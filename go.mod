@@ -3,7 +3,7 @@ module github.com/gizzahub/gzh-manager-go
 go 1.24
 
 require (
-	github.com/daixiang0/gci v0.13.5
+	github.com/daixiang0/gci v0.13.6
 	github.com/fatih/color v1.18.0
 	github.com/go-critic/go-critic v0.11.5
 	github.com/go-playground/validator/v10 v10.25.0
