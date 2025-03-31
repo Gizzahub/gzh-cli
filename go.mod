@@ -6,7 +6,7 @@ require (
 	github.com/daixiang0/gci v0.13.5
 	github.com/fatih/color v1.18.0
 	github.com/go-critic/go-critic v0.11.5
-	github.com/go-playground/validator/v10 v10.25.0
+	github.com/go-playground/validator/v10 v10.26.0
 	github.com/golangci/golangci-lint v1.63.4
 	github.com/gotesttools/gotestfmt/v2 v2.5.0
 	github.com/muesli/mango-cobra v1.2.0
