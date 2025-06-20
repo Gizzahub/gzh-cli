@@ -27,7 +27,7 @@
 - [x] config 설정 만들어내기
 
 ## Always Latest
-- [ ] asdf
+- [x] asdf
 - [ ] brew
 - [ ] sdkman
 - [ ] port
