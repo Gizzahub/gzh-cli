@@ -5,7 +5,7 @@
 동작 잘 하는거 확인했다 ^^b al
 
 ## Bulk Clone
-- [ ] bulk-clone cli
+- [x] bulk-clone cli
   - [x] -o organization name: `-o ScriptonBasestar`
   - [x] -t targetPath: `-t $HOME/mywork/ScriptonBasestar`
   - [x] -p proto: `-p https` or `-p ssh`
