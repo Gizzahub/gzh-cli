@@ -13,7 +13,9 @@
       "Bash(go build:*)",
       "Bash(./gz ssh-config generate:*)",
       "Bash(./gz --help)",
-      "Bash(./gz:*)"
+      "Bash(./gz:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

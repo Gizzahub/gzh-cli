@@ -21,9 +21,16 @@ func newGenConfigGithubCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "github",
-		Short: "Clone repositories from a GitHub organization",
-		Args:  cobra.NoArgs,
-		RunE:  o.run,
+		Short: "Clone repositories from a GitHub organization (legacy)",
+		Long: `Clone repositories from a GitHub organization.
+
+This is a legacy command that directly performs Git operations. For generating
+configuration files, use:
+  gz gen-config init        # Interactive wizard
+  gz gen-config template    # Predefined templates
+  gz gen-config discover    # Auto-discover existing repos`,
+		Args: cobra.NoArgs,
+		RunE: o.run,
 	}
 
 	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
