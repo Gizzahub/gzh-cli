@@ -90,6 +90,21 @@ func (cfg *bulkCloneConfig) ReadConfig(configPath string) error {
 	return nil
 }
 
+// ReadConfigWithoutValidation reads config file without validation (used for overlays)
+func (cfg *bulkCloneConfig) ReadConfigWithoutValidation(configPath string) error {
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to read config file: %v", err)
+	}
+
+	err = yaml.Unmarshal(data, cfg)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal config file: %v", err)
+	}
+
+	return nil
+}
+
 // ReadConfigFromDir reads config from a directory (legacy support)
 func (cfg *bulkCloneConfig) ReadConfigFromDir(targetPath string) {
 	configPath := path.Join(targetPath, "bulk-clone.yaml")

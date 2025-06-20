@@ -12,7 +12,7 @@
   - [x] -a auth: `-a token` 토큰이 있으면 private repo도 clone
   - [x] -s strategy: `-s reset` or `-s pull` or `-s fetch`
 - [x] bulk-clone.yaml 설정파일 지원
-- [ ] bulk-clone.yaml override bulk-clone.home.yaml bulk-clone.work.yaml. kustomize 이용
+- [x] bulk-clone.yaml override bulk-clone.home.yaml bulk-clone.work.yaml. kustomize 이용
 - [x] bulk-clone.yaml 설정파일 예시
 - [x] bulk-clone.yaml schema
 

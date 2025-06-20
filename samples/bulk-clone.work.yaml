@@ -1,0 +1,46 @@
+# Work overlay configuration for bulk-clone.yaml
+# This file demonstrates how to override base configuration for work environment
+
+# Override default settings for work environment
+default:
+  protocol: https  # Use HTTPS for work environment (some companies block SSH)
+  github:
+    root_path: "$HOME/work/github"
+    org_name: "company-main-org"
+  gitlab:
+    root_path: "$HOME/work/gitlab"
+    url: "https://gitlab.company.com"  # Company GitLab instance
+    recursive: false
+
+# Work-specific repositories
+repo_roots:
+  # Main company organization
+  - root_path: "$HOME/work/main-products"
+    provider: "github"
+    protocol: "https"
+    org_name: "company-main-org"
+  
+  # DevOps and infrastructure
+  - root_path: "$HOME/work/infrastructure"
+    provider: "github"
+    protocol: "https"
+    org_name: "company-infra-team"
+  
+  # Client projects
+  - root_path: "$HOME/work/client-projects"
+    provider: "github"
+    protocol: "https"
+    org_name: "client-project-org"
+  
+  # Open source contributions related to work
+  - root_path: "$HOME/work/opensource-contrib"
+    provider: "github"
+    protocol: "https"
+    org_name: "kubernetes"
+
+# Work-specific ignore patterns
+ignore_names:
+  - ".*-legacy$"      # Ignore legacy repositories
+  - "^archive-.*"     # Ignore archived repositories
+  - ".*-deprecated$"  # Ignore deprecated repositories
+  - "test-.*-temp$"   # Ignore temporary test repositories

@@ -172,3 +172,262 @@ func TestExpandPath(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadConfigWithOverlays(t *testing.T) {
+	tempDir := t.TempDir()
+
+	// Create base config file
+	baseConfig := `version: "0.1"
+default:
+  protocol: https
+  github:
+    root_path: "$HOME/base-repos"
+    org_name: "base-org"
+  gitlab:
+    root_path: "$HOME/base-gitlab"
+    group_name: "base-group"
+repo_roots:
+  - root_path: "$HOME/base-work"
+    provider: "github"
+    protocol: "https"
+    org_name: "base-company"
+ignore_names:
+  - "test-.*"
+`
+	basePath := filepath.Join(tempDir, "base-config.yaml")
+	err := os.WriteFile(basePath, []byte(baseConfig), 0o644)
+	require.NoError(t, err)
+
+	// Create home overlay config file
+	homeOverlay := `default:
+  protocol: ssh
+  github:
+    root_path: "$HOME/home-repos"
+    org_name: "home-org"
+repo_roots:
+  - root_path: "$HOME/home-work"
+    provider: "github"
+    protocol: "ssh"
+    org_name: "base-company"  # Override existing
+  - root_path: "$HOME/home-personal"
+    provider: "github"
+    protocol: "ssh"
+    org_name: "personal-org"  # New entry
+ignore_names:
+  - "home-.*"
+`
+	homePath := filepath.Join(tempDir, "home-overlay.yaml")
+	err = os.WriteFile(homePath, []byte(homeOverlay), 0o644)
+	require.NoError(t, err)
+
+	// Create work overlay config file
+	workOverlay := `default:
+  github:
+    root_path: "$HOME/work-repos"
+repo_roots:
+  - root_path: "$HOME/work-specific"
+    provider: "github"
+    protocol: "https"
+    org_name: "work-org"
+ignore_names:
+  - "work-.*"
+`
+	workPath := filepath.Join(tempDir, "work-overlay.yaml")
+	err = os.WriteFile(workPath, []byte(workOverlay), 0o644)
+	require.NoError(t, err)
+
+	t.Run("load config with home overlay", func(t *testing.T) {
+		cfg, err := LoadConfigWithOverlays(basePath, homePath)
+		assert.NoError(t, err)
+		assert.NotNil(t, cfg)
+
+		// Check that protocol was overridden
+		assert.Equal(t, "ssh", cfg.Default.Protocol)
+		
+		// Check that GitHub root path was overridden
+		assert.Equal(t, "$HOME/home-repos", cfg.Default.Github.RootPath)
+		assert.Equal(t, "home-org", cfg.Default.Github.OrgName)
+
+		// Check that GitLab config from base is preserved
+		assert.Equal(t, "$HOME/base-gitlab", cfg.Default.Gitlab.RootPath)
+		assert.Equal(t, "base-group", cfg.Default.Gitlab.GroupName)
+
+		// Check repo_roots merging
+		assert.Len(t, cfg.RepoRoots, 2)
+		
+		// base-company should be overridden
+		var baseCompanyRepo *BulkCloneGithub
+		var personalRepo *BulkCloneGithub
+		for i := range cfg.RepoRoots {
+			if cfg.RepoRoots[i].OrgName == "base-company" {
+				baseCompanyRepo = &cfg.RepoRoots[i]
+			}
+			if cfg.RepoRoots[i].OrgName == "personal-org" {
+				personalRepo = &cfg.RepoRoots[i]
+			}
+		}
+		
+		require.NotNil(t, baseCompanyRepo)
+		assert.Equal(t, "$HOME/home-work", baseCompanyRepo.RootPath)
+		assert.Equal(t, "ssh", baseCompanyRepo.Protocol)
+		
+		require.NotNil(t, personalRepo)
+		assert.Equal(t, "$HOME/home-personal", personalRepo.RootPath)
+
+		// Check ignore patterns were appended
+		assert.Len(t, cfg.IgnoreNameRegexes, 2)
+		assert.Contains(t, cfg.IgnoreNameRegexes, "test-.*")
+		assert.Contains(t, cfg.IgnoreNameRegexes, "home-.*")
+	})
+
+	t.Run("load config with multiple overlays", func(t *testing.T) {
+		cfg, err := LoadConfigWithOverlays(basePath, homePath, workPath)
+		assert.NoError(t, err)
+		assert.NotNil(t, cfg)
+
+		// Check that work overlay further overrode the GitHub root path
+		assert.Equal(t, "$HOME/work-repos", cfg.Default.Github.RootPath)
+		// But protocol should still be ssh from home overlay
+		assert.Equal(t, "ssh", cfg.Default.Protocol)
+
+		// Check repo_roots - should have 3 entries now
+		assert.Len(t, cfg.RepoRoots, 3)
+
+		var workRepo *BulkCloneGithub
+		for i := range cfg.RepoRoots {
+			if cfg.RepoRoots[i].OrgName == "work-org" {
+				workRepo = &cfg.RepoRoots[i]
+				break
+			}
+		}
+		require.NotNil(t, workRepo)
+		assert.Equal(t, "$HOME/work-specific", workRepo.RootPath)
+
+		// Check ignore patterns - should have all 3
+		assert.Len(t, cfg.IgnoreNameRegexes, 3)
+		assert.Contains(t, cfg.IgnoreNameRegexes, "test-.*")
+		assert.Contains(t, cfg.IgnoreNameRegexes, "home-.*")
+		assert.Contains(t, cfg.IgnoreNameRegexes, "work-.*")
+	})
+
+	t.Run("load config with non-existent overlay", func(t *testing.T) {
+		cfg, err := LoadConfigWithOverlays(basePath, "/non/existent/overlay.yaml")
+		assert.NoError(t, err) // Should not error for non-existent overlay
+		assert.NotNil(t, cfg)
+		
+		// Should be same as base config
+		assert.Equal(t, "https", cfg.Default.Protocol)
+		assert.Equal(t, "$HOME/base-repos", cfg.Default.Github.RootPath)
+	})
+}
+
+func TestGetOverlayConfigPaths(t *testing.T) {
+	paths := GetOverlayConfigPaths()
+	assert.NotEmpty(t, paths)
+	
+	// Should include current directory overlays
+	assert.Contains(t, paths, "./bulk-clone.home.yaml")
+	assert.Contains(t, paths, "./bulk-clone.home.yml")
+	assert.Contains(t, paths, "./bulk-clone.work.yaml")
+	assert.Contains(t, paths, "./bulk-clone.work.yml")
+	
+	// Should include home directory overlays if home directory exists
+	homeDir, err := os.UserHomeDir()
+	if err == nil {
+		assert.Contains(t, paths, filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.home.yaml"))
+		assert.Contains(t, paths, filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.work.yaml"))
+	}
+}
+
+func TestMergeConfig(t *testing.T) {
+	base := &bulkCloneConfig{
+		Version: "0.1",
+		Default: BulkCloneDefault{
+			Protocol: "https",
+			Github: BulkCloneDefaultGithub{
+				RootPath: "/base/github",
+				OrgName:  "base-org",
+			},
+			Gitlab: BulkCloneDefaultGitlab{
+				RootPath: "/base/gitlab",
+				GroupName: "base-group",
+				Recursive: false,
+			},
+		},
+		IgnoreNameRegexes: []string{"base-.*"},
+		RepoRoots: []BulkCloneGithub{
+			{
+				RootPath: "/base/work",
+				Provider: "github",
+				Protocol: "https",
+				OrgName:  "work-org",
+			},
+		},
+	}
+
+	overlay := &bulkCloneConfig{
+		Version: "0.2",
+		Default: BulkCloneDefault{
+			Protocol: "ssh",
+			Github: BulkCloneDefaultGithub{
+				RootPath: "/overlay/github",
+			},
+			Gitlab: BulkCloneDefaultGitlab{
+				Recursive: true,
+			},
+		},
+		IgnoreNameRegexes: []string{"overlay-.*"},
+		RepoRoots: []BulkCloneGithub{
+			{
+				RootPath: "/overlay/work",
+				Provider: "github", 
+				Protocol: "ssh",
+				OrgName:  "work-org", // Same org name - should override
+			},
+			{
+				RootPath: "/overlay/personal",
+				Provider: "github",
+				Protocol: "ssh",
+				OrgName:  "personal-org", // New org - should append
+			},
+		},
+	}
+
+	base.mergeConfig(overlay)
+
+	// Check version override
+	assert.Equal(t, "0.2", base.Version)
+
+	// Check default overrides
+	assert.Equal(t, "ssh", base.Default.Protocol)
+	assert.Equal(t, "/overlay/github", base.Default.Github.RootPath)
+	assert.Equal(t, "base-org", base.Default.Github.OrgName) // Should be preserved
+	assert.Equal(t, "/base/gitlab", base.Default.Gitlab.RootPath) // Should be preserved
+	assert.Equal(t, "base-group", base.Default.Gitlab.GroupName) // Should be preserved
+	assert.True(t, base.Default.Gitlab.Recursive) // Should be overridden
+
+	// Check ignore patterns were appended
+	assert.Len(t, base.IgnoreNameRegexes, 2)
+	assert.Contains(t, base.IgnoreNameRegexes, "base-.*")
+	assert.Contains(t, base.IgnoreNameRegexes, "overlay-.*")
+
+	// Check repo_roots merging
+	assert.Len(t, base.RepoRoots, 2)
+	
+	var workRepo, personalRepo *BulkCloneGithub
+	for i := range base.RepoRoots {
+		if base.RepoRoots[i].OrgName == "work-org" {
+			workRepo = &base.RepoRoots[i]
+		}
+		if base.RepoRoots[i].OrgName == "personal-org" {
+			personalRepo = &base.RepoRoots[i]
+		}
+	}
+	
+	require.NotNil(t, workRepo)
+	assert.Equal(t, "/overlay/work", workRepo.RootPath) // Should be overridden
+	assert.Equal(t, "ssh", workRepo.Protocol)
+	
+	require.NotNil(t, personalRepo)
+	assert.Equal(t, "/overlay/personal", personalRepo.RootPath) // Should be new
+}
