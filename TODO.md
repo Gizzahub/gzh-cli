@@ -23,7 +23,7 @@
 - [x] gitlab group bulk-clone cli
 
 ### Ssh config
-- [ ] ssh config 설정
+- [x] ssh config 설정
 - [ ] config 설정 만들어내기
 
 ## Always Latest

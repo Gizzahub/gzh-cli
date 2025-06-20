@@ -259,3 +259,170 @@ default:
 		assert.Equal(t, "/override/path", opts.targetPath)
 	})
 }
+
+func TestMainBulkCloneCommand(t *testing.T) {
+	tempDir := t.TempDir()
+
+	t.Run("default bulk clone options", func(t *testing.T) {
+		opts := defaultBulkCloneOptions()
+		assert.Equal(t, "reset", opts.strategy)
+		assert.Equal(t, "", opts.configFile)
+		assert.False(t, opts.useConfig)
+	})
+
+	t.Run("strategy validation", func(t *testing.T) {
+		validStrategies := []string{"reset", "pull", "fetch"}
+		invalidStrategies := []string{"invalid", "merge", "rebase"}
+
+		// Create a minimal config for testing
+		configContent := `version: "0.1"
+default:
+  protocol: https
+repo_roots: []
+`
+		configPath := filepath.Join(tempDir, "minimal-config.yaml")
+		err := os.WriteFile(configPath, []byte(configContent), 0o644)
+		require.NoError(t, err)
+
+		for _, strategy := range validStrategies {
+			t.Run("valid strategy: "+strategy, func(t *testing.T) {
+				opts := &bulkCloneOptions{
+					configFile: configPath,
+					strategy:   strategy,
+				}
+
+				// The command should not fail on strategy validation
+				// It might fail on network operations, but not on validation
+				err := opts.run(nil, []string{})
+				if err != nil {
+					assert.NotContains(t, err.Error(), "invalid strategy")
+				}
+			})
+		}
+
+		for _, strategy := range invalidStrategies {
+			t.Run("invalid strategy: "+strategy, func(t *testing.T) {
+				opts := &bulkCloneOptions{
+					configFile: configPath,
+					strategy:   strategy,
+				}
+
+				err := opts.run(nil, []string{})
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "invalid strategy")
+			})
+		}
+	})
+
+	t.Run("config loading", func(t *testing.T) {
+		// Create a comprehensive config
+		configContent := `version: "0.1"
+default:
+  protocol: https
+  github:
+    root_path: "%s/default-github"
+    org_name: "default-github-org"
+  gitlab:
+    root_path: "%s/default-gitlab"
+    group_name: "default-gitlab-group"
+repo_roots:
+  - root_path: "%s/github-org1"
+    provider: "github"
+    protocol: "ssh"
+    org_name: "github-org1"
+  - root_path: "%s/github-org2"
+    provider: "github"
+    protocol: "https"
+    org_name: "github-org2"
+  - root_path: "%s/gitlab-group1"
+    provider: "gitlab"
+    protocol: "https"
+    org_name: "gitlab-group1"
+`
+		configPath := filepath.Join(tempDir, "comprehensive-config.yaml")
+		formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir, tempDir, tempDir, tempDir)
+		err := os.WriteFile(configPath, []byte(formattedConfig), 0o644)
+		require.NoError(t, err)
+
+		opts := &bulkCloneOptions{
+			configFile: configPath,
+			strategy:   "fetch",
+		}
+
+		// Since we don't have actual git repositories, this will fail
+		// but we can verify that config loading and processing works
+		err = opts.run(nil, []string{})
+		// The error should come from git operations, not from config processing
+		if err != nil {
+			assert.NotContains(t, err.Error(), "failed to load config")
+			assert.NotContains(t, err.Error(), "invalid strategy")
+		}
+	})
+
+	t.Run("missing config", func(t *testing.T) {
+		opts := &bulkCloneOptions{
+			configFile: "/non/existent/config.yaml",
+			strategy:   "reset",
+		}
+
+		err := opts.run(nil, []string{})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to load config")
+	})
+
+	t.Run("empty config", func(t *testing.T) {
+		// Create an empty config
+		configContent := `version: "0.1"
+default:
+  protocol: https
+repo_roots: []
+`
+		configPath := filepath.Join(tempDir, "empty-config.yaml")
+		err := os.WriteFile(configPath, []byte(configContent), 0o644)
+		require.NoError(t, err)
+
+		opts := &bulkCloneOptions{
+			configFile: configPath,
+			strategy:   "reset",
+		}
+
+		// Should not error for empty config - just complete successfully
+		err = opts.run(nil, []string{})
+		assert.NoError(t, err)
+	})
+}
+
+func TestMainBulkCloneCommandFlags(t *testing.T) {
+	t.Run("command creation", func(t *testing.T) {
+		cmd := NewBulkCloneCmd()
+		assert.NotNil(t, cmd)
+		assert.Equal(t, "bulk-clone", cmd.Use)
+		assert.Contains(t, cmd.Short, "Clone repositories from multiple Git hosting services")
+
+		// Check that it has the right flags
+		configFlag := cmd.Flags().Lookup("config")
+		assert.NotNil(t, configFlag)
+		assert.Equal(t, "c", configFlag.Shorthand)
+
+		useConfigFlag := cmd.Flags().Lookup("use-config")
+		assert.NotNil(t, useConfigFlag)
+
+		strategyFlag := cmd.Flags().Lookup("strategy")
+		assert.NotNil(t, strategyFlag)
+		assert.Equal(t, "s", strategyFlag.Shorthand)
+		assert.Equal(t, "reset", strategyFlag.DefValue)
+
+		// Check that it has subcommands
+		subcommands := cmd.Commands()
+		subcommandNames := make([]string, len(subcommands))
+		for i, subcmd := range subcommands {
+			subcommandNames[i] = subcmd.Use
+		}
+
+		assert.Contains(t, subcommandNames, "github")
+		assert.Contains(t, subcommandNames, "gitlab")
+		assert.Contains(t, subcommandNames, "gitea")
+		assert.Contains(t, subcommandNames, "gogs")
+		assert.Contains(t, subcommandNames, "validate")
+	})
+}

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(./gz bulk-clone:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(go test:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(../gz bulk-clone:*)",
+      "Bash(rm:*)",
+      "Bash(go build:*)",
+      "Bash(./gz ssh-config generate:*)",
+      "Bash(./gz --help)",
+      "Bash(./gz:*)"
+    ],
+    "deny": []
+  }
+}

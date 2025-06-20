@@ -243,7 +243,7 @@ ignore_names:
 
 		// Check that protocol was overridden
 		assert.Equal(t, "ssh", cfg.Default.Protocol)
-		
+
 		// Check that GitHub root path was overridden
 		assert.Equal(t, "$HOME/home-repos", cfg.Default.Github.RootPath)
 		assert.Equal(t, "home-org", cfg.Default.Github.OrgName)
@@ -254,7 +254,7 @@ ignore_names:
 
 		// Check repo_roots merging
 		assert.Len(t, cfg.RepoRoots, 2)
-		
+
 		// base-company should be overridden
 		var baseCompanyRepo *BulkCloneGithub
 		var personalRepo *BulkCloneGithub
@@ -266,11 +266,11 @@ ignore_names:
 				personalRepo = &cfg.RepoRoots[i]
 			}
 		}
-		
+
 		require.NotNil(t, baseCompanyRepo)
 		assert.Equal(t, "$HOME/home-work", baseCompanyRepo.RootPath)
 		assert.Equal(t, "ssh", baseCompanyRepo.Protocol)
-		
+
 		require.NotNil(t, personalRepo)
 		assert.Equal(t, "$HOME/home-personal", personalRepo.RootPath)
 
@@ -314,7 +314,7 @@ ignore_names:
 		cfg, err := LoadConfigWithOverlays(basePath, "/non/existent/overlay.yaml")
 		assert.NoError(t, err) // Should not error for non-existent overlay
 		assert.NotNil(t, cfg)
-		
+
 		// Should be same as base config
 		assert.Equal(t, "https", cfg.Default.Protocol)
 		assert.Equal(t, "$HOME/base-repos", cfg.Default.Github.RootPath)
@@ -324,13 +324,13 @@ ignore_names:
 func TestGetOverlayConfigPaths(t *testing.T) {
 	paths := GetOverlayConfigPaths()
 	assert.NotEmpty(t, paths)
-	
+
 	// Should include current directory overlays
 	assert.Contains(t, paths, "./bulk-clone.home.yaml")
 	assert.Contains(t, paths, "./bulk-clone.home.yml")
 	assert.Contains(t, paths, "./bulk-clone.work.yaml")
 	assert.Contains(t, paths, "./bulk-clone.work.yml")
-	
+
 	// Should include home directory overlays if home directory exists
 	homeDir, err := os.UserHomeDir()
 	if err == nil {
@@ -349,7 +349,7 @@ func TestMergeConfig(t *testing.T) {
 				OrgName:  "base-org",
 			},
 			Gitlab: BulkCloneDefaultGitlab{
-				RootPath: "/base/gitlab",
+				RootPath:  "/base/gitlab",
 				GroupName: "base-group",
 				Recursive: false,
 			},
@@ -380,7 +380,7 @@ func TestMergeConfig(t *testing.T) {
 		RepoRoots: []BulkCloneGithub{
 			{
 				RootPath: "/overlay/work",
-				Provider: "github", 
+				Provider: "github",
 				Protocol: "ssh",
 				OrgName:  "work-org", // Same org name - should override
 			},
@@ -401,10 +401,10 @@ func TestMergeConfig(t *testing.T) {
 	// Check default overrides
 	assert.Equal(t, "ssh", base.Default.Protocol)
 	assert.Equal(t, "/overlay/github", base.Default.Github.RootPath)
-	assert.Equal(t, "base-org", base.Default.Github.OrgName) // Should be preserved
+	assert.Equal(t, "base-org", base.Default.Github.OrgName)      // Should be preserved
 	assert.Equal(t, "/base/gitlab", base.Default.Gitlab.RootPath) // Should be preserved
-	assert.Equal(t, "base-group", base.Default.Gitlab.GroupName) // Should be preserved
-	assert.True(t, base.Default.Gitlab.Recursive) // Should be overridden
+	assert.Equal(t, "base-group", base.Default.Gitlab.GroupName)  // Should be preserved
+	assert.True(t, base.Default.Gitlab.Recursive)                 // Should be overridden
 
 	// Check ignore patterns were appended
 	assert.Len(t, base.IgnoreNameRegexes, 2)
@@ -413,7 +413,7 @@ func TestMergeConfig(t *testing.T) {
 
 	// Check repo_roots merging
 	assert.Len(t, base.RepoRoots, 2)
-	
+
 	var workRepo, personalRepo *BulkCloneGithub
 	for i := range base.RepoRoots {
 		if base.RepoRoots[i].OrgName == "work-org" {
@@ -423,11 +423,11 @@ func TestMergeConfig(t *testing.T) {
 			personalRepo = &base.RepoRoots[i]
 		}
 	}
-	
+
 	require.NotNil(t, workRepo)
 	assert.Equal(t, "/overlay/work", workRepo.RootPath) // Should be overridden
 	assert.Equal(t, "ssh", workRepo.Protocol)
-	
+
 	require.NotNil(t, personalRepo)
 	assert.Equal(t, "/overlay/personal", personalRepo.RootPath) // Should be new
 }

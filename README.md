@@ -141,6 +141,30 @@ ignore_names:
 
 See `samples/bulk-clone-example.yaml` for a comprehensive example with all available options and detailed comments.
 
+#### Configuration Schema
+
+The configuration file structure is formally defined in:
+- **JSON Schema**: `docs/bulk-clone-schema.json` - Machine-readable schema definition
+- **YAML Schema**: `docs/bulk-clone-schema.yaml` - Human-readable schema documentation
+
+##### Validating Your Configuration
+
+You can validate your configuration file using the built-in validator:
+
+```bash
+# Validate a specific config file
+gzh bulk-clone validate -c /path/to/bulk-clone.yaml
+
+# Validate config from standard locations
+gzh bulk-clone validate --use-config
+```
+
+The validator checks:
+- Required fields are present
+- Values match allowed enums (protocol, provider, etc.)
+- Structure follows the schema
+- Regex patterns are valid
+
 #### Advanced Configuration (Future)
 
 ```yaml

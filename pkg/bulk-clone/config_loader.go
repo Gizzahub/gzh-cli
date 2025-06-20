@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+// BulkCloneConfig is the public interface for bulk clone configuration
+type BulkCloneConfig = bulkCloneConfig
+
 // ConfigPaths defines the paths where config files are searched
 var ConfigPaths = []string{
 	"./bulk-clone.yaml",
@@ -16,7 +19,7 @@ var ConfigPaths = []string{
 // OverlayConfigPaths defines overlay config files that can override base configuration
 var OverlayConfigPaths = []string{
 	"./bulk-clone.home.yaml",
-	"./bulk-clone.home.yml", 
+	"./bulk-clone.home.yml",
 	"./bulk-clone.work.yaml",
 	"./bulk-clone.work.yml",
 }
@@ -42,7 +45,7 @@ func GetConfigPaths() []string {
 	return paths
 }
 
-// GetOverlayConfigPaths returns overlay config file paths in order of preference  
+// GetOverlayConfigPaths returns overlay config file paths in order of preference
 func GetOverlayConfigPaths() []string {
 	paths := make([]string, 0, len(OverlayConfigPaths)+4)
 
@@ -82,7 +85,7 @@ func FindConfigFile() (string, error) {
 }
 
 // LoadConfig loads configuration from file with overlay support
-func LoadConfig(configPath string) (*bulkCloneConfig, error) {
+func LoadConfig(configPath string) (*BulkCloneConfig, error) {
 	if configPath == "" {
 		path, err := FindConfigFile()
 		if err != nil {
@@ -187,7 +190,7 @@ func ExpandPath(path string) string {
 // applyOverlays applies all found overlay configurations
 func (cfg *bulkCloneConfig) applyOverlays() error {
 	overlayPaths := GetOverlayConfigPaths()
-	
+
 	for _, overlayPath := range overlayPaths {
 		if fileExists(overlayPath) {
 			if err := cfg.applyOverlay(overlayPath); err != nil {
@@ -195,7 +198,7 @@ func (cfg *bulkCloneConfig) applyOverlays() error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -208,7 +211,7 @@ func (cfg *bulkCloneConfig) applyOverlay(overlayPath string) error {
 
 	// Merge configurations
 	cfg.mergeConfig(overlay)
-	
+
 	// Validate merged configuration
 	if err := cfg.validateConfig(); err != nil {
 		return fmt.Errorf("validation failed after applying overlay: %w", err)
