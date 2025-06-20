@@ -13,7 +13,7 @@
   - [x] -s strategy: `-s reset` or `-s pull` or `-s fetch`
 - [x] bulk-clone.yaml 설정파일 지원
 - [ ] bulk-clone.yaml override bulk-clone.home.yaml bulk-clone.work.yaml. kustomize 이용
-- [ ] bulk-clone.yaml 설정파일 예시
+- [x] bulk-clone.yaml 설정파일 예시
 - [ ] bulk-clone.yaml schema
 
 ### Github Org

@@ -1,3 +1,7 @@
+# Advanced bulk-clone configuration
+# Note: This shows planned features not yet fully implemented
+# For working examples, see bulk-clone-simple.yaml and bulk-clone-example.yaml
+
 github:
   myorg:
     auth: token

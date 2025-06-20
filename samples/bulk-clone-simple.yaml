@@ -1,0 +1,35 @@
+# Simple bulk-clone.yaml Example
+# This is a minimal working configuration
+
+version: "0.1"
+
+# Set global defaults
+default:
+  protocol: https
+  github:
+    root_path: "$HOME/github-repos"
+  gitlab:
+    root_path: "$HOME/gitlab-repos"
+
+# Configure your organizations
+repo_roots:
+  # GitHub organizations
+  - root_path: "$HOME/work/mycompany"
+    provider: "github"
+    protocol: "ssh"
+    org_name: "mycompany"
+  
+  - root_path: "$HOME/opensource"
+    provider: "github" 
+    protocol: "https"
+    org_name: "kubernetes"
+  
+  - root_path: "$HOME/personal"
+    provider: "github"
+    protocol: "ssh"
+    org_name: "myusername"
+
+# Ignore test and archived repos
+ignore_names:
+  - "test-.*"
+  - ".*-archive"

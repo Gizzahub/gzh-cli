@@ -102,31 +102,44 @@ gzh bulk-clone github -c /path/to/config.yaml -o myorg
 gzh bulk-clone github -c config.yaml -o myorg -t /different/path
 ```
 
-#### Configuration File Example
+#### Configuration File Examples
+
+Several example configuration files are provided in the `samples/` directory:
+
+1. **bulk-clone-simple.yaml** - A minimal working configuration
+2. **bulk-clone-example.yaml** - A comprehensive example with detailed comments
+3. **bulk-clone.yml** - Advanced features (planned/future implementation)
+
+##### Simple Configuration Example
 
 ```yaml
-# bulk-clone.yaml
+# bulk-clone-simple.yaml
 version: "0.1"
+
 default:
   protocol: https
   github:
-    root_path: "$HOME/default-repos"
-    org_name: "default-org"
+    root_path: "$HOME/github-repos"
   gitlab:
     root_path: "$HOME/gitlab-repos"
-    group_name: "default-group"
-    recursive: true
 
 repo_roots:
-  - root_path: "$HOME/mywork/nginxinc"
-    provider: "github"
-    protocol: "https"
-    org_name: "nginxinc"
-  - root_path: "$HOME/mywork/ScriptonBasestar"
+  - root_path: "$HOME/work/mycompany"
     provider: "github"
     protocol: "ssh"
-    org_name: "ScriptonBasestar"
+    org_name: "mycompany"
+  
+  - root_path: "$HOME/opensource"
+    provider: "github"
+    protocol: "https"
+    org_name: "kubernetes"
+
+ignore_names:
+  - "test-.*"
+  - ".*-archive"
 ```
+
+See `samples/bulk-clone-example.yaml` for a comprehensive example with all available options and detailed comments.
 
 #### Advanced Configuration (Future)
 
