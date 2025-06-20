@@ -28,7 +28,7 @@
 
 ## Always Latest
 - [x] asdf
-- [ ] brew
+- [x] brew
 - [ ] sdkman
 - [ ] port
 - [ ] apt-get

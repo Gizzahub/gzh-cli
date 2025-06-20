@@ -33,6 +33,7 @@ Examples:
 	}
 
 	cmd.AddCommand(newAlwaysLatestAsdfCmd())
+	cmd.AddCommand(newAlwaysLatestBrewCmd())
 
 	return cmd
 }
