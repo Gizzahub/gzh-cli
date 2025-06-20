@@ -3,6 +3,7 @@ package bulk_clone
 import (
 	"fmt"
 
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 )
@@ -11,6 +12,8 @@ type bulkCloneGithubOptions struct {
 	targetPath string
 	orgName    string
 	strategy   string
+	configFile string
+	useConfig  bool
 }
 
 func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
@@ -32,14 +35,26 @@ func newBulkCloneGithubCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
 	cmd.Flags().StringVarP(&o.orgName, "orgName", "o", o.orgName, "orgName")
 	cmd.Flags().StringVarP(&o.strategy, "strategy", "s", o.strategy, "Sync strategy: reset, pull, or fetch")
+	cmd.Flags().StringVarP(&o.configFile, "config", "c", o.configFile, "Path to config file")
+	cmd.Flags().BoolVar(&o.useConfig, "use-config", false, "Use config file from standard locations")
 
-	cmd.MarkFlagRequired("targetPath")
-	cmd.MarkFlagRequired("orgName")
+	// Mark flags as required only if not using config
+	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
+	cmd.MarkFlagsOneRequired("targetPath", "config", "use-config")
+	cmd.MarkFlagsOneRequired("orgName", "config", "use-config")
 
 	return cmd
 }
 
 func (o *bulkCloneGithubOptions) run(_ *cobra.Command, args []string) error {
+	// Load config if specified
+	if o.configFile != "" || o.useConfig {
+		err := o.loadFromConfig()
+		if err != nil {
+			return fmt.Errorf("failed to load config: %w", err)
+		}
+	}
+
 	if o.targetPath == "" || o.orgName == "" {
 		return fmt.Errorf("both targetPath and orgName must be specified")
 	}
@@ -55,6 +70,47 @@ func (o *bulkCloneGithubOptions) run(_ *cobra.Command, args []string) error {
 		// return fmt.Errorf("failed to refresh repositories: %w", err)
 		return nil
 	}
+
+	return nil
+}
+
+func (o *bulkCloneGithubOptions) loadFromConfig() error {
+	var configPath string
+	if o.configFile != "" {
+		configPath = o.configFile
+	}
+
+	cfg, err := bulkclone.LoadConfig(configPath)
+	if err != nil {
+		return err
+	}
+
+	// If orgName is specified via CLI, use it; otherwise get from config
+	if o.orgName == "" {
+		// TODO: Handle multiple organizations from config
+		// For now, just use the first one or from defaults
+		if len(cfg.RepoRoots) > 0 {
+			o.orgName = cfg.RepoRoots[0].OrgName
+		} else if cfg.Default.Github.OrgName != "" {
+			o.orgName = cfg.Default.Github.OrgName
+		} else {
+			return fmt.Errorf("no organization found in config")
+		}
+	}
+
+	// Get config for the specific organization
+	orgConfig, err := cfg.GetGithubOrgConfig(o.orgName)
+	if err != nil {
+		return err
+	}
+
+	// Apply config values (CLI flags take precedence)
+	if o.targetPath == "" && orgConfig.RootPath != "" {
+		o.targetPath = bulkclone.ExpandPath(orgConfig.RootPath)
+	}
+
+	// TODO: Support protocol from config
+	// TODO: Support auth from config
 
 	return nil
 }

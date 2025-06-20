@@ -1,9 +1,13 @@
 package bulk_clone
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBulkCloneGithubOptions_Validate(t *testing.T) {
@@ -171,4 +175,87 @@ func TestStrategyValidation(t *testing.T) {
 
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && s[:len(substr)] == substr || len(s) > len(substr) && contains(s[1:], substr)
+}
+
+func TestBulkCloneConfigSupport(t *testing.T) {
+	tempDir := t.TempDir()
+
+	// Create a test config file
+	configContent := `version: "0.1"
+default:
+  protocol: https
+  github:
+    root_path: "%s/github-repos"
+    org_name: "test-default-org"
+repo_roots:
+  - root_path: "%s/my-repos"
+    provider: "github"
+    protocol: "https"
+    org_name: "my-test-org"
+`
+	configPath := filepath.Join(tempDir, "test-config.yaml")
+	formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir)
+	err := os.WriteFile(configPath, []byte(formattedConfig), 0o644)
+	require.NoError(t, err)
+
+	t.Run("github with config file", func(t *testing.T) {
+		opts := &bulkCloneGithubOptions{
+			configFile: configPath,
+			orgName:    "my-test-org",
+		}
+
+		err := opts.loadFromConfig()
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(tempDir, "my-repos"), opts.targetPath)
+	})
+
+	t.Run("github with config use default org", func(t *testing.T) {
+		opts := &bulkCloneGithubOptions{
+			configFile: configPath,
+			orgName:    "test-default-org",
+		}
+
+		err := opts.loadFromConfig()
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(tempDir, "github-repos"), opts.targetPath)
+	})
+
+	t.Run("gitlab with config file", func(t *testing.T) {
+		// Create GitLab config
+		gitlabConfig := `version: "0.1"
+default:
+  protocol: https
+  gitlab:
+    root_path: "%s/gitlab-repos"
+    group_name: "test-group"
+    recursive: true
+`
+		gitlabConfigPath := filepath.Join(tempDir, "gitlab-config.yaml")
+		formattedGitlabConfig := fmt.Sprintf(gitlabConfig, tempDir)
+		err := os.WriteFile(gitlabConfigPath, []byte(formattedGitlabConfig), 0o644)
+		require.NoError(t, err)
+
+		opts := &bulkCloneGitlabOptions{
+			configFile: gitlabConfigPath,
+			groupName:  "test-group",
+		}
+
+		err = opts.loadFromConfig()
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(tempDir, "gitlab-repos"), opts.targetPath)
+		assert.True(t, opts.recursively)
+	})
+
+	t.Run("cli flags override config", func(t *testing.T) {
+		opts := &bulkCloneGithubOptions{
+			configFile: configPath,
+			orgName:    "my-test-org",
+			targetPath: "/override/path",
+		}
+
+		err := opts.loadFromConfig()
+		assert.NoError(t, err)
+		// CLI flag should take precedence
+		assert.Equal(t, "/override/path", opts.targetPath)
+	})
 }

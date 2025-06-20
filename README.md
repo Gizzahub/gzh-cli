@@ -77,10 +77,61 @@ $> gzh bulk-clone -t $HOME/mywork
 $> gzh bulk-clone -t ~/mywork
 ```
 
-### Bulk Clone config
+### Bulk Clone Config File Support
+
+The bulk-clone command now supports configuration files to manage multiple organizations and their settings. This allows you to define clone operations once and reuse them.
+
+#### Configuration File Locations
+
+The tool searches for configuration files in the following order:
+1. Environment variable: `GZH_CONFIG_PATH`
+2. Current directory: `./bulk-clone.yaml` or `./bulk-clone.yml`
+3. User config directory: `~/.config/gzh-manager/bulk-clone.yaml`
+4. System config: `/etc/gzh-manager/bulk-clone.yaml`
+
+#### Using Configuration Files
+
+```bash
+# Use config file from standard locations
+gzh bulk-clone github --use-config -o myorg
+
+# Use specific config file
+gzh bulk-clone github -c /path/to/config.yaml -o myorg
+
+# Override config values with CLI flags
+gzh bulk-clone github -c config.yaml -o myorg -t /different/path
+```
+
+#### Configuration File Example
 
 ```yaml
-# bulk-clone.yaml 
+# bulk-clone.yaml
+version: "0.1"
+default:
+  protocol: https
+  github:
+    root_path: "$HOME/default-repos"
+    org_name: "default-org"
+  gitlab:
+    root_path: "$HOME/gitlab-repos"
+    group_name: "default-group"
+    recursive: true
+
+repo_roots:
+  - root_path: "$HOME/mywork/nginxinc"
+    provider: "github"
+    protocol: "https"
+    org_name: "nginxinc"
+  - root_path: "$HOME/mywork/ScriptonBasestar"
+    provider: "github"
+    protocol: "ssh"
+    org_name: "ScriptonBasestar"
+```
+
+#### Advanced Configuration (Future)
+
+```yaml
+# bulk-clone.yaml (advanced example for future implementation)
 github:
   ScriptonBasestar:
    auth: token

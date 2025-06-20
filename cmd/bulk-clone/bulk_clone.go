@@ -7,6 +7,10 @@ func NewBulkCloneCmd() *cobra.Command {
 		Use:          "bulk-clone",
 		Short:        "bulk-clone subcommand to manage GitHub org repositories",
 		SilenceUsage: true,
+		Long: `Clone multiple repositories from various Git hosting services.
+		
+You can use a configuration file (bulk-clone.yaml) to define multiple organizations
+and their settings, or use command-line flags for single organization operations.`,
 	}
 
 	cmd.AddCommand(newBulkCloneGiteaCmd())

@@ -70,23 +70,31 @@ func (cfg *bulkCloneConfig) ConfigExists(targetPath string) bool {
 	return fileExists(path.Join(targetPath, "bulk-clone.yaml"))
 }
 
-func (cfg *bulkCloneConfig) ReadConfig(targetPath string) {
-	configPath := path.Join(targetPath, "bulk-clone.yaml")
-
+func (cfg *bulkCloneConfig) ReadConfig(configPath string) error {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		log.Fatalf("failed to read config file: %v", err)
+		return fmt.Errorf("failed to read config file: %v", err)
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		log.Fatalf("failed to unmarshal config file: %v", err)
+		return fmt.Errorf("failed to unmarshal config file: %v", err)
 	}
 
 	err = cfg.validateConfig()
 	if err != nil {
 		printValidationErrors(err)
-		log.Fatalf("failed to validate config file: %v", err)
+		return fmt.Errorf("failed to validate config file: %v", err)
+	}
+
+	return nil
+}
+
+// ReadConfigFromDir reads config from a directory (legacy support)
+func (cfg *bulkCloneConfig) ReadConfigFromDir(targetPath string) {
+	configPath := path.Join(targetPath, "bulk-clone.yaml")
+	if err := cfg.ReadConfig(configPath); err != nil {
+		log.Fatal(err)
 	}
 }
 
