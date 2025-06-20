@@ -12,6 +12,7 @@ func NewBulkCloneCmd() *cobra.Command {
 	cmd.AddCommand(newBulkCloneGiteaCmd())
 	cmd.AddCommand(newBulkCloneGithubCmd())
 	cmd.AddCommand(newBulkCloneGitlabCmd())
+	cmd.AddCommand(newBulkCloneGogsCmd())
 
 	return cmd
 }

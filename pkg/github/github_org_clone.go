@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/gizzahub/gzh-manager-go/helpers"
-	"github.com/schollz/progressbar/v3"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/gizzahub/gzh-manager-go/helpers"
+	"github.com/schollz/progressbar/v3"
 )
 
 type RepoInfo struct {
@@ -48,9 +49,9 @@ func List(org string) ([]string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		//body, _ := io.ReadAll(resp.Body)
-		//fmt.Println(string(body))
-		//resp.Header.Write(os.Stdout)
+		// body, _ := io.ReadAll(resp.Body)
+		// fmt.Println(string(body))
+		// resp.Header.Write(os.Stdout)
 		rateReset := resp.Header.Get("X-RateLimit-Reset")
 		resetTime, err := strconv.ParseInt(rateReset, 10, 64)
 		if err == nil {
@@ -58,7 +59,7 @@ func List(org string) ([]string, error) {
 			c.Println("Github RateLimit !!! you must wait until: ")
 			c.Println(time.Unix(resetTime, 0).Format(time.RFC1123))
 			c.Printf("%d minutes and %d seconds\n", int(time.Until(time.Unix(resetTime, 0)).Minutes()), int(time.Until(time.Unix(resetTime, 0)).Seconds())%60)
-			c.Println("or Use Github Token (not provided yet ^*)\n")
+			c.Println("or Use Github Token (not provided yet ^*)")
 		}
 		// try after
 		return nil, fmt.Errorf("failed to get repositories: %s", resp.Status)
@@ -107,7 +108,7 @@ func Clone(targetPath string, org string, repo string) error {
 		fmt.Println(stderr.String())
 		fmt.Println(out.String())
 		fmt.Println("execute git clone fail: ", out.String())
-		return fmt.Errorf("Clone Failed  (url: %s, branch: %s, targetPath: %s, err: %w)\n", cloneURL, targetPath, err)
+		return fmt.Errorf("Clone Failed  (url: %s, targetPath: %s, err: %w)", cloneURL, targetPath, err)
 	}
 	fmt.Println("execute git clone: ", out.String())
 
@@ -115,7 +116,8 @@ func Clone(targetPath string, org string, repo string) error {
 }
 
 // RefreshAll synchronizes the repositories in the targetPath with the repositories in the given organization.
-func RefreshAll(targetPath string, org string) error {
+// strategy can be "reset" (default), "pull", or "fetch"
+func RefreshAll(targetPath string, org string, strategy string) error {
 	// Get all directories inside targetPath
 	targetRepos, err := getDirectories(targetPath)
 	if err != nil {
@@ -128,14 +130,14 @@ func RefreshAll(targetPath string, org string) error {
 		return fmt.Errorf("failed to list repositories from organization: %w", err)
 	}
 
-	//bar := progressbar.Default(int64(len(orgRepos)), "Cloning Repositories")
+	// bar := progressbar.Default(int64(len(orgRepos)), "Cloning Repositories")
 	bar := progressbar.NewOptions(len(orgRepos),
 		progressbar.OptionSetDescription("Cloning Repositories"),
 		progressbar.OptionSetRenderBlankState(true),
 	)
 
 	// Determine repos to delete (targetRepos - orgRepos)
-	//reposToDelete := difference(targetRepos, orgRepos)
+	// reposToDelete := difference(targetRepos, orgRepos)
 
 	// Delete repos that are not in the organization
 	for _, repo := range targetRepos {
@@ -150,7 +152,7 @@ func RefreshAll(targetPath string, org string) error {
 
 	// print all orgs
 	c := color.New(color.FgCyan, color.Bold)
-	c.Println("All Target %d >>>>>>>>>>>>>>>>>>>>", len(orgRepos))
+	c.Printf("All Target %d >>>>>>>>>>>>>>>>>>>>\n", len(orgRepos))
 	for _, repo := range orgRepos {
 		c.Println(repo)
 	}
@@ -163,28 +165,38 @@ func RefreshAll(targetPath string, org string) error {
 		if _, err := os.Stat(repoPath); os.IsNotExist(err) {
 			// Clone the repository if it does not exist
 			if err := Clone(repoPath, org, repo); err != nil {
-				//fmt.Printf("failed to clone repository %s: %w\n", repoPath, err)
+				// fmt.Printf("failed to clone repository %s: %w\n", repoPath, err)
 				return fmt.Errorf("failed to clone repository %s: %w", repoPath, err)
 			}
 		} else {
-			// Reset hard HEAD if the repository already exists
-			//fmt.Print("else reset >>>>>>")
-			// pass if empty
+			// Execute git operation based on strategy
 			repoType, _ := helpers.CheckGitRepoType(repoPath)
 			if repoType != "empty" {
-				cmd := exec.Command("git", "-C", repoPath, "reset", "--hard", "HEAD")
-				if err := cmd.Run(); err != nil {
-					fmt.Print("execute git reset fail: empty dir - ", err)
-					//return fmt.Errorf("failed to reset repository %s: %w", repoPath, err)
+				switch strategy {
+				case "reset":
+					// Reset hard HEAD and pull
+					cmd := exec.Command("git", "-C", repoPath, "reset", "--hard", "HEAD")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
+					}
+					cmd = exec.Command("git", "-C", repoPath, "pull")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+					}
+				case "pull":
+					// Only pull without reset
+					cmd := exec.Command("git", "-C", repoPath, "pull")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+					}
+				case "fetch":
+					// Only fetch without modifying working directory
+					cmd := exec.Command("git", "-C", repoPath, "fetch")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git fetch fail for %s: %v\n", repo, err)
+					}
 				}
 			}
-			cmd := exec.Command("git", "-C", repoPath, "pull")
-			if err := cmd.Run(); err != nil {
-				fmt.Print("execute git pull fail: no branch? - ", err)
-				//return fmt.Errorf("failed to pull repository %s: %w", repoPath, err)
-			}
-			//fmt.Println("else reset <<<<<<")
-			//fmt.Printf("Repo Clone or Reset Success: %s\n", repoPath)
 		}
 		fmt.Println()
 		bar.Add(1)

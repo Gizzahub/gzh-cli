@@ -1,9 +1,10 @@
 package helpers
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os/exec"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCheckGitRepoType(t *testing.T) {

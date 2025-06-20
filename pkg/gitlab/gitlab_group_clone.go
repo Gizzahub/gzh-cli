@@ -12,8 +12,10 @@ import (
 	"path/filepath"
 )
 
-var ErrFailedToGetSubgroups = errors.New("failed to get subgroups")
-var ErrFailedToGetRepositories = errors.New("failed to get repositories")
+var (
+	ErrFailedToGetSubgroups    = errors.New("failed to get subgroups")
+	ErrFailedToGetRepositories = errors.New("failed to get repositories")
+)
 
 type GitLabRepoInfo struct {
 	DefaultBranch string `json:"default_branch"`
@@ -130,7 +132,7 @@ func Clone(targetPath string, group string, repo string, branch string) error {
 	cloneURL := fmt.Sprintf("https://gitlab.com/%s/%s.git", group, repo)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	//cmd := exec.Command("git", "clone", "-b", branch, cloneURL, targetPath)
+	// cmd := exec.Command("git", "clone", "-b", branch, cloneURL, targetPath)
 	cmd := exec.Command("git", "clone", cloneURL, targetPath)
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
@@ -143,7 +145,9 @@ func Clone(targetPath string, group string, repo string, branch string) error {
 	return nil
 }
 
-func RefreshAll(targetPath string, group string) error {
+// RefreshAll synchronizes the repositories in the targetPath with the repositories in the given group.
+// strategy can be "reset" (default), "pull", or "fetch"
+func RefreshAll(targetPath string, group string, strategy string) error {
 	// Get all directories inside targetPath
 	targetRepos, err := getDirectories(targetPath)
 	if err != nil {
@@ -176,12 +180,32 @@ func RefreshAll(targetPath string, group string) error {
 				return fmt.Errorf("failed to clone repository %s: %w", repoPath, err)
 			}
 		} else {
-			// Reset hard HEAD if the repository already exists
-			cmd := exec.Command("git", "-C", repoPath, "reset", "--hard", "HEAD")
-			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("failed to reset repository %s: %w", repoPath, err)
+			// Execute git operation based on strategy
+			switch strategy {
+			case "reset":
+				// Reset hard HEAD and pull
+				cmd := exec.Command("git", "-C", repoPath, "reset", "--hard", "HEAD")
+				if err := cmd.Run(); err != nil {
+					fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
+				}
+				cmd = exec.Command("git", "-C", repoPath, "pull")
+				if err := cmd.Run(); err != nil {
+					fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+				}
+			case "pull":
+				// Only pull without reset
+				cmd := exec.Command("git", "-C", repoPath, "pull")
+				if err := cmd.Run(); err != nil {
+					fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+				}
+			case "fetch":
+				// Only fetch without modifying working directory
+				cmd := exec.Command("git", "-C", repoPath, "fetch")
+				if err := cmd.Run(); err != nil {
+					fmt.Printf("execute git fetch fail for %s: %v\n", repo, err)
+				}
 			}
-			fmt.Printf("Repo Clone or Reset Success: %s\n", repoPath)
+			fmt.Printf("Repo sync success with strategy %s: %s\n", strategy, repoPath)
 		}
 	}
 

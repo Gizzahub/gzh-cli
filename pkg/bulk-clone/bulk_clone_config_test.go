@@ -15,8 +15,8 @@ func TestReadConfig(t *testing.T) {
 	// call setclond_config.ReadConfig
 
 	config := &bulkCloneConfig{}
-	//bulkCloneConfig.ReadConfig("../../../test")
-	//config.ReadConfig("../../../test")
+	// bulkCloneConfig.ReadConfig("../../../test")
+	// config.ReadConfig("../../../test")
 	config.ReadConfig("./")
 	// t.Log(yaml.Marshal(config))
 	// print unmarshal yaml format

@@ -5,7 +5,6 @@ import (
 
 	bulk_clone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
 	gen_config "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
-
 	"github.com/spf13/cobra"
 )
 

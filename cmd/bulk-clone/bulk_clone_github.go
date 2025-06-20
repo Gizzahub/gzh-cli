@@ -2,6 +2,7 @@ package bulk_clone
 
 import (
 	"fmt"
+
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 )
@@ -9,10 +10,13 @@ import (
 type bulkCloneGithubOptions struct {
 	targetPath string
 	orgName    string
+	strategy   string
 }
 
 func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
-	return &bulkCloneGithubOptions{}
+	return &bulkCloneGithubOptions{
+		strategy: "reset",
+	}
 }
 
 func newBulkCloneGithubCmd() *cobra.Command {
@@ -27,6 +31,7 @@ func newBulkCloneGithubCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
 	cmd.Flags().StringVarP(&o.orgName, "orgName", "o", o.orgName, "orgName")
+	cmd.Flags().StringVarP(&o.strategy, "strategy", "s", o.strategy, "Sync strategy: reset, pull, or fetch")
 
 	cmd.MarkFlagRequired("targetPath")
 	cmd.MarkFlagRequired("orgName")
@@ -39,10 +44,15 @@ func (o *bulkCloneGithubOptions) run(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("both targetPath and orgName must be specified")
 	}
 
-	err := github.RefreshAll(o.targetPath, o.orgName)
+	// Validate strategy
+	if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
+		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
+	}
+
+	err := github.RefreshAll(o.targetPath, o.orgName, o.strategy)
 	if err != nil {
-		//return err
-		//return fmt.Errorf("failed to refresh repositories: %w", err)
+		// return err
+		// return fmt.Errorf("failed to refresh repositories: %w", err)
 		return nil
 	}
 

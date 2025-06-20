@@ -10,7 +10,7 @@
   - [x] -t targetPath: `-t $HOME/mywork/ScriptonBasestar`
   - [x] -p proto: `-p https` or `-p ssh`
   - [x] -a auth: `-a token` 토큰이 있으면 private repo도 clone
-  - [ ] -s strategy: `-s reset` or `-s pull` or `-s fetch`
+  - [x] -s strategy: `-s reset` or `-s pull` or `-s fetch`
 - [ ] bulk-clone.yaml 설정파일 지원
 - [ ] bulk-clone.yaml override bulk-clone.home.yaml bulk-clone.work.yaml. kustomize 이용
 - [ ] bulk-clone.yaml 설정파일 예시

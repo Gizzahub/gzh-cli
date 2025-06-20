@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/gizzahub/gzh-manager-go/cmd"
 	"os"
+
+	"github.com/gizzahub/gzh-manager-go/cmd"
 )
 
 var version = ""

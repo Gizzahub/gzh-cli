@@ -106,6 +106,27 @@ github:
 gzh bulk-clone -o nginxinc
 gzh bulk-clone -o nginxinc -t $HOME/mywork/nginxinc
 gzh bulk-clone -o nginxinc -t $HOME/mywork/nginxinc --auth token
+gzh bulk-clone -o nginxinc -t $HOME/mywork/nginxinc -s pull
+```
+
+### Strategy Options
+
+The `-s` or `--strategy` flag controls how existing repositories are synchronized:
+
+- `reset` (default): Performs `git reset --hard HEAD` followed by `git pull`. This discards all local changes and ensures a clean sync with the remote repository.
+- `pull`: Only performs `git pull` without resetting. This attempts to merge remote changes with local changes. May fail if there are conflicts.
+- `fetch`: Only performs `git fetch` without modifying the working directory. This updates remote tracking branches but doesn't change your local files.
+
+Example usage:
+```bash
+# Default behavior (reset strategy)
+gzh bulk-clone github -o myorg -t ~/repos
+
+# Preserve local changes and merge with remote
+gzh bulk-clone github -o myorg -t ~/repos -s pull
+
+# Only fetch updates without modifying local files
+gzh bulk-clone github -o myorg -t ~/repos -s fetch
 ```
 
 ## Trigger

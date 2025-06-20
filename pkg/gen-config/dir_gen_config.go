@@ -70,7 +70,6 @@ func findGitRepos(targetDir string, maxDepth int) ([]GitRepo, error) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +122,7 @@ func saveToConfig(repos []GitRepo, configFile string) error {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	if err := ioutil.WriteFile(configFile, data, 0644); err != nil {
+	if err := ioutil.WriteFile(configFile, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
@@ -138,7 +137,7 @@ func createTestDirectories(baseDir string) error {
 	}
 
 	for _, path := range repoPaths {
-		if err := os.MkdirAll(path, 0755); err != nil {
+		if err := os.MkdirAll(path, 0o755); err != nil {
 			return fmt.Errorf("failed to create test directory %s: %w", path, err)
 		}
 	}
