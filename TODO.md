@@ -14,13 +14,13 @@
 - [x] bulk-clone.yaml 설정파일 지원
 - [ ] bulk-clone.yaml override bulk-clone.home.yaml bulk-clone.work.yaml. kustomize 이용
 - [x] bulk-clone.yaml 설정파일 예시
-- [ ] bulk-clone.yaml schema
+- [x] bulk-clone.yaml schema
 
 ### Github Org
 - [x] gituhb org bulk-clone cli
 
 ### Gitlab Org
-- [ ] gitlab group bulk-clone cli
+- [x] gitlab group bulk-clone cli
 
 ### Ssh config
 - [ ] ssh config 설정
