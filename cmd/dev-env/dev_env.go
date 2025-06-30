@@ -11,7 +11,7 @@ func NewDevEnvCmd() *cobra.Command {
 This command helps you backup, restore, and manage various development 
 environment configurations including:
 - Kubernetes configurations (kubeconfig)
-- Docker configurations  
+- Docker configurations
 - Cloud provider configurations (AWS, GCloud)
 - SSH configurations
 - And more...
@@ -21,17 +21,21 @@ projects, or maintaining consistent environments across multiple machines.
 
 Examples:
   # Save current kubeconfig
-  gz dev-env save kubeconfig
+  gz dev-env kubeconfig save --name my-cluster
   
-  # Load a saved kubeconfig
-  gz dev-env load kubeconfig --name my-cluster
+  # Save current Docker config
+  gz dev-env docker save --name production
+  
+  # Load a saved configuration
+  gz dev-env kubeconfig load --name my-cluster
   
   # List saved configurations
-  gz dev-env list`,
+  gz dev-env kubeconfig list`,
 		SilenceUsage: true,
 	}
 
 	cmd.AddCommand(newKubeconfigCmd())
+	cmd.AddCommand(newDockerCmd())
 
 	return cmd
 }
