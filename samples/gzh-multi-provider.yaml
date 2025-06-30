@@ -14,7 +14,7 @@ providers:
         visibility: "private"
         clone_dir: "${HOME}/work/github"
         match: "^(api|web|service)-.*"     # Only clone API, web, and service repos
-        exclude: ["*-archive", "*-backup"] # Exclude archived and backup repos
+        exclude: [".*-archive", ".*-backup"] # Exclude archived and backup repos
         strategy: "pull"                   # Use git pull for updates
         flatten: false                     # Maintain org/repo structure
       
@@ -34,7 +34,7 @@ providers:
         visibility: "private"
         recursive: true                    # Include all subgroups
         clone_dir: "${HOME}/work/gitlab"
-        exclude: ["*-temp", "experiment-*"]
+        exclude: [".*-temp", "experiment-.*"]
         strategy: "reset"
       
       # Public projects group

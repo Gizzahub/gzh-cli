@@ -13,7 +13,7 @@ providers:
         visibility: "all"
         clone_dir: "./projects/frontend"
         match: "^(web|app|mobile|ui)-.*"   # Frontend project patterns
-        exclude: ["*-archive", "*-deprecated"]
+        exclude: [".*-archive", ".*-deprecated"]
         strategy: "pull"                   # Active development - use pull
         flatten: true                      # Flat structure for easy access
       
@@ -22,7 +22,7 @@ providers:
         visibility: "all"
         clone_dir: "./projects/backend"
         match: "^(api|service|worker|job)-.*"  # Backend project patterns
-        exclude: ["*-archive", "*-deprecated", "*-legacy"]
+        exclude: [".*-archive", ".*-deprecated", ".*-legacy"]
         strategy: "pull"                   # Active development - use pull
         flatten: true
       

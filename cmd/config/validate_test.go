@@ -1,0 +1,385 @@
+package config
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestValidateConfig(t *testing.T) {
+	tests := []struct {
+		name          string
+		configContent string
+		setupEnv      func()
+		cleanupEnv    func()
+		strict        bool
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name: "valid configuration",
+			configContent: `
+version: "1.0.0"
+default_provider: github
+providers:
+  github:
+    token: "test-token"
+    orgs:
+      - name: "test-org"
+        visibility: "all"
+        clone_dir: "/tmp/test-repos"
+`,
+			expectError: false,
+		},
+		{
+			name: "invalid YAML syntax",
+			configContent: `
+version: "1.0.0"
+providers:
+  github:
+    token: "unclosed string
+`,
+			expectError:   true,
+			errorContains: "parsing failed",
+		},
+		{
+			name: "missing required field",
+			configContent: `
+providers:
+  github:
+    token: "test-token"
+`,
+			expectError:   true,
+			errorContains: "version",
+		},
+		{
+			name: "invalid regex pattern",
+			configContent: `
+version: "1.0.0"
+providers:
+  github:
+    token: "test-token"
+    orgs:
+      - name: "test-org"
+        match: "[invalid"
+`,
+			expectError:   true,
+			errorContains: "invalid regex pattern",
+		},
+		{
+			name: "environment variable configuration",
+			configContent: `
+version: "1.0.0"
+providers:
+  github:
+    token: "${TEST_GITHUB_TOKEN}"
+    orgs:
+      - name: "test-org"
+        clone_dir: "${HOME}/repos"
+`,
+			setupEnv: func() {
+				os.Setenv("TEST_GITHUB_TOKEN", "test-token-value")
+				os.Setenv("HOME", "/home/testuser")
+			},
+			cleanupEnv: func() {
+				os.Unsetenv("TEST_GITHUB_TOKEN")
+				os.Unsetenv("HOME")
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup environment if needed
+			if tt.setupEnv != nil {
+				tt.setupEnv()
+			}
+			if tt.cleanupEnv != nil {
+				defer tt.cleanupEnv()
+			}
+
+			// Create temporary config file
+			tmpDir, err := os.MkdirTemp("", "config-validate-test-*")
+			require.NoError(t, err)
+			defer os.RemoveAll(tmpDir)
+
+			configFile := filepath.Join(tmpDir, "gzh.yaml")
+			err = os.WriteFile(configFile, []byte(tt.configContent), 0o644)
+			require.NoError(t, err)
+
+			// Run validation
+			err = validateConfig(configFile, tt.strict, false)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestFindConfigFile(t *testing.T) {
+	// Create temporary directory
+	tmpDir, err := os.MkdirTemp("", "find-config-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	// Change to temp directory
+	originalDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer os.Chdir(originalDir)
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name         string
+		setupFiles   func()
+		setupEnv     func()
+		cleanupEnv   func()
+		expectError  bool
+		expectedFile string
+	}{
+		{
+			name: "find gzh.yaml in current directory",
+			setupFiles: func() {
+				os.WriteFile("gzh.yaml", []byte("version: 1.0.0"), 0o644)
+			},
+			expectError:  false,
+			expectedFile: "gzh.yaml",
+		},
+		{
+			name: "find gzh.yml in current directory",
+			setupFiles: func() {
+				os.WriteFile("gzh.yml", []byte("version: 1.0.0"), 0o644)
+			},
+			expectError:  false,
+			expectedFile: "gzh.yml",
+		},
+		{
+			name: "find via environment variable",
+			setupFiles: func() {
+				customFile := filepath.Join(tmpDir, "custom-config.yaml")
+				os.WriteFile(customFile, []byte("version: 1.0.0"), 0o644)
+			},
+			setupEnv: func() {
+				customFile := filepath.Join(tmpDir, "custom-config.yaml")
+				os.Setenv("GZH_CONFIG_PATH", customFile)
+			},
+			cleanupEnv: func() {
+				os.Unsetenv("GZH_CONFIG_PATH")
+			},
+			expectError:  false,
+			expectedFile: "custom-config.yaml",
+		},
+		{
+			name:        "no config file found",
+			setupFiles:  func() {}, // No files
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Clean up any existing files
+			os.Remove("gzh.yaml")
+			os.Remove("gzh.yml")
+
+			if tt.setupEnv != nil {
+				tt.setupEnv()
+			}
+			if tt.cleanupEnv != nil {
+				defer tt.cleanupEnv()
+			}
+
+			tt.setupFiles()
+
+			configFile, err := findConfigFile()
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Contains(t, configFile, tt.expectedFile)
+			}
+		})
+	}
+}
+
+func TestValidateFileAccess(t *testing.T) {
+	// Create temporary directory
+	tmpDir, err := os.MkdirTemp("", "file-access-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	tests := []struct {
+		name          string
+		setupFile     func() string
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name: "valid file",
+			setupFile: func() string {
+				file := filepath.Join(tmpDir, "valid.yaml")
+				os.WriteFile(file, []byte("test"), 0o644)
+				return file
+			},
+			expectError: false,
+		},
+		{
+			name: "non-existent file",
+			setupFile: func() string {
+				return filepath.Join(tmpDir, "nonexistent.yaml")
+			},
+			expectError:   true,
+			errorContains: "does not exist",
+		},
+		{
+			name: "directory instead of file",
+			setupFile: func() string {
+				dir := filepath.Join(tmpDir, "notafile")
+				os.Mkdir(dir, 0o755)
+				return dir
+			},
+			expectError:   true,
+			errorContains: "not a regular file",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filePath := tt.setupFile()
+			err := validateFileAccess(filePath)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateCloneDirectory(t *testing.T) {
+	tests := []struct {
+		name          string
+		cloneDir      string
+		strict        bool
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:        "valid directory",
+			cloneDir:    "/tmp/test-repos",
+			strict:      false,
+			expectError: false,
+		},
+		{
+			name:          "unsafe path",
+			cloneDir:      "/tmp/../etc/passwd",
+			strict:        false,
+			expectError:   true,
+			errorContains: "potentially unsafe path",
+		},
+		{
+			name:        "environment variable",
+			cloneDir:    "${HOME}/repos",
+			strict:      false,
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateCloneDirectory(tt.cloneDir, tt.strict)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCheckPathEnvironmentVariables(t *testing.T) {
+	tests := []struct {
+		name          string
+		path          string
+		setupEnv      func()
+		cleanupEnv    func()
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:        "no environment variables",
+			path:        "/simple/path",
+			expectError: false,
+		},
+		{
+			name: "existing environment variable",
+			path: "${TEST_VAR}/repos",
+			setupEnv: func() {
+				os.Setenv("TEST_VAR", "/home/user")
+			},
+			cleanupEnv: func() {
+				os.Unsetenv("TEST_VAR")
+			},
+			expectError: false,
+		},
+		{
+			name:          "missing environment variable",
+			path:          "${MISSING_VAR}/repos",
+			expectError:   true,
+			errorContains: "not found",
+		},
+		{
+			name: "environment variable with default",
+			path: "${TEST_VAR:default}/repos",
+			setupEnv: func() {
+				os.Setenv("TEST_VAR", "/home/user")
+			},
+			cleanupEnv: func() {
+				os.Unsetenv("TEST_VAR")
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.setupEnv != nil {
+				tt.setupEnv()
+			}
+			if tt.cleanupEnv != nil {
+				defer tt.cleanupEnv()
+			}
+
+			err := checkPathEnvironmentVariables(tt.path)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

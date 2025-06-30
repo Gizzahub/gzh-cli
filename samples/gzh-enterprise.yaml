@@ -14,7 +14,7 @@ providers:
         visibility: "private"
         clone_dir: "${WORKSPACE}/platform/core"
         match: "^(auth|user|payment|notification)-service$"
-        exclude: ["*-deprecated", "*-experimental"]
+        exclude: [".*-deprecated", ".*-experimental"]
         strategy: "reset"                  # Ensure consistency
         flatten: false
       
@@ -32,7 +32,7 @@ providers:
         visibility: "private"
         clone_dir: "${WORKSPACE}/frontend"
         match: "^(web|mobile|desktop)-.*"
-        exclude: ["*-poc", "*-prototype"]
+        exclude: [".*-poc", ".*-prototype"]
         strategy: "pull"
         flatten: false
       
@@ -49,7 +49,7 @@ providers:
         visibility: "private"
         clone_dir: "${WORKSPACE}/infrastructure"
         match: "^(terraform|ansible|kubernetes|docker)-.*"
-        exclude: ["*-sandbox", "*-experiment"]
+        exclude: [".*-sandbox", ".*-experiment"]
         strategy: "reset"                  # Infrastructure must be consistent
         flatten: false
       
