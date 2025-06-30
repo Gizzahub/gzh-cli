@@ -13,7 +13,7 @@
 [x] Config, Provider, GitTarget 구조체 구현 (`pkg/config/schema.go`)
 [x] YAML 파서 및 환경변수 치환 기능 구현 (`os.ExpandEnv` 활용)
 [x] 설정 파일 탐색 로직 구현 (우선순위: `./gzh.yaml` → `~/.config/gzh.yaml`)
-[ ] 설정 파일 유효성 검증 기능 구현 (필수 필드, enum 값 검증)
+[x] 설정 파일 유효성 검증 기능 구현 (필수 필드, enum 값 검증)
 
 ### 🔄 bulk-clone 명령어 gzh.yaml 통합
 [ ] 기존 bulk-clone 설정과 gzh.yaml 스키마 호환성 분석
