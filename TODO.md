@@ -64,7 +64,7 @@ setting sync 오류나서 이런것들 강제 수정
 - ...
 
 ## 네트워크 옮길 때
-- [ ] daemon 모니터링
+- [x] daemon 모니터링
 - [ ] hook wifi change event? -> action
 - [ ] action: vpn, dns, proxy, host 등 변경
 
