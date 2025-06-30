@@ -13,7 +13,7 @@ environment configurations including:
 - Kubernetes configurations (kubeconfig)
 - Docker configurations
 - AWS configurations and credentials
-- Google Cloud (GCloud) configurations
+- Google Cloud (GCloud) configurations and credentials
 - SSH configurations
 - And more...
 
@@ -36,6 +36,9 @@ Examples:
   # Save current gcloud config
   gz dev-env gcloud save --name production
   
+  # Save current gcloud credentials
+  gz dev-env gcloud-credentials save --name production
+  
   # Load a saved configuration
   gz dev-env kubeconfig load --name my-cluster
   
@@ -49,6 +52,7 @@ Examples:
 	cmd.AddCommand(newAwsCmd())
 	cmd.AddCommand(newAwsCredentialsCmd())
 	cmd.AddCommand(newGcloudCmd())
+	cmd.AddCommand(newGcloudCredentialsCmd())
 
 	return cmd
 }

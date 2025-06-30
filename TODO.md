@@ -59,7 +59,7 @@ setting sync 오류나서 이런것들 강제 수정
 - [x] aws config
 - [x] aws credentials
 - [x] gcloud config
-- [ ] gcloud credentials
+- [x] gcloud credentials
 - [ ] ssh config
 - ...
 
