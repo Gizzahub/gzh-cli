@@ -24,7 +24,9 @@ type Repository struct {
 	Name          string   `json:"name"`
 	FullName      string   `json:"full_name"`
 	Description   string   `json:"description"`
+	Homepage      string   `json:"homepage"`
 	Private       bool     `json:"private"`
+	Archived      bool     `json:"archived"`
 	HTMLURL       string   `json:"html_url"`
 	CloneURL      string   `json:"clone_url"`
 	SSHURL        string   `json:"ssh_url"`
@@ -45,6 +47,54 @@ type Repository struct {
 	AllowMergeCommit    bool `json:"allow_merge_commit"`
 	AllowRebaseMerge    bool `json:"allow_rebase_merge"`
 	DeleteBranchOnMerge bool `json:"delete_branch_on_merge"`
+}
+
+// RepositoryConfig represents comprehensive repository configuration
+type RepositoryConfig struct {
+	Name             string                            `json:"name"`
+	Description      string                            `json:"description"`
+	Homepage         string                            `json:"homepage"`
+	Private          bool                              `json:"private"`
+	Archived         bool                              `json:"archived"`
+	Topics           []string                          `json:"topics"`
+	Settings         RepoConfigSettings                `json:"settings"`
+	BranchProtection map[string]BranchProtectionConfig `json:"branch_protection,omitempty"`
+	Permissions      PermissionsConfig                 `json:"permissions,omitempty"`
+}
+
+// RepoConfigSettings represents repository feature settings
+type RepoConfigSettings struct {
+	HasIssues           bool   `json:"has_issues"`
+	HasProjects         bool   `json:"has_projects"`
+	HasWiki             bool   `json:"has_wiki"`
+	HasDownloads        bool   `json:"has_downloads"`
+	AllowSquashMerge    bool   `json:"allow_squash_merge"`
+	AllowMergeCommit    bool   `json:"allow_merge_commit"`
+	AllowRebaseMerge    bool   `json:"allow_rebase_merge"`
+	DeleteBranchOnMerge bool   `json:"delete_branch_on_merge"`
+	DefaultBranch       string `json:"default_branch"`
+}
+
+// BranchProtectionConfig represents branch protection configuration
+type BranchProtectionConfig struct {
+	RequiredReviews               int      `json:"required_reviews"`
+	DismissStaleReviews           bool     `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews       bool     `json:"require_code_owner_reviews"`
+	RequiredStatusChecks          []string `json:"required_status_checks"`
+	StrictStatusChecks            bool     `json:"strict_status_checks"`
+	EnforceAdmins                 bool     `json:"enforce_admins"`
+	RestrictPushes                bool     `json:"restrict_pushes"`
+	AllowedUsers                  []string `json:"allowed_users,omitempty"`
+	AllowedTeams                  []string `json:"allowed_teams,omitempty"`
+	RequireConversationResolution bool     `json:"require_conversation_resolution"`
+	AllowForcePushes              bool     `json:"allow_force_pushes"`
+	AllowDeletions                bool     `json:"allow_deletions"`
+}
+
+// PermissionsConfig represents repository permissions configuration
+type PermissionsConfig struct {
+	Teams map[string]string `json:"teams,omitempty"`
+	Users map[string]string `json:"users,omitempty"`
 }
 
 // BranchProtection represents branch protection rule configuration
@@ -282,6 +332,65 @@ func (c *RepoConfigClient) GetRepository(ctx context.Context, owner, repo string
 	return &repository, nil
 }
 
+// GetRepositoryConfiguration gets comprehensive repository configuration
+func (c *RepoConfigClient) GetRepositoryConfiguration(ctx context.Context, owner, repo string) (*RepositoryConfig, error) {
+	// Get basic repository info
+	repoData, err := c.GetRepository(ctx, owner, repo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repository: %w", err)
+	}
+
+	config := &RepositoryConfig{
+		Name:        repoData.Name,
+		Description: repoData.Description,
+		Homepage:    repoData.Homepage,
+		Private:     repoData.Private,
+		Archived:    repoData.Archived,
+		Topics:      repoData.Topics,
+		Settings: RepoConfigSettings{
+			HasIssues:           repoData.HasIssues,
+			HasProjects:         repoData.HasProjects,
+			HasWiki:             repoData.HasWiki,
+			HasDownloads:        repoData.HasDownloads,
+			AllowSquashMerge:    repoData.AllowSquashMerge,
+			AllowMergeCommit:    repoData.AllowMergeCommit,
+			AllowRebaseMerge:    repoData.AllowRebaseMerge,
+			DeleteBranchOnMerge: repoData.DeleteBranchOnMerge,
+			DefaultBranch:       repoData.DefaultBranch,
+		},
+	}
+
+	// Get branch protection for default branch
+	if repoData.DefaultBranch != "" {
+		protection, err := c.GetBranchProtection(ctx, owner, repo, repoData.DefaultBranch)
+		if err != nil {
+			// Branch protection might not be enabled, which is OK
+			if apiErr, ok := err.(*APIError); !ok || apiErr.StatusCode != 404 {
+				return nil, fmt.Errorf("failed to get branch protection: %w", err)
+			}
+		} else {
+			config.BranchProtection = make(map[string]BranchProtectionConfig)
+			config.BranchProtection[repoData.DefaultBranch] = convertBranchProtection(protection)
+		}
+	}
+
+	// Get team and user permissions
+	teamPerms, userPerms, err := c.GetRepositoryPermissions(ctx, owner, repo)
+	if err != nil {
+		// Permissions might require additional access, which is OK
+		if apiErr, ok := err.(*APIError); !ok || apiErr.StatusCode != 403 {
+			return nil, fmt.Errorf("failed to get permissions: %w", err)
+		}
+	} else {
+		config.Permissions = PermissionsConfig{
+			Teams: teamPerms,
+			Users: userPerms,
+		}
+	}
+
+	return config, nil
+}
+
 // UpdateRepository updates repository settings
 func (c *RepoConfigClient) UpdateRepository(ctx context.Context, owner, repo string, update *RepositoryUpdate) (*Repository, error) {
 	path := fmt.Sprintf("/repos/%s/%s", owner, repo)
@@ -355,4 +464,87 @@ type ListOptions struct {
 	Type      string // Repository type: all, owner, member
 	Sort      string // Sort by: created, updated, pushed, full_name
 	Direction string // Sort direction: asc, desc
+}
+
+// TeamPermission represents a team's permission on a repository
+type TeamPermission struct {
+	ID         int64  `json:"id"`
+	Name       string `json:"name"`
+	Slug       string `json:"slug"`
+	Permission string `json:"permission"`
+}
+
+// UserPermission represents a user's permission on a repository
+type UserPermission struct {
+	Login      string `json:"login"`
+	ID         int64  `json:"id"`
+	Permission string `json:"permission"`
+}
+
+// GetRepositoryPermissions gets team and user permissions for a repository
+func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, repo string) (map[string]string, map[string]string, error) {
+	teamPerms := make(map[string]string)
+	userPerms := make(map[string]string)
+
+	// Get team permissions
+	teamsPath := fmt.Sprintf("/repos/%s/%s/teams", owner, repo)
+	resp, err := c.makeRequest(ctx, "GET", teamsPath, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	var teams []TeamPermission
+	if err := json.NewDecoder(resp.Body).Decode(&teams); err != nil {
+		return nil, nil, fmt.Errorf("failed to decode teams: %w", err)
+	}
+
+	for _, team := range teams {
+		teamPerms[team.Slug] = team.Permission
+	}
+
+	// Get collaborators (users with direct access)
+	collabsPath := fmt.Sprintf("/repos/%s/%s/collaborators", owner, repo)
+	resp, err = c.makeRequest(ctx, "GET", collabsPath, nil)
+	if err != nil {
+		return teamPerms, nil, err
+	}
+	defer resp.Body.Close()
+
+	var users []UserPermission
+	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
+		return teamPerms, nil, fmt.Errorf("failed to decode users: %w", err)
+	}
+
+	for _, user := range users {
+		userPerms[user.Login] = user.Permission
+	}
+
+	return teamPerms, userPerms, nil
+}
+
+// convertBranchProtection converts API BranchProtection to config format
+func convertBranchProtection(bp *BranchProtection) BranchProtectionConfig {
+	config := BranchProtectionConfig{
+		EnforceAdmins: bp.EnforceAdmins,
+	}
+
+	if bp.RequiredStatusChecks != nil {
+		config.StrictStatusChecks = bp.RequiredStatusChecks.Strict
+		config.RequiredStatusChecks = bp.RequiredStatusChecks.Contexts
+	}
+
+	if bp.RequiredPullRequestReviews != nil {
+		config.RequiredReviews = bp.RequiredPullRequestReviews.RequiredApprovingReviewCount
+		config.DismissStaleReviews = bp.RequiredPullRequestReviews.DismissStaleReviews
+		config.RequireCodeOwnerReviews = bp.RequiredPullRequestReviews.RequireCodeOwnerReviews
+	}
+
+	if bp.Restrictions != nil {
+		config.RestrictPushes = true
+		config.AllowedUsers = bp.Restrictions.Users
+		config.AllowedTeams = bp.Restrictions.Teams
+	}
+
+	return config
 }

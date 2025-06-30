@@ -1,9 +1,15 @@
 package repoconfig
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
+	"strings"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -63,6 +69,15 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
 
+	// Get GitHub token
+	token := flags.Token
+	if token == "" {
+		token = os.Getenv("GITHUB_TOKEN")
+	}
+	if token == "" {
+		return fmt.Errorf("GitHub token is required (use --token flag or GITHUB_TOKEN env var)")
+	}
+
 	if flags.Verbose {
 		fmt.Printf("Listing repositories for organization: %s\n", flags.Organization)
 		if filter != "" {
@@ -74,37 +89,77 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 		fmt.Println()
 	}
 
-	// TODO: Implement actual repository listing logic
+	// Create GitHub client
+	client := github.NewRepoConfigClient(token)
+	ctx := context.Background()
+
 	fmt.Printf("📋 Repository Configuration Status for %s\n", flags.Organization)
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println()
 
-	// Mock data for demonstration
-	repositories := []RepositoryInfo{
-		{
-			Name:        "api-server",
-			Description: "Main API server",
-			Visibility:  "private",
-			Template:    "microservice",
-			Compliant:   true,
-			Issues:      0,
-		},
-		{
-			Name:        "web-frontend",
-			Description: "React frontend application",
-			Visibility:  "private",
-			Template:    "frontend",
-			Compliant:   true,
-			Issues:      0,
-		},
-		{
-			Name:        "legacy-service",
-			Description: "Legacy service (needs migration)",
-			Visibility:  "private",
-			Template:    "none",
-			Compliant:   false,
-			Issues:      3,
-		},
+	// List repositories
+	repos, err := client.ListRepositories(ctx, flags.Organization, nil)
+	if err != nil {
+		return fmt.Errorf("failed to list repositories: %w", err)
+	}
+
+	// Filter repositories if pattern provided
+	if filter != "" {
+		filterRegex, err := regexp.Compile(filter)
+		if err != nil {
+			return fmt.Errorf("invalid filter pattern: %w", err)
+		}
+		var filtered []*github.Repository
+		for _, repo := range repos {
+			if filterRegex.MatchString(repo.Name) {
+				filtered = append(filtered, repo)
+			}
+		}
+		repos = filtered
+	}
+
+	// Apply limit if specified
+	if limit > 0 && len(repos) > limit {
+		repos = repos[:limit]
+	}
+
+	// Load repository configuration to check compliance
+	var repoConfig *config.RepoConfig
+	if flags.ConfigFile != "" {
+		repoConfig, err = config.LoadRepoConfig(flags.ConfigFile)
+		if err != nil && flags.Verbose {
+			fmt.Printf("Warning: Could not load repo config: %v\n", err)
+		}
+	}
+
+	// Convert to RepositoryInfo format
+	var repositories []RepositoryInfo
+	for _, repo := range repos {
+		visibility := "public"
+		if repo.Private {
+			visibility = "private"
+		}
+
+		info := RepositoryInfo{
+			Name:        repo.Name,
+			Description: repo.Description,
+			Visibility:  visibility,
+			Template:    detectTemplate(repo, repoConfig),
+			Compliant:   checkCompliance(repo, repoConfig),
+			Issues:      0, // Could be calculated based on actual compliance checks
+		}
+
+		if showConfig {
+			// Get detailed configuration
+			config, err := client.GetRepositoryConfiguration(ctx, flags.Organization, repo.Name)
+			if err == nil {
+				info.Config = config
+			} else if flags.Verbose {
+				fmt.Printf("Warning: Could not get config for %s: %v\n", repo.Name, err)
+			}
+		}
+
+		repositories = append(repositories, info)
 	}
 
 	switch format {
@@ -123,12 +178,61 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 
 // RepositoryInfo represents repository information
 type RepositoryInfo struct {
-	Name        string `json:"name" yaml:"name"`
-	Description string `json:"description" yaml:"description"`
-	Visibility  string `json:"visibility" yaml:"visibility"`
-	Template    string `json:"template" yaml:"template"`
-	Compliant   bool   `json:"compliant" yaml:"compliant"`
-	Issues      int    `json:"issues" yaml:"issues"`
+	Name        string                   `json:"name" yaml:"name"`
+	Description string                   `json:"description" yaml:"description"`
+	Visibility  string                   `json:"visibility" yaml:"visibility"`
+	Template    string                   `json:"template" yaml:"template"`
+	Compliant   bool                     `json:"compliant" yaml:"compliant"`
+	Issues      int                      `json:"issues" yaml:"issues"`
+	Config      *github.RepositoryConfig `json:"config,omitempty" yaml:"config,omitempty"`
+}
+
+// detectTemplate attempts to detect which template a repository is using
+func detectTemplate(repo *github.Repository, repoConfig *config.RepoConfig) string {
+	if repoConfig == nil || repoConfig.Repositories == nil {
+		return "none"
+	}
+
+	// Check specific repositories
+	for _, specific := range repoConfig.Repositories.Specific {
+		if specific.Name == repo.Name && specific.Template != "" {
+			return specific.Template
+		}
+	}
+
+	// Check patterns
+	for _, pattern := range repoConfig.Repositories.Patterns {
+		if matched, _ := matchPattern(repo.Name, pattern.Match); matched && pattern.Template != "" {
+			return pattern.Template
+		}
+	}
+
+	// Check default
+	if repoConfig.Repositories.Default != nil && repoConfig.Repositories.Default.Template != "" {
+		return repoConfig.Repositories.Default.Template
+	}
+
+	return "none"
+}
+
+// checkCompliance checks if a repository is compliant with its template
+func checkCompliance(repo *github.Repository, repoConfig *config.RepoConfig) bool {
+	// Simple compliance check - can be expanded
+	// For now, just check if it has a template assigned
+	template := detectTemplate(repo, repoConfig)
+	return template != "none"
+}
+
+// matchPattern checks if a string matches a pattern (simple glob support)
+func matchPattern(str, pattern string) (bool, error) {
+	if strings.Contains(pattern, "*") {
+		// Convert simple glob to regex
+		pattern = strings.ReplaceAll(pattern, ".", "\\.")
+		pattern = strings.ReplaceAll(pattern, "*", ".*")
+		pattern = "^" + pattern + "$"
+		return regexp.MatchString(pattern, str)
+	}
+	return str == pattern, nil
 }
 
 // printTableFormat prints repositories in table format

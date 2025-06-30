@@ -431,3 +431,187 @@ func TestGetRateLimitStatus(t *testing.T) {
 	assert.Equal(t, 5000, limit)
 	assert.Equal(t, time.Unix(1640995200, 0), resetTime)
 }
+
+func TestGetRepositoryConfiguration(t *testing.T) {
+	// Mock server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/repos/testorg/testrepo":
+			repo := &Repository{
+				ID:                  1,
+				Name:                "testrepo",
+				Description:         "Test repository",
+				Homepage:            "https://example.com",
+				Private:             false,
+				Archived:            false,
+				DefaultBranch:       "main",
+				Topics:              []string{"test", "example"},
+				HasIssues:           true,
+				HasWiki:             false,
+				HasProjects:         true,
+				HasDownloads:        false,
+				AllowSquashMerge:    true,
+				AllowMergeCommit:    false,
+				AllowRebaseMerge:    false,
+				DeleteBranchOnMerge: true,
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(repo)
+
+		case "/repos/testorg/testrepo/branches/main/protection":
+			protection := &BranchProtection{
+				RequiredStatusChecks: &RequiredStatusChecks{
+					Strict:   true,
+					Contexts: []string{"ci/build", "ci/test"},
+				},
+				EnforceAdmins: true,
+				RequiredPullRequestReviews: &RequiredPullRequestReviews{
+					DismissStaleReviews:          true,
+					RequireCodeOwnerReviews:      true,
+					RequiredApprovingReviewCount: 2,
+				},
+				Restrictions: &BranchRestrictions{
+					Users: []string{"admin"},
+					Teams: []string{"maintainers"},
+				},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(protection)
+
+		case "/repos/testorg/testrepo/teams":
+			teams := []TeamPermission{
+				{ID: 1, Name: "Maintainers", Slug: "maintainers", Permission: "admin"},
+				{ID: 2, Name: "Developers", Slug: "developers", Permission: "push"},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(teams)
+
+		case "/repos/testorg/testrepo/collaborators":
+			users := []UserPermission{
+				{Login: "john", ID: 100, Permission: "admin"},
+				{Login: "jane", ID: 101, Permission: "write"},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(users)
+
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	client := NewRepoConfigClient("test-token")
+	client.baseURL = server.URL
+
+	config, err := client.GetRepositoryConfiguration(context.Background(), "testorg", "testrepo")
+
+	require.NoError(t, err)
+	assert.Equal(t, "testrepo", config.Name)
+	assert.Equal(t, "Test repository", config.Description)
+	assert.Equal(t, "https://example.com", config.Homepage)
+	assert.False(t, config.Private)
+	assert.False(t, config.Archived)
+	assert.Equal(t, []string{"test", "example"}, config.Topics)
+
+	// Check settings
+	assert.True(t, config.Settings.HasIssues)
+	assert.False(t, config.Settings.HasWiki)
+	assert.True(t, config.Settings.HasProjects)
+	assert.False(t, config.Settings.HasDownloads)
+	assert.True(t, config.Settings.AllowSquashMerge)
+	assert.False(t, config.Settings.AllowMergeCommit)
+	assert.False(t, config.Settings.AllowRebaseMerge)
+	assert.True(t, config.Settings.DeleteBranchOnMerge)
+	assert.Equal(t, "main", config.Settings.DefaultBranch)
+
+	// Check branch protection
+	assert.NotNil(t, config.BranchProtection)
+	mainProtection, ok := config.BranchProtection["main"]
+	assert.True(t, ok)
+	assert.Equal(t, 2, mainProtection.RequiredReviews)
+	assert.True(t, mainProtection.DismissStaleReviews)
+	assert.True(t, mainProtection.RequireCodeOwnerReviews)
+	assert.True(t, mainProtection.StrictStatusChecks)
+	assert.Equal(t, []string{"ci/build", "ci/test"}, mainProtection.RequiredStatusChecks)
+	assert.True(t, mainProtection.EnforceAdmins)
+	assert.True(t, mainProtection.RestrictPushes)
+	assert.Equal(t, []string{"admin"}, mainProtection.AllowedUsers)
+	assert.Equal(t, []string{"maintainers"}, mainProtection.AllowedTeams)
+
+	// Check permissions
+	assert.Equal(t, "admin", config.Permissions.Teams["maintainers"])
+	assert.Equal(t, "push", config.Permissions.Teams["developers"])
+	assert.Equal(t, "admin", config.Permissions.Users["john"])
+	assert.Equal(t, "write", config.Permissions.Users["jane"])
+}
+
+func TestGetRepositoryPermissions(t *testing.T) {
+	// Mock server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/repos/testorg/testrepo/teams":
+			teams := []TeamPermission{
+				{ID: 1, Name: "Admins", Slug: "admins", Permission: "admin"},
+				{ID: 2, Name: "Writers", Slug: "writers", Permission: "push"},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(teams)
+
+		case "/repos/testorg/testrepo/collaborators":
+			users := []UserPermission{
+				{Login: "alice", ID: 200, Permission: "admin"},
+				{Login: "bob", ID: 201, Permission: "read"},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(users)
+
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	client := NewRepoConfigClient("test-token")
+	client.baseURL = server.URL
+
+	teamPerms, userPerms, err := client.GetRepositoryPermissions(context.Background(), "testorg", "testrepo")
+
+	require.NoError(t, err)
+	assert.Len(t, teamPerms, 2)
+	assert.Equal(t, "admin", teamPerms["admins"])
+	assert.Equal(t, "push", teamPerms["writers"])
+	assert.Len(t, userPerms, 2)
+	assert.Equal(t, "admin", userPerms["alice"])
+	assert.Equal(t, "read", userPerms["bob"])
+}
+
+func TestConvertBranchProtection(t *testing.T) {
+	bp := &BranchProtection{
+		RequiredStatusChecks: &RequiredStatusChecks{
+			Strict:   true,
+			Contexts: []string{"ci/test", "ci/lint"},
+		},
+		EnforceAdmins: true,
+		RequiredPullRequestReviews: &RequiredPullRequestReviews{
+			DismissStaleReviews:          true,
+			RequireCodeOwnerReviews:      true,
+			RequiredApprovingReviewCount: 3,
+		},
+		Restrictions: &BranchRestrictions{
+			Users: []string{"lead"},
+			Teams: []string{"core"},
+		},
+	}
+
+	config := convertBranchProtection(bp)
+
+	assert.True(t, config.EnforceAdmins)
+	assert.True(t, config.StrictStatusChecks)
+	assert.Equal(t, []string{"ci/test", "ci/lint"}, config.RequiredStatusChecks)
+	assert.Equal(t, 3, config.RequiredReviews)
+	assert.True(t, config.DismissStaleReviews)
+	assert.True(t, config.RequireCodeOwnerReviews)
+	assert.True(t, config.RestrictPushes)
+	assert.Equal(t, []string{"lead"}, config.AllowedUsers)
+	assert.Equal(t, []string{"core"}, config.AllowedTeams)
+}
