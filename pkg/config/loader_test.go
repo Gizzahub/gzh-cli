@@ -33,7 +33,7 @@ func TestExpandPath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := expandPath(tt.path)
-			
+
 			if tt.path == "~/test.yaml" {
 				homeDir, _ := os.UserHomeDir()
 				assert.Equal(t, filepath.Join(homeDir, "test.yaml"), result)
@@ -90,11 +90,11 @@ providers:
     orgs:
       - name: "test-org"
 `
-	
+
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
-	
+
 	_, err = tmpFile.WriteString(configContent)
 	require.NoError(t, err)
 	tmpFile.Close()
@@ -112,17 +112,26 @@ func TestCreateDefaultConfig(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	configPath := filepath.Join(tmpDir, "gzh.yaml")
-	
+
+	// Set environment variables for test
+	os.Setenv("GITHUB_TOKEN", "test-github-token")
+	os.Setenv("GITLAB_TOKEN", "test-gitlab-token")
+	defer func() {
+		os.Unsetenv("GITHUB_TOKEN")
+		os.Unsetenv("GITLAB_TOKEN")
+	}()
+
 	err = CreateDefaultConfig(configPath)
 	assert.NoError(t, err)
-	
+
 	// Verify file was created
 	assert.True(t, fileExists(configPath))
-	
-	// Verify content is valid
+
+	// Verify content can be loaded (validation will happen in separate tests)
 	config, err := LoadConfigFromFile(configPath)
 	assert.NoError(t, err)
 	assert.NotNil(t, config)
+	assert.Equal(t, "1.0.0", config.Version)
 }
 
 func TestFindConfigFile(t *testing.T) {
@@ -152,11 +161,11 @@ providers:
     orgs:
       - name: "test-org"
 `
-	
+
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
-	
+
 	_, err = tmpFile.WriteString(configContent)
 	require.NoError(t, err)
 	tmpFile.Close()
@@ -174,7 +183,7 @@ providers:
 func TestGetConfigSearchPaths(t *testing.T) {
 	paths := GetConfigSearchPaths()
 	assert.Greater(t, len(paths), 0)
-	
+
 	// All paths should be absolute after expansion
 	for _, path := range paths {
 		assert.True(t, filepath.IsAbs(path), "Path should be absolute: %s", path)
@@ -215,16 +224,19 @@ providers:
 			tmpFile, err := os.CreateTemp("", "test-*.yaml")
 			require.NoError(t, err)
 			defer os.Remove(tmpFile.Name())
-			
+
 			_, err = tmpFile.WriteString(tt.content)
 			require.NoError(t, err)
 			tmpFile.Close()
 
-			err = ValidateConfigFile(tmpFile.Name())
+			result, err := ValidateConfigFile(tmpFile.Name())
+			assert.NoError(t, err) // ValidateConfigFile should not return an error, validation results are in the result
 			if tt.wantErr {
-				assert.Error(t, err)
+				assert.False(t, result.Valid)
+				assert.NotEmpty(t, result.Errors)
 			} else {
-				assert.NoError(t, err)
+				assert.True(t, result.Valid)
+				assert.Empty(t, result.Errors)
 			}
 		})
 	}

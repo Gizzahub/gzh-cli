@@ -95,7 +95,8 @@ func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) er
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		os.Setenv("GITEA_TOKEN", g.token)
 	}
-	return gitea.RefreshAll(targetPath, orgName, strategy)
+	// Note: strategy parameter is ignored for now since gitea.RefreshAll doesn't support it
+	return gitea.RefreshAll(targetPath, orgName)
 }
 
 func (g *GiteaCloner) CloneGroup(groupName, targetPath, strategy string) error {
