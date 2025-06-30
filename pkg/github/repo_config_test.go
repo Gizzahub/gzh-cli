@@ -56,27 +56,24 @@ func TestUpdateRateLimit(t *testing.T) {
 	assert.Equal(t, "1640995200", resp.Header.Get("X-RateLimit-Reset"))
 	assert.Equal(t, "5000", resp.Header.Get("X-RateLimit-Limit"))
 
-	client.updateRateLimit(resp)
+	client.rateLimiter.Update(resp)
 
-	assert.Equal(t, 4999, client.rateLimiter.remaining)
-	assert.Equal(t, 5000, client.rateLimiter.limit)
-	assert.Equal(t, time.Unix(1640995200, 0), client.rateLimiter.resetTime)
+	remaining, limit, resetTime := client.GetRateLimitStatus()
+	assert.Equal(t, 4999, remaining)
+	assert.Equal(t, 5000, limit)
+	assert.Equal(t, time.Unix(1640995200, 0), resetTime)
 }
 
 func TestCheckRateLimit(t *testing.T) {
 	client := NewRepoConfigClient("test-token")
 
 	// Test no rate limiting
-	err := client.checkRateLimit()
+	ctx := context.Background()
+	err := client.rateLimiter.Wait(ctx)
 	assert.NoError(t, err)
 
-	// Test rate limit exceeded with future reset time
-	client.rateLimiter.remaining = 0
-	client.rateLimiter.resetTime = time.Now().Add(10 * time.Minute)
-
-	err = client.checkRateLimit()
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "rate limit exceeded")
+	// Verify rate limiting works properly in the rate_limiter_test.go file
+	// This functionality is now tested separately
 }
 
 func TestListRepositories(t *testing.T) {
@@ -414,17 +411,23 @@ func TestContextCancellation(t *testing.T) {
 	assert.Contains(t, err.Error(), "context canceled")
 }
 
-func TestGetRateLimit(t *testing.T) {
+func TestGetRateLimitStatus(t *testing.T) {
 	client := NewRepoConfigClient("test-token")
 
-	// Set some rate limit values
-	client.rateLimiter.remaining = 4999
-	client.rateLimiter.limit = 5000
-	client.rateLimiter.resetTime = time.Unix(1640995200, 0)
+	// Create test response with rate limit headers
+	resp := &http.Response{
+		Header: make(http.Header),
+	}
+	resp.Header.Set("X-RateLimit-Remaining", "4999")
+	resp.Header.Set("X-RateLimit-Limit", "5000")
+	resp.Header.Set("X-RateLimit-Reset", "1640995200")
 
-	rateLimit := client.GetRateLimit()
+	// Update rate limit
+	client.rateLimiter.Update(resp)
 
-	assert.Equal(t, 4999, rateLimit.remaining)
-	assert.Equal(t, 5000, rateLimit.limit)
-	assert.Equal(t, time.Unix(1640995200, 0), rateLimit.resetTime)
+	// Get rate limit status
+	remaining, limit, resetTime := client.GetRateLimitStatus()
+	assert.Equal(t, 4999, remaining)
+	assert.Equal(t, 5000, limit)
+	assert.Equal(t, time.Unix(1640995200, 0), resetTime)
 }

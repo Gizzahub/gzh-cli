@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -16,13 +16,6 @@ type RepoConfigClient struct {
 	baseURL     string
 	httpClient  *http.Client
 	rateLimiter *RateLimiter
-}
-
-// RateLimiter handles GitHub API rate limiting
-type RateLimiter struct {
-	remaining int
-	resetTime time.Time
-	limit     int
 }
 
 // Repository represents a GitHub repository with configuration details
@@ -125,7 +118,7 @@ func NewRepoConfigClient(token string) *RepoConfigClient {
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
-		rateLimiter: &RateLimiter{},
+		rateLimiter: NewRateLimiter(),
 	}
 }
 
@@ -134,94 +127,97 @@ func (c *RepoConfigClient) SetTimeout(timeout time.Duration) {
 	c.httpClient.Timeout = timeout
 }
 
-// makeRequest performs an HTTP request with authentication and rate limiting
+// makeRequest performs an HTTP request with authentication, rate limiting, and retry logic
 func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
-	url := c.baseURL + path
+	retries := 0
+	maxRetries := 3
 
-	var reqBody []byte
-	var err error
-	if body != nil {
-		reqBody, err = json.Marshal(body)
+	for retries <= maxRetries {
+		// Wait for rate limit if necessary
+		if err := c.rateLimiter.Wait(ctx); err != nil {
+			return nil, fmt.Errorf("rate limit wait failed: %w", err)
+		}
+
+		url := c.baseURL + path
+
+		var bodyReader io.Reader
+		if body != nil {
+			jsonBody, err := json.Marshal(body)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal request body: %w", err)
+			}
+			bodyReader = bytes.NewReader(jsonBody)
+		}
+
+		req, err := http.NewRequestWithContext(ctx, method, url, bodyReader)
 		if err != nil {
-			return nil, fmt.Errorf("failed to marshal request body: %w", err)
+			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
-	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(reqBody))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	// Set headers
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.Header.Set("User-Agent", "gzh-manager-go/1.0")
-	if c.token != "" {
-		req.Header.Set("Authorization", "token "+c.token)
-	}
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
-	// Check rate limiting before making request
-	if err := c.checkRateLimit(); err != nil {
-		return nil, err
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-
-	// Update rate limit information
-	c.updateRateLimit(resp)
-
-	// Handle API errors
-	if resp.StatusCode >= 400 {
-		defer resp.Body.Close()
-		var apiError APIError
-		if err := json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
-			return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, resp.Status)
+		// Set headers
+		req.Header.Set("Accept", "application/vnd.github.v3+json")
+		req.Header.Set("User-Agent", "gzh-manager-go/1.0")
+		if c.token != "" {
+			req.Header.Set("Authorization", "token "+c.token)
 		}
-		apiError.StatusCode = resp.StatusCode
-		return nil, &apiError
-	}
-
-	return resp, nil
-}
-
-// checkRateLimit checks if we need to wait for rate limit reset
-func (c *RepoConfigClient) checkRateLimit() error {
-	if c.rateLimiter.remaining <= 0 && time.Now().Before(c.rateLimiter.resetTime) {
-		waitTime := time.Until(c.rateLimiter.resetTime)
-		return fmt.Errorf("rate limit exceeded, reset in %v", waitTime)
-	}
-	return nil
-}
-
-// updateRateLimit updates rate limit information from response headers
-func (c *RepoConfigClient) updateRateLimit(resp *http.Response) {
-	if remaining := resp.Header.Get("X-RateLimit-Remaining"); remaining != "" {
-		if r, err := strconv.Atoi(remaining); err == nil {
-			c.rateLimiter.remaining = r
+		if body != nil {
+			req.Header.Set("Content-Type", "application/json")
 		}
+
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			// Network errors are not retryable
+			return nil, fmt.Errorf("request failed: %w", err)
+		}
+
+		// Update rate limit information
+		c.rateLimiter.Update(resp)
+
+		// Check if we should retry
+		if ShouldRetry(resp) && retries < maxRetries {
+			// Close the response body before retry
+			_ = resp.Body.Close()
+
+			// Calculate backoff
+			backoff := CalculateBackoff(retries)
+
+			// Use Retry-After if available and longer than backoff
+			if retryAfter := c.rateLimiter.retryAfter; retryAfter > backoff {
+				backoff = retryAfter
+			}
+
+			// Wait before retry
+			if err := sleep(ctx, backoff); err != nil {
+				return nil, err
+			}
+
+			retries++
+			continue
+		}
+
+		// Handle API errors
+		if resp.StatusCode >= 400 {
+			defer resp.Body.Close()
+			var apiError APIError
+			if err := json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
+				return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, resp.Status)
+			}
+			apiError.StatusCode = resp.StatusCode
+			return nil, &apiError
+		}
+
+		return resp, nil
 	}
 
-	if limit := resp.Header.Get("X-RateLimit-Limit"); limit != "" {
-		if l, err := strconv.Atoi(limit); err == nil {
-			c.rateLimiter.limit = l
-		}
-	}
-
-	if reset := resp.Header.Get("X-RateLimit-Reset"); reset != "" {
-		if r, err := strconv.ParseInt(reset, 10, 64); err == nil {
-			c.rateLimiter.resetTime = time.Unix(r, 0)
-		}
+	return nil, &RetryableError{
+		Err:          fmt.Errorf("max retries exceeded after %d attempts", retries),
+		AttemptsLeft: 0,
 	}
 }
 
-// GetRateLimit returns current rate limit status
-func (c *RepoConfigClient) GetRateLimit() *RateLimiter {
-	return c.rateLimiter
+// GetRateLimitStatus returns current rate limit status
+func (c *RepoConfigClient) GetRateLimitStatus() (int, int, time.Time) {
+	return c.rateLimiter.GetStatus()
 }
 
 // ListRepositories lists all repositories for an organization with pagination
