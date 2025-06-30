@@ -41,7 +41,7 @@
 ### 📋 기본 설계 및 API 연동
 [x] GitHub 리포지토리 설정 관리 요구사항 상세 정리
 [x] `gz repo-config` 명령어 구조 설계 (list/apply/validate 서브커맨드)
-[ ] GitHub API 클라이언트 래퍼 구현 (`pkg/github/repo_config.go`)
+[x] GitHub API 클라이언트 래퍼 구현 (`pkg/github/repo_config.go`)
 [ ] 리포지토리 설정 스키마 정의 (YAML 형식)
 [ ] API Rate Limiting 처리 로직 구현 (재시도, 대기 시간 계산)
 

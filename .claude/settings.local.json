@@ -19,7 +19,8 @@
       "Bash(go mod:*)",
       "Bash(grep:*)",
       "Bash(chmod:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(go run:*)"
     ],
     "deny": []
   }
