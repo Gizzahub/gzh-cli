@@ -87,7 +87,7 @@ func (v *Validator) validateDefaultProvider(provider string) {
 
 	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea, ProviderGogs}
 	if !contains(validProviders, provider) {
-		v.addError(fmt.Sprintf("invalid default_provider '%s', must be one of: %s", 
+		v.addError(fmt.Sprintf("invalid default_provider '%s', must be one of: %s",
 			provider, strings.Join(validProviders, ", ")))
 	}
 }
@@ -104,7 +104,7 @@ func (v *Validator) validateProvider(name string, provider Provider) {
 	// Validate provider name
 	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea, ProviderGogs}
 	if !contains(validProviders, name) {
-		v.addError(fmt.Sprintf("invalid provider name '%s', must be one of: %s", 
+		v.addError(fmt.Sprintf("invalid provider name '%s', must be one of: %s",
 			name, strings.Join(validProviders, ", ")))
 	}
 
@@ -180,7 +180,7 @@ func (v *Validator) validateGitTarget(path string, target GitTarget) {
 	if target.Visibility != "" {
 		validVisibilities := []string{VisibilityPublic, VisibilityPrivate, VisibilityAll}
 		if !contains(validVisibilities, target.Visibility) {
-			v.addError(fmt.Sprintf("%s: invalid visibility '%s', must be one of: %s", 
+			v.addError(fmt.Sprintf("%s: invalid visibility '%s', must be one of: %s",
 				path, target.Visibility, strings.Join(validVisibilities, ", ")))
 		}
 	}
@@ -189,7 +189,7 @@ func (v *Validator) validateGitTarget(path string, target GitTarget) {
 	if target.Strategy != "" {
 		validStrategies := []string{StrategyReset, StrategyPull, StrategyFetch}
 		if !contains(validStrategies, target.Strategy) {
-			v.addError(fmt.Sprintf("%s: invalid strategy '%s', must be one of: %s", 
+			v.addError(fmt.Sprintf("%s: invalid strategy '%s', must be one of: %s",
 				path, target.Strategy, strings.Join(validStrategies, ", ")))
 		}
 	}
@@ -213,7 +213,7 @@ func (v *Validator) validateGitTarget(path string, target GitTarget) {
 		if strings.Contains(exclude, "*") {
 			// Basic glob pattern - just warn if it looks suspicious
 			if strings.Count(exclude, "*") > 2 {
-				v.addWarning(fmt.Sprintf("%s.exclude[%d]: complex glob pattern '%s' may not work as expected", 
+				v.addWarning(fmt.Sprintf("%s.exclude[%d]: complex glob pattern '%s' may not work as expected",
 					path, i, exclude))
 			}
 		}
@@ -253,7 +253,7 @@ func ValidateConfigFile(filename string) (*ValidationResult, error) {
 
 	validator := NewValidator()
 	err = validator.ValidateConfig(config)
-	
+
 	return &ValidationResult{
 		Valid:    err == nil,
 		Errors:   validator.errors,

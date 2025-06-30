@@ -9,7 +9,7 @@ import (
 // ConfigSearchPaths defines the search order for configuration files
 var ConfigSearchPaths = []string{
 	"./gzh.yaml",
-	"./gzh.yml", 
+	"./gzh.yml",
 	"~/.config/gzh.yaml",
 	"~/.config/gzh.yml",
 	"~/.config/gzh-manager/gzh.yaml",
@@ -82,14 +82,14 @@ func expandPath(path string) string {
 		}
 		return filepath.Join(homeDir, path[1:])
 	}
-	
+
 	// Convert to absolute path if relative
 	if !filepath.IsAbs(path) {
 		if abs, err := filepath.Abs(path); err == nil {
 			return abs
 		}
 	}
-	
+
 	return path
 }
 
@@ -126,12 +126,12 @@ providers:
 
 	// Ensure directory exists
 	dir := filepath.Dir(filename)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
 	// Write config file
-	if err := os.WriteFile(filename, []byte(defaultConfig), 0644); err != nil {
+	if err := os.WriteFile(filename, []byte(defaultConfig), 0o644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
@@ -145,10 +145,4 @@ func GetDefaultConfigPath() string {
 		return "./gzh.yaml" // Fallback to current directory
 	}
 	return filepath.Join(homeDir, ".config", "gzh.yaml")
-}
-
-// ValidateConfigFile validates a configuration file without loading it fully
-func ValidateConfigFile(filename string) error {
-	_, err := LoadConfigFromFile(filename)
-	return err
 }

@@ -15,7 +15,11 @@
       "Bash(./gz --help)",
       "Bash(./gz:*)",
       "Bash(find:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(go mod:*)",
+      "Bash(grep:*)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

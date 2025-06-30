@@ -75,7 +75,7 @@ func LoadYAMLWithEnvSubstitution(filename string) (*Config, error) {
 
 	// Pre-process for custom environment variable handling
 	processedContent := preprocessEnvVars(string(content))
-	
+
 	// Apply standard environment variable expansion
 	expandedContent := os.ExpandEnv(processedContent)
 
@@ -112,23 +112,23 @@ func processDefaultValues(line string) string {
 	if start == -1 {
 		return line
 	}
-	
+
 	end := strings.Index(line[start:], "}")
 	if end == -1 {
 		return line
 	}
-	
+
 	envExpr := line[start+2 : start+end]
 	if colonIndex := strings.Index(envExpr, ":"); colonIndex != -1 {
 		varName := envExpr[:colonIndex]
 		defaultValue := envExpr[colonIndex+1:]
-		
+
 		if value := os.Getenv(varName); value != "" {
 			return strings.Replace(line, "${"+envExpr+"}", value, 1)
 		}
 		return strings.Replace(line, "${"+envExpr+"}", defaultValue, 1)
 	}
-	
+
 	return line
 }
 

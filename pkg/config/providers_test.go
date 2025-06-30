@@ -68,7 +68,7 @@ func TestCreateProviderCloner(t *testing.T) {
 
 func TestGitHubCloner(t *testing.T) {
 	cloner := NewGitHubCloner("test-token")
-	
+
 	assert.Equal(t, ProviderGitHub, cloner.GetName())
 	assert.Equal(t, "test-token", cloner.token)
 
@@ -79,7 +79,7 @@ func TestGitHubCloner(t *testing.T) {
 
 func TestGitLabCloner(t *testing.T) {
 	cloner := NewGitLabCloner("test-token")
-	
+
 	assert.Equal(t, ProviderGitLab, cloner.GetName())
 	assert.Equal(t, "test-token", cloner.token)
 

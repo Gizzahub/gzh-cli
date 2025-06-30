@@ -19,28 +19,28 @@
 [x] 기존 bulk-clone 설정과 gzh.yaml 스키마 호환성 분석
 [x] gzh.yaml 기반 bulk-clone 실행 옵션 추가 (`--use-gzh-config`)
 [x] provider별 조직/그룹 일괄 클론 기능 구현
-[ ] visibility 필터링 로직 구현 (public/private/all)
-[ ] 정규식 기반 리포지토리 필터링 구현 (`match` 필드)
-[ ] flatten 옵션에 따른 디렉토리 구조 생성 로직 구현
+[x] visibility 필터링 로직 구현 (public/private/all)
+[x] 정규식 기반 리포지토리 필터링 구현 (`match` 필드)
+[x] flatten 옵션에 따른 디렉토리 구조 생성 로직 구현
 
 ### 🧪 테스트 및 문서화
-[ ] gzh.yaml 파서 단위 테스트 작성
-[ ] 다양한 설정 시나리오별 통합 테스트 작성
-[ ] gzh.yaml 사용 가이드 및 예제 문서 작성
-[ ] 마이그레이션 가이드 작성 (기존 bulk-clone.yaml → gzh.yaml)
+[x] gzh.yaml 파서 단위 테스트 작성
+[x] 다양한 설정 시나리오별 통합 테스트 작성
+[x] gzh.yaml 사용 가이드 및 예제 문서 작성
+[x] 마이그레이션 가이드 작성 (기존 bulk-clone.yaml → gzh.yaml)
 
 💡 **추가 제안 기능:**
-- `gz config validate` - gzh.yaml 유효성 검사 명령어
-- `gz config init` - 대화형 gzh.yaml 생성 도구
-- 설정 프로필 기능 (dev/prod 환경별 설정 분리)
+[x] `gz config validate` - gzh.yaml 유효성 검사 명령어
+[x] `gz config init` - 대화형 gzh.yaml 생성 도구
+[x] 설정 프로필 기능 (dev/prod 환경별 설정 분리)
 
 ---
 
 ## 🚀 GitHub Organization & Repository 관리 기능
 
 ### 📋 기본 설계 및 API 연동
-[ ] GitHub 리포지토리 설정 관리 요구사항 상세 정리
-[ ] `gz repo-config` 명령어 구조 설계 (list/apply/validate 서브커맨드)
+[x] GitHub 리포지토리 설정 관리 요구사항 상세 정리
+[x] `gz repo-config` 명령어 구조 설계 (list/apply/validate 서브커맨드)
 [ ] GitHub API 클라이언트 래퍼 구현 (`pkg/github/repo_config.go`)
 [ ] 리포지토리 설정 스키마 정의 (YAML 형식)
 [ ] API Rate Limiting 처리 로직 구현 (재시도, 대기 시간 계산)

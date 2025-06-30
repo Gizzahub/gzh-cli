@@ -63,14 +63,14 @@ func (c *Config) Validate() error {
 	if c.Version == "" {
 		return ErrMissingVersion
 	}
-	
+
 	// Validate each provider
 	for name, provider := range c.Providers {
 		if err := provider.Validate(name); err != nil {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -79,7 +79,7 @@ func (p *Provider) Validate(providerType string) error {
 	if p.Token == "" {
 		return ErrMissingToken
 	}
-	
+
 	// Validate targets based on provider type
 	switch providerType {
 	case ProviderGitLab:
@@ -95,7 +95,7 @@ func (p *Provider) Validate(providerType string) error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -104,25 +104,25 @@ func (g *GitTarget) Validate() error {
 	if g.Name == "" {
 		return ErrMissingName
 	}
-	
+
 	// Validate visibility
-	if g.Visibility != "" && g.Visibility != VisibilityAll && 
+	if g.Visibility != "" && g.Visibility != VisibilityAll &&
 		g.Visibility != VisibilityPublic && g.Visibility != VisibilityPrivate {
 		return ErrInvalidVisibility
 	}
-	
+
 	// Validate strategy
-	if g.Strategy != "" && g.Strategy != StrategyReset && 
+	if g.Strategy != "" && g.Strategy != StrategyReset &&
 		g.Strategy != StrategyPull && g.Strategy != StrategyFetch {
 		return ErrInvalidStrategy
 	}
-	
+
 	// Validate regex pattern if provided
 	if g.Match != "" {
 		if _, err := CompileRegex(g.Match); err != nil {
 			return ErrInvalidRegex
 		}
 	}
-	
+
 	return nil
 }

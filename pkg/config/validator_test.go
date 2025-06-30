@@ -315,8 +315,8 @@ func TestValidateGitTarget(t *testing.T) {
 
 func TestValidationResult(t *testing.T) {
 	tests := []struct {
-		name           string
-		result         ValidationResult
+		name            string
+		result          ValidationResult
 		expectHasIssues bool
 	}{
 		{

@@ -6,6 +6,7 @@
 
 # build
 build/
+*.out
 
 # exe
 /gzh-manager

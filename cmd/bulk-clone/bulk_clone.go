@@ -11,10 +11,10 @@ import (
 )
 
 type bulkCloneOptions struct {
-	configFile    string
-	useConfig     bool
-	useGZHConfig  bool
-	strategy      string
+	configFile     string
+	useConfig      bool
+	useGZHConfig   bool
+	strategy       string
 	providerFilter string
 }
 
@@ -182,7 +182,7 @@ func (o *bulkCloneOptions) runWithGZHConfig() error {
 	successCount := 0
 	for i, target := range targets {
 		fmt.Printf("\n[%d/%d] Processing %s: %s\n", i+1, len(targets), target.Provider, target.Name)
-		
+
 		// Override strategy if specified via command line
 		if o.strategy != "reset" {
 			target.Strategy = o.strategy
