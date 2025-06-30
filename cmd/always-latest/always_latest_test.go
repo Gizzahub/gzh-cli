@@ -156,7 +156,7 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 
 	t.Run("major strategy returns latest", func(t *testing.T) {
 		opts.strategy = "major"
-		
+
 		target, err := opts.getTargetVersion("nodejs", "18.17.0", "20.0.0")
 		assert.NoError(t, err)
 		assert.Equal(t, "20.0.0", target)
@@ -164,7 +164,7 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 
 	t.Run("minor strategy with no current version returns latest", func(t *testing.T) {
 		opts.strategy = "minor"
-		
+
 		target, err := opts.getTargetVersion("nodejs", "", "20.0.0")
 		assert.NoError(t, err)
 		assert.Equal(t, "20.0.0", target)
@@ -196,7 +196,7 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 func TestAsdfIntegration(t *testing.T) {
 	t.Run("asdf not installed scenario", func(t *testing.T) {
 		opts := &alwaysLatestAsdfOptions{}
-		
+
 		// This test will pass if asdf is not installed
 		// In CI/CD environments where asdf might not be available
 		if !opts.isAsdfInstalled() {
@@ -326,7 +326,7 @@ func TestBrewVersionExtraction(t *testing.T) {
 func TestBrewIntegration(t *testing.T) {
 	t.Run("brew not installed scenario", func(t *testing.T) {
 		opts := &alwaysLatestBrewOptions{}
-		
+
 		// This test will pass if brew is not installed
 		// In CI/CD environments where brew might not be available
 		if !opts.isBrewInstalled() {

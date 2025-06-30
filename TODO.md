@@ -29,7 +29,7 @@
 ## Always Latest
 - [x] asdf
 - [x] brew
-- [ ] sdkman
+- [x] sdkman
 - [ ] port
 - [ ] apt-get
 - [ ] rbenv

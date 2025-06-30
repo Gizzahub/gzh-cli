@@ -34,6 +34,7 @@ Examples:
 
 	cmd.AddCommand(newAlwaysLatestAsdfCmd())
 	cmd.AddCommand(newAlwaysLatestBrewCmd())
+	cmd.AddCommand(newAlwaysLatestSdkmanCmd())
 
 	return cmd
 }

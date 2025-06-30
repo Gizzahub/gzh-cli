@@ -11,16 +11,16 @@ import (
 )
 
 type alwaysLatestBrewOptions struct {
-	strategy     string
-	packages     []string
-	dryRun       bool
-	updateBrew   bool
-	configFile   string
-	casks        bool
-	taps         bool
-	interactive  bool
-	cleanup      bool
-	upgradeAll   bool
+	strategy    string
+	packages    []string
+	dryRun      bool
+	updateBrew  bool
+	configFile  string
+	casks       bool
+	taps        bool
+	interactive bool
+	cleanup     bool
+	upgradeAll  bool
 }
 
 func defaultAlwaysLatestBrewOptions() *alwaysLatestBrewOptions {

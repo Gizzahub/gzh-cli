@@ -271,7 +271,7 @@ func (o *alwaysLatestAsdfOptions) getLatestVersion(tool string) (string, error) 
 	}
 
 	lines := strings.Split(string(output), "\n")
-	
+
 	// Filter out non-release versions and get the latest
 	var versions []string
 	for _, line := range lines {
@@ -279,7 +279,7 @@ func (o *alwaysLatestAsdfOptions) getLatestVersion(tool string) (string, error) 
 		if version == "" {
 			continue
 		}
-		
+
 		// Skip pre-release versions (containing alpha, beta, rc, dev, etc.)
 		if o.isStableVersion(version) {
 			versions = append(versions, version)
@@ -378,7 +378,7 @@ func (o *alwaysLatestAsdfOptions) confirmUpdate(tool, currentVersion, targetVers
 
 func (o *alwaysLatestAsdfOptions) installVersion(tool, version string) error {
 	fmt.Printf("   Installing %s %s...\n", tool, version)
-	
+
 	cmd := exec.Command("asdf", "install", tool, version)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
