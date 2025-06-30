@@ -81,3 +81,35 @@ type GitTarget struct {
 이 스키마는 Claude Code에서 바로 파서 구조, validation, CLI 바인딩 등에 사용할 수 있도록 구성되어 있습니다.
 
 👉 원하시면 이 스키마 기반으로 `config` 모듈 코드, 디렉토리 경로 구성 유틸리티, 에러 메시지 포맷 등도 바로 만들어드릴 수 있습니다. 어떤 방식으로 진행해볼까요?
+
+---
+
+## 📋 GitHub Organization & Repository Management
+
+### 🎯 목적
+- GitHub 조직 및 리포지터리의 기본 설정을 일괄 관리
+- 리포지터리 정책 및 설정의 표준화
+- 새 프로젝트 생성 시 자동화된 설정 적용
+
+### 📋 관리 대상 설정들
+- 기본 브랜치 설정
+- 머지 정책 (squash, merge commit, rebase)
+- 보안 및 분석 설정
+- Issues, Projects, Wiki 활성화 여부
+- 가시성 설정 (public/private)
+- 포킹 및 자동 머지 정책
+- 커밋 서명 요구사항
+
+### 🛠️ 구현 방향
+- **CLI 명령어**: `gz github-org config` 또는 `gz repo-config`
+- **설정 방식**: YAML 기반 정책 파일
+- **API 활용**: GitHub REST API `repos.update` 엔드포인트
+- **대안 고려**: Terraform 사용 검토 (Infrastructure as Code)
+
+### 📚 참고 자료
+상세한 구현 참고 자료는 `docs/github-org-management-research.md` 참조
+
+### ⚠️ 고려사항
+- GitHub Actions보다는 CLI 도구로 구현이 더 적합
+- 토큰 권한 관리 (repos, admin:org 권한 필요)
+- 대량 업데이트 시 API Rate Limiting 고려
