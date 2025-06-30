@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 )
 
 // BulkCloneIntegration provides integration between gzh.yaml config and bulk-clone operations
@@ -42,7 +41,7 @@ func (b *BulkCloneIntegration) GetAllTargets() ([]BulkCloneTarget, error) {
 			target := BulkCloneTarget{
 				Provider:   providerName,
 				Name:       org.Name,
-				CloneDir:   b.resolveCloneDir(org.CloneDir, providerName, org.Name),
+				CloneDir:   b.resolveCloneDir(org.CloneDir, providerName, org.Name, org.Flatten),
 				Token:      ExpandEnvironmentVariables(provider.Token),
 				Visibility: org.Visibility,
 				Strategy:   org.Strategy,
@@ -59,7 +58,7 @@ func (b *BulkCloneIntegration) GetAllTargets() ([]BulkCloneTarget, error) {
 			target := BulkCloneTarget{
 				Provider:   providerName,
 				Name:       group.Name,
-				CloneDir:   b.resolveCloneDir(group.CloneDir, providerName, group.Name),
+				CloneDir:   b.resolveCloneDir(group.CloneDir, providerName, group.Name, group.Flatten),
 				Token:      ExpandEnvironmentVariables(provider.Token),
 				Visibility: group.Visibility,
 				Strategy:   group.Strategy,
@@ -108,8 +107,8 @@ func (b *BulkCloneIntegration) GetTargetByName(providerName, targetName string) 
 	return nil, fmt.Errorf("target '%s' not found for provider '%s'", targetName, providerName)
 }
 
-// resolveCloneDir resolves the clone directory with fallbacks
-func (b *BulkCloneIntegration) resolveCloneDir(cloneDir, providerName, targetName string) string {
+// resolveCloneDir resolves the clone directory with fallbacks and flatten support
+func (b *BulkCloneIntegration) resolveCloneDir(cloneDir, providerName, targetName string, flatten bool) string {
 	if cloneDir != "" {
 		return ExpandEnvironmentVariables(cloneDir)
 	}
@@ -120,8 +119,16 @@ func (b *BulkCloneIntegration) resolveCloneDir(cloneDir, providerName, targetNam
 		homeDir = expanded
 	}
 
-	// Create default path: ~/repos/{provider}/{target}
-	defaultPath := filepath.Join(homeDir, "repos", providerName, targetName)
+	// Create default path based on flatten option
+	var defaultPath string
+	if flatten {
+		// Flatten: ~/repos/{provider}/
+		defaultPath = filepath.Join(homeDir, "repos", providerName)
+	} else {
+		// Normal: ~/repos/{provider}/{target}
+		defaultPath = filepath.Join(homeDir, "repos", providerName, targetName)
+	}
+
 	return ExpandEnvironmentVariables(defaultPath)
 }
 

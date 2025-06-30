@@ -12,4 +12,6 @@ var (
 	ErrInvalidRegex      = errors.New("invalid regex pattern")
 	ErrFileNotFound      = errors.New("configuration file not found")
 	ErrInvalidYAML       = errors.New("invalid YAML format")
+	ErrInvalidCloneDir   = errors.New("invalid clone directory")
+	ErrUnsafePath        = errors.New("unsafe path: contains '..'")
 )
