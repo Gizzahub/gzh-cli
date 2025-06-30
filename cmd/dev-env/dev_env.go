@@ -12,7 +12,7 @@ This command helps you backup, restore, and manage various development
 environment configurations including:
 - Kubernetes configurations (kubeconfig)
 - Docker configurations
-- AWS configurations
+- AWS configurations and credentials
 - Cloud provider configurations (GCloud)
 - SSH configurations
 - And more...
@@ -30,6 +30,9 @@ Examples:
   # Save current AWS config
   gz dev-env aws save --name production
   
+  # Save current AWS credentials
+  gz dev-env aws-credentials save --name production
+  
   # Load a saved configuration
   gz dev-env kubeconfig load --name my-cluster
   
@@ -41,6 +44,7 @@ Examples:
 	cmd.AddCommand(newKubeconfigCmd())
 	cmd.AddCommand(newDockerCmd())
 	cmd.AddCommand(newAwsCmd())
+	cmd.AddCommand(newAwsCredentialsCmd())
 
 	return cmd
 }

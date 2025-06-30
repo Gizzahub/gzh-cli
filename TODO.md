@@ -57,7 +57,7 @@ setting sync 오류나서 이런것들 강제 수정
 - [x] kubeconfig
 - [x] docker config
 - [x] aws config
-- [ ] aws credentials
+- [x] aws credentials
 - [ ] gcloud config
 - [ ] gcloud credentials
 - [ ] ssh config
