@@ -56,7 +56,7 @@ setting sync 오류나서 이런것들 강제 수정
 ## 개발환경 Save & Load
 - [x] kubeconfig
 - [x] docker config
-- [ ] aws config
+- [x] aws config
 - [ ] aws credentials
 - [ ] gcloud config
 - [ ] gcloud credentials
