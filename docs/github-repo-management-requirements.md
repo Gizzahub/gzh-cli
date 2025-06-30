@@ -38,8 +38,33 @@ The GitHub repository management feature allows users to manage repository setti
   - GitHub Actions permissions and settings
 
 #### 1.2 Configuration Schema
+
+**Note: The configuration schema has been implemented in `pkg/config/repo_config_schema.go` with comprehensive support for all features listed below.**
+
 ```yaml
-# Repository configuration schema
+# Repository configuration schema (v1.0.0)
+version: "1.0.0"
+organization: "my-organization"
+
+# Default settings for all repositories
+defaults:
+  template: "standard"
+  settings:
+    private: true
+    has_issues: true
+
+# Reusable templates
+templates:
+  standard:
+    description: "Standard repository configuration"
+    settings:
+      has_issues: true
+      has_wiki: false
+    security:
+      branch_protection:
+        main:
+          required_reviews: 1
+
 repositories:
   # Apply to specific repositories
   specific:
@@ -47,7 +72,7 @@ repositories:
       description: "Main API server"
       homepage: "https://api.example.com"
       topics: ["api", "microservice", "go"]
-      visibility: "private"
+      template: "microservice"
       features:
         issues: true
         wiki: false
