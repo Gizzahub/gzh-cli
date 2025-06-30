@@ -1,0 +1,67 @@
+# Multi-provider gzh.yaml configuration
+# Example showing configuration for multiple Git providers
+
+version: "1.0.0"
+default_provider: github
+
+providers:
+  # GitHub configuration
+  github:
+    token: "${GITHUB_TOKEN}"
+    orgs:
+      # Work organization with filtered repositories
+      - name: "work-org"
+        visibility: "private"
+        clone_dir: "${HOME}/work/github"
+        match: "^(api|web|service)-.*"     # Only clone API, web, and service repos
+        exclude: ["*-archive", "*-backup"] # Exclude archived and backup repos
+        strategy: "pull"                   # Use git pull for updates
+        flatten: false                     # Maintain org/repo structure
+      
+      # Open source organization
+      - name: "oss-org"
+        visibility: "public"
+        clone_dir: "${HOME}/oss/github"
+        strategy: "fetch"                  # Read-only for OSS contributions
+        flatten: true                      # Flat directory structure
+
+  # GitLab configuration
+  gitlab:
+    token: "${GITLAB_TOKEN}"
+    groups:
+      # Company infrastructure group with subgroups
+      - name: "company/infrastructure"
+        visibility: "private"
+        recursive: true                    # Include all subgroups
+        clone_dir: "${HOME}/work/gitlab"
+        exclude: ["*-temp", "experiment-*"]
+        strategy: "reset"
+      
+      # Public projects group
+      - name: "opensource"
+        visibility: "public"
+        recursive: false                   # Top-level only
+        clone_dir: "${HOME}/oss/gitlab"
+        strategy: "fetch"
+
+  # Gitea configuration (self-hosted)
+  gitea:
+    token: "${GITEA_TOKEN}"
+    orgs:
+      # Personal projects on self-hosted Gitea
+      - name: "personal"
+        visibility: "all"
+        clone_dir: "${HOME}/personal/gitea"
+        strategy: "pull"
+        flatten: true
+
+  # Gogs configuration (legacy self-hosted)
+  gogs:
+    token: "${GOGS_TOKEN}"
+    orgs:
+      # Legacy projects on Gogs
+      - name: "legacy"
+        visibility: "all"
+        clone_dir: "${HOME}/legacy/gogs"
+        strategy: "fetch"                  # Read-only for legacy projects
+        flatten: true
