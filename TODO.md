@@ -60,7 +60,7 @@ setting sync 오류나서 이런것들 강제 수정
 - [x] aws credentials
 - [x] gcloud config
 - [x] gcloud credentials
-- [ ] ssh config
+- [x] ssh config
 - ...
 
 ## 네트워크 옮길 때

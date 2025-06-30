@@ -39,6 +39,9 @@ Examples:
   # Save current gcloud credentials
   gz dev-env gcloud-credentials save --name production
   
+  # Save current SSH config
+  gz dev-env ssh save --name production
+  
   # Load a saved configuration
   gz dev-env kubeconfig load --name my-cluster
   
@@ -53,6 +56,7 @@ Examples:
 	cmd.AddCommand(newAwsCredentialsCmd())
 	cmd.AddCommand(newGcloudCmd())
 	cmd.AddCommand(newGcloudCredentialsCmd())
+	cmd.AddCommand(newSshCmd())
 
 	return cmd
 }
