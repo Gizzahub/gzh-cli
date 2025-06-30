@@ -179,11 +179,11 @@ providers:
     orgs:
       - name: "test-org"
 `
-	
+
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
-	
+
 	_, err = tmpFile.WriteString(content)
 	require.NoError(t, err)
 	tmpFile.Close()
@@ -219,4 +219,186 @@ func TestApplyDefaults(t *testing.T) {
 	assert.Equal(t, ProviderGitHub, config.DefaultProvider)
 	assert.Equal(t, VisibilityAll, config.Providers["github"].Orgs[0].Visibility)
 	assert.Equal(t, StrategyReset, config.Providers["github"].Orgs[0].Strategy)
+}
+
+func TestParseYAML_ComplexScenarios(t *testing.T) {
+	tests := []struct {
+		name         string
+		yaml         string
+		setup        func()
+		cleanup      func()
+		wantErr      bool
+		validateFunc func(*testing.T, *Config)
+	}{
+		{
+			name: "simple valid configuration",
+			yaml: `
+version: "1.0.0"
+default_provider: github
+providers:
+  github:
+    token: "github-token"
+    orgs:
+      - name: "test-org"
+        visibility: "public"
+        flatten: true
+`,
+			wantErr: false,
+			validateFunc: func(t *testing.T, config *Config) {
+				assert.Equal(t, "github", config.DefaultProvider)
+				assert.Len(t, config.Providers, 1)
+
+				github := config.Providers["github"]
+				assert.Equal(t, "github-token", github.Token)
+				assert.Len(t, github.Orgs, 1)
+				assert.True(t, github.Orgs[0].Flatten)
+			},
+		},
+		{
+			name: "yaml with comments and special characters",
+			yaml: `# Configuration file for gzh-manager
+version: "1.0.0" # Version number
+# Default provider setting
+default_provider: github
+
+providers:
+  github:
+    token: "token-with-special!@#$%chars" # GitHub personal access token
+    orgs:
+      - name: "org-with-special/chars"
+        visibility: "all"
+        clone_dir: "/path/with spaces/and-special&chars"
+        match: "^test-.*\\.go$"
+        exclude: 
+          - "temp-*"
+          - "*-backup"
+`,
+			wantErr: false,
+			validateFunc: func(t *testing.T, config *Config) {
+				assert.Equal(t, "token-with-special!@#$%chars", config.Providers["github"].Token)
+				assert.Equal(t, "org-with-special/chars", config.Providers["github"].Orgs[0].Name)
+				assert.Equal(t, "/path/with spaces/and-special&chars", config.Providers["github"].Orgs[0].CloneDir)
+				assert.Equal(t, "^test-.*\\.go$", config.Providers["github"].Orgs[0].Match)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.setup != nil {
+				tt.setup()
+			}
+			if tt.cleanup != nil {
+				defer tt.cleanup()
+			}
+
+			reader := strings.NewReader(tt.yaml)
+			config, err := ParseYAML(reader)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, config)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, config)
+				if tt.validateFunc != nil {
+					tt.validateFunc(t, config)
+				}
+			}
+		})
+	}
+}
+
+func TestEnvironmentVariableExpansion_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			name:  "multiple environment variables in one string",
+			input: "${VAR1}-${VAR2}-${VAR3}",
+			envVars: map[string]string{
+				"VAR1": "part1",
+				"VAR2": "part2",
+				"VAR3": "part3",
+			},
+			expected: "part1-part2-part3",
+		},
+		{
+			name:     "empty environment variable",
+			input:    "${EMPTY_VAR}",
+			envVars:  map[string]string{"EMPTY_VAR": ""},
+			expected: "",
+		},
+		{
+			name:     "undefined environment variable",
+			input:    "${UNDEFINED_VAR}",
+			envVars:  map[string]string{},
+			expected: "",
+		},
+		{
+			name:     "dollar sign without braces gets expanded",
+			input:    "$VAR_WITHOUT_BRACES",
+			envVars:  map[string]string{"VAR_WITHOUT_BRACES": "value"},
+			expected: "value",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up environment variables
+			for key, value := range tt.envVars {
+				os.Setenv(key, value)
+				defer os.Unsetenv(key)
+			}
+
+			result := ExpandEnvironmentVariables(tt.input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestParseYAML_ErrorCases(t *testing.T) {
+	tests := []struct {
+		name        string
+		yaml        string
+		expectError bool
+	}{
+		{
+			name: "completely invalid YAML",
+			yaml: `
+version: "1.0.0"
+providers:
+  github:
+    token: "unclosed string
+`,
+			expectError: true,
+		},
+		{
+			name: "missing required version field",
+			yaml: `
+providers:
+  github:
+    token: "test-token"
+`,
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := strings.NewReader(tt.yaml)
+			config, err := ParseYAML(reader)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, config)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, config)
+			}
+		})
+	}
 }
