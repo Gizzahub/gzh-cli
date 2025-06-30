@@ -66,7 +66,7 @@ setting sync 오류나서 이런것들 강제 수정
 ## 네트워크 옮길 때
 - [x] daemon 모니터링
 - [x] hook wifi change event? -> action
-- [ ] action: vpn, dns, proxy, host 등 변경
+- [x] action: vpn, dns, proxy, host 등 변경
 
 ## Github org, repo 기본설정
 terraform으로 하는게 나을지도 모름
