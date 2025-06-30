@@ -14,6 +14,7 @@ switching between different network environments. It provides:
 - Service dependency tracking
 - Network environment transition management
 - WiFi change event monitoring and action triggers
+- Network configuration actions (VPN, DNS, proxy, hosts)
 - System state verification
 
 This is useful when:
@@ -36,12 +37,22 @@ Examples:
   gz net-env wifi monitor
   
   # Show current WiFi status
-  gz net-env wifi status`,
+  gz net-env wifi status
+  
+  # Execute network configuration actions
+  gz net-env actions run
+  
+  # Connect to VPN
+  gz net-env actions vpn connect --name office
+  
+  # Set DNS servers
+  gz net-env actions dns set --servers 1.1.1.1,1.0.0.1`,
 		SilenceUsage: true,
 	}
 
 	cmd.AddCommand(newDaemonCmd())
 	cmd.AddCommand(newWifiCmd())
+	cmd.AddCommand(newActionsCmd())
 
 	return cmd
 }

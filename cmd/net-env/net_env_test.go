@@ -17,16 +17,18 @@ func TestNewNetEnvCmd(t *testing.T) {
 
 	// Check subcommands
 	subcommands := cmd.Commands()
-	assert.Len(t, subcommands, 2)
+	assert.Len(t, subcommands, 3)
 
-	// Verify daemon subcommand exists
-	var daemonCmd, wifiCmd *cobra.Command
+	// Verify subcommands exist
+	var daemonCmd, wifiCmd, actionsCmd *cobra.Command
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "daemon":
 			daemonCmd = subcmd
 		case "wifi":
 			wifiCmd = subcmd
+		case "actions":
+			actionsCmd = subcmd
 		}
 	}
 
@@ -37,6 +39,10 @@ func TestNewNetEnvCmd(t *testing.T) {
 	assert.NotNil(t, wifiCmd)
 	assert.Equal(t, "wifi", wifiCmd.Use)
 	assert.Equal(t, "Monitor WiFi changes and trigger actions", wifiCmd.Short)
+
+	assert.NotNil(t, actionsCmd)
+	assert.Equal(t, "actions", actionsCmd.Use)
+	assert.Equal(t, "Execute network configuration actions", actionsCmd.Short)
 }
 
 func TestNetEnvCmdStructure(t *testing.T) {
@@ -65,6 +71,7 @@ func TestNetEnvCmdHelpContent(t *testing.T) {
 	assert.Contains(t, longDesc, "Service dependency tracking")
 	assert.Contains(t, longDesc, "Network environment transition management")
 	assert.Contains(t, longDesc, "WiFi change event monitoring and action triggers")
+	assert.Contains(t, longDesc, "Network configuration actions (VPN, DNS, proxy, hosts)")
 	assert.Contains(t, longDesc, "System state verification")
 
 	// Verify use cases are mentioned
@@ -76,4 +83,9 @@ func TestNetEnvCmdHelpContent(t *testing.T) {
 	// Verify WiFi examples are included
 	assert.Contains(t, longDesc, "gz net-env wifi monitor")
 	assert.Contains(t, longDesc, "gz net-env wifi status")
+
+	// Verify actions examples are included
+	assert.Contains(t, longDesc, "gz net-env actions run")
+	assert.Contains(t, longDesc, "gz net-env actions vpn connect")
+	assert.Contains(t, longDesc, "gz net-env actions dns set")
 }
