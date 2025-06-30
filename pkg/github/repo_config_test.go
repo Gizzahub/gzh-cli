@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -614,4 +615,203 @@ func TestConvertBranchProtection(t *testing.T) {
 	assert.True(t, config.RestrictPushes)
 	assert.Equal(t, []string{"lead"}, config.AllowedUsers)
 	assert.Equal(t, []string{"core"}, config.AllowedTeams)
+}
+
+func TestUpdateRepositoryConfiguration(t *testing.T) {
+	requestCount := 0
+	// Mock server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount++
+		switch {
+		case r.URL.Path == "/repos/testorg/testrepo" && r.Method == "PATCH":
+			// Update repository
+			var update RepositoryUpdate
+			err := json.NewDecoder(r.Body).Decode(&update)
+			require.NoError(t, err)
+
+			assert.Equal(t, "Updated description", *update.Description)
+			assert.True(t, *update.HasIssues)
+			assert.False(t, *update.HasWiki)
+
+			repo := &Repository{
+				ID:          1,
+				Name:        "testrepo",
+				Description: *update.Description,
+				HasIssues:   *update.HasIssues,
+				HasWiki:     *update.HasWiki,
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(repo)
+
+		case r.URL.Path == "/repos/testorg/testrepo/branches/main/protection" && r.Method == "PUT":
+			// Update branch protection
+			var protection BranchProtection
+			err := json.NewDecoder(r.Body).Decode(&protection)
+			require.NoError(t, err)
+
+			assert.True(t, protection.EnforceAdmins)
+			assert.NotNil(t, protection.RequiredPullRequestReviews)
+			assert.Equal(t, 2, protection.RequiredPullRequestReviews.RequiredApprovingReviewCount)
+
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(protection)
+
+		case strings.HasPrefix(r.URL.Path, "/orgs/testorg/teams/") && r.Method == "PUT":
+			// Update team permission
+			var body map[string]string
+			err := json.NewDecoder(r.Body).Decode(&body)
+			require.NoError(t, err)
+			assert.Contains(t, []string{"admin", "push"}, body["permission"])
+			w.WriteHeader(http.StatusNoContent)
+
+		case strings.HasPrefix(r.URL.Path, "/repos/testorg/testrepo/collaborators/") && r.Method == "PUT":
+			// Update user permission
+			var body map[string]string
+			err := json.NewDecoder(r.Body).Decode(&body)
+			require.NoError(t, err)
+			assert.Contains(t, []string{"admin", "write"}, body["permission"])
+			w.WriteHeader(http.StatusNoContent)
+
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	client := NewRepoConfigClient("test-token")
+	client.baseURL = server.URL
+
+	config := &RepositoryConfig{
+		Name:        "testrepo",
+		Description: "Updated description",
+		Homepage:    "https://example.com",
+		Private:     false,
+		Archived:    false,
+		Topics:      []string{"test", "example"},
+		Settings: RepoConfigSettings{
+			HasIssues:           true,
+			HasWiki:             false,
+			HasProjects:         true,
+			HasDownloads:        false,
+			AllowSquashMerge:    true,
+			AllowMergeCommit:    false,
+			AllowRebaseMerge:    false,
+			DeleteBranchOnMerge: true,
+			DefaultBranch:       "main",
+		},
+		BranchProtection: map[string]BranchProtectionConfig{
+			"main": {
+				RequiredReviews:         2,
+				DismissStaleReviews:     true,
+				RequireCodeOwnerReviews: true,
+				EnforceAdmins:           true,
+			},
+		},
+		Permissions: PermissionsConfig{
+			Teams: map[string]string{
+				"maintainers": "admin",
+				"developers":  "push",
+			},
+			Users: map[string]string{
+				"john": "admin",
+				"jane": "write",
+			},
+		},
+	}
+
+	err := client.UpdateRepositoryConfiguration(context.Background(), "testorg", "testrepo", config)
+	require.NoError(t, err)
+
+	// Verify all requests were made
+	assert.Equal(t, 6, requestCount) // 1 repo update + 1 branch protection + 2 teams + 2 users = 6 total
+}
+
+func TestUpdateBranchProtectionConfig(t *testing.T) {
+	// Mock server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "PUT", r.Method)
+		assert.Equal(t, "/repos/testorg/testrepo/branches/main/protection", r.URL.Path)
+
+		var protection BranchProtection
+		err := json.NewDecoder(r.Body).Decode(&protection)
+		require.NoError(t, err)
+
+		assert.True(t, protection.EnforceAdmins)
+		assert.NotNil(t, protection.RequiredStatusChecks)
+		assert.True(t, protection.RequiredStatusChecks.Strict)
+		assert.Equal(t, []string{"ci/build", "ci/test"}, protection.RequiredStatusChecks.Contexts)
+		assert.NotNil(t, protection.RequiredPullRequestReviews)
+		assert.Equal(t, 2, protection.RequiredPullRequestReviews.RequiredApprovingReviewCount)
+		assert.NotNil(t, protection.AllowForcePushes)
+		assert.False(t, protection.AllowForcePushes.Enabled)
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(protection)
+	}))
+	defer server.Close()
+
+	client := NewRepoConfigClient("test-token")
+	client.baseURL = server.URL
+
+	config := &BranchProtectionConfig{
+		RequiredReviews:         2,
+		DismissStaleReviews:     true,
+		RequireCodeOwnerReviews: true,
+		RequiredStatusChecks:    []string{"ci/build", "ci/test"},
+		StrictStatusChecks:      true,
+		EnforceAdmins:           true,
+		RestrictPushes:          true,
+		AllowedUsers:            []string{"admin"},
+		AllowedTeams:            []string{"maintainers"},
+		AllowForcePushes:        false,
+		AllowDeletions:          false,
+	}
+
+	err := client.UpdateBranchProtectionConfig(context.Background(), "testorg", "testrepo", "main", config)
+	require.NoError(t, err)
+}
+
+func TestUpdateRepositoryPermissions(t *testing.T) {
+	requestCount := 0
+	// Mock server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount++
+		assert.Equal(t, "PUT", r.Method)
+
+		var body map[string]string
+		err := json.NewDecoder(r.Body).Decode(&body)
+		require.NoError(t, err)
+
+		if strings.HasPrefix(r.URL.Path, "/orgs/testorg/teams/") {
+			// Team permission update
+			assert.Contains(t, r.URL.Path, "repos/testorg/testrepo")
+			assert.Contains(t, []string{"admin", "push"}, body["permission"])
+		} else if strings.HasPrefix(r.URL.Path, "/repos/testorg/testrepo/collaborators/") {
+			// User permission update
+			assert.Contains(t, []string{"admin", "write"}, body["permission"])
+		} else {
+			t.Fatalf("Unexpected path: %s", r.URL.Path)
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	client := NewRepoConfigClient("test-token")
+	client.baseURL = server.URL
+
+	perms := PermissionsConfig{
+		Teams: map[string]string{
+			"admins":  "admin",
+			"writers": "push",
+		},
+		Users: map[string]string{
+			"alice": "admin",
+			"bob":   "write",
+		},
+	}
+
+	err := client.UpdateRepositoryPermissions(context.Background(), "testorg", "testrepo", perms)
+	require.NoError(t, err)
+	assert.Equal(t, 4, requestCount) // 2 teams + 2 users
 }

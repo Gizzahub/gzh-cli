@@ -99,10 +99,13 @@ type PermissionsConfig struct {
 
 // BranchProtection represents branch protection rule configuration
 type BranchProtection struct {
-	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks,omitempty"`
-	EnforceAdmins              bool                        `json:"enforce_admins"`
-	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews,omitempty"`
-	Restrictions               *BranchRestrictions         `json:"restrictions,omitempty"`
+	RequiredStatusChecks           *RequiredStatusChecks           `json:"required_status_checks,omitempty"`
+	EnforceAdmins                  bool                            `json:"enforce_admins"`
+	RequiredPullRequestReviews     *RequiredPullRequestReviews     `json:"required_pull_request_reviews,omitempty"`
+	Restrictions                   *BranchRestrictions             `json:"restrictions,omitempty"`
+	AllowForcePushes               *AllowForcePushes               `json:"allow_force_pushes,omitempty"`
+	AllowDeletions                 *AllowDeletions                 `json:"allow_deletions,omitempty"`
+	RequiredConversationResolution *RequiredConversationResolution `json:"required_conversation_resolution,omitempty"`
 }
 
 // RequiredStatusChecks represents required status checks configuration
@@ -137,6 +140,7 @@ type RepositoryUpdate struct {
 	Description         *string  `json:"description,omitempty"`
 	Homepage            *string  `json:"homepage,omitempty"`
 	Private             *bool    `json:"private,omitempty"`
+	Archived            *bool    `json:"archived,omitempty"`
 	HasIssues           *bool    `json:"has_issues,omitempty"`
 	HasProjects         *bool    `json:"has_projects,omitempty"`
 	HasWiki             *bool    `json:"has_wiki,omitempty"`
@@ -409,6 +413,125 @@ func (c *RepoConfigClient) UpdateRepository(ctx context.Context, owner, repo str
 	return &repository, nil
 }
 
+// UpdateRepositoryConfiguration updates comprehensive repository configuration
+func (c *RepoConfigClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
+	// First, update basic repository settings
+	update := &RepositoryUpdate{
+		Description:         &config.Description,
+		Homepage:            &config.Homepage,
+		Private:             &config.Private,
+		Archived:            &config.Archived,
+		Topics:              config.Topics,
+		HasIssues:           &config.Settings.HasIssues,
+		HasProjects:         &config.Settings.HasProjects,
+		HasWiki:             &config.Settings.HasWiki,
+		HasDownloads:        &config.Settings.HasDownloads,
+		AllowSquashMerge:    &config.Settings.AllowSquashMerge,
+		AllowMergeCommit:    &config.Settings.AllowMergeCommit,
+		AllowRebaseMerge:    &config.Settings.AllowRebaseMerge,
+		DeleteBranchOnMerge: &config.Settings.DeleteBranchOnMerge,
+	}
+
+	if config.Settings.DefaultBranch != "" {
+		update.DefaultBranch = &config.Settings.DefaultBranch
+	}
+
+	_, err := c.UpdateRepository(ctx, owner, repo, update)
+	if err != nil {
+		return fmt.Errorf("failed to update repository settings: %w", err)
+	}
+
+	// Update branch protection rules
+	for branch, protection := range config.BranchProtection {
+		err := c.UpdateBranchProtectionConfig(ctx, owner, repo, branch, &protection)
+		if err != nil {
+			return fmt.Errorf("failed to update branch protection for %s: %w", branch, err)
+		}
+	}
+
+	// Update permissions
+	if err := c.UpdateRepositoryPermissions(ctx, owner, repo, config.Permissions); err != nil {
+		return fmt.Errorf("failed to update permissions: %w", err)
+	}
+
+	return nil
+}
+
+// UpdateBranchProtectionConfig updates branch protection from config format
+func (c *RepoConfigClient) UpdateBranchProtectionConfig(ctx context.Context, owner, repo, branch string, config *BranchProtectionConfig) error {
+	protection := &BranchProtection{
+		EnforceAdmins: config.EnforceAdmins,
+	}
+
+	// Set required status checks
+	if len(config.RequiredStatusChecks) > 0 {
+		protection.RequiredStatusChecks = &RequiredStatusChecks{
+			Strict:   config.StrictStatusChecks,
+			Contexts: config.RequiredStatusChecks,
+		}
+	}
+
+	// Set PR reviews
+	if config.RequiredReviews > 0 {
+		protection.RequiredPullRequestReviews = &RequiredPullRequestReviews{
+			RequiredApprovingReviewCount: config.RequiredReviews,
+			DismissStaleReviews:          config.DismissStaleReviews,
+			RequireCodeOwnerReviews:      config.RequireCodeOwnerReviews,
+		}
+	}
+
+	// Set restrictions if needed
+	if config.RestrictPushes {
+		protection.Restrictions = &BranchRestrictions{
+			Users: config.AllowedUsers,
+			Teams: config.AllowedTeams,
+		}
+	}
+
+	// Additional settings
+	protection.AllowForcePushes = &AllowForcePushes{
+		Enabled: config.AllowForcePushes,
+	}
+	protection.AllowDeletions = &AllowDeletions{
+		Enabled: config.AllowDeletions,
+	}
+	protection.RequiredConversationResolution = &RequiredConversationResolution{
+		Enabled: config.RequireConversationResolution,
+	}
+
+	_, err := c.UpdateBranchProtection(ctx, owner, repo, branch, protection)
+	return err
+}
+
+// UpdateRepositoryPermissions updates team and user permissions
+func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owner, repo string, perms PermissionsConfig) error {
+	// Update team permissions
+	for teamSlug, permission := range perms.Teams {
+		path := fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", owner, teamSlug, owner, repo)
+		body := map[string]string{"permission": permission}
+
+		resp, err := c.makeRequest(ctx, "PUT", path, body)
+		if err != nil {
+			return fmt.Errorf("failed to update team %s permission: %w", teamSlug, err)
+		}
+		resp.Body.Close()
+	}
+
+	// Update user permissions (collaborators)
+	for username, permission := range perms.Users {
+		path := fmt.Sprintf("/repos/%s/%s/collaborators/%s", owner, repo, username)
+		body := map[string]string{"permission": permission}
+
+		resp, err := c.makeRequest(ctx, "PUT", path, body)
+		if err != nil {
+			return fmt.Errorf("failed to update user %s permission: %w", username, err)
+		}
+		resp.Body.Close()
+	}
+
+	return nil
+}
+
 // GetBranchProtection gets branch protection rules for a specific branch
 func (c *RepoConfigClient) GetBranchProtection(ctx context.Context, owner, repo, branch string) (*BranchProtection, error) {
 	path := fmt.Sprintf("/repos/%s/%s/branches/%s/protection", owner, repo, branch)
@@ -464,6 +587,19 @@ type ListOptions struct {
 	Type      string // Repository type: all, owner, member
 	Sort      string // Sort by: created, updated, pushed, full_name
 	Direction string // Sort direction: asc, desc
+}
+
+// Additional branch protection settings
+type AllowForcePushes struct {
+	Enabled bool `json:"enabled"`
+}
+
+type AllowDeletions struct {
+	Enabled bool `json:"enabled"`
+}
+
+type RequiredConversationResolution struct {
+	Enabled bool `json:"enabled"`
 }
 
 // TeamPermission represents a team's permission on a repository

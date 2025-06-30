@@ -204,10 +204,99 @@ for _, repo := range repos {
 }
 ```
 
+## Update Operations
+
+### UpdateRepository
+
+Updates basic repository settings.
+
+```go
+update := &github.RepositoryUpdate{
+    Description:         &desc,
+    HasIssues:           &hasIssues,
+    DeleteBranchOnMerge: &deleteBranch,
+}
+repo, err := client.UpdateRepository(ctx, "owner", "repo", update)
+```
+
+### UpdateRepositoryConfiguration
+
+Updates comprehensive repository configuration in a single operation.
+
+```go
+config := &github.RepositoryConfig{
+    Description: "Updated description",
+    Settings: github.RepoConfigSettings{
+        HasIssues:           true,
+        AllowSquashMerge:    true,
+        DeleteBranchOnMerge: true,
+    },
+    BranchProtection: map[string]github.BranchProtectionConfig{
+        "main": {
+            RequiredReviews:     2,
+            EnforceAdmins:       true,
+            RequiredStatusChecks: []string{"ci/build"},
+        },
+    },
+    Permissions: github.PermissionsConfig{
+        Teams: map[string]string{
+            "maintainers": "admin",
+        },
+    },
+}
+
+err := client.UpdateRepositoryConfiguration(ctx, "owner", "repo", config)
+```
+
+This method performs multiple API calls:
+1. Updates repository settings
+2. Updates branch protection rules
+3. Updates team and user permissions
+
+### UpdateBranchProtectionConfig
+
+Updates branch protection using configuration format.
+
+```go
+config := &github.BranchProtectionConfig{
+    RequiredReviews:         2,
+    DismissStaleReviews:     true,
+    RequireCodeOwnerReviews: true,
+    RequiredStatusChecks:    []string{"ci/build", "ci/test"},
+    StrictStatusChecks:      true,
+    EnforceAdmins:           true,
+    AllowForcePushes:        false,
+    AllowDeletions:          false,
+}
+
+err := client.UpdateBranchProtectionConfig(ctx, "owner", "repo", "main", config)
+```
+
+### UpdateRepositoryPermissions
+
+Updates team and user permissions.
+
+```go
+perms := github.PermissionsConfig{
+    Teams: map[string]string{
+        "developers": "push",
+        "admins":     "admin",
+    },
+    Users: map[string]string{
+        "alice": "admin",
+        "bob":   "write",
+    },
+}
+
+err := client.UpdateRepositoryPermissions(ctx, "owner", "repo", perms)
+```
+
 ## Future Enhancements
 
-1. **Webhook Configuration**: Retrieve webhook settings
+1. **Webhook Configuration**: Retrieve and update webhook settings
 2. **Deploy Keys**: List and manage deploy keys
 3. **Secrets**: Organization and repository secrets (with proper permissions)
 4. **Actions Permissions**: GitHub Actions settings and permissions
 5. **Environments**: Deployment environment configurations
+6. **Rulesets**: New GitHub repository rulesets API
+7. **Tags Protection**: Tag protection rules
