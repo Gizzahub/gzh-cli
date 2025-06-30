@@ -31,7 +31,7 @@
 - [x] brew
 - [x] sdkman
 - [x] port
-- [ ] apt-get
+- [x] apt-get
 - [ ] rbenv
 
 업데이트 방식
