@@ -1,133 +1,92 @@
-# TODO to bulk-clone
+# TODO
 
 ## 중요!!
 테스트 할 때 Gizzahub에다 하지 않기 ^^
 동작 잘 하는거 확인했다 ^^b al
 
-## Bulk Clone
-- [x] bulk-clone cli
-  - [x] -o organization name: `-o ScriptonBasestar`
-  - [x] -t targetPath: `-t $HOME/mywork/ScriptonBasestar`
-  - [x] -p proto: `-p https` or `-p ssh`
-  - [x] -a auth: `-a token` 토큰이 있으면 private repo도 clone
-  - [x] -s strategy: `-s reset` or `-s pull` or `-s fetch`
-- [x] bulk-clone.yaml 설정파일 지원
-- [x] bulk-clone.yaml override bulk-clone.home.yaml bulk-clone.work.yaml. kustomize 이용
-- [x] bulk-clone.yaml 설정파일 예시
-- [x] bulk-clone.yaml schema
+---
 
-### Github Org
-- [x] gituhb org bulk-clone cli
+## 🔧 gzh.yaml 스키마 기반 설정 시스템 구현
 
-### Gitlab Org
-- [x] gitlab group bulk-clone cli
+### 📋 핵심 설정 파서 구현
+[ ] gzh.yaml 스키마 정의 문서 작성 (YAML/JSON Schema 형식)
+[ ] Config, Provider, GitTarget 구조체 구현 (`pkg/config/schema.go`)
+[ ] YAML 파서 및 환경변수 치환 기능 구현 (`os.ExpandEnv` 활용)
+[ ] 설정 파일 탐색 로직 구현 (우선순위: `./gzh.yaml` → `~/.config/gzh.yaml`)
+[ ] 설정 파일 유효성 검증 기능 구현 (필수 필드, enum 값 검증)
 
-### Ssh config
-- [x] ssh config 설정
-- [x] config 설정 만들어내기
+### 🔄 bulk-clone 명령어 gzh.yaml 통합
+[ ] 기존 bulk-clone 설정과 gzh.yaml 스키마 호환성 분석
+[ ] gzh.yaml 기반 bulk-clone 실행 옵션 추가 (`--use-gzh-config`)
+[ ] provider별 조직/그룹 일괄 클론 기능 구현
+[ ] visibility 필터링 로직 구현 (public/private/all)
+[ ] 정규식 기반 리포지토리 필터링 구현 (`match` 필드)
+[ ] flatten 옵션에 따른 디렉토리 구조 생성 로직 구현
 
-## Always Latest
-- [x] asdf
-- [x] brew
-- [x] sdkman
-- [x] port
-- [x] apt-get
-- [x] rbenv
+### 🧪 테스트 및 문서화
+[ ] gzh.yaml 파서 단위 테스트 작성
+[ ] 다양한 설정 시나리오별 통합 테스트 작성
+[ ] gzh.yaml 사용 가이드 및 예제 문서 작성
+[ ] 마이그레이션 가이드 작성 (기존 bulk-clone.yaml → gzh.yaml)
 
-업데이트 방식
-- minor latest
-- major latest
+💡 **추가 제안 기능:**
+- `gz config validate` - gzh.yaml 유효성 검사 명령어
+- `gz config init` - 대화형 gzh.yaml 생성 도구
+- 설정 프로필 기능 (dev/prod 환경별 설정 분리)
 
-## IDE
-Jetbrains 설정변경 감지 https://github.com/fsnotify/fsnotify
-리눅스 (Linux)
-경로: ~/.config/JetBrains/<Product><Version>/
-예: ~/.config/JetBrains/IntelliJIdea2023.2/
-맥OS (MacOS)
-경로: ~/Library/Application Support/JetBrains/<Product><Version>/
-예: ~/Library/Application Support/JetBrains/IntelliJIdea2023.2/
-윈도우 (Windows)
-경로: %APPDATA%\JetBrains\<Product><Version>\
-예: C:\Users\<YourUserName>\AppData\Roaming\JetBrains\IntelliJIdea2023.2\
+---
 
-setting sync 오류나서 이런것들 강제 수정
-- [moved to SKIP.md] ~/.config/JetBrains/PyCharm2024.3/settingsSync/options/filetypes.xml
+## 🚀 GitHub Organization & Repository 관리 기능
 
-## 개발환경 Save & Load
-- [x] kubeconfig
-- [x] docker config
-- [x] aws config
-- [x] aws credentials
-- [x] gcloud config
-- [x] gcloud credentials
-- [x] ssh config
-- ...
+### 📋 기본 설계 및 API 연동
+[ ] GitHub 리포지토리 설정 관리 요구사항 상세 정리
+[ ] `gz repo-config` 명령어 구조 설계 (list/apply/validate 서브커맨드)
+[ ] GitHub API 클라이언트 래퍼 구현 (`pkg/github/repo_config.go`)
+[ ] 리포지토리 설정 스키마 정의 (YAML 형식)
+[ ] API Rate Limiting 처리 로직 구현 (재시도, 대기 시간 계산)
 
-## 네트워크 옮길 때
-- [x] daemon 모니터링
-- [x] hook wifi change event? -> action
-- [x] action: vpn, dns, proxy, host 등 변경
+### ⚙️ 리포지토리 설정 관리 구현
+[ ] 리포지토리 현재 설정 조회 기능 구현 (`repos.get` API)
+[ ] 리포지토리 설정 일괄 업데이트 기능 구현 (`repos.update` API)
+[ ] 조직 내 모든 리포지토리 대상 일괄 적용 기능
+[ ] 설정 변경 이력 추적 및 롤백 기능 설계
+[ ] Dry-run 모드 구현 (변경사항 미리보기)
 
-## Github org, repo 기본설정
-terraform으로 하는게 나을지도 모름
-github action으로 할까 했는데 좀 안맞는 것 같아서 여기로 이동
+### 🔐 보안 및 권한 관리
+[ ] 필요한 GitHub 토큰 권한 문서화 (repos, admin:org)
+[ ] 토큰 권한 자동 검증 기능 구현
+[ ] 민감한 설정 변경 시 확인 프롬프트 추가
+[ ] 설정 변경 로그 기록 기능 구현
 
-참고프로젝트
+### 📊 정책 템플릿 시스템
+[ ] 기본 정책 템플릿 작성 (보안 강화, 오픈소스, 엔터프라이즈)
+[ ] 정책 템플릿 상속 및 오버라이드 기능 구현
+[ ] 리포지토리별 예외 처리 기능 구현
+[ ] 정책 준수 여부 감사 리포트 생성 기능
 
-- https://github.com/actions/hello-world-docker-action
-- https://github.com/actions/typescript-action
-- https://github.com/actions/hello-world-javascript-action
-- https://github.com/actions/javascript-action
-- https://github.com/actions/starter-workflows
+### 🧪 테스트 및 문서화
+[ ] GitHub API 모킹을 활용한 단위 테스트 작성
+[ ] 실제 테스트 조직을 활용한 통합 테스트 시나리오 작성
+[ ] 사용자 가이드 및 정책 템플릿 예제 문서 작성
+[ ] Terraform 대안 비교 문서 작성
 
-참고독s
-- https://docs.github.com/ko/actions/security-for-github-actions/security-guides/automatic-token-authentication
-- https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#update-a-repository
+💡 **추가 제안 기능:**
+- `gz repo-config diff` - 현재 설정과 목표 설정 비교
+- `gz repo-config audit` - 조직 전체 정책 준수 리포트
+- 웹훅 설정 관리 기능
+- 브랜치 보호 규칙 일괄 관리
+- GitHub Actions 권한 정책 관리
 
-env
-https://stackoverflow.com/questions/73955908/how-to-use-env-variable-as-default-value-for-input-in-github-actions
+---
 
-```
-        const repoUpdateResult = octokit.repos.update({
-          owner: repoOwner,
-          repo: repo.name,
+## 🔍 기존 기능 개선사항
 
-          name: repo.name,
-          // description: repo.description,
-          // homepage: repo.homepage,
-          private: repoMeta.private,
-          visibility: repoMeta.visibility,
-          security_and_analysis: repoMeta.security_and_analysis,
+### 📦 bulk-clone 성능 개선
+[ ] 병렬 클론 옵션 추가 (goroutine 활용)
+[ ] 중단된 작업 재개 기능 구현 (상태 저장)
+[ ] 프로그레스 바 세분화 (리포지토리별 진행률)
 
-          has_issues: repoMeta.has_issues,
-          has_projects: repoMeta.has_projects,
-          has_wiki: repoMeta.has_wiki,
-
-          default_branch: repo.default_branch,
-
-          allow_squash_merge: repoMeta.allow_squash_merge,
-          allow_merge_commit: repoMeta.allow_merge_commit,
-          allow_rebase_merge: repoMeta.allow_rebase_merge,
-
-          delete_branch_on_merge: repoMeta.delete_branch_on_merge,
-
-          allow_update_branch: repoMeta.allow_update_branch,
-
-          use_squash_pr_title_as_default: repoMeta.use_squash_pr_title_as_default,
-
-          squash_merge_commit_title: repoMeta.squash_merge_commit_title,
-          squash_merge_commit_message: repoMeta.squash_merge_commit_message,
-
-          merge_commit_title: repoMeta.merge_commit_title,
-          merge_commit_message: repoMeta.merge_commit_message,
-
-          archived: repoMeta.archived,
-          allow_forking: repoMeta.allow_forking,
-          allow_auto_merge: repoMeta.allow_auto_merge,
-
-          web_commit_signoff_required: repoMeta.web_commit_signoff_required,
-        })
-```
-### 토큰 권한 문서
-https://docs.github.com/ko/rest/authentication/permissions-required-for-github-apps?apiVersion=2022-11-28
-https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication
+### 🔧 설정 시스템 통합
+[ ] 모든 명령어에 대한 통합 설정 파일 체계 설계
+[ ] 설정 우선순위 문서화 (CLI 플래그 > 환경변수 > 설정파일)
+[ ] 설정 마이그레이션 도구 구현
