@@ -1,0 +1,128 @@
+# gzh.yaml Schema Definition
+# Version: 1.0.0
+# This schema defines the structure for gzh.yaml configuration files
+
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "GZH Configuration Schema"
+description: "Schema for gzh-manager-go configuration files"
+type: object
+required:
+  - version
+properties:
+  version:
+    type: string
+    description: "Configuration schema version"
+    pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    example: "1.0.0"
+  
+  default_provider:
+    type: string
+    description: "Default Git provider when not specified"
+    enum: ["github", "gitlab", "gitea", "gogs"]
+    default: "github"
+  
+  providers:
+    type: object
+    description: "Git provider configurations"
+    properties:
+      github:
+        $ref: "#/definitions/provider"
+      gitlab:
+        $ref: "#/definitions/provider"
+      gitea:
+        $ref: "#/definitions/provider"
+      gogs:
+        $ref: "#/definitions/provider"
+    additionalProperties: false
+
+definitions:
+  provider:
+    type: object
+    required:
+      - token
+    properties:
+      token:
+        type: string
+        description: "Authentication token (supports environment variables)"
+        pattern: "^(\\$\\{[A-Z_]+\\}|[a-zA-Z0-9_-]+)$"
+        example: "${GITHUB_TOKEN}"
+      
+      orgs:
+        type: array
+        description: "Organizations to manage (GitHub/Gitea/Gogs)"
+        items:
+          $ref: "#/definitions/gitTarget"
+      
+      groups:
+        type: array
+        description: "Groups to manage (GitLab)"
+        items:
+          $ref: "#/definitions/gitTarget"
+  
+  gitTarget:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: "Organization/group name"
+        example: "gizzahub"
+      
+      visibility:
+        type: string
+        description: "Repository visibility filter"
+        enum: ["public", "private", "all"]
+        default: "all"
+      
+      recursive:
+        type: boolean
+        description: "Include subgroups (GitLab)"
+        default: false
+      
+      flatten:
+        type: boolean
+        description: "Flatten directory structure"
+        default: false
+      
+      match:
+        type: string
+        description: "Regex pattern to filter repositories"
+        example: "^gzh-.*"
+      
+      clone_dir:
+        type: string
+        description: "Target directory for cloning"
+        example: "./github"
+      
+      exclude:
+        type: array
+        description: "Repository names to exclude"
+        items:
+          type: string
+        example: ["test-repo", "archived-*"]
+      
+      strategy:
+        type: string
+        description: "Clone/update strategy"
+        enum: ["reset", "pull", "fetch"]
+        default: "reset"
+
+examples:
+  - version: "1.0.0"
+    default_provider: "github"
+    providers:
+      github:
+        token: "${GITHUB_TOKEN}"
+        orgs:
+          - name: "gizzahub"
+            visibility: "all"
+            match: "^gzh-.*"
+            clone_dir: "./github"
+      gitlab:
+        token: "${GITLAB_TOKEN}"
+        groups:
+          - name: "gizzahub/infra"
+            visibility: "public"
+            recursive: true
+            flatten: true

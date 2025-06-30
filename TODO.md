@@ -9,7 +9,7 @@
 ## 🔧 gzh.yaml 스키마 기반 설정 시스템 구현
 
 ### 📋 핵심 설정 파서 구현
-[ ] gzh.yaml 스키마 정의 문서 작성 (YAML/JSON Schema 형식)
+[x] gzh.yaml 스키마 정의 문서 작성 (YAML/JSON Schema 형식)
 [ ] Config, Provider, GitTarget 구조체 구현 (`pkg/config/schema.go`)
 [ ] YAML 파서 및 환경변수 치환 기능 구현 (`os.ExpandEnv` 활용)
 [ ] 설정 파일 탐색 로직 구현 (우선순위: `./gzh.yaml` → `~/.config/gzh.yaml`)
