@@ -18,7 +18,7 @@
 ### 🔄 bulk-clone 명령어 gzh.yaml 통합
 [x] 기존 bulk-clone 설정과 gzh.yaml 스키마 호환성 분석
 [x] gzh.yaml 기반 bulk-clone 실행 옵션 추가 (`--use-gzh-config`)
-[ ] provider별 조직/그룹 일괄 클론 기능 구현
+[x] provider별 조직/그룹 일괄 클론 기능 구현
 [ ] visibility 필터링 로직 구현 (public/private/all)
 [ ] 정규식 기반 리포지토리 필터링 구현 (`match` 필드)
 [ ] flatten 옵션에 따른 디렉토리 구조 생성 로직 구현
