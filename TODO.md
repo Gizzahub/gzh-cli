@@ -51,11 +51,10 @@ Jetbrains 설정변경 감지 https://github.com/fsnotify/fsnotify
 예: C:\Users\<YourUserName>\AppData\Roaming\JetBrains\IntelliJIdea2023.2\
 
 setting sync 오류나서 이런것들 강제 수정
-- [ ] ~/.config/JetBrains/PyCharm2024.3/settingsSync/options/filetypes.xml
-      <mapping pattern="Dockerfile.*" type="Dockerfile" />
+- [moved to SKIP.md] ~/.config/JetBrains/PyCharm2024.3/settingsSync/options/filetypes.xml
 
 ## 개발환경 Save & Load
-- [ ] kubeconfig
+- [x] kubeconfig
 - [ ] docker config
 - [ ] aws config
 - [ ] aws credentials
