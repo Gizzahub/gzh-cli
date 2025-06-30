@@ -58,7 +58,7 @@ setting sync 오류나서 이런것들 강제 수정
 - [x] docker config
 - [x] aws config
 - [x] aws credentials
-- [ ] gcloud config
+- [x] gcloud config
 - [ ] gcloud credentials
 - [ ] ssh config
 - ...
