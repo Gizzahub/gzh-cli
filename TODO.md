@@ -10,7 +10,7 @@
 
 ### 📋 핵심 설정 파서 구현
 [x] gzh.yaml 스키마 정의 문서 작성 (YAML/JSON Schema 형식)
-[ ] Config, Provider, GitTarget 구조체 구현 (`pkg/config/schema.go`)
+[x] Config, Provider, GitTarget 구조체 구현 (`pkg/config/schema.go`)
 [ ] YAML 파서 및 환경변수 치환 기능 구현 (`os.ExpandEnv` 활용)
 [ ] 설정 파일 탐색 로직 구현 (우선순위: `./gzh.yaml` → `~/.config/gzh.yaml`)
 [ ] 설정 파일 유효성 검증 기능 구현 (필수 필드, enum 값 검증)
