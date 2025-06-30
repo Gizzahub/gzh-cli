@@ -32,7 +32,7 @@
 - [x] sdkman
 - [x] port
 - [x] apt-get
-- [ ] rbenv
+- [x] rbenv
 
 업데이트 방식
 - minor latest

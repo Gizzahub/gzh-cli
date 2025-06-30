@@ -37,6 +37,7 @@ Examples:
 	cmd.AddCommand(newAlwaysLatestSdkmanCmd())
 	cmd.AddCommand(newAlwaysLatestPortCmd())
 	cmd.AddCommand(newAlwaysLatestAptCmd())
+	cmd.AddCommand(newAlwaysLatestRbenvCmd())
 
 	return cmd
 }
