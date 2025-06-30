@@ -21,6 +21,7 @@ including validation, initialization, and migration tools.`,
 	// Add subcommands
 	cmd.AddCommand(newValidateCmd())
 	cmd.AddCommand(newInitCmd())
+	cmd.AddCommand(newProfileCmd())
 
 	return cmd
 }
