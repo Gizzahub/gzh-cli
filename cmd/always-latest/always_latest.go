@@ -12,10 +12,10 @@ func NewAlwaysLatestCmd() *cobra.Command {
 This command provides automated updating for various development environment tools:
 - asdf: Universal version manager for programming language runtimes
 - brew: macOS package manager (Homebrew)
+- port: MacPorts package manager for macOS
 - apt-get: Debian/Ubuntu package manager  
 - rbenv: Ruby version manager
 - sdkman: Software Development Kit Manager (Java ecosystem)
-- port: MacPorts package manager
 
 Supports two update strategies:
 - minor: Update to latest patch/minor version (safer)
@@ -35,6 +35,7 @@ Examples:
 	cmd.AddCommand(newAlwaysLatestAsdfCmd())
 	cmd.AddCommand(newAlwaysLatestBrewCmd())
 	cmd.AddCommand(newAlwaysLatestSdkmanCmd())
+	cmd.AddCommand(newAlwaysLatestPortCmd())
 
 	return cmd
 }

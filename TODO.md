@@ -30,7 +30,7 @@
 - [x] asdf
 - [x] brew
 - [x] sdkman
-- [ ] port
+- [x] port
 - [ ] apt-get
 - [ ] rbenv
 
