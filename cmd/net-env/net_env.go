@@ -13,6 +13,7 @@ switching between different network environments. It provides:
 - Daemon/service status monitoring
 - Service dependency tracking
 - Network environment transition management
+- WiFi change event monitoring and action triggers
 - System state verification
 
 This is useful when:
@@ -29,11 +30,18 @@ Examples:
   gz net-env daemon status --service ssh
   
   # Monitor network-related services
-  gz net-env daemon monitor --network-services`,
+  gz net-env daemon monitor --network-services
+  
+  # Monitor WiFi changes and trigger actions
+  gz net-env wifi monitor
+  
+  # Show current WiFi status
+  gz net-env wifi status`,
 		SilenceUsage: true,
 	}
 
 	cmd.AddCommand(newDaemonCmd())
+	cmd.AddCommand(newWifiCmd())
 
 	return cmd
 }

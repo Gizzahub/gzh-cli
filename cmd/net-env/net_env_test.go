@@ -3,6 +3,7 @@ package net_env
 import (
 	"testing"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,12 +17,26 @@ func TestNewNetEnvCmd(t *testing.T) {
 
 	// Check subcommands
 	subcommands := cmd.Commands()
-	assert.Len(t, subcommands, 1)
+	assert.Len(t, subcommands, 2)
 
 	// Verify daemon subcommand exists
-	daemonCmd := subcommands[0]
+	var daemonCmd, wifiCmd *cobra.Command
+	for _, subcmd := range subcommands {
+		switch subcmd.Use {
+		case "daemon":
+			daemonCmd = subcmd
+		case "wifi":
+			wifiCmd = subcmd
+		}
+	}
+
+	assert.NotNil(t, daemonCmd)
 	assert.Equal(t, "daemon", daemonCmd.Use)
 	assert.Equal(t, "Monitor and manage system daemons", daemonCmd.Short)
+
+	assert.NotNil(t, wifiCmd)
+	assert.Equal(t, "wifi", wifiCmd.Use)
+	assert.Equal(t, "Monitor WiFi changes and trigger actions", wifiCmd.Short)
 }
 
 func TestNetEnvCmdStructure(t *testing.T) {
@@ -49,6 +64,7 @@ func TestNetEnvCmdHelpContent(t *testing.T) {
 	assert.Contains(t, longDesc, "Daemon/service status monitoring")
 	assert.Contains(t, longDesc, "Service dependency tracking")
 	assert.Contains(t, longDesc, "Network environment transition management")
+	assert.Contains(t, longDesc, "WiFi change event monitoring and action triggers")
 	assert.Contains(t, longDesc, "System state verification")
 
 	// Verify use cases are mentioned
@@ -56,4 +72,8 @@ func TestNetEnvCmdHelpContent(t *testing.T) {
 	assert.Contains(t, longDesc, "Switching VPN connections")
 	assert.Contains(t, longDesc, "Managing services that depend on network connectivity")
 	assert.Contains(t, longDesc, "Verifying system state after network changes")
+
+	// Verify WiFi examples are included
+	assert.Contains(t, longDesc, "gz net-env wifi monitor")
+	assert.Contains(t, longDesc, "gz net-env wifi status")
 }
