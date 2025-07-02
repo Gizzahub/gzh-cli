@@ -1,0 +1,68 @@
+# 📄 .github/gzh/repo-settings.yaml
+# 외부에서 실행되는 설정 자동화 도구용 리포지터리 설정 정의
+# ✅ secrets, collaborators 등 포함 가능
+# 🚫 공개 리포지터리에서는 저장하지 마십시오
+
+repository:
+  name: gizzahub-web
+  description: Gizzahub 프론트엔드 웹 프로젝트
+  private: false
+  default_branch: main
+  homepage: https://gizzahub.dev
+  topics:
+    - gizzahub
+    - sveltekit
+    - frontend
+  has_issues: true
+  has_projects: false
+  has_wiki: false
+
+  allow_squash_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: true
+  delete_branch_on_merge: true
+
+  collaborators:
+    - username: daeve
+      permission: admin
+    - username: joonas
+      permission: push
+    - username: extern-dev
+      permission: triage
+
+  branch_protection:
+    main:
+      required_status_checks:
+        strict: true
+        contexts:
+          - build
+          - lint
+      enforce_admins: true
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+      restrictions:
+        users: []
+        teams:
+          - core-devs
+
+  environments:
+    - name: production
+      reviewers:
+        - daeve
+        - core-devs
+      deployment_branch_policy:
+        protected_branches: true
+        custom_branch_policies: false
+
+    - name: staging
+      reviewers:
+        - joonas
+      deployment_branch_policy:
+        protected_branches: true
+        custom_branch_policies: false
+
+  secrets:
+    - name: SENTRY_DSN
+      value: https://example.com/sentry-dsn/production
+    - name: API_KEY
+      value: $ENV:PRODUCTION_API_KEY  # 실행 환경의 ENV에서 가져오는 방식도 지원

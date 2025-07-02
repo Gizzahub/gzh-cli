@@ -1,0 +1,75 @@
+$schema: https://json-schema.org/draft-07/schema
+title: GitHub Organization Settings Schema
+type: object
+required:
+  - organization
+
+properties:
+  organization:
+    type: string
+    description: 조직 슬러그 (예: gizzahub)
+
+  display_name:
+    type: string
+    description: 조직 공개 이름
+
+  description:
+    type: string
+
+  company:
+    type: string
+  location:
+    type: string
+  email:
+    type: string
+    format: email
+  billing_email:
+    type: string
+    format: email
+  twitter_username:
+    type: string
+  website_url:
+    type: string
+    format: uri
+
+  default_repository_permission:
+    type: string
+    enum: [read, write, admin, none]
+
+  members_can_create_repositories:
+    type: boolean
+
+  members_allowed_repository_creation_type:
+    type: string
+    enum: [all, private, internal, none]
+
+  web_commit_signoff_required:
+    type: boolean
+
+  two_factor_requirement_enabled:
+    type: boolean
+
+  teams:
+    type: array
+    description: 조직 내 팀 구성
+    items:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        privacy:
+          type: string
+          enum: [closed, secret]
+        maintainers:
+          type: array
+          items:
+            type: string
+        members:
+          type: array
+          items:
+            type: string
+
+additionalProperties: false

@@ -1,0 +1,132 @@
+$schema: https://json-schema.org/draft-07/schema
+title: Full Repository Settings Schema
+type: object
+required:
+  - repository
+
+properties:
+  repository:
+    type: object
+    description: 리포지터리 설정 전체 정의
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: 리포지터리 이름
+      description:
+        type: string
+        description: 설명
+      private:
+        type: boolean
+        description: 비공개 여부
+      default_branch:
+        type: string
+        description: 기본 브랜치
+      homepage:
+        type: string
+        format: uri
+        description: 홈페이지 URL
+      topics:
+        type: array
+        items:
+          type: string
+        description: 토픽 목록
+      has_issues:
+        type: boolean
+      has_projects:
+        type: boolean
+      has_wiki:
+        type: boolean
+      allow_squash_merge:
+        type: boolean
+      allow_merge_commit:
+        type: boolean
+      allow_rebase_merge:
+        type: boolean
+      delete_branch_on_merge:
+        type: boolean
+
+      collaborators:
+        type: array
+        description: 협업자 목록
+        items:
+          type: object
+          required: [username, permission]
+          properties:
+            username:
+              type: string
+            permission:
+              type: string
+              enum: [pull, push, admin, maintain, triage]
+
+      branch_protection:
+        type: object
+        description: 브랜치 보호 규칙
+        patternProperties:
+          "^[a-zA-Z0-9._\\-/]+$":
+            type: object
+            properties:
+              required_status_checks:
+                type: object
+                properties:
+                  strict:
+                    type: boolean
+                  contexts:
+                    type: array
+                    items:
+                      type: string
+              enforce_admins:
+                type: boolean
+              required_pull_request_reviews:
+                type: object
+                properties:
+                  required_approving_review_count:
+                    type: integer
+              restrictions:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: string
+                  teams:
+                    type: array
+                    items:
+                      type: string
+
+      environments:
+        type: array
+        description: 배포 환경 목록
+        items:
+          type: object
+          required: [name]
+          properties:
+            name:
+              type: string
+            reviewers:
+              type: array
+              items:
+                type: string
+            deployment_branch_policy:
+              type: object
+              properties:
+                protected_branches:
+                  type: boolean
+                custom_branch_policies:
+                  type: boolean
+
+      secrets:
+        type: array
+        description: GitHub Secrets 정의
+        items:
+          type: object
+          required: [name]
+          properties:
+            name:
+              type: string
+            value:
+              type: string
+              description: 실제 값 또는 "$ENV:XXX" 형식의 참조 문자열
+
+additionalProperties: false
