@@ -17,6 +17,7 @@ type RepoConfigClient struct {
 	baseURL     string
 	httpClient  *http.Client
 	rateLimiter *RateLimiter
+	logger      *ChangeLogger
 }
 
 // Repository represents a GitHub repository with configuration details
@@ -175,6 +176,11 @@ func NewRepoConfigClient(token string) *RepoConfigClient {
 		},
 		rateLimiter: NewRateLimiter(),
 	}
+}
+
+// SetLogger sets the change logger for this client
+func (c *RepoConfigClient) SetLogger(logger *ChangeLogger) {
+	c.logger = logger
 }
 
 // SetTimeout configures the HTTP client timeout
@@ -421,6 +427,18 @@ func (c *RepoConfigClient) UpdateRepositoryConfiguration(ctx context.Context, ow
 
 // UpdateRepositoryConfigurationWithConfirmation updates repository configuration with optional confirmation prompts
 func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx context.Context, owner, repo string, config *RepositoryConfig, confirmationPrompt *ConfirmationPrompt) error {
+	// Create operation context for logging
+	var opCtx *OperationContext
+	if c.logger != nil {
+		opCtx = c.logger.CreateOperationContext(generateChangeID(), "repository_update")
+		opCtx.Organization = owner
+		opCtx.Repository = fmt.Sprintf("%s/%s", owner, repo)
+
+		// Log operation start
+		c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+			fmt.Sprintf("Starting repository configuration update for %s/%s", owner, repo), nil)
+	}
+
 	// Analyze changes for sensitivity if confirmation prompt is provided
 	if confirmationPrompt != nil {
 		// Get current configuration for comparison
@@ -429,10 +447,19 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 			// If we can't get current config, still proceed but warn
 			// This handles cases like tests or new repositories
 			fmt.Printf("Warning: Could not get current configuration for analysis: %v\n", err)
+			if c.logger != nil {
+				c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "configuration",
+					"Could not get current configuration for change analysis", err)
+			}
 		} else {
 			changes := confirmationPrompt.AnalyzeRepositoryChanges(ctx, owner, repo, currentConfig, config)
 
 			if len(changes) > 0 {
+				if c.logger != nil {
+					c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+						fmt.Sprintf("Detected %d sensitive changes requiring confirmation", len(changes)), nil)
+				}
+
 				request := &ConfirmationRequest{
 					Changes:     changes,
 					Operation:   "repository_update",
@@ -442,16 +469,33 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 
 				result, err := confirmationPrompt.RequestConfirmation(ctx, request)
 				if err != nil {
+					if c.logger != nil {
+						c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "confirmation",
+							"User confirmation failed", err)
+					}
 					return fmt.Errorf("confirmation failed: %w", err)
 				}
 
 				if !result.Confirmed {
+					if c.logger != nil {
+						c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "confirmation",
+							"Operation cancelled by user", nil)
+					}
 					return fmt.Errorf("operation cancelled: %s", result.Reason)
+				}
+
+				if c.logger != nil {
+					c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "confirmation",
+						fmt.Sprintf("User confirmed operation: %s", result.UserChoice), nil)
 				}
 
 				// If user chose to skip high/critical risk changes, filter them out
 				if len(result.SkippedRisks) > 0 {
 					config = c.filterConfigBySkippedRisks(currentConfig, config, result.SkippedRisks)
+					if c.logger != nil {
+						c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+							fmt.Sprintf("Filtered config to skip %d risk levels", len(result.SkippedRisks)), nil)
+					}
 				}
 			}
 		}
@@ -493,7 +537,17 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 
 	// Update permissions
 	if err := c.UpdateRepositoryPermissions(ctx, owner, repo, config.Permissions); err != nil {
+		if c.logger != nil && opCtx != nil {
+			c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "permissions",
+				"Failed to update repository permissions", err)
+		}
 		return fmt.Errorf("failed to update permissions: %w", err)
+	}
+
+	// Log successful completion
+	if c.logger != nil && opCtx != nil {
+		c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+			fmt.Sprintf("Successfully updated repository configuration for %s/%s", owner, repo), nil)
 	}
 
 	return nil
