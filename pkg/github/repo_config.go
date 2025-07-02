@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -683,4 +684,163 @@ func convertBranchProtection(bp *BranchProtection) BranchProtectionConfig {
 	}
 
 	return config
+}
+
+// BulkApplyOptions contains options for bulk application operations
+type BulkApplyOptions struct {
+	// DryRun performs a dry run without making actual changes
+	DryRun bool
+	// ConcurrentWorkers sets the number of concurrent workers (default: 5)
+	ConcurrentWorkers int
+	// ExcludeRepositories contains repository names to exclude from the operation
+	ExcludeRepositories []string
+	// IncludeRepositories contains repository names to include (if empty, all repos are included)
+	IncludeRepositories []string
+	// OnProgress callback function called for each repository processed
+	OnProgress func(repo string, current int, total int, err error)
+}
+
+// BulkApplyResult contains the result of bulk application operation
+type BulkApplyResult struct {
+	Total   int
+	Success int
+	Failed  int
+	Skipped int
+	Errors  map[string]error
+}
+
+// ApplyConfigurationToOrganization applies repository configuration to all repositories in an organization
+func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context, org string, config *RepositoryConfig, options *BulkApplyOptions) (*BulkApplyResult, error) {
+	if options == nil {
+		options = &BulkApplyOptions{
+			ConcurrentWorkers: 5,
+		}
+	}
+
+	if options.ConcurrentWorkers <= 0 {
+		options.ConcurrentWorkers = 5
+	}
+
+	// Get all repositories in the organization
+	listOptions := &ListOptions{
+		PerPage: 100,
+	}
+	repos, err := c.ListRepositories(ctx, org, listOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list repositories in organization %s: %w", org, err)
+	}
+
+	// Filter repositories based on include/exclude lists
+	filteredRepos := c.filterRepositories(repos, options)
+
+	result := &BulkApplyResult{
+		Total:  len(filteredRepos),
+		Errors: make(map[string]error),
+	}
+
+	// Create a semaphore to limit concurrent operations
+	semaphore := make(chan struct{}, options.ConcurrentWorkers)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	for i, repo := range filteredRepos {
+		wg.Add(1)
+		go func(repo *Repository, index int) {
+			defer wg.Done()
+
+			// Acquire semaphore
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+
+			var err error
+			if options.DryRun {
+				// For dry run, just validate the configuration
+				err = c.validateRepositoryConfiguration(ctx, org, repo.Name, config)
+			} else {
+				// Apply the configuration
+				err = c.UpdateRepositoryConfiguration(ctx, org, repo.Name, config)
+			}
+
+			mu.Lock()
+			if err != nil {
+				result.Failed++
+				result.Errors[repo.Name] = err
+			} else {
+				result.Success++
+			}
+
+			// Call progress callback if provided
+			if options.OnProgress != nil {
+				options.OnProgress(repo.Name, index+1, result.Total, err)
+			}
+			mu.Unlock()
+		}(repo, i)
+	}
+
+	wg.Wait()
+
+	return result, nil
+}
+
+// filterRepositories filters repositories based on include/exclude options
+func (c *RepoConfigClient) filterRepositories(repos []*Repository, options *BulkApplyOptions) []*Repository {
+	var filtered []*Repository
+
+	excludeMap := make(map[string]bool)
+	for _, repo := range options.ExcludeRepositories {
+		excludeMap[repo] = true
+	}
+
+	includeMap := make(map[string]bool)
+	if len(options.IncludeRepositories) > 0 {
+		for _, repo := range options.IncludeRepositories {
+			includeMap[repo] = true
+		}
+	}
+
+	for _, repo := range repos {
+		// Skip excluded repositories
+		if excludeMap[repo.Name] {
+			continue
+		}
+
+		// If include list is specified, only include repositories in the list
+		if len(options.IncludeRepositories) > 0 && !includeMap[repo.Name] {
+			continue
+		}
+
+		// Skip archived repositories by default
+		if repo.Archived {
+			continue
+		}
+
+		filtered = append(filtered, repo)
+	}
+
+	return filtered
+}
+
+// validateRepositoryConfiguration validates that a configuration can be applied to a repository
+func (c *RepoConfigClient) validateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
+	// Get current repository configuration to validate changes
+	current, err := c.GetRepositoryConfiguration(ctx, owner, repo)
+	if err != nil {
+		return fmt.Errorf("failed to get current configuration: %w", err)
+	}
+
+	// Validate that required fields are compatible
+	if config.Name != "" && config.Name != current.Name {
+		return fmt.Errorf("repository name cannot be changed via bulk operation")
+	}
+
+	// Validate branch protection rules
+	for branch := range config.BranchProtection {
+		// Check if branch exists (could add more validation here)
+		if branch == "" {
+			return fmt.Errorf("branch protection rule has empty branch name")
+		}
+	}
+
+	// Add more validation rules as needed
+	return nil
 }
