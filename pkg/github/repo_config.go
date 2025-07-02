@@ -416,6 +416,47 @@ func (c *RepoConfigClient) UpdateRepository(ctx context.Context, owner, repo str
 
 // UpdateRepositoryConfiguration updates comprehensive repository configuration
 func (c *RepoConfigClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
+	return c.UpdateRepositoryConfigurationWithConfirmation(ctx, owner, repo, config, nil)
+}
+
+// UpdateRepositoryConfigurationWithConfirmation updates repository configuration with optional confirmation prompts
+func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx context.Context, owner, repo string, config *RepositoryConfig, confirmationPrompt *ConfirmationPrompt) error {
+	// Analyze changes for sensitivity if confirmation prompt is provided
+	if confirmationPrompt != nil {
+		// Get current configuration for comparison
+		currentConfig, err := c.GetRepositoryConfiguration(ctx, owner, repo)
+		if err != nil {
+			// If we can't get current config, still proceed but warn
+			// This handles cases like tests or new repositories
+			fmt.Printf("Warning: Could not get current configuration for analysis: %v\n", err)
+		} else {
+			changes := confirmationPrompt.AnalyzeRepositoryChanges(ctx, owner, repo, currentConfig, config)
+
+			if len(changes) > 0 {
+				request := &ConfirmationRequest{
+					Changes:     changes,
+					Operation:   "repository_update",
+					Target:      fmt.Sprintf("%s/%s", owner, repo),
+					Description: "Update repository configuration",
+				}
+
+				result, err := confirmationPrompt.RequestConfirmation(ctx, request)
+				if err != nil {
+					return fmt.Errorf("confirmation failed: %w", err)
+				}
+
+				if !result.Confirmed {
+					return fmt.Errorf("operation cancelled: %s", result.Reason)
+				}
+
+				// If user chose to skip high/critical risk changes, filter them out
+				if len(result.SkippedRisks) > 0 {
+					config = c.filterConfigBySkippedRisks(currentConfig, config, result.SkippedRisks)
+				}
+			}
+		}
+	}
+
 	// First, update basic repository settings
 	update := &RepositoryUpdate{
 		Description:         &config.Description,
@@ -456,6 +497,98 @@ func (c *RepoConfigClient) UpdateRepositoryConfiguration(ctx context.Context, ow
 	}
 
 	return nil
+}
+
+// filterConfigBySkippedRisks creates a filtered configuration that excludes changes with skipped risk levels
+func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfig *RepositoryConfig, skippedRisks []RiskLevel) *RepositoryConfig {
+	// Create a copy of the target config
+	filteredConfig := *targetConfig
+
+	// Create a map for quick lookup of skipped risk levels
+	skipMap := make(map[RiskLevel]bool)
+	for _, risk := range skippedRisks {
+		skipMap[risk] = true
+	}
+
+	// Analyze what changes would be skipped and revert them to current values
+	prompt := NewConfirmationPrompt()
+	changes := prompt.AnalyzeRepositoryChanges(context.Background(), "", "", currentConfig, targetConfig)
+
+	for _, change := range changes {
+		if skipMap[change.Risk] {
+			// Revert this change to the current value
+			switch change.Field {
+			case "private":
+				filteredConfig.Private = currentConfig.Private
+			case "archived":
+				filteredConfig.Archived = currentConfig.Archived
+			case "default_branch":
+				filteredConfig.Settings.DefaultBranch = currentConfig.Settings.DefaultBranch
+			}
+		}
+	}
+
+	// Filter branch protection changes
+	if filteredConfig.BranchProtection != nil {
+		filteredBranchProtection := make(map[string]BranchProtectionConfig)
+		for branch, protection := range filteredConfig.BranchProtection {
+			filteredProtection := protection
+
+			// Check if any branch protection changes should be skipped
+			if currentBranchProtection, exists := currentConfig.BranchProtection[branch]; exists {
+				for _, change := range changes {
+					if change.Category == "branch_protection" && skipMap[change.Risk] {
+						switch change.Field {
+						case "required_reviews":
+							filteredProtection.RequiredReviews = currentBranchProtection.RequiredReviews
+						case "enforce_admins":
+							filteredProtection.EnforceAdmins = currentBranchProtection.EnforceAdmins
+						}
+					}
+				}
+			}
+
+			filteredBranchProtection[branch] = filteredProtection
+		}
+		filteredConfig.BranchProtection = filteredBranchProtection
+	}
+
+	// Filter permission changes
+	if filteredConfig.Permissions.Teams != nil || filteredConfig.Permissions.Users != nil {
+		filteredTeams := make(map[string]string)
+		filteredUsers := make(map[string]string)
+
+		// Copy current permissions for skipped changes
+		for team, perm := range currentConfig.Permissions.Teams {
+			filteredTeams[team] = perm
+		}
+		for user, perm := range currentConfig.Permissions.Users {
+			filteredUsers[user] = perm
+		}
+
+		// Apply only non-skipped permission changes
+		for _, change := range changes {
+			if change.Category == "permissions" && !skipMap[change.Risk] {
+				if change.Field == "team_permission" {
+					for team, perm := range targetConfig.Permissions.Teams {
+						filteredTeams[team] = perm
+					}
+				}
+				if change.Field == "user_permission" {
+					for user, perm := range targetConfig.Permissions.Users {
+						filteredUsers[user] = perm
+					}
+				}
+			}
+		}
+
+		filteredConfig.Permissions = PermissionsConfig{
+			Teams: filteredTeams,
+			Users: filteredUsers,
+		}
+	}
+
+	return &filteredConfig
 }
 
 // UpdateBranchProtectionConfig updates branch protection from config format
@@ -698,6 +831,8 @@ type BulkApplyOptions struct {
 	IncludeRepositories []string
 	// OnProgress callback function called for each repository processed
 	OnProgress func(repo string, current int, total int, err error)
+	// ConfirmationPrompt enables interactive confirmation for sensitive changes
+	ConfirmationPrompt *ConfirmationPrompt
 }
 
 // BulkApplyResult contains the result of bulk application operation
@@ -738,6 +873,47 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 		Errors: make(map[string]error),
 	}
 
+	// If confirmation prompt is enabled, analyze all changes for bulk confirmation
+	if options.ConfirmationPrompt != nil && !options.DryRun {
+		allChanges := []SensitiveChange{}
+
+		// Analyze changes for a sample of repositories to get an overview
+		sampleSize := 3
+		if len(filteredRepos) < sampleSize {
+			sampleSize = len(filteredRepos)
+		}
+
+		for i := 0; i < sampleSize; i++ {
+			repo := filteredRepos[i]
+			currentConfig, err := c.GetRepositoryConfiguration(ctx, org, repo.Name)
+			if err != nil {
+				continue // Skip this repo for analysis
+			}
+
+			repoChanges := options.ConfirmationPrompt.AnalyzeRepositoryChanges(ctx, org, repo.Name, currentConfig, config)
+			allChanges = append(allChanges, repoChanges...)
+		}
+
+		if len(allChanges) > 0 {
+			request := &ConfirmationRequest{
+				Changes:     allChanges,
+				Operation:   "bulk_update",
+				Target:      org,
+				BatchSize:   len(filteredRepos),
+				Description: fmt.Sprintf("Apply configuration to %d repositories in %s", len(filteredRepos), org),
+			}
+
+			confirmResult, err := options.ConfirmationPrompt.RequestConfirmation(ctx, request)
+			if err != nil {
+				return nil, fmt.Errorf("bulk confirmation failed: %w", err)
+			}
+
+			if !confirmResult.Confirmed {
+				return nil, fmt.Errorf("bulk operation cancelled: %s", confirmResult.Reason)
+			}
+		}
+	}
+
 	// Create a semaphore to limit concurrent operations
 	semaphore := make(chan struct{}, options.ConcurrentWorkers)
 	var wg sync.WaitGroup
@@ -757,8 +933,12 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 				// For dry run, just validate the configuration
 				err = c.validateRepositoryConfiguration(ctx, org, repo.Name, config)
 			} else {
-				// Apply the configuration
-				err = c.UpdateRepositoryConfiguration(ctx, org, repo.Name, config)
+				// Apply the configuration with confirmation if provided
+				if options.ConfirmationPrompt != nil {
+					err = c.UpdateRepositoryConfigurationWithConfirmation(ctx, org, repo.Name, config, options.ConfirmationPrompt)
+				} else {
+					err = c.UpdateRepositoryConfiguration(ctx, org, repo.Name, config)
+				}
 			}
 
 			mu.Lock()
