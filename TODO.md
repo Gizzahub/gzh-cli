@@ -43,7 +43,7 @@
 [x] `gz repo-config` 명령어 구조 설계 (list/apply/validate 서브커맨드)
 [x] GitHub API 클라이언트 래퍼 구현 (`pkg/github/repo_config.go`)
 [x] 리포지토리 설정 스키마 정의 (YAML 형식)
-[ ] API Rate Limiting 처리 로직 구현 (재시도, 대기 시간 계산)
+[x] API Rate Limiting 처리 로직 구현 (재시도, 대기 시간 계산)
 
 ### ⚙️ 리포지토리 설정 관리 구현
 [ ] 리포지토리 현재 설정 조회 기능 구현 (`repos.get` API)
