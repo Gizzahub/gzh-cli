@@ -20,7 +20,8 @@
       "Bash(grep:*)",
       "Bash(chmod:*)",
       "Bash(cat:*)",
-      "Bash(go run:*)"
+      "Bash(go run:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
