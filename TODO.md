@@ -79,6 +79,53 @@
 
 ---
 
+## 🔄 Bulk Clone 기능 구현 (완료)
+
+### 📋 기본 기능
+[x] bulk-clone cli
+  - [x] -o organization name: `-o ScriptonBasestar`
+  - [x] -t targetPath: `-t $HOME/mywork/ScriptonBasestar`
+  - [x] -p proto: `-p https` or `-p ssh`
+  - [x] -a auth: `-a token` 토큰이 있으면 private repo도 clone
+  - [x] -s strategy: `-s reset` or `-s pull` or `-s fetch`
+[x] bulk-clone.yaml 설정파일 지원
+[x] bulk-clone.yaml override bulk-clone.home.yaml bulk-clone.work.yaml
+[x] bulk-clone.yaml 설정파일 예시
+[x] bulk-clone.yaml schema
+
+### 🔌 Provider별 구현
+[x] Github org bulk-clone cli
+[x] Gitlab group bulk-clone cli
+
+---
+
+## 🔑 SSH Config 관리
+[x] ssh config 설정
+[x] config 설정 만들어내기
+
+---
+
+## 🔄 Always Latest (패키지 매니저 업데이트)
+[x] asdf
+[x] brew  
+[x] sdkman
+[x] port
+[x] apt-get
+[x] rbenv
+
+---
+
+## 💾 개발환경 Save & Load
+[x] kubeconfig
+[x] docker config
+[x] aws config
+[x] aws credentials
+[x] gcloud config
+[x] gcloud credentials
+[x] ssh config
+
+---
+
 ## 🔍 기존 기능 개선사항
 
 ### 📦 bulk-clone 성능 개선
@@ -90,3 +137,10 @@
 [ ] 모든 명령어에 대한 통합 설정 파일 체계 설계
 [ ] 설정 우선순위 문서화 (CLI 플래그 > 환경변수 > 설정파일)
 [ ] 설정 마이그레이션 도구 구현
+
+---
+
+## 🌐 네트워크 환경 전환
+[ ] daemon 모니터링
+[ ] hook wifi change event? -> action
+[ ] action: vpn, dns, proxy, host 등 변경
