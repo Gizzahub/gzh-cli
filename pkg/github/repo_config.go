@@ -428,7 +428,7 @@ func (c *RepoConfigClient) UpdateRepositoryConfiguration(ctx context.Context, ow
 // UpdateRepositoryConfigurationWithConfirmation updates repository configuration with optional confirmation prompts
 func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx context.Context, owner, repo string, config *RepositoryConfig, confirmationPrompt *ConfirmationPrompt) error {
 	// Create operation context for logging
-	var opCtx *OperationContext
+	var opCtx *operationContext
 	if c.logger != nil {
 		opCtx = c.logger.CreateOperationContext(generateChangeID(), "repository_update")
 		opCtx.Organization = owner

@@ -22,8 +22,8 @@ type GitHubProviderFactory interface {
 	GetProviderName() string
 }
 
-// GitHubProviderFactoryImpl implements the GitHubProviderFactory interface
-type GitHubProviderFactoryImpl struct {
+// gitHubProviderFactoryImpl implements the GitHubProviderFactory interface
+type gitHubProviderFactoryImpl struct {
 	environment env.Environment
 }
 
@@ -33,18 +33,18 @@ func NewGitHubProviderFactory(environment env.Environment) GitHubProviderFactory
 		environment = env.NewOSEnvironment()
 	}
 	
-	return &GitHubProviderFactoryImpl{
+	return &gitHubProviderFactoryImpl{
 		environment: environment,
 	}
 }
 
 // CreateCloner creates a GitHub cloner with the specified token
-func (f *GitHubProviderFactoryImpl) CreateCloner(ctx context.Context, token string) (GitHubCloner, error) {
+func (f *gitHubProviderFactoryImpl) CreateCloner(ctx context.Context, token string) (GitHubCloner, error) {
 	return f.CreateClonerWithEnv(ctx, token, f.environment)
 }
 
 // CreateClonerWithEnv creates a GitHub cloner with a specific environment
-func (f *GitHubProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitHubCloner, error) {
+func (f *gitHubProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitHubCloner, error) {
 	if token == "" {
 		// Try to get token from environment
 		token = environment.Get(env.CommonEnvironmentKeys.GitHubToken)
@@ -55,14 +55,14 @@ func (f *GitHubProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, tok
 	}
 	
 	// Create a specific GitHub cloner implementation
-	return &GitHubClonerImpl{
+	return &gitHubClonerImpl{
 		Token:       token,
 		Environment: environment,
 	}, nil
 }
 
 // CreateChangeLogger creates a GitHub change logger
-func (f *GitHubProviderFactoryImpl) CreateChangeLogger(ctx context.Context, changelog *ChangeLog, options *LoggerOptions) (*ChangeLogger, error) {
+func (f *gitHubProviderFactoryImpl) CreateChangeLogger(ctx context.Context, changelog *ChangeLog, options *LoggerOptions) (*ChangeLogger, error) {
 	if changelog == nil {
 		// Create a default changelog with nil dependencies for basic logging
 		// In production, these would be injected properly
@@ -73,7 +73,7 @@ func (f *GitHubProviderFactoryImpl) CreateChangeLogger(ctx context.Context, chan
 }
 
 // GetProviderName returns the provider name
-func (f *GitHubProviderFactoryImpl) GetProviderName() string {
+func (f *gitHubProviderFactoryImpl) GetProviderName() string {
 	return "github"
 }
 
@@ -95,14 +95,14 @@ type GitHubCloner interface {
 	GetProviderName() string
 }
 
-// GitHubClonerImpl implements the GitHubCloner interface
-type GitHubClonerImpl struct {
+// gitHubClonerImpl implements the GitHubCloner interface
+type gitHubClonerImpl struct {
 	Token       string
 	Environment env.Environment
 }
 
 // CloneOrganization clones all repositories from a GitHub organization
-func (g *GitHubClonerImpl) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
+func (g *gitHubClonerImpl) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token)
@@ -113,7 +113,7 @@ func (g *GitHubClonerImpl) CloneOrganization(ctx context.Context, orgName, targe
 }
 
 // CloneRepository clones a specific repository
-func (g *GitHubClonerImpl) CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error {
+func (g *gitHubClonerImpl) CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token)
@@ -125,17 +125,17 @@ func (g *GitHubClonerImpl) CloneRepository(ctx context.Context, owner, repo, tar
 }
 
 // SetToken sets the GitHub token for authentication
-func (g *GitHubClonerImpl) SetToken(token string) {
+func (g *gitHubClonerImpl) SetToken(token string) {
 	g.Token = token
 }
 
 // GetToken returns the current GitHub token
-func (g *GitHubClonerImpl) GetToken() string {
+func (g *gitHubClonerImpl) GetToken() string {
 	return g.Token
 }
 
 // GetProviderName returns the provider name
-func (g *GitHubClonerImpl) GetProviderName() string {
+func (g *gitHubClonerImpl) GetProviderName() string {
 	return "github"
 }
 

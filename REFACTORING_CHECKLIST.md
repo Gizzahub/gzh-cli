@@ -79,12 +79,12 @@
 ### 3. 🔧 Interface Design & Dependency Management
 
 #### API Surface Reduction
-- [ ] Make internal types unexported
+- [x] Make internal types unexported
   - 📌 **Why**: Large public API surface increases maintenance
   - 🧠 **How**: Lowercase first letter of internal types
   - 📁 **Files**: Review all exported types in `pkg/`
 
-- [ ] Create facade interfaces for complex operations
+- [x] Create facade interfaces for complex operations
   - 📌 **Why**: Simplify API usage and hide implementation
   - 🧠 **How**: Define high-level operation interfaces
   - 📁 **Files**: `pkg/*/facade.go`

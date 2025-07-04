@@ -257,7 +257,7 @@ func (cfg *bulkCloneConfig) mergeConfig(overlay *bulkCloneConfig) {
 }
 
 // mergeDefaults merges default configuration settings
-func (cfg *bulkCloneConfig) mergeDefaults(overlayDefault *BulkCloneDefault) {
+func (cfg *bulkCloneConfig) mergeDefaults(overlayDefault *bulkCloneDefault) {
 	// Merge protocol if specified
 	if overlayDefault.Protocol != "" {
 		cfg.Default.Protocol = overlayDefault.Protocol

@@ -22,8 +22,8 @@ type ProviderFactory interface {
 	IsProviderSupported(providerName string) bool
 }
 
-// ProviderFactoryImpl implements the ProviderFactory interface
-type ProviderFactoryImpl struct {
+// providerFactoryImpl implements the ProviderFactory interface
+type providerFactoryImpl struct {
 	environment env.Environment
 	logger      Logger
 }
@@ -34,19 +34,19 @@ func NewProviderFactory(environment env.Environment, logger Logger) ProviderFact
 		environment = env.NewOSEnvironment()
 	}
 	
-	return &ProviderFactoryImpl{
+	return &providerFactoryImpl{
 		environment: environment,
 		logger:      logger,
 	}
 }
 
 // CreateCloner creates a provider cloner for the specified provider
-func (f *ProviderFactoryImpl) CreateCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
+func (f *providerFactoryImpl) CreateCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
 	return f.CreateClonerWithEnv(ctx, providerName, token, f.environment)
 }
 
 // CreateClonerWithEnv creates a provider cloner with a specific environment
-func (f *ProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, providerName, token string, environment env.Environment) (ProviderCloner, error) {
+func (f *providerFactoryImpl) CreateClonerWithEnv(ctx context.Context, providerName, token string, environment env.Environment) (ProviderCloner, error) {
 	f.logger.Debug("Creating provider cloner", "provider", providerName)
 	
 	if !f.IsProviderSupported(providerName) {
@@ -66,12 +66,12 @@ func (f *ProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, providerN
 }
 
 // GetSupportedProviders returns a list of supported provider names
-func (f *ProviderFactoryImpl) GetSupportedProviders() []string {
+func (f *providerFactoryImpl) GetSupportedProviders() []string {
 	return []string{ProviderGitHub, ProviderGitLab, ProviderGitea}
 }
 
 // IsProviderSupported checks if a provider is supported
-func (f *ProviderFactoryImpl) IsProviderSupported(providerName string) bool {
+func (f *providerFactoryImpl) IsProviderSupported(providerName string) bool {
 	supportedProviders := f.GetSupportedProviders()
 	for _, provider := range supportedProviders {
 		if provider == providerName {

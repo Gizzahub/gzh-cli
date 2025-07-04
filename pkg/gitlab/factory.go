@@ -19,8 +19,8 @@ type GitLabProviderFactory interface {
 	GetProviderName() string
 }
 
-// GitLabProviderFactoryImpl implements the GitLabProviderFactory interface
-type GitLabProviderFactoryImpl struct {
+// gitLabProviderFactoryImpl implements the GitLabProviderFactory interface
+type gitLabProviderFactoryImpl struct {
 	environment env.Environment
 }
 
@@ -30,18 +30,18 @@ func NewGitLabProviderFactory(environment env.Environment) GitLabProviderFactory
 		environment = env.NewOSEnvironment()
 	}
 	
-	return &GitLabProviderFactoryImpl{
+	return &gitLabProviderFactoryImpl{
 		environment: environment,
 	}
 }
 
 // CreateCloner creates a GitLab cloner with the specified token
-func (f *GitLabProviderFactoryImpl) CreateCloner(ctx context.Context, token string) (GitLabCloner, error) {
+func (f *gitLabProviderFactoryImpl) CreateCloner(ctx context.Context, token string) (GitLabCloner, error) {
 	return f.CreateClonerWithEnv(ctx, token, f.environment)
 }
 
 // CreateClonerWithEnv creates a GitLab cloner with a specific environment
-func (f *GitLabProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitLabCloner, error) {
+func (f *gitLabProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitLabCloner, error) {
 	if token == "" {
 		// Try to get token from environment
 		token = environment.Get(env.CommonEnvironmentKeys.GitLabToken)
@@ -52,14 +52,14 @@ func (f *GitLabProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, tok
 	}
 	
 	// Create a specific GitLab cloner implementation
-	return &GitLabClonerImpl{
+	return &gitLabClonerImpl{
 		Token:       token,
 		Environment: environment,
 	}, nil
 }
 
 // GetProviderName returns the provider name
-func (f *GitLabProviderFactoryImpl) GetProviderName() string {
+func (f *gitLabProviderFactoryImpl) GetProviderName() string {
 	return "gitlab"
 }
 
@@ -81,14 +81,14 @@ type GitLabCloner interface {
 	GetProviderName() string
 }
 
-// GitLabClonerImpl implements the GitLabCloner interface
-type GitLabClonerImpl struct {
+// gitLabClonerImpl implements the GitLabCloner interface
+type gitLabClonerImpl struct {
 	Token       string
 	Environment env.Environment
 }
 
 // CloneGroup clones all repositories from a GitLab group
-func (g *GitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath, strategy string) error {
+func (g *gitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token)
@@ -99,7 +99,7 @@ func (g *GitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath
 }
 
 // CloneProject clones a specific project
-func (g *GitLabClonerImpl) CloneProject(ctx context.Context, groupName, projectName, targetPath, strategy string) error {
+func (g *gitLabClonerImpl) CloneProject(ctx context.Context, groupName, projectName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token)
@@ -111,17 +111,17 @@ func (g *GitLabClonerImpl) CloneProject(ctx context.Context, groupName, projectN
 }
 
 // SetToken sets the GitLab token for authentication
-func (g *GitLabClonerImpl) SetToken(token string) {
+func (g *gitLabClonerImpl) SetToken(token string) {
 	g.Token = token
 }
 
 // GetToken returns the current GitLab token
-func (g *GitLabClonerImpl) GetToken() string {
+func (g *gitLabClonerImpl) GetToken() string {
 	return g.Token
 }
 
 // GetProviderName returns the provider name
-func (g *GitLabClonerImpl) GetProviderName() string {
+func (g *gitLabClonerImpl) GetProviderName() string {
 	return "gitlab"
 }
 

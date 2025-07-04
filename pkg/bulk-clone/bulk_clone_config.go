@@ -12,20 +12,20 @@ import (
 )
 
 // >>>>>>>>>> default >>>>>>>>>>
-type BulkCloneDefault struct {
+type bulkCloneDefault struct {
 	Protocol string                 `yaml:"protocol" validate:"required,oneof=http https ssh"`
-	Github   BulkCloneDefaultGithub `yaml:"github"`
-	Gitlab   BulkCloneDefaultGitlab `yaml:"gitlab"`
+	Github   bulkCloneDefaultGithub `yaml:"github"`
+	Gitlab   bulkCloneDefaultGitlab `yaml:"gitlab"`
 }
 
-type BulkCloneDefaultGithub struct {
+type bulkCloneDefaultGithub struct {
 	RootPath string `yaml:"root_path"`
 	Provider string `yaml:"provider"`
 	Protocol string `yaml:"protocol"`
 	OrgName  string `yaml:"org_name"`
 }
 
-type BulkCloneDefaultGitlab struct {
+type bulkCloneDefaultGitlab struct {
 	RootPath  string `yaml:"root_path"`
 	Provider  string `yaml:"provider"`
 	URL       string `yaml:"url"`
@@ -54,7 +54,7 @@ type BulkCloneGitlab struct {
 
 type bulkCloneConfig struct {
 	Version           string            `yaml:"version"`
-	Default           BulkCloneDefault  `yaml:"default"`
+	Default           bulkCloneDefault  `yaml:"default"`
 	IgnoreNameRegexes []string          `yaml:"ignore_names"`
 	RepoRoots         []BulkCloneGithub `yaml:"repo_roots"`
 }

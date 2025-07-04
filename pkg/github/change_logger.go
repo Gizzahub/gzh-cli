@@ -57,8 +57,8 @@ const (
 	LogLevelError LogLevel = "error"
 )
 
-// LogEntry represents a structured log entry
-type LogEntry struct {
+// logEntry represents a structured log entry
+type logEntry struct {
 	Timestamp  time.Time              `json:"timestamp"`
 	Level      LogLevel               `json:"level"`
 	Message    string                 `json:"message"`
@@ -75,8 +75,8 @@ type LogEntry struct {
 	Metadata   map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// OperationContext provides context for logging operations
-type OperationContext struct {
+// operationContext provides context for logging operations
+type operationContext struct {
 	RequestID    string
 	User         string
 	Source       string
@@ -118,8 +118,8 @@ func DefaultLoggerOptions() *LoggerOptions {
 }
 
 // LogRepositoryChange logs a repository configuration change with full context
-func (cl *ChangeLogger) LogRepositoryChange(ctx context.Context, opCtx *OperationContext, changeRecord *ChangeRecord, level LogLevel, message string, err error) error {
-	entry := &LogEntry{
+func (cl *ChangeLogger) LogRepositoryChange(ctx context.Context, opCtx *operationContext, changeRecord *ChangeRecord, level LogLevel, message string, err error) error {
+	entry := &logEntry{
 		Timestamp:  time.Now(),
 		Level:      level,
 		Message:    message,
@@ -151,8 +151,8 @@ func (cl *ChangeLogger) LogRepositoryChange(ctx context.Context, opCtx *Operatio
 }
 
 // LogOperation logs a general operation with context
-func (cl *ChangeLogger) LogOperation(ctx context.Context, opCtx *OperationContext, level LogLevel, operation, category, message string, err error) error {
-	entry := &LogEntry{
+func (cl *ChangeLogger) LogOperation(ctx context.Context, opCtx *operationContext, level LogLevel, operation, category, message string, err error) error {
+	entry := &logEntry{
 		Timestamp: time.Now(),
 		Level:     level,
 		Message:   message,
@@ -181,11 +181,11 @@ func (cl *ChangeLogger) LogOperation(ctx context.Context, opCtx *OperationContex
 }
 
 // LogBulkOperation logs bulk operations with aggregated statistics
-func (cl *ChangeLogger) LogBulkOperation(ctx context.Context, opCtx *OperationContext, level LogLevel, operation string, stats *BulkOperationStats, err error) error {
+func (cl *ChangeLogger) LogBulkOperation(ctx context.Context, opCtx *operationContext, level LogLevel, operation string, stats *bulkOperationStats, err error) error {
 	message := fmt.Sprintf("Bulk %s completed: %d total, %d success, %d failed, %d skipped",
 		operation, stats.Total, stats.Success, stats.Failed, stats.Skipped)
 
-	entry := &LogEntry{
+	entry := &logEntry{
 		Timestamp: time.Now(),
 		Level:     level,
 		Message:   message,
@@ -213,8 +213,8 @@ func (cl *ChangeLogger) LogBulkOperation(ctx context.Context, opCtx *OperationCo
 	return cl.writeLogEntry(entry)
 }
 
-// BulkOperationStats contains statistics for bulk operations
-type BulkOperationStats struct {
+// bulkOperationStats contains statistics for bulk operations
+type bulkOperationStats struct {
 	Total    int                    `json:"total"`
 	Success  int                    `json:"success"`
 	Failed   int                    `json:"failed"`
@@ -225,9 +225,9 @@ type BulkOperationStats struct {
 }
 
 // CreateOperationContext creates a new operation context for logging
-func (cl *ChangeLogger) CreateOperationContext(requestID, operation string) *OperationContext {
+func (cl *ChangeLogger) CreateOperationContext(requestID, operation string) *operationContext {
 	user := getSystemUser()
-	return &OperationContext{
+	return &operationContext{
 		RequestID: requestID,
 		User:      user,
 		Source:    "cli",
@@ -237,7 +237,7 @@ func (cl *ChangeLogger) CreateOperationContext(requestID, operation string) *Ope
 }
 
 // writeLogEntry writes a log entry to the configured outputs
-func (cl *ChangeLogger) writeLogEntry(entry *LogEntry) error {
+func (cl *ChangeLogger) writeLogEntry(entry *logEntry) error {
 	// Check if we should log this level
 	if !cl.shouldLog(entry.Level) {
 		return nil
@@ -284,7 +284,7 @@ func (cl *ChangeLogger) shouldLog(level LogLevel) bool {
 }
 
 // writeToConsole writes log entry to console
-func (cl *ChangeLogger) writeToConsole(entry *LogEntry) error {
+func (cl *ChangeLogger) writeToConsole(entry *logEntry) error {
 	var output string
 
 	switch cl.options.LogFormat {
@@ -316,7 +316,7 @@ func (cl *ChangeLogger) writeToConsole(entry *LogEntry) error {
 }
 
 // writeToFile writes log entry to file with rotation
-func (cl *ChangeLogger) writeToFile(entry *LogEntry) error {
+func (cl *ChangeLogger) writeToFile(entry *logEntry) error {
 	logFile := cl.getLogFileName()
 
 	// Check if rotation is needed
@@ -409,7 +409,7 @@ func (cl *ChangeLogger) cleanupOldLogFiles() error {
 }
 
 // formatTextEntry formats a log entry as human-readable text
-func (cl *ChangeLogger) formatTextEntry(entry *LogEntry) string {
+func (cl *ChangeLogger) formatTextEntry(entry *logEntry) string {
 	timestamp := entry.Timestamp.Format("2006-01-02 15:04:05")
 	parts := []string{
 		fmt.Sprintf("[%s]", strings.ToUpper(string(entry.Level))),
@@ -441,7 +441,7 @@ func (cl *ChangeLogger) formatTextEntry(entry *LogEntry) string {
 }
 
 // formatCSVEntry formats a log entry as CSV
-func (cl *ChangeLogger) formatCSVEntry(entry *LogEntry) string {
+func (cl *ChangeLogger) formatCSVEntry(entry *logEntry) string {
 	timestamp := entry.Timestamp.Format("2006-01-02 15:04:05")
 	fields := []string{
 		timestamp,

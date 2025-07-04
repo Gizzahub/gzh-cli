@@ -106,7 +106,7 @@ func TestLoadSchemaFromFile(t *testing.T) {
 func TestConfigToJSON(t *testing.T) {
 	cfg := &bulkCloneConfig{
 		Version: "0.1",
-		Default: BulkCloneDefault{
+		Default: bulkCloneDefault{
 			Protocol: "https",
 		},
 		RepoRoots: []BulkCloneGithub{

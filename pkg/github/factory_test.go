@@ -102,7 +102,7 @@ func TestDefaultGitHubFactoryConfig(t *testing.T) {
 func TestGitHubClonerImpl(t *testing.T) {
 	mockEnv := env.NewMockEnvironment(map[string]string{})
 	
-	cloner := &GitHubClonerImpl{
+	cloner := &gitHubClonerImpl{
 		Token:       "test-token",
 		Environment: mockEnv,
 	}

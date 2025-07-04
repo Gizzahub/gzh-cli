@@ -65,7 +65,7 @@ func TestLogRepositoryChange(t *testing.T) {
 	logger := NewChangeLogger(changelog, options)
 	ctx := context.Background()
 
-	opCtx := &OperationContext{
+	opCtx := &operationContext{
 		RequestID:    "test-123",
 		User:         "testuser",
 		Source:       "cli",
@@ -100,7 +100,7 @@ func TestLogRepositoryChange(t *testing.T) {
 	content, err := os.ReadFile(logFiles[0])
 	require.NoError(t, err)
 
-	var entry LogEntry
+	var entry logEntry
 	err = json.Unmarshal(content, &entry)
 	require.NoError(t, err)
 
@@ -135,7 +135,7 @@ func TestLogOperation(t *testing.T) {
 	logger := NewChangeLogger(changelog, options)
 	ctx := context.Background()
 
-	opCtx := &OperationContext{
+	opCtx := &operationContext{
 		RequestID:    "op-456",
 		User:         "testuser",
 		Source:       "api",
@@ -182,7 +182,7 @@ func TestLogBulkOperation(t *testing.T) {
 	logger := NewChangeLogger(changelog, options)
 	ctx := context.Background()
 
-	opCtx := &OperationContext{
+	opCtx := &operationContext{
 		RequestID:    "bulk-789",
 		User:         "testuser",
 		Source:       "cli",
@@ -190,7 +190,7 @@ func TestLogBulkOperation(t *testing.T) {
 		StartTime:    time.Now().Add(-30 * time.Second),
 	}
 
-	stats := &BulkOperationStats{
+	stats := &bulkOperationStats{
 		Total:    10,
 		Success:  8,
 		Failed:   1,
@@ -210,7 +210,7 @@ func TestLogBulkOperation(t *testing.T) {
 	content, err := os.ReadFile(logFiles[0])
 	require.NoError(t, err)
 
-	var entry LogEntry
+	var entry logEntry
 	err = json.Unmarshal(content, &entry)
 	require.NoError(t, err)
 
@@ -270,7 +270,7 @@ func TestFormatTextEntry(t *testing.T) {
 	logger := &ChangeLogger{}
 	duration := 5 * time.Second
 
-	entry := &LogEntry{
+	entry := &logEntry{
 		Timestamp:  time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
 		Level:      LogLevelInfo,
 		Message:    "Test message",
@@ -296,7 +296,7 @@ func TestFormatTextEntry(t *testing.T) {
 func TestFormatCSVEntry(t *testing.T) {
 	logger := &ChangeLogger{}
 
-	entry := &LogEntry{
+	entry := &logEntry{
 		Timestamp:  time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
 		Level:      LogLevelError,
 		Operation:  "delete",
@@ -340,7 +340,7 @@ func TestLogRotation(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx := context.Background()
-	opCtx := &OperationContext{
+	opCtx := &operationContext{
 		RequestID: "rotation-test",
 		User:      "testuser",
 		Source:    "cli",
@@ -443,7 +443,7 @@ func TestLogFormats(t *testing.T) {
 			logger := NewChangeLogger(changelog, options)
 			ctx := context.Background()
 
-			opCtx := &OperationContext{
+			opCtx := &operationContext{
 				RequestID: "format-test",
 				User:      "testuser",
 				Source:    "cli",
@@ -463,7 +463,7 @@ func TestLogFormats(t *testing.T) {
 
 			switch format {
 			case LogFormatJSON:
-				var entry LogEntry
+				var entry logEntry
 				err = json.Unmarshal(content, &entry)
 				assert.NoError(t, err)
 			case LogFormatText:

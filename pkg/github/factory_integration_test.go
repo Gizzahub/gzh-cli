@@ -69,7 +69,7 @@ func TestFactoryPatternVersusDirectInstantiation(t *testing.T) {
 	ctx := context.Background()
 	
 	// Old way: Direct instantiation (harder to test, less flexible)
-	oldCloner := &GitHubClonerImpl{
+	oldCloner := &gitHubClonerImpl{
 		Token:       "direct-token",
 		Environment: mockEnv,
 	}

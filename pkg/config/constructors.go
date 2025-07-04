@@ -31,8 +31,8 @@ type Logger interface {
 	Error(msg string, args ...interface{})
 }
 
-// ConfigLoaderImpl implements the ConfigLoader interface
-type ConfigLoaderImpl struct {
+// configLoaderImpl implements the ConfigLoader interface
+type configLoaderImpl struct {
 	fileSystem  FileSystemInterface
 	parser      ConfigParser
 	validator   ConfigValidator
@@ -79,7 +79,7 @@ func NewConfigLoader(
 		config = DefaultConfigLoaderConfig()
 	}
 
-	return &ConfigLoaderImpl{
+	return &configLoaderImpl{
 		fileSystem:  fileSystem,
 		parser:      parser,
 		validator:   validator,
@@ -89,7 +89,7 @@ func NewConfigLoader(
 }
 
 // LoadConfig implements ConfigLoader interface
-func (l *ConfigLoaderImpl) LoadConfig(ctx context.Context) (*Config, error) {
+func (l *configLoaderImpl) LoadConfig(ctx context.Context) (*Config, error) {
 	l.logger.Debug("Loading configuration from search paths")
 
 	for _, path := range l.searchPaths {
@@ -104,7 +104,7 @@ func (l *ConfigLoaderImpl) LoadConfig(ctx context.Context) (*Config, error) {
 }
 
 // LoadConfigFromFile implements ConfigLoader interface
-func (l *ConfigLoaderImpl) LoadConfigFromFile(ctx context.Context, filename string) (*Config, error) {
+func (l *configLoaderImpl) LoadConfigFromFile(ctx context.Context, filename string) (*Config, error) {
 	l.logger.Debug("Loading configuration from file", "file", filename)
 
 	data, err := l.fileSystem.ReadFile(filename)
@@ -125,7 +125,7 @@ func (l *ConfigLoaderImpl) LoadConfigFromFile(ctx context.Context, filename stri
 }
 
 // LoadConfigFromReader implements ConfigLoader interface
-func (l *ConfigLoaderImpl) LoadConfigFromReader(ctx context.Context, reader io.Reader) (*Config, error) {
+func (l *configLoaderImpl) LoadConfigFromReader(ctx context.Context, reader io.Reader) (*Config, error) {
 	l.logger.Debug("Loading configuration from reader")
 
 	data, err := io.ReadAll(reader)
@@ -137,44 +137,44 @@ func (l *ConfigLoaderImpl) LoadConfigFromReader(ctx context.Context, reader io.R
 }
 
 // GetSearchPaths implements ConfigLoader interface
-func (l *ConfigLoaderImpl) GetSearchPaths() []string {
+func (l *configLoaderImpl) GetSearchPaths() []string {
 	return l.searchPaths
 }
 
 // SetSearchPaths implements ConfigLoader interface
-func (l *ConfigLoaderImpl) SetSearchPaths(paths []string) {
+func (l *configLoaderImpl) SetSearchPaths(paths []string) {
 	l.searchPaths = paths
 }
 
 // expandPath expands environment variables and home directory
-func (l *ConfigLoaderImpl) expandPath(path string) string {
+func (l *configLoaderImpl) expandPath(path string) string {
 	// Implementation would expand ~ and environment variables
 	return path
 }
 
-// ConfigValidatorImpl implements the ConfigValidator interface
-type ConfigValidatorImpl struct {
+// configValidatorImpl implements the ConfigValidator interface
+type configValidatorImpl struct {
 	schemaValidator SchemaValidator
 	logger          Logger
 }
 
 // NewConfigValidator creates a new config validator with dependencies
 func NewConfigValidator(schemaValidator SchemaValidator, logger Logger) ConfigValidator {
-	return &ConfigValidatorImpl{
+	return &configValidatorImpl{
 		schemaValidator: schemaValidator,
 		logger:          logger,
 	}
 }
 
 // ValidateConfig implements ConfigValidator interface
-func (v *ConfigValidatorImpl) ValidateConfig(ctx context.Context, config *Config) error {
+func (v *configValidatorImpl) ValidateConfig(ctx context.Context, config *Config) error {
 	v.logger.Debug("Validating configuration")
 
 	return v.schemaValidator.ValidateStructure(ctx, config)
 }
 
 // ValidateConfigFile implements ConfigValidator interface
-func (v *ConfigValidatorImpl) ValidateConfigFile(ctx context.Context, filename string) error {
+func (v *configValidatorImpl) ValidateConfigFile(ctx context.Context, filename string) error {
 	v.logger.Debug("Validating configuration file", "file", filename)
 
 	// Implementation would load and validate file
@@ -182,7 +182,7 @@ func (v *ConfigValidatorImpl) ValidateConfigFile(ctx context.Context, filename s
 }
 
 // GetValidationErrors implements ConfigValidator interface
-func (v *ConfigValidatorImpl) GetValidationErrors(ctx context.Context, config *Config) []ValidationError {
+func (v *configValidatorImpl) GetValidationErrors(ctx context.Context, config *Config) []ValidationError {
 	v.logger.Debug("Getting validation errors")
 
 	// Implementation would return detailed validation errors
@@ -190,24 +190,24 @@ func (v *ConfigValidatorImpl) GetValidationErrors(ctx context.Context, config *C
 }
 
 // IsValid implements ConfigValidator interface
-func (v *ConfigValidatorImpl) IsValid(ctx context.Context, config *Config) bool {
+func (v *configValidatorImpl) IsValid(ctx context.Context, config *Config) bool {
 	return v.ValidateConfig(ctx, config) == nil
 }
 
-// ConfigParserImpl implements the ConfigParser interface
-type ConfigParserImpl struct {
+// configParserImpl implements the ConfigParser interface
+type configParserImpl struct {
 	logger Logger
 }
 
 // NewConfigParser creates a new config parser with dependencies
 func NewConfigParser(logger Logger) ConfigParser {
-	return &ConfigParserImpl{
+	return &configParserImpl{
 		logger: logger,
 	}
 }
 
 // ParseConfig implements ConfigParser interface
-func (p *ConfigParserImpl) ParseConfig(ctx context.Context, data []byte) (*Config, error) {
+func (p *configParserImpl) ParseConfig(ctx context.Context, data []byte) (*Config, error) {
 	p.logger.Debug("Parsing configuration data")
 
 	// Implementation would parse YAML/JSON data
@@ -215,7 +215,7 @@ func (p *ConfigParserImpl) ParseConfig(ctx context.Context, data []byte) (*Confi
 }
 
 // ParseConfigWithFormat implements ConfigParser interface
-func (p *ConfigParserImpl) ParseConfigWithFormat(ctx context.Context, data []byte, format string) (*Config, error) {
+func (p *configParserImpl) ParseConfigWithFormat(ctx context.Context, data []byte, format string) (*Config, error) {
 	p.logger.Debug("Parsing configuration with format", "format", format)
 
 	// Implementation would parse based on format
@@ -223,12 +223,12 @@ func (p *ConfigParserImpl) ParseConfigWithFormat(ctx context.Context, data []byt
 }
 
 // GetSupportedFormats implements ConfigParser interface
-func (p *ConfigParserImpl) GetSupportedFormats() []string {
+func (p *configParserImpl) GetSupportedFormats() []string {
 	return []string{"yaml", "yml", "json"}
 }
 
 // IsFormatSupported implements ConfigParser interface
-func (p *ConfigParserImpl) IsFormatSupported(format string) bool {
+func (p *configParserImpl) IsFormatSupported(format string) bool {
 	for _, supported := range p.GetSupportedFormats() {
 		if format == supported {
 			return true
@@ -237,29 +237,29 @@ func (p *ConfigParserImpl) IsFormatSupported(format string) bool {
 	return false
 }
 
-// ProviderManagerImpl implements the ProviderManager interface
-type ProviderManagerImpl struct {
+// providerManagerImpl implements the ProviderManager interface
+type providerManagerImpl struct {
 	config *Config
 	logger Logger
 }
 
 // NewProviderManager creates a new provider manager with dependencies
 func NewProviderManager(config *Config, logger Logger) ProviderManager {
-	return &ProviderManagerImpl{
+	return &providerManagerImpl{
 		config: config,
 		logger: logger,
 	}
 }
 
 // GetProviders implements ProviderManager interface
-func (m *ProviderManagerImpl) GetProviders(ctx context.Context) (map[string]Provider, error) {
+func (m *providerManagerImpl) GetProviders(ctx context.Context) (map[string]Provider, error) {
 	m.logger.Debug("Getting all providers")
 
 	return m.config.Providers, nil
 }
 
 // GetProvider implements ProviderManager interface
-func (m *ProviderManagerImpl) GetProvider(ctx context.Context, name string) (*Provider, error) {
+func (m *providerManagerImpl) GetProvider(ctx context.Context, name string) (*Provider, error) {
 	m.logger.Debug("Getting provider", "name", name)
 
 	provider, exists := m.config.Providers[name]
@@ -271,7 +271,7 @@ func (m *ProviderManagerImpl) GetProvider(ctx context.Context, name string) (*Pr
 }
 
 // CreateProviderCloner implements ProviderManager interface
-func (m *ProviderManagerImpl) CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
+func (m *providerManagerImpl) CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
 	m.logger.Debug("Creating provider cloner", "provider", providerName)
 
 	// Use factory pattern for provider creation
@@ -280,7 +280,7 @@ func (m *ProviderManagerImpl) CreateProviderCloner(ctx context.Context, provider
 }
 
 // ValidateProvider implements ProviderManager interface
-func (m *ProviderManagerImpl) ValidateProvider(ctx context.Context, provider *Provider) error {
+func (m *providerManagerImpl) ValidateProvider(ctx context.Context, provider *Provider) error {
 	m.logger.Debug("Validating provider", "name", provider.Name)
 
 	// Implementation would validate provider configuration
@@ -288,12 +288,12 @@ func (m *ProviderManagerImpl) ValidateProvider(ctx context.Context, provider *Pr
 }
 
 // GetSupportedProviders implements ProviderManager interface
-func (m *ProviderManagerImpl) GetSupportedProviders() []string {
+func (m *providerManagerImpl) GetSupportedProviders() []string {
 	return []string{"github", "gitlab", "gitea"}
 }
 
-// ConfigServiceImpl implements the unified ConfigService interface
-type ConfigServiceImpl struct {
+// configServiceImpl implements the unified ConfigService interface
+type configServiceImpl struct {
 	ConfigLoader
 	ConfigValidator
 	ConfigParser
@@ -352,7 +352,7 @@ func NewConfigService(
 	var filterService FilterService
 	var integrationService IntegrationService
 
-	return &ConfigServiceImpl{
+	return &configServiceImpl{
 		ConfigLoader:       loader,
 		ConfigValidator:    validator,
 		ConfigParser:       parser,

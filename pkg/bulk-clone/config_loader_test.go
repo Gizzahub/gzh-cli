@@ -97,9 +97,9 @@ repo_roots:
 func TestGetGithubOrgConfig(t *testing.T) {
 	cfg := &bulkCloneConfig{
 		Version: "0.1",
-		Default: BulkCloneDefault{
+		Default: bulkCloneDefault{
 			Protocol: "https",
-			Github: BulkCloneDefaultGithub{
+			Github: bulkCloneDefaultGithub{
 				RootPath: "/default/path",
 				OrgName:  "default-org",
 			},
@@ -342,13 +342,13 @@ func TestGetOverlayConfigPaths(t *testing.T) {
 func TestMergeConfig(t *testing.T) {
 	base := &bulkCloneConfig{
 		Version: "0.1",
-		Default: BulkCloneDefault{
+		Default: bulkCloneDefault{
 			Protocol: "https",
-			Github: BulkCloneDefaultGithub{
+			Github: bulkCloneDefaultGithub{
 				RootPath: "/base/github",
 				OrgName:  "base-org",
 			},
-			Gitlab: BulkCloneDefaultGitlab{
+			Gitlab: bulkCloneDefaultGitlab{
 				RootPath:  "/base/gitlab",
 				GroupName: "base-group",
 				Recursive: false,
@@ -367,12 +367,12 @@ func TestMergeConfig(t *testing.T) {
 
 	overlay := &bulkCloneConfig{
 		Version: "0.2",
-		Default: BulkCloneDefault{
+		Default: bulkCloneDefault{
 			Protocol: "ssh",
-			Github: BulkCloneDefaultGithub{
+			Github: bulkCloneDefaultGithub{
 				RootPath: "/overlay/github",
 			},
-			Gitlab: BulkCloneDefaultGitlab{
+			Gitlab: bulkCloneDefaultGitlab{
 				Recursive: true,
 			},
 		},

@@ -19,8 +19,8 @@ type GiteaProviderFactory interface {
 	GetProviderName() string
 }
 
-// GiteaProviderFactoryImpl implements the GiteaProviderFactory interface
-type GiteaProviderFactoryImpl struct {
+// giteaProviderFactoryImpl implements the GiteaProviderFactory interface
+type giteaProviderFactoryImpl struct {
 	environment env.Environment
 }
 
@@ -30,18 +30,18 @@ func NewGiteaProviderFactory(environment env.Environment) GiteaProviderFactory {
 		environment = env.NewOSEnvironment()
 	}
 	
-	return &GiteaProviderFactoryImpl{
+	return &giteaProviderFactoryImpl{
 		environment: environment,
 	}
 }
 
 // CreateCloner creates a Gitea cloner with the specified token
-func (f *GiteaProviderFactoryImpl) CreateCloner(ctx context.Context, token string) (GiteaCloner, error) {
+func (f *giteaProviderFactoryImpl) CreateCloner(ctx context.Context, token string) (GiteaCloner, error) {
 	return f.CreateClonerWithEnv(ctx, token, f.environment)
 }
 
 // CreateClonerWithEnv creates a Gitea cloner with a specific environment
-func (f *GiteaProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GiteaCloner, error) {
+func (f *giteaProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GiteaCloner, error) {
 	if token == "" {
 		// Try to get token from environment
 		token = environment.Get(env.CommonEnvironmentKeys.GiteaToken)
@@ -52,14 +52,14 @@ func (f *GiteaProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, toke
 	}
 	
 	// Create a specific Gitea cloner implementation
-	return &GiteaClonerImpl{
+	return &giteaClonerImpl{
 		Token:       token,
 		Environment: environment,
 	}, nil
 }
 
 // GetProviderName returns the provider name
-func (f *GiteaProviderFactoryImpl) GetProviderName() string {
+func (f *giteaProviderFactoryImpl) GetProviderName() string {
 	return "gitea"
 }
 
@@ -81,14 +81,14 @@ type GiteaCloner interface {
 	GetProviderName() string
 }
 
-// GiteaClonerImpl implements the GiteaCloner interface
-type GiteaClonerImpl struct {
+// giteaClonerImpl implements the GiteaCloner interface
+type giteaClonerImpl struct {
 	Token       string
 	Environment env.Environment
 }
 
 // CloneOrganization clones all repositories from a Gitea organization
-func (g *GiteaClonerImpl) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
+func (g *giteaClonerImpl) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token)
@@ -100,7 +100,7 @@ func (g *GiteaClonerImpl) CloneOrganization(ctx context.Context, orgName, target
 }
 
 // CloneRepository clones a specific repository
-func (g *GiteaClonerImpl) CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error {
+func (g *giteaClonerImpl) CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token)
@@ -112,17 +112,17 @@ func (g *GiteaClonerImpl) CloneRepository(ctx context.Context, owner, repo, targ
 }
 
 // SetToken sets the Gitea token for authentication
-func (g *GiteaClonerImpl) SetToken(token string) {
+func (g *giteaClonerImpl) SetToken(token string) {
 	g.Token = token
 }
 
 // GetToken returns the current Gitea token
-func (g *GiteaClonerImpl) GetToken() string {
+func (g *giteaClonerImpl) GetToken() string {
 	return g.Token
 }
 
 // GetProviderName returns the provider name
-func (g *GiteaClonerImpl) GetProviderName() string {
+func (g *giteaClonerImpl) GetProviderName() string {
 	return "gitea"
 }
 
