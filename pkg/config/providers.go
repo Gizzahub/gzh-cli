@@ -6,9 +6,6 @@ import (
 	"strings"
 
 	"github.com/gizzahub/gzh-manager-go/internal/env"
-	"github.com/gizzahub/gzh-manager-go/pkg/gitea"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
 // ProviderCloner defines the interface for provider-specific cloning operations
@@ -43,7 +40,13 @@ func (g *GitHubCloner) CloneOrganization(orgName, targetPath, strategy string) e
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token)
 	}
-	return github.RefreshAll(targetPath, orgName, strategy)
+	// Use the new provider service interface
+	factory := NewDefaultProviderFactory(g.environment)
+	provider, err := factory.CreateProvider(context.Background(), ProviderGitHub, ProviderConfig{Token: g.token})
+	if err != nil {
+		return fmt.Errorf("failed to create GitHub provider: %w", err)
+	}
+	return provider.RefreshAll(context.Background(), targetPath, orgName, strategy)
 }
 
 func (g *GitHubCloner) CloneGroup(groupName, targetPath, strategy string) error {
@@ -88,7 +91,13 @@ func (g *GitLabCloner) CloneGroup(groupName, targetPath, strategy string) error 
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token)
 	}
-	return gitlab.RefreshAll(targetPath, groupName, strategy)
+	// Use the new provider service interface
+	factory := NewDefaultProviderFactory(g.environment)
+	provider, err := factory.CreateProvider(context.Background(), ProviderGitLab, ProviderConfig{Token: g.token})
+	if err != nil {
+		return fmt.Errorf("failed to create GitLab provider: %w", err)
+	}
+	return provider.RefreshAll(context.Background(), targetPath, groupName, strategy)
 }
 
 func (g *GitLabCloner) SetToken(token string) {
@@ -123,8 +132,13 @@ func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) er
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token)
 	}
-	// Note: strategy parameter is ignored for now since gitea.RefreshAll doesn't support it
-	return gitea.RefreshAll(targetPath, orgName)
+	// Use the new provider service interface
+	factory := NewDefaultProviderFactory(g.environment)
+	provider, err := factory.CreateProvider(context.Background(), ProviderGitea, ProviderConfig{Token: g.token})
+	if err != nil {
+		return fmt.Errorf("failed to create Gitea provider: %w", err)
+	}
+	return provider.RefreshAll(context.Background(), targetPath, orgName, strategy)
 }
 
 func (g *GiteaCloner) CloneGroup(groupName, targetPath, strategy string) error {
@@ -142,8 +156,18 @@ func (g *GiteaCloner) GetName() string {
 
 // CreateProviderCloner creates a cloner for the specified provider (deprecated: use ProviderFactory)
 func CreateProviderCloner(providerName, token string) (ProviderCloner, error) {
-	factory := NewProviderFactory(env.NewOSEnvironment(), nil)
-	return factory.CreateCloner(context.Background(), providerName, token)
+	environment := env.NewOSEnvironment()
+
+	switch strings.ToLower(providerName) {
+	case ProviderGitHub:
+		return NewGitHubClonerWithEnv(token, environment), nil
+	case ProviderGitLab:
+		return NewGitLabClonerWithEnv(token, environment), nil
+	case ProviderGitea:
+		return NewGiteaClonerWithEnv(token, environment), nil
+	default:
+		return nil, fmt.Errorf("unsupported provider: %s", providerName)
+	}
 }
 
 // BulkCloneExecutor handles bulk cloning operations with filtering and processing
@@ -154,7 +178,7 @@ type BulkCloneExecutor struct {
 
 // NewBulkCloneExecutor creates a new bulk clone executor
 func NewBulkCloneExecutor(config *Config) (*BulkCloneExecutor, error) {
-	return NewBulkCloneExecutorWithFactory(config, NewProviderFactory(env.NewOSEnvironment(), nil))
+	return NewBulkCloneExecutorWithFactory(config, nil)
 }
 
 // NewBulkCloneExecutorWithFactory creates a new bulk clone executor with a custom factory
@@ -162,9 +186,9 @@ func NewBulkCloneExecutorWithFactory(config *Config, factory ProviderFactory) (*
 	integration := NewBulkCloneIntegration(config)
 	cloners := make(map[string]ProviderCloner)
 
-	// Create cloners for each configured provider using the factory
+	// Create cloners for each configured provider using the legacy interface
 	for providerName, provider := range config.Providers {
-		cloner, err := factory.CreateCloner(context.Background(), providerName, provider.Token)
+		cloner, err := CreateProviderCloner(providerName, provider.Token)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create cloner for %s: %w", providerName, err)
 		}

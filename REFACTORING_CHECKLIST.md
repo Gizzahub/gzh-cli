@@ -95,7 +95,7 @@
   - 🧠 **How**: Document package purpose in `doc.go`
   - 📁 **Files**: Add `doc.go` to each package
 
-- [ ] Reduce inter-package dependencies
+- [x] Reduce inter-package dependencies
   - 📌 **Why**: High coupling between packages
   - 🧠 **How**: Use interfaces at package boundaries
   - 📁 **Files**: Review imports in each package

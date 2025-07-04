@@ -1,12 +1,12 @@
 package bulkclone
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 	"github.com/spf13/cobra"
 )
 
@@ -92,23 +92,24 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 		// Expand the root path
 		targetPath := bulkclonepkg.ExpandPath(repoRoot.RootPath)
 
-		switch repoRoot.Provider {
-		case "github":
-			err = github.RefreshAll(targetPath, repoRoot.OrgName, o.strategy)
-			if err != nil {
-				fmt.Printf("Error processing GitHub org %s: %v\n", repoRoot.OrgName, err)
-				continue
-			}
-		case "gitlab":
-			// For GitLab, we need to use the group name from the repoRoot
-			// Since RepoRoots currently only has GitHub structure, we'll use OrgName as GroupName
-			err = gitlab.RefreshAll(targetPath, repoRoot.OrgName, o.strategy)
-			if err != nil {
-				fmt.Printf("Error processing GitLab group %s: %v\n", repoRoot.OrgName, err)
-				continue
-			}
-		default:
-			fmt.Printf("Unsupported provider: %s (skipping %s)\n", repoRoot.Provider, repoRoot.OrgName)
+		// Use the new interface-based approach instead of direct provider calls
+		environment := env.NewOSEnvironment()
+		factory := config.NewDefaultProviderFactory(environment)
+
+		// Create appropriate provider config (token would come from environment or config)
+		providerConfig := config.ProviderConfig{
+			Token: "", // Token will be retrieved from environment variables
+		}
+
+		provider, err := factory.CreateProvider(context.Background(), repoRoot.Provider, providerConfig)
+		if err != nil {
+			fmt.Printf("Error creating provider %s: %v\n", repoRoot.Provider, err)
+			continue
+		}
+
+		err = provider.RefreshAll(context.Background(), targetPath, repoRoot.OrgName, o.strategy)
+		if err != nil {
+			fmt.Printf("Error processing %s org %s: %v\n", repoRoot.Provider, repoRoot.OrgName, err)
 			continue
 		}
 
@@ -116,25 +117,42 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	// Also process default GitHub and GitLab configurations if they have org/group names
+	environment := env.NewOSEnvironment()
+	factory := config.NewDefaultProviderFactory(environment)
+
 	if cfg.Default.Github.OrgName != "" {
 		fmt.Printf("Processing default GitHub organization: %s\n", cfg.Default.Github.OrgName)
 		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Github.RootPath)
-		err = github.RefreshAll(targetPath, cfg.Default.Github.OrgName, o.strategy)
+
+		providerConfig := config.ProviderConfig{Token: ""}
+		provider, err := factory.CreateProvider(context.Background(), "github", providerConfig)
 		if err != nil {
-			fmt.Printf("Error processing default GitHub org: %v\n", err)
+			fmt.Printf("Error creating GitHub provider: %v\n", err)
 		} else {
-			fmt.Printf("✓ Successfully processed default GitHub org: %s\n", cfg.Default.Github.OrgName)
+			err = provider.RefreshAll(context.Background(), targetPath, cfg.Default.Github.OrgName, o.strategy)
+			if err != nil {
+				fmt.Printf("Error processing default GitHub org: %v\n", err)
+			} else {
+				fmt.Printf("✓ Successfully processed default GitHub org: %s\n", cfg.Default.Github.OrgName)
+			}
 		}
 	}
 
 	if cfg.Default.Gitlab.GroupName != "" {
 		fmt.Printf("Processing default GitLab group: %s\n", cfg.Default.Gitlab.GroupName)
 		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Gitlab.RootPath)
-		err = gitlab.RefreshAll(targetPath, cfg.Default.Gitlab.GroupName, o.strategy)
+
+		providerConfig := config.ProviderConfig{Token: ""}
+		provider, err := factory.CreateProvider(context.Background(), "gitlab", providerConfig)
 		if err != nil {
-			fmt.Printf("Error processing default GitLab group: %v\n", err)
+			fmt.Printf("Error creating GitLab provider: %v\n", err)
 		} else {
-			fmt.Printf("✓ Successfully processed default GitLab group: %s\n", cfg.Default.Gitlab.GroupName)
+			err = provider.RefreshAll(context.Background(), targetPath, cfg.Default.Gitlab.GroupName, o.strategy)
+			if err != nil {
+				fmt.Printf("Error processing default GitLab group: %v\n", err)
+			} else {
+				fmt.Printf("✓ Successfully processed default GitLab group: %s\n", cfg.Default.Gitlab.GroupName)
+			}
 		}
 	}
 
