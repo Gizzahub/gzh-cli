@@ -1,4 +1,4 @@
-package gen_config
+package genconfig
 
 import (
 	"bufio"
@@ -32,7 +32,7 @@ func newGenConfigInitCmd() *cobra.Command {
 		Long: `Initialize a new bulk-clone.yaml configuration file through an interactive wizard.
 
 This command will guide you through creating a configuration file for managing
-multiple Git repositories across different hosting services (GitHub, GitLab, Gitea, Gogs).
+multiple Git repositories across different hosting services (GitHub, GitLab, Gitea).
 
 The wizard will ask about:
 - Repository hosting services you use
@@ -200,7 +200,7 @@ func (o *genConfigInitOptions) promptForRepoRoot(scanner *bufio.Scanner, default
 	repoRoot := RepoRootConfig{}
 
 	// Provider
-	fmt.Print("Provider (github/gitlab/gitea/gogs): ")
+	fmt.Print("Provider (github/gitlab/gitea): ")
 	scanner.Scan()
 	repoRoot.Provider = strings.ToLower(strings.TrimSpace(scanner.Text()))
 	if repoRoot.Provider == "" {

@@ -3,15 +3,15 @@ package cmd
 import (
 	"fmt"
 
-	always_latest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
-	bulk_clone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
+	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
+	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
-	dev_env "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
-	gen_config "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
+	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
+	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
-	net_env "github.com/gizzahub/gzh-manager-go/cmd/net-env"
-	repo_config "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
-	ssh_config "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
+	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
+	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
+	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
 	"github.com/spf13/cobra"
 )
 
@@ -25,15 +25,15 @@ func newRootCmd(version string) *cobra.Command {
 	}
 
 	cmd.AddCommand(newVersionCmd(version))
-	cmd.AddCommand(always_latest.NewAlwaysLatestCmd())
-	cmd.AddCommand(bulk_clone.NewBulkCloneCmd())
+	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd())
+	cmd.AddCommand(bulkclone.NewBulkCloneCmd())
 	cmd.AddCommand(config.NewConfigCmd())
-	cmd.AddCommand(dev_env.NewDevEnvCmd())
-	cmd.AddCommand(gen_config.NewGenConfigCmd())
+	cmd.AddCommand(devenv.NewDevEnvCmd())
+	cmd.AddCommand(genconfig.NewGenConfigCmd())
 	cmd.AddCommand(ide.NewIDECmd())
-	cmd.AddCommand(net_env.NewNetEnvCmd())
-	cmd.AddCommand(repo_config.NewRepoConfigCmd())
-	cmd.AddCommand(ssh_config.NewSSHConfigCmd())
+	cmd.AddCommand(netenv.NewNetEnvCmd())
+	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
+	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 
 	return cmd
 }

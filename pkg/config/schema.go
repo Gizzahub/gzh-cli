@@ -10,7 +10,7 @@ type Config struct {
 // Provider represents a Git provider configuration
 type Provider struct {
 	Token  string      `yaml:"token" json:"token"`
-	Orgs   []GitTarget `yaml:"orgs,omitempty" json:"orgs,omitempty"`     // For GitHub/Gitea/Gogs
+	Orgs   []GitTarget `yaml:"orgs,omitempty" json:"orgs,omitempty"`     // For GitHub/Gitea
 	Groups []GitTarget `yaml:"groups,omitempty" json:"groups,omitempty"` // For GitLab
 }
 
@@ -45,7 +45,6 @@ const (
 	ProviderGitHub = "github"
 	ProviderGitLab = "gitlab"
 	ProviderGitea  = "gitea"
-	ProviderGogs   = "gogs"
 )
 
 // SetDefaults sets default values for GitTarget
@@ -88,7 +87,7 @@ func (p *Provider) Validate(providerType string) error {
 				return err
 			}
 		}
-	case ProviderGitHub, ProviderGitea, ProviderGogs:
+	case ProviderGitHub, ProviderGitea:
 		for _, org := range p.Orgs {
 			if err := org.Validate(); err != nil {
 				return err

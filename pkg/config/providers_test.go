@@ -36,13 +36,6 @@ func TestCreateProviderCloner(t *testing.T) {
 			expectedType: ProviderGitea,
 		},
 		{
-			name:         "Gogs cloner",
-			providerName: ProviderGogs,
-			token:        "test-token",
-			expectError:  false,
-			expectedType: ProviderGogs,
-		},
-		{
 			name:         "invalid provider",
 			providerName: "invalid",
 			token:        "test-token",
@@ -150,8 +143,4 @@ func TestProviderClonerInterface(t *testing.T) {
 	cloner = NewGiteaCloner("token")
 	assert.NotNil(t, cloner)
 	assert.Equal(t, ProviderGitea, cloner.GetName())
-
-	cloner = NewGogsCloner("token")
-	assert.NotNil(t, cloner)
-	assert.Equal(t, ProviderGogs, cloner.GetName())
 }

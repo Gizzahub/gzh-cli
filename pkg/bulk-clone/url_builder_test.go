@@ -1,4 +1,4 @@
-package bulk_clone
+package bulkclone
 
 import (
 	"testing"
@@ -92,7 +92,6 @@ func TestGetDefaultHostname(t *testing.T) {
 		{"github", "github.com"},
 		{"gitlab", "gitlab.com"},
 		{"gitea", "gitea.com"},
-		{"gogs", "gogs.com"},
 		{"unknown", "unknown"},
 	}
 
@@ -147,8 +146,4 @@ func TestBuildURLWithHostAliasForProvider(t *testing.T) {
 		assert.Equal(t, "git@gitea-myorg:myorg/myrepo.git", url)
 	})
 
-	t.Run("Gogs SSH with host alias", func(t *testing.T) {
-		url := BuildURLWithHostAliasForProvider("gogs", "ssh", "myorg", "myrepo")
-		assert.Equal(t, "git@gogs-myorg:myorg/myrepo.git", url)
-	})
 }

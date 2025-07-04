@@ -1,4 +1,4 @@
-package dev_env
+package devenv
 
 import "github.com/spf13/cobra"
 

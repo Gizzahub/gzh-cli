@@ -1,9 +1,9 @@
-package bulk_clone
+package bulkclone
 
 import (
 	"fmt"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 )
@@ -80,7 +80,7 @@ func (o *bulkCloneGithubOptions) loadFromConfig() error {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclone.LoadConfig(configPath)
+	cfg, err := bulkclonepkg.LoadConfig(configPath)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (o *bulkCloneGithubOptions) loadFromConfig() error {
 
 	// Apply config values (CLI flags take precedence)
 	if o.targetPath == "" && orgConfig.RootPath != "" {
-		o.targetPath = bulkclone.ExpandPath(orgConfig.RootPath)
+		o.targetPath = bulkclonepkg.ExpandPath(orgConfig.RootPath)
 	}
 
 	// TODO: Support protocol from config

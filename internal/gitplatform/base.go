@@ -160,4 +160,3 @@ func GetRepoPath(targetPath, owner, repoName string, flatten bool) string {
 	}
 	return filepath.Join(targetPath, owner, repoName)
 }
-

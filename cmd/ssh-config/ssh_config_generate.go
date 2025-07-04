@@ -1,4 +1,4 @@
-package ssh_config
+package sshconfig
 
 import (
 	"fmt"
@@ -35,7 +35,7 @@ func newSSHConfigGenerateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate SSH config entries for Git hosting services",
-		Long: `Generate SSH configuration entries for GitHub, GitLab, Gitea, and Gogs
+		Long: `Generate SSH configuration entries for GitHub, GitLab, and Gitea
 based on your bulk-clone.yaml configuration.
 
 This command creates SSH Host entries that allow you to use different SSH keys
@@ -178,9 +178,6 @@ func (o *sshConfigGenerateOptions) generateHostConfig(provider, orgName string, 
 	case "gitea":
 		hostname = "gitea.com" // Default, can be customized
 		hostAlias = fmt.Sprintf("gitea-%s", orgName)
-	case "gogs":
-		hostname = "gogs.com" // Default, can be customized
-		hostAlias = fmt.Sprintf("gogs-%s", orgName)
 	default:
 		return "", fmt.Errorf("unsupported provider: %s", provider)
 	}

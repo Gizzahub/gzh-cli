@@ -144,4 +144,3 @@ func (of *OutputFormatter) Table(headers []string, rows [][]string) {
 		fmt.Println(rowLine)
 	}
 }
-

@@ -1,4 +1,4 @@
-package always_latest
+package alwayslatest
 
 import "github.com/spf13/cobra"
 

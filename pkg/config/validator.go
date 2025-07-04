@@ -85,7 +85,7 @@ func (v *Validator) validateDefaultProvider(provider string) {
 		return // Optional field
 	}
 
-	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea, ProviderGogs}
+	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea}
 	if !contains(validProviders, provider) {
 		v.addError(fmt.Sprintf("invalid default_provider '%s', must be one of: %s",
 			provider, strings.Join(validProviders, ", ")))
@@ -102,7 +102,7 @@ func (v *Validator) validateProviders(providers map[string]Provider) {
 // validateProvider validates a single provider configuration
 func (v *Validator) validateProvider(name string, provider Provider) {
 	// Validate provider name
-	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea, ProviderGogs}
+	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea}
 	if !contains(validProviders, name) {
 		v.addError(fmt.Sprintf("invalid provider name '%s', must be one of: %s",
 			name, strings.Join(validProviders, ", ")))

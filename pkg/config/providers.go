@@ -112,34 +112,6 @@ func (g *GiteaCloner) GetName() string {
 	return ProviderGitea
 }
 
-// GogsCloner implements ProviderCloner for Gogs
-type GogsCloner struct {
-	token string
-}
-
-// NewGogsCloner creates a new Gogs cloner
-func NewGogsCloner(token string) *GogsCloner {
-	return &GogsCloner{token: token}
-}
-
-func (g *GogsCloner) CloneOrganization(orgName, targetPath, strategy string) error {
-	// Gogs implementation would go here
-	return fmt.Errorf("gogs provider not yet fully implemented")
-}
-
-func (g *GogsCloner) CloneGroup(groupName, targetPath, strategy string) error {
-	// Gogs doesn't have groups, use organization instead
-	return g.CloneOrganization(groupName, targetPath, strategy)
-}
-
-func (g *GogsCloner) SetToken(token string) {
-	g.token = token
-}
-
-func (g *GogsCloner) GetName() string {
-	return ProviderGogs
-}
-
 // CreateProviderCloner creates a cloner for the specified provider
 func CreateProviderCloner(providerName, token string) (ProviderCloner, error) {
 	switch providerName {
@@ -149,8 +121,6 @@ func CreateProviderCloner(providerName, token string) (ProviderCloner, error) {
 		return NewGitLabCloner(token), nil
 	case ProviderGitea:
 		return NewGiteaCloner(token), nil
-	case ProviderGogs:
-		return NewGogsCloner(token), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", providerName)
 	}

@@ -196,4 +196,3 @@ func HasUncommittedChanges(repoPath string) (bool, error) {
 
 	return len(strings.TrimSpace(string(output))) > 0, nil
 }
-

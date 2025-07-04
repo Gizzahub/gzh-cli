@@ -1,4 +1,4 @@
-package dev_env
+package devenv
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package gen_config
+package genconfig
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gizzahub/gzh-manager-go/helpers"
+	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/spf13/cobra"
 )
 
@@ -241,7 +241,6 @@ func (o *genConfigDiscoverOptions) parseRemoteURL(remoteURL string) (provider, o
 		"github": regexp.MustCompile(`^git@github\.com:([^/]+)/(.+?)(?:\.git)?$`),
 		"gitlab": regexp.MustCompile(`^git@gitlab\.com:([^/]+)/(.+?)(?:\.git)?$`),
 		"gitea":  regexp.MustCompile(`^git@gitea\.com:([^/]+)/(.+?)(?:\.git)?$`),
-		"gogs":   regexp.MustCompile(`^git@gogs\.com:([^/]+)/(.+?)(?:\.git)?$`),
 	}
 
 	// Check SSH patterns
@@ -278,8 +277,6 @@ func (o *genConfigDiscoverOptions) parseRemoteURL(remoteURL string) (provider, o
 		return "gitlab", pathParts[0], pathParts[1], protocol
 	case "gitea.com":
 		return "gitea", pathParts[0], pathParts[1], protocol
-	case "gogs.com":
-		return "gogs", pathParts[0], pathParts[1], protocol
 	default:
 		// Custom GitLab/Gitea instance
 		if strings.Contains(host, "gitlab") {
@@ -287,9 +284,6 @@ func (o *genConfigDiscoverOptions) parseRemoteURL(remoteURL string) (provider, o
 		}
 		if strings.Contains(host, "gitea") {
 			return "gitea", pathParts[0], pathParts[1], protocol
-		}
-		if strings.Contains(host, "gogs") {
-			return "gogs", pathParts[0], pathParts[1], protocol
 		}
 	}
 

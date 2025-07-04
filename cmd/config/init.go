@@ -142,7 +142,7 @@ func createInteractiveConfig(outputFile string) error {
 	fmt.Println("📋 Basic Configuration")
 	fmt.Println("────────────────────")
 
-	defaultProvider := promptWithDefault(reader, "Default Git provider (github/gitlab/gitea/gogs)", "github")
+	defaultProvider := promptWithDefault(reader, "Default Git provider (github/gitlab/gitea)", "github")
 	template.DefaultProvider = defaultProvider
 
 	// Configure providers
@@ -152,7 +152,7 @@ func createInteractiveConfig(outputFile string) error {
 	}
 
 	// Ask about additional providers
-	allProviders := []string{"github", "gitlab", "gitea", "gogs"}
+	allProviders := []string{"github", "gitlab", "gitea"}
 	for _, provider := range allProviders {
 		if provider != defaultProvider {
 			if promptYesNo(reader, fmt.Sprintf("Configure %s?", provider), false) {

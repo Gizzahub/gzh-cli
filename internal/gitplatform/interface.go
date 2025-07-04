@@ -33,7 +33,7 @@ type GitPlatformClient interface {
 	// SetAuthentication sets the authentication token for API calls
 	SetAuthentication(token string)
 
-	// GetPlatformName returns the name of the platform (github, gitlab, gitea, gogs)
+	// GetPlatformName returns the name of the platform (github, gitlab, gitea)
 	GetPlatformName() string
 }
 
@@ -59,4 +59,3 @@ type ProviderConfig struct {
 	Strategy     CloneStrategy
 	MatchPattern string // Optional regex pattern for filtering repositories
 }
-

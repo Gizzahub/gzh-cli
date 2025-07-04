@@ -1,1 +1,1 @@
-package bulk_clone
+package bulkclone

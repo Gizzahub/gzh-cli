@@ -1,4 +1,4 @@
-package bulk_clone
+package bulkclone
 
 import (
 	"fmt"
@@ -111,10 +111,6 @@ func TestDefaultBulkCloneOptions(t *testing.T) {
 		assert.Equal(t, "reset", opts.strategy)
 	})
 
-	t.Run("gogs default options", func(t *testing.T) {
-		opts := defaultBulkCloneGogsOptions()
-		assert.Equal(t, "reset", opts.strategy)
-	})
 }
 
 func TestStrategyValidation(t *testing.T) {
@@ -422,7 +418,6 @@ func TestMainBulkCloneCommandFlags(t *testing.T) {
 		assert.Contains(t, subcommandNames, "github")
 		assert.Contains(t, subcommandNames, "gitlab")
 		assert.Contains(t, subcommandNames, "gitea")
-		assert.Contains(t, subcommandNames, "gogs")
 		assert.Contains(t, subcommandNames, "validate")
 	})
 }

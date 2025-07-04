@@ -1,4 +1,4 @@
-package bulk_clone
+package bulkclone
 
 import (
 	"fmt"
@@ -48,8 +48,6 @@ func (b *GitURLBuilder) BuildSSHHostAlias(orgName string) string {
 		return fmt.Sprintf("gitlab-%s", orgName)
 	case "gitea.com":
 		return fmt.Sprintf("gitea-%s", orgName)
-	case "gogs.com":
-		return fmt.Sprintf("gogs-%s", orgName)
 	default:
 		// For custom hostnames, use as-is
 		return b.Hostname
@@ -75,8 +73,6 @@ func GetDefaultHostname(provider string) string {
 		return "gitlab.com"
 	case "gitea":
 		return "gitea.com"
-	case "gogs":
-		return "gogs.com"
 	default:
 		return provider // Use provider name as hostname fallback
 	}

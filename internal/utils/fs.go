@@ -82,4 +82,3 @@ func FindFileInParents(startPath, filename string) (string, error) {
 
 	return "", os.ErrNotExist
 }
-

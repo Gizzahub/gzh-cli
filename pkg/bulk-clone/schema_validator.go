@@ -1,4 +1,4 @@
-package bulk_clone
+package bulkclone
 
 import (
 	_ "embed"

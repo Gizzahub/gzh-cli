@@ -1,4 +1,4 @@
-package net_env
+package netenv
 
 import (
 	"bufio"

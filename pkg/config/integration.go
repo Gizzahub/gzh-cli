@@ -19,7 +19,7 @@ func NewBulkCloneIntegration(config *Config) *BulkCloneIntegration {
 
 // BulkCloneTarget represents a target for bulk cloning operations
 type BulkCloneTarget struct {
-	Provider   string   // github, gitlab, gitea, gogs
+	Provider   string   // github, gitlab, gitea
 	Name       string   // organization or group name
 	CloneDir   string   // target directory
 	Token      string   // authentication token
@@ -36,7 +36,7 @@ func (b *BulkCloneIntegration) GetAllTargets() ([]BulkCloneTarget, error) {
 	var targets []BulkCloneTarget
 
 	for providerName, provider := range b.config.Providers {
-		// Process organizations (GitHub, Gitea, Gogs)
+		// Process organizations (GitHub, Gitea)
 		for _, org := range provider.Orgs {
 			target := BulkCloneTarget{
 				Provider:   providerName,

@@ -50,4 +50,3 @@ func Filter(items []string, predicate func(string) bool) []string {
 	}
 	return result
 }
-

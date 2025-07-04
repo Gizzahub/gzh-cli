@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/gizzahub/gzh-manager-go/helpers"
+	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/schollz/progressbar/v3"
 )
 

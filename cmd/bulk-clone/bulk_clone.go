@@ -1,9 +1,9 @@
-package bulk_clone
+package bulkclone
 
 import (
 	"fmt"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
@@ -35,7 +35,7 @@ func NewBulkCloneCmd() *cobra.Command {
 		
 You can use a configuration file (bulk-clone.yaml) to define multiple organizations
 and their settings. This command will process all repository roots defined in the
-configuration file regardless of the provider (GitHub, GitLab, Gitea, Gogs).
+configuration file regardless of the provider (GitHub, GitLab, Gitea).
 
 For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 		RunE: o.run,
@@ -45,7 +45,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.Flags().BoolVar(&o.useConfig, "use-config", false, "Use config file from standard locations")
 	cmd.Flags().BoolVar(&o.useGZHConfig, "use-gzh-config", false, "Use gzh.yaml configuration format")
 	cmd.Flags().StringVarP(&o.strategy, "strategy", "s", o.strategy, "Sync strategy: reset, pull, or fetch")
-	cmd.Flags().StringVar(&o.providerFilter, "provider", "", "Filter by provider: github, gitlab, gitea, gogs")
+	cmd.Flags().StringVar(&o.providerFilter, "provider", "", "Filter by provider: github, gitlab, gitea")
 
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
@@ -53,7 +53,6 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.AddCommand(newBulkCloneGiteaCmd())
 	cmd.AddCommand(newBulkCloneGithubCmd())
 	cmd.AddCommand(newBulkCloneGitlabCmd())
-	cmd.AddCommand(newBulkCloneGogsCmd())
 	cmd.AddCommand(newBulkCloneValidateCmd())
 
 	return cmd
@@ -71,7 +70,7 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclone.LoadConfig(configPath)
+	cfg, err := bulkclonepkg.LoadConfig(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
@@ -91,7 +90,7 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 		fmt.Printf("Processing %s organization: %s -> %s\n", repoRoot.Provider, repoRoot.OrgName, repoRoot.RootPath)
 
 		// Expand the root path
-		targetPath := bulkclone.ExpandPath(repoRoot.RootPath)
+		targetPath := bulkclonepkg.ExpandPath(repoRoot.RootPath)
 
 		switch repoRoot.Provider {
 		case "github":
@@ -119,7 +118,7 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 	// Also process default GitHub and GitLab configurations if they have org/group names
 	if cfg.Default.Github.OrgName != "" {
 		fmt.Printf("Processing default GitHub organization: %s\n", cfg.Default.Github.OrgName)
-		targetPath := bulkclone.ExpandPath(cfg.Default.Github.RootPath)
+		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Github.RootPath)
 		err = github.RefreshAll(targetPath, cfg.Default.Github.OrgName, o.strategy)
 		if err != nil {
 			fmt.Printf("Error processing default GitHub org: %v\n", err)
@@ -130,7 +129,7 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 
 	if cfg.Default.Gitlab.GroupName != "" {
 		fmt.Printf("Processing default GitLab group: %s\n", cfg.Default.Gitlab.GroupName)
-		targetPath := bulkclone.ExpandPath(cfg.Default.Gitlab.RootPath)
+		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Gitlab.RootPath)
 		err = gitlab.RefreshAll(targetPath, cfg.Default.Gitlab.GroupName, o.strategy)
 		if err != nil {
 			fmt.Printf("Error processing default GitLab group: %v\n", err)
@@ -228,9 +227,6 @@ func (o *bulkCloneOptions) executeProviderCloning(target config.BulkCloneTarget,
 	case config.ProviderGitea:
 		// Gitea support would go here
 		return fmt.Errorf("gitea provider not yet implemented for gzh.yaml format")
-	case config.ProviderGogs:
-		// Gogs support would go here
-		return fmt.Errorf("gogs provider not yet implemented for gzh.yaml format")
 	default:
 		return fmt.Errorf("unsupported provider: %s", target.Provider)
 	}

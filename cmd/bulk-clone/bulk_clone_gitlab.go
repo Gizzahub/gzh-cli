@@ -1,9 +1,9 @@
-package bulk_clone
+package bulkclone
 
 import (
 	"fmt"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	gitlabpkg "github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 	"github.com/spf13/cobra"
 )
@@ -80,7 +80,7 @@ func (o *bulkCloneGitlabOptions) loadFromConfig() error {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclone.LoadConfig(configPath)
+	cfg, err := bulkclonepkg.LoadConfig(configPath)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (o *bulkCloneGitlabOptions) loadFromConfig() error {
 
 	// Apply config values (CLI flags take precedence)
 	if o.targetPath == "" && groupConfig.RootPath != "" {
-		o.targetPath = bulkclone.ExpandPath(groupConfig.RootPath)
+		o.targetPath = bulkclonepkg.ExpandPath(groupConfig.RootPath)
 	}
 
 	if !o.recursively && groupConfig.Recursive {
