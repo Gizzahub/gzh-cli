@@ -48,10 +48,10 @@
 // Configuration Sources:
 //
 // The service searches for configuration files in the following order:
-//   1. Explicitly provided path
-//   2. Current directory (./gzh.yaml, ./gzh.yml)
-//   3. User config directory (~/.config/gzh-manager/gzh.yaml)
-//   4. System config directory (/etc/gzh-manager/gzh.yaml)
+//  1. Explicitly provided path
+//  2. Current directory (./gzh.yaml, ./gzh.yml)
+//  3. User config directory (~/.config/gzh-manager/gzh.yaml)
+//  4. System config directory (/etc/gzh-manager/gzh.yaml)
 //
 // Environment Variables:
 //

@@ -10,10 +10,9 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/spf13/viper"
-
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/spf13/viper"
 )
 
 // ConfigService provides centralized configuration management
@@ -96,11 +95,11 @@ func NewConfigService(options *ConfigServiceOptions) (ConfigService, error) {
 	}
 
 	v := viper.New()
-	
+
 	// Configure Viper
 	v.SetConfigName(options.ConfigName)
 	v.SetConfigType("yaml")
-	
+
 	// Add search paths
 	for _, path := range options.SearchPaths {
 		expandedPath := options.Environment.Expand(path)
@@ -134,7 +133,7 @@ func (s *DefaultConfigService) LoadConfiguration(ctx context.Context, configPath
 	defer s.mu.Unlock()
 
 	var err error
-	
+
 	if configPath != "" {
 		// Load from specific path
 		s.configPath = configPath
@@ -156,7 +155,7 @@ func (s *DefaultConfigService) LoadConfiguration(ctx context.Context, configPath
 	}
 
 	s.config = s.unifiedFacade.GetConfiguration()
-	
+
 	// Perform startup validation if enabled
 	if s.validationEnabled {
 		if err := s.performStartupValidation(); err != nil {
@@ -189,7 +188,7 @@ func (s *DefaultConfigService) ReloadConfiguration(ctx context.Context) error {
 	}
 
 	s.config = s.unifiedFacade.GetConfiguration()
-	
+
 	// Validate reloaded configuration
 	if err := s.validateConfig(); err != nil {
 		return fmt.Errorf("reloaded configuration validation failed: %w", err)
@@ -220,11 +219,11 @@ func (s *DefaultConfigService) SaveConfiguration(ctx context.Context, cfg *confi
 func (s *DefaultConfigService) ValidateConfiguration(ctx context.Context) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	if s.validationEnabled {
 		return s.performStartupValidationLocked()
 	}
-	
+
 	return s.validateConfig()
 }
 
@@ -241,7 +240,7 @@ func (s *DefaultConfigService) validateConfig() error {
 func (s *DefaultConfigService) performStartupValidation() error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	return s.performStartupValidationLocked()
 }
 
@@ -256,12 +255,12 @@ func (s *DefaultConfigService) performStartupValidationLocked() error {
 	}
 
 	result := s.startupValidator.ValidateUnifiedConfig(s.config)
-	
+
 	// Log warnings (could be configured to go to logger)
 	for _, warning := range result.Warnings {
 		fmt.Printf("⚠ Configuration Warning [%s]: %s\n", warning.Field, warning.Message)
 	}
-	
+
 	// Return error if validation failed
 	if !result.IsValid {
 		errorMessages := make([]string, len(result.Errors))
@@ -345,7 +344,7 @@ func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 func (s *DefaultConfigService) handleConfigChange(ctx context.Context) {
 	// Add a small delay to avoid multiple rapid changes
 	time.Sleep(100 * time.Millisecond)
-	
+
 	err := s.ReloadConfiguration(ctx)
 	if err != nil {
 		// Log error but continue watching - configuration might be temporarily invalid during editing
@@ -396,7 +395,7 @@ func (s *DefaultConfigService) findConfigFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	return s.viper.ConfigFileUsed(), nil
 }
 

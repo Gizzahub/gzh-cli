@@ -8,11 +8,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/spf13/cobra"
-
 	configservice "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/spf13/cobra"
 )
 
 // newWatchCmd creates the config watch subcommand
@@ -100,10 +99,10 @@ func watchConfig(configFile string, verbose bool, interval time.Duration) error 
 	changeCallback := func(newConfig *configpkg.UnifiedConfig) {
 		changeCount++
 		lastChangeTime = time.Now()
-		
-		fmt.Printf("\n🔄 Configuration changed (change #%d at %s)\n", 
+
+		fmt.Printf("\n🔄 Configuration changed (change #%d at %s)\n",
 			changeCount, lastChangeTime.Format("15:04:05"))
-		
+
 		// Validate the new configuration
 		validationResult := service.GetValidationResult()
 		if validationResult != nil {
@@ -162,10 +161,10 @@ func watchConfig(configFile string, verbose bool, interval time.Duration) error 
 
 		case <-statusTicker.C:
 			uptime := time.Since(startTime)
-			fmt.Printf("📊 Status: watching %s | uptime: %v | changes: %d", 
+			fmt.Printf("📊 Status: watching %s | uptime: %v | changes: %d",
 				configFile, uptime.Round(time.Second), changeCount)
 			if changeCount > 0 {
-				fmt.Printf(" | last change: %v ago", 
+				fmt.Printf(" | last change: %v ago",
 					time.Since(lastChangeTime).Round(time.Second))
 			}
 			fmt.Printf("\n")

@@ -66,7 +66,7 @@ func NormalizeVisibility(visibility string) string {
 	return normalized
 }
 
-// VisibilityRepository represents a repository with visibility information  
+// VisibilityRepository represents a repository with visibility information
 type VisibilityRepository struct {
 	Name      string `json:"name"`
 	FullName  string `json:"full_name"`

@@ -94,7 +94,7 @@ type ProviderManager interface {
 	GetSupportedProviders() []string
 }
 
-// DirectoryResolverInterface defines the interface for resolving target directories  
+// DirectoryResolverInterface defines the interface for resolving target directories
 type DirectoryResolverInterface interface {
 	// Resolve directory paths for repositories
 	ResolveDirectories(ctx context.Context, config *Config) ([]RepositoryPath, error)

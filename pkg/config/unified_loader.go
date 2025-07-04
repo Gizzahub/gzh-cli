@@ -5,17 +5,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	"gopkg.in/yaml.v3"
 )
 
 // UnifiedConfigLoader loads configuration from both legacy and unified formats
 type UnifiedConfigLoader struct {
-	ConfigPaths     []string
-	AutoMigrate     bool
-	PreferUnified   bool
-	CreateBackup    bool
+	ConfigPaths   []string
+	AutoMigrate   bool
+	PreferUnified bool
+	CreateBackup  bool
 }
 
 // NewUnifiedConfigLoader creates a new configuration loader
@@ -39,12 +38,12 @@ func NewUnifiedConfigLoader() *UnifiedConfigLoader {
 
 // LoadResult contains the result of loading a configuration
 type LoadResult struct {
-	Config         *UnifiedConfig
-	ConfigPath     string
-	IsLegacy       bool
-	WasMigrated    bool
-	MigrationPath  string
-	Warnings       []string
+	Config          *UnifiedConfig
+	ConfigPath      string
+	IsLegacy        bool
+	WasMigrated     bool
+	MigrationPath   string
+	Warnings        []string
 	RequiredActions []string
 }
 
@@ -56,7 +55,7 @@ func (l *UnifiedConfigLoader) LoadConfig() (*LoadResult, error) {
 // LoadConfigFromPath loads configuration from a specific path
 func (l *UnifiedConfigLoader) LoadConfigFromPath(configPath string) (*LoadResult, error) {
 	result := &LoadResult{
-		Warnings:       []string{},
+		Warnings:        []string{},
 		RequiredActions: []string{},
 	}
 
@@ -81,8 +80,8 @@ func (l *UnifiedConfigLoader) LoadConfigFromPath(configPath string) (*LoadResult
 // loadFromSpecificPath loads configuration from a specific file path
 func (l *UnifiedConfigLoader) loadFromSpecificPath(configPath string) (*LoadResult, error) {
 	result := &LoadResult{
-		ConfigPath:     configPath,
-		Warnings:       []string{},
+		ConfigPath:      configPath,
+		Warnings:        []string{},
 		RequiredActions: []string{},
 	}
 
@@ -147,13 +146,13 @@ func (l *UnifiedConfigLoader) loadLegacyConfig(configPath string, result *LoadRe
 		result.MigrationPath = migrationResult.TargetPath
 		result.Warnings = append(result.Warnings, migrationResult.Warnings...)
 		result.RequiredActions = append(result.RequiredActions, migrationResult.RequiredActions...)
-		result.RequiredActions = append(result.RequiredActions, 
+		result.RequiredActions = append(result.RequiredActions,
 			fmt.Sprintf("Consider removing legacy configuration file: %s", configPath))
 	} else {
 		// Convert legacy config to unified format in memory
 		unifiedConfig := l.convertLegacyToUnified(legacyConfig)
 		result.Config = unifiedConfig
-		result.RequiredActions = append(result.RequiredActions, 
+		result.RequiredActions = append(result.RequiredActions,
 			"Consider migrating to unified configuration format for better features")
 	}
 
@@ -168,7 +167,7 @@ func (l *UnifiedConfigLoader) performAutoMigration(configPath string, legacyConf
 
 	// If target already exists, create a versioned name
 	if FileExists(targetPath) {
-		targetPath = filepath.Join(dir, fmt.Sprintf("gzh.migrated.%s.yaml", 
+		targetPath = filepath.Join(dir, fmt.Sprintf("gzh.migrated.%s.yaml",
 			generateTimestamp()))
 	}
 
@@ -279,7 +278,7 @@ func (l *UnifiedConfigLoader) getSearchPaths() []string {
 	homeDir, err := os.UserHomeDir()
 	if err == nil {
 		configDir := filepath.Join(homeDir, ".config", "gzh-manager")
-		paths = append(paths, 
+		paths = append(paths,
 			filepath.Join(configDir, "gzh.yaml"),
 			filepath.Join(configDir, "gzh.yml"),
 			filepath.Join(configDir, "config.yaml"),
@@ -327,10 +326,9 @@ func (l *UnifiedConfigLoader) sortPathsByPreference(paths []string) []string {
 // isUnifiedFormatPath checks if a path is likely to be unified format
 func (l *UnifiedConfigLoader) isUnifiedFormatPath(path string) bool {
 	base := filepath.Base(path)
-	return base == "gzh.yaml" || base == "gzh.yml" || 
-		   base == "config.yaml" || base == "config.yml"
+	return base == "gzh.yaml" || base == "gzh.yml" ||
+		base == "config.yaml" || base == "config.yml"
 }
-
 
 // generateTimestamp generates a timestamp string for file naming
 func generateTimestamp() string {

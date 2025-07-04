@@ -14,12 +14,12 @@ func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
 	validator := NewStartupValidator()
 
 	tests := []struct {
-		name          string
-		config        *UnifiedConfig
-		expectedValid bool
-		expectedErrors int
+		name             string
+		config           *UnifiedConfig
+		expectedValid    bool
+		expectedErrors   int
 		expectedWarnings int
-		setupEnv      map[string]string
+		setupEnv         map[string]string
 	}{
 		{
 			name: "valid complete configuration",
@@ -65,7 +65,7 @@ func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
 			expectedErrors: 1,
 		},
 		{
-			name: "missing required fields",
+			name:   "missing required fields",
 			config: &UnifiedConfig{
 				// Missing version and providers
 			},
@@ -207,9 +207,9 @@ func TestStartupValidator_ValidateConfig(t *testing.T) {
 	validator := NewStartupValidator()
 
 	tests := []struct {
-		name          string
-		config        *Config
-		expectedValid bool
+		name           string
+		config         *Config
+		expectedValid  bool
 		expectedErrors int
 	}{
 		{

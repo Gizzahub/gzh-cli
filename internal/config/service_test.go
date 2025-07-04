@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConfigService_LoadConfiguration(t *testing.T) {
@@ -37,7 +36,7 @@ providers:
         strategy: "reset"
 `
 				path := filepath.Join(dir, "gzh.yaml")
-				err := os.WriteFile(path, []byte(content), 0644)
+				err := os.WriteFile(path, []byte(content), 0o644)
 				require.NoError(t, err)
 				return path
 			},
@@ -54,7 +53,7 @@ providers:
 			setupConfig: func(dir string) string {
 				content := `invalid: yaml: content`
 				path := filepath.Join(dir, "invalid.yaml")
-				err := os.WriteFile(path, []byte(content), 0644)
+				err := os.WriteFile(path, []byte(content), 0o644)
 				require.NoError(t, err)
 				return path
 			},
@@ -133,7 +132,7 @@ providers:
         clone_dir: "~/repos/initial"
 `
 
-	err = os.WriteFile(configPath, []byte(initialContent), 0644)
+	err = os.WriteFile(configPath, []byte(initialContent), 0o644)
 	require.NoError(t, err)
 
 	// Create service
@@ -173,7 +172,7 @@ providers:
         clone_dir: "~/repos/second"
 `
 
-	err = os.WriteFile(configPath, []byte(updatedContent), 0644)
+	err = os.WriteFile(configPath, []byte(updatedContent), 0o644)
 	require.NoError(t, err)
 
 	// Reload configuration
@@ -264,7 +263,7 @@ providers:
         clone_dir: "~/repos/watch-test"
 `
 
-	err = os.WriteFile(configPath, []byte(initialContent), 0644)
+	err = os.WriteFile(configPath, []byte(initialContent), 0o644)
 	require.NoError(t, err)
 
 	// Create service with watch enabled
@@ -316,7 +315,7 @@ providers:
         clone_dir: "~/repos/watched"
 `
 
-	err = os.WriteFile(configPath, []byte(updatedContent), 0644)
+	err = os.WriteFile(configPath, []byte(updatedContent), 0o644)
 	require.NoError(t, err)
 
 	// Wait for callback to be called
@@ -399,7 +398,7 @@ providers:
         strategy: "pull"
 `
 
-	err = os.WriteFile(configPath, []byte(content), 0644)
+	err = os.WriteFile(configPath, []byte(content), 0o644)
 	require.NoError(t, err)
 
 	// Create service

@@ -7,31 +7,30 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	"gopkg.in/yaml.v3"
 )
 
 // MigrationResult contains the results of a configuration migration
 type MigrationResult struct {
-	Success           bool
-	SourcePath        string
-	TargetPath        string
-	BackupPath        string
-	MigratedTargets   int
-	Warnings          []string
-	RequiredActions   []string
-	UnifiedConfig     *UnifiedConfig
-	LegacyConfig      *bulkclone.BulkCloneConfig
-	MigrationReport   string
+	Success         bool
+	SourcePath      string
+	TargetPath      string
+	BackupPath      string
+	MigratedTargets int
+	Warnings        []string
+	RequiredActions []string
+	UnifiedConfig   *UnifiedConfig
+	LegacyConfig    *bulkclone.BulkCloneConfig
+	MigrationReport string
 }
 
 // ConfigMigrator handles migration from legacy bulk-clone.yaml to unified format
 type ConfigMigrator struct {
-	SourcePath string
-	TargetPath string
+	SourcePath   string
+	TargetPath   string
 	CreateBackup bool
-	DryRun     bool
+	DryRun       bool
 }
 
 // NewConfigMigrator creates a new configuration migrator
@@ -344,21 +343,21 @@ func DetectLegacyFormat(configPath string) (bool, error) {
 
 	// Check for legacy format markers
 	content := string(data)
-	
+
 	// Legacy format has repo_roots and version 0.1
 	hasRepoRoots := strings.Contains(content, "repo_roots:")
 	hasLegacyVersion := strings.Contains(content, "version: \"0.1\"") || strings.Contains(content, "version: '0.1'")
 	hasIgnoreNames := strings.Contains(content, "ignore_names:")
-	
+
 	// Unified format has providers and version 1.0.0
 	hasProviders := strings.Contains(content, "providers:")
 	hasUnifiedVersion := strings.Contains(content, "version: \"1.0.0\"") || strings.Contains(content, "version: '1.0.0'")
-	
+
 	// If it has the old markers and not the new ones, it's legacy
 	if (hasRepoRoots || hasLegacyVersion || hasIgnoreNames) && !hasProviders && !hasUnifiedVersion {
 		return true, nil
 	}
-	
+
 	return false, nil
 }
 
@@ -366,7 +365,7 @@ func DetectLegacyFormat(configPath string) (bool, error) {
 func MigrateConfigFile(sourcePath, targetPath string, dryRun bool) (*MigrationResult, error) {
 	migrator := NewConfigMigrator(sourcePath, targetPath)
 	migrator.DryRun = dryRun
-	
+
 	return migrator.MigrateFromBulkClone()
 }
 
@@ -376,19 +375,19 @@ func AutoMigrate(configPath string) (*MigrationResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if !isLegacy {
 		return nil, nil // No migration needed
 	}
-	
+
 	// Determine target path (same directory, different name)
 	dir := filepath.Dir(configPath)
 	targetPath := filepath.Join(dir, "gzh.yaml")
-	
+
 	// If target already exists, create a versioned name
 	if FileExists(targetPath) {
 		targetPath = filepath.Join(dir, fmt.Sprintf("gzh.migrated.%s.yaml", time.Now().Format("20060102-150405")))
 	}
-	
+
 	return MigrateConfigFile(configPath, targetPath, false)
 }

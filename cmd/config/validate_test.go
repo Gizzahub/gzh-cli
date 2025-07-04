@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestValidateConfig(t *testing.T) {

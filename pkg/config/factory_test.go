@@ -5,24 +5,17 @@ import (
 	"testing"
 
 	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/gizzahub/gzh-manager-go/internal/testutil/builders"
 )
 
-// MockLogger implements the Logger interface for testing
-type MockLogger struct{}
-
-func (m *MockLogger) Debug(msg string, args ...interface{}) {}
-func (m *MockLogger) Info(msg string, args ...interface{})  {}
-func (m *MockLogger) Warn(msg string, args ...interface{})  {}
-func (m *MockLogger) Error(msg string, args ...interface{}) {}
-
 func TestProviderFactory(t *testing.T) {
-	mockEnv := env.NewMockEnvironment(map[string]string{
-		"GITHUB_TOKEN": "test-github-token",
-		"GITLAB_TOKEN": "test-gitlab-token",
-		"GITEA_TOKEN":  "test-gitea-token",
-	})
+	mockEnv := builders.NewEnvironmentBuilder().
+		WithGitHubToken("test-github-token").
+		WithGitLabToken("test-gitlab-token").
+		WithGiteaToken("test-gitea-token").
+		Build()
 
-	logger := &MockLogger{}
+	logger := builders.NewMockLoggerBuilder().Build()
 	factory := NewProviderFactory(mockEnv, logger)
 
 	// Test GetSupportedProviders
@@ -102,11 +95,11 @@ func TestProviderFactory(t *testing.T) {
 }
 
 func TestProviderFactoryWithConfig(t *testing.T) {
-	mockEnv := env.NewMockEnvironment(map[string]string{
-		"GITHUB_TOKEN": "test-github-token",
-	})
+	mockEnv := builders.NewEnvironmentBuilder().
+		WithGitHubToken("test-github-token").
+		Build()
 
-	logger := &MockLogger{}
+	logger := builders.NewMockLoggerBuilder().Build()
 	config := &ProviderFactoryConfig{
 		DefaultEnvironment: mockEnv,
 		EnableLogging:      true,
@@ -131,21 +124,21 @@ func TestProviderFactoryWithConfig(t *testing.T) {
 }
 
 func TestProviderFactoryWithEnvironment(t *testing.T) {
-	mockEnv := env.NewMockEnvironment(map[string]string{
-		"GITHUB_TOKEN": "env-github-token",
-		"GITLAB_TOKEN": "env-gitlab-token",
-		"GITEA_TOKEN":  "env-gitea-token",
-	})
+	mockEnv := builders.NewEnvironmentBuilder().
+		WithGitHubToken("env-github-token").
+		WithGitLabToken("env-gitlab-token").
+		WithGiteaToken("env-gitea-token").
+		Build()
 
-	logger := &MockLogger{}
+	logger := builders.NewMockLoggerBuilder().Build()
 	factory := NewProviderFactory(mockEnv, logger)
 
 	ctx := context.Background()
 
 	// Test CreateClonerWithEnv
-	customEnv := env.NewMockEnvironment(map[string]string{
-		"GITHUB_TOKEN": "custom-github-token",
-	})
+	customEnv := builders.NewEnvironmentBuilder().
+		WithGitHubToken("custom-github-token").
+		Build()
 
 	cloner, err := factory.CreateClonerWithEnv(ctx, "github", "test-token", customEnv)
 	if err != nil {

@@ -34,25 +34,25 @@ type StartupValidationWarning struct {
 
 // StartupValidationResult contains the results of startup validation
 type StartupValidationResult struct {
-	IsValid   bool                        `json:"is_valid"`
-	Errors    []StartupValidationError    `json:"errors"`
-	Warnings  []StartupValidationWarning  `json:"warnings"`
-	Summary   string                      `json:"summary"`
+	IsValid  bool                       `json:"is_valid"`
+	Errors   []StartupValidationError   `json:"errors"`
+	Warnings []StartupValidationWarning `json:"warnings"`
+	Summary  string                     `json:"summary"`
 }
 
 // NewStartupValidator creates a new startup configuration validator
 func NewStartupValidator() *StartupValidator {
 	v := validator.New()
-	
+
 	sv := &StartupValidator{
 		validator: v,
 		errors:    make([]StartupValidationError, 0),
 		warnings:  make([]StartupValidationWarning, 0),
 	}
-	
+
 	// Register custom validation functions
 	sv.registerCustomValidators()
-	
+
 	return sv
 }
 
@@ -60,25 +60,25 @@ func NewStartupValidator() *StartupValidator {
 func (sv *StartupValidator) registerCustomValidators() {
 	// Register custom strategy validator
 	sv.validator.RegisterValidation("strategy", sv.validateStrategy)
-	
+
 	// Register custom provider validator
 	sv.validator.RegisterValidation("provider", sv.validateProvider)
-	
+
 	// Register custom visibility validator
 	sv.validator.RegisterValidation("visibility", sv.validateVisibility)
-	
+
 	// Register custom directory path validator
 	sv.validator.RegisterValidation("dirpath", sv.validateDirectoryPath)
-	
+
 	// Register custom regex pattern validator
 	sv.validator.RegisterValidation("regexpattern", sv.validateRegexPattern)
-	
+
 	// Register custom environment token validator
 	sv.validator.RegisterValidation("envtoken", sv.validateEnvironmentToken)
-	
+
 	// Register custom timeout duration validator
 	sv.validator.RegisterValidation("timeout", sv.validateTimeout)
-	
+
 	// Register custom concurrency validator
 	sv.validator.RegisterValidation("concurrency", sv.validateConcurrency)
 }
@@ -86,33 +86,33 @@ func (sv *StartupValidator) registerCustomValidators() {
 // ValidateUnifiedConfig performs comprehensive validation of unified configuration
 func (sv *StartupValidator) ValidateUnifiedConfig(config *UnifiedConfig) *StartupValidationResult {
 	sv.reset()
-	
+
 	// Basic struct validation using tags
 	if err := sv.validator.Struct(config); err != nil {
 		sv.processValidationErrors(err)
 	}
-	
+
 	// Custom business logic validation
 	sv.validateBusinessRules(config)
-	
+
 	// Check for warnings
 	sv.checkConfigurationWarnings(config)
-	
+
 	return sv.buildResult()
 }
 
 // ValidateConfig performs validation of regular Config struct
 func (sv *StartupValidator) ValidateConfig(config *Config) *StartupValidationResult {
 	sv.reset()
-	
+
 	// Basic struct validation
 	if err := sv.validator.Struct(config); err != nil {
 		sv.processValidationErrors(err)
 	}
-	
+
 	// Custom validation for Config
 	sv.validateConfigBusinessRules(config)
-	
+
 	return sv.buildResult()
 }
 
@@ -122,19 +122,19 @@ func (sv *StartupValidator) validateBusinessRules(config *UnifiedConfig) {
 	if config.Version != "" && !isValidVersionFormat(config.Version) {
 		sv.addError("Version", "version_format", config.Version, "version must be in semantic versioning format (e.g., 1.0.0)")
 	}
-	
+
 	// Validate default provider exists in providers map
 	if config.DefaultProvider != "" {
 		if _, exists := config.Providers[config.DefaultProvider]; !exists {
 			sv.addError("DefaultProvider", "provider_exists", config.DefaultProvider, "default provider must exist in providers configuration")
 		}
 	}
-	
+
 	// Validate provider configurations
 	for providerName, provider := range config.Providers {
 		sv.validateProviderConfig(providerName, provider)
 	}
-	
+
 	// Validate global settings
 	if config.Global != nil {
 		sv.validateGlobalSettings(config.Global)
@@ -147,7 +147,7 @@ func (sv *StartupValidator) validateConfigBusinessRules(config *Config) {
 	if config.Version == "" {
 		sv.addError("Version", "required", "", "version is required")
 	}
-	
+
 	// Validate providers
 	for providerName, provider := range config.Providers {
 		sv.validateBasicProviderConfig(providerName, provider)
@@ -157,21 +157,21 @@ func (sv *StartupValidator) validateConfigBusinessRules(config *Config) {
 // validateProviderConfig validates a provider configuration
 func (sv *StartupValidator) validateProviderConfig(providerName string, provider *ProviderConfig) {
 	fieldPrefix := fmt.Sprintf("Providers[%s]", providerName)
-	
+
 	// Validate token format
 	if provider.Token == "" {
 		sv.addError(fieldPrefix+".Token", "required", "", "provider token is required")
 	} else {
 		sv.validateTokenFormat(fieldPrefix+".Token", provider.Token)
 	}
-	
+
 	// Validate API URL if provided
 	if provider.APIURL != "" {
 		if !isValidURL(provider.APIURL) {
 			sv.addError(fieldPrefix+".APIURL", "url", provider.APIURL, "API URL must be a valid URL")
 		}
 	}
-	
+
 	// Validate organizations
 	for i, org := range provider.Organizations {
 		sv.validateOrganizationConfig(fmt.Sprintf("%s.Organizations[%d]", fieldPrefix, i), org)
@@ -181,16 +181,16 @@ func (sv *StartupValidator) validateProviderConfig(providerName string, provider
 // validateBasicProviderConfig validates basic provider configuration
 func (sv *StartupValidator) validateBasicProviderConfig(providerName string, provider Provider) {
 	fieldPrefix := fmt.Sprintf("Providers[%s]", providerName)
-	
+
 	if provider.Token == "" {
 		sv.addError(fieldPrefix+".Token", "required", "", "provider token is required")
 	}
-	
+
 	// Validate orgs
 	for i, org := range provider.Orgs {
 		sv.validateBasicGitTarget(fmt.Sprintf("%s.Orgs[%d]", fieldPrefix, i), org)
 	}
-	
+
 	// Validate groups
 	for i, group := range provider.Groups {
 		sv.validateBasicGitTarget(fmt.Sprintf("%s.Groups[%d]", fieldPrefix, i), group)
@@ -202,12 +202,12 @@ func (sv *StartupValidator) validateBasicGitTarget(fieldPrefix string, target Gi
 	if target.Name == "" {
 		sv.addError(fieldPrefix+".Name", "required", "", "target name is required")
 	}
-	
+
 	// Validate visibility
 	if target.Visibility != "" && !isValidVisibility(target.Visibility) {
 		sv.addError(fieldPrefix+".Visibility", "visibility", target.Visibility, "visibility must be 'public', 'private', or 'all'")
 	}
-	
+
 	// Validate strategy
 	if target.Strategy != "" && !isValidStrategy(target.Strategy) {
 		sv.addError(fieldPrefix+".Strategy", "strategy", target.Strategy, "strategy must be 'reset', 'pull', or 'fetch'")
@@ -219,30 +219,30 @@ func (sv *StartupValidator) validateOrganizationConfig(fieldPrefix string, org *
 	if org.Name == "" {
 		sv.addError(fieldPrefix+".Name", "required", "", "organization name is required")
 	}
-	
+
 	if org.CloneDir == "" {
 		sv.addError(fieldPrefix+".CloneDir", "required", "", "clone directory is required")
 	} else {
 		sv.validateDirectoryPathValue(fieldPrefix+".CloneDir", org.CloneDir)
 	}
-	
+
 	// Validate visibility
 	if org.Visibility != "" && !isValidVisibility(org.Visibility) {
 		sv.addError(fieldPrefix+".Visibility", "visibility", org.Visibility, "visibility must be 'public', 'private', or 'all'")
 	}
-	
+
 	// Validate strategy
 	if org.Strategy != "" && !isValidStrategy(org.Strategy) {
 		sv.addError(fieldPrefix+".Strategy", "strategy", org.Strategy, "strategy must be 'reset', 'pull', or 'fetch'")
 	}
-	
+
 	// Validate include pattern
 	if org.Include != "" {
 		if _, err := regexp.Compile(org.Include); err != nil {
 			sv.addError(fieldPrefix+".Include", "regexpattern", org.Include, fmt.Sprintf("include pattern is not a valid regex: %v", err))
 		}
 	}
-	
+
 	// Validate exclude patterns
 	for i, pattern := range org.Exclude {
 		if _, err := regexp.Compile(pattern); err != nil {
@@ -257,22 +257,22 @@ func (sv *StartupValidator) validateGlobalSettings(global *GlobalSettings) {
 	if global.DefaultStrategy != "" && !isValidStrategy(global.DefaultStrategy) {
 		sv.addError("Global.DefaultStrategy", "strategy", global.DefaultStrategy, "default strategy must be 'reset', 'pull', or 'fetch'")
 	}
-	
+
 	// Validate default visibility
 	if global.DefaultVisibility != "" && !isValidVisibility(global.DefaultVisibility) {
 		sv.addError("Global.DefaultVisibility", "visibility", global.DefaultVisibility, "default visibility must be 'public', 'private', or 'all'")
 	}
-	
+
 	// Validate clone base directory
 	if global.CloneBaseDir != "" {
 		sv.validateDirectoryPathValue("Global.CloneBaseDir", global.CloneBaseDir)
 	}
-	
+
 	// Validate timeout settings
 	if global.Timeouts != nil {
 		sv.validateTimeoutSettings(global.Timeouts)
 	}
-	
+
 	// Validate concurrency settings
 	if global.Concurrency != nil {
 		sv.validateConcurrencySettings(global.Concurrency)
@@ -284,11 +284,11 @@ func (sv *StartupValidator) validateTimeoutSettings(timeouts *TimeoutSettings) {
 	if timeouts.HTTPTimeout > 0 && timeouts.HTTPTimeout < time.Second {
 		sv.addWarning("Global.Timeouts.HTTPTimeout", "HTTP timeout is very short (< 1s), this may cause request failures")
 	}
-	
+
 	if timeouts.GitTimeout > 0 && timeouts.GitTimeout < 30*time.Second {
 		sv.addWarning("Global.Timeouts.GitTimeout", "Git timeout is short (< 30s), this may cause issues with large repositories")
 	}
-	
+
 	if timeouts.RateLimitTimeout > 0 && timeouts.RateLimitTimeout < 5*time.Minute {
 		sv.addWarning("Global.Timeouts.RateLimitTimeout", "Rate limit timeout is short (< 5m), this may cause frequent rate limit errors")
 	}
@@ -299,11 +299,11 @@ func (sv *StartupValidator) validateConcurrencySettings(concurrency *Concurrency
 	if concurrency.CloneWorkers > 50 {
 		sv.addWarning("Global.Concurrency.CloneWorkers", "Very high clone worker count (> 50) may overwhelm the system or API rate limits")
 	}
-	
+
 	if concurrency.UpdateWorkers > 50 {
 		sv.addWarning("Global.Concurrency.UpdateWorkers", "Very high update worker count (> 50) may overwhelm the system or API rate limits")
 	}
-	
+
 	if concurrency.APIWorkers > 20 {
 		sv.addWarning("Global.Concurrency.APIWorkers", "Very high API worker count (> 20) may trigger rate limits")
 	}
@@ -316,11 +316,11 @@ func (sv *StartupValidator) checkConfigurationWarnings(config *UnifiedConfig) {
 	for _, provider := range config.Providers {
 		totalOrgs += len(provider.Organizations)
 	}
-	
+
 	if totalOrgs == 0 {
 		sv.addWarning("Providers", "No organizations configured, the application will not have any targets to process")
 	}
-	
+
 	// Check for environment variable tokens
 	for providerName, provider := range config.Providers {
 		if provider.Token != "" && strings.HasPrefix(provider.Token, "${") && strings.HasSuffix(provider.Token, "}") {
@@ -430,7 +430,7 @@ func (sv *StartupValidator) validateTokenFormat(field, token string) {
 		}
 		return
 	}
-	
+
 	// For direct tokens, check basic format (should be alphanumeric with some special chars)
 	if matched, _ := regexp.MatchString(`^[a-zA-Z0-9_.-]+$`, token); !matched {
 		sv.addWarning(field, "Token contains special characters that may cause issues")
@@ -442,7 +442,7 @@ func (sv *StartupValidator) validateDirectoryPathValue(field, path string) {
 	if strings.Contains(path, "$") {
 		return // Environment variables are valid
 	}
-	
+
 	// Check if path is absolute or relative with home directory
 	if !strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "~") && !strings.HasPrefix(path, ".") {
 		sv.addWarning(field, "Directory path should be absolute or start with ~, $, or .")
@@ -514,7 +514,7 @@ func (sv *StartupValidator) getErrorMessage(ve validator.FieldError) string {
 
 func (sv *StartupValidator) buildResult() *StartupValidationResult {
 	isValid := len(sv.errors) == 0
-	
+
 	var summary string
 	if isValid {
 		if len(sv.warnings) > 0 {
@@ -528,7 +528,7 @@ func (sv *StartupValidator) buildResult() *StartupValidationResult {
 			summary += fmt.Sprintf(" and %d warnings", len(sv.warnings))
 		}
 	}
-	
+
 	return &StartupValidationResult{
 		IsValid:  isValid,
 		Errors:   sv.errors,

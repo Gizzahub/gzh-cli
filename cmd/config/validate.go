@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 	configservice "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
+	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
 // validateConfig performs configuration validation
@@ -411,7 +411,7 @@ func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
 			fmt.Printf("    Default Visibility: %s\n", config.Global.DefaultVisibility)
 		}
 		if config.Global.Concurrency != nil {
-			fmt.Printf("    Concurrency: clone=%d, update=%d, api=%d\n", 
+			fmt.Printf("    Concurrency: clone=%d, update=%d, api=%d\n",
 				config.Global.Concurrency.CloneWorkers,
 				config.Global.Concurrency.UpdateWorkers,
 				config.Global.Concurrency.APIWorkers)

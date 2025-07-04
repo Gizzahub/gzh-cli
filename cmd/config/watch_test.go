@@ -9,12 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	configservice "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWatchConfigHotReloading(t *testing.T) {
@@ -43,7 +42,7 @@ providers:
         strategy: "reset"
 `
 
-	err = os.WriteFile(configPath, []byte(initialContent), 0644)
+	err = os.WriteFile(configPath, []byte(initialContent), 0o644)
 	require.NoError(t, err)
 
 	// Create service with hot-reloading enabled
@@ -103,7 +102,7 @@ providers:
         strategy: "pull"
 `
 
-		err = os.WriteFile(configPath, []byte(updatedContent), 0644)
+		err = os.WriteFile(configPath, []byte(updatedContent), 0o644)
 		require.NoError(t, err)
 
 		// Wait for change notification
@@ -143,10 +142,10 @@ providers:
         clone_dir: "~/repos/%s"
         visibility: "all"
         strategy: "reset"
-`, change.provider, change.provider, 
-			strings.ToUpper(change.provider), change.orgName, change.orgName)
+`, change.provider, change.provider,
+				strings.ToUpper(change.provider), change.orgName, change.orgName)
 
-			err = os.WriteFile(configPath, []byte(content), 0644)
+			err = os.WriteFile(configPath, []byte(content), 0o644)
 			require.NoError(t, err)
 
 			// Small delay between changes
@@ -179,7 +178,7 @@ providers:
         clone_dir: ""  # Invalid empty clone_dir
 `
 
-		err = os.WriteFile(configPath, []byte(invalidContent), 0644)
+		err = os.WriteFile(configPath, []byte(invalidContent), 0o644)
 		require.NoError(t, err)
 
 		// Wait for change notification
@@ -207,7 +206,7 @@ providers:
         strategy: "reset"
 `
 
-		err = os.WriteFile(configPath, []byte(fixedContent), 0644)
+		err = os.WriteFile(configPath, []byte(fixedContent), 0o644)
 		require.NoError(t, err)
 
 		// Wait for fix notification
@@ -215,7 +214,7 @@ providers:
 		case fixedConfig := <-changeNotifications:
 			assert.Equal(t, "1.0.0", fixedConfig.Version)
 			assert.Equal(t, "github", fixedConfig.DefaultProvider)
-			
+
 			// Validation should now pass
 			validationResult := service.GetValidationResult()
 			assert.NotNil(t, validationResult)
@@ -243,7 +242,7 @@ providers:
         clone_dir: "~/repos/test"
 `
 
-	err = os.WriteFile(configPath, []byte(content), 0644)
+	err = os.WriteFile(configPath, []byte(content), 0o644)
 	require.NoError(t, err)
 
 	// Test config file discovery

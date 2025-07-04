@@ -11,10 +11,10 @@ import (
 
 // UnifiedConfigFacade provides a unified interface for configuration management
 type UnifiedConfigFacade struct {
-	loader       *UnifiedConfigLoader
-	config       *UnifiedConfig
-	loadResult   *LoadResult
-	integration  *BulkCloneIntegration
+	loader      *UnifiedConfigLoader
+	config      *UnifiedConfig
+	loadResult  *LoadResult
+	integration *BulkCloneIntegration
 }
 
 // NewUnifiedConfigFacade creates a new unified configuration facade
@@ -99,7 +99,7 @@ func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 // CreateDefaultConfiguration creates a default configuration file
 func (f *UnifiedConfigFacade) CreateDefaultConfiguration(configPath string) error {
 	defaultConfig := DefaultUnifiedConfig()
-	
+
 	// Set up a basic example configuration
 	defaultConfig.Providers["github"] = &ProviderConfig{
 		Token: "${GITHUB_TOKEN}",
@@ -183,7 +183,7 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 - **Migration Status:** %s
 
 ## Providers Configuration
-`, 
+`,
 		time.Now().Format("2006-01-02 15:04:05"),
 		f.config.Version,
 		f.loadResult.ConfigPath,
@@ -200,7 +200,7 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 - **Token:** %s
 - **Organizations:** %d
 - **API URL:** %s
-`, 
+`,
 			providerName,
 			maskToken(provider.Token),
 			len(provider.Organizations),
@@ -209,7 +209,7 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 
 		for _, org := range provider.Organizations {
 			report += fmt.Sprintf(`  - **%s:** %s (%s, %s)
-`, 
+`,
 				org.Name,
 				org.CloneDir,
 				org.Visibility,
