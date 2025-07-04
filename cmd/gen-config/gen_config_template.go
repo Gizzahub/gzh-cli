@@ -72,7 +72,7 @@ func (o *genConfigTemplateOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	// Write to file
-	err = os.WriteFile(o.outputFile, []byte(content), 0o644)
+	err = os.WriteFile(o.outputFile, []byte(content), 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write configuration file: %w", err)
 	}

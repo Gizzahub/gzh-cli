@@ -1,6 +1,7 @@
 package repoconfig
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -335,8 +336,16 @@ func displayTemplateTable(templates []ConfigTemplate) {
 
 // displayTemplateJSON displays templates in JSON format
 func displayTemplateJSON(templates []ConfigTemplate) {
-	// TODO: Implement proper JSON serialization
-	fmt.Println("JSON template list output not yet implemented")
+	jsonData := map[string]interface{}{
+		"templates": templates,
+		"count":     len(templates),
+	}
+
+	if jsonBytes, err := json.MarshalIndent(jsonData, "", "  "); err != nil {
+		fmt.Printf("Error serializing JSON: %v\n", err)
+	} else {
+		fmt.Println(string(jsonBytes))
+	}
 }
 
 // getTemplateConfiguration returns mock template configuration

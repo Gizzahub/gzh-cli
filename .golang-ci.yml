@@ -1,6 +1,18 @@
 linters-settings:
   lll:
     line-length: 180
+  gocyclo:
+    min-complexity: 15
+  dupl:
+    threshold: 100
+  gosec:
+    severity: medium
+    confidence: medium
+  funlen:
+    lines: 100
+    statements: 50
+  gocognit:
+    min-complexity: 20
 linters:
   # disable-all: true
   # Uncomment to enable all linters
@@ -27,19 +39,9 @@ linters:
     - exhaustruct
     - nolintlint
     - wrapcheck
-# manual
-    - unused
-    - revive
+# manual (these are now enabled above)
   # additional non-default linters that we want to use
   enable:
-#    - gochecknoglobals
-#    - err113
-#    - revive
-#    - taglint
-#    - unused
-#    - gosec
-#    - gocritic
-#    - funlen
     - goconst
     - godox
     - gofmt
@@ -52,3 +54,45 @@ linters:
     - govet
     - gosimple
     - errcheck
+    # Security and complexity linters
+    - gosec
+    - dupl
+    - gocyclo
+    - funlen
+    - gocognit
+    # Additional quality linters
+    - gocritic
+    - revive
+    - unused
+    - gochecknoglobals
+    - err113
+    # Style and performance linters
+    - prealloc
+    - unparam
+    - unconvert
+    - copyloopvar
+
+issues:
+  exclude-rules:
+    # Exclude some gosec rules that are too noisy for this codebase
+    - linters:
+        - gosec
+      text: "G104"  # Ignore audit errors for now
+    - linters:
+        - gosec  
+      text: "G304"  # File path from user input - some are expected
+    # Exclude dupl in test files as test patterns are often duplicated
+    - path: "_test\\.go"
+      linters:
+        - dupl
+    # Exclude revive package-comments in test files
+    - path: "_test\\.go" 
+      linters:
+        - revive
+      text: "package-comments"
+    # Exclude funlen in test files where long tests are acceptable
+    - path: "_test\\.go"
+      linters:
+        - funlen
+  max-same-issues: 0
+  max-issues-per-linter: 0

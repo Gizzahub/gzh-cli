@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // ConfigSearchPaths defines the search order for configuration files
@@ -20,16 +22,21 @@ var ConfigSearchPaths = []string{
 
 // LoadConfig loads configuration from the first available file in search paths
 func LoadConfig() (*Config, error) {
+	return LoadConfigWithEnv(env.NewOSEnvironment())
+}
+
+// LoadConfigWithEnv loads configuration using the provided environment
+func LoadConfigWithEnv(environment env.Environment) (*Config, error) {
 	// Check environment variable first
-	if configPath := os.Getenv("GZH_CONFIG_PATH"); configPath != "" {
-		return LoadConfigFromFile(configPath)
+	if configPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); configPath != "" {
+		return LoadConfigFromFileWithEnv(configPath, environment)
 	}
 
 	// Search in predefined paths
 	for _, path := range ConfigSearchPaths {
-		expandedPath := expandPath(path)
+		expandedPath := expandPathWithEnv(path, environment)
 		if fileExists(expandedPath) {
-			return LoadConfigFromFile(expandedPath)
+			return LoadConfigFromFileWithEnv(expandedPath, environment)
 		}
 	}
 
@@ -38,15 +45,25 @@ func LoadConfig() (*Config, error) {
 
 // LoadConfigFromFile loads configuration from a specific file
 func LoadConfigFromFile(filename string) (*Config, error) {
-	expandedPath := expandPath(filename)
+	return LoadConfigFromFileWithEnv(filename, env.NewOSEnvironment())
+}
+
+// LoadConfigFromFileWithEnv loads configuration from a specific file using the provided environment
+func LoadConfigFromFileWithEnv(filename string, environment env.Environment) (*Config, error) {
+	expandedPath := expandPathWithEnv(filename, environment)
 	return ParseYAMLFile(expandedPath)
 }
 
 // FindConfigFile finds the first available configuration file
 func FindConfigFile() (string, error) {
+	return FindConfigFileWithEnv(env.NewOSEnvironment())
+}
+
+// FindConfigFileWithEnv finds the first available configuration file using the provided environment
+func FindConfigFileWithEnv(environment env.Environment) (string, error) {
 	// Check environment variable first
-	if configPath := os.Getenv("GZH_CONFIG_PATH"); configPath != "" {
-		expandedPath := expandPath(configPath)
+	if configPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); configPath != "" {
+		expandedPath := expandPathWithEnv(configPath, environment)
 		if fileExists(expandedPath) {
 			return expandedPath, nil
 		}
@@ -55,7 +72,7 @@ func FindConfigFile() (string, error) {
 
 	// Search in predefined paths
 	for _, path := range ConfigSearchPaths {
-		expandedPath := expandPath(path)
+		expandedPath := expandPathWithEnv(path, environment)
 		if fileExists(expandedPath) {
 			return expandedPath, nil
 		}
@@ -75,10 +92,21 @@ func GetConfigSearchPaths() []string {
 
 // expandPath expands ~ to home directory and resolves relative paths
 func expandPath(path string) string {
-	if path[0] == '~' {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return path // Return original if we can't get home dir
+	return expandPathWithEnv(path, env.NewOSEnvironment())
+}
+
+// expandPathWithEnv expands ~ to home directory and resolves relative paths using the provided environment
+func expandPathWithEnv(path string, environment env.Environment) string {
+	if len(path) > 0 && path[0] == '~' {
+		// Try to get home directory from environment first
+		homeDir := environment.Get(env.CommonEnvironmentKeys.HomeDir)
+		if homeDir == "" {
+			// Fallback to os.UserHomeDir() for compatibility
+			var err error
+			homeDir, err = os.UserHomeDir()
+			if err != nil {
+				return path // Return original if we can't get home dir
+			}
 		}
 		return filepath.Join(homeDir, path[1:])
 	}

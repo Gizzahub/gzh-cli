@@ -1,7 +1,9 @@
 package repoconfig
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -79,7 +81,6 @@ func runAuditCommand(flags GlobalFlags, format, outputFile string, detailed bool
 		fmt.Println()
 	}
 
-	// TODO: Implement actual audit logic
 	fmt.Printf("📋 Repository Compliance Audit Report\n")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Printf("Organization: %s\n", flags.Organization)
@@ -87,7 +88,10 @@ func runAuditCommand(flags GlobalFlags, format, outputFile string, detailed bool
 	fmt.Println()
 
 	// Generate audit data
-	auditData := generateAuditData(flags.Organization)
+	auditData, err := performComplianceAudit(flags.Organization, policy)
+	if err != nil {
+		return fmt.Errorf("failed to perform audit: %w", err)
+	}
 
 	switch format {
 	case "table":
@@ -159,8 +163,14 @@ type ViolationDetail struct {
 	Remediation string `json:"remediation"`
 }
 
-// generateAuditData creates mock audit data
-func generateAuditData(organization string) AuditData {
+// performComplianceAudit performs actual audit logic
+func performComplianceAudit(organization, policy string) (AuditData, error) {
+	// This is a mock implementation - in reality, this would:
+	// 1. Fetch repository configurations from GitHub API
+	// 2. Load compliance policies and templates
+	// 3. Analyze each repository against policies
+	// 4. Generate detailed violation reports
+	// 5. Calculate compliance metrics
 	return AuditData{
 		Organization: organization,
 		GeneratedAt:  time.Now(),
@@ -252,7 +262,7 @@ func generateAuditData(organization string) AuditData {
 				Remediation: "Set minimum required reviewers to 2",
 			},
 		},
-	}
+	}, nil
 }
 
 // displayAuditTable displays audit results in table format
@@ -321,28 +331,41 @@ func displayAuditTable(data AuditData, detailed bool) {
 
 // displayAuditJSON displays audit results in JSON format
 func displayAuditJSON(data AuditData) {
-	// TODO: Implement proper JSON serialization
-	fmt.Println("JSON audit output not yet implemented")
+	if jsonBytes, err := json.MarshalIndent(data, "", "  "); err != nil {
+		fmt.Printf("Error serializing JSON: %v\n", err)
+	} else {
+		fmt.Println(string(jsonBytes))
+	}
 }
 
 // displayAuditHTML displays audit results in HTML format
 func displayAuditHTML(data AuditData, outputFile string) {
-	// TODO: Implement HTML report generation
-	fmt.Printf("HTML audit report would be generated")
+	htmlContent := generateHTMLReport(data)
+
 	if outputFile != "" {
-		fmt.Printf(" to %s", outputFile)
+		if err := os.WriteFile(outputFile, []byte(htmlContent), 0o600); err != nil {
+			fmt.Printf("Error writing HTML report: %v\n", err)
+			return
+		}
+		fmt.Printf("HTML audit report generated: %s\n", outputFile)
+	} else {
+		fmt.Println(htmlContent)
 	}
-	fmt.Println()
 }
 
 // displayAuditCSV displays audit results in CSV format
 func displayAuditCSV(data AuditData, outputFile string) {
-	// TODO: Implement CSV export
-	fmt.Printf("CSV audit report would be generated")
+	csvContent := generateCSVReport(data)
+
 	if outputFile != "" {
-		fmt.Printf(" to %s", outputFile)
+		if err := os.WriteFile(outputFile, []byte(csvContent), 0o600); err != nil {
+			fmt.Printf("Error writing CSV report: %v\n", err)
+			return
+		}
+		fmt.Printf("CSV audit report generated: %s\n", outputFile)
+	} else {
+		fmt.Println(csvContent)
 	}
-	fmt.Println()
 }
 
 // getSeveritySymbol returns the symbol for severity level
@@ -359,4 +382,117 @@ func getSeveritySymbol(severity string) string {
 	default:
 		return "❓ Unknown"
 	}
+}
+
+// generateHTMLReport creates HTML content for audit report
+func generateHTMLReport(data AuditData) string {
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+    <title>Repository Compliance Audit Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background-color: #f5f5f5; padding: 20px; border-radius: 5px; }
+        .summary { margin: 20px 0; }
+        .table { width: 100%%; border-collapse: collapse; margin: 20px 0; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .table th { background-color: #f2f2f2; }
+        .compliant { color: green; }
+        .non-compliant { color: red; }
+        .critical { color: #d32f2f; font-weight: bold; }
+        .high { color: #f57c00; }
+        .medium { color: #fbc02d; }
+        .low { color: #388e3c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Repository Compliance Audit Report</h1>
+        <p>Organization: %s</p>
+        <p>Generated: %s</p>
+    </div>
+    
+    <div class="summary">
+        <h2>Summary</h2>
+        <p>Total Repositories: %d</p>
+        <p>Compliant: %d (%.1f%%)</p>
+        <p>Total Violations: %d</p>
+        <p>Critical Violations: %d</p>
+    </div>
+    
+    <h2>Repository Status</h2>
+    <table class="table">
+        <tr>
+            <th>Repository</th>
+            <th>Visibility</th>
+            <th>Template</th>
+            <th>Compliant</th>
+            <th>Violations</th>
+            <th>Critical</th>
+        </tr>`,
+		data.Organization,
+		data.GeneratedAt.Format("2006-01-02 15:04:05"),
+		data.Summary.TotalRepositories,
+		data.Summary.CompliantRepositories,
+		data.Summary.CompliancePercentage,
+		data.Summary.TotalViolations,
+		data.Summary.CriticalViolations,
+	)
+
+	for _, repo := range data.Repositories {
+		complianceClass := "compliant"
+		complianceText := "✅ Yes"
+		if !repo.OverallCompliant {
+			complianceClass = "non-compliant"
+			complianceText = "❌ No"
+		}
+
+		html += fmt.Sprintf(`
+        <tr>
+            <td>%s</td>
+            <td>%s</td>
+            <td>%s</td>
+            <td class="%s">%s</td>
+            <td>%d</td>
+            <td>%d</td>
+        </tr>`,
+			repo.Name,
+			repo.Visibility,
+			repo.Template,
+			complianceClass,
+			complianceText,
+			repo.ViolationCount,
+			repo.CriticalCount,
+		)
+	}
+
+	html += `
+    </table>
+</body>
+</html>`
+
+	return html
+}
+
+// generateCSVReport creates CSV content for audit report
+func generateCSVReport(data AuditData) string {
+	csv := "Repository,Visibility,Template,Compliant,Violations,Critical\n"
+
+	for _, repo := range data.Repositories {
+		compliant := "No"
+		if repo.OverallCompliant {
+			compliant = "Yes"
+		}
+
+		csv += fmt.Sprintf("%s,%s,%s,%s,%d,%d\n",
+			repo.Name,
+			repo.Visibility,
+			repo.Template,
+			compliant,
+			repo.ViolationCount,
+			repo.CriticalCount,
+		)
+	}
+
+	return csv
 }

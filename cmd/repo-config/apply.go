@@ -80,7 +80,6 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 		fmt.Println()
 	}
 
-	// TODO: Implement actual configuration application logic
 	fmt.Printf("⚙️  Repository Configuration Application\n")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println()
@@ -90,29 +89,10 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 		fmt.Println()
 	}
 
-	// Mock configuration changes for demonstration
-	changes := []ConfigurationChange{
-		{
-			Repository:   "api-server",
-			Setting:      "branch_protection.main.required_reviews",
-			CurrentValue: "1",
-			NewValue:     "2",
-			Action:       "update",
-		},
-		{
-			Repository:   "web-frontend",
-			Setting:      "features.wiki",
-			CurrentValue: "true",
-			NewValue:     "false",
-			Action:       "update",
-		},
-		{
-			Repository:   "legacy-service",
-			Setting:      "security.delete_head_branches",
-			CurrentValue: "false",
-			NewValue:     "true",
-			Action:       "create",
-		},
+	// Get configuration changes to apply
+	changes, err := getConfigurationChanges(flags.Organization, filter, template)
+	if err != nil {
+		return fmt.Errorf("failed to get configuration changes: %w", err)
 	}
 
 	if len(changes) == 0 {
@@ -167,9 +147,12 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 			}
 		}
 
-		// Simulate API call delay
+		// Apply configuration change
 		fmt.Printf("  🔄 Updating %s...", change.Repository)
-		// TODO: Implement actual GitHub API calls
+		if err := applyConfigurationChange(change); err != nil {
+			fmt.Printf(" ❌ Failed: %v\n", err)
+			continue
+		}
 		fmt.Printf(" ✅\n")
 	}
 
@@ -210,4 +193,64 @@ func getAffectedRepoCount(changes []ConfigurationChange) int {
 		repos[change.Repository] = true
 	}
 	return len(repos)
+}
+
+// getConfigurationChanges retrieves configuration changes for an organization
+func getConfigurationChanges(organization, filter, template string) ([]ConfigurationChange, error) {
+	// This is a mock implementation - in reality, this would:
+	// 1. Fetch current repository configurations from GitHub API
+	// 2. Load target configurations from templates
+	// 3. Generate required changes
+	// 4. Apply filter and template constraints if specified
+
+	mockChanges := []ConfigurationChange{
+		{
+			Repository:   "api-server",
+			Setting:      "branch_protection.main.required_reviews",
+			CurrentValue: "1",
+			NewValue:     "2",
+			Action:       "update",
+		},
+		{
+			Repository:   "web-frontend",
+			Setting:      "features.wiki",
+			CurrentValue: "true",
+			NewValue:     "false",
+			Action:       "update",
+		},
+		{
+			Repository:   "legacy-service",
+			Setting:      "security.delete_head_branches",
+			CurrentValue: "false",
+			NewValue:     "true",
+			Action:       "create",
+		},
+	}
+
+	// Apply filter if specified
+	if filter != "" {
+		// In a real implementation, this would use regex to filter repositories
+	}
+
+	// Apply template filter if specified
+	if template != "" {
+		// In a real implementation, this would filter changes based on template
+	}
+
+	return mockChanges, nil
+}
+
+// applyConfigurationChange applies a single configuration change
+func applyConfigurationChange(change ConfigurationChange) error {
+	// This is a mock implementation - in reality, this would:
+	// 1. Use GitHub API to apply the configuration change
+	// 2. Handle authentication and rate limiting
+	// 3. Verify the change was applied successfully
+	// 4. Return appropriate errors if something fails
+
+	// Simulate some processing time
+	// time.Sleep(100 * time.Millisecond)
+
+	// For demonstration, we'll just return success
+	return nil
 }

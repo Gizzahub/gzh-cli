@@ -195,9 +195,9 @@ func (o *sshConfigGenerateOptions) generateHostConfig(provider, orgName string, 
 	configLines = append(configLines, fmt.Sprintf("# %s organization: %s", strings.Title(provider), orgName))
 	configLines = append(configLines, fmt.Sprintf("Host %s", hostAlias))
 	configLines = append(configLines, fmt.Sprintf("    HostName %s", hostname))
-	configLines = append(configLines, fmt.Sprintf("    User git"))
+	configLines = append(configLines, "    User git")
 	configLines = append(configLines, fmt.Sprintf("    IdentityFile %s", keyPath))
-	configLines = append(configLines, fmt.Sprintf("    IdentitiesOnly yes"))
+	configLines = append(configLines, "    IdentitiesOnly yes")
 
 	return strings.Join(configLines, "\n"), nil
 }

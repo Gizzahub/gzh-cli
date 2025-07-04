@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // ChangeLogger provides comprehensive logging for repository configuration changes
@@ -463,13 +465,18 @@ func (cl *ChangeLogger) formatCSVEntry(entry *LogEntry) string {
 
 // getSystemUser gets the current system user for logging (enhanced version)
 func getSystemUser() string {
+	return getSystemUserWithEnv(env.NewOSEnvironment())
+}
+
+// getSystemUserWithEnv gets the current system user using the provided environment
+func getSystemUserWithEnv(environment env.Environment) string {
 	if u, err := user.Current(); err == nil {
 		return u.Username
 	}
-	if username := os.Getenv("USER"); username != "" {
+	if username := environment.Get(env.CommonEnvironmentKeys.User); username != "" {
 		return username
 	}
-	if username := os.Getenv("USERNAME"); username != "" {
+	if username := environment.Get(env.CommonEnvironmentKeys.Username); username != "" {
 		return username
 	}
 	return "unknown"

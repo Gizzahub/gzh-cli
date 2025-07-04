@@ -81,7 +81,7 @@ func List(org string) ([]string, error) {
 }
 
 func Clone(targetPath string, org string, repo string) error {
-	//if branch == "" {
+	// if branch == "" {
 	//	defaultBranch, err := GetDefaultBranch(org, repo)
 	//	if err != nil {
 	//		fmt.Println("failed to get default. clone without branch specify.")
@@ -94,7 +94,7 @@ func Clone(targetPath string, org string, repo string) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 
-	//var cmd *exec.Cmd
+	// var cmd *exec.Cmd
 	//if branch == "" {
 	//	//cmd := exec.Command("git", "clone", cloneURL, targetPath)
 	//	cmd = exec.Command("git", "clone", "-b", branch, cloneURL, targetPath)

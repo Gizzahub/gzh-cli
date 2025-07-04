@@ -2,9 +2,9 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/gitea"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
@@ -20,18 +20,27 @@ type ProviderCloner interface {
 
 // GitHubCloner implements ProviderCloner for GitHub
 type GitHubCloner struct {
-	token string
+	token       string
+	environment env.Environment
 }
 
 // NewGitHubCloner creates a new GitHub cloner
 func NewGitHubCloner(token string) *GitHubCloner {
-	return &GitHubCloner{token: token}
+	return NewGitHubClonerWithEnv(token, env.NewOSEnvironment())
+}
+
+// NewGitHubClonerWithEnv creates a new GitHub cloner with the provided environment
+func NewGitHubClonerWithEnv(token string, environment env.Environment) *GitHubCloner {
+	return &GitHubCloner{
+		token:       token,
+		environment: environment,
+	}
 }
 
 func (g *GitHubCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		os.Setenv("GITHUB_TOKEN", g.token)
+		g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token)
 	}
 	return github.RefreshAll(targetPath, orgName, strategy)
 }
@@ -51,12 +60,21 @@ func (g *GitHubCloner) GetName() string {
 
 // GitLabCloner implements ProviderCloner for GitLab
 type GitLabCloner struct {
-	token string
+	token       string
+	environment env.Environment
 }
 
 // NewGitLabCloner creates a new GitLab cloner
 func NewGitLabCloner(token string) *GitLabCloner {
-	return &GitLabCloner{token: token}
+	return NewGitLabClonerWithEnv(token, env.NewOSEnvironment())
+}
+
+// NewGitLabClonerWithEnv creates a new GitLab cloner with the provided environment
+func NewGitLabClonerWithEnv(token string, environment env.Environment) *GitLabCloner {
+	return &GitLabCloner{
+		token:       token,
+		environment: environment,
+	}
 }
 
 func (g *GitLabCloner) CloneOrganization(orgName, targetPath, strategy string) error {
@@ -67,7 +85,7 @@ func (g *GitLabCloner) CloneOrganization(orgName, targetPath, strategy string) e
 func (g *GitLabCloner) CloneGroup(groupName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		os.Setenv("GITLAB_TOKEN", g.token)
+		g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token)
 	}
 	return gitlab.RefreshAll(targetPath, groupName, strategy)
 }
@@ -82,18 +100,27 @@ func (g *GitLabCloner) GetName() string {
 
 // GiteaCloner implements ProviderCloner for Gitea
 type GiteaCloner struct {
-	token string
+	token       string
+	environment env.Environment
 }
 
 // NewGiteaCloner creates a new Gitea cloner
 func NewGiteaCloner(token string) *GiteaCloner {
-	return &GiteaCloner{token: token}
+	return NewGiteaClonerWithEnv(token, env.NewOSEnvironment())
+}
+
+// NewGiteaClonerWithEnv creates a new Gitea cloner with the provided environment
+func NewGiteaClonerWithEnv(token string, environment env.Environment) *GiteaCloner {
+	return &GiteaCloner{
+		token:       token,
+		environment: environment,
+	}
 }
 
 func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		os.Setenv("GITEA_TOKEN", g.token)
+		g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token)
 	}
 	// Note: strategy parameter is ignored for now since gitea.RefreshAll doesn't support it
 	return gitea.RefreshAll(targetPath, orgName)

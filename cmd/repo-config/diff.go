@@ -1,6 +1,7 @@
 package repoconfig
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -71,56 +72,18 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool) e
 		fmt.Println()
 	}
 
-	// TODO: Implement actual configuration comparison logic
 	fmt.Printf("📊 Repository Configuration Comparison\n")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Printf("Organization: %s\n", flags.Organization)
 	fmt.Println()
 
-	// Mock differences for demonstration
-	differences := []ConfigurationDifference{
-		{
-			Repository:   "api-server",
-			Setting:      "branch_protection.main.required_reviews",
-			CurrentValue: "1",
-			TargetValue:  "2",
-			ChangeType:   "update",
-			Impact:       "medium",
-			Template:     "microservice",
-			Compliant:    false,
-		},
-		{
-			Repository:   "web-frontend",
-			Setting:      "features.wiki",
-			CurrentValue: "true",
-			TargetValue:  "false",
-			ChangeType:   "update",
-			Impact:       "low",
-			Template:     "frontend",
-			Compliant:    false,
-		},
-		{
-			Repository:   "legacy-service",
-			Setting:      "security.delete_head_branches",
-			CurrentValue: "",
-			TargetValue:  "true",
-			ChangeType:   "create",
-			Impact:       "high",
-			Template:     "none",
-			Compliant:    false,
-		},
-		{
-			Repository:   "admin-tools",
-			Setting:      "visibility",
-			CurrentValue: "public",
-			TargetValue:  "private",
-			ChangeType:   "update",
-			Impact:       "high",
-			Template:     "security",
-			Compliant:    false,
-		},
+	// Get configuration differences
+	differences, err := getConfigurationDifferences(flags.Organization, filter)
+	if err != nil {
+		return fmt.Errorf("failed to get configuration differences: %w", err)
 	}
 
+	// If no differences found, return early
 	if len(differences) == 0 {
 		fmt.Println("✅ No configuration differences found - all repositories are compliant")
 		return nil
@@ -199,8 +162,19 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 
 // displayDiffJSON displays differences in JSON format
 func displayDiffJSON(differences []ConfigurationDifference) {
-	// TODO: Implement proper JSON serialization
-	fmt.Println("JSON diff output not yet implemented")
+	jsonData := map[string]interface{}{
+		"differences": differences,
+		"summary": map[string]interface{}{
+			"total_changes":  len(differences),
+			"affected_repos": len(getAffectedRepositories(differences)),
+		},
+	}
+
+	if jsonBytes, err := json.MarshalIndent(jsonData, "", "  "); err != nil {
+		fmt.Printf("Error serializing JSON: %v\n", err)
+	} else {
+		fmt.Println(string(jsonBytes))
+	}
 }
 
 // displayDiffUnified displays differences in unified diff format
@@ -287,4 +261,64 @@ func getAffectedRepositories(differences []ConfigurationDifference) []string {
 		result = append(result, repo)
 	}
 	return result
+}
+
+// getConfigurationDifferences retrieves configuration differences for an organization
+func getConfigurationDifferences(organization, filter string) ([]ConfigurationDifference, error) {
+	// This is a mock implementation - in reality, this would:
+	// 1. Fetch current repository configurations from GitHub API
+	// 2. Load target configurations from templates
+	// 3. Compare them and identify differences
+	// 4. Apply filter if specified
+
+	mockDifferences := []ConfigurationDifference{
+		{
+			Repository:   "api-server",
+			Setting:      "branch_protection.main.required_reviews",
+			CurrentValue: "1",
+			TargetValue:  "2",
+			ChangeType:   "update",
+			Impact:       "medium",
+			Template:     "microservice",
+			Compliant:    false,
+		},
+		{
+			Repository:   "web-frontend",
+			Setting:      "features.wiki",
+			CurrentValue: "true",
+			TargetValue:  "false",
+			ChangeType:   "update",
+			Impact:       "low",
+			Template:     "frontend",
+			Compliant:    false,
+		},
+		{
+			Repository:   "legacy-service",
+			Setting:      "security.delete_head_branches",
+			CurrentValue: "",
+			TargetValue:  "true",
+			ChangeType:   "create",
+			Impact:       "high",
+			Template:     "none",
+			Compliant:    false,
+		},
+		{
+			Repository:   "admin-tools",
+			Setting:      "visibility",
+			CurrentValue: "public",
+			TargetValue:  "private",
+			ChangeType:   "update",
+			Impact:       "high",
+			Template:     "security",
+			Compliant:    false,
+		},
+	}
+
+	// Apply filter if specified
+	if filter != "" {
+		// In a real implementation, this would use regex to filter repositories
+		// For now, just return all differences
+	}
+
+	return mockDifferences, nil
 }

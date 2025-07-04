@@ -28,7 +28,7 @@ type BulkCloneDefaultGithub struct {
 type BulkCloneDefaultGitlab struct {
 	RootPath  string `yaml:"root_path"`
 	Provider  string `yaml:"provider"`
-	Url       string `yaml:"url"`
+	URL       string `yaml:"url"`
 	Recursive bool   `yaml:"recursive"`
 	Protocol  string `yaml:"protocol"`
 	GroupName string `yaml:"group_name"`
@@ -46,7 +46,7 @@ type BulkCloneGithub struct {
 type BulkCloneGitlab struct {
 	RootPath  string `yaml:"root_path" validate:"required"`
 	Provider  string `yaml:"provider" validate:"required"`
-	Url       string `yaml:"url"`
+	URL       string `yaml:"url"`
 	Recursive bool   `yaml:"recursive"`
 	Protocol  string `yaml:"protocol" validate:"required,oneof=http https ssh"`
 	GroupName string `yaml:"group_name" binding:"required"`

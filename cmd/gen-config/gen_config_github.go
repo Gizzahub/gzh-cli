@@ -42,7 +42,7 @@ configuration files, use:
 	return cmd
 }
 
-func (o *genConfigGithubOptions) run(_ *cobra.Command, args []string) error {
+func (o *genConfigGithubOptions) run(_ *cobra.Command, _ []string) error {
 	if o.targetPath == "" || o.orgName == "" {
 		return fmt.Errorf("both targetPath and orgName must be specified")
 	}

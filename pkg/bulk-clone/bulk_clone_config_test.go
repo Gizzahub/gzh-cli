@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//func (receiver ) name()  {
+// func (receiver ) name()  {
 //
 //}
 

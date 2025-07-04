@@ -422,8 +422,6 @@ func (o *wifiOptions) runForeground() error {
 }
 
 func (o *wifiOptions) runAsDaemon() error {
-	// TODO: Implement proper daemon mode with PID file
-	// For now, just run in background-like mode
 	fmt.Printf("🔄 Starting WiFi monitor as daemon\n")
 	fmt.Printf("   Log: %s\n", o.logPath)
 
@@ -437,7 +435,39 @@ func (o *wifiOptions) runAsDaemon() error {
 		return fmt.Errorf("failed to create log directory: %w", err)
 	}
 
-	ctx := context.Background()
+	// Create PID file
+	pidFile := filepath.Join(filepath.Dir(o.logPath), "wifi-monitor.pid")
+	if err := o.createPidFile(pidFile); err != nil {
+		return fmt.Errorf("failed to create PID file: %w", err)
+	}
+	defer o.removePidFile(pidFile)
+
+	// Set up logging to file
+	logFile, err := os.OpenFile(o.logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	if err != nil {
+		return fmt.Errorf("failed to open log file: %w", err)
+	}
+	defer logFile.Close()
+
+	// Redirect output to log file in daemon mode
+	if !o.verbose {
+		os.Stdout = logFile
+		os.Stderr = logFile
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle signals for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		fmt.Printf("[%s] Received shutdown signal, stopping daemon\n", time.Now().Format("2006-01-02 15:04:05"))
+		cancel()
+	}()
+
+	fmt.Printf("[%s] WiFi monitor daemon started\n", time.Now().Format("2006-01-02 15:04:05"))
 	return o.monitorLoop(ctx, config)
 }
 
@@ -661,4 +691,15 @@ func (o *wifiOptions) loadConfig() (*wifiConfig, error) {
 	return &wifiConfig{
 		Actions: []wifiAction{},
 	}, nil
+}
+
+// createPidFile creates a PID file for daemon mode
+func (o *wifiOptions) createPidFile(pidFile string) error {
+	pid := os.Getpid()
+	return os.WriteFile(pidFile, []byte(fmt.Sprintf("%d\n", pid)), 0o644)
+}
+
+// removePidFile removes the PID file
+func (o *wifiOptions) removePidFile(pidFile string) {
+	os.Remove(pidFile)
 }

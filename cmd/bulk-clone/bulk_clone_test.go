@@ -110,7 +110,6 @@ func TestDefaultBulkCloneOptions(t *testing.T) {
 		opts := defaultBulkCloneGiteaOptions()
 		assert.Equal(t, "reset", opts.strategy)
 	})
-
 }
 
 func TestStrategyValidation(t *testing.T) {

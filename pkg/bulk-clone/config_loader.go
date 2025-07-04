@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // BulkCloneConfig is the public interface for bulk clone configuration
@@ -66,8 +68,13 @@ func GetOverlayConfigPaths() []string {
 
 // FindConfigFile searches for config file in predefined locations
 func FindConfigFile() (string, error) {
+	return FindConfigFileWithEnv(env.NewOSEnvironment())
+}
+
+// FindConfigFileWithEnv searches for config file using the provided environment
+func FindConfigFileWithEnv(environment env.Environment) (string, error) {
 	// Check environment variable first
-	if envPath := os.Getenv("GZH_CONFIG_PATH"); envPath != "" {
+	if envPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); envPath != "" {
 		if fileExists(envPath) {
 			return envPath, nil
 		}
@@ -158,7 +165,7 @@ func (cfg *bulkCloneConfig) GetGitlabGroupConfig(groupName string) (*BulkCloneGi
 		return &BulkCloneGitlab{
 			RootPath:  cfg.Default.Gitlab.RootPath,
 			Provider:  cfg.Default.Gitlab.Provider,
-			Url:       cfg.Default.Gitlab.Url,
+			URL:       cfg.Default.Gitlab.URL,
 			Protocol:  cfg.Default.Protocol,
 			GroupName: groupName,
 			Recursive: cfg.Default.Gitlab.Recursive,
@@ -170,19 +177,31 @@ func (cfg *bulkCloneConfig) GetGitlabGroupConfig(groupName string) (*BulkCloneGi
 
 // ExpandPath expands environment variables and ~ in paths
 func ExpandPath(path string) string {
+	return ExpandPathWithEnv(path, env.NewOSEnvironment())
+}
+
+// ExpandPathWithEnv expands environment variables and ~ in paths using the provided environment
+func ExpandPathWithEnv(path string, environment env.Environment) string {
 	if path == "" {
 		return path
 	}
 
 	// Expand ~ to home directory
 	if strings.HasPrefix(path, "~/") {
-		if homeDir, err := os.UserHomeDir(); err == nil {
+		homeDir := environment.Get(env.CommonEnvironmentKeys.HomeDir)
+		if homeDir == "" {
+			// Fallback to os.UserHomeDir() for compatibility
+			if h, err := os.UserHomeDir(); err == nil {
+				homeDir = h
+			}
+		}
+		if homeDir != "" {
 			path = filepath.Join(homeDir, path[2:])
 		}
 	}
 
 	// Expand environment variables
-	path = os.ExpandEnv(path)
+	path = environment.Expand(path)
 
 	return path
 }
@@ -265,8 +284,8 @@ func (cfg *bulkCloneConfig) mergeDefaults(overlayDefault *BulkCloneDefault) {
 	if overlayDefault.Gitlab.Provider != "" {
 		cfg.Default.Gitlab.Provider = overlayDefault.Gitlab.Provider
 	}
-	if overlayDefault.Gitlab.Url != "" {
-		cfg.Default.Gitlab.Url = overlayDefault.Gitlab.Url
+	if overlayDefault.Gitlab.URL != "" {
+		cfg.Default.Gitlab.URL = overlayDefault.Gitlab.URL
 	}
 	if overlayDefault.Gitlab.Protocol != "" {
 		cfg.Default.Gitlab.Protocol = overlayDefault.Gitlab.Protocol

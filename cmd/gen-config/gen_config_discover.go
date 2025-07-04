@@ -119,7 +119,7 @@ func (o *genConfigDiscoverOptions) run(_ *cobra.Command, args []string) error {
 
 	// Write configuration file
 	yamlContent := o.generateYAMLFromConfig(config)
-	err = os.WriteFile(o.outputFile, []byte(yamlContent), 0o644)
+	err = os.WriteFile(o.outputFile, []byte(yamlContent), 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write configuration file: %w", err)
 	}

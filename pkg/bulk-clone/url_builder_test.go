@@ -145,5 +145,4 @@ func TestBuildURLWithHostAliasForProvider(t *testing.T) {
 		url := BuildURLWithHostAliasForProvider("gitea", "ssh", "myorg", "myrepo")
 		assert.Equal(t, "git@gitea-myorg:myorg/myrepo.git", url)
 	})
-
 }

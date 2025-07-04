@@ -283,7 +283,10 @@ func deleteProfile(profileName string, force bool) error {
 	if !force {
 		fmt.Printf("Delete profile '%s'? (y/N): ", profileName)
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			// Handle scan error but continue with empty response (defaults to "no")
+			response = ""
+		}
 		if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
 			fmt.Println("Profile deletion cancelled")
 			return nil

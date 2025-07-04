@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
@@ -70,9 +70,10 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 	}
 
 	// Get GitHub token
+	environment := env.NewOSEnvironment()
 	token := flags.Token
 	if token == "" {
-		token = os.Getenv("GITHUB_TOKEN")
+		token = environment.Get(env.CommonEnvironmentKeys.GitHubToken)
 	}
 	if token == "" {
 		return fmt.Errorf("GitHub token is required (use --token flag or GITHUB_TOKEN env var)")

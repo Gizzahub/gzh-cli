@@ -45,7 +45,7 @@ func (o *bulkCloneGiteaOptions) run(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
-	//err := gitea_org.RefreshAll(o.targetPath, o.orgName, o.strategy)
+	// err := gitea_org.RefreshAll(o.targetPath, o.orgName, o.strategy)
 	//if err != nil {
 	//	return err
 	//}

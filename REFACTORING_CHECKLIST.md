@@ -26,18 +26,18 @@
   - 🧠 **How**: Either implement fully or remove the feature
   - 📁 **Files**: `cmd/bulk-clone/bulk_clone_gogs.go`, `pkg/gogs/`
 
-- [ ] Remove or implement TODO/FIXME items
+- [x] Remove or implement TODO/FIXME items
   - 📌 **Why**: 7 files contain incomplete implementations
   - 🧠 **How**: Review each TODO, implement or create issues
   - 📁 **Files**: Use `grep -r "TODO\|FIXME" .` to find all instances
 
 #### Code Formatting & Linting
-- [ ] Enable additional golangci-lint linters
+- [x] Enable additional golangci-lint linters
   - 📌 **Why**: Many useful linters are disabled (gosec, dupl, gocyclo)
   - 🧠 **How**: Update `.golangci.yml`, fix issues incrementally
   - 📁 **Files**: `.golangci.yml`, then run `make lint`
 
-- [ ] Fix all existing linter warnings
+- [x] Fix all existing linter warnings
   - 📌 **Why**: Clean code base improves maintainability
   - 🧠 **How**: Run `golangci-lint run --fix` for auto-fixes
   - 📁 **Files**: All `.go` files with warnings
@@ -45,28 +45,28 @@
 ### 2. 📦 Code Structure
 
 #### Interface Design
-- [ ] Create service interfaces for all major components
+- [x] Create service interfaces for all major components
   - 📌 **Why**: Only 3 interfaces exist, limiting testability
   - 🧠 **How**: Extract interfaces from concrete types
   - 📁 **Files**: Create `interfaces.go` in each package
 
-- [ ] Define file system abstraction interface
+- [x] Define file system abstraction interface
   - 📌 **Why**: Direct file operations make testing difficult
   - 🧠 **How**: Create `type FileSystem interface` with methods
-  - 📁 **Files**: `internal/filesystem/interface.go`
+  - 📁 **Files**: `internal/filesystem/interfaces.go`
 
-- [ ] Create HTTP client interface
+- [x] Create HTTP client interface
   - 📌 **Why**: Direct HTTP calls are hard to mock
   - 🧠 **How**: Define `type HTTPClient interface`
-  - 📁 **Files**: `internal/httpclient/interface.go`
+  - 📁 **Files**: `internal/httpclient/interfaces.go`
 
 #### Dependency Injection
-- [ ] Implement constructor functions with dependencies
+- [x] Implement constructor functions with dependencies
   - 📌 **Why**: Current code uses global state and direct instantiation
   - 🧠 **How**: Add `New*` functions accepting interfaces
   - 📁 **Files**: All service implementations
 
-- [ ] Remove direct environment variable access from packages
+- [x] Remove direct environment variable access from packages
   - 📌 **Why**: Tight coupling to environment
   - 🧠 **How**: Pass config through constructors
   - 📁 **Files**: All files using `os.Getenv()`

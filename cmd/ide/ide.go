@@ -578,7 +578,7 @@ func (o *ideOptions) fixFiletypesXML(filePath string) error {
 	fixedContent := o.applyFiletypesXMLFixes(originalContent)
 
 	if originalContent != fixedContent {
-		if err := os.WriteFile(filePath, []byte(fixedContent), 0o644); err != nil {
+		if err := os.WriteFile(filePath, []byte(fixedContent), 0o600); err != nil {
 			return fmt.Errorf("failed to write fixed file: %w", err)
 		}
 
@@ -614,7 +614,7 @@ func (o *ideOptions) copyFile(src, dst string) error {
 		return err
 	}
 
-	err = os.WriteFile(dst, input, 0o644)
+	err = os.WriteFile(dst, input, 0o600)
 	if err != nil {
 		return err
 	}

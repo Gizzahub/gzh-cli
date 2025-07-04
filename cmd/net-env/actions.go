@@ -308,7 +308,7 @@ func newVPNConnectCmd() *cobra.Command {
 	cmd.Flags().StringVar(&vpnName, "name", "", "VPN connection name (required)")
 	cmd.Flags().StringVar(&vpnType, "type", "networkmanager", "VPN type (networkmanager, openvpn, wireguard)")
 	cmd.Flags().StringVar(&configFile, "config", "", "VPN configuration file path")
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name")
 
 	return cmd
 }
@@ -325,7 +325,7 @@ func newVPNDisconnectCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&vpnName, "name", "", "VPN connection name (required)")
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name")
 
 	return cmd
 }
@@ -357,7 +357,7 @@ func newDNSSetCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&servers, "servers", "", "Comma-separated DNS servers (required)")
 	cmd.Flags().StringVar(&iface, "interface", "", "Network interface (auto-detect if not specified)")
-	cmd.MarkFlagRequired("servers")
+	_ = cmd.MarkFlagRequired("servers")
 
 	return cmd
 }
@@ -443,8 +443,8 @@ func newHostsAddCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&ip, "ip", "", "IP address (required)")
 	cmd.Flags().StringVar(&host, "host", "", "Hostname (required)")
-	cmd.MarkFlagRequired("ip")
-	cmd.MarkFlagRequired("host")
+	_ = cmd.MarkFlagRequired("ip")
+	_ = cmd.MarkFlagRequired("host")
 
 	return cmd
 }
@@ -461,7 +461,7 @@ func newHostsRemoveCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&host, "host", "", "Hostname to remove (required)")
-	cmd.MarkFlagRequired("host")
+	_ = cmd.MarkFlagRequired("host")
 
 	return cmd
 }
@@ -572,7 +572,7 @@ hosts:
     - "old-server.local"
 `
 
-	if err := os.WriteFile(o.configPath, []byte(exampleConfig), 0o644); err != nil {
+	if err := os.WriteFile(o.configPath, []byte(exampleConfig), 0o600); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
