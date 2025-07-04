@@ -21,7 +21,9 @@
       "Bash(chmod:*)",
       "Bash(cat:*)",
       "Bash(go run:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(golangci-lint run:*)",
+      "Bash(ln:*)"
     ],
     "deny": []
   }

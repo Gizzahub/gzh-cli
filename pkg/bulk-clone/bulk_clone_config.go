@@ -21,7 +21,6 @@ type BulkCloneDefault struct {
 type BulkCloneDefaultGithub struct {
 	RootPath string `yaml:"root_path"`
 	Provider string `yaml:"provider"`
-	url      string `yaml:"url"`
 	Protocol string `yaml:"protocol"`
 	OrgName  string `yaml:"org_name"`
 }
@@ -40,7 +39,6 @@ type BulkCloneDefaultGitlab struct {
 type BulkCloneGithub struct {
 	RootPath string `yaml:"root_path" validate:"required"`
 	Provider string `yaml:"provider" validate:"required"`
-	url      string `yaml:"url"`
 	Protocol string `yaml:"protocol" validate:"required,oneof=http https ssh"`
 	OrgName  string `yaml:"org_name" validate:"required"`
 }

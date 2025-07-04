@@ -5,6 +5,7 @@ go 1.24
 require (
 	github.com/daixiang0/gci v0.13.5
 	github.com/fatih/color v1.18.0
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-critic/go-critic v0.11.5
 	github.com/go-playground/validator/v10 v10.25.0
 	github.com/golangci/golangci-lint v1.63.4
@@ -14,6 +15,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.18.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
+	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/lint v0.0.0-20241112194109-818c5a804067
 	golang.org/x/tools v0.29.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -63,7 +65,6 @@ require (
 	github.com/ettle/strcase v0.2.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.5 // indirect
-	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/ghostiam/protogetter v0.3.8 // indirect
@@ -190,7 +191,6 @@ require (
 	github.com/uudashr/iface v1.3.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/xen0n/gosmopolitan v1.2.2 // indirect
 	github.com/yagipy/maintidx v1.0.0 // indirect
 	github.com/yeya24/promlinter v0.3.0 // indirect

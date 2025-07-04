@@ -375,34 +375,6 @@ func (o *alwaysLatestBrewOptions) cleanupBrew() error {
 	return nil
 }
 
-func (o *alwaysLatestBrewOptions) getPackageVersion(packageName string, isCask bool) (string, error) {
-	var cmd *exec.Cmd
-	if isCask {
-		cmd = exec.Command("brew", "list", "--cask", "--versions", packageName)
-	} else {
-		cmd = exec.Command("brew", "list", "--versions", packageName)
-	}
-
-	output, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
-
-	// Parse version from output (format: "package version1 version2...")
-	line := strings.TrimSpace(string(output))
-	if line == "" {
-		return "", fmt.Errorf("no version found for %s", packageName)
-	}
-
-	parts := strings.Fields(line)
-	if len(parts) < 2 {
-		return "", fmt.Errorf("could not parse version for %s", packageName)
-	}
-
-	// Return the latest version (last in the list)
-	return parts[len(parts)-1], nil
-}
-
 func (o *alwaysLatestBrewOptions) extractVersionNumber(versionString string) string {
 	// Extract version number using regex
 	re := regexp.MustCompile(`(\d+\.[\d.]+)`)

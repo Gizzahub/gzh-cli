@@ -11,11 +11,28 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Private repository support**: Token-based authentication for accessing private repositories
 - **Configuration-driven**: YAML configuration files with environment-specific overrides (home, work, etc.)
 - **Kustomize-style configuration**: Layer multiple configuration files for different environments
+- **gzh.yaml integration**: Native support for gzh.yaml configuration format with `--use-gzh-config` option
+- **Provider-based organization cloning**: Configure multiple organizations and groups across different Git hosting platforms
+- **Visibility filtering**: Filter repositories by visibility (public, private, all) per organization
+- **Regex-based filtering**: Use regular expressions to match specific repository names with the `match` field
+- **Flexible directory structure**: Flatten option to control directory hierarchy and organization
 
 ### SSH Configuration Management
 - **Automated SSH config generation**: Create SSH configurations for Git repositories
 - **Multi-service support**: Generate configs for GitHub, GitLab, Gitea, and Gogs
 - **Key management**: Automatic SSH key association and configuration
+
+### GitHub Organization & Repository Management
+- **Repository configuration management**: Comprehensive GitHub repository settings control through `gz repo-config` command
+- **Bulk operations**: Apply configuration changes across entire organizations or selected repositories
+- **Schema-driven configuration**: YAML-based repository settings with validation and templating
+- **API integration**: Full GitHub API client with rate limiting and retry logic
+- **Security features**: Token permission validation and confirmation prompts for sensitive operations
+- **Change tracking**: Configuration change history logging with rollback capabilities
+- **Dry-run mode**: Preview changes before applying them to repositories
+- **Multi-command interface**: List current settings, apply configurations, and validate schemas
+- **Organization-wide operations**: Manage repository settings across all repositories in an organization
+- **Automated validation**: Ensure token permissions match required operations before execution
 
 ## Package Management
 
@@ -68,6 +85,17 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Rollback capabilities**: Safe configuration changes with automatic backup and restore functionality
 
 ## Configuration Management
+
+### gzh.yaml Schema-Based Configuration System
+- **Unified configuration format**: Single gzh.yaml file for all tool configurations with comprehensive schema definition
+- **Schema validation**: JSON/YAML schema validation with built-in field validation and enum checking
+- **Configuration file hierarchy**: Automatic discovery with priority order (./gzh.yaml → ~/.config/gzh.yaml → system-wide)
+- **Environment variable substitution**: Dynamic configuration values using os.ExpandEnv for flexible deployment
+- **Configuration profiles**: Support for different environments (dev/prod) with profile-specific settings
+- **Interactive configuration**: `gz config init` command for guided configuration file creation
+- **Validation tools**: `gz config validate` command for configuration file validation and troubleshooting
+- **Migration support**: Tools and guides for migrating from legacy bulk-clone.yaml format
+- **Provider-based structure**: Organized configuration for different Git hosting providers (GitHub, GitLab, Gitea, Gogs)
 
 ### YAML Configuration System
 - **Hierarchical configurations**: Layer multiple YAML files for different environments and contexts
