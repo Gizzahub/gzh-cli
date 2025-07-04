@@ -66,8 +66,8 @@ func NormalizeVisibility(visibility string) string {
 	return normalized
 }
 
-// Repository represents a repository with visibility information
-type Repository struct {
+// VisibilityRepository represents a repository with visibility information  
+type VisibilityRepository struct {
 	Name      string `json:"name"`
 	FullName  string `json:"full_name"`
 	IsPrivate bool   `json:"is_private"`
@@ -118,7 +118,7 @@ func NewRepositoryFilter(visibility, namePattern string, excludePatterns []strin
 }
 
 // ShouldIncludeRepository determines if a repository should be included
-func (f *RepositoryFilter) ShouldIncludeRepository(repo Repository) bool {
+func (f *RepositoryFilter) ShouldIncludeRepository(repo VisibilityRepository) bool {
 	// Check visibility filter
 	if !f.VisibilityFilter.ShouldIncludeRepository(repo.IsPrivate) {
 		return false
@@ -174,8 +174,8 @@ func (f *RepositoryFilter) matchesGlob(name, pattern string) bool {
 }
 
 // FilterRepositories filters a list of repositories based on the filter criteria
-func (f *RepositoryFilter) FilterRepositories(repos []Repository) []Repository {
-	var filtered []Repository
+func (f *RepositoryFilter) FilterRepositories(repos []VisibilityRepository) []VisibilityRepository {
+	var filtered []VisibilityRepository
 
 	for _, repo := range repos {
 		if f.ShouldIncludeRepository(repo) {
@@ -211,7 +211,7 @@ type VisibilityStatistics struct {
 }
 
 // CalculateVisibilityStatistics calculates visibility statistics for a list of repositories
-func CalculateVisibilityStatistics(repos []Repository) VisibilityStatistics {
+func CalculateVisibilityStatistics(repos []VisibilityRepository) VisibilityStatistics {
 	stats := VisibilityStatistics{
 		TotalRepositories: len(repos),
 	}

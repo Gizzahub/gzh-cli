@@ -43,17 +43,7 @@ type Repository struct {
 	Size          int64  `json:"size"`
 }
 
-// ProviderFactory creates provider service instances
-type ProviderFactory interface {
-	// CreateProvider creates a provider service for the given provider name
-	CreateProvider(ctx context.Context, providerName string, config ProviderConfig) (ProviderService, error)
-
-	// GetSupportedProviders returns the list of supported provider names
-	GetSupportedProviders() []string
-
-	// ValidateProviderConfig validates the configuration for a given provider
-	ValidateProviderConfig(providerName string, config ProviderConfig) error
-}
+// ProviderFactory is defined in factory.go
 
 // ConfigurationService handles configuration loading and validation
 type ConfigurationService interface {
@@ -113,16 +103,7 @@ type BulkRefreshRequest struct {
 	DryRun        bool              `json:"dry_run"`
 }
 
-// BulkCloneResult represents the result of bulk clone operations
-type BulkCloneResult struct {
-	TotalRepositories    int                   `json:"total_repositories"`
-	SuccessfulOperations int                   `json:"successful_operations"`
-	FailedOperations     int                   `json:"failed_operations"`
-	SkippedRepositories  int                   `json:"skipped_repositories"`
-	OperationResults     []RepositoryOperation `json:"operation_results"`
-	ExecutionTimeMs      int64                 `json:"execution_time_ms"`
-	ErrorSummary         map[string]int        `json:"error_summary"`
-}
+// BulkCloneResult is defined in providers.go
 
 // BulkRefreshResult represents the result of bulk refresh operations
 type BulkRefreshResult struct {

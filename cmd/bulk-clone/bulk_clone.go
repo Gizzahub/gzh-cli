@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
-	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	pkgconfig "github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 	"github.com/spf13/cobra"
@@ -63,20 +64,39 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 }
 
 func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, args []string) error {
-	// Check if using gzh.yaml format
-	if o.useGZHConfig {
-		return o.runWithGZHConfig()
+	// Use central configuration service for unified configuration management
+	return o.runWithCentralConfigService(ctx)
+}
+
+// runWithCentralConfigService uses the central configuration service for unified config management
+func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) error {
+	// Create configuration service
+	configService, err := config.CreateDefaultConfigService()
+	if err != nil {
+		return fmt.Errorf("failed to create configuration service: %w", err)
 	}
 
-	// Original bulk-clone.yaml format handling
+	// Load configuration (supports both unified and legacy formats with auto-migration)
 	var configPath string
 	if o.configFile != "" {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclonepkg.LoadConfig(configPath)
+	cfg, err := configService.LoadConfiguration(ctx, configPath)
 	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
+		return fmt.Errorf("failed to load configuration: %w", err)
+	}
+
+	// Show migration warnings if any
+	warnings := configService.GetWarnings()
+	for _, warning := range warnings {
+		fmt.Printf("⚠ Warning: %s\n", warning)
+	}
+
+	// Show required actions if any
+	actions := configService.GetRequiredActions()
+	for _, action := range actions {
+		fmt.Printf("📋 Action required: %s\n", action)
 	}
 
 	// Validate strategy
@@ -84,102 +104,45 @@ func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, args []str
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
-	// Process all repository roots
-	for _, repoRoot := range cfg.RepoRoots {
-		// Filter by provider if specified
-		if o.providerFilter != "" && repoRoot.Provider != o.providerFilter {
-			continue
-		}
+	// Get bulk clone targets using the service
+	targets, err := configService.GetBulkCloneTargets(ctx, o.providerFilter)
+	if err != nil {
+		return fmt.Errorf("failed to get bulk clone targets: %w", err)
+	}
 
-		fmt.Printf("Processing %s organization: %s -> %s\n", repoRoot.Provider, repoRoot.OrgName, repoRoot.RootPath)
+	if len(targets) == 0 {
+		fmt.Println("No targets found to process")
+		return nil
+	}
 
-		// Expand the root path
-		targetPath := bulkclonepkg.ExpandPath(repoRoot.RootPath)
+	fmt.Printf("Found %d targets to process\n", len(targets))
 
-		// Use the new interface-based approach instead of direct provider calls
-		environment := env.NewOSEnvironment()
-		factory := config.NewDefaultProviderFactory(environment)
-
-		// Create appropriate provider config (token would come from environment or config)
-		providerConfig := config.ProviderConfig{
-			Token: "", // Token will be retrieved from environment variables
-		}
-
-		provider, err := factory.CreateProvider(ctx, repoRoot.Provider, providerConfig)
-		if err != nil {
-			fmt.Printf("Error creating provider %s: %v\n", repoRoot.Provider, err)
-			continue
-		}
-
-		// Check for cancellation before starting long-running operation
+	// Process each target
+	for _, target := range targets {
+		// Check for cancellation before starting each target
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("operation cancelled: %w", ctx.Err())
 		default:
 		}
 
-		err = provider.RefreshAll(ctx, targetPath, repoRoot.OrgName, o.strategy)
+		fmt.Printf("Processing %s organization: %s -> %s\n", target.Provider, target.Name, target.CloneDir)
+
+		// Use the strategy from target or override from command line
+		strategy := target.Strategy
+		if o.strategy != "reset" { // If user specified a different strategy
+			strategy = o.strategy
+		}
+
+		err := o.executeProviderCloning(ctx, target, target.CloneDir)
 		if err != nil {
-			fmt.Printf("Error processing %s org %s: %v\n", repoRoot.Provider, repoRoot.OrgName, err)
+			fmt.Printf("❌ Error processing %s/%s: %v\n", target.Provider, target.Name, err)
 			continue
 		}
 
-		fmt.Printf("✓ Successfully processed %s/%s\n", repoRoot.Provider, repoRoot.OrgName)
+		fmt.Printf("✅ Successfully processed %s/%s\n", target.Provider, target.Name)
 	}
 
-	// Also process default GitHub and GitLab configurations if they have org/group names
-	environment := env.NewOSEnvironment()
-	factory := config.NewDefaultProviderFactory(environment)
-
-	if cfg.Default.Github.OrgName != "" {
-		fmt.Printf("Processing default GitHub organization: %s\n", cfg.Default.Github.OrgName)
-		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Github.RootPath)
-
-		providerConfig := config.ProviderConfig{Token: ""}
-		provider, err := factory.CreateProvider(ctx, "github", providerConfig)
-		if err != nil {
-			fmt.Printf("Error creating GitHub provider: %v\n", err)
-		} else {
-			// Check for cancellation before starting long-running operation
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("operation cancelled: %w", ctx.Err())
-			default:
-			}
-			err = provider.RefreshAll(ctx, targetPath, cfg.Default.Github.OrgName, o.strategy)
-			if err != nil {
-				fmt.Printf("Error processing default GitHub org: %v\n", err)
-			} else {
-				fmt.Printf("✓ Successfully processed default GitHub org: %s\n", cfg.Default.Github.OrgName)
-			}
-		}
-	}
-
-	if cfg.Default.Gitlab.GroupName != "" {
-		fmt.Printf("Processing default GitLab group: %s\n", cfg.Default.Gitlab.GroupName)
-		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Gitlab.RootPath)
-
-		providerConfig := config.ProviderConfig{Token: ""}
-		provider, err := factory.CreateProvider(ctx, "gitlab", providerConfig)
-		if err != nil {
-			fmt.Printf("Error creating GitLab provider: %v\n", err)
-		} else {
-			// Check for cancellation before starting long-running operation
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("operation cancelled: %w", ctx.Err())
-			default:
-			}
-			err = provider.RefreshAll(ctx, targetPath, cfg.Default.Gitlab.GroupName, o.strategy)
-			if err != nil {
-				fmt.Printf("Error processing default GitLab group: %v\n", err)
-			} else {
-				fmt.Printf("✓ Successfully processed default GitLab group: %s\n", cfg.Default.Gitlab.GroupName)
-			}
-		}
-	}
-
-	fmt.Println("Bulk clone operation completed!")
 	return nil
 }
 

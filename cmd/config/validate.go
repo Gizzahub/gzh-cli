@@ -1,16 +1,20 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
+	configservice "github.com/gizzahub/gzh-manager-go/internal/config"
 )
 
 // validateConfig performs configuration validation
 func validateConfig(configFile string, strict bool, verbose bool) error {
+	ctx := context.Background()
+
 	// Step 1: Determine config file path
 	if configFile == "" {
 		var err error
@@ -33,39 +37,55 @@ func validateConfig(configFile string, strict bool, verbose bool) error {
 		fmt.Println("✓ File access validation passed")
 	}
 
-	// Step 3: Parse and validate configuration
-	config, err := configpkg.ParseYAMLFile(configFile)
+	// Step 3: Create configuration service with enhanced validation
+	serviceOptions := configservice.DefaultConfigServiceOptions()
+	serviceOptions.ValidationEnabled = true
+	service, err := configservice.NewConfigService(serviceOptions)
 	if err != nil {
-		return fmt.Errorf("configuration parsing failed: %w", err)
+		return fmt.Errorf("failed to create configuration service: %w", err)
+	}
+
+	// Step 4: Load and validate configuration using the service
+	config, err := service.LoadConfiguration(ctx, configFile)
+	if err != nil {
+		return fmt.Errorf("configuration loading and validation failed: %w", err)
 	}
 
 	if verbose {
-		fmt.Println("✓ Configuration parsing successful")
-		fmt.Printf("  - Version: %s\n", config.Version)
-		fmt.Printf("  - Default Provider: %s\n", config.DefaultProvider)
-		fmt.Printf("  - Providers: %d\n", len(config.Providers))
-	}
-
-	// Step 4: Perform additional validations
-	if err := performAdditionalValidations(config, strict, verbose); err != nil {
-		return fmt.Errorf("additional validation failed: %w", err)
-	}
-
-	// Step 5: Check environment variables
-	if err := validateEnvironmentVariables(config, verbose); err != nil {
-		if strict {
-			return fmt.Errorf("environment variable validation failed: %w", err)
-		}
-		if verbose {
-			fmt.Printf("⚠ Warning: %v\n", err)
+		fmt.Println("✓ Configuration loading and startup validation successful")
+		if config != nil {
+			fmt.Printf("  - Version: %s\n", config.Version)
+			fmt.Printf("  - Default Provider: %s\n", config.DefaultProvider)
+			fmt.Printf("  - Providers: %d\n", len(config.Providers))
 		}
 	}
 
-	// Step 6: Success message
+	// Step 5: Get detailed validation results for reporting
+	validationResult := service.GetValidationResult()
+	if validationResult != nil {
+		// Report warnings
+		for _, warning := range validationResult.Warnings {
+			fmt.Printf("⚠ Warning [%s]: %s\n", warning.Field, warning.Message)
+		}
+
+		// In strict mode, treat warnings as errors
+		if strict && len(validationResult.Warnings) > 0 {
+			return fmt.Errorf("validation failed in strict mode due to %d warnings", len(validationResult.Warnings))
+		}
+	}
+
+	// Step 6: Perform legacy additional validations if requested
+	if strict {
+		if err := performLegacyValidations(configFile, verbose); err != nil {
+			return fmt.Errorf("legacy validation failed: %w", err)
+		}
+	}
+
+	// Step 7: Success message
 	fmt.Printf("✓ Configuration validation successful: %s\n", configFile)
 
-	if verbose {
-		printConfigurationSummary(config)
+	if verbose && config != nil {
+		printUnifiedConfigurationSummary(config)
 	}
 
 	return nil
@@ -118,6 +138,17 @@ func validateFileAccess(configFile string) error {
 	file.Close()
 
 	return nil
+}
+
+// performLegacyValidations runs legacy validation checks for backwards compatibility
+func performLegacyValidations(configFile string, verbose bool) error {
+	// Parse configuration using legacy parser
+	config, err := configpkg.ParseYAMLFile(configFile)
+	if err != nil {
+		return fmt.Errorf("legacy configuration parsing failed: %w", err)
+	}
+
+	return performAdditionalValidations(config, true, verbose)
 }
 
 // performAdditionalValidations runs additional validation checks
@@ -329,9 +360,60 @@ func checkPathEnvironmentVariables(path string) error {
 	return nil
 }
 
-// printConfigurationSummary prints a summary of the configuration
+// printUnifiedConfigurationSummary prints a summary of the unified configuration
+func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
+	fmt.Println("\n📋 Unified Configuration Summary:")
+	fmt.Printf("  Version: %s\n", config.Version)
+	fmt.Printf("  Default Provider: %s\n", config.DefaultProvider)
+	fmt.Printf("  Total Providers: %d\n", len(config.Providers))
+
+	if config.Global != nil {
+		fmt.Println("\n  🌐 Global Settings:")
+		if config.Global.CloneBaseDir != "" {
+			fmt.Printf("    Clone Base Dir: %s\n", config.Global.CloneBaseDir)
+		}
+		if config.Global.DefaultStrategy != "" {
+			fmt.Printf("    Default Strategy: %s\n", config.Global.DefaultStrategy)
+		}
+		if config.Global.DefaultVisibility != "" {
+			fmt.Printf("    Default Visibility: %s\n", config.Global.DefaultVisibility)
+		}
+		if config.Global.Concurrency != nil {
+			fmt.Printf("    Concurrency: clone=%d, update=%d, api=%d\n", 
+				config.Global.Concurrency.CloneWorkers,
+				config.Global.Concurrency.UpdateWorkers,
+				config.Global.Concurrency.APIWorkers)
+		}
+	}
+
+	for providerName, provider := range config.Providers {
+		fmt.Printf("\n  📌 Provider: %s\n", providerName)
+		fmt.Printf("    Organizations: %d\n", len(provider.Organizations))
+		if provider.APIURL != "" {
+			fmt.Printf("    API URL: %s\n", provider.APIURL)
+		}
+
+		totalOrgs := len(provider.Organizations)
+		if totalOrgs > 0 {
+			fmt.Printf("    Total Organizations: %d\n", totalOrgs)
+			for _, org := range provider.Organizations {
+				fmt.Printf("      - %s (%s)\n", org.Name, org.CloneDir)
+			}
+		}
+	}
+
+	if config.Migration != nil {
+		fmt.Println("\n  🔄 Migration Info:")
+		fmt.Printf("    Source Format: %s\n", config.Migration.SourceFormat)
+		if !config.Migration.MigrationDate.IsZero() {
+			fmt.Printf("    Migration Date: %s\n", config.Migration.MigrationDate.Format("2006-01-02 15:04:05"))
+		}
+	}
+}
+
+// printConfigurationSummary prints a summary of the legacy configuration
 func printConfigurationSummary(config *configpkg.Config) {
-	fmt.Println("\n📋 Configuration Summary:")
+	fmt.Println("\n📋 Legacy Configuration Summary:")
 	fmt.Printf("  Version: %s\n", config.Version)
 	fmt.Printf("  Default Provider: %s\n", config.DefaultProvider)
 	fmt.Printf("  Total Providers: %d\n", len(config.Providers))

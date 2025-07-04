@@ -231,14 +231,7 @@ func (v *Validator) addWarning(message string) {
 }
 
 // contains checks if a slice contains a string
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
+// contains helper function (duplicate removed - defined in provider_adapters.go)
 
 // ValidateConfigFile validates a configuration file and returns detailed results
 func ValidateConfigFile(filename string) (*ValidationResult, error) {

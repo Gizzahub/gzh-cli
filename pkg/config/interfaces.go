@@ -94,8 +94,8 @@ type ProviderManager interface {
 	GetSupportedProviders() []string
 }
 
-// DirectoryResolver defines the interface for resolving target directories
-type DirectoryResolver interface {
+// DirectoryResolverInterface defines the interface for resolving target directories  
+type DirectoryResolverInterface interface {
 	// Resolve directory paths for repositories
 	ResolveDirectories(ctx context.Context, config *Config) ([]RepositoryPath, error)
 
@@ -109,14 +109,7 @@ type DirectoryResolver interface {
 	ValidatePath(ctx context.Context, path string) error
 }
 
-// RepositoryPath represents a resolved repository path
-type RepositoryPath struct {
-	Original  string            `json:"original"`
-	Resolved  string            `json:"resolved"`
-	Variables map[string]string `json:"variables"`
-	Valid     bool              `json:"valid"`
-	Error     string            `json:"error,omitempty"`
-}
+// RepositoryPath is defined in directory_resolver.go
 
 // FilterService defines the interface for repository filtering
 type FilterService interface {
@@ -133,19 +126,7 @@ type FilterService interface {
 	GetFilterStats(ctx context.Context, repositories []Repository, filter *RepositoryFilter) (*FilterStats, error)
 }
 
-// Repository represents a repository for filtering purposes
-type Repository struct {
-	Name       string            `json:"name"`
-	FullName   string            `json:"full_name"`
-	Provider   string            `json:"provider"`
-	Visibility string            `json:"visibility"`
-	Language   string            `json:"language"`
-	Topics     []string          `json:"topics"`
-	Archived   bool              `json:"archived"`
-	Disabled   bool              `json:"disabled"`
-	Size       int               `json:"size"`
-	Metadata   map[string]string `json:"metadata"`
-}
+// Repository is defined in provider_interfaces.go
 
 // FilterStats represents statistics about filter application
 type FilterStats struct {
@@ -173,15 +154,7 @@ type IntegrationService interface {
 	ExecuteBulkClone(ctx context.Context, targets []BulkCloneTarget) (*BulkCloneResult, error)
 }
 
-// BulkCloneTarget represents a target for bulk cloning
-type BulkCloneTarget struct {
-	Provider string            `json:"provider"`
-	Name     string            `json:"name"`
-	CloneDir string            `json:"clone_dir"`
-	Strategy string            `json:"strategy"`
-	Filters  *RepositoryFilter `json:"filters,omitempty"`
-	Metadata map[string]string `json:"metadata"`
-}
+// BulkCloneTarget is defined in integration.go
 
 // ConfigService provides a unified interface for all configuration operations
 type ConfigService interface {

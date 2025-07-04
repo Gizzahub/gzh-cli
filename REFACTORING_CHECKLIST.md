@@ -127,17 +127,17 @@
 ### 5. ⚙️ Configuration & Environment Separation
 
 #### Unified Configuration
-- [ ] Merge bulk-clone.yaml and gzh.yaml formats
+- [x] Merge bulk-clone.yaml and gzh.yaml formats
   - 📌 **Why**: Duplicate configuration approaches
   - 🧠 **How**: Create single schema, migration tool
   - 📁 **Files**: `pkg/config/`, configuration schemas
 
-- [ ] Implement central configuration service
+- [x] Implement central configuration service
   - 📌 **Why**: Configuration loading duplicated across commands
   - 🧠 **How**: Create `ConfigService` with Viper
   - 📁 **Files**: `internal/config/service.go`
 
-- [ ] Add configuration validation at startup
+- [x] Add configuration validation at startup
   - 📌 **Why**: Runtime failures from bad config
   - 🧠 **How**: Use validator tags and custom rules
   - 📁 **Files**: All config struct definitions
