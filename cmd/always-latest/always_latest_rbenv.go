@@ -2,6 +2,7 @@ package alwayslatest
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -36,7 +37,7 @@ func defaultAlwaysLatestRbenvOptions() *alwaysLatestRbenvOptions {
 	}
 }
 
-func newAlwaysLatestRbenvCmd() *cobra.Command {
+func newAlwaysLatestRbenvCmd(ctx context.Context) *cobra.Command {
 	o := defaultAlwaysLatestRbenvOptions()
 
 	cmd := &cobra.Command{

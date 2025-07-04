@@ -2,6 +2,7 @@ package alwayslatest
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -38,7 +39,7 @@ func defaultAlwaysLatestSdkmanOptions() *alwaysLatestSdkmanOptions {
 	}
 }
 
-func newAlwaysLatestSdkmanCmd() *cobra.Command {
+func newAlwaysLatestSdkmanCmd(ctx context.Context) *cobra.Command {
 	o := defaultAlwaysLatestSdkmanOptions()
 
 	cmd := &cobra.Command{

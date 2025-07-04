@@ -95,7 +95,7 @@ func (g *gitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath
 	}
 
 	// Call the existing RefreshAll function
-	return RefreshAll(targetPath, groupName, strategy)
+	return RefreshAll(ctx, targetPath, groupName, strategy)
 }
 
 // CloneProject clones a specific project

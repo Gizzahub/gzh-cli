@@ -64,19 +64,7 @@ Examples:
 	return cmd
 }
 
-type ConfigData struct {
-	Version   string
-	Protocol  string
-	RepoRoots []RepoRootConfig
-	Ignores   []string
-}
-
-type RepoRootConfig struct {
-	Provider string
-	OrgName  string
-	RootPath string
-	Protocol string
-}
+// ConfigData and RepoRootConfig are defined in gen_config_discover.go
 
 func (o *genConfigInitOptions) run(_ *cobra.Command, _ []string) error {
 	// Check if output file already exists

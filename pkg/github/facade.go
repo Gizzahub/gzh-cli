@@ -81,7 +81,7 @@ func (g *gitHubManagerImpl) ListOrganizationRepositories(ctx context.Context, or
 	g.logger.Debug("Listing repositories for organization", "org", organization)
 
 	// Use existing List function with context support
-	return List(organization)
+	return List(ctx, organization)
 }
 
 // CloneRepository clones a single repository
@@ -89,7 +89,7 @@ func (g *gitHubManagerImpl) CloneRepository(ctx context.Context, organization, r
 	g.logger.Debug("Cloning repository", "org", organization, "repo", repository, "path", targetPath)
 
 	// Use existing Clone function with context support
-	return Clone(targetPath, organization, repository)
+	return Clone(ctx, targetPath, organization, repository)
 }
 
 // GetRepositoryDefaultBranch gets the default branch for a repository
@@ -97,7 +97,7 @@ func (g *gitHubManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, orga
 	g.logger.Debug("Getting default branch", "org", organization, "repo", repository)
 
 	// Use existing GetDefaultBranch function
-	return GetDefaultBranch(organization, repository)
+	return GetDefaultBranch(ctx, organization, repository)
 }
 
 // RefreshAllRepositories refreshes all repositories in an organization
@@ -105,7 +105,7 @@ func (g *gitHubManagerImpl) RefreshAllRepositories(ctx context.Context, targetPa
 	g.logger.Info("Refreshing all repositories", "org", organization, "strategy", strategy)
 
 	// Use existing RefreshAll function
-	return RefreshAll(targetPath, organization, strategy)
+	return RefreshAll(ctx, targetPath, organization, strategy)
 }
 
 // BulkCloneRepositories performs bulk repository operations

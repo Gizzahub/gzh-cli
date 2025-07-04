@@ -2,6 +2,7 @@ package gitlab
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 var (
@@ -21,9 +26,16 @@ type GitLabRepoInfo struct {
 	DefaultBranch string `json:"default_branch"`
 }
 
-func GetDefaultBranch(group string, repo string) (string, error) {
+func GetDefaultBranch(ctx context.Context, group string, repo string) (string, error) {
 	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s%%2F%s", group, repo)
-	resp, err := http.Get(url)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -47,9 +59,16 @@ func GetDefaultBranch(group string, repo string) (string, error) {
 	return gitLabRepo.DefaultBranch, nil
 }
 
-func listGroupRepos(group string, allRepos *[]string) error {
+func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error {
 	url := fmt.Sprintf("https://gitlab.com/api/v4/groups/%s/projects", group)
-	resp, err := http.Get(url)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrFailedToGetRepositories, err)
 	}
@@ -78,7 +97,13 @@ func listGroupRepos(group string, allRepos *[]string) error {
 
 	// Get subgroups
 	subgroupsURL := fmt.Sprintf("https://gitlab.com/api/v4/groups/%s/subgroups", group)
-	subgroupsResp, err := http.Get(subgroupsURL)
+
+	subgroupsReq, err := http.NewRequestWithContext(ctx, "GET", subgroupsURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create subgroups request: %w", err)
+	}
+
+	subgroupsResp, err := client.Do(subgroupsReq)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrFailedToGetSubgroups, err)
 	}
@@ -102,7 +127,7 @@ func listGroupRepos(group string, allRepos *[]string) error {
 	}
 
 	for _, subgroup := range subgroups {
-		err := listGroupRepos(subgroup.ID, allRepos)
+		err := listGroupRepos(ctx, subgroup.ID, allRepos)
 		if err != nil {
 			return err
 		}
@@ -111,18 +136,18 @@ func listGroupRepos(group string, allRepos *[]string) error {
 	return nil
 }
 
-func List(group string) ([]string, error) {
+func List(ctx context.Context, group string) ([]string, error) {
 	var allRepos []string
-	err := listGroupRepos(group, &allRepos)
+	err := listGroupRepos(ctx, group, &allRepos)
 	if err != nil {
 		return nil, err
 	}
 	return allRepos, nil
 }
 
-func Clone(targetPath string, group string, repo string, branch string) error {
+func Clone(ctx context.Context, targetPath string, group string, repo string, branch string) error {
 	if branch == "" {
-		defaultBranch, err := GetDefaultBranch(group, repo)
+		defaultBranch, err := GetDefaultBranch(ctx, group, repo)
 		if err != nil {
 			return fmt.Errorf("failed to get default branch: %w", err)
 		}
@@ -132,8 +157,8 @@ func Clone(targetPath string, group string, repo string, branch string) error {
 	cloneURL := fmt.Sprintf("https://gitlab.com/%s/%s.git", group, repo)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	// cmd := exec.Command("git", "clone", "-b", branch, cloneURL, targetPath)
-	cmd := exec.Command("git", "clone", cloneURL, targetPath)
+	// cmd := exec.CommandContext(ctx, "git", "clone", "-b", branch, cloneURL, targetPath)
+	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath)
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
@@ -147,7 +172,10 @@ func Clone(targetPath string, group string, repo string, branch string) error {
 
 // RefreshAll synchronizes the repositories in the targetPath with the repositories in the given group.
 // strategy can be "reset" (default), "pull", or "fetch"
-func RefreshAll(targetPath string, group string, strategy string) error {
+//
+// Note: For better performance with large numbers of repositories, consider using RefreshAllWithWorkerPool
+// from the bulk_operations.go file, which provides configurable worker pools and better resource management.
+func RefreshAll(ctx context.Context, targetPath string, group string, strategy string) error {
 	// Get all directories inside targetPath
 	targetRepos, err := getDirectories(targetPath)
 	if err != nil {
@@ -155,7 +183,7 @@ func RefreshAll(targetPath string, group string, strategy string) error {
 	}
 
 	// Get all repositories from the group
-	groupRepos, err := List(group)
+	groupRepos, err := List(ctx, group)
 	if err != nil {
 		return fmt.Errorf("failed to list repositories from group: %w", err)
 	}
@@ -171,42 +199,71 @@ func RefreshAll(targetPath string, group string, strategy string) error {
 		}
 	}
 
-	// Clone or reset hard HEAD for each repository in the group
+	// Use errgroup for concurrent repository processing
+	g, gCtx := errgroup.WithContext(ctx)
+	// Limit concurrent git operations to avoid overwhelming the system
+	sem := semaphore.NewWeighted(5) // Max 5 concurrent git operations
+	var mu sync.Mutex
+
 	for _, repo := range groupRepos {
-		repoPath := filepath.Join(targetPath, repo)
-		if _, err := os.Stat(repoPath); os.IsNotExist(err) {
-			// Clone the repository if it does not exist
-			if err := Clone(repoPath, group, repo, ""); err != nil {
-				return fmt.Errorf("failed to clone repository %s: %w", repoPath, err)
+		// Capture loop variable
+		repo := repo
+
+		g.Go(func() error {
+			// Acquire semaphore to limit concurrency
+			if err := sem.Acquire(gCtx, 1); err != nil {
+				return err
 			}
-		} else {
-			// Execute git operation based on strategy
-			switch strategy {
-			case "reset":
-				// Reset hard HEAD and pull
-				cmd := exec.Command("git", "-C", repoPath, "reset", "--hard", "HEAD")
-				if err := cmd.Run(); err != nil {
-					fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
+			defer sem.Release(1)
+
+			repoPath := filepath.Join(targetPath, repo)
+			if _, err := os.Stat(repoPath); os.IsNotExist(err) {
+				// Clone the repository if it does not exist
+				if err := Clone(gCtx, repoPath, group, repo, ""); err != nil {
+					fmt.Printf("failed to clone repository %s: %v\n", repoPath, err)
+					// Don't return error to prevent stopping other operations
+					// Log error but continue with other repositories
 				}
-				cmd = exec.Command("git", "-C", repoPath, "pull")
-				if err := cmd.Run(); err != nil {
-					fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+			} else {
+				// Execute git operation based on strategy
+				switch strategy {
+				case "reset":
+					// Reset hard HEAD and pull
+					cmd := exec.CommandContext(gCtx, "git", "-C", repoPath, "reset", "--hard", "HEAD")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
+					}
+					cmd = exec.CommandContext(gCtx, "git", "-C", repoPath, "pull")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+					}
+				case "pull":
+					// Only pull without reset
+					cmd := exec.CommandContext(gCtx, "git", "-C", repoPath, "pull")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+					}
+				case "fetch":
+					// Only fetch without modifying working directory
+					cmd := exec.CommandContext(gCtx, "git", "-C", repoPath, "fetch")
+					if err := cmd.Run(); err != nil {
+						fmt.Printf("execute git fetch fail for %s: %v\n", repo, err)
+					}
 				}
-			case "pull":
-				// Only pull without reset
-				cmd := exec.Command("git", "-C", repoPath, "pull")
-				if err := cmd.Run(); err != nil {
-					fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
-				}
-			case "fetch":
-				// Only fetch without modifying working directory
-				cmd := exec.Command("git", "-C", repoPath, "fetch")
-				if err := cmd.Run(); err != nil {
-					fmt.Printf("execute git fetch fail for %s: %v\n", repo, err)
-				}
+
+				// Thread-safe success message
+				mu.Lock()
+				fmt.Printf("Repo sync success with strategy %s: %s\n", strategy, repoPath)
+				mu.Unlock()
 			}
-			fmt.Printf("Repo sync success with strategy %s: %s\n", strategy, repoPath)
-		}
+
+			return nil
+		})
+	}
+
+	// Wait for all operations to complete
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error in concurrent git operations: %w", err)
 	}
 
 	return nil

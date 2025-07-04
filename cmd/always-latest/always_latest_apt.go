@@ -2,6 +2,7 @@ package alwayslatest
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -39,7 +40,7 @@ func defaultAlwaysLatestAptOptions() *alwaysLatestAptOptions {
 	}
 }
 
-func newAlwaysLatestAptCmd() *cobra.Command {
+func newAlwaysLatestAptCmd(ctx context.Context) *cobra.Command {
 	o := defaultAlwaysLatestAptOptions()
 
 	cmd := &cobra.Command{

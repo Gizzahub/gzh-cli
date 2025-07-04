@@ -1,6 +1,7 @@
 package genconfig
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
@@ -47,7 +48,7 @@ func (o *genConfigGithubOptions) run(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("both targetPath and orgName must be specified")
 	}
 
-	err := github.RefreshAll(o.targetPath, o.orgName, "reset")
+	err := github.RefreshAll(context.Background(), o.targetPath, o.orgName, "reset")
 	if err != nil {
 		// return err
 		// return fmt.Errorf("failed to refresh repositories: %w", err)

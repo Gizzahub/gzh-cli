@@ -103,23 +103,23 @@
 ### 4. 🔄 Concurrency & Goroutine Safety
 
 #### Context Propagation
-- [ ] Add context.Context to all long-running operations
+- [x] Add context.Context to all long-running operations
   - 📌 **Why**: No cancellation support currently
   - 🧠 **How**: Add `ctx context.Context` as first parameter
   - 📁 **Files**: All functions doing I/O or network calls
 
-- [ ] Implement graceful shutdown
+- [x] Implement graceful shutdown
   - 📌 **Why**: No cleanup on interrupt signals
   - 🧠 **How**: Use `signal.Notify` and context cancellation
   - 📁 **Files**: `cmd/root.go`, all command files
 
 #### Structured Concurrency
-- [ ] Replace raw goroutines with errgroup
+- [x] Replace raw goroutines with errgroup
   - 📌 **Why**: Better error handling and synchronization
   - 🧠 **How**: Use `golang.org/x/sync/errgroup`
   - 📁 **Files**: `cmd/net-env/`, any concurrent operations
 
-- [ ] Implement worker pool for bulk operations
+- [x] Implement worker pool for bulk operations
   - 📌 **Why**: Unbounded concurrency can overwhelm resources
   - 🧠 **How**: Use semaphore or channel-based pool
   - 📁 **Files**: `pkg/github/`, `pkg/gitlab/` bulk operations

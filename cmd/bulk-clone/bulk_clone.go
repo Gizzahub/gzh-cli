@@ -7,6 +7,8 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +26,7 @@ func defaultBulkCloneOptions() *bulkCloneOptions {
 	}
 }
 
-func NewBulkCloneCmd() *cobra.Command {
+func NewBulkCloneCmd(ctx context.Context) *cobra.Command {
 	o := defaultBulkCloneOptions()
 
 	cmd := &cobra.Command{
@@ -38,7 +40,9 @@ and their settings. This command will process all repository roots defined in th
 configuration file regardless of the provider (GitHub, GitLab, Gitea).
 
 For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
-		RunE: o.run,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return o.run(ctx, cmd, args)
+		},
 	}
 
 	cmd.Flags().StringVarP(&o.configFile, "config", "c", o.configFile, "Path to config file")
@@ -58,7 +62,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	return cmd
 }
 
-func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
+func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, args []string) error {
 	// Check if using gzh.yaml format
 	if o.useGZHConfig {
 		return o.runWithGZHConfig()
@@ -101,13 +105,20 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 			Token: "", // Token will be retrieved from environment variables
 		}
 
-		provider, err := factory.CreateProvider(context.Background(), repoRoot.Provider, providerConfig)
+		provider, err := factory.CreateProvider(ctx, repoRoot.Provider, providerConfig)
 		if err != nil {
 			fmt.Printf("Error creating provider %s: %v\n", repoRoot.Provider, err)
 			continue
 		}
 
-		err = provider.RefreshAll(context.Background(), targetPath, repoRoot.OrgName, o.strategy)
+		// Check for cancellation before starting long-running operation
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("operation cancelled: %w", ctx.Err())
+		default:
+		}
+
+		err = provider.RefreshAll(ctx, targetPath, repoRoot.OrgName, o.strategy)
 		if err != nil {
 			fmt.Printf("Error processing %s org %s: %v\n", repoRoot.Provider, repoRoot.OrgName, err)
 			continue
@@ -125,11 +136,17 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Github.RootPath)
 
 		providerConfig := config.ProviderConfig{Token: ""}
-		provider, err := factory.CreateProvider(context.Background(), "github", providerConfig)
+		provider, err := factory.CreateProvider(ctx, "github", providerConfig)
 		if err != nil {
 			fmt.Printf("Error creating GitHub provider: %v\n", err)
 		} else {
-			err = provider.RefreshAll(context.Background(), targetPath, cfg.Default.Github.OrgName, o.strategy)
+			// Check for cancellation before starting long-running operation
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("operation cancelled: %w", ctx.Err())
+			default:
+			}
+			err = provider.RefreshAll(ctx, targetPath, cfg.Default.Github.OrgName, o.strategy)
 			if err != nil {
 				fmt.Printf("Error processing default GitHub org: %v\n", err)
 			} else {
@@ -143,11 +160,17 @@ func (o *bulkCloneOptions) run(_ *cobra.Command, args []string) error {
 		targetPath := bulkclonepkg.ExpandPath(cfg.Default.Gitlab.RootPath)
 
 		providerConfig := config.ProviderConfig{Token: ""}
-		provider, err := factory.CreateProvider(context.Background(), "gitlab", providerConfig)
+		provider, err := factory.CreateProvider(ctx, "gitlab", providerConfig)
 		if err != nil {
 			fmt.Printf("Error creating GitLab provider: %v\n", err)
 		} else {
-			err = provider.RefreshAll(context.Background(), targetPath, cfg.Default.Gitlab.GroupName, o.strategy)
+			// Check for cancellation before starting long-running operation
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("operation cancelled: %w", ctx.Err())
+			default:
+			}
+			err = provider.RefreshAll(ctx, targetPath, cfg.Default.Gitlab.GroupName, o.strategy)
 			if err != nil {
 				fmt.Printf("Error processing default GitLab group: %v\n", err)
 			} else {
@@ -198,6 +221,13 @@ func (o *bulkCloneOptions) runWithGZHConfig() error {
 	// Process each target
 	successCount := 0
 	for i, target := range targets {
+		// Check for cancellation before processing each target
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("operation cancelled after processing %d/%d targets: %w", i, len(targets), ctx.Err())
+		default:
+		}
+
 		fmt.Printf("\n[%d/%d] Processing %s: %s\n", i+1, len(targets), target.Provider, target.Name)
 
 		// Override strategy if specified via command line
@@ -221,7 +251,7 @@ func (o *bulkCloneOptions) runWithGZHConfig() error {
 		}
 
 		// Execute cloning based on provider
-		err := o.executeProviderCloning(target, targetPath)
+		err := o.executeProviderCloning(ctx, target, targetPath)
 		if err != nil {
 			fmt.Printf("❌ Error processing %s/%s: %v\n", target.Provider, target.Name, err)
 			continue
@@ -236,12 +266,12 @@ func (o *bulkCloneOptions) runWithGZHConfig() error {
 }
 
 // executeProviderCloning executes the cloning operation for a specific provider
-func (o *bulkCloneOptions) executeProviderCloning(target config.BulkCloneTarget, targetPath string) error {
+func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target config.BulkCloneTarget, targetPath string) error {
 	switch target.Provider {
 	case config.ProviderGitHub:
-		return github.RefreshAll(targetPath, target.Name, target.Strategy)
+		return github.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitLab:
-		return gitlab.RefreshAll(targetPath, target.Name, target.Strategy)
+		return gitlab.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitea:
 		// Gitea support would go here
 		return fmt.Errorf("gitea provider not yet implemented for gzh.yaml format")

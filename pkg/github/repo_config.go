@@ -9,6 +9,9 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 // RepoConfigClient provides GitHub API operations for repository configuration management
@@ -968,33 +971,38 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 		}
 	}
 
-	// Create a semaphore to limit concurrent operations
-	semaphore := make(chan struct{}, options.ConcurrentWorkers)
-	var wg sync.WaitGroup
+	// Create errgroup with context for structured concurrency
+	g, gCtx := errgroup.WithContext(ctx)
+	// Limit concurrent operations using semaphore
+	sem := semaphore.NewWeighted(int64(options.ConcurrentWorkers))
 	var mu sync.Mutex
 
 	for i, repo := range filteredRepos {
-		wg.Add(1)
-		go func(repo *Repository, index int) {
-			defer wg.Done()
+		// Capture loop variables
+		repo := repo
+		index := i
 
-			// Acquire semaphore
-			semaphore <- struct{}{}
-			defer func() { <-semaphore }()
+		g.Go(func() error {
+			// Acquire semaphore to limit concurrency
+			if err := sem.Acquire(gCtx, 1); err != nil {
+				return err
+			}
+			defer sem.Release(1)
 
 			var err error
 			if options.DryRun {
 				// For dry run, just validate the configuration
-				err = c.validateRepositoryConfiguration(ctx, org, repo.Name, config)
+				err = c.validateRepositoryConfiguration(gCtx, org, repo.Name, config)
 			} else {
 				// Apply the configuration with confirmation if provided
 				if options.ConfirmationPrompt != nil {
-					err = c.UpdateRepositoryConfigurationWithConfirmation(ctx, org, repo.Name, config, options.ConfirmationPrompt)
+					err = c.UpdateRepositoryConfigurationWithConfirmation(gCtx, org, repo.Name, config, options.ConfirmationPrompt)
 				} else {
-					err = c.UpdateRepositoryConfiguration(ctx, org, repo.Name, config)
+					err = c.UpdateRepositoryConfiguration(gCtx, org, repo.Name, config)
 				}
 			}
 
+			// Update result with mutex protection
 			mu.Lock()
 			if err != nil {
 				result.Failed++
@@ -1008,10 +1016,17 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 				options.OnProgress(repo.Name, index+1, result.Total, err)
 			}
 			mu.Unlock()
-		}(repo, i)
+
+			// Don't return the error to errgroup to prevent early termination
+			// We want to process all repositories and collect errors
+			return nil
+		})
 	}
 
-	wg.Wait()
+	// Wait for all goroutines to complete
+	if err := g.Wait(); err != nil {
+		return nil, fmt.Errorf("error in concurrent processing: %w", err)
+	}
 
 	return result, nil
 }

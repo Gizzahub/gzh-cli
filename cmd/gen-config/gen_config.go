@@ -1,8 +1,12 @@
 package genconfig
 
-import "github.com/spf13/cobra"
+import (
+	"context"
 
-func NewGenConfigCmd() *cobra.Command {
+	"github.com/spf13/cobra"
+)
+
+func NewGenConfigCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "gen-config",
 		Short:        "Generate bulk-clone configuration files",
@@ -30,7 +34,7 @@ Examples:
 
 	cmd.AddCommand(newGenConfigInitCmd())
 	cmd.AddCommand(newGenConfigTemplateCmd())
-	cmd.AddCommand(newGenConfigDiscoverCmd())
+	cmd.AddCommand(newGenConfigDiscoverCmd(ctx))
 	cmd.AddCommand(newGenConfigGithubCmd()) // Keep for backward compatibility
 
 	return cmd

@@ -2,6 +2,7 @@ package alwayslatest
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -37,7 +38,7 @@ func defaultAlwaysLatestBrewOptions() *alwaysLatestBrewOptions {
 	}
 }
 
-func newAlwaysLatestBrewCmd() *cobra.Command {
+func newAlwaysLatestBrewCmd(ctx context.Context) *cobra.Command {
 	o := defaultAlwaysLatestBrewOptions()
 
 	cmd := &cobra.Command{

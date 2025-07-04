@@ -27,7 +27,7 @@ func NewGitHubProviderAdapter(token string, environment env.Environment) *GitHub
 }
 
 func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
-	repoNames, err := github.List(owner)
+	repoNames, err := github.List(ctx, owner)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	repositories := make([]Repository, 0, len(repoNames))
 	for _, name := range repoNames {
 		// Get additional repository information
-		defaultBranch, _ := github.GetDefaultBranch(owner, name)
+		defaultBranch, _ := github.GetDefaultBranch(ctx, owner, name)
 
 		repo := Repository{
 			Name:          name,
@@ -52,19 +52,19 @@ func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner stri
 }
 
 func (g *GitHubProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
-	return github.Clone(targetPath, owner, repository)
+	return github.Clone(ctx, targetPath, owner, repository)
 }
 
 func (g *GitHubProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
-	return github.GetDefaultBranch(owner, repository)
+	return github.GetDefaultBranch(ctx, owner, repository)
 }
 
 func (g *GitHubProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
-	return github.RefreshAll(targetPath, owner, strategy)
+	return github.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
 func (g *GitHubProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
-	return github.RefreshAll(targetPath, owner, strategy)
+	return github.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
 func (g *GitHubProviderAdapter) SetToken(token string) {
@@ -76,7 +76,7 @@ func (g *GitHubProviderAdapter) SetToken(token string) {
 
 func (g *GitHubProviderAdapter) ValidateToken(ctx context.Context) error {
 	// Simple validation - try to make an API call
-	_, err := github.List("github") // Try to list github's own repositories
+	_, err := github.List(ctx, "github") // Try to list github's own repositories
 	return err
 }
 
@@ -108,7 +108,7 @@ func NewGitLabProviderAdapter(token string, environment env.Environment) *GitLab
 }
 
 func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
-	repoNames, err := gitlab.List(owner)
+	repoNames, err := gitlab.List(ctx, owner)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	repositories := make([]Repository, 0, len(repoNames))
 	for _, name := range repoNames {
 		// Get additional repository information
-		defaultBranch, _ := gitlab.GetDefaultBranch(owner, name)
+		defaultBranch, _ := gitlab.GetDefaultBranch(ctx, owner, name)
 
 		repo := Repository{
 			Name:          name,
@@ -133,19 +133,19 @@ func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner stri
 }
 
 func (g *GitLabProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
-	return gitlab.Clone(targetPath, owner, repository, "")
+	return gitlab.Clone(ctx, targetPath, owner, repository, "")
 }
 
 func (g *GitLabProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
-	return gitlab.GetDefaultBranch(owner, repository)
+	return gitlab.GetDefaultBranch(ctx, owner, repository)
 }
 
 func (g *GitLabProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
-	return gitlab.RefreshAll(targetPath, owner, strategy)
+	return gitlab.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
 func (g *GitLabProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
-	return gitlab.RefreshAll(targetPath, owner, strategy)
+	return gitlab.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
 func (g *GitLabProviderAdapter) SetToken(token string) {
@@ -157,7 +157,7 @@ func (g *GitLabProviderAdapter) SetToken(token string) {
 
 func (g *GitLabProviderAdapter) ValidateToken(ctx context.Context) error {
 	// Simple validation - try to make an API call
-	_, err := gitlab.List("gitlab-org") // Try to list gitlab-org repositories
+	_, err := gitlab.List(ctx, "gitlab-org") // Try to list gitlab-org repositories
 	return err
 }
 
@@ -188,7 +188,7 @@ func NewGiteaProviderAdapter(token string, environment env.Environment) *GiteaPr
 }
 
 func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
-	repoNames, err := gitea.List(owner)
+	repoNames, err := gitea.List(ctx, owner)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner strin
 	repositories := make([]Repository, 0, len(repoNames))
 	for _, name := range repoNames {
 		// Get additional repository information
-		defaultBranch, _ := gitea.GetDefaultBranch(owner, name)
+		defaultBranch, _ := gitea.GetDefaultBranch(ctx, owner, name)
 
 		repo := Repository{
 			Name:          name,
@@ -213,20 +213,20 @@ func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner strin
 }
 
 func (g *GiteaProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
-	return gitea.Clone(targetPath, owner, repository, "")
+	return gitea.Clone(ctx, targetPath, owner, repository, "")
 }
 
 func (g *GiteaProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
-	return gitea.GetDefaultBranch(owner, repository)
+	return gitea.GetDefaultBranch(ctx, owner, repository)
 }
 
 func (g *GiteaProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
 	// Note: gitea.RefreshAll doesn't support strategy parameter
-	return gitea.RefreshAll(targetPath, owner)
+	return gitea.RefreshAll(ctx, targetPath, owner)
 }
 
 func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
-	return gitea.RefreshAll(targetPath, owner)
+	return gitea.RefreshAll(ctx, targetPath, owner)
 }
 
 func (g *GiteaProviderAdapter) SetToken(token string) {
@@ -238,7 +238,7 @@ func (g *GiteaProviderAdapter) SetToken(token string) {
 
 func (g *GiteaProviderAdapter) ValidateToken(ctx context.Context) error {
 	// Simple validation - try to make an API call
-	_, err := gitea.List("gitea") // Try to list gitea's own repositories
+	_, err := gitea.List(ctx, "gitea") // Try to list gitea's own repositories
 	return err
 }
 

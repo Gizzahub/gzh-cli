@@ -1,6 +1,7 @@
 package ide
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -41,7 +42,7 @@ func defaultIDEOptions() *ideOptions {
 	}
 }
 
-func NewIDECmd() *cobra.Command {
+func NewIDECmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ide",
 		Short: "Monitor and manage IDE configuration changes",
@@ -76,14 +77,14 @@ Examples:
 		SilenceUsage: true,
 	}
 
-	cmd.AddCommand(newIDEMonitorCmd())
+	cmd.AddCommand(newIDEMonitorCmd(ctx))
 	cmd.AddCommand(newIDEListCmd())
 	cmd.AddCommand(newIDEFixSyncCmd())
 
 	return cmd
 }
 
-func newIDEMonitorCmd() *cobra.Command {
+func newIDEMonitorCmd(ctx context.Context) *cobra.Command {
 	o := defaultIDEOptions()
 
 	cmd := &cobra.Command{
@@ -107,7 +108,9 @@ Examples:
   
   # Monitor with custom directory
   gz ide monitor --watch-dir ~/.config/JetBrains/IntelliJIdea2023.2`,
-		RunE: o.runMonitor,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return o.runMonitor(ctx, cmd, args)
+		},
 	}
 
 	cmd.Flags().StringVar(&o.watchDir, "watch-dir", "", "Specific directory to monitor (auto-detect if not specified)")
@@ -177,7 +180,7 @@ Examples:
 	return cmd
 }
 
-func (o *ideOptions) runMonitor(_ *cobra.Command, args []string) error {
+func (o *ideOptions) runMonitor(ctx context.Context, _ *cobra.Command, args []string) error {
 	watchDirs, err := o.getWatchDirectories()
 	if err != nil {
 		return fmt.Errorf("failed to get watch directories: %w", err)
@@ -216,9 +219,13 @@ func (o *ideOptions) runMonitor(_ *cobra.Command, args []string) error {
 	fmt.Printf("📁 Watching %d paths for changes\n", len(watcher.WatchList()))
 	fmt.Printf("🎯 Press Ctrl+C to stop monitoring\n\n")
 
-	// Start monitoring
+	// Start monitoring with graceful shutdown support
 	for {
 		select {
+		case <-ctx.Done():
+			fmt.Printf("\n🛑 Stopping IDE monitoring (reason: %v)\n", ctx.Err())
+			return nil
+
 		case event, ok := <-watcher.Events:
 			if !ok {
 				return nil

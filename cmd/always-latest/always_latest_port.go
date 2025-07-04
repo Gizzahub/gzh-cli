@@ -2,6 +2,7 @@ package alwayslatest
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -35,7 +36,7 @@ func defaultAlwaysLatestPortOptions() *alwaysLatestPortOptions {
 	}
 }
 
-func newAlwaysLatestPortCmd() *cobra.Command {
+func newAlwaysLatestPortCmd(ctx context.Context) *cobra.Command {
 	o := defaultAlwaysLatestPortOptions()
 
 	cmd := &cobra.Command{

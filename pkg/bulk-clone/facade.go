@@ -389,8 +389,14 @@ func (b *bulkCloneManagerImpl) CleanupRepositories(ctx context.Context, request 
 
 // ConfigurationManager interface for configuration operations
 type ConfigurationManager interface {
-	LoadConfiguration(ctx context.Context) (*Config, error)
-	ValidateConfiguration(ctx context.Context, config *Config) error
+	LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error)
+	ValidateConfiguration(ctx context.Context, config *BulkCloneConfig) error
 }
 
-// Note: Logger interface is defined elsewhere
+// Logger interface for dependency injection
+type Logger interface {
+	Debug(msg string, args ...interface{})
+	Info(msg string, args ...interface{})
+	Warn(msg string, args ...interface{})
+	Error(msg string, args ...interface{})
+}

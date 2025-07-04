@@ -1,8 +1,12 @@
 package netenv
 
-import "github.com/spf13/cobra"
+import (
+	"context"
 
-func NewNetEnvCmd() *cobra.Command {
+	"github.com/spf13/cobra"
+)
+
+func NewNetEnvCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "net-env",
 		Short: "Manage network environment transitions",
@@ -50,7 +54,7 @@ Examples:
 		SilenceUsage: true,
 	}
 
-	cmd.AddCommand(newDaemonCmd())
+	cmd.AddCommand(newDaemonCmd(ctx))
 	cmd.AddCommand(newWifiCmd())
 	cmd.AddCommand(newActionsCmd())
 

@@ -109,7 +109,7 @@ func (g *gitHubClonerImpl) CloneOrganization(ctx context.Context, orgName, targe
 	}
 
 	// Call the existing RefreshAll function
-	return RefreshAll(targetPath, orgName, strategy)
+	return RefreshAll(ctx, targetPath, orgName, strategy)
 }
 
 // CloneRepository clones a specific repository

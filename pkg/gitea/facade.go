@@ -2,7 +2,6 @@ package gitea
 
 import (
 	"context"
-	"io"
 	"net/http"
 )
 
@@ -108,7 +107,7 @@ func (g *giteaManagerImpl) ListOrganizationRepositories(ctx context.Context, org
 	g.logger.Debug("Listing repositories for organization", "org", organization)
 
 	// Use existing List function with context support
-	return List(organization)
+	return List(ctx, organization)
 }
 
 // CloneRepository clones a single repository
@@ -116,7 +115,7 @@ func (g *giteaManagerImpl) CloneRepository(ctx context.Context, organization, re
 	g.logger.Debug("Cloning repository", "org", organization, "repo", repository, "path", targetPath)
 
 	// Use existing Clone function with context support
-	return Clone(targetPath, organization, repository)
+	return Clone(ctx, targetPath, organization, repository, "")
 }
 
 // GetRepositoryInfo gets detailed information about a repository
@@ -138,7 +137,7 @@ func (g *giteaManagerImpl) RefreshAllRepositories(ctx context.Context, targetPat
 	g.logger.Info("Refreshing all repositories", "org", organization)
 
 	// Use existing RefreshAll function
-	return RefreshAll(targetPath, organization)
+	return RefreshAll(ctx, targetPath, organization)
 }
 
 // BulkCloneRepositories performs bulk repository operations
@@ -260,4 +259,15 @@ func (g *giteaManagerImpl) applyFilters(repositories []string, filters *Reposito
 	return filtered
 }
 
-// Note: HTTPClient and Logger interfaces are defined elsewhere
+// HTTPClient interface for dependency injection
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// Logger interface for dependency injection
+type Logger interface {
+	Debug(msg string, args ...interface{})
+	Info(msg string, args ...interface{})
+	Warn(msg string, args ...interface{})
+	Error(msg string, args ...interface{})
+}

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
@@ -15,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newRootCmd(version string) *cobra.Command {
+func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gz",
 		Short: "Cli 종합 Manager by Gizzahub",
@@ -25,13 +26,13 @@ func newRootCmd(version string) *cobra.Command {
 	}
 
 	cmd.AddCommand(newVersionCmd(version))
-	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd())
-	cmd.AddCommand(bulkclone.NewBulkCloneCmd())
+	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
+	cmd.AddCommand(bulkclone.NewBulkCloneCmd(ctx))
 	cmd.AddCommand(config.NewConfigCmd())
 	cmd.AddCommand(devenv.NewDevEnvCmd())
-	cmd.AddCommand(genconfig.NewGenConfigCmd())
-	cmd.AddCommand(ide.NewIDECmd())
-	cmd.AddCommand(netenv.NewNetEnvCmd())
+	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
+	cmd.AddCommand(ide.NewIDECmd(ctx))
+	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 
@@ -39,8 +40,8 @@ func newRootCmd(version string) *cobra.Command {
 }
 
 // Execute invokes the command.
-func Execute(version string) error {
-	if err := newRootCmd(version).Execute(); err != nil {
+func Execute(ctx context.Context, version string) error {
+	if err := newRootCmd(ctx, version).Execute(); err != nil {
 		return fmt.Errorf("error executing root command: %w", err)
 	}
 

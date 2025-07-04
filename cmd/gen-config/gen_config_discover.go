@@ -1,6 +1,7 @@
 package genconfig
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -28,7 +29,21 @@ func defaultGenConfigDiscoverOptions() *genConfigDiscoverOptions {
 	}
 }
 
-func newGenConfigDiscoverCmd() *cobra.Command {
+type ConfigData struct {
+	Version   string
+	Protocol  string
+	RepoRoots []RepoRootConfig
+	Ignores   []string
+}
+
+type RepoRootConfig struct {
+	Provider string
+	OrgName  string
+	RootPath string
+	Protocol string
+}
+
+func newGenConfigDiscoverCmd(ctx context.Context) *cobra.Command {
 	o := defaultGenConfigDiscoverOptions()
 
 	cmd := &cobra.Command{

@@ -1,8 +1,12 @@
 package alwayslatest
 
-import "github.com/spf13/cobra"
+import (
+	"context"
 
-func NewAlwaysLatestCmd() *cobra.Command {
+	"github.com/spf13/cobra"
+)
+
+func NewAlwaysLatestCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "always-latest",
 		Short:        "Keep development tools and package managers up to date",
@@ -32,12 +36,12 @@ Examples:
   gz always-latest --all`,
 	}
 
-	cmd.AddCommand(newAlwaysLatestAsdfCmd())
-	cmd.AddCommand(newAlwaysLatestBrewCmd())
-	cmd.AddCommand(newAlwaysLatestSdkmanCmd())
-	cmd.AddCommand(newAlwaysLatestPortCmd())
-	cmd.AddCommand(newAlwaysLatestAptCmd())
-	cmd.AddCommand(newAlwaysLatestRbenvCmd())
+	cmd.AddCommand(newAlwaysLatestAsdfCmd(ctx))
+	cmd.AddCommand(newAlwaysLatestBrewCmd(ctx))
+	cmd.AddCommand(newAlwaysLatestSdkmanCmd(ctx))
+	cmd.AddCommand(newAlwaysLatestPortCmd(ctx))
+	cmd.AddCommand(newAlwaysLatestAptCmd(ctx))
+	cmd.AddCommand(newAlwaysLatestRbenvCmd(ctx))
 
 	return cmd
 }

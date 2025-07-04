@@ -2,7 +2,6 @@ package gitlab
 
 import (
 	"context"
-	"io"
 	"net/http"
 )
 
@@ -99,7 +98,7 @@ func (g *gitLabManagerImpl) ListGroupRepositories(ctx context.Context, group str
 	g.logger.Debug("Listing repositories for group", "group", group)
 
 	// Use existing List function with context support
-	return List(group)
+	return List(ctx, group)
 }
 
 // CloneRepository clones a single repository
@@ -107,7 +106,7 @@ func (g *gitLabManagerImpl) CloneRepository(ctx context.Context, group, reposito
 	g.logger.Debug("Cloning repository", "group", group, "repo", repository, "path", targetPath)
 
 	// Use existing Clone function with context support
-	return Clone(targetPath, group, repository, branch)
+	return Clone(ctx, targetPath, group, repository, branch)
 }
 
 // GetRepositoryDefaultBranch gets the default branch for a repository
@@ -115,7 +114,7 @@ func (g *gitLabManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, grou
 	g.logger.Debug("Getting default branch", "group", group, "repo", repository)
 
 	// Use existing GetDefaultBranch function
-	return GetDefaultBranch(group, repository)
+	return GetDefaultBranch(ctx, group, repository)
 }
 
 // RefreshAllRepositories refreshes all repositories in a group
@@ -123,7 +122,7 @@ func (g *gitLabManagerImpl) RefreshAllRepositories(ctx context.Context, targetPa
 	g.logger.Info("Refreshing all repositories", "group", group, "strategy", strategy)
 
 	// Use existing RefreshAll function
-	return RefreshAll(targetPath, group, strategy)
+	return RefreshAll(ctx, targetPath, group, strategy)
 }
 
 // BulkCloneRepositories performs bulk repository operations
@@ -248,4 +247,15 @@ func (g *gitLabManagerImpl) applyFilters(repositories []string, filters *Reposit
 	return filtered
 }
 
-// Note: HTTPClient and Logger interfaces are defined elsewhere
+// HTTPClient interface for dependency injection
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// Logger interface for dependency injection
+type Logger interface {
+	Debug(msg string, args ...interface{})
+	Info(msg string, args ...interface{})
+	Warn(msg string, args ...interface{})
+	Error(msg string, args ...interface{})
+}

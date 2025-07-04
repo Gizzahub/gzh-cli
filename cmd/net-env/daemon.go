@@ -2,6 +2,7 @@ package netenv
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -35,7 +36,7 @@ type serviceInfo struct {
 	Since       string
 }
 
-func newDaemonCmd() *cobra.Command {
+func newDaemonCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "daemon",
 		Short: "Monitor and manage system daemons",
@@ -64,7 +65,7 @@ Examples:
 
 	cmd.AddCommand(newDaemonListCmd())
 	cmd.AddCommand(newDaemonStatusCmd())
-	cmd.AddCommand(newDaemonMonitorCmd())
+	cmd.AddCommand(newDaemonMonitorCmd(ctx))
 
 	return cmd
 }
@@ -133,7 +134,7 @@ Examples:
 	return cmd
 }
 
-func newDaemonMonitorCmd() *cobra.Command {
+func newDaemonMonitorCmd(ctx context.Context) *cobra.Command {
 	o := &daemonOptions{}
 
 	cmd := &cobra.Command{
@@ -156,7 +157,9 @@ Examples:
   
   # Monitor network services
   gz net-env daemon monitor --network-services`,
-		RunE: o.runMonitor,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return o.runMonitor(ctx, cmd, args)
+		},
 	}
 
 	cmd.Flags().StringVar(&o.serviceName, "service", "", "Name of the service to monitor")
@@ -237,7 +240,7 @@ func (o *daemonOptions) runStatus(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *daemonOptions) runMonitor(_ *cobra.Command, args []string) error {
+func (o *daemonOptions) runMonitor(ctx context.Context, _ *cobra.Command, args []string) error {
 	if o.serviceName == "" && !o.networkServices {
 		return fmt.Errorf("either --service or --network-services must be specified")
 	}
@@ -250,22 +253,27 @@ func (o *daemonOptions) runMonitor(_ *cobra.Command, args []string) error {
 	defer ticker.Stop()
 
 	for {
-		// Clear screen (simple approach)
-		fmt.Print("\033[2J\033[H")
+		select {
+		case <-ctx.Done():
+			fmt.Printf("\n🛑 Stopping daemon monitoring (reason: %v)\n", ctx.Err())
+			return nil
 
-		if o.serviceName != "" {
-			if err := o.displayServiceMonitor(o.serviceName); err != nil {
-				fmt.Printf("Error monitoring service %s: %v\n", o.serviceName, err)
+		case <-ticker.C:
+			// Clear screen (simple approach)
+			fmt.Print("\033[2J\033[H")
+
+			if o.serviceName != "" {
+				if err := o.displayServiceMonitor(o.serviceName); err != nil {
+					fmt.Printf("Error monitoring service %s: %v\n", o.serviceName, err)
+				}
+			} else if o.networkServices {
+				if err := o.displayNetworkServicesMonitor(); err != nil {
+					fmt.Printf("Error monitoring network services: %v\n", err)
+				}
 			}
-		} else if o.networkServices {
-			if err := o.displayNetworkServicesMonitor(); err != nil {
-				fmt.Printf("Error monitoring network services: %v\n", err)
-			}
+
+			fmt.Printf("\nLast updated: %s\n", time.Now().Format("2006-01-02 15:04:05"))
 		}
-
-		fmt.Printf("\nLast updated: %s\n", time.Now().Format("2006-01-02 15:04:05"))
-
-		<-ticker.C
 	}
 }
 

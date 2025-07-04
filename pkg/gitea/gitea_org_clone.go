@@ -2,19 +2,31 @@ package gitea
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os/exec"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 type RepoInfo struct {
 	DefaultBranch string `json:"default_branch"`
 }
 
-func GetDefaultBranch(org string, repo string) (string, error) {
+func GetDefaultBranch(ctx context.Context, org string, repo string) (string, error) {
 	url := fmt.Sprintf("https://gitea.com/api/v1/repos/%s/%s", org, repo)
-	resp, err := http.Get(url)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -32,9 +44,16 @@ func GetDefaultBranch(org string, repo string) (string, error) {
 	return repoInfo.DefaultBranch, nil
 }
 
-func List(org string) ([]string, error) {
+func List(ctx context.Context, org string) ([]string, error) {
 	url := fmt.Sprintf("https://gitea.com/api/v1/orgs/%s/repos", org)
-	resp, err := http.Get(url)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repositories: %w", err)
 	}
@@ -59,9 +78,9 @@ func List(org string) ([]string, error) {
 	return repoNames, nil
 }
 
-func Clone(targetPath string, org string, repo string, branch string) error {
+func Clone(ctx context.Context, targetPath string, org string, repo string, branch string) error {
 	if branch == "" {
-		defaultBranch, err := GetDefaultBranch(org, repo)
+		defaultBranch, err := GetDefaultBranch(ctx, org, repo)
 		if err != nil {
 			return fmt.Errorf("failed to get default branch: %w", err)
 		}
@@ -71,7 +90,7 @@ func Clone(targetPath string, org string, repo string, branch string) error {
 	cloneURL := fmt.Sprintf("https://gitea.com/%s/%s.git", org, repo)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	cmd := exec.Command("git", "clone", "-b", branch, cloneURL, targetPath)
+	cmd := exec.CommandContext(ctx, "git", "clone", "-b", branch, cloneURL, targetPath)
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
@@ -83,17 +102,49 @@ func Clone(targetPath string, org string, repo string, branch string) error {
 	return nil
 }
 
-func RefreshAll(targetPath string, org string) error {
-	repos, err := List(org)
+// RefreshAll clones all repositories from the given organization to the target path.
+//
+// Note: For better performance with large numbers of repositories, consider using RefreshAllWithWorkerPool
+// from the bulk_operations.go file, which provides configurable worker pools and better resource management.
+func RefreshAll(ctx context.Context, targetPath string, org string) error {
+	repos, err := List(ctx, org)
 	if err != nil {
 		return fmt.Errorf("failed to list repositories: %w", err)
 	}
 
+	// Use errgroup for concurrent repository processing
+	g, gCtx := errgroup.WithContext(ctx)
+	// Limit concurrent git operations to avoid overwhelming the system
+	sem := semaphore.NewWeighted(5) // Max 5 concurrent git operations
+	var mu sync.Mutex
+
 	for _, repo := range repos {
-		err := Clone(targetPath, org, repo, "")
-		if err != nil {
-			return fmt.Errorf("failed to clone repository: %w", err)
-		}
+		// Capture loop variable
+		repo := repo
+
+		g.Go(func() error {
+			// Acquire semaphore to limit concurrency
+			if err := sem.Acquire(gCtx, 1); err != nil {
+				return err
+			}
+			defer sem.Release(1)
+
+			if err := Clone(gCtx, targetPath, org, repo, ""); err != nil {
+				// Thread-safe error logging
+				mu.Lock()
+				fmt.Printf("failed to clone repository %s: %v\n", repo, err)
+				mu.Unlock()
+				// Don't return error to prevent stopping other operations
+				// Log error but continue with other repositories
+			}
+
+			return nil
+		})
+	}
+
+	// Wait for all operations to complete
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error in concurrent git operations: %w", err)
 	}
 
 	return nil

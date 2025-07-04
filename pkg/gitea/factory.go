@@ -96,7 +96,7 @@ func (g *giteaClonerImpl) CloneOrganization(ctx context.Context, orgName, target
 
 	// Call the existing RefreshAll function
 	// Note: strategy parameter is ignored for now since gitea.RefreshAll doesn't support it
-	return RefreshAll(targetPath, orgName)
+	return RefreshAll(ctx, targetPath, orgName)
 }
 
 // CloneRepository clones a specific repository
