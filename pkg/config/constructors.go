@@ -274,7 +274,9 @@ func (m *ProviderManagerImpl) GetProvider(ctx context.Context, name string) (*Pr
 func (m *ProviderManagerImpl) CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
 	m.logger.Debug("Creating provider cloner", "provider", providerName)
 
-	return CreateProviderCloner(providerName, token)
+	// Use factory pattern for provider creation
+	factory := NewProviderFactory(nil, m.logger)
+	return factory.CreateCloner(ctx, providerName, token)
 }
 
 // ValidateProvider implements ProviderManager interface

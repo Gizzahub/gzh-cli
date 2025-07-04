@@ -71,7 +71,7 @@
   - 🧠 **How**: Pass config through constructors
   - 📁 **Files**: All files using `os.Getenv()`
 
-- [ ] Create factory pattern for provider instantiation
+- [x] Create factory pattern for provider instantiation
   - 📌 **Why**: Commands directly create provider instances
   - 🧠 **How**: Implement `ProviderFactory` interface
   - 📁 **Files**: `pkg/*/factory.go`

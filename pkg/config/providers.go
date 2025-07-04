@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -139,18 +140,10 @@ func (g *GiteaCloner) GetName() string {
 	return ProviderGitea
 }
 
-// CreateProviderCloner creates a cloner for the specified provider
+// CreateProviderCloner creates a cloner for the specified provider (deprecated: use ProviderFactory)
 func CreateProviderCloner(providerName, token string) (ProviderCloner, error) {
-	switch providerName {
-	case ProviderGitHub:
-		return NewGitHubCloner(token), nil
-	case ProviderGitLab:
-		return NewGitLabCloner(token), nil
-	case ProviderGitea:
-		return NewGiteaCloner(token), nil
-	default:
-		return nil, fmt.Errorf("unsupported provider: %s", providerName)
-	}
+	factory := NewProviderFactory(env.NewOSEnvironment(), nil)
+	return factory.CreateCloner(context.Background(), providerName, token)
 }
 
 // BulkCloneExecutor handles bulk cloning operations with filtering and processing
@@ -161,12 +154,17 @@ type BulkCloneExecutor struct {
 
 // NewBulkCloneExecutor creates a new bulk clone executor
 func NewBulkCloneExecutor(config *Config) (*BulkCloneExecutor, error) {
+	return NewBulkCloneExecutorWithFactory(config, NewProviderFactory(env.NewOSEnvironment(), nil))
+}
+
+// NewBulkCloneExecutorWithFactory creates a new bulk clone executor with a custom factory
+func NewBulkCloneExecutorWithFactory(config *Config, factory ProviderFactory) (*BulkCloneExecutor, error) {
 	integration := NewBulkCloneIntegration(config)
 	cloners := make(map[string]ProviderCloner)
 
-	// Create cloners for each configured provider
+	// Create cloners for each configured provider using the factory
 	for providerName, provider := range config.Providers {
-		cloner, err := CreateProviderCloner(providerName, provider.Token)
+		cloner, err := factory.CreateCloner(context.Background(), providerName, provider.Token)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create cloner for %s: %w", providerName, err)
 		}
