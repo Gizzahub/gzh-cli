@@ -36,6 +36,13 @@ go test ./cmd/ide -v               # Run IDE package tests
 go test ./pkg/github -v            # Run GitHub integration tests
 ```
 
+### Mocking Strategy
+```bash
+make generate-mocks    # Generate all interface mocks using gomock
+make clean-mocks      # Remove all generated mock files
+make regenerate-mocks # Clean and regenerate all mocks
+```
+
 ## Architecture
 
 ### Command Structure

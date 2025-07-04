@@ -23,7 +23,10 @@
       "Bash(go run:*)",
       "Bash(git push:*)",
       "Bash(golangci-lint run:*)",
-      "Bash(ln:*)"
+      "Bash(ln:*)",
+      "Bash(go get:*)",
+      "Bash(go install:*)",
+      "Bash(mockgen:*)"
     ],
     "deny": []
   }

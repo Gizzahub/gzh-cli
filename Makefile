@@ -57,6 +57,28 @@ PHONY: lint
 lint: ## lint go files
 	golangci-lint run -c .golang-ci.yml
 
+.PHONY: generate-mocks
+generate-mocks: ## generate all mock files using gomock
+	@echo "Generating mocks..."
+	@command -v mockgen >/dev/null 2>&1 || { echo "mockgen not found. Installing..."; go install go.uber.org/mock/mockgen@latest; }
+	@mockgen -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks
+	@mockgen -source=internal/filesystem/interfaces.go -destination=internal/filesystem/mocks/filesystem_mocks.go -package=mocks
+	@mockgen -source=internal/httpclient/interfaces.go -destination=internal/httpclient/mocks/httpclient_mocks.go -package=mocks
+	@mockgen -source=internal/git/interfaces.go -destination=internal/git/mocks/git_mocks.go -package=mocks
+	@echo "Mock generation complete!"
+
+.PHONY: clean-mocks
+clean-mocks: ## remove all generated mock files
+	@echo "Cleaning generated mocks..."
+	@rm -f pkg/github/mocks/github_mocks.go
+	@rm -f internal/filesystem/mocks/filesystem_mocks.go
+	@rm -f internal/httpclient/mocks/httpclient_mocks.go
+	@rm -f internal/git/mocks/git_mocks.go
+	@echo "Mock cleanup complete!"
+
+.PHONY: regenerate-mocks
+regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
+
 .PHONY: pre-commit
 pre-commit:	## run pre-commit hooks
 	pre-commit run --all-files
