@@ -50,9 +50,9 @@ func (m *MockGitHubProviderFactory) GetProviderName() string {
 func TestNewGitHubManager(t *testing.T) {
 	factory := &MockGitHubProviderFactory{}
 	logger := &MockLogger{}
-	
+
 	manager := NewGitHubManager(factory, logger)
-	
+
 	if manager == nil {
 		t.Error("Expected manager to be created, got nil")
 	}
@@ -61,9 +61,9 @@ func TestNewGitHubManager(t *testing.T) {
 func TestGitHubManagerBulkCloneRepositories(t *testing.T) {
 	factory := &MockGitHubProviderFactory{}
 	logger := &MockLogger{}
-	
+
 	manager := NewGitHubManager(factory, logger)
-	
+
 	request := &BulkCloneRequest{
 		Organization: "test-org",
 		TargetPath:   "/tmp/test",
@@ -71,10 +71,10 @@ func TestGitHubManagerBulkCloneRepositories(t *testing.T) {
 		Repositories: []string{"repo1", "repo2"},
 		Concurrency:  2,
 	}
-	
+
 	ctx := context.Background()
 	result, err := manager.BulkCloneRepositories(ctx, request)
-	
+
 	// Note: This will fail with current implementation since it calls actual functions
 	// In a real implementation, we would mock the underlying functions
 	if result != nil && err == nil {
@@ -87,22 +87,22 @@ func TestGitHubManagerBulkCloneRepositories(t *testing.T) {
 func TestRepositoryFilters(t *testing.T) {
 	factory := &MockGitHubProviderFactory{}
 	logger := &MockLogger{}
-	
+
 	manager := NewGitHubManager(factory, logger).(*gitHubManagerImpl)
-	
+
 	repositories := []string{"repo1", "repo2", "test-repo", "another-repo"}
 	filters := &RepositoryFilters{
 		IncludeNames: []string{"repo1", "test-repo"},
 		ExcludeNames: []string{"repo2"},
 	}
-	
+
 	filtered := manager.applyFilters(repositories, filters)
-	
+
 	expected := []string{"repo1", "test-repo"}
 	if len(filtered) != len(expected) {
 		t.Errorf("Expected %d repositories after filtering, got %d", len(expected), len(filtered))
 	}
-	
+
 	for i, repo := range filtered {
 		if repo != expected[i] {
 			t.Errorf("Expected repository %s at index %d, got %s", expected[i], i, repo)
@@ -113,7 +113,7 @@ func TestRepositoryFilters(t *testing.T) {
 func TestRepositoryInfoCreation(t *testing.T) {
 	organization := "test-org"
 	repository := "test-repo"
-	
+
 	// Test that RepositoryInfo is created correctly
 	info := &RepositoryInfo{
 		Name:          repository,
@@ -124,15 +124,15 @@ func TestRepositoryInfoCreation(t *testing.T) {
 		Private:       false,
 		Description:   "Test repository",
 	}
-	
+
 	if info.Name != repository {
 		t.Errorf("Expected repository name %s, got %s", repository, info.Name)
 	}
-	
+
 	if info.FullName != organization+"/"+repository {
 		t.Errorf("Expected full name %s, got %s", organization+"/"+repository, info.FullName)
 	}
-	
+
 	expectedCloneURL := "https://github.com/" + organization + "/" + repository + ".git"
 	if info.CloneURL != expectedCloneURL {
 		t.Errorf("Expected clone URL %s, got %s", expectedCloneURL, info.CloneURL)
@@ -147,15 +147,15 @@ func TestBulkCloneRequestValidation(t *testing.T) {
 		Strategy:     "reset",
 		Concurrency:  1,
 	}
-	
+
 	if request.Organization == "" {
 		t.Error("Organization should not be empty")
 	}
-	
+
 	if request.TargetPath == "" {
 		t.Error("TargetPath should not be empty")
 	}
-	
+
 	if request.Concurrency <= 0 {
 		t.Error("Concurrency should be positive")
 	}
@@ -175,19 +175,19 @@ func TestBulkCloneResultAggregation(t *testing.T) {
 			{Repository: "repo5", Operation: "skip", Success: false, Error: "already exists"},
 		},
 	}
-	
+
 	if result.TotalRepositories != 5 {
 		t.Errorf("Expected 5 total repositories, got %d", result.TotalRepositories)
 	}
-	
+
 	if result.SuccessfulOperations != 3 {
 		t.Errorf("Expected 3 successful operations, got %d", result.SuccessfulOperations)
 	}
-	
+
 	if len(result.OperationResults) != 5 {
 		t.Errorf("Expected 5 operation results, got %d", len(result.OperationResults))
 	}
-	
+
 	// Check that all operation results have required fields
 	for i, opResult := range result.OperationResults {
 		if opResult.Repository == "" {

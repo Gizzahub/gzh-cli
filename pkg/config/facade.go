@@ -12,21 +12,21 @@ type ConfigurationManager interface {
 	LoadConfiguration(ctx context.Context) (*Config, error)
 	LoadConfigurationFromFile(ctx context.Context, filename string) (*Config, error)
 	LoadConfigurationFromReader(ctx context.Context, reader io.Reader) (*Config, error)
-	
+
 	// Configuration Validation
 	ValidateConfiguration(ctx context.Context, config *Config) error
 	ValidateConfigurationFile(ctx context.Context, filename string) error
-	
+
 	// Configuration Management
 	MergeConfigurations(ctx context.Context, base, overlay *Config) (*Config, error)
 	GetConfigurationPaths() []string
 	FindConfigurationFile(ctx context.Context) (string, error)
-	
+
 	// Provider Management
 	GetProviders(ctx context.Context) (map[string]Provider, error)
 	GetProvider(ctx context.Context, name string) (*Provider, error)
 	CreateProviderInstance(ctx context.Context, providerName, token string) (ProviderCloner, error)
-	
+
 	// Repository Filtering
 	CreateRepositoryFilter(ctx context.Context, config *RepositoryFilterConfig) (*RepositoryFilter, error)
 	FilterRepositories(ctx context.Context, repositories []Repository, filters *RepositoryFilter) ([]Repository, error)
@@ -34,11 +34,11 @@ type ConfigurationManager interface {
 
 // ConfigurationRequest represents a request for configuration operations
 type ConfigurationRequest struct {
-	ConfigFiles    []string
-	OverlayFiles   []string
-	ValidateOnly   bool
-	MergeStrategy  string
-	OutputFormat   string
+	ConfigFiles   []string
+	OverlayFiles  []string
+	ValidateOnly  bool
+	MergeStrategy string
+	OutputFormat  string
 }
 
 // ConfigurationResult represents the result of configuration operations
@@ -55,13 +55,13 @@ type ConfigurationResult struct {
 type RepositoryManagementFacade interface {
 	// Repository Discovery
 	DiscoverRepositories(ctx context.Context, request *RepositoryDiscoveryRequest) (*RepositoryDiscoveryResult, error)
-	
+
 	// Bulk Operations
 	ExecuteBulkOperation(ctx context.Context, request *BulkOperationRequest) (*BulkOperationResult, error)
-	
+
 	// Repository Analysis
 	AnalyzeRepositories(ctx context.Context, repositories []Repository) (*RepositoryAnalysisResult, error)
-	
+
 	// Configuration Integration
 	GetRepositoryConfiguration(ctx context.Context, organization, repository string) (*RepositoryConfig, error)
 	ApplyRepositoryConfiguration(ctx context.Context, config *RepositoryConfig) error
@@ -69,11 +69,11 @@ type RepositoryManagementFacade interface {
 
 // RepositoryDiscoveryRequest represents a request for discovering repositories
 type RepositoryDiscoveryRequest struct {
-	Providers    []string
-	Organizations []string
-	Groups       []string
-	Filters      *RepositoryFilters
-	Recursive    bool
+	Providers       []string
+	Organizations   []string
+	Groups          []string
+	Filters         *RepositoryFilters
+	Recursive       bool
 	IncludeMetadata bool
 }
 
@@ -109,12 +109,12 @@ type BulkOperationResult struct {
 
 // OperationResult represents the result of a single operation
 type OperationResult struct {
-	Repository  Repository
-	Operation   string
-	Success     bool
-	Error       string
-	Duration    string
-	Metadata    map[string]interface{}
+	Repository Repository
+	Operation  string
+	Success    bool
+	Error      string
+	Duration   string
+	Metadata   map[string]interface{}
 }
 
 // BulkOperationStatistics contains statistics about bulk operations
@@ -127,22 +127,22 @@ type BulkOperationStatistics struct {
 
 // ProviderStatistics contains statistics for a specific provider
 type ProviderStatistics struct {
-	TotalOperations    int
+	TotalOperations      int
 	SuccessfulOperations int
-	FailedOperations   int
-	AverageResponseTime string
-	RateLimitHits      int
+	FailedOperations     int
+	AverageResponseTime  string
+	RateLimitHits        int
 }
 
 // RepositoryAnalysisResult represents the result of repository analysis
 type RepositoryAnalysisResult struct {
-	TotalRepositories int
-	ByLanguage        map[string]int
-	ByVisibility      map[string]int
-	ByProvider        map[string]int
-	SizeStatistics    *SizeStatistics
+	TotalRepositories  int
+	ByLanguage         map[string]int
+	ByVisibility       map[string]int
+	ByProvider         map[string]int
+	SizeStatistics     *SizeStatistics
 	ActivityStatistics *ActivityStatistics
-	Recommendations   []string
+	Recommendations    []string
 }
 
 // SizeStatistics contains repository size statistics
@@ -155,10 +155,10 @@ type SizeStatistics struct {
 
 // ActivityStatistics contains repository activity statistics
 type ActivityStatistics struct {
-	MostActive    string
-	LeastActive   string
+	MostActive     string
+	LeastActive    string
 	AverageCommits float64
-	LastUpdated   map[string]string // repo -> last update time
+	LastUpdated    map[string]string // repo -> last update time
 }
 
 // configurationManagerImpl implements the ConfigurationManager interface
@@ -223,7 +223,7 @@ func (c *configurationManagerImpl) ValidateConfigurationFile(ctx context.Context
 // MergeConfigurations merges two configurations
 func (c *configurationManagerImpl) MergeConfigurations(ctx context.Context, base, overlay *Config) (*Config, error) {
 	c.logger.Debug("Merging configurations")
-	
+
 	// Implementation would merge the configurations
 	// For now, return the overlay config as a simple merge
 	return overlay, nil
@@ -237,14 +237,14 @@ func (c *configurationManagerImpl) GetConfigurationPaths() []string {
 // FindConfigurationFile finds the first available configuration file
 func (c *configurationManagerImpl) FindConfigurationFile(ctx context.Context) (string, error) {
 	c.logger.Debug("Finding configuration file")
-	
+
 	// Implementation would search for configuration files
 	paths := c.GetConfigurationPaths()
 	for _, path := range paths {
 		// Check if file exists (simplified)
 		return path, nil
 	}
-	
+
 	return "", fmt.Errorf("no configuration file found")
 }
 

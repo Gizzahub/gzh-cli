@@ -11,13 +11,13 @@ import (
 type GitHubProviderFactory interface {
 	// CreateCloner creates a GitHub cloner with the specified token
 	CreateCloner(ctx context.Context, token string) (GitHubCloner, error)
-	
+
 	// CreateClonerWithEnv creates a GitHub cloner with a specific environment
 	CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitHubCloner, error)
-	
+
 	// CreateChangeLogger creates a GitHub change logger
 	CreateChangeLogger(ctx context.Context, changelog *ChangeLog, options *LoggerOptions) (*ChangeLogger, error)
-	
+
 	// GetProviderName returns the provider name
 	GetProviderName() string
 }
@@ -32,7 +32,7 @@ func NewGitHubProviderFactory(environment env.Environment) GitHubProviderFactory
 	if environment == nil {
 		environment = env.NewOSEnvironment()
 	}
-	
+
 	return &gitHubProviderFactoryImpl{
 		environment: environment,
 	}
@@ -49,11 +49,11 @@ func (f *gitHubProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, tok
 		// Try to get token from environment
 		token = environment.Get(env.CommonEnvironmentKeys.GitHubToken)
 	}
-	
+
 	if token == "" {
 		return nil, fmt.Errorf("GitHub token is required")
 	}
-	
+
 	// Create a specific GitHub cloner implementation
 	return &gitHubClonerImpl{
 		Token:       token,
@@ -68,7 +68,7 @@ func (f *gitHubProviderFactoryImpl) CreateChangeLogger(ctx context.Context, chan
 		// In production, these would be injected properly
 		changelog = NewChangeLog(nil, nil)
 	}
-	
+
 	return NewChangeLogger(changelog, options), nil
 }
 
@@ -81,16 +81,16 @@ func (f *gitHubProviderFactoryImpl) GetProviderName() string {
 type GitHubCloner interface {
 	// CloneOrganization clones all repositories from a GitHub organization
 	CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error
-	
+
 	// CloneRepository clones a specific repository
 	CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error
-	
+
 	// SetToken sets the GitHub token for authentication
 	SetToken(token string)
-	
+
 	// GetToken returns the current GitHub token
 	GetToken() string
-	
+
 	// GetProviderName returns the provider name
 	GetProviderName() string
 }
@@ -107,7 +107,7 @@ func (g *gitHubClonerImpl) CloneOrganization(ctx context.Context, orgName, targe
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token)
 	}
-	
+
 	// Call the existing RefreshAll function
 	return RefreshAll(targetPath, orgName, strategy)
 }
@@ -118,7 +118,7 @@ func (g *gitHubClonerImpl) CloneRepository(ctx context.Context, owner, repo, tar
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token)
 	}
-	
+
 	// Implementation would call appropriate GitHub API functions
 	// For now, this is a placeholder
 	return fmt.Errorf("CloneRepository not yet implemented")
@@ -159,6 +159,6 @@ func NewGitHubProviderFactoryWithConfig(config *GitHubFactoryConfig) GitHubProvi
 	if config == nil {
 		config = DefaultGitHubFactoryConfig()
 	}
-	
+
 	return NewGitHubProviderFactory(config.Environment)
 }

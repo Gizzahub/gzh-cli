@@ -25,7 +25,7 @@ func LoadSchemaFromFileWithEnv(environment env.Environment) (string, error) {
 		"docs/bulk-clone-schema.json",
 		"../../docs/bulk-clone-schema.json",
 	}
-	
+
 	if goPath != "" {
 		paths = append(paths, filepath.Join(goPath, "src/github.com/gizzahub/gzh-manager-go/docs/bulk-clone-schema.json"))
 	}

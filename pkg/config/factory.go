@@ -11,13 +11,13 @@ import (
 type ProviderFactory interface {
 	// CreateCloner creates a provider cloner for the specified provider
 	CreateCloner(ctx context.Context, providerName, token string) (ProviderCloner, error)
-	
+
 	// CreateClonerWithEnv creates a provider cloner with a specific environment
 	CreateClonerWithEnv(ctx context.Context, providerName, token string, environment env.Environment) (ProviderCloner, error)
-	
+
 	// GetSupportedProviders returns a list of supported provider names
 	GetSupportedProviders() []string
-	
+
 	// IsProviderSupported checks if a provider is supported
 	IsProviderSupported(providerName string) bool
 }
@@ -33,7 +33,7 @@ func NewProviderFactory(environment env.Environment, logger Logger) ProviderFact
 	if environment == nil {
 		environment = env.NewOSEnvironment()
 	}
-	
+
 	return &providerFactoryImpl{
 		environment: environment,
 		logger:      logger,
@@ -48,11 +48,11 @@ func (f *providerFactoryImpl) CreateCloner(ctx context.Context, providerName, to
 // CreateClonerWithEnv creates a provider cloner with a specific environment
 func (f *providerFactoryImpl) CreateClonerWithEnv(ctx context.Context, providerName, token string, environment env.Environment) (ProviderCloner, error) {
 	f.logger.Debug("Creating provider cloner", "provider", providerName)
-	
+
 	if !f.IsProviderSupported(providerName) {
 		return nil, fmt.Errorf("unsupported provider: %s", providerName)
 	}
-	
+
 	switch providerName {
 	case ProviderGitHub:
 		return NewGitHubClonerWithEnv(token, environment), nil
@@ -102,6 +102,6 @@ func NewProviderFactoryWithConfig(config *ProviderFactoryConfig, logger Logger) 
 	if config == nil {
 		config = DefaultProviderFactoryConfig()
 	}
-	
+
 	return NewProviderFactory(config.DefaultEnvironment, logger)
 }

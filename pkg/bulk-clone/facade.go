@@ -11,16 +11,16 @@ type BulkCloneManager interface {
 	LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error)
 	LoadConfigurationFromFile(ctx context.Context, filename string) (*BulkCloneConfig, error)
 	ValidateConfiguration(ctx context.Context, config *BulkCloneConfig) error
-	
+
 	// Repository Operations
 	CloneOrganization(ctx context.Context, request *OrganizationCloneRequest) (*CloneResult, error)
 	CloneRepositories(ctx context.Context, request *RepositoryCloneRequest) (*CloneResult, error)
 	RefreshRepositories(ctx context.Context, request *RefreshRequest) (*RefreshResult, error)
-	
+
 	// Discovery Operations
 	DiscoverRepositories(ctx context.Context, request *DiscoveryRequest) (*DiscoveryResult, error)
 	ListAvailableOrganizations(ctx context.Context, provider string) ([]string, error)
-	
+
 	// Utility Operations
 	GetRepositoryStatus(ctx context.Context, targetPath string) (*RepositoryStatus, error)
 	CleanupRepositories(ctx context.Context, request *CleanupRequest) (*CleanupResult, error)
@@ -52,19 +52,19 @@ type RepositoryCloneRequest struct {
 
 // RefreshRequest represents a request to refresh existing repositories
 type RefreshRequest struct {
-	TargetPath   string
-	Strategy     string
+	TargetPath    string
+	Strategy      string
 	Organizations []string
-	Filters      *RepositoryFilters
-	Concurrency  int
-	DryRun       bool
+	Filters       *RepositoryFilters
+	Concurrency   int
+	DryRun        bool
 }
 
 // DiscoveryRequest represents a request to discover repositories
 type DiscoveryRequest struct {
-	Providers     []string
-	Organizations []string
-	Filters       *RepositoryFilters
+	Providers       []string
+	Organizations   []string
+	Filters         *RepositoryFilters
 	IncludeMetadata bool
 }
 
@@ -80,34 +80,34 @@ type CleanupRequest struct {
 
 // CloneResult represents the result of clone operations
 type CloneResult struct {
-	TotalRepositories    int
-	ClonesSuccessful     int
-	ClonesFailed         int
-	ClonesSkipped        int
-	ExecutionTime        time.Duration
-	RepositoryResults    []RepositoryResult
-	ErrorSummary         map[string]int
-	Statistics           *CloneStatistics
+	TotalRepositories int
+	ClonesSuccessful  int
+	ClonesFailed      int
+	ClonesSkipped     int
+	ExecutionTime     time.Duration
+	RepositoryResults []RepositoryResult
+	ErrorSummary      map[string]int
+	Statistics        *CloneStatistics
 }
 
 // RefreshResult represents the result of refresh operations
 type RefreshResult struct {
-	TotalRepositories    int
-	RefreshSuccessful    int
-	RefreshFailed        int
-	RefreshSkipped       int
-	ExecutionTime        time.Duration
-	RepositoryResults    []RepositoryResult
-	ErrorSummary         map[string]int
+	TotalRepositories int
+	RefreshSuccessful int
+	RefreshFailed     int
+	RefreshSkipped    int
+	ExecutionTime     time.Duration
+	RepositoryResults []RepositoryResult
+	ErrorSummary      map[string]int
 }
 
 // DiscoveryResult represents the result of discovery operations
 type DiscoveryResult struct {
-	TotalRepositories   int
+	TotalRepositories      int
 	RepositoriesByProvider map[string]int
-	Repositories        []DiscoveredRepository
-	FilteringStatistics *FilteringStatistics
-	ExecutionTime       time.Duration
+	Repositories           []DiscoveredRepository
+	FilteringStatistics    *FilteringStatistics
+	ExecutionTime          time.Duration
 }
 
 // CleanupResult represents the result of cleanup operations
@@ -151,27 +151,27 @@ type DiscoveredRepository struct {
 
 // RepositoryFilters contains filtering criteria for repositories
 type RepositoryFilters struct {
-	IncludeNames      []string
-	ExcludeNames      []string
-	IncludeLanguages  []string
-	ExcludeLanguages  []string
-	IncludePrivate    bool
-	IncludePublic     bool
-	MinSize           int64
-	MaxSize           int64
-	LastUpdatedDays   int
-	IncludeArchived   bool
-	NamePattern       string
+	IncludeNames     []string
+	ExcludeNames     []string
+	IncludeLanguages []string
+	ExcludeLanguages []string
+	IncludePrivate   bool
+	IncludePublic    bool
+	MinSize          int64
+	MaxSize          int64
+	LastUpdatedDays  int
+	IncludeArchived  bool
+	NamePattern      string
 }
 
 // RepositoryStatus contains status information about repositories
 type RepositoryStatus struct {
-	TotalRepositories  int
-	HealthyRepositories int
-	BrokenRepositories int
+	TotalRepositories    int
+	HealthyRepositories  int
+	BrokenRepositories   int
 	OutdatedRepositories int
-	RepositoryDetails  []RepositoryDetails
-	LastScanTime       time.Time
+	RepositoryDetails    []RepositoryDetails
+	LastScanTime         time.Time
 }
 
 // RepositoryDetails contains detailed information about a repository
@@ -197,39 +197,39 @@ type BranchInfo struct {
 
 // RemoteInfo contains information about repository remotes
 type RemoteInfo struct {
-	OriginURL      string
-	RemoteCount    int
-	IsConnected    bool
-	LastFetchTime  time.Time
+	OriginURL     string
+	RemoteCount   int
+	IsConnected   bool
+	LastFetchTime time.Time
 }
 
 // CleanupAction represents a cleanup action taken
 type CleanupAction struct {
-	Action      string
-	Path        string
-	Reason      string
-	SizeFreed   int64
-	Success     bool
-	Error       string
+	Action    string
+	Path      string
+	Reason    string
+	SizeFreed int64
+	Success   bool
+	Error     string
 }
 
 // CloneStatistics contains statistics about clone operations
 type CloneStatistics struct {
-	AverageCloneTime    time.Duration
+	AverageCloneTime     time.Duration
 	TotalDataTransferred int64
-	LargestRepository   string
-	FastestClone        string
-	SlowestClone        string
-	ErrorsByType        map[string]int
+	LargestRepository    string
+	FastestClone         string
+	SlowestClone         string
+	ErrorsByType         map[string]int
 }
 
 // FilteringStatistics contains statistics about filtering operations
 type FilteringStatistics struct {
-	TotalEvaluated  int
-	FilteredOut     int
-	FilteredIn      int
-	FilteringRatio  float64
-	FiltersByType   map[string]int
+	TotalEvaluated int
+	FilteredOut    int
+	FilteredIn     int
+	FilteringRatio float64
+	FiltersByType  map[string]int
 }
 
 // bulkCloneManagerImpl implements the BulkCloneManager interface
@@ -249,12 +249,12 @@ func NewBulkCloneManager(configManager ConfigurationManager, logger Logger) Bulk
 // LoadConfiguration loads the bulk clone configuration
 func (b *bulkCloneManagerImpl) LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error) {
 	b.logger.Debug("Loading bulk clone configuration")
-	
+
 	configPath, err := FindConfigFile()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return LoadConfig(configPath)
 }
 
@@ -267,7 +267,7 @@ func (b *bulkCloneManagerImpl) LoadConfigurationFromFile(ctx context.Context, fi
 // ValidateConfiguration validates a bulk clone configuration
 func (b *bulkCloneManagerImpl) ValidateConfiguration(ctx context.Context, config *BulkCloneConfig) error {
 	b.logger.Debug("Validating configuration")
-	
+
 	// Implementation would validate the configuration
 	// For now, return nil (no validation errors)
 	return nil
@@ -276,15 +276,15 @@ func (b *bulkCloneManagerImpl) ValidateConfiguration(ctx context.Context, config
 // CloneOrganization clones an entire organization
 func (b *bulkCloneManagerImpl) CloneOrganization(ctx context.Context, request *OrganizationCloneRequest) (*CloneResult, error) {
 	b.logger.Info("Starting organization clone", "org", request.Organization, "provider", request.Provider)
-	
+
 	result := &CloneResult{
 		RepositoryResults: make([]RepositoryResult, 0),
 		ErrorSummary:      make(map[string]int),
 		Statistics:        &CloneStatistics{ErrorsByType: make(map[string]int)},
 	}
-	
+
 	startTime := time.Now()
-	
+
 	// Implementation would perform the actual cloning
 	// For now, simulate the operation
 	result.TotalRepositories = 10 // simulated
@@ -292,68 +292,68 @@ func (b *bulkCloneManagerImpl) CloneOrganization(ctx context.Context, request *O
 	result.ClonesFailed = 1
 	result.ClonesSkipped = 1
 	result.ExecutionTime = time.Since(startTime)
-	
+
 	return result, nil
 }
 
 // CloneRepositories clones specific repositories
 func (b *bulkCloneManagerImpl) CloneRepositories(ctx context.Context, request *RepositoryCloneRequest) (*CloneResult, error) {
 	b.logger.Info("Starting repository clone", "count", len(request.Repositories))
-	
+
 	result := &CloneResult{
 		RepositoryResults: make([]RepositoryResult, 0),
 		ErrorSummary:      make(map[string]int),
 		Statistics:        &CloneStatistics{ErrorsByType: make(map[string]int)},
 	}
-	
+
 	startTime := time.Now()
-	
+
 	// Implementation would perform the actual cloning
 	result.TotalRepositories = len(request.Repositories)
 	result.ExecutionTime = time.Since(startTime)
-	
+
 	return result, nil
 }
 
 // RefreshRepositories refreshes existing repositories
 func (b *bulkCloneManagerImpl) RefreshRepositories(ctx context.Context, request *RefreshRequest) (*RefreshResult, error) {
 	b.logger.Info("Starting repository refresh", "path", request.TargetPath)
-	
+
 	result := &RefreshResult{
 		RepositoryResults: make([]RepositoryResult, 0),
 		ErrorSummary:      make(map[string]int),
 	}
-	
+
 	startTime := time.Now()
-	
+
 	// Implementation would perform the actual refresh
 	result.ExecutionTime = time.Since(startTime)
-	
+
 	return result, nil
 }
 
 // DiscoverRepositories discovers repositories across providers
 func (b *bulkCloneManagerImpl) DiscoverRepositories(ctx context.Context, request *DiscoveryRequest) (*DiscoveryResult, error) {
 	b.logger.Info("Starting repository discovery", "providers", request.Providers)
-	
+
 	result := &DiscoveryResult{
 		RepositoriesByProvider: make(map[string]int),
 		Repositories:           make([]DiscoveredRepository, 0),
 		FilteringStatistics:    &FilteringStatistics{FiltersByType: make(map[string]int)},
 	}
-	
+
 	startTime := time.Now()
-	
+
 	// Implementation would perform the actual discovery
 	result.ExecutionTime = time.Since(startTime)
-	
+
 	return result, nil
 }
 
 // ListAvailableOrganizations lists available organizations for a provider
 func (b *bulkCloneManagerImpl) ListAvailableOrganizations(ctx context.Context, provider string) ([]string, error) {
 	b.logger.Debug("Listing organizations", "provider", provider)
-	
+
 	// Implementation would query the provider for organizations
 	return []string{}, nil
 }
@@ -361,12 +361,12 @@ func (b *bulkCloneManagerImpl) ListAvailableOrganizations(ctx context.Context, p
 // GetRepositoryStatus gets the status of repositories in a directory
 func (b *bulkCloneManagerImpl) GetRepositoryStatus(ctx context.Context, targetPath string) (*RepositoryStatus, error) {
 	b.logger.Debug("Getting repository status", "path", targetPath)
-	
+
 	status := &RepositoryStatus{
 		RepositoryDetails: make([]RepositoryDetails, 0),
 		LastScanTime:      time.Now(),
 	}
-	
+
 	// Implementation would scan the directory for repositories
 	return status, nil
 }
@@ -374,16 +374,16 @@ func (b *bulkCloneManagerImpl) GetRepositoryStatus(ctx context.Context, targetPa
 // CleanupRepositories cleans up repositories based on criteria
 func (b *bulkCloneManagerImpl) CleanupRepositories(ctx context.Context, request *CleanupRequest) (*CleanupResult, error) {
 	b.logger.Info("Starting repository cleanup", "path", request.TargetPath)
-	
+
 	result := &CleanupResult{
 		CleanupActions: make([]CleanupAction, 0),
 	}
-	
+
 	startTime := time.Now()
-	
+
 	// Implementation would perform the actual cleanup
 	result.ExecutionTime = time.Since(startTime)
-	
+
 	return result, nil
 }
 

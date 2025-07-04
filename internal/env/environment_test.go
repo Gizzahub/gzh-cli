@@ -6,21 +6,21 @@ import (
 
 func TestOSEnvironment(t *testing.T) {
 	env := NewOSEnvironment()
-	
+
 	// Test setting and getting a value
 	key := "TEST_ENV_VAR"
 	value := "test_value"
-	
+
 	err := env.Set(key, value)
 	if err != nil {
 		t.Errorf("Failed to set environment variable: %v", err)
 	}
-	
+
 	retrievedValue := env.Get(key)
 	if retrievedValue != value {
 		t.Errorf("Expected %s, got %s", value, retrievedValue)
 	}
-	
+
 	// Test LookupEnv
 	lookedUpValue, exists := env.LookupEnv(key)
 	if !exists {
@@ -29,7 +29,7 @@ func TestOSEnvironment(t *testing.T) {
 	if lookedUpValue != value {
 		t.Errorf("Expected %s, got %s", value, lookedUpValue)
 	}
-	
+
 	// Clean up
 	env.Unset(key)
 }
@@ -38,35 +38,35 @@ func TestMockEnvironment(t *testing.T) {
 	initialVars := map[string]string{
 		"TEST_VAR": "initial_value",
 	}
-	
+
 	env := NewMockEnvironment(initialVars)
-	
+
 	// Test getting initial value
 	value := env.Get("TEST_VAR")
 	if value != "initial_value" {
 		t.Errorf("Expected initial_value, got %s", value)
 	}
-	
+
 	// Test setting new value
 	env.Set("NEW_VAR", "new_value")
 	newValue := env.Get("NEW_VAR")
 	if newValue != "new_value" {
 		t.Errorf("Expected new_value, got %s", newValue)
 	}
-	
+
 	// Test LookupEnv for non-existing variable
 	_, exists := env.LookupEnv("NON_EXISTING")
 	if exists {
 		t.Error("Non-existing variable should not exist")
 	}
-	
+
 	// Test Expand
 	env.Set("GREETING", "Hello")
 	expanded := env.Expand("$GREETING World")
 	if expanded != "Hello World" {
 		t.Errorf("Expected 'Hello World', got %s", expanded)
 	}
-	
+
 	// Test GetAll
 	allVars := env.GetAll()
 	expectedKeys := map[string]bool{
@@ -74,11 +74,11 @@ func TestMockEnvironment(t *testing.T) {
 		"NEW_VAR":  true,
 		"GREETING": true,
 	}
-	
+
 	if len(allVars) != len(expectedKeys) {
 		t.Errorf("Expected %d variables, got %d: %v", len(expectedKeys), len(allVars), allVars)
 	}
-	
+
 	for key := range expectedKeys {
 		if _, exists := allVars[key]; !exists {
 			t.Errorf("Expected key %s to exist in environment", key)
@@ -88,15 +88,15 @@ func TestMockEnvironment(t *testing.T) {
 
 func TestCommonEnvironmentKeys(t *testing.T) {
 	keys := CommonEnvironmentKeys
-	
+
 	if keys.GitHubToken != "GITHUB_TOKEN" {
 		t.Errorf("Expected GITHUB_TOKEN, got %s", keys.GitHubToken)
 	}
-	
+
 	if keys.GitLabToken != "GITLAB_TOKEN" {
 		t.Errorf("Expected GITLAB_TOKEN, got %s", keys.GitLabToken)
 	}
-	
+
 	if keys.GZHConfigPath != "GZH_CONFIG_PATH" {
 		t.Errorf("Expected GZH_CONFIG_PATH, got %s", keys.GZHConfigPath)
 	}

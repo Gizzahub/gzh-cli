@@ -11,16 +11,16 @@ func TestGitHubProviderFactory(t *testing.T) {
 	mockEnv := env.NewMockEnvironment(map[string]string{
 		"GITHUB_TOKEN": "test-github-token",
 	})
-	
+
 	factory := NewGitHubProviderFactory(mockEnv)
-	
+
 	// Test GetProviderName
 	if factory.GetProviderName() != "github" {
 		t.Errorf("Expected provider name to be 'github', got %s", factory.GetProviderName())
 	}
-	
+
 	ctx := context.Background()
-	
+
 	// Test CreateCloner with token
 	cloner, err := factory.CreateCloner(ctx, "explicit-token")
 	if err != nil {
@@ -32,7 +32,7 @@ func TestGitHubProviderFactory(t *testing.T) {
 	if cloner.GetProviderName() != "github" {
 		t.Errorf("Expected cloner provider name to be 'github', got %s", cloner.GetProviderName())
 	}
-	
+
 	// Test CreateCloner without token (should use environment)
 	cloner2, err := factory.CreateCloner(ctx, "")
 	if err != nil {
@@ -41,12 +41,12 @@ func TestGitHubProviderFactory(t *testing.T) {
 	if cloner2 == nil {
 		t.Error("Cloner should not be nil")
 	}
-	
+
 	// Test CreateClonerWithEnv
 	customEnv := env.NewMockEnvironment(map[string]string{
 		"GITHUB_TOKEN": "custom-token",
 	})
-	
+
 	cloner3, err := factory.CreateClonerWithEnv(ctx, "", customEnv)
 	if err != nil {
 		t.Errorf("Failed to create cloner with custom environment: %v", err)
@@ -54,7 +54,7 @@ func TestGitHubProviderFactory(t *testing.T) {
 	if cloner3 == nil {
 		t.Error("Cloner should not be nil")
 	}
-	
+
 	// Test CreateCloner with empty token and no environment token
 	emptyEnv := env.NewMockEnvironment(map[string]string{})
 	cloner4, err := factory.CreateClonerWithEnv(ctx, "", emptyEnv)
@@ -70,18 +70,18 @@ func TestGitHubProviderFactoryWithConfig(t *testing.T) {
 	mockEnv := env.NewMockEnvironment(map[string]string{
 		"GITHUB_TOKEN": "test-github-token",
 	})
-	
+
 	config := &GitHubFactoryConfig{
 		DefaultToken: "config-token",
 		Environment:  mockEnv,
 	}
-	
+
 	factory := NewGitHubProviderFactoryWithConfig(config)
-	
+
 	if factory == nil {
 		t.Error("Factory should not be nil")
 	}
-	
+
 	if factory.GetProviderName() != "github" {
 		t.Errorf("Expected provider name to be 'github', got %s", factory.GetProviderName())
 	}
@@ -89,11 +89,11 @@ func TestGitHubProviderFactoryWithConfig(t *testing.T) {
 
 func TestDefaultGitHubFactoryConfig(t *testing.T) {
 	config := DefaultGitHubFactoryConfig()
-	
+
 	if config == nil {
 		t.Error("Default config should not be nil")
 	}
-	
+
 	if config.Environment == nil {
 		t.Error("Default environment should not be nil")
 	}
@@ -101,23 +101,23 @@ func TestDefaultGitHubFactoryConfig(t *testing.T) {
 
 func TestGitHubClonerImpl(t *testing.T) {
 	mockEnv := env.NewMockEnvironment(map[string]string{})
-	
+
 	cloner := &gitHubClonerImpl{
 		Token:       "test-token",
 		Environment: mockEnv,
 	}
-	
+
 	// Test GetProviderName
 	if cloner.GetProviderName() != "github" {
 		t.Errorf("Expected provider name to be 'github', got %s", cloner.GetProviderName())
 	}
-	
+
 	// Test SetToken and GetToken
 	cloner.SetToken("new-token")
 	if cloner.GetToken() != "new-token" {
 		t.Errorf("Expected token to be 'new-token', got %s", cloner.GetToken())
 	}
-	
+
 	// Test CloneRepository (should return not implemented error)
 	ctx := context.Background()
 	err := cloner.CloneRepository(ctx, "owner", "repo", "/tmp/test", "reset")

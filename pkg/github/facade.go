@@ -10,11 +10,11 @@ type GitHubManager interface {
 	ListOrganizationRepositories(ctx context.Context, organization string) ([]string, error)
 	CloneRepository(ctx context.Context, organization, repository, targetPath string) error
 	GetRepositoryDefaultBranch(ctx context.Context, organization, repository string) (string, error)
-	
+
 	// Bulk Operations
 	RefreshAllRepositories(ctx context.Context, targetPath, organization, strategy string) error
 	BulkCloneRepositories(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error)
-	
+
 	// Repository Management
 	GetRepositoryInfo(ctx context.Context, organization, repository string) (*RepositoryInfo, error)
 	ValidateRepositoryAccess(ctx context.Context, organization, repository string) error
@@ -32,12 +32,12 @@ type BulkCloneRequest struct {
 
 // BulkCloneResult represents the result of bulk operations
 type BulkCloneResult struct {
-	TotalRepositories     int
-	SuccessfulOperations  int
-	FailedOperations      int
-	SkippedRepositories   int
-	OperationResults      []RepositoryOperationResult
-	ExecutionTime         string
+	TotalRepositories    int
+	SuccessfulOperations int
+	FailedOperations     int
+	SkippedRepositories  int
+	OperationResults     []RepositoryOperationResult
+	ExecutionTime        string
 }
 
 // RepositoryOperationResult represents the result of a single repository operation
@@ -79,7 +79,7 @@ func NewGitHubManager(factory GitHubProviderFactory, logger Logger) GitHubManage
 // ListOrganizationRepositories lists all repositories in an organization
 func (g *gitHubManagerImpl) ListOrganizationRepositories(ctx context.Context, organization string) ([]string, error) {
 	g.logger.Debug("Listing repositories for organization", "org", organization)
-	
+
 	// Use existing List function with context support
 	return List(organization)
 }
@@ -87,7 +87,7 @@ func (g *gitHubManagerImpl) ListOrganizationRepositories(ctx context.Context, or
 // CloneRepository clones a single repository
 func (g *gitHubManagerImpl) CloneRepository(ctx context.Context, organization, repository, targetPath string) error {
 	g.logger.Debug("Cloning repository", "org", organization, "repo", repository, "path", targetPath)
-	
+
 	// Use existing Clone function with context support
 	return Clone(targetPath, organization, repository)
 }
@@ -95,7 +95,7 @@ func (g *gitHubManagerImpl) CloneRepository(ctx context.Context, organization, r
 // GetRepositoryDefaultBranch gets the default branch for a repository
 func (g *gitHubManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, organization, repository string) (string, error) {
 	g.logger.Debug("Getting default branch", "org", organization, "repo", repository)
-	
+
 	// Use existing GetDefaultBranch function
 	return GetDefaultBranch(organization, repository)
 }
@@ -103,7 +103,7 @@ func (g *gitHubManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, orga
 // RefreshAllRepositories refreshes all repositories in an organization
 func (g *gitHubManagerImpl) RefreshAllRepositories(ctx context.Context, targetPath, organization, strategy string) error {
 	g.logger.Info("Refreshing all repositories", "org", organization, "strategy", strategy)
-	
+
 	// Use existing RefreshAll function
 	return RefreshAll(targetPath, organization, strategy)
 }
@@ -111,11 +111,11 @@ func (g *gitHubManagerImpl) RefreshAllRepositories(ctx context.Context, targetPa
 // BulkCloneRepositories performs bulk repository operations
 func (g *gitHubManagerImpl) BulkCloneRepositories(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	g.logger.Info("Starting bulk clone operation", "org", request.Organization)
-	
+
 	result := &BulkCloneResult{
 		OperationResults: make([]RepositoryOperationResult, 0),
 	}
-	
+
 	// Get list of repositories to clone
 	repositories := request.Repositories
 	if len(repositories) == 0 {
@@ -125,21 +125,21 @@ func (g *gitHubManagerImpl) BulkCloneRepositories(ctx context.Context, request *
 		}
 		repositories = repos
 	}
-	
+
 	// Apply filters if provided
 	if request.Filters != nil {
 		repositories = g.applyFilters(repositories, request.Filters)
 	}
-	
+
 	result.TotalRepositories = len(repositories)
-	
+
 	// Clone repositories (simplified implementation)
 	for _, repo := range repositories {
 		opResult := RepositoryOperationResult{
 			Repository: repo,
 			Operation:  "clone",
 		}
-		
+
 		err := g.CloneRepository(ctx, request.Organization, repo, request.TargetPath)
 		if err != nil {
 			opResult.Success = false
@@ -149,24 +149,24 @@ func (g *gitHubManagerImpl) BulkCloneRepositories(ctx context.Context, request *
 			opResult.Success = true
 			result.SuccessfulOperations++
 		}
-		
+
 		result.OperationResults = append(result.OperationResults, opResult)
 	}
-	
+
 	return result, nil
 }
 
 // GetRepositoryInfo gets detailed information about a repository
 func (g *gitHubManagerImpl) GetRepositoryInfo(ctx context.Context, organization, repository string) (*RepositoryInfo, error) {
 	g.logger.Debug("Getting repository info", "org", organization, "repo", repository)
-	
+
 	// Implementation would make API call to get detailed repository information
 	// For now, return basic info
 	defaultBranch, err := g.GetRepositoryDefaultBranch(ctx, organization, repository)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &RepositoryInfo{
 		Name:          repository,
 		FullName:      organization + "/" + repository,
@@ -179,7 +179,7 @@ func (g *gitHubManagerImpl) GetRepositoryInfo(ctx context.Context, organization,
 // ValidateRepositoryAccess validates that the user has access to a repository
 func (g *gitHubManagerImpl) ValidateRepositoryAccess(ctx context.Context, organization, repository string) error {
 	g.logger.Debug("Validating repository access", "org", organization, "repo", repository)
-	
+
 	// Implementation would check access permissions
 	// For now, just try to get repository info
 	_, err := g.GetRepositoryInfo(ctx, organization, repository)
@@ -191,9 +191,9 @@ func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *Reposit
 	if filters == nil {
 		return repositories
 	}
-	
+
 	filtered := make([]string, 0, len(repositories))
-	
+
 	for _, repo := range repositories {
 		// Apply include/exclude name filters
 		if len(filters.IncludeNames) > 0 {
@@ -208,7 +208,7 @@ func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *Reposit
 				continue
 			}
 		}
-		
+
 		excluded := false
 		for _, exclude := range filters.ExcludeNames {
 			if repo == exclude {
@@ -219,10 +219,9 @@ func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *Reposit
 		if excluded {
 			continue
 		}
-		
+
 		filtered = append(filtered, repo)
 	}
-	
+
 	return filtered
 }
-

@@ -11,10 +11,10 @@ import (
 type GitLabProviderFactory interface {
 	// CreateCloner creates a GitLab cloner with the specified token
 	CreateCloner(ctx context.Context, token string) (GitLabCloner, error)
-	
+
 	// CreateClonerWithEnv creates a GitLab cloner with a specific environment
 	CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitLabCloner, error)
-	
+
 	// GetProviderName returns the provider name
 	GetProviderName() string
 }
@@ -29,7 +29,7 @@ func NewGitLabProviderFactory(environment env.Environment) GitLabProviderFactory
 	if environment == nil {
 		environment = env.NewOSEnvironment()
 	}
-	
+
 	return &gitLabProviderFactoryImpl{
 		environment: environment,
 	}
@@ -46,11 +46,11 @@ func (f *gitLabProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, tok
 		// Try to get token from environment
 		token = environment.Get(env.CommonEnvironmentKeys.GitLabToken)
 	}
-	
+
 	if token == "" {
 		return nil, fmt.Errorf("GitLab token is required")
 	}
-	
+
 	// Create a specific GitLab cloner implementation
 	return &gitLabClonerImpl{
 		Token:       token,
@@ -67,16 +67,16 @@ func (f *gitLabProviderFactoryImpl) GetProviderName() string {
 type GitLabCloner interface {
 	// CloneGroup clones all repositories from a GitLab group
 	CloneGroup(ctx context.Context, groupName, targetPath, strategy string) error
-	
+
 	// CloneProject clones a specific project
 	CloneProject(ctx context.Context, groupName, projectName, targetPath, strategy string) error
-	
+
 	// SetToken sets the GitLab token for authentication
 	SetToken(token string)
-	
+
 	// GetToken returns the current GitLab token
 	GetToken() string
-	
+
 	// GetProviderName returns the provider name
 	GetProviderName() string
 }
@@ -93,7 +93,7 @@ func (g *gitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token)
 	}
-	
+
 	// Call the existing RefreshAll function
 	return RefreshAll(targetPath, groupName, strategy)
 }
@@ -104,7 +104,7 @@ func (g *gitLabClonerImpl) CloneProject(ctx context.Context, groupName, projectN
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token)
 	}
-	
+
 	// Implementation would call appropriate GitLab API functions
 	// For now, this is a placeholder
 	return fmt.Errorf("CloneProject not yet implemented")
@@ -145,6 +145,6 @@ func NewGitLabProviderFactoryWithConfig(config *GitLabFactoryConfig) GitLabProvi
 	if config == nil {
 		config = DefaultGitLabFactoryConfig()
 	}
-	
+
 	return NewGitLabProviderFactory(config.Environment)
 }

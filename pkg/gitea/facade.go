@@ -12,11 +12,11 @@ type GiteaManager interface {
 	ListOrganizationRepositories(ctx context.Context, organization string) ([]string, error)
 	CloneRepository(ctx context.Context, organization, repository, targetPath string) error
 	GetRepositoryInfo(ctx context.Context, organization, repository string) (*RepositoryInfo, error)
-	
+
 	// Bulk Operations
 	RefreshAllRepositories(ctx context.Context, targetPath, organization string) error
 	BulkCloneRepositories(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error)
-	
+
 	// Organization Management
 	GetOrganizationInfo(ctx context.Context, organization string) (*OrganizationInfo, error)
 	ListUserOrganizations(ctx context.Context, username string) ([]string, error)
@@ -34,12 +34,12 @@ type BulkCloneRequest struct {
 
 // BulkCloneResult represents the result of bulk operations
 type BulkCloneResult struct {
-	TotalRepositories     int
-	SuccessfulOperations  int
-	FailedOperations      int
-	SkippedRepositories   int
-	OperationResults      []RepositoryOperationResult
-	ExecutionTime         string
+	TotalRepositories    int
+	SuccessfulOperations int
+	FailedOperations     int
+	SkippedRepositories  int
+	OperationResults     []RepositoryOperationResult
+	ExecutionTime        string
 }
 
 // RepositoryOperationResult represents the result of a single repository operation
@@ -66,14 +66,14 @@ type RepositoryInfo struct {
 
 // OrganizationInfo contains metadata about an organization
 type OrganizationInfo struct {
-	Name         string
-	FullName     string
-	Description  string
-	Website      string
-	Location     string
-	Visibility   string
-	RepoCount    int
-	MemberCount  int
+	Name        string
+	FullName    string
+	Description string
+	Website     string
+	Location    string
+	Visibility  string
+	RepoCount   int
+	MemberCount int
 }
 
 // RepositoryFilters contains filtering criteria for repositories
@@ -106,7 +106,7 @@ func NewGiteaManager(factory GiteaProviderFactory, client HTTPClient, logger Log
 // ListOrganizationRepositories lists all repositories in an organization
 func (g *giteaManagerImpl) ListOrganizationRepositories(ctx context.Context, organization string) ([]string, error) {
 	g.logger.Debug("Listing repositories for organization", "org", organization)
-	
+
 	// Use existing List function with context support
 	return List(organization)
 }
@@ -114,7 +114,7 @@ func (g *giteaManagerImpl) ListOrganizationRepositories(ctx context.Context, org
 // CloneRepository clones a single repository
 func (g *giteaManagerImpl) CloneRepository(ctx context.Context, organization, repository, targetPath string) error {
 	g.logger.Debug("Cloning repository", "org", organization, "repo", repository, "path", targetPath)
-	
+
 	// Use existing Clone function with context support
 	return Clone(targetPath, organization, repository)
 }
@@ -122,7 +122,7 @@ func (g *giteaManagerImpl) CloneRepository(ctx context.Context, organization, re
 // GetRepositoryInfo gets detailed information about a repository
 func (g *giteaManagerImpl) GetRepositoryInfo(ctx context.Context, organization, repository string) (*RepositoryInfo, error) {
 	g.logger.Debug("Getting repository info", "org", organization, "repo", repository)
-	
+
 	// Implementation would make API call to get detailed repository information
 	// For now, return basic info
 	return &RepositoryInfo{
@@ -136,7 +136,7 @@ func (g *giteaManagerImpl) GetRepositoryInfo(ctx context.Context, organization, 
 // RefreshAllRepositories refreshes all repositories in an organization
 func (g *giteaManagerImpl) RefreshAllRepositories(ctx context.Context, targetPath, organization string) error {
 	g.logger.Info("Refreshing all repositories", "org", organization)
-	
+
 	// Use existing RefreshAll function
 	return RefreshAll(targetPath, organization)
 }
@@ -144,11 +144,11 @@ func (g *giteaManagerImpl) RefreshAllRepositories(ctx context.Context, targetPat
 // BulkCloneRepositories performs bulk repository operations
 func (g *giteaManagerImpl) BulkCloneRepositories(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	g.logger.Info("Starting bulk clone operation", "org", request.Organization)
-	
+
 	result := &BulkCloneResult{
 		OperationResults: make([]RepositoryOperationResult, 0),
 	}
-	
+
 	// Get list of repositories to clone
 	repositories := request.Repositories
 	if len(repositories) == 0 {
@@ -158,21 +158,21 @@ func (g *giteaManagerImpl) BulkCloneRepositories(ctx context.Context, request *B
 		}
 		repositories = repos
 	}
-	
+
 	// Apply filters if provided
 	if request.Filters != nil {
 		repositories = g.applyFilters(repositories, request.Filters)
 	}
-	
+
 	result.TotalRepositories = len(repositories)
-	
+
 	// Clone repositories (simplified implementation)
 	for _, repo := range repositories {
 		opResult := RepositoryOperationResult{
 			Repository: repo,
 			Operation:  "clone",
 		}
-		
+
 		err := g.CloneRepository(ctx, request.Organization, repo, request.TargetPath)
 		if err != nil {
 			opResult.Success = false
@@ -182,17 +182,17 @@ func (g *giteaManagerImpl) BulkCloneRepositories(ctx context.Context, request *B
 			opResult.Success = true
 			result.SuccessfulOperations++
 		}
-		
+
 		result.OperationResults = append(result.OperationResults, opResult)
 	}
-	
+
 	return result, nil
 }
 
 // GetOrganizationInfo gets detailed information about an organization
 func (g *giteaManagerImpl) GetOrganizationInfo(ctx context.Context, organization string) (*OrganizationInfo, error) {
 	g.logger.Debug("Getting organization info", "org", organization)
-	
+
 	// Implementation would make API call to get detailed organization information
 	// For now, return basic info
 	return &OrganizationInfo{
@@ -204,7 +204,7 @@ func (g *giteaManagerImpl) GetOrganizationInfo(ctx context.Context, organization
 // ListUserOrganizations lists all organizations for a user
 func (g *giteaManagerImpl) ListUserOrganizations(ctx context.Context, username string) ([]string, error) {
 	g.logger.Debug("Listing user organizations", "user", username)
-	
+
 	// Implementation would make API call to get user organizations
 	// For now, return empty list
 	return []string{}, nil
@@ -213,7 +213,7 @@ func (g *giteaManagerImpl) ListUserOrganizations(ctx context.Context, username s
 // ValidateOrganizationAccess validates that the user has access to an organization
 func (g *giteaManagerImpl) ValidateOrganizationAccess(ctx context.Context, organization string) error {
 	g.logger.Debug("Validating organization access", "org", organization)
-	
+
 	// Implementation would check access permissions
 	// For now, just try to get organization info
 	_, err := g.GetOrganizationInfo(ctx, organization)
@@ -225,9 +225,9 @@ func (g *giteaManagerImpl) applyFilters(repositories []string, filters *Reposito
 	if filters == nil {
 		return repositories
 	}
-	
+
 	filtered := make([]string, 0, len(repositories))
-	
+
 	for _, repo := range repositories {
 		// Apply include/exclude name filters
 		if len(filters.IncludeNames) > 0 {
@@ -242,7 +242,7 @@ func (g *giteaManagerImpl) applyFilters(repositories []string, filters *Reposito
 				continue
 			}
 		}
-		
+
 		excluded := false
 		for _, exclude := range filters.ExcludeNames {
 			if repo == exclude {
@@ -253,10 +253,10 @@ func (g *giteaManagerImpl) applyFilters(repositories []string, filters *Reposito
 		if excluded {
 			continue
 		}
-		
+
 		filtered = append(filtered, repo)
 	}
-	
+
 	return filtered
 }
 

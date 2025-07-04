@@ -10,20 +10,20 @@ import (
 type Environment interface {
 	// Get retrieves the value of the environment variable named by the key
 	Get(key string) string
-	
+
 	// LookupEnv retrieves the value of the environment variable named by key
 	// If the variable is present in the environment the value is returned and ok is true
 	LookupEnv(key string) (string, bool)
-	
+
 	// Set sets the value of the environment variable named by the key
 	Set(key, value string) error
-	
+
 	// Unset unsets a single environment variable
 	Unset(key string) error
-	
+
 	// Expand replaces ${var} or $var in the string according to the values of environment variables
 	Expand(s string) string
-	
+
 	// GetAll returns all environment variables as a map
 	GetAll() map[string]string
 }
@@ -131,16 +131,16 @@ func (e *MockEnvironment) GetAll() map[string]string {
 
 // CommonEnvironmentKeys defines commonly used environment variable keys
 var CommonEnvironmentKeys = struct {
-	GitHubToken    string
-	GitLabToken    string
-	GiteaToken     string
-	GZHConfigPath  string
-	HomeDir        string
-	User           string
-	Username       string
+	GitHubToken   string
+	GitLabToken   string
+	GiteaToken    string
+	GZHConfigPath string
+	HomeDir       string
+	User          string
+	Username      string
 }{
 	GitHubToken:   "GITHUB_TOKEN",
-	GitLabToken:   "GITLAB_TOKEN", 
+	GitLabToken:   "GITLAB_TOKEN",
 	GiteaToken:    "GITEA_TOKEN",
 	GZHConfigPath: "GZH_CONFIG_PATH",
 	HomeDir:       "HOME",

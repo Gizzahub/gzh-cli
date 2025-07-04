@@ -11,10 +11,10 @@ import (
 type GiteaProviderFactory interface {
 	// CreateCloner creates a Gitea cloner with the specified token
 	CreateCloner(ctx context.Context, token string) (GiteaCloner, error)
-	
+
 	// CreateClonerWithEnv creates a Gitea cloner with a specific environment
 	CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GiteaCloner, error)
-	
+
 	// GetProviderName returns the provider name
 	GetProviderName() string
 }
@@ -29,7 +29,7 @@ func NewGiteaProviderFactory(environment env.Environment) GiteaProviderFactory {
 	if environment == nil {
 		environment = env.NewOSEnvironment()
 	}
-	
+
 	return &giteaProviderFactoryImpl{
 		environment: environment,
 	}
@@ -46,11 +46,11 @@ func (f *giteaProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, toke
 		// Try to get token from environment
 		token = environment.Get(env.CommonEnvironmentKeys.GiteaToken)
 	}
-	
+
 	if token == "" {
 		return nil, fmt.Errorf("Gitea token is required")
 	}
-	
+
 	// Create a specific Gitea cloner implementation
 	return &giteaClonerImpl{
 		Token:       token,
@@ -67,16 +67,16 @@ func (f *giteaProviderFactoryImpl) GetProviderName() string {
 type GiteaCloner interface {
 	// CloneOrganization clones all repositories from a Gitea organization
 	CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error
-	
+
 	// CloneRepository clones a specific repository
 	CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error
-	
+
 	// SetToken sets the Gitea token for authentication
 	SetToken(token string)
-	
+
 	// GetToken returns the current Gitea token
 	GetToken() string
-	
+
 	// GetProviderName returns the provider name
 	GetProviderName() string
 }
@@ -93,7 +93,7 @@ func (g *giteaClonerImpl) CloneOrganization(ctx context.Context, orgName, target
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token)
 	}
-	
+
 	// Call the existing RefreshAll function
 	// Note: strategy parameter is ignored for now since gitea.RefreshAll doesn't support it
 	return RefreshAll(targetPath, orgName)
@@ -105,7 +105,7 @@ func (g *giteaClonerImpl) CloneRepository(ctx context.Context, owner, repo, targ
 	if g.Token != "" {
 		g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token)
 	}
-	
+
 	// Implementation would call appropriate Gitea API functions
 	// For now, this is a placeholder
 	return fmt.Errorf("CloneRepository not yet implemented")
@@ -146,6 +146,6 @@ func NewGiteaProviderFactoryWithConfig(config *GiteaFactoryConfig) GiteaProvider
 	if config == nil {
 		config = DefaultGiteaFactoryConfig()
 	}
-	
+
 	return NewGiteaProviderFactory(config.Environment)
 }
