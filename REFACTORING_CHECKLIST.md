@@ -143,12 +143,12 @@
   - 📁 **Files**: All config struct definitions
 
 #### Environment Management
-- [ ] Create environment abstraction layer
+- [x] Create environment abstraction layer
   - 📌 **Why**: Direct os.Getenv calls throughout
   - 🧠 **How**: Define `Environment` interface
   - 📁 **Files**: `internal/env/environment.go`
 
-- [ ] Implement configuration hot-reloading
+- [x] Implement configuration hot-reloading
   - 📌 **Why**: Restart required for config changes
   - 🧠 **How**: Use fsnotify with Viper
   - 📁 **Files**: Configuration service implementation

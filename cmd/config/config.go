@@ -22,6 +22,7 @@ including validation, initialization, and migration tools.`,
 	cmd.AddCommand(newValidateCmd())
 	cmd.AddCommand(newInitCmd())
 	cmd.AddCommand(newProfileCmd())
+	cmd.AddCommand(newWatchCmd())
 
 	return cmd
 }

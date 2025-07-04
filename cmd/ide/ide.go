@@ -11,6 +11,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 type ideOptions struct {
@@ -383,6 +384,10 @@ func (o *ideOptions) detectJetBrainsProducts() ([]jetbrainsProduct, error) {
 }
 
 func (o *ideOptions) getJetBrainsBasePaths() []string {
+	return o.getJetBrainsBasePathsWithEnv(env.NewOSEnvironment())
+}
+
+func (o *ideOptions) getJetBrainsBasePathsWithEnv(environment env.Environment) []string {
 	switch runtime.GOOS {
 	case "linux":
 		homeDir, _ := os.UserHomeDir()
@@ -395,7 +400,7 @@ func (o *ideOptions) getJetBrainsBasePaths() []string {
 			filepath.Join(homeDir, "Library", "Application Support", "JetBrains"),
 		}
 	case "windows":
-		appData := os.Getenv("APPDATA")
+		appData := environment.Get("APPDATA")
 		if appData == "" {
 			homeDir, _ := os.UserHomeDir()
 			appData = filepath.Join(homeDir, "AppData", "Roaming")

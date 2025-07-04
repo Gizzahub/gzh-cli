@@ -80,7 +80,7 @@ providers:
 			configPath := tt.setupConfig(tempDir)
 
 			// Create service with test environment
-			testEnv := env.NewTestEnvironment(map[string]string{
+			testEnv := env.NewMockEnvironment(map[string]string{
 				"GITHUB_TOKEN": "test-token",
 			})
 
@@ -137,7 +137,7 @@ providers:
 	require.NoError(t, err)
 
 	// Create service
-	testEnv := env.NewTestEnvironment(map[string]string{
+	testEnv := env.NewMockEnvironment(map[string]string{
 		"GITHUB_TOKEN": "test-token",
 	})
 
@@ -194,7 +194,7 @@ func TestConfigService_SaveConfiguration(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Create service
-	testEnv := env.NewTestEnvironment(map[string]string{
+	testEnv := env.NewMockEnvironment(map[string]string{
 		"GITHUB_TOKEN": "test-token",
 	})
 
@@ -268,7 +268,7 @@ providers:
 	require.NoError(t, err)
 
 	// Create service with watch enabled
-	testEnv := env.NewTestEnvironment(map[string]string{
+	testEnv := env.NewMockEnvironment(map[string]string{
 		"GITHUB_TOKEN": "test-token",
 	})
 
@@ -339,7 +339,7 @@ func TestConfigService_Factory(t *testing.T) {
 	})
 
 	t.Run("create with custom environment", func(t *testing.T) {
-		testEnv := env.NewTestEnvironment(map[string]string{
+		testEnv := env.NewMockEnvironment(map[string]string{
 			"TEST_VAR": "test-value",
 		})
 
@@ -403,7 +403,7 @@ providers:
 	require.NoError(t, err)
 
 	// Create service
-	testEnv := env.NewTestEnvironment(map[string]string{
+	testEnv := env.NewMockEnvironment(map[string]string{
 		"GITHUB_TOKEN": "github-token",
 		"GITLAB_TOKEN": "gitlab-token",
 	})

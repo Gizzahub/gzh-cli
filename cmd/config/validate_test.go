@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestValidateConfig(t *testing.T) {
@@ -382,4 +383,78 @@ func TestCheckPathEnvironmentVariables(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestValidateConfigWithEnvironmentAbstraction tests that environment abstraction works properly
+func TestValidateConfigWithEnvironmentAbstraction(t *testing.T) {
+	// Create temporary directory
+	tmpDir, err := os.MkdirTemp("", "env-abstraction-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	// Create a test config file
+	configContent := `
+version: "1.0.0"
+default_provider: github
+providers:
+  github:
+    token: "${GITHUB_TOKEN}"
+    orgs:
+      - name: "test-org"
+        visibility: "all"
+        clone_dir: "${HOME}/repos"
+`
+	configFile := filepath.Join(tmpDir, "test-config.yaml")
+	err = os.WriteFile(configFile, []byte(configContent), 0o644)
+	require.NoError(t, err)
+
+	t.Run("with mock environment", func(t *testing.T) {
+		// Create mock environment with required variables
+		mockEnv := env.NewMockEnvironment(map[string]string{
+			"GITHUB_TOKEN": "mock-token-123",
+			"HOME":         "/home/testuser",
+		})
+
+		// Test findConfigFileWithEnv function
+		testHome := "/home/testuser"
+		mockEnvForFind := env.NewMockEnvironment(map[string]string{
+			"HOME":            testHome,
+			"GZH_CONFIG_PATH": configFile,
+		})
+
+		foundFile, err := findConfigFileWithEnv(mockEnvForFind)
+		assert.NoError(t, err)
+		assert.Equal(t, configFile, foundFile)
+
+		// Test validateConfigWithEnv function
+		err = validateConfigWithEnv(configFile, false, false, mockEnv)
+		assert.NoError(t, err)
+	})
+
+	t.Run("with missing environment variables", func(t *testing.T) {
+		// Create mock environment without required variables
+		mockEnv := env.NewMockEnvironment(map[string]string{})
+
+		// This should succeed but generate warnings since we're not in strict mode
+		err = validateConfigWithEnv(configFile, false, false, mockEnv)
+		assert.NoError(t, err)
+	})
+
+	t.Run("environment variable expansion", func(t *testing.T) {
+		mockEnv := env.NewMockEnvironment(map[string]string{
+			"TEST_VAR": "test-value",
+		})
+
+		expanded := mockEnv.Expand("${TEST_VAR}/subdir")
+		assert.Equal(t, "test-value/subdir", expanded)
+
+		// Test path environment validation
+		err := checkPathEnvironmentVariablesWithEnv("${TEST_VAR}/path", mockEnv)
+		assert.NoError(t, err)
+
+		// Test with missing variable
+		err = checkPathEnvironmentVariablesWithEnv("${MISSING_VAR}/path", mockEnv)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "MISSING_VAR")
+	})
 }

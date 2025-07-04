@@ -9,16 +9,22 @@ import (
 
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 	configservice "github.com/gizzahub/gzh-manager-go/internal/config"
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // validateConfig performs configuration validation
 func validateConfig(configFile string, strict bool, verbose bool) error {
+	return validateConfigWithEnv(configFile, strict, verbose, env.NewOSEnvironment())
+}
+
+// validateConfigWithEnv performs configuration validation with a specific environment
+func validateConfigWithEnv(configFile string, strict bool, verbose bool, environment env.Environment) error {
 	ctx := context.Background()
 
 	// Step 1: Determine config file path
 	if configFile == "" {
 		var err error
-		configFile, err = findConfigFile()
+		configFile, err = findConfigFileWithEnv(environment)
 		if err != nil {
 			return fmt.Errorf("failed to find configuration file: %w", err)
 		}
@@ -76,7 +82,7 @@ func validateConfig(configFile string, strict bool, verbose bool) error {
 
 	// Step 6: Perform legacy additional validations if requested
 	if strict {
-		if err := performLegacyValidations(configFile, verbose); err != nil {
+		if err := performLegacyValidationsWithEnv(configFile, verbose, environment); err != nil {
 			return fmt.Errorf("legacy validation failed: %w", err)
 		}
 	}
@@ -93,15 +99,21 @@ func validateConfig(configFile string, strict bool, verbose bool) error {
 
 // findConfigFile searches for configuration file in standard locations
 func findConfigFile() (string, error) {
+	return findConfigFileWithEnv(env.NewOSEnvironment())
+}
+
+// findConfigFileWithEnv searches for configuration file using provided environment
+func findConfigFileWithEnv(environment env.Environment) (string, error) {
+	homeDir := environment.Get(env.CommonEnvironmentKeys.HomeDir)
 	searchPaths := []string{
 		"./gzh.yaml",
 		"./gzh.yml",
-		filepath.Join(os.Getenv("HOME"), ".config", "gzh.yaml"),
-		filepath.Join(os.Getenv("HOME"), ".config", "gzh.yml"),
+		filepath.Join(homeDir, ".config", "gzh.yaml"),
+		filepath.Join(homeDir, ".config", "gzh.yml"),
 	}
 
 	// Check environment variable
-	if envPath := os.Getenv("GZH_CONFIG_PATH"); envPath != "" {
+	if envPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); envPath != "" {
 		searchPaths = append([]string{envPath}, searchPaths...)
 	}
 
@@ -142,17 +154,27 @@ func validateFileAccess(configFile string) error {
 
 // performLegacyValidations runs legacy validation checks for backwards compatibility
 func performLegacyValidations(configFile string, verbose bool) error {
+	return performLegacyValidationsWithEnv(configFile, verbose, env.NewOSEnvironment())
+}
+
+// performLegacyValidationsWithEnv runs legacy validation checks with provided environment
+func performLegacyValidationsWithEnv(configFile string, verbose bool, environment env.Environment) error {
 	// Parse configuration using legacy parser
 	config, err := configpkg.ParseYAMLFile(configFile)
 	if err != nil {
 		return fmt.Errorf("legacy configuration parsing failed: %w", err)
 	}
 
-	return performAdditionalValidations(config, true, verbose)
+	return performAdditionalValidationsWithEnv(config, true, verbose, environment)
 }
 
 // performAdditionalValidations runs additional validation checks
 func performAdditionalValidations(config *configpkg.Config, strict bool, verbose bool) error {
+	return performAdditionalValidationsWithEnv(config, strict, verbose, env.NewOSEnvironment())
+}
+
+// performAdditionalValidationsWithEnv runs additional validation checks with provided environment
+func performAdditionalValidationsWithEnv(config *configpkg.Config, strict bool, verbose bool, environment env.Environment) error {
 	var warnings []string
 	var errors []string
 
@@ -279,6 +301,11 @@ func validateCloneDirectory(cloneDir string, strict bool) error {
 
 // validateEnvironmentVariables checks if required environment variables are accessible
 func validateEnvironmentVariables(config *configpkg.Config, verbose bool) error {
+	return validateEnvironmentVariablesWithEnv(config, verbose, env.NewOSEnvironment())
+}
+
+// validateEnvironmentVariablesWithEnv checks if required environment variables are accessible using provided environment
+func validateEnvironmentVariablesWithEnv(config *configpkg.Config, verbose bool, environment env.Environment) error {
 	var missingVars []string
 
 	for providerName, provider := range config.Providers {
@@ -293,7 +320,7 @@ func validateEnvironmentVariables(config *configpkg.Config, verbose bool) error 
 				varName = varExpr[:colonIndex]
 			}
 
-			if os.Getenv(varName) == "" {
+			if environment.Get(varName) == "" {
 				missingVars = append(missingVars, fmt.Sprintf("%s (for provider '%s')", varName, providerName))
 			} else if verbose {
 				fmt.Printf("✓ Environment variable found: %s\n", varName)
@@ -302,13 +329,13 @@ func validateEnvironmentVariables(config *configpkg.Config, verbose bool) error 
 
 		// Check clone directory environment variables
 		for _, org := range provider.Orgs {
-			if err := checkPathEnvironmentVariables(org.CloneDir); err != nil {
+			if err := checkPathEnvironmentVariablesWithEnv(org.CloneDir, environment); err != nil {
 				missingVars = append(missingVars, err.Error())
 			}
 		}
 
 		for _, group := range provider.Groups {
-			if err := checkPathEnvironmentVariables(group.CloneDir); err != nil {
+			if err := checkPathEnvironmentVariablesWithEnv(group.CloneDir, environment); err != nil {
 				missingVars = append(missingVars, err.Error())
 			}
 		}
@@ -323,6 +350,11 @@ func validateEnvironmentVariables(config *configpkg.Config, verbose bool) error 
 
 // checkPathEnvironmentVariables checks environment variables in path strings
 func checkPathEnvironmentVariables(path string) error {
+	return checkPathEnvironmentVariablesWithEnv(path, env.NewOSEnvironment())
+}
+
+// checkPathEnvironmentVariablesWithEnv checks environment variables in path strings using provided environment
+func checkPathEnvironmentVariablesWithEnv(path string, environment env.Environment) error {
 	if path == "" {
 		return nil
 	}
@@ -350,7 +382,7 @@ func checkPathEnvironmentVariables(path string) error {
 			varName = varExpr[:colonIndex]
 		}
 
-		if os.Getenv(varName) == "" {
+		if environment.Get(varName) == "" {
 			return fmt.Errorf("environment variable '%s' not found in path: %s", varName, path)
 		}
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 type actionsOptions struct {
@@ -743,20 +744,24 @@ func resetDNS() error {
 
 // Proxy implementation functions
 func setProxy(httpProxy, httpsProxy, socksProxy string) error {
+	return setProxyWithEnv(httpProxy, httpsProxy, socksProxy, env.NewOSEnvironment())
+}
+
+func setProxyWithEnv(httpProxy, httpsProxy, socksProxy string, environment env.Environment) error {
 	fmt.Printf("🌐 Setting proxy configuration...\n")
 
 	if httpProxy != "" {
-		os.Setenv("http_proxy", httpProxy)
+		environment.Set("http_proxy", httpProxy)
 		fmt.Printf("   HTTP proxy: %s\n", httpProxy)
 	}
 
 	if httpsProxy != "" {
-		os.Setenv("https_proxy", httpsProxy)
+		environment.Set("https_proxy", httpsProxy)
 		fmt.Printf("   HTTPS proxy: %s\n", httpsProxy)
 	}
 
 	if socksProxy != "" {
-		os.Setenv("socks_proxy", socksProxy)
+		environment.Set("socks_proxy", socksProxy)
 		fmt.Printf("   SOCKS proxy: %s\n", socksProxy)
 	}
 
@@ -766,25 +771,33 @@ func setProxy(httpProxy, httpsProxy, socksProxy string) error {
 }
 
 func clearProxy() error {
+	return clearProxyWithEnv(env.NewOSEnvironment())
+}
+
+func clearProxyWithEnv(environment env.Environment) error {
 	fmt.Printf("🧹 Clearing proxy configuration...\n")
 
-	os.Unsetenv("http_proxy")
-	os.Unsetenv("https_proxy")
-	os.Unsetenv("socks_proxy")
-	os.Unsetenv("ftp_proxy")
+	environment.Unset("http_proxy")
+	environment.Unset("https_proxy")
+	environment.Unset("socks_proxy")
+	environment.Unset("ftp_proxy")
 
 	fmt.Printf("✅ Proxy configuration cleared\n")
 	return nil
 }
 
 func showProxyStatus() error {
+	return showProxyStatusWithEnv(env.NewOSEnvironment())
+}
+
+func showProxyStatusWithEnv(environment env.Environment) error {
 	fmt.Printf("🌐 Proxy Configuration:\n\n")
 
 	proxies := map[string]string{
-		"HTTP":  os.Getenv("http_proxy"),
-		"HTTPS": os.Getenv("https_proxy"),
-		"SOCKS": os.Getenv("socks_proxy"),
-		"FTP":   os.Getenv("ftp_proxy"),
+		"HTTP":  environment.Get("http_proxy"),
+		"HTTPS": environment.Get("https_proxy"),
+		"SOCKS": environment.Get("socks_proxy"),
+		"FTP":   environment.Get("ftp_proxy"),
 	}
 
 	hasProxy := false

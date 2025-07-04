@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -342,12 +343,21 @@ func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 
 // handleConfigChange handles configuration file changes
 func (s *DefaultConfigService) handleConfigChange(ctx context.Context) {
+	// Add a small delay to avoid multiple rapid changes
+	time.Sleep(100 * time.Millisecond)
+	
 	err := s.ReloadConfiguration(ctx)
 	if err != nil {
-		fmt.Printf("Failed to reload configuration: %v\n", err)
+		// Log error but continue watching - configuration might be temporarily invalid during editing
+		fmt.Printf("⚠️  Configuration reload failed: %v\n", err)
+		// Still call callback with current config so watchers know about the attempt
+		if s.watchCallback != nil && s.config != nil {
+			s.watchCallback(s.config)
+		}
 		return
 	}
 
+	// Configuration reloaded successfully
 	if s.watchCallback != nil {
 		s.watchCallback(s.config)
 	}
