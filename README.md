@@ -32,7 +32,7 @@ Comprehensive CLI Tool
 # Usage
 
 ## 기능
-Clone repositories by GitHub account (user, org) or GitLab group.
+Clone repositories by GitHub account (user, org) or GitLab group and manage repository configurations at scale.
 
 - bulk-clone
   - git
@@ -41,6 +41,12 @@ Clone repositories by GitHub account (user, org) or GitLab group.
   - gitlab
   - gogs
 - gen-config
+- repo-config (GitHub repository configuration management)
+  - Apply configuration templates
+  - Enforce security policies
+  - Audit compliance
+  - Manage branch protection
+  - Bulk operations
 
 ### CLI
 
@@ -215,6 +221,100 @@ gzh bulk-clone github -o myorg -t ~/repos -s pull
 
 # Only fetch updates without modifying local files
 gzh bulk-clone github -o myorg -t ~/repos -s fetch
+```
+
+## Repository Configuration Management
+
+The `gz repo-config` command allows you to manage GitHub repository configurations at scale, including settings, security policies, branch protection rules, and compliance auditing.
+
+### Quick Start
+
+1. **Create a configuration file** (`repo-config.yaml`):
+   ```yaml
+   version: "1.0.0"
+   organization: "your-org"
+   
+   templates:
+     standard:
+       description: "Standard repository settings"
+       settings:
+         has_issues: true
+         has_wiki: false
+         delete_branch_on_merge: true
+       security:
+         vulnerability_alerts: true
+         branch_protection:
+           main:
+             required_reviews: 2
+             enforce_admins: true
+   
+   repositories:
+     - name: "*"
+       template: "standard"
+   ```
+
+2. **Apply configuration**:
+   ```bash
+   # Preview changes (dry run)
+   gz repo-config apply --config repo-config.yaml --dry-run
+   
+   # Apply configuration
+   gz repo-config apply --config repo-config.yaml
+   ```
+
+3. **Audit compliance**:
+   ```bash
+   gz repo-config audit --config repo-config.yaml
+   ```
+
+### Key Features
+
+- **Templates**: Define reusable repository configurations
+- **Policies**: Enforce security and compliance rules
+- **Pattern Matching**: Apply configurations based on repository name patterns
+- **Exception Handling**: Allow documented exceptions to policies
+- **Compliance Auditing**: Generate reports on policy violations
+- **Bulk Operations**: Update multiple repositories efficiently
+
+### Documentation
+
+- [Quick Start Guide](docs/repo-config-quick-start.md) - Get started in 5 minutes
+- [User Guide](docs/repo-config-user-guide.md) - Complete documentation
+- [Policy Examples](docs/repo-config-policy-examples.md) - Ready-to-use policy templates
+- [Configuration Schema](docs/repo-config-schema.yaml) - Configuration file reference
+
+### Example: Enterprise Configuration
+
+```yaml
+version: "1.0.0"
+organization: "enterprise-org"
+
+templates:
+  backend:
+    description: "Backend service configuration"
+    settings:
+      private: true
+    security:
+      secret_scanning: true
+      branch_protection:
+        main:
+          required_reviews: 2
+          required_status_checks: ["ci/build", "ci/test"]
+
+policies:
+  security:
+    description: "Security requirements"
+    rules:
+      must_be_private:
+        type: "visibility"
+        value: "private"
+        enforcement: "required"
+        message: "Production services must be private"
+
+patterns:
+  - pattern: "*-service"
+    template: "backend"
+    policies: ["security"]
 ```
 
 ## Trigger
