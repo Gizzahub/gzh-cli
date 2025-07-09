@@ -9,22 +9,24 @@ import (
 )
 
 type bulkCloneGitlabOptions struct {
-	targetPath  string
-	groupName   string
-	recursively bool
-	strategy    string
-	configFile  string
-	useConfig   bool
-	parallel    int
-	maxRetries  int
-	resume      bool
+	targetPath   string
+	groupName    string
+	recursively  bool
+	strategy     string
+	configFile   string
+	useConfig    bool
+	parallel     int
+	maxRetries   int
+	resume       bool
+	progressMode string
 }
 
 func defaultBulkCloneGitlabOptions() *bulkCloneGitlabOptions {
 	return &bulkCloneGitlabOptions{
-		strategy:   "reset",
-		parallel:   10,
-		maxRetries: 3,
+		strategy:     "reset",
+		parallel:     10,
+		maxRetries:   3,
+		progressMode: "compact",
 	}
 }
 
@@ -47,6 +49,7 @@ func newBulkCloneGitlabCmd() *cobra.Command {
 	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
+	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: compact, detailed, quiet")
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
@@ -78,7 +81,7 @@ func (o *bulkCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 	var err error
 	if o.resume || o.parallel > 1 {
-		err = gitlabpkg.RefreshAllResumable(ctx, o.targetPath, o.groupName, o.strategy, o.parallel, o.maxRetries, o.resume)
+		err = gitlabpkg.RefreshAllResumable(ctx, o.targetPath, o.groupName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 	} else {
 		err = gitlabpkg.RefreshAll(ctx, o.targetPath, o.groupName, o.strategy)
 	}

@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
-	"github.com/schollz/progressbar/v3"
 )
 
 // ResumableCloneManager handles resumable clone operations for GitLab
@@ -27,7 +27,7 @@ func NewResumableCloneManager(config workerpool.RepositoryPoolConfig) *Resumable
 }
 
 // RefreshAllResumable performs bulk repository refresh with resumable support for GitLab
-func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targetPath, group, strategy string, parallel, maxRetries int, resume bool) error {
+func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targetPath, group, strategy string, parallel, maxRetries int, resume bool, progressMode string) error {
 	var state *bulkclonepkg.CloneState
 	var err error
 
@@ -134,7 +134,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	}
 
 	if maxRetries > 0 {
-		config.MaxRetries = maxRetries
+		config.RetryAttempts = maxRetries
 	}
 
 	// Create and start worker pool
@@ -144,23 +144,21 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	}
 	defer pool.Stop()
 
-	// Create progress bar
-	completed, failed, pending := state.GetProgress()
-	totalProcessed := completed + failed
+	// Create progress tracker with specified mode
+	displayMode := getDisplayMode(progressMode)
+	progressTracker := bulkclonepkg.NewProgressTracker(allRepos, displayMode)
 
-	bar := progressbar.NewOptions(len(allRepos),
-		progressbar.OptionSetDescription(fmt.Sprintf("GitLab %s", group)),
-		progressbar.OptionSetRenderBlankState(true),
-		progressbar.OptionShowCount(),
-		progressbar.OptionShowIts(),
-		progressbar.OptionSetPredictTime(true),
-		progressbar.OptionOnCompletion(func() {
-			fmt.Printf("\n")
-		}),
-	)
+	// Update progress tracker with existing state
+	for _, completed := range state.CompletedRepos {
+		progressTracker.CompleteRepository(completed.Name, completed.Message)
+	}
 
-	// Set initial progress
-	bar.Set(totalProcessed)
+	for _, failed := range state.FailedRepos {
+		progressTracker.SetRepositoryError(failed.Name, failed.Error)
+	}
+
+	// Print initial progress
+	fmt.Printf("\n%s\n", progressTracker.RenderProgress())
 
 	// Create jobs for repositories to process
 	jobs := make([]workerpool.RepositoryJob, 0, len(reposToProcess))
@@ -189,47 +187,60 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 			Operation:  operation,
 			Path:       repoPath,
 			Strategy:   strategy,
-			CloneURL:   fmt.Sprintf("https://gitlab.com/%s/%s.git", group, repo),
 		})
 	}
 
-	// Process jobs
-	results := pool.ProcessJobs(ctx, jobs)
+	// Start progress tracking for pending jobs
+	for _, job := range jobs {
+		progressTracker.UpdateRepository(job.Repository, getProgressStatusFromOperation(job.Operation), "Starting...", 0.0)
+	}
+
+	// Process jobs using the correct pattern
+	processFn := func(ctx context.Context, job workerpool.RepositoryJob) error {
+		return rcm.processRepositoryJob(ctx, job, group)
+	}
+
+	// Submit jobs and collect results
+	resultsChan := pool.Results()
+
+	// Submit all jobs
+	for _, job := range jobs {
+		if err := pool.SubmitJob(job, processFn); err != nil {
+			return fmt.Errorf("failed to submit job for %s: %w", job.Repository, err)
+		}
+	}
 
 	// Track results and update state
 	successCount := 0
 	failureCount := 0
 
-	// Set up periodic state saving
+	// Set up periodic state saving and progress updates
 	stateSaveTicker := time.NewTicker(30 * time.Second)
+	progressUpdateTicker := time.NewTicker(1 * time.Second)
 	defer stateSaveTicker.Stop()
+	defer progressUpdateTicker.Stop()
 
-	for {
+	for i := 0; i < len(jobs); i++ {
 		select {
-		case result, ok := <-results:
-			if !ok {
-				// All results processed
-				goto completed
-			}
-
+		case result := <-resultsChan:
 			if result.Error != nil {
 				failureCount++
-				state.AddFailedRepository(result.Repository, result.Path, string(result.Operation), result.Error.Error(), 1)
-				fmt.Printf("\n❌ Failed %s for %s: %v\n", result.Operation, result.Repository, result.Error)
+				state.AddFailedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Error.Error(), 1)
+				progressTracker.SetRepositoryError(result.Job.Repository, result.Error.Error())
 			} else {
 				successCount++
-				state.AddCompletedRepository(result.Repository, result.Path, string(result.Operation), result.Message)
-				if result.Message != "" {
-					fmt.Printf("\n✅ %s: %s\n", result.Repository, result.Message)
-				}
+				state.AddCompletedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Message)
+				progressTracker.CompleteRepository(result.Job.Repository, result.Message)
 			}
 
-			bar.Add(1)
+		case <-progressUpdateTicker.C:
+			// Update progress display
+			fmt.Printf("\r\033[K%s", progressTracker.RenderProgress())
 
 		case <-stateSaveTicker.C:
 			// Periodically save state
 			if err := rcm.stateManager.SaveState(state); err != nil {
-				fmt.Printf("⚠️  Warning: failed to save state: %v\n", err)
+				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
 			}
 
 		case <-ctx.Done():
@@ -240,8 +251,8 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		}
 	}
 
-completed:
-	bar.Finish()
+	// Final progress update
+	fmt.Printf("\r\033[K%s\n", progressTracker.RenderProgress())
 
 	// Final state update
 	if len(state.GetRemainingRepositories()) == 0 {
@@ -255,7 +266,8 @@ completed:
 		fmt.Printf("⚠️  Warning: failed to save final state: %v\n", err)
 	}
 
-	fmt.Printf("\nCompleted: %d successful, %d failed\n", successCount, failureCount)
+	// Show final summary
+	fmt.Printf("\n%s\n", progressTracker.GetSummary())
 
 	// Clean up state file if completed successfully
 	if state.Status == "completed" {
@@ -272,11 +284,78 @@ completed:
 	return nil
 }
 
+// processRepositoryJob processes a single repository job for GitLab
+func (rcm *ResumableCloneManager) processRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, group string) error {
+	switch job.Operation {
+	case workerpool.OperationClone:
+		return Clone(ctx, job.Path, group, job.Repository, "")
+
+	case workerpool.OperationPull:
+		return rcm.executeGitOperation(ctx, job.Path, "pull")
+
+	case workerpool.OperationFetch:
+		return rcm.executeGitOperation(ctx, job.Path, "fetch")
+
+	case workerpool.OperationReset:
+		// Reset hard HEAD and pull
+		if err := rcm.executeGitOperation(ctx, job.Path, "reset", "--hard", "HEAD"); err != nil {
+			return fmt.Errorf("git reset failed: %w", err)
+		}
+		return rcm.executeGitOperation(ctx, job.Path, "pull")
+
+	default:
+		return fmt.Errorf("unknown operation: %s", job.Operation)
+	}
+}
+
+// executeGitOperation executes a git command in the repository path
+func (rcm *ResumableCloneManager) executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
+	// Build git command
+	gitArgs := append([]string{"-C", repoPath}, args...)
+	cmd := exec.CommandContext(ctx, "git", gitArgs...)
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git %s failed: %w", args[0], err)
+	}
+
+	return nil
+}
+
 // RefreshAllResumable is a convenience function for resumable cloning
-func RefreshAllResumable(ctx context.Context, targetPath, group, strategy string, parallel, maxRetries int, resume bool) error {
+func RefreshAllResumable(ctx context.Context, targetPath, group, strategy string, parallel, maxRetries int, resume bool, progressMode string) error {
 	config := workerpool.DefaultRepositoryPoolConfig()
 	manager := NewResumableCloneManager(config)
-	return manager.RefreshAllResumable(ctx, targetPath, group, strategy, parallel, maxRetries, resume)
+	return manager.RefreshAllResumable(ctx, targetPath, group, strategy, parallel, maxRetries, resume, progressMode)
+}
+
+// getProgressStatusFromOperation converts worker pool operation to progress status
+func getProgressStatusFromOperation(operation workerpool.RepositoryOperation) bulkclonepkg.ProgressStatus {
+	switch operation {
+	case workerpool.OperationClone:
+		return bulkclonepkg.StatusCloning
+	case workerpool.OperationPull:
+		return bulkclonepkg.StatusPulling
+	case workerpool.OperationFetch:
+		return bulkclonepkg.StatusFetching
+	case workerpool.OperationReset:
+		return bulkclonepkg.StatusResetting
+	default:
+		return bulkclonepkg.StatusStarted
+	}
+}
+
+// getDisplayMode converts string to DisplayMode
+func getDisplayMode(mode string) bulkclonepkg.DisplayMode {
+	switch mode {
+	case "compact":
+		return bulkclonepkg.DisplayModeCompact
+	case "detailed":
+		return bulkclonepkg.DisplayModeDetailed
+	case "quiet":
+		return bulkclonepkg.DisplayModeQuiet
+	default:
+		return bulkclonepkg.DisplayModeCompact
+	}
 }
 
 // GetCloneState returns the current clone state for a group

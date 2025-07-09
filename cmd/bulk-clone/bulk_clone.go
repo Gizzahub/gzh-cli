@@ -22,13 +22,15 @@ type bulkCloneOptions struct {
 	parallel       int
 	maxRetries     int
 	resume         bool
+	progressMode   string
 }
 
 func defaultBulkCloneOptions() *bulkCloneOptions {
 	return &bulkCloneOptions{
-		strategy:   "reset",
-		parallel:   10,
-		maxRetries: 3,
+		strategy:     "reset",
+		parallel:     10,
+		maxRetries:   3,
+		progressMode: "compact",
 	}
 }
 
@@ -59,6 +61,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
+	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: compact, detailed, quiet")
 
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
@@ -243,13 +246,13 @@ func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target co
 	case config.ProviderGitHub:
 		// Use resumable clone if requested or if parallel/worker pool is enabled
 		if o.resume || o.parallel > 1 {
-			return github.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume)
+			return github.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
 		return github.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitLab:
 		// Use resumable clone if requested or if parallel/worker pool is enabled
 		if o.resume || o.parallel > 1 {
-			return gitlab.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume)
+			return gitlab.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
 		return gitlab.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitea:
