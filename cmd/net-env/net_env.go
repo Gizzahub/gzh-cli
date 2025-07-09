@@ -57,6 +57,7 @@ Examples:
 	cmd.AddCommand(newDaemonCmd(ctx))
 	cmd.AddCommand(newWifiCmd())
 	cmd.AddCommand(newActionsCmd())
+	cmd.AddCommand(newCloudCmd(ctx))
 
 	return cmd
 }

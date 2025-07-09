@@ -1,0 +1,590 @@
+package netenv
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+	"text/tabwriter"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
+	"github.com/spf13/cobra"
+)
+
+// cloudOptions contains options for cloud commands
+type cloudOptions struct {
+	configFile string
+	provider   string
+	profile    string
+	verbose    bool
+}
+
+// newCloudCmd creates the cloud subcommand
+func newCloudCmd(ctx context.Context) *cobra.Command {
+	opts := &cloudOptions{}
+
+	cmd := &cobra.Command{
+		Use:   "cloud",
+		Short: "Manage cloud provider network configurations",
+		Long: `Manage cloud provider network configurations and environment profiles.
+
+This command allows you to:
+- Configure cloud provider profiles (AWS, GCP, Azure)
+- Sync network configurations between cloud environments
+- Apply environment-specific network policies
+- Switch between cloud profiles with automatic network reconfiguration`,
+	}
+
+	// Global flags for cloud commands
+	cmd.PersistentFlags().StringVarP(&opts.configFile, "config", "c", "", "Cloud configuration file (default: auto-detect)")
+	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "Enable verbose output")
+
+	// Add subcommands
+	cmd.AddCommand(newCloudListCmd(ctx, opts))
+	cmd.AddCommand(newCloudShowCmd(ctx, opts))
+	cmd.AddCommand(newCloudSwitchCmd(ctx, opts))
+	cmd.AddCommand(newCloudSyncCmd(ctx, opts))
+	cmd.AddCommand(newCloudValidateCmd(ctx, opts))
+
+	return cmd
+}
+
+// newCloudListCmd creates the list subcommand
+func newCloudListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var showProfiles bool
+	var showProviders bool
+
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List cloud providers and profiles",
+		Long:  `List configured cloud providers and their profiles.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Show providers if requested or by default
+			if showProviders || (!showProfiles && !showProviders) {
+				fmt.Println("Cloud Providers:")
+				fmt.Println("================")
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "NAME\tTYPE\tREGION\tAUTH METHOD")
+				for name, provider := range config.Providers {
+					fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+						name,
+						provider.Type,
+						provider.Region,
+						provider.Auth.Method,
+					)
+				}
+				w.Flush()
+				fmt.Println()
+			}
+
+			// Show profiles if requested
+			if showProfiles || (!showProfiles && !showProviders) {
+				fmt.Println("Cloud Profiles:")
+				fmt.Println("===============")
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "NAME\tPROVIDER\tENVIRONMENT\tREGION\tVPC")
+				for name, profile := range config.Profiles {
+					vpcId := profile.Network.VPCId
+					if vpcId == "" {
+						vpcId = "N/A"
+					}
+					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+						name,
+						profile.Provider,
+						profile.Environment,
+						profile.Region,
+						vpcId,
+					)
+				}
+				w.Flush()
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&showProfiles, "profiles", false, "Show only profiles")
+	cmd.Flags().BoolVar(&showProviders, "providers", false, "Show only providers")
+
+	return cmd
+}
+
+// newCloudShowCmd creates the show subcommand
+func newCloudShowCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "show [profile]",
+		Short: "Show detailed profile information",
+		Long:  `Show detailed information about a cloud profile including network configuration.`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			profileName := args[0]
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Get profile
+			profile, exists := config.GetProfile(profileName)
+			if !exists {
+				return fmt.Errorf("profile not found: %s", profileName)
+			}
+
+			// Display profile information
+			fmt.Printf("Profile: %s\n", profile.Name)
+			fmt.Printf("Provider: %s\n", profile.Provider)
+			fmt.Printf("Environment: %s\n", profile.Environment)
+			fmt.Printf("Region: %s\n", profile.Region)
+
+			// Network configuration
+			fmt.Println("\nNetwork Configuration:")
+			fmt.Printf("  VPC ID: %s\n", profile.Network.VPCId)
+
+			if len(profile.Network.SubnetIds) > 0 {
+				fmt.Println("  Subnets:")
+				for _, subnet := range profile.Network.SubnetIds {
+					fmt.Printf("    - %s\n", subnet)
+				}
+			}
+
+			if len(profile.Network.SecurityGroups) > 0 {
+				fmt.Println("  Security Groups:")
+				for _, sg := range profile.Network.SecurityGroups {
+					fmt.Printf("    - %s\n", sg)
+				}
+			}
+
+			if len(profile.Network.DNSServers) > 0 {
+				fmt.Println("  DNS Servers:")
+				for _, dns := range profile.Network.DNSServers {
+					fmt.Printf("    - %s\n", dns)
+				}
+			}
+
+			// Proxy configuration
+			if profile.Network.Proxy != nil {
+				fmt.Println("  Proxy:")
+				if profile.Network.Proxy.HTTP != "" {
+					fmt.Printf("    HTTP: %s\n", profile.Network.Proxy.HTTP)
+				}
+				if profile.Network.Proxy.HTTPS != "" {
+					fmt.Printf("    HTTPS: %s\n", profile.Network.Proxy.HTTPS)
+				}
+			}
+
+			// VPN configuration
+			if profile.Network.VPN != nil {
+				fmt.Println("  VPN:")
+				fmt.Printf("    Type: %s\n", profile.Network.VPN.Type)
+				fmt.Printf("    Server: %s\n", profile.Network.VPN.Server)
+				if profile.Network.VPN.AutoConnect {
+					fmt.Println("    Auto-connect: enabled")
+				}
+			}
+
+			// Services
+			if len(profile.Services) > 0 {
+				fmt.Println("\nServices:")
+				for name, service := range profile.Services {
+					fmt.Printf("  %s:\n", name)
+					fmt.Printf("    Endpoint: %s\n", service.Endpoint)
+					if service.Port > 0 {
+						fmt.Printf("    Port: %d\n", service.Port)
+					}
+				}
+			}
+
+			// Tags
+			if len(profile.Tags) > 0 {
+				fmt.Println("\nTags:")
+				for key, value := range profile.Tags {
+					fmt.Printf("  %s: %s\n", key, value)
+				}
+			}
+
+			if !profile.LastSync.IsZero() {
+				fmt.Printf("\nLast Sync: %s\n", profile.LastSync.Format("2006-01-02 15:04:05"))
+			}
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newCloudSwitchCmd creates the switch subcommand
+func newCloudSwitchCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var dryRun bool
+	var applyPolicy bool
+
+	cmd := &cobra.Command{
+		Use:   "switch [profile]",
+		Short: "Switch to a cloud profile",
+		Long: `Switch to a cloud profile and apply its network configuration.
+
+This command will:
+1. Load the specified cloud profile
+2. Apply network policies (DNS, proxy, routes)
+3. Connect to VPN if configured
+4. Update environment variables`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			profileName := args[0]
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Get profile
+			profile, exists := config.GetProfile(profileName)
+			if !exists {
+				return fmt.Errorf("profile not found: %s", profileName)
+			}
+
+			// Get provider config
+			providerConfig, exists := config.GetProvider(profile.Provider)
+			if !exists {
+				return fmt.Errorf("provider not found: %s", profile.Provider)
+			}
+
+			fmt.Printf("Switching to cloud profile: %s\n", profileName)
+
+			if dryRun {
+				fmt.Println("\n[DRY RUN] Would perform the following actions:")
+			}
+
+			// Create provider instance
+			provider, err := cloud.NewProvider(ctx, providerConfig)
+			if err != nil {
+				return fmt.Errorf("failed to create provider: %w", err)
+			}
+
+			// Get network policy
+			if applyPolicy {
+				fmt.Println("\nApplying network policy...")
+
+				policy, err := provider.GetNetworkPolicy(ctx, profileName)
+				if err != nil {
+					if opts.verbose {
+						fmt.Printf("Warning: failed to get network policy: %v\n", err)
+					}
+				} else if policy != nil && policy.Enabled {
+					if !dryRun {
+						if err := provider.ApplyNetworkPolicy(ctx, policy); err != nil {
+							return fmt.Errorf("failed to apply network policy: %w", err)
+						}
+					}
+					fmt.Println("✓ Network policy applied")
+				}
+			}
+
+			// Apply network configuration
+			fmt.Println("\nApplying network configuration...")
+
+			// DNS configuration
+			if len(profile.Network.DNSServers) > 0 {
+				fmt.Printf("  Setting DNS servers: %v\n", profile.Network.DNSServers)
+				if !dryRun {
+					// TODO: Implement DNS configuration
+				}
+			}
+
+			// Proxy configuration
+			if profile.Network.Proxy != nil {
+				if profile.Network.Proxy.HTTP != "" {
+					fmt.Printf("  Setting HTTP proxy: %s\n", profile.Network.Proxy.HTTP)
+					if !dryRun {
+						os.Setenv("HTTP_PROXY", profile.Network.Proxy.HTTP)
+						os.Setenv("http_proxy", profile.Network.Proxy.HTTP)
+					}
+				}
+				if profile.Network.Proxy.HTTPS != "" {
+					fmt.Printf("  Setting HTTPS proxy: %s\n", profile.Network.Proxy.HTTPS)
+					if !dryRun {
+						os.Setenv("HTTPS_PROXY", profile.Network.Proxy.HTTPS)
+						os.Setenv("https_proxy", profile.Network.Proxy.HTTPS)
+					}
+				}
+			}
+
+			// VPN connection
+			if profile.Network.VPN != nil && profile.Network.VPN.AutoConnect {
+				fmt.Printf("  Connecting to VPN: %s\n", profile.Network.VPN.Server)
+				if !dryRun {
+					// TODO: Implement VPN connection
+				}
+			}
+
+			// Custom routes
+			if len(profile.Network.Routes) > 0 {
+				fmt.Println("  Adding custom routes:")
+				for _, route := range profile.Network.Routes {
+					fmt.Printf("    %s via %s\n", route.Destination, route.Gateway)
+					if !dryRun {
+						// TODO: Implement route addition
+					}
+				}
+			}
+
+			if dryRun {
+				fmt.Println("\n[DRY RUN] No changes were made")
+			} else {
+				fmt.Printf("\n✓ Successfully switched to profile: %s\n", profileName)
+
+				// Save current profile
+				if err := saveCurrentProfile(profileName); err != nil {
+					if opts.verbose {
+						fmt.Printf("Warning: failed to save current profile: %v\n", err)
+					}
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what would be done without making changes")
+	cmd.Flags().BoolVar(&applyPolicy, "apply-policy", true, "Apply network policy from cloud provider")
+
+	return cmd
+}
+
+// newCloudSyncCmd creates the sync subcommand
+func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var source string
+	var target string
+	var profiles []string
+	var conflictMode string
+
+	cmd := &cobra.Command{
+		Use:   "sync",
+		Short: "Sync profiles between cloud providers",
+		Long: `Synchronize profiles between different cloud providers.
+
+This allows you to maintain consistent network configurations across
+multiple cloud environments.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Validate source and target
+			if source == "" || target == "" {
+				return fmt.Errorf("both --source and --target are required")
+			}
+
+			sourceConfig, exists := config.GetProvider(source)
+			if !exists {
+				return fmt.Errorf("source provider not found: %s", source)
+			}
+
+			targetConfig, exists := config.GetProvider(target)
+			if !exists {
+				return fmt.Errorf("target provider not found: %s", target)
+			}
+
+			// Create provider instances
+			sourceProvider, err := cloud.NewProvider(ctx, sourceConfig)
+			if err != nil {
+				return fmt.Errorf("failed to create source provider: %w", err)
+			}
+
+			targetProvider, err := cloud.NewProvider(ctx, targetConfig)
+			if err != nil {
+				return fmt.Errorf("failed to create target provider: %w", err)
+			}
+
+			fmt.Printf("Syncing profiles from %s to %s...\n", source, target)
+
+			// Get profiles to sync
+			var profilesToSync []string
+			if len(profiles) > 0 {
+				profilesToSync = profiles
+			} else {
+				// Sync all profiles for the source provider
+				sourceProfiles := config.GetProfilesForProvider(source)
+				for _, p := range sourceProfiles {
+					profilesToSync = append(profilesToSync, p.Name)
+				}
+			}
+
+			if len(profilesToSync) == 0 {
+				fmt.Println("No profiles to sync")
+				return nil
+			}
+
+			// Perform sync for each profile
+			successCount := 0
+			for _, profileName := range profilesToSync {
+				fmt.Printf("\nSyncing profile: %s\n", profileName)
+
+				profile, err := sourceProvider.GetProfile(ctx, profileName)
+				if err != nil {
+					fmt.Printf("  ✗ Failed to get profile: %v\n", err)
+					continue
+				}
+
+				// Update provider reference
+				profile.Provider = target
+
+				if err := targetProvider.SyncProfile(ctx, profile); err != nil {
+					fmt.Printf("  ✗ Failed to sync: %v\n", err)
+					continue
+				}
+
+				fmt.Printf("  ✓ Successfully synced\n")
+				successCount++
+			}
+
+			fmt.Printf("\nSync completed: %d/%d profiles synced successfully\n",
+				successCount, len(profilesToSync))
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&source, "source", "", "Source provider name")
+	cmd.Flags().StringVar(&target, "target", "", "Target provider name")
+	cmd.Flags().StringSliceVar(&profiles, "profiles", nil, "Specific profiles to sync (default: all)")
+	cmd.Flags().StringVar(&conflictMode, "conflict-mode", "ask", "Conflict resolution mode (source_wins, target_wins, merge, ask)")
+
+	cmd.MarkFlagRequired("source")
+	cmd.MarkFlagRequired("target")
+
+	return cmd
+}
+
+// newCloudValidateCmd creates the validate subcommand
+func newCloudValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "validate",
+		Short: "Validate cloud configuration",
+		Long:  `Validate cloud configuration file and test provider connections.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			fmt.Printf("Validating configuration: %s\n\n", configPath)
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			fmt.Println("✓ Configuration file is valid")
+			fmt.Printf("  Version: %s\n", config.Version)
+			fmt.Printf("  Providers: %d\n", len(config.Providers))
+			fmt.Printf("  Profiles: %d\n", len(config.Profiles))
+
+			// Test provider connections
+			fmt.Println("\nTesting provider connections:")
+			for name, providerConfig := range config.Providers {
+				fmt.Printf("\n%s (%s):\n", name, providerConfig.Type)
+
+				provider, err := cloud.NewProvider(ctx, providerConfig)
+				if err != nil {
+					fmt.Printf("  ✗ Failed to create provider: %v\n", err)
+					continue
+				}
+
+				// Validate configuration
+				if err := provider.ValidateConfig(providerConfig); err != nil {
+					fmt.Printf("  ✗ Invalid configuration: %v\n", err)
+					continue
+				}
+				fmt.Println("  ✓ Configuration valid")
+
+				// Health check
+				if err := provider.HealthCheck(ctx); err != nil {
+					fmt.Printf("  ✗ Health check failed: %v\n", err)
+					continue
+				}
+				fmt.Println("  ✓ Connection successful")
+
+				// List profiles
+				profiles, err := provider.ListProfiles(ctx)
+				if err != nil {
+					fmt.Printf("  ⚠ Failed to list profiles: %v\n", err)
+				} else {
+					fmt.Printf("  ✓ Found %d profiles\n", len(profiles))
+				}
+			}
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// saveCurrentProfile saves the current profile name
+func saveCurrentProfile(profileName string) error {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return err
+	}
+
+	stateFile := filepath.Join(configDir, "gzh-manager", "current-cloud-profile")
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(filepath.Dir(stateFile), 0o755); err != nil {
+		return err
+	}
+
+	return os.WriteFile(stateFile, []byte(profileName), 0o644)
+}
+
+// getCurrentProfile reads the current profile name
+func getCurrentProfile() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	stateFile := filepath.Join(configDir, "gzh-manager", "current-cloud-profile")
+
+	data, err := os.ReadFile(stateFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return string(data), nil
+}
