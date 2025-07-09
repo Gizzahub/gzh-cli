@@ -39,7 +39,8 @@ Examples:
   gz repo-config webhook list --org myorg --repo myrepo
   gz repo-config webhook create --repo myrepo --url https://example.com/webhook --events push,pull_request
   gz repo-config webhook update --repo myrepo --id 12345 --events push,issues
-  gz repo-config webhook delete --repo myrepo --id 12345`,
+  gz repo-config webhook delete --repo myrepo --id 12345
+  gz repo-config webhook bulk create --org myorg --all --url https://example.com/webhook`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -51,6 +52,7 @@ Examples:
 	cmd.AddCommand(newWebhookUpdateCmd())
 	cmd.AddCommand(newWebhookDeleteCmd())
 	cmd.AddCommand(newWebhookGetCmd())
+	cmd.AddCommand(newWebhookBulkCmd())
 
 	return cmd
 }
