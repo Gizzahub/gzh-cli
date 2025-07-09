@@ -7,15 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	
 	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
-	
 	// Import cloud providers to register them
 	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/aws"
-	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/gcp"
 	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/azure"
+	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/gcp"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestSDKIntegration tests cloud SDK integration
@@ -23,11 +21,11 @@ func TestSDKIntegration(t *testing.T) {
 	t.Run("AWS_SDK_Integration", func(t *testing.T) {
 		testAWSSDKIntegration(t)
 	})
-	
+
 	t.Run("GCP_SDK_Integration", func(t *testing.T) {
 		testGCPSDKIntegration(t)
 	})
-	
+
 	t.Run("Azure_SDK_Integration", func(t *testing.T) {
 		testAzureSDKIntegration(t)
 	})
@@ -158,7 +156,7 @@ func testAzureSDKIntegration(t *testing.T) {
 func TestProviderRegistration(t *testing.T) {
 	// Test that all providers are registered
 	registeredProviders := cloud.GetRegisteredProviders()
-	
+
 	expectedProviders := []string{"aws", "gcp", "azure"}
 	for _, expected := range expectedProviders {
 		assert.Contains(t, registeredProviders, expected, "Provider %s should be registered", expected)
@@ -196,7 +194,7 @@ func TestMultiProviderSync(t *testing.T) {
 				Environment: "test",
 				Region:      "us-east-1",
 				Network: cloud.NetworkConfig{
-					VPCId: "vpc-12345",
+					VPCId:      "vpc-12345",
 					DNSServers: []string{"8.8.8.8", "8.8.4.4"},
 				},
 			},
@@ -238,7 +236,7 @@ func TestPolicyManagerIntegration(t *testing.T) {
 				Environment: "test",
 				Region:      "us-east-1",
 				Network: cloud.NetworkConfig{
-					VPCId: "vpc-12345",
+					VPCId:      "vpc-12345",
 					DNSServers: []string{"8.8.8.8", "8.8.4.4"},
 				},
 			},
@@ -351,10 +349,10 @@ func TestVPNManagerIntegration(t *testing.T) {
 	// Test failover monitoring (should not panic)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	
+
 	err = vpnManager.StartFailoverMonitoring(ctx)
 	assert.NoError(t, err)
-	
+
 	// Wait a bit then stop
 	time.Sleep(100 * time.Millisecond)
 	vpnManager.StopFailoverMonitoring()
@@ -366,24 +364,24 @@ func hasAWSCredentials() bool {
 	// Check for AWS credentials in environment or config
 	// This is a simplified check - in production you'd want more robust detection
 	return getEnvOrDefault("AWS_ACCESS_KEY_ID", "") != "" ||
-		   getEnvOrDefault("AWS_PROFILE", "") != "" ||
-		   fileExists("~/.aws/credentials") ||
-		   fileExists("~/.aws/config")
+		getEnvOrDefault("AWS_PROFILE", "") != "" ||
+		fileExists("~/.aws/credentials") ||
+		fileExists("~/.aws/config")
 }
 
 func hasGCPCredentials() bool {
 	// Check for GCP credentials
 	return getEnvOrDefault("GOOGLE_APPLICATION_CREDENTIALS", "") != "" ||
-		   getEnvOrDefault("GOOGLE_CLOUD_PROJECT", "") != "" ||
-		   fileExists("~/.config/gcloud/application_default_credentials.json")
+		getEnvOrDefault("GOOGLE_CLOUD_PROJECT", "") != "" ||
+		fileExists("~/.config/gcloud/application_default_credentials.json")
 }
 
 func hasAzureCredentials() bool {
 	// Check for Azure credentials
 	return getEnvOrDefault("AZURE_CLIENT_ID", "") != "" ||
-		   getEnvOrDefault("AZURE_CLIENT_SECRET", "") != "" ||
-		   getEnvOrDefault("AZURE_TENANT_ID", "") != "" ||
-		   fileExists("~/.azure/credentials")
+		getEnvOrDefault("AZURE_CLIENT_SECRET", "") != "" ||
+		getEnvOrDefault("AZURE_TENANT_ID", "") != "" ||
+		fileExists("~/.azure/credentials")
 }
 
 func getGCPProjectID() string {
@@ -413,7 +411,7 @@ func fileExists(path string) bool {
 		}
 		path = strings.Replace(path, "~", home, 1)
 	}
-	
+
 	_, err := os.Stat(path)
 	return err == nil
 }

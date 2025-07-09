@@ -27,7 +27,8 @@ Examples:
   gz repo-config apply                   # Apply configuration to repositories
   gz repo-config validate               # Validate configuration files
   gz repo-config diff                   # Show differences between current and target
-  gz repo-config audit                  # Generate compliance audit report`,
+  gz repo-config audit                  # Generate compliance audit report
+  gz repo-config webhook                # Manage repository webhooks`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -40,6 +41,7 @@ Examples:
 	cmd.AddCommand(newDiffCmd())
 	cmd.AddCommand(newAuditCmd())
 	cmd.AddCommand(newTemplateCmd())
+	cmd.AddCommand(newWebhookCmd())
 
 	return cmd
 }
