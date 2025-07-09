@@ -1,9 +1,15 @@
 package repoconfig
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
+	"strings"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 )
 
@@ -263,62 +269,392 @@ func getAffectedRepositories(differences []ConfigurationDifference) []string {
 	return result
 }
 
+// compareRepositoryConfigurations compares current and target configurations
+func compareRepositoryConfigurations(
+	repoName string,
+	current *github.RepositoryConfig,
+	targetSettings *config.RepoSettings,
+	targetSecurity *config.SecuritySettings,
+	targetPermissions *config.PermissionSettings,
+	templateName string,
+	exceptions []config.PolicyException,
+) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	// Compare basic settings
+	if targetSettings != nil {
+		// Description
+		if targetSettings.Description != nil && current.Description != *targetSettings.Description {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "description",
+				CurrentValue: current.Description,
+				TargetValue:  *targetSettings.Description,
+				ChangeType:   getChangeType(current.Description, *targetSettings.Description),
+				Impact:       "low",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+
+		// Homepage
+		if targetSettings.Homepage != nil && current.Homepage != *targetSettings.Homepage {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "homepage",
+				CurrentValue: current.Homepage,
+				TargetValue:  *targetSettings.Homepage,
+				ChangeType:   getChangeType(current.Homepage, *targetSettings.Homepage),
+				Impact:       "low",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+
+		// Private/Visibility
+		if targetSettings.Private != nil && current.Private != *targetSettings.Private {
+			visibility := "public"
+			targetVisibility := "public"
+			if current.Private {
+				visibility = "private"
+			}
+			if *targetSettings.Private {
+				targetVisibility = "private"
+			}
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "visibility",
+				CurrentValue: visibility,
+				TargetValue:  targetVisibility,
+				ChangeType:   "update",
+				Impact:       "high",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+
+		// Features
+		if targetSettings.HasIssues != nil && current.Settings.HasIssues != *targetSettings.HasIssues {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "features.issues",
+				CurrentValue: fmt.Sprintf("%t", current.Settings.HasIssues),
+				TargetValue:  fmt.Sprintf("%t", *targetSettings.HasIssues),
+				ChangeType:   "update",
+				Impact:       "low",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+
+		if targetSettings.HasWiki != nil && current.Settings.HasWiki != *targetSettings.HasWiki {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "features.wiki",
+				CurrentValue: fmt.Sprintf("%t", current.Settings.HasWiki),
+				TargetValue:  fmt.Sprintf("%t", *targetSettings.HasWiki),
+				ChangeType:   "update",
+				Impact:       "low",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+
+		if targetSettings.HasProjects != nil && current.Settings.HasProjects != *targetSettings.HasProjects {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "features.projects",
+				CurrentValue: fmt.Sprintf("%t", current.Settings.HasProjects),
+				TargetValue:  fmt.Sprintf("%t", *targetSettings.HasProjects),
+				ChangeType:   "update",
+				Impact:       "low",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+
+		// Merge settings
+		if targetSettings.DeleteBranchOnMerge != nil && current.Settings.DeleteBranchOnMerge != *targetSettings.DeleteBranchOnMerge {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "merge.delete_branch_on_merge",
+				CurrentValue: fmt.Sprintf("%t", current.Settings.DeleteBranchOnMerge),
+				TargetValue:  fmt.Sprintf("%t", *targetSettings.DeleteBranchOnMerge),
+				ChangeType:   "update",
+				Impact:       "medium",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+
+		if targetSettings.AllowSquashMerge != nil && current.Settings.AllowSquashMerge != *targetSettings.AllowSquashMerge {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      "merge.allow_squash_merge",
+				CurrentValue: fmt.Sprintf("%t", current.Settings.AllowSquashMerge),
+				TargetValue:  fmt.Sprintf("%t", *targetSettings.AllowSquashMerge),
+				ChangeType:   "update",
+				Impact:       "medium",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+	}
+
+	// Compare security settings
+	if targetSecurity != nil {
+		// Branch protection
+		if targetSecurity.BranchProtection != nil {
+			for branch, targetRule := range targetSecurity.BranchProtection {
+				currentRule, exists := current.BranchProtection[branch]
+				if !exists {
+					// Branch protection doesn't exist
+					if targetRule.RequiredReviews != nil && *targetRule.RequiredReviews > 0 {
+						differences = append(differences, ConfigurationDifference{
+							Repository:   repoName,
+							Setting:      fmt.Sprintf("branch_protection.%s.required_reviews", branch),
+							CurrentValue: "0",
+							TargetValue:  fmt.Sprintf("%d", *targetRule.RequiredReviews),
+							ChangeType:   "create",
+							Impact:       "high",
+							Template:     templateName,
+							Compliant:    false,
+						})
+					}
+				} else {
+					// Compare existing branch protection
+					if targetRule.RequiredReviews != nil && currentRule.RequiredReviews != *targetRule.RequiredReviews {
+						differences = append(differences, ConfigurationDifference{
+							Repository:   repoName,
+							Setting:      fmt.Sprintf("branch_protection.%s.required_reviews", branch),
+							CurrentValue: fmt.Sprintf("%d", currentRule.RequiredReviews),
+							TargetValue:  fmt.Sprintf("%d", *targetRule.RequiredReviews),
+							ChangeType:   "update",
+							Impact:       "medium",
+							Template:     templateName,
+							Compliant:    false,
+						})
+					}
+
+					if targetRule.EnforceAdmins != nil && currentRule.EnforceAdmins != *targetRule.EnforceAdmins {
+						differences = append(differences, ConfigurationDifference{
+							Repository:   repoName,
+							Setting:      fmt.Sprintf("branch_protection.%s.enforce_admins", branch),
+							CurrentValue: fmt.Sprintf("%t", currentRule.EnforceAdmins),
+							TargetValue:  fmt.Sprintf("%t", *targetRule.EnforceAdmins),
+							ChangeType:   "update",
+							Impact:       "high",
+							Template:     templateName,
+							Compliant:    false,
+						})
+					}
+				}
+			}
+		}
+	}
+
+	// Compare permissions
+	if targetPermissions != nil {
+		// Team permissions
+		for team, targetPerm := range targetPermissions.TeamPermissions {
+			currentPerm, exists := current.Permissions.Teams[team]
+			if !exists {
+				differences = append(differences, ConfigurationDifference{
+					Repository:   repoName,
+					Setting:      fmt.Sprintf("permissions.team.%s", team),
+					CurrentValue: "none",
+					TargetValue:  targetPerm,
+					ChangeType:   "create",
+					Impact:       "medium",
+					Template:     templateName,
+					Compliant:    false,
+				})
+			} else if currentPerm != targetPerm {
+				differences = append(differences, ConfigurationDifference{
+					Repository:   repoName,
+					Setting:      fmt.Sprintf("permissions.team.%s", team),
+					CurrentValue: currentPerm,
+					TargetValue:  targetPerm,
+					ChangeType:   "update",
+					Impact:       "medium",
+					Template:     templateName,
+					Compliant:    false,
+				})
+			}
+		}
+	}
+
+	// Apply policy exceptions to differences
+	differences = applyPolicyExceptions(differences, exceptions)
+
+	return differences
+}
+
+// getChangeType determines the type of change
+func getChangeType(current, target string) string {
+	if current == "" && target != "" {
+		return "create"
+	}
+	if current != "" && target == "" {
+		return "delete"
+	}
+	return "update"
+}
+
+// findAppliedTemplate finds which template applies to a repository
+func findAppliedTemplate(repoConfig *config.RepoConfig, repoName string) string {
+	if repoConfig.Repositories != nil {
+		// Check specific repositories
+		for _, specific := range repoConfig.Repositories.Specific {
+			if specific.Name == repoName && specific.Template != "" {
+				return specific.Template
+			}
+		}
+
+		// Check patterns
+		for _, pattern := range repoConfig.Repositories.Patterns {
+			if matched, _ := matchRepoPattern(repoName, pattern.Match); matched && pattern.Template != "" {
+				return pattern.Template
+			}
+		}
+
+		// Check default
+		if repoConfig.Repositories.Default != nil && repoConfig.Repositories.Default.Template != "" {
+			return repoConfig.Repositories.Default.Template
+		}
+	}
+
+	// Check global defaults
+	if repoConfig.Defaults != nil && repoConfig.Defaults.Template != "" {
+		return repoConfig.Defaults.Template
+	}
+
+	return "none"
+}
+
+// matchRepoPattern checks if a repository name matches a pattern
+func matchRepoPattern(name, pattern string) (bool, error) {
+	// Convert simple glob patterns to regex
+	if strings.Contains(pattern, "*") {
+		pattern = strings.ReplaceAll(pattern, ".", "\\.")
+		pattern = strings.ReplaceAll(pattern, "*", ".*")
+		pattern = "^" + pattern + "$"
+		return regexp.MatchString(pattern, name)
+	}
+	return name == pattern, nil
+}
+
+// applyPolicyExceptions applies policy exceptions to differences
+func applyPolicyExceptions(differences []ConfigurationDifference, exceptions []config.PolicyException) []ConfigurationDifference {
+	// For now, just return differences as-is
+	// In a full implementation, this would check if any differences are covered by exceptions
+	// and mark them as compliant or reduce their impact level
+	return differences
+}
+
+// getGitHubToken retrieves the GitHub token from various sources
+func getGitHubToken() string {
+	// This should be implemented to get token from:
+	// 1. Command line flags (if available)
+	// 2. Environment variables
+	// 3. Config file
+	return os.Getenv("GITHUB_TOKEN")
+}
+
+// getConfigPath retrieves the configuration file path
+func getConfigPath() string {
+	// This should be implemented to get config path from:
+	// 1. Command line flags (if available)
+	// 2. Default locations
+	// For now, return a default
+	return "repo-config.yaml"
+}
+
 // getConfigurationDifferences retrieves configuration differences for an organization
 func getConfigurationDifferences(organization, filter string) ([]ConfigurationDifference, error) {
-	// This is a mock implementation - in reality, this would:
-	// 1. Fetch current repository configurations from GitHub API
-	// 2. Load target configurations from templates
-	// 3. Compare them and identify differences
-	// 4. Apply filter if specified
+	// Create a context
+	ctx := context.Background()
 
-	mockDifferences := []ConfigurationDifference{
-		{
-			Repository:   "api-server",
-			Setting:      "branch_protection.main.required_reviews",
-			CurrentValue: "1",
-			TargetValue:  "2",
-			ChangeType:   "update",
-			Impact:       "medium",
-			Template:     "microservice",
-			Compliant:    false,
-		},
-		{
-			Repository:   "web-frontend",
-			Setting:      "features.wiki",
-			CurrentValue: "true",
-			TargetValue:  "false",
-			ChangeType:   "update",
-			Impact:       "low",
-			Template:     "frontend",
-			Compliant:    false,
-		},
-		{
-			Repository:   "legacy-service",
-			Setting:      "security.delete_head_branches",
-			CurrentValue: "",
-			TargetValue:  "true",
-			ChangeType:   "create",
-			Impact:       "high",
-			Template:     "none",
-			Compliant:    false,
-		},
-		{
-			Repository:   "admin-tools",
-			Setting:      "visibility",
-			CurrentValue: "public",
-			TargetValue:  "private",
-			ChangeType:   "update",
-			Impact:       "high",
-			Template:     "security",
-			Compliant:    false,
-		},
+	// Get GitHub token from environment or global flags
+	token := getGitHubToken()
+	if token == "" {
+		return nil, fmt.Errorf("GitHub token not found. Set GITHUB_TOKEN environment variable or use --token flag")
+	}
+
+	// Create GitHub client
+	client := github.NewRepoConfigClient(token)
+
+	// Load repo config file
+	configPath := getConfigPath()
+	if configPath == "" {
+		return nil, fmt.Errorf("configuration file not found. Use --config flag or create a repo-config.yaml file")
+	}
+
+	repoConfig, err := config.LoadRepoConfig(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load repo config: %w", err)
+	}
+
+	// Validate that the organization matches
+	if repoConfig.Organization != organization {
+		return nil, fmt.Errorf("organization mismatch: config file is for '%s', but diff requested for '%s'", repoConfig.Organization, organization)
+	}
+
+	// List all repositories in the organization
+	listOpts := &github.ListOptions{
+		PerPage: 100,
+	}
+	repos, err := client.ListRepositories(ctx, organization, listOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list repositories: %w", err)
 	}
 
 	// Apply filter if specified
+	var filteredRepos []*github.Repository
 	if filter != "" {
-		// In a real implementation, this would use regex to filter repositories
-		// For now, just return all differences
+		filterRegex, err := regexp.Compile(filter)
+		if err != nil {
+			return nil, fmt.Errorf("invalid filter regex: %w", err)
+		}
+		for _, repo := range repos {
+			if filterRegex.MatchString(repo.Name) {
+				filteredRepos = append(filteredRepos, repo)
+			}
+		}
+	} else {
+		filteredRepos = repos
 	}
 
-	return mockDifferences, nil
+	// Compare configurations
+	var differences []ConfigurationDifference
+	for _, repo := range filteredRepos {
+		// Skip archived repositories
+		if repo.Archived {
+			continue
+		}
+
+		// Get current configuration from GitHub
+		currentConfig, err := client.GetRepositoryConfiguration(ctx, organization, repo.Name)
+		if err != nil {
+			// Log error but continue with other repos
+			fmt.Printf("Warning: Failed to get configuration for %s: %v\n", repo.Name, err)
+			continue
+		}
+
+		// Get target configuration from repo config
+		targetSettings, targetSecurity, targetPermissions, exceptions, err := repoConfig.GetEffectiveConfig(repo.Name)
+		if err != nil {
+			fmt.Printf("Warning: Failed to get target configuration for %s: %v\n", repo.Name, err)
+			continue
+		}
+
+		// Find which template applies to this repository
+		templateName := findAppliedTemplate(repoConfig, repo.Name)
+
+		// Compare settings
+		repoDiffs := compareRepositoryConfigurations(repo.Name, currentConfig, targetSettings, targetSecurity, targetPermissions, templateName, exceptions)
+		differences = append(differences, repoDiffs...)
+	}
+
+	return differences, nil
 }
