@@ -21,6 +21,7 @@ type bulkCloneOptions struct {
 	providerFilter string
 	parallel       int
 	maxRetries     int
+	resume         bool
 }
 
 func defaultBulkCloneOptions() *bulkCloneOptions {
@@ -57,6 +58,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.Flags().StringVar(&o.providerFilter, "provider", "", "Filter by provider: github, gitlab, gitea")
 	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
+	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
 
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
@@ -65,6 +67,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.AddCommand(newBulkCloneGithubCmd())
 	cmd.AddCommand(newBulkCloneGitlabCmd())
 	cmd.AddCommand(newBulkCloneValidateCmd())
+	cmd.AddCommand(newBulkCloneStateCmd())
 
 	return cmd
 }
@@ -238,15 +241,15 @@ func (o *bulkCloneOptions) runWithGZHConfig(ctx context.Context) error {
 func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target config.BulkCloneTarget, targetPath string) error {
 	switch target.Provider {
 	case config.ProviderGitHub:
-		// Use worker pool for better performance with configurable parallelism
-		if o.parallel > 1 {
-			return github.RefreshAllWithWorkerPool(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries)
+		// Use resumable clone if requested or if parallel/worker pool is enabled
+		if o.resume || o.parallel > 1 {
+			return github.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume)
 		}
 		return github.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitLab:
-		// Use worker pool for better performance with configurable parallelism
-		if o.parallel > 1 {
-			return gitlab.RefreshAllWithWorkerPool(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries)
+		// Use resumable clone if requested or if parallel/worker pool is enabled
+		if o.resume || o.parallel > 1 {
+			return gitlab.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume)
 		}
 		return gitlab.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitea:

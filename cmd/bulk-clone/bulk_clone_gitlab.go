@@ -17,6 +17,7 @@ type bulkCloneGitlabOptions struct {
 	useConfig   bool
 	parallel    int
 	maxRetries  int
+	resume      bool
 }
 
 func defaultBulkCloneGitlabOptions() *bulkCloneGitlabOptions {
@@ -45,6 +46,7 @@ func newBulkCloneGitlabCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&o.useConfig, "use-config", false, "Use config file from standard locations")
 	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
+	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
@@ -72,11 +74,11 @@ func (o *bulkCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
-	// Use worker pool for better performance with configurable parallelism
+	// Use resumable clone if requested or if parallel/worker pool is enabled
 	ctx := cmd.Context()
 	var err error
-	if o.parallel > 1 {
-		err = gitlabpkg.RefreshAllWithWorkerPool(ctx, o.targetPath, o.groupName, o.strategy, o.parallel, o.maxRetries)
+	if o.resume || o.parallel > 1 {
+		err = gitlabpkg.RefreshAllResumable(ctx, o.targetPath, o.groupName, o.strategy, o.parallel, o.maxRetries, o.resume)
 	} else {
 		err = gitlabpkg.RefreshAll(ctx, o.targetPath, o.groupName, o.strategy)
 	}

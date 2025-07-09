@@ -253,6 +253,46 @@ gzh bulk-clone github -o myorg -t ~/repos -p 1
 - Network speed and CPU cores affect optimal parallel value
 - Monitor for rate limit errors and adjust accordingly
 
+### Resumable Clone Operations
+
+The `--resume` flag enables resumable clone operations that can be interrupted and continued later:
+
+```bash
+# Start a large clone operation
+gzh bulk-clone github -o large-org -t ~/repos -p 20
+
+# If interrupted (Ctrl+C), resume from where it left off
+gzh bulk-clone github -o large-org -t ~/repos -p 20 --resume
+
+# Resume with different settings
+gzh bulk-clone github -o large-org -t ~/repos -p 10 --resume
+```
+
+**State Management:**
+- States are automatically saved to `~/.gzh/state/`
+- Resume works across different parallel settings
+- States are cleaned up after successful completion
+- Failed repositories are tracked and can be retried
+
+**State Commands:**
+```bash
+# List all saved states
+gzh bulk-clone state list
+
+# Show details of a specific state
+gzh bulk-clone state show -p github -o myorg
+
+# Clean up saved states
+gzh bulk-clone state clean -p github -o myorg
+gzh bulk-clone state clean --all
+```
+
+**Benefits:**
+- No need to restart from beginning after interruption
+- Handles network failures gracefully
+- Tracks progress across sessions
+- Optimizes by skipping completed repositories
+
 ## Repository Configuration Management
 
 The `gz repo-config` command allows you to manage GitHub repository configurations at scale, including settings, security policies, branch protection rules, and compliance auditing.
