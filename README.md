@@ -43,9 +43,10 @@ Comprehensive CLI Tool
 
 ### 🏢 GitHub 조직 관리
 - **리포지토리 설정 관리**: 조직 전체 리포지토리의 설정을 템플릿 기반으로 일괄 관리
-- **정책 템플릿 시스템**: 보안 강화, 오픈소스, 엔터프라이즈용 정책 템플릿 제공
-- **준수성 감사**: 정책 준수 여부 자동 검사 및 리포트 생성
-- **브랜치 보호 규칙**: 조직 전체 브랜치 보호 정책 일괄 적용
+- **설정 비교 도구**: `gz repo-config diff`로 현재 설정과 목표 설정 간 차이점 시각화
+- **정책 준수 감사**: `gz repo-config audit`로 SOC2, ISO27001, NIST 등 컴플라이언스 프레임워크 준수 확인
+- **리스크 분석**: 보안, 컴플라이언스, 운영 리스크 자동 평가 및 권고사항 제공
+- **다양한 출력 형식**: 테이블, JSON, HTML, CSV, SARIF, JUnit 형식 지원으로 CI/CD 통합 가능
 
 ### 🔧 통합 설정 시스템
 - **gzh.yaml 통합 설정**: 모든 명령어의 설정을 하나의 파일로 통합 관리
@@ -489,6 +490,12 @@ gz net-env actions run
 - **직관적인 CLI**: 사용자 친화적인 인터페이스
 
 > 💡 **향후 계획은 [ROADMAP.md](ROADMAP.md)를 참고하세요.**
+
+## 📚 Documentation
+
+- [Repository Configuration Management](docs/repo-config-commands.md) - `gz repo-config diff` 및 `gz repo-config audit` 명령어 가이드
+- [Configuration Priority Guide](docs/configuration-priority.md) - 설정 우선순위 시스템 설명
+- [Bulk Clone Schema](docs/bulk-clone-schema.yaml) - 설정 파일 스키마 문서
 
 # Features
 - [goreleaser](https://goreleaser.com/) with `deb.` and `.rpm` packer and container (`docker.hub` and `ghcr.io`) releasing including `manpages` and `shell completions` and grouped Changelog generation.
