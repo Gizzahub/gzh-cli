@@ -10,12 +10,14 @@ import (
 
 // RepoConfig represents the complete repository configuration schema
 type RepoConfig struct {
-	Version      string                     `yaml:"version"`
-	Organization string                     `yaml:"organization"`
-	Defaults     *RepoDefaults              `yaml:"defaults,omitempty"`
-	Templates    map[string]*RepoTemplate   `yaml:"templates,omitempty"`
-	Repositories *RepoTargets               `yaml:"repositories,omitempty"`
-	Policies     map[string]*PolicyTemplate `yaml:"policies,omitempty"`
+	Version       string                     `yaml:"version"`
+	Organization  string                     `yaml:"organization"`
+	Defaults      *RepoDefaults              `yaml:"defaults,omitempty"`
+	Templates     map[string]*RepoTemplate   `yaml:"templates,omitempty"`
+	Repositories  *RepoTargets               `yaml:"repositories,omitempty"`
+	Policies      map[string]*PolicyTemplate `yaml:"policies,omitempty"`
+	PolicyGroups  map[string]*PolicyGroup    `yaml:"policy_groups,omitempty"`  // Policy group configurations
+	PolicyPresets map[string]*PolicyPreset   `yaml:"policy_presets,omitempty"` // Predefined policy sets (SOC2, ISO27001, etc.)
 }
 
 // RepoDefaults represents default settings for all repositories
@@ -142,7 +144,10 @@ type PermissionSettings struct {
 // PolicyTemplate represents a reusable policy configuration
 type PolicyTemplate struct {
 	Description string                `yaml:"description"`
+	Group       string                `yaml:"group,omitempty"`    // Policy group: security, compliance, best-practice, custom
+	Severity    string                `yaml:"severity,omitempty"` // Overall severity: critical, high, medium, low
 	Rules       map[string]PolicyRule `yaml:"rules"`
+	Tags        []string              `yaml:"tags,omitempty"` // Additional categorization tags
 }
 
 // PolicyRule represents a single policy rule
@@ -162,6 +167,40 @@ type PolicyException struct {
 	ApprovalDate string   `yaml:"approval_date,omitempty"`
 	ExpiresAt    string   `yaml:"expires_at,omitempty"`
 	Conditions   []string `yaml:"conditions,omitempty"`
+}
+
+// PolicyGroup represents a group of related policies
+type PolicyGroup struct {
+	Name        string   `yaml:"name"`
+	Description string   `yaml:"description"`
+	Weight      float64  `yaml:"weight"`             // Group weight in overall scoring (0.0-1.0)
+	Policies    []string `yaml:"policies"`           // List of policy names in this group
+	Required    bool     `yaml:"required,omitempty"` // Whether all policies in group must pass
+	Tags        []string `yaml:"tags,omitempty"`     // Additional categorization
+}
+
+// PolicyPreset represents a predefined set of policies for compliance frameworks
+type PolicyPreset struct {
+	Name        string                    `yaml:"name"`
+	Description string                    `yaml:"description"`
+	Framework   string                    `yaml:"framework"`           // SOC2, ISO27001, NIST, PCI-DSS, etc.
+	Version     string                    `yaml:"version,omitempty"`   // Framework version
+	Groups      []string                  `yaml:"groups"`              // Policy groups to include
+	Policies    []string                  `yaml:"policies"`            // Individual policies to include
+	Overrides   map[string]PolicyOverride `yaml:"overrides,omitempty"` // Policy-specific overrides
+}
+
+// PolicyOverride allows customizing policy rules for specific presets
+type PolicyOverride struct {
+	Enforcement string                  `yaml:"enforcement,omitempty"`
+	Rules       map[string]RuleOverride `yaml:"rules,omitempty"`
+}
+
+// RuleOverride allows customizing individual rules
+type RuleOverride struct {
+	Value       interface{} `yaml:"value,omitempty"`
+	Enforcement string      `yaml:"enforcement,omitempty"`
+	Disabled    bool        `yaml:"disabled,omitempty"`
 }
 
 // LoadRepoConfig loads repository configuration from a YAML file

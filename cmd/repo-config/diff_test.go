@@ -236,7 +236,7 @@ func TestMatchRepoPattern(t *testing.T) {
 		{"repo-test", "test-*", false},
 		{"exact-match", "exact-match", true},
 		{"no-match", "exact-match", false},
-		{"complex-pattern", "api-*-service", true},
+		{"api-complex-service", "api-*-service", true},
 	}
 
 	for _, tt := range tests {

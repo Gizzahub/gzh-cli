@@ -1,3 +1,5 @@
+# https://golangci-lint.run/usage/configuration/
+version: "2"
 linters-settings:
   lll:
     line-length: 180
@@ -44,7 +46,6 @@ linters:
   enable:
     - goconst
     - godox
-    - gofmt
     - misspell
     - ireturn
     - lll
@@ -52,7 +53,6 @@ linters:
     - staticcheck
     - ineffassign
     - govet
-    - gosimple
     - errcheck
     # Security and complexity linters
     - gosec

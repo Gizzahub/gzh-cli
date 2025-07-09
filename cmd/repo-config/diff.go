@@ -84,7 +84,7 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool) e
 	fmt.Println()
 
 	// Get configuration differences
-	differences, err := getConfigurationDifferences(flags.Organization, filter)
+	differences, err := getConfigurationDifferences(flags.Organization, filter, flags.Token, flags.ConfigFile)
 	if err != nil {
 		return fmt.Errorf("failed to get configuration differences: %w", err)
 	}
@@ -536,8 +536,10 @@ func findAppliedTemplate(repoConfig *config.RepoConfig, repoName string) string 
 func matchRepoPattern(name, pattern string) (bool, error) {
 	// Convert simple glob patterns to regex
 	if strings.Contains(pattern, "*") {
-		pattern = strings.ReplaceAll(pattern, ".", "\\.")
-		pattern = strings.ReplaceAll(pattern, "*", ".*")
+		// Escape special regex characters except *
+		pattern = regexp.QuoteMeta(pattern)
+		// Replace escaped \* back to .*
+		pattern = strings.ReplaceAll(pattern, "\\*", ".*")
 		pattern = "^" + pattern + "$"
 		return regexp.MatchString(pattern, name)
 	}
@@ -552,31 +554,15 @@ func applyPolicyExceptions(differences []ConfigurationDifference, exceptions []c
 	return differences
 }
 
-// getGitHubToken retrieves the GitHub token from various sources
-func getGitHubToken() string {
-	// This should be implemented to get token from:
-	// 1. Command line flags (if available)
-	// 2. Environment variables
-	// 3. Config file
-	return os.Getenv("GITHUB_TOKEN")
-}
-
-// getConfigPath retrieves the configuration file path
-func getConfigPath() string {
-	// This should be implemented to get config path from:
-	// 1. Command line flags (if available)
-	// 2. Default locations
-	// For now, return a default
-	return "repo-config.yaml"
-}
-
 // getConfigurationDifferences retrieves configuration differences for an organization
-func getConfigurationDifferences(organization, filter string) ([]ConfigurationDifference, error) {
+func getConfigurationDifferences(organization, filter, token, configPath string) ([]ConfigurationDifference, error) {
 	// Create a context
 	ctx := context.Background()
 
 	// Get GitHub token from environment or global flags
-	token := getGitHubToken()
+	if token == "" {
+		token = os.Getenv("GITHUB_TOKEN")
+	}
 	if token == "" {
 		return nil, fmt.Errorf("GitHub token not found. Set GITHUB_TOKEN environment variable or use --token flag")
 	}
@@ -585,9 +571,8 @@ func getConfigurationDifferences(organization, filter string) ([]ConfigurationDi
 	client := github.NewRepoConfigClient(token)
 
 	// Load repo config file
-	configPath := getConfigPath()
 	if configPath == "" {
-		return nil, fmt.Errorf("configuration file not found. Use --config flag or create a repo-config.yaml file")
+		configPath = "repo-config.yaml"
 	}
 
 	repoConfig, err := config.LoadRepoConfig(configPath)
