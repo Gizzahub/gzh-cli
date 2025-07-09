@@ -1,6 +1,7 @@
 package netenv
 
 import (
+	"context"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -8,7 +9,8 @@ import (
 )
 
 func TestNewNetEnvCmd(t *testing.T) {
-	cmd := NewNetEnvCmd()
+	ctx := context.Background()
+	cmd := NewNetEnvCmd(ctx)
 
 	assert.Equal(t, "net-env", cmd.Use)
 	assert.Equal(t, "Manage network environment transitions", cmd.Short)
@@ -46,7 +48,8 @@ func TestNewNetEnvCmd(t *testing.T) {
 }
 
 func TestNetEnvCmdStructure(t *testing.T) {
-	cmd := NewNetEnvCmd()
+	ctx := context.Background()
+	cmd := NewNetEnvCmd(ctx)
 
 	// Test that the command has proper structure
 	assert.NotNil(t, cmd.Use)
@@ -62,7 +65,8 @@ func TestNetEnvCmdStructure(t *testing.T) {
 }
 
 func TestNetEnvCmdHelpContent(t *testing.T) {
-	cmd := NewNetEnvCmd()
+	ctx := context.Background()
+	cmd := NewNetEnvCmd(ctx)
 
 	// Verify help content mentions key features
 	longDesc := cmd.Long
