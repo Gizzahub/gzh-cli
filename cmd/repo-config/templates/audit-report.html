@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Compliance Audit Report - {{.Organization}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0366d6;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f6f8fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0052cc 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .compliance-score {
+            position: relative;
+            display: inline-block;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .compliance-score svg {
+            transform: rotate(-90deg);
+        }
+        
+        .compliance-score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        
+        .policy-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .policy-enforced {
+            background-color: #d1f2eb;
+            color: #1e7e34;
+        }
+        
+        .policy-recommended {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .violation-item {
+            border-left: 4px solid var(--danger-color);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .repo-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-compliant {
+            background-color: var(--success-color);
+        }
+        
+        .status-violations {
+            background-color: var(--danger-color);
+        }
+        
+        .status-warnings {
+            background-color: var(--warning-color);
+        }
+        
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .trend-chart {
+            height: 300px;
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            .metric-card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">Repository Compliance Audit Report</h1>
+                    <p class="mb-0">
+                        <i class="fas fa-building me-2"></i> Organization: <strong>{{.Organization}}</strong>
+                        <span class="ms-3"><i class="fas fa-calendar me-2"></i> Generated: {{.GeneratedAt}}</span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light no-print" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i> Print Report
+                    </button>
+                    <button class="btn btn-light no-print" onclick="exportData()">
+                        <i class="fas fa-download me-2"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card text-center p-4">
+                    <div class="metric-value text-primary">{{.Summary.TotalRepositories}}</div>
+                    <div class="metric-label">Total Repositories</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card text-center p-4">
+                    <div class="metric-value text-success">{{.Summary.CompliantCount}}</div>
+                    <div class="metric-label">Compliant</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card text-center p-4">
+                    <div class="metric-value text-danger">{{.Summary.NonCompliantCount}}</div>
+                    <div class="metric-label">Non-Compliant</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card text-center p-4">
+                    <div class="metric-value text-warning">{{.Summary.TotalViolations}}</div>
+                    <div class="metric-label">Total Violations</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Score -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card p-4 text-center">
+                    <h3 class="mb-4">Overall Compliance Score</h3>
+                    <div class="compliance-score mx-auto">
+                        <svg width="200" height="200">
+                            <circle cx="100" cy="100" r="90" fill="none" stroke="#e9ecef" stroke-width="20"/>
+                            <circle cx="100" cy="100" r="90" fill="none" stroke="{{.ScoreColor}}" stroke-width="20"
+                                stroke-dasharray="{{.ScoreArc}} 565.48" stroke-linecap="round"/>
+                        </svg>
+                        <div class="compliance-score-text {{.ScoreClass}}">{{.Summary.CompliancePercentage}}%</div>
+                    </div>
+                    <p class="mt-3 text-muted">Based on {{len .Policies}} active policies</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h3 class="mb-4">Policy Overview</h3>
+                    <div class="policy-list">
+                        {{range .Policies}}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>{{.Name}}</strong>
+                                <span class="policy-badge {{if eq .Enforcement "required"}}policy-enforced{{else}}policy-recommended{{end}}">
+                                    {{.Enforcement}}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-muted">{{.ViolationCount}} violations</span>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section no-print">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search repositories...">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="compliant">Compliant</option>
+                        <option value="non-compliant">Non-Compliant</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="policyFilter">
+                        <option value="">All Policies</option>
+                        {{range .Policies}}
+                        <option value="{{.Name}}">{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-secondary w-100" onclick="resetFilters()">
+                        <i class="fas fa-redo me-2"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Repository Details -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Repository Compliance Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="repoTable">
+                        <thead>
+                            <tr>
+                                <th>Repository</th>
+                                <th>Status</th>
+                                <th>Violations</th>
+                                <th>Policies</th>
+                                <th>Last Checked</th>
+                                <th class="no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Repositories}}
+                            <tr data-status="{{if .IsCompliant}}compliant{{else}}non-compliant{{end}}" data-policies="{{range .Violations}}{{.Policy}} {{end}}">
+                                <td>
+                                    <span class="repo-status {{if .IsCompliant}}status-compliant{{else}}status-violations{{end}}"></span>
+                                    <strong>{{.Name}}</strong>
+                                    {{if .Description}}<br><small class="text-muted">{{.Description}}</small>{{end}}
+                                </td>
+                                <td>
+                                    {{if .IsCompliant}}
+                                    <span class="badge bg-success">Compliant</span>
+                                    {{else}}
+                                    <span class="badge bg-danger">{{len .Violations}} Violations</span>
+                                    {{end}}
+                                </td>
+                                <td>
+                                    {{if .Violations}}
+                                    <ul class="list-unstyled mb-0">
+                                        {{range .Violations}}
+                                        <li class="violation-item">
+                                            <strong>{{.Policy}}</strong>: {{.Rule}}<br>
+                                            <small class="text-muted">{{.Message}}</small>
+                                        </li>
+                                        {{end}}
+                                    </ul>
+                                    {{else}}
+                                    <span class="text-success">No violations</span>
+                                    {{end}}
+                                </td>
+                                <td>
+                                    {{range .AppliedPolicies}}
+                                    <span class="badge bg-secondary me-1">{{.}}</span>
+                                    {{end}}
+                                </td>
+                                <td>{{.LastChecked}}</td>
+                                <td class="no-print">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('{{.Name}}')">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="trend-chart">
+                    <h3 class="mb-4">Compliance Trend (Last 30 Days)</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.js"></script>
+    <script>
+        // Filter functionality
+        document.getElementById('searchInput').addEventListener('keyup', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+        document.getElementById('policyFilter').addEventListener('change', filterTable);
+
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const policyFilter = document.getElementById('policyFilter').value.toLowerCase();
+            
+            const rows = document.querySelectorAll('#repoTable tbody tr');
+            
+            rows.forEach(row => {
+                const repoName = row.cells[0].textContent.toLowerCase();
+                const status = row.getAttribute('data-status');
+                const policies = row.getAttribute('data-policies').toLowerCase();
+                
+                let show = true;
+                
+                if (searchTerm && !repoName.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                if (statusFilter && status !== statusFilter) {
+                    show = false;
+                }
+                
+                if (policyFilter && !policies.includes(policyFilter)) {
+                    show = false;
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('policyFilter').value = '';
+            filterTable();
+        }
+
+        function viewDetails(repoName) {
+            // This would navigate to a detailed view or open a modal
+            console.log('View details for:', repoName);
+        }
+
+        function exportData() {
+            // Export functionality
+            alert('Export functionality would be implemented here');
+        }
+
+        // Trend Chart
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{.TrendLabels}},
+                datasets: [{
+                    label: 'Compliant Repositories',
+                    data: {{.TrendCompliant}},
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.3
+                }, {
+                    label: 'Non-Compliant Repositories',
+                    data: {{.TrendNonCompliant}},
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
