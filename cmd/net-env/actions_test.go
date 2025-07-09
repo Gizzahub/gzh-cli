@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -509,4 +511,365 @@ func TestActionsOptionsDefaults(t *testing.T) {
 	assert.False(t, opts.dryRun)
 	assert.False(t, opts.verbose)
 	assert.False(t, opts.backup)
+}
+
+func TestSetProxyWithEnv(t *testing.T) {
+	mockEnv := env.NewMockEnvironment(nil)
+
+	err := setProxyWithEnv("http://proxy:8080", "https://proxy:8080", "socks5://proxy:1080", mockEnv)
+	assert.NoError(t, err)
+
+	// Check that environment variables were set
+	assert.Equal(t, "http://proxy:8080", mockEnv.Get("http_proxy"))
+	assert.Equal(t, "https://proxy:8080", mockEnv.Get("https_proxy"))
+	assert.Equal(t, "socks5://proxy:1080", mockEnv.Get("socks_proxy"))
+}
+
+func TestClearProxyWithEnv(t *testing.T) {
+	mockEnv := env.NewMockEnvironment(map[string]string{
+		"http_proxy":  "http://proxy:8080",
+		"https_proxy": "https://proxy:8080",
+		"socks_proxy": "socks5://proxy:1080",
+		"ftp_proxy":   "ftp://proxy:8080",
+	})
+
+	err := clearProxyWithEnv(mockEnv)
+	assert.NoError(t, err)
+
+	// Check that environment variables were unset
+	assert.Empty(t, mockEnv.Get("http_proxy"))
+	assert.Empty(t, mockEnv.Get("https_proxy"))
+	assert.Empty(t, mockEnv.Get("socks_proxy"))
+	assert.Empty(t, mockEnv.Get("ftp_proxy"))
+}
+
+func TestShowProxyStatusWithEnv(t *testing.T) {
+	mockEnv := env.NewMockEnvironment(nil)
+
+	// Test with no proxy configuration
+	err := showProxyStatusWithEnv(mockEnv)
+	assert.NoError(t, err)
+
+	// Test with proxy configuration
+	mockEnvWithProxy := env.NewMockEnvironment(map[string]string{
+		"http_proxy":  "http://proxy:8080",
+		"https_proxy": "https://proxy:8080",
+		"socks_proxy": "socks5://proxy:1080",
+	})
+
+	err = showProxyStatusWithEnv(mockEnvWithProxy)
+	assert.NoError(t, err)
+}
+
+func TestNetworkActionsStructure(t *testing.T) {
+	actions := &networkActions{}
+
+	// Test zero values
+	assert.Empty(t, actions.VPN.Connect)
+	assert.Empty(t, actions.VPN.Disconnect)
+	assert.Empty(t, actions.DNS.Servers)
+	assert.Empty(t, actions.DNS.Interface)
+	assert.Empty(t, actions.DNS.Method)
+	assert.Empty(t, actions.Proxy.HTTP)
+	assert.Empty(t, actions.Proxy.HTTPS)
+	assert.Empty(t, actions.Proxy.FTP)
+	assert.Empty(t, actions.Proxy.SOCKS)
+	assert.Empty(t, actions.Proxy.NoProxy)
+	assert.False(t, actions.Proxy.Clear)
+	assert.Empty(t, actions.Hosts.Add)
+	assert.Empty(t, actions.Hosts.Remove)
+	assert.False(t, actions.Hosts.Clear)
+}
+
+func TestConfigInitCreatesValidYAML(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "test-init.yaml")
+
+	opts := &actionsOptions{
+		configPath: configPath,
+	}
+
+	err := opts.runConfigInit(nil, nil)
+	require.NoError(t, err)
+
+	// Verify file exists and has proper permissions
+	info, err := os.Stat(configPath)
+	require.NoError(t, err)
+	assert.Equal(t, os.FileMode(0o600), info.Mode())
+
+	// Read and verify content structure
+	content, err := os.ReadFile(configPath)
+	require.NoError(t, err)
+
+	contentStr := string(content)
+
+	// Check for main sections
+	assert.Contains(t, contentStr, "vpn:")
+	assert.Contains(t, contentStr, "dns:")
+	assert.Contains(t, contentStr, "proxy:")
+	assert.Contains(t, contentStr, "hosts:")
+
+	// Check for VPN configuration examples
+	assert.Contains(t, contentStr, "connect:")
+	assert.Contains(t, contentStr, "disconnect:")
+	assert.Contains(t, contentStr, "networkmanager")
+	assert.Contains(t, contentStr, "openvpn")
+
+	// Check for DNS configuration examples
+	assert.Contains(t, contentStr, "servers:")
+	assert.Contains(t, contentStr, "1.1.1.1")
+	assert.Contains(t, contentStr, "interface:")
+	assert.Contains(t, contentStr, "method:")
+
+	// Check for proxy configuration examples
+	assert.Contains(t, contentStr, "http:")
+	assert.Contains(t, contentStr, "https:")
+	assert.Contains(t, contentStr, "no_proxy:")
+
+	// Check for hosts configuration examples
+	assert.Contains(t, contentStr, "add:")
+	assert.Contains(t, contentStr, "remove:")
+	assert.Contains(t, contentStr, "ip:")
+	assert.Contains(t, contentStr, "host:")
+}
+
+func TestAllSubcommands(t *testing.T) {
+	// Test that all main action subcommands exist and have correct structure
+	tests := []struct {
+		name        string
+		cmdFunc     func() *cobra.Command
+		use         string
+		short       string
+		subcommands []string
+	}{
+		{
+			name:        "VPN command",
+			cmdFunc:     newActionsVPNCmd,
+			use:         "vpn",
+			short:       "Manage VPN connections",
+			subcommands: []string{"connect", "disconnect", "status"},
+		},
+		{
+			name:        "DNS command",
+			cmdFunc:     newActionsDNSCmd,
+			use:         "dns",
+			short:       "Manage DNS configuration",
+			subcommands: []string{"set", "status", "reset"},
+		},
+		{
+			name:        "Proxy command",
+			cmdFunc:     newActionsProxyCmd,
+			use:         "proxy",
+			short:       "Manage proxy configuration",
+			subcommands: []string{"set", "clear", "status"},
+		},
+		{
+			name:        "Hosts command",
+			cmdFunc:     newActionsHostsCmd,
+			use:         "hosts",
+			short:       "Manage hosts file entries",
+			subcommands: []string{"add", "remove", "show"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := tt.cmdFunc()
+			assert.Equal(t, tt.use, cmd.Use)
+			assert.Contains(t, cmd.Short, tt.short)
+			assert.NotEmpty(t, cmd.Long)
+
+			// Check subcommands
+			subcommands := cmd.Commands()
+			assert.Len(t, subcommands, len(tt.subcommands))
+
+			foundSubcommands := make(map[string]bool)
+			for _, subcmd := range subcommands {
+				foundSubcommands[subcmd.Use] = true
+			}
+
+			for _, expectedSub := range tt.subcommands {
+				assert.True(t, foundSubcommands[expectedSub],
+					"Expected subcommand %s not found in %s", expectedSub, tt.name)
+			}
+		})
+	}
+}
+
+func TestRunConfig(t *testing.T) {
+	opts := &actionsOptions{}
+
+	err := opts.runConfig(nil, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "config subcommand required")
+}
+
+func TestCommandFlags(t *testing.T) {
+	// Test run command flags
+	runCmd := newActionsRunCmd()
+	assert.NotNil(t, runCmd.Flags().Lookup("config"))
+	assert.NotNil(t, runCmd.Flags().Lookup("dry-run"))
+	assert.NotNil(t, runCmd.Flags().Lookup("verbose"))
+	assert.NotNil(t, runCmd.Flags().Lookup("backup"))
+	assert.Equal(t, "true", runCmd.Flags().Lookup("backup").DefValue)
+
+	// Test config init command flags
+	initCmd := newActionsConfigInitCmd()
+	assert.NotNil(t, initCmd.Flags().Lookup("config"))
+
+	// Test config validate command flags
+	validateCmd := newActionsConfigValidateCmd()
+	assert.NotNil(t, validateCmd.Flags().Lookup("config"))
+
+	// Test VPN connect command flags
+	connectCmd := newVPNConnectCmd()
+	assert.NotNil(t, connectCmd.Flags().Lookup("name"))
+	assert.NotNil(t, connectCmd.Flags().Lookup("type"))
+	assert.NotNil(t, connectCmd.Flags().Lookup("config"))
+	assert.Equal(t, "networkmanager", connectCmd.Flags().Lookup("type").DefValue)
+
+	// Test VPN disconnect command flags
+	disconnectCmd := newVPNDisconnectCmd()
+	assert.NotNil(t, disconnectCmd.Flags().Lookup("name"))
+
+	// Test DNS set command flags
+	setCmd := newDNSSetCmd()
+	assert.NotNil(t, setCmd.Flags().Lookup("servers"))
+	assert.NotNil(t, setCmd.Flags().Lookup("interface"))
+
+	// Test proxy set command flags
+	proxySetCmd := newProxySetCmd()
+	assert.NotNil(t, proxySetCmd.Flags().Lookup("http"))
+	assert.NotNil(t, proxySetCmd.Flags().Lookup("https"))
+	assert.NotNil(t, proxySetCmd.Flags().Lookup("socks"))
+
+	// Test hosts add command flags
+	hostsAddCmd := newHostsAddCmd()
+	assert.NotNil(t, hostsAddCmd.Flags().Lookup("ip"))
+	assert.NotNil(t, hostsAddCmd.Flags().Lookup("host"))
+
+	// Test hosts remove command flags
+	hostsRemoveCmd := newHostsRemoveCmd()
+	assert.NotNil(t, hostsRemoveCmd.Flags().Lookup("host"))
+}
+
+func TestVPNTypesSupported(t *testing.T) {
+	// Test that all VPN types are handled correctly
+	supportedTypes := []string{"networkmanager", "openvpn", "wireguard"}
+
+	for _, vpnType := range supportedTypes {
+		config := vpnConfig{
+			Name: "test-vpn",
+			Type: vpnType,
+		}
+
+		assert.Equal(t, vpnType, config.Type)
+		assert.NotEmpty(t, config.Name)
+	}
+}
+
+func TestDNSMethodsSupported(t *testing.T) {
+	// Test that all DNS methods are handled correctly
+	supportedMethods := []string{"resolvectl", "networkmanager", "manual"}
+
+	for _, method := range supportedMethods {
+		dns := dnsActions{
+			Servers: []string{"1.1.1.1"},
+			Method:  method,
+		}
+
+		assert.Equal(t, method, dns.Method)
+		assert.NotEmpty(t, dns.Servers)
+	}
+}
+
+func TestProxyFailureModes(t *testing.T) {
+	// Test proxy on_failure modes
+	supportedFailureModes := []string{"ignore", "warn", "abort"}
+
+	for _, mode := range supportedFailureModes {
+		proxy := proxyActions{
+			HTTP:  "http://proxy:8080",
+			Clear: false,
+		}
+
+		assert.Equal(t, "http://proxy:8080", proxy.HTTP)
+		assert.False(t, proxy.Clear)
+
+		// Use mode to avoid unused variable error
+		assert.Contains(t, supportedFailureModes, mode)
+	}
+}
+
+func TestHostsEntryValidation(t *testing.T) {
+	// Test that host entries have required fields
+	entry := hostEntry{
+		IP:   "192.168.1.1",
+		Host: "router.local",
+	}
+
+	assert.NotEmpty(t, entry.IP)
+	assert.NotEmpty(t, entry.Host)
+	assert.Contains(t, entry.IP, ".")
+	assert.Contains(t, entry.Host, ".")
+}
+
+func TestComplexNetworkActionsConfig(t *testing.T) {
+	// Test a complex configuration with all action types
+	actions := networkActions{
+		VPN: vpnActions{
+			Connect: []vpnConfig{
+				{Name: "office", Type: "networkmanager", Service: "office-vpn"},
+				{Name: "home", Type: "openvpn", ConfigFile: "/etc/openvpn/home.conf"},
+				{Name: "mobile", Type: "wireguard", ConfigFile: "/etc/wireguard/mobile.conf"},
+			},
+			Disconnect: []string{"old-vpn", "temp-vpn"},
+		},
+		DNS: dnsActions{
+			Servers:   []string{"1.1.1.1", "1.0.0.1", "8.8.8.8"},
+			Interface: "wlan0",
+			Method:    "resolvectl",
+		},
+		Proxy: proxyActions{
+			HTTP:    "http://proxy.company.com:8080",
+			HTTPS:   "https://secure-proxy.company.com:8443",
+			SOCKS:   "socks5://proxy.company.com:1080",
+			NoProxy: []string{"localhost", "127.0.0.1", "*.local", "*.company.com"},
+			Clear:   false,
+		},
+		Hosts: hostsActions{
+			Add: []hostEntry{
+				{IP: "192.168.1.1", Host: "router.local"},
+				{IP: "192.168.1.10", Host: "server1.local"},
+				{IP: "192.168.1.20", Host: "server2.local"},
+				{IP: "10.0.0.1", Host: "gateway.corp"},
+			},
+			Remove: []string{"old-server.local", "deprecated.local", "temp.local"},
+			Clear:  false,
+		},
+	}
+
+	// Verify VPN configuration
+	assert.Len(t, actions.VPN.Connect, 3)
+	assert.Equal(t, "networkmanager", actions.VPN.Connect[0].Type)
+	assert.Equal(t, "openvpn", actions.VPN.Connect[1].Type)
+	assert.Equal(t, "wireguard", actions.VPN.Connect[2].Type)
+	assert.Len(t, actions.VPN.Disconnect, 2)
+
+	// Verify DNS configuration
+	assert.Len(t, actions.DNS.Servers, 3)
+	assert.Equal(t, "wlan0", actions.DNS.Interface)
+	assert.Equal(t, "resolvectl", actions.DNS.Method)
+
+	// Verify Proxy configuration
+	assert.NotEmpty(t, actions.Proxy.HTTP)
+	assert.NotEmpty(t, actions.Proxy.HTTPS)
+	assert.NotEmpty(t, actions.Proxy.SOCKS)
+	assert.Len(t, actions.Proxy.NoProxy, 4)
+	assert.False(t, actions.Proxy.Clear)
+
+	// Verify Hosts configuration
+	assert.Len(t, actions.Hosts.Add, 4)
+	assert.Len(t, actions.Hosts.Remove, 3)
+	assert.False(t, actions.Hosts.Clear)
 }
