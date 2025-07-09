@@ -41,6 +41,12 @@ Clone repositories by GitHub account (user, org) or GitLab group and manage repo
   - gitlab
   - gogs
 - gen-config
+- migrate (Configuration migration tool)
+  - Convert legacy bulk-clone.yaml to unified gzh.yaml format
+  - Batch migration for multiple files
+  - Dry-run mode for testing
+  - Automatic backup creation
+  - Detailed migration reports
 - repo-config (GitHub repository configuration management)
   - Apply configuration templates
   - Enforce security policies
