@@ -209,7 +209,13 @@ type NetworkPolicy struct {
 	Name string `yaml:"name" json:"name"`
 
 	// Profile name this policy belongs to
-	ProfileName string `yaml:"profile_name" json:"profile_name"`
+	ProfileName string `yaml:"profile_name,omitempty" json:"profile_name,omitempty"`
+
+	// Environment this policy applies to
+	Environment string `yaml:"environment,omitempty" json:"environment,omitempty"`
+
+	// Provider this policy applies to
+	Provider string `yaml:"provider,omitempty" json:"provider,omitempty"`
 
 	// Policy rules
 	Rules []PolicyRule `yaml:"rules" json:"rules"`

@@ -49,6 +49,7 @@ This command allows you to:
 	cmd.AddCommand(newCloudSwitchCmd(ctx, opts))
 	cmd.AddCommand(newCloudSyncCmd(ctx, opts))
 	cmd.AddCommand(newCloudValidateCmd(ctx, opts))
+	cmd.AddCommand(newCloudPolicyCmd(ctx, opts))
 
 	return cmd
 }
@@ -651,4 +652,439 @@ func getCurrentProfile() (string, error) {
 	}
 
 	return string(data), nil
+}
+
+// newCloudPolicyCmd creates the policy subcommand
+func newCloudPolicyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "policy",
+		Short: "Manage network policies",
+		Long:  `Manage network policies for cloud profiles with automatic application by environment.`,
+	}
+
+	// Add policy subcommands
+	cmd.AddCommand(newCloudPolicyApplyCmd(ctx, opts))
+	cmd.AddCommand(newCloudPolicyListCmd(ctx, opts))
+	cmd.AddCommand(newCloudPolicyStatusCmd(ctx, opts))
+	cmd.AddCommand(newCloudPolicyValidateCmd(ctx, opts))
+
+	return cmd
+}
+
+// newCloudPolicyApplyCmd creates the policy apply subcommand
+func newCloudPolicyApplyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var environment string
+	var profileName string
+	var dryRun bool
+
+	cmd := &cobra.Command{
+		Use:   "apply",
+		Short: "Apply network policies",
+		Long: `Apply network policies to cloud profiles automatically.
+
+This command can apply policies either by environment (all profiles in an environment)
+or by specific profile name.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create policy manager
+			policyManager := cloud.NewPolicyManager(config)
+
+			if dryRun {
+				fmt.Println("[DRY RUN] Would apply the following policies:")
+			}
+
+			// Apply policies by environment or profile
+			if environment != "" {
+				fmt.Printf("Applying policies for environment: %s\n", environment)
+				if !dryRun {
+					if err := policyManager.ApplyEnvironmentPolicies(ctx, environment); err != nil {
+						return fmt.Errorf("failed to apply environment policies: %w", err)
+					}
+				} else {
+					// Show what would be applied
+					profiles := getProfilesForEnvironment(config, environment)
+					for _, profile := range profiles {
+						fmt.Printf("  - Profile: %s (Provider: %s)\n", profile.Name, profile.Provider)
+
+						policies, err := policyManager.GetApplicablePolicies(ctx, profile.Name)
+						if err != nil {
+							fmt.Printf("    Warning: failed to get policies: %v\n", err)
+							continue
+						}
+
+						for _, policy := range policies {
+							if policy.Enabled {
+								fmt.Printf("    - Policy: %s (Priority: %d)\n", policy.Name, policy.Priority)
+							}
+						}
+					}
+				}
+			} else if profileName != "" {
+				fmt.Printf("Applying policies for profile: %s\n", profileName)
+				if !dryRun {
+					if err := policyManager.ApplyPoliciesForProfile(ctx, profileName); err != nil {
+						return fmt.Errorf("failed to apply profile policies: %w", err)
+					}
+				} else {
+					// Show what would be applied
+					policies, err := policyManager.GetApplicablePolicies(ctx, profileName)
+					if err != nil {
+						return fmt.Errorf("failed to get policies: %w", err)
+					}
+
+					for _, policy := range policies {
+						if policy.Enabled {
+							fmt.Printf("  - Policy: %s (Priority: %d)\n", policy.Name, policy.Priority)
+							fmt.Printf("    Rules: %d, Actions: %d\n", len(policy.Rules), len(policy.Actions))
+						}
+					}
+				}
+			} else {
+				return fmt.Errorf("either --environment or --profile must be specified")
+			}
+
+			if dryRun {
+				fmt.Println("\n[DRY RUN] No policies were actually applied")
+			} else {
+				fmt.Println("✓ Policies applied successfully")
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&environment, "environment", "e", "", "Apply policies for all profiles in environment")
+	cmd.Flags().StringVarP(&profileName, "profile", "p", "", "Apply policies for specific profile")
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what would be done without applying policies")
+
+	return cmd
+}
+
+// newCloudPolicyListCmd creates the policy list subcommand
+func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var profileName string
+	var environment string
+	var showDisabled bool
+
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List network policies",
+		Long:  `List network policies for profiles or environments.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create policy manager
+			policyManager := cloud.NewPolicyManager(config)
+
+			if profileName != "" {
+				// List policies for specific profile
+				policies, err := policyManager.GetApplicablePolicies(ctx, profileName)
+				if err != nil {
+					return fmt.Errorf("failed to get policies: %w", err)
+				}
+
+				fmt.Printf("Policies for profile: %s\n", profileName)
+				fmt.Println("=========================")
+
+				if len(policies) == 0 {
+					fmt.Println("No policies found")
+					return nil
+				}
+
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "NAME\tPRIORITY\tENABLED\tRULES\tACTIONS")
+
+				for _, policy := range policies {
+					if !showDisabled && !policy.Enabled {
+						continue
+					}
+
+					enabled := "✓"
+					if !policy.Enabled {
+						enabled = "✗"
+					}
+
+					fmt.Fprintf(w, "%s\t%d\t%s\t%d\t%d\n",
+						policy.Name,
+						policy.Priority,
+						enabled,
+						len(policy.Rules),
+						len(policy.Actions),
+					)
+				}
+				w.Flush()
+			} else if environment != "" {
+				// List policies for environment
+				profiles := getProfilesForEnvironment(config, environment)
+				if len(profiles) == 0 {
+					fmt.Printf("No profiles found for environment: %s\n", environment)
+					return nil
+				}
+
+				fmt.Printf("Policies for environment: %s\n", environment)
+				fmt.Println("===========================")
+
+				for _, profile := range profiles {
+					fmt.Printf("\nProfile: %s\n", profile.Name)
+					fmt.Println("----------")
+
+					policies, err := policyManager.GetApplicablePolicies(ctx, profile.Name)
+					if err != nil {
+						fmt.Printf("Error getting policies: %v\n", err)
+						continue
+					}
+
+					if len(policies) == 0 {
+						fmt.Println("No policies found")
+						continue
+					}
+
+					for _, policy := range policies {
+						if !showDisabled && !policy.Enabled {
+							continue
+						}
+
+						enabled := "✓"
+						if !policy.Enabled {
+							enabled = "✗"
+						}
+
+						fmt.Printf("  %s %s (Priority: %d, Rules: %d, Actions: %d)\n",
+							enabled,
+							policy.Name,
+							policy.Priority,
+							len(policy.Rules),
+							len(policy.Actions),
+						)
+					}
+				}
+			} else {
+				// List all configured policies
+				fmt.Println("Configured Policies:")
+				fmt.Println("==================")
+
+				if config.Policies == nil || len(config.Policies) == 0 {
+					fmt.Println("No policies configured")
+					return nil
+				}
+
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "NAME\tPROFILE\tENVIRONMENT\tPRIORITY\tENABLED\tRULES\tACTIONS")
+
+				for _, policy := range config.Policies {
+					if !showDisabled && !policy.Enabled {
+						continue
+					}
+
+					enabled := "✓"
+					if !policy.Enabled {
+						enabled = "✗"
+					}
+
+					profileName := policy.ProfileName
+					if profileName == "" {
+						profileName = "*"
+					}
+
+					environment := policy.Environment
+					if environment == "" {
+						environment = "*"
+					}
+
+					fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%d\t%d\n",
+						policy.Name,
+						profileName,
+						environment,
+						policy.Priority,
+						enabled,
+						len(policy.Rules),
+						len(policy.Actions),
+					)
+				}
+				w.Flush()
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&profileName, "profile", "p", "", "List policies for specific profile")
+	cmd.Flags().StringVarP(&environment, "environment", "e", "", "List policies for environment")
+	cmd.Flags().BoolVar(&showDisabled, "show-disabled", false, "Show disabled policies")
+
+	return cmd
+}
+
+// newCloudPolicyStatusCmd creates the policy status subcommand
+func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "status",
+		Short: "Show policy application status",
+		Long:  `Show the status of applied network policies across all profiles.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create policy manager
+			policyManager := cloud.NewPolicyManager(config)
+
+			// Get policy status
+			status, err := policyManager.GetPolicyStatus(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to get policy status: %w", err)
+			}
+
+			fmt.Println("Policy Application Status:")
+			fmt.Println("========================")
+
+			if len(status) == 0 {
+				fmt.Println("No policy status found")
+				return nil
+			}
+
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "POLICY\tPROFILE\tPROVIDER\tSTATUS\tAPPLIED\tERROR")
+
+			for _, s := range status {
+				errorMsg := s.Error
+				if errorMsg == "" {
+					errorMsg = "-"
+				}
+
+				appliedTime := s.Applied.Format("2006-01-02 15:04:05")
+
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+					s.PolicyName,
+					s.ProfileName,
+					s.Provider,
+					s.Status,
+					appliedTime,
+					errorMsg,
+				)
+			}
+			w.Flush()
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newCloudPolicyValidateCmd creates the policy validate subcommand
+func newCloudPolicyValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var profileName string
+
+	cmd := &cobra.Command{
+		Use:   "validate",
+		Short: "Validate network policies",
+		Long:  `Validate network policies for syntax and consistency.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create policy manager
+			policyManager := cloud.NewPolicyManager(config)
+
+			fmt.Println("Validating policies...")
+			fmt.Println("====================")
+
+			var validationErrors []string
+
+			if profileName != "" {
+				// Validate policies for specific profile
+				policies, err := policyManager.GetApplicablePolicies(ctx, profileName)
+				if err != nil {
+					return fmt.Errorf("failed to get policies: %w", err)
+				}
+
+				fmt.Printf("Validating policies for profile: %s\n", profileName)
+
+				for _, policy := range policies {
+					if err := policyManager.ValidatePolicy(policy); err != nil {
+						validationErrors = append(validationErrors, fmt.Sprintf("Policy %s: %v", policy.Name, err))
+						fmt.Printf("  ✗ %s: %v\n", policy.Name, err)
+					} else {
+						fmt.Printf("  ✓ %s: valid\n", policy.Name)
+					}
+				}
+			} else {
+				// Validate all configured policies
+				if config.Policies == nil || len(config.Policies) == 0 {
+					fmt.Println("No policies configured")
+					return nil
+				}
+
+				for _, policy := range config.Policies {
+					if err := policyManager.ValidatePolicy(&policy); err != nil {
+						validationErrors = append(validationErrors, fmt.Sprintf("Policy %s: %v", policy.Name, err))
+						fmt.Printf("  ✗ %s: %v\n", policy.Name, err)
+					} else {
+						fmt.Printf("  ✓ %s: valid\n", policy.Name)
+					}
+				}
+			}
+
+			if len(validationErrors) > 0 {
+				fmt.Printf("\n%d validation errors found:\n", len(validationErrors))
+				for _, err := range validationErrors {
+					fmt.Printf("  - %s\n", err)
+				}
+				return fmt.Errorf("validation failed")
+			}
+
+			fmt.Println("\n✓ All policies are valid")
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&profileName, "profile", "p", "", "Validate policies for specific profile")
+
+	return cmd
+}
+
+// Helper function to get profiles for environment
+func getProfilesForEnvironment(config *cloud.Config, environment string) []cloud.Profile {
+	var profiles []cloud.Profile
+	for _, profile := range config.Profiles {
+		if profile.Environment == environment {
+			profiles = append(profiles, profile)
+		}
+	}
+	return profiles
 }

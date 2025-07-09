@@ -14,6 +14,7 @@ type Config struct {
 	Version   string                    `yaml:"version"`
 	Providers map[string]ProviderConfig `yaml:"providers"`
 	Profiles  map[string]Profile        `yaml:"profiles"`
+	Policies  []NetworkPolicy           `yaml:"policies,omitempty"`
 	Sync      SyncConfig                `yaml:"sync,omitempty"`
 }
 
