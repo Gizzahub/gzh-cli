@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/audit"
+	"github.com/gizzahub/gzh-manager-go/pkg/compliance"
 	"github.com/spf13/cobra"
 )
 
@@ -168,14 +169,15 @@ type AuditData struct {
 
 // AuditSummary provides overall compliance statistics
 type AuditSummary struct {
-	TotalRepositories     int     `json:"total_repositories"`
-	CompliantRepositories int     `json:"compliant_repositories"`
-	CompliancePercentage  float64 `json:"compliance_percentage"`
-	TotalViolations       int     `json:"total_violations"`
-	CriticalViolations    int     `json:"critical_violations"`
-	PolicyCount           int     `json:"policy_count"`
-	CompliantCount        int     `json:"compliant_count"`
-	NonCompliantCount     int     `json:"non_compliant_count"`
+	TotalRepositories     int                         `json:"total_repositories"`
+	CompliantRepositories int                         `json:"compliant_repositories"`
+	CompliancePercentage  float64                     `json:"compliance_percentage"`
+	TotalViolations       int                         `json:"total_violations"`
+	CriticalViolations    int                         `json:"critical_violations"`
+	PolicyCount           int                         `json:"policy_count"`
+	CompliantCount        int                         `json:"compliant_count"`
+	NonCompliantCount     int                         `json:"non_compliant_count"`
+	ComplianceScore       *compliance.ComplianceScore `json:"compliance_score,omitempty"`
 }
 
 // PolicyCompliance tracks compliance per policy
@@ -220,7 +222,8 @@ func performComplianceAudit(organization, policy string) (AuditData, error) {
 	// 3. Analyze each repository against policies
 	// 4. Generate detailed violation reports
 	// 5. Calculate compliance metrics
-	return AuditData{
+
+	auditData := AuditData{
 		Organization: organization,
 		GeneratedAt:  time.Now(),
 		Summary: AuditSummary{
@@ -313,7 +316,42 @@ func performComplianceAudit(organization, policy string) (AuditData, error) {
 				Remediation: "Set minimum required reviewers to 2",
 			},
 		},
-	}, nil
+	}
+
+	// Calculate compliance score
+	calculator := compliance.NewScoreCalculator()
+
+	// Convert to compliance types
+	complianceSummary := compliance.AuditSummary{
+		TotalRepositories:     auditData.Summary.TotalRepositories,
+		CompliantRepositories: auditData.Summary.CompliantRepositories,
+		CompliancePercentage:  auditData.Summary.CompliancePercentage,
+		TotalViolations:       auditData.Summary.TotalViolations,
+		CriticalViolations:    auditData.Summary.CriticalViolations,
+		PolicyCount:           auditData.Summary.PolicyCount,
+		CompliantCount:        auditData.Summary.CompliantCount,
+		NonCompliantCount:     auditData.Summary.NonCompliantCount,
+	}
+
+	var compliancePolicies []compliance.PolicyCompliance
+	for _, policy := range auditData.PolicyCompliance {
+		compliancePolicies = append(compliancePolicies, compliance.PolicyCompliance{
+			PolicyName:           policy.PolicyName,
+			Description:          policy.Description,
+			Severity:             policy.Severity,
+			CompliantRepos:       policy.CompliantRepos,
+			ViolatingRepos:       policy.ViolatingRepos,
+			CompliancePercentage: policy.CompliancePercentage,
+		})
+	}
+
+	// Calculate score
+	score, err := calculator.CalculateScore(complianceSummary, compliancePolicies, nil)
+	if err == nil {
+		auditData.Summary.ComplianceScore = score
+	}
+
+	return auditData, nil
 }
 
 // displayAuditTable displays audit results in table format
@@ -324,6 +362,29 @@ func displayAuditTable(data AuditData, detailed bool) {
 	fmt.Printf("Compliant: %d (%.1f%%)\n", data.Summary.CompliantRepositories, data.Summary.CompliancePercentage)
 	fmt.Printf("Total Violations: %d\n", data.Summary.TotalViolations)
 	fmt.Printf("Critical Violations: %d\n", data.Summary.CriticalViolations)
+
+	// Display compliance score if available
+	if data.Summary.ComplianceScore != nil {
+		score := data.Summary.ComplianceScore
+		gradeSymbol := getGradeSymbol(score.Grade)
+		fmt.Printf("Compliance Score: %.1f/100 %s (%s)\n", score.TotalScore, gradeSymbol, score.Grade)
+
+		// Show score breakdown
+		if detailed {
+			fmt.Printf("  Base Score: %.1f\n", score.ScoreBreakdown.BaseScore)
+			fmt.Printf("  Security Penalty: -%.1f\n", score.ScoreBreakdown.SecurityPenalty)
+			fmt.Printf("  Compliance Penalty: -%.1f\n", score.ScoreBreakdown.CompliancePenalty)
+			fmt.Printf("  Best Practice Bonus: +%.1f\n", score.ScoreBreakdown.BestPracticeBonus)
+		}
+
+		// Show recommendations
+		if len(score.Recommendations) > 0 {
+			fmt.Println("\n💡 Recommendations:")
+			for _, rec := range score.Recommendations {
+				fmt.Printf("  %s\n", rec)
+			}
+		}
+	}
 	fmt.Println()
 
 	// Policy compliance
@@ -501,6 +562,7 @@ func generateHTMLReport(data AuditData) string {
 			NonCompliantCount:    data.Summary.TotalRepositories - data.Summary.CompliantRepositories,
 			TotalViolations:      data.Summary.TotalViolations,
 			CompliancePercentage: data.Summary.CompliancePercentage,
+			ComplianceScore:      data.Summary.ComplianceScore,
 		},
 	}
 
@@ -845,4 +907,22 @@ func generateComplianceBar(percentage float64) string {
 	filledLength := int(percentage / 100 * float64(barLength))
 	bar := strings.Repeat("█", filledLength) + strings.Repeat("░", barLength-filledLength)
 	return bar
+}
+
+// getGradeSymbol returns symbol for compliance grade
+func getGradeSymbol(grade compliance.Grade) string {
+	switch grade {
+	case compliance.GradeA:
+		return "🏆"
+	case compliance.GradeB:
+		return "🥈"
+	case compliance.GradeC:
+		return "🥉"
+	case compliance.GradeD:
+		return "⚠️"
+	case compliance.GradeF:
+		return "🚫"
+	default:
+		return "❓"
+	}
 }
