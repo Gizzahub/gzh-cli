@@ -106,6 +106,9 @@ type NetworkConfig struct {
 	// Security groups
 	SecurityGroups []string `yaml:"security_groups,omitempty" json:"security_groups,omitempty"`
 
+	// CIDR blocks
+	CIDRBlocks []string `yaml:"cidr_blocks,omitempty" json:"cidr_blocks,omitempty"`
+
 	// DNS servers
 	DNSServers []string `yaml:"dns_servers,omitempty" json:"dns_servers,omitempty"`
 

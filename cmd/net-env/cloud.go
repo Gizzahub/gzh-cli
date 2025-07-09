@@ -9,6 +9,11 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 	"github.com/spf13/cobra"
+
+	// Import providers to register them
+	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/aws"
+	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/azure"
+	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/gcp"
 )
 
 // cloudOptions contains options for cloud commands
