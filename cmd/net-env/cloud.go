@@ -8,12 +8,11 @@ import (
 	"text/tabwriter"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
-	"github.com/spf13/cobra"
-
 	// Import providers to register them
 	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/aws"
 	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/azure"
 	_ "github.com/gizzahub/gzh-manager-go/pkg/cloud/providers/gcp"
+	"github.com/spf13/cobra"
 )
 
 // cloudOptions contains options for cloud commands
@@ -385,6 +384,8 @@ func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	var target string
 	var profiles []string
 	var conflictMode string
+	var showStatus bool
+	var showRecommendations bool
 
 	cmd := &cobra.Command{
 		Use:   "sync",
@@ -392,7 +393,7 @@ func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 		Long: `Synchronize profiles between different cloud providers.
 
 This allows you to maintain consistent network configurations across
-multiple cloud environments.`,
+multiple cloud environments with intelligent conflict resolution.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Load configuration
 			configPath := opts.configFile
@@ -403,6 +404,70 @@ multiple cloud environments.`,
 			config, err := cloud.LoadConfig(configPath)
 			if err != nil {
 				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Validate sync configuration
+			if err := cloud.ValidateSyncConfig(config); err != nil {
+				return fmt.Errorf("invalid sync configuration: %w", err)
+			}
+
+			// Create sync manager
+			syncManager := cloud.NewSyncManager(config)
+
+			// Show sync status if requested
+			if showStatus {
+				status, err := syncManager.GetSyncStatus(ctx)
+				if err != nil {
+					return fmt.Errorf("failed to get sync status: %w", err)
+				}
+
+				fmt.Println("Sync Status:")
+				fmt.Println("============")
+				if len(status) == 0 {
+					fmt.Println("No sync history found")
+					return nil
+				}
+
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "PROFILE\tSOURCE\tTARGET\tSTATUS\tLAST SYNC\tERROR")
+				for _, s := range status {
+					errorMsg := s.Error
+					if errorMsg == "" {
+						errorMsg = "-"
+					}
+					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+						s.ProfileName,
+						s.Source,
+						s.Target,
+						s.Status,
+						s.LastSync.Format("2006-01-02 15:04:05"),
+						errorMsg,
+					)
+				}
+				w.Flush()
+				return nil
+			}
+
+			// Show recommendations if requested
+			if showRecommendations {
+				recommendations, err := cloud.GetSyncRecommendations(config)
+				if err != nil {
+					return fmt.Errorf("failed to get sync recommendations: %w", err)
+				}
+
+				fmt.Println("Sync Recommendations:")
+				fmt.Println("====================")
+				if len(recommendations) == 0 {
+					fmt.Println("No sync recommendations found")
+					return nil
+				}
+
+				for i, rec := range recommendations {
+					fmt.Printf("%d. Sync from %s to %s\n", i+1, rec.Source, rec.Target)
+					fmt.Printf("   Profiles: %s\n", strings.Join(rec.Profiles, ", "))
+					fmt.Printf("   Command: gz net-env cloud sync --source %s --target %s\n\n", rec.Source, rec.Target)
+				}
+				return nil
 			}
 
 			// Validate source and target
@@ -433,6 +498,11 @@ multiple cloud environments.`,
 
 			fmt.Printf("Syncing profiles from %s to %s...\n", source, target)
 
+			// Set conflict mode if specified
+			if conflictMode != "" {
+				config.Sync.ConflictMode = cloud.ConflictStrategy(conflictMode)
+			}
+
 			// Get profiles to sync
 			var profilesToSync []string
 			if len(profiles) > 0 {
@@ -450,32 +520,22 @@ multiple cloud environments.`,
 				return nil
 			}
 
-			// Perform sync for each profile
-			successCount := 0
-			for _, profileName := range profilesToSync {
-				fmt.Printf("\nSyncing profile: %s\n", profileName)
+			// Perform sync using sync manager
+			err = syncManager.SyncProfiles(ctx, sourceProvider, targetProvider, profilesToSync)
+			if err != nil {
+				fmt.Printf("Sync completed with errors: %v\n", err)
 
-				profile, err := sourceProvider.GetProfile(ctx, profileName)
-				if err != nil {
-					fmt.Printf("  ✗ Failed to get profile: %v\n", err)
-					continue
+				// Show sync status for failed profiles
+				status, _ := syncManager.GetSyncStatus(ctx)
+				for _, s := range status {
+					if s.Status == "error" || s.Status == "conflict" {
+						fmt.Printf("  ✗ %s: %s\n", s.ProfileName, s.Error)
+					}
 				}
-
-				// Update provider reference
-				profile.Provider = target
-
-				if err := targetProvider.SyncProfile(ctx, profile); err != nil {
-					fmt.Printf("  ✗ Failed to sync: %v\n", err)
-					continue
-				}
-
-				fmt.Printf("  ✓ Successfully synced\n")
-				successCount++
+				return nil
 			}
 
-			fmt.Printf("\nSync completed: %d/%d profiles synced successfully\n",
-				successCount, len(profilesToSync))
-
+			fmt.Printf("✓ All profiles synced successfully\n")
 			return nil
 		},
 	}
@@ -483,10 +543,9 @@ multiple cloud environments.`,
 	cmd.Flags().StringVar(&source, "source", "", "Source provider name")
 	cmd.Flags().StringVar(&target, "target", "", "Target provider name")
 	cmd.Flags().StringSliceVar(&profiles, "profiles", nil, "Specific profiles to sync (default: all)")
-	cmd.Flags().StringVar(&conflictMode, "conflict-mode", "ask", "Conflict resolution mode (source_wins, target_wins, merge, ask)")
-
-	cmd.MarkFlagRequired("source")
-	cmd.MarkFlagRequired("target")
+	cmd.Flags().StringVar(&conflictMode, "conflict-mode", "", "Conflict resolution mode (source_wins, target_wins, merge, ask)")
+	cmd.Flags().BoolVar(&showStatus, "status", false, "Show sync status history")
+	cmd.Flags().BoolVar(&showRecommendations, "recommendations", false, "Show sync recommendations")
 
 	return cmd
 }
