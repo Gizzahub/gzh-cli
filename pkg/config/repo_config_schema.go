@@ -309,6 +309,209 @@ func MergeRepoConfigs(configs ...*RepoConfig) (*RepoConfig, error) {
 	return result, nil
 }
 
+// ValidateTemplateOverrides checks for conflicts in template overrides
+func (rc *RepoConfig) ValidateTemplateOverrides() []string {
+	var warnings []string
+
+	// Check each template that has a base
+	for name, template := range rc.Templates {
+		if template.Base == "" {
+			continue
+		}
+
+		baseTemplate, err := rc.resolveTemplate(template.Base)
+		if err != nil {
+			warnings = append(warnings, fmt.Sprintf("Template '%s': %v", name, err))
+			continue
+		}
+
+		// Check for potential conflicts
+		conflicts := checkTemplateConflicts(name, template, baseTemplate)
+		warnings = append(warnings, conflicts...)
+	}
+
+	return warnings
+}
+
+// checkTemplateConflicts identifies potential conflicts between derived and base templates
+func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []string {
+	var conflicts []string
+
+	// Check security settings conflicts
+	if derived.Security != nil && base.Security != nil {
+		// Check branch protection conflicts
+		for branch, derivedRule := range derived.Security.BranchProtection {
+			if baseRule, exists := base.Security.BranchProtection[branch]; exists {
+				// Warn if derived has weaker protection
+				if derivedRule.RequiredReviews != nil && baseRule.RequiredReviews != nil {
+					if *derivedRule.RequiredReviews < *baseRule.RequiredReviews {
+						conflicts = append(conflicts, fmt.Sprintf(
+							"Template '%s': Reduces required reviews for branch '%s' from %d to %d",
+							templateName, branch, *baseRule.RequiredReviews, *derivedRule.RequiredReviews))
+					}
+				}
+
+				// Warn if derived disables protections that base enables
+				if baseRule.EnforceAdmins != nil && *baseRule.EnforceAdmins &&
+					derivedRule.EnforceAdmins != nil && !*derivedRule.EnforceAdmins {
+					conflicts = append(conflicts, fmt.Sprintf(
+						"Template '%s': Disables admin enforcement for branch '%s'",
+						templateName, branch))
+				}
+			}
+		}
+	}
+
+	// Check permission conflicts
+	if derived.Permissions != nil && base.Permissions != nil {
+		// Warn if derived grants higher permissions than base
+		for team, derivedPerm := range derived.Permissions.TeamPermissions {
+			if basePerm, exists := base.Permissions.TeamPermissions[team]; exists {
+				if isHigherPermission(derivedPerm, basePerm) {
+					conflicts = append(conflicts, fmt.Sprintf(
+						"Template '%s': Escalates permissions for team '%s' from '%s' to '%s'",
+						templateName, team, basePerm, derivedPerm))
+				}
+			}
+		}
+	}
+
+	// Check repository visibility conflicts
+	if derived.Settings != nil && base.Settings != nil {
+		if base.Settings.Private != nil && *base.Settings.Private &&
+			derived.Settings.Private != nil && !*derived.Settings.Private {
+			conflicts = append(conflicts, fmt.Sprintf(
+				"Template '%s': Changes repository from private to public",
+				templateName))
+		}
+	}
+
+	return conflicts
+}
+
+// isHigherPermission checks if perm1 grants more access than perm2
+func isHigherPermission(perm1, perm2 string) bool {
+	permissions := map[string]int{
+		"read":     1,
+		"triage":   2,
+		"write":    3,
+		"maintain": 4,
+		"admin":    5,
+	}
+
+	level1, ok1 := permissions[strings.ToLower(perm1)]
+	level2, ok2 := permissions[strings.ToLower(perm2)]
+
+	if !ok1 || !ok2 {
+		return false
+	}
+
+	return level1 > level2
+}
+
+// GetTemplateInheritanceChain returns the inheritance chain for a template
+func (rc *RepoConfig) GetTemplateInheritanceChain(templateName string) ([]string, error) {
+	chain := []string{}
+	visited := make(map[string]bool)
+
+	current := templateName
+	for current != "" {
+		if visited[current] {
+			return nil, fmt.Errorf("circular dependency detected in template '%s'", templateName)
+		}
+
+		template, ok := rc.Templates[current]
+		if !ok {
+			return nil, fmt.Errorf("template '%s' not found", current)
+		}
+
+		chain = append(chain, current)
+		visited[current] = true
+		current = template.Base
+	}
+
+	return chain, nil
+}
+
+// GetAllTemplateChains returns inheritance chains for all templates
+func (rc *RepoConfig) GetAllTemplateChains() map[string][]string {
+	chains := make(map[string][]string)
+
+	for name := range rc.Templates {
+		if chain, err := rc.GetTemplateInheritanceChain(name); err == nil {
+			chains[name] = chain
+		}
+	}
+
+	return chains
+}
+
+// resolveTemplate recursively resolves a template and all its base templates
+func (rc *RepoConfig) resolveTemplate(templateName string) (*RepoTemplate, error) {
+	return rc.resolveTemplateWithChain(templateName, []string{})
+}
+
+// resolveTemplateWithChain recursively resolves a template with circular dependency checking
+func (rc *RepoConfig) resolveTemplateWithChain(templateName string, chain []string) (*RepoTemplate, error) {
+	// Check for circular dependency
+	for _, name := range chain {
+		if name == templateName {
+			return nil, fmt.Errorf("circular template dependency detected: %s", strings.Join(append(chain, templateName), " -> "))
+		}
+	}
+
+	template, ok := rc.Templates[templateName]
+	if !ok {
+		return nil, fmt.Errorf("template '%s' not found", templateName)
+	}
+
+	// If no base template, return as is
+	if template.Base == "" {
+		return template, nil
+	}
+
+	// Resolve base template
+	baseTemplate, err := rc.resolveTemplateWithChain(template.Base, append(chain, templateName))
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a new merged template
+	result := &RepoTemplate{
+		Description: template.Description,
+		Settings:    mergeRepoSettings(baseTemplate.Settings, template.Settings),
+		Security:    mergeSecuritySettings(baseTemplate.Security, template.Security),
+		Permissions: mergePermissionSettings(baseTemplate.Permissions, template.Permissions),
+	}
+
+	// Merge other fields
+	if len(template.Topics) > 0 {
+		result.Topics = template.Topics
+	} else if len(baseTemplate.Topics) > 0 {
+		result.Topics = baseTemplate.Topics
+	}
+
+	if len(template.RequiredFiles) > 0 {
+		result.RequiredFiles = template.RequiredFiles
+	} else if len(baseTemplate.RequiredFiles) > 0 {
+		result.RequiredFiles = baseTemplate.RequiredFiles
+	}
+
+	if len(template.Webhooks) > 0 {
+		result.Webhooks = template.Webhooks
+	} else if len(baseTemplate.Webhooks) > 0 {
+		result.Webhooks = baseTemplate.Webhooks
+	}
+
+	if len(template.Environments) > 0 {
+		result.Environments = template.Environments
+	} else if len(baseTemplate.Environments) > 0 {
+		result.Environments = baseTemplate.Environments
+	}
+
+	return result, nil
+}
+
 // GetEffectiveConfig returns the effective configuration for a specific repository
 func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *SecuritySettings, *PermissionSettings, error) {
 	var settings *RepoSettings
@@ -318,8 +521,8 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 	// Start with defaults
 	if rc.Defaults != nil {
 		if rc.Defaults.Template != "" {
-			template, ok := rc.Templates[rc.Defaults.Template]
-			if ok {
+			template, err := rc.resolveTemplate(rc.Defaults.Template)
+			if err == nil {
 				settings = mergeRepoSettings(settings, template.Settings)
 				security = mergeSecuritySettings(security, template.Security)
 				permissions = mergePermissionSettings(permissions, template.Permissions)
@@ -336,8 +539,8 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 		for _, specific := range rc.Repositories.Specific {
 			if specific.Name == repoName {
 				if specific.Template != "" {
-					template, ok := rc.Templates[specific.Template]
-					if ok {
+					template, err := rc.resolveTemplate(specific.Template)
+					if err == nil {
 						settings = mergeRepoSettings(settings, template.Settings)
 						security = mergeSecuritySettings(security, template.Security)
 						permissions = mergePermissionSettings(permissions, template.Permissions)
@@ -354,8 +557,8 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 		for _, pattern := range rc.Repositories.Patterns {
 			if matched, _ := matchPattern(repoName, pattern.Match); matched {
 				if pattern.Template != "" {
-					template, ok := rc.Templates[pattern.Template]
-					if ok {
+					template, err := rc.resolveTemplate(pattern.Template)
+					if err == nil {
 						settings = mergeRepoSettings(settings, template.Settings)
 						security = mergeSecuritySettings(security, template.Security)
 						permissions = mergePermissionSettings(permissions, template.Permissions)
@@ -370,8 +573,8 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 		// Apply default if exists
 		if rc.Repositories.Default != nil {
 			if rc.Repositories.Default.Template != "" {
-				template, ok := rc.Templates[rc.Repositories.Default.Template]
-				if ok {
+				template, err := rc.resolveTemplate(rc.Repositories.Default.Template)
+				if err == nil {
 					settings = mergeRepoSettings(settings, template.Settings)
 					security = mergeSecuritySettings(security, template.Security)
 					permissions = mergePermissionSettings(permissions, template.Permissions)
