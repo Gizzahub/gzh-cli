@@ -62,3 +62,12 @@ func IsProviderSupported(providerType string) bool {
 	_, exists := globalRegistry.factories[ProviderType(providerType)]
 	return exists
 }
+
+// GetRegisteredProviders returns list of registered provider type names
+func GetRegisteredProviders() []string {
+	providers := make([]string, 0, len(globalRegistry.factories))
+	for p := range globalRegistry.factories {
+		providers = append(providers, string(p))
+	}
+	return providers
+}
