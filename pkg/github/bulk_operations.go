@@ -204,8 +204,22 @@ func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 }
 
 // RefreshAllWithWorkerPoolWrapper provides a drop-in replacement for the original RefreshAll
-func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy string) error {
+func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy string, parallel int, maxRetries int) error {
 	config := DefaultBulkOperationsConfig()
+
+	// Override defaults with user-specified values
+	if parallel > 0 {
+		config.PoolConfig.CloneWorkers = parallel
+		config.PoolConfig.UpdateWorkers = parallel + (parallel / 2) // 50% more for updates
+		config.PoolConfig.ConfigWorkers = parallel / 2              // 50% less for config operations
+		if config.PoolConfig.ConfigWorkers < 1 {
+			config.PoolConfig.ConfigWorkers = 1
+		}
+	}
+
+	if maxRetries > 0 {
+		config.PoolConfig.RetryAttempts = maxRetries
+	}
 
 	manager := NewBulkOperationsManager(config)
 	if err := manager.Start(); err != nil {

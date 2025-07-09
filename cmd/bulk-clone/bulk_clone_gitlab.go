@@ -15,11 +15,15 @@ type bulkCloneGitlabOptions struct {
 	strategy    string
 	configFile  string
 	useConfig   bool
+	parallel    int
+	maxRetries  int
 }
 
 func defaultBulkCloneGitlabOptions() *bulkCloneGitlabOptions {
 	return &bulkCloneGitlabOptions{
-		strategy: "reset",
+		strategy:   "reset",
+		parallel:   10,
+		maxRetries: 3,
 	}
 }
 
@@ -39,6 +43,8 @@ func newBulkCloneGitlabCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&o.strategy, "strategy", "s", o.strategy, "Sync strategy: reset, pull, or fetch")
 	cmd.Flags().StringVarP(&o.configFile, "config", "c", o.configFile, "Path to config file")
 	cmd.Flags().BoolVar(&o.useConfig, "use-config", false, "Use config file from standard locations")
+	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
+	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
@@ -48,7 +54,7 @@ func newBulkCloneGitlabCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *bulkCloneGitlabOptions) run(_ *cobra.Command, args []string) error {
+func (o *bulkCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	// Load config if specified
 	if o.configFile != "" || o.useConfig {
 		err := o.loadFromConfig()
@@ -66,7 +72,15 @@ func (o *bulkCloneGitlabOptions) run(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
-	err := gitlabpkg.RefreshAll(o.targetPath, o.groupName, o.strategy)
+	// Use worker pool for better performance with configurable parallelism
+	ctx := cmd.Context()
+	var err error
+	if o.parallel > 1 {
+		err = gitlabpkg.RefreshAllWithWorkerPool(ctx, o.targetPath, o.groupName, o.strategy, o.parallel, o.maxRetries)
+	} else {
+		err = gitlabpkg.RefreshAll(ctx, o.targetPath, o.groupName, o.strategy)
+	}
+
 	if err != nil {
 		return err
 	}

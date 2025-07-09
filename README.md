@@ -223,6 +223,36 @@ gzh bulk-clone github -o myorg -t ~/repos -s pull
 gzh bulk-clone github -o myorg -t ~/repos -s fetch
 ```
 
+### Parallel Clone Options
+
+The `-p` or `--parallel` flag controls how many repositories are cloned or updated simultaneously:
+
+- Default: 10 parallel workers
+- Range: 1-50 (higher values may hit rate limits)
+
+The `--max-retries` flag controls how many times failed operations are retried:
+
+- Default: 3 attempts
+- Range: 0-10
+
+Example usage:
+```bash
+# Clone with 20 parallel workers
+gzh bulk-clone github -o myorg -t ~/repos -p 20
+
+# Clone with 5 parallel workers and 5 retry attempts
+gzh bulk-clone github -o myorg -t ~/repos -p 5 --max-retries 5
+
+# Sequential cloning (no parallelism)
+gzh bulk-clone github -o myorg -t ~/repos -p 1
+```
+
+**Performance Tips:**
+- For large organizations (100+ repos), use `-p 20` or higher
+- For rate-limited accounts, use `-p 5` or lower
+- Network speed and CPU cores affect optimal parallel value
+- Monitor for rate limit errors and adjust accordingly
+
 ## Repository Configuration Management
 
 The `gz repo-config` command allows you to manage GitHub repository configurations at scale, including settings, security policies, branch protection rules, and compliance auditing.

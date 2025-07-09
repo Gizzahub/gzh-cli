@@ -19,11 +19,15 @@ type bulkCloneOptions struct {
 	useGZHConfig   bool
 	strategy       string
 	providerFilter string
+	parallel       int
+	maxRetries     int
 }
 
 func defaultBulkCloneOptions() *bulkCloneOptions {
 	return &bulkCloneOptions{
-		strategy: "reset",
+		strategy:   "reset",
+		parallel:   10,
+		maxRetries: 3,
 	}
 }
 
@@ -51,6 +55,8 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.Flags().BoolVar(&o.useGZHConfig, "use-gzh-config", false, "Use gzh.yaml configuration format")
 	cmd.Flags().StringVarP(&o.strategy, "strategy", "s", o.strategy, "Sync strategy: reset, pull, or fetch")
 	cmd.Flags().StringVar(&o.providerFilter, "provider", "", "Filter by provider: github, gitlab, gitea")
+	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
+	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
@@ -147,7 +153,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 }
 
 // runWithGZHConfig handles bulk cloning using gzh.yaml configuration format
-func (o *bulkCloneOptions) runWithGZHConfig() error {
+func (o *bulkCloneOptions) runWithGZHConfig(ctx context.Context) error {
 	// Load gzh.yaml configuration
 	gzhConfig, err := config.LoadConfig()
 	if err != nil {
@@ -232,8 +238,16 @@ func (o *bulkCloneOptions) runWithGZHConfig() error {
 func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target config.BulkCloneTarget, targetPath string) error {
 	switch target.Provider {
 	case config.ProviderGitHub:
+		// Use worker pool for better performance with configurable parallelism
+		if o.parallel > 1 {
+			return github.RefreshAllWithWorkerPool(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries)
+		}
 		return github.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitLab:
+		// Use worker pool for better performance with configurable parallelism
+		if o.parallel > 1 {
+			return gitlab.RefreshAllWithWorkerPool(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries)
+		}
 		return gitlab.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case config.ProviderGitea:
 		// Gitea support would go here
