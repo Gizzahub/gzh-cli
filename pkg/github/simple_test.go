@@ -124,4 +124,3 @@ func TestConfirmationPromptRecord_Struct(t *testing.T) {
 	assert.Equal(t, RiskLevelMedium, prompt.Risk)
 	assert.Equal(t, 3, prompt.Metadata["changes"])
 }
-

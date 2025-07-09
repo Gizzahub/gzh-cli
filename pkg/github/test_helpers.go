@@ -351,4 +351,3 @@ func AssertSecuritySettings(t *testing.T, expected, actual *config.SecuritySetti
 		}
 	}
 }
-

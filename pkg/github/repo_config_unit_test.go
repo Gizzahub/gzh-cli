@@ -600,4 +600,3 @@ func simulateBulkOperation(apiClient APIClient, repos []RepositoryInfo) map[stri
 
 	return stats
 }
-
