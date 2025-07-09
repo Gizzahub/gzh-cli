@@ -283,12 +283,12 @@ func TestIntegration_RepositoryFiltering(t *testing.T) {
 	require.NoError(t, err)
 
 	repositories := []Repository{
-		{Name: "test-repo1", IsPrivate: false},
-		{Name: "test-repo2", IsPrivate: true},
-		{Name: "prod-repo", IsPrivate: false},
-		{Name: "test-temp-file", IsPrivate: false},
-		{Name: "test-backup", IsPrivate: false},
-		{Name: "test-valid", IsPrivate: false},
+		{Name: "test-repo1", Private: false},
+		{Name: "test-repo2", Private: true},
+		{Name: "prod-repo", Private: false},
+		{Name: "test-temp-file", Private: false},
+		{Name: "test-backup", Private: false},
+		{Name: "test-valid", Private: false},
 	}
 
 	filtered := matcher.FilterRepositoryList(repositories)

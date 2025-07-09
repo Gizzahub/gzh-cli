@@ -47,12 +47,49 @@ func NewRepositoryMatcher(config *RepositoryFilterConfig) (*RepositoryMatcher, e
 
 // ShouldCloneRepository determines if a repository should be cloned based on configuration
 func (m *RepositoryMatcher) ShouldCloneRepository(repo Repository) bool {
-	return m.filter.ShouldIncludeRepository(repo)
+	visRepo := VisibilityRepository{
+		Name:      repo.Name,
+		FullName:  repo.FullName,
+		IsPrivate: repo.Private,
+		CloneURL:  repo.CloneURL,
+		SSHURL:    repo.SSHURL,
+		HTTPURL:   repo.HTMLURL,
+	}
+	return m.filter.ShouldIncludeRepository(visRepo)
 }
 
 // FilterRepositoryList filters a list of repositories based on configuration
 func (m *RepositoryMatcher) FilterRepositoryList(repos []Repository) []Repository {
-	return m.filter.FilterRepositories(repos)
+	// Convert Repository to VisibilityRepository
+	visRepos := make([]VisibilityRepository, len(repos))
+	for i, repo := range repos {
+		visRepos[i] = VisibilityRepository{
+			Name:      repo.Name,
+			FullName:  repo.FullName,
+			IsPrivate: repo.Private,
+			CloneURL:  repo.CloneURL,
+			SSHURL:    repo.SSHURL,
+			HTTPURL:   repo.HTMLURL,
+		}
+	}
+
+	// Filter using VisibilityRepository
+	filteredVisRepos := m.filter.FilterRepositories(visRepos)
+
+	// Convert back to Repository
+	result := make([]Repository, len(filteredVisRepos))
+	for i, visRepo := range filteredVisRepos {
+		result[i] = Repository{
+			Name:     visRepo.Name,
+			FullName: visRepo.FullName,
+			Private:  visRepo.IsPrivate,
+			CloneURL: visRepo.CloneURL,
+			SSHURL:   visRepo.SSHURL,
+			HTMLURL:  visRepo.HTTPURL,
+		}
+	}
+
+	return result
 }
 
 // GetFilterSummary returns a summary of the filtering configuration
@@ -62,9 +99,36 @@ func (m *RepositoryMatcher) GetFilterSummary() string {
 
 // GetStatistics returns filtering statistics for a repository list
 func (m *RepositoryMatcher) GetStatistics(repos []Repository) *FilteringStatistics {
-	originalStats := CalculateVisibilityStatistics(repos)
+	// Convert to VisibilityRepository for statistics
+	visRepos := make([]VisibilityRepository, len(repos))
+	for i, repo := range repos {
+		visRepos[i] = VisibilityRepository{
+			Name:      repo.Name,
+			FullName:  repo.FullName,
+			IsPrivate: repo.Private,
+			CloneURL:  repo.CloneURL,
+			SSHURL:    repo.SSHURL,
+			HTTPURL:   repo.HTMLURL,
+		}
+	}
+
+	originalStats := CalculateVisibilityStatistics(visRepos)
 	filteredRepos := m.FilterRepositoryList(repos)
-	filteredStats := CalculateVisibilityStatistics(filteredRepos)
+
+	// Convert filtered repos to VisibilityRepository
+	visFilteredRepos := make([]VisibilityRepository, len(filteredRepos))
+	for i, repo := range filteredRepos {
+		visFilteredRepos[i] = VisibilityRepository{
+			Name:      repo.Name,
+			FullName:  repo.FullName,
+			IsPrivate: repo.Private,
+			CloneURL:  repo.CloneURL,
+			SSHURL:    repo.SSHURL,
+			HTTPURL:   repo.HTMLURL,
+		}
+	}
+
+	filteredStats := CalculateVisibilityStatistics(visFilteredRepos)
 
 	return &FilteringStatistics{
 		OriginalStats: originalStats,

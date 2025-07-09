@@ -54,11 +54,6 @@ func (l *UnifiedConfigLoader) LoadConfig() (*LoadResult, error) {
 
 // LoadConfigFromPath loads configuration from a specific path
 func (l *UnifiedConfigLoader) LoadConfigFromPath(configPath string) (*LoadResult, error) {
-	result := &LoadResult{
-		Warnings:        []string{},
-		RequiredActions: []string{},
-	}
-
 	// If specific path provided, use it
 	if configPath != "" {
 		return l.loadFromSpecificPath(configPath)

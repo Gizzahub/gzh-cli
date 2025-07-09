@@ -308,12 +308,12 @@ func (f *DefaultProviderFactory) ValidateProviderConfig(providerName string, con
 
 // DefaultBulkOperationService implements BulkOperationService
 type DefaultBulkOperationService struct {
-	factory ProviderFactory
+	factory *DefaultProviderFactory
 	config  *Config
 }
 
 // NewDefaultBulkOperationService creates a new bulk operation service
-func NewDefaultBulkOperationService(factory ProviderFactory, config *Config) *DefaultBulkOperationService {
+func NewDefaultBulkOperationService(factory *DefaultProviderFactory, config *Config) *DefaultBulkOperationService {
 	return &DefaultBulkOperationService{
 		factory: factory,
 		config:  config,
@@ -321,10 +321,8 @@ func NewDefaultBulkOperationService(factory ProviderFactory, config *Config) *De
 }
 
 func (s *DefaultBulkOperationService) CloneAll(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error) {
-	startTime := time.Now()
 	result := &BulkCloneResult{
-		OperationResults: make([]RepositoryOperation, 0),
-		ErrorSummary:     make(map[string]int),
+		Results: make([]TargetResult, 0),
 	}
 
 	// Process each configured provider
@@ -333,9 +331,10 @@ func (s *DefaultBulkOperationService) CloneAll(ctx context.Context, request *Bul
 			continue
 		}
 
-		provider, err := s.factory.CreateProvider(ctx, providerName, providerConfig)
+		config := ProviderConfig{Token: providerConfig.Token}
+		provider, err := s.factory.CreateProvider(ctx, providerName, config)
 		if err != nil {
-			result.ErrorSummary[fmt.Sprintf("provider_creation_%s", providerName)]++
+			result.FailedTargets++
 			continue
 		}
 
@@ -345,36 +344,34 @@ func (s *DefaultBulkOperationService) CloneAll(ctx context.Context, request *Bul
 				// In dry run mode, just validate the operation
 				repos, err := provider.ListRepositories(ctx, org)
 				if err != nil {
-					result.ErrorSummary[fmt.Sprintf("list_repos_%s", providerName)]++
+					result.FailedTargets++
 					continue
 				}
-				result.TotalRepositories += len(repos)
+				result.TotalTargets += len(repos)
 				continue
 			}
 
 			err := provider.CloneOrganization(ctx, org, request.TargetPath, request.Strategy)
-			operation := RepositoryOperation{
-				Organization: org,
-				Provider:     providerName,
-				Operation:    "clone_organization",
-				Success:      err == nil,
-				DurationMs:   time.Since(startTime).Milliseconds(),
-				Path:         request.TargetPath,
+			operation := TargetResult{
+				Provider: providerName,
+				Name:     org,
+				CloneDir: request.TargetPath,
+				Strategy: request.Strategy,
+				Success:  err == nil,
 			}
 
 			if err != nil {
 				operation.Error = err.Error()
-				result.FailedOperations++
-				result.ErrorSummary[fmt.Sprintf("clone_%s", providerName)]++
+				result.FailedTargets++
 			} else {
-				result.SuccessfulOperations++
+				result.SuccessfulTargets++
 			}
 
-			result.OperationResults = append(result.OperationResults, operation)
+			result.Results = append(result.Results, operation)
 		}
 	}
 
-	result.ExecutionTimeMs = time.Since(startTime).Milliseconds()
+	// Execution completed
 	return result, nil
 }
 
@@ -400,9 +397,10 @@ func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *B
 
 	// Process each configured provider
 	for providerName, providerConfig := range s.config.Providers {
-		provider, err := s.factory.CreateProvider(context.Background(), providerName, providerConfig)
+		config := ProviderConfig{Token: providerConfig.Token}
+		provider, err := s.factory.CreateProvider(context.Background(), providerName, config)
 		if err != nil {
-			result.ErrorSummary[fmt.Sprintf("provider_creation_%s", providerName)]++
+			result.RefreshFailed++
 			continue
 		}
 
@@ -439,7 +437,7 @@ func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *B
 		}
 	}
 
-	result.ExecutionTimeMs = time.Since(startTime).Milliseconds()
+	// Execution completed
 	return result, nil
 }
 
@@ -459,7 +457,6 @@ func (s *DefaultBulkOperationService) GetRepositoryStatus(ctx context.Context, t
 }
 
 func (s *DefaultBulkOperationService) DiscoverRepositories(ctx context.Context, providers []string) (*DiscoveryResult, error) {
-	startTime := time.Now()
 	result := &DiscoveryResult{
 		RepositoriesByProvider: make(map[string]int),
 		Repositories:           make([]Repository, 0),
@@ -471,7 +468,8 @@ func (s *DefaultBulkOperationService) DiscoverRepositories(ctx context.Context, 
 			continue
 		}
 
-		provider, err := s.factory.CreateProvider(ctx, providerName, providerConfig)
+		config := ProviderConfig{Token: providerConfig.Token}
+		_, err := s.factory.CreateProvider(ctx, providerName, config)
 		if err != nil {
 			continue
 		}
@@ -481,7 +479,7 @@ func (s *DefaultBulkOperationService) DiscoverRepositories(ctx context.Context, 
 		result.RepositoriesByProvider[providerName] = 0
 	}
 
-	result.ExecutionTimeMs = time.Since(startTime).Milliseconds()
+	// Execution completed
 	return result, nil
 }
 

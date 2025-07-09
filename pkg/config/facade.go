@@ -63,8 +63,8 @@ type RepositoryManagementFacade interface {
 	AnalyzeRepositories(ctx context.Context, repositories []Repository) (*RepositoryAnalysisResult, error)
 
 	// Configuration Integration
-	GetRepositoryConfiguration(ctx context.Context, organization, repository string) (*RepositoryConfig, error)
-	ApplyRepositoryConfiguration(ctx context.Context, config *RepositoryConfig) error
+	GetRepositoryConfiguration(ctx context.Context, organization, repository string) (*Repository, error)
+	ApplyRepositoryConfiguration(ctx context.Context, config *Repository) error
 }
 
 // RepositoryDiscoveryRequest represents a request for discovering repositories
@@ -72,7 +72,7 @@ type RepositoryDiscoveryRequest struct {
 	Providers       []string
 	Organizations   []string
 	Groups          []string
-	Filters         *RepositoryFilters
+	Filters         *RepositoryFilter
 	Recursive       bool
 	IncludeMetadata bool
 }
@@ -269,13 +269,13 @@ func (c *configurationManagerImpl) CreateProviderInstance(ctx context.Context, p
 // CreateRepositoryFilter creates a repository filter
 func (c *configurationManagerImpl) CreateRepositoryFilter(ctx context.Context, config *RepositoryFilterConfig) (*RepositoryFilter, error) {
 	c.logger.Debug("Creating repository filter")
-	return c.filterService.CreateRepositoryFilter(config)
+	return config.CreateRepositoryFilter()
 }
 
 // FilterRepositories filters a list of repositories
 func (c *configurationManagerImpl) FilterRepositories(ctx context.Context, repositories []Repository, filters *RepositoryFilter) ([]Repository, error) {
 	c.logger.Debug("Filtering repositories", "count", len(repositories))
-	return c.filterService.FilterRepositories(repositories, filters)
+	return c.filterService.ApplyFilters(ctx, repositories, filters)
 }
 
 // Note: Logger interface is defined elsewhere

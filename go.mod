@@ -9,6 +9,7 @@ require (
 	github.com/go-critic/go-critic v0.11.5
 	github.com/go-playground/validator/v10 v10.25.0
 	github.com/golangci/golangci-lint v1.63.4
+	github.com/google/go-github/v66 v66.0.0
 	github.com/gotesttools/gotestfmt/v2 v2.5.0
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
@@ -17,6 +18,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.uber.org/mock v0.5.2
 	golang.org/x/lint v0.0.0-20241112194109-818c5a804067
 	golang.org/x/sync v0.11.0
 	golang.org/x/tools v0.29.0
@@ -93,7 +95,6 @@ require (
 	github.com/golangci/revgrep v0.5.3 // indirect
 	github.com/golangci/unconvert v0.0.0-20240309020433-c5143eacb3ed // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/go-github/v66 v66.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gordonklaus/ineffassign v0.1.0 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
@@ -202,7 +203,6 @@ require (
 	go-simpler.org/musttag v0.13.0 // indirect
 	go-simpler.org/sloglint v0.7.2 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
-	go.uber.org/mock v0.5.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.35.0 // indirect

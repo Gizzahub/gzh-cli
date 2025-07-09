@@ -5,7 +5,6 @@
 // and make tests more maintainable. It includes builders for:
 //
 // Configuration Objects:
-// - ConfigBuilder: For building UnifiedConfig test objects
 // - EnvironmentBuilder: For building mock environments with variables
 //
 // Mock Objects:
@@ -21,8 +20,8 @@
 //
 // Usage Example:
 //
-//	// Create a test configuration
-//	config := builders.NewConfigBuilder().
+//	// Create a test configuration (ConfigBuilder is now in pkg/config)
+//	config := config.NewConfigBuilder().
 //		WithVersion("1.0.0").
 //		WithDefaultProvider("github").
 //		WithGitHubProvider("${GITHUB_TOKEN}").

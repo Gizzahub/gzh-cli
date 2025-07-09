@@ -163,7 +163,7 @@ type ConfigService interface {
 	ConfigParser
 	SchemaValidator
 	ProviderManager
-	DirectoryResolver
+	DirectoryResolverInterface
 	FilterService
 	IntegrationService
 }

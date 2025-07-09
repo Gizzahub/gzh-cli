@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -133,7 +134,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	}
 
 	if maxRetries > 0 {
-		config.PoolConfig.MaxRetries = maxRetries
+		config.PoolConfig.RetryAttempts = maxRetries
 	}
 
 	// Create and start worker pool
@@ -186,7 +187,6 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 			Operation:  operation,
 			Path:       repoPath,
 			Strategy:   strategy,
-			CloneURL:   fmt.Sprintf("https://github.com/%s/%s.git", org, repo),
 		})
 	}
 
@@ -195,8 +195,20 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		progressTracker.UpdateRepository(job.Repository, getProgressStatusFromOperation(job.Operation), "Starting...", 0.0)
 	}
 
-	// Process jobs
-	results := pool.ProcessJobs(ctx, jobs)
+	// Process jobs using the correct pattern
+	processFn := func(ctx context.Context, job workerpool.RepositoryJob) error {
+		return processRepositoryJob(ctx, job, org)
+	}
+
+	// Submit jobs and collect results
+	resultsChan := pool.Results()
+
+	// Submit all jobs
+	for _, job := range jobs {
+		if err := pool.SubmitJob(job, processFn); err != nil {
+			return fmt.Errorf("failed to submit job for %s: %w", job.Repository, err)
+		}
+	}
 
 	// Track results and update state
 	successCount := 0
@@ -208,22 +220,17 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	defer stateSaveTicker.Stop()
 	defer progressUpdateTicker.Stop()
 
-	for {
+	for i := 0; i < len(jobs); i++ {
 		select {
-		case result, ok := <-results:
-			if !ok {
-				// All results processed
-				goto completed
-			}
-
+		case result := <-resultsChan:
 			if result.Error != nil {
 				failureCount++
-				state.AddFailedRepository(result.Repository, result.Path, string(result.Operation), result.Error.Error(), 1)
-				progressTracker.SetRepositoryError(result.Repository, result.Error.Error())
+				state.AddFailedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Error.Error(), 1)
+				progressTracker.SetRepositoryError(result.Job.Repository, result.Error.Error())
 			} else {
 				successCount++
-				state.AddCompletedRepository(result.Repository, result.Path, string(result.Operation), result.Message)
-				progressTracker.CompleteRepository(result.Repository, result.Message)
+				state.AddCompletedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Message)
+				progressTracker.CompleteRepository(result.Job.Repository, result.Message)
 			}
 
 		case <-progressUpdateTicker.C:
@@ -243,8 +250,6 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 			return fmt.Errorf("operation cancelled: %w", ctx.Err())
 		}
 	}
-
-completed:
 	// Final progress update
 	fmt.Printf("\r\033[K%s\n", progressTracker.RenderProgress())
 
@@ -273,6 +278,43 @@ completed:
 
 	if failureCount > 0 {
 		return fmt.Errorf("%d operations failed", failureCount)
+	}
+
+	return nil
+}
+
+// processRepositoryJob processes a single repository job for GitHub
+func processRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, org string) error {
+	switch job.Operation {
+	case workerpool.OperationClone:
+		return Clone(ctx, job.Path, org, job.Repository)
+
+	case workerpool.OperationPull:
+		return executeGitOperation(ctx, job.Path, "pull")
+
+	case workerpool.OperationFetch:
+		return executeGitOperation(ctx, job.Path, "fetch")
+
+	case workerpool.OperationReset:
+		// Reset hard HEAD and pull
+		if err := executeGitOperation(ctx, job.Path, "reset", "--hard", "HEAD"); err != nil {
+			return fmt.Errorf("git reset failed: %w", err)
+		}
+		return executeGitOperation(ctx, job.Path, "pull")
+
+	default:
+		return fmt.Errorf("unknown operation: %s", job.Operation)
+	}
+}
+
+// executeGitOperation executes a git command in the repository path
+func executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
+	// Build git command
+	gitArgs := append([]string{"-C", repoPath}, args...)
+	cmd := exec.CommandContext(ctx, "git", gitArgs...)
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git %s failed: %w", args[0], err)
 	}
 
 	return nil

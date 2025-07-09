@@ -281,7 +281,7 @@ func (m *providerManagerImpl) CreateProviderCloner(ctx context.Context, provider
 
 // ValidateProvider implements ProviderManager interface
 func (m *providerManagerImpl) ValidateProvider(ctx context.Context, provider *Provider) error {
-	m.logger.Debug("Validating provider", "name", provider.Name)
+	m.logger.Debug("Validating provider")
 
 	// Implementation would validate provider configuration
 	return nil
@@ -299,7 +299,7 @@ type configServiceImpl struct {
 	ConfigParser
 	SchemaValidator
 	ProviderManager
-	DirectoryResolver
+	DirectoryResolverInterface
 	FilterService
 	IntegrationService
 }
@@ -348,19 +348,19 @@ func NewConfigService(
 	providerManager := NewProviderManager(configData, logger)
 
 	// Other services would be created similarly
-	var directoryResolver DirectoryResolver
+	var directoryResolver DirectoryResolverInterface
 	var filterService FilterService
 	var integrationService IntegrationService
 
 	return &configServiceImpl{
-		ConfigLoader:       loader,
-		ConfigValidator:    validator,
-		ConfigParser:       parser,
-		SchemaValidator:    schemaValidator,
-		ProviderManager:    providerManager,
-		DirectoryResolver:  directoryResolver,
-		FilterService:      filterService,
-		IntegrationService: integrationService,
+		ConfigLoader:               loader,
+		ConfigValidator:            validator,
+		ConfigParser:               parser,
+		SchemaValidator:            schemaValidator,
+		ProviderManager:            providerManager,
+		DirectoryResolverInterface: directoryResolver,
+		FilterService:              filterService,
+		IntegrationService:         integrationService,
 	}
 }
 

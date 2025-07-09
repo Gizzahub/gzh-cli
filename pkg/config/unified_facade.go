@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -94,6 +93,155 @@ func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 	}
 
 	return nil
+}
+
+// GetIDEConfig returns the IDE configuration
+func (f *UnifiedConfigFacade) GetIDEConfig() *IDEConfig {
+	if f.config == nil {
+		return nil
+	}
+	return f.config.IDE
+}
+
+// GetDevEnvConfig returns the development environment configuration
+func (f *UnifiedConfigFacade) GetDevEnvConfig() *DevEnvConfig {
+	if f.config == nil {
+		return nil
+	}
+	return f.config.DevEnv
+}
+
+// GetNetEnvConfig returns the network environment configuration
+func (f *UnifiedConfigFacade) GetNetEnvConfig() *NetEnvConfig {
+	if f.config == nil {
+		return nil
+	}
+	return f.config.NetEnv
+}
+
+// GetSSHConfig returns the SSH configuration
+func (f *UnifiedConfigFacade) GetSSHConfig() *SSHConfigSettings {
+	if f.config == nil {
+		return nil
+	}
+	return f.config.SSHConfig
+}
+
+// GetGlobalSettings returns the global settings
+func (f *UnifiedConfigFacade) GetGlobalSettings() *GlobalSettings {
+	if f.config == nil {
+		return nil
+	}
+	return f.config.Global
+}
+
+// GetProviderConfig returns configuration for a specific provider
+func (f *UnifiedConfigFacade) GetProviderConfig(provider string) *ProviderConfig {
+	if f.config == nil || f.config.Providers == nil {
+		return nil
+	}
+	return f.config.Providers[provider]
+}
+
+// UpdateIDEConfig updates the IDE configuration
+func (f *UnifiedConfigFacade) UpdateIDEConfig(ideConfig *IDEConfig) error {
+	if f.config == nil {
+		return fmt.Errorf("no configuration loaded")
+	}
+	f.config.IDE = ideConfig
+	return nil
+}
+
+// UpdateDevEnvConfig updates the development environment configuration
+func (f *UnifiedConfigFacade) UpdateDevEnvConfig(devEnvConfig *DevEnvConfig) error {
+	if f.config == nil {
+		return fmt.Errorf("no configuration loaded")
+	}
+	f.config.DevEnv = devEnvConfig
+	return nil
+}
+
+// UpdateNetEnvConfig updates the network environment configuration
+func (f *UnifiedConfigFacade) UpdateNetEnvConfig(netEnvConfig *NetEnvConfig) error {
+	if f.config == nil {
+		return fmt.Errorf("no configuration loaded")
+	}
+	f.config.NetEnv = netEnvConfig
+	return nil
+}
+
+// UpdateSSHConfig updates the SSH configuration
+func (f *UnifiedConfigFacade) UpdateSSHConfig(sshConfig *SSHConfigSettings) error {
+	if f.config == nil {
+		return fmt.Errorf("no configuration loaded")
+	}
+	f.config.SSHConfig = sshConfig
+	return nil
+}
+
+// ValidateUnifiedConfiguration validates the current configuration
+func (f *UnifiedConfigFacade) ValidateUnifiedConfiguration() error {
+	if f.config == nil {
+		return fmt.Errorf("no configuration loaded")
+	}
+	return f.loader.validateUnifiedConfig(f.config)
+}
+
+// GetExpandedPath expands environment variables in a path
+func (f *UnifiedConfigFacade) GetExpandedPath(path string) string {
+	return ExpandEnvironmentVariables(path)
+}
+
+// IsFeatureEnabled checks if a feature is enabled across all configurations
+func (f *UnifiedConfigFacade) IsFeatureEnabled(feature string) bool {
+	if f.config == nil {
+		return false
+	}
+
+	switch feature {
+	case "ide":
+		return f.config.IDE != nil && f.config.IDE.Enabled
+	case "dev-env":
+		return f.config.DevEnv != nil && f.config.DevEnv.Enabled
+	case "net-env":
+		return f.config.NetEnv != nil && f.config.NetEnv.Enabled
+	case "ssh-config":
+		return f.config.SSHConfig != nil && f.config.SSHConfig.Enabled
+	default:
+		return false
+	}
+}
+
+// GetConfigurationSummary returns a summary of the current configuration
+func (f *UnifiedConfigFacade) GetConfigurationSummary() map[string]interface{} {
+	if f.config == nil {
+		return nil
+	}
+
+	summary := make(map[string]interface{})
+	summary["version"] = f.config.Version
+	summary["default_provider"] = f.config.DefaultProvider
+
+	if f.config.Global != nil {
+		summary["global"] = map[string]interface{}{
+			"clone_base_dir":     f.config.Global.CloneBaseDir,
+			"default_strategy":   f.config.Global.DefaultStrategy,
+			"default_visibility": f.config.Global.DefaultVisibility,
+			"clone_workers":      f.config.Global.Concurrency.CloneWorkers,
+			"update_workers":     f.config.Global.Concurrency.UpdateWorkers,
+		}
+	}
+
+	summary["providers"] = len(f.config.Providers)
+
+	features := make(map[string]bool)
+	features["ide"] = f.IsFeatureEnabled("ide")
+	features["dev-env"] = f.IsFeatureEnabled("dev-env")
+	features["net-env"] = f.IsFeatureEnabled("net-env")
+	features["ssh-config"] = f.IsFeatureEnabled("ssh-config")
+	summary["features"] = features
+
+	return summary
 }
 
 // CreateDefaultConfiguration creates a default configuration file

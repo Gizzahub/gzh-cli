@@ -220,7 +220,7 @@ func testEnterpriseTemplate(t *testing.T, config *RepoConfig) {
 	assert.NotEmpty(t, policy.Rules)
 }
 
-func TestTemplateInheritance(t *testing.T) {
+func TestTemplateInheritanceInSchema(t *testing.T) {
 	// Test that security template inherits from standard in schema
 	schemaPath := filepath.Join("..", "..", "docs", "repo-config-schema.yaml")
 	config, err := LoadRepoConfig(schemaPath)

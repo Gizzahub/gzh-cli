@@ -5,12 +5,13 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/builders"
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/fixtures"
+	"github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
 // ExampleBuildersUsage demonstrates how to use the builders package
 func ExampleBuildersUsage() {
 	// Create a configuration with builders
-	config := builders.NewConfigBuilder().
+	config := config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
@@ -72,7 +73,7 @@ func TestBuildersIntegration(t *testing.T) {
 		Build()
 
 	// Create test configuration
-	config := builders.NewConfigBuilder().
+	config := config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").

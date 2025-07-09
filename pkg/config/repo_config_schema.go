@@ -28,11 +28,15 @@ type RepoDefaults struct {
 
 // RepoTemplate represents a reusable configuration template
 type RepoTemplate struct {
-	Base        string              `yaml:"base,omitempty"`
-	Description string              `yaml:"description,omitempty"`
-	Settings    *RepoSettings       `yaml:"settings,omitempty"`
-	Security    *SecuritySettings   `yaml:"security,omitempty"`
-	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
+	Base          string              `yaml:"base,omitempty"`
+	Description   string              `yaml:"description,omitempty"`
+	Settings      *RepoSettings       `yaml:"settings,omitempty"`
+	Security      *SecuritySettings   `yaml:"security,omitempty"`
+	Permissions   *PermissionSettings `yaml:"permissions,omitempty"`
+	Topics        []string            `yaml:"topics,omitempty"`
+	RequiredFiles []string            `yaml:"required_files,omitempty"`
+	Webhooks      []string            `yaml:"webhooks,omitempty"`
+	Environments  []string            `yaml:"environments,omitempty"`
 }
 
 // RepoTargets represents repository targeting configuration

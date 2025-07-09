@@ -1,7 +1,6 @@
 package fixtures
 
 import (
-	"github.com/gizzahub/gzh-manager-go/internal/testutil/builders"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
@@ -15,7 +14,7 @@ func NewConfigFixtures() *ConfigFixtures {
 
 // SimpleGitHubConfig returns a simple GitHub configuration
 func (f *ConfigFixtures) SimpleGitHubConfig() *config.UnifiedConfig {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
@@ -25,7 +24,7 @@ func (f *ConfigFixtures) SimpleGitHubConfig() *config.UnifiedConfig {
 
 // MultiProviderConfig returns a configuration with multiple providers
 func (f *ConfigFixtures) MultiProviderConfig() *config.UnifiedConfig {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
@@ -39,7 +38,7 @@ func (f *ConfigFixtures) MultiProviderConfig() *config.UnifiedConfig {
 
 // ComplexGitHubConfig returns a complex GitHub configuration with multiple organizations
 func (f *ConfigFixtures) ComplexGitHubConfig() *config.UnifiedConfig {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
@@ -51,7 +50,7 @@ func (f *ConfigFixtures) ComplexGitHubConfig() *config.UnifiedConfig {
 
 // InvalidConfig returns an invalid configuration for error testing
 func (f *ConfigFixtures) InvalidConfig() *config.UnifiedConfig {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion(""). // Invalid empty version
 		WithDefaultProvider("invalid-provider").
 		Build()
@@ -59,7 +58,7 @@ func (f *ConfigFixtures) InvalidConfig() *config.UnifiedConfig {
 
 // ConfigWithEnvironmentVariables returns a configuration that uses environment variables
 func (f *ConfigFixtures) ConfigWithEnvironmentVariables() *config.UnifiedConfig {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
@@ -69,7 +68,7 @@ func (f *ConfigFixtures) ConfigWithEnvironmentVariables() *config.UnifiedConfig 
 
 // MinimalConfig returns a minimal valid configuration
 func (f *ConfigFixtures) MinimalConfig() *config.UnifiedConfig {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		Build()
@@ -85,7 +84,7 @@ func NewConfigYAMLFixtures() *ConfigYAMLFixtures {
 
 // SimpleGitHubYAML returns a simple GitHub configuration as YAML
 func (f *ConfigYAMLFixtures) SimpleGitHubYAML() string {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
@@ -95,7 +94,7 @@ func (f *ConfigYAMLFixtures) SimpleGitHubYAML() string {
 
 // MultiProviderYAML returns a multi-provider configuration as YAML
 func (f *ConfigYAMLFixtures) MultiProviderYAML() string {
-	return builders.NewConfigBuilder().
+	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
