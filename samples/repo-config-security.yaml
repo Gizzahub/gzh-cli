@@ -1,0 +1,229 @@
+# Security-Enhanced Repository Configuration Template
+# This template enforces maximum security settings for sensitive repositories
+# Use this for repositories containing secrets, infrastructure code, or critical business logic
+
+version: "1.0.0"
+organization: "your-organization"
+
+# Security-enhanced template definition
+templates:
+  security-enhanced:
+    description: "Maximum security repository configuration for sensitive projects"
+    
+    # Basic repository settings
+    settings:
+      private: true  # Must be private
+      has_issues: true
+      has_wiki: false  # Disabled to prevent accidental information disclosure
+      has_projects: false
+      has_downloads: false  # Prevent binary downloads
+      allow_squash_merge: true
+      allow_merge_commit: false  # Enforce clean history
+      allow_rebase_merge: false
+      allow_auto_merge: false  # Manual review required
+      delete_branch_on_merge: true
+      allow_update_branch: true
+      use_squash_pr_title_as_default: true
+      web_commit_signoff_required: true  # Require DCO
+      
+    # Security configurations
+    security:
+      # Enable all security features
+      vulnerability_alerts: true
+      automated_security_fixes: true
+      private_vulnerability_reporting: true
+      security_advisories: true
+      
+      # Strict branch protection for main/master
+      branch_protection:
+        main:
+          # Review requirements
+          required_reviews: 3  # Minimum 3 reviewers
+          dismiss_stale_reviews: true
+          require_code_owner_reviews: true
+          required_approving_review_count: 2
+          require_last_push_approval: true
+          
+          # Status checks
+          required_status_checks:
+            - "security/vulnerability-scan"
+            - "security/secrets-scan"
+            - "security/dependency-check"
+            - "ci/build"
+            - "ci/test"
+            - "ci/code-coverage"
+            - "compliance/license-check"
+          strict_status_checks: true
+          
+          # Push restrictions
+          restrict_pushes: true
+          allowed_teams:
+            - "security-team"
+            - "platform-team"
+          allowed_users: []  # No individual users
+          
+          # Admin enforcement
+          enforce_admins: true
+          allow_force_pushes: false
+          allow_deletions: false
+          lock_branch: false
+          
+          # Conversation resolution
+          required_conversation_resolution: true
+          
+        # Also protect development branch
+        develop:
+          required_reviews: 2
+          dismiss_stale_reviews: true
+          require_code_owner_reviews: true
+          required_status_checks:
+            - "ci/build"
+            - "ci/test"
+          enforce_admins: false
+          allow_force_pushes: false
+          allow_deletions: false
+    
+    # Permissions configuration
+    permissions:
+      # Team permissions (least privilege principle)
+      team_permissions:
+        "security-team": "admin"
+        "platform-team": "maintain"
+        "dev-team": "write"
+        "contractors": "read"  # External contributors get read-only
+      
+      # No individual user permissions (manage through teams only)
+      user_permissions: {}
+    
+    # Topics for categorization
+    topics:
+      - "secure"
+      - "restricted"
+      - "compliance-required"
+    
+    # Webhooks for security monitoring
+    webhooks:
+      - url: "${SECURITY_WEBHOOK_URL}"
+        events:
+          - "repository"
+          - "member"
+          - "team_add"
+          - "organization"
+          - "public"
+          - "security_advisory"
+          - "repository_vulnerability_alert"
+        content_type: "json"
+        secret: "${WEBHOOK_SECRET}"
+        active: true
+    
+    # Required files for compliance
+    required_files:
+      - path: "SECURITY.md"
+        content: |
+          # Security Policy
+          
+          ## Reporting Security Vulnerabilities
+          
+          Please report security vulnerabilities to security@company.com
+          
+          Do not report security issues through public GitHub issues.
+      
+      - path: ".github/CODEOWNERS"
+        content: |
+          # Global owners
+          * @organization/security-team
+          
+          # Infrastructure files
+          *.tf @organization/platform-team
+          *.yml @organization/platform-team
+          *.yaml @organization/platform-team
+          
+          # Security-sensitive files
+          /secrets/ @organization/security-team
+          /config/ @organization/security-team
+          .env* @organization/security-team
+
+# Policy rules for security compliance
+policies:
+  security_enhanced_compliance:
+    description: "Enhanced security compliance policy"
+    rules:
+      # Branch protection is mandatory
+      main_branch_protection:
+        type: "branch_protection"
+        branch: "main"
+        value: true
+        enforcement: "required"
+        message: "Main branch must have protection enabled"
+      
+      # Minimum reviewers
+      min_reviewers:
+        type: "min_reviews"
+        value: 3
+        enforcement: "required"
+        message: "At least 3 reviewers required for security repositories"
+      
+      # Security features must be enabled
+      vulnerability_scanning:
+        type: "security_feature"
+        features:
+          - "vulnerability_alerts"
+          - "automated_security_fixes"
+          - "private_vulnerability_reporting"
+        enforcement: "required"
+        message: "All security features must be enabled"
+      
+      # Required security files
+      security_documentation:
+        type: "file_exists"
+        files:
+          - "SECURITY.md"
+          - ".github/CODEOWNERS"
+        enforcement: "required"
+        message: "Security documentation files are required"
+      
+      # No public repositories allowed
+      privacy_requirement:
+        type: "repository_privacy"
+        value: "private"
+        enforcement: "required"
+        message: "Security repositories must be private"
+      
+      # Signed commits
+      commit_signing:
+        type: "commit_signing"
+        value: true
+        enforcement: "recommended"
+        message: "Commits should be signed with GPG"
+
+# Example usage
+repositories:
+  specific:
+    - name: "infrastructure-core"
+      template: "security-enhanced"
+      settings:
+        description: "Core infrastructure configuration and secrets"
+        
+    - name: "payment-service"
+      template: "security-enhanced"
+      settings:
+        description: "Payment processing service with PCI compliance requirements"
+        topics:
+          - "pci-compliant"
+          - "financial"
+      
+    - name: "auth-service"
+      template: "security-enhanced"
+      settings:
+        description: "Authentication and authorization service"
+  
+  # Apply to all repositories matching patterns
+  patterns:
+    - match: "*-secrets"
+      template: "security-enhanced"
+    
+    - match: "infra-*"
+      template: "security-enhanced"
+    
+    - match: "*-security"
+      template: "security-enhanced"

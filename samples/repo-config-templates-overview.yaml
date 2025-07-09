@@ -1,0 +1,103 @@
+# Repository Configuration Templates Overview
+# This file demonstrates how to use the three main policy templates
+
+version: "1.0.0"
+organization: "your-organization"
+
+# Import and use predefined templates
+# Templates can be loaded from separate files or defined inline
+
+# Quick reference for available templates:
+# 1. security-enhanced - Maximum security for sensitive repositories
+# 2. opensource-community - Public repositories with community features
+# 3. enterprise-standard - Enterprise governance and compliance
+
+# Example: Using templates for different repository types
+repositories:
+  specific:
+    # Critical infrastructure repositories
+    - name: "terraform-aws-infrastructure"
+      template: "security-enhanced"
+      settings:
+        description: "AWS infrastructure as code"
+        topics:
+          - "infrastructure"
+          - "terraform"
+          - "aws"
+    
+    # Public community projects
+    - name: "awesome-cli-tool"
+      template: "opensource-community"
+      settings:
+        description: "A CLI tool for developers"
+        homepage: "https://cli-tool.dev"
+        topics:
+          - "cli"
+          - "developer-tools"
+          - "golang"
+    
+    # Enterprise applications
+    - name: "customer-management-system"
+      template: "enterprise-standard"
+      settings:
+        description: "Internal CRM system"
+        topics:
+          - "crm"
+          - "enterprise"
+          - "internal"
+  
+  # Pattern-based template application
+  patterns:
+    # All infrastructure repositories use security template
+    - match: "infra-*"
+      template: "security-enhanced"
+    
+    - match: "terraform-*"
+      template: "security-enhanced"
+    
+    # All example/demo repositories are open source
+    - match: "example-*"
+      template: "opensource-community"
+    
+    - match: "demo-*"
+      template: "opensource-community"
+    
+    # All service repositories use enterprise template
+    - match: "*-service"
+      template: "enterprise-standard"
+    
+    - match: "*-api"
+      template: "enterprise-standard"
+
+# Template selection guide:
+#
+# Use 'security-enhanced' when:
+# - Repository contains secrets or credentials
+# - Infrastructure as code (Terraform, CloudFormation)
+# - Security-critical applications
+# - Compliance requirements (PCI, HIPAA)
+# - Access to production systems
+#
+# Use 'opensource-community' when:
+# - Public repositories
+# - Community projects
+# - Documentation sites
+# - Example/demo applications
+# - Open source libraries
+#
+# Use 'enterprise-standard' when:
+# - Internal enterprise applications
+# - Business-critical services
+# - Repositories requiring governance
+# - Projects with audit requirements
+# - Team collaboration with defined roles
+
+# Loading external template files (future feature)
+# templates:
+#   $import:
+#     - file: "repo-config-security.yaml"
+#       templates: ["security-enhanced"]
+#     - file: "repo-config-opensource.yaml"
+#       templates: ["opensource-community"]
+#     - file: "repo-config-enterprise.yaml"
+#       templates: ["enterprise-standard"]

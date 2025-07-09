@@ -1,0 +1,440 @@
+# Enterprise Repository Configuration Template
+# This template is designed for large organizations with compliance requirements
+# Use this for enterprise software development with governance and audit needs
+
+version: "1.0.0"
+organization: "enterprise-org"
+
+# Enterprise template definition
+templates:
+  enterprise-standard:
+    description: "Enterprise-grade repository configuration with compliance and governance"
+    
+    # Basic repository settings
+    settings:
+      private: true  # Default to private for enterprise
+      has_issues: true
+      has_wiki: true  # Internal documentation
+      has_projects: true  # Project management
+      has_downloads: false  # Control binary distribution
+      has_discussions: false  # Use enterprise forums instead
+      allow_squash_merge: true
+      allow_merge_commit: false  # Clean history
+      allow_rebase_merge: false
+      allow_auto_merge: false  # Manual review required
+      delete_branch_on_merge: true
+      allow_update_branch: true
+      use_squash_pr_title_as_default: true
+      web_commit_signoff_required: false
+      
+    # Security configurations for enterprise
+    security:
+      vulnerability_alerts: true
+      automated_security_fixes: true
+      private_vulnerability_reporting: true
+      security_advisories: true
+      
+      # Branch protection for main branch
+      branch_protection:
+        main:
+          # Review requirements
+          required_reviews: 2
+          dismiss_stale_reviews: true
+          require_code_owner_reviews: true
+          required_approving_review_count: 2
+          require_last_push_approval: false
+          
+          # Enterprise CI/CD pipeline checks
+          required_status_checks:
+            - "enterprise/security-scan"
+            - "enterprise/compliance-check"
+            - "enterprise/quality-gate"
+            - "ci/build"
+            - "ci/test"
+            - "ci/integration-test"
+            - "sonarqube/quality-gate"
+          strict_status_checks: true
+          
+          # Deployment restrictions
+          restrict_pushes: true
+          allowed_teams:
+            - "release-managers"
+            - "senior-developers"
+          
+          # Admin controls
+          enforce_admins: true
+          allow_force_pushes: false
+          allow_deletions: false
+          
+          # Require PR resolution
+          required_conversation_resolution: true
+          
+          # Deployment protection
+          deployment_protection_rules:
+            - environment: "production"
+              reviewers:
+                - "release-managers"
+                - "security-team"
+              wait_timer: 30  # 30 minutes wait
+        
+        # Development branch protection
+        develop:
+          required_reviews: 1
+          dismiss_stale_reviews: false
+          required_status_checks:
+            - "ci/build"
+            - "ci/test"
+          enforce_admins: false
+        
+        # Release branch pattern
+        "release/*":
+          required_reviews: 2
+          require_code_owner_reviews: true
+          restrict_pushes: true
+          allowed_teams:
+            - "release-managers"
+          enforce_admins: true
+    
+    # Enterprise permissions model
+    permissions:
+      # Team-based access control
+      team_permissions:
+        "architects": "admin"
+        "senior-developers": "maintain"
+        "developers": "write"
+        "qa-engineers": "write"
+        "business-analysts": "read"
+        "external-auditors": "read"
+      
+      # No direct user permissions (manage through teams)
+      user_permissions: {}
+    
+    # Enterprise categorization
+    topics:
+      - "enterprise"
+      - "internal"
+      - "managed"
+    
+    # Compliance and audit files
+    required_files:
+      - path: "README.md"
+        content: |
+          # [Project Name]
+          
+          ## Overview
+          
+          [Brief description of the project and its business purpose]
+          
+          ## Documentation
+          
+          - [Technical Documentation](docs/technical.md)
+          - [API Documentation](docs/api.md)
+          - [Deployment Guide](docs/deployment.md)
+          
+          ## Team
+          
+          - **Product Owner**: [Name] (@username)
+          - **Tech Lead**: [Name] (@username)
+          - **Security Champion**: [Name] (@username)
+          
+          ## Compliance
+          
+          - **Data Classification**: [Public/Internal/Confidential/Restricted]
+          - **Compliance Requirements**: [PCI/HIPAA/SOX/GDPR]
+          - **Last Security Review**: [Date]
+          
+          ## Support
+          
+          - **Slack Channel**: #team-[name]
+          - **Support Queue**: [JIRA/ServiceNow link]
+          - **On-Call Rotation**: [PagerDuty link]
+      
+      - path: ".github/CODEOWNERS"
+        content: |
+          # Default owners for everything
+          * @enterprise-org/architects
+          
+          # Frontend code
+          /frontend/ @enterprise-org/frontend-team
+          /src/components/ @enterprise-org/frontend-team
+          
+          # Backend code
+          /backend/ @enterprise-org/backend-team
+          /src/api/ @enterprise-org/backend-team
+          
+          # Database changes
+          /migrations/ @enterprise-org/database-team
+          *.sql @enterprise-org/database-team
+          
+          # Infrastructure
+          /infrastructure/ @enterprise-org/platform-team
+          /terraform/ @enterprise-org/platform-team
+          /.github/workflows/ @enterprise-org/devops-team
+          
+          # Security-sensitive files
+          /security/ @enterprise-org/security-team
+          *.key @enterprise-org/security-team
+          *.pem @enterprise-org/security-team
+          
+          # Compliance documents
+          /compliance/ @enterprise-org/compliance-team
+          /docs/audit/ @enterprise-org/compliance-team
+      
+      - path: "SECURITY.md"
+        content: |
+          # Security Policy
+          
+          ## Supported Versions
+          
+          | Version | Supported          |
+          | ------- | ------------------ |
+          | 2.x.x   | :white_check_mark: |
+          | 1.x.x   | :x:                |
+          
+          ## Reporting a Vulnerability
+          
+          **DO NOT** create a public issue for security vulnerabilities.
+          
+          Please report security vulnerabilities through our internal security portal:
+          https://security.enterprise.internal/report
+          
+          Or email: security@enterprise.internal
+          
+          ## Security Review Process
+          
+          All code must pass security review before deployment to production.
+          See [Security Review Guidelines](docs/security-review.md).
+      
+      - path: "COMPLIANCE.md"
+        content: |
+          # Compliance Information
+          
+          ## Data Classification
+          This repository is classified as: [CLASSIFICATION_LEVEL]
+          
+          ## Regulatory Requirements
+          This project must comply with:
+          - [ ] PCI-DSS
+          - [ ] HIPAA
+          - [ ] SOX
+          - [ ] GDPR
+          - [ ] CCPA
+          
+          ## Audit Trail
+          All changes to this repository are logged and retained per company policy.
+          
+          ## Required Reviews
+          - Security Review: Required for all changes
+          - Compliance Review: Required for data handling changes
+          - Architecture Review: Required for significant changes
+      
+      - path: ".github/workflows/compliance.yml"
+        content: |
+          name: Compliance Checks
+          
+          on:
+            pull_request:
+              branches: [ main, develop ]
+          
+          jobs:
+            compliance:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v3
+                
+                - name: Run Security Scanner
+                  uses: enterprise/security-scanner@v1
+                  with:
+                    fail-on-high: true
+                
+                - name: Check License Compliance
+                  uses: enterprise/license-checker@v1
+                  with:
+                    allowed-licenses: "MIT,Apache-2.0,BSD"
+                
+                - name: Run Compliance Validator
+                  uses: enterprise/compliance-validator@v1
+                  with:
+                    standards: "PCI,SOX"
+    
+    # Enterprise webhooks
+    webhooks:
+      - url: "${ENTERPRISE_AUDIT_WEBHOOK}"
+        events:
+          - "repository"
+          - "member"
+          - "team_add"
+          - "public"  # Alert if made public
+          - "security_advisory"
+        content_type: "json"
+        secret: "${WEBHOOK_SECRET}"
+        active: true
+      
+      - url: "${SLACK_WEBHOOK}"
+        events:
+          - "release"
+          - "deployment"
+        content_type: "json"
+        secret: "${WEBHOOK_SECRET}"
+        active: true
+    
+    # Environments configuration
+    environments:
+      - name: "development"
+        protection_rules:
+          required_reviewers: []
+          wait_timer: 0
+      
+      - name: "staging"
+        protection_rules:
+          required_reviewers:
+            - "qa-engineers"
+          wait_timer: 0
+      
+      - name: "production"
+        protection_rules:
+          required_reviewers:
+            - "release-managers"
+            - "security-team"
+          wait_timer: 60  # 1 hour wait
+          prevent_self_review: true
+          deployment_branch_policy:
+            protected_branches: true
+            custom_branch_policies:
+              - "main"
+              - "release/*"
+
+# Enterprise policies
+policies:
+  enterprise_governance:
+    description: "Enterprise governance and compliance policy"
+    rules:
+      # Private repositories only
+      privacy_requirement:
+        type: "repository_privacy"
+        value: "private"
+        enforcement: "required"
+        message: "Enterprise repositories must be private"
+      
+      # Branch protection mandatory
+      branch_protection:
+        type: "branch_protection"
+        branches: ["main", "develop"]
+        enforcement: "required"
+        message: "Main and develop branches must be protected"
+      
+      # Minimum reviewers for production code
+      code_review:
+        type: "min_reviews"
+        value: 2
+        enforcement: "required"
+        message: "Minimum 2 reviewers required"
+      
+      # Required compliance files
+      compliance_documentation:
+        type: "files_exist"
+        files:
+          - "README.md"
+          - "SECURITY.md"
+          - "COMPLIANCE.md"
+          - ".github/CODEOWNERS"
+        enforcement: "required"
+        message: "Compliance documentation required"
+      
+      # Security scanning
+      security_scanning:
+        type: "workflow_exists"
+        value: ".github/workflows/security.yml"
+        enforcement: "required"
+        message: "Security scanning workflow required"
+      
+      # License restrictions
+      license_compliance:
+        type: "approved_licenses"
+        licenses:
+          - "Proprietary"
+          - "MIT"
+          - "Apache-2.0"
+          - "BSD-3-Clause"
+        enforcement: "required"
+        message: "Only approved licenses allowed"
+      
+      # Data retention
+      audit_logging:
+        type: "audit_log_retention"
+        value: 365  # days
+        enforcement: "required"
+        message: "Audit logs must be retained for 1 year"
+
+# Example usage
+repositories:
+  specific:
+    - name: "customer-portal"
+      template: "enterprise-standard"
+      settings:
+        description: "Customer-facing portal application"
+        topics:
+          - "customer-facing"
+          - "web-application"
+          - "pci-compliant"
+      compliance:
+        data_classification: "confidential"
+        regulations: ["PCI-DSS", "GDPR"]
+    
+    - name: "billing-service"
+      template: "enterprise-standard"
+      settings:
+        description: "Core billing and payment processing service"
+        topics:
+          - "billing"
+          - "payments"
+          - "critical-service"
+      security:
+        branch_protection:
+          main:
+            required_reviews: 3  # Extra review for critical service
+      compliance:
+        data_classification: "restricted"
+        regulations: ["PCI-DSS", "SOX"]
+    
+    - name: "employee-tools"
+      template: "enterprise-standard"
+      settings:
+        description: "Internal employee productivity tools"
+        topics:
+          - "internal-tools"
+          - "employee-facing"
+      compliance:
+        data_classification: "internal"
+        regulations: []
+  
+  # Pattern-based configurations
+  patterns:
+    - match: "*-service"
+      template: "enterprise-standard"
+      settings:
+        topics:
+          - "microservice"
+          - "backend"
+    
+    - match: "*-api"
+      template: "enterprise-standard"
+      settings:
+        topics:
+          - "api"
+          - "backend"
+      security:
+        required_status_checks:
+          - "api-contract-test"
+          - "api-documentation"
+    
+    - match: "legacy-*"
+      template: "enterprise-standard"
+      settings:
+        topics:
+          - "legacy"
+          - "maintenance-mode"
+      security:
+        branch_protection:
+          main:
+            required_reviews: 3  # Extra caution for legacy code
