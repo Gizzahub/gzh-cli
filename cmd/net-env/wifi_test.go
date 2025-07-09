@@ -314,7 +314,7 @@ func TestExecuteActionCommands(t *testing.T) {
 func TestLoadConfig(t *testing.T) {
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "test-config.yaml")
-	
+
 	// Create a minimal valid config file
 	configContent := `
 actions:
@@ -324,10 +324,10 @@ actions:
 global:
   use_events: false
 `
-	
+
 	err := os.WriteFile(configPath, []byte(configContent), 0o644)
 	require.NoError(t, err)
-	
+
 	opts := &wifiOptions{
 		configPath: configPath,
 	}
@@ -339,12 +339,12 @@ global:
 	assert.NotNil(t, config.Actions)
 	assert.Len(t, config.Actions, 1)
 	assert.Equal(t, "test-action", config.Actions[0].Name)
-	
+
 	// Test with non-existent file
 	opts2 := &wifiOptions{
 		configPath: "/non/existent/path.yaml",
 	}
-	
+
 	config2, err2 := opts2.loadConfig()
 	assert.Error(t, err2)
 	assert.Nil(t, config2)
@@ -381,7 +381,7 @@ global:
 func TestRunConfigShow(t *testing.T) {
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "test-config.yaml")
-	
+
 	// Create a minimal valid config file
 	configContent := `
 actions:
@@ -393,7 +393,7 @@ global:
 `
 	err := os.WriteFile(configPath, []byte(configContent), 0o644)
 	require.NoError(t, err)
-	
+
 	opts := &wifiOptions{
 		configPath: configPath,
 	}
