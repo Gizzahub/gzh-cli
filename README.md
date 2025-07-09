@@ -87,13 +87,38 @@ $> gzh bulk-clone -t ~/mywork
 
 The bulk-clone command now supports configuration files to manage multiple organizations and their settings. This allows you to define clone operations once and reuse them.
 
+#### Configuration Priority System
+
+The gzh-manager tool uses a strict priority hierarchy where higher priority sources override lower priority ones:
+
+**Priority Order (Highest to Lowest):**
+1. **Command-Line Flags** (Highest Priority)
+2. **Environment Variables** (Second Priority)
+3. **Configuration Files** (Third Priority)
+4. **Default Values** (Lowest Priority)
+
+**Examples:**
+```bash
+# CLI flag overrides all other sources
+gz bulk-clone --strategy=pull --parallel=20
+
+# Environment variable overrides config file but not CLI flags
+export GITHUB_TOKEN=ghp_env_token
+gz bulk-clone --token=ghp_flag_token  # Uses ghp_flag_token
+
+# Configuration file provides base settings
+gz bulk-clone  # Uses settings from config file
+```
+
+> **📖 For detailed priority rules and examples, see [Configuration Priority Guide](docs/configuration-priority.md)**
+
 #### Configuration File Locations
 
 The tool searches for configuration files in the following order:
 1. Environment variable: `GZH_CONFIG_PATH`
-2. Current directory: `./bulk-clone.yaml` or `./bulk-clone.yml`
-3. User config directory: `~/.config/gzh-manager/bulk-clone.yaml`
-4. System config: `/etc/gzh-manager/bulk-clone.yaml`
+2. Current directory: `./gzh.yaml`, `./gzh.yml`, `./bulk-clone.yaml`, `./bulk-clone.yml`
+3. User config directory: `~/.config/gzh-manager/gzh.yaml`, `~/.config/gzh-manager/bulk-clone.yaml`
+4. System config: `/etc/gzh-manager/gzh.yaml`, `/etc/gzh-manager/bulk-clone.yaml`
 
 #### Using Configuration Files
 

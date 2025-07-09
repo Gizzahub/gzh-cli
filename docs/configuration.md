@@ -2,6 +2,167 @@
 
 The gzh-manager-go project uses a unified configuration system that supports all commands through a single `gzh.yaml` configuration file.
 
+## Configuration Priority
+
+The configuration system follows a strict priority order where higher priority sources override lower priority ones:
+
+### Priority Order (Highest to Lowest)
+
+1. **Command-Line Flags** (Highest Priority)
+2. **Environment Variables** (Second Priority)
+3. **Configuration Files** (Third Priority)
+4. **Default Values** (Lowest Priority)
+
+> **📖 For comprehensive priority documentation, see [Configuration Priority Guide](configuration-priority.md)**
+
+### Detailed Priority Explanation
+
+#### 1. Command-Line Flags (Highest Priority)
+Command-line flags always take precedence over all other configuration sources. When a flag is specified, it overrides any corresponding setting from environment variables, configuration files, or default values.
+
+**Examples:**
+```bash
+# Override configuration file strategy
+gz bulk-clone --strategy=pull
+
+# Override environment variable token
+gz bulk-clone --token=ghp_custom_token
+
+# Override configuration file parallel workers
+gz bulk-clone --parallel=20
+```
+
+#### 2. Environment Variables (Second Priority)
+Environment variables override configuration file values but are overridden by command-line flags.
+
+**Key Environment Variables:**
+- `GZH_CONFIG_PATH`: Override config file location
+- `GITHUB_TOKEN`: GitHub authentication token
+- `GITLAB_TOKEN`: GitLab authentication token
+- `GITEA_TOKEN`: Gitea authentication token
+
+**Examples:**
+```bash
+# Environment variable overrides config file
+export GITHUB_TOKEN=ghp_env_token
+gz bulk-clone  # Uses ghp_env_token
+
+# But command-line flag overrides environment variable
+gz bulk-clone --token=ghp_flag_token  # Uses ghp_flag_token
+```
+
+#### 3. Configuration Files (Third Priority)
+Configuration files provide the base configuration but are overridden by environment variables and command-line flags.
+
+**In configuration files, you can reference environment variables:**
+```yaml
+providers:
+  github:
+    token: "${GITHUB_TOKEN}"  # Expands to environment variable value
+```
+
+#### 4. Default Values (Lowest Priority)
+Default values are used when no higher priority source provides a value.
+
+**Common defaults:**
+- `strategy: reset`
+- `parallel: 10`
+- `visibility: all`
+- `timeout: 30s`
+
+### Priority Resolution Examples
+
+#### Example 1: Token Resolution
+```yaml
+# config.yaml
+providers:
+  github:
+    token: "ghp_config_token"
+```
+
+```bash
+# Environment variable
+export GITHUB_TOKEN=ghp_env_token
+
+# Command execution
+gz bulk-clone --token=ghp_flag_token
+```
+
+**Resolution:** `ghp_flag_token` (CLI flag wins)
+
+#### Example 2: Strategy Resolution
+```yaml
+# config.yaml
+global:
+  default_strategy: "reset"
+```
+
+```bash
+# Environment variable (not applicable for strategy)
+# Command execution
+gz bulk-clone --strategy=pull
+```
+
+**Resolution:** `pull` (CLI flag overrides config file)
+
+#### Example 3: Parallel Workers Resolution
+```yaml
+# config.yaml
+global:
+  concurrency:
+    clone_workers: 15
+```
+
+```bash
+# No environment variable for parallel workers
+# Command execution
+gz bulk-clone  # No --parallel flag
+```
+
+**Resolution:** `15` (from configuration file)
+
+### Environment Variable Expansion
+
+Configuration files support environment variable expansion using `${VAR_NAME}` syntax:
+
+```yaml
+providers:
+  github:
+    token: "${GITHUB_TOKEN}"
+    api_url: "${GITHUB_API_URL:-https://api.github.com}"  # With default
+```
+
+**Priority for expanded variables:**
+1. Command-line flags (if applicable)
+2. Environment variables (used in expansion)
+3. Default values in expansion syntax
+4. Configuration file literal values
+
+### Configuration File Search Order
+
+When no explicit config path is provided, the system searches in this order:
+
+1. **Environment Variable**: `GZH_CONFIG_PATH`
+2. **Current Directory**: `./gzh.yaml`, `./gzh.yml`
+3. **User Config**: `~/.config/gzh-manager/gzh.yaml`
+4. **System Config**: `/etc/gzh-manager/gzh.yaml`
+5. **Legacy Files**: `./bulk-clone.yaml`, `./bulk-clone.yml` (auto-migrated)
+
+### Debugging Configuration Priority
+
+Use these commands to understand configuration resolution:
+
+```bash
+# Show effective configuration after all priorities applied
+gz config show
+
+# Show configuration sources being used
+gz config sources
+
+# Validate current configuration
+gz config validate
+```
+
 ## Configuration File Hierarchy
 
 Configuration files are searched in the following order:
