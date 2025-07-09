@@ -70,32 +70,37 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Daemon mode support**: Run as background service for continuous monitoring
 - **Dry-run testing**: Test configurations safely without executing actual commands
 
-### Network Configuration Actions
-- **VPN management**: Connect/disconnect VPN connections (OpenVPN, WireGuard, NetworkManager)
-- **DNS configuration**: Switch DNS servers based on network environment using resolvectl, NetworkManager
-- **Proxy management**: Configure HTTP/HTTPS/SOCKS proxies with environment variables
-- **Hosts file management**: Add/remove entries from system hosts file with automatic backups
-- **Integrated automation**: Execute network configurations automatically when WiFi networks change
-- **Safety features**: Automatic backups, dry-run mode, and validation before making system changes
+### 네트워크 설정 액션
+- **VPN 연결 관리**: OpenVPN, WireGuard, NetworkManager를 통한 VPN 연결/해제 자동화
+- **DNS 설정 전환**: resolvectl, NetworkManager를 사용하여 네트워크 환경에 맞는 DNS 서버 자동 설정
+- **프록시 관리**: HTTP/HTTPS/SOCKS 프록시 설정 및 환경 변수를 통한 시스템 전체 적용
+- **호스트 파일 관리**: 시스템 호스트 파일에 엔트리 추가/제거, 자동 백업 기능 제공
+- **통합 자동화**: WiFi 네트워크 변경 시 네트워크 설정을 자동으로 실행하는 완전 자동화 시스템
+- **안전 기능**: 자동 백업, 드라이런 모드, 시스템 변경 전 검증 기능
 
-### Network Environment Transitions
-- **Seamless environment switching**: Automatically adapt system configuration when moving between networks (home, office, public WiFi)
-- **Profile-based configurations**: Define different network profiles with specific VPN, DNS, proxy, and host settings
-- **Event correlation**: Link WiFi network changes to appropriate system configuration changes
-- **Rollback capabilities**: Safe configuration changes with automatic backup and restore functionality
+### 네트워크 환경 전환
+- **원활한 환경 전환**: 네트워크 간 이동 시 (집, 사무실, 공공 WiFi) 시스템 설정 자동 적응
+- **프로필 기반 설정**: 각 네트워크별 VPN, DNS, 프록시, 호스트 설정을 프로필로 관리
+- **이벤트 연동**: WiFi 네트워크 변경을 적절한 시스템 설정 변경과 연결하는 이벤트 기반 시스템
+- **롤백 기능**: 안전한 설정 변경을 위한 자동 백업 및 복원 기능
+
+### 완료된 네트워크 환경 관리 기능
+- **✅ 데몬 모니터링**: 시스템 서비스 상태 실시간 모니터링 및 관리
+- **✅ WiFi 이벤트 훅**: 네트워크 연결 상태 변화 감지 및 자동 액션 트리거
+- **✅ 네트워크 액션 시스템**: VPN, DNS, 프록시, 호스트 파일 변경 자동화 완료
 
 ## Configuration Management
 
-### gzh.yaml Schema-Based Configuration System
-- **Unified configuration format**: Single gzh.yaml file for all tool configurations with comprehensive schema definition
-- **Schema validation**: JSON/YAML schema validation with built-in field validation and enum checking
-- **Configuration file hierarchy**: Automatic discovery with priority order (./gzh.yaml → ~/.config/gzh.yaml → system-wide)
-- **Environment variable substitution**: Dynamic configuration values using os.ExpandEnv for flexible deployment
-- **Configuration profiles**: Support for different environments (dev/prod) with profile-specific settings
-- **Interactive configuration**: `gz config init` command for guided configuration file creation
-- **Validation tools**: `gz config validate` command for configuration file validation and troubleshooting
-- **Migration support**: Tools and guides for migrating from legacy bulk-clone.yaml format
-- **Provider-based structure**: Organized configuration for different Git hosting providers (GitHub, GitLab, Gitea, Gogs)
+### 통합 설정 시스템 (gzh.yaml)
+- **✅ 통합 설정 포맷**: 모든 도구 설정을 하나의 gzh.yaml 파일로 통합 관리하는 포괄적인 스키마 정의 완료
+- **✅ 스키마 검증**: JSON/YAML 스키마 검증 기능과 내장된 필드 검증 및 열거형 검사 완료
+- **✅ 설정 파일 계층 구조**: 자동 발견 기능과 우선순위 (./gzh.yaml → ~/.config/gzh.yaml → 시스템 전체) 완료
+- **✅ 환경 변수 치환**: os.ExpandEnv를 사용한 동적 설정 값 지원으로 유연한 배포 가능
+- **✅ 설정 프로필**: 개발/운영 환경별 프로필 기반 설정 지원
+- **✅ 대화형 설정**: `gz config init` 명령을 통한 안내식 설정 파일 생성
+- **✅ 검증 도구**: `gz config validate` 명령으로 설정 파일 검증 및 문제 해결
+- **✅ 마이그레이션 지원**: 기존 bulk-clone.yaml 형식에서 통합 gzh.yaml로 자동 마이그레이션 도구 완료
+- **✅ 공급자 기반 구조**: GitHub, GitLab, Gitea, Gogs 등 다양한 Git 호스팅 공급자별 체계적인 설정 구조
 
 ### YAML Configuration System
 - **Hierarchical configurations**: Layer multiple YAML files for different environments and contexts

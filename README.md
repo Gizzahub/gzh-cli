@@ -31,28 +31,38 @@ Comprehensive CLI Tool
 
 # Usage
 
-## 기능
-Clone repositories by GitHub account (user, org) or GitLab group and manage repository configurations at scale.
+## 핵심 기능 개요
 
-- bulk-clone
-  - git
-  - gitea
-  - github
-  - gitlab
-  - gogs
-- gen-config
-- migrate (Configuration migration tool)
-  - Convert legacy bulk-clone.yaml to unified gzh.yaml format
-  - Batch migration for multiple files
-  - Dry-run mode for testing
-  - Automatic backup creation
-  - Detailed migration reports
-- repo-config (GitHub repository configuration management)
-  - Apply configuration templates
-  - Enforce security policies
-  - Audit compliance
-  - Manage branch protection
-  - Bulk operations
+`gzh-manager-go`는 개발자를 위한 종합적인 CLI 도구로, 다음과 같은 주요 기능을 제공합니다:
+
+### 📦 리포지토리 관리
+- **대량 클론 도구**: GitHub, GitLab, Gitea, Gogs에서 전체 조직의 리포지토리를 일괄 클론
+- **고급 클론 전략**: reset, pull, fetch 모드 지원으로 기존 리포지토리 동기화 방식 제어
+- **재개 가능한 작업**: 중단된 클론 작업을 이어서 진행할 수 있는 상태 관리 시스템
+- **병렬 처리**: 최대 50개의 동시 클론 작업으로 대규모 조직 처리 성능 향상
+
+### 🏢 GitHub 조직 관리
+- **리포지토리 설정 관리**: 조직 전체 리포지토리의 설정을 템플릿 기반으로 일괄 관리
+- **정책 템플릿 시스템**: 보안 강화, 오픈소스, 엔터프라이즈용 정책 템플릿 제공
+- **준수성 감사**: 정책 준수 여부 자동 검사 및 리포트 생성
+- **브랜치 보호 규칙**: 조직 전체 브랜치 보호 정책 일괄 적용
+
+### 🔧 통합 설정 시스템
+- **gzh.yaml 통합 설정**: 모든 명령어의 설정을 하나의 파일로 통합 관리
+- **설정 우선순위 체계**: CLI 플래그 > 환경변수 > 설정파일 > 기본값 순서
+- **설정 마이그레이션**: 기존 bulk-clone.yaml을 gzh.yaml로 자동 변환
+- **스키마 검증**: JSON/YAML 스키마를 통한 설정 파일 유효성 검사
+
+### 🌐 네트워크 환경 관리
+- **WiFi 변경 감지**: 네트워크 연결 상태 변화를 실시간으로 감지하고 자동 대응
+- **네트워크 환경 전환**: VPN, DNS, 프록시, 호스트 파일을 자동으로 환경에 맞게 전환
+- **데몬 모니터링**: 시스템 서비스 상태 모니터링 및 관리
+- **이벤트 기반 자동화**: 네트워크 변경 시 사용자 정의 액션 자동 실행
+
+### 🏠 개발 환경 관리
+- **패키지 관리자 통합**: asdf, Homebrew, SDKMAN, MacPorts 등의 패키지를 최신 버전으로 일괄 업데이트
+- **설정 백업/복원**: AWS, Docker, Kubernetes, SSH 등의 설정을 안전하게 백업 및 복원
+- **JetBrains IDE 지원**: IDE 설정 동기화 문제 자동 감지 및 수정
 
 ### CLI
 
@@ -418,9 +428,46 @@ patterns:
     policies: ["security"]
 ```
 
-## Trigger
+## 🚀 빠른 시작
 
-와이파이 변경.. 등
+### 1. 설치
+```bash
+# 바이너리 다운로드 및 설치
+make install
+
+# 또는 직접 빌드
+make build
+```
+
+### 2. 기본 설정
+```bash
+# 통합 설정 파일 생성
+gz config init
+
+# 네트워크 환경 설정
+gz net-env wifi config init
+gz net-env actions config init
+```
+
+### 3. 대량 클론 시작
+```bash
+# GitHub 조직 클론
+gz bulk-clone github -o myorg -t ~/repos
+
+# 설정 파일 사용
+gz bulk-clone github --use-config -o myorg
+```
+
+### 4. 네트워크 환경 자동화
+```bash
+# WiFi 변경 모니터링 시작
+gz net-env wifi monitor --daemon
+
+# 네트워크 액션 실행
+gz net-env actions run
+```
+
+> 📖 **자세한 사용법은 [USAGE.md](USAGE.md)를 참고하세요.**
 
 # Features
 - [goreleaser](https://goreleaser.com/) with `deb.` and `.rpm` packer and container (`docker.hub` and `ghcr.io`) releasing including `manpages` and `shell completions` and grouped Changelog generation.
