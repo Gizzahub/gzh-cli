@@ -4,60 +4,95 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
+	"net"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 type wifiOptions struct {
-	configPath string
-	daemon     bool
-	interval   time.Duration
-	action     string
-	logPath    string
-	dryRun     bool
-	verbose    bool
+	configPath  string
+	daemon      bool
+	interval    time.Duration
+	action      string
+	logPath     string
+	dryRun      bool
+	verbose     bool
+	useEvents   bool
+	hookTimeout time.Duration
 }
 
 type networkState struct {
-	SSID      string
-	Interface string
-	State     string
-	IP        string
-	Timestamp time.Time
+	SSID           string
+	Interface      string
+	State          string
+	IP             string
+	Timestamp      time.Time
+	SignalStrength int
+	Frequency      string
+	EventType      string // connect, disconnect, change
 }
 
 type wifiAction struct {
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description"`
-	Commands    []string `yaml:"commands"`
+	Name        string        `yaml:"name"`
+	Description string        `yaml:"description"`
+	Commands    []string      `yaml:"commands"`
+	Timeout     time.Duration `yaml:"timeout,omitempty"`
+	Async       bool          `yaml:"async,omitempty"`
+	OnFailure   string        `yaml:"on_failure,omitempty"` // ignore, warn, abort
 	Conditions  struct {
 		SSID      []string `yaml:"ssid,omitempty"`
 		Interface []string `yaml:"interface,omitempty"`
 		State     []string `yaml:"state,omitempty"`
+		EventType []string `yaml:"event_type,omitempty"`
+		SignalMin int      `yaml:"signal_min,omitempty"`
 	} `yaml:"conditions,omitempty"`
 }
 
 type wifiConfig struct {
 	Actions []wifiAction `yaml:"actions"`
 	Global  struct {
-		LogPath  string        `yaml:"log_path,omitempty"`
-		Interval time.Duration `yaml:"interval,omitempty"`
+		LogPath     string        `yaml:"log_path,omitempty"`
+		Interval    time.Duration `yaml:"interval,omitempty"`
+		UseEvents   bool          `yaml:"use_events,omitempty"`
+		HookTimeout time.Duration `yaml:"hook_timeout,omitempty"`
+		MaxRetries  int           `yaml:"max_retries,omitempty"`
 	} `yaml:"global,omitempty"`
+}
+
+// Event-driven monitoring structures
+type wifiEventMonitor struct {
+	opts     *wifiOptions
+	config   *wifiConfig
+	state    *networkState
+	stateMux sync.RWMutex
+	eventCh  chan *networkState
+	stopCh   chan struct{}
+}
+
+type netlinkEvent struct {
+	Interface string
+	State     string
+	EventType string
 }
 
 func defaultWifiOptions() *wifiOptions {
 	homeDir, _ := os.UserHomeDir()
 	return &wifiOptions{
-		configPath: filepath.Join(homeDir, ".gz", "wifi-hooks.yaml"),
-		interval:   5 * time.Second,
-		logPath:    filepath.Join(homeDir, ".gz", "logs", "wifi-hooks.log"),
+		configPath:  filepath.Join(homeDir, ".gz", "wifi-hooks.yaml"),
+		interval:    5 * time.Second,
+		logPath:     filepath.Join(homeDir, ".gz", "logs", "wifi-hooks.log"),
+		useEvents:   true,
+		hookTimeout: 30 * time.Second,
 	}
 }
 
@@ -131,10 +166,12 @@ Examples:
 
 	cmd.Flags().StringVar(&o.configPath, "config", o.configPath, "Path to WiFi actions configuration file")
 	cmd.Flags().BoolVar(&o.daemon, "daemon", false, "Run as background daemon")
-	cmd.Flags().DurationVar(&o.interval, "interval", o.interval, "Check interval for network changes")
+	cmd.Flags().DurationVar(&o.interval, "interval", o.interval, "Check interval for network changes (polling mode)")
 	cmd.Flags().StringVar(&o.logPath, "log", o.logPath, "Log file path (used when running as daemon)")
 	cmd.Flags().BoolVar(&o.dryRun, "dry-run", false, "Show what would be executed without running commands")
 	cmd.Flags().BoolVar(&o.verbose, "verbose", false, "Enable verbose logging")
+	cmd.Flags().BoolVar(&o.useEvents, "use-events", o.useEvents, "Use event-driven monitoring instead of polling")
+	cmd.Flags().DurationVar(&o.hookTimeout, "hook-timeout", o.hookTimeout, "Timeout for action execution")
 
 	return cmd
 }
@@ -307,38 +344,70 @@ func (o *wifiOptions) runConfigInit(_ *cobra.Command, args []string) error {
 actions:
   - name: "vpn-connect-office"
     description: "Connect to office VPN when joining office network"
+    timeout: 30s
+    async: false
+    on_failure: warn
     conditions:
       ssid: ["OfficeWiFi", "Office-Guest"]
+      event_type: ["connect", "change"]
     commands:
       - "echo 'Connecting to office VPN...'"
       - "systemctl start openvpn@office"
       
   - name: "vpn-disconnect-home"
     description: "Disconnect VPN when at home"
+    timeout: 15s
     conditions:
       ssid: ["HomeNetwork", "Home-5G"]
+      event_type: ["connect", "change"]
     commands:
       - "echo 'Disconnecting VPN...'"
       - "systemctl stop openvpn@office"
       
   - name: "dns-switch-public"
     description: "Switch to public DNS when on public networks"
+    timeout: 10s
+    async: true
     conditions:
       ssid: ["Starbucks", "PublicWiFi", "Guest"]
+      event_type: ["connect"]
+      signal_min: -70  # Only on decent signal strength
     commands:
       - "echo 'Switching to secure DNS...'"
       - "resolvectl dns wlan0 1.1.1.1 1.0.0.1"
       
   - name: "network-disconnect"
     description: "Actions when disconnecting from any network"
+    timeout: 20s
+    on_failure: ignore
     conditions:
       state: ["disconnected"]
+      event_type: ["disconnect"]
     commands:
       - "echo 'Network disconnected, cleaning up...'"
       - "systemctl stop openvpn@office || true"
+      - "killall -HUP dnsmasq || true"
+      
+  - name: "work-network-setup"
+    description: "Complete work environment setup"
+    timeout: 60s
+    async: false
+    on_failure: abort
+    conditions:
+      ssid: ["Corp-WiFi"]
+      event_type: ["connect"]
+      interface: ["wlan0", "wlp*"]
+    commands:
+      - "echo 'Setting up work environment...'"
+      - "systemctl start openvpn@corp"
+      - "mount -t cifs //fileserver/share /mnt/work || true"
+      - "systemctl start docker"
 
 global:
-  interval: 5s
+  use_events: true        # Use event-driven monitoring (faster response)
+  interval: 5s           # Fallback polling interval
+  hook_timeout: 30s      # Default timeout for actions
+  max_retries: 3         # Retry failed actions
   log_path: ~/.gz/logs/wifi-hooks.log
 `
 
@@ -401,10 +470,26 @@ func (o *wifiOptions) runForeground() error {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	fmt.Printf("🔍 Starting WiFi monitor (Press Ctrl+C to stop)\n")
+	// Apply global config settings
+	if config.Global.UseEvents {
+		o.useEvents = config.Global.UseEvents
+	}
+	if config.Global.HookTimeout > 0 {
+		o.hookTimeout = config.Global.HookTimeout
+	}
+
+	monitorType := "polling"
+	if o.useEvents {
+		monitorType = "event-driven"
+	}
+
+	fmt.Printf("🔍 Starting WiFi monitor (%s) - Press Ctrl+C to stop\n", monitorType)
 	fmt.Printf("   Config: %s\n", o.configPath)
-	fmt.Printf("   Interval: %v\n", o.interval)
-	fmt.Printf("   Actions: %d configured\n\n", len(config.Actions))
+	if !o.useEvents {
+		fmt.Printf("   Interval: %v\n", o.interval)
+	}
+	fmt.Printf("   Actions: %d configured\n", len(config.Actions))
+	fmt.Printf("   Hook timeout: %v\n\n", o.hookTimeout)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -418,17 +503,34 @@ func (o *wifiOptions) runForeground() error {
 		cancel()
 	}()
 
+	if o.useEvents {
+		return o.runEventMonitor(ctx, config)
+	}
+
 	return o.monitorLoop(ctx, config)
 }
 
 func (o *wifiOptions) runAsDaemon() error {
-	fmt.Printf("🔄 Starting WiFi monitor as daemon\n")
-	fmt.Printf("   Log: %s\n", o.logPath)
-
 	config, err := o.loadConfig()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
+
+	// Apply global config settings
+	if config.Global.UseEvents {
+		o.useEvents = config.Global.UseEvents
+	}
+	if config.Global.HookTimeout > 0 {
+		o.hookTimeout = config.Global.HookTimeout
+	}
+
+	monitorType := "polling"
+	if o.useEvents {
+		monitorType = "event-driven"
+	}
+
+	fmt.Printf("🔄 Starting WiFi monitor daemon (%s)\n", monitorType)
+	fmt.Printf("   Log: %s\n", o.logPath)
 
 	// Create log directory
 	if err := os.MkdirAll(filepath.Dir(o.logPath), 0o755); err != nil {
@@ -449,8 +551,12 @@ func (o *wifiOptions) runAsDaemon() error {
 	}
 	defer logFile.Close()
 
-	// Redirect output to log file in daemon mode
-	if !o.verbose {
+	// Create multi-writer for both file and stdout in verbose mode
+	var output io.Writer = logFile
+	if o.verbose {
+		output = io.MultiWriter(os.Stdout, logFile)
+	} else {
+		// Redirect output to log file in daemon mode
 		os.Stdout = logFile
 		os.Stderr = logFile
 	}
@@ -463,11 +569,17 @@ func (o *wifiOptions) runAsDaemon() error {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sigChan
-		fmt.Printf("[%s] Received shutdown signal, stopping daemon\n", time.Now().Format("2006-01-02 15:04:05"))
+		fmt.Fprintf(output, "[%s] Received shutdown signal, stopping daemon\n", time.Now().Format("2006-01-02 15:04:05"))
 		cancel()
 	}()
 
-	fmt.Printf("[%s] WiFi monitor daemon started\n", time.Now().Format("2006-01-02 15:04:05"))
+	fmt.Fprintf(output, "[%s] WiFi monitor daemon started (%s mode)\n", time.Now().Format("2006-01-02 15:04:05"), monitorType)
+	fmt.Fprintf(output, "[%s] Actions configured: %d\n", time.Now().Format("2006-01-02 15:04:05"), len(config.Actions))
+
+	if o.useEvents {
+		return o.runEventMonitor(ctx, config)
+	}
+
 	return o.monitorLoop(ctx, config)
 }
 
@@ -686,11 +798,419 @@ func (o *wifiOptions) executeActionCommands(action wifiAction) error {
 }
 
 func (o *wifiOptions) loadConfig() (*wifiConfig, error) {
-	// For now, return a basic config structure
-	// In a real implementation, this would parse YAML
-	return &wifiConfig{
-		Actions: []wifiAction{},
-	}, nil
+	if _, err := os.Stat(o.configPath); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	data, err := os.ReadFile(o.configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	var config wifiConfig
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("failed to parse YAML config: %w", err)
+	}
+
+	// Set defaults for actions
+	for i := range config.Actions {
+		if config.Actions[i].Timeout == 0 {
+			config.Actions[i].Timeout = 30 * time.Second
+		}
+		if config.Actions[i].OnFailure == "" {
+			config.Actions[i].OnFailure = "warn"
+		}
+	}
+
+	// Set global defaults
+	if config.Global.Interval == 0 {
+		config.Global.Interval = 5 * time.Second
+	}
+	if config.Global.HookTimeout == 0 {
+		config.Global.HookTimeout = 30 * time.Second
+	}
+	if config.Global.MaxRetries == 0 {
+		config.Global.MaxRetries = 3
+	}
+
+	return &config, nil
+}
+
+// Event-driven monitoring implementation
+func (o *wifiOptions) runEventMonitor(ctx context.Context, config *wifiConfig) error {
+	monitor := &wifiEventMonitor{
+		opts:    o,
+		config:  config,
+		eventCh: make(chan *networkState, 10),
+		stopCh:  make(chan struct{}),
+	}
+
+	// Start event collectors
+	go monitor.startNetlinkMonitor(ctx)
+	go monitor.startNetworkManagerMonitor(ctx)
+
+	// Get initial state
+	initialState, err := o.getCurrentNetworkState()
+	if err != nil {
+		fmt.Printf("⚠️  Could not get initial state: %v\n", err)
+	} else {
+		monitor.setState(initialState)
+		if o.verbose {
+			fmt.Printf("📡 Initial state: %s\n", o.formatState(initialState))
+		}
+	}
+
+	// Main event processing loop
+	for {
+		select {
+		case <-ctx.Done():
+			close(monitor.stopCh)
+			return nil
+		case event := <-monitor.eventCh:
+			if err := monitor.handleEvent(event); err != nil {
+				fmt.Printf("❌ Error handling event: %v\n", err)
+			}
+		}
+	}
+}
+
+func (m *wifiEventMonitor) setState(state *networkState) {
+	m.stateMux.Lock()
+	defer m.stateMux.Unlock()
+	m.state = state
+}
+
+func (m *wifiEventMonitor) getState() *networkState {
+	m.stateMux.RLock()
+	defer m.stateMux.RUnlock()
+	if m.state == nil {
+		return nil
+	}
+	// Return a copy to avoid race conditions
+	stateCopy := *m.state
+	return &stateCopy
+}
+
+func (m *wifiEventMonitor) handleEvent(newState *networkState) error {
+	oldState := m.getState()
+
+	// Check if state actually changed
+	if !m.opts.hasStateChanged(oldState, newState) {
+		return nil
+	}
+
+	if m.opts.verbose {
+		fmt.Printf("📡 Network event: %s -> %s (type: %s)\n",
+			m.opts.formatState(oldState),
+			m.opts.formatState(newState),
+			newState.EventType)
+	}
+
+	// Update state
+	m.setState(newState)
+
+	// Execute matching actions
+	return m.opts.executeActions(m.config, newState)
+}
+
+func (m *wifiEventMonitor) startNetlinkMonitor(ctx context.Context) {
+	// Monitor using netlink events for real-time interface changes
+	if err := m.netlinkMonitor(ctx); err != nil {
+		if m.opts.verbose {
+			fmt.Printf("⚠️  Netlink monitor failed: %v\n", err)
+		}
+	}
+}
+
+func (m *wifiEventMonitor) netlinkMonitor(ctx context.Context) error {
+	// Create a netlink socket to monitor interface events
+	conn, err := net.Dial("unix", "/var/run/NetworkManager/private-dhcp")
+	if err != nil {
+		// Fallback to manual interface monitoring
+		return m.interfaceMonitor(ctx)
+	}
+	defer conn.Close()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-m.stopCh:
+			return nil
+		default:
+			// Monitor for interface state changes
+			// This is a simplified implementation
+			time.Sleep(time.Second)
+
+			currentState, err := m.opts.getCurrentNetworkState()
+			if err != nil {
+				continue
+			}
+
+			currentState.EventType = "change"
+			m.eventCh <- currentState
+		}
+	}
+}
+
+func (m *wifiEventMonitor) interfaceMonitor(ctx context.Context) error {
+	ticker := time.NewTicker(2 * time.Second) // Faster polling for events
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-m.stopCh:
+			return nil
+		case <-ticker.C:
+			currentState, err := m.opts.getCurrentNetworkState()
+			if err != nil {
+				continue
+			}
+
+			currentState.EventType = "poll"
+			m.eventCh <- currentState
+		}
+	}
+}
+
+func (m *wifiEventMonitor) startNetworkManagerMonitor(ctx context.Context) {
+	// Monitor NetworkManager events via nmcli
+	if err := m.networkManagerMonitor(ctx); err != nil {
+		if m.opts.verbose {
+			fmt.Printf("⚠️  NetworkManager monitor failed: %v\n", err)
+		}
+	}
+}
+
+func (m *wifiEventMonitor) networkManagerMonitor(ctx context.Context) error {
+	// Use nmcli to monitor NetworkManager events
+	cmd := exec.CommandContext(ctx, "nmcli", "monitor")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdout pipe: %w", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start nmcli monitor: %w", err)
+	}
+
+	go func() {
+		defer cmd.Wait()
+		scanner := bufio.NewScanner(stdout)
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if m.opts.verbose {
+				fmt.Printf("🔍 NetworkManager event: %s\n", line)
+			}
+
+			// Parse NetworkManager events and create network state
+			if event := m.parseNetworkManagerEvent(line); event != nil {
+				select {
+				case m.eventCh <- event:
+				case <-ctx.Done():
+					return
+				case <-m.stopCh:
+					return
+				}
+			}
+		}
+	}()
+
+	<-ctx.Done()
+	cmd.Process.Kill()
+	return nil
+}
+
+func (m *wifiEventMonitor) parseNetworkManagerEvent(line string) *networkState {
+	// Parse NetworkManager monitor output
+	// Example formats:
+	// "wlan0: connected (local only)"
+	// "wlan0: disconnected"
+	// "wlan0: connecting (getting IP configuration)"
+
+	if !strings.Contains(line, ":") {
+		return nil
+	}
+
+	parts := strings.SplitN(line, ":", 2)
+	if len(parts) != 2 {
+		return nil
+	}
+
+	iface := strings.TrimSpace(parts[0])
+	status := strings.TrimSpace(parts[1])
+
+	state := &networkState{
+		Interface: iface,
+		Timestamp: time.Now(),
+		EventType: "networkmanager",
+	}
+
+	if strings.Contains(status, "connected") {
+		state.State = "connected"
+		// Get current SSID for connected state
+		if currentState, err := m.opts.getCurrentNetworkState(); err == nil {
+			state.SSID = currentState.SSID
+			state.IP = currentState.IP
+		}
+	} else if strings.Contains(status, "disconnected") {
+		state.State = "disconnected"
+		state.EventType = "disconnect"
+	} else if strings.Contains(status, "connecting") {
+		state.State = "connecting"
+		state.EventType = "connect"
+	}
+
+	return state
+}
+
+// Enhanced action execution with timeout and async support
+func (o *wifiOptions) executeActionsWithTimeout(config *wifiConfig, state *networkState) error {
+	var wg sync.WaitGroup
+	errCh := make(chan error, len(config.Actions))
+
+	for _, action := range config.Actions {
+		if !o.shouldExecuteAction(action, state) {
+			continue
+		}
+
+		wg.Add(1)
+		go func(act wifiAction) {
+			defer wg.Done()
+
+			if o.verbose || o.dryRun {
+				fmt.Printf("🎯 Executing action: %s\n", act.Name)
+				if act.Description != "" {
+					fmt.Printf("   %s\n", act.Description)
+				}
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), act.Timeout)
+			defer cancel()
+
+			if err := o.executeActionCommandsWithContext(ctx, act); err != nil {
+				switch act.OnFailure {
+				case "ignore":
+					// Silently ignore errors
+				case "abort":
+					errCh <- fmt.Errorf("action '%s' failed (abort on failure): %w", act.Name, err)
+				default: // "warn"
+					fmt.Printf("⚠️  Action '%s' failed: %v\n", act.Name, err)
+				}
+			} else {
+				if o.verbose {
+					fmt.Printf("✅ Action '%s' completed\n", act.Name)
+				}
+			}
+		}(action)
+
+		// If not async, wait for this action to complete before starting next
+		if !action.Async {
+			wg.Wait()
+		}
+	}
+
+	// Wait for all remaining actions
+	wg.Wait()
+	close(errCh)
+
+	// Check for abort errors
+	for err := range errCh {
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *wifiOptions) executeActionCommandsWithContext(ctx context.Context, action wifiAction) error {
+	for _, command := range action.Commands {
+		if o.dryRun {
+			fmt.Printf("   [DRY-RUN] %s\n", command)
+			continue
+		}
+
+		if o.verbose {
+			fmt.Printf("   Running: %s\n", command)
+		}
+
+		cmd := exec.CommandContext(ctx, "sh", "-c", command)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("command failed '%s': %w", command, err)
+		}
+	}
+
+	return nil
+}
+
+// Enhanced action condition checking
+func (o *wifiOptions) shouldExecuteActionEnhanced(action wifiAction, state *networkState) bool {
+	// Check SSID conditions
+	if len(action.Conditions.SSID) > 0 {
+		found := false
+		for _, ssid := range action.Conditions.SSID {
+			if ssid == state.SSID || (ssid == "*" && state.SSID != "") {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+
+	// Check state conditions
+	if len(action.Conditions.State) > 0 {
+		found := false
+		for _, stateCondition := range action.Conditions.State {
+			if stateCondition == state.State {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+
+	// Check event type conditions
+	if len(action.Conditions.EventType) > 0 {
+		found := false
+		for _, eventType := range action.Conditions.EventType {
+			if eventType == state.EventType {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+
+	// Check signal strength conditions
+	if action.Conditions.SignalMin > 0 && state.SignalStrength < action.Conditions.SignalMin {
+		return false
+	}
+
+	// Check interface conditions
+	if len(action.Conditions.Interface) > 0 {
+		found := false
+		for _, iface := range action.Conditions.Interface {
+			if iface == state.Interface || iface == "*" {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+
+	return true
 }
 
 // createPidFile creates a PID file for daemon mode

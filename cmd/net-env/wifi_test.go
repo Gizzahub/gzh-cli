@@ -19,6 +19,8 @@ func TestDefaultWifiOptions(t *testing.T) {
 	assert.False(t, opts.daemon)
 	assert.False(t, opts.dryRun)
 	assert.False(t, opts.verbose)
+	assert.True(t, opts.useEvents)
+	assert.Equal(t, 30*time.Second, opts.hookTimeout)
 }
 
 func TestNewWifiCmd(t *testing.T) {
@@ -310,13 +312,42 @@ func TestExecuteActionCommands(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	opts := &wifiOptions{}
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "test-config.yaml")
+	
+	// Create a minimal valid config file
+	configContent := `
+actions:
+  - name: "test-action"
+    commands:
+      - "echo 'test'"
+global:
+  use_events: false
+`
+	
+	err := os.WriteFile(configPath, []byte(configContent), 0o644)
+	require.NoError(t, err)
+	
+	opts := &wifiOptions{
+		configPath: configPath,
+	}
 
-	// Test basic config loading (simplified implementation)
+	// Test basic config loading with existing file
 	config, err := opts.loadConfig()
 	assert.NoError(t, err)
 	assert.NotNil(t, config)
 	assert.NotNil(t, config.Actions)
+	assert.Len(t, config.Actions, 1)
+	assert.Equal(t, "test-action", config.Actions[0].Name)
+	
+	// Test with non-existent file
+	opts2 := &wifiOptions{
+		configPath: "/non/existent/path.yaml",
+	}
+	
+	config2, err2 := opts2.loadConfig()
+	assert.Error(t, err2)
+	assert.Nil(t, config2)
 }
 
 func TestRunConfigValidation(t *testing.T) {
@@ -329,10 +360,18 @@ func TestRunConfigValidation(t *testing.T) {
 
 	// Test with non-existent file
 	err := opts.runConfigValidate(nil, nil)
-	assert.NoError(t, err) // Current implementation always returns valid config
+	assert.Error(t, err) // Should error if file doesn't exist
 
-	// Test with existing file (simplified)
-	err = os.WriteFile(configPath, []byte("test content"), 0o644)
+	// Test with existing valid file
+	configContent := `
+actions:
+  - name: "test-action"
+    commands:
+      - "echo 'test'"
+global:
+  use_events: false
+`
+	err = os.WriteFile(configPath, []byte(configContent), 0o644)
 	require.NoError(t, err)
 
 	err = opts.runConfigValidate(nil, nil)
@@ -340,10 +379,27 @@ func TestRunConfigValidation(t *testing.T) {
 }
 
 func TestRunConfigShow(t *testing.T) {
-	opts := &wifiOptions{}
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "test-config.yaml")
+	
+	// Create a minimal valid config file
+	configContent := `
+actions:
+  - name: "test-action"
+    commands:
+      - "echo 'test'"
+global:
+  use_events: false
+`
+	err := os.WriteFile(configPath, []byte(configContent), 0o644)
+	require.NoError(t, err)
+	
+	opts := &wifiOptions{
+		configPath: configPath,
+	}
 
-	// Test showing config (simplified implementation)
-	err := opts.runConfigShow(nil, nil)
+	// Test showing config with existing file
+	err = opts.runConfigShow(nil, nil)
 	assert.NoError(t, err)
 }
 
@@ -408,4 +464,396 @@ func TestWifiOptionsDefaults(t *testing.T) {
 	assert.Empty(t, opts.logPath)
 	assert.False(t, opts.dryRun)
 	assert.False(t, opts.verbose)
+	assert.False(t, opts.useEvents)
+	assert.Equal(t, time.Duration(0), opts.hookTimeout)
+}
+
+// Test event-driven WiFi functionality
+func TestWifiEventMonitor(t *testing.T) {
+	opts := &wifiOptions{
+		useEvents:   true,
+		hookTimeout: 10 * time.Second,
+		verbose:     true,
+	}
+
+	config := &wifiConfig{
+		Actions: []wifiAction{
+			{
+				Name:        "test-action",
+				Description: "Test action",
+				Commands:    []string{"echo 'test'"},
+				Timeout:     5 * time.Second,
+				Async:       false,
+				OnFailure:   "warn",
+				Conditions: struct {
+					SSID      []string `yaml:"ssid,omitempty"`
+					Interface []string `yaml:"interface,omitempty"`
+					State     []string `yaml:"state,omitempty"`
+					EventType []string `yaml:"event_type,omitempty"`
+					SignalMin int      `yaml:"signal_min,omitempty"`
+				}{
+					SSID:      []string{"TestNetwork"},
+					EventType: []string{"connect"},
+				},
+			},
+		},
+	}
+
+	monitor := &wifiEventMonitor{
+		opts:    opts,
+		config:  config,
+		eventCh: make(chan *networkState, 10),
+		stopCh:  make(chan struct{}),
+	}
+
+	// Test state management
+	testState := &networkState{
+		SSID:      "TestNetwork",
+		State:     "connected",
+		EventType: "connect",
+		Timestamp: time.Now(),
+	}
+
+	monitor.setState(testState)
+	retrievedState := monitor.getState()
+	assert.Equal(t, testState.SSID, retrievedState.SSID)
+	assert.Equal(t, testState.State, retrievedState.State)
+	assert.Equal(t, testState.EventType, retrievedState.EventType)
+}
+
+func TestNetworkStateEnhanced(t *testing.T) {
+	state := &networkState{
+		SSID:           "TestNetwork",
+		Interface:      "wlan0",
+		State:          "connected",
+		IP:             "192.168.1.100",
+		Timestamp:      time.Now(),
+		SignalStrength: -50,
+		Frequency:      "2.4GHz",
+		EventType:      "connect",
+	}
+
+	assert.Equal(t, "TestNetwork", state.SSID)
+	assert.Equal(t, "wlan0", state.Interface)
+	assert.Equal(t, "connected", state.State)
+	assert.Equal(t, "192.168.1.100", state.IP)
+	assert.Equal(t, -50, state.SignalStrength)
+	assert.Equal(t, "2.4GHz", state.Frequency)
+	assert.Equal(t, "connect", state.EventType)
+}
+
+func TestWifiActionEnhanced(t *testing.T) {
+	action := wifiAction{
+		Name:        "enhanced-action",
+		Description: "Enhanced action with new features",
+		Commands:    []string{"echo 'test'", "date"},
+		Timeout:     30 * time.Second,
+		Async:       true,
+		OnFailure:   "abort",
+		Conditions: struct {
+			SSID      []string `yaml:"ssid,omitempty"`
+			Interface []string `yaml:"interface,omitempty"`
+			State     []string `yaml:"state,omitempty"`
+			EventType []string `yaml:"event_type,omitempty"`
+			SignalMin int      `yaml:"signal_min,omitempty"`
+		}{
+			SSID:      []string{"Office", "Home"},
+			Interface: []string{"wlan0", "wlp*"},
+			State:     []string{"connected"},
+			EventType: []string{"connect", "change"},
+			SignalMin: -70,
+		},
+	}
+
+	assert.Equal(t, "enhanced-action", action.Name)
+	assert.Equal(t, "Enhanced action with new features", action.Description)
+	assert.Equal(t, []string{"echo 'test'", "date"}, action.Commands)
+	assert.Equal(t, 30*time.Second, action.Timeout)
+	assert.True(t, action.Async)
+	assert.Equal(t, "abort", action.OnFailure)
+	assert.Contains(t, action.Conditions.SSID, "Office")
+	assert.Contains(t, action.Conditions.SSID, "Home")
+	assert.Contains(t, action.Conditions.Interface, "wlan0")
+	assert.Contains(t, action.Conditions.State, "connected")
+	assert.Contains(t, action.Conditions.EventType, "connect")
+	assert.Equal(t, -70, action.Conditions.SignalMin)
+}
+
+func TestWifiConfigEnhanced(t *testing.T) {
+	config := &wifiConfig{
+		Actions: []wifiAction{
+			{Name: "action1"},
+			{Name: "action2"},
+		},
+		Global: struct {
+			LogPath     string        `yaml:"log_path,omitempty"`
+			Interval    time.Duration `yaml:"interval,omitempty"`
+			UseEvents   bool          `yaml:"use_events,omitempty"`
+			HookTimeout time.Duration `yaml:"hook_timeout,omitempty"`
+			MaxRetries  int           `yaml:"max_retries,omitempty"`
+		}{
+			LogPath:     "/var/log/wifi-hooks.log",
+			Interval:    5 * time.Second,
+			UseEvents:   true,
+			HookTimeout: 30 * time.Second,
+			MaxRetries:  3,
+		},
+	}
+
+	assert.Len(t, config.Actions, 2)
+	assert.Equal(t, "/var/log/wifi-hooks.log", config.Global.LogPath)
+	assert.Equal(t, 5*time.Second, config.Global.Interval)
+	assert.True(t, config.Global.UseEvents)
+	assert.Equal(t, 30*time.Second, config.Global.HookTimeout)
+	assert.Equal(t, 3, config.Global.MaxRetries)
+}
+
+func TestShouldExecuteActionEnhanced(t *testing.T) {
+	opts := &wifiOptions{}
+
+	tests := []struct {
+		name     string
+		action   wifiAction
+		state    *networkState
+		expected bool
+	}{
+		{
+			name: "matches SSID wildcard",
+			action: wifiAction{
+				Conditions: struct {
+					SSID      []string `yaml:"ssid,omitempty"`
+					Interface []string `yaml:"interface,omitempty"`
+					State     []string `yaml:"state,omitempty"`
+					EventType []string `yaml:"event_type,omitempty"`
+					SignalMin int      `yaml:"signal_min,omitempty"`
+				}{
+					SSID: []string{"*"},
+				},
+			},
+			state: &networkState{
+				SSID:  "AnyNetwork",
+				State: "connected",
+			},
+			expected: true,
+		},
+		{
+			name: "matches event type",
+			action: wifiAction{
+				Conditions: struct {
+					SSID      []string `yaml:"ssid,omitempty"`
+					Interface []string `yaml:"interface,omitempty"`
+					State     []string `yaml:"state,omitempty"`
+					EventType []string `yaml:"event_type,omitempty"`
+					SignalMin int      `yaml:"signal_min,omitempty"`
+				}{
+					EventType: []string{"connect", "disconnect"},
+				},
+			},
+			state: &networkState{
+				EventType: "connect",
+			},
+			expected: true,
+		},
+		{
+			name: "fails signal strength condition",
+			action: wifiAction{
+				Conditions: struct {
+					SSID      []string `yaml:"ssid,omitempty"`
+					Interface []string `yaml:"interface,omitempty"`
+					State     []string `yaml:"state,omitempty"`
+					EventType []string `yaml:"event_type,omitempty"`
+					SignalMin int      `yaml:"signal_min,omitempty"`
+				}{
+					SignalMin: -50,
+				},
+			},
+			state: &networkState{
+				SignalStrength: -80, // Weaker signal
+			},
+			expected: false,
+		},
+		{
+			name: "matches interface wildcard",
+			action: wifiAction{
+				Conditions: struct {
+					SSID      []string `yaml:"ssid,omitempty"`
+					Interface []string `yaml:"interface,omitempty"`
+					State     []string `yaml:"state,omitempty"`
+					EventType []string `yaml:"event_type,omitempty"`
+					SignalMin int      `yaml:"signal_min,omitempty"`
+				}{
+					Interface: []string{"*"},
+				},
+			},
+			state: &networkState{
+				Interface: "wlan0",
+			},
+			expected: true,
+		},
+		{
+			name: "complex condition - all match",
+			action: wifiAction{
+				Conditions: struct {
+					SSID      []string `yaml:"ssid,omitempty"`
+					Interface []string `yaml:"interface,omitempty"`
+					State     []string `yaml:"state,omitempty"`
+					EventType []string `yaml:"event_type,omitempty"`
+					SignalMin int      `yaml:"signal_min,omitempty"`
+				}{
+					SSID:      []string{"Office"},
+					State:     []string{"connected"},
+					EventType: []string{"connect"},
+					SignalMin: -70,
+				},
+			},
+			state: &networkState{
+				SSID:           "Office",
+				State:          "connected",
+				EventType:      "connect",
+				SignalStrength: -60,
+			},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := opts.shouldExecuteActionEnhanced(tt.action, tt.state)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestParseNetworkManagerEvent(t *testing.T) {
+	opts := &wifiOptions{}
+	monitor := &wifiEventMonitor{
+		opts: opts,
+	}
+
+	tests := []struct {
+		name     string
+		line     string
+		expected *networkState
+	}{
+		{
+			name:     "invalid format",
+			line:     "invalid line",
+			expected: nil,
+		},
+		{
+			name: "connected event",
+			line: "wlan0: connected (local only)",
+			expected: &networkState{
+				Interface: "wlan0",
+				State:     "connected",
+				EventType: "networkmanager",
+			},
+		},
+		{
+			name: "disconnected event",
+			line: "wlan0: disconnected",
+			expected: &networkState{
+				Interface: "wlan0",
+				State:     "disconnected",
+				EventType: "disconnect",
+			},
+		},
+		{
+			name: "connecting event",
+			line: "wlan0: connecting (getting IP configuration)",
+			expected: &networkState{
+				Interface: "wlan0",
+				State:     "connecting",
+				EventType: "connect",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := monitor.parseNetworkManagerEvent(tt.line)
+			if tt.expected == nil {
+				assert.Nil(t, result)
+			} else {
+				assert.NotNil(t, result)
+				assert.Equal(t, tt.expected.Interface, result.Interface)
+				assert.Equal(t, tt.expected.State, result.State)
+				assert.Equal(t, tt.expected.EventType, result.EventType)
+			}
+		})
+	}
+}
+
+func TestMonitorCommandFlags(t *testing.T) {
+	cmd := newWifiMonitorCmd()
+
+	// Test new flags
+	useEventsFlag := cmd.Flags().Lookup("use-events")
+	assert.NotNil(t, useEventsFlag)
+	assert.Equal(t, "true", useEventsFlag.DefValue)
+
+	hookTimeoutFlag := cmd.Flags().Lookup("hook-timeout")
+	assert.NotNil(t, hookTimeoutFlag)
+	assert.Equal(t, "30s", hookTimeoutFlag.DefValue)
+
+	// Test existing flags
+	configFlag := cmd.Flags().Lookup("config")
+	assert.NotNil(t, configFlag)
+
+	daemonFlag := cmd.Flags().Lookup("daemon")
+	assert.NotNil(t, daemonFlag)
+	assert.Equal(t, "false", daemonFlag.DefValue)
+}
+
+func TestLoadConfigYAML(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "test-config.yaml")
+
+	configContent := `
+actions:
+  - name: "test-action"
+    description: "Test action"
+    timeout: 45s
+    async: true
+    on_failure: abort
+    conditions:
+      ssid: ["TestNetwork"]
+      event_type: ["connect"]
+      signal_min: -60
+    commands:
+      - "echo 'test'"
+
+global:
+  use_events: true
+  hook_timeout: 25s
+  max_retries: 5
+  interval: 3s
+`
+
+	err := os.WriteFile(configPath, []byte(configContent), 0o644)
+	require.NoError(t, err)
+
+	opts := &wifiOptions{
+		configPath: configPath,
+	}
+
+	config, err := opts.loadConfig()
+	require.NoError(t, err)
+	require.NotNil(t, config)
+
+	assert.Len(t, config.Actions, 1)
+	action := config.Actions[0]
+	assert.Equal(t, "test-action", action.Name)
+	assert.Equal(t, "Test action", action.Description)
+	assert.Equal(t, 45*time.Second, action.Timeout)
+	assert.True(t, action.Async)
+	assert.Equal(t, "abort", action.OnFailure)
+	assert.Contains(t, action.Conditions.SSID, "TestNetwork")
+	assert.Contains(t, action.Conditions.EventType, "connect")
+	assert.Equal(t, -60, action.Conditions.SignalMin)
+
+	assert.True(t, config.Global.UseEvents)
+	assert.Equal(t, 25*time.Second, config.Global.HookTimeout)
+	assert.Equal(t, 5, config.Global.MaxRetries)
+	assert.Equal(t, 3*time.Second, config.Global.Interval)
 }
