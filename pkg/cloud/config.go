@@ -15,6 +15,7 @@ type Config struct {
 	Providers map[string]ProviderConfig `yaml:"providers"`
 	Profiles  map[string]Profile        `yaml:"profiles"`
 	Policies  []NetworkPolicy           `yaml:"policies,omitempty"`
+	VPNs      map[string]VPNConnection  `yaml:"vpns,omitempty"`
 	Sync      SyncConfig                `yaml:"sync,omitempty"`
 }
 
@@ -165,6 +166,38 @@ func (c *Config) GetProfilesForProvider(providerName string) []Profile {
 		}
 	}
 	return profiles
+}
+
+// GetVPNConnection returns VPN connection by name
+func (c *Config) GetVPNConnection(name string) (VPNConnection, bool) {
+	if c.VPNs == nil {
+		return VPNConnection{}, false
+	}
+	vpn, exists := c.VPNs[name]
+	return vpn, exists
+}
+
+// AddVPNConnection adds a VPN connection to the configuration
+func (c *Config) AddVPNConnection(conn VPNConnection) {
+	if c.VPNs == nil {
+		c.VPNs = make(map[string]VPNConnection)
+	}
+	c.VPNs[conn.Name] = conn
+}
+
+// RemoveVPNConnection removes a VPN connection from the configuration
+func (c *Config) RemoveVPNConnection(name string) {
+	if c.VPNs != nil {
+		delete(c.VPNs, name)
+	}
+}
+
+// GetVPNConnections returns all VPN connections
+func (c *Config) GetVPNConnections() map[string]VPNConnection {
+	if c.VPNs == nil {
+		return make(map[string]VPNConnection)
+	}
+	return c.VPNs
 }
 
 // GetDefaultConfigPath returns the default config file path

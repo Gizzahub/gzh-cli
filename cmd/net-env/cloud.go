@@ -50,6 +50,7 @@ This command allows you to:
 	cmd.AddCommand(newCloudSyncCmd(ctx, opts))
 	cmd.AddCommand(newCloudValidateCmd(ctx, opts))
 	cmd.AddCommand(newCloudPolicyCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNCmd(ctx, opts))
 
 	return cmd
 }
@@ -1087,4 +1088,644 @@ func getProfilesForEnvironment(config *cloud.Config, environment string) []cloud
 		}
 	}
 	return profiles
+}
+
+// newCloudVPNCmd creates the VPN subcommand
+func newCloudVPNCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "vpn",
+		Short: "Manage VPN connections",
+		Long: `Manage multiple VPN connections with priority-based connection and automatic failover.
+
+This command provides comprehensive VPN management including:
+- Multiple VPN connection management
+- Priority-based connection ordering
+- Automatic failover and health monitoring
+- Connection status monitoring`,
+	}
+
+	// Add VPN subcommands
+	cmd.AddCommand(newCloudVPNListCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNConnectCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNDisconnectCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNStatusCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNAddCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNRemoveCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNMonitorCmd(ctx, opts))
+
+	return cmd
+}
+
+// newCloudVPNListCmd creates the VPN list subcommand
+func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var showAll bool
+
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List VPN connections",
+		Long:  `List all configured VPN connections with their status and priority.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create VPN manager
+			vpnManager := cloud.NewVPNManager()
+
+			// Add VPN connections from config
+			if err := loadVPNConnections(vpnManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			// Get connection status
+			status := vpnManager.GetConnectionStatus()
+			activeConnections := vpnManager.GetActiveConnections()
+
+			if len(status) == 0 {
+				fmt.Println("No VPN connections configured")
+				return nil
+			}
+
+			fmt.Println("VPN Connections:")
+			fmt.Println("===============")
+
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "NAME\tTYPE\tSERVER\tPRIORITY\tSTATUS\tAUTO-CONNECT")
+
+			for name, s := range status {
+				// Get connection details from config
+				conn := findVPNConnection(config, name)
+				if conn == nil {
+					continue
+				}
+
+				if !showAll && s.State == cloud.VPNStateDisconnected {
+					continue
+				}
+
+				autoConnect := "No"
+				if conn.AutoConnect {
+					autoConnect = "Yes"
+				}
+
+				statusStr := string(s.State)
+				if s.State == cloud.VPNStateConnected {
+					statusStr = "✓ Connected"
+				} else if s.State == cloud.VPNStateError {
+					statusStr = "✗ Error"
+				}
+
+				fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
+					name,
+					conn.Type,
+					conn.Server,
+					conn.Priority,
+					statusStr,
+					autoConnect,
+				)
+			}
+
+			w.Flush()
+
+			if len(activeConnections) > 0 {
+				fmt.Printf("\nActive Connections: %d\n", len(activeConnections))
+				for _, conn := range activeConnections {
+					fmt.Printf("  - %s (%s)\n", conn.Name, conn.Type)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&showAll, "all", "a", false, "Show all connections including disconnected ones")
+
+	return cmd
+}
+
+// newCloudVPNConnectCmd creates the VPN connect subcommand
+func newCloudVPNConnectCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var byPriority bool
+	var vpnName string
+
+	cmd := &cobra.Command{
+		Use:   "connect [vpn-name]",
+		Short: "Connect to VPN",
+		Long: `Connect to a specific VPN connection or connect by priority order.
+
+Examples:
+  gz net-env cloud vpn connect my-vpn        # Connect to specific VPN
+  gz net-env cloud vpn connect --priority    # Connect by priority order`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				vpnName = args[0]
+			}
+
+			if !byPriority && vpnName == "" {
+				return fmt.Errorf("either specify VPN name or use --priority flag")
+			}
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create VPN manager
+			vpnManager := cloud.NewVPNManager()
+
+			// Add VPN connections from config
+			if err := loadVPNConnections(vpnManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			if byPriority {
+				fmt.Println("Connecting to VPNs by priority...")
+				if err := vpnManager.ConnectByPriority(ctx); err != nil {
+					return fmt.Errorf("failed to connect by priority: %w", err)
+				}
+			} else {
+				fmt.Printf("Connecting to VPN: %s\n", vpnName)
+				if err := vpnManager.ConnectVPN(ctx, vpnName); err != nil {
+					return fmt.Errorf("failed to connect to VPN: %w", err)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&byPriority, "priority", "p", false, "Connect by priority order")
+
+	return cmd
+}
+
+// newCloudVPNDisconnectCmd creates the VPN disconnect subcommand
+func newCloudVPNDisconnectCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var disconnectAll bool
+
+	cmd := &cobra.Command{
+		Use:   "disconnect [vpn-name]",
+		Short: "Disconnect from VPN",
+		Long: `Disconnect from a specific VPN connection or disconnect all active connections.
+
+Examples:
+  gz net-env cloud vpn disconnect my-vpn    # Disconnect from specific VPN
+  gz net-env cloud vpn disconnect --all     # Disconnect from all VPNs`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var vpnName string
+			if len(args) > 0 {
+				vpnName = args[0]
+			}
+
+			if !disconnectAll && vpnName == "" {
+				return fmt.Errorf("either specify VPN name or use --all flag")
+			}
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create VPN manager
+			vpnManager := cloud.NewVPNManager()
+
+			// Add VPN connections from config
+			if err := loadVPNConnections(vpnManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			if disconnectAll {
+				fmt.Println("Disconnecting from all VPNs...")
+				activeConnections := vpnManager.GetActiveConnections()
+				for _, conn := range activeConnections {
+					if err := vpnManager.DisconnectVPN(ctx, conn.Name); err != nil {
+						fmt.Printf("Failed to disconnect from %s: %v\n", conn.Name, err)
+					}
+				}
+			} else {
+				fmt.Printf("Disconnecting from VPN: %s\n", vpnName)
+				if err := vpnManager.DisconnectVPN(ctx, vpnName); err != nil {
+					return fmt.Errorf("failed to disconnect from VPN: %w", err)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&disconnectAll, "all", "a", false, "Disconnect from all VPNs")
+
+	return cmd
+}
+
+// newCloudVPNStatusCmd creates the VPN status subcommand
+func newCloudVPNStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var showHealth bool
+	var vpnName string
+
+	cmd := &cobra.Command{
+		Use:   "status [vpn-name]",
+		Short: "Show VPN connection status",
+		Long: `Show detailed status of VPN connections including health information.
+
+Examples:
+  gz net-env cloud vpn status              # Show status of all VPNs
+  gz net-env cloud vpn status my-vpn       # Show status of specific VPN
+  gz net-env cloud vpn status --health     # Show health check details`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				vpnName = args[0]
+			}
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create VPN manager
+			vpnManager := cloud.NewVPNManager()
+
+			// Add VPN connections from config
+			if err := loadVPNConnections(vpnManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			// Get connection status
+			status := vpnManager.GetConnectionStatus()
+
+			if len(status) == 0 {
+				fmt.Println("No VPN connections configured")
+				return nil
+			}
+
+			fmt.Println("VPN Connection Status:")
+			fmt.Println("=====================")
+
+			for name, s := range status {
+				if vpnName != "" && name != vpnName {
+					continue
+				}
+
+				conn := findVPNConnection(config, name)
+				if conn == nil {
+					continue
+				}
+
+				fmt.Printf("\nConnection: %s\n", name)
+				fmt.Printf("  Type: %s\n", conn.Type)
+				fmt.Printf("  Server: %s\n", conn.Server)
+				fmt.Printf("  Priority: %d\n", conn.Priority)
+				fmt.Printf("  State: %s\n", s.State)
+
+				if s.State == cloud.VPNStateConnected {
+					fmt.Printf("  Connected: %s\n", s.ConnectedAt.Format("2006-01-02 15:04:05"))
+					if s.LocalIP != "" {
+						fmt.Printf("  Local IP: %s\n", s.LocalIP)
+					}
+					if s.RemoteIP != "" {
+						fmt.Printf("  Remote IP: %s\n", s.RemoteIP)
+					}
+					if s.Interface != "" {
+						fmt.Printf("  Interface: %s\n", s.Interface)
+					}
+				}
+
+				if s.State == cloud.VPNStateDisconnected && !s.DisconnectedAt.IsZero() {
+					fmt.Printf("  Disconnected: %s\n", s.DisconnectedAt.Format("2006-01-02 15:04:05"))
+				}
+
+				if s.Error != "" {
+					fmt.Printf("  Error: %s\n", s.Error)
+				}
+
+				if showHealth && s.LastHealthCheck != nil {
+					fmt.Printf("  Last Health Check:\n")
+					fmt.Printf("    Time: %s\n", s.LastHealthCheck.Timestamp.Format("2006-01-02 15:04:05"))
+					fmt.Printf("    Success: %v\n", s.LastHealthCheck.Success)
+					fmt.Printf("    Target: %s\n", s.LastHealthCheck.Target)
+					if s.LastHealthCheck.Latency > 0 {
+						fmt.Printf("    Latency: %v\n", s.LastHealthCheck.Latency)
+					}
+					if s.LastHealthCheck.Error != "" {
+						fmt.Printf("    Error: %s\n", s.LastHealthCheck.Error)
+					}
+				}
+
+				if conn.AutoConnect {
+					fmt.Printf("  Auto-Connect: Enabled\n")
+				}
+
+				if conn.Failover != nil && conn.Failover.Enabled {
+					fmt.Printf("  Failover: Enabled\n")
+					if len(conn.Failover.FallbackOrder) > 0 {
+						fmt.Printf("    Fallbacks: %s\n", strings.Join(conn.Failover.FallbackOrder, ", "))
+					}
+				}
+
+				if conn.HealthCheck != nil && conn.HealthCheck.Enabled {
+					fmt.Printf("  Health Check: Enabled\n")
+					fmt.Printf("    Interval: %v\n", conn.HealthCheck.Interval)
+					fmt.Printf("    Targets: %s\n", strings.Join(conn.HealthCheck.Targets, ", "))
+				}
+			}
+
+			if vpnName != "" {
+				if _, exists := status[vpnName]; !exists {
+					return fmt.Errorf("VPN connection not found: %s", vpnName)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&showHealth, "health", false, "Show health check details")
+
+	return cmd
+}
+
+// newCloudVPNAddCmd creates the VPN add subcommand
+func newCloudVPNAddCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var vpnType string
+	var server string
+	var port int
+	var priority int
+	var autoConnect bool
+	var configFile string
+
+	cmd := &cobra.Command{
+		Use:   "add <name>",
+		Short: "Add a new VPN connection",
+		Long: `Add a new VPN connection to the configuration.
+
+Examples:
+  gz net-env cloud vpn add my-vpn --type openvpn --server vpn.example.com --port 1194
+  gz net-env cloud vpn add work-vpn --type wireguard --config /etc/wireguard/wg0.conf`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			vpnName := args[0]
+
+			if vpnType == "" {
+				return fmt.Errorf("VPN type is required (--type)")
+			}
+			if server == "" && configFile == "" {
+				return fmt.Errorf("either server (--server) or config file (--config) is required")
+			}
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create VPN connection
+			vpnConn := &cloud.VPNConnection{
+				Name:        vpnName,
+				Type:        vpnType,
+				Server:      server,
+				Port:        port,
+				Priority:    priority,
+				AutoConnect: autoConnect,
+				ConfigFile:  configFile,
+			}
+
+			// Create VPN manager to validate connection
+			vpnManager := cloud.NewVPNManager()
+			if err := vpnManager.ValidateConnection(vpnConn); err != nil {
+				return fmt.Errorf("invalid VPN connection: %w", err)
+			}
+
+			// Add VPN connection to config
+			if err := addVPNConnectionToConfig(config, vpnConn); err != nil {
+				return fmt.Errorf("failed to add VPN connection: %w", err)
+			}
+
+			// Save configuration
+			if err := cloud.SaveConfig(config, configPath); err != nil {
+				return fmt.Errorf("failed to save config: %w", err)
+			}
+
+			fmt.Printf("✓ VPN connection '%s' added successfully\n", vpnName)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&vpnType, "type", "t", "", "VPN type (openvpn, wireguard, ipsec)")
+	cmd.Flags().StringVarP(&server, "server", "s", "", "VPN server address")
+	cmd.Flags().IntVarP(&port, "port", "p", 0, "VPN server port")
+	cmd.Flags().IntVar(&priority, "priority", 100, "Connection priority (higher = more preferred)")
+	cmd.Flags().BoolVar(&autoConnect, "auto-connect", false, "Enable auto-connect")
+	cmd.Flags().StringVarP(&configFile, "config", "c", "", "Path to VPN configuration file")
+
+	return cmd
+}
+
+// newCloudVPNRemoveCmd creates the VPN remove subcommand
+func newCloudVPNRemoveCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var force bool
+
+	cmd := &cobra.Command{
+		Use:   "remove <name>",
+		Short: "Remove a VPN connection",
+		Long: `Remove a VPN connection from the configuration.
+
+Examples:
+  gz net-env cloud vpn remove my-vpn
+  gz net-env cloud vpn remove work-vpn --force`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			vpnName := args[0]
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Check if VPN connection exists
+			if findVPNConnection(config, vpnName) == nil {
+				return fmt.Errorf("VPN connection not found: %s", vpnName)
+			}
+
+			// If not force, check if connection is active
+			if !force {
+				vpnManager := cloud.NewVPNManager()
+				if err := loadVPNConnections(vpnManager, config); err != nil {
+					return fmt.Errorf("failed to load VPN connections: %w", err)
+				}
+
+				status := vpnManager.GetConnectionStatus()
+				if s, exists := status[vpnName]; exists && s.State == cloud.VPNStateConnected {
+					return fmt.Errorf("VPN connection '%s' is currently connected. Use --force to remove anyway", vpnName)
+				}
+			}
+
+			// Remove VPN connection from config
+			if err := removeVPNConnectionFromConfig(config, vpnName); err != nil {
+				return fmt.Errorf("failed to remove VPN connection: %w", err)
+			}
+
+			// Save configuration
+			if err := cloud.SaveConfig(config, configPath); err != nil {
+				return fmt.Errorf("failed to save config: %w", err)
+			}
+
+			fmt.Printf("✓ VPN connection '%s' removed successfully\n", vpnName)
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "Force removal even if connected")
+
+	return cmd
+}
+
+// newCloudVPNMonitorCmd creates the VPN monitor subcommand
+func newCloudVPNMonitorCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var interval time.Duration
+
+	cmd := &cobra.Command{
+		Use:   "monitor",
+		Short: "Monitor VPN connections with failover",
+		Long: `Start monitoring VPN connections with automatic failover.
+
+This command starts a continuous monitoring process that:
+- Monitors health of all active VPN connections
+- Automatically triggers failover when connections fail
+- Attempts to reconnect failed connections
+- Provides real-time status updates`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create VPN manager
+			vpnManager := cloud.NewVPNManager()
+
+			// Add VPN connections from config
+			if err := loadVPNConnections(vpnManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			// Start failover monitoring
+			if err := vpnManager.StartFailoverMonitoring(ctx); err != nil {
+				return fmt.Errorf("failed to start failover monitoring: %w", err)
+			}
+
+			// Set up signal handling for graceful shutdown
+			defer vpnManager.StopFailoverMonitoring()
+
+			fmt.Println("VPN monitoring started. Press Ctrl+C to stop.")
+			fmt.Printf("Monitoring interval: %v\n", interval)
+
+			// Monitor loop
+			ticker := time.NewTicker(interval)
+			defer ticker.Stop()
+
+			for {
+				select {
+				case <-ctx.Done():
+					fmt.Println("\nMonitoring stopped.")
+					return nil
+				case <-ticker.C:
+					// Display current status
+					status := vpnManager.GetConnectionStatus()
+					activeCount := 0
+					for _, s := range status {
+						if s.State == cloud.VPNStateConnected {
+							activeCount++
+						}
+					}
+					fmt.Printf("\r[%s] Active connections: %d/%d",
+						time.Now().Format("15:04:05"),
+						activeCount,
+						len(status))
+				}
+			}
+		},
+	}
+
+	cmd.Flags().DurationVarP(&interval, "interval", "i", 30*time.Second, "Monitoring interval")
+
+	return cmd
+}
+
+// Helper functions
+
+func loadVPNConnections(manager cloud.VPNManager, config *cloud.Config) error {
+	// Load VPN connections from config
+	vpnConnections := config.GetVPNConnections()
+
+	for _, conn := range vpnConnections {
+		// Create a copy to avoid reference issues
+		vpnConn := conn
+		if err := manager.AddVPNConnection(&vpnConn); err != nil {
+			return fmt.Errorf("failed to add VPN connection %s: %w", conn.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func findVPNConnection(config *cloud.Config, name string) *cloud.VPNConnection {
+	// Find VPN connection in config
+	vpnConn, exists := config.GetVPNConnection(name)
+	if !exists {
+		return nil
+	}
+	return &vpnConn
+}
+
+func addVPNConnectionToConfig(config *cloud.Config, conn *cloud.VPNConnection) error {
+	// Add VPN connection to config
+	config.AddVPNConnection(*conn)
+	return nil
+}
+
+func removeVPNConnectionFromConfig(config *cloud.Config, name string) error {
+	// Remove VPN connection from config
+	config.RemoveVPNConnection(name)
+	return nil
 }
