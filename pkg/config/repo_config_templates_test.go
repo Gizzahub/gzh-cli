@@ -245,7 +245,7 @@ func TestTemplateInheritance(t *testing.T) {
 		},
 	}
 
-	settings, security, _, err := config.GetEffectiveConfig("test-secure-repo")
+	settings, security, _, _, err := config.GetEffectiveConfig("test-secure-repo")
 	require.NoError(t, err)
 
 	// Should have settings from both templates

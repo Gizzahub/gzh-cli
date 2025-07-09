@@ -379,7 +379,7 @@ func TestEffectiveConfigWithInheritance(t *testing.T) {
 		},
 	}
 
-	settings, security, _, err := config.GetEffectiveConfig("test-repo")
+	settings, security, _, _, err := config.GetEffectiveConfig("test-repo")
 	require.NoError(t, err)
 
 	// Should have merged settings from base and secure templates

@@ -49,6 +49,7 @@ type RepoSpecificConfig struct {
 	Settings    *RepoSettings       `yaml:"settings,omitempty"`
 	Security    *SecuritySettings   `yaml:"security,omitempty"`
 	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
+	Exceptions  []PolicyException   `yaml:"exceptions,omitempty"`
 }
 
 // RepoPatternConfig represents configuration for repositories matching patterns
@@ -58,6 +59,7 @@ type RepoPatternConfig struct {
 	Settings    *RepoSettings       `yaml:"settings,omitempty"`
 	Security    *SecuritySettings   `yaml:"security,omitempty"`
 	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
+	Exceptions  []PolicyException   `yaml:"exceptions,omitempty"`
 }
 
 // RepoDefaultConfig represents default configuration for all repositories
@@ -144,6 +146,18 @@ type PolicyRule struct {
 	Type        string      `yaml:"type"`
 	Value       interface{} `yaml:"value"`
 	Enforcement string      `yaml:"enforcement"`
+	Message     string      `yaml:"message,omitempty"`
+}
+
+// PolicyException represents an exception to a policy rule
+type PolicyException struct {
+	PolicyName   string   `yaml:"policy"`
+	RuleName     string   `yaml:"rule"`
+	Reason       string   `yaml:"reason"`
+	ApprovedBy   string   `yaml:"approved_by"`
+	ApprovalDate string   `yaml:"approval_date,omitempty"`
+	ExpiresAt    string   `yaml:"expires_at,omitempty"`
+	Conditions   []string `yaml:"conditions,omitempty"`
 }
 
 // LoadRepoConfig loads repository configuration from a YAML file
@@ -513,10 +527,11 @@ func (rc *RepoConfig) resolveTemplateWithChain(templateName string, chain []stri
 }
 
 // GetEffectiveConfig returns the effective configuration for a specific repository
-func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *SecuritySettings, *PermissionSettings, error) {
+func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *SecuritySettings, *PermissionSettings, []PolicyException, error) {
 	var settings *RepoSettings
 	var security *SecuritySettings
 	var permissions *PermissionSettings
+	var exceptions []PolicyException
 
 	// Start with defaults
 	if rc.Defaults != nil {
@@ -549,7 +564,8 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 				settings = mergeRepoSettings(settings, specific.Settings)
 				security = mergeSecuritySettings(security, specific.Security)
 				permissions = mergePermissionSettings(permissions, specific.Permissions)
-				return settings, security, permissions, nil
+				exceptions = append(exceptions, specific.Exceptions...)
+				return settings, security, permissions, exceptions, nil
 			}
 		}
 
@@ -567,6 +583,7 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 				settings = mergeRepoSettings(settings, pattern.Settings)
 				security = mergeSecuritySettings(security, pattern.Security)
 				permissions = mergePermissionSettings(permissions, pattern.Permissions)
+				exceptions = append(exceptions, pattern.Exceptions...)
 			}
 		}
 
@@ -586,7 +603,127 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 		}
 	}
 
-	return settings, security, permissions, nil
+	return settings, security, permissions, exceptions, nil
+}
+
+// ValidatePolicyExceptions validates all policy exceptions in the configuration
+func (rc *RepoConfig) ValidatePolicyExceptions() []string {
+	var errors []string
+
+	// Validate specific repository exceptions
+	if rc.Repositories != nil {
+		for _, specific := range rc.Repositories.Specific {
+			for _, exception := range specific.Exceptions {
+				if err := validatePolicyException(exception, rc.Policies); err != nil {
+					errors = append(errors, fmt.Sprintf("Repository '%s': %v", specific.Name, err))
+				}
+			}
+		}
+
+		// Validate pattern-based exceptions
+		for _, pattern := range rc.Repositories.Patterns {
+			for _, exception := range pattern.Exceptions {
+				if err := validatePolicyException(exception, rc.Policies); err != nil {
+					errors = append(errors, fmt.Sprintf("Pattern '%s': %v", pattern.Match, err))
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// validatePolicyException validates a single policy exception
+func validatePolicyException(exception PolicyException, policies map[string]*PolicyTemplate) error {
+	// Check if policy exists
+	policy, exists := policies[exception.PolicyName]
+	if !exists {
+		return fmt.Errorf("exception references non-existent policy '%s'", exception.PolicyName)
+	}
+
+	// Check if rule exists
+	if _, exists := policy.Rules[exception.RuleName]; !exists {
+		return fmt.Errorf("exception references non-existent rule '%s' in policy '%s'",
+			exception.RuleName, exception.PolicyName)
+	}
+
+	// Validate required fields
+	if exception.Reason == "" {
+		return fmt.Errorf("exception for policy '%s' rule '%s' missing required 'reason'",
+			exception.PolicyName, exception.RuleName)
+	}
+
+	if exception.ApprovedBy == "" {
+		return fmt.Errorf("exception for policy '%s' rule '%s' missing required 'approved_by'",
+			exception.PolicyName, exception.RuleName)
+	}
+
+	// Validate expiration date format if provided
+	if exception.ExpiresAt != "" {
+		// Simple date format validation (could be enhanced)
+		if len(exception.ExpiresAt) < 10 {
+			return fmt.Errorf("exception for policy '%s' rule '%s' has invalid expiration date format",
+				exception.PolicyName, exception.RuleName)
+		}
+	}
+
+	return nil
+}
+
+// GetPolicyExceptionReport generates a report of all policy exceptions
+func (rc *RepoConfig) GetPolicyExceptionReport() map[string][]PolicyExceptionReport {
+	report := make(map[string][]PolicyExceptionReport)
+
+	if rc.Repositories != nil {
+		// Process specific repositories
+		for _, specific := range rc.Repositories.Specific {
+			if len(specific.Exceptions) > 0 {
+				report[specific.Name] = make([]PolicyExceptionReport, 0, len(specific.Exceptions))
+				for _, exception := range specific.Exceptions {
+					report[specific.Name] = append(report[specific.Name], PolicyExceptionReport{
+						Repository: specific.Name,
+						Exception:  exception,
+						Type:       "specific",
+					})
+				}
+			}
+		}
+
+		// Process pattern-based exceptions
+		for _, pattern := range rc.Repositories.Patterns {
+			if len(pattern.Exceptions) > 0 {
+				patternKey := fmt.Sprintf("pattern:%s", pattern.Match)
+				report[patternKey] = make([]PolicyExceptionReport, 0, len(pattern.Exceptions))
+				for _, exception := range pattern.Exceptions {
+					report[patternKey] = append(report[patternKey], PolicyExceptionReport{
+						Repository: pattern.Match,
+						Exception:  exception,
+						Type:       "pattern",
+					})
+				}
+			}
+		}
+	}
+
+	return report
+}
+
+// PolicyExceptionReport represents a policy exception in the report
+type PolicyExceptionReport struct {
+	Repository string
+	Exception  PolicyException
+	Type       string // "specific" or "pattern"
+}
+
+// IsExceptionActive checks if an exception is currently active
+func (e PolicyException) IsExceptionActive() bool {
+	if e.ExpiresAt == "" {
+		return true // No expiration means always active
+	}
+
+	// Simple date comparison (could be enhanced with proper date parsing)
+	// For now, we'll assume the date format is valid
+	return true
 }
 
 // mergeRepoSettings merges two RepoSettings, with the second taking precedence

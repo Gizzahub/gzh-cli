@@ -155,7 +155,7 @@ func TestGetEffectiveConfig(t *testing.T) {
 	}
 
 	// Test specific repository
-	settings, security, _, err := config.GetEffectiveConfig("api-gateway")
+	settings, security, _, _, err := config.GetEffectiveConfig("api-gateway")
 	require.NoError(t, err)
 
 	assert.NotNil(t, settings)
@@ -169,7 +169,7 @@ func TestGetEffectiveConfig(t *testing.T) {
 	assert.True(t, *security.VulnerabilityAlerts) // From template
 
 	// Test pattern matching
-	settings2, _, _, err := config.GetEffectiveConfig("service-auth")
+	settings2, _, _, _, err := config.GetEffectiveConfig("service-auth")
 	require.NoError(t, err)
 
 	assert.NotNil(t, settings2)
