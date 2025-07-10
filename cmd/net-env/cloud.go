@@ -1112,6 +1112,11 @@ This command provides comprehensive VPN management including:
 	cmd.AddCommand(newCloudVPNAddCmd(ctx, opts))
 	cmd.AddCommand(newCloudVPNRemoveCmd(ctx, opts))
 	cmd.AddCommand(newCloudVPNMonitorCmd(ctx, opts))
+	// Hierarchical VPN management commands
+	cmd.AddCommand(newCloudVPNHierarchyCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNConnectHierarchicalCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNDisconnectHierarchicalCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNEnvironmentCmd(ctx, opts))
 
 	return cmd
 }
@@ -1728,4 +1733,329 @@ func removeVPNConnectionFromConfig(config *cloud.Config, name string) error {
 	// Remove VPN connection from config
 	config.RemoveVPNConnection(name)
 	return nil
+}
+
+// Hierarchical VPN Management Commands
+
+// newCloudVPNHierarchyCmd creates the VPN hierarchy management subcommand
+func newCloudVPNHierarchyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "hierarchy",
+		Short: "Show VPN connection hierarchy",
+		Long: `Display the hierarchical structure of VPN connections showing parent-child relationships,
+layers, and site types.
+
+This command helps visualize:
+- Parent-child VPN relationships
+- Layer assignments
+- Site types (corporate, personal, public)
+- Network environment requirements`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create hierarchical VPN manager
+			baseManager := cloud.NewVPNManager()
+			hierarchicalManager := cloud.NewHierarchicalVPNManager(baseManager)
+
+			// Load VPN connections
+			if err := loadVPNConnections(hierarchicalManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			// Validate hierarchy
+			if err := hierarchicalManager.ValidateHierarchy(); err != nil {
+				fmt.Printf("⚠️  Hierarchy validation warning: %v\n\n", err)
+			}
+
+			// Get and display hierarchy
+			hierarchy := hierarchicalManager.GetVPNHierarchy()
+			if len(hierarchy) == 0 {
+				fmt.Println("No VPN connections found")
+				return nil
+			}
+
+			fmt.Println("VPN Connection Hierarchy:")
+			fmt.Println("========================")
+
+			// Group by layers
+			layers := hierarchicalManager.GetConnectionsByLayer()
+			for layer := 0; layer <= getMaxLayer(layers); layer++ {
+				if connections, exists := layers[layer]; exists {
+					fmt.Printf("\nLayer %d:\n", layer)
+					for _, conn := range connections {
+						node := hierarchy[conn.Name]
+						displayHierarchyNode(node, "  ")
+					}
+				}
+			}
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newCloudVPNConnectHierarchicalCmd creates the hierarchical VPN connect subcommand
+func newCloudVPNConnectHierarchicalCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "connect-hierarchy [root-connection]",
+		Short: "Connect VPN connections in hierarchical order",
+		Long: `Connect VPN connections following the hierarchical structure.
+This ensures parent connections are established before children.
+
+Examples:
+  gz net-env cloud vpn connect-hierarchy corporate-vpn    # Connect corporate VPN and all children
+  gz net-env cloud vpn connect-hierarchy personal-vpn    # Connect personal VPN hierarchy`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			rootConnection := args[0]
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create hierarchical VPN manager
+			baseManager := cloud.NewVPNManager()
+			hierarchicalManager := cloud.NewHierarchicalVPNManager(baseManager)
+
+			// Load VPN connections
+			if err := loadVPNConnections(hierarchicalManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			// Validate hierarchy
+			if err := hierarchicalManager.ValidateHierarchy(); err != nil {
+				return fmt.Errorf("hierarchy validation failed: %w", err)
+			}
+
+			fmt.Printf("Connecting VPN hierarchy starting from: %s\n", rootConnection)
+			if err := hierarchicalManager.ConnectHierarchical(ctx, rootConnection); err != nil {
+				return fmt.Errorf("failed to connect hierarchical VPN: %w", err)
+			}
+
+			fmt.Println("✓ Hierarchical VPN connection completed successfully")
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newCloudVPNDisconnectHierarchicalCmd creates the hierarchical VPN disconnect subcommand
+func newCloudVPNDisconnectHierarchicalCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "disconnect-hierarchy [root-connection]",
+		Short: "Disconnect VPN connections in reverse hierarchical order",
+		Long: `Disconnect VPN connections following the reverse hierarchical structure.
+This ensures child connections are disconnected before parents.
+
+Examples:
+  gz net-env cloud vpn disconnect-hierarchy corporate-vpn    # Disconnect corporate VPN hierarchy
+  gz net-env cloud vpn disconnect-hierarchy personal-vpn    # Disconnect personal VPN hierarchy`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			rootConnection := args[0]
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create hierarchical VPN manager
+			baseManager := cloud.NewVPNManager()
+			hierarchicalManager := cloud.NewHierarchicalVPNManager(baseManager)
+
+			// Load VPN connections
+			if err := loadVPNConnections(hierarchicalManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			fmt.Printf("Disconnecting VPN hierarchy starting from: %s\n", rootConnection)
+			if err := hierarchicalManager.DisconnectHierarchical(ctx, rootConnection); err != nil {
+				return fmt.Errorf("failed to disconnect hierarchical VPN: %w", err)
+			}
+
+			fmt.Println("✓ Hierarchical VPN disconnection completed successfully")
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newCloudVPNEnvironmentCmd creates the environment-based VPN management subcommand
+func newCloudVPNEnvironmentCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+	var autoConnect bool
+	var listOnly bool
+
+	cmd := &cobra.Command{
+		Use:   "environment [network-environment]",
+		Short: "Manage VPNs based on network environment",
+		Long: `Connect or list VPN connections appropriate for the current network environment.
+
+Supported environments:
+- home: Home network environment
+- office: Office network environment  
+- public: Public network (cafes, airports, etc.)
+- mobile: Mobile network environment
+- hotel: Hotel network environment
+
+Examples:
+  gz net-env cloud vpn environment public --auto-connect    # Auto-connect VPNs for public networks
+  gz net-env cloud vpn environment office --list           # List VPNs suitable for office
+  gz net-env cloud vpn environment home                    # Show home environment VPNs`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			envStr := args[0]
+
+			// Parse environment
+			var env cloud.NetworkEnvironment
+			switch envStr {
+			case "home":
+				env = cloud.NetworkEnvironmentHome
+			case "office":
+				env = cloud.NetworkEnvironmentOffice
+			case "public":
+				env = cloud.NetworkEnvironmentPublic
+			case "mobile":
+				env = cloud.NetworkEnvironmentMobile
+			case "hotel":
+				env = cloud.NetworkEnvironmentHotel
+			default:
+				return fmt.Errorf("unsupported network environment: %s", envStr)
+			}
+
+			// Load configuration
+			configPath := opts.configFile
+			if configPath == "" {
+				configPath = cloud.GetDefaultConfigPath()
+			}
+
+			config, err := cloud.LoadConfig(configPath)
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			// Create hierarchical VPN manager
+			baseManager := cloud.NewVPNManager()
+			hierarchicalManager := cloud.NewHierarchicalVPNManager(baseManager)
+
+			// Load VPN connections
+			if err := loadVPNConnections(hierarchicalManager, config); err != nil {
+				return fmt.Errorf("failed to load VPN connections: %w", err)
+			}
+
+			// Get connections for environment
+			connections := hierarchicalManager.GetConnectionsByEnvironment(env)
+
+			if listOnly {
+				fmt.Printf("VPN connections suitable for %s environment:\n", envStr)
+				fmt.Println("============================================")
+
+				if len(connections) == 0 {
+					fmt.Println("No VPN connections configured for this environment")
+					return nil
+				}
+
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "NAME\tTYPE\tSITE TYPE\tPRIORITY\tAUTO-CONNECT")
+				for _, conn := range connections {
+					siteType := "personal"
+					if conn.Hierarchy != nil {
+						siteType = string(conn.Hierarchy.SiteType)
+					}
+					fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%v\n",
+						conn.Name,
+						conn.Type,
+						siteType,
+						conn.Priority,
+						conn.AutoConnect,
+					)
+				}
+				w.Flush()
+				return nil
+			}
+
+			if autoConnect {
+				fmt.Printf("Auto-connecting VPNs for %s environment...\n", envStr)
+				if err := hierarchicalManager.AutoConnectForEnvironment(ctx, env); err != nil {
+					return fmt.Errorf("failed to auto-connect for environment: %w", err)
+				}
+				fmt.Println("✓ Auto-connection completed")
+			} else {
+				fmt.Printf("VPN connections available for %s environment:\n", envStr)
+				for _, conn := range connections {
+					fmt.Printf("- %s (priority: %d, auto-connect: %v)\n",
+						conn.Name, conn.Priority, conn.AutoConnect)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&autoConnect, "auto-connect", false, "Automatically connect suitable VPNs")
+	cmd.Flags().BoolVar(&listOnly, "list", false, "Only list suitable VPNs without connecting")
+
+	return cmd
+}
+
+// Helper functions for hierarchy display
+
+func getMaxLayer(layers map[int][]*cloud.VPNConnection) int {
+	maxLayer := 0
+	for layer := range layers {
+		if layer > maxLayer {
+			maxLayer = layer
+		}
+	}
+	return maxLayer
+}
+
+func displayHierarchyNode(node *cloud.VPNHierarchyNode, indent string) {
+	if node == nil {
+		return
+	}
+
+	conn := node.Connection
+	fmt.Printf("%s├─ %s (%s)\n", indent, conn.Name, conn.Type)
+
+	if conn.Hierarchy != nil {
+		fmt.Printf("%s   │  Site Type: %s\n", indent, node.SiteType)
+		fmt.Printf("%s   │  Mode: %s\n", indent, conn.Hierarchy.Mode)
+		if len(node.RequiredEnvironments) > 0 {
+			fmt.Printf("%s   │  Environments: %v\n", indent, node.RequiredEnvironments)
+		}
+		if conn.Hierarchy.ParentConnection != "" {
+			fmt.Printf("%s   │  Parent: %s\n", indent, conn.Hierarchy.ParentConnection)
+		}
+	}
+
+	// Display children with increased indentation
+	for _, child := range node.Children {
+		displayHierarchyNode(child, indent+"   ")
+	}
 }

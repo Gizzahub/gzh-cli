@@ -1,0 +1,258 @@
+# VPN Hierarchical Configuration Example
+# This example demonstrates how to configure hierarchical VPN connections
+# where VPNs can be layered (corporate VPN + personal VPN)
+
+vpn_connections:
+  # Layer 0: Corporate VPN (Base layer)
+  - name: "corporate-vpn"
+    type: "openvpn"
+    server: "corp-vpn.company.com"
+    port: 1194
+    priority: 200
+    auto_connect: true
+    
+    # Authentication
+    credentials:
+      username: "${CORP_VPN_USER}"
+      cert_file: "/etc/openvpn/corp-client.crt"
+      key_file: "/etc/openvpn/corp-client.key"
+      ca_file: "/etc/openvpn/corp-ca.crt"
+    
+    # Hierarchy configuration
+    hierarchy:
+      layer: 0
+      mode: "standalone"
+      site_type: "corporate"
+      required_environments: ["office", "home"]
+      child_connections: ["personal-vpn", "backup-vpn"]
+      auto_connect_dependencies: true
+      
+      # Routing rules for corporate traffic
+      routing_rules:
+        - name: "corporate-networks"
+          destinations: ["10.0.0.0/8", "172.16.0.0/12"]
+          route_direct: true
+          traffic_type: "corporate"
+          priority: 100
+          
+        - name: "development-servers"
+          destinations: ["dev.company.com", "staging.company.com"]
+          route_direct: true
+          traffic_type: "ssh"
+          priority: 90
+    
+    # Health monitoring
+    health_check:
+      enabled: true
+      interval: "30s"
+      timeout: "10s"
+      targets: ["corp-gateway.company.com", "8.8.8.8"]
+      success_threshold: 2
+      failure_threshold: 3
+    
+    # Failover configuration
+    failover:
+      enabled: true
+      fallback_order: ["backup-corporate-vpn"]
+      retry_attempts: 3
+      retry_interval: "10s"
+      failover_timeout: "60s"
+
+  # Layer 1: Personal VPN (Chained through corporate)
+  - name: "personal-vpn"
+    type: "wireguard"
+    server: "personal.myvpn.com"
+    port: 51820
+    priority: 100
+    auto_connect: false
+    
+    # Authentication
+    credentials:
+      config_file: "/etc/wireguard/personal.conf"
+    
+    # Hierarchy configuration
+    hierarchy:
+      layer: 1
+      mode: "chained"
+      site_type: "personal"
+      parent_connection: "corporate-vpn"
+      required_environments: ["home", "public", "hotel"]
+      
+      # Routing rules for personal traffic
+      routing_rules:
+        - name: "streaming-services"
+          destinations: ["netflix.com", "hulu.com", "disney.com"]
+          route_via_parent: false
+          route_direct: true
+          traffic_type: "web"
+          priority: 80
+          
+        - name: "social-media"
+          destinations: ["facebook.com", "twitter.com", "instagram.com"]
+          route_via_parent: false
+          route_direct: true
+          traffic_type: "web"
+          priority: 70
+          
+        - name: "corporate-access"
+          destinations: ["company.com", "intranet.company.com"]
+          route_via_parent: true
+          traffic_type: "web"
+          priority: 90
+      
+      # Hierarchical failover
+      hierarchical_failover:
+        enabled: true
+        strategy: "use_alternative_parent"
+        alternative_parents: ["backup-corporate-vpn"]
+        max_parent_reconnect_attempts: 3
+        reconnection_delay: "15s"
+    
+    # Health monitoring
+    health_check:
+      enabled: true
+      interval: "60s"
+      timeout: "15s"
+      targets: ["1.1.1.1", "9.9.9.9"]
+      success_threshold: 1
+      failure_threshold: 2
+
+  # Layer 1: Backup VPN (Alternative child)
+  - name: "backup-vpn"
+    type: "ipsec"
+    server: "backup.myvpn.com"
+    priority: 50
+    auto_connect: false
+    
+    # Authentication
+    credentials:
+      username: "${BACKUP_VPN_USER}"
+      password: "${BACKUP_VPN_PASSWORD}"
+      psk: "${BACKUP_VPN_PSK}"
+    
+    # Hierarchy configuration
+    hierarchy:
+      layer: 1
+      mode: "chained"
+      site_type: "personal"
+      parent_connection: "corporate-vpn"
+      required_environments: ["public", "mobile"]
+      
+      # Hierarchical failover
+      hierarchical_failover:
+        enabled: true
+        strategy: "standalone"
+        max_parent_reconnect_attempts: 2
+        reconnection_delay: "20s"
+
+  # Layer 0: Backup Corporate VPN
+  - name: "backup-corporate-vpn"
+    type: "openvpn"
+    server: "backup-vpn.company.com"
+    port: 443
+    priority: 150
+    auto_connect: false
+    
+    # Authentication
+    credentials:
+      username: "${CORP_VPN_USER}"
+      cert_file: "/etc/openvpn/backup-client.crt"
+      key_file: "/etc/openvpn/backup-client.key"
+      ca_file: "/etc/openvpn/backup-ca.crt"
+    
+    # Hierarchy configuration
+    hierarchy:
+      layer: 0
+      mode: "standalone"
+      site_type: "corporate"
+      required_environments: ["office", "home", "public"]
+      child_connections: ["personal-vpn", "backup-vpn"]
+      
+      # Routing rules
+      routing_rules:
+        - name: "corporate-backup-networks"
+          destinations: ["10.0.0.0/8", "172.16.0.0/12"]
+          route_direct: true
+          traffic_type: "corporate"
+          priority: 95
+
+  # Layer 0: Public/Hotel VPN (Standalone for public networks)
+  - name: "public-vpn"
+    type: "wireguard"
+    server: "public.securevpn.com"
+    port: 51820
+    priority: 80
+    auto_connect: true
+    
+    # Authentication
+    credentials:
+      config_file: "/etc/wireguard/public.conf"
+    
+    # Hierarchy configuration
+    hierarchy:
+      layer: 0
+      mode: "standalone"
+      site_type: "public"
+      required_environments: ["public", "hotel", "mobile"]
+      
+      # Routing rules for public network security
+      routing_rules:
+        - name: "secure-browsing"
+          destinations: ["0.0.0.0/0"]
+          route_direct: true
+          traffic_type: "web"
+          priority: 60
+
+# Network environment profiles
+network_environments:
+  home:
+    auto_connect_vpns: ["corporate-vpn"]
+    preferred_site_types: ["corporate", "personal"]
+    
+  office:
+    auto_connect_vpns: ["corporate-vpn"]
+    preferred_site_types: ["corporate"]
+    
+  public:
+    auto_connect_vpns: ["public-vpn", "corporate-vpn"]
+    preferred_site_types: ["public", "corporate"]
+    
+  hotel:
+    auto_connect_vpns: ["public-vpn", "personal-vpn"]
+    preferred_site_types: ["public", "personal"]
+    
+  mobile:
+    auto_connect_vpns: ["backup-vpn"]
+    preferred_site_types: ["personal", "public"]
+
+# Global VPN settings
+vpn_settings:
+  # Enable hierarchical management
+  hierarchical_management: true
+  
+  # Default connection timeout
+  connection_timeout: "30s"
+  
+  # Health check settings
+  default_health_check:
+    enabled: true
+    interval: "60s"
+    timeout: "10s"
+    targets: ["8.8.8.8", "1.1.1.1"]
+  
+  # Failover settings
+  default_failover:
+    enabled: true
+    retry_attempts: 3
+    retry_interval: "15s"
+    
+  # Routing settings
+  routing:
+    enable_split_tunneling: true
+    dns_servers: ["1.1.1.1", "9.9.9.9"]
+    
+  # Logging
+  logging:
+    enabled: true
+    level: "info"
+    file: "/var/log/gzh-vpn.log"

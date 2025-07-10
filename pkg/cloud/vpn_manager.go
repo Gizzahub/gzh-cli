@@ -42,6 +42,32 @@ type VPNManager interface {
 
 	// ValidateConnection validates VPN connection configuration
 	ValidateConnection(conn *VPNConnection) error
+
+	// Hierarchical VPN Management Methods
+
+	// ConnectHierarchical connects VPN connections in hierarchical order
+	ConnectHierarchical(ctx context.Context, rootConnection string) error
+
+	// DisconnectHierarchical disconnects VPN connections in reverse hierarchical order
+	DisconnectHierarchical(ctx context.Context, rootConnection string) error
+
+	// GetVPNHierarchy returns the VPN connection hierarchy tree
+	GetVPNHierarchy() map[string]*VPNHierarchyNode
+
+	// ValidateHierarchy validates VPN hierarchy configuration
+	ValidateHierarchy() error
+
+	// GetConnectionsByLayer returns VPN connections grouped by layer
+	GetConnectionsByLayer() map[int][]*VPNConnection
+
+	// GetConnectionsByEnvironment returns VPN connections filtered by network environment
+	GetConnectionsByEnvironment(env NetworkEnvironment) []*VPNConnection
+
+	// AutoConnectForEnvironment automatically connects appropriate VPNs for network environment
+	AutoConnectForEnvironment(ctx context.Context, env NetworkEnvironment) error
+
+	// UpdateHierarchicalRouting updates routing rules for hierarchical connections
+	UpdateHierarchicalRouting(ctx context.Context) error
 }
 
 // VPNConnection represents a VPN connection configuration
@@ -87,6 +113,158 @@ type VPNConnection struct {
 
 	// Tags for organization
 	Tags map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
+
+	// Hierarchy settings for layered VPN management
+	Hierarchy *VPNHierarchy `yaml:"hierarchy,omitempty" json:"hierarchy,omitempty"`
+}
+
+// VPNHierarchy represents hierarchical VPN connection settings
+type VPNHierarchy struct {
+	// Layer level (0 = base layer, higher numbers = upper layers)
+	Layer int `yaml:"layer" json:"layer"`
+
+	// Parent VPN connection name (for multi-layer VPN)
+	ParentConnection string `yaml:"parent_connection,omitempty" json:"parent_connection,omitempty"`
+
+	// Child VPN connections that depend on this connection
+	ChildConnections []string `yaml:"child_connections,omitempty" json:"child_connections,omitempty"`
+
+	// Connection mode (standalone, chained, nested)
+	Mode VPNHierarchyMode `yaml:"mode" json:"mode"`
+
+	// Network environment requirements
+	RequiredEnvironments []NetworkEnvironment `yaml:"required_environments,omitempty" json:"required_environments,omitempty"`
+
+	// Site classification (corporate, personal, public)
+	SiteType VPNSiteType `yaml:"site_type" json:"site_type"`
+
+	// Traffic routing rules for this layer
+	RoutingRules []HierarchicalRoutingRule `yaml:"routing_rules,omitempty" json:"routing_rules,omitempty"`
+
+	// Auto-connect dependencies (connect parent first, then children)
+	AutoConnectDependencies bool `yaml:"auto_connect_dependencies,omitempty" json:"auto_connect_dependencies,omitempty"`
+
+	// Failover behavior for hierarchical connections
+	HierarchicalFailover *HierarchicalFailover `yaml:"hierarchical_failover,omitempty" json:"hierarchical_failover,omitempty"`
+}
+
+// VPNHierarchyMode defines how VPN connections are layered
+type VPNHierarchyMode string
+
+const (
+	// Standalone connection (no dependencies)
+	VPNHierarchyModeStandalone VPNHierarchyMode = "standalone"
+	// Chained connection (connects after parent is established)
+	VPNHierarchyModeChained VPNHierarchyMode = "chained"
+	// Nested connection (tunneled through parent connection)
+	VPNHierarchyModeNested VPNHierarchyMode = "nested"
+)
+
+// VPNSiteType defines the site classification for VPN connections
+type VPNSiteType string
+
+const (
+	// Corporate VPN (company network)
+	VPNSiteTypeCorporate VPNSiteType = "corporate"
+	// Personal VPN (personal use)
+	VPNSiteTypePersonal VPNSiteType = "personal"
+	// Public VPN (public networks)
+	VPNSiteTypePublic VPNSiteType = "public"
+	// Guest VPN (guest networks)
+	VPNSiteTypeGuest VPNSiteType = "guest"
+)
+
+// NetworkEnvironment defines network environment types
+type NetworkEnvironment string
+
+const (
+	// Home network environment
+	NetworkEnvironmentHome NetworkEnvironment = "home"
+	// Office network environment
+	NetworkEnvironmentOffice NetworkEnvironment = "office"
+	// Public network environment (cafes, airports, etc.)
+	NetworkEnvironmentPublic NetworkEnvironment = "public"
+	// Mobile network environment
+	NetworkEnvironmentMobile NetworkEnvironment = "mobile"
+	// Hotel network environment
+	NetworkEnvironmentHotel NetworkEnvironment = "hotel"
+)
+
+// HierarchicalRoutingRule defines traffic routing for hierarchical VPN
+type HierarchicalRoutingRule struct {
+	// Rule name
+	Name string `yaml:"name" json:"name"`
+
+	// Destination networks (CIDR format)
+	Destinations []string `yaml:"destinations" json:"destinations"`
+
+	// Route through parent connection
+	RouteViaParent bool `yaml:"route_via_parent,omitempty" json:"route_via_parent,omitempty"`
+
+	// Route directly (bypass parent)
+	RouteDirect bool `yaml:"route_direct,omitempty" json:"route_direct,omitempty"`
+
+	// Traffic type (web, ssh, rdp, etc.)
+	TrafficType string `yaml:"traffic_type,omitempty" json:"traffic_type,omitempty"`
+
+	// Priority for routing decision
+	Priority int `yaml:"priority" json:"priority"`
+}
+
+// HierarchicalFailover defines failover behavior for hierarchical VPN connections
+type HierarchicalFailover struct {
+	// Enable hierarchical failover
+	Enabled bool `yaml:"enabled" json:"enabled"`
+
+	// Failover strategy (reconnect_parent, use_alternative_parent, disconnect_all)
+	Strategy HierarchicalFailoverStrategy `yaml:"strategy" json:"strategy"`
+
+	// Alternative parent connections
+	AlternativeParents []string `yaml:"alternative_parents,omitempty" json:"alternative_parents,omitempty"`
+
+	// Maximum reconnection attempts for parent
+	MaxParentReconnectAttempts int `yaml:"max_parent_reconnect_attempts,omitempty" json:"max_parent_reconnect_attempts,omitempty"`
+
+	// Reconnection delay between attempts
+	ReconnectionDelay time.Duration `yaml:"reconnection_delay,omitempty" json:"reconnection_delay,omitempty"`
+}
+
+// HierarchicalFailoverStrategy defines failover strategies for hierarchical connections
+type HierarchicalFailoverStrategy string
+
+const (
+	// Try to reconnect to the same parent
+	HierarchicalFailoverStrategyReconnectParent HierarchicalFailoverStrategy = "reconnect_parent"
+	// Switch to alternative parent connection
+	HierarchicalFailoverStrategyUseAlternativeParent HierarchicalFailoverStrategy = "use_alternative_parent"
+	// Disconnect all child connections when parent fails
+	HierarchicalFailoverStrategyDisconnectAll HierarchicalFailoverStrategy = "disconnect_all"
+	// Convert to standalone mode (bypass parent)
+	HierarchicalFailoverStrategyStandalone HierarchicalFailoverStrategy = "standalone"
+)
+
+// VPNHierarchyNode represents a node in the VPN hierarchy tree
+type VPNHierarchyNode struct {
+	// VPN connection
+	Connection *VPNConnection `json:"connection"`
+
+	// Parent node
+	Parent *VPNHierarchyNode `json:"parent,omitempty"`
+
+	// Child nodes
+	Children []*VPNHierarchyNode `json:"children,omitempty"`
+
+	// Current connection status
+	Status *VPNStatus `json:"status,omitempty"`
+
+	// Layer level in hierarchy
+	Layer int `json:"layer"`
+
+	// Site type
+	SiteType VPNSiteType `json:"site_type"`
+
+	// Required environments
+	RequiredEnvironments []NetworkEnvironment `json:"required_environments,omitempty"`
 }
 
 // VPNCredentials represents VPN authentication credentials
@@ -746,4 +924,73 @@ func (vm *DefaultVPNManager) initiateFailover(name string) {
 	}
 
 	fmt.Printf("✗ All failover attempts failed for VPN: %s\n", name)
+}
+
+// Hierarchical VPN Management Methods - Default implementations
+
+// ConnectHierarchical connects VPN connections in hierarchical order
+func (vm *DefaultVPNManager) ConnectHierarchical(ctx context.Context, rootConnection string) error {
+	// Default implementation delegates to normal connect
+	return vm.ConnectVPN(ctx, rootConnection)
+}
+
+// DisconnectHierarchical disconnects VPN connections in reverse hierarchical order
+func (vm *DefaultVPNManager) DisconnectHierarchical(ctx context.Context, rootConnection string) error {
+	// Default implementation delegates to normal disconnect
+	return vm.DisconnectVPN(ctx, rootConnection)
+}
+
+// GetVPNHierarchy returns the VPN connection hierarchy tree
+func (vm *DefaultVPNManager) GetVPNHierarchy() map[string]*VPNHierarchyNode {
+	// Default implementation returns empty hierarchy
+	return make(map[string]*VPNHierarchyNode)
+}
+
+// ValidateHierarchy validates VPN hierarchy configuration
+func (vm *DefaultVPNManager) ValidateHierarchy() error {
+	// Default implementation always returns success
+	return nil
+}
+
+// GetConnectionsByLayer returns VPN connections grouped by layer
+func (vm *DefaultVPNManager) GetConnectionsByLayer() map[int][]*VPNConnection {
+	// Default implementation returns all connections at layer 0
+	vm.mu.RLock()
+	defer vm.mu.RUnlock()
+
+	result := make(map[int][]*VPNConnection)
+	connections := make([]*VPNConnection, 0, len(vm.connections))
+	
+	for _, conn := range vm.connections {
+		connections = append(connections, conn)
+	}
+	
+	result[0] = connections
+	return result
+}
+
+// GetConnectionsByEnvironment returns VPN connections filtered by network environment
+func (vm *DefaultVPNManager) GetConnectionsByEnvironment(env NetworkEnvironment) []*VPNConnection {
+	// Default implementation returns all connections
+	vm.mu.RLock()
+	defer vm.mu.RUnlock()
+
+	result := make([]*VPNConnection, 0, len(vm.connections))
+	for _, conn := range vm.connections {
+		result = append(result, conn)
+	}
+	
+	return result
+}
+
+// AutoConnectForEnvironment automatically connects appropriate VPNs for network environment
+func (vm *DefaultVPNManager) AutoConnectForEnvironment(ctx context.Context, env NetworkEnvironment) error {
+	// Default implementation uses priority-based connection
+	return vm.ConnectByPriority(ctx)
+}
+
+// UpdateHierarchicalRouting updates routing rules for hierarchical connections
+func (vm *DefaultVPNManager) UpdateHierarchicalRouting(ctx context.Context) error {
+	// Default implementation does nothing
+	return nil
 }
