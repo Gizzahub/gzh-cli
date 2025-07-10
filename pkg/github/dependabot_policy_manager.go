@@ -37,15 +37,15 @@ type CachedRepositoryConfig struct {
 
 // PolicyEvaluationResult represents the result of policy evaluation for a repository
 type PolicyEvaluationResult struct {
-	PolicyID        string                 `json:"policy_id"`
-	Repository      string                 `json:"repository"`
-	Organization    string                 `json:"organization"`
-	Compliant       bool                   `json:"compliant"`
-	Violations      []DependabotPolicyViolation      `json:"violations"`
-	Recommendations []PolicyRecommendation `json:"recommendations"`
-	EvaluatedAt     time.Time              `json:"evaluated_at"`
-	NextEvaluation  time.Time              `json:"next_evaluation"`
-	ComplianceScore float64                `json:"compliance_score"`
+	PolicyID        string                      `json:"policy_id"`
+	Repository      string                      `json:"repository"`
+	Organization    string                      `json:"organization"`
+	Compliant       bool                        `json:"compliant"`
+	Violations      []DependabotPolicyViolation `json:"violations"`
+	Recommendations []PolicyRecommendation      `json:"recommendations"`
+	EvaluatedAt     time.Time                   `json:"evaluated_at"`
+	NextEvaluation  time.Time                   `json:"next_evaluation"`
+	ComplianceScore float64                     `json:"compliance_score"`
 }
 
 // DependabotPolicyViolation represents a violation of a Dependabot policy
@@ -75,17 +75,17 @@ type PolicyRecommendation struct {
 
 // BulkPolicyOperation represents a bulk operation on multiple repositories
 type BulkPolicyOperation struct {
-	ID                string                      `json:"id"`
-	Type              BulkOperationType           `json:"type"`
-	Organization      string                      `json:"organization"`
-	PolicyID          string                      `json:"policy_id"`
-	TargetRepos       []string                    `json:"target_repos"`
-	Status            BulkOperationStatus         `json:"status"`
-	Progress          BulkOperationProgress       `json:"progress"`
+	ID                string                                `json:"id"`
+	Type              BulkOperationType                     `json:"type"`
+	Organization      string                                `json:"organization"`
+	PolicyID          string                                `json:"policy_id"`
+	TargetRepos       []string                              `json:"target_repos"`
+	Status            BulkOperationStatus                   `json:"status"`
+	Progress          BulkOperationProgress                 `json:"progress"`
 	Results           []DependabotRepositoryOperationResult `json:"results"`
-	StartedAt         time.Time                   `json:"started_at"`
-	CompletedAt       *time.Time                  `json:"completed_at,omitempty"`
-	EstimatedDuration time.Duration               `json:"estimated_duration"`
+	StartedAt         time.Time                             `json:"started_at"`
+	CompletedAt       *time.Time                            `json:"completed_at,omitempty"`
+	EstimatedDuration time.Duration                         `json:"estimated_duration"`
 }
 
 // BulkOperationProgress tracks the progress of bulk operations
@@ -120,27 +120,27 @@ type ConfigurationChange struct {
 
 // OrganizationPolicyReport provides comprehensive reporting for organization policies
 type OrganizationPolicyReport struct {
-	Organization      string                    `json:"organization"`
-	PolicyID          string                    `json:"policy_id"`
-	GeneratedAt       time.Time                 `json:"generated_at"`
-	Summary           OrganizationPolicySummary `json:"summary"`
-	RepositoryResults []PolicyEvaluationResult  `json:"repository_results"`
-	TopViolations     []DependabotViolationStatistics     `json:"top_violations"`
-	Recommendations   []PolicyRecommendation    `json:"recommendations"`
-	TrendAnalysis     PolicyTrendAnalysis       `json:"trend_analysis"`
-	ExportFormats     []string                  `json:"available_exports"`
+	Organization      string                          `json:"organization"`
+	PolicyID          string                          `json:"policy_id"`
+	GeneratedAt       time.Time                       `json:"generated_at"`
+	Summary           OrganizationPolicySummary       `json:"summary"`
+	RepositoryResults []PolicyEvaluationResult        `json:"repository_results"`
+	TopViolations     []DependabotViolationStatistics `json:"top_violations"`
+	Recommendations   []PolicyRecommendation          `json:"recommendations"`
+	TrendAnalysis     PolicyTrendAnalysis             `json:"trend_analysis"`
+	ExportFormats     []string                        `json:"available_exports"`
 }
 
 // OrganizationPolicySummary provides high-level statistics
 type OrganizationPolicySummary struct {
-	TotalRepositories      int                         `json:"total_repositories"`
-	CompliantRepositories  int                         `json:"compliant_repositories"`
-	ViolatingRepositories  int                         `json:"violating_repositories"`
-	ComplianceRate         float64                     `json:"compliance_rate"`
-	AverageComplianceScore float64                     `json:"average_compliance_score"`
-	TotalViolations        int                         `json:"total_violations"`
-	CriticalViolations     int                         `json:"critical_violations"`
-	EcosystemBreakdown     map[string]EcosystemStats   `json:"ecosystem_breakdown"`
+	TotalRepositories      int                                   `json:"total_repositories"`
+	CompliantRepositories  int                                   `json:"compliant_repositories"`
+	ViolatingRepositories  int                                   `json:"violating_repositories"`
+	ComplianceRate         float64                               `json:"compliance_rate"`
+	AverageComplianceScore float64                               `json:"average_compliance_score"`
+	TotalViolations        int                                   `json:"total_violations"`
+	CriticalViolations     int                                   `json:"critical_violations"`
+	EcosystemBreakdown     map[string]EcosystemStats             `json:"ecosystem_breakdown"`
 	ViolationBreakdown     map[DependabotPolicyViolationType]int `json:"violation_breakdown"`
 }
 
@@ -156,11 +156,11 @@ type EcosystemStats struct {
 // DependabotViolationStatistics provides statistics for specific violation types
 type DependabotViolationStatistics struct {
 	Type           DependabotPolicyViolationType `json:"type"`
-	Count          int                 `json:"count"`
-	AffectedRepos  int                 `json:"affected_repos"`
-	Severity       PolicySeverity      `json:"severity"`
-	TrendDirection TrendDirection      `json:"trend_direction"`
-	RecommendedFix string              `json:"recommended_fix"`
+	Count          int                           `json:"count"`
+	AffectedRepos  int                           `json:"affected_repos"`
+	Severity       PolicySeverity                `json:"severity"`
+	TrendDirection TrendDirection                `json:"trend_direction"`
+	RecommendedFix string                        `json:"recommended_fix"`
 }
 
 // PolicyTrendAnalysis provides trend analysis for policy compliance
