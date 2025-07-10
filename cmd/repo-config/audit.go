@@ -192,7 +192,6 @@ Examples:
 			}
 			return runAuditCommandWithOptions(opts)
 		},
-		},
 	}
 
 	// Add global flags
@@ -234,7 +233,6 @@ Examples:
 	return cmd
 }
 
-<<<<<<< HEAD
 // runAuditCommandWithOptions executes the audit command with all options
 func runAuditCommandWithOptions(opts AuditOptions) error {
 	// For backward compatibility, delegate to the original function if no new features are used
@@ -415,25 +413,6 @@ func runAuditCommand(flags GlobalFlags, format, outputFile string, detailed bool
 		}
 	}
 
-	// Generate fix suggestions if requested
-	var fixSuggestions []FixSuggestion
-	if suggestFixes || autoFix {
-		fixSuggestions = generateFixSuggestions(auditData.Violations)
-	}
-
-	// Apply auto-fix if requested
-	if autoFix {
-		if dryRun {
-			fmt.Println("\n🔍 Dry Run Mode - Preview of automatic fixes:")
-			fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-			displayFixPreview(fixSuggestions)
-		} else {
-			fmt.Println("\n🔧 Applying automatic fixes...")
-			applyAutomaticFixes(flags.Organization, fixSuggestions)
-		}
-		return nil
-	}
-
 	switch format {
 	case "table":
 		displayAuditTable(auditData, detailed)
@@ -445,12 +424,6 @@ func runAuditCommand(flags GlobalFlags, format, outputFile string, detailed bool
 		displayAuditCSV(auditData, outputFile)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
-	}
-
-	// Display fix suggestions if requested
-	if suggestFixes && len(fixSuggestions) > 0 {
-		fmt.Println()
-		displayFixSuggestions(fixSuggestions)
 	}
 
 	return nil
