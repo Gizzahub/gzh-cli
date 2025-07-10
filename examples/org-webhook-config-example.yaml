@@ -1,0 +1,106 @@
+# Example Organization Webhook Configuration
+# Use with: gz webhook config org update myorg org-webhook-config-example.yaml
+
+organization: "myorg"
+version: "1.0"
+
+metadata:
+  name: "MyOrg Webhook Configuration"
+  description: "Organization-wide webhook configuration and policies"
+  author: "DevOps Team <devops@company.com>"
+  created_at: "2024-01-01T00:00:00Z"
+  updated_at: "2024-01-15T10:30:00Z"
+  version: "1.2.0"
+  tags:
+    environment: "production"
+    team: "platform"
+    compliance: "required"
+
+defaults:
+  # Default events for new webhooks
+  events:
+    - "push"
+    - "pull_request"
+  # Default active state
+  active: true
+  # Default webhook configuration
+  config:
+    content_type: "json"
+    insecure_ssl: false
+  # Template variables available to all policies
+  variables:
+    company_domain: "company.com"
+    ci_environment: "production"
+    notification_channel: "#github-notifications"
+
+policies:
+  # Include all policies defined in separate files
+  - id: "ci-cd-webhook-policy"
+    name: "CI/CD Webhook Policy"
+    description: "Ensures CI/CD webhooks are configured"
+    enabled: true
+    priority: 100
+    
+  - id: "security-webhook-policy"
+    name: "Security Webhook Policy"
+    description: "Ensures security webhooks are configured"
+    enabled: true
+    priority: 200
+    
+  - id: "notification-webhook-policy"
+    name: "Notification Webhook Policy"
+    description: "Configures team notification webhooks"
+    enabled: false
+    priority: 50
+
+settings:
+  # Allow individual repositories to override organization policies
+  allow_repository_override: true
+  
+  # Require approval for webhook changes
+  require_approval: false
+  
+  # Maximum number of webhooks per repository
+  max_webhooks_per_repo: 5
+  
+  # Retry failed webhook deliveries
+  retry_on_failure: true
+  
+  # Notification settings for policy operations
+  notification_settings:
+    on_success: true
+    on_failure: true
+    on_conflict: true
+    recipients:
+      - "devops@company.com"
+      - "security@company.com"
+    slack_channel: "#webhook-alerts"
+
+validation:
+  # Required events that all webhooks should support
+  required_events:
+    - "push"
+  
+  # Events that are forbidden for security reasons
+  forbidden_events:
+    - "workflow_job" # Too noisy
+  
+  # Allowed webhook domains (whitelist)
+  allowed_domains:
+    - "company.com"
+    - "ci.company.com"
+    - "security.company.com"
+    - "slack.com"
+    - "discord.com"
+    - "teams.microsoft.com"
+  
+  # Forbidden webhook domains (blacklist)
+  forbidden_domains:
+    - "malicious-site.com"
+    - "old-ci.company.com"
+  
+  # Require HTTPS for all webhooks
+  require_ssl: true
+  
+  # Require webhook secret for security
+  require_secret: true

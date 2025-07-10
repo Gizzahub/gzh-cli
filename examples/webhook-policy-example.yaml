@@ -1,0 +1,99 @@
+# Example Webhook Policy Configuration
+# Use with: gz webhook config policy create myorg webhook-policy-example.yaml
+
+id: "ci-cd-webhook-policy"
+name: "CI/CD Webhook Policy"
+description: "Ensures all repositories have proper CI/CD webhooks configured"
+organization: "myorg"
+enabled: true
+priority: 100
+created_by: "admin@company.com"
+
+tags:
+  category: "ci-cd"
+  environment: "production"
+  team: "devops"
+
+rules:
+  - id: "ensure-ci-webhook"
+    name: "Ensure CI webhook exists"
+    enabled: true
+    conditions:
+      # Apply to repositories matching these patterns
+      repository_pattern:
+        - "^api-.*"
+        - "^service-.*"
+        - "^web-.*"
+      # Exclude archived repositories
+      is_archived: false
+      # Only apply to repositories with issues enabled
+      has_issues: true
+      # Apply to specific languages
+      language:
+        - "Go"
+        - "JavaScript"
+        - "Python"
+      # Apply to public and private repos
+      visibility:
+        - "public"
+        - "private"
+    action: "ensure" # create if not exists, update if exists
+    on_conflict: "merge" # skip, overwrite, merge, error
+    template:
+      name: "ci-webhook"
+      url: "https://ci.company.com/webhook/github"
+      events:
+        - "push"
+        - "pull_request"
+        - "release"
+      active: true
+      config:
+        url: "https://ci.company.com/webhook/github"
+        content_type: "json"
+        secret: "${CI_WEBHOOK_SECRET}" # Template variable
+        insecure_ssl: false
+      variables:
+        # Template variables for URL customization
+        ci_environment: "production"
+        team_name: "platform"
+
+  - id: "ensure-security-webhook"
+    name: "Ensure security webhook exists"
+    enabled: true
+    conditions:
+      # Apply to all repositories
+      visibility:
+        - "public"
+        - "private"
+        - "internal"
+      # Exclude template repositories
+      is_template: false
+    action: "ensure"
+    on_conflict: "overwrite"
+    template:
+      name: "security-webhook"
+      url: "https://security.company.com/webhook/github"
+      events:
+        - "push"
+        - "pull_request"
+        - "create" # branch/tag creation
+        - "delete" # branch/tag deletion
+      active: true
+      config:
+        url: "https://security.company.com/webhook/github"
+        content_type: "json"
+        secret: "${SECURITY_WEBHOOK_SECRET}"
+        insecure_ssl: false
+
+  - id: "cleanup-old-webhooks"
+    name: "Remove deprecated webhooks"
+    enabled: true
+    conditions:
+      # Apply to all repositories
+      repository_pattern:
+        - ".*"
+    action: "delete"
+    on_conflict: "skip"
+    template:
+      # For delete actions, we match by URL pattern
+      url: "https://old-ci.company.com/.*"
