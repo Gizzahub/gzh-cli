@@ -61,11 +61,12 @@ type AlertInstance struct {
 
 // AlertManager manages alerts and alert rules
 type AlertManager struct {
-	mu        sync.RWMutex
-	rules     map[string]*AlertRule
-	alerts    map[string]*AlertInstance
-	silences  map[string]time.Time
-	evaluator *AlertEvaluator
+	mu            sync.RWMutex
+	rules         map[string]*AlertRule
+	alerts        map[string]*AlertInstance
+	silences      map[string]time.Time
+	evaluator     *AlertEvaluator
+	slackNotifier *SlackNotifier
 }
 
 // AlertEvaluator evaluates alert rules
@@ -81,6 +82,13 @@ func NewAlertManager() *AlertManager {
 		silences:  make(map[string]time.Time),
 		evaluator: &AlertEvaluator{},
 	}
+}
+
+// SetSlackNotifier sets the Slack notifier for alert notifications
+func (am *AlertManager) SetSlackNotifier(notifier *SlackNotifier) {
+	am.mu.Lock()
+	defer am.mu.Unlock()
+	am.slackNotifier = notifier
 }
 
 // SetMetrics sets the metrics collector for alert evaluation
@@ -205,6 +213,20 @@ func (am *AlertManager) CreateAlert(alert *Alert) error {
 	}
 
 	am.alerts[alert.ID] = instance
+
+	// Send Slack notification if configured
+	if am.slackNotifier != nil {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			
+			if err := am.slackNotifier.SendAlert(ctx, instance); err != nil {
+				// Log error but don't fail the alert creation
+				fmt.Printf("Failed to send Slack notification: %v\n", err)
+			}
+		}()
+	}
+
 	return nil
 }
 

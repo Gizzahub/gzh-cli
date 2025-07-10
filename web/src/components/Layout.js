@@ -108,6 +108,12 @@ const Layout = ({ children }) => {
       roles: ['admin', 'operator'],
     },
     {
+      text: 'Notifications',
+      icon: <NotificationsIcon />,
+      path: '/notifications',
+      roles: ['admin'],
+    },
+    {
       text: 'Settings',
       icon: <SettingsIcon />,
       path: '/settings',

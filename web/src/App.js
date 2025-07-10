@@ -5,6 +5,7 @@ import { useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import InstanceManager from './components/InstanceManager';
+import NotificationSettings from './components/NotificationSettings';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -30,6 +31,7 @@ function App() {
           <Route path="/metrics" element={<div>Metrics Page (Coming Soon)</div>} />
           <Route path="/users" element={<div>Users Page (Coming Soon)</div>} />
           <Route path="/instances" element={<InstanceManager />} />
+          <Route path="/notifications" element={<NotificationSettings />} />
           <Route path="/settings" element={<div>Settings Page (Coming Soon)</div>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

@@ -29,6 +29,7 @@ func NewMonitoringCmd(ctx context.Context) *cobra.Command {
 	cmd.AddCommand(newStatusCmd(ctx))
 	cmd.AddCommand(newMetricsCmd(ctx))
 	cmd.AddCommand(newInstanceCmd(ctx))
+	cmd.AddCommand(newNotificationCmd(ctx))
 
 	return cmd
 }
@@ -278,6 +279,47 @@ func formatBytes(bytes uint64) string {
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
 
+// newNotificationCmd creates the notification management subcommand
+func newNotificationCmd(ctx context.Context) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "notification",
+		Short: "Test and manage notifications",
+		Long:  `Test notification integrations like Slack, Discord, etc.`,
+	}
+
+	// Add notification subcommands
+	cmd.AddCommand(newNotificationTestCmd(ctx))
+
+	return cmd
+}
+
+// newNotificationTestCmd creates the notification test subcommand
+func newNotificationTestCmd(ctx context.Context) *cobra.Command {
+	var notificationType string
+	var message string
+
+	cmd := &cobra.Command{
+		Use:   "test",
+		Short: "Test notification delivery",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			client := NewMonitoringClient("http://localhost:8080")
+			
+			err := client.TestNotification(ctx, notificationType, "", message)
+			if err != nil {
+				return fmt.Errorf("failed to send test notification: %w", err)
+			}
+
+			fmt.Printf("✅ Test %s notification sent successfully\n", notificationType)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&notificationType, "type", "t", "slack", "Notification type (slack, discord, teams, email)")
+	cmd.Flags().StringVarP(&message, "message", "m", "Test message from GZH Monitoring", "Test message content")
+
+	return cmd
+}
+
 // ServerConfig represents server configuration
 type ServerConfig struct {
 	Host  string
@@ -321,6 +363,9 @@ func NewMonitoringServer(config *ServerConfig) *MonitoringServer {
 
 	// Set metrics collector for alerts
 	server.alerts.SetMetrics(server.metrics)
+
+	// Initialize Slack notifier if configured
+	server.initializeSlackNotifier(logger)
 
 	server.setupRoutes()
 	return server
@@ -646,7 +691,26 @@ func (s *MonitoringServer) testNotification(c *gin.Context) {
 	}
 
 	// Test notification implementation
-	c.JSON(http.StatusOK, gin.H{"message": "test notification sent"})
+	switch req.Type {
+	case "slack":
+		if s.alerts.slackNotifier == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Slack notifications not configured"})
+			return
+		}
+		
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+		defer cancel()
+		
+		err := s.alerts.slackNotifier.SendCustomMessage(ctx, "Test Notification", req.Message, AlertSeverityInfo)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		
+		c.JSON(http.StatusOK, gin.H{"message": "Slack test notification sent successfully"})
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported notification type"})
+	}
 }
 
 func (s *MonitoringServer) getConfig(c *gin.Context) {
@@ -1117,4 +1181,37 @@ func (s *MonitoringServer) removeInstance(c *gin.Context) {
 func (s *MonitoringServer) getClusterStatus(c *gin.Context) {
 	status := s.instanceManager.GetClusterStatus()
 	c.JSON(http.StatusOK, status)
+}
+
+// initializeSlackNotifier initializes Slack notification if configured
+func (s *MonitoringServer) initializeSlackNotifier(logger *zap.Logger) {
+	// Check for Slack configuration from environment variables
+	webhookURL := os.Getenv("SLACK_WEBHOOK_URL")
+	if webhookURL == "" {
+		logger.Info("Slack webhook URL not configured, skipping Slack notifications")
+		return
+	}
+
+	slackConfig := &SlackConfig{
+		WebhookURL: webhookURL,
+		Channel:    getEnvOrDefault("SLACK_CHANNEL", "#monitoring"),
+		Username:   getEnvOrDefault("SLACK_USERNAME", "GZH Monitoring"),
+		IconEmoji:  getEnvOrDefault("SLACK_ICON_EMOJI", ":robot_face:"),
+		Enabled:    true,
+	}
+
+	slackNotifier := NewSlackNotifier(slackConfig, logger)
+	s.alerts.SetSlackNotifier(slackNotifier)
+
+	logger.Info("Slack notifications initialized",
+		zap.String("channel", slackConfig.Channel),
+		zap.String("username", slackConfig.Username))
+}
+
+// getEnvOrDefault gets environment variable with default value
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
