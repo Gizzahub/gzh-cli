@@ -29,7 +29,8 @@ Examples:
   gz repo-config diff                   # Show differences between current and target
   gz repo-config audit                  # Generate compliance audit report
   gz repo-config webhook                # Manage repository webhooks
-  gz repo-config dashboard              # Start real-time compliance dashboard`,
+  gz repo-config dashboard              # Start real-time compliance dashboard
+  gz repo-config risk-assessment        # Perform CVSS-based risk assessment`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -44,6 +45,7 @@ Examples:
 	cmd.AddCommand(newTemplateCmd())
 	cmd.AddCommand(newWebhookCmd())
 	cmd.AddCommand(newDashboardCmd())
+	cmd.AddCommand(newRiskAssessmentCmd())
 
 	return cmd
 }
