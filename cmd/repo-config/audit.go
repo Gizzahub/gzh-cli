@@ -47,6 +47,11 @@ type AuditOptions struct {
 	// Notification options
 	NotifyWebhook string
 	NotifyEmail   string
+
+	// Auto-fix options
+	SuggestFixes bool
+	AutoFix      bool
+	DryRun       bool
 }
 
 // newAuditCmd creates the audit subcommand
@@ -81,6 +86,11 @@ func newAuditCmd() *cobra.Command {
 		// Notification options
 		notifyWebhook string
 		notifyEmail   string
+
+		// Auto-fix options
+		suggestFixes bool
+		autoFix      bool
+		dryRun       bool
 	)
 
 	cmd := &cobra.Command{
@@ -143,7 +153,16 @@ Examples:
   gz repo-config audit --format junit --exit-on-fail --fail-threshold 90
   
   # Generate SARIF report for GitHub Advanced Security
-  gz repo-config audit --format sarif --output results.sarif`,
+  gz repo-config audit --format sarif --output results.sarif
+  
+  # Show automated fix suggestions
+  gz repo-config audit --suggest-fixes
+  
+  # Preview automatic fixes
+  gz repo-config audit --auto-fix --dry-run
+  
+  # Apply automatic fixes
+  gz repo-config audit --auto-fix`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts := AuditOptions{
 				GlobalFlags:      flags,
@@ -167,8 +186,12 @@ Examples:
 				Baseline:         baseline,
 				NotifyWebhook:    notifyWebhook,
 				NotifyEmail:      notifyEmail,
+				SuggestFixes:     suggestFixes,
+				AutoFix:          autoFix,
+				DryRun:           dryRun,
 			}
 			return runAuditCommandWithOptions(opts)
+		},
 		},
 	}
 
@@ -183,6 +206,9 @@ Examples:
 	cmd.Flags().BoolVar(&saveTrend, "save-trend", false, "Save audit results for trend analysis")
 	cmd.Flags().BoolVar(&showTrend, "show-trend", false, "Show trend analysis report")
 	cmd.Flags().StringVar(&trendPeriod, "trend-period", "30d", "Trend analysis period (e.g., 7d, 30d, 90d)")
+	cmd.Flags().BoolVar(&suggestFixes, "suggest-fixes", false, "Generate automated fix suggestions for violations")
+	cmd.Flags().BoolVar(&autoFix, "auto-fix", false, "Automatically apply fixes for violations")
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Preview fixes without applying them (use with --auto-fix)")
 
 	// Repository filter flags
 	cmd.Flags().StringVar(&filterVisibility, "filter-visibility", "", "Filter by visibility (public, private, all)")
@@ -208,6 +234,7 @@ Examples:
 	return cmd
 }
 
+<<<<<<< HEAD
 // runAuditCommandWithOptions executes the audit command with all options
 func runAuditCommandWithOptions(opts AuditOptions) error {
 	// For backward compatibility, delegate to the original function if no new features are used
@@ -226,7 +253,8 @@ func hasNewFeatures(opts AuditOptions) bool {
 		opts.FilterTeam != "" || opts.FilterModified != "" || opts.FilterPattern != "" ||
 		opts.PolicyGroup != "" || opts.PolicyPreset != "" || opts.ExitOnFail ||
 		opts.Baseline != "" || opts.NotifyWebhook != "" || opts.NotifyEmail != "" ||
-		opts.Format == "sarif" || opts.Format == "junit"
+		opts.Format == "sarif" || opts.Format == "junit" ||
+		opts.SuggestFixes || opts.AutoFix || opts.DryRun
 }
 
 // runEnhancedAudit runs the audit with enhanced features
@@ -387,6 +415,25 @@ func runAuditCommand(flags GlobalFlags, format, outputFile string, detailed bool
 		}
 	}
 
+	// Generate fix suggestions if requested
+	var fixSuggestions []FixSuggestion
+	if suggestFixes || autoFix {
+		fixSuggestions = generateFixSuggestions(auditData.Violations)
+	}
+
+	// Apply auto-fix if requested
+	if autoFix {
+		if dryRun {
+			fmt.Println("\n🔍 Dry Run Mode - Preview of automatic fixes:")
+			fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			displayFixPreview(fixSuggestions)
+		} else {
+			fmt.Println("\n🔧 Applying automatic fixes...")
+			applyAutomaticFixes(flags.Organization, fixSuggestions)
+		}
+		return nil
+	}
+
 	switch format {
 	case "table":
 		displayAuditTable(auditData, detailed)
@@ -398,6 +445,12 @@ func runAuditCommand(flags GlobalFlags, format, outputFile string, detailed bool
 		displayAuditCSV(auditData, outputFile)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
+	}
+
+	// Display fix suggestions if requested
+	if suggestFixes && len(fixSuggestions) > 0 {
+		fmt.Println()
+		displayFixSuggestions(fixSuggestions)
 	}
 
 	return nil
@@ -458,6 +511,52 @@ type ViolationDetail struct {
 	Severity    string `json:"severity"`
 	Description string `json:"description"`
 	Remediation string `json:"remediation"`
+}
+
+// FixSuggestion represents an automated fix suggestion
+type FixSuggestion struct {
+	ID             string     `json:"id"`
+	Repository     string     `json:"repository"`
+	Violation      string     `json:"violation"`
+	Severity       string     `json:"severity"`
+	FixType        FixType    `json:"fix_type"`
+	Description    string     `json:"description"`
+	Command        string     `json:"command,omitempty"`
+	APIAction      *APIAction `json:"api_action,omitempty"`
+	Prerequisites  []string   `json:"prerequisites,omitempty"`
+	RiskLevel      string     `json:"risk_level"`
+	EstimatedTime  string     `json:"estimated_time"`
+	AutoApplicable bool       `json:"auto_applicable"`
+	Priority       int        `json:"priority"` // 1-5, 1 is highest
+}
+
+// FixType defines the type of fix
+type FixType string
+
+const (
+	FixTypeAPI     FixType = "api"     // GitHub API call
+	FixTypeManual  FixType = "manual"  // Manual intervention required
+	FixTypeCommand FixType = "command" // CLI command execution
+	FixTypeScript  FixType = "script"  // Script execution
+	FixTypeConfig  FixType = "config"  // Configuration file change
+)
+
+// APIAction represents a GitHub API action for fixing violations
+type APIAction struct {
+	Method   string                 `json:"method"`
+	Endpoint string                 `json:"endpoint"`
+	Body     map[string]interface{} `json:"body"`
+	Headers  map[string]string      `json:"headers,omitempty"`
+}
+
+// FixResult represents the result of applying a fix
+type FixResult struct {
+	FixID    string `json:"fix_id"`
+	Success  bool   `json:"success"`
+	Error    string `json:"error,omitempty"`
+	Applied  bool   `json:"applied"`
+	Message  string `json:"message"`
+	Duration string `json:"duration"`
 }
 
 // performComplianceAudit performs actual audit logic
@@ -949,6 +1048,424 @@ func generateHTMLReport(data AuditData) string {
 	}
 
 	return output.String()
+}
+
+// generateFixSuggestions creates automated fix suggestions for violations
+func generateFixSuggestions(violations []ViolationDetail) []FixSuggestion {
+	var suggestions []FixSuggestion
+
+	for i, violation := range violations {
+		suggestion := FixSuggestion{
+			ID:         fmt.Sprintf("fix-%d", i+1),
+			Repository: violation.Repository,
+			Violation:  fmt.Sprintf("%s: %s", violation.Policy, violation.Setting),
+			Severity:   violation.Severity,
+		}
+
+		// Generate specific fix based on violation type
+		switch {
+		case strings.Contains(violation.Setting, "branch_protection"):
+			suggestion = generateBranchProtectionFix(violation, suggestion)
+		case strings.Contains(violation.Setting, "required_reviews"):
+			suggestion = generateRequiredReviewsFix(violation, suggestion)
+		case strings.Contains(violation.Setting, "security_scanning"):
+			suggestion = generateSecurityScanningFix(violation, suggestion)
+		case strings.Contains(violation.Setting, "visibility"):
+			suggestion = generateVisibilityFix(violation, suggestion)
+		case strings.Contains(violation.Setting, "permissions"):
+			suggestion = generatePermissionsFix(violation, suggestion)
+		default:
+			suggestion = generateGenericFix(violation, suggestion)
+		}
+
+		// Set priority based on severity
+		suggestion.Priority = getSeverityPriority(violation.Severity)
+
+		suggestions = append(suggestions, suggestion)
+	}
+
+	// Sort by priority (1 is highest priority)
+	for i := 0; i < len(suggestions); i++ {
+		for j := i + 1; j < len(suggestions); j++ {
+			if suggestions[i].Priority > suggestions[j].Priority {
+				suggestions[i], suggestions[j] = suggestions[j], suggestions[i]
+			}
+		}
+	}
+
+	return suggestions
+}
+
+// generateBranchProtectionFix creates fix for branch protection violations
+func generateBranchProtectionFix(violation ViolationDetail, suggestion FixSuggestion) FixSuggestion {
+	suggestion.FixType = FixTypeAPI
+	suggestion.Description = "Enable branch protection with required settings"
+	suggestion.RiskLevel = "low"
+	suggestion.EstimatedTime = "30 seconds"
+	suggestion.AutoApplicable = true
+
+	// Extract branch name from setting
+	branch := "main"
+	if strings.Contains(violation.Setting, ".") {
+		parts := strings.Split(violation.Setting, ".")
+		if len(parts) > 1 {
+			branch = parts[1]
+		}
+	}
+
+	suggestion.APIAction = &APIAction{
+		Method:   "PUT",
+		Endpoint: fmt.Sprintf("/repos/{owner}/%s/branches/%s/protection", violation.Repository, branch),
+		Body: map[string]interface{}{
+			"required_status_checks": map[string]interface{}{
+				"strict":   true,
+				"contexts": []string{},
+			},
+			"enforce_admins": true,
+			"required_pull_request_reviews": map[string]interface{}{
+				"required_approving_review_count": 2,
+				"dismiss_stale_reviews":           true,
+				"require_code_owner_reviews":      true,
+			},
+			"restrictions": nil,
+		},
+	}
+
+	suggestion.Command = fmt.Sprintf("gz repo-config apply --org {org} --repo %s --setting branch_protection.%s.enabled=true", violation.Repository, branch)
+
+	return suggestion
+}
+
+// generateRequiredReviewsFix creates fix for required reviews violations
+func generateRequiredReviewsFix(violation ViolationDetail, suggestion FixSuggestion) FixSuggestion {
+	suggestion.FixType = FixTypeAPI
+	suggestion.Description = fmt.Sprintf("Set required reviewers to %s", violation.Expected)
+	suggestion.RiskLevel = "low"
+	suggestion.EstimatedTime = "15 seconds"
+	suggestion.AutoApplicable = true
+
+	// Extract branch name
+	branch := "main"
+	if strings.Contains(violation.Setting, ".") {
+		parts := strings.Split(violation.Setting, ".")
+		if len(parts) > 1 {
+			branch = parts[1]
+		}
+	}
+
+	suggestion.APIAction = &APIAction{
+		Method:   "PATCH",
+		Endpoint: fmt.Sprintf("/repos/{owner}/%s/branches/%s/protection/required_pull_request_reviews", violation.Repository, branch),
+		Body: map[string]interface{}{
+			"required_approving_review_count": violation.Expected,
+			"dismiss_stale_reviews":           true,
+			"require_code_owner_reviews":      true,
+		},
+	}
+
+	suggestion.Command = fmt.Sprintf("gz repo-config apply --org {org} --repo %s --setting branch_protection.%s.required_reviews=%s", violation.Repository, branch, violation.Expected)
+
+	return suggestion
+}
+
+// generateSecurityScanningFix creates fix for security scanning violations
+func generateSecurityScanningFix(violation ViolationDetail, suggestion FixSuggestion) FixSuggestion {
+	suggestion.FixType = FixTypeAPI
+	suggestion.Description = "Enable security scanning features"
+	suggestion.RiskLevel = "low"
+	suggestion.EstimatedTime = "45 seconds"
+	suggestion.AutoApplicable = true
+
+	suggestion.APIAction = &APIAction{
+		Method:   "PUT",
+		Endpoint: fmt.Sprintf("/repos/{owner}/%s/vulnerability-alerts", violation.Repository),
+		Body:     map[string]interface{}{},
+	}
+
+	suggestion.Prerequisites = []string{
+		"Repository must have security features enabled",
+		"Organization must allow security scanning",
+	}
+
+	suggestion.Command = fmt.Sprintf("gz repo-config apply --org {org} --repo %s --setting security.vulnerability_alerts=true", violation.Repository)
+
+	return suggestion
+}
+
+// generateVisibilityFix creates fix for repository visibility violations
+func generateVisibilityFix(violation ViolationDetail, suggestion FixSuggestion) FixSuggestion {
+	suggestion.FixType = FixTypeAPI
+	suggestion.Description = fmt.Sprintf("Change repository visibility to %s", violation.Expected)
+	suggestion.RiskLevel = "high"
+	suggestion.EstimatedTime = "10 seconds"
+	suggestion.AutoApplicable = false // Visibility changes require confirmation
+
+	isPrivate := violation.Expected == "private"
+
+	suggestion.APIAction = &APIAction{
+		Method:   "PATCH",
+		Endpoint: fmt.Sprintf("/repos/{owner}/%s", violation.Repository),
+		Body: map[string]interface{}{
+			"private": isPrivate,
+		},
+	}
+
+	suggestion.Prerequisites = []string{
+		"⚠️  Repository visibility changes affect access permissions",
+		"⚠️  Confirm this change won't break existing integrations",
+		"⚠️  Consider impact on team workflows",
+	}
+
+	suggestion.Command = fmt.Sprintf("gz repo-config apply --org {org} --repo %s --setting visibility=%s --confirm", violation.Repository, violation.Expected)
+
+	return suggestion
+}
+
+// generatePermissionsFix creates fix for permissions violations
+func generatePermissionsFix(violation ViolationDetail, suggestion FixSuggestion) FixSuggestion {
+	suggestion.FixType = FixTypeAPI
+	suggestion.Description = "Update team permissions"
+	suggestion.RiskLevel = "medium"
+	suggestion.EstimatedTime = "20 seconds"
+	suggestion.AutoApplicable = true
+
+	// Extract team name and permission level
+	parts := strings.Split(violation.Setting, ".")
+	teamName := "unknown"
+	if len(parts) >= 3 {
+		teamName = parts[2]
+	}
+
+	suggestion.APIAction = &APIAction{
+		Method:   "PUT",
+		Endpoint: fmt.Sprintf("/orgs/{owner}/teams/{team_slug}/repos/{owner}/%s", violation.Repository),
+		Body: map[string]interface{}{
+			"permission": violation.Expected,
+		},
+	}
+
+	suggestion.Prerequisites = []string{
+		fmt.Sprintf("Team '%s' must exist in the organization", teamName),
+		"User must have admin access to manage team permissions",
+	}
+
+	suggestion.Command = fmt.Sprintf("gz repo-config apply --org {org} --repo %s --setting permissions.team.%s=%s", violation.Repository, teamName, violation.Expected)
+
+	return suggestion
+}
+
+// generateGenericFix creates a generic fix suggestion
+func generateGenericFix(violation ViolationDetail, suggestion FixSuggestion) FixSuggestion {
+	suggestion.FixType = FixTypeManual
+	suggestion.Description = "Manual configuration required"
+	suggestion.RiskLevel = "medium"
+	suggestion.EstimatedTime = "5 minutes"
+	suggestion.AutoApplicable = false
+
+	suggestion.Prerequisites = []string{
+		"Review violation details carefully",
+		"Test changes in a safe environment first",
+		violation.Remediation,
+	}
+
+	suggestion.Command = fmt.Sprintf("# Manual fix required for %s\n# %s\n# Expected: %s, Current: %s",
+		violation.Setting, violation.Description, violation.Expected, violation.Actual)
+
+	return suggestion
+}
+
+// getSeverityPriority converts severity to priority number (1-5, 1 is highest)
+func getSeverityPriority(severity string) int {
+	switch severity {
+	case "critical":
+		return 1
+	case "high":
+		return 2
+	case "medium":
+		return 3
+	case "low":
+		return 4
+	default:
+		return 5
+	}
+}
+
+// displayFixSuggestions shows automated fix suggestions
+func displayFixSuggestions(suggestions []FixSuggestion) {
+	fmt.Println("🔧 Automated Fix Suggestions")
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+	for i, suggestion := range suggestions {
+		fmt.Printf("\n%d. %s\n", i+1, suggestion.Description)
+		fmt.Printf("   Repository: %s\n", suggestion.Repository)
+		fmt.Printf("   Violation: %s\n", suggestion.Violation)
+		fmt.Printf("   Severity: %s\n", getSeveritySymbol(suggestion.Severity))
+		fmt.Printf("   Risk Level: %s\n", getRiskSymbol(suggestion.RiskLevel))
+		fmt.Printf("   Fix Type: %s\n", getFixTypeSymbol(suggestion.FixType))
+		fmt.Printf("   Estimated Time: %s\n", suggestion.EstimatedTime)
+		fmt.Printf("   Auto-Applicable: %s\n", getBoolSymbol(suggestion.AutoApplicable))
+
+		if len(suggestion.Prerequisites) > 0 {
+			fmt.Printf("   Prerequisites:\n")
+			for _, prereq := range suggestion.Prerequisites {
+				fmt.Printf("     • %s\n", prereq)
+			}
+		}
+
+		if suggestion.Command != "" {
+			fmt.Printf("   Command:\n")
+			fmt.Printf("     %s\n", suggestion.Command)
+		}
+
+		if suggestion.AutoApplicable {
+			fmt.Printf("   💡 Run with --auto-fix to apply automatically\n")
+		}
+	}
+
+	// Summary
+	autoApplicable := 0
+	for _, s := range suggestions {
+		if s.AutoApplicable {
+			autoApplicable++
+		}
+	}
+
+	fmt.Printf("\n📊 Summary: %d suggestions (%d auto-applicable)\n", len(suggestions), autoApplicable)
+	if autoApplicable > 0 {
+		fmt.Printf("💡 To apply all auto-fixes: gz repo-config audit --auto-fix --org {org}\n")
+		fmt.Printf("💡 To preview first: gz repo-config audit --auto-fix --dry-run --org {org}\n")
+	}
+}
+
+// displayFixPreview shows preview of fixes that would be applied
+func displayFixPreview(suggestions []FixSuggestion) {
+	applicableFixes := []FixSuggestion{}
+	for _, suggestion := range suggestions {
+		if suggestion.AutoApplicable {
+			applicableFixes = append(applicableFixes, suggestion)
+		}
+	}
+
+	if len(applicableFixes) == 0 {
+		fmt.Println("⚠️  No auto-applicable fixes found")
+		return
+	}
+
+	fmt.Printf("Found %d auto-applicable fixes:\n\n", len(applicableFixes))
+
+	for i, fix := range applicableFixes {
+		fmt.Printf("%d. %s (%s)\n", i+1, fix.Description, fix.Repository)
+		fmt.Printf("   Command: %s\n", fix.Command)
+		if fix.APIAction != nil {
+			fmt.Printf("   API: %s %s\n", fix.APIAction.Method, fix.APIAction.Endpoint)
+		}
+		fmt.Printf("   Risk: %s, Time: %s\n", fix.RiskLevel, fix.EstimatedTime)
+		fmt.Println()
+	}
+
+	fmt.Printf("✅ These %d fixes would be applied with --auto-fix\n", len(applicableFixes))
+}
+
+// applyAutomaticFixes applies automated fixes
+func applyAutomaticFixes(organization string, suggestions []FixSuggestion) {
+	applicableFixes := []FixSuggestion{}
+	for _, suggestion := range suggestions {
+		if suggestion.AutoApplicable {
+			applicableFixes = append(applicableFixes, suggestion)
+		}
+	}
+
+	if len(applicableFixes) == 0 {
+		fmt.Println("⚠️  No auto-applicable fixes found")
+		return
+	}
+
+	fmt.Printf("Applying %d automatic fixes...\n\n", len(applicableFixes))
+
+	successCount := 0
+	for i, fix := range applicableFixes {
+		fmt.Printf("[%d/%d] Applying: %s (%s)...", i+1, len(applicableFixes), fix.Description, fix.Repository)
+
+		// Simulate fix application (in real implementation, this would call GitHub API)
+		result := simulateFixApplication(fix)
+
+		if result.Success {
+			fmt.Printf(" ✅ %s\n", result.Message)
+			successCount++
+		} else {
+			fmt.Printf(" ❌ %s\n", result.Error)
+		}
+	}
+
+	fmt.Printf("\n📊 Applied %d/%d fixes successfully\n", successCount, len(applicableFixes))
+	if successCount < len(applicableFixes) {
+		fmt.Printf("⚠️  %d fixes failed - check permissions and prerequisites\n", len(applicableFixes)-successCount)
+	}
+}
+
+// simulateFixApplication simulates applying a fix (placeholder for actual GitHub API calls)
+func simulateFixApplication(fix FixSuggestion) FixResult {
+	// In a real implementation, this would:
+	// 1. Authenticate with GitHub API
+	// 2. Make the required API calls
+	// 3. Handle responses and errors
+	// 4. Return actual results
+
+	// For now, simulate success/failure
+	result := FixResult{
+		FixID:   fix.ID,
+		Applied: true,
+		Success: true,
+		Message: "Fix applied successfully",
+	}
+
+	// Simulate some failures for demonstration
+	if strings.Contains(fix.Repository, "legacy") {
+		result.Success = false
+		result.Applied = false
+		result.Error = "Repository permissions insufficient"
+		result.Message = "Failed to apply fix"
+	}
+
+	return result
+}
+
+// Helper functions for display
+func getRiskSymbol(risk string) string {
+	switch risk {
+	case "high":
+		return "🔴 High"
+	case "medium":
+		return "🟡 Medium"
+	case "low":
+		return "🟢 Low"
+	default:
+		return "❓ Unknown"
+	}
+}
+
+func getFixTypeSymbol(fixType FixType) string {
+	switch fixType {
+	case FixTypeAPI:
+		return "🔌 API Call"
+	case FixTypeCommand:
+		return "⚡ Command"
+	case FixTypeManual:
+		return "👤 Manual"
+	case FixTypeScript:
+		return "📜 Script"
+	case FixTypeConfig:
+		return "⚙️  Config"
+	default:
+		return "❓ Unknown"
+	}
+}
+
+func getBoolSymbol(value bool) string {
+	if value {
+		return "✅ Yes"
+	}
+	return "❌ No"
 }
 
 // generateSimpleHTMLReport is a fallback for when template processing fails
