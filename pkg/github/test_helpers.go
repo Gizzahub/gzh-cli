@@ -223,10 +223,7 @@ func SetupGetRepoExpectation(t *testing.T, ctx context.Context, client *github.C
 	require.NotNil(t, repository)
 }
 
-// Helper functions for creating pointers
-func boolPtr(b bool) *bool {
-	return &b
-}
+// Helper functions for creating pointers - removed boolPtr as it's already defined in automation_engine.go
 
 func intPtr(i int) *int {
 	return &i

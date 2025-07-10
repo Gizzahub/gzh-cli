@@ -357,11 +357,11 @@ type MitigationStrategy struct {
 type VulnerabilitySeverity string
 
 const (
-	SeverityCritical VulnerabilitySeverity = "critical"
-	SeverityHigh     VulnerabilitySeverity = "high"
-	SeverityMedium   VulnerabilitySeverity = "medium"
-	SeverityLow      VulnerabilitySeverity = "low"
-	SeverityInfo     VulnerabilitySeverity = "info"
+	VulnSeverityCritical VulnerabilitySeverity = "critical"
+	VulnSeverityHigh     VulnerabilitySeverity = "high"
+	VulnSeverityMedium   VulnerabilitySeverity = "medium"
+	VulnSeverityLow      VulnerabilitySeverity = "low"
+	VulnSeverityInfo     VulnerabilitySeverity = "info"
 )
 
 type ConditionType string
@@ -376,15 +376,14 @@ const (
 	ConditionTypeEcosystem  ConditionType = "ecosystem"
 )
 
-type ActionType string
-
+// Security-specific action types (extending ActionType from automation_rule.go)
 const (
-	ActionTypeApprove      ActionType = "approve"
-	ActionTypeMerge        ActionType = "merge"
-	ActionTypeNotify       ActionType = "notify"
-	ActionTypeTest         ActionType = "test"
-	ActionTypeCreateTicket ActionType = "create_ticket"
-	ActionTypeSchedule     ActionType = "schedule"
+	ActionTypeSecurityApprove      ActionType = "security_approve"
+	ActionTypeSecurityMerge        ActionType = "security_merge"
+	ActionTypeSecurityNotify       ActionType = "security_notify"
+	ActionTypeSecurityTest         ActionType = "security_test"
+	ActionTypeSecurityCreateTicket ActionType = "security_create_ticket"
+	ActionTypeSecuritySchedule     ActionType = "security_schedule"
 )
 
 type ChannelType string
@@ -429,14 +428,10 @@ const (
 	UpdatePriorityLow      UpdatePriority = "low"
 )
 
-type RiskLevel string
-
+// Use existing RiskLevel from interfaces.go
+// Additional risk levels for security context
 const (
-	RiskLevelCritical RiskLevel = "critical"
-	RiskLevelHigh     RiskLevel = "high"
-	RiskLevelMedium   RiskLevel = "medium"
-	RiskLevelLow      RiskLevel = "low"
-	RiskLevelMinimal  RiskLevel = "minimal"
+	SecurityRiskLevelMinimal RiskLevel = "minimal"
 )
 
 type ImpactLevel string
@@ -634,7 +629,7 @@ func (sm *SecurityUpdatePolicyManager) getVulnerabilityInfo(ctx context.Context,
 		CVE:         "CVE-2024-" + vulnID[len(vulnID)-4:],
 		Title:       "Mock vulnerability for testing",
 		Description: "This is a mock vulnerability record",
-		Severity:    SeverityMedium,
+		Severity:    VulnSeverityMedium,
 		CVSS: CVSSScore{
 			Version:   "3.1",
 			Score:     5.5,
@@ -718,11 +713,11 @@ func (sm *SecurityUpdatePolicyManager) evaluateAutoApprovalRules(policy *Securit
 
 func (sm *SecurityUpdatePolicyManager) severityExceeds(actual, maximum VulnerabilitySeverity) bool {
 	severityOrder := map[VulnerabilitySeverity]int{
-		SeverityInfo:     0,
-		SeverityLow:      1,
-		SeverityMedium:   2,
-		SeverityHigh:     3,
-		SeverityCritical: 4,
+		VulnSeverityInfo:     0,
+		VulnSeverityLow:      1,
+		VulnSeverityMedium:   2,
+		VulnSeverityHigh:     3,
+		VulnSeverityCritical: 4,
 	}
 
 	return severityOrder[actual] > severityOrder[maximum]

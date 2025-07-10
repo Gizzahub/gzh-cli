@@ -260,3 +260,119 @@ func boolPtr(b bool) *bool {
 func intPtr(i int) *int {
 	return &i
 }
+
+func TestFilterByImpact(t *testing.T) {
+	differences := []ConfigurationDifference{
+		{Repository: "repo1", Impact: "high"},
+		{Repository: "repo2", Impact: "medium"},
+		{Repository: "repo3", Impact: "low"},
+		{Repository: "repo4", Impact: "high"},
+	}
+
+	filtered := filterByImpact(differences, "high")
+	assert.Equal(t, 2, len(filtered))
+	assert.Equal(t, "high", filtered[0].Impact)
+	assert.Equal(t, "high", filtered[1].Impact)
+}
+
+func TestFilterNonCompliant(t *testing.T) {
+	differences := []ConfigurationDifference{
+		{Repository: "repo1", Compliant: true},
+		{Repository: "repo2", Compliant: false},
+		{Repository: "repo3", Compliant: false},
+		{Repository: "repo4", Compliant: true},
+	}
+
+	filtered := filterNonCompliant(differences)
+	assert.Equal(t, 2, len(filtered))
+	assert.False(t, filtered[0].Compliant)
+	assert.False(t, filtered[1].Compliant)
+}
+
+func TestGroupDifferencesByRepository(t *testing.T) {
+	differences := []ConfigurationDifference{
+		{Repository: "repo1", Setting: "setting1"},
+		{Repository: "repo2", Setting: "setting1"},
+		{Repository: "repo1", Setting: "setting2"},
+	}
+
+	grouped := groupDifferencesByRepository(differences)
+	assert.Equal(t, 2, len(grouped))
+	assert.Equal(t, 2, len(grouped["repo1"]))
+	assert.Equal(t, 1, len(grouped["repo2"]))
+}
+
+func TestGetSortedRepositoryNames(t *testing.T) {
+	grouped := map[string][]ConfigurationDifference{
+		"zebra": {},
+		"alpha": {},
+		"beta":  {},
+	}
+
+	sorted := getSortedRepositoryNames(grouped)
+	expected := []string{"alpha", "beta", "zebra"}
+	assert.Equal(t, expected, sorted)
+}
+
+func TestAnalyzeSettingChange(t *testing.T) {
+	tests := []struct {
+		name     string
+		diff     ConfigurationDifference
+		expected string
+	}{
+		{
+			name: "visibility change to private",
+			diff: ConfigurationDifference{
+				Setting:     "visibility",
+				TargetValue: "private",
+			},
+			expected: "Making repository private will restrict access to organization members only",
+		},
+		{
+			name: "branch protection review requirement",
+			diff: ConfigurationDifference{
+				Setting: "branch_protection.main.required_reviews",
+			},
+			expected: "Changing review requirements affects code quality gates",
+		},
+		{
+			name: "permission change",
+			diff: ConfigurationDifference{
+				Setting: "permissions.team.developers",
+			},
+			expected: "Permission changes affect team access levels to the repository",
+		},
+		{
+			name: "unknown setting",
+			diff: ConfigurationDifference{
+				Setting: "unknown.setting",
+			},
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := analyzeSettingChange(tt.diff)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestFormatValue(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"", "(not set)"},
+		{"value", "value"},
+		{"true", "true"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			result := formatValue(tt.input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

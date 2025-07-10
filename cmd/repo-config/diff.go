@@ -17,9 +17,13 @@ import (
 func newDiffCmd() *cobra.Command {
 	var flags GlobalFlags
 	var (
-		filter     string
-		format     string
-		showValues bool
+		filter           string
+		format           string
+		showValues       bool
+		impactFilter     string
+		onlyNonCompliant bool
+		groupByImpact    bool
+		detailed         bool
 	)
 
 	cmd := &cobra.Command{
@@ -48,7 +52,7 @@ Examples:
   gz repo-config diff --format unified          # Unified diff format
   gz repo-config diff --show-values             # Include current values`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDiffCommand(flags, filter, format, showValues)
+			return runDiffCommand(flags, filter, format, showValues, impactFilter, onlyNonCompliant, groupByImpact, detailed)
 		},
 	}
 
@@ -59,12 +63,16 @@ Examples:
 	cmd.Flags().StringVar(&filter, "filter", "", "Filter repositories by name pattern (regex)")
 	cmd.Flags().StringVar(&format, "format", "table", "Output format (table, json, unified)")
 	cmd.Flags().BoolVar(&showValues, "show-values", false, "Include current values in output")
+	cmd.Flags().StringVar(&impactFilter, "impact", "", "Filter by impact level (low, medium, high)")
+	cmd.Flags().BoolVar(&onlyNonCompliant, "non-compliant", false, "Show only non-compliant configurations")
+	cmd.Flags().BoolVar(&groupByImpact, "group-by-impact", false, "Group results by impact level")
+	cmd.Flags().BoolVar(&detailed, "detailed", false, "Show detailed change analysis")
 
 	return cmd
 }
 
 // runDiffCommand executes the diff command
-func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool) error {
+func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, impactFilter string, onlyNonCompliant, groupByImpact, detailed bool) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
@@ -89,15 +97,32 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool) e
 		return fmt.Errorf("failed to get configuration differences: %w", err)
 	}
 
+	// Apply additional filters
+	if impactFilter != "" {
+		differences = filterByImpact(differences, impactFilter)
+	}
+
+	if onlyNonCompliant {
+		differences = filterNonCompliant(differences)
+	}
+
 	// If no differences found, return early
 	if len(differences) == 0 {
-		fmt.Println("✅ No configuration differences found - all repositories are compliant")
+		if impactFilter != "" || onlyNonCompliant {
+			fmt.Println("✅ No differences match the specified filters")
+		} else {
+			fmt.Println("✅ No configuration differences found - all repositories are compliant")
+		}
 		return nil
 	}
 
 	switch format {
 	case "table":
-		displayDiffTable(differences, showValues)
+		if groupByImpact {
+			displayDiffTableByImpact(differences, showValues, detailed)
+		} else {
+			displayDiffTable(differences, showValues)
+		}
 	case "json":
 		displayDiffJSON(differences)
 	case "unified":
@@ -128,40 +153,49 @@ type ConfigurationDifference struct {
 // displayDiffTable displays differences in table format
 func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 	if showValues {
-		fmt.Printf("%-20s %-30s %-15s %-15s %-10s %s\n",
+		fmt.Printf("%-20s %-30s %-15s %-15s %-12s %s\n",
 			"REPOSITORY", "SETTING", "CURRENT", "TARGET", "IMPACT", "ACTION")
 	} else {
-		fmt.Printf("%-20s %-30s %-10s %-10s %s\n",
+		fmt.Printf("%-20s %-30s %-12s %-15s %s\n",
 			"REPOSITORY", "SETTING", "IMPACT", "ACTION", "TEMPLATE")
 	}
 	fmt.Println("────────────────────────────────────────────────────────────────────────────────")
 
-	for _, diff := range differences {
-		actionSymbol := getActionSymbol(diff.ChangeType)
-		impactSymbol := getImpactSymbol(diff.Impact)
+	// Group differences by repository for better readability
+	groupedDiffs := groupDifferencesByRepository(differences)
 
-		if showValues {
-			currentDisplay := truncateString(diff.CurrentValue, 15)
-			if currentDisplay == "" {
-				currentDisplay = "-"
+	for _, repoName := range getSortedRepositoryNames(groupedDiffs) {
+		repoDiffs := groupedDiffs[repoName]
+
+		// Print repository header
+		fmt.Printf("\n📁 %s\n", repoName)
+		fmt.Println(strings.Repeat("─", 80))
+
+		for _, diff := range repoDiffs {
+			actionSymbol := getActionSymbol(diff.ChangeType)
+			impactSymbol := getImpactSymbol(diff.Impact)
+
+			if showValues {
+				currentDisplay := truncateString(diff.CurrentValue, 15)
+				if currentDisplay == "" {
+					currentDisplay = colorize("-", "dim")
+				}
+
+				fmt.Printf("  %-28s %-15s %-15s %-12s %s\n",
+					truncateString(diff.Setting, 28),
+					colorizeValue(currentDisplay, diff.ChangeType == "delete"),
+					colorizeValue(truncateString(diff.TargetValue, 15), diff.ChangeType == "create"),
+					impactSymbol,
+					actionSymbol,
+				)
+			} else {
+				fmt.Printf("  %-28s %-12s %-15s %s\n",
+					truncateString(diff.Setting, 28),
+					impactSymbol,
+					actionSymbol,
+					colorize(diff.Template, "dim"),
+				)
 			}
-
-			fmt.Printf("%-20s %-30s %-15s %-15s %-10s %s\n",
-				diff.Repository,
-				truncateString(diff.Setting, 30),
-				currentDisplay,
-				truncateString(diff.TargetValue, 15),
-				impactSymbol,
-				actionSymbol,
-			)
-		} else {
-			fmt.Printf("%-20s %-30s %-10s %-10s %s\n",
-				diff.Repository,
-				truncateString(diff.Setting, 30),
-				impactSymbol,
-				actionSymbol,
-				diff.Template,
-			)
 		}
 	}
 }
@@ -252,6 +286,198 @@ func getImpactSymbol(impact string) string {
 		return "🟢 Low"
 	default:
 		return "❓ Unknown"
+	}
+}
+
+// getActionSymbol returns the symbol for action type
+func getActionSymbol(changeType string) string {
+	switch changeType {
+	case "create":
+		return "➕ Create"
+	case "update":
+		return "🔄 Update"
+	case "delete":
+		return "➖ Delete"
+	default:
+		return "❓ Unknown"
+	}
+}
+
+// truncateString truncates a string to the specified length
+func truncateString(s string, maxLength int) string {
+	if len(s) <= maxLength {
+		return s
+	}
+	if maxLength <= 3 {
+		return s[:maxLength]
+	}
+	return s[:maxLength-3] + "..."
+}
+
+// groupDifferencesByRepository groups differences by repository name
+func groupDifferencesByRepository(differences []ConfigurationDifference) map[string][]ConfigurationDifference {
+	grouped := make(map[string][]ConfigurationDifference)
+	for _, diff := range differences {
+		grouped[diff.Repository] = append(grouped[diff.Repository], diff)
+	}
+	return grouped
+}
+
+// getSortedRepositoryNames returns repository names sorted alphabetically
+func getSortedRepositoryNames(grouped map[string][]ConfigurationDifference) []string {
+	repos := make([]string, 0, len(grouped))
+	for repo := range grouped {
+		repos = append(repos, repo)
+	}
+
+	// Simple sort
+	for i := 0; i < len(repos); i++ {
+		for j := i + 1; j < len(repos); j++ {
+			if repos[i] > repos[j] {
+				repos[i], repos[j] = repos[j], repos[i]
+			}
+		}
+	}
+	return repos
+}
+
+// colorize applies ANSI color codes to text
+func colorize(text, style string) string {
+	// For now, return text as-is
+	// In a more advanced implementation, we could add color support
+	// based on terminal capabilities
+	return text
+}
+
+// colorizeValue applies color based on whether it's being added or removed
+func colorizeValue(text string, isRemoving bool) string {
+	// For now, return text as-is
+	// In a more advanced implementation:
+	// - Green for additions
+	// - Red for removals
+	// - Yellow for changes
+	return text
+}
+
+// filterByImpact filters differences by impact level
+func filterByImpact(differences []ConfigurationDifference, impact string) []ConfigurationDifference {
+	var filtered []ConfigurationDifference
+	for _, diff := range differences {
+		if diff.Impact == impact {
+			filtered = append(filtered, diff)
+		}
+	}
+	return filtered
+}
+
+// filterNonCompliant filters differences to show only non-compliant configurations
+func filterNonCompliant(differences []ConfigurationDifference) []ConfigurationDifference {
+	var filtered []ConfigurationDifference
+	for _, diff := range differences {
+		if !diff.Compliant {
+			filtered = append(filtered, diff)
+		}
+	}
+	return filtered
+}
+
+// displayDiffTableByImpact displays differences grouped by impact level
+func displayDiffTableByImpact(differences []ConfigurationDifference, showValues, detailed bool) {
+	impactGroups := map[string][]ConfigurationDifference{
+		"high":   {},
+		"medium": {},
+		"low":    {},
+	}
+
+	// Group by impact
+	for _, diff := range differences {
+		if group, exists := impactGroups[diff.Impact]; exists {
+			impactGroups[diff.Impact] = append(group, diff)
+		}
+	}
+
+	// Display each impact level
+	impactOrder := []string{"high", "medium", "low"}
+	for _, impact := range impactOrder {
+		diffs := impactGroups[impact]
+		if len(diffs) == 0 {
+			continue
+		}
+
+		fmt.Printf("\n%s Impact Changes (%d)\n",
+			strings.ToUpper(impact), len(diffs))
+		fmt.Println(strings.Repeat("═", 80))
+
+		if detailed {
+			displayDetailedDifferences(diffs, showValues)
+		} else {
+			displayDiffTable(diffs, showValues)
+		}
+	}
+}
+
+// displayDetailedDifferences displays differences with detailed analysis
+func displayDetailedDifferences(differences []ConfigurationDifference, showValues bool) {
+	for i, diff := range differences {
+		if i > 0 {
+			fmt.Println()
+		}
+
+		fmt.Printf("📋 Change #%d\n", i+1)
+		fmt.Printf("Repository: %s\n", diff.Repository)
+		fmt.Printf("Setting: %s\n", diff.Setting)
+		fmt.Printf("Template: %s\n", diff.Template)
+		fmt.Printf("Change Type: %s\n", getActionSymbol(diff.ChangeType))
+		fmt.Printf("Impact: %s\n", getImpactSymbol(diff.Impact))
+
+		if showValues {
+			fmt.Printf("Current Value: %s\n", formatValue(diff.CurrentValue))
+			fmt.Printf("Target Value: %s\n", formatValue(diff.TargetValue))
+		}
+
+		// Add detailed analysis based on the setting type
+		analysis := analyzeSettingChange(diff)
+		if analysis != "" {
+			fmt.Printf("Analysis: %s\n", analysis)
+		}
+
+		fmt.Println(strings.Repeat("─", 40))
+	}
+}
+
+// formatValue formats a value for display, handling empty values
+func formatValue(value string) string {
+	if value == "" {
+		return "(not set)"
+	}
+	return value
+}
+
+// analyzeSettingChange provides detailed analysis for specific setting changes
+func analyzeSettingChange(diff ConfigurationDifference) string {
+	switch {
+	case strings.Contains(diff.Setting, "visibility"):
+		if diff.TargetValue == "private" {
+			return "Making repository private will restrict access to organization members only"
+		}
+		return "Making repository public will allow anyone to view the code"
+
+	case strings.Contains(diff.Setting, "branch_protection"):
+		if strings.Contains(diff.Setting, "required_reviews") {
+			return "Changing review requirements affects code quality gates"
+		}
+		if strings.Contains(diff.Setting, "enforce_admins") {
+			return "Admin enforcement affects repository admin bypass capabilities"
+		}
+
+	case strings.Contains(diff.Setting, "permissions"):
+		return "Permission changes affect team access levels to the repository"
+
+	case strings.Contains(diff.Setting, "merge"):
+		return "Merge setting changes affect workflow and branch management"
+
+	default:
+		return ""
 	}
 }
 
