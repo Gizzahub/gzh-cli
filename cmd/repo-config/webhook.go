@@ -53,6 +53,7 @@ Examples:
 	cmd.AddCommand(newWebhookDeleteCmd())
 	cmd.AddCommand(newWebhookGetCmd())
 	cmd.AddCommand(newWebhookBulkCmd())
+	cmd.AddCommand(newWebhookAutomationCmd())
 
 	return cmd
 }

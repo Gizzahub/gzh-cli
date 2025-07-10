@@ -19,7 +19,7 @@ func TestNewWebhookCmd(t *testing.T) {
 
 	assert.Equal(t, "webhook", cmd.Use)
 	assert.Equal(t, "Manage repository webhooks", cmd.Short)
-	assert.Len(t, cmd.Commands(), 6) // list, create, update, delete, get, bulk
+	assert.Len(t, cmd.Commands(), 7) // list, create, update, delete, get, bulk, automation
 }
 
 func TestWebhookCommands(t *testing.T) {
