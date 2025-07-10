@@ -46,6 +46,7 @@ Comprehensive CLI Tool
 - **설정 비교 도구**: `gz repo-config diff`로 현재 설정과 목표 설정 간 차이점 시각화
 - **정책 준수 감사**: `gz repo-config audit`로 SOC2, ISO27001, NIST 등 컴플라이언스 프레임워크 준수 확인
 - **리스크 분석**: 보안, 컴플라이언스, 운영 리스크 자동 평가 및 권고사항 제공
+- **웹훅 관리**: 개별 및 대량 웹훅 CRUD, 이벤트 기반 자동화 규칙 엔진
 - **다양한 출력 형식**: 테이블, JSON, HTML, CSV, SARIF, JUnit 형식 지원으로 CI/CD 통합 가능
 
 ### 🔧 통합 설정 시스템
@@ -335,7 +336,7 @@ gzh bulk-clone state clean --all
 
 ## Repository Configuration Management
 
-The `gz repo-config` command allows you to manage GitHub repository configurations at scale, including settings, security policies, branch protection rules, and compliance auditing.
+The `gz repo-config` command allows you to manage GitHub repository configurations at scale, including settings, security policies, branch protection rules, webhooks, and compliance auditing.
 
 ### Quick Start
 
@@ -377,6 +378,18 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
    gz repo-config audit --config repo-config.yaml
    ```
 
+4. **Manage webhooks**:
+   ```bash
+   # Individual webhook management
+   gz repo-config webhook create --org myorg --repo myrepo --url https://example.com/webhook
+   
+   # Bulk webhook operations
+   gz repo-config webhook bulk create --org myorg --config webhook-bulk-config.yaml
+   
+   # Event-based automation
+   gz repo-config webhook automation server --config automation-rules.yaml
+   ```
+
 ### Key Features
 
 - **Templates**: Define reusable repository configurations
@@ -385,12 +398,15 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
 - **Exception Handling**: Allow documented exceptions to policies
 - **Compliance Auditing**: Generate reports on policy violations
 - **Bulk Operations**: Update multiple repositories efficiently
+- **Webhook Management**: Complete CRUD operations and bulk management
+- **Event Automation**: GitHub event-based automation rules engine
 
 ### Documentation
 
 - [Quick Start Guide](docs/repo-config-quick-start.md) - Get started in 5 minutes
 - [User Guide](docs/repo-config-user-guide.md) - Complete documentation
 - [Policy Examples](docs/repo-config-policy-examples.md) - Ready-to-use policy templates
+- [Webhook Management Guide](docs/webhook-management-guide.md) - Complete webhook features guide
 - [Configuration Schema](docs/repo-config-schema.yaml) - Configuration file reference
 
 ### Example: Enterprise Configuration
@@ -494,8 +510,10 @@ gz net-env actions run
 ## 📚 Documentation
 
 - [Repository Configuration Management](docs/repo-config-commands.md) - `gz repo-config diff` 및 `gz repo-config audit` 명령어 가이드
+- [Webhook Management Guide](docs/webhook-management-guide.md) - 웹훅 관리 전체 기능 가이드
 - [Configuration Priority Guide](docs/configuration-priority.md) - 설정 우선순위 시스템 설명
 - [Bulk Clone Schema](docs/bulk-clone-schema.yaml) - 설정 파일 스키마 문서
+- [Release Notes v1.0.0](docs/release-notes-v1.0.0.md) - 첫 정식 릴리즈 노트
 
 # Features
 - [goreleaser](https://goreleaser.com/) with `deb.` and `.rpm` packer and container (`docker.hub` and `ghcr.io`) releasing including `manpages` and `shell completions` and grouped Changelog generation.

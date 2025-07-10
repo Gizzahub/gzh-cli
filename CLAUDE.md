@@ -138,3 +138,41 @@ make regenerate-mocks # Clean and regenerate all mocks
 - Token-based authentication for private repositories
 - Environment variable support (GITHUB_TOKEN, GITLAB_TOKEN, etc.)
 - SSH key management and configuration
+
+## TODO Runner Workflow
+
+### 🚀 TASK_RUNNER.todo 프롬프트
+
+> **역할**  
+> /tasks/todo/ 디렉터리의 미완료 TODO 파일을 순차적으로 읽어 **작업 → 커밋 → 완료 파일 이동**을 자동화합니다.  
+> 프롬프트 사용 시 `{DIR=/tasks/todo}` 나 `{DIR=/tasks/todo/my-feature}` 처럼 디렉터리를 지정할 수 있습니다.
+
+#### ✅ 절차
+
+1. **다음 `[ ]` 미완료 항목 하나 선택**   
+   - 파일 이름 오름차순 → 항목 순서대로 탐색  
+   - 한 번에 1 개 작업만 처리
+
+2. **분석 & 의존성 파악**  
+   - 관련 코드/문서 확인  
+   - 선행 조건이 누락되면 먼저 TODO 항목으로 세분화하여 같은 파일 최상단에 삽입
+
+3. **구현 & 테스트 & 문서화**  
+   - 코드 / 설정 / 문서 수정  
+   - 핵심 로직 테스트 코드 작성
+
+4. **포맷 & 커밋**  
+   - 포맷터 실행
+   - 커밋 전 `[x]` 체크
+   - 커밋 메시지  
+     ```
+     feat(모듈): 작업 요약 (50자 이내)
+     ```
+
+5. **파일 이동**  
+   - 모든 항목이 `[x]` 되면 파일을 `/tasks/done/` 으로 이동  
+     → 파일명 뒤에 `__DONE_YYYYMMDD.md` 자동 추가
+
+#### ⚠️ 유의  
+- 작업 불가(스펙 부재 등) → 해당 항목을 `[>]` 로 바꾸고 하단에 이유 서술  
+- 긴 작업은 2–4 개 하위 TODO 로 나눈 뒤 **다음 루프**에서 처리

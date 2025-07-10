@@ -2,8 +2,6 @@ package monitoring
 
 import (
 	"context"
-	"encoding/json"
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -49,6 +47,7 @@ type WebSocketClient struct {
 	conn        *websocket.Conn
 	send        chan *WebSocketMessage
 	filter      *ClientFilter
+	user        *User // Authenticated user
 	mu          sync.RWMutex
 	isConnected bool
 	logger      *zap.Logger
@@ -454,7 +453,7 @@ func (m *WebSocketManager) Stop() {
 	m.hub.Stop()
 }
 
-// HandleWebSocket handles WebSocket upgrade requests
+// HandleWebSocket handles WebSocket upgrade requests (without authentication)
 func (m *WebSocketManager) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := m.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -466,6 +465,31 @@ func (m *WebSocketManager) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 		ID:          uuid.New().String(),
 		conn:        conn,
 		send:        make(chan *WebSocketMessage, 256),
+		isConnected: true,
+		logger:      m.logger,
+		lastPing:    time.Now(),
+	}
+
+	m.hub.register <- client
+
+	// Start client goroutines
+	go client.writePump()
+	go client.readPump(m.hub)
+}
+
+// HandleAuthenticatedWebSocket handles WebSocket upgrade requests with authentication
+func (m *WebSocketManager) HandleAuthenticatedWebSocket(w http.ResponseWriter, r *http.Request, user *User) {
+	conn, err := m.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		m.logger.Error("Failed to upgrade WebSocket connection", zap.Error(err))
+		return
+	}
+
+	client := &WebSocketClient{
+		ID:          uuid.New().String(),
+		conn:        conn,
+		send:        make(chan *WebSocketMessage, 256),
+		user:        user,
 		isConnected: true,
 		logger:      m.logger,
 		lastPing:    time.Now(),

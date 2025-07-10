@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GZH Monitoring Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-healthy { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-critical { background-color: #dc3545; }
+        .task-item {
+            padding: 10px;
+            border-left: 3px solid #007bff;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 0 5px 5px 0;
+        }
+        .alert-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .alert-critical { background-color: #f8d7da; border-color: #f5c6cb; }
+        .alert-high { background-color: #fff3cd; border-color: #ffeeba; }
+        .alert-medium { background-color: #d1ecf1; border-color: #bee5eb; }
+        .alert-low { background-color: #d4edda; border-color: #c3e6cb; }
+        .alert-info { background-color: #e7f3ff; border-color: #b8daff; }
+        .ws-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        #logContainer {
+            height: 400px;
+            overflow-y: auto;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .log-info { color: #3498db; }
+        .log-success { color: #2ecc71; }
+        .log-warning { color: #f39c12; }
+        .log-error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="ws-status" id="wsStatus">
+        <span class="status-indicator status-warning" id="wsIndicator"></span>
+        <span id="wsStatusText">Connecting...</span>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-chart-line"></i> GZH Monitoring Dashboard
+                </h1>
+            </div>
+        </div>
+
+        <!-- System Metrics Row -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">System Status</div>
+                    <div class="metric-value" id="systemStatus">-</div>
+                    <small class="text-muted">Uptime: <span id="uptime">-</span></small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">Active Tasks</div>
+                    <div class="metric-value" id="activeTasks">0</div>
+                    <small class="text-muted">Running processes</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">Memory Usage</div>
+                    <div class="metric-value" id="memoryUsage">0</div>
+                    <small class="text-muted">MB</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">CPU Usage</div>
+                    <div class="metric-value" id="cpuUsage">0</div>
+                    <small class="text-muted">%</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-area"></i> System Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="metricsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-network-wired"></i> Network I/O</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="networkChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks and Alerts Row -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-tasks"></i> Active Tasks</h5>
+                        <button class="btn btn-sm btn-primary" onclick="filterTasks()">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <div id="tasksList">
+                            <p class="text-muted">No active tasks</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Active Alerts</h5>
+                        <span class="badge bg-danger" id="alertCount">0</span>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <div id="alertsList">
+                            <p class="text-muted">No active alerts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WebSocket Log -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-terminal"></i> WebSocket Log</h5>
+                        <div>
+                            <button class="btn btn-sm btn-secondary" onclick="clearLog()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="toggleAutoScroll()">
+                                <i class="fas fa-arrow-down"></i> Auto-scroll: <span id="autoScrollStatus">ON</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="logContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // WebSocket connection
+        let ws = null;
+        let reconnectInterval = null;
+        let autoScroll = true;
+        let metricsChart = null;
+        let networkChart = null;
+        let metricsData = {
+            labels: [],
+            cpu: [],
+            memory: []
+        };
+        let networkData = {
+            labels: [],
+            bytesIn: [],
+            bytesOut: []
+        };
+
+        // Initialize charts
+        function initCharts() {
+            // Metrics Chart
+            const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+            metricsChart = new Chart(metricsCtx, {
+                type: 'line',
+                data: {
+                    labels: metricsData.labels,
+                    datasets: [{
+                        label: 'CPU %',
+                        data: metricsData.cpu,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Memory MB',
+                        data: metricsData.memory,
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Network Chart
+            const networkCtx = document.getElementById('networkChart').getContext('2d');
+            networkChart = new Chart(networkCtx, {
+                type: 'line',
+                data: {
+                    labels: networkData.labels,
+                    datasets: [{
+                        label: 'Bytes In',
+                        data: networkData.bytesIn,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Bytes Out',
+                        data: networkData.bytesOut,
+                        borderColor: 'rgb(153, 102, 255)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Connect to WebSocket
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            addLog('info', `Connecting to WebSocket at ${wsUrl}...`);
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                addLog('success', 'WebSocket connected successfully');
+                updateConnectionStatus('connected');
+                
+                // Subscribe to all updates
+                ws.send(JSON.stringify({
+                    type: 'subscribe',
+                    filter: {
+                        types: ['all']
+                    }
+                }));
+                
+                // Clear reconnect interval if exists
+                if (reconnectInterval) {
+                    clearInterval(reconnectInterval);
+                    reconnectInterval = null;
+                }
+            };
+            
+            ws.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                } catch (e) {
+                    addLog('error', `Failed to parse message: ${e.message}`);
+                }
+            };
+            
+            ws.onerror = function(error) {
+                addLog('error', `WebSocket error: ${error}`);
+                updateConnectionStatus('error');
+            };
+            
+            ws.onclose = function() {
+                addLog('warning', 'WebSocket connection closed');
+                updateConnectionStatus('disconnected');
+                
+                // Attempt to reconnect after 5 seconds
+                if (!reconnectInterval) {
+                    reconnectInterval = setInterval(() => {
+                        addLog('info', 'Attempting to reconnect...');
+                        connectWebSocket();
+                    }, 5000);
+                }
+            };
+        }
+
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            addLog('info', `Received ${data.type} message`);
+            
+            switch (data.type) {
+                case 'initial_state':
+                    updateInitialState(data.data);
+                    break;
+                case 'system_status':
+                    updateSystemStatus(data.data);
+                    break;
+                case 'metrics_update':
+                    updateMetrics(data.data);
+                    break;
+                case 'task_update':
+                    updateTask(data.data);
+                    break;
+                case 'alert':
+                    handleAlert(data.data);
+                    break;
+                case 'pong':
+                    addLog('success', 'Received pong response');
+                    break;
+                default:
+                    addLog('warning', `Unknown message type: ${data.type}`);
+            }
+        }
+
+        // Update functions
+        function updateInitialState(data) {
+            if (data.system_status) {
+                updateSystemStatus(data.system_status);
+            }
+            if (data.metrics_summary) {
+                updateMetrics(data.metrics_summary);
+            }
+            if (data.active_tasks) {
+                updateTasksList(data.active_tasks);
+            }
+        }
+
+        function updateSystemStatus(status) {
+            document.getElementById('systemStatus').textContent = status.status.toUpperCase();
+            document.getElementById('uptime').textContent = status.uptime;
+            document.getElementById('activeTasks').textContent = status.active_tasks;
+            document.getElementById('memoryUsage').textContent = (status.memory_usage / 1024 / 1024).toFixed(1);
+            document.getElementById('cpuUsage').textContent = status.cpu_usage.toFixed(1);
+            
+            // Update charts
+            updateChartData(status);
+        }
+
+        function updateMetrics(metrics) {
+            if (metrics.active_tasks !== undefined) {
+                document.getElementById('activeTasks').textContent = metrics.active_tasks;
+            }
+            if (metrics.memory_usage_mb !== undefined) {
+                document.getElementById('memoryUsage').textContent = metrics.memory_usage_mb.toFixed(1);
+            }
+            if (metrics.cpu_usage !== undefined) {
+                document.getElementById('cpuUsage').textContent = metrics.cpu_usage.toFixed(1);
+            }
+        }
+
+        function updateTask(task) {
+            addLog('info', `Task ${task.name} is ${task.status} (${task.progress}%)`);
+            // Update task in the list
+            updateTaskInList(task);
+        }
+
+        function handleAlert(alert) {
+            addLog(alert.severity === 'critical' ? 'error' : 'warning', 
+                   `Alert: ${alert.message} (${alert.severity})`);
+            addAlertToList(alert);
+        }
+
+        // Chart update function
+        function updateChartData(status) {
+            const now = new Date().toLocaleTimeString();
+            
+            // Keep only last 20 data points
+            if (metricsData.labels.length >= 20) {
+                metricsData.labels.shift();
+                metricsData.cpu.shift();
+                metricsData.memory.shift();
+                networkData.labels.shift();
+                networkData.bytesIn.shift();
+                networkData.bytesOut.shift();
+            }
+            
+            // Add new data
+            metricsData.labels.push(now);
+            metricsData.cpu.push(status.cpu_usage);
+            metricsData.memory.push(status.memory_usage / 1024 / 1024);
+            
+            networkData.labels.push(now);
+            networkData.bytesIn.push(status.network_io.bytes_in / 1024);
+            networkData.bytesOut.push(status.network_io.bytes_out / 1024);
+            
+            // Update charts
+            metricsChart.update();
+            networkChart.update();
+        }
+
+        // UI update functions
+        function updateTasksList(tasks) {
+            const tasksList = document.getElementById('tasksList');
+            if (tasks.length === 0) {
+                tasksList.innerHTML = '<p class="text-muted">No active tasks</p>';
+                return;
+            }
+            
+            tasksList.innerHTML = tasks.map(task => `
+                <div class="task-item" id="task-${task.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${task.name}</strong>
+                            <span class="badge bg-${getTaskStatusColor(task.status)}">${task.status}</span>
+                        </div>
+                        <div class="text-end">
+                            <div class="progress" style="width: 100px;">
+                                <div class="progress-bar" style="width: ${task.progress}%">${task.progress}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTaskInList(task) {
+            const existingTask = document.getElementById(`task-${task.id}`);
+            if (existingTask) {
+                // Update existing task
+                existingTask.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${task.name}</strong>
+                            <span class="badge bg-${getTaskStatusColor(task.status)}">${task.status}</span>
+                        </div>
+                        <div class="text-end">
+                            <div class="progress" style="width: 100px;">
+                                <div class="progress-bar" style="width: ${task.progress}%">${task.progress}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Add new task
+                const tasksList = document.getElementById('tasksList');
+                if (tasksList.querySelector('.text-muted')) {
+                    tasksList.innerHTML = '';
+                }
+                tasksList.insertAdjacentHTML('afterbegin', `
+                    <div class="task-item" id="task-${task.id}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${task.name}</strong>
+                                <span class="badge bg-${getTaskStatusColor(task.status)}">${task.status}</span>
+                            </div>
+                            <div class="text-end">
+                                <div class="progress" style="width: 100px;">
+                                    <div class="progress-bar" style="width: ${task.progress}%">${task.progress}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+
+        function addAlertToList(alert) {
+            const alertsList = document.getElementById('alertsList');
+            if (alertsList.querySelector('.text-muted')) {
+                alertsList.innerHTML = '';
+            }
+            
+            alertsList.insertAdjacentHTML('afterbegin', `
+                <div class="alert-item alert-${alert.severity}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>${alert.rule_name}</strong><br>
+                            <small>${alert.message}</small>
+                        </div>
+                        <span class="badge bg-${getAlertSeverityColor(alert.severity)}">${alert.severity}</span>
+                    </div>
+                    <small class="text-muted">Value: ${alert.value} / Threshold: ${alert.threshold}</small>
+                </div>
+            `);
+            
+            // Update alert count
+            const alertCount = alertsList.querySelectorAll('.alert-item').length;
+            document.getElementById('alertCount').textContent = alertCount;
+        }
+
+        // Helper functions
+        function getTaskStatusColor(status) {
+            const colors = {
+                'running': 'primary',
+                'completed': 'success',
+                'failed': 'danger',
+                'pending': 'secondary'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function getAlertSeverityColor(severity) {
+            const colors = {
+                'critical': 'danger',
+                'high': 'warning',
+                'medium': 'info',
+                'low': 'secondary',
+                'info': 'light'
+            };
+            return colors[severity] || 'secondary';
+        }
+
+        function updateConnectionStatus(status) {
+            const indicator = document.getElementById('wsIndicator');
+            const statusText = document.getElementById('wsStatusText');
+            
+            switch (status) {
+                case 'connected':
+                    indicator.className = 'status-indicator status-healthy';
+                    statusText.textContent = 'Connected';
+                    break;
+                case 'disconnected':
+                    indicator.className = 'status-indicator status-warning';
+                    statusText.textContent = 'Disconnected';
+                    break;
+                case 'error':
+                    indicator.className = 'status-indicator status-critical';
+                    statusText.textContent = 'Error';
+                    break;
+            }
+        }
+
+        // Log functions
+        function addLog(level, message) {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${level}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            
+            if (autoScroll) {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('logContainer').innerHTML = '';
+            addLog('info', 'Log cleared');
+        }
+
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            document.getElementById('autoScrollStatus').textContent = autoScroll ? 'ON' : 'OFF';
+        }
+
+        // Action functions
+        function filterTasks() {
+            // Send filter request to WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'subscribe',
+                    filter: {
+                        types: ['task_update'],
+                        task_ids: [] // Add specific task IDs if needed
+                    }
+                }));
+                addLog('info', 'Applied task filter');
+            }
+        }
+
+        // Ping function to keep connection alive
+        function sendPing() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            connectWebSocket();
+            
+            // Send ping every 30 seconds
+            setInterval(sendPing, 30000);
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (ws) {
+                ws.close();
+            }
+        });
+    </script>
+</body>
+</html>

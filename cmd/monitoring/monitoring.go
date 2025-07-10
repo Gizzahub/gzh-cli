@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -165,13 +164,14 @@ type ServerConfig struct {
 
 // MonitoringServer represents the monitoring server
 type MonitoringServer struct {
-	config     *ServerConfig
-	router     *gin.Engine
-	httpServer *http.Server
-	metrics    *MetricsCollector
-	alerts     *AlertManager
-	startTime  time.Time
-	wsManager  *WebSocketManager
+	config      *ServerConfig
+	router      *gin.Engine
+	httpServer  *http.Server
+	metrics     *MetricsCollector
+	alerts      *AlertManager
+	startTime   time.Time
+	wsManager   *WebSocketManager
+	authManager *AuthManager
 }
 
 // NewMonitoringServer creates a new monitoring server
@@ -190,8 +190,9 @@ func NewMonitoringServer(config *ServerConfig) *MonitoringServer {
 		startTime: time.Now(),
 	}
 
-	// Initialize WebSocket manager with logger
+	// Initialize managers with logger
 	server.wsManager = NewWebSocketManager(logger)
+	server.authManager = NewAuthManager(logger)
 
 	// Set metrics collector for alerts
 	server.alerts.SetMetrics(server.metrics)
@@ -210,32 +211,52 @@ func (s *MonitoringServer) setupRoutes() {
 	s.router.Use(s.corsMiddleware())
 	s.router.Use(s.metricsMiddleware())
 
-	// API routes
+	// Public authentication endpoints
+	auth := s.router.Group("/auth")
+	{
+		auth.POST("/login", s.login)
+		auth.POST("/logout", s.logout)
+		auth.GET("/me", s.authManager.JWTAuthMiddleware(), s.getCurrentUser)
+	}
+
+	// API routes with authentication
 	api := s.router.Group("/api/v1")
+	api.Use(s.authManager.JWTAuthMiddleware()) // Require authentication for all API routes
 	{
 		// System endpoints
-		api.GET("/status", s.getSystemStatus)
-		api.GET("/health", s.getHealth)
-		api.GET("/metrics", s.getMetrics)
+		api.GET("/status", s.authManager.RequirePermission("read:system"), s.getSystemStatus)
+		api.GET("/health", s.authManager.RequirePermission("read:system"), s.getHealth)
+		api.GET("/metrics", s.authManager.RequirePermission("read:system"), s.getMetrics)
 
 		// Task monitoring endpoints
-		api.GET("/tasks", s.getTasks)
-		api.GET("/tasks/:id", s.getTask)
-		api.POST("/tasks/:id/stop", s.stopTask)
+		api.GET("/tasks", s.authManager.RequirePermission("read:tasks"), s.getTasks)
+		api.GET("/tasks/:id", s.authManager.RequirePermission("read:tasks"), s.getTask)
+		api.POST("/tasks/:id/stop", s.authManager.RequirePermission("write:tasks"), s.stopTask)
 
 		// Alert endpoints
-		api.GET("/alerts", s.getAlerts)
-		api.POST("/alerts", s.createAlert)
-		api.PUT("/alerts/:id", s.updateAlert)
-		api.DELETE("/alerts/:id", s.deleteAlert)
+		api.GET("/alerts", s.authManager.RequirePermission("read:alerts"), s.getAlerts)
+		api.POST("/alerts", s.authManager.RequirePermission("write:alerts"), s.createAlert)
+		api.PUT("/alerts/:id", s.authManager.RequirePermission("write:alerts"), s.updateAlert)
+		api.DELETE("/alerts/:id", s.authManager.RequirePermission("write:alerts"), s.deleteAlert)
 
 		// Notification endpoints
-		api.GET("/notifications", s.getNotifications)
-		api.POST("/notifications/test", s.testNotification)
+		api.GET("/notifications", s.authManager.RequirePermission("read:alerts"), s.getNotifications)
+		api.POST("/notifications/test", s.authManager.RequirePermission("write:alerts"), s.testNotification)
 
 		// Configuration endpoints
-		api.GET("/config", s.getConfig)
-		api.PUT("/config", s.updateConfig)
+		api.GET("/config", s.authManager.RequirePermission("read:config"), s.getConfig)
+		api.PUT("/config", s.authManager.RequirePermission("write:config"), s.updateConfig)
+
+		// User management endpoints (admin only)
+		users := api.Group("/users")
+		users.Use(s.authManager.RequirePermission("read:users"))
+		{
+			users.GET("", s.getUsers)
+			users.GET("/:username", s.getUser)
+			users.POST("", s.authManager.RequirePermission("write:users"), s.createUser)
+			users.PUT("/:username/password", s.authManager.RequirePermission("write:users"), s.updateUserPassword)
+			users.DELETE("/:username", s.authManager.RequirePermission("delete:users"), s.deleteUser)
+		}
 	}
 
 	// WebSocket endpoint for real-time updates
@@ -513,9 +534,131 @@ func (s *MonitoringServer) updateConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "configuration updated"})
 }
 
+// Authentication handlers
+
+func (s *MonitoringServer) login(c *gin.Context) {
+	var creds Credentials
+	if err := c.ShouldBindJSON(&creds); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, token, err := s.authManager.Authenticate(creds.Username, creds.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"user":  user,
+		"token": token,
+	})
+}
+
+func (s *MonitoringServer) logout(c *gin.Context) {
+	// For JWT tokens, logout is typically handled client-side
+	// In a more sophisticated implementation, you might maintain a blacklist
+	c.JSON(http.StatusOK, gin.H{"message": "logged out successfully"})
+}
+
+func (s *MonitoringServer) getCurrentUser(c *gin.Context) {
+	username, _ := c.Get("username")
+	user, err := s.authManager.GetUser(username.(string))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+// User management handlers
+
+func (s *MonitoringServer) getUsers(c *gin.Context) {
+	users := s.authManager.GetUsers()
+	c.JSON(http.StatusOK, gin.H{"users": users})
+}
+
+func (s *MonitoringServer) getUser(c *gin.Context) {
+	username := c.Param("username")
+	user, err := s.authManager.GetUser(username)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+func (s *MonitoringServer) createUser(c *gin.Context) {
+	var req struct {
+		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+		Role     string `json:"role" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := s.authManager.CreateUser(req.Username, req.Email, req.Password, req.Role)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"user": user})
+}
+
+func (s *MonitoringServer) updateUserPassword(c *gin.Context) {
+	username := c.Param("username")
+	var req struct {
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := s.authManager.UpdateUserPassword(username, req.Password); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "password updated successfully"})
+}
+
+func (s *MonitoringServer) deleteUser(c *gin.Context) {
+	username := c.Param("username")
+
+	// Prevent self-deletion
+	currentUsername, _ := c.Get("username")
+	if username == currentUsername.(string) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot delete your own account"})
+		return
+	}
+
+	if err := s.authManager.DeactivateUser(username); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
+}
+
 func (s *MonitoringServer) handleWebSocket(c *gin.Context) {
-	// Use the WebSocketManager to handle the upgrade
-	s.wsManager.HandleWebSocket(c.Writer, c.Request)
+	// Authenticate WebSocket connection
+	user, err := s.authManager.AuthenticateWebSocket(c.Request)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "WebSocket authentication failed"})
+		return
+	}
+
+	// Use the WebSocketManager to handle the upgrade with authenticated user
+	s.wsManager.HandleAuthenticatedWebSocket(c.Writer, c.Request, user)
 }
 
 func (s *MonitoringServer) serveDashboard(c *gin.Context) {

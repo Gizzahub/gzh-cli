@@ -1,6 +1,7 @@
 package monitoring
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -11,6 +12,51 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Helper function to get authentication token
+func getAuthToken(t *testing.T, server *httptest.Server, username, password string) string {
+	credentials := Credentials{
+		Username: username,
+		Password: password,
+	}
+	jsonData, _ := json.Marshal(credentials)
+
+	req, _ := http.NewRequest("POST", server.URL+"/auth/login", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var response map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	require.NoError(t, err)
+
+	return response["token"].(string)
+}
+
+// Helper function to create authenticated request
+func createAuthenticatedRequest(method, url, token string, body []byte) (*http.Request, error) {
+	var req *http.Request
+	var err error
+
+	if body != nil {
+		req, err = http.NewRequest(method, url, bytes.NewBuffer(body))
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	return req, nil
+}
 
 func TestNewMonitoringServer(t *testing.T) {
 	config := &ServerConfig{
@@ -38,6 +84,9 @@ func TestMonitoringServerRoutes(t *testing.T) {
 	testServer := httptest.NewServer(server.router)
 	defer testServer.Close()
 
+	// Get authentication token
+	token := getAuthToken(t, testServer, "admin", "admin123")
+
 	client := &http.Client{Timeout: 5 * time.Second}
 
 	tests := []struct {
@@ -52,12 +101,12 @@ func TestMonitoringServerRoutes(t *testing.T) {
 		{"Tasks", "GET", "/api/v1/tasks", http.StatusOK},
 		{"Alerts", "GET", "/api/v1/alerts", http.StatusOK},
 		{"Config", "GET", "/api/v1/config", http.StatusOK},
-		{"WebSocket", "GET", "/ws", http.StatusNotImplemented},
+		{"WebSocket", "GET", "/ws", http.StatusUnauthorized}, // WebSocket requires auth now
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := http.NewRequest(tt.method, testServer.URL+tt.path, nil)
+			req, err := createAuthenticatedRequest(tt.method, testServer.URL+tt.path, token, nil)
 			require.NoError(t, err)
 
 			resp, err := client.Do(req)
@@ -80,7 +129,13 @@ func TestSystemStatusEndpoint(t *testing.T) {
 	testServer := httptest.NewServer(server.router)
 	defer testServer.Close()
 
-	resp, err := http.Get(testServer.URL + "/api/v1/status")
+	// Get authentication token
+	token := getAuthToken(t, testServer, "admin", "admin123")
+
+	req, err := createAuthenticatedRequest("GET", testServer.URL+"/api/v1/status", token, nil)
+	require.NoError(t, err)
+
+	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -109,7 +164,13 @@ func TestHealthEndpoint(t *testing.T) {
 	testServer := httptest.NewServer(server.router)
 	defer testServer.Close()
 
-	resp, err := http.Get(testServer.URL + "/api/v1/health")
+	// Get authentication token
+	token := getAuthToken(t, testServer, "admin", "admin123")
+
+	req, err := createAuthenticatedRequest("GET", testServer.URL+"/api/v1/health", token, nil)
+	require.NoError(t, err)
+
+	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -152,6 +213,9 @@ func TestMetricsEndpoint(t *testing.T) {
 		{"Invalid Format", "xml", "", http.StatusBadRequest},
 	}
 
+	// Get authentication token
+	token := getAuthToken(t, testServer, "admin", "admin123")
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			url := testServer.URL + "/api/v1/metrics"
@@ -159,7 +223,10 @@ func TestMetricsEndpoint(t *testing.T) {
 				url += "?format=" + tt.format
 			}
 
-			resp, err := http.Get(url)
+			req, err := createAuthenticatedRequest("GET", url, token, nil)
+			require.NoError(t, err)
+
+			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
