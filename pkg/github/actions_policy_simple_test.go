@@ -10,7 +10,7 @@ import (
 func TestActionsPolicy_BasicCreation(t *testing.T) {
 	// Test creating a default policy
 	defaultPolicy := GetDefaultActionsPolicy()
-	
+
 	assert.NotNil(t, defaultPolicy)
 	assert.Equal(t, "Default Actions Policy", defaultPolicy.Name)
 	assert.Equal(t, ActionsPermissionLocalOnly, defaultPolicy.PermissionLevel)
