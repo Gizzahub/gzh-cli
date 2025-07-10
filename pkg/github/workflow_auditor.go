@@ -144,11 +144,11 @@ const (
 type SecurityRiskLevel string
 
 const (
-	RiskCritical SecurityRiskLevel = "critical"
-	RiskHigh     SecurityRiskLevel = "high"
-	RiskMedium   SecurityRiskLevel = "medium"
-	RiskLow      SecurityRiskLevel = "low"
-	RiskNone     SecurityRiskLevel = "none"
+	SecurityRiskCritical SecurityRiskLevel = "critical"
+	SecurityRiskHigh     SecurityRiskLevel = "high"
+	SecurityRiskMedium   SecurityRiskLevel = "medium"
+	SecurityRiskLow      SecurityRiskLevel = "low"
+	SecurityRiskNone     SecurityRiskLevel = "none"
 )
 
 // Workflow structure for parsing YAML
@@ -312,7 +312,7 @@ func (wa *WorkflowAuditor) auditWorkflowFile(ctx context.Context, organization, 
 
 		// Collect job-level issues
 		for _, step := range jobAudit.Steps {
-			if step.SecurityRisk == RiskHigh || step.SecurityRisk == RiskCritical {
+			if step.SecurityRisk == SecurityRiskHigh || step.SecurityRisk == SecurityRiskCritical {
 				issue := WorkflowSecurityIssue{
 					ID:          fmt.Sprintf("%s-%s-%d", filePath, jobID, len(audit.Issues)),
 					Type:        wa.determineIssueType(step.RiskReasons),
@@ -372,7 +372,7 @@ func (wa *WorkflowAuditor) auditStep(step Step, stepIndex int) StepAuditInfo {
 		Name:          step.Name,
 		Uses:          step.Uses,
 		Run:           step.Run,
-		SecurityRisk:  RiskNone,
+		SecurityRisk:  SecurityRiskNone,
 		RiskReasons:   make([]string, 0),
 		UsesSecrets:   make([]string, 0),
 		UsesVariables: make([]string, 0),
@@ -703,7 +703,7 @@ func (wa *WorkflowAuditor) hasPrivilegeEscalationRisk(script string) bool {
 
 func (wa *WorkflowAuditor) calculateStepRisk(risks []string) SecurityRiskLevel {
 	if len(risks) == 0 {
-		return RiskNone
+		return SecurityRiskNone
 	}
 
 	criticalCount := 0
@@ -718,13 +718,13 @@ func (wa *WorkflowAuditor) calculateStepRisk(risks []string) SecurityRiskLevel {
 	}
 
 	if criticalCount > 0 {
-		return RiskCritical
+		return SecurityRiskCritical
 	} else if highCount > 0 {
-		return RiskHigh
+		return SecurityRiskHigh
 	} else if len(risks) > 2 {
-		return RiskMedium
+		return SecurityRiskMedium
 	} else {
-		return RiskLow
+		return SecurityRiskLow
 	}
 }
 
@@ -733,13 +733,13 @@ func (wa *WorkflowAuditor) calculateJobSecurityScore(job JobAuditInfo) int {
 
 	for _, step := range job.Steps {
 		switch step.SecurityRisk {
-		case RiskCritical:
+		case SecurityRiskCritical:
 			score -= 25
-		case RiskHigh:
+		case SecurityRiskHigh:
 			score -= 15
-		case RiskMedium:
+		case SecurityRiskMedium:
 			score -= 10
-		case RiskLow:
+		case SecurityRiskLow:
 			score -= 5
 		}
 	}
@@ -991,13 +991,13 @@ func (wa *WorkflowAuditor) determineIssueType(reasons []string) WorkflowIssueTyp
 
 func (wa *WorkflowAuditor) mapRiskToSeverity(risk SecurityRiskLevel) SecurityIssueSeverity {
 	switch risk {
-	case RiskCritical:
+	case SecurityRiskCritical:
 		return SeverityCritical
-	case RiskHigh:
+	case SecurityRiskHigh:
 		return SeverityHigh
-	case RiskMedium:
+	case SecurityRiskMedium:
 		return SeverityMedium
-	case RiskLow:
+	case SecurityRiskLow:
 		return SeverityLow
 	default:
 		return SeverityInfo

@@ -281,27 +281,27 @@ func TestWorkflowAuditor_CalculateStepRisk(t *testing.T) {
 		{
 			name:     "no risks",
 			risks:    []string{},
-			expected: RiskNone,
+			expected: SecurityRiskNone,
 		},
 		{
 			name:     "critical risk",
 			risks:    []string{"Script may be vulnerable to code injection"},
-			expected: RiskCritical,
+			expected: SecurityRiskCritical,
 		},
 		{
 			name:     "high risk",
 			risks:    []string{"Action is not pinned to a specific commit hash"},
-			expected: RiskHigh,
+			expected: SecurityRiskHigh,
 		},
 		{
 			name:     "medium risk",
 			risks:    []string{"Action is deprecated", "Action not verified", "Some other issue"},
-			expected: RiskMedium,
+			expected: SecurityRiskMedium,
 		},
 		{
 			name:     "low risk",
 			risks:    []string{"Minor issue"},
-			expected: RiskLow,
+			expected: SecurityRiskLow,
 		},
 	}
 
@@ -434,12 +434,12 @@ func TestWorkflowAuditor_AnalyzeActionUsage(t *testing.T) {
 						{
 							Uses:          "actions/checkout@v4",
 							ActionVersion: "v4",
-							SecurityRisk:  RiskLow,
+							SecurityRisk:  SecurityRiskLow,
 						},
 						{
 							Uses:          "actions/setup-node@v4",
 							ActionVersion: "v4",
-							SecurityRisk:  RiskLow,
+							SecurityRisk:  SecurityRiskLow,
 						},
 					},
 				},
@@ -453,7 +453,7 @@ func TestWorkflowAuditor_AnalyzeActionUsage(t *testing.T) {
 						{
 							Uses:          "actions/checkout@v4",
 							ActionVersion: "v4",
-							SecurityRisk:  RiskLow,
+							SecurityRisk:  SecurityRiskLow,
 						},
 					},
 				},
@@ -541,9 +541,9 @@ func TestWorkflowAuditor_SecurityConstants(t *testing.T) {
 	assert.Equal(t, SecurityIssueSeverity("high"), SeverityHigh)
 	assert.Equal(t, SecurityIssueSeverity("medium"), SeverityMedium)
 
-	assert.Equal(t, SecurityRiskLevel("critical"), RiskCritical)
-	assert.Equal(t, SecurityRiskLevel("high"), RiskHigh)
-	assert.Equal(t, SecurityRiskLevel("none"), RiskNone)
+	assert.Equal(t, SecurityRiskLevel("critical"), SecurityRiskCritical)
+	assert.Equal(t, SecurityRiskLevel("high"), SecurityRiskHigh)
+	assert.Equal(t, SecurityRiskLevel("none"), SecurityRiskNone)
 }
 
 // Integration test with mock workflow content
