@@ -11,6 +11,7 @@ import (
 	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
+	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
@@ -34,6 +35,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
 	cmd.AddCommand(ide.NewIDECmd(ctx))
 	cmd.AddCommand(migrate.NewMigrateCmd())
+	cmd.AddCommand(monitoring.NewMonitoringCmd(ctx))
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())

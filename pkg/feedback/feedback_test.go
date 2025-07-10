@@ -17,8 +17,8 @@ func TestNewFeedbackManager(t *testing.T) {
 	// Test with custom config
 	config := &FeedbackConfig{
 		AutoCategorization:     false,
-		EnableVoting:          false,
-		EnableComments:        false,
+		EnableVoting:           false,
+		EnableComments:         false,
 		MaxCommentsPerFeedback: 10,
 	}
 	manager = NewFeedbackManager(config)
@@ -123,7 +123,7 @@ func TestListFeedback(t *testing.T) {
 			Severity:    FeedbackSeverityHigh,
 		},
 		{
-			Title:       "Feature feedback", 
+			Title:       "Feature feedback",
 			Description: "This is a feature request add new functionality",
 			Type:        FeedbackTypeFeature,
 			Severity:    FeedbackSeverityMedium,
@@ -131,7 +131,7 @@ func TestListFeedback(t *testing.T) {
 		{
 			Title:       "Performance feedback",
 			Description: "This is slow performance lag",
-			Type:        FeedbackTypePerformance, 
+			Type:        FeedbackTypePerformance,
 			Severity:    FeedbackSeverityLow,
 		},
 	}
@@ -149,9 +149,9 @@ func TestListFeedback(t *testing.T) {
 
 	// Verify sorting by priority (highest first, auto-assigned: High=75, Medium=50, Low=25)
 	// Let's check the actual priorities assigned
-	t.Logf("Feedback priorities: Bug=%d, Feature=%d, Performance=%d", 
+	t.Logf("Feedback priorities: Bug=%d, Feature=%d, Performance=%d",
 		list[0].Priority, list[1].Priority, list[2].Priority)
-	
+
 	// The exact order depends on auto-categorization, but bug should be highest
 	assert.Equal(t, "Bug feedback", list[0].Title) // Should have highest priority
 
@@ -367,14 +367,14 @@ func TestGetAnalytics(t *testing.T) {
 	assert.Equal(t, 3, analytics.TotalFeedback)
 	assert.Equal(t, 2, analytics.FeedbackByType[FeedbackTypeBug])
 	assert.Equal(t, 1, analytics.FeedbackByType[FeedbackTypeFeature])
-	
+
 	// Check status counts
-	t.Logf("Status counts: Resolved=%d, Open=%d", 
+	t.Logf("Status counts: Resolved=%d, Open=%d",
 		analytics.FeedbackByStatus[FeedbackStatusResolved],
 		analytics.FeedbackByStatus[FeedbackStatusOpen])
 	assert.Equal(t, 1, analytics.FeedbackByStatus[FeedbackStatusResolved])
 	assert.Equal(t, 2, analytics.FeedbackByStatus[FeedbackStatusOpen])
-	
+
 	assert.Equal(t, 2, analytics.FeedbackByComponent["auth"])
 	assert.Equal(t, 1, analytics.FeedbackByComponent["ui"])
 	assert.Greater(t, analytics.AverageResolutionTime, time.Duration(0))
@@ -385,39 +385,39 @@ func TestAutoCategorization(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
-		title       string
-		description string
-		expectedType FeedbackType
+		title            string
+		description      string
+		expectedType     FeedbackType
 		expectedSeverity FeedbackSeverity
 	}{
 		{
-			title:       "Application crashes on startup",
-			description: "The app crashes every time I try to start it",
-			expectedType: FeedbackTypeBug,
+			title:            "Application crashes on startup",
+			description:      "The app crashes every time I try to start it",
+			expectedType:     FeedbackTypeBug,
 			expectedSeverity: FeedbackSeverityHigh,
 		},
 		{
-			title:       "Slow performance",
-			description: "The application is very slow and takes too long to load",
-			expectedType: FeedbackTypePerformance,
+			title:            "Slow performance",
+			description:      "The application is very slow and takes too long to load",
+			expectedType:     FeedbackTypePerformance,
 			expectedSeverity: FeedbackSeverityMedium,
 		},
 		{
-			title:       "Add dark mode",
-			description: "I want to add a dark mode feature to the application",
-			expectedType: FeedbackTypeFeature,
+			title:            "Add dark mode",
+			description:      "I want to add a dark mode feature to the application",
+			expectedType:     FeedbackTypeFeature,
 			expectedSeverity: FeedbackSeverityLow,
 		},
 		{
-			title:       "Improve user interface",
-			description: "The UI could be better and more intuitive",
-			expectedType: FeedbackTypeImprovement,
+			title:            "Improve user interface",
+			description:      "The UI could be better and more intuitive",
+			expectedType:     FeedbackTypeImprovement,
 			expectedSeverity: FeedbackSeverityMedium,
 		},
 		{
-			title:       "Confusing navigation",
-			description: "The navigation is unclear and hard to understand",
-			expectedType: FeedbackTypeUsability,
+			title:            "Confusing navigation",
+			description:      "The navigation is unclear and hard to understand",
+			expectedType:     FeedbackTypeUsability,
 			expectedSeverity: FeedbackSeverityMedium,
 		},
 	}
@@ -470,12 +470,12 @@ func TestFindSimilarFeedback(t *testing.T) {
 	// Find similar feedback
 	similar, err := manager.FindSimilarFeedback(ctx, feedback1)
 	assert.NoError(t, err)
-	
+
 	// Log similarity for debugging
 	for i, s := range similar {
 		t.Logf("Similar feedback %d: %s", i, s.Title)
 	}
-	
+
 	// The similarity calculation might not find matches due to low threshold
 	// Let's adjust our expectation or improve the test data
 	if len(similar) > 0 {
@@ -565,7 +565,7 @@ func TestFeedbackFilter(t *testing.T) {
 			Description: "This is a feature request add",
 			Type:        FeedbackTypeFeature,
 			Severity:    FeedbackSeverityMedium,
-			Component:   "ui", 
+			Component:   "ui",
 			UserID:      "user2",
 		},
 	}
@@ -631,7 +631,7 @@ func TestFeedbackFilter(t *testing.T) {
 	for i, f := range allList {
 		t.Logf("Feedback %d: Type=%s, Severity=%s, Priority=%d", i, f.Type, f.Severity, f.Priority)
 	}
-	
+
 	// Test combined filters (both feedbacks should match)
 	filter = &FeedbackFilter{
 		Type:        []FeedbackType{FeedbackTypeBug, FeedbackTypeFeature},
@@ -648,9 +648,9 @@ func TestFeedbackManagerDisabledFeatures(t *testing.T) {
 	// Test with features disabled
 	config := &FeedbackConfig{
 		AutoCategorization: false,
-		EnableVoting:      false,
-		EnableComments:    false,
-		AnalyticsEnabled:  false,
+		EnableVoting:       false,
+		EnableComments:     false,
+		AnalyticsEnabled:   false,
 	}
 
 	manager := NewFeedbackManager(config)

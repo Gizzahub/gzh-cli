@@ -14,13 +14,13 @@ import (
 type FeedbackType string
 
 const (
-	FeedbackTypeBug        FeedbackType = "bug"
-	FeedbackTypeFeature    FeedbackType = "feature"
-	FeedbackTypeImprovement FeedbackType = "improvement"
-	FeedbackTypeUsability  FeedbackType = "usability"
-	FeedbackTypePerformance FeedbackType = "performance"
+	FeedbackTypeBug           FeedbackType = "bug"
+	FeedbackTypeFeature       FeedbackType = "feature"
+	FeedbackTypeImprovement   FeedbackType = "improvement"
+	FeedbackTypeUsability     FeedbackType = "usability"
+	FeedbackTypePerformance   FeedbackType = "performance"
 	FeedbackTypeDocumentation FeedbackType = "documentation"
-	FeedbackTypeGeneral    FeedbackType = "general"
+	FeedbackTypeGeneral       FeedbackType = "general"
 )
 
 // FeedbackSeverity represents the severity level of feedback
@@ -80,26 +80,26 @@ type FeedbackComment struct {
 
 // FeedbackAnalytics represents analytics data for feedback
 type FeedbackAnalytics struct {
-	TotalFeedback       int                            `json:"total_feedback"`
-	FeedbackByType      map[FeedbackType]int           `json:"feedback_by_type"`
-	FeedbackBySeverity  map[FeedbackSeverity]int       `json:"feedback_by_severity"`
-	FeedbackByStatus    map[FeedbackStatus]int         `json:"feedback_by_status"`
-	FeedbackByComponent map[string]int                 `json:"feedback_by_component"`
+	TotalFeedback         int                          `json:"total_feedback"`
+	FeedbackByType        map[FeedbackType]int         `json:"feedback_by_type"`
+	FeedbackBySeverity    map[FeedbackSeverity]int     `json:"feedback_by_severity"`
+	FeedbackByStatus      map[FeedbackStatus]int       `json:"feedback_by_status"`
+	FeedbackByComponent   map[string]int               `json:"feedback_by_component"`
 	AverageResolutionTime time.Duration                `json:"average_resolution_time"`
-	TopRequests         []FeedbackSummary              `json:"top_requests"`
-	TrendData           map[string][]TimeSeriesPoint   `json:"trend_data"`
-	UserSatisfaction    float64                        `json:"user_satisfaction"`
-	ResponseRate        float64                        `json:"response_rate"`
+	TopRequests           []FeedbackSummary            `json:"top_requests"`
+	TrendData             map[string][]TimeSeriesPoint `json:"trend_data"`
+	UserSatisfaction      float64                      `json:"user_satisfaction"`
+	ResponseRate          float64                      `json:"response_rate"`
 }
 
 // FeedbackSummary represents a summary of similar feedback items
 type FeedbackSummary struct {
-	Title       string `json:"title"`
-	Count       int    `json:"count"`
-	TotalVotes  int    `json:"total_votes"`
-	Type        FeedbackType `json:"type"`
+	Title       string           `json:"title"`
+	Count       int              `json:"count"`
+	TotalVotes  int              `json:"total_votes"`
+	Type        FeedbackType     `json:"type"`
 	Severity    FeedbackSeverity `json:"severity"`
-	LastUpdated time.Time `json:"last_updated"`
+	LastUpdated time.Time        `json:"last_updated"`
 }
 
 // TimeSeriesPoint represents a point in time series data
@@ -110,18 +110,18 @@ type TimeSeriesPoint struct {
 
 // FeedbackFilter represents filters for querying feedback
 type FeedbackFilter struct {
-	Type        []FeedbackType      `json:"type,omitempty"`
-	Severity    []FeedbackSeverity  `json:"severity,omitempty"`
-	Status      []FeedbackStatus    `json:"status,omitempty"`
-	Component   []string            `json:"component,omitempty"`
-	AssignedTo  []string            `json:"assigned_to,omitempty"`
-	UserID      string              `json:"user_id,omitempty"`
-	CreatedAfter *time.Time         `json:"created_after,omitempty"`
-	CreatedBefore *time.Time        `json:"created_before,omitempty"`
-	Tags        []string            `json:"tags,omitempty"`
-	SearchTerm  string              `json:"search_term,omitempty"`
-	MinPriority int                 `json:"min_priority,omitempty"`
-	MinVotes    int                 `json:"min_votes,omitempty"`
+	Type          []FeedbackType     `json:"type,omitempty"`
+	Severity      []FeedbackSeverity `json:"severity,omitempty"`
+	Status        []FeedbackStatus   `json:"status,omitempty"`
+	Component     []string           `json:"component,omitempty"`
+	AssignedTo    []string           `json:"assigned_to,omitempty"`
+	UserID        string             `json:"user_id,omitempty"`
+	CreatedAfter  *time.Time         `json:"created_after,omitempty"`
+	CreatedBefore *time.Time         `json:"created_before,omitempty"`
+	Tags          []string           `json:"tags,omitempty"`
+	SearchTerm    string             `json:"search_term,omitempty"`
+	MinPriority   int                `json:"min_priority,omitempty"`
+	MinVotes      int                `json:"min_votes,omitempty"`
 }
 
 // FeedbackManager manages user feedback collection and processing
@@ -174,14 +174,14 @@ type DefaultFeedbackManager struct {
 
 // FeedbackConfig represents configuration for feedback manager
 type FeedbackConfig struct {
-	AutoCategorization    bool          `json:"auto_categorization"`
-	EnableVoting         bool          `json:"enable_voting"`
-	EnableComments       bool          `json:"enable_comments"`
-	MaxCommentsPerFeedback int         `json:"max_comments_per_feedback"`
-	AutoAssignment       bool          `json:"auto_assignment"`
-	NotificationEnabled  bool          `json:"notification_enabled"`
-	AnalyticsEnabled     bool          `json:"analytics_enabled"`
-	RetentionPeriod      time.Duration `json:"retention_period"`
+	AutoCategorization     bool          `json:"auto_categorization"`
+	EnableVoting           bool          `json:"enable_voting"`
+	EnableComments         bool          `json:"enable_comments"`
+	MaxCommentsPerFeedback int           `json:"max_comments_per_feedback"`
+	AutoAssignment         bool          `json:"auto_assignment"`
+	NotificationEnabled    bool          `json:"notification_enabled"`
+	AnalyticsEnabled       bool          `json:"analytics_enabled"`
+	RetentionPeriod        time.Duration `json:"retention_period"`
 }
 
 // NewFeedbackManager creates a new feedback manager
@@ -189,13 +189,13 @@ func NewFeedbackManager(config *FeedbackConfig) FeedbackManager {
 	if config == nil {
 		config = &FeedbackConfig{
 			AutoCategorization:     true,
-			EnableVoting:          true,
-			EnableComments:        true,
+			EnableVoting:           true,
+			EnableComments:         true,
 			MaxCommentsPerFeedback: 50,
-			AutoAssignment:        false,
-			NotificationEnabled:   true,
-			AnalyticsEnabled:      true,
-			RetentionPeriod:       365 * 24 * time.Hour, // 1 year
+			AutoAssignment:         false,
+			NotificationEnabled:    true,
+			AnalyticsEnabled:       true,
+			RetentionPeriod:        365 * 24 * time.Hour, // 1 year
 		}
 	}
 
@@ -743,7 +743,7 @@ func (fm *DefaultFeedbackManager) GetUserSatisfactionMetrics(ctx context.Context
 	defer fm.mu.RUnlock()
 
 	metrics := make(map[string]float64)
-	
+
 	// Calculate overall satisfaction
 	totalSatisfaction := 0.0
 	satisfactionCount := 0
