@@ -8,7 +8,7 @@
 #### 1. 시스템 상태 대시보드 (웹 UI)
 - [x] 웹 서버 구현
   - [x] REST API 서버
-  - [ ] WebSocket 실시간 업데이트
+  - [x] WebSocket 실시간 업데이트
   - [ ] 인증 및 권한 관리
 - [ ] 프론트엔드 개발
   - [ ] React/Vue 기반 SPA

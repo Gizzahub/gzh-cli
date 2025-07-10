@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // NewMonitoringCmd creates the monitoring command
@@ -58,6 +60,9 @@ func newServerCmd(ctx context.Context) *cobra.Command {
 			go func() {
 				addr := fmt.Sprintf("%s:%d", host, port)
 				fmt.Printf("🚀 Starting monitoring server on %s\n", addr)
+				fmt.Printf("📊 Dashboard available at http://%s/dashboard\n", addr)
+				fmt.Printf("🔌 WebSocket endpoint at ws://%s/ws\n", addr)
+				fmt.Printf("📡 API endpoints at http://%s/api/v1/*\n", addr)
 				if err := server.Start(addr); err != nil && err != http.ErrServerClosed {
 					log.Fatalf("Failed to start server: %v", err)
 				}
@@ -166,10 +171,17 @@ type MonitoringServer struct {
 	metrics    *MetricsCollector
 	alerts     *AlertManager
 	startTime  time.Time
+	wsManager  *WebSocketManager
 }
 
 // NewMonitoringServer creates a new monitoring server
 func NewMonitoringServer(config *ServerConfig) *MonitoringServer {
+	// Create logger
+	logger, _ := zap.NewProduction()
+	if config.Debug {
+		logger, _ = zap.NewDevelopment()
+	}
+
 	server := &MonitoringServer{
 		config:    config,
 		router:    gin.New(),
@@ -177,6 +189,12 @@ func NewMonitoringServer(config *ServerConfig) *MonitoringServer {
 		alerts:    NewAlertManager(),
 		startTime: time.Now(),
 	}
+
+	// Initialize WebSocket manager with logger
+	server.wsManager = NewWebSocketManager(logger)
+
+	// Set metrics collector for alerts
+	server.alerts.SetMetrics(server.metrics)
 
 	server.setupRoutes()
 	return server
@@ -223,6 +241,9 @@ func (s *MonitoringServer) setupRoutes() {
 	// WebSocket endpoint for real-time updates
 	s.router.GET("/ws", s.handleWebSocket)
 
+	// Dashboard endpoint
+	s.router.GET("/dashboard", s.serveDashboard)
+
 	// Static files for dashboard (if implemented)
 	s.router.Static("/static", "./web/static")
 	s.router.StaticFile("/", "./web/index.html")
@@ -230,6 +251,15 @@ func (s *MonitoringServer) setupRoutes() {
 
 // Start starts the monitoring server
 func (s *MonitoringServer) Start(addr string) error {
+	// Start WebSocket manager
+	s.wsManager.Start()
+
+	// Start periodic updates
+	go s.startPeriodicUpdates(5 * time.Second)
+
+	// Start alert evaluation loop
+	go s.alerts.StartEvaluationLoop(context.Background(), 30*time.Second)
+
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: s.router,
@@ -240,6 +270,9 @@ func (s *MonitoringServer) Start(addr string) error {
 
 // Shutdown gracefully shuts down the server
 func (s *MonitoringServer) Shutdown(ctx context.Context) error {
+	// Stop WebSocket manager
+	s.wsManager.Stop()
+
 	return s.httpServer.Shutdown(ctx)
 }
 
@@ -395,6 +428,9 @@ func (s *MonitoringServer) createAlert(c *gin.Context) {
 		return
 	}
 
+	// Broadcast alert through WebSocket
+	s.wsManager.BroadcastAlert(alert)
+
 	c.JSON(http.StatusCreated, alert)
 }
 
@@ -478,8 +514,14 @@ func (s *MonitoringServer) updateConfig(c *gin.Context) {
 }
 
 func (s *MonitoringServer) handleWebSocket(c *gin.Context) {
-	// WebSocket implementation placeholder
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "WebSocket not implemented yet"})
+	// Use the WebSocketManager to handle the upgrade
+	s.wsManager.HandleWebSocket(c.Writer, c.Request)
+}
+
+func (s *MonitoringServer) serveDashboard(c *gin.Context) {
+	// Serve the embedded dashboard HTML
+	c.Header("Content-Type", "text/html")
+	c.String(http.StatusOK, dashboardHTML)
 }
 
 // Helper methods
@@ -530,6 +572,36 @@ func (s *MonitoringServer) stopTaskByID(id string) error {
 	return nil
 }
 
+// startPeriodicUpdates sends periodic updates through WebSocket
+func (s *MonitoringServer) startPeriodicUpdates(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// Broadcast system status
+			status := &SystemStatus{
+				Status:        "healthy",
+				Uptime:        time.Since(s.startTime).String(),
+				ActiveTasks:   s.metrics.GetActiveTasks(),
+				TotalRequests: s.metrics.GetTotalRequests(),
+				MemoryUsage:   s.metrics.GetMemoryUsage(),
+			}
+			s.wsManager.BroadcastSystemStatus(status)
+
+			// Broadcast metrics
+			metrics := map[string]interface{}{
+				"active_tasks":    s.metrics.GetActiveTasks(),
+				"memory_usage_mb": float64(s.metrics.GetMemoryUsage()) / 1024 / 1024,
+				"cpu_usage":       s.metrics.GetCPUUsage(),
+				"total_requests":  s.metrics.GetTotalRequests(),
+			}
+			s.wsManager.BroadcastMetrics(metrics)
+		}
+	}
+}
+
 // Data structures
 
 type SystemStatus struct {
@@ -568,3 +640,126 @@ type Alert struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+// Embedded dashboard HTML
+const dashboardHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GZH Monitoring Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .metric-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 2.5rem; font-weight: bold; color: #2c3e50; }
+        .metric-label { color: #7f8c8d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .status-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-healthy { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-critical { background-color: #dc3545; }
+        .ws-status { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border-radius: 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        .chart-container { position: relative; height: 300px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="ws-status" id="wsStatus">
+        <span class="status-indicator status-warning" id="wsIndicator"></span>
+        <span id="wsStatusText">Connecting...</span>
+    </div>
+    <div class="container-fluid mt-4">
+        <h1 class="mb-4"><i class="fas fa-chart-line"></i> GZH Monitoring Dashboard</h1>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">System Status</div>
+                    <div class="metric-value" id="systemStatus">-</div>
+                    <small class="text-muted">Uptime: <span id="uptime">-</span></small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">Active Tasks</div>
+                    <div class="metric-value" id="activeTasks">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">Memory (MB)</div>
+                    <div class="metric-value" id="memoryUsage">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">CPU Usage</div>
+                    <div class="metric-value" id="cpuUsage">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let ws = null;
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = protocol + '//' + window.location.host + '/ws';
+            ws = new WebSocket(wsUrl);
+            ws.onopen = function() {
+                updateConnectionStatus('connected');
+                ws.send(JSON.stringify({ type: 'subscribe', filter: { types: ['all'] } }));
+            };
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            ws.onclose = function() {
+                updateConnectionStatus('disconnected');
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+        function handleWebSocketMessage(data) {
+            switch (data.type) {
+                case 'system_status':
+                    updateSystemStatus(data.data);
+                    break;
+                case 'metrics_update':
+                    updateMetrics(data.data);
+                    break;
+            }
+        }
+        function updateSystemStatus(status) {
+            document.getElementById('systemStatus').textContent = status.status.toUpperCase();
+            document.getElementById('uptime').textContent = status.uptime;
+            document.getElementById('activeTasks').textContent = status.active_tasks;
+            document.getElementById('memoryUsage').textContent = (status.memory_usage / 1024 / 1024).toFixed(1);
+            document.getElementById('cpuUsage').textContent = status.cpu_usage.toFixed(1) + '%';
+        }
+        function updateMetrics(metrics) {
+            if (metrics.active_tasks !== undefined) {
+                document.getElementById('activeTasks').textContent = metrics.active_tasks;
+            }
+            if (metrics.memory_usage_mb !== undefined) {
+                document.getElementById('memoryUsage').textContent = metrics.memory_usage_mb.toFixed(1);
+            }
+            if (metrics.cpu_usage !== undefined) {
+                document.getElementById('cpuUsage').textContent = metrics.cpu_usage.toFixed(1) + '%';
+            }
+        }
+        function updateConnectionStatus(status) {
+            const indicator = document.getElementById('wsIndicator');
+            const statusText = document.getElementById('wsStatusText');
+            if (status === 'connected') {
+                indicator.className = 'status-indicator status-healthy';
+                statusText.textContent = 'Connected';
+            } else {
+                indicator.className = 'status-indicator status-warning';
+                statusText.textContent = 'Disconnected';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+        });
+    </script>
+</body>
+</html>`
