@@ -19,6 +19,9 @@ samples
 build/
 *.out
 
+# React build
+web/build/
+
 # exe
 /gzh-manager
 /gz

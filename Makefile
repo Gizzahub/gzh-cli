@@ -14,9 +14,14 @@ depup: ## update dependencies
 	go get -u ./...
 
 .PHONY: build
-build: ## build golang binary
+build: build-frontend ## build golang binary
 	@echo "Building $(executablename)..."
 	@go build -ldflags "-X main.version=$(shell git describe --always --abbrev=0 --tags)" -o $(executablename)
+
+.PHONY: build-frontend
+build-frontend: ## build React frontend
+	@echo "Building React frontend..."
+	@cd web && npm ci && npm run build
 
 .PHONY: install
 install: build ## install golang binary
@@ -42,6 +47,12 @@ clean: ## clean up environment
 	rm -rf coverage.out dist/ $(executablename)
 	rm -f $(shell go env GOPATH)/bin/$(executablename)
 	rm -f $(shell go env GOPATH)/bin/$(projectname)
+	rm -rf web/build web/node_modules
+
+.PHONY: dev-frontend
+dev-frontend: ## start React development server
+	@echo "Starting React development server..."
+	@cd web && npm start
 
 PHONY: cover
 cover: ## display test coverage

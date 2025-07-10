@@ -262,12 +262,16 @@ func (s *MonitoringServer) setupRoutes() {
 	// WebSocket endpoint for real-time updates
 	s.router.GET("/ws", s.handleWebSocket)
 
-	// Dashboard endpoint
+	// Dashboard endpoint (legacy HTML dashboard)
 	s.router.GET("/dashboard", s.serveDashboard)
 
-	// Static files for dashboard (if implemented)
-	s.router.Static("/static", "./web/static")
-	s.router.StaticFile("/", "./web/index.html")
+	// React SPA static files
+	s.router.Static("/static", "./web/build/static")
+	s.router.StaticFile("/favicon.ico", "./web/build/favicon.ico")
+	s.router.StaticFile("/manifest.json", "./web/build/manifest.json")
+	
+	// Serve React SPA for all other routes (fallback to index.html)
+	s.router.NoRoute(s.serveSPA)
 }
 
 // Start starts the monitoring server
@@ -665,6 +669,11 @@ func (s *MonitoringServer) serveDashboard(c *gin.Context) {
 	// Serve the embedded dashboard HTML
 	c.Header("Content-Type", "text/html")
 	c.String(http.StatusOK, dashboardHTML)
+}
+
+func (s *MonitoringServer) serveSPA(c *gin.Context) {
+	// Serve React SPA index.html for all non-API routes
+	c.File("./web/build/index.html")
 }
 
 // Helper methods
