@@ -28,6 +28,7 @@ func NewMonitoringCmd(ctx context.Context) *cobra.Command {
 	cmd.AddCommand(newServerCmd(ctx))
 	cmd.AddCommand(newStatusCmd(ctx))
 	cmd.AddCommand(newMetricsCmd(ctx))
+	cmd.AddCommand(newInstanceCmd(ctx))
 
 	return cmd
 }
@@ -155,6 +156,128 @@ func newMetricsCmd(ctx context.Context) *cobra.Command {
 	return cmd
 }
 
+// newInstanceCmd creates the instance management subcommand
+func newInstanceCmd(ctx context.Context) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "instance",
+		Short: "Manage monitoring instances",
+		Long:  `Manage multiple monitoring instances including discovery and status`,
+	}
+
+	// Add instance subcommands
+	cmd.AddCommand(newInstanceListCmd(ctx))
+	cmd.AddCommand(newInstanceDiscoverCmd(ctx))
+	cmd.AddCommand(newInstanceStatusCmd(ctx))
+
+	return cmd
+}
+
+// newInstanceListCmd creates the instance list subcommand
+func newInstanceListCmd(ctx context.Context) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all monitoring instances",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			client := NewMonitoringClient("http://localhost:8080")
+			instances, err := client.GetInstances(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to get instances: %w", err)
+			}
+
+			fmt.Printf("📋 Monitoring Instances:\n")
+			for _, instance := range instances {
+				fmt.Printf("  ID: %s\n", instance.ID)
+				fmt.Printf("  Name: %s\n", instance.Name)
+				fmt.Printf("  Host: %s:%d\n", instance.Host, instance.Port)
+				fmt.Printf("  Status: %s\n", instance.Status)
+				fmt.Printf("  Type: %s\n", instance.Tags["type"])
+				fmt.Printf("  Last Seen: %s\n", instance.LastSeen.Format("2006-01-02 15:04:05"))
+				if instance.Metrics != nil {
+					fmt.Printf("  CPU: %.1f%%, Memory: %s\n", 
+						instance.Metrics.CPUUsage, 
+						formatBytes(instance.Metrics.MemoryUsage))
+				}
+				fmt.Println()
+			}
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newInstanceDiscoverCmd creates the instance discovery subcommand
+func newInstanceDiscoverCmd(ctx context.Context) *cobra.Command {
+	var host string
+	var port int
+
+	cmd := &cobra.Command{
+		Use:   "discover",
+		Short: "Discover and add a remote monitoring instance",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			client := NewMonitoringClient("http://localhost:8080")
+			err := client.DiscoverInstance(ctx, host, port)
+			if err != nil {
+				return fmt.Errorf("failed to discover instance: %w", err)
+			}
+
+			fmt.Printf("✅ Successfully discovered instance at %s:%d\n", host, port)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&host, "host", "H", "", "Remote host to discover")
+	cmd.Flags().IntVarP(&port, "port", "p", 8080, "Remote port")
+	cmd.MarkFlagRequired("host")
+
+	return cmd
+}
+
+// newInstanceStatusCmd creates the cluster status subcommand
+func newInstanceStatusCmd(ctx context.Context) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "status",
+		Short: "Show cluster status",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			client := NewMonitoringClient("http://localhost:8080")
+			status, err := client.GetClusterStatus(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to get cluster status: %w", err)
+			}
+
+			fmt.Printf("🔧 Cluster Status:\n")
+			fmt.Printf("  Total Instances: %d\n", status.TotalInstances)
+			fmt.Printf("  Running: %d\n", status.RunningInstances)
+			fmt.Printf("  Unhealthy: %d\n", status.UnhealthyInstances)
+			fmt.Printf("  Health Rate: %.1f%%\n", 
+				float64(status.RunningInstances)/float64(status.TotalInstances)*100)
+			fmt.Printf("  Last Update: %s\n", status.LastUpdate.Format("2006-01-02 15:04:05"))
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// formatBytes formats bytes to human readable format
+func formatBytes(bytes uint64) string {
+	if bytes == 0 {
+		return "0 B"
+	}
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := uint64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
 // ServerConfig represents server configuration
 type ServerConfig struct {
 	Host  string
@@ -164,14 +287,15 @@ type ServerConfig struct {
 
 // MonitoringServer represents the monitoring server
 type MonitoringServer struct {
-	config      *ServerConfig
-	router      *gin.Engine
-	httpServer  *http.Server
-	metrics     *MetricsCollector
-	alerts      *AlertManager
-	startTime   time.Time
-	wsManager   *WebSocketManager
-	authManager *AuthManager
+	config          *ServerConfig
+	router          *gin.Engine
+	httpServer      *http.Server
+	metrics         *MetricsCollector
+	alerts          *AlertManager
+	startTime       time.Time
+	wsManager       *WebSocketManager
+	authManager     *AuthManager
+	instanceManager *InstanceManager
 }
 
 // NewMonitoringServer creates a new monitoring server
@@ -193,6 +317,7 @@ func NewMonitoringServer(config *ServerConfig) *MonitoringServer {
 	// Initialize managers with logger
 	server.wsManager = NewWebSocketManager(logger)
 	server.authManager = NewAuthManager(logger)
+	server.instanceManager = NewInstanceManager(logger)
 
 	// Set metrics collector for alerts
 	server.alerts.SetMetrics(server.metrics)
@@ -257,6 +382,17 @@ func (s *MonitoringServer) setupRoutes() {
 			users.PUT("/:username/password", s.authManager.RequirePermission("write:users"), s.updateUserPassword)
 			users.DELETE("/:username", s.authManager.RequirePermission("delete:users"), s.deleteUser)
 		}
+
+		// Instance management endpoints
+		instances := api.Group("/instances")
+		instances.Use(s.authManager.RequirePermission("read:system"))
+		{
+			instances.GET("", s.getInstances)
+			instances.GET("/:id", s.getInstance)
+			instances.POST("/discover", s.authManager.RequirePermission("write:system"), s.discoverInstance)
+			instances.DELETE("/:id", s.authManager.RequirePermission("write:system"), s.removeInstance)
+			instances.GET("/cluster/status", s.getClusterStatus)
+		}
 	}
 
 	// WebSocket endpoint for real-time updates
@@ -279,6 +415,11 @@ func (s *MonitoringServer) Start(addr string) error {
 	// Start WebSocket manager
 	s.wsManager.Start()
 
+	// Start instance manager and register local instance
+	s.instanceManager.Start()
+	instanceName := fmt.Sprintf("gzh-monitoring-%s", s.config.Host)
+	s.instanceManager.RegisterLocalInstance(s.config.Host, s.config.Port, instanceName)
+
 	// Start periodic updates
 	go s.startPeriodicUpdates(5 * time.Second)
 
@@ -295,8 +436,9 @@ func (s *MonitoringServer) Start(addr string) error {
 
 // Shutdown gracefully shuts down the server
 func (s *MonitoringServer) Shutdown(ctx context.Context) error {
-	// Stop WebSocket manager
+	// Stop managers
 	s.wsManager.Stop()
+	s.instanceManager.Stop()
 
 	return s.httpServer.Shutdown(ctx)
 }
@@ -739,8 +881,15 @@ func (s *MonitoringServer) startPeriodicUpdates(interval time.Duration) {
 				ActiveTasks:   s.metrics.GetActiveTasks(),
 				TotalRequests: s.metrics.GetTotalRequests(),
 				MemoryUsage:   s.metrics.GetMemoryUsage(),
+				CPUUsage:      s.metrics.GetCPUUsage(),
+				DiskUsage:     s.metrics.GetDiskUsage(),
+				NetworkIO:     s.metrics.GetNetworkIO(),
+				Timestamp:     time.Now(),
 			}
 			s.wsManager.BroadcastSystemStatus(status)
+
+			// Update local instance metrics
+			s.instanceManager.UpdateLocalMetrics(status)
 
 			// Broadcast metrics
 			metrics := map[string]interface{}{
@@ -915,3 +1064,57 @@ const dashboardHTML = `<!DOCTYPE html>
     </script>
 </body>
 </html>`
+
+// Instance management handlers
+
+func (s *MonitoringServer) getInstances(c *gin.Context) {
+	instances := s.instanceManager.GetInstances()
+	c.JSON(http.StatusOK, gin.H{"instances": instances})
+}
+
+func (s *MonitoringServer) getInstance(c *gin.Context) {
+	instanceID := c.Param("id")
+	instance, err := s.instanceManager.GetInstance(instanceID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "instance not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"instance": instance})
+}
+
+func (s *MonitoringServer) discoverInstance(c *gin.Context) {
+	var req struct {
+		Host string `json:"host" binding:"required"`
+		Port int    `json:"port" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := s.instanceManager.DiscoverInstance(req.Host, req.Port)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "instance discovered successfully"})
+}
+
+func (s *MonitoringServer) removeInstance(c *gin.Context) {
+	instanceID := c.Param("id")
+	
+	err := s.instanceManager.RemoveInstance(instanceID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "instance removed successfully"})
+}
+
+func (s *MonitoringServer) getClusterStatus(c *gin.Context) {
+	status := s.instanceManager.GetClusterStatus()
+	c.JSON(http.StatusOK, status)
+}

@@ -390,3 +390,108 @@ func (c *MonitoringClient) GetMetricsSummary(ctx context.Context) (map[string]in
 
 	return summary, nil
 }
+
+// Instance management methods
+
+// GetInstances gets the list of monitoring instances
+func (c *MonitoringClient) GetInstances(ctx context.Context) ([]*InstanceInfo, error) {
+	resp, err := c.get(ctx, "/api/v1/instances")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API error: %s", resp.Status)
+	}
+
+	var response struct {
+		Instances []*InstanceInfo `json:"instances"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return response.Instances, nil
+}
+
+// GetInstance gets a specific instance by ID
+func (c *MonitoringClient) GetInstance(ctx context.Context, instanceID string) (*InstanceInfo, error) {
+	resp, err := c.get(ctx, "/api/v1/instances/"+instanceID)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("instance not found: %s", instanceID)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API error: %s", resp.Status)
+	}
+
+	var response struct {
+		Instance *InstanceInfo `json:"instance"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return response.Instance, nil
+}
+
+// DiscoverInstance discovers and adds a remote monitoring instance
+func (c *MonitoringClient) DiscoverInstance(ctx context.Context, host string, port int) error {
+	req := map[string]interface{}{
+		"host": host,
+		"port": port,
+	}
+
+	resp, err := c.post(ctx, "/api/v1/instances/discover", req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("API error: %s", resp.Status)
+	}
+
+	return nil
+}
+
+// RemoveInstance removes an instance from the registry
+func (c *MonitoringClient) RemoveInstance(ctx context.Context, instanceID string) error {
+	resp, err := c.delete(ctx, "/api/v1/instances/"+instanceID)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API error: %s", resp.Status)
+	}
+
+	return nil
+}
+
+// GetClusterStatus gets the cluster status
+func (c *MonitoringClient) GetClusterStatus(ctx context.Context) (*ClusterStatus, error) {
+	resp, err := c.get(ctx, "/api/v1/instances/cluster/status")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API error: %s", resp.Status)
+	}
+
+	var status ClusterStatus
+	if err := json.NewDecoder(resp.Body).Decode(&status); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &status, nil
+}

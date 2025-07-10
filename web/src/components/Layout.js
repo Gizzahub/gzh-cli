@@ -27,6 +27,7 @@ import {
   Notifications as NotificationsIcon,
   BarChart as MetricsIcon,
   People as PeopleIcon,
+  Computer as ComputerIcon,
   Settings as SettingsIcon,
   AccountCircle,
   Logout,
@@ -99,6 +100,12 @@ const Layout = ({ children }) => {
       icon: <PeopleIcon />,
       path: '/users',
       roles: ['admin'],
+    },
+    {
+      text: 'Instances',
+      icon: <ComputerIcon />,
+      path: '/instances',
+      roles: ['admin', 'operator'],
     },
     {
       text: 'Settings',
