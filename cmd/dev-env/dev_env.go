@@ -13,6 +13,7 @@ environment configurations including:
 - Kubernetes configurations (kubeconfig)
 - Docker configurations
 - AWS configurations and credentials
+- AWS profile management with SSO support
 - Google Cloud (GCloud) configurations and credentials
 - SSH configurations
 - And more...
@@ -32,6 +33,11 @@ Examples:
   
   # Save current AWS credentials
   gz dev-env aws-credentials save --name production
+  
+  # Manage AWS profiles with SSO support
+  gz dev-env aws-profile list
+  gz dev-env aws-profile switch production
+  gz dev-env aws-profile login production
   
   # Save current gcloud config
   gz dev-env gcloud save --name production
@@ -54,6 +60,7 @@ Examples:
 	cmd.AddCommand(newDockerCmd())
 	cmd.AddCommand(newAwsCmd())
 	cmd.AddCommand(newAwsCredentialsCmd())
+	cmd.AddCommand(newAWSProfileCmd())
 	cmd.AddCommand(newGcloudCmd())
 	cmd.AddCommand(newGcloudCredentialsCmd())
 	cmd.AddCommand(newSshCmd())
