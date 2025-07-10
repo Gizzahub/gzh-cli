@@ -960,11 +960,11 @@ func (vm *DefaultVPNManager) GetConnectionsByLayer() map[int][]*VPNConnection {
 
 	result := make(map[int][]*VPNConnection)
 	connections := make([]*VPNConnection, 0, len(vm.connections))
-	
+
 	for _, conn := range vm.connections {
 		connections = append(connections, conn)
 	}
-	
+
 	result[0] = connections
 	return result
 }
@@ -979,7 +979,7 @@ func (vm *DefaultVPNManager) GetConnectionsByEnvironment(env NetworkEnvironment)
 	for _, conn := range vm.connections {
 		result = append(result, conn)
 	}
-	
+
 	return result
 }
 
