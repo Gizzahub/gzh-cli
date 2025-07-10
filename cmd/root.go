@@ -37,6 +37,8 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
+	cmd.AddCommand(NewTaskRunnerCmd())
+	cmd.AddCommand(NewWebhookCmd())
 
 	return cmd
 }

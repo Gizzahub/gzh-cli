@@ -18,6 +18,9 @@ type GitHubManager interface {
 	// Repository Management
 	GetRepositoryInfo(ctx context.Context, organization, repository string) (*RepositoryInfo, error)
 	ValidateRepositoryAccess(ctx context.Context, organization, repository string) error
+
+	// Webhook Operations
+	WebhookService() WebhookService
 }
 
 // BulkCloneRequest represents a request for bulk repository operations
@@ -64,15 +67,20 @@ type RepositoryFilters struct {
 
 // gitHubManagerImpl implements the GitHubManager interface
 type gitHubManagerImpl struct {
-	factory GitHubProviderFactory
-	logger  Logger
+	factory        GitHubProviderFactory
+	logger         Logger
+	webhookService WebhookService
 }
 
 // NewGitHubManager creates a new GitHub manager facade
 func NewGitHubManager(factory GitHubProviderFactory, logger Logger) GitHubManager {
+	// Create a basic API client for webhook service (this would be properly injected in real implementation)
+	var apiClient APIClient // This should be injected
+
 	return &gitHubManagerImpl{
-		factory: factory,
-		logger:  logger,
+		factory:        factory,
+		logger:         logger,
+		webhookService: NewWebhookService(apiClient, logger),
 	}
 }
 
@@ -224,4 +232,9 @@ func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *Reposit
 	}
 
 	return filtered
+}
+
+// WebhookService returns the webhook service instance
+func (g *gitHubManagerImpl) WebhookService() WebhookService {
+	return g.webhookService
 }
