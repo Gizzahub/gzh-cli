@@ -39,6 +39,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 	cmd.AddCommand(NewTaskRunnerCmd())
 	cmd.AddCommand(NewWebhookCmd())
+	cmd.AddCommand(NewEventCmd())
 
 	return cmd
 }

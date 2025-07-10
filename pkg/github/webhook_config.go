@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -153,7 +152,7 @@ type WebhookConfigurationService interface {
 	// Configuration Management
 	GetOrganizationConfig(ctx context.Context, org string) (*OrganizationWebhookConfig, error)
 	UpdateOrganizationConfig(ctx context.Context, config *OrganizationWebhookConfig) error
-	ValidateConfiguration(ctx context.Context, config *OrganizationWebhookConfig) (*ValidationResult, error)
+	ValidateConfiguration(ctx context.Context, config *OrganizationWebhookConfig) (*WebhookValidationResult, error)
 
 	// Policy Application
 	ApplyPolicies(ctx context.Context, request *ApplyPoliciesRequest) (*ApplyPoliciesResult, error)
@@ -348,24 +347,24 @@ type WebhookInventorySummary struct {
 	HealthScore       float64 `json:"health_score"`
 }
 
-// ValidationResult represents the result of configuration validation
-type ValidationResult struct {
-	Valid    bool                `json:"valid"`
-	Errors   []ValidationError   `json:"errors,omitempty"`
-	Warnings []ValidationWarning `json:"warnings,omitempty"`
-	Score    int                 `json:"score"` // 0-100
+// WebhookValidationResult represents the result of webhook configuration validation
+type WebhookValidationResult struct {
+	Valid    bool                       `json:"valid"`
+	Errors   []WebhookValidationError   `json:"errors,omitempty"`
+	Warnings []WebhookValidationWarning `json:"warnings,omitempty"`
+	Score    int                        `json:"score"` // 0-100
 }
 
-// ValidationError represents a validation error
-type ValidationError struct {
+// WebhookValidationError represents a webhook validation error
+type WebhookValidationError struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`
 	Severity   string `json:"severity"`
 	Suggestion string `json:"suggestion,omitempty"`
 }
 
-// ValidationWarning represents a validation warning
-type ValidationWarning struct {
+// WebhookValidationWarning represents a webhook validation warning
+type WebhookValidationWarning struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`
 	Suggestion string `json:"suggestion,omitempty"`

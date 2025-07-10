@@ -112,18 +112,18 @@ func (w *webhookConfigurationServiceImpl) UpdateOrganizationConfig(ctx context.C
 	return w.storage.SaveOrganizationConfig(ctx, config)
 }
 
-func (w *webhookConfigurationServiceImpl) ValidateConfiguration(ctx context.Context, config *OrganizationWebhookConfig) (*ValidationResult, error) {
-	result := &ValidationResult{
+func (w *webhookConfigurationServiceImpl) ValidateConfiguration(ctx context.Context, config *OrganizationWebhookConfig) (*WebhookValidationResult, error) {
+	result := &WebhookValidationResult{
 		Valid:    true,
-		Errors:   []ValidationError{},
-		Warnings: []ValidationWarning{},
+		Errors:   []WebhookValidationError{},
+		Warnings: []WebhookValidationWarning{},
 		Score:    100,
 	}
 
 	// Validate organization
 	if config.Organization == "" {
 		result.Valid = false
-		result.Errors = append(result.Errors, ValidationError{
+		result.Errors = append(result.Errors, WebhookValidationError{
 			Field:    "organization",
 			Message:  "Organization is required",
 			Severity: "error",
@@ -134,7 +134,7 @@ func (w *webhookConfigurationServiceImpl) ValidateConfiguration(ctx context.Cont
 	for i, policy := range config.Policies {
 		if err := w.validatePolicy(&policy); err != nil {
 			result.Valid = false
-			result.Errors = append(result.Errors, ValidationError{
+			result.Errors = append(result.Errors, WebhookValidationError{
 				Field:    fmt.Sprintf("policies[%d]", i),
 				Message:  err.Error(),
 				Severity: "error",
@@ -144,7 +144,7 @@ func (w *webhookConfigurationServiceImpl) ValidateConfiguration(ctx context.Cont
 
 	// Validate defaults
 	if err := w.validateWebhookTemplate(&config.Defaults.Config); err != nil {
-		result.Warnings = append(result.Warnings, ValidationWarning{
+		result.Warnings = append(result.Warnings, WebhookValidationWarning{
 			Field:   "defaults.config",
 			Message: err.Error(),
 		})

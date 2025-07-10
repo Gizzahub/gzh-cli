@@ -41,6 +41,9 @@ func (m *mockConfigStorage) SaveOrganizationConfig(ctx context.Context, config *
 
 func (m *mockConfigStorage) GetOrganizationConfig(ctx context.Context, org string) (*OrganizationWebhookConfig, error) {
 	args := m.Called(ctx, org)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*OrganizationWebhookConfig), args.Error(1)
 }
 
