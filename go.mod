@@ -1,6 +1,6 @@
 module github.com/gizzahub/gzh-manager-go
 
-go 1.24
+go 1.22
 
 require (
 	cloud.google.com/go/compute v1.39.0

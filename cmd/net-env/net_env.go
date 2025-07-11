@@ -62,7 +62,20 @@ Examples:
   gz net-env docker-network create myapp --network mynet --driver bridge
   
   # Apply Docker network profile
-  gz net-env docker-network apply myapp`,
+  gz net-env docker-network apply myapp
+  
+  # Kubernetes network policy management
+  gz net-env kubernetes-network list
+  
+  # Create Kubernetes network profile
+  gz net-env kubernetes-network create prod-policies --namespace production
+  
+  # Add network policy to profile
+  gz net-env kubernetes-network policy add prod-policies web-policy \
+    --pod-selector app=web --allow-from pod:app=api --ports TCP:8080
+  
+  # Apply Kubernetes network profile
+  gz net-env kubernetes-network apply prod-policies`,
 		SilenceUsage: true,
 	}
 
@@ -77,6 +90,7 @@ Examples:
 	cmd.AddCommand(newActionsCmd())
 	cmd.AddCommand(newCloudCmd(ctx))
 	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))
+	cmd.AddCommand(newKubernetesNetworkCmd(logger, configDir))
 
 	return cmd
 }
