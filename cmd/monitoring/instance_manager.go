@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -39,7 +40,7 @@ type InstanceManager struct {
 // NewInstanceManager creates a new instance manager
 func NewInstanceManager(logger *zap.Logger) *InstanceManager {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	return &InstanceManager{
 		instances:    make(map[string]*InstanceInfo),
 		logger:       logger,
@@ -55,7 +56,7 @@ func (im *InstanceManager) RegisterLocalInstance(host string, port int, name str
 	defer im.mu.Unlock()
 
 	instanceID := fmt.Sprintf("%s:%d", host, port)
-	
+
 	im.localInstance = &InstanceInfo{
 		ID:          instanceID,
 		Name:        name,
@@ -69,9 +70,9 @@ func (im *InstanceManager) RegisterLocalInstance(host string, port int, name str
 			"type": "local",
 		},
 	}
-	
+
 	im.instances[instanceID] = im.localInstance
-	im.logger.Info("Local instance registered", 
+	im.logger.Info("Local instance registered",
 		zap.String("id", instanceID),
 		zap.String("name", name))
 }
@@ -82,7 +83,7 @@ func (im *InstanceManager) DiscoverInstance(host string, port int) error {
 	defer im.mu.Unlock()
 
 	instanceID := fmt.Sprintf("%s:%d", host, port)
-	
+
 	// Check if instance already exists
 	if _, exists := im.instances[instanceID]; exists {
 		return nil
@@ -97,12 +98,12 @@ func (im *InstanceManager) DiscoverInstance(host string, port int) error {
 	info.Tags = map[string]string{
 		"type": "remote",
 	}
-	
+
 	im.instances[instanceID] = info
 	im.logger.Info("Remote instance discovered",
 		zap.String("id", instanceID),
 		zap.String("name", info.Name))
-	
+
 	return nil
 }
 
@@ -115,7 +116,7 @@ func (im *InstanceManager) GetInstances() []*InstanceInfo {
 	for _, instance := range im.instances {
 		instances = append(instances, instance)
 	}
-	
+
 	return instances
 }
 
@@ -128,7 +129,7 @@ func (im *InstanceManager) GetInstance(id string) (*InstanceInfo, error) {
 	if !exists {
 		return nil, fmt.Errorf("instance %s not found", id)
 	}
-	
+
 	return instance, nil
 }
 
@@ -167,7 +168,7 @@ func (im *InstanceManager) RemoveInstance(id string) error {
 
 	delete(im.instances, id)
 	im.logger.Info("Instance removed", zap.String("id", id))
-	
+
 	return nil
 }
 
@@ -177,23 +178,23 @@ func (im *InstanceManager) GetClusterStatus() *ClusterStatus {
 	defer im.mu.RUnlock()
 
 	status := &ClusterStatus{
-		TotalInstances:    len(im.instances),
-		RunningInstances:  0,
+		TotalInstances:     len(im.instances),
+		RunningInstances:   0,
 		UnhealthyInstances: 0,
-		LastUpdate:        time.Now(),
-		Instances:         make([]*InstanceInfo, 0, len(im.instances)),
+		LastUpdate:         time.Now(),
+		Instances:          make([]*InstanceInfo, 0, len(im.instances)),
 	}
 
 	for _, instance := range im.instances {
 		status.Instances = append(status.Instances, instance)
-		
+
 		switch instance.Status {
 		case "running":
 			status.RunningInstances++
 		case "unhealthy", "error":
 			status.UnhealthyInstances++
 		}
-		
+
 		// Check if instance is stale
 		if time.Since(instance.LastSeen) > 2*time.Minute {
 			status.UnhealthyInstances++
@@ -251,11 +252,11 @@ func (im *InstanceManager) syncRemoteInstances() {
 // fetchInstanceInfo retrieves instance information from a remote host
 func (im *InstanceManager) fetchInstanceInfo(host string, port int) (*InstanceInfo, error) {
 	url := fmt.Sprintf("http://%s:%d/api/v1/status", host, port)
-	
+
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
-	
+
 	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err

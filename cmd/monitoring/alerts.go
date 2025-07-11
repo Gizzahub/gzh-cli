@@ -56,6 +56,8 @@ type AlertInstance struct {
 	Threshold   float64           `json:"threshold"`
 	StartsAt    time.Time         `json:"starts_at"`
 	EndsAt      *time.Time        `json:"ends_at,omitempty"`
+	FiredAt     *time.Time        `json:"fired_at,omitempty"`
+	ResolvedAt  *time.Time        `json:"resolved_at,omitempty"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
@@ -68,6 +70,7 @@ type AlertManager struct {
 	evaluator       *AlertEvaluator
 	slackNotifier   *SlackNotifier
 	discordNotifier *DiscordNotifier
+	emailNotifier   *EmailNotifier
 }
 
 // AlertEvaluator evaluates alert rules
@@ -97,6 +100,13 @@ func (am *AlertManager) SetDiscordNotifier(notifier *DiscordNotifier) {
 	am.mu.Lock()
 	defer am.mu.Unlock()
 	am.discordNotifier = notifier
+}
+
+// SetEmailNotifier sets the Email notifier for alert notifications
+func (am *AlertManager) SetEmailNotifier(notifier *EmailNotifier) {
+	am.mu.Lock()
+	defer am.mu.Unlock()
+	am.emailNotifier = notifier
 }
 
 // SetMetrics sets the metrics collector for alert evaluation
@@ -227,7 +237,7 @@ func (am *AlertManager) CreateAlert(alert *Alert) error {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
-			
+
 			if err := am.slackNotifier.SendAlert(ctx, instance); err != nil {
 				// Log error but don't fail the alert creation
 				fmt.Printf("Failed to send Slack notification: %v\n", err)
@@ -240,10 +250,23 @@ func (am *AlertManager) CreateAlert(alert *Alert) error {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
-			
+
 			if err := am.discordNotifier.SendAlert(ctx, instance); err != nil {
 				// Log error but don't fail the alert creation
 				fmt.Printf("Failed to send Discord notification: %v\n", err)
+			}
+		}()
+	}
+
+	// Send Email notification if configured
+	if am.emailNotifier != nil {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			if err := am.emailNotifier.SendAlert(ctx, instance); err != nil {
+				// Log error but don't fail the alert creation
+				fmt.Printf("Failed to send Email notification: %v\n", err)
 			}
 		}()
 	}

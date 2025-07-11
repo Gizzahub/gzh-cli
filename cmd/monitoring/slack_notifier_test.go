@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -23,7 +22,7 @@ func TestNewSlackNotifier(t *testing.T) {
 	}
 
 	notifier := NewSlackNotifier(config, logger)
-	
+
 	assert.Equal(t, config.WebhookURL, notifier.webhookURL)
 	assert.Equal(t, config.Channel, notifier.channel)
 	assert.Equal(t, config.Username, notifier.username)

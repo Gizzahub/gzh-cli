@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -194,8 +195,8 @@ func newInstanceListCmd(ctx context.Context) *cobra.Command {
 				fmt.Printf("  Type: %s\n", instance.Tags["type"])
 				fmt.Printf("  Last Seen: %s\n", instance.LastSeen.Format("2006-01-02 15:04:05"))
 				if instance.Metrics != nil {
-					fmt.Printf("  CPU: %.1f%%, Memory: %s\n", 
-						instance.Metrics.CPUUsage, 
+					fmt.Printf("  CPU: %.1f%%, Memory: %s\n",
+						instance.Metrics.CPUUsage,
 						formatBytes(instance.Metrics.MemoryUsage))
 				}
 				fmt.Println()
@@ -251,7 +252,7 @@ func newInstanceStatusCmd(ctx context.Context) *cobra.Command {
 			fmt.Printf("  Total Instances: %d\n", status.TotalInstances)
 			fmt.Printf("  Running: %d\n", status.RunningInstances)
 			fmt.Printf("  Unhealthy: %d\n", status.UnhealthyInstances)
-			fmt.Printf("  Health Rate: %.1f%%\n", 
+			fmt.Printf("  Health Rate: %.1f%%\n",
 				float64(status.RunningInstances)/float64(status.TotalInstances)*100)
 			fmt.Printf("  Last Update: %s\n", status.LastUpdate.Format("2006-01-02 15:04:05"))
 
@@ -303,7 +304,7 @@ func newNotificationTestCmd(ctx context.Context) *cobra.Command {
 		Short: "Test notification delivery",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client := NewMonitoringClient("http://localhost:8080")
-			
+
 			err := client.TestNotification(ctx, notificationType, "", message)
 			if err != nil {
 				return fmt.Errorf("failed to send test notification: %w", err)
@@ -450,7 +451,7 @@ func (s *MonitoringServer) setupRoutes() {
 	s.router.Static("/static", "./web/build/static")
 	s.router.StaticFile("/favicon.ico", "./web/build/favicon.ico")
 	s.router.StaticFile("/manifest.json", "./web/build/manifest.json")
-	
+
 	// Serve React SPA for all other routes (fallback to index.html)
 	s.router.NoRoute(s.serveSPA)
 }
@@ -697,33 +698,49 @@ func (s *MonitoringServer) testNotification(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Slack notifications not configured"})
 			return
 		}
-		
+
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
 		defer cancel()
-		
+
 		err := s.alerts.slackNotifier.SendCustomMessage(ctx, "Test Notification", req.Message, AlertSeverityInfo)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		
+
 		c.JSON(http.StatusOK, gin.H{"message": "Slack test notification sent successfully"})
 	case "discord":
 		if s.alerts.discordNotifier == nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Discord notifications not configured"})
 			return
 		}
-		
+
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
 		defer cancel()
-		
+
 		err := s.alerts.discordNotifier.SendCustomMessage(ctx, "Test Notification", req.Message, AlertSeverityInfo)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		
+
 		c.JSON(http.StatusOK, gin.H{"message": "Discord test notification sent successfully"})
+	case "email":
+		if s.alerts.emailNotifier == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Email notifications not configured"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+		defer cancel()
+
+		err := s.alerts.emailNotifier.SendCustomMessage(ctx, "Test Notification", req.Message, AlertSeverityInfo)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Email test notification sent successfully"})
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported notification type"})
 	}
@@ -1184,7 +1201,7 @@ func (s *MonitoringServer) discoverInstance(c *gin.Context) {
 
 func (s *MonitoringServer) removeInstance(c *gin.Context) {
 	instanceID := c.Param("id")
-	
+
 	err := s.instanceManager.RemoveInstance(instanceID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -1225,6 +1242,9 @@ func (s *MonitoringServer) initializeSlackNotifier(logger *zap.Logger) {
 
 	// Also initialize Discord if configured
 	s.initializeDiscordNotifier(logger)
+
+	// Also initialize Email if configured
+	s.initializeEmailNotifier(logger)
 }
 
 // initializeDiscordNotifier initializes Discord notification if configured
@@ -1248,6 +1268,48 @@ func (s *MonitoringServer) initializeDiscordNotifier(logger *zap.Logger) {
 
 	logger.Info("Discord notifications initialized",
 		zap.String("username", discordConfig.Username))
+}
+
+// initializeEmailNotifier initializes Email notification if configured
+func (s *MonitoringServer) initializeEmailNotifier(logger *zap.Logger) {
+	// Check for Email configuration from environment variables
+	smtpHost := os.Getenv("SMTP_HOST")
+	if smtpHost == "" {
+		logger.Info("SMTP host not configured, skipping email notifications")
+		return
+	}
+
+	smtpPort := 587 // Default SMTP port
+	if port := os.Getenv("SMTP_PORT"); port != "" {
+		if p, err := strconv.Atoi(port); err == nil {
+			smtpPort = p
+		}
+	}
+
+	recipients := strings.Split(os.Getenv("EMAIL_RECIPIENTS"), ",")
+	if len(recipients) == 0 || recipients[0] == "" {
+		logger.Info("No email recipients configured, skipping email notifications")
+		return
+	}
+
+	emailConfig := &EmailConfig{
+		SMTPHost:   smtpHost,
+		SMTPPort:   smtpPort,
+		Username:   os.Getenv("SMTP_USERNAME"),
+		Password:   os.Getenv("SMTP_PASSWORD"),
+		From:       getEnvOrDefault("EMAIL_FROM", "monitoring@gzh-manager.com"),
+		Recipients: recipients,
+		UseTLS:     getEnvOrDefault("SMTP_USE_TLS", "true") == "true",
+		Enabled:    true,
+	}
+
+	emailNotifier := NewEmailNotifier(emailConfig, logger)
+	s.alerts.SetEmailNotifier(emailNotifier)
+
+	logger.Info("Email notifications initialized",
+		zap.String("smtp_host", emailConfig.SMTPHost),
+		zap.Int("smtp_port", emailConfig.SMTPPort),
+		zap.Strings("recipients", emailConfig.Recipients))
 }
 
 // getEnvOrDefault gets environment variable with default value

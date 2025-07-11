@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -255,11 +254,11 @@ func TestDiscordNotifier_GetSeverityColor(t *testing.T) {
 		severity AlertSeverity
 		expected int
 	}{
-		{AlertSeverityCritical, 0xFF0000}, // Red
-		{AlertSeverityHigh, 0xFF6600},     // Orange
-		{AlertSeverityMedium, 0xFFFF00},   // Yellow
-		{AlertSeverityLow, 0x00FF00},      // Green
-		{AlertSeverityInfo, 0x0099FF},     // Blue
+		{AlertSeverityCritical, 0xFF0000},    // Red
+		{AlertSeverityHigh, 0xFF6600},        // Orange
+		{AlertSeverityMedium, 0xFFFF00},      // Yellow
+		{AlertSeverityLow, 0x00FF00},         // Green
+		{AlertSeverityInfo, 0x0099FF},        // Blue
 		{AlertSeverity("unknown"), 0x808080}, // Gray
 	}
 
