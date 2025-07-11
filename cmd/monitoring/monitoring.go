@@ -2,6 +2,7 @@ package monitoring
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -339,6 +340,7 @@ type MonitoringServer struct {
 	wsManager       *WebSocketManager
 	authManager     *AuthManager
 	instanceManager *InstanceManager
+	logger          *zap.Logger
 }
 
 // NewMonitoringServer creates a new monitoring server
@@ -355,6 +357,7 @@ func NewMonitoringServer(config *ServerConfig) *MonitoringServer {
 		metrics:   NewMetricsCollector(),
 		alerts:    NewAlertManager(),
 		startTime: time.Now(),
+		logger:    logger,
 	}
 
 	// Initialize managers with logger
@@ -413,6 +416,9 @@ func (s *MonitoringServer) setupRoutes() {
 		// Notification endpoints
 		api.GET("/notifications", s.authManager.RequirePermission("read:alerts"), s.getNotifications)
 		api.POST("/notifications/test", s.authManager.RequirePermission("write:alerts"), s.testNotification)
+
+		// Slack interactive endpoints (no auth required for webhook callbacks)
+		api.POST("/slack/interactive", s.handleSlackInteraction)
 
 		// Configuration endpoints
 		api.GET("/config", s.authManager.RequirePermission("read:config"), s.getConfig)
@@ -519,7 +525,13 @@ func (s *MonitoringServer) metricsMiddleware() gin.HandlerFunc {
 // API handler functions
 
 func (s *MonitoringServer) getSystemStatus(c *gin.Context) {
-	status := &SystemStatus{
+	status := s.getCurrentSystemStatus()
+	c.JSON(http.StatusOK, status)
+}
+
+// getCurrentSystemStatus returns current system status without gin context
+func (s *MonitoringServer) getCurrentSystemStatus() *SystemStatus {
+	return &SystemStatus{
 		Status:        "healthy",
 		Uptime:        time.Since(s.startTime).String(),
 		ActiveTasks:   s.metrics.GetActiveTasks(),
@@ -530,8 +542,6 @@ func (s *MonitoringServer) getSystemStatus(c *gin.Context) {
 		NetworkIO:     s.metrics.GetNetworkIO(),
 		Timestamp:     time.Now(),
 	}
-
-	c.JSON(http.StatusOK, status)
 }
 
 func (s *MonitoringServer) getHealth(c *gin.Context) {
@@ -1318,4 +1328,90 @@ func getEnvOrDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// handleSlackInteraction handles Slack interactive message callbacks
+func (s *MonitoringServer) handleSlackInteraction(c *gin.Context) {
+	// Parse the form data from Slack
+	payload := c.PostForm("payload")
+	if payload == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing payload"})
+		return
+	}
+
+	// Parse the JSON payload
+	var slackPayload SlackInteractionPayload
+	if err := json.Unmarshal([]byte(payload), &slackPayload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload format"})
+		return
+	}
+
+	// Verify the request came from Slack (optional - requires verification token)
+	// if slackPayload.Token != expectedToken {
+	//     c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+	//     return
+	// }
+
+	// Get Slack notifier
+	if s.alerts.slackNotifier == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Slack integration not configured"})
+		return
+	}
+
+	// Process the interaction
+	response, err := s.alerts.slackNotifier.ProcessInteraction(&slackPayload)
+	if err != nil {
+		s.logger.Error("Failed to process Slack interaction", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process interaction"})
+		return
+	}
+
+	// Handle specific actions that require backend operations
+	if len(slackPayload.Actions) > 0 {
+		action := slackPayload.Actions[0]
+		alertID := action.Value
+
+		switch action.Name {
+		case "silence":
+			// Silence the alert in the backend
+			if err := s.alerts.SilenceAlert(alertID, time.Hour); err != nil {
+				s.logger.Error("Failed to silence alert", zap.String("alert_id", alertID), zap.Error(err))
+			} else {
+				s.logger.Info("Alert silenced via Slack", zap.String("alert_id", alertID))
+			}
+
+		case "resolve":
+			// Resolve the alert in the backend
+			if err := s.alerts.ResolveAlert(alertID); err != nil {
+				s.logger.Error("Failed to resolve alert", zap.String("alert_id", alertID), zap.Error(err))
+			} else {
+				s.logger.Info("Alert resolved via Slack", zap.String("alert_id", alertID))
+			}
+
+		case "unsilence":
+			// Unsilence the alert by resolving and then letting it re-fire if needed
+			// This is a simplified implementation
+			s.logger.Info("Alert unsilence requested via Slack", zap.String("alert_id", alertID))
+
+		case "refresh":
+			// Trigger a system status refresh
+			go func() {
+				status := s.getCurrentSystemStatus()
+				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+				defer cancel()
+
+				if err := s.alerts.slackNotifier.SendInteractiveSystemStatus(ctx, status); err != nil {
+					s.logger.Error("Failed to send refreshed system status", zap.Error(err))
+				}
+			}()
+		}
+	}
+
+	// Return the response message to Slack
+	if response != nil {
+		c.JSON(http.StatusOK, response)
+	} else {
+		// Return empty response to acknowledge the interaction
+		c.JSON(http.StatusOK, gin.H{})
+	}
 }
