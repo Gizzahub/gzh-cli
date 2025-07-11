@@ -708,6 +708,22 @@ func (s *MonitoringServer) testNotification(c *gin.Context) {
 		}
 		
 		c.JSON(http.StatusOK, gin.H{"message": "Slack test notification sent successfully"})
+	case "discord":
+		if s.alerts.discordNotifier == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Discord notifications not configured"})
+			return
+		}
+		
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+		defer cancel()
+		
+		err := s.alerts.discordNotifier.SendCustomMessage(ctx, "Test Notification", req.Message, AlertSeverityInfo)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		
+		c.JSON(http.StatusOK, gin.H{"message": "Discord test notification sent successfully"})
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported notification type"})
 	}
@@ -1206,6 +1222,32 @@ func (s *MonitoringServer) initializeSlackNotifier(logger *zap.Logger) {
 	logger.Info("Slack notifications initialized",
 		zap.String("channel", slackConfig.Channel),
 		zap.String("username", slackConfig.Username))
+
+	// Also initialize Discord if configured
+	s.initializeDiscordNotifier(logger)
+}
+
+// initializeDiscordNotifier initializes Discord notification if configured
+func (s *MonitoringServer) initializeDiscordNotifier(logger *zap.Logger) {
+	// Check for Discord configuration from environment variables
+	webhookURL := os.Getenv("DISCORD_WEBHOOK_URL")
+	if webhookURL == "" {
+		logger.Info("Discord webhook URL not configured, skipping Discord notifications")
+		return
+	}
+
+	discordConfig := &DiscordConfig{
+		WebhookURL: webhookURL,
+		Username:   getEnvOrDefault("DISCORD_USERNAME", "GZH Monitoring"),
+		AvatarURL:  getEnvOrDefault("DISCORD_AVATAR_URL", ""),
+		Enabled:    true,
+	}
+
+	discordNotifier := NewDiscordNotifier(discordConfig, logger)
+	s.alerts.SetDiscordNotifier(discordNotifier)
+
+	logger.Info("Discord notifications initialized",
+		zap.String("username", discordConfig.Username))
 }
 
 // getEnvOrDefault gets environment variable with default value

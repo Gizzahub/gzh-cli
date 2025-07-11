@@ -61,12 +61,13 @@ type AlertInstance struct {
 
 // AlertManager manages alerts and alert rules
 type AlertManager struct {
-	mu            sync.RWMutex
-	rules         map[string]*AlertRule
-	alerts        map[string]*AlertInstance
-	silences      map[string]time.Time
-	evaluator     *AlertEvaluator
-	slackNotifier *SlackNotifier
+	mu              sync.RWMutex
+	rules           map[string]*AlertRule
+	alerts          map[string]*AlertInstance
+	silences        map[string]time.Time
+	evaluator       *AlertEvaluator
+	slackNotifier   *SlackNotifier
+	discordNotifier *DiscordNotifier
 }
 
 // AlertEvaluator evaluates alert rules
@@ -89,6 +90,13 @@ func (am *AlertManager) SetSlackNotifier(notifier *SlackNotifier) {
 	am.mu.Lock()
 	defer am.mu.Unlock()
 	am.slackNotifier = notifier
+}
+
+// SetDiscordNotifier sets the Discord notifier for alert notifications
+func (am *AlertManager) SetDiscordNotifier(notifier *DiscordNotifier) {
+	am.mu.Lock()
+	defer am.mu.Unlock()
+	am.discordNotifier = notifier
 }
 
 // SetMetrics sets the metrics collector for alert evaluation
@@ -223,6 +231,19 @@ func (am *AlertManager) CreateAlert(alert *Alert) error {
 			if err := am.slackNotifier.SendAlert(ctx, instance); err != nil {
 				// Log error but don't fail the alert creation
 				fmt.Printf("Failed to send Slack notification: %v\n", err)
+			}
+		}()
+	}
+
+	// Send Discord notification if configured
+	if am.discordNotifier != nil {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			
+			if err := am.discordNotifier.SendAlert(ctx, instance); err != nil {
+				// Log error but don't fail the alert creation
+				fmt.Printf("Failed to send Discord notification: %v\n", err)
 			}
 		}()
 	}
