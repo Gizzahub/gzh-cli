@@ -101,7 +101,7 @@ func TestMonitoringServerRoutes(t *testing.T) {
 		{"Tasks", "GET", "/api/v1/tasks", http.StatusOK},
 		{"Alerts", "GET", "/api/v1/alerts", http.StatusOK},
 		{"Config", "GET", "/api/v1/config", http.StatusOK},
-		{"WebSocket", "GET", "/ws", http.StatusUnauthorized}, // WebSocket requires auth now
+		{"WebSocket", "GET", "/ws", http.StatusBadRequest}, // WebSocket upgrade fails without proper headers
 	}
 
 	for _, tt := range tests {
@@ -251,6 +251,9 @@ func TestMonitoringClient(t *testing.T) {
 	defer testServer.Close()
 
 	client := NewMonitoringClient(testServer.URL)
+	// Set auth for the test client and login
+	err := client.SetAuth("admin", "admin123")
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	t.Run("GetSystemStatus", func(t *testing.T) {
@@ -446,6 +449,9 @@ func TestTaskOperations(t *testing.T) {
 	defer testServer.Close()
 
 	client := NewMonitoringClient(testServer.URL)
+	// Set auth for the test client and login
+	err := client.SetAuth("admin", "admin123")
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	t.Run("GetTasks", func(t *testing.T) {

@@ -14,6 +14,9 @@ import (
 type MonitoringClient struct {
 	baseURL    string
 	httpClient *http.Client
+	username   string
+	password   string
+	token      string
 }
 
 // NewMonitoringClient creates a new monitoring client
@@ -24,6 +27,49 @@ func NewMonitoringClient(baseURL string) *MonitoringClient {
 			Timeout: 30 * time.Second,
 		},
 	}
+}
+
+// SetAuth sets the authentication credentials and obtains a token
+func (c *MonitoringClient) SetAuth(username, password string) error {
+	c.username = username
+	c.password = password
+
+	// Login and get token
+	credentials := map[string]string{
+		"username": username,
+		"password": password,
+	}
+
+	jsonData, err := json.Marshal(credentials)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", c.baseURL+"/auth/login", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("login failed: %s", resp.Status)
+	}
+
+	var loginResponse struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&loginResponse); err != nil {
+		return err
+	}
+
+	c.token = loginResponse.Token
+	return nil
 }
 
 // GetSystemStatus gets the system status
@@ -286,6 +332,11 @@ func (c *MonitoringClient) get(ctx context.Context, path string) (*http.Response
 		return nil, err
 	}
 
+	// Add token authorization if token is set
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
+
 	return c.httpClient.Do(req)
 }
 
@@ -306,6 +357,11 @@ func (c *MonitoringClient) post(ctx context.Context, path string, body interface
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
+	}
+
+	// Add token authorization if token is set
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
 	}
 
 	return c.httpClient.Do(req)
@@ -330,6 +386,11 @@ func (c *MonitoringClient) put(ctx context.Context, path string, body interface{
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	// Add token authorization if token is set
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
+
 	return c.httpClient.Do(req)
 }
 
@@ -337,6 +398,11 @@ func (c *MonitoringClient) delete(ctx context.Context, path string) (*http.Respo
 	req, err := http.NewRequestWithContext(ctx, "DELETE", c.baseURL+path, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	// Add token authorization if token is set
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
 	}
 
 	return c.httpClient.Do(req)
