@@ -135,7 +135,22 @@ Examples:
   gz net-env network-metrics bandwidth --interface eth0
   
   # Generate performance report
-  gz net-env network-metrics report --duration 1h`,
+  gz net-env network-metrics report --duration 1h
+  
+  # Advanced network analysis
+  gz net-env network-analysis latency --duration 10m --targets 8.8.8.8,1.1.1.1
+  
+  # Bandwidth utilization analysis
+  gz net-env network-analysis bandwidth --interface eth0 --duration 5m
+  
+  # Comprehensive network analysis
+  gz net-env network-analysis comprehensive --duration 15m
+  
+  # Performance trends analysis
+  gz net-env network-analysis trends --period 24h
+  
+  # Bottleneck detection
+  gz net-env network-analysis bottleneck`,
 		SilenceUsage: true,
 	}
 
@@ -157,6 +172,7 @@ Examples:
 	cmd.AddCommand(newVPNProfileCmd(logger, configDir))
 	cmd.AddCommand(newVPNFailoverCmd(logger, configDir))
 	cmd.AddCommand(newNetworkMetricsCmd(logger, configDir))
+	cmd.AddCommand(newNetworkAnalysisCmd(logger, configDir))
 
 	return cmd
 }
