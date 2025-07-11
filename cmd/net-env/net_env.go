@@ -111,7 +111,16 @@ Examples:
   gz net-env vpn-profile create office --network "Office WiFi" --vpn corp-vpn --priority 100
   
   # Map network to VPN with priority
-  gz net-env vpn-profile map --network "Home WiFi" --vpn home-vpn --priority 50`,
+  gz net-env vpn-profile map --network "Home WiFi" --vpn home-vpn --priority 50
+  
+  # VPN failover management
+  gz net-env vpn-failover start
+  
+  # Configure backup VPN
+  gz net-env vpn-failover backup add --primary corp-vpn --backup home-vpn --priority 50
+  
+  # Test failover scenario
+  gz net-env vpn-failover test --scenario connection-loss`,
 		SilenceUsage: true,
 	}
 
@@ -131,6 +140,7 @@ Examples:
 	cmd.AddCommand(newNetworkTopologyCmd(logger, configDir))
 	cmd.AddCommand(newVPNHierarchyCmd(logger, configDir))
 	cmd.AddCommand(newVPNProfileCmd(logger, configDir))
+	cmd.AddCommand(newVPNFailoverCmd(logger, configDir))
 
 	return cmd
 }
