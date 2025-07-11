@@ -31,6 +31,7 @@ type KubernetesNetworkProfile struct {
 	Policies    map[string]*NetworkPolicyConfig `yaml:"policies" json:"policies"`
 	Services    map[string]*ServiceConfig       `yaml:"services,omitempty" json:"services,omitempty"`
 	Ingress     map[string]*IngressConfig       `yaml:"ingress,omitempty" json:"ingress,omitempty"`
+	ServiceMesh *ServiceMeshConfig              `yaml:"service_mesh,omitempty" json:"service_mesh,omitempty"`
 	CreatedAt   time.Time                       `yaml:"created_at" json:"created_at"`
 	UpdatedAt   time.Time                       `yaml:"updated_at" json:"updated_at"`
 	Active      bool                            `yaml:"active" json:"active"`
@@ -308,6 +309,12 @@ func (km *KubernetesNetworkManager) ApplyProfile(name string) error {
 		km.logger.Info("Applied network policy",
 			zap.String("policy", policyName),
 			zap.String("namespace", profile.Namespace))
+	}
+
+	// Apply service mesh configuration if enabled
+	if err := km.ApplyServiceMeshConfig(profile); err != nil {
+		km.logger.Warn("Failed to apply service mesh configuration", zap.Error(err))
+		// Continue even if service mesh fails - network policies are still applied
 	}
 
 	// Mark profile as active

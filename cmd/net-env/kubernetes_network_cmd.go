@@ -36,6 +36,7 @@ func newKubernetesNetworkCmd(logger *zap.Logger, configDir string) *cobra.Comman
 	cmd.AddCommand(newK8sNetworkPolicyCmd(km))
 	cmd.AddCommand(newK8sNetworkGenerateCmd(km))
 	cmd.AddCommand(newK8sNetworkStatusCmd(km))
+	cmd.AddCommand(newServiceMeshCmd(km))
 
 	return cmd
 }

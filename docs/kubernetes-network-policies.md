@@ -419,11 +419,247 @@ Convert policies from other formats:
 4. **Compliance**: Ensure policies meet regulatory requirements
 5. **Backup**: Keep profile backups in version control
 
+## Service Mesh Integration
+
+The Kubernetes network management system now includes comprehensive service mesh integration for both Istio and Linkerd.
+
+### Detecting Service Mesh
+
+```bash
+# Detect which service mesh is installed
+gz net-env kubernetes-network service-mesh detect
+```
+
+### Enabling Service Mesh
+
+```bash
+# Enable service mesh for a profile (auto-detects type)
+gz net-env kubernetes-network service-mesh enable production-profile --apply
+
+# Enable specific service mesh type
+gz net-env kubernetes-network service-mesh enable production-profile --type istio
+```
+
+### Istio Configuration
+
+#### Virtual Services
+```bash
+# Add a VirtualService for traffic routing
+gz net-env kubernetes-network service-mesh istio virtual-service add production-profile frontend \
+  --hosts frontend.example.com \
+  --destination frontend-service \
+  --subset v2 \
+  --weight 20 \
+  --timeout 30s
+```
+
+#### Destination Rules
+```bash
+# Add a DestinationRule for load balancing and circuit breaking
+gz net-env kubernetes-network service-mesh istio destination-rule add production-profile frontend \
+  --host frontend-service \
+  --load-balancer ROUND_ROBIN \
+  --consecutive-errors 5 \
+  --interval 30s \
+  --base-ejection-time 30s \
+  --tls-mode ISTIO_MUTUAL
+```
+
+#### Service Entries
+```bash
+# Add external service to mesh
+gz net-env kubernetes-network service-mesh istio service-entry add production-profile external-api \
+  --hosts api.external.com \
+  --location MESH_EXTERNAL \
+  --resolution DNS \
+  --ports https:443:HTTPS
+```
+
+#### Gateways
+```bash
+# Add ingress gateway
+gz net-env kubernetes-network service-mesh istio gateway add production-profile main-gateway \
+  --selector istio=ingressgateway \
+  --hosts "*.example.com" \
+  --port 443 \
+  --protocol HTTPS \
+  --tls-mode SIMPLE
+```
+
+### Linkerd Configuration
+
+#### Service Profiles
+```bash
+# Add a ServiceProfile with retry budget
+gz net-env kubernetes-network service-mesh linkerd service-profile add production-profile api-service \
+  --route-name api-route \
+  --method GET \
+  --path-regex "/api/.*" \
+  --timeout 30s \
+  --retryable \
+  --retry-ratio 0.2 \
+  --min-retries 10
+```
+
+#### Traffic Splits
+```bash
+# Add canary deployment traffic split
+gz net-env kubernetes-network service-mesh linkerd traffic-split add production-profile api-canary \
+  --service api-service \
+  --backends api-service-stable:90,api-service-canary:10
+```
+
+### Service Mesh Status
+
+```bash
+# Check service mesh status in a namespace
+gz net-env kubernetes-network service-mesh status -n production
+
+# Get detailed status in JSON format
+gz net-env kubernetes-network service-mesh status -n production -o json
+```
+
+### Example: Complete Service Mesh Profile
+
+```yaml
+name: production-mesh
+description: Production environment with Istio service mesh
+namespace: production
+service_mesh:
+  type: istio
+  enabled: true
+  namespace: production
+  traffic_policy:
+    istio:
+      mtls_mode: ISTIO_MUTUAL
+      sidecar_injection: true
+      virtual_services:
+        frontend:
+          name: frontend
+          hosts:
+            - frontend.example.com
+          gateways:
+            - main-gateway
+          http:
+            - name: canary
+              match:
+                - headers:
+                    x-canary:
+                      exact: "true"
+              route:
+                - destination:
+                    host: frontend-service
+                    subset: canary
+                  weight: 100
+            - name: default
+              route:
+                - destination:
+                    host: frontend-service
+                    subset: stable
+                  weight: 80
+                - destination:
+                    host: frontend-service
+                    subset: v2
+                  weight: 20
+              timeout: 30s
+      destination_rules:
+        frontend:
+          name: frontend
+          host: frontend-service
+          traffic_policy:
+            load_balancer:
+              simple: ROUND_ROBIN
+            connection_pool:
+              tcp:
+                max_connections: 100
+              http:
+                http1_max_pending_requests: 100
+                http2_max_requests: 1000
+            outlier_detection:
+              consecutive_errors: 5
+              interval: 30s
+              base_ejection_time: 30s
+            tls:
+              mode: ISTIO_MUTUAL
+          subsets:
+            - name: stable
+              labels:
+                version: stable
+            - name: v2
+              labels:
+                version: v2
+            - name: canary
+              labels:
+                version: canary
+      circuit_breaker:
+        consecutive_errors: 5
+        interval: 30s
+        base_ejection_time: 30s
+        max_ejection_percent: 50
+      retry_policy:
+        attempts: 3
+        per_try_timeout: 30s
+        retry_on:
+          - 5xx
+          - reset
+          - connect-failure
+policies:
+  deny-all:
+    name: deny-all
+    pod_selector: {}
+    policy_types:
+      - Ingress
+      - Egress
+  allow-frontend:
+    name: allow-frontend
+    pod_selector:
+      app: frontend
+    policy_types:
+      - Ingress
+    ingress:
+      - from:
+          - namespace_selector:
+              name: istio-system
+        ports:
+          - protocol: TCP
+            port: 15090  # Envoy admin
+          - protocol: TCP
+            port: 15021  # Health checks
+```
+
+### Service Mesh Best Practices
+
+1. **Progressive Rollout**
+   - Start with a small percentage of traffic
+   - Monitor metrics and error rates
+   - Gradually increase traffic to new versions
+
+2. **Circuit Breaking**
+   - Configure appropriate thresholds
+   - Set reasonable ejection times
+   - Monitor outlier detection metrics
+
+3. **mTLS Configuration**
+   - Use ISTIO_MUTUAL for automatic certificate management
+   - Enable strict mode in production
+   - Monitor certificate expiration
+
+4. **Retry Policies**
+   - Set appropriate retry budgets
+   - Configure backoff strategies
+   - Avoid retry storms
+
+5. **Observability**
+   - Enable distributed tracing
+   - Configure proper metrics collection
+   - Set up alerting for failures
+
 ## Future Enhancements
 
 - Support for Kubernetes 1.21+ EndPort field in all scenarios
-- Enhanced service mesh policy generation
-- Network policy visualization
+- Network policy visualization and graph generation
 - Automated policy recommendations based on traffic analysis
 - Integration with admission controllers
 - Support for GlobalNetworkPolicies (Calico CRDs)
+- Advanced service mesh features (fault injection, request mirroring)
+- Multi-cluster service mesh federation support
