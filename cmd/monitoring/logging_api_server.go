@@ -72,6 +72,13 @@ func (s *LoggingAPIServer) setupRoutes() {
 		api.GET("/fields", s.getFields)
 		api.GET("/indices", s.getIndices)
 		api.GET("/indices/:name/stats", s.getIndexStats)
+
+		// Retention management endpoints
+		api.GET("/retention/policies", s.getRetentionPolicies)
+		api.POST("/retention/policies", s.addRetentionPolicy)
+		api.DELETE("/retention/policies/:name", s.deleteRetentionPolicy)
+		api.POST("/retention/policies/:name/execute", s.executeRetentionPolicy)
+		api.GET("/retention/metrics", s.getRetentionMetrics)
 	}
 
 	// Health endpoint
@@ -388,4 +395,91 @@ func (s *LoggingAPIServer) corsMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// Retention management endpoint handlers
+
+func (s *LoggingAPIServer) getRetentionPolicies(c *gin.Context) {
+	retentionManager := s.logger.GetRetentionManager()
+	if retentionManager == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "retention management not enabled"})
+		return
+	}
+
+	policies := retentionManager.GetPolicies()
+	c.JSON(http.StatusOK, gin.H{"policies": policies})
+}
+
+func (s *LoggingAPIServer) addRetentionPolicy(c *gin.Context) {
+	retentionManager := s.logger.GetRetentionManager()
+	if retentionManager == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "retention management not enabled"})
+		return
+	}
+
+	var request struct {
+		Name   string           `json:"name" binding:"required"`
+		Policy *RetentionPolicy `json:"policy" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	retentionManager.AddPolicy(request.Name, request.Policy)
+	c.JSON(http.StatusOK, gin.H{"message": "retention policy added successfully"})
+}
+
+func (s *LoggingAPIServer) deleteRetentionPolicy(c *gin.Context) {
+	retentionManager := s.logger.GetRetentionManager()
+	if retentionManager == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "retention management not enabled"})
+		return
+	}
+
+	policyName := c.Param("name")
+	if policyName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "policy name is required"})
+		return
+	}
+
+	retentionManager.RemovePolicy(policyName)
+	c.JSON(http.StatusOK, gin.H{"message": "retention policy deleted successfully"})
+}
+
+func (s *LoggingAPIServer) executeRetentionPolicy(c *gin.Context) {
+	retentionManager := s.logger.GetRetentionManager()
+	if retentionManager == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "retention management not enabled"})
+		return
+	}
+
+	policyName := c.Param("name")
+	if policyName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "policy name is required"})
+		return
+	}
+
+	results, err := retentionManager.ExecutePolicy(policyName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "retention policy executed successfully",
+		"results": results,
+	})
+}
+
+func (s *LoggingAPIServer) getRetentionMetrics(c *gin.Context) {
+	retentionManager := s.logger.GetRetentionManager()
+	if retentionManager == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "retention management not enabled"})
+		return
+	}
+
+	metrics := retentionManager.GetMetrics()
+	c.JSON(http.StatusOK, gin.H{"metrics": metrics})
 }

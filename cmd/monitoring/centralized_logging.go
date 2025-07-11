@@ -16,15 +16,16 @@ import (
 
 // CentralizedLogger provides centralized logging capabilities
 type CentralizedLogger struct {
-	logger     *zap.Logger
-	config     *CentralizedLoggingConfig
-	outputs    map[string]LogOutput
-	processors map[string]LogProcessor
-	shippers   map[string]LogShipper
-	indexer    LogIndexer
-	wsManager  *WebSocketManager
-	metrics    *LoggingMetrics
-	mutex      sync.RWMutex
+	logger           *zap.Logger
+	config           *CentralizedLoggingConfig
+	outputs          map[string]LogOutput
+	processors       map[string]LogProcessor
+	shippers         map[string]LogShipper
+	indexer          LogIndexer
+	wsManager        *WebSocketManager
+	retentionManager *LogRetentionManager
+	metrics          *LoggingMetrics
+	mutex            sync.RWMutex
 
 	// Context and cancellation
 	ctx    context.Context
@@ -58,6 +59,9 @@ type CentralizedLoggingConfig struct {
 
 	// Real-time streaming
 	Streaming *StreamingConfig `yaml:"streaming" json:"streaming"`
+
+	// Log retention
+	Retention *LogRetentionConfig `yaml:"retention" json:"retention"`
 
 	// Filtering and sampling
 	Filters *FilterConfig `yaml:"filters" json:"filters"`
@@ -243,6 +247,11 @@ func NewCentralizedLogger(config *CentralizedLoggingConfig, registry *prometheus
 	// Initialize WebSocket manager for real-time streaming
 	if err := cl.initializeWebSocketManager(); err != nil {
 		return nil, fmt.Errorf("failed to initialize WebSocket manager: %w", err)
+	}
+
+	// Initialize retention manager
+	if err := cl.initializeRetentionManager(); err != nil {
+		return nil, fmt.Errorf("failed to initialize retention manager: %w", err)
 	}
 
 	// Start background processing
@@ -609,6 +618,26 @@ func (cl *CentralizedLogger) initializeWebSocketManager() error {
 	return nil
 }
 
+// initializeRetentionManager initializes the log retention manager
+func (cl *CentralizedLogger) initializeRetentionManager() error {
+	if cl.config.Retention == nil || !cl.config.Retention.Enabled {
+		cl.logger.Info("Log retention management disabled")
+		return nil
+	}
+
+	cl.retentionManager = NewLogRetentionManager(cl.config.Retention, cl.logger)
+
+	// Start the retention manager
+	cl.retentionManager.Start()
+
+	cl.logger.Info("Log retention management initialized",
+		zap.Bool("enabled", cl.config.Retention.Enabled),
+		zap.Duration("check_interval", cl.config.Retention.CheckInterval),
+		zap.Bool("compression_enabled", cl.config.Retention.CompressionEnabled))
+
+	return nil
+}
+
 // startBackgroundProcessing starts background processing routines
 func (cl *CentralizedLogger) startBackgroundProcessing() {
 	// Start buffer flushing routine
@@ -808,6 +837,11 @@ func (cl *CentralizedLogger) GetWebSocketManager() *WebSocketManager {
 	return cl.wsManager
 }
 
+// GetRetentionManager returns the retention manager for external integration
+func (cl *CentralizedLogger) GetRetentionManager() *LogRetentionManager {
+	return cl.retentionManager
+}
+
 // Shutdown gracefully shuts down the centralized logging system
 func (cl *CentralizedLogger) Shutdown(ctx context.Context) error {
 	cl.logger.Info("Shutting down centralized logging system")
@@ -858,6 +892,11 @@ func (cl *CentralizedLogger) Shutdown(ctx context.Context) error {
 		cl.wsManager.Stop()
 	}
 
+	// Stop retention manager
+	if cl.retentionManager != nil {
+		cl.retentionManager.Stop()
+	}
+
 	// Sync logger
 	if err := cl.logger.Sync(); err != nil {
 		// Ignore sync errors on stderr/stdout
@@ -895,6 +934,12 @@ func (cl *CentralizedLogger) GetStats() map[string]interface{} {
 	if cl.wsManager != nil {
 		stats["websocket"] = cl.wsManager.GetClientStats()
 		stats["streaming"] = cl.config.Streaming
+	}
+
+	// Add retention stats if available
+	if cl.retentionManager != nil {
+		stats["retention"] = cl.retentionManager.GetMetrics()
+		stats["retention_config"] = cl.config.Retention
 	}
 
 	return stats
