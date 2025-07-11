@@ -120,7 +120,22 @@ Examples:
   gz net-env vpn-failover backup add --primary corp-vpn --backup home-vpn --priority 50
   
   # Test failover scenario
-  gz net-env vpn-failover test --scenario connection-loss`,
+  gz net-env vpn-failover test --scenario connection-loss
+  
+  # Network performance monitoring
+  gz net-env network-metrics monitor
+  
+  # Show current network metrics
+  gz net-env network-metrics show
+  
+  # Test latency to specific targets
+  gz net-env network-metrics latency --targets 8.8.8.8,1.1.1.1,google.com
+  
+  # Monitor bandwidth usage
+  gz net-env network-metrics bandwidth --interface eth0
+  
+  # Generate performance report
+  gz net-env network-metrics report --duration 1h`,
 		SilenceUsage: true,
 	}
 
@@ -141,6 +156,7 @@ Examples:
 	cmd.AddCommand(newVPNHierarchyCmd(logger, configDir))
 	cmd.AddCommand(newVPNProfileCmd(logger, configDir))
 	cmd.AddCommand(newVPNFailoverCmd(logger, configDir))
+	cmd.AddCommand(newNetworkMetricsCmd(logger, configDir))
 
 	return cmd
 }
