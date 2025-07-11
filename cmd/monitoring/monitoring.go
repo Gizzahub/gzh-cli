@@ -421,6 +421,18 @@ func (s *MonitoringServer) setupRoutes() {
 		api.POST("/slack/interactive", s.handleSlackInteraction)
 		api.POST("/slack/command", s.handleSlackCommand)
 
+		// Teams management endpoints
+		teams := api.Group("/teams")
+		teams.Use(s.authManager.RequirePermission("read:alerts"))
+		{
+			teams.GET("", s.getTeams)
+			teams.GET("/:teamId/channels", s.getTeamChannels)
+			teams.GET("/channels/rules", s.getChannelRules)
+			teams.POST("/channels/rules", s.authManager.RequirePermission("write:alerts"), s.addChannelRule)
+			teams.DELETE("/channels/rules/:teamId/:channelId", s.authManager.RequirePermission("write:alerts"), s.removeChannelRule)
+			teams.POST("/test/:teamId/:channelId", s.authManager.RequirePermission("write:alerts"), s.testTeamsChannel)
+		}
+
 		// Configuration endpoints
 		api.GET("/config", s.authManager.RequirePermission("read:config"), s.getConfig)
 		api.PUT("/config", s.authManager.RequirePermission("write:config"), s.updateConfig)
@@ -1346,8 +1358,15 @@ func (s *MonitoringServer) initializeEmailNotifier(logger *zap.Logger) {
 func (s *MonitoringServer) initializeTeamsNotifier(logger *zap.Logger) {
 	// Check for Teams configuration from environment variables
 	webhookURL := os.Getenv("TEAMS_WEBHOOK_URL")
-	if webhookURL == "" {
-		logger.Info("Teams webhook URL not configured, skipping Teams notifications")
+
+	// Check for Graph API configuration
+	tenantID := os.Getenv("TEAMS_TENANT_ID")
+	clientID := os.Getenv("TEAMS_CLIENT_ID")
+	clientSecret := os.Getenv("TEAMS_CLIENT_SECRET")
+	defaultTeam := os.Getenv("TEAMS_DEFAULT_TEAM")
+
+	if webhookURL == "" && tenantID == "" {
+		logger.Info("Teams webhook URL or Graph API not configured, skipping Teams notifications")
 		return
 	}
 
@@ -1356,15 +1375,100 @@ func (s *MonitoringServer) initializeTeamsNotifier(logger *zap.Logger) {
 		Enabled:    true,
 	}
 
+	// Add Graph API configuration if available
+	if tenantID != "" && clientID != "" && clientSecret != "" {
+		teamsConfig.GraphConfig = &TeamsGraphConfig{
+			TenantID:     tenantID,
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			DefaultTeam:  defaultTeam,
+		}
+
+		// Add default channel rules if configured
+		teamsConfig.ChannelRules = s.loadTeamsChannelRules()
+	}
+
 	teamsNotifier := NewTeamsNotifier(teamsConfig, logger)
 	s.alerts.SetTeamsNotifier(teamsNotifier)
 
-	truncateLength := 50
-	if len(webhookURL) < truncateLength {
-		truncateLength = len(webhookURL)
+	if webhookURL != "" {
+		truncateLength := 50
+		if len(webhookURL) < truncateLength {
+			truncateLength = len(webhookURL)
+		}
+		logger.Info("Teams webhook notifications initialized",
+			zap.String("webhook_url_prefix", webhookURL[:truncateLength]+"..."))
 	}
-	logger.Info("Teams notifications initialized",
-		zap.String("webhook_url_prefix", webhookURL[:truncateLength]+"..."))
+
+	if teamsConfig.GraphConfig != nil {
+		logger.Info("Teams Graph API integration initialized",
+			zap.String("tenant_id", tenantID),
+			zap.String("client_id", clientID),
+			zap.String("default_team", defaultTeam),
+			zap.Int("channel_rules", len(teamsConfig.ChannelRules)))
+	}
+}
+
+// loadTeamsChannelRules loads channel routing rules from environment variables
+func (s *MonitoringServer) loadTeamsChannelRules() []ChannelRule {
+	var rules []ChannelRule
+
+	// Example environment variables:
+	// TEAMS_CRITICAL_ALERT_TEAM=team-id
+	// TEAMS_CRITICAL_ALERT_CHANNEL=channel-id
+	// TEAMS_HIGH_ALERT_TEAM=team-id
+	// TEAMS_HIGH_ALERT_CHANNEL=channel-id
+	// TEAMS_SYSTEM_STATUS_TEAM=team-id
+	// TEAMS_SYSTEM_STATUS_CHANNEL=channel-id
+
+	criticalTeam := os.Getenv("TEAMS_CRITICAL_ALERT_TEAM")
+	criticalChannel := os.Getenv("TEAMS_CRITICAL_ALERT_CHANNEL")
+	if criticalTeam != "" && criticalChannel != "" {
+		rules = append(rules, ChannelRule{
+			Severity:    AlertSeverityCritical,
+			Type:        "alert",
+			TeamID:      criticalTeam,
+			ChannelID:   criticalChannel,
+			ChannelName: "critical-alerts",
+		})
+	}
+
+	highTeam := os.Getenv("TEAMS_HIGH_ALERT_TEAM")
+	highChannel := os.Getenv("TEAMS_HIGH_ALERT_CHANNEL")
+	if highTeam != "" && highChannel != "" {
+		rules = append(rules, ChannelRule{
+			Severity:    AlertSeverityHigh,
+			Type:        "alert",
+			TeamID:      highTeam,
+			ChannelID:   highChannel,
+			ChannelName: "high-alerts",
+		})
+	}
+
+	mediumTeam := os.Getenv("TEAMS_MEDIUM_ALERT_TEAM")
+	mediumChannel := os.Getenv("TEAMS_MEDIUM_ALERT_CHANNEL")
+	if mediumTeam != "" && mediumChannel != "" {
+		rules = append(rules, ChannelRule{
+			Severity:    AlertSeverityMedium,
+			Type:        "alert",
+			TeamID:      mediumTeam,
+			ChannelID:   mediumChannel,
+			ChannelName: "medium-alerts",
+		})
+	}
+
+	systemTeam := os.Getenv("TEAMS_SYSTEM_STATUS_TEAM")
+	systemChannel := os.Getenv("TEAMS_SYSTEM_STATUS_CHANNEL")
+	if systemTeam != "" && systemChannel != "" {
+		rules = append(rules, ChannelRule{
+			Type:        "system",
+			TeamID:      systemTeam,
+			ChannelID:   systemChannel,
+			ChannelName: "system-status",
+		})
+	}
+
+	return rules
 }
 
 // getEnvOrDefault gets environment variable with default value
@@ -1607,4 +1711,159 @@ func (s *MonitoringServer) getHealthColor(status string) string {
 	default:
 		return "#439FE0"
 	}
+}
+
+// Teams API handlers
+
+func (s *MonitoringServer) getTeams(c *gin.Context) {
+	if s.alerts.teamsNotifier == nil || s.alerts.teamsNotifier.graphConfig == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Teams Graph API integration not configured"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+	defer cancel()
+
+	teams, err := s.alerts.teamsNotifier.ListTeams(ctx)
+	if err != nil {
+		s.logger.Error("Failed to list Teams", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list teams"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"teams": teams})
+}
+
+func (s *MonitoringServer) getTeamChannels(c *gin.Context) {
+	if s.alerts.teamsNotifier == nil || s.alerts.teamsNotifier.graphConfig == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Teams Graph API integration not configured"})
+		return
+	}
+
+	teamID := c.Param("teamId")
+	if teamID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "team ID is required"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+	defer cancel()
+
+	channels, err := s.alerts.teamsNotifier.ListChannels(ctx, teamID)
+	if err != nil {
+		s.logger.Error("Failed to list channels", zap.String("team_id", teamID), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list channels"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"channels": channels})
+}
+
+func (s *MonitoringServer) getChannelRules(c *gin.Context) {
+	if s.alerts.teamsNotifier == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Teams integration not configured"})
+		return
+	}
+
+	rules := s.alerts.teamsNotifier.GetChannelConfiguration()
+	c.JSON(http.StatusOK, gin.H{"rules": rules})
+}
+
+func (s *MonitoringServer) addChannelRule(c *gin.Context) {
+	if s.alerts.teamsNotifier == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Teams integration not configured"})
+		return
+	}
+
+	var rule ChannelRule
+	if err := c.ShouldBindJSON(&rule); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate required fields
+	if rule.TeamID == "" || rule.ChannelID == "" || rule.Type == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "team_id, channel_id, and type are required"})
+		return
+	}
+
+	s.alerts.teamsNotifier.AddChannelRule(rule)
+	s.logger.Info("Channel rule added",
+		zap.String("team_id", rule.TeamID),
+		zap.String("channel_id", rule.ChannelID),
+		zap.String("type", rule.Type),
+		zap.String("severity", string(rule.Severity)))
+
+	c.JSON(http.StatusCreated, gin.H{"message": "channel rule added successfully"})
+}
+
+func (s *MonitoringServer) removeChannelRule(c *gin.Context) {
+	if s.alerts.teamsNotifier == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Teams integration not configured"})
+		return
+	}
+
+	teamID := c.Param("teamId")
+	channelID := c.Param("channelId")
+
+	if teamID == "" || channelID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "team ID and channel ID are required"})
+		return
+	}
+
+	s.alerts.teamsNotifier.RemoveChannelRule(teamID, channelID)
+	s.logger.Info("Channel rule removed",
+		zap.String("team_id", teamID),
+		zap.String("channel_id", channelID))
+
+	c.JSON(http.StatusOK, gin.H{"message": "channel rule removed successfully"})
+}
+
+func (s *MonitoringServer) testTeamsChannel(c *gin.Context) {
+	if s.alerts.teamsNotifier == nil || s.alerts.teamsNotifier.graphConfig == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Teams Graph API integration not configured"})
+		return
+	}
+
+	teamID := c.Param("teamId")
+	channelID := c.Param("channelId")
+
+	if teamID == "" || channelID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "team ID and channel ID are required"})
+		return
+	}
+
+	// Get optional message from request body
+	var req struct {
+		Message string `json:"message"`
+	}
+	c.ShouldBindJSON(&req)
+
+	message := req.Message
+	if message == "" {
+		message = "This is a test message from GZH Monitoring system to verify Teams channel integration."
+	}
+
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+	defer cancel()
+
+	// Create a test adaptive card
+	testMessage := s.alerts.teamsNotifier.formatCustomMessage("🧪 Teams Channel Test", message, AlertSeverityInfo)
+	cardContent := &testMessage.Attachments[0].Content
+
+	err := s.alerts.teamsNotifier.SendToChannel(ctx, teamID, channelID, cardContent)
+	if err != nil {
+		s.logger.Error("Failed to send test message to Teams channel",
+			zap.String("team_id", teamID),
+			zap.String("channel_id", channelID),
+			zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send test message"})
+		return
+	}
+
+	s.logger.Info("Test message sent to Teams channel",
+		zap.String("team_id", teamID),
+		zap.String("channel_id", channelID))
+
+	c.JSON(http.StatusOK, gin.H{"message": "test message sent successfully to Teams channel"})
 }

@@ -14,15 +14,36 @@ import (
 
 // TeamsNotifier handles Microsoft Teams webhook notifications
 type TeamsNotifier struct {
-	webhookURL string
-	httpClient *http.Client
-	logger     *zap.Logger
+	webhookURL   string
+	httpClient   *http.Client
+	logger       *zap.Logger
+	graphConfig  *TeamsGraphConfig
+	channelRules []ChannelRule
 }
 
 // TeamsConfig represents Teams notification configuration
 type TeamsConfig struct {
-	WebhookURL string `json:"webhook_url"`
-	Enabled    bool   `json:"enabled"`
+	WebhookURL   string            `json:"webhook_url"`
+	Enabled      bool              `json:"enabled"`
+	GraphConfig  *TeamsGraphConfig `json:"graph_config,omitempty"`
+	ChannelRules []ChannelRule     `json:"channel_rules,omitempty"`
+}
+
+// TeamsGraphConfig represents Microsoft Graph API configuration
+type TeamsGraphConfig struct {
+	TenantID     string `json:"tenant_id"`
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+	DefaultTeam  string `json:"default_team_id"`
+}
+
+// ChannelRule defines routing rules for different notification types
+type ChannelRule struct {
+	Severity    AlertSeverity `json:"severity"`
+	Type        string        `json:"type"` // "alert", "system", "custom"
+	TeamID      string        `json:"team_id"`
+	ChannelID   string        `json:"channel_id"`
+	ChannelName string        `json:"channel_name"`
 }
 
 // TeamsMessage represents a Teams message payload with Adaptive Cards
@@ -114,6 +135,49 @@ type TeamsActionTarget struct {
 	URI string `json:"uri"`
 }
 
+// Microsoft Graph API structures for channel integration
+
+// GraphToken represents OAuth token for Graph API
+type GraphToken struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
+	ExpiresAt   time.Time
+}
+
+// GraphTeam represents a Microsoft Teams team
+type GraphTeam struct {
+	ID          string `json:"id"`
+	DisplayName string `json:"displayName"`
+	Description string `json:"description"`
+}
+
+// GraphChannel represents a Microsoft Teams channel
+type GraphChannel struct {
+	ID          string `json:"id"`
+	DisplayName string `json:"displayName"`
+	Description string `json:"description"`
+	WebURL      string `json:"webUrl"`
+}
+
+// GraphChannelMessage represents a message to be sent to a channel
+type GraphChannelMessage struct {
+	Body struct {
+		ContentType string `json:"contentType"`
+		Content     string `json:"content"`
+	} `json:"body"`
+	Attachments []GraphMessageAttachment `json:"attachments,omitempty"`
+}
+
+// GraphMessageAttachment represents an attachment in a Graph API message
+type GraphMessageAttachment struct {
+	ID          string      `json:"id"`
+	ContentType string      `json:"contentType"`
+	ContentURL  string      `json:"contentUrl,omitempty"`
+	Content     interface{} `json:"content,omitempty"`
+	Name        string      `json:"name,omitempty"`
+}
+
 // NewTeamsNotifier creates a new Teams notifier
 func NewTeamsNotifier(config *TeamsConfig, logger *zap.Logger) *TeamsNotifier {
 	return &TeamsNotifier{
@@ -121,7 +185,9 @@ func NewTeamsNotifier(config *TeamsConfig, logger *zap.Logger) *TeamsNotifier {
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-		logger: logger,
+		logger:       logger,
+		graphConfig:  config.GraphConfig,
+		channelRules: config.ChannelRules,
 	}
 }
 
@@ -541,5 +607,297 @@ func (t *TeamsNotifier) getSystemStatusTextColor(status string) string {
 		return "Attention"
 	default:
 		return "Default"
+	}
+}
+
+// Microsoft Graph API integration for Teams channel management
+
+// getGraphToken obtains an OAuth token for Microsoft Graph API
+func (t *TeamsNotifier) getGraphToken(ctx context.Context) (*GraphToken, error) {
+	if t.graphConfig == nil {
+		return nil, fmt.Errorf("Graph API configuration not provided")
+	}
+
+	tokenURL := fmt.Sprintf("https://login.microsoftonline.com/%s/oauth2/v2.0/token", t.graphConfig.TenantID)
+
+	data := fmt.Sprintf("client_id=%s&scope=https://graph.microsoft.com/.default&client_secret=%s&grant_type=client_credentials",
+		t.graphConfig.ClientID, t.graphConfig.ClientSecret)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", tokenURL, strings.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create token request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := t.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to request token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("token request failed with status: %d", resp.StatusCode)
+	}
+
+	var token GraphToken
+	if err := json.NewDecoder(resp.Body).Decode(&token); err != nil {
+		return nil, fmt.Errorf("failed to decode token response: %w", err)
+	}
+
+	token.ExpiresAt = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
+	return &token, nil
+}
+
+// ListTeams retrieves all Teams that the application has access to
+func (t *TeamsNotifier) ListTeams(ctx context.Context) ([]GraphTeam, error) {
+	token, err := t.getGraphToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://graph.microsoft.com/v1.0/groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := t.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list teams: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("teams request failed with status: %d", resp.StatusCode)
+	}
+
+	var result struct {
+		Value []GraphTeam `json:"value"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode teams response: %w", err)
+	}
+
+	return result.Value, nil
+}
+
+// ListChannels retrieves all channels for a specific team
+func (t *TeamsNotifier) ListChannels(ctx context.Context, teamID string) ([]GraphChannel, error) {
+	token, err := t.getGraphToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/teams/%s/channels", teamID)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := t.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list channels: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("channels request failed with status: %d", resp.StatusCode)
+	}
+
+	var result struct {
+		Value []GraphChannel `json:"value"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode channels response: %w", err)
+	}
+
+	return result.Value, nil
+}
+
+// SendToChannel sends a message with Adaptive Card to a specific Teams channel
+func (t *TeamsNotifier) SendToChannel(ctx context.Context, teamID, channelID string, card *TeamsCardContent) error {
+	token, err := t.getGraphToken(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Create Graph message with Adaptive Card attachment
+	message := GraphChannelMessage{
+		Body: struct {
+			ContentType string `json:"contentType"`
+			Content     string `json:"content"`
+		}{
+			ContentType: "html",
+			Content:     "<attachment id=\"adaptive-card\"></attachment>",
+		},
+		Attachments: []GraphMessageAttachment{
+			{
+				ID:          "adaptive-card",
+				ContentType: "application/vnd.microsoft.card.adaptive",
+				Content:     card,
+			},
+		},
+	}
+
+	jsonData, err := json.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message: %w", err)
+	}
+
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/teams/%s/channels/%s/messages", teamID, channelID)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := t.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send message to channel: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("channel message request failed with status: %d", resp.StatusCode)
+	}
+
+	t.logger.Info("Message sent to Teams channel successfully",
+		zap.String("team_id", teamID),
+		zap.String("channel_id", channelID))
+
+	return nil
+}
+
+// SendAlertToChannel sends an alert to appropriate channel based on routing rules
+func (t *TeamsNotifier) SendAlertToChannel(ctx context.Context, alert *AlertInstance) error {
+	if t.graphConfig == nil {
+		return fmt.Errorf("Graph API not configured for channel integration")
+	}
+
+	// Find matching channel rule
+	rule := t.findChannelRule("alert", AlertSeverity(alert.Severity))
+	if rule == nil {
+		// Use default team if no rule matches
+		if t.graphConfig.DefaultTeam == "" {
+			return fmt.Errorf("no channel rule found and no default team configured")
+		}
+		// Send to general channel of default team
+		channels, err := t.ListChannels(ctx, t.graphConfig.DefaultTeam)
+		if err != nil {
+			return fmt.Errorf("failed to list channels: %w", err)
+		}
+
+		var generalChannel *GraphChannel
+		for _, ch := range channels {
+			if strings.ToLower(ch.DisplayName) == "general" {
+				generalChannel = &ch
+				break
+			}
+		}
+
+		if generalChannel == nil {
+			return fmt.Errorf("general channel not found in default team")
+		}
+
+		rule = &ChannelRule{
+			TeamID:    t.graphConfig.DefaultTeam,
+			ChannelID: generalChannel.ID,
+		}
+	}
+
+	// Format alert as adaptive card
+	message := t.formatAlertMessage(alert)
+	cardContent := &message.Attachments[0].Content
+
+	return t.SendToChannel(ctx, rule.TeamID, rule.ChannelID, cardContent)
+}
+
+// SendSystemStatusToChannel sends system status to appropriate channel
+func (t *TeamsNotifier) SendSystemStatusToChannel(ctx context.Context, status *SystemStatus) error {
+	if t.graphConfig == nil {
+		return fmt.Errorf("Graph API not configured for channel integration")
+	}
+
+	// Find matching channel rule for system status
+	rule := t.findChannelRule("system", AlertSeverityInfo)
+	if rule == nil && t.graphConfig.DefaultTeam != "" {
+		// Use default team if no rule matches
+		channels, err := t.ListChannels(ctx, t.graphConfig.DefaultTeam)
+		if err != nil {
+			return fmt.Errorf("failed to list channels: %w", err)
+		}
+
+		var generalChannel *GraphChannel
+		for _, ch := range channels {
+			if strings.ToLower(ch.DisplayName) == "general" {
+				generalChannel = &ch
+				break
+			}
+		}
+
+		if generalChannel != nil {
+			rule = &ChannelRule{
+				TeamID:    t.graphConfig.DefaultTeam,
+				ChannelID: generalChannel.ID,
+			}
+		}
+	}
+
+	if rule == nil {
+		return fmt.Errorf("no channel rule found for system status")
+	}
+
+	// Format system status as adaptive card
+	message := t.formatSystemStatusMessage(status)
+	cardContent := &message.Attachments[0].Content
+
+	return t.SendToChannel(ctx, rule.TeamID, rule.ChannelID, cardContent)
+}
+
+// findChannelRule finds the most appropriate channel rule for given type and severity
+func (t *TeamsNotifier) findChannelRule(msgType string, severity AlertSeverity) *ChannelRule {
+	var bestRule *ChannelRule
+
+	for _, rule := range t.channelRules {
+		if rule.Type == msgType {
+			if rule.Severity == severity {
+				// Exact match - return immediately
+				return &rule
+			}
+			if bestRule == nil {
+				// First matching type
+				bestRule = &rule
+			}
+		}
+	}
+
+	return bestRule
+}
+
+// GetChannelConfiguration returns current channel configuration for management
+func (t *TeamsNotifier) GetChannelConfiguration() []ChannelRule {
+	return t.channelRules
+}
+
+// AddChannelRule adds a new channel routing rule
+func (t *TeamsNotifier) AddChannelRule(rule ChannelRule) {
+	t.channelRules = append(t.channelRules, rule)
+}
+
+// RemoveChannelRule removes a channel routing rule
+func (t *TeamsNotifier) RemoveChannelRule(teamID, channelID string) {
+	for i, rule := range t.channelRules {
+		if rule.TeamID == teamID && rule.ChannelID == channelID {
+			t.channelRules = append(t.channelRules[:i], t.channelRules[i+1:]...)
+			break
+		}
 	}
 }

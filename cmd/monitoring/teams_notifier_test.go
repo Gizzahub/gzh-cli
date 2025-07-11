@@ -560,3 +560,311 @@ func TestTeamsAdaptiveCard_Structure(t *testing.T) {
 	assert.Equal(t, "Action.OpenUrl", card.Content.Actions[0].Type)
 	assert.Equal(t, "Test Action", card.Content.Actions[0].Title)
 }
+
+func TestTeamsNotifier_ChannelIntegration(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+
+	// Test Graph API configuration
+	graphConfig := &TeamsGraphConfig{
+		TenantID:     "test-tenant-id",
+		ClientID:     "test-client-id",
+		ClientSecret: "test-client-secret",
+		DefaultTeam:  "test-default-team",
+	}
+
+	// Test channel rules
+	channelRules := []ChannelRule{
+		{
+			Severity:    AlertSeverityCritical,
+			Type:        "alert",
+			TeamID:      "critical-team-id",
+			ChannelID:   "critical-channel-id",
+			ChannelName: "critical-alerts",
+		},
+		{
+			Severity:    AlertSeverityHigh,
+			Type:        "alert",
+			TeamID:      "high-team-id",
+			ChannelID:   "high-channel-id",
+			ChannelName: "high-alerts",
+		},
+		{
+			Type:        "system",
+			TeamID:      "system-team-id",
+			ChannelID:   "system-channel-id",
+			ChannelName: "system-status",
+		},
+	}
+
+	config := &TeamsConfig{
+		WebhookURL:   "https://test.webhook.office.com/webhookb2/test",
+		Enabled:      true,
+		GraphConfig:  graphConfig,
+		ChannelRules: channelRules,
+	}
+
+	notifier := NewTeamsNotifier(config, logger)
+
+	// Test configuration
+	assert.Equal(t, graphConfig, notifier.graphConfig)
+	assert.Equal(t, channelRules, notifier.channelRules)
+	assert.Equal(t, channelRules, notifier.GetChannelConfiguration())
+}
+
+func TestTeamsNotifier_ChannelRuleMatching(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+
+	channelRules := []ChannelRule{
+		{
+			Severity:    AlertSeverityCritical,
+			Type:        "alert",
+			TeamID:      "critical-team-id",
+			ChannelID:   "critical-channel-id",
+			ChannelName: "critical-alerts",
+		},
+		{
+			Severity:    AlertSeverityHigh,
+			Type:        "alert",
+			TeamID:      "high-team-id",
+			ChannelID:   "high-channel-id",
+			ChannelName: "high-alerts",
+		},
+		{
+			Type:        "system",
+			TeamID:      "system-team-id",
+			ChannelID:   "system-channel-id",
+			ChannelName: "system-status",
+		},
+	}
+
+	config := &TeamsConfig{
+		WebhookURL:   "https://test.webhook.office.com/webhookb2/test",
+		Enabled:      true,
+		ChannelRules: channelRules,
+	}
+
+	notifier := NewTeamsNotifier(config, logger)
+
+	testCases := []struct {
+		name              string
+		msgType           string
+		severity          AlertSeverity
+		expectedTeamID    string
+		expectedChannelID string
+	}{
+		{
+			name:              "Critical alert exact match",
+			msgType:           "alert",
+			severity:          AlertSeverityCritical,
+			expectedTeamID:    "critical-team-id",
+			expectedChannelID: "critical-channel-id",
+		},
+		{
+			name:              "High alert exact match",
+			msgType:           "alert",
+			severity:          AlertSeverityHigh,
+			expectedTeamID:    "high-team-id",
+			expectedChannelID: "high-channel-id",
+		},
+		{
+			name:              "System message",
+			msgType:           "system",
+			severity:          AlertSeverityInfo,
+			expectedTeamID:    "system-team-id",
+			expectedChannelID: "system-channel-id",
+		},
+		{
+			name:              "Medium alert fallback to first alert rule",
+			msgType:           "alert",
+			severity:          AlertSeverityMedium,
+			expectedTeamID:    "critical-team-id",
+			expectedChannelID: "critical-channel-id",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			rule := notifier.findChannelRule(tc.msgType, tc.severity)
+
+			if tc.expectedTeamID != "" {
+				assert.NotNil(t, rule)
+				assert.Equal(t, tc.expectedTeamID, rule.TeamID)
+				assert.Equal(t, tc.expectedChannelID, rule.ChannelID)
+			} else {
+				assert.Nil(t, rule)
+			}
+		})
+	}
+}
+
+func TestTeamsNotifier_ChannelRuleManagement(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	config := &TeamsConfig{
+		WebhookURL: "https://test.webhook.office.com/webhookb2/test",
+		Enabled:    true,
+	}
+
+	notifier := NewTeamsNotifier(config, logger)
+
+	// Test adding rules
+	rule1 := ChannelRule{
+		Severity:    AlertSeverityCritical,
+		Type:        "alert",
+		TeamID:      "team1",
+		ChannelID:   "channel1",
+		ChannelName: "critical",
+	}
+
+	rule2 := ChannelRule{
+		Severity:    AlertSeverityHigh,
+		Type:        "alert",
+		TeamID:      "team2",
+		ChannelID:   "channel2",
+		ChannelName: "high",
+	}
+
+	notifier.AddChannelRule(rule1)
+	notifier.AddChannelRule(rule2)
+
+	rules := notifier.GetChannelConfiguration()
+	assert.Len(t, rules, 2)
+	assert.Contains(t, rules, rule1)
+	assert.Contains(t, rules, rule2)
+
+	// Test removing rules
+	notifier.RemoveChannelRule("team1", "channel1")
+	rules = notifier.GetChannelConfiguration()
+	assert.Len(t, rules, 1)
+	assert.Contains(t, rules, rule2)
+
+	// Test removing non-existent rule (should not panic)
+	notifier.RemoveChannelRule("non-existent", "non-existent")
+	rules = notifier.GetChannelConfiguration()
+	assert.Len(t, rules, 1)
+}
+
+func TestTeamsNotifier_GraphApiErrors(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+
+	testCases := []struct {
+		name        string
+		config      *TeamsConfig
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "No Graph config",
+			config: &TeamsConfig{
+				WebhookURL: "https://test.webhook.office.com/webhookb2/test",
+				Enabled:    true,
+			},
+			expectError: true,
+			errorMsg:    "Graph API not configured",
+		},
+		{
+			name: "Missing default team configuration",
+			config: &TeamsConfig{
+				WebhookURL: "https://test.webhook.office.com/webhookb2/test",
+				Enabled:    true,
+				GraphConfig: &TeamsGraphConfig{
+					TenantID:     "test-tenant",
+					ClientID:     "test-client",
+					ClientSecret: "test-secret",
+					// Missing DefaultTeam
+				},
+			},
+			expectError: true,
+			errorMsg:    "no channel rule found and no default team configured",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			notifier := NewTeamsNotifier(tc.config, logger)
+			ctx := context.Background()
+
+			alert := &AlertInstance{
+				ID:       "test-alert",
+				RuleName: "Test Rule",
+				Severity: "critical",
+				Status:   AlertStatusFiring,
+				Message:  "Test message",
+			}
+
+			err := notifier.SendAlertToChannel(ctx, alert)
+
+			if tc.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestGraphToken_Structure(t *testing.T) {
+	token := GraphToken{
+		AccessToken: "test-token",
+		TokenType:   "Bearer",
+		ExpiresIn:   3600,
+		ExpiresAt:   time.Now().Add(time.Hour),
+	}
+
+	assert.Equal(t, "test-token", token.AccessToken)
+	assert.Equal(t, "Bearer", token.TokenType)
+	assert.Equal(t, 3600, token.ExpiresIn)
+	assert.True(t, token.ExpiresAt.After(time.Now()))
+}
+
+func TestGraphTeam_Structure(t *testing.T) {
+	team := GraphTeam{
+		ID:          "team-123",
+		DisplayName: "Test Team",
+		Description: "A test team",
+	}
+
+	assert.Equal(t, "team-123", team.ID)
+	assert.Equal(t, "Test Team", team.DisplayName)
+	assert.Equal(t, "A test team", team.Description)
+}
+
+func TestGraphChannel_Structure(t *testing.T) {
+	channel := GraphChannel{
+		ID:          "channel-123",
+		DisplayName: "General",
+		Description: "General discussion",
+		WebURL:      "https://teams.microsoft.com/...",
+	}
+
+	assert.Equal(t, "channel-123", channel.ID)
+	assert.Equal(t, "General", channel.DisplayName)
+	assert.Equal(t, "General discussion", channel.Description)
+	assert.Equal(t, "https://teams.microsoft.com/...", channel.WebURL)
+}
+
+func TestGraphChannelMessage_Structure(t *testing.T) {
+	message := GraphChannelMessage{
+		Body: struct {
+			ContentType string `json:"contentType"`
+			Content     string `json:"content"`
+		}{
+			ContentType: "html",
+			Content:     "<attachment id=\"test\"></attachment>",
+		},
+		Attachments: []GraphMessageAttachment{
+			{
+				ID:          "test",
+				ContentType: "application/vnd.microsoft.card.adaptive",
+				Content:     map[string]interface{}{"test": "data"},
+				Name:        "Test Card",
+			},
+		},
+	}
+
+	assert.Equal(t, "html", message.Body.ContentType)
+	assert.Contains(t, message.Body.Content, "attachment")
+	assert.Len(t, message.Attachments, 1)
+	assert.Equal(t, "test", message.Attachments[0].ID)
+	assert.Equal(t, "application/vnd.microsoft.card.adaptive", message.Attachments[0].ContentType)
+}
