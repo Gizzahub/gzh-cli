@@ -70,6 +70,7 @@ type AlertManager struct {
 	evaluator       *AlertEvaluator
 	slackNotifier   *SlackNotifier
 	discordNotifier *DiscordNotifier
+	teamsNotifier   *TeamsNotifier
 	emailNotifier   *EmailNotifier
 }
 
@@ -100,6 +101,13 @@ func (am *AlertManager) SetDiscordNotifier(notifier *DiscordNotifier) {
 	am.mu.Lock()
 	defer am.mu.Unlock()
 	am.discordNotifier = notifier
+}
+
+// SetTeamsNotifier sets the Teams notifier for alert notifications
+func (am *AlertManager) SetTeamsNotifier(notifier *TeamsNotifier) {
+	am.mu.Lock()
+	defer am.mu.Unlock()
+	am.teamsNotifier = notifier
 }
 
 // SetEmailNotifier sets the Email notifier for alert notifications
@@ -267,6 +275,19 @@ func (am *AlertManager) CreateAlert(alert *Alert) error {
 			if err := am.emailNotifier.SendAlert(ctx, instance); err != nil {
 				// Log error but don't fail the alert creation
 				fmt.Printf("Failed to send Email notification: %v\n", err)
+			}
+		}()
+	}
+
+	// Send Teams notification if configured
+	if am.teamsNotifier != nil {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			if err := am.teamsNotifier.SendAlert(ctx, instance); err != nil {
+				// Log error but don't fail the alert creation
+				fmt.Printf("Failed to send Teams notification: %v\n", err)
 			}
 		}()
 	}

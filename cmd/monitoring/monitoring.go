@@ -752,6 +752,22 @@ func (s *MonitoringServer) testNotification(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Email test notification sent successfully"})
+	case "teams":
+		if s.alerts.teamsNotifier == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Teams notifications not configured"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+		defer cancel()
+
+		err := s.alerts.teamsNotifier.SendCustomMessage(ctx, "Test Notification", req.Message, AlertSeverityInfo)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Teams test notification sent successfully"})
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported notification type"})
 	}
@@ -1256,6 +1272,9 @@ func (s *MonitoringServer) initializeSlackNotifier(logger *zap.Logger) {
 
 	// Also initialize Email if configured
 	s.initializeEmailNotifier(logger)
+
+	// Also initialize Teams if configured
+	s.initializeTeamsNotifier(logger)
 }
 
 // initializeDiscordNotifier initializes Discord notification if configured
@@ -1321,6 +1340,31 @@ func (s *MonitoringServer) initializeEmailNotifier(logger *zap.Logger) {
 		zap.String("smtp_host", emailConfig.SMTPHost),
 		zap.Int("smtp_port", emailConfig.SMTPPort),
 		zap.Strings("recipients", emailConfig.Recipients))
+}
+
+// initializeTeamsNotifier initializes Teams notification if configured
+func (s *MonitoringServer) initializeTeamsNotifier(logger *zap.Logger) {
+	// Check for Teams configuration from environment variables
+	webhookURL := os.Getenv("TEAMS_WEBHOOK_URL")
+	if webhookURL == "" {
+		logger.Info("Teams webhook URL not configured, skipping Teams notifications")
+		return
+	}
+
+	teamsConfig := &TeamsConfig{
+		WebhookURL: webhookURL,
+		Enabled:    true,
+	}
+
+	teamsNotifier := NewTeamsNotifier(teamsConfig, logger)
+	s.alerts.SetTeamsNotifier(teamsNotifier)
+
+	truncateLength := 50
+	if len(webhookURL) < truncateLength {
+		truncateLength = len(webhookURL)
+	}
+	logger.Info("Teams notifications initialized",
+		zap.String("webhook_url_prefix", webhookURL[:truncateLength]+"..."))
 }
 
 // getEnvOrDefault gets environment variable with default value
