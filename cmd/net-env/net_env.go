@@ -150,7 +150,22 @@ Examples:
   gz net-env network-analysis trends --period 24h
   
   # Bottleneck detection
-  gz net-env network-analysis bottleneck`,
+  gz net-env network-analysis bottleneck
+  
+  # Optimal routing management
+  gz net-env optimal-routing analyze --destination 8.8.8.8
+  
+  # Discover optimal routes
+  gz net-env optimal-routing discover --targets google.com,cloudflare.com
+  
+  # Apply optimal routing
+  gz net-env optimal-routing apply --policy latency-optimized
+  
+  # Enable auto-optimization
+  gz net-env optimal-routing auto-optimize --enable
+  
+  # Configure load balancing
+  gz net-env optimal-routing load-balance --interfaces eth0,wlan0`,
 		SilenceUsage: true,
 	}
 
@@ -173,6 +188,7 @@ Examples:
 	cmd.AddCommand(newVPNFailoverCmd(logger, configDir))
 	cmd.AddCommand(newNetworkMetricsCmd(logger, configDir))
 	cmd.AddCommand(newNetworkAnalysisCmd(logger, configDir))
+	cmd.AddCommand(newOptimalRoutingCmd(logger, configDir))
 
 	return cmd
 }
