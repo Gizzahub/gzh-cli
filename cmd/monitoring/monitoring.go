@@ -33,6 +33,7 @@ func NewMonitoringCmd(ctx context.Context) *cobra.Command {
 	cmd.AddCommand(newInstanceCmd(ctx))
 	cmd.AddCommand(newNotificationCmd(ctx))
 	cmd.AddCommand(newPerformanceCmd(ctx))
+	cmd.AddCommand(newCentralizedLoggingCmd(ctx))
 
 	return cmd
 }
