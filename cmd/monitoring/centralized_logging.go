@@ -22,6 +22,7 @@ type CentralizedLogger struct {
 	processors map[string]LogProcessor
 	shippers   map[string]LogShipper
 	indexer    LogIndexer
+	wsManager  *WebSocketManager
 	metrics    *LoggingMetrics
 	mutex      sync.RWMutex
 
@@ -54,6 +55,9 @@ type CentralizedLoggingConfig struct {
 
 	// Search and indexing
 	Indexing *IndexingConfig `yaml:"indexing" json:"indexing"`
+
+	// Real-time streaming
+	Streaming *StreamingConfig `yaml:"streaming" json:"streaming"`
 
 	// Filtering and sampling
 	Filters *FilterConfig `yaml:"filters" json:"filters"`
@@ -125,6 +129,17 @@ type SearchAPIConfig struct {
 	TimeoutSeconds int    `yaml:"timeout_seconds" json:"timeout_seconds"`
 	AuthEnabled    bool   `yaml:"auth_enabled" json:"auth_enabled"`
 	CorsEnabled    bool   `yaml:"cors_enabled" json:"cors_enabled"`
+}
+
+// StreamingConfig represents real-time log streaming configuration
+type StreamingConfig struct {
+	Enabled           bool          `yaml:"enabled" json:"enabled"`
+	BufferSize        int           `yaml:"buffer_size" json:"buffer_size"`
+	MaxConnections    int           `yaml:"max_connections" json:"max_connections"`
+	HeartbeatInterval time.Duration `yaml:"heartbeat_interval" json:"heartbeat_interval"`
+	StreamLevels      []string      `yaml:"stream_levels" json:"stream_levels"`   // levels to stream
+	StreamSources     []string      `yaml:"stream_sources" json:"stream_sources"` // sources to stream
+	RateLimit         int           `yaml:"rate_limit" json:"rate_limit"`         // messages per second per client
 }
 
 // LogOutput represents a log output destination
@@ -223,6 +238,11 @@ func NewCentralizedLogger(config *CentralizedLoggingConfig, registry *prometheus
 	// Initialize indexer
 	if err := cl.initializeIndexer(); err != nil {
 		return nil, fmt.Errorf("failed to initialize indexer: %w", err)
+	}
+
+	// Initialize WebSocket manager for real-time streaming
+	if err := cl.initializeWebSocketManager(); err != nil {
+		return nil, fmt.Errorf("failed to initialize WebSocket manager: %w", err)
 	}
 
 	// Start background processing
@@ -569,6 +589,26 @@ func (cl *CentralizedLogger) createShipper(name string, config *ShipperConfig) (
 	}
 }
 
+// initializeWebSocketManager initializes the WebSocket manager for real-time streaming
+func (cl *CentralizedLogger) initializeWebSocketManager() error {
+	if cl.config.Streaming == nil || !cl.config.Streaming.Enabled {
+		cl.logger.Info("Real-time log streaming disabled")
+		return nil
+	}
+
+	cl.wsManager = NewWebSocketManager(cl.logger)
+
+	// Start the WebSocket manager
+	cl.wsManager.Start()
+
+	cl.logger.Info("Real-time log streaming initialized",
+		zap.Bool("enabled", cl.config.Streaming.Enabled),
+		zap.Int("buffer_size", cl.config.Streaming.BufferSize),
+		zap.Int("max_connections", cl.config.Streaming.MaxConnections))
+
+	return nil
+}
+
 // startBackgroundProcessing starts background processing routines
 func (cl *CentralizedLogger) startBackgroundProcessing() {
 	// Start buffer flushing routine
@@ -684,6 +724,11 @@ func (cl *CentralizedLogger) Log(entry *LogEntry) error {
 		}
 	}
 
+	// Stream to WebSocket clients in real-time
+	if cl.wsManager != nil && cl.shouldStreamEntry(processedEntry) {
+		cl.wsManager.BroadcastLogEntry(processedEntry)
+	}
+
 	// Record processing duration
 	cl.metrics.ProcessingDuration.WithLabelValues("total", "centralized").Observe(time.Since(start).Seconds())
 
@@ -719,6 +764,48 @@ func (cl *CentralizedLogger) CreateContextualLogger(component string, fields map
 	}
 
 	return logger.With(zapFields...)
+}
+
+// shouldStreamEntry determines if a log entry should be streamed to WebSocket clients
+func (cl *CentralizedLogger) shouldStreamEntry(entry *LogEntry) bool {
+	if cl.config.Streaming == nil {
+		return false
+	}
+
+	// Check if level should be streamed
+	if len(cl.config.Streaming.StreamLevels) > 0 {
+		levelMatch := false
+		for _, level := range cl.config.Streaming.StreamLevels {
+			if level == entry.Level {
+				levelMatch = true
+				break
+			}
+		}
+		if !levelMatch {
+			return false
+		}
+	}
+
+	// Check if source should be streamed
+	if len(cl.config.Streaming.StreamSources) > 0 {
+		sourceMatch := false
+		for _, source := range cl.config.Streaming.StreamSources {
+			if source == entry.Logger {
+				sourceMatch = true
+				break
+			}
+		}
+		if !sourceMatch {
+			return false
+		}
+	}
+
+	return true
+}
+
+// GetWebSocketManager returns the WebSocket manager for external integration
+func (cl *CentralizedLogger) GetWebSocketManager() *WebSocketManager {
+	return cl.wsManager
 }
 
 // Shutdown gracefully shuts down the centralized logging system
@@ -766,6 +853,11 @@ func (cl *CentralizedLogger) Shutdown(ctx context.Context) error {
 		}
 	}
 
+	// Stop WebSocket manager
+	if cl.wsManager != nil {
+		cl.wsManager.Stop()
+	}
+
 	// Sync logger
 	if err := cl.logger.Sync(); err != nil {
 		// Ignore sync errors on stderr/stdout
@@ -797,6 +889,12 @@ func (cl *CentralizedLogger) GetStats() map[string]interface{} {
 	// Add indexer stats if available
 	if cl.indexer != nil {
 		stats["indexer"] = cl.indexer.GetStats()
+	}
+
+	// Add WebSocket stats if available
+	if cl.wsManager != nil {
+		stats["websocket"] = cl.wsManager.GetClientStats()
+		stats["streaming"] = cl.config.Streaming
 	}
 
 	return stats

@@ -153,9 +153,14 @@ func (s *LoggingAPIServer) ingestLogsBatch(c *gin.Context) {
 }
 
 func (s *LoggingAPIServer) streamLogs(c *gin.Context) {
-	// This would implement WebSocket or Server-Sent Events for real-time log streaming
-	// For now, return placeholder
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "log streaming not yet implemented"})
+	wsManager := s.logger.GetWebSocketManager()
+	if wsManager == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "real-time streaming not enabled"})
+		return
+	}
+
+	// Upgrade to WebSocket connection
+	wsManager.HandleWebSocket(c.Writer, c.Request)
 }
 
 func (s *LoggingAPIServer) getLoggingConfig(c *gin.Context) {

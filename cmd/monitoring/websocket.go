@@ -2,7 +2,9 @@ package monitoring
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +24,11 @@ const (
 	MessageTypeSubscribe    = "subscribe"
 	MessageTypeUnsubscribe  = "unsubscribe"
 	MessageTypeInitialState = "initial_state"
+	// Log streaming message types
+	MessageTypeLogStream    = "log_stream"
+	MessageTypeLogEntry     = "log_entry"
+	MessageTypeLogSubscribe = "log_subscribe"
+	MessageTypeLogFilter    = "log_filter"
 )
 
 // WebSocketMessage represents a message sent through WebSocket
@@ -39,6 +46,11 @@ type ClientFilter struct {
 	TaskIDs    []string `json:"task_ids,omitempty"`   // Specific task IDs to monitor
 	Severity   []string `json:"severity,omitempty"`   // Alert severity levels
 	Components []string `json:"components,omitempty"` // Specific components to monitor
+	// Log streaming filters
+	LogLevels  []string          `json:"log_levels,omitempty"`  // debug, info, warn, error
+	LogSources []string          `json:"log_sources,omitempty"` // specific loggers/services
+	LogFields  map[string]string `json:"log_fields,omitempty"`  // field-based filtering
+	LogQuery   string            `json:"log_query,omitempty"`   // search query for logs
 }
 
 // WebSocketClient represents a connected WebSocket client
@@ -287,6 +299,78 @@ func (c *WebSocketClient) shouldReceiveMessage(msg *WebSocketMessage) bool {
 		}
 	}
 
+	// Check log entry filters
+	if msg.Type == MessageTypeLogEntry {
+		logEntry, ok := msg.Data.(*LogEntry)
+		if !ok {
+			return false
+		}
+
+		// Check log level filter
+		if len(c.filter.LogLevels) > 0 {
+			levelMatch := false
+			for _, level := range c.filter.LogLevels {
+				if level == logEntry.Level {
+					levelMatch = true
+					break
+				}
+			}
+			if !levelMatch {
+				return false
+			}
+		}
+
+		// Check log source (logger) filter
+		if len(c.filter.LogSources) > 0 {
+			sourceMatch := false
+			for _, source := range c.filter.LogSources {
+				if source == logEntry.Logger {
+					sourceMatch = true
+					break
+				}
+			}
+			if !sourceMatch {
+				return false
+			}
+		}
+
+		// Check log fields filter
+		if len(c.filter.LogFields) > 0 {
+			for filterKey, filterValue := range c.filter.LogFields {
+				if logValue, exists := logEntry.Fields[filterKey]; exists {
+					if fmt.Sprintf("%v", logValue) != filterValue {
+						return false
+					}
+				} else {
+					return false
+				}
+			}
+		}
+
+		// Check log query filter (simple contains check)
+		if c.filter.LogQuery != "" {
+			queryMatch := false
+			// Search in message
+			if strings.Contains(strings.ToLower(logEntry.Message), strings.ToLower(c.filter.LogQuery)) {
+				queryMatch = true
+			}
+			// Search in logger
+			if strings.Contains(strings.ToLower(logEntry.Logger), strings.ToLower(c.filter.LogQuery)) {
+				queryMatch = true
+			}
+			// Search in field values
+			for _, value := range logEntry.Fields {
+				if valueStr := fmt.Sprintf("%v", value); strings.Contains(strings.ToLower(valueStr), strings.ToLower(c.filter.LogQuery)) {
+					queryMatch = true
+					break
+				}
+			}
+			if !queryMatch {
+				return false
+			}
+		}
+	}
+
 	return true
 }
 
@@ -401,6 +485,41 @@ func (c *WebSocketClient) handleSubscribe(message map[string]interface{}) {
 					filter.Severity = append(filter.Severity, str)
 				}
 			}
+		}
+
+		// Parse log levels
+		if logLevels, ok := filterData["log_levels"].([]interface{}); ok {
+			filter.LogLevels = make([]string, 0, len(logLevels))
+			for _, l := range logLevels {
+				if str, ok := l.(string); ok {
+					filter.LogLevels = append(filter.LogLevels, str)
+				}
+			}
+		}
+
+		// Parse log sources
+		if logSources, ok := filterData["log_sources"].([]interface{}); ok {
+			filter.LogSources = make([]string, 0, len(logSources))
+			for _, s := range logSources {
+				if str, ok := s.(string); ok {
+					filter.LogSources = append(filter.LogSources, str)
+				}
+			}
+		}
+
+		// Parse log fields
+		if logFields, ok := filterData["log_fields"].(map[string]interface{}); ok {
+			filter.LogFields = make(map[string]string)
+			for k, v := range logFields {
+				if str, ok := v.(string); ok {
+					filter.LogFields[k] = str
+				}
+			}
+		}
+
+		// Parse log query
+		if logQuery, ok := filterData["log_query"].(string); ok {
+			filter.LogQuery = logQuery
 		}
 
 		c.filter = filter
@@ -520,6 +639,35 @@ func (m *WebSocketManager) BroadcastTaskUpdate(taskUpdate interface{}) {
 // BroadcastAlert broadcasts alert
 func (m *WebSocketManager) BroadcastAlert(alert interface{}) {
 	m.hub.BroadcastMessage(MessageTypeAlert, alert)
+}
+
+// BroadcastLogEntry broadcasts a log entry to subscribed clients
+func (m *WebSocketManager) BroadcastLogEntry(logEntry *LogEntry) {
+	// Create metadata for the log entry
+	metadata := map[string]interface{}{
+		"source": "centralized_logging",
+		"type":   "log_entry",
+	}
+
+	message := &WebSocketMessage{
+		ID:        uuid.New().String(),
+		Type:      MessageTypeLogEntry,
+		Timestamp: time.Now(),
+		Data:      logEntry,
+		Metadata:  metadata,
+	}
+
+	select {
+	case m.hub.broadcast <- message:
+	case <-time.After(time.Millisecond * 100):
+		// Don't block log processing if WebSocket is slow
+		m.logger.Debug("WebSocket broadcast timeout for log entry")
+	}
+}
+
+// BroadcastLogStream broadcasts log stream start/stop events
+func (m *WebSocketManager) BroadcastLogStream(streamEvent interface{}) {
+	m.hub.BroadcastMessage(MessageTypeLogStream, streamEvent)
 }
 
 // GetConnectedClients returns the number of connected clients
