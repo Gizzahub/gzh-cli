@@ -331,16 +331,18 @@ type ServerConfig struct {
 
 // MonitoringServer represents the monitoring server
 type MonitoringServer struct {
-	config          *ServerConfig
-	router          *gin.Engine
-	httpServer      *http.Server
-	metrics         *MetricsCollector
-	alerts          *AlertManager
-	startTime       time.Time
-	wsManager       *WebSocketManager
-	authManager     *AuthManager
-	instanceManager *InstanceManager
-	logger          *zap.Logger
+	config             *ServerConfig
+	router             *gin.Engine
+	httpServer         *http.Server
+	metrics            *MetricsCollector
+	customMetrics      *CustomMetricsManager
+	alerts             *AlertManager
+	startTime          time.Time
+	wsManager          *WebSocketManager
+	authManager        *AuthManager
+	instanceManager    *InstanceManager
+	prometheusExporter *PrometheusExporter
+	logger             *zap.Logger
 }
 
 // NewMonitoringServer creates a new monitoring server
@@ -364,6 +366,21 @@ func NewMonitoringServer(config *ServerConfig) *MonitoringServer {
 	server.wsManager = NewWebSocketManager(logger)
 	server.authManager = NewAuthManager(logger)
 	server.instanceManager = NewInstanceManager(logger)
+
+	// Initialize Prometheus exporter first to get the registry
+	prometheusConfig := &PrometheusConfig{
+		Enabled:       true,
+		ListenAddress: "localhost:9090",
+		MetricsPath:   "/metrics",
+		Namespace:     "gzh_manager",
+		Subsystem:     "monitoring",
+	}
+	server.prometheusExporter = NewPrometheusExporter(logger, prometheusConfig, server.metrics)
+
+	// Initialize custom metrics manager with the Prometheus registry
+	if server.prometheusExporter != nil {
+		server.customMetrics = NewCustomMetricsManager(logger, server.prometheusExporter.GetMetrics())
+	}
 
 	// Set metrics collector for alerts
 	server.alerts.SetMetrics(server.metrics)
@@ -457,6 +474,20 @@ func (s *MonitoringServer) setupRoutes() {
 			instances.POST("/discover", s.authManager.RequirePermission("write:system"), s.discoverInstance)
 			instances.DELETE("/:id", s.authManager.RequirePermission("write:system"), s.removeInstance)
 			instances.GET("/cluster/status", s.getClusterStatus)
+		}
+
+		// Custom metrics management endpoints
+		customMetrics := api.Group("/custom-metrics")
+		customMetrics.Use(s.authManager.RequirePermission("read:system"))
+		{
+			customMetrics.GET("", s.getCustomMetrics)
+			customMetrics.GET("/summary", s.getCustomMetricsSummary)
+			customMetrics.POST("", s.authManager.RequirePermission("write:system"), s.createCustomMetric)
+			customMetrics.DELETE("/:name", s.authManager.RequirePermission("write:system"), s.deleteCustomMetric)
+			customMetrics.GET("/business", s.getBusinessMetrics)
+			customMetrics.GET("/performance", s.getPerformanceMetrics)
+			customMetrics.GET("/usage", s.getUsageMetrics)
+			customMetrics.POST("/record", s.authManager.RequirePermission("write:system"), s.recordCustomMetric)
 		}
 	}
 
@@ -1253,6 +1284,463 @@ func (s *MonitoringServer) removeInstance(c *gin.Context) {
 func (s *MonitoringServer) getClusterStatus(c *gin.Context) {
 	status := s.instanceManager.GetClusterStatus()
 	c.JSON(http.StatusOK, status)
+}
+
+// Custom metrics handlers
+
+func (s *MonitoringServer) getCustomMetrics(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	metrics := s.customMetrics.ListCustomMetrics()
+	c.JSON(http.StatusOK, gin.H{
+		"custom_metrics": metrics,
+		"count":          len(metrics),
+	})
+}
+
+func (s *MonitoringServer) getCustomMetricsSummary(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	summary := s.customMetrics.GetMetricsSummary()
+	c.JSON(http.StatusOK, summary)
+}
+
+func (s *MonitoringServer) createCustomMetric(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	var req CustomMetricDefinition
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
+		return
+	}
+
+	// Validate required fields
+	if req.Name == "" || req.Type == "" || req.Help == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Name, type, and help are required"})
+		return
+	}
+
+	var err error
+	switch req.Type {
+	case "counter":
+		err = s.customMetrics.CreateCustomCounter(req.Name, req.Help, req.Labels, req.ConstLabels)
+	case "gauge":
+		err = s.customMetrics.CreateCustomGauge(req.Name, req.Help, req.Labels, req.ConstLabels)
+	case "histogram":
+		err = s.customMetrics.CreateCustomHistogram(req.Name, req.Help, req.Labels, req.Buckets, req.ConstLabels)
+	case "summary":
+		err = s.customMetrics.CreateCustomSummary(req.Name, req.Help, req.Labels, req.Objectives, req.ConstLabels)
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid metric type. Must be one of: counter, gauge, histogram, summary"})
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Custom metric created successfully",
+		"name":    req.Name,
+		"type":    req.Type,
+	})
+}
+
+func (s *MonitoringServer) deleteCustomMetric(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	name := c.Param("name")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Metric name is required"})
+		return
+	}
+
+	err := s.customMetrics.DeleteCustomMetric(name)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Custom metric deleted successfully",
+		"name":    name,
+	})
+}
+
+func (s *MonitoringServer) getBusinessMetrics(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	// Return business metrics metadata and current values
+	businessInfo := map[string]interface{}{
+		"repo_operations": map[string]interface{}{
+			"clone_total":     "Total repository clone operations",
+			"clone_duration":  "Repository clone duration metrics",
+			"sync_operations": "Repository sync operations",
+			"repo_size":       "Repository size tracking",
+		},
+		"organization_management": map[string]interface{}{
+			"organizations_total": "Total number of organizations",
+			"projects_active":     "Active projects count",
+			"users_active":        "Active users count",
+		},
+		"task_execution": map[string]interface{}{
+			"tasks_completed":   "Completed tasks by type and outcome",
+			"task_failure_rate": "Task failure rate percentages",
+			"task_throughput":   "Task processing throughput",
+		},
+		"integrations": map[string]interface{}{
+			"integration_status":   "Integration service health status",
+			"api_latency":          "Integration API call latency",
+			"rate_limit_remaining": "API rate limit status",
+		},
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"business_metrics": businessInfo,
+		"description":      "Business-specific metrics for gzh-manager operations",
+	})
+}
+
+func (s *MonitoringServer) getPerformanceMetrics(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	performanceInfo := map[string]interface{}{
+		"system_resources": map[string]interface{}{
+			"cpu_utilization":    "CPU utilization by core and type",
+			"memory_utilization": "Memory utilization by type",
+			"disk_io":            "Disk I/O operations and bytes",
+			"network_io":         "Network I/O bytes by interface",
+		},
+		"application": map[string]interface{}{
+			"goroutine_count": "Number of active goroutines",
+			"gc_duration":     "Garbage collection duration",
+			"heap_alloc":      "Heap allocated bytes",
+		},
+		"database": map[string]interface{}{
+			"connections_active": "Active database connections",
+			"query_duration":     "Database query performance",
+			"connection_pool":    "Connection pool metrics",
+		},
+		"cache": map[string]interface{}{
+			"hit_ratio":  "Cache hit ratios",
+			"operations": "Cache operations by type",
+			"evictions":  "Cache evictions by reason",
+		},
+		"queue": map[string]interface{}{
+			"depth":               "Queue depth by priority",
+			"processing_duration": "Queue processing time",
+			"throughput":          "Queue throughput metrics",
+		},
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"performance_metrics": performanceInfo,
+		"description":         "Performance indicators for system and application monitoring",
+	})
+}
+
+func (s *MonitoringServer) getUsageMetrics(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	usageInfo := map[string]interface{}{
+		"user_activity": map[string]interface{}{
+			"active_users":     "Active user counts by time window",
+			"session_duration": "User session duration tracking",
+		},
+		"feature_usage": map[string]interface{}{
+			"feature_usage_total": "Feature utilization counters",
+			"feature_latency":     "Feature execution latency",
+			"feature_error_rate":  "Feature error rates",
+		},
+		"resource_consumption": map[string]interface{}{
+			"bandwidth_usage": "Bandwidth consumption by operation",
+			"storage_usage":   "Storage utilization by type",
+			"compute_hours":   "Compute resource consumption",
+		},
+		"api_usage": map[string]interface{}{
+			"api_calls":      "API call counters and latency",
+			"quota_usage":    "API quota utilization",
+			"retry_attempts": "API retry statistics",
+			"geographical":   "Geographical request distribution",
+		},
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"usage_metrics": usageInfo,
+		"description":   "Usage statistics and consumption metrics",
+	})
+}
+
+type MetricRecordRequest struct {
+	MetricType string                 `json:"metric_type"` // business, performance, usage, custom
+	Action     string                 `json:"action"`      // record, set, inc, add, observe
+	Name       string                 `json:"name"`
+	Labels     map[string]string      `json:"labels"`
+	Value      float64                `json:"value"`
+	Duration   string                 `json:"duration,omitempty"` // for duration-based metrics
+	Metadata   map[string]interface{} `json:"metadata,omitempty"`
+}
+
+func (s *MonitoringServer) recordCustomMetric(c *gin.Context) {
+	if s.customMetrics == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Custom metrics not initialized"})
+		return
+	}
+
+	var req MetricRecordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
+		return
+	}
+
+	// Validate required fields
+	if req.MetricType == "" || req.Action == "" || req.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "metric_type, action, and name are required"})
+		return
+	}
+
+	var err error
+	var duration time.Duration
+
+	// Parse duration if provided
+	if req.Duration != "" {
+		duration, err = time.ParseDuration(req.Duration)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid duration format: " + err.Error()})
+			return
+		}
+	}
+
+	// Handle different metric types and actions
+	switch req.MetricType {
+	case "business":
+		err = s.handleBusinessMetricRecord(req, duration)
+	case "performance":
+		err = s.handlePerformanceMetricRecord(req, duration)
+	case "usage":
+		err = s.handleUsageMetricRecord(req, duration)
+	case "custom":
+		err = s.handleCustomMetricRecord(req, duration)
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid metric_type. Must be one of: business, performance, usage, custom"})
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Metric recorded successfully",
+		"metric_type": req.MetricType,
+		"action":      req.Action,
+		"name":        req.Name,
+	})
+}
+
+func (s *MonitoringServer) handleBusinessMetricRecord(req MetricRecordRequest, duration time.Duration) error {
+	switch req.Name {
+	case "repo_clone":
+		if req.Action == "record" && req.Labels != nil {
+			org := req.Labels["organization"]
+			platform := req.Labels["platform"]
+			status := req.Labels["status"]
+			sizeCategory := req.Labels["size_category"]
+			s.customMetrics.RecordRepoClone(org, platform, status, duration, sizeCategory)
+		}
+	case "repo_sync":
+		if req.Action == "record" && req.Labels != nil {
+			operation := req.Labels["operation"]
+			status := req.Labels["status"]
+			org := req.Labels["organization"]
+			s.customMetrics.RecordRepoSync(operation, status, org)
+		}
+	case "repo_size":
+		if req.Action == "set" && req.Labels != nil {
+			repo := req.Labels["repository"]
+			org := req.Labels["organization"]
+			s.customMetrics.SetRepoSize(repo, org, req.Value)
+		}
+	case "organizations_total":
+		if req.Action == "set" {
+			s.customMetrics.SetOrganizationsTotal(req.Value)
+		}
+	case "projects_active_total":
+		if req.Action == "set" {
+			s.customMetrics.SetProjectsActiveTotal(req.Value)
+		}
+	case "users_active_total":
+		if req.Action == "set" {
+			s.customMetrics.SetUsersActiveTotal(req.Value)
+		}
+	case "task_completion":
+		if req.Action == "record" && req.Labels != nil {
+			taskType := req.Labels["task_type"]
+			org := req.Labels["organization"]
+			outcome := req.Labels["outcome"]
+			s.customMetrics.RecordTaskCompletion(taskType, org, outcome)
+		}
+	default:
+		return fmt.Errorf("unknown business metric: %s", req.Name)
+	}
+	return nil
+}
+
+func (s *MonitoringServer) handlePerformanceMetricRecord(req MetricRecordRequest, duration time.Duration) error {
+	switch req.Name {
+	case "cpu_utilization":
+		if req.Action == "set" && req.Labels != nil {
+			core := req.Labels["core"]
+			cpuType := req.Labels["type"]
+			s.customMetrics.SetCPUUtilization(core, cpuType, req.Value)
+		}
+	case "memory_utilization":
+		if req.Action == "set" && req.Labels != nil {
+			memType := req.Labels["type"]
+			s.customMetrics.SetMemoryUtilization(memType, req.Value)
+		}
+	case "goroutine_count":
+		if req.Action == "set" {
+			s.customMetrics.SetGoroutineCount(req.Value)
+		}
+	case "gc_duration":
+		if req.Action == "observe" && req.Labels != nil {
+			gcType := req.Labels["gc_type"]
+			s.customMetrics.RecordGCDuration(gcType, duration)
+		}
+	case "heap_alloc":
+		if req.Action == "set" {
+			s.customMetrics.SetHeapAlloc(req.Value)
+		}
+	default:
+		return fmt.Errorf("unknown performance metric: %s", req.Name)
+	}
+	return nil
+}
+
+func (s *MonitoringServer) handleUsageMetricRecord(req MetricRecordRequest, duration time.Duration) error {
+	switch req.Name {
+	case "active_users":
+		if req.Action == "set" && req.Labels != nil && req.Metadata != nil {
+			org := req.Labels["organization"]
+			role := req.Labels["role"]
+			users5min, _ := req.Metadata["users_5min"].(float64)
+			users1hour, _ := req.Metadata["users_1hour"].(float64)
+			users24hour, _ := req.Metadata["users_24hour"].(float64)
+			s.customMetrics.SetActiveUsers(org, role, users5min, users1hour, users24hour)
+		}
+	case "user_session":
+		if req.Action == "record" && req.Labels != nil {
+			org := req.Labels["organization"]
+			role := req.Labels["role"]
+			sessionType := req.Labels["session_type"]
+			s.customMetrics.RecordUserSession(org, role, sessionType, duration)
+		}
+	case "feature_usage":
+		if req.Action == "record" && req.Labels != nil {
+			feature := req.Labels["feature"]
+			org := req.Labels["organization"]
+			userRole := req.Labels["user_role"]
+			complexity := req.Labels["complexity"]
+			s.customMetrics.RecordFeatureUsage(feature, org, userRole, duration, complexity)
+		}
+	case "api_call":
+		if req.Action == "record" && req.Labels != nil {
+			apiVersion := req.Labels["api_version"]
+			endpoint := req.Labels["endpoint"]
+			method := req.Labels["method"]
+			status := req.Labels["status"]
+			s.customMetrics.RecordAPICall(apiVersion, endpoint, method, status, duration)
+		}
+	default:
+		return fmt.Errorf("unknown usage metric: %s", req.Name)
+	}
+	return nil
+}
+
+func (s *MonitoringServer) handleCustomMetricRecord(req MetricRecordRequest, duration time.Duration) error {
+	switch req.Action {
+	case "inc":
+		counter, err := s.customMetrics.GetCustomCounter(req.Name)
+		if err != nil {
+			return err
+		}
+		labelValues := make([]string, 0, len(req.Labels))
+		for _, value := range req.Labels {
+			labelValues = append(labelValues, value)
+		}
+		counter.WithLabelValues(labelValues...).Inc()
+	case "add":
+		counter, err := s.customMetrics.GetCustomCounter(req.Name)
+		if err != nil {
+			return err
+		}
+		labelValues := make([]string, 0, len(req.Labels))
+		for _, value := range req.Labels {
+			labelValues = append(labelValues, value)
+		}
+		counter.WithLabelValues(labelValues...).Add(req.Value)
+	case "set":
+		gauge, err := s.customMetrics.GetCustomGauge(req.Name)
+		if err != nil {
+			return err
+		}
+		labelValues := make([]string, 0, len(req.Labels))
+		for _, value := range req.Labels {
+			labelValues = append(labelValues, value)
+		}
+		gauge.WithLabelValues(labelValues...).Set(req.Value)
+	case "observe":
+		if duration > 0 {
+			histogram, err := s.customMetrics.GetCustomHistogram(req.Name)
+			if err == nil {
+				labelValues := make([]string, 0, len(req.Labels))
+				for _, value := range req.Labels {
+					labelValues = append(labelValues, value)
+				}
+				histogram.WithLabelValues(labelValues...).Observe(duration.Seconds())
+				return nil
+			}
+			// Try summary if histogram fails
+			summary, err := s.customMetrics.GetCustomSummary(req.Name)
+			if err != nil {
+				return err
+			}
+			labelValues := make([]string, 0, len(req.Labels))
+			for _, value := range req.Labels {
+				labelValues = append(labelValues, value)
+			}
+			summary.WithLabelValues(labelValues...).Observe(duration.Seconds())
+		} else {
+			return fmt.Errorf("duration required for observe action")
+		}
+	default:
+		return fmt.Errorf("unknown action: %s", req.Action)
+	}
+	return nil
 }
 
 // initializeSlackNotifier initializes Slack notification if configured
