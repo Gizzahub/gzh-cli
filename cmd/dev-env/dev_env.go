@@ -15,6 +15,7 @@ environment configurations including:
 - AWS configurations and credentials
 - AWS profile management with SSO support
 - Google Cloud (GCloud) configurations and credentials
+- GCP project management and gcloud configurations
 - SSH configurations
 - And more...
 
@@ -45,6 +46,11 @@ Examples:
   # Save current gcloud credentials
   gz dev-env gcloud-credentials save --name production
   
+  # Manage GCP projects and configurations
+  gz dev-env gcp-project list
+  gz dev-env gcp-project switch my-project-id
+  gz dev-env gcp-project config create --name prod --project my-prod-project
+  
   # Save current SSH config
   gz dev-env ssh save --name production
   
@@ -63,6 +69,7 @@ Examples:
 	cmd.AddCommand(newAWSProfileCmd())
 	cmd.AddCommand(newGcloudCmd())
 	cmd.AddCommand(newGcloudCredentialsCmd())
+	cmd.AddCommand(newGCPProjectCmd())
 	cmd.AddCommand(newSshCmd())
 
 	return cmd
