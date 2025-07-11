@@ -66,6 +66,12 @@ func (s *LoggingAPIServer) setupRoutes() {
 		// Shipper management
 		api.GET("/shippers", s.listShippers)
 		api.POST("/shippers/:name/test", s.testShipper)
+
+		// Search endpoints
+		api.POST("/search", s.searchLogs)
+		api.GET("/fields", s.getFields)
+		api.GET("/indices", s.getIndices)
+		api.GET("/indices/:name/stats", s.getIndexStats)
 	}
 
 	// Health endpoint
@@ -266,6 +272,92 @@ func (s *LoggingAPIServer) testShipper(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "test entries shipped successfully"})
+}
+
+// Search endpoint handlers
+
+func (s *LoggingAPIServer) searchLogs(c *gin.Context) {
+	if s.logger.indexer == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "search indexing not enabled"})
+		return
+	}
+
+	var query SearchQuery
+	if err := c.ShouldBindJSON(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Apply default limits
+	if query.Limit == 0 {
+		query.Limit = 50
+	}
+	if query.Limit > 1000 {
+		query.Limit = 1000 // Maximum safety limit
+	}
+
+	result, err := s.logger.indexer.Search(&query)
+	if err != nil {
+		s.zapLogger.Error("Search error", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "search failed"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (s *LoggingAPIServer) getFields(c *gin.Context) {
+	if s.logger.indexer == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "search indexing not enabled"})
+		return
+	}
+
+	// Get available fields from the indexer
+	stats := s.logger.indexer.GetStats()
+	fields := []string{
+		"timestamp", "level", "logger", "message", "trace_id", "span_id",
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"fields": fields,
+		"stats":  stats,
+	})
+}
+
+func (s *LoggingAPIServer) getIndices(c *gin.Context) {
+	if s.logger.indexer == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "search indexing not enabled"})
+		return
+	}
+
+	stats := s.logger.indexer.GetStats()
+	indices := []map[string]interface{}{
+		{
+			"name":   stats.Name,
+			"health": stats.Health,
+			"docs":   stats.DocCount,
+			"size":   stats.Size,
+		},
+	}
+
+	c.JSON(http.StatusOK, gin.H{"indices": indices})
+}
+
+func (s *LoggingAPIServer) getIndexStats(c *gin.Context) {
+	if s.logger.indexer == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "search indexing not enabled"})
+		return
+	}
+
+	indexName := c.Param("name")
+	stats := s.logger.indexer.GetStats()
+
+	if stats.Name != indexName {
+		c.JSON(http.StatusNotFound, gin.H{"error": "index not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
 func (s *LoggingAPIServer) getHealth(c *gin.Context) {

@@ -21,6 +21,7 @@ type CentralizedLogger struct {
 	outputs    map[string]LogOutput
 	processors map[string]LogProcessor
 	shippers   map[string]LogShipper
+	indexer    LogIndexer
 	metrics    *LoggingMetrics
 	mutex      sync.RWMutex
 
@@ -50,6 +51,9 @@ type CentralizedLoggingConfig struct {
 
 	// Log shipping configurations
 	Shippers map[string]*ShipperConfig `yaml:"shippers" json:"shippers"`
+
+	// Search and indexing
+	Indexing *IndexingConfig `yaml:"indexing" json:"indexing"`
 
 	// Filtering and sampling
 	Filters *FilterConfig `yaml:"filters" json:"filters"`
@@ -99,6 +103,28 @@ type FilterConfig struct {
 	ExcludeKeys []string `yaml:"exclude_keys" json:"exclude_keys"`
 	IncludeKeys []string `yaml:"include_keys" json:"include_keys"`
 	SampleRate  float64  `yaml:"sample_rate" json:"sample_rate"`
+}
+
+// IndexingConfig represents search indexing configuration
+type IndexingConfig struct {
+	Enabled   bool                   `yaml:"enabled" json:"enabled"`
+	Type      string                 `yaml:"type" json:"type"` // "memory", "elasticsearch", "opensearch"
+	IndexName string                 `yaml:"index_name" json:"index_name"`
+	Settings  map[string]interface{} `yaml:"settings" json:"settings"`
+	Mappings  *IndexMappings         `yaml:"mappings" json:"mappings"`
+	Retention *RetentionPolicy       `yaml:"retention" json:"retention"`
+	SearchAPI *SearchAPIConfig       `yaml:"search_api" json:"search_api"`
+}
+
+// SearchAPIConfig represents search API configuration
+type SearchAPIConfig struct {
+	Enabled        bool   `yaml:"enabled" json:"enabled"`
+	Address        string `yaml:"address" json:"address"`
+	Port           int    `yaml:"port" json:"port"`
+	MaxResultLimit int    `yaml:"max_result_limit" json:"max_result_limit"`
+	TimeoutSeconds int    `yaml:"timeout_seconds" json:"timeout_seconds"`
+	AuthEnabled    bool   `yaml:"auth_enabled" json:"auth_enabled"`
+	CorsEnabled    bool   `yaml:"cors_enabled" json:"cors_enabled"`
 }
 
 // LogOutput represents a log output destination
@@ -192,6 +218,11 @@ func NewCentralizedLogger(config *CentralizedLoggingConfig, registry *prometheus
 	// Initialize shippers
 	if err := cl.initializeShippers(); err != nil {
 		return nil, fmt.Errorf("failed to initialize shippers: %w", err)
+	}
+
+	// Initialize indexer
+	if err := cl.initializeIndexer(); err != nil {
+		return nil, fmt.Errorf("failed to initialize indexer: %w", err)
 	}
 
 	// Start background processing
@@ -440,6 +471,8 @@ func (cl *CentralizedLogger) createProcessor(name string, config *ProcessorConfi
 		return NewEnrichProcessor(name, config)
 	case "sample":
 		return NewSampleProcessor(name, config)
+	case "parse":
+		return NewParseProcessor(name, config)
 	default:
 		return nil, fmt.Errorf("unsupported processor type: %s", config.Type)
 	}
@@ -466,6 +499,56 @@ func (cl *CentralizedLogger) initializeShippers() error {
 			cl.logger.Error("Failed to start shipper", zap.String("shipper", name), zap.Error(err))
 		}
 	}
+
+	return nil
+}
+
+// initializeIndexer initializes the log indexer
+func (cl *CentralizedLogger) initializeIndexer() error {
+	if cl.config.Indexing == nil || !cl.config.Indexing.Enabled {
+		cl.logger.Info("Log indexing disabled")
+		return nil
+	}
+
+	indexConfig := &IndexConfig{
+		Name: cl.config.Indexing.IndexName,
+		Settings: &IndexSettings{
+			Shards:          1,
+			Replicas:        0,
+			RefreshInterval: "1s",
+			MaxResultWindow: 10000,
+		},
+		Mappings:        cl.config.Indexing.Mappings,
+		RetentionPolicy: cl.config.Indexing.Retention,
+	}
+
+	// Override with custom settings if provided
+	if settings := cl.config.Indexing.Settings; settings != nil {
+		if shards, ok := settings["shards"].(int); ok {
+			indexConfig.Settings.Shards = shards
+		}
+		if replicas, ok := settings["replicas"].(int); ok {
+			indexConfig.Settings.Replicas = replicas
+		}
+		if refresh, ok := settings["refresh_interval"].(string); ok {
+			indexConfig.Settings.RefreshInterval = refresh
+		}
+	}
+
+	switch cl.config.Indexing.Type {
+	case "memory", "":
+		cl.indexer = NewMemoryIndexer(cl.config.Indexing.IndexName, indexConfig)
+	default:
+		return fmt.Errorf("unsupported indexer type: %s", cl.config.Indexing.Type)
+	}
+
+	if err := cl.indexer.CreateIndex(cl.config.Indexing.IndexName, indexConfig); err != nil {
+		return fmt.Errorf("failed to create search index: %w", err)
+	}
+
+	cl.logger.Info("Search indexer initialized",
+		zap.String("type", cl.config.Indexing.Type),
+		zap.String("index", cl.config.Indexing.IndexName))
 
 	return nil
 }
@@ -593,6 +676,14 @@ func (cl *CentralizedLogger) Log(entry *LogEntry) error {
 		}
 	}
 
+	// Index the entry for search
+	if cl.indexer != nil {
+		if err := cl.indexer.Index(processedEntry); err != nil {
+			cl.metrics.ErrorsTotal.WithLabelValues("indexer", "index").Inc()
+			cl.logger.Error("Indexing error", zap.Error(err))
+		}
+	}
+
 	// Record processing duration
 	cl.metrics.ProcessingDuration.WithLabelValues("total", "centralized").Observe(time.Since(start).Seconds())
 
@@ -668,6 +759,13 @@ func (cl *CentralizedLogger) Shutdown(ctx context.Context) error {
 		}
 	}
 
+	// Close indexer
+	if cl.indexer != nil {
+		if err := cl.indexer.Close(); err != nil {
+			cl.logger.Error("Failed to close indexer", zap.Error(err))
+		}
+	}
+
 	// Sync logger
 	if err := cl.logger.Sync(); err != nil {
 		// Ignore sync errors on stderr/stdout
@@ -685,7 +783,7 @@ func (cl *CentralizedLogger) GetStats() map[string]interface{} {
 	cl.mutex.RLock()
 	defer cl.mutex.RUnlock()
 
-	return map[string]interface{}{
+	stats := map[string]interface{}{
 		"outputs":        len(cl.outputs),
 		"processors":     len(cl.processors),
 		"shippers":       len(cl.shippers),
@@ -695,4 +793,11 @@ func (cl *CentralizedLogger) GetStats() map[string]interface{} {
 		"flush_interval": cl.config.FlushInterval.String(),
 		"async_mode":     cl.config.AsyncMode,
 	}
+
+	// Add indexer stats if available
+	if cl.indexer != nil {
+		stats["indexer"] = cl.indexer.GetStats()
+	}
+
+	return stats
 }
