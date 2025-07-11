@@ -633,11 +633,140 @@ func (dm *DockerNetworkManager) createNetwork(name string, network *DockerNetwor
 
 // applyContainerNetworkConfig applies network configuration to a container
 func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string, config *ContainerNetwork) error {
-	// This is a placeholder for container network configuration
-	// In a real implementation, this would modify running containers or prepare configurations
-	dm.logger.Info("Applied container network configuration",
+	// Check if container is already running
+	inspectCmd := fmt.Sprintf("docker inspect %s", containerName)
+	result, err := dm.executor.ExecuteWithTimeout(context.Background(), inspectCmd, 5*time.Second)
+
+	containerExists := err == nil && result.ExitCode == 0
+
+	if containerExists {
+		// Container is running, we need to handle network connections
+		dm.logger.Info("Container already exists, updating network connections",
+			zap.String("container", containerName))
+
+		// Connect to specified networks
+		for _, network := range config.Networks {
+			connectCmd := fmt.Sprintf("docker network connect %s %s", network, containerName)
+			if config.NetworkAlias != nil && len(config.NetworkAlias) > 0 {
+				// Add network aliases
+				for _, alias := range config.NetworkAlias {
+					connectCmd += fmt.Sprintf(" --alias %s", alias)
+				}
+			}
+
+			// Check if already connected
+			checkCmd := fmt.Sprintf("docker inspect %s --format '{{json .NetworkSettings.Networks}}'", containerName)
+			checkResult, _ := dm.executor.ExecuteWithTimeout(context.Background(), checkCmd, 5*time.Second)
+
+			if !strings.Contains(checkResult.Output, fmt.Sprintf("\"%s\"", network)) {
+				// Not connected, connect now
+				connectResult, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
+				if err != nil || connectResult.ExitCode != 0 {
+					dm.logger.Warn("Failed to connect container to network",
+						zap.String("container", containerName),
+						zap.String("network", network),
+						zap.Error(err))
+				} else {
+					dm.logger.Info("Connected container to network",
+						zap.String("container", containerName),
+						zap.String("network", network))
+				}
+			}
+		}
+
+		// Update DNS settings if specified
+		if len(config.DNSServers) > 0 || len(config.DNSSearch) > 0 {
+			dm.logger.Warn("Cannot update DNS settings on running container",
+				zap.String("container", containerName),
+				zap.String("note", "Container must be recreated for DNS changes"))
+		}
+
+		return nil
+	}
+
+	// Container doesn't exist, create it with the specified configuration
+	dm.logger.Info("Creating new container with network configuration",
 		zap.String("container", containerName),
 		zap.String("image", config.Image))
+
+	// Build docker run command
+	runCmd := fmt.Sprintf("docker run -d --name %s", containerName)
+
+	// Add network mode if specified
+	if config.NetworkMode != "" {
+		runCmd += fmt.Sprintf(" --network-mode %s", config.NetworkMode)
+	} else if len(config.Networks) > 0 {
+		// Connect to the first network on creation
+		runCmd += fmt.Sprintf(" --network %s", config.Networks[0])
+	}
+
+	// Add network aliases
+	for _, alias := range config.NetworkAlias {
+		runCmd += fmt.Sprintf(" --network-alias %s", alias)
+	}
+
+	// Add port mappings
+	for _, port := range config.Ports {
+		runCmd += fmt.Sprintf(" -p %s", port)
+	}
+
+	// Add environment variables
+	for key, value := range config.Environment {
+		runCmd += fmt.Sprintf(" -e %s=%s", key, value)
+	}
+
+	// Add DNS servers
+	for _, dns := range config.DNSServers {
+		runCmd += fmt.Sprintf(" --dns %s", dns)
+	}
+
+	// Add DNS search domains
+	for _, search := range config.DNSSearch {
+		runCmd += fmt.Sprintf(" --dns-search %s", search)
+	}
+
+	// Add extra hosts
+	for _, host := range config.ExtraHosts {
+		runCmd += fmt.Sprintf(" --add-host %s", host)
+	}
+
+	// Add hostname if specified
+	if config.Hostname != "" {
+		runCmd += fmt.Sprintf(" --hostname %s", config.Hostname)
+	}
+
+	// Add domain name if specified
+	if config.Domainname != "" {
+		runCmd += fmt.Sprintf(" --domainname %s", config.Domainname)
+	}
+
+	// Add the image
+	runCmd += fmt.Sprintf(" %s", config.Image)
+
+	// Execute the run command
+	runResult, err := dm.executor.ExecuteWithTimeout(context.Background(), runCmd, 30*time.Second)
+	if err != nil || runResult.ExitCode != 0 {
+		return fmt.Errorf("failed to create container: %w", err)
+	}
+
+	// Connect to additional networks (if more than one specified)
+	if len(config.Networks) > 1 {
+		for i := 1; i < len(config.Networks); i++ {
+			connectCmd := fmt.Sprintf("docker network connect %s %s", config.Networks[i], containerName)
+			connectResult, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
+			if err != nil || connectResult.ExitCode != 0 {
+				dm.logger.Warn("Failed to connect container to additional network",
+					zap.String("container", containerName),
+					zap.String("network", config.Networks[i]),
+					zap.Error(err))
+			}
+		}
+	}
+
+	dm.logger.Info("Successfully created container with network configuration",
+		zap.String("container", containerName),
+		zap.String("image", config.Image))
+
 	return nil
 }
 
@@ -800,4 +929,206 @@ func (dm *DockerNetworkManager) DeleteProfile(name string) error {
 	delete(dm.cache, name)
 	dm.logger.Info("Deleted Docker network profile", zap.String("name", name))
 	return nil
+}
+
+// UpdateContainerNetwork updates the network configuration for a specific container in a profile
+func (dm *DockerNetworkManager) UpdateContainerNetwork(profileName, containerName string, config *ContainerNetwork) error {
+	profile, err := dm.LoadProfile(profileName)
+	if err != nil {
+		return fmt.Errorf("failed to load profile: %w", err)
+	}
+
+	// Update or add the container configuration
+	if profile.Containers == nil {
+		profile.Containers = make(map[string]*ContainerNetwork)
+	}
+	profile.Containers[containerName] = config
+	profile.UpdatedAt = time.Now()
+
+	// Save the updated profile
+	if err := dm.saveProfile(profile); err != nil {
+		return fmt.Errorf("failed to save updated profile: %w", err)
+	}
+
+	dm.logger.Info("Updated container network configuration",
+		zap.String("profile", profileName),
+		zap.String("container", containerName))
+
+	return nil
+}
+
+// RemoveContainerFromProfile removes a container from a profile
+func (dm *DockerNetworkManager) RemoveContainerFromProfile(profileName, containerName string) error {
+	profile, err := dm.LoadProfile(profileName)
+	if err != nil {
+		return fmt.Errorf("failed to load profile: %w", err)
+	}
+
+	if profile.Containers == nil || profile.Containers[containerName] == nil {
+		return fmt.Errorf("container %s not found in profile %s", containerName, profileName)
+	}
+
+	delete(profile.Containers, containerName)
+	profile.UpdatedAt = time.Now()
+
+	// Save the updated profile
+	if err := dm.saveProfile(profile); err != nil {
+		return fmt.Errorf("failed to save updated profile: %w", err)
+	}
+
+	dm.logger.Info("Removed container from profile",
+		zap.String("profile", profileName),
+		zap.String("container", containerName))
+
+	return nil
+}
+
+// ValidateContainerNetwork validates container network configuration
+func (dm *DockerNetworkManager) ValidateContainerNetwork(config *ContainerNetwork) error {
+	if config.Image == "" {
+		return fmt.Errorf("container image cannot be empty")
+	}
+
+	// Validate network mode if specified
+	if config.NetworkMode != "" {
+		validModes := []string{"bridge", "host", "none", "container", "custom"}
+		valid := false
+		for _, mode := range validModes {
+			if config.NetworkMode == mode || strings.HasPrefix(config.NetworkMode, "container:") {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return fmt.Errorf("invalid network mode: %s", config.NetworkMode)
+		}
+	}
+
+	// Validate port mappings
+	for _, port := range config.Ports {
+		// Basic validation - should be in format "host:container" or "container"
+		parts := strings.Split(port, ":")
+		if len(parts) > 3 {
+			return fmt.Errorf("invalid port mapping: %s", port)
+		}
+	}
+
+	// Validate DNS servers
+	for _, dns := range config.DNSServers {
+		// Basic IP validation
+		parts := strings.Split(dns, ".")
+		if len(parts) != 4 {
+			return fmt.Errorf("invalid DNS server IP: %s", dns)
+		}
+	}
+
+	// Validate extra hosts
+	for _, host := range config.ExtraHosts {
+		// Should be in format "hostname:ip"
+		if !strings.Contains(host, ":") {
+			return fmt.Errorf("invalid extra host entry: %s (should be hostname:ip)", host)
+		}
+	}
+
+	return nil
+}
+
+// GetContainerStatus gets the current status of a container
+func (dm *DockerNetworkManager) GetContainerStatus(containerName string) (*ContainerNetworkInfo, error) {
+	result, err := dm.executor.ExecuteWithTimeout(context.Background(),
+		fmt.Sprintf("docker inspect %s", containerName), 10*time.Second)
+	if err != nil || result.ExitCode != 0 {
+		return nil, fmt.Errorf("container not found: %s", containerName)
+	}
+
+	return dm.getDetailedContainerNetworkInfo(containerName)
+}
+
+// DisconnectContainerFromNetwork disconnects a container from a network
+func (dm *DockerNetworkManager) DisconnectContainerFromNetwork(containerName, networkName string) error {
+	disconnectCmd := fmt.Sprintf("docker network disconnect %s %s", networkName, containerName)
+	result, err := dm.executor.ExecuteWithTimeout(context.Background(), disconnectCmd, 10*time.Second)
+
+	if err != nil || result.ExitCode != 0 {
+		return fmt.Errorf("failed to disconnect container from network: %w", err)
+	}
+
+	dm.logger.Info("Disconnected container from network",
+		zap.String("container", containerName),
+		zap.String("network", networkName))
+
+	return nil
+}
+
+// CloneProfile creates a copy of an existing profile with a new name
+func (dm *DockerNetworkManager) CloneProfile(sourceName, targetName string) error {
+	sourceProfile, err := dm.LoadProfile(sourceName)
+	if err != nil {
+		return fmt.Errorf("failed to load source profile: %w", err)
+	}
+
+	// Create a deep copy of the profile
+	targetProfile := &DockerNetworkProfile{
+		Name:        targetName,
+		Description: fmt.Sprintf("Cloned from %s", sourceName),
+		Networks:    make(map[string]*DockerNetwork),
+		Containers:  make(map[string]*ContainerNetwork),
+		Metadata:    make(map[string]string),
+	}
+
+	// Copy networks
+	for name, network := range sourceProfile.Networks {
+		targetProfile.Networks[name] = &DockerNetwork{
+			Name:       network.Name,
+			Driver:     network.Driver,
+			Subnet:     network.Subnet,
+			Gateway:    network.Gateway,
+			External:   network.External,
+			Attachable: network.Attachable,
+		}
+		if network.Options != nil {
+			targetProfile.Networks[name].Options = make(map[string]string)
+			for k, v := range network.Options {
+				targetProfile.Networks[name].Options[k] = v
+			}
+		}
+		if network.Labels != nil {
+			targetProfile.Networks[name].Labels = make(map[string]string)
+			for k, v := range network.Labels {
+				targetProfile.Networks[name].Labels[k] = v
+			}
+		}
+	}
+
+	// Copy containers
+	for name, container := range sourceProfile.Containers {
+		targetProfile.Containers[name] = &ContainerNetwork{
+			Image:        container.Image,
+			NetworkMode:  container.NetworkMode,
+			Networks:     append([]string{}, container.Networks...),
+			Ports:        append([]string{}, container.Ports...),
+			DNSServers:   append([]string{}, container.DNSServers...),
+			DNSSearch:    append([]string{}, container.DNSSearch...),
+			ExtraHosts:   append([]string{}, container.ExtraHosts...),
+			Hostname:     container.Hostname,
+			Domainname:   container.Domainname,
+			NetworkAlias: append([]string{}, container.NetworkAlias...),
+		}
+		if container.Environment != nil {
+			targetProfile.Containers[name].Environment = make(map[string]string)
+			for k, v := range container.Environment {
+				targetProfile.Containers[name].Environment[k] = v
+			}
+		}
+	}
+
+	// Copy metadata
+	for k, v := range sourceProfile.Metadata {
+		targetProfile.Metadata[k] = v
+	}
+	targetProfile.Metadata["cloned_from"] = sourceName
+	targetProfile.Metadata["cloned_at"] = time.Now().Format(time.RFC3339)
+
+	// Create the new profile
+	return dm.CreateProfile(targetProfile)
 }

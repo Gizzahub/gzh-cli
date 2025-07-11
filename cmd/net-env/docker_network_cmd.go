@@ -1,6 +1,7 @@
 package netenv
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -33,6 +35,8 @@ func newDockerNetworkCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd.AddCommand(newDockerNetworkImportCmd(dm))
 	cmd.AddCommand(newDockerNetworkExportCmd(dm))
 	cmd.AddCommand(newDockerNetworkDetectCmd(dm))
+	cmd.AddCommand(newDockerNetworkContainerCmd(dm))
+	cmd.AddCommand(newDockerNetworkCloneCmd(dm))
 
 	return cmd
 }
@@ -559,4 +563,355 @@ func truncateString(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen-3] + "..."
+}
+
+// newDockerNetworkContainerCmd creates the container subcommand
+func newDockerNetworkContainerCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "container",
+		Short: "Manage container-specific network configurations",
+		Long:  `Manage container-specific network configurations within Docker network profiles.`,
+	}
+
+	// Add container subcommands
+	cmd.AddCommand(newContainerAddCmd(dm))
+	cmd.AddCommand(newContainerUpdateCmd(dm))
+	cmd.AddCommand(newContainerRemoveCmd(dm))
+	cmd.AddCommand(newContainerShowCmd(dm))
+	cmd.AddCommand(newContainerConnectCmd(dm))
+	cmd.AddCommand(newContainerDisconnectCmd(dm))
+
+	return cmd
+}
+
+// newContainerAddCmd creates the container add subcommand
+func newContainerAddCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add [profile-name] [container-name]",
+		Short: "Add a container to a network profile",
+		Long:  `Add a container with specific network configuration to a Docker network profile.`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			profileName := args[0]
+			containerName := args[1]
+
+			// Get flags
+			image, _ := cmd.Flags().GetString("image")
+			networks, _ := cmd.Flags().GetStringSlice("network")
+			ports, _ := cmd.Flags().GetStringSlice("port")
+			envs, _ := cmd.Flags().GetStringSlice("env")
+			dns, _ := cmd.Flags().GetStringSlice("dns")
+			aliases, _ := cmd.Flags().GetStringSlice("alias")
+			hostname, _ := cmd.Flags().GetString("hostname")
+
+			// Build container configuration
+			config := &ContainerNetwork{
+				Image:        image,
+				Networks:     networks,
+				Ports:        ports,
+				Environment:  make(map[string]string),
+				DNSServers:   dns,
+				NetworkAlias: aliases,
+				Hostname:     hostname,
+			}
+
+			// Parse environment variables
+			for _, env := range envs {
+				parts := strings.SplitN(env, "=", 2)
+				if len(parts) == 2 {
+					config.Environment[parts[0]] = parts[1]
+				}
+			}
+
+			// Validate configuration
+			if err := dm.ValidateContainerNetwork(config); err != nil {
+				return fmt.Errorf("invalid container configuration: %w", err)
+			}
+
+			// Add container to profile
+			if err := dm.UpdateContainerNetwork(profileName, containerName, config); err != nil {
+				return fmt.Errorf("failed to add container: %w", err)
+			}
+
+			fmt.Printf("✅ Added container '%s' to profile '%s'\n", containerName, profileName)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringP("image", "i", "", "Container image (required)")
+	cmd.MarkFlagRequired("image")
+	cmd.Flags().StringSliceP("network", "n", []string{}, "Networks to connect to")
+	cmd.Flags().StringSliceP("port", "p", []string{}, "Port mappings (e.g., 80:80)")
+	cmd.Flags().StringSliceP("env", "e", []string{}, "Environment variables (e.g., KEY=value)")
+	cmd.Flags().StringSlice("dns", []string{}, "DNS servers")
+	cmd.Flags().StringSlice("alias", []string{}, "Network aliases")
+	cmd.Flags().String("hostname", "", "Container hostname")
+
+	return cmd
+}
+
+// newContainerUpdateCmd creates the container update subcommand
+func newContainerUpdateCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update [profile-name] [container-name]",
+		Short: "Update container network configuration",
+		Long:  `Update the network configuration for a container in a Docker network profile.`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			profileName := args[0]
+			containerName := args[1]
+
+			// Load existing profile
+			profile, err := dm.LoadProfile(profileName)
+			if err != nil {
+				return fmt.Errorf("failed to load profile: %w", err)
+			}
+
+			// Get existing container config
+			config, exists := profile.Containers[containerName]
+			if !exists {
+				return fmt.Errorf("container '%s' not found in profile '%s'", containerName, profileName)
+			}
+
+			// Update with new values if provided
+			if image, _ := cmd.Flags().GetString("image"); image != "" {
+				config.Image = image
+			}
+
+			if networks, _ := cmd.Flags().GetStringSlice("network"); len(networks) > 0 {
+				config.Networks = networks
+			}
+
+			if ports, _ := cmd.Flags().GetStringSlice("port"); len(ports) > 0 {
+				config.Ports = ports
+			}
+
+			if envs, _ := cmd.Flags().GetStringSlice("env"); len(envs) > 0 {
+				config.Environment = make(map[string]string)
+				for _, env := range envs {
+					parts := strings.SplitN(env, "=", 2)
+					if len(parts) == 2 {
+						config.Environment[parts[0]] = parts[1]
+					}
+				}
+			}
+
+			if dns, _ := cmd.Flags().GetStringSlice("dns"); len(dns) > 0 {
+				config.DNSServers = dns
+			}
+
+			if aliases, _ := cmd.Flags().GetStringSlice("alias"); len(aliases) > 0 {
+				config.NetworkAlias = aliases
+			}
+
+			if hostname, _ := cmd.Flags().GetString("hostname"); hostname != "" {
+				config.Hostname = hostname
+			}
+
+			// Validate updated configuration
+			if err := dm.ValidateContainerNetwork(config); err != nil {
+				return fmt.Errorf("invalid container configuration: %w", err)
+			}
+
+			// Update container in profile
+			if err := dm.UpdateContainerNetwork(profileName, containerName, config); err != nil {
+				return fmt.Errorf("failed to update container: %w", err)
+			}
+
+			fmt.Printf("✅ Updated container '%s' in profile '%s'\n", containerName, profileName)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringP("image", "i", "", "Container image")
+	cmd.Flags().StringSliceP("network", "n", []string{}, "Networks to connect to")
+	cmd.Flags().StringSliceP("port", "p", []string{}, "Port mappings (e.g., 80:80)")
+	cmd.Flags().StringSliceP("env", "e", []string{}, "Environment variables (e.g., KEY=value)")
+	cmd.Flags().StringSlice("dns", []string{}, "DNS servers")
+	cmd.Flags().StringSlice("alias", []string{}, "Network aliases")
+	cmd.Flags().String("hostname", "", "Container hostname")
+
+	return cmd
+}
+
+// newContainerRemoveCmd creates the container remove subcommand
+func newContainerRemoveCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "remove [profile-name] [container-name]",
+		Short:   "Remove a container from a network profile",
+		Long:    `Remove a container from a Docker network profile.`,
+		Aliases: []string{"rm"},
+		Args:    cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			profileName := args[0]
+			containerName := args[1]
+
+			if err := dm.RemoveContainerFromProfile(profileName, containerName); err != nil {
+				return fmt.Errorf("failed to remove container: %w", err)
+			}
+
+			fmt.Printf("✅ Removed container '%s' from profile '%s'\n", containerName, profileName)
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newContainerShowCmd creates the container show subcommand
+func newContainerShowCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "show [profile-name] [container-name]",
+		Short: "Show container network configuration",
+		Long:  `Show the network configuration for a container in a Docker network profile.`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			profileName := args[0]
+			containerName := args[1]
+
+			profile, err := dm.LoadProfile(profileName)
+			if err != nil {
+				return fmt.Errorf("failed to load profile: %w", err)
+			}
+
+			config, exists := profile.Containers[containerName]
+			if !exists {
+				return fmt.Errorf("container '%s' not found in profile '%s'", containerName, profileName)
+			}
+
+			output, _ := cmd.Flags().GetString("output")
+			switch output {
+			case "json":
+				data, err := json.MarshalIndent(config, "", "  ")
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(data))
+			case "yaml":
+				data, err := yaml.Marshal(config)
+				if err != nil {
+					return err
+				}
+				fmt.Print(string(data))
+			default:
+				// Table format
+				fmt.Printf("Container: %s\n", containerName)
+				fmt.Printf("Image: %s\n", config.Image)
+				if config.NetworkMode != "" {
+					fmt.Printf("Network Mode: %s\n", config.NetworkMode)
+				}
+				if len(config.Networks) > 0 {
+					fmt.Printf("Networks: %s\n", strings.Join(config.Networks, ", "))
+				}
+				if len(config.Ports) > 0 {
+					fmt.Printf("Ports: %s\n", strings.Join(config.Ports, ", "))
+				}
+				if len(config.Environment) > 0 {
+					fmt.Println("Environment:")
+					for k, v := range config.Environment {
+						fmt.Printf("  %s=%s\n", k, v)
+					}
+				}
+				if len(config.DNSServers) > 0 {
+					fmt.Printf("DNS Servers: %s\n", strings.Join(config.DNSServers, ", "))
+				}
+				if len(config.NetworkAlias) > 0 {
+					fmt.Printf("Network Aliases: %s\n", strings.Join(config.NetworkAlias, ", "))
+				}
+				if config.Hostname != "" {
+					fmt.Printf("Hostname: %s\n", config.Hostname)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringP("output", "o", "table", "Output format (table|json|yaml)")
+
+	return cmd
+}
+
+// newContainerConnectCmd creates the container connect subcommand
+func newContainerConnectCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "connect [container-name] [network-name]",
+		Short: "Connect a running container to a network",
+		Long:  `Connect a running Docker container to a network with optional aliases.`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			containerName := args[0]
+			networkName := args[1]
+
+			aliases, _ := cmd.Flags().GetStringSlice("alias")
+
+			// Build connect command
+			connectCmd := fmt.Sprintf("docker network connect %s %s", networkName, containerName)
+			for _, alias := range aliases {
+				connectCmd += fmt.Sprintf(" --alias %s", alias)
+			}
+
+			result, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
+			if err != nil || result.ExitCode != 0 {
+				return fmt.Errorf("failed to connect container to network: %w", err)
+			}
+
+			fmt.Printf("✅ Connected container '%s' to network '%s'\n", containerName, networkName)
+			if len(aliases) > 0 {
+				fmt.Printf("   Aliases: %s\n", strings.Join(aliases, ", "))
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringSlice("alias", []string{}, "Network aliases for the container")
+
+	return cmd
+}
+
+// newContainerDisconnectCmd creates the container disconnect subcommand
+func newContainerDisconnectCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "disconnect [container-name] [network-name]",
+		Short: "Disconnect a running container from a network",
+		Long:  `Disconnect a running Docker container from a network.`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			containerName := args[0]
+			networkName := args[1]
+
+			if err := dm.DisconnectContainerFromNetwork(containerName, networkName); err != nil {
+				return fmt.Errorf("failed to disconnect container: %w", err)
+			}
+
+			fmt.Printf("✅ Disconnected container '%s' from network '%s'\n", containerName, networkName)
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+// newDockerNetworkCloneCmd creates the clone subcommand
+func newDockerNetworkCloneCmd(dm *DockerNetworkManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "clone [source-profile] [target-profile]",
+		Short: "Clone an existing Docker network profile",
+		Long:  `Create a copy of an existing Docker network profile with a new name.`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			sourceName := args[0]
+			targetName := args[1]
+
+			if err := dm.CloneProfile(sourceName, targetName); err != nil {
+				return fmt.Errorf("failed to clone profile: %w", err)
+			}
+
+			fmt.Printf("✅ Cloned profile '%s' to '%s'\n", sourceName, targetName)
+			return nil
+		},
+	}
+
+	return cmd
 }

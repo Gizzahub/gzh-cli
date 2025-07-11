@@ -18,9 +18,9 @@
   - [x] 멀티 테넌트 지원
 
 #### 2. 컨테이너 환경 네트워크 설정 자동화
-- [ ] Docker 네트워크 프로필 관리
-  - [ ] 컨테이너별 네트워크 설정
-  - [ ] Docker Compose 통합
+- [x] Docker 네트워크 프로필 관리
+  - [x] 컨테이너별 네트워크 설정
+  - [x] Docker Compose 통합
 - [ ] Kubernetes 네임스페이스별 설정
   - [ ] NetworkPolicy 자동 생성
   - [ ] 서비스 메시 통합 (Istio/Linkerd)
