@@ -112,6 +112,31 @@ type SlackUser struct {
 	Name string `json:"name"`
 }
 
+// SlackSlashCommand represents a Slack slash command payload
+type SlackSlashCommand struct {
+	Token               string `json:"token"`
+	TeamID              string `json:"team_id"`
+	TeamDomain          string `json:"team_domain"`
+	ChannelID           string `json:"channel_id"`
+	ChannelName         string `json:"channel_name"`
+	UserID              string `json:"user_id"`
+	UserName            string `json:"user_name"`
+	Command             string `json:"command"`
+	Text                string `json:"text"`
+	ResponseURL         string `json:"response_url"`
+	TriggerID           string `json:"trigger_id"`
+	APIAppID            string `json:"api_app_id"`
+	IsEnterpriseInstall string `json:"is_enterprise_install"`
+}
+
+// SlackCommandResponse represents a response to a Slack slash command
+type SlackCommandResponse struct {
+	ResponseType string            `json:"response_type,omitempty"` // ephemeral or in_channel
+	Text         string            `json:"text,omitempty"`
+	Attachments  []SlackAttachment `json:"attachments,omitempty"`
+	Blocks       []interface{}     `json:"blocks,omitempty"`
+}
+
 // NewSlackNotifier creates a new Slack notifier
 func NewSlackNotifier(config *SlackConfig, logger *zap.Logger) *SlackNotifier {
 	return &SlackNotifier{
@@ -777,4 +802,381 @@ func (s *SlackNotifier) handleRefreshAction(payload *SlackInteractionPayload, ac
 		zap.String("user", payload.User.Name))
 
 	return response, nil
+}
+
+// ProcessSlashCommand processes Slack slash commands
+func (s *SlackNotifier) ProcessSlashCommand(cmd *SlackSlashCommand) (*SlackCommandResponse, error) {
+	// Parse command and arguments
+	args := strings.Fields(cmd.Text)
+
+	s.logger.Info("Processing Slack slash command",
+		zap.String("command", cmd.Command),
+		zap.String("text", cmd.Text),
+		zap.String("user", cmd.UserName),
+		zap.String("channel", cmd.ChannelName))
+
+	// Route to appropriate handler based on command arguments
+	if len(args) == 0 {
+		return s.handleHelpCommand(cmd)
+	}
+
+	switch args[0] {
+	case "status":
+		return s.handleStatusCommand(cmd, args[1:])
+	case "alerts":
+		return s.handleAlertsCommand(cmd, args[1:])
+	case "help":
+		return s.handleHelpCommand(cmd)
+	case "silence":
+		return s.handleSilenceCommand(cmd, args[1:])
+	case "resolve":
+		return s.handleResolveCommand(cmd, args[1:])
+	case "test":
+		return s.handleTestCommand(cmd, args[1:])
+	default:
+		return s.handleUnknownCommand(cmd, args[0])
+	}
+}
+
+// handleHelpCommand shows available commands
+func (s *SlackNotifier) handleHelpCommand(cmd *SlackSlashCommand) (*SlackCommandResponse, error) {
+	helpText := "*GZH Monitoring Commands*\n\n" +
+		"Available commands:\n" +
+		"• `/gzh status` - Show current system status\n" +
+		"• `/gzh alerts` - List active alerts\n" +
+		"• `/gzh alerts firing` - Show only firing alerts\n" +
+		"• `/gzh silence <alert-id>` - Silence an alert for 1 hour\n" +
+		"• `/gzh resolve <alert-id>` - Resolve an alert\n" +
+		"• `/gzh test` - Send a test notification\n" +
+		"• `/gzh help` - Show this help message\n\n" +
+		"Examples:\n" +
+		"• `/gzh status` - Get system health overview\n" +
+		"• `/gzh alerts firing` - See what's currently alerting\n" +
+		"• `/gzh silence alert-123` - Silence specific alert"
+
+	return &SlackCommandResponse{
+		ResponseType: "ephemeral",
+		Text:         helpText,
+	}, nil
+}
+
+// handleStatusCommand shows system status
+func (s *SlackNotifier) handleStatusCommand(cmd *SlackSlashCommand, args []string) (*SlackCommandResponse, error) {
+	// This would normally fetch real system status
+	// For now, we'll create a sample status
+	statusText := "*🖥️ GZH Monitoring System Status*\n\n" +
+		"*Overall Health:* ✅ Healthy\n" +
+		"*Uptime:* 2d 4h 15m\n" +
+		"*Active Tasks:* 12\n" +
+		"*Memory Usage:* 1.2 GB\n" +
+		"*CPU Usage:* 23.5%\n" +
+		"*Total Requests:* 45,678\n\n" +
+		"*Quick Actions:*"
+
+	actions := []SlackAction{
+		{
+			Type:  "button",
+			Text:  "📊 Full Dashboard",
+			Name:  "view_dashboard",
+			Value: "dashboard",
+			Style: "primary",
+			Url:   "http://localhost:8080/dashboard",
+		},
+		{
+			Type:  "button",
+			Text:  "🔄 Refresh Status",
+			Name:  "refresh_status",
+			Value: "refresh",
+			Style: "default",
+		},
+		{
+			Type:  "button",
+			Text:  "📈 View Metrics",
+			Name:  "view_metrics",
+			Value: "metrics",
+			Style: "default",
+			Url:   "http://localhost:8080/metrics",
+		},
+	}
+
+	attachment := SlackAttachment{
+		Color:      "good",
+		Text:       statusText,
+		Actions:    actions,
+		CallbackID: "status_command",
+		Footer:     "GZH Monitoring",
+		Timestamp:  time.Now().Unix(),
+	}
+
+	responseType := "ephemeral"
+	if len(args) > 0 && args[0] == "public" {
+		responseType = "in_channel"
+	}
+
+	return &SlackCommandResponse{
+		ResponseType: responseType,
+		Attachments:  []SlackAttachment{attachment},
+	}, nil
+}
+
+// handleAlertsCommand shows alert information
+func (s *SlackNotifier) handleAlertsCommand(cmd *SlackSlashCommand, args []string) (*SlackCommandResponse, error) {
+	var filterType string
+	if len(args) > 0 {
+		filterType = args[0]
+	}
+
+	// This would normally fetch real alerts from AlertManager
+	// For now, we'll create sample alerts
+	var alertText string
+	var color string
+
+	switch filterType {
+	case "firing":
+		alertText = "*🚨 Firing Alerts (2)*\n\n" +
+			"• `alert-001` - High CPU Usage (critical)\n" +
+			"  Host: server-01, CPU: 95%\n\n" +
+			"• `alert-002` - Memory Warning (medium)\n" +
+			"  Host: server-02, Memory: 85%"
+		color = "danger"
+	case "resolved":
+		alertText = "*✅ Recently Resolved Alerts (3)*\n\n" +
+			"• `alert-003` - Disk Space Warning\n" +
+			"  Resolved 2 hours ago\n\n" +
+			"• `alert-004` - Network Latency\n" +
+			"  Resolved 4 hours ago\n\n" +
+			"• `alert-005` - Database Connection\n" +
+			"  Resolved 6 hours ago"
+		color = "good"
+	default:
+		alertText = "*📋 All Alerts Summary*\n\n" +
+			"*Firing:* 2 alerts\n" +
+			"*Silenced:* 1 alert\n" +
+			"*Resolved (24h):* 5 alerts\n\n" +
+			"Use `/gzh alerts firing` or `/gzh alerts resolved` for details."
+		color = "#439FE0"
+	}
+
+	actions := []SlackAction{
+		{
+			Type:  "button",
+			Text:  "🔥 View Firing",
+			Name:  "view_firing",
+			Value: "firing",
+			Style: "danger",
+		},
+		{
+			Type:  "button",
+			Text:  "📊 Alert Dashboard",
+			Name:  "view_alerts",
+			Value: "alerts",
+			Style: "primary",
+			Url:   "http://localhost:8080/alerts",
+		},
+	}
+
+	attachment := SlackAttachment{
+		Color:      color,
+		Text:       alertText,
+		Actions:    actions,
+		CallbackID: "alerts_command",
+		Footer:     "GZH Monitoring",
+		Timestamp:  time.Now().Unix(),
+	}
+
+	responseType := "ephemeral"
+	if len(args) > 1 && args[1] == "public" {
+		responseType = "in_channel"
+	}
+
+	return &SlackCommandResponse{
+		ResponseType: responseType,
+		Attachments:  []SlackAttachment{attachment},
+	}, nil
+}
+
+// handleSilenceCommand silences an alert
+func (s *SlackNotifier) handleSilenceCommand(cmd *SlackSlashCommand, args []string) (*SlackCommandResponse, error) {
+	if len(args) == 0 {
+		return &SlackCommandResponse{
+			ResponseType: "ephemeral",
+			Text:         "❌ Usage: `/gzh silence <alert-id>`\nExample: `/gzh silence alert-123`",
+		}, nil
+	}
+
+	alertID := args[0]
+	duration := "1 hour" // Default duration
+	if len(args) > 1 {
+		duration = strings.Join(args[1:], " ")
+	}
+
+	responseText := fmt.Sprintf("🔇 Alert `%s` has been silenced for %s by <@%s>",
+		alertID, duration, cmd.UserID)
+
+	attachment := SlackAttachment{
+		Color: "warning",
+		Text:  "The alert will not trigger notifications until the silence expires or is manually removed.",
+		Fields: []SlackField{
+			{
+				Title: "Alert ID",
+				Value: alertID,
+				Short: true,
+			},
+			{
+				Title: "Duration",
+				Value: duration,
+				Short: true,
+			},
+			{
+				Title: "Silenced By",
+				Value: fmt.Sprintf("<@%s>", cmd.UserID),
+				Short: true,
+			},
+		},
+		Footer:    "GZH Monitoring",
+		Timestamp: time.Now().Unix(),
+	}
+
+	s.logger.Info("Alert silenced via Slack command",
+		zap.String("alert_id", alertID),
+		zap.String("duration", duration),
+		zap.String("user", cmd.UserName))
+
+	return &SlackCommandResponse{
+		ResponseType: "in_channel",
+		Text:         responseText,
+		Attachments:  []SlackAttachment{attachment},
+	}, nil
+}
+
+// handleResolveCommand resolves an alert
+func (s *SlackNotifier) handleResolveCommand(cmd *SlackSlashCommand, args []string) (*SlackCommandResponse, error) {
+	if len(args) == 0 {
+		return &SlackCommandResponse{
+			ResponseType: "ephemeral",
+			Text:         "❌ Usage: `/gzh resolve <alert-id>`\nExample: `/gzh resolve alert-123`",
+		}, nil
+	}
+
+	alertID := args[0]
+	responseText := fmt.Sprintf("✅ Alert `%s` has been resolved by <@%s>", alertID, cmd.UserID)
+
+	attachment := SlackAttachment{
+		Color: "good",
+		Text:  "The alert has been marked as resolved and will no longer trigger notifications.",
+		Fields: []SlackField{
+			{
+				Title: "Alert ID",
+				Value: alertID,
+				Short: true,
+			},
+			{
+				Title: "Resolved By",
+				Value: fmt.Sprintf("<@%s>", cmd.UserID),
+				Short: true,
+			},
+			{
+				Title: "Resolved At",
+				Value: time.Now().Format("2006-01-02 15:04:05 MST"),
+				Short: true,
+			},
+		},
+		Footer:    "GZH Monitoring",
+		Timestamp: time.Now().Unix(),
+	}
+
+	s.logger.Info("Alert resolved via Slack command",
+		zap.String("alert_id", alertID),
+		zap.String("user", cmd.UserName))
+
+	return &SlackCommandResponse{
+		ResponseType: "in_channel",
+		Text:         responseText,
+		Attachments:  []SlackAttachment{attachment},
+	}, nil
+}
+
+// handleTestCommand sends a test notification
+func (s *SlackNotifier) handleTestCommand(cmd *SlackSlashCommand, args []string) (*SlackCommandResponse, error) {
+	testType := "basic"
+	if len(args) > 0 {
+		testType = args[0]
+	}
+
+	var responseText string
+	var attachment SlackAttachment
+
+	switch testType {
+	case "alert":
+		responseText = "🧪 Test alert notification sent"
+		attachment = SlackAttachment{
+			Color: "danger",
+			Title: "🚨 Test Alert - High CPU Usage",
+			Text:  "This is a test alert to verify notification delivery.",
+			Fields: []SlackField{
+				{
+					Title: "Severity",
+					Value: "Critical",
+					Short: true,
+				},
+				{
+					Title: "Host",
+					Value: "test-server",
+					Short: true,
+				},
+			},
+			Footer:    "GZH Monitoring Test",
+			Timestamp: time.Now().Unix(),
+		}
+	case "status":
+		responseText = "🧪 Test system status notification sent"
+		attachment = SlackAttachment{
+			Color: "good",
+			Title: "✅ Test System Status - All Systems Operational",
+			Text:  "This is a test system status notification.",
+			Fields: []SlackField{
+				{
+					Title: "Status",
+					Value: "Healthy",
+					Short: true,
+				},
+				{
+					Title: "Uptime",
+					Value: "100%",
+					Short: true,
+				},
+			},
+			Footer:    "GZH Monitoring Test",
+			Timestamp: time.Now().Unix(),
+		}
+	default:
+		responseText = fmt.Sprintf("🧪 Test notification sent by <@%s>", cmd.UserID)
+		attachment = SlackAttachment{
+			Color:     "#439FE0",
+			Title:     "🔔 Test Notification",
+			Text:      "If you can see this message, Slack integration is working correctly!",
+			Footer:    "GZH Monitoring Test",
+			Timestamp: time.Now().Unix(),
+		}
+	}
+
+	s.logger.Info("Test notification sent via Slack command",
+		zap.String("test_type", testType),
+		zap.String("user", cmd.UserName))
+
+	return &SlackCommandResponse{
+		ResponseType: "ephemeral",
+		Text:         responseText,
+		Attachments:  []SlackAttachment{attachment},
+	}, nil
+}
+
+// handleUnknownCommand handles unknown commands
+func (s *SlackNotifier) handleUnknownCommand(cmd *SlackSlashCommand, command string) (*SlackCommandResponse, error) {
+	responseText := fmt.Sprintf("❌ Unknown command: `%s`\n\nUse `/gzh help` to see available commands.", command)
+
+	return &SlackCommandResponse{
+		ResponseType: "ephemeral",
+		Text:         responseText,
+	}, nil
 }

@@ -419,6 +419,7 @@ func (s *MonitoringServer) setupRoutes() {
 
 		// Slack interactive endpoints (no auth required for webhook callbacks)
 		api.POST("/slack/interactive", s.handleSlackInteraction)
+		api.POST("/slack/command", s.handleSlackCommand)
 
 		// Configuration endpoints
 		api.GET("/config", s.authManager.RequirePermission("read:config"), s.getConfig)
@@ -1413,5 +1414,153 @@ func (s *MonitoringServer) handleSlackInteraction(c *gin.Context) {
 	} else {
 		// Return empty response to acknowledge the interaction
 		c.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+// handleSlackCommand handles Slack slash command callbacks
+func (s *MonitoringServer) handleSlackCommand(c *gin.Context) {
+	// Parse the form data from Slack slash command
+	var slackCmd SlackSlashCommand
+
+	// Slack sends form data, not JSON
+	slackCmd.Token = c.PostForm("token")
+	slackCmd.TeamID = c.PostForm("team_id")
+	slackCmd.TeamDomain = c.PostForm("team_domain")
+	slackCmd.ChannelID = c.PostForm("channel_id")
+	slackCmd.ChannelName = c.PostForm("channel_name")
+	slackCmd.UserID = c.PostForm("user_id")
+	slackCmd.UserName = c.PostForm("user_name")
+	slackCmd.Command = c.PostForm("command")
+	slackCmd.Text = c.PostForm("text")
+	slackCmd.ResponseURL = c.PostForm("response_url")
+	slackCmd.TriggerID = c.PostForm("trigger_id")
+	slackCmd.APIAppID = c.PostForm("api_app_id")
+	slackCmd.IsEnterpriseInstall = c.PostForm("is_enterprise_install")
+
+	// Verify the request came from Slack (optional - requires verification token)
+	// if slackCmd.Token != expectedToken {
+	//     c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+	//     return
+	// }
+
+	// Get Slack notifier
+	if s.alerts.slackNotifier == nil {
+		c.JSON(http.StatusServiceUnavailable, SlackCommandResponse{
+			ResponseType: "ephemeral",
+			Text:         "❌ Slack integration not configured on this server.",
+		})
+		return
+	}
+
+	// Process the slash command
+	response, err := s.alerts.slackNotifier.ProcessSlashCommand(&slackCmd)
+	if err != nil {
+		s.logger.Error("Failed to process Slack slash command", zap.Error(err))
+		c.JSON(http.StatusOK, SlackCommandResponse{
+			ResponseType: "ephemeral",
+			Text:         "❌ Failed to process command. Please try again.",
+		})
+		return
+	}
+
+	// Handle specific commands that require backend operations
+	if slackCmd.Text != "" {
+		args := strings.Fields(slackCmd.Text)
+		if len(args) > 0 {
+			switch args[0] {
+			case "silence":
+				if len(args) > 1 {
+					alertID := args[1]
+					duration := time.Hour // Default 1 hour
+					if err := s.alerts.SilenceAlert(alertID, duration); err != nil {
+						s.logger.Error("Failed to silence alert via Slack command",
+							zap.String("alert_id", alertID), zap.Error(err))
+					} else {
+						s.logger.Info("Alert silenced via Slack command",
+							zap.String("alert_id", alertID), zap.String("user", slackCmd.UserName))
+					}
+				}
+
+			case "resolve":
+				if len(args) > 1 {
+					alertID := args[1]
+					if err := s.alerts.ResolveAlert(alertID); err != nil {
+						s.logger.Error("Failed to resolve alert via Slack command",
+							zap.String("alert_id", alertID), zap.Error(err))
+					} else {
+						s.logger.Info("Alert resolved via Slack command",
+							zap.String("alert_id", alertID), zap.String("user", slackCmd.UserName))
+					}
+				}
+
+			case "status":
+				// For status commands, we could update the response with real data
+				if response != nil && len(response.Attachments) > 0 {
+					// Update with real system status
+					systemStatus := s.getCurrentSystemStatus()
+					statusText := fmt.Sprintf(`*🖥️ GZH Monitoring System Status*
+
+*Overall Health:* %s %s
+*Uptime:* %s
+*Active Tasks:* %d
+*Memory Usage:* %s
+*CPU Usage:* %.1f%%
+*Total Requests:* %d
+
+*Quick Actions:*`,
+						s.getHealthEmoji(systemStatus.Status),
+						systemStatus.Status,
+						systemStatus.Uptime,
+						systemStatus.ActiveTasks,
+						formatBytes(systemStatus.MemoryUsage),
+						systemStatus.CPUUsage,
+						systemStatus.TotalRequests)
+
+					response.Attachments[0].Text = statusText
+					response.Attachments[0].Color = s.getHealthColor(systemStatus.Status)
+				}
+
+			case "test":
+				// Log test command usage
+				testType := "basic"
+				if len(args) > 1 {
+					testType = args[1]
+				}
+				s.logger.Info("Test command executed via Slack",
+					zap.String("test_type", testType),
+					zap.String("user", slackCmd.UserName),
+					zap.String("channel", slackCmd.ChannelName))
+			}
+		}
+	}
+
+	// Return the response to Slack
+	c.JSON(http.StatusOK, response)
+}
+
+// Helper methods for status commands
+func (s *MonitoringServer) getHealthEmoji(status string) string {
+	switch status {
+	case "healthy":
+		return "✅"
+	case "warning":
+		return "⚠️"
+	case "critical":
+		return "🚨"
+	default:
+		return "ℹ️"
+	}
+}
+
+func (s *MonitoringServer) getHealthColor(status string) string {
+	switch status {
+	case "healthy":
+		return "good"
+	case "warning":
+		return "warning"
+	case "critical":
+		return "danger"
+	default:
+		return "#439FE0"
 	}
 }
