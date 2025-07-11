@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/smtp"
 	"strings"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -19,18 +20,42 @@ type EmailNotifier struct {
 	config    *EmailConfig
 	logger    *zap.Logger
 	templates map[string]*template.Template
+	digest    *DigestCollector
 }
 
 // EmailConfig represents email notification configuration
 type EmailConfig struct {
-	SMTPHost   string   `json:"smtp_host"`
-	SMTPPort   int      `json:"smtp_port"`
-	Username   string   `json:"username"`
-	Password   string   `json:"password"`
-	From       string   `json:"from"`
-	Recipients []string `json:"recipients"`
-	UseTLS     bool     `json:"use_tls"`
-	Enabled    bool     `json:"enabled"`
+	SMTPHost          string        `json:"smtp_host"`
+	SMTPPort          int           `json:"smtp_port"`
+	Username          string        `json:"username"`
+	Password          string        `json:"password"`
+	From              string        `json:"from"`
+	Recipients        []string      `json:"recipients"`
+	UseTLS            bool          `json:"use_tls"`
+	Enabled           bool          `json:"enabled"`
+	DigestEnabled     bool          `json:"digest_enabled"`
+	DigestInterval    time.Duration `json:"digest_interval"`
+	DigestMaxAlerts   int           `json:"digest_max_alerts"`
+	ImmediateSeverity AlertSeverity `json:"immediate_severity"`
+}
+
+// DigestCollector collects alerts for digest email
+type DigestCollector struct {
+	alerts      []*AlertInstance
+	systemStats *SystemStatus
+	mutex       sync.RWMutex
+	lastSent    time.Time
+}
+
+// DigestSummary contains aggregated digest information
+type DigestSummary struct {
+	Alerts       []*AlertInstance
+	AlertCounts  map[AlertSeverity]int
+	StatusCounts map[AlertStatus]int
+	TimeRange    string
+	TotalAlerts  int
+	SystemStatus *SystemStatus
+	GeneratedAt  time.Time
 }
 
 // EmailMessage represents an email message
@@ -46,10 +71,30 @@ func NewEmailNotifier(config *EmailConfig, logger *zap.Logger) *EmailNotifier {
 		config:    config,
 		logger:    logger,
 		templates: make(map[string]*template.Template),
+		digest: &DigestCollector{
+			alerts:   make([]*AlertInstance, 0),
+			lastSent: time.Now(),
+		},
+	}
+
+	// Set default digest configuration if not specified
+	if config.DigestInterval == 0 {
+		config.DigestInterval = time.Hour // Default: hourly digest
+	}
+	if config.DigestMaxAlerts == 0 {
+		config.DigestMaxAlerts = 50 // Default: max 50 alerts per digest
+	}
+	if config.ImmediateSeverity == "" {
+		config.ImmediateSeverity = AlertSeverityCritical // Default: only critical alerts sent immediately
 	}
 
 	// Initialize email templates
 	notifier.initializeTemplates()
+
+	// Start digest scheduler if digest is enabled
+	if config.DigestEnabled {
+		go notifier.startDigestScheduler()
+	}
 
 	return notifier
 }
@@ -60,6 +105,16 @@ func (e *EmailNotifier) SendAlert(ctx context.Context, alert *AlertInstance) err
 		return fmt.Errorf("email notifications not configured")
 	}
 
+	// Check if digest is enabled and if this alert should be sent immediately
+	if e.config.DigestEnabled && !e.shouldSendImmediately(alert) {
+		e.addToDigest(alert)
+		e.logger.Debug("Alert added to digest queue",
+			zap.String("alert_id", alert.ID),
+			zap.String("severity", string(alert.Severity)))
+		return nil
+	}
+
+	// Send immediate alert
 	subject := e.formatAlertSubject(alert)
 	body, err := e.formatAlertBody(alert)
 	if err != nil {
@@ -489,6 +544,124 @@ func (e *EmailNotifier) initializeTemplates() {
 </html>
 `
 	e.templates["custom"] = template.Must(template.New("custom").Parse(customTemplate))
+
+	// Digest template
+	digestTemplate := `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #2196F3, #21CBF3); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .summary { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; }
+        .stat { text-align: center; padding: 15px; margin: 5px; background-color: #f8f9fa; border-radius: 8px; min-width: 100px; }
+        .stat-number { font-size: 24px; font-weight: bold; color: #2196F3; }
+        .stat-label { font-size: 12px; color: #666; text-transform: uppercase; }
+        .alerts-section { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .alert-item { border-left: 4px solid #ddd; padding: 15px; margin: 10px 0; background-color: #fafafa; border-radius: 0 4px 4px 0; }
+        .alert-critical { border-left-color: #f44336; }
+        .alert-high { border-left-color: #FF5722; }
+        .alert-medium { border-left-color: #FF9800; }
+        .alert-low { border-left-color: #4CAF50; }
+        .alert-info { border-left-color: #2196F3; }
+        .alert-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .alert-title { font-weight: bold; font-size: 16px; }
+        .alert-severity { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; }
+        .severity-critical { background-color: #f44336; }
+        .severity-high { background-color: #FF5722; }
+        .severity-medium { background-color: #FF9800; }
+        .severity-low { background-color: #4CAF50; }
+        .severity-info { background-color: #2196F3; }
+        .alert-meta { font-size: 14px; color: #666; margin-top: 8px; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .time-range { background-color: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .no-alerts { text-align: center; padding: 40px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 GZH Monitoring Digest</h1>
+            <p>Alert Summary Report</p>
+        </div>
+
+        <div class="time-range">
+            <strong>Time Range:</strong> {{.TimeRange}}
+        </div>
+
+        <div class="summary">
+            <h2>Summary</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">{{.TotalAlerts}}</div>
+                    <div class="stat-label">Total Alerts</div>
+                </div>
+                {{range $severity, $count := .AlertCounts}}
+                {{if gt $count 0}}
+                <div class="stat">
+                    <div class="stat-number" style="color: {{if eq $severity "critical"}}#f44336{{else if eq $severity "high"}}#FF5722{{else if eq $severity "medium"}}#FF9800{{else if eq $severity "low"}}#4CAF50{{else}}#2196F3{{end}};">{{$count}}</div>
+                    <div class="stat-label">{{if eq $severity "critical"}}Critical{{else if eq $severity "high"}}High{{else if eq $severity "medium"}}Medium{{else if eq $severity "low"}}Low{{else}}Info{{end}}</div>
+                </div>
+                {{end}}
+                {{end}}
+            </div>
+        </div>
+
+        {{if .Alerts}}
+        <div class="alerts-section">
+            <h2>Alert Details</h2>
+            {{range .Alerts}}
+            <div class="alert-item alert-{{.Severity}}">
+                <div class="alert-header">
+                    <div class="alert-title">{{.RuleName}}</div>
+                    <span class="alert-severity severity-{{.Severity}}">{{.Severity}}</span>
+                </div>
+                <div>{{.Message}}</div>
+                <div class="alert-meta">
+                    Status: {{.Status}} | 
+                    {{if .FiredAt}}Fired: {{.FiredAt.Format "2006-01-02 15:04"}}{{end}}
+                    {{if .ResolvedAt}} | Resolved: {{.ResolvedAt.Format "2006-01-02 15:04"}}{{end}}
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="alerts-section">
+            <div class="no-alerts">
+                ✅ No alerts during this period
+            </div>
+        </div>
+        {{end}}
+
+        {{if .SystemStatus}}
+        <div class="summary">
+            <h2>System Status</h2>
+            <p><strong>Overall Status:</strong> {{.SystemStatus.Status}}</p>
+            <p><strong>Uptime:</strong> {{.SystemStatus.Uptime}}</p>
+            {{if .SystemStatus.Metrics}}
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                {{range $key, $value := .SystemStatus.Metrics}}
+                <div class="stat">
+                    <div class="stat-number">{{$value}}</div>
+                    <div class="stat-label">{{$key}}</div>
+                </div>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        <div class="footer">
+            <p>Generated at: {{.GeneratedAt.Format "2006-01-02 15:04:05 MST"}}</p>
+            <p>This is an automated digest from GZH Monitoring System</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+	e.templates["digest"] = template.Must(template.New("digest").Parse(digestTemplate))
 }
 
 // Helper methods
@@ -560,4 +733,194 @@ func (e *EmailNotifier) getSystemStatusColor(status string) string {
 	default:
 		return "#2196F3"
 	}
+}
+
+// Digest-related methods
+
+// shouldSendImmediately determines if an alert should be sent immediately instead of added to digest
+func (e *EmailNotifier) shouldSendImmediately(alert *AlertInstance) bool {
+	// Send immediately if severity is at or above the configured threshold
+	switch e.config.ImmediateSeverity {
+	case AlertSeverityCritical:
+		return alert.Severity == AlertSeverityCritical
+	case AlertSeverityHigh:
+		return alert.Severity == AlertSeverityCritical || alert.Severity == AlertSeverityHigh
+	case AlertSeverityMedium:
+		return alert.Severity == AlertSeverityCritical || alert.Severity == AlertSeverityHigh || alert.Severity == AlertSeverityMedium
+	default:
+		return false
+	}
+}
+
+// addToDigest adds an alert to the digest collection
+func (e *EmailNotifier) addToDigest(alert *AlertInstance) {
+	e.digest.mutex.Lock()
+	defer e.digest.mutex.Unlock()
+
+	// Add alert to digest
+	e.digest.alerts = append(e.digest.alerts, alert)
+
+	// Limit the number of alerts in digest to prevent memory issues
+	if len(e.digest.alerts) > e.config.DigestMaxAlerts {
+		// Remove oldest alerts, keep most recent ones
+		e.digest.alerts = e.digest.alerts[len(e.digest.alerts)-e.config.DigestMaxAlerts:]
+	}
+}
+
+// updateSystemStatus updates the system status in digest
+func (e *EmailNotifier) updateSystemStatus(status *SystemStatus) {
+	e.digest.mutex.Lock()
+	defer e.digest.mutex.Unlock()
+	e.digest.systemStats = status
+}
+
+// startDigestScheduler starts the digest email scheduler
+func (e *EmailNotifier) startDigestScheduler() {
+	ticker := time.NewTicker(e.config.DigestInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if err := e.sendDigest(context.Background()); err != nil {
+			e.logger.Error("Failed to send digest email", zap.Error(err))
+		}
+	}
+}
+
+// sendDigest sends a digest email with collected alerts
+func (e *EmailNotifier) sendDigest(ctx context.Context) error {
+	e.digest.mutex.Lock()
+	defer e.digest.mutex.Unlock()
+
+	// Skip if no alerts to send
+	if len(e.digest.alerts) == 0 {
+		e.logger.Debug("No alerts in digest queue, skipping digest email")
+		return nil
+	}
+
+	// Create digest summary
+	summary := e.createDigestSummary()
+
+	// Format digest email
+	subject := e.formatDigestSubject(summary)
+	body, err := e.formatDigestBody(summary)
+	if err != nil {
+		return fmt.Errorf("failed to format digest body: %w", err)
+	}
+
+	message := &EmailMessage{
+		To:      e.config.Recipients,
+		Subject: subject,
+		Body:    body,
+	}
+
+	// Send digest email
+	if err := e.sendEmail(ctx, message); err != nil {
+		return fmt.Errorf("failed to send digest email: %w", err)
+	}
+
+	// Clear digest after successful send
+	e.digest.alerts = make([]*AlertInstance, 0)
+	e.digest.lastSent = time.Now()
+
+	e.logger.Info("Digest email sent successfully",
+		zap.Int("alert_count", summary.TotalAlerts),
+		zap.String("time_range", summary.TimeRange))
+
+	return nil
+}
+
+// createDigestSummary creates a summary of collected alerts
+func (e *EmailNotifier) createDigestSummary() *DigestSummary {
+	now := time.Now()
+
+	summary := &DigestSummary{
+		Alerts:       make([]*AlertInstance, len(e.digest.alerts)),
+		AlertCounts:  make(map[AlertSeverity]int),
+		StatusCounts: make(map[AlertStatus]int),
+		GeneratedAt:  now,
+		TotalAlerts:  len(e.digest.alerts),
+		SystemStatus: e.digest.systemStats,
+	}
+
+	// Copy alerts
+	copy(summary.Alerts, e.digest.alerts)
+
+	// Calculate time range
+	if e.digest.lastSent.IsZero() {
+		summary.TimeRange = fmt.Sprintf("Since %s", now.Add(-e.config.DigestInterval).Format("2006-01-02 15:04"))
+	} else {
+		summary.TimeRange = fmt.Sprintf("%s - %s",
+			e.digest.lastSent.Format("2006-01-02 15:04"),
+			now.Format("2006-01-02 15:04"))
+	}
+
+	// Count alerts by severity and status
+	for _, alert := range e.digest.alerts {
+		summary.AlertCounts[alert.Severity]++
+		summary.StatusCounts[alert.Status]++
+	}
+
+	return summary
+}
+
+// formatDigestSubject formats the subject line for digest emails
+func (e *EmailNotifier) formatDigestSubject(summary *DigestSummary) string {
+	if summary.TotalAlerts == 0 {
+		return "GZH Monitoring - No Alerts Digest"
+	}
+
+	criticalCount := summary.AlertCounts[AlertSeverityCritical]
+	highCount := summary.AlertCounts[AlertSeverityHigh]
+
+	if criticalCount > 0 {
+		return fmt.Sprintf("🚨 GZH Monitoring - %d Alerts (%d Critical, %d High)",
+			summary.TotalAlerts, criticalCount, highCount)
+	} else if highCount > 0 {
+		return fmt.Sprintf("⚠️ GZH Monitoring - %d Alerts (%d High Priority)",
+			summary.TotalAlerts, highCount)
+	}
+
+	return fmt.Sprintf("📊 GZH Monitoring - %d Alerts Digest", summary.TotalAlerts)
+}
+
+// formatDigestBody formats the HTML body for digest emails
+func (e *EmailNotifier) formatDigestBody(summary *DigestSummary) (string, error) {
+	tmpl, exists := e.templates["digest"]
+	if !exists {
+		return "", fmt.Errorf("digest template not found")
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, summary); err != nil {
+		return "", fmt.Errorf("failed to execute digest template: %w", err)
+	}
+
+	return buf.String(), nil
+}
+
+// SendDigestNow forces sending a digest email immediately
+func (e *EmailNotifier) SendDigestNow(ctx context.Context) error {
+	return e.sendDigest(ctx)
+}
+
+// GetDigestStats returns current digest statistics
+func (e *EmailNotifier) GetDigestStats() map[string]interface{} {
+	e.digest.mutex.RLock()
+	defer e.digest.mutex.RUnlock()
+
+	stats := make(map[string]interface{})
+	stats["total_alerts"] = len(e.digest.alerts)
+	stats["last_sent"] = e.digest.lastSent
+	stats["next_send"] = e.digest.lastSent.Add(e.config.DigestInterval)
+	stats["digest_enabled"] = e.config.DigestEnabled
+	stats["digest_interval"] = e.config.DigestInterval.String()
+
+	// Count by severity
+	severityCounts := make(map[string]int)
+	for _, alert := range e.digest.alerts {
+		severityCounts[string(alert.Severity)]++
+	}
+	stats["severity_counts"] = severityCounts
+
+	return stats
 }
