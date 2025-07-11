@@ -3,6 +3,7 @@ package reposync
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
@@ -98,9 +99,11 @@ type BranchPolicyConfig struct {
 
 // BranchPolicyManager handles branch policy enforcement
 type BranchPolicyManager struct {
-	logger *zap.Logger
-	config *BranchPolicyConfig
-	rules  *BranchPolicyRules
+	logger    *zap.Logger
+	config    *BranchPolicyConfig
+	rules     *BranchPolicyRules
+	validator *BranchValidator
+	gitCmd    GitCommandExecutor
 }
 
 // BranchPolicyRules defines the branch policy rules
@@ -135,10 +138,14 @@ func NewBranchPolicyManager(logger *zap.Logger, config *BranchPolicyConfig) (*Br
 		return nil, fmt.Errorf("failed to create policy rules: %w", err)
 	}
 
+	validator := NewBranchValidator(logger, config.Template)
+
 	return &BranchPolicyManager{
-		logger: logger,
-		config: config,
-		rules:  rules,
+		logger:    logger,
+		config:    config,
+		rules:     rules,
+		validator: validator,
+		gitCmd:    &defaultGitExecutor{},
 	}, nil
 }
 
@@ -182,10 +189,59 @@ func (bpm *BranchPolicyManager) ApplyPolicies(ctx context.Context) error {
 func (bpm *BranchPolicyManager) validateBranchNaming(ctx context.Context) error {
 	fmt.Println("📋 Validating branch naming conventions...")
 
-	// TODO: Get list of branches and validate against patterns
-	// This would use git commands to list branches and check naming
+	// Get list of all branches
+	result, err := bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath, "branch", "-a", "--format=%(refname:short)")
+	if err != nil {
+		return fmt.Errorf("failed to list branches: %w", err)
+	}
 
-	fmt.Printf("✅ Branch naming validation passed for %s template\n", bpm.config.Template)
+	// Parse branch names
+	branches := strings.Split(strings.TrimSpace(result.Output), "\n")
+	if len(branches) == 0 || (len(branches) == 1 && branches[0] == "") {
+		fmt.Println("No branches found to validate")
+		return nil
+	}
+
+	// Validate each branch
+	validationResults := bpm.validator.BatchValidate(branches)
+	var invalidBranches []string
+	var suggestions []string
+
+	for branchName, result := range validationResults {
+		if !result.Valid && result.BranchType != "protected" {
+			invalidBranches = append(invalidBranches, branchName)
+			bpm.logger.Warn("Invalid branch name",
+				zap.String("branch", branchName),
+				zap.Strings("errors", result.Errors),
+				zap.String("suggestion", result.FixedName))
+
+			if result.FixedName != "" {
+				suggestions = append(suggestions, fmt.Sprintf("  %s → %s", branchName, result.FixedName))
+			}
+		}
+	}
+
+	if len(invalidBranches) > 0 {
+		fmt.Printf("❌ Found %d branches with invalid names:\n", len(invalidBranches))
+		for _, branch := range invalidBranches {
+			fmt.Printf("  - %s\n", branch)
+		}
+
+		if len(suggestions) > 0 {
+			fmt.Println("\n💡 Suggested fixes:")
+			for _, suggestion := range suggestions {
+				fmt.Println(suggestion)
+			}
+		}
+
+		if bpm.config.Enforce && !bpm.config.DryRun {
+			fmt.Println("\n🔧 Applying automatic fixes...")
+			return bpm.renameBranches(ctx, validationResults)
+		}
+	} else {
+		fmt.Printf("✅ All branches follow %s naming conventions\n", bpm.config.Template)
+	}
+
 	return nil
 }
 
@@ -345,4 +401,99 @@ func createCustomRules() *BranchPolicyRules {
 			AutoDelete:        false,
 		},
 	}
+}
+
+// renameBranches renames branches to match naming conventions
+func (bpm *BranchPolicyManager) renameBranches(ctx context.Context, validationResults map[string]*ValidationResult) error {
+	var renameCount int
+
+	for branchName, result := range validationResults {
+		if !result.Valid && result.FixedName != "" && result.BranchType != "protected" {
+			// Skip if branch name is the same as fixed name
+			if branchName == result.FixedName {
+				continue
+			}
+
+			fmt.Printf("🔄 Renaming: %s → %s\n", branchName, result.FixedName)
+
+			// Check if the target branch already exists
+			checkResult, _ := bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath, "show-ref", "--verify", "--quiet", fmt.Sprintf("refs/heads/%s", result.FixedName))
+			if checkResult != nil && checkResult.Success {
+				fmt.Printf("⚠️  Target branch '%s' already exists, skipping\n", result.FixedName)
+				continue
+			}
+
+			// Rename the branch
+			_, err := bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath, "branch", "-m", branchName, result.FixedName)
+			if err != nil {
+				bpm.logger.Error("Failed to rename branch",
+					zap.String("from", branchName),
+					zap.String("to", result.FixedName),
+					zap.Error(err))
+				continue
+			}
+
+			renameCount++
+
+			// If this is a remote branch, we need to push the new branch and delete the old one
+			if strings.HasPrefix(branchName, "origin/") {
+				fmt.Printf("🌐 Updating remote branch...\n")
+				// Push new branch
+				_, err = bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath, "push", "origin", result.FixedName)
+				if err != nil {
+					bpm.logger.Warn("Failed to push renamed branch", zap.Error(err))
+				}
+				// Delete old branch
+				_, err = bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath, "push", "origin", "--delete", strings.TrimPrefix(branchName, "origin/"))
+				if err != nil {
+					bpm.logger.Warn("Failed to delete old remote branch", zap.Error(err))
+				}
+			}
+		}
+	}
+
+	if renameCount > 0 {
+		fmt.Printf("✅ Renamed %d branches to follow naming conventions\n", renameCount)
+	}
+
+	return nil
+}
+
+// suggestBranchName suggests a branch name based on user input
+func (bpm *BranchPolicyManager) suggestBranchName(branchType, description string) error {
+	suggestion, err := bpm.validator.SuggestBranchName(branchType, description)
+	if err != nil {
+		return fmt.Errorf("failed to suggest branch name: %w", err)
+	}
+
+	fmt.Printf("💡 Suggested branch name: %s\n", suggestion)
+	return nil
+}
+
+// validateSingleBranch validates a single branch name
+func (bpm *BranchPolicyManager) validateSingleBranch(branchName string) error {
+	result := bpm.validator.ValidateBranchName(branchName)
+
+	if result.Valid {
+		fmt.Printf("✅ '%s' is a valid branch name (%s)\n", branchName, result.BranchType)
+	} else {
+		fmt.Printf("❌ '%s' is invalid\n", branchName)
+		if len(result.Errors) > 0 {
+			fmt.Println("📝 Errors:")
+			for _, err := range result.Errors {
+				fmt.Printf("  - %s\n", err)
+			}
+		}
+		if len(result.Suggestions) > 0 {
+			fmt.Println("💡 Suggestions:")
+			for _, suggestion := range result.Suggestions {
+				fmt.Printf("  - %s\n", suggestion)
+			}
+		}
+		if result.FixedName != "" {
+			fmt.Printf("🔧 Fixed name: %s\n", result.FixedName)
+		}
+	}
+
+	return nil
 }
