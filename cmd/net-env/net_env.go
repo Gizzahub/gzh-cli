@@ -75,7 +75,16 @@ Examples:
     --pod-selector app=web --allow-from pod:app=api --ports TCP:8080
   
   # Apply Kubernetes network profile
-  gz net-env kubernetes-network apply prod-policies`,
+  gz net-env kubernetes-network apply prod-policies
+  
+  # Container environment detection
+  gz net-env container-detection detect
+  
+  # Show running containers
+  gz net-env container-detection list
+  
+  # Monitor container changes
+  gz net-env container-detection monitor`,
 		SilenceUsage: true,
 	}
 
@@ -91,6 +100,7 @@ Examples:
 	cmd.AddCommand(newCloudCmd(ctx))
 	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))
 	cmd.AddCommand(newKubernetesNetworkCmd(logger, configDir))
+	cmd.AddCommand(newContainerDetectionCmd(logger, configDir))
 
 	return cmd
 }

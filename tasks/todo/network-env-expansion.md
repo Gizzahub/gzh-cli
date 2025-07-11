@@ -21,7 +21,7 @@
 - [x] Docker 네트워크 프로필 관리
   - [x] 컨테이너별 네트워크 설정
   - [x] Docker Compose 통합
-- [ ] Kubernetes 네임스페이스별 설정
+- [x] Kubernetes 네임스페이스별 설정
   - [x] NetworkPolicy 자동 생성
   - [x] 서비스 메시 통합 (Istio/Linkerd)
 - [ ] 컨테이너 환경 자동 감지
