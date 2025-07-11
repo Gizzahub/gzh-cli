@@ -90,7 +90,7 @@ func TestInstanceManager_GetClusterStatus(t *testing.T) {
 
 	// Add running instance
 	manager.RegisterLocalInstance("localhost", 8080, "test-instance-1")
-	
+
 	// Simulate adding a remote instance manually for testing
 	manager.mu.Lock()
 	remoteInstance := &InstanceInfo{
@@ -169,12 +169,12 @@ func TestInstanceManager_StartStop(t *testing.T) {
 
 	// Test start and stop
 	manager.Start()
-	
+
 	// Wait a bit to ensure background routines start
 	time.Sleep(100 * time.Millisecond)
-	
+
 	manager.Stop()
-	
+
 	// Verify context is cancelled
 	select {
 	case <-manager.ctx.Done():
@@ -234,7 +234,7 @@ func TestClusterStatus_HealthCalculation(t *testing.T) {
 	manager.mu.Unlock()
 
 	status := manager.GetClusterStatus()
-	
+
 	// Total: 4, Running: 2 (healthy and not stale), Unhealthy: 2 (1 explicitly unhealthy + 1 stale)
 	assert.Equal(t, 4, status.TotalInstances)
 	assert.Equal(t, 2, status.RunningInstances)

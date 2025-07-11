@@ -30,23 +30,23 @@ type DiscordConfig struct {
 
 // DiscordMessage represents a Discord message payload
 type DiscordMessage struct {
-	Username  string          `json:"username,omitempty"`
-	AvatarURL string          `json:"avatar_url,omitempty"`
-	Content   string          `json:"content,omitempty"`
-	Embeds    []DiscordEmbed  `json:"embeds,omitempty"`
+	Username  string         `json:"username,omitempty"`
+	AvatarURL string         `json:"avatar_url,omitempty"`
+	Content   string         `json:"content,omitempty"`
+	Embeds    []DiscordEmbed `json:"embeds,omitempty"`
 }
 
 // DiscordEmbed represents a Discord embed message
 type DiscordEmbed struct {
-	Title       string             `json:"title,omitempty"`
-	Type        string             `json:"type,omitempty"`
-	Description string             `json:"description,omitempty"`
-	URL         string             `json:"url,omitempty"`
-	Color       int                `json:"color,omitempty"`
-	Footer      *DiscordFooter     `json:"footer,omitempty"`
-	Thumbnail   *DiscordThumbnail  `json:"thumbnail,omitempty"`
-	Fields      []DiscordField     `json:"fields,omitempty"`
-	Timestamp   string             `json:"timestamp,omitempty"`
+	Title       string            `json:"title,omitempty"`
+	Type        string            `json:"type,omitempty"`
+	Description string            `json:"description,omitempty"`
+	URL         string            `json:"url,omitempty"`
+	Color       int               `json:"color,omitempty"`
+	Footer      *DiscordFooter    `json:"footer,omitempty"`
+	Thumbnail   *DiscordThumbnail `json:"thumbnail,omitempty"`
+	Fields      []DiscordField    `json:"fields,omitempty"`
+	Timestamp   string            `json:"timestamp,omitempty"`
 }
 
 // DiscordFooter represents embed footer
