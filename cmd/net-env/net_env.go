@@ -2,8 +2,11 @@ package netenv
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func NewNetEnvCmd(ctx context.Context) *cobra.Command {
@@ -50,14 +53,40 @@ Examples:
   gz net-env actions vpn connect --name office
   
   # Set DNS servers
-  gz net-env actions dns set --servers 1.1.1.1,1.0.0.1`,
+  gz net-env actions dns set --servers 1.1.1.1,1.0.0.1
+  
+  # Docker network profile management
+  gz net-env docker-network list
+  
+  # Create Docker network profile
+  gz net-env docker-network create myapp --network mynet --driver bridge
+  
+  # Apply Docker network profile
+  gz net-env docker-network apply myapp`,
 		SilenceUsage: true,
 	}
+
+	// Create logger for Docker network management
+	logger, _ := zap.NewProduction()
+
+	// Get config directory
+	configDir := getConfigDirectory()
 
 	cmd.AddCommand(newDaemonCmd(ctx))
 	cmd.AddCommand(newWifiCmd())
 	cmd.AddCommand(newActionsCmd())
 	cmd.AddCommand(newCloudCmd(ctx))
+	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))
 
 	return cmd
+}
+
+// getConfigDirectory returns the configuration directory for net-env
+func getConfigDirectory() string {
+	if configDir := os.Getenv("GZH_CONFIG_DIR"); configDir != "" {
+		return configDir
+	}
+
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".config", "gzh-manager")
 }
