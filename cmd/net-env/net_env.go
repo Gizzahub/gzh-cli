@@ -84,7 +84,16 @@ Examples:
   gz net-env container-detection list
   
   # Monitor container changes
-  gz net-env container-detection monitor`,
+  gz net-env container-detection monitor
+  
+  # Network topology analysis
+  gz net-env network-topology analyze
+  
+  # Show topology summary
+  gz net-env network-topology summary
+  
+  # Export topology visualization
+  gz net-env network-topology export --format dot --output topology.dot`,
 		SilenceUsage: true,
 	}
 
@@ -101,6 +110,7 @@ Examples:
 	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))
 	cmd.AddCommand(newKubernetesNetworkCmd(logger, configDir))
 	cmd.AddCommand(newContainerDetectionCmd(logger, configDir))
+	cmd.AddCommand(newNetworkTopologyCmd(logger, configDir))
 
 	return cmd
 }
