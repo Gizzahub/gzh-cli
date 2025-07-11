@@ -93,7 +93,25 @@ Examples:
   gz net-env network-topology summary
   
   # Export topology visualization
-  gz net-env network-topology export --format dot --output topology.dot`,
+  gz net-env network-topology export --format dot --output topology.dot
+  
+  # Hierarchical VPN management
+  gz net-env vpn-hierarchy show
+  
+  # Connect hierarchical VPN
+  gz net-env vpn-hierarchy connect --root corp-vpn
+  
+  # Auto-connect for current environment
+  gz net-env vpn-hierarchy auto-connect
+  
+  # VPN profile management
+  gz net-env vpn-profile list
+  
+  # Create VPN profile with network mapping
+  gz net-env vpn-profile create office --network "Office WiFi" --vpn corp-vpn --priority 100
+  
+  # Map network to VPN with priority
+  gz net-env vpn-profile map --network "Home WiFi" --vpn home-vpn --priority 50`,
 		SilenceUsage: true,
 	}
 
@@ -111,6 +129,8 @@ Examples:
 	cmd.AddCommand(newKubernetesNetworkCmd(logger, configDir))
 	cmd.AddCommand(newContainerDetectionCmd(logger, configDir))
 	cmd.AddCommand(newNetworkTopologyCmd(logger, configDir))
+	cmd.AddCommand(newVPNHierarchyCmd(logger, configDir))
+	cmd.AddCommand(newVPNProfileCmd(logger, configDir))
 
 	return cmd
 }
