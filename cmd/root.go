@@ -10,6 +10,7 @@ import (
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/docker"
 	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
+	"github.com/gizzahub/gzh-manager-go/cmd/i18n"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
@@ -37,6 +38,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(devenv.NewDevEnvCmd())
 	cmd.AddCommand(docker.DockerCmd)
 	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
+	cmd.AddCommand(i18n.I18nCmd)
 	cmd.AddCommand(ide.NewIDECmd(ctx))
 	cmd.AddCommand(migrate.NewMigrateCmd())
 	cmd.AddCommand(monitoring.NewMonitoringCmd(ctx))
