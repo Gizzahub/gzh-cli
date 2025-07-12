@@ -13,6 +13,7 @@ import (
 	doctorcmd "github.com/gizzahub/gzh-manager-go/cmd/doctor"
 	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
 	githubactions "github.com/gizzahub/gzh-manager-go/cmd/github-actions"
+	gitlabci "github.com/gizzahub/gzh-manager-go/cmd/gitlab-ci"
 	"github.com/gizzahub/gzh-manager-go/cmd/helm"
 	"github.com/gizzahub/gzh-manager-go/cmd/i18n"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
@@ -48,6 +49,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(docker.DockerCmd)
 	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
 	cmd.AddCommand(githubactions.GitHubActionsCmd)
+	cmd.AddCommand(gitlabci.GitLabCICmd)
 	cmd.AddCommand(helm.HelmCmd)
 	cmd.AddCommand(i18n.I18nCmd)
 	cmd.AddCommand(ide.NewIDECmd(ctx))
