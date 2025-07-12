@@ -18,6 +18,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
+	"github.com/gizzahub/gzh-manager-go/cmd/operator"
 	"github.com/gizzahub/gzh-manager-go/cmd/plugin"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
@@ -51,6 +52,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(migrate.NewMigrateCmd())
 	cmd.AddCommand(monitoring.NewMonitoringCmd(ctx))
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
+	cmd.AddCommand(operator.OperatorCmd)
 	cmd.AddCommand(plugin.PluginCmd)
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
 	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
