@@ -518,6 +518,75 @@ gz net-env switch office
 - [Bulk Clone Schema](docs/bulk-clone-schema.yaml) - 설정 파일 스키마 문서
 - [Release Notes v1.0.0](docs/release-notes-v1.0.0.md) - 첫 정식 릴리즈 노트
 
+## 🔧 Go SDK (Programmatic API)
+
+GZH Manager는 Go 애플리케이션에서 직접 사용할 수 있는 공개 API를 제공합니다.
+
+### 설치
+
+```bash
+go get github.com/gizzahub/gzh-manager-go/pkg/gzhclient
+```
+
+### 기본 사용법
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "time"
+
+    "github.com/gizzahub/gzh-manager-go/pkg/gzhclient"
+)
+
+func main() {
+    // 클라이언트 생성
+    client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer client.Close()
+
+    // 대량 클론 작업 수행
+    req := gzhclient.BulkCloneRequest{
+        Platforms: []gzhclient.PlatformConfig{
+            {
+                Type:          "github",
+                Token:         "your-github-token",
+                Organizations: []string{"your-org"},
+            },
+        },
+        OutputDir:   "./repositories",
+        Concurrency: 5,
+        Strategy:    "reset",
+    }
+
+    result, err := client.BulkClone(context.Background(), req)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("Successfully cloned %d repositories\n", result.SuccessCount)
+}
+```
+
+### 주요 기능
+
+- **대량 클론**: GitHub, GitLab, Gitea, Gogs에서 리포지토리 일괄 클론
+- **플러그인 관리**: 플러그인 로드, 실행, 상태 확인
+- **시스템 모니터링**: CPU, 메모리, 디스크 사용량 수집
+- **이벤트 시스템**: 실시간 이벤트 구독 및 처리
+- **플랫폼별 클라이언트**: GitHub, GitLab, Gitea 전용 클라이언트
+
+### 더 많은 예제
+
+완전한 사용 예제와 API 문서는 다음에서 확인하세요:
+- [GoDoc](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg/gzhclient)
+- [Example Code](pkg/gzhclient/examples_test.go)
+
 # Features
 - [goreleaser](https://goreleaser.com/) with `deb.` and `.rpm` packer and container (`docker.hub` and `ghcr.io`) releasing including `manpages` and `shell completions` and grouped Changelog generation.
 - [golangci-lint](https://golangci-lint.run/) for linting and formatting
