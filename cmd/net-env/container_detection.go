@@ -137,9 +137,9 @@ type DetectedNetwork struct {
 
 // NetworkIPAM represents network IP address management
 type NetworkIPAM struct {
-	Driver  string                    `json:"driver"`
-	Config  []ContainerIPAMConfig     `json:"config"`
-	Options map[string]string         `json:"options"`
+	Driver  string                `json:"driver"`
+	Config  []ContainerIPAMConfig `json:"config"`
+	Options map[string]string     `json:"options"`
 }
 
 // ContainerIPAMConfig represents IPAM configuration for container detection

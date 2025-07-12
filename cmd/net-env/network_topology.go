@@ -100,13 +100,13 @@ type NetworkConnection struct {
 
 // ServiceDependency represents a dependency between services
 type ServiceDependency struct {
-	SourceService  string                `json:"source_service"`
-	TargetService  string                `json:"target_service"`
-	DependencyType DependencyType        `json:"dependency_type"`
-	Protocol       string                `json:"protocol"`
-	Ports          []int                 `json:"ports"`
-	Required       bool                  `json:"required"`
-	HealthImpact   HealthImpactLevel     `json:"health_impact"`
+	SourceService  string                        `json:"source_service"`
+	TargetService  string                        `json:"target_service"`
+	DependencyType DependencyType                `json:"dependency_type"`
+	Protocol       string                        `json:"protocol"`
+	Ports          []int                         `json:"ports"`
+	Required       bool                          `json:"required"`
+	HealthImpact   HealthImpactLevel             `json:"health_impact"`
 	CircuitBreaker *TopologyCircuitBreakerConfig `json:"circuit_breaker,omitempty"`
 }
 
@@ -273,9 +273,9 @@ type HealthCheckConfig struct {
 }
 
 type TrafficPolicyConfig struct {
-	LoadBalancing  *LoadBalancingPolicy  `json:"load_balancing,omitempty"`
-	Retries        *RetryPolicy          `json:"retries,omitempty"`
-	Timeout        *TimeoutPolicy        `json:"timeout,omitempty"`
+	LoadBalancing  *LoadBalancingPolicy          `json:"load_balancing,omitempty"`
+	Retries        *RetryPolicy                  `json:"retries,omitempty"`
+	Timeout        *TimeoutPolicy                `json:"timeout,omitempty"`
 	CircuitBreaker *TopologyCircuitBreakerConfig `json:"circuit_breaker,omitempty"`
 }
 
@@ -1231,17 +1231,17 @@ func (nta *NetworkTopologyAnalyzer) convertResourceLimits(detected *DetectedReso
 	if detected == nil {
 		return nil
 	}
-	
+
 	limits := &ContainerResourceLimits{}
-	
+
 	if detected.Memory > 0 {
 		limits.MemoryLimit = fmt.Sprintf("%d", detected.Memory)
 	}
-	
+
 	if detected.CPUQuota > 0 && detected.CPUPeriod > 0 {
 		cpuLimit := float64(detected.CPUQuota) / float64(detected.CPUPeriod)
 		limits.CPULimit = fmt.Sprintf("%.2f", cpuLimit)
 	}
-	
+
 	return limits
 }

@@ -2,7 +2,10 @@ package reposync
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"math"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -313,6 +316,13 @@ func (cqa *CodeQualityAnalyzer) AnalyzeQuality(ctx context.Context) (*QualityRes
 		if err := cqa.saveReport(result); err != nil {
 			cqa.logger.Warn("Failed to save report", zap.Error(err))
 		}
+
+		// Generate HTML dashboard if output format is HTML
+		if cqa.config.OutputFormat == "html" {
+			if err := cqa.generateDashboard(result); err != nil {
+				cqa.logger.Warn("Failed to generate dashboard", zap.Error(err))
+			}
+		}
 	}
 
 	return result, nil
@@ -400,24 +410,45 @@ func (cqa *CodeQualityAnalyzer) calculateOverallMetrics(result *QualityResult) {
 	var totalFiles int
 	var totalLines int
 	var weightedScore float64
+	var totalComplexity float64
+	var totalCoverage float64
+	var totalDuplication float64
+	var langCount int
 
 	for _, langResult := range result.LanguageResults {
 		weight := float64(langResult.LinesOfCode)
 		weightedScore += langResult.QualityScore * weight
 		totalFiles += langResult.FilesAnalyzed
 		totalLines += langResult.LinesOfCode
+		totalComplexity += langResult.ComplexityScore * weight
+		totalCoverage += langResult.TestCoverage * weight
+		totalDuplication += langResult.DuplicationRate * weight
+		langCount++
 	}
 
 	if totalLines > 0 {
 		totalScore = weightedScore / float64(totalLines)
+		totalComplexity = totalComplexity / float64(totalLines)
+		totalCoverage = totalCoverage / float64(totalLines)
+		totalDuplication = totalDuplication / float64(totalLines)
 	}
+
+	// Calculate technical debt
+	technicalDebt := cqa.calculateTechnicalDebt(result)
 
 	result.OverallScore = totalScore
 	result.Metrics = QualityMetrics{
-		TotalFiles:       totalFiles,
-		TotalLinesOfCode: totalLines,
-		// TODO: Calculate other aggregate metrics
+		TotalFiles:         totalFiles,
+		TotalLinesOfCode:   totalLines,
+		AvgComplexity:      totalComplexity,
+		DuplicationRate:    totalDuplication,
+		TestCoverage:       totalCoverage,
+		TechnicalDebtRatio: technicalDebt.DebtRatio,
+		SecurityScore:      cqa.calculateSecurityScore(result),
+		Maintainability:    cqa.calculateMaintainability(totalScore, totalComplexity, totalCoverage),
 	}
+
+	result.TechnicalDebt = technicalDebt
 }
 
 // generateRecommendations generates quality improvement recommendations
@@ -589,4 +620,142 @@ func (cqa *CodeQualityAnalyzer) mapToCWE(rule string) string {
 		return cwe
 	}
 	return ""
+}
+
+// generateDashboard generates HTML dashboard for quality metrics
+func (cqa *CodeQualityAnalyzer) generateDashboard(result *QualityResult) error {
+	// Load historical data
+	historicalData := cqa.loadHistoricalData()
+
+	// Create dashboard generator
+	dashboardGen := NewDashboardGenerator(cqa.logger, "quality-reports")
+
+	// Generate dashboard
+	if err := dashboardGen.GenerateDashboard(result, historicalData); err != nil {
+		return fmt.Errorf("failed to generate dashboard: %w", err)
+	}
+
+	// Save current result to history
+	cqa.saveToHistory(result)
+
+	return nil
+}
+
+// calculateTechnicalDebt calculates technical debt information
+func (cqa *CodeQualityAnalyzer) calculateTechnicalDebt(result *QualityResult) TechnicalDebtInfo {
+	// Estimate minutes to fix each issue type
+	issueTimeMap := map[string]int{
+		"critical": 60, // 1 hour per critical issue
+		"major":    30, // 30 min per major issue
+		"minor":    15, // 15 min per minor issue
+		"info":     5,  // 5 min per info issue
+	}
+
+	totalMinutes := 0
+	for _, issue := range result.Issues {
+		if time, exists := issueTimeMap[issue.Severity]; exists {
+			totalMinutes += time
+		}
+	}
+
+	// Calculate debt ratio (debt minutes per 1000 lines of code)
+	debtRatio := 0.0
+	if result.Metrics.TotalLinesOfCode > 0 {
+		debtRatio = float64(totalMinutes) / float64(result.Metrics.TotalLinesOfCode) * 1000
+	}
+
+	// Calculate maintenance index (0-100, higher is better)
+	// Based on Halstead volume, cyclomatic complexity, and lines of code
+	maintenanceIndex := 171 - 5.2*math.Log(result.Metrics.AvgComplexity) -
+		0.23*result.Metrics.AvgComplexity -
+		16.2*math.Log(float64(result.Metrics.TotalLinesOfCode))
+
+	if maintenanceIndex < 0 {
+		maintenanceIndex = 0
+	} else if maintenanceIndex > 100 {
+		maintenanceIndex = 100
+	}
+
+	return TechnicalDebtInfo{
+		TotalMinutes:     totalMinutes,
+		DebtRatio:        debtRatio,
+		NewCodeDebt:      0, // Would need git history to calculate
+		MaintenanceIndex: maintenanceIndex,
+	}
+}
+
+// calculateSecurityScore calculates security score based on security issues
+func (cqa *CodeQualityAnalyzer) calculateSecurityScore(result *QualityResult) float64 {
+	score := 100.0
+
+	// Count security issues by severity
+	for _, issue := range result.Issues {
+		if issue.Type == "security" {
+			switch issue.Severity {
+			case "critical":
+				score -= 20.0
+			case "major":
+				score -= 10.0
+			case "minor":
+				score -= 5.0
+			}
+		}
+	}
+
+	// Additional penalty for high-severity security issues
+	for _, secIssue := range result.SecurityIssues {
+		if secIssue.CVSS > 7.0 {
+			score -= 15.0
+		} else if secIssue.CVSS > 4.0 {
+			score -= 10.0
+		}
+	}
+
+	if score < 0 {
+		score = 0
+	}
+
+	return score
+}
+
+// calculateMaintainability calculates maintainability score
+func (cqa *CodeQualityAnalyzer) calculateMaintainability(qualityScore, complexity, coverage float64) float64 {
+	// Weighted average of quality factors
+	maintainability := qualityScore*0.4 + (100-complexity*5)*0.3 + coverage*0.3
+
+	if maintainability < 0 {
+		maintainability = 0
+	} else if maintainability > 100 {
+		maintainability = 100
+	}
+
+	return maintainability
+}
+
+// loadHistoricalData loads historical quality data
+func (cqa *CodeQualityAnalyzer) loadHistoricalData() []*QualityResult {
+	// In a real implementation, this would load from a database or file storage
+	// For now, return empty slice
+	return make([]*QualityResult, 0)
+}
+
+// saveToHistory saves quality result to history
+func (cqa *CodeQualityAnalyzer) saveToHistory(result *QualityResult) {
+	// In a real implementation, this would save to a database or file storage
+	historyDir := "quality-reports/history"
+	if err := os.MkdirAll(historyDir, 0755); err != nil {
+		cqa.logger.Warn("Failed to create history directory", zap.Error(err))
+		return
+	}
+
+	filename := fmt.Sprintf("%s/quality-%s.json", historyDir, result.Timestamp.Format("20060102-150405"))
+	data, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		cqa.logger.Warn("Failed to marshal quality result", zap.Error(err))
+		return
+	}
+
+	if err := os.WriteFile(filename, data, 0644); err != nil {
+		cqa.logger.Warn("Failed to save quality history", zap.Error(err))
+	}
 }

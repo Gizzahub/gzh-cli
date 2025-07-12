@@ -14,6 +14,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
+	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
 	"github.com/spf13/cobra"
 )
@@ -38,6 +39,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(monitoring.NewMonitoringCmd(ctx))
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
+	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 	cmd.AddCommand(NewTaskRunnerCmd())
 	cmd.AddCommand(NewWebhookCmd())
