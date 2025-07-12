@@ -18,6 +18,8 @@ func newBranchPolicyCmd(logger *zap.Logger) *cobra.Command {
 		template    string
 		autoCleanup bool
 		dryRun      bool
+		createIssue string
+		deleteMode  string
 	)
 
 	cmd := &cobra.Command{
@@ -60,7 +62,49 @@ Examples:
 				return fmt.Errorf("invalid repository path: %w", err)
 			}
 
-			// Create branch policy manager
+			ctx := context.Background()
+
+			// Handle branch creation from issue
+			if createIssue != "" {
+				issue, err := ParseIssueFromString(createIssue)
+				if err != nil {
+					return fmt.Errorf("invalid issue format: %w", err)
+				}
+
+				branchConfig := &BranchManagementConfig{
+					RepositoryPath:    repoPath,
+					BranchNamingRules: template,
+					RemoteName:        "origin",
+					DryRun:            dryRun,
+				}
+
+				branchManager := NewBranchManager(logger, branchConfig)
+				return branchManager.CreateBranchFromIssue(ctx, issue)
+			}
+
+			// Handle branch deletion
+			if deleteMode != "" {
+				branchConfig := &BranchManagementConfig{
+					RepositoryPath:    repoPath,
+					BranchNamingRules: template,
+					RemoteName:        "origin",
+					StaleBranchDays:   30,
+					DryRun:            dryRun,
+				}
+
+				branchManager := NewBranchManager(logger, branchConfig)
+
+				switch deleteMode {
+				case "merged":
+					return branchManager.DeleteMergedBranches(ctx)
+				case "stale":
+					return branchManager.CleanupStaleBranches(ctx)
+				default:
+					return fmt.Errorf("invalid delete mode: %s (use 'merged' or 'stale')", deleteMode)
+				}
+			}
+
+			// Default branch policy enforcement
 			config := &BranchPolicyConfig{
 				RepositoryPath: repoPath,
 				Enforce:        enforce,
@@ -74,7 +118,6 @@ Examples:
 				return fmt.Errorf("failed to create branch policy manager: %w", err)
 			}
 
-			ctx := context.Background()
 			return manager.ApplyPolicies(ctx)
 		},
 	}
@@ -84,6 +127,8 @@ Examples:
 	cmd.Flags().StringVar(&template, "template", "github-flow", "Branch strategy template (gitflow|github-flow|gitlab-flow|custom)")
 	cmd.Flags().BoolVar(&autoCleanup, "auto-cleanup", false, "Enable automatic cleanup of stale branches")
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what would be enforced without applying changes")
+	cmd.Flags().StringVar(&createIssue, "create-issue", "", "Create branch from issue (format: 'ID: Title')")
+	cmd.Flags().StringVar(&deleteMode, "delete-mode", "", "Delete branches (merged|stale)")
 
 	return cmd
 }
@@ -250,11 +295,40 @@ func (bpm *BranchPolicyManager) ensureRequiredBranches(ctx context.Context) erro
 	fmt.Printf("🌿 Ensuring required branches exist: %v\n", bpm.rules.RequiredBranches)
 
 	for _, branch := range bpm.rules.RequiredBranches {
-		if bpm.config.DryRun {
-			fmt.Printf("📝 Would ensure branch '%s' exists\n", branch)
+		// Check if branch exists
+		result, _ := bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath,
+			"show-ref", "--verify", "--quiet", fmt.Sprintf("refs/heads/%s", branch))
+
+		if result == nil || !result.Success {
+			// Branch doesn't exist
+			if bpm.config.DryRun {
+				fmt.Printf("📝 Would create required branch '%s'\n", branch)
+			} else {
+				// Create the branch
+				_, err := bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath,
+					"checkout", "-b", branch)
+				if err != nil {
+					bpm.logger.Warn("Failed to create required branch",
+						zap.String("branch", branch),
+						zap.Error(err))
+					// Try to create from origin/main or origin/master
+					_, err = bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath,
+						"checkout", "-b", branch, "origin/main")
+					if err != nil {
+						_, err = bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath,
+							"checkout", "-b", branch, "origin/master")
+						if err != nil {
+							return fmt.Errorf("failed to create required branch %s: %w", branch, err)
+						}
+					}
+				}
+				fmt.Printf("✨ Created required branch '%s'\n", branch)
+
+				// Return to previous branch
+				bpm.gitCmd.ExecuteCommand(ctx, bpm.config.RepositoryPath, "checkout", "-")
+			}
 		} else {
-			// TODO: Check if branch exists and create if needed
-			fmt.Printf("✅ Branch '%s' verified\n", branch)
+			fmt.Printf("✅ Branch '%s' exists\n", branch)
 		}
 	}
 
@@ -265,13 +339,32 @@ func (bpm *BranchPolicyManager) ensureRequiredBranches(ctx context.Context) erro
 func (bpm *BranchPolicyManager) cleanupStaleBranches(ctx context.Context) error {
 	fmt.Printf("🧹 Cleaning up stale branches (older than %d days)...\n", bpm.rules.CleanupRules.StaleDays)
 
-	if bpm.config.DryRun {
-		fmt.Println("📝 Would identify and remove stale branches")
-		return nil
+	// Use BranchManager for cleanup
+	branchConfig := &BranchManagementConfig{
+		RepositoryPath:    bpm.config.RepositoryPath,
+		BranchNamingRules: bpm.config.Template,
+		RemoteName:        "origin",
+		StaleBranchDays:   bpm.rules.CleanupRules.StaleDays,
+		ProtectedBranches: bpm.rules.CleanupRules.ProtectedBranches,
+		DryRun:            bpm.config.DryRun,
+		AutoDelete:        bpm.rules.CleanupRules.AutoDelete,
 	}
 
-	// TODO: Implement stale branch detection and cleanup
-	fmt.Println("✅ Stale branch cleanup completed")
+	branchManager := NewBranchManager(bpm.logger, branchConfig)
+
+	// Clean up stale branches
+	if err := branchManager.CleanupStaleBranches(ctx); err != nil {
+		return fmt.Errorf("failed to cleanup stale branches: %w", err)
+	}
+
+	// Also delete merged branches if auto-cleanup is enabled
+	if bpm.config.AutoCleanup {
+		fmt.Println("\n🧹 Checking for merged branches...")
+		if err := branchManager.DeleteMergedBranches(ctx); err != nil {
+			return fmt.Errorf("failed to delete merged branches: %w", err)
+		}
+	}
+
 	return nil
 }
 
