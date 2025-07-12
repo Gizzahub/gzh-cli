@@ -30,7 +30,7 @@ priority: low
   - 공개 API 설계 및 문서화
   - Go 모듈로 배포 준비
   - 사용 예제 및 튜토리얼 작성
-- [ ] **Python 바인딩 구현** - Python 개발자를 위한 래퍼
+- [x] **Python 바인딩 구현** - Python 개발자를 위한 래퍼
   - Python 패키지 생성 (ctypes/cgo 활용)
   - Pythonic API 설계
   - pip 패키지로 배포
