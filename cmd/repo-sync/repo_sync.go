@@ -53,6 +53,7 @@ Examples:
 	cmd.AddCommand(newWatchMultiCmd(logger))
 	cmd.AddCommand(newBranchPolicyCmd(logger))
 	cmd.AddCommand(newQualityCheckCmd(logger))
+	cmd.AddCommand(newTrendAnalyzeCmd(logger))
 
 	return cmd
 }
