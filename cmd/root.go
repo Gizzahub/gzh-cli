@@ -8,11 +8,13 @@ import (
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
+	"github.com/gizzahub/gzh-manager-go/cmd/docker"
 	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
+	"github.com/gizzahub/gzh-manager-go/cmd/plugin"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
@@ -33,11 +35,13 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(bulkclone.NewBulkCloneCmd(ctx))
 	cmd.AddCommand(config.NewConfigCmd())
 	cmd.AddCommand(devenv.NewDevEnvCmd())
+	cmd.AddCommand(docker.DockerCmd)
 	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
 	cmd.AddCommand(ide.NewIDECmd(ctx))
 	cmd.AddCommand(migrate.NewMigrateCmd())
 	cmd.AddCommand(monitoring.NewMonitoringCmd(ctx))
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
+	cmd.AddCommand(plugin.PluginCmd)
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
 	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
