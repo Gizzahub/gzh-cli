@@ -29,6 +29,17 @@ This is useful when:
 - Verifying network state after changes
 
 Examples:
+  # Show current network status
+  gz net-env status
+  
+  # Switch to a network profile
+  gz net-env switch office
+  
+  # List available network profiles
+  gz net-env switch --list
+  
+  # Create example network profiles configuration
+  gz net-env switch --init
   
   # Execute network configuration actions
   gz net-env actions run
@@ -159,6 +170,8 @@ Examples:
 	// Get config directory
 	configDir := getConfigDirectory()
 
+	cmd.AddCommand(newStatusCmd())
+	cmd.AddCommand(newSwitchCmd())
 	cmd.AddCommand(newActionsCmd())
 	cmd.AddCommand(newCloudCmd(ctx))
 	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))
