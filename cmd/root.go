@@ -7,8 +7,10 @@ import (
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
+	debugcmd "github.com/gizzahub/gzh-manager-go/cmd/debug"
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/docker"
+	doctorcmd "github.com/gizzahub/gzh-manager-go/cmd/doctor"
 	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
 	"github.com/gizzahub/gzh-manager-go/cmd/i18n"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
@@ -18,6 +20,8 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/plugin"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
+	"github.com/gizzahub/gzh-manager-go/cmd/serve"
+	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
 	"github.com/spf13/cobra"
 )
@@ -35,6 +39,8 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
 	cmd.AddCommand(bulkclone.NewBulkCloneCmd(ctx))
 	cmd.AddCommand(config.NewConfigCmd())
+	cmd.AddCommand(debugcmd.DebugCmd)
+	cmd.AddCommand(doctorcmd.DoctorCmd)
 	cmd.AddCommand(devenv.NewDevEnvCmd())
 	cmd.AddCommand(docker.DockerCmd)
 	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
@@ -46,6 +52,8 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(plugin.PluginCmd)
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
 	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
+	cmd.AddCommand(serve.ServeCmd)
+	cmd.AddCommand(shell.ShellCmd)
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 	cmd.AddCommand(NewTaskRunnerCmd())
 	cmd.AddCommand(NewWebhookCmd())
