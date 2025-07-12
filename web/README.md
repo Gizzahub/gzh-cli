@@ -181,6 +181,30 @@ The Go server will serve:
 - Safari 14+
 - Edge 90+
 
+## Development Notes
+
+### Deprecation Warnings
+
+During `npm install`, you may see deprecation warnings. These are primarily from `react-scripts` dependencies and do not affect:
+
+- Application functionality
+- Production builds  
+- Runtime security
+
+**Key warnings explained:**
+- `inflight`, `stable`, `q` - Outdated utility libraries in build tools
+- Babel proposal plugins - Now part of ES standard, used by react-scripts
+- `eslint` 8.x - Upgraded to v9 in devDependencies
+- `svgo`, `glob` - Outdated versions in build chain
+
+See [SECURITY.md](./SECURITY.md) for detailed analysis and mitigation strategies.
+
+### Package Management
+
+- Direct dependencies are kept up-to-date with latest stable versions
+- Development tools may show warnings due to react-scripts constraints
+- Security vulnerabilities are monitored and limited to development tools only
+
 ## Contributing
 
 1. Follow React best practices and hooks patterns
