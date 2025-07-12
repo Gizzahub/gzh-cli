@@ -321,14 +321,14 @@ func (cqa *CodeQualityAnalyzer) AnalyzeQuality(ctx context.Context) (*QualityRes
 // initializeTools initializes available quality analysis tools
 func (cqa *CodeQualityAnalyzer) initializeTools() error {
 	// Initialize Go tools
-	cqa.tools["go"] = &GoQualityTool{}
+	cqa.tools["go"] = NewGoQualityAnalyzer(cqa.logger)
 
 	// Initialize JavaScript/TypeScript tools
-	cqa.tools["javascript"] = &JavaScriptQualityTool{}
-	cqa.tools["typescript"] = &TypeScriptQualityTool{}
+	cqa.tools["javascript"] = NewJavaScriptQualityAnalyzer(cqa.logger)
+	cqa.tools["typescript"] = NewTypeScriptQualityAnalyzer(cqa.logger)
 
 	// Initialize Python tools
-	cqa.tools["python"] = &PythonQualityTool{}
+	cqa.tools["python"] = NewPythonQualityAnalyzer(cqa.logger)
 
 	// Add more language tools as needed
 	return nil
@@ -552,49 +552,41 @@ func printQualityResults(result *QualityResult, format string) {
 	fmt.Println()
 }
 
-// Placeholder quality tool implementations
+// Additional helper functions for quality analysis
 
-type GoQualityTool struct{}
+// analyzeSecurityIssues extracts security issues from general issues
+func (cqa *CodeQualityAnalyzer) analyzeSecurityIssues(issues []QualityIssue) []SecurityIssue {
+	securityIssues := make([]SecurityIssue, 0)
 
-func (t *GoQualityTool) Name() string                         { return "golangci-lint" }
-func (t *GoQualityTool) Language() string                     { return "go" }
-func (t *GoQualityTool) IsAvailable(ctx context.Context) bool { return true }
-func (t *GoQualityTool) Analyze(ctx context.Context, path string) (*QualityResult, error) {
-	// TODO: Implement actual Go quality analysis
-	return &QualityResult{
-		OverallScore: 85.0,
-		Metrics: QualityMetrics{
-			TotalFiles:       10,
-			TotalLinesOfCode: 1000,
-			AvgComplexity:    3.2,
-		},
-		Issues: []QualityIssue{},
-	}, nil
+	for _, issue := range issues {
+		if issue.Type == "security" || strings.Contains(strings.ToLower(issue.Message), "security") ||
+			strings.Contains(strings.ToLower(issue.Message), "vulnerability") {
+			securityIssues = append(securityIssues, SecurityIssue{
+				Type:        issue.Type,
+				Severity:    issue.Severity,
+				File:        issue.File,
+				Line:        issue.Line,
+				Description: issue.Message,
+				CWE:         cqa.mapToCWE(issue.Rule),
+			})
+		}
+	}
+
+	return securityIssues
 }
 
-type JavaScriptQualityTool struct{}
+// mapToCWE maps rule IDs to CWE identifiers
+func (cqa *CodeQualityAnalyzer) mapToCWE(rule string) string {
+	// Simple mapping of common security rules to CWE
+	cweMap := map[string]string{
+		"B201": "CWE-78",  // Command injection
+		"B301": "CWE-327", // Use of weak crypto
+		"B601": "CWE-116", // Shell injection
+		"B608": "CWE-89",  // SQL injection
+	}
 
-func (t *JavaScriptQualityTool) Name() string                         { return "eslint" }
-func (t *JavaScriptQualityTool) Language() string                     { return "javascript" }
-func (t *JavaScriptQualityTool) IsAvailable(ctx context.Context) bool { return false } // Not implemented
-func (t *JavaScriptQualityTool) Analyze(ctx context.Context, path string) (*QualityResult, error) {
-	return nil, fmt.Errorf("not implemented")
-}
-
-type TypeScriptQualityTool struct{}
-
-func (t *TypeScriptQualityTool) Name() string                         { return "tslint" }
-func (t *TypeScriptQualityTool) Language() string                     { return "typescript" }
-func (t *TypeScriptQualityTool) IsAvailable(ctx context.Context) bool { return false }
-func (t *TypeScriptQualityTool) Analyze(ctx context.Context, path string) (*QualityResult, error) {
-	return nil, fmt.Errorf("not implemented")
-}
-
-type PythonQualityTool struct{}
-
-func (t *PythonQualityTool) Name() string                         { return "pylint" }
-func (t *PythonQualityTool) Language() string                     { return "python" }
-func (t *PythonQualityTool) IsAvailable(ctx context.Context) bool { return false }
-func (t *PythonQualityTool) Analyze(ctx context.Context, path string) (*QualityResult, error) {
-	return nil, fmt.Errorf("not implemented")
+	if cwe, exists := cweMap[rule]; exists {
+		return cwe
+	}
+	return ""
 }
