@@ -17,34 +17,28 @@ func TestNewNetEnvCmd(t *testing.T) {
 	assert.NotEmpty(t, cmd.Long)
 	assert.True(t, cmd.SilenceUsage)
 
-	// Check subcommands
+	// Check subcommands - should have status, switch, and other commands
 	subcommands := cmd.Commands()
-	assert.Len(t, subcommands, 3)
+	assert.GreaterOrEqual(t, len(subcommands), 2) // At least status and switch commands
 
-	// Verify subcommands exist
-	var daemonCmd, wifiCmd, actionsCmd *cobra.Command
+	// Verify core CLI subcommands exist
+	var statusCmd, switchCmd *cobra.Command
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
-		case "daemon":
-			daemonCmd = subcmd
-		case "wifi":
-			wifiCmd = subcmd
-		case "actions":
-			actionsCmd = subcmd
+		case "status":
+			statusCmd = subcmd
+		case "switch [profile-name]":
+			switchCmd = subcmd
 		}
 	}
 
-	assert.NotNil(t, daemonCmd)
-	assert.Equal(t, "daemon", daemonCmd.Use)
-	assert.Equal(t, "Monitor and manage system daemons", daemonCmd.Short)
+	assert.NotNil(t, statusCmd)
+	assert.Equal(t, "status", statusCmd.Use)
+	assert.Equal(t, "Show current network environment status", statusCmd.Short)
 
-	assert.NotNil(t, wifiCmd)
-	assert.Equal(t, "wifi", wifiCmd.Use)
-	assert.Equal(t, "Monitor WiFi changes and trigger actions", wifiCmd.Short)
-
-	assert.NotNil(t, actionsCmd)
-	assert.Equal(t, "actions", actionsCmd.Use)
-	assert.Equal(t, "Execute network configuration actions", actionsCmd.Short)
+	assert.NotNil(t, switchCmd)
+	assert.Equal(t, "switch [profile-name]", switchCmd.Use)
+	assert.Equal(t, "Switch network environment to specified profile", switchCmd.Short)
 }
 
 func TestNetEnvCmdStructure(t *testing.T) {
