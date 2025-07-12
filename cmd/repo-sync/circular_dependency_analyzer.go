@@ -35,7 +35,7 @@ func (cdd *CircularDependencyDetector) generateCycleDescription(cycle *EnhancedC
 	cycleStr := strings.Join(cycle.Cycle[:len(cycle.Cycle)-1], " → ")
 	cycleStr += " → " + cycle.Cycle[0] // Close the cycle
 
-	return fmt.Sprintf("%s cycle of length %d: %s", 
+	return fmt.Sprintf("%s cycle of length %d: %s",
 		strings.Title(cycle.CycleType), cycle.Length, cycleStr)
 }
 

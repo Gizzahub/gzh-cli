@@ -57,7 +57,7 @@ func (ia *ImpactAnalyzer) generateReasonForImpact(module *AffectedModule, change
 	}
 
 	var reason strings.Builder
-	
+
 	if module.DistanceFromChange == 1 {
 		reason.WriteString("Module directly depends on modified code")
 	} else {
@@ -94,8 +94,8 @@ func (ia *ImpactAnalyzer) identifyAffectedFeatures(module *AffectedModule, chang
 	// Extract features from module path
 	pathParts := strings.Split(module.ModulePath, "/")
 	for _, part := range pathParts {
-		if strings.Contains(part, "service") || strings.Contains(part, "handler") || 
-		   strings.Contains(part, "controller") || strings.Contains(part, "api") {
+		if strings.Contains(part, "service") || strings.Contains(part, "handler") ||
+			strings.Contains(part, "controller") || strings.Contains(part, "api") {
 			features = append(features, strings.Title(part))
 		}
 	}

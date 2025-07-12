@@ -48,15 +48,15 @@ func TestCircularDependencyDetector_DetectCircularDependencies(t *testing.T) {
 			// Simple 2-node cycle: A -> B -> A
 			{From: "moduleA", To: "moduleB", Type: DependencyTypeImport, Language: "go", Strength: DependencyStrengthStrong, External: false},
 			{From: "moduleB", To: "moduleA", Type: DependencyTypeImport, Language: "go", Strength: DependencyStrengthStrong, External: false},
-			
+
 			// 3-node cycle: C -> D -> E -> C
 			{From: "moduleC", To: "moduleD", Type: DependencyTypeRequire, Language: "javascript", Strength: DependencyStrengthWeak, External: false},
 			{From: "moduleD", To: "moduleE", Type: DependencyTypeRequire, Language: "javascript", Strength: DependencyStrengthStrong, External: false},
 			{From: "moduleE", To: "moduleC", Type: DependencyTypeRequire, Language: "javascript", Strength: DependencyStrengthStrong, External: false},
-			
+
 			// External dependency (should be excluded)
 			{From: "moduleA", To: "external_lib", Type: DependencyTypeImport, Language: "go", Strength: DependencyStrengthStrong, External: true},
-			
+
 			// Non-circular dependencies
 			{From: "moduleF", To: "moduleG", Type: DependencyTypeImport, Language: "python", Strength: DependencyStrengthStrong, External: false},
 		},
@@ -320,20 +320,20 @@ func TestCircularDependencyDetector_FilterCycles(t *testing.T) {
 	cycles := []*EnhancedCycle{
 		{ID: "1", Length: 2, Severity: "critical"},
 		{ID: "2", Length: 3, Severity: "medium"},
-		{ID: "3", Length: 4, Severity: "high"},      // Should be filtered (too long)
-		{ID: "4", Length: 2, Severity: "low"},       // Should be filtered (low severity)
+		{ID: "3", Length: 4, Severity: "high"}, // Should be filtered (too long)
+		{ID: "4", Length: 2, Severity: "low"},  // Should be filtered (low severity)
 		{ID: "5", Length: 3, Severity: "high"},
 	}
 
 	filtered := detector.filterCycles(cycles)
 
 	assert.Len(t, filtered, 3) // Should have cycles 1, 2, and 5
-	
+
 	ids := make([]string, len(filtered))
 	for i, cycle := range filtered {
 		ids[i] = cycle.ID
 	}
-	
+
 	assert.Contains(t, ids, "1")
 	assert.Contains(t, ids, "2")
 	assert.Contains(t, ids, "5")
@@ -353,7 +353,7 @@ func TestCircularDependencyDetector_GenerateRecommendations(t *testing.T) {
 		MaintainabilityScore: 8.0,
 		LanguageImpact:       make(map[string]*LanguageImpact),
 	}
-	
+
 	recommendations := detector.generateRecommendations(noCycles, noImpact)
 	assert.NotEmpty(t, recommendations)
 	assert.Contains(t, recommendations[0], "No circular dependencies")
@@ -364,7 +364,7 @@ func TestCircularDependencyDetector_GenerateRecommendations(t *testing.T) {
 		{Severity: "high"},
 		{Severity: "medium"},
 	}
-	
+
 	highImpact := &ImpactAnalysis{
 		SystemComplexity:     8.0,
 		TestabilityScore:     4.0,
@@ -373,10 +373,10 @@ func TestCircularDependencyDetector_GenerateRecommendations(t *testing.T) {
 			"go": {CycleCount: 5},
 		},
 	}
-	
+
 	criticalRecommendations := detector.generateRecommendations(criticalCycles, highImpact)
 	assert.NotEmpty(t, criticalRecommendations)
-	
+
 	// Should contain recommendations about critical cycles, complexity, etc.
 	recommendationText := strings.Join(criticalRecommendations, " ")
 	assert.Contains(t, recommendationText, "critical")
@@ -396,7 +396,7 @@ func TestCircularDependencyDetector_GroupMethods(t *testing.T) {
 
 	// Test grouping by language
 	byLanguage := detector.groupCyclesByLanguage(cycles)
-	assert.Len(t, byLanguage["go"], 2)      // cycles 1 and 3
+	assert.Len(t, byLanguage["go"], 2)         // cycles 1 and 3
 	assert.Len(t, byLanguage["javascript"], 1) // cycle 2
 	assert.Len(t, byLanguage["python"], 2)     // cycles 3 and 4
 

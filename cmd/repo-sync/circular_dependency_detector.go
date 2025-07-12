@@ -17,12 +17,12 @@ type CircularDependencyDetector struct {
 
 // CircularDetectionConfig represents configuration for circular dependency detection
 type CircularDetectionConfig struct {
-	MaxCycleLength     int     `json:"max_cycle_length"`     // Maximum cycle length to report
-	MinSeverityLevel   string  `json:"min_severity_level"`   // Minimum severity to report (low, medium, high, critical)
-	IncludeExternal    bool    `json:"include_external"`     // Include external dependencies in analysis
-	DetectionDepth     int     `json:"detection_depth"`      // Maximum depth for cycle detection
-	AnalyzeWeakCycles  bool    `json:"analyze_weak_cycles"`  // Include weak dependency cycles
-	GroupByLanguage    bool    `json:"group_by_language"`    // Group results by programming language
+	MaxCycleLength     int                `json:"max_cycle_length"`    // Maximum cycle length to report
+	MinSeverityLevel   string             `json:"min_severity_level"`  // Minimum severity to report (low, medium, high, critical)
+	IncludeExternal    bool               `json:"include_external"`    // Include external dependencies in analysis
+	DetectionDepth     int                `json:"detection_depth"`     // Maximum depth for cycle detection
+	AnalyzeWeakCycles  bool               `json:"analyze_weak_cycles"` // Include weak dependency cycles
+	GroupByLanguage    bool               `json:"group_by_language"`   // Group results by programming language
 	SeverityThresholds SeverityThresholds `json:"severity_thresholds"`
 }
 
@@ -36,58 +36,58 @@ type SeverityThresholds struct {
 
 // CircularDependencyReport represents a comprehensive analysis of circular dependencies
 type CircularDependencyReport struct {
-	Summary           *CircularSummary           `json:"summary"`
-	CyclesByLanguage  map[string][]*EnhancedCycle `json:"cycles_by_language"`
-	CyclesByLength    map[int][]*EnhancedCycle   `json:"cycles_by_length"`
-	CyclesBySeverity  map[string][]*EnhancedCycle `json:"cycles_by_severity"`
-	ImpactAnalysis    *ImpactAnalysis            `json:"impact_analysis"`
-	BreakingStrategies []*BreakingStrategy       `json:"breaking_strategies"`
-	Recommendations   []string                   `json:"recommendations"`
-	GeneratedAt       time.Time                  `json:"generated_at"`
+	Summary            *CircularSummary            `json:"summary"`
+	CyclesByLanguage   map[string][]*EnhancedCycle `json:"cycles_by_language"`
+	CyclesByLength     map[int][]*EnhancedCycle    `json:"cycles_by_length"`
+	CyclesBySeverity   map[string][]*EnhancedCycle `json:"cycles_by_severity"`
+	ImpactAnalysis     *ImpactAnalysis             `json:"impact_analysis"`
+	BreakingStrategies []*BreakingStrategy         `json:"breaking_strategies"`
+	Recommendations    []string                    `json:"recommendations"`
+	GeneratedAt        time.Time                   `json:"generated_at"`
 }
 
 // CircularSummary provides high-level statistics about circular dependencies
 type CircularSummary struct {
-	TotalCycles        int                        `json:"total_cycles"`
-	TotalNodes         int                        `json:"total_nodes"`
-	AffectedNodes      int                        `json:"affected_nodes"`
-	CriticalCycles     int                        `json:"critical_cycles"`
-	HighSeverityCycles int                        `json:"high_severity_cycles"`
-	AverageCycleLength float64                    `json:"average_cycle_length"`
-	MaxCycleLength     int                        `json:"max_cycle_length"`
-	LanguageBreakdown  map[string]int             `json:"language_breakdown"`
-	SeverityDistribution map[string]int           `json:"severity_distribution"`
+	TotalCycles          int            `json:"total_cycles"`
+	TotalNodes           int            `json:"total_nodes"`
+	AffectedNodes        int            `json:"affected_nodes"`
+	CriticalCycles       int            `json:"critical_cycles"`
+	HighSeverityCycles   int            `json:"high_severity_cycles"`
+	AverageCycleLength   float64        `json:"average_cycle_length"`
+	MaxCycleLength       int            `json:"max_cycle_length"`
+	LanguageBreakdown    map[string]int `json:"language_breakdown"`
+	SeverityDistribution map[string]int `json:"severity_distribution"`
 }
 
 // EnhancedCycle represents a circular dependency with enhanced analysis
 type EnhancedCycle struct {
-	ID              string                 `json:"id"`
-	Cycle           []string               `json:"cycle"`
-	Length          int                    `json:"length"`
-	Severity        string                 `json:"severity"`
-	Weight          float64                `json:"weight"`
-	Languages       []string               `json:"languages"`
-	CycleType       string                 `json:"cycle_type"`       // direct, indirect, cross-language
-	Description     string                 `json:"description"`
-	Impact          string                 `json:"impact"`
-	Suggestions     []string               `json:"suggestions"`
-	BreakingPoints  []*BreakingPoint       `json:"breaking_points"`
-	RelatedCycles   []string               `json:"related_cycles"`
-	DetectedAt      time.Time              `json:"detected_at"`
-	Edges           []*CycleEdge           `json:"edges"`
-	Metrics         *CycleMetrics          `json:"metrics"`
+	ID             string           `json:"id"`
+	Cycle          []string         `json:"cycle"`
+	Length         int              `json:"length"`
+	Severity       string           `json:"severity"`
+	Weight         float64          `json:"weight"`
+	Languages      []string         `json:"languages"`
+	CycleType      string           `json:"cycle_type"` // direct, indirect, cross-language
+	Description    string           `json:"description"`
+	Impact         string           `json:"impact"`
+	Suggestions    []string         `json:"suggestions"`
+	BreakingPoints []*BreakingPoint `json:"breaking_points"`
+	RelatedCycles  []string         `json:"related_cycles"`
+	DetectedAt     time.Time        `json:"detected_at"`
+	Edges          []*CycleEdge     `json:"edges"`
+	Metrics        *CycleMetrics    `json:"metrics"`
 }
 
 // BreakingPoint represents a potential point to break a circular dependency
 type BreakingPoint struct {
-	FromNode      string  `json:"from_node"`
-	ToNode        string  `json:"to_node"`
-	Confidence    float64 `json:"confidence"`    // 0-1, how confident we are this is a good breaking point
-	Impact        string  `json:"impact"`        // low, medium, high
-	Strategy      string  `json:"strategy"`      // interface, injection, merge, extract, etc.
-	Description   string  `json:"description"`
-	Effort        string  `json:"effort"`        // low, medium, high
-	Rationale     string  `json:"rationale"`
+	FromNode    string  `json:"from_node"`
+	ToNode      string  `json:"to_node"`
+	Confidence  float64 `json:"confidence"` // 0-1, how confident we are this is a good breaking point
+	Impact      string  `json:"impact"`     // low, medium, high
+	Strategy    string  `json:"strategy"`   // interface, injection, merge, extract, etc.
+	Description string  `json:"description"`
+	Effort      string  `json:"effort"` // low, medium, high
+	Rationale   string  `json:"rationale"`
 }
 
 // CycleEdge represents an edge within a circular dependency
@@ -103,31 +103,31 @@ type CycleEdge struct {
 
 // CycleMetrics provides metrics about a cycle
 type CycleMetrics struct {
-	TotalWeight       float64 `json:"total_weight"`
-	AverageWeight     float64 `json:"average_weight"`
-	StrongEdges       int     `json:"strong_edges"`
-	WeakEdges         int     `json:"weak_edges"`
-	OptionalEdges     int     `json:"optional_edges"`
-	CrossLanguageEdges int    `json:"cross_language_edges"`
-	Complexity        float64 `json:"complexity"`
+	TotalWeight        float64 `json:"total_weight"`
+	AverageWeight      float64 `json:"average_weight"`
+	StrongEdges        int     `json:"strong_edges"`
+	WeakEdges          int     `json:"weak_edges"`
+	OptionalEdges      int     `json:"optional_edges"`
+	CrossLanguageEdges int     `json:"cross_language_edges"`
+	Complexity         float64 `json:"complexity"`
 }
 
 // ImpactAnalysis provides analysis of the impact of circular dependencies
 type ImpactAnalysis struct {
-	MostAffectedNodes []string                   `json:"most_affected_nodes"`
-	CriticalPaths     [][]string                 `json:"critical_paths"`
-	LanguageImpact    map[string]*LanguageImpact `json:"language_impact"`
-	SystemComplexity  float64                    `json:"system_complexity"`
-	TestabilityScore  float64                    `json:"testability_score"`
-	MaintainabilityScore float64                 `json:"maintainability_score"`
+	MostAffectedNodes    []string                   `json:"most_affected_nodes"`
+	CriticalPaths        [][]string                 `json:"critical_paths"`
+	LanguageImpact       map[string]*LanguageImpact `json:"language_impact"`
+	SystemComplexity     float64                    `json:"system_complexity"`
+	TestabilityScore     float64                    `json:"testability_score"`
+	MaintainabilityScore float64                    `json:"maintainability_score"`
 }
 
 // LanguageImpact represents the impact on a specific programming language
 type LanguageImpact struct {
-	Language       string  `json:"language"`
-	CycleCount     int     `json:"cycle_count"`
-	AffectedModules int    `json:"affected_modules"`
-	ComplexityScore float64 `json:"complexity_score"`
+	Language        string   `json:"language"`
+	CycleCount      int      `json:"cycle_count"`
+	AffectedModules int      `json:"affected_modules"`
+	ComplexityScore float64  `json:"complexity_score"`
 	Recommendations []string `json:"recommendations"`
 }
 
@@ -149,12 +149,12 @@ type BreakingStrategy struct {
 func NewCircularDependencyDetector(logger *zap.Logger, config *CircularDetectionConfig) *CircularDependencyDetector {
 	if config == nil {
 		config = &CircularDetectionConfig{
-			MaxCycleLength:   10,
-			MinSeverityLevel: "low",
-			IncludeExternal:  false,
-			DetectionDepth:   20,
+			MaxCycleLength:    10,
+			MinSeverityLevel:  "low",
+			IncludeExternal:   false,
+			DetectionDepth:    20,
 			AnalyzeWeakCycles: true,
-			GroupByLanguage:  true,
+			GroupByLanguage:   true,
 			SeverityThresholds: SeverityThresholds{
 				CriticalCycleLength: 2,
 				HighCycleLength:     3,
@@ -251,7 +251,7 @@ func (cdd *CircularDependencyDetector) detectAllCycles(graph map[string][]*Cycle
 
 	// Use Tarjan's strongly connected components algorithm for better cycle detection
 	cycles := cdd.findStronglyConnectedComponents(graph)
-	
+
 	// Convert SCCs to cycle paths
 	for _, scc := range cycles {
 		if len(scc) > 1 {
@@ -331,12 +331,12 @@ func (cdd *CircularDependencyDetector) findStronglyConnectedComponents(graph map
 // findCyclePathsInSCC finds actual cycle paths within an SCC
 func (cdd *CircularDependencyDetector) findCyclePathsInSCC(scc []string, graph map[string][]*CycleEdge) [][]*CycleEdge {
 	var cycles [][]*CycleEdge
-	
+
 	// For each node in SCC, try to find cycles starting from it
 	for _, startNode := range scc {
 		visited := make(map[string]bool)
 		path := make([]*CycleEdge, 0)
-		
+
 		var dfs func(string, string) bool
 		dfs = func(current, target string) bool {
 			if current == target && len(path) > 0 {
@@ -346,13 +346,13 @@ func (cdd *CircularDependencyDetector) findCyclePathsInSCC(scc []string, graph m
 				cycles = append(cycles, cycleCopy)
 				return true
 			}
-			
+
 			if visited[current] {
 				return false
 			}
-			
+
 			visited[current] = true
-			
+
 			for _, edge := range graph[current] {
 				if edge.To == target || (!visited[edge.To] && cdd.contains(scc, edge.To)) {
 					path = append(path, edge)
@@ -362,14 +362,14 @@ func (cdd *CircularDependencyDetector) findCyclePathsInSCC(scc []string, graph m
 					path = path[:len(path)-1]
 				}
 			}
-			
+
 			visited[current] = false
 			return false
 		}
-		
+
 		dfs(startNode, startNode)
 	}
-	
+
 	return cycles
 }
 
@@ -379,19 +379,19 @@ func (cdd *CircularDependencyDetector) johnsonCycleDetection(graph map[string][]
 	blocked := make(map[string]bool)
 	blockedMap := make(map[string]map[string]bool)
 	stack := make([]*CycleEdge, 0)
-	
+
 	nodes := make([]string, 0, len(graph))
 	for node := range graph {
 		nodes = append(nodes, node)
 	}
 	sort.Strings(nodes)
-	
+
 	var circuit func(string, string) bool
 	circuit = func(v, s string) bool {
 		found := false
 		stack = append(stack, &CycleEdge{From: v}) // Placeholder edge
 		blocked[v] = true
-		
+
 		for _, edge := range graph[v] {
 			w := edge.To
 			if w == s {
@@ -407,7 +407,7 @@ func (cdd *CircularDependencyDetector) johnsonCycleDetection(graph map[string][]
 				}
 			}
 		}
-		
+
 		if found {
 			cdd.unblock(v, blocked, blockedMap)
 		} else {
@@ -419,26 +419,26 @@ func (cdd *CircularDependencyDetector) johnsonCycleDetection(graph map[string][]
 				blockedMap[w][v] = true
 			}
 		}
-		
+
 		stack = stack[:len(stack)-1]
 		return found
 	}
-	
+
 	for i, s := range nodes {
 		// Limit detection to prevent excessive computation
 		if len(cycles) > 100 {
 			break
 		}
-		
+
 		// Reset for this starting node
 		for _, node := range nodes[i:] {
 			blocked[node] = false
 			blockedMap[node] = make(map[string]bool)
 		}
-		
+
 		circuit(s, s)
 	}
-	
+
 	return cycles
 }
 
@@ -469,13 +469,13 @@ func (cdd *CircularDependencyDetector) enhanceCycles(rawCycles [][]*CycleEdge, g
 
 	for i, cycle := range rawCycles {
 		enhancedCycle := &EnhancedCycle{
-			ID:          fmt.Sprintf("cycle_%d", i+1),
-			Cycle:       cdd.extractNodePath(cycle),
-			Length:      len(cycle),
-			Edges:       cycle,
-			DetectedAt:  time.Now(),
-			Languages:   cdd.extractLanguages(cycle),
-			Metrics:     cdd.calculateCycleMetrics(cycle),
+			ID:         fmt.Sprintf("cycle_%d", i+1),
+			Cycle:      cdd.extractNodePath(cycle),
+			Length:     len(cycle),
+			Edges:      cycle,
+			DetectedAt: time.Now(),
+			Languages:  cdd.extractLanguages(cycle),
+			Metrics:    cdd.calculateCycleMetrics(cycle),
 		}
 
 		enhancedCycle.Weight = enhancedCycle.Metrics.TotalWeight

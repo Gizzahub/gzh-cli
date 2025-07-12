@@ -85,7 +85,7 @@ func (cdd *CircularDependencyDetector) identifyCriticalPaths(cycles []*EnhancedC
 			// Extract all paths of length 2 from the cycle
 			for i := 0; i < len(cycle.Cycle)-1; i++ {
 				for j := i + 1; j < len(cycle.Cycle)-1 && j-i <= 3; j++ {
-					path := cycle.Cycle[i:j+1]
+					path := cycle.Cycle[i : j+1]
 					pathKey := cdd.pathKey(path)
 					pathCount[pathKey]++
 					pathCycles[pathKey] = append(pathCycles[pathKey], cycle)
@@ -167,7 +167,7 @@ func (cdd *CircularDependencyDetector) analyzeLanguageImpact(cycles []*EnhancedC
 	// Calculate final metrics and recommendations
 	for lang, impact := range languageImpact {
 		impact.AffectedModules = len(modulesByLanguage[lang])
-		
+
 		if impact.CycleCount > 0 {
 			impact.ComplexityScore /= float64(impact.CycleCount) // Average complexity
 		}

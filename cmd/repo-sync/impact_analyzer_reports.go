@@ -97,7 +97,7 @@ func (ia *ImpactAnalyzer) generateTestRecommendations(module *AffectedModule, im
 func (ia *ImpactAnalyzer) estimateTestEffort(affectedModules []*AffectedModule, changeSet *ChangeSet) string {
 	totalModules := len(affectedModules)
 	highRiskModules := 0
-	
+
 	for _, module := range affectedModules {
 		if module.RiskLevel == "high" {
 			highRiskModules++
@@ -138,13 +138,13 @@ func (ia *ImpactAnalyzer) analyzePerformanceImpact(changeSet *ChangeSet, affecte
 	}
 
 	performanceKeywords := []string{"cache", "database", "network", "algorithm", "loop", "query", "index", "memory"}
-	
+
 	for _, module := range affectedModules {
 		// Check if module path suggests performance-critical components
 		for _, keyword := range performanceKeywords {
 			if strings.Contains(strings.ToLower(module.ModulePath), keyword) {
 				impact.AffectedComponents = append(impact.AffectedComponents, module.ModulePath)
-				impact.RecommendedBenchmarks = append(impact.RecommendedBenchmarks, 
+				impact.RecommendedBenchmarks = append(impact.RecommendedBenchmarks,
 					fmt.Sprintf("Benchmark %s performance", module.ModulePath))
 				break
 			}
@@ -290,7 +290,7 @@ func (ia *ImpactAnalyzer) generateRecommendations(changeSet *ChangeSet, affected
 	}
 
 	if poorCoverageCount > 3 {
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			fmt.Sprintf("🧪 %d modules have poor test coverage - Prioritize test improvements", poorCoverageCount))
 	}
 
@@ -323,12 +323,12 @@ func (ia *ImpactAnalyzer) generateMitigationStrategies(riskAssessment *RiskAsses
 	// Strategy for high-risk modules
 	if len(riskAssessment.HighRiskModules) > 0 {
 		strategies = append(strategies, &MitigationStrategy{
-			ID:          fmt.Sprintf("strategy_%d", strategyID),
-			Name:        "High-Risk Module Monitoring",
-			Description: "Implement enhanced monitoring for high-risk modules",
-			Priority:    9,
-			Effort:      "medium",
-			Effectiveness: "high",
+			ID:              fmt.Sprintf("strategy_%d", strategyID),
+			Name:            "High-Risk Module Monitoring",
+			Description:     "Implement enhanced monitoring for high-risk modules",
+			Priority:        9,
+			Effort:          "medium",
+			Effectiveness:   "high",
 			ApplicableRisks: []string{"high_risk_modules"},
 			Steps: []string{
 				"Set up detailed logging for high-risk modules",
@@ -350,12 +350,12 @@ func (ia *ImpactAnalyzer) generateMitigationStrategies(riskAssessment *RiskAsses
 
 	if len(poorCoverageModules) > 0 {
 		strategies = append(strategies, &MitigationStrategy{
-			ID:          fmt.Sprintf("strategy_%d", strategyID),
-			Name:        "Test Coverage Improvement",
-			Description: "Improve test coverage for affected modules",
-			Priority:    7,
-			Effort:      "high",
-			Effectiveness: "high",
+			ID:              fmt.Sprintf("strategy_%d", strategyID),
+			Name:            "Test Coverage Improvement",
+			Description:     "Improve test coverage for affected modules",
+			Priority:        7,
+			Effort:          "high",
+			Effectiveness:   "high",
 			ApplicableRisks: []string{"poor_test_coverage"},
 			Steps: []string{
 				"Identify critical paths in affected modules",
@@ -370,12 +370,12 @@ func (ia *ImpactAnalyzer) generateMitigationStrategies(riskAssessment *RiskAsses
 	// Strategy for critical paths
 	if len(riskAssessment.CriticalPaths) > 0 {
 		strategies = append(strategies, &MitigationStrategy{
-			ID:          fmt.Sprintf("strategy_%d", strategyID),
-			Name:        "Critical Path Protection",
-			Description: "Protect critical dependency paths from failures",
-			Priority:    8,
-			Effort:      "medium",
-			Effectiveness: "high",
+			ID:              fmt.Sprintf("strategy_%d", strategyID),
+			Name:            "Critical Path Protection",
+			Description:     "Protect critical dependency paths from failures",
+			Priority:        8,
+			Effort:          "medium",
+			Effectiveness:   "high",
 			ApplicableRisks: []string{"critical_paths"},
 			Steps: []string{
 				"Implement circuit breakers for critical paths",
@@ -395,12 +395,12 @@ func (ia *ImpactAnalyzer) generateMitigationStrategies(riskAssessment *RiskAsses
 
 	if len(languages) > 1 {
 		strategies = append(strategies, &MitigationStrategy{
-			ID:          fmt.Sprintf("strategy_%d", strategyID),
-			Name:        "Cross-Language Integration Testing",
-			Description: "Ensure proper integration across different programming languages",
-			Priority:    6,
-			Effort:      "medium",
-			Effectiveness: "medium",
+			ID:              fmt.Sprintf("strategy_%d", strategyID),
+			Name:            "Cross-Language Integration Testing",
+			Description:     "Ensure proper integration across different programming languages",
+			Priority:        6,
+			Effort:          "medium",
+			Effectiveness:   "medium",
 			ApplicableRisks: []string{"cross_language_complexity"},
 			Steps: []string{
 				"Set up end-to-end test environments",
@@ -415,12 +415,12 @@ func (ia *ImpactAnalyzer) generateMitigationStrategies(riskAssessment *RiskAsses
 	// Strategy for overall risk mitigation
 	if riskAssessment.OverallRisk == "critical" || riskAssessment.OverallRisk == "high" {
 		strategies = append(strategies, &MitigationStrategy{
-			ID:          fmt.Sprintf("strategy_%d", strategyID),
-			Name:        "Staged Deployment",
-			Description: "Deploy changes in stages to minimize risk",
-			Priority:    10,
-			Effort:      "low",
-			Effectiveness: "high",
+			ID:              fmt.Sprintf("strategy_%d", strategyID),
+			Name:            "Staged Deployment",
+			Description:     "Deploy changes in stages to minimize risk",
+			Priority:        10,
+			Effort:          "low",
+			Effectiveness:   "high",
 			ApplicableRisks: []string{"overall_high_risk"},
 			Steps: []string{
 				"Deploy to development environment first",
@@ -479,12 +479,12 @@ func (ia *ImpactAnalyzer) extractModulesFromFiles(files []string) []string {
 	for _, file := range files {
 		// Extract module path from file path
 		dir := filepath.Dir(file)
-		
+
 		// Normalize module path (remove common prefixes)
 		module := strings.TrimPrefix(dir, "./")
 		module = strings.TrimPrefix(module, "src/")
 		module = strings.TrimPrefix(module, "lib/")
-		
+
 		if module != "" && module != "." {
 			moduleSet[module] = true
 		}
@@ -502,29 +502,29 @@ func (ia *ImpactAnalyzer) extractModulesFromFiles(files []string) []string {
 func (ia *ImpactAnalyzer) inferChangeType(files []string) string {
 	// This is a simplified implementation
 	// In practice, you would analyze git status to determine if files were added, modified, or deleted
-	
+
 	if len(files) > 10 {
 		return "refactor"
 	}
-	
+
 	// Check for common patterns
 	for _, file := range files {
 		if strings.Contains(file, "test") {
 			continue // Skip test files for change type detection
 		}
-		
+
 		if strings.Contains(file, "new") || strings.Contains(file, "add") {
 			return "addition"
 		}
 	}
-	
+
 	return "modification"
 }
 
 // inferPrimaryLanguage infers the primary language from file extensions
 func (ia *ImpactAnalyzer) inferPrimaryLanguage(files []string) string {
 	langCount := make(map[string]int)
-	
+
 	for _, file := range files {
 		ext := strings.ToLower(filepath.Ext(file))
 		switch ext {
@@ -546,7 +546,7 @@ func (ia *ImpactAnalyzer) inferPrimaryLanguage(files []string) string {
 			langCount["csharp"]++
 		}
 	}
-	
+
 	// Find the language with the most files
 	maxCount := 0
 	primaryLang := "unknown"
@@ -556,6 +556,6 @@ func (ia *ImpactAnalyzer) inferPrimaryLanguage(files []string) string {
 			primaryLang = lang
 		}
 	}
-	
+
 	return primaryLang
 }

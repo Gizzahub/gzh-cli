@@ -17,124 +17,124 @@ type ImpactAnalyzer struct {
 
 // ImpactAnalysisConfig represents configuration for impact analysis
 type ImpactAnalysisConfig struct {
-	MaxDepth              int      `json:"max_depth"`               // Maximum depth for impact analysis
-	IncludeExternalDeps   bool     `json:"include_external_deps"`   // Include external dependencies in analysis
-	AnalyzeTestImpact     bool     `json:"analyze_test_impact"`     // Analyze impact on test files
-	ConsiderWeakDeps      bool     `json:"consider_weak_deps"`      // Consider weak dependencies in analysis
-	ImpactThreshold       float64  `json:"impact_threshold"`        // Minimum impact score to report
-	ExcludePatterns       []string `json:"exclude_patterns"`        // Patterns to exclude from analysis
-	RiskLevels            RiskLevels `json:"risk_levels"`           // Risk level thresholds
+	MaxDepth            int        `json:"max_depth"`             // Maximum depth for impact analysis
+	IncludeExternalDeps bool       `json:"include_external_deps"` // Include external dependencies in analysis
+	AnalyzeTestImpact   bool       `json:"analyze_test_impact"`   // Analyze impact on test files
+	ConsiderWeakDeps    bool       `json:"consider_weak_deps"`    // Consider weak dependencies in analysis
+	ImpactThreshold     float64    `json:"impact_threshold"`      // Minimum impact score to report
+	ExcludePatterns     []string   `json:"exclude_patterns"`      // Patterns to exclude from analysis
+	RiskLevels          RiskLevels `json:"risk_levels"`           // Risk level thresholds
 }
 
 // RiskLevels defines thresholds for risk classification
 type RiskLevels struct {
-	HighRiskThreshold     float64 `json:"high_risk_threshold"`     // >= this score = high risk
-	MediumRiskThreshold   float64 `json:"medium_risk_threshold"`   // >= this score = medium risk
-	LowRiskThreshold      float64 `json:"low_risk_threshold"`      // >= this score = low risk
+	HighRiskThreshold   float64 `json:"high_risk_threshold"`   // >= this score = high risk
+	MediumRiskThreshold float64 `json:"medium_risk_threshold"` // >= this score = medium risk
+	LowRiskThreshold    float64 `json:"low_risk_threshold"`    // >= this score = low risk
 }
 
 // ImpactAnalysisReport represents the complete impact analysis result
 type ImpactAnalysisReport struct {
-	ChangeSet           *ChangeSet            `json:"change_set"`
-	Summary             *ImpactSummary        `json:"summary"`
-	AffectedModules     []*AffectedModule     `json:"affected_modules"`
-	ImpactPaths         []*ImpactPath         `json:"impact_paths"`
-	RiskAssessment      *RiskAssessment       `json:"risk_assessment"`
-	TestImpact          *TestImpact           `json:"test_impact,omitempty"`
-	PerformanceImpact   *PerformanceImpact    `json:"performance_impact"`
-	Recommendations     []string              `json:"recommendations"`
+	ChangeSet            *ChangeSet            `json:"change_set"`
+	Summary              *ImpactSummary        `json:"summary"`
+	AffectedModules      []*AffectedModule     `json:"affected_modules"`
+	ImpactPaths          []*ImpactPath         `json:"impact_paths"`
+	RiskAssessment       *RiskAssessment       `json:"risk_assessment"`
+	TestImpact           *TestImpact           `json:"test_impact,omitempty"`
+	PerformanceImpact    *PerformanceImpact    `json:"performance_impact"`
+	Recommendations      []string              `json:"recommendations"`
 	MitigationStrategies []*MitigationStrategy `json:"mitigation_strategies"`
-	GeneratedAt         time.Time             `json:"generated_at"`
+	GeneratedAt          time.Time             `json:"generated_at"`
 }
 
 // ChangeSet represents a set of changes to analyze
 type ChangeSet struct {
-	ID              string    `json:"id"`
-	Description     string    `json:"description"`
-	ChangedModules  []string  `json:"changed_modules"`
-	ChangedFiles    []string  `json:"changed_files"`
-	ChangeType      string    `json:"change_type"`      // addition, modification, deletion, refactor
-	Language        string    `json:"language"`
-	Author          string    `json:"author,omitempty"`
-	Timestamp       time.Time `json:"timestamp"`
-	CommitHash      string    `json:"commit_hash,omitempty"`
-	PullRequestID   string    `json:"pull_request_id,omitempty"`
+	ID             string    `json:"id"`
+	Description    string    `json:"description"`
+	ChangedModules []string  `json:"changed_modules"`
+	ChangedFiles   []string  `json:"changed_files"`
+	ChangeType     string    `json:"change_type"` // addition, modification, deletion, refactor
+	Language       string    `json:"language"`
+	Author         string    `json:"author,omitempty"`
+	Timestamp      time.Time `json:"timestamp"`
+	CommitHash     string    `json:"commit_hash,omitempty"`
+	PullRequestID  string    `json:"pull_request_id,omitempty"`
 }
 
 // ImpactSummary provides high-level impact statistics
 type ImpactSummary struct {
-	TotalAffectedModules   int                    `json:"total_affected_modules"`
-	TotalImpactPaths       int                    `json:"total_impact_paths"`
-	MaxImpactDepth         int                    `json:"max_impact_depth"`
-	HighRiskModules        int                    `json:"high_risk_modules"`
-	MediumRiskModules      int                    `json:"medium_risk_modules"`
-	LowRiskModules         int                    `json:"low_risk_modules"`
-	CrossLanguageImpact    bool                   `json:"cross_language_impact"`
-	LanguageBreakdown      map[string]int         `json:"language_breakdown"`
-	ImpactByDepth          map[int]int            `json:"impact_by_depth"`
-	EstimatedEffort        string                 `json:"estimated_effort"`      // low, medium, high
-	OverallRiskLevel       string                 `json:"overall_risk_level"`    // low, medium, high, critical
+	TotalAffectedModules int            `json:"total_affected_modules"`
+	TotalImpactPaths     int            `json:"total_impact_paths"`
+	MaxImpactDepth       int            `json:"max_impact_depth"`
+	HighRiskModules      int            `json:"high_risk_modules"`
+	MediumRiskModules    int            `json:"medium_risk_modules"`
+	LowRiskModules       int            `json:"low_risk_modules"`
+	CrossLanguageImpact  bool           `json:"cross_language_impact"`
+	LanguageBreakdown    map[string]int `json:"language_breakdown"`
+	ImpactByDepth        map[int]int    `json:"impact_by_depth"`
+	EstimatedEffort      string         `json:"estimated_effort"`   // low, medium, high
+	OverallRiskLevel     string         `json:"overall_risk_level"` // low, medium, high, critical
 }
 
 // AffectedModule represents a module affected by the changes
 type AffectedModule struct {
-	ModulePath        string               `json:"module_path"`
-	Language          string               `json:"language"`
-	ImpactScore       float64              `json:"impact_score"`       // 0-10 scale
-	RiskLevel         string               `json:"risk_level"`         // low, medium, high
-	ImpactType        []string             `json:"impact_type"`        // compile, runtime, interface, behavior
-	DistanceFromChange int                 `json:"distance_from_change"`
-	DependencyType    DependencyType       `json:"dependency_type"`
-	DependencyStrength DependencyStrength   `json:"dependency_strength"`
-	ReasonForImpact   string               `json:"reason_for_impact"`
-	AffectedFeatures  []string             `json:"affected_features"`
-	TestCoverage      float64              `json:"test_coverage"`      // 0-1 scale
-	LastModified      time.Time            `json:"last_modified"`
-	Maintainers       []string             `json:"maintainers,omitempty"`
-	Related           []string             `json:"related"`            // Related module IDs
+	ModulePath         string             `json:"module_path"`
+	Language           string             `json:"language"`
+	ImpactScore        float64            `json:"impact_score"` // 0-10 scale
+	RiskLevel          string             `json:"risk_level"`   // low, medium, high
+	ImpactType         []string           `json:"impact_type"`  // compile, runtime, interface, behavior
+	DistanceFromChange int                `json:"distance_from_change"`
+	DependencyType     DependencyType     `json:"dependency_type"`
+	DependencyStrength DependencyStrength `json:"dependency_strength"`
+	ReasonForImpact    string             `json:"reason_for_impact"`
+	AffectedFeatures   []string           `json:"affected_features"`
+	TestCoverage       float64            `json:"test_coverage"` // 0-1 scale
+	LastModified       time.Time          `json:"last_modified"`
+	Maintainers        []string           `json:"maintainers,omitempty"`
+	Related            []string           `json:"related"` // Related module IDs
 }
 
 // ImpactPath represents a path of impact through the dependency graph
 type ImpactPath struct {
-	ID              string    `json:"id"`
-	SourceModule    string    `json:"source_module"`
-	TargetModule    string    `json:"target_module"`
-	Path            []string  `json:"path"`
-	PathLength      int       `json:"path_length"`
-	TotalWeight     float64   `json:"total_weight"`
-	RiskScore       float64   `json:"risk_score"`
-	PathType        string    `json:"path_type"`        // direct, transitive, circular
-	CriticalEdges   []string  `json:"critical_edges"`   // Edges that are critical for this path
-	BreakingPoints  []string  `json:"breaking_points"`  // Points where the path could be broken
+	ID             string   `json:"id"`
+	SourceModule   string   `json:"source_module"`
+	TargetModule   string   `json:"target_module"`
+	Path           []string `json:"path"`
+	PathLength     int      `json:"path_length"`
+	TotalWeight    float64  `json:"total_weight"`
+	RiskScore      float64  `json:"risk_score"`
+	PathType       string   `json:"path_type"`       // direct, transitive, circular
+	CriticalEdges  []string `json:"critical_edges"`  // Edges that are critical for this path
+	BreakingPoints []string `json:"breaking_points"` // Points where the path could be broken
 }
 
 // RiskAssessment provides risk analysis of the changes
 type RiskAssessment struct {
-	OverallRisk         string                 `json:"overall_risk"`
-	RiskFactors         []string               `json:"risk_factors"`
-	MitigatingFactors   []string               `json:"mitigating_factors"`
-	HighRiskModules     []string               `json:"high_risk_modules"`
-	CriticalPaths       []string               `json:"critical_paths"`
-	RiskMetrics         *RiskMetrics           `json:"risk_metrics"`
-	ComplianceImpact    *ComplianceImpact      `json:"compliance_impact,omitempty"`
-	SecurityImpact      *SecurityImpact        `json:"security_impact,omitempty"`
+	OverallRisk       string            `json:"overall_risk"`
+	RiskFactors       []string          `json:"risk_factors"`
+	MitigatingFactors []string          `json:"mitigating_factors"`
+	HighRiskModules   []string          `json:"high_risk_modules"`
+	CriticalPaths     []string          `json:"critical_paths"`
+	RiskMetrics       *RiskMetrics      `json:"risk_metrics"`
+	ComplianceImpact  *ComplianceImpact `json:"compliance_impact,omitempty"`
+	SecurityImpact    *SecurityImpact   `json:"security_impact,omitempty"`
 }
 
 // RiskMetrics contains quantitative risk metrics
 type RiskMetrics struct {
-	ChangeComplexity    float64 `json:"change_complexity"`    // Complexity of the change itself
-	ImpactScope         float64 `json:"impact_scope"`         // How widely the change affects the system
-	TestCoverageRisk    float64 `json:"test_coverage_risk"`   // Risk due to insufficient test coverage
-	DependencyRisk      float64 `json:"dependency_risk"`      // Risk from dependency complexity
-	HistoricalRisk      float64 `json:"historical_risk"`      // Risk based on historical failure patterns
-	OverallRiskScore    float64 `json:"overall_risk_score"`   // Combined risk score (0-10)
+	ChangeComplexity float64 `json:"change_complexity"`  // Complexity of the change itself
+	ImpactScope      float64 `json:"impact_scope"`       // How widely the change affects the system
+	TestCoverageRisk float64 `json:"test_coverage_risk"` // Risk due to insufficient test coverage
+	DependencyRisk   float64 `json:"dependency_risk"`    // Risk from dependency complexity
+	HistoricalRisk   float64 `json:"historical_risk"`    // Risk based on historical failure patterns
+	OverallRiskScore float64 `json:"overall_risk_score"` // Combined risk score (0-10)
 }
 
 // ComplianceImpact represents impact on compliance requirements
 type ComplianceImpact struct {
 	AffectedStandards []string `json:"affected_standards"` // e.g., SOX, PCI-DSS, GDPR
 	RequiredActions   []string `json:"required_actions"`
-	ComplianceRisk    string   `json:"compliance_risk"`    // low, medium, high
+	ComplianceRisk    string   `json:"compliance_risk"` // low, medium, high
 }
 
 // SecurityImpact represents security implications of changes
@@ -146,19 +146,19 @@ type SecurityImpact struct {
 
 // TestImpact represents impact on testing
 type TestImpact struct {
-	AffectedTestSuites    []string  `json:"affected_test_suites"`
-	RequiredTestUpdates   []string  `json:"required_test_updates"`
-	EstimatedTestEffort   string    `json:"estimated_test_effort"`   // low, medium, high
-	TestCoverageGaps      []string  `json:"test_coverage_gaps"`
-	RecommendedTests      []string  `json:"recommended_tests"`
+	AffectedTestSuites  []string `json:"affected_test_suites"`
+	RequiredTestUpdates []string `json:"required_test_updates"`
+	EstimatedTestEffort string   `json:"estimated_test_effort"` // low, medium, high
+	TestCoverageGaps    []string `json:"test_coverage_gaps"`
+	RecommendedTests    []string `json:"recommended_tests"`
 }
 
 // PerformanceImpact represents potential performance implications
 type PerformanceImpact struct {
-	AffectedComponents    []string  `json:"affected_components"`
-	PerformanceRisk       string    `json:"performance_risk"`       // low, medium, high
-	RecommendedBenchmarks []string  `json:"recommended_benchmarks"`
-	PotentialBottlenecks  []string  `json:"potential_bottlenecks"`
+	AffectedComponents    []string `json:"affected_components"`
+	PerformanceRisk       string   `json:"performance_risk"` // low, medium, high
+	RecommendedBenchmarks []string `json:"recommended_benchmarks"`
+	PotentialBottlenecks  []string `json:"potential_bottlenecks"`
 }
 
 // MitigationStrategy represents a strategy to mitigate risks
@@ -166,9 +166,9 @@ type MitigationStrategy struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
 	Description     string   `json:"description"`
-	Priority        int      `json:"priority"`        // 1-10, higher = more important
-	Effort          string   `json:"effort"`          // low, medium, high
-	Effectiveness   string   `json:"effectiveness"`   // low, medium, high
+	Priority        int      `json:"priority"`      // 1-10, higher = more important
+	Effort          string   `json:"effort"`        // low, medium, high
+	Effectiveness   string   `json:"effectiveness"` // low, medium, high
 	ApplicableRisks []string `json:"applicable_risks"`
 	Steps           []string `json:"steps"`
 	Owner           string   `json:"owner,omitempty"`
@@ -336,7 +336,7 @@ func (ia *ImpactAnalyzer) findAffectedModules(changeSet *ChangeSet, graph, rever
 // traverseDependencies traverses dependencies using BFS
 func (ia *ImpactAnalyzer) traverseDependencies(startModule string, graph map[string][]*Dependency, visited map[string]bool, distanceMap map[string]int, affected *[]*AffectedModule, changeSet *ChangeSet, depResult *DependencyResult, direction string) {
 	queue := []string{startModule}
-	
+
 	for len(queue) > 0 {
 		current := queue[0]
 		queue = queue[1:]
@@ -357,7 +357,7 @@ func (ia *ImpactAnalyzer) traverseDependencies(startModule string, graph map[str
 			}
 
 			newDistance := currentDistance + 1
-			
+
 			// Check if we should add this module
 			if !visited[target] || distanceMap[target] > newDistance {
 				if !visited[target] {
@@ -367,9 +367,9 @@ func (ia *ImpactAnalyzer) traverseDependencies(startModule string, graph map[str
 					*affected = append(*affected, affectedModule)
 					visited[target] = true
 				}
-				
+
 				distanceMap[target] = newDistance
-				
+
 				if newDistance < ia.config.MaxDepth {
 					queue = append(queue, target)
 				}
@@ -463,7 +463,7 @@ func (ia *ImpactAnalyzer) shouldExcludeModule(modulePath string) bool {
 // determineRiskLevel determines the risk level based on impact score
 func (ia *ImpactAnalyzer) determineRiskLevel(impactScore float64) string {
 	thresholds := ia.config.RiskLevels
-	
+
 	if impactScore >= thresholds.HighRiskThreshold {
 		return "high"
 	}
@@ -473,7 +473,7 @@ func (ia *ImpactAnalyzer) determineRiskLevel(impactScore float64) string {
 	if impactScore >= thresholds.LowRiskThreshold {
 		return "low"
 	}
-	
+
 	return "minimal"
 }
 

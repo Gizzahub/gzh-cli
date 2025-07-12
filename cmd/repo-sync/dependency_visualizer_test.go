@@ -264,7 +264,7 @@ func TestDependencyVisualizer_RenderDOT(t *testing.T) {
 			Title: "Test Dependency Graph",
 		},
 		Clusters: map[string][]string{
-			"internal_go":  {"module1"},
+			"internal_go": {"module1"},
 			"external_go": {"ext_go_lib"},
 		},
 	}

@@ -13,38 +13,22 @@ func NewNetEnvCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "net-env",
 		Short: "Manage network environment transitions",
-		Long: `Manage network environment transitions and service monitoring.
+		Long: `Manage network environment transitions on-demand.
 
-This command helps you monitor and manage system services (daemons) when
+This command helps you manage network configurations when
 switching between different network environments. It provides:
-- Daemon/service status monitoring
-- Service dependency tracking
-- Network environment transition management
-- WiFi change event monitoring and action triggers
-- Network configuration actions (VPN, DNS, proxy, hosts)
-- System state verification
+- Network configuration switching (VPN, DNS, proxy, hosts)
+- Network status verification
+- Container environment management
+- Network performance monitoring
 
 This is useful when:
 - Moving between different network environments (home, office, cafe)
-- Switching VPN connections that require service restarts
-- Managing services that depend on network connectivity
-- Verifying system state after network changes
+- Switching VPN connections manually
+- Managing network configurations in container environments
+- Verifying network state after changes
 
 Examples:
-  # Monitor current daemon status
-  gz net-env daemon list
-  
-  # Check specific service status
-  gz net-env daemon status --service ssh
-  
-  # Monitor network-related services
-  gz net-env daemon monitor --network-services
-  
-  # Monitor WiFi changes and trigger actions
-  gz net-env wifi monitor
-  
-  # Show current WiFi status
-  gz net-env wifi status
   
   # Execute network configuration actions
   gz net-env actions run
@@ -175,8 +159,6 @@ Examples:
 	// Get config directory
 	configDir := getConfigDirectory()
 
-	cmd.AddCommand(newDaemonCmd(ctx))
-	cmd.AddCommand(newWifiCmd())
 	cmd.AddCommand(newActionsCmd())
 	cmd.AddCommand(newCloudCmd(ctx))
 	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))

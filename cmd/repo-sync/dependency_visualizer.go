@@ -22,39 +22,39 @@ type DependencyVisualizer struct {
 
 // VisualizerConfig represents configuration for dependency visualization
 type VisualizerConfig struct {
-	OutputFormat     string            `json:"output_format"`     // dot, svg, html, json
-	OutputPath       string            `json:"output_path"`
-	IncludeExternal  bool              `json:"include_external"`
-	IncludeInternal  bool              `json:"include_internal"`
-	MaxNodes         int               `json:"max_nodes"`
-	ClusterByType    bool              `json:"cluster_by_type"`
-	ShowLabels       bool              `json:"show_labels"`
-	NodeStyles       map[string]string `json:"node_styles"`
-	EdgeStyles       map[string]string `json:"edge_styles"`
-	LayoutAlgorithm  string            `json:"layout_algorithm"` // dot, neato, fdp, sfdp, twopi, circo
-	Theme            string            `json:"theme"`            // light, dark, colorful
+	OutputFormat    string            `json:"output_format"` // dot, svg, html, json
+	OutputPath      string            `json:"output_path"`
+	IncludeExternal bool              `json:"include_external"`
+	IncludeInternal bool              `json:"include_internal"`
+	MaxNodes        int               `json:"max_nodes"`
+	ClusterByType   bool              `json:"cluster_by_type"`
+	ShowLabels      bool              `json:"show_labels"`
+	NodeStyles      map[string]string `json:"node_styles"`
+	EdgeStyles      map[string]string `json:"edge_styles"`
+	LayoutAlgorithm string            `json:"layout_algorithm"` // dot, neato, fdp, sfdp, twopi, circo
+	Theme           string            `json:"theme"`            // light, dark, colorful
 }
 
 // GraphNode represents a node in the dependency graph
 type GraphNode struct {
-	ID          string                 `json:"id"`
-	Label       string                 `json:"label"`
-	Type        string                 `json:"type"`        // module, file, package
-	Language    string                 `json:"language"`
-	Size        int                    `json:"size"`        // lines of code or file count
-	Complexity  float64                `json:"complexity"`
-	External    bool                   `json:"external"`
-	Properties  map[string]interface{} `json:"properties"`
-	Position    *NodePosition          `json:"position,omitempty"`
+	ID         string                 `json:"id"`
+	Label      string                 `json:"label"`
+	Type       string                 `json:"type"` // module, file, package
+	Language   string                 `json:"language"`
+	Size       int                    `json:"size"` // lines of code or file count
+	Complexity float64                `json:"complexity"`
+	External   bool                   `json:"external"`
+	Properties map[string]interface{} `json:"properties"`
+	Position   *NodePosition          `json:"position,omitempty"`
 }
 
 // GraphEdge represents an edge in the dependency graph
 type GraphEdge struct {
-	From       string             `json:"from"`
-	To         string             `json:"to"`
-	Type       DependencyType     `json:"type"`
-	Strength   DependencyStrength `json:"strength"`
-	Weight     float64            `json:"weight"`
+	From       string                 `json:"from"`
+	To         string                 `json:"to"`
+	Type       DependencyType         `json:"type"`
+	Strength   DependencyStrength     `json:"strength"`
+	Weight     float64                `json:"weight"`
 	Properties map[string]interface{} `json:"properties"`
 }
 
@@ -66,11 +66,11 @@ type NodePosition struct {
 
 // DependencyGraph represents the complete dependency graph
 type DependencyGraph struct {
-	Nodes         []*GraphNode         `json:"nodes"`
-	Edges         []*GraphEdge         `json:"edges"`
-	Metadata      *GraphMetadata       `json:"metadata"`
-	Clusters      map[string][]string  `json:"clusters,omitempty"`
-	Statistics    *GraphStatistics     `json:"statistics"`
+	Nodes      []*GraphNode        `json:"nodes"`
+	Edges      []*GraphEdge        `json:"edges"`
+	Metadata   *GraphMetadata      `json:"metadata"`
+	Clusters   map[string][]string `json:"clusters,omitempty"`
+	Statistics *GraphStatistics    `json:"statistics"`
 }
 
 // GraphMetadata contains metadata about the graph
@@ -105,13 +105,13 @@ func NewDependencyVisualizer(logger *zap.Logger, config *VisualizerConfig) *Depe
 
 // CreateGraph creates a dependency graph from analysis results
 func (dv *DependencyVisualizer) CreateGraph(result *DependencyResult) (*DependencyGraph, error) {
-	dv.logger.Info("Creating dependency graph", 
+	dv.logger.Info("Creating dependency graph",
 		zap.String("repository", result.Repository))
 
 	graph := &DependencyGraph{
-		Nodes:      make([]*GraphNode, 0),
-		Edges:      make([]*GraphEdge, 0),
-		Clusters:   make(map[string][]string),
+		Nodes:    make([]*GraphNode, 0),
+		Edges:    make([]*GraphEdge, 0),
+		Clusters: make(map[string][]string),
 		Metadata: &GraphMetadata{
 			Title:       fmt.Sprintf("Dependency Graph - %s", filepath.Base(result.Repository)),
 			Description: "Generated dependency visualization",
@@ -221,7 +221,7 @@ func (dv *DependencyVisualizer) createModuleNode(moduleID string, module *Module
 // createExternalNode creates a graph node from an external dependency
 func (dv *DependencyVisualizer) createExternalNode(extDep ExternalDependency) *GraphNode {
 	nodeID := fmt.Sprintf("ext_%s_%s", extDep.Language, extDep.Name)
-	
+
 	return &GraphNode{
 		ID:         nodeID,
 		Label:      dv.formatNodeLabel(extDep.Name, extDep.Language),
@@ -466,7 +466,7 @@ func (dv *DependencyVisualizer) extractLanguages(result *DependencyResult) []str
 // renderJSON renders the graph as JSON
 func (dv *DependencyVisualizer) renderJSON(graph *DependencyGraph) error {
 	outputPath := dv.getOutputPath("json")
-	
+
 	data, err := json.MarshalIndent(graph, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal graph to JSON: %w", err)

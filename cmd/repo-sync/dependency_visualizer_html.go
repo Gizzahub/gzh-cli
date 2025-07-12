@@ -14,7 +14,7 @@ import (
 // renderHTML renders the graph as an interactive HTML page
 func (dv *DependencyVisualizer) renderHTML(graph *DependencyGraph) error {
 	outputPath := dv.getOutputPath("html")
-	
+
 	// Prepare template data
 	templateData := struct {
 		Graph     *DependencyGraph
@@ -26,54 +26,54 @@ func (dv *DependencyVisualizer) renderHTML(graph *DependencyGraph) error {
 		Config:    dv.config,
 		Timestamp: time.Now().Format("2006-01-02 15:04:05"),
 	}
-	
+
 	// Serialize graph to JSON for JavaScript
 	graphJSON, err := json.Marshal(graph)
 	if err != nil {
 		return fmt.Errorf("failed to marshal graph for HTML: %w", err)
 	}
 	templateData.GraphJSON = string(graphJSON)
-	
+
 	// Create HTML template
 	tmpl, err := template.New("dependency_graph").Parse(htmlTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to parse HTML template: %w", err)
 	}
-	
+
 	// Create output file
 	file, err := os.Create(outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create HTML file: %w", err)
 	}
 	defer file.Close()
-	
+
 	// Execute template
 	if err := tmpl.Execute(file, templateData); err != nil {
 		return fmt.Errorf("failed to execute HTML template: %w", err)
 	}
-	
-	dv.logger.Info("Graph exported as HTML", 
+
+	dv.logger.Info("Graph exported as HTML",
 		zap.String("path", outputPath),
 		zap.Int("nodes", len(graph.Nodes)),
 		zap.Int("edges", len(graph.Edges)))
-	
+
 	return nil
 }
 
 // renderSVG renders the graph as SVG (basic implementation)
 func (dv *DependencyVisualizer) renderSVG(graph *DependencyGraph) error {
 	outputPath := dv.getOutputPath("svg")
-	
+
 	// For now, generate a simple force-directed layout
 	layout := dv.calculateForceDirectedLayout(graph)
-	
+
 	// Create SVG content
 	svg := dv.generateSVG(graph, layout)
-	
+
 	if err := os.WriteFile(outputPath, []byte(svg), 0644); err != nil {
 		return fmt.Errorf("failed to write SVG file: %w", err)
 	}
-	
+
 	dv.logger.Info("Graph exported as SVG", zap.String("path", outputPath))
 	return nil
 }
@@ -81,7 +81,7 @@ func (dv *DependencyVisualizer) renderSVG(graph *DependencyGraph) error {
 // calculateForceDirectedLayout calculates node positions using a simple force-directed algorithm
 func (dv *DependencyVisualizer) calculateForceDirectedLayout(graph *DependencyGraph) map[string]*NodePosition {
 	positions := make(map[string]*NodePosition)
-	
+
 	// Initialize random positions
 	for i, node := range graph.Nodes {
 		angle := float64(i) * 2.0 * 3.14159 / float64(len(graph.Nodes))
@@ -91,30 +91,30 @@ func (dv *DependencyVisualizer) calculateForceDirectedLayout(graph *DependencyGr
 			Y: 300 + radius*math.Sin(angle),
 		}
 	}
-	
+
 	// Simple force-directed iterations (simplified)
 	for iter := 0; iter < 50; iter++ {
 		forces := make(map[string]*NodePosition)
-		
+
 		// Initialize forces
 		for nodeID := range positions {
 			forces[nodeID] = &NodePosition{X: 0, Y: 0}
 		}
-		
+
 		// Repulsive forces between all nodes
 		for _, node1 := range graph.Nodes {
 			for _, node2 := range graph.Nodes {
 				if node1.ID == node2.ID {
 					continue
 				}
-				
+
 				pos1 := positions[node1.ID]
 				pos2 := positions[node2.ID]
-				
+
 				dx := pos1.X - pos2.X
 				dy := pos1.Y - pos2.Y
 				dist := math.Sqrt(dx*dx + dy*dy)
-				
+
 				if dist > 0 {
 					repulsion := 5000.0 / (dist * dist)
 					forces[node1.ID].X += repulsion * dx / dist
@@ -122,16 +122,16 @@ func (dv *DependencyVisualizer) calculateForceDirectedLayout(graph *DependencyGr
 				}
 			}
 		}
-		
+
 		// Attractive forces for connected nodes
 		for _, edge := range graph.Edges {
 			pos1 := positions[edge.From]
 			pos2 := positions[edge.To]
-			
+
 			dx := pos2.X - pos1.X
 			dy := pos2.Y - pos1.Y
 			dist := math.Sqrt(dx*dx + dy*dy)
-			
+
 			if dist > 0 {
 				attraction := dist * 0.01 * edge.Weight
 				forces[edge.From].X += attraction * dx / dist
@@ -140,14 +140,14 @@ func (dv *DependencyVisualizer) calculateForceDirectedLayout(graph *DependencyGr
 				forces[edge.To].Y -= attraction * dy / dist
 			}
 		}
-		
+
 		// Apply forces
 		for nodeID, force := range forces {
 			positions[nodeID].X += force.X * 0.1
 			positions[nodeID].Y += force.Y * 0.1
 		}
 	}
-	
+
 	return positions
 }
 
@@ -163,16 +163,16 @@ func (dv *DependencyVisualizer) generateSVG(graph *DependencyGraph, layout map[s
   </defs>
   <rect width="100%" height="100%" fill="white"/>
 `
-	
+
 	// Draw edges first (so they appear behind nodes)
 	for _, edge := range graph.Edges {
 		fromPos := layout[edge.From]
 		toPos := layout[edge.To]
-		
+
 		if fromPos != nil && toPos != nil {
 			strokeWidth := 1.0 + edge.Weight*0.5
 			color := "#666"
-			
+
 			switch edge.Strength {
 			case DependencyStrengthStrong:
 				color = "#000"
@@ -181,30 +181,30 @@ func (dv *DependencyVisualizer) generateSVG(graph *DependencyGraph, layout map[s
 			case DependencyStrengthOptional:
 				color = "#CCC"
 			}
-			
+
 			svg += fmt.Sprintf(`  <line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" 
             stroke="%s" stroke-width="%.1f" marker-end="url(#arrowhead)"/>
 `, fromPos.X, fromPos.Y, toPos.X, toPos.Y, color, strokeWidth)
 		}
 	}
-	
+
 	// Draw nodes
 	for _, node := range graph.Nodes {
 		pos := layout[node.ID]
 		if pos == nil {
 			continue
 		}
-		
+
 		radius := 10.0 + float64(node.Size)*0.5
 		if radius > 30 {
 			radius = 30
 		}
-		
+
 		color := "#90EE90"
 		if node.External {
 			color = "#FFB6C1"
 		}
-		
+
 		// Language-specific colors
 		switch node.Language {
 		case "go":
@@ -216,13 +216,13 @@ func (dv *DependencyVisualizer) generateSVG(graph *DependencyGraph, layout map[s
 		case "python":
 			color = "#3776AB"
 		}
-		
+
 		svg += fmt.Sprintf(`  <circle cx="%.1f" cy="%.1f" r="%.1f" fill="%s" 
           stroke="#333" stroke-width="1">
     <title>%s (%s)</title>
   </circle>
 `, pos.X, pos.Y, radius, color, node.Label, node.Language)
-		
+
 		// Add label
 		if dv.config.ShowLabels && node.Label != "" {
 			svg += fmt.Sprintf(`  <text x="%.1f" y="%.1f" text-anchor="middle" 
@@ -230,12 +230,12 @@ func (dv *DependencyVisualizer) generateSVG(graph *DependencyGraph, layout map[s
 `, pos.X, pos.Y+radius+12, node.Label)
 		}
 	}
-	
+
 	// Add title
 	svg += fmt.Sprintf(`  <text x="400" y="30" text-anchor="middle" 
           font-family="Arial" font-size="16" font-weight="bold">%s</text>
 `, graph.Metadata.Title)
-	
+
 	svg += "</svg>"
 	return svg
 }

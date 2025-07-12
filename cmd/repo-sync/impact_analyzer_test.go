@@ -75,9 +75,9 @@ func TestImpactAnalyzer_AnalyzeImpact(t *testing.T) {
 			{From: "core/auth", To: "github.com/external/lib", Type: DependencyTypeImport, Language: "go", Strength: DependencyStrengthStrong, External: true},
 		},
 		Modules: map[string]*ModuleDependencies{
-			"core/auth":      {ModulePath: "core/auth", Language: "go"},
-			"core/user":      {ModulePath: "core/user", Language: "go"},
-			"api/handlers":   {ModulePath: "api/handlers", Language: "go"},
+			"core/auth":       {ModulePath: "core/auth", Language: "go"},
+			"core/user":       {ModulePath: "core/user", Language: "go"},
+			"api/handlers":    {ModulePath: "api/handlers", Language: "go"},
 			"web/controllers": {ModulePath: "web/controllers", Language: "go"},
 		},
 	}
@@ -97,7 +97,7 @@ func TestImpactAnalyzer_AnalyzeImpact(t *testing.T) {
 
 	// Verify affected modules
 	assert.True(t, len(report.AffectedModules) >= 2) // At least the changed modules
-	
+
 	// Should include the changed modules themselves
 	changedModuleNames := make([]string, len(report.AffectedModules))
 	for i, module := range report.AffectedModules {
@@ -129,16 +129,16 @@ func TestImpactAnalyzer_CalculateImpactScore(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		module         *AffectedModule
-		expectedRange  [2]float64 // min, max expected score
+		name          string
+		module        *AffectedModule
+		expectedRange [2]float64 // min, max expected score
 	}{
 		{
 			name: "directly changed module",
 			module: &AffectedModule{
 				DistanceFromChange: 0,
 				DependencyStrength: DependencyStrengthStrong,
-				TestCoverage:      0.8,
+				TestCoverage:       0.8,
 			},
 			expectedRange: [2]float64{9.0, 10.0},
 		},
@@ -147,7 +147,7 @@ func TestImpactAnalyzer_CalculateImpactScore(t *testing.T) {
 			module: &AffectedModule{
 				DistanceFromChange: 1,
 				DependencyStrength: DependencyStrengthStrong,
-				TestCoverage:      0.8,
+				TestCoverage:       0.8,
 			},
 			expectedRange: [2]float64{7.0, 9.0},
 		},
@@ -156,7 +156,7 @@ func TestImpactAnalyzer_CalculateImpactScore(t *testing.T) {
 			module: &AffectedModule{
 				DistanceFromChange: 3,
 				DependencyStrength: DependencyStrengthWeak,
-				TestCoverage:      0.3,
+				TestCoverage:       0.3,
 			},
 			expectedRange: [2]float64{1.0, 4.0},
 		},
@@ -165,7 +165,7 @@ func TestImpactAnalyzer_CalculateImpactScore(t *testing.T) {
 			module: &AffectedModule{
 				DistanceFromChange: 5,
 				DependencyStrength: DependencyStrengthOptional,
-				TestCoverage:      0.9,
+				TestCoverage:       0.9,
 			},
 			expectedRange: [2]float64{0.0, 2.0},
 		},
@@ -226,10 +226,10 @@ func TestImpactAnalyzer_DetermineImpactType(t *testing.T) {
 	}
 
 	impactTypes := analyzer.determineImpactType(module, changeSet)
-	
+
 	assert.NotEmpty(t, impactTypes)
-	assert.Contains(t, impactTypes, "immediate") // Distance 1
-	assert.Contains(t, impactTypes, "compile")   // Import dependency
+	assert.Contains(t, impactTypes, "immediate")  // Distance 1
+	assert.Contains(t, impactTypes, "compile")    // Import dependency
 	assert.Contains(t, impactTypes, "behavioral") // Modification change
 }
 
@@ -273,7 +273,7 @@ func TestImpactAnalyzer_CalculatePathWeight(t *testing.T) {
 
 	path := []string{"A", "B", "C", "D"}
 	weight := analyzer.calculatePathWeight(path, graph)
-	
+
 	expectedWeight := 3.0 + 1.0 + 0.3 // Sum of edge weights
 	assert.InDelta(t, expectedWeight, weight, 0.1)
 }
@@ -287,11 +287,11 @@ func TestImpactAnalyzer_EstimateTestEffort(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		moduleCount     int
-		highRiskCount   int
-		changeType      string
-		expectedEffort  string
+		name           string
+		moduleCount    int
+		highRiskCount  int
+		changeType     string
+		expectedEffort string
 	}{
 		{
 			name:           "small change",
@@ -414,11 +414,11 @@ func TestImpactAnalyzer_GenerateRecommendations(t *testing.T) {
 	recommendations := analyzer.generateRecommendations(changeSet, affectedModules, riskAssessment)
 
 	assert.NotEmpty(t, recommendations)
-	
+
 	// Should contain high risk recommendation
 	recommendationText := strings.Join(recommendations, " ")
 	assert.Contains(t, recommendationText, "High risk")
-	
+
 	// Should contain deletion-specific recommendation
 	assert.Contains(t, recommendationText, "Deletion changes")
 }
