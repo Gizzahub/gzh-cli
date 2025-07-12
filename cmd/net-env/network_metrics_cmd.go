@@ -1066,7 +1066,7 @@ func saveReport(report *PerformanceReport, filename, format string) error {
 		return fmt.Errorf("failed to format report: %w", err)
 	}
 
-	if err := os.WriteFile(filename, data, 0644); err != nil {
+	if err := os.WriteFile(filename, data, 0o644); err != nil {
 		return fmt.Errorf("failed to save report: %w", err)
 	}
 

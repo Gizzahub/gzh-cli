@@ -235,7 +235,7 @@ func createPluginStructure(pluginDir, pluginName, pluginType string) error {
 	}
 
 	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
 	}
@@ -323,7 +323,7 @@ func generateFileFromTemplate(baseDir string, file TemplateFile, data PluginTemp
 	filePath := filepath.Join(baseDir, file.Path)
 
 	// Create directory if it doesn't exist
-	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(filePath), 0o755); err != nil {
 		return err
 	}
 

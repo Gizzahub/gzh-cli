@@ -1313,7 +1313,7 @@ func (oro *OptimalRouteOptimizer) backupCurrentRoutes() (string, error) {
 		return "", fmt.Errorf("failed to get current routes: %w", result.Error)
 	}
 
-	if err := os.WriteFile(backupPath, result.Output, 0644); err != nil {
+	if err := os.WriteFile(backupPath, result.Output, 0o644); err != nil {
 		return "", fmt.Errorf("failed to write backup: %w", err)
 	}
 

@@ -472,7 +472,7 @@ func (dv *DependencyVisualizer) renderJSON(graph *DependencyGraph) error {
 		return fmt.Errorf("failed to marshal graph to JSON: %w", err)
 	}
 
-	if err := os.WriteFile(outputPath, data, 0644); err != nil {
+	if err := os.WriteFile(outputPath, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write JSON file: %w", err)
 	}
 

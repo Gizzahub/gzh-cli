@@ -842,7 +842,7 @@ func (fvm *FailoverVPNManager) saveConfiguration() error {
 	configPath := filepath.Join(fvm.configDir, "vpn-failover.json")
 
 	// Ensure config directory exists
-	if err := os.MkdirAll(fvm.configDir, 0755); err != nil {
+	if err := os.MkdirAll(fvm.configDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 

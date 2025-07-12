@@ -171,7 +171,7 @@ func TestValidateRepositoryPath(t *testing.T) {
 
 	// Create a mock .git directory
 	gitDir := filepath.Join(tempDir, ".git")
-	err = os.MkdirAll(gitDir, 0755)
+	err = os.MkdirAll(gitDir, 0o755)
 	require.NoError(t, err)
 
 	tests := []struct {

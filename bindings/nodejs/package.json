@@ -1,0 +1,79 @@
+{
+  "name": "@gizzahub/gzh-manager",
+  "version": "1.0.0",
+  "description": "Node.js bindings for GZH Manager - A comprehensive CLI tool for managing development environments and Git repositories",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm run build:native && npm run build:ts",
+    "build:native": "node-gyp rebuild",
+    "build:ts": "tsc",
+    "prepare": "npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "clean": "rimraf dist build",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "git",
+    "repository",
+    "bulk-clone",
+    "development",
+    "devops",
+    "github",
+    "gitlab",
+    "gitea",
+    "cli",
+    "management"
+  ],
+  "author": "GizzaHub Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gizzahub/gzh-manager-go.git",
+    "directory": "bindings/nodejs"
+  },
+  "bugs": {
+    "url": "https://github.com/gizzahub/gzh-manager-go/issues"
+  },
+  "homepage": "https://github.com/gizzahub/gzh-manager-go#readme",
+  "files": [
+    "dist/",
+    "binding.gyp",
+    "libgzh.go",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "@types/node": "^20.6.3",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.7.0",
+    "node-gyp": "^9.4.0",
+    "prettier": "^3.0.3",
+    "rimraf": "^5.0.1",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  },
+  "gypfile": true,
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}

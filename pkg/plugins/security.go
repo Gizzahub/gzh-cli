@@ -291,7 +291,7 @@ func (sm *SecurityManager) CreateSandbox(pluginName string, permissions Permissi
 	}
 
 	// Create temporary directory for the plugin
-	if err := os.MkdirAll(sandbox.TempDir, 0755); err != nil {
+	if err := os.MkdirAll(sandbox.TempDir, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create sandbox directory: %w", err)
 	}
 

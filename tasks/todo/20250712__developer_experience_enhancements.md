@@ -34,7 +34,7 @@ priority: low
   - Python 패키지 생성 (ctypes/cgo 활용)
   - Pythonic API 설계
   - pip 패키지로 배포
-- [ ] **JavaScript/TypeScript 바인딩** - Node.js 환경 지원
+- [x] **JavaScript/TypeScript 바인딩** - Node.js 환경 지원
   - Node.js 패키지 생성
   - TypeScript 타입 정의 파일
   - npm 패키지로 배포

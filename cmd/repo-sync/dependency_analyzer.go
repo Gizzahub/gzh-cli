@@ -693,7 +693,7 @@ func (da *DependencyAnalyzer) SaveResult(result *DependencyResult, outputPath st
 		return fmt.Errorf("failed to marshal result: %w", err)
 	}
 
-	if err := os.WriteFile(outputPath, data, 0644); err != nil {
+	if err := os.WriteFile(outputPath, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write result file: %w", err)
 	}
 

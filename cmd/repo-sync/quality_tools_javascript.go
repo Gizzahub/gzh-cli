@@ -447,7 +447,7 @@ func (j *JavaScriptQualityAnalyzer) createBasicESLintConfig(path string) error {
 		return err
 	}
 
-	return os.WriteFile(filepath.Join(path, ".eslintrc.json"), configJSON, 0644)
+	return os.WriteFile(filepath.Join(path, ".eslintrc.json"), configJSON, 0o644)
 }
 
 // TypeScriptQualityAnalyzer extends JavaScript analyzer for TypeScript
@@ -590,7 +590,7 @@ func (t *TypeScriptQualityAnalyzer) createBasicTSConfig(path string) error {
 		return err
 	}
 
-	return os.WriteFile(filepath.Join(path, "tsconfig.json"), configJSON, 0644)
+	return os.WriteFile(filepath.Join(path, "tsconfig.json"), configJSON, 0o644)
 }
 
 // Helper function to parse float

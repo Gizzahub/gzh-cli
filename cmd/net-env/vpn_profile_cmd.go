@@ -668,7 +668,7 @@ func (vpm *VPNProfileManager) saveProfiles() error {
 	configPath := filepath.Join(vpm.configDir, "vpn-profiles.json")
 
 	// Ensure config directory exists
-	if err := os.MkdirAll(vpm.configDir, 0755); err != nil {
+	if err := os.MkdirAll(vpm.configDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 

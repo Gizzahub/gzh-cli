@@ -743,7 +743,7 @@ func (cqa *CodeQualityAnalyzer) loadHistoricalData() []*QualityResult {
 func (cqa *CodeQualityAnalyzer) saveToHistory(result *QualityResult) {
 	// In a real implementation, this would save to a database or file storage
 	historyDir := "quality-reports/history"
-	if err := os.MkdirAll(historyDir, 0755); err != nil {
+	if err := os.MkdirAll(historyDir, 0o755); err != nil {
 		cqa.logger.Warn("Failed to create history directory", zap.Error(err))
 		return
 	}
@@ -755,7 +755,7 @@ func (cqa *CodeQualityAnalyzer) saveToHistory(result *QualityResult) {
 		return
 	}
 
-	if err := os.WriteFile(filename, data, 0644); err != nil {
+	if err := os.WriteFile(filename, data, 0o644); err != nil {
 		cqa.logger.Warn("Failed to save quality history", zap.Error(err))
 	}
 }

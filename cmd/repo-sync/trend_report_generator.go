@@ -468,7 +468,7 @@ func (trg *TrendReportGenerator) generateRecommendations(report *TrendReport) []
 
 // saveReport saves the report to file
 func (trg *TrendReportGenerator) saveReport(report *TrendReport) error {
-	if err := os.MkdirAll(trg.outputDir, 0755); err != nil {
+	if err := os.MkdirAll(trg.outputDir, 0o755); err != nil {
 		return err
 	}
 
@@ -481,7 +481,7 @@ func (trg *TrendReportGenerator) saveReport(report *TrendReport) error {
 		return err
 	}
 
-	return os.WriteFile(filepath.Join(trg.outputDir, filename), data, 0644)
+	return os.WriteFile(filepath.Join(trg.outputDir, filename), data, 0o644)
 }
 
 // generateHTMLReport generates an HTML version of the report
@@ -525,7 +525,7 @@ func (trg *TrendReportGenerator) generateHTMLReport(report *TrendReport) error {
 		sanitizeFilename(report.Repository),
 		report.GeneratedAt.Format("20060102-150405"))
 
-	return os.WriteFile(filepath.Join(trg.outputDir, filename), buf.Bytes(), 0644)
+	return os.WriteFile(filepath.Join(trg.outputDir, filename), buf.Bytes(), 0o644)
 }
 
 // getHTMLTemplate returns the HTML template for trend reports

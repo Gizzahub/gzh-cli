@@ -55,7 +55,7 @@ var ExportedVar = "test"
 var privateVar = "private"
 `
 
-	err = os.WriteFile(goFile, []byte(goContent), 0644)
+	err = os.WriteFile(goFile, []byte(goContent), 0o644)
 	require.NoError(t, err)
 
 	logger := zaptest.NewLogger(t)
@@ -110,25 +110,25 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 )
 `
-	err = os.WriteFile(filepath.Join(tempDir, "go.mod"), []byte(goModContent), 0644)
+	err = os.WriteFile(filepath.Join(tempDir, "go.mod"), []byte(goModContent), 0o644)
 	require.NoError(t, err)
 
 	// Create some Go files
 	mainGo := filepath.Join(tempDir, "main.go")
-	err = os.WriteFile(mainGo, []byte("package main\n\nfunc main() {}\n"), 0644)
+	err = os.WriteFile(mainGo, []byte("package main\n\nfunc main() {}\n"), 0o644)
 	require.NoError(t, err)
 
 	subDir := filepath.Join(tempDir, "pkg")
-	err = os.MkdirAll(subDir, 0755)
+	err = os.MkdirAll(subDir, 0o755)
 	require.NoError(t, err)
 
 	pkgGo := filepath.Join(subDir, "pkg.go")
-	err = os.WriteFile(pkgGo, []byte("package pkg\n\nfunc Helper() {}\n"), 0644)
+	err = os.WriteFile(pkgGo, []byte("package pkg\n\nfunc Helper() {}\n"), 0o644)
 	require.NoError(t, err)
 
 	// Create test file (should be excluded)
 	testGo := filepath.Join(tempDir, "main_test.go")
-	err = os.WriteFile(testGo, []byte("package main\n\nfunc TestMain() {}\n"), 0644)
+	err = os.WriteFile(testGo, []byte("package main\n\nfunc TestMain() {}\n"), 0o644)
 	require.NoError(t, err)
 
 	logger := zaptest.NewLogger(t)
@@ -189,12 +189,12 @@ func TestGoDependencyParser_ExtractModulePath(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	goModContent := "module github.com/test/project\n\ngo 1.19\n"
-	err = os.WriteFile(filepath.Join(tempDir, "go.mod"), []byte(goModContent), 0644)
+	err = os.WriteFile(filepath.Join(tempDir, "go.mod"), []byte(goModContent), 0o644)
 	require.NoError(t, err)
 
 	// Create subdirectory
 	subDir := filepath.Join(tempDir, "cmd", "server")
-	err = os.MkdirAll(subDir, 0755)
+	err = os.MkdirAll(subDir, 0o755)
 	require.NoError(t, err)
 
 	logger := zaptest.NewLogger(t)
@@ -219,7 +219,7 @@ go 1.19
 
 require github.com/stretchr/testify v1.8.0
 `
-	err = os.WriteFile(goModFile, []byte(goModContent), 0644)
+	err = os.WriteFile(goModFile, []byte(goModContent), 0o644)
 	require.NoError(t, err)
 
 	logger := zaptest.NewLogger(t)

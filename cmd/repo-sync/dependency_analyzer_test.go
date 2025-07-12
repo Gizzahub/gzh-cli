@@ -228,11 +228,11 @@ func TestDependencyAnalyzer_InferModuleFromPath(t *testing.T) {
 
 	// Create go.mod file
 	goModDir := filepath.Join(tempDir, "go_project")
-	err = os.MkdirAll(goModDir, 0755)
+	err = os.MkdirAll(goModDir, 0o755)
 	require.NoError(t, err)
 
 	goModContent := "module github.com/test/project\n\ngo 1.19\n"
-	err = os.WriteFile(filepath.Join(goModDir, "go.mod"), []byte(goModContent), 0644)
+	err = os.WriteFile(filepath.Join(goModDir, "go.mod"), []byte(goModContent), 0o644)
 	require.NoError(t, err)
 
 	logger := zaptest.NewLogger(t)

@@ -671,5 +671,5 @@ max-line-length=120
 [DESIGN]
 max-complexity=10
 `
-	return os.WriteFile(filepath.Join(path, ".pylintrc"), []byte(config), 0644)
+	return os.WriteFile(filepath.Join(path, ".pylintrc"), []byte(config), 0o644)
 }

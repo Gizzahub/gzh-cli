@@ -793,7 +793,7 @@ func (na *NetworkAnalyzer) SaveAnalysisReport(analysis *ComprehensiveAnalysis, f
 		return fmt.Errorf("failed to marshal analysis: %w", err)
 	}
 
-	if err := os.WriteFile(filename, data, 0644); err != nil {
+	if err := os.WriteFile(filename, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write report: %w", err)
 	}
 

@@ -81,7 +81,7 @@ func NewFileAlertHandler(logger *zap.Logger, outputDir string) *FileAlertHandler
 func (f *FileAlertHandler) HandleAlert(ctx context.Context, alert *QualityAlert) error {
 	// Ensure output directory exists
 	alertDir := filepath.Join(f.outputDir, "alerts", alert.Repository)
-	if err := os.MkdirAll(alertDir, 0755); err != nil {
+	if err := os.MkdirAll(alertDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create alert directory: %w", err)
 	}
 
@@ -99,7 +99,7 @@ func (f *FileAlertHandler) HandleAlert(ctx context.Context, alert *QualityAlert)
 
 	// Write to file
 	filePath := filepath.Join(alertDir, filename)
-	if err := os.WriteFile(filePath, data, 0644); err != nil {
+	if err := os.WriteFile(filePath, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write alert file: %w", err)
 	}
 

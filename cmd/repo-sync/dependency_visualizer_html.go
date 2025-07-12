@@ -70,7 +70,7 @@ func (dv *DependencyVisualizer) renderSVG(graph *DependencyGraph) error {
 	// Create SVG content
 	svg := dv.generateSVG(graph, layout)
 
-	if err := os.WriteFile(outputPath, []byte(svg), 0644); err != nil {
+	if err := os.WriteFile(outputPath, []byte(svg), 0o644); err != nil {
 		return fmt.Errorf("failed to write SVG file: %w", err)
 	}
 

@@ -49,7 +49,7 @@ func (dv *DependencyVisualizer) renderDOT(graph *DependencyGraph) error {
 	sb.WriteString("}\n")
 
 	// Write to file
-	if err := os.WriteFile(outputPath, []byte(sb.String()), 0644); err != nil {
+	if err := os.WriteFile(outputPath, []byte(sb.String()), 0o644); err != nil {
 		return fmt.Errorf("failed to write DOT file: %w", err)
 	}
 

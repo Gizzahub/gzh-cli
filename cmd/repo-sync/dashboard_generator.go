@@ -32,7 +32,7 @@ func NewDashboardGenerator(logger *zap.Logger, outputDir string) *DashboardGener
 // GenerateDashboard generates an HTML dashboard from quality results
 func (dg *DashboardGenerator) GenerateDashboard(result *QualityResult, historicalData []*QualityResult) error {
 	// Ensure output directory exists
-	if err := os.MkdirAll(dg.outputDir, 0755); err != nil {
+	if err := os.MkdirAll(dg.outputDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
@@ -47,7 +47,7 @@ func (dg *DashboardGenerator) GenerateDashboard(result *QualityResult, historica
 
 	// Write HTML file
 	outputPath := filepath.Join(dg.outputDir, "quality-dashboard.html")
-	if err := os.WriteFile(outputPath, []byte(html), 0644); err != nil {
+	if err := os.WriteFile(outputPath, []byte(html), 0o644); err != nil {
 		return fmt.Errorf("failed to write dashboard file: %w", err)
 	}
 
@@ -666,14 +666,14 @@ func (dg *DashboardGenerator) generateAssets() error {
 	// Generate custom CSS if needed
 	cssContent := dg.getCustomCSS()
 	cssPath := filepath.Join(dg.outputDir, "dashboard.css")
-	if err := os.WriteFile(cssPath, []byte(cssContent), 0644); err != nil {
+	if err := os.WriteFile(cssPath, []byte(cssContent), 0o644); err != nil {
 		return fmt.Errorf("failed to write CSS file: %w", err)
 	}
 
 	// Generate data export functionality
 	jsContent := dg.getExportJS()
 	jsPath := filepath.Join(dg.outputDir, "dashboard.js")
-	if err := os.WriteFile(jsPath, []byte(jsContent), 0644); err != nil {
+	if err := os.WriteFile(jsPath, []byte(jsContent), 0o644); err != nil {
 		return fmt.Errorf("failed to write JS file: %w", err)
 	}
 

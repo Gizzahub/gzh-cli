@@ -86,7 +86,7 @@ func (api *DefaultPluginAPI) WriteFile(path string, data []byte) error {
 		return fmt.Errorf("invalid file path: %w", err)
 	}
 
-	return os.WriteFile(absPath, data, 0644)
+	return os.WriteFile(absPath, data, 0o644)
 }
 
 // HTTPRequest performs an HTTP request with permission checking

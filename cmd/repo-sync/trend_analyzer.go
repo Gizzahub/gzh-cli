@@ -597,7 +597,7 @@ func (ta *TrendAnalyzer) saveAlerts(repository string, alerts []*QualityAlert) e
 	}
 
 	alertsDir := filepath.Join(ta.dataDir, "alerts")
-	if err := os.MkdirAll(alertsDir, 0755); err != nil {
+	if err := os.MkdirAll(alertsDir, 0o755); err != nil {
 		return err
 	}
 
@@ -610,7 +610,7 @@ func (ta *TrendAnalyzer) saveAlerts(repository string, alerts []*QualityAlert) e
 		return err
 	}
 
-	return os.WriteFile(filepath.Join(alertsDir, filename), data, 0644)
+	return os.WriteFile(filepath.Join(alertsDir, filename), data, 0o644)
 }
 
 // Helper functions
