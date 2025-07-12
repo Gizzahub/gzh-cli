@@ -239,194 +239,74 @@ dev_env:
       method: aes256
       key_path: "$HOME/.gz/backup-key"
 
-# Network environment configuration
+# Network environment configuration (CLI-based)
 net_env:
   enabled: true
-  wifi_monitoring:
-    enabled: true
-    interval: 5s
-    known_networks:
-      "Home-WiFi":
-        ssid: "Home-WiFi"
-        type: home
-        dns_servers:
-          - "192.168.1.1"
-          - "1.1.1.1"
-        on_connect:
-          - "sync-time"
-          - "update-dns"
-        on_disconnect:
-          - "pause-sync"
-      "Office-WiFi":
-        ssid: "Office-WiFi"
-        type: work
-        vpn_config: "work-vpn"
-        proxy_config: "corporate"
-        dns_servers:
-          - "10.0.0.1"
-          - "10.0.0.2"
-        on_connect:
-          - "connect-vpn"
-          - "set-proxy"
-          - "sync-time"
-        on_disconnect:
-          - "disconnect-vpn"
-          - "unset-proxy"
-      "Public-WiFi":
-        ssid: "Starbucks-WiFi"
-        type: public
-        vpn_config: "personal-vpn"
-        dns_servers:
-          - "1.1.1.1"
-          - "1.0.0.1"
-        on_connect:
-          - "connect-vpn"
-          - "enable-firewall"
-        on_disconnect:
-          - "disconnect-vpn"
-          - "disable-firewall"
-    default_actions:
-      - "update-dns"
-      - "check-vpn"
-      - "sync-time"
-  vpn:
-    profiles:
-      work-vpn:
-        type: openvpn
-        config_file: "$HOME/.config/vpn/work.ovpn"
-        connect_command: "openvpn --config $HOME/.config/vpn/work.ovpn --daemon"
-        disconnect_command: "pkill -f work.ovpn"
-        status_command: "pgrep -f work.ovpn"
-        auto_connect_networks:
-          - "Office-WiFi"
-          - "Public-WiFi"
-      personal-vpn:
-        type: wireguard
-        config_file: "$HOME/.config/vpn/personal.conf"
-        connect_command: "wg-quick up personal"
-        disconnect_command: "wg-quick down personal"
-        status_command: "wg show personal"
-        auto_connect_networks:
-          - "Public-WiFi"
-    default_profile: work-vpn
-    auto_connect:
-      enabled: true
-      on_untrusted_networks: true
-      trusted_networks:
-        - "Home-WiFi"
-        - "Office-WiFi"
-      retry_attempts: 3
-      retry_delay: 5s
-  dns:
-    default_servers:
-      - "1.1.1.1"
-      - "1.0.0.1"
-    enable_doh: true
-    doh_provider: cloudflare
-    custom_mappings:
-      "internal.example.com": "10.0.0.100"
-      "dev.example.com": "10.0.1.100"
-    profiles:
-      home:
+  # Network profiles for manual switching (no automatic monitoring)
+  # Use: gz net-env switch <profile-name>
+  network_profiles:
+    home:
+      name: "home"
+      description: "Home network configuration"
+      dns:
         servers:
           - "192.168.1.1"
           - "1.1.1.1"
-        search_domains:
-          - "local"
-          - "home.arpa"
-        enable_ipv6: true
-        timeout: 5s
-      work:
+        method: "resolvectl"
+      proxy:
+        clear: true
+      vpn:
+        disconnect:
+          - "work-vpn"
+      scripts:
+        post_switch:
+          - "echo 'Switched to home network'"
+    
+    office:
+      name: "office"
+      description: "Office network with corporate VPN"
+      vpn:
+        connect:
+          - name: "work-vpn"
+            type: "networkmanager"
+        disconnect:
+          - "personal-vpn"
+      dns:
         servers:
           - "10.0.0.1"
           - "10.0.0.2"
-        search_domains:
-          - "company.com"
-          - "internal.company.com"
-        enable_ipv6: false
-        timeout: 3s
-  proxy:
-    profiles:
-      corporate:
-        type: http
-        host: "proxy.company.com"
-        port: 8080
-        username: "${PROXY_USERNAME}"
-        password: "${PROXY_PASSWORD}"
+        method: "resolvectl"
+      proxy:
+        http: "http://proxy.company.com:8080"
+        https: "http://proxy.company.com:8080"
         no_proxy:
           - "localhost"
           - "127.0.0.1"
           - "*.company.com"
-          - "10.0.0.0/8"
-        https_proxy: true
-      development:
-        type: socks5
-        host: "dev-proxy.example.com"
-        port: 1080
-        no_proxy:
-          - "*.dev.example.com"
-    auto_configure: false
-    pac_url: "http://proxy.company.com/proxy.pac"
-  actions:
-    on_network_change:
-      - "update-dns"
-      - "check-vpn"
-      - "sync-time"
-    on_wifi_connect:
-      - "sync-time"
-      - "check-updates"
-    on_wifi_disconnect:
-      - "pause-sync"
-      - "save-work"
-    on_vpn_connect:
-      - "update-routes"
-      - "sync-corporate-time"
-    on_vpn_disconnect:
-      - "restore-routes"
-      - "clear-corporate-dns"
-    custom_actions:
-      sync-time:
-        name: "Sync system time"
-        description: "Synchronize system time with NTP servers"
-        command: "ntpdate -s time.nist.gov"
-        timeout: 30s
-        retry:
-          max_attempts: 3
-          delay: 5s
-      update-dns:
-        name: "Update DNS configuration"
-        description: "Restart DNS resolution service"
-        command: "sudo systemctl restart systemd-resolved"
-        run_as_user: root
-        timeout: 10s
-      connect-vpn:
-        name: "Connect to VPN"
-        description: "Connect to the configured VPN"
-        command: "gz net-env vpn connect"
-        timeout: 30s
-        retry:
-          max_attempts: 3
-          delay: 10s
-      set-proxy:
-        name: "Set system proxy"
-        description: "Configure system proxy settings"
-        command: "gz net-env proxy set corporate"
-        timeout: 10s
-      enable-firewall:
-        name: "Enable firewall"
-        description: "Enable system firewall for public networks"
-        command: "sudo ufw --force enable"
-        run_as_user: root
-        timeout: 5s
-  daemon:
-    enabled: true
-    pid_file: "/var/run/gzh-manager-netenv.pid"
-    log_file: "/var/log/gzh-manager-netenv.log"
-    log_level: info
-    user: "gzh-manager"
-    group: "gzh-manager"
-    working_dir: "/"
-    systemd_integration: true
+      scripts:
+        pre_switch:
+          - "echo 'Connecting to office network...'"
+        post_switch:
+          - "echo 'Connected to office network'"
+    
+    public:
+      name: "public"
+      description: "Public WiFi with VPN for security"
+      vpn:
+        connect:
+          - name: "personal-vpn"
+            type: "wireguard"
+            config: "/etc/wireguard/personal.conf"
+      dns:
+        servers:
+          - "1.1.1.1"
+          - "1.0.0.1"
+        method: "resolvectl"
+      proxy:
+        clear: true
+      scripts:
+        post_switch:
+          - "echo 'Secure connection established'"
 
 # SSH configuration management
 ssh_config:
