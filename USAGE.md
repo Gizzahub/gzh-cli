@@ -130,114 +130,111 @@ gz repo-config template apply --type enterprise -o myorg
 
 ## 🌐 네트워크 환경 관리
 
-### 데몬 모니터링
+### 네트워크 프로필 설정
 ```bash
-# 시스템 데몬 목록 확인
-gz net-env daemon list
+# 네트워크 프로필 설정 파일 생성
+gz net-env switch --init
 
-# 네트워크 관련 서비스만 확인
-gz net-env daemon list --network-services
+# 사용 가능한 네트워크 프로필 확인
+gz net-env switch --list
 
-# 특정 서비스 상태 확인
-gz net-env daemon status --service ssh
+# 현재 네트워크 상태 확인
+gz net-env status
 
-# 실시간 모니터링
-gz net-env daemon monitor --network-services
-
-# 서비스 관리
-gz net-env daemon manage --service nginx --action start
-gz net-env daemon manage --service nginx --action stop
-gz net-env daemon manage --service nginx --action restart
+# 상세 네트워크 정보 확인
+gz net-env status --verbose
 ```
 
-### WiFi 변경 감지 및 자동화
+### 네트워크 환경 전환
 ```bash
-# WiFi 설정 파일 생성
-gz net-env wifi config init
+# 특정 네트워크 프로필로 전환
+gz net-env switch home
+gz net-env switch office
+gz net-env switch public
 
-# 현재 WiFi 상태 확인
-gz net-env wifi status
+# 실행 전 미리보기 (dry-run)
+gz net-env switch office --dry-run
 
-# WiFi 변경 모니터링 시작
-gz net-env wifi monitor
+# 강제 전환 (조건 확인 건너뛰기)
+gz net-env switch office --force
 
-# 데몬 모드로 백그라운드 실행
-gz net-env wifi monitor --daemon
-
-# 설정 파일 검증
-gz net-env wifi config validate
-
-# 설정 파일 내용 확인
-gz net-env wifi config show
+# 상세 로그와 함께 전환
+gz net-env switch office --verbose
 ```
 
-### 네트워크 액션 실행
+### 네트워크 프로필 구성 예시
 ```bash
-# 네트워크 액션 설정 파일 생성
-gz net-env actions config init
+# 홈 네트워크 프로필로 전환
+# - VPN 연결 해제
+# - DNS를 홈 라우터로 설정
+# - 프록시 비활성화
+gz net-env switch home
 
-# 모든 네트워크 액션 실행
-gz net-env actions run
+# 오피스 네트워크 프로필로 전환  
+# - 회사 VPN 연결
+# - 회사 DNS 서버 설정
+# - 프록시 설정 적용
+# - 회사 내부 호스트 파일 추가
+gz net-env switch office
 
-# 드라이런 모드 (실제 변경 없이 테스트)
-gz net-env actions run --dry-run
-
-# 자세한 로그와 함께 실행
-gz net-env actions run --verbose
+# 공용 WiFi 프로필로 전환
+# - 개인 VPN 연결 (보안)
+# - 안전한 DNS 서버 사용
+# - 프록시 비활성화
+gz net-env switch public
 ```
 
-### VPN 관리
-```bash
-# VPN 연결
-gz net-env actions vpn connect --name office --type networkmanager
-gz net-env actions vpn connect --name home --type openvpn --config /etc/openvpn/home.conf
-gz net-env actions vpn connect --name mobile --type wireguard
+### 네트워크 프로필 설정 파일 예시
+```yaml
+# ~/.gz/network-profiles.yaml
+default: "home"
 
-# VPN 해제
-gz net-env actions vpn disconnect --name office
+profiles:
+  - name: "home"
+    description: "홈 네트워크 설정"
+    dns:
+      servers: ["192.168.1.1", "1.1.1.1"]
+      method: "resolvectl"
+    proxy:
+      clear: true
+    vpn:
+      disconnect: ["office-vpn"]
+    scripts:
+      post_switch: ["echo '홈 네트워크로 전환 완료'"]
 
-# VPN 상태 확인
-gz net-env actions vpn status
+  - name: "office"
+    description: "오피스 네트워크 설정"
+    vpn:
+      connect:
+        - name: "office-vpn"
+          type: "networkmanager"
+    dns:
+      servers: ["10.0.0.1", "10.0.0.2"]
+    proxy:
+      http: "http://proxy.company.com:8080"
+      https: "http://proxy.company.com:8080"
+    hosts:
+      add:
+        - ip: "10.0.1.100"
+          host: "intranet.company.com"
 ```
 
-### DNS 설정 관리
+### 네트워크 구성 요소별 상태 확인
 ```bash
-# DNS 서버 변경
-gz net-env actions dns set --servers 1.1.1.1,1.0.0.1
-gz net-env actions dns set --servers 8.8.8.8,8.8.4.4 --interface wlan0
+# 현재 DNS 설정 상태 확인
+gz net-env status --verbose | grep -A 5 "DNS Configuration"
 
-# 현재 DNS 설정 확인
-gz net-env actions dns status
+# 현재 VPN 연결 상태 확인  
+gz net-env status --verbose | grep -A 5 "VPN Connections"
 
-# DNS 설정 초기화
-gz net-env actions dns reset
+# 현재 프록시 설정 확인
+gz net-env status --verbose | grep -A 5 "Proxy Configuration"
+
+# 전체 네트워크 인터페이스 정보
+gz net-env status --verbose | grep -A 10 "Network Interfaces"
 ```
 
-### 프록시 설정 관리
-```bash
-# 프록시 설정
-gz net-env actions proxy set --http http://proxy.company.com:8080
-gz net-env actions proxy set --https https://proxy.company.com:8080 --socks socks5://proxy.company.com:1080
-
-# 프록시 설정 제거
-gz net-env actions proxy clear
-
-# 현재 프록시 상태 확인
-gz net-env actions proxy status
-```
-
-### 호스트 파일 관리
-```bash
-# 호스트 엔트리 추가
-gz net-env actions hosts add --ip 192.168.1.100 --host server.local
-gz net-env actions hosts add --ip 10.0.0.50 --host dev-server.local
-
-# 호스트 엔트리 제거
-gz net-env actions hosts remove --host server.local
-
-# 호스트 파일 내용 확인
-gz net-env actions hosts show
-```
+> **💡 권장사항**: 개별 네트워크 구성 요소를 직접 수정하는 대신, 네트워크 프로필을 사용하여 일괄적으로 관리하는 것을 권장합니다. 이렇게 하면 설정의 일관성을 유지하고 복잡한 네트워크 환경 간 전환을 쉽게 할 수 있습니다.
 
 ## 🏠 개발 환경 관리
 

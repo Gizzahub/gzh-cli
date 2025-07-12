@@ -55,9 +55,10 @@ Comprehensive CLI Tool
 - **설정 마이그레이션**: 기존 bulk-clone.yaml을 gzh.yaml로 자동 변환
 - **스키마 검증**: JSON/YAML 스키마를 통한 설정 파일 유효성 검사
 
-### 🌐 네트워크 일괄수정
-- **네트워크 환경 전환**: VPN, DNS, 프록시, 호스트 파일을 한번의 스크립트로 전환
-- **이벤트 기반 자동화**: 네트워크 변경 시 사용자 정의 액션 자동 실행
+### 🌐 네트워크 환경 관리
+- **네트워크 프로필 전환**: VPN, DNS, 프록시, 호스트 파일을 한번의 명령어로 전환
+- **수동 환경 관리**: 필요시 `gz net-env switch` 명령어로 네트워크 환경 변경
+- **상태 확인**: `gz net-env status`로 현재 네트워크 설정 상태 조회
 
 ### 🏠 개발 환경 관리
 - **패키지 관리자 통합**: asdf, Homebrew, SDKMAN, MacPorts 등의 패키지를 최신 버전으로 일괄 업데이트
@@ -459,9 +460,8 @@ make build
 # 통합 설정 파일 생성
 gz config init
 
-# 네트워크 환경 설정
-gz net-env wifi config init
-gz net-env actions config init
+# 네트워크 프로필 설정
+gz net-env switch --init
 ```
 
 ### 3. 대량 클론 시작
@@ -473,13 +473,16 @@ gz bulk-clone github -o myorg -t ~/repos
 gz bulk-clone github --use-config -o myorg
 ```
 
-### 4. 네트워크 환경 자동화
+### 4. 네트워크 환경 관리
 ```bash
-# WiFi 변경 모니터링 시작
-gz net-env wifi monitor --daemon
+# 네트워크 프로필 목록 확인
+gz net-env switch --list
 
-# 네트워크 액션 실행
-gz net-env actions run
+# 현재 네트워크 상태 확인
+gz net-env status
+
+# 특정 네트워크 프로필로 전환
+gz net-env switch office
 ```
 
 > 📖 **자세한 사용법은 [USAGE.md](USAGE.md)를 참고하세요.**
@@ -494,7 +497,7 @@ gz net-env actions run
 
 ### 주요 성과
 - 📊 수백 개의 리포지토리를 효율적으로 관리하는 도구 완성
-- 🤖 개발자의 네트워크 환경 전환 작업을 완전 자동화
+- 🔧 개발자의 네트워크 환경 전환 작업을 CLI 명령어로 간소화
 - ⚙️ 모든 도구를 하나의 설정 파일로 관리하는 통합 체계 구축
 - 🔐 조직 차원의 리포지토리 보안 정책 일괄 적용 시스템
 - 📚 사용자 가이드부터 개발자 문서까지 완벽한 문서 체계
