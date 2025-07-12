@@ -34,4 +34,5 @@ func init() {
 	I18nCmd.AddCommand(InitCmd)
 	I18nCmd.AddCommand(ExtractCmd)
 	I18nCmd.AddCommand(ValidateCmd)
+	I18nCmd.AddCommand(TestCmd)
 }
