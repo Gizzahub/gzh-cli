@@ -6,6 +6,7 @@ import (
 
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
+	"github.com/gizzahub/gzh-manager-go/cmd/cloudformation"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
 	debugcmd "github.com/gizzahub/gzh-manager-go/cmd/debug"
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
@@ -44,6 +45,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(newVersionCmd(version))
 	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
 	cmd.AddCommand(bulkclone.NewBulkCloneCmd(ctx))
+	cmd.AddCommand(cloudformation.CloudFormationCmd)
 	cmd.AddCommand(config.NewConfigCmd())
 	cmd.AddCommand(debugcmd.DebugCmd)
 	cmd.AddCommand(doctorcmd.DoctorCmd)
