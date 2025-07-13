@@ -1,8 +1,12 @@
 package template
 
 import (
+	"archive/zip"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -37,6 +41,10 @@ var (
 	publishMessage  string
 	skipValidation  bool
 	autoApprove     bool
+	publishAuthor   string
+	publishServer   string
+	publishAPIKey   string
+	configPath      string
 )
 
 func init() {
@@ -47,6 +55,10 @@ func init() {
 	PublishCmd.Flags().StringVarP(&publishMessage, "message", "m", "", "퍼블리시 메시지")
 	PublishCmd.Flags().BoolVar(&skipValidation, "skip-validation", false, "검증 건너뛰기")
 	PublishCmd.Flags().BoolVar(&autoApprove, "auto-approve", false, "자동 승인 요청")
+	PublishCmd.Flags().StringVarP(&publishAuthor, "author", "a", "", "템플릿 작성자")
+	PublishCmd.Flags().StringVar(&publishServer, "server", "http://localhost:8080", "템플릿 서버 URL")
+	PublishCmd.Flags().StringVar(&publishAPIKey, "api-key", "", "API 키")
+	PublishCmd.Flags().StringVar(&configPath, "config", "", "클라이언트 설정 파일")
 }
 
 func runPublish(cmd *cobra.Command, args []string) {
@@ -68,23 +80,167 @@ func runPublish(cmd *cobra.Command, args []string) {
 }
 
 func publishTemplate() error {
-	// Implementation would include:
-	// 1. Validate template
-	// 2. Package template files
-	// 3. Generate checksums
-	// 4. Upload to registry
-	// 5. Update marketplace index
-	// 6. Send for approval if required
+	// 1. Load client configuration
+	client, err := setupClient()
+	if err != nil {
+		return fmt.Errorf("클라이언트 설정 실패: %w", err)
+	}
 
-	fmt.Printf("🔍 템플릿 검증 중...\n")
+	// 2. Validate template if not skipped
+	if !skipValidation {
+		fmt.Printf("🔍 템플릿 검증 중...\n")
+		if err := validateTemplateForPublish(); err != nil {
+			return fmt.Errorf("템플릿 검증 실패: %w", err)
+		}
+		fmt.Printf("✅ 템플릿 검증 완료\n")
+	}
+
+	// 3. Package template files
 	fmt.Printf("📦 패키징 중...\n")
-	fmt.Printf("📤 업로드 중...\n")
+	packagePath, err := packageTemplate()
+	if err != nil {
+		return fmt.Errorf("패키징 실패: %w", err)
+	}
+	defer os.Remove(packagePath) // Clean up
+	fmt.Printf("✅ 패키징 완료: %s\n", packagePath)
 
-	if publishDraft {
-		fmt.Printf("📝 드래프트로 저장됨\n")
-	} else {
-		fmt.Printf("🔄 승인 대기 중...\n")
+	// 4. Upload to server
+	fmt.Printf("📤 업로드 중...\n")
+	author := getAuthor()
+	response, err := client.UploadTemplate(packagePath, author)
+	if err != nil {
+		return fmt.Errorf("업로드 실패: %w", err)
+	}
+
+	// 5. Display results
+	fmt.Printf("✅ 업로드 완료\n")
+	fmt.Printf("🆔 템플릿 ID: %s\n", response.TemplateID)
+	fmt.Printf("💬 메시지: %s\n", response.Message)
+
+	if response.ApprovalID != "" {
+		fmt.Printf("🔄 승인 대기 중 (ID: %s)\n", response.ApprovalID)
 	}
 
 	return nil
+}
+
+func setupClient() (*TemplateClient, error) {
+	var config *ClientConfig
+
+	// Try to load from config file
+	if configPath == "" {
+		configPath = GetDefaultConfigPath()
+	}
+
+	if _, err := os.Stat(configPath); err == nil {
+		loadedConfig, err := LoadClientConfig(configPath)
+		if err != nil {
+			return nil, fmt.Errorf("설정 파일 로드 실패: %w", err)
+		}
+		config = loadedConfig
+	} else {
+		// Create default config
+		config = &ClientConfig{
+			BaseURL: "http://localhost:8080",
+			Timeout: 30,
+		}
+	}
+
+	// Override with command line flags
+	if publishServer != "" {
+		config.BaseURL = publishServer
+	}
+	if publishAPIKey != "" {
+		config.APIKey = publishAPIKey
+	}
+
+	return NewTemplateClient(config), nil
+}
+
+func validateTemplateForPublish() error {
+	// Check if template.yaml exists
+	metadataFile := filepath.Join(publishPath, "template.yaml")
+	if _, err := os.Stat(metadataFile); os.IsNotExist(err) {
+		return fmt.Errorf("template.yaml 파일이 없습니다: %s", metadataFile)
+	}
+
+	// Validate required directories
+	requiredDirs := []string{"templates"}
+	for _, dir := range requiredDirs {
+		dirPath := filepath.Join(publishPath, dir)
+		if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+			return fmt.Errorf("필수 디렉터리가 없습니다: %s", dir)
+		}
+	}
+
+	return nil
+}
+
+func packageTemplate() (string, error) {
+	// Create temporary zip file
+	tempFile, err := os.CreateTemp("", "template-*.zip")
+	if err != nil {
+		return "", fmt.Errorf("임시 파일 생성 실패: %w", err)
+	}
+	defer tempFile.Close()
+
+	// Create zip writer
+	zipWriter := zip.NewWriter(tempFile)
+	defer zipWriter.Close()
+
+	// Walk through template directory
+	err = filepath.Walk(publishPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip hidden files and directories
+		if strings.HasPrefix(info.Name(), ".") {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		// Get relative path
+		relPath, err := filepath.Rel(publishPath, path)
+		if err != nil {
+			return err
+		}
+
+		// Skip directories themselves
+		if info.IsDir() {
+			return nil
+		}
+
+		// Add file to zip
+		fileWriter, err := zipWriter.Create(relPath)
+		if err != nil {
+			return err
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		_, err = io.Copy(fileWriter, file)
+		return err
+	})
+	if err != nil {
+		return "", fmt.Errorf("파일 압축 실패: %w", err)
+	}
+
+	return tempFile.Name(), nil
+}
+
+func getAuthor() string {
+	if publishAuthor != "" {
+		return publishAuthor
+	}
+
+	// Try to get from git config
+	// In a real implementation, you might use git commands
+	return "unknown"
 }

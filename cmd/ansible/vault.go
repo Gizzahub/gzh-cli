@@ -45,11 +45,11 @@ var (
 	vaultAction       string
 	vaultFile         string
 	vaultOutput       string
-	vaultString        string
-	vaultName          string
-	vaultPassword      string
-	vaultPasswordPath  string
-	vaultId            string
+	vaultString       string
+	vaultName         string
+	vaultPassword     string
+	vaultPasswordPath string
+	vaultId           string
 	vaultFormat       string
 	createBackup      bool
 	force             bool

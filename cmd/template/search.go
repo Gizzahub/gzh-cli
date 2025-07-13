@@ -43,6 +43,10 @@ var (
 	searchLimit    int
 	showDetails    bool
 	outputFormat   string
+	searchServer   string
+	searchAPIKey   string
+	searchConfig   string
+	useLocalIndex  bool
 )
 
 func init() {
@@ -54,6 +58,10 @@ func init() {
 	SearchCmd.Flags().IntVarP(&searchLimit, "limit", "l", 20, "결과 개수 제한")
 	SearchCmd.Flags().BoolVarP(&showDetails, "details", "d", false, "상세 정보 표시")
 	SearchCmd.Flags().StringVarP(&outputFormat, "output", "o", "table", "출력 형식 (table, json, yaml)")
+	SearchCmd.Flags().StringVar(&searchServer, "server", "http://localhost:8080", "템플릿 서버 URL")
+	SearchCmd.Flags().StringVar(&searchAPIKey, "api-key", "", "API 키")
+	SearchCmd.Flags().StringVar(&searchConfig, "config", "", "클라이언트 설정 파일")
+	SearchCmd.Flags().BoolVar(&useLocalIndex, "local", false, "로컬 인덱스 사용")
 }
 
 // SearchResult represents search results
@@ -107,7 +115,15 @@ func runSearch(cmd *cobra.Command, args []string) {
 	}
 
 	// Perform search
-	result, err := performSearch(filter)
+	var result *SearchResult
+	var err error
+
+	if useLocalIndex {
+		result, err = performLocalSearch(filter)
+	} else {
+		result, err = performRemoteSearch(filter)
+	}
+
 	if err != nil {
 		fmt.Printf("❌ 검색 실패: %v\n", err)
 		os.Exit(1)
@@ -117,7 +133,100 @@ func runSearch(cmd *cobra.Command, args []string) {
 	displaySearchResults(result)
 }
 
-func performSearch(filter SearchFilter) (*SearchResult, error) {
+func performRemoteSearch(filter SearchFilter) (*SearchResult, error) {
+	// Setup client
+	client, err := setupSearchClient()
+	if err != nil {
+		return nil, fmt.Errorf("클라이언트 설정 실패: %w", err)
+	}
+
+	// Calculate pagination
+	page := 1
+	perPage := searchLimit
+	if searchLimit <= 0 {
+		perPage = 20
+	}
+
+	// Perform API search
+	response, err := client.SearchTemplates(filter.Query, filter.Category, filter.Type, page, perPage)
+	if err != nil {
+		return nil, fmt.Errorf("API 검색 실패: %w", err)
+	}
+
+	// Convert API response to our SearchResult format
+	var templates []Template
+	for _, apiTemplate := range response.Templates {
+		template := Template{
+			Name:        apiTemplate.Name,
+			Version:     apiTemplate.Version,
+			Description: apiTemplate.Description,
+			Author:      apiTemplate.Author,
+			Category:    apiTemplate.Category,
+			Type:        apiTemplate.Type,
+			Keywords:    apiTemplate.Keywords,
+			Downloads:   apiTemplate.Downloads,
+			Rating:      apiTemplate.Rating,
+			Created:     apiTemplate.Created,
+			Updated:     apiTemplate.Updated,
+			License:     apiTemplate.License,
+			Homepage:    apiTemplate.Homepage,
+			Repository:  apiTemplate.Repository,
+			Verified:    apiTemplate.Verified,
+			Deprecated:  apiTemplate.Deprecated,
+			Tags:        apiTemplate.Tags,
+		}
+		templates = append(templates, template)
+	}
+
+	// Generate facets from results
+	facets := generateSearchFacets(templates)
+
+	result := &SearchResult{
+		Query:     filter.Query,
+		Total:     response.Total,
+		Limit:     searchLimit,
+		Templates: templates,
+		Facets:    facets,
+		SortBy:    sortBy,
+	}
+
+	return result, nil
+}
+
+func setupSearchClient() (*TemplateClient, error) {
+	var config *ClientConfig
+
+	// Try to load from config file
+	if searchConfig == "" {
+		searchConfig = GetDefaultConfigPath()
+	}
+
+	if _, err := os.Stat(searchConfig); err == nil {
+		loadedConfig, err := LoadClientConfig(searchConfig)
+		if err != nil {
+			return nil, fmt.Errorf("설정 파일 로드 실패: %w", err)
+		}
+		config = loadedConfig
+	} else {
+		// Create default config
+		config = &ClientConfig{
+			BaseURL: "http://localhost:8080",
+			Timeout: 30,
+		}
+	}
+
+	// Override with command line flags
+	if searchServer != "" {
+		config.BaseURL = searchServer
+	}
+	if searchAPIKey != "" {
+		config.APIKey = searchAPIKey
+	}
+
+	return NewTemplateClient(config), nil
+}
+
+func performLocalSearch(filter SearchFilter) (*SearchResult, error) {
 	// Load marketplace index
 	index, err := loadMarketplaceIndex()
 	if err != nil {
