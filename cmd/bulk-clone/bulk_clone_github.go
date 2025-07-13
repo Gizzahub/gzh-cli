@@ -24,6 +24,9 @@ type bulkCloneGithubOptions struct {
 	token         string
 	memoryLimit   string
 	streamingMode bool
+	enableCache   bool
+	enableRedis   bool
+	redisAddr     string
 }
 
 func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
@@ -62,6 +65,11 @@ func newBulkCloneGithubCmd() *cobra.Command {
 	cmd.Flags().StringVar(&o.memoryLimit, "memory-limit", o.memoryLimit, "Maximum memory usage (e.g., 500MB, 2GB)")
 	cmd.Flags().BoolVar(&o.streamingMode, "streaming", o.streamingMode, "Enable streaming mode for memory-efficient processing")
 
+	// Cache flags
+	cmd.Flags().BoolVar(&o.enableCache, "cache", false, "Enable caching for repeated requests (recommended for frequent operations)")
+	cmd.Flags().BoolVar(&o.enableRedis, "redis", false, "Enable Redis distributed caching (requires Redis server)")
+	cmd.Flags().StringVar(&o.redisAddr, "redis-addr", "localhost:6379", "Redis server address for distributed caching")
+
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
 	cmd.MarkFlagsOneRequired("targetPath", "config", "use-config")
@@ -99,7 +107,21 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 	var err error
 
 	// Determine which approach to use
-	if o.optimized || o.streamingMode || token != "" {
+	if o.enableCache {
+		// Use cached approach
+		cacheConfig := github.DefaultCacheConfiguration()
+		cacheConfig.EnableRedisCache = o.enableRedis
+		if o.redisAddr != "" {
+			cacheConfig.RedisAddress = o.redisAddr
+		}
+
+		fmt.Printf("🔄 Using cached API calls for improved performance\n")
+		if o.enableRedis {
+			fmt.Printf("📡 Redis caching enabled at: %s\n", cacheConfig.RedisAddress)
+		}
+
+		err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token, cacheConfig.ToCacheManagerConfig())
+	} else if o.optimized || o.streamingMode || token != "" {
 		if token == "" {
 			fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
 			fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
