@@ -24,7 +24,8 @@ var TemplateCmd = &cobra.Command{
   search       템플릿 검색
   install      템플릿 설치
   marketplace  마켓플레이스 관리
-  serve        커뮤니티 템플릿 공유 API 서버`,
+  serve        커뮤니티 템플릿 공유 API 서버
+  enterprise   기업용 프라이빗 마켓플레이스`,
 	Aliases: []string{"tpl"},
 }
 
@@ -36,4 +37,5 @@ func init() {
 	TemplateCmd.AddCommand(InstallCmd)
 	TemplateCmd.AddCommand(MarketplaceCmd)
 	TemplateCmd.AddCommand(ServeCmd)
+	TemplateCmd.AddCommand(EnterpriseCmd)
 }
