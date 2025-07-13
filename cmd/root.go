@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
+	"github.com/gizzahub/gzh-manager-go/cmd/ansible"
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/cmd/cloudformation"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
@@ -44,6 +45,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 
 	cmd.AddCommand(newVersionCmd(version))
 	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
+	cmd.AddCommand(ansible.AnsibleCmd)
 	cmd.AddCommand(bulkclone.NewBulkCloneCmd(ctx))
 	cmd.AddCommand(cloudformation.CloudFormationCmd)
 	cmd.AddCommand(config.NewConfigCmd())
