@@ -40,7 +40,7 @@ Docker/Kubernetes, CI/CD 파이프라인, 클라우드 인프라 관리를 통�
   - 플러그인 자동 설치 및 설정
 
 ### 3. 클라우드 인프라 관리
-- [ ] **Terraform 통합** - Infrastructure as Code 지원
+- [x] **Terraform 통합** - Infrastructure as Code 지원
   - 클라우드별 모듈 라이브러리
   - Terraform 상태 관리 자동화
   - 계획(plan) 및 적용(apply) 자동화
