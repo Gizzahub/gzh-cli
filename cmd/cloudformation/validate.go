@@ -37,15 +37,15 @@ Examples:
 }
 
 var (
-	validateTemplate   string
-	validateRegion     string
-	validateProfile    string
-	strictValidation   bool
-	securityValidation bool
-	costAnalysis       bool
+	validateTemplate     string
+	validateRegion       string
+	validateProfile      string
+	strictValidation     bool
+	securityValidation   bool
+	costAnalysis         bool
 	validateOutputFormat string
-	skipAWSValidation  bool
-	localValidation    bool
+	skipAWSValidation    bool
+	localValidation      bool
 )
 
 func init() {

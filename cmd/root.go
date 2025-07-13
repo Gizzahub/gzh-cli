@@ -30,6 +30,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/serve"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
+	"github.com/gizzahub/gzh-manager-go/cmd/template"
 	"github.com/gizzahub/gzh-manager-go/cmd/terraform"
 	"github.com/spf13/cobra"
 )
@@ -70,6 +71,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(serve.ServeCmd)
 	cmd.AddCommand(shell.ShellCmd)
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
+	cmd.AddCommand(template.TemplateCmd)
 	cmd.AddCommand(terraform.TerraformCmd)
 	cmd.AddCommand(NewTaskRunnerCmd())
 	cmd.AddCommand(NewWebhookCmd())
