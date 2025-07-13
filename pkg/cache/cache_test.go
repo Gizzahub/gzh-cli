@@ -157,7 +157,7 @@ func TestCacheManager(t *testing.T) {
 		testConfig := DefaultCacheManagerConfig()
 		testManager := NewCacheManager(testConfig)
 		defer testManager.Close()
-		
+
 		key1 := CacheKey{Service: "github", Resource: "repos", Identifier: "org1"}
 		key2 := CacheKey{Service: "github", Resource: "users", Identifier: "user1"}
 		key3 := CacheKey{Service: "gitlab", Resource: "projects", Identifier: "group1"}
@@ -182,11 +182,11 @@ func TestCacheManager(t *testing.T) {
 	})
 
 	t.Run("Resource-based invalidation", func(t *testing.T) {
-		// Create fresh manager for this test  
+		// Create fresh manager for this test
 		testConfig2 := DefaultCacheManagerConfig()
 		testManager2 := NewCacheManager(testConfig2)
 		defer testManager2.Close()
-		
+
 		key1 := CacheKey{Service: "github", Resource: "repos", Identifier: "org1"}
 		key2 := CacheKey{Service: "github", Resource: "repos", Identifier: "org2"}
 		key3 := CacheKey{Service: "github", Resource: "users", Identifier: "user1"}

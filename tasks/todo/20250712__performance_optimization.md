@@ -25,10 +25,13 @@ priority: medium
   - GitHub/GitLab API 클라이언트 캐싱 통합 완료
   - CLI 플래그 추가 (--cache, --redis, --redis-addr)
   - 포괄적인 테스트 스위트 작성 완료
-- [ ] **가비지 컬렉션 튜닝** - GC 압력 감소
-  - 메모리 할당 패턴 분석 (pprof 활용)
-  - 객체 풀링으로 할당 감소
-  - 프로파일링 기반 핫스팟 최적화
+- [x] **가비지 컬렉션 튜닝** - GC 압력 감소 ✅
+  - 메모리 할당 패턴 분석 (pprof 활용) - GCTuner, Profiler 구현 완료
+  - 객체 풀링으로 할당 감소 - CommonPools, MemoryPool 구현 완료
+  - 프로파일링 기반 핫스팟 최적화 - CPU/Memory/Trace 프로파일링 완료
+  - 작업별 GC 최적화 (low-latency, high-throughput, memory-constrained)
+  - 메모리 압력 모니터링 및 자동 최적화 시스템
+  - CLI 명령어 추가 (gz performance gc-tuning)
 
 ### 2. 응답 시간 개선
 - [ ] **API 호출 최적화** - 외부 API 효율성 증대
