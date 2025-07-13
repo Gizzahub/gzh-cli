@@ -8,7 +8,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,7 +16,6 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/term"
-	"gopkg.in/yaml.v3"
 )
 
 // VaultCmd represents the vault command
@@ -47,11 +45,11 @@ var (
 	vaultAction       string
 	vaultFile         string
 	vaultOutput       string
-	vaultString       string
-	vaultName         string
-	vaultPassword     string
-	vaultPasswordFile string
-	vaultId           string
+	vaultString        string
+	vaultName          string
+	vaultPassword      string
+	vaultPasswordPath  string
+	vaultId            string
 	vaultFormat       string
 	createBackup      bool
 	force             bool
@@ -66,7 +64,7 @@ func init() {
 	VaultCmd.Flags().StringVarP(&vaultString, "string", "s", "", "암호화할 문자열")
 	VaultCmd.Flags().StringVarP(&vaultName, "name", "n", "", "변수 이름")
 	VaultCmd.Flags().StringVar(&vaultPassword, "password", "", "Vault 패스워드")
-	VaultCmd.Flags().StringVar(&vaultPasswordFile, "password-file", "", "패스워드 파일 경로")
+	VaultCmd.Flags().StringVar(&vaultPasswordPath, "password-file", "", "패스워드 파일 경로")
 	VaultCmd.Flags().StringVar(&vaultId, "vault-id", "default", "Vault ID")
 	VaultCmd.Flags().StringVar(&vaultFormat, "format", "yaml", "출력 형식 (yaml, json)")
 	VaultCmd.Flags().BoolVar(&createBackup, "backup", true, "백업 파일 생성")
@@ -482,8 +480,8 @@ func getVaultPassword() (string, error) {
 		return vaultPassword, nil
 	}
 
-	if vaultPasswordFile != "" {
-		data, err := os.ReadFile(vaultPasswordFile)
+	if vaultPasswordPath != "" {
+		data, err := os.ReadFile(vaultPasswordPath)
 		if err != nil {
 			return "", fmt.Errorf("패스워드 파일 읽기 실패: %w", err)
 		}

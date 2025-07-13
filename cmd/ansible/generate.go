@@ -33,20 +33,20 @@ Examples:
 }
 
 var (
-	generateType        string
-	generateTarget      string
-	generateRole        string
-	generateTasks       []string
-	generateVars        []string
-	genEnvironment      string
-	outputPath          string
-	withVault           bool
-	withHandlers        bool
-	withTemplates       bool
-	withDefaults        bool
-	genInventoryGroups  []string
-	playbookName        string
-	description         string
+	generateType       string
+	generateTarget     string
+	generateRole       string
+	generateTasks      []string
+	generateVars       []string
+	genEnvironment     string
+	outputPath         string
+	withVault          bool
+	withHandlers       bool
+	withTemplates      bool
+	withDefaults       bool
+	genInventoryGroups []string
+	playbookName       string
+	description        string
 )
 
 func init() {
@@ -92,6 +92,7 @@ type Task struct {
 	Notify       []string               `yaml:"notify,omitempty"`
 	Tags         []string               `yaml:"tags,omitempty"`
 	Become       bool                   `yaml:"become,omitempty"`
+	BecomeUser   string                 `yaml:"become_user,omitempty"`
 	IgnoreErrors bool                   `yaml:"ignore_errors,omitempty"`
 }
 
