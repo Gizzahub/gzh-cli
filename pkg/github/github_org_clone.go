@@ -133,11 +133,35 @@ func Clone(ctx context.Context, targetPath string, org string, repo string) erro
 	return nil
 }
 
+// RefreshAllOptimizedStreaming performs optimized bulk repository refresh using streaming API and memory management
+// This is the recommended method for large-scale organization cloning (>1000 repositories)
+func RefreshAllOptimizedStreaming(ctx context.Context, targetPath, org, strategy, token string) error {
+	config := DefaultOptimizedCloneConfig()
+
+	manager, err := NewOptimizedBulkCloneManager(token, config)
+	if err != nil {
+		return fmt.Errorf("failed to create optimized bulk clone manager: %w", err)
+	}
+	defer manager.Close()
+
+	stats, err := manager.RefreshAllOptimized(ctx, targetPath, org, strategy)
+	if err != nil {
+		return fmt.Errorf("optimized bulk clone failed: %w", err)
+	}
+
+	// Print summary
+	fmt.Printf("\n🎉 Bulk clone completed: %d successful, %d failed (%.1f%% success rate)\n",
+		stats.Successful, stats.Failed,
+		float64(stats.Successful)/float64(stats.TotalRepositories)*100)
+
+	return nil
+}
+
 // RefreshAll synchronizes the repositories in the targetPath with the repositories in the given organization.
 // strategy can be "reset" (default), "pull", or "fetch"
 //
-// Note: For better performance with large numbers of repositories, consider using RefreshAllWithWorkerPool
-// from the bulk_operations.go file, which provides configurable worker pools and better resource management.
+// Note: For better performance with large numbers of repositories, consider using RefreshAllOptimizedStreaming
+// for organizations with >1000 repositories, which provides streaming API, memory management, and better resource control.
 func RefreshAll(ctx context.Context, targetPath string, org string, strategy string) error {
 	// Get all directories inside targetPath
 	targetRepos, err := getDirectories(targetPath)

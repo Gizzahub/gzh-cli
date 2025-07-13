@@ -2,6 +2,9 @@ package bulkclone
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
@@ -9,21 +12,28 @@ import (
 )
 
 type bulkCloneGithubOptions struct {
-	targetPath string
-	orgName    string
-	strategy   string
-	configFile string
-	useConfig  bool
-	parallel   int
-	maxRetries int
-	resume     bool
+	targetPath    string
+	orgName       string
+	strategy      string
+	configFile    string
+	useConfig     bool
+	parallel      int
+	maxRetries    int
+	resume        bool
+	optimized     bool
+	token         string
+	memoryLimit   string
+	streamingMode bool
 }
 
 func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
 	return &bulkCloneGithubOptions{
-		strategy:   "reset",
-		parallel:   10,
-		maxRetries: 3,
+		strategy:      "reset",
+		parallel:      10,
+		maxRetries:    3,
+		optimized:     false,
+		streamingMode: false,
+		memoryLimit:   "500MB",
 	}
 }
 
@@ -45,6 +55,12 @@ func newBulkCloneGithubCmd() *cobra.Command {
 	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
+
+	// New optimization flags
+	cmd.Flags().BoolVar(&o.optimized, "optimized", o.optimized, "Use optimized streaming API for large-scale operations (recommended for >1000 repos)")
+	cmd.Flags().StringVar(&o.token, "token", "", "GitHub token for API access (can also use GITHUB_TOKEN env var)")
+	cmd.Flags().StringVar(&o.memoryLimit, "memory-limit", o.memoryLimit, "Maximum memory usage (e.g., 500MB, 2GB)")
+	cmd.Flags().BoolVar(&o.streamingMode, "streaming", o.streamingMode, "Enable streaming mode for memory-efficient processing")
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
@@ -72,10 +88,30 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
-	// Use resumable clone if requested or if parallel/worker pool is enabled
+	// Get GitHub token
+	token := o.token
+	if token == "" {
+		token = os.Getenv("GITHUB_TOKEN")
+	}
+
+	// Use optimized streaming approach for large-scale operations
 	ctx := cmd.Context()
 	var err error
-	if o.resume || o.parallel > 1 {
+
+	// Determine which approach to use
+	if o.optimized || o.streamingMode || token != "" {
+		if token == "" {
+			fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
+			fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
+		}
+
+		fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
+		if o.memoryLimit != "" {
+			fmt.Printf("🧠 Memory limit: %s\n", o.memoryLimit)
+		}
+
+		err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
+	} else if o.resume || o.parallel > 1 {
 		err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume)
 	} else {
 		err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
