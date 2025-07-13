@@ -34,7 +34,7 @@ Docker/Kubernetes, CI/CD 파이프라인, 클라우드 인프라 관리를 통�
   - .gitlab-ci.yml 템플릿 생성
   - 파이프라인 단계별 템플릿
   - GitLab Runner 설정 자동화
-- [ ] **Jenkins 파이프라인 지원** - Jenkins 기반 빌드 시스템
+- [x] **Jenkins 파이프라인 지원** - Jenkins 기반 빌드 시스템
   - Jenkinsfile 생성기
   - 공유 라이브러리 개발
   - 플러그인 자동 설치 및 설정

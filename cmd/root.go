@@ -17,6 +17,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/helm"
 	"github.com/gizzahub/gzh-manager-go/cmd/i18n"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
+	"github.com/gizzahub/gzh-manager-go/cmd/jenkins"
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
@@ -53,6 +54,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(helm.HelmCmd)
 	cmd.AddCommand(i18n.I18nCmd)
 	cmd.AddCommand(ide.NewIDECmd(ctx))
+	cmd.AddCommand(jenkins.JenkinsCmd)
 	cmd.AddCommand(migrate.NewMigrateCmd())
 	cmd.AddCommand(monitoring.NewMonitoringCmd(ctx))
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
