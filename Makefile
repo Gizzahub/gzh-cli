@@ -59,6 +59,34 @@ cover: ## display test coverage
 	go test -v -race $(shell go list ./... | grep -v /vendor/) -v -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 
+.PHONY: test-docker
+test-docker: ## run Docker-based integration tests
+	@echo "Running Docker integration tests..."
+	@./test/integration/run_docker_tests.sh all
+
+.PHONY: test-docker-short
+test-docker-short: ## run integration tests in short mode (skip Docker)
+	@echo "Running integration tests in short mode..."
+	@./test/integration/run_docker_tests.sh -s all
+
+.PHONY: test-gitlab
+test-gitlab: ## run GitLab integration tests only
+	@echo "Running GitLab integration tests..."
+	@./test/integration/run_docker_tests.sh gitlab
+
+.PHONY: test-gitea
+test-gitea: ## run Gitea integration tests only
+	@echo "Running Gitea integration tests..."
+	@./test/integration/run_docker_tests.sh gitea
+
+.PHONY: test-redis
+test-redis: ## run Redis integration tests only
+	@echo "Running Redis integration tests..."
+	@./test/integration/run_docker_tests.sh redis
+
+.PHONY: test-integration
+test-integration: test-docker ## alias for test-docker
+
 PHONY: fmt
 fmt: ## format go files
 	gofumpt -w .

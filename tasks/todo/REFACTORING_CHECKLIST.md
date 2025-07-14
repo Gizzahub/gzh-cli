@@ -172,7 +172,7 @@
   - 📁 **Files**: All test files with repetitive tests
 
 #### Integration Testing
-- [ ] Create Docker-based integration test suite
+- [x] Create Docker-based integration test suite
   - 📌 **Why**: Tests require real tokens/services
   - 🧠 **How**: Use testcontainers-go
   - 📁 **Files**: `test/integration/`
