@@ -293,7 +293,7 @@ func (kb *LocalKnowledgeBase) Search(ctx context.Context, query string) ([]Knowl
 	queryLower := strings.ToLower(query)
 
 	for _, article := range kb.articles {
-		score := calculateRelevanceScore(article.Title, article.Content, query)
+		score := calculateRelevanceScore(article.Title, article.Content, queryLower)
 		if score > 0.1 { // Minimum relevance threshold
 			article.Score = score
 			results = append(results, article)
