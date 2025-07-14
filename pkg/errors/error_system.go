@@ -226,6 +226,13 @@ func ConfigValidationError(field string, value interface{}) *UserError {
 		Build()
 }
 
+// GitHubTokenError creates a user-friendly error for GitHub authentication failures.
+// It provides context about invalid tokens and suggests corrective actions.
+//
+// Parameters:
+//   - err: The underlying error that caused the authentication failure
+//
+// Returns a UserError with guidance on resolving GitHub token issues.
 func GitHubTokenError(err error) *UserError {
 	return NewError(DomainGitHub, CategoryAuth, "INVALID_TOKEN").
 		Message("GitHub authentication failed").
@@ -237,6 +244,14 @@ func GitHubTokenError(err error) *UserError {
 		Build()
 }
 
+// NetworkTimeoutError creates a user-friendly error for network timeout issues.
+// It provides context about the timed-out operation and suggests retry strategies.
+//
+// Parameters:
+//   - operation: Description of the operation that timed out
+//   - duration: The timeout duration that was exceeded
+//
+// Returns a UserError with guidance on handling network timeouts.
 func NetworkTimeoutError(operation string, duration time.Duration) *UserError {
 	return NewError(DomainNetwork, CategoryTimeout, "OPERATION_TIMEOUT").
 		Message("Network operation timed out").

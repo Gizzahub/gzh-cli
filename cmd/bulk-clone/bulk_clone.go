@@ -34,6 +34,15 @@ func defaultBulkCloneOptions() *bulkCloneOptions {
 	}
 }
 
+// NewBulkCloneCmd creates a new cobra command for bulk repository cloning.
+// This command enables cloning multiple repositories from various Git hosting
+// services including GitHub, GitLab, Gitea, and Gogs using configuration files
+// or command-line flags.
+//
+// Parameters:
+//   - ctx: Context for operation cancellation and timeout control
+//
+// Returns a configured cobra.Command ready for execution.
 func NewBulkCloneCmd(ctx context.Context) *cobra.Command {
 	o := defaultBulkCloneOptions()
 

@@ -21,10 +21,23 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
+// RepoInfo represents GitHub repository information returned by the GitHub API.
+// It contains essential repository metadata used during clone operations.
 type RepoInfo struct {
+	// DefaultBranch is the name of the repository's default branch (e.g., "main", "master")
 	DefaultBranch string `json:"default_branch"`
 }
 
+// GetDefaultBranch retrieves the default branch name for a GitHub repository.
+// It makes an authenticated HTTP GET request to the GitHub API to fetch repository information.
+//
+// Parameters:
+//   - ctx: Context for request cancellation and timeout control
+//   - org: GitHub organization or user name
+//   - repo: Repository name
+//
+// Returns the default branch name (e.g., "main", "master") or an error if the
+// repository doesn't exist, access is denied, or the API request fails.
 func GetDefaultBranch(ctx context.Context, org string, repo string) (string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", org, repo)
 
@@ -52,6 +65,16 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 	return repoInfo.DefaultBranch, nil
 }
 
+// List retrieves all repository names for a GitHub organization.
+// It makes paginated requests to the GitHub API to fetch all repositories
+// in the specified organization, handling pagination automatically.
+//
+// Parameters:
+//   - ctx: Context for request cancellation and timeout control
+//   - org: GitHub organization name
+//
+// Returns a slice of repository names or an error if the organization
+// doesn't exist, access is denied, or the API request fails.
 func List(ctx context.Context, org string) ([]string, error) {
 	url := fmt.Sprintf("https://api.github.com/orgs/%s/repos", org)
 
@@ -119,6 +142,19 @@ func List(ctx context.Context, org string) ([]string, error) {
 	return result, nil
 }
 
+// Clone downloads a GitHub repository to the specified local path.
+// It performs a git clone operation using the repository's HTTPS URL.
+// The repository is cloned into a subdirectory named after the repository
+// within the targetPath directory.
+//
+// Parameters:
+//   - ctx: Context for operation cancellation and timeout control
+//   - targetPath: Local directory path where the repository will be cloned
+//   - org: GitHub organization or user name
+//   - repo: Repository name
+//
+// Returns an error if the clone operation fails due to network issues,
+// authentication problems, or local file system errors.
 func Clone(ctx context.Context, targetPath string, org string, repo string) error {
 	// if branch == "" {
 	//	defaultBranch, err := GetDefaultBranch(ctx, org, repo)

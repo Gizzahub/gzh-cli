@@ -22,10 +22,23 @@ var (
 	ErrFailedToGetRepositories = errors.New("failed to get repositories")
 )
 
+// GitLabRepoInfo represents GitLab project information returned by the GitLab API.
+// It contains essential project metadata used during clone operations.
 type GitLabRepoInfo struct {
+	// DefaultBranch is the name of the project's default branch (e.g., "main", "master")
 	DefaultBranch string `json:"default_branch"`
 }
 
+// GetDefaultBranch retrieves the default branch name for a GitLab project.
+// It makes an HTTP GET request to the GitLab API to fetch project information.
+//
+// Parameters:
+//   - ctx: Context for request cancellation and timeout control
+//   - group: GitLab group or user name
+//   - repo: Project name
+//
+// Returns the default branch name (e.g., "main", "master") or an error if the
+// project doesn't exist, access is denied, or the API request fails.
 func GetDefaultBranch(ctx context.Context, group string, repo string) (string, error) {
 	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s%%2F%s", group, repo)
 
@@ -136,6 +149,16 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	return nil
 }
 
+// List retrieves all project names for a GitLab group.
+// It makes paginated requests to the GitLab API to fetch all projects
+// in the specified group, handling pagination automatically.
+//
+// Parameters:
+//   - ctx: Context for request cancellation and timeout control
+//   - group: GitLab group name
+//
+// Returns a slice of project names or an error if the group
+// doesn't exist, access is denied, or the API request fails.
 func List(ctx context.Context, group string) ([]string, error) {
 	var allRepos []string
 	err := listGroupRepos(ctx, group, &allRepos)
@@ -145,6 +168,20 @@ func List(ctx context.Context, group string) ([]string, error) {
 	return allRepos, nil
 }
 
+// Clone downloads a GitLab project to the specified local path.
+// It performs a git clone operation using the project's HTTPS URL.
+// The project is cloned into a subdirectory named after the project
+// within the targetPath directory.
+//
+// Parameters:
+//   - ctx: Context for operation cancellation and timeout control
+//   - targetPath: Local directory path where the project will be cloned
+//   - group: GitLab group or user name
+//   - repo: Project name
+//   - branch: Specific branch to clone (if empty, uses default branch)
+//
+// Returns an error if the clone operation fails due to network issues,
+// authentication problems, or local file system errors.
 func Clone(ctx context.Context, targetPath string, group string, repo string, branch string) error {
 	if branch == "" {
 		defaultBranch, err := GetDefaultBranch(ctx, group, repo)

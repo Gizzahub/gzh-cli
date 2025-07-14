@@ -13,10 +13,23 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
+// RepoInfo represents Gitea repository information returned by the Gitea API.
+// It contains essential repository metadata used during clone operations.
 type RepoInfo struct {
+	// DefaultBranch is the name of the repository's default branch (e.g., "main", "master")
 	DefaultBranch string `json:"default_branch"`
 }
 
+// GetDefaultBranch retrieves the default branch name for a Gitea repository.
+// It makes an HTTP GET request to the Gitea API to fetch repository information.
+//
+// Parameters:
+//   - ctx: Context for request cancellation and timeout control
+//   - org: Gitea organization or user name
+//   - repo: Repository name
+//
+// Returns the default branch name (e.g., "main", "master") or an error if the
+// repository doesn't exist, access is denied, or the API request fails.
 func GetDefaultBranch(ctx context.Context, org string, repo string) (string, error) {
 	url := fmt.Sprintf("https://gitea.com/api/v1/repos/%s/%s", org, repo)
 
@@ -44,6 +57,16 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 	return repoInfo.DefaultBranch, nil
 }
 
+// List retrieves all repository names for a Gitea organization.
+// It makes paginated requests to the Gitea API to fetch all repositories
+// in the specified organization, handling pagination automatically.
+//
+// Parameters:
+//   - ctx: Context for request cancellation and timeout control
+//   - org: Gitea organization name
+//
+// Returns a slice of repository names or an error if the organization
+// doesn't exist, access is denied, or the API request fails.
 func List(ctx context.Context, org string) ([]string, error) {
 	url := fmt.Sprintf("https://gitea.com/api/v1/orgs/%s/repos", org)
 
@@ -78,6 +101,20 @@ func List(ctx context.Context, org string) ([]string, error) {
 	return repoNames, nil
 }
 
+// Clone downloads a Gitea repository to the specified local path.
+// It performs a git clone operation using the repository's HTTPS URL.
+// The repository is cloned into a subdirectory named after the repository
+// within the targetPath directory.
+//
+// Parameters:
+//   - ctx: Context for operation cancellation and timeout control
+//   - targetPath: Local directory path where the repository will be cloned
+//   - org: Gitea organization or user name
+//   - repo: Repository name
+//   - branch: Specific branch to clone (if empty, uses default branch)
+//
+// Returns an error if the clone operation fails due to network issues,
+// authentication problems, or local file system errors.
 func Clone(ctx context.Context, targetPath string, org string, repo string, branch string) error {
 	if branch == "" {
 		defaultBranch, err := GetDefaultBranch(ctx, org, repo)
