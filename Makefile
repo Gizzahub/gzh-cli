@@ -146,9 +146,22 @@ clean-mocks: ## remove all generated mock files
 .PHONY: regenerate-mocks
 regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
 
+.PHONY: pre-commit-install
+pre-commit-install: ## install pre-commit hooks
+	@echo "Installing pre-commit hooks..."
+	@command -v pre-commit >/dev/null 2>&1 || { echo "pre-commit not found. Install with: pip install pre-commit"; exit 1; }
+	@pre-commit install --install-hooks
+	@pre-commit install --hook-type commit-msg
+	@pre-commit install --hook-type pre-push
+	@echo "Pre-commit hooks installed successfully!"
+
 .PHONY: pre-commit
 pre-commit:	## run pre-commit hooks
 	pre-commit run --all-files
+
+.PHONY: pre-commit-update
+pre-commit-update: ## update pre-commit hooks to latest versions
+	pre-commit autoupdate
 
 .PHONY: deploy
 deploy:

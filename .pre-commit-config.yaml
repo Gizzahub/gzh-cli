@@ -1,14 +1,142 @@
+# See https://pre-commit.com for more information
 repos:
+  # Generic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # Go-specific hooks using tekwizely/pre-commit-golang
   - repo: https://github.com/tekwizely/pre-commit-golang
     rev: v1.0.0-rc.1
     hooks:
       - id: go-build-mod
       - id: go-test-mod
+        args: [-short, -race]
       - id: go-vet-mod
       - id: go-staticcheck-mod
-      - id: go-fmt
       - id: go-fumpt
-      - id: go-imports
-      - id: go-lint
       - id: golangci-lint-mod
-        args: [-c.golang-ci.yml]
+        args: [-c=.golang-ci.yml, --fix]
+
+  # Additional Go tooling
+  - repo: local
+    hooks:
+      # Go import formatting with gci
+      - id: gci
+        name: Format Go imports with gci
+        entry: gci
+        args: [write, --skip-generated]
+        language: system
+        files: \.go$
+        pass_filenames: true
+
+      # Go security scanning with gosec
+      - id: gosec
+        name: Security scan Go code with gosec
+        entry: gosec
+        args: [-fmt=json, -out=gosec-report.json, -stdout, -verbose=text, ./...]
+        language: system
+        files: \.go$
+        pass_filenames: false
+
+      # Go module checks
+      - id: go-mod-tidy
+        name: Tidy Go modules
+        entry: go
+        args: [mod, tidy]
+        language: system
+        files: (go\.mod|go\.sum)$
+        pass_filenames: false
+
+      # Go vulnerability check
+      - id: go-vuln-check
+        name: Check Go vulnerabilities
+        entry: govulncheck
+        args: [./...]
+        language: system
+        files: \.go$
+        pass_filenames: false
+
+  # YAML/JSON/Markdown formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: \.(yaml|yml|json|md)$
+        exclude: |
+          (?x)(
+            ^test/.*\.yaml$|
+            ^test/.*\.yml$|
+            ^samples/.*\.yaml$|
+            ^samples/.*\.yml$|
+            ^docs/.*\.json$
+          )
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3009]
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [-e, SC1091, -e, SC2034]
+
+  # Commit message formatting
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--strict, --optional-scope]
+
+  # Secrets detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: |
+          (?x)(
+            ^test/.*\.go$|
+            ^.*_test\.go$|
+            ^samples/.*$|
+            ^docs/.*$
+          )
+
+# Configuration
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_stages: [pre-commit]
+
+# CI configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [go-test-mod, go-vuln-check, gosec]
+  submodules: false

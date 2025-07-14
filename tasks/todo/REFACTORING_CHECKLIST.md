@@ -185,7 +185,7 @@
 ### 7. 🛠 Tooling & Automation
 
 #### Build & CI
-- [ ] Add pre-commit hooks
+- [x] Add pre-commit hooks
   - 📌 **Why**: Catch issues before commit
   - 🧠 **How**: Use pre-commit framework
   - 📁 **Files**: `.pre-commit-config.yaml`
