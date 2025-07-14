@@ -1,32 +1,47 @@
 version: 2
+
 updates:
+  # Go modules
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "fix(deps)"
+      include: "scope"
     labels:
       - "dependencies"
-    commit-message:
-      prefix: "feat"
-      include: "scope"
+      - "go"
+
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "fix(deps)"
+      include: "scope"
     labels:
       - "dependencies"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+      - "github-actions"
+
+  # Docker
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "fix(deps)"
+      include: "scope"
     labels:
       - "dependencies"
-    commit-message:
-      prefix: "feat"
-      include: "scope"
+      - "docker"

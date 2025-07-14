@@ -195,7 +195,7 @@
   - 🧠 **How**: Enable in `.golangci.yml`
   - 📁 **Files**: Fix security issues found
 
-- [ ] Implement automated release process
+- [x] Implement automated release process
   - 📌 **Why**: Manual release process
   - 🧠 **How**: Configure goreleaser
   - 📁 **Files**: `.goreleaser.yml`

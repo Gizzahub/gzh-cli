@@ -1,38 +1,68 @@
+version: 2
+
 env:
   - GO111MODULE=on
   - CGO_ENABLED=0
 
+git:
+  tag_sort: -version:refname
+
 before:
   hooks:
+    - go mod tidy
+    - go generate ./...
     - ./scripts/manpages.sh
     - ./scripts/completions.sh
 
 builds:
-  -
-    binary: bulk-clone
-    ldflags: -s -w -X main.version={{ .Version }}
+  - id: gz
+    binary: gz
+    main: ./main.go
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+      - -X main.builtBy=goreleaser
     goos:
       - linux
       - darwin
+      - windows
     goarch:
       - amd64
       - arm64
+      - arm
+    goarm:
+      - "6"
+      - "7"
+    ignore:
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: arm64
 
 archives:
-  -
+  - id: default
     builds:
-      - bulk-clone
+      - gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 \"v1\") }}{{ .Amd64 }}{{ end }}"
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+      - completions/*
+      - manpages/*
 
 nfpms:
-  - builds:
-      - bulk-clone
+  - id: packages
+    builds:
+      - gz
     vendor: Gizzahub
-    homepage:  https://github.com/Gizzahub/gzh-manager-go
-    maintainer: "Tom Morelly <tommorelly@gmail.com>"
-    description: "A general purpose golang CLI template for Github and Gitlab"
+    homepage: https://github.com/Gizzahub/gzh-manager-go
+    maintainer: "Gizzahub <support@gizzahub.com>"
+    description: "Comprehensive CLI tool for managing development environments and Git repositories"
     license: GPL-3.0
     formats:
       - apk
@@ -40,106 +70,267 @@ nfpms:
       - rpm
     bindir: /usr/bin
     contents:
-      - src: ./manpages/bulk-clone.1.bulk-clone
-        dst: /usr/share/man/man1/bulk-clone.1.bulk-clone
+      - src: ./manpages/gzh-manager.1.gz
+        dst: /usr/share/man/man1/gz.1.gz
         file_info:
           mode: 0644
-      - src: ./completions/bulk-clone.bash
-        dst: /usr/share/bash-completion/completions/bulk-clone
+      - src: ./completions/gzh-manager.bash
+        dst: /usr/share/bash-completion/completions/gz
         file_info:
           mode: 0644
-      - src: ./completions/bulk-clone.fish
-        dst: /usr/share/fish/vendor_completions.d/bulk-clone.fish
+      - src: ./completions/gzh-manager.fish
+        dst: /usr/share/fish/vendor_completions.d/gz.fish
         file_info:
           mode: 0644
-      - src: ./completions/bulk-clone.zsh
-        dst:  /usr/share/zsh/vendor-completions/_gzh-manager
+      - src: ./completions/gzh-manager.zsh
+        dst: /usr/share/zsh/vendor-completions/_gz
         file_info:
           mode: 0644
 
 dockers:
-- image_templates:
-  - 'gizzahub/{{.ProjectName}}:{{ .Tag }}-amd64'
-  - 'ghcr.io/gizzahub/{{.ProjectName}}:{{ .Tag }}-amd64'
-  dockerfile: Dockerfile
-  use: buildx
-  build_flag_templates:
-  - "--pull"
-  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/Gizzahub/bulk-clone/master/README.md"
-  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Tom Morelly\",\"email\":\"tommorelly@gmail.com\"}]"
-  - "--label=io.artifacthub.package.license=MIT"
-  - "--label=org.opencontainers.image.description=A general purpose golang CLI template for Github and Gitlab"
-  - "--label=org.opencontainers.image.created={{.Date}}"
-  - "--label=org.opencontainers.image.name={{.ProjectName}}"
-  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-  - "--label=org.opencontainers.image.version={{.Version}}"
-  - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--platform=linux/amd64"
-- image_templates:
-  - 'gizzahub/{{.ProjectName}}:{{ .Tag }}-arm64'
-  - 'ghcr.io/gizzahub/{{.ProjectName}}:{{ .Tag }}-arm64'
-  dockerfile:  Dockerfile
-  use: buildx
-  build_flag_templates:
-  - "--pull"
-  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/gizzahub/bulk-clone/master/README.md"
-  - "--label=io.artifacthub.package.logo-url=https://raw.githubusercontent.com/gizzahub/bulk-clone/master/www/static/images/logo.png"
-  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Tom Morelly\",\"email\":\"tommorelly@gmail.com\"}]"
-  - "--label=io.artifacthub.package.license=MIT"
-  - "--label=org.opencontainers.image.description=A general purpose golang CLI template for Github and Gitlab"
-  - "--label=org.opencontainers.image.created={{.Date}}"
-  - "--label=org.opencontainers.image.name={{.ProjectName}}"
-  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-  - "--label=org.opencontainers.image.version={{.Version}}"
-  - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--platform=linux/arm64"
-  goarch: arm64
+  - id: gz-amd64
+    ids:
+      - gz
+    image_templates:
+      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
+      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--label=org.opencontainers.image.description=Comprehensive CLI tool for managing development environments and Git repositories"
+      - "--label=org.opencontainers.image.vendor=Gizzahub"
+      - "--label=org.opencontainers.image.licenses=GPL-3.0"
+    goarch: amd64
+
+  - id: gz-arm64
+    ids:
+      - gz
+    image_templates:
+      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--label=org.opencontainers.image.description=Comprehensive CLI tool for managing development environments and Git repositories"
+      - "--label=org.opencontainers.image.vendor=Gizzahub"
+      - "--label=org.opencontainers.image.licenses=GPL-3.0"
+    goarch: arm64
 
 docker_manifests:
-- name_template: 'gizzahub/{{.ProjectName}}:{{ .Tag }}'
-  image_templates:
-  - 'gizzahub/{{.ProjectName}}:{{ .Tag }}-amd64'
-  - 'gizzahub/{{.ProjectName}}:{{ .Tag }}-arm64'
-- name_template: 'ghcr.io/gizzahub/{{.ProjectName}}:{{ .Tag }}'
-  image_templates:
-  - 'ghcr.io/gizzahub/{{.ProjectName}}:{{ .Tag }}-amd64'
-  - 'ghcr.io/gizzahub/{{.ProjectName}}:{{ .Tag }}-arm64'
-- name_template: 'gizzahub/{{.ProjectName}}:latest'
-  image_templates:
-  - 'gizzahub/{{.ProjectName}}:{{ .Tag }}-amd64'
-  - 'gizzahub/{{.ProjectName}}:{{ .Tag }}-arm64'
-- name_template: 'ghcr.io/gizzahub/{{.ProjectName}}:latest'
-  image_templates:
-  - 'ghcr.io/gizzahub/{{.ProjectName}}:{{ .Tag }}-amd64'
-  - 'ghcr.io/gizzahub/{{.ProjectName}}:{{ .Tag }}-arm64'
+  - name_template: 'gizzahub/{{ .ProjectName }}:{{ .Tag }}'
+    image_templates:
+      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
+      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+  - name_template: 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}'
+    image_templates:
+      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
+      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+  - name_template: 'gizzahub/{{ .ProjectName }}:latest'
+    image_templates:
+      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
+      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+  - name_template: 'ghcr.io/gizzahub/{{ .ProjectName }}:latest'
+    image_templates:
+      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
+      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+
+brews:
+  - name: gz
+    ids:
+      - default
+    repository:
+      owner: Gizzahub
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    folder: Formula
+    homepage: https://github.com/Gizzahub/gzh-manager-go
+    description: "Comprehensive CLI tool for managing development environments and Git repositories"
+    license: GPL-3.0
+    test: |
+      system "#{bin}/gz version"
+    install: |
+      bin.install "gz"
+
+chocolateys:
+  - name: gz
+    ids:
+      - default
+    owners: Gizzahub
+    title: gz CLI Tool
+    authors: Gizzahub
+    project_url: https://github.com/Gizzahub/gzh-manager-go
+    url_template: "https://github.com/Gizzahub/gzh-manager-go/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    icon_url: 'https://raw.githubusercontent.com/Gizzahub/gzh-manager-go/main/assets/logo.png'
+    copyright: 2025 Gizzahub
+    license_url: https://github.com/Gizzahub/gzh-manager-go/blob/main/LICENSE
+    require_license_acceptance: false
+    project_source_url: https://github.com/Gizzahub/gzh-manager-go
+    docs_url: https://github.com/Gizzahub/gzh-manager-go/blob/main/README.md
+    bug_tracker_url: https://github.com/Gizzahub/gzh-manager-go/issues
+    tags: "cli devops git development"
+    summary: Comprehensive CLI tool for managing development environments and Git repositories
+    description: |
+      gz is a comprehensive CLI tool for managing development environments and Git repositories across multiple platforms.
+      It provides bulk operations for cloning organizations, package management, network environment transitions,
+      IDE settings monitoring, and development environment configuration management.
+    release_notes: "https://github.com/Gizzahub/gzh-manager-go/releases/tag/v{{ .Version }}"
+
+scoops:
+  - name: gz
+    ids:
+      - default
+    repository:
+      owner: Gizzahub
+      name: scoop-bucket
+      branch: main
+      token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
+    folder: bucket
+    homepage: https://github.com/Gizzahub/gzh-manager-go
+    description: "Comprehensive CLI tool for managing development environments and Git repositories"
+    license: GPL-3.0
+
+aurs:
+  - name: gz-bin
+    ids:
+      - default
+    homepage: https://github.com/Gizzahub/gzh-manager-go
+    description: "Comprehensive CLI tool for managing development environments and Git repositories"
+    maintainers:
+      - 'Gizzahub <support@gizzahub.com>'
+    license: GPL-3.0
+    private_key: '{{ .Env.AUR_KEY }}'
+    git_url: 'ssh://aur@aur.archlinux.org/gz-bin.git'
+    depends:
+      - git
+    package: |-
+      # bin
+      install -Dm755 "./gz" "${pkgdir}/usr/bin/gz"
+      
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/gz/LICENSE"
+      
+      # completions
+      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
+      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
+      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
+      install -Dm644 "./completions/gzh-manager.bash" "${pkgdir}/usr/share/bash-completion/completions/gz"
+      install -Dm644 "./completions/gzh-manager.zsh" "${pkgdir}/usr/share/zsh/site-functions/_gz"
+      install -Dm644 "./completions/gzh-manager.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/gz.fish"
+      
+      # man pages
+      install -Dm644 "./manpages/gzh-manager.1.gz" "${pkgdir}/usr/share/man/man1/gz.1.gz"
 
 checksum:
   name_template: "checksums.txt"
+
+sboms:
+  - artifacts: archive
+
+signs:
+  - cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
+    certificate: '${artifact}.pem'
+    args:
+      - sign-blob
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
+      - "--yes" # needed on cosign 2.0.0+
+    artifacts: checksum
+    output: true
+
+docker_signs:
+  - cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
+    artifacts: images
+    output: true
+    args:
+      - 'sign'
+      - '${artifact}@${digest}'
+      - "--yes" # needed on cosign 2.0.0+
 
 changelog:
   sort: asc
   use: github
   filters:
     exclude:
-    - '^test:'
-    - '^chore'
-    - 'merge conflict'
-    - Merge pull request
-    - Merge remote-tracking branch
-    - Merge branch
-    - go mod tidy
+      - '^test:'
+      - '^chore'
+      - '^docs:'
+      - 'merge conflict'
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
   groups:
-    - title: Dependency updates
-      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
-      order: 300
     - title: 'New Features'
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 100
-    - title: 'Bug fixes'
+    - title: 'Security Updates'
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 150
+    - title: 'Bug Fixes'
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 200
-    - title: 'Documentation updates'
-      regexp: ^.*?doc(\([[:word:]]+\))??!?:.+$
+    - title: 'Performance Improvements'
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 250
+    - title: 'Dependency Updates'
+      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
+      order: 300
+    - title: 'Documentation Updates'
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
       order: 400
-    - title: Other work
+    - title: 'Other Changes'
       order: 9999
+
+release:
+  github:
+    owner: Gizzahub
+    name: gzh-manager-go
+  draft: true
+  prerelease: auto
+  mode: replace
+  header: |
+    ## gz {{ .Tag }} ({{ .Date }})
+    
+    Welcome to this new release!
+  footer: |
+    ## Thanks!
+    
+    Those were the changes on {{ .Tag }}!
+    
+    **Full Changelog**: https://github.com/Gizzahub/gzh-manager-go/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+milestones:
+  - close: true
+    fail_on_error: false
+    name_template: "{{ .Tag }}"
+
+announcements:
+  - provider: slack
+    enabled: '{{ .Env.SLACK_WEBHOOK_URL }}'
+    message_template: 'gz {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+  - provider: discord
+    enabled: '{{ .Env.DISCORD_WEBHOOK_URL }}'
+    message_template: 'gz {{ .Tag }} has been released! 🎉'
+    
+metadata:
+  mod_timestamp: '{{ .CommitTimestamp }}'

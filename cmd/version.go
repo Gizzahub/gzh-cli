@@ -9,11 +9,14 @@ import (
 func newVersionCmd(version string) *cobra.Command {
 	return &cobra.Command{
 		Use:          "version",
-		Short:        "bulk-clone version",
+		Short:        "gz version information",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(cmd.OutOrStdout(), "bulk-clone: %s\n", version)
+			if version == "" {
+				version = "dev"
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "gz version %s\n", version)
 		},
 	}
 }

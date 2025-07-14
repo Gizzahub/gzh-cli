@@ -175,8 +175,28 @@ pre-commit:	## run pre-commit hooks
 pre-commit-update: ## update pre-commit hooks to latest versions
 	pre-commit autoupdate
 
+.PHONY: release-dry-run
+release-dry-run: ## run goreleaser in dry-run mode
+	@echo "Running goreleaser in dry-run mode..."
+	@command -v goreleaser >/dev/null 2>&1 || { echo "goreleaser not found. Install with: go install github.com/goreleaser/goreleaser@latest"; exit 1; }
+	@goreleaser release --snapshot --clean --skip=publish
+
+.PHONY: release-snapshot
+release-snapshot: ## create a snapshot release
+	@echo "Creating snapshot release..."
+	@command -v goreleaser >/dev/null 2>&1 || { echo "goreleaser not found. Install with: go install github.com/goreleaser/goreleaser@latest"; exit 1; }
+	@goreleaser release --snapshot --clean
+
+.PHONY: release-check
+release-check: ## check goreleaser configuration
+	@echo "Checking goreleaser configuration..."
+	@command -v goreleaser >/dev/null 2>&1 || { echo "goreleaser not found. Install with: go install github.com/goreleaser/goreleaser@latest"; exit 1; }
+	@goreleaser check
+
+.PHONY: install-goreleaser
+install-goreleaser: ## install goreleaser
+	@echo "Installing goreleaser..."
+	@go install github.com/goreleaser/goreleaser@latest
+
 .PHONY: deploy
-deploy:
-	# TODO ...
-	# $build and deploy
-	cp * .$(executablename)
+deploy: release-dry-run ## alias for release-dry-run
