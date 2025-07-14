@@ -166,7 +166,7 @@
   - 🧠 **How**: Use gomock or testify/mock
   - 📁 **Files**: `*_test.go` files, create `mocks/` directories
 
-- [ ] Add table-driven tests
+- [x] Add table-driven tests
   - 📌 **Why**: Many tests could be more concise
   - 🧠 **How**: Convert to `[]struct{...}` test cases
   - 📁 **Files**: All test files with repetitive tests

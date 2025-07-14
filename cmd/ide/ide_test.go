@@ -1,6 +1,7 @@
 package ide
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,7 +13,7 @@ import (
 )
 
 func TestNewIDECmd(t *testing.T) {
-	cmd := NewIDECmd()
+	cmd := NewIDECmd(context.Background())
 
 	assert.Equal(t, "ide", cmd.Use)
 	assert.Equal(t, "Monitor and manage IDE configuration changes", cmd.Short)
@@ -82,36 +83,33 @@ func TestGetJetBrainsBasePaths(t *testing.T) {
 }
 
 func TestIsJetBrainsProduct(t *testing.T) {
-	opts := defaultIDEOptions()
-
-	// Test valid JetBrains product names
-	validProducts := []string{
-		"IntelliJIdea2023.2",
-		"PyCharm2024.1",
-		"WebStorm2023.3",
-		"PhpStorm2024.2",
-		"CLion2023.1",
-		"GoLand2024.1",
-		"DataGrip2023.3",
-		"Rider2024.1",
-		"AndroidStudio2023.2",
+	tests := []struct {
+		name     string
+		product  string
+		expected bool
+	}{
+		{"IntelliJ IDEA", "IntelliJIdea2023.2", true},
+		{"PyCharm", "PyCharm2024.1", true},
+		{"WebStorm", "WebStorm2023.3", true},
+		{"PhpStorm", "PhpStorm2024.2", true},
+		{"CLion", "CLion2023.1", true},
+		{"GoLand", "GoLand2024.1", true},
+		{"DataGrip", "DataGrip2023.3", true},
+		{"Rider", "Rider2024.1", true},
+		{"AndroidStudio", "AndroidStudio2023.2", true},
+		{"VSCode", "VSCode", false},
+		{"Eclipse", "Eclipse", false},
+		{"SublimeText", "SublimeText", false},
+		{"Atom", "Atom", false},
+		{"Random product", "Random2023.1", false},
 	}
 
-	for _, product := range validProducts {
-		assert.True(t, opts.isJetBrainsProduct(product), "Should recognize %s as JetBrains product", product)
-	}
-
-	// Test invalid product names
-	invalidProducts := []string{
-		"VSCode",
-		"Eclipse",
-		"SublimeText",
-		"Atom",
-		"Random2023.1",
-	}
-
-	for _, product := range invalidProducts {
-		assert.False(t, opts.isJetBrainsProduct(product), "Should not recognize %s as JetBrains product", product)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := defaultIDEOptions()
+			result := opts.isJetBrainsProduct(tt.product)
+			assert.Equal(t, tt.expected, result)
+		})
 	}
 }
 
@@ -136,63 +134,57 @@ func TestFormatProductName(t *testing.T) {
 }
 
 func TestShouldIgnoreEvent(t *testing.T) {
-	opts := defaultIDEOptions()
-
-	// Create a temporary file for testing
 	tmpDir := t.TempDir()
-	tmpFile := filepath.Join(tmpDir, "test.tmp")
-	_ = os.WriteFile(tmpFile, []byte("test"), 0o644)
 
-	ignoredFiles := []string{
-		filepath.Join(tmpDir, "file.tmp"),
-		filepath.Join(tmpDir, "file~"),
-		filepath.Join(tmpDir, "file.swp"),
-		filepath.Join(tmpDir, ".DS_Store"),
-		filepath.Join(tmpDir, "Thumbs.db"),
-		filepath.Join(tmpDir, "file.lock"),
-		filepath.Join(tmpDir, "file.log"),
-		filepath.Join(tmpDir, "___jb_temp"),
+	tests := []struct {
+		name         string
+		filename     string
+		shouldIgnore bool
+	}{
+		{"temp file", "file.tmp", true},
+		{"backup file", "file~", true},
+		{"swap file", "file.swp", true},
+		{"macOS DS_Store", ".DS_Store", true},
+		{"Windows thumbs", "Thumbs.db", true},
+		{"lock file", "file.lock", true},
+		{"log file", "file.log", true},
+		{"JetBrains temp", "___jb_temp", true},
+		{"config XML", "config.xml", false},
+		{"settings JSON", "settings.json", false},
+		{"filetypes XML", "filetypes.xml", false},
 	}
 
-	for _, file := range ignoredFiles {
-		event := fsnotify.Event{Name: file, Op: fsnotify.Write}
-		assert.True(t, opts.shouldIgnoreEvent(event), "Should ignore %s", file)
-	}
-
-	// Test files that should not be ignored
-	normalFiles := []string{
-		filepath.Join(tmpDir, "config.xml"),
-		filepath.Join(tmpDir, "settings.json"),
-		filepath.Join(tmpDir, "filetypes.xml"),
-	}
-
-	for _, file := range normalFiles {
-		event := fsnotify.Event{Name: file, Op: fsnotify.Write}
-		assert.False(t, opts.shouldIgnoreEvent(event), "Should not ignore %s", file)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := defaultIDEOptions()
+			file := filepath.Join(tmpDir, tt.filename)
+			event := fsnotify.Event{Name: file, Op: fsnotify.Write}
+			result := opts.shouldIgnoreEvent(event)
+			assert.Equal(t, tt.shouldIgnore, result)
+		})
 	}
 }
 
 func TestIsSyncProblematicFile(t *testing.T) {
-	opts := defaultIDEOptions()
-
-	problematicFiles := []string{
-		"/path/to/filetypes.xml",
-		"/path/to/settingsSync/options/filetypes.xml",
-		"/path/to/workspace.xml",
+	tests := []struct {
+		name          string
+		filepath      string
+		isProblematic bool
+	}{
+		{"filetypes XML", "/path/to/filetypes.xml", true},
+		{"sync filetypes XML", "/path/to/settingsSync/options/filetypes.xml", true},
+		{"workspace XML", "/path/to/workspace.xml", true},
+		{"colors XML", "/path/to/colors.xml", false},
+		{"keymap XML", "/path/to/keymap.xml", false},
+		{"other XML", "/path/to/other.xml", false},
 	}
 
-	for _, file := range problematicFiles {
-		assert.True(t, opts.isSyncProblematicFile(file), "Should identify %s as problematic", file)
-	}
-
-	normalFiles := []string{
-		"/path/to/colors.xml",
-		"/path/to/keymap.xml",
-		"/path/to/other.xml",
-	}
-
-	for _, file := range normalFiles {
-		assert.False(t, opts.isSyncProblematicFile(file), "Should not identify %s as problematic", file)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := defaultIDEOptions()
+			result := opts.isSyncProblematicFile(tt.filepath)
+			assert.Equal(t, tt.isProblematic, result)
+		})
 	}
 }
 
@@ -277,7 +269,7 @@ func TestCopyFile(t *testing.T) {
 }
 
 func TestIDECmdStructure(t *testing.T) {
-	cmd := NewIDECmd()
+	cmd := NewIDECmd(context.Background())
 
 	// Test that the command has proper structure
 	assert.NotNil(t, cmd.Use)
@@ -293,7 +285,7 @@ func TestIDECmdStructure(t *testing.T) {
 }
 
 func TestIDECmdHelpContent(t *testing.T) {
-	cmd := NewIDECmd()
+	cmd := NewIDECmd(context.Background())
 
 	// Verify help content mentions key features
 	longDesc := cmd.Long
