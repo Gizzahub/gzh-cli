@@ -1,10 +1,11 @@
-package github
+package github_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/gizzahub/gzh-manager-go/pkg/github/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +18,7 @@ func TestAPIClient_GetRepository(t *testing.T) {
 		owner         string
 		repo          string
 		setupMocks    func(*mocks.MockAPIClient)
-		expected      *RepositoryInfo
+		expected      *github.RepositoryInfo
 		expectedError bool
 		errorMessage  string
 	}{
@@ -28,7 +29,7 @@ func TestAPIClient_GetRepository(t *testing.T) {
 			setupMocks: func(mockAPI *mocks.MockAPIClient) {
 				mockAPI.EXPECT().
 					GetRepository(gomock.Any(), "test-org", "test-repo").
-					Return(&RepositoryInfo{
+					Return(&github.RepositoryInfo{
 						Name:          "test-repo",
 						FullName:      "test-org/test-repo",
 						Description:   "Test repository",
@@ -42,7 +43,7 @@ func TestAPIClient_GetRepository(t *testing.T) {
 						Size:          1024,
 					}, nil)
 			},
-			expected: &RepositoryInfo{
+			expected: &github.RepositoryInfo{
 				Name:          "test-repo",
 				FullName:      "test-org/test-repo",
 				Description:   "Test repository",
@@ -98,7 +99,7 @@ func TestAPIClient_ListOrganizationRepositories(t *testing.T) {
 		name          string
 		org           string
 		setupMocks    func(*mocks.MockAPIClient)
-		expected      []RepositoryInfo
+		expected      []github.RepositoryInfo
 		expectedError bool
 		errorMessage  string
 	}{
@@ -106,7 +107,7 @@ func TestAPIClient_ListOrganizationRepositories(t *testing.T) {
 			name: "successful list repositories",
 			org:  "test-org",
 			setupMocks: func(mockAPI *mocks.MockAPIClient) {
-				repos := []RepositoryInfo{
+				repos := []github.RepositoryInfo{
 					{
 						Name:          "repo1",
 						FullName:      "test-org/repo1",
@@ -129,7 +130,7 @@ func TestAPIClient_ListOrganizationRepositories(t *testing.T) {
 					ListOrganizationRepositories(gomock.Any(), "test-org").
 					Return(repos, nil)
 			},
-			expected: []RepositoryInfo{
+			expected: []github.RepositoryInfo{
 				{
 					Name:          "repo1",
 					FullName:      "test-org/repo1",
@@ -156,9 +157,9 @@ func TestAPIClient_ListOrganizationRepositories(t *testing.T) {
 			setupMocks: func(mockAPI *mocks.MockAPIClient) {
 				mockAPI.EXPECT().
 					ListOrganizationRepositories(gomock.Any(), "empty-org").
-					Return([]RepositoryInfo{}, nil)
+					Return([]github.RepositoryInfo{}, nil)
 			},
-			expected:      []RepositoryInfo{},
+			expected:      []github.RepositoryInfo{},
 			expectedError: false,
 		},
 		{
@@ -200,7 +201,7 @@ func TestAPIClient_GetRateLimit(t *testing.T) {
 	tests := []struct {
 		name          string
 		setupMocks    func(*mocks.MockAPIClient)
-		expected      *RateLimit
+		expected      *github.RateLimit
 		expectedError bool
 	}{
 		{
@@ -208,13 +209,13 @@ func TestAPIClient_GetRateLimit(t *testing.T) {
 			setupMocks: func(mockAPI *mocks.MockAPIClient) {
 				mockAPI.EXPECT().
 					GetRateLimit(gomock.Any()).
-					Return(&RateLimit{
+					Return(&github.RateLimit{
 						Limit:     5000,
 						Remaining: 4500,
 						Used:      500,
 					}, nil)
 			},
-			expected: &RateLimit{
+			expected: &github.RateLimit{
 				Limit:     5000,
 				Remaining: 4500,
 				Used:      500,
@@ -258,7 +259,7 @@ func TestAPIClient_GetRateLimit(t *testing.T) {
 func TestCloneService_CloneRepository(t *testing.T) {
 	tests := []struct {
 		name          string
-		repo          RepositoryInfo
+		repo          github.RepositoryInfo
 		targetPath    string
 		strategy      string
 		setupMocks    func(*mocks.MockCloneService)
@@ -267,7 +268,7 @@ func TestCloneService_CloneRepository(t *testing.T) {
 	}{
 		{
 			name: "successful clone with reset strategy",
-			repo: RepositoryInfo{
+			repo: github.RepositoryInfo{
 				Name:     "test-repo",
 				CloneURL: "https://github.com/test-org/test-repo.git",
 			},
@@ -282,7 +283,7 @@ func TestCloneService_CloneRepository(t *testing.T) {
 		},
 		{
 			name: "clone with invalid strategy",
-			repo: RepositoryInfo{
+			repo: github.RepositoryInfo{
 				Name:     "test-repo",
 				CloneURL: "https://github.com/test-org/test-repo.git",
 			},
@@ -298,7 +299,7 @@ func TestCloneService_CloneRepository(t *testing.T) {
 		},
 		{
 			name: "clone failure due to network error",
-			repo: RepositoryInfo{
+			repo: github.RepositoryInfo{
 				Name:     "test-repo",
 				CloneURL: "https://github.com/test-org/test-repo.git",
 			},
@@ -339,7 +340,7 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 		name          string
 		token         string
 		setupMocks    func(*mocks.MockTokenValidatorInterface)
-		expected      *TokenInfoRecord
+		expected      *github.TokenInfoRecord
 		expectedError bool
 		errorMessage  string
 	}{
@@ -349,10 +350,10 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 			setupMocks: func(mockValidator *mocks.MockTokenValidatorInterface) {
 				mockValidator.EXPECT().
 					ValidateToken(gomock.Any(), "ghp_validtoken123").
-					Return(&TokenInfoRecord{
+					Return(&github.TokenInfoRecord{
 						Valid:  true,
 						Scopes: []string{"repo", "user", "admin:org"},
-						RateLimit: RateLimit{
+						RateLimit: github.RateLimit{
 							Limit:     5000,
 							Remaining: 4999,
 						},
@@ -360,10 +361,10 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 						Permissions: []string{"read", "write", "admin"},
 					}, nil)
 			},
-			expected: &TokenInfoRecord{
+			expected: &github.TokenInfoRecord{
 				Valid:  true,
 				Scopes: []string{"repo", "user", "admin:org"},
-				RateLimit: RateLimit{
+				RateLimit: github.RateLimit{
 					Limit:     5000,
 					Remaining: 4999,
 				},
@@ -378,11 +379,11 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 			setupMocks: func(mockValidator *mocks.MockTokenValidatorInterface) {
 				mockValidator.EXPECT().
 					ValidateToken(gomock.Any(), "invalid_token").
-					Return(&TokenInfoRecord{
+					Return(&github.TokenInfoRecord{
 						Valid: false,
 					}, errors.New("invalid authentication credentials"))
 			},
-			expected: &TokenInfoRecord{
+			expected: &github.TokenInfoRecord{
 				Valid: false,
 			},
 			expectedError: true,
@@ -394,10 +395,10 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 			setupMocks: func(mockValidator *mocks.MockTokenValidatorInterface) {
 				mockValidator.EXPECT().
 					ValidateToken(gomock.Any(), "ghp_limitedtoken456").
-					Return(&TokenInfoRecord{
+					Return(&github.TokenInfoRecord{
 						Valid:  true,
 						Scopes: []string{"repo:status", "public_repo"},
-						RateLimit: RateLimit{
+						RateLimit: github.RateLimit{
 							Limit:     5000,
 							Remaining: 3000,
 						},
@@ -405,10 +406,10 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 						Permissions: []string{"read"},
 					}, nil)
 			},
-			expected: &TokenInfoRecord{
+			expected: &github.TokenInfoRecord{
 				Valid:  true,
 				Scopes: []string{"repo:status", "public_repo"},
-				RateLimit: RateLimit{
+				RateLimit: github.RateLimit{
 					Limit:     5000,
 					Remaining: 3000,
 				},
