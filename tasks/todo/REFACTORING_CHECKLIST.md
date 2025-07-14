@@ -190,7 +190,7 @@
   - 🧠 **How**: Use pre-commit framework
   - 📁 **Files**: `.pre-commit-config.yaml`
 
-- [ ] Enable security scanning (gosec)
+- [x] Enable security scanning (gosec)
   - 📌 **Why**: Security linter is disabled
   - 🧠 **How**: Enable in `.golangci.yml`
   - 📁 **Files**: Fix security issues found

@@ -1,5 +1,5 @@
 # https://golangci-lint.run/usage/configuration/
-version: "2"
+# Removed version field for v1 compatibility
 linters-settings:
   lll:
     line-length: 180
@@ -8,8 +8,54 @@ linters-settings:
   dupl:
     threshold: 100
   gosec:
-    severity: medium
-    confidence: medium
+    # Includes rules G101-G602
+    includes:
+      - G101  # Look for hard coded credentials
+      - G102  # Bind to all interfaces  
+      - G103  # Audit the use of unsafe block
+      - G104  # Audit errors not checked
+      - G106  # Audit the use of ssh.InsecureIgnoreHostKey
+      - G107  # Url provided to HTTP request as taint input
+      - G108  # Profiling endpoint automatically exposed on /debug/pprof
+      - G109  # Potential Integer overflow made by strconv.Atoi result conversion to int16/32
+      - G110  # Potential DoS vulnerability via decompression bomb
+      - G201  # SQL query construction using format string
+      - G202  # SQL query construction using string concatenation
+      - G203  # Use of unescaped data in HTML templates
+      - G204  # Audit use of command execution
+      - G301  # Poor file permissions used when creating a directory
+      - G302  # Poor file permissions used with chmod
+      - G303  # Creating tempfile using a predictable path
+      - G304  # File path provided as taint input
+      - G305  # File traversal when extracting zip/tar archive
+      - G306  # Poor file permissions used when writing to a new file
+      - G307  # Deferring a method which returns an error
+      - G401  # Detect the usage of DES, RC4, MD5 or SHA1
+      - G402  # Look for bad TLS connection settings
+      - G403  # Ensure minimum RSA key length of 2048 bits
+      - G404  # Insecure random number source (rand)
+      - G501  # Import blocklist: crypto/md5
+      - G502  # Import blocklist: crypto/des
+      - G503  # Import blocklist: crypto/rc4
+      - G504  # Import blocklist: net/http/cgi
+      - G505  # Import blocklist: crypto/sha1
+      - G601  # Implicit memory aliasing of items from a range statement
+      - G602  # Slice access out of bounds
+    # Configuration of specific rules
+    config:
+      G101:
+        pattern: (?i)(?:password|passwd|pwd|secret|token|key|api[_-]?key|private[_-]?key|credential)
+        ignore_entropy: false
+        entropy_threshold: "80.0"
+        per_char_threshold: "3.0"
+        truncate: "32"
+      G104:
+        fmt: true
+      G111:
+        pattern: "(?i)dir.*traversal"
+      G301: "0750"
+      G302: "0600"
+      G306: "0600"
   funlen:
     lines: 100
     statements: 50
@@ -74,13 +120,23 @@ linters:
 
 issues:
   exclude-rules:
-    # Exclude some gosec rules that are too noisy for this codebase
+    # Exclude specific gosec rules in test files where they're expected
+    - path: "_test\\.go"
+      linters:
+        - gosec
+      text: "G104"  # Unchecked errors are acceptable in tests
+    - path: "_test\\.go"
+      linters:
+        - gosec
+      text: "G204"  # Command execution is expected in tests
+    # Exclude G304 for specific config loading patterns
     - linters:
         - gosec
-      text: "G104"  # Ignore audit errors for now
+      text: "G304.*config"  # Config file loading from user input is expected
+    # Exclude G304 for log file paths
     - linters:
-        - gosec  
-      text: "G304"  # File path from user input - some are expected
+        - gosec
+      text: "G304.*log"  # Log file paths from user input are controlled
     # Exclude dupl in test files as test patterns are often duplicated
     - path: "_test\\.go"
       linters:

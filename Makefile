@@ -124,6 +124,18 @@ PHONY: lint
 lint: ## lint go files
 	golangci-lint run -c .golang-ci.yml
 
+.PHONY: security
+security: ## run security analysis with gosec
+	@echo "Running security analysis..."
+	@command -v gosec >/dev/null 2>&1 || { echo "gosec not found. Installing..."; go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
+	@gosec -config=.gosec.yaml ./...
+
+.PHONY: security-json
+security-json: ## run security analysis and output JSON report
+	@echo "Running security analysis with JSON output..."
+	@command -v gosec >/dev/null 2>&1 || { echo "gosec not found. Installing..."; go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
+	@gosec -fmt=json -out=gosec-report.json -config=.gosec.yaml ./...
+
 .PHONY: generate-mocks
 generate-mocks: ## generate all mock files using gomock
 	@echo "Generating mocks..."

@@ -1,0 +1,114 @@
+# Gosec security scanner configuration
+# See: https://github.com/securecodewarrior/gosec#configuration
+
+global:
+  # Nosec comments can be used to exclude rules for specific lines
+  nosec: true
+  # Show ignored issues in the report
+  show-ignored: false
+  # Confidence levels: LOW, MEDIUM, HIGH
+  confidence: medium
+  # Severity levels: LOW, MEDIUM, HIGH
+  severity: medium
+  # Format for output
+  fmt: json
+  # Output file for results
+  out: gosec-report.json
+
+# Rule configuration
+rules:
+  # G101: Hardcoded credentials
+  G101:
+    # Pattern to match potential credentials
+    pattern: "(?i)(?:password|passwd|pwd|secret|token|key|api[_-]?key|private[_-]?key|credential|auth)"
+    # Don't ignore entropy analysis
+    ignore_entropy: false
+    # Minimum entropy threshold for detection
+    entropy_threshold: "80.0"
+    # Per character threshold
+    per_char_threshold: "3.0"
+    # Truncate strings longer than this for display
+    truncate: "32"
+
+  # G104: Audit errors not checked
+  G104:
+    # Include fmt package errors
+    fmt: true
+
+  # G204: Subprocess launched with variable
+  G204:
+    # Allow specific patterns for legitimate command execution
+    whitelist:
+      - "git"
+      - "go"
+      - "docker"
+      - "kubectl"
+
+  # G301-G306: File permissions
+  G301: "0750"  # Directory permissions
+  G302: "0600"  # File permissions with chmod
+  G306: "0600"  # File permissions when writing
+
+  # G401-G404: Cryptography
+  G401:
+    # Allowed weak hash functions (none recommended)
+    allowed: []
+  
+  G402:
+    # Minimum TLS version
+    min_version: "1.2"
+
+  G403:
+    # Minimum RSA key length
+    min_length: 2048
+
+# Include specific rules (empty means include all)
+include:
+  - G101  # Hardcoded credentials
+  - G102  # Bind to all interfaces
+  - G103  # Unsafe blocks
+  - G104  # Unchecked errors
+  - G106  # SSH InsecureIgnoreHostKey
+  - G107  # URL provided to HTTP request as taint input
+  - G108  # Profiling endpoint exposed
+  - G109  # Integer overflow
+  - G110  # DoS via decompression bomb
+  - G201  # SQL injection via format string
+  - G202  # SQL injection via concatenation
+  - G203  # Unescaped HTML templates
+  - G204  # Command injection
+  - G301  # Poor directory permissions
+  - G302  # Poor file permissions (chmod)
+  - G303  # Predictable tempfile paths
+  - G304  # File path injection
+  - G305  # ZIP/TAR traversal
+  - G306  # Poor file permissions (write)
+  - G307  # Deferred method returns error
+  - G401  # Weak cryptographic primitives
+  - G402  # Bad TLS settings
+  - G403  # Weak RSA keys
+  - G404  # Insecure random source
+  - G501  # Blocklist: crypto/md5
+  - G502  # Blocklist: crypto/des
+  - G503  # Blocklist: crypto/rc4
+  - G504  # Blocklist: net/http/cgi
+  - G505  # Blocklist: crypto/sha1
+  - G601  # Implicit memory aliasing
+  - G602  # Slice bounds checking
+
+# Exclude specific rules or patterns
+exclude:
+  # No global excludes - handle via nosec comments
+
+# Exclude rules for specific files or paths
+exclude-generated: true
+
+# Vendor directory exclusions
+exclude-dir:
+  - vendor
+  - node_modules
+  - .git
+  - tmp
+
+# Test file handling
+tests: true  # Include test files in scanning
