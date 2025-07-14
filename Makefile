@@ -87,6 +87,34 @@ test-redis: ## run Redis integration tests only
 .PHONY: test-integration
 test-integration: test-docker ## alias for test-docker
 
+.PHONY: test-e2e
+test-e2e: build ## run End-to-End test scenarios
+	@echo "Running E2E tests..."
+	@./test/e2e/run_e2e_tests.sh all
+
+.PHONY: test-e2e-short
+test-e2e-short: build ## run E2E tests in short mode
+	@echo "Running E2E tests in short mode..."
+	@./test/e2e/run_e2e_tests.sh -s all
+
+.PHONY: test-e2e-bulk-clone
+test-e2e-bulk-clone: build ## run bulk clone E2E tests only
+	@echo "Running bulk clone E2E tests..."
+	@./test/e2e/run_e2e_tests.sh bulk-clone
+
+.PHONY: test-e2e-config
+test-e2e-config: build ## run configuration E2E tests only
+	@echo "Running configuration E2E tests..."
+	@./test/e2e/run_e2e_tests.sh config
+
+.PHONY: test-e2e-ide
+test-e2e-ide: build ## run IDE E2E tests only
+	@echo "Running IDE E2E tests..."
+	@./test/e2e/run_e2e_tests.sh ide
+
+.PHONY: test-all
+test-all: test test-docker test-e2e ## run all tests (unit, integration, e2e)
+
 PHONY: fmt
 fmt: ## format go files
 	gofumpt -w .

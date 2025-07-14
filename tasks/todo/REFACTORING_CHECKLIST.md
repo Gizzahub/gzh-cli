@@ -177,7 +177,7 @@
   - 🧠 **How**: Use testcontainers-go
   - 📁 **Files**: `test/integration/`
 
-- [ ] Add E2E test scenarios
+- [x] Add E2E test scenarios
   - 📌 **Why**: No full workflow testing
   - 🧠 **How**: Script common user workflows
   - 📁 **Files**: `test/e2e/`
