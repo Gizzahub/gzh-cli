@@ -100,7 +100,7 @@ func NewFileFallbackProvider() *FileFallbackProvider {
 	return &FileFallbackProvider{
 		backupLocations: []string{
 			"~/.config/gzh-manager/backup",
-			"/tmp/gzh-manager-backup",
+			filepath.Join(os.TempDir(), "gzh-manager-backup"),
 			"./backup",
 		},
 		tempDirectory: os.TempDir(),

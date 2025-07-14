@@ -1,4 +1,4 @@
-package bulk_clone_test
+package bulkclone_test
 
 import (
 	"fmt"
@@ -48,7 +48,7 @@ gitea:
 	}
 
 	// Load the configuration
-	config, err := bulk_clone.LoadConfig(configPath)
+	config, err := bulkclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
@@ -91,7 +91,7 @@ gitlab:
 	}
 
 	// Attempt to load and validate
-	_, err = bulk_clone.LoadConfig(configPath)
+	_, err = bulkclone.LoadConfig(configPath)
 	if err != nil {
 		fmt.Printf("Validation caught error: %v\n", err)
 	}
@@ -113,7 +113,7 @@ github:
 		return
 	}
 
-	config, err := bulk_clone.LoadConfig(validConfigPath)
+	config, err := bulkclone.LoadConfig(validConfigPath)
 	if err != nil {
 		log.Printf("Error loading valid config: %v", err)
 		return
@@ -183,7 +183,7 @@ gogs:
 		return
 	}
 
-	config, err := bulk_clone.LoadConfig(configPath)
+	config, err := bulkclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
@@ -237,7 +237,7 @@ github:
 		return
 	}
 
-	config, err := bulk_clone.LoadConfig(configPath)
+	config, err := bulkclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
@@ -305,7 +305,7 @@ gitlab:
 		return
 	}
 
-	config, err := bulk_clone.LoadConfig(configPath)
+	config, err := bulkclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return

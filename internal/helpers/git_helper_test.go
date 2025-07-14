@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"os"
 	"os/exec"
 	"testing"
 
@@ -12,21 +13,18 @@ func TestCheckGitRepoType(t *testing.T) {
 	var cmd *exec.Cmd
 
 	// rmp tmp
-	cmd = exec.Command("rm", "-rf", "tmp")
-	cmd.Run()
+	// Clean up and create directories using Go's built-in functions for cross-platform compatibility
+	os.RemoveAll("tmp")
 
-	cmd = exec.Command("mkdir", "-p", "tmp/git-commit0")
-	cmd.Run()
-	cmd = exec.Command("mkdir", "-p", "tmp/git-commit2")
-	cmd.Run()
-	cmd = exec.Command("mkdir", "-p", "tmp/nongit")
-	cmd.Run()
+	os.MkdirAll("tmp/git-commit0", 0o755)
+	os.MkdirAll("tmp/git-commit2", 0o755)
+	os.MkdirAll("tmp/nongit", 0o755)
 	cmd = exec.Command("git", "-C", "tmp/git-commit0", "init")
 	cmd.Run()
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "init")
 	cmd.Run()
-	cmd = exec.Command("touch", "tmp/git-commit2/test")
-	cmd.Run()
+	// Create test file using Go's built-in function for cross-platform compatibility
+	os.WriteFile("tmp/git-commit2/test", []byte{}, 0o644)
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "add", ".")
 	cmd.Run()
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "commit", "-m", "test1")
