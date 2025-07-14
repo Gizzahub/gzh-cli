@@ -147,6 +147,74 @@
             "mode": "local",
             "processId": "${command:pickProcess}",
             "showLog": true
+        },
+        {
+            "name": "Debug GZH IDE Command",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "ide",
+                "monitor",
+                "--interval",
+                "5s"
+            ],
+            "env": {
+                "GZH_DEV_MODE": "true",
+                "GO111MODULE": "on"
+            },
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "showLog": true
+        },
+        {
+            "name": "Debug GZH Network Environment",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "net-env",
+                "monitor",
+                "--verbose"
+            ],
+            "env": {
+                "GZH_DEV_MODE": "true",
+                "GO111MODULE": "on"
+            },
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "showLog": true
+        },
+        {
+            "name": "Debug GZH Performance Analysis",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "performance",
+                "analyze",
+                "--profile"
+            ],
+            "env": {
+                "GZH_DEV_MODE": "true",
+                "GO111MODULE": "on"
+            },
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "showLog": true
+        },
+        {
+            "name": "Remote Debug (attach)",
+            "type": "go",
+            "request": "attach",
+            "mode": "remote",
+            "remotePath": "/workspace",
+            "port": 2345,
+            "host": "127.0.0.1",
+            "showLog": true
         }
     ],
     "inputs": [

@@ -206,7 +206,7 @@
   - 🧠 **How**: Create `.devcontainer/`
   - 📁 **Files**: `.devcontainer/devcontainer.json`
 
-- [ ] Create debugging configurations
+- [x] Create debugging configurations
   - 📌 **Why**: No standard debug setup
   - 🧠 **How**: Add VS Code/GoLand configs
   - 📁 **Files**: `.vscode/launch.json`

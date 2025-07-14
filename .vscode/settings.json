@@ -1,0 +1,248 @@
+{
+    // Go language settings
+    "go.useLanguageServer": true,
+    "go.languageServerExperimentalFeatures": {
+        "diagnostics": true,
+        "documentLink": true
+    },
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": ["-c", ".golang-ci.yml"],
+    "go.buildTags": "integration",
+    "go.testTags": "integration",
+    "go.testFlags": ["-v", "-race"],
+    "go.coverOnSave": true,
+    "go.formatTool": "gofumpt",
+    "go.alternateTools": {
+        "go": "/usr/local/go/bin/go",
+        "gofmt": "gofumpt",
+        "goimports": "gci"
+    },
+    "go.toolsManagement.autoUpdate": true,
+    "go.testEnvVars": {
+        "GZH_DEV_MODE": "true",
+        "GO111MODULE": "on"
+    },
+    "go.buildFlags": ["-ldflags", "-X main.version=dev"],
+    
+    // TypeScript/JavaScript settings
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.suggest.autoImports": true,
+    "javascript.suggest.autoImports": true,
+    "typescript.preferences.importModuleSpecifier": "relative",
+    
+    // Python settings
+    "python.defaultInterpreterPath": "./bindings/python/venv/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.formatting.provider": "black",
+    "python.sorting.provider": "isort",
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "bindings/python"
+    ],
+    
+    // Editor settings
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.fixAll.eslint": "explicit",
+        "source.fixAll.golangci-lint": "explicit"
+    },
+    "editor.rulers": [80, 120],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false,
+    "editor.detectIndentation": true,
+    
+    // File settings
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/*.pyc": true,
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/coverage.out": true,
+        "**/.coverage": true,
+        "**/tmp": true
+    },
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/tmp/**": true
+    },
+    
+    // Terminal settings
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.env.linux": {
+        "GZH_DEV_MODE": "true",
+        "GO111MODULE": "on"
+    },
+    "terminal.integrated.env.osx": {
+        "GZH_DEV_MODE": "true",
+        "GO111MODULE": "on"
+    },
+    
+    // YAML schema associations
+    "yaml.schemas": {
+        "./docs/bulk-clone-schema.json": [
+            "samples/bulk-clone*.yaml",
+            "samples/bulk-clone*.yml",
+            "examples/bulk-clone*.yaml"
+        ],
+        "./docs/gzh-schema.json": [
+            "samples/gzh*.yaml",
+            "examples/gzh*.yaml"
+        ],
+        "https://json.schemastore.org/github-workflow.json": [
+            ".github/workflows/*.yml",
+            ".github/workflows/*.yaml"
+        ],
+        "https://json.schemastore.org/pre-commit-config.json": [
+            ".pre-commit-config.yaml"
+        ],
+        "https://goreleaser.com/static/schema.json": [
+            ".goreleaser.yml",
+            ".goreleaser.yaml"
+        ]
+    },
+    
+    // JSON schema associations
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "package.json"
+            ],
+            "url": "https://json.schemastore.org/package.json"
+        },
+        {
+            "fileMatch": [
+                "tsconfig.json",
+                "tsconfig.*.json"
+            ],
+            "url": "https://json.schemastore.org/tsconfig.json"
+        }
+    ],
+    
+    // Makefile settings
+    "makefile.configureOnOpen": true,
+    
+    // Docker settings
+    "docker.defaultRegistryPath": "gizzahub",
+    
+    // Git settings
+    "git.autofetch": true,
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+    "git.postCommitCommand": "none",
+    
+    // Security settings
+    "security.workspace.trust.enabled": false,
+    
+    // Search settings
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/coverage.out": true,
+        "**/.coverage": true,
+        "**/tmp": true,
+        "**/*.log": true
+    },
+    
+    // Language-specific settings
+    "[go]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": false,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "[typescript]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+    "[javascript]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+    "[python]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "[yaml]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true
+    },
+    "[json]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true
+    },
+    "[markdown]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "editor.wordWrap": "on"
+    },
+    "[dockerfile]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+    
+    // Extension-specific settings
+    "eslint.workingDirectories": [
+        "web",
+        "bindings/nodejs"
+    ],
+    "prettier.configPath": "web/.prettierrc",
+    "prettier.ignorePath": "web/.prettierignore",
+    
+    // Testing settings
+    "go.testTimeout": "30s",
+    "testing.automaticallyOpenPeekView": "never",
+    
+    // Debugging settings
+    "debug.console.acceptSuggestionOnEnter": "off",
+    "debug.console.fontSize": 14,
+    "debug.console.wordWrap": false,
+    
+    // Performance settings
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.hg/store/**": true
+    }
+}
