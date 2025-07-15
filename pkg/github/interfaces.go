@@ -21,6 +21,9 @@ type RepositoryInfo struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 	Language      string    `json:"language"`
 	Size          int       `json:"size"`
+	Topics        []string  `json:"topics"`
+	Visibility    string    `json:"visibility"`
+	IsTemplate    bool      `json:"is_template"`
 }
 
 // APIClient defines the interface for GitHub API operations

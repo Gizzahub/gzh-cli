@@ -7,6 +7,33 @@ import (
 	"time"
 )
 
+// PolicyViolationType represents the type of policy violation
+type PolicyViolationType string
+
+const (
+	ViolationTypeMissingEcosystem   PolicyViolationType = "missing_ecosystem"
+	ViolationTypeInvalidSchedule     PolicyViolationType = "invalid_schedule"
+	ViolationTypeMissingDirectory    PolicyViolationType = "missing_directory"
+	ViolationTypeSecurityUpdates     PolicyViolationType = "security_updates"
+	ViolationTypeVersionUpdates      PolicyViolationType = "version_updates"
+	ViolationTypeIgnoreConditions    PolicyViolationType = "ignore_conditions"
+	ViolationTypeAllowedDependencies PolicyViolationType = "allowed_dependencies"
+)
+
+// ViolationStatistics provides statistics about policy violations
+type ViolationStatistics struct {
+	ViolationType PolicyViolationType `json:"violation_type"`
+	Count         int                 `json:"count"`
+	Percentage    float64             `json:"percentage"`
+	Repositories  []string            `json:"repositories"`
+	Severity      string              `json:"severity"`
+}
+
+// Type aliases for Dependabot-specific types
+type DependabotViolationStatistics = ViolationStatistics
+type DependabotPolicyViolationType = PolicyViolationType
+type PolicyViolation = DependabotPolicyViolation
+
 // DependabotPolicyManager manages organization-wide Dependabot policies
 type DependabotPolicyManager struct {
 	logger        Logger
@@ -153,15 +180,7 @@ type EcosystemStats struct {
 	CommonViolations    []string `json:"common_violations"`
 }
 
-// DependabotViolationStatistics provides statistics for specific violation types
-type DependabotViolationStatistics struct {
-	Type           DependabotPolicyViolationType `json:"type"`
-	Count          int                           `json:"count"`
-	AffectedRepos  int                           `json:"affected_repos"`
-	Severity       PolicySeverity                `json:"severity"`
-	TrendDirection TrendDirection                `json:"trend_direction"`
-	RecommendedFix string                        `json:"recommended_fix"`
-}
+// DependabotViolationStatistics provides statistics for specific violation types (removed duplicate, using original at line 24)
 
 // PolicyTrendAnalysis provides trend analysis for policy compliance
 type PolicyTrendAnalysis struct {
@@ -204,8 +223,7 @@ type RecommendationImpact struct {
 	ViolationsReduced  int       `json:"violations_reduced"`
 }
 
-// Enum types
-type DependabotPolicyViolationType string
+// Enum types (removed duplicate, using original at line 11)
 
 const (
 	DependabotViolationTypeMissingConfig          DependabotPolicyViolationType = "missing_config"
@@ -412,7 +430,7 @@ func (pm *DependabotPolicyManager) EvaluateRepositoryCompliance(ctx context.Cont
 	}
 
 	// Get policy
-	policy, err := pm.GetPolicy(ctx, policyID)
+	_, err := pm.GetPolicy(ctx, policyID)
 	if err != nil {
 		return nil, err
 	}
@@ -429,6 +447,9 @@ func (pm *DependabotPolicyManager) EvaluateRepositoryCompliance(ctx context.Cont
 		return nil, fmt.Errorf("failed to get repository status: %w", err)
 	}
 
+	// Get policy for evaluation (we validated it exists above)
+	policy, _ := pm.GetPolicy(ctx, policyID)
+	
 	// Perform evaluation
 	result := pm.performPolicyEvaluation(policy, config, status, organization, repository)
 
@@ -443,7 +464,7 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 	pm.logger.Info("Applying policy to organization", "policy_id", policyID, "organization", organization)
 
 	// Get policy
-	policy, err := pm.GetPolicy(ctx, policyID)
+	_, err := pm.GetPolicy(ctx, policyID)
 	if err != nil {
 		return nil, err
 	}
@@ -465,7 +486,7 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 		Progress: BulkOperationProgress{
 			Total: len(repos),
 		},
-		Results:           make([]RepositoryOperationResult, 0),
+		Results:           make([]DependabotRepositoryOperationResult, 0),
 		StartedAt:         time.Now(),
 		EstimatedDuration: time.Duration(len(repos)) * 30 * time.Second, // Estimate 30s per repo
 	}
@@ -474,6 +495,9 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 		operation.TargetRepos[i] = repo.Name
 	}
 
+	// Get policy for execution
+	policy, _ := pm.GetPolicy(ctx, policyID)
+	
 	// Execute bulk operation asynchronously
 	go pm.executeBulkOperation(ctx, operation, policy)
 
@@ -485,7 +509,7 @@ func (pm *DependabotPolicyManager) GenerateOrganizationReport(ctx context.Contex
 	pm.logger.Info("Generating organization policy report", "policy_id", policyID, "organization", organization)
 
 	// Get policy
-	policy, err := pm.GetPolicy(ctx, policyID)
+	_, err := pm.GetPolicy(ctx, policyID)
 	if err != nil {
 		return nil, err
 	}
@@ -510,7 +534,7 @@ func (pm *DependabotPolicyManager) GenerateOrganizationReport(ctx context.Contex
 	summary := OrganizationPolicySummary{
 		TotalRepositories:  len(repos),
 		EcosystemBreakdown: make(map[string]EcosystemStats),
-		ViolationBreakdown: make(map[PolicyViolationType]int),
+		ViolationBreakdown: make(map[DependabotPolicyViolationType]int),
 	}
 
 	var totalScore float64
@@ -589,7 +613,7 @@ func (pm *DependabotPolicyManager) performPolicyEvaluation(policy *DependabotPol
 		PolicyID:        policy.ID,
 		Repository:      repository,
 		Organization:    organization,
-		Violations:      make([]PolicyViolation, 0),
+		Violations:      make([]DependabotPolicyViolation, 0),
 		Recommendations: make([]PolicyRecommendation, 0),
 		EvaluatedAt:     time.Now(),
 		NextEvaluation:  time.Now().Add(24 * time.Hour),

@@ -355,7 +355,7 @@ func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, ex
 
 	// Execute actions
 	var executionErr error
-	for i, action := range rule.Actions {
+	for _, action := range rule.Actions {
 		if !action.Enabled {
 			rm.logger.Debug("Skipping disabled action", "action_id", action.ID, "rule_id", rule.ID)
 			continue

@@ -254,7 +254,7 @@ func (mrw *MultiRepositoryWatcher) processEvents(ctx context.Context, verbose bo
 	defer ticker.Stop()
 
 	batch := make([]MultiRepoEvent, 0, mrw.config.BatchSize)
-	batchStart := time.Now()
+	_ = time.Now() // batchStart was unused
 
 	for {
 		select {

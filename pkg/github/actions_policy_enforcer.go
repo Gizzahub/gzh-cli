@@ -3,7 +3,6 @@ package github
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 )

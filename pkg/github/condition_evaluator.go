@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -828,7 +829,7 @@ func (e *conditionEvaluatorImpl) extractPathsFromPayload(payload map[string]inte
 	pathMap := make(map[string]bool)
 
 	for _, file := range files {
-		dir := strings.Dir(file)
+		dir := filepath.Dir(file)
 		if dir != "." {
 			pathMap[dir] = true
 		}

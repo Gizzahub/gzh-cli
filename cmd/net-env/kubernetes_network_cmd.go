@@ -851,9 +851,4 @@ func parsePorts(portSpecs []string) []NetworkPolicyPort {
 	return ports
 }
 
-func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-	return s[:maxLen-3] + "..."
-}
+// truncateString function moved to docker_network_cmd.go to avoid duplication

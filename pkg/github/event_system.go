@@ -73,6 +73,8 @@ type EventProcessor interface {
 	RegisterEventHandler(eventType EventType, handler EventHandler) error
 	UnregisterEventHandler(eventType EventType) error
 	GetMetrics() *EventMetrics
+	ValidateEvent(ctx context.Context, event *GitHubEvent) error
+	FilterEvent(ctx context.Context, event *GitHubEvent, filter *EventFilter) (bool, error)
 }
 
 // EventHandler defines the interface for handling specific event types
@@ -401,6 +403,79 @@ func (e *eventProcessorImpl) updateMetrics(event *GitHubEvent, duration time.Dur
 // GetMetrics returns current event processing metrics
 func (e *eventProcessorImpl) GetMetrics() *EventMetrics {
 	return e.metrics
+}
+
+// ValidateEvent validates a GitHub event
+func (e *eventProcessorImpl) ValidateEvent(ctx context.Context, event *GitHubEvent) error {
+	if event == nil {
+		return fmt.Errorf("event is nil")
+	}
+	if event.ID == "" {
+		return fmt.Errorf("event ID is empty")
+	}
+	if event.Type == "" {
+		return fmt.Errorf("event type is empty")
+	}
+	return nil
+}
+
+// FilterEvent filters a GitHub event based on the provided filter
+func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent, filter *EventFilter) (bool, error) {
+	if filter == nil {
+		return true, nil
+	}
+	
+	// Check organization filter
+	if filter.Organization != "" && event.Organization != filter.Organization {
+		return false, nil
+	}
+	
+	// Check repository filter
+	if filter.Repository != "" && event.Repository != filter.Repository {
+		return false, nil
+	}
+	
+	// Check event type filter
+	if len(filter.EventTypes) > 0 {
+		found := false
+		for _, eventType := range filter.EventTypes {
+			if string(eventType) == event.Type {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false, nil
+		}
+	}
+	
+	// Check action filter
+	if len(filter.Actions) > 0 && event.Action != "" {
+		found := false
+		for _, action := range filter.Actions {
+			if string(action) == event.Action {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false, nil
+		}
+	}
+	
+	// Check sender filter
+	if filter.Sender != "" && event.Sender != filter.Sender {
+		return false, nil
+	}
+	
+	// Check time range filter
+	if filter.TimeRange != nil {
+		if event.Timestamp.Before(filter.TimeRange.Start) || event.Timestamp.After(filter.TimeRange.End) {
+			return false, nil
+		}
+	}
+	
+	return true, nil
 }
 
 // EventWebhookServer provides HTTP server functionality for receiving GitHub webhooks

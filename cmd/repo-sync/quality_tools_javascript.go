@@ -9,8 +9,18 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/common"
 	"go.uber.org/zap"
 )
+
+// Use common package types directly
+
+// fileMetrics represents metrics about files in a directory
+type fileMetrics struct {
+	totalFiles int
+	totalLines int
+	totalSize  int64
+}
 
 // JavaScriptQualityAnalyzer implements quality analysis for JavaScript projects
 type JavaScriptQualityAnalyzer struct {
@@ -32,11 +42,11 @@ func (j *JavaScriptQualityAnalyzer) IsAvailable(ctx context.Context) bool {
 	return err == nil
 }
 
-func (j *JavaScriptQualityAnalyzer) Analyze(ctx context.Context, path string) (*QualityResult, error) {
-	result := &QualityResult{
+func (j *JavaScriptQualityAnalyzer) Analyze(ctx context.Context, path string) (*common.QualityResult, error) {
+	result := &common.QualityResult{
 		Repository: path,
-		Issues:     make([]QualityIssue, 0),
-		Metrics:    QualityMetrics{},
+		Issues:     make([]common.QualityIssue, 0),
+		Metrics:    common.QualityMetrics{},
 	}
 
 	// Run ESLint
@@ -82,7 +92,7 @@ func (j *JavaScriptQualityAnalyzer) Analyze(ctx context.Context, path string) (*
 	return result, nil
 }
 
-func (j *JavaScriptQualityAnalyzer) runESLint(ctx context.Context, path string) ([]QualityIssue, error) {
+func (j *JavaScriptQualityAnalyzer) runESLint(ctx context.Context, path string) ([]common.QualityIssue, error) {
 	// Check if .eslintrc exists
 	eslintConfig := j.findESLintConfig(path)
 	if eslintConfig == "" {
@@ -123,7 +133,7 @@ func (j *JavaScriptQualityAnalyzer) runESLint(ctx context.Context, path string) 
 		return nil, fmt.Errorf("failed to parse ESLint output: %w", err)
 	}
 
-	issues := make([]QualityIssue, 0)
+	issues := make([]common.QualityIssue, 0)
 	for _, file := range eslintResults {
 		for _, msg := range file.Messages {
 			issueType := "style"
@@ -131,7 +141,7 @@ func (j *JavaScriptQualityAnalyzer) runESLint(ctx context.Context, path string) 
 				issueType = "bug"
 			}
 
-			issues = append(issues, QualityIssue{
+			issues = append(issues, common.QualityIssue{
 				Type:       issueType,
 				Severity:   j.mapESLintSeverity(msg.Severity),
 				File:       file.FilePath,
@@ -148,8 +158,8 @@ func (j *JavaScriptQualityAnalyzer) runESLint(ctx context.Context, path string) 
 	return issues, nil
 }
 
-func (j *JavaScriptQualityAnalyzer) analyzeComplexity(issues []QualityIssue) ([]QualityIssue, float64) {
-	complexityIssues := make([]QualityIssue, 0)
+func (j *JavaScriptQualityAnalyzer) analyzeComplexity(issues []common.QualityIssue) ([]common.QualityIssue, float64) {
+	complexityIssues := make([]common.QualityIssue, 0)
 	totalComplexity := 0
 	complexityCount := 0
 
@@ -331,7 +341,7 @@ func (j *JavaScriptQualityAnalyzer) simpleDuplicationDetection(path string) floa
 	return float64(duplicateLines) / float64(totalLines) * 100
 }
 
-func (j *JavaScriptQualityAnalyzer) calculateScore(result *QualityResult) float64 {
+func (j *JavaScriptQualityAnalyzer) calculateScore(result *common.QualityResult) float64 {
 	score := 100.0
 
 	// Deduct points for issues based on severity
@@ -475,7 +485,7 @@ func (t *TypeScriptQualityAnalyzer) IsAvailable(ctx context.Context) bool {
 	return t.JavaScriptQualityAnalyzer.IsAvailable(ctx)
 }
 
-func (t *TypeScriptQualityAnalyzer) Analyze(ctx context.Context, path string) (*QualityResult, error) {
+func (t *TypeScriptQualityAnalyzer) Analyze(ctx context.Context, path string) (*common.QualityResult, error) {
 	// Run TypeScript compiler for type checking
 	typeIssues, err := t.runTypeScriptCompiler(ctx, path)
 	if err != nil {
@@ -496,7 +506,7 @@ func (t *TypeScriptQualityAnalyzer) Analyze(ctx context.Context, path string) (*
 	return result, nil
 }
 
-func (t *TypeScriptQualityAnalyzer) runTypeScriptCompiler(ctx context.Context, path string) ([]QualityIssue, error) {
+func (t *TypeScriptQualityAnalyzer) runTypeScriptCompiler(ctx context.Context, path string) ([]common.QualityIssue, error) {
 	// Check if tsconfig.json exists
 	tsConfig := filepath.Join(path, "tsconfig.json")
 	if _, err := os.Stat(tsConfig); err != nil {
@@ -519,8 +529,8 @@ func (t *TypeScriptQualityAnalyzer) runTypeScriptCompiler(ctx context.Context, p
 	return t.parseTSCOutput(string(output)), nil
 }
 
-func (t *TypeScriptQualityAnalyzer) parseTSCOutput(output string) []QualityIssue {
-	issues := make([]QualityIssue, 0)
+func (t *TypeScriptQualityAnalyzer) parseTSCOutput(output string) []common.QualityIssue {
+	issues := make([]common.QualityIssue, 0)
 	lines := strings.Split(output, "\n")
 
 	for _, line := range lines {
@@ -555,7 +565,7 @@ func (t *TypeScriptQualityAnalyzer) parseTSCOutput(output string) []QualityIssue
 						errorCode = parts[1][idx+1:]
 					}
 
-					issues = append(issues, QualityIssue{
+					issues = append(issues, common.QualityIssue{
 						Type:     "bug",
 						Severity: "major",
 						File:     file,

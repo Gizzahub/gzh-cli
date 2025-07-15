@@ -148,8 +148,11 @@ type QualityTool interface {
 	Analyze(ctx context.Context, path string) (*common.QualityResult, error)
 }
 
-// QualityResult represents the result of quality analysis
-type QualityResult struct {
+// QualityResult represents the result of quality analysis for a repository (legacy alias)
+type QualityResult = common.QualityResult
+
+// RepoQualityResult represents the result of quality analysis for a repository  
+type RepoQualityResult struct {
 	Repository        string                      `json:"repository"`
 	Timestamp         time.Time                   `json:"timestamp"`
 	OverallScore      float64                     `json:"overall_score"`
@@ -256,10 +259,10 @@ func NewCodeQualityAnalyzer(logger *zap.Logger, config *QualityCheckConfig) (*Co
 }
 
 // AnalyzeQuality performs comprehensive code quality analysis
-func (cqa *CodeQualityAnalyzer) AnalyzeQuality(ctx context.Context) (*QualityResult, error) {
+func (cqa *CodeQualityAnalyzer) AnalyzeQuality(ctx context.Context) (*RepoQualityResult, error) {
 	startTime := time.Now()
 
-	result := &QualityResult{
+	result := &RepoQualityResult{
 		Repository:        cqa.config.RepositoryPath,
 		Timestamp:         startTime,
 		LanguageResults:   make(map[string]*LanguageQuality),

@@ -612,12 +612,13 @@ type BackupVPNConfig struct {
 	HealthCheck  HealthCheckConfig `json:"health_check"`
 }
 
-type HealthCheckConfig struct {
-	Enabled  bool          `json:"enabled"`
-	Interval time.Duration `json:"interval"`
-	Timeout  time.Duration `json:"timeout"`
-	Endpoint string        `json:"endpoint,omitempty"`
-}
+// HealthCheckConfig type moved to network_topology.go to avoid duplication
+// type HealthCheckConfig struct {
+//	Enabled  bool          `json:"enabled"`
+//	Interval time.Duration `json:"interval"`
+//	Timeout  time.Duration `json:"timeout"`
+//	Endpoint string        `json:"endpoint,omitempty"`
+//}
 
 type FailoverPolicy struct {
 	Strategy        FailoverStrategy `json:"strategy"`

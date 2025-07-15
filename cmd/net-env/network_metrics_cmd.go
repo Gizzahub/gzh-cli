@@ -392,12 +392,7 @@ type InterfaceStats struct {
 	UptimePercent float64          `json:"uptime_percent"`
 }
 
-type LatencyTrend struct {
-	Timestamp time.Time     `json:"timestamp"`
-	Target    string        `json:"target"`
-	Latency   time.Duration `json:"latency"`
-	Quality   string        `json:"quality"`
-}
+// LatencyTrend type moved to network_analysis_cmd.go to avoid duplication
 
 type BandwidthTrend struct {
 	Timestamp   time.Time        `json:"timestamp"`

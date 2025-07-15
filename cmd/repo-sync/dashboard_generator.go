@@ -30,7 +30,7 @@ func NewDashboardGenerator(logger *zap.Logger, outputDir string) *DashboardGener
 }
 
 // GenerateDashboard generates an HTML dashboard from quality results
-func (dg *DashboardGenerator) GenerateDashboard(result *QualityResult, historicalData []*QualityResult) error {
+func (dg *DashboardGenerator) GenerateDashboard(result *RepoQualityResult, historicalData []*RepoQualityResult) error {
 	// Ensure output directory exists
 	if err := os.MkdirAll(dg.outputDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
@@ -110,7 +110,7 @@ type ChartsData struct {
 	ComplexityDist   map[string]int `json:"complexity_distribution"`
 }
 
-func (dg *DashboardGenerator) prepareDashboardData(result *QualityResult, historicalData []*QualityResult) *DashboardData {
+func (dg *DashboardGenerator) prepareDashboardData(result *RepoQualityResult, historicalData []*RepoQualityResult) *DashboardData {
 	data := &DashboardData{
 		Title:           "Code Quality Dashboard",
 		GeneratedAt:     time.Now().Format("2006-01-02 15:04:05"),
@@ -215,7 +215,7 @@ func (dg *DashboardGenerator) getTopIssues(issues []QualityIssue, limit int) []Q
 	return issues
 }
 
-func (dg *DashboardGenerator) extractTrendData(historicalData []*QualityResult) TrendData {
+func (dg *DashboardGenerator) extractTrendData(historicalData []*RepoQualityResult) TrendData {
 	trend := TrendData{
 		Dates:         make([]string, 0),
 		Scores:        make([]float64, 0),
@@ -243,13 +243,13 @@ func (dg *DashboardGenerator) extractTrendData(historicalData []*QualityResult) 
 		trend.Complexity = append(trend.Complexity, result.Metrics.AvgComplexity)
 		trend.Coverage = append(trend.Coverage, result.Metrics.TestCoverage)
 		trend.IssuesCount = append(trend.IssuesCount, len(result.Issues))
-		trend.TechnicalDebt = append(trend.TechnicalDebt, result.Metrics.TechnicalDebtRatio)
+		trend.TechnicalDebt = append(trend.TechnicalDebt, result.TechnicalDebt.DebtRatio)
 	}
 
 	return trend
 }
 
-func (dg *DashboardGenerator) prepareChartsData(result *QualityResult) ChartsData {
+func (dg *DashboardGenerator) prepareChartsData(result *RepoQualityResult) ChartsData {
 	charts := ChartsData{
 		IssuesByType:     make(map[string]int),
 		IssuesBySeverity: make(map[string]int),

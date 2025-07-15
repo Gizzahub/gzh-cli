@@ -263,8 +263,7 @@ func (c *TokenAwareGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitIn
 	return &RateLimitInfo{
 		Limit:     rateLimitResponse.Resources.Core.Limit,
 		Remaining: rateLimitResponse.Resources.Core.Remaining,
-		Reset:     resetTime,
-		Used:      rateLimitResponse.Resources.Core.Used,
+		ResetTime: resetTime,
 	}, nil
 }
 

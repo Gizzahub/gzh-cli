@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 )
@@ -155,7 +154,7 @@ func NewStreamingClient(token string, config StreamingConfig) *StreamingClient {
 
 	rateLimiter := &RateLimiter{
 		remaining: 5000, // GitHub default
-		reset:     time.Now().Add(time.Hour),
+		resetTime: time.Now().Add(time.Hour),
 		limit:     5000,
 	}
 
@@ -380,13 +379,17 @@ func (sc *StreamingClient) parseLinkPagination(current CursorPagination) CursorP
 
 // waitForRateLimit waits if necessary to respect rate limits
 func (sc *StreamingClient) waitForRateLimit(ctx context.Context, buffer int) error {
-	sc.rateLimiter.mu.RLock()
+	sc.rateLimiter.mu.Lock()
 	remaining := sc.rateLimiter.remaining
-	reset := sc.rateLimiter.reset
-	sc.rateLimiter.mu.RUnlock()
+	reset := sc.rateLimiter.resetTime
+	sc.rateLimiter.mu.Unlock()
 
 	if remaining <= buffer {
 		waitDuration := time.Until(reset)
+		
+		if waitDuration <= 0 {
+			return nil
+		}
 		if waitDuration > 0 {
 			fmt.Printf("Rate limit approached, waiting %v...\n", waitDuration)
 
@@ -415,7 +418,7 @@ func (sc *StreamingClient) updateRateLimit(headers http.Header) {
 
 	if reset := headers.Get("X-RateLimit-Reset"); reset != "" {
 		if r, err := strconv.ParseInt(reset, 10, 64); err == nil {
-			sc.rateLimiter.reset = time.Unix(r, 0)
+			sc.rateLimiter.resetTime = time.Unix(r, 0)
 		}
 	}
 

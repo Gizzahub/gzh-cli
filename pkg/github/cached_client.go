@@ -159,7 +159,7 @@ func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Cont
 
 	// For now, delegate to the existing optimized method
 	// In a full implementation, this would use the cached repos list
-	cloneStats, err := cbm.OptimizedBulkCloneManager.RefreshAllOptimized(ctx, targetPath, org, strategy)
+	_, err := cbm.OptimizedBulkCloneManager.RefreshAllOptimized(ctx, targetPath, org, strategy)
 	if err != nil {
 		return BulkCloneStats{}, err
 	}

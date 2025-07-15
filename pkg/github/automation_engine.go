@@ -210,7 +210,7 @@ func (ae *AutomationEngine) ProcessEvent(ctx context.Context, event *GitHubEvent
 
 	// Validate event
 	if ae.eventProcessor != nil {
-		if err := ae.eventProcessor.ValidateEvent(event); err != nil {
+		if err := ae.eventProcessor.ValidateEvent(ctx, event); err != nil {
 			ae.logger.Warn("Event validation failed", "event_id", event.ID, "error", err)
 			return fmt.Errorf("event validation failed: %w", err)
 		}
@@ -218,7 +218,7 @@ func (ae *AutomationEngine) ProcessEvent(ctx context.Context, event *GitHubEvent
 
 	// Filter event if filtering is enabled
 	if ae.config.EnableRuleFiltering && ae.eventProcessor != nil {
-		if !ae.eventProcessor.FilterEvent(event) {
+		if passed, err := ae.eventProcessor.FilterEvent(ctx, event, nil); err != nil || !passed {
 			ae.logger.Debug("Event filtered out", "event_id", event.ID, "event_type", event.Type)
 			return nil
 		}

@@ -2,6 +2,7 @@ package reposync
 
 import (
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"

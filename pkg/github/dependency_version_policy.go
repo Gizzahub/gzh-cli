@@ -489,7 +489,7 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 func (dvm *DependencyVersionPolicyManager) ApplyVersionConstraints(ctx context.Context, policyID string, updates []DependencyUpdate) (*VersionConstraintApplicationResult, error) {
 	dvm.logger.Info("Applying version constraints", "policy_id", policyID, "updates_count", len(updates))
 
-	policy, exists := dvm.policies[policyID]
+	_, exists := dvm.policies[policyID]
 	if !exists {
 		return nil, fmt.Errorf("dependency version policy not found: %s", policyID)
 	}

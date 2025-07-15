@@ -26,7 +26,8 @@
       "Bash(ln:*)",
       "Bash(go get:*)",
       "Bash(go install:*)",
-      "Bash(mockgen:*)"
+      "Bash(mockgen:*)",
+      "Bash(./tasks/qa/test-what-works.sh:*)"
     ],
     "deny": []
   }
