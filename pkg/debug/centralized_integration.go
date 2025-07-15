@@ -9,7 +9,21 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
 )
 
-// CentralizedLoggerBridge bridges StructuredLogger with CentralizedLogger
+// CentralizedLoggerBridge provides a seamless bridge between StructuredLogger and CentralizedLogger,
+// enabling automatic forwarding of structured log entries to the centralized logging system.
+//
+// The bridge operates asynchronously to avoid blocking the main application flow and includes
+// buffering, error handling, and graceful degradation capabilities.
+//
+// Key features:
+//   - Asynchronous log forwarding with configurable buffer sizes
+//   - Automatic conversion between structured and centralized log formats
+//   - Error handling with fallback to structured logging
+//   - Runtime enable/disable capabilities
+//   - Performance monitoring and statistics
+//   - Graceful shutdown with buffer draining
+//
+// Thread Safety: All methods are safe for concurrent use.
 type CentralizedLoggerBridge struct {
 	structuredLogger  *StructuredLogger
 	centralizedLogger *monitoring.CentralizedLogger
@@ -30,7 +44,19 @@ type CentralizedBridgeConfig struct {
 	PreserveOriginalID bool              `json:"preserve_original_id"`
 }
 
-// NewCentralizedLoggerBridge creates a bridge between structured and centralized logging
+// NewCentralizedLoggerBridge creates a new bridge instance that connects a StructuredLogger
+// with a CentralizedLogger, enabling automatic forwarding of log entries.
+//
+// Parameters:
+//   - structuredLogger: The source structured logger instance
+//   - centralizedLogger: The target centralized logger instance
+//   - config: Bridge configuration (nil uses defaults)
+//
+// The bridge will start forwarding immediately if config.Enabled is true.
+// Use nil config to apply default settings (enabled=true, bufferSize=1000).
+//
+// Returns an error if the bridge cannot be initialized, typically due to
+// invalid configuration parameters.
 func NewCentralizedLoggerBridge(
 	structuredLogger *StructuredLogger,
 	centralizedLogger *monitoring.CentralizedLogger,

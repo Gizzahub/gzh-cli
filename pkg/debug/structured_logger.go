@@ -1,4 +1,3 @@
-// Package debug provides structured logging capabilities with RFC 5424 compliance
 package debug
 
 import (
@@ -16,7 +15,9 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// RFC5424Severity represents syslog severity levels
+// RFC5424Severity represents syslog severity levels as defined in RFC 5424.
+// These numeric values correspond to standard syslog severity levels,
+// with lower numbers indicating higher severity.
 type RFC5424Severity int
 
 const (
@@ -41,7 +42,13 @@ var rfc5424Names = map[RFC5424Severity]string{
 	SeverityDebug:     "debug",
 }
 
-// StructuredLogEntry represents a standardized log entry following RFC 5424
+// StructuredLogEntry represents a standardized log entry following RFC 5424.
+// It provides a comprehensive structure for logging with support for
+// distributed tracing, caller information, and performance metrics.
+//
+// The structure includes all required RFC 5424 fields plus additional
+// fields for modern application logging needs such as tracing,
+// performance monitoring, and structured data.
 type StructuredLogEntry struct {
 	// RFC 5424 Required Fields
 	Timestamp time.Time       `json:"@timestamp"`      // ISO 8601 timestamp
@@ -75,7 +82,12 @@ type StructuredLogEntry struct {
 	BytesOut  *int64         `json:"bytes_out,omitempty"`  // Bytes written
 }
 
-// StructuredLoggerConfig holds structured logger configuration
+// StructuredLoggerConfig holds comprehensive configuration for the structured logger.
+// It supports various output formats, sampling strategies, performance optimizations,
+// and filtering capabilities.
+//
+// The configuration can be customized for different environments (development,
+// staging, production) with appropriate defaults and performance settings.
 type StructuredLoggerConfig struct {
 	// Basic Configuration
 	Level       RFC5424Severity `json:"level"`
@@ -109,6 +121,16 @@ type StructuredLoggerConfig struct {
 }
 
 // DefaultStructuredLoggerConfig returns a default structured logger configuration
+// suitable for development environments.
+//
+// The default configuration includes:
+//   - Info level logging with JSON format
+//   - Caller information and tracing enabled
+//   - Output to stderr with file rotation support
+//   - Conservative performance settings
+//
+// For production use, consider using a custom configuration with
+// appropriate log levels, sampling, and output destinations.
 func DefaultStructuredLoggerConfig() *StructuredLoggerConfig {
 	return &StructuredLoggerConfig{
 		Level:           SeverityInfo,
@@ -133,7 +155,32 @@ func DefaultStructuredLoggerConfig() *StructuredLoggerConfig {
 	}
 }
 
-// StructuredLogger provides RFC 5424 compliant structured logging
+// StructuredLogger provides RFC 5424 compliant structured logging with
+// advanced features including async logging, sampling, caller information,
+// and distributed tracing integration.
+//
+// The logger is thread-safe and supports:
+//   - Multiple output formats (JSON, logfmt, console)
+//   - Configurable log levels and module-specific levels
+//   - Async logging with buffering for high-performance scenarios
+//   - Sampling for high-volume logging with intelligent rate control
+//   - OpenTelemetry integration for distributed tracing
+//   - File rotation and compression
+//
+// Example usage:
+//
+//	config := DefaultStructuredLoggerConfig()
+//	logger, err := NewStructuredLogger(config)
+//	if err != nil {
+//	    return err
+//	}
+//	defer logger.Close()
+//
+//	ctx := context.Background()
+//	logger.InfoLevel(ctx, "Operation completed", map[string]interface{}{
+//	    "duration": "150ms",
+//	    "items":    42,
+//	})
 type StructuredLogger struct {
 	config   *StructuredLoggerConfig
 	writer   io.Writer
@@ -151,7 +198,15 @@ type StructuredLogger struct {
 	sampleMutex   sync.Mutex
 }
 
-// NewStructuredLogger creates a new structured logger
+// NewStructuredLogger creates a new structured logger with the provided configuration.
+// If config is nil, it uses DefaultStructuredLoggerConfig().
+//
+// The function sets up output writers, initializes async workers if enabled,
+// and prepares the logger for use. It returns an error if the output
+// destination cannot be configured or if async logging setup fails.
+//
+// The returned logger must be closed using Close() to ensure proper
+// cleanup of resources and flushing of any buffered log entries.
 func NewStructuredLogger(config *StructuredLoggerConfig) (*StructuredLogger, error) {
 	if config == nil {
 		config = DefaultStructuredLoggerConfig()
@@ -606,7 +661,19 @@ func (fsl *FieldStructuredLogger) mergeFields(additionalFields ...map[string]int
 	return merged
 }
 
-// ParseRFC5424Severity parses a string into RFC5424Severity
+// ParseRFC5424Severity parses a string log level into RFC5424Severity.
+// It accepts both full names and common abbreviations:
+//   - "emergency", "emerg" -> SeverityEmergency
+//   - "alert" -> SeverityAlert
+//   - "critical", "crit" -> SeverityCritical
+//   - "error", "err" -> SeverityError
+//   - "warning", "warn" -> SeverityWarning
+//   - "notice" -> SeverityNotice
+//   - "info", "informational" -> SeverityInfo
+//   - "debug" -> SeverityDebug
+//
+// The function is case-insensitive and returns SeverityInfo with an error
+// for unknown levels.
 func ParseRFC5424Severity(level string) (RFC5424Severity, error) {
 	switch strings.ToLower(level) {
 	case "emergency", "emerg":
@@ -636,7 +703,15 @@ var (
 	globalStructuredLoggerMu sync.RWMutex
 )
 
-// InitGlobalStructuredLogger initializes the global structured logger
+// InitGlobalStructuredLogger initializes the global structured logger instance.
+// This function should be called once during application startup to configure
+// the global logger that can be accessed via GetGlobalStructuredLogger().
+//
+// If a global logger is already initialized, it will be properly closed
+// before creating the new one. This ensures no resource leaks occur
+// during reinitialization.
+//
+// Returns an error if the logger cannot be created with the provided configuration.
 func InitGlobalStructuredLogger(config *StructuredLoggerConfig) error {
 	logger, err := NewStructuredLogger(config)
 	if err != nil {
@@ -653,7 +728,11 @@ func InitGlobalStructuredLogger(config *StructuredLoggerConfig) error {
 	return nil
 }
 
-// GetGlobalStructuredLogger returns the global structured logger
+// GetGlobalStructuredLogger returns the global structured logger instance.
+// This provides access to a shared logger that can be used across the application.
+//
+// Returns nil if InitGlobalStructuredLogger() has not been called yet.
+// The returned logger is thread-safe and can be used concurrently.
 func GetGlobalStructuredLogger() *StructuredLogger {
 	globalStructuredLoggerMu.RLock()
 	defer globalStructuredLoggerMu.RUnlock()

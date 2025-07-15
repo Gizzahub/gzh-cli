@@ -11,7 +11,26 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// IntegratedLoggingConfig combines structured and centralized logging configuration
+// IntegratedLoggingConfig provides unified configuration for both structured and centralized
+// logging systems, enabling seamless integration between local logging and remote log shipping.
+//
+// This configuration structure supports:
+//   - Structured logging with RFC 5424 compliance
+//   - Centralized log collection and processing
+//   - Remote log shipping to multiple destinations
+//   - Bridge configuration for seamless integration
+//   - Failover and backup mechanisms
+//
+// The configuration can be used to set up different deployment scenarios:
+//   - Development: Local logging with console output
+//   - Staging: File logging with basic shipping
+//   - Production: Full centralized logging with multiple shippers and failover
+//
+// Example usage:
+//
+//	config := DefaultIntegratedLoggingConfig()
+//	config.AddElasticsearchShipper("es", "http://localhost:9200", "logs")
+//	setup, err := NewIntegratedLoggingSetup(config)
 type IntegratedLoggingConfig struct {
 	// Application settings
 	AppName     string `json:"app_name" yaml:"app_name"`

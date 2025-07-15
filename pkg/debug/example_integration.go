@@ -52,8 +52,8 @@ func ExampleIntegratedLogging() {
 	ctx := context.Background()
 
 	logger.InfoLevel(ctx, "Application started", map[string]interface{}{
-		"version":   "1.0.0",
-		"component": "main",
+		"version":      "1.0.0",
+		"component":    "main",
 		"startup_time": time.Now().Format(time.RFC3339),
 	})
 
@@ -78,8 +78,8 @@ func ExampleIntegratedLogging() {
 	// 8. Use module-specific logging
 	dbLogger := logger.WithModule("database")
 	dbLogger.InfoLevel(ctx, "Query executed", map[string]interface{}{
-		"query":        "SELECT * FROM users WHERE id = ?",
-		"execution_ms": 25,
+		"query":         "SELECT * FROM users WHERE id = ?",
+		"execution_ms":  25,
 		"rows_returned": 1,
 	})
 
@@ -97,10 +97,10 @@ func ExampleIntegratedLogging() {
 
 	// 10. Log with performance metrics
 	httpLogger.InfoLevel(ctx, "Request with metrics", map[string]interface{}{
-		"method":      "POST",
-		"path":        "/api/users",
-		"status":      201,
-		"bytes_read":  1024,
+		"method":        "POST",
+		"path":          "/api/users",
+		"status":        201,
+		"bytes_read":    1024,
 		"bytes_written": 256,
 	})
 
@@ -163,21 +163,21 @@ func ExampleProductionLogging() {
 
 	// Error with structured context
 	logger.ErrorLevel(ctx, "Payment processing failed", map[string]interface{}{
-		"error_code":    "PAYMENT_DECLINED",
+		"error_code":     "PAYMENT_DECLINED",
 		"transaction_id": "txn_abc123",
-		"user_id":       "user_456",
-		"amount":        99.99,
-		"currency":      "USD",
-		"retry_count":   2,
+		"user_id":        "user_456",
+		"amount":         99.99,
+		"currency":       "USD",
+		"retry_count":    2,
 	})
 
 	// Business metrics
 	logger.InfoLevel(ctx, "Order completed", map[string]interface{}{
-		"order_id":      "order_789",
-		"user_id":       "user_456",
-		"total_amount":  149.99,
-		"items_count":   3,
-		"processing_ms": 1250,
+		"order_id":       "order_789",
+		"user_id":        "user_456",
+		"total_amount":   149.99,
+		"items_count":    3,
+		"processing_ms":  1250,
 		"payment_method": "credit_card",
 	})
 
@@ -197,23 +197,23 @@ func ExampleCustomConfiguration() {
 
 		// Custom structured logger configuration
 		StructuredConfig: &StructuredLoggerConfig{
-			Level:           SeverityInfo,
-			Format:          "json",
-			Output:          "/var/log/custom-service/structured.log",
-			AppName:         "custom-service",
-			Version:         "1.5.0",
-			Environment:     "staging",
-			EnableTracing:   true,
-			EnableCaller:    true,
-			CallerSkip:      3,
-			EnableSampling:  true,
-			SampleRate:      0.2, // Sample 20% of logs
-			AsyncLogging:    true,
-			BufferSize:      2000,
-			FlushInterval:   5 * time.Second,
-			MaxFileSize:     50 * 1024 * 1024, // 50MB
-			MaxBackups:      10,
-			Compress:        true,
+			Level:          SeverityInfo,
+			Format:         "json",
+			Output:         "/var/log/custom-service/structured.log",
+			AppName:        "custom-service",
+			Version:        "1.5.0",
+			Environment:    "staging",
+			EnableTracing:  true,
+			EnableCaller:   true,
+			CallerSkip:     3,
+			EnableSampling: true,
+			SampleRate:     0.2, // Sample 20% of logs
+			AsyncLogging:   true,
+			BufferSize:     2000,
+			FlushInterval:  5 * time.Second,
+			MaxFileSize:    50 * 1024 * 1024, // 50MB
+			MaxBackups:     10,
+			Compress:       true,
 			ModuleLevels: map[string]RFC5424Severity{
 				"database": SeverityDebug,
 				"cache":    SeverityWarning,
@@ -350,10 +350,10 @@ func ExampleCustomConfiguration() {
 
 	// 3. Test the custom configuration
 	logger.InfoLevel(ctx, "Custom logging system initialized", map[string]interface{}{
-		"config_type":        "custom",
-		"sampling_enabled":   true,
-		"sampling_rate":      0.2,
-		"async_enabled":      true,
+		"config_type":         "custom",
+		"sampling_enabled":    true,
+		"sampling_rate":       0.2,
+		"async_enabled":       true,
 		"centralized_enabled": true,
 	})
 

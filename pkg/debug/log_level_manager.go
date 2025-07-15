@@ -1,4 +1,3 @@
-// Package debug provides advanced log level management capabilities
 package debug
 
 import (
@@ -15,7 +14,18 @@ import (
 	"time"
 )
 
-// LogLevelRule represents a rule for conditional logging
+// LogLevelRule represents a rule for conditional logging that allows
+// dynamic adjustment of log levels based on various conditions.
+//
+// Rules can be configured to respond to:
+//   - Log message content and metadata
+//   - System performance metrics (CPU, memory)
+//   - Module or component context
+//   - Time-based conditions
+//   - Frequency patterns
+//
+// Each rule has a priority level for conflict resolution and tracks
+// usage statistics for monitoring and optimization.
 type LogLevelRule struct {
 	ID          string         `json:"id"`
 	Name        string         `json:"name"`
@@ -29,7 +39,21 @@ type LogLevelRule struct {
 	ApplyCount  int64          `json:"apply_count"`
 }
 
-// LogCondition represents a condition for applying a log rule
+// LogCondition represents a condition that must be met for a log rule to apply.
+// Conditions support various types of evaluations including field comparisons,
+// pattern matching, and system state checks.
+//
+// Supported condition types:
+//   - "level": Log severity level
+//   - "module": Module or component name
+//   - "field": Custom field in log entry
+//   - "message": Log message content
+//   - "time": Time-based conditions
+//   - "frequency": Log frequency patterns
+//   - "cpu": CPU usage percentage
+//   - "memory": Memory usage percentage
+//
+// Operators include: eq, ne, gt, lt, gte, lte, contains, regex, in
 type LogCondition struct {
 	Type     string         `json:"type"`     // "level", "module", "field", "message", "time", "frequency", "cpu", "memory"
 	Field    string         `json:"field"`    // Field name for "field" type
@@ -38,7 +62,18 @@ type LogCondition struct {
 	Regex    *regexp.Regexp `json:"-"`        // Compiled regex for "regex" operator
 }
 
-// LogAction represents an action to take when conditions are met
+// LogAction represents an action to execute when rule conditions are satisfied.
+// Actions can modify logging behavior dynamically, including level changes,
+// sampling adjustments, and routing decisions.
+//
+// Supported action types:
+//   - "set_level": Change log level for target scope
+//   - "sample": Apply sampling rate to reduce log volume
+//   - "drop": Suppress log entries matching conditions
+//   - "redirect": Route logs to different outputs
+//   - "throttle": Limit log rate to prevent flooding
+//
+// Actions can be temporary (with duration) or permanent until rule removal.
 type LogAction struct {
 	Type     string         `json:"type"`               // "set_level", "sample", "drop", "redirect", "throttle"
 	Target   string         `json:"target"`             // Module name or "global"
@@ -47,6 +82,18 @@ type LogAction struct {
 }
 
 // LogLevelProfile represents a predefined set of log level configurations
+// for different operational scenarios (development, testing, production).
+//
+// Profiles provide:
+//   - Global and module-specific log levels
+//   - Pre-configured rule sets for common patterns
+//   - Sampling configurations optimized for the environment
+//   - Easy switching between operational modes
+//
+// Example profiles:
+//   - "development": Verbose logging with minimal sampling
+//   - "testing": Structured logging with error focus
+//   - "production": Optimized logging with aggressive sampling
 type LogLevelProfile struct {
 	Name         string                     `json:"name"`
 	Description  string                     `json:"description"`
@@ -76,7 +123,33 @@ type SystemMetrics struct {
 	Timestamp   time.Time `json:"timestamp"`
 }
 
-// LogLevelManager provides advanced log level management
+// LogLevelManager provides advanced log level management with dynamic
+// rule evaluation, profile switching, and performance-aware sampling.
+//
+// Key features:
+//   - Dynamic rule evaluation based on conditions
+//   - Profile-based configuration management
+//   - HTTP API for runtime control and monitoring
+//   - Signal-based configuration reloading
+//   - Adaptive sampling based on system performance
+//   - Performance metrics collection and analysis
+//
+// The manager integrates with StructuredLogger to provide real-time
+// log level adjustments and optimization for different operational scenarios.
+//
+// Example usage:
+//
+//	manager, err := NewLogLevelManager(config, logger)
+//	if err != nil {
+//	    return err
+//	}
+//	defer manager.Shutdown()
+//
+//	// Apply production profile
+//	manager.ApplyProfile("production")
+//
+//	// Start HTTP API
+//	manager.StartHTTPServer(8080)
 type LogLevelManager struct {
 	logger *StructuredLogger
 	mutex  sync.RWMutex

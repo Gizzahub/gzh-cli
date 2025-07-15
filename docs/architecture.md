@@ -476,10 +476,81 @@ graph LR
 
 ### Logging Architecture
 
-- **Structured Logging**: JSON-formatted logs for machine processing
-- **Log Levels**: Debug, Info, Warn, Error for different verbosity
-- **Context Propagation**: Request IDs and correlation across operations
-- **Log Aggregation**: Centralized logging for distributed deployments
+The logging system has been significantly enhanced with RFC 5424 compliant structured logging and centralized log management:
+
+- **RFC 5424 Compliance**: Standardized log format with severity levels (0-7)
+- **Structured Logging**: JSON, logfmt, and console output formats for machine and human processing
+- **Centralized Integration**: Seamless bridge between structured and centralized logging systems
+- **Dynamic Log Control**: Real-time log level management with rule-based conditional logging
+- **Remote Log Shipping**: Support for Elasticsearch, Loki, Fluentd, and HTTP endpoints
+- **Performance Optimization**: Async logging, sampling, and buffering for high-throughput scenarios
+- **Distributed Tracing**: OpenTelemetry integration with trace and span ID propagation
+- **Adaptive Sampling**: Performance-aware log sampling based on system metrics
+- **Multi-destination Routing**: Configurable log routing with fallback mechanisms
+
+#### Enhanced Logging Flow
+
+```mermaid
+graph TB
+    subgraph "Application Layer"
+        APP[Application Code]
+        MODULE[Module Loggers]
+    end
+
+    subgraph "Structured Logging Layer"
+        SL[StructuredLogger]
+        ESL[EnhancedStructuredLogger]
+        BRIDGE[CentralizedBridge]
+    end
+
+    subgraph "Log Level Management"
+        LLM[LogLevelManager]
+        RULES[Dynamic Rules]
+        PROFILES[Log Profiles]
+        HTTP_API[HTTP Control API]
+    end
+
+    subgraph "Centralized Logging Layer"
+        CL[CentralizedLogger]
+        PROCESSORS[Log Processors]
+        OUTPUTS[Output Destinations]
+    end
+
+    subgraph "Remote Destinations"
+        ES[Elasticsearch]
+        LOKI[Grafana Loki]
+        FLUENTD[Fluentd]
+        HTTP_DEST[HTTP Endpoints]
+        WEBSOCKET[WebSocket Streams]
+    end
+
+    APP --> MODULE
+    MODULE --> SL
+    SL --> ESL
+    ESL --> BRIDGE
+    BRIDGE --> CL
+
+    LLM --> SL
+    RULES --> LLM
+    PROFILES --> LLM
+    HTTP_API --> LLM
+
+    CL --> PROCESSORS
+    PROCESSORS --> OUTPUTS
+    OUTPUTS --> ES
+    OUTPUTS --> LOKI
+    OUTPUTS --> FLUENTD
+    OUTPUTS --> HTTP_DEST
+    OUTPUTS --> WEBSOCKET
+```
+
+#### Key Components
+
+1. **StructuredLogger**: RFC 5424 compliant logging with OpenTelemetry integration
+2. **EnhancedStructuredLogger**: Structured logger with centralized forwarding capabilities
+3. **CentralizedLoggerBridge**: Asynchronous bridge for log forwarding with buffering
+4. **LogLevelManager**: Dynamic log level control with rule-based conditions
+5. **IntegratedLoggingSetup**: Unified configuration and management for both logging systems
 
 ## Development Guidelines
 

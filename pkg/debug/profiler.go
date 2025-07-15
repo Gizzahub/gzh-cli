@@ -1,4 +1,3 @@
-// Package debug provides advanced debugging and profiling capabilities
 package debug
 
 import (
@@ -16,7 +15,17 @@ import (
 	"time"
 )
 
-// ProfilerConfig holds profiler configuration
+// ProfilerConfig holds comprehensive configuration for the profiler,
+// enabling fine-grained control over different types of profiling activities.
+//
+// The configuration supports multiple profiling modes:
+//   - CPU profiling for performance hotspot analysis
+//   - Memory profiling for allocation and leak detection
+//   - Goroutine tracing for concurrency analysis
+//   - Block and mutex profiling for contention analysis
+//
+// Profiles can be collected continuously at intervals or on-demand
+// with configurable output destinations and HTTP endpoint exposure.
 type ProfilerConfig struct {
 	Enabled        bool          `json:"enabled"`
 	CPUProfile     bool          `json:"cpu_profile"`
@@ -31,6 +40,17 @@ type ProfilerConfig struct {
 }
 
 // DefaultProfilerConfig returns a default profiler configuration
+// suitable for development and debugging scenarios.
+//
+// The default configuration:
+//   - Enables CPU, memory, and goroutine profiling
+//   - Disables potentially expensive block and mutex profiling
+//   - Uses 30-second profiling sessions with 5-second intervals
+//   - Outputs to "./debug-profiles" directory
+//   - Exposes pprof HTTP endpoint on port 6060
+//
+// For production use, consider customizing the configuration
+// to minimize performance impact.
 func DefaultProfilerConfig() *ProfilerConfig {
 	return &ProfilerConfig{
 		Enabled:        false,
@@ -46,7 +66,29 @@ func DefaultProfilerConfig() *ProfilerConfig {
 	}
 }
 
-// Profiler provides comprehensive profiling capabilities
+// Profiler provides comprehensive profiling capabilities for performance
+// analysis, memory debugging, and concurrency monitoring.
+//
+// Features:
+//   - Multiple profiling types (CPU, memory, goroutine, block, mutex)
+//   - Continuous and on-demand profiling modes
+//   - HTTP endpoint integration with Go's pprof package
+//   - Configurable output formats and destinations
+//   - Thread-safe operation for concurrent environments
+//
+// The profiler integrates with Go's built-in profiling infrastructure
+// and provides convenient APIs for common profiling scenarios.
+//
+// Example usage:
+//
+//	config := DefaultProfilerConfig()
+//	config.Duration = 60 * time.Second
+//	profiler := NewProfiler(config)
+//
+//	if err := profiler.Start(ctx); err != nil {
+//	    return err
+//	}
+//	defer profiler.Stop()
 type Profiler struct {
 	config    *ProfilerConfig
 	active    bool
@@ -57,7 +99,14 @@ type Profiler struct {
 	server    *http.Server
 }
 
-// NewProfiler creates a new profiler instance
+// NewProfiler creates a new profiler instance with the specified configuration.
+// If config is nil, it uses DefaultProfilerConfig().
+//
+// The profiler is created in an inactive state and must be explicitly
+// started using the Start() method. The output directory is created
+// if it doesn't exist when profiling begins.
+//
+// Returns a configured profiler ready for use.
 func NewProfiler(config *ProfilerConfig) *Profiler {
 	if config == nil {
 		config = DefaultProfilerConfig()
