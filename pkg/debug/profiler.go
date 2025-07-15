@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -142,19 +141,23 @@ func (p *Profiler) IsActive() bool {
 }
 
 // GetStats returns profiler statistics
-func (p *Profiler) GetStats() map[string]interface{} {
+func (p *Profiler) GetStats() *ProfilerStats {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
-	stats := map[string]interface{}{
-		"active":     p.active,
-		"config":     p.config,
-		"output_dir": p.outputDir,
+	stats := &ProfilerStats{
+		Active:          p.active,
+		OutputDirectory: p.outputDir,
 	}
 
 	if p.active {
-		stats["uptime"] = time.Since(p.startTime).String()
-		stats["start_time"] = p.startTime
+		stats.Uptime = time.Since(p.startTime)
+		stats.StartTime = p.startTime
+	}
+
+	// Count generated profiles
+	if files, err := filepath.Glob(filepath.Join(p.outputDir, "*.prof")); err == nil {
+		stats.ProfilesGenerated = len(files)
 	}
 
 	return stats
@@ -539,5 +542,38 @@ func FormatMemorySize(bytes uint64) string {
 		Div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(Div), "KMGTPE"[exp])
+}
+
+// ProfilerStats holds profiler runtime statistics
+type ProfilerStats struct {
+	Active            bool          `json:"active"`
+	Uptime            time.Duration `json:"uptime"`
+	ProfilesGenerated int           `json:"profiles_generated"`
+	OutputDirectory   string        `json:"output_directory"`
+	StartTime         time.Time     `json:"start_time,omitempty"`
+}
+
+// GetConfig returns the current profiler configuration
+func (p *Profiler) GetConfig() *ProfilerConfig {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.config
+}
+
+// validateConfig validates the profiler configuration
+func (p *Profiler) validateConfig() bool {
+	if p.config == nil {
+		return false
+	}
+
+	if p.config.Duration <= 0 {
+		return false
+	}
+
+	if p.config.Interval <= 0 {
+		return false
+	}
+
+	return true
 }

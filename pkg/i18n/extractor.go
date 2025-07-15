@@ -1,7 +1,6 @@
 package i18n
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"go/ast"

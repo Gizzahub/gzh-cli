@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 	"testing"
 	"time"
-
-	"golang.org/x/text/language"
 )
 
 // TestSuite provides comprehensive testing for internationalization

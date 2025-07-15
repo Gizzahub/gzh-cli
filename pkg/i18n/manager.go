@@ -11,7 +11,6 @@ import (
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 // Manager handles all internationalization operations
@@ -269,8 +268,10 @@ func (m *Manager) Tn(messageID string, count int, templateData ...map[string]int
 	}
 
 	if len(templateData) > 0 && templateData[0] != nil {
-		for k, v := range templateData[0] {
-			localizeConfig.TemplateData[k] = v
+		if templateMap, ok := localizeConfig.TemplateData.(map[string]interface{}); ok {
+			for k, v := range templateData[0] {
+				templateMap[k] = v
+			}
 		}
 	}
 
@@ -366,7 +367,9 @@ func (m *Manager) AddMessageBundle(lang string, bundle *LocalizationBundle) erro
 		messages[id] = msg
 	}
 
-	m.bundle.AddMessages(langTag, messages)
+	for _, msg := range messages {
+		m.bundle.AddMessages(langTag, msg)
+	}
 	return nil
 }
 
@@ -375,7 +378,7 @@ func (m *Manager) ExportMessages(lang string) (*LocalizationBundle, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
-	langTag, err := language.Parse(lang)
+	_, err := language.Parse(lang)
 	if err != nil {
 		return nil, fmt.Errorf("invalid language %s: %w", lang, err)
 	}
@@ -529,4 +532,49 @@ func Tf(messageID string, args ...interface{}) string {
 // GetManager returns the global manager
 func GetManager() *Manager {
 	return globalManager
+}
+
+// GetSupportedLanguages returns list of supported languages
+func (m *Manager) GetSupportedLanguages() []string {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+
+	// Return languages from configuration or scan available locale files
+	supportedLangs := []string{}
+
+	// Scan locale directory for available language files
+	if m.localesDir != "" {
+		if files, err := filepath.Glob(filepath.Join(m.localesDir, "*.json")); err == nil {
+			for _, file := range files {
+				basename := filepath.Base(file)
+				lang := strings.TrimSuffix(basename, filepath.Ext(basename))
+				if lang != "" {
+					supportedLangs = append(supportedLangs, lang)
+				}
+			}
+		}
+	}
+
+	// If no files found, return default supported languages
+	if len(supportedLangs) == 0 {
+		supportedLangs = []string{"en", "ko"}
+	}
+
+	return supportedLangs
+}
+
+// IsLanguageSupported checks if a language is supported
+func (m *Manager) IsLanguageSupported(lang string) bool {
+	supported := m.GetSupportedLanguages()
+	for _, supportedLang := range supported {
+		if supportedLang == lang {
+			return true
+		}
+	}
+	return false
+}
+
+// Localize translates a message (alias for T method)
+func (m *Manager) Localize(messageID string, templateData ...map[string]interface{}) string {
+	return m.T(messageID, templateData...)
 }
