@@ -1,7 +1,6 @@
 package doctor
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -10,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 

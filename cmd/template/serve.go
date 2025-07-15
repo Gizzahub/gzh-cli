@@ -1,7 +1,6 @@
 package template
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -38,21 +37,21 @@ Examples:
 }
 
 var (
-	serverHost        string
-	serverPort        int
-	storageDir        string
-	authRequired      bool
-	adminKey          string
-	enableCORS        bool
-	enableTLS         bool
-	tlsCertFile       string
-	tlsKeyFile        string
-	uploadMaxSize     int64
-	allowedExtensions []string
-	rateLimitRPM      int
-	enableMetrics     bool
-	logLevel          string
-	dataDirectory     string
+	serverHost         string
+	serverPort         int
+	storageDir         string
+	authRequired       bool
+	adminKey           string
+	enableCORS         bool
+	enableTLS          bool
+	tlsCertFile        string
+	tlsKeyFile         string
+	uploadMaxSize      int64
+	allowedExtensions  []string
+	rateLimitRPM       int
+	serveEnableMetrics bool
+	logLevel           string
+	dataDirectory      string
 )
 
 func init() {

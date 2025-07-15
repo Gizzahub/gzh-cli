@@ -412,7 +412,10 @@ func runStateMigrate(cmd *cobra.Command, args []string) {
 
 	if stateDryRun {
 		fmt.Printf("🧪 Dry run mode - showing migration plan\n")
-		return showMigrationPlan()
+		if err := showMigrationPlan(); err != nil {
+			fmt.Printf("Error showing migration plan: %v\n", err)
+		}
+		return
 	}
 
 	// Confirm migration if not forced

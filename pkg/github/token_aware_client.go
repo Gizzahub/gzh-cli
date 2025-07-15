@@ -398,8 +398,8 @@ type GitHubRepository struct {
 	GitURL          string    `json:"git_url"`
 }
 
-// RateLimitInfo represents GitHub rate limit information
-type RateLimitInfo struct {
+// TokenRateLimitInfo represents GitHub rate limit information for token-aware client
+type TokenRateLimitInfo struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`
 	Reset     time.Time `json:"reset"`

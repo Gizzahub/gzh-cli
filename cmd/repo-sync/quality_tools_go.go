@@ -12,17 +12,20 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/common"
 	"go.uber.org/zap"
 )
 
 // GoQualityAnalyzer implements quality analysis for Go projects
 type GoQualityAnalyzer struct {
-	logger *zap.Logger
+	*common.BaseQualityAnalyzer
 }
 
 // NewGoQualityAnalyzer creates a new Go quality analyzer
 func NewGoQualityAnalyzer(logger *zap.Logger) *GoQualityAnalyzer {
-	return &GoQualityAnalyzer{logger: logger}
+	return &GoQualityAnalyzer{
+		BaseQualityAnalyzer: common.NewBaseQualityAnalyzer(logger),
+	}
 }
 
 func (g *GoQualityAnalyzer) Name() string     { return "golangci-lint" }
@@ -34,17 +37,17 @@ func (g *GoQualityAnalyzer) IsAvailable(ctx context.Context) bool {
 	return err == nil
 }
 
-func (g *GoQualityAnalyzer) Analyze(ctx context.Context, path string) (*QualityResult, error) {
-	result := &QualityResult{
+func (g *GoQualityAnalyzer) Analyze(ctx context.Context, path string) (*common.QualityResult, error) {
+	result := &common.QualityResult{
 		Repository: path,
-		Issues:     make([]QualityIssue, 0),
-		Metrics:    QualityMetrics{},
+		Issues:     make([]common.QualityIssue, 0),
+		Metrics:    common.QualityMetrics{},
 	}
 
 	// Run golangci-lint
 	lintIssues, err := g.runGolangciLint(ctx, path)
 	if err != nil {
-		g.logger.Warn("Failed to run golangci-lint", zap.Error(err))
+		g.GetLogger().Warn("Failed to run golangci-lint", zap.Error(err))
 	} else {
 		result.Issues = append(result.Issues, lintIssues...)
 	}
@@ -52,7 +55,7 @@ func (g *GoQualityAnalyzer) Analyze(ctx context.Context, path string) (*QualityR
 	// Run go vet
 	vetIssues, err := g.runGoVet(ctx, path)
 	if err != nil {
-		g.logger.Warn("Failed to run go vet", zap.Error(err))
+		g.GetLogger().Warn("Failed to run go vet", zap.Error(err))
 	} else {
 		result.Issues = append(result.Issues, vetIssues...)
 	}
@@ -60,24 +63,24 @@ func (g *GoQualityAnalyzer) Analyze(ctx context.Context, path string) (*QualityR
 	// Calculate cyclomatic complexity
 	complexityMetrics, err := g.calculateComplexity(ctx, path)
 	if err != nil {
-		g.logger.Warn("Failed to calculate complexity", zap.Error(err))
+		g.GetLogger().Warn("Failed to calculate complexity", zap.Error(err))
 	} else {
-		result.Metrics.AvgComplexity = complexityMetrics.avgComplexity
+		result.Metrics.AvgComplexity = complexityMetrics.AvgComplexity
 	}
 
 	// Count Go files and lines
 	fileMetrics, err := g.countGoFiles(path)
 	if err != nil {
-		g.logger.Warn("Failed to count Go files", zap.Error(err))
+		g.GetLogger().Warn("Failed to count Go files", zap.Error(err))
 	} else {
-		result.Metrics.TotalFiles = fileMetrics.totalFiles
-		result.Metrics.TotalLinesOfCode = fileMetrics.totalLines
+		result.Metrics.TotalFiles = fileMetrics.TotalFiles
+		result.Metrics.TotalLinesOfCode = fileMetrics.TotalLines
 	}
 
 	// Get test coverage
 	coverage, err := g.getTestCoverage(ctx, path)
 	if err != nil {
-		g.logger.Warn("Failed to get test coverage", zap.Error(err))
+		g.GetLogger().Warn("Failed to get test coverage", zap.Error(err))
 	} else {
 		result.Metrics.TestCoverage = coverage
 	}
@@ -85,18 +88,18 @@ func (g *GoQualityAnalyzer) Analyze(ctx context.Context, path string) (*QualityR
 	// Calculate duplication rate
 	duplicationRate, err := g.calculateDuplication(ctx, path)
 	if err != nil {
-		g.logger.Warn("Failed to calculate duplication", zap.Error(err))
+		g.GetLogger().Warn("Failed to calculate duplication", zap.Error(err))
 	} else {
 		result.Metrics.DuplicationRate = duplicationRate
 	}
 
 	// Calculate overall score
-	result.OverallScore = g.calculateScore(result)
+	result.OverallScore = g.CalculateScore(result)
 
 	return result, nil
 }
 
-func (g *GoQualityAnalyzer) runGolangciLint(ctx context.Context, path string) ([]QualityIssue, error) {
+func (g *GoQualityAnalyzer) runGolangciLint(ctx context.Context, path string) ([]common.QualityIssue, error) {
 	// Run golangci-lint with JSON output
 	cmd := exec.CommandContext(ctx, "golangci-lint", "run", "--out-format", "json", path)
 	output, err := cmd.Output()
@@ -131,7 +134,7 @@ func (g *GoQualityAnalyzer) runGolangciLint(ctx context.Context, path string) ([
 	issues := make([]QualityIssue, 0, len(lintResult.Issues))
 	for _, issue := range lintResult.Issues {
 		severity := g.mapSeverity(issue.Severity)
-		issues = append(issues, QualityIssue{
+		issues = append(issues, common.QualityIssue{
 			Type:     "style",
 			Severity: severity,
 			File:     issue.Pos.Filename,
@@ -146,7 +149,7 @@ func (g *GoQualityAnalyzer) runGolangciLint(ctx context.Context, path string) ([
 	return issues, nil
 }
 
-func (g *GoQualityAnalyzer) runGoVet(ctx context.Context, path string) ([]QualityIssue, error) {
+func (g *GoQualityAnalyzer) runGoVet(ctx context.Context, path string) ([]common.QualityIssue, error) {
 	cmd := exec.CommandContext(ctx, "go", "vet", "./...")
 	cmd.Dir = path
 	output, err := cmd.CombinedOutput()
@@ -154,7 +157,7 @@ func (g *GoQualityAnalyzer) runGoVet(ctx context.Context, path string) ([]Qualit
 		return nil, err
 	}
 
-	issues := make([]QualityIssue, 0)
+	issues := make([]common.QualityIssue, 0)
 	lines := strings.Split(string(output), "\n")
 
 	for _, line := range lines {
@@ -174,7 +177,7 @@ func (g *GoQualityAnalyzer) runGoVet(ctx context.Context, path string) ([]Qualit
 				message = parts[3]
 			}
 
-			issues = append(issues, QualityIssue{
+			issues = append(issues, common.QualityIssue{
 				Type:     "bug",
 				Severity: "major",
 				File:     parts[0],
@@ -190,7 +193,7 @@ func (g *GoQualityAnalyzer) runGoVet(ctx context.Context, path string) ([]Qualit
 	return issues, nil
 }
 
-func (g *GoQualityAnalyzer) calculateComplexity(ctx context.Context, path string) (*complexityMetrics, error) {
+func (g *GoQualityAnalyzer) calculateComplexity(ctx context.Context, path string) (*common.ComplexityMetrics, error) {
 	// Use gocyclo if available, otherwise estimate from code structure
 	cmd := exec.CommandContext(ctx, "gocyclo", "-avg", path)
 	output, err := cmd.Output()
@@ -203,14 +206,14 @@ func (g *GoQualityAnalyzer) calculateComplexity(ctx context.Context, path string
 	avgStr := strings.TrimSpace(string(output))
 	avg, err := strconv.ParseFloat(avgStr, 64)
 	if err != nil {
-		return &complexityMetrics{avgComplexity: 5.0}, nil
+		return &common.ComplexityMetrics{AvgComplexity: 5.0}, nil
 	}
 
-	return &complexityMetrics{avgComplexity: avg}, nil
+	return &common.ComplexityMetrics{AvgComplexity: avg}, nil
 }
 
-func (g *GoQualityAnalyzer) countGoFiles(path string) (*fileMetrics, error) {
-	metrics := &fileMetrics{}
+func (g *GoQualityAnalyzer) countGoFiles(path string) (*common.FileMetrics, error) {
+	metrics := &common.FileMetrics{}
 
 	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -223,12 +226,12 @@ func (g *GoQualityAnalyzer) countGoFiles(path string) (*fileMetrics, error) {
 		}
 
 		if strings.HasSuffix(filePath, ".go") && !strings.HasSuffix(filePath, "_test.go") {
-			metrics.totalFiles++
+			metrics.TotalFiles++
 
 			// Count lines
 			lines, err := g.countLines(filePath)
 			if err == nil {
-				metrics.totalLines += lines
+				metrics.TotalLines += lines
 			}
 		}
 
@@ -326,49 +329,6 @@ func (g *GoQualityAnalyzer) calculateDuplication(ctx context.Context, path strin
 	return float64(duplicateLines) / float64(totalLines) * 100, nil
 }
 
-func (g *GoQualityAnalyzer) calculateScore(result *QualityResult) float64 {
-	score := 100.0
-
-	// Deduct points for issues based on severity
-	for _, issue := range result.Issues {
-		switch issue.Severity {
-		case "critical":
-			score -= 5.0
-		case "major":
-			score -= 3.0
-		case "minor":
-			score -= 1.0
-		case "info":
-			score -= 0.5
-		}
-	}
-
-	// Factor in complexity
-	if result.Metrics.AvgComplexity > 10 {
-		score -= (result.Metrics.AvgComplexity - 10) * 2
-	}
-
-	// Factor in test coverage
-	if result.Metrics.TestCoverage < 80 {
-		score -= (80 - result.Metrics.TestCoverage) * 0.5
-	}
-
-	// Factor in duplication
-	if result.Metrics.DuplicationRate > 5 {
-		score -= result.Metrics.DuplicationRate * 0.5
-	}
-
-	// Ensure score is between 0 and 100
-	if score < 0 {
-		score = 0
-	}
-	if score > 100 {
-		score = 100
-	}
-
-	return score
-}
-
 func (g *GoQualityAnalyzer) mapSeverity(severity string) string {
 	switch strings.ToLower(severity) {
 	case "error":
@@ -382,8 +342,8 @@ func (g *GoQualityAnalyzer) mapSeverity(severity string) string {
 	}
 }
 
-func (g *GoQualityAnalyzer) parseLintTextOutput(output string) []QualityIssue {
-	issues := make([]QualityIssue, 0)
+func (g *GoQualityAnalyzer) parseLintTextOutput(output string) []common.QualityIssue {
+	issues := make([]common.QualityIssue, 0)
 	lines := strings.Split(output, "\n")
 
 	for _, line := range lines {
@@ -398,7 +358,7 @@ func (g *GoQualityAnalyzer) parseLintTextOutput(output string) []QualityIssue {
 			lineNum, _ := strconv.Atoi(matches[2])
 			colNum, _ := strconv.Atoi(matches[3])
 
-			issues = append(issues, QualityIssue{
+			issues = append(issues, common.QualityIssue{
 				Type:     "style",
 				Severity: "minor",
 				File:     matches[1],
@@ -414,7 +374,7 @@ func (g *GoQualityAnalyzer) parseLintTextOutput(output string) []QualityIssue {
 	return issues
 }
 
-func (g *GoQualityAnalyzer) estimateComplexity(path string) *complexityMetrics {
+func (g *GoQualityAnalyzer) estimateComplexity(path string) *common.ComplexityMetrics {
 	totalComplexity := 0
 	functionCount := 0
 
@@ -447,14 +407,5 @@ func (g *GoQualityAnalyzer) estimateComplexity(path string) *complexityMetrics {
 		avgComplexity = float64(totalComplexity) / float64(functionCount)
 	}
 
-	return &complexityMetrics{avgComplexity: avgComplexity}
-}
-
-type complexityMetrics struct {
-	avgComplexity float64
-}
-
-type fileMetrics struct {
-	totalFiles int
-	totalLines int
+	return &common.ComplexityMetrics{AvgComplexity: avgComplexity}
 }

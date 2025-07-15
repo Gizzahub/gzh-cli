@@ -210,7 +210,7 @@ func (r *AllowedActionsValidationRule) Validate(ctx context.Context, policy *Act
 		return result, nil
 	}
 
-	violations := make([]string, 0)
+	_ = make([]string, 0) // violations - TODO: implement violation tracking
 	unauthorizedActions := make([]string, 0)
 
 	// Check recent workflows for unauthorized actions

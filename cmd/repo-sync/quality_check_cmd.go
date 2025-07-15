@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/common"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -144,7 +145,7 @@ type QualityTool interface {
 	Name() string
 	Language() string
 	IsAvailable(ctx context.Context) bool
-	Analyze(ctx context.Context, path string) (*QualityResult, error)
+	Analyze(ctx context.Context, path string) (*common.QualityResult, error)
 }
 
 // QualityResult represents the result of quality analysis

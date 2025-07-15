@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -43,16 +42,16 @@ Examples:
 }
 
 var (
-	templatePath   string
-	keyFile        string
-	certFile       string
-	complianceStd  string
-	scanType       string
-	severityLevel  string
-	outputFormat   string
-	reportPath     string
-	encryptionKey  string
-	securityPolicy string
+	securityTemplatePath string
+	keyFile              string
+	certFile             string
+	complianceStd        string
+	scanType             string
+	severityLevel        string
+	securityOutputFormat string
+	reportPath           string
+	encryptionKey        string
+	securityPolicy       string
 )
 
 func init() {

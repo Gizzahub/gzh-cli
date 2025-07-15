@@ -201,7 +201,7 @@ type Vulnerability struct {
 	LastModified  string            `json:"last_modified,omitempty"`
 	References    []string          `json:"references,omitempty"`
 	CPE           string            `json:"cpe,omitempty"`
-	Layer         LayerInfo         `json:"layer,omitempty"`
+	Layer         ScanLayerInfo     `json:"layer,omitempty"`
 	Metadata      map[string]string `json:"metadata,omitempty"`
 }
 
@@ -213,7 +213,7 @@ type PackageInfo struct {
 	Architecture string `json:"architecture,omitempty"`
 }
 
-type LayerInfo struct {
+type ScanLayerInfo struct {
 	Digest    string `json:"digest"`
 	DiffID    string `json:"diff_id"`
 	CreatedBy string `json:"created_by,omitempty"`
@@ -657,9 +657,9 @@ func parseTrivyComprehensive(output []byte, result *ScannerResult) error {
 				PublishedDate: vuln.PublishedDate,
 				LastModified:  vuln.LastModifiedDate,
 				References:    vuln.References,
-				Layer: LayerInfo{
-					Digest: vuln.Layer.Digest,
-					DiffID: vuln.Layer.DiffID,
+				Layer:         ScanLayerInfo{
+					// Digest: vuln.Layer.Digest,  // TODO: Fix when trivy schema is available
+					// DiffID: vuln.Layer.DiffID,  // TODO: Fix when trivy schema is available
 				},
 			}
 
@@ -712,7 +712,7 @@ func runGrypeScan(config *ScanConfiguration, result *ScannerResult) error {
 	}
 
 	cmd := exec.Command("grype", args...)
-	output, err := cmd.Output()
+	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("grype 실행 실패: %w", err)
 	}
@@ -725,7 +725,7 @@ func runSnykScan(config *ScanConfiguration, result *ScannerResult) error {
 	args := []string{"container", "test", config.Image, "--json"}
 
 	cmd := exec.Command("snyk", args...)
-	output, err := cmd.Output()
+	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("snyk 실행 실패: %w", err)
 	}
@@ -786,7 +786,7 @@ func getImageMetadata(image string, metadata *ScanMetadata) error {
 func generateSBOM(image string) (*SBOM, error) {
 	// Use syft to generate SBOM
 	cmd := exec.Command("syft", image, "--output", "json")
-	output, err := cmd.Output()
+	_, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("syft 실행 실패: %w", err)
 	}

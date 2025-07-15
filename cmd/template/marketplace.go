@@ -95,14 +95,14 @@ type StorageConfig struct {
 
 // AuthConfig represents authentication configuration
 type AuthConfig struct {
-	Provider string            `yaml:"provider" json:"provider"`
-	Config   map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
-	LDAP     *LDAPConfig       `yaml:"ldap,omitempty" json:"ldap,omitempty"`
-	OAuth    *OAuthConfig      `yaml:"oauth,omitempty" json:"oauth,omitempty"`
+	Provider string                 `yaml:"provider" json:"provider"`
+	Config   map[string]string      `yaml:"config,omitempty" json:"config,omitempty"`
+	LDAP     *MarketplaceLDAPConfig `yaml:"ldap,omitempty" json:"ldap,omitempty"`
+	OAuth    *OAuthConfig           `yaml:"oauth,omitempty" json:"oauth,omitempty"`
 }
 
-// LDAPConfig represents LDAP configuration
-type LDAPConfig struct {
+// MarketplaceLDAPConfig represents LDAP configuration for marketplace
+type MarketplaceLDAPConfig struct {
 	Server  string `yaml:"server" json:"server"`
 	Port    int    `yaml:"port" json:"port"`
 	BaseDN  string `yaml:"baseDN" json:"baseDN"`
@@ -122,23 +122,23 @@ type OAuthConfig struct {
 
 // AuthzConfig represents authorization configuration
 type AuthzConfig struct {
-	Enabled     bool         `yaml:"enabled" json:"enabled"`
-	AdminUsers  []string     `yaml:"adminUsers" json:"adminUsers"`
-	AdminGroups []string     `yaml:"adminGroups" json:"adminGroups"`
-	Roles       []Role       `yaml:"roles" json:"roles"`
-	Permissions []Permission `yaml:"permissions" json:"permissions"`
-	DefaultRole string       `yaml:"defaultRole" json:"defaultRole"`
+	Enabled     bool                    `yaml:"enabled" json:"enabled"`
+	AdminUsers  []string                `yaml:"adminUsers" json:"adminUsers"`
+	AdminGroups []string                `yaml:"adminGroups" json:"adminGroups"`
+	Roles       []MarketplaceRole       `yaml:"roles" json:"roles"`
+	Permissions []MarketplacePermission `yaml:"permissions" json:"permissions"`
+	DefaultRole string                  `yaml:"defaultRole" json:"defaultRole"`
 }
 
-// Role represents a user role
-type Role struct {
+// MarketplaceRole represents a user role in marketplace
+type MarketplaceRole struct {
 	Name        string   `yaml:"name" json:"name"`
 	Description string   `yaml:"description" json:"description"`
 	Permissions []string `yaml:"permissions" json:"permissions"`
 }
 
-// Permission represents a permission
-type Permission struct {
+// MarketplacePermission represents a permission in marketplace
+type MarketplacePermission struct {
 	Name        string   `yaml:"name" json:"name"`
 	Description string   `yaml:"description" json:"description"`
 	Resource    string   `yaml:"resource" json:"resource"`
@@ -393,7 +393,7 @@ func generateMarketplaceSpec() MarketplaceSpec {
 			Enabled:     true,
 			AdminUsers:  adminUsers,
 			DefaultRole: "user",
-			Roles: []Role{
+			Roles: []MarketplaceRole{
 				{
 					Name:        "admin",
 					Description: "관리자 역할",

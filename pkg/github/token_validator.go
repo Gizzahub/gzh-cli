@@ -48,8 +48,8 @@ type User struct {
 	SiteAdmin bool   `json:"site_admin"`
 }
 
-// RateLimitInfo contains rate limit information
-type RateLimitInfo struct {
+// ValidatorRateLimitInfo contains rate limit information for token validator
+type ValidatorRateLimitInfo struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`
 	Reset     time.Time `json:"reset"`

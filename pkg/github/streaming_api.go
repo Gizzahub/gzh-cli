@@ -25,8 +25,8 @@ type StreamingClient struct {
 	mu             sync.RWMutex
 }
 
-// RateLimiter manages API rate limiting
-type RateLimiter struct {
+// StreamingRateLimiter manages API rate limiting for streaming
+type StreamingRateLimiter struct {
 	remaining int
 	reset     time.Time
 	limit     int
@@ -68,8 +68,8 @@ type StreamMetadata struct {
 	RetryAttempt int
 }
 
-// Repository represents a GitHub repository with optimized memory layout
-type Repository struct {
+// StreamingRepository represents a GitHub repository with optimized memory layout for streaming
+type StreamingRepository struct {
 	ID            int64     `json:"id"`
 	Name          string    `json:"name"`
 	FullName      string    `json:"full_name"`

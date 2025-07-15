@@ -8,6 +8,17 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/cache"
 )
 
+// BulkCloneStats represents statistics from bulk clone operations
+type BulkCloneStats struct {
+	TotalRepositories int
+	StartTime         time.Time
+	EndTime           time.Time
+	SuccessCount      int
+	FailureCount      int
+	Successful        int
+	Failed            int
+}
+
 // CachedGitHubClient wraps GitHub API calls with caching
 type CachedGitHubClient struct {
 	cacheManager *cache.CacheManager
@@ -148,7 +159,23 @@ func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Cont
 
 	// For now, delegate to the existing optimized method
 	// In a full implementation, this would use the cached repos list
-	return cbm.OptimizedBulkCloneManager.RefreshAllOptimized(ctx, targetPath, org, strategy)
+	cloneStats, err := cbm.OptimizedBulkCloneManager.RefreshAllOptimized(ctx, targetPath, org, strategy)
+	if err != nil {
+		return BulkCloneStats{}, err
+	}
+
+	// Convert CloneStats to BulkCloneStats
+	bulkStats := BulkCloneStats{
+		TotalRepositories: stats.TotalRepositories,
+		StartTime:         stats.StartTime,
+		EndTime:           time.Now(),
+		SuccessCount:      0, // TODO: Extract from cloneStats
+		FailureCount:      0, // TODO: Extract from cloneStats
+		Successful:        0, // TODO: Extract from cloneStats
+		Failed:            0, // TODO: Extract from cloneStats
+	}
+
+	return bulkStats, nil
 }
 
 // Close cleans up cached manager resources

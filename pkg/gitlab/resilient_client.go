@@ -174,8 +174,8 @@ func (c *ResilientGitLabClient) GetProject(ctx context.Context, projectID string
 }
 
 // ListGroups retrieves all accessible groups
-func (c *ResilientGitLabClient) ListGroups(ctx context.Context) ([]GroupInfo, error) {
-	var allGroups []GroupInfo
+func (c *ResilientGitLabClient) ListGroups(ctx context.Context) ([]APIGroupInfo, error) {
+	var allGroups []APIGroupInfo
 	page := 1
 	perPage := 100
 
@@ -205,7 +205,7 @@ func (c *ResilientGitLabClient) ListGroups(ctx context.Context) ([]GroupInfo, er
 }
 
 // getGroupPage fetches a single page of groups
-func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage int) ([]GroupInfo, bool, error) {
+func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage int) ([]APIGroupInfo, bool, error) {
 	url := fmt.Sprintf("%s/api/v4/groups?page=%d&per_page=%d&owned=true", c.baseURL, page, perPage)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -225,7 +225,7 @@ func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage 
 		return nil, false, c.handleAPIError(resp, "failed to get groups")
 	}
 
-	var groups []GroupInfo
+	var groups []APIGroupInfo
 	if err := json.NewDecoder(resp.Body).Decode(&groups); err != nil {
 		return nil, false, fmt.Errorf("failed to decode response: %w", err)
 	}
@@ -236,8 +236,8 @@ func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage 
 	return groups, hasMore, nil
 }
 
-// GroupInfo represents GitLab group information
-type GroupInfo struct {
+// APIGroupInfo represents GitLab group information from API
+type APIGroupInfo struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	Path     string `json:"path"`

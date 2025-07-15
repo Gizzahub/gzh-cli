@@ -235,7 +235,7 @@ func packageTemplate() (string, error) {
 	return tempFile.Name(), nil
 }
 
-func getAuthor() string {
+func getPublishAuthor() string {
 	if publishAuthor != "" {
 		return publishAuthor
 	}

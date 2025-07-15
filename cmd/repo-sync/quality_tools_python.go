@@ -11,17 +11,20 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/common"
 	"go.uber.org/zap"
 )
 
 // PythonQualityAnalyzer implements quality analysis for Python projects
 type PythonQualityAnalyzer struct {
-	logger *zap.Logger
+	*common.BaseQualityAnalyzer
 }
 
 // NewPythonQualityAnalyzer creates a new Python quality analyzer
 func NewPythonQualityAnalyzer(logger *zap.Logger) *PythonQualityAnalyzer {
-	return &PythonQualityAnalyzer{logger: logger}
+	return &PythonQualityAnalyzer{
+		BaseQualityAnalyzer: common.NewBaseQualityAnalyzer(logger),
+	}
 }
 
 func (p *PythonQualityAnalyzer) Name() string     { return "pylint" }
@@ -34,11 +37,11 @@ func (p *PythonQualityAnalyzer) IsAvailable(ctx context.Context) bool {
 	return err == nil
 }
 
-func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*QualityResult, error) {
-	result := &QualityResult{
+func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*common.QualityResult, error) {
+	result := &common.QualityResult{
 		Repository: path,
-		Issues:     make([]QualityIssue, 0),
-		Metrics:    QualityMetrics{},
+		Issues:     make([]common.QualityIssue, 0),
+		Metrics:    common.QualityMetrics{},
 	}
 
 	// Run pylint
@@ -50,7 +53,7 @@ func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*Qual
 	// Run flake8 for additional style checks
 	flake8Issues, err := p.runFlake8(ctx, path)
 	if err != nil {
-		p.logger.Warn("Failed to run flake8", zap.Error(err))
+		p.GetLogger().Warn("Failed to run flake8", zap.Error(err))
 	} else {
 		result.Issues = append(result.Issues, flake8Issues...)
 	}
@@ -58,7 +61,7 @@ func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*Qual
 	// Run bandit for security analysis
 	securityIssues, err := p.runBandit(ctx, path)
 	if err != nil {
-		p.logger.Warn("Failed to run bandit", zap.Error(err))
+		p.GetLogger().Warn("Failed to run bandit", zap.Error(err))
 	} else {
 		result.Issues = append(result.Issues, securityIssues...)
 	}
@@ -66,7 +69,7 @@ func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*Qual
 	// Run mypy for type checking
 	typeIssues, err := p.runMypy(ctx, path)
 	if err != nil {
-		p.logger.Warn("Failed to run mypy", zap.Error(err))
+		p.GetLogger().Warn("Failed to run mypy", zap.Error(err))
 	} else {
 		result.Issues = append(result.Issues, typeIssues...)
 	}
@@ -74,7 +77,7 @@ func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*Qual
 	// Calculate complexity using radon
 	avgComplexity, err := p.calculateComplexity(ctx, path)
 	if err != nil {
-		p.logger.Warn("Failed to calculate complexity", zap.Error(err))
+		p.GetLogger().Warn("Failed to calculate complexity", zap.Error(err))
 		avgComplexity = 5.0 // Default
 	}
 	result.Metrics.AvgComplexity = avgComplexity
@@ -82,16 +85,16 @@ func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*Qual
 	// Count files and lines
 	fileMetrics, err := p.countPythonFiles(path)
 	if err != nil {
-		p.logger.Warn("Failed to count Python files", zap.Error(err))
+		p.GetLogger().Warn("Failed to count Python files", zap.Error(err))
 	} else {
-		result.Metrics.TotalFiles = fileMetrics.totalFiles
-		result.Metrics.TotalLinesOfCode = fileMetrics.totalLines
+		result.Metrics.TotalFiles = fileMetrics.TotalFiles
+		result.Metrics.TotalLinesOfCode = fileMetrics.TotalLines
 	}
 
 	// Get test coverage
 	coverage, err := p.getTestCoverage(ctx, path)
 	if err != nil {
-		p.logger.Warn("Failed to get test coverage", zap.Error(err))
+		p.GetLogger().Warn("Failed to get test coverage", zap.Error(err))
 	} else {
 		result.Metrics.TestCoverage = coverage
 	}
@@ -99,7 +102,7 @@ func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*Qual
 	// Calculate duplication
 	duplicationRate, err := p.calculateDuplication(ctx, path)
 	if err != nil {
-		p.logger.Warn("Failed to calculate duplication", zap.Error(err))
+		p.GetLogger().Warn("Failed to calculate duplication", zap.Error(err))
 	} else {
 		result.Metrics.DuplicationRate = duplicationRate
 	}
@@ -108,18 +111,18 @@ func (p *PythonQualityAnalyzer) Analyze(ctx context.Context, path string) (*Qual
 	if pylintScore > 0 {
 		result.OverallScore = pylintScore
 	} else {
-		result.OverallScore = p.calculateScore(result)
+		result.OverallScore = p.CalculateScore(result)
 	}
 
 	return result, nil
 }
 
-func (p *PythonQualityAnalyzer) runPylint(ctx context.Context, path string) ([]QualityIssue, float64) {
+func (p *PythonQualityAnalyzer) runPylint(ctx context.Context, path string) ([]common.QualityIssue, float64) {
 	// Create a basic pylintrc if none exists
 	pylintrc := p.findPylintConfig(path)
 	if pylintrc == "" {
 		if err := p.createBasicPylintrc(path); err != nil {
-			p.logger.Warn("Failed to create pylintrc", zap.Error(err))
+			p.GetLogger().Warn("Failed to create pylintrc", zap.Error(err))
 		}
 		defer os.Remove(filepath.Join(path, ".pylintrc"))
 	}
@@ -129,7 +132,7 @@ func (p *PythonQualityAnalyzer) runPylint(ctx context.Context, path string) ([]Q
 	output, err := cmd.Output()
 
 	var score float64
-	issues := make([]QualityIssue, 0)
+	issues := make([]common.QualityIssue, 0)
 
 	if err != nil {
 		// Try to get the score from stderr
@@ -158,7 +161,7 @@ func (p *PythonQualityAnalyzer) runPylint(ctx context.Context, path string) ([]Q
 
 	if err := json.Unmarshal(output, &pylintResults); err == nil {
 		for _, msg := range pylintResults {
-			issues = append(issues, QualityIssue{
+			issues = append(issues, common.QualityIssue{
 				Type:     p.mapPylintType(msg.Type),
 				Severity: p.mapPylintSeverity(msg.Type),
 				File:     msg.Path,
@@ -177,14 +180,14 @@ func (p *PythonQualityAnalyzer) runPylint(ctx context.Context, path string) ([]Q
 	return issues, score
 }
 
-func (p *PythonQualityAnalyzer) runFlake8(ctx context.Context, path string) ([]QualityIssue, error) {
+func (p *PythonQualityAnalyzer) runFlake8(ctx context.Context, path string) ([]common.QualityIssue, error) {
 	cmd := exec.CommandContext(ctx, "flake8", "--format=%(path)s:%(row)d:%(col)d: %(code)s %(text)s", path)
 	output, err := cmd.CombinedOutput()
 	if err != nil && len(output) == 0 {
 		return nil, err
 	}
 
-	issues := make([]QualityIssue, 0)
+	issues := make([]common.QualityIssue, 0)
 	lines := strings.Split(string(output), "\n")
 
 	for _, line := range lines {
@@ -206,7 +209,7 @@ func (p *PythonQualityAnalyzer) runFlake8(ctx context.Context, path string) ([]Q
 				severity = "critical"
 			}
 
-			issues = append(issues, QualityIssue{
+			issues = append(issues, common.QualityIssue{
 				Type:     "style",
 				Severity: severity,
 				File:     matches[1],
@@ -222,7 +225,7 @@ func (p *PythonQualityAnalyzer) runFlake8(ctx context.Context, path string) ([]Q
 	return issues, nil
 }
 
-func (p *PythonQualityAnalyzer) runBandit(ctx context.Context, path string) ([]QualityIssue, error) {
+func (p *PythonQualityAnalyzer) runBandit(ctx context.Context, path string) ([]common.QualityIssue, error) {
 	cmd := exec.CommandContext(ctx, "bandit", "-r", "-f", "json", path)
 	output, err := cmd.Output()
 	if err != nil && len(output) == 0 {
@@ -247,9 +250,9 @@ func (p *PythonQualityAnalyzer) runBandit(ctx context.Context, path string) ([]Q
 		return nil, err
 	}
 
-	issues := make([]QualityIssue, 0)
+	issues := make([]common.QualityIssue, 0)
 	for _, result := range banditResult.Results {
-		issues = append(issues, QualityIssue{
+		issues = append(issues, common.QualityIssue{
 			Type:     "security",
 			Severity: p.mapBanditSeverity(result.Severity),
 			File:     result.Filename,
@@ -264,14 +267,14 @@ func (p *PythonQualityAnalyzer) runBandit(ctx context.Context, path string) ([]Q
 	return issues, nil
 }
 
-func (p *PythonQualityAnalyzer) runMypy(ctx context.Context, path string) ([]QualityIssue, error) {
+func (p *PythonQualityAnalyzer) runMypy(ctx context.Context, path string) ([]common.QualityIssue, error) {
 	cmd := exec.CommandContext(ctx, "mypy", "--no-error-summary", path)
 	output, err := cmd.CombinedOutput()
 	if err != nil && len(output) == 0 {
 		return nil, err
 	}
 
-	issues := make([]QualityIssue, 0)
+	issues := make([]common.QualityIssue, 0)
 	lines := strings.Split(string(output), "\n")
 
 	for _, line := range lines {
@@ -292,7 +295,7 @@ func (p *PythonQualityAnalyzer) runMypy(ctx context.Context, path string) ([]Qua
 				severity = "info"
 			}
 
-			issues = append(issues, QualityIssue{
+			issues = append(issues, common.QualityIssue{
 				Type:     "type-error",
 				Severity: severity,
 				File:     matches[1],
@@ -354,8 +357,8 @@ func (p *PythonQualityAnalyzer) calculateComplexity(ctx context.Context, path st
 	return 5.0, nil
 }
 
-func (p *PythonQualityAnalyzer) countPythonFiles(path string) (*fileMetrics, error) {
-	metrics := &fileMetrics{}
+func (p *PythonQualityAnalyzer) countPythonFiles(path string) (*common.FileMetrics, error) {
+	metrics := &common.FileMetrics{}
 
 	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -373,7 +376,7 @@ func (p *PythonQualityAnalyzer) countPythonFiles(path string) (*fileMetrics, err
 
 		if strings.HasSuffix(filePath, ".py") && !strings.Contains(filePath, "test_") &&
 			!strings.Contains(filePath, "_test.py") {
-			metrics.totalFiles++
+			metrics.TotalFiles++
 
 			// Count lines
 			content, err := os.ReadFile(filePath)
@@ -382,7 +385,7 @@ func (p *PythonQualityAnalyzer) countPythonFiles(path string) (*fileMetrics, err
 				for _, line := range lines {
 					trimmed := strings.TrimSpace(line)
 					if trimmed != "" && !strings.HasPrefix(trimmed, "#") {
-						metrics.totalLines++
+						metrics.TotalLines++
 					}
 				}
 			}
@@ -494,49 +497,6 @@ func (p *PythonQualityAnalyzer) simpleDuplicationDetection(path string) float64 
 	return float64(duplicateLines) / float64(totalLines) * 100
 }
 
-func (p *PythonQualityAnalyzer) calculateScore(result *QualityResult) float64 {
-	score := 100.0
-
-	// Deduct points for issues
-	for _, issue := range result.Issues {
-		switch issue.Severity {
-		case "critical":
-			score -= 5.0
-		case "major":
-			score -= 3.0
-		case "minor":
-			score -= 1.0
-		case "info":
-			score -= 0.5
-		}
-	}
-
-	// Factor in complexity
-	if result.Metrics.AvgComplexity > 10 {
-		score -= (result.Metrics.AvgComplexity - 10) * 2
-	}
-
-	// Factor in test coverage
-	if result.Metrics.TestCoverage < 80 {
-		score -= (80 - result.Metrics.TestCoverage) * 0.5
-	}
-
-	// Factor in duplication
-	if result.Metrics.DuplicationRate > 5 {
-		score -= result.Metrics.DuplicationRate * 0.5
-	}
-
-	// Ensure score is between 0 and 100
-	if score < 0 {
-		score = 0
-	}
-	if score > 100 {
-		score = 100
-	}
-
-	return score
-}
-
 func (p *PythonQualityAnalyzer) mapPylintType(msgType string) string {
 	switch msgType {
 	case "convention", "refactor":
@@ -576,8 +536,8 @@ func (p *PythonQualityAnalyzer) mapBanditSeverity(severity string) string {
 	}
 }
 
-func (p *PythonQualityAnalyzer) parsePylintTextOutput(output string) []QualityIssue {
-	issues := make([]QualityIssue, 0)
+func (p *PythonQualityAnalyzer) parsePylintTextOutput(output string) []common.QualityIssue {
+	issues := make([]common.QualityIssue, 0)
 	lines := strings.Split(output, "\n")
 
 	for _, line := range lines {
@@ -592,7 +552,7 @@ func (p *PythonQualityAnalyzer) parsePylintTextOutput(output string) []QualityIs
 			lineNum, _ := strconv.Atoi(matches[2])
 			colNum, _ := strconv.Atoi(matches[3])
 
-			issues = append(issues, QualityIssue{
+			issues = append(issues, common.QualityIssue{
 				Type:     "style",
 				Severity: "minor",
 				File:     matches[1],

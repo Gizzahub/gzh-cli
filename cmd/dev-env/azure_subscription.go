@@ -508,8 +508,7 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 
 	case "table":
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Subscription ID", "Name", "State", "Tenant", "User", "Active"})
-		table.SetRowLine(true)
+		table.Header("Subscription ID", "Name", "State", "Tenant", "User", "Active")
 
 		for _, subscription := range subscriptions {
 			active := ""
@@ -523,14 +522,14 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 				displayID = displayID[:8] + "..." + displayID[len(displayID)-8:]
 			}
 
-			table.Append([]string{
+			table.Append(
 				displayID,
 				subscription.DisplayName,
 				subscription.State,
 				subscription.TenantDisplayName,
 				subscription.User,
 				active,
-			})
+			)
 		}
 
 		table.Render()
@@ -797,7 +796,7 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 
 	case "table":
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Tenant ID", "Display Name", "Subscriptions"})
+		table.Header("Tenant ID", "Display Name", "Subscriptions")
 
 		for tenantID, displayName := range m.tenants {
 			// Count subscriptions in this tenant
@@ -808,11 +807,11 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 				}
 			}
 
-			table.Append([]string{
+			table.Append(
 				tenantID,
 				displayName,
 				fmt.Sprintf("%d", subCount),
-			})
+			)
 		}
 
 		table.Render()

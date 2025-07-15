@@ -311,7 +311,7 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	}
 
 	// Get image info
-	imageInfo, err := getImageInfo(imageName)
+	imageInfo, err := getOptimizeImageInfo(imageName)
 	if err != nil {
 		return nil, fmt.Errorf("이미지 정보 조회 실패: %w", err)
 	}
@@ -351,7 +351,7 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	return analysis, nil
 }
 
-func getImageInfo(imageName string) (*ImageInfo, error) {
+func getOptimizeImageInfo(imageName string) (*ImageInfo, error) {
 	cmd := exec.Command("docker", "image", "inspect", imageName)
 	output, err := cmd.Output()
 	if err != nil {
@@ -850,7 +850,7 @@ func applyOptimizations(imageName string, analysis *OptimizationAnalysis, sugges
 			result.OptimizedImage = optimizedImage
 
 			// Get optimized image size
-			optimizedInfo, err := getImageInfo(optimizedImage)
+			optimizedInfo, err := getOptimizeImageInfo(optimizedImage)
 			if err == nil {
 				result.OptimizedSize = optimizedInfo.Size
 				result.SizeReduction = result.OriginalSize - result.OptimizedSize

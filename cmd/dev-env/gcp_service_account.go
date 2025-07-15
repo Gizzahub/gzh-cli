@@ -358,7 +358,7 @@ func (m *GCPServiceAccountManager) listServiceAccounts(format string) error {
 
 	case "table":
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Email", "Display Name", "Keys", "Disabled", "Active"})
+		table.Header("Email", "Display Name", "Keys", "Disabled", "Active")
 
 		for _, account := range m.serviceAccounts {
 			disabled := ""
@@ -596,7 +596,7 @@ func (m *GCPServiceAccountManager) listServiceAccountKeys(email string) error {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Key ID", "Type", "Algorithm", "Origin", "Valid After", "Valid Before"})
+	table.Header("Key ID", "Type", "Algorithm", "Origin", "Valid After", "Valid Before")
 
 	for _, key := range keys {
 		// Extract key ID from name (format: projects/PROJECT/serviceAccounts/EMAIL/keys/KEYID)

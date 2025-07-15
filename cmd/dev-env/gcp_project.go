@@ -530,8 +530,7 @@ func (m *GCPProjectManager) listProjects(format string) error {
 
 	case "table":
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Project ID", "Name", "State", "Account", "Region", "Active"})
-		table.SetRowLine(true)
+		table.Header("Project ID", "Name", "State", "Account", "Region", "Active")
 
 		for _, project := range projects {
 			active := ""
@@ -848,7 +847,7 @@ func (m *GCPProjectManager) listConfigurations() error {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Project", "Account", "Region", "Zone", "Active"})
+	table.Header("Name", "Project", "Account", "Region", "Zone", "Active")
 
 	for _, config := range m.configurations {
 		active := ""
@@ -856,14 +855,14 @@ func (m *GCPProjectManager) listConfigurations() error {
 			active = "✓"
 		}
 
-		table.Append([]string{
+		table.Append(
 			config.Name,
 			config.Project,
 			config.Account,
 			config.Region,
 			config.Zone,
 			active,
-		})
+		)
 	}
 
 	table.Render()

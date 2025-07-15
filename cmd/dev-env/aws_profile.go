@@ -12,7 +12,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/sso"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/manifoldco/promptui"
@@ -322,7 +321,7 @@ func (m *AWSProfileManager) LoginSSO(profileName string) error {
 		})
 		if err != nil {
 			if strings.Contains(err.Error(), "AuthorizationPending") {
-				time.Sleep(time.Duration(*startResp.Interval) * time.Second)
+				time.Sleep(time.Duration(startResp.Interval) * time.Second)
 				continue
 			}
 			return fmt.Errorf("failed to create token: %w", err)
@@ -355,7 +354,7 @@ func (m *AWSProfileManager) saveSSOToken(profile *AWSProfile, tokenResp *ssooidc
 	// Create token cache entry
 	token := map[string]interface{}{
 		"accessToken":  *tokenResp.AccessToken,
-		"expiresAt":    time.Now().Add(time.Duration(*tokenResp.ExpiresIn) * time.Second).Format(time.RFC3339),
+		"expiresAt":    time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second).Format(time.RFC3339),
 		"region":       profile.SSORegion,
 		"startUrl":     profile.SSOStartURL,
 		"refreshToken": tokenResp.RefreshToken,
@@ -431,11 +430,7 @@ func newAWSProfileListCmd() *cobra.Command {
 				fallthrough
 			default:
 				table := tablewriter.NewWriter(os.Stdout)
-				table.SetHeader([]string{"Profile", "Region", "Type", "SSO URL", "Account ID", "Active"})
-				table.SetAutoWrapText(false)
-				table.SetAutoFormatHeaders(true)
-				table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-				table.SetAlignment(tablewriter.ALIGN_LEFT)
+				table.Header("Profile", "Region", "Type", "SSO URL", "Account ID", "Active")
 
 				for _, profile := range profiles {
 					profileType := "Standard"
@@ -452,14 +447,14 @@ func newAWSProfileListCmd() *cobra.Command {
 						active = "✓"
 					}
 
-					table.Append([]string{
+					table.Append(
 						profile.Name,
 						profile.Region,
 						profileType,
 						profile.SSOStartURL,
 						profile.SSOAccountID,
 						active,
-					})
+					)
 				}
 
 				table.Render()
@@ -657,7 +652,7 @@ func newAWSProfileValidateCmd() *cobra.Command {
 
 			// Validate each profile
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Profile", "Type", "Status", "Details"})
+			table.Header("Profile", "Type", "Status", "Details")
 
 			for _, profile := range profiles {
 				profileType := "Standard"
@@ -675,12 +670,12 @@ func newAWSProfileValidateCmd() *cobra.Command {
 					details = err.Error()
 				}
 
-				table.Append([]string{
+				table.Append(
 					profile.Name,
 					profileType,
 					status,
 					details,
-				})
+				)
 			}
 
 			table.Render()

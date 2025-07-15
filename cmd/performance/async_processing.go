@@ -389,7 +389,7 @@ func demoWorkQueue() error {
 	workQueue := async.NewWorkQueue(config)
 	defer workQueue.Stop(10 * time.Second)
 
-	ctx := context.Background()
+	_ = context.Background()
 	fmt.Printf("👷 %d개 워커로 %d개 작업 처리 중...\n\n", asyncWorkers, asyncJobs)
 
 	// Track results
@@ -744,6 +744,9 @@ func demoIntegratedAsyncProcessing() error {
 
 	fmt.Printf("\n📊 파이프라인 처리 결과:\n")
 	fmt.Printf("   총 처리 시간: %v\n", totalDuration)
+	fmt.Printf("   스캔 완료: %d개\n", finalScanned)
+	fmt.Printf("   변환 완료: %d개\n", finalTransformed)
+	fmt.Printf("   아카이브 완료: %d개\n", finalArchived)
 	fmt.Printf("   파일 처리 완료율: %.1f%% (%d/%d)\n",
 		float64(finalArchived)/float64(asyncFiles)*100, finalArchived, asyncFiles)
 	fmt.Printf("   평균 처리율: %.1f 파일/초\n", float64(finalArchived)/totalDuration.Seconds())

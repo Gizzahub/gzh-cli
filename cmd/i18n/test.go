@@ -36,7 +36,7 @@ var (
 	testLanguages    []string
 	testBaseLanguage string
 	reportDir        string
-	strictMode       bool
+	testStrictMode   bool
 	generateHTML     bool
 	generateJUnit    bool
 	testTimeout      int
@@ -47,7 +47,7 @@ func init() {
 	TestCmd.Flags().StringSliceVar(&testLanguages, "languages", nil, "Languages to test (default: all)")
 	TestCmd.Flags().StringVar(&testBaseLanguage, "base-language", "en", "Base language for comparisons")
 	TestCmd.Flags().StringVar(&reportDir, "report-dir", "test-reports", "Directory for test reports")
-	TestCmd.Flags().BoolVar(&strictMode, "strict", false, "Strict mode - fail on any warning")
+	TestCmd.Flags().BoolVar(&testStrictMode, "strict", false, "Strict mode - fail on any warning")
 	TestCmd.Flags().BoolVar(&generateHTML, "html", true, "Generate HTML report")
 	TestCmd.Flags().BoolVar(&generateJUnit, "junit", false, "Generate JUnit XML report")
 	TestCmd.Flags().IntVar(&testTimeout, "timeout", 300, "Test timeout in seconds")
@@ -152,7 +152,7 @@ func runTest(cmd *cobra.Command, args []string) {
 	fmt.Printf("\n%s\n", report.Summary)
 
 	// Exit with error code if tests failed and strict mode is enabled
-	if strictMode && (report.FailedTests > 0 || report.SkippedTests > 0) {
+	if testStrictMode && (report.FailedTests > 0 || report.SkippedTests > 0) {
 		fmt.Println("\n💥 Exiting with error code due to strict mode")
 		os.Exit(1)
 	} else if report.FailedTests > 0 {

@@ -87,8 +87,8 @@ type EngineMetrics struct {
 	StartTime             time.Time                 `json:"start_time"`
 }
 
-// EventProcessor defines the interface for processing GitHub events
-type EventProcessor interface {
+// AutomationEventProcessor defines the interface for processing GitHub events in automation
+type AutomationEventProcessor interface {
 	ProcessEvent(ctx context.Context, event *GitHubEvent) error
 	FilterEvent(event *GitHubEvent) bool
 	ValidateEvent(event *GitHubEvent) error
