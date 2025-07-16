@@ -7,8 +7,8 @@ This document provides comprehensive guidance for using the development containe
 The development container provides a consistent, reproducible development environment that includes:
 
 - **Go 1.24.0** with all development tools
-- **Node.js 20** for React dashboard and bindings
-- **Python 3.12** for Python bindings
+- **Node.js 20** for React dashboard
+- **Python 3.12** for scripting
 - **Docker-in-Docker** for container development
 - **Comprehensive tooling** for linting, testing, and debugging
 - **VS Code integration** with optimized settings and extensions
@@ -183,58 +183,6 @@ npm run lint
 npm run format
 ```
 
-### Node.js Bindings Development
-
-#### Setup
-```bash
-cd bindings/nodejs
-
-# Install dependencies
-npm ci
-
-# Build TypeScript and native code
-npm run build
-```
-
-#### Development Cycle
-```bash
-# TypeScript development
-npm run build:ts
-npm test
-
-# Native addon development
-npm run build:native
-npm run clean  # Clean build artifacts
-```
-
-### Python Bindings Development
-
-#### Setup
-```bash
-cd bindings/python
-
-# Activate virtual environment
-source venv/bin/activate
-
-# Install development dependencies
-pip install -e .
-```
-
-#### Development Cycle
-```bash
-# Activate environment
-py-activate  # Custom alias
-
-# Run tests
-python -m pytest
-pytest tests/ -v
-
-# Code quality
-black .
-isort .
-pylint gzhclient/
-mypy gzhclient/
-```
 
 ### Docker Development
 
@@ -300,7 +248,7 @@ GZH_DEV_MODE=true          # Enable development features
 GO111MODULE=on             # Go modules support
 GOPROXY=https://proxy.golang.org,direct
 GOSUMDB=sum.golang.org
-CGO_ENABLED=1              # Required for Node.js bindings
+CGO_ENABLED=1              # CGO support for native dependencies
 DOCKER_BUILDKIT=1          # Enhanced Docker builds
 COMPOSE_DOCKER_CLI_BUILD=1 # Docker Compose v2
 ```
@@ -554,34 +502,6 @@ echo $GOPATH
 echo $GOROOT
 ```
 
-#### Node.js Build Issues
-
-```bash
-# Clear npm cache
-npm cache clean --force
-
-# Rebuild native modules
-cd bindings/nodejs
-npm run clean
-npm install
-npm run build:native
-
-# Check node-gyp setup
-node-gyp --version
-python3 --version
-```
-
-#### Python Environment Issues
-
-```bash
-# Recreate virtual environment
-cd bindings/python
-rm -rf venv
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -e .
-```
 
 #### Git Configuration Issues
 
@@ -726,7 +646,6 @@ go mod tidy
    go mod tidy
    
    cd web && npm update
-   cd bindings/nodejs && npm update
    ```
 
 ### Security

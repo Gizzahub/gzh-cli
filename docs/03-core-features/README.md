@@ -204,7 +204,6 @@ cache:
 ### 통합 가이드
 - [GitHub Actions 통합](../08-integrations/)
 - [Terraform 대안](../08-integrations/terraform-alternative-comparison.md)
-- [언어 바인딩](../08-integrations/bindings/)
 
 ---
 

@@ -57,14 +57,11 @@ Access via Command Palette (`Ctrl+Shift+P` → "Tasks: Run Task"):
 #### Test Tasks
 - **go: test** - Run all tests
 - **go: test (current package)** - Test current package
-- **nodejs: test bindings** - Test Node.js bindings
-- **python: test bindings** - Test Python bindings
 - **docker: test integration** - Run integration tests
 
 #### Development Tasks
 - **react: start dev server** - Start React development
 - **react: build** - Build React app
-- **nodejs: build bindings** - Build Node.js bindings
 - **docker: build image** - Build Docker image
 
 ### Environment Variables
@@ -355,37 +352,6 @@ npm start
 # Debug in Chrome DevTools (F12)
 ```
 
-### Node.js Bindings
-
-```bash
-# Debug Node.js addon
-cd bindings/nodejs
-
-# Build with debug symbols
-npm run build:native -- --debug
-
-# Debug with Node.js inspector
-node --inspect-brk examples/basic-usage.js
-
-# Connect Chrome DevTools
-# Open: chrome://inspect
-```
-
-### Python Bindings
-
-```bash
-# Debug Python module
-cd bindings/python
-source venv/bin/activate
-
-# Debug with pdb
-python -m pdb examples/basic_usage.py
-
-# Debug with pytest
-python -m pytest --pdb tests/
-
-# Debug with IDE (PyCharm, VS Code)
-```
 
 ### Integration Tests
 

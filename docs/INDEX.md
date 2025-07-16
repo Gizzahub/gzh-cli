@@ -102,9 +102,6 @@
   - [📊 Terraform vs gz 예제](08-integrations/terraform-vs-gz-examples.md)
   - [📊 웹훅 대시보드](08-integrations/webhook-dashboard.md)
   - [🪝 웹훅 관리 가이드](08-integrations/webhook-management-guide.md)
-  - **언어 바인딩**
-    - [🟢 Node.js 바인딩](08-integrations/bindings/nodejs.md)
-    - [🐍 Python 바인딩](08-integrations/bindings/python.md)
 
 ### 🏢 9. 엔터프라이즈 기능
 - [📁 09-enterprise/](09-enterprise/)
