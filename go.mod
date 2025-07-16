@@ -23,7 +23,7 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-critic/go-critic v0.11.5
 	github.com/go-playground/validator/v10 v10.27.0
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-jwt/jwt/v5 v5.2.3
 	github.com/golangci/golangci-lint v1.63.4
 	github.com/google/go-github/v66 v66.0.0
 	github.com/google/uuid v1.6.0
