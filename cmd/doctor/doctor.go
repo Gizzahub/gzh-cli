@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/debug"
 	"github.com/spf13/cobra"
 )
 
@@ -210,9 +209,11 @@ func runSystemChecks(report *DiagnosticReport) {
 
 	// Memory check
 	start = time.Now()
-	memStats := debug.ProfileMemoryUsage()
-	allocatedMB := memStats["allocated_mb"].(float64)
-	goroutines := memStats["goroutines"].(int)
+	var memStats runtime.MemStats
+	runtime.ReadMemStats(&memStats)
+
+	allocatedMB := float64(memStats.Alloc) / 1024 / 1024
+	goroutines := runtime.NumGoroutine()
 
 	status = "pass"
 	message = fmt.Sprintf("Memory: %.2f MB allocated, %d goroutines", allocatedMB, goroutines)
@@ -222,12 +223,21 @@ func runSystemChecks(report *DiagnosticReport) {
 		message += " (high memory usage)"
 	}
 
+	memStatsMap := map[string]interface{}{
+		"allocated_mb":  allocatedMB,
+		"goroutines":    goroutines,
+		"sys_mb":        float64(memStats.Sys) / 1024 / 1024,
+		"heap_alloc_mb": float64(memStats.HeapAlloc) / 1024 / 1024,
+		"heap_sys_mb":   float64(memStats.HeapSys) / 1024 / 1024,
+		"gc_runs":       memStats.NumGC,
+	}
+
 	report.Results = append(report.Results, DiagnosticResult{
 		Name:      "Memory Usage",
 		Category:  "system",
 		Status:    status,
 		Message:   message,
-		Details:   map[string]interface{}{"memory_stats": memStats},
+		Details:   map[string]interface{}{"memory_stats": memStatsMap},
 		Duration:  time.Since(start),
 		Timestamp: time.Now(),
 	})
