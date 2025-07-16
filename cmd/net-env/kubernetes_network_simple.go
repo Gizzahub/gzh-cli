@@ -398,7 +398,7 @@ func (km *KubernetesNetworkManager) ExportNamespacePolicies(namespace, profileNa
 		}
 
 		// Extract egress rules (similar to ingress)
-		if egressRules, ok := spec["egress"].([]interface{}); ok {
+		if _, ok := spec["egress"].([]interface{}); ok {
 			config.Egress = make([]NetworkPolicyEgressRule, 0)
 			// Similar parsing logic as ingress
 		}

@@ -217,9 +217,10 @@ func newVPNFailoverBackupAddCmd(logger *zap.Logger, configDir string) *cobra.Com
 				Priority:     priority,
 				AutoActivate: true,
 				HealthCheck: HealthCheckConfig{
-					Enabled:  true,
+					Type:     "ping",
 					Interval: 30 * time.Second,
 					Timeout:  10 * time.Second,
+					Retries:  3,
 				},
 			}
 
@@ -429,10 +430,11 @@ func newVPNFailoverHealthConfigCmd(logger *zap.Logger, configDir string) *cobra.
 			}
 
 			config := HealthCheckConfig{
-				Enabled:  enabled,
+				Type:     "ping", 
 				Interval: interval,
 				Timeout:  timeout,
 				Endpoint: endpoint,
+				Retries:  3,
 			}
 
 			if err := manager.ConfigureHealthCheck(vpnName, config); err != nil {
@@ -804,7 +806,7 @@ func (fvm *FailoverVPNManager) ConfigureHealthCheck(vpnName string, config Healt
 	// TODO: Implement health check configuration
 	fvm.logger.Info("Configured health check",
 		zap.String("vpn", vpnName),
-		zap.Bool("enabled", config.Enabled),
+		zap.String("type", config.Type),
 		zap.Duration("interval", config.Interval))
 	return nil
 }
@@ -840,7 +842,7 @@ func (fvm *FailoverVPNManager) loadConfiguration() error {
 }
 
 func (fvm *FailoverVPNManager) saveConfiguration() error {
-	configPath := filepath.Join(fvm.configDir, "vpn-failover.json")
+	// configPath := filepath.Join(fvm.configDir, "vpn-failover.json")
 
 	// Ensure config directory exists
 	if err := os.MkdirAll(fvm.configDir, 0o755); err != nil {
@@ -903,7 +905,7 @@ func printBackupVPNs(backups []BackupVPNConfig) error {
 		}
 
 		healthCheck := "Disabled"
-		if backup.HealthCheck.Enabled {
+		if backup.HealthCheck.Type != "" {
 			healthCheck = fmt.Sprintf("Every %s", backup.HealthCheck.Interval)
 		}
 

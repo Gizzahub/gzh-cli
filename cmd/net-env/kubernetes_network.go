@@ -452,7 +452,7 @@ func (executor *KubernetesCommandExecutor) ExecuteWithTimeout(ctx context.Contex
 	}
 
 	// Create context with timeout
-	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+	_, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	// Execute command using existing DockerCommandExecutor logic

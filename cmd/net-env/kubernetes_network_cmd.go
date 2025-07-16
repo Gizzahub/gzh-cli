@@ -556,7 +556,11 @@ func newK8sNetworkStatusCmd(km *KubernetesNetworkManager) *cobra.Command {
 					if len(policies) == 0 {
 						fmt.Println("  No network policies found.")
 					} else {
-						printNetworkPoliciesTable(policies)
+						interfacePolicies := make([]interface{}, len(policies))
+						for i, p := range policies {
+							interfacePolicies[i] = p
+						}
+						printNetworkPoliciesTable(interfacePolicies)
 					}
 				}
 			} else {
@@ -573,7 +577,11 @@ func newK8sNetworkStatusCmd(km *KubernetesNetworkManager) *cobra.Command {
 				if len(policies) == 0 {
 					fmt.Println("No network policies found.")
 				} else {
-					printNetworkPoliciesTable(policies)
+					interfacePolicies := make([]interface{}, len(policies))
+					for i, p := range policies {
+						interfacePolicies[i] = p
+					}
+					printNetworkPoliciesTable(interfacePolicies)
 				}
 			}
 

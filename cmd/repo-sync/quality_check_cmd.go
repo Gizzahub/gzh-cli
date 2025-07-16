@@ -102,7 +102,7 @@ Examples:
 			}
 
 			// Print results
-			printQualityResults(result, outputFormat)
+			printRepoQualityResults(result, outputFormat)
 
 			// Check if quality meets threshold
 			if result.OverallScore < float64(threshold) {
@@ -400,7 +400,7 @@ func (cqa *CodeQualityAnalyzer) analyzeLanguage(ctx context.Context, language st
 		ComplexityScore: result.Metrics.AvgComplexity,
 		DuplicationRate: result.Metrics.DuplicationRate,
 		TestCoverage:    result.Metrics.TestCoverage,
-		Issues:          result.Issues,
+		Issues:          convertFromCommonIssues(result.Issues),
 		QualityScore:    result.OverallScore,
 	}
 
@@ -409,7 +409,7 @@ func (cqa *CodeQualityAnalyzer) analyzeLanguage(ctx context.Context, language st
 }
 
 // calculateOverallMetrics calculates overall quality metrics
-func (cqa *CodeQualityAnalyzer) calculateOverallMetrics(result *QualityResult) {
+func (cqa *CodeQualityAnalyzer) calculateOverallMetrics(result *RepoQualityResult) {
 	var totalScore float64
 	var totalFiles int
 	var totalLines int
@@ -456,7 +456,7 @@ func (cqa *CodeQualityAnalyzer) calculateOverallMetrics(result *QualityResult) {
 }
 
 // generateRecommendations generates quality improvement recommendations
-func (cqa *CodeQualityAnalyzer) generateRecommendations(result *QualityResult) {
+func (cqa *CodeQualityAnalyzer) generateRecommendations(result *RepoQualityResult) {
 	recommendations := make([]string, 0)
 
 	if result.OverallScore < 60 {
@@ -486,7 +486,7 @@ func (cqa *CodeQualityAnalyzer) generateRecommendations(result *QualityResult) {
 }
 
 // saveReport saves the quality analysis report to a file
-func (cqa *CodeQualityAnalyzer) saveReport(result *QualityResult) error {
+func (cqa *CodeQualityAnalyzer) saveReport(result *RepoQualityResult) error {
 	filename := fmt.Sprintf("quality-report-%s.%s",
 		result.Timestamp.Format("20060102-150405"),
 		getReportExtension(cqa.config.OutputFormat))
@@ -506,6 +506,54 @@ func shouldSkipDir(dirname string) bool {
 		}
 	}
 	return false
+}
+
+// convertToCommonIssues converts local QualityIssue to common.QualityIssue
+func convertToCommonIssues(issues []QualityIssue) []common.QualityIssue {
+	commonIssues := make([]common.QualityIssue, len(issues))
+	for i, issue := range issues {
+		commonIssues[i] = common.QualityIssue{
+			Type:       issue.Type,
+			Severity:   issue.Severity,
+			File:       issue.File,
+			Line:       issue.Line,
+			Column:     issue.Column,
+			Message:    issue.Message,
+			Rule:       issue.Rule,
+			Tool:       issue.Tool,
+			// Suggestion field not available in common.QualityIssue
+		}
+	}
+	return commonIssues
+}
+
+// convertFromCommonIssues converts common.QualityIssue to local QualityIssue
+func convertFromCommonIssues(issues []common.QualityIssue) []QualityIssue {
+	localIssues := make([]QualityIssue, len(issues))
+	for i, issue := range issues {
+		localIssues[i] = QualityIssue{
+			Type:       issue.Type,
+			Severity:   issue.Severity,
+			File:       issue.File,
+			Line:       issue.Line,
+			Column:     issue.Column,
+			Message:    issue.Message,
+			Rule:       issue.Rule,
+			Tool:       issue.Tool,
+			Suggestion: "",  // common.QualityIssue doesn't have Suggestion field
+		}
+	}
+	return localIssues
+}
+
+// getScoreColor returns ANSI color based on score
+func getScoreColor(score float64) string {
+	if score >= 80 {
+		return "\033[32m" // Green
+	} else if score >= 60 {
+		return "\033[33m" // Yellow
+	}
+	return "\033[31m" // Red
 }
 
 func getLanguageFromExtension(ext string) string {
@@ -536,55 +584,56 @@ func getReportExtension(format string) string {
 }
 
 // printQualityResults prints quality analysis results
-func printQualityResults(result *QualityResult, format string) {
+func printRepoQualityResults(result *RepoQualityResult, format string) {
 	fmt.Printf("\n📊 Code Quality Analysis Results\n")
 	fmt.Printf("Repository: %s\n", result.Repository)
 	fmt.Printf("Analysis Time: %s\n", result.Timestamp.Format("2006-01-02 15:04:05"))
 	fmt.Printf("Duration: %v\n\n", result.Duration.Round(time.Millisecond))
 
-	// Overall score
-	fmt.Printf("🎯 Overall Quality Score: %.1f%%", result.OverallScore)
-	if result.OverallScore >= 90 {
-		fmt.Printf(" 🌟 Excellent\n")
-	} else if result.OverallScore >= 80 {
-		fmt.Printf(" ✅ Good\n")
-	} else if result.OverallScore >= 60 {
-		fmt.Printf(" ⚠️  Needs Improvement\n")
-	} else {
-		fmt.Printf(" ❌ Poor\n")
-	}
+	// Overall score with color
+	scoreColor := getScoreColor(result.OverallScore)
+	fmt.Printf("Overall Score: %s%.1f%%%s\n\n", scoreColor, result.OverallScore, "\033[0m")
 
 	// Language breakdown
 	if len(result.LanguageResults) > 0 {
-		fmt.Printf("\n📋 Language Breakdown:\n")
-		for lang, langResult := range result.LanguageResults {
-			fmt.Printf("  %s: %.1f%% (%d files, %d lines)\n",
-				lang, langResult.QualityScore, langResult.FilesAnalyzed, langResult.LinesOfCode)
+		fmt.Println("📝 Language Breakdown:")
+		for lang, lr := range result.LanguageResults {
+			fmt.Printf("  %s: %.1f%% (%d files, %d LOC)\n",
+				lang, lr.QualityScore, lr.FilesAnalyzed, lr.LinesOfCode)
 		}
+		fmt.Println()
 	}
 
-	// Issues summary
-	if len(result.Issues) > 0 {
-		severityCounts := make(map[string]int)
-		for _, issue := range result.Issues {
-			severityCounts[issue.Severity]++
-		}
+	// Metrics summary
+	fmt.Println("📊 Metrics Summary:")
+	fmt.Printf("  Total Files: %d\n", result.Metrics.TotalFiles)
+	fmt.Printf("  Total Lines: %d\n", result.Metrics.TotalLinesOfCode)
+	fmt.Printf("  Avg Complexity: %.2f\n", result.Metrics.AvgComplexity)
+	fmt.Printf("  Test Coverage: %.1f%%\n", result.Metrics.TestCoverage)
+	fmt.Printf("  Duplication: %.1f%%\n\n", result.Metrics.DuplicationRate)
 
-		fmt.Printf("\n⚠️  Issues Found: %d total\n", len(result.Issues))
-		for severity, count := range severityCounts {
-			fmt.Printf("  %s: %d\n", severity, count)
+	// Issues by severity
+	if len(result.Issues) > 0 {
+		fmt.Printf("⚠️  Issues Found: %d\n", len(result.Issues))
+		severityCount := make(map[string]int)
+		for _, issue := range result.Issues {
+			severityCount[issue.Severity]++
 		}
+		for _, sev := range []string{"critical", "major", "minor", "info"} {
+			if count := severityCount[sev]; count > 0 {
+				fmt.Printf("  %s: %d\n", strings.Title(sev), count)
+			}
+		}
+		fmt.Println()
 	}
 
 	// Recommendations
 	if len(result.Recommendations) > 0 {
-		fmt.Printf("\n💡 Recommendations:\n")
+		fmt.Println("💡 Recommendations:")
 		for i, rec := range result.Recommendations {
 			fmt.Printf("  %d. %s\n", i+1, rec)
 		}
 	}
-
-	fmt.Println()
 }
 
 // Additional helper functions for quality analysis
@@ -627,7 +676,7 @@ func (cqa *CodeQualityAnalyzer) mapToCWE(rule string) string {
 }
 
 // generateDashboard generates HTML dashboard for quality metrics
-func (cqa *CodeQualityAnalyzer) generateDashboard(result *QualityResult) error {
+func (cqa *CodeQualityAnalyzer) generateDashboard(result *RepoQualityResult) error {
 	// Load historical data
 	historicalData := cqa.loadHistoricalData()
 
@@ -646,7 +695,7 @@ func (cqa *CodeQualityAnalyzer) generateDashboard(result *QualityResult) error {
 }
 
 // calculateTechnicalDebt calculates technical debt information
-func (cqa *CodeQualityAnalyzer) calculateTechnicalDebt(result *QualityResult) TechnicalDebtInfo {
+func (cqa *CodeQualityAnalyzer) calculateTechnicalDebt(result *RepoQualityResult) TechnicalDebtInfo {
 	// Estimate minutes to fix each issue type
 	issueTimeMap := map[string]int{
 		"critical": 60, // 1 hour per critical issue
@@ -689,7 +738,7 @@ func (cqa *CodeQualityAnalyzer) calculateTechnicalDebt(result *QualityResult) Te
 }
 
 // calculateSecurityScore calculates security score based on security issues
-func (cqa *CodeQualityAnalyzer) calculateSecurityScore(result *QualityResult) float64 {
+func (cqa *CodeQualityAnalyzer) calculateSecurityScore(result *RepoQualityResult) float64 {
 	score := 100.0
 
 	// Count security issues by severity

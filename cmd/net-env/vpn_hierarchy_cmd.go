@@ -372,10 +372,7 @@ func newVPNHierarchyStatusCmd(logger *zap.Logger, configDir string) *cobra.Comma
 
 func createHierarchicalVPNManager(ctx context.Context, logger *zap.Logger, configDir string) (*cloud.HierarchicalVPNManager, error) {
 	// Create base VPN manager
-	baseManager, err := cloud.NewVPNManager(logger, configDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create base VPN manager: %w", err)
-	}
+	baseManager := cloud.NewVPNManager()
 
 	// Create hierarchical manager
 	hierarchicalManager := cloud.NewHierarchicalVPNManager(baseManager)
