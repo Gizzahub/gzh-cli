@@ -1,4 +1,4 @@
-# bash completion V2 for bulk-clone                  -*- shell-script -*-
+# bash completion V2 for gzh-manager                  -*- shell-script -*-
 
 __gzh-manager_debug()
 {
@@ -15,13 +15,13 @@ __gzh-manager_init_completion()
     _get_comp_words_by_ref "$@" cur prev words cword
 }
 
-# This function calls the bulk-clone program to obtain the completion
+# This function calls the gzh-manager program to obtain the completion
 # results and the directive.  It fills the 'out' and 'directive' vars.
 __gzh-manager_get_completion_results() {
     local requestComp lastParam lastChar args
 
     # Prepare the command to request completions for the program.
-    # Calling ${words[0]} instead of directly bulk-clone allows to handle aliases
+    # Calling ${words[0]} instead of directly gzh-manager allows to handle aliases
     args=("${words[@]:1}")
     requestComp="${words[0]} __complete ${args[*]}"
 
@@ -36,7 +36,7 @@ __gzh-manager_get_completion_results() {
         requestComp="${requestComp} ''"
     fi
 
-    # When completing a flag with an = (e.g., bulk-clone -n=<TAB>)
+    # When completing a flag with an = (e.g., gzh-manager -n=<TAB>)
     # bash focuses on the part after the =, so we need to remove
     # the flag part from $cur
     if [[ "${cur}" == -*=* ]]; then

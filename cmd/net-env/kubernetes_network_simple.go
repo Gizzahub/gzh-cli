@@ -195,52 +195,53 @@ func (km *KubernetesNetworkManager) GenerateNetworkPolicy(namespace string, conf
 }
 
 // // ExecuteWithTimeout executes a kubectl command with timeout
-// func (executor *KubernetesCommandExecutor) ExecuteWithTimeout(ctx context.Context, command string, timeout time.Duration) (*KubernetesCommandResult, error) {
-// 	// Check cache first (for read-only commands)
-// 	if strings.Contains(command, "get") && !strings.Contains(command, "watch") {
-// 		if cached := executor.getCachedResult(command); cached != nil {
-// 			return cached, nil
-// 		}
-// 	}
-// 
-// 	// Create context with timeout
-// 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
-// 	defer cancel()
-// 
-// 	// Parse command
-// 	parts := strings.Fields(command)
-// 	if len(parts) == 0 {
-// 		return nil, fmt.Errorf("empty command")
-// 	}
-// 
-// 	start := time.Now()
-// 	cmd := exec.CommandContext(timeoutCtx, parts[0], parts[1:]...)
-// 	output, err := cmd.CombinedOutput()
-// 	duration := time.Since(start)
-// 
-// 	result := &KubernetesCommandResult{
-// 		Output:   string(output),
-// 		Duration: duration,
-// 		CachedAt: time.Now(),
-// 	}
-// 
-// 	if err != nil {
-// 		result.Error = err.Error()
-// 		if exitError, ok := err.(*exec.ExitError); ok {
-// 			result.ExitCode = exitError.ExitCode()
-// 		} else {
-// 			result.ExitCode = 1
-// 		}
-// 	}
-// 
-// 	// Cache read-only command results for 30 seconds
-// 	if strings.Contains(command, "get") && !strings.Contains(command, "watch") {
-// 		executor.setCachedResult(command, result)
-// 	}
-// 
-// 	return result, nil
-// }
-// 
+//
+//	func (executor *KubernetesCommandExecutor) ExecuteWithTimeout(ctx context.Context, command string, timeout time.Duration) (*KubernetesCommandResult, error) {
+//		// Check cache first (for read-only commands)
+//		if strings.Contains(command, "get") && !strings.Contains(command, "watch") {
+//			if cached := executor.getCachedResult(command); cached != nil {
+//				return cached, nil
+//			}
+//		}
+//
+//		// Create context with timeout
+//		timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+//		defer cancel()
+//
+//		// Parse command
+//		parts := strings.Fields(command)
+//		if len(parts) == 0 {
+//			return nil, fmt.Errorf("empty command")
+//		}
+//
+//		start := time.Now()
+//		cmd := exec.CommandContext(timeoutCtx, parts[0], parts[1:]...)
+//		output, err := cmd.CombinedOutput()
+//		duration := time.Since(start)
+//
+//		result := &KubernetesCommandResult{
+//			Output:   string(output),
+//			Duration: duration,
+//			CachedAt: time.Now(),
+//		}
+//
+//		if err != nil {
+//			result.Error = err.Error()
+//			if exitError, ok := err.(*exec.ExitError); ok {
+//				result.ExitCode = exitError.ExitCode()
+//			} else {
+//				result.ExitCode = 1
+//			}
+//		}
+//
+//		// Cache read-only command results for 30 seconds
+//		if strings.Contains(command, "get") && !strings.Contains(command, "watch") {
+//			executor.setCachedResult(command, result)
+//		}
+//
+//		return result, nil
+//	}
+//
 // GetNamespaceNetworkPolicies gets all network policies in a namespace
 func (km *KubernetesNetworkManager) GetNamespaceNetworkPolicies(namespace string) ([]map[string]interface{}, error) {
 	cmd := fmt.Sprintf("kubectl get networkpolicies -n %s -o json", namespace)

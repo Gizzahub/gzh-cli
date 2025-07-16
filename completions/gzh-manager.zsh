@@ -1,6 +1,6 @@
-#compdef bulk-clone
+#compdef gzh-manager
 
-# zsh completion for bulk-clone                  -*- shell-script -*-
+# zsh completion for gzh-manager                  -*- shell-script -*-
 
 __gzh-manager_debug()
 {

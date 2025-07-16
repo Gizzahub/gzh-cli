@@ -151,7 +151,7 @@ type QualityTool interface {
 // QualityResult represents the result of quality analysis for a repository (legacy alias)
 type QualityResult = common.QualityResult
 
-// RepoQualityResult represents the result of quality analysis for a repository  
+// RepoQualityResult represents the result of quality analysis for a repository
 type RepoQualityResult struct {
 	Repository        string                      `json:"repository"`
 	Timestamp         time.Time                   `json:"timestamp"`
@@ -513,14 +513,14 @@ func convertToCommonIssues(issues []QualityIssue) []common.QualityIssue {
 	commonIssues := make([]common.QualityIssue, len(issues))
 	for i, issue := range issues {
 		commonIssues[i] = common.QualityIssue{
-			Type:       issue.Type,
-			Severity:   issue.Severity,
-			File:       issue.File,
-			Line:       issue.Line,
-			Column:     issue.Column,
-			Message:    issue.Message,
-			Rule:       issue.Rule,
-			Tool:       issue.Tool,
+			Type:     issue.Type,
+			Severity: issue.Severity,
+			File:     issue.File,
+			Line:     issue.Line,
+			Column:   issue.Column,
+			Message:  issue.Message,
+			Rule:     issue.Rule,
+			Tool:     issue.Tool,
 			// Suggestion field not available in common.QualityIssue
 		}
 	}
@@ -540,7 +540,7 @@ func convertFromCommonIssues(issues []common.QualityIssue) []QualityIssue {
 			Message:    issue.Message,
 			Rule:       issue.Rule,
 			Tool:       issue.Tool,
-			Suggestion: "",  // common.QualityIssue doesn't have Suggestion field
+			Suggestion: "", // common.QualityIssue doesn't have Suggestion field
 		}
 	}
 	return localIssues

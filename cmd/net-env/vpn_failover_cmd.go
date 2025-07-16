@@ -430,7 +430,7 @@ func newVPNFailoverHealthConfigCmd(logger *zap.Logger, configDir string) *cobra.
 			}
 
 			config := HealthCheckConfig{
-				Type:     "ping", 
+				Type:     "ping",
 				Interval: interval,
 				Timeout:  timeout,
 				Endpoint: endpoint,

@@ -424,17 +424,17 @@ func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent
 	if filter == nil {
 		return true, nil
 	}
-	
+
 	// Check organization filter
 	if filter.Organization != "" && event.Organization != filter.Organization {
 		return false, nil
 	}
-	
+
 	// Check repository filter
 	if filter.Repository != "" && event.Repository != filter.Repository {
 		return false, nil
 	}
-	
+
 	// Check event type filter
 	if len(filter.EventTypes) > 0 {
 		found := false
@@ -448,7 +448,7 @@ func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent
 			return false, nil
 		}
 	}
-	
+
 	// Check action filter
 	if len(filter.Actions) > 0 && event.Action != "" {
 		found := false
@@ -462,19 +462,19 @@ func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent
 			return false, nil
 		}
 	}
-	
+
 	// Check sender filter
 	if filter.Sender != "" && event.Sender != filter.Sender {
 		return false, nil
 	}
-	
+
 	// Check time range filter
 	if filter.TimeRange != nil {
 		if event.Timestamp.Before(filter.TimeRange.Start) || event.Timestamp.After(filter.TimeRange.End) {
 			return false, nil
 		}
 	}
-	
+
 	return true, nil
 }
 

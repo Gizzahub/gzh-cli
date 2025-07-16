@@ -11,7 +11,7 @@ import (
 type PolicyViolationType string
 
 const (
-	ViolationTypeMissingEcosystem   PolicyViolationType = "missing_ecosystem"
+	ViolationTypeMissingEcosystem    PolicyViolationType = "missing_ecosystem"
 	ViolationTypeInvalidSchedule     PolicyViolationType = "invalid_schedule"
 	ViolationTypeMissingDirectory    PolicyViolationType = "missing_directory"
 	ViolationTypeSecurityUpdates     PolicyViolationType = "security_updates"
@@ -30,9 +30,11 @@ type ViolationStatistics struct {
 }
 
 // Type aliases for Dependabot-specific types
-type DependabotViolationStatistics = ViolationStatistics
-type DependabotPolicyViolationType = PolicyViolationType
-type PolicyViolation = DependabotPolicyViolation
+type (
+	DependabotViolationStatistics = ViolationStatistics
+	DependabotPolicyViolationType = PolicyViolationType
+	PolicyViolation               = DependabotPolicyViolation
+)
 
 // DependabotPolicyManager manages organization-wide Dependabot policies
 type DependabotPolicyManager struct {
@@ -449,7 +451,7 @@ func (pm *DependabotPolicyManager) EvaluateRepositoryCompliance(ctx context.Cont
 
 	// Get policy for evaluation (we validated it exists above)
 	policy, _ := pm.GetPolicy(ctx, policyID)
-	
+
 	// Perform evaluation
 	result := pm.performPolicyEvaluation(policy, config, status, organization, repository)
 
@@ -497,7 +499,7 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 
 	// Get policy for execution
 	policy, _ := pm.GetPolicy(ctx, policyID)
-	
+
 	// Execute bulk operation asynchronously
 	go pm.executeBulkOperation(ctx, operation, policy)
 

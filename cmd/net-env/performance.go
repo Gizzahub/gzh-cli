@@ -201,14 +201,14 @@ func (cp *CommandPool) GetCacheStats() map[string]interface{} {
 // 	lastConfigTime time.Time
 // 	configTTL      time.Duration
 // }
-// 
+//
 // // DNSConfig represents DNS configuration
 // type DNSConfig struct {
 // 	Servers   []string
 // 	Interface string
 // 	Method    string
 // }
-// 
+//
 // // NewOptimizedDNSManager creates a new optimized DNS manager
 // func NewOptimizedDNSManager() *OptimizedDNSManager {
 // 	return &OptimizedDNSManager{
@@ -216,16 +216,16 @@ func (cp *CommandPool) GetCacheStats() map[string]interface{} {
 // 		configTTL:   15 * time.Second,
 // 	}
 // }
-// 
+//
 // // Close shuts down the DNS manager
 // func (odm *OptimizedDNSManager) Close() {
 // 	odm.commandPool.Close()
 // }
-// 
+//
 // // SetDNSServersBatch sets DNS servers efficiently with minimal system calls
 // func (odm *OptimizedDNSManager) SetDNSServersBatch(configs []DNSConfig) error {
 // 	commands := make([]Command, 0, len(configs))
-// 
+//
 // 	for _, config := range configs {
 // 		if config.Interface == "" {
 // 			// Auto-detect interface efficiently using cached route info
@@ -233,7 +233,7 @@ func (cp *CommandPool) GetCacheStats() map[string]interface{} {
 // 				config.Interface = iface
 // 			}
 // 		}
-// 
+//
 // 		args := append([]string{"dns", config.Interface}, config.Servers...)
 // 		commands = append(commands, Command{
 // 			Name: "resolvectl",
@@ -241,31 +241,31 @@ func (cp *CommandPool) GetCacheStats() map[string]interface{} {
 // 			TTL:  10 * time.Second,
 // 		})
 // 	}
-// 
+//
 // 	results := odm.commandPool.ExecuteBatch(commands)
-// 
+//
 // 	for i, result := range results {
 // 		if result.Error != nil {
 // 			return fmt.Errorf("failed to set DNS for interface '%s': %w", configs[i].Interface, result.Error)
 // 		}
 // 	}
-// 
+//
 // 	return nil
 // }
-// 
+//
 // // getCachedDefaultInterface returns the cached default network interface
 // func (odm *OptimizedDNSManager) getCachedDefaultInterface() string {
 // 	result := odm.commandPool.ExecuteCommand("ip", "route", "get", "1.1.1.1")
 // 	if result.Error != nil {
 // 		return ""
 // 	}
-// 
+//
 // 	fields := strings.Fields(string(result.Output))
 // 	for i, field := range fields {
 // 		if field == "dev" && i+1 < len(fields) {
 // 			return fields[i+1]
 // 		}
 // 	}
-// 
+//
 // 	return ""
 // }

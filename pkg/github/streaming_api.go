@@ -386,7 +386,7 @@ func (sc *StreamingClient) waitForRateLimit(ctx context.Context, buffer int) err
 
 	if remaining <= buffer {
 		waitDuration := time.Until(reset)
-		
+
 		if waitDuration <= 0 {
 			return nil
 		}
