@@ -23,7 +23,6 @@ graph TB
         CLI[CLI Interface]
         ROOT[Root Command]
         BULK[Bulk Clone]
-        MONITOR[Monitoring]
         IDE[IDE Management]
         NETENV[Network Environment]
         DEVENV[Development Environment]
@@ -56,7 +55,6 @@ graph TB
 
     CLI --> ROOT
     ROOT --> BULK
-    ROOT --> MONITOR
     ROOT --> IDE
     ROOT --> NETENV
     ROOT --> DEVENV
@@ -96,7 +94,6 @@ The CLI layer provides the user interface and command-line interface functionali
 
 - **Root Command**: Main entry point that coordinates all sub-commands
 - **Bulk Clone**: Multi-platform repository cloning operations
-- **Monitoring**: System monitoring and observability features
 - **IDE Management**: JetBrains IDE settings synchronization
 - **Network Environment**: Network configuration and VPN management
 - **Development Environment**: Development tool and environment management
@@ -130,7 +127,6 @@ gzh-manager-go/
 ├── cmd/                    # CLI commands and user interface
 │   ├── root.go            # Main CLI entry point
 │   ├── bulk-clone/        # Repository bulk cloning
-│   ├── monitoring/        # System monitoring
 │   ├── ide/              # IDE management
 │   ├── net-env/          # Network environment
 │   └── dev-env/          # Development environment
@@ -217,7 +213,7 @@ type FetchStrategy struct{}
 
 ### 3. Observer Pattern
 
-Used in the monitoring and event system:
+Used in the event system:
 
 ```go
 type EventBus interface {
@@ -431,14 +427,12 @@ graph TB
 3. **Memory Management**
    - Object pooling for frequent allocations
    - Garbage collection tuning
-   - Memory usage monitoring
 
 4. **Network Optimization**
    - Request batching and deduplication
    - HTTP/2 connection reuse
    - Retry mechanisms with exponential backoff
 
-## Monitoring and Observability
 
 ### Metrics Collection
 
@@ -458,7 +452,6 @@ graph LR
 
     subgraph "Storage & Analysis"
         TSDB[Time Series DB]
-        DASHBOARDS[Dashboards]
         NOTIFICATIONS[Notifications]
     end
 
@@ -470,7 +463,6 @@ graph LR
     PROMETHEUS --> ALERTS
 
     GRAFANA --> TSDB
-    GRAFANA --> DASHBOARDS
     ALERTS --> NOTIFICATIONS
 ```
 
@@ -593,7 +585,6 @@ graph TB
 
 - **Web Interface**: Browser-based management console
 - **Real-time Updates**: WebSocket-based progress updates
-- **Mobile Support**: Mobile-friendly monitoring interfaces
 
 ---
 

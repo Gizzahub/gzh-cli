@@ -213,7 +213,7 @@ providers:
         clone_dir: "$HOME/repos/gitlab/mygroup"
         recursive: true
 
-# IDE monitoring configuration
+# IDE configuration
 ide:
   enabled: true
   watch_directories:
@@ -304,7 +304,7 @@ dev_env:
 # Network environment configuration
 net_env:
   enabled: true
-  wifi_monitoring:
+  wifi_detection:
     enabled: true
     interval: 5s
     known_networks:
@@ -496,8 +496,8 @@ gz bulk-clone --strategy pull
 Uses the `ide` section:
 
 ```bash
-# Enable IDE monitoring
-gz ide monitor
+# Enable IDE sync
+gz ide sync
 
 # Sync IDE settings
 gz ide sync --product IntelliJ
@@ -520,7 +520,7 @@ gz dev-env restore docker
 Uses the `net_env` section:
 
 ```bash
-# Start network monitoring daemon
+# Start network environment daemon
 gz net-env daemon start
 
 # Show current network status
@@ -545,7 +545,7 @@ gz ssh-config add github
 2. **Version Control**: Include configuration in version control (without secrets)
 3. **Backup Configuration**: Regular backups of configuration files
 4. **Validate Configuration**: Use `gz config validate` to check configuration
-5. **Monitor Changes**: Enable configuration file monitoring for automatic reloads
+5. **Watch Changes**: Enable configuration file watching for automatic reloads
 6. **Documentation**: Document custom configurations and overrides
 
 ## Configuration Management Commands

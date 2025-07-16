@@ -108,7 +108,6 @@ gz net-env deploy --k8s-namespace production
 | **네트워크** | `gz net-env` | 네트워크 환경 관리 |
 | **개발 환경** | `gz dev-env` | 클라우드/개발 환경 |
 | **설정** | `gz config` | 전역 설정 관리 |
-| **모니터링** | `gz monitoring` | 성능 및 로그 모니터링 |
 
 ## 🔗 통합 워크플로우
 

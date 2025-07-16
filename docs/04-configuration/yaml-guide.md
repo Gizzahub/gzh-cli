@@ -233,9 +233,6 @@ security:
   require_ssl: true
   audit_log: "/var/log/gzh/audit.log"
   
-monitoring:
-  prometheus:
-    enabled: true
     port: 9090
   logging:
     level: "info"

@@ -18,7 +18,6 @@ build: ## build golang binary
 	@echo "Building $(executablename)..."
 	@go build -ldflags "-X main.version=$(shell git describe --always --abbrev=0 --tags)" -o $(executablename)
 
-
 .PHONY: install
 install: build ## install golang binary
 #	@go install -ldflags "-X main.version=$(shell git describe --always --abbrev=0 --tags)"
@@ -37,7 +36,7 @@ PHONY: test
 test: clean ## display test coverage
 	go test --cover -parallel=1 -v -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out | sort -rnk3
-	
+
 PHONY: clean
 clean: ## clean up environment
 	rm -rf coverage.out dist/ $(executablename)

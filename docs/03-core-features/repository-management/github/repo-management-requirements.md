@@ -242,7 +242,7 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 - **GitOps**: Git-based configuration management workflow
 - **Webhook Integration**: Automatic configuration updates on repository creation
 
-#### 7.2 Monitoring and Alerting
+#### 7.2 Alerting and Notifications
 - **Configuration Drift Detection**: Alert when repositories drift from policy
 - **Compliance Reporting**: Regular compliance status reports
 - **Change Notifications**: Notify on configuration changes
@@ -332,7 +332,7 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 #### 12.3 Operational Risks
 - **Service Disruption**: Gradual rollout and rollback capabilities
 - **User Adoption**: Comprehensive documentation and training
-- **Maintenance Overhead**: Automated testing and monitoring
+- **Maintenance Overhead**: Automated testing and alerts
 
 ### 13. Alternative Solutions Comparison
 

@@ -93,14 +93,12 @@
   - [📋 릴리스 준비 체크리스트](07-deployment/release-preparation-checklist.md)
   - [📦 릴리스 가이드](07-deployment/releases.md)
   - [📄 v1.0.0 릴리스 노트](07-deployment/release-notes-v1.0.0.md)
-  - [🌐 WebSocket 가이드](07-deployment/websocket-guide.md)
   - [🔒 보안 스캐닝](07-deployment/security-scanning.md)
 
 ### 🔗 8. 외부 통합
 - [📁 08-integrations/](08-integrations/)
   - [🏗️ Terraform 대안 비교](08-integrations/terraform-alternative-comparison.md)
   - [📊 Terraform vs gz 예제](08-integrations/terraform-vs-gz-examples.md)
-  - [📊 웹훅 대시보드](08-integrations/webhook-dashboard.md)
   - [🪝 웹훅 관리 가이드](08-integrations/webhook-management-guide.md)
 
 ### 🏢 9. 엔터프라이즈 기능

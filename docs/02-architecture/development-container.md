@@ -346,11 +346,10 @@ Pre-configured debug scenarios:
 1. **Debug GZH CLI** - Debug main application with `--help`
 2. **Debug GZH Bulk Clone** - Debug bulk clone with sample config
 3. **Debug GZH Config Validate** - Debug configuration validation
-4. **Debug GZH Monitoring** - Debug monitoring server
-5. **Debug GZH Web Dashboard** - Debug web server
-6. **Debug Current Go File** - Debug the currently open file
-7. **Debug Go Test** - Debug tests in current package
-8. **Attach to Process** - Attach to running process
+4. **Debug GZH Web Dashboard** - Debug web server
+5. **Debug Current Go File** - Debug the currently open file
+6. **Debug Go Test** - Debug tests in current package
+7. **Attach to Process** - Attach to running process
 
 ## File Mounting
 

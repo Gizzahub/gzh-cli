@@ -4,7 +4,7 @@ This document describes the configuration hot-reloading functionality implemente
 
 ## Overview
 
-Configuration hot-reloading allows the application to automatically detect and reload configuration file changes without requiring a restart. This feature is built on top of the centralized configuration service and uses file system notifications for efficient monitoring.
+Configuration hot-reloading allows the application to automatically detect and reload configuration file changes without requiring a restart. This feature is built on top of the centralized configuration service and uses file system notifications for efficient watching.
 
 ## Architecture
 
@@ -88,7 +88,7 @@ gz config watch --interval 10s
 
 #### Watch Command Features
 
-- **Real-time Monitoring**: Shows configuration changes as they happen
+- **Real-time Watching**: Shows configuration changes as they happen
 - **Validation Feedback**: Displays validation errors and warnings immediately
 - **Status Updates**: Periodic status reports showing uptime and change count
 - **Graceful Shutdown**: Handles Ctrl+C and system signals properly
@@ -98,7 +98,7 @@ gz config watch --interval 10s
 
 ### Error Handling
 
-- **Temporary Invalid Configurations**: During editing, configurations may be temporarily invalid. The watcher continues monitoring and reports errors without stopping.
+- **Temporary Invalid Configurations**: During editing, configurations may be temporarily invalid. The watcher continues watching and reports errors without stopping.
 - **File System Errors**: Watcher errors are logged but don't stop the watching process
 - **Validation Errors**: Invalid configurations are loaded but marked with validation errors
 

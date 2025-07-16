@@ -223,7 +223,7 @@ CentralizedLoggerBridge provides a seamless bridge between StructuredLogger and 
 - Automatic conversion between structured and centralized log formats
 - Error handling with fallback to structured logging
 - Runtime enable/disable capabilities
-- Performance monitoring and statistics
+- Performance statistics and metrics
 - Graceful shutdown with buffer draining
 
 ### Methods
@@ -233,7 +233,7 @@ CentralizedLoggerBridge provides a seamless bridge between StructuredLogger and 
 ```go
 func NewCentralizedLoggerBridge(
     structuredLogger *StructuredLogger,
-    centralizedLogger *monitoring.CentralizedLogger,
+    centralizedLogger *logging.CentralizedLogger,
     config *CentralizedBridgeConfig,
 ) (*CentralizedLoggerBridge, error)
 ```
@@ -296,7 +296,7 @@ EnhancedStructuredLogger extends StructuredLogger with centralized logging integ
 ```go
 func NewEnhancedStructuredLogger(
     config *StructuredLoggerConfig,
-    centralizedLogger *monitoring.CentralizedLogger,
+    centralizedLogger *logging.CentralizedLogger,
     bridgeConfig *CentralizedBridgeConfig,
 ) (*EnhancedStructuredLogger, error)
 ```
@@ -318,7 +318,7 @@ LogLevelManager provides advanced log level management with dynamic rule evaluat
 **Key Features:**
 - Dynamic rule evaluation based on conditions
 - Profile-based configuration management
-- HTTP API for runtime control and monitoring
+- HTTP API for runtime control
 - Signal-based configuration reloading
 - Adaptive sampling based on system performance
 - Performance metrics collection and analysis
@@ -368,7 +368,7 @@ type Profiler struct {
 }
 ```
 
-Profiler provides comprehensive profiling capabilities for performance analysis, memory debugging, and concurrency monitoring.
+Profiler provides comprehensive profiling capabilities for performance analysis, memory debugging, and concurrency analysis.
 
 **Features:**
 - Multiple profiling types (CPU, memory, goroutine, block, mutex)
@@ -452,7 +452,7 @@ type IntegratedLoggingConfig struct {
     StructuredConfig *StructuredLoggerConfig `json:"structured" yaml:"structured"`
     
     // Centralized logging specific
-    CentralizedConfig *monitoring.CentralizedLoggingConfig `json:"centralized" yaml:"centralized"`
+    CentralizedConfig *logging.CentralizedLoggingConfig `json:"centralized" yaml:"centralized"`
     
     // Integration settings
     EnableCentralizedForwarding bool                     `json:"enable_centralized_forwarding" yaml:"enable_centralized_forwarding"`

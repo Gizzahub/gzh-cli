@@ -141,7 +141,7 @@ To add custom metrics to the report:
    - Use JSON format for automated processing
    - Use CSV format for spreadsheet analysis
 
-3. **Compliance Monitoring**
+3. **Compliance Tracking**
    - Set up automated alerts for compliance drops
    - Review violation details regularly
    - Update policies based on audit findings

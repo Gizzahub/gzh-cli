@@ -419,6 +419,6 @@ docker exec <container> ping <other-container>
 
 - Support for Docker Swarm network configurations
 - Integration with Kubernetes NetworkPolicies
-- Network traffic monitoring and analysis
+- Network traffic analysis and reporting
 - Automatic network topology visualization
 - Integration with service mesh solutions (Istio, Linkerd)

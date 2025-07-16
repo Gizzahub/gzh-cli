@@ -269,7 +269,7 @@ If you discover a security vulnerability:
 3. Include details about the vulnerability
 4. Provide steps to reproduce if possible
 
-## Metrics and Monitoring
+## Metrics and Reporting
 
 ### Security Metrics
 
@@ -280,10 +280,10 @@ Track these metrics over time:
 - Coverage of security scanning
 - False positive rate
 
-### Integration with Monitoring
+### Integration with Metrics
 
 ```bash
-# Generate metrics for monitoring
+# Generate metrics for reporting
 gosec -fmt=json ./... | jq '.Issues | length'
 gosec -fmt=json ./... | jq '.Issues | group_by(.severity) | map({severity: .[0].severity, count: length})'
 ```

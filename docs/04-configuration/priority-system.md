@@ -193,7 +193,7 @@ Different commands may have different configuration sections but follow the same
 ### net-env Command
 - CLI flags: `--wifi-monitor`, `--auto-switch`
 - Environment: `GZH_WIFI_MONITOR`
-- Config: `net_env.enabled`, `net_env.wifi_monitoring`
+- Config: `net_env.enabled`, `net_env.wifi_detection`
 
 ## Debugging Configuration Priority
 

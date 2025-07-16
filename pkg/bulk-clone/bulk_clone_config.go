@@ -11,7 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// >>>>>>>>>> default >>>>>>>>>>
 type bulkCloneDefault struct {
 	Protocol string                 `yaml:"protocol" validate:"required,oneof=http https ssh"`
 	Github   bulkCloneDefaultGithub `yaml:"github"`
@@ -33,8 +32,6 @@ type bulkCloneDefaultGitlab struct {
 	Protocol  string `yaml:"protocol"`
 	GroupName string `yaml:"group_name"`
 }
-
-// <<<<<<<<<< default <<<<<<<<<<
 
 type BulkCloneGithub struct {
 	RootPath string `yaml:"root_path" validate:"required"`

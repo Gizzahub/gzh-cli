@@ -22,8 +22,6 @@ Access via the Debug panel (`Ctrl+Shift+D`) or Command Palette (`F5`):
 | **Debug GZH CLI** | Main application help | `--help` |
 | **Debug GZH Bulk Clone** | Bulk clone with sample config | `bulk-clone --config samples/bulk-clone-simple.yaml --dry-run` |
 | **Debug GZH Config Validate** | Configuration validation | `bulk-clone validate --config samples/bulk-clone-example.yaml` |
-| **Debug GZH Monitoring** | Monitoring server | `monitoring start --port 8080` |
-| **Debug GZH Web Dashboard** | Web server | `serve --port 8080 --static-dir web/build` |
 | **Debug Current Go File** | Debug the currently open file | N/A |
 | **Debug Go Test (Current Package)** | Test debugging | Test files in current directory |
 | **Debug Go Test (Current File)** | Specific test function | Prompts for test name |
@@ -85,7 +83,6 @@ Pre-configured run configurations in `.idea/runConfigurations/`:
 
 - **Debug GZH CLI** - Main application debugging
 - **Debug GZH Bulk Clone** - Bulk clone functionality
-- **Debug GZH Monitoring** - Monitoring server
 - **Build and Test** - Makefile-based build and test
 - **Go Tests** - All Go tests with proper environment
 
@@ -193,8 +190,6 @@ Convenience scripts in `scripts/debug/`:
 # Debug with specific command
 ./scripts/debug/debug-cli.sh bulk-clone --config samples/bulk-clone-simple.yaml
 
-# Debug monitoring
-./scripts/debug/debug-cli.sh monitoring start --port 8080
 ```
 
 **Features:**
@@ -337,7 +332,6 @@ dlv debug main.go -- bulk-clone --help
 
 # Specific commands
 dlv debug main.go -- bulk-clone --config samples/bulk-clone-simple.yaml --dry-run
-dlv debug main.go -- monitoring start --port 8080
 dlv debug main.go -- serve --port 8080
 ```
 

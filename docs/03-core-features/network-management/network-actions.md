@@ -4,7 +4,7 @@ The `gz net-env actions` command provides concrete implementations for common ne
 
 ## Overview
 
-Network actions allow you to automate VPN connections, DNS configuration, proxy settings, and hosts file management. This is particularly useful when combined with WiFi monitoring to automatically configure your network environment based on the current network.
+Network actions allow you to automate VPN connections, DNS configuration, proxy settings, and hosts file management. This is particularly useful when combined with WiFi detection to automatically configure your network environment based on the current network.
 
 ## Usage
 
@@ -182,9 +182,9 @@ gz net-env actions config validate
 
 Validates the configuration file syntax and structure.
 
-## Integration with WiFi Monitoring
+## Integration with WiFi Detection
 
-Network actions can be integrated with WiFi monitoring to automatically execute actions when network changes occur. See the WiFi monitoring documentation for details on how to configure actions to run automatically.
+Network actions can be integrated with WiFi detection to automatically execute actions when network changes occur. See the WiFi detection documentation for details on how to configure actions to run automatically.
 
 Example WiFi configuration with network actions:
 

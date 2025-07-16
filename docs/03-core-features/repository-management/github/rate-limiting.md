@@ -132,5 +132,5 @@ go test ./pkg/github/... -v
 
 1. **Predictive Waiting**: Pre-emptively slow down when approaching limits
 2. **Multi-Account Support**: Rotate between multiple tokens
-3. **Metrics Collection**: Export rate limit metrics for monitoring
+3. **Metrics Collection**: Export rate limit metrics for reporting
 4. **Conditional Requests**: Use ETags to reduce API calls
