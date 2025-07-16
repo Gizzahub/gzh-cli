@@ -1,3 +1,14 @@
+> ⚠️ 이 QA는 자동으로 검증할 수 없습니다.  
+> 아래 절차에 따라 수동으로 확인해야 합니다.
+
+### ✅ 수동 테스트 지침
+- [ ] 실제 환경에서 테스트 수행
+- [ ] 외부 서비스 연동 확인
+- [ ] 사용자 시나리오 검증
+- [ ] 결과 문서화
+
+---
+
 # GitHub Organization Management - Agent-Friendly Test Commands
 
 ## Test 1: Repository Configuration Diff Tool

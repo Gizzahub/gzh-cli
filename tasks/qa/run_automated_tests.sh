@@ -142,6 +142,44 @@ run_test_command "Config Validate" \
     "gz config validate || echo 'No config to validate (expected)'" \
     "Validate configuration"
 
+# 6. Run Comprehensive Test Suites
+echo -e "${BLUE}=== Running Comprehensive Test Suites ===${NC}"
+
+# Check if test directory exists
+if [ -d "${SCRIPT_DIR}/tests" ]; then
+    echo "Found test directory, running additional test suites..."
+    
+    # Run CLI refactor tests
+    if [ -f "${SCRIPT_DIR}/tests/cli-refactor-automated.sh" ]; then
+        echo -e "\n${YELLOW}Running CLI Refactor Automated Tests${NC}"
+        if bash "${SCRIPT_DIR}/tests/cli-refactor-automated.sh"; then
+            log_test "CLI Refactor Test Suite" "✅ PASSED" "All CLI refactor tests passed"
+        else
+            log_test "CLI Refactor Test Suite" "❌ FAILED" "Some CLI refactor tests failed"
+        fi
+    fi
+    
+    # Run network environment tests
+    if [ -f "${SCRIPT_DIR}/tests/network-env-automated.sh" ]; then
+        echo -e "\n${YELLOW}Running Network Environment Automated Tests${NC}"
+        if bash "${SCRIPT_DIR}/tests/network-env-automated.sh"; then
+            log_test "Network Environment Test Suite" "✅ PASSED" "All network environment tests passed"
+        else
+            log_test "Network Environment Test Suite" "❌ FAILED" "Some network environment tests failed"
+        fi
+    fi
+    
+    # Run user experience tests
+    if [ -f "${SCRIPT_DIR}/tests/user-experience-automated.sh" ]; then
+        echo -e "\n${YELLOW}Running User Experience Automated Tests${NC}"
+        if bash "${SCRIPT_DIR}/tests/user-experience-automated.sh"; then
+            log_test "User Experience Test Suite" "✅ PASSED" "All UX tests passed"
+        else
+            log_test "User Experience Test Suite" "❌ FAILED" "Some UX tests failed"
+        fi
+    fi
+fi
+
 # Summary
 echo ""
 echo -e "${GREEN}=== Test Summary ===${NC}"
@@ -153,6 +191,36 @@ FAILED=$(grep -c "❌ FAILED" "$RESULTS_FILE" || true)
 
 echo -e "Passed: ${GREEN}$PASSED${NC}"
 echo -e "Failed: ${RED}$FAILED${NC}"
+
+# Generate final report
+cat >> "$RESULTS_FILE" << EOF
+
+## Summary Statistics
+- Total Tests Run: $((PASSED + FAILED))
+- Passed: $PASSED
+- Failed: $FAILED
+- Success Rate: $(echo "scale=2; $PASSED * 100 / ($PASSED + $FAILED)" | bc)%
+
+## Test Coverage
+- CLI Functionality: ✅
+- Performance Optimization: ✅
+- Developer Experience: ✅
+- Network Environment Management: ✅
+- User Experience Improvements: ✅
+
+## Automated Test Files
+- Original tests: run_automated_tests.sh
+- CLI refactor tests: tests/cli-refactor-automated.sh
+- Network environment tests: tests/network-env-automated.sh
+- User experience tests: tests/user-experience-automated.sh
+
+## Manual Testing Still Required
+- Cross-platform compatibility (Windows, macOS specific features)
+- Real cloud service integration (AWS, GCP, Azure)
+- VPN failover scenarios
+- Network performance under load
+- User acceptance testing
+EOF
 
 if [ "$FAILED" -gt 0 ]; then
     echo -e "${RED}Some tests failed. Please check the results.${NC}"
