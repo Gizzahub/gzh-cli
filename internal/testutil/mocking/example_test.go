@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -134,7 +135,7 @@ func TestMockFactoryUsage(t *testing.T) {
 
 		// Test HTTP operations
 		ctx := context.Background()
-		resp, err := mockHTTP.Get(ctx, nil)
+		resp, err := mockHTTP.Get(ctx, "https://api.github.com/test")
 
 		require.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
@@ -147,19 +148,21 @@ func TestMockFactoryUsage(t *testing.T) {
 
 		// Test git operations
 		ctx := context.Background()
-		err := mockGit.Clone(ctx, "https://github.com/test/repo.git", "/tmp/test")
+		_, err := mockGit.Clone(ctx, git.CloneOptions{
+			URL:  "https://github.com/test/repo.git",
+			Path: "/tmp/test",
+		})
 		require.NoError(t, err)
 
-		err = mockGit.Pull(ctx, "/tmp/test")
+		_, err = mockGit.Pull(ctx, "/tmp/test", git.PullOptions{Remote: "origin"})
 		require.NoError(t, err)
 
 		branch, err := mockGit.GetCurrentBranch(ctx, "/tmp/test")
 		require.NoError(t, err)
 		assert.Equal(t, "main", branch)
 
-		isClean, err := mockGit.IsClean(ctx, "/tmp/test")
-		require.NoError(t, err)
-		assert.True(t, isClean)
+		isRepo := mockGit.IsRepository(ctx, "/tmp/test")
+		assert.True(t, isRepo)
 	})
 }
 

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -14,6 +16,40 @@ type Logger interface {
 	Info(msg string, args ...interface{})
 	Warn(msg string, args ...interface{})
 	Error(msg string, args ...interface{})
+}
+
+// FileEvent represents a file system change event (alias for WatchEvent)
+type FileEvent = WatchEvent
+
+// FileImpl implements the File interface
+type FileImpl struct {
+	*os.File
+}
+
+// Name implements File interface
+func (f *FileImpl) Name() string {
+	return f.File.Name()
+}
+
+// Stat implements File interface
+func (f *FileImpl) Stat() (FileInfo, error) {
+	info, err := f.File.Stat()
+	if err != nil {
+		return FileInfo{}, err
+	}
+	return convertFileInfo(info), nil
+}
+
+// convertFileInfo converts os.FileInfo to our FileInfo
+func convertFileInfo(info os.FileInfo) FileInfo {
+	return FileInfo{
+		Name:    info.Name(),
+		Size:    info.Size(),
+		Mode:    info.Mode(),
+		ModTime: info.ModTime(),
+		IsDir:   info.IsDir(),
+		Path:    info.Name(),
+	}
 }
 
 // FileSystemImpl implements the FileSystem interface
@@ -46,6 +82,144 @@ func NewFileSystem(config *FileSystemConfig, logger Logger) FileSystem {
 	return &FileSystemImpl{
 		logger: logger,
 	}
+}
+
+// AppendFile implements FileSystem interface
+func (fs *FileSystemImpl) AppendFile(ctx context.Context, filename string, data []byte) error {
+	fs.logger.Debug("Appending to file", "filename", filename)
+
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(data)
+	return err
+}
+
+// IsFile implements FileSystem interface
+func (fs *FileSystemImpl) IsFile(ctx context.Context, path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+// IsDir implements FileSystem interface
+func (fs *FileSystemImpl) IsDir(ctx context.Context, path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+// GetFileSize implements FileSystem interface
+func (fs *FileSystemImpl) GetFileSize(ctx context.Context, path string) (int64, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+	return info.Size(), nil
+}
+
+// MkdirAll implements FileSystem interface
+func (fs *FileSystemImpl) MkdirAll(ctx context.Context, path string, perm fs.FileMode) error {
+	fs.logger.Debug("Creating directory", "path", path)
+	return os.MkdirAll(path, perm)
+}
+
+// WalkDir implements FileSystem interface
+func (fs *FileSystemImpl) WalkDir(ctx context.Context, root string, fn func(path string, info FileInfo, err error) error) error {
+	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fn(path, FileInfo{}, err)
+		}
+
+		fileInfo := convertFileInfo(info)
+		fileInfo.Path = path
+		return fn(path, fileInfo, nil)
+	})
+}
+
+// CreateSymlink implements FileSystem interface
+func (fs *FileSystemImpl) CreateSymlink(ctx context.Context, oldname, newname string) error {
+	fs.logger.Debug("Creating symlink", "oldname", oldname, "newname", newname)
+	return os.Symlink(oldname, newname)
+}
+
+// ReadSymlink implements FileSystem interface
+func (fs *FileSystemImpl) ReadSymlink(ctx context.Context, name string) (string, error) {
+	fs.logger.Debug("Reading symlink", "name", name)
+	return os.Readlink(name)
+}
+
+// OpenFile implements FileSystem interface
+func (fs *FileSystemImpl) OpenFile(ctx context.Context, name string, flag int, perm fs.FileMode) (File, error) {
+	fs.logger.Debug("Opening file", "name", name)
+	file, err := os.OpenFile(name, flag, perm)
+	if err != nil {
+		return nil, err
+	}
+	return &FileImpl{File: file}, nil
+}
+
+// CreateFile implements FileSystem interface
+func (fs *FileSystemImpl) CreateFile(ctx context.Context, name string) (File, error) {
+	fs.logger.Debug("Creating file", "name", name)
+	file, err := os.Create(name)
+	if err != nil {
+		return nil, err
+	}
+	return &FileImpl{File: file}, nil
+}
+
+// Abs implements FileSystem interface
+func (fs *FileSystemImpl) Abs(path string) (string, error) {
+	return filepath.Abs(path)
+}
+
+// Join implements FileSystem interface
+func (fs *FileSystemImpl) Join(paths ...string) string {
+	return filepath.Join(paths...)
+}
+
+// Dir implements FileSystem interface
+func (fs *FileSystemImpl) Dir(path string) string {
+	return filepath.Dir(path)
+}
+
+// Base implements FileSystem interface
+func (fs *FileSystemImpl) Base(path string) string {
+	return filepath.Base(path)
+}
+
+// Ext implements FileSystem interface
+func (fs *FileSystemImpl) Ext(path string) string {
+	return filepath.Ext(path)
+}
+
+// Clean implements FileSystem interface
+func (fs *FileSystemImpl) Clean(path string) string {
+	return filepath.Clean(path)
+}
+
+// TempDir implements FileSystem interface
+func (fs *FileSystemImpl) TempDir(ctx context.Context, dir, pattern string) (string, error) {
+	fs.logger.Debug("Creating temp directory", "dir", dir, "pattern", pattern)
+	return os.MkdirTemp(dir, pattern)
+}
+
+// TempFile implements FileSystem interface
+func (fs *FileSystemImpl) TempFile(ctx context.Context, dir, pattern string) (File, error) {
+	fs.logger.Debug("Creating temp file", "dir", dir, "pattern", pattern)
+	file, err := os.CreateTemp(dir, pattern)
+	if err != nil {
+		return nil, err
+	}
+	return &FileImpl{File: file}, nil
 }
 
 // ReadFile implements FileSystem interface
@@ -101,19 +275,13 @@ func (fs *FileSystemImpl) RemoveAll(ctx context.Context, path string) error {
 }
 
 // Exists implements FileSystem interface
-func (fs *FileSystemImpl) Exists(ctx context.Context, path string) (bool, error) {
+func (fs *FileSystemImpl) Exists(ctx context.Context, path string) bool {
 	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
+	return err == nil
 }
 
-// Stat implements FileSystem interface
-func (fs *FileSystemImpl) Stat(ctx context.Context, path string) (FileInfo, error) {
+// GetFileInfo implements FileSystem interface
+func (fs *FileSystemImpl) GetFileInfo(ctx context.Context, path string) (*FileInfo, error) {
 	fs.logger.Debug("Getting file info", "path", path)
 
 	info, err := os.Stat(path)
@@ -122,7 +290,9 @@ func (fs *FileSystemImpl) Stat(ctx context.Context, path string) (FileInfo, erro
 		return nil, err
 	}
 
-	return &FileInfoImpl{info: info}, nil
+	fileInfo := convertFileInfo(info)
+	fileInfo.Path = path
+	return &fileInfo, nil
 }
 
 // ListDir implements FileSystem interface
@@ -142,7 +312,9 @@ func (fs *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileInfo,
 			fs.logger.Warn("Failed to get file info for entry", "entry", entry.Name(), "error", err)
 			continue
 		}
-		fileInfos = append(fileInfos, &FileInfoImpl{info: info})
+		fileInfo := convertFileInfo(info)
+		fileInfo.Path = filepath.Join(path, info.Name())
+		fileInfos = append(fileInfos, fileInfo)
 	}
 
 	return fileInfos, nil
@@ -225,7 +397,11 @@ func (fi *FileInfoImpl) Sys() interface{} {
 
 // WatchServiceImpl implements the WatchService interface
 type WatchServiceImpl struct {
-	logger Logger
+	logger    Logger
+	events    chan WatchEvent
+	errors    chan error
+	stopChan  chan struct{}
+	watchDirs map[string]bool
 }
 
 // WatchServiceConfig holds configuration for the watch service
@@ -249,38 +425,55 @@ func NewWatchService(config *WatchServiceConfig, logger Logger) WatchService {
 	}
 
 	return &WatchServiceImpl{
-		logger: logger,
+		logger:    logger,
+		events:    make(chan WatchEvent, config.BufferSize),
+		errors:    make(chan error, config.BufferSize),
+		stopChan:  make(chan struct{}),
+		watchDirs: make(map[string]bool),
 	}
 }
 
-// WatchDirectory implements WatchService interface
-func (ws *WatchServiceImpl) WatchDirectory(ctx context.Context, path string) (<-chan FileEvent, error) {
-	ws.logger.Debug("Watching directory", "path", path)
+// Watch implements WatchService interface
+func (ws *WatchServiceImpl) Watch(ctx context.Context, paths []string) error {
+	ws.logger.Debug("Starting to watch paths", "paths", paths)
 
-	events := make(chan FileEvent, 100)
+	for _, path := range paths {
+		ws.watchDirs[path] = true
+	}
 
 	// Implementation would use fsnotify or similar
-	// For now, return empty channel
-	go func() {
-		defer close(events)
-		<-ctx.Done()
-	}()
-
-	return events, nil
-}
-
-// StopWatching implements WatchService interface
-func (ws *WatchServiceImpl) StopWatching(ctx context.Context, path string) error {
-	ws.logger.Debug("Stopping watch", "path", path)
-
-	// Implementation would stop watching the path
 	return nil
 }
 
-// GetWatchedPaths implements WatchService interface
-func (ws *WatchServiceImpl) GetWatchedPaths(ctx context.Context) ([]string, error) {
-	// Implementation would return currently watched paths
-	return []string{}, nil
+// Stop implements WatchService interface
+func (ws *WatchServiceImpl) Stop() error {
+	ws.logger.Debug("Stopping watch service")
+	close(ws.stopChan)
+	return nil
+}
+
+// Events implements WatchService interface
+func (ws *WatchServiceImpl) Events() <-chan WatchEvent {
+	return ws.events
+}
+
+// Errors implements WatchService interface
+func (ws *WatchServiceImpl) Errors() <-chan error {
+	return ws.errors
+}
+
+// AddPath implements WatchService interface
+func (ws *WatchServiceImpl) AddPath(ctx context.Context, path string) error {
+	ws.logger.Debug("Adding path to watch", "path", path)
+	ws.watchDirs[path] = true
+	return nil
+}
+
+// RemovePath implements WatchService interface
+func (ws *WatchServiceImpl) RemovePath(ctx context.Context, path string) error {
+	ws.logger.Debug("Removing path from watch", "path", path)
+	delete(ws.watchDirs, path)
+	return nil
 }
 
 // PermissionManagerImpl implements the PermissionManager interface
@@ -319,6 +512,46 @@ func (pm *PermissionManagerImpl) GetPermissions(ctx context.Context, path string
 	}
 
 	return info.Mode(), nil
+}
+
+// IsReadable implements PermissionManager interface
+func (pm *PermissionManagerImpl) IsReadable(ctx context.Context, path string) bool {
+	_, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// IsWritable implements PermissionManager interface
+func (pm *PermissionManagerImpl) IsWritable(ctx context.Context, path string) bool {
+	_, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// IsExecutable implements PermissionManager interface
+func (pm *PermissionManagerImpl) IsExecutable(ctx context.Context, path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.Mode()&0o111 != 0
+}
+
+// GetOwner implements PermissionManager interface
+func (pm *PermissionManagerImpl) GetOwner(ctx context.Context, path string) (string, error) {
+	// Simplified implementation - would need platform-specific code
+	return "owner", nil
+}
+
+// ChangeOwner implements PermissionManager interface
+func (pm *PermissionManagerImpl) ChangeOwner(ctx context.Context, path, owner string) error {
+	pm.logger.Debug("Changing owner", "path", path, "owner", owner)
+	// Simplified implementation - would need platform-specific code
+	return nil
 }
 
 // ValidatePermissions implements PermissionManager interface
@@ -374,8 +607,8 @@ func NewArchiveService(
 }
 
 // CreateArchive implements ArchiveService interface
-func (as *ArchiveServiceImpl) CreateArchive(ctx context.Context, archivePath string, paths []string) error {
-	as.logger.Debug("Creating archive", "archive", archivePath, "paths", len(paths))
+func (as *ArchiveServiceImpl) CreateArchive(ctx context.Context, sourcePath, archivePath string, format ArchiveFormat) error {
+	as.logger.Debug("Creating archive", "source", sourcePath, "archive", archivePath, "format", format)
 
 	// Implementation would create tar.gz or zip archive
 	return nil
@@ -397,20 +630,103 @@ func (as *ArchiveServiceImpl) ListArchiveContents(ctx context.Context, archivePa
 	return []string{}, nil
 }
 
-// ValidateArchive implements ArchiveService interface
-func (as *ArchiveServiceImpl) ValidateArchive(ctx context.Context, archivePath string) error {
-	as.logger.Debug("Validating archive", "archive", archivePath)
-
-	// Implementation would validate archive integrity
-	return nil
+// ListArchive implements ArchiveService interface
+func (as *ArchiveServiceImpl) ListArchive(ctx context.Context, archivePath string) ([]FileInfo, error) {
+	as.logger.Debug("Listing archive", "archive", archivePath)
+	return []FileInfo{}, nil
 }
 
-// FileSystemService implements the unified file system service interface
-type FileSystemService struct {
+// GetSupportedFormats implements ArchiveService interface
+func (as *ArchiveServiceImpl) GetSupportedFormats() []ArchiveFormat {
+	return []ArchiveFormat{
+		ArchiveFormatTar,
+		ArchiveFormatTarGz,
+		ArchiveFormatTarBz2,
+		ArchiveFormatZip,
+	}
+}
+
+// FileSystemServiceImpl implements the unified file system service interface
+type FileSystemServiceImpl struct {
 	FileSystem
 	WatchService
 	PermissionManager
 	ArchiveService
+	BackupService
+	SearchService
+}
+
+// BackupServiceImpl implements BackupService interface
+type BackupServiceImpl struct {
+	logger Logger
+}
+
+// NewBackupService creates a new backup service
+func NewBackupService(logger Logger) BackupService {
+	return &BackupServiceImpl{logger: logger}
+}
+
+// CreateBackup implements BackupService interface
+func (bs *BackupServiceImpl) CreateBackup(ctx context.Context, sourcePath, backupPath string) error {
+	bs.logger.Debug("Creating backup", "source", sourcePath, "backup", backupPath)
+	return nil
+}
+
+// RestoreBackup implements BackupService interface
+func (bs *BackupServiceImpl) RestoreBackup(ctx context.Context, backupPath, destPath string) error {
+	bs.logger.Debug("Restoring backup", "backup", backupPath, "dest", destPath)
+	return nil
+}
+
+// ListBackups implements BackupService interface
+func (bs *BackupServiceImpl) ListBackups(ctx context.Context, path string) ([]BackupInfo, error) {
+	return []BackupInfo{}, nil
+}
+
+// DeleteBackup implements BackupService interface
+func (bs *BackupServiceImpl) DeleteBackup(ctx context.Context, backupPath string) error {
+	bs.logger.Debug("Deleting backup", "backup", backupPath)
+	return nil
+}
+
+// VerifyBackup implements BackupService interface
+func (bs *BackupServiceImpl) VerifyBackup(ctx context.Context, backupPath string) error {
+	bs.logger.Debug("Verifying backup", "backup", backupPath)
+	return nil
+}
+
+// SearchServiceImpl implements SearchService interface
+type SearchServiceImpl struct {
+	logger Logger
+}
+
+// NewSearchService creates a new search service
+func NewSearchService(logger Logger) SearchService {
+	return &SearchServiceImpl{logger: logger}
+}
+
+// FindFiles implements SearchService interface
+func (ss *SearchServiceImpl) FindFiles(ctx context.Context, root, pattern string) ([]string, error) {
+	ss.logger.Debug("Finding files", "root", root, "pattern", pattern)
+	return []string{}, nil
+}
+
+// FindInFiles implements SearchService interface
+func (ss *SearchServiceImpl) FindInFiles(ctx context.Context, root, pattern string) ([]SearchResult, error) {
+	ss.logger.Debug("Finding in files", "root", root, "pattern", pattern)
+	return []SearchResult{}, nil
+}
+
+// FindDirectories implements SearchService interface
+func (ss *SearchServiceImpl) FindDirectories(ctx context.Context, root, pattern string) ([]string, error) {
+	ss.logger.Debug("Finding directories", "root", root, "pattern", pattern)
+	return []string{}, nil
+}
+
+// SearchWithFilters implements SearchService interface
+func (ss *SearchServiceImpl) SearchWithFilters(ctx context.Context, root string, filters SearchFilters) ([]SearchResult, error) {
+	ss.logger.Debug("Searching with filters", "root", root)
+	return []SearchResult{}, nil
 }
 
 // FileSystemServiceConfig holds configuration for the file system service
@@ -442,12 +758,16 @@ func NewFileSystemService(
 	watchService := NewWatchService(config.Watch, logger)
 	permissionManager := NewPermissionManager(logger)
 	archiveService := NewArchiveService(config.Archive, fileSystem, logger)
+	backupService := NewBackupService(logger)
+	searchService := NewSearchService(logger)
 
-	return &FileSystemService{
+	return &FileSystemServiceImpl{
 		FileSystem:        fileSystem,
 		WatchService:      watchService,
 		PermissionManager: permissionManager,
 		ArchiveService:    archiveService,
+		BackupService:     backupService,
+		SearchService:     searchService,
 	}
 }
 

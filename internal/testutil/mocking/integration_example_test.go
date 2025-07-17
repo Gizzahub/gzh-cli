@@ -28,8 +28,8 @@ func TestComprehensiveMockingStrategy(t *testing.T) {
 
 		// Create gomock-based mocks
 		mockGitHubClient := factory.CreateMockGitHubAPIClientWithRepo("testorg", "testrepo")
-		mockFileSystem := factory.CreateMockFileSystem()
-		mockHTTPClient := factory.CreateMockHTTPClient()
+		_ = factory.CreateMockFileSystem()
+		_ = factory.CreateMockHTTPClient()
 
 		// Create testify-based mocks for complex scenarios
 		mockComplexService := NewMockComplexGitHubService()

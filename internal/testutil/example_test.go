@@ -8,8 +8,8 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
-// ExampleBuildersUsage demonstrates how to use the builders package
-func ExampleBuildersUsage() {
+// TestBuildersUsage demonstrates how to use the builders package
+func TestBuildersUsage(t *testing.T) {
 	// Create a configuration with builders
 	config := config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -41,8 +41,8 @@ func ExampleBuildersUsage() {
 	_ = request
 }
 
-// ExampleFixturesUsage demonstrates how to use the fixtures package
-func ExampleFixturesUsage() {
+// TestFixturesUsage demonstrates how to use the fixtures package
+func TestFixturesUsage(t *testing.T) {
 	// Use configuration fixtures
 	configFixtures := fixtures.NewConfigFixtures()
 	simpleConfig := configFixtures.SimpleGitHubConfig()

@@ -506,9 +506,9 @@ Examples:
 
 	addWebhookFlags(cmd, flags)
 	cmd.Flags().StringVar(&operation, "operation", "", "Bulk operation (create, update, delete, sync)")
-	cmd.Flags().StringVar(&configFile, "config", "", "Webhook configuration file")
-	cmd.Flags().IntVar(&parallelJobs, "parallel", 5, "Number of parallel operations")
-	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Preview changes without applying")
+	cmd.Flags().StringVar(&configFile, "webhook-config", "", "Webhook configuration file")
+	cmd.Flags().IntVar(&parallelJobs, "parallel-jobs", 5, "Number of parallel operations")
+	cmd.Flags().BoolVar(&dryRun, "dry-run-bulk", false, "Preview changes without applying")
 
 	cmd.MarkFlagRequired("operation")
 

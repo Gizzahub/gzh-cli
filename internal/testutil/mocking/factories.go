@@ -3,6 +3,7 @@ package mocking
 import (
 	"context"
 	"net/http"
+	"testing"
 	"time"
 
 	"github.com/gizzahub/gzh-manager-go/internal/filesystem/mocks"
@@ -161,10 +162,10 @@ func (f *MockFactory) CreateMockHTTPClient() *httpmocks.MockHTTPClient {
 	mock.EXPECT().Get(gomock.Any(), gomock.Any()).
 		Return(successResponse, nil).AnyTimes()
 
-	mock.EXPECT().Post(gomock.Any(), gomock.Any()).
+	mock.EXPECT().Post(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(successResponse, nil).AnyTimes()
 
-	mock.EXPECT().Put(gomock.Any(), gomock.Any()).
+	mock.EXPECT().Put(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(successResponse, nil).AnyTimes()
 
 	mock.EXPECT().Delete(gomock.Any(), gomock.Any()).
@@ -196,37 +197,25 @@ func (f *MockFactory) CreateMockGitClient() *gitmocks.MockGitClient {
 	mock := gitmocks.NewMockGitClient(f.ctrl)
 
 	// Default successful operations
-	mock.EXPECT().Clone(gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(nil).AnyTimes()
+	mock.EXPECT().Clone(gomock.Any(), gomock.Any()).
+		Return(nil, nil).AnyTimes()
 
-	mock.EXPECT().Pull(gomock.Any(), gomock.Any()).
-		Return(nil).AnyTimes()
+	mock.EXPECT().Pull(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, nil).AnyTimes()
 
-	mock.EXPECT().Fetch(gomock.Any(), gomock.Any()).
-		Return(nil).AnyTimes()
+	mock.EXPECT().Fetch(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, nil).AnyTimes()
 
 	mock.EXPECT().GetCurrentBranch(gomock.Any(), gomock.Any()).
 		Return("main", nil).AnyTimes()
 
-	mock.EXPECT().IsClean(gomock.Any(), gomock.Any()).
-		Return(true, nil).AnyTimes()
+	mock.EXPECT().IsRepository(gomock.Any(), gomock.Any()).
+		Return(true).AnyTimes()
 
 	return mock
 }
 
-// CreateMockRepositoryService creates a repository service mock
-func (f *MockFactory) CreateMockRepositoryService() *gitmocks.MockRepositoryService {
-	mock := gitmocks.NewMockRepositoryService(f.ctrl)
-
-	// Default successful operations
-	mock.EXPECT().InitRepository(gomock.Any(), gomock.Any()).
-		Return(nil).AnyTimes()
-
-	mock.EXPECT().GetRepositoryInfo(gomock.Any(), gomock.Any()).
-		Return(nil, nil).AnyTimes()
-
-	return mock
-}
+// Note: MockRepositoryService no longer exists in the updated interface
 
 // Utility Methods
 
@@ -243,12 +232,12 @@ func (f *MockFactory) CreateCancelableContext() (context.Context, context.Cancel
 // MockFactoryBuilder provides a fluent interface for building mock factories
 type MockFactoryBuilder struct {
 	ctrl     *gomock.Controller
-	t        interface{ Fatalf(string, ...interface{}) }
+	t        *testing.T
 	finished bool
 }
 
 // NewMockFactoryBuilder creates a new mock factory builder
-func NewMockFactoryBuilder(t interface{ Fatalf(string, ...interface{}) }) *MockFactoryBuilder {
+func NewMockFactoryBuilder(t *testing.T) *MockFactoryBuilder {
 	return &MockFactoryBuilder{
 		t:        t,
 		finished: false,

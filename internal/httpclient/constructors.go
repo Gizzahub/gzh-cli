@@ -2,7 +2,7 @@ package httpclient
 
 import (
 	"context"
-	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -15,11 +15,25 @@ type Logger interface {
 	Error(msg string, args ...interface{})
 }
 
-// MetricsCollector interface for dependency injection
-type MetricsCollector interface {
-	IncrementCounter(name string, labels map[string]string)
-	RecordHistogram(name string, value float64, labels map[string]string)
-	RecordGauge(name string, value float64, labels map[string]string)
+// Middleware defines the interface for request/response middleware
+type Middleware interface {
+	ModifyRequest(ctx context.Context, req *http.Request) *http.Request
+	ModifyResponse(ctx context.Context, resp *http.Response) *http.Response
+}
+
+// CacheEntry represents a cached response
+type CacheEntry struct {
+	Response  *http.Response `json:"response"`
+	CreatedAt time.Time      `json:"created_at"`
+	TTL       time.Duration  `json:"ttl"`
+}
+
+// Cache defines the interface for caching
+type Cache interface {
+	Get(ctx context.Context, key string) (*http.Response, bool)
+	Set(ctx context.Context, key string, response *http.Response, ttl time.Duration)
+	Delete(ctx context.Context, key string)
+	Clear(ctx context.Context)
 }
 
 // HTTPClientImpl implements the HTTPClient interface
@@ -28,6 +42,10 @@ type HTTPClientImpl struct {
 	logger           Logger
 	metricsCollector MetricsCollector
 	middleware       []Middleware
+	baseURL          string
+	defaultHeaders   map[string]string
+	userAgent        string
+	timeout          time.Duration
 }
 
 // HTTPClientConfig holds configuration for HTTP client
@@ -81,11 +99,36 @@ func NewHTTPClient(
 		logger:           logger,
 		metricsCollector: metricsCollector,
 		middleware:       []Middleware{},
+		defaultHeaders:   make(map[string]string),
+		userAgent:        config.UserAgent,
+		timeout:          config.Timeout,
 	}
 }
 
 // Do implements HTTPClient interface
-func (c *HTTPClientImpl) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
+func (c *HTTPClientImpl) Do(ctx context.Context, req *Request) (*Response, error) {
+	httpReq, err := http.NewRequest(req.Method, req.URL, req.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set headers
+	for k, v := range req.Headers {
+		httpReq.Header.Set(k, v)
+	}
+
+	// Add default headers
+	for k, v := range c.defaultHeaders {
+		if httpReq.Header.Get(k) == "" {
+			httpReq.Header.Set(k, v)
+		}
+	}
+
+	return c.doHTTPRequest(ctx, httpReq)
+}
+
+// doHTTPRequest handles the actual HTTP request
+func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (*Response, error) {
 	c.logger.Debug("Making HTTP request", "method", req.Method, "url", req.URL.String())
 
 	// Apply middleware
@@ -99,15 +142,7 @@ func (c *HTTPClientImpl) Do(ctx context.Context, req *http.Request) (*http.Respo
 
 	// Record metrics
 	if c.metricsCollector != nil {
-		labels := map[string]string{
-			"method": req.Method,
-			"host":   req.URL.Host,
-		}
-		if resp != nil {
-			labels["status_code"] = fmt.Sprintf("%d", resp.StatusCode)
-		}
-		c.metricsCollector.RecordHistogram("http_request_duration", duration.Seconds(), labels)
-		c.metricsCollector.IncrementCounter("http_requests_total", labels)
+		c.metricsCollector.RecordRequest(ctx, &Request{Method: req.Method, URL: req.URL.String()}, nil, duration, err)
 	}
 
 	if err != nil {
@@ -120,52 +155,161 @@ func (c *HTTPClientImpl) Do(ctx context.Context, req *http.Request) (*http.Respo
 		resp = middleware.ModifyResponse(ctx, resp)
 	}
 
-	return resp, nil
-}
-
-// Get implements HTTPClient interface
-func (c *HTTPClientImpl) Get(ctx context.Context, url string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	// Convert to our Response type
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
+	resp.Body.Close()
 
+	headers := make(map[string]string)
+	for k, v := range resp.Header {
+		if len(v) > 0 {
+			headers[k] = v[0]
+		}
+	}
+
+	return &Response{
+		StatusCode: resp.StatusCode,
+		Status:     resp.Status,
+		Headers:    headers,
+		Body:       body,
+		Size:       int64(len(body)),
+		Duration:   duration,
+	}, nil
+}
+
+// Get implements HTTPClient interface
+func (c *HTTPClientImpl) Get(ctx context.Context, url string) (*Response, error) {
+	req := &Request{
+		Method:  "GET",
+		URL:     url,
+		Headers: make(map[string]string),
+		Timeout: c.timeout,
+	}
 	return c.Do(ctx, req)
 }
 
 // Post implements HTTPClient interface
-func (c *HTTPClientImpl) Post(ctx context.Context, url, contentType string, body interface{}) (*http.Response, error) {
-	// Implementation would handle different body types
-	req, err := http.NewRequest(http.MethodPost, url, nil)
-	if err != nil {
-		return nil, err
+func (c *HTTPClientImpl) Post(ctx context.Context, url string, body io.Reader) (*Response, error) {
+	req := &Request{
+		Method:  "POST",
+		URL:     url,
+		Headers: make(map[string]string),
+		Body:    body,
+		Timeout: c.timeout,
 	}
-
-	req.Header.Set("Content-Type", contentType)
-
 	return c.Do(ctx, req)
 }
 
 // Put implements HTTPClient interface
-func (c *HTTPClientImpl) Put(ctx context.Context, url, contentType string, body interface{}) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPut, url, nil)
-	if err != nil {
-		return nil, err
+func (c *HTTPClientImpl) Put(ctx context.Context, url string, body io.Reader) (*Response, error) {
+	req := &Request{
+		Method:  "PUT",
+		URL:     url,
+		Headers: make(map[string]string),
+		Body:    body,
+		Timeout: c.timeout,
 	}
-
-	req.Header.Set("Content-Type", contentType)
-
 	return c.Do(ctx, req)
 }
 
 // Delete implements HTTPClient interface
-func (c *HTTPClientImpl) Delete(ctx context.Context, url string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		return nil, err
+func (c *HTTPClientImpl) Delete(ctx context.Context, url string) (*Response, error) {
+	req := &Request{
+		Method:  "DELETE",
+		URL:     url,
+		Headers: make(map[string]string),
+		Timeout: c.timeout,
 	}
-
 	return c.Do(ctx, req)
+}
+
+// Patch implements HTTPClient interface
+func (c *HTTPClientImpl) Patch(ctx context.Context, url string, body io.Reader) (*Response, error) {
+	req := &Request{
+		Method:  "PATCH",
+		URL:     url,
+		Headers: make(map[string]string),
+		Body:    body,
+		Timeout: c.timeout,
+	}
+	return c.Do(ctx, req)
+}
+
+// Head implements HTTPClient interface
+func (c *HTTPClientImpl) Head(ctx context.Context, url string) (*Response, error) {
+	req := &Request{
+		Method:  "HEAD",
+		URL:     url,
+		Headers: make(map[string]string),
+		Timeout: c.timeout,
+	}
+	return c.Do(ctx, req)
+}
+
+// Options implements HTTPClient interface
+func (c *HTTPClientImpl) Options(ctx context.Context, url string) (*Response, error) {
+	req := &Request{
+		Method:  "OPTIONS",
+		URL:     url,
+		Headers: make(map[string]string),
+		Timeout: c.timeout,
+	}
+	return c.Do(ctx, req)
+}
+
+// SetTimeout implements HTTPClient interface
+func (c *HTTPClientImpl) SetTimeout(timeout time.Duration) {
+	c.timeout = timeout
+	c.client.Timeout = timeout
+}
+
+// SetUserAgent implements HTTPClient interface
+func (c *HTTPClientImpl) SetUserAgent(userAgent string) {
+	c.userAgent = userAgent
+	c.defaultHeaders["User-Agent"] = userAgent
+}
+
+// SetBaseURL implements HTTPClient interface
+func (c *HTTPClientImpl) SetBaseURL(baseURL string) {
+	c.baseURL = baseURL
+}
+
+// AddDefaultHeader implements HTTPClient interface
+func (c *HTTPClientImpl) AddDefaultHeader(key, value string) {
+	c.defaultHeaders[key] = value
+}
+
+// RemoveDefaultHeader implements HTTPClient interface
+func (c *HTTPClientImpl) RemoveDefaultHeader(key string) {
+	delete(c.defaultHeaders, key)
+}
+
+// SetBearerToken implements HTTPClient interface
+func (c *HTTPClientImpl) SetBearerToken(token string) {
+	c.defaultHeaders["Authorization"] = "Bearer " + token
+}
+
+// SetBasicAuth implements HTTPClient interface
+func (c *HTTPClientImpl) SetBasicAuth(username, password string) {
+	// This would normally use base64 encoding
+	c.defaultHeaders["Authorization"] = "Basic " + username + ":" + password
+}
+
+// SetAPIKey implements HTTPClient interface
+func (c *HTTPClientImpl) SetAPIKey(key, value string) {
+	c.defaultHeaders[key] = value
+}
+
+// AddRequestMiddleware implements HTTPClient interface
+func (c *HTTPClientImpl) AddRequestMiddleware(middleware RequestMiddleware) {
+	// Implementation would wrap the middleware
+}
+
+// AddResponseMiddleware implements HTTPClient interface
+func (c *HTTPClientImpl) AddResponseMiddleware(middleware ResponseMiddleware) {
+	// Implementation would wrap the middleware
 }
 
 // AddMiddleware implements HTTPClient interface
@@ -214,7 +358,7 @@ func NewRetryPolicy(config *RetryPolicyConfig, logger Logger) RetryPolicy {
 }
 
 // ShouldRetry implements RetryPolicy interface
-func (rp *RetryPolicyImpl) ShouldRetry(ctx context.Context, attempt int, err error) bool {
+func (rp *RetryPolicyImpl) ShouldRetry(ctx context.Context, req *Request, resp *Response, err error, attempt int) bool {
 	if attempt >= rp.maxRetries {
 		return false
 	}
@@ -232,15 +376,9 @@ func (rp *RetryPolicyImpl) GetRetryDelay(ctx context.Context, attempt int) time.
 	return delay
 }
 
-// GetMaxRetries implements RetryPolicy interface
-func (rp *RetryPolicyImpl) GetMaxRetries() int {
+// MaxRetries implements RetryPolicy interface
+func (rp *RetryPolicyImpl) MaxRetries() int {
 	return rp.maxRetries
-}
-
-// IsRetryableError implements RetryPolicy interface
-func (rp *RetryPolicyImpl) IsRetryableError(err error) bool {
-	// Implementation would determine if error is retryable
-	return true
 }
 
 // RateLimiterImpl implements the RateLimiter interface
@@ -307,7 +445,7 @@ func (rl *RateLimiterImpl) Wait(ctx context.Context) error {
 }
 
 // Allow implements RateLimiter interface
-func (rl *RateLimiterImpl) Allow() bool {
+func (rl *RateLimiterImpl) Allow(ctx context.Context) bool {
 	select {
 	case <-rl.tokens:
 		return true
@@ -316,9 +454,28 @@ func (rl *RateLimiterImpl) Allow() bool {
 	}
 }
 
-// GetAvailableTokens implements RateLimiter interface
-func (rl *RateLimiterImpl) GetAvailableTokens() int {
-	return len(rl.tokens)
+// GetLimitInfo implements RateLimiter interface
+func (rl *RateLimiterImpl) GetLimitInfo() *RateLimitInfo {
+	return &RateLimitInfo{
+		Limit:     cap(rl.tokens),
+		Remaining: len(rl.tokens),
+		Reset:     time.Now().Add(time.Second),
+		Window:    time.Second,
+	}
+}
+
+// Reset implements RateLimiter interface
+func (rl *RateLimiterImpl) Reset() {
+	// Drain and refill tokens
+	for len(rl.tokens) > 0 {
+		<-rl.tokens
+	}
+	for i := 0; i < cap(rl.tokens); i++ {
+		select {
+		case rl.tokens <- struct{}{}:
+		default:
+		}
+	}
 }
 
 // CacheImpl implements the Cache interface
@@ -422,7 +579,7 @@ func NewHTTPClientService(
 	config *HTTPClientServiceConfig,
 	logger Logger,
 	metricsCollector MetricsCollector,
-) HTTPClientService {
+) *HTTPClientService {
 	if config == nil {
 		config = DefaultHTTPClientServiceConfig()
 	}
