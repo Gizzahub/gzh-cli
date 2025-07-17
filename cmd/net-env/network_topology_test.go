@@ -72,8 +72,8 @@ func TestAnalyzeNetworkTopology(t *testing.T) {
 				Ports: []DetectedPortMapping{
 					{
 						ContainerPort: 5432,
-						HostPort: 5432,
-						Protocol:     "tcp",
+						HostPort:      5432,
+						Protocol:      "tcp",
 					},
 				},
 			},
@@ -95,8 +95,8 @@ func TestAnalyzeNetworkTopology(t *testing.T) {
 	mockDetector.On("DetectContainerEnvironment", mock.Anything).Return(mockEnv, nil)
 
 	analyzer := &NetworkTopologyAnalyzer{
-		logger:       logger,
-		cacheExpiry:  5 * time.Minute,
+		logger:      logger,
+		cacheExpiry: 5 * time.Minute,
 	}
 	// Note: For testing, we'd need to inject the mock detector differently
 	// This is a simplified version for the test structure

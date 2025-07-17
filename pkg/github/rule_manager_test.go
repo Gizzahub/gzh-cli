@@ -221,7 +221,7 @@ func createTestRule() *AutomationRule {
 	}
 }
 
-func createTestEvent() *GitHubEvent {
+func createTestEventForRuleManager() *GitHubEvent {
 	return &GitHubEvent{
 		ID:           "test-event-001",
 		Type:         "pull_request",
@@ -370,7 +370,7 @@ func TestRuleManager_EnableDisableRule(t *testing.T) {
 func TestRuleManager_EvaluateConditions(t *testing.T) {
 	rm, _, _, _, evaluator := createTestRuleManager()
 	rule := createTestRule()
-	event := createTestEvent()
+	event := createTestEventForRuleManager()
 
 	evaluationResult := &EvaluationResult{
 		Matched:           true,
@@ -391,7 +391,7 @@ func TestRuleManager_EvaluateConditions_DisabledRule(t *testing.T) {
 	rm, _, _, _, _ := createTestRuleManager()
 	rule := createTestRule()
 	rule.Enabled = false
-	event := createTestEvent()
+	event := createTestEventForRuleManager()
 
 	result, err := rm.EvaluateConditions(context.Background(), rule, event)
 
@@ -402,7 +402,7 @@ func TestRuleManager_EvaluateConditions_DisabledRule(t *testing.T) {
 func TestRuleManager_ExecuteRule(t *testing.T) {
 	rm, storage, _, actionExecutor, _ := createTestRuleManager()
 	rule := createTestRule()
-	event := createTestEvent()
+	event := createTestEventForRuleManager()
 
 	execContext := &AutomationExecutionContext{
 		Event:        event,
@@ -559,7 +559,7 @@ func TestRuleManager_ValidateRule(t *testing.T) {
 func TestRuleManager_TestRule(t *testing.T) {
 	rm, _, _, _, evaluator := createTestRuleManager()
 	rule := createTestRule()
-	event := createTestEvent()
+	event := createTestEventForRuleManager()
 
 	evaluationResult := &EvaluationResult{
 		Matched:           true,
@@ -637,7 +637,7 @@ func BenchmarkRuleManager_CreateRule(b *testing.B) {
 func BenchmarkRuleManager_EvaluateConditions(b *testing.B) {
 	rm, _, _, _, evaluator := createTestRuleManager()
 	rule := createTestRule()
-	event := createTestEvent()
+	event := createTestEventForRuleManager()
 
 	evaluationResult := &EvaluationResult{
 		Matched:           true,
@@ -676,7 +676,7 @@ func TestRuleManager_Integration(t *testing.T) {
 	assert.Equal(t, rule.ID, retrievedRule.ID)
 
 	// Test the rule
-	event := createTestEvent()
+	event := createTestEventForRuleManager()
 	evaluationResult := &EvaluationResult{
 		Matched:           true,
 		MatchedConditions: []string{"event_conditions"},

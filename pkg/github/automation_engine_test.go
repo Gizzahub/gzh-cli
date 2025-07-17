@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -12,6 +13,44 @@ import (
 
 // Mock implementations for testing
 
+type mockAPIClient struct {
+	mock.Mock
+}
+
+func (m *mockAPIClient) GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error) {
+	args := m.Called(ctx, owner, repo)
+	return args.Get(0).(*RepositoryInfo), args.Error(1)
+}
+
+func (m *mockAPIClient) ListOrganizationRepositories(ctx context.Context, org string) ([]RepositoryInfo, error) {
+	args := m.Called(ctx, org)
+	return args.Get(0).([]RepositoryInfo), args.Error(1)
+}
+
+func (m *mockAPIClient) GetDefaultBranch(ctx context.Context, owner, repo string) (string, error) {
+	args := m.Called(ctx, owner, repo)
+	return args.String(0), args.Error(1)
+}
+
+func (m *mockAPIClient) SetToken(token string) {
+	m.Called(token)
+}
+
+func (m *mockAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(*RateLimit), args.Error(1)
+}
+
+func (m *mockAPIClient) GetRepositoryConfiguration(ctx context.Context, owner, repo string) (*RepositoryConfig, error) {
+	args := m.Called(ctx, owner, repo)
+	return args.Get(0).(*RepositoryConfig), args.Error(1)
+}
+
+func (m *mockAPIClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
+	args := m.Called(ctx, owner, repo, config)
+	return args.Error(0)
+}
+
 type mockEventProcessor struct {
 	mock.Mock
 }
@@ -21,9 +60,9 @@ func (m *mockEventProcessor) ProcessEvent(ctx context.Context, event *GitHubEven
 	return args.Error(0)
 }
 
-func (m *mockEventProcessor) FilterEvent(event *GitHubEvent) bool {
-	args := m.Called(event)
-	return args.Bool(0)
+func (m *mockEventProcessor) FilterEvent(ctx context.Context, event *GitHubEvent, filter *EventFilter) (bool, error) {
+	args := m.Called(ctx, event, filter)
+	return args.Bool(0), args.Error(1)
 }
 
 func (m *mockEventProcessor) ValidateEvent(event *GitHubEvent) error {
@@ -31,31 +70,41 @@ func (m *mockEventProcessor) ValidateEvent(event *GitHubEvent) error {
 	return args.Error(0)
 }
 
-type mockRuleManager struct {
-	mock.Mock
+func (m *mockEventProcessor) ValidateSignature(payload []byte, signature, secret string) bool {
+	args := m.Called(payload, signature, secret)
+	return args.Bool(0)
 }
 
-func (m *mockRuleManager) ListRules(ctx context.Context, org string, filter *RuleFilter) ([]*AutomationRule, error) {
-	args := m.Called(ctx, org, filter)
-	return args.Get(0).([]*AutomationRule), args.Error(1)
+func (m *mockEventProcessor) ParseWebhookEvent(r *http.Request) (*GitHubEvent, error) {
+	args := m.Called(r)
+	return args.Get(0).(*GitHubEvent), args.Error(1)
 }
 
-func (m *mockRuleManager) EvaluateConditions(ctx context.Context, rule *AutomationRule, event *GitHubEvent) (bool, error) {
-	args := m.Called(ctx, rule, event)
-	return args.Bool(0), args.Error(1)
+func (m *mockEventProcessor) RegisterEventHandler(eventType EventType, handler EventHandler) error {
+	args := m.Called(eventType, handler)
+	return args.Error(0)
 }
 
-func (m *mockRuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, context *AutomationExecutionContext) (*AutomationRuleExecution, error) {
-	args := m.Called(ctx, rule, context)
-	return args.Get(0).(*AutomationRuleExecution), args.Error(1)
+func (m *mockEventProcessor) UnregisterEventHandler(eventType EventType) error {
+	args := m.Called(eventType)
+	return args.Error(0)
 }
+
+func (m *mockEventProcessor) GetMetrics() *EventMetrics {
+	args := m.Called()
+	return args.Get(0).(*EventMetrics)
+}
+
 
 // Test helper functions
 
-func createTestAutomationEngine() (*AutomationEngine, *mockRuleManager, *mockEventProcessor) {
+func createTestAutomationEngine() (*AutomationEngine, *mockEventProcessor) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	ruleManager := &mockRuleManager{}
+	
+	// Create a real RuleManager for testing since it's expected as a struct pointer
+	ruleManager := &RuleManager{}
+	
 	conditionEvaluator := &mockConditionEvaluator{}
 	actionExecutor := &mockActionExecutor{}
 	eventProcessor := &mockEventProcessor{}
@@ -81,7 +130,7 @@ func createTestAutomationEngine() (*AutomationEngine, *mockRuleManager, *mockEve
 		config,
 	)
 
-	return engine, ruleManager, eventProcessor
+	return engine, eventProcessor
 }
 
 func createTestEngineEvent() *GitHubEvent {

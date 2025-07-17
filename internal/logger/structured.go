@@ -102,7 +102,8 @@ func NewStructuredLogger(component string, level LogLevel) *StructuredLogger {
 // WithContext adds context to the logger
 func (l *StructuredLogger) WithContext(key string, value interface{}) *StructuredLogger {
 	newLogger := *l
-	newLogger.context = make(map[string]interface{})
+	// Preallocate with appropriate capacity
+	newLogger.context = make(map[string]interface{}, len(l.context)+1)
 	for k, v := range l.context {
 		newLogger.context[k] = v
 	}
@@ -175,13 +176,17 @@ func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}
 
 	caller := getCaller(2)
 
-	attrs := []slog.Attr{
+	// Preallocate slice with estimated capacity
+	capacity := 5 + len(l.context) + len(args)/2
+	attrs := make([]slog.Attr, 0, capacity)
+
+	attrs = append(attrs,
 		slog.String("component", l.component),
 		slog.String("session_id", l.sessionID),
 		slog.String("caller_file", caller.File),
 		slog.Int("caller_line", caller.Line),
 		slog.String("caller_function", caller.Function),
-	}
+	)
 
 	// Add context attributes
 	for k, v := range l.context {
@@ -235,7 +240,11 @@ func (l *StructuredLogger) writeStructuredLog(entry *LogEntry) {
 		return
 	}
 
-	fmt.Println(string(data))
+	// Write to stdout
+	if _, writeErr := fmt.Println(string(data)); writeErr != nil {
+		// Silent fallback - avoid recursive logging
+		l.logger.Error("Failed to write log entry", "error", writeErr)
+	}
 }
 
 // getCaller gets caller information

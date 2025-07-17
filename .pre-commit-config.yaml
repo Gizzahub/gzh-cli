@@ -32,7 +32,7 @@ repos:
       - id: go-staticcheck-mod
       - id: go-fumpt
       - id: golangci-lint-mod
-        args: [-c=.golang-ci.yml, --fix]
+        args: [-c=.golangci.yml, --fix]
 
   # Additional Go tooling
   - repo: local

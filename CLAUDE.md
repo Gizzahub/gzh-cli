@@ -23,8 +23,17 @@ make run        # Run with version tag
 ### Code Quality - ALWAYS RUN BEFORE COMMITTING
 ```bash
 make fmt        # Format code with gofumpt and gci
-make lint       # Run golangci-lint checks
+make lint       # Run golangci-lint checks with auto-fix
 make test       # Run all tests with coverage
+make lint-all   # Run all linting steps (format + lint + pre-commit)
+```
+
+### Pre-commit Hooks Setup
+```bash
+make pre-commit-install    # Install pre-commit hooks (one-time setup)
+make pre-commit           # Run pre-commit hooks manually
+make pre-push             # Run pre-push hooks manually
+make check-consistency    # Verify lint configuration consistency
 ```
 
 ### Testing

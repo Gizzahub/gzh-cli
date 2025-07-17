@@ -10,6 +10,45 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Mock implementations
+type mockAPIClient struct {
+	mock.Mock
+}
+
+func (m *mockAPIClient) GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error) {
+	args := m.Called(ctx, owner, repo)
+	return args.Get(0).(*RepositoryInfo), args.Error(1)
+}
+
+func (m *mockAPIClient) ListOrganizationRepositories(ctx context.Context, org string) ([]RepositoryInfo, error) {
+	args := m.Called(ctx, org)
+	return args.Get(0).([]RepositoryInfo), args.Error(1)
+}
+
+func (m *mockAPIClient) GetDefaultBranch(ctx context.Context, owner, repo string) (string, error) {
+	args := m.Called(ctx, owner, repo)
+	return args.String(0), args.Error(1)
+}
+
+func (m *mockAPIClient) SetToken(token string) {
+	m.Called(token)
+}
+
+func (m *mockAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(*RateLimit), args.Error(1)
+}
+
+func (m *mockAPIClient) GetRepositoryConfiguration(ctx context.Context, owner, repo string) (*RepositoryConfig, error) {
+	args := m.Called(ctx, owner, repo)
+	return args.Get(0).(*RepositoryConfig), args.Error(1)
+}
+
+func (m *mockAPIClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
+	args := m.Called(ctx, owner, repo, config)
+	return args.Error(0)
+}
+
 // Test helper functions
 
 func createTestWebhookMonitor() (*WebhookMonitor, *mockAPIClient) {

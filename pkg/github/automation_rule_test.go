@@ -480,9 +480,7 @@ func TestConditionOperators_Constants(t *testing.T) {
 }
 
 // Helper functions
-func boolPtr(b bool) *bool {
-	return &b
-}
+// boolPtr is defined in automation_engine.go
 
 // Benchmark tests
 func BenchmarkAutomationRule_Creation(b *testing.B) {

@@ -64,7 +64,7 @@ func (m *mockEventHandler) GetPriority() int {
 }
 
 // Test helper functions
-func createTestEvent() *GitHubEvent {
+func createTestEventForEventSystem() *GitHubEvent {
 	return &GitHubEvent{
 		ID:           "test-event-123",
 		Type:         string(EventTypePush),
@@ -124,7 +124,7 @@ func TestEventProcessor_ProcessEvent(t *testing.T) {
 	mockHandler := &mockEventHandler{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	event := createTestEvent()
+	event := createTestEventForEventSystem()
 
 	// Setup mocks
 	mockStorage.On("StoreEvent", mock.Anything, event).Return(nil)
@@ -146,7 +146,7 @@ func TestEventProcessor_ProcessEvent_NoHandlers(t *testing.T) {
 	mockLogger := &mockLogger{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	event := createTestEvent()
+	event := createTestEventForEventSystem()
 
 	mockStorage.On("StoreEvent", mock.Anything, event).Return(nil)
 
@@ -162,7 +162,7 @@ func TestEventProcessor_ProcessEvent_HandlerFailure(t *testing.T) {
 	mockHandler := &mockEventHandler{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	event := createTestEvent()
+	event := createTestEventForEventSystem()
 
 	mockStorage.On("StoreEvent", mock.Anything, event).Return(nil)
 	mockHandler.On("GetSupportedActions").Return([]EventAction{ActionCreated})
@@ -450,7 +450,7 @@ func TestEventMetrics(t *testing.T) {
 	processor := NewEventProcessor(mockStorage, mockLogger)
 	impl := processor.(*eventProcessorImpl)
 
-	event := createTestEvent()
+	event := createTestEventForEventSystem()
 	mockStorage.On("StoreEvent", mock.Anything, event).Return(nil)
 
 	err := processor.ProcessEvent(context.Background(), event)
@@ -517,7 +517,7 @@ func BenchmarkEventProcessor_ProcessEvent(b *testing.B) {
 	mockLogger := &mockLogger{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	event := createTestEvent()
+	event := createTestEventForEventSystem()
 
 	mockStorage.On("StoreEvent", mock.Anything, event).Return(nil)
 

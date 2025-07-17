@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -244,6 +245,10 @@ func getCurrentUser() string {
 
 func parseRepositoryFullName(fullName string) (owner, repo string) {
 	// Simple implementation - should be more robust
+	parts := strings.Split(fullName, "/")
+	if len(parts) >= 2 {
+		return parts[0], parts[1]
+	}
 	return "owner", "repo"
 }
 

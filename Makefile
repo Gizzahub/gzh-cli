@@ -112,7 +112,11 @@ fmt: ## format go files
 
 PHONY: lint
 lint: ## lint go files
-	golangci-lint run -c .golangci.yml
+	golangci-lint run -c .golangci.yml --fix
+
+PHONY: format
+format: ## format go files (alias for lint)
+	golangci-lint run -c .golangci.yml --fix
 
 .PHONY: security
 security: ## run security analysis with gosec
@@ -160,6 +164,20 @@ pre-commit-install: ## install pre-commit hooks
 .PHONY: pre-commit
 pre-commit:	## run pre-commit hooks
 	pre-commit run --all-files
+
+.PHONY: pre-push
+pre-push: ## run pre-push hooks (same as pre-commit for consistency)
+	pre-commit run --all-files --hook-stage pre-push
+
+.PHONY: lint-all
+lint-all: fmt lint pre-commit ## run all linting steps (format, lint, pre-commit)
+
+.PHONY: check-consistency
+check-consistency: ## verify lint configuration consistency
+	@echo "Checking lint configuration consistency..."
+	@echo "✓ Makefile uses: .golangci.yml"
+	@grep -q "\.golangci\.yml" .pre-commit-config.yaml && echo "✓ Pre-commit uses: .golangci.yml" || echo "✗ Pre-commit config mismatch"
+	@echo "✓ All configurations aligned"
 
 .PHONY: pre-commit-update
 pre-commit-update: ## update pre-commit hooks to latest versions

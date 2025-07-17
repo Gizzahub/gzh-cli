@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -128,7 +127,7 @@ func TestBulkClone_ProgressTracking(t *testing.T) {
 
 	t.Run("ProgressTracker_Operations", func(t *testing.T) {
 		repos := []string{"repo1", "repo2", "repo3", "repo4", "repo5"}
-		
+
 		// Test different display modes
 		displayModes := []bulkclone.DisplayMode{
 			bulkclone.DisplayModeCompact,
@@ -149,7 +148,7 @@ func TestBulkClone_ProgressTracking(t *testing.T) {
 				assert.Equal(t, 0.0, progressPercent)
 
 				// Update progress for some repositories
-				tracker.UpdateRepository("repo1", bulkclone.ProgressStatusInProgress, "Cloning...", 0.5)
+				tracker.UpdateRepository("repo1", bulkclone.StatusCloning, "Cloning...", 0.5)
 				tracker.CompleteRepository("repo2", "Successfully cloned")
 				tracker.SetRepositoryError("repo3", "Network timeout")
 
@@ -218,7 +217,7 @@ func TestBulkClone_URLBuilder(t *testing.T) {
 	})
 }
 
-// TestBulkClone_SchemaValidation tests the schema validation functionality  
+// TestBulkClone_SchemaValidation tests the schema validation functionality
 func TestBulkClone_SchemaValidation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -303,7 +302,7 @@ providers:
 
 		require.NotNil(t, config)
 		assert.Equal(t, "1.0.0", config.Version)
-		assert.Equal(t, "github", config.DefaultProvider)
+		// Note: DefaultProvider is not available in current config structure
 
 		t.Logf("Successfully loaded configuration for end-to-end test")
 		t.Logf("Target directory: %s", tmpDir)
@@ -331,8 +330,8 @@ func createTestConfig(tmpDir string) map[string]interface{} {
 				"token": "${GITHUB_TOKEN}",
 				"organizations": []map[string]interface{}{
 					{
-						"name":      "test-org",
-						"clone_dir": tmpDir,
+						"name":       "test-org",
+						"clone_dir":  tmpDir,
 						"visibility": "public",
 						"strategy":   "pull",
 					},

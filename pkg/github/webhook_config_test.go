@@ -480,7 +480,7 @@ func TestRuleAppliesTo(t *testing.T) {
 }
 
 // Benchmark tests
-func BenchmarkValidatePolicy(b *testing.B) {
+func BenchmarkValidatePolicyWebhook(b *testing.B) {
 	mockStorage := &mockConfigStorage{}
 	mockLogger := &mockLogger{}
 	service := &webhookConfigurationServiceImpl{

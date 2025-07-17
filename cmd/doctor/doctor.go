@@ -825,7 +825,10 @@ func isDirectoryWritable(dir string) bool {
 		return false
 	}
 	file.Close()
-	os.Remove(testFile)
+	if err := os.Remove(testFile); err != nil {
+		// Log error but don't fail the check
+		fmt.Printf("Warning: failed to remove test file: %v\n", err)
+	}
 	return true
 }
 
@@ -835,7 +838,10 @@ func canCreateDirectory(dir string) bool {
 		if err != nil {
 			return false
 		}
-		os.RemoveAll(dir) // Clean up test directory
+		if err := os.RemoveAll(dir); err != nil {
+			// Log error but don't fail the check
+			fmt.Printf("Warning: failed to remove test directory: %v\n", err)
+		}
 	}
 	return true
 }
@@ -871,9 +877,13 @@ func runDiskBenchmark() float64 {
 	}()
 
 	for i := 0; i < 10; i++ {
-		file.Write(data)
+		if _, err := file.Write(data); err != nil {
+			return 0 // Return 0 on write error
+		}
 	}
-	file.Sync()
+	if err := file.Sync(); err != nil {
+		return 0 // Return 0 on sync error
+	}
 
 	duration := time.Since(start)
 	mb := float64(len(data)*10) / 1024 / 1024

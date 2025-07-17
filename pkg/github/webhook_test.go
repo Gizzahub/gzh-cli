@@ -9,29 +9,29 @@ import (
 
 // mockLogger implements the Logger interface for testing
 type mockLogger struct {
-	logs []logEntry
+	logs []mockLogEntry
 }
 
-type logEntry struct {
+type mockLogEntry struct {
 	level  string
 	msg    string
 	fields []interface{}
 }
 
 func (l *mockLogger) Debug(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, logEntry{"debug", msg, fields})
+	l.logs = append(l.logs, mockLogEntry{"debug", msg, fields})
 }
 
 func (l *mockLogger) Info(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, logEntry{"info", msg, fields})
+	l.logs = append(l.logs, mockLogEntry{"info", msg, fields})
 }
 
 func (l *mockLogger) Warn(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, logEntry{"warn", msg, fields})
+	l.logs = append(l.logs, mockLogEntry{"warn", msg, fields})
 }
 
 func (l *mockLogger) Error(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, logEntry{"error", msg, fields})
+	l.logs = append(l.logs, mockLogEntry{"error", msg, fields})
 }
 
 func TestWebhookService_CreateRepositoryWebhook(t *testing.T) {
@@ -464,9 +464,7 @@ func TestValidateWebhookRequest(t *testing.T) {
 }
 
 // Helper function to create bool pointer
-func boolPtr(b bool) *bool {
-	return &b
-}
+// boolPtr is defined in automation_engine.go
 
 // Benchmark tests
 func BenchmarkWebhookService_CreateRepositoryWebhook(b *testing.B) {

@@ -12,11 +12,11 @@ run:
     - .git
     - tmp
     - test/integration  # Exclude all integration tests with outdated API usage
-    - pkg/github  # Exclude GitHub package with compilation issues
   skip-files:
     - ".*\\.pb\\.go$"
     - ".*\\.gen\\.go$"
     - ".*/pkg/bulk-clone/example_test\\.go$"
+    - "pkg/bulk-clone/example_test\\.go$"
   modules-download-mode: readonly
 
 output:
@@ -153,7 +153,7 @@ issues:
     - path: "pkg/bulk-clone/example_test\\.go$"
       linters:
         - all
-    - path: "pkg/github/.*\\.go$"
+    - path: ".*/pkg/bulk-clone/example_test\\.go$"
       linters:
         - all
     

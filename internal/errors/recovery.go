@@ -14,7 +14,6 @@ type ErrorRecovery struct {
 	logger       Logger
 	maxRetries   int
 	retryDelay   time.Duration
-	circuitOpen  bool
 	errorCounts  map[string]int
 	mu           sync.RWMutex
 	recoveryFunc func(error) error
@@ -384,8 +383,12 @@ func (hm *HealthMonitor) RunChecks(ctx context.Context) map[string]error {
 				}
 			}()
 			// Use checkCtx for timeout handling if needed in the future
-			_ = checkCtx
-			return check.CheckFunc()
+			select {
+			case <-checkCtx.Done():
+				return checkCtx.Err()
+			default:
+				return check.CheckFunc()
+			}
 		}()
 
 		results[check.Name] = err

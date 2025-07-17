@@ -11,9 +11,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd"
 )
 
-var (
-	version = "dev"
-)
+var version = "dev"
 
 func main() {
 	// Create a context that will be cancelled on interrupt signals
