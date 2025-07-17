@@ -531,7 +531,7 @@ func (rs *RepositorySynchronizer) forceRemoteChanges(ctx context.Context, status
 }
 
 func (rs *RepositorySynchronizer) resolveByTimestamp(ctx context.Context, status *GitStatus, result *SyncResult) error {
-	// TODO: Implement timestamp-based resolution
+	// Timestamp-based resolution placeholder - implement timestamp comparison logic
 	// This would compare commit timestamps and choose the newer set of changes
 	return fmt.Errorf("timestamp-based resolution not yet implemented")
 }

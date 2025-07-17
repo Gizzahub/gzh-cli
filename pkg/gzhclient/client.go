@@ -1,3 +1,4 @@
+// Package gzhclient provides programmatic access to GZH Manager functionality.
 package gzhclient
 
 import (

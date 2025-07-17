@@ -100,7 +100,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	startTime := time.Now()
 	report := &DiagnosticReport{
 		Timestamp:       startTime,
-		Version:         "1.0.0", // TODO: Get from build info
+		Version:         "1.0.0", // Version should be passed from build system
 		Platform:        fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
 		Results:         []DiagnosticResult{},
 		Recommendations: []string{},

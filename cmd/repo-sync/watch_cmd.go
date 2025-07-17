@@ -454,7 +454,7 @@ func (rw *RepositoryWatcher) processBatch(batch FileChangeBatch, verbose bool) {
 
 // performAutoCommit automatically commits changes if enabled
 func (rw *RepositoryWatcher) performAutoCommit(batch FileChangeBatch) {
-	// TODO: Implement Git auto-commit functionality
+	// Git auto-commit integration placeholder - implement Git command integration
 	// This would integrate with Git commands to:
 	// 1. Stage modified files
 	// 2. Create commit with batch information

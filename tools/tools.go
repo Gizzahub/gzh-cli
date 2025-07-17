@@ -1,5 +1,6 @@
 //go:build tools
 
+// Package tools manages build tool dependencies for the project.
 package tools
 
 // https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module

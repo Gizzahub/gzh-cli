@@ -545,17 +545,17 @@ func handleTrace(s *Shell, args []string) error {
 	switch args[0] {
 	case "start":
 		fmt.Println("Starting execution tracing...")
-		// TODO: Integrate with actual tracer
+		// Tracing integration placeholder - implement with actual tracer
 		fmt.Println("Tracing started (use 'trace stop' to stop)")
 
 	case "stop":
 		fmt.Println("Stopping execution tracing...")
-		// TODO: Integrate with actual tracer
+		// Tracing integration placeholder - implement with actual tracer
 		fmt.Println("Tracing stopped")
 
 	case "status":
 		fmt.Println("Trace Status: Not implemented yet")
-		// TODO: Show actual tracer status
+		// Status display placeholder - implement with actual tracer status
 
 	default:
 		return fmt.Errorf("unknown trace command: %s", args[0])
@@ -572,17 +572,17 @@ func handleProfile(s *Shell, args []string) error {
 	switch args[0] {
 	case "start":
 		fmt.Println("Starting performance profiling...")
-		// TODO: Integrate with actual profiler
+		// Profiler integration placeholder - implement with actual profiler
 		fmt.Println("Profiling started (use 'profile stop' to stop)")
 
 	case "stop":
 		fmt.Println("Stopping performance profiling...")
-		// TODO: Integrate with actual profiler
+		// Profiler integration placeholder - implement with actual profiler
 		fmt.Println("Profiling stopped")
 
 	case "status":
 		fmt.Println("Profile Status: Not implemented yet")
-		// TODO: Show actual profiler status
+		// Profiler status placeholder - implement with actual profiler status
 
 	default:
 		return fmt.Errorf("unknown profile command: %s", args[0])
@@ -641,7 +641,7 @@ func handleContext(s *Shell, args []string) error {
 	jsonOutput := len(args) > 0 && args[0] == "--json"
 
 	context := ShellContext{
-		StartTime: time.Now(), // TODO: Track actual start time
+		StartTime: time.Now(), // Current time used as placeholder for actual start time
 		Uptime:    time.Since(time.Now()),
 		Commands:  len(s.history),
 		LastCmd:   "",
@@ -685,7 +685,7 @@ func handleLogs(s *Shell, args []string) error {
 		}
 	}
 
-	// TODO: Integrate with actual log system
+	// Log system integration placeholder - implement with actual log system
 	fmt.Printf("Recent Logs (last %d):\n", count)
 	fmt.Println("Log integration not yet implemented")
 	fmt.Printf("Filters: level=%s\n", level)

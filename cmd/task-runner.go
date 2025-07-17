@@ -57,7 +57,10 @@ type TodoFile struct {
 
 func runTaskRunner(cmd *cobra.Command, args []string) error {
 	// Determine directory to process
-	wd, _ := os.Getwd()
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %w", err)
+	}
 	dir := filepath.Join(wd, "tasks", "todo")
 	if len(args) > 0 {
 		dir = args[0]
@@ -320,7 +323,10 @@ func analyzeTask(content string) TaskAnalysis {
 }
 
 func moveCompletedFiles(files []string) error {
-	wd, _ := os.Getwd()
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %w", err)
+	}
 	doneDir := filepath.Join(wd, "tasks", "done")
 
 	// Create done directory if it doesn't exist

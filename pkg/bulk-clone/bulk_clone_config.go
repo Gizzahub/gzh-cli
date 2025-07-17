@@ -1,3 +1,4 @@
+// Package bulkclone provides configuration management for bulk cloning operations.
 package bulkclone
 
 import (
@@ -46,7 +47,7 @@ type BulkCloneGitlab struct {
 	URL       string `yaml:"url"`
 	Recursive bool   `yaml:"recursive"`
 	Protocol  string `yaml:"protocol" validate:"required,oneof=http https ssh"`
-	GroupName string `yaml:"group_name" binding:"required"`
+	GroupName string `yaml:"group_name" validate:"required"`
 }
 
 type bulkCloneConfig struct {
@@ -108,37 +109,36 @@ func (cfg *bulkCloneConfig) ReadConfigFromDir(targetPath string) {
 	}
 }
 
-// 커스텀 오류 메시지 맵
+// errorMessages contains custom error messages for validation
 var errorMessages = map[string]string{
-	"required": "필수 필드입니다.",
-	"url":      "유효한 URL을 입력해야 합니다.",
-	"oneof":    "허용되는 값이 아닙니다 (http, https, ssh).",
+	"required": "This field is required.",
+	"url":      "Please enter a valid URL.",
+	"oneof":    "Invalid value (allowed: http, https, ssh).",
 }
 
-// 유효성 검사 오류 상세 메시지 출력 함수
+// printValidationErrors prints detailed validation error messages
 func printValidationErrors(err error) {
 	var errs validator.ValidationErrors
 	if errors.As(err, &errs) {
 		for _, e := range errs {
-			// 기본 메시지
+			// Default message
 			msg, exists := errorMessages[e.Tag()]
 			if !exists {
-				msg = fmt.Sprintf("필드 '%s'은(는) '%s' 규칙을 만족해야 합니다.", e.Field(), e.Tag())
+				msg = fmt.Sprintf("Field '%s' must satisfy '%s' rule.", e.Field(), e.Tag())
 			}
 
-			// 추가 정보가 필요한 경우 (예: oneof)
+			// Additional information for specific cases (e.g., oneof)
 			if e.Tag() == "oneof" {
-				msg = fmt.Sprintf("필드 '%s'은(는) 허용되는 값 중 하나여야 합니다: %s.", e.Field(), e.Param())
+				msg = fmt.Sprintf("Field '%s' must be one of the allowed values: %s.", e.Field(), e.Param())
 			}
 
-			fmt.Printf("오류: %s\n", msg)
+			fmt.Printf("Error: %s\n", msg)
 		}
 	}
 }
 
-// 유효성 검사 함수
+// validateConfig validates the configuration structure
 func (cfg *bulkCloneConfig) validateConfig() error {
-	// validate := validator.New(validator.WithRequiredStructEnabled())
 	validate := validator.New()
 	return validate.Struct(cfg)
 }

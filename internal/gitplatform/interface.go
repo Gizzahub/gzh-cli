@@ -1,3 +1,4 @@
+// Package gitplatform provides a common interface for different Git hosting platforms.
 package gitplatform
 
 import (

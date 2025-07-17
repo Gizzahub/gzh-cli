@@ -1,3 +1,4 @@
+// Package cmd provides the command-line interface for the gzh-manager-go application.
 package cmd
 
 import (

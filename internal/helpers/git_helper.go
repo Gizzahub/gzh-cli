@@ -1,3 +1,4 @@
+// Package helpers provides utility functions for Git operations.
 package helpers
 
 import (
@@ -7,6 +8,8 @@ import (
 	"strings"
 )
 
+// CheckGitRepoType checks the type of a Git repository.
+// Returns "none" if not a Git repo, "empty" if no commits, "normal" if has commits.
 func CheckGitRepoType(dir string) (string, error) {
 	// Check if .git directory exists
 	if _, err := os.Stat(fmt.Sprintf("%s/.git", dir)); os.IsNotExist(err) {

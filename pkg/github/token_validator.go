@@ -332,10 +332,15 @@ func (tv *TokenValidator) addRecommendations(result *ValidationResult) {
 // GetPermissionHelp returns help text for permissions
 func (tv *TokenValidator) GetPermissionHelp() map[string]string {
 	return map[string]string{
-		"repo":            "Full access to repositories including private repositories. Grants read, write, and admin access to code, commit statuses, repository invitations, collaborators, deployment statuses, and repository webhooks.",
-		"public_repo":     "Access to public repositories only. Grants read and write access to code, commit statuses, repository invitations, collaborators, deployment statuses, and repository webhooks for public repositories.",
+		"repo": "Full access to repositories including private repositories. " +
+			"Grants read, write, and admin access to code, commit statuses, repository invitations, " +
+			"collaborators, deployment statuses, and repository webhooks.",
+		"public_repo": "Access to public repositories only. " +
+			"Grants read and write access to code, commit statuses, repository invitations, " +
+			"collaborators, deployment statuses, and repository webhooks for public repositories.",
 		"read:org":        "Read access to organization membership, organization projects, and team membership.",
-		"admin:org":       "Full administrative access to organization and teams. Grants read and write access to organization profile, organization projects, and team membership.",
+		"admin:org": "Full administrative access to organization and teams. " +
+			"Grants read and write access to organization profile, organization projects, and team membership.",
 		"admin:repo_hook": "Grants read, write, ping, and delete access to repository hooks in public or private repositories.",
 		"read:repo_hook":  "Grants read and ping access to repository hooks in public or private repositories.",
 	}

@@ -1,3 +1,4 @@
+// Package main is the entry point for the gzh-manager-go CLI application.
 package main
 
 import (
@@ -12,9 +13,6 @@ import (
 
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
-	builtBy = "unknown"
 )
 
 func main() {
