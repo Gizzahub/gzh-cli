@@ -8,35 +8,41 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/gizzahub/gzh-manager-go/pkg/recovery"
 )
 
-// ResilientGitHubClient provides GitHub API operations with network resilience
+// ResilientGitHubClient provides GitHub API operations with network resilience - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
 type ResilientGitHubClient struct {
-	httpClient *recovery.ResilientHTTPClient
+	httpClient *http.Client
 	baseURL    string
 	token      string
 }
 
-// NewResilientGitHubClient creates a new resilient GitHub client
+// NewResilientGitHubClient creates a new resilient GitHub client - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
 func NewResilientGitHubClient(token string) *ResilientGitHubClient {
 	return &ResilientGitHubClient{
-		httpClient: recovery.NewGitHubClient(),
-		baseURL:    "https://api.github.com",
-		token:      token,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+		baseURL: "https://api.github.com",
+		token:   token,
 	}
 }
 
-// NewResilientGitHubClientWithConfig creates a resilient GitHub client with custom config
-func NewResilientGitHubClientWithConfig(token string, config recovery.ResilientHTTPClientConfig) *ResilientGitHubClient {
-	// Ensure GitHub-specific optimizations
-	config.CircuitConfig.Name = "github-api"
+// NewResilientGitHubClientWithConfig creates a resilient GitHub client with custom config - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
+func NewResilientGitHubClientWithConfig(token string, timeout time.Duration) *ResilientGitHubClient {
+	if timeout == 0 {
+		timeout = 30 * time.Second
+	}
 
 	return &ResilientGitHubClient{
-		httpClient: recovery.NewResilientHTTPClient(config),
-		baseURL:    "https://api.github.com",
-		token:      token,
+		httpClient: &http.Client{
+			Timeout: timeout,
+		},
+		baseURL: "https://api.github.com",
+		token:   token,
 	}
 }
 
@@ -227,6 +233,8 @@ func (c *ResilientGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInf
 }
 
 // RateLimitInfo contains GitHub API rate limit information
+// RateLimitInfo type is defined in token_aware_client.go to avoid duplication
+/*
 type RateLimitInfo struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`
@@ -243,14 +251,20 @@ func (r *RateLimitInfo) TimeUntilReset() time.Duration {
 	return time.Until(r.ResetTime)
 }
 
-// GetStats returns statistics about the underlying HTTP client
+// GetStats returns statistics about the underlying HTTP client - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *ResilientGitHubClient) GetStats() map[string]interface{} {
-	return c.httpClient.GetStats()
+	return map[string]interface{}{
+		"type": "standard_http_client",
+		"note": "recovery package removed, using standard http.Client",
+	}
 }
 
-// Close closes the underlying HTTP client connections
+// Close closes the underlying HTTP client connections - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *ResilientGitHubClient) Close() {
-	c.httpClient.Close()
+	// Standard http.Client doesn't have Close method
+	// No cleanup needed for standard client
 }
 
 // SetToken updates the authentication token
@@ -262,3 +276,4 @@ func (c *ResilientGitHubClient) SetToken(token string) {
 func (c *ResilientGitHubClient) SetBaseURL(baseURL string) {
 	c.baseURL = strings.TrimSuffix(baseURL, "/")
 }
+*/

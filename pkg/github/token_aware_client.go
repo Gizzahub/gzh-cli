@@ -8,113 +8,123 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/gizzahub/gzh-manager-go/pkg/recovery"
 )
 
-// TokenAwareGitHubClient provides GitHub API operations with automatic token expiration handling
+// TokenAwareGitHubClient provides GitHub API operations with automatic token expiration handling - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
 type TokenAwareGitHubClient struct {
-	httpClient       *recovery.TokenAwareHTTPClient
-	tokenIntegration *recovery.TokenExpirationIntegration
-	baseURL          string
-	fallbackTokens   []string
+	httpClient     *http.Client
+	baseURL        string
+	primaryToken   string
+	fallbackTokens []string
 }
 
-// TokenAwareGitHubClientConfig configures the token-aware GitHub client
+// TokenAwareGitHubClientConfig configures the token-aware GitHub client - DISABLED (recovery package removed)
+// Simple configuration struct without external recovery dependency
 type TokenAwareGitHubClientConfig struct {
 	BaseURL        string
 	PrimaryToken   string
 	FallbackTokens []string
-	OAuth2Config   *recovery.OAuth2Config
+	// OAuth2Config   *recovery.OAuth2Config // Disabled - recovery package removed
 
 	// HTTP client configuration
-	HTTPConfig recovery.ResilientHTTPClientConfig
+	Timeout time.Duration
 
-	// Token expiration configuration
-	ExpirationConfig recovery.TokenExpirationConfig
+	// Token expiration configuration - simplified
+	// ExpirationConfig recovery.TokenExpirationConfig // Disabled - recovery package removed
 }
 
-// DefaultTokenAwareGitHubClientConfig returns sensible defaults
+// DefaultTokenAwareGitHubClientConfig returns sensible defaults - DISABLED (recovery package removed)
+// Simple configuration without external recovery dependency
 func DefaultTokenAwareGitHubClientConfig() TokenAwareGitHubClientConfig {
 	return TokenAwareGitHubClientConfig{
-		BaseURL:          "https://api.github.com",
-		HTTPConfig:       recovery.DefaultResilientHTTPClientConfig(),
-		ExpirationConfig: recovery.DefaultTokenExpirationConfig(),
+		BaseURL: "https://api.github.com",
+		Timeout: 30 * time.Second,
 	}
 }
 
-// NewTokenAwareGitHubClient creates a new token-aware GitHub client
+// NewTokenAwareGitHubClient creates a new token-aware GitHub client - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
 func NewTokenAwareGitHubClient(config TokenAwareGitHubClientConfig) (*TokenAwareGitHubClient, error) {
-	// Configure token expiration integration
-	expConfig := config.ExpirationConfig
-	expConfig.FallbackTokens = map[string][]string{
-		"github": config.FallbackTokens,
+	timeout := config.Timeout
+	if timeout == 0 {
+		timeout = 30 * time.Second
 	}
-
-	if config.OAuth2Config != nil {
-		expConfig.GitHubOAuth2 = config.OAuth2Config
-	}
-
-	// Create token integration
-	integration, err := recovery.NewTokenExpirationIntegration(expConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create token integration: %w", err)
-	}
-
-	// Add primary token
-	if config.PrimaryToken != "" {
-		if err := integration.AddToken("github", config.PrimaryToken); err != nil {
-			return nil, fmt.Errorf("failed to add primary token: %w", err)
-		}
-	}
-
-	// Create HTTP factory and token-aware client
-	httpFactory := recovery.NewHTTPClientFactoryWithConfig(config.HTTPConfig)
-	tokenAwareFactory := recovery.NewTokenExpirationAwareFactory(integration, httpFactory)
-	httpClient := tokenAwareFactory.CreateGitHubClient()
 
 	return &TokenAwareGitHubClient{
-		httpClient:       httpClient,
-		tokenIntegration: integration,
-		baseURL:          config.BaseURL,
-		fallbackTokens:   config.FallbackTokens,
+		httpClient: &http.Client{
+			Timeout: timeout,
+		},
+		baseURL:        config.BaseURL,
+		primaryToken:   config.PrimaryToken,
+		fallbackTokens: config.FallbackTokens,
 	}, nil
 }
 
-// Start initializes the token expiration monitoring
+// Start initializes the token expiration monitoring - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *TokenAwareGitHubClient) Start(ctx context.Context) error {
-	return c.tokenIntegration.Start(ctx)
+	// No token monitoring in simple implementation
+	return nil
 }
 
-// Stop shuts down the token expiration monitoring
+// Stop shuts down the token expiration monitoring - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *TokenAwareGitHubClient) Stop() {
-	c.tokenIntegration.Stop()
+	// No token monitoring in simple implementation
 }
 
-// GetCurrentToken returns the current valid token
+// GetCurrentToken returns the current valid token - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *TokenAwareGitHubClient) GetCurrentToken() (string, error) {
-	return c.tokenIntegration.GetValidToken("github")
-}
-
-// GetTokenStatus returns detailed token status information
-func (c *TokenAwareGitHubClient) GetTokenStatus() (recovery.TokenStatus, error) {
-	statuses := c.tokenIntegration.GetTokenStatus()
-	if status, exists := statuses["github"]; exists {
-		return status, nil
+	if c.primaryToken != "" {
+		return c.primaryToken, nil
 	}
-	return recovery.TokenStatus{}, fmt.Errorf("no GitHub token found")
+	if len(c.fallbackTokens) > 0 {
+		return c.fallbackTokens[0], nil
+	}
+	return "", fmt.Errorf("no tokens available")
 }
 
-// RefreshToken manually refreshes the GitHub token
+// GetTokenStatus returns detailed token status information - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
+func (c *TokenAwareGitHubClient) GetTokenStatus() (map[string]interface{}, error) {
+	token, err := c.GetCurrentToken()
+	if err != nil {
+		return nil, err
+	}
+	return map[string]interface{}{
+		"has_token": token != "",
+		"note":      "recovery package removed, using simple token management",
+	}, nil
+}
+
+// RefreshToken manually refreshes the GitHub token - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *TokenAwareGitHubClient) RefreshToken(ctx context.Context) error {
-	return c.tokenIntegration.RefreshToken(ctx, "github")
+	// No token refresh in simple implementation
+	return nil
 }
 
-// GetUser retrieves the authenticated user information
+// GetUser retrieves the authenticated user information - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *TokenAwareGitHubClient) GetUser(ctx context.Context) (*GitHubUser, error) {
 	url := fmt.Sprintf("%s/user", c.baseURL)
 
-	resp, err := c.httpClient.GetWithContext(ctx, url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add authentication
+	token, err := c.GetCurrentToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
+	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
@@ -136,7 +146,20 @@ func (c *TokenAwareGitHubClient) GetUser(ctx context.Context) (*GitHubUser, erro
 func (c *TokenAwareGitHubClient) GetOrganization(ctx context.Context, org string) (*GitHubOrganization, error) {
 	url := fmt.Sprintf("%s/orgs/%s", c.baseURL, org)
 
-	resp, err := c.httpClient.GetWithContext(ctx, url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add authentication
+	token, err := c.GetCurrentToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
+	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get organization %s: %w", org, err)
 	}
@@ -175,7 +198,20 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 	// Add pagination parameters
 	url += fmt.Sprintf("?page=%d&per_page=%d&sort=updated&direction=desc", page, perPage)
 
-	resp, err := c.httpClient.GetWithContext(ctx, url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add authentication
+	token, err := c.GetCurrentToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
+	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list repositories for %s: %w", owner, err)
 	}
@@ -197,7 +233,20 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 func (c *TokenAwareGitHubClient) GetRepository(ctx context.Context, owner, repo string) (*GitHubRepository, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s", c.baseURL, owner, repo)
 
-	resp, err := c.httpClient.GetWithContext(ctx, url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add authentication
+	token, err := c.GetCurrentToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
+	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repository %s/%s: %w", owner, repo, err)
 	}
@@ -233,7 +282,20 @@ func (c *TokenAwareGitHubClient) GetDefaultBranch(ctx context.Context, owner, re
 func (c *TokenAwareGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInfo, error) {
 	url := fmt.Sprintf("%s/rate_limit", c.baseURL)
 
-	resp, err := c.httpClient.GetWithContext(ctx, url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add authentication
+	token, err := c.GetCurrentToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
+	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get rate limit: %w", err)
 	}
@@ -395,6 +457,14 @@ type GitHubRepository struct {
 	SSHURL          string    `json:"ssh_url"`
 	HTMLURL         string    `json:"html_url"`
 	GitURL          string    `json:"git_url"`
+}
+
+// RateLimitInfo represents GitHub rate limit information - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
+type RateLimitInfo struct {
+	Limit     int       `json:"limit"`
+	Remaining int       `json:"remaining"`
+	ResetTime time.Time `json:"reset_time"`
 }
 
 // TokenRateLimitInfo represents GitHub rate limit information for token-aware client

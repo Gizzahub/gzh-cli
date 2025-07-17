@@ -15,7 +15,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gizzahub/gzh-manager-go/internal/helpers"
-	"github.com/gizzahub/gzh-manager-go/pkg/memory"
 	"github.com/schollz/progressbar/v3"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -107,36 +106,19 @@ func List(ctx context.Context, org string) ([]string, error) {
 		return nil, fmt.Errorf("failed to get repositories: %s", resp.Status)
 	}
 
-	// Use pooled JSON buffer for efficient JSON decoding
-	var result []string
-	err = memory.WithJSONBuffer(func(jb *memory.JSONBuffer) error {
-		// Copy response body to buffer
-		if _, err := jb.ReadFrom(resp.Body); err != nil {
-			return fmt.Errorf("failed to read response body: %w", err)
-		}
+	// Use standard JSON decoding - DISABLED (memory package removed)
+	// Simple implementation without external memory dependency
+	var repos []struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
 
-		var repos []struct {
-			Name string `json:"name"`
-		}
-		if err := jb.DecodeJSON(&repos); err != nil {
-			return fmt.Errorf("failed to decode response: %w", err)
-		}
-
-		// Use pooled string slice for collecting repo names
-		repoNames := memory.GlobalPools.GetStringSlice()
-		defer memory.GlobalPools.PutStringSlice(repoNames)
-
-		for _, repo := range repos {
-			repoNames = append(repoNames, repo.Name)
-		}
-
-		// Create result copy
-		result = make([]string, len(repoNames))
-		copy(result, repoNames)
-		return nil
-	})
-	if err != nil {
-		return nil, err
+	// Create result slice
+	result := make([]string, len(repos))
+	for i, repo := range repos {
+		result[i] = repo.Name
 	}
 
 	return result, nil

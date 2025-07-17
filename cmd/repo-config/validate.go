@@ -282,14 +282,6 @@ func hasValidationErrors(results ValidationSummary) bool {
 	return results.Errors > 0
 }
 
-// truncateString truncates a string to the specified length
-func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-	return s[:maxLen-3] + "..."
-}
-
 // discoverConfigFile attempts to find a configuration file
 func discoverConfigFile() string {
 	candidates := []string{

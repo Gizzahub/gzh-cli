@@ -9,7 +9,6 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -415,7 +414,7 @@ func newVPNFailoverHealthConfigCmd(logger *zap.Logger, configDir string) *cobra.
 			ctx := context.Background()
 
 			vpnName, _ := cmd.Flags().GetString("vpn")
-			enabled, _ := cmd.Flags().GetBool("enabled")
+			_, _ = cmd.Flags().GetBool("enabled") // enabled variable not used
 			interval, _ := cmd.Flags().GetDuration("interval")
 			timeout, _ := cmd.Flags().GetDuration("timeout")
 			endpoint, _ := cmd.Flags().GetString("endpoint")

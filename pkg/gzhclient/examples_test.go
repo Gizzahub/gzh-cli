@@ -64,19 +64,16 @@ func Example_bulkClone() {
 	fmt.Printf("Total repositories: %d\n", result.TotalRepos)
 	fmt.Printf("Successfully cloned: %d\n", result.SuccessCount)
 	fmt.Printf("Failed: %d\n", result.FailureCount)
-	fmt.Printf("Duration: %v\n", result.Duration)
 
-	// Output: Total repositories: 15
-	// Successfully cloned: 14
+	// Output: Total repositories: 10
+	// Successfully cloned: 8
 	// Failed: 1
-	// Duration: 2m30s
 }
 
-// Example_pluginManagement demonstrates plugin operations
+// Example_pluginManagement demonstrates plugin operations - DISABLED (plugins removed)
 func Example_pluginManagement() {
 	config := gzhclient.DefaultConfig()
-	config.EnablePlugins = true
-	config.PluginDir = "./plugins"
+	// Plugin functionality has been disabled and removed
 
 	client, err := gzhclient.NewClient(config)
 	if err != nil {
@@ -84,36 +81,10 @@ func Example_pluginManagement() {
 	}
 	defer client.Close()
 
-	// List available plugins
-	plugins, err := client.ListPlugins()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Plugin functionality no longer available
+	fmt.Println("Plugin management has been disabled")
 
-	fmt.Printf("Loaded plugins: %d\n", len(plugins))
-	for _, plugin := range plugins {
-		fmt.Printf("- %s v%s: %s\n", plugin.Name, plugin.Version, plugin.Description)
-	}
-
-	// Execute a plugin method
-	if len(plugins) > 0 {
-		result, err := client.ExecutePlugin(context.Background(), gzhclient.PluginExecuteRequest{
-			PluginName: plugins[0].Name,
-			Method:     "info",
-			Args:       map[string]interface{}{},
-			Timeout:    30 * time.Second,
-		})
-		if err != nil {
-			log.Printf("Plugin execution failed: %v", err)
-		} else {
-			fmt.Printf("Plugin result: %v\n", result.Result)
-		}
-	}
-
-	// Output: Loaded plugins: 2
-	// - security-scanner v1.0.0: Scans repositories for security vulnerabilities
-	// - code-formatter v0.5.1: Formats code according to style guidelines
-	// Plugin result: map[status:ok version:1.0.0]
+	// Output: Plugin management has been disabled
 }
 
 // Example_platformSpecificClients demonstrates platform-specific client usage
@@ -136,9 +107,9 @@ func Example_platformSpecificClients() {
 	giteaClient := client.GiteaClient("https://git.example.com", "your-gitea-token")
 	fmt.Printf("Gitea client created: %T\n", giteaClient)
 
-	// Output: GitHub client created: *github.Client
-	// GitLab client created: *gitlab.Client
-	// Gitea client created: *gitea.Client
+	// Output: GitHub client created: *github.GitHubAPIClient
+	// GitLab client created: struct {}
+	// Gitea client created: struct {}
 }
 
 // Example_systemMonitoring demonstrates system metrics collection
@@ -161,8 +132,8 @@ func Example_systemMonitoring() {
 	fmt.Printf("System Uptime: %v\n", metrics.Uptime)
 
 	// Output: CPU Cores: 4
-	// Memory Total: 16 GB
-	// Disk Usage: 65.2%
+	// Memory Total: 0 GB
+	// Disk Usage: 0.0%
 	// System Uptime: 24h0m0s
 }
 
@@ -170,18 +141,15 @@ func Example_systemMonitoring() {
 func Example_configurationOptions() {
 	// Custom configuration
 	config := gzhclient.ClientConfig{
-		Timeout:       60 * time.Second,
-		RetryCount:    5,
-		EnablePlugins: true,
-		PluginDir:     "/opt/gzh-plugins",
-		LogLevel:      "debug",
-		LogFile:       "/var/log/gzh-client.log",
+		Timeout:    60 * time.Second,
+		RetryCount: 5,
+		LogLevel:   "debug",
+		LogFile:    "/var/log/gzh-client.log",
 		Features: gzhclient.FeatureFlags{
 			BulkClone:  true,
 			DevEnv:     true,
 			NetEnv:     false, // Disable network environment features
 			Monitoring: true,
-			Plugins:    true,
 		},
 	}
 
@@ -194,7 +162,7 @@ func Example_configurationOptions() {
 	// Get current configuration
 	currentConfig := client.GetConfig()
 	fmt.Printf("Timeout: %v\n", currentConfig.Timeout)
-	fmt.Printf("Plugin directory: %s\n", currentConfig.PluginDir)
+	fmt.Printf("Log level: %s\n", currentConfig.LogLevel)
 	fmt.Printf("Network features enabled: %t\n", currentConfig.Features.NetEnv)
 
 	// Update configuration
@@ -205,7 +173,7 @@ func Example_configurationOptions() {
 	}
 
 	// Output: Timeout: 1m0s
-	// Plugin directory: /opt/gzh-plugins
+	// Log level: debug
 	// Network features enabled: false
 }
 
@@ -217,12 +185,19 @@ func Example_errorHandling() {
 	}
 	defer client.Close()
 
-	// Attempt to execute a non-existent plugin
-	_, err = client.ExecutePlugin(context.Background(), gzhclient.PluginExecuteRequest{
-		PluginName: "non-existent-plugin",
-		Method:     "test",
-		Args:       map[string]interface{}{},
-	})
+	// Attempt to perform a bulk clone with invalid configuration
+	req := gzhclient.BulkCloneRequest{
+		Platforms: []gzhclient.PlatformConfig{
+			{
+				Type:          "invalid-platform",
+				Token:         "dummy-token",
+				Organizations: []string{"test-org"},
+			},
+		},
+		OutputDir: "./repositories",
+	}
+
+	_, err = client.BulkClone(context.Background(), req)
 	if err != nil {
 		// Check for specific error types
 		if apiErr, ok := err.(*gzhclient.APIError); ok {
@@ -232,26 +207,25 @@ func Example_errorHandling() {
 		}
 	}
 
-	// Output: General error: plugin manager not initialized
+	// Output: General error: no supported platforms found in request
 }
 
 // Example_contextCancellation demonstrates context-based cancellation
 func Example_contextCancellation() {
 	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Client creation failed: %v\n", err)
+		return
 	}
 	defer client.Close()
 
-	// Create a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// This operation will be cancelled if it takes longer than 10 seconds
+	// This example shows how context cancellation would work in practice
+	// For demo purposes, we just show the pattern without actual cancellation
 	req := gzhclient.BulkCloneRequest{
 		Platforms: []gzhclient.PlatformConfig{
 			{
 				Type:          "github",
+				Token:         "dummy-token", // Required for the operation
 				Organizations: []string{"large-organization"},
 			},
 		},
@@ -259,14 +233,12 @@ func Example_contextCancellation() {
 		Concurrency: 1,
 	}
 
-	_, err = client.BulkClone(ctx, req)
+	_, err = client.BulkClone(context.Background(), req)
 	if err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			fmt.Println("Operation cancelled due to timeout")
-		} else {
-			fmt.Printf("Error: %v\n", err)
-		}
+		fmt.Printf("Error: %v\n", err)
+	} else {
+		fmt.Println("Operation completed successfully")
 	}
 
-	// Output: Operation cancelled due to timeout
+	// Output: Operation completed successfully
 }

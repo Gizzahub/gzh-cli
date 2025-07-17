@@ -1,6 +1,7 @@
 package bulkclone
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -124,7 +125,8 @@ func TestStrategyValidation(t *testing.T) {
 				orgName:    "test-org",
 				strategy:   strategy,
 			}
-			err := githubOpts.run(nil, []string{})
+			cmd := newBulkCloneGithubCmd()
+			err := githubOpts.run(cmd, []string{})
 			// We expect an error from RefreshAll (network), not from validation
 			assert.True(t, err == nil || !contains(err.Error(), "invalid strategy"))
 
@@ -134,7 +136,8 @@ func TestStrategyValidation(t *testing.T) {
 				groupName:  "test-group",
 				strategy:   strategy,
 			}
-			err = gitlabOpts.run(nil, []string{})
+			gitlabCmd := newBulkCloneGitlabCmd()
+			err = gitlabOpts.run(gitlabCmd, []string{})
 			assert.True(t, err == nil || !contains(err.Error(), "invalid strategy"))
 		})
 	}
@@ -147,7 +150,8 @@ func TestStrategyValidation(t *testing.T) {
 				orgName:    "test-org",
 				strategy:   strategy,
 			}
-			err := githubOpts.run(nil, []string{})
+			cmd := newBulkCloneGithubCmd()
+			err := githubOpts.run(cmd, []string{})
 			if strategy != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), "invalid strategy")
@@ -159,7 +163,8 @@ func TestStrategyValidation(t *testing.T) {
 				groupName:  "test-group",
 				strategy:   strategy,
 			}
-			err = gitlabOpts.run(nil, []string{})
+			gitlabCmd := newBulkCloneGitlabCmd()
+			err = gitlabOpts.run(gitlabCmd, []string{})
 			if strategy != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), "invalid strategy")
@@ -288,7 +293,7 @@ repo_roots: []
 
 				// The command should not fail on strategy validation
 				// It might fail on network operations, but not on validation
-				err := opts.run(nil, []string{})
+				err := opts.run(context.Background(), nil, []string{})
 				if err != nil {
 					assert.NotContains(t, err.Error(), "invalid strategy")
 				}
@@ -302,7 +307,7 @@ repo_roots: []
 					strategy:   strategy,
 				}
 
-				err := opts.run(nil, []string{})
+				err := opts.run(context.Background(), nil, []string{})
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), "invalid strategy")
 			})
@@ -346,7 +351,7 @@ repo_roots:
 
 		// Since we don't have actual git repositories, this will fail
 		// but we can verify that config loading and processing works
-		err = opts.run(nil, []string{})
+		err = opts.run(context.Background(), nil, []string{})
 		// The error should come from git operations, not from config processing
 		if err != nil {
 			assert.NotContains(t, err.Error(), "failed to load config")
@@ -360,7 +365,7 @@ repo_roots:
 			strategy:   "reset",
 		}
 
-		err := opts.run(nil, []string{})
+		err := opts.run(context.Background(), nil, []string{})
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to load config")
 	})
@@ -382,14 +387,14 @@ repo_roots: []
 		}
 
 		// Should not error for empty config - just complete successfully
-		err = opts.run(nil, []string{})
+		err = opts.run(context.Background(), nil, []string{})
 		assert.NoError(t, err)
 	})
 }
 
 func TestMainBulkCloneCommandFlags(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := NewBulkCloneCmd()
+		cmd := NewBulkCloneCmd(context.Background())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "bulk-clone", cmd.Use)
 		assert.Contains(t, cmd.Short, "Clone repositories from multiple Git hosting services")

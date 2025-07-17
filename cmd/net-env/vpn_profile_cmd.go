@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"text/tabwriter"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -665,7 +663,7 @@ func (vpm *VPNProfileManager) loadProfiles() error {
 }
 
 func (vpm *VPNProfileManager) saveProfiles() error {
-	configPath := filepath.Join(vpm.configDir, "vpn-profiles.json")
+	_ = filepath.Join(vpm.configDir, "vpn-profiles.json") // configPath for future use
 
 	// Ensure config directory exists
 	if err := os.MkdirAll(vpm.configDir, 0o755); err != nil {

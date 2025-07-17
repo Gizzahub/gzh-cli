@@ -261,37 +261,37 @@ type TaskStatus struct {
 	Error     string                 `json:"error,omitempty"`
 }
 
-// PluginInfo represents information about a plugin
-type PluginInfo struct {
-	Name         string    `json:"name"`
-	Version      string    `json:"version"`
-	Description  string    `json:"description"`
-	Author       string    `json:"author"`
-	Status       string    `json:"status"`
-	Capabilities []string  `json:"capabilities"`
-	LoadTime     time.Time `json:"load_time"`
-	LastUsed     time.Time `json:"last_used"`
-	CallCount    int64     `json:"call_count"`
-	ErrorCount   int64     `json:"error_count"`
-}
+// PluginInfo represents information about a plugin - DISABLED (plugins package removed)
+// type PluginInfo struct {
+//	Name         string    `json:"name"`
+//	Version      string    `json:"version"`
+//	Description  string    `json:"description"`
+//	Author       string    `json:"author"`
+//	Status       string    `json:"status"`
+//	Capabilities []string  `json:"capabilities"`
+//	LoadTime     time.Time `json:"load_time"`
+//	LastUsed     time.Time `json:"last_used"`
+//	CallCount    int64     `json:"call_count"`
+//	ErrorCount   int64     `json:"error_count"`
+// }
 
-// PluginExecuteRequest represents a plugin execution request
-type PluginExecuteRequest struct {
-	PluginName string                 `json:"plugin_name"`
-	Method     string                 `json:"method,omitempty"`
-	Args       map[string]interface{} `json:"args"`
-	Timeout    time.Duration          `json:"timeout,omitempty"`
-}
+// PluginExecuteRequest represents a plugin execution request - DISABLED (plugins package removed)
+// type PluginExecuteRequest struct {
+//	PluginName string                 `json:"plugin_name"`
+//	Method     string                 `json:"method,omitempty"`
+//	Args       map[string]interface{} `json:"args"`
+//	Timeout    time.Duration          `json:"timeout,omitempty"`
+// }
 
-// PluginExecuteResult represents the result of plugin execution
-type PluginExecuteResult struct {
-	PluginName string        `json:"plugin_name"`
-	Method     string        `json:"method"`
-	Result     interface{}   `json:"result"`
-	Error      string        `json:"error,omitempty"`
-	Duration   time.Duration `json:"duration"`
-	Timestamp  time.Time     `json:"timestamp"`
-}
+// PluginExecuteResult represents the result of plugin execution - DISABLED (plugins package removed)
+// type PluginExecuteResult struct {
+//	PluginName string        `json:"plugin_name"`
+//	Method     string        `json:"method"`
+//	Result     interface{}   `json:"result"`
+//	Error      string        `json:"error,omitempty"`
+//	Duration   time.Duration `json:"duration"`
+//	Timestamp  time.Time     `json:"timestamp"`
+// }
 
 // Event represents a system event
 type Event struct {

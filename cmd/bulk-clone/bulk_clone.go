@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/gizzahub/gzh-manager-go/internal/config"
-	"github.com/gizzahub/gzh-manager-go/internal/env"
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	pkgconfig "github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
@@ -103,7 +101,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 		configPath = o.configFile
 	}
 
-	cfg, err := configService.LoadConfiguration(ctx, configPath)
+	_, err = configService.LoadConfiguration(ctx, configPath)
 	if err != nil {
 		return fmt.Errorf("failed to load configuration: %w", err)
 	}
@@ -149,12 +147,6 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 
 		fmt.Printf("Processing %s organization: %s -> %s\n", target.Provider, target.Name, target.CloneDir)
 
-		// Use the strategy from target or override from command line
-		strategy := target.Strategy
-		if o.strategy != "reset" { // If user specified a different strategy
-			strategy = o.strategy
-		}
-
 		err := o.executeProviderCloning(ctx, target, target.CloneDir)
 		if err != nil {
 			fmt.Printf("❌ Error processing %s/%s: %v\n", target.Provider, target.Name, err)
@@ -170,16 +162,16 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 // runWithGZHConfig handles bulk cloning using gzh.yaml configuration format
 func (o *bulkCloneOptions) runWithGZHConfig(ctx context.Context) error {
 	// Load gzh.yaml configuration
-	gzhConfig, err := config.LoadConfig()
+	gzhConfig, err := pkgconfig.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("failed to load gzh.yaml config: %w", err)
 	}
 
 	// Create integration wrapper
-	integration := config.NewBulkCloneIntegration(gzhConfig)
+	integration := pkgconfig.NewBulkCloneIntegration(gzhConfig)
 
 	// Get all targets or filter by provider
-	var targets []config.BulkCloneTarget
+	var targets []pkgconfig.BulkCloneTarget
 	if o.providerFilter != "" {
 		if err := integration.ValidateProvider(o.providerFilter); err != nil {
 			return fmt.Errorf("invalid provider filter: %w", err)
@@ -226,7 +218,7 @@ func (o *bulkCloneOptions) runWithGZHConfig(ctx context.Context) error {
 		}
 
 		// Expand clone directory
-		targetPath := config.ExpandEnvironmentVariables(target.CloneDir)
+		targetPath := pkgconfig.ExpandEnvironmentVariables(target.CloneDir)
 		fmt.Printf("   📁 Target directory: %s\n", targetPath)
 		fmt.Printf("   🔧 Strategy: %s\n", target.Strategy)
 
@@ -250,21 +242,21 @@ func (o *bulkCloneOptions) runWithGZHConfig(ctx context.Context) error {
 }
 
 // executeProviderCloning executes the cloning operation for a specific provider
-func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target config.BulkCloneTarget, targetPath string) error {
+func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target pkgconfig.BulkCloneTarget, targetPath string) error {
 	switch target.Provider {
-	case config.ProviderGitHub:
+	case pkgconfig.ProviderGitHub:
 		// Use resumable clone if requested or if parallel/worker pool is enabled
 		if o.resume || o.parallel > 1 {
 			return github.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
 		return github.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
-	case config.ProviderGitLab:
+	case pkgconfig.ProviderGitLab:
 		// Use resumable clone if requested or if parallel/worker pool is enabled
 		if o.resume || o.parallel > 1 {
 			return gitlab.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
 		return gitlab.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
-	case config.ProviderGitea:
+	case pkgconfig.ProviderGitea:
 		// Gitea support would go here
 		return fmt.Errorf("gitea provider not yet implemented for gzh.yaml format")
 	default:

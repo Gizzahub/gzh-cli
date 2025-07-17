@@ -4,15 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
-	"sync"
 	"time"
-
-	"go.uber.org/zap"
-	"gopkg.in/yaml.v3"
 )
 
 // NetworkPolicyManifest represents a Kubernetes NetworkPolicy in YAML format

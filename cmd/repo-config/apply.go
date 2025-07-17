@@ -172,20 +172,6 @@ type ConfigurationChange struct {
 	Action       string `json:"action"` // create, update, delete
 }
 
-// getActionSymbol returns the symbol for a change action
-func getActionSymbol(action string) string {
-	switch action {
-	case "create":
-		return "➕"
-	case "update":
-		return "🔄"
-	case "delete":
-		return "➖"
-	default:
-		return "📝"
-	}
-}
-
 // getAffectedRepoCount returns the number of unique repositories affected
 func getAffectedRepoCount(changes []ConfigurationChange) int {
 	repos := make(map[string]bool)

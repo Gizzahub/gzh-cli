@@ -418,6 +418,34 @@ type TaskListResponse struct {
 	Offset int    `json:"offset"`
 }
 
+// InstanceInfo represents monitoring instance information
+type InstanceInfo struct {
+	ID           string            `json:"id"`
+	Name         string            `json:"name"`
+	Host         string            `json:"host"`
+	Port         int               `json:"port"`
+	Status       string            `json:"status"`
+	Version      string            `json:"version"`
+	LastSeen     time.Time         `json:"last_seen"`
+	Metadata     map[string]string `json:"metadata,omitempty"`
+	Capabilities []string          `json:"capabilities,omitempty"`
+	CreatedAt    time.Time         `json:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at"`
+}
+
+// ClusterStatus represents the status of the monitoring cluster
+type ClusterStatus struct {
+	ID              string          `json:"id"`
+	Name            string          `json:"name"`
+	Status          string          `json:"status"`
+	TotalInstances  int             `json:"total_instances"`
+	ActiveInstances int             `json:"active_instances"`
+	Instances       []InstanceInfo  `json:"instances"`
+	Leader          *InstanceInfo   `json:"leader,omitempty"`
+	LastUpdated     time.Time       `json:"last_updated"`
+	HealthChecks    map[string]bool `json:"health_checks,omitempty"`
+}
+
 // Ping tests the connection to the monitoring server
 func (c *MonitoringClient) Ping(ctx context.Context) error {
 	resp, err := c.get(ctx, "/api/v1/health")

@@ -496,17 +496,27 @@ func (rw *RepositoryWatcher) matchesWatchPatterns(path string) bool {
 
 	ext := filepath.Ext(path)
 	for _, pattern := range rw.config.WatchPatterns {
+		// Direct pattern match
 		if matched, _ := filepath.Match(pattern, path); matched {
 			return true
 		}
 
-		// Check file extension match
+		// Check file extension match (*.go, *.md, etc.)
 		if strings.HasPrefix(pattern, "*.") && pattern[1:] == ext {
 			return true
 		}
 
-		// Check glob pattern match
+		// Handle ** patterns like **/*.go, **/*.md
 		if strings.Contains(pattern, "**") {
+			// For patterns like **/*.go, match any file with .go extension
+			if strings.HasPrefix(pattern, "**/") {
+				suffixPattern := pattern[3:] // Remove "**/" prefix
+				if matched, _ := filepath.Match(suffixPattern, filepath.Base(path)); matched {
+					return true
+				}
+			}
+
+			// General glob pattern with ** replaced by *
 			cleanPattern := strings.ReplaceAll(pattern, "**", "*")
 			if matched, _ := filepath.Match(cleanPattern, filepath.Base(path)); matched {
 				return true

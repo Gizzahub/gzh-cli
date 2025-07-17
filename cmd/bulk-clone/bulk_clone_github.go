@@ -3,10 +3,8 @@ package bulkclone
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 )
@@ -27,6 +25,7 @@ type bulkCloneGithubOptions struct {
 	enableCache   bool
 	enableRedis   bool
 	redisAddr     string
+	progressMode  string
 }
 
 func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
@@ -37,6 +36,7 @@ func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
 		optimized:     false,
 		streamingMode: false,
 		memoryLimit:   "500MB",
+		progressMode:  "compact",
 	}
 }
 
@@ -108,19 +108,9 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 
 	// Determine which approach to use
 	if o.enableCache {
-		// Use cached approach
-		cacheConfig := github.DefaultCacheConfiguration()
-		cacheConfig.EnableRedisCache = o.enableRedis
-		if o.redisAddr != "" {
-			cacheConfig.RedisAddress = o.redisAddr
-		}
-
+		// Use cached approach (Redis cache disabled, using local cache only)
 		fmt.Printf("🔄 Using cached API calls for improved performance\n")
-		if o.enableRedis {
-			fmt.Printf("📡 Redis caching enabled at: %s\n", cacheConfig.RedisAddress)
-		}
-
-		err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token, cacheConfig.ToCacheManagerConfig())
+		err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
 	} else if o.optimized || o.streamingMode || token != "" {
 		if token == "" {
 			fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
@@ -134,7 +124,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 
 		err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
 	} else if o.resume || o.parallel > 1 {
-		err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume)
+		err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 	} else {
 		err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
 	}
@@ -154,40 +144,43 @@ func (o *bulkCloneGithubOptions) loadFromConfig() error {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclonepkg.LoadConfig(configPath)
+	cfg, err := config.LoadConfigFromFile(configPath)
 	if err != nil {
 		return err
 	}
 
 	// If orgName is specified via CLI, use it; otherwise get from config
 	if o.orgName == "" {
-		// Handle multiple organizations from config
-		// First try to get from RepoRoots, then fall back to defaults
-		if len(cfg.RepoRoots) > 0 {
-			// Use the first organization from repo roots
-			o.orgName = cfg.RepoRoots[0].OrgName
-		} else if cfg.Default.Github.OrgName != "" {
-			o.orgName = cfg.Default.Github.OrgName
+		// Look for GitHub provider configuration
+		if githubProvider, exists := cfg.Providers[config.ProviderGitHub]; exists {
+			if len(githubProvider.Orgs) > 0 {
+				o.orgName = githubProvider.Orgs[0].Name
+			} else {
+				return fmt.Errorf("no GitHub organizations found in config")
+			}
 		} else {
-			return fmt.Errorf("no organization found in config")
+			return fmt.Errorf("no GitHub provider configuration found")
 		}
 	}
 
-	// Get config for the specific organization
-	orgConfig, err := cfg.GetGithubOrgConfig(o.orgName)
-	if err != nil {
-		return err
+	// Find the organization configuration
+	var orgConfig *config.GitTarget
+	if githubProvider, exists := cfg.Providers[config.ProviderGitHub]; exists {
+		for i := range githubProvider.Orgs {
+			if githubProvider.Orgs[i].Name == o.orgName {
+				orgConfig = &githubProvider.Orgs[i]
+				break
+			}
+		}
+	}
+
+	if orgConfig == nil {
+		return fmt.Errorf("organization '%s' not found in GitHub provider configuration", o.orgName)
 	}
 
 	// Apply config values (CLI flags take precedence)
-	if o.targetPath == "" && orgConfig.RootPath != "" {
-		o.targetPath = bulkclonepkg.ExpandPath(orgConfig.RootPath)
-	}
-
-	// Apply protocol from config if available
-	if orgConfig.Protocol != "" {
-		// Protocol support would be implemented here
-		// For now, this is documented for future implementation
+	if o.targetPath == "" && orgConfig.CloneDir != "" {
+		o.targetPath = config.ExpandEnvironmentVariables(orgConfig.CloneDir)
 	}
 
 	// Apply auth configuration if available

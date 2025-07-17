@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
@@ -778,8 +779,8 @@ func runApplyWebhookPolicies(cmd *cobra.Command, args []string) error {
 func runPreviewWebhookPolicies(cmd *cobra.Command, args []string) error {
 	org := args[0]
 
-	policies, _ := cmd.Flags().GetStringSlice("policies")
-	repos, _ := cmd.Flags().GetStringSlice("repos")
+	_, _ = cmd.Flags().GetStringSlice("policies") // policies unused in mock
+	_, _ = cmd.Flags().GetStringSlice("repos")    // repos unused in mock
 
 	fmt.Printf("🔍 Previewing webhook policy application for: %s\n\n", org)
 

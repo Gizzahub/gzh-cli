@@ -17,8 +17,19 @@ type MockGitCommandExecutor struct {
 }
 
 func (m *MockGitCommandExecutor) ExecuteCommand(ctx context.Context, dir string, args ...string) (*GitCommandResult, error) {
-	callArgs := m.Called(ctx, dir, args)
-	return callArgs.Get(0).(*GitCommandResult), callArgs.Error(1)
+	// Convert variadic args to a slice and pass them individually
+	callArgs := append([]interface{}{ctx, dir}, argsToInterfaces(args)...)
+	callResults := m.Called(callArgs...)
+	return callResults.Get(0).(*GitCommandResult), callResults.Error(1)
+}
+
+// Helper function to convert string slice to interface slice
+func argsToInterfaces(args []string) []interface{} {
+	interfaces := make([]interface{}, len(args))
+	for i, arg := range args {
+		interfaces[i] = arg
+	}
+	return interfaces
 }
 
 func (m *MockGitCommandExecutor) GetStatus(ctx context.Context, dir string) (*GitStatus, error) {
@@ -160,9 +171,9 @@ func TestSynchronizeWithLocalChanges(t *testing.T) {
 
 	mockGit.On("GetStatus", mock.Anything, "/test/repo").Return(mockStatus, nil)
 	mockGit.On("GetRemoteInfo", mock.Anything, "/test/repo", "origin").Return(mockRemoteInfo, nil)
-	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", []string{"add", "."}).Return(mockCommitResult, nil)
-	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", []string{"commit", "-m", mock.AnythingOfType("string")}).Return(mockCommitResult, nil)
-	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", []string{"push", "origin", "main"}).Return(mockPushResult, nil)
+	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", "add", ".").Return(mockCommitResult, nil)
+	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", "commit", "-m", mock.AnythingOfType("string")).Return(mockCommitResult, nil)
+	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", "push", "origin", "main").Return(mockPushResult, nil)
 
 	ctx := context.Background()
 	result, err := synchronizer.Synchronize(ctx)
@@ -238,9 +249,9 @@ func TestSynchronizeBidirectionalWithDivergence(t *testing.T) {
 
 	mockGit.On("GetStatus", mock.Anything, "/test/repo").Return(mockStatus, nil)
 	mockGit.On("GetRemoteInfo", mock.Anything, "/test/repo", "origin").Return(mockRemoteInfo, nil)
-	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", []string{"fetch", "origin"}).Return(mockFetchResult, nil)
-	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", []string{"merge", "origin/main"}).Return(mockMergeResult, nil)
-	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", []string{"push", "origin", "main"}).Return(mockPushResult, nil)
+	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", "fetch", "origin").Return(mockFetchResult, nil)
+	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", "merge", "origin/main").Return(mockMergeResult, nil)
+	mockGit.On("ExecuteCommand", mock.Anything, "/test/repo", "push", "origin", "main").Return(mockPushResult, nil)
 
 	ctx := context.Background()
 	result, err := synchronizer.Synchronize(ctx)

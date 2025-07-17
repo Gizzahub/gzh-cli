@@ -79,7 +79,7 @@ func newBulkCloneStateCleanCmd() *cobra.Command {
 	return cmd
 }
 
-func runStateList() error {
+func runStateList(cmd *cobra.Command, args []string) error {
 	stateManager := bulkclonepkg.NewStateManager("")
 	states, err := stateManager.ListStates()
 	if err != nil {

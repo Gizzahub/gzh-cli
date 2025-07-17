@@ -3,9 +3,8 @@ package github
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
-
-	"github.com/gizzahub/gzh-manager-go/pkg/cache"
 )
 
 // BulkCloneStats represents statistics from bulk clone operations
@@ -19,31 +18,28 @@ type BulkCloneStats struct {
 	Failed            int
 }
 
-// CachedGitHubClient wraps GitHub API calls with caching
+// CachedGitHubClient wraps GitHub API calls with caching - DISABLED (cache package removed)
+// Simple in-memory cache implementation to replace deleted cache package
 type CachedGitHubClient struct {
-	cacheManager *cache.CacheManager
-	token        string
+	cache sync.Map // Simple in-memory cache replacement
+	token string
 }
 
-// NewCachedGitHubClient creates a new cached GitHub client
-func NewCachedGitHubClient(token string, cacheManager *cache.CacheManager) *CachedGitHubClient {
+// NewCachedGitHubClient creates a new cached GitHub client - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
+func NewCachedGitHubClient(token string) *CachedGitHubClient {
 	return &CachedGitHubClient{
-		cacheManager: cacheManager,
-		token:        token,
+		cache: sync.Map{},
+		token: token,
 	}
 }
 
-// ListRepositoriesWithCache lists repositories with caching support
+// ListRepositoriesWithCache lists repositories with caching support - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
 func (c *CachedGitHubClient) ListRepositoriesWithCache(ctx context.Context, org string) ([]string, error) {
-	// Create cache key
-	cacheKey := cache.CacheKey{
-		Service:    "github",
-		Resource:   "repos",
-		Identifier: org,
-	}
-
-	// Try to get from cache first
-	if cached, found := c.cacheManager.Get(ctx, cacheKey); found {
+	// Try to get from simple cache first
+	cacheKey := fmt.Sprintf("repos:%s", org)
+	if cached, found := c.cache.Load(cacheKey); found {
 		if repos, ok := cached.([]string); ok {
 			return repos, nil
 		}
@@ -55,23 +51,18 @@ func (c *CachedGitHubClient) ListRepositoriesWithCache(ctx context.Context, org 
 		return nil, fmt.Errorf("failed to fetch repositories: %w", err)
 	}
 
-	// Store in cache with 10 minute TTL
-	c.cacheManager.PutWithTTL(ctx, cacheKey, repos, 10*time.Minute)
+	// Store in simple cache (no TTL implementation)
+	c.cache.Store(cacheKey, repos)
 
 	return repos, nil
 }
 
-// GetDefaultBranchWithCache gets repository default branch with caching
+// GetDefaultBranchWithCache gets repository default branch with caching - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
 func (c *CachedGitHubClient) GetDefaultBranchWithCache(ctx context.Context, org, repo string) (string, error) {
-	// Create cache key
-	cacheKey := cache.CacheKey{
-		Service:    "github",
-		Resource:   "default_branch",
-		Identifier: fmt.Sprintf("%s/%s", org, repo),
-	}
-
-	// Try to get from cache first
-	if cached, found := c.cacheManager.Get(ctx, cacheKey); found {
+	// Try to get from simple cache first
+	cacheKey := fmt.Sprintf("default_branch:%s/%s", org, repo)
+	if cached, found := c.cache.Load(cacheKey); found {
 		if branch, ok := cached.(string); ok {
 			return branch, nil
 		}
@@ -83,26 +74,41 @@ func (c *CachedGitHubClient) GetDefaultBranchWithCache(ctx context.Context, org,
 		return "", fmt.Errorf("failed to get default branch: %w", err)
 	}
 
-	// Store in cache with 30 minute TTL (default branches change rarely)
-	c.cacheManager.PutWithTTL(ctx, cacheKey, branch, 30*time.Minute)
+	// Store in simple cache (no TTL implementation)
+	c.cache.Store(cacheKey, branch)
 
 	return branch, nil
 }
 
-// InvalidateOrgCache invalidates all cache entries for an organization
+// InvalidateOrgCache invalidates all cache entries for an organization - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
 func (c *CachedGitHubClient) InvalidateOrgCache(ctx context.Context, org string) int {
-	return c.cacheManager.InvalidateByIdentifier(ctx, "github", org)
+	count := 0
+	cacheKey := fmt.Sprintf("repos:%s", org)
+	if _, found := c.cache.LoadAndDelete(cacheKey); found {
+		count++
+	}
+	return count
 }
 
-// InvalidateRepoCache invalidates cache entries for a specific repository
+// InvalidateRepoCache invalidates cache entries for a specific repository - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
 func (c *CachedGitHubClient) InvalidateRepoCache(ctx context.Context, org, repo string) int {
-	identifier := fmt.Sprintf("%s/%s", org, repo)
-	return c.cacheManager.InvalidateByIdentifier(ctx, "github", identifier)
+	count := 0
+	cacheKey := fmt.Sprintf("default_branch:%s/%s", org, repo)
+	if _, found := c.cache.LoadAndDelete(cacheKey); found {
+		count++
+	}
+	return count
 }
 
-// GetCacheStats returns GitHub cache statistics
-func (c *CachedGitHubClient) GetCacheStats() cache.CacheManagerStats {
-	return c.cacheManager.GetStats()
+// GetCacheStats returns GitHub cache statistics - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
+func (c *CachedGitHubClient) GetCacheStats() map[string]interface{} {
+	return map[string]interface{}{
+		"type": "simple_sync_map",
+		"note": "cache package removed, using simple sync.Map",
+	}
 }
 
 // CachedBulkCloneManager extends OptimizedBulkCloneManager with caching
@@ -111,13 +117,11 @@ type CachedBulkCloneManager struct {
 	cachedClient *CachedGitHubClient
 }
 
-// NewCachedBulkCloneManager creates a new cached bulk clone manager
-func NewCachedBulkCloneManager(token string, config OptimizedCloneConfig, cacheConfig cache.CacheManagerConfig) (*CachedBulkCloneManager, error) {
-	// Create cache manager
-	cacheManager := cache.NewCacheManager(cacheConfig)
-
-	// Create cached client
-	cachedClient := NewCachedGitHubClient(token, cacheManager)
+// NewCachedBulkCloneManager creates a new cached bulk clone manager - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
+func NewCachedBulkCloneManager(token string, config OptimizedCloneConfig) (*CachedBulkCloneManager, error) {
+	// Create cached client with simple cache
+	cachedClient := NewCachedGitHubClient(token)
 
 	// Create optimized manager
 	optimizedManager, err := NewOptimizedBulkCloneManager(token, config)
@@ -178,22 +182,20 @@ func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Cont
 	return bulkStats, nil
 }
 
-// Close cleans up cached manager resources
+// Close cleans up cached manager resources - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
 func (cbm *CachedBulkCloneManager) Close() error {
-	// Close cache manager
-	if err := cbm.cachedClient.cacheManager.Close(); err != nil {
-		return fmt.Errorf("failed to close cache manager: %w", err)
-	}
-
+	// No cache manager to close - using simple sync.Map
 	// Close optimized manager
 	return cbm.OptimizedBulkCloneManager.Close()
 }
 
-// RefreshAllOptimizedStreamingWithCache is the cached version of the streaming API
-func RefreshAllOptimizedStreamingWithCache(ctx context.Context, targetPath, org, strategy, token string, cacheConfig cache.CacheManagerConfig) error {
+// RefreshAllOptimizedStreamingWithCache is the cached version of the streaming API - DISABLED (cache package removed)
+// Simple implementation without external cache dependency
+func RefreshAllOptimizedStreamingWithCache(ctx context.Context, targetPath, org, strategy, token string) error {
 	// Create cached manager
 	config := DefaultOptimizedCloneConfig()
-	manager, err := NewCachedBulkCloneManager(token, config, cacheConfig)
+	manager, err := NewCachedBulkCloneManager(token, config)
 	if err != nil {
 		return fmt.Errorf("failed to create cached bulk clone manager: %w", err)
 	}
@@ -211,48 +213,42 @@ func RefreshAllOptimizedStreamingWithCache(ctx context.Context, targetPath, org,
 		stats.Successful, stats.Failed,
 		float64(stats.Successful)/float64(stats.TotalRepositories)*100)
 
-	fmt.Printf("📊 Cache performance: %.1f%% hit rate (local: %d hits, %d misses)\n",
-		cacheStats.Local.HitRate*100, cacheStats.Local.Hits, cacheStats.Local.Misses)
+	fmt.Printf("📊 Cache performance: %s\n", cacheStats["note"])
 
 	return nil
 }
 
-// CacheConfiguration provides cache configuration for GitHub operations
+// CacheConfiguration provides cache configuration for GitHub operations - DISABLED (cache package removed)
+// Simple configuration struct without external cache dependency
 type CacheConfiguration struct {
 	EnableLocalCache bool
-	EnableRedisCache bool
-	LocalCacheSize   int
-	DefaultTTL       time.Duration
-	RedisAddress     string
-	RedisPassword    string
+	// EnableRedisCache bool // Disabled - cache package removed
+	LocalCacheSize int
+	DefaultTTL     time.Duration
+	// RedisAddress     string // Disabled - cache package removed
+	// RedisPassword    string // Disabled - cache package removed
 }
 
-// DefaultCacheConfiguration returns sensible defaults for GitHub caching
+// DefaultCacheConfiguration returns sensible defaults for GitHub caching - DISABLED (cache package removed)
+// Simple configuration without external cache dependency
 func DefaultCacheConfiguration() CacheConfiguration {
 	return CacheConfiguration{
 		EnableLocalCache: true,
-		EnableRedisCache: false, // Disabled by default
-		LocalCacheSize:   1000,
-		DefaultTTL:       10 * time.Minute,
-		RedisAddress:     "localhost:6379",
-		RedisPassword:    "",
+		// EnableRedisCache: false, // Disabled - cache package removed
+		LocalCacheSize: 1000,
+		DefaultTTL:     10 * time.Minute,
+		// RedisAddress:     "localhost:6379", // Disabled - cache package removed
+		// RedisPassword:    "", // Disabled - cache package removed
 	}
 }
 
-// ToCacheManagerConfig converts to cache manager configuration
-func (cc CacheConfiguration) ToCacheManagerConfig() cache.CacheManagerConfig {
-	return cache.CacheManagerConfig{
-		UseRedis: cc.EnableRedisCache,
-		LocalCacheConfig: cache.CacheConfig{
-			Capacity:        cc.LocalCacheSize,
-			DefaultTTL:      cc.DefaultTTL,
-			CleanupInterval: cc.DefaultTTL / 2,
-		},
-		RedisCacheConfig: cache.RedisCacheConfig{
-			Address:  cc.RedisAddress,
-			Password: cc.RedisPassword,
-		},
-		DefaultTTL: cc.DefaultTTL,
-		TagPrefix:  "github",
+// ToCacheManagerConfig converts to cache manager configuration - DISABLED (cache package removed)
+// Simple configuration conversion without external cache dependency
+func (cc CacheConfiguration) ToCacheManagerConfig() map[string]interface{} {
+	return map[string]interface{}{
+		"enable_local_cache": cc.EnableLocalCache,
+		"local_cache_size":   cc.LocalCacheSize,
+		"default_ttl":        cc.DefaultTTL,
+		"note":               "cache package removed, using simple sync.Map",
 	}
 }

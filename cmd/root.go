@@ -5,34 +5,20 @@ import (
 	"fmt"
 
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
-	"github.com/gizzahub/gzh-manager-go/cmd/ansible"
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
-	"github.com/gizzahub/gzh-manager-go/cmd/cloudformation"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
-	debugcmd "github.com/gizzahub/gzh-manager-go/cmd/debug"
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/docker"
 	doctorcmd "github.com/gizzahub/gzh-manager-go/cmd/doctor"
 	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
-	githubactions "github.com/gizzahub/gzh-manager-go/cmd/github-actions"
-	gitlabci "github.com/gizzahub/gzh-manager-go/cmd/gitlab-ci"
-	"github.com/gizzahub/gzh-manager-go/cmd/helm"
-	"github.com/gizzahub/gzh-manager-go/cmd/i18n"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
-	"github.com/gizzahub/gzh-manager-go/cmd/jenkins"
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	"github.com/gizzahub/gzh-manager-go/cmd/monitoring"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
-	"github.com/gizzahub/gzh-manager-go/cmd/operator"
-	"github.com/gizzahub/gzh-manager-go/cmd/performance"
-	"github.com/gizzahub/gzh-manager-go/cmd/plugin"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
-	"github.com/gizzahub/gzh-manager-go/cmd/serve"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
-	"github.com/gizzahub/gzh-manager-go/cmd/template"
-	"github.com/gizzahub/gzh-manager-go/cmd/terraform"
 	"github.com/spf13/cobra"
 )
 
@@ -47,34 +33,20 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 
 	cmd.AddCommand(newVersionCmd(version))
 	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
-	cmd.AddCommand(ansible.AnsibleCmd)
 	cmd.AddCommand(bulkclone.NewBulkCloneCmd(ctx))
-	cmd.AddCommand(cloudformation.CloudFormationCmd)
 	cmd.AddCommand(config.NewConfigCmd())
-	cmd.AddCommand(debugcmd.DebugCmd)
 	cmd.AddCommand(doctorcmd.DoctorCmd)
 	cmd.AddCommand(devenv.NewDevEnvCmd())
 	cmd.AddCommand(docker.DockerCmd)
 	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
-	cmd.AddCommand(githubactions.GitHubActionsCmd)
-	cmd.AddCommand(gitlabci.GitLabCICmd)
-	cmd.AddCommand(helm.HelmCmd)
-	cmd.AddCommand(i18n.I18nCmd)
 	cmd.AddCommand(ide.NewIDECmd(ctx))
-	cmd.AddCommand(jenkins.JenkinsCmd)
 	cmd.AddCommand(migrate.NewMigrateCmd())
 	cmd.AddCommand(monitoring.NewMonitoringCmd(ctx))
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
-	cmd.AddCommand(operator.OperatorCmd)
-	cmd.AddCommand(performance.NewPerformanceCmd())
-	cmd.AddCommand(plugin.PluginCmd)
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
 	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
-	cmd.AddCommand(serve.ServeCmd)
 	cmd.AddCommand(shell.ShellCmd)
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
-	cmd.AddCommand(template.TemplateCmd)
-	cmd.AddCommand(terraform.TerraformCmd)
 	cmd.AddCommand(NewTaskRunnerCmd())
 	cmd.AddCommand(NewWebhookCmd())
 	cmd.AddCommand(NewEventCmd())

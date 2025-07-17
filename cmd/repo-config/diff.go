@@ -172,7 +172,7 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 		fmt.Println(strings.Repeat("─", 80))
 
 		for _, diff := range repoDiffs {
-			actionSymbol := getActionSymbol(diff.ChangeType)
+			actionSymbol := getActionSymbolWithText(diff.ChangeType)
 			impactSymbol := getImpactSymbol(diff.Impact)
 
 			if showValues {
@@ -289,31 +289,6 @@ func getImpactSymbol(impact string) string {
 	}
 }
 
-// getActionSymbol returns the symbol for action type
-func getActionSymbol(changeType string) string {
-	switch changeType {
-	case "create":
-		return "➕ Create"
-	case "update":
-		return "🔄 Update"
-	case "delete":
-		return "➖ Delete"
-	default:
-		return "❓ Unknown"
-	}
-}
-
-// truncateString truncates a string to the specified length
-func truncateString(s string, maxLength int) string {
-	if len(s) <= maxLength {
-		return s
-	}
-	if maxLength <= 3 {
-		return s[:maxLength]
-	}
-	return s[:maxLength-3] + "..."
-}
-
 // groupDifferencesByRepository groups differences by repository name
 func groupDifferencesByRepository(differences []ConfigurationDifference) map[string][]ConfigurationDifference {
 	grouped := make(map[string][]ConfigurationDifference)
@@ -427,7 +402,7 @@ func displayDetailedDifferences(differences []ConfigurationDifference, showValue
 		fmt.Printf("Repository: %s\n", diff.Repository)
 		fmt.Printf("Setting: %s\n", diff.Setting)
 		fmt.Printf("Template: %s\n", diff.Template)
-		fmt.Printf("Change Type: %s\n", getActionSymbol(diff.ChangeType))
+		fmt.Printf("Change Type: %s\n", getActionSymbolWithText(diff.ChangeType))
 		fmt.Printf("Impact: %s\n", getImpactSymbol(diff.Impact))
 
 		if showValues {
@@ -469,6 +444,7 @@ func analyzeSettingChange(diff ConfigurationDifference) string {
 		if strings.Contains(diff.Setting, "enforce_admins") {
 			return "Admin enforcement affects repository admin bypass capabilities"
 		}
+		return "Branch protection rule changes affect repository security"
 
 	case strings.Contains(diff.Setting, "permissions"):
 		return "Permission changes affect team access levels to the repository"

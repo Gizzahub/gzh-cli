@@ -9,7 +9,6 @@ import (
 	"time"
 
 	configservice "github.com/gizzahub/gzh-manager-go/internal/config"
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/spf13/cobra"
 )

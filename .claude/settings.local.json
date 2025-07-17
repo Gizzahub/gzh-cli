@@ -27,7 +27,10 @@
       "Bash(go get:*)",
       "Bash(go install:*)",
       "Bash(mockgen:*)",
-      "Bash(./tasks/qa/test-what-works.sh:*)"
+      "Bash(./tasks/qa/test-what-works.sh:*)",
+      "Bash(go vet:*)",
+      "Bash(go fmt:*)",
+      "Bash(gofumpt:*)"
     ],
     "deny": []
   }

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/gizzahub/gzh-manager-go/pkg/recovery"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,10 +32,11 @@ func TestTokenAwareGitHubClient_Creation(t *testing.T) {
 
 func TestTokenAwareGitHubClient_WithOAuth2(t *testing.T) {
 	config := github.DefaultTokenAwareGitHubClientConfig()
-	config.OAuth2Config = &recovery.OAuth2Config{
-		ClientID:     "test-client-id",
-		ClientSecret: "test-client-secret",
-	}
+	// OAuth2Config disabled - recovery package removed
+	// config.OAuth2Config = &recovery.OAuth2Config{
+	//	ClientID:     "test-client-id",
+	//	ClientSecret: "test-client-secret",
+	// }
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)

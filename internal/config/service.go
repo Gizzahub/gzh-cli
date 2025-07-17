@@ -41,6 +41,18 @@ type ConfigService interface {
 
 	// IsLoaded returns true if configuration is loaded
 	IsLoaded() bool
+
+	// GetWarnings returns any warnings from configuration loading
+	GetWarnings() []string
+
+	// GetRequiredActions returns any required actions from configuration loading
+	GetRequiredActions() []string
+
+	// GetBulkCloneTargets returns bulk clone targets for integration
+	GetBulkCloneTargets(ctx context.Context, providerFilter string) ([]config.BulkCloneTarget, error)
+
+	// GetValidationResult returns the latest validation result
+	GetValidationResult() *config.StartupValidationResult
 }
 
 // DefaultConfigService implements ConfigService using Viper

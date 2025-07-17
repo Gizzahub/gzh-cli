@@ -14,7 +14,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/debug"
 	"github.com/gizzahub/gzh-manager-go/pkg/gzhclient"
 	"github.com/spf13/cobra"
 )
@@ -243,106 +242,106 @@ func (s *Shell) registerCommands() {
 		Name:        "help",
 		Description: "Show available commands",
 		Usage:       "help [command]",
-		Handler:     s.handleHelp,
-		Completer:   s.completeHelp,
+		Handler:     handleHelp,
+		Completer:   completeHelp,
 	}
 
 	s.commands["exit"] = ShellCommand{
 		Name:        "exit",
 		Description: "Exit the shell",
 		Usage:       "exit",
-		Handler:     s.handleExit,
+		Handler:     handleExit,
 	}
 
 	s.commands["quit"] = ShellCommand{
 		Name:        "quit",
 		Description: "Exit the shell",
 		Usage:       "quit",
-		Handler:     s.handleExit,
+		Handler:     handleExit,
 	}
 
 	s.commands["status"] = ShellCommand{
 		Name:        "status",
 		Description: "Show system status",
 		Usage:       "status [--json]",
-		Handler:     s.handleStatus,
+		Handler:     handleStatus,
 	}
 
 	s.commands["memory"] = ShellCommand{
 		Name:        "memory",
 		Description: "Show memory usage",
 		Usage:       "memory [--json] [--gc]",
-		Handler:     s.handleMemory,
+		Handler:     handleMemory,
 	}
 
 	s.commands["plugins"] = ShellCommand{
 		Name:        "plugins",
 		Description: "List and manage plugins",
 		Usage:       "plugins [list|exec <name> <method>]",
-		Handler:     s.handlePlugins,
-		Completer:   s.completePlugins,
+		Handler:     handlePlugins,
+		Completer:   completePlugins,
 	}
 
 	s.commands["config"] = ShellCommand{
 		Name:        "config",
 		Description: "Show/modify configuration",
 		Usage:       "config [get|set <key> <value>|list]",
-		Handler:     s.handleConfig,
+		Handler:     handleConfig,
 	}
 
 	s.commands["metrics"] = ShellCommand{
 		Name:        "metrics",
 		Description: "Show system metrics",
 		Usage:       "metrics [--json] [--watch]",
-		Handler:     s.handleMetrics,
+		Handler:     handleMetrics,
 	}
 
 	s.commands["trace"] = ShellCommand{
 		Name:        "trace",
 		Description: "Control execution tracing",
 		Usage:       "trace [start|stop|status]",
-		Handler:     s.handleTrace,
+		Handler:     handleTrace,
 	}
 
 	s.commands["profile"] = ShellCommand{
 		Name:        "profile",
 		Description: "Control performance profiling",
 		Usage:       "profile [start|stop|status]",
-		Handler:     s.handleProfile,
+		Handler:     handleProfile,
 	}
 
 	s.commands["history"] = ShellCommand{
 		Name:        "history",
 		Description: "Show command history",
 		Usage:       "history [--clear] [--count <n>]",
-		Handler:     s.handleHistory,
+		Handler:     handleHistory,
 	}
 
 	s.commands["clear"] = ShellCommand{
 		Name:        "clear",
 		Description: "Clear the screen",
 		Usage:       "clear",
-		Handler:     s.handleClear,
+		Handler:     handleClear,
 	}
 
 	s.commands["context"] = ShellCommand{
 		Name:        "context",
 		Description: "Show shell context",
 		Usage:       "context [--json]",
-		Handler:     s.handleContext,
+		Handler:     handleContext,
 	}
 
 	s.commands["logs"] = ShellCommand{
 		Name:        "logs",
 		Description: "Show recent logs",
 		Usage:       "logs [--count <n>] [--level <level>]",
-		Handler:     s.handleLogs,
+		Handler:     handleLogs,
 	}
 }
 
 // Command handlers
 
-func (s *Shell) handleHelp(args []string) error {
+func handleHelp(s *Shell, args []string) error {
 	if len(args) > 0 {
 		// Show help for specific command
 		cmdName := args[0]
@@ -377,23 +376,25 @@ func (s *Shell) handleHelp(args []string) error {
 	return nil
 }
 
-func (s *Shell) handleExit(args []string) error {
+func handleExit(s *Shell, args []string) error {
 	s.Stop()
 	return nil
 }
 
-func (s *Shell) handleStatus(args []string) error {
+func handleStatus(s *Shell, args []string) error {
 	jsonOutput := len(args) > 0 && args[0] == "--json"
 
 	health := s.client.Health()
-	memStats := debug.ProfileMemoryUsage()
+
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
 
 	status := map[string]interface{}{
-		"healthy":    health.Healthy,
-		"uptime":     health.Uptime,
-		"version":    health.Version,
-		"memory_mb":  memStats["allocated_mb"],
-		"goroutines": memStats["goroutines"],
+		"healthy":    health.Overall == "healthy",
+		"uptime":     time.Since(health.Timestamp).String(),
+		"version":    "1.0.0", // This should come from build info
+		"memory_mb":  float64(m.Alloc) / 1024 / 1024,
+		"goroutines": runtime.NumGoroutine(),
 		"timestamp":  time.Now(),
 	}
 
@@ -412,7 +413,7 @@ func (s *Shell) handleStatus(args []string) error {
 	return nil
 }
 
-func (s *Shell) handleMemory(args []string) error {
+func handleMemory(s *Shell, args []string) error {
 	jsonOutput := false
 	runGC := false
 
@@ -430,7 +431,17 @@ func (s *Shell) handleMemory(args []string) error {
 		runtime.GC()
 	}
 
-	memStats := debug.ProfileMemoryUsage()
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	memStats := map[string]interface{}{
+		"allocated_mb":   float64(m.Alloc) / 1024 / 1024,
+		"total_alloc_mb": float64(m.TotalAlloc) / 1024 / 1024,
+		"sys_mb":         float64(m.Sys) / 1024 / 1024,
+		"num_gc":         m.NumGC,
+		"goroutines":     runtime.NumGoroutine(),
+		"heap_objects":   m.HeapObjects,
+	}
 
 	if jsonOutput {
 		data, _ := json.MarshalIndent(memStats, "", "  ")
@@ -448,66 +459,14 @@ func (s *Shell) handleMemory(args []string) error {
 	return nil
 }
 
-func (s *Shell) handlePlugins(args []string) error {
-	if len(args) == 0 {
-		args = []string{"list"}
-	}
-
-	switch args[0] {
-	case "list":
-		plugins, err := s.client.ListPlugins()
-		if err != nil {
-			return fmt.Errorf("failed to list plugins: %w", err)
-		}
-
-		fmt.Printf("Available Plugins (%d):\n", len(plugins))
-		for i, plugin := range plugins {
-			fmt.Printf("  %d. %s\n", i+1, plugin.Name)
-			if plugin.Description != "" {
-				fmt.Printf("     %s\n", plugin.Description)
-			}
-		}
-
-	case "exec":
-		if len(args) < 3 {
-			return fmt.Errorf("usage: plugins exec <name> <method> [args...]")
-		}
-
-		pluginName := args[1]
-		method := args[2]
-		pluginArgs := make(map[string]interface{})
-
-		// Parse additional arguments as key=value pairs
-		for _, arg := range args[3:] {
-			if parts := strings.SplitN(arg, "=", 2); len(parts) == 2 {
-				pluginArgs[parts[0]] = parts[1]
-			}
-		}
-
-		request := gzhclient.PluginExecuteRequest{
-			PluginName: pluginName,
-			Method:     method,
-			Args:       pluginArgs,
-			Timeout:    30 * time.Second,
-		}
-
-		result, err := s.client.ExecutePlugin(context.Background(), request)
-		if err != nil {
-			return fmt.Errorf("plugin execution failed: %w", err)
-		}
-
-		fmt.Printf("Plugin Execution Result:\n")
-		data, _ := json.MarshalIndent(result, "", "  ")
-		fmt.Println(string(data))
-
-	default:
-		return fmt.Errorf("unknown plugins subcommand: %s", args[0])
-	}
-
+func handlePlugins(s *Shell, args []string) error {
+	fmt.Println("Plugin functionality has been disabled in this version.")
+	fmt.Println("The plugins package has been removed from the codebase.")
+	fmt.Println("Available subcommands: list, exec (both non-functional)")
 	return nil
 }
 
-func (s *Shell) handleConfig(args []string) error {
+func handleConfig(s *Shell, args []string) error {
 	// Simplified config handling - in a real implementation,
 	// this would integrate with the actual config system
 	fmt.Println("Configuration management not yet implemented in shell")
@@ -515,7 +474,7 @@ func (s *Shell) handleConfig(args []string) error {
 	return nil
 }
 
-func (s *Shell) handleMetrics(args []string) error {
+func handleMetrics(s *Shell, args []string) error {
 	jsonOutput := false
 	watchMode := false
 
@@ -544,9 +503,9 @@ func (s *Shell) handleMetrics(args []string) error {
 					data, _ := json.MarshalIndent(metrics, "", "  ")
 					fmt.Println(string(data))
 				} else {
-					fmt.Printf("\r[%s] CPU: %.1f%%, Memory: %.1f MB, Goroutines: %d",
+					fmt.Printf("\r[%s] CPU: %.1f%%, Memory: %d MB, Uptime: %v",
 						time.Now().Format("15:04:05"),
-						metrics.CPU, metrics.Memory, metrics.Goroutines)
+						metrics.CPU.Usage, metrics.Memory.Used/1024/1024, metrics.Uptime)
 				}
 
 				time.Sleep(1 * time.Second)
@@ -563,19 +522,22 @@ func (s *Shell) handleMetrics(args []string) error {
 			fmt.Println(string(data))
 		} else {
 			fmt.Printf("System Metrics:\n")
-			fmt.Printf("  CPU: %.1f%%\n", metrics.CPU)
-			fmt.Printf("  Memory: %.1f MB\n", metrics.Memory)
-			fmt.Printf("  Disk: %.1f GB\n", metrics.Disk)
-			fmt.Printf("  Network: %.1f KB/s\n", metrics.Network)
-			fmt.Printf("  Goroutines: %d\n", metrics.Goroutines)
-			fmt.Printf("  Load Average: %.2f\n", metrics.LoadAverage)
+			fmt.Printf("  CPU Usage: %.1f%%\n", metrics.CPU.Usage)
+			fmt.Printf("  CPU Cores: %d\n", metrics.CPU.Cores)
+			fmt.Printf("  Memory Used: %.1f MB\n", float64(metrics.Memory.Used)/1024/1024)
+			fmt.Printf("  Memory Total: %.1f MB\n", float64(metrics.Memory.Total)/1024/1024)
+			fmt.Printf("  Disk Used: %.1f GB\n", float64(metrics.Disk.Used)/1024/1024/1024)
+			fmt.Printf("  Uptime: %v\n", metrics.Uptime)
+			if len(metrics.LoadAvg) > 0 {
+				fmt.Printf("  Load Average: %.2f\n", metrics.LoadAvg[0])
+			}
 		}
 	}
 
 	return nil
 }
 
-func (s *Shell) handleTrace(args []string) error {
+func handleTrace(s *Shell, args []string) error {
 	if len(args) == 0 {
 		args = []string{"status"}
 	}
@@ -602,7 +564,7 @@ func (s *Shell) handleTrace(args []string) error {
 	return nil
 }
 
-func (s *Shell) handleProfile(args []string) error {
+func handleProfile(s *Shell, args []string) error {
 	if len(args) == 0 {
 		args = []string{"status"}
 	}
@@ -629,7 +591,7 @@ func (s *Shell) handleProfile(args []string) error {
 	return nil
 }
 
-func (s *Shell) handleHistory(args []string) error {
+func handleHistory(s *Shell, args []string) error {
 	clearHistory := false
 	count := len(s.history)
 
@@ -670,12 +632,12 @@ func (s *Shell) handleHistory(args []string) error {
 	return nil
 }
 
-func (s *Shell) handleClear(args []string) error {
+func handleClear(s *Shell, args []string) error {
 	fmt.Print("\033[2J\033[H") // ANSI escape codes to clear screen
 	return nil
 }
 
-func (s *Shell) handleContext(args []string) error {
+func handleContext(s *Shell, args []string) error {
 	jsonOutput := len(args) > 0 && args[0] == "--json"
 
 	context := ShellContext{
@@ -704,7 +666,7 @@ func (s *Shell) handleContext(args []string) error {
 	return nil
 }
 
-func (s *Shell) handleLogs(args []string) error {
+func handleLogs(s *Shell, args []string) error {
 	count := 10
 	level := ""
 
@@ -733,7 +695,7 @@ func (s *Shell) handleLogs(args []string) error {
 
 // Completion functions
 
-func (s *Shell) completeHelp(input string) []string {
+func completeHelp(s *Shell, input string) []string {
 	var completions []string
 	for name := range s.commands {
 		if strings.HasPrefix(name, input) {
@@ -743,7 +705,7 @@ func (s *Shell) completeHelp(input string) []string {
 	return completions
 }
 
-func (s *Shell) completePlugins(input string) []string {
+func completePlugins(s *Shell, input string) []string {
 	completions := []string{"list", "exec"}
 	var filtered []string
 	for _, comp := range completions {

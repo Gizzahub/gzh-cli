@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 // NewEventCmd creates a new event command
@@ -148,7 +150,7 @@ without waiting for actual GitHub events.`,
 }
 
 func runEventServer(cmd *cobra.Command, args []string, host string, port int, secret string) error {
-	ctx := context.Background()
+	_ = context.Background() // ctx unused in mock implementation
 
 	logger := getLogger()
 	logger.Info("Starting GitHub webhook server", "host", host, "port", port)
@@ -195,11 +197,11 @@ func runEventServer(cmd *cobra.Command, args []string, host string, port int, se
 }
 
 func runEventList(cmd *cobra.Command, args []string, org, repo, eventType, action, sender, since, until string, limit, offset int, outputFormat string) error {
-	ctx := context.Background()
-	logger := getLogger()
+	_ = context.Background() // ctx unused in mock implementation
+	_ = getLogger()          // logger unused in mock implementation
 
-	// Create storage implementation
-	storage := &mockEventStorage{}
+	// Create storage implementation (unused in mock)
+	_ = &mockEventStorage{}
 
 	// Build event filter
 	filter := &github.EventFilter{
@@ -271,11 +273,9 @@ func runEventList(cmd *cobra.Command, args []string, org, repo, eventType, actio
 
 func runEventGet(cmd *cobra.Command, args []string, outputFormat string) error {
 	eventID := args[0]
-	ctx := context.Background()
-	logger := getLogger()
-
-	// Create storage implementation
-	storage := &mockEventStorage{}
+	_ = context.Background() // ctx unused in mock implementation
+	_ = getLogger()          // logger unused in mock implementation
+	_ = &mockEventStorage{}  // storage unused in mock implementation
 
 	// Mock event for demonstration
 	event := &github.GitHubEvent{
@@ -315,12 +315,12 @@ func runEventGet(cmd *cobra.Command, args []string, outputFormat string) error {
 }
 
 func runEventMetrics(cmd *cobra.Command, args []string, outputFormat string) error {
-	ctx := context.Background()
+	_ = context.Background() // ctx unused in mock implementation
 	logger := getLogger()
 
-	// Create storage implementation
-	storage := &mockEventStorage{}
-	processor := github.NewEventProcessor(storage, logger)
+	// Create storage implementation (unused in mock)
+	_ = &mockEventStorage{}
+	_ = logger // logger unused in mock implementation
 
 	// Mock metrics for demonstration
 	metrics := &github.EventMetrics{
@@ -484,6 +484,58 @@ func truncate(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen-3] + "..."
+}
+
+// getLogger returns a logger that implements the github.Logger interface
+func getLogger() github.Logger {
+	return &simpleLogger{}
+}
+
+// simpleLogger implements the github.Logger interface
+type simpleLogger struct{}
+
+func (l *simpleLogger) Debug(msg string, args ...interface{}) {
+	log.Printf("[DEBUG] %s", formatMessage(msg, args...))
+}
+
+func (l *simpleLogger) Info(msg string, args ...interface{}) {
+	log.Printf("[INFO] %s", formatMessage(msg, args...))
+}
+
+func (l *simpleLogger) Warn(msg string, args ...interface{}) {
+	log.Printf("[WARN] %s", formatMessage(msg, args...))
+}
+
+func (l *simpleLogger) Error(msg string, args ...interface{}) {
+	log.Printf("[ERROR] %s", formatMessage(msg, args...))
+}
+
+// formatMessage formats a message with key-value pairs
+func formatMessage(msg string, args ...interface{}) string {
+	if len(args) == 0 {
+		return msg
+	}
+	return fmt.Sprintf("%s %v", msg, args)
+}
+
+// outputJSON marshals the data to JSON and prints it
+func outputJSON(data interface{}) error {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+	fmt.Println(string(jsonData))
+	return nil
+}
+
+// outputYAML marshals the data to YAML and prints it
+func outputYAML(data interface{}) error {
+	yamlData, err := yaml.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal YAML: %w", err)
+	}
+	fmt.Println(string(yamlData))
+	return nil
 }
 
 // Mock storage implementation for CLI demonstration

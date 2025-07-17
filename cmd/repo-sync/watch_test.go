@@ -1,12 +1,12 @@
 package reposync
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -142,7 +142,7 @@ func TestMapOperation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.expected, func(t *testing.T) {
 			// Create a mock fsnotify.Op with the given value
-			result := watcher.mapOperation(fsnotifyOpFromUint32(tt.op))
+			result := watcher.mapOperation(fsnotify.Op(tt.op))
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -251,46 +251,7 @@ func TestCalculateChecksum(t *testing.T) {
 	assert.Equal(t, checksum, checksum2)
 }
 
-// Helper function to mock fsnotify operations for testing
-func fsnotifyOpFromUint32(op uint32) mockFsnotifyOp {
-	return mockFsnotifyOp(op)
-}
-
-type mockFsnotifyOp uint32
-
-// Mock fsnotify operation constants for testing
-const (
-	mockCreate mockFsnotifyOp = 1 << iota
-	mockWrite
-	mockRemove
-	mockRename
-	mockChmod
-)
-
-// Helper method to check if operation contains specific flag
-func (op mockFsnotifyOp) has(flag mockFsnotifyOp) bool {
-	return op&flag == flag
-}
-
-// Update the mapOperation method to work with our mock type
-func (rw *RepositoryWatcher) mapOperationMock(op mockFsnotifyOp) string {
-	switch {
-	case op.has(mockCreate):
-		return "create"
-	case op.has(mockWrite):
-		return "write"
-	case op.has(mockRemove):
-		return "remove"
-	case op.has(mockRename):
-		return "rename"
-	case op.has(mockChmod):
-		return "chmod"
-	default:
-		return "unknown"
-	}
-}
-
-func TestMapOperationMock(t *testing.T) {
+func TestMapOperationWithFsnotify(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	config := DefaultRepoSyncConfig()
 
@@ -299,20 +260,20 @@ func TestMapOperationMock(t *testing.T) {
 	defer watcher.Close()
 
 	tests := []struct {
-		op       mockFsnotifyOp
+		op       fsnotify.Op
 		expected string
 	}{
-		{mockCreate, "create"},
-		{mockWrite, "write"},
-		{mockRemove, "remove"},
-		{mockRename, "rename"},
-		{mockChmod, "chmod"},
-		{mockFsnotifyOp(64), "unknown"}, // Unknown operation
+		{fsnotify.Create, "create"},
+		{fsnotify.Write, "write"},
+		{fsnotify.Remove, "remove"},
+		{fsnotify.Rename, "rename"},
+		{fsnotify.Chmod, "chmod"},
+		{fsnotify.Op(64), "unknown"}, // Unknown operation
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.expected, func(t *testing.T) {
-			result := watcher.mapOperationMock(tt.op)
+			result := watcher.mapOperation(tt.op)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

@@ -7,35 +7,42 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/gizzahub/gzh-manager-go/pkg/recovery"
+	"time"
 )
 
-// ResilientGitLabClient provides GitLab API operations with network resilience
+// ResilientGitLabClient provides GitLab API operations with network resilience - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
 type ResilientGitLabClient struct {
-	httpClient *recovery.ResilientHTTPClient
+	httpClient *http.Client
 	baseURL    string
 	token      string
 }
 
-// NewResilientGitLabClient creates a new resilient GitLab client
+// NewResilientGitLabClient creates a new resilient GitLab client - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
 func NewResilientGitLabClient(baseURL, token string) *ResilientGitLabClient {
 	return &ResilientGitLabClient{
-		httpClient: recovery.NewGitLabClient(),
-		baseURL:    strings.TrimSuffix(baseURL, "/"),
-		token:      token,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+		baseURL: strings.TrimSuffix(baseURL, "/"),
+		token:   token,
 	}
 }
 
-// NewResilientGitLabClientWithConfig creates a resilient GitLab client with custom config
-func NewResilientGitLabClientWithConfig(baseURL, token string, config recovery.ResilientHTTPClientConfig) *ResilientGitLabClient {
-	// Ensure GitLab-specific optimizations
-	config.CircuitConfig.Name = "gitlab-api"
+// NewResilientGitLabClientWithConfig creates a resilient GitLab client with custom config - DISABLED (recovery package removed)
+// Simple HTTP client implementation to replace deleted recovery package
+func NewResilientGitLabClientWithConfig(baseURL, token string, timeout time.Duration) *ResilientGitLabClient {
+	if timeout == 0 {
+		timeout = 30 * time.Second
+	}
 
 	return &ResilientGitLabClient{
-		httpClient: recovery.NewResilientHTTPClient(config),
-		baseURL:    strings.TrimSuffix(baseURL, "/"),
-		token:      token,
+		httpClient: &http.Client{
+			Timeout: timeout,
+		},
+		baseURL: strings.TrimSuffix(baseURL, "/"),
+		token:   token,
 	}
 }
 
@@ -269,14 +276,20 @@ func (c *ResilientGitLabClient) handleAPIError(resp *http.Response, operation st
 	}
 }
 
-// GetStats returns statistics about the underlying HTTP client
+// GetStats returns statistics about the underlying HTTP client - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *ResilientGitLabClient) GetStats() map[string]interface{} {
-	return c.httpClient.GetStats()
+	return map[string]interface{}{
+		"type": "standard_http_client",
+		"note": "recovery package removed, using standard http.Client",
+	}
 }
 
-// Close closes the underlying HTTP client connections
+// Close closes the underlying HTTP client connections - DISABLED (recovery package removed)
+// Simple implementation without external recovery dependency
 func (c *ResilientGitLabClient) Close() {
-	c.httpClient.Close()
+	// Standard http.Client doesn't have Close method
+	// No cleanup needed for standard client
 }
 
 // SetToken updates the authentication token
