@@ -91,7 +91,7 @@ type EngineMetrics struct {
 type AutomationEventProcessor interface {
 	ProcessEvent(ctx context.Context, event *GitHubEvent) error
 	FilterEvent(event *GitHubEvent) bool
-	ValidateEvent(event *GitHubEvent) error
+	ValidateEvent(ctx context.Context, event *GitHubEvent) error
 }
 
 // NewAutomationEngine creates a new automation engine

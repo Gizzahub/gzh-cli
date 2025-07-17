@@ -65,8 +65,8 @@ func (m *mockEventProcessor) FilterEvent(ctx context.Context, event *GitHubEvent
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *mockEventProcessor) ValidateEvent(event *GitHubEvent) error {
-	args := m.Called(event)
+func (m *mockEventProcessor) ValidateEvent(ctx context.Context, event *GitHubEvent) error {
+	args := m.Called(ctx, event)
 	return args.Error(0)
 }
 
@@ -93,6 +93,67 @@ func (m *mockEventProcessor) UnregisterEventHandler(eventType EventType) error {
 func (m *mockEventProcessor) GetMetrics() *EventMetrics {
 	args := m.Called()
 	return args.Get(0).(*EventMetrics)
+}
+
+type mockLogger struct {
+	mock.Mock
+}
+
+func (m *mockLogger) Debug(msg string, args ...interface{}) {
+	m.Called(msg, args)
+}
+
+func (m *mockLogger) Info(msg string, args ...interface{}) {
+	m.Called(msg, args)
+}
+
+func (m *mockLogger) Warn(msg string, args ...interface{}) {
+	m.Called(msg, args)
+}
+
+func (m *mockLogger) Error(msg string, args ...interface{}) {
+	m.Called(msg, args)
+}
+
+func (m *mockLogger) Fatal(msg string, args ...interface{}) {
+	m.Called(msg, args)
+}
+
+type mockRuleManager struct {
+	mock.Mock
+}
+
+func (m *mockRuleManager) ListRules(ctx context.Context, org string, filter *RuleFilter) ([]*AutomationRule, error) {
+	args := m.Called(ctx, org, filter)
+	return args.Get(0).([]*AutomationRule), args.Error(1)
+}
+
+func (m *mockRuleManager) EvaluateConditions(ctx context.Context, rule *AutomationRule, event *GitHubEvent) (bool, error) {
+	args := m.Called(ctx, rule, event)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *mockRuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, execContext *AutomationExecutionContext) (*AutomationRuleExecution, error) {
+	args := m.Called(ctx, rule, execContext)
+	return args.Get(0).(*AutomationRuleExecution), args.Error(1)
+}
+
+type mockConditionEvaluator struct {
+	mock.Mock
+}
+
+func (m *mockConditionEvaluator) EvaluateCondition(ctx context.Context, condition *AutomationCondition, event *GitHubEvent) (bool, error) {
+	args := m.Called(ctx, condition, event)
+	return args.Bool(0), args.Error(1)
+}
+
+type mockActionExecutor struct {
+	mock.Mock
+}
+
+func (m *mockActionExecutor) ExecuteAction(ctx context.Context, action *AutomationAction, execContext *AutomationExecutionContext) error {
+	args := m.Called(ctx, action, execContext)
+	return args.Error(0)
 }
 
 
@@ -180,7 +241,7 @@ func createTestEngineRule() *AutomationRule {
 // Test Cases
 
 func TestNewAutomationEngine(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 
 	assert.NotNil(t, engine)
 	assert.NotNil(t, engine.config)
@@ -215,7 +276,7 @@ func TestNewAutomationEngine_WithNilConfig(t *testing.T) {
 }
 
 func TestAutomationEngine_Start(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 	ctx := context.Background()
 
 	err := engine.Start(ctx)
@@ -234,7 +295,7 @@ func TestAutomationEngine_Start(t *testing.T) {
 }
 
 func TestAutomationEngine_Stop(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 	ctx := context.Background()
 
 	// Try to stop when not running - should fail
@@ -252,7 +313,7 @@ func TestAutomationEngine_Stop(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_NotRunning(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 	event := createTestEngineEvent()
 
 	err := engine.ProcessEvent(context.Background(), event)
@@ -261,11 +322,11 @@ func TestAutomationEngine_ProcessEvent_NotRunning(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_ValidationFailed(t *testing.T) {
-	engine, _, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(assert.AnError)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(assert.AnError)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -279,11 +340,11 @@ func TestAutomationEngine_ProcessEvent_ValidationFailed(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
-	engine, _, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 	eventProcessor.On("FilterEvent", event).Return(false) // Event is filtered out
 
 	err := engine.Start(ctx)
@@ -303,12 +364,12 @@ func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_ExcludedEventType(t *testing.T) {
-	engine, _, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	engine.config.ExcludedEventTypes = []EventType{EventTypePullRequest}
 	event := createTestEngineEvent()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -327,12 +388,12 @@ func TestAutomationEngine_ProcessEvent_ExcludedEventType(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_Success(t *testing.T) {
-	engine, ruleManager, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	rule := createTestEngineRule()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 	eventProcessor.On("FilterEvent", event).Return(true)
 	ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
 	ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
@@ -363,12 +424,12 @@ func TestAutomationEngine_ProcessEvent_Success(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
-	engine, ruleManager, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	rule := createTestEngineRule()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 	eventProcessor.On("FilterEvent", event).Return(true)
 	ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
 	ruleManager.On("EvaluateConditions", ctx, rule, event).Return(false, nil) // Conditions don't match
@@ -393,12 +454,12 @@ func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_ExecutionFailure(t *testing.T) {
-	engine, ruleManager, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	rule := createTestEngineRule()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 	eventProcessor.On("FilterEvent", event).Return(true)
 	ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
 	ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
@@ -422,7 +483,7 @@ func TestAutomationEngine_ProcessEvent_ExecutionFailure(t *testing.T) {
 }
 
 func TestAutomationEngine_GetMetrics(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 
 	metrics := engine.GetMetrics()
 	assert.NotNil(t, metrics)
@@ -432,7 +493,7 @@ func TestAutomationEngine_GetMetrics(t *testing.T) {
 }
 
 func TestAutomationEngine_GetActiveExecutions(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 
 	executions := engine.GetActiveExecutions()
 	assert.NotNil(t, executions)
@@ -440,14 +501,14 @@ func TestAutomationEngine_GetActiveExecutions(t *testing.T) {
 }
 
 func TestAutomationEngine_SyncExecution(t *testing.T) {
-	engine, ruleManager, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	engine.config.EnableAsyncExecution = false // Disable async execution
 
 	event := createTestEngineEvent()
 	rule := createTestEngineRule()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 	eventProcessor.On("FilterEvent", event).Return(true)
 	ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
 	ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
@@ -477,13 +538,13 @@ func TestAutomationEngine_SyncExecution(t *testing.T) {
 }
 
 func TestAutomationEngine_EventChannelFull(t *testing.T) {
-	engine, _, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 	engine.config.EventBufferSize = 1 // Very small buffer
 
 	event := createTestEngineEvent()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -515,7 +576,7 @@ func TestAutomationEngineConfig_Defaults(t *testing.T) {
 }
 
 func TestEngineMetrics_ThreadSafety(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 
 	// Simulate concurrent access to metrics
 	done := make(chan bool)
@@ -549,7 +610,7 @@ func TestEngineMetrics_ThreadSafety(t *testing.T) {
 }
 
 func TestAutomationEngine_ContextCancellation(t *testing.T) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -568,12 +629,40 @@ func TestAutomationEngine_ContextCancellation(t *testing.T) {
 // Benchmark tests
 
 func BenchmarkAutomationEngine_ProcessEvent(b *testing.B) {
-	engine, ruleManager, eventProcessor := createTestAutomationEngine()
+	// Create a proper benchmark setup with mocks
+	logger := &mockLogger{}
+	apiClient := &mockAPIClient{}
+	ruleManager := &mockRuleManager{}
+	conditionEvaluator := &mockConditionEvaluator{}
+	actionExecutor := &mockActionExecutor{}
+	eventProcessor := &mockEventProcessor{}
+
+	config := &AutomationEngineConfig{
+		MaxWorkers:           2,
+		EventBufferSize:      10,
+		ExecutionTimeout:     30 * time.Second,
+		EnableAsyncExecution: true,
+		EnableRuleFiltering:  true,
+		EnableMetrics:        true,
+		MaxRetries:           2,
+		RetryBackoffFactor:   1.5,
+	}
+
+	engine := NewAutomationEngine(
+		logger,
+		apiClient,
+		ruleManager,
+		conditionEvaluator,
+		actionExecutor,
+		eventProcessor,
+		config,
+	)
+
 	event := createTestEngineEvent()
 	rule := createTestEngineRule()
 	ctx := context.Background()
 
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 	eventProcessor.On("FilterEvent", event).Return(true)
 	ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
 	ruleManager.On("EvaluateConditions", ctx, rule, event).Return(false, nil) // Don't execute for benchmark
@@ -588,7 +677,7 @@ func BenchmarkAutomationEngine_ProcessEvent(b *testing.B) {
 }
 
 func BenchmarkAutomationEngine_UpdateMetrics(b *testing.B) {
-	engine, _, _ := createTestAutomationEngine()
+	engine, _ := createTestAutomationEngine()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -601,7 +690,7 @@ func BenchmarkAutomationEngine_UpdateMetrics(b *testing.B) {
 // Integration test
 
 func TestAutomationEngine_Integration(t *testing.T) {
-	engine, ruleManager, eventProcessor := createTestAutomationEngine()
+	engine, eventProcessor := createTestAutomationEngine()
 
 	// Test complete flow: start -> process event -> execute rule -> stop
 	event := createTestEngineEvent()
@@ -609,7 +698,7 @@ func TestAutomationEngine_Integration(t *testing.T) {
 	ctx := context.Background()
 
 	// Set up mocks for complete flow
-	eventProcessor.On("ValidateEvent", event).Return(nil)
+	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
 	eventProcessor.On("FilterEvent", event).Return(true)
 	ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
 	ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
