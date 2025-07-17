@@ -1,6 +1,7 @@
 package doctor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -12,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/errors"
+	"github.com/gizzahub/gzh-manager-go/internal/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -95,7 +98,57 @@ type SystemInfo struct {
 }
 
 func runDoctor(cmd *cobra.Command, args []string) {
+	// Initialize structured logger for doctor operations
+	structuredLogger := logger.NewStructuredLogger("doctor", logger.LevelInfo)
+	sessionID := fmt.Sprintf("doctor-%d", time.Now().Unix())
+	structuredLogger = structuredLogger.WithSession(sessionID).
+		WithContext("quick_mode", quickMode).
+		WithContext("attempt_fix", attemptFix).
+		WithContext("verbose", verbose)
+
+	// Initialize error recovery system
+	recoveryConfig := errors.RecoveryConfig{
+		MaxRetries: 3,
+		RetryDelay: time.Second,
+		Logger:     structuredLogger,
+		RecoveryFunc: func(err error) error {
+			structuredLogger.Warn("Doctor diagnostic encountered recoverable error", "error_type", fmt.Sprintf("%T", err))
+			return nil
+		},
+	}
+	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
+
+	// Initialize health monitor
+	healthMonitor := errors.NewHealthMonitor(structuredLogger)
+
+	// Add system health checks
+	healthMonitor.AddCheck(errors.HealthCheck{
+		Name:        "memory-usage",
+		Description: "Check memory usage levels",
+		CheckFunc: func() error {
+			memStats := errors.GetMemoryStats()
+			if allocMB, ok := memStats["alloc_mb"].(uint64); ok && allocMB > 1000 {
+				return fmt.Errorf("high memory usage: %d MB", allocMB)
+			}
+			return nil
+		},
+		Timeout: 5 * time.Second,
+	})
+
+	healthMonitor.AddCheck(errors.HealthCheck{
+		Name:        "goroutine-count",
+		Description: "Check for goroutine leaks",
+		CheckFunc: func() error {
+			if runtime.NumGoroutine() > 100 {
+				return fmt.Errorf("high goroutine count: %d", runtime.NumGoroutine())
+			}
+			return nil
+		},
+		Timeout: 2 * time.Second,
+	})
+
 	fmt.Println("🩺 Starting GZH Manager diagnostic...")
+	structuredLogger.Info("Starting GZH Manager diagnostic session")
 
 	startTime := time.Now()
 	report := &DiagnosticReport{
@@ -106,39 +159,82 @@ func runDoctor(cmd *cobra.Command, args []string) {
 		Recommendations: []string{},
 	}
 
-	// Run diagnostic checks
-	if verbose {
-		fmt.Println("🔍 Running diagnostic checks...")
+	// Execute diagnostic with error recovery
+	diagnosticErr := errorRecovery.Execute(cmd.Context(), "doctor-diagnostic", func() error {
+		// Run pre-diagnostic health checks
+		healthResults := healthMonitor.RunChecks(cmd.Context())
+		for checkName, checkErr := range healthResults {
+			if checkErr != nil {
+				structuredLogger.Warn("Pre-diagnostic health check failed", "check", checkName, "error", checkErr)
+			} else {
+				structuredLogger.Debug("Pre-diagnostic health check passed", "check", checkName)
+			}
+		}
+
+		// Run diagnostic checks
+		if verbose {
+			fmt.Println("🔍 Running diagnostic checks...")
+		}
+		structuredLogger.Info("Running diagnostic checks", "total_categories", 7)
+
+		// System checks
+		structuredLogger.Debug("Running system checks")
+		runSystemChecks(report, structuredLogger, errorRecovery)
+
+		// Configuration checks
+		structuredLogger.Debug("Running configuration checks")
+		runConfigChecks(report, structuredLogger, errorRecovery)
+
+		// Network checks
+		if !quickMode {
+			structuredLogger.Debug("Running network checks")
+			runNetworkChecks(report, structuredLogger, errorRecovery)
+		} else {
+			structuredLogger.Debug("Skipping network checks (quick mode)")
+		}
+
+		// Git checks
+		structuredLogger.Debug("Running git checks")
+		runGitChecks(report, structuredLogger, errorRecovery)
+
+		// Permission checks
+		structuredLogger.Debug("Running permission checks")
+		runPermissionChecks(report, structuredLogger, errorRecovery)
+
+		// Performance checks
+		if !quickMode {
+			structuredLogger.Debug("Running performance checks")
+			runPerformanceChecks(report, structuredLogger, errorRecovery)
+		} else {
+			structuredLogger.Debug("Skipping performance checks (quick mode)")
+		}
+
+		// Security checks
+		structuredLogger.Debug("Running security checks")
+		runSecurityChecks(report, structuredLogger, errorRecovery)
+
+		return nil
+	})
+
+	if diagnosticErr != nil {
+		structuredLogger.ErrorWithStack(diagnosticErr, "Diagnostic execution failed")
+		fmt.Printf("❌ Diagnostic execution failed: %v\n", diagnosticErr)
+		os.Exit(1)
 	}
-
-	// System checks
-	runSystemChecks(report)
-
-	// Configuration checks
-	runConfigChecks(report)
-
-	// Network checks
-	if !quickMode {
-		runNetworkChecks(report)
-	}
-
-	// Git checks
-	runGitChecks(report)
-
-	// Permission checks
-	runPermissionChecks(report)
-
-	// Performance checks
-	if !quickMode {
-		runPerformanceChecks(report)
-	}
-
-	// Security checks
-	runSecurityChecks(report)
 
 	// Calculate totals
 	calculateReportTotals(report)
 	report.Duration = time.Since(startTime)
+
+	// Log performance metrics
+	structuredLogger.LogPerformance("doctor-diagnostic-completed", report.Duration, map[string]interface{}{
+		"total_checks":   report.TotalChecks,
+		"passed_checks":  report.PassedChecks,
+		"failed_checks":  report.FailedChecks,
+		"warn_checks":    report.WarnChecks,
+		"skipped_checks": report.SkippedChecks,
+		"memory_stats":   errors.GetMemoryStats(),
+	})
 
 	// Generate summary and recommendations
 	generateSummaryAndRecommendations(report)
@@ -146,29 +242,42 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	// Print results
 	printResults(report)
 
+	structuredLogger.Info("Diagnostic completed",
+		"duration", report.Duration.String(),
+		"success_rate", fmt.Sprintf("%.1f%%", float64(report.PassedChecks)/float64(report.TotalChecks)*100),
+		"critical_issues", report.FailedChecks,
+		"warnings", report.WarnChecks)
+
 	// Save report if requested
 	if reportFile != "" {
 		if err := saveReport(report, reportFile); err != nil {
+			structuredLogger.ErrorWithStack(err, "Failed to save diagnostic report")
 			fmt.Printf("❌ Failed to save report: %v\n", err)
 		} else {
+			structuredLogger.Info("Diagnostic report saved", "file", reportFile)
 			fmt.Printf("💾 Report saved to: %s\n", reportFile)
 		}
 	}
 
 	// Attempt fixes if requested
 	if attemptFix {
-		attemptAutomaticFixes(report)
+		structuredLogger.Info("Attempting automatic fixes")
+		attemptAutomaticFixes(report, structuredLogger, errorRecovery)
 	}
 
 	// Exit with appropriate code
 	if report.FailedChecks > 0 {
+		structuredLogger.Error("Doctor diagnostic completed with critical issues", "failed_checks", report.FailedChecks)
 		os.Exit(1)
 	} else if report.WarnChecks > 0 {
+		structuredLogger.Warn("Doctor diagnostic completed with warnings", "warn_checks", report.WarnChecks)
 		os.Exit(2)
 	}
+
+	structuredLogger.Info("Doctor diagnostic completed successfully")
 }
 
-func runSystemChecks(report *DiagnosticReport) {
+func runSystemChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("💻 Checking system information...")
 	}
@@ -269,7 +378,7 @@ func runSystemChecks(report *DiagnosticReport) {
 	})
 }
 
-func runConfigChecks(report *DiagnosticReport) {
+func runConfigChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("⚙️ Checking configuration...")
 	}
@@ -343,7 +452,7 @@ func runConfigChecks(report *DiagnosticReport) {
 	})
 }
 
-func runNetworkChecks(report *DiagnosticReport) {
+func runNetworkChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🌐 Checking network connectivity...")
 	}
@@ -415,7 +524,7 @@ func runNetworkChecks(report *DiagnosticReport) {
 	})
 }
 
-func runGitChecks(report *DiagnosticReport) {
+func runGitChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🐙 Checking Git configuration...")
 	}
@@ -494,7 +603,7 @@ func runGitChecks(report *DiagnosticReport) {
 	})
 }
 
-func runPermissionChecks(report *DiagnosticReport) {
+func runPermissionChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🔒 Checking permissions...")
 	}
@@ -544,7 +653,7 @@ func runPermissionChecks(report *DiagnosticReport) {
 	})
 }
 
-func runPerformanceChecks(report *DiagnosticReport) {
+func runPerformanceChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🚀 Running performance benchmarks...")
 	}
@@ -592,7 +701,7 @@ func runPerformanceChecks(report *DiagnosticReport) {
 	})
 }
 
-func runSecurityChecks(report *DiagnosticReport) {
+func runSecurityChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🔐 Checking security configuration...")
 	}
@@ -894,23 +1003,37 @@ func saveReport(report *DiagnosticReport, filename string) error {
 	return encoder.Encode(report)
 }
 
-func attemptAutomaticFixes(report *DiagnosticReport) {
+func attemptAutomaticFixes(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	fmt.Printf("\n🔧 Attempting automatic fixes...\n")
+	structuredLogger.Info("Starting automatic fixes", "total_issues", report.FailedChecks+report.WarnChecks)
 
 	fixed := 0
 	for _, result := range report.Results {
 		if result.Status == "fail" || result.Status == "warn" {
-			if attemptFix := tryAutoFix(result); attemptFix {
-				fmt.Printf("  ✅ Fixed: %s\n", result.Name)
-				fixed++
-			} else {
-				fmt.Printf("  ❌ Cannot auto-fix: %s\n", result.Name)
+			fixErr := errorRecovery.Execute(context.Background(), fmt.Sprintf("fix-%s", result.Name), func() error {
+				structuredLogger.Debug("Attempting fix", "check_name", result.Name, "status", result.Status)
+
+				if attemptFix := tryAutoFix(result); attemptFix {
+					structuredLogger.Info("Successfully applied automatic fix", "check_name", result.Name)
+					fmt.Printf("  ✅ Fixed: %s\n", result.Name)
+					fixed++
+				} else {
+					structuredLogger.Warn("Cannot auto-fix issue", "check_name", result.Name, "reason", "no_fix_available")
+					fmt.Printf("  ❌ Cannot auto-fix: %s\n", result.Name)
+				}
+				return nil
+			})
+
+			if fixErr != nil {
+				structuredLogger.ErrorWithStack(fixErr, "Auto-fix operation failed", "check_name", result.Name)
 			}
 		}
 	}
 
+	structuredLogger.Info("Auto-fix completed", "fixed_count", fixed, "total_attempted", report.FailedChecks+report.WarnChecks)
 	fmt.Printf("\n🎯 Auto-fix summary: %d issues resolved\n", fixed)
 	if fixed > 0 {
+		structuredLogger.Info("Recommend re-running diagnostic to verify fixes")
 		fmt.Println("🔄 Re-run 'gz doctor' to verify fixes")
 	}
 }

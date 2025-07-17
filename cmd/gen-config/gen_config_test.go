@@ -1,6 +1,7 @@
 package genconfig
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -350,7 +351,7 @@ func TestParseRemoteURL(t *testing.T) {
 
 func TestGenConfigCommand(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := NewGenConfigCmd()
+		cmd := NewGenConfigCmd(context.Background())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "gen-config", cmd.Use)
 		assert.Contains(t, cmd.Short, "Generate bulk-clone configuration files")

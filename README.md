@@ -65,22 +65,79 @@ Comprehensive CLI Tool
 - **설정 백업/복원**: AWS, Docker, Kubernetes, SSH 등의 설정을 안전하게 백업 및 복원
 - **JetBrains IDE 지원**: IDE 설정 동기화 문제 자동 감지 및 수정
 
-### CLI
+### 🩺 시스템 진단
+- **종합 진단 도구**: `gz doctor`로 시스템 상태, 의존성, 네트워크 연결성 등을 자동 진단
+- **문제 해결 제안**: 발견된 문제에 대한 구체적인 해결 방안 제시
+- **성능 벤치마크**: CPU, 디스크 I/O 성능 측정 및 최적화 권고
+- **보고서 생성**: JSON 형태의 상세한 진단 보고서 생성
 
+## 🚀 빠른 시작
+
+### 1. 설치
+```bash
+# 최신 릴리스 다운로드 (권장)
+wget https://github.com/gizzahub/gzh-manager-go/releases/latest/download/gz-linux-amd64
+chmod +x gz-linux-amd64
+sudo mv gz-linux-amd64 /usr/local/bin/gz
+
+# 또는 Go로 직접 빌드
+git clone https://github.com/gizzahub/gzh-manager-go.git
+cd gzh-manager-go
+make build
+```
+
+### 2. 기본 사용법
+```sh
+# 시스템 상태 진단
+gz doctor
+
+# 설정 파일 검증
+gz bulk-clone validate --config examples/bulk-clone-simple.yaml
+
+# GitHub 조직의 저장소 클론
+gz bulk-clone github --orgName myorg --targetPath ~/repos/myorg --token $GITHUB_TOKEN
+
+# 리포지토리 설정 감사
+gz repo-config audit --org myorg --framework SOC2
+```
+
+### CLI 명령어 개요
 
 ```sh
-$> bulk-clone -h
-golang-cli cli application by managing bulk-clone
+$> gz --help
+Cli 종합 Manager by Gizzahub
 
 Usage:
-  gzh [flags]
-  gzh [command]
+  gz [flags]
+  gz [command]
 
 Available Commands:
-  completion  Generate the autocompletion script for the specified shell
-  bulk-clone    Clone repositories in bulk
-  help        Help about any command
-  version     bulk-clone version
+  always-latest Keep development tools and package managers up to date
+  bulk-clone    Clone repositories from multiple Git hosting services
+  completion    Generate the autocompletion script for the specified shell
+  config        Configuration management commands
+  dev-env       Manage development environment configurations
+  docker        컨테이너 이미지 관리 및 자동화
+  doctor        Diagnose system health and configuration issues
+  event         GitHub event management and webhook server
+  gen-config    Generate bulk-clone configuration files
+  help          Help about any command
+  ide           Monitor and manage IDE configuration changes
+  migrate       Migrate configuration files to unified format
+  monitoring    Run monitoring and alerting system
+  net-env       Manage network environment transitions
+  repo-config   GitHub repository configuration management
+  repo-sync     Advanced repository synchronization and management
+  shell         Start interactive debugging shell (REPL)
+  ssh-config    SSH configuration management for Git operations
+  task-runner   🚀 TASK_RUNNER.todo - 자동 TODO 작업 실행기
+  version       gz version information
+  webhook       🔗 GitHub 웹훅 관리 도구
+
+Flags:
+  -h, --help   help for gz
+
+Use "gz [command] --help" for more information about a command.
 
 Flags:
   -h, --help   help for bulk-clone

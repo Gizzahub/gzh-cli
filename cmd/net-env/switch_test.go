@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -186,37 +185,37 @@ func TestExecuteScriptsEmpty(t *testing.T) {
 }
 
 // Mock implementations for network configuration functions
-func connectVPN(name, vpnType, configFile string) error {
+func mockConnectVPN(name, vpnType, configFile string) error {
 	// Mock implementation for testing
 	return nil
 }
 
-func disconnectVPN(name string) error {
+func mockDisconnectVPN(name string) error {
 	// Mock implementation for testing
 	return nil
 }
 
-func setDNSServers(servers []string, iface string) error {
+func mockSetDNSServers(servers []string, iface string) error {
 	// Mock implementation for testing
 	return nil
 }
 
-func clearProxy() error {
+func mockClearProxy() error {
 	// Mock implementation for testing
 	return nil
 }
 
-func setProxy(http, https, socks string) error {
+func mockSetProxy(http, https, socks string) error {
 	// Mock implementation for testing
 	return nil
 }
 
-func addHostEntry(ip, host string) error {
+func mockAddHostEntry(ip, host string) error {
 	// Mock implementation for testing
 	return nil
 }
 
-func removeHostEntry(host string) error {
+func mockRemoveHostEntry(host string) error {
 	// Mock implementation for testing
 	return nil
 }

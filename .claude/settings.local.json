@@ -30,7 +30,13 @@
       "Bash(./tasks/qa/test-what-works.sh:*)",
       "Bash(go vet:*)",
       "Bash(go fmt:*)",
-      "Bash(gofumpt:*)"
+      "Bash(gofumpt:*)",
+      "Bash(for file in examples/*.yaml examples/*.yml)",
+      "Bash(do echo \"=== Validating $file ===\")",
+      "Bash(echo)",
+      "Bash(done)",
+      "Bash(golangci-lint:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

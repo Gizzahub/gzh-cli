@@ -1,6 +1,7 @@
 package alwayslatest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestDefaultAlwaysLatestSdkmanOptions(t *testing.T) {
 }
 
 func TestNewAlwaysLatestSdkmanCmd(t *testing.T) {
-	cmd := newAlwaysLatestSdkmanCmd()
+	cmd := newAlwaysLatestSdkmanCmd(context.Background())
 
 	assert.Equal(t, "sdkman", cmd.Use)
 	assert.Equal(t, "Update SDKMAN and its managed SDKs to latest versions", cmd.Short)

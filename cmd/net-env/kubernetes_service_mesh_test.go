@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestServiceMeshIntegration(t *testing.T) {
+func TestServiceMeshIntegrationAdvanced(t *testing.T) {
 	// Create temporary directory for test
 	tempDir, err := os.MkdirTemp("", "k8s_service_mesh_test")
 	require.NoError(t, err)

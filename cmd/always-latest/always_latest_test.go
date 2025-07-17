@@ -1,6 +1,7 @@
 package alwayslatest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,7 +9,7 @@ import (
 
 func TestAlwaysLatestCommand(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := NewAlwaysLatestCmd()
+		cmd := NewAlwaysLatestCmd(context.Background())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "always-latest", cmd.Use)
 		assert.Contains(t, cmd.Short, "Keep development tools and package managers up to date")
@@ -27,7 +28,7 @@ func TestAlwaysLatestCommand(t *testing.T) {
 
 func TestAsdfCommand(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := newAlwaysLatestAsdfCmd()
+		cmd := newAlwaysLatestAsdfCmd(context.Background())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "asdf", cmd.Use)
 		assert.Contains(t, cmd.Short, "Update asdf and its managed tools")
@@ -217,7 +218,7 @@ func TestAsdfIntegration(t *testing.T) {
 
 func TestBrewCommand(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := newAlwaysLatestBrewCmd()
+		cmd := newAlwaysLatestBrewCmd(context.Background())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "brew", cmd.Use)
 		assert.Contains(t, cmd.Short, "Update Homebrew and its managed packages")

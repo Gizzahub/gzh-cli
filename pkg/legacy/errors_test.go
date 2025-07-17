@@ -2,7 +2,6 @@ package legacy
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

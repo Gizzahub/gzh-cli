@@ -1,6 +1,8 @@
 # Work overlay configuration for bulk-clone.yaml
 # This file demonstrates how to override base configuration for work environment
 
+version: "0.1"
+
 # Override default settings for work environment
 default:
   protocol: https  # Use HTTPS for work environment (some companies block SSH)

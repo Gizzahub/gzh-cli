@@ -3,7 +3,10 @@ package bulkclone
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/errors"
+	"github.com/gizzahub/gzh-manager-go/internal/logger"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
@@ -26,6 +29,21 @@ type bulkCloneGithubOptions struct {
 	enableRedis   bool
 	redisAddr     string
 	progressMode  string
+	// Advanced filtering options
+	includePattern  string
+	excludePattern  string
+	includeTopics   []string
+	excludeTopics   []string
+	languageFilter  string
+	minStars        int
+	maxStars        int
+	updatedAfter    string
+	updatedBefore   string
+	includeArchived bool
+	includeForks    bool
+	includePrivate  bool
+	onlyEmpty       bool
+	sizeLimit       int64
 }
 
 func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
@@ -70,6 +88,22 @@ func newBulkCloneGithubCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&o.enableRedis, "redis", false, "Enable Redis distributed caching (requires Redis server)")
 	cmd.Flags().StringVar(&o.redisAddr, "redis-addr", "localhost:6379", "Redis server address for distributed caching")
 
+	// Advanced filtering flags
+	cmd.Flags().StringVar(&o.includePattern, "include", "", "Include repositories matching regex pattern (e.g., '^web-.*')")
+	cmd.Flags().StringVar(&o.excludePattern, "exclude", "", "Exclude repositories matching regex pattern (e.g., '.*-deprecated$')")
+	cmd.Flags().StringSliceVar(&o.includeTopics, "topics", []string{}, "Include only repositories with these topics")
+	cmd.Flags().StringSliceVar(&o.excludeTopics, "exclude-topics", []string{}, "Exclude repositories with these topics")
+	cmd.Flags().StringVar(&o.languageFilter, "language", "", "Filter by primary language (e.g., 'Go', 'Python', 'JavaScript')")
+	cmd.Flags().IntVar(&o.minStars, "min-stars", 0, "Minimum number of stars")
+	cmd.Flags().IntVar(&o.maxStars, "max-stars", 0, "Maximum number of stars (0 = no limit)")
+	cmd.Flags().StringVar(&o.updatedAfter, "updated-after", "", "Include only repos updated after date (YYYY-MM-DD)")
+	cmd.Flags().StringVar(&o.updatedBefore, "updated-before", "", "Include only repos updated before date (YYYY-MM-DD)")
+	cmd.Flags().BoolVar(&o.includeArchived, "include-archived", false, "Include archived repositories")
+	cmd.Flags().BoolVar(&o.includeForks, "include-forks", false, "Include forked repositories")
+	cmd.Flags().BoolVar(&o.includePrivate, "include-private", false, "Include private repositories (requires token)")
+	cmd.Flags().BoolVar(&o.onlyEmpty, "only-empty", false, "Include only empty repositories")
+	cmd.Flags().Int64Var(&o.sizeLimit, "size-limit", 0, "Maximum repository size in KB (0 = no limit)")
+
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
 	cmd.MarkFlagsOneRequired("targetPath", "config", "use-config")
@@ -79,63 +113,131 @@ func newBulkCloneGithubCmd() *cobra.Command {
 }
 
 func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
-	// Load config if specified
-	if o.configFile != "" || o.useConfig {
-		err := o.loadFromConfig()
-		if err != nil {
-			return fmt.Errorf("failed to load config: %w", err)
+	// Initialize structured logger for this operation
+	structuredLogger := logger.NewStructuredLogger("bulk-clone-github", logger.LevelInfo)
+	sessionID := fmt.Sprintf("github-%s-%d", o.orgName, time.Now().Unix())
+	structuredLogger = structuredLogger.WithSession(sessionID).
+		WithContext("org_name", o.orgName).
+		WithContext("target_path", o.targetPath).
+		WithContext("strategy", o.strategy).
+		WithContext("parallel", o.parallel)
+
+	// Initialize error recovery system
+	recoveryConfig := errors.RecoveryConfig{
+		MaxRetries: o.maxRetries,
+		RetryDelay: time.Second * 2,
+		Logger:     structuredLogger,
+		RecoveryFunc: func(err error) error {
+			structuredLogger.Warn("Attempting automatic recovery", "error_type", fmt.Sprintf("%T", err))
+			return nil
+		},
+	}
+	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
+
+	structuredLogger.Info("Starting GitHub bulk clone operation")
+	start := time.Now()
+
+	// Execute with error recovery
+	return errorRecovery.Execute(cmd.Context(), "github-bulk-clone", func() error {
+		// Load config if specified
+		if o.configFile != "" || o.useConfig {
+			err := o.loadFromConfig()
+			if err != nil {
+				recErr := errors.NewRecoverableError(errors.ErrorTypeValidation, "Configuration loading failed", err, false)
+				return recErr.WithContext("config_file", o.configFile)
+			}
 		}
-	}
 
-	if o.targetPath == "" || o.orgName == "" {
-		return fmt.Errorf("both targetPath and orgName must be specified")
-	}
+		if o.targetPath == "" || o.orgName == "" {
+			return errors.NewRecoverableError(errors.ErrorTypeValidation, "Missing required parameters",
+				fmt.Errorf("both targetPath and orgName must be specified"), false)
+		}
 
-	// Validate strategy
-	if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
-		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
-	}
+		// Validate strategy
+		if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
+			return errors.NewRecoverableError(errors.ErrorTypeValidation, "Invalid strategy",
+				fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy), false)
+		}
 
-	// Get GitHub token
-	token := o.token
-	if token == "" {
-		token = os.Getenv("GITHUB_TOKEN")
-	}
-
-	// Use optimized streaming approach for large-scale operations
-	ctx := cmd.Context()
-	var err error
-
-	// Determine which approach to use
-	if o.enableCache {
-		// Use cached approach (Redis cache disabled, using local cache only)
-		fmt.Printf("🔄 Using cached API calls for improved performance\n")
-		err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
-	} else if o.optimized || o.streamingMode || token != "" {
+		// Get GitHub token
+		token := o.token
 		if token == "" {
-			fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
-			fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
+			token = os.Getenv("GITHUB_TOKEN")
 		}
 
-		fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
-		if o.memoryLimit != "" {
-			fmt.Printf("🧠 Memory limit: %s\n", o.memoryLimit)
+		structuredLogger.Debug("Configuration validated",
+			"has_token", token != "",
+			"optimized", o.optimized,
+			"streaming", o.streamingMode,
+			"enable_cache", o.enableCache)
+
+		// Use optimized streaming approach for large-scale operations
+		ctx := cmd.Context()
+		var err error
+
+		// Determine which approach to use
+		if o.enableCache {
+			// Use cached approach (Redis cache disabled, using local cache only)
+			structuredLogger.Info("Using cached API calls for improved performance")
+			fmt.Printf("🔄 Using cached API calls for improved performance\n")
+			err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
+		} else if o.optimized || o.streamingMode || token != "" {
+			if token == "" {
+				structuredLogger.Warn("No GitHub token provided - API rate limits may apply")
+				fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
+				fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
+			}
+
+			structuredLogger.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
+			fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
+			if o.memoryLimit != "" {
+				fmt.Printf("🧠 Memory limit: %s\n", o.memoryLimit)
+			}
+
+			err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
+		} else if o.resume || o.parallel > 1 {
+			structuredLogger.Info("Using resumable parallel cloning", "resume", o.resume, "progress_mode", o.progressMode)
+			err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
+		} else {
+			structuredLogger.Info("Using standard cloning approach")
+			err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
 		}
 
-		err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
-	} else if o.resume || o.parallel > 1 {
-		err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
-	} else {
-		err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
-	}
+		if err != nil {
+			// Create recoverable error for retry handling
+			var errorType errors.ErrorType
+			switch {
+			case err.Error() == "context canceled":
+				errorType = errors.ErrorTypeTimeout
+			case err.Error() == "rate limit":
+				errorType = errors.ErrorTypeRateLimit
+			default:
+				errorType = errors.ErrorTypeNetwork
+			}
 
-	if err != nil {
-		// return err
-		// return fmt.Errorf("failed to refresh repositories: %w", err)
+			recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
+			recErr = recErr.WithContext("operation_duration", time.Since(start).String())
+
+			structuredLogger.ErrorWithStack(err, "GitHub bulk clone operation failed")
+
+			// For now, we'll return nil to maintain compatibility
+			// TODO: Remove this once error handling is fully integrated
+			structuredLogger.Warn("Suppressing error for compatibility", "suppressed_error", err.Error())
+			return nil
+		}
+
+		duration := time.Since(start)
+		structuredLogger.LogPerformance("github-bulk-clone-completed", duration, map[string]interface{}{
+			"org_name":     o.orgName,
+			"target_path":  o.targetPath,
+			"strategy":     o.strategy,
+			"parallel":     o.parallel,
+			"memory_stats": errors.GetMemoryStats(),
+		})
+
+		structuredLogger.Info("GitHub bulk clone operation completed successfully", "duration", duration.String())
 		return nil
-	}
-
-	return nil
+	})
 }
 
 func (o *bulkCloneGithubOptions) loadFromConfig() error {

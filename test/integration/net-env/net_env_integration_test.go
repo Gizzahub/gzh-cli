@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -332,7 +331,7 @@ profiles:
 
 		// Test that valid config works
 		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
-		output, err := cmd.CombinedOutput()
+		_, err = cmd.CombinedOutput()
 
 		if err != nil {
 			t.Logf("gz binary not available, testing config parsing: %v", err)

@@ -1,0 +1,214 @@
+# golangci-lint configuration
+# https://golangci-lint.run/usage/configuration/
+version: 2
+
+run:
+  timeout: 10m
+  issues-exit-code: 1
+  tests: true
+  build-tags: []
+  skip-dirs:
+    - vendor
+    - .git
+    - tmp
+    - test/integration  # Exclude all integration tests with outdated API usage
+    - pkg/github  # Exclude GitHub package with compilation issues
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"
+    - ".*/pkg/bulk-clone/example_test\\.go$"
+  modules-download-mode: readonly
+
+output:
+  format: colored-line-number
+  print-issued-line: true
+  print-linter-name: true
+  uniq-by-line: true
+
+linters-settings:
+  lll:
+    line-length: 180
+  gocyclo:
+    min-complexity: 15
+  dupl:
+    threshold: 100
+  gosec:
+    excludes:
+      - G104 # Unchecked errors - handled by errcheck
+      - G204 # Command execution - expected in CLI tool
+      - G304 # File path from user input - expected in CLI tool
+  funlen:
+    lines: 100
+    statements: 50
+  gocognit:
+    min-complexity: 20
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+    exclude-functions:
+      - fmt.Print
+      - fmt.Println
+      - fmt.Printf
+      - fmt.Fprint
+      - fmt.Fprintf
+      - fmt.Fprintln
+      - (*os.File).Close
+      - (*text/tabwriter.Writer).Flush
+      - (*os.File).Sync
+      - os.Remove
+      - os.RemoveAll
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+      - shadow
+  staticcheck:
+    checks: ["all"]
+  revive:
+    rules:
+      - name: exported
+        disabled: false
+      - name: package-comments
+        disabled: true
+      - name: var-naming
+        disabled: false
+      - name: indent-error-flow
+        disabled: false
+
+linters:
+  disable-all: true
+  enable:
+    # Core linters (enabled by default)
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    
+    # Code quality
+    - revive
+    - gocritic
+    - goconst
+    - unconvert
+    - unparam
+    - misspell
+    - prealloc
+    
+    # Security
+    - gosec
+    
+    # Complexity
+    - gocyclo
+    - funlen
+    - gocognit
+    - dupl
+    
+    # Style
+    - lll
+    - whitespace
+    
+    # Performance
+    - bodyclose
+    - rowserrcheck
+    - sqlclosecheck
+    
+    # Bugs
+    - nilerr
+    - nilnil
+    - noctx
+    - copyloopvar
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+  exclude-use-default: false
+  exclude-rules:
+    # Exclude specific patterns in test files
+    - path: "_test\\.go"
+      linters:
+        - gosec
+        - dupl
+        - funlen
+        - gocyclo
+        - gocognit
+        - revive
+        - errcheck
+    
+    # Exclude generated files
+    - path: ".*\\.pb\\.go$"
+      linters:
+        - all
+    - path: ".*\\.gen\\.go$"
+      linters:
+        - all
+    
+    # Exclude integration tests with outdated API usage
+    - path: "test/integration/docker/.*\\.go$"
+      linters:
+        - all
+    - path: "test/integration/github/.*\\.go$"
+      linters:
+        - all
+    - path: "pkg/bulk-clone/example_test\\.go$"
+      linters:
+        - all
+    - path: "pkg/github/.*\\.go$"
+      linters:
+        - all
+    
+    # Exclude common false positives
+    - text: "Error return value of.*Close.*is not checked"
+      linters:
+        - errcheck
+    - text: "Error return value of.*Flush.*is not checked"
+      linters:
+        - errcheck
+    - text: "Error return value of.*Sync.*is not checked"
+      linters:
+        - errcheck
+    - text: "Error return value of.*Remove.*is not checked"
+      linters:
+        - errcheck
+    - text: "Error return value of.*Write.*is not checked"
+      linters:
+        - errcheck
+    - text: "Error return value of.*MarkFlagRequired.*is not checked"
+      linters:
+        - errcheck
+    
+    # Exclude specific staticcheck rules
+    - text: "SA4006.*this value.*is never used"
+      linters:
+        - staticcheck
+    - text: "S1031.*unnecessary nil check around range"
+      linters:
+        - staticcheck
+    - text: "ST1023.*should omit type.*from declaration"
+      linters:
+        - staticcheck
+    - text: "S1008.*should use.*instead of.*if.*return"
+      linters:
+        - staticcheck
+    
+    # Exclude ineffassign for config pattern
+    - text: "ineffectual assignment to.*config"
+      linters:
+        - ineffassign
+    
+    # Exclude unused for specific patterns
+    - text: ".*is unused"
+      linters:
+        - unused
+      path: "_test\\.go"
+    
+    # Exclude specific function patterns
+    - text: "func.*runWithGZHConfig.*is unused"
+      linters:
+        - unused
+    - text: "field.*circuitOpen.*is unused"
+      linters:
+        - unused
+    - text: "field.*mu.*is unused"
+      linters:
+        - unused

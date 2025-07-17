@@ -1,6 +1,7 @@
 package netenv
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -237,8 +238,8 @@ func TestNetworkPolicyGeneration(t *testing.T) {
 		policy, err := km.GenerateNetworkPolicy("test-namespace", config)
 		assert.NoError(t, err)
 		assert.NotNil(t, policy)
-		assert.Equal(t, "web-policy", policy.Name)
-		assert.Equal(t, "test-namespace", policy.Namespace)
+		assert.Equal(t, "web-policy", policy.Metadata.Name)
+		assert.Equal(t, "test-namespace", policy.Metadata.Namespace)
 		assert.Equal(t, 2, len(policy.Spec.PolicyTypes))
 		assert.Equal(t, 1, len(policy.Spec.Ingress))
 		assert.Equal(t, 1, len(policy.Spec.Egress))
@@ -274,7 +275,7 @@ func TestNetworkPolicyGeneration(t *testing.T) {
 		policy, err := km.GenerateNetworkPolicy("secure-namespace", config)
 		assert.NoError(t, err)
 		assert.NotNil(t, policy)
-		assert.Equal(t, "ssh-policy", policy.Name)
+		assert.Equal(t, "ssh-policy", policy.Metadata.Name)
 		assert.Equal(t, 1, len(policy.Spec.Ingress))
 		assert.NotNil(t, policy.Spec.Ingress[0].From[0].IPBlock)
 		assert.Equal(t, "10.0.0.0/8", policy.Spec.Ingress[0].From[0].IPBlock.CIDR)
@@ -310,8 +311,8 @@ func TestNetworkPolicyGeneration(t *testing.T) {
 		policy, err := km.GenerateNetworkPolicy("api-namespace", config)
 		assert.NoError(t, err)
 		assert.NotNil(t, policy)
-		assert.Equal(t, "api-policy", policy.Name)
-		assert.Equal(t, int32(8080), policy.Spec.Ingress[0].Ports[0].Port.IntVal)
+		assert.Equal(t, "api-policy", policy.Metadata.Name)
+		assert.Equal(t, int32(8080), policy.Spec.Ingress[0].Ports[0].Port.(int32))
 		assert.Equal(t, int32(8090), *policy.Spec.Ingress[0].Ports[0].EndPort)
 	})
 }

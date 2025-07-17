@@ -112,7 +112,7 @@ fmt: ## format go files
 
 PHONY: lint
 lint: ## lint go files
-	golangci-lint run -c .golang-ci.yml
+	golangci-lint run -c .golangci.yml
 
 .PHONY: security
 security: ## run security analysis with gosec

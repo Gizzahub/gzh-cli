@@ -162,8 +162,8 @@ func TestContainerDetector_CalculateEnvironmentFingerprint(t *testing.T) {
 			{ID: "container2", Name: "test2", Image: "redis:alpine"},
 		},
 		Networks: []DetectedNetwork{
-			{NetworkID: "net1", Name: "bridge"},
-			{NetworkID: "net2", Name: "custom"},
+			{ID: "net1", Name: "bridge"},
+			{ID: "net2", Name: "custom"},
 		},
 	}
 
@@ -284,8 +284,8 @@ ghi123456789,mynetwork,bridge,local`
 	}
 
 	// Validate first network
-	if networks[0].NetworkID != "abc123456789" {
-		t.Errorf("Expected network ID 'abc123456789', got '%s'", networks[0].NetworkID)
+	if networks[0].ID != "abc123456789" {
+		t.Errorf("Expected network ID 'abc123456789', got '%s'", networks[0].ID)
 	}
 
 	if networks[0].Name != "bridge" {
@@ -433,8 +433,8 @@ func BenchmarkContainerDetector_CalculateEnvironmentFingerprint(b *testing.B) {
 			{ID: "container2", Name: "test2", Image: "redis:alpine"},
 		},
 		Networks: []DetectedNetwork{
-			{NetworkID: "net1", Name: "bridge"},
-			{NetworkID: "net2", Name: "custom"},
+			{ID: "net1", Name: "bridge"},
+			{ID: "net2", Name: "custom"},
 		},
 	}
 

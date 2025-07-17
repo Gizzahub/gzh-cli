@@ -1,6 +1,7 @@
 package alwayslatest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestDefaultAlwaysLatestPortOptions(t *testing.T) {
 }
 
 func TestNewAlwaysLatestPortCmd(t *testing.T) {
-	cmd := newAlwaysLatestPortCmd()
+	cmd := newAlwaysLatestPortCmd(context.Background())
 
 	assert.Equal(t, "port", cmd.Use)
 	assert.Equal(t, "Update MacPorts and its managed ports to latest versions", cmd.Short)

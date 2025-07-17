@@ -1,6 +1,7 @@
 package alwayslatest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,7 @@ func TestDefaultAlwaysLatestAptOptions(t *testing.T) {
 }
 
 func TestNewAlwaysLatestAptCmd(t *testing.T) {
-	cmd := newAlwaysLatestAptCmd()
+	cmd := newAlwaysLatestAptCmd(context.Background())
 
 	assert.Equal(t, "apt", cmd.Use)
 	assert.Equal(t, "Update APT and its managed packages to latest versions", cmd.Short)

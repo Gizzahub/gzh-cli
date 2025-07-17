@@ -1,6 +1,7 @@
 package alwayslatest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestDefaultAlwaysLatestRbenvOptions(t *testing.T) {
 }
 
 func TestNewAlwaysLatestRbenvCmd(t *testing.T) {
-	cmd := newAlwaysLatestRbenvCmd()
+	cmd := newAlwaysLatestRbenvCmd(context.Background())
 
 	assert.Equal(t, "rbenv", cmd.Use)
 	assert.Equal(t, "Update rbenv and install latest Ruby versions", cmd.Short)
