@@ -83,8 +83,8 @@ repo_roots:
 	// Output: Configuration loaded successfully with multiple providers
 }
 
-// ExampleConfigValidation demonstrates configuration validation and error handling.
-func ExampleConfigValidation() {
+// ExampleLoadConfig_validation demonstrates configuration validation and error handling.
+func ExampleLoadConfig_validation() {
 	tempDir := "/tmp/bulk-clone-validation-example"
 
 	os.MkdirAll(tempDir, 0o755)
@@ -248,7 +248,7 @@ repo_roots:
 
 // ExampleConfigStrategies demonstrates different cloning strategies
 // and their use cases.
-func ExampleConfigStrategies() {
+func ExampleLoadConfig_strategies() {
 	tempDir := "/tmp/bulk-clone-strategies-example"
 
 	os.MkdirAll(tempDir, 0o755)
@@ -303,7 +303,7 @@ repo_roots:
 
 // ExampleEnvironmentVariables demonstrates how environment variables
 // are used for authentication and configuration.
-func ExampleEnvironmentVariables() {
+func ExampleLoadConfig_environmentVariables() {
 	// Save original environment
 	originalGitHub := os.Getenv("GITHUB_TOKEN")
 	originalGitLab := os.Getenv("GITLAB_TOKEN")

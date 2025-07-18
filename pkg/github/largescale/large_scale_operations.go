@@ -399,7 +399,17 @@ func (m *LargeScaleManager) GetStats() OperationStats {
 	m.stats.mu.RLock()
 	defer m.stats.mu.RUnlock()
 
-	return *m.stats
+	// Copy values to avoid returning a structure with mutex
+	return OperationStats{
+		TotalRepos:     m.stats.TotalRepos,
+		ProcessedRepos: m.stats.ProcessedRepos,
+		FailedRepos:    m.stats.FailedRepos,
+		SkippedRepos:   m.stats.SkippedRepos,
+		TotalSize:      m.stats.TotalSize,
+		StartTime:      m.stats.StartTime,
+		LastUpdateTime: m.stats.LastUpdateTime,
+		APICallsUsed:   m.stats.APICallsUsed,
+	}
 }
 
 // Utility functions

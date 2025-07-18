@@ -71,7 +71,7 @@ func ExampleClone() {
 
 // ExampleWorkflow demonstrates a complete workflow of discovering and cloning
 // repositories from a GitHub organization.
-func ExampleWorkflow() {
+func ExampleCachedGitHubClient_workflow() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
@@ -124,7 +124,7 @@ func ExampleWorkflow() {
 
 // ExampleErrorHandling demonstrates proper error handling when working
 // with GitHub API operations.
-func ExampleErrorHandling() {
+func ExampleCachedGitHubClient_errorHandling() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
