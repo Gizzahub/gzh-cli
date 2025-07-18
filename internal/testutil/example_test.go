@@ -66,10 +66,12 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	resp1, err := mockClient.Do(req1)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp1.StatusCode)
+	resp1.Body.Close()
 
 	resp2, err := mockClient.Do(req2)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp2.StatusCode)
+	resp2.Body.Close()
 
 	// Verify calls were recorded
 	assert.Len(t, mockClient.Calls, 2)
