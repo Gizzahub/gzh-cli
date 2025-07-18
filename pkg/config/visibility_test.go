@@ -227,54 +227,54 @@ func TestRepositoryFilter_ShouldIncludeRepository(t *testing.T) {
 		visibility      string
 		namePattern     string
 		excludePatterns []string
-		repo            Repository
+		repo            VisibilityRepository
 		expected        bool
 	}{
 		{
 			name:       "public repo passes public filter",
 			visibility: "public",
-			repo:       Repository{Name: "test-repo", IsPrivate: false},
+			repo:       VisibilityRepository{Name: "test-repo", IsPrivate: false},
 			expected:   true,
 		},
 		{
 			name:       "private repo fails public filter",
 			visibility: "public",
-			repo:       Repository{Name: "test-repo", IsPrivate: true},
+			repo:       VisibilityRepository{Name: "test-repo", IsPrivate: true},
 			expected:   false,
 		},
 		{
 			name:        "repo matches name pattern",
 			visibility:  "all",
 			namePattern: "test-.*",
-			repo:        Repository{Name: "test-repo", IsPrivate: false},
+			repo:        VisibilityRepository{Name: "test-repo", IsPrivate: false},
 			expected:    true,
 		},
 		{
 			name:        "repo doesn't match name pattern",
 			visibility:  "all",
 			namePattern: "prod-.*",
-			repo:        Repository{Name: "test-repo", IsPrivate: false},
+			repo:        VisibilityRepository{Name: "test-repo", IsPrivate: false},
 			expected:    false,
 		},
 		{
 			name:            "repo excluded by exact match",
 			visibility:      "all",
 			excludePatterns: []string{"test-repo", "other-repo"},
-			repo:            Repository{Name: "test-repo", IsPrivate: false},
+			repo:            VisibilityRepository{Name: "test-repo", IsPrivate: false},
 			expected:        false,
 		},
 		{
 			name:            "repo excluded by glob pattern",
 			visibility:      "all",
 			excludePatterns: []string{"test-*"},
-			repo:            Repository{Name: "test-repo", IsPrivate: false},
+			repo:            VisibilityRepository{Name: "test-repo", IsPrivate: false},
 			expected:        false,
 		},
 		{
 			name:            "repo not excluded",
 			visibility:      "all",
 			excludePatterns: []string{"other-*"},
-			repo:            Repository{Name: "test-repo", IsPrivate: false},
+			repo:            VisibilityRepository{Name: "test-repo", IsPrivate: false},
 			expected:        true,
 		},
 	}
@@ -291,7 +291,7 @@ func TestRepositoryFilter_ShouldIncludeRepository(t *testing.T) {
 }
 
 func TestRepositoryFilter_FilterRepositories(t *testing.T) {
-	repos := []Repository{
+	repos := []VisibilityRepository{
 		{Name: "public-repo", IsPrivate: false},
 		{Name: "private-repo", IsPrivate: true},
 		{Name: "test-public", IsPrivate: false},
@@ -394,7 +394,7 @@ func TestRepositoryFilter_GetFilterSummary(t *testing.T) {
 }
 
 func TestCalculateVisibilityStatistics(t *testing.T) {
-	repos := []Repository{
+	repos := []VisibilityRepository{
 		{Name: "public1", IsPrivate: false},
 		{Name: "public2", IsPrivate: false},
 		{Name: "private1", IsPrivate: true},
@@ -418,7 +418,7 @@ func TestCalculateVisibilityStatistics(t *testing.T) {
 }
 
 func TestVisibilityStatistics_EmptyRepos(t *testing.T) {
-	stats := CalculateVisibilityStatistics([]Repository{})
+	stats := CalculateVisibilityStatistics([]VisibilityRepository{})
 
 	assert.Equal(t, 0, stats.TotalRepositories)
 	assert.Equal(t, 0, stats.PublicRepositories)

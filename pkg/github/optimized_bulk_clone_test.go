@@ -1,7 +1,6 @@
 package github
 
 import (
-	"context"
 	"testing"
 	"time"
 )
@@ -261,7 +260,6 @@ func TestRepositoryStreamProcessing(t *testing.T) {
 		FullName:      "test-org/test-repo",
 		DefaultBranch: "main",
 		Private:       false,
-		Fork:          false,
 	}
 
 	if repo.ID != 12345 {

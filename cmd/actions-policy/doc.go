@@ -1,4 +1,4 @@
-// Package actionspolicy implements GitHub Actions policy management commands for the gz CLI.
+// Package main implements GitHub Actions policy management commands for the gz CLI.
 // It provides functionality to define, validate, and enforce policies for GitHub Actions
 // workflows across repositories, ensuring compliance with organizational standards
 // and security requirements.
@@ -9,4 +9,4 @@
 //   - Automated policy enforcement via GitHub APIs
 //   - Reporting of policy violations
 //   - Remediation suggestions for non-compliant workflows
-package actionspolicy
+package main

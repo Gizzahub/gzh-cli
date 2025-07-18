@@ -21,6 +21,13 @@ func NewHTTPClientAdapter() HTTPClient {
 	}
 }
 
+// NewHTTPClientAdapterWithClient creates a new HTTP client adapter with a custom client
+func NewHTTPClientAdapterWithClient(client *http.Client) HTTPClient {
+	return &HTTPClientAdapter{
+		client: client,
+	}
+}
+
 // Do performs an HTTP request
 func (a *HTTPClientAdapter) Do(req *http.Request) (*http.Response, error) {
 	return a.client.Do(req)

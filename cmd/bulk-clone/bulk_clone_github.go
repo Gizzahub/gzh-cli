@@ -3,7 +3,6 @@ package bulkclone
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	internalconfig "github.com/gizzahub/gzh-manager-go/internal/config"
@@ -252,8 +251,8 @@ func (o *bulkCloneGithubOptions) loadFromConfig() error {
 	if o.orgName == "" {
 		// Look for GitHub provider configuration
 		if githubProvider, exists := cfg.Providers[config.ProviderGitHub]; exists {
-			if len(githubProvider.Orgs) > 0 {
-				o.orgName = githubProvider.Orgs[0].Name
+			if len(githubProvider.Organizations) > 0 {
+				o.orgName = githubProvider.Organizations[0].Name
 			} else {
 				return fmt.Errorf("no GitHub organizations found in config")
 			}
@@ -263,11 +262,11 @@ func (o *bulkCloneGithubOptions) loadFromConfig() error {
 	}
 
 	// Find the organization configuration
-	var orgConfig *config.GitTarget
+	var orgConfig *config.OrganizationConfig
 	if githubProvider, exists := cfg.Providers[config.ProviderGitHub]; exists {
-		for i := range githubProvider.Orgs {
-			if githubProvider.Orgs[i].Name == o.orgName {
-				orgConfig = &githubProvider.Orgs[i]
+		for _, org := range githubProvider.Organizations {
+			if org.Name == o.orgName {
+				orgConfig = org
 				break
 			}
 		}
@@ -278,7 +277,7 @@ func (o *bulkCloneGithubOptions) loadFromConfig() error {
 	}
 
 	// Apply config values (CLI flags take precedence)
-	if o.targetPath == "" && orgConfig.CloneDir != "" {
+	if o.targetPath == "" && orgConfig != nil && orgConfig.CloneDir != "" {
 		o.targetPath = config.ExpandEnvironmentVariables(orgConfig.CloneDir)
 	}
 

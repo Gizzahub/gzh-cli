@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestRootCommandOutput(t *testing.T) {
-	cmd := newRootCmd("")
+	cmd := newRootCmd(context.Background(), "")
 	b := bytes.NewBufferString("")
 
 	cmd.SetArgs([]string{"-h"})

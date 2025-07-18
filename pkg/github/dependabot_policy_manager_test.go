@@ -216,7 +216,7 @@ func TestDependabotPolicyManager_UpdatePolicy(t *testing.T) {
 	assert.True(t, updated.UpdatedAt.After(originalCreatedAt))
 
 	// Test updating non-existent policy
-	nonExistentPolicy := createTestPolicy()
+	nonExistentPolicy := createTestDependabotPolicy()
 	nonExistentPolicy.ID = "non-existent"
 	err = policyManager.UpdatePolicy(ctx, nonExistentPolicy)
 	assert.Error(t, err)

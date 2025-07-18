@@ -1,5 +1,12 @@
 package env
 
+import "os"
+
+// Get retrieves the value of an environment variable
+func Get(key string) string {
+	return os.Getenv(key)
+}
+
 // Standard environment variable names used by gzh-manager
 const (
 	// Configuration paths
@@ -26,10 +33,10 @@ const (
 	GZHProgressBar = "GZH_PROGRESS_BAR" // Control progress bar display (auto, always, never)
 
 	// Performance tuning
-	GZHMaxWorkers    = "GZH_MAX_WORKERS"     // Maximum number of concurrent workers
-	GZHTimeout       = "GZH_TIMEOUT"         // Default timeout for operations
-	GZHRetryAttempts = "GZH_RETRY_ATTEMPTS"  // Number of retry attempts
-	GZHRateLimit     = "GZH_RATE_LIMIT"      // API rate limit per hour
+	GZHMaxWorkers    = "GZH_MAX_WORKERS"    // Maximum number of concurrent workers
+	GZHTimeout       = "GZH_TIMEOUT"        // Default timeout for operations
+	GZHRetryAttempts = "GZH_RETRY_ATTEMPTS" // Number of retry attempts
+	GZHRateLimit     = "GZH_RATE_LIMIT"     // API rate limit per hour
 
 	// Network settings
 	GZHHTTPProxy  = "GZH_HTTP_PROXY"  // HTTP proxy URL

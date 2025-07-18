@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
@@ -283,8 +282,6 @@ func TestStartupValidator_ValidateConfig(t *testing.T) {
 }
 
 func TestStartupValidator_CustomValidators(t *testing.T) {
-	validator := NewStartupValidator()
-
 	t.Run("strategy validation", func(t *testing.T) {
 		validStrategies := []string{"reset", "pull", "fetch"}
 		invalidStrategies := []string{"invalid", "push", ""}

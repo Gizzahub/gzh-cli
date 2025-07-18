@@ -15,7 +15,7 @@
 //	func TestMyFunction(t *testing.T) {
 //	    tmpDir := helpers.TempDir(t)
 //	    helpers.WithEnvVars(t, map[string]string{"GZH_TOKEN": "test"})
-//	    
+//
 //	    result := MyFunction()
 //	    helpers.AssertEqual(t, expected, result)
 //	}

@@ -11,15 +11,15 @@ import (
 
 // Server represents a GitHub webhook server
 type Server struct {
-	processor *github.EventProcessor
-	logger    github.EventLogger
+	processor github.EventProcessor
+	logger    github.Logger
 	host      string
 	port      int
 	secret    string
 }
 
 // NewServer creates a new event server
-func NewServer(host string, port int, secret string, storage github.EventStorage, logger github.EventLogger) *Server {
+func NewServer(host string, port int, secret string, storage github.EventStorage, logger github.Logger) *Server {
 	processor := github.NewEventProcessor(storage, logger)
 	return &Server{
 		processor: processor,

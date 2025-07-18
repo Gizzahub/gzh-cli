@@ -84,10 +84,12 @@ var SampleRepoConfigs = struct {
 				},
 			},
 		},
-		Repositories: []config.RepoSpecificConfig{
-			{
-				Name:     "*",
-				Template: "basic",
+		Repositories: &config.RepoTargets{
+			Specific: []config.RepoSpecificConfig{
+				{
+					Name:     "*",
+					Template: "basic",
+				},
 			},
 		},
 	},
@@ -164,29 +166,20 @@ var SampleRepoConfigs = struct {
 					HasProjects: boolPtr(true),
 					HasPages:    boolPtr(true),
 				},
-				Permissions: &config.RepoPermissions{
-					Admin:    []string{"opensource-admins"},
-					Maintain: []string{"opensource-maintainers"},
-					Push:     []string{"opensource-contributors"},
-				},
-				RequiredFiles: []config.RequiredFile{
-					{
-						Path:    "LICENSE",
-						Content: "MIT License\n\nCopyright (c) 2024 Test Organization\n",
-					},
-					{
-						Path:    "README.md",
-						Content: "# Project Name\n\n## Description\n\n## Installation\n\n## Usage\n\n## Contributing\n\n## License\n",
-					},
-					{
-						Path:    "CONTRIBUTING.md",
-						Content: "# Contributing Guidelines\n\n## Code of Conduct\n\n## How to Contribute\n\n## Pull Request Process\n",
-					},
-					{
-						Path:    "CODE_OF_CONDUCT.md",
-						Content: "# Code of Conduct\n\n## Our Pledge\n\n## Our Standards\n\n## Enforcement\n",
+				Permissions: &config.PermissionSettings{
+					TeamPermissions: map[string]string{
+						"opensource-admins":       "admin",
+						"opensource-maintainers":  "maintain",
+						"opensource-contributors": "push",
 					},
 				},
+				// RequiredFiles should be []string in current config
+				// RequiredFiles: []string{
+				// 	"LICENSE",
+				// 	"README.md",
+				// 	"CONTRIBUTING.md",
+				// 	"CODE_OF_CONDUCT.md",
+				// },
 			},
 		},
 	},
@@ -216,7 +209,8 @@ var SampleRepoConfigs = struct {
 							RequireCodeOwnerReviews: boolPtr(true),
 							RequiredStatusChecks:    []string{"ci/build", "ci/test", "sonarqube"},
 							EnforceAdmins:           boolPtr(false),
-							RestrictPushAccess:      []string{"senior-developers"},
+							RestrictPushes:          boolPtr(true),
+							AllowedTeams:            []string{"senior-developers"},
 						},
 						"develop": {
 							RequiredReviews:      intPtr(1),
@@ -224,19 +218,9 @@ var SampleRepoConfigs = struct {
 						},
 					},
 				},
-				Webhooks: []config.WebhookConfig{
-					{
-						Name:   "jenkins",
-						URL:    "https://jenkins.internal/github-webhook/",
-						Events: []string{"push", "pull_request"},
-						Active: boolPtr(true),
-					},
-					{
-						Name:   "sonarqube",
-						URL:    "https://sonar.internal/webhook/github",
-						Events: []string{"push"},
-						Active: boolPtr(true),
-					},
+				Webhooks: []string{
+					"jenkins",
+					"sonarqube",
 				},
 			},
 		},
@@ -270,17 +254,19 @@ var SampleRepoConfigs = struct {
 				},
 			},
 		},
-		Repositories: []config.RepoSpecificConfig{
-			{
-				Name:     "public-exception-repo",
-				Template: "strict",
-				Exceptions: []config.PolicyException{
-					{
-						PolicyName: "strict-policy",
-						RuleName:   "must_be_private",
-						Reason:     "This repository needs to be public for documentation",
-						ApprovedBy: "security-team",
-						ExpiresAt:  "2025-01-01",
+		Repositories: &config.RepoTargets{
+			Specific: []config.RepoSpecificConfig{
+				{
+					Name:     "public-exception-repo",
+					Template: "strict",
+					Exceptions: []config.PolicyException{
+						{
+							PolicyName: "strict-policy",
+							RuleName:   "must_be_private",
+							Reason:     "This repository needs to be public for documentation",
+							ApprovedBy: "security-team",
+							ExpiresAt:  "2025-01-01",
+						},
 					},
 				},
 			},
@@ -374,4 +360,27 @@ type TestStep struct {
 	Name   string
 	Action string
 	Data   interface{}
+}
+
+// Helper functions for creating pointers
+func boolPtr(b bool) *bool {
+	return &b
+}
+
+func intPtr(i int) *int {
+	return &i
+}
+
+// SampleWebhookConfigs provides webhook configuration examples
+var SampleWebhookConfigs = map[string]*config.WebhookConfig{
+	"jenkins": {
+		URL:    "https://jenkins.internal/github-webhook/",
+		Events: []string{"push", "pull_request"},
+		Active: boolPtr(true),
+	},
+	"sonarqube": {
+		URL:    "https://sonar.internal/webhook/github",
+		Events: []string{"push"},
+		Active: boolPtr(true),
+	},
 }

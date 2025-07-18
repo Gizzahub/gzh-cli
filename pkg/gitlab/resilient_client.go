@@ -36,9 +36,9 @@ func NewResilientGitLabClientWithConfig(baseURL, token string, timeout time.Dura
 	}
 
 	return &ResilientGitLabClient{
-		httpClient: &http.Client{
+		httpClient: NewHTTPClientAdapterWithClient(&http.Client{
 			Timeout: timeout,
-		},
+		}),
 		baseURL: strings.TrimSuffix(baseURL, "/"),
 		token:   token,
 	}

@@ -2,11 +2,14 @@ package devenv
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ssooidc"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/ini.v1"
@@ -174,10 +177,10 @@ func TestAWSProfileManager(t *testing.T) {
 		refreshToken := "test-refresh-token"
 
 		// Create a mock token response
-		tokenResp := &mockCreateTokenOutput{
-			AccessToken:  &accessToken,
-			ExpiresIn:    &expiresIn,
-			RefreshToken: &refreshToken,
+		tokenResp := &ssooidc.CreateTokenOutput{
+			AccessToken:  aws.String(accessToken),
+			ExpiresIn:    expiresIn,
+			RefreshToken: aws.String(refreshToken),
 		}
 
 		// Save token
@@ -190,25 +193,6 @@ func TestAWSProfileManager(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, files, 1)
 	})
-}
-
-// Mock token output for testing
-type mockCreateTokenOutput struct {
-	AccessToken  *string
-	ExpiresIn    *int32
-	RefreshToken *string
-}
-
-func (m *mockCreateTokenOutput) GetAccessToken() *string {
-	return m.AccessToken
-}
-
-func (m *mockCreateTokenOutput) GetExpiresIn() *int32 {
-	return m.ExpiresIn
-}
-
-func (m *mockCreateTokenOutput) GetRefreshToken() *string {
-	return m.RefreshToken
 }
 
 func TestAWSProfileCommands(t *testing.T) {

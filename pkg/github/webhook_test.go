@@ -7,31 +7,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// mockLogger implements the Logger interface for testing
-type mockLogger struct {
-	logs []mockLogEntry
+// mockWebhookLogger implements the Logger interface for testing
+type mockWebhookLogger struct {
+	logs []mockWebhookLogEntry
 }
 
-type mockLogEntry struct {
+type mockWebhookLogEntry struct {
 	level  string
 	msg    string
 	fields []interface{}
 }
 
-func (l *mockLogger) Debug(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, mockLogEntry{"debug", msg, fields})
+func (l *mockWebhookLogger) Debug(msg string, fields ...interface{}) {
+	l.logs = append(l.logs, mockWebhookLogEntry{"debug", msg, fields})
 }
 
-func (l *mockLogger) Info(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, mockLogEntry{"info", msg, fields})
+func (l *mockWebhookLogger) Info(msg string, fields ...interface{}) {
+	l.logs = append(l.logs, mockWebhookLogEntry{"info", msg, fields})
 }
 
-func (l *mockLogger) Warn(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, mockLogEntry{"warn", msg, fields})
+func (l *mockWebhookLogger) Warn(msg string, fields ...interface{}) {
+	l.logs = append(l.logs, mockWebhookLogEntry{"warn", msg, fields})
 }
 
-func (l *mockLogger) Error(msg string, fields ...interface{}) {
-	l.logs = append(l.logs, mockLogEntry{"error", msg, fields})
+func (l *mockWebhookLogger) Error(msg string, fields ...interface{}) {
+	l.logs = append(l.logs, mockWebhookLogEntry{"error", msg, fields})
 }
 
 func TestWebhookService_CreateRepositoryWebhook(t *testing.T) {
@@ -96,7 +96,7 @@ func TestWebhookService_CreateRepositoryWebhook(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger := &mockLogger{}
+			logger := &mockWebhookLogger{}
 			service := NewWebhookService(nil, logger)
 
 			webhook, err := service.CreateRepositoryWebhook(context.Background(), tt.owner, tt.repo, tt.request)
@@ -120,7 +120,7 @@ func TestWebhookService_CreateRepositoryWebhook(t *testing.T) {
 }
 
 func TestWebhookService_GetRepositoryWebhook(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	webhook, err := service.GetRepositoryWebhook(context.Background(), "testowner", "testrepo", 123456)
@@ -136,7 +136,7 @@ func TestWebhookService_GetRepositoryWebhook(t *testing.T) {
 }
 
 func TestWebhookService_ListRepositoryWebhooks(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	webhooks, err := service.ListRepositoryWebhooks(context.Background(), "testowner", "testrepo", nil)
@@ -159,7 +159,7 @@ func TestWebhookService_ListRepositoryWebhooks(t *testing.T) {
 }
 
 func TestWebhookService_UpdateRepositoryWebhook(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	updateRequest := &WebhookUpdateRequest{
@@ -182,7 +182,7 @@ func TestWebhookService_UpdateRepositoryWebhook(t *testing.T) {
 }
 
 func TestWebhookService_DeleteRepositoryWebhook(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	err := service.DeleteRepositoryWebhook(context.Background(), "testowner", "testrepo", 123456)
@@ -191,7 +191,7 @@ func TestWebhookService_DeleteRepositoryWebhook(t *testing.T) {
 }
 
 func TestWebhookService_CreateOrganizationWebhook(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	request := &WebhookCreateRequest{
@@ -218,7 +218,7 @@ func TestWebhookService_CreateOrganizationWebhook(t *testing.T) {
 }
 
 func TestWebhookService_BulkCreateWebhooks(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	request := &BulkWebhookRequest{
@@ -256,7 +256,7 @@ func TestWebhookService_BulkCreateWebhooks(t *testing.T) {
 }
 
 func TestWebhookService_TestWebhook(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	result, err := service.TestWebhook(context.Background(), "testowner", "testrepo", 123456)
@@ -272,7 +272,7 @@ func TestWebhookService_TestWebhook(t *testing.T) {
 }
 
 func TestWebhookService_GetWebhookDeliveries(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	deliveries, err := service.GetWebhookDeliveries(context.Background(), "testowner", "testrepo", 123456)
@@ -300,7 +300,7 @@ func TestWebhookService_GetWebhookDeliveries(t *testing.T) {
 }
 
 func TestWebhookMatchesSelector(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := &webhookServiceImpl{
 		apiClient: nil,
 		logger:    logger,
@@ -395,7 +395,7 @@ func TestWebhookMatchesSelector(t *testing.T) {
 }
 
 func TestValidateWebhookRequest(t *testing.T) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := &webhookServiceImpl{
 		apiClient: nil,
 		logger:    logger,
@@ -468,7 +468,7 @@ func TestValidateWebhookRequest(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkWebhookService_CreateRepositoryWebhook(b *testing.B) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	request := &WebhookCreateRequest{
@@ -492,7 +492,7 @@ func BenchmarkWebhookService_CreateRepositoryWebhook(b *testing.B) {
 }
 
 func BenchmarkWebhookService_ListRepositoryWebhooks(b *testing.B) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
 
 	b.ResetTimer()
@@ -505,7 +505,7 @@ func BenchmarkWebhookService_ListRepositoryWebhooks(b *testing.B) {
 }
 
 func BenchmarkWebhookMatchesSelector(b *testing.B) {
-	logger := &mockLogger{}
+	logger := &mockWebhookLogger{}
 	service := &webhookServiceImpl{
 		apiClient: nil,
 		logger:    logger,

@@ -64,14 +64,18 @@ func TestResilientGitHubClient_ListRepositories(t *testing.T) {
 		}
 
 		if page == "1" || page == "" {
-			repos = []struct{ Name string }{
+			repos = []struct {
+				Name string `json:"name"`
+			}{
 				{Name: "repo1"},
 				{Name: "repo2"},
 			}
 			// Add link header for pagination
 			w.Header().Set("Link", `<http://example.com?page=2>; rel="next"`)
 		} else if page == "2" {
-			repos = []struct{ Name string }{
+			repos = []struct {
+				Name string `json:"name"`
+			}{
 				{Name: "repo3"},
 			}
 			// No next link for last page

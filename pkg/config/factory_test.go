@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/builders"
 )
 

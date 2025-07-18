@@ -19,26 +19,25 @@ func ExampleLoadConfig() {
 
 	configPath := filepath.Join(tempDir, "bulk-clone.yaml")
 	configContent := `
-github:
-  organizations:
-    - name: "octocat"
-      target: "./github-repos"
-      strategy: "reset"
-  token_env: "GITHUB_TOKEN"
-
-gitlab:
-  groups:
-    - name: "gitlab-org"
-      target: "./gitlab-repos"
-      strategy: "pull"
-  token_env: "GITLAB_TOKEN"
-
-gitea:
-  organizations:
-    - name: "gitea"
-      target: "./gitea-repos"
-      strategy: "fetch"
-  base_url: "https://gitea.com"
+version: "0.1"
+default:
+  protocol: https
+repo_roots:
+  - root_path: "./github-repos"
+    provider: "github"
+    protocol: "https"
+    org_name: "octocat"
+    strategy: "reset"
+  - root_path: "./gitlab-repos"
+    provider: "gitlab"
+    protocol: "https"
+    org_name: "gitlab-org"
+    strategy: "pull"
+  - root_path: "./gitea-repos"
+    provider: "gitea"
+    protocol: "https"
+    org_name: "gitea"
+    strategy: "fetch"
 `
 
 	err := os.WriteFile(configPath, []byte(configContent), 0o644)
@@ -55,12 +54,28 @@ gitea:
 	}
 
 	fmt.Printf("Loaded configuration with:\n")
-	fmt.Printf("- GitHub organizations: %d\n", len(config.GitHub.Organizations))
-	fmt.Printf("- GitLab groups: %d\n", len(config.GitLab.Groups))
-	fmt.Printf("- Gitea organizations: %d\n", len(config.Gitea.Organizations))
+	fmt.Printf("- Version: %s\n", config.Version)
+	fmt.Printf("- Repository roots: %d\n", len(config.RepoRoots))
 
-	if len(config.GitHub.Organizations) > 0 {
-		fmt.Printf("- First GitHub org: %s\n", config.GitHub.Organizations[0].Name)
+	// Count providers by type
+	githubCount, gitlabCount, giteaCount := 0, 0, 0
+	for _, root := range config.RepoRoots {
+		switch root.Provider {
+		case "github":
+			githubCount++
+		case "gitlab":
+			gitlabCount++
+		case "gitea":
+			giteaCount++
+		}
+	}
+
+	fmt.Printf("- GitHub organizations: %d\n", githubCount)
+	fmt.Printf("- GitLab groups: %d\n", gitlabCount)
+	fmt.Printf("- Gitea organizations: %d\n", giteaCount)
+
+	if len(config.RepoRoots) > 0 && config.RepoRoots[0].Provider == "github" {
+		fmt.Printf("- First GitHub org: %s\n", config.RepoRoots[0].OrgName)
 	}
 
 	// Output: Configuration loaded successfully with multiple providers
@@ -75,12 +90,11 @@ func ExampleConfigValidation() {
 	// Create an invalid configuration file
 	configPath := filepath.Join(tempDir, "invalid-config.yaml")
 	invalidConfig := `
-github:
-  organizations:
-    - name: ""  # Invalid: empty name
-      target: ""  # Invalid: empty target
-gitlab:
-  groups: []  # Valid but empty
+version: "0.1"
+repo_roots:
+  - root_path: ""  # Invalid: empty path
+    provider: "github"
+    org_name: ""  # Invalid: empty name
 # Missing required fields
 `
 
@@ -98,13 +112,14 @@ gitlab:
 
 	// Create a valid configuration
 	validConfigPath := filepath.Join(tempDir, "valid-config.yaml")
-	validConfig := `
-github:
-  organizations:
-    - name: "valid-org"
-      target: "./repos"
-      strategy: "reset"
-  token_env: "GITHUB_TOKEN"
+	validConfig := `version: "0.1"
+default:
+  protocol: https
+repo_roots:
+  - root_path: "./repos"
+    provider: "github"
+    protocol: "https"
+    org_name: "valid-org"
 `
 
 	err = os.WriteFile(validConfigPath, []byte(validConfig), 0o644)
@@ -120,8 +135,10 @@ github:
 	}
 
 	fmt.Printf("Valid configuration loaded successfully\n")
-	fmt.Printf("Organization: %s\n", config.GitHub.Organizations[0].Name)
-	fmt.Printf("Strategy: %s\n", config.GitHub.Organizations[0].Strategy)
+	if len(config.RepoRoots) > 0 {
+		fmt.Printf("Organization: %s\n", config.RepoRoots[0].OrgName)
+		fmt.Printf("Provider: %s\n", config.RepoRoots[0].Provider)
+	}
 
 	// Output: Configuration validation demonstrates error detection and handling
 }
@@ -135,46 +152,44 @@ func ExampleMultiProviderConfig() {
 
 	configPath := filepath.Join(tempDir, "multi-provider.yaml")
 	multiProviderConfig := `
-github:
-  organizations:
-    - name: "github-org-1"
-      target: "./github/org1"
-      strategy: "reset"
-      include_forks: false
-    - name: "github-org-2"
-      target: "./github/org2"
-      strategy: "pull"
-      include_forks: true
-  token_env: "GITHUB_TOKEN"
-
-gitlab:
-  groups:
-    - name: "gitlab-group-1"
-      target: "./gitlab/group1"
-      strategy: "fetch"
-      include_subgroups: true
-    - name: "gitlab-group-2"
-      target: "./gitlab/group2"
-      strategy: "reset"
-      include_subgroups: false
-  base_url: "https://gitlab.com"
-  token_env: "GITLAB_TOKEN"
-
-gitea:
-  organizations:
-    - name: "gitea-org"
-      target: "./gitea/org"
-      strategy: "pull"
-  base_url: "https://gitea.com"
-  token_env: "GITEA_TOKEN"
-
-gogs:
-  organizations:
-    - name: "gogs-org"
-      target: "./gogs/org"
-      strategy: "reset"
-  base_url: "https://try.gogs.io"
-  token_env: "GOGS_TOKEN"
+version: "0.1"
+default:
+  protocol: https
+repo_roots:
+  - root_path: "./github/org1"
+    provider: "github"
+    protocol: "https"
+    org_name: "github-org-1"
+    strategy: "reset"
+    include_forks: false
+  - root_path: "./github/org2"
+    provider: "github"
+    protocol: "https"
+    org_name: "github-org-2"
+    strategy: "pull"
+    include_forks: true
+  - root_path: "./gitlab/group1"
+    provider: "gitlab"
+    protocol: "https"
+    org_name: "gitlab-group-1"
+    strategy: "fetch"
+    include_subgroups: true
+  - root_path: "./gitlab/group2"
+    provider: "gitlab"
+    protocol: "https"
+    org_name: "gitlab-group-2"
+    strategy: "reset"
+    include_subgroups: false
+  - root_path: "./gitea/org"
+    provider: "gitea"
+    protocol: "https"
+    org_name: "gitea-org"
+    strategy: "pull"
+  - root_path: "./gogs/org"
+    provider: "gogs"
+    protocol: "https"
+    org_name: "gogs-org"
+    strategy: "reset"
 `
 
 	err := os.WriteFile(configPath, []byte(multiProviderConfig), 0o644)
@@ -190,19 +205,34 @@ gogs:
 	}
 
 	fmt.Printf("Multi-provider configuration loaded:\n")
-	fmt.Printf("- GitHub: %d organizations\n", len(config.GitHub.Organizations))
-	fmt.Printf("- GitLab: %d groups\n", len(config.GitLab.Groups))
-	fmt.Printf("- Gitea: %d organizations\n", len(config.Gitea.Organizations))
-	fmt.Printf("- Gogs: %d organizations\n", len(config.Gogs.Organizations))
+	// Count providers by type
+	githubCount, gitlabCount, giteaCount, gogsCount := 0, 0, 0, 0
+	for _, root := range config.RepoRoots {
+		switch root.Provider {
+		case "github":
+			githubCount++
+		case "gitlab":
+			gitlabCount++
+		case "gitea":
+			giteaCount++
+		case "gogs":
+			gogsCount++
+		}
+	}
+	fmt.Printf("- GitHub: %d organizations\n", githubCount)
+	fmt.Printf("- GitLab: %d groups\n", gitlabCount)
+	fmt.Printf("- Gitea: %d organizations\n", giteaCount)
+	fmt.Printf("- Gogs: %d organizations\n", gogsCount)
 
 	// Demonstrate accessing specific configuration details
-	if len(config.GitHub.Organizations) > 0 {
-		org := config.GitHub.Organizations[0]
-		fmt.Printf("\nGitHub org details:\n")
-		fmt.Printf("  Name: %s\n", org.Name)
-		fmt.Printf("  Target: %s\n", org.Target)
-		fmt.Printf("  Strategy: %s\n", org.Strategy)
-		fmt.Printf("  Include forks: %t\n", org.IncludeForks)
+	for _, root := range config.RepoRoots {
+		if root.Provider == "github" {
+			fmt.Printf("\nGitHub org details:\n")
+			fmt.Printf("  Name: %s\n", root.OrgName)
+			fmt.Printf("  Target: %s\n", root.RootPath)
+			fmt.Printf("  Protocol: %s\n", root.Protocol)
+			break
+		}
 	}
 
 	// Output: Multi-provider configuration demonstrates comprehensive setup
@@ -217,18 +247,25 @@ func ExampleConfigStrategies() {
 
 	configPath := filepath.Join(tempDir, "strategies.yaml")
 	strategiesConfig := `
-github:
-  organizations:
-    - name: "production-org"
-      target: "./production"
-      strategy: "reset"  # Clean slate, discard local changes
-    - name: "development-org"
-      target: "./development"
-      strategy: "pull"   # Merge changes, preserve local work
-    - name: "backup-org"
-      target: "./backup"
-      strategy: "fetch"  # Update refs only, no merge
-  token_env: "GITHUB_TOKEN"
+version: "0.1"
+default:
+  protocol: https
+repo_roots:
+  - root_path: "./production"
+    provider: "github"
+    protocol: "https"
+    org_name: "production-org"
+    strategy: "reset"  # Clean slate, discard local changes
+  - root_path: "./development"
+    provider: "github"
+    protocol: "https"
+    org_name: "development-org"
+    strategy: "pull"   # Merge changes, preserve local work
+  - root_path: "./backup"
+    provider: "github"
+    protocol: "https"
+    org_name: "backup-org"
+    strategy: "fetch"  # Update refs only, no merge
 `
 
 	err := os.WriteFile(configPath, []byte(strategiesConfig), 0o644)
@@ -244,20 +281,11 @@ github:
 	}
 
 	fmt.Println("Clone strategies configured:")
-	for _, org := range config.GitHub.Organizations {
-		var description string
-		switch org.Strategy {
-		case "reset":
-			description = "Hard reset + pull (discards local changes)"
-		case "pull":
-			description = "Merge remote changes with local changes"
-		case "fetch":
-			description = "Update remote tracking without changing working directory"
-		default:
-			description = "Unknown strategy"
+	for _, root := range config.RepoRoots {
+		if root.Provider == "github" {
+			// Note: Strategy is configured at the operation level, not in the config
+			fmt.Printf("- %s: %s\n", root.OrgName, root.RootPath)
 		}
-
-		fmt.Printf("- %s: %s - %s\n", org.Name, org.Strategy, description)
 	}
 
 	// Output: Clone strategies provide different update behaviors
@@ -284,19 +312,20 @@ func ExampleEnvironmentVariables() {
 
 	configPath := filepath.Join(tempDir, "env-config.yaml")
 	envConfig := `
-github:
-  organizations:
-    - name: "private-org"
-      target: "./private-repos"
-      strategy: "reset"
-  token_env: "GITHUB_TOKEN"  # References environment variable
-
-gitlab:
-  groups:
-    - name: "private-group"
-      target: "./private-projects"
-      strategy: "pull"
-  token_env: "GITLAB_TOKEN"  # References environment variable
+version: "0.1"
+default:
+  protocol: https
+repo_roots:
+  - root_path: "./private-repos"
+    provider: "github"
+    protocol: "https"
+    org_name: "private-org"
+    strategy: "reset"
+  - root_path: "./private-projects"
+    provider: "gitlab"
+    protocol: "https"
+    org_name: "private-group"
+    strategy: "pull"
 `
 
 	err := os.WriteFile(configPath, []byte(envConfig), 0o644)
@@ -305,19 +334,16 @@ gitlab:
 		return
 	}
 
-	config, err := bulkclone.LoadConfig(configPath)
+	_, err = bulkclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
 	}
 
 	fmt.Println("Environment variable configuration:")
-	fmt.Printf("GitHub token env: %s\n", config.GitHub.TokenEnv)
-	fmt.Printf("GitLab token env: %s\n", config.GitLab.TokenEnv)
-
-	// In real usage, tokens would be retrieved like this:
-	githubToken := os.Getenv(config.GitHub.TokenEnv)
-	gitlabToken := os.Getenv(config.GitLab.TokenEnv)
+	// In real usage, tokens would be retrieved from environment
+	githubToken := os.Getenv("GITHUB_TOKEN")
+	gitlabToken := os.Getenv("GITLAB_TOKEN")
 
 	fmt.Printf("GitHub token available: %t\n", githubToken != "")
 	fmt.Printf("GitLab token available: %t\n", gitlabToken != "")

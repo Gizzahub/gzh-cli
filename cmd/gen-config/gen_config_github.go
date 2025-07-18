@@ -1,7 +1,6 @@
 package genconfig
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"

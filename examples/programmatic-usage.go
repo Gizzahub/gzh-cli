@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/archmagece/gzh-manager-go/pkg/bulk-clone"
+	bulkclone "github.com/archmagece/gzh-manager-go/pkg/bulk-clone"
 	"github.com/archmagece/gzh-manager-go/pkg/github"
 	"github.com/archmagece/gzh-manager-go/pkg/gitlab"
 )

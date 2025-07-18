@@ -25,16 +25,16 @@ func TestExampleWithHelpers(t *testing.T) {
 
 	// Create test configuration
 	configPath := helpers.CreateTestConfig(t, tempDir, fixtures.MinimalConfig)
-	
+
 	// Assert file exists
 	helpers.AssertFileExists(t, configPath)
 	helpers.AssertFileContains(t, configPath, "test-org")
 
 	// Create test repository structure
 	repo := helpers.CreateTestRepo(t, tempDir, "test-repo", map[string]string{
-		"README.md":     "# Test Repo",
-		"src/main.go":   "package main",
-		".gitignore":    "*.tmp",
+		"README.md":   "# Test Repo",
+		"src/main.go": "package main",
+		".gitignore":  "*.tmp",
 	})
 
 	// Assert repository structure
@@ -62,7 +62,7 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	// Make some requests
 	req1, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
 	req2, _ := http.NewRequest("GET", "https://api.github.com/repos", nil)
-	
+
 	resp1, err := mockClient.Do(req1)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp1.StatusCode)
@@ -97,7 +97,7 @@ func TestExampleWithFixtures(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			configPath := helpers.CreateTestConfig(t, tempDir, tc.config)
 			helpers.AssertFileExists(t, configPath)
-			
+
 			// In a real test, you would load and validate the config
 			// cfg, err := config.LoadConfigFromFile(configPath)
 			// if tc.valid {

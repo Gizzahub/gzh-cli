@@ -234,29 +234,17 @@ func (c *ResilientGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInf
 
 // RateLimitInfo contains GitHub API rate limit information
 // RateLimitInfo type is defined in token_aware_client.go to avoid duplication
-/*
-type RateLimitInfo struct {
-	Limit     int       `json:"limit"`
-	Remaining int       `json:"remaining"`
-	ResetTime time.Time `json:"reset_time"`
-}
-
-// IsRateLimited checks if we're close to hitting rate limits
-func (r *RateLimitInfo) IsRateLimited() bool {
-	return r.Remaining < 10 // Consider rate limited if fewer than 10 requests remaining
-}
-
-// TimeUntilReset returns duration until rate limit resets
-func (r *RateLimitInfo) TimeUntilReset() time.Duration {
-	return time.Until(r.ResetTime)
-}
 
 // GetStats returns statistics about the underlying HTTP client - DISABLED (recovery package removed)
 // Simple implementation without external recovery dependency
 func (c *ResilientGitHubClient) GetStats() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "standard_http_client",
-		"note": "recovery package removed, using standard http.Client",
+		"type":   "standard_http_client",
+		"note":   "recovery package removed, using standard http.Client",
+		"config": map[string]interface{}{
+			"timeout": c.httpClient.Timeout,
+			"baseURL": c.baseURL,
+		},
 	}
 }
 
@@ -276,4 +264,3 @@ func (c *ResilientGitHubClient) SetToken(token string) {
 func (c *ResilientGitHubClient) SetBaseURL(baseURL string) {
 	c.baseURL = strings.TrimSuffix(baseURL, "/")
 }
-*/

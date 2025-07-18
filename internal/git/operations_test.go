@@ -47,7 +47,7 @@ func TestOperations_Clone(t *testing.T) {
 			// For actual testing, we would need to mock the git command
 			// This is a basic structure test
 			err = ops.Clone(tt.url, targetPath)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -104,7 +104,7 @@ func TestOperations_ExecuteStrategy(t *testing.T) {
 			}
 
 			err = ops.ExecuteStrategy(targetPath, tt.strategy)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -113,5 +113,3 @@ func TestOperations_ExecuteStrategy(t *testing.T) {
 		})
 	}
 }
-
-

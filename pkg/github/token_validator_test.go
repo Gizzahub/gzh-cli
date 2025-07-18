@@ -32,8 +32,7 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 					"core": &RateLimitInfo{
 						Limit:     5000,
 						Remaining: 4999,
-						Reset:     time.Now().Add(1 * time.Hour),
-						Used:      1,
+						ResetTime: time.Now().Add(1 * time.Hour),
 					},
 				},
 			}
@@ -82,8 +81,7 @@ func TestTokenValidator_ValidateForOperation(t *testing.T) {
 					"core": &RateLimitInfo{
 						Limit:     5000,
 						Remaining: 4999,
-						Reset:     time.Now().Add(1 * time.Hour),
-						Used:      1,
+						ResetTime: time.Now().Add(1 * time.Hour),
 					},
 				},
 			}
@@ -154,8 +152,7 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 					"core": &RateLimitInfo{
 						Limit:     5000,
 						Remaining: 4999,
-						Reset:     time.Now().Add(1 * time.Hour),
-						Used:      1,
+						ResetTime: time.Now().Add(1 * time.Hour),
 					},
 				},
 			}

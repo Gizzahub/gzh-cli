@@ -24,7 +24,7 @@ func NewBaseClient(platform, baseURL, token string) *BaseClient {
 	httpClient := httpclient.NewHTTPClient(&httpclient.HTTPClientConfig{
 		Timeout: 30 * time.Second,
 	}, nil, nil)
-	
+
 	return &BaseClient{
 		httpClient: httpClient,
 		token:      token,

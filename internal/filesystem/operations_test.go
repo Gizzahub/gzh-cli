@@ -20,25 +20,25 @@ func TestFileSystemImpl_MkdirAll(t *testing.T) {
 		{
 			name:    "create directory with default permissions",
 			path:    "test-dir",
-			perm:    0755,
+			perm:    0o755,
 			wantErr: false,
 		},
 		{
 			name:    "create nested directories",
 			path:    "test/nested/dir",
-			perm:    0755,
+			perm:    0o755,
 			wantErr: false,
 		},
 		{
 			name:    "create directory with custom permissions",
 			path:    "custom-perm-dir",
-			perm:    0700,
+			perm:    0o700,
 			wantErr: false,
 		},
 		{
 			name:    "create directory with empty path",
 			path:    "",
-			perm:    0755,
+			perm:    0o755,
 			wantErr: true,
 		},
 	}
@@ -50,11 +50,11 @@ func TestFileSystemImpl_MkdirAll(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(tmpDir)
 
-			fs := NewFileSystemImpl(nil)
+			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
 
 			err = fs.MkdirAll(context.Background(), targetPath, tt.perm)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -110,17 +110,17 @@ func TestFileSystemImpl_ReadFile(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(tmpDir)
 
-			fs := NewFileSystemImpl(nil)
+			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.filename)
 
 			// Create test file if needed
 			if tt.createFile {
-				err := os.WriteFile(targetPath, []byte(tt.content), 0644)
+				err := os.WriteFile(targetPath, []byte(tt.content), 0o644)
 				require.NoError(t, err)
 			}
 
 			content, err := fs.ReadFile(context.Background(), targetPath)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, content)
@@ -144,35 +144,35 @@ func TestFileSystemImpl_WriteFile(t *testing.T) {
 			name:    "write new file",
 			path:    "new-file.txt",
 			content: []byte("New content"),
-			perm:    0644,
+			perm:    0o644,
 			wantErr: false,
 		},
 		{
 			name:    "overwrite existing file",
 			path:    "existing.txt",
 			content: []byte("Updated content"),
-			perm:    0644,
+			perm:    0o644,
 			wantErr: false,
 		},
 		{
 			name:    "write file in nested directory",
 			path:    "nested/dir/file.txt",
 			content: []byte("Nested content"),
-			perm:    0644,
+			perm:    0o644,
 			wantErr: false,
 		},
 		{
 			name:    "write empty file",
 			path:    "empty.txt",
 			content: []byte{},
-			perm:    0644,
+			perm:    0o644,
 			wantErr: false,
 		},
 		{
 			name:    "write file with empty path",
 			path:    "",
 			content: []byte("content"),
-			perm:    0644,
+			perm:    0o644,
 			wantErr: true,
 		},
 	}
@@ -184,18 +184,18 @@ func TestFileSystemImpl_WriteFile(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(tmpDir)
 
-			fs := NewFileSystemImpl(nil)
+			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
 
 			// Create existing file for overwrite test
 			if tt.name == "overwrite existing file" {
 				dir := filepath.Dir(targetPath)
-				os.MkdirAll(dir, 0755)
-				os.WriteFile(targetPath, []byte("Original content"), 0644)
+				os.MkdirAll(dir, 0o755)
+				os.WriteFile(targetPath, []byte("Original content"), 0o644)
 			}
 
 			err = fs.WriteFile(context.Background(), targetPath, tt.content, tt.perm)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -249,21 +249,21 @@ func TestFileSystemImpl_RemoveAll(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(tmpDir)
 
-			fs := NewFileSystemImpl(nil)
+			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
 
 			// Create test file or directory if needed
 			switch tt.createType {
 			case "file":
-				err := os.WriteFile(targetPath, []byte("test content"), 0644)
+				err := os.WriteFile(targetPath, []byte("test content"), 0o644)
 				require.NoError(t, err)
 			case "dir":
-				err := os.MkdirAll(targetPath, 0755)
+				err := os.MkdirAll(targetPath, 0o755)
 				require.NoError(t, err)
 			}
 
 			err = fs.RemoveAll(context.Background(), targetPath)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -316,16 +316,16 @@ func TestFileSystemImpl_Exists(t *testing.T) {
 			require.NoError(t, err)
 			defer os.RemoveAll(tmpDir)
 
-			fs := NewFileSystemImpl(nil)
+			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
 
 			// Create test file or directory if needed
 			switch tt.createType {
 			case "file":
-				err := os.WriteFile(targetPath, []byte("test content"), 0644)
+				err := os.WriteFile(targetPath, []byte("test content"), 0o644)
 				require.NoError(t, err)
 			case "dir":
-				err := os.MkdirAll(targetPath, 0755)
+				err := os.MkdirAll(targetPath, 0o755)
 				require.NoError(t, err)
 			}
 
@@ -347,7 +347,7 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 			setup: func(dir string) error {
 				files := []string{"file1.txt", "file2.txt", "file3.md"}
 				for _, f := range files {
-					if err := os.WriteFile(filepath.Join(dir, f), []byte("content"), 0644); err != nil {
+					if err := os.WriteFile(filepath.Join(dir, f), []byte("content"), 0o644); err != nil {
 						return err
 					}
 				}
@@ -361,7 +361,7 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 			setup: func(dir string) error {
 				dirs := []string{"subdir1", "subdir2"}
 				for _, d := range dirs {
-					if err := os.MkdirAll(filepath.Join(dir, d), 0755); err != nil {
+					if err := os.MkdirAll(filepath.Join(dir, d), 0o755); err != nil {
 						return err
 					}
 				}
@@ -392,21 +392,21 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			testDir := filepath.Join(tmpDir, "test-dir")
-			
+
 			// Setup test directory if not testing non-existent
 			if tt.name != "list non-existent directory" {
-				err := os.MkdirAll(testDir, 0755)
+				err := os.MkdirAll(testDir, 0o755)
 				require.NoError(t, err)
-				
+
 				if tt.setup != nil {
 					err := tt.setup(testDir)
 					require.NoError(t, err)
 				}
 			}
 
-			fs := NewFileSystemImpl(nil)
+			fs := NewFileSystem(nil, nil)
 			entries, err := fs.ListDir(context.Background(), testDir)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, entries)
@@ -415,7 +415,7 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 				// Extract just the names for comparison
 				var names []string
 				for _, entry := range entries {
-					names = append(names, entry.Name())
+					names = append(names, entry.Name)
 				}
 				assert.ElementsMatch(t, tt.wantEntries, names)
 			}

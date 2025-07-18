@@ -196,7 +196,7 @@ func NewTestRepoConfigClient(t *testing.T) *TestRepoConfigClient {
 	client := &RepoConfigClient{
 		token:       "test-token",
 		baseURL:     "https://api.github.com",
-		httpClient:  mockClient.client.Client(),
+		httpClient:  NewHTTPClientAdapterWithClient(mockClient.client.Client()),
 		rateLimiter: NewRateLimiter(),
 	}
 

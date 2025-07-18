@@ -259,7 +259,8 @@ func TestRepoConfigClient_MakeRequestWithRetry(t *testing.T) {
 
 	client := NewRepoConfigClient("test-token")
 	client.baseURL = server.URL
-	client.httpClient.Timeout = 5 * time.Second
+	// TODO: Cannot set timeout on interface - need to set it when creating HTTP client
+	// client.httpClient.Timeout = 5 * time.Second
 
 	ctx := context.Background()
 	resp, err := client.makeRequest(ctx, "GET", "/test", nil)

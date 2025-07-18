@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"golang.org/x/oauth2"
 	gh "github.com/google/go-github/v66/github"
+	"golang.org/x/oauth2"
 )
 
 // ClientFactory creates GitHub clients with proper dependency injection
@@ -67,15 +67,15 @@ func (f *DefaultClientFactory) CreateRepoConfigClient(token string) (*github.Rep
 
 	// Create client with injected configuration
 	client := github.NewRepoConfigClient(token)
-	
+
 	// Apply optional configuration
 	if f.baseURL != "" {
 		// client.SetBaseURL(f.baseURL) // If such method exists
 	}
-	
+
 	// Note: In a real implementation, you would pass these dependencies
 	// to the constructor or use setter methods
-	
+
 	return client, nil
 }
 
@@ -93,14 +93,14 @@ func (f *DefaultClientFactory) CreateGitHubClient(token string) (*gh.Client, err
 		&oauth2.Token{AccessToken: token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-	
+
 	client := gh.NewClient(tc)
-	
+
 	// Apply base URL if configured
 	if f.baseURL != "" {
 		// client.BaseURL = f.baseURL // If needed
 	}
-	
+
 	return client, nil
 }
 

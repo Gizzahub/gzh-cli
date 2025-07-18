@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -125,9 +126,9 @@ func TestConditionEvaluator_EvaluateConditions_Success(t *testing.T) {
 
 	conditions := createTestConditions()
 	event := createTestEvent()
-	context := createTestEvaluationContext()
+	evalContext := createTestEvaluationContext()
 
-	result, err := evaluator.EvaluateConditions(context.Background(), conditions, event, context)
+	result, err := evaluator.EvaluateConditions(context.Background(), conditions, event, evalContext)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)

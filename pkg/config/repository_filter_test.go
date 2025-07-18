@@ -105,7 +105,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 			name: "public repo matching pattern",
 			repo: Repository{
 				Name:      "test-repo",
-				IsPrivate: false,
+				Private: false,
 			},
 			expected: true,
 		},
@@ -113,7 +113,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 			name: "private repo (filtered out)",
 			repo: Repository{
 				Name:      "test-private",
-				IsPrivate: true,
+				Private: true,
 			},
 			expected: false,
 		},
@@ -121,7 +121,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 			name: "public repo not matching pattern",
 			repo: Repository{
 				Name:      "prod-repo",
-				IsPrivate: false,
+				Private: false,
 			},
 			expected: false,
 		},
@@ -129,7 +129,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 			name: "excluded repo",
 			repo: Repository{
 				Name:      "test-exclude",
-				IsPrivate: false,
+				Private: false,
 			},
 			expected: false,
 		},
@@ -145,10 +145,10 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 
 func TestRepositoryMatcher_FilterRepositoryList(t *testing.T) {
 	repos := []Repository{
-		{Name: "test-repo1", IsPrivate: false},
-		{Name: "test-repo2", IsPrivate: true},
-		{Name: "prod-repo1", IsPrivate: false},
-		{Name: "test-exclude", IsPrivate: false},
+		{Name: "test-repo1", Private: false},
+		{Name: "test-repo2", Private: true},
+		{Name: "prod-repo1", Private: false},
+		{Name: "test-exclude", Private: false},
 	}
 
 	config := &RepositoryFilterConfig{
@@ -183,10 +183,10 @@ func TestRepositoryMatcher_GetFilterSummary(t *testing.T) {
 
 func TestRepositoryMatcher_GetStatistics(t *testing.T) {
 	repos := []Repository{
-		{Name: "test-repo1", IsPrivate: false},
-		{Name: "test-repo2", IsPrivate: true},
-		{Name: "prod-repo1", IsPrivate: false},
-		{Name: "test-exclude", IsPrivate: false},
+		{Name: "test-repo1", Private: false},
+		{Name: "test-repo2", Private: true},
+		{Name: "prod-repo1", Private: false},
+		{Name: "test-exclude", Private: false},
 	}
 
 	config := &RepositoryFilterConfig{

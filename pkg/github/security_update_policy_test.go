@@ -56,7 +56,7 @@ func TestSecurityUpdatePolicyManager_CreateSecurityPolicy(t *testing.T) {
 						ID:          "rule-1",
 						Name:        "Auto-approve low severity",
 						Enabled:     true,
-						MaxSeverity: SeverityLow,
+						MaxSeverity: VulnSeverityLow,
 						Conditions: []ApprovalCondition{
 							{
 								Type:     ConditionTypeSeverity,
@@ -67,7 +67,7 @@ func TestSecurityUpdatePolicyManager_CreateSecurityPolicy(t *testing.T) {
 						},
 						Actions: []AutoApprovalAction{
 							{
-								Type: ActionTypeApprove,
+								Type: ActionTypeSecurityApprove,
 							},
 						},
 					},
@@ -232,7 +232,7 @@ func TestSecurityUpdatePolicyManager_ProcessSecurityUpdates(t *testing.T) {
 
 func TestVulnerabilitySeverityConstants(t *testing.T) {
 	severities := []VulnerabilitySeverity{
-		SeverityCritical, SeverityHigh, SeverityMedium, SeverityLow, SeverityInfo,
+		VulnSeverityCritical, VulnSeverityHigh, VulnSeverityMedium, VulnSeverityLow, VulnSeverityInfo,
 	}
 
 	for _, severity := range severities {
@@ -266,8 +266,8 @@ func TestConditionTypeConstants(t *testing.T) {
 
 func TestActionTypeConstants(t *testing.T) {
 	actionTypes := []ActionType{
-		ActionTypeApprove, ActionTypeMerge, ActionTypeNotify,
-		ActionTypeTest, ActionTypeCreateTicket, ActionTypeSchedule,
+		ActionTypeSecurityApprove, ActionTypeSecurityMerge, ActionTypeSecurityNotify,
+		ActionTypeSecurityTest, ActionTypeSecurityCreateTicket, ActionTypeSecuritySchedule,
 	}
 
 	for _, actionType := range actionTypes {
@@ -275,9 +275,9 @@ func TestActionTypeConstants(t *testing.T) {
 	}
 
 	// Test specific values
-	assert.Equal(t, ActionType("approve"), ActionTypeApprove)
-	assert.Equal(t, ActionType("merge"), ActionTypeMerge)
-	assert.Equal(t, ActionType("notify"), ActionTypeNotify)
+	assert.Equal(t, ActionType("security_approve"), ActionTypeSecurityApprove)
+	assert.Equal(t, ActionType("security_merge"), ActionTypeSecurityMerge)
+	assert.Equal(t, ActionType("security_notify"), ActionTypeSecurityNotify)
 }
 
 func TestUpdateStatusConstants(t *testing.T) {
@@ -308,26 +308,26 @@ func TestSecurityUpdatePolicyManager_SeverityComparison(t *testing.T) {
 	}{
 		{
 			name:     "critical exceeds high",
-			actual:   SeverityCritical,
-			maximum:  SeverityHigh,
+			actual:   VulnSeverityCritical,
+			maximum:  VulnSeverityHigh,
 			expected: true,
 		},
 		{
 			name:     "medium does not exceed high",
-			actual:   SeverityMedium,
-			maximum:  SeverityHigh,
+			actual:   VulnSeverityMedium,
+			maximum:  VulnSeverityHigh,
 			expected: false,
 		},
 		{
 			name:     "high equals high",
-			actual:   SeverityHigh,
-			maximum:  SeverityHigh,
+			actual:   VulnSeverityHigh,
+			maximum:  VulnSeverityHigh,
 			expected: false,
 		},
 		{
 			name:     "low does not exceed critical",
-			actual:   SeverityLow,
-			maximum:  SeverityCritical,
+			actual:   VulnSeverityLow,
+			maximum:  VulnSeverityCritical,
 			expected: false,
 		},
 	}
@@ -345,7 +345,7 @@ func TestSecurityUpdatePolicyManager_ConditionEvaluation(t *testing.T) {
 
 	vuln := &VulnerabilityRecord{
 		ID:       "test-vuln",
-		Severity: SeverityMedium,
+		Severity: VulnSeverityMedium,
 		CVSS: CVSSScore{
 			Score: 6.5,
 		},
@@ -631,7 +631,7 @@ func BenchmarkConditionEvaluation(b *testing.B) {
 	manager := createTestSecurityPolicyManager()
 
 	vuln := &VulnerabilityRecord{
-		Severity: SeverityMedium,
+		Severity: VulnSeverityMedium,
 		CVSS:     CVSSScore{Score: 6.5},
 	}
 
@@ -672,7 +672,7 @@ func createTestSecurityPolicy() *SecurityUpdatePolicy {
 				ID:          "rule-1",
 				Name:        "Auto-approve low severity",
 				Enabled:     true,
-				MaxSeverity: SeverityMedium,
+				MaxSeverity: VulnSeverityMedium,
 				Conditions: []ApprovalCondition{
 					{
 						Type:     ConditionTypeSeverity,
@@ -683,7 +683,7 @@ func createTestSecurityPolicy() *SecurityUpdatePolicy {
 				},
 				Actions: []AutoApprovalAction{
 					{
-						Type: ActionTypeApprove,
+						Type: ActionTypeSecurityApprove,
 					},
 				},
 				TestingRequired: false,
@@ -721,7 +721,7 @@ func createTestSecurityPolicy() *SecurityUpdatePolicy {
 					Type:       ChannelTypeEmail,
 					Target:     "security@example.com",
 					Enabled:    true,
-					Severities: []VulnerabilitySeverity{SeverityCritical, SeverityHigh},
+					Severities: []VulnerabilitySeverity{VulnSeverityCritical, VulnSeverityHigh},
 				},
 			},
 		},

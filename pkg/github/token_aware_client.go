@@ -467,6 +467,16 @@ type RateLimitInfo struct {
 	ResetTime time.Time `json:"reset_time"`
 }
 
+// IsRateLimited checks if we're close to hitting rate limits
+func (r *RateLimitInfo) IsRateLimited() bool {
+	return r.Remaining < 10 // Consider rate limited if fewer than 10 requests remaining
+}
+
+// TimeUntilReset returns duration until rate limit resets
+func (r *RateLimitInfo) TimeUntilReset() time.Duration {
+	return time.Until(r.ResetTime)
+}
+
 // TokenRateLimitInfo represents GitHub rate limit information for token-aware client
 type TokenRateLimitInfo struct {
 	Limit     int       `json:"limit"`

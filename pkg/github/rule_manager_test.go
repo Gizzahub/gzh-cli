@@ -110,78 +110,78 @@ func (m *mockTemplateStorage) DeleteTemplate(ctx context.Context, templateID str
 	return args.Error(0)
 }
 
-type mockActionExecutor struct {
+type mockRuleActionExecutor struct {
 	mock.Mock
 }
 
-func (m *mockActionExecutor) ExecuteAction(ctx context.Context, action *AutomationAction, context *AutomationExecutionContext) (*ActionExecutionResult, error) {
+func (m *mockRuleActionExecutor) ExecuteAction(ctx context.Context, action *AutomationAction, context *AutomationExecutionContext) (*ActionExecutionResult, error) {
 	args := m.Called(ctx, action, context)
 	return args.Get(0).(*ActionExecutionResult), args.Error(1)
 }
 
-func (m *mockActionExecutor) ValidateAction(ctx context.Context, action *AutomationAction) error {
+func (m *mockRuleActionExecutor) ValidateAction(ctx context.Context, action *AutomationAction) error {
 	args := m.Called(ctx, action)
 	return args.Error(0)
 }
 
-func (m *mockActionExecutor) GetSupportedActions() []ActionType {
+func (m *mockRuleActionExecutor) GetSupportedActions() []ActionType {
 	args := m.Called()
 	return args.Get(0).([]ActionType)
 }
 
-type mockConditionEvaluator struct {
+type mockRuleConditionEvaluator struct {
 	mock.Mock
 }
 
-func (m *mockConditionEvaluator) EvaluateConditions(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent, context *EvaluationContext) (*EvaluationResult, error) {
+func (m *mockRuleConditionEvaluator) EvaluateConditions(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent, context *EvaluationContext) (*EvaluationResult, error) {
 	args := m.Called(ctx, conditions, event, context)
 	return args.Get(0).(*EvaluationResult), args.Error(1)
 }
 
-func (m *mockConditionEvaluator) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error) {
+func (m *mockRuleConditionEvaluator) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error) {
 	args := m.Called(ctx, matcher, payload)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *mockConditionEvaluator) EvaluateEventConditions(event *GitHubEvent, conditions *AutomationConditions) (bool, error) {
+func (m *mockRuleConditionEvaluator) EvaluateEventConditions(event *GitHubEvent, conditions *AutomationConditions) (bool, error) {
 	args := m.Called(event, conditions)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *mockConditionEvaluator) EvaluateRepositoryConditions(ctx context.Context, repoInfo *RepositoryInfo, conditions *AutomationConditions) (bool, error) {
+func (m *mockRuleConditionEvaluator) EvaluateRepositoryConditions(ctx context.Context, repoInfo *RepositoryInfo, conditions *AutomationConditions) (bool, error) {
 	args := m.Called(ctx, repoInfo, conditions)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *mockConditionEvaluator) EvaluateTimeConditions(timestamp time.Time, conditions *AutomationConditions) (bool, error) {
+func (m *mockRuleConditionEvaluator) EvaluateTimeConditions(timestamp time.Time, conditions *AutomationConditions) (bool, error) {
 	args := m.Called(timestamp, conditions)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *mockConditionEvaluator) EvaluateContentConditions(ctx context.Context, event *GitHubEvent, conditions *AutomationConditions) (bool, error) {
+func (m *mockRuleConditionEvaluator) EvaluateContentConditions(ctx context.Context, event *GitHubEvent, conditions *AutomationConditions) (bool, error) {
 	args := m.Called(ctx, event, conditions)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *mockConditionEvaluator) ValidateConditions(conditions *AutomationConditions) (*ConditionValidationResult, error) {
+func (m *mockRuleConditionEvaluator) ValidateConditions(conditions *AutomationConditions) (*ConditionValidationResult, error) {
 	args := m.Called(conditions)
 	return args.Get(0).(*ConditionValidationResult), args.Error(1)
 }
 
-func (m *mockConditionEvaluator) ExplainEvaluation(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent) (*EvaluationExplanation, error) {
+func (m *mockRuleConditionEvaluator) ExplainEvaluation(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent) (*EvaluationExplanation, error) {
 	args := m.Called(ctx, conditions, event)
 	return args.Get(0).(*EvaluationExplanation), args.Error(1)
 }
 
 // Test helper functions
 
-func createTestRuleManager() (*RuleManager, *mockRuleStorage, *mockTemplateStorage, *mockActionExecutor, *mockConditionEvaluator) {
+func createTestRuleManager() (*RuleManager, *mockRuleStorage, *mockTemplateStorage, *mockRuleActionExecutor, *mockRuleConditionEvaluator) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
 	storage := &mockRuleStorage{}
 	templateStorage := &mockTemplateStorage{}
-	actionExecutor := &mockActionExecutor{}
-	evaluator := &mockConditionEvaluator{}
+	actionExecutor := &mockRuleActionExecutor{}
+	evaluator := &mockRuleConditionEvaluator{}
 
 	rm := NewRuleManager(logger, apiClient, evaluator, actionExecutor, storage, templateStorage)
 	return rm, storage, templateStorage, actionExecutor, evaluator
@@ -264,7 +264,7 @@ func TestRuleManager_CreateRule(t *testing.T) {
 }
 
 func TestRuleManager_CreateRule_ValidationFailure(t *testing.T) {
-	rm, _, _, _, evaluator := createTestRuleManager()
+	rm, _, _, _, _ := createTestRuleManager()
 	rule := createTestRule()
 	rule.Name = "" // Invalid rule
 

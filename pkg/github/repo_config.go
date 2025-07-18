@@ -174,9 +174,9 @@ func NewRepoConfigClient(token string) *RepoConfigClient {
 	return &RepoConfigClient{
 		token:   token,
 		baseURL: "https://api.github.com",
-		httpClient: &http.Client{
+		httpClient: NewHTTPClientAdapterWithClient(&http.Client{
 			Timeout: 30 * time.Second,
-		},
+		}),
 		rateLimiter: NewRateLimiter(),
 	}
 }
@@ -188,7 +188,10 @@ func (c *RepoConfigClient) SetLogger(logger *ChangeLogger) {
 
 // SetTimeout configures the HTTP client timeout
 func (c *RepoConfigClient) SetTimeout(timeout time.Duration) {
-	c.httpClient.Timeout = timeout
+	// If the underlying client is our adapter, recreate it with the new timeout
+	c.httpClient = NewHTTPClientAdapterWithClient(&http.Client{
+		Timeout: timeout,
+	})
 }
 
 // makeRequest performs an HTTP request with authentication, rate limiting, and retry logic

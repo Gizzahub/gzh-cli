@@ -13,16 +13,16 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// GiteaContainer wraps the Gitea testcontainer for integration tests
-type GiteaContainer struct {
+// GiteaTestContainer wraps the Gitea testcontainer for integration tests
+type GiteaTestContainer struct {
 	Container testcontainers.Container
 	BaseURL   string
 	AdminUser string
 	AdminPass string
 }
 
-// SetupGiteaContainer creates and starts a Gitea container for testing
-func SetupGiteaContainer(ctx context.Context, t *testing.T) *GiteaContainer {
+// SetupGiteaTestContainer creates and starts a Gitea container for testing
+func SetupGiteaTestContainer(ctx context.Context, t *testing.T) *GiteaTestContainer {
 	t.Helper()
 
 	req := testcontainers.ContainerRequest{
@@ -65,7 +65,7 @@ func SetupGiteaContainer(ctx context.Context, t *testing.T) *GiteaContainer {
 
 	baseURL := fmt.Sprintf("http://%s:%s", host, mappedPort.Port())
 
-	return &GiteaContainer{
+	return &GiteaTestContainer{
 		Container: container,
 		BaseURL:   baseURL,
 		AdminUser: "gitea_admin",
@@ -74,12 +74,12 @@ func SetupGiteaContainer(ctx context.Context, t *testing.T) *GiteaContainer {
 }
 
 // Cleanup terminates the Gitea container
-func (g *GiteaContainer) Cleanup(ctx context.Context) error {
+func (g *GiteaTestContainer) Cleanup(ctx context.Context) error {
 	return g.Container.Terminate(ctx)
 }
 
 // WaitForReady waits for Gitea to be fully ready for API calls
-func (g *GiteaContainer) WaitForReady(ctx context.Context) error {
+func (g *GiteaTestContainer) WaitForReady(ctx context.Context) error {
 	timeout := time.After(2 * time.Minute)
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()

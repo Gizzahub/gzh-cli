@@ -1,6 +1,11 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+
+	"github.com/gizzahub/gzh-manager-go/internal/event"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 )
@@ -8,8 +13,8 @@ import (
 // WebhookDependencies holds all dependencies for webhook commands
 type WebhookDependencies struct {
 	WebhookService github.WebhookService
-	Logger         github.EventLogger
-	ClientFactory  func(token string) (*github.Client, error)
+	Logger         github.Logger
+	ClientFactory  func(token string) (github.APIClient, error)
 }
 
 // WebhookCommandFactory creates webhook commands with injected dependencies
@@ -23,19 +28,25 @@ func NewWebhookCommandFactory(deps *WebhookDependencies) *WebhookCommandFactory 
 	if deps == nil {
 		deps = &WebhookDependencies{}
 	}
-	
+
 	if deps.Logger == nil {
 		// Use a default logger if none provided
-		deps.Logger = &defaultLogger{}
+		deps.Logger = event.NewLoggerAdapter()
 	}
-	
+
 	if deps.ClientFactory == nil {
 		// Default client factory
-		deps.ClientFactory = func(token string) (*github.Client, error) {
-			return github.NewClient(nil), nil
+		deps.ClientFactory = func(token string) (github.APIClient, error) {
+			config := &github.APIClientConfig{
+				Token: token,
+			}
+			// Create a simple HTTP client that implements HTTPClientInterface
+			httpClient := &simpleHTTPClient{client: &http.Client{}}
+			logger := event.NewLoggerAdapter()
+			return github.NewAPIClient(config, httpClient, logger), nil
 		}
 	}
-	
+
 	return &WebhookCommandFactory{
 		deps: deps,
 	}
@@ -121,7 +132,7 @@ func (f *WebhookCommandFactory) runCreateRepositoryWebhook(cmd *cobra.Command, a
 		return err
 	}
 
-	f.deps.Logger.Info("Webhook created successfully", 
+	f.deps.Logger.Info("Webhook created successfully",
 		"webhook_id", webhook.ID,
 		"url", webhook.URL,
 		"events", webhook.Events,
@@ -133,7 +144,33 @@ func (f *WebhookCommandFactory) runCreateRepositoryWebhook(cmd *cobra.Command, a
 // defaultLogger is a simple logger implementation
 type defaultLogger struct{}
 
-func (l *defaultLogger) Info(msg string, keysAndValues ...interface{}) {}
+func (l *defaultLogger) Info(msg string, keysAndValues ...interface{})             {}
 func (l *defaultLogger) Error(msg string, err error, keysAndValues ...interface{}) {}
-func (l *defaultLogger) Debug(msg string, keysAndValues ...interface{}) {}
-func (l *defaultLogger) Warn(msg string, keysAndValues ...interface{}) {}
+func (l *defaultLogger) Debug(msg string, keysAndValues ...interface{})            {}
+func (l *defaultLogger) Warn(msg string, keysAndValues ...interface{})             {}
+
+// simpleHTTPClient implements HTTPClientInterface
+type simpleHTTPClient struct {
+	client *http.Client
+}
+
+func (c *simpleHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	return c.client.Do(req)
+}
+
+func (c *simpleHTTPClient) Get(url string) (*http.Response, error) {
+	return c.client.Get(url)
+}
+
+func (c *simpleHTTPClient) Post(url, contentType string, body interface{}) (*http.Response, error) {
+	var bodyReader *bytes.Reader
+	if body != nil {
+		bodyBytes, err := json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+		bodyReader = bytes.NewReader(bodyBytes)
+		return c.client.Post(url, contentType, bodyReader)
+	}
+	return c.client.Post(url, contentType, nil)
+}

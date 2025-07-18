@@ -216,7 +216,7 @@ func enforcePolicy(cmd *cobra.Command, args []string) error {
 			Repository:   repo,
 		}
 
-		results, err := enforcer.ValidatePolicy(ctx, policy, state)
+		results, err := enforcer.ValidatePolicy(cmd.Context(), policy, state)
 		if err != nil {
 			return fmt.Errorf("validation failed: %w", err)
 		}
@@ -260,7 +260,7 @@ func validatePolicy(cmd *cobra.Command, args []string) error {
 		Repository:   repo,
 	}
 
-	results, err := enforcer.ValidatePolicy(ctx, policy, state)
+	results, err := enforcer.ValidatePolicy(cmd.Context(), policy, state)
 	if err != nil {
 		return fmt.Errorf("validation failed: %w", err)
 	}

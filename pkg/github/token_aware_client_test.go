@@ -296,16 +296,15 @@ func TestTokenAwareGitHubClient_TokenStatus(t *testing.T) {
 	status, err := client.GetTokenStatus()
 	require.NoError(t, err)
 
-	assert.Equal(t, "github", status.Service)
-	assert.True(t, status.IsValid)
-	assert.False(t, status.IsExpiring) // Should not be expiring for a fresh token
+	// GetTokenStatus returns a map[string]interface{}
+	assert.True(t, status["has_token"].(bool))
+	assert.Equal(t, "recovery package removed, using simple token management", status["note"])
 }
 
 func TestDefaultTokenAwareGitHubClientConfig(t *testing.T) {
 	config := github.DefaultTokenAwareGitHubClientConfig()
 
 	assert.Equal(t, "https://api.github.com", config.BaseURL)
-	assert.NotNil(t, config.HTTPConfig)
-	assert.NotNil(t, config.ExpirationConfig)
-	assert.Equal(t, 24*time.Hour, config.ExpirationConfig.ExpirationThreshold)
+	assert.Equal(t, 30*time.Second, config.Timeout)
+	// HTTPConfig and ExpirationConfig were removed when recovery package was removed
 }

@@ -10,7 +10,7 @@ import (
 
 // EventDependencies holds all dependencies for event commands
 type EventDependencies struct {
-	Logger  github.EventLogger
+	Logger  github.Logger
 	Storage github.EventStorage
 }
 
@@ -23,12 +23,12 @@ type EventCommandFactory struct {
 func NewEventCommandFactory(deps *EventDependencies) *EventCommandFactory {
 	// Provide defaults if not specified
 	if deps.Logger == nil {
-		deps.Logger = event.NewSimpleLogger()
+		deps.Logger = event.NewLoggerAdapter()
 	}
 	if deps.Storage == nil {
 		deps.Storage = event.NewMockStorage()
 	}
-	
+
 	return &EventCommandFactory{
 		deps: deps,
 	}
@@ -41,19 +41,6 @@ func (f *EventCommandFactory) NewEventCmd() *cobra.Command {
 		eventServerPort   int
 		eventServerSecret string
 		eventServerHost   string
-		eventFilterOrg    string
-		eventFilterRepo   string
-		eventFilterType   string
-		eventFilterAction string
-		eventFilterSender string
-		eventFilterSince  string
-		eventFilterUntil  string
-		eventListLimit    int
-		eventListOffset   int
-		eventOutputFormat string
-		eventTestType     string
-		eventTestAction   string
-		eventTestPayload  string
 	)
 
 	eventCmd := &cobra.Command{
@@ -78,10 +65,10 @@ according to registered event handlers and policies.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Use injected dependencies
 			server := event.NewServer(
-				eventServerHost, 
-				eventServerPort, 
-				eventServerSecret, 
-				f.deps.Storage, 
+				eventServerHost,
+				eventServerPort,
+				eventServerSecret,
+				f.deps.Storage,
 				f.deps.Logger,
 			)
 			return server.Start(context.Background())
@@ -89,7 +76,7 @@ according to registered event handlers and policies.`,
 	}
 
 	// Add other commands with similar dependency injection...
-	
+
 	// Add flags to server command
 	eventServerCmd.Flags().IntVarP(&eventServerPort, "port", "p", 8089, "Server port")
 	eventServerCmd.Flags().StringVarP(&eventServerSecret, "secret", "s", "", "Webhook secret")

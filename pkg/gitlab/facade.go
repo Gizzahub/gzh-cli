@@ -2,7 +2,6 @@ package gitlab
 
 import (
 	"context"
-	"net/http"
 )
 
 // GitLabManager provides a high-level facade for GitLab operations
@@ -245,11 +244,6 @@ func (g *gitLabManagerImpl) applyFilters(repositories []string, filters *Reposit
 	}
 
 	return filtered
-}
-
-// HTTPClient interface for dependency injection
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
 }
 
 // Logger interface for dependency injection

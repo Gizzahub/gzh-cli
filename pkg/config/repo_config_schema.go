@@ -85,16 +85,23 @@ type RepoSettings struct {
 	Archived    *bool    `yaml:"archived,omitempty"`
 
 	// Features
-	HasIssues    *bool `yaml:"has_issues,omitempty"`
-	HasProjects  *bool `yaml:"has_projects,omitempty"`
-	HasWiki      *bool `yaml:"has_wiki,omitempty"`
-	HasDownloads *bool `yaml:"has_downloads,omitempty"`
+	HasIssues      *bool `yaml:"has_issues,omitempty"`
+	HasProjects    *bool `yaml:"has_projects,omitempty"`
+	HasWiki        *bool `yaml:"has_wiki,omitempty"`
+	HasDownloads   *bool `yaml:"has_downloads,omitempty"`
+	HasDiscussions *bool `yaml:"has_discussions,omitempty"`
+	HasPages       *bool `yaml:"has_pages,omitempty"`
 
 	// Merge settings
 	AllowSquashMerge    *bool `yaml:"allow_squash_merge,omitempty"`
 	AllowMergeCommit    *bool `yaml:"allow_merge_commit,omitempty"`
 	AllowRebaseMerge    *bool `yaml:"allow_rebase_merge,omitempty"`
+	AllowAutoMerge     *bool `yaml:"allow_auto_merge,omitempty"`
 	DeleteBranchOnMerge *bool `yaml:"delete_branch_on_merge,omitempty"`
+
+	// Advanced settings
+	AllowForking             *bool `yaml:"allow_forking,omitempty"`
+	WebCommitSignoffRequired *bool `yaml:"web_commit_signoff_required,omitempty"`
 
 	// Default branch
 	DefaultBranch *string `yaml:"default_branch,omitempty"`
@@ -103,8 +110,11 @@ type RepoSettings struct {
 // SecuritySettings represents security-related settings
 type SecuritySettings struct {
 	VulnerabilityAlerts           *bool                            `yaml:"vulnerability_alerts,omitempty"`
+	AutomatedSecurityFixes        *bool                            `yaml:"automated_security_fixes,omitempty"`
 	SecurityAdvisories            *bool                            `yaml:"security_advisories,omitempty"`
 	PrivateVulnerabilityReporting *bool                            `yaml:"private_vulnerability_reporting,omitempty"`
+	SecretScanning                *bool                            `yaml:"secret_scanning,omitempty"`
+	SecretScanningPushProtection  *bool                            `yaml:"secret_scanning_push_protection,omitempty"`
 	BranchProtection              map[string]*BranchProtectionRule `yaml:"branch_protection,omitempty"`
 	Webhooks                      []WebhookConfig                  `yaml:"webhooks,omitempty"`
 }
@@ -121,9 +131,15 @@ type BranchProtectionRule struct {
 	AllowedTeams                  []string `yaml:"allowed_teams,omitempty"`
 	RequireUpToDateBranch         *bool    `yaml:"require_up_to_date_branch,omitempty"`
 	EnforceAdmins                 *bool    `yaml:"enforce_admins,omitempty"`
-	RequireConversationResolution *bool    `yaml:"require_conversation_resolution,omitempty"`
-	AllowForcePushes              *bool    `yaml:"allow_force_pushes,omitempty"`
-	AllowDeletions                *bool    `yaml:"allow_deletions,omitempty"`
+	RequireConversationResolution *bool                       `yaml:"require_conversation_resolution,omitempty"`
+	AllowForcePushes              *bool                       `yaml:"allow_force_pushes,omitempty"`
+	AllowDeletions                *bool                       `yaml:"allow_deletions,omitempty"`
+	DeploymentProtectionRules     []DeploymentProtectionRule `yaml:"deployment_protection_rules,omitempty"`
+}
+
+// DeploymentProtectionRule represents deployment protection settings
+type DeploymentProtectionRule struct {
+	Environment string `yaml:"environment"`
 }
 
 // WebhookConfig represents webhook configuration

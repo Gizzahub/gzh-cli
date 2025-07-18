@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/gizzahub/gzh-manager-go/internal/event"
@@ -51,9 +50,9 @@ The server listens for incoming webhook requests from GitHub and processes them
 according to registered event handlers and policies.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Create dependencies
-			logger := event.NewSimpleLogger()
+			logger := event.NewLoggerAdapter()
 			storage := event.NewMockStorage()
-			
+
 			// Create and start server
 			server := event.NewServer(eventServerHost, eventServerPort, eventServerSecret, storage, logger)
 			return server.Start(cmd.Context())
