@@ -1,36 +1,23 @@
-// Package gitlab provides GitLab API integration for group and repository management.
+// Package gitlab provides a client library for interacting with GitLab's API.
+// It implements group management, project operations, and repository synchronization
+// features required by the gzh-manager-go tool for GitLab instances.
 //
-// This package handles:
-//   - GitLab API client implementation
-//   - Group and subgroup repository listing
-//   - Repository cloning with branch support
-//   - Bulk refresh operations with multiple strategies
-//   - Default branch detection
-//   - Recursive subgroup discovery
-//   - Repository synchronization with cleanup
+// Features:
+//   - Project and group cloning
+//   - Repository synchronization
+//   - Pipeline management
+//   - Merge request automation
+//   - Issue tracking integration
+//   - Container registry operations
+//   - CI/CD configuration validation
 //
-// The package implements direct HTTP API calls to GitLab instances (primarily gitlab.com)
-// and provides Git operations through command-line execution. It supports both
-// individual repository operations and bulk group-wide operations with recursive
-// subgroup support.
+// The package supports:
+//   - GitLab.com and self-hosted instances
+//   - Personal access tokens and OAuth2
+//   - API v4 with pagination support
+//   - Concurrent operations with rate limiting
+//   - Webhook event processing
 //
-// Main functions:
-//   - List: List all repositories in a GitLab group (including subgroups)
-//   - Clone: Clone a specific repository with branch support
-//   - RefreshAll: Bulk refresh with multiple strategies (reset, pull, fetch)
-//   - GetDefaultBranch: Get the default branch name for a repository
-//
-// Key features:
-//   - Recursive subgroup discovery and repository listing
-//   - Multiple refresh strategies for different use cases:
-//   - "reset": Hard reset + pull (discards local changes)
-//   - "pull": Merge remote changes with local changes
-//   - "fetch": Update remote tracking without changing working directory
-//   - Automatic repository cleanup (removes repos not in group)
-//   - Error handling with detailed error messages
-//   - Directory synchronization utilities
-//
-// The package uses the GitLab v4 API and supports standard Git operations
-// through subprocess execution. It's designed to work with public GitLab
-// instances and follows GitLab's API conventions for groups and projects.
+// All operations are designed to be idempotent and safe for automation,
+// with comprehensive error handling and retry logic.
 package gitlab

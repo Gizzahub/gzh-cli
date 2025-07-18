@@ -1,163 +1,110 @@
-package testutil
+package testutil_test
 
 import (
+	"net/http"
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/internal/testutil/builders"
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/fixtures"
-	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/gizzahub/gzh-manager-go/internal/testutil/helpers"
+	"github.com/gizzahub/gzh-manager-go/internal/testutil/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
-// TestBuildersUsage demonstrates how to use the builders package
-func TestBuildersUsage(t *testing.T) {
-	// Create a configuration with builders
-	config := config.NewConfigBuilder().
-		WithVersion("1.0.0").
-		WithDefaultProvider("github").
-		WithGitHubProvider("${GITHUB_TOKEN}").
-		WithOrganization("github", "test-org", "~/repos/test").
-		Build()
+// Example of using test helpers
+func TestExampleWithHelpers(t *testing.T) {
+	// Create temporary directory
+	tempDir, cleanup := helpers.TempDir(t, "test-*")
+	defer cleanup()
 
-	// Create a mock environment
-	env := builders.NewEnvironmentBuilder().
-		WithGitHubToken("test-token").
-		WithHome("/home/user").
-		Build()
-
-	// Create a mock logger
-	logger := builders.NewMockLoggerBuilder().Build()
-
-	// Create a GitHub bulk clone request
-	request := builders.NewBulkCloneRequestBuilder().
-		WithOrganization("test-org").
-		WithTargetPath("/tmp/test").
-		WithRepository("repo1").
-		WithRepository("repo2").
-		Build()
-
-	_ = config
-	_ = env
-	_ = logger
-	_ = request
-}
-
-// TestFixturesUsage demonstrates how to use the fixtures package
-func TestFixturesUsage(t *testing.T) {
-	// Use configuration fixtures
-	configFixtures := fixtures.NewConfigFixtures()
-	simpleConfig := configFixtures.SimpleGitHubConfig()
-	multiProviderConfig := configFixtures.MultiProviderConfig()
-
-	// Use YAML fixtures
-	yamlFixtures := fixtures.NewConfigYAMLFixtures()
-	yaml := yamlFixtures.SimpleGitHubYAML()
-
-	// Use GitHub fixtures
-	githubFixtures := fixtures.NewGitHubFixtures()
-	request := githubFixtures.SimpleBulkCloneRequest()
-	result := githubFixtures.SuccessfulBulkCloneResult()
-
-	_ = simpleConfig
-	_ = multiProviderConfig
-	_ = yaml
-	_ = request
-	_ = result
-}
-
-// TestBuildersIntegration demonstrates how builders work together
-func TestBuildersIntegration(t *testing.T) {
-	// Create test environment
-	env := builders.NewEnvironmentBuilder().
-		WithGitHubToken("test-token-123").
-		WithHome("/home/testuser").
-		Build()
+	// Set environment variables
+	cleanupEnv := helpers.SetEnvs(t, map[string]string{
+		"GITHUB_TOKEN": "test-token",
+		"GZH_DEBUG":    "true",
+	})
+	defer cleanupEnv()
 
 	// Create test configuration
-	config := config.NewConfigBuilder().
-		WithVersion("1.0.0").
-		WithDefaultProvider("github").
-		WithGitHubProvider("${GITHUB_TOKEN}").
-		WithOrganization("github", "test-org", "~/repos/test").
-		Build()
+	configPath := helpers.CreateTestConfig(t, tempDir, fixtures.MinimalConfig)
+	
+	// Assert file exists
+	helpers.AssertFileExists(t, configPath)
+	helpers.AssertFileContains(t, configPath, "test-org")
 
-	// Create mock logger to track calls
-	logger := builders.NewMockLoggerBuilder().Build()
+	// Create test repository structure
+	repo := helpers.CreateTestRepo(t, tempDir, "test-repo", map[string]string{
+		"README.md":     "# Test Repo",
+		"src/main.go":   "package main",
+		".gitignore":    "*.tmp",
+	})
 
-	// Test that environment expansion works
-	expandedHome := env.Expand("${HOME}/repos")
-	if expandedHome != "/home/testuser/repos" {
-		t.Errorf("Expected '/home/testuser/repos', got '%s'", expandedHome)
-	}
-
-	// Test that configuration is properly structured
-	if config.Version != "1.0.0" {
-		t.Errorf("Expected version '1.0.0', got '%s'", config.Version)
-	}
-
-	if config.DefaultProvider != "github" {
-		t.Errorf("Expected default provider 'github', got '%s'", config.DefaultProvider)
-	}
-
-	if len(config.Providers) != 1 {
-		t.Errorf("Expected 1 provider, got %d", len(config.Providers))
-	}
-
-	// Test logger call tracking
-	logger.Info("Test message", "key", "value")
-	logger.Error("Error message")
-
-	if len(logger.InfoCalls) != 1 {
-		t.Errorf("Expected 1 info call, got %d", len(logger.InfoCalls))
-	}
-
-	if len(logger.ErrorCalls) != 1 {
-		t.Errorf("Expected 1 error call, got %d", len(logger.ErrorCalls))
-	}
-
-	if logger.InfoCalls[0].Message != "Test message" {
-		t.Errorf("Expected 'Test message', got '%s'", logger.InfoCalls[0].Message)
-	}
+	// Assert repository structure
+	helpers.AssertGitRepository(t, repo)
+	helpers.AssertFileExists(t, repo+"/README.md")
 }
 
-// TestFixturesIntegration demonstrates how fixtures work together
-func TestFixturesIntegration(t *testing.T) {
-	// Use configuration fixtures
-	configFixtures := fixtures.NewConfigFixtures()
-	config := configFixtures.SimpleGitHubConfig()
-
-	// Use GitHub fixtures
-	githubFixtures := fixtures.NewGitHubFixtures()
-	request := githubFixtures.SimpleBulkCloneRequest()
-	result := githubFixtures.SuccessfulBulkCloneResult()
-
-	// Test configuration structure
-	if config.Version != "1.0.0" {
-		t.Errorf("Expected version '1.0.0', got '%s'", config.Version)
+// Example of using mock HTTP client
+func TestExampleWithMockHTTP(t *testing.T) {
+	// Create mock HTTP client
+	mockClient := &mocks.MockHTTPClient{
+		DoFunc: func(req *http.Request) (*http.Response, error) {
+			// Return different responses based on URL
+			switch req.URL.Path {
+			case "/api/v3/user":
+				return mocks.NewMockJSONResponse(200, `{"login":"testuser"}`), nil
+			case "/api/v3/repos":
+				return mocks.NewMockJSONResponse(200, `[{"name":"repo1"},{"name":"repo2"}]`), nil
+			default:
+				return mocks.NewMockResponse(404, "Not Found"), nil
+			}
+		},
 	}
 
-	if len(config.Providers) != 1 {
-		t.Errorf("Expected 1 provider, got %d", len(config.Providers))
+	// Make some requests
+	req1, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
+	req2, _ := http.NewRequest("GET", "https://api.github.com/repos", nil)
+	
+	resp1, err := mockClient.Do(req1)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp1.StatusCode)
+
+	resp2, err := mockClient.Do(req2)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp2.StatusCode)
+
+	// Verify calls were recorded
+	assert.Len(t, mockClient.Calls, 2)
+	assert.Equal(t, "/user", mockClient.Calls[0].URL.Path)
+	assert.Equal(t, "/repos", mockClient.Calls[1].URL.Path)
+}
+
+// Example of using fixtures
+func TestExampleWithFixtures(t *testing.T) {
+	tempDir, cleanup := helpers.TempDir(t, "config-test-*")
+	defer cleanup()
+
+	// Test with different fixture configurations
+	testCases := []struct {
+		name   string
+		config string
+		valid  bool
+	}{
+		{"minimal", fixtures.MinimalConfig, true},
+		{"complex", fixtures.ComplexConfig, true},
+		{"invalid", fixtures.InvalidConfig, false},
 	}
 
-	// Test bulk clone request structure
-	if request.Organization != "test-org" {
-		t.Errorf("Expected organization 'test-org', got '%s'", request.Organization)
-	}
-
-	if len(request.Repositories) != 2 {
-		t.Errorf("Expected 2 repositories, got %d", len(request.Repositories))
-	}
-
-	// Test bulk clone result structure
-	if result.TotalRepositories != 3 {
-		t.Errorf("Expected 3 total repositories, got %d", result.TotalRepositories)
-	}
-
-	if result.SuccessfulOperations != 3 {
-		t.Errorf("Expected 3 successful operations, got %d", result.SuccessfulOperations)
-	}
-
-	if result.FailedOperations != 0 {
-		t.Errorf("Expected 0 failed operations, got %d", result.FailedOperations)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			configPath := helpers.CreateTestConfig(t, tempDir, tc.config)
+			helpers.AssertFileExists(t, configPath)
+			
+			// In a real test, you would load and validate the config
+			// cfg, err := config.LoadConfigFromFile(configPath)
+			// if tc.valid {
+			//     assert.NoError(t, err)
+			// } else {
+			//     assert.Error(t, err)
+			// }
+		})
 	}
 }

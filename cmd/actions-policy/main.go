@@ -168,8 +168,7 @@ func createPolicy(cmd *cobra.Command, args []string) error {
 	policy.Enabled = enabled
 	policy.CreatedBy = "actions-policy-cli"
 
-	ctx := context.Background()
-	if err := policyManager.CreatePolicy(ctx, policy); err != nil {
+	if err := policyManager.CreatePolicy(cmd.Context(), policy); err != nil {
 		return fmt.Errorf("failed to create policy: %w", err)
 	}
 
@@ -199,7 +198,7 @@ func enforcePolicy(cmd *cobra.Command, args []string) error {
 	policyManager := github.NewActionsPolicyManager(logger, apiClient)
 	enforcer := github.NewActionsPolicyEnforcer(logger, apiClient, policyManager)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	ctx, cancel := context.WithTimeout(cmd.Context(), time.Duration(timeout)*time.Second)
 	defer cancel()
 
 	if dryRun {
@@ -250,9 +249,7 @@ func validatePolicy(cmd *cobra.Command, args []string) error {
 	policyManager := github.NewActionsPolicyManager(logger, apiClient)
 	enforcer := github.NewActionsPolicyEnforcer(logger, apiClient, policyManager)
 
-	ctx := context.Background()
-
-	policy, err := policyManager.GetPolicy(ctx, policyID)
+	policy, err := policyManager.GetPolicy(cmd.Context(), policyID)
 	if err != nil {
 		return fmt.Errorf("failed to get policy: %w", err)
 	}
@@ -301,8 +298,7 @@ func listPolicies(cmd *cobra.Command, args []string) error {
 	apiClient := createAPIClient()
 	policyManager := github.NewActionsPolicyManager(logger, apiClient)
 
-	ctx := context.Background()
-	policies, err := policyManager.ListPolicies(ctx, org)
+	policies, err := policyManager.ListPolicies(cmd.Context(), org)
 	if err != nil {
 		return fmt.Errorf("failed to list policies: %w", err)
 	}
@@ -370,8 +366,7 @@ func showPolicy(cmd *cobra.Command, args []string) error {
 	apiClient := createAPIClient()
 	policyManager := github.NewActionsPolicyManager(logger, apiClient)
 
-	ctx := context.Background()
-	policy, err := policyManager.GetPolicy(ctx, policyID)
+	policy, err := policyManager.GetPolicy(cmd.Context(), policyID)
 	if err != nil {
 		return fmt.Errorf("failed to get policy: %w", err)
 	}
@@ -422,8 +417,7 @@ func deletePolicy(cmd *cobra.Command, args []string) error {
 	apiClient := createAPIClient()
 	policyManager := github.NewActionsPolicyManager(logger, apiClient)
 
-	ctx := context.Background()
-	if err := policyManager.DeletePolicy(ctx, policyID); err != nil {
+	if err := policyManager.DeletePolicy(cmd.Context(), policyID); err != nil {
 		return fmt.Errorf("failed to delete policy: %w", err)
 	}
 
@@ -441,7 +435,7 @@ func monitorCompliance(cmd *cobra.Command, args []string) error {
 	apiClient := createAPIClient()
 	policyManager := github.NewActionsPolicyManager(logger, apiClient)
 
-	ctx := context.Background()
+	ctx := cmd.Context()
 
 	fmt.Printf("🔍 Starting compliance monitoring for organization: %s\n", org)
 	fmt.Printf("   Interval: %s\n", interval)

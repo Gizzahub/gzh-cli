@@ -74,6 +74,247 @@ linters-settings:
         disabled: false
       - name: indent-error-flow
         disabled: false
+      - name: unnecessary-stmt
+        disabled: false
+      - name: unreachable-code
+        disabled: false
+      - name: early-return
+        disabled: false
+      - name: blank-imports
+        disabled: false
+      - name: context-as-argument
+        disabled: false
+      - name: context-keys-type
+        disabled: false
+      - name: dot-imports
+        disabled: false
+      - name: error-return
+        disabled: false
+      - name: error-strings
+        disabled: false
+      - name: error-naming
+        disabled: false
+      - name: increment-decrement
+        disabled: false
+      - name: receiver-naming
+        disabled: false
+      - name: struct-tag
+        disabled: false
+      - name: time-naming
+        disabled: false
+  gocritic:
+    enabled-checks:
+      - appendAssign
+      - appendCombine
+      - argOrder
+      - assignOp
+      - badCall
+      - badCond
+      - boolExprSimplify
+      - builtinShadow
+      - captLocal
+      - caseOrder
+      - codegenComment
+      - commentedOutCode
+      - defaultCaseOrder
+      - deprecatedComment
+      - docStub
+      - dupArg
+      - dupBranchBody
+      - dupCase
+      - dupSubExpr
+      - elseif
+      - emptyStringTest
+      - equalFold
+      - evalOrder
+      - exitAfterDefer
+      - flagDeref
+      - flagName
+      - hexLiteral
+      - hugeParam
+      - ifElseChain
+      - importShadow
+      - indexAlloc
+      - initClause
+      - methodExprCall
+      - nestingReduce
+      - newDeref
+      - nilValReturn
+      - octalLiteral
+      - offBy1
+      - paramTypeCombine
+      - ptrToRefParam
+      - rangeExprCopy
+      - rangeValCopy
+      - regexpMust
+      - regexpPattern
+      - singleCaseSwitch
+      - sloppyLen
+      - sloppyReassign
+      - sloppyTypeAssert
+      - stringXbytes
+      - switchTrue
+      - truncateCmp
+      - typeAssertChain
+      - typeSwitchVar
+      - typeUnparen
+      - underef
+      - unlabelStmt
+      - unlambda
+      - unnamedResult
+      - unnecessaryBlock
+      - unnecessaryDefer
+      - unslice
+      - valSwap
+      - weakCond
+      - wrapperFunc
+      - yodaStyleExpr
+    settings:
+      hugeParam:
+        sizeThreshold: 512
+      rangeValCopy:
+        sizeThreshold: 512
+      rangeExprCopy:
+        sizeThreshold: 512
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+    ignore-tests: true
+  misspell:
+    locale: US
+  unparam:
+    check-exported: false
+  nakedret:
+    max-func-lines: 30
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: true
+  gomodguard:
+    blocked:
+      modules:
+        - github.com/pkg/errors:
+            recommendations:
+              - errors
+              - fmt
+            reason: "We use stdlib errors with Go 1.13+ error wrapping"
+  goimports:
+    local-prefixes: github.com/archmagece/gzh-manager-go
+  gofumpt:
+    lang-version: "1.21"
+    extra-rules: true
+  depguard:
+    rules:
+      main:
+        files:
+          - "$all"
+        deny:
+          - pkg: "github.com/pkg/errors"
+            desc: "Use stdlib errors instead"
+          - pkg: "io/ioutil"
+            desc: "Deprecated. Use io or os package instead"
+  godot:
+    scope: declarations
+    exclude:
+      - "^TODO"
+      - "^FIXME"
+      - "^NOTE"
+  goheader:
+    values:
+      const:
+        COMPANY: Archmagece
+        LICENSE: MIT
+    template: |-
+      Copyright (c) {{ YEAR }} {{ COMPANY }}
+      SPDX-License-Identifier: {{ LICENSE }}
+  testpackage:
+    skip-regexp: "(export|internal)_test\\.go"
+  tparallel:
+    ignore:
+      - "^Test.*Parallel.*$"
+  varnamelen:
+    min-name-length: 2
+    check-receiver: false
+    check-return: false
+    check-type-param: true
+    ignore:
+      - err
+      - ok
+      - id
+      - vm
+      - db
+      - tx
+      - i
+      - j
+      - k
+      - v
+      - w
+      - tt
+      - tc
+      - t
+      - mu
+      - fn
+      - op
+  wsl:
+    allow-assign-and-anything: false
+    allow-assign-and-call: true
+    allow-cuddle-declarations: false
+    allow-multiline-assign: true
+    allow-separated-leading-comment: false
+    allow-trailing-comment: false
+    force-case-trailing-whitespace: 0
+    force-err-cuddling: false
+    force-short-decl-cuddling: false
+    strict-append: true
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: snake
+        yaml: camel
+        xml: camel
+        bson: camel
+        avro: snake
+        mapstructure: kebab
+  nestif:
+    min-complexity: 4
+  exhaustive:
+    check-generated: false
+    default-signifies-exhaustive: false
+  errorlint:
+    errorf: true
+    asserts: true
+    comparison: true
+  godox:
+    keywords:
+      - TODO
+      - FIXME
+      - BUG
+      - HACK
+      - OPTIMIZE
+      - XXX
+  maintidx:
+    under: 20
+  musttag:
+    functions:
+      - json.Marshal
+      - json.Unmarshal
+      - yaml.Marshal
+      - yaml.Unmarshal
+      - toml.Marshal
+      - toml.Unmarshal
+      - xml.Marshal
+      - xml.Unmarshal
+      - msgpack.Marshal
+      - msgpack.Unmarshal
+  thelper:
+    check:
+      begin: true
+      first: true
+      name: true
+      fuzz: true
+      benchmark: true
+      tb: true
 
 linters:
   disable-all: true
@@ -93,6 +334,9 @@ linters:
     - unparam
     - misspell
     - prealloc
+    - nakedret
+    - exhaustive
+    - exportloopref
     
     # Security
     - gosec
@@ -102,10 +346,18 @@ linters:
     - funlen
     - gocognit
     - dupl
+    - nestif
+    - maintidx
     
     # Style
     - lll
     - whitespace
+    - wsl
+    - gofumpt
+    - goimports
+    - godot
+    - godox
+    - goheader
     
     # Performance
     - bodyclose
@@ -117,6 +369,30 @@ linters:
     - nilnil
     - noctx
     - copyloopvar
+    - musttag
+    - asasalint
+    - bidichk
+    - contextcheck
+    - durationcheck
+    - errname
+    - errorlint
+    - execinquery
+    - forcetypeassert
+    - gomoddirectives
+    
+    # Dependencies
+    - gomodguard
+    - depguard
+    
+    # Testing
+    - testpackage
+    - tparallel
+    - thelper
+    - testableexamples
+    
+    # Naming
+    - varnamelen
+    - tagliatelle
 
 issues:
   max-issues-per-linter: 0
@@ -212,3 +488,55 @@ issues:
     - text: "field.*mu.*is unused"
       linters:
         - unused
+    
+    # Exclude wsl for test files
+    - path: "_test\\.go"
+      linters:
+        - wsl
+        - godox
+        - varnamelen
+        - maintidx
+    
+    # Exclude godox for specific files
+    - path: "(cmd/|internal/)"
+      text: "TODO|FIXME|BUG"
+      linters:
+        - godox
+    
+    # Exclude header check for generated and test files
+    - path: "(.*_test\\.go|.*\\.pb\\.go|.*\\.gen\\.go)"
+      linters:
+        - goheader
+    
+    # Exclude exhaustive for command handlers
+    - path: "cmd/"
+      linters:
+        - exhaustive
+    
+    # Exclude tagliatelle for existing structs
+    - path: "(pkg/config/|pkg/bulk-clone/)"
+      linters:
+        - tagliatelle
+    
+    # Exclude errorlint for legacy code
+    - path: "pkg/legacy/"
+      linters:
+        - errorlint
+        - contextcheck
+    
+    # Allow longer variable names in table tests
+    - path: "_test\\.go"
+      text: "tt.*is too short"
+      linters:
+        - varnamelen
+    
+    # Allow context.Background() in main and test
+    - path: "(main\\.go|.*_test\\.go)"
+      linters:
+        - contextcheck
+    
+    # Exclude nestif for complex command logic
+    - path: "cmd/net-env/"
+      linters:
+        - nestif
+        - maintidx

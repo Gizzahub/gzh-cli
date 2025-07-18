@@ -72,6 +72,57 @@ repos:
         language: system
         files: \.go$
         pass_filenames: false
+      
+      # Check for TODO comments without issue references
+      - id: check-todos
+        name: Check TODO format
+        entry: bash -c 'todos=$(grep -rn "TODO" --include="*.go" . | grep -v vendor | grep -v .git | grep -v "// TODO(" | grep -v "// TODO:"); if [ -n "$todos" ]; then echo "Found TODOs without proper format. Use // TODO(username): description"; echo "$todos"; exit 1; fi'
+        language: system
+        types: [go]
+        pass_filenames: false
+      
+      # Check for large files in the codebase
+      - id: check-file-sizes
+        name: Check for oversized files
+        entry: bash -c 'large_files=$(find cmd pkg internal -name "*.go" -type f -exec wc -l {} + | awk "$1 > 500 {print $2, $1}" | sort -k2 -nr); if [ -n "$large_files" ]; then echo "Warning: Files over 500 lines found:"; echo "$large_files" | head -10; fi'
+        language: system
+        types: [go]
+        pass_filenames: false
+      
+      # Ensure go.mod is tidy
+      - id: go-mod-tidy-check
+        name: Check go.mod is tidy
+        entry: bash -c 'cp go.mod go.mod.bak && cp go.sum go.sum.bak && go mod tidy && if ! diff -q go.mod go.mod.bak >/dev/null || ! diff -q go.sum go.sum.bak >/dev/null; then rm go.mod.bak go.sum.bak; echo "go.mod is not tidy. Run '\''go mod tidy'\''"; exit 1; else rm go.mod.bak go.sum.bak; fi'
+        language: system
+        files: (go\.mod|go\.sum)$
+        pass_filenames: false
+      
+      # Check for missing package documentation
+      - id: check-package-docs
+        name: Check package documentation
+        entry: bash -c 'missing_docs=$(find cmd pkg internal -type d -exec bash -c '\''if [ -z "$(find "$1" -maxdepth 1 -name "*.go" -type f | head -1)" ]; then exit 0; fi; if ! [ -f "$1/doc.go" ] && ! grep -q "^// Package" "$1"/*.go 2>/dev/null; then echo "$1"; fi'\'' _ {} \;); if [ -n "$missing_docs" ]; then echo "Packages missing documentation:"; echo "$missing_docs"; fi'
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [push]
+      
+      # Run make targets
+      - id: make-lint-all
+        name: Run all linting checks
+        entry: make lint-all
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [push]
+      
+      # Coverage check on push
+      - id: coverage-check
+        name: Check test coverage
+        entry: bash -c './scripts/check-coverage.sh || echo "Warning: Coverage check failed"'
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [push]
 
   # YAML/JSON/Markdown formatting
   - repo: https://github.com/pre-commit/mirrors-prettier

@@ -15,7 +15,9 @@ type ActionsPolicyEnforcer struct {
 	validationRules []PolicyValidationRule
 }
 
-// PolicyValidationRule defines a rule for validating policy compliance
+// PolicyValidationRule defines a rule for validating policy compliance.
+// Implementations check specific aspects of GitHub Actions configuration
+// against organizational policies and return validation results.
 type PolicyValidationRule interface {
 	Validate(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState) (*PolicyValidationResult, error)
 	GetRuleID() string
@@ -122,7 +124,9 @@ type PolicyChange struct {
 	Error    string      `json:"error,omitempty"`
 }
 
-// NewActionsPolicyEnforcer creates a new Actions policy enforcer
+// NewActionsPolicyEnforcer creates a new Actions policy enforcer that validates
+// and enforces GitHub Actions policies across repositories. It registers default
+// validation rules and provides methods to scan workflows for compliance.
 func NewActionsPolicyEnforcer(logger Logger, apiClient APIClient, policyManager *ActionsPolicyManager) *ActionsPolicyEnforcer {
 	enforcer := &ActionsPolicyEnforcer{
 		logger:          logger,

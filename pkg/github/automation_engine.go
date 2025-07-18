@@ -1,5 +1,7 @@
 package github
 
+//go:generate mockgen -source=automation_engine.go -destination=mocks/automation_mocks.go -package=mocks AutomationEventProcessor,AutomationExecutor,AutomationPlugin
+
 import (
 	"context"
 	"fmt"

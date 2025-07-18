@@ -262,7 +262,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	// Attempt fixes if requested
 	if attemptFix {
 		structuredLogger.Info("Attempting automatic fixes")
-		attemptAutomaticFixes(report, structuredLogger, errorRecovery)
+		attemptAutomaticFixes(cmd.Context(), report, structuredLogger, errorRecovery)
 	}
 
 	// Exit with appropriate code
@@ -1013,14 +1013,14 @@ func saveReport(report *DiagnosticReport, filename string) error {
 	return encoder.Encode(report)
 }
 
-func attemptAutomaticFixes(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func attemptAutomaticFixes(ctx context.Context, report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	fmt.Printf("\n🔧 Attempting automatic fixes...\n")
 	structuredLogger.Info("Starting automatic fixes", "total_issues", report.FailedChecks+report.WarnChecks)
 
 	fixed := 0
 	for _, result := range report.Results {
 		if result.Status == "fail" || result.Status == "warn" {
-			fixErr := errorRecovery.Execute(context.Background(), fmt.Sprintf("fix-%s", result.Name), func() error {
+			fixErr := errorRecovery.Execute(ctx, fmt.Sprintf("fix-%s", result.Name), func() error {
 				structuredLogger.Debug("Attempting fix", "check_name", result.Name, "status", result.Status)
 
 				if attemptFix := tryAutoFix(result); attemptFix {

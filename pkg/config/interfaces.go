@@ -1,5 +1,7 @@
 package config
 
+//go:generate mockgen -source=interfaces.go -destination=mocks/config_mocks.go -package=mocks ConfigLoader,ConfigValidator,ConfigWatcher,ConfigProvider
+
 import (
 	"context"
 	"io"

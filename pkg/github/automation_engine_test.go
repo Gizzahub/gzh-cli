@@ -156,16 +156,15 @@ func (m *mockActionExecutor) ExecuteAction(ctx context.Context, action *Automati
 	return args.Error(0)
 }
 
-
 // Test helper functions
 
 func createTestAutomationEngine() (*AutomationEngine, *mockEventProcessor) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	
+
 	// Create a real RuleManager for testing since it's expected as a struct pointer
 	ruleManager := &RuleManager{}
-	
+
 	conditionEvaluator := &mockConditionEvaluator{}
 	actionExecutor := &mockActionExecutor{}
 	eventProcessor := &mockEventProcessor{}

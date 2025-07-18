@@ -43,12 +43,12 @@ configuration files, use:
 	return cmd
 }
 
-func (o *genConfigGithubOptions) run(_ *cobra.Command, _ []string) error {
+func (o *genConfigGithubOptions) run(cmd *cobra.Command, _ []string) error {
 	if o.targetPath == "" || o.orgName == "" {
 		return fmt.Errorf("both targetPath and orgName must be specified")
 	}
 
-	err := github.RefreshAll(context.Background(), o.targetPath, o.orgName, "reset")
+	err := github.RefreshAll(cmd.Context(), o.targetPath, o.orgName, "reset")
 	if err != nil {
 		// return err
 		// return fmt.Errorf("failed to refresh repositories: %w", err)

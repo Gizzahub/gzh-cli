@@ -1,11 +1,16 @@
 package bulkclone
 
+//go:generate mockgen -source=facade.go -destination=mocks/bulk_clone_manager_mock.go -package=mocks BulkCloneManager
+
 import (
 	"context"
 	"time"
 )
 
 // BulkCloneManager provides a high-level facade for bulk cloning operations
+// across multiple Git hosting platforms. It abstracts the complexity of
+// platform-specific APIs and provides a unified interface for repository
+// discovery, cloning, and management operations.
 type BulkCloneManager interface {
 	// Configuration Management
 	LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error)
@@ -26,7 +31,9 @@ type BulkCloneManager interface {
 	CleanupRepositories(ctx context.Context, request *CleanupRequest) (*CleanupResult, error)
 }
 
-// OrganizationCloneRequest represents a request to clone an entire organization
+// OrganizationCloneRequest represents a request to clone all repositories
+// from an organization. It includes filtering options, concurrency settings,
+// and authentication details for the clone operation.
 type OrganizationCloneRequest struct {
 	Provider     string
 	Organization string
@@ -39,6 +46,8 @@ type OrganizationCloneRequest struct {
 }
 
 // RepositoryCloneRequest represents a request to clone specific repositories
+// from an organization. Unlike OrganizationCloneRequest, this allows
+// explicit selection of repositories rather than cloning all of them.
 type RepositoryCloneRequest struct {
 	Provider     string
 	Organization string
@@ -51,6 +60,8 @@ type RepositoryCloneRequest struct {
 }
 
 // RefreshRequest represents a request to refresh existing repositories
+// by pulling latest changes, updating remotes, and synchronizing branches.
+// It can operate on all repositories or be filtered to specific ones.
 type RefreshRequest struct {
 	TargetPath    string
 	Strategy      string
@@ -61,6 +72,8 @@ type RefreshRequest struct {
 }
 
 // DiscoveryRequest represents a request to discover repositories
+// from Git hosting platforms without actually cloning them. This is useful
+// for preview operations and repository selection.
 type DiscoveryRequest struct {
 	Providers       []string
 	Organizations   []string
@@ -69,6 +82,8 @@ type DiscoveryRequest struct {
 }
 
 // CleanupRequest represents a request to cleanup repositories
+// that no longer exist on the remote, are archived, or match specific
+// cleanup criteria. It helps maintain a tidy local repository structure.
 type CleanupRequest struct {
 	TargetPath        string
 	RemoveUntracked   bool
@@ -78,7 +93,9 @@ type CleanupRequest struct {
 	OrphanedThreshold time.Duration
 }
 
-// CloneResult represents the result of clone operations
+// CloneResult represents the result of clone operations, including
+// statistics about successful clones, failures, and detailed information
+// about each repository processed during the operation.
 type CloneResult struct {
 	TotalRepositories int
 	ClonesSuccessful  int

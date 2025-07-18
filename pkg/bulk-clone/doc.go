@@ -1,28 +1,23 @@
-// Package bulkclone provides configuration loading and management for bulk repository cloning operations.
+// Package bulkclone implements the core functionality for cloning multiple repositories
+// from various Git hosting platforms. It provides a unified interface for bulk operations
+// across GitHub, GitLab, Gitea, and Gogs platforms.
 //
-// This package handles:
-//   - Loading and parsing bulk-clone configuration files (YAML format)
-//   - Configuration file discovery across multiple standard locations
-//   - Overlay configuration support for environment-specific settings
-//   - Path expansion and environment variable resolution
-//   - URL building for different Git service providers
-//   - JSON Schema validation for configuration files
+// The package features:
+//   - Multi-platform support with consistent API
+//   - Concurrent cloning with configurable parallelism
+//   - Progress tracking and resumable operations
+//   - Flexible filtering and selection criteria
+//   - Multiple clone strategies (HTTPS, SSH, mirror)
+//   - Automatic retry with exponential backoff
+//   - Detailed logging and error reporting
 //
-// The package supports a hierarchical configuration system where base configurations
-// can be overridden by environment-specific overlay files. Configuration files are
-// searched in the following order:
-//  1. Current directory (./bulk-clone.yaml, ./bulk-clone.yml)
-//  2. User home directory (~/.config/gzh-manager/bulk-clone.yaml)
-//  3. System-wide directory (/etc/gzh-manager/bulk-clone.yaml)
+// Configuration is handled through YAML files with schema validation,
+// supporting organization-wide cloning, team-based filtering, and
+// custom repository selection rules.
 //
-// Main types:
-//   - BulkCloneConfig: Primary configuration structure
-//   - BulkCloneGithub: GitHub-specific configuration
-//   - BulkCloneGitlab: GitLab-specific configuration
+// Example usage:
 //
-// Key functions:
-//   - LoadConfig: Load configuration with automatic discovery
-//   - FindConfigFile: Locate configuration files in standard paths
-//   - ValidateConfig: Validate configuration against JSON schema
-//   - BuildURL: Build repository URLs for different providers
+//	config := bulkclone.LoadConfig("config.yaml")
+//	manager := bulkclone.NewManager(config)
+//	results := manager.CloneAll(context.Background())
 package bulkclone

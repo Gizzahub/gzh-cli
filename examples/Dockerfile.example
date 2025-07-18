@@ -1,0 +1,69 @@
+# Example Dockerfile for running gz in a container
+FROM golang:1.21-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git make
+
+# Copy source code
+WORKDIR /build
+COPY . .
+
+# Build the binary
+RUN make build
+
+# Runtime image
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    git \
+    openssh-client \
+    ca-certificates \
+    tzdata
+
+# Create non-root user
+RUN addgroup -g 1000 gz && \
+    adduser -D -u 1000 -G gz gz
+
+# Copy binary from builder
+COPY --from=builder /build/gz /usr/local/bin/gz
+
+# Create working directories
+RUN mkdir -p /home/gz/.config/gzh-manager /repos && \
+    chown -R gz:gz /home/gz /repos
+
+# Switch to non-root user
+USER gz
+WORKDIR /repos
+
+# Default config location
+ENV GZH_CONFIG_PATH=/home/gz/.config/gzh-manager/bulk-clone.yaml
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD gz doctor || exit 1
+
+# Default command
+ENTRYPOINT ["gz"]
+CMD ["help"]
+
+# Usage examples:
+# 
+# Build the image:
+#   docker build -f examples/Dockerfile.example -t gz:latest .
+#
+# Run with local config:
+#   docker run -v ~/.config/gzh-manager:/home/gz/.config/gzh-manager \
+#              -v ~/repos:/repos \
+#              -e GITHUB_TOKEN=$GITHUB_TOKEN \
+#              gz:latest bulk-clone
+#
+# Run with custom config:
+#   docker run -v $(pwd)/my-config.yaml:/config/bulk-clone.yaml \
+#              -v ~/repos:/repos \
+#              -e GITHUB_TOKEN=$GITHUB_TOKEN \
+#              -e GZH_CONFIG_PATH=/config/bulk-clone.yaml \
+#              gz:latest bulk-clone
+#
+# Interactive shell:
+#   docker run -it --entrypoint /bin/sh gz:latest

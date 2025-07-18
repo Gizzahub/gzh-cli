@@ -1,5 +1,7 @@
 package github
 
+//go:generate mockgen -source=condition_evaluator.go -destination=mocks/condition_evaluator_mock.go -package=mocks ConditionEvaluator
+
 import (
 	"context"
 	"encoding/json"

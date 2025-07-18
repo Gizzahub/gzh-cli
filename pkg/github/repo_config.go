@@ -18,7 +18,7 @@ import (
 type RepoConfigClient struct {
 	token       string
 	baseURL     string
-	httpClient  *http.Client
+	httpClient  HTTPClient
 	rateLimiter *RateLimiter
 	logger      *ChangeLogger
 }

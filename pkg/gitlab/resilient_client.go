@@ -13,7 +13,7 @@ import (
 // ResilientGitLabClient provides GitLab API operations with network resilience - DISABLED (recovery package removed)
 // Simple HTTP client implementation to replace deleted recovery package
 type ResilientGitLabClient struct {
-	httpClient *http.Client
+	httpClient HTTPClient
 	baseURL    string
 	token      string
 }
@@ -22,11 +22,9 @@ type ResilientGitLabClient struct {
 // Simple HTTP client implementation to replace deleted recovery package
 func NewResilientGitLabClient(baseURL, token string) *ResilientGitLabClient {
 	return &ResilientGitLabClient{
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		baseURL: strings.TrimSuffix(baseURL, "/"),
-		token:   token,
+		httpClient: NewHTTPClientAdapter(),
+		baseURL:    strings.TrimSuffix(baseURL, "/"),
+		token:      token,
 	}
 }
 

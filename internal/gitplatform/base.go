@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 )
 
 // BaseClient provides common functionality for all git platform clients
 type BaseClient struct {
-	httpClient *http.Client
+	httpClient httpclient.HTTPClient
 	token      string
 	baseURL    string
 	platform   string
@@ -19,13 +21,15 @@ type BaseClient struct {
 
 // NewBaseClient creates a new base client with common configuration
 func NewBaseClient(platform, baseURL, token string) *BaseClient {
+	httpClient := httpclient.NewHTTPClient(&httpclient.HTTPClientConfig{
+		Timeout: 30 * time.Second,
+	}, nil, nil)
+	
 	return &BaseClient{
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		token:    token,
-		baseURL:  strings.TrimSuffix(baseURL, "/"),
-		platform: platform,
+		httpClient: httpClient,
+		token:      token,
+		baseURL:    strings.TrimSuffix(baseURL, "/"),
+		platform:   platform,
 	}
 }
 
@@ -40,7 +44,7 @@ func (b *BaseClient) GetPlatformName() string {
 }
 
 // GetHTTPClient returns the configured HTTP client
-func (b *BaseClient) GetHTTPClient() *http.Client {
+func (b *BaseClient) GetHTTPClient() httpclient.HTTPClient {
 	return b.httpClient
 }
 

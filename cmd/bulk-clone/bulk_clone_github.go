@@ -1,10 +1,13 @@
 package bulkclone
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
 
+	internalconfig "github.com/gizzahub/gzh-manager-go/internal/config"
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
@@ -162,7 +165,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 		// Get GitHub token
 		token := o.token
 		if token == "" {
-			token = os.Getenv("GITHUB_TOKEN")
+			token = env.GetToken("github")
 		}
 
 		structuredLogger.Debug("Configuration validated",
@@ -220,10 +223,8 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 
 			structuredLogger.ErrorWithStack(err, "GitHub bulk clone operation failed")
 
-			// For now, we'll return nil to maintain compatibility
-			// TODO: Remove this once error handling is fully integrated
-			structuredLogger.Warn("Suppressing error for compatibility", "suppressed_error", err.Error())
-			return nil
+			// Return the error properly for error handling
+			return recErr
 		}
 
 		duration := time.Since(start)
@@ -241,12 +242,8 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 }
 
 func (o *bulkCloneGithubOptions) loadFromConfig() error {
-	var configPath string
-	if o.configFile != "" {
-		configPath = o.configFile
-	}
-
-	cfg, err := config.LoadConfigFromFile(configPath)
+	// Use unified config loading
+	cfg, err := internalconfig.LoadCommandConfig(context.Background(), o.configFile, "bulk-clone")
 	if err != nil {
 		return err
 	}

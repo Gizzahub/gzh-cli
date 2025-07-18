@@ -1,37 +1,23 @@
-// Package github provides comprehensive GitHub API integration and repository management.
+// Package github provides a comprehensive client library for interacting with GitHub's API.
+// It implements repository management, organization operations, Actions policy enforcement,
+// and various automation features required by the gzh-manager-go tool.
 //
-// This package handles:
-//   - GitHub API client implementation with rate limiting
-//   - Repository and organization management
-//   - Token validation and authentication
-//   - Bulk cloning and synchronization operations
-//   - Change logging and operation tracking
-//   - User confirmation workflows for destructive operations
-//   - Repository configuration management
+// Key features:
+//   - Repository cloning and synchronization
+//   - Organization and team management
+//   - GitHub Actions policy validation and enforcement
+//   - Webhook handling and event processing
+//   - Pull request and issue automation
+//   - Release management
+//   - Dependency version policy enforcement
 //
-// The package implements a sophisticated GitHub integration layer with multiple
-// service interfaces for different concerns. It provides both low-level API
-// access and high-level facade operations for common workflows.
+// The package uses GitHub's REST and GraphQL APIs, providing:
+//   - Automatic retry with exponential backoff
+//   - Rate limit handling
+//   - Concurrent operations with worker pools
+//   - Comprehensive error handling
+//   - Metrics and logging integration
 //
-// Main interfaces:
-//   - GitHubService: Unified interface for all GitHub operations
-//   - APIClient: GitHub API operations and rate limiting
-//   - CloneService: Repository cloning and synchronization
-//   - TokenValidatorInterface: Token validation and permission checking
-//   - ChangeLoggerInterface: Operation logging and audit trails
-//   - ConfirmationServiceInterface: User confirmation workflows
-//
-// Key types:
-//   - GitHubManager: High-level facade for GitHub operations
-//   - RepositoryInfo: Repository metadata and information
-//   - BulkCloneRequest/Result: Bulk operation request/response structures
-//   - TokenInfoRecord: Token information and validation results
-//
-// The package supports advanced features like:
-//   - Comprehensive rate limiting with GitHub API limits
-//   - Token scope validation for specific operations
-//   - Bulk operations with filtering and concurrency control
-//   - Operation logging with structured metadata
-//   - Risk-based confirmation prompts for destructive operations
-//   - Factory pattern for provider instantiation
+// Authentication is handled via personal access tokens or GitHub Apps,
+// with support for fine-grained permissions and OAuth scopes.
 package github

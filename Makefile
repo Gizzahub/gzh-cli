@@ -33,9 +33,23 @@ bootstrap: ## install build deps
 	go generate -tags tools tools/tools.go
 
 PHONY: test
-test: clean ## display test coverage
+test: clean ## run all tests with coverage
 	go test --cover -parallel=1 -v -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out | sort -rnk3
+
+PHONY: test-unit
+test-unit: ## run only unit tests (exclude integration and e2e)
+	go test -short --cover -parallel=1 -v -coverprofile=coverage-unit.out \
+		$(shell go list ./... | grep -v -E '(test/integration|test/e2e)')
+	go tool cover -func=coverage-unit.out | sort -rnk3
+
+PHONY: test-integration-only
+test-integration-only: ## run only integration tests with build tag
+	go test -tags=integration -v ./test/integration/...
+
+PHONY: test-e2e-only
+test-e2e-only: ## run only e2e tests with build tag
+	go test -tags=e2e -v ./test/e2e/...
 
 PHONY: clean
 clean: ## clean up environment
@@ -48,6 +62,25 @@ PHONY: cover
 cover: ## display test coverage
 	go test -v -race $(shell go list ./... | grep -v /vendor/) -v -coverprofile=coverage.out
 	go tool cover -func=coverage.out
+
+PHONY: cover-html
+cover-html: ## generate HTML coverage report
+	go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
+PHONY: cover-report
+cover-report: ## generate detailed coverage report
+	@echo "Generating coverage report..."
+	@go test -coverprofile=coverage.out -covermode=atomic ./...
+	@echo ""
+	@echo "=== Coverage Summary ==="
+	@go tool cover -func=coverage.out | grep total | awk '{print "Total Coverage: " $$3}'
+	@echo ""
+	@echo "=== Package Coverage ==="
+	@go tool cover -func=coverage.out | grep -v total | sort -k3 -nr | head -20
+	@echo ""
+	@echo "For detailed HTML report, run: make cover-html"
 
 .PHONY: test-docker
 test-docker: ## run Docker-based integration tests
@@ -156,10 +189,7 @@ regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
 pre-commit-install: ## install pre-commit hooks
 	@echo "Installing pre-commit hooks..."
 	@command -v pre-commit >/dev/null 2>&1 || { echo "pre-commit not found. Install with: pip install pre-commit"; exit 1; }
-	@pre-commit install --install-hooks
-	@pre-commit install --hook-type commit-msg
-	@pre-commit install --hook-type pre-push
-	@echo "Pre-commit hooks installed successfully!"
+	@./scripts/setup-git-hooks.sh
 
 .PHONY: pre-commit
 pre-commit:	## run pre-commit hooks
@@ -208,3 +238,149 @@ install-goreleaser: ## install goreleaser
 
 .PHONY: deploy
 deploy: release-dry-run ## alias for release-dry-run
+
+## Development Workflow Targets
+
+.PHONY: dev
+dev: fmt lint test ## run standard development workflow (format, lint, test)
+
+.PHONY: dev-fast
+dev-fast: fmt test-unit ## quick development cycle (format and unit tests only)
+
+.PHONY: verify
+verify: fmt lint test cover-report check-consistency ## complete verification before PR
+
+.PHONY: deps-check
+deps-check: ## check for outdated dependencies
+	@echo "Checking for outdated dependencies..."
+	@go list -u -m all | grep '\[' || echo "All dependencies are up to date"
+
+.PHONY: deps-upgrade
+deps-upgrade: ## upgrade all dependencies to latest versions
+	@echo "Upgrading all dependencies..."
+	@go get -u ./...
+	@go mod tidy
+
+.PHONY: deps-verify
+deps-verify: ## verify dependency checksums
+	@echo "Verifying dependency checksums..."
+	@go mod verify
+
+.PHONY: deps-why
+deps-why: ## show why a module is needed (usage: make deps-why MOD=github.com/pkg/errors)
+	@go mod why -m $(MOD)
+
+.PHONY: deps-graph
+deps-graph: ## show module dependency graph
+	@go mod graph
+
+## Documentation Targets
+
+.PHONY: docs-serve
+docs-serve: ## serve documentation locally (requires mkdocs)
+	@command -v mkdocs >/dev/null 2>&1 || { echo "mkdocs not found. Install with: pip install mkdocs mkdocs-material"; exit 1; }
+	@mkdocs serve
+
+.PHONY: docs-build
+docs-build: ## build documentation site
+	@command -v mkdocs >/dev/null 2>&1 || { echo "mkdocs not found. Install with: pip install mkdocs mkdocs-material"; exit 1; }
+	@mkdocs build
+
+.PHONY: godoc
+godoc: ## run godoc server
+	@echo "Starting godoc server on http://localhost:6060"
+	@godoc -http=:6060
+
+.PHONY: docs-check
+docs-check: ## check for missing package documentation
+	@echo "Checking for missing package documentation..."
+	@for pkg in $$(go list ./...); do \
+		if ! go doc -short $$pkg | grep -q "^package"; then \
+			echo "Missing documentation for: $$pkg"; \
+		fi; \
+	done
+
+## Code Analysis Targets
+
+.PHONY: complexity
+complexity: ## analyze code complexity
+	@echo "Analyzing code complexity..."
+	@command -v gocyclo >/dev/null 2>&1 || { echo "gocyclo not found. Installing..."; go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; }
+	@gocyclo -over 10 -avg .
+
+.PHONY: ineffassign
+ineffassign: ## detect ineffectual assignments
+	@echo "Checking for ineffectual assignments..."
+	@command -v ineffassign >/dev/null 2>&1 || { echo "ineffassign not found. Installing..."; go install github.com/gordonklaus/ineffassign@latest; }
+	@ineffassign ./...
+
+.PHONY: dupl
+dupl: ## find duplicate code
+	@echo "Checking for duplicate code..."
+	@command -v dupl >/dev/null 2>&1 || { echo "dupl not found. Installing..."; go install github.com/mibk/dupl@latest; }
+	@dupl -threshold 50 .
+
+.PHONY: vuln
+vuln: ## check for known vulnerabilities
+	@echo "Checking for known vulnerabilities..."
+	@go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
+## Benchmarking Targets
+
+.PHONY: bench
+bench: ## run all benchmarks
+	@go test -bench=. -benchmem ./...
+
+.PHONY: bench-compare
+bench-compare: ## compare benchmark results (requires benchstat)
+	@command -v benchstat >/dev/null 2>&1 || { echo "benchstat not found. Installing..."; go install golang.org/x/perf/cmd/benchstat@latest; }
+	@echo "Run benchmarks and save results:"
+	@echo "  go test -bench=. -count=10 ./... > old.txt"
+	@echo "  # make changes"
+	@echo "  go test -bench=. -count=10 ./... > new.txt"
+	@echo "  benchstat old.txt new.txt"
+
+## Quick Commands
+
+.PHONY: todo
+todo: ## show all TODO comments in codebase
+	@grep -r "TODO" --include="*.go" . | grep -v vendor | grep -v .git || echo "No TODOs found!"
+
+.PHONY: fixme
+fixme: ## show all FIXME comments in codebase
+	@grep -r "FIXME" --include="*.go" . | grep -v vendor | grep -v .git || echo "No FIXMEs found!"
+
+.PHONY: notes
+notes: ## show all NOTE comments in codebase
+	@grep -r "NOTE" --include="*.go" . | grep -v vendor | grep -v .git || echo "No NOTEs found!"
+
+## CI/CD Helpers
+
+.PHONY: ci-local
+ci-local: clean verify test-all ## run full CI pipeline locally
+
+.PHONY: pr-check
+pr-check: fmt lint test cover-report check-consistency ## pre-PR submission check
+
+.PHONY: changelog
+changelog: ## generate changelog (requires git-chglog)
+	@command -v git-chglog >/dev/null 2>&1 || { echo "git-chglog not found. Install from: https://github.com/git-chglog/git-chglog"; exit 1; }
+	@git-chglog -o CHANGELOG.md
+
+## Module Management
+
+.PHONY: mod-tidy-check
+mod-tidy-check: ## check if go.mod and go.sum are tidy
+	@echo "Checking if go.mod is tidy..."
+	@cp go.mod go.mod.bak
+	@cp go.sum go.sum.bak
+	@go mod tidy
+	@if ! diff -q go.mod go.mod.bak >/dev/null || ! diff -q go.sum go.sum.bak >/dev/null; then \
+		echo "❌ go.mod or go.sum is not tidy. Run 'go mod tidy'"; \
+		mv go.mod.bak go.mod; \
+		mv go.sum.bak go.sum; \
+		exit 1; \
+	else \
+		echo "✅ go.mod is tidy"; \
+		rm go.mod.bak go.sum.bak; \
+	fi

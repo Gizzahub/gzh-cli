@@ -93,7 +93,7 @@ providers:
     # export GITHUB_TOKEN="your_github_personal_access_token"
     token: "${GITHUB_TOKEN}"
     orgs:
-      # TODO: Add your organizations here
+      # Add your GitHub organizations here
       # Example:
       # - name: "your-org-name"
       #   visibility: "all"
