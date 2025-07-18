@@ -2,6 +2,7 @@ package gzhclient_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"

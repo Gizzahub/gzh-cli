@@ -2,6 +2,7 @@ package mocking
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
@@ -334,6 +335,7 @@ func (e *RateLimitError) Error() string {
 func IsRateLimitError(err error) bool {
 	rateLimitError := &RateLimitError{}
 	ok := errors.As(err, &rateLimitError)
+
 	return ok
 }
 

@@ -3,6 +3,7 @@ package helpers
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -90,6 +91,7 @@ func (c *CLIExecutor) Run(args ...string) *CLIResult {
 
 	if err != nil {
 		result.Error = err
+
 		exitError := &exec.ExitError{}
 		if errors.As(err, &exitError) {
 			result.ExitCode = exitError.ExitCode()
@@ -139,6 +141,7 @@ func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 
 	if err != nil {
 		result.Error = err
+
 		exitError := &exec.ExitError{}
 		if errors.As(err, &exitError) {
 			result.ExitCode = exitError.ExitCode()

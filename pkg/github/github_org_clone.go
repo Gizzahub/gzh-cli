@@ -160,7 +160,7 @@ func Clone(ctx context.Context, targetPath string, org string, repo string) erro
 	// if branch == "" {
 	//	//cmd := exec.Command("git", "clone", cloneURL, targetPath)
 	//	cmd = exec.Command("git", "clone", "-b", branch, cloneURL, targetPath)
-	//} else {
+	// } else {
 	//	cmd = exec.Command("git", "clone", cloneURL, targetPath)
 	//}
 	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath)

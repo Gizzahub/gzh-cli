@@ -2,6 +2,7 @@ package reposync
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -606,6 +607,7 @@ func (ge *defaultGitExecutor) ExecuteCommand(ctx context.Context, dir string, ar
 	}
 	if err != nil {
 		result.Error = err.Error()
+
 		exitErr := &exec.ExitError{}
 		if errors.As(err, &exitErr) {
 			result.ExitCode = exitErr.ExitCode()

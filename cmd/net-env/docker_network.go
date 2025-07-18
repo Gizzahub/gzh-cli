@@ -3,6 +3,7 @@ package netenv
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -192,6 +193,7 @@ func (dce *DockerCommandExecutor) ExecuteWithTimeout(ctx context.Context, comman
 
 	if err != nil {
 		result.Error = err.Error()
+
 		exitError := &exec.ExitError{}
 		if errors.As(err, &exitError) {
 			result.ExitCode = exitError.ExitCode()

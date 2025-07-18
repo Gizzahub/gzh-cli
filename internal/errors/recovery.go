@@ -2,6 +2,7 @@ package errors
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"runtime/debug"
@@ -377,7 +378,7 @@ func (hm *HealthMonitor) RunChecks(ctx context.Context) map[string]error {
 
 	for _, check := range hm.checks {
 		var (
-			checkCtx context.Context = ctx
+			checkCtx = ctx
 			cancel   context.CancelFunc
 		)
 
