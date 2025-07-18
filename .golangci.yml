@@ -1,6 +1,8 @@
 # golangci-lint configuration
 # https://golangci-lint.run/usage/configuration/
 
+version: "2"
+
 run:
   timeout: 10m
   issues-exit-code: 1
@@ -11,7 +13,8 @@ run:
 
 output:
   formats:
-    - format: colored-line-number
+    default:
+      format: colored-line-number
   print-issued-line: true
   print-linter-name: true
 
@@ -132,10 +135,6 @@ linters-settings:
               - errors
               - fmt
             reason: "We use stdlib errors with Go 1.13+ error wrapping"
-  goimports:
-    local-prefixes: github.com/archmagece/gzh-manager-go
-  gofumpt:
-    extra-rules: true
   depguard:
     rules:
       main:
@@ -188,17 +187,10 @@ linters-settings:
       - mu
       - fn
       - op
-  wsl:
-    allow-assign-and-anything: false
-    allow-assign-and-call: true
-    allow-cuddle-declarations: false
-    allow-multiline-assign: true
-    allow-separated-leading-comment: false
-    allow-trailing-comment: false
-    force-case-trailing-whitespace: 0
-    force-err-cuddling: false
-    force-short-decl-cuddling: false
-    strict-append: true
+  wsl_v5:
+    allow-first-in-block: true
+    allow-whole-block: false
+    branch-max-lines: 2
   tagliatelle:
     case:
       use-field-name: true
@@ -288,9 +280,7 @@ linters:
     # Style
     - lll
     - whitespace
-    - wsl
-    - gofumpt
-    - goimports
+    - wsl_v5
     - godot
     - godox
     - goheader
@@ -435,10 +425,10 @@ issues:
       linters:
         - unused
     
-    # Exclude wsl for test files
+    # Exclude linters for test files
     - path: "_test\\.go"
       linters:
-        - wsl
+        - wsl_v5
         - godox
         - varnamelen
         - maintidx

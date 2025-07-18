@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// ConfirmationPrompt handles user confirmation for sensitive operations
+// ConfirmationPrompt handles user confirmation for sensitive operations.
 type ConfirmationPrompt struct {
 	// AutoConfirm bypasses prompts when true (useful for automation)
 	AutoConfirm bool
@@ -16,7 +16,7 @@ type ConfirmationPrompt struct {
 	inputReader *bufio.Scanner
 }
 
-// SensitiveChange represents a potentially sensitive configuration change
+// SensitiveChange represents a potentially sensitive configuration change.
 type SensitiveChange struct {
 	Repository  string      `json:"repository"`
 	Category    string      `json:"category"`  // settings, branch_protection, permissions
@@ -29,7 +29,7 @@ type SensitiveChange struct {
 	Impact      string      `json:"impact"`
 }
 
-// RiskLevel represents the risk level of a change
+// RiskLevel represents the risk level of a change.
 type RiskLevel string
 
 const (
@@ -39,7 +39,7 @@ const (
 	RiskCritical RiskLevel = "critical"
 )
 
-// ConfirmationRequest contains details for a confirmation request
+// ConfirmationRequest contains details for a confirmation request.
 type ConfirmationRequest struct {
 	Changes     []SensitiveChange `json:"changes"`
 	Operation   string            `json:"operation"` // bulk_update, rollback, etc.
@@ -49,7 +49,7 @@ type ConfirmationRequest struct {
 	Description string            `json:"description"`
 }
 
-// ConfirmationResult contains the result of a confirmation request
+// ConfirmationResult contains the result of a confirmation request.
 type ConfirmationResult struct {
 	Confirmed    bool        `json:"confirmed"`
 	UserChoice   string      `json:"user_choice"` // yes, no, skip, abort
@@ -57,33 +57,35 @@ type ConfirmationResult struct {
 	Reason       string      `json:"reason,omitempty"`
 }
 
-// NewConfirmationPrompt creates a new confirmation prompt handler
+// NewConfirmationPrompt creates a new confirmation prompt handler.
 func NewConfirmationPrompt() *ConfirmationPrompt {
 	return &ConfirmationPrompt{
 		inputReader: bufio.NewScanner(os.Stdin),
 	}
 }
 
-// NewAutoConfirmationPrompt creates a confirmation prompt that auto-confirms all prompts
+// NewAutoConfirmationPrompt creates a confirmation prompt that auto-confirms all prompts.
 func NewAutoConfirmationPrompt() *ConfirmationPrompt {
 	return &ConfirmationPrompt{
 		AutoConfirm: true,
 	}
 }
 
-// RequestConfirmation requests user confirmation for sensitive changes
+// RequestConfirmation requests user confirmation for sensitive changes.
 func (cp *ConfirmationPrompt) RequestConfirmation(ctx context.Context, request *ConfirmationRequest) (*ConfirmationResult, error) {
 	result := &ConfirmationResult{}
 
 	// Auto-confirm if enabled
 	if cp.AutoConfirm || request.DryRun {
 		result.Confirmed = true
+
 		result.UserChoice = "auto"
 		if request.DryRun {
 			result.Reason = "Dry run mode - no actual changes will be made"
 		} else {
 			result.Reason = "Auto-confirmation enabled"
 		}
+
 		return result, nil
 	}
 
@@ -91,9 +93,11 @@ func (cp *ConfirmationPrompt) RequestConfirmation(ctx context.Context, request *
 	fmt.Printf("\n🔧 Repository Configuration Change Request\n")
 	fmt.Printf("Operation: %s\n", request.Operation)
 	fmt.Printf("Target: %s\n", request.Target)
+
 	if request.BatchSize > 1 {
 		fmt.Printf("Repositories affected: %d\n", request.BatchSize)
 	}
+
 	if request.Description != "" {
 		fmt.Printf("Description: %s\n", request.Description)
 	}
@@ -112,7 +116,7 @@ func (cp *ConfirmationPrompt) RequestConfirmation(ctx context.Context, request *
 	return cp.promptForConfirmation(request, riskCategories)
 }
 
-// categorizeChangesByRisk groups changes by their risk level
+// categorizeChangesByRisk groups changes by their risk level.
 func (cp *ConfirmationPrompt) categorizeChangesByRisk(changes []SensitiveChange) map[RiskLevel][]SensitiveChange {
 	categories := make(map[RiskLevel][]SensitiveChange)
 
@@ -123,7 +127,7 @@ func (cp *ConfirmationPrompt) categorizeChangesByRisk(changes []SensitiveChange)
 	return categories
 }
 
-// displayRiskCategory displays changes for a specific risk level
+// displayRiskCategory displays changes for a specific risk level.
 func (cp *ConfirmationPrompt) displayRiskCategory(risk RiskLevel, changes []SensitiveChange) {
 	riskColor := cp.getRiskColor(risk)
 	riskIcon := cp.getRiskIcon(risk)
@@ -132,17 +136,19 @@ func (cp *ConfirmationPrompt) displayRiskCategory(risk RiskLevel, changes []Sens
 
 	for i, change := range changes {
 		fmt.Printf("  %d. %s (%s)\n", i+1, change.Description, change.Repository)
+
 		if change.Field != "" {
 			fmt.Printf("     Field: %s\n", change.Field)
 			fmt.Printf("     Change: %v → %v\n", change.OldValue, change.NewValue)
 		}
+
 		if change.Impact != "" {
 			fmt.Printf("     Impact: %s\n", change.Impact)
 		}
 	}
 }
 
-// promptForConfirmation handles the interactive confirmation process
+// promptForConfirmation handles the interactive confirmation process.
 func (cp *ConfirmationPrompt) promptForConfirmation(request *ConfirmationRequest, riskCategories map[RiskLevel][]SensitiveChange) (*ConfirmationResult, error) {
 	result := &ConfirmationResult{}
 
@@ -190,13 +196,16 @@ func (cp *ConfirmationPrompt) promptForConfirmation(request *ConfirmationRequest
 	case "s", "skip":
 		if hasCritical || hasHigh {
 			result.Confirmed = true
+
 			result.SkippedRisks = []RiskLevel{}
 			if hasCritical {
 				result.SkippedRisks = append(result.SkippedRisks, RiskCritical)
 			}
+
 			if hasHigh {
 				result.SkippedRisks = append(result.SkippedRisks, RiskHigh)
 			}
+
 			result.Reason = "User chose to skip high/critical risk changes"
 		} else {
 			result.Confirmed = false
@@ -206,25 +215,29 @@ func (cp *ConfirmationPrompt) promptForConfirmation(request *ConfirmationRequest
 	case "a", "abort":
 		result.Confirmed = false
 		result.Reason = "User aborted operation"
+
 		return result, fmt.Errorf("operation aborted by user")
 
 	default:
 		result.Confirmed = false
 		result.Reason = fmt.Sprintf("Invalid choice: %s", choice)
+
 		return result, fmt.Errorf("invalid choice: %s", choice)
 	}
 
 	return result, nil
 }
 
-// AnalyzeRepositoryChanges analyzes repository configuration changes for sensitivity
+// AnalyzeRepositoryChanges analyzes repository configuration changes for sensitivity.
 func (cp *ConfirmationPrompt) AnalyzeRepositoryChanges(ctx context.Context, owner, repo string, before, after *RepositoryConfig) []SensitiveChange {
 	var changes []SensitiveChange
+
 	repoName := fmt.Sprintf("%s/%s", owner, repo)
 
 	// Check visibility changes
 	if before.Private != after.Private {
 		risk := RiskHigh
+
 		impact := "Repository access permissions will change"
 		if !before.Private && after.Private {
 			impact = "Repository will become private - public access will be lost"
@@ -250,6 +263,7 @@ func (cp *ConfirmationPrompt) AnalyzeRepositoryChanges(ctx context.Context, owne
 	// Check archive status changes
 	if before.Archived != after.Archived {
 		risk := RiskMedium
+
 		impact := "Repository write access will change"
 		if after.Archived {
 			impact = "Repository will be archived - no further commits allowed"
@@ -296,7 +310,7 @@ func (cp *ConfirmationPrompt) AnalyzeRepositoryChanges(ctx context.Context, owne
 	return changes
 }
 
-// analyzeBranchProtectionChanges analyzes branch protection rule changes
+// analyzeBranchProtectionChanges analyzes branch protection rule changes.
 func (cp *ConfirmationPrompt) analyzeBranchProtectionChanges(repoName string, before, after map[string]BranchProtectionConfig) []SensitiveChange {
 	var changes []SensitiveChange
 
@@ -355,7 +369,7 @@ func (cp *ConfirmationPrompt) analyzeBranchProtectionChanges(repoName string, be
 	return changes
 }
 
-// analyzePermissionChanges analyzes permission changes
+// analyzePermissionChanges analyzes permission changes.
 func (cp *ConfirmationPrompt) analyzePermissionChanges(repoName string, before, after PermissionsConfig) []SensitiveChange {
 	var changes []SensitiveChange
 
@@ -426,7 +440,7 @@ func (cp *ConfirmationPrompt) analyzePermissionChanges(repoName string, before, 
 	return changes
 }
 
-// isPermissionEscalation checks if a permission change represents an escalation
+// isPermissionEscalation checks if a permission change represents an escalation.
 func (cp *ConfirmationPrompt) isPermissionEscalation(before, after string) bool {
 	levels := map[string]int{
 		"read":     1,
@@ -446,7 +460,7 @@ func (cp *ConfirmationPrompt) isPermissionEscalation(before, after string) bool 
 	return afterLevel > beforeLevel
 }
 
-// Helper functions for display formatting
+// Helper functions for display formatting.
 func (cp *ConfirmationPrompt) getRiskColor(risk RiskLevel) string {
 	switch risk {
 	case RiskCritical:

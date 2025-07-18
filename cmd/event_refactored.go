@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewEventCmd creates a new event command
+// NewEventCmd creates a new event command.
 func NewEventCmdRefactored() *cobra.Command {
 	// Command flags - declare as local variables
 	var (

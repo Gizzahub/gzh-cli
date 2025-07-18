@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// ConfigService provides centralized configuration management
+// ConfigService provides centralized configuration management.
 type ConfigService interface {
 	// LoadConfiguration loads configuration from the specified path or default locations
 	LoadConfiguration(ctx context.Context, configPath string) (*config.UnifiedConfig, error)
@@ -55,7 +55,7 @@ type ConfigService interface {
 	GetValidationResult() *config.StartupValidationResult
 }
 
-// DefaultConfigService implements ConfigService using Viper
+// DefaultConfigService implements ConfigService using Viper.
 type DefaultConfigService struct {
 	mu                sync.RWMutex
 	config            *config.UnifiedConfig
@@ -70,7 +70,7 @@ type DefaultConfigService struct {
 	validationEnabled bool
 }
 
-// ConfigServiceOptions provides configuration options for the service
+// ConfigServiceOptions provides configuration options for the service.
 type ConfigServiceOptions struct {
 	Environment       env.Environment
 	AutoMigrate       bool
@@ -81,7 +81,7 @@ type ConfigServiceOptions struct {
 	ConfigTypes       []string
 }
 
-// DefaultConfigServiceOptions returns default configuration service options
+// DefaultConfigServiceOptions returns default configuration service options.
 func DefaultConfigServiceOptions() *ConfigServiceOptions {
 	return &ConfigServiceOptions{
 		Environment:       env.NewOSEnvironment(),
@@ -98,7 +98,7 @@ func DefaultConfigServiceOptions() *ConfigServiceOptions {
 	}
 }
 
-// NewConfigService creates a new configuration service
+// NewConfigService creates a new configuration service.
 func NewConfigService(options *ConfigServiceOptions) (ConfigService, error) {
 	if options == nil {
 		options = DefaultConfigServiceOptions()
@@ -137,7 +137,7 @@ func NewConfigService(options *ConfigServiceOptions) (ConfigService, error) {
 	return service, nil
 }
 
-// LoadConfiguration loads configuration from the specified path or default locations
+// LoadConfiguration loads configuration from the specified path or default locations.
 func (s *DefaultConfigService) LoadConfiguration(ctx context.Context, configPath string) (*config.UnifiedConfig, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -176,14 +176,15 @@ func (s *DefaultConfigService) LoadConfiguration(ctx context.Context, configPath
 	return s.config, nil
 }
 
-// GetConfiguration returns the currently loaded configuration
+// GetConfiguration returns the currently loaded configuration.
 func (s *DefaultConfigService) GetConfiguration() *config.UnifiedConfig {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	return s.config
 }
 
-// ReloadConfiguration reloads configuration from disk
+// ReloadConfiguration reloads configuration from disk.
 func (s *DefaultConfigService) ReloadConfiguration(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -207,7 +208,7 @@ func (s *DefaultConfigService) ReloadConfiguration(ctx context.Context) error {
 	return nil
 }
 
-// SaveConfiguration saves configuration to disk
+// SaveConfiguration saves configuration to disk.
 func (s *DefaultConfigService) SaveConfiguration(ctx context.Context, cfg *config.UnifiedConfig, path string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -225,7 +226,7 @@ func (s *DefaultConfigService) SaveConfiguration(ctx context.Context, cfg *confi
 	return nil
 }
 
-// ValidateConfiguration validates the current configuration
+// ValidateConfiguration validates the current configuration.
 func (s *DefaultConfigService) ValidateConfiguration(ctx context.Context) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -237,7 +238,7 @@ func (s *DefaultConfigService) ValidateConfiguration(ctx context.Context) error 
 	return s.validateConfig()
 }
 
-// validateConfig performs the actual validation (no locking)
+// validateConfig performs the actual validation (no locking).
 func (s *DefaultConfigService) validateConfig() error {
 	if s.config == nil {
 		return fmt.Errorf("no configuration loaded")
@@ -246,7 +247,7 @@ func (s *DefaultConfigService) validateConfig() error {
 	return s.unifiedFacade.ValidateConfiguration()
 }
 
-// performStartupValidation performs startup validation with locking
+// performStartupValidation performs startup validation with locking.
 func (s *DefaultConfigService) performStartupValidation() error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -254,7 +255,7 @@ func (s *DefaultConfigService) performStartupValidation() error {
 	return s.performStartupValidationLocked()
 }
 
-// performStartupValidationLocked performs startup validation without locking
+// performStartupValidationLocked performs startup validation without locking.
 func (s *DefaultConfigService) performStartupValidationLocked() error {
 	if s.config == nil {
 		return fmt.Errorf("no configuration loaded")
@@ -277,13 +278,14 @@ func (s *DefaultConfigService) performStartupValidationLocked() error {
 		for i, err := range result.Errors {
 			errorMessages[i] = fmt.Sprintf("[%s] %s", err.Field, err.Message)
 		}
+
 		return fmt.Errorf("configuration validation failed:\n%s", strings.Join(errorMessages, "\n"))
 	}
 
 	return nil
 }
 
-// WatchConfiguration starts watching for configuration file changes
+// WatchConfiguration starts watching for configuration file changes.
 func (s *DefaultConfigService) WatchConfiguration(ctx context.Context, callback func(*config.UnifiedConfig)) error {
 	if !s.watchingEnabled {
 		return fmt.Errorf("configuration watching is disabled")
@@ -313,6 +315,7 @@ func (s *DefaultConfigService) WatchConfiguration(ctx context.Context, callback 
 	if err != nil {
 		s.watcher.Close()
 		s.watcher = nil
+
 		return fmt.Errorf("failed to watch configuration file: %w", err)
 	}
 
@@ -322,7 +325,7 @@ func (s *DefaultConfigService) WatchConfiguration(ctx context.Context, callback 
 	return nil
 }
 
-// watchLoop handles file system events
+// watchLoop handles file system events.
 func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 	defer func() {
 		if s.watcher != nil {
@@ -338,6 +341,7 @@ func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 			if !ok {
 				return
 			}
+
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				s.handleConfigChange(ctx)
 			}
@@ -345,12 +349,13 @@ func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 			if !ok {
 				return
 			}
+
 			fmt.Printf("Configuration watcher error: %v\n", err)
 		}
 	}
 }
 
-// handleConfigChange handles configuration file changes
+// handleConfigChange handles configuration file changes.
 func (s *DefaultConfigService) handleConfigChange(ctx context.Context) {
 	// Add a small delay to avoid multiple rapid changes
 	time.Sleep(100 * time.Millisecond)
@@ -363,6 +368,7 @@ func (s *DefaultConfigService) handleConfigChange(ctx context.Context) {
 		if s.watchCallback != nil && s.config != nil {
 			s.watchCallback(s.config)
 		}
+
 		return
 	}
 
@@ -372,7 +378,7 @@ func (s *DefaultConfigService) handleConfigChange(ctx context.Context) {
 	}
 }
 
-// StopWatching stops watching for configuration changes
+// StopWatching stops watching for configuration changes.
 func (s *DefaultConfigService) StopWatching() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -384,21 +390,23 @@ func (s *DefaultConfigService) StopWatching() {
 	}
 }
 
-// GetConfigPath returns the path of the currently loaded configuration
+// GetConfigPath returns the path of the currently loaded configuration.
 func (s *DefaultConfigService) GetConfigPath() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	return s.configPath
 }
 
-// IsLoaded returns true if configuration is loaded
+// IsLoaded returns true if configuration is loaded.
 func (s *DefaultConfigService) IsLoaded() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	return s.config != nil
 }
 
-// findConfigFile uses Viper to find configuration file
+// findConfigFile uses Viper to find configuration file.
 func (s *DefaultConfigService) findConfigFile() (string, error) {
 	// Try reading configuration to trigger file discovery
 	err := s.viper.ReadInConfig()
@@ -409,7 +417,7 @@ func (s *DefaultConfigService) findConfigFile() (string, error) {
 	return s.viper.ConfigFileUsed(), nil
 }
 
-// GetMigrationInfo returns migration information if available
+// GetMigrationInfo returns migration information if available.
 func (s *DefaultConfigService) GetMigrationInfo() *config.MigrationResult {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -432,7 +440,7 @@ func (s *DefaultConfigService) GetMigrationInfo() *config.MigrationResult {
 	}
 }
 
-// GetWarnings returns any warnings from configuration loading
+// GetWarnings returns any warnings from configuration loading.
 func (s *DefaultConfigService) GetWarnings() []string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -444,7 +452,7 @@ func (s *DefaultConfigService) GetWarnings() []string {
 	return s.unifiedFacade.GetWarnings()
 }
 
-// GetRequiredActions returns any required actions from configuration loading
+// GetRequiredActions returns any required actions from configuration loading.
 func (s *DefaultConfigService) GetRequiredActions() []string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -456,7 +464,7 @@ func (s *DefaultConfigService) GetRequiredActions() []string {
 	return s.unifiedFacade.GetRequiredActions()
 }
 
-// GetValidationResult returns the latest validation result
+// GetValidationResult returns the latest validation result.
 func (s *DefaultConfigService) GetValidationResult() *config.StartupValidationResult {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -472,21 +480,23 @@ func (s *DefaultConfigService) GetValidationResult() *config.StartupValidationRe
 	return s.startupValidator.ValidateUnifiedConfig(s.config)
 }
 
-// IsValidationEnabled returns whether startup validation is enabled
+// IsValidationEnabled returns whether startup validation is enabled.
 func (s *DefaultConfigService) IsValidationEnabled() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	return s.validationEnabled
 }
 
-// SetValidationEnabled enables or disables startup validation
+// SetValidationEnabled enables or disables startup validation.
 func (s *DefaultConfigService) SetValidationEnabled(enabled bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	s.validationEnabled = enabled
 }
 
-// CreateDefaultConfiguration creates a default configuration file
+// CreateDefaultConfiguration creates a default configuration file.
 func (s *DefaultConfigService) CreateDefaultConfiguration(ctx context.Context, path string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -497,10 +507,11 @@ func (s *DefaultConfigService) CreateDefaultConfiguration(ctx context.Context, p
 	}
 
 	s.configPath = path
+
 	return s.unifiedFacade.LoadConfigurationFromPath(path)
 }
 
-// GetBulkCloneTargets returns bulk clone targets for integration
+// GetBulkCloneTargets returns bulk clone targets for integration.
 func (s *DefaultConfigService) GetBulkCloneTargets(ctx context.Context, providerFilter string) ([]config.BulkCloneTarget, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -516,7 +527,7 @@ func (s *DefaultConfigService) GetBulkCloneTargets(ctx context.Context, provider
 	return s.unifiedFacade.GetAllTargets()
 }
 
-// GetConfiguredProviders returns all configured providers
+// GetConfiguredProviders returns all configured providers.
 func (s *DefaultConfigService) GetConfiguredProviders() []string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -528,7 +539,7 @@ func (s *DefaultConfigService) GetConfiguredProviders() []string {
 	return s.unifiedFacade.GetConfiguredProviders()
 }
 
-// GenerateReport generates a configuration report
+// GenerateReport generates a configuration report.
 func (s *DefaultConfigService) GenerateReport(ctx context.Context) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

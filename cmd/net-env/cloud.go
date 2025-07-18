@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// cloudOptions contains options for cloud commands
+// cloudOptions contains options for cloud commands.
 type cloudOptions struct {
 	configFile string
 	provider   string
@@ -21,7 +21,7 @@ type cloudOptions struct {
 	verbose    bool
 }
 
-// newCloudCmd creates the cloud subcommand
+// newCloudCmd creates the cloud subcommand.
 func newCloudCmd(ctx context.Context) *cobra.Command {
 	opts := &cloudOptions{}
 
@@ -53,10 +53,12 @@ This command allows you to:
 	return cmd
 }
 
-// newCloudListCmd creates the list subcommand
+// newCloudListCmd creates the list subcommand.
 func newCloudListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var showProfiles bool
-	var showProviders bool
+	var (
+		showProfiles  bool
+		showProviders bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -124,7 +126,7 @@ func newCloudListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	return cmd
 }
 
-// newCloudShowCmd creates the show subcommand
+// newCloudShowCmd creates the show subcommand.
 func newCloudShowCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show [profile]",
@@ -234,10 +236,12 @@ func newCloudShowCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	return cmd
 }
 
-// newCloudSwitchCmd creates the switch subcommand
+// newCloudSwitchCmd creates the switch subcommand.
 func newCloudSwitchCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var dryRun bool
-	var applyPolicy bool
+	var (
+		dryRun      bool
+		applyPolicy bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "switch [profile]",
@@ -378,14 +382,16 @@ This command will:
 	return cmd
 }
 
-// newCloudSyncCmd creates the sync subcommand
+// newCloudSyncCmd creates the sync subcommand.
 func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var source string
-	var target string
-	var profiles []string
-	var conflictMode string
-	var showStatus bool
-	var showRecommendations bool
+	var (
+		source              string
+		target              string
+		profiles            []string
+		conflictMode        string
+		showStatus          bool
+		showRecommendations bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "sync",
@@ -550,7 +556,7 @@ multiple cloud environments with intelligent conflict resolution.`,
 	return cmd
 }
 
-// newCloudValidateCmd creates the validate subcommand
+// newCloudValidateCmd creates the validate subcommand.
 func newCloudValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
@@ -616,7 +622,7 @@ func newCloudValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.Command
 	return cmd
 }
 
-// saveCurrentProfile saves the current profile name
+// saveCurrentProfile saves the current profile name.
 func saveCurrentProfile(profileName string) error {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
@@ -633,7 +639,7 @@ func saveCurrentProfile(profileName string) error {
 	return os.WriteFile(stateFile, []byte(profileName), 0o644)
 }
 
-// getCurrentProfile reads the current profile name
+// getCurrentProfile reads the current profile name.
 func getCurrentProfile() (string, error) {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
@@ -647,13 +653,14 @@ func getCurrentProfile() (string, error) {
 		if os.IsNotExist(err) {
 			return "", nil
 		}
+
 		return "", err
 	}
 
 	return string(data), nil
 }
 
-// newCloudPolicyCmd creates the policy subcommand
+// newCloudPolicyCmd creates the policy subcommand.
 func newCloudPolicyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy",
@@ -670,11 +677,13 @@ func newCloudPolicyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	return cmd
 }
 
-// newCloudPolicyApplyCmd creates the policy apply subcommand
+// newCloudPolicyApplyCmd creates the policy apply subcommand.
 func newCloudPolicyApplyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var environment string
-	var profileName string
-	var dryRun bool
+	var (
+		environment string
+		profileName string
+		dryRun      bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "apply",
@@ -769,11 +778,13 @@ or by specific profile name.`,
 	return cmd
 }
 
-// newCloudPolicyListCmd creates the policy list subcommand
+// newCloudPolicyListCmd creates the policy list subcommand.
 func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var profileName string
-	var environment string
-	var showDisabled bool
+	var (
+		profileName  string
+		environment  string
+		showDisabled bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -933,7 +944,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 	return cmd
 }
 
-// newCloudPolicyStatusCmd creates the policy status subcommand
+// newCloudPolicyStatusCmd creates the policy status subcommand.
 func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -997,7 +1008,7 @@ func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Com
 	return cmd
 }
 
-// newCloudPolicyValidateCmd creates the policy validate subcommand
+// newCloudPolicyValidateCmd creates the policy validate subcommand.
 func newCloudPolicyValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	var profileName string
 
@@ -1077,18 +1088,20 @@ func newCloudPolicyValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.C
 	return cmd
 }
 
-// Helper function to get profiles for environment
+// Helper function to get profiles for environment.
 func getProfilesForEnvironment(config *cloud.Config, environment string) []cloud.Profile {
 	var profiles []cloud.Profile
+
 	for _, profile := range config.Profiles {
 		if profile.Environment == environment {
 			profiles = append(profiles, profile)
 		}
 	}
+
 	return profiles
 }
 
-// newCloudVPNCmd creates the VPN subcommand
+// newCloudVPNCmd creates the VPN subcommand.
 func newCloudVPNCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vpn",
@@ -1119,7 +1132,7 @@ This command provides comprehensive VPN management including:
 	return cmd
 }
 
-// newCloudVPNListCmd creates the VPN list subcommand
+// newCloudVPNListCmd creates the VPN list subcommand.
 func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	var showAll bool
 
@@ -1185,9 +1198,10 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 				}
 
 				statusStr := s.Status
-				if s.Status == cloud.VPNStateConnected {
+				switch s.Status {
+				case cloud.VPNStateConnected:
 					statusStr = "✓ Connected"
-				} else if s.Status == cloud.VPNStateError {
+				case cloud.VPNStateError:
 					statusStr = "✗ Error"
 				}
 
@@ -1225,10 +1239,12 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 	return cmd
 }
 
-// newCloudVPNConnectCmd creates the VPN connect subcommand
+// newCloudVPNConnectCmd creates the VPN connect subcommand.
 func newCloudVPNConnectCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var byPriority bool
-	var vpnName string
+	var (
+		byPriority bool
+		vpnName    string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "connect [vpn-name]",
@@ -1297,7 +1313,7 @@ Examples:
 	return cmd
 }
 
-// newCloudVPNDisconnectCmd creates the VPN disconnect subcommand
+// newCloudVPNDisconnectCmd creates the VPN disconnect subcommand.
 func newCloudVPNDisconnectCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	var disconnectAll bool
 
@@ -1365,10 +1381,12 @@ Examples:
 	return cmd
 }
 
-// newCloudVPNStatusCmd creates the VPN status subcommand
+// newCloudVPNStatusCmd creates the VPN status subcommand.
 func newCloudVPNStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var showHealth bool
-	var vpnName string
+	var (
+		showHealth bool
+		vpnName    string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "status [vpn-name]",
@@ -1484,14 +1502,16 @@ Examples:
 	return cmd
 }
 
-// newCloudVPNAddCmd creates the VPN add subcommand
+// newCloudVPNAddCmd creates the VPN add subcommand.
 func newCloudVPNAddCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var vpnType string
-	var server string
-	var port int
-	var priority int
-	var autoConnect bool
-	var configFile string
+	var (
+		vpnType     string
+		server      string
+		port        int
+		priority    int
+		autoConnect bool
+		configFile  string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "add <name>",
@@ -1561,7 +1581,7 @@ Examples:
 	return cmd
 }
 
-// newCloudVPNRemoveCmd creates the VPN remove subcommand
+// newCloudVPNRemoveCmd creates the VPN remove subcommand.
 func newCloudVPNRemoveCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	var force bool
 
@@ -1629,7 +1649,7 @@ Examples:
 	return cmd
 }
 
-// newCloudVPNMonitorCmd creates the VPN monitor subcommand
+// newCloudVPNMonitorCmd creates the VPN monitor subcommand.
 func newCloudVPNMonitorCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	var interval time.Duration
 
@@ -1728,6 +1748,7 @@ func findVPNConnection(config *cloud.Config, name string) *cloud.VPNConnection {
 	if !exists {
 		return nil
 	}
+
 	return &vpnConn
 }
 
@@ -1745,7 +1766,7 @@ func removeVPNConnectionFromConfig(config *cloud.Config, name string) error {
 
 // Hierarchical VPN Management Commands
 
-// newCloudVPNHierarchyCmd creates the VPN hierarchy management subcommand
+// newCloudVPNHierarchyCmd creates the VPN hierarchy management subcommand.
 func newCloudVPNHierarchyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "hierarchy",
@@ -1821,7 +1842,7 @@ This command helps visualize:
 	return cmd
 }
 
-// newCloudVPNConnectHierarchicalCmd creates the hierarchical VPN connect subcommand
+// newCloudVPNConnectHierarchicalCmd creates the hierarchical VPN connect subcommand.
 func newCloudVPNConnectHierarchicalCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "connect-hierarchy [root-connection]",
@@ -1872,7 +1893,7 @@ Examples:
 	return cmd
 }
 
-// newCloudVPNDisconnectHierarchicalCmd creates the hierarchical VPN disconnect subcommand
+// newCloudVPNDisconnectHierarchicalCmd creates the hierarchical VPN disconnect subcommand.
 func newCloudVPNDisconnectHierarchicalCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "disconnect-hierarchy [root-connection]",
@@ -1921,10 +1942,12 @@ Examples:
 	return cmd
 }
 
-// newCloudVPNEnvironmentCmd creates the environment-based VPN management subcommand
+// newCloudVPNEnvironmentCmd creates the environment-based VPN management subcommand.
 func newCloudVPNEnvironmentCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
-	var autoConnect bool
-	var listOnly bool
+	var (
+		autoConnect bool
+		listOnly    bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "environment [network-environment]",
@@ -2057,6 +2080,7 @@ func getMaxLayer(layers map[int][]*cloud.VPNConnection) int {
 			maxLayer = layer
 		}
 	}
+
 	return maxLayer
 }
 
@@ -2069,9 +2093,11 @@ func displayHierarchyNode(node *cloud.VPNHierarchyNode, indent string) {
 	if conn != nil {
 		fmt.Printf("%s├─ %s (%s)\n", indent, conn.Name, conn.Type)
 		fmt.Printf("%s   │  Layer: %d\n", indent, node.Layer)
+
 		if len(node.Dependencies) > 0 {
 			fmt.Printf("%s   │  Dependencies: %v\n", indent, node.Dependencies)
 		}
+
 		if node.AutoReconnect {
 			fmt.Printf("%s   │  Auto-reconnect: enabled\n", indent)
 		}

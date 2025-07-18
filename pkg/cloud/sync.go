@@ -10,14 +10,14 @@ import (
 	"time"
 )
 
-// DefaultSyncManager implements SyncManager interface
+// DefaultSyncManager implements SyncManager interface.
 type DefaultSyncManager struct {
 	config      *Config
 	syncHistory []SyncStatus
 	statePath   string
 }
 
-// NewSyncManager creates a new sync manager instance
+// NewSyncManager creates a new sync manager instance.
 func NewSyncManager(config *Config) SyncManager {
 	statePath := getSyncStatePath()
 	manager := &DefaultSyncManager{
@@ -31,13 +31,14 @@ func NewSyncManager(config *Config) SyncManager {
 	return manager
 }
 
-// SyncProfiles synchronizes specific profiles between providers
+// SyncProfiles synchronizes specific profiles between providers.
 func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target Provider, profileNames []string) error {
 	if len(profileNames) == 0 {
 		return fmt.Errorf("no profiles specified for sync")
 	}
 
 	var allConflicts []SyncConflict
+
 	syncResults := make([]SyncStatus, 0, len(profileNames))
 
 	for _, profileName := range profileNames {
@@ -55,6 +56,7 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 			status.Status = "error"
 			status.Error = fmt.Sprintf("failed to get source profile: %v", err)
 			syncResults = append(syncResults, status)
+
 			continue
 		}
 
@@ -85,6 +87,7 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 				status.Status = "conflict"
 				status.Error = fmt.Sprintf("conflict resolution failed: %v", err)
 				syncResults = append(syncResults, status)
+
 				continue
 			}
 		}
@@ -117,7 +120,7 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 	return nil
 }
 
-// SyncAll synchronizes all profiles between providers
+// SyncAll synchronizes all profiles between providers.
 func (sm *DefaultSyncManager) SyncAll(ctx context.Context, source, target Provider) error {
 	// Get all profiles from source provider
 	sourceProfiles, err := source.ListProfiles(ctx)
@@ -138,12 +141,12 @@ func (sm *DefaultSyncManager) SyncAll(ctx context.Context, source, target Provid
 	return sm.SyncProfiles(ctx, source, target, profileNames)
 }
 
-// GetSyncStatus returns sync status for profiles
+// GetSyncStatus returns sync status for profiles.
 func (sm *DefaultSyncManager) GetSyncStatus(ctx context.Context) ([]SyncStatus, error) {
 	return sm.syncHistory, nil
 }
 
-// ResolveSyncConflicts resolves conflicts during sync
+// ResolveSyncConflicts resolves conflicts during sync.
 func (sm *DefaultSyncManager) ResolveSyncConflicts(conflicts []SyncConflict, strategy ConflictStrategy) error {
 	for i := range conflicts {
 		conflict := &conflicts[i]
@@ -163,6 +166,7 @@ func (sm *DefaultSyncManager) ResolveSyncConflicts(conflicts []SyncConflict, str
 			if err != nil {
 				return fmt.Errorf("failed to merge conflict for field %s: %w", conflict.Field, err)
 			}
+
 			conflict.SourceValue = merged
 
 		case ConflictStrategyAsk:
@@ -172,6 +176,7 @@ func (sm *DefaultSyncManager) ResolveSyncConflicts(conflicts []SyncConflict, str
 			fmt.Printf("  Source: %v\n", conflict.SourceValue)
 			fmt.Printf("  Target: %v\n", conflict.TargetValue)
 			fmt.Printf("  Resolution: Using source value (automated mode)\n")
+
 			continue
 
 		default:
@@ -182,7 +187,7 @@ func (sm *DefaultSyncManager) ResolveSyncConflicts(conflicts []SyncConflict, str
 	return nil
 }
 
-// detectConflicts compares source and target profiles to detect conflicts
+// detectConflicts compares source and target profiles to detect conflicts.
 func (sm *DefaultSyncManager) detectConflicts(profileName string, source, target *Profile) []SyncConflict {
 	var conflicts []SyncConflict
 
@@ -248,7 +253,7 @@ func (sm *DefaultSyncManager) detectConflicts(profileName string, source, target
 	return conflicts
 }
 
-// mergeProfiles merges source profile into target with provider-specific adjustments
+// mergeProfiles merges source profile into target with provider-specific adjustments.
 func (sm *DefaultSyncManager) mergeProfiles(source, target *Profile, targetProvider string) *Profile {
 	merged := &Profile{
 		Name:        source.Name,
@@ -265,6 +270,7 @@ func (sm *DefaultSyncManager) mergeProfiles(source, target *Profile, targetProvi
 	for k, v := range source.Services {
 		merged.Services[k] = v
 	}
+
 	for k, v := range target.Services {
 		if _, exists := merged.Services[k]; !exists {
 			merged.Services[k] = v
@@ -275,6 +281,7 @@ func (sm *DefaultSyncManager) mergeProfiles(source, target *Profile, targetProvi
 	for k, v := range source.Tags {
 		merged.Tags[k] = v
 	}
+
 	for k, v := range target.Tags {
 		if _, exists := merged.Tags[k]; !exists {
 			merged.Tags[k] = v
@@ -288,7 +295,7 @@ func (sm *DefaultSyncManager) mergeProfiles(source, target *Profile, targetProvi
 	return merged
 }
 
-// mergeValues attempts to merge two values intelligently
+// mergeValues attempts to merge two values intelligently.
 func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface{}, error) {
 	sourceType := reflect.TypeOf(source)
 	targetType := reflect.TypeOf(target)
@@ -310,12 +317,14 @@ func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface
 				seen[v] = true
 			}
 		}
+
 		for _, v := range t {
 			if !seen[v] {
 				merged = append(merged, v)
 				seen[v] = true
 			}
 		}
+
 		return merged, nil
 
 	case map[string]string:
@@ -325,9 +334,11 @@ func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface
 		for k, v := range t {
 			merged[k] = v
 		}
+
 		for k, v := range s {
 			merged[k] = v
 		}
+
 		return merged, nil
 
 	default:
@@ -336,16 +347,18 @@ func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface
 	}
 }
 
-// Helper functions
+// Helper functions.
 func equalStringSlices(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
 	}
+
 	for i := range a {
 		if a[i] != b[i] {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -353,11 +366,13 @@ func equalStringMaps(a, b map[string]string) bool {
 	if len(a) != len(b) {
 		return false
 	}
+
 	for k, v := range a {
 		if b[k] != v {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -365,33 +380,38 @@ func equalProxyConfig(a, b *ProxyConfig) bool {
 	if a == nil && b == nil {
 		return true
 	}
+
 	if a == nil || b == nil {
 		return false
 	}
+
 	return a.HTTP == b.HTTP && a.HTTPS == b.HTTPS && equalStringSlices(a.NoProxy, b.NoProxy)
 }
 
-// updateSyncHistory updates the sync history with new results
+// updateSyncHistory updates the sync history with new results.
 func (sm *DefaultSyncManager) updateSyncHistory(results []SyncStatus) {
 	for _, result := range results {
 		// Find existing entry or add new one
 		found := false
+
 		for i := range sm.syncHistory {
 			if sm.syncHistory[i].ProfileName == result.ProfileName &&
 				sm.syncHistory[i].Source == result.Source &&
 				sm.syncHistory[i].Target == result.Target {
 				sm.syncHistory[i] = result
 				found = true
+
 				break
 			}
 		}
+
 		if !found {
 			sm.syncHistory = append(sm.syncHistory, result)
 		}
 	}
 }
 
-// loadSyncHistory loads sync history from disk
+// loadSyncHistory loads sync history from disk.
 func (sm *DefaultSyncManager) loadSyncHistory() {
 	if sm.statePath == "" {
 		return
@@ -402,6 +422,7 @@ func (sm *DefaultSyncManager) loadSyncHistory() {
 		if !os.IsNotExist(err) {
 			fmt.Printf("Warning: failed to load sync history: %v\n", err)
 		}
+
 		return
 	}
 
@@ -414,7 +435,7 @@ func (sm *DefaultSyncManager) loadSyncHistory() {
 	sm.syncHistory = history
 }
 
-// saveSyncHistory saves sync history to disk
+// saveSyncHistory saves sync history to disk.
 func (sm *DefaultSyncManager) saveSyncHistory() {
 	if sm.statePath == "" {
 		return
@@ -438,16 +459,17 @@ func (sm *DefaultSyncManager) saveSyncHistory() {
 	}
 }
 
-// getSyncStatePath returns the path for sync state storage
+// getSyncStatePath returns the path for sync state storage.
 func getSyncStatePath() string {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
 		return ""
 	}
+
 	return filepath.Join(configDir, "gzh-manager", "cloud-sync-state.json")
 }
 
-// ValidateSyncConfig validates sync configuration
+// ValidateSyncConfig validates sync configuration.
 func ValidateSyncConfig(config *Config) error {
 	if !config.Sync.Enabled {
 		return nil
@@ -462,12 +484,14 @@ func ValidateSyncConfig(config *Config) error {
 	}
 
 	valid := false
+
 	for _, strategy := range validStrategies {
 		if config.Sync.ConflictMode == strategy {
 			valid = true
 			break
 		}
 	}
+
 	if !valid && config.Sync.ConflictMode != "" {
 		return fmt.Errorf("invalid conflict strategy: %s", config.Sync.ConflictMode)
 	}
@@ -477,9 +501,11 @@ func ValidateSyncConfig(config *Config) error {
 		if target.Source == "" {
 			return fmt.Errorf("sync target %d: source provider is required", i)
 		}
+
 		if target.Target == "" {
 			return fmt.Errorf("sync target %d: target provider is required", i)
 		}
+
 		if target.Source == target.Target {
 			return fmt.Errorf("sync target %d: source and target cannot be the same", i)
 		}
@@ -488,6 +514,7 @@ func ValidateSyncConfig(config *Config) error {
 		if _, exists := config.Providers[target.Source]; !exists {
 			return fmt.Errorf("sync target %d: source provider %s not found", i, target.Source)
 		}
+
 		if _, exists := config.Providers[target.Target]; !exists {
 			return fmt.Errorf("sync target %d: target provider %s not found", i, target.Target)
 		}
@@ -496,30 +523,35 @@ func ValidateSyncConfig(config *Config) error {
 	return nil
 }
 
-// GetSyncRecommendations analyzes profiles and suggests sync targets
+// GetSyncRecommendations analyzes profiles and suggests sync targets.
 func GetSyncRecommendations(config *Config) ([]SyncTarget, error) {
 	var recommendations []SyncTarget
 
 	// Group profiles by environment
 	envProfiles := make(map[string][]string)
+
 	for name, profile := range config.Profiles {
 		env := profile.Environment
 		if env == "" {
 			env = "default"
 		}
+
 		envProfiles[env] = append(envProfiles[env], name)
 	}
 
 	// Suggest sync targets for environments with multiple providers
 	providersByEnv := make(map[string]map[string]bool)
+
 	for _, profile := range config.Profiles {
 		env := profile.Environment
 		if env == "" {
 			env = "default"
 		}
+
 		if providersByEnv[env] == nil {
 			providersByEnv[env] = make(map[string]bool)
 		}
+
 		providersByEnv[env][profile.Provider] = true
 	}
 

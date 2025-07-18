@@ -9,7 +9,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-// MockHTTPClient for testing
+// MockHTTPClient for testing.
 type MockHTTPClient struct{}
 
 func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
@@ -20,7 +20,7 @@ func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Re
 	return nil, nil
 }
 
-// MockLogger for testing
+// MockLogger for testing.
 type MockLogger struct{}
 
 func (m *MockLogger) Debug(msg string, args ...interface{}) {}
@@ -28,7 +28,7 @@ func (m *MockLogger) Info(msg string, args ...interface{})  {}
 func (m *MockLogger) Warn(msg string, args ...interface{})  {}
 func (m *MockLogger) Error(msg string, args ...interface{}) {}
 
-// MockGitHubProviderFactory for testing
+// MockGitHubProviderFactory for testing.
 type MockGitHubProviderFactory struct{}
 
 func (m *MockGitHubProviderFactory) CreateCloner(ctx context.Context, token string) (GitHubCloner, error) {
@@ -193,6 +193,7 @@ func TestBulkCloneResultAggregation(t *testing.T) {
 		if opResult.Repository == "" {
 			t.Errorf("Operation result %d has empty repository name", i)
 		}
+
 		if opResult.Operation == "" {
 			t.Errorf("Operation result %d has empty operation", i)
 		}

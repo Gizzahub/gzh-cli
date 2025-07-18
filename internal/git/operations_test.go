@@ -39,6 +39,7 @@ func TestOperations_Clone(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "git-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			ops := NewOperations(tt.verbose)
@@ -93,6 +94,7 @@ func TestOperations_ExecuteStrategy(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "git-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			ops := NewOperations(false)

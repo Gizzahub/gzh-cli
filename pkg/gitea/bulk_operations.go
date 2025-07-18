@@ -9,7 +9,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
 )
 
-// RefreshAllWithWorkerPool performs bulk repository refresh using worker pools
+// RefreshAllWithWorkerPool performs bulk repository refresh using worker pools.
 func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org string) error {
 	config := workerpool.DefaultRepositoryPoolConfig()
 
@@ -54,6 +54,7 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org string) error
 
 	// Report results
 	successCount := 0
+
 	for _, result := range results {
 		if result.Success {
 			successCount++
@@ -63,10 +64,11 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org string) error
 	}
 
 	fmt.Printf("Gitea bulk operation completed: %d/%d successful\n", successCount, len(results))
+
 	return nil
 }
 
-// processGiteaRepositoryJob processes a single Gitea repository job
+// processGiteaRepositoryJob processes a single Gitea repository job.
 func processGiteaRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, org string) error {
 	switch job.Operation {
 	case workerpool.OperationClone:
@@ -83,6 +85,7 @@ func processGiteaRepositoryJob(ctx context.Context, job workerpool.RepositoryJob
 		if err := executeGitOperation(ctx, job.Path, "reset", "--hard", "HEAD"); err != nil {
 			return fmt.Errorf("git reset failed: %w", err)
 		}
+
 		return executeGitOperation(ctx, job.Path, "pull")
 
 	default:
@@ -90,7 +93,7 @@ func processGiteaRepositoryJob(ctx context.Context, job workerpool.RepositoryJob
 	}
 }
 
-// executeGitOperation executes a git command in the repository path
+// executeGitOperation executes a git command in the repository path.
 func executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
 	// Build git command
 	gitArgs := append([]string{"-C", repoPath}, args...)

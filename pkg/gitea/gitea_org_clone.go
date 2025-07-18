@@ -39,6 +39,7 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 	}
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -76,6 +77,7 @@ func List(ctx context.Context, org string) ([]string, error) {
 	}
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repositories: %w", err)
@@ -121,18 +123,25 @@ func Clone(ctx context.Context, targetPath string, org string, repo string, bran
 		if err != nil {
 			return fmt.Errorf("failed to get default branch: %w", err)
 		}
+
 		branch = defaultBranch
 	}
 
 	cloneURL := fmt.Sprintf("https://gitea.com/%s/%s.git", org, repo)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
+
+	var (
+		out    bytes.Buffer
+		stderr bytes.Buffer
+	)
+
 	cmd := exec.CommandContext(ctx, "git", "clone", "-b", branch, cloneURL, targetPath)
 	cmd.Stdout = &out
+
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		fmt.Println(stderr.String())
 		fmt.Println(out.String())
+
 		return fmt.Errorf("Clone Failed (url: %s, branch: %s, targetPath: %s, err: %w)\n", cloneURL, branch, targetPath, err)
 	}
 
@@ -153,6 +162,7 @@ func RefreshAll(ctx context.Context, targetPath string, org string) error {
 	g, gCtx := errgroup.WithContext(ctx)
 	// Limit concurrent git operations to avoid overwhelming the system
 	sem := semaphore.NewWeighted(5) // Max 5 concurrent git operations
+
 	var mu sync.Mutex
 
 	for _, repo := range repos {

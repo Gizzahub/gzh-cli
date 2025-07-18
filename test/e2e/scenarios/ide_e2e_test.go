@@ -112,6 +112,7 @@ func TestIDE_FixSync_E2E(t *testing.T) {
 		fixedContent := env.ReadFile(ideSettingsDir + "/options/filetypes.xml")
 		lines := strings.Split(fixedContent, "\n")
 		txtMappings := 0
+
 		for _, line := range lines {
 			if strings.Contains(line, `ext="txt"`) {
 				txtMappings++
@@ -191,6 +192,7 @@ func TestIDE_SettingsBackup_E2E(t *testing.T) {
 		// Verify backup directory was created
 		backupFiles := env.ListFiles(".")
 		backupFound := false
+
 		for _, file := range backupFiles {
 			if strings.Contains(file, "backup") && strings.Contains(file, ".xml") {
 				backupFound = true

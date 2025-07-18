@@ -114,12 +114,14 @@ func (o *alwaysLatestAsdfOptions) run(_ *cobra.Command, args []string) error {
 
 	// Update each tool
 	updatedCount := 0
+
 	for _, tool := range tools {
 		updated, err := o.updateTool(tool)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to update %s: %v\n", tool, err)
 			continue
 		}
+
 		if updated {
 			updatedCount++
 		}
@@ -149,23 +151,27 @@ func (o *alwaysLatestAsdfOptions) updateAsdfPlugins() error {
 	}
 
 	cmd := exec.Command("asdf", "plugin", "update", "--all")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("plugin update failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Plugins updated successfully")
+
 	return nil
 }
 
 func (o *alwaysLatestAsdfOptions) getInstalledTools() ([]string, error) {
 	cmd := exec.Command("asdf", "plugin", "list")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list plugins: %w", err)
 	}
 
 	var tools []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 	for scanner.Scan() {
 		tool := strings.TrimSpace(scanner.Text())
@@ -184,6 +190,7 @@ func (o *alwaysLatestAsdfOptions) filterTools(allTools, requestedTools []string)
 	}
 
 	var filtered []string
+
 	for _, tool := range allTools {
 		if toolSet[tool] {
 			filtered = append(filtered, tool)
@@ -245,11 +252,13 @@ func (o *alwaysLatestAsdfOptions) updateTool(tool string) (bool, error) {
 	}
 
 	fmt.Printf("✅ Updated %s to %s\n", tool, targetVersion)
+
 	return true, nil
 }
 
 func (o *alwaysLatestAsdfOptions) getCurrentVersion(tool string) (string, error) {
 	cmd := exec.Command("asdf", "current", tool)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", nil // Tool might not have a version set
@@ -266,6 +275,7 @@ func (o *alwaysLatestAsdfOptions) getCurrentVersion(tool string) (string, error)
 
 func (o *alwaysLatestAsdfOptions) getLatestVersion(tool string) (string, error) {
 	cmd := exec.Command("asdf", "list", "all", tool)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to list versions: %w", err)
@@ -275,6 +285,7 @@ func (o *alwaysLatestAsdfOptions) getLatestVersion(tool string) (string, error) 
 
 	// Filter out non-release versions and get the latest
 	var versions []string
+
 	for _, line := range lines {
 		version := strings.TrimSpace(line)
 		if version == "" {
@@ -328,12 +339,14 @@ func (o *alwaysLatestAsdfOptions) getTargetVersion(tool, currentVersion, latestV
 
 	// Get all versions and find the latest within the same major version
 	cmd := exec.Command("asdf", "list", "all", tool)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return latestVersion, nil
 	}
 
 	lines := strings.Split(string(output), "\n")
+
 	var candidateVersions []string
 
 	for _, line := range lines {
@@ -363,17 +376,21 @@ func (o *alwaysLatestAsdfOptions) getTargetVersion(tool, currentVersion, latestV
 func (o *alwaysLatestAsdfOptions) extractMajorVersion(version string) (string, error) {
 	// Extract major version number from version string
 	re := regexp.MustCompile(`^(\d+)`)
+
 	matches := re.FindStringSubmatch(version)
 	if len(matches) < 2 {
 		return "", fmt.Errorf("cannot extract major version from %s", version)
 	}
+
 	return matches[1], nil
 }
 
 func (o *alwaysLatestAsdfOptions) confirmUpdate(tool, currentVersion, targetVersion string) bool {
 	fmt.Printf("   Update %s from %s to %s? (y/N): ", tool, currentVersion, targetVersion)
+
 	var response string
 	fmt.Scanln(&response)
+
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
@@ -381,6 +398,7 @@ func (o *alwaysLatestAsdfOptions) installVersion(tool, version string) error {
 	fmt.Printf("   Installing %s %s...\n", tool, version)
 
 	cmd := exec.Command("asdf", "install", tool, version)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("installation failed: %w\n%s", err, string(output))
@@ -391,6 +409,7 @@ func (o *alwaysLatestAsdfOptions) installVersion(tool, version string) error {
 
 func (o *alwaysLatestAsdfOptions) setGlobalVersion(tool, version string) error {
 	cmd := exec.Command("asdf", "global", tool, version)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to set global version: %w\n%s", err, string(output))

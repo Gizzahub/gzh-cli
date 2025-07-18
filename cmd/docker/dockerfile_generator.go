@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// DockerfileCmd represents the dockerfile command
+// DockerfileCmd represents the dockerfile command.
 var DockerfileCmd = &cobra.Command{
 	Use:   "dockerfile",
 	Short: "Generate optimized Dockerfile for projects",
@@ -45,7 +45,7 @@ func init() {
 	DockerfileCmd.Flags().BoolVar(&production, "production", true, "Generate production-ready Dockerfile")
 }
 
-// ProjectInfo holds detected project information
+// ProjectInfo holds detected project information.
 type ProjectInfo struct {
 	Language        string
 	Name            string
@@ -61,7 +61,7 @@ type ProjectInfo struct {
 	Port            int
 }
 
-// DockerfileTemplate holds template data
+// DockerfileTemplate holds template data.
 type DockerfileTemplate struct {
 	Project          ProjectInfo
 	IncludeScanning  bool
@@ -86,9 +86,11 @@ func runDockerfileGenerate(cmd *cobra.Command, args []string) {
 	if projectLanguage != "" {
 		projectInfo.Language = projectLanguage
 	}
+
 	if projectName != "" {
 		projectInfo.Name = projectName
 	}
+
 	if baseImage != "" {
 		projectInfo.BaseImage = baseImage
 	}
@@ -162,6 +164,7 @@ func detectProjectInfo() (ProjectInfo, error) {
 			if d.IsDir() {
 				return filepath.SkipDir
 			}
+
 			return nil
 		}
 
@@ -201,6 +204,7 @@ func getCurrentDir() string {
 	if err != nil {
 		return "app"
 	}
+
 	return dir
 }
 
@@ -228,6 +232,7 @@ func getSecurityTools() []string {
 	if includeScanning {
 		tools = append(tools, "trivy", "grype")
 	}
+
 	return tools
 }
 
@@ -286,6 +291,7 @@ func generateDockerfile(data DockerfileTemplate) (string, error) {
 	}
 
 	var result strings.Builder
+
 	err = tmpl.Execute(&result, data)
 	if err != nil {
 		return "", err
@@ -322,5 +328,6 @@ func generateDockerignore(info ProjectInfo) error {
 	}
 
 	content := getDockerignoreTemplate(info.Language)
+
 	return os.WriteFile(dockerignorePath, []byte(content), 0o644)
 }

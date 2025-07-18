@@ -7,7 +7,7 @@ import (
 )
 
 // CachedGitLabClient wraps GitLab API calls with caching - DISABLED (cache package removed)
-// Simple in-memory cache implementation to replace deleted cache package
+// Simple in-memory cache implementation to replace deleted cache package.
 type CachedGitLabClient struct {
 	cache           sync.Map // Simple in-memory cache replacement
 	streamingClient *StreamingClient
@@ -16,7 +16,7 @@ type CachedGitLabClient struct {
 }
 
 // NewCachedGitLabClient creates a new cached GitLab client - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func NewCachedGitLabClient(token, baseURL string) *CachedGitLabClient {
 	streamingConfig := DefaultStreamingConfig()
 	streamingClient := NewStreamingClient(token, baseURL, streamingConfig)
@@ -30,7 +30,7 @@ func NewCachedGitLabClient(token, baseURL string) *CachedGitLabClient {
 }
 
 // ListGroupProjectsWithCache lists group projects with caching support - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func (c *CachedGitLabClient) ListGroupProjectsWithCache(ctx context.Context, groupID string) ([]*Project, error) {
 	// Try to get from simple cache first
 	cacheKey := fmt.Sprintf("projects:%s", groupID)
@@ -52,15 +52,17 @@ func (c *CachedGitLabClient) ListGroupProjectsWithCache(ctx context.Context, gro
 	return projects, nil
 }
 
-// fetchProjectsFromStream collects all projects from the streaming API
+// fetchProjectsFromStream collects all projects from the streaming API.
 func (c *CachedGitLabClient) fetchProjectsFromStream(ctx context.Context, groupID string) ([]*Project, error) {
 	config := DefaultStreamingConfig()
+
 	projectChan, err := c.streamingClient.StreamGroupProjects(ctx, groupID, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start streaming: %w", err)
 	}
 
 	var projects []*Project
+
 	for projectStream := range projectChan {
 		if projectStream.Error != nil {
 			return nil, fmt.Errorf("streaming error: %w", projectStream.Error)
@@ -75,7 +77,7 @@ func (c *CachedGitLabClient) fetchProjectsFromStream(ctx context.Context, groupI
 }
 
 // GetProjectWithCache gets a specific project with caching - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func (c *CachedGitLabClient) GetProjectWithCache(ctx context.Context, projectID string) (*Project, error) {
 	// Try to get from simple cache first
 	cacheKey := fmt.Sprintf("project:%s", projectID)
@@ -91,29 +93,33 @@ func (c *CachedGitLabClient) GetProjectWithCache(ctx context.Context, projectID 
 }
 
 // InvalidateGroupCache invalidates all cache entries for a group - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func (c *CachedGitLabClient) InvalidateGroupCache(ctx context.Context, groupID string) int {
 	count := 0
+
 	cacheKey := fmt.Sprintf("projects:%s", groupID)
 	if _, found := c.cache.LoadAndDelete(cacheKey); found {
 		count++
 	}
+
 	return count
 }
 
 // InvalidateProjectCache invalidates cache entries for a specific project - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func (c *CachedGitLabClient) InvalidateProjectCache(ctx context.Context, projectID string) int {
 	count := 0
+
 	cacheKey := fmt.Sprintf("project:%s", projectID)
 	if _, found := c.cache.LoadAndDelete(cacheKey); found {
 		count++
 	}
+
 	return count
 }
 
 // GetCacheStats returns GitLab cache statistics - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func (c *CachedGitLabClient) GetCacheStats() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "simple_sync_map",
@@ -122,7 +128,7 @@ func (c *CachedGitLabClient) GetCacheStats() map[string]interface{} {
 }
 
 // Close cleans up cached client resources - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func (c *CachedGitLabClient) Close() error {
 	// Close streaming client
 	if err := c.streamingClient.Close(); err != nil {
@@ -134,14 +140,14 @@ func (c *CachedGitLabClient) Close() error {
 }
 
 // CachedStreamingClient extends StreamingClient with caching capabilities - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 type CachedStreamingClient struct {
 	*StreamingClient
 	cache sync.Map // Simple in-memory cache replacement
 }
 
 // NewCachedStreamingClient creates a streaming client with caching - DISABLED (cache package removed)
-// Simple implementation without external cache dependency
+// Simple implementation without external cache dependency.
 func NewCachedStreamingClient(token, baseURL string, config StreamingConfig) *CachedStreamingClient {
 	streamingClient := NewStreamingClient(token, baseURL, config)
 
@@ -151,7 +157,7 @@ func NewCachedStreamingClient(token, baseURL string, config StreamingConfig) *Ca
 	}
 }
 
-// StreamGroupProjectsWithCache streams projects with intelligent caching
+// StreamGroupProjectsWithCache streams projects with intelligent caching.
 func (csc *CachedStreamingClient) StreamGroupProjectsWithCache(ctx context.Context, groupID string, config StreamingConfig) (<-chan ProjectStream, error) {
 	resultChan := make(chan ProjectStream, config.BufferSize)
 
@@ -161,6 +167,7 @@ func (csc *CachedStreamingClient) StreamGroupProjectsWithCache(ctx context.Conte
 		if projects, ok := cached.([]ProjectStream); ok {
 			go func() {
 				defer close(resultChan)
+
 				for _, project := range projects {
 					select {
 					case resultChan <- project:
@@ -169,6 +176,7 @@ func (csc *CachedStreamingClient) StreamGroupProjectsWithCache(ctx context.Conte
 					}
 				}
 			}()
+
 			return resultChan, nil
 		}
 	}
@@ -176,7 +184,7 @@ func (csc *CachedStreamingClient) StreamGroupProjectsWithCache(ctx context.Conte
 	// Cache miss - use streaming API
 	// For now, delegate to regular streaming
 	// In a full implementation, this would cache the results
-	return csc.StreamingClient.StreamGroupProjects(ctx, groupID, config)
+	return csc.StreamGroupProjects(ctx, groupID, config)
 	/*
 			// Original cache logic - disabled
 			// Check if we have cached results first

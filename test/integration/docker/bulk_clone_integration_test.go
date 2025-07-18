@@ -25,6 +25,7 @@ func TestBulkClone_GitLab_Integration(t *testing.T) {
 
 	// Setup GitLab container
 	gitlab := testcontainers.SetupGitLabContainer(ctx, t)
+
 	defer func() {
 		err := gitlab.Cleanup(ctx)
 		assert.NoError(t, err)
@@ -37,6 +38,7 @@ func TestBulkClone_GitLab_Integration(t *testing.T) {
 	// Create temporary directory for test configuration
 	tmpDir, err := os.MkdirTemp("", "bulk-clone-gitlab-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Create test configuration
@@ -89,6 +91,7 @@ func TestBulkClone_Gitea_Integration(t *testing.T) {
 
 	// Setup Gitea container
 	gitea := testcontainers.SetupGiteaContainer(ctx, t)
+
 	defer func() {
 		err := gitea.Cleanup(ctx)
 		assert.NoError(t, err)
@@ -101,6 +104,7 @@ func TestBulkClone_Gitea_Integration(t *testing.T) {
 	// Create temporary directory for test configuration
 	tmpDir, err := os.MkdirTemp("", "bulk-clone-gitea-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Create test configuration
@@ -153,6 +157,7 @@ func TestBulkClone_Redis_Cache_Integration(t *testing.T) {
 
 	// Setup Redis container
 	redis := testcontainers.SetupRedisContainer(ctx, t)
+
 	defer func() {
 		err := redis.Cleanup(ctx)
 		assert.NoError(t, err)
@@ -161,6 +166,7 @@ func TestBulkClone_Redis_Cache_Integration(t *testing.T) {
 	// Create temporary directory for test configuration
 	tmpDir, err := os.MkdirTemp("", "bulk-clone-redis-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Create test configuration with Redis cache

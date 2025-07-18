@@ -7,7 +7,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-// ProviderFactory defines the interface for creating provider instances
+// ProviderFactory defines the interface for creating provider instances.
 type ProviderFactory interface {
 	// CreateCloner creates a provider cloner for the specified provider
 	CreateCloner(ctx context.Context, providerName, token string) (ProviderCloner, error)
@@ -22,13 +22,13 @@ type ProviderFactory interface {
 	IsProviderSupported(providerName string) bool
 }
 
-// providerFactoryImpl implements the ProviderFactory interface
+// providerFactoryImpl implements the ProviderFactory interface.
 type providerFactoryImpl struct {
 	environment env.Environment
 	logger      Logger
 }
 
-// NewProviderFactory creates a new provider factory with dependencies
+// NewProviderFactory creates a new provider factory with dependencies.
 func NewProviderFactory(environment env.Environment, logger Logger) ProviderFactory {
 	if environment == nil {
 		environment = env.NewOSEnvironment()
@@ -40,12 +40,12 @@ func NewProviderFactory(environment env.Environment, logger Logger) ProviderFact
 	}
 }
 
-// CreateCloner creates a provider cloner for the specified provider
+// CreateCloner creates a provider cloner for the specified provider.
 func (f *providerFactoryImpl) CreateCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
 	return f.CreateClonerWithEnv(ctx, providerName, token, f.environment)
 }
 
-// CreateClonerWithEnv creates a provider cloner with a specific environment
+// CreateClonerWithEnv creates a provider cloner with a specific environment.
 func (f *providerFactoryImpl) CreateClonerWithEnv(ctx context.Context, providerName, token string, environment env.Environment) (ProviderCloner, error) {
 	f.logger.Debug("Creating provider cloner", "provider", providerName)
 
@@ -65,12 +65,12 @@ func (f *providerFactoryImpl) CreateClonerWithEnv(ctx context.Context, providerN
 	}
 }
 
-// GetSupportedProviders returns a list of supported provider names
+// GetSupportedProviders returns a list of supported provider names.
 func (f *providerFactoryImpl) GetSupportedProviders() []string {
 	return []string{ProviderGitHub, ProviderGitLab, ProviderGitea}
 }
 
-// IsProviderSupported checks if a provider is supported
+// IsProviderSupported checks if a provider is supported.
 func (f *providerFactoryImpl) IsProviderSupported(providerName string) bool {
 	supportedProviders := f.GetSupportedProviders()
 	for _, provider := range supportedProviders {
@@ -78,10 +78,11 @@ func (f *providerFactoryImpl) IsProviderSupported(providerName string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
-// ProviderFactoryConfig holds configuration for the provider factory
+// ProviderFactoryConfig holds configuration for the provider factory.
 type ProviderFactoryConfig struct {
 	// DefaultEnvironment is the default environment to use when none is specified
 	DefaultEnvironment env.Environment
@@ -89,7 +90,7 @@ type ProviderFactoryConfig struct {
 	EnableLogging bool
 }
 
-// DefaultProviderFactoryConfig returns default factory configuration
+// DefaultProviderFactoryConfig returns default factory configuration.
 func DefaultProviderFactoryConfig() *ProviderFactoryConfig {
 	return &ProviderFactoryConfig{
 		DefaultEnvironment: env.NewOSEnvironment(),
@@ -97,7 +98,7 @@ func DefaultProviderFactoryConfig() *ProviderFactoryConfig {
 	}
 }
 
-// NewProviderFactoryWithConfig creates a new provider factory with configuration
+// NewProviderFactoryWithConfig creates a new provider factory with configuration.
 func NewProviderFactoryWithConfig(config *ProviderFactoryConfig, logger Logger) ProviderFactory {
 	if config == nil {
 		config = DefaultProviderFactoryConfig()

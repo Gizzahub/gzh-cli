@@ -26,6 +26,7 @@ func TestOSEnvironment(t *testing.T) {
 	if !exists {
 		t.Error("Environment variable should exist")
 	}
+
 	if lookedUpValue != value {
 		t.Errorf("Expected %s, got %s", value, lookedUpValue)
 	}
@@ -49,6 +50,7 @@ func TestMockEnvironment(t *testing.T) {
 
 	// Test setting new value
 	env.Set("NEW_VAR", "new_value")
+
 	newValue := env.Get("NEW_VAR")
 	if newValue != "new_value" {
 		t.Errorf("Expected new_value, got %s", newValue)
@@ -62,6 +64,7 @@ func TestMockEnvironment(t *testing.T) {
 
 	// Test Expand
 	env.Set("GREETING", "Hello")
+
 	expanded := env.Expand("$GREETING World")
 	if expanded != "Hello World" {
 		t.Errorf("Expected 'Hello World', got %s", expanded)

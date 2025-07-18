@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// WebhookInfo represents a GitHub webhook configuration
+// WebhookInfo represents a GitHub webhook configuration.
 type WebhookInfo struct {
 	ID           int64         `json:"id"`
 	Name         string        `json:"name"`
@@ -20,7 +20,7 @@ type WebhookInfo struct {
 	Organization string        `json:"organization,omitempty"`
 }
 
-// WebhookConfig represents webhook configuration settings
+// WebhookConfig represents webhook configuration settings.
 type WebhookConfig struct {
 	URL         string `json:"url"`
 	ContentType string `json:"content_type"`
@@ -28,7 +28,7 @@ type WebhookConfig struct {
 	InsecureSSL bool   `json:"insecure_ssl"`
 }
 
-// WebhookCreateRequest represents a request to create a new webhook
+// WebhookCreateRequest represents a request to create a new webhook.
 type WebhookCreateRequest struct {
 	Name   string        `json:"name"`
 	URL    string        `json:"url"`
@@ -37,7 +37,7 @@ type WebhookCreateRequest struct {
 	Config WebhookConfig `json:"config"`
 }
 
-// WebhookUpdateRequest represents a request to update an existing webhook
+// WebhookUpdateRequest represents a request to update an existing webhook.
 type WebhookUpdateRequest struct {
 	ID     int64         `json:"id"`
 	Name   string        `json:"name,omitempty"`
@@ -47,7 +47,7 @@ type WebhookUpdateRequest struct {
 	Config WebhookConfig `json:"config,omitempty"`
 }
 
-// WebhookListOptions represents options for listing webhooks
+// WebhookListOptions represents options for listing webhooks.
 type WebhookListOptions struct {
 	Organization string `json:"organization,omitempty"`
 	Repository   string `json:"repository,omitempty"`
@@ -55,7 +55,7 @@ type WebhookListOptions struct {
 	PerPage      int    `json:"per_page"`
 }
 
-// WebhookService defines the interface for webhook operations
+// WebhookService defines the interface for webhook operations.
 type WebhookService interface {
 	// Repository webhooks
 	CreateRepositoryWebhook(ctx context.Context, owner, repo string, request *WebhookCreateRequest) (*WebhookInfo, error)
@@ -81,7 +81,7 @@ type WebhookService interface {
 	GetWebhookDeliveries(ctx context.Context, owner, repo string, webhookID int64) ([]*WebhookDelivery, error)
 }
 
-// BulkWebhookRequest represents a bulk webhook creation request
+// BulkWebhookRequest represents a bulk webhook creation request.
 type BulkWebhookRequest struct {
 	Organization string               `json:"organization"`
 	Repositories []string             `json:"repositories,omitempty"` // if empty, apply to all repos
@@ -89,7 +89,7 @@ type BulkWebhookRequest struct {
 	Filters      *RepositoryFilters   `json:"filters,omitempty"`
 }
 
-// BulkWebhookUpdateRequest represents a bulk webhook update request
+// BulkWebhookUpdateRequest represents a bulk webhook update request.
 type BulkWebhookUpdateRequest struct {
 	Organization string               `json:"organization"`
 	Repositories []string             `json:"repositories,omitempty"`
@@ -98,7 +98,7 @@ type BulkWebhookUpdateRequest struct {
 	SelectBy     WebhookSelector      `json:"select_by"` // how to find webhooks to update
 }
 
-// BulkWebhookDeleteRequest represents a bulk webhook deletion request
+// BulkWebhookDeleteRequest represents a bulk webhook deletion request.
 type BulkWebhookDeleteRequest struct {
 	Organization string             `json:"organization"`
 	Repositories []string           `json:"repositories,omitempty"`
@@ -106,7 +106,7 @@ type BulkWebhookDeleteRequest struct {
 	Filters      *RepositoryFilters `json:"filters,omitempty"`
 }
 
-// WebhookSelector defines how to select webhooks for bulk operations
+// WebhookSelector defines how to select webhooks for bulk operations.
 type WebhookSelector struct {
 	ByName   string   `json:"by_name,omitempty"`
 	ByURL    string   `json:"by_url,omitempty"`
@@ -114,7 +114,7 @@ type WebhookSelector struct {
 	Active   *bool    `json:"active,omitempty"`
 }
 
-// BulkWebhookResult represents the result of bulk webhook operations
+// BulkWebhookResult represents the result of bulk webhook operations.
 type BulkWebhookResult struct {
 	TotalRepositories int                      `json:"total_repositories"`
 	SuccessCount      int                      `json:"success_count"`
@@ -123,7 +123,7 @@ type BulkWebhookResult struct {
 	ExecutionTime     string                   `json:"execution_time"`
 }
 
-// WebhookOperationResult represents the result of a single webhook operation
+// WebhookOperationResult represents the result of a single webhook operation.
 type WebhookOperationResult struct {
 	Repository  string       `json:"repository"`
 	Operation   string       `json:"operation"`
@@ -133,7 +133,7 @@ type WebhookOperationResult struct {
 	Duration    string       `json:"duration"`
 }
 
-// WebhookTestResult represents the result of testing a webhook
+// WebhookTestResult represents the result of testing a webhook.
 type WebhookTestResult struct {
 	Success    bool      `json:"success"`
 	StatusCode int       `json:"status_code"`
@@ -144,7 +144,7 @@ type WebhookTestResult struct {
 	TestedAt   time.Time `json:"tested_at"`
 }
 
-// WebhookDelivery represents a webhook delivery record
+// WebhookDelivery represents a webhook delivery record.
 type WebhookDelivery struct {
 	ID          string    `json:"id"`
 	Event       string    `json:"event"`
@@ -157,13 +157,13 @@ type WebhookDelivery struct {
 	URL         string    `json:"url"`
 }
 
-// webhookServiceImpl implements the WebhookService interface
+// webhookServiceImpl implements the WebhookService interface.
 type webhookServiceImpl struct {
 	apiClient APIClient
 	logger    Logger
 }
 
-// NewWebhookService creates a new webhook service instance
+// NewWebhookService creates a new webhook service instance.
 func NewWebhookService(apiClient APIClient, logger Logger) WebhookService {
 	return &webhookServiceImpl{
 		apiClient: apiClient,
@@ -173,7 +173,7 @@ func NewWebhookService(apiClient APIClient, logger Logger) WebhookService {
 
 // Repository webhook operations
 
-// CreateRepositoryWebhook creates a new webhook for a repository
+// CreateRepositoryWebhook creates a new webhook for a repository.
 func (w *webhookServiceImpl) CreateRepositoryWebhook(ctx context.Context, owner, repo string, request *WebhookCreateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Creating repository webhook", "owner", owner, "repo", repo, "name", request.Name)
 
@@ -197,10 +197,11 @@ func (w *webhookServiceImpl) CreateRepositoryWebhook(ctx context.Context, owner,
 	}
 
 	w.logger.Info("Successfully created repository webhook", "webhook_id", webhook.ID)
+
 	return webhook, nil
 }
 
-// GetRepositoryWebhook retrieves a specific webhook for a repository
+// GetRepositoryWebhook retrieves a specific webhook for a repository.
 func (w *webhookServiceImpl) GetRepositoryWebhook(ctx context.Context, owner, repo string, webhookID int64) (*WebhookInfo, error) {
 	w.logger.Debug("Getting repository webhook", "owner", owner, "repo", repo, "webhook_id", webhookID)
 
@@ -221,7 +222,7 @@ func (w *webhookServiceImpl) GetRepositoryWebhook(ctx context.Context, owner, re
 	return webhook, nil
 }
 
-// ListRepositoryWebhooks lists all webhooks for a repository
+// ListRepositoryWebhooks lists all webhooks for a repository.
 func (w *webhookServiceImpl) ListRepositoryWebhooks(ctx context.Context, owner, repo string, options *WebhookListOptions) ([]*WebhookInfo, error) {
 	w.logger.Debug("Listing repository webhooks", "owner", owner, "repo", repo)
 
@@ -255,7 +256,7 @@ func (w *webhookServiceImpl) ListRepositoryWebhooks(ctx context.Context, owner, 
 	return webhooks, nil
 }
 
-// UpdateRepositoryWebhook updates an existing webhook for a repository
+// UpdateRepositoryWebhook updates an existing webhook for a repository.
 func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner, repo string, request *WebhookUpdateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Updating repository webhook", "owner", owner, "repo", repo, "webhook_id", request.ID)
 
@@ -269,13 +270,16 @@ func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner,
 	if request.Name != "" {
 		existing.Name = request.Name
 	}
+
 	if request.URL != "" {
 		existing.URL = request.URL
 		existing.Config.URL = request.URL
 	}
+
 	if request.Events != nil {
 		existing.Events = request.Events
 	}
+
 	if request.Active != nil {
 		existing.Active = *request.Active
 	}
@@ -285,22 +289,24 @@ func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner,
 	// TODO: Implement actual GitHub API call
 
 	w.logger.Info("Successfully updated repository webhook", "webhook_id", existing.ID)
+
 	return existing, nil
 }
 
-// DeleteRepositoryWebhook deletes a webhook from a repository
+// DeleteRepositoryWebhook deletes a webhook from a repository.
 func (w *webhookServiceImpl) DeleteRepositoryWebhook(ctx context.Context, owner, repo string, webhookID int64) error {
 	w.logger.Info("Deleting repository webhook", "owner", owner, "repo", repo, "webhook_id", webhookID)
 
 	// TODO: Implement actual GitHub API call
 
 	w.logger.Info("Successfully deleted repository webhook", "webhook_id", webhookID)
+
 	return nil
 }
 
 // Organization webhook operations (similar implementations)
 
-// CreateOrganizationWebhook creates a new webhook for an organization
+// CreateOrganizationWebhook creates a new webhook for an organization.
 func (w *webhookServiceImpl) CreateOrganizationWebhook(ctx context.Context, org string, request *WebhookCreateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Creating organization webhook", "org", org, "name", request.Name)
 
@@ -321,10 +327,11 @@ func (w *webhookServiceImpl) CreateOrganizationWebhook(ctx context.Context, org 
 	}
 
 	w.logger.Info("Successfully created organization webhook", "webhook_id", webhook.ID)
+
 	return webhook, nil
 }
 
-// GetOrganizationWebhook retrieves a specific webhook for an organization
+// GetOrganizationWebhook retrieves a specific webhook for an organization.
 func (w *webhookServiceImpl) GetOrganizationWebhook(ctx context.Context, org string, webhookID int64) (*WebhookInfo, error) {
 	w.logger.Debug("Getting organization webhook", "org", org, "webhook_id", webhookID)
 
@@ -343,7 +350,7 @@ func (w *webhookServiceImpl) GetOrganizationWebhook(ctx context.Context, org str
 	return webhook, nil
 }
 
-// ListOrganizationWebhooks lists all webhooks for an organization
+// ListOrganizationWebhooks lists all webhooks for an organization.
 func (w *webhookServiceImpl) ListOrganizationWebhooks(ctx context.Context, org string, options *WebhookListOptions) ([]*WebhookInfo, error) {
 	w.logger.Debug("Listing organization webhooks", "org", org)
 
@@ -364,7 +371,7 @@ func (w *webhookServiceImpl) ListOrganizationWebhooks(ctx context.Context, org s
 	return webhooks, nil
 }
 
-// UpdateOrganizationWebhook updates an existing webhook for an organization
+// UpdateOrganizationWebhook updates an existing webhook for an organization.
 func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org string, request *WebhookUpdateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Updating organization webhook", "org", org, "webhook_id", request.ID)
 
@@ -377,13 +384,16 @@ func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org 
 	if request.Name != "" {
 		existing.Name = request.Name
 	}
+
 	if request.URL != "" {
 		existing.URL = request.URL
 		existing.Config.URL = request.URL
 	}
+
 	if request.Events != nil {
 		existing.Events = request.Events
 	}
+
 	if request.Active != nil {
 		existing.Active = *request.Active
 	}
@@ -391,22 +401,24 @@ func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org 
 	existing.UpdatedAt = time.Now()
 
 	w.logger.Info("Successfully updated organization webhook", "webhook_id", existing.ID)
+
 	return existing, nil
 }
 
-// DeleteOrganizationWebhook deletes a webhook from an organization
+// DeleteOrganizationWebhook deletes a webhook from an organization.
 func (w *webhookServiceImpl) DeleteOrganizationWebhook(ctx context.Context, org string, webhookID int64) error {
 	w.logger.Info("Deleting organization webhook", "org", org, "webhook_id", webhookID)
 
 	// TODO: Implement actual GitHub API call
 
 	w.logger.Info("Successfully deleted organization webhook", "webhook_id", webhookID)
+
 	return nil
 }
 
 // Bulk operations
 
-// BulkCreateWebhooks creates webhooks across multiple repositories
+// BulkCreateWebhooks creates webhooks across multiple repositories.
 func (w *webhookServiceImpl) BulkCreateWebhooks(ctx context.Context, request *BulkWebhookRequest) (*BulkWebhookResult, error) {
 	w.logger.Info("Starting bulk webhook creation", "org", request.Organization)
 
@@ -459,7 +471,7 @@ func (w *webhookServiceImpl) BulkCreateWebhooks(ctx context.Context, request *Bu
 	return result, nil
 }
 
-// BulkUpdateWebhooks updates webhooks across multiple repositories
+// BulkUpdateWebhooks updates webhooks across multiple repositories.
 func (w *webhookServiceImpl) BulkUpdateWebhooks(ctx context.Context, request *BulkWebhookUpdateRequest) (*BulkWebhookResult, error) {
 	w.logger.Info("Starting bulk webhook update", "org", request.Organization)
 
@@ -513,10 +525,11 @@ func (w *webhookServiceImpl) BulkUpdateWebhooks(ctx context.Context, request *Bu
 	}
 
 	result.ExecutionTime = time.Since(startTime).String()
+
 	return result, nil
 }
 
-// BulkDeleteWebhooks deletes webhooks across multiple repositories
+// BulkDeleteWebhooks deletes webhooks across multiple repositories.
 func (w *webhookServiceImpl) BulkDeleteWebhooks(ctx context.Context, request *BulkWebhookDeleteRequest) (*BulkWebhookResult, error) {
 	w.logger.Info("Starting bulk webhook deletion", "org", request.Organization)
 
@@ -565,10 +578,11 @@ func (w *webhookServiceImpl) BulkDeleteWebhooks(ctx context.Context, request *Bu
 	}
 
 	result.ExecutionTime = time.Since(startTime).String()
+
 	return result, nil
 }
 
-// TestWebhook tests a webhook by sending a ping event
+// TestWebhook tests a webhook by sending a ping event.
 func (w *webhookServiceImpl) TestWebhook(ctx context.Context, owner, repo string, webhookID int64) (*WebhookTestResult, error) {
 	w.logger.Info("Testing webhook", "owner", owner, "repo", repo, "webhook_id", webhookID)
 
@@ -587,7 +601,7 @@ func (w *webhookServiceImpl) TestWebhook(ctx context.Context, owner, repo string
 	return testResult, nil
 }
 
-// GetWebhookDeliveries retrieves recent webhook deliveries
+// GetWebhookDeliveries retrieves recent webhook deliveries.
 func (w *webhookServiceImpl) GetWebhookDeliveries(ctx context.Context, owner, repo string, webhookID int64) ([]*WebhookDelivery, error) {
 	w.logger.Debug("Getting webhook deliveries", "owner", owner, "repo", repo, "webhook_id", webhookID)
 
@@ -622,46 +636,55 @@ func (w *webhookServiceImpl) GetWebhookDeliveries(ctx context.Context, owner, re
 
 // Helper methods
 
-// validateWebhookRequest validates a webhook creation request
+// validateWebhookRequest validates a webhook creation request.
 func (w *webhookServiceImpl) validateWebhookRequest(request *WebhookCreateRequest) error {
 	if request.Name == "" {
 		return fmt.Errorf("webhook name is required")
 	}
+
 	if request.URL == "" {
 		return fmt.Errorf("webhook URL is required")
 	}
+
 	if len(request.Events) == 0 {
 		return fmt.Errorf("at least one event must be specified")
 	}
+
 	return nil
 }
 
-// webhookMatchesSelector checks if a webhook matches the given selector criteria
+// webhookMatchesSelector checks if a webhook matches the given selector criteria.
 func (w *webhookServiceImpl) webhookMatchesSelector(webhook *WebhookInfo, selector *WebhookSelector) bool {
 	if selector.ByName != "" && webhook.Name != selector.ByName {
 		return false
 	}
+
 	if selector.ByURL != "" && webhook.URL != selector.ByURL {
 		return false
 	}
+
 	if selector.Active != nil && webhook.Active != *selector.Active {
 		return false
 	}
+
 	if len(selector.ByEvents) > 0 {
 		// Check if webhook has all specified events
 		for _, event := range selector.ByEvents {
 			found := false
+
 			for _, webhookEvent := range webhook.Events {
 				if webhookEvent == event {
 					found = true
 					break
 				}
 			}
+
 			if !found {
 				return false
 			}
 		}
 	}
+
 	return true
 }
 

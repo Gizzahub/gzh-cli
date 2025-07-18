@@ -13,7 +13,6 @@ import (
 func TestReadConfig(t *testing.T) {
 	// use bulk-clone.yaml
 	// call setclond_config.ReadConfig
-
 	config := &bulkCloneConfig{}
 	// bulkCloneConfig.ReadConfig("../../../test")
 	// config.ReadConfig("../../../test")
@@ -24,5 +23,6 @@ func TestReadConfig(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
 	t.Log(string(yamlData))
 }

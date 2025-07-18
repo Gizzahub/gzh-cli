@@ -48,6 +48,7 @@ func TestFileSystemImpl_MkdirAll(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			fs := NewFileSystem(nil, nil)
@@ -108,6 +109,7 @@ func TestFileSystemImpl_ReadFile(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			fs := NewFileSystem(nil, nil)
@@ -182,6 +184,7 @@ func TestFileSystemImpl_WriteFile(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			fs := NewFileSystem(nil, nil)
@@ -247,6 +250,7 @@ func TestFileSystemImpl_RemoveAll(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			fs := NewFileSystem(nil, nil)
@@ -314,6 +318,7 @@ func TestFileSystemImpl_Exists(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			fs := NewFileSystem(nil, nil)
@@ -389,6 +394,7 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 			// Create a temporary directory for testing
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			testDir := filepath.Join(tmpDir, "test-dir")
@@ -417,6 +423,7 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 				for _, entry := range entries {
 					names = append(names, entry.Name)
 				}
+
 				assert.ElementsMatch(t, tt.wantEntries, names)
 			}
 		})

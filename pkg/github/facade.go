@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-// GitHubManager provides a high-level facade for GitHub operations
+// GitHubManager provides a high-level facade for GitHub operations.
 type GitHubManager interface {
 	// Repository Operations
 	ListOrganizationRepositories(ctx context.Context, organization string) ([]string, error)
@@ -23,7 +23,7 @@ type GitHubManager interface {
 	WebhookService() WebhookService
 }
 
-// BulkCloneRequest represents a request for bulk repository operations
+// BulkCloneRequest represents a request for bulk repository operations.
 type BulkCloneRequest struct {
 	Organization string
 	TargetPath   string
@@ -33,7 +33,7 @@ type BulkCloneRequest struct {
 	Concurrency  int
 }
 
-// BulkCloneResult represents the result of bulk operations
+// BulkCloneResult represents the result of bulk operations.
 type BulkCloneResult struct {
 	TotalRepositories    int
 	SuccessfulOperations int
@@ -43,7 +43,7 @@ type BulkCloneResult struct {
 	ExecutionTime        string
 }
 
-// RepositoryOperationResult represents the result of a single repository operation
+// RepositoryOperationResult represents the result of a single repository operation.
 type RepositoryOperationResult struct {
 	Repository string
 	Operation  string
@@ -54,7 +54,7 @@ type RepositoryOperationResult struct {
 
 // Note: RepositoryInfo is defined in interfaces.go
 
-// RepositoryFilters contains filtering criteria for repositories
+// RepositoryFilters contains filtering criteria for repositories.
 type RepositoryFilters struct {
 	IncludeNames    []string
 	ExcludeNames    []string
@@ -65,14 +65,14 @@ type RepositoryFilters struct {
 	LastUpdatedDays int
 }
 
-// gitHubManagerImpl implements the GitHubManager interface
+// gitHubManagerImpl implements the GitHubManager interface.
 type gitHubManagerImpl struct {
 	factory        GitHubProviderFactory
 	logger         Logger
 	webhookService WebhookService
 }
 
-// NewGitHubManager creates a new GitHub manager facade
+// NewGitHubManager creates a new GitHub manager facade.
 func NewGitHubManager(factory GitHubProviderFactory, logger Logger) GitHubManager {
 	// Create a basic API client for webhook service (this would be properly injected in real implementation)
 	var apiClient APIClient // This should be injected
@@ -84,7 +84,7 @@ func NewGitHubManager(factory GitHubProviderFactory, logger Logger) GitHubManage
 	}
 }
 
-// ListOrganizationRepositories lists all repositories in an organization
+// ListOrganizationRepositories lists all repositories in an organization.
 func (g *gitHubManagerImpl) ListOrganizationRepositories(ctx context.Context, organization string) ([]string, error) {
 	g.logger.Debug("Listing repositories for organization", "org", organization)
 
@@ -92,7 +92,7 @@ func (g *gitHubManagerImpl) ListOrganizationRepositories(ctx context.Context, or
 	return List(ctx, organization)
 }
 
-// CloneRepository clones a single repository
+// CloneRepository clones a single repository.
 func (g *gitHubManagerImpl) CloneRepository(ctx context.Context, organization, repository, targetPath string) error {
 	g.logger.Debug("Cloning repository", "org", organization, "repo", repository, "path", targetPath)
 
@@ -100,7 +100,7 @@ func (g *gitHubManagerImpl) CloneRepository(ctx context.Context, organization, r
 	return Clone(ctx, targetPath, organization, repository)
 }
 
-// GetRepositoryDefaultBranch gets the default branch for a repository
+// GetRepositoryDefaultBranch gets the default branch for a repository.
 func (g *gitHubManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, organization, repository string) (string, error) {
 	g.logger.Debug("Getting default branch", "org", organization, "repo", repository)
 
@@ -108,7 +108,7 @@ func (g *gitHubManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, orga
 	return GetDefaultBranch(ctx, organization, repository)
 }
 
-// RefreshAllRepositories refreshes all repositories in an organization
+// RefreshAllRepositories refreshes all repositories in an organization.
 func (g *gitHubManagerImpl) RefreshAllRepositories(ctx context.Context, targetPath, organization, strategy string) error {
 	g.logger.Info("Refreshing all repositories", "org", organization, "strategy", strategy)
 
@@ -116,7 +116,7 @@ func (g *gitHubManagerImpl) RefreshAllRepositories(ctx context.Context, targetPa
 	return RefreshAll(ctx, targetPath, organization, strategy)
 }
 
-// BulkCloneRepositories performs bulk repository operations
+// BulkCloneRepositories performs bulk repository operations.
 func (g *gitHubManagerImpl) BulkCloneRepositories(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	g.logger.Info("Starting bulk clone operation", "org", request.Organization)
 
@@ -131,6 +131,7 @@ func (g *gitHubManagerImpl) BulkCloneRepositories(ctx context.Context, request *
 		if err != nil {
 			return nil, err
 		}
+
 		repositories = repos
 	}
 
@@ -164,7 +165,7 @@ func (g *gitHubManagerImpl) BulkCloneRepositories(ctx context.Context, request *
 	return result, nil
 }
 
-// GetRepositoryInfo gets detailed information about a repository
+// GetRepositoryInfo gets detailed information about a repository.
 func (g *gitHubManagerImpl) GetRepositoryInfo(ctx context.Context, organization, repository string) (*RepositoryInfo, error) {
 	g.logger.Debug("Getting repository info", "org", organization, "repo", repository)
 
@@ -184,17 +185,18 @@ func (g *gitHubManagerImpl) GetRepositoryInfo(ctx context.Context, organization,
 	}, nil
 }
 
-// ValidateRepositoryAccess validates that the user has access to a repository
+// ValidateRepositoryAccess validates that the user has access to a repository.
 func (g *gitHubManagerImpl) ValidateRepositoryAccess(ctx context.Context, organization, repository string) error {
 	g.logger.Debug("Validating repository access", "org", organization, "repo", repository)
 
 	// Implementation would check access permissions
 	// For now, just try to get repository info
 	_, err := g.GetRepositoryInfo(ctx, organization, repository)
+
 	return err
 }
 
-// applyFilters applies repository filters to a list of repositories
+// applyFilters applies repository filters to a list of repositories.
 func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *RepositoryFilters) []string {
 	if filters == nil {
 		return repositories
@@ -206,24 +208,28 @@ func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *Reposit
 		// Apply include/exclude name filters
 		if len(filters.IncludeNames) > 0 {
 			found := false
+
 			for _, include := range filters.IncludeNames {
 				if repo == include {
 					found = true
 					break
 				}
 			}
+
 			if !found {
 				continue
 			}
 		}
 
 		excluded := false
+
 		for _, exclude := range filters.ExcludeNames {
 			if repo == exclude {
 				excluded = true
 				break
 			}
 		}
+
 		if excluded {
 			continue
 		}
@@ -234,7 +240,7 @@ func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *Reposit
 	return filtered
 }
 
-// WebhookService returns the webhook service instance
+// WebhookService returns the webhook service instance.
 func (g *gitHubManagerImpl) WebhookService() WebhookService {
 	return g.webhookService
 }

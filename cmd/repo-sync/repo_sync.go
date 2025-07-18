@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// NewRepoSyncCmd creates the repository synchronization command
+// NewRepoSyncCmd creates the repository synchronization command.
 func NewRepoSyncCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo-sync",
@@ -58,17 +58,18 @@ Examples:
 	return cmd
 }
 
-// getDefaultConfigDir returns the default configuration directory
+// getDefaultConfigDir returns the default configuration directory.
 func getDefaultConfigDir() string {
 	if configDir := os.Getenv("GZH_CONFIG_DIR"); configDir != "" {
 		return configDir
 	}
 
 	homeDir, _ := os.UserHomeDir()
+
 	return filepath.Join(homeDir, ".config", "gzh-manager")
 }
 
-// validateRepositoryPath validates that the path is a valid Git repository
+// validateRepositoryPath validates that the path is a valid Git repository.
 func validateRepositoryPath(path string) error {
 	// Check if path exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -84,7 +85,7 @@ func validateRepositoryPath(path string) error {
 	return nil
 }
 
-// RepoSyncConfig represents the configuration for repository synchronization
+// RepoSyncConfig represents the configuration for repository synchronization.
 type RepoSyncConfig struct {
 	RepositoryPath   string        `json:"repository_path"`
 	WatchPatterns    []string      `json:"watch_patterns"`
@@ -98,7 +99,7 @@ type RepoSyncConfig struct {
 	CommitMessage    string        `json:"commit_message"`
 }
 
-// DefaultRepoSyncConfig returns the default configuration
+// DefaultRepoSyncConfig returns the default configuration.
 func DefaultRepoSyncConfig() *RepoSyncConfig {
 	return &RepoSyncConfig{
 		WatchPatterns:    []string{"**/*.go", "**/*.md", "**/*.yaml", "**/*.yml", "**/*.json"},
@@ -113,7 +114,7 @@ func DefaultRepoSyncConfig() *RepoSyncConfig {
 	}
 }
 
-// FileChangeEvent represents a file system change event
+// FileChangeEvent represents a file system change event.
 type FileChangeEvent struct {
 	Path        string    `json:"path"`
 	Operation   string    `json:"operation"` // create, write, remove, rename, chmod
@@ -123,7 +124,7 @@ type FileChangeEvent struct {
 	Checksum    string    `json:"checksum,omitempty"`
 }
 
-// FileChangeBatch represents a batch of file changes
+// FileChangeBatch represents a batch of file changes.
 type FileChangeBatch struct {
 	Events      []FileChangeEvent `json:"events"`
 	BatchID     string            `json:"batch_id"`
@@ -132,7 +133,7 @@ type FileChangeBatch struct {
 	TotalEvents int               `json:"total_events"`
 }
 
-// SyncResult represents the result of a synchronization operation
+// SyncResult represents the result of a synchronization operation.
 type SyncResult struct {
 	Success       bool           `json:"success"`
 	FilesModified int            `json:"files_modified"`
@@ -144,7 +145,7 @@ type SyncResult struct {
 	CommitHash    string         `json:"commit_hash,omitempty"`
 }
 
-// ConflictInfo represents information about a merge conflict
+// ConflictInfo represents information about a merge conflict.
 type ConflictInfo struct {
 	Path         string    `json:"path"`
 	ConflictType string    `json:"conflict_type"` // content, rename, delete
@@ -154,7 +155,7 @@ type ConflictInfo struct {
 	ResolvedAt   time.Time `json:"resolved_at,omitempty"`
 }
 
-// newWatchMultiCmd creates the watch-multi subcommand for monitoring multiple repositories
+// newWatchMultiCmd creates the watch-multi subcommand for monitoring multiple repositories.
 func newWatchMultiCmd(logger *zap.Logger) *cobra.Command {
 	var (
 		configFile     string
@@ -221,7 +222,7 @@ Examples:
 	return cmd
 }
 
-// newBranchPolicyCmd creates the branch-policy subcommand for branch management
+// newBranchPolicyCmd creates the branch-policy subcommand for branch management.
 func newBranchPolicyCmd(logger *zap.Logger) *cobra.Command {
 	var (
 		policyType      string
@@ -292,7 +293,7 @@ Examples:
 	return cmd
 }
 
-// newQualityCheckCmd creates the quality-check subcommand for code quality monitoring
+// newQualityCheckCmd creates the quality-check subcommand for code quality monitoring.
 func newQualityCheckCmd(logger *zap.Logger) *cobra.Command {
 	var (
 		threshold       int
@@ -374,7 +375,7 @@ Examples:
 	return cmd
 }
 
-// newTrendAnalyzeCmd creates the trend-analyze subcommand for repository trend analysis
+// newTrendAnalyzeCmd creates the trend-analyze subcommand for repository trend analysis.
 func newTrendAnalyzeCmd(logger *zap.Logger) *cobra.Command {
 	var (
 		timeRange      string

@@ -5,21 +5,21 @@ import (
 	"time"
 )
 
-// HealthStatus represents the overall health of the client
+// HealthStatus represents the overall health of the client.
 type HealthStatus struct {
 	Overall    StatusType                 `json:"overall"`
 	Components map[string]ComponentHealth `json:"components"`
 	Timestamp  time.Time                  `json:"timestamp"`
 }
 
-// ComponentHealth represents the health of a specific component
+// ComponentHealth represents the health of a specific component.
 type ComponentHealth struct {
 	Status  StatusType             `json:"status"`
 	Message string                 `json:"message"`
 	Details map[string]interface{} `json:"details,omitempty"`
 }
 
-// StatusType represents health status
+// StatusType represents health status.
 type StatusType string
 
 const (
@@ -28,7 +28,7 @@ const (
 	StatusUnhealthy StatusType = "unhealthy"
 )
 
-// BulkCloneRequest represents a bulk clone operation request
+// BulkCloneRequest represents a bulk clone operation request.
 type BulkCloneRequest struct {
 	Platforms      []PlatformConfig `json:"platforms" yaml:"platforms"`
 	OutputDir      string           `json:"output_dir" yaml:"output_dir"`
@@ -38,7 +38,7 @@ type BulkCloneRequest struct {
 	Filters        CloneFilters     `json:"filters" yaml:"filters"`
 }
 
-// PlatformConfig defines configuration for a Git platform
+// PlatformConfig defines configuration for a Git platform.
 type PlatformConfig struct {
 	Type          string   `json:"type" yaml:"type"` // github, gitlab, gitea, gogs
 	URL           string   `json:"url" yaml:"url"`
@@ -47,7 +47,7 @@ type PlatformConfig struct {
 	Users         []string `json:"users" yaml:"users"`
 }
 
-// CloneFilters defines filtering options for repositories
+// CloneFilters defines filtering options for repositories.
 type CloneFilters struct {
 	IncludeRepos []string  `json:"include_repos" yaml:"include_repos"`
 	ExcludeRepos []string  `json:"exclude_repos" yaml:"exclude_repos"`
@@ -57,7 +57,7 @@ type CloneFilters struct {
 	UpdatedAfter time.Time `json:"updated_after" yaml:"updated_after"`
 }
 
-// BulkCloneResult represents the result of a bulk clone operation
+// BulkCloneResult represents the result of a bulk clone operation.
 type BulkCloneResult struct {
 	TotalRepos   int                     `json:"total_repos"`
 	SuccessCount int                     `json:"success_count"`
@@ -68,7 +68,7 @@ type BulkCloneResult struct {
 	Summary      map[string]interface{}  `json:"summary"`
 }
 
-// RepositoryCloneResult represents the result of cloning a single repository
+// RepositoryCloneResult represents the result of cloning a single repository.
 type RepositoryCloneResult struct {
 	RepoName  string        `json:"repo_name"`
 	Platform  string        `json:"platform"`
@@ -80,7 +80,7 @@ type RepositoryCloneResult struct {
 	Size      int64         `json:"size"`
 }
 
-// DevEnvRequest represents a development environment setup request
+// DevEnvRequest represents a development environment setup request.
 type DevEnvRequest struct {
 	Profile     string            `json:"profile" yaml:"profile"`
 	Services    []ServiceConfig   `json:"services" yaml:"services"`
@@ -89,7 +89,7 @@ type DevEnvRequest struct {
 	Networks    []NetworkConfig   `json:"networks" yaml:"networks"`
 }
 
-// ServiceConfig defines a service in the development environment
+// ServiceConfig defines a service in the development environment.
 type ServiceConfig struct {
 	Name    string            `json:"name" yaml:"name"`
 	Image   string            `json:"image" yaml:"image"`
@@ -99,40 +99,40 @@ type ServiceConfig struct {
 	Command []string          `json:"command" yaml:"command"`
 }
 
-// PortMapping defines port forwarding configuration
+// PortMapping defines port forwarding configuration.
 type PortMapping struct {
 	Host      int    `json:"host" yaml:"host"`
 	Container int    `json:"container" yaml:"container"`
 	Protocol  string `json:"protocol" yaml:"protocol"`
 }
 
-// VolumeMount defines volume mounting configuration
+// VolumeMount defines volume mounting configuration.
 type VolumeMount struct {
 	Source string `json:"source" yaml:"source"`
 	Target string `json:"target" yaml:"target"`
 	Type   string `json:"type" yaml:"type"` // bind, volume, tmpfs
 }
 
-// NetworkConfig defines network configuration
+// NetworkConfig defines network configuration.
 type NetworkConfig struct {
 	Name   string `json:"name" yaml:"name"`
 	Driver string `json:"driver" yaml:"driver"`
 	IPAM   IPAM   `json:"ipam" yaml:"ipam"`
 }
 
-// IPAM defines IP address management configuration
+// IPAM defines IP address management configuration.
 type IPAM struct {
 	Driver string       `json:"driver" yaml:"driver"`
 	Config []IPAMConfig `json:"config" yaml:"config"`
 }
 
-// IPAMConfig defines IPAM configuration
+// IPAMConfig defines IPAM configuration.
 type IPAMConfig struct {
 	Subnet  string `json:"subnet" yaml:"subnet"`
 	Gateway string `json:"gateway" yaml:"gateway"`
 }
 
-// DevEnvResult represents the result of development environment setup
+// DevEnvResult represents the result of development environment setup.
 type DevEnvResult struct {
 	Profile   string            `json:"profile"`
 	Status    string            `json:"status"`
@@ -142,7 +142,7 @@ type DevEnvResult struct {
 	Endpoints map[string]string `json:"endpoints"`
 }
 
-// ServiceResult represents the result of service setup
+// ServiceResult represents the result of service setup.
 type ServiceResult struct {
 	Name      string        `json:"name"`
 	Status    string        `json:"status"`
@@ -152,7 +152,7 @@ type ServiceResult struct {
 	Duration  time.Duration `json:"duration"`
 }
 
-// NetworkResult represents the result of network setup
+// NetworkResult represents the result of network setup.
 type NetworkResult struct {
 	Name     string        `json:"name"`
 	Status   string        `json:"status"`
@@ -161,7 +161,7 @@ type NetworkResult struct {
 	Duration time.Duration `json:"duration"`
 }
 
-// MonitoringData represents monitoring information
+// MonitoringData represents monitoring information.
 type MonitoringData struct {
 	System   SystemMetrics  `json:"system"`
 	Services ServiceMetrics `json:"services"`
@@ -169,7 +169,7 @@ type MonitoringData struct {
 	Tasks    []TaskStatus   `json:"tasks"`
 }
 
-// SystemMetrics represents system-level metrics
+// SystemMetrics represents system-level metrics.
 type SystemMetrics struct {
 	CPU       CPUMetrics    `json:"cpu"`
 	Memory    MemoryMetrics `json:"memory"`
@@ -179,7 +179,7 @@ type SystemMetrics struct {
 	Timestamp time.Time     `json:"timestamp"`
 }
 
-// CPUMetrics represents CPU metrics
+// CPUMetrics represents CPU metrics.
 type CPUMetrics struct {
 	Usage      float64 `json:"usage"`
 	Cores      int     `json:"cores"`
@@ -188,7 +188,7 @@ type CPUMetrics struct {
 	IdleTime   float64 `json:"idle_time"`
 }
 
-// MemoryMetrics represents memory metrics
+// MemoryMetrics represents memory metrics.
 type MemoryMetrics struct {
 	Total     uint64  `json:"total"`
 	Used      uint64  `json:"used"`
@@ -198,7 +198,7 @@ type MemoryMetrics struct {
 	Buffers   uint64  `json:"buffers"`
 }
 
-// DiskMetrics represents disk metrics
+// DiskMetrics represents disk metrics.
 type DiskMetrics struct {
 	Total      uint64  `json:"total"`
 	Used       uint64  `json:"used"`
@@ -210,7 +210,7 @@ type DiskMetrics struct {
 	WriteBytes uint64  `json:"write_bytes"`
 }
 
-// ServiceMetrics represents service-level metrics
+// ServiceMetrics represents service-level metrics.
 type ServiceMetrics struct {
 	Services []ServiceInfo `json:"services"`
 	Total    int           `json:"total"`
@@ -219,7 +219,7 @@ type ServiceMetrics struct {
 	Failed   int           `json:"failed"`
 }
 
-// ServiceInfo represents information about a service
+// ServiceInfo represents information about a service.
 type ServiceInfo struct {
 	Name     string            `json:"name"`
 	Status   string            `json:"status"`
@@ -231,14 +231,14 @@ type ServiceInfo struct {
 	Labels   map[string]string `json:"labels"`
 }
 
-// NetworkMetrics represents network metrics
+// NetworkMetrics represents network metrics.
 type NetworkMetrics struct {
 	Interfaces []NetworkInterface `json:"interfaces"`
 	TotalRx    uint64             `json:"total_rx"`
 	TotalTx    uint64             `json:"total_tx"`
 }
 
-// NetworkInterface represents network interface information
+// NetworkInterface represents network interface information.
 type NetworkInterface struct {
 	Name      string   `json:"name"`
 	Addresses []string `json:"addresses"`
@@ -249,7 +249,7 @@ type NetworkInterface struct {
 	Status    string   `json:"status"`
 }
 
-// TaskStatus represents the status of a running task
+// TaskStatus represents the status of a running task.
 type TaskStatus struct {
 	ID        string                 `json:"id"`
 	Name      string                 `json:"name"`
@@ -293,7 +293,7 @@ type TaskStatus struct {
 //	Timestamp  time.Time     `json:"timestamp"`
 // }
 
-// Event represents a system event
+// Event represents a system event.
 type Event struct {
 	ID        string                 `json:"id"`
 	Type      string                 `json:"type"`
@@ -303,7 +303,7 @@ type Event struct {
 	Level     string                 `json:"level"` // info, warn, error
 }
 
-// EventSubscription represents an event subscription
+// EventSubscription represents an event subscription.
 type EventSubscription struct {
 	ID      string                 `json:"id"`
 	Types   []string               `json:"types"`
@@ -314,7 +314,7 @@ type EventSubscription struct {
 	Created time.Time              `json:"created"`
 }
 
-// APIError represents an API error response
+// APIError represents an API error response.
 type APIError struct {
 	Code      string                 `json:"code"`
 	Message   string                 `json:"message"`
@@ -323,12 +323,12 @@ type APIError struct {
 	RequestID string                 `json:"request_id,omitempty"`
 }
 
-// Error implements the error interface
+// Error implements the error interface.
 func (e APIError) Error() string {
 	return fmt.Sprintf("API Error %s: %s", e.Code, e.Message)
 }
 
-// PaginationInfo represents pagination information
+// PaginationInfo represents pagination information.
 type PaginationInfo struct {
 	Page       int `json:"page"`
 	PerPage    int `json:"per_page"`
@@ -336,7 +336,7 @@ type PaginationInfo struct {
 	TotalPages int `json:"total_pages"`
 }
 
-// ListOptions represents options for list operations
+// ListOptions represents options for list operations.
 type ListOptions struct {
 	Page    int               `json:"page,omitempty"`
 	PerPage int               `json:"per_page,omitempty"`
@@ -345,7 +345,7 @@ type ListOptions struct {
 	Filters map[string]string `json:"filters,omitempty"`
 }
 
-// Response represents a paginated API response
+// Response represents a paginated API response.
 type Response struct {
 	Data       interface{}            `json:"data"`
 	Pagination *PaginationInfo        `json:"pagination,omitempty"`

@@ -99,6 +99,7 @@ providers:
 			if tt.setupEnv != nil {
 				tt.setupEnv()
 			}
+
 			if tt.cleanupEnv != nil {
 				defer tt.cleanupEnv()
 			}
@@ -106,6 +107,7 @@ providers:
 			// Create temporary config file
 			tmpDir, err := os.MkdirTemp("", "config-validate-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			configFile := filepath.Join(tmpDir, "gzh.yaml")
@@ -117,6 +119,7 @@ providers:
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorContains != "" {
 					assert.Contains(t, err.Error(), tt.errorContains)
 				}
@@ -131,11 +134,13 @@ func TestFindConfigFile(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "find-config-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer os.Chdir(originalDir)
 
 	err = os.Chdir(tmpDir)
@@ -197,6 +202,7 @@ func TestFindConfigFile(t *testing.T) {
 			if tt.setupEnv != nil {
 				tt.setupEnv()
 			}
+
 			if tt.cleanupEnv != nil {
 				defer tt.cleanupEnv()
 			}
@@ -219,6 +225,7 @@ func TestValidateFileAccess(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "file-access-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	tests := []struct {
@@ -263,6 +270,7 @@ func TestValidateFileAccess(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorContains != "" {
 					assert.Contains(t, err.Error(), tt.errorContains)
 				}
@@ -308,6 +316,7 @@ func TestValidateCloneDirectory(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorContains != "" {
 					assert.Contains(t, err.Error(), tt.errorContains)
 				}
@@ -367,6 +376,7 @@ func TestCheckPathEnvironmentVariables(t *testing.T) {
 			if tt.setupEnv != nil {
 				tt.setupEnv()
 			}
+
 			if tt.cleanupEnv != nil {
 				defer tt.cleanupEnv()
 			}
@@ -375,6 +385,7 @@ func TestCheckPathEnvironmentVariables(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorContains != "" {
 					assert.Contains(t, err.Error(), tt.errorContains)
 				}
@@ -385,11 +396,12 @@ func TestCheckPathEnvironmentVariables(t *testing.T) {
 	}
 }
 
-// TestValidateConfigWithEnvironmentAbstraction tests that environment abstraction works properly
+// TestValidateConfigWithEnvironmentAbstraction tests that environment abstraction works properly.
 func TestValidateConfigWithEnvironmentAbstraction(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "env-abstraction-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Create a test config file

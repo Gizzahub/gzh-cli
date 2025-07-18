@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newWatchCmd creates the config watch subcommand
+// newWatchCmd creates the config watch subcommand.
 func newWatchCmd() *cobra.Command {
 	var (
 		configFile string
@@ -56,7 +56,7 @@ Examples:
 	return cmd
 }
 
-// watchConfig implements the configuration watching functionality
+// watchConfig implements the configuration watching functionality.
 func watchConfig(configFile string, verbose bool, interval time.Duration) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -74,6 +74,7 @@ func watchConfig(configFile string, verbose bool, interval time.Duration) error 
 	// Load initial configuration
 	if configFile == "" {
 		var findErr error
+
 		configFile, findErr = findConfigFile()
 		if findErr != nil {
 			return fmt.Errorf("failed to find configuration file: %w", findErr)
@@ -81,12 +82,14 @@ func watchConfig(configFile string, verbose bool, interval time.Duration) error 
 	}
 
 	fmt.Printf("🔍 Loading configuration from: %s\n", configFile)
+
 	config, err := service.LoadConfiguration(ctx, configFile)
 	if err != nil {
 		return fmt.Errorf("failed to load configuration: %w", err)
 	}
 
 	fmt.Printf("✅ Configuration loaded successfully\n")
+
 	if verbose {
 		printConfigSummary(config)
 	}
@@ -107,14 +110,17 @@ func watchConfig(configFile string, verbose bool, interval time.Duration) error 
 		if validationResult != nil {
 			if validationResult.IsValid {
 				fmt.Printf("✅ Configuration reloaded and validated successfully\n")
+
 				if len(validationResult.Warnings) > 0 {
 					fmt.Printf("⚠️  %d warnings found:\n", len(validationResult.Warnings))
+
 					for _, warning := range validationResult.Warnings {
 						fmt.Printf("   - [%s] %s\n", warning.Field, warning.Message)
 					}
 				}
 			} else {
 				fmt.Printf("❌ Configuration validation failed with %d errors:\n", len(validationResult.Errors))
+
 				for _, err := range validationResult.Errors {
 					fmt.Printf("   - [%s] %s\n", err.Field, err.Message)
 				}
@@ -156,22 +162,25 @@ func watchConfig(configFile string, verbose bool, interval time.Duration) error 
 		case sig := <-sigChan:
 			fmt.Printf("\n🛑 Received signal %v, stopping watch\n", sig)
 			cancel()
+
 			return nil
 
 		case <-statusTicker.C:
 			uptime := time.Since(startTime)
 			fmt.Printf("📊 Status: watching %s | uptime: %v | changes: %d",
 				configFile, uptime.Round(time.Second), changeCount)
+
 			if changeCount > 0 {
 				fmt.Printf(" | last change: %v ago",
 					time.Since(lastChangeTime).Round(time.Second))
 			}
+
 			fmt.Printf("\n")
 		}
 	}
 }
 
-// printConfigSummary prints a summary of the configuration
+// printConfigSummary prints a summary of the configuration.
 func printConfigSummary(config *configpkg.UnifiedConfig) {
 	fmt.Printf("📋 Configuration Summary:\n")
 	fmt.Printf("   Version: %s\n", config.Version)
@@ -180,6 +189,7 @@ func printConfigSummary(config *configpkg.UnifiedConfig) {
 
 	for providerName, provider := range config.Providers {
 		fmt.Printf("   📌 %s: %d organizations\n", providerName, len(provider.Organizations))
+
 		if provider.APIURL != "" {
 			fmt.Printf("      API URL: %s\n", provider.APIURL)
 		}
@@ -187,12 +197,15 @@ func printConfigSummary(config *configpkg.UnifiedConfig) {
 
 	if config.Global != nil {
 		fmt.Printf("   🌐 Global Settings:\n")
+
 		if config.Global.CloneBaseDir != "" {
 			fmt.Printf("      Clone Base Dir: %s\n", config.Global.CloneBaseDir)
 		}
+
 		if config.Global.DefaultStrategy != "" {
 			fmt.Printf("      Default Strategy: %s\n", config.Global.DefaultStrategy)
 		}
 	}
+
 	fmt.Printf("\n")
 }

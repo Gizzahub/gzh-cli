@@ -1,6 +1,6 @@
 package config
 
-// GetPredefinedPolicyTemplates returns predefined policy templates for common compliance frameworks
+// GetPredefinedPolicyTemplates returns predefined policy templates for common compliance frameworks.
 func GetPredefinedPolicyTemplates() map[string]*PolicyTemplate {
 	return map[string]*PolicyTemplate{
 		// Security Policies
@@ -201,7 +201,7 @@ func GetPredefinedPolicyTemplates() map[string]*PolicyTemplate {
 	}
 }
 
-// GetPolicyPresets returns predefined policy presets for compliance frameworks
+// GetPolicyPresets returns predefined policy presets for compliance frameworks.
 func GetPolicyPresets() map[string]*PolicyPreset {
 	return map[string]*PolicyPreset{
 		"soc2": {
@@ -433,7 +433,7 @@ func GetPolicyPresets() map[string]*PolicyPreset {
 	}
 }
 
-// GetPolicyGroups returns predefined policy groups
+// GetPolicyGroups returns predefined policy groups.
 func GetPolicyGroups() map[string]*PolicyGroup {
 	return map[string]*PolicyGroup{
 		"security": {

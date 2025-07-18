@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// runDashboardCommand executes the dashboard command
+// runDashboardCommand executes the dashboard command.
 func runDashboardCommand(flags GlobalFlags, port int, autoRefresh bool, refreshRate int) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -16,9 +16,11 @@ func runDashboardCommand(flags GlobalFlags, port int, autoRefresh bool, refreshR
 		fmt.Printf("🚀 Starting compliance dashboard for organization: %s\n", flags.Organization)
 		fmt.Printf("Port: %d\n", port)
 		fmt.Printf("Auto refresh: %t\n", autoRefresh)
+
 		if autoRefresh {
 			fmt.Printf("Refresh rate: %d seconds\n", refreshRate)
 		}
+
 		fmt.Println()
 	}
 
@@ -68,15 +70,16 @@ func runDashboardCommand(flags GlobalFlags, port int, autoRefresh bool, refreshR
 	return server.ListenAndServe()
 }
 
-// handleDashboardHome serves the main dashboard page
+// handleDashboardHome serves the main dashboard page.
 func handleDashboardHome(w http.ResponseWriter, r *http.Request, organization string, autoRefresh bool, refreshRate int) {
 	html := generateDashboardHTML(organization, autoRefresh, refreshRate)
+
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(html))
 }
 
-// handleRepositoriesAPI serves repository data as JSON
+// handleRepositoriesAPI serves repository data as JSON.
 func handleRepositoriesAPI(w http.ResponseWriter, r *http.Request, organization, token string) {
 	// This would fetch real repository data
 	mockData := `{
@@ -111,7 +114,7 @@ func handleRepositoriesAPI(w http.ResponseWriter, r *http.Request, organization,
 	w.Write([]byte(mockData))
 }
 
-// handleComplianceAPI serves compliance data as JSON
+// handleComplianceAPI serves compliance data as JSON.
 func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, token string) {
 	// This would fetch real compliance data
 	mockData := `{
@@ -139,13 +142,13 @@ func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, t
 	w.Write([]byte(mockData))
 }
 
-// handleStaticAssets serves static CSS/JS files
+// handleStaticAssets serves static CSS/JS files.
 func handleStaticAssets(w http.ResponseWriter, r *http.Request) {
 	// For a real implementation, this would serve actual static files
 	w.WriteHeader(http.StatusNotFound)
 }
 
-// generateDashboardHTML generates the HTML for the dashboard
+// generateDashboardHTML generates the HTML for the dashboard.
 func generateDashboardHTML(organization string, autoRefresh bool, refreshRate int) string {
 	refreshScript := ""
 	if autoRefresh {
@@ -261,6 +264,7 @@ func generateDashboardHTML(organization string, autoRefresh bool, refreshRate in
 			if autoRefresh {
 				return fmt.Sprintf("<p>🔄 Auto-refresh enabled (every %d seconds)</p>", refreshRate)
 			}
+
 			return "<p>🔄 Manual refresh - reload page to update</p>"
 		}())
 }

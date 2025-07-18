@@ -15,6 +15,7 @@ func TestServiceMeshIntegrationAdvanced(t *testing.T) {
 	// Create temporary directory for test
 	tempDir, err := os.MkdirTemp("", "k8s_service_mesh_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -88,6 +89,7 @@ func TestServiceMeshIntegrationAdvanced(t *testing.T) {
 func TestIstioConfiguration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "istio_config_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -263,6 +265,7 @@ func TestIstioConfiguration(t *testing.T) {
 func TestLinkerdConfiguration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "linkerd_config_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -346,6 +349,7 @@ func TestLinkerdConfiguration(t *testing.T) {
 func TestServiceMeshProfileIntegration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "mesh_profile_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -507,6 +511,7 @@ func TestServiceMeshProfileIntegration(t *testing.T) {
 func TestServiceMeshValidation(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "mesh_validation_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -574,6 +579,7 @@ func TestServiceMeshValidation(t *testing.T) {
 func TestServiceMeshStatus(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "mesh_status_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()

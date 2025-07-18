@@ -430,10 +430,12 @@ func TestPolicyExceptionInAudit(t *testing.T) {
 
 	// Check that public-demo is compliant due to exception
 	var publicDemo, otherPublic *RepoAuditResult
+
 	for i := range report.Repositories {
-		if report.Repositories[i].Repository == "public-demo" {
+		switch report.Repositories[i].Repository {
+		case "public-demo":
 			publicDemo = &report.Repositories[i]
-		} else if report.Repositories[i].Repository == "other-public" {
+		case "other-public":
 			otherPublic = &report.Repositories[i]
 		}
 	}

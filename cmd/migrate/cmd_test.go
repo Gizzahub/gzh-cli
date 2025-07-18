@@ -97,7 +97,9 @@ func TestFindLegacyFiles(t *testing.T) {
 	// Change to temp directory
 	oldDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer func() { require.NoError(t, os.Chdir(oldDir)) }()
+
 	require.NoError(t, os.Chdir(tmpDir))
 
 	// Test finding legacy files

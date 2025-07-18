@@ -12,7 +12,7 @@ import (
 )
 
 // TestComprehensiveMockingStrategy demonstrates a complete mocking strategy
-// integrating gomock, testify/mock, and custom builders
+// integrating gomock, testify/mock, and custom builders.
 func TestComprehensiveMockingStrategy(t *testing.T) {
 	// Setup test context
 	ctx := context.Background()
@@ -86,6 +86,7 @@ func TestComprehensiveMockingStrategy(t *testing.T) {
 
 		// Step 4: Bulk clone with progress callback
 		var progressUpdates []ProgressUpdate
+
 		progressCallback := func(update ProgressUpdate) {
 			progressUpdates = append(progressUpdates, update)
 		}
@@ -223,6 +224,7 @@ func TestComprehensiveMockingStrategy(t *testing.T) {
 
 		exists1 := mockStatefulFS.Exists(ctx, "/file1.txt")
 		exists2 := mockStatefulFS.Exists(ctx, "/file2.txt")
+
 		assert.True(t, exists1)
 		assert.True(t, exists2)
 
@@ -241,7 +243,7 @@ func TestComprehensiveMockingStrategy(t *testing.T) {
 	})
 }
 
-// TestMockingBestPractices demonstrates best practices for mock usage
+// TestMockingBestPractices demonstrates best practices for mock usage.
 func TestMockingBestPractices(t *testing.T) {
 	t.Run("Mock Isolation", func(t *testing.T) {
 		// Each test should have its own mocks
@@ -323,13 +325,14 @@ func TestMockingBestPractices(t *testing.T) {
 	})
 }
 
-// BenchmarkMockingPerformance benchmarks different mocking approaches
+// BenchmarkMockingPerformance benchmarks different mocking approaches.
 func BenchmarkMockingPerformance(b *testing.B) {
 	b.Run("Gomock Creation", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			ctrl := gomock.NewController(b)
 			factory := NewMockFactory(ctrl)
 			_ = factory.CreateMockGitHubAPIClient()
+
 			ctrl.Finish()
 		}
 	})
@@ -347,6 +350,7 @@ func BenchmarkMockingPerformance(b *testing.B) {
 		factory := NewMockFactory(ctrl)
 
 		b.ResetTimer()
+
 		for i := 0; i < b.N; i++ {
 			mock := factory.CreateMockGitHubAPIClient()
 			_, _ = mock.GetRateLimit(context.Background())
@@ -362,6 +366,7 @@ func BenchmarkMockingPerformance(b *testing.B) {
 		mockFS.On("ReadFile", ctx, "/test.txt").Return([]byte("data"), nil)
 
 		b.ResetTimer()
+
 		for i := 0; i < b.N; i++ {
 			_ = mockFS.WriteFile(ctx, "/test.txt", []byte("data"), 0o644)
 			_, _ = mockFS.ReadFile(ctx, "/test.txt")

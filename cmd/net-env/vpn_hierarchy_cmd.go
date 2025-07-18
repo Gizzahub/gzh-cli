@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newVPNHierarchyCmd creates the VPN hierarchy management command
+// newVPNHierarchyCmd creates the VPN hierarchy management command.
 func newVPNHierarchyCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vpn-hierarchy",
@@ -61,7 +61,7 @@ Examples:
 	return cmd
 }
 
-// newVPNHierarchyShowCmd creates the show subcommand
+// newVPNHierarchyShowCmd creates the show subcommand.
 func newVPNHierarchyShowCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
@@ -96,7 +96,7 @@ func newVPNHierarchyShowCmd(logger *zap.Logger, configDir string) *cobra.Command
 	return cmd
 }
 
-// newVPNHierarchyConnectCmd creates the connect subcommand
+// newVPNHierarchyConnectCmd creates the connect subcommand.
 func newVPNHierarchyConnectCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "connect",
@@ -133,7 +133,7 @@ func newVPNHierarchyConnectCmd(logger *zap.Logger, configDir string) *cobra.Comm
 	return cmd
 }
 
-// newVPNHierarchyDisconnectCmd creates the disconnect subcommand
+// newVPNHierarchyDisconnectCmd creates the disconnect subcommand.
 func newVPNHierarchyDisconnectCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "disconnect",
@@ -170,7 +170,7 @@ func newVPNHierarchyDisconnectCmd(logger *zap.Logger, configDir string) *cobra.C
 	return cmd
 }
 
-// newVPNHierarchyLayersCmd creates the layers subcommand
+// newVPNHierarchyLayersCmd creates the layers subcommand.
 func newVPNHierarchyLayersCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "layers",
@@ -207,7 +207,7 @@ func newVPNHierarchyLayersCmd(logger *zap.Logger, configDir string) *cobra.Comma
 	return cmd
 }
 
-// newVPNHierarchyAutoConnectCmd creates the auto-connect subcommand
+// newVPNHierarchyAutoConnectCmd creates the auto-connect subcommand.
 func newVPNHierarchyAutoConnectCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auto-connect",
@@ -260,7 +260,7 @@ func newVPNHierarchyAutoConnectCmd(logger *zap.Logger, configDir string) *cobra.
 	return cmd
 }
 
-// newVPNHierarchyAddCmd creates the add subcommand
+// newVPNHierarchyAddCmd creates the add subcommand.
 func newVPNHierarchyAddCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add",
@@ -300,7 +300,7 @@ func newVPNHierarchyAddCmd(logger *zap.Logger, configDir string) *cobra.Command 
 	return cmd
 }
 
-// newVPNHierarchyRemoveCmd creates the remove subcommand
+// newVPNHierarchyRemoveCmd creates the remove subcommand.
 func newVPNHierarchyRemoveCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove",
@@ -332,7 +332,7 @@ func newVPNHierarchyRemoveCmd(logger *zap.Logger, configDir string) *cobra.Comma
 	return cmd
 }
 
-// newVPNHierarchyValidateCmd creates the validate subcommand
+// newVPNHierarchyValidateCmd creates the validate subcommand.
 func newVPNHierarchyValidateCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
@@ -364,7 +364,7 @@ func newVPNHierarchyValidateCmd(logger *zap.Logger, configDir string) *cobra.Com
 	return cmd
 }
 
-// newVPNHierarchyStatusCmd creates the status subcommand
+// newVPNHierarchyStatusCmd creates the status subcommand.
 func newVPNHierarchyStatusCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -450,7 +450,6 @@ func detectNetworkEnvironment(ctx context.Context) (string, error) {
 	// - Network IP ranges
 	// - Available services
 	// - DNS servers
-
 	return "office", nil
 }
 
@@ -464,6 +463,7 @@ func printVPNHierarchy(hierarchy map[string]*cloud.VPNHierarchyNode) error {
 
 	// Find root nodes (nodes without dependencies)
 	var roots []*cloud.VPNHierarchyNode
+
 	for _, node := range hierarchy {
 		if len(node.Dependencies) == 0 {
 			roots = append(roots, node)
@@ -475,6 +475,7 @@ func printVPNHierarchy(hierarchy map[string]*cloud.VPNHierarchyNode) error {
 		if i > 0 {
 			fmt.Println()
 		}
+
 		printHierarchyNode(root, 0)
 	}
 
@@ -491,6 +492,7 @@ func printHierarchyNode(node *cloud.VPNHierarchyNode, indent int) {
 	if conn != nil {
 		fmt.Printf("%s├─ %s (Layer %d, Priority %d)\n",
 			indentStr, conn.Name, node.Layer, conn.Priority)
+
 		if len(node.Dependencies) > 0 {
 			fmt.Printf("%s   Dependencies: %v\n", indentStr, node.Dependencies)
 		}
@@ -576,17 +578,20 @@ func formatBytes(bytes int64) string {
 	if bytes < unit {
 		return fmt.Sprintf("%d B", bytes)
 	}
+
 	div, exp := int64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
 	}
+
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
 
-// printVPNHierarchyList prints a list of VPN hierarchies
+// printVPNHierarchyList prints a list of VPN hierarchies.
 func printVPNHierarchyList(hierarchies []*cloud.VPNHierarchy) error {
 	fmt.Printf("🌐 VPN Hierarchies\n\n")
+
 	if len(hierarchies) == 0 {
 		fmt.Println("  No VPN hierarchies configured.")
 		return nil
@@ -596,21 +601,27 @@ func printVPNHierarchyList(hierarchies []*cloud.VPNHierarchy) error {
 		if i > 0 {
 			fmt.Println()
 		}
+
 		fmt.Printf("Hierarchy: %s\n", hierarchy.Name)
+
 		if hierarchy.Description != "" {
 			fmt.Printf("  Description: %s\n", hierarchy.Description)
 		}
+
 		if hierarchy.Environment != "" {
 			fmt.Printf("  Environment: %s\n", hierarchy.Environment)
 		}
 
 		// Display layers
 		fmt.Printf("  Layers:\n")
+
 		for layer, nodes := range hierarchy.Layers {
 			fmt.Printf("    Layer %d:\n", layer)
+
 			for _, node := range nodes {
 				if node.Connection != nil {
 					fmt.Printf("      - %s (%s)\n", node.Connection.Name, node.Connection.Type)
+
 					if len(node.Dependencies) > 0 {
 						fmt.Printf("        Dependencies: %v\n", node.Dependencies)
 					}
@@ -618,12 +629,14 @@ func printVPNHierarchyList(hierarchies []*cloud.VPNHierarchy) error {
 			}
 		}
 	}
+
 	return nil
 }
 
-// printVPNHierarchyLayers prints layers from hierarchies
+// printVPNHierarchyLayers prints layers from hierarchies.
 func printVPNHierarchyLayers(hierarchies []*cloud.VPNHierarchy) error {
 	fmt.Printf("🌐 VPN Hierarchy Layers\n\n")
+
 	if len(hierarchies) == 0 {
 		fmt.Println("  No VPN hierarchies configured.")
 		return nil
@@ -631,6 +644,7 @@ func printVPNHierarchyLayers(hierarchies []*cloud.VPNHierarchy) error {
 
 	for _, hierarchy := range hierarchies {
 		fmt.Printf("Hierarchy: %s\n", hierarchy.Name)
+
 		if len(hierarchy.Layers) == 0 {
 			fmt.Println("  No layers configured")
 			continue
@@ -638,13 +652,16 @@ func printVPNHierarchyLayers(hierarchies []*cloud.VPNHierarchy) error {
 
 		for layer, nodes := range hierarchy.Layers {
 			fmt.Printf("  📍 Layer %d: %d connections\n", layer, len(nodes))
+
 			for _, node := range nodes {
 				if node.Connection != nil {
 					fmt.Printf("    └─ %s (%s)\n", node.Connection.Name, node.Connection.Type)
 				}
 			}
 		}
+
 		fmt.Println()
 	}
+
 	return nil
 }

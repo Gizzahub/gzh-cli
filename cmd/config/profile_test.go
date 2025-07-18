@@ -65,11 +65,13 @@ func TestCreateProfile(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "profile-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer os.Chdir(originalDir)
 
 	err = os.Chdir(tmpDir)
@@ -93,11 +95,13 @@ func TestCreateProfileFromExisting(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "profile-from-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer os.Chdir(originalDir)
 
 	err = os.Chdir(tmpDir)
@@ -133,11 +137,13 @@ func TestGetAvailableProfiles(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "profiles-list-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer os.Chdir(originalDir)
 
 	err = os.Chdir(tmpDir)
@@ -172,11 +178,13 @@ func TestUseProfile(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "use-profile-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer os.Chdir(originalDir)
 
 	err = os.Chdir(tmpDir)
@@ -214,11 +222,13 @@ func TestGetCurrentProfile(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "current-profile-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer os.Chdir(originalDir)
 
 	err = os.Chdir(tmpDir)
@@ -247,11 +257,13 @@ func TestDeleteProfile(t *testing.T) {
 	// Create temporary directory
 	tmpDir, err := os.MkdirTemp("", "delete-profile-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
+
 	defer os.Chdir(originalDir)
 
 	err = os.Chdir(tmpDir)

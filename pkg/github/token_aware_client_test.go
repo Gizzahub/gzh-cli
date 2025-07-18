@@ -58,6 +58,7 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 		switch r.URL.Path {
 		case "/user":
 			w.Header().Set("X-OAuth-Scopes", "repo,read:org")
+
 			user := github.GitHubUser{
 				ID:    12345,
 				Login: "testuser",
@@ -129,6 +130,7 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)
+
 	defer client.Stop()
 
 	ctx := context.Background()
@@ -210,6 +212,7 @@ func TestTokenAwareGitHubClient_ErrorHandling(t *testing.T) {
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)
+
 	defer client.Stop()
 
 	ctx := context.Background()
@@ -243,6 +246,7 @@ func TestTokenAwareGitHubClient_ErrorHandling(t *testing.T) {
 func TestTokenAwareGitHubClient_TokenExpiration(t *testing.T) {
 	// Mock server that simulates token expiration
 	tokenExpired := false
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if tokenExpired {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -270,6 +274,7 @@ func TestTokenAwareGitHubClient_TokenExpiration(t *testing.T) {
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)
+
 	defer client.Stop()
 
 	ctx := context.Background()
@@ -291,6 +296,7 @@ func TestTokenAwareGitHubClient_TokenStatus(t *testing.T) {
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)
+
 	defer client.Stop()
 
 	status, err := client.GetTokenStatus()

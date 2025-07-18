@@ -253,6 +253,7 @@ func TestExpandEnvVars(t *testing.T) {
 	// Set test environment variables
 	os.Setenv("TEST_WEBHOOK_URL", "https://example.com/webhook")
 	os.Setenv("TEST_SECRET", "secret123")
+
 	defer func() {
 		os.Unsetenv("TEST_WEBHOOK_URL")
 		os.Unsetenv("TEST_SECRET")
@@ -281,7 +282,7 @@ func TestExpandEnvVars(t *testing.T) {
 	assert.Equal(t, "secret123", webhook.Secret)
 }
 
-// Helper functions
+// Helper functions.
 func boolPtr(b bool) *bool {
 	return &b
 }

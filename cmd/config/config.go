@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewConfigCmd creates the config command with subcommands
+// NewConfigCmd creates the config command with subcommands.
 func NewConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
@@ -27,7 +27,7 @@ including validation, initialization, and migration tools.`,
 	return cmd
 }
 
-// newValidateCmd creates the config validate subcommand
+// newValidateCmd creates the config validate subcommand.
 func newValidateCmd() *cobra.Command {
 	var (
 		configFile string

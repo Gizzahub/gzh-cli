@@ -13,13 +13,13 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-// ChangeLogger provides comprehensive logging for repository configuration changes
+// ChangeLogger provides comprehensive logging for repository configuration changes.
 type ChangeLogger struct {
 	changelog *ChangeLog
 	options   *LoggerOptions
 }
 
-// LoggerOptions configures the change logger behavior
+// LoggerOptions configures the change logger behavior.
 type LoggerOptions struct {
 	// LogDirectory specifies where log files are stored
 	LogDirectory string
@@ -37,7 +37,7 @@ type LoggerOptions struct {
 	EnableStructuredOutput bool
 }
 
-// LogFormat represents the output format for logs
+// LogFormat represents the output format for logs.
 type LogFormat string
 
 const (
@@ -46,7 +46,7 @@ const (
 	LogFormatCSV  LogFormat = "csv"
 )
 
-// LogLevel represents the logging level
+// LogLevel represents the logging level.
 type LogLevel string
 
 const (
@@ -57,7 +57,7 @@ const (
 	LogLevelError LogLevel = "error"
 )
 
-// logEntry represents a structured log entry
+// logEntry represents a structured log entry.
 type logEntry struct {
 	Timestamp  time.Time              `json:"timestamp"`
 	Level      LogLevel               `json:"level"`
@@ -75,7 +75,7 @@ type logEntry struct {
 	Metadata   map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// operationContext provides context for logging operations
+// operationContext provides context for logging operations.
 type operationContext struct {
 	RequestID    string
 	User         string
@@ -86,7 +86,7 @@ type operationContext struct {
 	Metadata     map[string]interface{}
 }
 
-// NewChangeLogger creates a new change logger with the specified options
+// NewChangeLogger creates a new change logger with the specified options.
 func NewChangeLogger(changelog *ChangeLog, options *LoggerOptions) *ChangeLogger {
 	if options == nil {
 		options = DefaultLoggerOptions()
@@ -103,9 +103,10 @@ func NewChangeLogger(changelog *ChangeLog, options *LoggerOptions) *ChangeLogger
 	}
 }
 
-// DefaultLoggerOptions returns default logger configuration
+// DefaultLoggerOptions returns default logger configuration.
 func DefaultLoggerOptions() *LoggerOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &LoggerOptions{
 		LogDirectory:           filepath.Join(homeDir, ".config", "gzh-manager", "logs"),
 		LogFormat:              LogFormatJSON,
@@ -117,7 +118,7 @@ func DefaultLoggerOptions() *LoggerOptions {
 	}
 }
 
-// LogRepositoryChange logs a repository configuration change with full context
+// LogRepositoryChange logs a repository configuration change with full context.
 func (cl *ChangeLogger) LogRepositoryChange(ctx context.Context, opCtx *operationContext, changeRecord *ChangeRecord, level LogLevel, message string, err error) error {
 	entry := &logEntry{
 		Timestamp:  time.Now(),
@@ -150,7 +151,7 @@ func (cl *ChangeLogger) LogRepositoryChange(ctx context.Context, opCtx *operatio
 	return cl.writeLogEntry(entry)
 }
 
-// LogOperation logs a general operation with context
+// LogOperation logs a general operation with context.
 func (cl *ChangeLogger) LogOperation(ctx context.Context, opCtx *operationContext, level LogLevel, operation, category, message string, err error) error {
 	entry := &logEntry{
 		Timestamp: time.Now(),
@@ -180,7 +181,7 @@ func (cl *ChangeLogger) LogOperation(ctx context.Context, opCtx *operationContex
 	return cl.writeLogEntry(entry)
 }
 
-// LogBulkOperation logs bulk operations with aggregated statistics
+// LogBulkOperation logs bulk operations with aggregated statistics.
 func (cl *ChangeLogger) LogBulkOperation(ctx context.Context, opCtx *operationContext, level LogLevel, operation string, stats *bulkOperationStats, err error) error {
 	message := fmt.Sprintf("Bulk %s completed: %d total, %d success, %d failed, %d skipped",
 		operation, stats.Total, stats.Success, stats.Failed, stats.Skipped)
@@ -213,7 +214,7 @@ func (cl *ChangeLogger) LogBulkOperation(ctx context.Context, opCtx *operationCo
 	return cl.writeLogEntry(entry)
 }
 
-// bulkOperationStats contains statistics for bulk operations
+// bulkOperationStats contains statistics for bulk operations.
 type bulkOperationStats struct {
 	Total    int                    `json:"total"`
 	Success  int                    `json:"success"`
@@ -224,9 +225,10 @@ type bulkOperationStats struct {
 	Details  map[string]interface{} `json:"details,omitempty"`
 }
 
-// CreateOperationContext creates a new operation context for logging
+// CreateOperationContext creates a new operation context for logging.
 func (cl *ChangeLogger) CreateOperationContext(requestID, operation string) *operationContext {
 	user := getSystemUser()
+
 	return &operationContext{
 		RequestID: requestID,
 		User:      user,
@@ -236,7 +238,7 @@ func (cl *ChangeLogger) CreateOperationContext(requestID, operation string) *ope
 	}
 }
 
-// writeLogEntry writes a log entry to the configured outputs
+// writeLogEntry writes a log entry to the configured outputs.
 func (cl *ChangeLogger) writeLogEntry(entry *logEntry) error {
 	// Check if we should log this level
 	if !cl.shouldLog(entry.Level) {
@@ -260,7 +262,7 @@ func (cl *ChangeLogger) writeLogEntry(entry *logEntry) error {
 	return nil
 }
 
-// shouldLog determines if a log entry should be written based on level
+// shouldLog determines if a log entry should be written based on level.
 func (cl *ChangeLogger) shouldLog(level LogLevel) bool {
 	levels := map[LogLevel]int{
 		LogLevelTrace: 0,
@@ -283,7 +285,7 @@ func (cl *ChangeLogger) shouldLog(level LogLevel) bool {
 	return entryLevel >= configLevel
 }
 
-// writeToConsole writes log entry to console
+// writeToConsole writes log entry to console.
 func (cl *ChangeLogger) writeToConsole(entry *logEntry) error {
 	var output string
 
@@ -293,6 +295,7 @@ func (cl *ChangeLogger) writeToConsole(entry *logEntry) error {
 		if err != nil {
 			return err
 		}
+
 		output = string(jsonBytes)
 
 	case LogFormatText:
@@ -315,7 +318,7 @@ func (cl *ChangeLogger) writeToConsole(entry *logEntry) error {
 	return nil
 }
 
-// writeToFile writes log entry to file with rotation
+// writeToFile writes log entry to file with rotation.
 func (cl *ChangeLogger) writeToFile(entry *logEntry) error {
 	logFile := cl.getLogFileName()
 
@@ -333,12 +336,14 @@ func (cl *ChangeLogger) writeToFile(entry *logEntry) error {
 
 	// Format entry based on configured format
 	var line string
+
 	switch cl.options.LogFormat {
 	case LogFormatJSON:
 		jsonBytes, err := json.Marshal(entry)
 		if err != nil {
 			return err
 		}
+
 		line = string(jsonBytes) + "\n"
 
 	case LogFormatText:
@@ -352,21 +357,23 @@ func (cl *ChangeLogger) writeToFile(entry *logEntry) error {
 	}
 
 	_, err = file.WriteString(line)
+
 	return err
 }
 
-// getLogFileName returns the current log file name
+// getLogFileName returns the current log file name.
 func (cl *ChangeLogger) getLogFileName() string {
 	date := time.Now().Format("2006-01-02")
 	return filepath.Join(cl.options.LogDirectory, fmt.Sprintf("gzh-manager-%s.log", date))
 }
 
-// rotateLogIfNeeded checks if log rotation is needed and performs it
+// rotateLogIfNeeded checks if log rotation is needed and performs it.
 func (cl *ChangeLogger) rotateLogIfNeeded(logFile string) error {
 	info, err := os.Stat(logFile)
 	if os.IsNotExist(err) {
 		return nil // File doesn't exist, no rotation needed
 	}
+
 	if err != nil {
 		return err
 	}
@@ -387,9 +394,10 @@ func (cl *ChangeLogger) rotateLogIfNeeded(logFile string) error {
 	return cl.cleanupOldLogFiles()
 }
 
-// cleanupOldLogFiles removes old rotated log files
+// cleanupOldLogFiles removes old rotated log files.
 func (cl *ChangeLogger) cleanupOldLogFiles() error {
 	pattern := filepath.Join(cl.options.LogDirectory, "gzh-manager-*.log.*")
+
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
 		return err
@@ -408,7 +416,7 @@ func (cl *ChangeLogger) cleanupOldLogFiles() error {
 	return nil
 }
 
-// formatTextEntry formats a log entry as human-readable text
+// formatTextEntry formats a log entry as human-readable text.
 func (cl *ChangeLogger) formatTextEntry(entry *logEntry) string {
 	timestamp := entry.Timestamp.Format("2006-01-02 15:04:05")
 	parts := []string{
@@ -440,7 +448,7 @@ func (cl *ChangeLogger) formatTextEntry(entry *logEntry) string {
 	return strings.Join(parts, " ")
 }
 
-// formatCSVEntry formats a log entry as CSV
+// formatCSVEntry formats a log entry as CSV.
 func (cl *ChangeLogger) formatCSVEntry(entry *logEntry) string {
 	timestamp := entry.Timestamp.Format("2006-01-02 15:04:05")
 	fields := []string{
@@ -463,26 +471,29 @@ func (cl *ChangeLogger) formatCSVEntry(entry *logEntry) string {
 	return strings.Join(fields, ",")
 }
 
-// getSystemUser gets the current system user for logging (enhanced version)
+// getSystemUser gets the current system user for logging (enhanced version).
 func getSystemUser() string {
 	return getSystemUserWithEnv(env.NewOSEnvironment())
 }
 
-// getSystemUserWithEnv gets the current system user using the provided environment
+// getSystemUserWithEnv gets the current system user using the provided environment.
 func getSystemUserWithEnv(environment env.Environment) string {
 	if u, err := user.Current(); err == nil {
 		return u.Username
 	}
+
 	if username := environment.Get(env.CommonEnvironmentKeys.User); username != "" {
 		return username
 	}
+
 	if username := environment.Get(env.CommonEnvironmentKeys.Username); username != "" {
 		return username
 	}
+
 	return "unknown"
 }
 
-// GetLogSummary returns a summary of recent log entries
+// GetLogSummary returns a summary of recent log entries.
 func (cl *ChangeLogger) GetLogSummary(ctx context.Context, since time.Time) (*LogSummary, error) {
 	filter := ChangeFilter{
 		Since: since,
@@ -512,7 +523,7 @@ func (cl *ChangeLogger) GetLogSummary(ctx context.Context, since time.Time) (*Lo
 	return summary, nil
 }
 
-// LogSummary provides a summary of logging activity
+// LogSummary provides a summary of logging activity.
 type LogSummary struct {
 	Period       string         `json:"period"`
 	TotalChanges int            `json:"total_changes"`

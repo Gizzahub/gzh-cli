@@ -16,8 +16,10 @@ import (
 func TestNewGCPProjectManager(t *testing.T) {
 	// Create temporary directory for testing
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	// Create mock gcloud config directory
@@ -37,8 +39,10 @@ func TestNewGCPProjectManager(t *testing.T) {
 func TestGCPProjectManager_LoadConfigurations(t *testing.T) {
 	// Create temporary directory for testing
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	// Create mock gcloud config structure
@@ -122,8 +126,10 @@ func TestGCPProjectManager_LoadConfigurations(t *testing.T) {
 func TestGCPProjectManager_LoadConfigurationsINIFormat(t *testing.T) {
 	// Create temporary directory for testing
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	// Create mock gcloud config structure
@@ -198,6 +204,7 @@ func TestGCPProject_JSONSerialization(t *testing.T) {
 
 	// Test JSON unmarshaling
 	var unmarshaled GCPProject
+
 	err = json.Unmarshal(data, &unmarshaled)
 	require.NoError(t, err)
 
@@ -235,6 +242,7 @@ func TestGCPConfiguration_StructValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	var unmarshaled GCPConfiguration
+
 	err = json.Unmarshal(data, &unmarshaled)
 	require.NoError(t, err)
 
@@ -250,8 +258,10 @@ func TestGCPConfiguration_StructValidation(t *testing.T) {
 func TestGCPProjectManager_GetActiveConfiguration(t *testing.T) {
 	// Test with existing active_config file
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	gcloudDir := filepath.Join(tmpDir, ".config", "gcloud")
@@ -403,8 +413,10 @@ func TestGCPProjectManager_Integration(t *testing.T) {
 
 	// Create temporary directory for testing
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	// Create minimal gcloud config structure
@@ -423,12 +435,14 @@ func TestGCPProjectManager_Integration(t *testing.T) {
 	assert.NoError(t, err) // Should handle empty project list gracefully
 }
 
-// Benchmark tests for performance
+// Benchmark tests for performance.
 func BenchmarkGCPProjectManager_LoadConfigurations(b *testing.B) {
 	// Create temporary directory with test data
 	tmpDir := b.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	// Create multiple configurations for benchmarking
@@ -498,7 +512,9 @@ func BenchmarkGCPProject_JSONSerialization(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		data, _ := json.Marshal(project)
+
 		var unmarshaled GCPProject
+
 		_ = json.Unmarshal(data, &unmarshaled)
 	}
 }

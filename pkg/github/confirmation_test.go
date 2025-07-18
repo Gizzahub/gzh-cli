@@ -261,15 +261,19 @@ func TestAnalyzeRepositoryChanges(t *testing.T) {
 		switch change.Field {
 		case "private":
 			foundPrivacyChange = true
+
 			assert.Equal(t, RiskCritical, change.Risk)
 		case "archived":
 			foundArchiveChange = true
+
 			assert.Equal(t, RiskHigh, change.Risk)
 		case "default_branch":
 			foundBranchChange = true
+
 			assert.Equal(t, RiskHigh, change.Risk)
 		case "enforce_admins":
 			foundAdminEnforcement = true
+
 			assert.Equal(t, RiskHigh, change.Risk)
 		}
 	}
@@ -314,14 +318,19 @@ func TestAnalyzeBranchProtectionChanges(t *testing.T) {
 	for _, change := range changes {
 		if change.Operation == "delete" && strings.Contains(change.Description, "develop") {
 			foundRemoval = true
+
 			assert.Equal(t, RiskHigh, change.Risk)
 		}
+
 		if change.Field == "required_reviews" {
 			foundReviewDecrease = true
+
 			assert.Equal(t, RiskMedium, change.Risk)
 		}
+
 		if change.Field == "enforce_admins" {
 			foundAdminDisable = true
+
 			assert.Equal(t, RiskHigh, change.Risk)
 		}
 	}
@@ -356,18 +365,25 @@ func TestAnalyzePermissionChanges(t *testing.T) {
 	for _, change := range changes {
 		if change.Field == "team_permission" && change.Operation == "update" && strings.Contains(change.Description, "dev") {
 			foundTeamEscalation = true
+
 			assert.Equal(t, RiskMedium, change.Risk)
 		}
+
 		if change.Field == "user_permission" && change.Operation == "update" && strings.Contains(change.Description, "user1") {
 			foundUserEscalation = true
+
 			assert.Equal(t, RiskMedium, change.Risk)
 		}
+
 		if change.Field == "team_permission" && change.Operation == "create" && strings.Contains(change.Description, "ops") {
 			foundNewTeam = true
+
 			assert.Equal(t, RiskLow, change.Risk)
 		}
+
 		if change.Field == "user_permission" && change.Operation == "create" && strings.Contains(change.Description, "user2") {
 			foundNewUser = true
+
 			assert.Equal(t, RiskLow, change.Risk)
 		}
 	}

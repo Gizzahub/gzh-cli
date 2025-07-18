@@ -11,12 +11,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// LoadSchemaFromFile loads the JSON schema from the docs directory
+// LoadSchemaFromFile loads the JSON schema from the docs directory.
 func LoadSchemaFromFile() (string, error) {
 	return LoadSchemaFromFileWithEnv(env.NewOSEnvironment())
 }
 
-// LoadSchemaFromFileWithEnv loads the JSON schema using the provided environment
+// LoadSchemaFromFileWithEnv loads the JSON schema using the provided environment.
 func LoadSchemaFromFileWithEnv(environment env.Environment) (string, error) {
 	// Try to find the schema file relative to the current working directory
 	goPath := environment.Get("GOPATH")
@@ -39,7 +39,7 @@ func LoadSchemaFromFileWithEnv(environment env.Environment) (string, error) {
 	return bulkCloneSchemaJSON, nil
 }
 
-// bulkCloneSchemaJSON contains the embedded JSON schema for validating bulk-clone configuration files
+// bulkCloneSchemaJSON contains the embedded JSON schema for validating bulk-clone configuration files.
 var bulkCloneSchemaJSON string = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Bulk Clone Configuration Schema",
@@ -173,7 +173,7 @@ var bulkCloneSchemaJSON string = `{
   }
 }`
 
-// ValidateConfigWithSchema validates a configuration against the JSON schema
+// ValidateConfigWithSchema validates a configuration against the JSON schema.
 func ValidateConfigWithSchema(configPath string) error {
 	// Load the schema
 	schemaLoader := gojsonschema.NewStringLoader(bulkCloneSchemaJSON)
@@ -204,13 +204,14 @@ func ValidateConfigWithSchema(configPath string) error {
 		for _, err := range result.Errors() {
 			errors = append(errors, fmt.Sprintf("- %s", err))
 		}
+
 		return fmt.Errorf("config validation failed:\n%s", joinStrings(errors, "\n"))
 	}
 
 	return nil
 }
 
-// configToJSON converts the config struct to JSON bytes
+// configToJSON converts the config struct to JSON bytes.
 func configToJSON(cfg *bulkCloneConfig) ([]byte, error) {
 	// First convert to a generic map to handle the YAML tags
 	yamlData, err := yaml.Marshal(cfg)
@@ -227,14 +228,16 @@ func configToJSON(cfg *bulkCloneConfig) ([]byte, error) {
 	return json.Marshal(genericData)
 }
 
-// joinStrings joins strings with a separator (simple helper)
+// joinStrings joins strings with a separator (simple helper).
 func joinStrings(strs []string, sep string) string {
 	if len(strs) == 0 {
 		return ""
 	}
+
 	result := strs[0]
 	for i := 1; i < len(strs); i++ {
 		result += sep + strs[i]
 	}
+
 	return result
 }

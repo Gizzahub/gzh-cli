@@ -188,12 +188,15 @@ func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
 			// Print details for debugging
 			if len(result.Errors) > 0 {
 				t.Logf("Validation errors:")
+
 				for _, err := range result.Errors {
 					t.Logf("  - %s: %s", err.Field, err.Message)
 				}
 			}
+
 			if len(result.Warnings) > 0 {
 				t.Logf("Validation warnings:")
+
 				for _, warn := range result.Warnings {
 					t.Logf("  - %s: %s", warn.Field, warn.Message)
 				}
@@ -397,12 +400,14 @@ func TestStartupValidator_EnvironmentVariableWarnings(t *testing.T) {
 
 	// Check for environment variable warning
 	foundEnvWarning := false
+
 	for _, warning := range result.Warnings {
 		if strings.Contains(warning.Message, "MISSING_TOKEN") {
 			foundEnvWarning = true
 			break
 		}
 	}
+
 	assert.True(t, foundEnvWarning, "Should have warning about missing environment variable")
 }
 
@@ -477,11 +482,13 @@ func TestStartupValidator_NoOrganizationsWarning(t *testing.T) {
 
 	// Check for no organizations warning
 	foundNoOrgsWarning := false
+
 	for _, warning := range result.Warnings {
 		if strings.Contains(warning.Message, "No organizations configured") {
 			foundNoOrgsWarning = true
 			break
 		}
 	}
+
 	assert.True(t, foundNoOrgsWarning, "Should have warning about no organizations")
 }

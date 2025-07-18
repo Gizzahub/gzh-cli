@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// RateLimiter handles GitHub API rate limiting with retry logic
+// RateLimiter handles GitHub API rate limiting with retry logic.
 type RateLimiter struct {
 	mu         sync.Mutex
 	limit      int
@@ -20,7 +20,7 @@ type RateLimiter struct {
 	maxRetries int
 }
 
-// NewRateLimiter creates a new rate limiter with default settings
+// NewRateLimiter creates a new rate limiter with default settings.
 func NewRateLimiter() *RateLimiter {
 	return &RateLimiter{
 		limit:      5000, // GitHub's default API rate limit
@@ -30,7 +30,7 @@ func NewRateLimiter() *RateLimiter {
 	}
 }
 
-// Wait blocks until rate limit allows making a request
+// Wait blocks until rate limit allows making a request.
 func (rl *RateLimiter) Wait(ctx context.Context) error {
 	rl.mu.Lock()
 
@@ -61,10 +61,11 @@ func (rl *RateLimiter) Wait(ctx context.Context) error {
 
 	rl.remaining--
 	rl.mu.Unlock()
+
 	return nil
 }
 
-// Update updates rate limit information from response headers
+// Update updates rate limit information from response headers.
 func (rl *RateLimiter) Update(resp *http.Response) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -98,21 +99,23 @@ func (rl *RateLimiter) Update(resp *http.Response) {
 	}
 }
 
-// SetRetryAfter sets the retry-after duration
+// SetRetryAfter sets the retry-after duration.
 func (rl *RateLimiter) SetRetryAfter(duration time.Duration) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
+
 	rl.retryAfter = duration
 }
 
-// GetStatus returns current rate limit status
+// GetStatus returns current rate limit status.
 func (rl *RateLimiter) GetStatus() (int, int, time.Time) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
+
 	return rl.remaining, rl.limit, rl.resetTime
 }
 
-// CalculateBackoff calculates exponential backoff with jitter
+// CalculateBackoff calculates exponential backoff with jitter.
 func CalculateBackoff(attempt int) time.Duration {
 	if attempt < 0 {
 		attempt = 0
@@ -128,10 +131,11 @@ func CalculateBackoff(attempt int) time.Duration {
 
 	// Add jitter (10% of backoff)
 	jitter := time.Duration(rand.Float64() * float64(backoff) * 0.1)
+
 	return backoff + jitter
 }
 
-// ShouldRetry determines if a response indicates we should retry
+// ShouldRetry determines if a response indicates we should retry.
 func ShouldRetry(resp *http.Response) bool {
 	if resp == nil {
 		return false
@@ -159,7 +163,7 @@ func ShouldRetry(resp *http.Response) bool {
 	return false
 }
 
-// RetryableError represents an error that can be retried
+// RetryableError represents an error that can be retried.
 type RetryableError struct {
 	Err           error
 	RetryAfter    time.Duration
@@ -172,15 +176,16 @@ func (e *RetryableError) Error() string {
 		return fmt.Sprintf("%v (retry after %v, %d attempts left)",
 			e.Err, e.RetryAfter, e.AttemptsLeft)
 	}
+
 	return fmt.Sprintf("%v (%d attempts left)", e.Err, e.AttemptsLeft)
 }
 
-// IsRetryable returns true if the error is retryable
+// IsRetryable returns true if the error is retryable.
 func (e *RetryableError) IsRetryable() bool {
 	return e.AttemptsLeft > 0
 }
 
-// sleep is a context-aware sleep function
+// sleep is a context-aware sleep function.
 func sleep(ctx context.Context, duration time.Duration) error {
 	select {
 	case <-time.After(duration):

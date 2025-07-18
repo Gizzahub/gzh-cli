@@ -40,6 +40,7 @@ func ExampleList() {
 	}
 
 	fmt.Printf("Found %d projects", len(projects))
+
 	if len(projects) > 0 {
 		fmt.Printf("\nFirst project: %s", projects[0])
 	}
@@ -53,6 +54,7 @@ func ExampleClone() {
 
 	// Create a temporary directory for cloning
 	tempDir := "/tmp/gitlab-clone-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 
@@ -74,6 +76,7 @@ func ExampleClone_defaultBranch() {
 
 	// Create a temporary directory for cloning
 	tempDir := "/tmp/gitlab-default-branch-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 
@@ -123,8 +126,10 @@ func ExampleGroupWorkflow() {
 		branch, err := gitlab.GetDefaultBranch(ctx, groupName, project)
 		if err != nil {
 			log.Printf("Warning: Could not get default branch for %s: %v", project, err)
+
 			branch = "main" // fallback
 		}
+
 		fmt.Printf("  Default branch: %s\n", branch)
 
 		// Clone the project

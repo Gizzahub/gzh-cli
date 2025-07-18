@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestNetEnvCLIIntegration tests the complete CLI workflow for network environment management
+// TestNetEnvCLIIntegration tests the complete CLI workflow for network environment management.
 func TestNetEnvCLIIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
@@ -26,8 +26,8 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 	t.Run("InitializeNetworkProfiles", func(t *testing.T) {
 		// Test gz net-env switch --init
 		cmd := exec.Command("gz", "net-env", "switch", "--init", "--config", configPath)
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			// If gz binary is not available, create mock config for testing
 			t.Logf("gz binary not available, creating mock config: %v", err)
@@ -45,8 +45,8 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 	t.Run("ListNetworkProfiles", func(t *testing.T) {
 		// Test gz net-env switch --list
 		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing config parsing: %v", err)
 			// Test that we can read the config file
@@ -57,6 +57,7 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 			assert.Contains(t, string(content), "office")
 		} else {
 			assert.NoError(t, err, "gz net-env switch --list should succeed")
+
 			outputStr := string(output)
 			assert.Contains(t, outputStr, "Available Network Profiles")
 			assert.Contains(t, outputStr, "home")
@@ -67,8 +68,8 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 	t.Run("NetworkStatusCheck", func(t *testing.T) {
 		// Test gz net-env status
 		cmd := exec.Command("gz", "net-env", "status")
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, simulating status check: %v", err)
 			// We can't test actual network status without the binary
@@ -76,6 +77,7 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 			assert.True(t, true, "Status check simulation passed")
 		} else {
 			assert.NoError(t, err, "gz net-env status should succeed")
+
 			outputStr := string(output)
 			assert.Contains(t, outputStr, "Network Environment Status")
 			assert.Contains(t, outputStr, "Network Interfaces")
@@ -85,8 +87,8 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 	t.Run("DryRunNetworkSwitch", func(t *testing.T) {
 		// Test gz net-env switch home --dry-run
 		cmd := exec.Command("gz", "net-env", "switch", "home", "--dry-run", "--config", configPath)
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing dry-run simulation: %v", err)
 			// Verify we have a valid config for dry-run testing
@@ -95,6 +97,7 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 			assert.Contains(t, string(content), `name: "home"`)
 		} else {
 			assert.NoError(t, err, "gz net-env switch --dry-run should succeed")
+
 			outputStr := string(output)
 			assert.Contains(t, outputStr, "dry-run mode")
 			assert.Contains(t, outputStr, "no changes will be made")
@@ -102,7 +105,7 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 	})
 }
 
-// TestNetworkProfileManagement tests network profile configuration management
+// TestNetworkProfileManagement tests network profile configuration management.
 func TestNetworkProfileManagement(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
@@ -158,8 +161,8 @@ profiles:
 
 		// Test listing custom profiles
 		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing config validation: %v", err)
 			// Verify the config is valid YAML
@@ -169,6 +172,7 @@ profiles:
 			assert.Contains(t, string(content), "test-office")
 		} else {
 			assert.NoError(t, err, "Custom profile listing should succeed")
+
 			outputStr := string(output)
 			assert.Contains(t, outputStr, "custom")
 			assert.Contains(t, outputStr, "test-office")
@@ -181,8 +185,8 @@ profiles:
 
 		for _, profile := range profiles {
 			cmd := exec.Command("gz", "net-env", "switch", profile, "--dry-run", "--verbose", "--config", configPath)
-			output, err := cmd.CombinedOutput()
 
+			output, err := cmd.CombinedOutput()
 			if err != nil {
 				t.Logf("gz binary not available for profile %s, simulating switch: %v", profile, err)
 				// Verify profile exists in config
@@ -191,6 +195,7 @@ profiles:
 				assert.Contains(t, string(content), `name: "`+profile+`"`)
 			} else {
 				assert.NoError(t, err, "Profile switch should succeed in dry-run")
+
 				outputStr := string(output)
 				assert.Contains(t, outputStr, profile)
 				assert.Contains(t, outputStr, "dry-run mode")
@@ -199,7 +204,7 @@ profiles:
 	})
 }
 
-// TestNetworkConfigurationScenarios tests real-world network configuration scenarios
+// TestNetworkConfigurationScenarios tests real-world network configuration scenarios.
 func TestNetworkConfigurationScenarios(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
@@ -284,8 +289,8 @@ profiles:
 
 			// Test dry-run switch
 			cmd := exec.Command("gz", "net-env", "switch", scenario.profile, "--dry-run", "--config", configPath)
-			output, err := cmd.CombinedOutput()
 
+			output, err := cmd.CombinedOutput()
 			if err != nil {
 				t.Logf("gz binary not available for scenario %s, validating config: %v", scenario.name, err)
 				// Validate the configuration is properly formatted
@@ -295,6 +300,7 @@ profiles:
 				assert.Contains(t, string(content), "profiles:")
 			} else {
 				assert.NoError(t, err, "Scenario %s should work in dry-run", scenario.name)
+
 				outputStr := string(output)
 				assert.Contains(t, outputStr, scenario.profile)
 			}
@@ -302,7 +308,7 @@ profiles:
 	}
 }
 
-// TestConfigurationValidation tests configuration file validation
+// TestConfigurationValidation tests configuration file validation.
 func TestConfigurationValidation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
@@ -331,8 +337,8 @@ profiles:
 
 		// Test that valid config works
 		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
-		_, err = cmd.CombinedOutput()
 
+		_, err = cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing config parsing: %v", err)
 			// Validate YAML can be parsed
@@ -362,8 +368,8 @@ profiles:
 
 		// Test that invalid config is handled gracefully
 		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			// This is expected for invalid config
 			t.Logf("Invalid config correctly rejected: %v", err)
@@ -373,7 +379,7 @@ profiles:
 	})
 }
 
-// TestCliErrorHandling tests CLI error handling scenarios
+// TestCliErrorHandling tests CLI error handling scenarios.
 func TestCliErrorHandling(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
@@ -381,8 +387,8 @@ func TestCliErrorHandling(t *testing.T) {
 
 	t.Run("NonexistentProfile", func(t *testing.T) {
 		cmd := exec.Command("gz", "net-env", "switch", "nonexistent-profile")
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			outputStr := string(output)
 			// Should provide helpful error message
@@ -394,8 +400,8 @@ func TestCliErrorHandling(t *testing.T) {
 
 	t.Run("NonexistentConfigFile", func(t *testing.T) {
 		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", "/nonexistent/path/config.yaml")
-		output, err := cmd.CombinedOutput()
 
+		output, err := cmd.CombinedOutput()
 		if err != nil {
 			outputStr := string(output)
 			// Should provide helpful error message about missing config
@@ -406,7 +412,7 @@ func TestCliErrorHandling(t *testing.T) {
 	})
 }
 
-// TestConcurrentOperations tests concurrent network operations
+// TestConcurrentOperations tests concurrent network operations.
 func TestConcurrentOperations(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
@@ -417,8 +423,10 @@ func TestConcurrentOperations(t *testing.T) {
 	createMockNetworkConfig(t, configPath)
 
 	t.Run("ConcurrentStatusChecks", func(t *testing.T) {
-		const numGoroutines = 5
-		const numIterations = 3
+		const (
+			numGoroutines = 5
+			numIterations = 3
+		)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -429,6 +437,7 @@ func TestConcurrentOperations(t *testing.T) {
 			go func(goroutineID int) {
 				for j := 0; j < numIterations; j++ {
 					cmd := exec.CommandContext(ctx, "gz", "net-env", "status")
+
 					_, err := cmd.CombinedOutput()
 					results <- err
 				}
@@ -437,6 +446,7 @@ func TestConcurrentOperations(t *testing.T) {
 
 		// Collect results
 		successCount := 0
+
 		for i := 0; i < numGoroutines*numIterations; i++ {
 			err := <-results
 			if err == nil {
@@ -451,7 +461,7 @@ func TestConcurrentOperations(t *testing.T) {
 	})
 }
 
-// Helper function to create a mock network configuration
+// Helper function to create a mock network configuration.
 func createMockNetworkConfig(t *testing.T, configPath string) {
 	mockConfig := `default: "home"
 
@@ -519,7 +529,7 @@ profiles:
 	require.NoError(t, err, "Should create mock config file")
 }
 
-// TestPerformanceCharacteristics tests performance of CLI operations
+// TestPerformanceCharacteristics tests performance of CLI operations.
 func TestPerformanceCharacteristics(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode")
@@ -533,7 +543,9 @@ func TestPerformanceCharacteristics(t *testing.T) {
 		start := time.Now()
 
 		cmd := exec.Command("gz", "net-env", "status")
+
 		var stdout, stderr bytes.Buffer
+
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
 
@@ -553,7 +565,9 @@ func TestPerformanceCharacteristics(t *testing.T) {
 		start := time.Now()
 
 		cmd := exec.Command("gz", "net-env", "switch", "home", "--dry-run", "--config", configPath)
+
 		var stdout, stderr bytes.Buffer
+
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
 

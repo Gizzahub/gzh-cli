@@ -5,7 +5,7 @@ import (
 )
 
 // RepositoryStateData represents the raw state data collected from GitHub
-// This is a simple data structure with no dependencies on other packages
+// This is a simple data structure with no dependencies on other packages.
 type RepositoryStateData struct {
 	Name         string
 	Private      bool
@@ -32,14 +32,14 @@ type RepositoryStateData struct {
 	LastModified string // ISO 8601 format
 }
 
-// BranchProtectionData represents raw branch protection data
+// BranchProtectionData represents raw branch protection data.
 type BranchProtectionData struct {
 	Protected       bool
 	RequiredReviews int
 	EnforceAdmins   bool
 }
 
-// CollectRepositoryStates collects state data for all repositories in the organization
+// CollectRepositoryStates collects state data for all repositories in the organization.
 func (c *RepoConfigClient) CollectRepositoryStates(ctx context.Context, org string) (map[string]RepositoryStateData, error) {
 	repos, err := c.ListRepositories(ctx, org, nil)
 	if err != nil {
@@ -47,19 +47,21 @@ func (c *RepoConfigClient) CollectRepositoryStates(ctx context.Context, org stri
 	}
 
 	states := make(map[string]RepositoryStateData)
+
 	for _, repo := range repos {
 		state, err := c.collectRepositoryState(ctx, org, repo)
 		if err != nil {
 			// Log error but continue with other repos
 			continue
 		}
+
 		states[repo.Name] = state
 	}
 
 	return states, nil
 }
 
-// collectRepositoryState collects the current state of a repository
+// collectRepositoryState collects the current state of a repository.
 func (c *RepoConfigClient) collectRepositoryState(ctx context.Context, org string, repo *Repository) (RepositoryStateData, error) {
 	state := RepositoryStateData{
 		Name:             repo.Name,
@@ -100,15 +102,16 @@ func (c *RepoConfigClient) collectRepositoryState(ctx context.Context, org strin
 	return state, nil
 }
 
-// getBranchProtectionRequiredReviews extracts the required review count from branch protection
+// getBranchProtectionRequiredReviews extracts the required review count from branch protection.
 func getBranchProtectionRequiredReviews(protection *BranchProtection) int {
 	if protection.RequiredPullRequestReviews == nil {
 		return 0
 	}
+
 	return protection.RequiredPullRequestReviews.RequiredApprovingReviewCount
 }
 
-// checkForFiles checks for the existence of specific files in the repository
+// checkForFiles checks for the existence of specific files in the repository.
 func (c *RepoConfigClient) checkForFiles(ctx context.Context, org, repoName string) []string {
 	var foundFiles []string
 
@@ -133,7 +136,7 @@ func (c *RepoConfigClient) checkForFiles(ctx context.Context, org, repoName stri
 	return foundFiles
 }
 
-// listRepoWorkflows lists GitHub Actions workflows in the repository
+// listRepoWorkflows lists GitHub Actions workflows in the repository.
 func (c *RepoConfigClient) listRepoWorkflows(ctx context.Context, org, repoName string) []string {
 	var workflows []string
 

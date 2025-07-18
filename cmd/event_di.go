@@ -8,23 +8,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// EventDependencies holds all dependencies for event commands
+// EventDependencies holds all dependencies for event commands.
 type EventDependencies struct {
 	Logger  github.Logger
 	Storage github.EventStorage
 }
 
-// EventCommandFactory creates event commands with injected dependencies
+// EventCommandFactory creates event commands with injected dependencies.
 type EventCommandFactory struct {
 	deps *EventDependencies
 }
 
-// NewEventCommandFactory creates a new event command factory
+// NewEventCommandFactory creates a new event command factory.
 func NewEventCommandFactory(deps *EventDependencies) *EventCommandFactory {
 	// Provide defaults if not specified
 	if deps.Logger == nil {
 		deps.Logger = event.NewLoggerAdapter()
 	}
+
 	if deps.Storage == nil {
 		deps.Storage = event.NewMockStorage()
 	}
@@ -34,7 +35,7 @@ func NewEventCommandFactory(deps *EventDependencies) *EventCommandFactory {
 	}
 }
 
-// NewEventCmd creates a new event command with dependency injection
+// NewEventCmd creates a new event command with dependency injection.
 func (f *EventCommandFactory) NewEventCmd() *cobra.Command {
 	// Command flags
 	var (

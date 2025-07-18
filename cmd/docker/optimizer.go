@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-// LanguageOptimizer provides language-specific optimizations
+// LanguageOptimizer provides language-specific optimizations.
 type LanguageOptimizer struct {
 	Language string
 	Project  ProjectInfo
 }
 
-// OptimizationConfig holds optimization settings
+// OptimizationConfig holds optimization settings.
 type OptimizationConfig struct {
 	BaseImage        string            `json:"base_image"`
 	BuildArgs        map[string]string `json:"build_args"`
@@ -25,7 +25,7 @@ type OptimizationConfig struct {
 	SecuritySettings SecuritySettings  `json:"security_settings"`
 }
 
-// SecuritySettings holds security-related configurations
+// SecuritySettings holds security-related configurations.
 type SecuritySettings struct {
 	RunAsNonRoot     bool     `json:"run_as_non_root"`
 	ReadOnlyRootFS   bool     `json:"read_only_root_fs"`
@@ -35,7 +35,7 @@ type SecuritySettings struct {
 	ApparmorProfile  string   `json:"apparmor_profile"`
 }
 
-// NewLanguageOptimizer creates a new language optimizer
+// NewLanguageOptimizer creates a new language optimizer.
 func NewLanguageOptimizer(language string, project ProjectInfo) *LanguageOptimizer {
 	return &LanguageOptimizer{
 		Language: language,
@@ -43,7 +43,7 @@ func NewLanguageOptimizer(language string, project ProjectInfo) *LanguageOptimiz
 	}
 }
 
-// GetOptimizedConfig returns optimized configuration for the language
+// GetOptimizedConfig returns optimized configuration for the language.
 func (lo *LanguageOptimizer) GetOptimizedConfig() OptimizationConfig {
 	switch lo.Language {
 	case "go":
@@ -341,20 +341,24 @@ func (lo *LanguageOptimizer) getGenericOptimizations() OptimizationConfig {
 	}
 }
 
-// Framework detection methods
+// Framework detection methods.
 func (lo *LanguageOptimizer) detectGoFramework() string {
 	if lo.fileContains("go.mod", "gin-gonic/gin") {
 		return "gin"
 	}
+
 	if lo.fileContains("go.mod", "labstack/echo") {
 		return "echo"
 	}
+
 	if lo.fileContains("go.mod", "gofiber/fiber") {
 		return "fiber"
 	}
+
 	if lo.fileContains("go.mod", "go-chi/chi") {
 		return "chi"
 	}
+
 	return ""
 }
 
@@ -362,18 +366,23 @@ func (lo *LanguageOptimizer) detectNodeFramework() string {
 	if lo.fileContains("package.json", "express") {
 		return "express"
 	}
+
 	if lo.fileContains("package.json", "fastify") {
 		return "fastify"
 	}
+
 	if lo.fileContains("package.json", "koa") {
 		return "koa"
 	}
+
 	if lo.fileContains("package.json", "next") {
 		return "nextjs"
 	}
+
 	if lo.fileContains("package.json", "nuxt") {
 		return "nuxtjs"
 	}
+
 	return ""
 }
 
@@ -381,15 +390,19 @@ func (lo *LanguageOptimizer) detectPythonFramework() string {
 	if lo.fileContains("requirements.txt", "Flask") || lo.fileContains("pyproject.toml", "flask") {
 		return "flask"
 	}
+
 	if lo.fileContains("requirements.txt", "Django") || lo.fileContains("pyproject.toml", "django") {
 		return "django"
 	}
+
 	if lo.fileContains("requirements.txt", "fastapi") || lo.fileContains("pyproject.toml", "fastapi") {
 		return "fastapi"
 	}
+
 	if lo.fileContains("requirements.txt", "tornado") || lo.fileContains("pyproject.toml", "tornado") {
 		return "tornado"
 	}
+
 	return ""
 }
 
@@ -397,9 +410,11 @@ func (lo *LanguageOptimizer) detectRubyFramework() string {
 	if lo.fileContains("Gemfile", "rails") {
 		return "rails"
 	}
+
 	if lo.fileContains("Gemfile", "sinatra") {
 		return "sinatra"
 	}
+
 	return ""
 }
 
@@ -407,15 +422,19 @@ func (lo *LanguageOptimizer) detectRustFramework() string {
 	if lo.fileContains("Cargo.toml", "actix-web") {
 		return "actix"
 	}
+
 	if lo.fileContains("Cargo.toml", "warp") {
 		return "warp"
 	}
+
 	if lo.fileContains("Cargo.toml", "rocket") {
 		return "rocket"
 	}
+
 	if lo.fileContains("Cargo.toml", "axum") {
 		return "axum"
 	}
+
 	return ""
 }
 
@@ -423,12 +442,15 @@ func (lo *LanguageOptimizer) detectJavaFramework() string {
 	if lo.fileContains("pom.xml", "spring-boot") || lo.fileContains("build.gradle", "spring-boot") {
 		return "spring"
 	}
+
 	if lo.fileContains("pom.xml", "quarkus") || lo.fileContains("build.gradle", "quarkus") {
 		return "quarkus"
 	}
+
 	if lo.fileContains("pom.xml", "micronaut") || lo.fileContains("build.gradle", "micronaut") {
 		return "micronaut"
 	}
+
 	return ""
 }
 
@@ -445,7 +467,7 @@ func (lo *LanguageOptimizer) fileContains(filename, text string) bool {
 	return strings.Contains(string(content), text)
 }
 
-// GetOptimizationSummary returns a summary of applied optimizations
+// GetOptimizationSummary returns a summary of applied optimizations.
 func (lo *LanguageOptimizer) GetOptimizationSummary() map[string]interface{} {
 	config := lo.GetOptimizedConfig()
 	framework := ""
@@ -481,7 +503,7 @@ func (lo *LanguageOptimizer) GetOptimizationSummary() map[string]interface{} {
 	}
 }
 
-// SaveOptimizationConfig saves the optimization config to a file
+// SaveOptimizationConfig saves the optimization config to a file.
 func (lo *LanguageOptimizer) SaveOptimizationConfig(filename string) error {
 	config := lo.GetOptimizedConfig()
 

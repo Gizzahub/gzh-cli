@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// CLIResult represents the result of a CLI command execution
+// CLIResult represents the result of a CLI command execution.
 type CLIResult struct {
 	ExitCode int
 	Output   string
@@ -18,7 +18,7 @@ type CLIResult struct {
 	Duration time.Duration
 }
 
-// CLIExecutor handles CLI command execution for E2E tests
+// CLIExecutor handles CLI command execution for E2E tests.
 type CLIExecutor struct {
 	BinaryPath string
 	WorkDir    string
@@ -26,7 +26,7 @@ type CLIExecutor struct {
 	Timeout    time.Duration
 }
 
-// NewCLIExecutor creates a new CLI executor
+// NewCLIExecutor creates a new CLI executor.
 func NewCLIExecutor(binaryPath, workDir string) *CLIExecutor {
 	return &CLIExecutor{
 		BinaryPath: binaryPath,
@@ -36,7 +36,7 @@ func NewCLIExecutor(binaryPath, workDir string) *CLIExecutor {
 	}
 }
 
-// SetEnv sets an environment variable for command execution
+// SetEnv sets an environment variable for command execution.
 func (c *CLIExecutor) SetEnv(key, value string) {
 	// Remove existing env var if present
 	for i, env := range c.Env {
@@ -49,12 +49,12 @@ func (c *CLIExecutor) SetEnv(key, value string) {
 	c.Env = append(c.Env, key+"="+value)
 }
 
-// SetTimeout sets the command execution timeout
+// SetTimeout sets the command execution timeout.
 func (c *CLIExecutor) SetTimeout(timeout time.Duration) {
 	c.Timeout = timeout
 }
 
-// Run executes a CLI command with the given arguments
+// Run executes a CLI command with the given arguments.
 func (c *CLIExecutor) Run(args ...string) *CLIResult {
 	start := time.Now()
 
@@ -66,6 +66,7 @@ func (c *CLIExecutor) Run(args ...string) *CLIResult {
 	cmd.Env = c.Env
 
 	var stdout, stderr bytes.Buffer
+
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
@@ -78,6 +79,7 @@ func (c *CLIExecutor) Run(args ...string) *CLIResult {
 		if output != "" {
 			output += "\n"
 		}
+
 		output += stderr.String()
 	}
 
@@ -88,7 +90,8 @@ func (c *CLIExecutor) Run(args ...string) *CLIResult {
 
 	if err != nil {
 		result.Error = err
-		if exitError, ok := err.(*exec.ExitError); ok {
+		exitError := &exec.ExitError{}
+		if errors.As(err, &exitError) {
 			result.ExitCode = exitError.ExitCode()
 		} else {
 			result.ExitCode = -1
@@ -100,7 +103,7 @@ func (c *CLIExecutor) Run(args ...string) *CLIResult {
 	return result
 }
 
-// RunWithInput executes a CLI command with stdin input
+// RunWithInput executes a CLI command with stdin input.
 func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 	start := time.Now()
 
@@ -112,6 +115,7 @@ func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 	cmd.Env = c.Env
 
 	var stdout, stderr bytes.Buffer
+
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Stdin = strings.NewReader(input)
@@ -124,6 +128,7 @@ func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 		if output != "" {
 			output += "\n"
 		}
+
 		output += stderr.String()
 	}
 
@@ -134,7 +139,8 @@ func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 
 	if err != nil {
 		result.Error = err
-		if exitError, ok := err.(*exec.ExitError); ok {
+		exitError := &exec.ExitError{}
+		if errors.As(err, &exitError) {
 			result.ExitCode = exitError.ExitCode()
 		} else {
 			result.ExitCode = -1
@@ -146,7 +152,7 @@ func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 	return result
 }
 
-// RunAsync executes a command asynchronously (for daemon processes)
+// RunAsync executes a command asynchronously (for daemon processes).
 func (c *CLIExecutor) RunAsync(args ...string) (*exec.Cmd, error) {
 	cmd := exec.Command(c.BinaryPath, args...)
 	cmd.Dir = c.WorkDir
@@ -160,7 +166,7 @@ func (c *CLIExecutor) RunAsync(args ...string) (*exec.Cmd, error) {
 	return cmd, nil
 }
 
-// BuildBinary builds the gz binary for testing
+// BuildBinary builds the gz binary for testing.
 func BuildBinary(projectRoot string) (string, error) {
 	binaryPath := filepath.Join(projectRoot, "gz")
 
@@ -168,6 +174,7 @@ func BuildBinary(projectRoot string) (string, error) {
 	cmd.Dir = projectRoot
 
 	var stderr bytes.Buffer
+
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
@@ -177,7 +184,7 @@ func BuildBinary(projectRoot string) (string, error) {
 	return binaryPath, nil
 }
 
-// FindProjectRoot finds the project root directory
+// FindProjectRoot finds the project root directory.
 func FindProjectRoot() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -193,13 +200,14 @@ func FindProjectRoot() (string, error) {
 		if parent == dir {
 			break
 		}
+
 		dir = parent
 	}
 
 	return "", os.ErrNotExist
 }
 
-// WaitForOutput waits for specific output from a running command
+// WaitForOutput waits for specific output from a running command.
 func WaitForOutput(cmd *exec.Cmd, expectedOutput string, timeout time.Duration) error {
 	done := make(chan error, 1)
 

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// mockWebhookLogger implements the Logger interface for testing
+// mockWebhookLogger implements the Logger interface for testing.
 type mockWebhookLogger struct {
 	logs []mockWebhookLogEntry
 }
@@ -466,7 +466,7 @@ func TestValidateWebhookRequest(t *testing.T) {
 // Helper function to create bool pointer
 // boolPtr is defined in automation_engine.go
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkWebhookService_CreateRepositoryWebhook(b *testing.B) {
 	logger := &mockWebhookLogger{}
 	service := NewWebhookService(nil, logger)
@@ -483,6 +483,7 @@ func BenchmarkWebhookService_CreateRepositoryWebhook(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_, err := service.CreateRepositoryWebhook(context.Background(), "testowner", "testrepo", request)
 		if err != nil {
@@ -496,6 +497,7 @@ func BenchmarkWebhookService_ListRepositoryWebhooks(b *testing.B) {
 	service := NewWebhookService(nil, logger)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_, err := service.ListRepositoryWebhooks(context.Background(), "testowner", "testrepo", nil)
 		if err != nil {
@@ -526,6 +528,7 @@ func BenchmarkWebhookMatchesSelector(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		service.webhookMatchesSelector(webhook, selector)
 	}

@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newContainerDetectionCmd creates the container detection command
+// newContainerDetectionCmd creates the container detection command.
 func newContainerDetectionCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cd := NewContainerDetector(logger)
 
@@ -56,7 +56,7 @@ Examples:
 	return cmd
 }
 
-// newContainerDetectCmd creates the detect subcommand
+// newContainerDetectCmd creates the detect subcommand.
 func newContainerDetectCmd(cd *ContainerDetector) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "detect",
@@ -94,7 +94,7 @@ func newContainerDetectCmd(cd *ContainerDetector) *cobra.Command {
 	return cmd
 }
 
-// newContainerStatusCmd creates the status subcommand
+// newContainerStatusCmd creates the status subcommand.
 func newContainerStatusCmd(cd *ContainerDetector) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -167,7 +167,7 @@ func newContainerStatusCmd(cd *ContainerDetector) *cobra.Command {
 	return cmd
 }
 
-// newContainerRuntimesCmd creates the runtimes subcommand
+// newContainerRuntimesCmd creates the runtimes subcommand.
 func newContainerRuntimesCmd(cd *ContainerDetector) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "runtimes",
@@ -198,7 +198,7 @@ func newContainerRuntimesCmd(cd *ContainerDetector) *cobra.Command {
 	return cmd
 }
 
-// newContainerMonitorCmd creates the monitor subcommand
+// newContainerMonitorCmd creates the monitor subcommand.
 func newContainerMonitorCmd(cd *ContainerDetector) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "monitor",
@@ -258,7 +258,7 @@ func newContainerMonitorCmd(cd *ContainerDetector) *cobra.Command {
 	return cmd
 }
 
-// newContainerListCmd creates the list subcommand
+// newContainerListCmd creates the list subcommand.
 func newContainerListCmd(cd *ContainerDetector) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -309,7 +309,7 @@ func newContainerListCmd(cd *ContainerDetector) *cobra.Command {
 	return cmd
 }
 
-// newContainerInspectCmd creates the inspect subcommand
+// newContainerInspectCmd creates the inspect subcommand.
 func newContainerInspectCmd(cd *ContainerDetector) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "inspect [container-id-or-name]",
@@ -373,6 +373,7 @@ func printEnvironmentSummary(env *ContainerEnvironment, detailed bool) error {
 	// Running containers
 	if len(env.RunningContainers) > 0 {
 		fmt.Printf("\n📦 Running Containers (%d):\n", len(env.RunningContainers))
+
 		if detailed {
 			for _, container := range env.RunningContainers {
 				printContainerSummary(&container)
@@ -456,6 +457,7 @@ func printDetectedNetworksTable(networks []DetectedNetwork) error {
 
 	for _, network := range networks {
 		networkID := truncateStringUtil(network.ID, 12)
+
 		created := "N/A"
 		if !network.Created.IsZero() {
 			created = network.Created.Format("2006-01-02")
@@ -477,9 +479,11 @@ func printContainerSummary(container *DetectedContainer) {
 	fmt.Printf("    Image: %s\n", container.Image)
 	fmt.Printf("    Status: %s\n", container.Status)
 	fmt.Printf("    Runtime: %s\n", container.Runtime)
+
 	if len(container.Ports) > 0 {
 		fmt.Printf("    Ports: %d mapped\n", len(container.Ports))
 	}
+
 	fmt.Println()
 }
 
@@ -496,6 +500,7 @@ func printContainerDetails(container *DetectedContainer) error {
 
 	if len(container.Ports) > 0 {
 		fmt.Printf("\nPorts:\n")
+
 		for _, port := range container.Ports {
 			fmt.Printf("  %s:%d -> %d/%s\n", port.HostIP, port.HostPort, port.ContainerPort, port.Protocol)
 		}
@@ -503,6 +508,7 @@ func printContainerDetails(container *DetectedContainer) error {
 
 	if len(container.Networks) > 0 {
 		fmt.Printf("\nNetworks:\n")
+
 		for _, network := range container.Networks {
 			fmt.Printf("  • %s (IP: %s)\n", network.NetworkName, network.IPAddress)
 		}
@@ -510,6 +516,7 @@ func printContainerDetails(container *DetectedContainer) error {
 
 	if len(container.Environment) > 0 {
 		fmt.Printf("\nEnvironment Variables:\n")
+
 		for _, env := range container.Environment {
 			fmt.Printf("  %s\n", env)
 		}
@@ -517,6 +524,7 @@ func printContainerDetails(container *DetectedContainer) error {
 
 	if len(container.Mounts) > 0 {
 		fmt.Printf("\nMounts:\n")
+
 		for _, mount := range container.Mounts {
 			fmt.Printf("  %s -> %s (%s)\n", mount.Source, mount.Destination, mount.Type)
 		}
@@ -534,10 +542,12 @@ func printComposeProjects(projects []ComposeProject) {
 		if configFile == "" {
 			configFile = "N/A"
 		}
+
 		containerCount := 0
 		for _, service := range project.Services {
 			containerCount += len(service.Containers)
 		}
+
 		fmt.Fprintf(w, "%s\t%s\t%d\t%d\n",
 			project.Name,
 			configFile,
@@ -553,9 +563,11 @@ func printKubernetesInfo(info *KubernetesClusterInfo) {
 	fmt.Printf("  Context: %s\n", info.Context)
 	fmt.Printf("  Namespace: %s\n", info.Namespace)
 	fmt.Printf("  Version: %s\n", info.Version)
+
 	if len(info.Nodes) > 0 {
 		fmt.Printf("  Nodes: %d\n", len(info.Nodes))
 	}
+
 	if info.ServiceMesh != nil {
 		fmt.Printf("  Service Mesh: %s (%s)\n", info.ServiceMesh.Type, info.ServiceMesh.Version)
 	}
@@ -580,16 +592,20 @@ func printEnvironmentYAML(env *ContainerEnvironment) error {
 	fmt.Printf("  detected_at: %s\n", env.DetectedAt.Format(time.RFC3339))
 	fmt.Printf("  environment_fingerprint: %s\n", env.EnvironmentFingerprint)
 	fmt.Printf("  available_runtimes:\n")
+
 	for _, runtime := range env.AvailableRuntimes {
 		fmt.Printf("    - runtime: %s\n", runtime.Runtime)
 		fmt.Printf("      version: %s\n", runtime.Version)
 		fmt.Printf("      available: %t\n", runtime.Available)
 	}
+
 	fmt.Printf("  running_containers: %d\n", len(env.RunningContainers))
 	fmt.Printf("  networks: %d\n", len(env.Networks))
+
 	if len(env.ComposeProjects) > 0 {
 		fmt.Printf("  compose_projects: %d\n", len(env.ComposeProjects))
 	}
+
 	return nil
 }
 
@@ -597,5 +613,6 @@ func truncateStringUtil(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
 	}
+
 	return s[:maxLen-3] + "..."
 }

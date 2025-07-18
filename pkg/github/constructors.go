@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-// HTTPClient interface for dependency injection
+// HTTPClient interface for dependency injection.
 type HTTPClientInterface interface {
 	Do(req *http.Request) (*http.Response, error)
 	Get(url string) (*http.Response, error)
 	Post(url, contentType string, body interface{}) (*http.Response, error)
 }
 
-// FileSystem interface for dependency injection
+// FileSystem interface for dependency injection.
 type FileSystemInterface interface {
 	WriteFile(filename string, data []byte, perm int) error
 	ReadFile(filename string) ([]byte, error)
@@ -22,7 +22,7 @@ type FileSystemInterface interface {
 	Exists(path string) bool
 }
 
-// GitCommand interface for dependency injection
+// GitCommand interface for dependency injection.
 type GitCommandInterface interface {
 	Clone(ctx context.Context, url, path string) error
 	Pull(ctx context.Context, path string) error
@@ -30,7 +30,7 @@ type GitCommandInterface interface {
 	Reset(ctx context.Context, path string, hard bool) error
 }
 
-// APIClientConfig holds configuration for GitHub API client
+// APIClientConfig holds configuration for GitHub API client.
 type APIClientConfig struct {
 	BaseURL    string
 	Token      string
@@ -39,7 +39,7 @@ type APIClientConfig struct {
 	RetryCount int
 }
 
-// DefaultAPIClientConfig returns default configuration
+// DefaultAPIClientConfig returns default configuration.
 func DefaultAPIClientConfig() *APIClientConfig {
 	return &APIClientConfig{
 		BaseURL:    "https://api.github.com",
@@ -49,14 +49,14 @@ func DefaultAPIClientConfig() *APIClientConfig {
 	}
 }
 
-// GitHubAPIClient implements the APIClient interface
+// GitHubAPIClient implements the APIClient interface.
 type GitHubAPIClient struct {
 	config     *APIClientConfig
 	httpClient HTTPClientInterface
 	logger     Logger
 }
 
-// Logger interface for dependency injection
+// Logger interface for dependency injection.
 type Logger interface {
 	Debug(msg string, args ...interface{})
 	Info(msg string, args ...interface{})
@@ -64,7 +64,7 @@ type Logger interface {
 	Error(msg string, args ...interface{})
 }
 
-// NewAPIClient creates a new GitHub API client with dependencies
+// NewAPIClient creates a new GitHub API client with dependencies.
 func NewAPIClient(config *APIClientConfig, httpClient HTTPClientInterface, logger Logger) APIClient {
 	if config == nil {
 		config = DefaultAPIClientConfig()
@@ -77,12 +77,12 @@ func NewAPIClient(config *APIClientConfig, httpClient HTTPClientInterface, logge
 	}
 }
 
-// SetToken implements APIClient interface
+// SetToken implements APIClient interface.
 func (c *GitHubAPIClient) SetToken(token string) {
 	c.config.Token = token
 }
 
-// GetRepository implements APIClient interface
+// GetRepository implements APIClient interface.
 func (c *GitHubAPIClient) GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error) {
 	c.logger.Debug("Getting repository info", "owner", owner, "repo", repo)
 
@@ -91,7 +91,7 @@ func (c *GitHubAPIClient) GetRepository(ctx context.Context, owner, repo string)
 	return nil, nil
 }
 
-// ListOrganizationRepositories implements APIClient interface
+// ListOrganizationRepositories implements APIClient interface.
 func (c *GitHubAPIClient) ListOrganizationRepositories(ctx context.Context, org string) ([]RepositoryInfo, error) {
 	c.logger.Debug("Listing organization repositories", "org", org)
 
@@ -99,7 +99,7 @@ func (c *GitHubAPIClient) ListOrganizationRepositories(ctx context.Context, org 
 	return nil, nil
 }
 
-// GetDefaultBranch implements APIClient interface
+// GetDefaultBranch implements APIClient interface.
 func (c *GitHubAPIClient) GetDefaultBranch(ctx context.Context, owner, repo string) (string, error) {
 	c.logger.Debug("Getting default branch", "owner", owner, "repo", repo)
 
@@ -107,7 +107,7 @@ func (c *GitHubAPIClient) GetDefaultBranch(ctx context.Context, owner, repo stri
 	return "main", nil
 }
 
-// GetRateLimit implements APIClient interface
+// GetRateLimit implements APIClient interface.
 func (c *GitHubAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) {
 	c.logger.Debug("Getting rate limit info")
 
@@ -120,7 +120,7 @@ func (c *GitHubAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) 
 	}, nil
 }
 
-// GetRepositoryConfiguration implements APIClient interface
+// GetRepositoryConfiguration implements APIClient interface.
 func (c *GitHubAPIClient) GetRepositoryConfiguration(ctx context.Context, owner, repo string) (*RepositoryConfig, error) {
 	c.logger.Debug("Getting repository configuration", "owner", owner, "repo", repo)
 
@@ -128,7 +128,7 @@ func (c *GitHubAPIClient) GetRepositoryConfiguration(ctx context.Context, owner,
 	return nil, nil
 }
 
-// UpdateRepositoryConfiguration implements APIClient interface
+// UpdateRepositoryConfiguration implements APIClient interface.
 func (c *GitHubAPIClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
 	c.logger.Debug("Updating repository configuration", "owner", owner, "repo", repo)
 
@@ -136,7 +136,7 @@ func (c *GitHubAPIClient) UpdateRepositoryConfiguration(ctx context.Context, own
 	return nil
 }
 
-// GitHubCloneService implements the CloneService interface
+// GitHubCloneService implements the CloneService interface.
 type GitHubCloneService struct {
 	apiClient  APIClient
 	gitClient  GitCommandInterface
@@ -144,14 +144,14 @@ type GitHubCloneService struct {
 	logger     Logger
 }
 
-// CloneServiceConfig holds configuration for clone service
+// CloneServiceConfig holds configuration for clone service.
 type CloneServiceConfig struct {
 	DefaultStrategy string
 	Concurrency     int
 	Timeout         time.Duration
 }
 
-// DefaultCloneServiceConfig returns default clone service configuration
+// DefaultCloneServiceConfig returns default clone service configuration.
 func DefaultCloneServiceConfig() *CloneServiceConfig {
 	return &CloneServiceConfig{
 		DefaultStrategy: "reset",
@@ -160,7 +160,7 @@ func DefaultCloneServiceConfig() *CloneServiceConfig {
 	}
 }
 
-// NewCloneService creates a new clone service with dependencies
+// NewCloneService creates a new clone service with dependencies.
 func NewCloneService(
 	apiClient APIClient,
 	gitClient GitCommandInterface,
@@ -175,7 +175,7 @@ func NewCloneService(
 	}
 }
 
-// CloneRepository implements CloneService interface
+// CloneRepository implements CloneService interface.
 func (s *GitHubCloneService) CloneRepository(ctx context.Context, repo RepositoryInfo, targetPath, strategy string) error {
 	s.logger.Info("Cloning repository", "repo", repo.Name, "path", targetPath, "strategy", strategy)
 
@@ -183,7 +183,7 @@ func (s *GitHubCloneService) CloneRepository(ctx context.Context, repo Repositor
 	return s.gitClient.Clone(ctx, repo.CloneURL, targetPath)
 }
 
-// RefreshAll implements CloneService interface
+// RefreshAll implements CloneService interface.
 func (s *GitHubCloneService) RefreshAll(ctx context.Context, targetPath, orgName, strategy string) error {
 	s.logger.Info("Refreshing all repositories", "org", orgName, "path", targetPath, "strategy", strategy)
 
@@ -202,12 +202,12 @@ func (s *GitHubCloneService) RefreshAll(ctx context.Context, targetPath, orgName
 	return nil
 }
 
-// CloneOrganization implements CloneService interface
+// CloneOrganization implements CloneService interface.
 func (s *GitHubCloneService) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
 	return s.RefreshAll(ctx, targetPath, orgName, strategy)
 }
 
-// SetStrategy implements CloneService interface
+// SetStrategy implements CloneService interface.
 func (s *GitHubCloneService) SetStrategy(strategy string) error {
 	// Validate strategy
 	validStrategies := s.GetSupportedStrategies()
@@ -216,21 +216,22 @@ func (s *GitHubCloneService) SetStrategy(strategy string) error {
 			return nil
 		}
 	}
+
 	return fmt.Errorf("unsupported strategy: %s", strategy)
 }
 
-// GetSupportedStrategies implements CloneService interface
+// GetSupportedStrategies implements CloneService interface.
 func (s *GitHubCloneService) GetSupportedStrategies() []string {
 	return []string{"reset", "pull", "fetch"}
 }
 
-// GitHubTokenValidator implements the TokenValidator interface
+// GitHubTokenValidator implements the TokenValidator interface.
 type GitHubTokenValidator struct {
 	apiClient APIClient
 	logger    Logger
 }
 
-// NewGitHubTokenValidator creates a new token validator with dependencies
+// NewGitHubTokenValidator creates a new token validator with dependencies.
 func NewGitHubTokenValidator(apiClient APIClient, logger Logger) TokenValidatorInterface {
 	return &GitHubTokenValidator{
 		apiClient: apiClient,
@@ -238,7 +239,7 @@ func NewGitHubTokenValidator(apiClient APIClient, logger Logger) TokenValidatorI
 	}
 }
 
-// ValidateToken implements TokenValidator interface
+// ValidateToken implements TokenValidator interface.
 func (v *GitHubTokenValidator) ValidateToken(ctx context.Context, token string) (*TokenInfoRecord, error) {
 	v.logger.Debug("Validating GitHub token")
 
@@ -250,7 +251,7 @@ func (v *GitHubTokenValidator) ValidateToken(ctx context.Context, token string) 
 	}, nil
 }
 
-// ValidateForOperation implements TokenValidator interface
+// ValidateForOperation implements TokenValidator interface.
 func (v *GitHubTokenValidator) ValidateForOperation(ctx context.Context, token, operation string) error {
 	v.logger.Debug("Validating token for operation", "operation", operation)
 
@@ -258,7 +259,7 @@ func (v *GitHubTokenValidator) ValidateForOperation(ctx context.Context, token, 
 	return nil
 }
 
-// ValidateForRepository implements TokenValidator interface
+// ValidateForRepository implements TokenValidator interface.
 func (v *GitHubTokenValidator) ValidateForRepository(ctx context.Context, token, owner, repo string) error {
 	v.logger.Debug("Validating token for repository", "owner", owner, "repo", repo)
 
@@ -266,7 +267,7 @@ func (v *GitHubTokenValidator) ValidateForRepository(ctx context.Context, token,
 	return nil
 }
 
-// GetRequiredScopes implements TokenValidator interface
+// GetRequiredScopes implements TokenValidator interface.
 func (v *GitHubTokenValidator) GetRequiredScopes(operation string) []string {
 	switch operation {
 	case "read":
@@ -280,20 +281,20 @@ func (v *GitHubTokenValidator) GetRequiredScopes(operation string) []string {
 	}
 }
 
-// GitHubServiceContainer holds all GitHub service implementations
+// GitHubServiceContainer holds all GitHub service implementations.
 type GitHubServiceContainer struct {
 	APIClient      APIClient
 	CloneService   CloneService
 	TokenValidator TokenValidatorInterface
 }
 
-// GitHubServiceConfig holds configuration for the GitHub service
+// GitHubServiceConfig holds configuration for the GitHub service.
 type GitHubServiceConfig struct {
 	API   *APIClientConfig
 	Clone *CloneServiceConfig
 }
 
-// NewGitHubServiceContainer creates a new GitHub service container with all dependencies
+// NewGitHubServiceContainer creates a new GitHub service container with all dependencies.
 func NewGitHubServiceContainer(
 	config *GitHubServiceConfig,
 	httpClient HTTPClientInterface,

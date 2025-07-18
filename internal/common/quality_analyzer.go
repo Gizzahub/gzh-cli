@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// QualityIssue represents a single quality issue found during analysis
+// QualityIssue represents a single quality issue found during analysis.
 type QualityIssue struct {
 	Type     string `json:"type"`     // "style", "bug", "security", "complexity", "type-error"
 	Severity string `json:"severity"` // "critical", "major", "minor", "info"
@@ -21,7 +21,7 @@ type QualityIssue struct {
 	Tool     string `json:"tool"`
 }
 
-// QualityMetrics holds various quality metrics
+// QualityMetrics holds various quality metrics.
 type QualityMetrics struct {
 	TotalFiles       int     `json:"total_files"`
 	TotalLinesOfCode int     `json:"total_lines_of_code"`
@@ -30,7 +30,7 @@ type QualityMetrics struct {
 	DuplicationRate  float64 `json:"duplication_rate"`
 }
 
-// QualityResult represents the complete analysis result
+// QualityResult represents the complete analysis result.
 type QualityResult struct {
 	Repository   string         `json:"repository"`
 	Issues       []QualityIssue `json:"issues"`
@@ -38,18 +38,18 @@ type QualityResult struct {
 	OverallScore float64        `json:"overall_score"`
 }
 
-// FileMetrics holds file-level metrics
+// FileMetrics holds file-level metrics.
 type FileMetrics struct {
 	TotalFiles int
 	TotalLines int
 }
 
-// ComplexityMetrics holds complexity analysis results
+// ComplexityMetrics holds complexity analysis results.
 type ComplexityMetrics struct {
 	AvgComplexity float64
 }
 
-// QualityAnalyzer defines the interface for language-specific quality analyzers
+// QualityAnalyzer defines the interface for language-specific quality analyzers.
 type QualityAnalyzer interface {
 	Name() string
 	Language() string
@@ -57,22 +57,22 @@ type QualityAnalyzer interface {
 	Analyze(ctx context.Context, path string) (*QualityResult, error)
 }
 
-// BaseQualityAnalyzer provides common functionality for all analyzers
+// BaseQualityAnalyzer provides common functionality for all analyzers.
 type BaseQualityAnalyzer struct {
 	logger *zap.Logger
 }
 
-// NewBaseQualityAnalyzer creates a new base analyzer
+// NewBaseQualityAnalyzer creates a new base analyzer.
 func NewBaseQualityAnalyzer(logger *zap.Logger) *BaseQualityAnalyzer {
 	return &BaseQualityAnalyzer{logger: logger}
 }
 
-// GetLogger returns the logger instance
+// GetLogger returns the logger instance.
 func (b *BaseQualityAnalyzer) GetLogger() *zap.Logger {
 	return b.logger
 }
 
-// CalculateScore calculates quality score based on issues and metrics
+// CalculateScore calculates quality score based on issues and metrics.
 func (b *BaseQualityAnalyzer) CalculateScore(result *QualityResult) float64 {
 	score := 100.0
 
@@ -109,6 +109,7 @@ func (b *BaseQualityAnalyzer) CalculateScore(result *QualityResult) float64 {
 	if score < 0 {
 		score = 0
 	}
+
 	if score > 100 {
 		score = 100
 	}
@@ -116,7 +117,7 @@ func (b *BaseQualityAnalyzer) CalculateScore(result *QualityResult) float64 {
 	return score
 }
 
-// MapSeverity maps tool-specific severity to standard severity
+// MapSeverity maps tool-specific severity to standard severity.
 func (b *BaseQualityAnalyzer) MapSeverity(severity string) string {
 	switch severity {
 	case "error", "fatal", "high":

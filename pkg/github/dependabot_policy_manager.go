@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// PolicyViolationType represents the type of policy violation
+// PolicyViolationType represents the type of policy violation.
 type PolicyViolationType string
 
 const (
@@ -20,7 +20,7 @@ const (
 	ViolationTypeAllowedDependencies PolicyViolationType = "allowed_dependencies"
 )
 
-// ViolationStatistics provides statistics about policy violations
+// ViolationStatistics provides statistics about policy violations.
 type ViolationStatistics struct {
 	ViolationType PolicyViolationType `json:"violation_type"`
 	Count         int                 `json:"count"`
@@ -29,14 +29,14 @@ type ViolationStatistics struct {
 	Severity      string              `json:"severity"`
 }
 
-// Type aliases for Dependabot-specific types
+// Type aliases for Dependabot-specific types.
 type (
 	DependabotViolationStatistics = ViolationStatistics
 	DependabotPolicyViolationType = PolicyViolationType
 	PolicyViolation               = DependabotPolicyViolation
 )
 
-// DependabotPolicyManager manages organization-wide Dependabot policies
+// DependabotPolicyManager manages organization-wide Dependabot policies.
 type DependabotPolicyManager struct {
 	logger        Logger
 	apiClient     APIClient
@@ -46,7 +46,7 @@ type DependabotPolicyManager struct {
 	cache         *PolicyCache
 }
 
-// PolicyCache provides caching for policy evaluations and repository states
+// PolicyCache provides caching for policy evaluations and repository states.
 type PolicyCache struct {
 	repositoryConfigs map[string]*CachedRepositoryConfig
 	policyResults     map[string]*PolicyEvaluationResult
@@ -54,7 +54,7 @@ type PolicyCache struct {
 	ttl               time.Duration
 }
 
-// CachedRepositoryConfig represents a cached repository configuration
+// CachedRepositoryConfig represents a cached repository configuration.
 type CachedRepositoryConfig struct {
 	Repository   string            `json:"repository"`
 	Organization string            `json:"organization"`
@@ -64,7 +64,7 @@ type CachedRepositoryConfig struct {
 	ExpiresAt    time.Time         `json:"expires_at"`
 }
 
-// PolicyEvaluationResult represents the result of policy evaluation for a repository
+// PolicyEvaluationResult represents the result of policy evaluation for a repository.
 type PolicyEvaluationResult struct {
 	PolicyID        string                      `json:"policy_id"`
 	Repository      string                      `json:"repository"`
@@ -77,7 +77,7 @@ type PolicyEvaluationResult struct {
 	ComplianceScore float64                     `json:"compliance_score"`
 }
 
-// DependabotPolicyViolation represents a violation of a Dependabot policy
+// DependabotPolicyViolation represents a violation of a Dependabot policy.
 type DependabotPolicyViolation struct {
 	ID          string                        `json:"id"`
 	Type        DependabotPolicyViolationType `json:"type"`
@@ -90,7 +90,7 @@ type DependabotPolicyViolation struct {
 	References  []string                      `json:"references,omitempty"`
 }
 
-// PolicyRecommendation represents a recommendation to improve Dependabot configuration
+// PolicyRecommendation represents a recommendation to improve Dependabot configuration.
 type PolicyRecommendation struct {
 	ID          string                   `json:"id"`
 	Type        PolicyRecommendationType `json:"type"`
@@ -102,7 +102,7 @@ type PolicyRecommendation struct {
 	Benefits    []string                 `json:"benefits"`
 }
 
-// BulkPolicyOperation represents a bulk operation on multiple repositories
+// BulkPolicyOperation represents a bulk operation on multiple repositories.
 type BulkPolicyOperation struct {
 	ID                string                                `json:"id"`
 	Type              BulkOperationType                     `json:"type"`
@@ -117,7 +117,7 @@ type BulkPolicyOperation struct {
 	EstimatedDuration time.Duration                         `json:"estimated_duration"`
 }
 
-// BulkOperationProgress tracks the progress of bulk operations
+// BulkOperationProgress tracks the progress of bulk operations.
 type BulkOperationProgress struct {
 	Total       int     `json:"total"`
 	Completed   int     `json:"completed"`
@@ -127,7 +127,7 @@ type BulkOperationProgress struct {
 	CurrentRepo string  `json:"current_repo,omitempty"`
 }
 
-// DependabotRepositoryOperationResult represents the result of an operation on a single repository
+// DependabotRepositoryOperationResult represents the result of an operation on a single repository.
 type DependabotRepositoryOperationResult struct {
 	Repository string                `json:"repository"`
 	Status     OperationResultStatus `json:"status"`
@@ -138,7 +138,7 @@ type DependabotRepositoryOperationResult struct {
 	Timestamp  time.Time             `json:"timestamp"`
 }
 
-// ConfigurationChange represents a change made to Dependabot configuration
+// ConfigurationChange represents a change made to Dependabot configuration.
 type ConfigurationChange struct {
 	Type        ChangeType  `json:"type"`
 	Field       string      `json:"field"`
@@ -147,7 +147,7 @@ type ConfigurationChange struct {
 	Description string      `json:"description"`
 }
 
-// OrganizationPolicyReport provides comprehensive reporting for organization policies
+// OrganizationPolicyReport provides comprehensive reporting for organization policies.
 type OrganizationPolicyReport struct {
 	Organization      string                          `json:"organization"`
 	PolicyID          string                          `json:"policy_id"`
@@ -160,7 +160,7 @@ type OrganizationPolicyReport struct {
 	ExportFormats     []string                        `json:"available_exports"`
 }
 
-// OrganizationPolicySummary provides high-level statistics
+// OrganizationPolicySummary provides high-level statistics.
 type OrganizationPolicySummary struct {
 	TotalRepositories      int                                   `json:"total_repositories"`
 	CompliantRepositories  int                                   `json:"compliant_repositories"`
@@ -173,7 +173,7 @@ type OrganizationPolicySummary struct {
 	ViolationBreakdown     map[DependabotPolicyViolationType]int `json:"violation_breakdown"`
 }
 
-// EcosystemStats provides statistics for a specific ecosystem
+// EcosystemStats provides statistics for a specific ecosystem.
 type EcosystemStats struct {
 	Ecosystem           string   `json:"ecosystem"`
 	TotalRepositories   int      `json:"total_repositories"`
@@ -184,7 +184,7 @@ type EcosystemStats struct {
 
 // DependabotViolationStatistics provides statistics for specific violation types (removed duplicate, using original at line 24)
 
-// PolicyTrendAnalysis provides trend analysis for policy compliance
+// PolicyTrendAnalysis provides trend analysis for policy compliance.
 type PolicyTrendAnalysis struct {
 	TimeRange            string                 `json:"time_range"`
 	ComplianceTrend      TrendDirection         `json:"compliance_trend"`
@@ -193,7 +193,7 @@ type PolicyTrendAnalysis struct {
 	RecommendationImpact []RecommendationImpact `json:"recommendation_impact"`
 }
 
-// TrendData represents trend information over time
+// TrendData represents trend information over time.
 type TrendData struct {
 	Direction  TrendDirection `json:"direction"`
 	ChangeRate float64        `json:"change_rate"`
@@ -201,14 +201,14 @@ type TrendData struct {
 	Forecast   *TrendForecast `json:"forecast,omitempty"`
 }
 
-// DataPoint represents a single data point in trend analysis
+// DataPoint represents a single data point in trend analysis.
 type DataPoint struct {
 	Timestamp time.Time `json:"timestamp"`
 	Value     float64   `json:"value"`
 	Count     int       `json:"count"`
 }
 
-// TrendForecast provides forecasting for trends
+// TrendForecast provides forecasting for trends.
 type TrendForecast struct {
 	ProjectedValue float64   `json:"projected_value"`
 	Confidence     float64   `json:"confidence"`
@@ -216,7 +216,7 @@ type TrendForecast struct {
 	Methodology    string    `json:"methodology"`
 }
 
-// RecommendationImpact tracks the impact of implemented recommendations
+// RecommendationImpact tracks the impact of implemented recommendations.
 type RecommendationImpact struct {
 	RecommendationID   string    `json:"recommendation_id"`
 	ImplementedAt      time.Time `json:"implemented_at"`
@@ -315,7 +315,7 @@ const (
 	TrendDirectionUnknown   TrendDirection = "unknown"
 )
 
-// NewDependabotPolicyManager creates a new Dependabot policy manager
+// NewDependabotPolicyManager creates a new Dependabot policy manager.
 func NewDependabotPolicyManager(logger Logger, apiClient APIClient, configManager *DependabotConfigManager) *DependabotPolicyManager {
 	return &DependabotPolicyManager{
 		logger:        logger,
@@ -330,7 +330,7 @@ func NewDependabotPolicyManager(logger Logger, apiClient APIClient, configManage
 	}
 }
 
-// CreatePolicy creates a new organization-wide Dependabot policy
+// CreatePolicy creates a new organization-wide Dependabot policy.
 func (pm *DependabotPolicyManager) CreatePolicy(ctx context.Context, policy *DependabotPolicyConfig) error {
 	pm.logger.Info("Creating Dependabot policy", "organization", policy.Organization, "policy", policy.Name)
 
@@ -351,10 +351,11 @@ func (pm *DependabotPolicyManager) CreatePolicy(ctx context.Context, policy *Dep
 	pm.policies[policy.ID] = policy
 
 	pm.logger.Info("Dependabot policy created successfully", "policy_id", policy.ID)
+
 	return nil
 }
 
-// GetPolicy retrieves a policy by ID
+// GetPolicy retrieves a policy by ID.
 func (pm *DependabotPolicyManager) GetPolicy(ctx context.Context, policyID string) (*DependabotPolicyConfig, error) {
 	pm.policyMutex.RLock()
 	defer pm.policyMutex.RUnlock()
@@ -367,7 +368,7 @@ func (pm *DependabotPolicyManager) GetPolicy(ctx context.Context, policyID strin
 	return policy, nil
 }
 
-// UpdatePolicy updates an existing policy
+// UpdatePolicy updates an existing policy.
 func (pm *DependabotPolicyManager) UpdatePolicy(ctx context.Context, policy *DependabotPolicyConfig) error {
 	pm.logger.Info("Updating Dependabot policy", "policy_id", policy.ID)
 
@@ -396,10 +397,11 @@ func (pm *DependabotPolicyManager) UpdatePolicy(ctx context.Context, policy *Dep
 	pm.invalidateCacheForOrganization(policy.Organization)
 
 	pm.logger.Info("Dependabot policy updated successfully", "policy_id", policy.ID, "version", policy.Version)
+
 	return nil
 }
 
-// DeletePolicy deletes a policy
+// DeletePolicy deletes a policy.
 func (pm *DependabotPolicyManager) DeletePolicy(ctx context.Context, policyID string) error {
 	pm.logger.Info("Deleting Dependabot policy", "policy_id", policyID)
 
@@ -418,10 +420,11 @@ func (pm *DependabotPolicyManager) DeletePolicy(ctx context.Context, policyID st
 	pm.invalidateCacheForOrganization(policy.Organization)
 
 	pm.logger.Info("Dependabot policy deleted successfully", "policy_id", policyID)
+
 	return nil
 }
 
-// EvaluateRepositoryCompliance evaluates a repository against a policy
+// EvaluateRepositoryCompliance evaluates a repository against a policy.
 func (pm *DependabotPolicyManager) EvaluateRepositoryCompliance(ctx context.Context, policyID, organization, repository string) (*PolicyEvaluationResult, error) {
 	pm.logger.Debug("Evaluating repository compliance", "policy_id", policyID, "repository", repository)
 
@@ -461,7 +464,7 @@ func (pm *DependabotPolicyManager) EvaluateRepositoryCompliance(ctx context.Cont
 	return result, nil
 }
 
-// ApplyPolicyToOrganization applies a policy to all repositories in an organization
+// ApplyPolicyToOrganization applies a policy to all repositories in an organization.
 func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context, policyID, organization string) (*BulkPolicyOperation, error) {
 	pm.logger.Info("Applying policy to organization", "policy_id", policyID, "organization", organization)
 
@@ -506,7 +509,7 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 	return operation, nil
 }
 
-// GenerateOrganizationReport generates a comprehensive compliance report
+// GenerateOrganizationReport generates a comprehensive compliance report.
 func (pm *DependabotPolicyManager) GenerateOrganizationReport(ctx context.Context, policyID, organization string) (*OrganizationPolicyReport, error) {
 	pm.logger.Info("Generating organization policy report", "policy_id", policyID, "organization", organization)
 
@@ -540,6 +543,7 @@ func (pm *DependabotPolicyManager) GenerateOrganizationReport(ctx context.Contex
 	}
 
 	var totalScore float64
+
 	for _, repo := range repos {
 		if repo.Archived || repo.Disabled {
 			continue
@@ -567,6 +571,7 @@ func (pm *DependabotPolicyManager) GenerateOrganizationReport(ctx context.Contex
 				summary.CriticalViolations++
 			}
 		}
+
 		summary.TotalViolations += len(result.Violations)
 	}
 
@@ -595,9 +600,11 @@ func (pm *DependabotPolicyManager) validatePolicy(policy *DependabotPolicyConfig
 	if policy.ID == "" {
 		return fmt.Errorf("policy ID is required")
 	}
+
 	if policy.Name == "" {
 		return fmt.Errorf("policy name is required")
 	}
+
 	if policy.Organization == "" {
 		return fmt.Errorf("organization is required")
 	}
@@ -654,12 +661,14 @@ func (pm *DependabotPolicyManager) performPolicyEvaluation(policy *DependabotPol
 	for ecosystem, ecosystemPolicy := range policy.EcosystemPolicies {
 		if ecosystemPolicy.Enabled {
 			found := false
+
 			for _, update := range config.Updates {
 				if update.PackageEcosystem == ecosystem {
 					found = true
 					break
 				}
 			}
+
 			if !found {
 				result.Violations = append(result.Violations, DependabotPolicyViolation{
 					ID:          fmt.Sprintf("violation-eco-%s", ecosystem),
@@ -693,6 +702,7 @@ func (pm *DependabotPolicyManager) getCachedResult(key string) *PolicyEvaluation
 		// Remove expired result
 		delete(pm.cache.policyResults, key)
 	}
+
 	return nil
 }
 

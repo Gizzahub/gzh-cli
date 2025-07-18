@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// NetworkTopologyAnalyzer analyzes network topology and relationships
+// NetworkTopologyAnalyzer analyzes network topology and relationships.
 type NetworkTopologyAnalyzer struct {
 	logger            *zap.Logger
 	containerDetector *ContainerDetector
@@ -22,7 +22,7 @@ type NetworkTopologyAnalyzer struct {
 	lastAnalysis      time.Time
 }
 
-// NetworkTopology represents the complete network topology
+// NetworkTopology represents the complete network topology.
 type NetworkTopology struct {
 	GeneratedAt     time.Time               `json:"generated_at"`
 	Networks        []TopologyNetwork       `json:"networks"`
@@ -35,7 +35,7 @@ type NetworkTopology struct {
 	AnalysisMetrics TopologyAnalysisMetrics `json:"analysis_metrics"`
 }
 
-// TopologyNetwork represents a network in the topology
+// TopologyNetwork represents a network in the topology.
 type TopologyNetwork struct {
 	ID                  string            `json:"id"`
 	Name                string            `json:"name"`
@@ -52,7 +52,7 @@ type TopologyNetwork struct {
 	Runtime             ContainerRuntime  `json:"runtime"`
 }
 
-// TopologyContainer represents a container in the topology
+// TopologyContainer represents a container in the topology.
 type TopologyContainer struct {
 	ID                string                      `json:"id"`
 	Name              string                      `json:"name"`
@@ -67,7 +67,7 @@ type TopologyContainer struct {
 	ResourceLimits    *ContainerResourceLimits    `json:"resource_limits,omitempty"`
 }
 
-// TopologyService represents a logical service in the topology
+// TopologyService represents a logical service in the topology.
 type TopologyService struct {
 	Name          string               `json:"name"`
 	Type          ServiceType          `json:"type"`
@@ -81,7 +81,7 @@ type TopologyService struct {
 	Annotations   map[string]string    `json:"annotations"`
 }
 
-// NetworkConnection represents a connection between network entities
+// NetworkConnection represents a connection between network entities.
 type NetworkConnection struct {
 	ID         string              `json:"id"`
 	Source     ConnectionNode      `json:"source"`
@@ -96,7 +96,7 @@ type NetworkConnection struct {
 	LastSeen   time.Time           `json:"last_seen"`
 }
 
-// ServiceDependency represents a dependency between services
+// ServiceDependency represents a dependency between services.
 type ServiceDependency struct {
 	SourceService  string                        `json:"source_service"`
 	TargetService  string                        `json:"target_service"`
@@ -108,7 +108,7 @@ type ServiceDependency struct {
 	CircuitBreaker *TopologyCircuitBreakerConfig `json:"circuit_breaker,omitempty"`
 }
 
-// NetworkCluster represents a logical grouping of network entities
+// NetworkCluster represents a logical grouping of network entities.
 type NetworkCluster struct {
 	ID        string              `json:"id"`
 	Name      string              `json:"name"`
@@ -121,7 +121,7 @@ type NetworkCluster struct {
 	Metadata  map[string]string   `json:"metadata"`
 }
 
-// TopologySummary provides high-level topology statistics
+// TopologySummary provides high-level topology statistics.
 type TopologySummary struct {
 	TotalNetworks      int                       `json:"total_networks"`
 	TotalContainers    int                       `json:"total_containers"`
@@ -134,7 +134,7 @@ type TopologySummary struct {
 	TopologyComplexity TopologyComplexityMetrics `json:"topology_complexity"`
 }
 
-// TopologyAnalysisMetrics contains analysis performance metrics
+// TopologyAnalysisMetrics contains analysis performance metrics.
 type TopologyAnalysisMetrics struct {
 	AnalysisDuration  time.Duration  `json:"analysis_duration"`
 	DiscoveryDuration time.Duration  `json:"discovery_duration"`
@@ -146,7 +146,7 @@ type TopologyAnalysisMetrics struct {
 	DataSourceCounts  map[string]int `json:"data_source_counts"`
 }
 
-// Supporting types
+// Supporting types.
 type (
 	NetworkType         string
 	ServiceType         string
@@ -159,14 +159,14 @@ type (
 )
 
 const (
-	// NetworkType constants
+	// NetworkType constants.
 	NetworkTypeBridge  NetworkType = "bridge"
 	NetworkTypeHost    NetworkType = "host"
 	NetworkTypeOverlay NetworkType = "overlay"
 	NetworkTypeMacvlan NetworkType = "macvlan"
 	NetworkTypeCustom  NetworkType = "custom"
 
-	// ServiceType constants
+	// ServiceType constants.
 	ServiceTypeWeb      ServiceType = "web"
 	ServiceTypeAPI      ServiceType = "api"
 	ServiceTypeDatabase ServiceType = "database"
@@ -176,41 +176,41 @@ const (
 	ServiceTypeProxy    ServiceType = "proxy"
 	ServiceTypeOther    ServiceType = "other"
 
-	// ConnectionDirection constants
+	// ConnectionDirection constants.
 	DirectionInbound       ConnectionDirection = "inbound"
 	DirectionOutbound      ConnectionDirection = "outbound"
 	DirectionBidirectional ConnectionDirection = "bidirectional"
 
-	// ConnectionStatus constants
+	// ConnectionStatus constants.
 	StatusActive  ConnectionStatus = "active"
 	StatusIdle    ConnectionStatus = "idle"
 	StatusFailed  ConnectionStatus = "failed"
 	StatusUnknown ConnectionStatus = "unknown"
 
-	// DependencyType constants
+	// DependencyType constants.
 	DependencySynchronous  DependencyType = "synchronous"
 	DependencyAsynchronous DependencyType = "asynchronous"
 	DependencyOptional     DependencyType = "optional"
 
-	// HealthImpactLevel constants
+	// HealthImpactLevel constants.
 	HealthImpactCritical HealthImpactLevel = "critical"
 	HealthImpactHigh     HealthImpactLevel = "high"
 	HealthImpactMedium   HealthImpactLevel = "medium"
 	HealthImpactLow      HealthImpactLevel = "low"
 
-	// ClusterType constants
+	// ClusterType constants.
 	ClusterTypeNamespace   ClusterType = "namespace"
 	ClusterTypeProject     ClusterType = "project"
 	ClusterTypeEnvironment ClusterType = "environment"
 	ClusterTypeLogical     ClusterType = "logical"
 
-	// IsolationLevel constants
+	// IsolationLevel constants.
 	IsolationStrict     IsolationLevel = "strict"
 	IsolationModerate   IsolationLevel = "moderate"
 	IsolationPermissive IsolationLevel = "permissive"
 )
 
-// Supporting data structures
+// Supporting data structures.
 type ContainerNetworkInterface struct {
 	NetworkID   string `json:"network_id"`
 	NetworkName string `json:"network_name"`
@@ -367,7 +367,7 @@ type EurekaServiceInfo struct {
 	Metadata   map[string]string `json:"metadata"`
 }
 
-// NewNetworkTopologyAnalyzer creates a new network topology analyzer
+// NewNetworkTopologyAnalyzer creates a new network topology analyzer.
 func NewNetworkTopologyAnalyzer(logger *zap.Logger, containerDetector *ContainerDetector) *NetworkTopologyAnalyzer {
 	return &NetworkTopologyAnalyzer{
 		logger:            logger,
@@ -376,16 +376,19 @@ func NewNetworkTopologyAnalyzer(logger *zap.Logger, containerDetector *Container
 	}
 }
 
-// AnalyzeNetworkTopology performs comprehensive network topology analysis
+// AnalyzeNetworkTopology performs comprehensive network topology analysis.
 func (nta *NetworkTopologyAnalyzer) AnalyzeNetworkTopology(ctx context.Context) (*NetworkTopology, error) {
 	nta.cacheMutex.RLock()
+
 	if nta.cachedTopology != nil && time.Since(nta.lastAnalysis) < nta.cacheExpiry {
 		nta.cacheMutex.RUnlock()
 		return nta.cachedTopology, nil
 	}
+
 	nta.cacheMutex.RUnlock()
 
 	startTime := time.Now()
+
 	nta.logger.Info("Starting network topology analysis")
 
 	topology := &NetworkTopology{
@@ -397,10 +400,12 @@ func (nta *NetworkTopologyAnalyzer) AnalyzeNetworkTopology(ctx context.Context) 
 
 	// Step 1: Discover container environment
 	discoveryStart := time.Now()
+
 	containerEnv, err := nta.containerDetector.DetectContainerEnvironment(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to detect container environment: %w", err)
 	}
+
 	topology.AnalysisMetrics.DiscoveryDuration = time.Since(discoveryStart)
 
 	// Step 2: Map networks
@@ -414,6 +419,7 @@ func (nta *NetworkTopologyAnalyzer) AnalyzeNetworkTopology(ctx context.Context) 
 
 	// Step 3: Map containers with network interfaces
 	mappingStart := time.Now()
+
 	containers, err := nta.mapContainers(ctx, containerEnv)
 	if err != nil {
 		nta.logger.Warn("Failed to map containers", zap.Error(err))
@@ -480,7 +486,7 @@ func (nta *NetworkTopologyAnalyzer) AnalyzeNetworkTopology(ctx context.Context) 
 	return topology, nil
 }
 
-// mapNetworks maps detected networks to topology networks
+// mapNetworks maps detected networks to topology networks.
 func (nta *NetworkTopologyAnalyzer) mapNetworks(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyNetwork, error) {
 	var topologyNetworks []TopologyNetwork
 
@@ -520,7 +526,7 @@ func (nta *NetworkTopologyAnalyzer) mapNetworks(ctx context.Context, containerEn
 	return topologyNetworks, nil
 }
 
-// mapContainers maps detected containers to topology containers
+// mapContainers maps detected containers to topology containers.
 func (nta *NetworkTopologyAnalyzer) mapContainers(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyContainer, error) {
 	var topologyContainers []TopologyContainer
 
@@ -571,7 +577,7 @@ func (nta *NetworkTopologyAnalyzer) mapContainers(ctx context.Context, container
 	return topologyContainers, nil
 }
 
-// discoverServices discovers logical services from containers
+// discoverServices discovers logical services from containers.
 func (nta *NetworkTopologyAnalyzer) discoverServices(ctx context.Context, containers []TopologyContainer) ([]TopologyService, error) {
 	serviceMap := make(map[string]*TopologyService)
 
@@ -627,7 +633,7 @@ func (nta *NetworkTopologyAnalyzer) discoverServices(ctx context.Context, contai
 	return services, nil
 }
 
-// analyzeConnections analyzes network connections between containers
+// analyzeConnections analyzes network connections between containers.
 func (nta *NetworkTopologyAnalyzer) analyzeConnections(ctx context.Context, containers []TopologyContainer, networks []TopologyNetwork) ([]NetworkConnection, error) {
 	var connections []NetworkConnection
 
@@ -678,9 +684,10 @@ func (nta *NetworkTopologyAnalyzer) analyzeConnections(ctx context.Context, cont
 	return connections, nil
 }
 
-// mapServiceDependencies maps dependencies between services
+// mapServiceDependencies maps dependencies between services.
 func (nta *NetworkTopologyAnalyzer) mapServiceDependencies(ctx context.Context, services []TopologyService, connections []NetworkConnection) ([]ServiceDependency, error) {
 	var dependencies []ServiceDependency
+
 	serviceContainerMap := nta.buildServiceContainerMap(services)
 
 	// Analyze dependencies based on connections
@@ -695,6 +702,7 @@ func (nta *NetworkTopologyAnalyzer) mapServiceDependencies(ctx context.Context, 
 		// Check if dependency already exists
 		dependencyKey := fmt.Sprintf("%s->%s", sourceService, targetService)
 		existing := false
+
 		for _, dep := range dependencies {
 			if fmt.Sprintf("%s->%s", dep.SourceService, dep.TargetService) == dependencyKey {
 				existing = true
@@ -720,7 +728,7 @@ func (nta *NetworkTopologyAnalyzer) mapServiceDependencies(ctx context.Context, 
 	return dependencies, nil
 }
 
-// identifyNetworkClusters identifies logical network clusters
+// identifyNetworkClusters identifies logical network clusters.
 func (nta *NetworkTopologyAnalyzer) identifyNetworkClusters(ctx context.Context, networks []TopologyNetwork, containers []TopologyContainer, services []TopologyService) ([]NetworkCluster, error) {
 	var clusters []NetworkCluster
 
@@ -759,6 +767,7 @@ func (nta *NetworkTopologyAnalyzer) identifyNetworkClusters(ctx context.Context,
 						},
 					}
 					cluster.Members = append(cluster.Members, member)
+
 					break
 				}
 			}
@@ -807,7 +816,7 @@ func (nta *NetworkTopologyAnalyzer) identifyNetworkClusters(ctx context.Context,
 	return clusters, nil
 }
 
-// generateTopologySummary generates summary statistics
+// generateTopologySummary generates summary statistics.
 func (nta *NetworkTopologyAnalyzer) generateTopologySummary(topology *NetworkTopology) TopologySummary {
 	summary := TopologySummary{
 		TotalNetworks:     len(topology.Networks),
@@ -904,12 +913,15 @@ func (nta *NetworkTopologyAnalyzer) determineServiceType(container TopologyConta
 	if strings.Contains(imageName, "nginx") || strings.Contains(imageName, "apache") || strings.Contains(imageName, "frontend") {
 		return ServiceTypeWeb
 	}
+
 	if strings.Contains(imageName, "postgres") || strings.Contains(imageName, "mysql") || strings.Contains(imageName, "mongo") {
 		return ServiceTypeDatabase
 	}
+
 	if strings.Contains(imageName, "redis") || strings.Contains(imageName, "memcached") {
 		return ServiceTypeCache
 	}
+
 	if strings.Contains(imageName, "kafka") || strings.Contains(imageName, "rabbitmq") {
 		return ServiceTypeQueue
 	}
@@ -935,6 +947,7 @@ func (nta *NetworkTopologyAnalyzer) getContainerIPAddress(container TopologyCont
 	if len(container.NetworkInterfaces) > 0 {
 		return container.NetworkInterfaces[0].IPAddress
 	}
+
 	return ""
 }
 
@@ -977,6 +990,7 @@ func (nta *NetworkTopologyAnalyzer) testConnection(ctx context.Context, address 
 	}
 
 	timeout := 3 * time.Second
+
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", address, port), timeout)
 	if err != nil {
 		return StatusFailed
@@ -988,11 +1002,13 @@ func (nta *NetworkTopologyAnalyzer) testConnection(ctx context.Context, address 
 
 func (nta *NetworkTopologyAnalyzer) buildServiceContainerMap(services []TopologyService) map[string]string {
 	serviceMap := make(map[string]string)
+
 	for _, service := range services {
 		for _, containerID := range service.Containers {
 			serviceMap[containerID] = service.Name
 		}
 	}
+
 	return serviceMap
 }
 
@@ -1005,6 +1021,7 @@ func (nta *NetworkTopologyAnalyzer) determineDependencyType(connection NetworkCo
 	if strings.ToLower(connection.Protocol) == "tcp" {
 		return DependencySynchronous
 	}
+
 	return DependencyAsynchronous
 }
 
@@ -1031,9 +1048,11 @@ func (nta *NetworkTopologyAnalyzer) determineIsolationLevel(network TopologyNetw
 	if network.Internal {
 		return IsolationStrict
 	}
+
 	if network.Driver == "bridge" {
 		return IsolationModerate
 	}
+
 	return IsolationPermissive
 }
 
@@ -1058,6 +1077,7 @@ func (nta *NetworkTopologyAnalyzer) extractComposeServiceName(container Topology
 	if serviceName, ok := container.ServiceLabels["com.docker.compose.service"]; ok {
 		return serviceName
 	}
+
 	return ""
 }
 
@@ -1102,25 +1122,28 @@ func (nta *NetworkTopologyAnalyzer) calculateComplexityMetrics(topology *Network
 	return metrics
 }
 
-// InvalidateCache invalidates the cached topology
+// InvalidateCache invalidates the cached topology.
 func (nta *NetworkTopologyAnalyzer) InvalidateCache() {
 	nta.cacheMutex.Lock()
 	defer nta.cacheMutex.Unlock()
+
 	nta.cachedTopology = nil
 	nta.lastAnalysis = time.Time{}
 }
 
-// GetCachedTopology returns the cached topology if available
+// GetCachedTopology returns the cached topology if available.
 func (nta *NetworkTopologyAnalyzer) GetCachedTopology() *NetworkTopology {
 	nta.cacheMutex.RLock()
 	defer nta.cacheMutex.RUnlock()
+
 	if nta.cachedTopology != nil && time.Since(nta.lastAnalysis) < nta.cacheExpiry {
 		return nta.cachedTopology
 	}
+
 	return nil
 }
 
-// ExportTopology exports topology to various formats
+// ExportTopology exports topology to various formats.
 func (nta *NetworkTopologyAnalyzer) ExportTopology(topology *NetworkTopology, format string) ([]byte, error) {
 	switch format {
 	case "json":
@@ -1134,7 +1157,7 @@ func (nta *NetworkTopologyAnalyzer) ExportTopology(topology *NetworkTopology, fo
 	}
 }
 
-// exportToDOT exports topology to Graphviz DOT format
+// exportToDOT exports topology to Graphviz DOT format.
 func (nta *NetworkTopologyAnalyzer) exportToDOT(topology *NetworkTopology) []byte {
 	var dot strings.Builder
 
@@ -1161,10 +1184,11 @@ func (nta *NetworkTopologyAnalyzer) exportToDOT(topology *NetworkTopology) []byt
 	}
 
 	dot.WriteString("}\n")
+
 	return []byte(dot.String())
 }
 
-// exportToCytoscape exports topology to Cytoscape.js format
+// exportToCytoscape exports topology to Cytoscape.js format.
 func (nta *NetworkTopologyAnalyzer) exportToCytoscape(topology *NetworkTopology) ([]byte, error) {
 	cytoscapeData := map[string]interface{}{
 		"elements": map[string]interface{}{
@@ -1224,7 +1248,7 @@ func (nta *NetworkTopologyAnalyzer) exportToCytoscape(topology *NetworkTopology)
 	return json.MarshalIndent(cytoscapeData, "", "  ")
 }
 
-// convertResourceLimits converts DetectedResourceLimits to ContainerResourceLimits
+// convertResourceLimits converts DetectedResourceLimits to ContainerResourceLimits.
 func (nta *NetworkTopologyAnalyzer) convertResourceLimits(detected *DetectedResourceLimits) *ContainerResourceLimits {
 	if detected == nil {
 		return nil

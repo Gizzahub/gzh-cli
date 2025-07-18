@@ -248,7 +248,7 @@ func TestMatchRepoPattern(t *testing.T) {
 	}
 }
 
-// Helper functions for creating pointers
+// Helper functions for creating pointers.
 func strPtr(s string) *string {
 	return &s
 }

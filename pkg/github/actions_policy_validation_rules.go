@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// PermissionLevelValidationRule validates Actions permission level compliance
+// PermissionLevelValidationRule validates Actions permission level compliance.
 type PermissionLevelValidationRule struct{}
 
 func (r *PermissionLevelValidationRule) GetRuleID() string {
@@ -52,7 +52,7 @@ func (r *PermissionLevelValidationRule) Validate(ctx context.Context, policy *Ac
 	return result, nil
 }
 
-// WorkflowPermissionsValidationRule validates workflow token permissions
+// WorkflowPermissionsValidationRule validates workflow token permissions.
 type WorkflowPermissionsValidationRule struct{}
 
 func (r *WorkflowPermissionsValidationRule) GetRuleID() string {
@@ -105,7 +105,7 @@ func (r *WorkflowPermissionsValidationRule) Validate(ctx context.Context, policy
 	return result, nil
 }
 
-// SecuritySettingsValidationRule validates security settings compliance
+// SecuritySettingsValidationRule validates security settings compliance.
 type SecuritySettingsValidationRule struct{}
 
 func (r *SecuritySettingsValidationRule) GetRuleID() string {
@@ -186,7 +186,7 @@ func (r *SecuritySettingsValidationRule) Validate(ctx context.Context, policy *A
 	return result, nil
 }
 
-// AllowedActionsValidationRule validates allowed actions compliance
+// AllowedActionsValidationRule validates allowed actions compliance.
 type AllowedActionsValidationRule struct{}
 
 func (r *AllowedActionsValidationRule) GetRuleID() string {
@@ -207,6 +207,7 @@ func (r *AllowedActionsValidationRule) Validate(ctx context.Context, policy *Act
 		result.Passed = true
 		result.Message = "Actions permission level does not require specific action validation"
 		result.Severity = ViolationSeverityLow
+
 		return result, nil
 	}
 
@@ -261,7 +262,7 @@ func (r *AllowedActionsValidationRule) isActionAllowed(action string, allowedAct
 	return false
 }
 
-// SecretPolicyValidationRule validates secret policy compliance
+// SecretPolicyValidationRule validates secret policy compliance.
 type SecretPolicyValidationRule struct{}
 
 func (r *SecretPolicyValidationRule) GetRuleID() string {
@@ -332,10 +333,11 @@ func (r *SecretPolicyValidationRule) matchesNamingPattern(secretName string, pat
 			return true
 		}
 	}
+
 	return false
 }
 
-// RunnerPolicyValidationRule validates runner policy compliance
+// RunnerPolicyValidationRule validates runner policy compliance.
 type RunnerPolicyValidationRule struct{}
 
 func (r *RunnerPolicyValidationRule) GetRuleID() string {
@@ -356,6 +358,7 @@ func (r *RunnerPolicyValidationRule) Validate(ctx context.Context, policy *Actio
 	// Check runner count limits
 	if policy.Runners.SelfHostedRunnerPolicy.MaxRunners > 0 {
 		selfHostedCount := 0
+
 		for _, runner := range currentState.Runners {
 			if r.isSelfHostedRunner(runner) {
 				selfHostedCount++
@@ -418,6 +421,7 @@ func (r *RunnerPolicyValidationRule) getRunnerType(runner RunnerInfo) RunnerType
 	if r.isSelfHostedRunner(runner) {
 		return RunnerTypeSelfHosted
 	}
+
 	return RunnerTypeGitHubHosted
 }
 
@@ -427,22 +431,26 @@ func (r *RunnerPolicyValidationRule) isRunnerTypeAllowed(runnerType RunnerType, 
 			return true
 		}
 	}
+
 	return false
 }
 
 func (r *RunnerPolicyValidationRule) hasRequiredLabels(runner RunnerInfo, requiredLabels []string) bool {
 	for _, required := range requiredLabels {
 		found := false
+
 		for _, label := range runner.Labels {
 			if label == required {
 				found = true
 				break
 			}
 		}
+
 		if !found {
 			return false
 		}
 	}
+
 	return true
 }
 

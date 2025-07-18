@@ -48,6 +48,7 @@ func GetDefaultBranch(ctx context.Context, group string, repo string) (string, e
 	}
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -64,6 +65,7 @@ func GetDefaultBranch(ctx context.Context, group string, repo string) (string, e
 	}
 
 	var gitLabRepo GitLabRepoInfo
+
 	err = json.Unmarshal(body, &gitLabRepo)
 	if err != nil {
 		return "", err
@@ -81,6 +83,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	}
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrFailedToGetRepositories, err)
@@ -99,6 +102,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	var repos []struct {
 		Name string `json:"name"`
 	}
+
 	err = json.Unmarshal(body, &repos)
 	if err != nil {
 		return err
@@ -134,6 +138,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	var subgroups []struct {
 		ID string `json:"id"`
 	}
+
 	err = json.Unmarshal(subgroupsBody, &subgroups)
 	if err != nil {
 		return err
@@ -161,10 +166,12 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 // doesn't exist, access is denied, or the API request fails.
 func List(ctx context.Context, group string) ([]string, error) {
 	var allRepos []string
+
 	err := listGroupRepos(ctx, group, &allRepos)
 	if err != nil {
 		return nil, err
 	}
+
 	return allRepos, nil
 }
 
@@ -188,19 +195,25 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 		if err != nil {
 			return fmt.Errorf("failed to get default branch: %w", err)
 		}
+
 		branch = defaultBranch
 	}
 
 	cloneURL := fmt.Sprintf("https://gitlab.com/%s/%s.git", group, repo)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
+
+	var (
+		out    bytes.Buffer
+		stderr bytes.Buffer
+	)
 	// cmd := exec.CommandContext(ctx, "git", "clone", "-b", branch, cloneURL, targetPath)
 	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath)
 	cmd.Stdout = &out
+
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		fmt.Println(stderr.String())
 		fmt.Println(out.String())
+
 		return fmt.Errorf("Clone Failed  (url: %s, branch: %s, targetPath: %s, err: %w)\n", cloneURL, branch, targetPath, err)
 	}
 
@@ -240,6 +253,7 @@ func RefreshAll(ctx context.Context, targetPath string, group string, strategy s
 	g, gCtx := errgroup.WithContext(ctx)
 	// Limit concurrent git operations to avoid overwhelming the system
 	sem := semaphore.NewWeighted(5) // Max 5 concurrent git operations
+
 	var mu sync.Mutex
 
 	for _, repo := range groupRepos {
@@ -270,6 +284,7 @@ func RefreshAll(ctx context.Context, targetPath string, group string, strategy s
 					if err := cmd.Run(); err != nil {
 						fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
 					}
+
 					cmd = exec.CommandContext(gCtx, "git", "-C", repoPath, "pull")
 					if err := cmd.Run(); err != nil {
 						fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
@@ -314,6 +329,7 @@ func getDirectories(path string) ([]string, error) {
 	}
 
 	var dirs []string
+
 	for _, entry := range entries {
 		if entry.IsDir() {
 			dirs = append(dirs, entry.Name())
@@ -329,11 +345,14 @@ func difference(a, b []string) []string {
 	for _, x := range b {
 		mb[x] = struct{}{}
 	}
+
 	var diff []string
+
 	for _, x := range a {
 		if _, found := mb[x]; !found {
 			diff = append(diff, x)
 		}
 	}
+
 	return diff
 }

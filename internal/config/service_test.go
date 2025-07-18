@@ -73,6 +73,7 @@ providers:
 			// Create temporary directory
 			tempDir, err := os.MkdirTemp("", "config-test-")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tempDir)
 
 			// Setup configuration file
@@ -105,6 +106,7 @@ providers:
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, cfg)
+
 				if tt.validateConfig != nil {
 					tt.validateConfig(t, cfg)
 				}
@@ -117,6 +119,7 @@ func TestConfigService_ReloadConfiguration(t *testing.T) {
 	// Create temporary directory
 	tempDir, err := os.MkdirTemp("", "config-reload-test-")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")
@@ -190,6 +193,7 @@ func TestConfigService_SaveConfiguration(t *testing.T) {
 	// Create temporary directory
 	tempDir, err := os.MkdirTemp("", "config-save-test-")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	// Create service
@@ -248,6 +252,7 @@ func TestConfigService_WatchConfiguration(t *testing.T) {
 	// Create temporary directory
 	tempDir, err := os.MkdirTemp("", "config-watch-test-")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")
@@ -302,6 +307,7 @@ providers:
 	// Start watching
 	err = service.WatchConfiguration(ctx, callback)
 	require.NoError(t, err)
+
 	defer service.StopWatching()
 
 	// Update configuration file
@@ -374,6 +380,7 @@ func TestConfigService_BulkCloneIntegration(t *testing.T) {
 	// Create temporary directory
 	tempDir, err := os.MkdirTemp("", "config-bulk-test-")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")

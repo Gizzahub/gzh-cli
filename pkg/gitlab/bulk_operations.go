@@ -10,7 +10,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
 )
 
-// RefreshAllWithWorkerPool performs bulk repository refresh using worker pools
+// RefreshAllWithWorkerPool performs bulk repository refresh using worker pools.
 func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy string, parallel int, maxRetries int) error {
 	config := workerpool.DefaultRepositoryPoolConfig()
 
@@ -18,7 +18,8 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy s
 	if parallel > 0 {
 		config.CloneWorkers = parallel
 		config.UpdateWorkers = parallel + (parallel / 2) // 50% more for updates
-		config.ConfigWorkers = parallel / 2              // 50% less for config operations
+
+		config.ConfigWorkers = parallel / 2 // 50% less for config operations
 		if config.ConfigWorkers < 1 {
 			config.ConfigWorkers = 1
 		}
@@ -87,6 +88,7 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy s
 
 	// Report results
 	successCount := 0
+
 	for _, result := range results {
 		if result.Success {
 			successCount++
@@ -96,10 +98,11 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy s
 	}
 
 	fmt.Printf("GitLab bulk operation completed: %d/%d successful\n", successCount, len(results))
+
 	return nil
 }
 
-// processGitLabRepositoryJob processes a single GitLab repository job
+// processGitLabRepositoryJob processes a single GitLab repository job.
 func processGitLabRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, group string) error {
 	switch job.Operation {
 	case workerpool.OperationClone:
@@ -116,6 +119,7 @@ func processGitLabRepositoryJob(ctx context.Context, job workerpool.RepositoryJo
 		if err := executeGitOperation(ctx, job.Path, "reset", "--hard", "HEAD"); err != nil {
 			return fmt.Errorf("git reset failed: %w", err)
 		}
+
 		return executeGitOperation(ctx, job.Path, "pull")
 
 	default:
@@ -123,7 +127,7 @@ func processGitLabRepositoryJob(ctx context.Context, job workerpool.RepositoryJo
 	}
 }
 
-// executeGitOperation executes a git command in the repository path
+// executeGitOperation executes a git command in the repository path.
 func executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
 	// Build git command
 	gitArgs := append([]string{"-C", repoPath}, args...)

@@ -6,46 +6,46 @@ import (
 	"strings"
 )
 
-// ErrorCode represents different types of errors in the system
+// ErrorCode represents different types of errors in the system.
 type ErrorCode string
 
 const (
-	// Network related errors
+	// Network related errors.
 	ErrorCodeNetworkConnection  ErrorCode = "NETWORK_CONNECTION"
 	ErrorCodeNetworkTimeout     ErrorCode = "NETWORK_TIMEOUT"
 	ErrorCodeNetworkDNS         ErrorCode = "NETWORK_DNS"
 	ErrorCodeNetworkUnreachable ErrorCode = "NETWORK_UNREACHABLE"
 
-	// VPN related errors
+	// VPN related errors.
 	ErrorCodeVPNConnection     ErrorCode = "VPN_CONNECTION"
 	ErrorCodeVPNAuthentication ErrorCode = "VPN_AUTHENTICATION"
 	ErrorCodeVPNConfiguration  ErrorCode = "VPN_CONFIGURATION"
 	ErrorCodeVPNHierarchy      ErrorCode = "VPN_HIERARCHY"
 
-	// Configuration related errors
+	// Configuration related errors.
 	ErrorCodeConfigInvalid    ErrorCode = "CONFIG_INVALID"
 	ErrorCodeConfigNotFound   ErrorCode = "CONFIG_NOT_FOUND"
 	ErrorCodeConfigSyntax     ErrorCode = "CONFIG_SYNTAX"
 	ErrorCodeConfigValidation ErrorCode = "CONFIG_VALIDATION"
 
-	// Authentication related errors
+	// Authentication related errors.
 	ErrorCodeAuthFailed  ErrorCode = "AUTH_FAILED"
 	ErrorCodeAuthExpired ErrorCode = "AUTH_EXPIRED"
 	ErrorCodeAuthMissing ErrorCode = "AUTH_MISSING"
 	ErrorCodeAuthInvalid ErrorCode = "AUTH_INVALID"
 
-	// Permission related errors
+	// Permission related errors.
 	ErrorCodePermissionDenied ErrorCode = "PERMISSION_DENIED"
 	ErrorCodeResourceNotFound ErrorCode = "RESOURCE_NOT_FOUND"
 	ErrorCodeResourceExists   ErrorCode = "RESOURCE_EXISTS"
 
-	// System related errors
+	// System related errors.
 	ErrorCodeSystemInternal ErrorCode = "SYSTEM_INTERNAL"
 	ErrorCodeSystemTimeout  ErrorCode = "SYSTEM_TIMEOUT"
 	ErrorCodeSystemResource ErrorCode = "SYSTEM_RESOURCE"
 )
 
-// GzhError represents an enhanced error with additional context
+// GzhError represents an enhanced error with additional context.
 type GzhError struct {
 	Code        ErrorCode              `json:"code"`
 	Message     string                 `json:"message"`
@@ -55,20 +55,21 @@ type GzhError struct {
 	Cause       error                  `json:"cause,omitempty"`
 }
 
-// Error implements the error interface
+// Error implements the error interface.
 func (e *GzhError) Error() string {
 	if e.Details != "" {
 		return fmt.Sprintf("[%s] %s: %s", e.Code, e.Message, e.Details)
 	}
+
 	return fmt.Sprintf("[%s] %s", e.Code, e.Message)
 }
 
-// Unwrap returns the underlying cause
+// Unwrap returns the underlying cause.
 func (e *GzhError) Unwrap() error {
 	return e.Cause
 }
 
-// Is checks if the error matches the given error
+// Is checks if the error matches the given error.
 func (e *GzhError) Is(target error) bool {
 	if target == nil {
 		return e == nil
@@ -81,28 +82,30 @@ func (e *GzhError) Is(target error) bool {
 	return errors.Is(e.Cause, target)
 }
 
-// WithContext adds context information to the error
+// WithContext adds context information to the error.
 func (e *GzhError) WithContext(key string, value interface{}) *GzhError {
 	if e.Context == nil {
 		e.Context = make(map[string]interface{})
 	}
+
 	e.Context[key] = value
+
 	return e
 }
 
-// WithSuggestion adds a suggestion for resolving the error
+// WithSuggestion adds a suggestion for resolving the error.
 func (e *GzhError) WithSuggestion(suggestion string) *GzhError {
 	e.Suggestions = append(e.Suggestions, suggestion)
 	return e
 }
 
-// WithCause sets the underlying cause of the error
+// WithCause sets the underlying cause of the error.
 func (e *GzhError) WithCause(cause error) *GzhError {
 	e.Cause = cause
 	return e
 }
 
-// GetSuggestions returns formatted suggestions for resolving the error
+// GetSuggestions returns formatted suggestions for resolving the error.
 func (e *GzhError) GetSuggestions() string {
 	if len(e.Suggestions) == 0 {
 		return ""
@@ -110,13 +113,15 @@ func (e *GzhError) GetSuggestions() string {
 
 	var sb strings.Builder
 	sb.WriteString("Suggestions:\n")
+
 	for i, suggestion := range e.Suggestions {
 		sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, suggestion))
 	}
+
 	return sb.String()
 }
 
-// GetFormattedError returns a user-friendly formatted error message
+// GetFormattedError returns a user-friendly formatted error message.
 func (e *GzhError) GetFormattedError() string {
 	var sb strings.Builder
 
@@ -131,6 +136,7 @@ func (e *GzhError) GetFormattedError() string {
 	// Context information
 	if len(e.Context) > 0 {
 		sb.WriteString("🔍 Context:\n")
+
 		for key, value := range e.Context {
 			sb.WriteString(fmt.Sprintf("   %s: %v\n", key, value))
 		}
@@ -139,6 +145,7 @@ func (e *GzhError) GetFormattedError() string {
 	// Suggestions
 	if len(e.Suggestions) > 0 {
 		sb.WriteString("💡 Suggestions:\n")
+
 		for i, suggestion := range e.Suggestions {
 			sb.WriteString(fmt.Sprintf("   %d. %s\n", i+1, suggestion))
 		}
@@ -149,7 +156,7 @@ func (e *GzhError) GetFormattedError() string {
 
 // Error creation functions
 
-// NewNetworkError creates a new network-related error
+// NewNetworkError creates a new network-related error.
 func NewNetworkError(code ErrorCode, message string) *GzhError {
 	return &GzhError{
 		Code:    code,
@@ -157,7 +164,7 @@ func NewNetworkError(code ErrorCode, message string) *GzhError {
 	}
 }
 
-// NewVPNError creates a new VPN-related error
+// NewVPNError creates a new VPN-related error.
 func NewVPNError(code ErrorCode, message string) *GzhError {
 	err := &GzhError{
 		Code:    code,
@@ -183,7 +190,7 @@ func NewVPNError(code ErrorCode, message string) *GzhError {
 	return err
 }
 
-// NewConfigError creates a new configuration-related error
+// NewConfigError creates a new configuration-related error.
 func NewConfigError(code ErrorCode, message string) *GzhError {
 	err := &GzhError{
 		Code:    code,
@@ -209,7 +216,7 @@ func NewConfigError(code ErrorCode, message string) *GzhError {
 	return err
 }
 
-// NewAuthError creates a new authentication-related error
+// NewAuthError creates a new authentication-related error.
 func NewAuthError(code ErrorCode, message string) *GzhError {
 	err := &GzhError{
 		Code:    code,
@@ -235,7 +242,7 @@ func NewAuthError(code ErrorCode, message string) *GzhError {
 	return err
 }
 
-// NewSystemError creates a new system-related error
+// NewSystemError creates a new system-related error.
 func NewSystemError(code ErrorCode, message string) *GzhError {
 	err := &GzhError{
 		Code:    code,
@@ -263,7 +270,7 @@ func NewSystemError(code ErrorCode, message string) *GzhError {
 
 // Helper functions for common error scenarios
 
-// WrapError wraps an existing error with additional context
+// WrapError wraps an existing error with additional context.
 func WrapError(err error, code ErrorCode, message string) *GzhError {
 	return &GzhError{
 		Code:    code,
@@ -272,13 +279,14 @@ func WrapError(err error, code ErrorCode, message string) *GzhError {
 	}
 }
 
-// FromError converts a standard error to a GzhError
+// FromError converts a standard error to a GzhError.
 func FromError(err error) *GzhError {
 	if err == nil {
 		return nil
 	}
 
-	if gzhErr, ok := err.(*GzhError); ok {
+	gzhErr := &GzhError{}
+	if errors.As(err, &gzhErr) {
 		return gzhErr
 	}
 
@@ -290,56 +298,61 @@ func FromError(err error) *GzhError {
 	}
 }
 
-// IsCode checks if an error has a specific error code
+// IsCode checks if an error has a specific error code.
 func IsCode(err error, code ErrorCode) bool {
-	if gzhErr, ok := err.(*GzhError); ok {
+	gzhErr := &GzhError{}
+	if errors.As(err, &gzhErr) {
 		return gzhErr.Code == code
 	}
+
 	return false
 }
 
-// ExtractCode extracts the error code from an error
+// ExtractCode extracts the error code from an error.
 func ExtractCode(err error) ErrorCode {
-	if gzhErr, ok := err.(*GzhError); ok {
+	gzhErr := &GzhError{}
+	if errors.As(err, &gzhErr) {
 		return gzhErr.Code
 	}
+
 	return ErrorCodeSystemInternal
 }
 
 // Recovery functions for automatic error recovery
 
-// RecoveryStrategy represents a strategy for automatic error recovery
+// RecoveryStrategy represents a strategy for automatic error recovery.
 type RecoveryStrategy func(err *GzhError) error
 
-// RecoveryManager manages automatic error recovery
+// RecoveryManager manages automatic error recovery.
 type RecoveryManager struct {
 	strategies map[ErrorCode]RecoveryStrategy
 }
 
-// NewRecoveryManager creates a new recovery manager
+// NewRecoveryManager creates a new recovery manager.
 func NewRecoveryManager() *RecoveryManager {
 	return &RecoveryManager{
 		strategies: make(map[ErrorCode]RecoveryStrategy),
 	}
 }
 
-// RegisterStrategy registers a recovery strategy for an error code
+// RegisterStrategy registers a recovery strategy for an error code.
 func (rm *RecoveryManager) RegisterStrategy(code ErrorCode, strategy RecoveryStrategy) {
 	rm.strategies[code] = strategy
 }
 
-// Recover attempts to recover from an error automatically
+// Recover attempts to recover from an error automatically.
 func (rm *RecoveryManager) Recover(err error) error {
 	gzhErr := FromError(err)
 	if strategy, exists := rm.strategies[gzhErr.Code]; exists {
 		return strategy(gzhErr)
 	}
+
 	return err
 }
 
 // Default recovery strategies
 
-// NetworkRecoveryStrategy attempts to recover from network errors
+// NetworkRecoveryStrategy attempts to recover from network errors.
 func NetworkRecoveryStrategy(err *GzhError) error {
 	switch err.Code {
 	case ErrorCodeNetworkTimeout:
@@ -353,7 +366,7 @@ func NetworkRecoveryStrategy(err *GzhError) error {
 	}
 }
 
-// VPNRecoveryStrategy attempts to recover from VPN errors
+// VPNRecoveryStrategy attempts to recover from VPN errors.
 func VPNRecoveryStrategy(err *GzhError) error {
 	switch err.Code {
 	case ErrorCodeVPNConnection:

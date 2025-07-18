@@ -42,6 +42,7 @@ func TestFindConfigFile(t *testing.T) {
 		// Change to temp directory
 		oldDir, _ := os.Getwd()
 		defer os.Chdir(oldDir)
+
 		os.Chdir(tempDir)
 
 		configPath := filepath.Join(tempDir, "bulk-clone.yaml")
@@ -256,12 +257,16 @@ ignore_names:
 		assert.Len(t, cfg.RepoRoots, 2)
 
 		// base-company should be overridden
-		var baseCompanyRepo *BulkCloneGithub
-		var personalRepo *BulkCloneGithub
+		var (
+			baseCompanyRepo *BulkCloneGithub
+			personalRepo    *BulkCloneGithub
+		)
+
 		for i := range cfg.RepoRoots {
 			if cfg.RepoRoots[i].OrgName == "base-company" {
 				baseCompanyRepo = &cfg.RepoRoots[i]
 			}
+
 			if cfg.RepoRoots[i].OrgName == "personal-org" {
 				personalRepo = &cfg.RepoRoots[i]
 			}
@@ -294,12 +299,14 @@ ignore_names:
 		assert.Len(t, cfg.RepoRoots, 3)
 
 		var workRepo *BulkCloneGithub
+
 		for i := range cfg.RepoRoots {
 			if cfg.RepoRoots[i].OrgName == "work-org" {
 				workRepo = &cfg.RepoRoots[i]
 				break
 			}
 		}
+
 		require.NotNil(t, workRepo)
 		assert.Equal(t, "$HOME/work-specific", workRepo.RootPath)
 
@@ -415,10 +422,12 @@ func TestMergeConfig(t *testing.T) {
 	assert.Len(t, base.RepoRoots, 2)
 
 	var workRepo, personalRepo *BulkCloneGithub
+
 	for i := range base.RepoRoots {
 		if base.RepoRoots[i].OrgName == "work-org" {
 			workRepo = &base.RepoRoots[i]
 		}
+
 		if base.RepoRoots[i].OrgName == "personal-org" {
 			personalRepo = &base.RepoRoots[i]
 		}

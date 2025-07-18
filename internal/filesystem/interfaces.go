@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// FileInfo represents information about a file or directory
+// FileInfo represents information about a file or directory.
 type FileInfo struct {
 	Name    string      `json:"name"`
 	Size    int64       `json:"size"`
@@ -17,7 +17,7 @@ type FileInfo struct {
 	Path    string      `json:"path"`
 }
 
-// FileSystem defines the interface for file system operations
+// FileSystem defines the interface for file system operations.
 type FileSystem interface {
 	// File operations
 	ReadFile(ctx context.Context, filename string) ([]byte, error)
@@ -60,7 +60,7 @@ type FileSystem interface {
 	TempFile(ctx context.Context, dir, pattern string) (File, error)
 }
 
-// File defines the interface for file operations
+// File defines the interface for file operations.
 type File interface {
 	io.Reader
 	io.Writer
@@ -83,7 +83,7 @@ type File interface {
 	WriteString(s string) (n int, err error)
 }
 
-// WatchService defines the interface for file system watching
+// WatchService defines the interface for file system watching.
 type WatchService interface {
 	// Start watching paths for changes
 	Watch(ctx context.Context, paths []string) error
@@ -104,7 +104,7 @@ type WatchService interface {
 	RemovePath(ctx context.Context, path string) error
 }
 
-// WatchEvent represents a file system change event
+// WatchEvent represents a file system change event.
 type WatchEvent struct {
 	Path      string    `json:"path"`
 	Operation string    `json:"operation"` // create, write, remove, rename, chmod
@@ -112,7 +112,7 @@ type WatchEvent struct {
 	Time      time.Time `json:"time"`
 }
 
-// PermissionManager defines the interface for managing file permissions
+// PermissionManager defines the interface for managing file permissions.
 type PermissionManager interface {
 	// Get file permissions
 	GetPermissions(ctx context.Context, path string) (fs.FileMode, error)
@@ -136,7 +136,7 @@ type PermissionManager interface {
 	ChangeOwner(ctx context.Context, path, owner string) error
 }
 
-// ArchiveService defines the interface for archive operations
+// ArchiveService defines the interface for archive operations.
 type ArchiveService interface {
 	// Create archive from directory
 	CreateArchive(ctx context.Context, sourcePath, archivePath string, format ArchiveFormat) error
@@ -151,7 +151,7 @@ type ArchiveService interface {
 	GetSupportedFormats() []ArchiveFormat
 }
 
-// ArchiveFormat represents supported archive formats
+// ArchiveFormat represents supported archive formats.
 type ArchiveFormat string
 
 const (
@@ -161,7 +161,7 @@ const (
 	ArchiveFormatZip    ArchiveFormat = "zip"
 )
 
-// BackupService defines the interface for file backup operations
+// BackupService defines the interface for file backup operations.
 type BackupService interface {
 	// Create backup of file or directory
 	CreateBackup(ctx context.Context, sourcePath, backupPath string) error
@@ -179,7 +179,7 @@ type BackupService interface {
 	VerifyBackup(ctx context.Context, backupPath string) error
 }
 
-// BackupInfo represents information about a backup
+// BackupInfo represents information about a backup.
 type BackupInfo struct {
 	Path         string    `json:"path"`
 	OriginalPath string    `json:"original_path"`
@@ -188,7 +188,7 @@ type BackupInfo struct {
 	Checksum     string    `json:"checksum"`
 }
 
-// SearchService defines the interface for file search operations
+// SearchService defines the interface for file search operations.
 type SearchService interface {
 	// Find files by name pattern
 	FindFiles(ctx context.Context, root, pattern string) ([]string, error)
@@ -203,7 +203,7 @@ type SearchService interface {
 	SearchWithFilters(ctx context.Context, root string, filters SearchFilters) ([]SearchResult, error)
 }
 
-// SearchResult represents a search result
+// SearchResult represents a search result.
 type SearchResult struct {
 	Path    string `json:"path"`
 	Line    int    `json:"line"`
@@ -212,7 +212,7 @@ type SearchResult struct {
 	Context string `json:"context"`
 }
 
-// SearchFilters represents search filter options
+// SearchFilters represents search filter options.
 type SearchFilters struct {
 	NamePattern    string    `json:"name_pattern"`
 	ContentPattern string    `json:"content_pattern"`
@@ -226,7 +226,7 @@ type SearchFilters struct {
 	MaxDepth       int       `json:"max_depth"`
 }
 
-// FileSystemService provides a unified interface for all file system operations
+// FileSystemService provides a unified interface for all file system operations.
 type FileSystemService interface {
 	FileSystem
 	WatchService

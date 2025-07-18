@@ -184,6 +184,7 @@ func createTestRuleManager() (*RuleManager, *mockRuleStorage, *mockTemplateStora
 	evaluator := &mockRuleConditionEvaluator{}
 
 	rm := NewRuleManager(logger, apiClient, evaluator, actionExecutor, storage, templateStorage)
+
 	return rm, storage, templateStorage, actionExecutor, evaluator
 }
 
@@ -627,6 +628,7 @@ func BenchmarkRuleManager_CreateRule(b *testing.B) {
 	storage.On("CreateRule", mock.Anything, mock.AnythingOfType("*github.AutomationRule")).Return(nil)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		rule := createTestRule()
 		rule.ID = "" // Reset ID for creation
@@ -648,6 +650,7 @@ func BenchmarkRuleManager_EvaluateConditions(b *testing.B) {
 	evaluator.On("EvaluateConditions", mock.Anything, mock.AnythingOfType("*github.AutomationConditions"), mock.AnythingOfType("*github.GitHubEvent"), mock.AnythingOfType("*github.EvaluationContext")).Return(evaluationResult, nil)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		rm.EvaluateConditions(context.Background(), rule, event)
 	}

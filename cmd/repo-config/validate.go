@@ -9,10 +9,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// newValidateCmd creates the validate subcommand
+// newValidateCmd creates the validate subcommand.
 func newValidateCmd() *cobra.Command {
-	var flags GlobalFlags
 	var (
+		flags      GlobalFlags
 		configFile string
 		strict     bool
 		format     string
@@ -60,16 +60,19 @@ Examples:
 	return cmd
 }
 
-// runValidateCommand executes the validate command
+// runValidateCommand executes the validate command.
 func runValidateCommand(flags GlobalFlags, configFile string, strict bool, format string) error {
 	if flags.Verbose {
 		fmt.Println("🔍 Validating repository configuration...")
+
 		if configFile != "" {
 			fmt.Printf("Configuration file: %s\n", configFile)
 		}
+
 		if strict {
 			fmt.Println("Mode: STRICT validation")
 		}
+
 		fmt.Println()
 	}
 
@@ -117,7 +120,7 @@ func runValidateCommand(flags GlobalFlags, configFile string, strict bool, forma
 	return nil
 }
 
-// ValidationResult represents a single validation check result
+// ValidationResult represents a single validation check result.
 type ValidationResult struct {
 	Check      string `json:"check" yaml:"check"`
 	Status     string `json:"status" yaml:"status"` // pass, warn, fail
@@ -127,7 +130,7 @@ type ValidationResult struct {
 	Suggestion string `json:"suggestion,omitempty" yaml:"suggestion,omitempty"`
 }
 
-// ValidationSummary contains overall validation results
+// ValidationSummary contains overall validation results.
 type ValidationSummary struct {
 	File     string             `json:"file" yaml:"file"`
 	Valid    bool               `json:"valid" yaml:"valid"`
@@ -136,7 +139,7 @@ type ValidationSummary struct {
 	Checks   []ValidationResult `json:"checks" yaml:"checks"`
 }
 
-// performValidation runs all validation checks on the configuration file
+// performValidation runs all validation checks on the configuration file.
 func performValidation(configFile string, strict bool) ValidationSummary {
 	results := ValidationSummary{
 		File:   configFile,
@@ -207,13 +210,14 @@ func performValidation(configFile string, strict bool) ValidationSummary {
 	return results
 }
 
-// displayValidationTable displays validation results in table format
+// displayValidationTable displays validation results in table format.
 func displayValidationTable(results ValidationSummary) {
 	fmt.Printf("%-20s %-8s %-50s %s\n", "CHECK", "STATUS", "MESSAGE", "LINE")
 	fmt.Println("────────────────────────────────────────────────────────────────────────────────")
 
 	for _, check := range results.Checks {
 		statusSymbol := getStatusSymbol(check.Status)
+
 		lineStr := ""
 		if check.Line > 0 {
 			lineStr = fmt.Sprintf("%d", check.Line)
@@ -243,27 +247,29 @@ func displayValidationTable(results ValidationSummary) {
 	fmt.Printf("📊 Summary: %d errors, %d warnings\n", results.Errors, results.Warnings)
 }
 
-// displayValidationJSON displays validation results in JSON format
+// displayValidationJSON displays validation results in JSON format.
 func displayValidationJSON(results ValidationSummary) {
 	data, err := json.MarshalIndent(results, "", "  ")
 	if err != nil {
 		fmt.Printf("Error marshaling JSON: %v\n", err)
 		return
 	}
+
 	fmt.Println(string(data))
 }
 
-// displayValidationYAML displays validation results in YAML format
+// displayValidationYAML displays validation results in YAML format.
 func displayValidationYAML(results ValidationSummary) {
 	data, err := yaml.Marshal(results)
 	if err != nil {
 		fmt.Printf("Error marshaling YAML: %v\n", err)
 		return
 	}
+
 	fmt.Println(string(data))
 }
 
-// getStatusSymbol returns the symbol for a validation status
+// getStatusSymbol returns the symbol for a validation status.
 func getStatusSymbol(status string) string {
 	switch status {
 	case "pass":
@@ -277,12 +283,12 @@ func getStatusSymbol(status string) string {
 	}
 }
 
-// hasValidationErrors checks if there are any validation errors
+// hasValidationErrors checks if there are any validation errors.
 func hasValidationErrors(results ValidationSummary) bool {
 	return results.Errors > 0
 }
 
-// discoverConfigFile attempts to find a configuration file
+// discoverConfigFile attempts to find a configuration file.
 func discoverConfigFile() string {
 	candidates := []string{
 		".gzh/repo-config.yaml",

@@ -8,7 +8,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-// ProviderCloner defines the interface for provider-specific cloning operations
+// ProviderCloner defines the interface for provider-specific cloning operations.
 type ProviderCloner interface {
 	CloneOrganization(orgName, targetPath, strategy string) error
 	CloneGroup(groupName, targetPath, strategy string) error
@@ -16,18 +16,18 @@ type ProviderCloner interface {
 	GetName() string
 }
 
-// GitHubCloner implements ProviderCloner for GitHub
+// GitHubCloner implements ProviderCloner for GitHub.
 type GitHubCloner struct {
 	token       string
 	environment env.Environment
 }
 
-// NewGitHubCloner creates a new GitHub cloner
+// NewGitHubCloner creates a new GitHub cloner.
 func NewGitHubCloner(token string) *GitHubCloner {
 	return NewGitHubClonerWithEnv(token, env.NewOSEnvironment())
 }
 
-// NewGitHubClonerWithEnv creates a new GitHub cloner with the provided environment
+// NewGitHubClonerWithEnv creates a new GitHub cloner with the provided environment.
 func NewGitHubClonerWithEnv(token string, environment env.Environment) *GitHubCloner {
 	return &GitHubCloner{
 		token:       token,
@@ -42,10 +42,12 @@ func (g *GitHubCloner) CloneOrganization(orgName, targetPath, strategy string) e
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
+
 	provider, err := factory.CreateProvider(context.Background(), ProviderGitHub, ProviderConfig{Token: g.token})
 	if err != nil {
 		return fmt.Errorf("failed to create GitHub provider: %w", err)
 	}
+
 	return provider.RefreshAll(context.Background(), targetPath, orgName, strategy)
 }
 
@@ -62,18 +64,18 @@ func (g *GitHubCloner) GetName() string {
 	return ProviderGitHub
 }
 
-// GitLabCloner implements ProviderCloner for GitLab
+// GitLabCloner implements ProviderCloner for GitLab.
 type GitLabCloner struct {
 	token       string
 	environment env.Environment
 }
 
-// NewGitLabCloner creates a new GitLab cloner
+// NewGitLabCloner creates a new GitLab cloner.
 func NewGitLabCloner(token string) *GitLabCloner {
 	return NewGitLabClonerWithEnv(token, env.NewOSEnvironment())
 }
 
-// NewGitLabClonerWithEnv creates a new GitLab cloner with the provided environment
+// NewGitLabClonerWithEnv creates a new GitLab cloner with the provided environment.
 func NewGitLabClonerWithEnv(token string, environment env.Environment) *GitLabCloner {
 	return &GitLabCloner{
 		token:       token,
@@ -93,10 +95,12 @@ func (g *GitLabCloner) CloneGroup(groupName, targetPath, strategy string) error 
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
+
 	provider, err := factory.CreateProvider(context.Background(), ProviderGitLab, ProviderConfig{Token: g.token})
 	if err != nil {
 		return fmt.Errorf("failed to create GitLab provider: %w", err)
 	}
+
 	return provider.RefreshAll(context.Background(), targetPath, groupName, strategy)
 }
 
@@ -108,18 +112,18 @@ func (g *GitLabCloner) GetName() string {
 	return ProviderGitLab
 }
 
-// GiteaCloner implements ProviderCloner for Gitea
+// GiteaCloner implements ProviderCloner for Gitea.
 type GiteaCloner struct {
 	token       string
 	environment env.Environment
 }
 
-// NewGiteaCloner creates a new Gitea cloner
+// NewGiteaCloner creates a new Gitea cloner.
 func NewGiteaCloner(token string) *GiteaCloner {
 	return NewGiteaClonerWithEnv(token, env.NewOSEnvironment())
 }
 
-// NewGiteaClonerWithEnv creates a new Gitea cloner with the provided environment
+// NewGiteaClonerWithEnv creates a new Gitea cloner with the provided environment.
 func NewGiteaClonerWithEnv(token string, environment env.Environment) *GiteaCloner {
 	return &GiteaCloner{
 		token:       token,
@@ -134,10 +138,12 @@ func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) er
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
+
 	provider, err := factory.CreateProvider(context.Background(), ProviderGitea, ProviderConfig{Token: g.token})
 	if err != nil {
 		return fmt.Errorf("failed to create Gitea provider: %w", err)
 	}
+
 	return provider.RefreshAll(context.Background(), targetPath, orgName, strategy)
 }
 
@@ -154,7 +160,7 @@ func (g *GiteaCloner) GetName() string {
 	return ProviderGitea
 }
 
-// CreateProviderCloner creates a cloner for the specified provider (deprecated: use ProviderFactory)
+// CreateProviderCloner creates a cloner for the specified provider (deprecated: use ProviderFactory).
 func CreateProviderCloner(providerName, token string) (ProviderCloner, error) {
 	environment := env.NewOSEnvironment()
 
@@ -170,18 +176,18 @@ func CreateProviderCloner(providerName, token string) (ProviderCloner, error) {
 	}
 }
 
-// BulkCloneExecutor handles bulk cloning operations with filtering and processing
+// BulkCloneExecutor handles bulk cloning operations with filtering and processing.
 type BulkCloneExecutor struct {
 	integration *BulkCloneIntegration
 	cloners     map[string]ProviderCloner
 }
 
-// NewBulkCloneExecutor creates a new bulk clone executor
+// NewBulkCloneExecutor creates a new bulk clone executor.
 func NewBulkCloneExecutor(config *Config) (*BulkCloneExecutor, error) {
 	return NewBulkCloneExecutorWithFactory(config, nil)
 }
 
-// NewBulkCloneExecutorWithFactory creates a new bulk clone executor with a custom factory
+// NewBulkCloneExecutorWithFactory creates a new bulk clone executor with a custom factory.
 func NewBulkCloneExecutorWithFactory(config *Config, factory ProviderFactory) (*BulkCloneExecutor, error) {
 	integration := NewBulkCloneIntegration(config)
 	cloners := make(map[string]ProviderCloner)
@@ -192,6 +198,7 @@ func NewBulkCloneExecutorWithFactory(config *Config, factory ProviderFactory) (*
 		if err != nil {
 			return nil, fmt.Errorf("failed to create cloner for %s: %w", providerName, err)
 		}
+
 		cloners[providerName] = cloner
 	}
 
@@ -201,7 +208,7 @@ func NewBulkCloneExecutorWithFactory(config *Config, factory ProviderFactory) (*
 	}, nil
 }
 
-// ExecuteAll executes bulk cloning for all configured targets
+// ExecuteAll executes bulk cloning for all configured targets.
 func (e *BulkCloneExecutor) ExecuteAll(filters map[string]interface{}) (*BulkCloneResult, error) {
 	targets, err := e.integration.GetAllTargets()
 	if err != nil {
@@ -211,7 +218,7 @@ func (e *BulkCloneExecutor) ExecuteAll(filters map[string]interface{}) (*BulkClo
 	return e.executeTargets(targets, filters)
 }
 
-// ExecuteByProvider executes bulk cloning for a specific provider
+// ExecuteByProvider executes bulk cloning for a specific provider.
 func (e *BulkCloneExecutor) ExecuteByProvider(providerName string, filters map[string]interface{}) (*BulkCloneResult, error) {
 	targets, err := e.integration.GetTargetsByProvider(providerName)
 	if err != nil {
@@ -221,7 +228,7 @@ func (e *BulkCloneExecutor) ExecuteByProvider(providerName string, filters map[s
 	return e.executeTargets(targets, filters)
 }
 
-// executeTargets executes cloning for a list of targets
+// executeTargets executes cloning for a list of targets.
 func (e *BulkCloneExecutor) executeTargets(targets []BulkCloneTarget, filters map[string]interface{}) (*BulkCloneResult, error) {
 	result := &BulkCloneResult{
 		TotalTargets: len(targets),
@@ -248,7 +255,7 @@ func (e *BulkCloneExecutor) executeTargets(targets []BulkCloneTarget, filters ma
 	return result, nil
 }
 
-// executeTarget executes cloning for a single target
+// executeTarget executes cloning for a single target.
 func (e *BulkCloneExecutor) executeTarget(target BulkCloneTarget) TargetResult {
 	result := TargetResult{
 		Provider: target.Provider,
@@ -285,7 +292,7 @@ func (e *BulkCloneExecutor) executeTarget(target BulkCloneTarget) TargetResult {
 	return result
 }
 
-// BulkCloneResult contains the results of a bulk clone operation
+// BulkCloneResult contains the results of a bulk clone operation.
 type BulkCloneResult struct {
 	TotalTargets      int            `json:"total_targets"`
 	SuccessfulTargets int            `json:"successful_targets"`
@@ -294,7 +301,7 @@ type BulkCloneResult struct {
 	Results           []TargetResult `json:"results"`
 }
 
-// TargetResult contains the result of cloning a single target
+// TargetResult contains the result of cloning a single target.
 type TargetResult struct {
 	Provider string `json:"provider"`
 	Name     string `json:"name"`
@@ -304,7 +311,7 @@ type TargetResult struct {
 	Error    string `json:"error,omitempty"`
 }
 
-// GetSummary returns a summary of the bulk clone operation
+// GetSummary returns a summary of the bulk clone operation.
 func (r *BulkCloneResult) GetSummary() string {
 	return fmt.Sprintf("Total: %d, Successful: %d, Failed: %d, Skipped: %d",
 		r.TotalTargets, r.SuccessfulTargets, r.FailedTargets, r.SkippedTargets)

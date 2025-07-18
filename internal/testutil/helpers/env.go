@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// SetEnv sets an environment variable and returns a cleanup function
+// SetEnv sets an environment variable and returns a cleanup function.
 func SetEnv(t *testing.T, key, value string) func() {
 	t.Helper()
 
@@ -24,7 +24,7 @@ func SetEnv(t *testing.T, key, value string) func() {
 	}
 }
 
-// SetEnvs sets multiple environment variables and returns a cleanup function
+// SetEnvs sets multiple environment variables and returns a cleanup function.
 func SetEnvs(t *testing.T, envs map[string]string) func() {
 	t.Helper()
 
@@ -43,7 +43,7 @@ func SetEnvs(t *testing.T, envs map[string]string) func() {
 	}
 }
 
-// UnsetEnv temporarily unsets an environment variable
+// UnsetEnv temporarily unsets an environment variable.
 func UnsetEnv(t *testing.T, key string) func() {
 	t.Helper()
 
@@ -60,7 +60,7 @@ func UnsetEnv(t *testing.T, key string) func() {
 	}
 }
 
-// RequireEnv skips the test if the environment variable is not set
+// RequireEnv skips the test if the environment variable is not set.
 func RequireEnv(t *testing.T, key string) string {
 	t.Helper()
 
@@ -72,7 +72,7 @@ func RequireEnv(t *testing.T, key string) string {
 	return value
 }
 
-// RequireAnyEnv skips the test if none of the environment variables are set
+// RequireAnyEnv skips the test if none of the environment variables are set.
 func RequireAnyEnv(t *testing.T, keys ...string) (string, string) {
 	t.Helper()
 
@@ -83,5 +83,6 @@ func RequireAnyEnv(t *testing.T, keys ...string) (string, string) {
 	}
 
 	t.Skipf("skipping test: none of %v environment variables are set", keys)
+
 	return "", ""
 }

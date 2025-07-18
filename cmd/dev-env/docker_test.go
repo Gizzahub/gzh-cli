@@ -31,6 +31,7 @@ func TestNewDockerCmd(t *testing.T) {
 	assert.Len(t, subcommands, 3)
 
 	var saveCmd, loadCmd, listCmd bool
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "save":

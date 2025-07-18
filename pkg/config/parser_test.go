@@ -61,6 +61,7 @@ providers:
 			if tt.setup != nil {
 				tt.setup()
 			}
+
 			if tt.cleanup != nil {
 				defer tt.cleanup()
 			}
@@ -182,6 +183,7 @@ providers:
 
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
+
 	defer os.Remove(tmpFile.Name())
 
 	_, err = tmpFile.WriteString(content)
@@ -288,6 +290,7 @@ providers:
 			if tt.setup != nil {
 				tt.setup()
 			}
+
 			if tt.cleanup != nil {
 				defer tt.cleanup()
 			}
@@ -301,6 +304,7 @@ providers:
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, config)
+
 				if tt.validateFunc != nil {
 					tt.validateFunc(t, config)
 				}

@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-// Repository represents a git repository with common fields across platforms
+// Repository represents a git repository with common fields across platforms.
 type Repository struct {
 	Name          string
 	FullName      string
@@ -17,7 +17,7 @@ type Repository struct {
 	Description   string
 }
 
-// GitPlatformClient defines the common interface for all git hosting platforms
+// GitPlatformClient defines the common interface for all git hosting platforms.
 type GitPlatformClient interface {
 	// GetDefaultBranch retrieves the default branch name for a repository
 	GetDefaultBranch(ctx context.Context, owner, repo string) (string, error)
@@ -38,19 +38,19 @@ type GitPlatformClient interface {
 	GetPlatformName() string
 }
 
-// CloneStrategy represents the strategy for cloning/updating repositories
+// CloneStrategy represents the strategy for cloning/updating repositories.
 type CloneStrategy string
 
 const (
-	// StrategyReset performs hard reset and pull (discards local changes)
+	// StrategyReset performs hard reset and pull (discards local changes).
 	StrategyReset CloneStrategy = "reset"
-	// StrategyPull performs git pull (merges changes)
+	// StrategyPull performs git pull (merges changes).
 	StrategyPull CloneStrategy = "pull"
-	// StrategyFetch only fetches without changing working directory
+	// StrategyFetch only fetches without changing working directory.
 	StrategyFetch CloneStrategy = "fetch"
 )
 
-// ProviderConfig represents common configuration for a git provider
+// ProviderConfig represents common configuration for a git provider.
 type ProviderConfig struct {
 	Name         string
 	BaseURL      string

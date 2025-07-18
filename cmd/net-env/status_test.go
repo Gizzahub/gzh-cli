@@ -251,14 +251,15 @@ func TestInterfaceType_Detection(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// This tests the logic from parseIPOutput indirectly
 			var interfaceType string
-			switch {
-			case tt.interfaceName == "wlan0" || tt.interfaceName == "wifi0":
+
+			switch tt.interfaceName {
+			case "wlan0", "wifi0":
 				interfaceType = "WiFi"
-			case tt.interfaceName == "eth0" || tt.interfaceName == "en0":
+			case "eth0", "en0":
 				interfaceType = "Ethernet"
-			case tt.interfaceName == "lo":
+			case "lo":
 				interfaceType = "Loopback"
-			case tt.interfaceName == "tun0" || tt.interfaceName == "tap0":
+			case "tun0", "tap0":
 				interfaceType = "VPN"
 			default:
 				interfaceType = "Other"

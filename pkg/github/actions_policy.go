@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// ActionsPermissionLevel defines the permission level for GitHub Actions
+// ActionsPermissionLevel defines the permission level for GitHub Actions.
 type ActionsPermissionLevel string
 
 const (
@@ -16,7 +16,7 @@ const (
 	ActionsPermissionSelectedActions ActionsPermissionLevel = "selected"
 )
 
-// ActionsPolicy represents a GitHub Actions permission policy
+// ActionsPolicy represents a GitHub Actions permission policy.
 type ActionsPolicy struct {
 	ID                     string                  `json:"id" yaml:"id"`
 	Name                   string                  `json:"name" yaml:"name"`
@@ -41,7 +41,7 @@ type ActionsPolicy struct {
 	Tags                   []string                `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
-// WorkflowPermissions defines permissions for workflow tokens
+// WorkflowPermissions defines permissions for workflow tokens.
 type WorkflowPermissions struct {
 	DefaultPermissions       DefaultPermissions                `json:"default_permissions" yaml:"default_permissions"`
 	CanApproveOwnChanges     bool                              `json:"can_approve_own_changes" yaml:"can_approve_own_changes"`
@@ -60,7 +60,7 @@ type WorkflowPermissions struct {
 	CustomPermissions        map[string]ActionsTokenPermission `json:"custom_permissions,omitempty" yaml:"custom_permissions,omitempty"`
 }
 
-// DefaultPermissions defines the default permission level for workflow tokens
+// DefaultPermissions defines the default permission level for workflow tokens.
 type DefaultPermissions string
 
 const (
@@ -69,7 +69,7 @@ const (
 	DefaultPermissionsRestricted DefaultPermissions = "restricted"
 )
 
-// ActionsTokenPermission defines the permission level for a specific scope
+// ActionsTokenPermission defines the permission level for a specific scope.
 type ActionsTokenPermission string
 
 const (
@@ -78,7 +78,7 @@ const (
 	TokenPermissionWrite ActionsTokenPermission = "write"
 )
 
-// ActionsSecuritySettings defines security-related settings for Actions
+// ActionsSecuritySettings defines security-related settings for Actions.
 type ActionsSecuritySettings struct {
 	RequireCodeScanningApproval   bool                     `json:"require_code_scanning_approval" yaml:"require_code_scanning_approval"`
 	RequireSecretScanningApproval bool                     `json:"require_secret_scanning_approval" yaml:"require_secret_scanning_approval"`
@@ -95,7 +95,7 @@ type ActionsSecuritySettings struct {
 	OIDCCustomClaims              map[string]string        `json:"oidc_custom_claims,omitempty" yaml:"oidc_custom_claims,omitempty"`
 }
 
-// ActionsMarketplacePolicy defines the policy for marketplace actions
+// ActionsMarketplacePolicy defines the policy for marketplace actions.
 type ActionsMarketplacePolicy string
 
 const (
@@ -105,7 +105,7 @@ const (
 	MarketplacePolicySelected     ActionsMarketplacePolicy = "selected"
 )
 
-// SecretsPolicy defines policy for managing secrets
+// SecretsPolicy defines policy for managing secrets.
 type SecretsPolicy struct {
 	AllowedSecrets               []string             `json:"allowed_secrets,omitempty" yaml:"allowed_secrets,omitempty"`
 	RestrictedSecrets            []string             `json:"restricted_secrets,omitempty" yaml:"restricted_secrets,omitempty"`
@@ -117,7 +117,7 @@ type SecretsPolicy struct {
 	SecretRotationPolicy         SecretRotationPolicy `json:"secret_rotation_policy" yaml:"secret_rotation_policy"`
 }
 
-// SecretVisibility defines the visibility scope for secrets
+// SecretVisibility defines the visibility scope for secrets.
 type SecretVisibility string
 
 const (
@@ -126,7 +126,7 @@ const (
 	SecretVisibilitySelectedRepos SecretVisibility = "selected"
 )
 
-// SecretRotationPolicy defines policy for secret rotation
+// SecretRotationPolicy defines policy for secret rotation.
 type SecretRotationPolicy struct {
 	Enabled                bool          `json:"enabled" yaml:"enabled"`
 	RotationInterval       time.Duration `json:"rotation_interval" yaml:"rotation_interval"`
@@ -135,7 +135,7 @@ type SecretRotationPolicy struct {
 	AutoRotateSecrets      []string      `json:"auto_rotate_secrets,omitempty" yaml:"auto_rotate_secrets,omitempty"`
 }
 
-// EnvironmentPolicy defines policy for deployment environments
+// EnvironmentPolicy defines policy for deployment environments.
 type EnvironmentPolicy struct {
 	Name                    string                  `json:"name" yaml:"name"`
 	RequiredReviewers       []string                `json:"required_reviewers,omitempty" yaml:"required_reviewers,omitempty"`
@@ -150,7 +150,7 @@ type EnvironmentPolicy struct {
 	Variables               map[string]string       `json:"variables,omitempty" yaml:"variables,omitempty"`
 }
 
-// EnvironmentBranchPolicy defines branch protection policy for environments
+// EnvironmentBranchPolicy defines branch protection policy for environments.
 type EnvironmentBranchPolicy string
 
 const (
@@ -160,7 +160,7 @@ const (
 	EnvironmentBranchPolicyNone      EnvironmentBranchPolicy = "none"
 )
 
-// RunnerPolicy defines policy for GitHub Actions runners
+// RunnerPolicy defines policy for GitHub Actions runners.
 type RunnerPolicy struct {
 	AllowedRunnerTypes      []RunnerType           `json:"allowed_runner_types" yaml:"allowed_runner_types"`
 	RequireSelfHostedLabels []string               `json:"require_self_hosted_labels,omitempty" yaml:"require_self_hosted_labels,omitempty"`
@@ -172,7 +172,7 @@ type RunnerPolicy struct {
 	SelfHostedRunnerPolicy  SelfHostedRunnerPolicy `json:"self_hosted_runner_policy" yaml:"self_hosted_runner_policy"`
 }
 
-// RunnerType defines the type of runner allowed
+// RunnerType defines the type of runner allowed.
 type RunnerType string
 
 const (
@@ -182,7 +182,7 @@ const (
 	RunnerTypeRepository   RunnerType = "repository"
 )
 
-// SelfHostedRunnerPolicy defines policy for self-hosted runners
+// SelfHostedRunnerPolicy defines policy for self-hosted runners.
 type SelfHostedRunnerPolicy struct {
 	RequireRunnerRegistration  bool          `json:"require_runner_registration" yaml:"require_runner_registration"`
 	AllowedOperatingSystems    []string      `json:"allowed_operating_systems,omitempty" yaml:"allowed_operating_systems,omitempty"`
@@ -193,7 +193,7 @@ type SelfHostedRunnerPolicy struct {
 	MaxRunners                 int           `json:"max_runners,omitempty" yaml:"max_runners,omitempty"`
 }
 
-// ActionsPolicyViolation represents a policy violation
+// ActionsPolicyViolation represents a policy violation.
 type ActionsPolicyViolation struct {
 	ID            string                     `json:"id"`
 	PolicyID      string                     `json:"policy_id"`
@@ -207,7 +207,7 @@ type ActionsPolicyViolation struct {
 	Status        PolicyViolationStatus      `json:"status"`
 }
 
-// ActionsPolicyViolationType defines types of policy violations
+// ActionsPolicyViolationType defines types of policy violations.
 type ActionsPolicyViolationType string
 
 const (
@@ -220,7 +220,7 @@ const (
 	ViolationTypeSecuritySettingsBreach   ActionsPolicyViolationType = "security_settings_breach"
 )
 
-// PolicyViolationSeverity defines the severity of policy violations
+// PolicyViolationSeverity defines the severity of policy violations.
 type PolicyViolationSeverity string
 
 const (
@@ -230,7 +230,7 @@ const (
 	ViolationSeverityCritical PolicyViolationSeverity = "critical"
 )
 
-// PolicyViolationStatus defines the status of a policy violation
+// PolicyViolationStatus defines the status of a policy violation.
 type PolicyViolationStatus string
 
 const (
@@ -240,7 +240,7 @@ const (
 	ViolationStatusIgnored    PolicyViolationStatus = "ignored"
 )
 
-// ActionsPolicyManager manages GitHub Actions policies
+// ActionsPolicyManager manages GitHub Actions policies.
 type ActionsPolicyManager struct {
 	logger     Logger
 	apiClient  APIClient
@@ -248,7 +248,7 @@ type ActionsPolicyManager struct {
 	violations map[string]*ActionsPolicyViolation
 }
 
-// NewActionsPolicyManager creates a new Actions policy manager
+// NewActionsPolicyManager creates a new Actions policy manager.
 func NewActionsPolicyManager(logger Logger, apiClient APIClient) *ActionsPolicyManager {
 	return &ActionsPolicyManager{
 		logger:     logger,
@@ -258,7 +258,7 @@ func NewActionsPolicyManager(logger Logger, apiClient APIClient) *ActionsPolicyM
 	}
 }
 
-// CreatePolicy creates a new Actions policy
+// CreatePolicy creates a new Actions policy.
 func (apm *ActionsPolicyManager) CreatePolicy(ctx context.Context, policy *ActionsPolicy) error {
 	if policy.ID == "" {
 		return fmt.Errorf("policy ID is required")
@@ -294,7 +294,7 @@ func (apm *ActionsPolicyManager) CreatePolicy(ctx context.Context, policy *Actio
 	return nil
 }
 
-// UpdatePolicy updates an existing Actions policy
+// UpdatePolicy updates an existing Actions policy.
 func (apm *ActionsPolicyManager) UpdatePolicy(ctx context.Context, policyID string, updates *ActionsPolicy) error {
 	existingPolicy, exists := apm.policies[policyID]
 	if !exists {
@@ -322,7 +322,7 @@ func (apm *ActionsPolicyManager) UpdatePolicy(ctx context.Context, policyID stri
 	return nil
 }
 
-// GetPolicy retrieves a policy by ID
+// GetPolicy retrieves a policy by ID.
 func (apm *ActionsPolicyManager) GetPolicy(ctx context.Context, policyID string) (*ActionsPolicy, error) {
 	policy, exists := apm.policies[policyID]
 	if !exists {
@@ -331,10 +331,11 @@ func (apm *ActionsPolicyManager) GetPolicy(ctx context.Context, policyID string)
 
 	// Return a copy to prevent modification
 	policyCopy := *policy
+
 	return &policyCopy, nil
 }
 
-// ListPolicies lists all policies, optionally filtered by organization
+// ListPolicies lists all policies, optionally filtered by organization.
 func (apm *ActionsPolicyManager) ListPolicies(ctx context.Context, organization string) ([]*ActionsPolicy, error) {
 	policies := make([]*ActionsPolicy, 0)
 
@@ -348,7 +349,7 @@ func (apm *ActionsPolicyManager) ListPolicies(ctx context.Context, organization 
 	return policies, nil
 }
 
-// DeletePolicy deletes a policy
+// DeletePolicy deletes a policy.
 func (apm *ActionsPolicyManager) DeletePolicy(ctx context.Context, policyID string) error {
 	if _, exists := apm.policies[policyID]; !exists {
 		return fmt.Errorf("policy not found: %s", policyID)
@@ -357,10 +358,11 @@ func (apm *ActionsPolicyManager) DeletePolicy(ctx context.Context, policyID stri
 	delete(apm.policies, policyID)
 
 	apm.logger.Info("Actions policy deleted", "policy_id", policyID)
+
 	return nil
 }
 
-// ValidatePolicy validates a policy configuration
+// ValidatePolicy validates a policy configuration.
 func (apm *ActionsPolicyManager) validatePolicy(policy *ActionsPolicy) error {
 	// Validate permission level
 	validPermissionLevels := map[ActionsPermissionLevel]bool{
@@ -430,7 +432,7 @@ func (apm *ActionsPolicyManager) validatePolicy(policy *ActionsPolicy) error {
 	return nil
 }
 
-// GetDefaultActionsPolicy returns a default Actions policy template
+// GetDefaultActionsPolicy returns a default Actions policy template.
 func GetDefaultActionsPolicy() *ActionsPolicy {
 	return &ActionsPolicy{
 		Name:            "Default Actions Policy",

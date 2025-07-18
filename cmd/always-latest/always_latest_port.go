@@ -132,12 +132,14 @@ func (o *alwaysLatestPortOptions) run(_ *cobra.Command, args []string) error {
 
 	// Update ports
 	updatedCount := 0
+
 	for _, port := range outdatedPorts {
 		updated, err := o.updatePort(port)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to update %s: %v\n", port, err)
 			continue
 		}
+
 		if updated {
 			updatedCount++
 		}
@@ -174,12 +176,14 @@ func (o *alwaysLatestPortOptions) updateMacPorts() error {
 	}
 
 	cmd := exec.Command("sudo", "port", "selfupdate")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("MacPorts selfupdate failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ MacPorts updated successfully")
+
 	return nil
 }
 
@@ -192,23 +196,27 @@ func (o *alwaysLatestPortOptions) syncPortsTree() error {
 	}
 
 	cmd := exec.Command("sudo", "port", "sync")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("port sync failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Ports tree synced successfully")
+
 	return nil
 }
 
 func (o *alwaysLatestPortOptions) getOutdatedPorts() ([]string, error) {
 	cmd := exec.Command("port", "outdated")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get outdated ports: %w", err)
 	}
 
 	var ports []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -233,6 +241,7 @@ func (o *alwaysLatestPortOptions) filterPorts(allPorts, requestedPorts []string)
 	}
 
 	var filtered []string
+
 	for _, port := range allPorts {
 		if portSet[port] {
 			filtered = append(filtered, port)
@@ -259,19 +268,24 @@ func (o *alwaysLatestPortOptions) updatePort(portName string) (bool, error) {
 	// Upgrade the port
 	fmt.Printf("   Upgrading %s...\n", portName)
 	cmd := exec.Command("sudo", "port", "upgrade", portName)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return false, fmt.Errorf("upgrade failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Printf("✅ Updated %s\n", portName)
+
 	return true, nil
 }
 
 func (o *alwaysLatestPortOptions) confirmUpdate(portName string) bool {
 	fmt.Printf("   Update %s? (y/N): ", portName)
+
 	var response string
+
 	_, _ = fmt.Scanln(&response)
+
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
@@ -279,17 +293,20 @@ func (o *alwaysLatestPortOptions) cleanupPorts() error {
 	fmt.Println("🧹 Cleaning up inactive ports...")
 
 	cmd := exec.Command("sudo", "port", "uninstall", "inactive")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("cleanup failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Cleanup completed")
+
 	return nil
 }
 
 func (o *alwaysLatestPortOptions) getPortVersion(portName string) (string, error) {
 	cmd := exec.Command("port", "list", "installed", portName)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -303,6 +320,7 @@ func (o *alwaysLatestPortOptions) getPortVersion(portName string) (string, error
 
 	// Extract version using regex
 	re := regexp.MustCompile(`@([\d.]+)`)
+
 	matches := re.FindStringSubmatch(line)
 	if len(matches) < 2 {
 		return "", fmt.Errorf("could not parse version for %s", portName)
@@ -314,9 +332,11 @@ func (o *alwaysLatestPortOptions) getPortVersion(portName string) (string, error
 func (o *alwaysLatestPortOptions) extractVersionNumber(versionString string) string {
 	// Extract version number using regex
 	re := regexp.MustCompile(`(\d+\.[\d.]+)`)
+
 	matches := re.FindStringSubmatch(versionString)
 	if len(matches) > 1 {
 		return matches[1]
 	}
+
 	return versionString
 }

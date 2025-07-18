@@ -31,6 +31,7 @@ func TestNewGcloudCmd(t *testing.T) {
 	assert.Len(t, subcommands, 3)
 
 	var saveCmd, loadCmd, listCmd bool
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "save":
@@ -395,10 +396,12 @@ func TestGcloudParseConfigurations(t *testing.T) {
 
 	// Check default config
 	var defaultConfig, devConfig *gcloudConfiguration
+
 	for i := range configs {
-		if configs[i].Name == "default" {
+		switch configs[i].Name {
+		case "default":
 			defaultConfig = &configs[i]
-		} else if configs[i].Name == "dev" {
+		case "dev":
 			devConfig = &configs[i]
 		}
 	}

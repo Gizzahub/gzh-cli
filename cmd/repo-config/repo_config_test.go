@@ -157,6 +157,7 @@ func TestTemplateCommand(t *testing.T) {
 
 func TestRunListCommandMissingOrg(t *testing.T) {
 	var flags GlobalFlags
+
 	err := runListCommand(flags, "", "table", false, 0)
 
 	assert.Error(t, err)
@@ -165,6 +166,7 @@ func TestRunListCommandMissingOrg(t *testing.T) {
 
 func TestRunApplyCommandMissingOrg(t *testing.T) {
 	var flags GlobalFlags
+
 	err := runApplyCommand(flags, "", "", false, false)
 
 	assert.Error(t, err)

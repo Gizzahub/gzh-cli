@@ -76,6 +76,7 @@ func TestNewActionsConfigCmd(t *testing.T) {
 	assert.Len(t, subcommands, 2)
 
 	var initCmd, validateCmd bool
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "init":

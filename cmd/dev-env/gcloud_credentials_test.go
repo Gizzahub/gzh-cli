@@ -31,6 +31,7 @@ func TestNewGcloudCredentialsCmd(t *testing.T) {
 	assert.Len(t, subcommands, 3)
 
 	var saveCmd, loadCmd, listCmd bool
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "save":
@@ -377,6 +378,7 @@ func TestGcloudCredentialsCopyCredentials(t *testing.T) {
 	for filename := range credentialFiles {
 		assert.FileExists(t, filepath.Join(dstDir, filename))
 	}
+
 	assert.DirExists(t, filepath.Join(dstDir, "legacy_credentials"))
 
 	// Check that non-credential files were NOT copied

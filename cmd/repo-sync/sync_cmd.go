@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newSyncCmd creates the sync subcommand for bidirectional repository synchronization
+// newSyncCmd creates the sync subcommand for bidirectional repository synchronization.
 func newSyncCmd(logger *zap.Logger) *cobra.Command {
 	var (
 		bidirectional    bool
@@ -112,7 +112,7 @@ Examples:
 	return cmd
 }
 
-// SyncConfig represents configuration for repository synchronization
+// SyncConfig represents configuration for repository synchronization.
 type SyncConfig struct {
 	RepositoryPath   string   `json:"repository_path"`
 	Bidirectional    bool     `json:"bidirectional"`
@@ -125,21 +125,21 @@ type SyncConfig struct {
 	ForcePush        bool     `json:"force_push"`
 }
 
-// RepositorySynchronizer handles bidirectional repository synchronization
+// RepositorySynchronizer handles bidirectional repository synchronization.
 type RepositorySynchronizer struct {
 	logger *zap.Logger
 	config *SyncConfig
 	gitCmd GitCommandExecutor
 }
 
-// GitCommandExecutor interface for Git command execution
+// GitCommandExecutor interface for Git command execution.
 type GitCommandExecutor interface {
 	ExecuteCommand(ctx context.Context, dir string, args ...string) (*GitCommandResult, error)
 	GetStatus(ctx context.Context, dir string) (*GitStatus, error)
 	GetRemoteInfo(ctx context.Context, dir string, remote string) (*GitRemoteInfo, error)
 }
 
-// GitCommandResult represents the result of a Git command
+// GitCommandResult represents the result of a Git command.
 type GitCommandResult struct {
 	Command  string        `json:"command"`
 	Output   string        `json:"output"`
@@ -149,7 +149,7 @@ type GitCommandResult struct {
 	Success  bool          `json:"success"`
 }
 
-// GitStatus represents the current Git repository status
+// GitStatus represents the current Git repository status.
 type GitStatus struct {
 	Branch          string    `json:"branch"`
 	Upstream        string    `json:"upstream"`
@@ -163,7 +163,7 @@ type GitStatus struct {
 	LastCommitTime  time.Time `json:"last_commit_time"`
 }
 
-// GitRemoteInfo represents information about a Git remote
+// GitRemoteInfo represents information about a Git remote.
 type GitRemoteInfo struct {
 	Name      string `json:"name"`
 	URL       string `json:"url"`
@@ -172,10 +172,10 @@ type GitRemoteInfo struct {
 	Reachable bool   `json:"reachable"`
 }
 
-// defaultGitExecutor provides default Git command execution
+// defaultGitExecutor provides default Git command execution.
 type defaultGitExecutor struct{}
 
-// NewRepositorySynchronizer creates a new repository synchronizer
+// NewRepositorySynchronizer creates a new repository synchronizer.
 func NewRepositorySynchronizer(logger *zap.Logger, config *SyncConfig) (*RepositorySynchronizer, error) {
 	return &RepositorySynchronizer{
 		logger: logger,
@@ -184,7 +184,7 @@ func NewRepositorySynchronizer(logger *zap.Logger, config *SyncConfig) (*Reposit
 	}, nil
 }
 
-// Synchronize performs repository synchronization based on configuration
+// Synchronize performs repository synchronization based on configuration.
 func (rs *RepositorySynchronizer) Synchronize(ctx context.Context) (*SyncResult, error) {
 	startTime := time.Now()
 	result := &SyncResult{
@@ -249,10 +249,11 @@ func (rs *RepositorySynchronizer) Synchronize(ctx context.Context) (*SyncResult,
 	}
 
 	result.Duration = time.Since(startTime)
+
 	return result, nil
 }
 
-// commitLocalChanges commits local changes if auto-commit is enabled
+// commitLocalChanges commits local changes if auto-commit is enabled.
 func (rs *RepositorySynchronizer) commitLocalChanges(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	if len(status.ModifiedFiles) == 0 && len(status.UntrackedFiles) == 0 {
 		return nil
@@ -265,6 +266,7 @@ func (rs *RepositorySynchronizer) commitLocalChanges(ctx context.Context, status
 	if rs.config.DryRun {
 		fmt.Printf("📝 Would auto-commit %d modified and %d untracked files\n",
 			len(status.ModifiedFiles), len(status.UntrackedFiles))
+
 		return nil
 	}
 
@@ -296,7 +298,7 @@ func (rs *RepositorySynchronizer) commitLocalChanges(ctx context.Context, status
 	return nil
 }
 
-// performUnidirectionalSync performs one-way synchronization (local to remote)
+// performUnidirectionalSync performs one-way synchronization (local to remote).
 func (rs *RepositorySynchronizer) performUnidirectionalSync(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	if status.AheadBy == 0 {
 		fmt.Println("📊 Repository is up to date with remote")
@@ -329,7 +331,7 @@ func (rs *RepositorySynchronizer) performUnidirectionalSync(ctx context.Context,
 	return nil
 }
 
-// performBidirectionalSync performs two-way synchronization with conflict resolution
+// performBidirectionalSync performs two-way synchronization with conflict resolution.
 func (rs *RepositorySynchronizer) performBidirectionalSync(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	rs.logger.Info("Performing bidirectional sync",
 		zap.Int("commits_ahead", status.AheadBy),
@@ -358,7 +360,7 @@ func (rs *RepositorySynchronizer) performBidirectionalSync(ctx context.Context, 
 	}
 }
 
-// pushLocalChanges pushes local changes to remote
+// pushLocalChanges pushes local changes to remote.
 func (rs *RepositorySynchronizer) pushLocalChanges(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	if rs.config.DryRun {
 		fmt.Printf("📤 Would push %d local commits to remote\n", status.AheadBy)
@@ -378,7 +380,7 @@ func (rs *RepositorySynchronizer) pushLocalChanges(ctx context.Context, status *
 	return nil
 }
 
-// pullRemoteChanges pulls remote changes to local
+// pullRemoteChanges pulls remote changes to local.
 func (rs *RepositorySynchronizer) pullRemoteChanges(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	if rs.config.DryRun {
 		fmt.Printf("📥 Would pull %d remote commits to local\n", status.BehindBy)
@@ -398,7 +400,7 @@ func (rs *RepositorySynchronizer) pullRemoteChanges(ctx context.Context, status 
 	return nil
 }
 
-// resolveDivergence handles diverged repositories based on conflict strategy
+// resolveDivergence handles diverged repositories based on conflict strategy.
 func (rs *RepositorySynchronizer) resolveDivergence(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	fmt.Printf("⚠️  Repository has diverged: %d local, %d remote commits\n",
 		status.AheadBy, status.BehindBy)
@@ -424,7 +426,7 @@ func (rs *RepositorySynchronizer) resolveDivergence(ctx context.Context, status 
 	}
 }
 
-// performAutoMerge attempts automatic merge resolution
+// performAutoMerge attempts automatic merge resolution.
 func (rs *RepositorySynchronizer) performAutoMerge(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	rs.logger.Info("Attempting automatic merge")
 
@@ -438,7 +440,6 @@ func (rs *RepositorySynchronizer) performAutoMerge(ctx context.Context, status *
 	// Attempt merge
 	mergeResult, err := rs.gitCmd.ExecuteCommand(ctx, rs.config.RepositoryPath,
 		"merge", fmt.Sprintf("%s/%s", rs.config.RemoteName, status.Branch))
-
 	if err != nil || !mergeResult.Success {
 		// Merge failed, likely due to conflicts
 		return rs.handleMergeConflicts(ctx, status, result)
@@ -454,10 +455,11 @@ func (rs *RepositorySynchronizer) performAutoMerge(ctx context.Context, status *
 	}
 
 	fmt.Println("📤 Pushed merged changes to remote")
+
 	return nil
 }
 
-// handleMergeConflicts handles merge conflicts during auto-merge
+// handleMergeConflicts handles merge conflicts during auto-merge.
 func (rs *RepositorySynchronizer) handleMergeConflicts(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	// Get conflicted files
 	statusResult, err := rs.gitCmd.ExecuteCommand(ctx, rs.config.RepositoryPath,
@@ -478,6 +480,7 @@ func (rs *RepositorySynchronizer) handleMergeConflicts(ctx context.Context, stat
 	}
 
 	fmt.Printf("❌ Merge conflicts detected in %d files:\n", len(conflictedFiles))
+
 	for _, file := range conflictedFiles {
 		fmt.Printf("   - %s\n", file)
 	}
@@ -491,7 +494,7 @@ func (rs *RepositorySynchronizer) handleMergeConflicts(ctx context.Context, stat
 	return fmt.Errorf("merge conflicts require manual resolution")
 }
 
-// Helper methods for other conflict resolution strategies
+// Helper methods for other conflict resolution strategies.
 func (rs *RepositorySynchronizer) forceLocalChanges(ctx context.Context, status *GitStatus, result *SyncResult) error {
 	fmt.Println("🔄 Forcing local changes (local-wins strategy)")
 
@@ -508,6 +511,7 @@ func (rs *RepositorySynchronizer) forceLocalChanges(ctx context.Context, status 
 	}
 
 	fmt.Println("📤 Force pushed local changes to remote")
+
 	return nil
 }
 
@@ -527,6 +531,7 @@ func (rs *RepositorySynchronizer) forceRemoteChanges(ctx context.Context, status
 	}
 
 	fmt.Println("📥 Reset local repository to match remote")
+
 	return nil
 }
 
@@ -564,11 +569,13 @@ func (rs *RepositorySynchronizer) extractCommitHash(output string) string {
 			}
 		}
 	}
+
 	return ""
 }
 
 func (rs *RepositorySynchronizer) parseConflictedFiles(statusOutput string) []string {
 	var conflicted []string
+
 	lines := strings.Split(statusOutput, "\n")
 
 	for _, line := range lines {
@@ -597,10 +604,10 @@ func (ge *defaultGitExecutor) ExecuteCommand(ctx context.Context, dir string, ar
 		Duration: duration,
 		Success:  err == nil,
 	}
-
 	if err != nil {
 		result.Error = err.Error()
-		if exitErr, ok := err.(*exec.ExitError); ok {
+		exitErr := &exec.ExitError{}
+		if errors.As(err, &exitErr) {
 			result.ExitCode = exitErr.ExitCode()
 		}
 	}
@@ -685,10 +692,11 @@ func (ge *defaultGitExecutor) GetRemoteInfo(ctx context.Context, dir string, rem
 	return info, nil
 }
 
-// printSyncResult prints the synchronization results
+// printSyncResult prints the synchronization results.
 func printSyncResult(result *SyncResult) {
 	fmt.Printf("\n📊 Synchronization Results:\n")
 	fmt.Printf("   Status: ")
+
 	if result.Success {
 		fmt.Printf("✅ Success\n")
 	} else {
@@ -708,6 +716,7 @@ func printSyncResult(result *SyncResult) {
 
 	if len(result.Conflicts) > 0 {
 		fmt.Printf("   Conflicts: %d found\n", len(result.Conflicts))
+
 		for _, conflict := range result.Conflicts {
 			fmt.Printf("     - %s (%s)\n", conflict.Path, conflict.ConflictType)
 		}
@@ -715,6 +724,7 @@ func printSyncResult(result *SyncResult) {
 
 	if len(result.Errors) > 0 {
 		fmt.Printf("   Errors:\n")
+
 		for _, err := range result.Errors {
 			fmt.Printf("     - %s\n", err)
 		}

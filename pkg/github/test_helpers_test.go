@@ -10,14 +10,14 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-// TestFixtures provides common test data
+// TestFixtures provides common test data.
 type TestFixtures struct {
 	Org              string
 	Repos            []RepositoryInfo
 	RepositoryStates map[string]RepositoryStateData
 }
 
-// NewTestFixtures creates a new set of test fixtures
+// NewTestFixtures creates a new set of test fixtures.
 func NewTestFixtures() *TestFixtures {
 	return &TestFixtures{
 		Org: "test-org",
@@ -75,12 +75,12 @@ func NewTestFixtures() *TestFixtures {
 	}
 }
 
-// AddRepositoryState adds a repository state to the fixtures
+// AddRepositoryState adds a repository state to the fixtures.
 func (tf *TestFixtures) AddRepositoryState(repoName string, state RepositoryStateData) {
 	tf.RepositoryStates[repoName] = state
 }
 
-// GetTestRepositoryState creates a test repository state
+// GetTestRepositoryState creates a test repository state.
 func GetTestRepositoryState(name string, private bool) RepositoryStateData {
 	return RepositoryStateData{
 		Name:         name,
@@ -104,16 +104,17 @@ func GetTestRepositoryState(name string, private bool) RepositoryStateData {
 	}
 }
 
-// MockGitHubClient creates a mock GitHub client for testing
+// MockGitHubClient creates a mock GitHub client for testing.
 type MockGitHubClient struct {
 	ctrl     *gomock.Controller
 	client   *github.Client
 	fixtures *TestFixtures
 }
 
-// NewMockGitHubClient creates a new mock GitHub client
+// NewMockGitHubClient creates a new mock GitHub client.
 func NewMockGitHubClient(t *testing.T) *MockGitHubClient {
 	ctrl := gomock.NewController(t)
+
 	return &MockGitHubClient{
 		ctrl:     ctrl,
 		client:   github.NewClient(nil),
@@ -121,12 +122,12 @@ func NewMockGitHubClient(t *testing.T) *MockGitHubClient {
 	}
 }
 
-// Finish should be called at the end of the test
+// Finish should be called at the end of the test.
 func (m *MockGitHubClient) Finish() {
 	m.ctrl.Finish()
 }
 
-// ConvertRepoInfoToGitHubRepo converts RepositoryInfo to github.Repository
+// ConvertRepoInfoToGitHubRepo converts RepositoryInfo to github.Repository.
 func ConvertRepoInfoToGitHubRepo(info RepositoryInfo) *github.Repository {
 	return &github.Repository{
 		Name:          github.String(info.Name),
@@ -146,7 +147,7 @@ func ConvertRepoInfoToGitHubRepo(info RepositoryInfo) *github.Repository {
 	}
 }
 
-// CreateMockBranchProtection creates a mock branch protection object
+// CreateMockBranchProtection creates a mock branch protection object.
 func CreateMockBranchProtection(requiredReviews int, enforceAdmins bool) *github.Protection {
 	return &github.Protection{
 		RequiredPullRequestReviews: &github.PullRequestReviewsEnforcement{
@@ -171,9 +172,10 @@ func CreateMockBranchProtection(requiredReviews int, enforceAdmins bool) *github
 	}
 }
 
-// CreateMockRepositoryContent creates mock repository content
+// CreateMockRepositoryContent creates mock repository content.
 func CreateMockRepositoryContent(name, path, content string) *github.RepositoryContent {
 	contentType := "file"
+
 	return &github.RepositoryContent{
 		Type:    &contentType,
 		Name:    &name,
@@ -184,13 +186,13 @@ func CreateMockRepositoryContent(name, path, content string) *github.RepositoryC
 	}
 }
 
-// TestRepoConfigClient wraps RepoConfigClient for testing
+// TestRepoConfigClient wraps RepoConfigClient for testing.
 type TestRepoConfigClient struct {
 	*RepoConfigClient
 	MockClient *MockGitHubClient
 }
 
-// NewTestRepoConfigClient creates a new test repo config client
+// NewTestRepoConfigClient creates a new test repo config client.
 func NewTestRepoConfigClient(t *testing.T) *TestRepoConfigClient {
 	mockClient := NewMockGitHubClient(t)
 	client := &RepoConfigClient{
@@ -206,7 +208,7 @@ func NewTestRepoConfigClient(t *testing.T) *TestRepoConfigClient {
 	}
 }
 
-// SetupListReposExpectation sets up expectation for listing repositories
+// SetupListReposExpectation sets up expectation for listing repositories.
 func SetupListReposExpectation(t *testing.T, ctx context.Context, client *github.Client, org string, repos []*github.Repository) {
 	// This would typically use gomock expectations
 	// For now, we're showing the pattern
@@ -215,7 +217,7 @@ func SetupListReposExpectation(t *testing.T, ctx context.Context, client *github
 	require.NotNil(t, repos)
 }
 
-// SetupGetRepoExpectation sets up expectation for getting a single repository
+// SetupGetRepoExpectation sets up expectation for getting a single repository.
 func SetupGetRepoExpectation(t *testing.T, ctx context.Context, client *github.Client, owner, repo string, repository *github.Repository) {
 	require.NotNil(t, ctx)
 	require.NotEmpty(t, owner)
@@ -233,7 +235,7 @@ func stringPtr(s string) *string {
 	return &s
 }
 
-// AssertRepositoryConfig asserts that two repository configurations are equal
+// AssertRepositoryConfig asserts that two repository configurations are equal.
 func AssertRepositoryConfig(t *testing.T, expected, actual *Repository) {
 	if expected == nil && actual == nil {
 		return
@@ -248,7 +250,7 @@ func AssertRepositoryConfig(t *testing.T, expected, actual *Repository) {
 	require.Equal(t, expected.HasDownloads, actual.HasDownloads, "HasDownloads setting mismatch")
 }
 
-// AssertSecuritySettings asserts that two security settings are equal
+// AssertSecuritySettings asserts that two security settings are equal.
 func AssertSecuritySettings(t *testing.T, expected, actual *RepositoryConfig) {
 	if expected == nil && actual == nil {
 		return

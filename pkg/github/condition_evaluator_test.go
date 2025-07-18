@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Test helper functions
+// Test helper functions.
 func createTestEvaluationContext() *EvaluationContext {
 	return &EvaluationContext{
 		Repository: &RepositoryInfo{
@@ -726,6 +726,7 @@ func TestConditionEvaluator_LogicalOperators(t *testing.T) {
 			for i := 0; i < tt.matchedCount; i++ {
 				result.MatchedConditions[i] = fmt.Sprintf("matched_%d", i)
 			}
+
 			for i := 0; i < tt.failedCount; i++ {
 				result.FailedConditions[i] = fmt.Sprintf("failed_%d", i)
 			}
@@ -818,7 +819,7 @@ func TestConditionEvaluator_HelperMethods(t *testing.T) {
 	})
 }
 
-// Integration test
+// Integration test.
 func TestConditionEvaluator_Integration(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
@@ -862,7 +863,7 @@ func TestConditionEvaluator_Integration(t *testing.T) {
 	assert.Greater(t, result.EvaluationTime, time.Duration(0))
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkConditionEvaluator_EvaluateConditions(b *testing.B) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
@@ -873,6 +874,7 @@ func BenchmarkConditionEvaluator_EvaluateConditions(b *testing.B) {
 	evalContext := createTestEvaluationContext()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		evaluator.EvaluateConditions(context.Background(), conditions, event, evalContext)
 	}
@@ -897,6 +899,7 @@ func BenchmarkConditionEvaluator_EvaluatePayloadMatcher(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		evaluator.EvaluatePayloadMatcher(context.Background(), matcher, payload)
 	}

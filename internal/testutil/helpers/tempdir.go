@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TempDir creates a temporary directory and returns a cleanup function
+// TempDir creates a temporary directory and returns a cleanup function.
 func TempDir(t *testing.T, pattern string) (string, func()) {
 	t.Helper()
 
@@ -24,7 +24,7 @@ func TempDir(t *testing.T, pattern string) (string, func()) {
 	return dir, cleanup
 }
 
-// CreateTempFile creates a temporary file with the given content
+// CreateTempFile creates a temporary file with the given content.
 func CreateTempFile(t *testing.T, dir, pattern string, content []byte) string {
 	t.Helper()
 
@@ -43,7 +43,7 @@ func CreateTempFile(t *testing.T, dir, pattern string, content []byte) string {
 	return file.Name()
 }
 
-// CreateTestRepo creates a test git repository structure
+// CreateTestRepo creates a test git repository structure.
 func CreateTestRepo(t *testing.T, baseDir string, name string, files map[string]string) string {
 	t.Helper()
 
@@ -75,7 +75,7 @@ func CreateTestRepo(t *testing.T, baseDir string, name string, files map[string]
 	return repoPath
 }
 
-// CreateTestConfig creates a test configuration file
+// CreateTestConfig creates a test configuration file.
 func CreateTestConfig(t *testing.T, dir string, content string) string {
 	t.Helper()
 

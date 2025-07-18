@@ -40,6 +40,7 @@ func ExampleList() {
 	}
 
 	fmt.Printf("Found %d repositories", len(repos))
+
 	if len(repos) > 0 {
 		fmt.Printf("\nFirst repository: %s", repos[0])
 	}
@@ -53,6 +54,7 @@ func ExampleClone() {
 
 	// Create a temporary directory for cloning
 	tempDir := "/tmp/github-clone-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 

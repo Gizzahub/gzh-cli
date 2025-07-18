@@ -7,7 +7,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-// TestFactoryPatternIntegration demonstrates the complete factory pattern working
+// TestFactoryPatternIntegration demonstrates the complete factory pattern working.
 func TestFactoryPatternIntegration(t *testing.T) {
 	// Create a mock environment for testing
 	mockEnv := env.NewMockEnvironment(map[string]string{
@@ -26,6 +26,7 @@ func TestFactoryPatternIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create cloner with explicit token: %v", err)
 	}
+
 	if cloner1.GetToken() != "explicit-token" {
 		t.Errorf("Expected token 'explicit-token', got %s", cloner1.GetToken())
 	}
@@ -35,6 +36,7 @@ func TestFactoryPatternIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create cloner with environment token: %v", err)
 	}
+
 	if cloner2.GetToken() != "test-github-token" {
 		t.Errorf("Expected token 'test-github-token', got %s", cloner2.GetToken())
 	}
@@ -48,6 +50,7 @@ func TestFactoryPatternIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create cloner with custom environment: %v", err)
 	}
+
 	if cloner3.GetToken() != "custom-token" {
 		t.Errorf("Expected token 'custom-token', got %s", cloner3.GetToken())
 	}
@@ -60,7 +63,7 @@ func TestFactoryPatternIntegration(t *testing.T) {
 	}
 }
 
-// TestFactoryPatternVersusDirectInstantiation shows the benefit of the factory pattern
+// TestFactoryPatternVersusDirectInstantiation shows the benefit of the factory pattern.
 func TestFactoryPatternVersusDirectInstantiation(t *testing.T) {
 	mockEnv := env.NewMockEnvironment(map[string]string{
 		env.CommonEnvironmentKeys.GitHubToken: "env-token",
@@ -76,6 +79,7 @@ func TestFactoryPatternVersusDirectInstantiation(t *testing.T) {
 
 	// New way: Factory pattern (easier to test, more flexible)
 	factory := NewGitHubProviderFactory(mockEnv)
+
 	newCloner, err := factory.CreateCloner(ctx, "factory-token")
 	if err != nil {
 		t.Errorf("Failed to create cloner via factory: %v", err)
@@ -99,6 +103,7 @@ func TestFactoryPatternVersusDirectInstantiation(t *testing.T) {
 	}
 
 	configuredFactory := NewGitHubProviderFactoryWithConfig(config)
+
 	configuredCloner, err := configuredFactory.CreateCloner(ctx, "")
 	if err != nil {
 		t.Errorf("Failed to create cloner with configured factory: %v", err)

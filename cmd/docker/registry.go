@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RegistryCmd represents the registry command
+// RegistryCmd represents the registry command.
 var RegistryCmd = &cobra.Command{
 	Use:   "registry",
 	Short: "이미지 레지스트리 관리",

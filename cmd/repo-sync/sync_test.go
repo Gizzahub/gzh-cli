@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-// MockGitCommandExecutor is a mock implementation of GitCommandExecutor
+// MockGitCommandExecutor is a mock implementation of GitCommandExecutor.
 type MockGitCommandExecutor struct {
 	mock.Mock
 }
@@ -20,15 +20,17 @@ func (m *MockGitCommandExecutor) ExecuteCommand(ctx context.Context, dir string,
 	// Convert variadic args to a slice and pass them individually
 	callArgs := append([]interface{}{ctx, dir}, argsToInterfaces(args)...)
 	callResults := m.Called(callArgs...)
+
 	return callResults.Get(0).(*GitCommandResult), callResults.Error(1)
 }
 
-// Helper function to convert string slice to interface slice
+// Helper function to convert string slice to interface slice.
 func argsToInterfaces(args []string) []interface{} {
 	interfaces := make([]interface{}, len(args))
 	for i, arg := range args {
 		interfaces[i] = arg
 	}
+
 	return interfaces
 }
 
@@ -431,12 +433,14 @@ func TestSyncConfigValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			validStrategies := []string{"manual", "auto-merge", "local-wins", "remote-wins", "timestamp"}
 			isValid := false
+
 			for _, strategy := range validStrategies {
 				if tt.config.ConflictStrategy == strategy {
 					isValid = true
 					break
 				}
 			}
+
 			assert.Equal(t, tt.valid, isValid)
 		})
 	}

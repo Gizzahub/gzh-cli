@@ -10,19 +10,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// WebhookDependencies holds all dependencies for webhook commands
+// WebhookDependencies holds all dependencies for webhook commands.
 type WebhookDependencies struct {
 	WebhookService github.WebhookService
 	Logger         github.Logger
 	ClientFactory  func(token string) (github.APIClient, error)
 }
 
-// WebhookCommandFactory creates webhook commands with injected dependencies
+// WebhookCommandFactory creates webhook commands with injected dependencies.
 type WebhookCommandFactory struct {
 	deps *WebhookDependencies
 }
 
-// NewWebhookCommandFactory creates a new webhook command factory
+// NewWebhookCommandFactory creates a new webhook command factory.
 func NewWebhookCommandFactory(deps *WebhookDependencies) *WebhookCommandFactory {
 	// Provide defaults if not specified
 	if deps == nil {
@@ -43,6 +43,7 @@ func NewWebhookCommandFactory(deps *WebhookDependencies) *WebhookCommandFactory 
 			// Create a simple HTTP client that implements HTTPClientInterface
 			httpClient := &simpleHTTPClient{client: &http.Client{}}
 			logger := event.NewLoggerAdapter()
+
 			return github.NewAPIClient(config, httpClient, logger), nil
 		}
 	}
@@ -52,7 +53,7 @@ func NewWebhookCommandFactory(deps *WebhookDependencies) *WebhookCommandFactory 
 	}
 }
 
-// NewWebhookCmd creates the webhook command with dependency injection
+// NewWebhookCmd creates the webhook command with dependency injection.
 func (f *WebhookCommandFactory) NewWebhookCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "webhook",
@@ -97,7 +98,7 @@ This command provides comprehensive webhook management including:
 	return cmd
 }
 
-// runCreateRepositoryWebhook handles webhook creation with injected dependencies
+// runCreateRepositoryWebhook handles webhook creation with injected dependencies.
 func (f *WebhookCommandFactory) runCreateRepositoryWebhook(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
 
@@ -141,7 +142,7 @@ func (f *WebhookCommandFactory) runCreateRepositoryWebhook(cmd *cobra.Command, a
 	return nil
 }
 
-// defaultLogger is a simple logger implementation
+// defaultLogger is a simple logger implementation.
 type defaultLogger struct{}
 
 func (l *defaultLogger) Info(msg string, keysAndValues ...interface{})             {}
@@ -149,7 +150,7 @@ func (l *defaultLogger) Error(msg string, err error, keysAndValues ...interface{
 func (l *defaultLogger) Debug(msg string, keysAndValues ...interface{})            {}
 func (l *defaultLogger) Warn(msg string, keysAndValues ...interface{})             {}
 
-// simpleHTTPClient implements HTTPClientInterface
+// simpleHTTPClient implements HTTPClientInterface.
 type simpleHTTPClient struct {
 	client *http.Client
 }
@@ -164,13 +165,17 @@ func (c *simpleHTTPClient) Get(url string) (*http.Response, error) {
 
 func (c *simpleHTTPClient) Post(url, contentType string, body interface{}) (*http.Response, error) {
 	var bodyReader *bytes.Reader
+
 	if body != nil {
 		bodyBytes, err := json.Marshal(body)
 		if err != nil {
 			return nil, err
 		}
+
 		bodyReader = bytes.NewReader(bodyBytes)
+
 		return c.client.Post(url, contentType, bodyReader)
 	}
+
 	return c.client.Post(url, contentType, nil)
 }

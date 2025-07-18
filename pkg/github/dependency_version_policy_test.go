@@ -924,7 +924,7 @@ func TestDependencyVersionPolicyManager_DisabledPolicy(t *testing.T) {
 	assert.Contains(t, analysis.RecommendedAction.Reason, "policy is disabled")
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkAnalyzeDependencyVersionUpdate(b *testing.B) {
 	manager := createTestDependencyVersionPolicyManager()
 	ctx := context.Background()
@@ -933,6 +933,7 @@ func BenchmarkAnalyzeDependencyVersionUpdate(b *testing.B) {
 	manager.CreateDependencyVersionPolicy(ctx, policy)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.AnalyzeDependencyVersionUpdate(ctx, policy.ID, "lodash", "4.17.20", "4.17.21", "npm")
 	}
@@ -943,6 +944,7 @@ func BenchmarkVersionConstraintCheck(b *testing.B) {
 	policy := createTestDependencyVersionPolicy()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.checkVersionConstraints(policy, "lodash", "4.17.21", "npm")
 	}
@@ -952,17 +954,19 @@ func BenchmarkDependencyPatternMatching(b *testing.B) {
 	manager := createTestDependencyVersionPolicyManager()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.matchesDependencyPattern("lodash", "^lo.*")
 	}
 }
 
-// Helper functions
+// Helper functions.
 func createTestDependencyVersionPolicyManager() *DependencyVersionPolicyManager {
 	logger := &simpleLogger{}
 	apiClient := &simpleAPIClient{}
 	dependabotManager := createTestDependabotManager()
 	securityPolicyManager := createTestSecurityPolicyManager()
+
 	return NewDependencyVersionPolicyManager(logger, apiClient, dependabotManager, securityPolicyManager)
 }
 

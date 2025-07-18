@@ -11,13 +11,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// WorkflowAuditor performs security audits on GitHub Actions workflows
+// WorkflowAuditor performs security audits on GitHub Actions workflows.
 type WorkflowAuditor struct {
 	logger    Logger
 	apiClient APIClient
 }
 
-// WorkflowAuditResult represents the audit result for a repository
+// WorkflowAuditResult represents the audit result for a repository.
 type WorkflowAuditResult struct {
 	Repository      string                    `json:"repository"`
 	Organization    string                    `json:"organization"`
@@ -30,7 +30,7 @@ type WorkflowAuditResult struct {
 	Timestamp       time.Time                 `json:"timestamp"`
 }
 
-// WorkflowFileAudit represents audit information for a single workflow file
+// WorkflowFileAudit represents audit information for a single workflow file.
 type WorkflowFileAudit struct {
 	FilePath      string                  `json:"file_path"`
 	WorkflowName  string                  `json:"workflow_name"`
@@ -42,7 +42,7 @@ type WorkflowFileAudit struct {
 	LastModified  time.Time               `json:"last_modified"`
 }
 
-// JobAuditInfo represents audit information for a job within a workflow
+// JobAuditInfo represents audit information for a job within a workflow.
 type JobAuditInfo struct {
 	JobID         string            `json:"job_id"`
 	RunsOn        string            `json:"runs_on"`
@@ -54,7 +54,7 @@ type JobAuditInfo struct {
 	UsesVariables []string          `json:"uses_variables,omitempty"`
 }
 
-// StepAuditInfo represents audit information for a step within a job
+// StepAuditInfo represents audit information for a step within a job.
 type StepAuditInfo struct {
 	Name          string            `json:"name,omitempty"`
 	Uses          string            `json:"uses,omitempty"`
@@ -66,7 +66,7 @@ type StepAuditInfo struct {
 	UsesVariables []string          `json:"uses_variables,omitempty"`
 }
 
-// WorkflowSecurityIssue represents a security issue found in a workflow
+// WorkflowSecurityIssue represents a security issue found in a workflow.
 type WorkflowSecurityIssue struct {
 	ID          string                `json:"id"`
 	Type        WorkflowIssueType     `json:"type"`
@@ -81,7 +81,7 @@ type WorkflowSecurityIssue struct {
 	References  []string              `json:"references,omitempty"`
 }
 
-// WorkflowPermissionUsage represents permission usage statistics
+// WorkflowPermissionUsage represents permission usage statistics.
 type WorkflowPermissionUsage struct {
 	Scope         string   `json:"scope"`
 	Permission    string   `json:"permission"`
@@ -90,7 +90,7 @@ type WorkflowPermissionUsage struct {
 	Recommended   string   `json:"recommended,omitempty"`
 }
 
-// ActionUsageInfo represents information about action usage
+// ActionUsageInfo represents information about action usage.
 type ActionUsageInfo struct {
 	ActionName    string            `json:"action_name"`
 	Version       string            `json:"version"`
@@ -101,7 +101,7 @@ type ActionUsageInfo struct {
 	IsDeprecated  bool              `json:"is_deprecated"`
 }
 
-// WorkflowAuditSummary provides summary statistics
+// WorkflowAuditSummary provides summary statistics.
 type WorkflowAuditSummary struct {
 	TotalFiles             int                       `json:"total_files"`
 	FilesWithIssues        int                       `json:"files_with_issues"`
@@ -115,7 +115,7 @@ type WorkflowAuditSummary struct {
 	ComplianceScore        float64                   `json:"compliance_score"`
 }
 
-// Enum types
+// Enum types.
 type WorkflowIssueType string
 
 const (
@@ -151,7 +151,7 @@ const (
 	SecurityRiskNone     SecurityRiskLevel = "none"
 )
 
-// Workflow structure for parsing YAML
+// Workflow structure for parsing YAML.
 type WorkflowFile struct {
 	Name        string                 `yaml:"name"`
 	On          interface{}            `yaml:"on"`
@@ -177,7 +177,7 @@ type Step struct {
 	Env  map[string]string `yaml:"env"`
 }
 
-// NewWorkflowAuditor creates a new workflow auditor
+// NewWorkflowAuditor creates a new workflow auditor.
 func NewWorkflowAuditor(logger Logger, apiClient APIClient) *WorkflowAuditor {
 	return &WorkflowAuditor{
 		logger:    logger,
@@ -185,7 +185,7 @@ func NewWorkflowAuditor(logger Logger, apiClient APIClient) *WorkflowAuditor {
 	}
 }
 
-// AuditRepository performs a comprehensive audit of all workflows in a repository
+// AuditRepository performs a comprehensive audit of all workflows in a repository.
 func (wa *WorkflowAuditor) AuditRepository(ctx context.Context, organization, repository string) (*WorkflowAuditResult, error) {
 	wa.logger.Info("Starting workflow audit", "organization", organization, "repository", repository)
 
@@ -233,7 +233,7 @@ func (wa *WorkflowAuditor) AuditRepository(ctx context.Context, organization, re
 	return result, nil
 }
 
-// AuditOrganization performs workflow audit across all repositories in an organization
+// AuditOrganization performs workflow audit across all repositories in an organization.
 func (wa *WorkflowAuditor) AuditOrganization(ctx context.Context, organization string) ([]*WorkflowAuditResult, error) {
 	wa.logger.Info("Starting organization-wide workflow audit", "organization", organization)
 
@@ -267,7 +267,7 @@ func (wa *WorkflowAuditor) AuditOrganization(ctx context.Context, organization s
 	return results, nil
 }
 
-// getWorkflowFiles retrieves all workflow files from a repository
+// getWorkflowFiles retrieves all workflow files from a repository.
 func (wa *WorkflowAuditor) getWorkflowFiles(ctx context.Context, organization, repository string) ([]string, error) {
 	// In a real implementation, this would use GitHub API to get files from .github/workflows/
 	// For now, return mock workflow files
@@ -278,7 +278,7 @@ func (wa *WorkflowAuditor) getWorkflowFiles(ctx context.Context, organization, r
 	}, nil
 }
 
-// auditWorkflowFile performs security audit on a single workflow file
+// auditWorkflowFile performs security audit on a single workflow file.
 func (wa *WorkflowAuditor) auditWorkflowFile(ctx context.Context, organization, repository, filePath string) (*WorkflowFileAudit, error) {
 	// Get file content - in real implementation, this would fetch from GitHub API
 	content, err := wa.getFileContent(ctx, organization, repository, filePath)
@@ -334,7 +334,7 @@ func (wa *WorkflowAuditor) auditWorkflowFile(ctx context.Context, organization, 
 	return audit, nil
 }
 
-// auditJob performs security audit on a job
+// auditJob performs security audit on a job.
 func (wa *WorkflowAuditor) auditJob(jobID string, job Job, filePath string) JobAuditInfo {
 	jobAudit := JobAuditInfo{
 		JobID:         jobID,
@@ -366,7 +366,7 @@ func (wa *WorkflowAuditor) auditJob(jobID string, job Job, filePath string) JobA
 	return jobAudit
 }
 
-// auditStep performs security audit on a step
+// auditStep performs security audit on a step.
 func (wa *WorkflowAuditor) auditStep(step Step, stepIndex int) StepAuditInfo {
 	stepAudit := StepAuditInfo{
 		Name:          step.Name,
@@ -518,6 +518,7 @@ func (wa *WorkflowAuditor) normalizeRunsOn(runsOn interface{}) string {
 			}
 		}
 	}
+
 	return "unknown"
 }
 
@@ -530,6 +531,7 @@ func (wa *WorkflowAuditor) normalizeEnvironment(env interface{}) string {
 			return name
 		}
 	}
+
 	return ""
 }
 
@@ -538,6 +540,7 @@ func (wa *WorkflowAuditor) extractActionVersion(uses string) string {
 	if len(parts) > 1 {
 		return parts[1]
 	}
+
 	return "latest"
 }
 
@@ -592,6 +595,7 @@ func (wa *WorkflowAuditor) isHighRiskScope(scope string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -601,8 +605,10 @@ func (wa *WorkflowAuditor) isActionPinned(uses string) bool {
 	if len(parts) > 1 {
 		version := parts[1]
 		matched, _ := regexp.MatchString(`^[a-f0-9]{40}$`, version)
+
 		return matched
 	}
+
 	return false
 }
 
@@ -619,6 +625,7 @@ func (wa *WorkflowAuditor) isActionDeprecated(uses string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -631,6 +638,7 @@ func (wa *WorkflowAuditor) isActionVerified(uses string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -646,6 +654,7 @@ func (wa *WorkflowAuditor) isHighRiskAction(uses string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -663,6 +672,7 @@ func (wa *WorkflowAuditor) hasCodeInjectionRisk(script string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -679,6 +689,7 @@ func (wa *WorkflowAuditor) hasSecretExposureRisk(script string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -696,6 +707,7 @@ func (wa *WorkflowAuditor) hasPrivilegeEscalationRisk(script string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -895,6 +907,7 @@ func (wa *WorkflowAuditor) generateSummary(result *WorkflowAuditResult) Workflow
 	if summary.TotalFiles > 0 {
 		maxPossibleIssues := summary.TotalFiles * 10 // Assumption: max 10 issues per file
 		actualIssues := len(result.SecurityIssues)
+
 		summary.ComplianceScore = float64(maxPossibleIssues-actualIssues) / float64(maxPossibleIssues) * 100
 		if summary.ComplianceScore < 0 {
 			summary.ComplianceScore = 0
@@ -967,6 +980,7 @@ func (wa *WorkflowAuditor) getRecommendedPermission(scope, permission string) st
 	if wa.isHighRiskScope(scope) && permission == "write" {
 		return "read"
 	}
+
 	return permission
 }
 
@@ -986,6 +1000,7 @@ func (wa *WorkflowAuditor) determineIssueType(reasons []string) WorkflowIssueTyp
 			return IssueTypeUnverifiedAction
 		}
 	}
+
 	return IssueTypeExcessivePermissions
 }
 
@@ -1016,6 +1031,7 @@ func (wa *WorkflowAuditor) generateSecuritySuggestion(reasons []string) string {
 	if len(reasons) > 0 {
 		return suggestions[0] // Return most relevant suggestion
 	}
+
 	return "Review workflow for security best practices"
 }
 
@@ -1039,5 +1055,6 @@ func (wa *WorkflowAuditor) contains(slice []string, item string) bool {
 			return true
 		}
 	}
+
 	return false
 }

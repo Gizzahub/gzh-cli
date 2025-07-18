@@ -14,6 +14,7 @@ import (
 func ExampleLoadConfig() {
 	// Create a temporary configuration file
 	tempDir := "/tmp/bulk-clone-config-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 
@@ -59,6 +60,7 @@ repo_roots:
 
 	// Count providers by type
 	githubCount, gitlabCount, giteaCount := 0, 0, 0
+
 	for _, root := range config.RepoRoots {
 		switch root.Provider {
 		case "github":
@@ -84,6 +86,7 @@ repo_roots:
 // ExampleConfigValidation demonstrates configuration validation and error handling.
 func ExampleConfigValidation() {
 	tempDir := "/tmp/bulk-clone-validation-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 
@@ -135,6 +138,7 @@ repo_roots:
 	}
 
 	fmt.Printf("Valid configuration loaded successfully\n")
+
 	if len(config.RepoRoots) > 0 {
 		fmt.Printf("Organization: %s\n", config.RepoRoots[0].OrgName)
 		fmt.Printf("Provider: %s\n", config.RepoRoots[0].Provider)
@@ -147,6 +151,7 @@ repo_roots:
 // with multiple Git hosting providers.
 func ExampleMultiProviderConfig() {
 	tempDir := "/tmp/bulk-clone-multi-provider-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 
@@ -207,6 +212,7 @@ repo_roots:
 	fmt.Printf("Multi-provider configuration loaded:\n")
 	// Count providers by type
 	githubCount, gitlabCount, giteaCount, gogsCount := 0, 0, 0, 0
+
 	for _, root := range config.RepoRoots {
 		switch root.Provider {
 		case "github":
@@ -219,6 +225,7 @@ repo_roots:
 			gogsCount++
 		}
 	}
+
 	fmt.Printf("- GitHub: %d organizations\n", githubCount)
 	fmt.Printf("- GitLab: %d groups\n", gitlabCount)
 	fmt.Printf("- Gitea: %d organizations\n", giteaCount)
@@ -231,6 +238,7 @@ repo_roots:
 			fmt.Printf("  Name: %s\n", root.OrgName)
 			fmt.Printf("  Target: %s\n", root.RootPath)
 			fmt.Printf("  Protocol: %s\n", root.Protocol)
+
 			break
 		}
 	}
@@ -242,6 +250,7 @@ repo_roots:
 // and their use cases.
 func ExampleConfigStrategies() {
 	tempDir := "/tmp/bulk-clone-strategies-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 
@@ -281,6 +290,7 @@ repo_roots:
 	}
 
 	fmt.Println("Clone strategies configured:")
+
 	for _, root := range config.RepoRoots {
 		if root.Provider == "github" {
 			// Note: Strategy is configured at the operation level, not in the config
@@ -297,6 +307,7 @@ func ExampleEnvironmentVariables() {
 	// Save original environment
 	originalGitHub := os.Getenv("GITHUB_TOKEN")
 	originalGitLab := os.Getenv("GITLAB_TOKEN")
+
 	defer func() {
 		os.Setenv("GITHUB_TOKEN", originalGitHub)
 		os.Setenv("GITLAB_TOKEN", originalGitLab)
@@ -307,6 +318,7 @@ func ExampleEnvironmentVariables() {
 	os.Setenv("GITLAB_TOKEN", "glpat_example_token_here")
 
 	tempDir := "/tmp/bulk-clone-env-example"
+
 	os.MkdirAll(tempDir, 0o755)
 	defer os.RemoveAll(tempDir)
 

@@ -118,6 +118,7 @@ func TestStateManager_SaveAndLoadState(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "gzh-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	sm := NewStateManager(tempDir)
@@ -155,6 +156,7 @@ func TestStateManager_HasState(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "gzh-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	sm := NewStateManager(tempDir)
@@ -176,6 +178,7 @@ func TestStateManager_DeleteState(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "gzh-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	sm := NewStateManager(tempDir)
@@ -200,6 +203,7 @@ func TestStateManager_ListStates(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "gzh-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	sm := NewStateManager(tempDir)

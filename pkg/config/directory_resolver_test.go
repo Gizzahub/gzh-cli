@@ -358,6 +358,7 @@ func TestDirectoryStructureValidator_ValidateStructure(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.expectedErr != nil {
 					assert.Equal(t, tt.expectedErr, err)
 				}

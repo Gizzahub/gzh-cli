@@ -79,6 +79,7 @@ func (o *bulkCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 
 	// Use resumable clone if requested or if parallel/worker pool is enabled
 	ctx := cmd.Context()
+
 	var err error
 	if o.resume || o.parallel > 1 {
 		err = gitlabpkg.RefreshAllResumable(ctx, o.targetPath, o.groupName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)

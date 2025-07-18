@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// StreamingClient provides streaming API access for GitLab large-scale operations
+// StreamingClient provides streaming API access for GitLab large-scale operations.
 type StreamingClient struct {
 	httpClient     *http.Client
 	token          string
@@ -25,7 +25,7 @@ type StreamingClient struct {
 	mu             sync.RWMutex
 }
 
-// RateLimiter manages GitLab API rate limiting
+// RateLimiter manages GitLab API rate limiting.
 type RateLimiter struct {
 	remaining int
 	reset     time.Time
@@ -33,14 +33,14 @@ type RateLimiter struct {
 	mu        sync.RWMutex
 }
 
-// MemoryPool manages reusable memory allocations for GitLab
+// MemoryPool manages reusable memory allocations for GitLab.
 type MemoryPool struct {
 	bufferPool  sync.Pool
 	projectPool sync.Pool
 	resultPool  sync.Pool
 }
 
-// RequestMetrics tracks GitLab API usage statistics
+// RequestMetrics tracks GitLab API usage statistics.
 type RequestMetrics struct {
 	totalRequests   int64
 	cachedResponses int64
@@ -51,14 +51,14 @@ type RequestMetrics struct {
 	mu              sync.RWMutex
 }
 
-// ProjectStream represents a streaming project result
+// ProjectStream represents a streaming project result.
 type ProjectStream struct {
 	Project  *Project
 	Error    error
 	Metadata StreamMetadata
 }
 
-// StreamMetadata contains GitLab stream processing metadata
+// StreamMetadata contains GitLab stream processing metadata.
 type StreamMetadata struct {
 	Page         int
 	TotalPages   int
@@ -68,7 +68,7 @@ type StreamMetadata struct {
 	RetryAttempt int
 }
 
-// Project represents a GitLab project with optimized memory layout
+// Project represents a GitLab project with optimized memory layout.
 type Project struct {
 	ID                int64     `json:"id"`
 	Name              string    `json:"name"`
@@ -83,7 +83,7 @@ type Project struct {
 	// Only include essential fields to minimize memory usage
 }
 
-// CursorPagination represents cursor-based pagination for GitLab API
+// CursorPagination represents cursor-based pagination for GitLab API.
 type CursorPagination struct {
 	Page       int
 	PerPage    int
@@ -95,7 +95,7 @@ type CursorPagination struct {
 	HasPrev    bool
 }
 
-// StreamingConfig configures GitLab streaming behavior
+// StreamingConfig configures GitLab streaming behavior.
 type StreamingConfig struct {
 	PageSize        int
 	MaxConcurrency  int
@@ -108,7 +108,7 @@ type StreamingConfig struct {
 	RateLimitBuffer int // requests to keep in reserve
 }
 
-// DefaultStreamingConfig returns optimized defaults for GitLab large-scale operations
+// DefaultStreamingConfig returns optimized defaults for GitLab large-scale operations.
 func DefaultStreamingConfig() StreamingConfig {
 	return StreamingConfig{
 		PageSize:        100, // GitLab's max per page
@@ -123,7 +123,7 @@ func DefaultStreamingConfig() StreamingConfig {
 	}
 }
 
-// NewStreamingClient creates a new streaming GitLab API client
+// NewStreamingClient creates a new streaming GitLab API client.
 func NewStreamingClient(token, baseURL string, config StreamingConfig) *StreamingClient {
 	if baseURL == "" {
 		baseURL = "https://gitlab.com"
@@ -178,7 +178,7 @@ func NewStreamingClient(token, baseURL string, config StreamingConfig) *Streamin
 	}
 }
 
-// StreamGroupProjects streams projects for a GitLab group with memory optimization
+// StreamGroupProjects streams projects for a GitLab group with memory optimization.
 func (sc *StreamingClient) StreamGroupProjects(ctx context.Context, groupID string, config StreamingConfig) (<-chan ProjectStream, error) {
 	resultChan := make(chan ProjectStream, config.BufferSize)
 
@@ -252,7 +252,7 @@ func (sc *StreamingClient) StreamGroupProjects(ctx context.Context, groupID stri
 	return resultChan, nil
 }
 
-// fetchProjectPage fetches a single page of projects with optimized memory usage
+// fetchProjectPage fetches a single page of projects with optimized memory usage.
 func (sc *StreamingClient) fetchProjectPage(ctx context.Context, groupID string, pagination CursorPagination) ([]*Project, CursorPagination, error) {
 	url := sc.buildProjectURL(groupID, pagination)
 
@@ -265,10 +265,12 @@ func (sc *StreamingClient) fetchProjectPage(ctx context.Context, groupID string,
 	if sc.token != "" {
 		req.Header.Set("Authorization", "Bearer "+sc.token)
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	// Execute request
 	startTime := time.Now()
+
 	resp, err := sc.httpClient.Do(req)
 	if err != nil {
 		return nil, CursorPagination{}, fmt.Errorf("request failed: %w", err)
@@ -297,12 +299,13 @@ func (sc *StreamingClient) fetchProjectPage(ctx context.Context, groupID string,
 	return projects, newPagination, nil
 }
 
-// parseProjectResponse parses JSON response with streaming to minimize memory usage
+// parseProjectResponse parses JSON response with streaming to minimize memory usage.
 func (sc *StreamingClient) parseProjectResponse(reader io.Reader) ([]*Project, error) {
 	// Use buffered reader for efficient streaming
 	bufReader := bufio.NewReaderSize(reader, 64*1024)
 
 	var rawProjects []json.RawMessage
+
 	decoder := json.NewDecoder(bufReader)
 
 	if err := decoder.Decode(&rawProjects); err != nil {
@@ -316,13 +319,14 @@ func (sc *StreamingClient) parseProjectResponse(reader io.Reader) ([]*Project, e
 			sc.memoryPool.projectPool.Put(project)
 			continue // Skip malformed entries
 		}
+
 		projects = append(projects, project)
 	}
 
 	return projects, nil
 }
 
-// buildProjectURL constructs the GitLab API URL with pagination
+// buildProjectURL constructs the GitLab API URL with pagination.
 func (sc *StreamingClient) buildProjectURL(groupID string, pagination CursorPagination) string {
 	baseURL := fmt.Sprintf("%s/api/v4/groups/%s/projects", sc.baseURL, groupID)
 
@@ -337,7 +341,7 @@ func (sc *StreamingClient) buildProjectURL(groupID string, pagination CursorPagi
 	return baseURL + "?" + params.Encode()
 }
 
-// parsePaginationHeaders extracts pagination info from GitLab response headers
+// parsePaginationHeaders extracts pagination info from GitLab response headers.
 func (sc *StreamingClient) parsePaginationHeaders(headers http.Header, current CursorPagination) CursorPagination {
 	newPagination := current
 
@@ -372,7 +376,7 @@ func (sc *StreamingClient) parsePaginationHeaders(headers http.Header, current C
 	return newPagination
 }
 
-// waitForRateLimit waits if necessary to respect GitLab rate limits
+// waitForRateLimit waits if necessary to respect GitLab rate limits.
 func (sc *StreamingClient) waitForRateLimit(ctx context.Context, buffer int) error {
 	sc.rateLimiter.mu.RLock()
 	remaining := sc.rateLimiter.remaining
@@ -396,7 +400,7 @@ func (sc *StreamingClient) waitForRateLimit(ctx context.Context, buffer int) err
 	return nil
 }
 
-// updateRateLimit updates rate limit info from GitLab response headers
+// updateRateLimit updates rate limit info from GitLab response headers.
 func (sc *StreamingClient) updateRateLimit(headers http.Header) {
 	sc.rateLimiter.mu.Lock()
 	defer sc.rateLimiter.mu.Unlock()
@@ -420,7 +424,7 @@ func (sc *StreamingClient) updateRateLimit(headers http.Header) {
 	}
 }
 
-// checkMemoryLimit monitors memory usage and triggers cleanup if needed
+// checkMemoryLimit monitors memory usage and triggers cleanup if needed.
 func (sc *StreamingClient) checkMemoryLimit(limit int64) error {
 	current := sc.getCurrentMemoryUsage()
 	if current > limit {
@@ -432,18 +436,20 @@ func (sc *StreamingClient) checkMemoryLimit(limit int64) error {
 			return fmt.Errorf("memory usage %d bytes exceeds limit %d bytes", current, limit)
 		}
 	}
+
 	return nil
 }
 
-// getCurrentMemoryUsage gets current memory usage (simplified implementation)
+// getCurrentMemoryUsage gets current memory usage (simplified implementation).
 func (sc *StreamingClient) getCurrentMemoryUsage() int64 {
 	// In a real implementation, this would use runtime.ReadMemStats()
 	sc.requestMetrics.mu.RLock()
 	defer sc.requestMetrics.mu.RUnlock()
+
 	return sc.requestMetrics.memoryUsage
 }
 
-// optimizeMemory triggers garbage collection and pool cleanup
+// optimizeMemory triggers garbage collection and pool cleanup.
 func (sc *StreamingClient) optimizeMemory() {
 	// Force garbage collection
 	// runtime.GC()
@@ -456,7 +462,7 @@ func (sc *StreamingClient) optimizeMemory() {
 	}
 }
 
-// updateRequestMetrics updates GitLab API usage statistics
+// updateRequestMetrics updates GitLab API usage statistics.
 func (sc *StreamingClient) updateRequestMetrics(latency time.Duration) {
 	sc.requestMetrics.mu.Lock()
 	defer sc.requestMetrics.mu.Unlock()
@@ -474,7 +480,7 @@ func (sc *StreamingClient) updateRequestMetrics(latency time.Duration) {
 	}
 }
 
-// sendError sends an error to the result channel
+// sendError sends an error to the result channel.
 func (sc *StreamingClient) sendError(resultChan chan<- ProjectStream, err error) {
 	result := sc.memoryPool.resultPool.Get().(*ProjectStream)
 	result.Error = err
@@ -493,7 +499,7 @@ func (sc *StreamingClient) sendError(resultChan chan<- ProjectStream, err error)
 	sc.memoryPool.resultPool.Put(result)
 }
 
-// GetMetrics returns current GitLab API usage metrics
+// GetMetrics returns current GitLab API usage metrics.
 func (sc *StreamingClient) GetMetrics() RequestMetrics {
 	sc.requestMetrics.mu.RLock()
 	defer sc.requestMetrics.mu.RUnlock()
@@ -508,7 +514,7 @@ func (sc *StreamingClient) GetMetrics() RequestMetrics {
 	}
 }
 
-// Close cleans up resources
+// Close cleans up resources.
 func (sc *StreamingClient) Close() error {
 	// Clean up HTTP client connections
 	if transport, ok := sc.httpClient.Transport.(*http.Transport); ok {

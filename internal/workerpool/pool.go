@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Config represents worker pool configuration
+// Config represents worker pool configuration.
 type Config struct {
 	// WorkerCount specifies the number of workers. If 0, defaults to runtime.NumCPU()
 	WorkerCount int
@@ -19,7 +19,7 @@ type Config struct {
 	Timeout time.Duration
 }
 
-// DefaultConfig returns a sensible default configuration
+// DefaultConfig returns a sensible default configuration.
 func DefaultConfig() Config {
 	return Config{
 		WorkerCount: runtime.NumCPU(),
@@ -28,19 +28,19 @@ func DefaultConfig() Config {
 	}
 }
 
-// Job represents a unit of work to be processed by the worker pool
+// Job represents a unit of work to be processed by the worker pool.
 type Job[T any] struct {
 	Data T
 	Fn   func(context.Context, T) error
 }
 
-// Result represents the result of processing a job
+// Result represents the result of processing a job.
 type Result[T any] struct {
 	Data  T
 	Error error
 }
 
-// Pool represents a generic worker pool
+// Pool represents a generic worker pool.
 type Pool[T any] struct {
 	config  Config
 	jobs    chan Job[T]
@@ -52,14 +52,16 @@ type Pool[T any] struct {
 	mu      sync.RWMutex
 }
 
-// New creates a new worker pool with the given configuration
+// New creates a new worker pool with the given configuration.
 func New[T any](config Config) *Pool[T] {
 	if config.WorkerCount <= 0 {
 		config.WorkerCount = runtime.NumCPU()
 	}
+
 	if config.BufferSize <= 0 {
 		config.BufferSize = config.WorkerCount * 2
 	}
+
 	if config.Timeout <= 0 {
 		config.Timeout = 30 * time.Second
 	}
@@ -75,7 +77,7 @@ func New[T any](config Config) *Pool[T] {
 	}
 }
 
-// Start initializes and starts the worker pool
+// Start initializes and starts the worker pool.
 func (p *Pool[T]) Start() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -87,14 +89,16 @@ func (p *Pool[T]) Start() error {
 	// Start workers
 	for i := 0; i < p.config.WorkerCount; i++ {
 		p.wg.Add(1)
+
 		go p.worker(i)
 	}
 
 	p.started = true
+
 	return nil
 }
 
-// Submit submits a job to the worker pool
+// Submit submits a job to the worker pool.
 func (p *Pool[T]) Submit(data T, fn func(context.Context, T) error) error {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
@@ -113,12 +117,12 @@ func (p *Pool[T]) Submit(data T, fn func(context.Context, T) error) error {
 	}
 }
 
-// Results returns a channel to receive job results
+// Results returns a channel to receive job results.
 func (p *Pool[T]) Results() <-chan Result[T] {
 	return p.results
 }
 
-// Stop gracefully shuts down the worker pool
+// Stop gracefully shuts down the worker pool.
 func (p *Pool[T]) Stop() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -142,7 +146,7 @@ func (p *Pool[T]) Stop() {
 	p.started = false
 }
 
-// StopWithTimeout stops the worker pool with a timeout
+// StopWithTimeout stops the worker pool with a timeout.
 func (p *Pool[T]) StopWithTimeout(timeout time.Duration) error {
 	done := make(chan struct{})
 
@@ -160,7 +164,7 @@ func (p *Pool[T]) StopWithTimeout(timeout time.Duration) error {
 	}
 }
 
-// worker is the main worker goroutine
+// worker is the main worker goroutine.
 func (p *Pool[T]) worker(id int) {
 	defer p.wg.Done()
 
@@ -195,7 +199,7 @@ func (p *Pool[T]) worker(id int) {
 	}
 }
 
-// ProcessBatch processes a batch of items using the worker pool
+// ProcessBatch processes a batch of items using the worker pool.
 func ProcessBatch[T any](ctx context.Context, items []T, config Config,
 	processFn func(context.Context, T) error,
 ) ([]Result[T], error) {

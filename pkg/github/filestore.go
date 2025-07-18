@@ -10,12 +10,12 @@ import (
 	"strings"
 )
 
-// FileStore implements ChangeStore using local file storage
+// FileStore implements ChangeStore using local file storage.
 type FileStore struct {
 	basePath string
 }
 
-// NewFileStore creates a new file-based change store
+// NewFileStore creates a new file-based change store.
 func NewFileStore(basePath string) (*FileStore, error) {
 	// Create base directory if it doesn't exist
 	err := os.MkdirAll(basePath, 0o755)
@@ -28,7 +28,7 @@ func NewFileStore(basePath string) (*FileStore, error) {
 	}, nil
 }
 
-// Store saves a change record to a file
+// Store saves a change record to a file.
 func (fs *FileStore) Store(ctx context.Context, record *ChangeRecord) error {
 	// Create directory structure: basePath/year/month/day
 	date := record.Timestamp
@@ -58,7 +58,7 @@ func (fs *FileStore) Store(ctx context.Context, record *ChangeRecord) error {
 	return nil
 }
 
-// Get retrieves a change record by ID
+// Get retrieves a change record by ID.
 func (fs *FileStore) Get(ctx context.Context, id string) (*ChangeRecord, error) {
 	// Search for the file across all directories
 	filePath, err := fs.findRecordFile(id)
@@ -72,6 +72,7 @@ func (fs *FileStore) Get(ctx context.Context, id string) (*ChangeRecord, error) 
 	}
 
 	var record ChangeRecord
+
 	err = json.Unmarshal(data, &record)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal change record: %w", err)
@@ -80,7 +81,7 @@ func (fs *FileStore) Get(ctx context.Context, id string) (*ChangeRecord, error) 
 	return &record, nil
 }
 
-// List retrieves change records based on filter criteria
+// List retrieves change records based on filter criteria.
 func (fs *FileStore) List(ctx context.Context, filter ChangeFilter) ([]*ChangeRecord, error) {
 	var records []*ChangeRecord
 
@@ -100,6 +101,7 @@ func (fs *FileStore) List(ctx context.Context, filter ChangeFilter) ([]*ChangeRe
 		}
 
 		var record ChangeRecord
+
 		err = json.Unmarshal(data, &record)
 		if err != nil {
 			return nil // Skip invalid files
@@ -133,7 +135,7 @@ func (fs *FileStore) List(ctx context.Context, filter ChangeFilter) ([]*ChangeRe
 	return records, nil
 }
 
-// Delete removes a change record
+// Delete removes a change record.
 func (fs *FileStore) Delete(ctx context.Context, id string) error {
 	filePath, err := fs.findRecordFile(id)
 	if err != nil {
@@ -148,7 +150,7 @@ func (fs *FileStore) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// findRecordFile searches for a record file by ID across all directories
+// findRecordFile searches for a record file by ID across all directories.
 func (fs *FileStore) findRecordFile(id string) (string, error) {
 	var foundPath string
 
@@ -175,7 +177,7 @@ func (fs *FileStore) findRecordFile(id string) (string, error) {
 	return foundPath, nil
 }
 
-// matchesFilter checks if a record matches the given filter criteria
+// matchesFilter checks if a record matches the given filter criteria.
 func (fs *FileStore) matchesFilter(record *ChangeRecord, filter ChangeFilter) bool {
 	if filter.Organization != "" && record.Organization != filter.Organization {
 		return false
@@ -208,12 +210,12 @@ func (fs *FileStore) matchesFilter(record *ChangeRecord, filter ChangeFilter) bo
 	return true
 }
 
-// GetStorePath returns the base storage path
+// GetStorePath returns the base storage path.
 func (fs *FileStore) GetStorePath() string {
 	return fs.basePath
 }
 
-// GetStats returns storage statistics
+// GetStats returns storage statistics.
 func (fs *FileStore) GetStats(ctx context.Context) (map[string]interface{}, error) {
 	stats := make(map[string]interface{})
 	totalFiles := 0

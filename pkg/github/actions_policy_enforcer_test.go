@@ -127,11 +127,13 @@ func TestActionsPolicyEnforcer_ValidatePolicy(t *testing.T) {
 				}
 			} else {
 				failedRules := 0
+
 				for _, result := range results {
 					if !result.Passed {
 						failedRules++
 					}
 				}
+
 				assert.Greater(t, failedRules, 0, "At least some rules should fail")
 			}
 		})
@@ -305,6 +307,7 @@ func TestSecuritySettingsValidationRule(t *testing.T) {
 			require.NotNil(t, result)
 
 			assert.Equal(t, tt.expectPassed, result.Passed)
+
 			if tt.expectCritical {
 				assert.Equal(t, ViolationSeverityCritical, result.Severity)
 			}
@@ -514,7 +517,7 @@ func TestHelperFunctions(t *testing.T) {
 	})
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkEnforcePolicy(b *testing.B) {
 	enforcer := createTestEnforcer()
 	ctx := context.Background()
@@ -530,6 +533,7 @@ func BenchmarkEnforcePolicy(b *testing.B) {
 	enforcer.policyManager.CreatePolicy(ctx, policy)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		enforcer.EnforcePolicy(ctx, "bench-policy", "testorg", "testrepo")
 	}
@@ -568,15 +572,17 @@ func BenchmarkValidatePolicy(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		enforcer.ValidatePolicy(ctx, policy, state)
 	}
 }
 
-// Helper function to create a test enforcer
+// Helper function to create a test enforcer.
 func createTestEnforcer() *ActionsPolicyEnforcer {
 	logger := &simpleLogger{}
 	apiClient := &simpleAPIClient{}
 	policyManager := NewActionsPolicyManager(logger, apiClient)
+
 	return NewActionsPolicyEnforcer(logger, apiClient, policyManager)
 }

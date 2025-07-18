@@ -16,6 +16,7 @@ func TestDockerNetworkManager(t *testing.T) {
 	// Create temporary directory for test
 	tempDir, err := os.MkdirTemp("", "docker_network_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -115,6 +116,7 @@ func TestDockerNetworkManager(t *testing.T) {
 		for i, p := range listedProfiles {
 			profileNames[i] = p.Name
 		}
+
 		assert.Contains(t, profileNames, "profile1")
 		assert.Contains(t, profileNames, "profile2")
 	})
@@ -180,6 +182,7 @@ func TestDockerNetworkProfileValidation(t *testing.T) {
 	t.Run("EmptyProfileName", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_network_validation_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -200,6 +203,7 @@ func TestDockerNetworkProfileValidation(t *testing.T) {
 	t.Run("NetworkDefaults", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_network_defaults_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -233,6 +237,7 @@ func TestDockerComposeIntegration(t *testing.T) {
 	t.Run("CreateProfileFromCompose", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_compose_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		// Create a test Docker Compose file
@@ -313,6 +318,7 @@ networks:
 	t.Run("NonExistentComposeFile", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_compose_nonexistent_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -328,6 +334,7 @@ func TestDockerNetworkConfiguration(t *testing.T) {
 	t.Run("ComplexNetworkConfiguration", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_complex_network_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -464,13 +471,14 @@ func TestDockerNetworkConfiguration(t *testing.T) {
 	})
 }
 
-// Mock tests for external Docker commands (these would require Docker to be installed)
+// Mock tests for external Docker commands (these would require Docker to be installed).
 func TestDockerCommandIntegration(t *testing.T) {
 	t.Skip("Skipping Docker command integration tests - requires Docker installation")
 
 	t.Run("GetNetworkStatus", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_status_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -488,6 +496,7 @@ func TestDockerCommandIntegration(t *testing.T) {
 	t.Run("GetContainerNetworkInfo", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_container_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -505,6 +514,7 @@ func TestDockerCommandIntegration(t *testing.T) {
 	t.Run("DetectDockerComposeProjects", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_detect_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()

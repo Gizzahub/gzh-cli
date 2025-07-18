@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Provider represents a cloud provider interface
+// Provider represents a cloud provider interface.
 type Provider interface {
 	// Name returns the provider name (aws, gcp, azure)
 	Name() string
@@ -35,7 +35,7 @@ type Provider interface {
 	HealthCheck(ctx context.Context) error
 }
 
-// ProviderConfig represents provider-specific configuration
+// ProviderConfig represents provider-specific configuration.
 type ProviderConfig struct {
 	// Provider type (aws, gcp, azure)
 	Type string `yaml:"type" json:"type"`
@@ -53,7 +53,7 @@ type ProviderConfig struct {
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty"`
 }
 
-// AuthConfig represents authentication configuration
+// AuthConfig represents authentication configuration.
 type AuthConfig struct {
 	// Authentication method (key, token, iam, service_account, etc.)
 	Method string `yaml:"method" json:"method"`
@@ -68,7 +68,7 @@ type AuthConfig struct {
 	Params map[string]string `yaml:"params,omitempty" json:"params,omitempty"`
 }
 
-// Profile represents a cloud environment profile
+// Profile represents a cloud environment profile.
 type Profile struct {
 	// Profile name
 	Name string `yaml:"name" json:"name"`
@@ -95,7 +95,7 @@ type Profile struct {
 	LastSync time.Time `yaml:"last_sync,omitempty" json:"last_sync,omitempty"`
 }
 
-// NetworkConfig represents network configuration for a profile
+// NetworkConfig represents network configuration for a profile.
 type NetworkConfig struct {
 	// VPC/VNet ID
 	VPCId string `yaml:"vpc_id,omitempty" json:"vpc_id,omitempty"`
@@ -122,7 +122,7 @@ type NetworkConfig struct {
 	Routes []RouteConfig `yaml:"routes,omitempty" json:"routes,omitempty"`
 }
 
-// ServiceConfig represents service-specific configuration
+// ServiceConfig represents service-specific configuration.
 type ServiceConfig struct {
 	// Service endpoint
 	Endpoint string `yaml:"endpoint" json:"endpoint"`
@@ -137,7 +137,7 @@ type ServiceConfig struct {
 	TLS *TLSConfig `yaml:"tls,omitempty" json:"tls,omitempty"`
 }
 
-// ProxyConfig represents proxy configuration
+// ProxyConfig represents proxy configuration.
 type ProxyConfig struct {
 	// HTTP proxy
 	HTTP string `yaml:"http,omitempty" json:"http,omitempty"`
@@ -152,13 +152,13 @@ type ProxyConfig struct {
 	Auth *ProxyAuth `yaml:"auth,omitempty" json:"auth,omitempty"`
 }
 
-// ProxyAuth represents proxy authentication
+// ProxyAuth represents proxy authentication.
 type ProxyAuth struct {
 	Username string `yaml:"username" json:"username"`
 	Password string `yaml:"password,omitempty" json:"password,omitempty"`
 }
 
-// VPNConfig represents VPN configuration
+// VPNConfig represents VPN configuration.
 type VPNConfig struct {
 	// VPN type (openvpn, wireguard, ipsec)
 	Type string `yaml:"type" json:"type"`
@@ -176,7 +176,7 @@ type VPNConfig struct {
 	AutoConnect bool `yaml:"auto_connect,omitempty" json:"auto_connect,omitempty"`
 }
 
-// VPNConnection represents a VPN connection configuration
+// VPNConnection represents a VPN connection configuration.
 type VPNConnection struct {
 	// Connection name
 	Name string `yaml:"name" json:"name"`
@@ -233,7 +233,7 @@ type VPNConnection struct {
 	Tags map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
 }
 
-// VPNHealthCheck represents health check configuration for VPN connections
+// VPNHealthCheck represents health check configuration for VPN connections.
 type VPNHealthCheck struct {
 	// Enable health checking
 	Enabled bool `yaml:"enabled" json:"enabled"`
@@ -254,7 +254,7 @@ type VPNHealthCheck struct {
 	SuccessThreshold int `yaml:"success_threshold,omitempty" json:"success_threshold,omitempty"`
 }
 
-// RouteConfig represents custom route configuration
+// RouteConfig represents custom route configuration.
 type RouteConfig struct {
 	// Destination CIDR
 	Destination string `yaml:"destination" json:"destination"`
@@ -266,7 +266,7 @@ type RouteConfig struct {
 	Metric int `yaml:"metric,omitempty" json:"metric,omitempty"`
 }
 
-// TLSConfig represents TLS/SSL configuration
+// TLSConfig represents TLS/SSL configuration.
 type TLSConfig struct {
 	// Skip verification (insecure)
 	SkipVerify bool `yaml:"skip_verify,omitempty" json:"skip_verify,omitempty"`
@@ -281,7 +281,7 @@ type TLSConfig struct {
 	KeyFile string `yaml:"key_file,omitempty" json:"key_file,omitempty"`
 }
 
-// NetworkPolicy represents network policy that can be applied
+// NetworkPolicy represents network policy that can be applied.
 type NetworkPolicy struct {
 	// Policy name
 	Name string `yaml:"name" json:"name"`
@@ -308,7 +308,7 @@ type NetworkPolicy struct {
 	Enabled bool `yaml:"enabled" json:"enabled"`
 }
 
-// PolicyRule represents a network policy rule
+// PolicyRule represents a network policy rule.
 type PolicyRule struct {
 	// Rule type (allow, deny, redirect)
 	Type string `yaml:"type" json:"type"`
@@ -326,7 +326,7 @@ type PolicyRule struct {
 	Port string `yaml:"port,omitempty" json:"port,omitempty"`
 }
 
-// PolicyAction represents an action to take when policy is applied
+// PolicyAction represents an action to take when policy is applied.
 type PolicyAction struct {
 	// Action type (configure_dns, setup_proxy, connect_vpn, add_route)
 	Type string `yaml:"type" json:"type"`
@@ -338,7 +338,7 @@ type PolicyAction struct {
 	Order int `yaml:"order" json:"order"`
 }
 
-// VPNManager manages VPN connections
+// VPNManager manages VPN connections.
 type VPNManager interface {
 	// AddVPNConnection adds a VPN connection
 	AddVPNConnection(conn *VPNConnection) error
@@ -374,7 +374,7 @@ type VPNManager interface {
 	ConnectByPriority(ctx context.Context, connectionNames []string) error
 }
 
-// HierarchicalVPNManager manages hierarchical VPN connections
+// HierarchicalVPNManager manages hierarchical VPN connections.
 type HierarchicalVPNManager interface {
 	VPNManager
 
@@ -400,7 +400,7 @@ type HierarchicalVPNManager interface {
 	GetVPNHierarchyStatus(ctx context.Context, name string) (*VPNHierarchyStatus, error)
 }
 
-// PolicyManager manages network policies
+// PolicyManager manages network policies.
 type PolicyManager interface {
 	// AddPolicy adds a network policy
 	AddPolicy(policy *NetworkPolicy) error
@@ -439,7 +439,7 @@ type PolicyManager interface {
 	ValidatePolicy(ctx context.Context, policy *NetworkPolicy) error
 }
 
-// SyncManager manages synchronization between cloud providers
+// SyncManager manages synchronization between cloud providers.
 type SyncManager interface {
 	// SyncProfiles synchronizes profiles between providers
 	SyncProfiles(ctx context.Context, source, target Provider, profileNames []string) error
@@ -454,7 +454,7 @@ type SyncManager interface {
 	ResolveSyncConflicts(conflicts []SyncConflict, strategy ConflictStrategy) error
 }
 
-// SyncStatus represents synchronization status
+// SyncStatus represents synchronization status.
 type SyncStatus struct {
 	ProfileName string    `json:"profile_name"`
 	Source      string    `json:"source"`
@@ -464,7 +464,7 @@ type SyncStatus struct {
 	Error       string    `json:"error,omitempty"`
 }
 
-// SyncConflict represents a synchronization conflict
+// SyncConflict represents a synchronization conflict.
 type SyncConflict struct {
 	ProfileName string      `json:"profile_name"`
 	Field       string      `json:"field"`
@@ -472,24 +472,24 @@ type SyncConflict struct {
 	TargetValue interface{} `json:"target_value"`
 }
 
-// ConflictStrategy represents how to resolve sync conflicts
+// ConflictStrategy represents how to resolve sync conflicts.
 type ConflictStrategy string
 
 const (
-	// ConflictStrategySourceWins uses source value in conflicts
+	// ConflictStrategySourceWins uses source value in conflicts.
 	ConflictStrategySourceWins ConflictStrategy = "source_wins"
 
-	// ConflictStrategyTargetWins uses target value in conflicts
+	// ConflictStrategyTargetWins uses target value in conflicts.
 	ConflictStrategyTargetWins ConflictStrategy = "target_wins"
 
-	// ConflictStrategyMerge attempts to merge values
+	// ConflictStrategyMerge attempts to merge values.
 	ConflictStrategyMerge ConflictStrategy = "merge"
 
-	// ConflictStrategyAsk prompts user for each conflict
+	// ConflictStrategyAsk prompts user for each conflict.
 	ConflictStrategyAsk ConflictStrategy = "ask"
 )
 
-// VPN connection state constants
+// VPN connection state constants.
 const (
 	VPNStateDisconnected = "disconnected"
 	VPNStateConnected    = "connected"
@@ -497,7 +497,7 @@ const (
 	VPNStateError        = "error"
 )
 
-// VPNStatus represents the status of a VPN connection
+// VPNStatus represents the status of a VPN connection.
 type VPNStatus struct {
 	// Connection name
 	Name string `json:"name"`
@@ -525,7 +525,7 @@ type VPNStatus struct {
 	HealthCheck *VPNHealthStatus `json:"health_check,omitempty"`
 }
 
-// VPNHealthStatus represents health check status for VPN
+// VPNHealthStatus represents health check status for VPN.
 type VPNHealthStatus struct {
 	// Health status (healthy, unhealthy, unknown)
 	Status string `json:"status"`
@@ -546,7 +546,7 @@ type VPNHealthStatus struct {
 	SuccessCount int `json:"success_count"`
 }
 
-// VPNHierarchy represents a hierarchical VPN configuration
+// VPNHierarchy represents a hierarchical VPN configuration.
 type VPNHierarchy struct {
 	// Hierarchy name
 	Name string `yaml:"name" json:"name"`
@@ -567,7 +567,7 @@ type VPNHierarchy struct {
 	Tags map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
 }
 
-// VPNHierarchyNode represents a node in the VPN hierarchy
+// VPNHierarchyNode represents a node in the VPN hierarchy.
 type VPNHierarchyNode struct {
 	// Node name
 	Name string `yaml:"name" json:"name"`
@@ -591,7 +591,7 @@ type VPNHierarchyNode struct {
 	AutoReconnect bool `yaml:"auto_reconnect,omitempty" json:"auto_reconnect,omitempty"`
 }
 
-// VPNHierarchyPolicy represents policy for VPN hierarchy connections
+// VPNHierarchyPolicy represents policy for VPN hierarchy connections.
 type VPNHierarchyPolicy struct {
 	// Connection strategy (sequential, parallel, smart)
 	Strategy string `yaml:"strategy" json:"strategy"`
@@ -606,7 +606,7 @@ type VPNHierarchyPolicy struct {
 	FailureHandling string `yaml:"failure_handling,omitempty" json:"failure_handling,omitempty"`
 }
 
-// VPNFailoverConfig represents failover configuration for VPN connections
+// VPNFailoverConfig represents failover configuration for VPN connections.
 type VPNFailoverConfig struct {
 	// Enable failover
 	Enabled bool `yaml:"enabled" json:"enabled"`
@@ -624,7 +624,7 @@ type VPNFailoverConfig struct {
 	AutoFailback bool `yaml:"auto_failback,omitempty" json:"auto_failback,omitempty"`
 }
 
-// VPNHierarchyStatus represents the status of a VPN hierarchy
+// VPNHierarchyStatus represents the status of a VPN hierarchy.
 type VPNHierarchyStatus struct {
 	// Hierarchy name
 	Name string `json:"name"`
@@ -648,7 +648,7 @@ type VPNHierarchyStatus struct {
 	TotalConnections int `json:"total_connections"`
 }
 
-// VPNLayerStatus represents the status of a layer in VPN hierarchy
+// VPNLayerStatus represents the status of a layer in VPN hierarchy.
 type VPNLayerStatus struct {
 	// Layer number
 	Layer int `json:"layer"`
@@ -666,7 +666,7 @@ type VPNLayerStatus struct {
 	ConnectedAt time.Time `json:"connected_at,omitempty"`
 }
 
-// NetworkEnvironment represents a network environment configuration
+// NetworkEnvironment represents a network environment configuration.
 type NetworkEnvironment struct {
 	// Environment name
 	Name string `yaml:"name" json:"name"`
@@ -690,7 +690,7 @@ type NetworkEnvironment struct {
 	Tags map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
 }
 
-// PolicyStatus represents the status of a network policy
+// PolicyStatus represents the status of a network policy.
 type PolicyStatus struct {
 	// Policy name
 	PolicyName string `json:"policy_name"`

@@ -15,7 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// newKubernetesNetworkCmd creates the kubernetes-network command
+// newKubernetesNetworkCmd creates the kubernetes-network command.
 func newKubernetesNetworkCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	km := NewKubernetesNetworkManager(logger, configDir)
 
@@ -40,7 +40,7 @@ func newKubernetesNetworkCmd(logger *zap.Logger, configDir string) *cobra.Comman
 	return cmd
 }
 
-// newK8sNetworkCreateCmd creates the create subcommand
+// newK8sNetworkCreateCmd creates the create subcommand.
 func newK8sNetworkCreateCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create [profile-name]",
@@ -90,7 +90,7 @@ func newK8sNetworkCreateCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newK8sNetworkListCmd creates the list subcommand
+// newK8sNetworkListCmd creates the list subcommand.
 func newK8sNetworkListCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -127,7 +127,7 @@ func newK8sNetworkListCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newK8sNetworkApplyCmd creates the apply subcommand
+// newK8sNetworkApplyCmd creates the apply subcommand.
 func newK8sNetworkApplyCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "apply [profile-name]",
@@ -163,7 +163,7 @@ func newK8sNetworkApplyCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newK8sNetworkDeleteCmd creates the delete subcommand
+// newK8sNetworkDeleteCmd creates the delete subcommand.
 func newK8sNetworkDeleteCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "delete [profile-name]",
@@ -199,7 +199,7 @@ func newK8sNetworkDeleteCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newK8sNetworkExportCmd creates the export subcommand
+// newK8sNetworkExportCmd creates the export subcommand.
 func newK8sNetworkExportCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
@@ -267,7 +267,7 @@ func newK8sNetworkExportCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newK8sNetworkPolicyCmd creates the policy subcommand
+// newK8sNetworkPolicyCmd creates the policy subcommand.
 func newK8sNetworkPolicyCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy",
@@ -283,7 +283,7 @@ func newK8sNetworkPolicyCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newPolicyAddCmd creates the policy add subcommand
+// newPolicyAddCmd creates the policy add subcommand.
 func newPolicyAddCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add [profile-name] [policy-name]",
@@ -390,7 +390,7 @@ func newPolicyAddCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newPolicyRemoveCmd creates the policy remove subcommand
+// newPolicyRemoveCmd creates the policy remove subcommand.
 func newPolicyRemoveCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "remove [profile-name] [policy-name]",
@@ -425,7 +425,7 @@ func newPolicyRemoveCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newPolicyShowCmd creates the policy show subcommand
+// newPolicyShowCmd creates the policy show subcommand.
 func newPolicyShowCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show [profile-name] [policy-name]",
@@ -472,7 +472,7 @@ func newPolicyShowCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newK8sNetworkGenerateCmd creates the generate subcommand
+// newK8sNetworkGenerateCmd creates the generate subcommand.
 func newK8sNetworkGenerateCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -528,7 +528,7 @@ func newK8sNetworkGenerateCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newK8sNetworkStatusCmd creates the status subcommand
+// newK8sNetworkStatusCmd creates the status subcommand.
 func newK8sNetworkStatusCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -604,6 +604,7 @@ func createK8sProfileInteractively(km *KubernetesNetworkManager, profile *Kubern
 	if profile.Namespace == "" {
 		fmt.Print("Enter namespace [default]: ")
 		fmt.Scanln(&profile.Namespace)
+
 		if profile.Namespace == "" {
 			profile.Namespace = "default"
 		}
@@ -617,6 +618,7 @@ func createK8sProfileInteractively(km *KubernetesNetworkManager, profile *Kubern
 
 	// Ask if user wants to add a network policy
 	fmt.Print("Add a network policy? (y/N): ")
+
 	var addPolicy string
 	fmt.Scanln(&addPolicy)
 
@@ -631,6 +633,7 @@ func createK8sProfileInteractively(km *KubernetesNetworkManager, profile *Kubern
 		}
 
 		profile.Policies["deny-all"] = denyAllPolicy
+
 		fmt.Println("✅ Added deny-all network policy")
 		fmt.Println("💡 You can add more specific policies using 'gz net-env kubernetes-network policy add'")
 	}
@@ -647,7 +650,9 @@ func printK8sProfilesYAML(profiles []*KubernetesNetworkProfile) error {
 	if err != nil {
 		return err
 	}
+
 	fmt.Print(string(data))
+
 	return nil
 }
 
@@ -681,16 +686,20 @@ func printK8sProfilesTable(profiles []*KubernetesNetworkProfile) error {
 func printK8sProfileDetails(profile *KubernetesNetworkProfile) error {
 	fmt.Printf("Profile: %s\n", profile.Name)
 	fmt.Printf("Namespace: %s\n", profile.Namespace)
+
 	if profile.Description != "" {
 		fmt.Printf("Description: %s\n", profile.Description)
 	}
 
 	fmt.Printf("\nNetwork Policies (%d):\n", len(profile.Policies))
+
 	for name, policy := range profile.Policies {
 		fmt.Printf("  • %s\n", name)
+
 		if len(policy.PodSelector) > 0 {
 			fmt.Printf("    Pod Selector: %v\n", policy.PodSelector)
 		}
+
 		if len(policy.PolicyTypes) > 0 {
 			fmt.Printf("    Policy Types: %s\n", strings.Join(policy.PolicyTypes, ", "))
 		}
@@ -698,6 +707,7 @@ func printK8sProfileDetails(profile *KubernetesNetworkProfile) error {
 
 	if len(profile.Services) > 0 {
 		fmt.Printf("\nServices (%d):\n", len(profile.Services))
+
 		for name, service := range profile.Services {
 			fmt.Printf("  • %s (Type: %s)\n", name, service.Type)
 		}
@@ -705,8 +715,10 @@ func printK8sProfileDetails(profile *KubernetesNetworkProfile) error {
 
 	if len(profile.Ingress) > 0 {
 		fmt.Printf("\nIngress Rules (%d):\n", len(profile.Ingress))
+
 		for name, ingress := range profile.Ingress {
 			fmt.Printf("  • %s\n", name)
+
 			for _, rule := range ingress.Rules {
 				fmt.Printf("    Host: %s\n", rule.Host)
 			}
@@ -720,6 +732,7 @@ func printPolicyDetails(policy *NetworkPolicyConfig) {
 	fmt.Printf("Policy: %s\n", policy.Name)
 
 	fmt.Println("Pod Selector:")
+
 	if len(policy.PodSelector) == 0 {
 		fmt.Println("  <all pods>")
 	} else {
@@ -732,16 +745,21 @@ func printPolicyDetails(policy *NetworkPolicyConfig) {
 
 	if len(policy.Ingress) > 0 {
 		fmt.Printf("\nIngress Rules (%d):\n", len(policy.Ingress))
+
 		for i, rule := range policy.Ingress {
 			fmt.Printf("  Rule %d:\n", i+1)
+
 			if len(rule.From) > 0 {
 				fmt.Println("    From:")
+
 				for _, peer := range rule.From {
 					printPolicyPeer(&peer, "      ")
 				}
 			}
+
 			if len(rule.Ports) > 0 {
 				fmt.Println("    Ports:")
+
 				for _, port := range rule.Ports {
 					printPolicyPort(&port, "      ")
 				}
@@ -751,16 +769,21 @@ func printPolicyDetails(policy *NetworkPolicyConfig) {
 
 	if len(policy.Egress) > 0 {
 		fmt.Printf("\nEgress Rules (%d):\n", len(policy.Egress))
+
 		for i, rule := range policy.Egress {
 			fmt.Printf("  Rule %d:\n", i+1)
+
 			if len(rule.To) > 0 {
 				fmt.Println("    To:")
+
 				for _, peer := range rule.To {
 					printPolicyPeer(&peer, "      ")
 				}
 			}
+
 			if len(rule.Ports) > 0 {
 				fmt.Println("    Ports:")
+
 				for _, port := range rule.Ports {
 					printPolicyPort(&port, "      ")
 				}
@@ -773,11 +796,14 @@ func printPolicyPeer(peer *NetworkPolicyPeer, indent string) {
 	if len(peer.PodSelector) > 0 {
 		fmt.Printf("%sPod Selector: %v\n", indent, peer.PodSelector)
 	}
+
 	if len(peer.NamespaceSelector) > 0 {
 		fmt.Printf("%sNamespace Selector: %v\n", indent, peer.NamespaceSelector)
 	}
+
 	if peer.IPBlock != nil {
 		fmt.Printf("%sIP Block: %s\n", indent, peer.IPBlock.CIDR)
+
 		if len(peer.IPBlock.Except) > 0 {
 			fmt.Printf("%s  Except: %v\n", indent, peer.IPBlock.Except)
 		}
@@ -789,12 +815,15 @@ func printPolicyPort(port *NetworkPolicyPort, indent string) {
 	if port.Protocol != "" {
 		portInfo += port.Protocol + " "
 	}
+
 	if port.Port != nil {
 		portInfo += fmt.Sprintf("Port %d", *port.Port)
 	}
+
 	if port.EndPort != nil {
 		portInfo += fmt.Sprintf("-%d", *port.EndPort)
 	}
+
 	fmt.Println(portInfo)
 }
 
@@ -806,6 +835,7 @@ func printNetworkPoliciesTable(policies []interface{}) {
 
 func parseSelector(selector string) map[string]string {
 	result := make(map[string]string)
+
 	parts := strings.Split(selector, ",")
 	for _, part := range parts {
 		kv := strings.Split(strings.TrimSpace(part), "=")
@@ -813,6 +843,7 @@ func parseSelector(selector string) map[string]string {
 			result[kv[0]] = kv[1]
 		}
 	}
+
 	return result
 }
 
@@ -839,6 +870,7 @@ func parsePorts(portSpecs []string) []NetworkPolicyPort {
 					startPort32 := int32(startPort)
 					port.Port = &startPort32
 				}
+
 				if endPort, err := strconv.ParseInt(rangeParts[1], 10, 32); err == nil {
 					endPort32 := int32(endPort)
 					port.EndPort = &endPort32

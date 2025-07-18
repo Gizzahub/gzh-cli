@@ -84,6 +84,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
+
 				if tt.errContains != "" {
 					assert.Contains(t, err.Error(), tt.errContains)
 				}
@@ -151,6 +152,7 @@ func TestStrategyValidation(t *testing.T) {
 				strategy:   strategy,
 			}
 			cmd := newBulkCloneGithubCmd()
+
 			err := githubOpts.run(cmd, []string{})
 			if strategy != "" {
 				assert.Error(t, err)
@@ -164,6 +166,7 @@ func TestStrategyValidation(t *testing.T) {
 				strategy:   strategy,
 			}
 			gitlabCmd := newBulkCloneGitlabCmd()
+
 			err = gitlabOpts.run(gitlabCmd, []string{})
 			if strategy != "" {
 				assert.Error(t, err)
@@ -414,6 +417,7 @@ func TestMainBulkCloneCommandFlags(t *testing.T) {
 
 		// Check that it has subcommands
 		subcommands := cmd.Commands()
+
 		subcommandNames := make([]string, len(subcommands))
 		for i, subcmd := range subcommands {
 			subcommandNames[i] = subcmd.Use

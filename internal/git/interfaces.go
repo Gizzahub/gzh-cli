@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Repository represents a Git repository
+// Repository represents a Git repository.
 type Repository struct {
 	Path          string            `json:"path"`
 	RemoteURL     string            `json:"remote_url"`
@@ -17,7 +17,7 @@ type Repository struct {
 	LastCommit    *Commit           `json:"last_commit,omitempty"`
 }
 
-// Commit represents a Git commit
+// Commit represents a Git commit.
 type Commit struct {
 	Hash      string    `json:"hash"`
 	ShortHash string    `json:"short_hash"`
@@ -27,7 +27,7 @@ type Commit struct {
 	Date      time.Time `json:"date"`
 }
 
-// CloneOptions represents options for cloning a repository
+// CloneOptions represents options for cloning a repository.
 type CloneOptions struct {
 	URL          string `json:"url"`
 	Path         string `json:"path"`
@@ -41,7 +41,7 @@ type CloneOptions struct {
 	Token        string `json:"token,omitempty"`
 }
 
-// PullOptions represents options for pulling changes
+// PullOptions represents options for pulling changes.
 type PullOptions struct {
 	Remote     string `json:"remote"`
 	Branch     string `json:"branch,omitempty"`
@@ -50,14 +50,14 @@ type PullOptions struct {
 	AllowDirty bool   `json:"allow_dirty"`
 }
 
-// ResetOptions represents options for resetting repository state
+// ResetOptions represents options for resetting repository state.
 type ResetOptions struct {
 	Mode   string `json:"mode"`   // soft, mixed, hard
 	Target string `json:"target"` // commit hash, branch, tag
 	Force  bool   `json:"force"`
 }
 
-// OperationResult represents the result of a Git operation
+// OperationResult represents the result of a Git operation.
 type OperationResult struct {
 	Success      bool              `json:"success"`
 	Message      string            `json:"message"`
@@ -67,7 +67,7 @@ type OperationResult struct {
 	Metadata     map[string]string `json:"metadata,omitempty"`
 }
 
-// GitClient defines the interface for Git operations
+// GitClient defines the interface for Git operations.
 type GitClient interface {
 	// Repository operations
 	Clone(ctx context.Context, options CloneOptions) (*OperationResult, error)
@@ -103,7 +103,7 @@ type GitClient interface {
 	GetStatus(ctx context.Context, repoPath string) (*StatusResult, error)
 }
 
-// StatusResult represents the status of a Git repository
+// StatusResult represents the status of a Git repository.
 type StatusResult struct {
 	Clean          bool     `json:"clean"`
 	Branch         string   `json:"branch"`
@@ -115,7 +115,7 @@ type StatusResult struct {
 	ConflictFiles  []string `json:"conflict_files"`
 }
 
-// StrategyExecutor defines the interface for executing different Git strategies
+// StrategyExecutor defines the interface for executing different Git strategies.
 type StrategyExecutor interface {
 	// Execute strategy on a repository
 	ExecuteStrategy(ctx context.Context, repoPath, strategy string) (*OperationResult, error)
@@ -130,7 +130,7 @@ type StrategyExecutor interface {
 	GetStrategyDescription(strategy string) string
 }
 
-// BulkOperator defines the interface for bulk Git operations
+// BulkOperator defines the interface for bulk Git operations.
 type BulkOperator interface {
 	// Execute operation on multiple repositories
 	ExecuteBulkOperation(ctx context.Context, repoPaths []string, operation BulkOperation) ([]BulkResult, error)
@@ -142,14 +142,14 @@ type BulkOperator interface {
 	GetProgress() <-chan BulkProgress
 }
 
-// BulkOperation represents a bulk operation to execute
+// BulkOperation represents a bulk operation to execute.
 type BulkOperation struct {
 	Type     string                 `json:"type"` // clone, pull, fetch, reset
 	Strategy string                 `json:"strategy,omitempty"`
 	Options  map[string]interface{} `json:"options,omitempty"`
 }
 
-// BulkOptions represents options for bulk operations
+// BulkOptions represents options for bulk operations.
 type BulkOptions struct {
 	Concurrency      int                `json:"concurrency"`
 	Timeout          time.Duration      `json:"timeout"`
@@ -157,7 +157,7 @@ type BulkOptions struct {
 	ProgressCallback func(BulkProgress) `json:"-"`
 }
 
-// BulkResult represents the result of a bulk operation on a repository
+// BulkResult represents the result of a bulk operation on a repository.
 type BulkResult struct {
 	RepoPath string           `json:"repo_path"`
 	Success  bool             `json:"success"`
@@ -166,7 +166,7 @@ type BulkResult struct {
 	Duration time.Duration    `json:"duration"`
 }
 
-// BulkProgress represents progress information for bulk operations
+// BulkProgress represents progress information for bulk operations.
 type BulkProgress struct {
 	TotalRepos      int           `json:"total_repos"`
 	CompletedRepos  int           `json:"completed_repos"`
@@ -177,7 +177,7 @@ type BulkProgress struct {
 	EstimatedTime   time.Duration `json:"estimated_time"`
 }
 
-// AuthManager defines the interface for Git authentication
+// AuthManager defines the interface for Git authentication.
 type AuthManager interface {
 	// Configure SSH authentication
 	ConfigureSSHAuth(ctx context.Context, keyPath, passphrase string) error
@@ -195,7 +195,7 @@ type AuthManager interface {
 	ValidateAuth(ctx context.Context, remoteURL string) error
 }
 
-// GitService provides a unified interface for all Git operations
+// GitService provides a unified interface for all Git operations.
 type GitService interface {
 	GitClient
 	StrategyExecutor

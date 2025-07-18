@@ -14,7 +14,7 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-// RepoConfigClient provides GitHub API operations for repository configuration management
+// RepoConfigClient provides GitHub API operations for repository configuration management.
 type RepoConfigClient struct {
 	token       string
 	baseURL     string
@@ -23,7 +23,7 @@ type RepoConfigClient struct {
 	logger      *ChangeLogger
 }
 
-// Repository represents a GitHub repository with configuration details
+// Repository represents a GitHub repository with configuration details.
 type Repository struct {
 	ID            int64    `json:"id"`
 	Name          string   `json:"name"`
@@ -54,7 +54,7 @@ type Repository struct {
 	DeleteBranchOnMerge bool `json:"delete_branch_on_merge"`
 }
 
-// RepositoryConfig represents comprehensive repository configuration
+// RepositoryConfig represents comprehensive repository configuration.
 type RepositoryConfig struct {
 	Name             string                            `json:"name"`
 	Description      string                            `json:"description"`
@@ -67,7 +67,7 @@ type RepositoryConfig struct {
 	Permissions      PermissionsConfig                 `json:"permissions,omitempty"`
 }
 
-// RepoConfigSettings represents repository feature settings
+// RepoConfigSettings represents repository feature settings.
 type RepoConfigSettings struct {
 	HasIssues           bool   `json:"has_issues"`
 	HasProjects         bool   `json:"has_projects"`
@@ -80,7 +80,7 @@ type RepoConfigSettings struct {
 	DefaultBranch       string `json:"default_branch"`
 }
 
-// BranchProtectionConfig represents branch protection configuration
+// BranchProtectionConfig represents branch protection configuration.
 type BranchProtectionConfig struct {
 	RequiredReviews               int      `json:"required_reviews"`
 	DismissStaleReviews           bool     `json:"dismiss_stale_reviews"`
@@ -96,13 +96,13 @@ type BranchProtectionConfig struct {
 	AllowDeletions                bool     `json:"allow_deletions"`
 }
 
-// PermissionsConfig represents repository permissions configuration
+// PermissionsConfig represents repository permissions configuration.
 type PermissionsConfig struct {
 	Teams map[string]string `json:"teams,omitempty"`
 	Users map[string]string `json:"users,omitempty"`
 }
 
-// BranchProtection represents branch protection rule configuration
+// BranchProtection represents branch protection rule configuration.
 type BranchProtection struct {
 	RequiredStatusChecks           *RequiredStatusChecks           `json:"required_status_checks,omitempty"`
 	EnforceAdmins                  bool                            `json:"enforce_admins"`
@@ -113,13 +113,13 @@ type BranchProtection struct {
 	RequiredConversationResolution *RequiredConversationResolution `json:"required_conversation_resolution,omitempty"`
 }
 
-// RequiredStatusChecks represents required status checks configuration
+// RequiredStatusChecks represents required status checks configuration.
 type RequiredStatusChecks struct {
 	Strict   bool     `json:"strict"`
 	Contexts []string `json:"contexts"`
 }
 
-// RequiredPullRequestReviews represents PR review requirements
+// RequiredPullRequestReviews represents PR review requirements.
 type RequiredPullRequestReviews struct {
 	DismissStaleReviews          bool                  `json:"dismiss_stale_reviews"`
 	RequireCodeOwnerReviews      bool                  `json:"require_code_owner_reviews"`
@@ -127,19 +127,19 @@ type RequiredPullRequestReviews struct {
 	DismissalRestrictions        *UserTeamRestrictions `json:"dismissal_restrictions,omitempty"`
 }
 
-// BranchRestrictions represents branch push restrictions
+// BranchRestrictions represents branch push restrictions.
 type BranchRestrictions struct {
 	Users []string `json:"users"`
 	Teams []string `json:"teams"`
 }
 
-// UserTeamRestrictions represents user/team restrictions
+// UserTeamRestrictions represents user/team restrictions.
 type UserTeamRestrictions struct {
 	Users []string `json:"users"`
 	Teams []string `json:"teams"`
 }
 
-// RepositoryUpdate represents fields that can be updated in a repository
+// RepositoryUpdate represents fields that can be updated in a repository.
 type RepositoryUpdate struct {
 	Name                *string  `json:"name,omitempty"`
 	Description         *string  `json:"description,omitempty"`
@@ -158,7 +158,7 @@ type RepositoryUpdate struct {
 	Topics              []string `json:"topics,omitempty"`
 }
 
-// APIError represents a GitHub API error response
+// APIError represents a GitHub API error response.
 type APIError struct {
 	Message          string `json:"message"`
 	DocumentationURL string `json:"documentation_url"`
@@ -169,7 +169,7 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("GitHub API error (%d): %s", e.StatusCode, e.Message)
 }
 
-// NewRepoConfigClient creates a new GitHub API client for repository configuration
+// NewRepoConfigClient creates a new GitHub API client for repository configuration.
 func NewRepoConfigClient(token string) *RepoConfigClient {
 	return &RepoConfigClient{
 		token:   token,
@@ -181,12 +181,12 @@ func NewRepoConfigClient(token string) *RepoConfigClient {
 	}
 }
 
-// SetLogger sets the change logger for this client
+// SetLogger sets the change logger for this client.
 func (c *RepoConfigClient) SetLogger(logger *ChangeLogger) {
 	c.logger = logger
 }
 
-// SetTimeout configures the HTTP client timeout
+// SetTimeout configures the HTTP client timeout.
 func (c *RepoConfigClient) SetTimeout(timeout time.Duration) {
 	// If the underlying client is our adapter, recreate it with the new timeout
 	c.httpClient = NewHTTPClientAdapterWithClient(&http.Client{
@@ -194,7 +194,7 @@ func (c *RepoConfigClient) SetTimeout(timeout time.Duration) {
 	})
 }
 
-// makeRequest performs an HTTP request with authentication, rate limiting, and retry logic
+// makeRequest performs an HTTP request with authentication, rate limiting, and retry logic.
 func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
 	retries := 0
 	maxRetries := 3
@@ -208,11 +208,13 @@ func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string,
 		url := c.baseURL + path
 
 		var bodyReader io.Reader
+
 		if body != nil {
 			jsonBody, err := json.Marshal(body)
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal request body: %w", err)
 			}
+
 			bodyReader = bytes.NewReader(jsonBody)
 		}
 
@@ -224,9 +226,11 @@ func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string,
 		// Set headers
 		req.Header.Set("Accept", "application/vnd.github.v3+json")
 		req.Header.Set("User-Agent", "gzh-manager-go/1.0")
+
 		if c.token != "" {
 			req.Header.Set("Authorization", "token "+c.token)
 		}
+
 		if body != nil {
 			req.Header.Set("Content-Type", "application/json")
 		}
@@ -259,17 +263,21 @@ func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string,
 			}
 
 			retries++
+
 			continue
 		}
 
 		// Handle API errors
 		if resp.StatusCode >= 400 {
 			defer resp.Body.Close()
+
 			var apiError APIError
 			if err := json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
 				return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, resp.Status)
 			}
+
 			apiError.StatusCode = resp.StatusCode
+
 			return nil, &apiError
 		}
 
@@ -282,18 +290,19 @@ func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string,
 	}
 }
 
-// GetRateLimitStatus returns current rate limit status
+// GetRateLimitStatus returns current rate limit status.
 func (c *RepoConfigClient) GetRateLimitStatus() (int, int, time.Time) {
 	return c.rateLimiter.GetStatus()
 }
 
-// ListRepositories lists all repositories for an organization with pagination
+// ListRepositories lists all repositories for an organization with pagination.
 func (c *RepoConfigClient) ListRepositories(ctx context.Context, org string, options *ListOptions) ([]*Repository, error) {
 	if options == nil {
 		options = &ListOptions{PerPage: 30}
 	}
 
 	var allRepos []*Repository
+
 	page := 1
 
 	for {
@@ -301,9 +310,11 @@ func (c *RepoConfigClient) ListRepositories(ctx context.Context, org string, opt
 		if options.Type != "" {
 			path += "&type=" + options.Type
 		}
+
 		if options.Sort != "" {
 			path += "&sort=" + options.Sort
 		}
+
 		if options.Direction != "" {
 			path += "&direction=" + options.Direction
 		}
@@ -325,13 +336,14 @@ func (c *RepoConfigClient) ListRepositories(ctx context.Context, org string, opt
 		if len(repos) < options.PerPage {
 			break
 		}
+
 		page++
 	}
 
 	return allRepos, nil
 }
 
-// GetRepository gets a specific repository
+// GetRepository gets a specific repository.
 func (c *RepoConfigClient) GetRepository(ctx context.Context, owner, repo string) (*Repository, error) {
 	path := fmt.Sprintf("/repos/%s/%s", owner, repo)
 
@@ -349,7 +361,7 @@ func (c *RepoConfigClient) GetRepository(ctx context.Context, owner, repo string
 	return &repository, nil
 }
 
-// GetRepositoryConfiguration gets comprehensive repository configuration
+// GetRepositoryConfiguration gets comprehensive repository configuration.
 func (c *RepoConfigClient) GetRepositoryConfiguration(ctx context.Context, owner, repo string) (*RepositoryConfig, error) {
 	// Get basic repository info
 	repoData, err := c.GetRepository(ctx, owner, repo)
@@ -382,7 +394,8 @@ func (c *RepoConfigClient) GetRepositoryConfiguration(ctx context.Context, owner
 		protection, err := c.GetBranchProtection(ctx, owner, repo, repoData.DefaultBranch)
 		if err != nil {
 			// Branch protection might not be enabled, which is OK
-			if apiErr, ok := err.(*APIError); !ok || apiErr.StatusCode != 404 {
+			apiErr := &APIError{}
+			if errors.As(err, &apiErr) {
 				return nil, fmt.Errorf("failed to get branch protection: %w", err)
 			}
 		} else {
@@ -395,7 +408,8 @@ func (c *RepoConfigClient) GetRepositoryConfiguration(ctx context.Context, owner
 	teamPerms, userPerms, err := c.GetRepositoryPermissions(ctx, owner, repo)
 	if err != nil {
 		// Permissions might require additional access, which is OK
-		if apiErr, ok := err.(*APIError); !ok || apiErr.StatusCode != 403 {
+		apiErr := &APIError{}
+		if errors.As(err, &apiErr) {
 			return nil, fmt.Errorf("failed to get permissions: %w", err)
 		}
 	} else {
@@ -408,7 +422,7 @@ func (c *RepoConfigClient) GetRepositoryConfiguration(ctx context.Context, owner
 	return config, nil
 }
 
-// UpdateRepository updates repository settings
+// UpdateRepository updates repository settings.
 func (c *RepoConfigClient) UpdateRepository(ctx context.Context, owner, repo string, update *RepositoryUpdate) (*Repository, error) {
 	path := fmt.Sprintf("/repos/%s/%s", owner, repo)
 
@@ -426,12 +440,12 @@ func (c *RepoConfigClient) UpdateRepository(ctx context.Context, owner, repo str
 	return &repository, nil
 }
 
-// UpdateRepositoryConfiguration updates comprehensive repository configuration
+// UpdateRepositoryConfiguration updates comprehensive repository configuration.
 func (c *RepoConfigClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
 	return c.UpdateRepositoryConfigurationWithConfirmation(ctx, owner, repo, config, nil)
 }
 
-// UpdateRepositoryConfigurationWithConfirmation updates repository configuration with optional confirmation prompts
+// UpdateRepositoryConfigurationWithConfirmation updates repository configuration with optional confirmation prompts.
 func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx context.Context, owner, repo string, config *RepositoryConfig, confirmationPrompt *ConfirmationPrompt) error {
 	// Create operation context for logging
 	var opCtx *operationContext
@@ -453,6 +467,7 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 			// If we can't get current config, still proceed but warn
 			// This handles cases like tests or new repositories
 			fmt.Printf("Warning: Could not get current configuration for analysis: %v\n", err)
+
 			if c.logger != nil {
 				c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "configuration",
 					"Could not get current configuration for change analysis", err)
@@ -479,6 +494,7 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 						c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "confirmation",
 							"User confirmation failed", err)
 					}
+
 					return fmt.Errorf("confirmation failed: %w", err)
 				}
 
@@ -487,6 +503,7 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 						c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "confirmation",
 							"Operation cancelled by user", nil)
 					}
+
 					return fmt.Errorf("operation cancelled: %s", result.Reason)
 				}
 
@@ -547,6 +564,7 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 			c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "permissions",
 				"Failed to update repository permissions", err)
 		}
+
 		return fmt.Errorf("failed to update permissions: %w", err)
 	}
 
@@ -559,7 +577,7 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 	return nil
 }
 
-// filterConfigBySkippedRisks creates a filtered configuration that excludes changes with skipped risk levels
+// filterConfigBySkippedRisks creates a filtered configuration that excludes changes with skipped risk levels.
 func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfig *RepositoryConfig, skippedRisks []RiskLevel) *RepositoryConfig {
 	// Create a copy of the target config
 	filteredConfig := *targetConfig
@@ -591,6 +609,7 @@ func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfi
 	// Filter branch protection changes
 	if filteredConfig.BranchProtection != nil {
 		filteredBranchProtection := make(map[string]BranchProtectionConfig)
+
 		for branch, protection := range filteredConfig.BranchProtection {
 			filteredProtection := protection
 
@@ -610,6 +629,7 @@ func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfi
 
 			filteredBranchProtection[branch] = filteredProtection
 		}
+
 		filteredConfig.BranchProtection = filteredBranchProtection
 	}
 
@@ -622,6 +642,7 @@ func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfi
 		for team, perm := range currentConfig.Permissions.Teams {
 			filteredTeams[team] = perm
 		}
+
 		for user, perm := range currentConfig.Permissions.Users {
 			filteredUsers[user] = perm
 		}
@@ -634,6 +655,7 @@ func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfi
 						filteredTeams[team] = perm
 					}
 				}
+
 				if change.Field == "user_permission" {
 					for user, perm := range targetConfig.Permissions.Users {
 						filteredUsers[user] = perm
@@ -651,7 +673,7 @@ func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfi
 	return &filteredConfig
 }
 
-// UpdateBranchProtectionConfig updates branch protection from config format
+// UpdateBranchProtectionConfig updates branch protection from config format.
 func (c *RepoConfigClient) UpdateBranchProtectionConfig(ctx context.Context, owner, repo, branch string, config *BranchProtectionConfig) error {
 	protection := &BranchProtection{
 		EnforceAdmins: config.EnforceAdmins,
@@ -694,10 +716,11 @@ func (c *RepoConfigClient) UpdateBranchProtectionConfig(ctx context.Context, own
 	}
 
 	_, err := c.UpdateBranchProtection(ctx, owner, repo, branch, protection)
+
 	return err
 }
 
-// UpdateRepositoryPermissions updates team and user permissions
+// UpdateRepositoryPermissions updates team and user permissions.
 func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owner, repo string, perms PermissionsConfig) error {
 	// Update team permissions
 	for teamSlug, permission := range perms.Teams {
@@ -708,6 +731,7 @@ func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owne
 		if err != nil {
 			return fmt.Errorf("failed to update team %s permission: %w", teamSlug, err)
 		}
+
 		resp.Body.Close()
 	}
 
@@ -720,13 +744,14 @@ func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owne
 		if err != nil {
 			return fmt.Errorf("failed to update user %s permission: %w", username, err)
 		}
+
 		resp.Body.Close()
 	}
 
 	return nil
 }
 
-// GetBranchProtection gets branch protection rules for a specific branch
+// GetBranchProtection gets branch protection rules for a specific branch.
 func (c *RepoConfigClient) GetBranchProtection(ctx context.Context, owner, repo, branch string) (*BranchProtection, error) {
 	path := fmt.Sprintf("/repos/%s/%s/branches/%s/protection", owner, repo, branch)
 
@@ -744,7 +769,7 @@ func (c *RepoConfigClient) GetBranchProtection(ctx context.Context, owner, repo,
 	return &protection, nil
 }
 
-// UpdateBranchProtection updates branch protection rules
+// UpdateBranchProtection updates branch protection rules.
 func (c *RepoConfigClient) UpdateBranchProtection(ctx context.Context, owner, repo, branch string, protection *BranchProtection) (*BranchProtection, error) {
 	path := fmt.Sprintf("/repos/%s/%s/branches/%s/protection", owner, repo, branch)
 
@@ -762,7 +787,7 @@ func (c *RepoConfigClient) UpdateBranchProtection(ctx context.Context, owner, re
 	return &updatedProtection, nil
 }
 
-// DeleteBranchProtection removes branch protection rules
+// DeleteBranchProtection removes branch protection rules.
 func (c *RepoConfigClient) DeleteBranchProtection(ctx context.Context, owner, repo, branch string) error {
 	path := fmt.Sprintf("/repos/%s/%s/branches/%s/protection", owner, repo, branch)
 
@@ -775,7 +800,7 @@ func (c *RepoConfigClient) DeleteBranchProtection(ctx context.Context, owner, re
 	return nil
 }
 
-// ListOptions represents options for listing operations
+// ListOptions represents options for listing operations.
 type ListOptions struct {
 	PerPage   int    // Number of items per page (default: 30, max: 100)
 	Type      string // Repository type: all, owner, member
@@ -783,7 +808,7 @@ type ListOptions struct {
 	Direction string // Sort direction: asc, desc
 }
 
-// Additional branch protection settings
+// Additional branch protection settings.
 type AllowForcePushes struct {
 	Enabled bool `json:"enabled"`
 }
@@ -796,7 +821,7 @@ type RequiredConversationResolution struct {
 	Enabled bool `json:"enabled"`
 }
 
-// TeamPermission represents a team's permission on a repository
+// TeamPermission represents a team's permission on a repository.
 type TeamPermission struct {
 	ID         int64  `json:"id"`
 	Name       string `json:"name"`
@@ -804,20 +829,21 @@ type TeamPermission struct {
 	Permission string `json:"permission"`
 }
 
-// UserPermission represents a user's permission on a repository
+// UserPermission represents a user's permission on a repository.
 type UserPermission struct {
 	Login      string `json:"login"`
 	ID         int64  `json:"id"`
 	Permission string `json:"permission"`
 }
 
-// GetRepositoryPermissions gets team and user permissions for a repository
+// GetRepositoryPermissions gets team and user permissions for a repository.
 func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, repo string) (map[string]string, map[string]string, error) {
 	teamPerms := make(map[string]string)
 	userPerms := make(map[string]string)
 
 	// Get team permissions
 	teamsPath := fmt.Sprintf("/repos/%s/%s/teams", owner, repo)
+
 	resp, err := c.makeRequest(ctx, "GET", teamsPath, nil)
 	if err != nil {
 		return nil, nil, err
@@ -835,6 +861,7 @@ func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, 
 
 	// Get collaborators (users with direct access)
 	collabsPath := fmt.Sprintf("/repos/%s/%s/collaborators", owner, repo)
+
 	resp, err = c.makeRequest(ctx, "GET", collabsPath, nil)
 	if err != nil {
 		return teamPerms, nil, err
@@ -853,7 +880,7 @@ func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, 
 	return teamPerms, userPerms, nil
 }
 
-// convertBranchProtection converts API BranchProtection to config format
+// convertBranchProtection converts API BranchProtection to config format.
 func convertBranchProtection(bp *BranchProtection) BranchProtectionConfig {
 	config := BranchProtectionConfig{
 		EnforceAdmins: bp.EnforceAdmins,
@@ -879,7 +906,7 @@ func convertBranchProtection(bp *BranchProtection) BranchProtectionConfig {
 	return config
 }
 
-// BulkApplyOptions contains options for bulk application operations
+// BulkApplyOptions contains options for bulk application operations.
 type BulkApplyOptions struct {
 	// DryRun performs a dry run without making actual changes
 	DryRun bool
@@ -895,7 +922,7 @@ type BulkApplyOptions struct {
 	ConfirmationPrompt *ConfirmationPrompt
 }
 
-// BulkApplyResult contains the result of bulk application operation
+// BulkApplyResult contains the result of bulk application operation.
 type BulkApplyResult struct {
 	Total   int
 	Success int
@@ -904,7 +931,7 @@ type BulkApplyResult struct {
 	Errors  map[string]error
 }
 
-// ApplyConfigurationToOrganization applies repository configuration to all repositories in an organization
+// ApplyConfigurationToOrganization applies repository configuration to all repositories in an organization.
 func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context, org string, config *RepositoryConfig, options *BulkApplyOptions) (*BulkApplyResult, error) {
 	if options == nil {
 		options = &BulkApplyOptions{
@@ -920,6 +947,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 	listOptions := &ListOptions{
 		PerPage: 100,
 	}
+
 	repos, err := c.ListRepositories(ctx, org, listOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list repositories in organization %s: %w", org, err)
@@ -945,6 +973,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 
 		for i := 0; i < sampleSize; i++ {
 			repo := filteredRepos[i]
+
 			currentConfig, err := c.GetRepositoryConfiguration(ctx, org, repo.Name)
 			if err != nil {
 				continue // Skip this repo for analysis
@@ -978,6 +1007,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 	g, gCtx := errgroup.WithContext(ctx)
 	// Limit concurrent operations using semaphore
 	sem := semaphore.NewWeighted(int64(options.ConcurrentWorkers))
+
 	var mu sync.Mutex
 
 	for i, repo := range filteredRepos {
@@ -1007,6 +1037,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 
 			// Update result with mutex protection
 			mu.Lock()
+
 			if err != nil {
 				result.Failed++
 				result.Errors[repo.Name] = err
@@ -1018,6 +1049,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 			if options.OnProgress != nil {
 				options.OnProgress(repo.Name, index+1, result.Total, err)
 			}
+
 			mu.Unlock()
 
 			// Don't return the error to errgroup to prevent early termination
@@ -1034,7 +1066,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 	return result, nil
 }
 
-// filterRepositories filters repositories based on include/exclude options
+// filterRepositories filters repositories based on include/exclude options.
 func (c *RepoConfigClient) filterRepositories(repos []*Repository, options *BulkApplyOptions) []*Repository {
 	var filtered []*Repository
 
@@ -1044,6 +1076,7 @@ func (c *RepoConfigClient) filterRepositories(repos []*Repository, options *Bulk
 	}
 
 	includeMap := make(map[string]bool)
+
 	if len(options.IncludeRepositories) > 0 {
 		for _, repo := range options.IncludeRepositories {
 			includeMap[repo] = true
@@ -1072,7 +1105,7 @@ func (c *RepoConfigClient) filterRepositories(repos []*Repository, options *Bulk
 	return filtered
 }
 
-// validateRepositoryConfiguration validates that a configuration can be applied to a repository
+// validateRepositoryConfiguration validates that a configuration can be applied to a repository.
 func (c *RepoConfigClient) validateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
 	// Get current repository configuration to validate changes
 	current, err := c.GetRepositoryConfiguration(ctx, owner, repo)

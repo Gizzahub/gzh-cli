@@ -141,13 +141,16 @@ func (o *alwaysLatestRbenvOptions) run(_ *cobra.Command, args []string) error {
 
 	// Install each version
 	installedCount := 0
+
 	var latestInstalled string
+
 	for _, version := range targetVersions {
 		installed, err := o.installRubyVersion(version)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to install Ruby %s: %v\n", version, err)
 			continue
 		}
+
 		if installed {
 			installedCount++
 			latestInstalled = version
@@ -207,10 +210,12 @@ func (o *alwaysLatestRbenvOptions) updateRbenvInstallation() error {
 		}
 
 		fmt.Println("⚠️  Could not update rbenv automatically")
+
 		return nil
 	}
 
 	fmt.Println("✅ rbenv updated via git")
+
 	return nil
 }
 
@@ -241,12 +246,14 @@ func (o *alwaysLatestRbenvOptions) updateRbenvPlugins() error {
 
 func (o *alwaysLatestRbenvOptions) getAvailableRubyVersions() ([]string, error) {
 	cmd := exec.Command("rbenv", "install", "--list")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list available Ruby versions: %w", err)
 	}
 
 	var versions []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -308,6 +315,7 @@ func (o *alwaysLatestRbenvOptions) filterRequestedVersions(availableVersions []s
 	}
 
 	var filtered []string
+
 	for _, version := range availableVersions {
 		// Check for exact match or major.minor match
 		for requestedVersion := range versionSet {
@@ -323,12 +331,14 @@ func (o *alwaysLatestRbenvOptions) filterRequestedVersions(availableVersions []s
 
 func (o *alwaysLatestRbenvOptions) getInstalledRubyVersions() ([]string, error) {
 	cmd := exec.Command("rbenv", "versions", "--bare")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list installed Ruby versions: %w", err)
 	}
 
 	var versions []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -348,6 +358,7 @@ func (o *alwaysLatestRbenvOptions) findVersionsToInstall(availableVersions, inst
 
 	// Group versions by major.minor
 	versionGroups := make(map[string][]string)
+
 	for _, version := range availableVersions {
 		if installedSet[version] {
 			continue // Skip already installed versions
@@ -367,6 +378,7 @@ func (o *alwaysLatestRbenvOptions) findVersionsToInstall(availableVersions, inst
 		// Install latest version from each major.minor series
 		for _, versions := range versionGroups {
 			sort.Strings(versions)
+
 			if len(versions) > 0 {
 				targetVersions = append(targetVersions, versions[len(versions)-1])
 			}
@@ -374,6 +386,7 @@ func (o *alwaysLatestRbenvOptions) findVersionsToInstall(availableVersions, inst
 	} else {
 		// Minor strategy: only update within existing major.minor series
 		installedMajorMinors := make(map[string]bool)
+
 		for _, installed := range installedVersions {
 			if majorMinor, err := o.extractMajorMinor(installed); err == nil {
 				installedMajorMinors[majorMinor] = true
@@ -383,6 +396,7 @@ func (o *alwaysLatestRbenvOptions) findVersionsToInstall(availableVersions, inst
 		for majorMinor, versions := range versionGroups {
 			if installedMajorMinors[majorMinor] {
 				sort.Strings(versions)
+
 				if len(versions) > 0 {
 					targetVersions = append(targetVersions, versions[len(versions)-1])
 				}
@@ -395,10 +409,12 @@ func (o *alwaysLatestRbenvOptions) findVersionsToInstall(availableVersions, inst
 
 func (o *alwaysLatestRbenvOptions) extractMajorMinor(version string) (string, error) {
 	re := regexp.MustCompile(`^(\d+\.\d+)`)
+
 	matches := re.FindStringSubmatch(version)
 	if len(matches) < 2 {
 		return "", fmt.Errorf("cannot extract major.minor from %s", version)
 	}
+
 	return matches[1], nil
 }
 
@@ -430,12 +446,14 @@ func (o *alwaysLatestRbenvOptions) installRubyVersion(version string) (bool, err
 	// Install the version
 	fmt.Printf("   Installing Ruby %s...\n", version)
 	cmd := exec.Command("rbenv", "install", version)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return false, fmt.Errorf("installation failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Printf("✅ Installed Ruby %s\n", version)
+
 	return true, nil
 }
 
@@ -456,8 +474,11 @@ func (o *alwaysLatestRbenvOptions) isVersionInstalled(version string) (bool, err
 
 func (o *alwaysLatestRbenvOptions) confirmInstallation(version string) bool {
 	fmt.Printf("   Install Ruby %s? (y/N): ", version)
+
 	var response string
+
 	_, _ = fmt.Scanln(&response)
+
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
@@ -470,12 +491,14 @@ func (o *alwaysLatestRbenvOptions) setGlobalVersion(version string) error {
 	}
 
 	cmd := exec.Command("rbenv", "global", version)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to set global version: %w\n%s", err, string(output))
 	}
 
 	fmt.Printf("✅ Ruby %s set as global version\n", version)
+
 	return nil
 }
 
@@ -483,11 +506,13 @@ func (o *alwaysLatestRbenvOptions) rehashRbenv() error {
 	fmt.Println("🔄 Rehashing rbenv shims...")
 
 	cmd := exec.Command("rbenv", "rehash")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("rehash failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ rbenv rehashed successfully")
+
 	return nil
 }

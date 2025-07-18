@@ -13,6 +13,7 @@ import (
 func TestCreateMinimalConfig(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "config-init-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	outputFile := filepath.Join(tmpDir, "test-gzh.yaml")
@@ -97,6 +98,7 @@ func TestGenerateConfigContent(t *testing.T) {
 func TestInitializeConfig_FileExists(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "config-init-exists-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	outputFile := filepath.Join(tmpDir, "existing.yaml")

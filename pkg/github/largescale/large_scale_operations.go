@@ -15,7 +15,7 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-// LargeScaleConfig holds configuration for large-scale repository operations
+// LargeScaleConfig holds configuration for large-scale repository operations.
 type LargeScaleConfig struct {
 	MaxConcurrency    int
 	BatchSize         int
@@ -26,7 +26,7 @@ type LargeScaleConfig struct {
 	MemoryThreshold   int64 // bytes
 }
 
-// DefaultLargeScaleConfig returns optimized configuration for large-scale operations
+// DefaultLargeScaleConfig returns optimized configuration for large-scale operations.
 func DefaultLargeScaleConfig() *LargeScaleConfig {
 	return &LargeScaleConfig{
 		MaxConcurrency:    minInt(runtime.NumCPU()*4, 20), // Scale with CPU but cap at 20
@@ -39,7 +39,7 @@ func DefaultLargeScaleConfig() *LargeScaleConfig {
 	}
 }
 
-// LargeScaleRepository represents a minimal repository structure for large-scale operations
+// LargeScaleRepository represents a minimal repository structure for large-scale operations.
 type LargeScaleRepository struct {
 	Name          string `json:"name"`
 	FullName      string `json:"full_name"`
@@ -51,10 +51,10 @@ type LargeScaleRepository struct {
 	Archived      bool   `json:"archived"`
 }
 
-// ProgressCallback is called periodically during large operations
+// ProgressCallback is called periodically during large operations.
 type ProgressCallback func(processed, total int, current string)
 
-// LargeScaleManager handles large-scale repository operations efficiently
+// LargeScaleManager handles large-scale repository operations efficiently.
 type LargeScaleManager struct {
 	config           *LargeScaleConfig
 	client           *http.Client
@@ -63,7 +63,7 @@ type LargeScaleManager struct {
 	stats            *OperationStats
 }
 
-// OperationStats tracks statistics for large-scale operations
+// OperationStats tracks statistics for large-scale operations.
 type OperationStats struct {
 	TotalRepos     int
 	ProcessedRepos int
@@ -76,7 +76,7 @@ type OperationStats struct {
 	mu             sync.RWMutex
 }
 
-// NewLargeScaleManager creates a new manager for large-scale repository operations
+// NewLargeScaleManager creates a new manager for large-scale repository operations.
 func NewLargeScaleManager(config *LargeScaleConfig, progressCallback ProgressCallback) *LargeScaleManager {
 	if config == nil {
 		config = DefaultLargeScaleConfig()
@@ -93,9 +93,10 @@ func NewLargeScaleManager(config *LargeScaleConfig, progressCallback ProgressCal
 	}
 }
 
-// ListAllRepositories fetches all repositories from an organization with proper pagination
+// ListAllRepositories fetches all repositories from an organization with proper pagination.
 func (m *LargeScaleManager) ListAllRepositories(ctx context.Context, org string) ([]LargeScaleRepository, error) {
 	var allRepos []LargeScaleRepository
+
 	page := 1
 	perPage := m.config.BatchSize
 
@@ -143,7 +144,7 @@ func (m *LargeScaleManager) ListAllRepositories(ctx context.Context, org string)
 	return allRepos, nil
 }
 
-// fetchRepositoryPage fetches a single page of repositories
+// fetchRepositoryPage fetches a single page of repositories.
 func (m *LargeScaleManager) fetchRepositoryPage(ctx context.Context, org string, page, perPage int) ([]LargeScaleRepository, bool, error) {
 	u, err := url.Parse(fmt.Sprintf("https://api.github.com/orgs/%s/repos", org))
 	if err != nil {
@@ -166,6 +167,7 @@ func (m *LargeScaleManager) fetchRepositoryPage(ctx context.Context, org string,
 	if token := getGitHubToken(); token != "" {
 		req.Header.Set("Authorization", "token "+token)
 	}
+
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	resp, err := m.client.Do(req)
@@ -194,7 +196,7 @@ func (m *LargeScaleManager) fetchRepositoryPage(ctx context.Context, org string,
 	return repos, hasMore, nil
 }
 
-// BulkCloneRepositories clones multiple repositories with optimized concurrency
+// BulkCloneRepositories clones multiple repositories with optimized concurrency.
 func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []LargeScaleRepository, targetPath string) error {
 	if len(repos) == 0 {
 		return nil
@@ -207,8 +209,10 @@ func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []L
 	g, ctx := errgroup.WithContext(ctx)
 
 	// Progress tracking
-	var processed int64
-	var mu sync.Mutex
+	var (
+		processed int64
+		mu        sync.Mutex
+	)
 
 	// Progress reporting goroutine
 	progressTicker := time.NewTicker(m.config.ProgressInterval)
@@ -219,7 +223,9 @@ func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []L
 			select {
 			case <-progressTicker.C:
 				mu.Lock()
+
 				current := processed
+
 				mu.Unlock()
 
 				if m.progressCallback != nil {
@@ -268,7 +274,9 @@ func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []L
 			}
 
 			mu.Lock()
+
 			processed++
+
 			mu.Unlock()
 
 			if err != nil {
@@ -277,6 +285,7 @@ func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []L
 			}
 
 			m.updateStats(1, 0, 0)
+
 			return nil
 		})
 
@@ -289,7 +298,7 @@ func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []L
 	return g.Wait()
 }
 
-// cloneRepository clones a single repository with optimization
+// cloneRepository clones a single repository with optimization.
 func (m *LargeScaleManager) cloneRepository(ctx context.Context, repo LargeScaleRepository, targetPath string) error {
 	args := []string{"clone"}
 
@@ -318,6 +327,7 @@ func (m *LargeScaleManager) shouldSkipRepository(repo LargeScaleRepository) bool
 	if repo.Size > 1000000 { // 1GB in KB
 		var memStats runtime.MemStats
 		runtime.ReadMemStats(&memStats)
+
 		if int64(memStats.Alloc) > m.config.MemoryThreshold {
 			return true
 		}
@@ -350,6 +360,7 @@ func (m *LargeScaleManager) calculateOptimalConcurrency(totalRepos int) int {
 func (m *LargeScaleManager) shouldTriggerGC(processed int) bool {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
+
 	return int64(memStats.Alloc) > m.config.MemoryThreshold
 }
 
@@ -383,10 +394,11 @@ func (m *LargeScaleManager) updateAPIStats(resp *http.Response) {
 	}
 }
 
-// GetStats returns current operation statistics
+// GetStats returns current operation statistics.
 func (m *LargeScaleManager) GetStats() OperationStats {
 	m.stats.mu.RLock()
 	defer m.stats.mu.RUnlock()
+
 	return *m.stats
 }
 
@@ -411,6 +423,7 @@ func stringContains(s, substr string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -418,17 +431,18 @@ func minInt(a, b int) int {
 	if a < b {
 		return a
 	}
+
 	return b
 }
 
-// executeGitCommand is a placeholder for actual git command execution
+// executeGitCommand is a placeholder for actual git command execution.
 func executeGitCommand(ctx context.Context, args ...string) error {
 	// This would be implemented with actual git command execution
 	// For now, this is a placeholder
 	return nil
 }
 
-// getGitHubToken retrieves GitHub token from environment
+// getGitHubToken retrieves GitHub token from environment.
 func getGitHubToken() string {
 	// This would retrieve token from environment or configuration
 	// For now, this is a placeholder

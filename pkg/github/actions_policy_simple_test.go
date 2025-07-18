@@ -88,7 +88,7 @@ func TestPolicyViolationStatus_Constants(t *testing.T) {
 	assert.Equal(t, PolicyViolationStatus("ignored"), ViolationStatusIgnored)
 }
 
-// Simple mock logger for basic testing
+// Simple mock logger for basic testing.
 type simpleLogger struct{}
 
 func (l *simpleLogger) Debug(msg string, keysAndValues ...interface{}) {}
@@ -96,7 +96,7 @@ func (l *simpleLogger) Info(msg string, keysAndValues ...interface{})  {}
 func (l *simpleLogger) Warn(msg string, keysAndValues ...interface{})  {}
 func (l *simpleLogger) Error(msg string, keysAndValues ...interface{}) {}
 
-// Simple mock API client for basic testing
+// Simple mock API client for basic testing.
 type simpleAPIClient struct{}
 
 func (m *simpleAPIClient) GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error) {

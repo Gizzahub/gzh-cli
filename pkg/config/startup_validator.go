@@ -11,14 +11,14 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// StartupValidator provides comprehensive configuration validation at application startup
+// StartupValidator provides comprehensive configuration validation at application startup.
 type StartupValidator struct {
 	validator *validator.Validate
 	errors    []StartupValidationError
 	warnings  []StartupValidationWarning
 }
 
-// StartupValidationError represents a validation error with context
+// StartupValidationError represents a validation error with context.
 type StartupValidationError struct {
 	Field   string `json:"field"`
 	Tag     string `json:"tag"`
@@ -26,13 +26,13 @@ type StartupValidationError struct {
 	Message string `json:"message"`
 }
 
-// StartupValidationWarning represents a validation warning
+// StartupValidationWarning represents a validation warning.
 type StartupValidationWarning struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
 }
 
-// StartupValidationResult contains the results of startup validation
+// StartupValidationResult contains the results of startup validation.
 type StartupValidationResult struct {
 	IsValid  bool                       `json:"is_valid"`
 	Errors   []StartupValidationError   `json:"errors"`
@@ -40,7 +40,7 @@ type StartupValidationResult struct {
 	Summary  string                     `json:"summary"`
 }
 
-// NewStartupValidator creates a new startup configuration validator
+// NewStartupValidator creates a new startup configuration validator.
 func NewStartupValidator() *StartupValidator {
 	v := validator.New()
 
@@ -56,7 +56,7 @@ func NewStartupValidator() *StartupValidator {
 	return sv
 }
 
-// registerCustomValidators registers custom validation functions
+// registerCustomValidators registers custom validation functions.
 func (sv *StartupValidator) registerCustomValidators() {
 	// Register custom strategy validator
 	sv.validator.RegisterValidation("strategy", sv.validateStrategy)
@@ -83,7 +83,7 @@ func (sv *StartupValidator) registerCustomValidators() {
 	sv.validator.RegisterValidation("concurrency", sv.validateConcurrency)
 }
 
-// ValidateUnifiedConfig performs comprehensive validation of unified configuration
+// ValidateUnifiedConfig performs comprehensive validation of unified configuration.
 func (sv *StartupValidator) ValidateUnifiedConfig(config *UnifiedConfig) *StartupValidationResult {
 	sv.reset()
 
@@ -101,7 +101,7 @@ func (sv *StartupValidator) ValidateUnifiedConfig(config *UnifiedConfig) *Startu
 	return sv.buildResult()
 }
 
-// ValidateConfig performs validation of regular Config struct
+// ValidateConfig performs validation of regular Config struct.
 func (sv *StartupValidator) ValidateConfig(config *Config) *StartupValidationResult {
 	sv.reset()
 
@@ -116,7 +116,7 @@ func (sv *StartupValidator) ValidateConfig(config *Config) *StartupValidationRes
 	return sv.buildResult()
 }
 
-// validateBusinessRules performs custom business logic validation
+// validateBusinessRules performs custom business logic validation.
 func (sv *StartupValidator) validateBusinessRules(config *UnifiedConfig) {
 	// Validate version format
 	if config.Version != "" && !isValidVersionFormat(config.Version) {
@@ -141,7 +141,7 @@ func (sv *StartupValidator) validateBusinessRules(config *UnifiedConfig) {
 	}
 }
 
-// validateConfigBusinessRules performs validation for regular Config struct
+// validateConfigBusinessRules performs validation for regular Config struct.
 func (sv *StartupValidator) validateConfigBusinessRules(config *Config) {
 	// Validate version
 	if config.Version == "" {
@@ -154,7 +154,7 @@ func (sv *StartupValidator) validateConfigBusinessRules(config *Config) {
 	}
 }
 
-// validateProviderConfig validates a provider configuration
+// validateProviderConfig validates a provider configuration.
 func (sv *StartupValidator) validateProviderConfig(providerName string, provider *ProviderConfig) {
 	fieldPrefix := fmt.Sprintf("Providers[%s]", providerName)
 
@@ -178,7 +178,7 @@ func (sv *StartupValidator) validateProviderConfig(providerName string, provider
 	}
 }
 
-// validateBasicProviderConfig validates basic provider configuration
+// validateBasicProviderConfig validates basic provider configuration.
 func (sv *StartupValidator) validateBasicProviderConfig(providerName string, provider Provider) {
 	fieldPrefix := fmt.Sprintf("Providers[%s]", providerName)
 
@@ -197,7 +197,7 @@ func (sv *StartupValidator) validateBasicProviderConfig(providerName string, pro
 	}
 }
 
-// validateBasicGitTarget validates basic GitTarget configuration
+// validateBasicGitTarget validates basic GitTarget configuration.
 func (sv *StartupValidator) validateBasicGitTarget(fieldPrefix string, target GitTarget) {
 	if target.Name == "" {
 		sv.addError(fieldPrefix+".Name", "required", "", "target name is required")
@@ -214,7 +214,7 @@ func (sv *StartupValidator) validateBasicGitTarget(fieldPrefix string, target Gi
 	}
 }
 
-// validateOrganizationConfig validates an organization configuration
+// validateOrganizationConfig validates an organization configuration.
 func (sv *StartupValidator) validateOrganizationConfig(fieldPrefix string, org *OrganizationConfig) {
 	if org.Name == "" {
 		sv.addError(fieldPrefix+".Name", "required", "", "organization name is required")
@@ -251,7 +251,7 @@ func (sv *StartupValidator) validateOrganizationConfig(fieldPrefix string, org *
 	}
 }
 
-// validateGlobalSettings validates global settings
+// validateGlobalSettings validates global settings.
 func (sv *StartupValidator) validateGlobalSettings(global *GlobalSettings) {
 	// Validate default strategy
 	if global.DefaultStrategy != "" && !isValidStrategy(global.DefaultStrategy) {
@@ -279,7 +279,7 @@ func (sv *StartupValidator) validateGlobalSettings(global *GlobalSettings) {
 	}
 }
 
-// validateTimeoutSettings validates timeout settings
+// validateTimeoutSettings validates timeout settings.
 func (sv *StartupValidator) validateTimeoutSettings(timeouts *TimeoutSettings) {
 	if timeouts.HTTPTimeout > 0 && timeouts.HTTPTimeout < time.Second {
 		sv.addWarning("Global.Timeouts.HTTPTimeout", "HTTP timeout is very short (< 1s), this may cause request failures")
@@ -294,7 +294,7 @@ func (sv *StartupValidator) validateTimeoutSettings(timeouts *TimeoutSettings) {
 	}
 }
 
-// validateConcurrencySettings validates concurrency settings
+// validateConcurrencySettings validates concurrency settings.
 func (sv *StartupValidator) validateConcurrencySettings(concurrency *ConcurrencySettings) {
 	if concurrency.CloneWorkers > 50 {
 		sv.addWarning("Global.Concurrency.CloneWorkers", "Very high clone worker count (> 50) may overwhelm the system or API rate limits")
@@ -309,7 +309,7 @@ func (sv *StartupValidator) validateConcurrencySettings(concurrency *Concurrency
 	}
 }
 
-// checkConfigurationWarnings checks for potential configuration issues
+// checkConfigurationWarnings checks for potential configuration issues.
 func (sv *StartupValidator) checkConfigurationWarnings(config *UnifiedConfig) {
 	// Check if no organizations are configured
 	totalOrgs := 0
@@ -356,7 +356,9 @@ func (sv *StartupValidator) validateRegexPattern(fl validator.FieldLevel) bool {
 	if pattern == "" {
 		return true // Empty patterns are allowed
 	}
+
 	_, err := regexp.Compile(pattern)
+
 	return err == nil
 }
 
@@ -428,6 +430,7 @@ func (sv *StartupValidator) validateTokenFormat(field, token string) {
 		if envVar == "" {
 			sv.addError(field, "envtoken", token, "environment variable name cannot be empty")
 		}
+
 		return
 	}
 
@@ -473,7 +476,8 @@ func (sv *StartupValidator) addWarning(field, message string) {
 }
 
 func (sv *StartupValidator) processValidationErrors(err error) {
-	if validationErrors, ok := err.(validator.ValidationErrors); ok {
+	var validationErrors validator.ValidationErrors
+	if errors.As(err, &validationErrors) {
 		for _, ve := range validationErrors {
 			sv.addError(
 				ve.StructField(),
@@ -516,6 +520,7 @@ func (sv *StartupValidator) buildResult() *StartupValidationResult {
 	isValid := len(sv.errors) == 0
 
 	var summary string
+
 	if isValid {
 		if len(sv.warnings) > 0 {
 			summary = fmt.Sprintf("Configuration is valid with %d warnings", len(sv.warnings))

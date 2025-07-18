@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// CloneState represents the state of a bulk clone operation
+// CloneState represents the state of a bulk clone operation.
 type CloneState struct {
 	// Operation metadata
 	StartTime    time.Time `json:"start_time"`
@@ -32,7 +32,7 @@ type CloneState struct {
 	Status string `json:"status"` // "in_progress", "completed", "failed", "cancelled"
 }
 
-// CompletedRepository represents a successfully processed repository
+// CompletedRepository represents a successfully processed repository.
 type CompletedRepository struct {
 	Name        string    `json:"name"`
 	Path        string    `json:"path"`
@@ -41,7 +41,7 @@ type CompletedRepository struct {
 	Message     string    `json:"message,omitempty"`
 }
 
-// FailedRepository represents a failed repository operation
+// FailedRepository represents a failed repository operation.
 type FailedRepository struct {
 	Name        string    `json:"name"`
 	Path        string    `json:"path"`
@@ -51,12 +51,12 @@ type FailedRepository struct {
 	LastAttempt time.Time `json:"last_attempt"`
 }
 
-// StateManager handles saving and loading clone states
+// StateManager handles saving and loading clone states.
 type StateManager struct {
 	stateDir string
 }
 
-// NewStateManager creates a new state manager
+// NewStateManager creates a new state manager.
 func NewStateManager(stateDir string) *StateManager {
 	if stateDir == "" {
 		// Default to ~/.gzh/state
@@ -69,13 +69,13 @@ func NewStateManager(stateDir string) *StateManager {
 	}
 }
 
-// GetStateFilePath returns the path to the state file for a given operation
+// GetStateFilePath returns the path to the state file for a given operation.
 func (sm *StateManager) GetStateFilePath(provider, organization string) string {
 	filename := fmt.Sprintf("%s_%s.json", provider, organization)
 	return filepath.Join(sm.stateDir, filename)
 }
 
-// SaveState saves the clone state to disk
+// SaveState saves the clone state to disk.
 func (sm *StateManager) SaveState(state *CloneState) error {
 	// Ensure state directory exists
 	if err := os.MkdirAll(sm.stateDir, 0o755); err != nil {
@@ -102,7 +102,7 @@ func (sm *StateManager) SaveState(state *CloneState) error {
 	return nil
 }
 
-// LoadState loads the clone state from disk
+// LoadState loads the clone state from disk.
 func (sm *StateManager) LoadState(provider, organization string) (*CloneState, error) {
 	statePath := sm.GetStateFilePath(provider, organization)
 
@@ -126,7 +126,7 @@ func (sm *StateManager) LoadState(provider, organization string) (*CloneState, e
 	return &state, nil
 }
 
-// DeleteState removes the state file
+// DeleteState removes the state file.
 func (sm *StateManager) DeleteState(provider, organization string) error {
 	statePath := sm.GetStateFilePath(provider, organization)
 
@@ -141,14 +141,15 @@ func (sm *StateManager) DeleteState(provider, organization string) error {
 	return nil
 }
 
-// HasState checks if a state file exists for the given operation
+// HasState checks if a state file exists for the given operation.
 func (sm *StateManager) HasState(provider, organization string) bool {
 	statePath := sm.GetStateFilePath(provider, organization)
 	_, err := os.Stat(statePath)
+
 	return err == nil
 }
 
-// ListStates returns all saved states
+// ListStates returns all saved states.
 func (sm *StateManager) ListStates() ([]CloneState, error) {
 	// Check if state directory exists
 	if _, err := os.Stat(sm.stateDir); os.IsNotExist(err) {
@@ -162,6 +163,7 @@ func (sm *StateManager) ListStates() ([]CloneState, error) {
 	}
 
 	var states []CloneState
+
 	for _, entry := range entries {
 		if !entry.IsDir() && filepath.Ext(entry.Name()) == ".json" {
 			// Read and parse each state file
@@ -182,7 +184,7 @@ func (sm *StateManager) ListStates() ([]CloneState, error) {
 	return states, nil
 }
 
-// NewCloneState creates a new clone state
+// NewCloneState creates a new clone state.
 func NewCloneState(provider, organization, targetPath, strategy string, parallel, maxRetries int) *CloneState {
 	return &CloneState{
 		StartTime:         time.Now(),
@@ -201,7 +203,7 @@ func NewCloneState(provider, organization, targetPath, strategy string, parallel
 	}
 }
 
-// AddCompletedRepository adds a completed repository to the state
+// AddCompletedRepository adds a completed repository to the state.
 func (cs *CloneState) AddCompletedRepository(name, path, operation, message string) {
 	cs.CompletedRepos = append(cs.CompletedRepos, CompletedRepository{
 		Name:        name,
@@ -218,7 +220,7 @@ func (cs *CloneState) AddCompletedRepository(name, path, operation, message stri
 	cs.updateTotalRepositories()
 }
 
-// AddFailedRepository adds a failed repository to the state
+// AddFailedRepository adds a failed repository to the state.
 func (cs *CloneState) AddFailedRepository(name, path, operation, errorMsg string, attempts int) {
 	// Check if this repo already failed and update it
 	for i, failed := range cs.FailedRepos {
@@ -226,6 +228,7 @@ func (cs *CloneState) AddFailedRepository(name, path, operation, errorMsg string
 			cs.FailedRepos[i].Error = errorMsg
 			cs.FailedRepos[i].Attempts = attempts
 			cs.FailedRepos[i].LastAttempt = time.Now()
+
 			return
 		}
 	}
@@ -247,32 +250,34 @@ func (cs *CloneState) AddFailedRepository(name, path, operation, errorMsg string
 	cs.updateTotalRepositories()
 }
 
-// IsCompleted checks if a repository has been completed
+// IsCompleted checks if a repository has been completed.
 func (cs *CloneState) IsCompleted(name string) bool {
 	for _, completed := range cs.CompletedRepos {
 		if completed.Name == name {
 			return true
 		}
 	}
+
 	return false
 }
 
-// IsFailed checks if a repository has failed
+// IsFailed checks if a repository has failed.
 func (cs *CloneState) IsFailed(name string) bool {
 	for _, failed := range cs.FailedRepos {
 		if failed.Name == name {
 			return true
 		}
 	}
+
 	return false
 }
 
-// GetProgress returns the current progress statistics
+// GetProgress returns the current progress statistics.
 func (cs *CloneState) GetProgress() (completed, failed, pending int) {
 	return len(cs.CompletedRepos), len(cs.FailedRepos), len(cs.PendingRepos)
 }
 
-// GetProgressPercent returns the progress as a percentage
+// GetProgressPercent returns the progress as a percentage.
 func (cs *CloneState) GetProgressPercent() float64 {
 	if cs.TotalRepositories == 0 {
 		return 0
@@ -280,21 +285,22 @@ func (cs *CloneState) GetProgressPercent() float64 {
 
 	completed, failed, _ := cs.GetProgress()
 	processed := completed + failed
+
 	return float64(processed) / float64(cs.TotalRepositories) * 100
 }
 
-// SetPendingRepositories sets the list of pending repositories
+// SetPendingRepositories sets the list of pending repositories.
 func (cs *CloneState) SetPendingRepositories(repos []string) {
 	cs.PendingRepos = repos
 	cs.updateTotalRepositories()
 }
 
-// updateTotalRepositories updates the total repository count
+// updateTotalRepositories updates the total repository count.
 func (cs *CloneState) updateTotalRepositories() {
 	cs.TotalRepositories = len(cs.PendingRepos) + len(cs.CompletedRepos) + len(cs.FailedRepos)
 }
 
-// removePendingRepo removes a repository from the pending list
+// removePendingRepo removes a repository from the pending list.
 func (cs *CloneState) removePendingRepo(name string) {
 	for i, repo := range cs.PendingRepos {
 		if repo == name {
@@ -304,24 +310,24 @@ func (cs *CloneState) removePendingRepo(name string) {
 	}
 }
 
-// GetRemainingRepositories returns repositories that still need to be processed
+// GetRemainingRepositories returns repositories that still need to be processed.
 func (cs *CloneState) GetRemainingRepositories() []string {
 	return cs.PendingRepos
 }
 
-// MarkCompleted marks the operation as completed
+// MarkCompleted marks the operation as completed.
 func (cs *CloneState) MarkCompleted() {
 	cs.Status = "completed"
 	cs.LastUpdated = time.Now()
 }
 
-// MarkFailed marks the operation as failed
+// MarkFailed marks the operation as failed.
 func (cs *CloneState) MarkFailed() {
 	cs.Status = "failed"
 	cs.LastUpdated = time.Now()
 }
 
-// MarkCancelled marks the operation as cancelled
+// MarkCancelled marks the operation as cancelled.
 func (cs *CloneState) MarkCancelled() {
 	cs.Status = "cancelled"
 	cs.LastUpdated = time.Now()

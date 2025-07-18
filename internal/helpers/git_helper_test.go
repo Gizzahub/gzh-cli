@@ -19,12 +19,14 @@ func TestCheckGitRepoType(t *testing.T) {
 	os.MkdirAll("tmp/git-commit0", 0o755)
 	os.MkdirAll("tmp/git-commit2", 0o755)
 	os.MkdirAll("tmp/nongit", 0o755)
+
 	cmd = exec.Command("git", "-C", "tmp/git-commit0", "init")
 	cmd.Run()
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "init")
 	cmd.Run()
 	// Create test file using Go's built-in function for cross-platform compatibility
 	os.WriteFile("tmp/git-commit2/test", []byte{}, 0o644)
+
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "add", ".")
 	cmd.Run()
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "commit", "-m", "test1")
@@ -35,6 +37,7 @@ func TestCheckGitRepoType(t *testing.T) {
 	cmd.Run()
 
 	println("============")
+
 	res, _ := CheckGitRepoType("tmp/git-commit0")
 	println("tmp/git-commit0:", res)
 	assert.Equal(t, "empty", res, "they should be equal")

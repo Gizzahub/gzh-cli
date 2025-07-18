@@ -163,6 +163,7 @@ func TestUpdateRepository(t *testing.T) {
 
 		// Verify request body
 		var update RepositoryUpdate
+
 		err := json.NewDecoder(r.Body).Decode(&update)
 		require.NoError(t, err)
 
@@ -254,6 +255,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 
 		// Verify request body
 		var protection BranchProtection
+
 		err := json.NewDecoder(r.Body).Decode(&protection)
 		require.NoError(t, err)
 
@@ -458,6 +460,7 @@ func TestGetRepositoryConfiguration(t *testing.T) {
 				AllowRebaseMerge:    false,
 				DeleteBranchOnMerge: true,
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repo)
 
@@ -478,6 +481,7 @@ func TestGetRepositoryConfiguration(t *testing.T) {
 					Teams: []string{"maintainers"},
 				},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(protection)
 
@@ -486,6 +490,7 @@ func TestGetRepositoryConfiguration(t *testing.T) {
 				{ID: 1, Name: "Maintainers", Slug: "maintainers", Permission: "admin"},
 				{ID: 2, Name: "Developers", Slug: "developers", Permission: "push"},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(teams)
 
@@ -494,6 +499,7 @@ func TestGetRepositoryConfiguration(t *testing.T) {
 				{Login: "john", ID: 100, Permission: "admin"},
 				{Login: "jane", ID: 101, Permission: "write"},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(users)
 
@@ -557,6 +563,7 @@ func TestGetRepositoryPermissions(t *testing.T) {
 				{ID: 1, Name: "Admins", Slug: "admins", Permission: "admin"},
 				{ID: 2, Name: "Writers", Slug: "writers", Permission: "push"},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(teams)
 
@@ -565,6 +572,7 @@ func TestGetRepositoryPermissions(t *testing.T) {
 				{Login: "alice", ID: 200, Permission: "admin"},
 				{Login: "bob", ID: 201, Permission: "read"},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(users)
 
@@ -624,10 +632,12 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestCount++
+
 		switch {
 		case r.URL.Path == "/repos/testorg/testrepo" && r.Method == "PATCH":
 			// Update repository
 			var update RepositoryUpdate
+
 			err := json.NewDecoder(r.Body).Decode(&update)
 			require.NoError(t, err)
 
@@ -642,12 +652,14 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 				HasIssues:   *update.HasIssues,
 				HasWiki:     *update.HasWiki,
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repo)
 
 		case r.URL.Path == "/repos/testorg/testrepo/branches/main/protection" && r.Method == "PUT":
 			// Update branch protection
 			var protection BranchProtection
+
 			err := json.NewDecoder(r.Body).Decode(&protection)
 			require.NoError(t, err)
 
@@ -661,6 +673,7 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 		case strings.HasPrefix(r.URL.Path, "/orgs/testorg/teams/") && r.Method == "PUT":
 			// Update team permission
 			var body map[string]string
+
 			err := json.NewDecoder(r.Body).Decode(&body)
 			require.NoError(t, err)
 			assert.Contains(t, []string{"admin", "push"}, body["permission"])
@@ -669,6 +682,7 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 		case strings.HasPrefix(r.URL.Path, "/repos/testorg/testrepo/collaborators/") && r.Method == "PUT":
 			// Update user permission
 			var body map[string]string
+
 			err := json.NewDecoder(r.Body).Decode(&body)
 			require.NoError(t, err)
 			assert.Contains(t, []string{"admin", "write"}, body["permission"])
@@ -735,6 +749,7 @@ func TestUpdateBranchProtectionConfig(t *testing.T) {
 		assert.Equal(t, "/repos/testorg/testrepo/branches/main/protection", r.URL.Path)
 
 		var protection BranchProtection
+
 		err := json.NewDecoder(r.Body).Decode(&protection)
 		require.NoError(t, err)
 
@@ -778,9 +793,11 @@ func TestUpdateRepositoryPermissions(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestCount++
+
 		assert.Equal(t, "PUT", r.Method)
 
 		var body map[string]string
+
 		err := json.NewDecoder(r.Body).Decode(&body)
 		require.NoError(t, err)
 
@@ -820,8 +837,10 @@ func TestUpdateRepositoryPermissions(t *testing.T) {
 
 func TestApplyConfigurationToOrganization(t *testing.T) {
 	// Track requests made during the test
-	var requestPaths []string
-	var requestCount int
+	var (
+		requestPaths []string
+		requestCount int
+	)
 
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -856,6 +875,7 @@ func TestApplyConfigurationToOrganization(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repos)
+
 			return
 		}
 
@@ -870,6 +890,7 @@ func TestApplyConfigurationToOrganization(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repo)
+
 			return
 		}
 
@@ -931,6 +952,7 @@ func TestApplyConfigurationToOrganization_DryRun(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repos)
+
 			return
 		}
 
@@ -938,6 +960,7 @@ func TestApplyConfigurationToOrganization_DryRun(t *testing.T) {
 			// Teams endpoint - return empty array
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode([]TeamPermission{})
+
 			return
 		}
 
@@ -945,6 +968,7 @@ func TestApplyConfigurationToOrganization_DryRun(t *testing.T) {
 			// Collaborators endpoint - return empty array
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode([]UserPermission{})
+
 			return
 		}
 
@@ -954,6 +978,7 @@ func TestApplyConfigurationToOrganization_DryRun(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(map[string]string{
 				"message": "Branch not protected",
 			})
+
 			return
 		}
 
@@ -972,6 +997,7 @@ func TestApplyConfigurationToOrganization_DryRun(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repo)
+
 			return
 		}
 

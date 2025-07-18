@@ -11,7 +11,7 @@ import (
 )
 
 // TokenAwareGitHubClient provides GitHub API operations with automatic token expiration handling - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 type TokenAwareGitHubClient struct {
 	httpClient     *http.Client
 	baseURL        string
@@ -20,7 +20,7 @@ type TokenAwareGitHubClient struct {
 }
 
 // TokenAwareGitHubClientConfig configures the token-aware GitHub client - DISABLED (recovery package removed)
-// Simple configuration struct without external recovery dependency
+// Simple configuration struct without external recovery dependency.
 type TokenAwareGitHubClientConfig struct {
 	BaseURL        string
 	PrimaryToken   string
@@ -35,7 +35,7 @@ type TokenAwareGitHubClientConfig struct {
 }
 
 // DefaultTokenAwareGitHubClientConfig returns sensible defaults - DISABLED (recovery package removed)
-// Simple configuration without external recovery dependency
+// Simple configuration without external recovery dependency.
 func DefaultTokenAwareGitHubClientConfig() TokenAwareGitHubClientConfig {
 	return TokenAwareGitHubClientConfig{
 		BaseURL: "https://api.github.com",
@@ -44,7 +44,7 @@ func DefaultTokenAwareGitHubClientConfig() TokenAwareGitHubClientConfig {
 }
 
 // NewTokenAwareGitHubClient creates a new token-aware GitHub client - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 func NewTokenAwareGitHubClient(config TokenAwareGitHubClientConfig) (*TokenAwareGitHubClient, error) {
 	timeout := config.Timeout
 	if timeout == 0 {
@@ -62,37 +62,40 @@ func NewTokenAwareGitHubClient(config TokenAwareGitHubClientConfig) (*TokenAware
 }
 
 // Start initializes the token expiration monitoring - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *TokenAwareGitHubClient) Start(ctx context.Context) error {
 	// No token monitoring in simple implementation
 	return nil
 }
 
 // Stop shuts down the token expiration monitoring - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *TokenAwareGitHubClient) Stop() {
 	// No token monitoring in simple implementation
 }
 
 // GetCurrentToken returns the current valid token - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *TokenAwareGitHubClient) GetCurrentToken() (string, error) {
 	if c.primaryToken != "" {
 		return c.primaryToken, nil
 	}
+
 	if len(c.fallbackTokens) > 0 {
 		return c.fallbackTokens[0], nil
 	}
+
 	return "", fmt.Errorf("no tokens available")
 }
 
 // GetTokenStatus returns detailed token status information - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *TokenAwareGitHubClient) GetTokenStatus() (map[string]interface{}, error) {
 	token, err := c.GetCurrentToken()
 	if err != nil {
 		return nil, err
 	}
+
 	return map[string]interface{}{
 		"has_token": token != "",
 		"note":      "recovery package removed, using simple token management",
@@ -100,14 +103,14 @@ func (c *TokenAwareGitHubClient) GetTokenStatus() (map[string]interface{}, error
 }
 
 // RefreshToken manually refreshes the GitHub token - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *TokenAwareGitHubClient) RefreshToken(ctx context.Context) error {
 	// No token refresh in simple implementation
 	return nil
 }
 
 // GetUser retrieves the authenticated user information - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *TokenAwareGitHubClient) GetUser(ctx context.Context) (*GitHubUser, error) {
 	url := fmt.Sprintf("%s/user", c.baseURL)
 
@@ -121,6 +124,7 @@ func (c *TokenAwareGitHubClient) GetUser(ctx context.Context) (*GitHubUser, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
+
 	req.Header.Set("Authorization", "token "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -142,7 +146,7 @@ func (c *TokenAwareGitHubClient) GetUser(ctx context.Context) (*GitHubUser, erro
 	return &user, nil
 }
 
-// GetOrganization retrieves organization information
+// GetOrganization retrieves organization information.
 func (c *TokenAwareGitHubClient) GetOrganization(ctx context.Context, org string) (*GitHubOrganization, error) {
 	url := fmt.Sprintf("%s/orgs/%s", c.baseURL, org)
 
@@ -156,6 +160,7 @@ func (c *TokenAwareGitHubClient) GetOrganization(ctx context.Context, org string
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
+
 	req.Header.Set("Authorization", "token "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -177,7 +182,7 @@ func (c *TokenAwareGitHubClient) GetOrganization(ctx context.Context, org string
 	return &organization, nil
 }
 
-// ListRepositories retrieves repositories for a user or organization
+// ListRepositories retrieves repositories for a user or organization.
 func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner string, page, perPage int) ([]*GitHubRepository, error) {
 	var url string
 
@@ -208,6 +213,7 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
+
 	req.Header.Set("Authorization", "token "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -229,7 +235,7 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 	return repositories, nil
 }
 
-// GetRepository retrieves specific repository information
+// GetRepository retrieves specific repository information.
 func (c *TokenAwareGitHubClient) GetRepository(ctx context.Context, owner, repo string) (*GitHubRepository, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s", c.baseURL, owner, repo)
 
@@ -243,6 +249,7 @@ func (c *TokenAwareGitHubClient) GetRepository(ctx context.Context, owner, repo 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
+
 	req.Header.Set("Authorization", "token "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -264,7 +271,7 @@ func (c *TokenAwareGitHubClient) GetRepository(ctx context.Context, owner, repo 
 	return &repository, nil
 }
 
-// GetDefaultBranch retrieves the default branch for a repository
+// GetDefaultBranch retrieves the default branch for a repository.
 func (c *TokenAwareGitHubClient) GetDefaultBranch(ctx context.Context, owner, repo string) (string, error) {
 	repository, err := c.GetRepository(ctx, owner, repo)
 	if err != nil {
@@ -278,7 +285,7 @@ func (c *TokenAwareGitHubClient) GetDefaultBranch(ctx context.Context, owner, re
 	return repository.DefaultBranch, nil
 }
 
-// GetRateLimit retrieves current rate limit information
+// GetRateLimit retrieves current rate limit information.
 func (c *TokenAwareGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInfo, error) {
 	url := fmt.Sprintf("%s/rate_limit", c.baseURL)
 
@@ -292,6 +299,7 @@ func (c *TokenAwareGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitIn
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
+
 	req.Header.Set("Authorization", "token "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -329,7 +337,7 @@ func (c *TokenAwareGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitIn
 	}, nil
 }
 
-// ValidateTokenPermissions validates token permissions for specific operations
+// ValidateTokenPermissions validates token permissions for specific operations.
 func (c *TokenAwareGitHubClient) ValidateTokenPermissions(ctx context.Context, requiredScopes []string) error {
 	url := fmt.Sprintf("%s/user", c.baseURL)
 
@@ -359,12 +367,14 @@ func (c *TokenAwareGitHubClient) ValidateTokenPermissions(ctx context.Context, r
 	// Check if all required scopes are available
 	for _, requiredScope := range requiredScopes {
 		found := false
+
 		for _, availableScope := range availableScopes {
 			if availableScope == requiredScope {
 				found = true
 				break
 			}
 		}
+
 		if !found {
 			return fmt.Errorf("missing required scope: %s", requiredScope)
 		}
@@ -373,7 +383,7 @@ func (c *TokenAwareGitHubClient) ValidateTokenPermissions(ctx context.Context, r
 	return nil
 }
 
-// handleErrorResponse creates appropriate errors from HTTP responses
+// handleErrorResponse creates appropriate errors from HTTP responses.
 func (c *TokenAwareGitHubClient) handleErrorResponse(resp *http.Response, operation string) error {
 	var errorMsg string
 
@@ -401,7 +411,7 @@ func (c *TokenAwareGitHubClient) handleErrorResponse(resp *http.Response, operat
 	return fmt.Errorf("GitHub API error during %s: %s", operation, errorMsg)
 }
 
-// GitHubUser represents a GitHub user
+// GitHubUser represents a GitHub user.
 type GitHubUser struct {
 	ID          int       `json:"id"`
 	Login       string    `json:"login"`
@@ -417,7 +427,7 @@ type GitHubUser struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// GitHubOrganization represents a GitHub organization
+// GitHubOrganization represents a GitHub organization.
 type GitHubOrganization struct {
 	ID          int       `json:"id"`
 	Login       string    `json:"login"`
@@ -433,7 +443,7 @@ type GitHubOrganization struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// GitHubRepository represents a GitHub repository
+// GitHubRepository represents a GitHub repository.
 type GitHubRepository struct {
 	ID              int       `json:"id"`
 	Name            string    `json:"name"`
@@ -460,24 +470,24 @@ type GitHubRepository struct {
 }
 
 // RateLimitInfo represents GitHub rate limit information - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 type RateLimitInfo struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`
 	ResetTime time.Time `json:"reset_time"`
 }
 
-// IsRateLimited checks if we're close to hitting rate limits
+// IsRateLimited checks if we're close to hitting rate limits.
 func (r *RateLimitInfo) IsRateLimited() bool {
 	return r.Remaining < 10 // Consider rate limited if fewer than 10 requests remaining
 }
 
-// TimeUntilReset returns duration until rate limit resets
+// TimeUntilReset returns duration until rate limit resets.
 func (r *RateLimitInfo) TimeUntilReset() time.Duration {
 	return time.Until(r.ResetTime)
 }
 
-// TokenRateLimitInfo represents GitHub rate limit information for token-aware client
+// TokenRateLimitInfo represents GitHub rate limit information for token-aware client.
 type TokenRateLimitInfo struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`

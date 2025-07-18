@@ -55,9 +55,11 @@ func TestProviderFactory(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create GitHub cloner: %v", err)
 	}
+
 	if githubCloner == nil {
 		t.Error("GitHub cloner should not be nil")
 	}
+
 	if githubCloner.GetName() != "github" {
 		t.Errorf("Expected GitHub cloner name to be 'github', got %s", githubCloner.GetName())
 	}
@@ -67,9 +69,11 @@ func TestProviderFactory(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create GitLab cloner: %v", err)
 	}
+
 	if gitlabCloner == nil {
 		t.Error("GitLab cloner should not be nil")
 	}
+
 	if gitlabCloner.GetName() != "gitlab" {
 		t.Errorf("Expected GitLab cloner name to be 'gitlab', got %s", gitlabCloner.GetName())
 	}
@@ -79,9 +83,11 @@ func TestProviderFactory(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create Gitea cloner: %v", err)
 	}
+
 	if giteaCloner == nil {
 		t.Error("Gitea cloner should not be nil")
 	}
+
 	if giteaCloner.GetName() != "gitea" {
 		t.Errorf("Expected Gitea cloner name to be 'gitea', got %s", giteaCloner.GetName())
 	}
@@ -113,10 +119,12 @@ func TestProviderFactoryWithConfig(t *testing.T) {
 
 	// Test creating a cloner
 	ctx := context.Background()
+
 	cloner, err := factory.CreateCloner(ctx, "github", "test-token")
 	if err != nil {
 		t.Errorf("Failed to create cloner: %v", err)
 	}
+
 	if cloner == nil {
 		t.Error("Cloner should not be nil")
 	}
@@ -143,6 +151,7 @@ func TestProviderFactoryWithEnvironment(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create cloner with custom environment: %v", err)
 	}
+
 	if cloner == nil {
 		t.Error("Cloner should not be nil")
 	}

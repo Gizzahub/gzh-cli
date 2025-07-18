@@ -35,6 +35,7 @@ func createTestWebhookMonitor() (*WebhookMonitor, *mockAPIClient) {
 	}
 
 	monitor := NewWebhookMonitor(logger, apiClient, config)
+
 	return monitor, apiClient
 }
 
@@ -397,6 +398,7 @@ func TestWebhookMonitorConfig_Defaults(t *testing.T) {
 
 func TestWebhookMonitor_Integration(t *testing.T) {
 	monitor, apiClient := createTestWebhookMonitor()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -438,6 +440,7 @@ func BenchmarkWebhookMonitor_UpdateMetrics(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		monitor.updateMetrics()
 	}
@@ -454,6 +457,7 @@ func BenchmarkWebhookMonitor_GetAllWebhookStatuses(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_ = monitor.GetAllWebhookStatuses()
 	}

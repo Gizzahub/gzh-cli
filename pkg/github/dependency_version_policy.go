@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// DependencyVersionPolicyManager manages dependency version policies for repositories
+// DependencyVersionPolicyManager manages dependency version policies for repositories.
 type DependencyVersionPolicyManager struct {
 	logger                Logger
 	apiClient             APIClient
@@ -18,7 +18,7 @@ type DependencyVersionPolicyManager struct {
 	versionConstraints    *VersionConstraintEngine
 }
 
-// DependencyVersionPolicy defines version management policies for dependencies
+// DependencyVersionPolicy defines version management policies for dependencies.
 type DependencyVersionPolicy struct {
 	ID                   string                            `json:"id"`
 	Name                 string                            `json:"name"`
@@ -40,7 +40,7 @@ type DependencyVersionPolicy struct {
 	Version              int                               `json:"version"`
 }
 
-// VersionConstraintRule defines version constraints for dependencies
+// VersionConstraintRule defines version constraints for dependencies.
 type VersionConstraintRule struct {
 	RuleID            string                       `json:"rule_id"`
 	DependencyPattern string                       `json:"dependency_pattern"`
@@ -62,7 +62,7 @@ type VersionConstraintRule struct {
 	Exceptions        []VersionConstraintException `json:"exceptions,omitempty"`
 }
 
-// EcosystemVersionPolicy defines version policies specific to package ecosystems
+// EcosystemVersionPolicy defines version policies specific to package ecosystems.
 type EcosystemVersionPolicy struct {
 	Ecosystem               string                   `json:"ecosystem"`
 	Enabled                 bool                     `json:"enabled"`
@@ -79,7 +79,7 @@ type EcosystemVersionPolicy struct {
 	CustomValidationRules   []CustomValidationRule   `json:"custom_validation_rules"`
 }
 
-// BreakingChangePolicy defines how to handle breaking changes
+// BreakingChangePolicy defines how to handle breaking changes.
 type BreakingChangePolicy struct {
 	AllowBreakingChanges        bool                    `json:"allow_breaking_changes"`
 	BreakingChangeDetection     BreakingChangeDetection `json:"breaking_change_detection"`
@@ -91,7 +91,7 @@ type BreakingChangePolicy struct {
 	CommunicationPlan           CommunicationPlan       `json:"communication_plan"`
 }
 
-// BreakingChangeDetection configures how breaking changes are detected
+// BreakingChangeDetection configures how breaking changes are detected.
 type BreakingChangeDetection struct {
 	Enabled                bool              `json:"enabled"`
 	Methods                []DetectionMethod `json:"methods"`
@@ -103,7 +103,7 @@ type BreakingChangeDetection struct {
 	ThresholdConfiguration ThresholdConfig   `json:"threshold_configuration"`
 }
 
-// CompatibilityCheckConfig defines compatibility checking requirements
+// CompatibilityCheckConfig defines compatibility checking requirements.
 type CompatibilityCheckConfig struct {
 	Enabled                   bool                       `json:"enabled"`
 	MatrixTesting             MatrixTestingConfig        `json:"matrix_testing"`
@@ -116,7 +116,7 @@ type CompatibilityCheckConfig struct {
 	RegressionTesting         RegressionTestingConfig    `json:"regression_testing"`
 }
 
-// RollbackPolicy defines rollback procedures and conditions
+// RollbackPolicy defines rollback procedures and conditions.
 type RollbackPolicy struct {
 	Enabled                 bool                     `json:"enabled"`
 	AutoRollbackTriggers    []RollbackTrigger        `json:"auto_rollback_triggers"`
@@ -129,7 +129,7 @@ type RollbackPolicy struct {
 	PostRollbackAnalysis    bool                     `json:"post_rollback_analysis"`
 }
 
-// VersionUpdateApprovalRequirements defines approval requirements for version updates
+// VersionUpdateApprovalRequirements defines approval requirements for version updates.
 type VersionUpdateApprovalRequirements struct {
 	MajorVersionUpdates VersionApprovalRule            `json:"major_version_updates"`
 	MinorVersionUpdates VersionApprovalRule            `json:"minor_version_updates"`
@@ -141,7 +141,7 @@ type VersionUpdateApprovalRequirements struct {
 	DependencySpecific  map[string]VersionApprovalRule `json:"dependency_specific,omitempty"`
 }
 
-// VersionApprovalRule defines approval rules for version updates
+// VersionApprovalRule defines approval rules for version updates.
 type VersionApprovalRule struct {
 	RequiredApprovers          int                      `json:"required_approvers"`
 	RequiredApprovalTeams      []string                 `json:"required_approval_teams"`
@@ -156,7 +156,7 @@ type VersionApprovalRule struct {
 	EscalationRules            []ApprovalEscalationRule `json:"escalation_rules"`
 }
 
-// TestingRequirements defines testing requirements for version updates
+// TestingRequirements defines testing requirements for version updates.
 type TestingRequirements struct {
 	Enabled                    bool                   `json:"enabled"`
 	UnitTestingRequired        bool                   `json:"unit_testing_required"`
@@ -172,7 +172,7 @@ type TestingRequirements struct {
 	TestDataRequirements       TestDataRequirements   `json:"test_data_requirements"`
 }
 
-// ReleaseWindow defines allowed time windows for dependency updates
+// ReleaseWindow defines allowed time windows for dependency updates.
 type ReleaseWindow struct {
 	ID                   string                     `json:"id"`
 	Name                 string                     `json:"name"`
@@ -188,7 +188,7 @@ type ReleaseWindow struct {
 	EmergencyOverride    EmergencyOverride          `json:"emergency_override"`
 }
 
-// VersionConstraintEngine handles version constraint evaluation and resolution
+// VersionConstraintEngine handles version constraint evaluation and resolution.
 type VersionConstraintEngine struct {
 	logger          Logger
 	semverParser    SemverParser
@@ -196,7 +196,7 @@ type VersionConstraintEngine struct {
 	cacheTTL        time.Duration
 }
 
-// DependencyVersionAnalysis represents analysis results for a dependency version update
+// DependencyVersionAnalysis represents analysis results for a dependency version update.
 type DependencyVersionAnalysis struct {
 	DependencyName         string                       `json:"dependency_name"`
 	Ecosystem              string                       `json:"ecosystem"`
@@ -217,7 +217,7 @@ type DependencyVersionAnalysis struct {
 	ApprovalWorkflow       ApprovalWorkflow             `json:"approval_workflow"`
 }
 
-// Supporting types and enums
+// Supporting types and enums.
 type DependencyUpdateStrategy string
 
 const (
@@ -260,7 +260,7 @@ const (
 	DetectionMethodBinary    DetectionMethod = "binary_diff"
 )
 
-// Supporting structs for complex configurations
+// Supporting structs for complex configurations.
 type VersionConstraintException struct {
 	Repository    string    `json:"repository"`
 	Justification string    `json:"justification"`
@@ -303,7 +303,7 @@ type CustomValidationRule struct {
 	Required   bool                   `json:"required"`
 }
 
-// Additional supporting types
+// Additional supporting types.
 type DetectionRule struct {
 	Pattern     string  `json:"pattern"`
 	Severity    string  `json:"severity"`
@@ -363,7 +363,7 @@ type RegressionTestingConfig struct {
 	TestEnvironment           string   `json:"test_environment"`
 }
 
-// NewDependencyVersionPolicyManager creates a new dependency version policy manager
+// NewDependencyVersionPolicyManager creates a new dependency version policy manager.
 func NewDependencyVersionPolicyManager(logger Logger, apiClient APIClient, dependabotManager *DependabotConfigManager, securityPolicyManager *SecurityUpdatePolicyManager) *DependencyVersionPolicyManager {
 	return &DependencyVersionPolicyManager{
 		logger:                logger,
@@ -375,7 +375,7 @@ func NewDependencyVersionPolicyManager(logger Logger, apiClient APIClient, depen
 	}
 }
 
-// NewVersionConstraintEngine creates a new version constraint engine
+// NewVersionConstraintEngine creates a new version constraint engine.
 func NewVersionConstraintEngine(logger Logger) *VersionConstraintEngine {
 	return &VersionConstraintEngine{
 		logger:          logger,
@@ -385,7 +385,7 @@ func NewVersionConstraintEngine(logger Logger) *VersionConstraintEngine {
 	}
 }
 
-// CreateDependencyVersionPolicy creates a new dependency version policy
+// CreateDependencyVersionPolicy creates a new dependency version policy.
 func (dvm *DependencyVersionPolicyManager) CreateDependencyVersionPolicy(ctx context.Context, policy *DependencyVersionPolicy) error {
 	dvm.logger.Info("Creating dependency version policy", "organization", policy.Organization, "policy", policy.Name)
 
@@ -403,10 +403,11 @@ func (dvm *DependencyVersionPolicyManager) CreateDependencyVersionPolicy(ctx con
 	dvm.policies[policy.ID] = policy
 
 	dvm.logger.Info("Dependency version policy created successfully", "policy_id", policy.ID)
+
 	return nil
 }
 
-// AnalyzeDependencyVersionUpdate analyzes a proposed dependency version update
+// AnalyzeDependencyVersionUpdate analyzes a proposed dependency version update.
 func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx context.Context, policyID string, dependencyName, currentVersion, proposedVersion, ecosystem string) (*DependencyVersionAnalysis, error) {
 	dvm.logger.Debug("Analyzing dependency version update",
 		"policy_id", policyID,
@@ -448,6 +449,7 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 	if err != nil {
 		return nil, fmt.Errorf("failed to check version constraints: %w", err)
 	}
+
 	analysis.VersionConstraintCheck = *constraintResult
 
 	// Perform compatibility analysis
@@ -455,6 +457,7 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 	if err != nil {
 		return nil, fmt.Errorf("failed to perform compatibility analysis: %w", err)
 	}
+
 	analysis.CompatibilityAnalysis = *compatibilityResult
 
 	// Analyze security impact
@@ -462,6 +465,7 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 	if err != nil {
 		return nil, fmt.Errorf("failed to analyze security impact: %w", err)
 	}
+
 	analysis.SecurityImpact = *securityImpact
 
 	// Analyze breaking changes
@@ -469,6 +473,7 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 	if err != nil {
 		return nil, fmt.Errorf("failed to analyze breaking changes: %w", err)
 	}
+
 	analysis.BreakingChangeAnalysis = *breakingChangeResult
 
 	// Determine recommended action
@@ -485,7 +490,7 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 	return analysis, nil
 }
 
-// ApplyVersionConstraints applies version constraints to a list of dependency updates
+// ApplyVersionConstraints applies version constraints to a list of dependency updates.
 func (dvm *DependencyVersionPolicyManager) ApplyVersionConstraints(ctx context.Context, policyID string, updates []DependencyUpdate) (*VersionConstraintApplicationResult, error) {
 	dvm.logger.Info("Applying version constraints", "policy_id", policyID, "updates_count", len(updates))
 
@@ -511,6 +516,7 @@ func (dvm *DependencyVersionPolicyManager) ApplyVersionConstraints(ctx context.C
 				Update: update,
 				Reason: fmt.Sprintf("Analysis failed: %s", err.Error()),
 			})
+
 			continue
 		}
 
@@ -546,9 +552,11 @@ func (dvm *DependencyVersionPolicyManager) validateDependencyVersionPolicy(polic
 	if policy.ID == "" {
 		return fmt.Errorf("policy ID is required")
 	}
+
 	if policy.Name == "" {
 		return fmt.Errorf("policy name is required")
 	}
+
 	if policy.Organization == "" {
 		return fmt.Errorf("organization is required")
 	}
@@ -574,9 +582,11 @@ func (dvm *DependencyVersionPolicyManager) validateVersionConstraintRule(rule *V
 	if rule.RuleID == "" {
 		return fmt.Errorf("rule ID is required")
 	}
+
 	if rule.DependencyPattern == "" {
 		return fmt.Errorf("dependency pattern is required")
 	}
+
 	if rule.Ecosystem == "" {
 		return fmt.Errorf("ecosystem is required")
 	}
@@ -618,9 +628,11 @@ func (dvm *DependencyVersionPolicyManager) determineUpdateType(currentVersion, p
 	if len(currentParts) >= 1 && len(proposedParts) >= 1 && currentParts[0] != proposedParts[0] {
 		return "major"
 	}
+
 	if len(currentParts) >= 2 && len(proposedParts) >= 2 && currentParts[1] != proposedParts[1] {
 		return "minor"
 	}
+
 	return "patch"
 }
 
@@ -648,6 +660,7 @@ func (dvm *DependencyVersionPolicyManager) checkVersionConstraints(policy *Depen
 			if err != nil {
 				return nil, err
 			}
+
 			if matched {
 				if err := dvm.evaluateVersionConstraint(&constraint, proposedVersion, result); err != nil {
 					return nil, err
@@ -713,9 +726,11 @@ func (dvm *DependencyVersionPolicyManager) versionInRange(version string, versio
 	if versionRange.Introduced != "" && dvm.compareVersions(version, versionRange.Introduced) < 0 {
 		return false
 	}
+
 	if versionRange.Fixed != "" && dvm.compareVersions(version, versionRange.Fixed) >= 0 {
 		return false
 	}
+
 	return true
 }
 
@@ -734,6 +749,7 @@ func (dvm *DependencyVersionPolicyManager) performCompatibilityAnalysis(policy *
 	if !policy.CompatibilityChecks.Enabled {
 		result.ChecksSkipped = true
 		result.Reason = "Compatibility checks disabled"
+
 		return result, nil
 	}
 
@@ -815,6 +831,7 @@ func (dvm *DependencyVersionPolicyManager) generateApprovalWorkflow(policy *Depe
 	}
 
 	updateType := analysis.UpdateType
+
 	var approvalRule VersionApprovalRule
 
 	switch updateType {
@@ -841,7 +858,7 @@ func (dvm *DependencyVersionPolicyManager) generateApprovalWorkflow(policy *Depe
 	return workflow
 }
 
-// Supporting types for analysis results
+// Supporting types for analysis results.
 type VersionConstraintCheckResult struct {
 	DependencyName      string    `json:"dependency_name"`
 	ProposedVersion     string    `json:"proposed_version"`
@@ -913,7 +930,7 @@ type ApprovalStep struct {
 	Timeout     time.Duration `json:"timeout,omitempty"`
 }
 
-// Result types
+// Result types.
 type DependencyUpdate struct {
 	Name            string `json:"name"`
 	Ecosystem       string `json:"ecosystem"`
@@ -950,7 +967,7 @@ func NewSemverParser() SemverParser {
 	return SemverParser{}
 }
 
-// Additional supporting types for comprehensive functionality
+// Additional supporting types for comprehensive functionality.
 type CompatibilityTestResult struct {
 	TestName string `json:"test_name"`
 	Passed   bool   `json:"passed"`
@@ -1001,7 +1018,7 @@ type TimelinePhase struct {
 	Required    bool          `json:"required"`
 }
 
-// Additional complex supporting types
+// Additional complex supporting types.
 type PerformanceImpactAnalysis struct {
 	ExpectedImpact        string            `json:"expected_impact"`
 	BenchmarkResults      []BenchmarkResult `json:"benchmark_results"`
@@ -1024,7 +1041,7 @@ type LicenseCompatibilityResult struct {
 	RequiredActions     []string `json:"required_actions"`
 }
 
-// Additional supporting configuration types
+// Additional supporting configuration types.
 type CommunicationPlan struct {
 	Channels             []string      `json:"channels"`
 	NotificationTemplate string        `json:"notification_template"`

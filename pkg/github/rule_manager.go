@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// RuleManager implements the AutomationRuleService interface
+// RuleManager implements the AutomationRuleService interface.
 type RuleManager struct {
 	logger          Logger
 	apiClient       APIClient
@@ -25,7 +25,7 @@ type RuleManager struct {
 	enabledRules    map[string]bool
 }
 
-// RuleStorage defines the interface for persisting automation rules
+// RuleStorage defines the interface for persisting automation rules.
 type RuleStorage interface {
 	// Rule operations
 	CreateRule(ctx context.Context, rule *AutomationRule) error
@@ -47,7 +47,7 @@ type RuleStorage interface {
 	ListExecutions(ctx context.Context, org string, filter *ExecutionFilter) ([]*AutomationRuleExecution, error)
 }
 
-// TemplateStorage defines the interface for persisting rule templates
+// TemplateStorage defines the interface for persisting rule templates.
 type TemplateStorage interface {
 	CreateTemplate(ctx context.Context, template *AutomationRuleTemplate) error
 	GetTemplate(ctx context.Context, templateID string) (*AutomationRuleTemplate, error)
@@ -56,14 +56,14 @@ type TemplateStorage interface {
 	DeleteTemplate(ctx context.Context, templateID string) error
 }
 
-// ActionExecutor defines the interface for executing automation actions
+// ActionExecutor defines the interface for executing automation actions.
 type ActionExecutor interface {
 	ExecuteAction(ctx context.Context, action *AutomationAction, context *AutomationExecutionContext) (*ActionExecutionResult, error)
 	ValidateAction(ctx context.Context, action *AutomationAction) error
 	GetSupportedActions() []ActionType
 }
 
-// NewRuleManager creates a new rule manager instance
+// NewRuleManager creates a new rule manager instance.
 func NewRuleManager(logger Logger, apiClient APIClient, evaluator ConditionEvaluator, actionExecutor ActionExecutor, storage RuleStorage, templateStorage TemplateStorage) *RuleManager {
 	return &RuleManager{
 		logger:          logger,
@@ -77,7 +77,7 @@ func NewRuleManager(logger Logger, apiClient APIClient, evaluator ConditionEvalu
 	}
 }
 
-// CreateRule creates a new automation rule
+// CreateRule creates a new automation rule.
 func (rm *RuleManager) CreateRule(ctx context.Context, rule *AutomationRule) error {
 	rm.logger.Info("Creating automation rule", "rule_id", rule.ID, "organization", rule.Organization)
 
@@ -88,9 +88,11 @@ func (rm *RuleManager) CreateRule(ctx context.Context, rule *AutomationRule) err
 
 	// Set metadata
 	now := time.Now()
+
 	if rule.ID == "" {
 		rule.ID = uuid.New().String()
 	}
+
 	rule.CreatedAt = now
 	rule.UpdatedAt = now
 
@@ -104,6 +106,7 @@ func (rm *RuleManager) CreateRule(ctx context.Context, rule *AutomationRule) err
 	if err != nil {
 		return fmt.Errorf("failed to validate conditions: %w", err)
 	}
+
 	if !validationResult.Valid {
 		return fmt.Errorf("rule conditions are invalid: %v", validationResult.Errors)
 	}
@@ -127,19 +130,22 @@ func (rm *RuleManager) CreateRule(ctx context.Context, rule *AutomationRule) err
 	rm.mu.Unlock()
 
 	rm.logger.Info("Automation rule created successfully", "rule_id", rule.ID)
+
 	return nil
 }
 
-// GetRule retrieves an automation rule by ID
+// GetRule retrieves an automation rule by ID.
 func (rm *RuleManager) GetRule(ctx context.Context, org, ruleID string) (*AutomationRule, error) {
 	cacheKey := rm.cacheKey(org, ruleID)
 
 	// Check cache first
 	rm.mu.RLock()
+
 	if rule, exists := rm.ruleCache[cacheKey]; exists {
 		rm.mu.RUnlock()
 		return rule, nil
 	}
+
 	rm.mu.RUnlock()
 
 	// Load from storage
@@ -157,7 +163,7 @@ func (rm *RuleManager) GetRule(ctx context.Context, org, ruleID string) (*Automa
 	return rule, nil
 }
 
-// ListRules lists automation rules with optional filtering
+// ListRules lists automation rules with optional filtering.
 func (rm *RuleManager) ListRules(ctx context.Context, org string, filter *RuleFilter) ([]*AutomationRule, error) {
 	rules, err := rm.storage.ListRules(ctx, org, filter)
 	if err != nil {
@@ -169,22 +175,25 @@ func (rm *RuleManager) ListRules(ctx context.Context, org string, filter *RuleFi
 		if rules[i].Priority != rules[j].Priority {
 			return rules[i].Priority > rules[j].Priority
 		}
+
 		return rules[i].CreatedAt.Before(rules[j].CreatedAt)
 	})
 
 	// Update cache for retrieved rules
 	rm.mu.Lock()
+
 	for _, rule := range rules {
 		cacheKey := rm.cacheKey(rule.Organization, rule.ID)
 		rm.ruleCache[cacheKey] = rule
 		rm.enabledRules[cacheKey] = rule.Enabled
 	}
+
 	rm.mu.Unlock()
 
 	return rules, nil
 }
 
-// UpdateRule updates an existing automation rule
+// UpdateRule updates an existing automation rule.
 func (rm *RuleManager) UpdateRule(ctx context.Context, rule *AutomationRule) error {
 	rm.logger.Info("Updating automation rule", "rule_id", rule.ID, "organization", rule.Organization)
 
@@ -209,6 +218,7 @@ func (rm *RuleManager) UpdateRule(ctx context.Context, rule *AutomationRule) err
 	if err != nil {
 		return fmt.Errorf("failed to validate conditions: %w", err)
 	}
+
 	if !validationResult.Valid {
 		return fmt.Errorf("rule conditions are invalid: %v", validationResult.Errors)
 	}
@@ -233,10 +243,11 @@ func (rm *RuleManager) UpdateRule(ctx context.Context, rule *AutomationRule) err
 	rm.mu.Unlock()
 
 	rm.logger.Info("Automation rule updated successfully", "rule_id", rule.ID)
+
 	return nil
 }
 
-// DeleteRule deletes an automation rule
+// DeleteRule deletes an automation rule.
 func (rm *RuleManager) DeleteRule(ctx context.Context, org, ruleID string) error {
 	rm.logger.Info("Deleting automation rule", "rule_id", ruleID, "organization", org)
 
@@ -253,20 +264,21 @@ func (rm *RuleManager) DeleteRule(ctx context.Context, org, ruleID string) error
 	rm.mu.Unlock()
 
 	rm.logger.Info("Automation rule deleted successfully", "rule_id", ruleID)
+
 	return nil
 }
 
-// EnableRule enables an automation rule
+// EnableRule enables an automation rule.
 func (rm *RuleManager) EnableRule(ctx context.Context, org, ruleID string) error {
 	return rm.setRuleEnabled(ctx, org, ruleID, true)
 }
 
-// DisableRule disables an automation rule
+// DisableRule disables an automation rule.
 func (rm *RuleManager) DisableRule(ctx context.Context, org, ruleID string) error {
 	return rm.setRuleEnabled(ctx, org, ruleID, false)
 }
 
-// setRuleEnabled sets the enabled status of a rule
+// setRuleEnabled sets the enabled status of a rule.
 func (rm *RuleManager) setRuleEnabled(ctx context.Context, org, ruleID string, enabled bool) error {
 	rule, err := rm.GetRule(ctx, org, ruleID)
 	if err != nil {
@@ -279,7 +291,7 @@ func (rm *RuleManager) setRuleEnabled(ctx context.Context, org, ruleID string, e
 	return rm.UpdateRule(ctx, rule)
 }
 
-// EvaluateConditions evaluates conditions for a rule against an event
+// EvaluateConditions evaluates conditions for a rule against an event.
 func (rm *RuleManager) EvaluateConditions(ctx context.Context, rule *AutomationRule, event *GitHubEvent) (bool, error) {
 	// Check if rule is enabled
 	if !rule.Enabled {
@@ -328,7 +340,7 @@ func (rm *RuleManager) EvaluateConditions(ctx context.Context, rule *AutomationR
 	return result.Matched, nil
 }
 
-// ExecuteRule executes a rule if conditions are met
+// ExecuteRule executes a rule if conditions are met.
 func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, execContext *AutomationExecutionContext) (*AutomationRuleExecution, error) {
 	rm.logger.Info("Executing automation rule", "rule_id", rule.ID, "event_id", execContext.Event.ID)
 
@@ -355,6 +367,7 @@ func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, ex
 
 	// Execute actions
 	var executionErr error
+
 	for _, action := range rule.Actions {
 		if !action.Enabled {
 			rm.logger.Debug("Skipping disabled action", "action_id", action.ID, "rule_id", rule.ID)
@@ -442,7 +455,7 @@ func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, ex
 
 // Rule Set Management
 
-// CreateRuleSet creates a new rule set
+// CreateRuleSet creates a new rule set.
 func (rm *RuleManager) CreateRuleSet(ctx context.Context, ruleSet *AutomationRuleSet) error {
 	rm.logger.Info("Creating rule set", "set_id", ruleSet.ID, "organization", ruleSet.Organization)
 
@@ -453,9 +466,11 @@ func (rm *RuleManager) CreateRuleSet(ctx context.Context, ruleSet *AutomationRul
 
 	// Set metadata
 	now := time.Now()
+
 	if ruleSet.ID == "" {
 		ruleSet.ID = uuid.New().String()
 	}
+
 	ruleSet.CreatedAt = now
 	ruleSet.UpdatedAt = now
 
@@ -469,17 +484,17 @@ func (rm *RuleManager) CreateRuleSet(ctx context.Context, ruleSet *AutomationRul
 	return rm.storage.CreateRuleSet(ctx, ruleSet)
 }
 
-// GetRuleSet retrieves a rule set by ID
+// GetRuleSet retrieves a rule set by ID.
 func (rm *RuleManager) GetRuleSet(ctx context.Context, org, setID string) (*AutomationRuleSet, error) {
 	return rm.storage.GetRuleSet(ctx, org, setID)
 }
 
-// ListRuleSets lists all rule sets for an organization
+// ListRuleSets lists all rule sets for an organization.
 func (rm *RuleManager) ListRuleSets(ctx context.Context, org string) ([]*AutomationRuleSet, error) {
 	return rm.storage.ListRuleSets(ctx, org)
 }
 
-// UpdateRuleSet updates an existing rule set
+// UpdateRuleSet updates an existing rule set.
 func (rm *RuleManager) UpdateRuleSet(ctx context.Context, ruleSet *AutomationRuleSet) error {
 	rm.logger.Info("Updating rule set", "set_id", ruleSet.ID, "organization", ruleSet.Organization)
 
@@ -508,7 +523,7 @@ func (rm *RuleManager) UpdateRuleSet(ctx context.Context, ruleSet *AutomationRul
 	return rm.storage.UpdateRuleSet(ctx, ruleSet)
 }
 
-// DeleteRuleSet deletes a rule set
+// DeleteRuleSet deletes a rule set.
 func (rm *RuleManager) DeleteRuleSet(ctx context.Context, org, setID string) error {
 	rm.logger.Info("Deleting rule set", "set_id", setID, "organization", org)
 	return rm.storage.DeleteRuleSet(ctx, org, setID)
@@ -516,7 +531,7 @@ func (rm *RuleManager) DeleteRuleSet(ctx context.Context, org, setID string) err
 
 // Template Management
 
-// CreateTemplate creates a new rule template
+// CreateTemplate creates a new rule template.
 func (rm *RuleManager) CreateTemplate(ctx context.Context, template *AutomationRuleTemplate) error {
 	rm.logger.Info("Creating rule template", "template_id", template.ID)
 
@@ -527,26 +542,28 @@ func (rm *RuleManager) CreateTemplate(ctx context.Context, template *AutomationR
 
 	// Set metadata
 	now := time.Now()
+
 	if template.ID == "" {
 		template.ID = uuid.New().String()
 	}
+
 	template.CreatedAt = now
 	template.UpdatedAt = now
 
 	return rm.templateStorage.CreateTemplate(ctx, template)
 }
 
-// GetTemplate retrieves a template by ID
+// GetTemplate retrieves a template by ID.
 func (rm *RuleManager) GetTemplate(ctx context.Context, templateID string) (*AutomationRuleTemplate, error) {
 	return rm.templateStorage.GetTemplate(ctx, templateID)
 }
 
-// ListTemplates lists templates by category
+// ListTemplates lists templates by category.
 func (rm *RuleManager) ListTemplates(ctx context.Context, category string) ([]*AutomationRuleTemplate, error) {
 	return rm.templateStorage.ListTemplates(ctx, category)
 }
 
-// UpdateTemplate updates an existing template
+// UpdateTemplate updates an existing template.
 func (rm *RuleManager) UpdateTemplate(ctx context.Context, template *AutomationRuleTemplate) error {
 	rm.logger.Info("Updating rule template", "template_id", template.ID)
 
@@ -568,13 +585,13 @@ func (rm *RuleManager) UpdateTemplate(ctx context.Context, template *AutomationR
 	return rm.templateStorage.UpdateTemplate(ctx, template)
 }
 
-// DeleteTemplate deletes a template
+// DeleteTemplate deletes a template.
 func (rm *RuleManager) DeleteTemplate(ctx context.Context, templateID string) error {
 	rm.logger.Info("Deleting rule template", "template_id", templateID)
 	return rm.templateStorage.DeleteTemplate(ctx, templateID)
 }
 
-// InstantiateTemplate creates a rule from a template with variable substitution
+// InstantiateTemplate creates a rule from a template with variable substitution.
 func (rm *RuleManager) InstantiateTemplate(ctx context.Context, templateID string, variables map[string]interface{}) (*AutomationRule, error) {
 	template, err := rm.GetTemplate(ctx, templateID)
 	if err != nil {
@@ -606,17 +623,17 @@ func (rm *RuleManager) InstantiateTemplate(ctx context.Context, templateID strin
 
 // Execution History
 
-// GetExecution retrieves an execution by ID
+// GetExecution retrieves an execution by ID.
 func (rm *RuleManager) GetExecution(ctx context.Context, executionID string) (*AutomationRuleExecution, error) {
 	return rm.storage.GetExecution(ctx, executionID)
 }
 
-// ListExecutions lists executions with optional filtering
+// ListExecutions lists executions with optional filtering.
 func (rm *RuleManager) ListExecutions(ctx context.Context, org string, filter *ExecutionFilter) ([]*AutomationRuleExecution, error) {
 	return rm.storage.ListExecutions(ctx, org, filter)
 }
 
-// CancelExecution cancels a running execution
+// CancelExecution cancels a running execution.
 func (rm *RuleManager) CancelExecution(ctx context.Context, executionID string) error {
 	execution, err := rm.storage.GetExecution(ctx, executionID)
 	if err != nil {
@@ -637,7 +654,7 @@ func (rm *RuleManager) CancelExecution(ctx context.Context, executionID string) 
 
 // Validation and Testing
 
-// ValidateRule validates a rule structure and configuration
+// ValidateRule validates a rule structure and configuration.
 func (rm *RuleManager) ValidateRule(ctx context.Context, rule *AutomationRule) (*RuleValidationResult, error) {
 	result := &RuleValidationResult{
 		Valid:    true,
@@ -676,6 +693,7 @@ func (rm *RuleManager) ValidateRule(ctx context.Context, rule *AutomationRule) (
 				Suggestion: condErr.Suggestion,
 			})
 		}
+
 		result.Score -= 25
 	}
 
@@ -704,7 +722,7 @@ func (rm *RuleManager) ValidateRule(ctx context.Context, rule *AutomationRule) (
 	return result, nil
 }
 
-// TestRule tests a rule against a sample event
+// TestRule tests a rule against a sample event.
 func (rm *RuleManager) TestRule(ctx context.Context, rule *AutomationRule, testEvent *GitHubEvent) (*RuleTestResult, error) {
 	startTime := time.Now()
 
@@ -757,10 +775,11 @@ func (rm *RuleManager) TestRule(ctx context.Context, rule *AutomationRule, testE
 	}
 
 	result.ExecutionTime = time.Since(startTime)
+
 	return result, nil
 }
 
-// DryRunRule performs a dry run of a rule against an event without executing actions
+// DryRunRule performs a dry run of a rule against an event without executing actions.
 func (rm *RuleManager) DryRunRule(ctx context.Context, ruleID string, event *GitHubEvent) (*RuleTestResult, error) {
 	rule, err := rm.GetRule(ctx, event.Organization, ruleID)
 	if err != nil {
@@ -776,12 +795,15 @@ func (rm *RuleManager) validateRule(rule *AutomationRule) error {
 	if rule.Name == "" {
 		return fmt.Errorf("rule name is required")
 	}
+
 	if rule.Organization == "" {
 		return fmt.Errorf("organization is required")
 	}
+
 	if len(rule.Actions) == 0 {
 		return fmt.Errorf("at least one action is required")
 	}
+
 	return nil
 }
 
@@ -789,12 +811,15 @@ func (rm *RuleManager) validateRuleSet(ruleSet *AutomationRuleSet) error {
 	if ruleSet.Name == "" {
 		return fmt.Errorf("rule set name is required")
 	}
+
 	if ruleSet.Organization == "" {
 		return fmt.Errorf("organization is required")
 	}
+
 	if len(ruleSet.Rules) == 0 {
 		return fmt.Errorf("at least one rule is required")
 	}
+
 	return nil
 }
 
@@ -802,9 +827,11 @@ func (rm *RuleManager) validateTemplate(template *AutomationRuleTemplate) error 
 	if template.Name == "" {
 		return fmt.Errorf("template name is required")
 	}
+
 	if template.Category == "" {
 		return fmt.Errorf("template category is required")
 	}
+
 	return rm.validateRule(&template.Template)
 }
 
@@ -842,6 +869,7 @@ func (rm *RuleManager) getOrganizationInfo(ctx context.Context, org string) (*Or
 func (rm *RuleManager) applyVariableSubstitution(rule *AutomationRule, variables map[string]interface{}, templateVars []TemplateVariable) error {
 	// Create variable map with defaults
 	varMap := make(map[string]interface{})
+
 	for _, tv := range templateVars {
 		if tv.DefaultValue != nil {
 			varMap[tv.Name] = tv.DefaultValue

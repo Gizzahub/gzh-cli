@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// ChangeRecord represents a single configuration change
+// ChangeRecord represents a single configuration change.
 type ChangeRecord struct {
 	ID           string                 `json:"id"`
 	Timestamp    time.Time              `json:"timestamp"`
@@ -24,13 +24,13 @@ type ChangeRecord struct {
 	RequestID    string                 `json:"request_id,omitempty"`
 }
 
-// ChangeLog manages configuration change history
+// ChangeLog manages configuration change history.
 type ChangeLog struct {
 	client *RepoConfigClient
 	store  ChangeStore
 }
 
-// ChangeStore interface for persisting change records
+// ChangeStore interface for persisting change records.
 type ChangeStore interface {
 	Store(ctx context.Context, record *ChangeRecord) error
 	Get(ctx context.Context, id string) (*ChangeRecord, error)
@@ -38,7 +38,7 @@ type ChangeStore interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// ChangeFilter for querying change records
+// ChangeFilter for querying change records.
 type ChangeFilter struct {
 	Organization string
 	Repository   string
@@ -51,7 +51,7 @@ type ChangeFilter struct {
 	Offset       int
 }
 
-// RollbackRequest represents a rollback operation
+// RollbackRequest represents a rollback operation.
 type RollbackRequest struct {
 	ChangeID    string `json:"change_id"`
 	Repository  string `json:"repository"`
@@ -60,7 +60,7 @@ type RollbackRequest struct {
 	Description string `json:"description"`
 }
 
-// RollbackResult contains the result of a rollback operation
+// RollbackResult contains the result of a rollback operation.
 type RollbackResult struct {
 	Success     bool     `json:"success"`
 	ChangeID    string   `json:"change_id"`
@@ -69,7 +69,7 @@ type RollbackResult struct {
 	DryRun      bool     `json:"dry_run"`
 }
 
-// NewChangeLog creates a new change log manager
+// NewChangeLog creates a new change log manager.
 func NewChangeLog(client *RepoConfigClient, store ChangeStore) *ChangeLog {
 	return &ChangeLog{
 		client: client,
@@ -77,11 +77,12 @@ func NewChangeLog(client *RepoConfigClient, store ChangeStore) *ChangeLog {
 	}
 }
 
-// RecordChange creates and stores a change record
+// RecordChange creates and stores a change record.
 func (cl *ChangeLog) RecordChange(ctx context.Context, change *ChangeRecord) error {
 	if change.ID == "" {
 		change.ID = generateChangeID()
 	}
+
 	if change.Timestamp.IsZero() {
 		change.Timestamp = time.Now()
 	}
@@ -89,17 +90,17 @@ func (cl *ChangeLog) RecordChange(ctx context.Context, change *ChangeRecord) err
 	return cl.store.Store(ctx, change)
 }
 
-// GetChange retrieves a specific change record
+// GetChange retrieves a specific change record.
 func (cl *ChangeLog) GetChange(ctx context.Context, id string) (*ChangeRecord, error) {
 	return cl.store.Get(ctx, id)
 }
 
-// ListChanges retrieves change records based on filter criteria
+// ListChanges retrieves change records based on filter criteria.
 func (cl *ChangeLog) ListChanges(ctx context.Context, filter ChangeFilter) ([]*ChangeRecord, error) {
 	return cl.store.List(ctx, filter)
 }
 
-// Rollback performs a rollback operation to revert a previous change
+// Rollback performs a rollback operation to revert a previous change.
 func (cl *ChangeLog) Rollback(ctx context.Context, request *RollbackRequest) (*RollbackResult, error) {
 	result := &RollbackResult{
 		ChangeID: request.ChangeID,
@@ -164,10 +165,11 @@ func (cl *ChangeLog) Rollback(ctx context.Context, request *RollbackRequest) (*R
 
 	result.Success = true
 	result.NewChangeID = rollbackChange.ID
+
 	return result, nil
 }
 
-// performRollback executes the actual rollback operation
+// performRollback executes the actual rollback operation.
 func (cl *ChangeLog) performRollback(ctx context.Context, change *ChangeRecord, request *RollbackRequest) error {
 	switch change.Category {
 	case "settings":
@@ -181,12 +183,13 @@ func (cl *ChangeLog) performRollback(ctx context.Context, change *ChangeRecord, 
 	}
 }
 
-// rollbackRepositorySettings reverts repository settings changes
+// rollbackRepositorySettings reverts repository settings changes.
 func (cl *ChangeLog) rollbackRepositorySettings(ctx context.Context, change *ChangeRecord) error {
 	owner, repo := parseRepositoryFullName(change.Repository)
 
 	// Convert before state to RepositoryUpdate
 	var update RepositoryUpdate
+
 	beforeBytes, err := json.Marshal(change.Before)
 	if err != nil {
 		return fmt.Errorf("failed to marshal before state: %w", err)
@@ -198,22 +201,23 @@ func (cl *ChangeLog) rollbackRepositorySettings(ctx context.Context, change *Cha
 	}
 
 	_, err = cl.client.UpdateRepository(ctx, owner, repo, &update)
+
 	return err
 }
 
-// rollbackBranchProtection reverts branch protection rule changes
+// rollbackBranchProtection reverts branch protection rule changes.
 func (cl *ChangeLog) rollbackBranchProtection(ctx context.Context, change *ChangeRecord) error {
 	// Implementation for branch protection rollback
 	return fmt.Errorf("branch protection rollback not yet implemented")
 }
 
-// rollbackPermissions reverts permission changes
+// rollbackPermissions reverts permission changes.
 func (cl *ChangeLog) rollbackPermissions(ctx context.Context, change *ChangeRecord) error {
 	// Implementation for permissions rollback
 	return fmt.Errorf("permissions rollback not yet implemented")
 }
 
-// RecordRepositoryUpdate creates a change record for repository updates
+// RecordRepositoryUpdate creates a change record for repository updates.
 func (cl *ChangeLog) RecordRepositoryUpdate(ctx context.Context, owner, repo string, before, after *Repository, description string) error {
 	beforeData := convertRepositoryToMap(before)
 	afterData := convertRepositoryToMap(after)
@@ -233,7 +237,7 @@ func (cl *ChangeLog) RecordRepositoryUpdate(ctx context.Context, owner, repo str
 	return cl.RecordChange(ctx, change)
 }
 
-// Helper functions
+// Helper functions.
 func generateChangeID() string {
 	return fmt.Sprintf("ch_%d", time.Now().UnixNano())
 }
@@ -249,6 +253,7 @@ func parseRepositoryFullName(fullName string) (owner, repo string) {
 	if len(parts) >= 2 {
 		return parts[0], parts[1]
 	}
+
 	return "owner", "repo"
 }
 
@@ -260,5 +265,6 @@ func convertRepositoryToMap(repo *Repository) map[string]interface{} {
 	data := make(map[string]interface{})
 	repoBytes, _ := json.Marshal(repo)
 	json.Unmarshal(repoBytes, &data)
+
 	return data
 }

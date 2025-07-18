@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// parseMemorySize parses memory size strings (e.g., "500MB", "2GB") into bytes
+// parseMemorySize parses memory size strings (e.g., "500MB", "2GB") into bytes.
 func parseMemorySize(sizeStr string) (int64, error) {
 	if sizeStr == "" {
 		return 0, fmt.Errorf("empty memory size string")
@@ -17,8 +17,10 @@ func parseMemorySize(sizeStr string) (int64, error) {
 	sizeStr = strings.ToUpper(strings.TrimSpace(sizeStr))
 
 	// Extract numeric part and unit
-	var numStr string
-	var unit string
+	var (
+		numStr string
+		unit   string
+	)
 
 	for i, char := range sizeStr {
 		if char >= '0' && char <= '9' || char == '.' {
@@ -54,7 +56,7 @@ func parseMemorySize(sizeStr string) (int64, error) {
 	}
 }
 
-// MemoryStats represents memory usage statistics
+// MemoryStats represents memory usage statistics.
 type MemoryStats struct {
 	Alloc         uint64      // Currently allocated bytes
 	TotalAlloc    uint64      // Total allocated bytes (cumulative)
@@ -90,7 +92,7 @@ type MemoryStats struct {
 	Timestamp     time.Time   // When stats were collected
 }
 
-// GetMemoryStats returns current memory statistics
+// GetMemoryStats returns current memory statistics.
 func GetMemoryStats() *MemoryStats {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -131,7 +133,7 @@ func GetMemoryStats() *MemoryStats {
 	}
 }
 
-// String returns a human-readable string representation of memory stats
+// String returns a human-readable string representation of memory stats.
 func (ms *MemoryStats) String() string {
 	return fmt.Sprintf(
 		"Memory Stats:\n"+
@@ -154,7 +156,7 @@ func (ms *MemoryStats) String() string {
 	)
 }
 
-// MemoryEfficiency calculates memory usage efficiency metrics
+// MemoryEfficiency calculates memory usage efficiency metrics.
 func (ms *MemoryStats) MemoryEfficiency() map[string]float64 {
 	efficiency := make(map[string]float64)
 
@@ -184,7 +186,7 @@ func (ms *MemoryStats) MemoryEfficiency() map[string]float64 {
 	return efficiency
 }
 
-// OptimizeMemoryUsage performs aggressive memory optimization
+// OptimizeMemoryUsage performs aggressive memory optimization.
 func OptimizeMemoryUsage() *MemoryStats {
 	beforeStats := GetMemoryStats()
 
@@ -209,7 +211,7 @@ func OptimizeMemoryUsage() *MemoryStats {
 	}
 }
 
-// MemoryPressureLevel represents the current memory pressure
+// MemoryPressureLevel represents the current memory pressure.
 type MemoryPressureLevel int
 
 const (
@@ -219,7 +221,7 @@ const (
 	MemoryPressureCritical
 )
 
-// String returns string representation of memory pressure level
+// String returns string representation of memory pressure level.
 func (mpl MemoryPressureLevel) String() string {
 	switch mpl {
 	case MemoryPressureLow:
@@ -235,7 +237,7 @@ func (mpl MemoryPressureLevel) String() string {
 	}
 }
 
-// GetMemoryPressure assesses current memory pressure level
+// GetMemoryPressure assesses current memory pressure level.
 func GetMemoryPressure(maxMemory int64) MemoryPressureLevel {
 	stats := GetMemoryStats()
 
@@ -259,7 +261,7 @@ func GetMemoryPressure(maxMemory int64) MemoryPressureLevel {
 	}
 }
 
-// MemoryWatcher monitors memory usage and triggers cleanup when needed
+// MemoryWatcher monitors memory usage and triggers cleanup when needed.
 type MemoryWatcher struct {
 	maxMemory     int64
 	threshold     float64
@@ -268,7 +270,7 @@ type MemoryWatcher struct {
 	stopChan      chan struct{}
 }
 
-// NewMemoryWatcher creates a new memory watcher
+// NewMemoryWatcher creates a new memory watcher.
 func NewMemoryWatcher(maxMemory int64, threshold float64, checkInterval time.Duration) *MemoryWatcher {
 	return &MemoryWatcher{
 		maxMemory:     maxMemory,
@@ -278,12 +280,12 @@ func NewMemoryWatcher(maxMemory int64, threshold float64, checkInterval time.Dur
 	}
 }
 
-// SetPressureHandler sets the callback function for memory pressure events
+// SetPressureHandler sets the callback function for memory pressure events.
 func (mw *MemoryWatcher) SetPressureHandler(handler func(MemoryPressureLevel)) {
 	mw.onPressure = handler
 }
 
-// Start begins memory monitoring
+// Start begins memory monitoring.
 func (mw *MemoryWatcher) Start() {
 	go func() {
 		ticker := time.NewTicker(mw.checkInterval)
@@ -305,7 +307,7 @@ func (mw *MemoryWatcher) Start() {
 	}()
 }
 
-// Stop stops memory monitoring
+// Stop stops memory monitoring.
 func (mw *MemoryWatcher) Stop() {
 	close(mw.stopChan)
 }

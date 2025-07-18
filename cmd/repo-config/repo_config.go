@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewRepoConfigCmd creates the repo-config command with subcommands
+// NewRepoConfigCmd creates the repo-config command with subcommands.
 func NewRepoConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo-config",
@@ -50,7 +50,7 @@ Examples:
 	return cmd
 }
 
-// Global flags for all repo-config commands
+// Global flags for all repo-config commands.
 type GlobalFlags struct {
 	Organization string
 	ConfigFile   string
@@ -61,7 +61,7 @@ type GlobalFlags struct {
 	Timeout      string
 }
 
-// addGlobalFlags adds common flags to a command
+// addGlobalFlags adds common flags to a command.
 func addGlobalFlags(cmd *cobra.Command, flags *GlobalFlags) {
 	cmd.Flags().StringVarP(&flags.Organization, "org", "o", "", "GitHub organization name")
 	cmd.Flags().StringVarP(&flags.ConfigFile, "config", "c", "", "Configuration file path")
@@ -72,10 +72,10 @@ func addGlobalFlags(cmd *cobra.Command, flags *GlobalFlags) {
 	cmd.Flags().StringVar(&flags.Timeout, "timeout", "30s", "API timeout duration")
 }
 
-// newDashboardCmd creates the dashboard subcommand
+// newDashboardCmd creates the dashboard subcommand.
 func newDashboardCmd() *cobra.Command {
-	var flags GlobalFlags
 	var (
+		flags       GlobalFlags
 		port        int
 		autoRefresh bool
 		refreshRate int
@@ -121,10 +121,10 @@ Examples:
 	return cmd
 }
 
-// newRiskAssessmentCmd creates the risk-assessment subcommand
+// newRiskAssessmentCmd creates the risk-assessment subcommand.
 func newRiskAssessmentCmd() *cobra.Command {
-	var flags GlobalFlags
 	var (
+		flags           GlobalFlags
 		format          string
 		includeArchived bool
 		severityFilter  string

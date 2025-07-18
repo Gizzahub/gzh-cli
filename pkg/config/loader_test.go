@@ -51,7 +51,9 @@ func TestFileExists(t *testing.T) {
 	// Create a temporary file
 	tmpFile, err := os.CreateTemp("", "test-*.yaml")
 	require.NoError(t, err)
+
 	defer os.Remove(tmpFile.Name())
+
 	tmpFile.Close()
 
 	tests := []struct {
@@ -93,6 +95,7 @@ providers:
 
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
+
 	defer os.Remove(tmpFile.Name())
 
 	_, err = tmpFile.WriteString(configContent)
@@ -109,6 +112,7 @@ providers:
 func TestCreateDefaultConfig(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "test-config-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	configPath := filepath.Join(tmpDir, "gzh.yaml")
@@ -116,6 +120,7 @@ func TestCreateDefaultConfig(t *testing.T) {
 	// Set environment variables for test
 	os.Setenv("GITHUB_TOKEN", "test-github-token")
 	os.Setenv("GITLAB_TOKEN", "test-gitlab-token")
+
 	defer func() {
 		os.Unsetenv("GITHUB_TOKEN")
 		os.Unsetenv("GITLAB_TOKEN")
@@ -138,12 +143,15 @@ func TestFindConfigFile(t *testing.T) {
 	// Create a temporary config file in current directory
 	tmpFile, err := os.CreateTemp(".", "gzh-*.yaml")
 	require.NoError(t, err)
+
 	defer os.Remove(tmpFile.Name())
+
 	tmpFile.Close()
 
 	// Temporarily modify ConfigSearchPaths to include our test file
 	originalPaths := ConfigSearchPaths
 	ConfigSearchPaths = []string{tmpFile.Name()}
+
 	defer func() { ConfigSearchPaths = originalPaths }()
 
 	foundPath, err := FindConfigFile()
@@ -164,6 +172,7 @@ providers:
 
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
+
 	defer os.Remove(tmpFile.Name())
 
 	_, err = tmpFile.WriteString(configContent)
@@ -223,6 +232,7 @@ providers:
 		t.Run(tt.name, func(t *testing.T) {
 			tmpFile, err := os.CreateTemp("", "test-*.yaml")
 			require.NoError(t, err)
+
 			defer os.Remove(tmpFile.Name())
 
 			_, err = tmpFile.WriteString(tt.content)
@@ -231,6 +241,7 @@ providers:
 
 			result, err := ValidateConfigFile(tmpFile.Name())
 			assert.NoError(t, err) // ValidateConfigFile should not return an error, validation results are in the result
+
 			if tt.wantErr {
 				assert.False(t, result.Valid)
 				assert.NotEmpty(t, result.Errors)

@@ -16,6 +16,7 @@ func TestAlwaysLatestCommand(t *testing.T) {
 
 		// Check that it has subcommands
 		subcommands := cmd.Commands()
+
 		subcommandNames := make([]string, len(subcommands))
 		for i, subcmd := range subcommands {
 			subcommandNames[i] = subcmd.Use
@@ -193,7 +194,7 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 }
 
 // Integration tests would require asdf to be installed and would be more complex
-// These are unit tests for the core logic and parsing functions
+// These are unit tests for the core logic and parsing functions.
 func TestAsdfIntegration(t *testing.T) {
 	t.Run("asdf not installed scenario", func(t *testing.T) {
 		opts := &alwaysLatestAsdfOptions{}

@@ -12,7 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-// TestMockFactoryUsage demonstrates how to use the mock factory
+// TestMockFactoryUsage demonstrates how to use the mock factory.
 func TestMockFactoryUsage(t *testing.T) {
 	// Create controller
 	ctrl := gomock.NewController(t)
@@ -166,7 +166,7 @@ func TestMockFactoryUsage(t *testing.T) {
 	})
 }
 
-// TestMockFactoryBuilder demonstrates the builder pattern usage
+// TestMockFactoryBuilder demonstrates the builder pattern usage.
 func TestMockFactoryBuilder(t *testing.T) {
 	// Create factory using builder
 	factoryBuilder := NewMockFactoryBuilder(t)
@@ -184,7 +184,7 @@ func TestMockFactoryBuilder(t *testing.T) {
 	assert.Equal(t, 5000, rateLimit.Limit)
 }
 
-// TestCustomMockExpectations demonstrates custom mock expectations
+// TestCustomMockExpectations demonstrates custom mock expectations.
 func TestCustomMockExpectations(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -233,7 +233,7 @@ func TestCustomMockExpectations(t *testing.T) {
 	})
 }
 
-// TestMockLifecycle demonstrates proper mock lifecycle management
+// TestMockLifecycle demonstrates proper mock lifecycle management.
 func TestMockLifecycle(t *testing.T) {
 	t.Run("Controller Per Test", func(t *testing.T) {
 		// Each test should have its own controller
@@ -266,7 +266,7 @@ func TestMockLifecycle(t *testing.T) {
 	})
 }
 
-// BenchmarkMockCreation benchmarks mock creation performance
+// BenchmarkMockCreation benchmarks mock creation performance.
 func BenchmarkMockCreation(b *testing.B) {
 	ctrl := gomock.NewController(b)
 	defer ctrl.Finish()

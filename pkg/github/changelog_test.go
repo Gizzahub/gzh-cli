@@ -14,6 +14,7 @@ func TestFileStore(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
@@ -68,6 +69,7 @@ func TestChangeLog(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
@@ -115,6 +117,7 @@ func TestChangeFilter(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
@@ -214,6 +217,7 @@ func TestChangeFilter(t *testing.T) {
 func TestFileStoreStats(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
@@ -251,6 +255,7 @@ func TestFileStoreStats(t *testing.T) {
 func TestRollbackRequest(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)

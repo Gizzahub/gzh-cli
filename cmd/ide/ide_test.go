@@ -26,6 +26,7 @@ func TestNewIDECmd(t *testing.T) {
 
 	// Verify subcommands exist
 	var monitorCmd, listCmd, fixSyncCmd *cobra.Command
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "monitor":

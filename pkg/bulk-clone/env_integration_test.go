@@ -6,7 +6,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-// TestEnvironmentAbstraction demonstrates the environment abstraction working
+// TestEnvironmentAbstraction demonstrates the environment abstraction working.
 func TestEnvironmentAbstraction(t *testing.T) {
 	// Test with mock environment
 	mockEnv := env.NewMockEnvironment(map[string]string{
@@ -35,7 +35,7 @@ func TestEnvironmentAbstraction(t *testing.T) {
 	}
 }
 
-// TestEnvironmentAbstractionBefore demonstrates what the code looked like before abstraction
+// TestEnvironmentAbstractionBefore demonstrates what the code looked like before abstraction.
 func TestEnvironmentAbstractionBefore(t *testing.T) {
 	// Before: Direct os.Getenv() call (this would be hard to test)
 	// configPath := os.Getenv("GZH_CONFIG_PATH")

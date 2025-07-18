@@ -601,7 +601,7 @@ func TestSecurityUpdatePolicyManager_FloatComparison(t *testing.T) {
 	}
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkEvaluateSecurityUpdate(b *testing.B) {
 	manager := createTestSecurityPolicyManager()
 	ctx := context.Background()
@@ -622,6 +622,7 @@ func BenchmarkEvaluateSecurityUpdate(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.EvaluateSecurityUpdate(ctx, policy.ID, update)
 	}
@@ -647,16 +648,18 @@ func BenchmarkConditionEvaluation(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.evaluateCondition(condition, vuln, update)
 	}
 }
 
-// Helper functions
+// Helper functions.
 func createTestSecurityPolicyManager() *SecurityUpdatePolicyManager {
 	logger := &simpleLogger{}
 	apiClient := &simpleAPIClient{}
 	dependabotManager := createTestDependabotManager()
+
 	return NewSecurityUpdatePolicyManager(logger, apiClient, dependabotManager)
 }
 

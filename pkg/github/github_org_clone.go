@@ -46,6 +46,7 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 	}
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -83,6 +84,7 @@ func List(ctx context.Context, org string) ([]string, error) {
 	}
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repositories: %w", err)
@@ -94,6 +96,7 @@ func List(ctx context.Context, org string) ([]string, error) {
 		// fmt.Println(string(body))
 		// resp.Header.Write(os.Stdout)
 		rateReset := resp.Header.Get("X-RateLimit-Reset")
+
 		resetTime, err := strconv.ParseInt(rateReset, 10, 64)
 		if err == nil {
 			c := color.New(color.FgCyan, color.Bold)
@@ -146,13 +149,15 @@ func Clone(ctx context.Context, targetPath string, org string, repo string) erro
 	//	}
 	//	branch = defaultBranch
 	//}
-
 	cloneURL := fmt.Sprintf("https://github.com/%s/%s.git", org, repo)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
+
+	var (
+		out    bytes.Buffer
+		stderr bytes.Buffer
+	)
 
 	// var cmd *exec.Cmd
-	//if branch == "" {
+	// if branch == "" {
 	//	//cmd := exec.Command("git", "clone", cloneURL, targetPath)
 	//	cmd = exec.Command("git", "clone", "-b", branch, cloneURL, targetPath)
 	//} else {
@@ -160,20 +165,23 @@ func Clone(ctx context.Context, targetPath string, org string, repo string) erro
 	//}
 	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath)
 	cmd.Stdout = &out
+
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		fmt.Println(stderr.String())
 		fmt.Println(out.String())
 		fmt.Println("execute git clone fail: ", out.String())
+
 		return fmt.Errorf("Clone Failed  (url: %s, targetPath: %s, err: %w)", cloneURL, targetPath, err)
 	}
+
 	fmt.Println("execute git clone: ", out.String())
 
 	return nil
 }
 
 // RefreshAllOptimizedStreaming performs optimized bulk repository refresh using streaming API and memory management
-// This is the recommended method for large-scale organization cloning (>1000 repositories)
+// This is the recommended method for large-scale organization cloning (>1000 repositories).
 func RefreshAllOptimizedStreaming(ctx context.Context, targetPath, org, strategy, token string) error {
 	config := DefaultOptimizedCloneConfig()
 
@@ -226,6 +234,7 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 	// Delete repos that are not in the organization
 	for _, repo := range targetRepos {
 		repoPath := filepath.Join(targetPath, repo)
+
 		repoType, _ := helpers.CheckGitRepoType(repoPath)
 		if !Contains(targetRepos, repo) || repoType == "none" {
 			if err := os.RemoveAll(repoPath); err != nil {
@@ -237,15 +246,18 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 	// print all orgs
 	c := color.New(color.FgCyan, color.Bold)
 	c.Printf("All Target %d >>>>>>>>>>>>>>>>>>>>\n", len(orgRepos))
+
 	for _, repo := range orgRepos {
 		c.Println(repo)
 	}
+
 	c.Println("All Target <<<<<<<<<<<<<<<<<<<")
 
 	// Use errgroup for concurrent repository processing
 	g, gCtx := errgroup.WithContext(ctx)
 	// Limit concurrent git operations to avoid overwhelming the system
 	sem := semaphore.NewWeighted(5) // Max 5 concurrent git operations
+
 	var mu sync.Mutex
 
 	for _, repo := range orgRepos {
@@ -283,6 +295,7 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 						if err := cmd.Run(); err != nil {
 							fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
 						}
+
 						cmd = exec.CommandContext(gCtx, "git", "-C", repoPath, "pull")
 						if err := cmd.Run(); err != nil {
 							fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
@@ -328,6 +341,7 @@ func getDirectories(path string) ([]string, error) {
 	}
 
 	var dirs []string
+
 	for _, entry := range entries {
 		if entry.IsDir() {
 			dirs = append(dirs, entry.Name())
@@ -343,5 +357,6 @@ func Contains(list []string, element string) bool {
 			return true
 		}
 	}
+
 	return false
 }

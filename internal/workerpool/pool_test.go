@@ -23,6 +23,7 @@ func TestPool_BasicFunctionality(t *testing.T) {
 
 	err := pool.Start()
 	require.NoError(t, err)
+
 	defer pool.Stop()
 
 	// Submit a simple job
@@ -55,12 +56,15 @@ func TestPool_ConcurrentProcessing(t *testing.T) {
 
 	err := pool.Start()
 	require.NoError(t, err)
+
 	defer pool.Stop()
 
 	var processedCount int64
+
 	processFn := func(ctx context.Context, data int) error {
 		time.Sleep(100 * time.Millisecond) // Simulate work
 		atomic.AddInt64(&processedCount, 1)
+
 		return nil
 	}
 
@@ -103,6 +107,7 @@ func TestPool_ErrorHandling(t *testing.T) {
 
 	err := pool.Start()
 	require.NoError(t, err)
+
 	defer pool.Stop()
 
 	// Submit jobs that will fail
@@ -110,6 +115,7 @@ func TestPool_ErrorHandling(t *testing.T) {
 		if data%2 == 0 {
 			return errors.New("simulated error")
 		}
+
 		return nil
 	}
 
@@ -146,6 +152,7 @@ func TestPool_DoubleStart(t *testing.T) {
 
 	err := pool.Start()
 	require.NoError(t, err)
+
 	defer pool.Stop()
 
 	// Second start should fail
@@ -233,6 +240,7 @@ func BenchmarkPool_Processing(b *testing.B) {
 	}
 
 	pool := New[int](config)
+
 	require.NoError(b, pool.Start())
 	defer pool.Stop()
 
@@ -242,6 +250,7 @@ func BenchmarkPool_Processing(b *testing.B) {
 		for i := 0; i < 1000; i++ {
 			sum += i
 		}
+
 		return nil
 	}
 

@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// GitHubEvent represents a GitHub webhook event
+// GitHubEvent represents a GitHub webhook event.
 type GitHubEvent struct {
 	ID           string                 `json:"id"`
 	Type         string                 `json:"type"`
@@ -27,7 +27,7 @@ type GitHubEvent struct {
 	Signature    string                 `json:"signature"`
 }
 
-// EventType defines the type of GitHub events
+// EventType defines the type of GitHub events.
 type EventType string
 
 const (
@@ -47,7 +47,7 @@ const (
 	EventTypeInstallationRepos EventType = "installation_repositories"
 )
 
-// EventAction defines specific actions within events
+// EventAction defines specific actions within events.
 type EventAction string
 
 const (
@@ -65,7 +65,7 @@ const (
 	ActionRemoved     EventAction = "removed"
 )
 
-// EventProcessor defines the interface for processing GitHub events
+// EventProcessor defines the interface for processing GitHub events.
 type EventProcessor interface {
 	ProcessEvent(ctx context.Context, event *GitHubEvent) error
 	ValidateSignature(payload []byte, signature, secret string) bool
@@ -77,14 +77,14 @@ type EventProcessor interface {
 	FilterEvent(ctx context.Context, event *GitHubEvent, filter *EventFilter) (bool, error)
 }
 
-// EventHandler defines the interface for handling specific event types
+// EventHandler defines the interface for handling specific event types.
 type EventHandler interface {
 	HandleEvent(ctx context.Context, event *GitHubEvent) error
 	GetSupportedActions() []EventAction
 	GetPriority() int // Higher number = higher priority
 }
 
-// EventFilter defines criteria for filtering events
+// EventFilter defines criteria for filtering events.
 type EventFilter struct {
 	Organization  string        `json:"organization,omitempty"`
 	Repository    string        `json:"repository,omitempty"`
@@ -96,13 +96,13 @@ type EventFilter struct {
 	TimeRange     *TimeRange    `json:"time_range,omitempty"`
 }
 
-// TimeRange defines a time range for event filtering
+// TimeRange defines a time range for event filtering.
 type TimeRange struct {
 	Start time.Time `json:"start"`
 	End   time.Time `json:"end"`
 }
 
-// EventProcessingResult represents the result of event processing
+// EventProcessingResult represents the result of event processing.
 type EventProcessingResult struct {
 	EventID     string    `json:"event_id"`
 	Success     bool      `json:"success"`
@@ -113,7 +113,7 @@ type EventProcessingResult struct {
 	Actions     []string  `json:"actions,omitempty"`
 }
 
-// EventStorage defines the interface for storing events
+// EventStorage defines the interface for storing events.
 type EventStorage interface {
 	StoreEvent(ctx context.Context, event *GitHubEvent) error
 	GetEvent(ctx context.Context, eventID string) (*GitHubEvent, error)
@@ -122,7 +122,7 @@ type EventStorage interface {
 	CountEvents(ctx context.Context, filter *EventFilter) (int, error)
 }
 
-// EventMetrics provides metrics for event processing
+// EventMetrics provides metrics for event processing.
 type EventMetrics struct {
 	TotalEventsReceived   int64             `json:"total_events_received"`
 	TotalEventsProcessed  int64             `json:"total_events_processed"`
@@ -134,7 +134,7 @@ type EventMetrics struct {
 	HandlersStatus        map[string]string `json:"handlers_status"`
 }
 
-// eventProcessorImpl implements the EventProcessor interface
+// eventProcessorImpl implements the EventProcessor interface.
 type eventProcessorImpl struct {
 	handlers map[EventType][]EventHandler
 	storage  EventStorage
@@ -142,7 +142,7 @@ type eventProcessorImpl struct {
 	metrics  *EventMetrics
 }
 
-// NewEventProcessor creates a new event processor
+// NewEventProcessor creates a new event processor.
 func NewEventProcessor(storage EventStorage, logger Logger) EventProcessor {
 	return &eventProcessorImpl{
 		handlers: make(map[EventType][]EventHandler),
@@ -156,11 +156,12 @@ func NewEventProcessor(storage EventStorage, logger Logger) EventProcessor {
 	}
 }
 
-// ProcessEvent processes a GitHub event
+// ProcessEvent processes a GitHub event.
 func (e *eventProcessorImpl) ProcessEvent(ctx context.Context, event *GitHubEvent) error {
 	e.logger.Info("Processing GitHub event", "event_id", event.ID, "type", event.Type, "action", event.Action)
 
 	startTime := time.Now()
+
 	defer func() {
 		e.updateMetrics(event, time.Since(startTime))
 	}()
@@ -180,6 +181,7 @@ func (e *eventProcessorImpl) ProcessEvent(ctx context.Context, event *GitHubEven
 
 	// Process event with all registered handlers
 	var lastErr error
+
 	handledCount := 0
 
 	for _, handler := range handlers {
@@ -210,7 +212,7 @@ func (e *eventProcessorImpl) ProcessEvent(ctx context.Context, event *GitHubEven
 	return nil
 }
 
-// ValidateSignature validates the GitHub webhook signature
+// ValidateSignature validates the GitHub webhook signature.
 func (e *eventProcessorImpl) ValidateSignature(payload []byte, signature, secret string) bool {
 	if secret == "" {
 		e.logger.Warn("No secret configured for signature validation")
@@ -242,7 +244,7 @@ func (e *eventProcessorImpl) ValidateSignature(payload []byte, signature, secret
 	return valid
 }
 
-// ParseWebhookEvent parses a GitHub webhook request into an event
+// ParseWebhookEvent parses a GitHub webhook request into an event.
 func (e *eventProcessorImpl) ParseWebhookEvent(r *http.Request) (*GitHubEvent, error) {
 	// Read the request body
 	body, err := io.ReadAll(r.Body)
@@ -292,7 +294,7 @@ func (e *eventProcessorImpl) ParseWebhookEvent(r *http.Request) (*GitHubEvent, e
 	return event, nil
 }
 
-// RegisterEventHandler registers an event handler for a specific event type
+// RegisterEventHandler registers an event handler for a specific event type.
 func (e *eventProcessorImpl) RegisterEventHandler(eventType EventType, handler EventHandler) error {
 	e.logger.Info("Registering event handler", "event_type", eventType, "handler", fmt.Sprintf("%T", handler))
 
@@ -306,10 +308,11 @@ func (e *eventProcessorImpl) RegisterEventHandler(eventType EventType, handler E
 	e.sortHandlersByPriority(eventType)
 
 	e.metrics.HandlersStatus[string(eventType)] = "active"
+
 	return nil
 }
 
-// UnregisterEventHandler removes an event handler for a specific event type
+// UnregisterEventHandler removes an event handler for a specific event type.
 func (e *eventProcessorImpl) UnregisterEventHandler(eventType EventType) error {
 	e.logger.Info("Unregistering event handlers", "event_type", eventType)
 
@@ -400,26 +403,29 @@ func (e *eventProcessorImpl) updateMetrics(event *GitHubEvent, duration time.Dur
 	}
 }
 
-// GetMetrics returns current event processing metrics
+// GetMetrics returns current event processing metrics.
 func (e *eventProcessorImpl) GetMetrics() *EventMetrics {
 	return e.metrics
 }
 
-// ValidateEvent validates a GitHub event
+// ValidateEvent validates a GitHub event.
 func (e *eventProcessorImpl) ValidateEvent(ctx context.Context, event *GitHubEvent) error {
 	if event == nil {
 		return fmt.Errorf("event is nil")
 	}
+
 	if event.ID == "" {
 		return fmt.Errorf("event ID is empty")
 	}
+
 	if event.Type == "" {
 		return fmt.Errorf("event type is empty")
 	}
+
 	return nil
 }
 
-// FilterEvent filters a GitHub event based on the provided filter
+// FilterEvent filters a GitHub event based on the provided filter.
 func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent, filter *EventFilter) (bool, error) {
 	if filter == nil {
 		return true, nil
@@ -438,12 +444,14 @@ func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent
 	// Check event type filter
 	if len(filter.EventTypes) > 0 {
 		found := false
+
 		for _, eventType := range filter.EventTypes {
 			if string(eventType) == event.Type {
 				found = true
 				break
 			}
 		}
+
 		if !found {
 			return false, nil
 		}
@@ -452,12 +460,14 @@ func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent
 	// Check action filter
 	if len(filter.Actions) > 0 && event.Action != "" {
 		found := false
+
 		for _, action := range filter.Actions {
 			if string(action) == event.Action {
 				found = true
 				break
 			}
 		}
+
 		if !found {
 			return false, nil
 		}
@@ -478,14 +488,14 @@ func (e *eventProcessorImpl) FilterEvent(ctx context.Context, event *GitHubEvent
 	return true, nil
 }
 
-// EventWebhookServer provides HTTP server functionality for receiving GitHub webhooks
+// EventWebhookServer provides HTTP server functionality for receiving GitHub webhooks.
 type EventWebhookServer struct {
 	processor EventProcessor
 	secret    string
 	logger    Logger
 }
 
-// NewEventWebhookServer creates a new webhook server
+// NewEventWebhookServer creates a new webhook server.
 func NewEventWebhookServer(processor EventProcessor, secret string, logger Logger) *EventWebhookServer {
 	return &EventWebhookServer{
 		processor: processor,
@@ -494,7 +504,7 @@ func NewEventWebhookServer(processor EventProcessor, secret string, logger Logge
 	}
 }
 
-// HandleWebhook handles incoming GitHub webhook requests
+// HandleWebhook handles incoming GitHub webhook requests.
 func (s *EventWebhookServer) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -506,6 +516,7 @@ func (s *EventWebhookServer) HandleWebhook(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		s.logger.Error("Failed to parse webhook event", "error", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
+
 		return
 	}
 
@@ -517,6 +528,7 @@ func (s *EventWebhookServer) HandleWebhook(w http.ResponseWriter, r *http.Reques
 		if !s.processor.ValidateSignature(body, event.Signature, s.secret) {
 			s.logger.Warn("Invalid webhook signature", "event_id", event.ID)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+
 			return
 		}
 	}
@@ -526,12 +538,14 @@ func (s *EventWebhookServer) HandleWebhook(w http.ResponseWriter, r *http.Reques
 	if err := s.processor.ProcessEvent(ctx, event); err != nil {
 		s.logger.Error("Failed to process event", "event_id", event.ID, "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+
 		return
 	}
 
 	// Return success response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
 	response := map[string]interface{}{
 		"status":   "success",
 		"event_id": event.ID,
@@ -540,7 +554,7 @@ func (s *EventWebhookServer) HandleWebhook(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(response)
 }
 
-// GetHealthCheck provides a health check endpoint
+// GetHealthCheck provides a health check endpoint.
 func (s *EventWebhookServer) GetHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

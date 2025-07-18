@@ -443,7 +443,7 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 	}
 }
 
-// Helper function
+// Helper function.
 func boolPtr(b bool) *bool {
 	return &b
 }

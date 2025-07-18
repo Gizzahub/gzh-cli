@@ -13,6 +13,7 @@ func TestGetCurrentUsername(t *testing.T) {
 	if username == "" {
 		t.Error("GetCurrentUsername should not return empty string")
 	}
+
 	if username == "unknown" {
 		t.Skip("Username detection returned fallback value 'unknown'")
 	}
@@ -35,6 +36,7 @@ func TestGetHomeDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetHomeDir failed: %v", err)
 	}
+
 	if homeDir == "" {
 		t.Error("GetHomeDir should not return empty string")
 	}
@@ -50,6 +52,7 @@ func TestGetConfigDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetConfigDir failed: %v", err)
 	}
+
 	if configDir == "" {
 		t.Error("GetConfigDir should not return empty string")
 	}
@@ -81,6 +84,7 @@ func TestSetFilePermissions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
+
 	file.Close()
 
 	// Test setting permissions
@@ -95,6 +99,7 @@ func TestSetFilePermissions(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to stat file: %v", err)
 		}
+
 		if info.Mode().Perm() != 0o644 {
 			t.Errorf("Expected permissions 0644, got %o", info.Mode().Perm())
 		}
@@ -104,6 +109,7 @@ func TestSetFilePermissions(t *testing.T) {
 func TestIsExecutableAvailable(t *testing.T) {
 	// Test with a command that should always be available
 	var testCommand string
+
 	switch runtime.GOOS {
 	case "windows":
 		testCommand = "cmd"
@@ -171,6 +177,7 @@ func TestGetShellCommand(t *testing.T) {
 		if shell != "cmd" {
 			t.Errorf("On Windows, expected cmd, got %s", shell)
 		}
+
 		if len(args) != 1 || args[0] != "/C" {
 			t.Errorf("On Windows, expected args [/C], got %v", args)
 		}
@@ -178,12 +185,14 @@ func TestGetShellCommand(t *testing.T) {
 		// Should be one of the Unix shells
 		validShells := []string{"bash", "sh", "zsh"}
 		isValid := false
+
 		for _, validShell := range validShells {
 			if shell == validShell {
 				isValid = true
 				break
 			}
 		}
+
 		if !isValid {
 			t.Errorf("Expected Unix shell (bash/sh/zsh), got %s", shell)
 		}
@@ -219,6 +228,7 @@ func TestPlatformDetection(t *testing.T) {
 	// Only one should be true
 	platforms := []bool{IsWindows(), IsMacOS(), IsLinux()}
 	trueCount := 0
+
 	for _, platform := range platforms {
 		if platform {
 			trueCount++
@@ -248,6 +258,7 @@ func TestPlatformDetection(t *testing.T) {
 
 func TestGetPlatformSpecificConfig(t *testing.T) {
 	appName := "test-app"
+
 	paths, err := GetPlatformSpecificConfig(appName)
 	if err != nil {
 		t.Fatalf("GetPlatformSpecificConfig failed: %v", err)
@@ -268,34 +279,40 @@ func TestGetPlatformSpecificConfig(t *testing.T) {
 	switch runtime.GOOS {
 	case "windows":
 		hasAppData := false
+
 		for _, path := range paths {
 			if strings.Contains(path, "AppData") || strings.Contains(path, "PROGRAMDATA") {
 				hasAppData = true
 				break
 			}
 		}
+
 		if !hasAppData {
 			t.Error("Windows config paths should include AppData or PROGRAMDATA")
 		}
 	case "darwin":
 		hasLibrary := false
+
 		for _, path := range paths {
 			if strings.Contains(path, "Library") {
 				hasLibrary = true
 				break
 			}
 		}
+
 		if !hasLibrary {
 			t.Error("macOS config paths should include Library")
 		}
 	default:
 		hasEtc := false
+
 		for _, path := range paths {
 			if strings.Contains(path, "/etc") {
 				hasEtc = true
 				break
 			}
 		}
+
 		if !hasEtc {
 			t.Error("Unix config paths should include /etc")
 		}
@@ -340,6 +357,7 @@ func TestGetBackupLocations(t *testing.T) {
 	// All locations should contain the app name or "backup"
 	for _, location := range locations {
 		hasAppName := strings.Contains(location, appName)
+
 		hasBackup := strings.Contains(location, "backup")
 		if !hasAppName && !hasBackup {
 			t.Errorf("Backup location should contain app name or 'backup', got %s", location)
@@ -348,6 +366,7 @@ func TestGetBackupLocations(t *testing.T) {
 
 	// Should include temp directory backup
 	hasTempBackup := false
+
 	tempDir := GetTempDir()
 	for _, location := range locations {
 		if strings.Contains(location, tempDir) {
@@ -355,18 +374,21 @@ func TestGetBackupLocations(t *testing.T) {
 			break
 		}
 	}
+
 	if !hasTempBackup {
 		t.Error("Backup locations should include temp directory")
 	}
 
 	// Should include current directory backup
 	hasCurrentDirBackup := false
+
 	for _, location := range locations {
 		if strings.Contains(location, "./backup") {
 			hasCurrentDirBackup = true
 			break
 		}
 	}
+
 	if !hasCurrentDirBackup {
 		t.Error("Backup locations should include current directory backup")
 	}

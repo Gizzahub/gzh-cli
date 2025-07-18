@@ -1,4 +1,8 @@
 // Package main demonstrates programmatic usage of the gzh-manager-go library
+// NOTE: This example file is outdated and needs to be updated to match the current API
+//go:build ignore
+// +build ignore
+
 package main
 
 import (
@@ -7,9 +11,9 @@ import (
 	"log"
 	"os"
 
-	bulkclone "github.com/archmagece/gzh-manager-go/pkg/bulk-clone"
-	"github.com/archmagece/gzh-manager-go/pkg/github"
-	"github.com/archmagece/gzh-manager-go/pkg/gitlab"
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
 func main() {
@@ -27,14 +31,15 @@ func bulkCloneExample() {
 	fmt.Println("=== Bulk Clone Example ===")
 
 	// Load configuration from file
-	config, err := bulkclone.LoadConfigFromFile("bulk-clone.yaml")
+	config, err := bulkclone.LoadConfig("bulk-clone.yaml")
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
 	}
 
 	// Create bulk clone manager
-	manager := bulkclone.NewDefaultManager(config)
+	manager := bulkclone.NewBulkCloneManager()
+	manager.SetConfig(config)
 
 	// Clone an organization
 	ctx := context.Background()

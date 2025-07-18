@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// WebhookPolicy represents an organization-wide webhook policy
+// WebhookPolicy represents an organization-wide webhook policy.
 type WebhookPolicy struct {
 	ID           string              `json:"id" yaml:"id"`
 	Name         string              `json:"name" yaml:"name"`
@@ -20,7 +20,7 @@ type WebhookPolicy struct {
 	Tags         map[string]string   `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
-// WebhookPolicyRule defines a rule for applying webhooks
+// WebhookPolicyRule defines a rule for applying webhooks.
 type WebhookPolicyRule struct {
 	ID         string             `json:"id" yaml:"id"`
 	Name       string             `json:"name" yaml:"name"`
@@ -31,7 +31,7 @@ type WebhookPolicyRule struct {
 	OnConflict ConflictResolution `json:"on_conflict" yaml:"on_conflict"`
 }
 
-// WebhookConditions defines when a rule should be applied
+// WebhookConditions defines when a rule should be applied.
 type WebhookConditions struct {
 	RepositoryName    []string          `json:"repository_name,omitempty" yaml:"repository_name,omitempty"`
 	RepositoryPattern []string          `json:"repository_pattern,omitempty" yaml:"repository_pattern,omitempty"`
@@ -44,7 +44,7 @@ type WebhookConditions struct {
 	CustomFields      map[string]string `json:"custom_fields,omitempty" yaml:"custom_fields,omitempty"`
 }
 
-// WebhookAction defines what action to take
+// WebhookAction defines what action to take.
 type WebhookAction string
 
 const (
@@ -54,7 +54,7 @@ const (
 	WebhookActionEnsure WebhookAction = "ensure" // create if not exists, update if exists
 )
 
-// ConflictResolution defines how to handle conflicts
+// ConflictResolution defines how to handle conflicts.
 type ConflictResolution string
 
 const (
@@ -64,7 +64,7 @@ const (
 	ConflictResolutionError     ConflictResolution = "error"     // Fail on conflict
 )
 
-// WebhookTemplate defines the webhook configuration template
+// WebhookTemplate defines the webhook configuration template.
 type WebhookTemplate struct {
 	Name      string                `json:"name" yaml:"name"`
 	URL       string                `json:"url" yaml:"url"`
@@ -74,7 +74,7 @@ type WebhookTemplate struct {
 	Variables map[string]string     `json:"variables,omitempty" yaml:"variables,omitempty"` // Template variables
 }
 
-// WebhookConfigTemplate extends WebhookConfig with template support
+// WebhookConfigTemplate extends WebhookConfig with template support.
 type WebhookConfigTemplate struct {
 	URL         string `json:"url" yaml:"url"`
 	ContentType string `json:"content_type" yaml:"content_type"`
@@ -82,7 +82,7 @@ type WebhookConfigTemplate struct {
 	InsecureSSL bool   `json:"insecure_ssl" yaml:"insecure_ssl"`
 }
 
-// OrganizationWebhookConfig represents the overall webhook configuration for an organization
+// OrganizationWebhookConfig represents the overall webhook configuration for an organization.
 type OrganizationWebhookConfig struct {
 	Organization string                      `json:"organization" yaml:"organization"`
 	Version      string                      `json:"version" yaml:"version"`
@@ -93,7 +93,7 @@ type OrganizationWebhookConfig struct {
 	Validation   ValidationConfig            `json:"validation" yaml:"validation"`
 }
 
-// ConfigMetadata contains metadata about the configuration
+// ConfigMetadata contains metadata about the configuration.
 type ConfigMetadata struct {
 	Name        string            `json:"name" yaml:"name"`
 	Description string            `json:"description" yaml:"description"`
@@ -104,7 +104,7 @@ type ConfigMetadata struct {
 	Tags        map[string]string `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
-// WebhookDefaults defines default webhook settings
+// WebhookDefaults defines default webhook settings.
 type WebhookDefaults struct {
 	Events    []string              `json:"events" yaml:"events"`
 	Active    bool                  `json:"active" yaml:"active"`
@@ -112,7 +112,7 @@ type WebhookDefaults struct {
 	Variables map[string]string     `json:"variables,omitempty" yaml:"variables,omitempty"`
 }
 
-// OrganizationWebhookSettings contains organization-specific settings
+// OrganizationWebhookSettings contains organization-specific settings.
 type OrganizationWebhookSettings struct {
 	AllowRepositoryOverride bool                 `json:"allow_repository_override" yaml:"allow_repository_override"`
 	RequireApproval         bool                 `json:"require_approval" yaml:"require_approval"`
@@ -121,7 +121,7 @@ type OrganizationWebhookSettings struct {
 	NotificationSettings    NotificationSettings `json:"notification_settings" yaml:"notification_settings"`
 }
 
-// NotificationSettings defines notification preferences
+// NotificationSettings defines notification preferences.
 type NotificationSettings struct {
 	OnSuccess    bool     `json:"on_success" yaml:"on_success"`
 	OnFailure    bool     `json:"on_failure" yaml:"on_failure"`
@@ -130,7 +130,7 @@ type NotificationSettings struct {
 	SlackChannel string   `json:"slack_channel,omitempty" yaml:"slack_channel,omitempty"`
 }
 
-// ValidationConfig defines validation rules
+// ValidationConfig defines validation rules.
 type ValidationConfig struct {
 	RequiredEvents   []string `json:"required_events,omitempty" yaml:"required_events,omitempty"`
 	ForbiddenEvents  []string `json:"forbidden_events,omitempty" yaml:"forbidden_events,omitempty"`
@@ -140,7 +140,7 @@ type ValidationConfig struct {
 	RequireSecret    bool     `json:"require_secret" yaml:"require_secret"`
 }
 
-// WebhookConfigurationService provides organization-wide webhook configuration management
+// WebhookConfigurationService provides organization-wide webhook configuration management.
 type WebhookConfigurationService interface {
 	// Policy Management
 	CreatePolicy(ctx context.Context, policy *WebhookPolicy) error
@@ -167,7 +167,7 @@ type WebhookConfigurationService interface {
 	GetWebhookInventory(ctx context.Context, org string) (*WebhookInventory, error)
 }
 
-// ApplyPoliciesRequest represents a request to apply webhook policies
+// ApplyPoliciesRequest represents a request to apply webhook policies.
 type ApplyPoliciesRequest struct {
 	Organization    string   `json:"organization"`
 	PolicyIDs       []string `json:"policy_ids,omitempty"`       // if empty, apply all enabled policies
@@ -176,7 +176,7 @@ type ApplyPoliciesRequest struct {
 	Force           bool     `json:"force"` // Override conflict resolution
 }
 
-// ApplyPoliciesResult represents the result of applying policies
+// ApplyPoliciesResult represents the result of applying policies.
 type ApplyPoliciesResult struct {
 	Organization          string                    `json:"organization"`
 	TotalRepositories     int                       `json:"total_repositories"`
@@ -189,7 +189,7 @@ type ApplyPoliciesResult struct {
 	Summary               PolicyApplicationSummary  `json:"summary"`
 }
 
-// PolicyApplicationResult represents the result for a single repository
+// PolicyApplicationResult represents the result for a single repository.
 type PolicyApplicationResult struct {
 	Repository string        `json:"repository"`
 	PolicyID   string        `json:"policy_id"`
@@ -204,7 +204,7 @@ type PolicyApplicationResult struct {
 	Duration   string        `json:"duration"`
 }
 
-// PolicyApplicationSummary provides a summary of policy application
+// PolicyApplicationSummary provides a summary of policy application.
 type PolicyApplicationSummary struct {
 	WebhooksCreated int            `json:"webhooks_created"`
 	WebhooksUpdated int            `json:"webhooks_updated"`
@@ -213,7 +213,7 @@ type PolicyApplicationSummary struct {
 	ErrorsByType    map[string]int `json:"errors_by_type"`
 }
 
-// PolicyApplicationPreview shows what would happen without making changes
+// PolicyApplicationPreview shows what would happen without making changes.
 type PolicyApplicationPreview struct {
 	Organization      string                   `json:"organization"`
 	TotalRepositories int                      `json:"total_repositories"`
@@ -223,7 +223,7 @@ type PolicyApplicationPreview struct {
 	Summary           PolicyApplicationSummary `json:"summary"`
 }
 
-// PlannedAction represents an action that would be taken
+// PlannedAction represents an action that would be taken.
 type PlannedAction struct {
 	Repository  string        `json:"repository"`
 	PolicyID    string        `json:"policy_id"`
@@ -234,7 +234,7 @@ type PlannedAction struct {
 	Conflicts   []string      `json:"conflicts,omitempty"`
 }
 
-// PolicyConflict represents a conflict between policies or existing webhooks
+// PolicyConflict represents a conflict between policies or existing webhooks.
 type PolicyConflict struct {
 	Repository      string       `json:"repository"`
 	ConflictType    string       `json:"conflict_type"`
@@ -245,7 +245,7 @@ type PolicyConflict struct {
 	Resolution      string       `json:"resolution"`
 }
 
-// MigrationRequest represents a request to migrate existing webhooks
+// MigrationRequest represents a request to migrate existing webhooks.
 type MigrationRequest struct {
 	Organization   string            `json:"organization"`
 	SourceConfig   string            `json:"source_config,omitempty"` // Path to source configuration
@@ -255,7 +255,7 @@ type MigrationRequest struct {
 	Mapping        map[string]string `json:"mapping,omitempty"` // URL mappings for migration
 }
 
-// MigrationResult represents the result of a migration operation
+// MigrationResult represents the result of a migration operation.
 type MigrationResult struct {
 	Organization     string                   `json:"organization"`
 	TotalWebhooks    int                      `json:"total_webhooks"`
@@ -267,7 +267,7 @@ type MigrationResult struct {
 	ExecutionTime    string                   `json:"execution_time"`
 }
 
-// WebhookMigrationResult represents the result for a single webhook migration
+// WebhookMigrationResult represents the result for a single webhook migration.
 type WebhookMigrationResult struct {
 	Repository   string   `json:"repository"`
 	OldWebhookID int64    `json:"old_webhook_id"`
@@ -277,7 +277,7 @@ type WebhookMigrationResult struct {
 	Changes      []string `json:"changes"`
 }
 
-// SyncResult represents the result of synchronizing webhooks
+// SyncResult represents the result of synchronizing webhooks.
 type SyncResult struct {
 	Organization       string               `json:"organization"`
 	TotalRepositories  int                  `json:"total_repositories"`
@@ -286,7 +286,7 @@ type SyncResult struct {
 	ExecutionTime      string               `json:"execution_time"`
 }
 
-// WebhookDiscrepancy represents a difference between expected and actual webhook configuration
+// WebhookDiscrepancy represents a difference between expected and actual webhook configuration.
 type WebhookDiscrepancy struct {
 	Repository      string `json:"repository"`
 	WebhookID       int64  `json:"webhook_id"`
@@ -296,7 +296,7 @@ type WebhookDiscrepancy struct {
 	Severity        string `json:"severity"`
 }
 
-// ComplianceReport represents a compliance report for webhooks
+// ComplianceReport represents a compliance report for webhooks.
 type ComplianceReport struct {
 	Organization      string                `json:"organization"`
 	GeneratedAt       time.Time             `json:"generated_at"`
@@ -308,7 +308,7 @@ type ComplianceReport struct {
 	Recommendations   []string              `json:"recommendations"`
 }
 
-// ComplianceViolation represents a compliance violation
+// ComplianceViolation represents a compliance violation.
 type ComplianceViolation struct {
 	Repository    string `json:"repository"`
 	PolicyID      string `json:"policy_id"`
@@ -319,7 +319,7 @@ type ComplianceViolation struct {
 	Remediation   string `json:"remediation"`
 }
 
-// WebhookInventory represents an inventory of all webhooks in an organization
+// WebhookInventory represents an inventory of all webhooks in an organization.
 type WebhookInventory struct {
 	Organization    string                  `json:"organization"`
 	GeneratedAt     time.Time               `json:"generated_at"`
@@ -330,7 +330,7 @@ type WebhookInventory struct {
 	Summary         WebhookInventorySummary `json:"summary"`
 }
 
-// RepositoryWebhookInfo represents webhook information for a repository
+// RepositoryWebhookInfo represents webhook information for a repository.
 type RepositoryWebhookInfo struct {
 	Repository string         `json:"repository"`
 	Webhooks   []*WebhookInfo `json:"webhooks"`
@@ -338,7 +338,7 @@ type RepositoryWebhookInfo struct {
 	Issues     []string       `json:"issues,omitempty"`
 }
 
-// WebhookInventorySummary provides summary statistics
+// WebhookInventorySummary provides summary statistics.
 type WebhookInventorySummary struct {
 	ActiveWebhooks    int     `json:"active_webhooks"`
 	InactiveWebhooks  int     `json:"inactive_webhooks"`
@@ -347,7 +347,7 @@ type WebhookInventorySummary struct {
 	HealthScore       float64 `json:"health_score"`
 }
 
-// WebhookValidationResult represents the result of webhook configuration validation
+// WebhookValidationResult represents the result of webhook configuration validation.
 type WebhookValidationResult struct {
 	Valid    bool                       `json:"valid"`
 	Errors   []WebhookValidationError   `json:"errors,omitempty"`
@@ -355,7 +355,7 @@ type WebhookValidationResult struct {
 	Score    int                        `json:"score"` // 0-100
 }
 
-// WebhookValidationError represents a webhook validation error
+// WebhookValidationError represents a webhook validation error.
 type WebhookValidationError struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`
@@ -363,7 +363,7 @@ type WebhookValidationError struct {
 	Suggestion string `json:"suggestion,omitempty"`
 }
 
-// WebhookValidationWarning represents a webhook validation warning
+// WebhookValidationWarning represents a webhook validation warning.
 type WebhookValidationWarning struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`

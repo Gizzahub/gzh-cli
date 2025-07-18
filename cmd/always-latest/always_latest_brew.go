@@ -147,14 +147,17 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, args []string) error {
 
 	// Update packages
 	updatedCount := 0
+
 	if len(outdatedPackages) > 0 {
 		fmt.Printf("📦 Processing %d outdated formulae...\n", len(outdatedPackages))
+
 		for _, pkg := range outdatedPackages {
 			updated, err := o.updatePackage(pkg, false)
 			if err != nil {
 				fmt.Printf("⚠️  Failed to update %s: %v\n", pkg, err)
 				continue
 			}
+
 			if updated {
 				updatedCount++
 			}
@@ -164,12 +167,14 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, args []string) error {
 	// Update casks
 	if len(outdatedCasks) > 0 {
 		fmt.Printf("🍺 Processing %d outdated casks...\n", len(outdatedCasks))
+
 		for _, cask := range outdatedCasks {
 			updated, err := o.updatePackage(cask, true)
 			if err != nil {
 				fmt.Printf("⚠️  Failed to update %s: %v\n", cask, err)
 				continue
 			}
+
 			if updated {
 				updatedCount++
 			}
@@ -207,12 +212,14 @@ func (o *alwaysLatestBrewOptions) updateHomebrew() error {
 	}
 
 	cmd := exec.Command("brew", "update")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("brew update failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Homebrew updated successfully")
+
 	return nil
 }
 
@@ -226,6 +233,7 @@ func (o *alwaysLatestBrewOptions) updateTaps() error {
 
 	// Get list of taps
 	cmd := exec.Command("brew", "tap")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to list taps: %w", err)
@@ -239,6 +247,7 @@ func (o *alwaysLatestBrewOptions) updateTaps() error {
 		}
 
 		fmt.Printf("   Updating tap: %s\n", tap)
+
 		updateCmd := exec.Command("brew", "tap", tap)
 		if updateOutput, updateErr := updateCmd.CombinedOutput(); updateErr != nil {
 			fmt.Printf("   ⚠️  Failed to update tap %s: %v\n%s", tap, updateErr, string(updateOutput))
@@ -246,17 +255,20 @@ func (o *alwaysLatestBrewOptions) updateTaps() error {
 	}
 
 	fmt.Println("✅ Taps updated")
+
 	return nil
 }
 
 func (o *alwaysLatestBrewOptions) getOutdatedPackages() ([]string, error) {
 	cmd := exec.Command("brew", "outdated", "--formula")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get outdated packages: %w", err)
 	}
 
 	var packages []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -276,12 +288,14 @@ func (o *alwaysLatestBrewOptions) getOutdatedPackages() ([]string, error) {
 
 func (o *alwaysLatestBrewOptions) getOutdatedCasks() ([]string, error) {
 	cmd := exec.Command("brew", "outdated", "--cask")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get outdated casks: %w", err)
 	}
 
 	var casks []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -306,6 +320,7 @@ func (o *alwaysLatestBrewOptions) filterPackages(allPackages, requestedPackages 
 	}
 
 	var filtered []string
+
 	for _, pkg := range allPackages {
 		if packageSet[pkg] {
 			filtered = append(filtered, pkg)
@@ -329,6 +344,7 @@ func (o *alwaysLatestBrewOptions) updatePackage(packageName string, isCask bool)
 		} else {
 			fmt.Printf("   [DRY RUN] Would run: brew upgrade %s\n", packageName)
 		}
+
 		return true, nil
 	}
 
@@ -347,19 +363,23 @@ func (o *alwaysLatestBrewOptions) updatePackage(packageName string, isCask bool)
 	}
 
 	fmt.Printf("   Upgrading %s...\n", packageName)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return false, fmt.Errorf("upgrade failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Printf("✅ Updated %s\n", packageName)
+
 	return true, nil
 }
 
 func (o *alwaysLatestBrewOptions) confirmUpdate(packageName, packageType string) bool {
 	fmt.Printf("   Update %s (%s)? (y/N): ", packageName, packageType)
+
 	var response string
 	fmt.Scanln(&response)
+
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
@@ -367,21 +387,25 @@ func (o *alwaysLatestBrewOptions) cleanupBrew() error {
 	fmt.Println("🧹 Cleaning up old versions...")
 
 	cmd := exec.Command("brew", "cleanup")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("cleanup failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Cleanup completed")
+
 	return nil
 }
 
 func (o *alwaysLatestBrewOptions) extractVersionNumber(versionString string) string {
 	// Extract version number using regex
 	re := regexp.MustCompile(`(\d+\.[\d.]+)`)
+
 	matches := re.FindStringSubmatch(versionString)
 	if len(matches) > 1 {
 		return matches[1]
 	}
+
 	return versionString
 }

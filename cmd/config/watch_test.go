@@ -25,6 +25,7 @@ func TestWatchConfigHotReloading(t *testing.T) {
 	// Create temporary directory
 	tempDir, err := os.MkdirTemp("", "config-hot-reload-test-")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")
@@ -86,6 +87,7 @@ providers:
 	// Start watching
 	err = service.WatchConfiguration(ctx, callback)
 	require.NoError(t, err)
+
 	defer service.StopWatching()
 
 	t.Run("single configuration change", func(t *testing.T) {
@@ -229,6 +231,7 @@ func TestWatchConfigCommand(t *testing.T) {
 	// Create temporary directory and config file
 	tempDir, err := os.MkdirTemp("", "config-watch-cmd-test-")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "test-config.yaml")
@@ -250,6 +253,7 @@ providers:
 		// Change to temp directory to test auto-discovery
 		originalDir, err := os.Getwd()
 		require.NoError(t, err)
+
 		defer os.Chdir(originalDir)
 
 		err = os.Chdir(tempDir)

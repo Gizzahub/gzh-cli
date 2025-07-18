@@ -16,10 +16,12 @@ import (
 func TestNewChangeLogger(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	options := &LoggerOptions{
@@ -49,10 +51,12 @@ func TestDefaultLoggerOptions(t *testing.T) {
 func TestLogRepositoryChange(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	options := &LoggerOptions{
@@ -101,6 +105,7 @@ func TestLogRepositoryChange(t *testing.T) {
 	require.NoError(t, err)
 
 	var entry logEntry
+
 	err = json.Unmarshal(content, &entry)
 	require.NoError(t, err)
 
@@ -119,10 +124,12 @@ func TestLogRepositoryChange(t *testing.T) {
 func TestLogOperation(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	options := &LoggerOptions{
@@ -166,10 +173,12 @@ func TestLogOperation(t *testing.T) {
 func TestLogBulkOperation(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	options := &LoggerOptions{
@@ -211,6 +220,7 @@ func TestLogBulkOperation(t *testing.T) {
 	require.NoError(t, err)
 
 	var entry logEntry
+
 	err = json.Unmarshal(content, &entry)
 	require.NoError(t, err)
 
@@ -223,10 +233,12 @@ func TestLogBulkOperation(t *testing.T) {
 func TestCreateOperationContext(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	logger := NewChangeLogger(changelog, nil)
@@ -316,10 +328,12 @@ func TestFormatCSVEntry(t *testing.T) {
 func TestLogRotation(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	options := &LoggerOptions{
@@ -359,10 +373,12 @@ func TestLogRotation(t *testing.T) {
 func TestGetLogSummary(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	logger := NewChangeLogger(changelog, nil)
@@ -419,10 +435,12 @@ func TestGetLogSummary(t *testing.T) {
 func TestLogFormats(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "change_logger_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
+
 	changelog := NewChangeLog(nil, store)
 
 	formats := []LogFormat{LogFormatJSON, LogFormatText, LogFormatCSV}
@@ -464,6 +482,7 @@ func TestLogFormats(t *testing.T) {
 			switch format {
 			case LogFormatJSON:
 				var entry logEntry
+
 				err = json.Unmarshal(content, &entry)
 				assert.NoError(t, err)
 			case LogFormatText:

@@ -65,6 +65,7 @@ func TestAWSProfileManager(t *testing.T) {
 
 	// Override home directory for testing
 	oldHome := os.Getenv("HOME")
+
 	os.Setenv("HOME", tmpDir)
 	defer os.Setenv("HOME", oldHome)
 
@@ -281,6 +282,7 @@ func TestAWSProfile_Serialization(t *testing.T) {
 
 	// Test JSON deserialization
 	var decoded AWSProfile
+
 	err = json.Unmarshal(data, &decoded)
 	require.NoError(t, err)
 
@@ -305,6 +307,7 @@ func TestUpdateShellConfig(t *testing.T) {
 
 	// Override home directory
 	oldHome := os.Getenv("HOME")
+
 	os.Setenv("HOME", tmpDir)
 	defer os.Setenv("HOME", oldHome)
 

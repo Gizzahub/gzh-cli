@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// ContainerRuntime represents different container runtime types
+// ContainerRuntime represents different container runtime types.
 type ContainerRuntime string
 
 const (
@@ -22,7 +22,7 @@ const (
 	Nerdctl    ContainerRuntime = "nerdctl"
 )
 
-// ContainerEnvironment represents the detected container environment
+// ContainerEnvironment represents the detected container environment.
 type ContainerEnvironment struct {
 	AvailableRuntimes      []RuntimeInfo           `json:"available_runtimes"`
 	PrimaryRuntime         ContainerRuntime        `json:"primary_runtime"`
@@ -36,7 +36,7 @@ type ContainerEnvironment struct {
 	EnvironmentFingerprint string                  `json:"environment_fingerprint"`
 }
 
-// RuntimeInfo represents information about a container runtime
+// RuntimeInfo represents information about a container runtime.
 type RuntimeInfo struct {
 	Runtime    ContainerRuntime `json:"runtime"`
 	Version    string           `json:"version"`
@@ -45,7 +45,7 @@ type RuntimeInfo struct {
 	ServerInfo *ServerInfo      `json:"server_info,omitempty"`
 }
 
-// ServerInfo represents container runtime server information
+// ServerInfo represents container runtime server information.
 type ServerInfo struct {
 	Version       string            `json:"version"`
 	OS            string            `json:"os"`
@@ -59,7 +59,7 @@ type ServerInfo struct {
 	RuntimeConfig map[string]string `json:"runtime_config"`
 }
 
-// DetectedContainer represents a detected running container
+// DetectedContainer represents a detected running container.
 type DetectedContainer struct {
 	ID             string                  `json:"id"`
 	Name           string                  `json:"name"`
@@ -83,7 +83,7 @@ type DetectedContainer struct {
 	Args           []string                `json:"args"`
 }
 
-// DetectedPortMapping represents container port mappings
+// DetectedPortMapping represents container port mappings.
 type DetectedPortMapping struct {
 	ContainerPort int32  `json:"container_port"`
 	HostPort      int32  `json:"host_port"`
@@ -91,7 +91,7 @@ type DetectedPortMapping struct {
 	Protocol      string `json:"protocol"`
 }
 
-// DetectedNetworkInfo represents container network information
+// DetectedNetworkInfo represents container network information.
 type DetectedNetworkInfo struct {
 	NetworkName string `json:"network_name"`
 	NetworkID   string `json:"network_id"`
@@ -101,7 +101,7 @@ type DetectedNetworkInfo struct {
 	Subnet      string `json:"subnet"`
 }
 
-// DetectedMount represents container mount information
+// DetectedMount represents container mount information.
 type DetectedMount struct {
 	Type        string `json:"type"` // bind, volume, tmpfs
 	Source      string `json:"source"`
@@ -110,7 +110,7 @@ type DetectedMount struct {
 	ReadWrite   bool   `json:"read_write"`
 }
 
-// DetectedResourceLimits represents container resource limits
+// DetectedResourceLimits represents container resource limits.
 type DetectedResourceLimits struct {
 	CPUShares       int64 `json:"cpu_shares"`
 	CPUQuota        int64 `json:"cpu_quota"`
@@ -121,7 +121,7 @@ type DetectedResourceLimits struct {
 	OomKillDisabled bool  `json:"oom_kill_disabled"`
 }
 
-// DetectedNetwork represents detected container network
+// DetectedNetwork represents detected container network.
 type DetectedNetwork struct {
 	ID       string            `json:"id"`
 	Name     string            `json:"name"`
@@ -135,21 +135,21 @@ type DetectedNetwork struct {
 	Runtime  ContainerRuntime  `json:"runtime"`
 }
 
-// NetworkIPAM represents network IP address management
+// NetworkIPAM represents network IP address management.
 type NetworkIPAM struct {
 	Driver  string                `json:"driver"`
 	Config  []ContainerIPAMConfig `json:"config"`
 	Options map[string]string     `json:"options"`
 }
 
-// ContainerIPAMConfig represents IPAM configuration for container detection
+// ContainerIPAMConfig represents IPAM configuration for container detection.
 type ContainerIPAMConfig struct {
 	Subnet  string `json:"subnet"`
 	Gateway string `json:"gateway"`
 	IPRange string `json:"ip_range,omitempty"`
 }
 
-// ComposeProject represents a detected Docker Compose project
+// ComposeProject represents a detected Docker Compose project.
 type ComposeProject struct {
 	Name        string            `json:"name"`
 	Services    []ComposeService  `json:"services"`
@@ -160,7 +160,7 @@ type ComposeProject struct {
 	Runtime     ContainerRuntime  `json:"runtime"`
 }
 
-// ComposeService represents a service in a Compose project
+// ComposeService represents a service in a Compose project.
 type ComposeService struct {
 	Name       string                `json:"name"`
 	Image      string                `json:"image"`
@@ -170,7 +170,7 @@ type ComposeService struct {
 	Labels     map[string]string     `json:"labels"`
 }
 
-// KubernetesClusterInfo represents Kubernetes cluster information
+// KubernetesClusterInfo represents Kubernetes cluster information.
 type KubernetesClusterInfo struct {
 	Available          bool             `json:"available"`
 	Version            string           `json:"version"`
@@ -182,7 +182,7 @@ type KubernetesClusterInfo struct {
 	IngressControllers []string         `json:"ingress_controllers"`
 }
 
-// KubernetesNode represents a Kubernetes node
+// KubernetesNode represents a Kubernetes node.
 type KubernetesNode struct {
 	Name      string            `json:"name"`
 	Status    string            `json:"status"`
@@ -193,7 +193,7 @@ type KubernetesNode struct {
 	Addresses map[string]string `json:"addresses"`
 }
 
-// ServiceMeshInfo represents service mesh information
+// ServiceMeshInfo represents service mesh information.
 type ServiceMeshInfo struct {
 	Type      string `json:"type"` // istio, linkerd, consul-connect
 	Version   string `json:"version"`
@@ -201,7 +201,7 @@ type ServiceMeshInfo struct {
 	Enabled   bool   `json:"enabled"`
 }
 
-// ContainerResourceUsage represents overall container resource usage
+// ContainerResourceUsage represents overall container resource usage.
 type ContainerResourceUsage struct {
 	TotalContainers   int             `json:"total_containers"`
 	RunningContainers int             `json:"running_containers"`
@@ -212,7 +212,7 @@ type ContainerResourceUsage struct {
 	ResourceSummary   ResourceSummary `json:"resource_summary"`
 }
 
-// ResourceSummary represents resource usage summary
+// ResourceSummary represents resource usage summary.
 type ResourceSummary struct {
 	CPUUsage    float64 `json:"cpu_usage_percent"`
 	MemoryUsage int64   `json:"memory_usage_bytes"`
@@ -223,7 +223,7 @@ type ResourceSummary struct {
 	BlockWrite  int64   `json:"block_write_bytes"`
 }
 
-// ContainerDetector detects and analyzes container environments
+// ContainerDetector detects and analyzes container environments.
 type ContainerDetector struct {
 	logger            *zap.Logger
 	cachedEnvironment *ContainerEnvironment
@@ -232,7 +232,7 @@ type ContainerDetector struct {
 	lastDetection     time.Time
 }
 
-// NewContainerDetector creates a new container detector
+// NewContainerDetector creates a new container detector.
 func NewContainerDetector(logger *zap.Logger) *ContainerDetector {
 	return &ContainerDetector{
 		logger:      logger,
@@ -240,13 +240,15 @@ func NewContainerDetector(logger *zap.Logger) *ContainerDetector {
 	}
 }
 
-// DetectContainerEnvironment detects the current container environment
+// DetectContainerEnvironment detects the current container environment.
 func (cd *ContainerDetector) DetectContainerEnvironment(ctx context.Context) (*ContainerEnvironment, error) {
 	cd.cacheMutex.RLock()
+
 	if cd.cachedEnvironment != nil && time.Since(cd.lastDetection) < cd.cacheExpiry {
 		cd.cacheMutex.RUnlock()
 		return cd.cachedEnvironment, nil
 	}
+
 	cd.cacheMutex.RUnlock()
 
 	cd.logger.Info("Detecting container environment")
@@ -260,6 +262,7 @@ func (cd *ContainerDetector) DetectContainerEnvironment(ctx context.Context) (*C
 	if err != nil {
 		return nil, fmt.Errorf("failed to detect container runtimes: %w", err)
 	}
+
 	env.AvailableRuntimes = runtimes
 
 	// Determine primary runtime
@@ -328,7 +331,7 @@ func (cd *ContainerDetector) DetectContainerEnvironment(ctx context.Context) (*C
 	return env, nil
 }
 
-// detectContainerRuntimes detects available container runtimes
+// detectContainerRuntimes detects available container runtimes.
 func (cd *ContainerDetector) detectContainerRuntimes(ctx context.Context) ([]RuntimeInfo, error) {
 	runtimes := []RuntimeInfo{}
 	candidates := []ContainerRuntime{Docker, Podman, Nerdctl}
@@ -342,8 +345,10 @@ func (cd *ContainerDetector) detectContainerRuntimes(ctx context.Context) ([]Run
 		executable, err := exec.LookPath(string(runtime))
 		if err != nil {
 			cd.logger.Debug("Runtime not found", zap.String("runtime", string(runtime)))
+
 			info.Available = false
 			runtimes = append(runtimes, info)
+
 			continue
 		}
 
@@ -371,6 +376,7 @@ func (cd *ContainerDetector) detectContainerRuntimes(ctx context.Context) ([]Run
 		}
 
 		runtimes = append(runtimes, info)
+
 		cd.logger.Info("Detected container runtime",
 			zap.String("runtime", string(runtime)),
 			zap.String("version", version))
@@ -379,13 +385,15 @@ func (cd *ContainerDetector) detectContainerRuntimes(ctx context.Context) ([]Run
 	return runtimes, nil
 }
 
-// getRuntimeVersion gets the version of a container runtime
+// getRuntimeVersion gets the version of a container runtime.
 func (cd *ContainerDetector) getRuntimeVersion(ctx context.Context, runtime ContainerRuntime) (string, error) {
 	cmd := exec.CommandContext(ctx, string(runtime), "version", "--format", "{{.Client.Version}}")
+
 	output, err := cmd.Output()
 	if err != nil {
 		// Try alternative version command
 		cmd = exec.CommandContext(ctx, string(runtime), "--version")
+
 		output, err = cmd.Output()
 		if err != nil {
 			return "", err
@@ -407,7 +415,7 @@ func (cd *ContainerDetector) getRuntimeVersion(ctx context.Context, runtime Cont
 	return version, nil
 }
 
-// getRuntimeServerInfo gets server information from container runtime
+// getRuntimeServerInfo gets server information from container runtime.
 func (cd *ContainerDetector) getRuntimeServerInfo(ctx context.Context, runtime ContainerRuntime) (*ServerInfo, error) {
 	var cmd *exec.Cmd
 
@@ -440,27 +448,35 @@ func (cd *ContainerDetector) getRuntimeServerInfo(ctx context.Context, runtime C
 		if version, ok := info["ServerVersion"].(string); ok {
 			serverInfo.Version = version
 		}
+
 		if os, ok := info["OperatingSystem"].(string); ok {
 			serverInfo.OS = os
 		}
+
 		if arch, ok := info["Architecture"].(string); ok {
 			serverInfo.Architecture = arch
 		}
+
 		if kernel, ok := info["KernelVersion"].(string); ok {
 			serverInfo.KernelVersion = kernel
 		}
+
 		if cpus, ok := info["NCPU"].(float64); ok {
 			serverInfo.CPUs = int(cpus)
 		}
+
 		if memory, ok := info["MemTotal"].(float64); ok {
 			serverInfo.TotalMemory = fmt.Sprintf("%.0f", memory)
 		}
+
 		if storage, ok := info["Driver"].(string); ok {
 			serverInfo.StorageDriver = storage
 		}
+
 		if logging, ok := info["LoggingDriver"].(string); ok {
 			serverInfo.LoggingDriver = logging
 		}
+
 		if cgroup, ok := info["CgroupDriver"].(string); ok {
 			serverInfo.CgroupDriver = cgroup
 		}
@@ -489,7 +505,7 @@ func (cd *ContainerDetector) getRuntimeServerInfo(ctx context.Context, runtime C
 	return serverInfo, nil
 }
 
-// determinePrimaryRuntime determines the primary container runtime to use
+// determinePrimaryRuntime determines the primary container runtime to use.
 func (cd *ContainerDetector) determinePrimaryRuntime(runtimes []RuntimeInfo) ContainerRuntime {
 	// Priority order: Docker > Podman > nerdctl
 	priorities := []ContainerRuntime{Docker, Podman, Nerdctl}
@@ -512,7 +528,7 @@ func (cd *ContainerDetector) determinePrimaryRuntime(runtimes []RuntimeInfo) Con
 	return ""
 }
 
-// detectOrchestrationPlatform detects the container orchestration platform
+// detectOrchestrationPlatform detects the container orchestration platform.
 func (cd *ContainerDetector) detectOrchestrationPlatform(ctx context.Context) string {
 	// Check for Kubernetes
 	if cd.isKubernetesAvailable(ctx) {
@@ -527,19 +543,19 @@ func (cd *ContainerDetector) detectOrchestrationPlatform(ctx context.Context) st
 	return "standalone"
 }
 
-// isKubernetesAvailable checks if Kubernetes is available
+// isKubernetesAvailable checks if Kubernetes is available.
 func (cd *ContainerDetector) isKubernetesAvailable(ctx context.Context) bool {
 	cmd := exec.CommandContext(ctx, "kubectl", "cluster-info")
 	return cmd.Run() == nil
 }
 
-// isDockerSwarmAvailable checks if Docker Swarm is available
+// isDockerSwarmAvailable checks if Docker Swarm is available.
 func (cd *ContainerDetector) isDockerSwarmAvailable(ctx context.Context) bool {
 	cmd := exec.CommandContext(ctx, "docker", "node", "ls")
 	return cmd.Run() == nil
 }
 
-// detectRunningContainers detects running containers using the specified runtime
+// detectRunningContainers detects running containers using the specified runtime.
 func (cd *ContainerDetector) detectRunningContainers(ctx context.Context, runtime ContainerRuntime) ([]DetectedContainer, error) {
 	var cmd *exec.Cmd
 
@@ -558,6 +574,7 @@ func (cd *ContainerDetector) detectRunningContainers(ctx context.Context, runtim
 	}
 
 	var containers []DetectedContainer
+
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 
 	for _, line := range lines {
@@ -579,15 +596,19 @@ func (cd *ContainerDetector) detectRunningContainers(ctx context.Context, runtim
 		if id, ok := psContainer["ID"].(string); ok {
 			container.ID = id
 		}
+
 		if name, ok := psContainer["Names"].(string); ok {
 			container.Name = name
 		}
+
 		if image, ok := psContainer["Image"].(string); ok {
 			container.Image = image
 		}
+
 		if status, ok := psContainer["Status"].(string); ok {
 			container.Status = status
 		}
+
 		if state, ok := psContainer["State"].(string); ok {
 			container.State = state
 		}
@@ -609,9 +630,10 @@ func (cd *ContainerDetector) detectRunningContainers(ctx context.Context, runtim
 	return containers, nil
 }
 
-// inspectContainer gets detailed container information
+// inspectContainer gets detailed container information.
 func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime ContainerRuntime, containerID string) (*DetectedContainer, error) {
 	cmd := exec.CommandContext(ctx, string(runtime), "inspect", containerID)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -637,9 +659,11 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 		if image, ok := config["Image"].(string); ok {
 			container.Image = image
 		}
+
 		if workingDir, ok := config["WorkingDir"].(string); ok {
 			container.WorkingDir = workingDir
 		}
+
 		if cmd, ok := config["Cmd"].([]interface{}); ok {
 			for _, c := range cmd {
 				if cmdStr, ok := c.(string); ok {
@@ -647,6 +671,7 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 				}
 			}
 		}
+
 		if env, ok := config["Env"].([]interface{}); ok {
 			for _, e := range env {
 				if envStr, ok := e.(string); ok {
@@ -654,6 +679,7 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 				}
 			}
 		}
+
 		if labels, ok := config["Labels"].(map[string]interface{}); ok {
 			container.Labels = make(map[string]string)
 			for k, v := range labels {
@@ -669,11 +695,13 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 		if status, ok := state["Status"].(string); ok {
 			container.State = status
 		}
+
 		if health, ok := state["Health"].(map[string]interface{}); ok {
 			if healthStatus, ok := health["Status"].(string); ok {
 				container.HealthStatus = healthStatus
 			}
 		}
+
 		if startedAt, ok := state["StartedAt"].(string); ok {
 			if t, err := time.Parse(time.RFC3339Nano, startedAt); err == nil {
 				container.StartedAt = t
@@ -694,12 +722,15 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 		if memory, ok := hostConfig["Memory"].(float64); ok {
 			container.ResourceLimits.Memory = int64(memory)
 		}
+
 		if cpuShares, ok := hostConfig["CpuShares"].(float64); ok {
 			container.ResourceLimits.CPUShares = int64(cpuShares)
 		}
+
 		if cpuQuota, ok := hostConfig["CpuQuota"].(float64); ok {
 			container.ResourceLimits.CPUQuota = int64(cpuQuota)
 		}
+
 		if cpuPeriod, ok := hostConfig["CpuPeriod"].(float64); ok {
 			container.ResourceLimits.CPUPeriod = int64(cpuPeriod)
 		}
@@ -716,15 +747,19 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 					if networkID, ok := netInfo["NetworkID"].(string); ok {
 						detectedNet.NetworkID = networkID
 					}
+
 					if ipAddress, ok := netInfo["IPAddress"].(string); ok {
 						detectedNet.IPAddress = ipAddress
 					}
+
 					if macAddress, ok := netInfo["MacAddress"].(string); ok {
 						detectedNet.MacAddress = macAddress
 					}
+
 					if gateway, ok := netInfo["Gateway"].(string); ok {
 						detectedNet.Gateway = gateway
 					}
+
 					container.Networks = append(container.Networks, detectedNet)
 				}
 			}
@@ -749,6 +784,7 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 							if hostIP, ok := hostPort["HostIp"].(string); ok {
 								portMapping.HostIP = hostIP
 							}
+
 							if hostPortStr, ok := hostPort["HostPort"].(string); ok {
 								if port, err := fmt.Sscanf(hostPortStr, "%d", &portMapping.HostPort); err == nil && port == 1 {
 									container.Ports = append(container.Ports, portMapping)
@@ -769,18 +805,23 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 				if mountType, ok := mount["Type"].(string); ok {
 					detectedMount.Type = mountType
 				}
+
 				if source, ok := mount["Source"].(string); ok {
 					detectedMount.Source = source
 				}
+
 				if destination, ok := mount["Destination"].(string); ok {
 					detectedMount.Destination = destination
 				}
+
 				if mode, ok := mount["Mode"].(string); ok {
 					detectedMount.Mode = mode
 				}
+
 				if rw, ok := mount["RW"].(bool); ok {
 					detectedMount.ReadWrite = rw
 				}
+
 				container.Mounts = append(container.Mounts, detectedMount)
 			}
 		}
@@ -796,7 +837,7 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 	return container, nil
 }
 
-// mergeContainerInfo merges basic and detailed container information
+// mergeContainerInfo merges basic and detailed container information.
 func (cd *ContainerDetector) mergeContainerInfo(basic DetectedContainer, detailed *DetectedContainer) DetectedContainer {
 	if detailed == nil {
 		return basic
@@ -807,45 +848,59 @@ func (cd *ContainerDetector) mergeContainerInfo(basic DetectedContainer, detaile
 	if detailed.Name != "" {
 		result.Name = detailed.Name
 	}
+
 	if detailed.Image != "" {
 		result.Image = detailed.Image
 	}
+
 	if detailed.State != "" {
 		result.State = detailed.State
 	}
+
 	if detailed.WorkingDir != "" {
 		result.WorkingDir = detailed.WorkingDir
 	}
+
 	if len(detailed.Command) > 0 {
 		result.Command = detailed.Command
 	}
+
 	if len(detailed.Environment) > 0 {
 		result.Environment = detailed.Environment
 	}
+
 	if len(detailed.Labels) > 0 {
 		result.Labels = detailed.Labels
 	}
+
 	if len(detailed.Networks) > 0 {
 		result.Networks = detailed.Networks
 	}
+
 	if len(detailed.Ports) > 0 {
 		result.Ports = detailed.Ports
 	}
+
 	if len(detailed.Mounts) > 0 {
 		result.Mounts = detailed.Mounts
 	}
+
 	if detailed.ResourceLimits != nil {
 		result.ResourceLimits = detailed.ResourceLimits
 	}
+
 	if detailed.HealthStatus != "" {
 		result.HealthStatus = detailed.HealthStatus
 	}
+
 	if detailed.RestartPolicy != "" {
 		result.RestartPolicy = detailed.RestartPolicy
 	}
+
 	if !detailed.Created.IsZero() {
 		result.Created = detailed.Created
 	}
+
 	if !detailed.StartedAt.IsZero() {
 		result.StartedAt = detailed.StartedAt
 	}
@@ -853,15 +908,17 @@ func (cd *ContainerDetector) mergeContainerInfo(basic DetectedContainer, detaile
 	return result
 }
 
-// detectNetworks detects container networks
+// detectNetworks detects container networks.
 func (cd *ContainerDetector) detectNetworks(ctx context.Context, runtime ContainerRuntime) ([]DetectedNetwork, error) {
 	cmd := exec.CommandContext(ctx, string(runtime), "network", "ls", "--format", "json")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
 
 	var networks []DetectedNetwork
+
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 
 	for _, line := range lines {
@@ -882,12 +939,15 @@ func (cd *ContainerDetector) detectNetworks(ctx context.Context, runtime Contain
 		if id, ok := networkData["ID"].(string); ok {
 			network.ID = id
 		}
+
 		if name, ok := networkData["Name"].(string); ok {
 			network.Name = name
 		}
+
 		if driver, ok := networkData["Driver"].(string); ok {
 			network.Driver = driver
 		}
+
 		if scope, ok := networkData["Scope"].(string); ok {
 			network.Scope = scope
 		}
@@ -908,9 +968,10 @@ func (cd *ContainerDetector) detectNetworks(ctx context.Context, runtime Contain
 	return networks, nil
 }
 
-// inspectNetwork gets detailed network information
+// inspectNetwork gets detailed network information.
 func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime ContainerRuntime, networkID string) (*DetectedNetwork, error) {
 	cmd := exec.CommandContext(ctx, string(runtime), "network", "inspect", networkID)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -934,15 +995,19 @@ func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime Contain
 	if name, ok := data["Name"].(string); ok {
 		network.Name = name
 	}
+
 	if driver, ok := data["Driver"].(string); ok {
 		network.Driver = driver
 	}
+
 	if scope, ok := data["Scope"].(string); ok {
 		network.Scope = scope
 	}
+
 	if internal, ok := data["Internal"].(bool); ok {
 		network.Internal = internal
 	}
+
 	if created, ok := data["Created"].(string); ok {
 		if t, err := time.Parse(time.RFC3339Nano, created); err == nil {
 			network.Created = t
@@ -955,6 +1020,7 @@ func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime Contain
 		if driver, ok := ipam["Driver"].(string); ok {
 			network.IPAM.Driver = driver
 		}
+
 		if config, ok := ipam["Config"].([]interface{}); ok {
 			for _, configData := range config {
 				if configMap, ok := configData.(map[string]interface{}); ok {
@@ -962,16 +1028,20 @@ func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime Contain
 					if subnet, ok := configMap["Subnet"].(string); ok {
 						ipamConfig.Subnet = subnet
 					}
+
 					if gateway, ok := configMap["Gateway"].(string); ok {
 						ipamConfig.Gateway = gateway
 					}
+
 					if ipRange, ok := configMap["IPRange"].(string); ok {
 						ipamConfig.IPRange = ipRange
 					}
+
 					network.IPAM.Config = append(network.IPAM.Config, ipamConfig)
 				}
 			}
 		}
+
 		if options, ok := ipam["Options"].(map[string]interface{}); ok {
 			network.IPAM.Options = make(map[string]string)
 			for k, v := range options {
@@ -1005,7 +1075,7 @@ func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime Contain
 	return network, nil
 }
 
-// mergeNetworkInfo merges basic and detailed network information
+// mergeNetworkInfo merges basic and detailed network information.
 func (cd *ContainerDetector) mergeNetworkInfo(basic DetectedNetwork, detailed *DetectedNetwork) DetectedNetwork {
 	if detailed == nil {
 		return basic
@@ -1015,22 +1085,28 @@ func (cd *ContainerDetector) mergeNetworkInfo(basic DetectedNetwork, detailed *D
 	if detailed.Name != "" {
 		result.Name = detailed.Name
 	}
+
 	if detailed.Driver != "" {
 		result.Driver = detailed.Driver
 	}
+
 	if detailed.Scope != "" {
 		result.Scope = detailed.Scope
 	}
+
 	result.Internal = detailed.Internal
 	if !detailed.Created.IsZero() {
 		result.Created = detailed.Created
 	}
+
 	if len(detailed.IPAM.Config) > 0 {
 		result.IPAM = detailed.IPAM
 	}
+
 	if len(detailed.Options) > 0 {
 		result.Options = detailed.Options
 	}
+
 	if len(detailed.Labels) > 0 {
 		result.Labels = detailed.Labels
 	}
@@ -1038,7 +1114,7 @@ func (cd *ContainerDetector) mergeNetworkInfo(basic DetectedNetwork, detailed *D
 	return result
 }
 
-// detectComposeProjects detects Docker Compose projects
+// detectComposeProjects detects Docker Compose projects.
 func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime ContainerRuntime) ([]ComposeProject, error) {
 	// Only supported for Docker and Podman with compose
 	if runtime != Docker && runtime != Podman {
@@ -1055,14 +1131,17 @@ func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime 
 
 	for _, container := range containers {
 		// Check for compose labels
-		var projectName string
-		var serviceName string
+		var (
+			projectName string
+			serviceName string
+		)
 
 		if container.Labels != nil {
 			// Docker Compose v2 labels
 			if project, ok := container.Labels["com.docker.compose.project"]; ok {
 				projectName = project
 			}
+
 			if service, ok := container.Labels["com.docker.compose.service"]; ok {
 				serviceName = service
 			}
@@ -1095,6 +1174,7 @@ func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime 
 
 		// Find or create service
 		var service *ComposeService
+
 		for i := range project.Services {
 			if project.Services[i].Name == serviceName {
 				service = &project.Services[i]
@@ -1121,6 +1201,7 @@ func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime 
 		// Merge ports
 		for _, port := range container.Ports {
 			found := false
+
 			for _, existingPort := range service.Ports {
 				if existingPort.ContainerPort == port.ContainerPort &&
 					existingPort.Protocol == port.Protocol {
@@ -1128,6 +1209,7 @@ func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime 
 					break
 				}
 			}
+
 			if !found {
 				service.Ports = append(service.Ports, port)
 			}
@@ -1138,18 +1220,21 @@ func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime 
 			if strings.HasPrefix(k, "com.docker.compose.") {
 				continue // Skip compose-specific labels
 			}
+
 			service.Labels[k] = v
 		}
 
 		// Collect networks
 		for _, network := range container.Networks {
 			found := false
+
 			for _, existingNetwork := range project.Networks {
 				if existingNetwork == network.NetworkName {
 					found = true
 					break
 				}
 			}
+
 			if !found {
 				project.Networks = append(project.Networks, network.NetworkName)
 			}
@@ -1159,12 +1244,14 @@ func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime 
 		for _, mount := range container.Mounts {
 			if mount.Type == "volume" {
 				found := false
+
 				for _, existingVolume := range project.Volumes {
 					if existingVolume == mount.Source {
 						found = true
 						break
 					}
 				}
+
 				if !found {
 					project.Volumes = append(project.Volumes, mount.Source)
 				}
@@ -1181,7 +1268,7 @@ func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime 
 	return result, nil
 }
 
-// detectKubernetesInfo detects Kubernetes cluster information
+// detectKubernetesInfo detects Kubernetes cluster information.
 func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*KubernetesClusterInfo, error) {
 	// Check if kubectl is available
 	if _, err := exec.LookPath("kubectl"); err != nil {
@@ -1195,10 +1282,12 @@ func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*Kuberne
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("cluster not accessible")
 	}
+
 	info.Available = true
 
 	// Get version
 	cmd = exec.CommandContext(ctx, "kubectl", "version", "--client", "--output=json")
+
 	output, err := cmd.Output()
 	if err == nil {
 		var versionData map[string]interface{}
@@ -1213,6 +1302,7 @@ func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*Kuberne
 
 	// Get current context
 	cmd = exec.CommandContext(ctx, "kubectl", "config", "current-context")
+
 	output, err = cmd.Output()
 	if err == nil {
 		info.Context = strings.TrimSpace(string(output))
@@ -1220,10 +1310,12 @@ func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*Kuberne
 
 	// Get current namespace
 	cmd = exec.CommandContext(ctx, "kubectl", "config", "view", "--minify", "--output=jsonpath={..namespace}")
+
 	output, err = cmd.Output()
 	if err == nil {
 		info.Namespace = strings.TrimSpace(string(output))
 	}
+
 	if info.Namespace == "" {
 		info.Namespace = "default"
 	}
@@ -1255,9 +1347,10 @@ func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*Kuberne
 	return info, nil
 }
 
-// getKubernetesNodes gets Kubernetes node information
+// getKubernetesNodes gets Kubernetes node information.
 func (cd *ContainerDetector) getKubernetesNodes(ctx context.Context) ([]KubernetesNode, error) {
 	cmd := exec.CommandContext(ctx, "kubectl", "get", "nodes", "-o", "json")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -1274,6 +1367,7 @@ func (cd *ContainerDetector) getKubernetesNodes(ctx context.Context) ([]Kubernet
 	}
 
 	var nodes []KubernetesNode
+
 	for _, item := range items {
 		nodeData, ok := item.(map[string]interface{})
 		if !ok {
@@ -1309,9 +1403,11 @@ func (cd *ContainerDetector) getKubernetesNodes(ctx context.Context) ([]Kubernet
 				if kubeletVersion, ok := nodeInfo["kubeletVersion"].(string); ok {
 					node.Version = kubeletVersion
 				}
+
 				if osImage, ok := nodeInfo["osImage"].(string); ok {
 					node.OS = osImage
 				}
+
 				if arch, ok := nodeInfo["architecture"].(string); ok {
 					node.Arch = arch
 				}
@@ -1336,19 +1432,21 @@ func (cd *ContainerDetector) getKubernetesNodes(ctx context.Context) ([]Kubernet
 	return nodes, nil
 }
 
-// getKubernetesNamespaces gets Kubernetes namespaces
+// getKubernetesNamespaces gets Kubernetes namespaces.
 func (cd *ContainerDetector) getKubernetesNamespaces(ctx context.Context) ([]string, error) {
 	cmd := exec.CommandContext(ctx, "kubectl", "get", "namespaces", "-o", "jsonpath={.items[*].metadata.name}")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
 
 	namespaces := strings.Fields(strings.TrimSpace(string(output)))
+
 	return namespaces, nil
 }
 
-// detectServiceMesh detects service mesh installation
+// detectServiceMesh detects service mesh installation.
 func (cd *ContainerDetector) detectServiceMesh(ctx context.Context) (*ServiceMeshInfo, error) {
 	// Check for Istio
 	cmd := exec.CommandContext(ctx, "kubectl", "get", "namespace", "istio-system")
@@ -1390,7 +1488,7 @@ func (cd *ContainerDetector) detectServiceMesh(ctx context.Context) (*ServiceMes
 	return nil, fmt.Errorf("no service mesh detected")
 }
 
-// detectIngressControllers detects ingress controllers
+// detectIngressControllers detects ingress controllers.
 func (cd *ContainerDetector) detectIngressControllers(ctx context.Context) ([]string, error) {
 	var controllers []string
 
@@ -1412,7 +1510,7 @@ func (cd *ContainerDetector) detectIngressControllers(ctx context.Context) ([]st
 	return controllers, nil
 }
 
-// calculateResourceUsage calculates overall resource usage
+// calculateResourceUsage calculates overall resource usage.
 func (cd *ContainerDetector) calculateResourceUsage(ctx context.Context, env *ContainerEnvironment) (*ContainerResourceUsage, error) {
 	usage := &ContainerResourceUsage{
 		TotalContainers: len(env.RunningContainers),
@@ -1458,11 +1556,12 @@ func (cd *ContainerDetector) calculateResourceUsage(ctx context.Context, env *Co
 	return usage, nil
 }
 
-// getContainerStats gets aggregated container statistics
+// getContainerStats gets aggregated container statistics.
 func (cd *ContainerDetector) getContainerStats(ctx context.Context, runtime ContainerRuntime) (ResourceSummary, error) {
 	var summary ResourceSummary
 
 	cmd := exec.CommandContext(ctx, string(runtime), "stats", "--no-stream", "--format", "json")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return summary, err
@@ -1482,6 +1581,7 @@ func (cd *ContainerDetector) getContainerStats(ctx context.Context, runtime Cont
 		// Aggregate CPU usage
 		if cpuPercent, ok := stats["CPUPerc"].(string); ok {
 			cpuPercent = strings.TrimSuffix(cpuPercent, "%")
+
 			var cpu float64
 			if n, err := fmt.Sscanf(cpuPercent, "%f", &cpu); err == nil && n == 1 {
 				summary.CPUUsage += cpu
@@ -1528,20 +1628,24 @@ func (cd *ContainerDetector) getContainerStats(ctx context.Context, runtime Cont
 	return summary, nil
 }
 
-// parseMemorySize parses memory size strings like "1.5GiB"
+// parseMemorySize parses memory size strings like "1.5GiB".
 func (cd *ContainerDetector) parseMemorySize(sizeStr string) int64 {
 	sizeStr = strings.TrimSpace(sizeStr)
 	if sizeStr == "" {
 		return 0
 	}
 
-	var size float64
-	var unit string
+	var (
+		size float64
+		unit string
+	)
+
 	if n, err := fmt.Sscanf(sizeStr, "%f%s", &size, &unit); err != nil || n != 2 {
 		return 0
 	}
 
 	multiplier := int64(1)
+
 	switch strings.ToLower(unit) {
 	case "kib", "k":
 		multiplier = 1024
@@ -1564,19 +1668,20 @@ func (cd *ContainerDetector) parseMemorySize(sizeStr string) int64 {
 	return int64(size * float64(multiplier))
 }
 
-// parseNetworkSize parses network size strings like "1.2kB"
+// parseNetworkSize parses network size strings like "1.2kB".
 func (cd *ContainerDetector) parseNetworkSize(sizeStr string) int64 {
 	return cd.parseMemorySize(sizeStr)
 }
 
-// parseBlockSize parses block size strings like "1.2MB"
+// parseBlockSize parses block size strings like "1.2MB".
 func (cd *ContainerDetector) parseBlockSize(sizeStr string) int64 {
 	return cd.parseMemorySize(sizeStr)
 }
 
-// getImageCount gets the number of images
+// getImageCount gets the number of images.
 func (cd *ContainerDetector) getImageCount(ctx context.Context, runtime ContainerRuntime) (int, error) {
 	cmd := exec.CommandContext(ctx, string(runtime), "images", "-q")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return 0, err
@@ -1590,9 +1695,10 @@ func (cd *ContainerDetector) getImageCount(ctx context.Context, runtime Containe
 	return len(lines), nil
 }
 
-// getVolumeCount gets the number of volumes
+// getVolumeCount gets the number of volumes.
 func (cd *ContainerDetector) getVolumeCount(ctx context.Context, runtime ContainerRuntime) (int, error) {
 	cmd := exec.CommandContext(ctx, string(runtime), "volume", "ls", "-q")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return 0, err
@@ -1606,7 +1712,7 @@ func (cd *ContainerDetector) getVolumeCount(ctx context.Context, runtime Contain
 	return len(lines), nil
 }
 
-// generateEnvironmentFingerprint generates a unique fingerprint for the environment
+// generateEnvironmentFingerprint generates a unique fingerprint for the environment.
 func (cd *ContainerDetector) generateEnvironmentFingerprint(env *ContainerEnvironment) string {
 	var elements []string
 
@@ -1633,57 +1739,62 @@ func (cd *ContainerDetector) generateEnvironmentFingerprint(env *ContainerEnviro
 
 	// Create fingerprint from sorted elements
 	fingerprint := strings.Join(elements, "|")
+
 	return fmt.Sprintf("%x", fingerprint)[:16] // Return first 16 characters of hash
 }
 
-// InvalidateCache invalidates the cached environment detection
+// InvalidateCache invalidates the cached environment detection.
 func (cd *ContainerDetector) InvalidateCache() {
 	cd.cacheMutex.Lock()
 	defer cd.cacheMutex.Unlock()
+
 	cd.cachedEnvironment = nil
 	cd.lastDetection = time.Time{}
 }
 
-// GetCachedEnvironment returns the cached environment if available
+// GetCachedEnvironment returns the cached environment if available.
 func (cd *ContainerDetector) GetCachedEnvironment() *ContainerEnvironment {
 	cd.cacheMutex.RLock()
 	defer cd.cacheMutex.RUnlock()
+
 	if cd.cachedEnvironment != nil && time.Since(cd.lastDetection) < cd.cacheExpiry {
 		return cd.cachedEnvironment
 	}
+
 	return nil
 }
 
 // Public API methods for container detection
 
-// DetectAvailableRuntimes detects available container runtimes
+// DetectAvailableRuntimes detects available container runtimes.
 func (cd *ContainerDetector) DetectAvailableRuntimes(ctx context.Context) ([]RuntimeInfo, error) {
 	return cd.detectContainerRuntimes(ctx)
 }
 
-// DeterminePrimaryRuntime determines the primary container runtime
+// DeterminePrimaryRuntime determines the primary container runtime.
 func (cd *ContainerDetector) DeterminePrimaryRuntime(runtimes []RuntimeInfo) ContainerRuntime {
 	return cd.determinePrimaryRuntime(runtimes)
 }
 
-// DetectOrchestrationPlatform detects the orchestration platform
+// DetectOrchestrationPlatform detects the orchestration platform.
 func (cd *ContainerDetector) DetectOrchestrationPlatform(ctx context.Context) (string, error) {
 	return cd.detectOrchestrationPlatform(ctx), nil
 }
 
-// GetRunningContainers gets running containers for a runtime
+// GetRunningContainers gets running containers for a runtime.
 func (cd *ContainerDetector) GetRunningContainers(ctx context.Context, runtime ContainerRuntime) ([]DetectedContainer, error) {
 	return cd.detectRunningContainers(ctx, runtime)
 }
 
-// GetContainerNetworks gets container networks for a runtime
+// GetContainerNetworks gets container networks for a runtime.
 func (cd *ContainerDetector) GetContainerNetworks(ctx context.Context, runtime ContainerRuntime) ([]DetectedNetwork, error) {
 	return cd.detectNetworks(ctx, runtime)
 }
 
-// ParseDockerPsOutput parses docker ps output
+// ParseDockerPsOutput parses docker ps output.
 func (cd *ContainerDetector) ParseDockerPsOutput(output string) ([]DetectedContainer, error) {
 	var containers []DetectedContainer
+
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	if len(lines) <= 1 {
 		return containers, nil
@@ -1707,9 +1818,10 @@ func (cd *ContainerDetector) ParseDockerPsOutput(output string) ([]DetectedConta
 	return containers, nil
 }
 
-// ParseDockerNetworkOutput parses docker network ls output
+// ParseDockerNetworkOutput parses docker network ls output.
 func (cd *ContainerDetector) ParseDockerNetworkOutput(output string) ([]DetectedNetwork, error) {
 	var networks []DetectedNetwork
+
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	if len(lines) <= 1 {
 		return networks, nil
@@ -1733,7 +1845,7 @@ func (cd *ContainerDetector) ParseDockerNetworkOutput(output string) ([]Detected
 	return networks, nil
 }
 
-// CalculateEnvironmentFingerprint calculates environment fingerprint
+// CalculateEnvironmentFingerprint calculates environment fingerprint.
 func (cd *ContainerDetector) CalculateEnvironmentFingerprint(env *ContainerEnvironment) string {
 	return cd.generateEnvironmentFingerprint(env)
 }

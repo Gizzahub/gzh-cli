@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// IstioConfig represents Istio-specific configuration
+// IstioConfig represents Istio-specific configuration.
 type IstioConfig struct {
 	VirtualServices  map[string]*IstioVirtualService  `yaml:"virtual_services,omitempty" json:"virtual_services,omitempty"`
 	DestinationRules map[string]*IstioDestinationRule `yaml:"destination_rules,omitempty" json:"destination_rules,omitempty"`
@@ -23,7 +23,7 @@ type IstioConfig struct {
 	RetryPolicy      *RetryPolicyConfig               `yaml:"retry_policy,omitempty" json:"retry_policy,omitempty"`
 }
 
-// LinkerdConfig represents Linkerd-specific configuration
+// LinkerdConfig represents Linkerd-specific configuration.
 type LinkerdConfig struct {
 	ServiceProfiles map[string]*LinkerdServiceProfile `yaml:"service_profiles,omitempty" json:"service_profiles,omitempty"`
 	TrafficSplits   map[string]*LinkerdTrafficSplit   `yaml:"traffic_splits,omitempty" json:"traffic_splits,omitempty"`
@@ -33,7 +33,7 @@ type LinkerdConfig struct {
 	RetryBudget     *RetryBudgetConfig                `yaml:"retry_budget,omitempty" json:"retry_budget,omitempty"`
 }
 
-// IstioVirtualService represents an Istio VirtualService
+// IstioVirtualService represents an Istio VirtualService.
 type IstioVirtualService struct {
 	Name     string           `yaml:"name" json:"name"`
 	Hosts    []string         `yaml:"hosts" json:"hosts"`
@@ -43,7 +43,7 @@ type IstioVirtualService struct {
 	ExportTo []string         `yaml:"export_to,omitempty" json:"export_to,omitempty"`
 }
 
-// IstioHTTPRoute represents HTTP routing rules in VirtualService
+// IstioHTTPRoute represents HTTP routing rules in VirtualService.
 type IstioHTTPRoute struct {
 	Name          string                      `yaml:"name,omitempty" json:"name,omitempty"`
 	Match         []IstioHTTPMatchRequest     `yaml:"match,omitempty" json:"match,omitempty"`
@@ -57,7 +57,7 @@ type IstioHTTPRoute struct {
 	MirrorPercent *int32                      `yaml:"mirror_percent,omitempty" json:"mirror_percent,omitempty"`
 }
 
-// IstioHTTPMatchRequest represents HTTP match conditions
+// IstioHTTPMatchRequest represents HTTP match conditions.
 type IstioHTTPMatchRequest struct {
 	URI         *StringMatch            `yaml:"uri,omitempty" json:"uri,omitempty"`
 	Headers     map[string]*StringMatch `yaml:"headers,omitempty" json:"headers,omitempty"`
@@ -65,97 +65,97 @@ type IstioHTTPMatchRequest struct {
 	QueryParams map[string]*StringMatch `yaml:"query_params,omitempty" json:"query_params,omitempty"`
 }
 
-// StringMatch represents different string matching types
+// StringMatch represents different string matching types.
 type StringMatch struct {
 	Exact  string `yaml:"exact,omitempty" json:"exact,omitempty"`
 	Prefix string `yaml:"prefix,omitempty" json:"prefix,omitempty"`
 	Regex  string `yaml:"regex,omitempty" json:"regex,omitempty"`
 }
 
-// IstioHTTPRouteDestination represents HTTP route destination
+// IstioHTTPRouteDestination represents HTTP route destination.
 type IstioHTTPRouteDestination struct {
 	Destination *IstioDestination `yaml:"destination" json:"destination"`
 	Weight      int32             `yaml:"weight,omitempty" json:"weight,omitempty"`
 	Headers     *HeaderOperations `yaml:"headers,omitempty" json:"headers,omitempty"`
 }
 
-// IstioDestination represents a service destination
+// IstioDestination represents a service destination.
 type IstioDestination struct {
 	Host   string        `yaml:"host" json:"host"`
 	Subset string        `yaml:"subset,omitempty" json:"subset,omitempty"`
 	Port   *PortSelector `yaml:"port,omitempty" json:"port,omitempty"`
 }
 
-// PortSelector represents port selection
+// PortSelector represents port selection.
 type PortSelector struct {
 	Number int32 `yaml:"number,omitempty" json:"number,omitempty"`
 }
 
-// HeaderOperations represents header manipulation operations
+// HeaderOperations represents header manipulation operations.
 type HeaderOperations struct {
 	Set    map[string]string `yaml:"set,omitempty" json:"set,omitempty"`
 	Add    map[string]string `yaml:"add,omitempty" json:"add,omitempty"`
 	Remove []string          `yaml:"remove,omitempty" json:"remove,omitempty"`
 }
 
-// IstioHTTPRedirect represents HTTP redirect
+// IstioHTTPRedirect represents HTTP redirect.
 type IstioHTTPRedirect struct {
 	URI          string `yaml:"uri,omitempty" json:"uri,omitempty"`
 	Authority    string `yaml:"authority,omitempty" json:"authority,omitempty"`
 	RedirectCode int32  `yaml:"redirect_code,omitempty" json:"redirect_code,omitempty"`
 }
 
-// IstioHTTPRewrite represents HTTP rewrite
+// IstioHTTPRewrite represents HTTP rewrite.
 type IstioHTTPRewrite struct {
 	URI       string `yaml:"uri,omitempty" json:"uri,omitempty"`
 	Authority string `yaml:"authority,omitempty" json:"authority,omitempty"`
 }
 
-// IstioHTTPRetry represents retry configuration
+// IstioHTTPRetry represents retry configuration.
 type IstioHTTPRetry struct {
 	Attempts      int32  `yaml:"attempts" json:"attempts"`
 	PerTryTimeout string `yaml:"per_try_timeout,omitempty" json:"per_try_timeout,omitempty"`
 	RetryOn       string `yaml:"retry_on,omitempty" json:"retry_on,omitempty"`
 }
 
-// IstioHTTPFaultInjection represents fault injection
+// IstioHTTPFaultInjection represents fault injection.
 type IstioHTTPFaultInjection struct {
 	Delay *FaultDelay `yaml:"delay,omitempty" json:"delay,omitempty"`
 	Abort *FaultAbort `yaml:"abort,omitempty" json:"abort,omitempty"`
 }
 
-// FaultDelay represents delay injection
+// FaultDelay represents delay injection.
 type FaultDelay struct {
 	Percentage int32  `yaml:"percentage" json:"percentage"`
 	FixedDelay string `yaml:"fixed_delay" json:"fixed_delay"`
 }
 
-// FaultAbort represents abort injection
+// FaultAbort represents abort injection.
 type FaultAbort struct {
 	Percentage int32 `yaml:"percentage" json:"percentage"`
 	HTTPStatus int32 `yaml:"http_status" json:"http_status"`
 }
 
-// IstioTCPRoute represents TCP routing rules
+// IstioTCPRoute represents TCP routing rules.
 type IstioTCPRoute struct {
 	Match []IstioL4MatchAttributes `yaml:"match,omitempty" json:"match,omitempty"`
 	Route []IstioRouteDestination  `yaml:"route" json:"route"`
 }
 
-// IstioL4MatchAttributes represents L4 match attributes
+// IstioL4MatchAttributes represents L4 match attributes.
 type IstioL4MatchAttributes struct {
 	DestinationSubnets []string          `yaml:"destination_subnets,omitempty" json:"destination_subnets,omitempty"`
 	Port               int32             `yaml:"port,omitempty" json:"port,omitempty"`
 	SourceLabels       map[string]string `yaml:"source_labels,omitempty" json:"source_labels,omitempty"`
 }
 
-// IstioRouteDestination represents route destination
+// IstioRouteDestination represents route destination.
 type IstioRouteDestination struct {
 	Destination *IstioDestination `yaml:"destination" json:"destination"`
 	Weight      int32             `yaml:"weight,omitempty" json:"weight,omitempty"`
 }
 
-// IstioDestinationRule represents an Istio DestinationRule
+// IstioDestinationRule represents an Istio DestinationRule.
 type IstioDestinationRule struct {
 	Name          string              `yaml:"name" json:"name"`
 	Host          string              `yaml:"host" json:"host"`
@@ -164,7 +164,7 @@ type IstioDestinationRule struct {
 	ExportTo      []string            `yaml:"export_to,omitempty" json:"export_to,omitempty"`
 }
 
-// IstioTrafficPolicy represents traffic policy configuration
+// IstioTrafficPolicy represents traffic policy configuration.
 type IstioTrafficPolicy struct {
 	LoadBalancer     *LoadBalancerSettings   `yaml:"load_balancer,omitempty" json:"load_balancer,omitempty"`
 	ConnectionPool   *ConnectionPoolSettings `yaml:"connection_pool,omitempty" json:"connection_pool,omitempty"`
@@ -172,24 +172,24 @@ type IstioTrafficPolicy struct {
 	TLS              *ClientTLSSettings      `yaml:"tls,omitempty" json:"tls,omitempty"`
 }
 
-// LoadBalancerSettings represents load balancer configuration
+// LoadBalancerSettings represents load balancer configuration.
 type LoadBalancerSettings struct {
 	Simple string `yaml:"simple,omitempty" json:"simple,omitempty"` // ROUND_ROBIN, LEAST_CONN, RANDOM, PASSTHROUGH
 }
 
-// ConnectionPoolSettings represents connection pool configuration
+// ConnectionPoolSettings represents connection pool configuration.
 type ConnectionPoolSettings struct {
 	TCP  *TCPSettings  `yaml:"tcp,omitempty" json:"tcp,omitempty"`
 	HTTP *HTTPSettings `yaml:"http,omitempty" json:"http,omitempty"`
 }
 
-// TCPSettings represents TCP connection pool settings
+// TCPSettings represents TCP connection pool settings.
 type TCPSettings struct {
 	MaxConnections int32  `yaml:"max_connections,omitempty" json:"max_connections,omitempty"`
 	ConnectTimeout string `yaml:"connect_timeout,omitempty" json:"connect_timeout,omitempty"`
 }
 
-// HTTPSettings represents HTTP connection pool settings
+// HTTPSettings represents HTTP connection pool settings.
 type HTTPSettings struct {
 	HTTP1MaxPendingRequests  int32  `yaml:"http1_max_pending_requests,omitempty" json:"http1_max_pending_requests,omitempty"`
 	HTTP2MaxRequests         int32  `yaml:"http2_max_requests,omitempty" json:"http2_max_requests,omitempty"`
@@ -198,7 +198,7 @@ type HTTPSettings struct {
 	UseClientProtocol        bool   `yaml:"use_client_protocol,omitempty" json:"use_client_protocol,omitempty"`
 }
 
-// OutlierDetection represents outlier detection configuration
+// OutlierDetection represents outlier detection configuration.
 type OutlierDetection struct {
 	ConsecutiveErrors  int32  `yaml:"consecutive_errors,omitempty" json:"consecutive_errors,omitempty"`
 	Interval           string `yaml:"interval,omitempty" json:"interval,omitempty"`
@@ -207,7 +207,7 @@ type OutlierDetection struct {
 	MinHealthPercent   int32  `yaml:"min_health_percent,omitempty" json:"min_health_percent,omitempty"`
 }
 
-// ClientTLSSettings represents client TLS settings
+// ClientTLSSettings represents client TLS settings.
 type ClientTLSSettings struct {
 	Mode              string   `yaml:"mode" json:"mode"` // DISABLE, SIMPLE, MUTUAL, ISTIO_MUTUAL
 	ClientCertificate string   `yaml:"client_certificate,omitempty" json:"client_certificate,omitempty"`
@@ -216,14 +216,14 @@ type ClientTLSSettings struct {
 	SubjectAltNames   []string `yaml:"subject_alt_names,omitempty" json:"subject_alt_names,omitempty"`
 }
 
-// IstioSubset represents a subset configuration
+// IstioSubset represents a subset configuration.
 type IstioSubset struct {
 	Name          string              `yaml:"name" json:"name"`
 	Labels        map[string]string   `yaml:"labels" json:"labels"`
 	TrafficPolicy *IstioTrafficPolicy `yaml:"traffic_policy,omitempty" json:"traffic_policy,omitempty"`
 }
 
-// IstioServiceEntry represents an Istio ServiceEntry
+// IstioServiceEntry represents an Istio ServiceEntry.
 type IstioServiceEntry struct {
 	Name       string          `yaml:"name" json:"name"`
 	Hosts      []string        `yaml:"hosts" json:"hosts"`
@@ -233,7 +233,7 @@ type IstioServiceEntry struct {
 	Endpoints  []WorkloadEntry `yaml:"endpoints,omitempty" json:"endpoints,omitempty"`
 }
 
-// WorkloadEntry represents a workload endpoint
+// WorkloadEntry represents a workload endpoint.
 type WorkloadEntry struct {
 	Address string            `yaml:"address" json:"address"`
 	Ports   map[string]int32  `yaml:"ports,omitempty" json:"ports,omitempty"`
@@ -241,28 +241,28 @@ type WorkloadEntry struct {
 	Weight  int32             `yaml:"weight,omitempty" json:"weight,omitempty"`
 }
 
-// IstioGateway represents an Istio Gateway
+// IstioGateway represents an Istio Gateway.
 type IstioGateway struct {
 	Name     string            `yaml:"name" json:"name"`
 	Selector map[string]string `yaml:"selector" json:"selector"`
 	Servers  []IstioServer     `yaml:"servers" json:"servers"`
 }
 
-// IstioServer represents a server configuration in Gateway
+// IstioServer represents a server configuration in Gateway.
 type IstioServer struct {
 	Port  *GatewayPort       `yaml:"port" json:"port"`
 	Hosts []string           `yaml:"hosts" json:"hosts"`
 	TLS   *ServerTLSSettings `yaml:"tls,omitempty" json:"tls,omitempty"`
 }
 
-// GatewayPort represents a gateway port
+// GatewayPort represents a gateway port.
 type GatewayPort struct {
 	Number   int32  `yaml:"number" json:"number"`
 	Name     string `yaml:"name" json:"name"`
 	Protocol string `yaml:"protocol" json:"protocol"`
 }
 
-// ServerTLSSettings represents server TLS settings
+// ServerTLSSettings represents server TLS settings.
 type ServerTLSSettings struct {
 	Mode              string   `yaml:"mode" json:"mode"` // PASSTHROUGH, SIMPLE, MUTUAL
 	ServerCertificate string   `yaml:"server_certificate,omitempty" json:"server_certificate,omitempty"`
@@ -271,7 +271,7 @@ type ServerTLSSettings struct {
 	SubjectAltNames   []string `yaml:"subject_alt_names,omitempty" json:"subject_alt_names,omitempty"`
 }
 
-// LinkerdServiceProfile represents a Linkerd ServiceProfile
+// LinkerdServiceProfile represents a Linkerd ServiceProfile.
 type LinkerdServiceProfile struct {
 	Name        string             `yaml:"name" json:"name"`
 	Routes      []LinkerdRoute     `yaml:"routes" json:"routes"`
@@ -279,7 +279,7 @@ type LinkerdServiceProfile struct {
 	OpaquePorts []int32            `yaml:"opaque_ports,omitempty" json:"opaque_ports,omitempty"`
 }
 
-// LinkerdRoute represents a route in ServiceProfile
+// LinkerdRoute represents a route in ServiceProfile.
 type LinkerdRoute struct {
 	Name        string            `yaml:"name" json:"name"`
 	Condition   *LinkerdCondition `yaml:"condition" json:"condition"`
@@ -287,26 +287,26 @@ type LinkerdRoute struct {
 	IsRetryable bool              `yaml:"is_retryable,omitempty" json:"is_retryable,omitempty"`
 }
 
-// LinkerdCondition represents a route condition
+// LinkerdCondition represents a route condition.
 type LinkerdCondition struct {
 	Method    string `yaml:"method,omitempty" json:"method,omitempty"`
 	PathRegex string `yaml:"path_regex,omitempty" json:"path_regex,omitempty"`
 }
 
-// LinkerdTrafficSplit represents a Linkerd TrafficSplit
+// LinkerdTrafficSplit represents a Linkerd TrafficSplit.
 type LinkerdTrafficSplit struct {
 	Name     string           `yaml:"name" json:"name"`
 	Service  string           `yaml:"service" json:"service"`
 	Backends []LinkerdBackend `yaml:"backends" json:"backends"`
 }
 
-// LinkerdBackend represents a traffic split backend
+// LinkerdBackend represents a traffic split backend.
 type LinkerdBackend struct {
 	Service string `yaml:"service" json:"service"`
 	Weight  int32  `yaml:"weight" json:"weight"`
 }
 
-// CircuitBreakerConfig represents circuit breaker configuration
+// CircuitBreakerConfig represents circuit breaker configuration.
 type CircuitBreakerConfig struct {
 	ConsecutiveErrors  int32  `yaml:"consecutive_errors" json:"consecutive_errors"`
 	Interval           string `yaml:"interval" json:"interval"`
@@ -314,7 +314,7 @@ type CircuitBreakerConfig struct {
 	MaxEjectionPercent int32  `yaml:"max_ejection_percent" json:"max_ejection_percent"`
 }
 
-// RetryPolicyConfig represents retry policy configuration
+// RetryPolicyConfig represents retry policy configuration.
 type RetryPolicyConfig struct {
 	Attempts      int32    `yaml:"attempts" json:"attempts"`
 	PerTryTimeout string   `yaml:"per_try_timeout,omitempty" json:"per_try_timeout,omitempty"`
@@ -323,7 +323,7 @@ type RetryPolicyConfig struct {
 	RetryOn       []string `yaml:"retry_on,omitempty" json:"retry_on,omitempty"`
 }
 
-// ProxyResourceConfig represents proxy resource configuration
+// ProxyResourceConfig represents proxy resource configuration.
 type ProxyResourceConfig struct {
 	CPURequest    string `yaml:"cpu_request" json:"cpu_request"`
 	CPULimit      string `yaml:"cpu_limit" json:"cpu_limit"`
@@ -331,28 +331,30 @@ type ProxyResourceConfig struct {
 	MemoryLimit   string `yaml:"memory_limit" json:"memory_limit"`
 }
 
-// TimeoutPolicyConfig represents timeout policy configuration
+// TimeoutPolicyConfig represents timeout policy configuration.
 type TimeoutPolicyConfig struct {
 	RequestTimeout    string `yaml:"request_timeout" json:"request_timeout"`
 	IdleTimeout       string `yaml:"idle_timeout" json:"idle_timeout"`
 	StreamIdleTimeout string `yaml:"stream_idle_timeout" json:"stream_idle_timeout"`
 }
 
-// RetryBudgetConfig represents retry budget configuration
+// RetryBudgetConfig represents retry budget configuration.
 type RetryBudgetConfig struct {
 	RetryRatio          float32 `yaml:"retry_ratio" json:"retry_ratio"`
 	MinRetriesPerSecond int32   `yaml:"min_retries_per_second" json:"min_retries_per_second"`
 	TTL                 string  `yaml:"ttl" json:"ttl"`
 }
 
-// DetectServiceMesh detects which service mesh is installed in the cluster
+// DetectServiceMesh detects which service mesh is installed in the cluster.
 func (km *KubernetesNetworkManager) DetectServiceMesh(ctx context.Context) (string, error) {
 	// Check for Istio
 	istioCmd := "kubectl get namespace istio-system --no-headers 2>/dev/null"
+
 	result, err := km.executor.ExecuteWithTimeout(ctx, istioCmd, 5*time.Second)
 	if err == nil && result.ExitCode == 0 {
 		// Check if Istio control plane is running
 		pilotCmd := "kubectl get deployment -n istio-system istiod --no-headers 2>/dev/null"
+
 		pilotResult, err := km.executor.ExecuteWithTimeout(ctx, pilotCmd, 5*time.Second)
 		if err == nil && pilotResult.ExitCode == 0 {
 			km.logger.Info("Detected Istio service mesh")
@@ -362,10 +364,12 @@ func (km *KubernetesNetworkManager) DetectServiceMesh(ctx context.Context) (stri
 
 	// Check for Linkerd
 	linkerdCmd := "kubectl get namespace linkerd --no-headers 2>/dev/null"
+
 	result, err = km.executor.ExecuteWithTimeout(ctx, linkerdCmd, 5*time.Second)
 	if err == nil && result.ExitCode == 0 {
 		// Check if Linkerd control plane is running
 		controllerCmd := "kubectl get deployment -n linkerd linkerd-controller --no-headers 2>/dev/null"
+
 		controllerResult, err := km.executor.ExecuteWithTimeout(ctx, controllerCmd, 5*time.Second)
 		if err == nil && controllerResult.ExitCode == 0 {
 			km.logger.Info("Detected Linkerd service mesh")
@@ -374,10 +378,11 @@ func (km *KubernetesNetworkManager) DetectServiceMesh(ctx context.Context) (stri
 	}
 
 	km.logger.Info("No service mesh detected")
+
 	return "", nil
 }
 
-// ApplyServiceMeshConfig applies service mesh configuration
+// ApplyServiceMeshConfig applies service mesh configuration.
 func (km *KubernetesNetworkManager) ApplyServiceMeshConfig(profile *KubernetesNetworkProfile) error {
 	if profile.ServiceMesh == nil || !profile.ServiceMesh.Enabled {
 		km.logger.Info("Service mesh not enabled for profile", zap.String("profile", profile.Name))
@@ -394,7 +399,7 @@ func (km *KubernetesNetworkManager) ApplyServiceMeshConfig(profile *KubernetesNe
 	}
 }
 
-// applyIstioConfig applies Istio-specific configuration
+// applyIstioConfig applies Istio-specific configuration.
 func (km *KubernetesNetworkManager) applyIstioConfig(profile *KubernetesNetworkProfile) error {
 	km.logger.Info("Applying Istio configuration",
 		zap.String("profile", profile.Name),
@@ -439,10 +444,11 @@ func (km *KubernetesNetworkManager) applyIstioConfig(profile *KubernetesNetworkP
 	}
 
 	km.logger.Info("Successfully applied Istio configuration", zap.String("profile", profile.Name))
+
 	return nil
 }
 
-// applyLinkerdConfig applies Linkerd-specific configuration
+// applyLinkerdConfig applies Linkerd-specific configuration.
 func (km *KubernetesNetworkManager) applyLinkerdConfig(profile *KubernetesNetworkProfile) error {
 	km.logger.Info("Applying Linkerd configuration",
 		zap.String("profile", profile.Name),
@@ -473,38 +479,41 @@ func (km *KubernetesNetworkManager) applyLinkerdConfig(profile *KubernetesNetwor
 	}
 
 	km.logger.Info("Successfully applied Linkerd configuration", zap.String("profile", profile.Name))
+
 	return nil
 }
 
-// enableIstioSidecarInjection enables Istio sidecar injection for a namespace
+// enableIstioSidecarInjection enables Istio sidecar injection for a namespace.
 func (km *KubernetesNetworkManager) enableIstioSidecarInjection(namespace string) error {
 	// Label namespace for automatic sidecar injection
 	labelCmd := fmt.Sprintf("kubectl label namespace %s istio-injection=enabled --overwrite", namespace)
-	result, err := km.executor.ExecuteWithTimeout(context.Background(), labelCmd, 10*time.Second)
 
+	result, err := km.executor.ExecuteWithTimeout(context.Background(), labelCmd, 10*time.Second)
 	if err != nil || result.ExitCode != 0 {
 		return fmt.Errorf("failed to enable sidecar injection: %s", result.Error)
 	}
 
 	km.logger.Info("Enabled Istio sidecar injection", zap.String("namespace", namespace))
+
 	return nil
 }
 
-// enableLinkerdProxyInjection enables Linkerd proxy injection for a namespace
+// enableLinkerdProxyInjection enables Linkerd proxy injection for a namespace.
 func (km *KubernetesNetworkManager) enableLinkerdProxyInjection(namespace string) error {
 	// Annotate namespace for automatic proxy injection
 	annotateCmd := fmt.Sprintf("kubectl annotate namespace %s linkerd.io/inject=enabled --overwrite", namespace)
-	result, err := km.executor.ExecuteWithTimeout(context.Background(), annotateCmd, 10*time.Second)
 
+	result, err := km.executor.ExecuteWithTimeout(context.Background(), annotateCmd, 10*time.Second)
 	if err != nil || result.ExitCode != 0 {
 		return fmt.Errorf("failed to enable proxy injection: %s", result.Error)
 	}
 
 	km.logger.Info("Enabled Linkerd proxy injection", zap.String("namespace", namespace))
+
 	return nil
 }
 
-// GenerateIstioVirtualService generates an Istio VirtualService manifest
+// GenerateIstioVirtualService generates an Istio VirtualService manifest.
 func (km *KubernetesNetworkManager) GenerateIstioVirtualService(namespace string, name string, vs *IstioVirtualService) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
@@ -530,13 +539,14 @@ func (km *KubernetesNetworkManager) GenerateIstioVirtualService(namespace string
 			httpRoute := km.convertHTTPRoute(route)
 			httpRoutes = append(httpRoutes, httpRoute)
 		}
+
 		spec["http"] = httpRoutes
 	}
 
 	return manifest, nil
 }
 
-// convertHTTPRoute converts HTTPRoute to map for YAML generation
+// convertHTTPRoute converts HTTPRoute to map for YAML generation.
 func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[string]interface{} {
 	httpRoute := make(map[string]interface{})
 
@@ -551,18 +561,23 @@ func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[s
 			if match.URI != nil {
 				m["uri"] = km.convertStringMatch(match.URI)
 			}
+
 			if match.Method != nil {
 				m["method"] = km.convertStringMatch(match.Method)
 			}
+
 			if len(match.Headers) > 0 {
 				headers := make(map[string]interface{})
 				for k, v := range match.Headers {
 					headers[k] = km.convertStringMatch(v)
 				}
+
 				m["headers"] = headers
 			}
+
 			matches = append(matches, m)
 		}
+
 		httpRoute["match"] = matches
 	}
 
@@ -577,11 +592,14 @@ func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[s
 			if r.Destination.Subset != "" {
 				rm["destination"].(map[string]interface{})["subset"] = r.Destination.Subset
 			}
+
 			if r.Weight > 0 {
 				rm["weight"] = r.Weight
 			}
+
 			routes = append(routes, rm)
 		}
+
 		httpRoute["route"] = routes
 	}
 
@@ -601,7 +619,7 @@ func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[s
 	return httpRoute
 }
 
-// convertStringMatch converts StringMatch to map
+// convertStringMatch converts StringMatch to map.
 func (km *KubernetesNetworkManager) convertStringMatch(sm *StringMatch) map[string]interface{} {
 	match := make(map[string]interface{})
 	if sm.Exact != "" {
@@ -611,10 +629,11 @@ func (km *KubernetesNetworkManager) convertStringMatch(sm *StringMatch) map[stri
 	} else if sm.Regex != "" {
 		match["regex"] = sm.Regex
 	}
+
 	return match
 }
 
-// applyIstioVirtualService applies an Istio VirtualService
+// applyIstioVirtualService applies an Istio VirtualService.
 func (km *KubernetesNetworkManager) applyIstioVirtualService(namespace, name string, vs *IstioVirtualService) error {
 	manifest, err := km.GenerateIstioVirtualService(namespace, name, vs)
 	if err != nil {
@@ -629,7 +648,7 @@ func (km *KubernetesNetworkManager) applyIstioVirtualService(namespace, name str
 	return km.applyResource(yamlData)
 }
 
-// GenerateIstioDestinationRule generates an Istio DestinationRule manifest
+// GenerateIstioDestinationRule generates an Istio DestinationRule manifest.
 func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace string, name string, dr *IstioDestinationRule) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
@@ -661,21 +680,27 @@ func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace strin
 				if dr.TrafficPolicy.ConnectionPool.TCP.MaxConnections > 0 {
 					tcp["maxConnections"] = dr.TrafficPolicy.ConnectionPool.TCP.MaxConnections
 				}
+
 				if dr.TrafficPolicy.ConnectionPool.TCP.ConnectTimeout != "" {
 					tcp["connectTimeout"] = dr.TrafficPolicy.ConnectionPool.TCP.ConnectTimeout
 				}
+
 				cp["tcp"] = tcp
 			}
+
 			if dr.TrafficPolicy.ConnectionPool.HTTP != nil {
 				http := make(map[string]interface{})
 				if dr.TrafficPolicy.ConnectionPool.HTTP.HTTP1MaxPendingRequests > 0 {
 					http["http1MaxPendingRequests"] = dr.TrafficPolicy.ConnectionPool.HTTP.HTTP1MaxPendingRequests
 				}
+
 				if dr.TrafficPolicy.ConnectionPool.HTTP.HTTP2MaxRequests > 0 {
 					http["http2MaxRequests"] = dr.TrafficPolicy.ConnectionPool.HTTP.HTTP2MaxRequests
 				}
+
 				cp["http"] = http
 			}
+
 			tp["connectionPool"] = cp
 		}
 
@@ -684,12 +709,15 @@ func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace strin
 			if dr.TrafficPolicy.OutlierDetection.ConsecutiveErrors > 0 {
 				od["consecutiveErrors"] = dr.TrafficPolicy.OutlierDetection.ConsecutiveErrors
 			}
+
 			if dr.TrafficPolicy.OutlierDetection.Interval != "" {
 				od["interval"] = dr.TrafficPolicy.OutlierDetection.Interval
 			}
+
 			if dr.TrafficPolicy.OutlierDetection.BaseEjectionTime != "" {
 				od["baseEjectionTime"] = dr.TrafficPolicy.OutlierDetection.BaseEjectionTime
 			}
+
 			tp["outlierDetection"] = od
 		}
 
@@ -712,13 +740,14 @@ func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace strin
 			}
 			subsets = append(subsets, s)
 		}
+
 		spec["subsets"] = subsets
 	}
 
 	return manifest, nil
 }
 
-// applyIstioDestinationRule applies an Istio DestinationRule
+// applyIstioDestinationRule applies an Istio DestinationRule.
 func (km *KubernetesNetworkManager) applyIstioDestinationRule(namespace, name string, dr *IstioDestinationRule) error {
 	manifest, err := km.GenerateIstioDestinationRule(namespace, name, dr)
 	if err != nil {
@@ -733,7 +762,7 @@ func (km *KubernetesNetworkManager) applyIstioDestinationRule(namespace, name st
 	return km.applyResource(yamlData)
 }
 
-// GenerateIstioServiceEntry generates an Istio ServiceEntry manifest
+// GenerateIstioServiceEntry generates an Istio ServiceEntry manifest.
 func (km *KubernetesNetworkManager) GenerateIstioServiceEntry(namespace string, name string, se *IstioServiceEntry) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
@@ -764,18 +793,21 @@ func (km *KubernetesNetworkManager) GenerateIstioServiceEntry(namespace string, 
 			if len(ep.Ports) > 0 {
 				endpoint["ports"] = ep.Ports
 			}
+
 			if len(ep.Labels) > 0 {
 				endpoint["labels"] = ep.Labels
 			}
+
 			endpoints = append(endpoints, endpoint)
 		}
+
 		spec["endpoints"] = endpoints
 	}
 
 	return manifest, nil
 }
 
-// convertServicePorts converts ServicePort slice to interface slice
+// convertServicePorts converts ServicePort slice to interface slice.
 func (km *KubernetesNetworkManager) convertServicePorts(ports []ServicePort) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(ports))
 	for _, port := range ports {
@@ -786,10 +818,11 @@ func (km *KubernetesNetworkManager) convertServicePorts(ports []ServicePort) []m
 		}
 		result = append(result, p)
 	}
+
 	return result
 }
 
-// applyIstioServiceEntry applies an Istio ServiceEntry
+// applyIstioServiceEntry applies an Istio ServiceEntry.
 func (km *KubernetesNetworkManager) applyIstioServiceEntry(namespace, name string, se *IstioServiceEntry) error {
 	manifest, err := km.GenerateIstioServiceEntry(namespace, name, se)
 	if err != nil {
@@ -804,7 +837,7 @@ func (km *KubernetesNetworkManager) applyIstioServiceEntry(namespace, name strin
 	return km.applyResource(yamlData)
 }
 
-// GenerateIstioGateway generates an Istio Gateway manifest
+// GenerateIstioGateway generates an Istio Gateway manifest.
 func (km *KubernetesNetworkManager) GenerateIstioGateway(namespace string, name string, gw *IstioGateway) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
@@ -822,7 +855,7 @@ func (km *KubernetesNetworkManager) GenerateIstioGateway(namespace string, name 
 	return manifest, nil
 }
 
-// convertGatewayServers converts IstioServer slice to interface slice
+// convertGatewayServers converts IstioServer slice to interface slice.
 func (km *KubernetesNetworkManager) convertGatewayServers(servers []IstioServer) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(servers))
 	for _, server := range servers {
@@ -839,12 +872,14 @@ func (km *KubernetesNetworkManager) convertGatewayServers(servers []IstioServer)
 				"mode": server.TLS.Mode,
 			}
 		}
+
 		result = append(result, s)
 	}
+
 	return result
 }
 
-// applyIstioGateway applies an Istio Gateway
+// applyIstioGateway applies an Istio Gateway.
 func (km *KubernetesNetworkManager) applyIstioGateway(namespace, name string, gw *IstioGateway) error {
 	manifest, err := km.GenerateIstioGateway(namespace, name, gw)
 	if err != nil {
@@ -859,7 +894,7 @@ func (km *KubernetesNetworkManager) applyIstioGateway(namespace, name string, gw
 	return km.applyResource(yamlData)
 }
 
-// GenerateLinkerdServiceProfile generates a Linkerd ServiceProfile manifest
+// GenerateLinkerdServiceProfile generates a Linkerd ServiceProfile manifest.
 func (km *KubernetesNetworkManager) GenerateLinkerdServiceProfile(namespace string, name string, sp *LinkerdServiceProfile) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "linkerd.io/v1alpha2",
@@ -884,19 +919,25 @@ func (km *KubernetesNetworkManager) GenerateLinkerdServiceProfile(namespace stri
 				if route.Condition.Method != "" {
 					condition["method"] = route.Condition.Method
 				}
+
 				if route.Condition.PathRegex != "" {
 					condition["pathRegex"] = route.Condition.PathRegex
 				}
+
 				r["condition"] = condition
 			}
+
 			if route.Timeout != "" {
 				r["timeout"] = route.Timeout
 			}
+
 			if route.IsRetryable {
 				r["isRetryable"] = true
 			}
+
 			routes = append(routes, r)
 		}
+
 		spec["routes"] = routes
 	}
 
@@ -911,7 +952,7 @@ func (km *KubernetesNetworkManager) GenerateLinkerdServiceProfile(namespace stri
 	return manifest, nil
 }
 
-// applyLinkerdServiceProfile applies a Linkerd ServiceProfile
+// applyLinkerdServiceProfile applies a Linkerd ServiceProfile.
 func (km *KubernetesNetworkManager) applyLinkerdServiceProfile(namespace, name string, sp *LinkerdServiceProfile) error {
 	manifest, err := km.GenerateLinkerdServiceProfile(namespace, name, sp)
 	if err != nil {
@@ -926,7 +967,7 @@ func (km *KubernetesNetworkManager) applyLinkerdServiceProfile(namespace, name s
 	return km.applyResource(yamlData)
 }
 
-// GenerateLinkerdTrafficSplit generates a Linkerd TrafficSplit manifest
+// GenerateLinkerdTrafficSplit generates a Linkerd TrafficSplit manifest.
 func (km *KubernetesNetworkManager) GenerateLinkerdTrafficSplit(namespace string, name string, ts *LinkerdTrafficSplit) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "split.smi-spec.io/v1alpha1",
@@ -951,13 +992,14 @@ func (km *KubernetesNetworkManager) GenerateLinkerdTrafficSplit(namespace string
 			}
 			backends = append(backends, b)
 		}
+
 		spec["backends"] = backends
 	}
 
 	return manifest, nil
 }
 
-// applyLinkerdTrafficSplit applies a Linkerd TrafficSplit
+// applyLinkerdTrafficSplit applies a Linkerd TrafficSplit.
 func (km *KubernetesNetworkManager) applyLinkerdTrafficSplit(namespace, name string, ts *LinkerdTrafficSplit) error {
 	manifest, err := km.GenerateLinkerdTrafficSplit(namespace, name, ts)
 	if err != nil {
@@ -972,7 +1014,7 @@ func (km *KubernetesNetworkManager) applyLinkerdTrafficSplit(namespace, name str
 	return km.applyResource(yamlData)
 }
 
-// ValidateServiceMeshConfig validates service mesh configuration
+// ValidateServiceMeshConfig validates service mesh configuration.
 func (km *KubernetesNetworkManager) ValidateServiceMeshConfig(config *ServiceMeshConfig) error {
 	if config == nil {
 		return nil
@@ -1010,7 +1052,7 @@ func (km *KubernetesNetworkManager) ValidateServiceMeshConfig(config *ServiceMes
 	return nil
 }
 
-// validateIstioConfig validates Istio-specific configuration
+// validateIstioConfig validates Istio-specific configuration.
 func (km *KubernetesNetworkManager) validateIstioConfig(config interface{}) error {
 	// Convert to IstioConfig if possible
 	istioConfig, ok := config.(*IstioConfig)
@@ -1025,6 +1067,7 @@ func (km *KubernetesNetworkManager) validateIstioConfig(config interface{}) erro
 		if err != nil {
 			return err
 		}
+
 		istioConfig = &IstioConfig{}
 		if err := json.Unmarshal(jsonData, istioConfig); err != nil {
 			return err
@@ -1061,7 +1104,7 @@ func (km *KubernetesNetworkManager) validateIstioConfig(config interface{}) erro
 	return nil
 }
 
-// validateLinkerdConfig validates Linkerd-specific configuration
+// validateLinkerdConfig validates Linkerd-specific configuration.
 func (km *KubernetesNetworkManager) validateLinkerdConfig(config interface{}) error {
 	// Convert to LinkerdConfig if possible
 	linkerdConfig, ok := config.(*LinkerdConfig)
@@ -1076,6 +1119,7 @@ func (km *KubernetesNetworkManager) validateLinkerdConfig(config interface{}) er
 		if err != nil {
 			return err
 		}
+
 		linkerdConfig = &LinkerdConfig{}
 		if err := json.Unmarshal(jsonData, linkerdConfig); err != nil {
 			return err
@@ -1094,6 +1138,7 @@ func (km *KubernetesNetworkManager) validateLinkerdConfig(config interface{}) er
 		if ts.Service == "" {
 			return fmt.Errorf("TrafficSplit %s must have a service", name)
 		}
+
 		if len(ts.Backends) == 0 {
 			return fmt.Errorf("TrafficSplit %s must have at least one backend", name)
 		}
@@ -1103,6 +1148,7 @@ func (km *KubernetesNetworkManager) validateLinkerdConfig(config interface{}) er
 		for _, backend := range ts.Backends {
 			totalWeight += backend.Weight
 		}
+
 		if totalWeight != 100 {
 			return fmt.Errorf("TrafficSplit %s backend weights must sum to 100, got %d", name, totalWeight)
 		}
@@ -1111,7 +1157,7 @@ func (km *KubernetesNetworkManager) validateLinkerdConfig(config interface{}) er
 	return nil
 }
 
-// GetServiceMeshStatus gets the status of service mesh in a namespace
+// GetServiceMeshStatus gets the status of service mesh in a namespace.
 func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[string]interface{}, error) {
 	status := make(map[string]interface{})
 
@@ -1134,6 +1180,7 @@ func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[
 		// Count Istio resources
 		resources := []string{"virtualservices", "destinationrules", "serviceentries", "gateways"}
 		resourceCounts := make(map[string]int)
+
 		for _, resource := range resources {
 			countCmd := fmt.Sprintf("kubectl get %s -n %s --no-headers 2>/dev/null | wc -l", resource, namespace)
 			result, _ := km.executor.ExecuteWithTimeout(context.Background(), countCmd, 5*time.Second)
@@ -1141,6 +1188,7 @@ func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[
 			fmt.Sscanf(strings.TrimSpace(result.Output), "%d", &count)
 			resourceCounts[resource] = count
 		}
+
 		status["resources"] = resourceCounts
 
 	case "linkerd":
@@ -1152,6 +1200,7 @@ func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[
 		// Count Linkerd resources
 		resources := []string{"serviceprofiles.linkerd.io", "trafficsplits.split.smi-spec.io"}
 		resourceCounts := make(map[string]int)
+
 		for _, resource := range resources {
 			countCmd := fmt.Sprintf("kubectl get %s -n %s --no-headers 2>/dev/null | wc -l", resource, namespace)
 			result, _ := km.executor.ExecuteWithTimeout(context.Background(), countCmd, 5*time.Second)
@@ -1159,6 +1208,7 @@ func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[
 			fmt.Sscanf(strings.TrimSpace(result.Output), "%d", &count)
 			resourceCounts[resource] = count
 		}
+
 		status["resources"] = resourceCounts
 
 	default:

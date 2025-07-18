@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// HTTPClient defines the interface for HTTP operations
+// HTTPClient defines the interface for HTTP operations.
 type HTTPClient interface {
 	// Do performs an HTTP request
 	Do(req *http.Request) (*http.Response, error)
@@ -28,7 +28,7 @@ type HTTPClient interface {
 	Delete(ctx context.Context, url string) (*http.Response, error)
 }
 
-// RepositoryInfo represents a GitHub repository with essential information for interfaces
+// RepositoryInfo represents a GitHub repository with essential information for interfaces.
 type RepositoryInfo struct {
 	Name          string    `json:"name"`
 	FullName      string    `json:"full_name"`
@@ -49,7 +49,7 @@ type RepositoryInfo struct {
 	IsTemplate    bool      `json:"is_template"`
 }
 
-// APIClient defines the interface for GitHub API operations
+// APIClient defines the interface for GitHub API operations.
 type APIClient interface {
 	// Repository operations
 	GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error)
@@ -65,7 +65,7 @@ type APIClient interface {
 	UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error
 }
 
-// CloneService defines the interface for repository cloning operations
+// CloneService defines the interface for repository cloning operations.
 type CloneService interface {
 	// Clone a single repository
 	CloneRepository(ctx context.Context, repo RepositoryInfo, targetPath, strategy string) error
@@ -79,7 +79,7 @@ type CloneService interface {
 	GetSupportedStrategies() []string
 }
 
-// RateLimit represents GitHub API rate limit information
+// RateLimit represents GitHub API rate limit information.
 type RateLimit struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`
@@ -87,7 +87,7 @@ type RateLimit struct {
 	Used      int       `json:"used"`
 }
 
-// TokenValidatorInterface defines the interface for GitHub token validation
+// TokenValidatorInterface defines the interface for GitHub token validation.
 type TokenValidatorInterface interface {
 	ValidateToken(ctx context.Context, token string) (*TokenInfoRecord, error)
 	ValidateForOperation(ctx context.Context, token, operation string) error
@@ -95,7 +95,7 @@ type TokenValidatorInterface interface {
 	GetRequiredScopes(operation string) []string
 }
 
-// TokenInfoRecord represents information about a GitHub token
+// TokenInfoRecord represents information about a GitHub token.
 type TokenInfoRecord struct {
 	Valid       bool      `json:"valid"`
 	Scopes      []string  `json:"scopes"`
@@ -105,14 +105,14 @@ type TokenInfoRecord struct {
 	Permissions []string  `json:"permissions"`
 }
 
-// ChangeLoggerInterface defines the interface for logging repository changes
+// ChangeLoggerInterface defines the interface for logging repository changes.
 type ChangeLoggerInterface interface {
 	LogOperation(ctx context.Context, operation LogOperationRecord) error
 	GetOperationHistory(ctx context.Context, filters LogFilters) ([]LogOperationRecord, error)
 	SetLogLevel(level LogLevelType)
 }
 
-// LogOperationRecord represents a logged operation
+// LogOperationRecord represents a logged operation.
 type LogOperationRecord struct {
 	ID         string                 `json:"id"`
 	Timestamp  time.Time              `json:"timestamp"`
@@ -124,7 +124,7 @@ type LogOperationRecord struct {
 	Metadata   map[string]interface{} `json:"metadata"`
 }
 
-// LogLevelType represents the logging level
+// LogLevelType represents the logging level.
 type LogLevelType int
 
 const (
@@ -134,7 +134,7 @@ const (
 	LogLevelTypeError
 )
 
-// LogFilters defines filters for operation history queries
+// LogFilters defines filters for operation history queries.
 type LogFilters struct {
 	Repository string    `json:"repository,omitempty"`
 	Operation  string    `json:"operation,omitempty"`
@@ -144,14 +144,14 @@ type LogFilters struct {
 	Success    *bool     `json:"success,omitempty"`
 }
 
-// ConfirmationServiceInterface defines the interface for user confirmation operations
+// ConfirmationServiceInterface defines the interface for user confirmation operations.
 type ConfirmationServiceInterface interface {
 	ConfirmOperation(ctx context.Context, prompt *ConfirmationPromptRecord) (bool, error)
 	ConfirmBulkOperation(ctx context.Context, operations []OperationRecord) ([]bool, error)
 	SetConfirmationMode(mode ConfirmationModeType)
 }
 
-// ConfirmationPromptRecord represents a confirmation request
+// ConfirmationPromptRecord represents a confirmation request.
 type ConfirmationPromptRecord struct {
 	Title       string                 `json:"title"`
 	Description string                 `json:"description"`
@@ -162,7 +162,7 @@ type ConfirmationPromptRecord struct {
 	Metadata    map[string]interface{} `json:"metadata"`
 }
 
-// OperationRecord represents an operation that requires confirmation
+// OperationRecord represents an operation that requires confirmation.
 type OperationRecord struct {
 	ID          string                 `json:"id"`
 	Type        string                 `json:"type"`
@@ -172,7 +172,7 @@ type OperationRecord struct {
 	Metadata    map[string]interface{} `json:"metadata"`
 }
 
-// RiskLevelType represents the risk level of an operation
+// RiskLevelType represents the risk level of an operation.
 type RiskLevelType int
 
 const (
@@ -182,7 +182,7 @@ const (
 	RiskLevelCritical
 )
 
-// ConfirmationModeType represents the confirmation mode
+// ConfirmationModeType represents the confirmation mode.
 type ConfirmationModeType int
 
 const (
@@ -192,7 +192,7 @@ const (
 	ConfirmationModeDryRun
 )
 
-// GitHubService provides a unified interface for all GitHub operations
+// GitHubService provides a unified interface for all GitHub operations.
 type GitHubService interface {
 	APIClient
 	CloneService

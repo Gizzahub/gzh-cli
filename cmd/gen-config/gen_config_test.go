@@ -358,6 +358,7 @@ func TestGenConfigCommand(t *testing.T) {
 
 		// Check that it has subcommands
 		subcommands := cmd.Commands()
+
 		subcommandNames := make([]string, len(subcommands))
 		for i, subcmd := range subcommands {
 			subcommandNames[i] = subcmd.Use
@@ -370,7 +371,7 @@ func TestGenConfigCommand(t *testing.T) {
 	})
 }
 
-// Helper function to create mock Git repositories for testing
+// Helper function to create mock Git repositories for testing.
 func createMockGitRepo(t *testing.T, baseDir, orgDir, repoName, remoteURL string) {
 	repoPath := filepath.Join(baseDir, orgDir, repoName)
 	gitDir := filepath.Join(repoPath, ".git")

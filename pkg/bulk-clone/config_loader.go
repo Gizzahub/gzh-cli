@@ -9,16 +9,16 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-// BulkCloneConfig is the public interface for bulk clone configuration
+// BulkCloneConfig is the public interface for bulk clone configuration.
 type BulkCloneConfig = bulkCloneConfig
 
-// ConfigPaths defines the paths where config files are searched
+// ConfigPaths defines the paths where config files are searched.
 var ConfigPaths = []string{
 	"./bulk-clone.yaml",
 	"./bulk-clone.yml",
 }
 
-// OverlayConfigPaths defines overlay config files that can override base configuration
+// OverlayConfigPaths defines overlay config files that can override base configuration.
 var OverlayConfigPaths = []string{
 	"./bulk-clone.home.yaml",
 	"./bulk-clone.home.yml",
@@ -26,7 +26,7 @@ var OverlayConfigPaths = []string{
 	"./bulk-clone.work.yml",
 }
 
-// GetConfigPaths returns all possible config file paths in order of preference
+// GetConfigPaths returns all possible config file paths in order of preference.
 func GetConfigPaths() []string {
 	paths := make([]string, 0, len(ConfigPaths)+2)
 
@@ -47,7 +47,7 @@ func GetConfigPaths() []string {
 	return paths
 }
 
-// GetOverlayConfigPaths returns overlay config file paths in order of preference
+// GetOverlayConfigPaths returns overlay config file paths in order of preference.
 func GetOverlayConfigPaths() []string {
 	paths := make([]string, 0, len(OverlayConfigPaths)+4)
 
@@ -66,18 +66,19 @@ func GetOverlayConfigPaths() []string {
 	return paths
 }
 
-// FindConfigFile searches for config file in predefined locations
+// FindConfigFile searches for config file in predefined locations.
 func FindConfigFile() (string, error) {
 	return FindConfigFileWithEnv(env.NewOSEnvironment())
 }
 
-// FindConfigFileWithEnv searches for config file using the provided environment
+// FindConfigFileWithEnv searches for config file using the provided environment.
 func FindConfigFileWithEnv(environment env.Environment) (string, error) {
 	// Check environment variable first
 	if envPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); envPath != "" {
 		if fileExists(envPath) {
 			return envPath, nil
 		}
+
 		return "", fmt.Errorf("config file specified in GZH_CONFIG_PATH not found: %s", envPath)
 	}
 
@@ -91,13 +92,14 @@ func FindConfigFileWithEnv(environment env.Environment) (string, error) {
 	return "", fmt.Errorf("no config file found in standard locations")
 }
 
-// LoadConfig loads configuration from file with overlay support
+// LoadConfig loads configuration from file with overlay support.
 func LoadConfig(configPath string) (*BulkCloneConfig, error) {
 	if configPath == "" {
 		path, err := FindConfigFile()
 		if err != nil {
 			return nil, err
 		}
+
 		configPath = path
 	}
 
@@ -115,7 +117,7 @@ func LoadConfig(configPath string) (*BulkCloneConfig, error) {
 	return cfg, nil
 }
 
-// LoadConfigWithOverlays loads base config and applies overlay configurations
+// LoadConfigWithOverlays loads base config and applies overlay configurations.
 func LoadConfigWithOverlays(basePath string, overlayPaths ...string) (*bulkCloneConfig, error) {
 	// Load base configuration
 	cfg := &bulkCloneConfig{}
@@ -135,7 +137,7 @@ func LoadConfigWithOverlays(basePath string, overlayPaths ...string) (*bulkClone
 	return cfg, nil
 }
 
-// GetGithubOrgConfig extracts GitHub organization config from the full config
+// GetGithubOrgConfig extracts GitHub organization config from the full config.
 func (cfg *bulkCloneConfig) GetGithubOrgConfig(orgName string) (*BulkCloneGithub, error) {
 	// Check in repo_roots first
 	for _, repo := range cfg.RepoRoots {
@@ -157,7 +159,7 @@ func (cfg *bulkCloneConfig) GetGithubOrgConfig(orgName string) (*BulkCloneGithub
 	return nil, fmt.Errorf("no configuration found for organization: %s", orgName)
 }
 
-// GetGitlabGroupConfig extracts GitLab group config from the full config
+// GetGitlabGroupConfig extracts GitLab group config from the full config.
 func (cfg *bulkCloneConfig) GetGitlabGroupConfig(groupName string) (*BulkCloneGitlab, error) {
 	// Note: Current config structure doesn't have repo_roots for GitLab
 	// Check defaults
@@ -175,12 +177,12 @@ func (cfg *bulkCloneConfig) GetGitlabGroupConfig(groupName string) (*BulkCloneGi
 	return nil, fmt.Errorf("no configuration found for group: %s", groupName)
 }
 
-// ExpandPath expands environment variables and ~ in paths
+// ExpandPath expands environment variables and ~ in paths.
 func ExpandPath(path string) string {
 	return ExpandPathWithEnv(path, env.NewOSEnvironment())
 }
 
-// ExpandPathWithEnv expands environment variables and ~ in paths using the provided environment
+// ExpandPathWithEnv expands environment variables and ~ in paths using the provided environment.
 func ExpandPathWithEnv(path string, environment env.Environment) string {
 	if path == "" {
 		return path
@@ -195,6 +197,7 @@ func ExpandPathWithEnv(path string, environment env.Environment) string {
 				homeDir = h
 			}
 		}
+
 		if homeDir != "" {
 			path = filepath.Join(homeDir, path[2:])
 		}
@@ -206,7 +209,7 @@ func ExpandPathWithEnv(path string, environment env.Environment) string {
 	return path
 }
 
-// applyOverlays applies all found overlay configurations
+// applyOverlays applies all found overlay configurations.
 func (cfg *bulkCloneConfig) applyOverlays() error {
 	overlayPaths := GetOverlayConfigPaths()
 
@@ -221,7 +224,7 @@ func (cfg *bulkCloneConfig) applyOverlays() error {
 	return nil
 }
 
-// applyOverlay applies a single overlay configuration file
+// applyOverlay applies a single overlay configuration file.
 func (cfg *bulkCloneConfig) applyOverlay(overlayPath string) error {
 	overlay := &bulkCloneConfig{}
 	if err := overlay.ReadConfigWithoutValidation(overlayPath); err != nil {
@@ -239,7 +242,7 @@ func (cfg *bulkCloneConfig) applyOverlay(overlayPath string) error {
 	return nil
 }
 
-// mergeConfig merges an overlay configuration into the base configuration
+// mergeConfig merges an overlay configuration into the base configuration.
 func (cfg *bulkCloneConfig) mergeConfig(overlay *bulkCloneConfig) {
 	// Merge version if specified in overlay
 	if overlay.Version != "" {
@@ -256,7 +259,7 @@ func (cfg *bulkCloneConfig) mergeConfig(overlay *bulkCloneConfig) {
 	cfg.mergeRepoRoots(overlay.RepoRoots)
 }
 
-// mergeDefaults merges default configuration settings
+// mergeDefaults merges default configuration settings.
 func (cfg *bulkCloneConfig) mergeDefaults(overlayDefault *bulkCloneDefault) {
 	// Merge protocol if specified
 	if overlayDefault.Protocol != "" {
@@ -267,12 +270,15 @@ func (cfg *bulkCloneConfig) mergeDefaults(overlayDefault *bulkCloneDefault) {
 	if overlayDefault.Github.RootPath != "" {
 		cfg.Default.Github.RootPath = overlayDefault.Github.RootPath
 	}
+
 	if overlayDefault.Github.Provider != "" {
 		cfg.Default.Github.Provider = overlayDefault.Github.Provider
 	}
+
 	if overlayDefault.Github.Protocol != "" {
 		cfg.Default.Github.Protocol = overlayDefault.Github.Protocol
 	}
+
 	if overlayDefault.Github.OrgName != "" {
 		cfg.Default.Github.OrgName = overlayDefault.Github.OrgName
 	}
@@ -281,15 +287,19 @@ func (cfg *bulkCloneConfig) mergeDefaults(overlayDefault *bulkCloneDefault) {
 	if overlayDefault.Gitlab.RootPath != "" {
 		cfg.Default.Gitlab.RootPath = overlayDefault.Gitlab.RootPath
 	}
+
 	if overlayDefault.Gitlab.Provider != "" {
 		cfg.Default.Gitlab.Provider = overlayDefault.Gitlab.Provider
 	}
+
 	if overlayDefault.Gitlab.URL != "" {
 		cfg.Default.Gitlab.URL = overlayDefault.Gitlab.URL
 	}
+
 	if overlayDefault.Gitlab.Protocol != "" {
 		cfg.Default.Gitlab.Protocol = overlayDefault.Gitlab.Protocol
 	}
+
 	if overlayDefault.Gitlab.GroupName != "" {
 		cfg.Default.Gitlab.GroupName = overlayDefault.Gitlab.GroupName
 	}
@@ -299,7 +309,7 @@ func (cfg *bulkCloneConfig) mergeDefaults(overlayDefault *bulkCloneDefault) {
 	}
 }
 
-// mergeRepoRoots merges repo_roots, replacing existing entries with same org_name
+// mergeRepoRoots merges repo_roots, replacing existing entries with same org_name.
 func (cfg *bulkCloneConfig) mergeRepoRoots(overlayRepoRoots []BulkCloneGithub) {
 	for _, overlayRepo := range overlayRepoRoots {
 		found := false
@@ -308,6 +318,7 @@ func (cfg *bulkCloneConfig) mergeRepoRoots(overlayRepoRoots []BulkCloneGithub) {
 			if existingRepo.OrgName == overlayRepo.OrgName {
 				cfg.RepoRoots[i] = overlayRepo
 				found = true
+
 				break
 			}
 		}

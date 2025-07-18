@@ -128,12 +128,14 @@ func testOpenSourceTemplate(t *testing.T, config *RepoConfig) {
 
 	// Verify required files
 	assert.NotEmpty(t, template.RequiredFiles)
+
 	hasFile := func(path string) bool {
 		for _, f := range template.RequiredFiles {
 			if f == path {
 				return true
 			}
 		}
+
 		return false
 	}
 	assert.True(t, hasFile("README.md"))
@@ -196,6 +198,7 @@ func testEnterpriseTemplate(t *testing.T, config *RepoConfig) {
 				return true
 			}
 		}
+
 		return false
 	}
 	assert.True(t, hasFile("COMPLIANCE.md"))
@@ -351,9 +354,11 @@ func TestTemplateUsagePatterns(t *testing.T) {
 		if pattern.Match == "infra-*" || pattern.Match == "terraform-*" {
 			assert.Equal(t, "security-enhanced", pattern.Template)
 		}
+
 		if pattern.Match == "example-*" || pattern.Match == "demo-*" {
 			assert.Equal(t, "opensource-community", pattern.Template)
 		}
+
 		if pattern.Match == "*-service" || pattern.Match == "*-api" {
 			assert.Equal(t, "enterprise-standard", pattern.Template)
 		}

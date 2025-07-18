@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewWebhookCmd creates the webhook management command
+// NewWebhookCmd creates the webhook management command.
 func NewWebhookCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "webhook",
@@ -46,7 +46,7 @@ func NewWebhookCmd() *cobra.Command {
 	return cmd
 }
 
-// Repository webhook commands
+// Repository webhook commands.
 func newRepositoryWebhookCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo",
@@ -112,10 +112,11 @@ func newRepositoryWebhookCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(createCmd, listCmd, getCmd, updateCmd, deleteCmd)
+
 	return cmd
 }
 
-// Organization webhook commands
+// Organization webhook commands.
 func newOrganizationWebhookCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "org",
@@ -150,10 +151,11 @@ func newOrganizationWebhookCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(createCmd, listCmd)
+
 	return cmd
 }
 
-// Bulk operations
+// Bulk operations.
 func newBulkWebhookCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bulk",
@@ -178,10 +180,11 @@ func newBulkWebhookCmd() *cobra.Command {
 	createCmd.MarkFlagRequired("url")
 
 	cmd.AddCommand(createCmd)
+
 	return cmd
 }
 
-// Monitoring and testing
+// Monitoring and testing.
 func newWebhookMonitorCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "monitor",
@@ -208,10 +211,11 @@ func newWebhookMonitorCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(testCmd, deliveriesCmd)
+
 	return cmd
 }
 
-// Organization-wide webhook configuration
+// Organization-wide webhook configuration.
 func newWebhookConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
@@ -343,6 +347,7 @@ func newWebhookConfigCmd() *cobra.Command {
 	reportCmd.AddCommand(complianceCmd, inventoryCmd, syncCmd)
 
 	cmd.AddCommand(policyCmd, orgConfigCmd, reportCmd)
+
 	return cmd
 }
 
@@ -392,6 +397,7 @@ func runListRepositoryWebhooks(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
 
 	webhookService := createMockWebhookService()
+
 	webhooks, err := webhookService.ListRepositoryWebhooks(cmd.Context(), owner, repo, nil)
 	if err != nil {
 		return fmt.Errorf("failed to list webhooks: %w", err)
@@ -403,6 +409,7 @@ func runListRepositoryWebhooks(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("📡 %s/%s의 웹훅 목록 (%d개):\n\n", owner, repo, len(webhooks))
+
 	for _, webhook := range webhooks {
 		status := "🔴"
 		if webhook.Active {
@@ -421,12 +428,14 @@ func runListRepositoryWebhooks(cmd *cobra.Command, args []string) error {
 
 func runGetRepositoryWebhook(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
+
 	webhookID, err := strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
 	webhookService := createMockWebhookService()
+
 	webhook, err := webhookService.GetRepositoryWebhook(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
 		return fmt.Errorf("failed to get webhook: %w", err)
@@ -446,6 +455,7 @@ func runGetRepositoryWebhook(cmd *cobra.Command, args []string) error {
 
 func runUpdateRepositoryWebhook(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
+
 	webhookID, err := strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
@@ -480,18 +490,21 @@ func runUpdateRepositoryWebhook(cmd *cobra.Command, args []string) error {
 
 func runDeleteRepositoryWebhook(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
+
 	webhookID, err := strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
 	webhookService := createMockWebhookService()
+
 	err = webhookService.DeleteRepositoryWebhook(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
 		return fmt.Errorf("failed to delete webhook: %w", err)
 	}
 
 	fmt.Printf("✅ 웹훅 %d이 성공적으로 삭제되었습니다.\n", webhookID)
+
 	return nil
 }
 
@@ -535,12 +548,14 @@ func runListOrganizationWebhooks(cmd *cobra.Command, args []string) error {
 	org := args[0]
 
 	webhookService := createMockWebhookService()
+
 	webhooks, err := webhookService.ListOrganizationWebhooks(cmd.Context(), org, nil)
 	if err != nil {
 		return fmt.Errorf("failed to list organization webhooks: %w", err)
 	}
 
 	fmt.Printf("🏢 %s 조직의 웹훅 목록 (%d개):\n\n", org, len(webhooks))
+
 	for _, webhook := range webhooks {
 		status := "🔴"
 		if webhook.Active {
@@ -583,6 +598,7 @@ func runBulkCreateWebhooks(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("🚀 %s 조직에 대량 웹훅 생성을 시작합니다...\n", org)
+
 	result, err := webhookService.BulkCreateWebhooks(cmd.Context(), request)
 	if err != nil {
 		return fmt.Errorf("failed to bulk create webhooks: %w", err)
@@ -596,6 +612,7 @@ func runBulkCreateWebhooks(cmd *cobra.Command, args []string) error {
 
 	if result.FailureCount > 0 {
 		fmt.Printf("\n❌ 실패한 작업:\n")
+
 		for _, r := range result.Results {
 			if !r.Success {
 				fmt.Printf("• %s: %s\n", r.Repository, r.Error)
@@ -608,23 +625,27 @@ func runBulkCreateWebhooks(cmd *cobra.Command, args []string) error {
 
 func runTestWebhook(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
+
 	webhookID, err := strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
 	webhookService := createMockWebhookService()
+
 	result, err := webhookService.TestWebhook(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
 		return fmt.Errorf("failed to test webhook: %w", err)
 	}
 
 	fmt.Printf("🧪 웹훅 테스트 결과:\n")
+
 	if result.Success {
 		fmt.Printf("✅ 성공 (상태 코드: %d)\n", result.StatusCode)
 	} else {
 		fmt.Printf("❌ 실패: %s\n", result.Error)
 	}
+
 	fmt.Printf("응답 시간: %s\n", result.Duration)
 	fmt.Printf("배송 ID: %s\n", result.DeliveryID)
 
@@ -633,18 +654,21 @@ func runTestWebhook(cmd *cobra.Command, args []string) error {
 
 func runGetWebhookDeliveries(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
+
 	webhookID, err := strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
 	webhookService := createMockWebhookService()
+
 	deliveries, err := webhookService.GetWebhookDeliveries(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
 		return fmt.Errorf("failed to get webhook deliveries: %w", err)
 	}
 
 	fmt.Printf("📬 웹훅 배송 기록 (%d개):\n\n", len(deliveries))
+
 	for _, delivery := range deliveries {
 		status := "✅"
 		if !delivery.Success {
@@ -660,13 +684,13 @@ func runGetWebhookDeliveries(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// Helper function to create a mock webhook service for demo purposes
+// Helper function to create a mock webhook service for demo purposes.
 func createMockWebhookService() github.WebhookService {
 	// In real implementation, this would be properly injected with real dependencies
 	return github.NewWebhookService(nil, &mockLogger{})
 }
 
-// Mock logger for demo purposes
+// Mock logger for demo purposes.
 type mockLogger struct{}
 
 func (l *mockLogger) Debug(msg string, fields ...interface{}) {
@@ -833,6 +857,7 @@ validation:
   require_secret: false`
 
 	fmt.Printf(config, org, org)
+
 	return nil
 }
 

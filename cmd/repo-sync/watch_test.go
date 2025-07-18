@@ -33,6 +33,7 @@ func TestFileChangeEventDeduplication(t *testing.T) {
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
+
 	defer watcher.Close()
 
 	// Create test events with same file path but different timestamps
@@ -65,6 +66,7 @@ func TestShouldIgnorePatterns(t *testing.T) {
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
+
 	defer watcher.Close()
 
 	tests := []struct {
@@ -95,6 +97,7 @@ func TestMatchesWatchPatterns(t *testing.T) {
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
+
 	defer watcher.Close()
 
 	tests := []struct {
@@ -125,6 +128,7 @@ func TestMapOperation(t *testing.T) {
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
+
 	defer watcher.Close()
 
 	tests := []struct {
@@ -154,6 +158,7 @@ func TestWatcherStats(t *testing.T) {
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
+
 	defer watcher.Close()
 
 	// Initial stats should be zero
@@ -167,6 +172,7 @@ func TestValidateRepositoryPath(t *testing.T) {
 	// Create a temporary directory structure for testing
 	tempDir, err := os.MkdirTemp("", "repo-sync-test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	// Create a mock .git directory
@@ -228,11 +234,13 @@ func TestCalculateChecksum(t *testing.T) {
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
+
 	defer watcher.Close()
 
 	// Create a temporary file for checksum testing
 	tempFile, err := os.CreateTemp("", "checksum-test")
 	require.NoError(t, err)
+
 	defer os.Remove(tempFile.Name())
 
 	testContent := "Hello, World!"
@@ -257,6 +265,7 @@ func TestMapOperationWithFsnotify(t *testing.T) {
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
+
 	defer watcher.Close()
 
 	tests := []struct {

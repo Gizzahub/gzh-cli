@@ -14,8 +14,10 @@ import (
 func TestNewAzureSubscriptionManager(t *testing.T) {
 	// Create temporary directory for testing
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	ctx := context.Background()
@@ -65,6 +67,7 @@ func TestAzureSubscription_JSONSerialization(t *testing.T) {
 
 	// Test JSON unmarshaling
 	var unmarshaled AzureSubscription
+
 	err = json.Unmarshal(data, &unmarshaled)
 	require.NoError(t, err)
 
@@ -89,8 +92,10 @@ func TestAzureSubscription_JSONSerialization(t *testing.T) {
 
 func TestAzureSubscriptionManager_EmptyState(t *testing.T) {
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	manager := &AzureSubscriptionManager{
@@ -332,8 +337,10 @@ func TestAzureSubscriptionManager_Integration(t *testing.T) {
 	}
 
 	tmpDir := t.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	ctx := context.Background()
@@ -381,11 +388,13 @@ func TestAzureSubscriptionManager_InvalidFormat(t *testing.T) {
 	})
 }
 
-// Benchmark tests for performance
+// Benchmark tests for performance.
 func BenchmarkAzureSubscriptionManager_LoadSubscriptions(b *testing.B) {
 	tmpDir := b.TempDir()
+
 	originalHome := os.Getenv("HOME")
 	defer os.Setenv("HOME", originalHome)
+
 	os.Setenv("HOME", tmpDir)
 
 	b.ResetTimer()
@@ -432,7 +441,9 @@ func BenchmarkAzureSubscription_JSONSerialization(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		data, _ := json.Marshal(subscription)
+
 		var unmarshaled AzureSubscription
+
 		_ = json.Unmarshal(data, &unmarshaled)
 	}
 }

@@ -271,6 +271,7 @@ func TestSSHConfigCommand(t *testing.T) {
 
 		// Check that it has subcommands
 		subcommands := cmd.Commands()
+
 		subcommandNames := make([]string, len(subcommands))
 		for i, subcmd := range subcommands {
 			subcommandNames[i] = subcmd.Use

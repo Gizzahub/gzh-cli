@@ -69,6 +69,7 @@ type hostEntry struct {
 
 func defaultActionsOptions() *actionsOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &actionsOptions{
 		configPath: filepath.Join(homeDir, ".gz", "network-actions.yaml"),
 		backup:     true,
@@ -295,7 +296,7 @@ Examples:
 	return cmd
 }
 
-// VPN command implementations
+// VPN command implementations.
 func newVPNConnectCmd() *cobra.Command {
 	var vpnName, vpnType, configFile string
 
@@ -344,7 +345,7 @@ func newVPNStatusCmd() *cobra.Command {
 	return cmd
 }
 
-// DNS command implementations
+// DNS command implementations.
 func newDNSSetCmd() *cobra.Command {
 	var servers, iface string
 
@@ -388,7 +389,7 @@ func newDNSResetCmd() *cobra.Command {
 	return cmd
 }
 
-// Proxy command implementations
+// Proxy command implementations.
 func newProxySetCmd() *cobra.Command {
 	var httpProxy, httpsProxy, socksProxy string
 
@@ -431,7 +432,7 @@ func newProxyStatusCmd() *cobra.Command {
 	return cmd
 }
 
-// Hosts command implementations
+// Hosts command implementations.
 func newHostsAddCmd() *cobra.Command {
 	var ip, host string
 
@@ -480,7 +481,7 @@ func newHostsShowCmd() *cobra.Command {
 	return cmd
 }
 
-// Implementation functions
+// Implementation functions.
 func (o *actionsOptions) runActions(_ *cobra.Command, args []string) error {
 	fmt.Printf("🎯 Executing network actions from: %s\n", o.configPath)
 
@@ -517,6 +518,7 @@ func (o *actionsOptions) runActions(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("🎉 Network actions completed successfully\n")
+
 	return nil
 }
 
@@ -591,17 +593,18 @@ func (o *actionsOptions) runConfigValidate(_ *cobra.Command, args []string) erro
 	}
 
 	fmt.Printf("✅ Configuration file is valid: %s\n", o.configPath)
+
 	return nil
 }
 
-// Global optimized managers (initialized once for performance)
+// Global optimized managers (initialized once for performance).
 var (
 	optimizedVPNManager *OptimizedVPNManager
 	optimizedDNSManager *OptimizedDNSManager
 	managersInitOnce    sync.Once
 )
 
-// initOptimizedManagers initializes performance-optimized managers
+// initOptimizedManagers initializes performance-optimized managers.
 func initOptimizedManagers() {
 	managersInitOnce.Do(func() {
 		optimizedVPNManager = NewOptimizedVPNManager()
@@ -609,7 +612,7 @@ func initOptimizedManagers() {
 	})
 }
 
-// VPN implementation functions
+// VPN implementation functions.
 func connectVPN(name, vpnType, configFile string) error {
 	fmt.Printf("🔐 Connecting to VPN: %s (type: %s)\n", name, vpnType)
 
@@ -627,6 +630,7 @@ func connectVPN(name, vpnType, configFile string) error {
 	}
 
 	fmt.Printf("✅ Successfully connected to VPN: %s\n", name)
+
 	return nil
 }
 
@@ -666,11 +670,15 @@ func showVPNStatus() error {
 
 	if statuses, err := optimizedVPNManager.GetVPNStatusBatch(commonVPNs); err == nil {
 		fmt.Printf("VPN Connections Status:\n")
+
 		hasConnections := false
+
 		for name, status := range statuses {
 			fmt.Printf("  %s: %s\n", name, status)
+
 			hasConnections = true
 		}
+
 		if !hasConnections {
 			fmt.Printf("  No configured VPN connections found\n")
 		}
@@ -680,6 +688,7 @@ func showVPNStatus() error {
 
 		// NetworkManager VPN connections
 		fmt.Printf("NetworkManager VPN connections:\n")
+
 		cmd := exec.Command("nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show")
 		if output, err := cmd.Output(); err == nil {
 			lines := strings.Split(string(output), "\n")
@@ -693,6 +702,7 @@ func showVPNStatus() error {
 
 		// OpenVPN services
 		fmt.Printf("\nOpenVPN services:\n")
+
 		cmd = exec.Command("systemctl", "list-units", "--type=service", "--state=active", "openvpn@*")
 		if output, err := cmd.Output(); err == nil {
 			if strings.Contains(string(output), "openvpn@") {
@@ -706,7 +716,7 @@ func showVPNStatus() error {
 	return nil
 }
 
-// DNS implementation functions
+// DNS implementation functions.
 func setDNSServers(servers []string, iface string) error {
 	fmt.Printf("🌐 Setting DNS servers: %s\n", strings.Join(servers, ", "))
 
@@ -724,6 +734,7 @@ func setDNSServers(servers []string, iface string) error {
 	}
 
 	fmt.Printf("✅ DNS servers set successfully\n")
+
 	return nil
 }
 
@@ -752,10 +763,11 @@ func resetDNS() error {
 	}
 
 	fmt.Printf("✅ DNS configuration reset to default\n")
+
 	return nil
 }
 
-// Proxy implementation functions
+// Proxy implementation functions.
 func setProxy(httpProxy, httpsProxy, socksProxy string) error {
 	return setProxyWithEnv(httpProxy, httpsProxy, socksProxy, env.NewOSEnvironment())
 }
@@ -780,6 +792,7 @@ func setProxyWithEnv(httpProxy, httpsProxy, socksProxy string, environment env.E
 
 	fmt.Printf("✅ Proxy configuration updated\n")
 	fmt.Printf("   Note: Environment variables set for current session only\n")
+
 	return nil
 }
 
@@ -796,6 +809,7 @@ func clearProxyWithEnv(environment env.Environment) error {
 	environment.Unset("ftp_proxy")
 
 	fmt.Printf("✅ Proxy configuration cleared\n")
+
 	return nil
 }
 
@@ -814,9 +828,11 @@ func showProxyStatusWithEnv(environment env.Environment) error {
 	}
 
 	hasProxy := false
+
 	for name, value := range proxies {
 		if value != "" {
 			fmt.Printf("  %s: %s\n", name, value)
+
 			hasProxy = true
 		}
 	}
@@ -828,7 +844,7 @@ func showProxyStatusWithEnv(environment env.Environment) error {
 	return nil
 }
 
-// Hosts implementation functions
+// Hosts implementation functions.
 func addHostEntry(ip, host string) error {
 	fmt.Printf("📝 Adding host entry: %s -> %s\n", host, ip)
 
@@ -854,6 +870,7 @@ func addHostEntry(ip, host string) error {
 
 	// Add entry
 	entry := fmt.Sprintf("%s\t%s\t# Added by gz net-env\n", ip, host)
+
 	file, err := os.OpenFile(hostsFile, os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("failed to open hosts file: %w", err)
@@ -865,6 +882,7 @@ func addHostEntry(ip, host string) error {
 	}
 
 	fmt.Printf("✅ Host entry added successfully\n")
+
 	return nil
 }
 
@@ -872,21 +890,27 @@ func removeHostEntry(host string) error {
 	fmt.Printf("🗑️  Removing host entry: %s\n", host)
 
 	hostsFile := "/etc/hosts"
+
 	content, err := os.ReadFile(hostsFile)
 	if err != nil {
 		return fmt.Errorf("failed to read hosts file: %w", err)
 	}
 
 	lines := strings.Split(string(content), "\n")
+
 	var newLines []string
+
 	removed := false
 
 	for _, line := range lines {
 		if strings.Contains(line, host) && !strings.HasPrefix(strings.TrimSpace(line), "#") {
 			fmt.Printf("   Removing: %s\n", strings.TrimSpace(line))
+
 			removed = true
+
 			continue
 		}
+
 		newLines = append(newLines, line)
 	}
 
@@ -907,6 +931,7 @@ func removeHostEntry(host string) error {
 	}
 
 	fmt.Printf("✅ Host entry removed successfully\n")
+
 	return nil
 }
 
@@ -921,6 +946,7 @@ func showHostsFile() error {
 
 	scanner := bufio.NewScanner(file)
 	lineNum := 1
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		fmt.Printf("%3d: %s\n", lineNum, line)

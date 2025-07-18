@@ -112,6 +112,7 @@ func (o *genConfigDiscoverOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("🔍 Discovering Git repositories in: %s\n", directory)
+
 	if o.recursive {
 		fmt.Println("   Searching recursively...")
 	}
@@ -134,6 +135,7 @@ func (o *genConfigDiscoverOptions) run(_ *cobra.Command, args []string) error {
 
 	// Write configuration file
 	yamlContent := o.generateYAMLFromConfig(config)
+
 	err = os.WriteFile(o.outputFile, []byte(yamlContent), 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write configuration file: %w", err)
@@ -141,8 +143,10 @@ func (o *genConfigDiscoverOptions) run(_ *cobra.Command, args []string) error {
 
 	fmt.Printf("📝 Configuration file generated: %s\n", o.outputFile)
 	fmt.Println("\nDiscovered repositories:")
+
 	for provider, orgs := range o.groupReposByProvider(repos) {
 		fmt.Printf("  %s:\n", strings.Title(provider))
+
 		for orgName, repoCount := range orgs {
 			fmt.Printf("    %s: %d repositories\n", orgName, repoCount)
 		}
@@ -170,20 +174,24 @@ func (o *genConfigDiscoverOptions) discoverRepositories(rootDir string) ([]Disco
 			if info.IsDir() {
 				return filepath.SkipDir
 			}
+
 			return nil
 		}
 
 		// Check if this is a Git repository
 		if info.IsDir() && info.Name() == ".git" {
 			repoPath := filepath.Dir(path)
+
 			repo, err := o.analyzeRepository(repoPath)
 			if err != nil {
 				fmt.Printf("⚠️  Warning: Failed to analyze repository at %s: %v\n", repoPath, err)
 				return nil
 			}
+
 			if repo != nil {
 				repos = append(repos, *repo)
 			}
+
 			return filepath.SkipDir // Don't descend into .git directory
 		}
 
@@ -225,6 +233,7 @@ func (o *genConfigDiscoverOptions) analyzeRepository(repoPath string) (*Discover
 func (o *genConfigDiscoverOptions) getRemoteURL(repoPath string) (string, error) {
 	// Try to read .git/config file
 	configPath := filepath.Join(repoPath, ".git", "config")
+
 	content, err := os.ReadFile(configPath)
 	if err != nil {
 		return "", err
@@ -233,15 +242,18 @@ func (o *genConfigDiscoverOptions) getRemoteURL(repoPath string) (string, error)
 	// Look for remote origin URL
 	lines := strings.Split(string(content), "\n")
 	inOriginSection := false
+
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "[remote \"origin\"]" {
 			inOriginSection = true
 			continue
 		}
+
 		if strings.HasPrefix(line, "[") && inOriginSection {
 			break // End of origin section
 		}
+
 		if inOriginSection && strings.HasPrefix(line, "url = ") {
 			return strings.TrimPrefix(line, "url = "), nil
 		}
@@ -297,6 +309,7 @@ func (o *genConfigDiscoverOptions) parseRemoteURL(remoteURL string) (provider, o
 		if strings.Contains(host, "gitlab") {
 			return "gitlab", pathParts[0], pathParts[1], protocol
 		}
+
 		if strings.Contains(host, "gitea") {
 			return "gitea", pathParts[0], pathParts[1], protocol
 		}
@@ -319,6 +332,7 @@ func (o *genConfigDiscoverOptions) generateConfigFromRepos(repos []DiscoveredRep
 		if groups[repo.Provider] == nil {
 			groups[repo.Provider] = make(map[string][]DiscoveredRepo)
 		}
+
 		groups[repo.Provider][repo.OrgName] = append(groups[repo.Provider][repo.OrgName], repo)
 	}
 
@@ -366,6 +380,7 @@ func (o *genConfigDiscoverOptions) findCommonRootPath(repos []DiscoveredRepo, ba
 		// Create organization-specific path
 		provider := repos[0].Provider
 		orgName := repos[0].OrgName
+
 		return fmt.Sprintf("$HOME/%s/%s", provider, orgName)
 	}
 
@@ -377,6 +392,7 @@ func (o *genConfigDiscoverOptions) findCommonPath(path1, path2 string) string {
 	parts2 := strings.Split(filepath.Clean(path2), string(filepath.Separator))
 
 	var common []string
+
 	for i := 0; i < len(parts1) && i < len(parts2); i++ {
 		if parts1[i] == parts2[i] {
 			common = append(common, parts1[i])
@@ -396,6 +412,7 @@ func (o *genConfigDiscoverOptions) determineMostCommonProtocol(repos []Discovere
 
 	maxCount := 0
 	mostCommon := "https"
+
 	for protocol, count := range protocolCount {
 		if count > maxCount {
 			maxCount = count
@@ -412,8 +429,10 @@ func (o *genConfigDiscoverOptions) groupReposByProvider(repos []DiscoveredRepo) 
 		if groups[repo.Provider] == nil {
 			groups[repo.Provider] = make(map[string]int)
 		}
+
 		groups[repo.Provider][repo.OrgName]++
 	}
+
 	return groups
 }
 
@@ -436,6 +455,7 @@ func (o *genConfigDiscoverOptions) generateYAMLFromConfig(config ConfigData) str
 	// Repository roots
 	content.WriteString("# Discovered repository configurations\n")
 	content.WriteString("repo_roots:\n")
+
 	for _, root := range config.RepoRoots {
 		content.WriteString(fmt.Sprintf("  - root_path: \"%s\"\n", root.RootPath))
 		content.WriteString(fmt.Sprintf("    provider: \"%s\"\n", root.Provider))
@@ -447,6 +467,7 @@ func (o *genConfigDiscoverOptions) generateYAMLFromConfig(config ConfigData) str
 	// Ignore patterns
 	content.WriteString("# Common ignore patterns\n")
 	content.WriteString("ignore_names:\n")
+
 	for _, pattern := range config.Ignores {
 		content.WriteString(fmt.Sprintf("  - \"%s\"\n", pattern))
 	}

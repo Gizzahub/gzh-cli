@@ -11,7 +11,7 @@ import (
 )
 
 // ResilientGitHubClient provides GitHub API operations with network resilience - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 type ResilientGitHubClient struct {
 	httpClient *http.Client
 	baseURL    string
@@ -19,7 +19,7 @@ type ResilientGitHubClient struct {
 }
 
 // NewResilientGitHubClient creates a new resilient GitHub client - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 func NewResilientGitHubClient(token string) *ResilientGitHubClient {
 	return &ResilientGitHubClient{
 		httpClient: &http.Client{
@@ -31,7 +31,7 @@ func NewResilientGitHubClient(token string) *ResilientGitHubClient {
 }
 
 // NewResilientGitHubClientWithConfig creates a resilient GitHub client with custom config - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 func NewResilientGitHubClientWithConfig(token string, timeout time.Duration) *ResilientGitHubClient {
 	if timeout == 0 {
 		timeout = 30 * time.Second
@@ -46,16 +46,17 @@ func NewResilientGitHubClientWithConfig(token string, timeout time.Duration) *Re
 	}
 }
 
-// prepareRequest adds authentication and headers to requests
+// prepareRequest adds authentication and headers to requests.
 func (c *ResilientGitHubClient) prepareRequest(req *http.Request) {
 	if c.token != "" {
 		req.Header.Set("Authorization", "token "+c.token)
 	}
+
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("User-Agent", "gzh-manager-go")
 }
 
-// GetDefaultBranch retrieves the default branch for a repository with network resilience
+// GetDefaultBranch retrieves the default branch for a repository with network resilience.
 func (c *ResilientGitHubClient) GetDefaultBranch(ctx context.Context, org, repo string) (string, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s", c.baseURL, org, repo)
 
@@ -84,9 +85,10 @@ func (c *ResilientGitHubClient) GetDefaultBranch(ctx context.Context, org, repo 
 	return repoInfo.DefaultBranch, nil
 }
 
-// ListRepositories retrieves all repositories for an organization with pagination and resilience
+// ListRepositories retrieves all repositories for an organization with pagination and resilience.
 func (c *ResilientGitHubClient) ListRepositories(ctx context.Context, org string) ([]string, error) {
 	var allRepos []string
+
 	page := 1
 	perPage := 100
 
@@ -115,7 +117,7 @@ func (c *ResilientGitHubClient) ListRepositories(ctx context.Context, org string
 	return allRepos, nil
 }
 
-// getRepositoryPage fetches a single page of repositories
+// getRepositoryPage fetches a single page of repositories.
 func (c *ResilientGitHubClient) getRepositoryPage(ctx context.Context, org string, page, perPage int) ([]string, bool, error) {
 	url := fmt.Sprintf("%s/orgs/%s/repos?page=%d&per_page=%d", c.baseURL, org, page, perPage)
 
@@ -156,12 +158,12 @@ func (c *ResilientGitHubClient) getRepositoryPage(ctx context.Context, org strin
 	return names, hasMore, nil
 }
 
-// hasNextPage checks if there are more pages based on Link header
+// hasNextPage checks if there are more pages based on Link header.
 func (c *ResilientGitHubClient) hasNextPage(linkHeader string) bool {
 	return strings.Contains(linkHeader, `rel="next"`)
 }
 
-// handleAPIError creates appropriate error messages based on response status
+// handleAPIError creates appropriate error messages based on response status.
 func (c *ResilientGitHubClient) handleAPIError(resp *http.Response, operation string) error {
 	switch resp.StatusCode {
 	case http.StatusNotFound:
@@ -176,8 +178,10 @@ func (c *ResilientGitHubClient) handleAPIError(resp *http.Response, operation st
 		if resetTime, err := strconv.ParseInt(resetHeader, 10, 64); err == nil {
 			resetAt := time.Unix(resetTime, 0)
 			waitTime := time.Until(resetAt)
+
 			return fmt.Errorf("%s: rate limited - retry after %v (429)", operation, waitTime.Round(time.Second))
 		}
+
 		return fmt.Errorf("%s: rate limited (429)", operation)
 	case http.StatusInternalServerError:
 		return fmt.Errorf("%s: server error (500)", operation)
@@ -192,7 +196,7 @@ func (c *ResilientGitHubClient) handleAPIError(resp *http.Response, operation st
 	}
 }
 
-// GetRateLimit retrieves current rate limit status
+// GetRateLimit retrieves current rate limit status.
 func (c *ResilientGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInfo, error) {
 	url := fmt.Sprintf("%s/rate_limit", c.baseURL)
 
@@ -236,11 +240,11 @@ func (c *ResilientGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInf
 // RateLimitInfo type is defined in token_aware_client.go to avoid duplication
 
 // GetStats returns statistics about the underlying HTTP client - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *ResilientGitHubClient) GetStats() map[string]interface{} {
 	return map[string]interface{}{
-		"type":   "standard_http_client",
-		"note":   "recovery package removed, using standard http.Client",
+		"type": "standard_http_client",
+		"note": "recovery package removed, using standard http.Client",
 		"config": map[string]interface{}{
 			"timeout": c.httpClient.Timeout,
 			"baseURL": c.baseURL,
@@ -249,18 +253,18 @@ func (c *ResilientGitHubClient) GetStats() map[string]interface{} {
 }
 
 // Close closes the underlying HTTP client connections - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *ResilientGitHubClient) Close() {
 	// Standard http.Client doesn't have Close method
 	// No cleanup needed for standard client
 }
 
-// SetToken updates the authentication token
+// SetToken updates the authentication token.
 func (c *ResilientGitHubClient) SetToken(token string) {
 	c.token = token
 }
 
-// SetBaseURL updates the base URL (useful for GitHub Enterprise)
+// SetBaseURL updates the base URL (useful for GitHub Enterprise).
 func (c *ResilientGitHubClient) SetBaseURL(baseURL string) {
 	c.baseURL = strings.TrimSuffix(baseURL, "/")
 }

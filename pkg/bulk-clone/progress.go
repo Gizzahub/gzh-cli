@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// RepositoryProgress represents the progress of a single repository operation
+// RepositoryProgress represents the progress of a single repository operation.
 type RepositoryProgress struct {
 	Name        string
 	Status      ProgressStatus
@@ -18,7 +18,7 @@ type RepositoryProgress struct {
 	Progress    float64 // 0.0 to 1.0
 }
 
-// ProgressStatus represents the status of a repository operation
+// ProgressStatus represents the status of a repository operation.
 type ProgressStatus string
 
 const (
@@ -33,7 +33,7 @@ const (
 	StatusSkipped   ProgressStatus = "skipped"
 )
 
-// ProgressTracker tracks progress for multiple repositories
+// ProgressTracker tracks progress for multiple repositories.
 type ProgressTracker struct {
 	mu           sync.RWMutex
 	repositories map[string]*RepositoryProgress
@@ -42,7 +42,7 @@ type ProgressTracker struct {
 	displayMode  DisplayMode
 }
 
-// DisplayMode controls how progress is displayed
+// DisplayMode controls how progress is displayed.
 type DisplayMode string
 
 const (
@@ -51,7 +51,7 @@ const (
 	DisplayModeQuiet    DisplayMode = "quiet"    // No progress display
 )
 
-// NewProgressTracker creates a new progress tracker
+// NewProgressTracker creates a new progress tracker.
 func NewProgressTracker(repoNames []string, displayMode DisplayMode) *ProgressTracker {
 	tracker := &ProgressTracker{
 		repositories: make(map[string]*RepositoryProgress),
@@ -73,7 +73,7 @@ func NewProgressTracker(repoNames []string, displayMode DisplayMode) *ProgressTr
 	return tracker
 }
 
-// UpdateRepository updates the progress for a specific repository
+// UpdateRepository updates the progress for a specific repository.
 func (pt *ProgressTracker) UpdateRepository(name string, status ProgressStatus, message string, progress float64) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -91,7 +91,7 @@ func (pt *ProgressTracker) UpdateRepository(name string, status ProgressStatus, 
 	}
 }
 
-// SetRepositoryError sets an error for a specific repository
+// SetRepositoryError sets an error for a specific repository.
 func (pt *ProgressTracker) SetRepositoryError(name string, err string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -104,7 +104,7 @@ func (pt *ProgressTracker) SetRepositoryError(name string, err string) {
 	}
 }
 
-// CompleteRepository marks a repository as completed
+// CompleteRepository marks a repository as completed.
 func (pt *ProgressTracker) CompleteRepository(name string, message string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -117,7 +117,7 @@ func (pt *ProgressTracker) CompleteRepository(name string, message string) {
 	}
 }
 
-// GetOverallProgress returns the overall progress statistics
+// GetOverallProgress returns the overall progress statistics.
 func (pt *ProgressTracker) GetOverallProgress() (completed, failed, pending int, progressPercent float64) {
 	pt.mu.RLock()
 	defer pt.mu.RUnlock()
@@ -146,7 +146,7 @@ func (pt *ProgressTracker) GetOverallProgress() (completed, failed, pending int,
 	return completed, failed, pending, progressPercent
 }
 
-// GetRepositoryProgress returns progress for a specific repository
+// GetRepositoryProgress returns progress for a specific repository.
 func (pt *ProgressTracker) GetRepositoryProgress(name string) (*RepositoryProgress, bool) {
 	pt.mu.RLock()
 	defer pt.mu.RUnlock()
@@ -168,7 +168,7 @@ func (pt *ProgressTracker) GetRepositoryProgress(name string) (*RepositoryProgre
 	}, true
 }
 
-// GetAllRepositories returns all repository progress information
+// GetAllRepositories returns all repository progress information.
 func (pt *ProgressTracker) GetAllRepositories() []RepositoryProgress {
 	pt.mu.RLock()
 	defer pt.mu.RUnlock()
@@ -181,7 +181,7 @@ func (pt *ProgressTracker) GetAllRepositories() []RepositoryProgress {
 	return repos
 }
 
-// RenderProgress renders the current progress based on display mode
+// RenderProgress renders the current progress based on display mode.
 func (pt *ProgressTracker) RenderProgress() string {
 	switch pt.displayMode {
 	case DisplayModeQuiet:
@@ -193,7 +193,7 @@ func (pt *ProgressTracker) RenderProgress() string {
 	}
 }
 
-// renderCompactProgress renders a single-line progress display
+// renderCompactProgress renders a single-line progress display.
 func (pt *ProgressTracker) renderCompactProgress() string {
 	completed, failed, pending, progressPercent := pt.GetOverallProgress()
 
@@ -211,7 +211,7 @@ func (pt *ProgressTracker) renderCompactProgress() string {
 		completed, failed, pending, elapsed)
 }
 
-// renderDetailedProgress renders multi-line progress with per-repository status
+// renderDetailedProgress renders multi-line progress with per-repository status.
 func (pt *ProgressTracker) renderDetailedProgress() string {
 	completed, failed, _, progressPercent := pt.GetOverallProgress()
 	elapsed := time.Since(pt.startTime).Round(time.Second)
@@ -236,6 +236,7 @@ func (pt *ProgressTracker) renderDetailedProgress() string {
 	for _, status := range activeStatuses {
 		if repos, exists := statusGroups[status]; exists {
 			output.WriteString(fmt.Sprintf("\n%s (%d):\n", getStatusEmoji(status), len(repos)))
+
 			for _, repo := range repos {
 				duration := time.Since(repo.StartTime).Round(time.Second)
 				output.WriteString(fmt.Sprintf("  %s (%.0f%%) - %s\n",
@@ -268,6 +269,7 @@ func (pt *ProgressTracker) renderDetailedProgress() string {
 	// Show failed repositories
 	if failedRepos, exists := statusGroups[StatusFailed]; exists {
 		output.WriteString(fmt.Sprintf("\n❌ Failed (%d):\n", len(failedRepos)))
+
 		for _, repo := range failedRepos {
 			output.WriteString(fmt.Sprintf("  %s - %s\n", repo.Name, repo.Error))
 		}
@@ -281,7 +283,7 @@ func (pt *ProgressTracker) renderDetailedProgress() string {
 	return output.String()
 }
 
-// getStatusEmoji returns an emoji for the given status
+// getStatusEmoji returns an emoji for the given status.
 func getStatusEmoji(status ProgressStatus) string {
 	switch status {
 	case StatusPending:
@@ -307,12 +309,12 @@ func getStatusEmoji(status ProgressStatus) string {
 	}
 }
 
-// GetDuration returns the total duration of the operation
+// GetDuration returns the total duration of the operation.
 func (pt *ProgressTracker) GetDuration() time.Duration {
 	return time.Since(pt.startTime)
 }
 
-// GetETA estimates the time to completion based on current progress
+// GetETA estimates the time to completion based on current progress.
 func (pt *ProgressTracker) GetETA() time.Duration {
 	_, _, _, progressPercent := pt.GetOverallProgress()
 
@@ -331,7 +333,7 @@ func (pt *ProgressTracker) GetETA() time.Duration {
 	return remaining
 }
 
-// IsCompleted returns true if all repositories have been processed
+// IsCompleted returns true if all repositories have been processed.
 func (pt *ProgressTracker) IsCompleted() bool {
 	pt.mu.RLock()
 	defer pt.mu.RUnlock()
@@ -345,7 +347,7 @@ func (pt *ProgressTracker) IsCompleted() bool {
 	return true
 }
 
-// GetSummary returns a summary of the operation
+// GetSummary returns a summary of the operation.
 func (pt *ProgressTracker) GetSummary() string {
 	completed, failed, pending, progressPercent := pt.GetOverallProgress()
 	duration := pt.GetDuration().Round(time.Second)

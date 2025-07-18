@@ -494,14 +494,17 @@ func TestDependabotPolicyManager_PolicyEvaluation(t *testing.T) {
 	// Check violation details
 	hasDisabledViolation := false
 	hasInvalidConfigViolation := false
+
 	for _, violation := range result.Violations {
 		if violation.Type == DependabotViolationTypeMissingConfig {
 			hasDisabledViolation = true
 		}
+
 		if violation.Type == DependabotViolationTypeInvalidConfig {
 			hasInvalidConfigViolation = true
 		}
 	}
+
 	assert.True(t, hasDisabledViolation)
 	assert.True(t, hasInvalidConfigViolation)
 }
@@ -553,7 +556,7 @@ func TestDependabotPolicyManager_Cache(t *testing.T) {
 	assert.Nil(t, cached) // Should be invalidated
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkEvaluateRepositoryCompliance(b *testing.B) {
 	policyManager := createTestPolicyManager()
 	ctx := context.Background()
@@ -562,6 +565,7 @@ func BenchmarkEvaluateRepositoryCompliance(b *testing.B) {
 	policyManager.CreatePolicy(ctx, policy)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		policyManager.EvaluateRepositoryCompliance(ctx, policy.ID, "testorg", "testrepo")
 	}
@@ -590,16 +594,18 @@ func BenchmarkPolicyEvaluation(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		policyManager.performPolicyEvaluation(policy, config, status, "testorg", "testrepo")
 	}
 }
 
-// Helper functions
+// Helper functions.
 func createTestPolicyManager() *DependabotPolicyManager {
 	logger := &simpleLogger{}
 	apiClient := &simpleAPIClient{}
 	configManager := createTestDependabotManager()
+
 	return NewDependabotPolicyManager(logger, apiClient, configManager)
 }
 

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// AutomationRule represents a complete automation rule for GitHub events
+// AutomationRule represents a complete automation rule for GitHub events.
 type AutomationRule struct {
 	ID           string                 `json:"id" yaml:"id"`
 	Name         string                 `json:"name" yaml:"name"`
@@ -24,7 +24,7 @@ type AutomationRule struct {
 	Tags         map[string]string      `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
-// AutomationConditions defines the conditions that must be met for a rule to trigger
+// AutomationConditions defines the conditions that must be met for a rule to trigger.
 type AutomationConditions struct {
 	// Event-based conditions
 	EventTypes   []EventType   `json:"event_types,omitempty" yaml:"event_types,omitempty"`
@@ -61,7 +61,7 @@ type AutomationConditions struct {
 	SubConditions   []AutomationConditions `json:"sub_conditions,omitempty" yaml:"sub_conditions,omitempty"`
 }
 
-// PayloadMatcher defines conditions for matching against event payload
+// PayloadMatcher defines conditions for matching against event payload.
 type PayloadMatcher struct {
 	Path          string        `json:"path" yaml:"path"`         // JSONPath expression (e.g., "$.pull_request.title")
 	Operator      MatchOperator `json:"operator" yaml:"operator"` // equals, contains, regex, etc.
@@ -69,7 +69,7 @@ type PayloadMatcher struct {
 	CaseSensitive bool          `json:"case_sensitive,omitempty" yaml:"case_sensitive,omitempty"`
 }
 
-// ConditionOperator defines how multiple conditions are combined
+// ConditionOperator defines how multiple conditions are combined.
 type ConditionOperator string
 
 const (
@@ -78,7 +78,7 @@ const (
 	ConditionOperatorNOT ConditionOperator = "NOT"
 )
 
-// MatchOperator defines how payload matching is performed
+// MatchOperator defines how payload matching is performed.
 type MatchOperator string
 
 const (
@@ -97,7 +97,7 @@ const (
 	MatchOperatorNotEmpty    MatchOperator = "not_empty"
 )
 
-// AutomationAction defines an action to be executed when conditions are met
+// AutomationAction defines an action to be executed when conditions are met.
 type AutomationAction struct {
 	ID          string                 `json:"id" yaml:"id"`
 	Type        ActionType             `json:"type" yaml:"type"`
@@ -110,15 +110,15 @@ type AutomationAction struct {
 	OnFailure   ActionFailurePolicy    `json:"on_failure,omitempty" yaml:"on_failure,omitempty"`
 }
 
-// ActionType defines the type of action to be executed
+// ActionType defines the type of action to be executed.
 type ActionType string
 
 const (
-	// Webhook actions
+	// Webhook actions.
 	ActionTypeWebhook     ActionType = "webhook"
 	ActionTypeHTTPRequest ActionType = "http_request"
 
-	// GitHub API actions
+	// GitHub API actions.
 	ActionTypeCreateIssue    ActionType = "create_issue"
 	ActionTypeCreatePR       ActionType = "create_pr"
 	ActionTypeAddLabel       ActionType = "add_label"
@@ -128,29 +128,29 @@ const (
 	ActionTypeClosePR        ActionType = "close_pr"
 	ActionTypeCloseIssue     ActionType = "close_issue"
 
-	// Repository actions
+	// Repository actions.
 	ActionTypeCreateBranch  ActionType = "create_branch"
 	ActionTypeDeleteBranch  ActionType = "delete_branch"
 	ActionTypeProtectBranch ActionType = "protect_branch"
 	ActionTypeCreateTag     ActionType = "create_tag"
 	ActionTypeCreateRelease ActionType = "create_release"
 
-	// Notification actions
+	// Notification actions.
 	ActionTypeSlackMessage ActionType = "slack_message"
 	ActionTypeTeamsMessage ActionType = "teams_message"
 	ActionTypeEmail        ActionType = "email"
 	ActionTypeSMS          ActionType = "sms"
 
-	// Workflow actions
+	// Workflow actions.
 	ActionTypeTriggerWorkflow ActionType = "trigger_workflow"
 	ActionTypeRunScript       ActionType = "run_script"
 	ActionTypeDeployment      ActionType = "deployment"
 
-	// Custom actions
+	// Custom actions.
 	ActionTypeCustom ActionType = "custom"
 )
 
-// ActionRetryPolicy defines retry behavior for failed actions
+// ActionRetryPolicy defines retry behavior for failed actions.
 type ActionRetryPolicy struct {
 	MaxRetries    int           `json:"max_retries" yaml:"max_retries"`
 	RetryInterval time.Duration `json:"retry_interval" yaml:"retry_interval"`
@@ -158,7 +158,7 @@ type ActionRetryPolicy struct {
 	MaxInterval   time.Duration `json:"max_interval,omitempty" yaml:"max_interval,omitempty"`
 }
 
-// ActionFailurePolicy defines what to do when an action fails
+// ActionFailurePolicy defines what to do when an action fails.
 type ActionFailurePolicy string
 
 const (
@@ -168,7 +168,7 @@ const (
 	ActionFailurePolicySkip     ActionFailurePolicy = "skip"     // Skip and mark as failed
 )
 
-// AutomationSchedule defines when a rule should be evaluated (for scheduled rules)
+// AutomationSchedule defines when a rule should be evaluated (for scheduled rules).
 type AutomationSchedule struct {
 	Type       ScheduleType `json:"type" yaml:"type"`
 	Expression string       `json:"expression" yaml:"expression"` // Cron expression
@@ -177,7 +177,7 @@ type AutomationSchedule struct {
 	EndDate    *time.Time   `json:"end_date,omitempty" yaml:"end_date,omitempty"`
 }
 
-// ScheduleType defines the type of schedule
+// ScheduleType defines the type of schedule.
 type ScheduleType string
 
 const (
@@ -186,7 +186,7 @@ const (
 	ScheduleTypeOneTime  ScheduleType = "one_time"
 )
 
-// AutomationRuleMetadata contains metadata about the rule
+// AutomationRuleMetadata contains metadata about the rule.
 type AutomationRuleMetadata struct {
 	Version        string            `json:"version" yaml:"version"`
 	Category       string            `json:"category,omitempty" yaml:"category,omitempty"`
@@ -198,7 +198,7 @@ type AutomationRuleMetadata struct {
 	CustomMetadata map[string]string `json:"custom_metadata,omitempty" yaml:"custom_metadata,omitempty"`
 }
 
-// AutomationRuleExecution represents an execution instance of an automation rule
+// AutomationRuleExecution represents an execution instance of an automation rule.
 type AutomationRuleExecution struct {
 	ID             string                     `json:"id"`
 	RuleID         string                     `json:"rule_id"`
@@ -214,7 +214,7 @@ type AutomationRuleExecution struct {
 	Metadata       map[string]interface{}     `json:"metadata,omitempty"`
 }
 
-// ExecutionStatus defines the status of a rule execution
+// ExecutionStatus defines the status of a rule execution.
 type ExecutionStatus string
 
 const (
@@ -226,7 +226,7 @@ const (
 	ExecutionStatusTimeout   ExecutionStatus = "timeout"
 )
 
-// ExecutionTriggerType defines what triggered the rule execution
+// ExecutionTriggerType defines what triggered the rule execution.
 type ExecutionTriggerType string
 
 const (
@@ -236,7 +236,7 @@ const (
 	ExecutionTriggerTypeAPI      ExecutionTriggerType = "api"
 )
 
-// AutomationExecutionContext provides context for rule execution
+// AutomationExecutionContext provides context for rule execution.
 type AutomationExecutionContext struct {
 	Event        *GitHubEvent           `json:"event,omitempty"`
 	Repository   *RepositoryInfo        `json:"repository,omitempty"`
@@ -247,7 +247,7 @@ type AutomationExecutionContext struct {
 	Metadata     map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// ActionExecutionResult represents the result of executing a single action
+// ActionExecutionResult represents the result of executing a single action.
 type ActionExecutionResult struct {
 	ActionID    string                 `json:"action_id"`
 	ActionType  ActionType             `json:"action_type"`
@@ -260,7 +260,7 @@ type ActionExecutionResult struct {
 	RetryCount  int                    `json:"retry_count,omitempty"`
 }
 
-// AutomationRuleSet represents a collection of related automation rules
+// AutomationRuleSet represents a collection of related automation rules.
 type AutomationRuleSet struct {
 	ID           string            `json:"id" yaml:"id"`
 	Name         string            `json:"name" yaml:"name"`
@@ -274,7 +274,7 @@ type AutomationRuleSet struct {
 	CreatedBy    string            `json:"created_by" yaml:"created_by"`
 }
 
-// AutomationRuleTemplate represents a reusable rule template
+// AutomationRuleTemplate represents a reusable rule template.
 type AutomationRuleTemplate struct {
 	ID          string             `json:"id" yaml:"id"`
 	Name        string             `json:"name" yaml:"name"`
@@ -289,7 +289,7 @@ type AutomationRuleTemplate struct {
 	CreatedBy   string             `json:"created_by" yaml:"created_by"`
 }
 
-// TemplateVariable defines a variable that can be customized in a template
+// TemplateVariable defines a variable that can be customized in a template.
 type TemplateVariable struct {
 	Name         string      `json:"name" yaml:"name"`
 	Type         string      `json:"type" yaml:"type"` // string, number, boolean, array, object
@@ -300,14 +300,14 @@ type TemplateVariable struct {
 	Validation   string      `json:"validation,omitempty" yaml:"validation,omitempty"` // Regex or validation rule
 }
 
-// TemplateExample provides example configurations for a template
+// TemplateExample provides example configurations for a template.
 type TemplateExample struct {
 	Name        string                 `json:"name" yaml:"name"`
 	Description string                 `json:"description" yaml:"description"`
 	Variables   map[string]interface{} `json:"variables" yaml:"variables"`
 }
 
-// AutomationRuleService defines the interface for managing automation rules
+// AutomationRuleService defines the interface for managing automation rules.
 type AutomationRuleService interface {
 	// Rule Management
 	CreateRule(ctx context.Context, rule *AutomationRule) error
@@ -348,7 +348,7 @@ type AutomationRuleService interface {
 	DryRunRule(ctx context.Context, ruleID string, event *GitHubEvent) (*RuleTestResult, error)
 }
 
-// RuleFilter defines criteria for filtering automation rules
+// RuleFilter defines criteria for filtering automation rules.
 type RuleFilter struct {
 	Organization  string      `json:"organization,omitempty"`
 	Enabled       *bool       `json:"enabled,omitempty"`
@@ -360,7 +360,7 @@ type RuleFilter struct {
 	CreatedBefore *time.Time  `json:"created_before,omitempty"`
 }
 
-// ExecutionFilter defines criteria for filtering rule executions
+// ExecutionFilter defines criteria for filtering rule executions.
 type ExecutionFilter struct {
 	RuleID        string               `json:"rule_id,omitempty"`
 	Status        ExecutionStatus      `json:"status,omitempty"`
@@ -369,7 +369,7 @@ type ExecutionFilter struct {
 	StartedBefore *time.Time           `json:"started_before,omitempty"`
 }
 
-// RuleValidationResult represents the result of rule validation
+// RuleValidationResult represents the result of rule validation.
 type RuleValidationResult struct {
 	Valid    bool                    `json:"valid"`
 	Errors   []RuleValidationError   `json:"errors,omitempty"`
@@ -377,7 +377,7 @@ type RuleValidationResult struct {
 	Score    int                     `json:"score"` // 0-100
 }
 
-// RuleValidationError represents a validation error
+// RuleValidationError represents a validation error.
 type RuleValidationError struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`
@@ -385,14 +385,14 @@ type RuleValidationError struct {
 	Suggestion string `json:"suggestion,omitempty"`
 }
 
-// RuleValidationWarning represents a validation warning
+// RuleValidationWarning represents a validation warning.
 type RuleValidationWarning struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`
 	Suggestion string `json:"suggestion,omitempty"`
 }
 
-// RuleTestResult represents the result of testing a rule
+// RuleTestResult represents the result of testing a rule.
 type RuleTestResult struct {
 	RuleID            string                     `json:"rule_id"`
 	ConditionsMatched bool                       `json:"conditions_matched"`

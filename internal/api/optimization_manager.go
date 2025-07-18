@@ -8,7 +8,7 @@ import (
 )
 
 // OptimizationManager orchestrates API optimization features including
-// deduplication, batching, and intelligent rate limiting
+// deduplication, batching, and intelligent rate limiting.
 type OptimizationManager struct {
 	deduplicator *RequestDeduplicator
 	batcher      *BatchProcessor
@@ -19,7 +19,7 @@ type OptimizationManager struct {
 	enabled      bool
 }
 
-// OptimizationStats aggregates performance metrics across all optimization features
+// OptimizationStats aggregates performance metrics across all optimization features.
 type OptimizationStats struct {
 	StartTime             time.Time
 	TotalRequests         int64
@@ -32,7 +32,7 @@ type OptimizationStats struct {
 	LastUpdated           time.Time
 }
 
-// OptimizationConfig configures the optimization behavior
+// OptimizationConfig configures the optimization behavior.
 type OptimizationConfig struct {
 	EnableDeduplication bool
 	EnableBatching      bool
@@ -42,7 +42,7 @@ type OptimizationConfig struct {
 	MetricsInterval     time.Duration
 }
 
-// DefaultOptimizationConfig returns sensible defaults for API optimization
+// DefaultOptimizationConfig returns sensible defaults for API optimization.
 func DefaultOptimizationConfig() OptimizationConfig {
 	return OptimizationConfig{
 		EnableDeduplication: true,
@@ -54,7 +54,7 @@ func DefaultOptimizationConfig() OptimizationConfig {
 	}
 }
 
-// NewOptimizationManager creates a new API optimization manager
+// NewOptimizationManager creates a new API optimization manager.
 func NewOptimizationManager(config OptimizationConfig) *OptimizationManager {
 	om := &OptimizationManager{
 		config:  config,
@@ -81,7 +81,7 @@ func NewOptimizationManager(config OptimizationConfig) *OptimizationManager {
 	return om
 }
 
-// OptimizedRequest represents a request with optimization metadata
+// OptimizedRequest represents a request with optimization metadata.
 type OptimizedRequest struct {
 	Service   string
 	Operation string
@@ -90,7 +90,7 @@ type OptimizedRequest struct {
 	Context   context.Context
 }
 
-// OptimizedResponse contains the response and optimization metadata
+// OptimizedResponse contains the response and optimization metadata.
 type OptimizedResponse struct {
 	Data              interface{}
 	Error             error
@@ -101,12 +101,13 @@ type OptimizedResponse struct {
 	ResponseTime      time.Duration
 }
 
-// ExecuteRequest executes a request with all available optimizations
+// ExecuteRequest executes a request with all available optimizations.
 func (om *OptimizationManager) ExecuteRequest(req OptimizedRequest, executor RequestFunc) (*OptimizedResponse, error) {
 	if !om.enabled {
 		// Execute directly without optimizations
 		start := time.Now()
 		result, err := executor(req.Context)
+
 		return &OptimizedResponse{
 			Data:         result,
 			Error:        err,
@@ -130,6 +131,7 @@ func (om *OptimizationManager) ExecuteRequest(req OptimizedRequest, executor Req
 			response.Error = fmt.Errorf("rate limit wait failed: %w", err)
 			return response, response.Error
 		}
+
 		response.WasRateLimited = true
 
 		om.mu.Lock()
@@ -173,7 +175,7 @@ func (om *OptimizationManager) ExecuteRequest(req OptimizedRequest, executor Req
 	return response, response.Error
 }
 
-// ExecuteBatchRequest executes a batch of similar requests
+// ExecuteBatchRequest executes a batch of similar requests.
 func (om *OptimizationManager) ExecuteBatchRequest(ctx context.Context, batchKey string, requests []*BatchRequest, processor BatchFunc) error {
 	if !om.enabled || !om.config.EnableBatching || om.batcher == nil {
 		// Execute requests individually
@@ -187,8 +189,10 @@ func (om *OptimizationManager) ExecuteBatchRequest(ctx context.Context, batchKey
 					Error: fmt.Errorf("no response generated for request %s", req.ID),
 				}
 			}
+
 			close(req.Response)
 		}
+
 		return nil
 	}
 
@@ -200,6 +204,7 @@ func (om *OptimizationManager) ExecuteBatchRequest(ctx context.Context, batchKey
 				ID:    req.ID,
 				Error: fmt.Errorf("failed to add to batch: %w", err),
 			}
+
 			close(req.Response)
 		}
 	}
@@ -211,7 +216,7 @@ func (om *OptimizationManager) ExecuteBatchRequest(ctx context.Context, batchKey
 	return nil
 }
 
-// updateAverageResponseTime updates the running average response time
+// updateAverageResponseTime updates the running average response time.
 func (om *OptimizationManager) updateAverageResponseTime(responseTime time.Duration) {
 	om.mu.Lock()
 	defer om.mu.Unlock()
@@ -227,7 +232,7 @@ func (om *OptimizationManager) updateAverageResponseTime(responseTime time.Durat
 	}
 }
 
-// GetStats returns current optimization statistics
+// GetStats returns current optimization statistics.
 func (om *OptimizationManager) GetStats() OptimizationStats {
 	om.mu.RLock()
 	defer om.mu.RUnlock()
@@ -243,28 +248,31 @@ func (om *OptimizationManager) GetStats() OptimizationStats {
 	return stats
 }
 
-// Enable enables optimization features
+// Enable enables optimization features.
 func (om *OptimizationManager) Enable() {
 	om.mu.Lock()
 	defer om.mu.Unlock()
+
 	om.enabled = true
 }
 
-// Disable disables optimization features (useful for debugging)
+// Disable disables optimization features (useful for debugging).
 func (om *OptimizationManager) Disable() {
 	om.mu.Lock()
 	defer om.mu.Unlock()
+
 	om.enabled = false
 }
 
-// IsEnabled returns whether optimizations are currently enabled
+// IsEnabled returns whether optimizations are currently enabled.
 func (om *OptimizationManager) IsEnabled() bool {
 	om.mu.RLock()
 	defer om.mu.RUnlock()
+
 	return om.enabled
 }
 
-// ClearCaches clears all optimization caches
+// ClearCaches clears all optimization caches.
 func (om *OptimizationManager) ClearCaches() {
 	if om.deduplicator != nil {
 		om.deduplicator.Clear()
@@ -278,7 +286,7 @@ func (om *OptimizationManager) ClearCaches() {
 	om.mu.Unlock()
 }
 
-// Stop gracefully stops all optimization components
+// Stop gracefully stops all optimization components.
 func (om *OptimizationManager) Stop() {
 	if om.deduplicator != nil {
 		om.deduplicator.Close()
@@ -293,7 +301,7 @@ func (om *OptimizationManager) Stop() {
 	}
 }
 
-// PrintDetailedStats prints comprehensive optimization statistics
+// PrintDetailedStats prints comprehensive optimization statistics.
 func (om *OptimizationManager) PrintDetailedStats() {
 	stats := om.GetStats()
 	uptime := time.Since(stats.StartTime)
@@ -328,25 +336,26 @@ func (om *OptimizationManager) PrintDetailedStats() {
 	}
 }
 
-// GetRateLimiter returns the rate limiter for a specific service
+// GetRateLimiter returns the rate limiter for a specific service.
 func (om *OptimizationManager) GetRateLimiter(service string) *EnhancedRateLimiter {
 	if om.rateLimitMgr == nil {
 		return nil
 	}
+
 	return om.rateLimitMgr.GetLimiter(service)
 }
 
-// GetBatchProcessor returns the batch processor
+// GetBatchProcessor returns the batch processor.
 func (om *OptimizationManager) GetBatchProcessor() *BatchProcessor {
 	return om.batcher
 }
 
-// GetDeduplicator returns the request deduplicator
+// GetDeduplicator returns the request deduplicator.
 func (om *OptimizationManager) GetDeduplicator() *RequestDeduplicator {
 	return om.deduplicator
 }
 
-// UpdateConfiguration updates the optimization configuration
+// UpdateConfiguration updates the optimization configuration.
 func (om *OptimizationManager) UpdateConfiguration(config OptimizationConfig) {
 	om.mu.Lock()
 	defer om.mu.Unlock()
@@ -364,18 +373,19 @@ func (om *OptimizationManager) UpdateConfiguration(config OptimizationConfig) {
 	// Similar logic for other components...
 }
 
-// GlobalOptimizationManager provides a global instance for application-wide optimization
+// GlobalOptimizationManager provides a global instance for application-wide optimization.
 var GlobalOptimizationManager = NewOptimizationManager(DefaultOptimizationConfig())
 
-// GetGlobalOptimizer returns the global optimization manager instance
+// GetGlobalOptimizer returns the global optimization manager instance.
 func GetGlobalOptimizer() *OptimizationManager {
 	return GlobalOptimizationManager
 }
 
-// InitializeOptimization initializes global API optimization with custom configuration
+// InitializeOptimization initializes global API optimization with custom configuration.
 func InitializeOptimization(config OptimizationConfig) {
 	if GlobalOptimizationManager != nil {
 		GlobalOptimizationManager.Stop()
 	}
+
 	GlobalOptimizationManager = NewOptimizationManager(config)
 }

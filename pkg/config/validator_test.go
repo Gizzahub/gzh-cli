@@ -156,6 +156,7 @@ func TestValidator_ValidateConfig(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorCount > 0 {
 					assert.Len(t, validator.errors, tt.errorCount)
 				}

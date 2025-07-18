@@ -170,9 +170,11 @@ func TestCommandPool_Performance(t *testing.T) {
 	}
 
 	start = time.Now()
+
 	for _, cmd := range sequentialCommands {
 		poolSequential.ExecuteCommand(cmd.Name, cmd.Args...)
 	}
+
 	sequentialDuration := time.Since(start)
 
 	require.Len(t, results, 5)
@@ -309,6 +311,7 @@ func TestPerformanceOptimization_Integration(t *testing.T) {
 		{Servers: []string{"8.8.8.8"}, Interface: "lo"},
 	}
 	dnsManager.SetDNSServersBatch(configs)
+
 	dnsDuration := time.Since(start)
 
 	assert.Less(t, dnsDuration, 3*time.Second, "DNS configuration took too long")

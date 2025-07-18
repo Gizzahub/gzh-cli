@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// WebhookMonitor monitors webhook status and health
+// WebhookMonitor monitors webhook status and health.
 type WebhookMonitor struct {
 	logger      Logger
 	apiClient   APIClient
@@ -19,7 +19,7 @@ type WebhookMonitor struct {
 	running     bool
 }
 
-// WebhookMonitorConfig holds configuration for webhook monitoring
+// WebhookMonitorConfig holds configuration for webhook monitoring.
 type WebhookMonitorConfig struct {
 	CheckInterval       time.Duration   `json:"check_interval" yaml:"check_interval"`
 	HealthCheckTimeout  time.Duration   `json:"health_check_timeout" yaml:"health_check_timeout"`
@@ -29,7 +29,7 @@ type WebhookMonitorConfig struct {
 	MaxHistorySize      int             `json:"max_history_size" yaml:"max_history_size"`
 }
 
-// AlertThresholds defines thresholds for different alert levels
+// AlertThresholds defines thresholds for different alert levels.
 type AlertThresholds struct {
 	ErrorRate          float64       `json:"error_rate" yaml:"error_rate"`                     // Percentage
 	ResponseTime       time.Duration `json:"response_time" yaml:"response_time"`               // Maximum acceptable response time
@@ -37,7 +37,7 @@ type AlertThresholds struct {
 	DeliveryFailureAge time.Duration `json:"delivery_failure_age" yaml:"delivery_failure_age"` // Age of oldest delivery failure
 }
 
-// WebhookStatus represents the current status of a webhook
+// WebhookStatus represents the current status of a webhook.
 type WebhookStatus struct {
 	ID           string                 `json:"id"`
 	URL          string                 `json:"url"`
@@ -55,7 +55,7 @@ type WebhookStatus struct {
 	History      []WebhookHealthCheck   `json:"history"`
 }
 
-// WebhookHealthStatus represents the health status of a webhook
+// WebhookHealthStatus represents the health status of a webhook.
 type WebhookHealthStatus string
 
 const (
@@ -66,7 +66,7 @@ const (
 	WebhookStatusDisabled  WebhookHealthStatus = "disabled"
 )
 
-// WebhookStatusMetrics holds metrics for a specific webhook
+// WebhookStatusMetrics holds metrics for a specific webhook.
 type WebhookStatusMetrics struct {
 	TotalDeliveries      int64         `json:"total_deliveries"`
 	SuccessfulDeliveries int64         `json:"successful_deliveries"`
@@ -80,7 +80,7 @@ type WebhookStatusMetrics struct {
 	Uptime               float64       `json:"uptime"`
 }
 
-// WebhookAlert represents an alert for a webhook
+// WebhookAlert represents an alert for a webhook.
 type WebhookAlert struct {
 	ID           string                 `json:"id"`
 	WebhookID    string                 `json:"webhook_id"`
@@ -93,7 +93,7 @@ type WebhookAlert struct {
 	Details      map[string]interface{} `json:"details,omitempty"`
 }
 
-// WebhookAlertType defines types of webhook alerts
+// WebhookAlertType defines types of webhook alerts.
 type WebhookAlertType string
 
 const (
@@ -105,7 +105,7 @@ const (
 	AlertTypeEndpointDown        WebhookAlertType = "endpoint_down"
 )
 
-// WebhookAlertSeverity defines severity levels for alerts
+// WebhookAlertSeverity defines severity levels for alerts.
 type WebhookAlertSeverity string
 
 const (
@@ -115,7 +115,7 @@ const (
 	AlertSeverityCritical WebhookAlertSeverity = "critical"
 )
 
-// WebhookHealthCheck represents a health check result
+// WebhookHealthCheck represents a health check result.
 type WebhookHealthCheck struct {
 	Timestamp    time.Time              `json:"timestamp"`
 	Status       WebhookHealthStatus    `json:"status"`
@@ -125,7 +125,7 @@ type WebhookHealthCheck struct {
 	Details      map[string]interface{} `json:"details,omitempty"`
 }
 
-// WebhookMetrics holds global webhook metrics
+// WebhookMetrics holds global webhook metrics.
 type WebhookMetrics struct {
 	mu                   sync.RWMutex
 	TotalWebhooks        int64                           `json:"total_webhooks"`
@@ -142,7 +142,7 @@ type WebhookMetrics struct {
 	LastUpdated          time.Time                       `json:"last_updated"`
 }
 
-// OrganizationMetrics holds metrics for a specific organization
+// OrganizationMetrics holds metrics for a specific organization.
 type OrganizationMetrics struct {
 	TotalWebhooks       int64         `json:"total_webhooks"`
 	HealthyWebhooks     int64         `json:"healthy_webhooks"`
@@ -152,7 +152,7 @@ type OrganizationMetrics struct {
 	ActiveAlerts        int64         `json:"active_alerts"`
 }
 
-// NewWebhookMonitor creates a new webhook monitor
+// NewWebhookMonitor creates a new webhook monitor.
 func NewWebhookMonitor(logger Logger, apiClient APIClient, config *WebhookMonitorConfig) *WebhookMonitor {
 	if config == nil {
 		config = getDefaultWebhookMonitorConfig()
@@ -169,7 +169,7 @@ func NewWebhookMonitor(logger Logger, apiClient APIClient, config *WebhookMonito
 	}
 }
 
-// Start starts the webhook monitoring service
+// Start starts the webhook monitoring service.
 func (wm *WebhookMonitor) Start(ctx context.Context) error {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
@@ -191,10 +191,11 @@ func (wm *WebhookMonitor) Start(ctx context.Context) error {
 	go wm.alertProcessor(ctx)
 
 	wm.logger.Info("Webhook monitor started successfully")
+
 	return nil
 }
 
-// Stop stops the webhook monitoring service
+// Stop stops the webhook monitoring service.
 func (wm *WebhookMonitor) Stop(ctx context.Context) error {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
@@ -208,10 +209,11 @@ func (wm *WebhookMonitor) Stop(ctx context.Context) error {
 	wm.running = false
 
 	wm.logger.Info("Webhook monitor stopped successfully")
+
 	return nil
 }
 
-// GetWebhookStatus returns the status of a specific webhook
+// GetWebhookStatus returns the status of a specific webhook.
 func (wm *WebhookMonitor) GetWebhookStatus(webhookID string) (*WebhookStatus, error) {
 	wm.mu.RLock()
 	defer wm.mu.RUnlock()
@@ -223,15 +225,17 @@ func (wm *WebhookMonitor) GetWebhookStatus(webhookID string) (*WebhookStatus, er
 
 	// Return a copy to avoid data races
 	statusCopy := *status
+
 	return &statusCopy, nil
 }
 
-// GetAllWebhookStatuses returns the status of all monitored webhooks
+// GetAllWebhookStatuses returns the status of all monitored webhooks.
 func (wm *WebhookMonitor) GetAllWebhookStatuses() map[string]*WebhookStatus {
 	wm.mu.RLock()
 	defer wm.mu.RUnlock()
 
 	statuses := make(map[string]*WebhookStatus)
+
 	for id, status := range wm.webhooks {
 		statusCopy := *status
 		statuses[id] = &statusCopy
@@ -240,7 +244,7 @@ func (wm *WebhookMonitor) GetAllWebhookStatuses() map[string]*WebhookStatus {
 	return statuses
 }
 
-// GetMetrics returns current webhook metrics
+// GetMetrics returns current webhook metrics.
 func (wm *WebhookMonitor) GetMetrics() *WebhookMetrics {
 	wm.metrics.mu.RLock()
 	defer wm.metrics.mu.RUnlock()
@@ -262,12 +266,13 @@ func (wm *WebhookMonitor) GetMetrics() *WebhookMetrics {
 	return &metricsCopy
 }
 
-// GetActiveAlerts returns all active alerts
+// GetActiveAlerts returns all active alerts.
 func (wm *WebhookMonitor) GetActiveAlerts() []WebhookAlert {
 	wm.mu.RLock()
 	defer wm.mu.RUnlock()
 
 	var alerts []WebhookAlert
+
 	for _, webhook := range wm.webhooks {
 		for _, alert := range webhook.Alerts {
 			if alert.ResolvedAt == nil {
@@ -279,14 +284,15 @@ func (wm *WebhookMonitor) GetActiveAlerts() []WebhookAlert {
 	return alerts
 }
 
-// AddWebhook adds a webhook to the monitor (for testing/demo purposes)
+// AddWebhook adds a webhook to the monitor (for testing/demo purposes).
 func (wm *WebhookMonitor) AddWebhook(webhook *WebhookStatus) {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
+
 	wm.webhooks[webhook.ID] = webhook
 }
 
-// AcknowledgeAlert marks an alert as acknowledged
+// AcknowledgeAlert marks an alert as acknowledged.
 func (wm *WebhookMonitor) AcknowledgeAlert(alertID string) error {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
@@ -296,6 +302,7 @@ func (wm *WebhookMonitor) AcknowledgeAlert(alertID string) error {
 			if webhook.Alerts[i].ID == alertID {
 				webhook.Alerts[i].Acknowledged = true
 				wm.logger.Info("Alert acknowledged", "alert_id", alertID, "webhook_id", webhook.ID)
+
 				return nil
 			}
 		}
@@ -422,6 +429,7 @@ func (wm *WebhookMonitor) updateMetrics() {
 			orgMetrics = &OrganizationMetrics{}
 			wm.metrics.OrganizationMetrics[webhook.Organization] = orgMetrics
 		}
+
 		orgMetrics.TotalWebhooks++
 
 		if webhook.Status == WebhookStatusHealthy {

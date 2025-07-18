@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Request represents an HTTP request
+// Request represents an HTTP request.
 type Request struct {
 	Method  string            `json:"method"`
 	URL     string            `json:"url"`
@@ -15,7 +15,7 @@ type Request struct {
 	Timeout time.Duration     `json:"timeout"`
 }
 
-// Response represents an HTTP response
+// Response represents an HTTP response.
 type Response struct {
 	StatusCode int               `json:"status_code"`
 	Status     string            `json:"status"`
@@ -25,7 +25,7 @@ type Response struct {
 	Duration   time.Duration     `json:"duration"`
 }
 
-// HTTPClient defines the interface for HTTP operations
+// HTTPClient defines the interface for HTTP operations.
 type HTTPClient interface {
 	// Basic HTTP methods
 	Get(ctx context.Context, url string) (*Response, error)
@@ -56,17 +56,17 @@ type HTTPClient interface {
 	AddResponseMiddleware(middleware ResponseMiddleware)
 }
 
-// RequestMiddleware defines the interface for request middleware
+// RequestMiddleware defines the interface for request middleware.
 type RequestMiddleware interface {
 	ProcessRequest(ctx context.Context, req *Request) (*Request, error)
 }
 
-// ResponseMiddleware defines the interface for response middleware
+// ResponseMiddleware defines the interface for response middleware.
 type ResponseMiddleware interface {
 	ProcessResponse(ctx context.Context, req *Request, resp *Response) (*Response, error)
 }
 
-// RetryPolicy defines the interface for retry logic
+// RetryPolicy defines the interface for retry logic.
 type RetryPolicy interface {
 	// Check if request should be retried
 	ShouldRetry(ctx context.Context, req *Request, resp *Response, err error, attempt int) bool
@@ -78,7 +78,7 @@ type RetryPolicy interface {
 	MaxRetries() int
 }
 
-// RateLimiter defines the interface for rate limiting
+// RateLimiter defines the interface for rate limiting.
 type RateLimiter interface {
 	// Check if request is allowed
 	Allow(ctx context.Context) bool
@@ -93,7 +93,7 @@ type RateLimiter interface {
 	Reset()
 }
 
-// RateLimitInfo represents rate limit information
+// RateLimitInfo represents rate limit information.
 type RateLimitInfo struct {
 	Limit     int           `json:"limit"`
 	Remaining int           `json:"remaining"`
@@ -101,7 +101,7 @@ type RateLimitInfo struct {
 	Window    time.Duration `json:"window"`
 }
 
-// CachePolicy defines the interface for HTTP caching
+// CachePolicy defines the interface for HTTP caching.
 type CachePolicy interface {
 	// Check if response can be cached
 	ShouldCache(ctx context.Context, req *Request, resp *Response) bool
@@ -119,7 +119,7 @@ type CachePolicy interface {
 	GetStats() *CacheStats
 }
 
-// CacheStats represents cache statistics
+// CacheStats represents cache statistics.
 type CacheStats struct {
 	Hits      int64 `json:"hits"`
 	Misses    int64 `json:"misses"`
@@ -129,7 +129,7 @@ type CacheStats struct {
 	MaxSize   int64 `json:"max_size"`
 }
 
-// RequestLogger defines the interface for request logging
+// RequestLogger defines the interface for request logging.
 type RequestLogger interface {
 	// Log request
 	LogRequest(ctx context.Context, req *Request) error
@@ -144,7 +144,7 @@ type RequestLogger interface {
 	GetLogs(ctx context.Context, filters LogFilters) ([]LogEntry, error)
 }
 
-// LogLevel represents logging level
+// LogLevel represents logging level.
 type LogLevel int
 
 const (
@@ -155,7 +155,7 @@ const (
 	LogLevelDebug
 )
 
-// LogFilters represents filters for log queries
+// LogFilters represents filters for log queries.
 type LogFilters struct {
 	Method      string        `json:"method,omitempty"`
 	URL         string        `json:"url,omitempty"`
@@ -166,7 +166,7 @@ type LogFilters struct {
 	MaxDuration time.Duration `json:"max_duration,omitempty"`
 }
 
-// LogEntry represents a logged HTTP request/response
+// LogEntry represents a logged HTTP request/response.
 type LogEntry struct {
 	ID           string        `json:"id"`
 	Timestamp    time.Time     `json:"timestamp"`
@@ -181,7 +181,7 @@ type LogEntry struct {
 	RemoteAddr   string        `json:"remote_addr"`
 }
 
-// MockClient defines the interface for HTTP client mocking
+// MockClient defines the interface for HTTP client mocking.
 type MockClient interface {
 	HTTPClient
 
@@ -199,7 +199,7 @@ type MockClient interface {
 	LoadRecordings(path string) error
 }
 
-// Mock represents a mocked HTTP request/response
+// Mock represents a mocked HTTP request/response.
 type Mock struct {
 	ID         string            `json:"id"`
 	Method     string            `json:"method"`
@@ -213,12 +213,12 @@ type Mock struct {
 	Condition  MockCondition     `json:"condition,omitempty"`
 }
 
-// MockCondition defines conditions for mock matching
+// MockCondition defines conditions for mock matching.
 type MockCondition interface {
 	Matches(ctx context.Context, req *Request) bool
 }
 
-// Recording represents a recorded HTTP request/response
+// Recording represents a recorded HTTP request/response.
 type Recording struct {
 	ID        string        `json:"id"`
 	Timestamp time.Time     `json:"timestamp"`
@@ -228,7 +228,7 @@ type Recording struct {
 	Error     string        `json:"error,omitempty"`
 }
 
-// MetricsCollector defines the interface for collecting HTTP metrics
+// MetricsCollector defines the interface for collecting HTTP metrics.
 type MetricsCollector interface {
 	// Record request metrics
 	RecordRequest(ctx context.Context, req *Request, resp *Response, duration time.Duration, err error)
@@ -244,7 +244,7 @@ type MetricsCollector interface {
 	ExportJSON() ([]byte, error)
 }
 
-// HTTPMetrics represents collected HTTP metrics
+// HTTPMetrics represents collected HTTP metrics.
 type HTTPMetrics struct {
 	TotalRequests      int64            `json:"total_requests"`
 	SuccessfulRequests int64            `json:"successful_requests"`
@@ -261,7 +261,7 @@ type HTTPMetrics struct {
 	TopEndpoints       []EndpointStat   `json:"top_endpoints"`
 }
 
-// SizeStats represents size statistics
+// SizeStats represents size statistics.
 type SizeStats struct {
 	Total   int64 `json:"total"`
 	Average int64 `json:"average"`
@@ -272,7 +272,7 @@ type SizeStats struct {
 	P99     int64 `json:"p99"`
 }
 
-// EndpointStat represents statistics for an endpoint
+// EndpointStat represents statistics for an endpoint.
 type EndpointStat struct {
 	URL             string        `json:"url"`
 	Count           int64         `json:"count"`
@@ -280,7 +280,7 @@ type EndpointStat struct {
 	ErrorRate       float64       `json:"error_rate"`
 }
 
-// HTTPService provides a unified interface for all HTTP operations
+// HTTPService provides a unified interface for all HTTP operations.
 type HTTPService interface {
 	HTTPClient
 	RetryPolicy

@@ -491,13 +491,14 @@ func TestDependabotConfigManager_ValidationHelpers(t *testing.T) {
 	})
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkCreateDefaultConfig(b *testing.B) {
 	manager := createTestDependabotManager()
 	ctx := context.Background()
 	ecosystems := []string{EcosystemGoModules, EcosystemNPM, EcosystemDockerfile, EcosystemGitHubActions}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.CreateDefaultConfig(ctx, "testorg", "testrepo", ecosystems)
 	}
@@ -526,6 +527,7 @@ func BenchmarkValidateConfig(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.ValidateConfig(config)
 	}
@@ -536,12 +538,13 @@ func BenchmarkDetectEcosystems(b *testing.B) {
 	ctx := context.Background()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.DetectEcosystems(ctx, "testorg", "test-node-python-docker-repo")
 	}
 }
 
-// Integration test
+// Integration test.
 func TestDependabotConfigManager_FullWorkflow(t *testing.T) {
 	manager := createTestDependabotManager()
 	ctx := context.Background()
@@ -571,9 +574,10 @@ func TestDependabotConfigManager_FullWorkflow(t *testing.T) {
 	assert.True(t, status.Enabled)
 }
 
-// Helper function to create a test Dependabot manager
+// Helper function to create a test Dependabot manager.
 func createTestDependabotManager() *DependabotConfigManager {
 	logger := &simpleLogger{}
 	apiClient := &simpleAPIClient{}
+
 	return NewDependabotConfigManager(logger, apiClient)
 }

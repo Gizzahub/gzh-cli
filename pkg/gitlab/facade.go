@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-// GitLabManager provides a high-level facade for GitLab operations
+// GitLabManager provides a high-level facade for GitLab operations.
 type GitLabManager interface {
 	// Repository Operations
 	ListGroupRepositories(ctx context.Context, group string) ([]string, error)
@@ -21,7 +21,7 @@ type GitLabManager interface {
 	ValidateGroupAccess(ctx context.Context, group string) error
 }
 
-// BulkCloneRequest represents a request for bulk repository operations
+// BulkCloneRequest represents a request for bulk repository operations.
 type BulkCloneRequest struct {
 	Group        string
 	TargetPath   string
@@ -32,7 +32,7 @@ type BulkCloneRequest struct {
 	Recursive    bool // clone subgroups recursively
 }
 
-// BulkCloneResult represents the result of bulk operations
+// BulkCloneResult represents the result of bulk operations.
 type BulkCloneResult struct {
 	TotalRepositories    int
 	SuccessfulOperations int
@@ -43,7 +43,7 @@ type BulkCloneResult struct {
 	ProcessedGroups      []string
 }
 
-// RepositoryOperationResult represents the result of a single repository operation
+// RepositoryOperationResult represents the result of a single repository operation.
 type RepositoryOperationResult struct {
 	Repository string
 	Group      string
@@ -53,7 +53,7 @@ type RepositoryOperationResult struct {
 	Duration   string
 }
 
-// GroupInfo contains metadata about a GitLab group
+// GroupInfo contains metadata about a GitLab group.
 type GroupInfo struct {
 	Name          string
 	FullName      string
@@ -64,7 +64,7 @@ type GroupInfo struct {
 	SubgroupCount int
 }
 
-// RepositoryFilters contains filtering criteria for repositories
+// RepositoryFilters contains filtering criteria for repositories.
 type RepositoryFilters struct {
 	IncludeNames    []string
 	ExcludeNames    []string
@@ -76,14 +76,14 @@ type RepositoryFilters struct {
 	IncludeArchived bool
 }
 
-// gitLabManagerImpl implements the GitLabManager interface
+// gitLabManagerImpl implements the GitLabManager interface.
 type gitLabManagerImpl struct {
 	factory GitLabProviderFactory
 	client  HTTPClient
 	logger  Logger
 }
 
-// NewGitLabManager creates a new GitLab manager facade
+// NewGitLabManager creates a new GitLab manager facade.
 func NewGitLabManager(factory GitLabProviderFactory, client HTTPClient, logger Logger) GitLabManager {
 	return &gitLabManagerImpl{
 		factory: factory,
@@ -92,7 +92,7 @@ func NewGitLabManager(factory GitLabProviderFactory, client HTTPClient, logger L
 	}
 }
 
-// ListGroupRepositories lists all repositories in a group
+// ListGroupRepositories lists all repositories in a group.
 func (g *gitLabManagerImpl) ListGroupRepositories(ctx context.Context, group string) ([]string, error) {
 	g.logger.Debug("Listing repositories for group", "group", group)
 
@@ -100,7 +100,7 @@ func (g *gitLabManagerImpl) ListGroupRepositories(ctx context.Context, group str
 	return List(ctx, group)
 }
 
-// CloneRepository clones a single repository
+// CloneRepository clones a single repository.
 func (g *gitLabManagerImpl) CloneRepository(ctx context.Context, group, repository, targetPath, branch string) error {
 	g.logger.Debug("Cloning repository", "group", group, "repo", repository, "path", targetPath)
 
@@ -108,7 +108,7 @@ func (g *gitLabManagerImpl) CloneRepository(ctx context.Context, group, reposito
 	return Clone(ctx, targetPath, group, repository, branch)
 }
 
-// GetRepositoryDefaultBranch gets the default branch for a repository
+// GetRepositoryDefaultBranch gets the default branch for a repository.
 func (g *gitLabManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, group, repository string) (string, error) {
 	g.logger.Debug("Getting default branch", "group", group, "repo", repository)
 
@@ -116,7 +116,7 @@ func (g *gitLabManagerImpl) GetRepositoryDefaultBranch(ctx context.Context, grou
 	return GetDefaultBranch(ctx, group, repository)
 }
 
-// RefreshAllRepositories refreshes all repositories in a group
+// RefreshAllRepositories refreshes all repositories in a group.
 func (g *gitLabManagerImpl) RefreshAllRepositories(ctx context.Context, targetPath, group, strategy string) error {
 	g.logger.Info("Refreshing all repositories", "group", group, "strategy", strategy)
 
@@ -124,7 +124,7 @@ func (g *gitLabManagerImpl) RefreshAllRepositories(ctx context.Context, targetPa
 	return RefreshAll(ctx, targetPath, group, strategy)
 }
 
-// BulkCloneRepositories performs bulk repository operations
+// BulkCloneRepositories performs bulk repository operations.
 func (g *gitLabManagerImpl) BulkCloneRepositories(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	g.logger.Info("Starting bulk clone operation", "group", request.Group)
 
@@ -140,6 +140,7 @@ func (g *gitLabManagerImpl) BulkCloneRepositories(ctx context.Context, request *
 		if err != nil {
 			return nil, err
 		}
+
 		repositories = repos
 	}
 
@@ -174,7 +175,7 @@ func (g *gitLabManagerImpl) BulkCloneRepositories(ctx context.Context, request *
 	return result, nil
 }
 
-// GetGroupInfo gets detailed information about a group
+// GetGroupInfo gets detailed information about a group.
 func (g *gitLabManagerImpl) GetGroupInfo(ctx context.Context, group string) (*GroupInfo, error) {
 	g.logger.Debug("Getting group info", "group", group)
 
@@ -187,7 +188,7 @@ func (g *gitLabManagerImpl) GetGroupInfo(ctx context.Context, group string) (*Gr
 	}, nil
 }
 
-// ListSubgroups lists all subgroups within a group
+// ListSubgroups lists all subgroups within a group.
 func (g *gitLabManagerImpl) ListSubgroups(ctx context.Context, group string) ([]string, error) {
 	g.logger.Debug("Listing subgroups", "group", group)
 
@@ -196,17 +197,18 @@ func (g *gitLabManagerImpl) ListSubgroups(ctx context.Context, group string) ([]
 	return []string{}, nil
 }
 
-// ValidateGroupAccess validates that the user has access to a group
+// ValidateGroupAccess validates that the user has access to a group.
 func (g *gitLabManagerImpl) ValidateGroupAccess(ctx context.Context, group string) error {
 	g.logger.Debug("Validating group access", "group", group)
 
 	// Implementation would check access permissions
 	// For now, just try to get group info
 	_, err := g.GetGroupInfo(ctx, group)
+
 	return err
 }
 
-// applyFilters applies repository filters to a list of repositories
+// applyFilters applies repository filters to a list of repositories.
 func (g *gitLabManagerImpl) applyFilters(repositories []string, filters *RepositoryFilters) []string {
 	if filters == nil {
 		return repositories
@@ -218,24 +220,28 @@ func (g *gitLabManagerImpl) applyFilters(repositories []string, filters *Reposit
 		// Apply include/exclude name filters
 		if len(filters.IncludeNames) > 0 {
 			found := false
+
 			for _, include := range filters.IncludeNames {
 				if repo == include {
 					found = true
 					break
 				}
 			}
+
 			if !found {
 				continue
 			}
 		}
 
 		excluded := false
+
 		for _, exclude := range filters.ExcludeNames {
 			if repo == exclude {
 				excluded = true
 				break
 			}
 		}
+
 		if excluded {
 			continue
 		}
@@ -246,7 +252,7 @@ func (g *gitLabManagerImpl) applyFilters(repositories []string, filters *Reposit
 	return filtered
 }
 
-// Logger interface for dependency injection
+// Logger interface for dependency injection.
 type Logger interface {
 	Debug(msg string, args ...interface{})
 	Info(msg string, args ...interface{})

@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// AutomationEngine is the main engine that processes GitHub events and executes automation rules
+// AutomationEngine is the main engine that processes GitHub events and executes automation rules.
 type AutomationEngine struct {
 	logger             Logger
 	apiClient          APIClient
@@ -38,7 +38,7 @@ type AutomationEngine struct {
 	metrics *EngineMetrics
 }
 
-// AutomationEngineConfig holds configuration for the automation engine
+// AutomationEngineConfig holds configuration for the automation engine.
 type AutomationEngineConfig struct {
 	// Worker configuration
 	MaxWorkers       int           `json:"max_workers" yaml:"max_workers"`
@@ -65,7 +65,7 @@ type AutomationEngineConfig struct {
 	Organizations      []string    `json:"organizations" yaml:"organizations"`
 }
 
-// ExecutionTask represents a task to execute a rule
+// ExecutionTask represents a task to execute a rule.
 type ExecutionTask struct {
 	ID         string
 	Rule       *AutomationRule
@@ -75,7 +75,7 @@ type ExecutionTask struct {
 	CreatedAt  time.Time
 }
 
-// EngineMetrics holds metrics for the automation engine
+// EngineMetrics holds metrics for the automation engine.
 type EngineMetrics struct {
 	mu                    sync.RWMutex
 	EventsProcessed       int64                     `json:"events_processed"`
@@ -89,14 +89,14 @@ type EngineMetrics struct {
 	StartTime             time.Time                 `json:"start_time"`
 }
 
-// AutomationEventProcessor defines the interface for processing GitHub events in automation
+// AutomationEventProcessor defines the interface for processing GitHub events in automation.
 type AutomationEventProcessor interface {
 	ProcessEvent(ctx context.Context, event *GitHubEvent) error
 	FilterEvent(event *GitHubEvent) bool
 	ValidateEvent(ctx context.Context, event *GitHubEvent) error
 }
 
-// NewAutomationEngine creates a new automation engine
+// NewAutomationEngine creates a new automation engine.
 func NewAutomationEngine(
 	logger Logger,
 	apiClient APIClient,
@@ -128,7 +128,7 @@ func NewAutomationEngine(
 	return engine
 }
 
-// Start starts the automation engine
+// Start starts the automation engine.
 func (ae *AutomationEngine) Start(ctx context.Context) error {
 	ae.mu.Lock()
 	defer ae.mu.Unlock()
@@ -165,10 +165,11 @@ func (ae *AutomationEngine) Start(ctx context.Context) error {
 	}
 
 	ae.logger.Info("Automation engine started successfully")
+
 	return nil
 }
 
-// Stop stops the automation engine
+// Stop stops the automation engine.
 func (ae *AutomationEngine) Stop(ctx context.Context) error {
 	ae.mu.Lock()
 	defer ae.mu.Unlock()
@@ -184,6 +185,7 @@ func (ae *AutomationEngine) Stop(ctx context.Context) error {
 
 	// Wait for active executions to complete or timeout
 	timeout := time.After(30 * time.Second)
+
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
@@ -192,6 +194,7 @@ func (ae *AutomationEngine) Stop(ctx context.Context) error {
 		case <-timeout:
 			ae.logger.Warn("Timeout waiting for executions to complete",
 				"active_executions", len(ae.activeExecutions))
+
 			return nil
 		case <-ticker.C:
 			if len(ae.activeExecutions) == 0 {
@@ -204,7 +207,7 @@ func (ae *AutomationEngine) Stop(ctx context.Context) error {
 	}
 }
 
-// ProcessEvent processes a GitHub event through the automation engine
+// ProcessEvent processes a GitHub event through the automation engine.
 func (ae *AutomationEngine) ProcessEvent(ctx context.Context, event *GitHubEvent) error {
 	if !ae.isRunning() {
 		return fmt.Errorf("automation engine is not running")
@@ -237,12 +240,15 @@ func (ae *AutomationEngine) ProcessEvent(ctx context.Context, event *GitHubEvent
 	case ae.eventChannel <- event:
 		ae.updateMetrics(func(m *EngineMetrics) {
 			m.EventsProcessed++
+
 			m.LastProcessedEvent = time.Now()
 			if m.EventTypeDistribution == nil {
 				m.EventTypeDistribution = make(map[string]int64)
 			}
+
 			m.EventTypeDistribution[event.Type]++
 		})
+
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
@@ -251,7 +257,7 @@ func (ae *AutomationEngine) ProcessEvent(ctx context.Context, event *GitHubEvent
 	}
 }
 
-// GetMetrics returns current engine metrics
+// GetMetrics returns current engine metrics.
 func (ae *AutomationEngine) GetMetrics() *EngineMetrics {
 	ae.metrics.mu.RLock()
 	defer ae.metrics.mu.RUnlock()
@@ -280,7 +286,7 @@ func (ae *AutomationEngine) GetMetrics() *EngineMetrics {
 	return metrics
 }
 
-// GetActiveExecutions returns currently active executions
+// GetActiveExecutions returns currently active executions.
 func (ae *AutomationEngine) GetActiveExecutions() map[string]*AutomationRuleExecution {
 	ae.mu.RLock()
 	defer ae.mu.RUnlock()
@@ -343,6 +349,7 @@ func (ae *AutomationEngine) handleEvent(ctx context.Context, event *GitHubEvent,
 		ae.logger.Error("Failed to get rules for organization",
 			"organization", event.Organization,
 			"error", err)
+
 		return
 	}
 
@@ -374,6 +381,7 @@ func (ae *AutomationEngine) evaluateRule(ctx context.Context, rule *AutomationRu
 			"rule_id", rule.ID,
 			"event_id", event.ID,
 			"error", err)
+
 		return
 	}
 
@@ -381,6 +389,7 @@ func (ae *AutomationEngine) evaluateRule(ctx context.Context, rule *AutomationRu
 		ae.logger.Debug("Rule conditions not matched",
 			"rule_id", rule.ID,
 			"event_id", event.ID)
+
 		return
 	}
 
@@ -440,6 +449,7 @@ func (ae *AutomationEngine) executeTask(ctx context.Context, task *ExecutionTask
 
 	// Track active execution
 	ae.mu.Lock()
+
 	execution := &AutomationRuleExecution{
 		ID:          task.ID,
 		RuleID:      task.Rule.ID,
@@ -459,6 +469,7 @@ func (ae *AutomationEngine) executeTask(ctx context.Context, task *ExecutionTask
 
 	// Update metrics
 	duration := time.Since(startTime)
+
 	ae.updateMetrics(func(m *EngineMetrics) {
 		m.RulesExecuted++
 		if err != nil {
@@ -476,6 +487,7 @@ func (ae *AutomationEngine) executeTask(ctx context.Context, task *ExecutionTask
 		if m.ExecutionsByStatus == nil {
 			m.ExecutionsByStatus = make(map[ExecutionStatus]int64)
 		}
+
 		if result != nil {
 			m.ExecutionsByStatus[result.Status]++
 		} else {
@@ -577,6 +589,7 @@ func (ae *AutomationEngine) collectMetrics() {
 func (ae *AutomationEngine) isRunning() bool {
 	ae.mu.RLock()
 	defer ae.mu.RUnlock()
+
 	return ae.running
 }
 
@@ -597,6 +610,7 @@ func (ae *AutomationEngine) isEventTypeExcluded(eventType string) bool {
 func (ae *AutomationEngine) updateMetrics(updateFunc func(*EngineMetrics)) {
 	ae.metrics.mu.Lock()
 	defer ae.metrics.mu.Unlock()
+
 	updateFunc(ae.metrics)
 }
 

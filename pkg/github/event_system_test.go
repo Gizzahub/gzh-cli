@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// Mock implementations for testing
+// Mock implementations for testing.
 type mockEventStorage struct {
 	mock.Mock
 }
@@ -62,7 +62,7 @@ func (m *mockEventHandler) GetPriority() int {
 	return args.Int(0)
 }
 
-// Test helper functions
+// Test helper functions.
 func createTestEventForEventSystem() *GitHubEvent {
 	return &GitHubEvent{
 		ID:           "test-event-123",
@@ -100,6 +100,7 @@ func createTestWebhookRequest(eventType, eventID string, payload interface{}) *h
 	req.Header.Set("X-GitHub-Delivery", eventID)
 	req.Header.Set("X-Hub-Signature-256", "sha256=test-signature")
 	req.Header.Set("Content-Type", "application/json")
+
 	return req
 }
 
@@ -359,6 +360,7 @@ func TestEventWebhookServer_HandleWebhook(t *testing.T) {
 	assert.Contains(t, w.Header().Get("Content-Type"), "application/json")
 
 	var response map[string]interface{}
+
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, "success", response["status"])
@@ -415,6 +417,7 @@ func TestEventWebhookServer_GetHealthCheck(t *testing.T) {
 	assert.Contains(t, w.Header().Get("Content-Type"), "application/json")
 
 	var response map[string]interface{}
+
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, "healthy", response["status"])
@@ -510,7 +513,7 @@ func TestHandlerSupportsAction(t *testing.T) {
 	mockHandler.AssertExpectations(t)
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkEventProcessor_ProcessEvent(b *testing.B) {
 	mockStorage := &mockEventStorage{}
 	mockLogger := &mockLogger{}
@@ -521,6 +524,7 @@ func BenchmarkEventProcessor_ProcessEvent(b *testing.B) {
 	mockStorage.On("StoreEvent", mock.Anything, event).Return(nil)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		processor.ProcessEvent(context.Background(), event)
 	}
@@ -540,6 +544,7 @@ func BenchmarkEventProcessor_ParseWebhookEvent(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		req := createTestWebhookRequest("push", "test-123", payload)
 		processor.ParseWebhookEvent(req)
@@ -558,12 +563,13 @@ func BenchmarkSignatureValidation(b *testing.B) {
 	secret := "test-secret"
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		impl.ValidateSignature(payload, signature, secret)
 	}
 }
 
-// Example test showing how to use the event system
+// Example test showing how to use the event system.
 func ExampleEventProcessor() {
 	// Create storage and logger (would be real implementations)
 	storage := &mockEventStorage{}

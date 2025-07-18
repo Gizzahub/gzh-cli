@@ -112,6 +112,7 @@ func TestComprehensiveExampleConfig(t *testing.T) {
 			if repo.Protocol == "ssh" {
 				hasSSH = true
 			}
+
 			if repo.Protocol == "https" {
 				hasHTTPS = true
 			}

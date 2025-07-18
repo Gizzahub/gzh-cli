@@ -9,7 +9,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/gzhclient"
 )
 
-// Example_basicUsage demonstrates basic client usage
+// Example_basicUsage demonstrates basic client usage.
 func Example_basicUsage() {
 	// Create client with default configuration
 	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
@@ -25,7 +25,7 @@ func Example_basicUsage() {
 	// Output: Client status: healthy
 }
 
-// Example_bulkClone demonstrates bulk repository cloning
+// Example_bulkClone demonstrates bulk repository cloning.
 func Example_bulkClone() {
 	config := gzhclient.DefaultConfig()
 	config.Timeout = 5 * time.Minute
@@ -70,7 +70,7 @@ func Example_bulkClone() {
 	// Failed: 1
 }
 
-// Example_pluginManagement demonstrates plugin operations - DISABLED (plugins removed)
+// Example_pluginManagement demonstrates plugin operations - DISABLED (plugins removed).
 func Example_pluginManagement() {
 	config := gzhclient.DefaultConfig()
 	// Plugin functionality has been disabled and removed
@@ -87,7 +87,7 @@ func Example_pluginManagement() {
 	// Output: Plugin management has been disabled
 }
 
-// Example_platformSpecificClients demonstrates platform-specific client usage
+// Example_platformSpecificClients demonstrates platform-specific client usage.
 func Example_platformSpecificClients() {
 	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
 	if err != nil {
@@ -112,7 +112,7 @@ func Example_platformSpecificClients() {
 	// Gitea client created: struct {}
 }
 
-// Example_systemMonitoring demonstrates system metrics collection
+// Example_systemMonitoring demonstrates system metrics collection.
 func Example_systemMonitoring() {
 	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
 	if err != nil {
@@ -137,7 +137,7 @@ func Example_systemMonitoring() {
 	// System Uptime: 24h0m0s
 }
 
-// Example_configurationOptions demonstrates various configuration options
+// Example_configurationOptions demonstrates various configuration options.
 func Example_configurationOptions() {
 	// Custom configuration
 	config := gzhclient.ClientConfig{
@@ -167,6 +167,7 @@ func Example_configurationOptions() {
 
 	// Update configuration
 	newConfig := currentConfig
+
 	newConfig.Timeout = 120 * time.Second
 	if err := client.UpdateConfig(newConfig); err != nil {
 		log.Printf("Failed to update config: %v", err)
@@ -177,7 +178,7 @@ func Example_configurationOptions() {
 	// Network features enabled: false
 }
 
-// Example_errorHandling demonstrates proper error handling
+// Example_errorHandling demonstrates proper error handling.
 func Example_errorHandling() {
 	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
 	if err != nil {
@@ -200,7 +201,8 @@ func Example_errorHandling() {
 	_, err = client.BulkClone(context.Background(), req)
 	if err != nil {
 		// Check for specific error types
-		if apiErr, ok := err.(*gzhclient.APIError); ok {
+		apiErr := &gzhclient.APIError{}
+		if errors.As(err, &apiErr) {
 			fmt.Printf("API Error: %s - %s\n", apiErr.Code, apiErr.Message)
 		} else {
 			fmt.Printf("General error: %v\n", err)
@@ -210,7 +212,7 @@ func Example_errorHandling() {
 	// Output: General error: no supported platforms found in request
 }
 
-// Example_contextCancellation demonstrates context-based cancellation
+// Example_contextCancellation demonstrates context-based cancellation.
 func Example_contextCancellation() {
 	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
 	if err != nil {

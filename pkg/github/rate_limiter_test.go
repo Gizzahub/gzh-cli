@@ -232,6 +232,7 @@ func TestRetryableError(t *testing.T) {
 func TestRepoConfigClient_MakeRequestWithRetry(t *testing.T) {
 	// Test successful request after retry
 	attempts := 0
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		attempts++
 
@@ -265,6 +266,7 @@ func TestRepoConfigClient_MakeRequestWithRetry(t *testing.T) {
 	ctx := context.Background()
 	resp, err := client.makeRequest(ctx, "GET", "/test", nil)
 	require.NoError(t, err)
+
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -274,8 +276,10 @@ func TestRepoConfigClient_MakeRequestWithRetry(t *testing.T) {
 func TestRepoConfigClient_MakeRequestMaxRetries(t *testing.T) {
 	// Test max retries exceeded
 	attempts := 0
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		attempts++
+
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"message": "Internal server error",

@@ -13,10 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newDiffCmd creates the diff subcommand
+// newDiffCmd creates the diff subcommand.
 func newDiffCmd() *cobra.Command {
-	var flags GlobalFlags
 	var (
+		flags            GlobalFlags
 		filter           string
 		format           string
 		showValues       bool
@@ -71,7 +71,7 @@ Examples:
 	return cmd
 }
 
-// runDiffCommand executes the diff command
+// runDiffCommand executes the diff command.
 func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, impactFilter string, onlyNonCompliant, groupByImpact, detailed bool) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -79,9 +79,11 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, i
 
 	if flags.Verbose {
 		fmt.Printf("🔍 Comparing repository configurations for organization: %s\n", flags.Organization)
+
 		if filter != "" {
 			fmt.Printf("Filter pattern: %s\n", filter)
 		}
+
 		fmt.Printf("Format: %s\n", format)
 		fmt.Println()
 	}
@@ -113,6 +115,7 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, i
 		} else {
 			fmt.Println("✅ No configuration differences found - all repositories are compliant")
 		}
+
 		return nil
 	}
 
@@ -138,7 +141,7 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, i
 	return nil
 }
 
-// ConfigurationDifference represents a difference between current and target config
+// ConfigurationDifference represents a difference between current and target config.
 type ConfigurationDifference struct {
 	Repository   string `json:"repository"`
 	Setting      string `json:"setting"`
@@ -150,7 +153,7 @@ type ConfigurationDifference struct {
 	Compliant    bool   `json:"compliant"`
 }
 
-// displayDiffTable displays differences in table format
+// displayDiffTable displays differences in table format.
 func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 	if showValues {
 		fmt.Printf("%-20s %-30s %-15s %-15s %-12s %s\n",
@@ -159,6 +162,7 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 		fmt.Printf("%-20s %-30s %-12s %-15s %s\n",
 			"REPOSITORY", "SETTING", "IMPACT", "ACTION", "TEMPLATE")
 	}
+
 	fmt.Println("────────────────────────────────────────────────────────────────────────────────")
 
 	// Group differences by repository for better readability
@@ -200,7 +204,7 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 	}
 }
 
-// displayDiffJSON displays differences in JSON format
+// displayDiffJSON displays differences in JSON format.
 func displayDiffJSON(differences []ConfigurationDifference) {
 	jsonData := map[string]interface{}{
 		"differences": differences,
@@ -217,7 +221,7 @@ func displayDiffJSON(differences []ConfigurationDifference) {
 	}
 }
 
-// displayDiffUnified displays differences in unified diff format
+// displayDiffUnified displays differences in unified diff format.
 func displayDiffUnified(differences []ConfigurationDifference) {
 	for _, diff := range differences {
 		fmt.Printf("--- %s (current)\n", diff.Repository)
@@ -233,11 +237,12 @@ func displayDiffUnified(differences []ConfigurationDifference) {
 		case "delete":
 			fmt.Printf("-%s: %s\n", diff.Setting, diff.CurrentValue)
 		}
+
 		fmt.Println()
 	}
 }
 
-// displayDiffSummary displays a summary of differences
+// displayDiffSummary displays a summary of differences.
 func displayDiffSummary(differences []ConfigurationDifference) {
 	repoCount := len(getAffectedRepositories(differences))
 
@@ -275,7 +280,7 @@ func displayDiffSummary(differences []ConfigurationDifference) {
 	fmt.Printf("  ➖ Delete: %d\n", actionCounts["delete"])
 }
 
-// getImpactSymbol returns the symbol for impact level
+// getImpactSymbol returns the symbol for impact level.
 func getImpactSymbol(impact string) string {
 	switch impact {
 	case "high":
@@ -289,16 +294,17 @@ func getImpactSymbol(impact string) string {
 	}
 }
 
-// groupDifferencesByRepository groups differences by repository name
+// groupDifferencesByRepository groups differences by repository name.
 func groupDifferencesByRepository(differences []ConfigurationDifference) map[string][]ConfigurationDifference {
 	grouped := make(map[string][]ConfigurationDifference)
 	for _, diff := range differences {
 		grouped[diff.Repository] = append(grouped[diff.Repository], diff)
 	}
+
 	return grouped
 }
 
-// getSortedRepositoryNames returns repository names sorted alphabetically
+// getSortedRepositoryNames returns repository names sorted alphabetically.
 func getSortedRepositoryNames(grouped map[string][]ConfigurationDifference) []string {
 	repos := make([]string, 0, len(grouped))
 	for repo := range grouped {
@@ -313,10 +319,11 @@ func getSortedRepositoryNames(grouped map[string][]ConfigurationDifference) []st
 			}
 		}
 	}
+
 	return repos
 }
 
-// colorize applies ANSI color codes to text
+// colorize applies ANSI color codes to text.
 func colorize(text, style string) string {
 	// For now, return text as-is
 	// In a more advanced implementation, we could add color support
@@ -324,7 +331,7 @@ func colorize(text, style string) string {
 	return text
 }
 
-// colorizeValue applies color based on whether it's being added or removed
+// colorizeValue applies color based on whether it's being added or removed.
 func colorizeValue(text string, isRemoving bool) string {
 	// For now, return text as-is
 	// In a more advanced implementation:
@@ -334,29 +341,33 @@ func colorizeValue(text string, isRemoving bool) string {
 	return text
 }
 
-// filterByImpact filters differences by impact level
+// filterByImpact filters differences by impact level.
 func filterByImpact(differences []ConfigurationDifference, impact string) []ConfigurationDifference {
 	var filtered []ConfigurationDifference
+
 	for _, diff := range differences {
 		if diff.Impact == impact {
 			filtered = append(filtered, diff)
 		}
 	}
+
 	return filtered
 }
 
-// filterNonCompliant filters differences to show only non-compliant configurations
+// filterNonCompliant filters differences to show only non-compliant configurations.
 func filterNonCompliant(differences []ConfigurationDifference) []ConfigurationDifference {
 	var filtered []ConfigurationDifference
+
 	for _, diff := range differences {
 		if !diff.Compliant {
 			filtered = append(filtered, diff)
 		}
 	}
+
 	return filtered
 }
 
-// displayDiffTableByImpact displays differences grouped by impact level
+// displayDiffTableByImpact displays differences grouped by impact level.
 func displayDiffTableByImpact(differences []ConfigurationDifference, showValues, detailed bool) {
 	impactGroups := map[string][]ConfigurationDifference{
 		"high":   {},
@@ -391,7 +402,7 @@ func displayDiffTableByImpact(differences []ConfigurationDifference, showValues,
 	}
 }
 
-// displayDetailedDifferences displays differences with detailed analysis
+// displayDetailedDifferences displays differences with detailed analysis.
 func displayDetailedDifferences(differences []ConfigurationDifference, showValues bool) {
 	for i, diff := range differences {
 		if i > 0 {
@@ -420,30 +431,34 @@ func displayDetailedDifferences(differences []ConfigurationDifference, showValue
 	}
 }
 
-// formatValue formats a value for display, handling empty values
+// formatValue formats a value for display, handling empty values.
 func formatValue(value string) string {
 	if value == "" {
 		return "(not set)"
 	}
+
 	return value
 }
 
-// analyzeSettingChange provides detailed analysis for specific setting changes
+// analyzeSettingChange provides detailed analysis for specific setting changes.
 func analyzeSettingChange(diff ConfigurationDifference) string {
 	switch {
 	case strings.Contains(diff.Setting, "visibility"):
 		if diff.TargetValue == "private" {
 			return "Making repository private will restrict access to organization members only"
 		}
+
 		return "Making repository public will allow anyone to view the code"
 
 	case strings.Contains(diff.Setting, "branch_protection"):
 		if strings.Contains(diff.Setting, "required_reviews") {
 			return "Changing review requirements affects code quality gates"
 		}
+
 		if strings.Contains(diff.Setting, "enforce_admins") {
 			return "Admin enforcement affects repository admin bypass capabilities"
 		}
+
 		return "Branch protection rule changes affect repository security"
 
 	case strings.Contains(diff.Setting, "permissions"):
@@ -457,7 +472,7 @@ func analyzeSettingChange(diff ConfigurationDifference) string {
 	}
 }
 
-// getAffectedRepositories returns unique repository names from differences
+// getAffectedRepositories returns unique repository names from differences.
 func getAffectedRepositories(differences []ConfigurationDifference) []string {
 	repos := make(map[string]bool)
 	for _, diff := range differences {
@@ -468,10 +483,11 @@ func getAffectedRepositories(differences []ConfigurationDifference) []string {
 	for repo := range repos {
 		result = append(result, repo)
 	}
+
 	return result
 }
 
-// compareRepositoryConfigurations compares current and target configurations
+// compareRepositoryConfigurations compares current and target configurations.
 func compareRepositoryConfigurations(
 	repoName string,
 	current *github.RepositoryConfig,
@@ -517,12 +533,15 @@ func compareRepositoryConfigurations(
 		if targetSettings.Private != nil && current.Private != *targetSettings.Private {
 			visibility := "public"
 			targetVisibility := "public"
+
 			if current.Private {
 				visibility = "private"
 			}
+
 			if *targetSettings.Private {
 				targetVisibility = "private"
 			}
+
 			differences = append(differences, ConfigurationDifference{
 				Repository:   repoName,
 				Setting:      "visibility",
@@ -692,18 +711,20 @@ func compareRepositoryConfigurations(
 	return differences
 }
 
-// getChangeType determines the type of change
+// getChangeType determines the type of change.
 func getChangeType(current, target string) string {
 	if current == "" && target != "" {
 		return "create"
 	}
+
 	if current != "" && target == "" {
 		return "delete"
 	}
+
 	return "update"
 }
 
-// findAppliedTemplate finds which template applies to a repository
+// findAppliedTemplate finds which template applies to a repository.
 func findAppliedTemplate(repoConfig *config.RepoConfig, repoName string) string {
 	if repoConfig.Repositories != nil {
 		// Check specific repositories
@@ -734,7 +755,7 @@ func findAppliedTemplate(repoConfig *config.RepoConfig, repoName string) string 
 	return "none"
 }
 
-// matchRepoPattern checks if a repository name matches a pattern
+// matchRepoPattern checks if a repository name matches a pattern.
 func matchRepoPattern(name, pattern string) (bool, error) {
 	// Convert simple glob patterns to regex
 	if strings.Contains(pattern, "*") {
@@ -743,12 +764,14 @@ func matchRepoPattern(name, pattern string) (bool, error) {
 		// Replace escaped \* back to .*
 		pattern = strings.ReplaceAll(pattern, "\\*", ".*")
 		pattern = "^" + pattern + "$"
+
 		return regexp.MatchString(pattern, name)
 	}
+
 	return name == pattern, nil
 }
 
-// applyPolicyExceptions applies policy exceptions to differences
+// applyPolicyExceptions applies policy exceptions to differences.
 func applyPolicyExceptions(differences []ConfigurationDifference, exceptions []config.PolicyException) []ConfigurationDifference {
 	// For now, just return differences as-is
 	// In a full implementation, this would check if any differences are covered by exceptions
@@ -756,7 +779,7 @@ func applyPolicyExceptions(differences []ConfigurationDifference, exceptions []c
 	return differences
 }
 
-// getConfigurationDifferences retrieves configuration differences for an organization
+// getConfigurationDifferences retrieves configuration differences for an organization.
 func getConfigurationDifferences(organization, filter, token, configPath string) ([]ConfigurationDifference, error) {
 	// Create a context
 	ctx := context.Background()
@@ -765,6 +788,7 @@ func getConfigurationDifferences(organization, filter, token, configPath string)
 	if token == "" {
 		token = os.Getenv("GITHUB_TOKEN")
 	}
+
 	if token == "" {
 		return nil, fmt.Errorf("GitHub token not found. Set GITHUB_TOKEN environment variable or use --token flag")
 	}
@@ -791,6 +815,7 @@ func getConfigurationDifferences(organization, filter, token, configPath string)
 	listOpts := &github.ListOptions{
 		PerPage: 100,
 	}
+
 	repos, err := client.ListRepositories(ctx, organization, listOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list repositories: %w", err)
@@ -798,11 +823,13 @@ func getConfigurationDifferences(organization, filter, token, configPath string)
 
 	// Apply filter if specified
 	var filteredRepos []*github.Repository
+
 	if filter != "" {
 		filterRegex, err := regexp.Compile(filter)
 		if err != nil {
 			return nil, fmt.Errorf("invalid filter regex: %w", err)
 		}
+
 		for _, repo := range repos {
 			if filterRegex.MatchString(repo.Name) {
 				filteredRepos = append(filteredRepos, repo)
@@ -814,6 +841,7 @@ func getConfigurationDifferences(organization, filter, token, configPath string)
 
 	// Compare configurations
 	var differences []ConfigurationDifference
+
 	for _, repo := range filteredRepos {
 		// Skip archived repositories
 		if repo.Archived {

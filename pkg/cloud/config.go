@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config represents the cloud configuration
+// Config represents the cloud configuration.
 type Config struct {
 	Version   string                    `yaml:"version"`
 	Providers map[string]ProviderConfig `yaml:"providers"`
@@ -19,7 +19,7 @@ type Config struct {
 	Sync      SyncConfig                `yaml:"sync,omitempty"`
 }
 
-// SyncConfig represents synchronization configuration
+// SyncConfig represents synchronization configuration.
 type SyncConfig struct {
 	Enabled      bool             `yaml:"enabled"`
 	Interval     time.Duration    `yaml:"interval,omitempty"`
@@ -27,14 +27,14 @@ type SyncConfig struct {
 	ConflictMode ConflictStrategy `yaml:"conflict_mode,omitempty"`
 }
 
-// SyncTarget represents a sync target configuration
+// SyncTarget represents a sync target configuration.
 type SyncTarget struct {
 	Source   string   `yaml:"source"`
 	Target   string   `yaml:"target"`
 	Profiles []string `yaml:"profiles,omitempty"` // empty means all profiles
 }
 
-// LoadConfig loads cloud configuration from file
+// LoadConfig loads cloud configuration from file.
 func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -67,7 +67,7 @@ func LoadConfig(path string) (*Config, error) {
 	return &config, nil
 }
 
-// SaveConfig saves cloud configuration to file
+// SaveConfig saves cloud configuration to file.
 func SaveConfig(config *Config, path string) error {
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(path)
@@ -87,7 +87,7 @@ func SaveConfig(config *Config, path string) error {
 	return nil
 }
 
-// Validate validates the configuration
+// Validate validates the configuration.
 func (c *Config) Validate() error {
 	if len(c.Providers) == 0 {
 		return fmt.Errorf("no providers configured")
@@ -145,62 +145,68 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// GetProvider returns provider configuration by name
+// GetProvider returns provider configuration by name.
 func (c *Config) GetProvider(name string) (ProviderConfig, bool) {
 	provider, exists := c.Providers[name]
 	return provider, exists
 }
 
-// GetProfile returns profile by name
+// GetProfile returns profile by name.
 func (c *Config) GetProfile(name string) (Profile, bool) {
 	profile, exists := c.Profiles[name]
 	return profile, exists
 }
 
-// GetProfilesForProvider returns all profiles for a provider
+// GetProfilesForProvider returns all profiles for a provider.
 func (c *Config) GetProfilesForProvider(providerName string) []Profile {
 	var profiles []Profile
+
 	for _, profile := range c.Profiles {
 		if profile.Provider == providerName {
 			profiles = append(profiles, profile)
 		}
 	}
+
 	return profiles
 }
 
-// GetVPNConnection returns VPN connection by name
+// GetVPNConnection returns VPN connection by name.
 func (c *Config) GetVPNConnection(name string) (VPNConnection, bool) {
 	if c.VPNs == nil {
 		return VPNConnection{}, false
 	}
+
 	vpn, exists := c.VPNs[name]
+
 	return vpn, exists
 }
 
-// AddVPNConnection adds a VPN connection to the configuration
+// AddVPNConnection adds a VPN connection to the configuration.
 func (c *Config) AddVPNConnection(conn VPNConnection) {
 	if c.VPNs == nil {
 		c.VPNs = make(map[string]VPNConnection)
 	}
+
 	c.VPNs[conn.Name] = conn
 }
 
-// RemoveVPNConnection removes a VPN connection from the configuration
+// RemoveVPNConnection removes a VPN connection from the configuration.
 func (c *Config) RemoveVPNConnection(name string) {
 	if c.VPNs != nil {
 		delete(c.VPNs, name)
 	}
 }
 
-// GetVPNConnections returns all VPN connections
+// GetVPNConnections returns all VPN connections.
 func (c *Config) GetVPNConnections() map[string]VPNConnection {
 	if c.VPNs == nil {
 		return make(map[string]VPNConnection)
 	}
+
 	return c.VPNs
 }
 
-// GetDefaultConfigPath returns the default config file path
+// GetDefaultConfigPath returns the default config file path.
 func GetDefaultConfigPath() string {
 	// Check environment variable first
 	if path := os.Getenv("GZH_CLOUD_CONFIG"); path != "" {

@@ -268,12 +268,14 @@ func TestValidatePolicyExceptions(t *testing.T) {
 
 			for _, expected := range tt.errorContains {
 				found := false
+
 				for _, err := range errors {
 					if assert.Contains(t, err, expected) {
 						found = true
 						break
 					}
 				}
+
 				assert.True(t, found, "Expected error containing '%s' not found", expected)
 			}
 		})

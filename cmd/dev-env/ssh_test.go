@@ -30,6 +30,7 @@ func TestNewSshCmd(t *testing.T) {
 	assert.Len(t, subcommands, 3)
 
 	var saveCmd, loadCmd, listCmd bool
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "save":
@@ -332,12 +333,14 @@ Host *
 
 	// Check production-web host
 	var prodHost *sshHost
+
 	for i := range hosts {
 		if hosts[i].Name == "production-web" {
 			prodHost = &hosts[i]
 			break
 		}
 	}
+
 	require.NotNil(t, prodHost)
 	assert.Equal(t, "web.prod.example.com", prodHost.Hostname)
 	assert.Equal(t, "deploy", prodHost.User)
@@ -346,12 +349,14 @@ Host *
 
 	// Check staging-web host
 	var stagingHost *sshHost
+
 	for i := range hosts {
 		if hosts[i].Name == "staging-web" {
 			stagingHost = &hosts[i]
 			break
 		}
 	}
+
 	require.NotNil(t, stagingHost)
 	assert.Equal(t, "web.staging.example.com", stagingHost.Hostname)
 	assert.Equal(t, "ubuntu", stagingHost.User)
@@ -359,12 +364,14 @@ Host *
 
 	// Check database host
 	var dbHost *sshHost
+
 	for i := range hosts {
 		if hosts[i].Name == "database" {
 			dbHost = &hosts[i]
 			break
 		}
 	}
+
 	require.NotNil(t, dbHost)
 	assert.Equal(t, "db.example.com", dbHost.Hostname)
 	assert.Equal(t, "postgres", dbHost.User)
@@ -372,12 +379,14 @@ Host *
 
 	// Check github.com host
 	var githubHost *sshHost
+
 	for i := range hosts {
 		if hosts[i].Name == "github.com" {
 			githubHost = &hosts[i]
 			break
 		}
 	}
+
 	require.NotNil(t, githubHost)
 	assert.Equal(t, "github.com", githubHost.Hostname)
 	assert.Equal(t, "git", githubHost.User)
@@ -487,12 +496,14 @@ Host single-quoted
 
 	// Check quoted host (should handle quotes properly)
 	var quotedHost *sshHost
+
 	for i := range hosts {
 		if hosts[i].Name == "quoted-host" {
 			quotedHost = &hosts[i]
 			break
 		}
 	}
+
 	require.NotNil(t, quotedHost)
 	assert.Equal(t, "\"hostname.example.com\"", quotedHost.Hostname)
 	assert.Equal(t, "\"myuser\"", quotedHost.User)
@@ -501,12 +512,14 @@ Host single-quoted
 
 	// Check single quoted host
 	var singleQuotedHost *sshHost
+
 	for i := range hosts {
 		if hosts[i].Name == "single-quoted" {
 			singleQuotedHost = &hosts[i]
 			break
 		}
 	}
+
 	require.NotNil(t, singleQuotedHost)
 	assert.Equal(t, "'single.example.com'", singleQuotedHost.Hostname)
 	assert.Equal(t, "~/.ssh/single key", singleQuotedHost.KeyFile) // Quotes should be stripped

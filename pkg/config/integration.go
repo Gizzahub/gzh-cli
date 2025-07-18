@@ -5,19 +5,19 @@ import (
 	"path/filepath"
 )
 
-// BulkCloneIntegration provides integration between gzh.yaml config and bulk-clone operations
+// BulkCloneIntegration provides integration between gzh.yaml config and bulk-clone operations.
 type BulkCloneIntegration struct {
 	config *Config
 }
 
-// NewBulkCloneIntegration creates a new integration instance
+// NewBulkCloneIntegration creates a new integration instance.
 func NewBulkCloneIntegration(config *Config) *BulkCloneIntegration {
 	return &BulkCloneIntegration{
 		config: config,
 	}
 }
 
-// BulkCloneTarget represents a target for bulk cloning operations
+// BulkCloneTarget represents a target for bulk cloning operations.
 type BulkCloneTarget struct {
 	Provider   string   // github, gitlab, gitea
 	Name       string   // organization or group name
@@ -31,7 +31,7 @@ type BulkCloneTarget struct {
 	Flatten    bool     // flatten directory structure
 }
 
-// GetAllTargets returns all configured targets for bulk cloning
+// GetAllTargets returns all configured targets for bulk cloning.
 func (b *BulkCloneIntegration) GetAllTargets() ([]BulkCloneTarget, error) {
 	var targets []BulkCloneTarget
 
@@ -74,7 +74,7 @@ func (b *BulkCloneIntegration) GetAllTargets() ([]BulkCloneTarget, error) {
 	return targets, nil
 }
 
-// GetTargetsByProvider returns targets filtered by provider
+// GetTargetsByProvider returns targets filtered by provider.
 func (b *BulkCloneIntegration) GetTargetsByProvider(providerName string) ([]BulkCloneTarget, error) {
 	allTargets, err := b.GetAllTargets()
 	if err != nil {
@@ -82,6 +82,7 @@ func (b *BulkCloneIntegration) GetTargetsByProvider(providerName string) ([]Bulk
 	}
 
 	var filtered []BulkCloneTarget
+
 	for _, target := range allTargets {
 		if target.Provider == providerName {
 			filtered = append(filtered, target)
@@ -91,7 +92,7 @@ func (b *BulkCloneIntegration) GetTargetsByProvider(providerName string) ([]Bulk
 	return filtered, nil
 }
 
-// GetTargetByName returns a specific target by provider and name
+// GetTargetByName returns a specific target by provider and name.
 func (b *BulkCloneIntegration) GetTargetByName(providerName, targetName string) (*BulkCloneTarget, error) {
 	targets, err := b.GetTargetsByProvider(providerName)
 	if err != nil {
@@ -107,7 +108,7 @@ func (b *BulkCloneIntegration) GetTargetByName(providerName, targetName string) 
 	return nil, fmt.Errorf("target '%s' not found for provider '%s'", targetName, providerName)
 }
 
-// resolveCloneDir resolves the clone directory with fallbacks and flatten support
+// resolveCloneDir resolves the clone directory with fallbacks and flatten support.
 func (b *BulkCloneIntegration) resolveCloneDir(cloneDir, providerName, targetName string, flatten bool) string {
 	if cloneDir != "" {
 		return ExpandEnvironmentVariables(cloneDir)
@@ -132,24 +133,26 @@ func (b *BulkCloneIntegration) resolveCloneDir(cloneDir, providerName, targetNam
 	return ExpandEnvironmentVariables(defaultPath)
 }
 
-// ValidateProvider checks if a provider is configured
+// ValidateProvider checks if a provider is configured.
 func (b *BulkCloneIntegration) ValidateProvider(providerName string) error {
 	if _, exists := b.config.Providers[providerName]; !exists {
 		return fmt.Errorf("provider '%s' is not configured", providerName)
 	}
+
 	return nil
 }
 
-// GetConfiguredProviders returns a list of all configured providers
+// GetConfiguredProviders returns a list of all configured providers.
 func (b *BulkCloneIntegration) GetConfiguredProviders() []string {
 	var providers []string
 	for name := range b.config.Providers {
 		providers = append(providers, name)
 	}
+
 	return providers
 }
 
-// GetDefaultProvider returns the default provider or the first available one
+// GetDefaultProvider returns the default provider or the first available one.
 func (b *BulkCloneIntegration) GetDefaultProvider() string {
 	if b.config.DefaultProvider != "" {
 		return b.config.DefaultProvider
@@ -163,7 +166,7 @@ func (b *BulkCloneIntegration) GetDefaultProvider() string {
 	return ProviderGitHub // Ultimate fallback
 }
 
-// ShouldProcessTarget determines if a target should be processed based on filters
+// ShouldProcessTarget determines if a target should be processed based on filters.
 func (b *BulkCloneIntegration) ShouldProcessTarget(target BulkCloneTarget, filters map[string]interface{}) bool {
 	// Check provider filter
 	if providerFilter, ok := filters["provider"]; ok {
@@ -195,7 +198,7 @@ func (b *BulkCloneIntegration) ShouldProcessTarget(target BulkCloneTarget, filte
 	return true
 }
 
-// CreateDefaultGZHConfig creates a default gzh.yaml configuration
+// CreateDefaultGZHConfig creates a default gzh.yaml configuration.
 func CreateDefaultGZHConfig(filename string) error {
 	defaultConfig := &Config{
 		Version:         "1.0.0",
@@ -234,7 +237,7 @@ func CreateDefaultGZHConfig(filename string) error {
 	return SaveConfigToFile(defaultConfig, filename)
 }
 
-// SaveConfigToFile saves a configuration to a YAML file
+// SaveConfigToFile saves a configuration to a YAML file.
 func SaveConfigToFile(config *Config, filename string) error {
 	// This is a placeholder - would need YAML marshaling
 	// For now, we'll create the file with a string template
@@ -276,7 +279,7 @@ providers:
 	return WriteFileContent(filename, content)
 }
 
-// WriteFileContent writes content to a file (helper function)
+// WriteFileContent writes content to a file (helper function).
 func WriteFileContent(filename, content string) error {
 	// Ensure directory exists
 	dir := filepath.Dir(filename)

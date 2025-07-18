@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// StreamingClient provides streaming API access for large-scale operations
+// StreamingClient provides streaming API access for large-scale operations.
 type StreamingClient struct {
 	httpClient     *http.Client
 	token          string
@@ -24,7 +24,7 @@ type StreamingClient struct {
 	mu             sync.RWMutex
 }
 
-// StreamingRateLimiter manages API rate limiting for streaming
+// StreamingRateLimiter manages API rate limiting for streaming.
 type StreamingRateLimiter struct {
 	remaining int
 	reset     time.Time
@@ -32,14 +32,14 @@ type StreamingRateLimiter struct {
 	mu        sync.RWMutex
 }
 
-// MemoryPool manages reusable memory allocations
+// MemoryPool manages reusable memory allocations.
 type MemoryPool struct {
 	bufferPool     sync.Pool
 	repositoryPool sync.Pool
 	resultPool     sync.Pool
 }
 
-// RequestMetrics tracks API usage statistics
+// RequestMetrics tracks API usage statistics.
 type RequestMetrics struct {
 	totalRequests   int64
 	cachedResponses int64
@@ -50,14 +50,14 @@ type RequestMetrics struct {
 	mu              sync.RWMutex
 }
 
-// RepositoryStream represents a streaming repository result
+// RepositoryStream represents a streaming repository result.
 type RepositoryStream struct {
 	Repository *Repository
 	Error      error
 	Metadata   StreamMetadata
 }
 
-// StreamMetadata contains stream processing metadata
+// StreamMetadata contains stream processing metadata.
 type StreamMetadata struct {
 	Page         int
 	TotalPages   int
@@ -67,7 +67,7 @@ type StreamMetadata struct {
 	RetryAttempt int
 }
 
-// StreamingRepository represents a GitHub repository with optimized memory layout for streaming
+// StreamingRepository represents a GitHub repository with optimized memory layout for streaming.
 type StreamingRepository struct {
 	ID            int64     `json:"id"`
 	Name          string    `json:"name"`
@@ -82,7 +82,7 @@ type StreamingRepository struct {
 	// Only include essential fields to minimize memory usage
 }
 
-// CursorPagination represents cursor-based pagination for efficient large dataset traversal
+// CursorPagination represents cursor-based pagination for efficient large dataset traversal.
 type CursorPagination struct {
 	After       string
 	Before      string
@@ -94,7 +94,7 @@ type CursorPagination struct {
 	StartCursor string
 }
 
-// StreamingConfig configures streaming behavior
+// StreamingConfig configures streaming behavior.
 type StreamingConfig struct {
 	PageSize        int
 	MaxConcurrency  int
@@ -107,7 +107,7 @@ type StreamingConfig struct {
 	RateLimitBuffer int // requests to keep in reserve
 }
 
-// DefaultStreamingConfig returns optimized defaults for large-scale operations
+// DefaultStreamingConfig returns optimized defaults for large-scale operations.
 func DefaultStreamingConfig() StreamingConfig {
 	return StreamingConfig{
 		PageSize:        100, // GitHub's max per page
@@ -122,7 +122,7 @@ func DefaultStreamingConfig() StreamingConfig {
 	}
 }
 
-// NewStreamingClient creates a new streaming GitHub API client
+// NewStreamingClient creates a new streaming GitHub API client.
 func NewStreamingClient(token string, config StreamingConfig) *StreamingClient {
 	httpClient := &http.Client{
 		Timeout: 30 * time.Second,
@@ -172,7 +172,7 @@ func NewStreamingClient(token string, config StreamingConfig) *StreamingClient {
 	}
 }
 
-// StreamOrganizationRepositories streams repositories for an organization with memory optimization
+// StreamOrganizationRepositories streams repositories for an organization with memory optimization.
 func (sc *StreamingClient) StreamOrganizationRepositories(ctx context.Context, org string, config StreamingConfig) (<-chan RepositoryStream, error) {
 	resultChan := make(chan RepositoryStream, config.BufferSize)
 
@@ -247,7 +247,7 @@ func (sc *StreamingClient) StreamOrganizationRepositories(ctx context.Context, o
 	return resultChan, nil
 }
 
-// fetchRepositoryPage fetches a single page of repositories with optimized memory usage
+// fetchRepositoryPage fetches a single page of repositories with optimized memory usage.
 func (sc *StreamingClient) fetchRepositoryPage(ctx context.Context, org string, cursor CursorPagination) ([]*Repository, CursorPagination, error) {
 	url := sc.buildRepositoryURL(org, cursor)
 
@@ -260,11 +260,13 @@ func (sc *StreamingClient) fetchRepositoryPage(ctx context.Context, org string, 
 	if sc.token != "" {
 		req.Header.Set("Authorization", "Bearer "+sc.token)
 	}
+
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
 	// Execute request
 	startTime := time.Now()
+
 	resp, err := sc.httpClient.Do(req)
 	if err != nil {
 		return nil, CursorPagination{}, fmt.Errorf("request failed: %w", err)
@@ -285,7 +287,7 @@ func (sc *StreamingClient) fetchRepositoryPage(ctx context.Context, org string, 
 	return sc.parseRepositoryResponse(resp.Body, cursor)
 }
 
-// parseRepositoryResponse parses JSON response with streaming to minimize memory usage
+// parseRepositoryResponse parses JSON response with streaming to minimize memory usage.
 func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor CursorPagination) ([]*Repository, CursorPagination, error) {
 	// Use buffered reader for efficient streaming
 	bufReader := bufio.NewReaderSize(reader, 64*1024)
@@ -305,8 +307,10 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 		return nil, CursorPagination{}, fmt.Errorf("failed to peek response: %w", err)
 	}
 
-	var repositories []*Repository
-	var newPagination CursorPagination
+	var (
+		repositories  []*Repository
+		newPagination CursorPagination
+	)
 
 	if firstByte[0] == '[' {
 		// Direct array response
@@ -322,12 +326,12 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 				sc.memoryPool.repositoryPool.Put(repo)
 				continue // Skip malformed entries
 			}
+
 			repositories = append(repositories, repo)
 		}
 
 		// For array responses, pagination is handled via Link headers
 		newPagination = sc.parseLinkPagination(cursor)
-
 	} else {
 		// Object response (search results)
 		if err := decoder.Decode(&response); err != nil {
@@ -341,6 +345,7 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 				sc.memoryPool.repositoryPool.Put(repo)
 				continue
 			}
+
 			repositories = append(repositories, repo)
 		}
 
@@ -350,7 +355,7 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 	return repositories, newPagination, nil
 }
 
-// buildRepositoryURL constructs the API URL with cursor pagination
+// buildRepositoryURL constructs the API URL with cursor pagination.
 func (sc *StreamingClient) buildRepositoryURL(org string, cursor CursorPagination) string {
 	baseURL := fmt.Sprintf("https://api.github.com/orgs/%s/repos", org)
 
@@ -367,7 +372,7 @@ func (sc *StreamingClient) buildRepositoryURL(org string, cursor CursorPaginatio
 	return baseURL + "?" + params.Encode()
 }
 
-// parseLinkPagination extracts pagination info from Link headers
+// parseLinkPagination extracts pagination info from Link headers.
 func (sc *StreamingClient) parseLinkPagination(current CursorPagination) CursorPagination {
 	// Implementation would parse GitHub's Link header for next/prev URLs
 	// For now, return a simplified version
@@ -377,7 +382,7 @@ func (sc *StreamingClient) parseLinkPagination(current CursorPagination) CursorP
 	}
 }
 
-// waitForRateLimit waits if necessary to respect rate limits
+// waitForRateLimit waits if necessary to respect rate limits.
 func (sc *StreamingClient) waitForRateLimit(ctx context.Context, buffer int) error {
 	sc.rateLimiter.mu.Lock()
 	remaining := sc.rateLimiter.remaining
@@ -390,6 +395,7 @@ func (sc *StreamingClient) waitForRateLimit(ctx context.Context, buffer int) err
 		if waitDuration <= 0 {
 			return nil
 		}
+
 		if waitDuration > 0 {
 			fmt.Printf("Rate limit approached, waiting %v...\n", waitDuration)
 
@@ -405,7 +411,7 @@ func (sc *StreamingClient) waitForRateLimit(ctx context.Context, buffer int) err
 	return nil
 }
 
-// updateRateLimit updates rate limit info from response headers
+// updateRateLimit updates rate limit info from response headers.
 func (sc *StreamingClient) updateRateLimit(headers http.Header) {
 	sc.rateLimiter.mu.Lock()
 	defer sc.rateLimiter.mu.Unlock()
@@ -429,7 +435,7 @@ func (sc *StreamingClient) updateRateLimit(headers http.Header) {
 	}
 }
 
-// checkMemoryLimit monitors memory usage and triggers cleanup if needed
+// checkMemoryLimit monitors memory usage and triggers cleanup if needed.
 func (sc *StreamingClient) checkMemoryLimit(limit int64) error {
 	current := sc.getCurrentMemoryUsage()
 	if current > limit {
@@ -441,19 +447,21 @@ func (sc *StreamingClient) checkMemoryLimit(limit int64) error {
 			return fmt.Errorf("memory usage %d bytes exceeds limit %d bytes", current, limit)
 		}
 	}
+
 	return nil
 }
 
-// getCurrentMemoryUsage gets current memory usage (simplified implementation)
+// getCurrentMemoryUsage gets current memory usage (simplified implementation).
 func (sc *StreamingClient) getCurrentMemoryUsage() int64 {
 	// In a real implementation, this would use runtime.ReadMemStats()
 	// For now, return a placeholder
 	sc.requestMetrics.mu.RLock()
 	defer sc.requestMetrics.mu.RUnlock()
+
 	return sc.requestMetrics.memoryUsage
 }
 
-// optimizeMemory triggers garbage collection and pool cleanup
+// optimizeMemory triggers garbage collection and pool cleanup.
 func (sc *StreamingClient) optimizeMemory() {
 	// Force garbage collection
 	// runtime.GC()
@@ -466,7 +474,7 @@ func (sc *StreamingClient) optimizeMemory() {
 	}
 }
 
-// updateRequestMetrics updates API usage statistics
+// updateRequestMetrics updates API usage statistics.
 func (sc *StreamingClient) updateRequestMetrics(latency time.Duration) {
 	sc.requestMetrics.mu.Lock()
 	defer sc.requestMetrics.mu.Unlock()
@@ -484,7 +492,7 @@ func (sc *StreamingClient) updateRequestMetrics(latency time.Duration) {
 	}
 }
 
-// sendError sends an error to the result channel
+// sendError sends an error to the result channel.
 func (sc *StreamingClient) sendError(resultChan chan<- RepositoryStream, err error) {
 	result := sc.memoryPool.resultPool.Get().(*RepositoryStream)
 	result.Error = err
@@ -503,7 +511,7 @@ func (sc *StreamingClient) sendError(resultChan chan<- RepositoryStream, err err
 	sc.memoryPool.resultPool.Put(result)
 }
 
-// GetMetrics returns current API usage metrics
+// GetMetrics returns current API usage metrics.
 func (sc *StreamingClient) GetMetrics() RequestMetrics {
 	sc.requestMetrics.mu.RLock()
 	defer sc.requestMetrics.mu.RUnlock()
@@ -518,7 +526,7 @@ func (sc *StreamingClient) GetMetrics() RequestMetrics {
 	}
 }
 
-// Close cleans up resources
+// Close cleans up resources.
 func (sc *StreamingClient) Close() error {
 	// Clean up HTTP client connections
 	if transport, ok := sc.httpClient.Transport.(*http.Transport); ok {

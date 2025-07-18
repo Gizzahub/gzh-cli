@@ -38,6 +38,7 @@ func TestIntegration_RepoConfig_EndToEnd(t *testing.T) {
 	// Create a temporary directory for test configs
 	tmpDir, err := os.MkdirTemp("", "repo-config-integration-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Create a test repository configuration
@@ -85,6 +86,7 @@ func TestIntegration_RepoConfig_EndToEnd(t *testing.T) {
 		assert.NotEmpty(t, repos, "Test organization should have at least one repository")
 
 		t.Logf("Found %d repositories in organization %s", len(repos), testOrg)
+
 		for i, repo := range repos {
 			if i < 5 { // Log first 5 repos
 				t.Logf("  - %s (private: %v, archived: %v)", repo.Name, repo.Private, repo.Archived)
@@ -126,11 +128,11 @@ func TestIntegration_RepoConfig_EndToEnd(t *testing.T) {
 			DryRun:            true,
 			ConcurrentWorkers: 5,
 		}
-		
+
 		// Need to convert RepoConfig to RepositoryConfig
 		// For now, we'll skip this test as it requires a different approach
 		t.Skip("ApplyConfigurationToOrganization requires RepositoryConfig, not RepoConfig")
-		
+
 		// Note: If we were to implement this properly, we would need to:
 		// 1. Convert RepoConfig to RepositoryConfig
 		// 2. Call ApplyConfigurationToOrganization with the correct parameters
@@ -176,7 +178,7 @@ func TestIntegration_RepoConfig_EndToEnd(t *testing.T) {
 
 		// Skip compliance audit - method not implemented
 		t.Skip("RunComplianceAudit method not implemented")
-		
+
 		// Note: If we were to implement this properly, we would need to:
 		// 1. Implement RunComplianceAudit method in RepoConfigClient
 		// 2. Process the audit report
@@ -200,6 +202,7 @@ func TestIntegration_RepoConfig_BulkOperations(t *testing.T) {
 
 		// Filter to test repositories only
 		var testRepos []*github.Repository
+
 		for _, repo := range repos {
 			if !repo.Archived && !repo.Private {
 				testRepos = append(testRepos, repo)
@@ -245,6 +248,7 @@ func TestIntegration_RepoConfig_BulkOperations(t *testing.T) {
 
 		// Find a test repository with main branch
 		var testRepo *github.Repository
+
 		for _, repo := range repos {
 			if !repo.Archived && repo.DefaultBranch == "main" {
 				testRepo = repo
@@ -264,6 +268,7 @@ func TestIntegration_RepoConfig_BulkOperations(t *testing.T) {
 		}
 
 		t.Logf("Current branch protection for %s/main:", testRepo.Name)
+
 		if protection != nil {
 			t.Logf("  - Required reviews: %+v", protection.RequiredStatusChecks)
 			t.Logf("  - Enforce admins: %v", protection.EnforceAdmins)
@@ -282,7 +287,7 @@ func TestIntegration_RepoConfig_RateLimiting(t *testing.T) {
 	// Test rate limit handling
 	t.Run("RateLimitStatus", func(t *testing.T) {
 		limit, remaining, resetTime := client.GetRateLimitStatus()
-		
+
 		t.Logf("GitHub API Rate Limit Status:")
 		t.Logf("  - Limit: %d", limit)
 		t.Logf("  - Remaining: %d", remaining)
@@ -296,6 +301,7 @@ func TestIntegration_RepoConfig_RateLimiting(t *testing.T) {
 
 		// Make 5 concurrent requests
 		results := make(chan error, 5)
+
 		for i := 0; i < 5; i++ {
 			go func(index int) {
 				_, err := client.ListRepositories(ctx, testOrg, nil)
@@ -305,9 +311,11 @@ func TestIntegration_RepoConfig_RateLimiting(t *testing.T) {
 
 		// Collect results
 		errors := 0
+
 		for i := 0; i < 5; i++ {
 			if err := <-results; err != nil {
 				errors++
+
 				t.Logf("Request %d failed: %v", i, err)
 			}
 		}
@@ -347,12 +355,12 @@ func TestIntegration_RepoConfig_ErrorHandling(t *testing.T) {
 }
 
 // Helper functions
-// Note: boolPtr and intPtr are already defined in fixtures.go
+// Note: boolPtr and intPtr are already defined in fixtures.go.
 func stringPtr(s string) *string {
 	return &s
 }
 
-// Test fixture creation
+// Test fixture creation.
 func createTestRepoConfig(org string) *config.RepoConfig {
 	return &config.RepoConfig{
 		Version:      "1.0.0",
@@ -386,7 +394,7 @@ func createTestRepoConfig(org string) *config.RepoConfig {
 	}
 }
 
-// Performance test helper
+// Performance test helper.
 func measureOperationTime(t *testing.T, operation string, fn func() error) {
 	start := time.Now()
 	err := fn()

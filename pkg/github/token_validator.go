@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-// TokenValidator validates GitHub token permissions
+// TokenValidator validates GitHub token permissions.
 type TokenValidator struct {
 	client *RepoConfigClient
 }
 
-// PermissionLevel represents the level of access for a permission
+// PermissionLevel represents the level of access for a permission.
 type PermissionLevel string
 
 const (
@@ -22,7 +22,7 @@ const (
 	PermissionAdmin PermissionLevel = "admin"
 )
 
-// RequiredPermission represents a required permission for an operation
+// RequiredPermission represents a required permission for an operation.
 type RequiredPermission struct {
 	Scope       string          `json:"scope"`
 	Level       PermissionLevel `json:"level"`
@@ -30,7 +30,7 @@ type RequiredPermission struct {
 	Optional    bool            `json:"optional"`
 }
 
-// TokenInfo contains information about the current token
+// TokenInfo contains information about the current token.
 type TokenInfo struct {
 	User        *User                      `json:"user"`
 	Scopes      []string                   `json:"scopes"`
@@ -40,7 +40,7 @@ type TokenInfo struct {
 	ValidatedAt time.Time                  `json:"validated_at"`
 }
 
-// User represents GitHub user information
+// User represents GitHub user information.
 type User struct {
 	Login     string `json:"login"`
 	ID        int64  `json:"id"`
@@ -48,7 +48,7 @@ type User struct {
 	SiteAdmin bool   `json:"site_admin"`
 }
 
-// ValidatorRateLimitInfo contains rate limit information for token validator
+// ValidatorRateLimitInfo contains rate limit information for token validator.
 type ValidatorRateLimitInfo struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`
@@ -56,7 +56,7 @@ type ValidatorRateLimitInfo struct {
 	Used      int       `json:"used"`
 }
 
-// ValidationResult represents the result of token validation
+// ValidationResult represents the result of token validation.
 type ValidationResult struct {
 	Valid           bool                 `json:"valid"`
 	TokenInfo       *TokenInfo           `json:"token_info"`
@@ -66,7 +66,7 @@ type ValidationResult struct {
 	ValidatedAt     time.Time            `json:"validated_at"`
 }
 
-// OperationRequirements defines required permissions for different operations
+// OperationRequirements defines required permissions for different operations.
 var OperationRequirements = map[string][]RequiredPermission{
 	"repository_read": {
 		{Scope: "repo", Level: PermissionRead, Description: "Read repository information", Optional: false},
@@ -86,14 +86,14 @@ var OperationRequirements = map[string][]RequiredPermission{
 	},
 }
 
-// NewTokenValidator creates a new token validator
+// NewTokenValidator creates a new token validator.
 func NewTokenValidator(client *RepoConfigClient) *TokenValidator {
 	return &TokenValidator{
 		client: client,
 	}
 }
 
-// ValidateToken validates the current token and its permissions
+// ValidateToken validates the current token and its permissions.
 func (tv *TokenValidator) ValidateToken(ctx context.Context) (*ValidationResult, error) {
 	result := &ValidationResult{
 		ValidatedAt:     time.Now(),
@@ -114,14 +114,16 @@ func (tv *TokenValidator) ValidateToken(ctx context.Context) (*ValidationResult,
 	if tokenInfo.User == nil {
 		result.Valid = false
 		result.Warnings = append(result.Warnings, "Unable to retrieve user information - token may be invalid")
+
 		return result, nil
 	}
 
 	result.Valid = true
+
 	return result, nil
 }
 
-// ValidateForOperation validates token permissions for a specific operation
+// ValidateForOperation validates token permissions for a specific operation.
 func (tv *TokenValidator) ValidateForOperation(ctx context.Context, operation string) (*ValidationResult, error) {
 	result, err := tv.ValidateToken(ctx)
 	if err != nil {
@@ -155,7 +157,7 @@ func (tv *TokenValidator) ValidateForOperation(ctx context.Context, operation st
 	return result, nil
 }
 
-// ValidateForRepository validates permissions for a specific repository
+// ValidateForRepository validates permissions for a specific repository.
 func (tv *TokenValidator) ValidateForRepository(ctx context.Context, owner, repo string, operation string) (*ValidationResult, error) {
 	result, err := tv.ValidateForOperation(ctx, operation)
 	if err != nil {
@@ -177,7 +179,7 @@ func (tv *TokenValidator) ValidateForRepository(ctx context.Context, owner, repo
 	return result, nil
 }
 
-// getTokenInfo retrieves comprehensive token information
+// getTokenInfo retrieves comprehensive token information.
 func (tv *TokenValidator) getTokenInfo(ctx context.Context) (*TokenInfo, error) {
 	info := &TokenInfo{
 		ValidatedAt: time.Now(),
@@ -189,6 +191,7 @@ func (tv *TokenValidator) getTokenInfo(ctx context.Context) (*TokenInfo, error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info: %w", err)
 	}
+
 	info.User = user
 
 	// Get rate limit information
@@ -209,7 +212,7 @@ func (tv *TokenValidator) getTokenInfo(ctx context.Context) (*TokenInfo, error) 
 	return info, nil
 }
 
-// getCurrentUser gets the current authenticated user
+// getCurrentUser gets the current authenticated user.
 func (tv *TokenValidator) getCurrentUser(ctx context.Context) (*User, error) {
 	resp, err := tv.client.makeRequest(ctx, "GET", "/user", nil)
 	if err != nil {
@@ -218,6 +221,7 @@ func (tv *TokenValidator) getCurrentUser(ctx context.Context) (*User, error) {
 	defer resp.Body.Close()
 
 	var user User
+
 	err = json.NewDecoder(resp.Body).Decode(&user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode user: %w", err)
@@ -226,7 +230,7 @@ func (tv *TokenValidator) getCurrentUser(ctx context.Context) (*User, error) {
 	return &user, nil
 }
 
-// getRateLimit gets current rate limit information
+// getRateLimit gets current rate limit information.
 func (tv *TokenValidator) getRateLimit(ctx context.Context) (*RateLimitInfo, error) {
 	resp, err := tv.client.makeRequest(ctx, "GET", "/rate_limit", nil)
 	if err != nil {
@@ -252,7 +256,7 @@ func (tv *TokenValidator) getRateLimit(ctx context.Context) (*RateLimitInfo, err
 	return &RateLimitInfo{}, nil
 }
 
-// detectTokenType determines if the token is classic or fine-grained
+// detectTokenType determines if the token is classic or fine-grained.
 func (tv *TokenValidator) detectTokenType(ctx context.Context, info *TokenInfo) error {
 	// Try to get the token's scopes from the response headers
 	// This is a simplified implementation - in reality, you'd need to check headers from authenticated requests
@@ -270,7 +274,7 @@ func (tv *TokenValidator) detectTokenType(ctx context.Context, info *TokenInfo) 
 	return nil
 }
 
-// scopeToPermissionLevel converts a scope string to permission level
+// scopeToPermissionLevel converts a scope string to permission level.
 func (tv *TokenValidator) scopeToPermissionLevel(scope string) PermissionLevel {
 	switch scope {
 	case "repo", "admin:org":
@@ -282,7 +286,7 @@ func (tv *TokenValidator) scopeToPermissionLevel(scope string) PermissionLevel {
 	}
 }
 
-// hasPermission checks if the token has the required permission
+// hasPermission checks if the token has the required permission.
 func (tv *TokenValidator) hasPermission(tokenInfo *TokenInfo, req RequiredPermission) bool {
 	level, exists := tokenInfo.Permissions[req.Scope]
 	if !exists {
@@ -292,7 +296,7 @@ func (tv *TokenValidator) hasPermission(tokenInfo *TokenInfo, req RequiredPermis
 	return tv.permissionLevelSufficient(level, req.Level)
 }
 
-// permissionLevelSufficient checks if the current level meets the requirement
+// permissionLevelSufficient checks if the current level meets the requirement.
 func (tv *TokenValidator) permissionLevelSufficient(current, required PermissionLevel) bool {
 	levels := map[PermissionLevel]int{
 		PermissionNone:  0,
@@ -304,14 +308,14 @@ func (tv *TokenValidator) permissionLevelSufficient(current, required Permission
 	return levels[current] >= levels[required]
 }
 
-// testRepositoryAccess tests actual access to a repository
+// testRepositoryAccess tests actual access to a repository.
 func (tv *TokenValidator) testRepositoryAccess(ctx context.Context, owner, repo string) error {
 	// Try to get repository information
 	_, err := tv.client.GetRepository(ctx, owner, repo)
 	return err
 }
 
-// addRecommendations adds helpful recommendations based on the validation result
+// addRecommendations adds helpful recommendations based on the validation result.
 func (tv *TokenValidator) addRecommendations(result *ValidationResult) {
 	if len(result.MissingPerms) > 0 {
 		result.Recommendations = append(result.Recommendations,
@@ -329,7 +333,7 @@ func (tv *TokenValidator) addRecommendations(result *ValidationResult) {
 	}
 }
 
-// GetPermissionHelp returns help text for permissions
+// GetPermissionHelp returns help text for permissions.
 func (tv *TokenValidator) GetPermissionHelp() map[string]string {
 	return map[string]string{
 		"repo": "Full access to repositories including private repositories. " +

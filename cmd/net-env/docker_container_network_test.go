@@ -15,6 +15,7 @@ func TestContainerNetworkManagement(t *testing.T) {
 	// Create temporary directory for test
 	tempDir, err := os.MkdirTemp("", "docker_container_network_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -411,11 +412,12 @@ func TestContainerNetworkManagement(t *testing.T) {
 	})
 }
 
-// TestContainerNetworkCommandValidation tests command-level validations
+// TestContainerNetworkCommandValidation tests command-level validations.
 func TestContainerNetworkCommandValidation(t *testing.T) {
 	t.Run("ValidateNetworkMode", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_network_mode_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -442,6 +444,7 @@ func TestContainerNetworkCommandValidation(t *testing.T) {
 	t.Run("ContainerNetworkIsolation", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_isolation_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -510,7 +513,7 @@ func TestContainerNetworkCommandValidation(t *testing.T) {
 	})
 }
 
-// TestDockerCommandExecutorCaching tests the caching mechanism
+// TestDockerCommandExecutorCaching tests the caching mechanism.
 func TestDockerCommandExecutorCaching(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
 	executor := NewDockerCommandExecutor(logger)

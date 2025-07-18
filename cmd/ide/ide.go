@@ -33,6 +33,7 @@ type jetbrainsProduct struct {
 
 func defaultIDEOptions() *ideOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &ideOptions{
 		recursive:    true,
 		verbose:      false,
@@ -231,12 +232,14 @@ func (o *ideOptions) runMonitor(ctx context.Context, _ *cobra.Command, args []st
 			if !ok {
 				return nil
 			}
+
 			o.handleFileEvent(event)
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return nil
 			}
+
 			fmt.Printf("❌ Watcher error: %v\n", err)
 		}
 	}
@@ -288,11 +291,13 @@ func (o *ideOptions) runFixSync(_ *cobra.Command, args []string) error {
 	if o.product != "" {
 		// Filter to specific product
 		filtered := []jetbrainsProduct{}
+
 		for _, p := range products {
 			if strings.Contains(p.DirName, o.product) {
 				filtered = append(filtered, p)
 			}
 		}
+
 		products = filtered
 	}
 
@@ -333,11 +338,13 @@ func (o *ideOptions) getWatchDirectories() ([]string, error) {
 	// Filter by specific product if specified
 	if o.product != "" {
 		filtered := []jetbrainsProduct{}
+
 		for _, p := range products {
 			if strings.Contains(p.DirName, o.product) {
 				filtered = append(filtered, p)
 			}
 		}
+
 		products = filtered
 	}
 
@@ -351,6 +358,7 @@ func (o *ideOptions) getWatchDirectories() ([]string, error) {
 
 func (o *ideOptions) detectJetBrainsProducts() ([]jetbrainsProduct, error) {
 	var products []jetbrainsProduct
+
 	basePaths := o.getJetBrainsBasePaths()
 
 	for _, basePath := range basePaths {
@@ -391,11 +399,13 @@ func (o *ideOptions) getJetBrainsBasePathsWithEnv(environment env.Environment) [
 	switch runtime.GOOS {
 	case "linux":
 		homeDir, _ := os.UserHomeDir()
+
 		return []string{
 			filepath.Join(homeDir, ".config", "JetBrains"),
 		}
 	case "darwin":
 		homeDir, _ := os.UserHomeDir()
+
 		return []string{
 			filepath.Join(homeDir, "Library", "Application Support", "JetBrains"),
 		}
@@ -405,6 +415,7 @@ func (o *ideOptions) getJetBrainsBasePathsWithEnv(environment env.Environment) [
 			homeDir, _ := os.UserHomeDir()
 			appData = filepath.Join(homeDir, "AppData", "Roaming")
 		}
+
 		return []string{
 			filepath.Join(appData, "JetBrains"),
 		}
@@ -434,9 +445,11 @@ func (o *ideOptions) formatProductName(dirName string) string {
 		if char >= '0' && char <= '9' {
 			product := dirName[:i]
 			version := dirName[i:]
+
 			return fmt.Sprintf("%s %s", product, version)
 		}
 	}
+
 	return dirName
 }
 
@@ -456,6 +469,7 @@ func (o *ideOptions) addWatchRecursive(watcher *fsnotify.Watcher, root string) e
 				if info.IsDir() {
 					return filepath.SkipDir
 				}
+
 				return nil
 			}
 		}
@@ -474,6 +488,7 @@ func (o *ideOptions) handleFileEvent(event fsnotify.Event) {
 	relativePath := o.getRelativePath(event.Name)
 
 	var icon string
+
 	switch {
 	case event.Op&fsnotify.Create == fsnotify.Create:
 		icon = "📝"
@@ -534,6 +549,7 @@ func (o *ideOptions) getRelativePath(fullPath string) string {
 	if rel, err := filepath.Rel(homeDir, fullPath); err == nil && !strings.HasPrefix(rel, "..") {
 		return "~/" + rel
 	}
+
 	return fullPath
 }
 
@@ -607,6 +623,7 @@ func (o *ideOptions) applyFiletypesXMLFixes(content string) string {
 	// Remove duplicate entries (simple approach)
 	lines := strings.Split(content, "\n")
 	seen := make(map[string]bool)
+
 	var uniqueLines []string
 
 	for _, line := range lines {
@@ -636,15 +653,19 @@ func (o *ideOptions) copyFile(src, dst string) error {
 
 func (o *ideOptions) getDirSize(path string) int64 {
 	var size int64
+
 	_ = filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
 			return nil
 		}
+
 		if !info.IsDir() {
 			size += info.Size()
 		}
+
 		return nil
 	})
+
 	return size
 }
 
@@ -653,11 +674,13 @@ func (o *ideOptions) formatSize(bytes int64) string {
 	if bytes < unit {
 		return fmt.Sprintf("%d B", bytes)
 	}
+
 	div, exp := int64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
 	}
+
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
 
@@ -667,10 +690,13 @@ func (o *ideOptions) countConfigFiles(path string) int {
 		if err != nil {
 			return nil
 		}
+
 		if !info.IsDir() && (strings.HasSuffix(info.Name(), ".xml") || strings.HasSuffix(info.Name(), ".json")) {
 			count++
 		}
+
 		return nil
 	})
+
 	return count
 }

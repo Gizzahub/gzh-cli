@@ -1,20 +1,20 @@
 package config
 
-// Config represents the top-level gzh.yaml configuration
+// Config represents the top-level gzh.yaml configuration.
 type Config struct {
 	Version         string              `yaml:"version" json:"version"`
 	DefaultProvider string              `yaml:"default_provider,omitempty" json:"default_provider,omitempty"`
 	Providers       map[string]Provider `yaml:"providers,omitempty" json:"providers,omitempty"`
 }
 
-// Provider represents a Git provider configuration
+// Provider represents a Git provider configuration.
 type Provider struct {
 	Token  string      `yaml:"token" json:"token"`
 	Orgs   []GitTarget `yaml:"orgs,omitempty" json:"orgs,omitempty"`     // For GitHub/Gitea
 	Groups []GitTarget `yaml:"groups,omitempty" json:"groups,omitempty"` // For GitLab
 }
 
-// GitTarget represents an organization or group configuration
+// GitTarget represents an organization or group configuration.
 type GitTarget struct {
 	Name       string   `yaml:"name" json:"name"`
 	Visibility string   `yaml:"visibility,omitempty" json:"visibility,omitempty"` // public, private, all
@@ -26,38 +26,39 @@ type GitTarget struct {
 	Strategy   string   `yaml:"strategy,omitempty" json:"strategy,omitempty"`     // reset, pull, fetch
 }
 
-// Visibility constants
+// Visibility constants.
 const (
 	VisibilityPublic  = "public"
 	VisibilityPrivate = "private"
 	VisibilityAll     = "all"
 )
 
-// Strategy constants
+// Strategy constants.
 const (
 	StrategyReset = "reset"
 	StrategyPull  = "pull"
 	StrategyFetch = "fetch"
 )
 
-// Provider type constants
+// Provider type constants.
 const (
 	ProviderGitHub = "github"
 	ProviderGitLab = "gitlab"
 	ProviderGitea  = "gitea"
 )
 
-// SetDefaults sets default values for GitTarget
+// SetDefaults sets default values for GitTarget.
 func (g *GitTarget) SetDefaults() {
 	if g.Visibility == "" {
 		g.Visibility = VisibilityAll
 	}
+
 	if g.Strategy == "" {
 		g.Strategy = StrategyReset
 	}
 }
 
-// Validate checks if the configuration is valid
+// Validate checks if the configuration is valid.
 func (c *Config) Validate() error {
 	if c.Version == "" {
 		return ErrMissingVersion
@@ -73,7 +74,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// Validate checks if the provider configuration is valid
+// Validate checks if the provider configuration is valid.
 func (p *Provider) Validate(providerType string) error {
 	if p.Token == "" {
 		return ErrMissingToken
@@ -98,7 +99,7 @@ func (p *Provider) Validate(providerType string) error {
 	return nil
 }
 
-// Validate checks if the GitTarget configuration is valid
+// Validate checks if the GitTarget configuration is valid.
 func (g *GitTarget) Validate() error {
 	if g.Name == "" {
 		return ErrMissingName

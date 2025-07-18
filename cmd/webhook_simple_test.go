@@ -21,6 +21,7 @@ func TestNewWebhookCmd(t *testing.T) {
 
 	// Find specific subcommands
 	var repoCmd, orgCmd, bulkCmd, monitorCmd *cobra.Command
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "repo":
@@ -54,6 +55,7 @@ func TestRepositoryWebhookCommands(t *testing.T) {
 
 	for _, expected := range expectedSubcommands {
 		found := false
+
 		for _, subcmd := range subcommands {
 			if subcmd.Use == expected || subcmd.Use == expected+" <owner> <repo>" ||
 				subcmd.Use == expected+" <owner> <repo> <webhook-id>" {
@@ -61,6 +63,7 @@ func TestRepositoryWebhookCommands(t *testing.T) {
 				break
 			}
 		}
+
 		assert.True(t, found, "Expected subcommand %s not found", expected)
 	}
 }
@@ -149,7 +152,7 @@ func TestTaskRunnerCmd(t *testing.T) {
 	assert.Equal(t, "l", listFlag.Shorthand)
 }
 
-// Helper function to find a subcommand by name or use pattern
+// Helper function to find a subcommand by name or use pattern.
 func findSubcommand(parent *cobra.Command, name string) *cobra.Command {
 	for _, cmd := range parent.Commands() {
 		if cmd.Use == name || cmd.Name() == name {
@@ -160,5 +163,6 @@ func findSubcommand(parent *cobra.Command, name string) *cobra.Command {
 			return cmd
 		}
 	}
+
 	return nil
 }

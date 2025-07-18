@@ -28,7 +28,7 @@ type ProviderService interface {
 	IsHealthy(ctx context.Context) error
 }
 
-// Repository represents a repository across different providers
+// Repository represents a repository across different providers.
 type Repository struct {
 	Name          string `json:"name"`
 	FullName      string `json:"full_name"`
@@ -45,7 +45,7 @@ type Repository struct {
 
 // ProviderFactory is defined in factory.go
 
-// ConfigurationService handles configuration loading and validation
+// ConfigurationService handles configuration loading and validation.
 type ConfigurationService interface {
 	// Configuration Loading
 	LoadConfiguration(ctx context.Context) (*Config, error)
@@ -64,7 +64,7 @@ type ConfigurationService interface {
 	MergeConfigurations(base *Config, overlay *Config) (*Config, error)
 }
 
-// BulkOperationService handles bulk operations across multiple repositories/providers
+// BulkOperationService handles bulk operations across multiple repositories/providers.
 type BulkOperationService interface {
 	// Bulk Clone Operations
 	CloneAll(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error)
@@ -80,7 +80,7 @@ type BulkOperationService interface {
 	DiscoverRepositories(ctx context.Context, providers []string) (*DiscoveryResult, error)
 }
 
-// BulkCloneRequest represents a request for bulk cloning operations
+// BulkCloneRequest represents a request for bulk cloning operations.
 type BulkCloneRequest struct {
 	Providers     []string          `json:"providers,omitempty"`
 	Organizations []string          `json:"organizations,omitempty"`
@@ -93,7 +93,7 @@ type BulkCloneRequest struct {
 	Credentials   map[string]string `json:"credentials,omitempty"`
 }
 
-// BulkRefreshRequest represents a request for bulk refresh operations
+// BulkRefreshRequest represents a request for bulk refresh operations.
 type BulkRefreshRequest struct {
 	TargetPath    string            `json:"target_path"`
 	Strategy      string            `json:"strategy"`
@@ -105,7 +105,7 @@ type BulkRefreshRequest struct {
 
 // BulkCloneResult is defined in providers.go
 
-// BulkRefreshResult represents the result of bulk refresh operations
+// BulkRefreshResult represents the result of bulk refresh operations.
 type BulkRefreshResult struct {
 	TotalRepositories int                   `json:"total_repositories"`
 	RefreshSuccessful int                   `json:"refresh_successful"`
@@ -116,7 +116,7 @@ type BulkRefreshResult struct {
 	ErrorSummary      map[string]int        `json:"error_summary"`
 }
 
-// RepositoryOperation represents the result of an operation on a single repository
+// RepositoryOperation represents the result of an operation on a single repository.
 type RepositoryOperation struct {
 	Repository   string `json:"repository"`
 	Organization string `json:"organization"`
@@ -128,7 +128,7 @@ type RepositoryOperation struct {
 	Path         string `json:"path,omitempty"`
 }
 
-// DiscoveryResult represents the result of repository discovery operations
+// DiscoveryResult represents the result of repository discovery operations.
 type DiscoveryResult struct {
 	TotalRepositories      int            `json:"total_repositories"`
 	RepositoriesByProvider map[string]int `json:"repositories_by_provider"`
@@ -136,7 +136,7 @@ type DiscoveryResult struct {
 	ExecutionTimeMs        int64          `json:"execution_time_ms"`
 }
 
-// RepositoryStatus represents the status of repositories in a directory
+// RepositoryStatus represents the status of repositories in a directory.
 type RepositoryStatus struct {
 	TotalRepositories    int                    `json:"total_repositories"`
 	HealthyRepositories  int                    `json:"healthy_repositories"`
@@ -146,7 +146,7 @@ type RepositoryStatus struct {
 	ScanTimeMs           int64                  `json:"scan_time_ms"`
 }
 
-// RepositoryStatusInfo contains detailed status information for a single repository
+// RepositoryStatusInfo contains detailed status information for a single repository.
 type RepositoryStatusInfo struct {
 	Path           string   `json:"path"`
 	Name           string   `json:"name"`

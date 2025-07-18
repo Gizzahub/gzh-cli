@@ -23,6 +23,7 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 				Type:      "User",
 				SiteAdmin: false,
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(user)
 
@@ -36,6 +37,7 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 					},
 				},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(rateLimit)
 
@@ -72,6 +74,7 @@ func TestTokenValidator_ValidateForOperation(t *testing.T) {
 				ID:    12345,
 				Type:  "User",
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(user)
 
@@ -85,6 +88,7 @@ func TestTokenValidator_ValidateForOperation(t *testing.T) {
 					},
 				},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(rateLimit)
 
@@ -143,6 +147,7 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 				ID:    12345,
 				Type:  "User",
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(user)
 
@@ -156,6 +161,7 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 					},
 				},
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(rateLimit)
 
@@ -166,6 +172,7 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 				FullName: "testorg/testrepo",
 				Private:  false,
 			}
+
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repo)
 

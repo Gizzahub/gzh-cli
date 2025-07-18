@@ -9,14 +9,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// TestFixtures provides test data for integration tests
+// TestFixtures provides test data for integration tests.
 type TestFixtures struct {
 	Organization string
 	Token        string
 	BaseDir      string
 }
 
-// NewTestFixtures creates fixtures from environment
+// NewTestFixtures creates fixtures from environment.
 func NewTestFixtures() (*TestFixtures, error) {
 	org := os.Getenv(testOrgEnvVar)
 	if org == "" {
@@ -40,14 +40,14 @@ func NewTestFixtures() (*TestFixtures, error) {
 	}, nil
 }
 
-// Cleanup removes temporary files
+// Cleanup removes temporary files.
 func (f *TestFixtures) Cleanup() {
 	if f.BaseDir != "" {
 		os.RemoveAll(f.BaseDir)
 	}
 }
 
-// CreateConfigFile creates a test configuration file
+// CreateConfigFile creates a test configuration file.
 func (f *TestFixtures) CreateConfigFile(filename string, config interface{}) (string, error) {
 	data, err := yaml.Marshal(config)
 	if err != nil {
@@ -55,6 +55,7 @@ func (f *TestFixtures) CreateConfigFile(filename string, config interface{}) (st
 	}
 
 	filepath := filepath.Join(f.BaseDir, filename)
+
 	err = os.WriteFile(filepath, data, 0o644)
 	if err != nil {
 		return "", err
@@ -63,7 +64,7 @@ func (f *TestFixtures) CreateConfigFile(filename string, config interface{}) (st
 	return filepath, nil
 }
 
-// SampleRepoConfigs provides various test configurations
+// SampleRepoConfigs provides various test configurations.
 var SampleRepoConfigs = struct {
 	Basic          *config.RepoConfig
 	SecurityFocus  *config.RepoConfig
@@ -274,7 +275,7 @@ var SampleRepoConfigs = struct {
 	},
 }
 
-// TestScenarios provides predefined test scenarios
+// TestScenarios provides predefined test scenarios.
 var TestScenarios = struct {
 	BasicSetup          TestScenario
 	SecurityCompliance  TestScenario
@@ -347,7 +348,7 @@ var TestScenarios = struct {
 	},
 }
 
-// TestScenario represents a complete test scenario
+// TestScenario represents a complete test scenario.
 type TestScenario struct {
 	Name        string
 	Description string
@@ -355,14 +356,14 @@ type TestScenario struct {
 	Steps       []TestStep
 }
 
-// TestStep represents a single step in a test scenario
+// TestStep represents a single step in a test scenario.
 type TestStep struct {
 	Name   string
 	Action string
 	Data   interface{}
 }
 
-// Helper functions for creating pointers
+// Helper functions for creating pointers.
 func boolPtr(b bool) *bool {
 	return &b
 }
@@ -371,7 +372,7 @@ func intPtr(i int) *int {
 	return &i
 }
 
-// SampleWebhookConfigs provides webhook configuration examples
+// SampleWebhookConfigs provides webhook configuration examples.
 var SampleWebhookConfigs = map[string]*config.WebhookConfig{
 	"jenkins": {
 		URL:    "https://jenkins.internal/github-webhook/",

@@ -52,6 +52,7 @@ func TestRateLimiterContextCancellation(t *testing.T) {
 
 	// Start waiting in goroutine
 	errCh := make(chan error, 1)
+
 	go func() {
 		errCh <- rl.Wait(ctx)
 	}()
@@ -63,7 +64,7 @@ func TestRateLimiterContextCancellation(t *testing.T) {
 	// Should get cancellation error
 	select {
 	case err := <-errCh:
-		if err != context.Canceled {
+		if !errors.Is(err, context.Canceled) {
 			t.Errorf("Expected context.Canceled, got %v", err)
 		}
 	case <-time.After(time.Second):
@@ -212,6 +213,7 @@ func TestRateLimiterConfiguration(t *testing.T) {
 	// and that the values are stored correctly
 
 	ctx := context.Background()
+
 	err := rl.Wait(ctx)
 	if err != nil {
 		t.Errorf("Wait should not error after configuration: %v", err)
@@ -256,6 +258,7 @@ func TestRateLimiterRequestHistory(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Wait failed: %v", err)
 		}
+
 		time.Sleep(time.Millisecond * 10)
 	}
 
@@ -279,6 +282,7 @@ func TestRateLimiterMemoryEfficiency(t *testing.T) {
 	// Make many requests to test history cleanup
 	for i := 0; i < 200; i++ {
 		rl.Wait(ctx)
+
 		if i%50 == 0 {
 			time.Sleep(time.Millisecond) // Small delay to vary timestamps
 		}
@@ -321,6 +325,7 @@ func BenchmarkRateLimiterWait(b *testing.B) {
 	ctx := context.Background()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		rl.Wait(ctx)
 	}
@@ -330,6 +335,7 @@ func BenchmarkRateLimiterUpdateRemaining(b *testing.B) {
 	rl := NewAdaptiveRateLimiter()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		rl.UpdateRemaining(i % 5000)
 	}
@@ -339,6 +345,7 @@ func BenchmarkRateLimiterEstimateCompletion(b *testing.B) {
 	rl := NewAdaptiveRateLimiter()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		rl.EstimateTimeToCompletion(1000)
 	}

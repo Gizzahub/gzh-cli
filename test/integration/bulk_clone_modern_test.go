@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// TestBulkClone_ConfigurationLoading tests the configuration loading functionality
+// TestBulkClone_ConfigurationLoading tests the configuration loading functionality.
 func TestBulkClone_ConfigurationLoading(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -22,6 +22,7 @@ func TestBulkClone_ConfigurationLoading(t *testing.T) {
 		// Create temporary directory for test configuration
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-config-*")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tmpDir)
 
 		// Create test configuration
@@ -62,7 +63,7 @@ func TestBulkClone_ConfigurationLoading(t *testing.T) {
 	})
 }
 
-// TestBulkClone_StateManagement tests the state management functionality
+// TestBulkClone_StateManagement tests the state management functionality.
 func TestBulkClone_StateManagement(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -72,6 +73,7 @@ func TestBulkClone_StateManagement(t *testing.T) {
 		// Create temporary directory for state files
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-state-*")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tmpDir)
 
 		// Create state manager
@@ -119,7 +121,7 @@ func TestBulkClone_StateManagement(t *testing.T) {
 	})
 }
 
-// TestBulkClone_ProgressTracking tests the progress tracking functionality
+// TestBulkClone_ProgressTracking tests the progress tracking functionality.
 func TestBulkClone_ProgressTracking(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -177,7 +179,7 @@ func TestBulkClone_ProgressTracking(t *testing.T) {
 	})
 }
 
-// TestBulkClone_URLBuilder tests the URL building functionality
+// TestBulkClone_URLBuilder tests the URL building functionality.
 func TestBulkClone_URLBuilder(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -217,7 +219,7 @@ func TestBulkClone_URLBuilder(t *testing.T) {
 	})
 }
 
-// TestBulkClone_SchemaValidation tests the schema validation functionality
+// TestBulkClone_SchemaValidation tests the schema validation functionality.
 func TestBulkClone_SchemaValidation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -227,6 +229,7 @@ func TestBulkClone_SchemaValidation(t *testing.T) {
 		// Create temporary directory for test configuration
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-schema-*")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tmpDir)
 
 		// Create valid configuration
@@ -258,7 +261,7 @@ providers:
 	})
 }
 
-// TestBulkClone_EndToEnd tests the complete workflow
+// TestBulkClone_EndToEnd tests the complete workflow.
 func TestBulkClone_EndToEnd(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -273,6 +276,7 @@ func TestBulkClone_EndToEnd(t *testing.T) {
 		// Create temporary directory for test
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-e2e-*")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tmpDir)
 
 		// Create configuration file
@@ -313,14 +317,14 @@ providers:
 	})
 }
 
-// Helper function to skip tests if required environment variables are not set
+// Helper function to skip tests if required environment variables are not set.
 func skipIfNoTestEnvironment(t *testing.T) {
 	if os.Getenv("GITHUB_TOKEN") == "" && os.Getenv("GITLAB_TOKEN") == "" {
 		t.Skip("No test tokens available, skipping integration test")
 	}
 }
 
-// Helper function to create a test configuration
+// Helper function to create a test configuration.
 func createTestConfig(tmpDir string) map[string]interface{} {
 	return map[string]interface{}{
 		"version":          "1.0.0",

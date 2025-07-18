@@ -326,12 +326,12 @@ func TestFromError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := FromError(tt.input)
-
 			if tt.expected == nil {
 				assert.Nil(t, result)
 			} else {
 				assert.Equal(t, tt.expected.Code, result.Code)
 				assert.Equal(t, tt.expected.Message, result.Message)
+
 				if tt.expected.Details != "" {
 					assert.Equal(t, tt.expected.Details, result.Details)
 				}

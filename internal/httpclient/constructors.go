@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// Logger interface for dependency injection
+// Logger interface for dependency injection.
 type Logger interface {
 	Debug(msg string, args ...interface{})
 	Info(msg string, args ...interface{})
@@ -15,20 +15,20 @@ type Logger interface {
 	Error(msg string, args ...interface{})
 }
 
-// Middleware defines the interface for request/response middleware
+// Middleware defines the interface for request/response middleware.
 type Middleware interface {
 	ModifyRequest(ctx context.Context, req *http.Request) *http.Request
 	ModifyResponse(ctx context.Context, resp *http.Response) *http.Response
 }
 
-// CacheEntry represents a cached response
+// CacheEntry represents a cached response.
 type CacheEntry struct {
 	Response  *http.Response `json:"response"`
 	CreatedAt time.Time      `json:"created_at"`
 	TTL       time.Duration  `json:"ttl"`
 }
 
-// Cache defines the interface for caching
+// Cache defines the interface for caching.
 type Cache interface {
 	Get(ctx context.Context, key string) (*http.Response, bool)
 	Set(ctx context.Context, key string, response *http.Response, ttl time.Duration)
@@ -36,7 +36,7 @@ type Cache interface {
 	Clear(ctx context.Context)
 }
 
-// HTTPClientImpl implements the HTTPClient interface
+// HTTPClientImpl implements the HTTPClient interface.
 type HTTPClientImpl struct {
 	client           *http.Client
 	logger           Logger
@@ -48,7 +48,7 @@ type HTTPClientImpl struct {
 	timeout          time.Duration
 }
 
-// HTTPClientConfig holds configuration for HTTP client
+// HTTPClientConfig holds configuration for HTTP client.
 type HTTPClientConfig struct {
 	Timeout             time.Duration
 	MaxIdleConns        int
@@ -59,7 +59,7 @@ type HTTPClientConfig struct {
 	EnableMetrics       bool
 }
 
-// DefaultHTTPClientConfig returns default configuration
+// DefaultHTTPClientConfig returns default configuration.
 func DefaultHTTPClientConfig() *HTTPClientConfig {
 	return &HTTPClientConfig{
 		Timeout:             30 * time.Second,
@@ -72,7 +72,7 @@ func DefaultHTTPClientConfig() *HTTPClientConfig {
 	}
 }
 
-// NewHTTPClient creates a new HTTP client with dependencies
+// NewHTTPClient creates a new HTTP client with dependencies.
 func NewHTTPClient(
 	config *HTTPClientConfig,
 	logger Logger,
@@ -105,7 +105,7 @@ func NewHTTPClient(
 	}
 }
 
-// Do implements HTTPClient interface
+// Do implements HTTPClient interface.
 func (c *HTTPClientImpl) Do(ctx context.Context, req *Request) (*Response, error) {
 	httpReq, err := http.NewRequest(req.Method, req.URL, req.Body)
 	if err != nil {
@@ -127,7 +127,7 @@ func (c *HTTPClientImpl) Do(ctx context.Context, req *Request) (*Response, error
 	return c.doHTTPRequest(ctx, httpReq)
 }
 
-// doHTTPRequest handles the actual HTTP request
+// doHTTPRequest handles the actual HTTP request.
 func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (*Response, error) {
 	c.logger.Debug("Making HTTP request", "method", req.Method, "url", req.URL.String())
 
@@ -160,9 +160,11 @@ func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (
 	if err != nil {
 		return nil, err
 	}
+
 	resp.Body.Close()
 
 	headers := make(map[string]string)
+
 	for k, v := range resp.Header {
 		if len(v) > 0 {
 			headers[k] = v[0]
@@ -179,7 +181,7 @@ func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (
 	}, nil
 }
 
-// Get implements HTTPClient interface
+// Get implements HTTPClient interface.
 func (c *HTTPClientImpl) Get(ctx context.Context, url string) (*Response, error) {
 	req := &Request{
 		Method:  "GET",
@@ -187,10 +189,11 @@ func (c *HTTPClientImpl) Get(ctx context.Context, url string) (*Response, error)
 		Headers: make(map[string]string),
 		Timeout: c.timeout,
 	}
+
 	return c.Do(ctx, req)
 }
 
-// Post implements HTTPClient interface
+// Post implements HTTPClient interface.
 func (c *HTTPClientImpl) Post(ctx context.Context, url string, body io.Reader) (*Response, error) {
 	req := &Request{
 		Method:  "POST",
@@ -199,10 +202,11 @@ func (c *HTTPClientImpl) Post(ctx context.Context, url string, body io.Reader) (
 		Body:    body,
 		Timeout: c.timeout,
 	}
+
 	return c.Do(ctx, req)
 }
 
-// Put implements HTTPClient interface
+// Put implements HTTPClient interface.
 func (c *HTTPClientImpl) Put(ctx context.Context, url string, body io.Reader) (*Response, error) {
 	req := &Request{
 		Method:  "PUT",
@@ -211,10 +215,11 @@ func (c *HTTPClientImpl) Put(ctx context.Context, url string, body io.Reader) (*
 		Body:    body,
 		Timeout: c.timeout,
 	}
+
 	return c.Do(ctx, req)
 }
 
-// Delete implements HTTPClient interface
+// Delete implements HTTPClient interface.
 func (c *HTTPClientImpl) Delete(ctx context.Context, url string) (*Response, error) {
 	req := &Request{
 		Method:  "DELETE",
@@ -222,10 +227,11 @@ func (c *HTTPClientImpl) Delete(ctx context.Context, url string) (*Response, err
 		Headers: make(map[string]string),
 		Timeout: c.timeout,
 	}
+
 	return c.Do(ctx, req)
 }
 
-// Patch implements HTTPClient interface
+// Patch implements HTTPClient interface.
 func (c *HTTPClientImpl) Patch(ctx context.Context, url string, body io.Reader) (*Response, error) {
 	req := &Request{
 		Method:  "PATCH",
@@ -234,10 +240,11 @@ func (c *HTTPClientImpl) Patch(ctx context.Context, url string, body io.Reader) 
 		Body:    body,
 		Timeout: c.timeout,
 	}
+
 	return c.Do(ctx, req)
 }
 
-// Head implements HTTPClient interface
+// Head implements HTTPClient interface.
 func (c *HTTPClientImpl) Head(ctx context.Context, url string) (*Response, error) {
 	req := &Request{
 		Method:  "HEAD",
@@ -245,10 +252,11 @@ func (c *HTTPClientImpl) Head(ctx context.Context, url string) (*Response, error
 		Headers: make(map[string]string),
 		Timeout: c.timeout,
 	}
+
 	return c.Do(ctx, req)
 }
 
-// Options implements HTTPClient interface
+// Options implements HTTPClient interface.
 func (c *HTTPClientImpl) Options(ctx context.Context, url string) (*Response, error) {
 	req := &Request{
 		Method:  "OPTIONS",
@@ -256,68 +264,69 @@ func (c *HTTPClientImpl) Options(ctx context.Context, url string) (*Response, er
 		Headers: make(map[string]string),
 		Timeout: c.timeout,
 	}
+
 	return c.Do(ctx, req)
 }
 
-// SetTimeout implements HTTPClient interface
+// SetTimeout implements HTTPClient interface.
 func (c *HTTPClientImpl) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
 	c.client.Timeout = timeout
 }
 
-// SetUserAgent implements HTTPClient interface
+// SetUserAgent implements HTTPClient interface.
 func (c *HTTPClientImpl) SetUserAgent(userAgent string) {
 	c.userAgent = userAgent
 	c.defaultHeaders["User-Agent"] = userAgent
 }
 
-// SetBaseURL implements HTTPClient interface
+// SetBaseURL implements HTTPClient interface.
 func (c *HTTPClientImpl) SetBaseURL(baseURL string) {
 	c.baseURL = baseURL
 }
 
-// AddDefaultHeader implements HTTPClient interface
+// AddDefaultHeader implements HTTPClient interface.
 func (c *HTTPClientImpl) AddDefaultHeader(key, value string) {
 	c.defaultHeaders[key] = value
 }
 
-// RemoveDefaultHeader implements HTTPClient interface
+// RemoveDefaultHeader implements HTTPClient interface.
 func (c *HTTPClientImpl) RemoveDefaultHeader(key string) {
 	delete(c.defaultHeaders, key)
 }
 
-// SetBearerToken implements HTTPClient interface
+// SetBearerToken implements HTTPClient interface.
 func (c *HTTPClientImpl) SetBearerToken(token string) {
 	c.defaultHeaders["Authorization"] = "Bearer " + token
 }
 
-// SetBasicAuth implements HTTPClient interface
+// SetBasicAuth implements HTTPClient interface.
 func (c *HTTPClientImpl) SetBasicAuth(username, password string) {
 	// This would normally use base64 encoding
 	c.defaultHeaders["Authorization"] = "Basic " + username + ":" + password
 }
 
-// SetAPIKey implements HTTPClient interface
+// SetAPIKey implements HTTPClient interface.
 func (c *HTTPClientImpl) SetAPIKey(key, value string) {
 	c.defaultHeaders[key] = value
 }
 
-// AddRequestMiddleware implements HTTPClient interface
+// AddRequestMiddleware implements HTTPClient interface.
 func (c *HTTPClientImpl) AddRequestMiddleware(middleware RequestMiddleware) {
 	// Implementation would wrap the middleware
 }
 
-// AddResponseMiddleware implements HTTPClient interface
+// AddResponseMiddleware implements HTTPClient interface.
 func (c *HTTPClientImpl) AddResponseMiddleware(middleware ResponseMiddleware) {
 	// Implementation would wrap the middleware
 }
 
-// AddMiddleware implements HTTPClient interface
+// AddMiddleware implements HTTPClient interface.
 func (c *HTTPClientImpl) AddMiddleware(middleware Middleware) {
 	c.middleware = append(c.middleware, middleware)
 }
 
-// RetryPolicyImpl implements the RetryPolicy interface
+// RetryPolicyImpl implements the RetryPolicy interface.
 type RetryPolicyImpl struct {
 	maxRetries int
 	baseDelay  time.Duration
@@ -325,7 +334,7 @@ type RetryPolicyImpl struct {
 	logger     Logger
 }
 
-// RetryPolicyConfig holds configuration for retry policy
+// RetryPolicyConfig holds configuration for retry policy.
 type RetryPolicyConfig struct {
 	MaxRetries int
 	BaseDelay  time.Duration
@@ -333,7 +342,7 @@ type RetryPolicyConfig struct {
 	Backoff    string // "linear", "exponential", "constant"
 }
 
-// DefaultRetryPolicyConfig returns default configuration
+// DefaultRetryPolicyConfig returns default configuration.
 func DefaultRetryPolicyConfig() *RetryPolicyConfig {
 	return &RetryPolicyConfig{
 		MaxRetries: 3,
@@ -343,7 +352,7 @@ func DefaultRetryPolicyConfig() *RetryPolicyConfig {
 	}
 }
 
-// NewRetryPolicy creates a new retry policy with dependencies
+// NewRetryPolicy creates a new retry policy with dependencies.
 func NewRetryPolicy(config *RetryPolicyConfig, logger Logger) RetryPolicy {
 	if config == nil {
 		config = DefaultRetryPolicyConfig()
@@ -357,7 +366,7 @@ func NewRetryPolicy(config *RetryPolicyConfig, logger Logger) RetryPolicy {
 	}
 }
 
-// ShouldRetry implements RetryPolicy interface
+// ShouldRetry implements RetryPolicy interface.
 func (rp *RetryPolicyImpl) ShouldRetry(ctx context.Context, req *Request, resp *Response, err error, attempt int) bool {
 	if attempt >= rp.maxRetries {
 		return false
@@ -367,33 +376,34 @@ func (rp *RetryPolicyImpl) ShouldRetry(ctx context.Context, req *Request, resp *
 	return true
 }
 
-// GetRetryDelay implements RetryPolicy interface
+// GetRetryDelay implements RetryPolicy interface.
 func (rp *RetryPolicyImpl) GetRetryDelay(ctx context.Context, attempt int) time.Duration {
 	delay := rp.baseDelay * time.Duration(attempt)
 	if delay > rp.maxDelay {
 		delay = rp.maxDelay
 	}
+
 	return delay
 }
 
-// MaxRetries implements RetryPolicy interface
+// MaxRetries implements RetryPolicy interface.
 func (rp *RetryPolicyImpl) MaxRetries() int {
 	return rp.maxRetries
 }
 
-// RateLimiterImpl implements the RateLimiter interface
+// RateLimiterImpl implements the RateLimiter interface.
 type RateLimiterImpl struct {
 	tokens chan struct{}
 	logger Logger
 }
 
-// RateLimiterConfig holds configuration for rate limiter
+// RateLimiterConfig holds configuration for rate limiter.
 type RateLimiterConfig struct {
 	RequestsPerSecond int
 	BurstSize         int
 }
 
-// DefaultRateLimiterConfig returns default configuration
+// DefaultRateLimiterConfig returns default configuration.
 func DefaultRateLimiterConfig() *RateLimiterConfig {
 	return &RateLimiterConfig{
 		RequestsPerSecond: 10,
@@ -401,7 +411,7 @@ func DefaultRateLimiterConfig() *RateLimiterConfig {
 	}
 }
 
-// NewRateLimiter creates a new rate limiter with dependencies
+// NewRateLimiter creates a new rate limiter with dependencies.
 func NewRateLimiter(config *RateLimiterConfig, logger Logger) RateLimiter {
 	if config == nil {
 		config = DefaultRateLimiterConfig()
@@ -434,7 +444,7 @@ func NewRateLimiter(config *RateLimiterConfig, logger Logger) RateLimiter {
 	}
 }
 
-// Wait implements RateLimiter interface
+// Wait implements RateLimiter interface.
 func (rl *RateLimiterImpl) Wait(ctx context.Context) error {
 	select {
 	case <-rl.tokens:
@@ -444,7 +454,7 @@ func (rl *RateLimiterImpl) Wait(ctx context.Context) error {
 	}
 }
 
-// Allow implements RateLimiter interface
+// Allow implements RateLimiter interface.
 func (rl *RateLimiterImpl) Allow(ctx context.Context) bool {
 	select {
 	case <-rl.tokens:
@@ -454,7 +464,7 @@ func (rl *RateLimiterImpl) Allow(ctx context.Context) bool {
 	}
 }
 
-// GetLimitInfo implements RateLimiter interface
+// GetLimitInfo implements RateLimiter interface.
 func (rl *RateLimiterImpl) GetLimitInfo() *RateLimitInfo {
 	return &RateLimitInfo{
 		Limit:     cap(rl.tokens),
@@ -464,12 +474,13 @@ func (rl *RateLimiterImpl) GetLimitInfo() *RateLimitInfo {
 	}
 }
 
-// Reset implements RateLimiter interface
+// Reset implements RateLimiter interface.
 func (rl *RateLimiterImpl) Reset() {
 	// Drain and refill tokens
 	for len(rl.tokens) > 0 {
 		<-rl.tokens
 	}
+
 	for i := 0; i < cap(rl.tokens); i++ {
 		select {
 		case rl.tokens <- struct{}{}:
@@ -478,19 +489,19 @@ func (rl *RateLimiterImpl) Reset() {
 	}
 }
 
-// CacheImpl implements the Cache interface
+// CacheImpl implements the Cache interface.
 type CacheImpl struct {
 	cache  map[string]*CacheEntry
 	logger Logger
 }
 
-// CacheConfig holds configuration for cache
+// CacheConfig holds configuration for cache.
 type CacheConfig struct {
 	MaxSize int
 	TTL     time.Duration
 }
 
-// DefaultCacheConfig returns default configuration
+// DefaultCacheConfig returns default configuration.
 func DefaultCacheConfig() *CacheConfig {
 	return &CacheConfig{
 		MaxSize: 1000,
@@ -498,7 +509,7 @@ func DefaultCacheConfig() *CacheConfig {
 	}
 }
 
-// NewCache creates a new cache with dependencies
+// NewCache creates a new cache with dependencies.
 func NewCache(config *CacheConfig, logger Logger) Cache {
 	if config == nil {
 		config = DefaultCacheConfig()
@@ -510,7 +521,7 @@ func NewCache(config *CacheConfig, logger Logger) Cache {
 	}
 }
 
-// Get implements Cache interface
+// Get implements Cache interface.
 func (c *CacheImpl) Get(ctx context.Context, key string) (*http.Response, bool) {
 	entry, exists := c.cache[key]
 	if !exists {
@@ -525,7 +536,7 @@ func (c *CacheImpl) Get(ctx context.Context, key string) (*http.Response, bool) 
 	return entry.Response, true
 }
 
-// Set implements Cache interface
+// Set implements Cache interface.
 func (c *CacheImpl) Set(ctx context.Context, key string, response *http.Response, ttl time.Duration) {
 	c.cache[key] = &CacheEntry{
 		Response:  response,
@@ -534,17 +545,17 @@ func (c *CacheImpl) Set(ctx context.Context, key string, response *http.Response
 	}
 }
 
-// Delete implements Cache interface
+// Delete implements Cache interface.
 func (c *CacheImpl) Delete(ctx context.Context, key string) {
 	delete(c.cache, key)
 }
 
-// Clear implements Cache interface
+// Clear implements Cache interface.
 func (c *CacheImpl) Clear(ctx context.Context) {
 	c.cache = make(map[string]*CacheEntry)
 }
 
-// HTTPClientService implements the unified HTTP client service interface
+// HTTPClientService implements the unified HTTP client service interface.
 type HTTPClientService struct {
 	HTTPClient
 	RetryPolicy
@@ -552,7 +563,7 @@ type HTTPClientService struct {
 	Cache
 }
 
-// HTTPClientServiceConfig holds configuration for the HTTP client service
+// HTTPClientServiceConfig holds configuration for the HTTP client service.
 type HTTPClientServiceConfig struct {
 	Client      *HTTPClientConfig
 	Retry       *RetryPolicyConfig
@@ -562,7 +573,7 @@ type HTTPClientServiceConfig struct {
 	EnableCache bool
 }
 
-// DefaultHTTPClientServiceConfig returns default configuration
+// DefaultHTTPClientServiceConfig returns default configuration.
 func DefaultHTTPClientServiceConfig() *HTTPClientServiceConfig {
 	return &HTTPClientServiceConfig{
 		Client:      DefaultHTTPClientConfig(),
@@ -574,7 +585,7 @@ func DefaultHTTPClientServiceConfig() *HTTPClientServiceConfig {
 	}
 }
 
-// NewHTTPClientService creates a new HTTP client service with all dependencies
+// NewHTTPClientService creates a new HTTP client service with all dependencies.
 func NewHTTPClientService(
 	config *HTTPClientServiceConfig,
 	logger Logger,
@@ -597,13 +608,13 @@ func NewHTTPClientService(
 	}
 }
 
-// ServiceDependencies holds all the dependencies needed for HTTP client services
+// ServiceDependencies holds all the dependencies needed for HTTP client services.
 type ServiceDependencies struct {
 	Logger           Logger
 	MetricsCollector MetricsCollector
 }
 
-// NewServiceDependencies creates a default set of service dependencies
+// NewServiceDependencies creates a default set of service dependencies.
 func NewServiceDependencies(logger Logger, metricsCollector MetricsCollector) *ServiceDependencies {
 	return &ServiceDependencies{
 		Logger:           logger,

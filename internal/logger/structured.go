@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// StructuredLogger provides advanced logging capabilities
+// StructuredLogger provides advanced logging capabilities.
 type StructuredLogger struct {
 	logger    *slog.Logger
 	level     slog.Level
@@ -20,7 +20,7 @@ type StructuredLogger struct {
 	component string
 }
 
-// LogLevel represents logging levels
+// LogLevel represents logging levels.
 type LogLevel string
 
 const (
@@ -30,7 +30,7 @@ const (
 	LevelError LogLevel = "error"
 )
 
-// LogEntry represents a structured log entry
+// LogEntry represents a structured log entry.
 type LogEntry struct {
 	Timestamp   time.Time              `json:"timestamp"`
 	Level       string                 `json:"level"`
@@ -43,14 +43,14 @@ type LogEntry struct {
 	Performance *PerformanceInfo       `json:"performance,omitempty"`
 }
 
-// CallerInfo represents caller information
+// CallerInfo represents caller information.
 type CallerInfo struct {
 	File     string `json:"file"`
 	Line     int    `json:"line"`
 	Function string `json:"function"`
 }
 
-// ErrorInfo represents error information
+// ErrorInfo represents error information.
 type ErrorInfo struct {
 	Type       string `json:"type"`
 	Message    string `json:"message"`
@@ -58,7 +58,7 @@ type ErrorInfo struct {
 	Code       string `json:"code,omitempty"`
 }
 
-// PerformanceInfo represents performance metrics
+// PerformanceInfo represents performance metrics.
 type PerformanceInfo struct {
 	Duration    time.Duration          `json:"duration"`
 	MemoryUsage int64                  `json:"memory_usage"`
@@ -66,9 +66,10 @@ type PerformanceInfo struct {
 	Metrics     map[string]interface{} `json:"metrics,omitempty"`
 }
 
-// NewStructuredLogger creates a new structured logger
+// NewStructuredLogger creates a new structured logger.
 func NewStructuredLogger(component string, level LogLevel) *StructuredLogger {
 	var slogLevel slog.Level
+
 	switch level {
 	case LevelDebug:
 		slogLevel = slog.LevelDebug
@@ -99,7 +100,7 @@ func NewStructuredLogger(component string, level LogLevel) *StructuredLogger {
 	}
 }
 
-// WithContext adds context to the logger
+// WithContext adds context to the logger.
 func (l *StructuredLogger) WithContext(key string, value interface{}) *StructuredLogger {
 	newLogger := *l
 	// Preallocate with appropriate capacity
@@ -107,43 +108,46 @@ func (l *StructuredLogger) WithContext(key string, value interface{}) *Structure
 	for k, v := range l.context {
 		newLogger.context[k] = v
 	}
+
 	newLogger.context[key] = value
+
 	return &newLogger
 }
 
-// WithSession sets a session ID
+// WithSession sets a session ID.
 func (l *StructuredLogger) WithSession(sessionID string) *StructuredLogger {
 	newLogger := *l
 	newLogger.sessionID = sessionID
+
 	return &newLogger
 }
 
-// Debug logs a debug message
+// Debug logs a debug message.
 func (l *StructuredLogger) Debug(msg string, args ...interface{}) {
 	l.log(slog.LevelDebug, msg, args...)
 }
 
-// Info logs an info message
+// Info logs an info message.
 func (l *StructuredLogger) Info(msg string, args ...interface{}) {
 	l.log(slog.LevelInfo, msg, args...)
 }
 
-// Warn logs a warning message
+// Warn logs a warning message.
 func (l *StructuredLogger) Warn(msg string, args ...interface{}) {
 	l.log(slog.LevelWarn, msg, args...)
 }
 
-// Error logs an error message
+// Error logs an error message.
 func (l *StructuredLogger) Error(msg string, args ...interface{}) {
 	l.log(slog.LevelError, msg, args...)
 }
 
-// ErrorWithStack logs an error with stack trace
+// ErrorWithStack logs an error with stack trace.
 func (l *StructuredLogger) ErrorWithStack(err error, msg string, args ...interface{}) {
 	l.logWithError(slog.LevelError, err, msg, args...)
 }
 
-// LogPerformance logs performance metrics
+// LogPerformance logs performance metrics.
 func (l *StructuredLogger) LogPerformance(operation string, duration time.Duration, metrics map[string]interface{}) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -168,7 +172,7 @@ func (l *StructuredLogger) LogPerformance(operation string, duration time.Durati
 	l.writeStructuredLog(entry)
 }
 
-// log writes a log message with context
+// log writes a log message with context.
 func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}) {
 	if !l.logger.Enabled(context.Background(), level) {
 		return
@@ -205,7 +209,7 @@ func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}
 	l.logger.LogAttrs(context.Background(), level, msg, attrs...)
 }
 
-// logWithError logs a message with error information
+// logWithError logs a message with error information.
 func (l *StructuredLogger) logWithError(level slog.Level, err error, msg string, args ...interface{}) {
 	if !l.logger.Enabled(context.Background(), level) {
 		return
@@ -231,7 +235,7 @@ func (l *StructuredLogger) logWithError(level slog.Level, err error, msg string,
 	l.writeStructuredLog(entry)
 }
 
-// writeStructuredLog writes a structured log entry
+// writeStructuredLog writes a structured log entry.
 func (l *StructuredLogger) writeStructuredLog(entry *LogEntry) {
 	data, err := json.Marshal(entry)
 	if err != nil {
@@ -247,7 +251,7 @@ func (l *StructuredLogger) writeStructuredLog(entry *LogEntry) {
 	}
 }
 
-// getCaller gets caller information
+// getCaller gets caller information.
 func getCaller(skip int) *CallerInfo {
 	pc, file, line, ok := runtime.Caller(skip)
 	if !ok {
@@ -259,6 +263,7 @@ func getCaller(skip int) *CallerInfo {
 	}
 
 	fn := runtime.FuncForPC(pc)
+
 	fnName := "unknown"
 	if fn != nil {
 		fnName = fn.Name()
@@ -271,12 +276,12 @@ func getCaller(skip int) *CallerInfo {
 	}
 }
 
-// generateSessionID generates a unique session ID
+// generateSessionID generates a unique session ID.
 func generateSessionID() string {
 	return fmt.Sprintf("sess_%d_%d", time.Now().Unix(), time.Now().Nanosecond()%1000000)
 }
 
-// LoggerMiddleware provides logging middleware functionality
+// LoggerMiddleware provides logging middleware functionality.
 func (l *StructuredLogger) LoggerMiddleware(next func() error) error {
 	start := time.Now()
 
@@ -290,6 +295,7 @@ func (l *StructuredLogger) LoggerMiddleware(next func() error) error {
 			"success": false,
 		})
 		l.ErrorWithStack(err, "Operation failed")
+
 		return err
 	}
 
@@ -301,7 +307,7 @@ func (l *StructuredLogger) LoggerMiddleware(next func() error) error {
 	return nil
 }
 
-// SetGlobalLogger sets a global logger instance
+// SetGlobalLogger sets a global logger instance.
 var globalLogger *StructuredLogger
 
 func SetGlobalLogger(logger *StructuredLogger) {
@@ -312,10 +318,11 @@ func GetGlobalLogger() *StructuredLogger {
 	if globalLogger == nil {
 		globalLogger = NewStructuredLogger("global", LevelInfo)
 	}
+
 	return globalLogger
 }
 
-// Convenience functions for global logger
+// Convenience functions for global logger.
 func Debug(msg string, args ...interface{}) {
 	GetGlobalLogger().Debug(msg, args...)
 }

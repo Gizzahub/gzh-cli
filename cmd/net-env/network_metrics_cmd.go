@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newNetworkMetricsCmd creates the network metrics monitoring command
+// newNetworkMetricsCmd creates the network metrics monitoring command.
 func newNetworkMetricsCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "network-metrics",
@@ -58,7 +58,7 @@ Examples:
 	return cmd
 }
 
-// newNetworkMetricsMonitorCmd creates the monitor subcommand
+// newNetworkMetricsMonitorCmd creates the monitor subcommand.
 func newNetworkMetricsMonitorCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "monitor",
@@ -100,7 +100,7 @@ func newNetworkMetricsMonitorCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newNetworkMetricsShowCmd creates the show subcommand
+// newNetworkMetricsShowCmd creates the show subcommand.
 func newNetworkMetricsShowCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
@@ -136,7 +136,7 @@ func newNetworkMetricsShowCmd(logger *zap.Logger, configDir string) *cobra.Comma
 	return cmd
 }
 
-// newNetworkMetricsLatencyCmd creates the latency subcommand
+// newNetworkMetricsLatencyCmd creates the latency subcommand.
 func newNetworkMetricsLatencyCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "latency",
@@ -183,7 +183,7 @@ func newNetworkMetricsLatencyCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newNetworkMetricsBandwidthCmd creates the bandwidth subcommand
+// newNetworkMetricsBandwidthCmd creates the bandwidth subcommand.
 func newNetworkMetricsBandwidthCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bandwidth",
@@ -227,7 +227,7 @@ func newNetworkMetricsBandwidthCmd(logger *zap.Logger, configDir string) *cobra.
 	return cmd
 }
 
-// newNetworkMetricsReportCmd creates the report subcommand
+// newNetworkMetricsReportCmd creates the report subcommand.
 func newNetworkMetricsReportCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
@@ -268,7 +268,7 @@ func newNetworkMetricsReportCmd(logger *zap.Logger, configDir string) *cobra.Com
 	return cmd
 }
 
-// newNetworkMetricsOptimizeCmd creates the optimize subcommand
+// newNetworkMetricsOptimizeCmd creates the optimize subcommand.
 func newNetworkMetricsOptimizeCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "optimize",
@@ -436,6 +436,7 @@ func (nmc *NetworkMetricsCollector) Close() {
 
 func (nmc *NetworkMetricsCollector) StartMonitoring(ctx context.Context, config MonitoringConfig) error {
 	nmc.isMonitoring = true
+
 	defer func() { nmc.isMonitoring = false }()
 
 	ticker := time.NewTicker(config.Interval)
@@ -519,13 +520,13 @@ func (nmc *NetworkMetricsCollector) MonitorBandwidth(ctx context.Context, iface 
 	}
 
 	fmt.Println() // New line after monitoring
+
 	return trends, nil
 }
 
 func (nmc *NetworkMetricsCollector) GenerateReport(ctx context.Context, duration time.Duration) (*PerformanceReport, error) {
 	// TODO: Implement comprehensive report generation
 	// This would collect historical data and generate analysis
-
 	report := &PerformanceReport{
 		GeneratedAt: time.Now(),
 		Duration:    duration,
@@ -637,6 +638,7 @@ func (nmc *NetworkMetricsCollector) getActiveInterfaces() []string {
 	}
 
 	var interfaces []string
+
 	lines := strings.Split(string(result.Output), "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "state UP") && strings.Contains(line, ":") {
@@ -687,6 +689,7 @@ func (nmc *NetworkMetricsCollector) measureBandwidth(iface string) BandwidthMetr
 	// Get interface statistics
 	result := nmc.commandPool.ExecuteCommand("cat", fmt.Sprintf("/sys/class/net/%s/statistics/rx_bytes", iface))
 	rxBytes := int64(0)
+
 	if result.Error == nil {
 		if val, err := strconv.ParseInt(strings.TrimSpace(string(result.Output)), 10, 64); err == nil {
 			rxBytes = val
@@ -695,6 +698,7 @@ func (nmc *NetworkMetricsCollector) measureBandwidth(iface string) BandwidthMetr
 
 	result = nmc.commandPool.ExecuteCommand("cat", fmt.Sprintf("/sys/class/net/%s/statistics/tx_bytes", iface))
 	txBytes := int64(0)
+
 	if result.Error == nil {
 		if val, err := strconv.ParseInt(strings.TrimSpace(string(result.Output)), 10, 64); err == nil {
 			txBytes = val
@@ -775,17 +779,21 @@ func (nmc *NetworkMetricsCollector) pingTarget(ctx context.Context, target strin
 				statsStr := line[eqIdx+1:]
 				if spaceIdx := strings.Index(statsStr, " ms"); spaceIdx != -1 {
 					statsStr = strings.TrimSpace(statsStr[:spaceIdx])
+
 					parts := strings.Split(statsStr, "/")
 					if len(parts) >= 3 {
 						if min, err := time.ParseDuration(parts[0] + "ms"); err == nil {
 							result.MinLatency = min
 						}
+
 						if avg, err := time.ParseDuration(parts[1] + "ms"); err == nil {
 							result.AvgLatency = avg
 						}
+
 						if max, err := time.ParseDuration(parts[2] + "ms"); err == nil {
 							result.MaxLatency = max
 						}
+
 						if len(parts) >= 4 {
 							if jitter, err := time.ParseDuration(parts[3] + "ms"); err == nil {
 								result.Jitter = jitter
@@ -808,9 +816,11 @@ func (nmc *NetworkMetricsCollector) pingTarget(ctx context.Context, target strin
 						if loss, err := strconv.ParseFloat(strings.TrimSuffix(field, "%"), 64); err == nil {
 							result.PacketLoss = loss
 						}
+
 						break
 					}
 				}
+
 				break
 			}
 		}
@@ -890,12 +900,14 @@ func (nmc *NetworkMetricsCollector) displayRealTimeMetrics(metrics *NetworkMetri
 	if len(metrics.LatencyResults) > 0 {
 		avgLatency := time.Duration(0)
 		successCount := 0
+
 		for _, result := range metrics.LatencyResults {
 			if result.Success {
 				avgLatency += result.AvgLatency
 				successCount++
 			}
 		}
+
 		if successCount > 0 {
 			avgLatency /= time.Duration(successCount)
 			fmt.Printf("Latency: %s", avgLatency.Round(time.Millisecond))
@@ -913,6 +925,7 @@ func printNetworkMetrics(metrics *NetworkMetrics) error {
 	// Interface metrics
 	if len(metrics.Interfaces) > 0 {
 		fmt.Printf("Interface Metrics:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "INTERFACE\tSTATE\tIP ADDRESS\tUPLOAD\tDOWNLOAD\tPACKET LOSS")
 
@@ -925,6 +938,7 @@ func printNetworkMetrics(metrics *NetworkMetrics) error {
 				iface.Bandwidth.DownloadMbps,
 				iface.PacketStats.LossRate)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -998,9 +1012,11 @@ func printPerformanceReport(report *PerformanceReport) error {
 	// Issues
 	if len(report.Issues) > 0 {
 		fmt.Printf("⚠️  Issues Found:\n")
+
 		for i, issue := range report.Issues {
 			fmt.Printf("  %d. [%s] %s: %s\n", i+1, issue.Severity, issue.Type, issue.Description)
 		}
+
 		fmt.Println()
 	}
 
@@ -1021,6 +1037,7 @@ func printOptimizationRecommendations(recommendations []OptimizationRecommendati
 
 	for i, rec := range recommendations {
 		status := ""
+
 		if applied {
 			if rec.Applied {
 				status = " ✅ Applied"
@@ -1032,9 +1049,11 @@ func printOptimizationRecommendations(recommendations []OptimizationRecommendati
 		fmt.Printf("%d. [%s] %s%s\n", i+1, rec.Category, rec.Title, status)
 		fmt.Printf("   %s\n", rec.Description)
 		fmt.Printf("   Impact: %s\n", rec.Impact)
+
 		if rec.Command != "" && !applied {
 			fmt.Printf("   Command: %s\n", rec.Command)
 		}
+
 		fmt.Println()
 	}
 
@@ -1042,8 +1061,10 @@ func printOptimizationRecommendations(recommendations []OptimizationRecommendati
 }
 
 func saveReport(report *PerformanceReport, filename, format string) error {
-	var data []byte
-	var err error
+	var (
+		data []byte
+		err  error
+	)
 
 	switch format {
 	case "json":
@@ -1066,5 +1087,6 @@ func saveReport(report *PerformanceReport, filename, format string) error {
 	}
 
 	fmt.Printf("✅ Report saved to: %s\n", filename)
+
 	return nil
 }

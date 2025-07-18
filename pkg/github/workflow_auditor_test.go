@@ -410,10 +410,13 @@ func TestWorkflowAuditor_AnalyzePermissionUsage(t *testing.T) {
 	for _, usage := range result {
 		if usage.Scope == "contents" && usage.Permission == "read" {
 			foundContentsRead = true
+
 			assert.GreaterOrEqual(t, usage.UsageCount, 1)
 		}
+
 		if usage.Scope == "packages" && usage.Permission == "write" {
 			foundPackagesWrite = true
+
 			assert.GreaterOrEqual(t, usage.UsageCount, 1)
 		}
 	}
@@ -472,11 +475,14 @@ func TestWorkflowAuditor_AnalyzeActionUsage(t *testing.T) {
 	for _, usage := range result {
 		if usage.ActionName == "actions/checkout" {
 			foundCheckout = true
+
 			assert.Equal(t, 2, usage.UsageCount)
 			assert.Len(t, usage.WorkflowFiles, 2)
 		}
+
 		if usage.ActionName == "actions/setup-node" {
 			foundSetupNode = true
+
 			assert.Equal(t, 1, usage.UsageCount)
 			assert.Len(t, usage.WorkflowFiles, 1)
 		}
@@ -546,7 +552,7 @@ func TestWorkflowAuditor_SecurityConstants(t *testing.T) {
 	assert.Equal(t, SecurityRiskLevel("none"), SecurityRiskNone)
 }
 
-// Integration test with mock workflow content
+// Integration test with mock workflow content.
 func TestWorkflowAuditor_AuditWorkflowFile_Integration(t *testing.T) {
 	auditor := createTestAuditor()
 	ctx := context.Background()
@@ -586,12 +592,13 @@ func TestWorkflowAuditor_AuditWorkflowFile_Integration(t *testing.T) {
 	assert.Equal(t, "v4", setupNodeStep.ActionVersion)
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkAuditRepository(b *testing.B) {
 	auditor := createTestAuditor()
 	ctx := context.Background()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		auditor.AuditRepository(ctx, "testorg", "testrepo")
 	}
@@ -608,6 +615,7 @@ func BenchmarkAnalyzeActionSecurity(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		for _, action := range testActions {
 			auditor.analyzeActionSecurity(action)
@@ -634,14 +642,16 @@ func BenchmarkExtractSecretsUsage(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		auditor.extractSecretsUsage(step)
 	}
 }
 
-// Helper function to create a test auditor
+// Helper function to create a test auditor.
 func createTestAuditor() *WorkflowAuditor {
 	logger := &simpleLogger{}
 	apiClient := &simpleAPIClient{}
+
 	return NewWorkflowAuditor(logger, apiClient)
 }

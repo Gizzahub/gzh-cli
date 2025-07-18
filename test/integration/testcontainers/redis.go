@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-// RedisContainer represents a Redis test container
+// RedisContainer represents a Redis test container.
 type RedisContainer struct {
 	Address  string
 	Password string
 }
 
-// SetupRedisContainer creates a Redis test container
+// SetupRedisContainer creates a Redis test container.
 func SetupRedisContainer(ctx context.Context, t *testing.T) *RedisContainer {
 	// This is a stub implementation - in a real test, this would spin up a container
 	return &RedisContainer{
@@ -20,7 +20,7 @@ func SetupRedisContainer(ctx context.Context, t *testing.T) *RedisContainer {
 	}
 }
 
-// Cleanup terminates the Redis container
+// Cleanup terminates the Redis container.
 func (r *RedisContainer) Cleanup(ctx context.Context) error {
 	// Stub implementation
 	return nil

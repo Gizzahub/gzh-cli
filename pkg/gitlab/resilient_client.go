@@ -11,7 +11,7 @@ import (
 )
 
 // ResilientGitLabClient provides GitLab API operations with network resilience - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 type ResilientGitLabClient struct {
 	httpClient HTTPClient
 	baseURL    string
@@ -19,7 +19,7 @@ type ResilientGitLabClient struct {
 }
 
 // NewResilientGitLabClient creates a new resilient GitLab client - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 func NewResilientGitLabClient(baseURL, token string) *ResilientGitLabClient {
 	return &ResilientGitLabClient{
 		httpClient: NewHTTPClientAdapter(),
@@ -29,7 +29,7 @@ func NewResilientGitLabClient(baseURL, token string) *ResilientGitLabClient {
 }
 
 // NewResilientGitLabClientWithConfig creates a resilient GitLab client with custom config - DISABLED (recovery package removed)
-// Simple HTTP client implementation to replace deleted recovery package
+// Simple HTTP client implementation to replace deleted recovery package.
 func NewResilientGitLabClientWithConfig(baseURL, token string, timeout time.Duration) *ResilientGitLabClient {
 	if timeout == 0 {
 		timeout = 30 * time.Second
@@ -44,18 +44,20 @@ func NewResilientGitLabClientWithConfig(baseURL, token string, timeout time.Dura
 	}
 }
 
-// prepareRequest adds authentication and headers to requests
+// prepareRequest adds authentication and headers to requests.
 func (c *ResilientGitLabClient) prepareRequest(req *http.Request) {
 	if c.token != "" {
 		req.Header.Set("PRIVATE-TOKEN", c.token)
 	}
+
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "gzh-manager-go")
 }
 
-// ListGroupProjects retrieves all projects for a GitLab group with pagination and resilience
+// ListGroupProjects retrieves all projects for a GitLab group with pagination and resilience.
 func (c *ResilientGitLabClient) ListGroupProjects(ctx context.Context, groupID string) ([]ProjectInfo, error) {
 	var allProjects []ProjectInfo
+
 	page := 1
 	perPage := 100
 
@@ -84,7 +86,7 @@ func (c *ResilientGitLabClient) ListGroupProjects(ctx context.Context, groupID s
 	return allProjects, nil
 }
 
-// getProjectPage fetches a single page of projects
+// getProjectPage fetches a single page of projects.
 func (c *ResilientGitLabClient) getProjectPage(ctx context.Context, groupID string, page, perPage int) ([]ProjectInfo, bool, error) {
 	url := fmt.Sprintf("%s/api/v4/groups/%s/projects?page=%d&per_page=%d&include_subgroups=true",
 		c.baseURL, groupID, page, perPage)
@@ -117,7 +119,7 @@ func (c *ResilientGitLabClient) getProjectPage(ctx context.Context, groupID stri
 	return projects, hasMore, nil
 }
 
-// hasNextPage checks if there are more pages based on pagination headers
+// hasNextPage checks if there are more pages based on pagination headers.
 func (c *ResilientGitLabClient) hasNextPage(headers http.Header) bool {
 	totalPages := headers.Get("X-Total-Pages")
 	currentPage := headers.Get("X-Page")
@@ -127,8 +129,8 @@ func (c *ResilientGitLabClient) hasNextPage(headers http.Header) bool {
 	}
 
 	total, err1 := strconv.Atoi(totalPages)
-	current, err2 := strconv.Atoi(currentPage)
 
+	current, err2 := strconv.Atoi(currentPage)
 	if err1 != nil || err2 != nil {
 		return false
 	}
@@ -136,7 +138,7 @@ func (c *ResilientGitLabClient) hasNextPage(headers http.Header) bool {
 	return current < total
 }
 
-// ProjectInfo represents GitLab project information
+// ProjectInfo represents GitLab project information.
 type ProjectInfo struct {
 	ID                int    `json:"id"`
 	Name              string `json:"name"`
@@ -149,7 +151,7 @@ type ProjectInfo struct {
 	Visibility        string `json:"visibility"`
 }
 
-// GetProject retrieves detailed information about a specific project
+// GetProject retrieves detailed information about a specific project.
 func (c *ResilientGitLabClient) GetProject(ctx context.Context, projectID string) (*ProjectInfo, error) {
 	url := fmt.Sprintf("%s/api/v4/projects/%s", c.baseURL, projectID)
 
@@ -178,9 +180,10 @@ func (c *ResilientGitLabClient) GetProject(ctx context.Context, projectID string
 	return &project, nil
 }
 
-// ListGroups retrieves all accessible groups
+// ListGroups retrieves all accessible groups.
 func (c *ResilientGitLabClient) ListGroups(ctx context.Context) ([]APIGroupInfo, error) {
 	var allGroups []APIGroupInfo
+
 	page := 1
 	perPage := 100
 
@@ -209,7 +212,7 @@ func (c *ResilientGitLabClient) ListGroups(ctx context.Context) ([]APIGroupInfo,
 	return allGroups, nil
 }
 
-// getGroupPage fetches a single page of groups
+// getGroupPage fetches a single page of groups.
 func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage int) ([]APIGroupInfo, bool, error) {
 	url := fmt.Sprintf("%s/api/v4/groups?page=%d&per_page=%d&owned=true", c.baseURL, page, perPage)
 
@@ -241,7 +244,7 @@ func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage 
 	return groups, hasMore, nil
 }
 
-// APIGroupInfo represents GitLab group information from API
+// APIGroupInfo represents GitLab group information from API.
 type APIGroupInfo struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -250,7 +253,7 @@ type APIGroupInfo struct {
 	WebURL   string `json:"web_url"`
 }
 
-// handleAPIError creates appropriate error messages based on response status
+// handleAPIError creates appropriate error messages based on response status.
 func (c *ResilientGitLabClient) handleAPIError(resp *http.Response, operation string) error {
 	switch resp.StatusCode {
 	case http.StatusNotFound:
@@ -275,7 +278,7 @@ func (c *ResilientGitLabClient) handleAPIError(resp *http.Response, operation st
 }
 
 // GetStats returns statistics about the underlying HTTP client - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *ResilientGitLabClient) GetStats() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "standard_http_client",
@@ -284,18 +287,18 @@ func (c *ResilientGitLabClient) GetStats() map[string]interface{} {
 }
 
 // Close closes the underlying HTTP client connections - DISABLED (recovery package removed)
-// Simple implementation without external recovery dependency
+// Simple implementation without external recovery dependency.
 func (c *ResilientGitLabClient) Close() {
 	// Standard http.Client doesn't have Close method
 	// No cleanup needed for standard client
 }
 
-// SetToken updates the authentication token
+// SetToken updates the authentication token.
 func (c *ResilientGitLabClient) SetToken(token string) {
 	c.token = token
 }
 
-// SetBaseURL updates the base URL
+// SetBaseURL updates the base URL.
 func (c *ResilientGitLabClient) SetBaseURL(baseURL string) {
 	c.baseURL = strings.TrimSuffix(baseURL, "/")
 }

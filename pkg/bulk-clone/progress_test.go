@@ -117,10 +117,11 @@ func TestGetAllRepositories(t *testing.T) {
 
 	// Check that we get copies, not references
 	for _, repo := range allRepos {
-		if repo.Name == "repo1" {
+		switch repo.Name {
+		case "repo1":
 			assert.Equal(t, StatusCloning, repo.Status)
 			assert.Equal(t, 0.3, repo.Progress)
-		} else if repo.Name == "repo2" {
+		case "repo2":
 			assert.Equal(t, StatusCompleted, repo.Status)
 			assert.Equal(t, 1.0, repo.Progress)
 		}
@@ -334,6 +335,7 @@ func TestProgressBarRendering(t *testing.T) {
 	// Count the characters in the progress bar
 	barStart := strings.Index(progress, "[")
 	barEnd := strings.Index(progress, "]")
+
 	assert.True(t, barStart >= 0)
 	assert.True(t, barEnd > barStart)
 

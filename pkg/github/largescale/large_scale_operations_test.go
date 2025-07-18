@@ -57,8 +57,11 @@ func TestLargeScaleManagerCreation(t *testing.T) {
 
 func TestProgressCallback(t *testing.T) {
 	callbackCalled := false
-	var lastProcessed, lastTotal int
-	var lastMessage string
+
+	var (
+		lastProcessed, lastTotal int
+		lastMessage              string
+	)
 
 	callback := func(processed, total int, message string) {
 		callbackCalled = true
@@ -288,7 +291,7 @@ func TestContextCancellation(t *testing.T) {
 		t.Error("Expected error when context is cancelled")
 	}
 
-	if err != context.Canceled {
+	if !errors.Is(err, context.Canceled) {
 		t.Errorf("Expected context.Canceled error, got %v", err)
 	}
 }
@@ -352,6 +355,7 @@ func BenchmarkRepositoryCreation(b *testing.B) {
 	manager := NewLargeScaleManager(nil, nil)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		repo := LargeScaleRepository{
 			Name:          fmt.Sprintf("repo-%d", i),
@@ -371,6 +375,7 @@ func BenchmarkStatsUpdate(b *testing.B) {
 	manager := NewLargeScaleManager(nil, nil)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		manager.updateStats(1, 0, 0)
 	}
@@ -380,6 +385,7 @@ func BenchmarkConcurrencyCalculation(b *testing.B) {
 	manager := NewLargeScaleManager(nil, nil)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_ = manager.calculateOptimalConcurrency(1000)
 	}

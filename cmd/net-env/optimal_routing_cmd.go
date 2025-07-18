@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newOptimalRoutingCmd creates the optimal routing command
+// newOptimalRoutingCmd creates the optimal routing command.
 func newOptimalRoutingCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "optimal-routing",
@@ -60,7 +60,7 @@ Examples:
 	return cmd
 }
 
-// newOptimalRoutingAnalyzeCmd creates the analyze subcommand
+// newOptimalRoutingAnalyzeCmd creates the analyze subcommand.
 func newOptimalRoutingAnalyzeCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "analyze",
@@ -114,7 +114,7 @@ func newOptimalRoutingAnalyzeCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newOptimalRoutingDiscoverCmd creates the discover subcommand
+// newOptimalRoutingDiscoverCmd creates the discover subcommand.
 func newOptimalRoutingDiscoverCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "discover",
@@ -165,7 +165,7 @@ func newOptimalRoutingDiscoverCmd(logger *zap.Logger, configDir string) *cobra.C
 	return cmd
 }
 
-// newOptimalRoutingApplyCmd creates the apply subcommand
+// newOptimalRoutingApplyCmd creates the apply subcommand.
 func newOptimalRoutingApplyCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "apply",
@@ -212,7 +212,7 @@ func newOptimalRoutingApplyCmd(logger *zap.Logger, configDir string) *cobra.Comm
 	return cmd
 }
 
-// newOptimalRoutingAutoOptimizeCmd creates the auto-optimize subcommand
+// newOptimalRoutingAutoOptimizeCmd creates the auto-optimize subcommand.
 func newOptimalRoutingAutoOptimizeCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auto-optimize",
@@ -267,7 +267,7 @@ func newOptimalRoutingAutoOptimizeCmd(logger *zap.Logger, configDir string) *cob
 	return cmd
 }
 
-// newOptimalRoutingLoadBalanceCmd creates the load-balance subcommand
+// newOptimalRoutingLoadBalanceCmd creates the load-balance subcommand.
 func newOptimalRoutingLoadBalanceCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "load-balance",
@@ -310,7 +310,7 @@ func newOptimalRoutingLoadBalanceCmd(logger *zap.Logger, configDir string) *cobr
 	return cmd
 }
 
-// newOptimalRoutingStatusCmd creates the status subcommand
+// newOptimalRoutingStatusCmd creates the status subcommand.
 func newOptimalRoutingStatusCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -346,7 +346,7 @@ func newOptimalRoutingStatusCmd(logger *zap.Logger, configDir string) *cobra.Com
 	return cmd
 }
 
-// newOptimalRoutingPolicyCmd creates the policy subcommand
+// newOptimalRoutingPolicyCmd creates the policy subcommand.
 func newOptimalRoutingPolicyCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy",
@@ -670,6 +670,7 @@ func (oro *OptimalRouteOptimizer) ApplyOptimalRouting(ctx context.Context, confi
 		result.ChangesApplied = changes
 		result.Success = true
 		result.Message = fmt.Sprintf("Dry run: %d changes would be applied", len(changes))
+
 		return result, nil
 	}
 
@@ -679,6 +680,7 @@ func (oro *OptimalRouteOptimizer) ApplyOptimalRouting(ctx context.Context, confi
 		if err != nil {
 			return nil, fmt.Errorf("failed to backup current routes: %w", err)
 		}
+
 		result.BackupLocation = backupPath
 	}
 
@@ -710,7 +712,9 @@ func (oro *OptimalRouteOptimizer) StartAutoOptimization(ctx context.Context, con
 
 func (oro *OptimalRouteOptimizer) StopAutoOptimization(ctx context.Context) error {
 	oro.isOptimizing = false
+
 	fmt.Println("✅ Auto-optimization disabled")
+
 	return nil
 }
 
@@ -735,6 +739,7 @@ func (oro *OptimalRouteOptimizer) ConfigureLoadBalancing(ctx context.Context, co
 
 	// Configure load balancing paths
 	var paths []LoadBalancePath
+
 	totalWeight := 0
 
 	for i, iface := range config.Interfaces {
@@ -742,6 +747,7 @@ func (oro *OptimalRouteOptimizer) ConfigureLoadBalancing(ctx context.Context, co
 		if i < len(config.Weights) {
 			weight = config.Weights[i]
 		}
+
 		totalWeight += weight
 
 		path := LoadBalancePath{
@@ -774,6 +780,7 @@ func (oro *OptimalRouteOptimizer) GetRoutingStatus(ctx context.Context) (*Routin
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current routes: %w", err)
 	}
+
 	status.CurrentRoutes = routes
 
 	// Get load balancing status
@@ -800,6 +807,7 @@ func (oro *OptimalRouteOptimizer) ListPolicies(ctx context.Context) ([]RoutingPo
 	for _, policy := range oro.policies {
 		policies = append(policies, *policy)
 	}
+
 	return policies, nil
 }
 
@@ -807,6 +815,7 @@ func (oro *OptimalRouteOptimizer) CreatePolicy(ctx context.Context, name string,
 	policy.Name = name
 	policy.CreatedAt = time.Now()
 	oro.policies[name] = policy
+
 	return nil
 }
 
@@ -950,6 +959,7 @@ func (oro *OptimalRouteOptimizer) createRouteForInterface(iface, destination str
 						break
 					}
 				}
+
 				break
 			}
 		}
@@ -1013,6 +1023,7 @@ func (oro *OptimalRouteOptimizer) testLatency(destination, iface string) time.Du
 					statsStr := line[idx+1:]
 					if spaceIdx := strings.Index(statsStr, " ms"); spaceIdx != -1 {
 						statsStr = strings.TrimSpace(statsStr[:spaceIdx])
+
 						parts := strings.Split(statsStr, "/")
 						if len(parts) >= 2 {
 							if avg, err := time.ParseDuration(parts[1] + "ms"); err == nil {
@@ -1119,6 +1130,7 @@ func (oro *OptimalRouteOptimizer) calculateQualityScore(route *NetworkRoute) flo
 	policy := oro.policies["balanced"]
 
 	latencyScore := 100.0
+
 	if route.Latency > 0 {
 		latencyMs := float64(route.Latency) / float64(time.Millisecond)
 		if latencyMs <= 10 {
@@ -1146,6 +1158,7 @@ func (oro *OptimalRouteOptimizer) selectOptimalRoute(routes []NetworkRoute) *Net
 	}
 
 	var bestRoute *NetworkRoute
+
 	bestScore := 0.0
 
 	for i := range routes {
@@ -1167,9 +1180,12 @@ func (oro *OptimalRouteOptimizer) calculateRouteMetrics(routes []NetworkRoute) R
 		return metrics
 	}
 
-	var totalQuality float64
-	var bestLatency time.Duration
-	var bestBandwidth float64
+	var (
+		totalQuality  float64
+		bestLatency   time.Duration
+		bestBandwidth float64
+	)
+
 	bestRoute := ""
 
 	for _, route := range routes {
@@ -1227,6 +1243,7 @@ func (oro *OptimalRouteOptimizer) generateRouteRecommendations(analysis *RouteAn
 
 	// Multi-path recommendations
 	activeRoutes := 0
+
 	for _, route := range analysis.AvailableRoutes {
 		if route.Status == "good" {
 			activeRoutes++
@@ -1249,10 +1266,13 @@ func (oro *OptimalRouteOptimizer) calculateDiscoverySummary(discovery *RouteDisc
 		TotalTargets: len(discovery.Config.Targets),
 	}
 
-	var totalRoutes int
-	var totalLatency time.Duration
-	var totalBandwidth float64
-	var totalQuality float64
+	var (
+		totalRoutes    int
+		totalLatency   time.Duration
+		totalBandwidth float64
+		totalQuality   float64
+	)
+
 	validTargets := 0
 
 	for _, routes := range discovery.TargetRoutes {
@@ -1365,6 +1385,7 @@ func (oro *OptimalRouteOptimizer) getCurrentRoutes() ([]NetworkRoute, error) {
 	}
 
 	var routes []NetworkRoute
+
 	lines := strings.Split(string(result.Output), "\n")
 
 	for _, line := range lines {
@@ -1435,6 +1456,7 @@ func max(a, b float64) float64 {
 	if a > b {
 		return a
 	}
+
 	return b
 }
 
@@ -1442,6 +1464,7 @@ func min(a, b float64) float64 {
 	if a < b {
 		return a
 	}
+
 	return b
 }
 
@@ -1452,6 +1475,7 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 
 	// Metrics summary
 	metrics := analysis.Analysis
+
 	fmt.Printf("📊 Analysis Summary:\n")
 	fmt.Printf("  Total Routes: %d\n", metrics.TotalRoutes)
 	fmt.Printf("  Active Routes: %d\n", metrics.ActiveRoutes)
@@ -1463,6 +1487,7 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 	// Available routes
 	if len(analysis.AvailableRoutes) > 0 {
 		fmt.Printf("🛤️  Available Routes:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "INTERFACE\tGATEWAY\tMETRIC\tLATENCY\tBANDWIDTH\tLOSS\tQUALITY\tSTATUS")
 
@@ -1489,6 +1514,7 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 				route.QualityScore,
 				status)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -1506,9 +1532,11 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 	// Recommendations
 	if len(analysis.Recommendations) > 0 {
 		fmt.Printf("💡 Recommendations:\n")
+
 		for i, rec := range analysis.Recommendations {
 			fmt.Printf("  %d. %s\n", i+1, rec)
 		}
+
 		fmt.Println()
 	}
 
@@ -1520,6 +1548,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 
 	// Summary
 	summary := discovery.Summary
+
 	fmt.Printf("📊 Discovery Summary:\n")
 	fmt.Printf("  Total Targets: %d\n", summary.TotalTargets)
 	fmt.Printf("  Routes Discovered: %d\n", summary.RoutesDiscovered)
@@ -1530,6 +1559,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 	// Optimal paths
 	if len(discovery.OptimalPaths) > 0 {
 		fmt.Printf("⭐ Optimal Paths:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "TARGET\tINTERFACE\tGATEWAY\tLATENCY\tBANDWIDTH\tQUALITY")
 
@@ -1544,14 +1574,17 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 					route.QualityScore)
 			}
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
 
 	// Detailed routes by target
 	fmt.Printf("🛤️  Routes by Target:\n")
+
 	for target, routes := range discovery.TargetRoutes {
 		fmt.Printf("\n  %s (%d routes):\n", target, len(routes))
+
 		if len(routes) > 0 {
 			w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 			fmt.Fprintln(w, "  INTERFACE\tLATENCY\tBANDWIDTH\tLOSS\tQUALITY\tSTATUS")
@@ -1570,6 +1603,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 					route.QualityScore,
 					route.Status)
 			}
+
 			w.Flush()
 		}
 	}
@@ -1584,20 +1618,24 @@ func printApplyResult(result *RoutingApplyResult) error {
 		fmt.Printf("🔍 Dry Run Mode: %s\n\n", result.Message)
 	} else {
 		fmt.Printf("Status: %s\n", result.Message)
+
 		if result.BackupLocation != "" {
 			fmt.Printf("Backup Location: %s\n", result.BackupLocation)
 		}
+
 		fmt.Println()
 	}
 
 	// Changes applied
 	if len(result.ChangesApplied) > 0 {
 		fmt.Printf("📝 Changes Applied:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "TYPE\tINTERFACE\tDESTINATION\tCHANGE\tREASON")
 
 		for _, change := range result.ChangesApplied {
 			changeDesc := ""
+
 			switch change.Type {
 			case "add":
 				changeDesc = fmt.Sprintf("Add route via %s metric %d", change.NewGateway, change.NewMetric)
@@ -1614,6 +1652,7 @@ func printApplyResult(result *RoutingApplyResult) error {
 				changeDesc,
 				change.Reason)
 		}
+
 		w.Flush()
 	}
 
@@ -1624,14 +1663,17 @@ func printAutoOptimizeStatus(status *AutoOptimizeStatus) error {
 	fmt.Printf("🤖 Auto-Optimization Status\n\n")
 
 	fmt.Printf("Status: ")
+
 	if status.Enabled {
 		fmt.Printf("✅ Enabled")
+
 		if status.Running {
 			fmt.Printf(" (Running)")
 		}
 	} else {
 		fmt.Printf("❌ Disabled")
 	}
+
 	fmt.Println()
 
 	if status.Enabled {
@@ -1652,6 +1694,7 @@ func printLoadBalanceResult(result *LoadBalanceResult) error {
 
 	if len(result.ConfiguredPaths) > 0 {
 		fmt.Printf("📊 Configured Paths:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "INTERFACE\tWEIGHT\tTRAFFIC SHARE\tSTATUS")
 
@@ -1662,6 +1705,7 @@ func printLoadBalanceResult(result *LoadBalanceResult) error {
 				path.Share,
 				path.Status)
 		}
+
 		w.Flush()
 	}
 
@@ -1673,15 +1717,18 @@ func printRoutingStatus(status *RoutingStatus) error {
 
 	// System health
 	health := status.SystemHealth
+
 	fmt.Printf("🏥 System Health:\n")
 	fmt.Printf("  Overall Score: %.1f%%\n", health.OverallScore)
 	fmt.Printf("  Route Stability: %.1f%%\n", health.RouteStability)
 	fmt.Printf("  Path Diversity: %d paths\n", health.PathDiversity)
 	fmt.Printf("  Failover Ready: %v\n", health.FailoverReady)
 	fmt.Printf("  Optimization Age: %s\n", health.OptimizationAge)
+
 	if health.IssuesDetected > 0 {
 		fmt.Printf("  Issues Detected: %d\n", health.IssuesDetected)
 	}
+
 	fmt.Println()
 
 	// Active policies
@@ -1692,6 +1739,7 @@ func printRoutingStatus(status *RoutingStatus) error {
 	// Current routes
 	if len(status.CurrentRoutes) > 0 {
 		fmt.Printf("🛤️  Current Routes:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "INTERFACE\tGATEWAY\tMETRIC\tSTATUS\tQUALITY")
 
@@ -1703,6 +1751,7 @@ func printRoutingStatus(status *RoutingStatus) error {
 				route.Status,
 				route.QualityScore)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -1710,22 +1759,27 @@ func printRoutingStatus(status *RoutingStatus) error {
 	// Load balancing status
 	if status.LoadBalancing != nil {
 		lb := status.LoadBalancing
+
 		fmt.Printf("⚖️  Load Balancing:\n")
 		fmt.Printf("  Status: ")
+
 		if lb.Enabled {
 			fmt.Printf("✅ Enabled (%s)\n", lb.Policy)
 			fmt.Printf("  Paths: %d total, %d active\n", lb.TotalPaths, lb.ActivePaths)
 		} else {
 			fmt.Printf("❌ Disabled\n")
 		}
+
 		fmt.Println()
 	}
 
 	// Auto-optimization status
 	if status.AutoOptimization != nil {
 		auto := status.AutoOptimization
+
 		fmt.Printf("🤖 Auto-Optimization:\n")
 		fmt.Printf("  Status: ")
+
 		if auto.Enabled {
 			fmt.Printf("✅ Enabled\n")
 			fmt.Printf("  Changes Applied: %d\n", auto.ChangesApplied)

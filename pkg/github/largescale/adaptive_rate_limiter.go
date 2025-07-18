@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// AdaptiveRateLimiter provides intelligent rate limiting for GitHub API operations
+// AdaptiveRateLimiter provides intelligent rate limiting for GitHub API operations.
 type AdaptiveRateLimiter struct {
 	mu                sync.RWMutex
 	remaining         int
@@ -23,7 +23,7 @@ type AdaptiveRateLimiter struct {
 	adaptiveDelay        bool
 }
 
-// NewAdaptiveRateLimiter creates a new adaptive rate limiter
+// NewAdaptiveRateLimiter creates a new adaptive rate limiter.
 func NewAdaptiveRateLimiter() *AdaptiveRateLimiter {
 	return &AdaptiveRateLimiter{
 		remaining:            5000, // GitHub default
@@ -37,7 +37,7 @@ func NewAdaptiveRateLimiter() *AdaptiveRateLimiter {
 	}
 }
 
-// Wait blocks until it's safe to make a request
+// Wait blocks until it's safe to make a request.
 func (rl *AdaptiveRateLimiter) Wait(ctx context.Context) error {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -65,7 +65,7 @@ func (rl *AdaptiveRateLimiter) Wait(ctx context.Context) error {
 	return nil
 }
 
-// UpdateRemaining updates the remaining request count from API response
+// UpdateRemaining updates the remaining request count from API response.
 func (rl *AdaptiveRateLimiter) UpdateRemaining(remaining int) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -88,7 +88,7 @@ func (rl *AdaptiveRateLimiter) UpdateRemaining(remaining int) {
 	}
 }
 
-// UpdateResetTime updates the rate limit reset time from API response
+// UpdateResetTime updates the rate limit reset time from API response.
 func (rl *AdaptiveRateLimiter) UpdateResetTime(resetTime time.Time) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -96,7 +96,7 @@ func (rl *AdaptiveRateLimiter) UpdateResetTime(resetTime time.Time) {
 	rl.resetTime = resetTime
 }
 
-// GetStatus returns current rate limiter status
+// GetStatus returns current rate limiter status.
 func (rl *AdaptiveRateLimiter) GetStatus() (remaining int, resetTime time.Time, estimatedDelay time.Duration) {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
@@ -104,7 +104,7 @@ func (rl *AdaptiveRateLimiter) GetStatus() (remaining int, resetTime time.Time, 
 	return rl.remaining, rl.resetTime, rl.calculateDelay(time.Now())
 }
 
-// calculateDelay determines how long to wait before next request
+// calculateDelay determines how long to wait before next request.
 func (rl *AdaptiveRateLimiter) calculateDelay(now time.Time) time.Duration {
 	// If we're past reset time, no delay needed
 	if now.After(rl.resetTime) {
@@ -161,7 +161,7 @@ func (rl *AdaptiveRateLimiter) calculateDelay(now time.Time) time.Duration {
 	return 0
 }
 
-// calculateRecentFrequency calculates requests per second for recent history
+// calculateRecentFrequency calculates requests per second for recent history.
 func (rl *AdaptiveRateLimiter) calculateRecentFrequency(now time.Time) float64 {
 	if len(rl.requestHistory) < 2 {
 		return 0
@@ -172,6 +172,7 @@ func (rl *AdaptiveRateLimiter) calculateRecentFrequency(now time.Time) float64 {
 	cutoff := now.Add(-lookback)
 
 	recentRequests := 0
+
 	for i := len(rl.requestHistory) - 1; i >= 0; i-- {
 		if rl.requestHistory[i].After(cutoff) {
 			recentRequests++
@@ -193,18 +194,20 @@ func (rl *AdaptiveRateLimiter) calculateRecentFrequency(now time.Time) float64 {
 	return float64(recentRequests) / timeSpan.Seconds()
 }
 
-// cleanHistory removes old entries from request history
+// cleanHistory removes old entries from request history.
 func (rl *AdaptiveRateLimiter) cleanHistory(now time.Time) {
 	// Keep only last 100 requests or requests from last hour
 	cutoff := now.Add(-time.Hour)
 
 	// Find first entry to keep
 	keepFrom := 0
+
 	for i, reqTime := range rl.requestHistory {
 		if reqTime.After(cutoff) {
 			keepFrom = i
 			break
 		}
+
 		keepFrom = i + 1
 	}
 
@@ -220,7 +223,7 @@ func (rl *AdaptiveRateLimiter) cleanHistory(now time.Time) {
 	}
 }
 
-// EstimateTimeToCompletion estimates how long it will take to make N requests
+// EstimateTimeToCompletion estimates how long it will take to make N requests.
 func (rl *AdaptiveRateLimiter) EstimateTimeToCompletion(requestsNeeded int) time.Duration {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
@@ -258,7 +261,7 @@ func (rl *AdaptiveRateLimiter) EstimateTimeToCompletion(requestsNeeded int) time
 	return currentBatchTime + timeUntilReset + additionalTime
 }
 
-// SetConfiguration allows customizing rate limiter behavior
+// SetConfiguration allows customizing rate limiter behavior.
 func (rl *AdaptiveRateLimiter) SetConfiguration(maxPerSecond int, bufferRatio float64, enableAdaptive bool) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -268,7 +271,7 @@ func (rl *AdaptiveRateLimiter) SetConfiguration(maxPerSecond int, bufferRatio fl
 	rl.adaptiveDelay = enableAdaptive
 }
 
-// Reset resets the rate limiter state (useful for testing or manual reset)
+// Reset resets the rate limiter state (useful for testing or manual reset).
 func (rl *AdaptiveRateLimiter) Reset() {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -279,10 +282,11 @@ func (rl *AdaptiveRateLimiter) Reset() {
 	rl.lastRequest = time.Time{}
 }
 
-// Helper function for rate limiter
+// Helper function for rate limiter.
 func maxInt(a, b int) int {
 	if a > b {
 		return a
 	}
+
 	return b
 }

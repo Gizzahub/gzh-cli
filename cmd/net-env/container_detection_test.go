@@ -47,12 +47,14 @@ func TestContainerDetector_DetectContainerEnvironment(t *testing.T) {
 	// Orchestration platform should be detected
 	validPlatforms := []string{"standalone", "docker-swarm", "kubernetes", "unknown"}
 	found := false
+
 	for _, platform := range validPlatforms {
 		if env.OrchestrationPlatform == platform {
 			found = true
 			break
 		}
 	}
+
 	if !found {
 		t.Errorf("Invalid orchestration platform: %s", env.OrchestrationPlatform)
 	}
@@ -207,6 +209,7 @@ func TestContainerDetector_DetectOrchestrationPlatform(t *testing.T) {
 
 	validPlatforms := []string{"standalone", "docker-swarm", "kubernetes", "unknown"}
 	found := false
+
 	for _, validPlatform := range validPlatforms {
 		if platform == validPlatform {
 			found = true
@@ -406,13 +409,14 @@ func TestDetectedContainer_Validation(t *testing.T) {
 	}
 }
 
-// Benchmark tests for performance
+// Benchmark tests for performance.
 func BenchmarkContainerDetector_DetectAvailableRuntimes(b *testing.B) {
 	logger := zap.NewNop()
 	cd := NewContainerDetector(logger)
 	ctx := context.Background()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_, err := cd.DetectAvailableRuntimes(ctx)
 		if err != nil {
@@ -439,12 +443,13 @@ func BenchmarkContainerDetector_CalculateEnvironmentFingerprint(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_ = cd.CalculateEnvironmentFingerprint(env)
 	}
 }
 
-// Integration tests that require Docker to be running
+// Integration tests that require Docker to be running.
 func TestContainerDetector_Integration_DockerRunning(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -463,6 +468,7 @@ func TestContainerDetector_Integration_DockerRunning(t *testing.T) {
 	}
 
 	dockerAvailable := false
+
 	for _, runtime := range runtimes {
 		if runtime.Runtime == Docker && runtime.Available {
 			dockerAvailable = true
@@ -492,6 +498,7 @@ func TestContainerDetector_Integration_DockerRunning(t *testing.T) {
 
 	// At least the default networks should be present
 	foundBridge := false
+
 	for _, network := range networks {
 		if network.Name == "bridge" {
 			foundBridge = true
@@ -504,7 +511,7 @@ func TestContainerDetector_Integration_DockerRunning(t *testing.T) {
 	}
 }
 
-// Test error conditions
+// Test error conditions.
 func TestContainerDetector_ErrorConditions(t *testing.T) {
 	logger := zap.NewNop()
 	cd := NewContainerDetector(logger)

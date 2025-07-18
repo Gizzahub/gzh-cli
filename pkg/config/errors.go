@@ -2,7 +2,7 @@ package config
 
 import "errors"
 
-// Configuration errors
+// Configuration errors.
 var (
 	ErrMissingVersion    = errors.New("missing required field: version")
 	ErrMissingToken      = errors.New("missing required field: token")

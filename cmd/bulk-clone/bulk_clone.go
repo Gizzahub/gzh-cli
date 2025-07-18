@@ -87,7 +87,7 @@ func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, args []str
 	return o.runWithCentralConfigService(ctx)
 }
 
-// runWithCentralConfigService uses the central configuration service for unified config management
+// runWithCentralConfigService uses the central configuration service for unified config management.
 func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) error {
 	// Create configuration service
 	configService, err := config.CreateDefaultConfigService()
@@ -159,7 +159,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 	return nil
 }
 
-// executeProviderCloning executes the cloning operation for a specific provider
+// executeProviderCloning executes the cloning operation for a specific provider.
 func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target pkgconfig.BulkCloneTarget, targetPath string) error {
 	switch target.Provider {
 	case pkgconfig.ProviderGitHub:
@@ -167,12 +167,14 @@ func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target pk
 		if o.resume || o.parallel > 1 {
 			return github.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
+
 		return github.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case pkgconfig.ProviderGitLab:
 		// Use resumable clone if requested or if parallel/worker pool is enabled
 		if o.resume || o.parallel > 1 {
 			return gitlab.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
+
 		return gitlab.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case pkgconfig.ProviderGitea:
 		// Gitea support would go here

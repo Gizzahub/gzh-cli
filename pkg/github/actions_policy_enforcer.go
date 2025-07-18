@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// ActionsPolicyEnforcer handles the enforcement and validation of Actions policies
+// ActionsPolicyEnforcer handles the enforcement and validation of Actions policies.
 type ActionsPolicyEnforcer struct {
 	logger          Logger
 	apiClient       APIClient
@@ -24,7 +24,7 @@ type PolicyValidationRule interface {
 	GetDescription() string
 }
 
-// PolicyValidationResult represents the result of a policy validation
+// PolicyValidationResult represents the result of a policy validation.
 type PolicyValidationResult struct {
 	RuleID        string                  `json:"rule_id"`
 	Passed        bool                    `json:"passed"`
@@ -36,7 +36,7 @@ type PolicyValidationResult struct {
 	ExpectedValue interface{}             `json:"expected_value,omitempty"`
 }
 
-// RepositoryActionsState represents the current Actions configuration state of a repository
+// RepositoryActionsState represents the current Actions configuration state of a repository.
 type RepositoryActionsState struct {
 	Organization        string                  `json:"organization"`
 	Repository          string                  `json:"repository"`
@@ -53,7 +53,7 @@ type RepositoryActionsState struct {
 	LastUpdated         time.Time               `json:"last_updated"`
 }
 
-// SecretInfo represents information about a repository secret
+// SecretInfo represents information about a repository secret.
 type SecretInfo struct {
 	Name        string    `json:"name"`
 	Visibility  string    `json:"visibility"`
@@ -62,7 +62,7 @@ type SecretInfo struct {
 	Environment string    `json:"environment,omitempty"`
 }
 
-// EnvironmentInfo represents information about a repository environment
+// EnvironmentInfo represents information about a repository environment.
 type EnvironmentInfo struct {
 	Name               string            `json:"name"`
 	ProtectionRules    []ProtectionRule  `json:"protection_rules,omitempty"`
@@ -71,14 +71,14 @@ type EnvironmentInfo struct {
 	Variables          map[string]string `json:"variables,omitempty"`
 }
 
-// ProtectionRule represents an environment protection rule
+// ProtectionRule represents an environment protection rule.
 type ProtectionRule struct {
 	Type      string   `json:"type"`
 	Reviewers []string `json:"reviewers,omitempty"`
 	WaitTimer int      `json:"wait_timer,omitempty"`
 }
 
-// RunnerInfo represents information about a repository runner
+// RunnerInfo represents information about a repository runner.
 type RunnerInfo struct {
 	ID     int64    `json:"id"`
 	Name   string   `json:"name"`
@@ -88,7 +88,7 @@ type RunnerInfo struct {
 	Busy   bool     `json:"busy"`
 }
 
-// WorkflowInfo represents information about a workflow
+// WorkflowInfo represents information about a workflow.
 type WorkflowInfo struct {
 	ID          int64             `json:"id"`
 	Name        string            `json:"name"`
@@ -99,7 +99,7 @@ type WorkflowInfo struct {
 	LastRun     time.Time         `json:"last_run"`
 }
 
-// PolicyEnforcementResult represents the result of applying a policy
+// PolicyEnforcementResult represents the result of applying a policy.
 type PolicyEnforcementResult struct {
 	PolicyID         string                   `json:"policy_id"`
 	Organization     string                   `json:"organization"`
@@ -113,7 +113,7 @@ type PolicyEnforcementResult struct {
 	Timestamp        time.Time                `json:"timestamp"`
 }
 
-// PolicyChange represents a change made during policy enforcement
+// PolicyChange represents a change made during policy enforcement.
 type PolicyChange struct {
 	Type     string      `json:"type"`
 	Target   string      `json:"target"`
@@ -141,7 +141,7 @@ func NewActionsPolicyEnforcer(logger Logger, apiClient APIClient, policyManager 
 	return enforcer
 }
 
-// EnforcePolicy applies an Actions policy to a repository
+// EnforcePolicy applies an Actions policy to a repository.
 func (ape *ActionsPolicyEnforcer) EnforcePolicy(ctx context.Context, policyID, organization, repository string) (*PolicyEnforcementResult, error) {
 	startTime := time.Now()
 
@@ -175,6 +175,7 @@ func (ape *ActionsPolicyEnforcer) EnforcePolicy(ctx context.Context, policyID, o
 	if err != nil {
 		return result, fmt.Errorf("failed to validate policy: %w", err)
 	}
+
 	result.ValidationResult = validationResults
 
 	// Apply policy changes
@@ -202,7 +203,7 @@ func (ape *ActionsPolicyEnforcer) EnforcePolicy(ctx context.Context, policyID, o
 	return result, nil
 }
 
-// ValidatePolicy validates a policy against current repository state
+// ValidatePolicy validates a policy against current repository state.
 func (ape *ActionsPolicyEnforcer) ValidatePolicy(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState) ([]PolicyValidationResult, error) {
 	results := make([]PolicyValidationResult, 0)
 
@@ -212,6 +213,7 @@ func (ape *ActionsPolicyEnforcer) ValidatePolicy(ctx context.Context, policy *Ac
 			ape.logger.Error("Failed to validate rule",
 				"rule_id", rule.GetRuleID(),
 				"error", err)
+
 			continue
 		}
 
@@ -223,7 +225,7 @@ func (ape *ActionsPolicyEnforcer) ValidatePolicy(ctx context.Context, policy *Ac
 	return results, nil
 }
 
-// GetRepositoryActionsState retrieves the current Actions configuration state
+// GetRepositoryActionsState retrieves the current Actions configuration state.
 func (ape *ActionsPolicyEnforcer) getRepositoryActionsState(ctx context.Context, organization, repository string) (*RepositoryActionsState, error) {
 	// This would typically make GitHub API calls to get the current state
 	// For now, return a mock state structure
@@ -247,7 +249,7 @@ func (ape *ActionsPolicyEnforcer) getRepositoryActionsState(ctx context.Context,
 	return state, nil
 }
 
-// applyPolicyChanges applies the necessary changes to enforce the policy
+// applyPolicyChanges applies the necessary changes to enforce the policy.
 func (ape *ActionsPolicyEnforcer) applyPolicyChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	// Apply permission level changes
 	if err := ape.applyPermissionLevelChanges(ctx, policy, currentState, result); err != nil {
@@ -277,7 +279,7 @@ func (ape *ActionsPolicyEnforcer) applyPolicyChanges(ctx context.Context, policy
 	return nil
 }
 
-// applyPermissionLevelChanges applies Actions permission level changes
+// applyPermissionLevelChanges applies Actions permission level changes.
 func (ape *ActionsPolicyEnforcer) applyPermissionLevelChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	if policy.PermissionLevel != currentState.PermissionLevel {
 		change := PolicyChange{
@@ -293,6 +295,7 @@ func (ape *ActionsPolicyEnforcer) applyPermissionLevelChanges(ctx context.Contex
 			change.Success = false
 			change.Error = err.Error()
 			result.FailedChanges = append(result.FailedChanges, change)
+
 			return err
 		}
 
@@ -304,7 +307,7 @@ func (ape *ActionsPolicyEnforcer) applyPermissionLevelChanges(ctx context.Contex
 	return nil
 }
 
-// applyWorkflowPermissionChanges applies workflow permission changes
+// applyWorkflowPermissionChanges applies workflow permission changes.
 func (ape *ActionsPolicyEnforcer) applyWorkflowPermissionChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	if policy.WorkflowPermissions.DefaultPermissions != currentState.WorkflowPermissions.DefaultPermissions {
 		change := PolicyChange{
@@ -320,6 +323,7 @@ func (ape *ActionsPolicyEnforcer) applyWorkflowPermissionChanges(ctx context.Con
 			change.Success = false
 			change.Error = err.Error()
 			result.FailedChanges = append(result.FailedChanges, change)
+
 			return err
 		}
 
@@ -331,7 +335,7 @@ func (ape *ActionsPolicyEnforcer) applyWorkflowPermissionChanges(ctx context.Con
 	return nil
 }
 
-// applySecuritySettingChanges applies security setting changes
+// applySecuritySettingChanges applies security setting changes.
 func (ape *ActionsPolicyEnforcer) applySecuritySettingChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	// Apply fork PR settings
 	if policy.SecuritySettings.AllowForkPRs != currentState.SecuritySettings.AllowForkPRs {
@@ -347,6 +351,7 @@ func (ape *ActionsPolicyEnforcer) applySecuritySettingChanges(ctx context.Contex
 			change.Success = false
 			change.Error = err.Error()
 			result.FailedChanges = append(result.FailedChanges, change)
+
 			return err
 		}
 
@@ -358,7 +363,7 @@ func (ape *ActionsPolicyEnforcer) applySecuritySettingChanges(ctx context.Contex
 	return nil
 }
 
-// applySecretPolicyChanges applies secret policy changes
+// applySecretPolicyChanges applies secret policy changes.
 func (ape *ActionsPolicyEnforcer) applySecretPolicyChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	// This would implement secret policy enforcement
 	// For now, just log that we would apply secret policies
@@ -370,7 +375,7 @@ func (ape *ActionsPolicyEnforcer) applySecretPolicyChanges(ctx context.Context, 
 	return nil
 }
 
-// applyEnvironmentPolicyChanges applies environment policy changes
+// applyEnvironmentPolicyChanges applies environment policy changes.
 func (ape *ActionsPolicyEnforcer) applyEnvironmentPolicyChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	// This would implement environment policy enforcement
 	// For now, just log that we would apply environment policies
@@ -382,7 +387,7 @@ func (ape *ActionsPolicyEnforcer) applyEnvironmentPolicyChanges(ctx context.Cont
 	return nil
 }
 
-// detectViolations detects policy violations based on validation results
+// detectViolations detects policy violations based on validation results.
 func (ape *ActionsPolicyEnforcer) detectViolations(policy *ActionsPolicy, currentState *RepositoryActionsState, validationResults []PolicyValidationResult) []ActionsPolicyViolation {
 	violations := make([]ActionsPolicyViolation, 0)
 
@@ -411,7 +416,7 @@ func (ape *ActionsPolicyEnforcer) detectViolations(policy *ActionsPolicy, curren
 	return violations
 }
 
-// mapViolationType maps a validation rule ID to a violation type
+// mapViolationType maps a validation rule ID to a violation type.
 func (ape *ActionsPolicyEnforcer) mapViolationType(ruleID string) ActionsPolicyViolationType {
 	switch {
 	case strings.Contains(ruleID, "permission"):
@@ -440,6 +445,7 @@ func (ape *ActionsPolicyEnforcer) updateActionsPermissionLevel(ctx context.Conte
 		"organization", org,
 		"repository", repo,
 		"level", level)
+
 	return nil
 }
 
@@ -448,6 +454,7 @@ func (ape *ActionsPolicyEnforcer) updateWorkflowPermissions(ctx context.Context,
 		"organization", org,
 		"repository", repo,
 		"default_permissions", permissions.DefaultPermissions)
+
 	return nil
 }
 
@@ -456,10 +463,11 @@ func (ape *ActionsPolicyEnforcer) updateSecuritySettings(ctx context.Context, or
 		"organization", org,
 		"repository", repo,
 		"allow_fork_prs", settings.AllowForkPRs)
+
 	return nil
 }
 
-// registerDefaultValidationRules registers the default set of validation rules
+// registerDefaultValidationRules registers the default set of validation rules.
 func (ape *ActionsPolicyEnforcer) registerDefaultValidationRules() {
 	ape.validationRules = append(ape.validationRules,
 		&PermissionLevelValidationRule{},
@@ -471,7 +479,7 @@ func (ape *ActionsPolicyEnforcer) registerDefaultValidationRules() {
 	)
 }
 
-// AddValidationRule adds a custom validation rule
+// AddValidationRule adds a custom validation rule.
 func (ape *ActionsPolicyEnforcer) AddValidationRule(rule PolicyValidationRule) {
 	ape.validationRules = append(ape.validationRules, rule)
 }

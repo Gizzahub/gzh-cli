@@ -147,6 +147,7 @@ func (m *mockConditionEvaluator) EvaluateConditions(ctx context.Context, conditi
 	if result := args.Get(0); result != nil {
 		return result.(*EvaluationResult), args.Error(1)
 	}
+
 	return nil, args.Error(1)
 }
 
@@ -180,6 +181,7 @@ func (m *mockConditionEvaluator) ValidateConditions(conditions *AutomationCondit
 	if result := args.Get(0); result != nil {
 		return result.(*ConditionValidationResult), args.Error(1)
 	}
+
 	return nil, args.Error(1)
 }
 
@@ -188,6 +190,7 @@ func (m *mockConditionEvaluator) ExplainEvaluation(ctx context.Context, conditio
 	if result := args.Get(0); result != nil {
 		return result.(*EvaluationExplanation), args.Error(1)
 	}
+
 	return nil, args.Error(1)
 }
 
@@ -200,6 +203,7 @@ func (m *mockActionExecutor) ExecuteAction(ctx context.Context, action *Automati
 	if result := args.Get(0); result != nil {
 		return result.(*ActionExecutionResult), args.Error(1)
 	}
+
 	return nil, args.Error(1)
 }
 
@@ -393,6 +397,7 @@ func TestAutomationEngine_ProcessEvent_ValidationFailed(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	err = engine.ProcessEvent(ctx, event)
@@ -412,6 +417,7 @@ func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	err = engine.ProcessEvent(ctx, event)
@@ -436,6 +442,7 @@ func TestAutomationEngine_ProcessEvent_ExcludedEventType(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	err = engine.ProcessEvent(ctx, event)
@@ -470,6 +477,7 @@ func TestAutomationEngine_ProcessEvent_Success(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	err = engine.ProcessEvent(ctx, event)
@@ -499,6 +507,7 @@ func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	err = engine.ProcessEvent(ctx, event)
@@ -530,6 +539,7 @@ func TestAutomationEngine_ProcessEvent_ExecutionFailure(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	err = engine.ProcessEvent(ctx, event)
@@ -585,6 +595,7 @@ func TestAutomationEngine_SyncExecution(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	err = engine.ProcessEvent(ctx, event)
@@ -611,6 +622,7 @@ func TestAutomationEngine_EventChannelFull(t *testing.T) {
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
+
 	defer engine.Stop(ctx)
 
 	// Fill the channel
@@ -652,6 +664,7 @@ func TestEngineMetrics_ThreadSafety(t *testing.T) {
 				m.RulesEvaluated++
 			})
 		}
+
 		done <- true
 	}()
 
@@ -660,6 +673,7 @@ func TestEngineMetrics_ThreadSafety(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			_ = engine.GetMetrics()
 		}
+
 		done <- true
 	}()
 
@@ -741,6 +755,7 @@ func BenchmarkAutomationEngine_ProcessEvent(b *testing.B) {
 	defer engine.Stop(ctx)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		engine.ProcessEvent(ctx, event)
 	}
@@ -750,6 +765,7 @@ func BenchmarkAutomationEngine_UpdateMetrics(b *testing.B) {
 	engine, _ := createTestAutomationEngine()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		engine.updateMetrics(func(m *EngineMetrics) {
 			m.EventsProcessed++

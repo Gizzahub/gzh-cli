@@ -13,6 +13,7 @@ func TestIntegration_EndToEndConfiguration(t *testing.T) {
 	// Test end-to-end configuration loading, parsing, and integration
 	tmpDir, err := os.MkdirTemp("", "gzh-integration-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Create a comprehensive test configuration
@@ -69,6 +70,7 @@ providers:
 	os.Setenv("GITLAB_TOKEN", "real-gitlab-token")
 	os.Setenv("GITEA_TOKEN", "real-gitea-token")
 	os.Setenv("HOME", "/home/testuser")
+
 	defer func() {
 		os.Unsetenv("GITHUB_TOKEN")
 		os.Unsetenv("GITLAB_TOKEN")
@@ -148,11 +150,13 @@ providers:
 
 	// Verify targets have correct flatten settings
 	var flattenedTargets []BulkCloneTarget
+
 	for _, target := range targets {
 		if target.Flatten {
 			flattenedTargets = append(flattenedTargets, target)
 		}
 	}
+
 	assert.Len(t, flattenedTargets, 1) // Only test-org-2 has flatten=true
 	assert.Equal(t, "test-org-2", flattenedTargets[0].Name)
 }
@@ -248,6 +252,7 @@ providers:
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "gzh-validation-test-*")
 			require.NoError(t, err)
+
 			defer os.RemoveAll(tmpDir)
 
 			configPath := filepath.Join(tmpDir, "gzh.yaml")
@@ -258,9 +263,11 @@ providers:
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorContains != "" {
 					assert.Contains(t, err.Error(), tt.errorContains)
 				}
+
 				assert.Nil(t, config)
 			} else {
 				assert.NoError(t, err)
@@ -301,6 +308,7 @@ func TestIntegration_RepositoryFiltering(t *testing.T) {
 	for _, repo := range filtered {
 		names = append(names, repo.Name)
 	}
+
 	assert.Contains(t, names, "test-repo1")
 	assert.Contains(t, names, "test-valid")
 
@@ -442,6 +450,7 @@ func TestIntegration_ConfigurationSearchPaths(t *testing.T) {
 	// Test configuration file search functionality
 	tmpDir, err := os.MkdirTemp("", "gzh-search-test-*")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tmpDir)
 
 	// Create a config in the temporary directory

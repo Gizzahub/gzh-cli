@@ -147,6 +147,7 @@ func createPolicy(cmd *cobra.Command, args []string) error {
 
 	// Get policy template
 	var policy *github.ActionsPolicy
+
 	switch template {
 	case "default":
 		policy = github.GetDefaultActionsPolicy()
@@ -175,9 +176,11 @@ func createPolicy(cmd *cobra.Command, args []string) error {
 	fmt.Printf("✅ Policy '%s' created successfully\n", policy.ID)
 	fmt.Printf("   Name: %s\n", policy.Name)
 	fmt.Printf("   Organization: %s\n", policy.Organization)
+
 	if policy.Repository != "" {
 		fmt.Printf("   Repository: %s\n", policy.Repository)
 	}
+
 	fmt.Printf("   Template: %s\n", template)
 	fmt.Printf("   Enabled: %t\n", policy.Enabled)
 
@@ -222,6 +225,7 @@ func enforcePolicy(cmd *cobra.Command, args []string) error {
 		}
 
 		printValidationResults(results)
+
 		return nil
 	}
 
@@ -233,6 +237,7 @@ func enforcePolicy(cmd *cobra.Command, args []string) error {
 	}
 
 	printEnforcementResult(result)
+
 	return nil
 }
 
@@ -268,11 +273,13 @@ func validatePolicy(cmd *cobra.Command, args []string) error {
 	// Filter by severity
 	if severityFilter != "all" {
 		filtered := make([]github.PolicyValidationResult, 0)
+
 		for _, result := range results {
-			if strings.ToLower(string(result.Severity)) == strings.ToLower(severityFilter) {
+			if strings.EqualFold(string(result.Severity), severityFilter) {
 				filtered = append(filtered, result)
 			}
 		}
+
 		results = filtered
 	}
 
@@ -305,6 +312,7 @@ func listPolicies(cmd *cobra.Command, args []string) error {
 
 	// Apply filters
 	filtered := make([]*github.ActionsPolicy, 0)
+
 	for _, policy := range policies {
 		if enabledOnly && !policy.Enabled {
 			continue
@@ -312,6 +320,7 @@ func listPolicies(cmd *cobra.Command, args []string) error {
 
 		if len(tags) > 0 {
 			hasTag := false
+
 			for _, filterTag := range tags {
 				for _, policyTag := range policy.Tags {
 					if policyTag == filterTag {
@@ -319,10 +328,12 @@ func listPolicies(cmd *cobra.Command, args []string) error {
 						break
 					}
 				}
+
 				if hasTag {
 					break
 				}
 			}
+
 			if !hasTag {
 				continue
 			}
@@ -382,15 +393,18 @@ func showPolicy(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Name: %s\n", policy.Name)
 	fmt.Printf("Description: %s\n", policy.Description)
 	fmt.Printf("Organization: %s\n", policy.Organization)
+
 	if policy.Repository != "" {
 		fmt.Printf("Repository: %s\n", policy.Repository)
 	}
+
 	fmt.Printf("Permission Level: %s\n", policy.PermissionLevel)
 	fmt.Printf("Enabled: %t\n", policy.Enabled)
 	fmt.Printf("Version: %d\n", policy.Version)
 	fmt.Printf("Created: %s\n", policy.CreatedAt.Format("2006-01-02 15:04:05"))
 	fmt.Printf("Updated: %s\n", policy.UpdatedAt.Format("2006-01-02 15:04:05"))
 	fmt.Printf("Created By: %s\n", policy.CreatedBy)
+
 	if policy.UpdatedBy != "" {
 		fmt.Printf("Updated By: %s\n", policy.UpdatedBy)
 	}
@@ -422,6 +436,7 @@ func deletePolicy(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✅ Policy '%s' deleted successfully\n", policyID)
+
 	return nil
 }
 
@@ -496,7 +511,7 @@ func performComplianceCheck(ctx context.Context, policyManager *github.ActionsPo
 	return nil
 }
 
-// Helper functions
+// Helper functions.
 func createAPIClient() github.APIClient {
 	return &simpleAPIClient{}
 }
@@ -510,6 +525,7 @@ func createStrictPolicy() *github.ActionsPolicy {
 	policy.SecuritySettings.AllowForkPRs = false
 	policy.SecuritySettings.AllowMarketplaceActions = github.MarketplacePolicyDisabled
 	policy.SecretsPolicy.MaxSecretCount = 10
+
 	return policy
 }
 
@@ -522,6 +538,7 @@ func createPermissivePolicy() *github.ActionsPolicy {
 	policy.SecuritySettings.AllowForkPRs = true
 	policy.SecuritySettings.AllowMarketplaceActions = github.MarketplacePolicyAll
 	policy.SecretsPolicy.MaxSecretCount = 100
+
 	return policy
 }
 
@@ -541,6 +558,7 @@ func printValidationResults(results []github.PolicyValidationResult) {
 
 	if failed > 0 {
 		fmt.Printf("❌ Failed Validations:\n")
+
 		for _, result := range results {
 			if !result.Passed {
 				fmt.Printf("   %s: %s (%s)\n", result.RuleID, result.Message, result.Severity)
@@ -569,12 +587,14 @@ func printDetailedValidationResults(results []github.PolicyValidationResult) {
 		if result.ActualValue != nil {
 			fmt.Printf("  Actual: %v\n", result.ActualValue)
 		}
+
 		if result.ExpectedValue != nil {
 			fmt.Printf("  Expected: %v\n", result.ExpectedValue)
 		}
 
 		if len(result.Suggestions) > 0 {
 			fmt.Printf("  Suggestions:\n")
+
 			for _, suggestion := range result.Suggestions {
 				fmt.Printf("    - %s\n", suggestion)
 			}
@@ -599,6 +619,7 @@ func printEnforcementResult(result *github.PolicyEnforcementResult) {
 
 	if len(result.AppliedChanges) > 0 {
 		fmt.Printf("\n✅ Applied Changes:\n")
+
 		for _, change := range result.AppliedChanges {
 			fmt.Printf("   %s.%s: %v → %v\n", change.Type, change.Target, change.OldValue, change.NewValue)
 		}
@@ -606,6 +627,7 @@ func printEnforcementResult(result *github.PolicyEnforcementResult) {
 
 	if len(result.FailedChanges) > 0 {
 		fmt.Printf("\n❌ Failed Changes:\n")
+
 		for _, change := range result.FailedChanges {
 			fmt.Printf("   %s.%s: %s\n", change.Type, change.Target, change.Error)
 		}
@@ -613,6 +635,7 @@ func printEnforcementResult(result *github.PolicyEnforcementResult) {
 
 	if len(result.Violations) > 0 {
 		fmt.Printf("\n⚠️  Policy Violations:\n")
+
 		for _, violation := range result.Violations {
 			fmt.Printf("   %s: %s (%s)\n", violation.ViolationType, violation.Description, violation.Severity)
 		}
@@ -622,6 +645,7 @@ func printEnforcementResult(result *github.PolicyEnforcementResult) {
 func printJSON(data interface{}) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
+
 	return encoder.Encode(data)
 }
 
@@ -629,10 +653,11 @@ func truncate(s string, length int) string {
 	if len(s) <= length {
 		return s
 	}
+
 	return s[:length-3] + "..."
 }
 
-// Console logger implementation
+// Console logger implementation.
 type consoleLogger struct{}
 
 func (l *consoleLogger) Debug(msg string, args ...interface{}) {
@@ -641,35 +666,41 @@ func (l *consoleLogger) Debug(msg string, args ...interface{}) {
 
 func (l *consoleLogger) Info(msg string, args ...interface{}) {
 	fmt.Printf("[INFO] %s", msg)
+
 	for i := 0; i < len(args); i += 2 {
 		if i+1 < len(args) {
 			fmt.Printf(" %v=%v", args[i], args[i+1])
 		}
 	}
+
 	fmt.Println()
 }
 
 func (l *consoleLogger) Warn(msg string, args ...interface{}) {
 	fmt.Printf("[WARN] %s", msg)
+
 	for i := 0; i < len(args); i += 2 {
 		if i+1 < len(args) {
 			fmt.Printf(" %v=%v", args[i], args[i+1])
 		}
 	}
+
 	fmt.Println()
 }
 
 func (l *consoleLogger) Error(msg string, args ...interface{}) {
 	fmt.Printf("[ERROR] %s", msg)
+
 	for i := 0; i < len(args); i += 2 {
 		if i+1 < len(args) {
 			fmt.Printf(" %v=%v", args[i], args[i+1])
 		}
 	}
+
 	fmt.Println()
 }
 
-// Simple API client for CLI
+// Simple API client for CLI.
 type simpleAPIClient struct{}
 
 func (m *simpleAPIClient) GetRepository(ctx context.Context, owner, repo string) (*github.RepositoryInfo, error) {

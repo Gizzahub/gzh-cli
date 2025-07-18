@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-// HTTPClient defines the interface for HTTP operations
+// HTTPClient defines the interface for HTTP operations.
 type HTTPClient interface {
 	// Do performs an HTTP request
 	Do(req *http.Request) (*http.Response, error)

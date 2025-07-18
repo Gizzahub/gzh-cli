@@ -12,7 +12,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-// BulkOperationsConfig represents configuration for bulk operations
+// BulkOperationsConfig represents configuration for bulk operations.
 type BulkOperationsConfig struct {
 	// WorkerPool configuration
 	PoolConfig workerpool.RepositoryPoolConfig
@@ -22,7 +22,7 @@ type BulkOperationsConfig struct {
 	Verbose bool
 }
 
-// DefaultBulkOperationsConfig returns default configuration for bulk operations
+// DefaultBulkOperationsConfig returns default configuration for bulk operations.
 func DefaultBulkOperationsConfig() BulkOperationsConfig {
 	return BulkOperationsConfig{
 		PoolConfig:   workerpool.DefaultRepositoryPoolConfig(),
@@ -31,13 +31,13 @@ func DefaultBulkOperationsConfig() BulkOperationsConfig {
 	}
 }
 
-// BulkOperationsManager manages bulk repository operations using worker pools
+// BulkOperationsManager manages bulk repository operations using worker pools.
 type BulkOperationsManager struct {
 	config BulkOperationsConfig
 	pool   *workerpool.RepositoryWorkerPool
 }
 
-// NewBulkOperationsManager creates a new bulk operations manager
+// NewBulkOperationsManager creates a new bulk operations manager.
 func NewBulkOperationsManager(config BulkOperationsConfig) *BulkOperationsManager {
 	return &BulkOperationsManager{
 		config: config,
@@ -45,17 +45,17 @@ func NewBulkOperationsManager(config BulkOperationsConfig) *BulkOperationsManage
 	}
 }
 
-// Start initializes the bulk operations manager
+// Start initializes the bulk operations manager.
 func (b *BulkOperationsManager) Start() error {
 	return b.pool.Start()
 }
 
-// Stop shuts down the bulk operations manager
+// Stop shuts down the bulk operations manager.
 func (b *BulkOperationsManager) Stop() {
 	b.pool.Stop()
 }
 
-// RefreshAllWithWorkerPool performs bulk repository refresh using worker pools
+// RefreshAllWithWorkerPool performs bulk repository refresh using worker pools.
 func (b *BulkOperationsManager) RefreshAllWithWorkerPool(ctx context.Context,
 	targetPath, org, strategy string,
 ) error {
@@ -133,12 +133,14 @@ func (b *BulkOperationsManager) RefreshAllWithWorkerPool(ctx context.Context,
 		case result := <-resultsChan:
 			if result.Success {
 				successCount++
+
 				if b.config.Verbose {
 					fmt.Printf("✓ %s: %s completed successfully\n",
 						result.Job.Repository, result.Job.Operation)
 				}
 			} else {
 				errorCount++
+
 				fmt.Printf("✗ %s: %s failed: %v\n",
 					result.Job.Repository, result.Job.Operation, result.Error)
 			}
@@ -153,10 +155,11 @@ func (b *BulkOperationsManager) RefreshAllWithWorkerPool(ctx context.Context,
 	}
 
 	fmt.Printf("\nBulk operation completed: %d successful, %d failed\n", successCount, errorCount)
+
 	return nil
 }
 
-// processRepositoryJob processes a single repository job
+// processRepositoryJob processes a single repository job.
 func (b *BulkOperationsManager) processRepositoryJob(ctx context.Context,
 	job workerpool.RepositoryJob, org string,
 ) error {
@@ -175,6 +178,7 @@ func (b *BulkOperationsManager) processRepositoryJob(ctx context.Context,
 		if err := b.executeGitOperation(ctx, job.Path, "reset", "--hard", "HEAD"); err != nil {
 			return fmt.Errorf("git reset failed: %w", err)
 		}
+
 		return b.executeGitOperation(ctx, job.Path, "pull")
 
 	default:
@@ -182,7 +186,7 @@ func (b *BulkOperationsManager) processRepositoryJob(ctx context.Context,
 	}
 }
 
-// executeGitOperation executes a git command in the repository path
+// executeGitOperation executes a git command in the repository path.
 func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 	repoPath string, args ...string,
 ) error {
@@ -203,7 +207,7 @@ func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 	return nil
 }
 
-// RefreshAllWithWorkerPoolWrapper provides a drop-in replacement for the original RefreshAll
+// RefreshAllWithWorkerPoolWrapper provides a drop-in replacement for the original RefreshAll.
 func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy string, parallel int, maxRetries int) error {
 	config := DefaultBulkOperationsConfig()
 
@@ -211,7 +215,8 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy str
 	if parallel > 0 {
 		config.PoolConfig.CloneWorkers = parallel
 		config.PoolConfig.UpdateWorkers = parallel + (parallel / 2) // 50% more for updates
-		config.PoolConfig.ConfigWorkers = parallel / 2              // 50% less for config operations
+
+		config.PoolConfig.ConfigWorkers = parallel / 2 // 50% less for config operations
 		if config.PoolConfig.ConfigWorkers < 1 {
 			config.PoolConfig.ConfigWorkers = 1
 		}
@@ -230,7 +235,7 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy str
 	return manager.RefreshAllWithWorkerPool(ctx, targetPath, org, strategy)
 }
 
-// BulkCloneOptions represents options for bulk clone operations
+// BulkCloneOptions represents options for bulk clone operations.
 type BulkCloneOptions struct {
 	// WorkerPoolConfig allows customizing worker pool behavior
 	WorkerPoolConfig workerpool.RepositoryPoolConfig
@@ -244,7 +249,7 @@ type BulkCloneOptions struct {
 	Verbose bool
 }
 
-// BulkCloneMultipleOrganizations clones repositories from multiple organizations using worker pools
+// BulkCloneMultipleOrganizations clones repositories from multiple organizations using worker pools.
 func BulkCloneMultipleOrganizations(ctx context.Context, targetBasePath string,
 	options BulkCloneOptions,
 ) error {

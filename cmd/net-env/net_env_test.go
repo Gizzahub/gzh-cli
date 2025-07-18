@@ -23,6 +23,7 @@ func TestNewNetEnvCmd(t *testing.T) {
 
 	// Verify core CLI subcommands exist
 	var statusCmd, switchCmd *cobra.Command
+
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
 		case "status":

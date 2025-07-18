@@ -33,6 +33,7 @@ func TestParseMemorySize(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error for input %s: %v", test.input, err)
 			}
+
 			if result != test.expected {
 				t.Errorf("For input %s, expected %d but got %d", test.input, test.expected, result)
 			}
@@ -79,6 +80,7 @@ func TestMemoryPressure(t *testing.T) {
 	}
 
 	found := false
+
 	for _, valid := range validPressures {
 		if pressure == valid {
 			found = true
@@ -108,6 +110,7 @@ func TestMemoryWatcher(t *testing.T) {
 	}
 
 	pressureEvents := 0
+
 	watcher.SetPressureHandler(func(level MemoryPressureLevel) {
 		pressureEvents++
 	})
@@ -174,21 +177,21 @@ func TestDefaultOptimizedCloneConfig(t *testing.T) {
 	}
 }
 
-// Benchmark memory optimization
+// Benchmark memory optimization.
 func BenchmarkOptimizeMemoryUsage(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		OptimizeMemoryUsage()
 	}
 }
 
-// Benchmark memory stats collection
+// Benchmark memory stats collection.
 func BenchmarkGetMemoryStats(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		GetMemoryStats()
 	}
 }
 
-// Test streaming client creation (without actual API calls)
+// Test streaming client creation (without actual API calls).
 func TestNewStreamingClient(t *testing.T) {
 	config := DefaultStreamingConfig()
 	client := NewStreamingClient("test-token", config)
@@ -208,9 +211,10 @@ func TestNewStreamingClient(t *testing.T) {
 	}
 }
 
-// Test optimized bulk clone manager creation
+// Test optimized bulk clone manager creation.
 func TestNewOptimizedBulkCloneManager(t *testing.T) {
 	config := DefaultOptimizedCloneConfig()
+
 	manager, err := NewOptimizedBulkCloneManager("test-token", config)
 	if err != nil {
 		t.Fatalf("Unexpected error creating manager: %v", err)
@@ -227,9 +231,10 @@ func TestNewOptimizedBulkCloneManager(t *testing.T) {
 	}
 }
 
-// Test memory monitor
+// Test memory monitor.
 func TestMemoryMonitor(t *testing.T) {
 	config := DefaultOptimizedCloneConfig()
+
 	manager, err := NewOptimizedBulkCloneManager("test-token", config)
 	if err != nil {
 		t.Fatalf("Failed to create manager: %v", err)
@@ -249,11 +254,10 @@ func TestMemoryMonitor(t *testing.T) {
 	}
 }
 
-// Test repository stream processing (mock)
+// Test repository stream processing (mock).
 func TestRepositoryStreamProcessing(t *testing.T) {
 	// This would test the streaming functionality with a mock server
 	// For now, we'll test the data structures and basic functionality
-
 	repo := &Repository{
 		ID:            12345,
 		Name:          "test-repo",

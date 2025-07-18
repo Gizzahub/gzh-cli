@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test helper functions
+// Test helper functions.
 func createTestAutomationRule() *AutomationRule {
 	return &AutomationRule{
 		ID:           "test-rule-001",
@@ -482,7 +482,7 @@ func TestConditionOperators_Constants(t *testing.T) {
 // Helper functions
 // boolPtr is defined in automation_engine.go
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkAutomationRule_Creation(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		rule := createTestAutomationRule()

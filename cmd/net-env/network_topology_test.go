@@ -226,6 +226,7 @@ func TestDiscoverServices(t *testing.T) {
 
 	// Find web service
 	var webService *TopologyService
+
 	for i := range services {
 		if services[i].Name == "web" {
 			webService = &services[i]
@@ -241,6 +242,7 @@ func TestDiscoverServices(t *testing.T) {
 
 	// Find database service
 	var dbService *TopologyService
+
 	for i := range services {
 		if services[i].Name == "database" {
 			dbService = &services[i]
@@ -490,7 +492,7 @@ func TestValidateTopology(t *testing.T) {
 	assert.Contains(t, issueText, "many containers")
 }
 
-// MockContainerDetector for testing
+// MockContainerDetector for testing.
 type MockContainerDetector struct {
 	mock.Mock
 }

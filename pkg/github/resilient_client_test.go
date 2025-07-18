@@ -63,7 +63,8 @@ func TestResilientGitHubClient_ListRepositories(t *testing.T) {
 			Name string `json:"name"`
 		}
 
-		if page == "1" || page == "" {
+		switch page {
+		case "1", "":
 			repos = []struct {
 				Name string `json:"name"`
 			}{
@@ -72,7 +73,7 @@ func TestResilientGitHubClient_ListRepositories(t *testing.T) {
 			}
 			// Add link header for pagination
 			w.Header().Set("Link", `<http://example.com?page=2>; rel="next"`)
-		} else if page == "2" {
+		case "2":
 			repos = []struct {
 				Name string `json:"name"`
 			}{
@@ -226,7 +227,7 @@ func TestResilientGitHubClient_ContextCancellation(t *testing.T) {
 		t.Fatal("Expected timeout error, got success")
 	}
 
-	if err != context.DeadlineExceeded && !containsString(err.Error(), "timeout") {
+	if !errors.Is(err, context.DeadlineExceeded) && !containsString(err.Error(), "timeout") {
 		t.Errorf("Expected timeout error, got: %v", err)
 	}
 }
@@ -282,11 +283,13 @@ func TestResilientGitHubClient_SetToken(t *testing.T) {
 		if authHeader != "token new-token" {
 			t.Errorf("Expected 'token new-token', got '%s'", authHeader)
 		}
+
 		json.NewEncoder(w).Encode(RepoInfo{DefaultBranch: "main"})
 	}))
 	defer server.Close()
 
 	client.SetBaseURL(server.URL)
+
 	_, err := client.GetDefaultBranch(context.Background(), "testorg", "testrepo")
 	if err != nil {
 		t.Fatalf("Expected success, got error: %v", err)
@@ -306,7 +309,7 @@ func TestResilientGitHubClient_Stats(t *testing.T) {
 	}
 }
 
-// Helper function for string containment check
+// Helper function for string containment check.
 func containsString(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr ||
 		(len(s) > len(substr) &&
@@ -321,5 +324,6 @@ func stringContains(s, substr string) bool {
 			return true
 		}
 	}
+
 	return false
 }

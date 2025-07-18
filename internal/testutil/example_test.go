@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Example of using test helpers
+// Example of using test helpers.
 func TestExampleWithHelpers(t *testing.T) {
 	// Create temporary directory
 	tempDir, cleanup := helpers.TempDir(t, "test-*")
@@ -42,7 +42,7 @@ func TestExampleWithHelpers(t *testing.T) {
 	helpers.AssertFileExists(t, repo+"/README.md")
 }
 
-// Example of using mock HTTP client
+// Example of using mock HTTP client.
 func TestExampleWithMockHTTP(t *testing.T) {
 	// Create mock HTTP client
 	mockClient := &mocks.MockHTTPClient{
@@ -77,7 +77,7 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	assert.Equal(t, "/repos", mockClient.Calls[1].URL.Path)
 }
 
-// Example of using fixtures
+// Example of using fixtures.
 func TestExampleWithFixtures(t *testing.T) {
 	tempDir, cleanup := helpers.TempDir(t, "config-test-*")
 	defer cleanup()

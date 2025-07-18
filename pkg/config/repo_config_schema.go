@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// RepoConfig represents the complete repository configuration schema
+// RepoConfig represents the complete repository configuration schema.
 type RepoConfig struct {
 	Version       string                     `yaml:"version"`
 	Organization  string                     `yaml:"organization"`
@@ -20,7 +20,7 @@ type RepoConfig struct {
 	PolicyPresets map[string]*PolicyPreset   `yaml:"policy_presets,omitempty"` // Predefined policy sets (SOC2, ISO27001, etc.)
 }
 
-// RepoDefaults represents default settings for all repositories
+// RepoDefaults represents default settings for all repositories.
 type RepoDefaults struct {
 	Template    string              `yaml:"template,omitempty"`
 	Settings    *RepoSettings       `yaml:"settings,omitempty"`
@@ -28,7 +28,7 @@ type RepoDefaults struct {
 	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
 }
 
-// RepoTemplate represents a reusable configuration template
+// RepoTemplate represents a reusable configuration template.
 type RepoTemplate struct {
 	Base          string              `yaml:"base,omitempty"`
 	Description   string              `yaml:"description,omitempty"`
@@ -41,14 +41,14 @@ type RepoTemplate struct {
 	Environments  []string            `yaml:"environments,omitempty"`
 }
 
-// RepoTargets represents repository targeting configuration
+// RepoTargets represents repository targeting configuration.
 type RepoTargets struct {
 	Specific []RepoSpecificConfig `yaml:"specific,omitempty"`
 	Patterns []RepoPatternConfig  `yaml:"patterns,omitempty"`
 	Default  *RepoDefaultConfig   `yaml:"default,omitempty"`
 }
 
-// RepoSpecificConfig represents configuration for specific repositories
+// RepoSpecificConfig represents configuration for specific repositories.
 type RepoSpecificConfig struct {
 	Name        string              `yaml:"name"`
 	Template    string              `yaml:"template,omitempty"`
@@ -58,7 +58,7 @@ type RepoSpecificConfig struct {
 	Exceptions  []PolicyException   `yaml:"exceptions,omitempty"`
 }
 
-// RepoPatternConfig represents configuration for repositories matching patterns
+// RepoPatternConfig represents configuration for repositories matching patterns.
 type RepoPatternConfig struct {
 	Match       string              `yaml:"match"`
 	Template    string              `yaml:"template,omitempty"`
@@ -68,7 +68,7 @@ type RepoPatternConfig struct {
 	Exceptions  []PolicyException   `yaml:"exceptions,omitempty"`
 }
 
-// RepoDefaultConfig represents default configuration for all repositories
+// RepoDefaultConfig represents default configuration for all repositories.
 type RepoDefaultConfig struct {
 	Template    string              `yaml:"template,omitempty"`
 	Settings    *RepoSettings       `yaml:"settings,omitempty"`
@@ -76,7 +76,7 @@ type RepoDefaultConfig struct {
 	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
 }
 
-// RepoSettings represents basic repository settings
+// RepoSettings represents basic repository settings.
 type RepoSettings struct {
 	Description *string  `yaml:"description,omitempty"`
 	Homepage    *string  `yaml:"homepage,omitempty"`
@@ -96,7 +96,7 @@ type RepoSettings struct {
 	AllowSquashMerge    *bool `yaml:"allow_squash_merge,omitempty"`
 	AllowMergeCommit    *bool `yaml:"allow_merge_commit,omitempty"`
 	AllowRebaseMerge    *bool `yaml:"allow_rebase_merge,omitempty"`
-	AllowAutoMerge     *bool `yaml:"allow_auto_merge,omitempty"`
+	AllowAutoMerge      *bool `yaml:"allow_auto_merge,omitempty"`
 	DeleteBranchOnMerge *bool `yaml:"delete_branch_on_merge,omitempty"`
 
 	// Advanced settings
@@ -107,7 +107,7 @@ type RepoSettings struct {
 	DefaultBranch *string `yaml:"default_branch,omitempty"`
 }
 
-// SecuritySettings represents security-related settings
+// SecuritySettings represents security-related settings.
 type SecuritySettings struct {
 	VulnerabilityAlerts           *bool                            `yaml:"vulnerability_alerts,omitempty"`
 	AutomatedSecurityFixes        *bool                            `yaml:"automated_security_fixes,omitempty"`
@@ -119,30 +119,30 @@ type SecuritySettings struct {
 	Webhooks                      []WebhookConfig                  `yaml:"webhooks,omitempty"`
 }
 
-// BranchProtectionRule represents branch protection settings
+// BranchProtectionRule represents branch protection settings.
 type BranchProtectionRule struct {
-	RequiredReviews               *int     `yaml:"required_reviews,omitempty"`
-	DismissStaleReviews           *bool    `yaml:"dismiss_stale_reviews,omitempty"`
-	RequireCodeOwnerReviews       *bool    `yaml:"require_code_owner_reviews,omitempty"`
-	RequiredStatusChecks          []string `yaml:"required_status_checks,omitempty"`
-	StrictStatusChecks            *bool    `yaml:"strict_status_checks,omitempty"`
-	RestrictPushes                *bool    `yaml:"restrict_pushes,omitempty"`
-	AllowedUsers                  []string `yaml:"allowed_users,omitempty"`
-	AllowedTeams                  []string `yaml:"allowed_teams,omitempty"`
-	RequireUpToDateBranch         *bool    `yaml:"require_up_to_date_branch,omitempty"`
-	EnforceAdmins                 *bool    `yaml:"enforce_admins,omitempty"`
-	RequireConversationResolution *bool                       `yaml:"require_conversation_resolution,omitempty"`
-	AllowForcePushes              *bool                       `yaml:"allow_force_pushes,omitempty"`
-	AllowDeletions                *bool                       `yaml:"allow_deletions,omitempty"`
+	RequiredReviews               *int                       `yaml:"required_reviews,omitempty"`
+	DismissStaleReviews           *bool                      `yaml:"dismiss_stale_reviews,omitempty"`
+	RequireCodeOwnerReviews       *bool                      `yaml:"require_code_owner_reviews,omitempty"`
+	RequiredStatusChecks          []string                   `yaml:"required_status_checks,omitempty"`
+	StrictStatusChecks            *bool                      `yaml:"strict_status_checks,omitempty"`
+	RestrictPushes                *bool                      `yaml:"restrict_pushes,omitempty"`
+	AllowedUsers                  []string                   `yaml:"allowed_users,omitempty"`
+	AllowedTeams                  []string                   `yaml:"allowed_teams,omitempty"`
+	RequireUpToDateBranch         *bool                      `yaml:"require_up_to_date_branch,omitempty"`
+	EnforceAdmins                 *bool                      `yaml:"enforce_admins,omitempty"`
+	RequireConversationResolution *bool                      `yaml:"require_conversation_resolution,omitempty"`
+	AllowForcePushes              *bool                      `yaml:"allow_force_pushes,omitempty"`
+	AllowDeletions                *bool                      `yaml:"allow_deletions,omitempty"`
 	DeploymentProtectionRules     []DeploymentProtectionRule `yaml:"deployment_protection_rules,omitempty"`
 }
 
-// DeploymentProtectionRule represents deployment protection settings
+// DeploymentProtectionRule represents deployment protection settings.
 type DeploymentProtectionRule struct {
 	Environment string `yaml:"environment"`
 }
 
-// WebhookConfig represents webhook configuration
+// WebhookConfig represents webhook configuration.
 type WebhookConfig struct {
 	URL         string   `yaml:"url"`
 	Events      []string `yaml:"events"`
@@ -151,13 +151,13 @@ type WebhookConfig struct {
 	Secret      string   `yaml:"secret,omitempty"`
 }
 
-// PermissionSettings represents permission-related settings
+// PermissionSettings represents permission-related settings.
 type PermissionSettings struct {
 	TeamPermissions map[string]string `yaml:"team_permissions,omitempty"`
 	UserPermissions map[string]string `yaml:"user_permissions,omitempty"`
 }
 
-// PolicyTemplate represents a reusable policy configuration
+// PolicyTemplate represents a reusable policy configuration.
 type PolicyTemplate struct {
 	Description string                `yaml:"description"`
 	Group       string                `yaml:"group,omitempty"`    // Policy group: security, compliance, best-practice, custom
@@ -166,7 +166,7 @@ type PolicyTemplate struct {
 	Tags        []string              `yaml:"tags,omitempty"` // Additional categorization tags
 }
 
-// PolicyRule represents a single policy rule
+// PolicyRule represents a single policy rule.
 type PolicyRule struct {
 	Type        string      `yaml:"type"`
 	Value       interface{} `yaml:"value"`
@@ -174,7 +174,7 @@ type PolicyRule struct {
 	Message     string      `yaml:"message,omitempty"`
 }
 
-// PolicyException represents an exception to a policy rule
+// PolicyException represents an exception to a policy rule.
 type PolicyException struct {
 	PolicyName   string   `yaml:"policy"`
 	RuleName     string   `yaml:"rule"`
@@ -185,7 +185,7 @@ type PolicyException struct {
 	Conditions   []string `yaml:"conditions,omitempty"`
 }
 
-// PolicyGroup represents a group of related policies
+// PolicyGroup represents a group of related policies.
 type PolicyGroup struct {
 	Name        string   `yaml:"name"`
 	Description string   `yaml:"description"`
@@ -195,7 +195,7 @@ type PolicyGroup struct {
 	Tags        []string `yaml:"tags,omitempty"`     // Additional categorization
 }
 
-// PolicyPreset represents a predefined set of policies for compliance frameworks
+// PolicyPreset represents a predefined set of policies for compliance frameworks.
 type PolicyPreset struct {
 	Name        string                    `yaml:"name"`
 	Description string                    `yaml:"description"`
@@ -206,20 +206,20 @@ type PolicyPreset struct {
 	Overrides   map[string]PolicyOverride `yaml:"overrides,omitempty"` // Policy-specific overrides
 }
 
-// PolicyOverride allows customizing policy rules for specific presets
+// PolicyOverride allows customizing policy rules for specific presets.
 type PolicyOverride struct {
 	Enforcement string                  `yaml:"enforcement,omitempty"`
 	Rules       map[string]RuleOverride `yaml:"rules,omitempty"`
 }
 
-// RuleOverride allows customizing individual rules
+// RuleOverride allows customizing individual rules.
 type RuleOverride struct {
 	Value       interface{} `yaml:"value,omitempty"`
 	Enforcement string      `yaml:"enforcement,omitempty"`
 	Disabled    bool        `yaml:"disabled,omitempty"`
 }
 
-// LoadRepoConfig loads repository configuration from a YAML file
+// LoadRepoConfig loads repository configuration from a YAML file.
 func LoadRepoConfig(path string) (*RepoConfig, error) {
 	// Expand environment variables in path
 	path = os.ExpandEnv(path)
@@ -249,7 +249,7 @@ func LoadRepoConfig(path string) (*RepoConfig, error) {
 	return &config, nil
 }
 
-// expandRepoConfigEnvVars expands environment variables in the configuration
+// expandRepoConfigEnvVars expands environment variables in the configuration.
 func expandRepoConfigEnvVars(config *RepoConfig) error {
 	// Expand environment variables in webhook URLs and secrets
 	if config.Templates != nil {
@@ -279,7 +279,7 @@ func expandRepoConfigEnvVars(config *RepoConfig) error {
 	return nil
 }
 
-// validateRepoConfig validates the repository configuration
+// validateRepoConfig validates the repository configuration.
 func validateRepoConfig(config *RepoConfig) error {
 	// Check version
 	if config.Version == "" {
@@ -313,7 +313,7 @@ func validateRepoConfig(config *RepoConfig) error {
 	return nil
 }
 
-// validateTemplateInheritance checks for circular dependencies in template inheritance
+// validateTemplateInheritance checks for circular dependencies in template inheritance.
 func validateTemplateInheritance(name string, template *RepoTemplate, templates map[string]*RepoTemplate) error {
 	visited := make(map[string]bool)
 	return checkTemplateInheritance(name, template, templates, visited)
@@ -338,7 +338,7 @@ func checkTemplateInheritance(name string, template *RepoTemplate, templates map
 	return checkTemplateInheritance(template.Base, baseTemplate, templates, visited)
 }
 
-// MergeRepoConfigs merges multiple repository configurations with priority
+// MergeRepoConfigs merges multiple repository configurations with priority.
 func MergeRepoConfigs(configs ...*RepoConfig) (*RepoConfig, error) {
 	if len(configs) == 0 {
 		return nil, fmt.Errorf("no configurations to merge")
@@ -382,7 +382,7 @@ func MergeRepoConfigs(configs ...*RepoConfig) (*RepoConfig, error) {
 	return result, nil
 }
 
-// ValidateTemplateOverrides checks for conflicts in template overrides
+// ValidateTemplateOverrides checks for conflicts in template overrides.
 func (rc *RepoConfig) ValidateTemplateOverrides() []string {
 	var warnings []string
 
@@ -406,7 +406,7 @@ func (rc *RepoConfig) ValidateTemplateOverrides() []string {
 	return warnings
 }
 
-// checkTemplateConflicts identifies potential conflicts between derived and base templates
+// checkTemplateConflicts identifies potential conflicts between derived and base templates.
 func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []string {
 	var conflicts []string
 
@@ -462,7 +462,7 @@ func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []
 	return conflicts
 }
 
-// isHigherPermission checks if perm1 grants more access than perm2
+// isHigherPermission checks if perm1 grants more access than perm2.
 func isHigherPermission(perm1, perm2 string) bool {
 	permissions := map[string]int{
 		"read":     1,
@@ -482,7 +482,7 @@ func isHigherPermission(perm1, perm2 string) bool {
 	return level1 > level2
 }
 
-// GetTemplateInheritanceChain returns the inheritance chain for a template
+// GetTemplateInheritanceChain returns the inheritance chain for a template.
 func (rc *RepoConfig) GetTemplateInheritanceChain(templateName string) ([]string, error) {
 	chain := []string{}
 	visited := make(map[string]bool)
@@ -506,7 +506,7 @@ func (rc *RepoConfig) GetTemplateInheritanceChain(templateName string) ([]string
 	return chain, nil
 }
 
-// GetAllTemplateChains returns inheritance chains for all templates
+// GetAllTemplateChains returns inheritance chains for all templates.
 func (rc *RepoConfig) GetAllTemplateChains() map[string][]string {
 	chains := make(map[string][]string)
 
@@ -519,12 +519,12 @@ func (rc *RepoConfig) GetAllTemplateChains() map[string][]string {
 	return chains
 }
 
-// resolveTemplate recursively resolves a template and all its base templates
+// resolveTemplate recursively resolves a template and all its base templates.
 func (rc *RepoConfig) resolveTemplate(templateName string) (*RepoTemplate, error) {
 	return rc.resolveTemplateWithChain(templateName, []string{})
 }
 
-// resolveTemplateWithChain recursively resolves a template with circular dependency checking
+// resolveTemplateWithChain recursively resolves a template with circular dependency checking.
 func (rc *RepoConfig) resolveTemplateWithChain(templateName string, chain []string) (*RepoTemplate, error) {
 	// Check for circular dependency
 	for _, name := range chain {
@@ -585,14 +585,17 @@ func (rc *RepoConfig) resolveTemplateWithChain(templateName string, chain []stri
 	return result, nil
 }
 
-// GetEffectiveConfig returns the effective configuration for a specific repository
+// GetEffectiveConfig returns the effective configuration for a specific repository.
 func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *SecuritySettings, *PermissionSettings, []PolicyException, error) {
-	var settings *RepoSettings
-	var security *SecuritySettings
-	var permissions *PermissionSettings
-	var exceptions []PolicyException
+	var (
+		settings    *RepoSettings
+		security    *SecuritySettings
+		permissions *PermissionSettings
+		exceptions  []PolicyException
+	)
 
 	// Start with defaults
+
 	if rc.Defaults != nil {
 		if rc.Defaults.Template != "" {
 			template, err := rc.resolveTemplate(rc.Defaults.Template)
@@ -602,6 +605,7 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 				permissions = mergePermissionSettings(permissions, template.Permissions)
 			}
 		}
+
 		settings = mergeRepoSettings(settings, rc.Defaults.Settings)
 		security = mergeSecuritySettings(security, rc.Defaults.Security)
 		permissions = mergePermissionSettings(permissions, rc.Defaults.Permissions)
@@ -620,10 +624,12 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 						permissions = mergePermissionSettings(permissions, template.Permissions)
 					}
 				}
+
 				settings = mergeRepoSettings(settings, specific.Settings)
 				security = mergeSecuritySettings(security, specific.Security)
 				permissions = mergePermissionSettings(permissions, specific.Permissions)
 				exceptions = append(exceptions, specific.Exceptions...)
+
 				return settings, security, permissions, exceptions, nil
 			}
 		}
@@ -639,6 +645,7 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 						permissions = mergePermissionSettings(permissions, template.Permissions)
 					}
 				}
+
 				settings = mergeRepoSettings(settings, pattern.Settings)
 				security = mergeSecuritySettings(security, pattern.Security)
 				permissions = mergePermissionSettings(permissions, pattern.Permissions)
@@ -656,6 +663,7 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 					permissions = mergePermissionSettings(permissions, template.Permissions)
 				}
 			}
+
 			settings = mergeRepoSettings(settings, rc.Repositories.Default.Settings)
 			security = mergeSecuritySettings(security, rc.Repositories.Default.Security)
 			permissions = mergePermissionSettings(permissions, rc.Repositories.Default.Permissions)
@@ -665,7 +673,7 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 	return settings, security, permissions, exceptions, nil
 }
 
-// ValidatePolicyExceptions validates all policy exceptions in the configuration
+// ValidatePolicyExceptions validates all policy exceptions in the configuration.
 func (rc *RepoConfig) ValidatePolicyExceptions() []string {
 	var errors []string
 
@@ -692,7 +700,7 @@ func (rc *RepoConfig) ValidatePolicyExceptions() []string {
 	return errors
 }
 
-// validatePolicyException validates a single policy exception
+// validatePolicyException validates a single policy exception.
 func validatePolicyException(exception PolicyException, policies map[string]*PolicyTemplate) error {
 	// Check if policy exists
 	policy, exists := policies[exception.PolicyName]
@@ -729,7 +737,7 @@ func validatePolicyException(exception PolicyException, policies map[string]*Pol
 	return nil
 }
 
-// GetPolicyExceptionReport generates a report of all policy exceptions
+// GetPolicyExceptionReport generates a report of all policy exceptions.
 func (rc *RepoConfig) GetPolicyExceptionReport() map[string][]PolicyExceptionReport {
 	report := make(map[string][]PolicyExceptionReport)
 
@@ -752,6 +760,7 @@ func (rc *RepoConfig) GetPolicyExceptionReport() map[string][]PolicyExceptionRep
 		for _, pattern := range rc.Repositories.Patterns {
 			if len(pattern.Exceptions) > 0 {
 				patternKey := fmt.Sprintf("pattern:%s", pattern.Match)
+
 				report[patternKey] = make([]PolicyExceptionReport, 0, len(pattern.Exceptions))
 				for _, exception := range pattern.Exceptions {
 					report[patternKey] = append(report[patternKey], PolicyExceptionReport{
@@ -767,14 +776,14 @@ func (rc *RepoConfig) GetPolicyExceptionReport() map[string][]PolicyExceptionRep
 	return report
 }
 
-// PolicyExceptionReport represents a policy exception in the report
+// PolicyExceptionReport represents a policy exception in the report.
 type PolicyExceptionReport struct {
 	Repository string
 	Exception  PolicyException
 	Type       string // "specific" or "pattern"
 }
 
-// IsExceptionActive checks if an exception is currently active
+// IsExceptionActive checks if an exception is currently active.
 func (e PolicyException) IsExceptionActive() bool {
 	if e.ExpiresAt == "" {
 		return true // No expiration means always active
@@ -785,7 +794,7 @@ func (e PolicyException) IsExceptionActive() bool {
 	return true
 }
 
-// mergeRepoSettings merges two RepoSettings, with the second taking precedence
+// mergeRepoSettings merges two RepoSettings, with the second taking precedence.
 func mergeRepoSettings(base, override *RepoSettings) *RepoSettings {
 	if base == nil && override == nil {
 		return nil
@@ -807,43 +816,56 @@ func mergeRepoSettings(base, override *RepoSettings) *RepoSettings {
 		if override.Description != nil {
 			result.Description = override.Description
 		}
+
 		if override.Homepage != nil {
 			result.Homepage = override.Homepage
 		}
+
 		if override.Topics != nil {
 			result.Topics = make([]string, len(override.Topics))
 			copy(result.Topics, override.Topics)
 		}
+
 		if override.Private != nil {
 			result.Private = override.Private
 		}
+
 		if override.Archived != nil {
 			result.Archived = override.Archived
 		}
+
 		if override.HasIssues != nil {
 			result.HasIssues = override.HasIssues
 		}
+
 		if override.HasProjects != nil {
 			result.HasProjects = override.HasProjects
 		}
+
 		if override.HasWiki != nil {
 			result.HasWiki = override.HasWiki
 		}
+
 		if override.HasDownloads != nil {
 			result.HasDownloads = override.HasDownloads
 		}
+
 		if override.AllowSquashMerge != nil {
 			result.AllowSquashMerge = override.AllowSquashMerge
 		}
+
 		if override.AllowMergeCommit != nil {
 			result.AllowMergeCommit = override.AllowMergeCommit
 		}
+
 		if override.AllowRebaseMerge != nil {
 			result.AllowRebaseMerge = override.AllowRebaseMerge
 		}
+
 		if override.DeleteBranchOnMerge != nil {
 			result.DeleteBranchOnMerge = override.DeleteBranchOnMerge
 		}
+
 		if override.DefaultBranch != nil {
 			result.DefaultBranch = override.DefaultBranch
 		}
@@ -852,7 +874,7 @@ func mergeRepoSettings(base, override *RepoSettings) *RepoSettings {
 	return result
 }
 
-// mergeSecuritySettings merges two SecuritySettings, with the second taking precedence
+// mergeSecuritySettings merges two SecuritySettings, with the second taking precedence.
 func mergeSecuritySettings(base, override *SecuritySettings) *SecuritySettings {
 	if base == nil && override == nil {
 		return nil
@@ -885,9 +907,11 @@ func mergeSecuritySettings(base, override *SecuritySettings) *SecuritySettings {
 		if override.VulnerabilityAlerts != nil {
 			result.VulnerabilityAlerts = override.VulnerabilityAlerts
 		}
+
 		if override.SecurityAdvisories != nil {
 			result.SecurityAdvisories = override.SecurityAdvisories
 		}
+
 		if override.PrivateVulnerabilityReporting != nil {
 			result.PrivateVulnerabilityReporting = override.PrivateVulnerabilityReporting
 		}
@@ -907,7 +931,7 @@ func mergeSecuritySettings(base, override *SecuritySettings) *SecuritySettings {
 	return result
 }
 
-// mergePermissionSettings merges two PermissionSettings, with the second taking precedence
+// mergePermissionSettings merges two PermissionSettings, with the second taking precedence.
 func mergePermissionSettings(base, override *PermissionSettings) *PermissionSettings {
 	if base == nil && override == nil {
 		return nil
@@ -923,6 +947,7 @@ func mergePermissionSettings(base, override *PermissionSettings) *PermissionSett
 		for team, perm := range base.TeamPermissions {
 			result.TeamPermissions[team] = perm
 		}
+
 		for user, perm := range base.UserPermissions {
 			result.UserPermissions[user] = perm
 		}
@@ -933,6 +958,7 @@ func mergePermissionSettings(base, override *PermissionSettings) *PermissionSett
 		for team, perm := range override.TeamPermissions {
 			result.TeamPermissions[team] = perm
 		}
+
 		for user, perm := range override.UserPermissions {
 			result.UserPermissions[user] = perm
 		}
@@ -941,7 +967,7 @@ func mergePermissionSettings(base, override *PermissionSettings) *PermissionSett
 	return result
 }
 
-// copyBranchProtectionRule creates a deep copy of a BranchProtectionRule
+// copyBranchProtectionRule creates a deep copy of a BranchProtectionRule.
 func copyBranchProtectionRule(rule *BranchProtectionRule) *BranchProtectionRule {
 	if rule == nil {
 		return nil
@@ -978,7 +1004,7 @@ func copyBranchProtectionRule(rule *BranchProtectionRule) *BranchProtectionRule 
 	return result
 }
 
-// matchPattern checks if a string matches a pattern (simple glob support)
+// matchPattern checks if a string matches a pattern (simple glob support).
 func matchPattern(str, pattern string) (bool, error) {
 	// Simple implementation - can be enhanced with more sophisticated pattern matching
 	if strings.Contains(pattern, "*") {
@@ -986,7 +1012,9 @@ func matchPattern(str, pattern string) (bool, error) {
 		pattern = strings.ReplaceAll(pattern, ".", "\\.")
 		pattern = strings.ReplaceAll(pattern, "*", ".*")
 		pattern = "^" + pattern + "$"
+
 		return strings.Contains(str, strings.Trim(pattern, "^.*$")), nil
 	}
+
 	return str == pattern, nil
 }

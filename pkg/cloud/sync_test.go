@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockProvider implements Provider interface for testing
+// MockProvider implements Provider interface for testing.
 type MockProvider struct {
 	name     string
 	profiles map[string]*Profile
@@ -37,6 +37,7 @@ func (m *MockProvider) GetProfile(ctx context.Context, profileName string) (*Pro
 	if profile, exists := m.profiles[profileName]; exists {
 		return profile, nil
 	}
+
 	return nil, fmt.Errorf("profile not found: %s", profileName)
 }
 
@@ -45,6 +46,7 @@ func (m *MockProvider) ListProfiles(ctx context.Context) ([]*Profile, error) {
 	for _, profile := range m.profiles {
 		profiles = append(profiles, profile)
 	}
+
 	return profiles, nil
 }
 
@@ -554,6 +556,7 @@ func TestValidateSyncConfig(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorMsg != "" {
 					assert.Contains(t, err.Error(), tt.errorMsg)
 				}

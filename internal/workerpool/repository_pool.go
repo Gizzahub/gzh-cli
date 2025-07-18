@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// RepositoryOperation represents a repository operation type
+// RepositoryOperation represents a repository operation type.
 type RepositoryOperation string
 
 const (
@@ -17,7 +17,7 @@ const (
 	OperationConfig RepositoryOperation = "config"
 )
 
-// RepositoryJob represents a repository operation job
+// RepositoryJob represents a repository operation job.
 type RepositoryJob struct {
 	Repository string
 	Operation  RepositoryOperation
@@ -27,7 +27,7 @@ type RepositoryJob struct {
 	Config     map[string]interface{} // For configuration operations
 }
 
-// RepositoryResult represents the result of a repository operation
+// RepositoryResult represents the result of a repository operation.
 type RepositoryResult struct {
 	Job      RepositoryJob
 	Success  bool
@@ -36,7 +36,7 @@ type RepositoryResult struct {
 	Message  string
 }
 
-// RepositoryPoolConfig represents configuration for repository operations
+// RepositoryPoolConfig represents configuration for repository operations.
 type RepositoryPoolConfig struct {
 	// CloneWorkers specifies concurrent workers for clone operations
 	CloneWorkers int
@@ -52,7 +52,7 @@ type RepositoryPoolConfig struct {
 	RetryDelay time.Duration
 }
 
-// DefaultRepositoryPoolConfig returns default configuration for repository operations
+// DefaultRepositoryPoolConfig returns default configuration for repository operations.
 func DefaultRepositoryPoolConfig() RepositoryPoolConfig {
 	return RepositoryPoolConfig{
 		CloneWorkers:     10, // I/O bound, can handle more concurrency
@@ -64,7 +64,7 @@ func DefaultRepositoryPoolConfig() RepositoryPoolConfig {
 	}
 }
 
-// RepositoryWorkerPool manages repository operations with operation-specific worker pools
+// RepositoryWorkerPool manages repository operations with operation-specific worker pools.
 type RepositoryWorkerPool struct {
 	config     RepositoryPoolConfig
 	clonePool  *Pool[RepositoryJob]
@@ -75,7 +75,7 @@ type RepositoryWorkerPool struct {
 	cancel     context.CancelFunc
 }
 
-// NewRepositoryWorkerPool creates a new repository worker pool
+// NewRepositoryWorkerPool creates a new repository worker pool.
 func NewRepositoryWorkerPool(config RepositoryPoolConfig) *RepositoryWorkerPool {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -109,7 +109,7 @@ func NewRepositoryWorkerPool(config RepositoryPoolConfig) *RepositoryWorkerPool 
 	}
 }
 
-// Start initializes and starts all worker pools
+// Start initializes and starts all worker pools.
 func (rp *RepositoryWorkerPool) Start() error {
 	if err := rp.clonePool.Start(); err != nil {
 		return fmt.Errorf("failed to start clone pool: %w", err)
@@ -123,6 +123,7 @@ func (rp *RepositoryWorkerPool) Start() error {
 	if err := rp.configPool.Start(); err != nil {
 		rp.clonePool.Stop()
 		rp.updatePool.Stop()
+
 		return fmt.Errorf("failed to start config pool: %w", err)
 	}
 
@@ -134,7 +135,7 @@ func (rp *RepositoryWorkerPool) Start() error {
 	return nil
 }
 
-// Stop gracefully shuts down all worker pools
+// Stop gracefully shuts down all worker pools.
 func (rp *RepositoryWorkerPool) Stop() {
 	rp.cancel()
 	rp.clonePool.Stop()
@@ -143,7 +144,7 @@ func (rp *RepositoryWorkerPool) Stop() {
 	close(rp.results)
 }
 
-// SubmitJob submits a repository job to the appropriate worker pool
+// SubmitJob submits a repository job to the appropriate worker pool.
 func (rp *RepositoryWorkerPool) SubmitJob(job RepositoryJob,
 	processFn func(context.Context, RepositoryJob) error,
 ) error {
@@ -166,12 +167,12 @@ func (rp *RepositoryWorkerPool) SubmitJob(job RepositoryJob,
 	return pool.Submit(job, wrappedFn)
 }
 
-// Results returns a channel to receive job results
+// Results returns a channel to receive job results.
 func (rp *RepositoryWorkerPool) Results() <-chan RepositoryResult {
 	return rp.results
 }
 
-// ProcessRepositories processes a batch of repository jobs
+// ProcessRepositories processes a batch of repository jobs.
 func (rp *RepositoryWorkerPool) ProcessRepositories(ctx context.Context,
 	jobs []RepositoryJob, processFn func(context.Context, RepositoryJob) error,
 ) ([]RepositoryResult, error) {
@@ -200,7 +201,7 @@ func (rp *RepositoryWorkerPool) ProcessRepositories(ctx context.Context,
 	return results, nil
 }
 
-// collectResults collects results from a worker pool and forwards them
+// collectResults collects results from a worker pool and forwards them.
 func (rp *RepositoryWorkerPool) collectResults(resultsChan <-chan Result[RepositoryJob], poolType string) {
 	for result := range resultsChan {
 		repoResult := RepositoryResult{
@@ -218,7 +219,7 @@ func (rp *RepositoryWorkerPool) collectResults(resultsChan <-chan Result[Reposit
 	}
 }
 
-// wrapWithRetry wraps a processing function with retry logic
+// wrapWithRetry wraps a processing function with retry logic.
 func (rp *RepositoryWorkerPool) wrapWithRetry(
 	processFn func(context.Context, RepositoryJob) error,
 ) func(context.Context, RepositoryJob) error {
@@ -245,6 +246,7 @@ func (rp *RepositoryWorkerPool) wrapWithRetry(
 					fmt.Printf("Repository %s succeeded on attempt %d (took %v)\n",
 						job.Repository, attempt+1, duration)
 				}
+
 				return nil
 			}
 
@@ -266,7 +268,7 @@ func (rp *RepositoryWorkerPool) wrapWithRetry(
 	}
 }
 
-// isRetryableError determines if an error is worth retrying
+// isRetryableError determines if an error is worth retrying.
 func isRetryableError(err error) bool {
 	if err == nil {
 		return false
@@ -294,7 +296,7 @@ func isRetryableError(err error) bool {
 	return false
 }
 
-// contains checks if a string contains a substring (case-insensitive)
+// contains checks if a string contains a substring (case-insensitive).
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) &&
 		(s == substr ||
@@ -310,5 +312,6 @@ func containsInner(s, substr string) bool {
 			return true
 		}
 	}
+
 	return false
 }

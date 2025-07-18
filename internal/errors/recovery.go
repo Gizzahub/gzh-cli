@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// ErrorRecovery provides advanced error handling and recovery capabilities
+// ErrorRecovery provides advanced error handling and recovery capabilities.
 type ErrorRecovery struct {
 	logger       Logger
 	maxRetries   int
@@ -19,7 +19,7 @@ type ErrorRecovery struct {
 	recoveryFunc func(error) error
 }
 
-// Logger interface for error recovery
+// Logger interface for error recovery.
 type Logger interface {
 	Error(msg string, args ...interface{})
 	Warn(msg string, args ...interface{})
@@ -27,7 +27,7 @@ type Logger interface {
 	Debug(msg string, args ...interface{})
 }
 
-// RecoveryConfig configures error recovery behavior
+// RecoveryConfig configures error recovery behavior.
 type RecoveryConfig struct {
 	MaxRetries       int
 	RetryDelay       time.Duration
@@ -37,7 +37,7 @@ type RecoveryConfig struct {
 	RecoveryFunc     func(error) error
 }
 
-// ErrorType represents different types of errors
+// ErrorType represents different types of errors.
 type ErrorType string
 
 const (
@@ -50,7 +50,7 @@ const (
 	ErrorTypeUnknown    ErrorType = "unknown"
 )
 
-// RecoverableError represents an error that can be recovered from
+// RecoverableError represents an error that can be recovered from.
 type RecoverableError struct {
 	Type       ErrorType
 	Message    string
@@ -69,16 +69,17 @@ func (e *RecoverableError) Unwrap() error {
 	return e.Cause
 }
 
-// IsRetryable returns whether the error can be retried
+// IsRetryable returns whether the error can be retried.
 func (e *RecoverableError) IsRetryable() bool {
 	return e.Retryable
 }
 
-// NewErrorRecovery creates a new error recovery system
+// NewErrorRecovery creates a new error recovery system.
 func NewErrorRecovery(config RecoveryConfig) *ErrorRecovery {
 	if config.MaxRetries == 0 {
 		config.MaxRetries = 3
 	}
+
 	if config.RetryDelay == 0 {
 		config.RetryDelay = time.Second
 	}
@@ -92,7 +93,7 @@ func NewErrorRecovery(config RecoveryConfig) *ErrorRecovery {
 	}
 }
 
-// NewRecoverableError creates a new recoverable error
+// NewRecoverableError creates a new recoverable error.
 func NewRecoverableError(errType ErrorType, message string, cause error, retryable bool) *RecoverableError {
 	return &RecoverableError{
 		Type:       errType,
@@ -105,20 +106,20 @@ func NewRecoverableError(errType ErrorType, message string, cause error, retryab
 	}
 }
 
-// WithContext adds context to the error
+// WithContext adds context to the error.
 func (e *RecoverableError) WithContext(key string, value interface{}) *RecoverableError {
 	e.Context[key] = value
 	return e
 }
 
-// Execute runs a function with automatic retry and recovery
+// Execute runs a function with automatic retry and recovery.
 func (er *ErrorRecovery) Execute(ctx context.Context, operation string, fn func() error) error {
 	return er.ExecuteWithResult(ctx, operation, func() (interface{}, error) {
 		return nil, fn()
 	})
 }
 
-// ExecuteWithResult runs a function with return value and automatic retry
+// ExecuteWithResult runs a function with return value and automatic retry.
 func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string, fn func() (interface{}, error)) error {
 	var lastErr error
 
@@ -140,13 +141,15 @@ func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string
 			if attempt > 0 {
 				er.logger.Info("Operation succeeded after retry", "operation", operation, "attempts", attempt+1)
 			}
+
 			return nil
 		}
 
 		lastErr = err
 
 		// Check if error is recoverable
-		if recErr, ok := err.(*RecoverableError); ok {
+		recErr := &RecoverableError{}
+		if errors.As(err, &recErr) {
 			if !recErr.IsRetryable() {
 				er.logger.Error("Non-retryable error encountered", "operation", operation, "error", err)
 				return err
@@ -176,7 +179,7 @@ func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string
 	return fmt.Errorf("operation failed after %d attempts: %w", er.maxRetries+1, lastErr)
 }
 
-// RecoverPanic recovers from panics and converts them to errors
+// RecoverPanic recovers from panics and converts them to errors.
 func (er *ErrorRecovery) RecoverPanic() {
 	if r := recover(); r != nil {
 		stack := string(debug.Stack())
@@ -192,7 +195,7 @@ func (er *ErrorRecovery) RecoverPanic() {
 	}
 }
 
-// WithPanicRecovery wraps a function with panic recovery
+// WithPanicRecovery wraps a function with panic recovery.
 func (er *ErrorRecovery) WithPanicRecovery(fn func()) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -210,20 +213,22 @@ func (er *ErrorRecovery) WithPanicRecovery(fn func()) (err error) {
 	}()
 
 	fn()
+
 	return nil
 }
 
-// calculateBackoff calculates the backoff delay for retries
+// calculateBackoff calculates the backoff delay for retries.
 func (er *ErrorRecovery) calculateBackoff(attempt int) time.Duration {
 	// Exponential backoff with jitter
 	delay := er.retryDelay * time.Duration(1<<uint(attempt))
 	if delay > 30*time.Second {
 		delay = 30 * time.Second
 	}
+
 	return delay
 }
 
-// CircuitBreaker implements a simple circuit breaker pattern
+// CircuitBreaker implements a simple circuit breaker pattern.
 type CircuitBreaker struct {
 	maxFailures int
 	resetTime   time.Duration
@@ -233,7 +238,7 @@ type CircuitBreaker struct {
 	mu          sync.RWMutex
 }
 
-// CircuitState represents the state of a circuit breaker
+// CircuitState represents the state of a circuit breaker.
 type CircuitState int
 
 const (
@@ -255,7 +260,7 @@ func (s CircuitState) String() string {
 	}
 }
 
-// NewCircuitBreaker creates a new circuit breaker
+// NewCircuitBreaker creates a new circuit breaker.
 func NewCircuitBreaker(maxFailures int, resetTime time.Duration) *CircuitBreaker {
 	return &CircuitBreaker{
 		maxFailures: maxFailures,
@@ -264,7 +269,7 @@ func NewCircuitBreaker(maxFailures int, resetTime time.Duration) *CircuitBreaker
 	}
 }
 
-// Execute executes a function through the circuit breaker
+// Execute executes a function through the circuit breaker.
 func (cb *CircuitBreaker) Execute(fn func() error) error {
 	if !cb.allowRequest() {
 		return fmt.Errorf("circuit breaker is open")
@@ -272,10 +277,11 @@ func (cb *CircuitBreaker) Execute(fn func() error) error {
 
 	err := fn()
 	cb.recordResult(err)
+
 	return err
 }
 
-// allowRequest checks if a request should be allowed
+// allowRequest checks if a request should be allowed.
 func (cb *CircuitBreaker) allowRequest() bool {
 	cb.mu.RLock()
 	defer cb.mu.RUnlock()
@@ -292,7 +298,7 @@ func (cb *CircuitBreaker) allowRequest() bool {
 	}
 }
 
-// recordResult records the result of an operation
+// recordResult records the result of an operation.
 func (cb *CircuitBreaker) recordResult(err error) {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
@@ -310,14 +316,15 @@ func (cb *CircuitBreaker) recordResult(err error) {
 	}
 }
 
-// GetState returns the current state of the circuit breaker
+// GetState returns the current state of the circuit breaker.
 func (cb *CircuitBreaker) GetState() CircuitState {
 	cb.mu.RLock()
 	defer cb.mu.RUnlock()
+
 	return cb.state
 }
 
-// GetMemoryStats returns current memory statistics
+// GetMemoryStats returns current memory statistics.
 func GetMemoryStats() map[string]interface{} {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -337,7 +344,7 @@ func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
 }
 
-// HealthCheck represents a system health check
+// HealthCheck represents a system health check.
 type HealthCheck struct {
 	Name        string
 	Description string
@@ -345,13 +352,13 @@ type HealthCheck struct {
 	Timeout     time.Duration
 }
 
-// HealthMonitor monitors system health
+// HealthMonitor monitors system health.
 type HealthMonitor struct {
 	checks []HealthCheck
 	logger Logger
 }
 
-// NewHealthMonitor creates a new health monitor
+// NewHealthMonitor creates a new health monitor.
 func NewHealthMonitor(logger Logger) *HealthMonitor {
 	return &HealthMonitor{
 		checks: make([]HealthCheck, 0),
@@ -359,18 +366,21 @@ func NewHealthMonitor(logger Logger) *HealthMonitor {
 	}
 }
 
-// AddCheck adds a health check
+// AddCheck adds a health check.
 func (hm *HealthMonitor) AddCheck(check HealthCheck) {
 	hm.checks = append(hm.checks, check)
 }
 
-// RunChecks runs all health checks
+// RunChecks runs all health checks.
 func (hm *HealthMonitor) RunChecks(ctx context.Context) map[string]error {
 	results := make(map[string]error)
 
 	for _, check := range hm.checks {
-		var checkCtx context.Context = ctx
-		var cancel context.CancelFunc
+		var (
+			checkCtx context.Context = ctx
+			cancel   context.CancelFunc
+		)
+
 		if check.Timeout > 0 {
 			checkCtx, cancel = context.WithTimeout(ctx, check.Timeout)
 			defer cancel()
@@ -392,7 +402,6 @@ func (hm *HealthMonitor) RunChecks(ctx context.Context) map[string]error {
 		}()
 
 		results[check.Name] = err
-
 		if err != nil {
 			hm.logger.Warn("Health check failed", "check", check.Name, "error", err)
 		} else {

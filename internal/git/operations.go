@@ -11,19 +11,19 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/gitplatform"
 )
 
-// Operations provides common git operations
+// Operations provides common git operations.
 type Operations struct {
 	verbose bool
 }
 
-// NewOperations creates a new git operations handler
+// NewOperations creates a new git operations handler.
 func NewOperations(verbose bool) *Operations {
 	return &Operations{
 		verbose: verbose,
 	}
 }
 
-// Clone clones a repository to the specified path
+// Clone clones a repository to the specified path.
 func (o *Operations) Clone(cloneURL, targetPath string) error {
 	// Ensure parent directory exists
 	parentDir := filepath.Dir(targetPath)
@@ -45,7 +45,7 @@ func (o *Operations) Clone(cloneURL, targetPath string) error {
 	return nil
 }
 
-// ExecuteStrategy executes the specified git strategy in the repository path
+// ExecuteStrategy executes the specified git strategy in the repository path.
 func (o *Operations) ExecuteStrategy(repoPath string, strategy gitplatform.CloneStrategy) error {
 	switch strategy {
 	case gitplatform.StrategyReset:
@@ -59,13 +59,14 @@ func (o *Operations) ExecuteStrategy(repoPath string, strategy gitplatform.Clone
 	}
 }
 
-// resetStrategy performs git reset --hard and git pull
+// resetStrategy performs git reset --hard and git pull.
 func (o *Operations) resetStrategy(repoPath string) error {
 	// First, reset any local changes
 	resetCmd := exec.Command("git", "reset", "--hard")
 	resetCmd.Dir = repoPath
 
 	var resetBuf bytes.Buffer
+
 	resetCmd.Stdout = &resetBuf
 	resetCmd.Stderr = &resetBuf
 
@@ -78,6 +79,7 @@ func (o *Operations) resetStrategy(repoPath string) error {
 	pullCmd.Dir = repoPath
 
 	var pullBuf bytes.Buffer
+
 	pullCmd.Stdout = &pullBuf
 	pullCmd.Stderr = &pullBuf
 
@@ -92,12 +94,13 @@ func (o *Operations) resetStrategy(repoPath string) error {
 	return nil
 }
 
-// pullStrategy performs git pull
+// pullStrategy performs git pull.
 func (o *Operations) pullStrategy(repoPath string) error {
 	pullCmd := exec.Command("git", "pull")
 	pullCmd.Dir = repoPath
 
 	var buf bytes.Buffer
+
 	pullCmd.Stdout = &buf
 	pullCmd.Stderr = &buf
 
@@ -112,12 +115,13 @@ func (o *Operations) pullStrategy(repoPath string) error {
 	return nil
 }
 
-// fetchStrategy performs git fetch
+// fetchStrategy performs git fetch.
 func (o *Operations) fetchStrategy(repoPath string) error {
 	fetchCmd := exec.Command("git", "fetch")
 	fetchCmd.Dir = repoPath
 
 	var buf bytes.Buffer
+
 	fetchCmd.Stdout = &buf
 	fetchCmd.Stderr = &buf
 
@@ -132,17 +136,19 @@ func (o *Operations) fetchStrategy(repoPath string) error {
 	return nil
 }
 
-// IsGitRepository checks if a directory is a git repository
+// IsGitRepository checks if a directory is a git repository.
 func IsGitRepository(path string) bool {
 	gitDir := filepath.Join(path, ".git")
+
 	info, err := os.Stat(gitDir)
 	if err != nil {
 		return false
 	}
+
 	return info.IsDir()
 }
 
-// GetRemoteURL gets the remote URL for a repository
+// GetRemoteURL gets the remote URL for a repository.
 func GetRemoteURL(repoPath string) (string, error) {
 	cmd := exec.Command("git", "remote", "get-url", "origin")
 	cmd.Dir = repoPath
@@ -155,7 +161,7 @@ func GetRemoteURL(repoPath string) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// GetCurrentBranch gets the current branch name
+// GetCurrentBranch gets the current branch name.
 func GetCurrentBranch(repoPath string) (string, error) {
 	cmd := exec.Command("git", "branch", "--show-current")
 	cmd.Dir = repoPath
@@ -168,12 +174,13 @@ func GetCurrentBranch(repoPath string) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// CheckoutBranch checks out a specific branch
+// CheckoutBranch checks out a specific branch.
 func CheckoutBranch(repoPath, branch string) error {
 	cmd := exec.Command("git", "checkout", branch)
 	cmd.Dir = repoPath
 
 	var buf bytes.Buffer
+
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
 
@@ -184,7 +191,7 @@ func CheckoutBranch(repoPath, branch string) error {
 	return nil
 }
 
-// HasUncommittedChanges checks if the repository has uncommitted changes
+// HasUncommittedChanges checks if the repository has uncommitted changes.
 func HasUncommittedChanges(repoPath string) (bool, error) {
 	cmd := exec.Command("git", "status", "--porcelain")
 	cmd.Dir = repoPath

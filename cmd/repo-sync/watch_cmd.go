@@ -18,7 +18,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newWatchCmd creates the watch subcommand for real-time file system monitoring
+// newWatchCmd creates the watch subcommand for real-time file system monitoring.
 func newWatchCmd(logger *zap.Logger) *cobra.Command {
 	var (
 		configFile     string
@@ -118,7 +118,7 @@ Examples:
 	return cmd
 }
 
-// RepositoryWatcher handles efficient file system monitoring for Git repositories
+// RepositoryWatcher handles efficient file system monitoring for Git repositories.
 type RepositoryWatcher struct {
 	logger  *zap.Logger
 	config  *RepoSyncConfig
@@ -130,7 +130,7 @@ type RepositoryWatcher struct {
 	stats   WatcherStats
 }
 
-// WatcherStats tracks statistics about the file watcher
+// WatcherStats tracks statistics about the file watcher.
 type WatcherStats struct {
 	StartTime        time.Time `json:"start_time"`
 	TotalEvents      int64     `json:"total_events"`
@@ -140,7 +140,7 @@ type WatcherStats struct {
 	ErrorCount       int64     `json:"error_count"`
 }
 
-// NewRepositoryWatcher creates a new repository file system watcher
+// NewRepositoryWatcher creates a new repository file system watcher.
 func NewRepositoryWatcher(logger *zap.Logger, config *RepoSyncConfig) (*RepositoryWatcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -159,7 +159,7 @@ func NewRepositoryWatcher(logger *zap.Logger, config *RepoSyncConfig) (*Reposito
 	}, nil
 }
 
-// Start begins watching the repository for file changes
+// Start begins watching the repository for file changes.
 func (rw *RepositoryWatcher) Start(ctx context.Context, verbose bool) error {
 	rw.mu.Lock()
 	rw.running = true
@@ -189,6 +189,7 @@ func (rw *RepositoryWatcher) Start(ctx context.Context, verbose bool) error {
 		case sig := <-sigChan:
 			fmt.Printf("\n🛑 Received signal %v, stopping watcher\n", sig)
 			rw.printStats()
+
 			return nil
 
 		case event, ok := <-rw.watcher.Events:
@@ -196,6 +197,7 @@ func (rw *RepositoryWatcher) Start(ctx context.Context, verbose bool) error {
 				rw.logger.Info("Watcher events channel closed")
 				return nil
 			}
+
 			rw.handleFileEvent(event)
 
 		case err, ok := <-rw.watcher.Errors:
@@ -203,13 +205,14 @@ func (rw *RepositoryWatcher) Start(ctx context.Context, verbose bool) error {
 				rw.logger.Info("Watcher errors channel closed")
 				return nil
 			}
+
 			rw.logger.Error("File watcher error", zap.Error(err))
 			rw.stats.ErrorCount++
 		}
 	}
 }
 
-// Close stops the file watcher and cleans up resources
+// Close stops the file watcher and cleans up resources.
 func (rw *RepositoryWatcher) Close() error {
 	rw.mu.Lock()
 	defer rw.mu.Unlock()
@@ -218,12 +221,14 @@ func (rw *RepositoryWatcher) Close() error {
 		rw.running = false
 		close(rw.events)
 		close(rw.batches)
+
 		return rw.watcher.Close()
 	}
+
 	return nil
 }
 
-// addDirectoryRecursively adds a directory and all its subdirectories to the watcher
+// addDirectoryRecursively adds a directory and all its subdirectories to the watcher.
 func (rw *RepositoryWatcher) addDirectoryRecursively(dir string) error {
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -254,7 +259,7 @@ func (rw *RepositoryWatcher) addDirectoryRecursively(dir string) error {
 	})
 }
 
-// handleFileEvent processes a single file system event
+// handleFileEvent processes a single file system event.
 func (rw *RepositoryWatcher) handleFileEvent(event fsnotify.Event) {
 	// Skip if file should be ignored
 	if rw.shouldIgnore(event.Name) {
@@ -298,7 +303,7 @@ func (rw *RepositoryWatcher) handleFileEvent(event fsnotify.Event) {
 	}
 }
 
-// processFileEvents collects events into batches for efficient processing
+// processFileEvents collects events into batches for efficient processing.
 func (rw *RepositoryWatcher) processFileEvents(ctx context.Context) {
 	ticker := time.NewTicker(rw.config.BatchTimeout)
 	defer ticker.Stop()
@@ -313,6 +318,7 @@ func (rw *RepositoryWatcher) processFileEvents(ctx context.Context) {
 			if len(currentBatch) > 0 {
 				rw.sendBatch(currentBatch, batchStartTime)
 			}
+
 			return
 
 		case event, ok := <-rw.events:
@@ -321,6 +327,7 @@ func (rw *RepositoryWatcher) processFileEvents(ctx context.Context) {
 				if len(currentBatch) > 0 {
 					rw.sendBatch(currentBatch, batchStartTime)
 				}
+
 				return
 			}
 
@@ -332,6 +339,7 @@ func (rw *RepositoryWatcher) processFileEvents(ctx context.Context) {
 				rw.sendBatch(currentBatch, batchStartTime)
 				currentBatch = currentBatch[:0] // Clear batch
 				batchStartTime = time.Now()
+
 				ticker.Reset(rw.config.BatchTimeout)
 			}
 
@@ -346,7 +354,7 @@ func (rw *RepositoryWatcher) processFileEvents(ctx context.Context) {
 	}
 }
 
-// sendBatch creates and sends a batch of file change events
+// sendBatch creates and sends a batch of file change events.
 func (rw *RepositoryWatcher) sendBatch(events []FileChangeEvent, startTime time.Time) {
 	// Deduplicate events for the same file (keep the latest)
 	deduped := rw.deduplicateEvents(events)
@@ -367,7 +375,7 @@ func (rw *RepositoryWatcher) sendBatch(events []FileChangeEvent, startTime time.
 	}
 }
 
-// deduplicateEvents removes duplicate events for the same file, keeping the latest
+// deduplicateEvents removes duplicate events for the same file, keeping the latest.
 func (rw *RepositoryWatcher) deduplicateEvents(events []FileChangeEvent) []FileChangeEvent {
 	eventMap := make(map[string]FileChangeEvent)
 
@@ -387,7 +395,7 @@ func (rw *RepositoryWatcher) deduplicateEvents(events []FileChangeEvent) []FileC
 	return deduped
 }
 
-// processBatches handles batches of file change events
+// processBatches handles batches of file change events.
 func (rw *RepositoryWatcher) processBatches(ctx context.Context, verbose bool) {
 	for {
 		select {
@@ -404,7 +412,7 @@ func (rw *RepositoryWatcher) processBatches(ctx context.Context, verbose bool) {
 	}
 }
 
-// processBatch processes a single batch of file change events
+// processBatch processes a single batch of file change events.
 func (rw *RepositoryWatcher) processBatch(batch FileChangeBatch, verbose bool) {
 	startTime := time.Now()
 
@@ -434,16 +442,21 @@ func (rw *RepositoryWatcher) processBatch(batch FileChangeBatch, verbose bool) {
 
 	if len(operationCounts) > 0 {
 		fmt.Printf(" (")
+
 		first := true
 		for op, count := range operationCounts {
 			if !first {
 				fmt.Printf(", ")
 			}
+
 			fmt.Printf("%d %s", count, op)
+
 			first = false
 		}
+
 		fmt.Printf(")")
 	}
+
 	fmt.Println()
 
 	// Auto-commit if enabled
@@ -452,14 +465,13 @@ func (rw *RepositoryWatcher) processBatch(batch FileChangeBatch, verbose bool) {
 	}
 }
 
-// performAutoCommit automatically commits changes if enabled
+// performAutoCommit automatically commits changes if enabled.
 func (rw *RepositoryWatcher) performAutoCommit(batch FileChangeBatch) {
 	// Git auto-commit integration placeholder - implement Git command integration
 	// This would integrate with Git commands to:
 	// 1. Stage modified files
 	// 2. Create commit with batch information
 	// 3. Handle merge conflicts if they occur
-
 	rw.logger.Info("Auto-commit triggered",
 		zap.String("batchId", batch.BatchID),
 		zap.Int("events", batch.TotalEvents))
@@ -469,7 +481,7 @@ func (rw *RepositoryWatcher) performAutoCommit(batch FileChangeBatch) {
 
 // Helper methods
 
-// shouldIgnore checks if a path should be ignored based on ignore patterns
+// shouldIgnore checks if a path should be ignored based on ignore patterns.
 func (rw *RepositoryWatcher) shouldIgnore(path string) bool {
 	for _, pattern := range rw.config.IgnorePatterns {
 		if matched, _ := filepath.Match(pattern, path); matched {
@@ -484,10 +496,11 @@ func (rw *RepositoryWatcher) shouldIgnore(path string) bool {
 			}
 		}
 	}
+
 	return false
 }
 
-// matchesWatchPatterns checks if a path matches any watch patterns
+// matchesWatchPatterns checks if a path matches any watch patterns.
 func (rw *RepositoryWatcher) matchesWatchPatterns(path string) bool {
 	// If no patterns specified, watch everything
 	if len(rw.config.WatchPatterns) == 0 {
@@ -523,10 +536,11 @@ func (rw *RepositoryWatcher) matchesWatchPatterns(path string) bool {
 			}
 		}
 	}
+
 	return false
 }
 
-// mapOperation converts fsnotify operations to readable strings
+// mapOperation converts fsnotify operations to readable strings.
 func (rw *RepositoryWatcher) mapOperation(op fsnotify.Op) string {
 	switch {
 	case op&fsnotify.Create == fsnotify.Create:
@@ -544,7 +558,7 @@ func (rw *RepositoryWatcher) mapOperation(op fsnotify.Op) string {
 	}
 }
 
-// getOperationEmoji returns an emoji for the operation type
+// getOperationEmoji returns an emoji for the operation type.
 func (rw *RepositoryWatcher) getOperationEmoji(operation string) string {
 	switch operation {
 	case "create":
@@ -562,15 +576,16 @@ func (rw *RepositoryWatcher) getOperationEmoji(operation string) string {
 	}
 }
 
-// isDirectory checks if a path is a directory
+// isDirectory checks if a path is a directory.
 func (rw *RepositoryWatcher) isDirectory(path string) bool {
 	if stat, err := os.Stat(path); err == nil {
 		return stat.IsDir()
 	}
+
 	return false
 }
 
-// calculateChecksum calculates SHA256 checksum of a file
+// calculateChecksum calculates SHA256 checksum of a file.
 func (rw *RepositoryWatcher) calculateChecksum(path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -586,19 +601,23 @@ func (rw *RepositoryWatcher) calculateChecksum(path string) (string, error) {
 	return fmt.Sprintf("%x", hasher.Sum(nil)), nil
 }
 
-// printStats prints current watcher statistics
+// printStats prints current watcher statistics.
 func (rw *RepositoryWatcher) printStats() {
 	uptime := time.Since(rw.stats.StartTime)
+
 	fmt.Printf("\n📊 Watcher Statistics:\n")
 	fmt.Printf("   Uptime: %v\n", uptime.Round(time.Second))
 	fmt.Printf("   Total Events: %d\n", rw.stats.TotalEvents)
 	fmt.Printf("   Batches Processed: %d\n", rw.stats.BatchesProcessed)
 	fmt.Printf("   Files Modified: %d\n", rw.stats.FilesModified)
+
 	if !rw.stats.LastEventTime.IsZero() {
 		fmt.Printf("   Last Event: %v ago\n", time.Since(rw.stats.LastEventTime).Round(time.Second))
 	}
+
 	if rw.stats.ErrorCount > 0 {
 		fmt.Printf("   Errors: %d\n", rw.stats.ErrorCount)
 	}
+
 	fmt.Println()
 }

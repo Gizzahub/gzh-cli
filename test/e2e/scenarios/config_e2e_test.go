@@ -293,6 +293,7 @@ providers:
 		// Verify backup file was created (filename would include timestamp)
 		files := env.ListFiles(".")
 		backupFound := false
+
 		for _, file := range files {
 			if strings.Contains(file, "config") && strings.Contains(file, "backup") {
 				backupFound = true

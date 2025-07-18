@@ -22,6 +22,7 @@ type awsOptions struct {
 
 func defaultAwsOptions() *awsOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &awsOptions{
 		configPath: filepath.Join(homeDir, ".aws", "config"),
 		storePath:  filepath.Join(homeDir, ".gz", "aws-configs"),
@@ -194,9 +195,11 @@ func (o *awsOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✅ AWS config saved as '%s'\n", o.name)
+
 	if o.description != "" {
 		fmt.Printf("   Description: %s\n", o.description)
 	}
+
 	fmt.Printf("   Saved to: %s\n", savedPath)
 
 	return nil
@@ -216,6 +219,7 @@ func (o *awsOptions) runLoad(_ *cobra.Command, args []string) error {
 			if err := o.copyFile(o.configPath, backupPath); err != nil {
 				return fmt.Errorf("failed to backup current AWS config: %w", err)
 			}
+
 			fmt.Printf("📦 Current AWS config backed up to: %s\n", backupPath)
 		}
 	}
@@ -257,6 +261,7 @@ func (o *awsOptions) runList(_ *cobra.Command, args []string) error {
 
 	// Filter for .config files
 	var configs []string
+
 	for _, entry := range entries {
 		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".config") {
 			name := strings.TrimSuffix(entry.Name(), ".config")
@@ -275,9 +280,11 @@ func (o *awsOptions) runList(_ *cobra.Command, args []string) error {
 	for _, name := range configs {
 		metadata := o.loadMetadata(name)
 		fmt.Printf("☁️ %s\n", name)
+
 		if metadata.Description != "" {
 			fmt.Printf("   Description: %s\n", metadata.Description)
 		}
+
 		if !metadata.SavedAt.IsZero() {
 			fmt.Printf("   Saved: %s\n", metadata.SavedAt.Format("2006-01-02 15:04:05"))
 		}
@@ -314,6 +321,7 @@ func (o *awsOptions) saveMetadata() error {
 	}
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
+
 	file, err := os.Create(metadataPath)
 	if err != nil {
 		return err
@@ -324,6 +332,7 @@ func (o *awsOptions) saveMetadata() error {
 	if metadata.Description != "" {
 		fmt.Fprintf(file, "description=%s\n", metadata.Description)
 	}
+
 	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
 	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
 
@@ -334,6 +343,7 @@ func (o *awsOptions) loadMetadata(name string) awsMetadata {
 	metadata := awsMetadata{Name: name}
 
 	metadataPath := filepath.Join(o.storePath, name+".meta")
+
 	content, err := os.ReadFile(metadataPath)
 	if err != nil {
 		return metadata
@@ -407,14 +417,18 @@ func (o *awsOptions) displayConfigInfo(configPath string) error {
 	// Display profile information
 	if len(profiles) > 0 {
 		fmt.Printf("   Profiles: %d configured\n", len(profiles))
+
 		for _, profile := range profiles {
 			fmt.Printf("     - %s", profile.Name)
+
 			if profile.Region != "" {
 				fmt.Printf(" (region: %s)", profile.Region)
 			}
+
 			if profile.Output != "" {
 				fmt.Printf(" (output: %s)", profile.Output)
 			}
+
 			fmt.Println()
 		}
 	}
@@ -429,8 +443,10 @@ type awsProfile struct {
 }
 
 func (o *awsOptions) parseAwsConfig(content string) []awsProfile {
-	var profiles []awsProfile
-	var currentProfile *awsProfile
+	var (
+		profiles       []awsProfile
+		currentProfile *awsProfile
+	)
 
 	lines := strings.Split(content, "\n")
 	for _, line := range lines {
@@ -454,6 +470,7 @@ func (o *awsOptions) parseAwsConfig(content string) []awsProfile {
 			}
 
 			currentProfile = &awsProfile{Name: profileName}
+
 			continue
 		}
 

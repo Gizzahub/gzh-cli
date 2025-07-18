@@ -78,6 +78,7 @@ func (o *genConfigTemplateOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✅ Configuration template '%s' generated: %s\n", templateName, o.outputFile)
+
 	return nil
 }
 

@@ -15,7 +15,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// ConditionEvaluator provides functionality to evaluate automation rule conditions
+// ConditionEvaluator provides functionality to evaluate automation rule conditions.
 type ConditionEvaluator interface {
 	// Core evaluation methods
 	EvaluateConditions(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent, context *EvaluationContext) (*EvaluationResult, error)
@@ -32,7 +32,7 @@ type ConditionEvaluator interface {
 	ExplainEvaluation(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent) (*EvaluationExplanation, error)
 }
 
-// EvaluationContext provides additional context for condition evaluation
+// EvaluationContext provides additional context for condition evaluation.
 type EvaluationContext struct {
 	Repository   *RepositoryInfo        `json:"repository,omitempty"`
 	Organization *OrganizationInfo      `json:"organization,omitempty"`
@@ -43,7 +43,7 @@ type EvaluationContext struct {
 	Timezone     *time.Location         `json:"-"`
 }
 
-// OrganizationInfo contains information about a GitHub organization
+// OrganizationInfo contains information about a GitHub organization.
 type OrganizationInfo struct {
 	Login             string            `json:"login"`
 	Name              string            `json:"name"`
@@ -56,7 +56,7 @@ type OrganizationInfo struct {
 	Settings          map[string]string `json:"settings,omitempty"`
 }
 
-// UserInfo contains information about a GitHub user
+// UserInfo contains information about a GitHub user.
 type UserInfo struct {
 	Login     string `json:"login"`
 	Name      string `json:"name"`
@@ -67,7 +67,7 @@ type UserInfo struct {
 	Location  string `json:"location"`
 }
 
-// EvaluationResult represents the result of condition evaluation
+// EvaluationResult represents the result of condition evaluation.
 type EvaluationResult struct {
 	Matched             bool                         `json:"matched"`
 	MatchedConditions   []string                     `json:"matched_conditions"`
@@ -81,7 +81,7 @@ type EvaluationResult struct {
 	Debug               map[string]interface{}       `json:"debug,omitempty"`
 }
 
-// PayloadMatchResult represents the result of a single payload matcher
+// PayloadMatchResult represents the result of a single payload matcher.
 type PayloadMatchResult struct {
 	Path          string        `json:"path"`
 	Operator      MatchOperator `json:"operator"`
@@ -91,7 +91,7 @@ type PayloadMatchResult struct {
 	Error         string        `json:"error,omitempty"`
 }
 
-// ConditionValidationResult represents the result of condition validation
+// ConditionValidationResult represents the result of condition validation.
 type ConditionValidationResult struct {
 	Valid               bool                         `json:"valid"`
 	Errors              []ConditionValidationError   `json:"errors,omitempty"`
@@ -100,35 +100,35 @@ type ConditionValidationResult struct {
 	RegexValidations    []RegexValidationResult      `json:"regex_validations,omitempty"`
 }
 
-// ConditionValidationError represents a validation error
+// ConditionValidationError represents a validation error.
 type ConditionValidationError struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`
 	Suggestion string `json:"suggestion,omitempty"`
 }
 
-// ConditionValidationWarning represents a validation warning
+// ConditionValidationWarning represents a validation warning.
 type ConditionValidationWarning struct {
 	Field      string `json:"field"`
 	Message    string `json:"message"`
 	Suggestion string `json:"suggestion,omitempty"`
 }
 
-// JSONPathValidationResult represents JSONPath validation result
+// JSONPathValidationResult represents JSONPath validation result.
 type JSONPathValidationResult struct {
 	Path  string `json:"path"`
 	Valid bool   `json:"valid"`
 	Error string `json:"error,omitempty"`
 }
 
-// RegexValidationResult represents regex validation result
+// RegexValidationResult represents regex validation result.
 type RegexValidationResult struct {
 	Pattern string `json:"pattern"`
 	Valid   bool   `json:"valid"`
 	Error   string `json:"error,omitempty"`
 }
 
-// EvaluationExplanation provides detailed explanation of how conditions were evaluated
+// EvaluationExplanation provides detailed explanation of how conditions were evaluated.
 type EvaluationExplanation struct {
 	RuleID               string                           `json:"rule_id"`
 	EventID              string                           `json:"event_id"`
@@ -141,7 +141,7 @@ type EvaluationExplanation struct {
 	Summary              string                           `json:"summary"`
 }
 
-// ConditionExplanation explains how a specific condition was evaluated
+// ConditionExplanation explains how a specific condition was evaluated.
 type ConditionExplanation struct {
 	Type        string      `json:"type"`
 	Description string      `json:"description"`
@@ -151,7 +151,7 @@ type ConditionExplanation struct {
 	Reason      string      `json:"reason"`
 }
 
-// PayloadMatchExplanation explains payload matching results
+// PayloadMatchExplanation explains payload matching results.
 type PayloadMatchExplanation struct {
 	Path        string      `json:"path"`
 	Operator    string      `json:"operator"`
@@ -161,7 +161,7 @@ type PayloadMatchExplanation struct {
 	Explanation string      `json:"explanation"`
 }
 
-// TimeEvaluationExplanation explains time-based condition evaluation
+// TimeEvaluationExplanation explains time-based condition evaluation.
 type TimeEvaluationExplanation struct {
 	EventTime     time.Time `json:"event_time"`
 	DayOfWeek     int       `json:"day_of_week"`
@@ -172,7 +172,7 @@ type TimeEvaluationExplanation struct {
 	Reason        string    `json:"reason"`
 }
 
-// RepositoryEvaluationExplanation explains repository-based condition evaluation
+// RepositoryEvaluationExplanation explains repository-based condition evaluation.
 type RepositoryEvaluationExplanation struct {
 	Repository   string   `json:"repository"`
 	Language     string   `json:"language"`
@@ -184,13 +184,13 @@ type RepositoryEvaluationExplanation struct {
 	MatchedRules []string `json:"matched_rules"`
 }
 
-// conditionEvaluatorImpl implements the ConditionEvaluator interface
+// conditionEvaluatorImpl implements the ConditionEvaluator interface.
 type conditionEvaluatorImpl struct {
 	logger    Logger
 	apiClient APIClient
 }
 
-// NewConditionEvaluator creates a new condition evaluator
+// NewConditionEvaluator creates a new condition evaluator.
 func NewConditionEvaluator(logger Logger, apiClient APIClient) ConditionEvaluator {
 	return &conditionEvaluatorImpl{
 		logger:    logger,
@@ -198,7 +198,7 @@ func NewConditionEvaluator(logger Logger, apiClient APIClient) ConditionEvaluato
 	}
 }
 
-// EvaluateConditions evaluates all conditions for an automation rule
+// EvaluateConditions evaluates all conditions for an automation rule.
 func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent, evalContext *EvaluationContext) (*EvaluationResult, error) {
 	startTime := time.Now()
 
@@ -284,6 +284,7 @@ func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditi
 			if err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("Sub-condition %d error: %v", i, err))
 			}
+
 			result.SubConditionResults[fmt.Sprintf("sub_condition_%d", i)] = subResult
 		}
 	}
@@ -301,17 +302,19 @@ func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditi
 	return result, nil
 }
 
-// EvaluateEventConditions evaluates event-specific conditions
+// EvaluateEventConditions evaluates event-specific conditions.
 func (e *conditionEvaluatorImpl) EvaluateEventConditions(event *GitHubEvent, conditions *AutomationConditions) (bool, error) {
 	// Check event types
 	if len(conditions.EventTypes) > 0 {
 		matched := false
+
 		for _, eventType := range conditions.EventTypes {
 			if string(eventType) == event.Type {
 				matched = true
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -320,12 +323,14 @@ func (e *conditionEvaluatorImpl) EvaluateEventConditions(event *GitHubEvent, con
 	// Check actions
 	if len(conditions.Actions) > 0 && event.Action != "" {
 		matched := false
+
 		for _, action := range conditions.Actions {
 			if string(action) == event.Action {
 				matched = true
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -349,7 +354,7 @@ func (e *conditionEvaluatorImpl) EvaluateEventConditions(event *GitHubEvent, con
 	return true, nil
 }
 
-// EvaluateRepositoryConditions evaluates repository-specific conditions
+// EvaluateRepositoryConditions evaluates repository-specific conditions.
 func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Context, repoInfo *RepositoryInfo, conditions *AutomationConditions) (bool, error) {
 	// Check repository patterns
 	if len(conditions.RepositoryPatterns) > 0 {
@@ -362,6 +367,7 @@ func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Contex
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -370,12 +376,14 @@ func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Contex
 	// Check languages
 	if len(conditions.Languages) > 0 {
 		matched := false
+
 		for _, lang := range conditions.Languages {
 			if strings.EqualFold(lang, repoInfo.Language) {
 				matched = true
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -384,6 +392,7 @@ func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Contex
 	// Check topics
 	if len(conditions.Topics) > 0 {
 		matched := false
+
 		for _, requiredTopic := range conditions.Topics {
 			for _, repoTopic := range repoInfo.Topics {
 				if strings.EqualFold(requiredTopic, repoTopic) {
@@ -391,10 +400,12 @@ func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Contex
 					break
 				}
 			}
+
 			if matched {
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -403,12 +414,14 @@ func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Contex
 	// Check visibility
 	if len(conditions.Visibility) > 0 {
 		matched := false
+
 		for _, visibility := range conditions.Visibility {
 			if strings.EqualFold(visibility, repoInfo.Visibility) {
 				matched = true
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -427,7 +440,7 @@ func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Contex
 	return true, nil
 }
 
-// EvaluateTimeConditions evaluates time-based conditions
+// EvaluateTimeConditions evaluates time-based conditions.
 func (e *conditionEvaluatorImpl) EvaluateTimeConditions(timestamp time.Time, conditions *AutomationConditions) (bool, error) {
 	// Check time range
 	if conditions.TimeRange != nil {
@@ -440,12 +453,14 @@ func (e *conditionEvaluatorImpl) EvaluateTimeConditions(timestamp time.Time, con
 	if len(conditions.DaysOfWeek) > 0 {
 		weekday := int(timestamp.Weekday())
 		matched := false
+
 		for _, day := range conditions.DaysOfWeek {
 			if day == weekday {
 				matched = true
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -455,12 +470,14 @@ func (e *conditionEvaluatorImpl) EvaluateTimeConditions(timestamp time.Time, con
 	if len(conditions.HoursOfDay) > 0 {
 		hour := timestamp.Hour()
 		matched := false
+
 		for _, h := range conditions.HoursOfDay {
 			if h == hour {
 				matched = true
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -480,7 +497,7 @@ func (e *conditionEvaluatorImpl) EvaluateTimeConditions(timestamp time.Time, con
 	return true, nil
 }
 
-// EvaluateContentConditions evaluates content-based conditions (branches, files, paths)
+// EvaluateContentConditions evaluates content-based conditions (branches, files, paths).
 func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, event *GitHubEvent, conditions *AutomationConditions) (bool, error) {
 	// Extract branch information from event payload
 	branch := e.extractBranchFromPayload(event.Payload)
@@ -496,6 +513,7 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -509,6 +527,7 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 		}
 
 		matched := false
+
 		for _, pattern := range conditions.FilePatterns {
 			for _, file := range files {
 				if matched, err := regexp.MatchString(pattern, file); err != nil {
@@ -518,10 +537,12 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 					break
 				}
 			}
+
 			if matched {
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -535,6 +556,7 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 		}
 
 		matched := false
+
 		for _, pattern := range conditions.PathPatterns {
 			for _, path := range paths {
 				if matched, err := regexp.MatchString(pattern, path); err != nil {
@@ -544,10 +566,12 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 					break
 				}
 			}
+
 			if matched {
 				break
 			}
 		}
+
 		if !matched {
 			return false, nil
 		}
@@ -556,13 +580,13 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 	return true, nil
 }
 
-// EvaluatePayloadMatcher evaluates a single payload matcher
+// EvaluatePayloadMatcher evaluates a single payload matcher.
 func (e *conditionEvaluatorImpl) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error) {
 	result, err := e.evaluatePayloadMatcherWithResult(matcher, payload)
 	return result.Matched, err
 }
 
-// evaluatePayloadMatcherWithResult evaluates a payload matcher and returns detailed results
+// evaluatePayloadMatcherWithResult evaluates a payload matcher and returns detailed results.
 func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *PayloadMatcher, payload map[string]interface{}) (PayloadMatchResult, error) {
 	result := PayloadMatchResult{
 		Path:          matcher.Path,
@@ -582,15 +606,17 @@ func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *Paylo
 	gjsonResult := gjson.GetBytes(jsonBytes, matcher.Path)
 	if !gjsonResult.Exists() {
 		// Handle "exists" and "not_exists" operators specially
-		if matcher.Operator == MatchOperatorExists {
+		switch matcher.Operator {
+		case MatchOperatorExists:
 			result.Matched = false
 			return result, nil
-		} else if matcher.Operator == MatchOperatorNotExists {
+		case MatchOperatorNotExists:
 			result.Matched = true
 			return result, nil
 		}
 
 		result.Error = fmt.Sprintf("Path '%s' not found in payload", matcher.Path)
+
 		return result, fmt.Errorf("path not found: %s", matcher.Path)
 	}
 
@@ -604,10 +630,11 @@ func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *Paylo
 	}
 
 	result.Matched = matched
+
 	return result, nil
 }
 
-// evaluateOperator evaluates a value against an expected value using the specified operator
+// evaluateOperator evaluates a value against an expected value using the specified operator.
 func (e *conditionEvaluatorImpl) evaluateOperator(operator MatchOperator, actual, expected interface{}, caseSensitive bool) (bool, error) {
 	switch operator {
 	case MatchOperatorEquals:
@@ -771,6 +798,7 @@ func (e *conditionEvaluatorImpl) extractBranchFromPayload(payload map[string]int
 		if strings.HasPrefix(ref, "refs/heads/") {
 			return strings.TrimPrefix(ref, "refs/heads/")
 		}
+
 		return ref
 	}
 
@@ -800,6 +828,7 @@ func (e *conditionEvaluatorImpl) extractFilesFromPayload(payload map[string]inte
 						}
 					}
 				}
+
 				if modified, ok := commit["modified"].([]interface{}); ok {
 					for _, file := range modified {
 						if fileStr, ok := file.(string); ok {
@@ -845,7 +874,7 @@ func (e *conditionEvaluatorImpl) extractPathsFromPayload(payload map[string]inte
 	return paths
 }
 
-// ValidateConditions validates the structure and syntax of automation conditions
+// ValidateConditions validates the structure and syntax of automation conditions.
 func (e *conditionEvaluatorImpl) ValidateConditions(conditions *AutomationConditions) (*ConditionValidationResult, error) {
 	result := &ConditionValidationResult{
 		Valid:               true,
@@ -965,7 +994,7 @@ func (e *conditionEvaluatorImpl) ValidateConditions(conditions *AutomationCondit
 	return result, nil
 }
 
-// ExplainEvaluation provides a detailed explanation of how conditions were evaluated
+// ExplainEvaluation provides a detailed explanation of how conditions were evaluated.
 func (e *conditionEvaluatorImpl) ExplainEvaluation(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent) (*EvaluationExplanation, error) {
 	explanation := &EvaluationExplanation{
 		EventID:             event.ID,

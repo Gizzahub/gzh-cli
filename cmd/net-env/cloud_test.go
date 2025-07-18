@@ -132,8 +132,11 @@ profiles:
 			cmd := NewNetEnvCmd(ctx)
 
 			// Capture output
-			var stdout bytes.Buffer
-			var stderr bytes.Buffer
+			var (
+				stdout bytes.Buffer
+				stderr bytes.Buffer
+			)
+
 			cmd.SetOut(&stdout)
 			cmd.SetErr(&stderr)
 
@@ -280,6 +283,7 @@ profiles:
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				if tt.errorMsg != "" {
 					assert.Contains(t, stderr.String()+err.Error(), tt.errorMsg)
 				}
@@ -293,6 +297,7 @@ profiles:
 func TestSaveAndGetCurrentProfile(t *testing.T) {
 	// Set temporary config dir
 	tmpDir := t.TempDir()
+
 	os.Setenv("HOME", tmpDir)
 	defer os.Unsetenv("HOME")
 
@@ -307,6 +312,7 @@ func TestSaveAndGetCurrentProfile(t *testing.T) {
 
 	// Test get when file doesn't exist
 	os.Remove(filepath.Join(tmpDir, ".config", "gzh-manager", "current-cloud-profile"))
+
 	profile, err = getCurrentProfile()
 	assert.NoError(t, err)
 	assert.Empty(t, profile)

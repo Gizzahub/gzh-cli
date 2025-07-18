@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// AzureSubscription represents an Azure subscription configuration
+// AzureSubscription represents an Azure subscription configuration.
 type AzureSubscription struct {
 	ID                string            `json:"id"`
 	DisplayName       string            `json:"display_name"`
@@ -35,7 +35,7 @@ type AzureSubscription struct {
 	ManagedByTenants  []string          `json:"managed_by_tenants,omitempty"`
 }
 
-// AzureSubscriptionManager manages Azure subscriptions and configurations
+// AzureSubscriptionManager manages Azure subscriptions and configurations.
 type AzureSubscriptionManager struct {
 	configPath    string
 	subscriptions map[string]*AzureSubscription
@@ -43,7 +43,7 @@ type AzureSubscriptionManager struct {
 	ctx           context.Context
 }
 
-// NewAzureSubscriptionManager creates a new Azure subscription manager
+// NewAzureSubscriptionManager creates a new Azure subscription manager.
 func NewAzureSubscriptionManager(ctx context.Context) (*AzureSubscriptionManager, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -64,7 +64,7 @@ func NewAzureSubscriptionManager(ctx context.Context) (*AzureSubscriptionManager
 	return manager, nil
 }
 
-// newAzureSubscriptionCmd creates the azure-subscription command
+// newAzureSubscriptionCmd creates the azure-subscription command.
 func newAzureSubscriptionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "azure-subscription",
@@ -106,10 +106,12 @@ Examples:
 	return cmd
 }
 
-// newAzureSubscriptionListCmd creates the list subcommand
+// newAzureSubscriptionListCmd creates the list subcommand.
 func newAzureSubscriptionListCmd() *cobra.Command {
-	var outputFormat string
-	var tenantID string
+	var (
+		outputFormat string
+		tenantID     string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -147,10 +149,12 @@ Examples:
 	return cmd
 }
 
-// newAzureSubscriptionSwitchCmd creates the switch subcommand
+// newAzureSubscriptionSwitchCmd creates the switch subcommand.
 func newAzureSubscriptionSwitchCmd() *cobra.Command {
-	var interactive bool
-	var tenantID string
+	var (
+		interactive bool
+		tenantID    string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "switch [SUBSCRIPTION_ID]",
@@ -193,7 +197,7 @@ Examples:
 	return cmd
 }
 
-// newAzureSubscriptionShowCmd creates the show subcommand
+// newAzureSubscriptionShowCmd creates the show subcommand.
 func newAzureSubscriptionShowCmd() *cobra.Command {
 	var outputFormat string
 
@@ -233,11 +237,13 @@ Examples:
 	return cmd
 }
 
-// newAzureSubscriptionLoginCmd creates the login subcommand
+// newAzureSubscriptionLoginCmd creates the login subcommand.
 func newAzureSubscriptionLoginCmd() *cobra.Command {
-	var tenantID string
-	var useDeviceCode bool
-	var servicePrincipal bool
+	var (
+		tenantID         string
+		useDeviceCode    bool
+		servicePrincipal bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "login",
@@ -277,11 +283,13 @@ Examples:
 	return cmd
 }
 
-// newAzureSubscriptionValidateCmd creates the validate subcommand
+// newAzureSubscriptionValidateCmd creates the validate subcommand.
 func newAzureSubscriptionValidateCmd() *cobra.Command {
-	var checkResourceGroups bool
-	var checkPermissions bool
-	var checkQuotas bool
+	var (
+		checkResourceGroups bool
+		checkPermissions    bool
+		checkQuotas         bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "validate [SUBSCRIPTION_ID]",
@@ -323,7 +331,7 @@ Examples:
 	return cmd
 }
 
-// newAzureSubscriptionTenantCmd creates the tenant subcommand
+// newAzureSubscriptionTenantCmd creates the tenant subcommand.
 func newAzureSubscriptionTenantCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "tenant",
@@ -381,10 +389,11 @@ func newAzureSubscriptionTenantSwitchCmd() *cobra.Command {
 	}
 }
 
-// loadSubscriptions loads all Azure subscriptions using Azure CLI
+// loadSubscriptions loads all Azure subscriptions using Azure CLI.
 func (m *AzureSubscriptionManager) loadSubscriptions() error {
 	// Use Azure CLI to list subscriptions
 	cmd := exec.CommandContext(m.ctx, "az", "account", "list", "--output", "json")
+
 	output, err := cmd.Output()
 	if err != nil {
 		// If Azure CLI is not available or not authenticated, return empty list
@@ -442,7 +451,7 @@ func (m *AzureSubscriptionManager) loadSubscriptions() error {
 	return nil
 }
 
-// enrichSubscriptionDetails adds additional details to a subscription
+// enrichSubscriptionDetails adds additional details to a subscription.
 func (m *AzureSubscriptionManager) enrichSubscriptionDetails(subscription *AzureSubscription) {
 	// Get resource groups for this subscription
 	cmd := exec.CommandContext(m.ctx, "az", "group", "list", "--subscription", subscription.ID, "--query", "[].name", "--output", "tsv")
@@ -463,17 +472,19 @@ func (m *AzureSubscriptionManager) enrichSubscriptionDetails(subscription *Azure
 	}
 }
 
-// getCurrentSubscription gets the current active subscription
+// getCurrentSubscription gets the current active subscription.
 func (m *AzureSubscriptionManager) getCurrentSubscription() string {
 	cmd := exec.CommandContext(m.ctx, "az", "account", "show", "--query", "id", "--output", "tsv")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return ""
 	}
+
 	return strings.TrimSpace(string(output))
 }
 
-// listSubscriptions lists all available subscriptions
+// listSubscriptions lists all available subscriptions.
 func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) error {
 	if len(m.subscriptions) == 0 {
 		fmt.Println("No Azure subscriptions found. Make sure you are authenticated with Azure CLI.")
@@ -492,6 +503,7 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 		if tenantID != "" {
 			fmt.Printf("No subscriptions found for tenant: %s\n", tenantID)
 		}
+
 		return nil
 	}
 
@@ -504,6 +516,7 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 	case "json":
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(subscriptions)
 
 	case "table":
@@ -533,6 +546,7 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 		}
 
 		table.Render()
+
 		return nil
 
 	default:
@@ -540,11 +554,12 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 	}
 }
 
-// switchSubscription switches to a specific subscription
+// switchSubscription switches to a specific subscription.
 func (m *AzureSubscriptionManager) switchSubscription(subscriptionID string, interactive bool, tenantID string) error {
 	// Interactive selection if no subscription specified
 	if subscriptionID == "" || interactive {
 		var err error
+
 		subscriptionID, err = m.selectSubscriptionInteractively(tenantID)
 		if err != nil {
 			return err
@@ -565,9 +580,11 @@ func (m *AzureSubscriptionManager) switchSubscription(subscriptionID string, int
 
 	// Update subscription status
 	now := time.Now()
+
 	for _, sub := range m.subscriptions {
 		sub.IsActive = false
 	}
+
 	subscription.IsActive = true
 	subscription.LastUsed = &now
 
@@ -578,22 +595,26 @@ func (m *AzureSubscriptionManager) switchSubscription(subscriptionID string, int
 	return nil
 }
 
-// selectSubscriptionInteractively provides interactive subscription selection
+// selectSubscriptionInteractively provides interactive subscription selection.
 func (m *AzureSubscriptionManager) selectSubscriptionInteractively(tenantID string) (string, error) {
 	if len(m.subscriptions) == 0 {
 		return "", fmt.Errorf("no subscriptions available")
 	}
 
-	var subscriptions []*AzureSubscription
-	var items []string
+	var (
+		subscriptions []*AzureSubscription
+		items         []string
+	)
 
 	for _, subscription := range m.subscriptions {
 		if tenantID == "" || subscription.TenantID == tenantID {
 			subscriptions = append(subscriptions, subscription)
+
 			label := fmt.Sprintf("%s (%s)", subscription.DisplayName, subscription.ID[:8]+"...")
 			if subscription.IsActive {
 				label += " [current]"
 			}
+
 			items = append(items, label)
 		}
 	}
@@ -619,7 +640,7 @@ func (m *AzureSubscriptionManager) selectSubscriptionInteractively(tenantID stri
 	return subscriptions[index].ID, nil
 }
 
-// showSubscription shows detailed information about a subscription
+// showSubscription shows detailed information about a subscription.
 func (m *AzureSubscriptionManager) showSubscription(subscriptionID string, format string) error {
 	// Get current subscription if none specified
 	if subscriptionID == "" {
@@ -638,6 +659,7 @@ func (m *AzureSubscriptionManager) showSubscription(subscriptionID string, forma
 	case "json":
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(subscription)
 
 	case "table":
@@ -659,6 +681,7 @@ func (m *AzureSubscriptionManager) showSubscription(subscriptionID string, forma
 
 		if len(subscription.ResourceGroups) > 0 {
 			fmt.Printf("\nResource Groups (%d):\n", len(subscription.ResourceGroups))
+
 			for _, rg := range subscription.ResourceGroups {
 				fmt.Printf("  - %s\n", rg)
 			}
@@ -666,6 +689,7 @@ func (m *AzureSubscriptionManager) showSubscription(subscriptionID string, forma
 
 		if len(subscription.Regions) > 0 {
 			fmt.Printf("\nAvailable Regions (%d):\n", len(subscription.Regions))
+
 			for i, region := range subscription.Regions {
 				if i < 10 { // Show first 10 regions
 					fmt.Printf("  - %s\n", region)
@@ -683,7 +707,7 @@ func (m *AzureSubscriptionManager) showSubscription(subscriptionID string, forma
 	}
 }
 
-// login authenticates with Azure
+// login authenticates with Azure.
 func (m *AzureSubscriptionManager) login(tenantID string, useDeviceCode, servicePrincipal bool) error {
 	var args []string
 
@@ -705,6 +729,7 @@ func (m *AzureSubscriptionManager) login(tenantID string, useDeviceCode, service
 	}
 
 	fmt.Printf("🔐 Logging in to Azure...\n")
+
 	cmd := exec.CommandContext(m.ctx, "az", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -723,7 +748,7 @@ func (m *AzureSubscriptionManager) login(tenantID string, useDeviceCode, service
 	return nil
 }
 
-// validateSubscription validates subscription access and configuration
+// validateSubscription validates subscription access and configuration.
 func (m *AzureSubscriptionManager) validateSubscription(subscriptionID string, checkResourceGroups, checkPermissions, checkQuotas bool) error {
 	// Get current subscription if none specified
 	if subscriptionID == "" {
@@ -742,6 +767,7 @@ func (m *AzureSubscriptionManager) validateSubscription(subscriptionID string, c
 		fmt.Printf("❌ Subscription access: FAILED\n")
 		return fmt.Errorf("cannot access subscription '%s': %w", subscriptionID, err)
 	}
+
 	fmt.Printf("✅ Subscription access: OK\n")
 
 	// Check resource groups if requested
@@ -778,10 +804,11 @@ func (m *AzureSubscriptionManager) validateSubscription(subscriptionID string, c
 	}
 
 	fmt.Printf("\nValidation completed for subscription: %s\n", subscriptionID)
+
 	return nil
 }
 
-// listTenants lists all available tenants
+// listTenants lists all available tenants.
 func (m *AzureSubscriptionManager) listTenants(format string) error {
 	if len(m.tenants) == 0 {
 		fmt.Println("No Azure tenants found.")
@@ -792,6 +819,7 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 	case "json":
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(m.tenants)
 
 	case "table":
@@ -801,6 +829,7 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 		for tenantID, displayName := range m.tenants {
 			// Count subscriptions in this tenant
 			subCount := 0
+
 			for _, sub := range m.subscriptions {
 				if sub.TenantID == tenantID {
 					subCount++
@@ -815,6 +844,7 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 		}
 
 		table.Render()
+
 		return nil
 
 	default:
@@ -822,7 +852,7 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 	}
 }
 
-// switchTenant switches to a specific tenant context
+// switchTenant switches to a specific tenant context.
 func (m *AzureSubscriptionManager) switchTenant(tenantID string) error {
 	// Validate tenant exists
 	displayName, exists := m.tenants[tenantID]

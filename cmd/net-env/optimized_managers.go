@@ -7,40 +7,40 @@ import (
 	"sync"
 )
 
-// OptimizedVPNManager provides batch VPN operations for better performance
+// OptimizedVPNManager provides batch VPN operations for better performance.
 type OptimizedVPNManager struct {
 	cache map[string]string
 	mutex sync.RWMutex
 }
 
-// OptimizedDNSManager provides batch DNS operations for better performance
+// OptimizedDNSManager provides batch DNS operations for better performance.
 type OptimizedDNSManager struct {
 	cache map[string][]string
 	mutex sync.RWMutex
 }
 
-// DNSConfig represents DNS configuration for batch operations
+// DNSConfig represents DNS configuration for batch operations.
 type DNSConfig struct {
 	Servers   []string
 	Interface string
 	Method    string
 }
 
-// NewOptimizedVPNManager creates a new optimized VPN manager
+// NewOptimizedVPNManager creates a new optimized VPN manager.
 func NewOptimizedVPNManager() *OptimizedVPNManager {
 	return &OptimizedVPNManager{
 		cache: make(map[string]string),
 	}
 }
 
-// NewOptimizedDNSManager creates a new optimized DNS manager
+// NewOptimizedDNSManager creates a new optimized DNS manager.
 func NewOptimizedDNSManager() *OptimizedDNSManager {
 	return &OptimizedDNSManager{
 		cache: make(map[string][]string),
 	}
 }
 
-// ConnectVPNBatch connects multiple VPNs efficiently
+// ConnectVPNBatch connects multiple VPNs efficiently.
 func (m *OptimizedVPNManager) ConnectVPNBatch(configs []vpnConfig) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -49,13 +49,14 @@ func (m *OptimizedVPNManager) ConnectVPNBatch(configs []vpnConfig) error {
 		if err := m.connectSingleVPN(config); err != nil {
 			return fmt.Errorf("failed to connect VPN %s: %w", config.Name, err)
 		}
+
 		m.cache[config.Name] = "connected"
 	}
 
 	return nil
 }
 
-// GetVPNStatusBatch gets status for multiple VPNs efficiently
+// GetVPNStatusBatch gets status for multiple VPNs efficiently.
 func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]string, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
@@ -71,6 +72,7 @@ func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]stri
 			if len(fields) >= 2 {
 				name := fields[0]
 				state := fields[1]
+
 				for _, requestedName := range names {
 					if name == requestedName {
 						status[name] = state
@@ -90,7 +92,7 @@ func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]stri
 	return status, nil
 }
 
-// connectSingleVPN connects a single VPN connection
+// connectSingleVPN connects a single VPN connection.
 func (m *OptimizedVPNManager) connectSingleVPN(config vpnConfig) error {
 	switch config.Type {
 	case "networkmanager":
@@ -99,22 +101,25 @@ func (m *OptimizedVPNManager) connectSingleVPN(config vpnConfig) error {
 		if config.Service != "" {
 			return exec.Command("systemctl", "start", config.Service).Run()
 		}
+
 		if config.ConfigFile != "" {
 			cmd := exec.Command("openvpn", "--config", config.ConfigFile, "--daemon")
 			return cmd.Run()
 		}
+
 		return fmt.Errorf("openvpn requires either service or config file")
 	case "wireguard":
 		if config.ConfigFile != "" {
 			return exec.Command("wg-quick", "up", config.ConfigFile).Run()
 		}
+
 		return exec.Command("wg-quick", "up", config.Name).Run()
 	default:
 		return fmt.Errorf("unsupported VPN type: %s", config.Type)
 	}
 }
 
-// SetDNSServersBatch sets DNS servers for multiple configurations efficiently
+// SetDNSServersBatch sets DNS servers for multiple configurations efficiently.
 func (m *OptimizedDNSManager) SetDNSServersBatch(configs []DNSConfig) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -123,13 +128,14 @@ func (m *OptimizedDNSManager) SetDNSServersBatch(configs []DNSConfig) error {
 		if err := m.setSingleDNS(config); err != nil {
 			return fmt.Errorf("failed to set DNS servers %v: %w", config.Servers, err)
 		}
+
 		m.cache[config.Interface] = config.Servers
 	}
 
 	return nil
 }
 
-// setSingleDNS sets DNS servers for a single interface
+// setSingleDNS sets DNS servers for a single interface.
 func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
 	iface := config.Interface
 	if iface == "" {
@@ -145,6 +151,7 @@ func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
 	case "resolvectl", "":
 		args := []string{"dns", iface}
 		args = append(args, config.Servers...)
+
 		return exec.Command("resolvectl", args...).Run()
 	case "networkmanager":
 		servers := strings.Join(config.Servers, ",")
@@ -154,9 +161,10 @@ func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
 	}
 }
 
-// detectPrimaryInterface detects the primary network interface
+// detectPrimaryInterface detects the primary network interface.
 func (m *OptimizedDNSManager) detectPrimaryInterface() (string, error) {
 	cmd := exec.Command("ip", "route", "show", "default")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -178,7 +186,7 @@ func (m *OptimizedDNSManager) detectPrimaryInterface() (string, error) {
 	return "", fmt.Errorf("could not detect primary interface")
 }
 
-// executeShellCommand executes a shell command
+// executeShellCommand executes a shell command.
 func executeShellCommand(command string) error {
 	cmd := exec.Command("sh", "-c", command)
 	return cmd.Run()

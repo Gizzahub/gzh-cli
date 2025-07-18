@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// SecurityUpdatePolicyManager manages security update policies and vulnerability handling
+// SecurityUpdatePolicyManager manages security update policies and vulnerability handling.
 type SecurityUpdatePolicyManager struct {
 	logger            Logger
 	apiClient         APIClient
@@ -16,7 +16,7 @@ type SecurityUpdatePolicyManager struct {
 	vulnerabilityDB   *VulnerabilityDatabase
 }
 
-// SecurityUpdatePolicy defines policies for handling security updates
+// SecurityUpdatePolicy defines policies for handling security updates.
 type SecurityUpdatePolicy struct {
 	ID                       string                   `json:"id"`
 	Name                     string                   `json:"name"`
@@ -35,7 +35,7 @@ type SecurityUpdatePolicy struct {
 	Version                  int                      `json:"version"`
 }
 
-// AutoApprovalRule defines when security updates can be automatically approved
+// AutoApprovalRule defines when security updates can be automatically approved.
 type AutoApprovalRule struct {
 	ID                string                `json:"id"`
 	Name              string                `json:"name"`
@@ -50,7 +50,7 @@ type AutoApprovalRule struct {
 	CooldownPeriod    time.Duration         `json:"cooldown_period"`
 }
 
-// ApprovalCondition defines conditions for auto-approval
+// ApprovalCondition defines conditions for auto-approval.
 type ApprovalCondition struct {
 	Type     ConditionType `json:"type"`
 	Field    string        `json:"field"`
@@ -59,14 +59,14 @@ type ApprovalCondition struct {
 	Negated  bool          `json:"negated,omitempty"`
 }
 
-// AutoApprovalAction defines actions to take when auto-approving
+// AutoApprovalAction defines actions to take when auto-approving.
 type AutoApprovalAction struct {
 	Type       ActionType        `json:"type"`
 	Parameters map[string]string `json:"parameters,omitempty"`
 	DelayAfter time.Duration     `json:"delay_after,omitempty"`
 }
 
-// SeverityThresholdConfig defines how to handle different severity levels
+// SeverityThresholdConfig defines how to handle different severity levels.
 type SeverityThresholdConfig struct {
 	Critical SeverityThreshold `json:"critical"`
 	High     SeverityThreshold `json:"high"`
@@ -74,7 +74,7 @@ type SeverityThresholdConfig struct {
 	Low      SeverityThreshold `json:"low"`
 }
 
-// SeverityThreshold defines response requirements for a severity level
+// SeverityThreshold defines response requirements for a severity level.
 type SeverityThreshold struct {
 	AutoApprove            bool          `json:"auto_approve"`
 	RequireManualReview    bool          `json:"require_manual_review"`
@@ -85,7 +85,7 @@ type SeverityThreshold struct {
 	BusinessImpactAnalysis bool          `json:"business_impact_analysis"`
 }
 
-// ResponseTimeConfig defines required response times
+// ResponseTimeConfig defines required response times.
 type ResponseTimeConfig struct {
 	CriticalVulnerabilities time.Duration `json:"critical_vulnerabilities"`
 	HighVulnerabilities     time.Duration `json:"high_vulnerabilities"`
@@ -94,7 +94,7 @@ type ResponseTimeConfig struct {
 	BusinessHours           BusinessHours `json:"business_hours"`
 }
 
-// BusinessHours defines when business hours are active
+// BusinessHours defines when business hours are active.
 type BusinessHours struct {
 	Timezone  string    `json:"timezone"`
 	StartTime time.Time `json:"start_time"`
@@ -103,7 +103,7 @@ type BusinessHours struct {
 	Holidays  []string  `json:"holidays,omitempty"`
 }
 
-// NotificationConfig defines how notifications should be sent
+// NotificationConfig defines how notifications should be sent.
 type NotificationConfig struct {
 	Enabled           bool                  `json:"enabled"`
 	Channels          []NotificationChannel `json:"channels"`
@@ -112,7 +112,7 @@ type NotificationConfig struct {
 	SummaryFrequency  string                `json:"summary_frequency"`
 }
 
-// NotificationChannel defines a notification delivery channel
+// NotificationChannel defines a notification delivery channel.
 type NotificationChannel struct {
 	Type       ChannelType             `json:"type"`
 	Target     string                  `json:"target"`
@@ -122,7 +122,7 @@ type NotificationChannel struct {
 	RateLimit  *RateLimitConfig        `json:"rate_limit,omitempty"`
 }
 
-// EscalationTarget defines who to notify during escalation
+// EscalationTarget defines who to notify during escalation.
 type EscalationTarget struct {
 	Level    int      `json:"level"`
 	Users    []string `json:"users"`
@@ -130,7 +130,7 @@ type EscalationTarget struct {
 	External []string `json:"external,omitempty"`
 }
 
-// RateLimitConfig defines rate limiting for notifications
+// RateLimitConfig defines rate limiting for notifications.
 type RateLimitConfig struct {
 	MaxPerHour  int           `json:"max_per_hour"`
 	MaxPerDay   int           `json:"max_per_day"`
@@ -138,7 +138,7 @@ type RateLimitConfig struct {
 	ResetPeriod time.Duration `json:"reset_period"`
 }
 
-// VulnerabilityExclusion defines vulnerabilities to exclude from policies
+// VulnerabilityExclusion defines vulnerabilities to exclude from policies.
 type VulnerabilityExclusion struct {
 	ID        string        `json:"id"`
 	Type      ExclusionType `json:"type"`
@@ -149,7 +149,7 @@ type VulnerabilityExclusion struct {
 	CreatedAt time.Time     `json:"created_at"`
 }
 
-// EscalationRule defines when and how to escalate unresolved vulnerabilities
+// EscalationRule defines when and how to escalate unresolved vulnerabilities.
 type EscalationRule struct {
 	ID             string                `json:"id"`
 	Name           string                `json:"name"`
@@ -160,21 +160,21 @@ type EscalationRule struct {
 	MaxEscalations int                   `json:"max_escalations"`
 }
 
-// EscalationCondition defines when escalation should occur
+// EscalationCondition defines when escalation should occur.
 type EscalationCondition struct {
 	Type     string      `json:"type"`
 	Operator string      `json:"operator"`
 	Value    interface{} `json:"value"`
 }
 
-// EscalationAction defines what to do during escalation
+// EscalationAction defines what to do during escalation.
 type EscalationAction struct {
 	Type       string            `json:"type"`
 	Target     string            `json:"target"`
 	Parameters map[string]string `json:"parameters,omitempty"`
 }
 
-// ComplianceConfig defines compliance-related settings
+// ComplianceConfig defines compliance-related settings.
 type ComplianceConfig struct {
 	Frameworks            []ComplianceFramework `json:"frameworks"`
 	AuditTrailRequired    bool                  `json:"audit_trail_required"`
@@ -183,28 +183,28 @@ type ComplianceConfig struct {
 	RetentionPeriod       time.Duration         `json:"retention_period"`
 }
 
-// ComplianceFramework defines compliance framework requirements
+// ComplianceFramework defines compliance framework requirements.
 type ComplianceFramework struct {
 	Name         string        `json:"name"`
 	Version      string        `json:"version"`
 	Requirements []Requirement `json:"requirements"`
 }
 
-// Requirement defines a specific compliance requirement
+// Requirement defines a specific compliance requirement.
 type Requirement struct {
 	ID          string `json:"id"`
 	Description string `json:"description"`
 	Mandatory   bool   `json:"mandatory"`
 }
 
-// VulnerabilityDatabase manages vulnerability data and CVE information
+// VulnerabilityDatabase manages vulnerability data and CVE information.
 type VulnerabilityDatabase struct {
 	vulnerabilities map[string]*VulnerabilityRecord
 	cveCache        map[string]*CVERecord
 	lastUpdated     time.Time
 }
 
-// VulnerabilityRecord represents a vulnerability in the database
+// VulnerabilityRecord represents a vulnerability in the database.
 type VulnerabilityRecord struct {
 	ID               string                 `json:"id"`
 	CVE              string                 `json:"cve,omitempty"`
@@ -222,7 +222,7 @@ type VulnerabilityRecord struct {
 	Metadata         map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// CVERecord represents a CVE record from external sources
+// CVERecord represents a CVE record from external sources.
 type CVERecord struct {
 	ID          string                 `json:"id"`
 	Description string                 `json:"description"`
@@ -234,7 +234,7 @@ type CVERecord struct {
 	Metadata    map[string]interface{} `json:"metadata"`
 }
 
-// CVSSScore represents CVSS scoring information
+// CVSSScore represents CVSS scoring information.
 type CVSSScore struct {
 	Version     string  `json:"version"`
 	Score       float64 `json:"score"`
@@ -244,7 +244,7 @@ type CVSSScore struct {
 	ImpactScore float64 `json:"impact_score,omitempty"`
 }
 
-// PackageInfo represents information about a vulnerable package
+// PackageInfo represents information about a vulnerable package.
 type PackageInfo struct {
 	Name      string `json:"name"`
 	Ecosystem string `json:"ecosystem"`
@@ -252,32 +252,32 @@ type PackageInfo struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
-// VersionRange represents a range of affected versions
+// VersionRange represents a range of affected versions.
 type VersionRange struct {
 	Introduced   string `json:"introduced,omitempty"`
 	Fixed        string `json:"fixed,omitempty"`
 	LastAffected string `json:"last_affected,omitempty"`
 }
 
-// Reference represents a reference URL or identifier
+// Reference represents a reference URL or identifier.
 type Reference struct {
 	Type string `json:"type"`
 	URL  string `json:"url"`
 }
 
-// VendorInfo represents vendor information in CVE records
+// VendorInfo represents vendor information in CVE records.
 type VendorInfo struct {
 	Name     string        `json:"name"`
 	Products []ProductInfo `json:"products"`
 }
 
-// ProductInfo represents product information in CVE records
+// ProductInfo represents product information in CVE records.
 type ProductInfo struct {
 	Name     string   `json:"name"`
 	Versions []string `json:"versions"`
 }
 
-// CVETimeline represents the timeline of a CVE
+// CVETimeline represents the timeline of a CVE.
 type CVETimeline struct {
 	Published time.Time  `json:"published"`
 	Modified  time.Time  `json:"modified"`
@@ -285,7 +285,7 @@ type CVETimeline struct {
 	Rejected  *time.Time `json:"rejected,omitempty"`
 }
 
-// SecurityUpdateStatus represents the status of a security update
+// SecurityUpdateStatus represents the status of a security update.
 type SecurityUpdateStatus struct {
 	UpdateID        string          `json:"update_id"`
 	VulnerabilityID string          `json:"vulnerability_id"`
@@ -308,7 +308,7 @@ type SecurityUpdateStatus struct {
 	RiskAssessment  *RiskAssessment `json:"risk_assessment,omitempty"`
 }
 
-// ReviewNote represents a review note for a security update
+// ReviewNote represents a review note for a security update.
 type ReviewNote struct {
 	Author    string    `json:"author"`
 	Content   string    `json:"content"`
@@ -316,7 +316,7 @@ type ReviewNote struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// TestResults represents test results for a security update
+// TestResults represents test results for a security update.
 type TestResults struct {
 	Passed      bool          `json:"passed"`
 	TestSuite   string        `json:"test_suite"`
@@ -326,7 +326,7 @@ type TestResults struct {
 	ExecutedAt  time.Time     `json:"executed_at"`
 }
 
-// RiskAssessment represents a risk assessment for a security update
+// RiskAssessment represents a risk assessment for a security update.
 type RiskAssessment struct {
 	OverallRisk    RiskLevel            `json:"overall_risk"`
 	BusinessImpact ImpactLevel          `json:"business_impact"`
@@ -337,7 +337,7 @@ type RiskAssessment struct {
 	AssessedAt     time.Time            `json:"assessed_at"`
 }
 
-// RiskFactor represents a factor contributing to risk
+// RiskFactor represents a factor contributing to risk.
 type RiskFactor struct {
 	Type        string    `json:"type"`
 	Description string    `json:"description"`
@@ -345,7 +345,7 @@ type RiskFactor struct {
 	Likelihood  string    `json:"likelihood"`
 }
 
-// MitigationStrategy represents a strategy to mitigate risk
+// MitigationStrategy represents a strategy to mitigate risk.
 type MitigationStrategy struct {
 	Type          string `json:"type"`
 	Description   string `json:"description"`
@@ -353,7 +353,7 @@ type MitigationStrategy struct {
 	Effectiveness string `json:"effectiveness"`
 }
 
-// Enum types
+// Enum types.
 type VulnerabilitySeverity string
 
 const (
@@ -376,7 +376,7 @@ const (
 	ConditionTypeEcosystem  ConditionType = "ecosystem"
 )
 
-// Security-specific action types (extending ActionType from automation_rule.go)
+// Security-specific action types (extending ActionType from automation_rule.go).
 const (
 	ActionTypeSecurityApprove      ActionType = "security_approve"
 	ActionTypeSecurityMerge        ActionType = "security_merge"
@@ -429,7 +429,7 @@ const (
 )
 
 // Use existing RiskLevel from interfaces.go
-// Additional risk levels for security context
+// Additional risk levels for security context.
 const (
 	SecurityRiskLevelMinimal RiskLevel = "minimal"
 )
@@ -444,7 +444,7 @@ const (
 	ImpactLevelMinimal  ImpactLevel = "minimal"
 )
 
-// NewSecurityUpdatePolicyManager creates a new security update policy manager
+// NewSecurityUpdatePolicyManager creates a new security update policy manager.
 func NewSecurityUpdatePolicyManager(logger Logger, apiClient APIClient, dependabotManager *DependabotConfigManager) *SecurityUpdatePolicyManager {
 	return &SecurityUpdatePolicyManager{
 		logger:            logger,
@@ -455,7 +455,7 @@ func NewSecurityUpdatePolicyManager(logger Logger, apiClient APIClient, dependab
 	}
 }
 
-// NewVulnerabilityDatabase creates a new vulnerability database
+// NewVulnerabilityDatabase creates a new vulnerability database.
 func NewVulnerabilityDatabase() *VulnerabilityDatabase {
 	return &VulnerabilityDatabase{
 		vulnerabilities: make(map[string]*VulnerabilityRecord),
@@ -464,7 +464,7 @@ func NewVulnerabilityDatabase() *VulnerabilityDatabase {
 	}
 }
 
-// CreateSecurityPolicy creates a new security update policy
+// CreateSecurityPolicy creates a new security update policy.
 func (sm *SecurityUpdatePolicyManager) CreateSecurityPolicy(ctx context.Context, policy *SecurityUpdatePolicy) error {
 	sm.logger.Info("Creating security update policy", "organization", policy.Organization, "policy", policy.Name)
 
@@ -482,10 +482,11 @@ func (sm *SecurityUpdatePolicyManager) CreateSecurityPolicy(ctx context.Context,
 	sm.policies[policy.ID] = policy
 
 	sm.logger.Info("Security update policy created successfully", "policy_id", policy.ID)
+
 	return nil
 }
 
-// EvaluateSecurityUpdate evaluates whether a security update should be auto-approved
+// EvaluateSecurityUpdate evaluates whether a security update should be auto-approved.
 func (sm *SecurityUpdatePolicyManager) EvaluateSecurityUpdate(ctx context.Context, policyID string, update *SecurityUpdateStatus) (*SecurityUpdateDecision, error) {
 	sm.logger.Debug("Evaluating security update", "policy_id", policyID, "update_id", update.UpdateID)
 
@@ -526,7 +527,7 @@ func (sm *SecurityUpdatePolicyManager) EvaluateSecurityUpdate(ctx context.Contex
 	return decision, nil
 }
 
-// ProcessSecurityUpdates processes pending security updates for an organization
+// ProcessSecurityUpdates processes pending security updates for an organization.
 func (sm *SecurityUpdatePolicyManager) ProcessSecurityUpdates(ctx context.Context, organization string) (*SecurityUpdateProcessResult, error) {
 	sm.logger.Info("Processing security updates", "organization", organization)
 
@@ -557,7 +558,9 @@ func (sm *SecurityUpdatePolicyManager) ProcessSecurityUpdates(ctx context.Contex
 		decision, err := sm.EvaluateSecurityUpdate(ctx, policyID, &update)
 		if err != nil {
 			sm.logger.Error("Failed to evaluate security update", "update_id", update.UpdateID, "error", err)
+
 			result.FailedUpdates++
+
 			continue
 		}
 
@@ -566,6 +569,7 @@ func (sm *SecurityUpdatePolicyManager) ProcessSecurityUpdates(ctx context.Contex
 			err = sm.approveSecurityUpdate(ctx, &update, decision)
 			if err != nil {
 				sm.logger.Error("Failed to approve security update", "update_id", update.UpdateID, "error", err)
+
 				result.FailedUpdates++
 			} else {
 				result.ApprovedUpdates++
@@ -596,9 +600,11 @@ func (sm *SecurityUpdatePolicyManager) validateSecurityPolicy(policy *SecurityUp
 	if policy.ID == "" {
 		return fmt.Errorf("policy ID is required")
 	}
+
 	if policy.Name == "" {
 		return fmt.Errorf("policy name is required")
 	}
+
 	if policy.Organization == "" {
 		return fmt.Errorf("organization is required")
 	}
@@ -608,6 +614,7 @@ func (sm *SecurityUpdatePolicyManager) validateSecurityPolicy(policy *SecurityUp
 		if rule.ID == "" {
 			return fmt.Errorf("auto-approval rule %d: ID is required", i)
 		}
+
 		if len(rule.Conditions) == 0 {
 			return fmt.Errorf("auto-approval rule %d: at least one condition is required", i)
 		}
@@ -642,6 +649,7 @@ func (sm *SecurityUpdatePolicyManager) getVulnerabilityInfo(ctx context.Context,
 	}
 
 	sm.vulnerabilityDB.vulnerabilities[vulnID] = vuln
+
 	return vuln, nil
 }
 
@@ -671,6 +679,7 @@ func (sm *SecurityUpdatePolicyManager) isExcluded(policy *SecurityUpdatePolicy, 
 			}
 		}
 	}
+
 	return false
 }
 
@@ -687,6 +696,7 @@ func (sm *SecurityUpdatePolicyManager) evaluateAutoApprovalRules(policy *Securit
 
 		// Evaluate all conditions
 		allConditionsMet := true
+
 		for _, condition := range rule.Conditions {
 			if !sm.evaluateCondition(condition, vuln, update) {
 				allConditionsMet = false
@@ -732,9 +742,10 @@ func (sm *SecurityUpdatePolicyManager) evaluateCondition(condition ApprovalCondi
 			result = sm.compareSeverity(vuln.Severity, condition.Operator, condition.Value)
 		}
 	case ConditionTypePackage:
-		if condition.Field == "name" {
+		switch condition.Field {
+		case "name":
 			result = sm.compareString(update.Package.Name, condition.Operator, condition.Value)
-		} else if condition.Field == "ecosystem" {
+		case "ecosystem":
 			result = sm.compareString(update.Package.Ecosystem, condition.Operator, condition.Value)
 		}
 	case ConditionTypeCVSS:
@@ -845,6 +856,7 @@ func (sm *SecurityUpdatePolicyManager) findApplicablePolicy(organization, reposi
 			return policyID
 		}
 	}
+
 	return ""
 }
 
@@ -863,7 +875,7 @@ func (sm *SecurityUpdatePolicyManager) approveSecurityUpdate(ctx context.Context
 	return nil
 }
 
-// SecurityUpdateDecision represents the result of evaluating a security update
+// SecurityUpdateDecision represents the result of evaluating a security update.
 type SecurityUpdateDecision struct {
 	Approved     bool                 `json:"approved"`
 	Reason       string               `json:"reason"`
@@ -873,7 +885,7 @@ type SecurityUpdateDecision struct {
 	Conditions   []string             `json:"conditions,omitempty"`
 }
 
-// SecurityUpdateProcessResult represents the result of processing security updates
+// SecurityUpdateProcessResult represents the result of processing security updates.
 type SecurityUpdateProcessResult struct {
 	Organization    string                 `json:"organization"`
 	TotalUpdates    int                    `json:"total_updates"`

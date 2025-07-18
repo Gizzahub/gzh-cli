@@ -19,7 +19,9 @@ func TestRequestDeduplicator(t *testing.T) {
 		callCount := 0
 		testFunc := func(ctx context.Context) (interface{}, error) {
 			callCount++
+
 			time.Sleep(10 * time.Millisecond) // Simulate API call
+
 			return fmt.Sprintf("result-%d", callCount), nil
 		}
 
@@ -41,16 +43,21 @@ func TestRequestDeduplicator(t *testing.T) {
 
 	t.Run("Concurrent deduplication", func(t *testing.T) {
 		deduplicator.Clear()
+
 		callCount := 0
+
 		var mu sync.Mutex
 
 		testFunc := func(ctx context.Context) (interface{}, error) {
 			mu.Lock()
+
 			callCount++
 			currentCall := callCount
+
 			mu.Unlock()
 
 			time.Sleep(50 * time.Millisecond) // Simulate longer API call
+
 			return fmt.Sprintf("result-%d", currentCall), nil
 		}
 
@@ -59,13 +66,16 @@ func TestRequestDeduplicator(t *testing.T) {
 
 		// Launch multiple concurrent requests
 		var wg sync.WaitGroup
+
 		results := make([]interface{}, 5)
 		errors := make([]error, 5)
 
 		for i := 0; i < 5; i++ {
 			wg.Add(1)
+
 			go func(index int) {
 				defer wg.Done()
+
 				results[index], errors[index] = deduplicator.Do(ctx, key, testFunc)
 			}(i)
 		}
@@ -125,16 +135,20 @@ func TestBatchProcessor(t *testing.T) {
 		FlushInterval: 100 * time.Millisecond,
 		Concurrency:   2,
 	}
+
 	processor := NewBatchProcessor(config)
 	defer processor.Stop()
 
 	t.Run("Batch size triggering", func(t *testing.T) {
 		processedBatches := make([]int, 0)
+
 		var mu sync.Mutex
 
 		batchFunc := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
 			mu.Lock()
+
 			processedBatches = append(processedBatches, len(requests))
+
 			mu.Unlock()
 
 			responses := make([]BatchResponse, len(requests))
@@ -144,6 +158,7 @@ func TestBatchProcessor(t *testing.T) {
 					Data: fmt.Sprintf("processed-%s", req.ID),
 				}
 			}
+
 			return responses
 		}
 
@@ -189,12 +204,15 @@ func TestBatchProcessor(t *testing.T) {
 		} else {
 			// Requests were processed in multiple batches
 			assert.True(t, len(processedBatches) >= 1)
+
 			totalProcessed := 0
 			for _, batchSize := range processedBatches {
 				totalProcessed += batchSize
 			}
+
 			assert.Equal(t, 5, totalProcessed)
 		}
+
 		mu.Unlock()
 	})
 
@@ -204,15 +222,19 @@ func TestBatchProcessor(t *testing.T) {
 			FlushInterval: 50 * time.Millisecond,
 			Concurrency:   1,
 		}
+
 		timerProcessor := NewBatchProcessor(timerConfig)
 		defer timerProcessor.Stop()
 
 		processed := false
+
 		var mu sync.Mutex
 
 		batchFunc := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
 			mu.Lock()
+
 			processed = true
+
 			mu.Unlock()
 
 			responses := make([]BatchResponse, len(requests))
@@ -222,6 +244,7 @@ func TestBatchProcessor(t *testing.T) {
 					Data: "timer-processed",
 				}
 			}
+
 			return responses
 		}
 
@@ -242,6 +265,7 @@ func TestBatchProcessor(t *testing.T) {
 		case resp := <-response:
 			require.NoError(t, resp.Error)
 			assert.Equal(t, "timer-processed", resp.Data)
+
 			elapsed := time.Since(start)
 			assert.True(t, elapsed >= 50*time.Millisecond)
 			assert.True(t, elapsed < 150*time.Millisecond)
@@ -270,6 +294,7 @@ func TestEnhancedRateLimiter(t *testing.T) {
 			start := time.Now()
 			err := limiter.Wait(ctx)
 			elapsed := time.Since(start)
+
 			require.NoError(t, err)
 			assert.True(t, elapsed < 10*time.Millisecond) // Should be immediate
 		}
@@ -279,6 +304,7 @@ func TestEnhancedRateLimiter(t *testing.T) {
 
 		// Next request should be delayed
 		start := time.Now()
+
 		ctx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
 		defer cancel()
 
@@ -306,10 +332,12 @@ func TestEnhancedRateLimiter(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			// Change the limit to trigger adaptive adjustments
 			newLimit := initialLimit + (i * 200)
+
 			remaining := newLimit - (i * 50)
 			if remaining < 0 {
 				remaining = 0
 			}
+
 			limiter.UpdateLimits(newLimit, remaining, time.Now().Add(time.Hour))
 		}
 
@@ -331,7 +359,9 @@ func TestOptimizationManager(t *testing.T) {
 		callCount := 0
 		testExecutor := func(ctx context.Context) (interface{}, error) {
 			callCount++
+
 			time.Sleep(10 * time.Millisecond)
+
 			return fmt.Sprintf("result-%d", callCount), nil
 		}
 
@@ -371,6 +401,7 @@ func TestOptimizationManager(t *testing.T) {
 					Data: fmt.Sprintf("batch-result-%s-%s", data["org"], data["repo"]),
 				}
 			}
+
 			return responses
 		}
 
@@ -430,9 +461,10 @@ func TestRepositoryBatchProcessor(t *testing.T) {
 				_ = req.Data.(map[string]string) // Acknowledge but don't use data
 				responses[i] = BatchResponse{
 					ID:   req.ID,
-					Data: fmt.Sprintf("main"), // Simulate default branch
+					Data: "main", // Simulate default branch
 				}
 			}
+
 			return responses
 		}
 
@@ -482,6 +514,7 @@ func BenchmarkBatchProcessing(b *testing.B) {
 		FlushInterval: 10 * time.Millisecond,
 		Concurrency:   5,
 	}
+
 	processor := NewBatchProcessor(config)
 	defer processor.Stop()
 
@@ -490,6 +523,7 @@ func BenchmarkBatchProcessing(b *testing.B) {
 		for i, req := range requests {
 			responses[i] = BatchResponse{ID: req.ID, Data: "processed"}
 		}
+
 		return responses
 	}
 
@@ -509,6 +543,7 @@ func BenchmarkBatchProcessing(b *testing.B) {
 				Response: response,
 			}
 			_ = processor.Add(ctx, "bench-batch", request, batchFunc)
+
 			<-response
 		}
 	})

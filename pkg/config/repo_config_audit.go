@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// AuditReport represents a comprehensive compliance audit report
+// AuditReport represents a comprehensive compliance audit report.
 type AuditReport struct {
 	Organization string              `yaml:"organization" json:"organization"`
 	GeneratedAt  time.Time           `yaml:"generated_at" json:"generated_at"`
@@ -16,7 +16,7 @@ type AuditReport struct {
 	Repositories []RepoAuditResult   `yaml:"repositories" json:"repositories"`
 }
 
-// AuditSummary provides high-level compliance metrics
+// AuditSummary provides high-level compliance metrics.
 type AuditSummary struct {
 	TotalRepositories     int     `yaml:"total_repositories" json:"total_repositories"`
 	AuditedRepositories   int     `yaml:"audited_repositories" json:"audited_repositories"`
@@ -28,7 +28,7 @@ type AuditSummary struct {
 	ActiveExceptions      int     `yaml:"active_exceptions" json:"active_exceptions"`
 }
 
-// PolicyAuditResult represents audit results for a specific policy
+// PolicyAuditResult represents audit results for a specific policy.
 type PolicyAuditResult struct {
 	PolicyName           string            `yaml:"policy_name" json:"policy_name"`
 	Description          string            `yaml:"description" json:"description"`
@@ -39,7 +39,7 @@ type PolicyAuditResult struct {
 	CompliancePercentage float64           `yaml:"compliance_percentage" json:"compliance_percentage"`
 }
 
-// RuleAuditResult represents audit results for a specific rule within a policy
+// RuleAuditResult represents audit results for a specific rule within a policy.
 type RuleAuditResult struct {
 	RuleName       string   `yaml:"rule_name" json:"rule_name"`
 	Type           string   `yaml:"type" json:"type"`
@@ -48,7 +48,7 @@ type RuleAuditResult struct {
 	ExemptedRepos  []string `yaml:"exempted_repos" json:"exempted_repos"`
 }
 
-// RepoAuditResult represents audit results for a specific repository
+// RepoAuditResult represents audit results for a specific repository.
 type RepoAuditResult struct {
 	Repository   string            `yaml:"repository" json:"repository"`
 	Template     string            `yaml:"template,omitempty" json:"template,omitempty"`
@@ -58,7 +58,7 @@ type RepoAuditResult struct {
 	LastModified time.Time         `yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
 }
 
-// PolicyViolation represents a specific policy violation
+// PolicyViolation represents a specific policy violation.
 type PolicyViolation struct {
 	PolicyName  string      `yaml:"policy" json:"policy"`
 	RuleName    string      `yaml:"rule" json:"rule"`
@@ -70,7 +70,7 @@ type PolicyViolation struct {
 	Remediation string      `yaml:"remediation,omitempty" json:"remediation,omitempty"`
 }
 
-// RunComplianceAudit performs a compliance audit against configured policies
+// RunComplianceAudit performs a compliance audit against configured policies.
 func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState) (*AuditReport, error) {
 	report := &AuditReport{
 		Organization: rc.Organization,
@@ -126,6 +126,7 @@ func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState)
 			for ruleName, rule := range policy.Rules {
 				// Check if there's an active exception for this rule
 				hasException := false
+
 				for _, exc := range exceptions {
 					if exc.PolicyName == policyName && exc.RuleName == ruleName && exc.IsExceptionActive() {
 						hasException = true
@@ -134,9 +135,11 @@ func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState)
 							if r.RuleName == ruleName {
 								policyResults[policyName].Rules[i].ExemptedRepos = append(
 									policyResults[policyName].Rules[i].ExemptedRepos, repoName)
+
 								break
 							}
 						}
+
 						break
 					}
 				}
@@ -162,6 +165,7 @@ func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState)
 						if r.RuleName == ruleName {
 							policyResults[policyName].Rules[i].ViolatingRepos = append(
 								policyResults[policyName].Rules[i].ViolatingRepos, repoName)
+
 							break
 						}
 					}
@@ -171,11 +175,14 @@ func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState)
 
 		// Update summary
 		report.Summary.TotalRepositories++
+
 		report.Summary.AuditedRepositories++
 		if repoResult.Compliant {
 			report.Summary.CompliantRepositories++
 		}
+
 		report.Summary.TotalViolations += len(repoResult.Violations)
+
 		report.Summary.TotalExceptions += len(repoResult.Exceptions)
 		for _, exc := range repoResult.Exceptions {
 			if exc.IsExceptionActive() {
@@ -213,7 +220,7 @@ func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState)
 	return report, nil
 }
 
-// RepositoryState represents the actual state of a repository
+// RepositoryState represents the actual state of a repository.
 type RepositoryState struct {
 	Name         string
 	Private      bool
@@ -240,7 +247,7 @@ type RepositoryState struct {
 	LastModified time.Time
 }
 
-// BranchProtectionState represents actual branch protection settings
+// BranchProtectionState represents actual branch protection settings.
 type BranchProtectionState struct {
 	Protected       bool
 	RequiredReviews int
@@ -248,17 +255,19 @@ type BranchProtectionState struct {
 	// Add other relevant fields as needed
 }
 
-// checkRuleCompliance checks if a repository complies with a specific rule
+// checkRuleCompliance checks if a repository complies with a specific rule.
 func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *SecuritySettings,
 	permissions *PermissionSettings, state RepositoryState,
 ) *PolicyViolation {
 	switch rule.Type {
 	case "visibility":
 		expected := rule.Value.(string)
+
 		actual := "public"
 		if state.Private {
 			actual = "private"
 		}
+
 		if expected != actual {
 			return &PolicyViolation{
 				Type:     rule.Type,
@@ -305,12 +314,14 @@ func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *Secu
 	case "file_exists":
 		if expectedFile, ok := rule.Value.(string); ok {
 			found := false
+
 			for _, file := range state.Files {
 				if strings.EqualFold(file, expectedFile) {
 					found = true
 					break
 				}
 			}
+
 			if !found {
 				return &PolicyViolation{
 					Type:        rule.Type,
@@ -324,6 +335,7 @@ func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *Secu
 	case "workflow_exists":
 		if expectedWorkflow, ok := rule.Value.(string); ok {
 			found := false
+
 			workflowName := strings.TrimPrefix(expectedWorkflow, ".github/workflows/")
 			for _, workflow := range state.Workflows {
 				if strings.EqualFold(workflow, workflowName) {
@@ -331,6 +343,7 @@ func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *Secu
 					break
 				}
 			}
+
 			if !found {
 				return &PolicyViolation{
 					Type:        rule.Type,
@@ -344,6 +357,7 @@ func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *Secu
 	case "security_feature":
 		if feature, ok := rule.Value.(string); ok {
 			enabled := false
+
 			switch feature {
 			case "vulnerability_alerts":
 				enabled = state.VulnerabilityAlerts
@@ -365,7 +379,7 @@ func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *Secu
 	return nil
 }
 
-// getIntValue safely extracts an int value from an interface{}
+// getIntValue safely extracts an int value from an interface{}.
 func getIntValue(v interface{}) (int, bool) {
 	switch val := v.(type) {
 	case int:
@@ -379,7 +393,7 @@ func getIntValue(v interface{}) (int, bool) {
 	}
 }
 
-// getSeverity determines severity level from enforcement
+// getSeverity determines severity level from enforcement.
 func getSeverity(enforcement string) string {
 	switch strings.ToLower(enforcement) {
 	case "required":
@@ -391,7 +405,7 @@ func getSeverity(enforcement string) string {
 	}
 }
 
-// GenerateAuditSummary creates a human-readable summary of the audit report
+// GenerateAuditSummary creates a human-readable summary of the audit report.
 func (ar *AuditReport) GenerateAuditSummary() string {
 	var sb strings.Builder
 
@@ -407,6 +421,7 @@ func (ar *AuditReport) GenerateAuditSummary() string {
 	sb.WriteString(fmt.Sprintf("- Active Exceptions: %d\n", ar.Summary.ActiveExceptions))
 
 	sb.WriteString("\n## Policy Compliance\n\n")
+
 	for _, policy := range ar.Policies {
 		sb.WriteString(fmt.Sprintf("### %s\n", policy.PolicyName))
 		sb.WriteString(fmt.Sprintf("%s\n\n", policy.Description))
@@ -418,6 +433,7 @@ func (ar *AuditReport) GenerateAuditSummary() string {
 
 	// List non-compliant repositories
 	nonCompliant := 0
+
 	for _, repo := range ar.Repositories {
 		if !repo.Compliant {
 			nonCompliant++
@@ -426,16 +442,20 @@ func (ar *AuditReport) GenerateAuditSummary() string {
 
 	if nonCompliant > 0 {
 		sb.WriteString("\n## Non-Compliant Repositories\n\n")
+
 		for _, repo := range ar.Repositories {
 			if !repo.Compliant {
 				sb.WriteString(fmt.Sprintf("### %s\n", repo.Repository))
+
 				for _, violation := range repo.Violations {
 					sb.WriteString(fmt.Sprintf("- **%s/%s**: %s\n",
 						violation.PolicyName, violation.RuleName, violation.Message))
+
 					if violation.Remediation != "" {
 						sb.WriteString(fmt.Sprintf("  - Remediation: %s\n", violation.Remediation))
 					}
 				}
+
 				sb.WriteString("\n")
 			}
 		}

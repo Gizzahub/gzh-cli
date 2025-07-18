@@ -9,13 +9,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// DependabotConfigManager manages Dependabot configurations for repositories
+// DependabotConfigManager manages Dependabot configurations for repositories.
 type DependabotConfigManager struct {
 	logger    Logger
 	apiClient APIClient
 }
 
-// DependabotConfig represents the complete Dependabot configuration
+// DependabotConfig represents the complete Dependabot configuration.
 type DependabotConfig struct {
 	Version int                    `yaml:"version" json:"version"`
 	Updates []DependabotUpdateRule `yaml:"updates" json:"updates"`
@@ -23,7 +23,7 @@ type DependabotConfig struct {
 	Registries map[string]DependabotRegistry `yaml:"registries,omitempty" json:"registries,omitempty"`
 }
 
-// DependabotUpdateRule defines update rules for a package ecosystem
+// DependabotUpdateRule defines update rules for a package ecosystem.
 type DependabotUpdateRule struct {
 	PackageEcosystem     string                     `yaml:"package-ecosystem" json:"package_ecosystem"`
 	Directory            string                     `yaml:"directory" json:"directory"`
@@ -43,7 +43,7 @@ type DependabotUpdateRule struct {
 	InsecureExternalCode bool                       `yaml:"insecure-external-code-execution,omitempty" json:"insecure_external_code,omitempty"`
 }
 
-// DependabotSchedule defines when Dependabot checks for updates
+// DependabotSchedule defines when Dependabot checks for updates.
 type DependabotSchedule struct {
 	Interval string `yaml:"interval" json:"interval"`
 	Day      string `yaml:"day,omitempty" json:"day,omitempty"`
@@ -51,28 +51,28 @@ type DependabotSchedule struct {
 	Timezone string `yaml:"timezone,omitempty" json:"timezone,omitempty"`
 }
 
-// DependabotAllowedUpdate defines which updates are allowed
+// DependabotAllowedUpdate defines which updates are allowed.
 type DependabotAllowedUpdate struct {
 	DependencyType string `yaml:"dependency-type,omitempty" json:"dependency_type,omitempty"`
 	DependencyName string `yaml:"dependency-name,omitempty" json:"dependency_name,omitempty"`
 	UpdateType     string `yaml:"update-type,omitempty" json:"update_type,omitempty"`
 }
 
-// DependabotIgnoredUpdate defines dependencies to ignore
+// DependabotIgnoredUpdate defines dependencies to ignore.
 type DependabotIgnoredUpdate struct {
 	DependencyName string   `yaml:"dependency-name" json:"dependency_name"`
 	Versions       []string `yaml:"versions,omitempty" json:"versions,omitempty"`
 	UpdateTypes    []string `yaml:"update-types,omitempty" json:"update_types,omitempty"`
 }
 
-// DependabotCommitMessage defines commit message preferences
+// DependabotCommitMessage defines commit message preferences.
 type DependabotCommitMessage struct {
 	Prefix            string `yaml:"prefix,omitempty" json:"prefix,omitempty"`
 	PrefixDevelopment string `yaml:"prefix-development,omitempty" json:"prefix_development,omitempty"`
 	Include           string `yaml:"include,omitempty" json:"include,omitempty"`
 }
 
-// DependabotGroup defines dependency groups for batch updates
+// DependabotGroup defines dependency groups for batch updates.
 type DependabotGroup struct {
 	DependencyType string                   `yaml:"dependency-type,omitempty" json:"dependency_type,omitempty"`
 	UpdateTypes    []string                 `yaml:"update-types,omitempty" json:"update_types,omitempty"`
@@ -81,13 +81,13 @@ type DependabotGroup struct {
 	AppliesTo      DependabotGroupAppliesTo `yaml:"applies-to,omitempty" json:"applies_to,omitempty"`
 }
 
-// DependabotGroupAppliesTo defines version update constraints for groups
+// DependabotGroupAppliesTo defines version update constraints for groups.
 type DependabotGroupAppliesTo struct {
 	VersionUpdates  []string `yaml:"version-updates,omitempty" json:"version_updates,omitempty"`
 	SecurityUpdates bool     `yaml:"security-updates,omitempty" json:"security_updates,omitempty"`
 }
 
-// DependabotRegistry defines private package registry configuration
+// DependabotRegistry defines private package registry configuration.
 type DependabotRegistry struct {
 	Type        string `yaml:"type" json:"type"`
 	URL         string `yaml:"url" json:"url"`
@@ -98,7 +98,7 @@ type DependabotRegistry struct {
 	ReplaceBase bool   `yaml:"replace-base,omitempty" json:"replace_base,omitempty"`
 }
 
-// DependabotPolicyConfig represents organization-wide Dependabot policies
+// DependabotPolicyConfig represents organization-wide Dependabot policies.
 type DependabotPolicyConfig struct {
 	ID                   string                     `json:"id"`
 	Name                 string                     `json:"name"`
@@ -114,7 +114,7 @@ type DependabotPolicyConfig struct {
 	Version              int                        `json:"version"`
 }
 
-// EcosystemPolicy defines policies for specific package ecosystems
+// EcosystemPolicy defines policies for specific package ecosystems.
 type EcosystemPolicy struct {
 	Ecosystem             string   `json:"ecosystem"`
 	Enabled               bool     `json:"enabled"`
@@ -128,7 +128,7 @@ type EcosystemPolicy struct {
 	MinSecuritySeverity   string   `json:"min_security_severity"`
 }
 
-// SecurityPolicySettings defines security-related policies for Dependabot
+// SecurityPolicySettings defines security-related policies for Dependabot.
 type SecurityPolicySettings struct {
 	EnableVulnerabilityAlerts  bool     `json:"enable_vulnerability_alerts"`
 	AutoFixSecurityVulns       bool     `json:"auto_fix_security_vulns"`
@@ -139,7 +139,7 @@ type SecurityPolicySettings struct {
 	ExcludedVulnerabilityIDs   []string `json:"excluded_vulnerability_ids,omitempty"`
 }
 
-// ApprovalRequirements defines approval requirements for different update types
+// ApprovalRequirements defines approval requirements for different update types.
 type ApprovalRequirements struct {
 	MajorUpdates    ApprovalRule `json:"major_updates"`
 	MinorUpdates    ApprovalRule `json:"minor_updates"`
@@ -147,7 +147,7 @@ type ApprovalRequirements struct {
 	SecurityUpdates ApprovalRule `json:"security_updates"`
 }
 
-// ApprovalRule defines approval requirements for a specific update type
+// ApprovalRule defines approval requirements for a specific update type.
 type ApprovalRule struct {
 	RequiredReviewers      int      `json:"required_reviewers"`
 	RequiredApprovals      int      `json:"required_approvals"`
@@ -157,7 +157,7 @@ type ApprovalRule struct {
 	RestrictedPaths        []string `json:"restricted_paths,omitempty"`
 }
 
-// DependabotStatus represents the current status of Dependabot for a repository
+// DependabotStatus represents the current status of Dependabot for a repository.
 type DependabotStatus struct {
 	Repository          string                  `json:"repository"`
 	Organization        string                  `json:"organization"`
@@ -172,7 +172,7 @@ type DependabotStatus struct {
 	ConfigSummary       DependabotConfigSummary `json:"config_summary"`
 }
 
-// DependabotUpdate represents a Dependabot update activity
+// DependabotUpdate represents a Dependabot update activity.
 type DependabotUpdate struct {
 	ID               string                 `json:"id"`
 	Dependency       string                 `json:"dependency"`
@@ -187,7 +187,7 @@ type DependabotUpdate struct {
 	SecurityAdvisory *SecurityAdvisoryInfo  `json:"security_advisory,omitempty"`
 }
 
-// DependabotError represents an error encountered by Dependabot
+// DependabotError represents an error encountered by Dependabot.
 type DependabotError struct {
 	ID        string              `json:"id"`
 	Type      DependabotErrorType `json:"type"`
@@ -198,7 +198,7 @@ type DependabotError struct {
 	Resolved  bool                `json:"resolved"`
 }
 
-// DependabotConfigSummary provides a summary of the current configuration
+// DependabotConfigSummary provides a summary of the current configuration.
 type DependabotConfigSummary struct {
 	TotalEcosystems        int               `json:"total_ecosystems"`
 	EnabledEcosystems      []string          `json:"enabled_ecosystems"`
@@ -209,7 +209,7 @@ type DependabotConfigSummary struct {
 	RegistriesConfigured   int               `json:"registries_configured"`
 }
 
-// SecurityAdvisoryInfo represents security vulnerability information
+// SecurityAdvisoryInfo represents security vulnerability information.
 type SecurityAdvisoryInfo struct {
 	ID          string    `json:"id"`
 	Summary     string    `json:"summary"`
@@ -219,7 +219,7 @@ type SecurityAdvisoryInfo struct {
 	PublishedAt time.Time `json:"published_at"`
 }
 
-// Enum types
+// Enum types.
 type DependabotUpdateStatus string
 
 const (
@@ -242,7 +242,7 @@ const (
 	DependabotErrorTypeUnknown           DependabotErrorType = "unknown_error"
 )
 
-// Supported package ecosystems
+// Supported package ecosystems.
 const (
 	EcosystemNPM           = "npm"
 	EcosystemPip           = "pip"
@@ -263,14 +263,14 @@ const (
 	EcosystemSwift         = "swift"
 )
 
-// Update intervals
+// Update intervals.
 const (
 	IntervalDaily   = "daily"
 	IntervalWeekly  = "weekly"
 	IntervalMonthly = "monthly"
 )
 
-// Update types
+// Update types.
 const (
 	UpdateTypeAll           = "all"
 	UpdateTypeSecurity      = "security"
@@ -279,7 +279,7 @@ const (
 	UpdateTypeVersionPatch  = "version-update:semver-patch"
 )
 
-// Versioning strategies
+// Versioning strategies.
 const (
 	VersioningStrategyAuto                = "auto"
 	VersioningStrategyLockfileOnly        = "lockfile-only"
@@ -288,7 +288,7 @@ const (
 	VersioningStrategyIncreaseIfNecessary = "increase-if-necessary"
 )
 
-// NewDependabotConfigManager creates a new Dependabot configuration manager
+// NewDependabotConfigManager creates a new Dependabot configuration manager.
 func NewDependabotConfigManager(logger Logger, apiClient APIClient) *DependabotConfigManager {
 	return &DependabotConfigManager{
 		logger:    logger,
@@ -296,7 +296,7 @@ func NewDependabotConfigManager(logger Logger, apiClient APIClient) *DependabotC
 	}
 }
 
-// GetDependabotConfig retrieves the current Dependabot configuration for a repository
+// GetDependabotConfig retrieves the current Dependabot configuration for a repository.
 func (dm *DependabotConfigManager) GetDependabotConfig(ctx context.Context, organization, repository string) (*DependabotConfig, error) {
 	dm.logger.Info("Retrieving Dependabot configuration", "organization", organization, "repository", repository)
 
@@ -327,7 +327,7 @@ func (dm *DependabotConfigManager) GetDependabotConfig(ctx context.Context, orga
 	return config, nil
 }
 
-// UpdateDependabotConfig updates the Dependabot configuration for a repository
+// UpdateDependabotConfig updates the Dependabot configuration for a repository.
 func (dm *DependabotConfigManager) UpdateDependabotConfig(ctx context.Context, organization, repository string, config *DependabotConfig) error {
 	dm.logger.Info("Updating Dependabot configuration", "organization", organization, "repository", repository)
 
@@ -354,7 +354,7 @@ func (dm *DependabotConfigManager) UpdateDependabotConfig(ctx context.Context, o
 	return nil
 }
 
-// CreateDefaultConfig creates a default Dependabot configuration for a repository
+// CreateDefaultConfig creates a default Dependabot configuration for a repository.
 func (dm *DependabotConfigManager) CreateDefaultConfig(ctx context.Context, organization, repository string, ecosystems []string) (*DependabotConfig, error) {
 	dm.logger.Info("Creating default Dependabot configuration",
 		"organization", organization,
@@ -375,7 +375,7 @@ func (dm *DependabotConfigManager) CreateDefaultConfig(ctx context.Context, orga
 	return config, nil
 }
 
-// ValidateConfig validates a Dependabot configuration
+// ValidateConfig validates a Dependabot configuration.
 func (dm *DependabotConfigManager) ValidateConfig(config *DependabotConfig) error {
 	if config.Version != 2 {
 		return fmt.Errorf("unsupported version: %d (only version 2 is supported)", config.Version)
@@ -395,7 +395,7 @@ func (dm *DependabotConfigManager) ValidateConfig(config *DependabotConfig) erro
 	return nil
 }
 
-// GetDependabotStatus retrieves the current status of Dependabot for a repository
+// GetDependabotStatus retrieves the current status of Dependabot for a repository.
 func (dm *DependabotConfigManager) GetDependabotStatus(ctx context.Context, organization, repository string) (*DependabotStatus, error) {
 	dm.logger.Info("Retrieving Dependabot status", "organization", organization, "repository", repository)
 
@@ -520,6 +520,7 @@ func (dm *DependabotConfigManager) isSupportedEcosystem(ecosystem string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -530,6 +531,7 @@ func (dm *DependabotConfigManager) isValidInterval(interval string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -544,10 +546,11 @@ func (dm *DependabotConfigManager) isValidVersioningStrategy(strategy string) bo
 			return true
 		}
 	}
+
 	return false
 }
 
-// DetectEcosystems detects package ecosystems in a repository
+// DetectEcosystems detects package ecosystems in a repository.
 func (dm *DependabotConfigManager) DetectEcosystems(ctx context.Context, organization, repository string) ([]string, error) {
 	dm.logger.Info("Detecting package ecosystems", "organization", organization, "repository", repository)
 
@@ -560,9 +563,11 @@ func (dm *DependabotConfigManager) DetectEcosystems(ctx context.Context, organiz
 	if strings.Contains(repoName, "node") || strings.Contains(repoName, "js") {
 		ecosystems = append(ecosystems, EcosystemNPM)
 	}
+
 	if strings.Contains(repoName, "python") || strings.Contains(repoName, "py") {
 		ecosystems = append(ecosystems, EcosystemPip)
 	}
+
 	if strings.Contains(repoName, "docker") {
 		ecosystems = append(ecosystems, EcosystemDockerfile)
 	}
@@ -571,5 +576,6 @@ func (dm *DependabotConfigManager) DetectEcosystems(ctx context.Context, organiz
 	ecosystems = append(ecosystems, EcosystemGitHubActions)
 
 	dm.logger.Info("Detected ecosystems", "ecosystems", ecosystems)
+
 	return ecosystems, nil
 }

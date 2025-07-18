@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// webhookConfigurationServiceImpl implements WebhookConfigurationService
+// webhookConfigurationServiceImpl implements WebhookConfigurationService.
 type webhookConfigurationServiceImpl struct {
 	webhookService WebhookService
 	apiClient      APIClient
@@ -16,7 +16,7 @@ type webhookConfigurationServiceImpl struct {
 	storage        ConfigStorage // Interface for storing configuration data
 }
 
-// ConfigStorage defines the interface for storing webhook configuration data
+// ConfigStorage defines the interface for storing webhook configuration data.
 type ConfigStorage interface {
 	SavePolicy(ctx context.Context, policy *WebhookPolicy) error
 	GetPolicy(ctx context.Context, org, policyID string) (*WebhookPolicy, error)
@@ -27,7 +27,7 @@ type ConfigStorage interface {
 	GetOrganizationConfig(ctx context.Context, org string) (*OrganizationWebhookConfig, error)
 }
 
-// NewWebhookConfigurationService creates a new webhook configuration service
+// NewWebhookConfigurationService creates a new webhook configuration service.
 func NewWebhookConfigurationService(webhookService WebhookService, apiClient APIClient, logger Logger, storage ConfigStorage) WebhookConfigurationService {
 	return &webhookConfigurationServiceImpl{
 		webhookService: webhookService,
@@ -90,6 +90,7 @@ func (w *webhookConfigurationServiceImpl) GetOrganizationConfig(ctx context.Cont
 		// Return default configuration if none exists
 		return w.getDefaultOrganizationConfig(org), nil
 	}
+
 	return config, nil
 }
 
@@ -306,6 +307,7 @@ func (w *webhookConfigurationServiceImpl) MigrateExistingWebhooks(ctx context.Co
 	}
 
 	result.ExecutionTime = time.Since(startTime).String()
+
 	return result, nil
 }
 
@@ -335,6 +337,7 @@ func (w *webhookConfigurationServiceImpl) SyncOrganizationWebhooks(ctx context.C
 	// Check each repository for discrepancies
 	for _, repo := range repositories {
 		discrepancies := w.checkRepositoryCompliance(ctx, repo, orgConfig)
+
 		result.Discrepancies = append(result.Discrepancies, discrepancies...)
 		if len(discrepancies) == 0 {
 			result.SyncedRepositories++
@@ -342,6 +345,7 @@ func (w *webhookConfigurationServiceImpl) SyncOrganizationWebhooks(ctx context.C
 	}
 
 	result.ExecutionTime = time.Since(startTime).String()
+
 	return result, nil
 }
 
@@ -442,9 +446,11 @@ func (w *webhookConfigurationServiceImpl) validatePolicy(policy *WebhookPolicy) 
 	if policy.Name == "" {
 		return fmt.Errorf("policy name is required")
 	}
+
 	if policy.Organization == "" {
 		return fmt.Errorf("organization is required")
 	}
+
 	if len(policy.Rules) == 0 {
 		return fmt.Errorf("at least one rule is required")
 	}
@@ -531,10 +537,12 @@ func (w *webhookConfigurationServiceImpl) getApplicablePolicies(ctx context.Cont
 			if err != nil {
 				return nil, fmt.Errorf("failed to get policy %s: %w", id, err)
 			}
+
 			if policy.Enabled {
 				policies = append(policies, policy)
 			}
 		}
+
 		return policies, nil
 	}
 
@@ -545,6 +553,7 @@ func (w *webhookConfigurationServiceImpl) getApplicablePolicies(ctx context.Cont
 	}
 
 	enabledPolicies := make([]*WebhookPolicy, 0)
+
 	for _, policy := range allPolicies {
 		if policy.Enabled {
 			enabledPolicies = append(enabledPolicies, policy)
@@ -588,12 +597,14 @@ func (w *webhookConfigurationServiceImpl) ruleAppliesTo(repo string, conditions 
 	// Check repository name exact match
 	if len(conditions.RepositoryName) > 0 {
 		found := false
+
 		for _, name := range conditions.RepositoryName {
 			if name == repo {
 				found = true
 				break
 			}
 		}
+
 		if !found {
 			return false
 		}
@@ -602,12 +613,14 @@ func (w *webhookConfigurationServiceImpl) ruleAppliesTo(repo string, conditions 
 	// Check repository pattern match
 	if len(conditions.RepositoryPattern) > 0 {
 		found := false
+
 		for _, pattern := range conditions.RepositoryPattern {
 			if matched, _ := regexp.MatchString(pattern, repo); matched {
 				found = true
 				break
 			}
 		}
+
 		if !found {
 			return false
 		}
@@ -633,6 +646,7 @@ func (w *webhookConfigurationServiceImpl) applyRuleToRepository(ctx context.Cont
 	if dryRun {
 		result.Success = true
 		result.Changes = []string{fmt.Sprintf("Would %s webhook '%s'", rule.Action, rule.Template.Name)}
+
 		return result
 	}
 
@@ -658,6 +672,7 @@ func (w *webhookConfigurationServiceImpl) applyRuleToRepository(ctx context.Cont
 	}
 
 	result.Duration = time.Since(startTime).String()
+
 	return result
 }
 
@@ -728,6 +743,7 @@ func (w *webhookConfigurationServiceImpl) categorizeWebhook(webhook *WebhookInfo
 	} else if strings.Contains(webhook.URL, "discord") {
 		return "discord"
 	}
+
 	return "other"
 }
 
@@ -762,5 +778,6 @@ func max(a, b int) int {
 	if a > b {
 		return a
 	}
+
 	return b
 }

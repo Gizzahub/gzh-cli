@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-// Validator provides configuration validation functionality
+// Validator provides configuration validation functionality.
 type Validator struct {
 	errors   []string
 	warnings []string
 }
 
-// NewValidator creates a new configuration validator
+// NewValidator creates a new configuration validator.
 func NewValidator() *Validator {
 	return &Validator{
 		errors:   make([]string, 0),
@@ -20,7 +20,7 @@ func NewValidator() *Validator {
 	}
 }
 
-// ValidateConfig performs comprehensive validation of a configuration
+// ValidateConfig performs comprehensive validation of a configuration.
 func (v *Validator) ValidateConfig(config *Config) error {
 	v.reset()
 
@@ -44,18 +44,18 @@ func (v *Validator) ValidateConfig(config *Config) error {
 	return nil
 }
 
-// GetWarnings returns validation warnings
+// GetWarnings returns validation warnings.
 func (v *Validator) GetWarnings() []string {
 	return v.warnings
 }
 
-// reset clears previous validation results
+// reset clears previous validation results.
 func (v *Validator) reset() {
 	v.errors = v.errors[:0]
 	v.warnings = v.warnings[:0]
 }
 
-// validateRequiredFields checks for required configuration fields
+// validateRequiredFields checks for required configuration fields.
 func (v *Validator) validateRequiredFields(config *Config) {
 	if config.Version == "" {
 		v.addError("missing required field 'version'")
@@ -66,7 +66,7 @@ func (v *Validator) validateRequiredFields(config *Config) {
 	}
 }
 
-// validateVersion validates the version format
+// validateVersion validates the version format.
 func (v *Validator) validateVersion(version string) {
 	if version == "" {
 		return // Already handled in required fields
@@ -79,7 +79,7 @@ func (v *Validator) validateVersion(version string) {
 	}
 }
 
-// validateDefaultProvider validates the default provider setting
+// validateDefaultProvider validates the default provider setting.
 func (v *Validator) validateDefaultProvider(provider string) {
 	if provider == "" {
 		return // Optional field
@@ -92,14 +92,14 @@ func (v *Validator) validateDefaultProvider(provider string) {
 	}
 }
 
-// validateProviders validates all provider configurations
+// validateProviders validates all provider configurations.
 func (v *Validator) validateProviders(providers map[string]Provider) {
 	for name, provider := range providers {
 		v.validateProvider(name, provider)
 	}
 }
 
-// validateProvider validates a single provider configuration
+// validateProvider validates a single provider configuration.
 func (v *Validator) validateProvider(name string, provider Provider) {
 	// Validate provider name
 	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea}
@@ -121,6 +121,7 @@ func (v *Validator) validateProvider(name string, provider Provider) {
 		if len(provider.Groups) == 0 && len(provider.Orgs) > 0 {
 			v.addWarning(fmt.Sprintf("provider '%s': 'orgs' field should be 'groups' for GitLab", name))
 		}
+
 		for i, group := range provider.Groups {
 			v.validateGitTarget(fmt.Sprintf("%s.groups[%d]", name, i), group)
 		}
@@ -128,6 +129,7 @@ func (v *Validator) validateProvider(name string, provider Provider) {
 		if len(provider.Orgs) == 0 && len(provider.Groups) > 0 {
 			v.addWarning(fmt.Sprintf("provider '%s': 'groups' field should be 'orgs' for %s", name, name))
 		}
+
 		for i, org := range provider.Orgs {
 			v.validateGitTarget(fmt.Sprintf("%s.orgs[%d]", name, i), org)
 		}
@@ -139,7 +141,7 @@ func (v *Validator) validateProvider(name string, provider Provider) {
 	}
 }
 
-// validateToken validates token format and provides warnings
+// validateToken validates token format and provides warnings.
 func (v *Validator) validateToken(providerName, token string) {
 	// Check for environment variable format
 	if strings.HasPrefix(token, "${") && strings.HasSuffix(token, "}") {
@@ -169,7 +171,7 @@ func (v *Validator) validateToken(providerName, token string) {
 	}
 }
 
-// validateGitTarget validates a GitTarget configuration
+// validateGitTarget validates a GitTarget configuration.
 func (v *Validator) validateGitTarget(path string, target GitTarget) {
 	// Validate required fields
 	if target.Name == "" {
@@ -220,12 +222,12 @@ func (v *Validator) validateGitTarget(path string, target GitTarget) {
 	}
 }
 
-// addError adds a validation error
+// addError adds a validation error.
 func (v *Validator) addError(message string) {
 	v.errors = append(v.errors, fmt.Sprintf("ERROR: %s", message))
 }
 
-// addWarning adds a validation warning
+// addWarning adds a validation warning.
 func (v *Validator) addWarning(message string) {
 	v.warnings = append(v.warnings, fmt.Sprintf("WARNING: %s", message))
 }
@@ -233,7 +235,7 @@ func (v *Validator) addWarning(message string) {
 // contains checks if a slice contains a string
 // contains helper function (duplicate removed - defined in provider_adapters.go)
 
-// ValidateConfigFile validates a configuration file and returns detailed results
+// ValidateConfigFile validates a configuration file and returns detailed results.
 func ValidateConfigFile(filename string) (*ValidationResult, error) {
 	config, err := LoadConfigFromFile(filename)
 	if err != nil {
@@ -254,14 +256,14 @@ func ValidateConfigFile(filename string) (*ValidationResult, error) {
 	}, nil
 }
 
-// ValidationResult contains the results of configuration validation
+// ValidationResult contains the results of configuration validation.
 type ValidationResult struct {
 	Valid    bool     `json:"valid"`
 	Errors   []string `json:"errors,omitempty"`
 	Warnings []string `json:"warnings,omitempty"`
 }
 
-// HasIssues returns true if there are any errors or warnings
+// HasIssues returns true if there are any errors or warnings.
 func (r *ValidationResult) HasIssues() bool {
 	return len(r.Errors) > 0 || len(r.Warnings) > 0
 }

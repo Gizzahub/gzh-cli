@@ -16,6 +16,7 @@ func TestKubernetesNetworkManager(t *testing.T) {
 	// Create temporary directory for test
 	tempDir, err := os.MkdirTemp("", "k8s_network_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -111,6 +112,7 @@ func TestKubernetesNetworkManager(t *testing.T) {
 		for i, p := range listedProfiles {
 			profileNames[i] = p.Name
 		}
+
 		assert.Contains(t, profileNames, "profile1")
 		assert.Contains(t, profileNames, "profile2")
 	})
@@ -183,6 +185,7 @@ func TestKubernetesNetworkManager(t *testing.T) {
 func TestNetworkPolicyGeneration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_policy_gen_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -320,6 +323,7 @@ func TestNetworkPolicyGeneration(t *testing.T) {
 func TestComplexNetworkProfile(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_complex_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -566,6 +570,7 @@ func TestComplexNetworkProfile(t *testing.T) {
 func TestNetworkPolicyValidation(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_validation_test")
 	require.NoError(t, err)
+
 	defer os.RemoveAll(tempDir)
 
 	logger, _ := zap.NewDevelopment()
@@ -625,6 +630,7 @@ func TestServiceMeshIntegration(t *testing.T) {
 	t.Run("IstioServiceMeshConfig", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "k8s_istio_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -659,6 +665,7 @@ func TestServiceMeshIntegration(t *testing.T) {
 	t.Run("LinkerdServiceMeshConfig", func(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "k8s_linkerd_test")
 		require.NoError(t, err)
+
 		defer os.RemoveAll(tempDir)
 
 		logger, _ := zap.NewDevelopment()
@@ -689,7 +696,7 @@ func TestServiceMeshIntegration(t *testing.T) {
 	})
 }
 
-// TestKubernetesCommandExecutor tests the command executor
+// TestKubernetesCommandExecutor tests the command executor.
 func TestKubernetesCommandExecutor(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
 	executor := NewKubernetesCommandExecutor(logger)

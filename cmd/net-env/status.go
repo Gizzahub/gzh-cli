@@ -130,6 +130,7 @@ func (o *statusOptions) getNetworkInterfaces() ([]interfaceInfo, error) {
 
 	// Get interface list using 'ip' command
 	cmd := exec.Command("ip", "-json", "addr", "show")
+
 	output, err := cmd.Output()
 	if err != nil {
 		// Fallback to non-JSON output
@@ -152,12 +153,14 @@ func (o *statusOptions) getInterfacesFallback() ([]interfaceInfo, error) {
 
 	// Get basic interface information
 	cmd := exec.Command("ip", "addr", "show")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
 
 	interfaces = o.parseIPTextOutput(string(output))
+
 	return interfaces, nil
 }
 
@@ -226,6 +229,7 @@ func (o *statusOptions) getWiFiInfo() ([]interfaceInfo, error) {
 
 	// Try nmcli first
 	cmd := exec.Command("nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device", "status")
+
 	output, err := cmd.Output()
 	if err == nil {
 		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -255,6 +259,7 @@ func (o *statusOptions) getWiFiInfo() ([]interfaceInfo, error) {
 
 func (o *statusOptions) getWiFiDetails(device string) *interfaceInfo {
 	cmd := exec.Command("nmcli", "-t", "-f", "SSID,SIGNAL,FREQ", "device", "wifi", "list", "ifname", device)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil
@@ -285,6 +290,7 @@ func (o *statusOptions) mergeWiFiInfo(interfaces []interfaceInfo, wifiInterfaces
 		if wifi, exists := wifiMap[iface.Name]; exists {
 			interfaces[i].SSID = wifi.SSID
 			interfaces[i].Signal = wifi.Signal
+
 			interfaces[i].Frequency = wifi.Frequency
 			if wifi.State != "" {
 				interfaces[i].State = wifi.State
@@ -300,6 +306,7 @@ func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) {
 
 	// Check NetworkManager VPNs
 	cmd := exec.Command("nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show")
+
 	output, err := cmd.Output()
 	if err == nil {
 		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -366,6 +373,7 @@ func (o *statusOptions) getDNSInfo() (dnsInfo, error) {
 
 	// Try resolvectl first
 	cmd := exec.Command("resolvectl", "status")
+
 	output, err := cmd.Output()
 	if err == nil {
 		// Parse resolvectl output
@@ -376,6 +384,7 @@ func (o *statusOptions) getDNSInfo() (dnsInfo, error) {
 				servers := strings.TrimPrefix(line, "DNS Servers:")
 				info.Servers = strings.Fields(servers)
 				info.Method = "resolvectl"
+
 				break
 			}
 		}
@@ -392,6 +401,7 @@ func (o *statusOptions) getDNSInfo() (dnsInfo, error) {
 					info.Servers = append(info.Servers, fields[1])
 				}
 			}
+
 			info.Method = "resolv.conf"
 		}
 	}
@@ -405,6 +415,7 @@ func (o *statusOptions) getProxyInfo() (proxyInfo, error) {
 		HTTPS: os.Getenv("https_proxy"),
 		SOCKS: os.Getenv("socks_proxy"),
 	}
+
 	return info, nil
 }
 
@@ -416,27 +427,34 @@ func (o *statusOptions) printJSON(status *networkStatus) error {
 	fmt.Printf("  \"dns\": {...},\n")
 	fmt.Printf("  \"proxy\": {...}\n")
 	fmt.Printf("}\n")
+
 	return nil
 }
 
 func (o *statusOptions) printHuman(status *networkStatus) error {
 	// Print Network Interfaces
 	fmt.Printf("📡 Network Interfaces:\n")
+
 	if len(status.Interfaces) == 0 {
 		fmt.Printf("   No interfaces found\n")
 	} else {
 		for _, iface := range status.Interfaces {
 			fmt.Printf("   %s (%s): %s\n", iface.Name, iface.Type, iface.State)
+
 			if len(iface.IP) > 0 {
 				fmt.Printf("      IP: %s\n", strings.Join(iface.IP, ", "))
 			}
+
 			if iface.SSID != "" {
 				fmt.Printf("      SSID: %s", iface.SSID)
+
 				if iface.Signal != "" {
 					fmt.Printf(" (Signal: %s)", iface.Signal)
 				}
+
 				fmt.Printf("\n")
 			}
+
 			if iface.MAC != "" && o.verbose {
 				fmt.Printf("      MAC: %s\n", iface.MAC)
 			}
@@ -445,6 +463,7 @@ func (o *statusOptions) printHuman(status *networkStatus) error {
 
 	// Print VPN Status
 	fmt.Printf("\n🔐 VPN Connections:\n")
+
 	if len(status.VPN) == 0 {
 		fmt.Printf("   No VPN connections found\n")
 	} else {
@@ -455,10 +474,12 @@ func (o *statusOptions) printHuman(status *networkStatus) error {
 
 	// Print DNS Status
 	fmt.Printf("\n🌐 DNS Configuration:\n")
+
 	if len(status.DNS.Servers) == 0 {
 		fmt.Printf("   No DNS servers configured\n")
 	} else {
 		fmt.Printf("   Servers: %s\n", strings.Join(status.DNS.Servers, ", "))
+
 		if status.DNS.Method != "" {
 			fmt.Printf("   Method: %s\n", status.DNS.Method)
 		}
@@ -466,19 +487,27 @@ func (o *statusOptions) printHuman(status *networkStatus) error {
 
 	// Print Proxy Status
 	fmt.Printf("\n🌐 Proxy Configuration:\n")
+
 	hasProxy := false
+
 	if status.Proxy.HTTP != "" {
 		fmt.Printf("   HTTP: %s\n", status.Proxy.HTTP)
+
 		hasProxy = true
 	}
+
 	if status.Proxy.HTTPS != "" {
 		fmt.Printf("   HTTPS: %s\n", status.Proxy.HTTPS)
+
 		hasProxy = true
 	}
+
 	if status.Proxy.SOCKS != "" {
 		fmt.Printf("   SOCKS: %s\n", status.Proxy.SOCKS)
+
 		hasProxy = true
 	}
+
 	if !hasProxy {
 		fmt.Printf("   No proxy configured\n")
 	}

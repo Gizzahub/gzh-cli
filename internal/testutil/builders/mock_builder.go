@@ -9,12 +9,12 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-// MockLoggerBuilder provides a fluent interface for building test loggers
+// MockLoggerBuilder provides a fluent interface for building test loggers.
 type MockLoggerBuilder struct {
 	logger *MockLogger
 }
 
-// MockLogger implements the Logger interface for testing
+// MockLogger implements the Logger interface for testing.
 type MockLogger struct {
 	DebugCalls []LogCall
 	InfoCalls  []LogCall
@@ -22,13 +22,13 @@ type MockLogger struct {
 	ErrorCalls []LogCall
 }
 
-// LogCall represents a call to a logging method
+// LogCall represents a call to a logging method.
 type LogCall struct {
 	Message string
 	Args    []interface{}
 }
 
-// NewMockLoggerBuilder creates a new MockLoggerBuilder
+// NewMockLoggerBuilder creates a new MockLoggerBuilder.
 func NewMockLoggerBuilder() *MockLoggerBuilder {
 	return &MockLoggerBuilder{
 		logger: &MockLogger{
@@ -40,12 +40,12 @@ func NewMockLoggerBuilder() *MockLoggerBuilder {
 	}
 }
 
-// Build returns the constructed mock logger
+// Build returns the constructed mock logger.
 func (b *MockLoggerBuilder) Build() *MockLogger {
 	return b.logger
 }
 
-// MockLogger method implementations
+// MockLogger method implementations.
 func (m *MockLogger) Debug(msg string, args ...interface{}) {
 	m.DebugCalls = append(m.DebugCalls, LogCall{Message: msg, Args: args})
 }
@@ -62,12 +62,12 @@ func (m *MockLogger) Error(msg string, args ...interface{}) {
 	m.ErrorCalls = append(m.ErrorCalls, LogCall{Message: msg, Args: args})
 }
 
-// MockHTTPClientBuilder provides a fluent interface for building test HTTP clients
+// MockHTTPClientBuilder provides a fluent interface for building test HTTP clients.
 type MockHTTPClientBuilder struct {
 	client *MockHTTPClient
 }
 
-// MockHTTPClient implements the HTTPClient interface for testing
+// MockHTTPClient implements the HTTPClient interface for testing.
 type MockHTTPClient struct {
 	GetResponses  map[string]*http.Response
 	GetErrors     map[string]error
@@ -77,14 +77,14 @@ type MockHTTPClient struct {
 	PostCalls     []PostCall
 }
 
-// PostCall represents a call to the Post method
+// PostCall represents a call to the Post method.
 type PostCall struct {
 	URL         string
 	ContentType string
 	Body        string
 }
 
-// NewMockHTTPClientBuilder creates a new MockHTTPClientBuilder
+// NewMockHTTPClientBuilder creates a new MockHTTPClientBuilder.
 func NewMockHTTPClientBuilder() *MockHTTPClientBuilder {
 	return &MockHTTPClientBuilder{
 		client: &MockHTTPClient{
@@ -98,36 +98,36 @@ func NewMockHTTPClientBuilder() *MockHTTPClientBuilder {
 	}
 }
 
-// WithGetResponse configures a GET response for a specific URL
+// WithGetResponse configures a GET response for a specific URL.
 func (b *MockHTTPClientBuilder) WithGetResponse(url string, response *http.Response) *MockHTTPClientBuilder {
 	b.client.GetResponses[url] = response
 	return b
 }
 
-// WithGetError configures a GET error for a specific URL
+// WithGetError configures a GET error for a specific URL.
 func (b *MockHTTPClientBuilder) WithGetError(url string, err error) *MockHTTPClientBuilder {
 	b.client.GetErrors[url] = err
 	return b
 }
 
-// WithPostResponse configures a POST response for a specific URL
+// WithPostResponse configures a POST response for a specific URL.
 func (b *MockHTTPClientBuilder) WithPostResponse(url string, response *http.Response) *MockHTTPClientBuilder {
 	b.client.PostResponses[url] = response
 	return b
 }
 
-// WithPostError configures a POST error for a specific URL
+// WithPostError configures a POST error for a specific URL.
 func (b *MockHTTPClientBuilder) WithPostError(url string, err error) *MockHTTPClientBuilder {
 	b.client.PostErrors[url] = err
 	return b
 }
 
-// Build returns the constructed mock HTTP client
+// Build returns the constructed mock HTTP client.
 func (b *MockHTTPClientBuilder) Build() *MockHTTPClient {
 	return b.client
 }
 
-// MockHTTPClient method implementations
+// MockHTTPClient method implementations.
 func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
 	m.GetCalls = append(m.GetCalls, url)
 
@@ -144,6 +144,7 @@ func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
 
 func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
 	bodyStr := ""
+
 	if body != nil {
 		bodyBytes, _ := io.ReadAll(body)
 		bodyStr = string(bodyBytes)
@@ -166,12 +167,12 @@ func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Re
 	return nil, nil
 }
 
-// MockGitHubProviderFactoryBuilder provides a fluent interface for building GitHub provider factories
+// MockGitHubProviderFactoryBuilder provides a fluent interface for building GitHub provider factories.
 type MockGitHubProviderFactoryBuilder struct {
 	factory *MockGitHubProviderFactory
 }
 
-// MockGitHubProviderFactory implements the GitHubProviderFactory interface for testing
+// MockGitHubProviderFactory implements the GitHubProviderFactory interface for testing.
 type MockGitHubProviderFactory struct {
 	CreateClonerFunc        func(ctx context.Context, token string) (github.GitHubCloner, error)
 	CreateClonerWithEnvFunc func(ctx context.Context, token string, environment env.Environment) (github.GitHubCloner, error)
@@ -179,7 +180,7 @@ type MockGitHubProviderFactory struct {
 	ProviderName            string
 }
 
-// NewMockGitHubProviderFactoryBuilder creates a new MockGitHubProviderFactoryBuilder
+// NewMockGitHubProviderFactoryBuilder creates a new MockGitHubProviderFactoryBuilder.
 func NewMockGitHubProviderFactoryBuilder() *MockGitHubProviderFactoryBuilder {
 	return &MockGitHubProviderFactoryBuilder{
 		factory: &MockGitHubProviderFactory{
@@ -188,34 +189,35 @@ func NewMockGitHubProviderFactoryBuilder() *MockGitHubProviderFactoryBuilder {
 	}
 }
 
-// WithCreateClonerFunc sets the CreateCloner function
+// WithCreateClonerFunc sets the CreateCloner function.
 func (b *MockGitHubProviderFactoryBuilder) WithCreateClonerFunc(fn func(ctx context.Context, token string) (github.GitHubCloner, error)) *MockGitHubProviderFactoryBuilder {
 	b.factory.CreateClonerFunc = fn
 	return b
 }
 
-// WithCreateClonerWithEnvFunc sets the CreateClonerWithEnv function
+// WithCreateClonerWithEnvFunc sets the CreateClonerWithEnv function.
 func (b *MockGitHubProviderFactoryBuilder) WithCreateClonerWithEnvFunc(fn func(ctx context.Context, token string, environment env.Environment) (github.GitHubCloner, error)) *MockGitHubProviderFactoryBuilder {
 	b.factory.CreateClonerWithEnvFunc = fn
 	return b
 }
 
-// WithProviderName sets the provider name
+// WithProviderName sets the provider name.
 func (b *MockGitHubProviderFactoryBuilder) WithProviderName(name string) *MockGitHubProviderFactoryBuilder {
 	b.factory.ProviderName = name
 	return b
 }
 
-// Build returns the constructed mock GitHub provider factory
+// Build returns the constructed mock GitHub provider factory.
 func (b *MockGitHubProviderFactoryBuilder) Build() *MockGitHubProviderFactory {
 	return b.factory
 }
 
-// MockGitHubProviderFactory method implementations
+// MockGitHubProviderFactory method implementations.
 func (m *MockGitHubProviderFactory) CreateCloner(ctx context.Context, token string) (github.GitHubCloner, error) {
 	if m.CreateClonerFunc != nil {
 		return m.CreateClonerFunc(ctx, token)
 	}
+
 	return nil, nil
 }
 
@@ -223,6 +225,7 @@ func (m *MockGitHubProviderFactory) CreateClonerWithEnv(ctx context.Context, tok
 	if m.CreateClonerWithEnvFunc != nil {
 		return m.CreateClonerWithEnvFunc(ctx, token, environment)
 	}
+
 	return nil, nil
 }
 
@@ -230,6 +233,7 @@ func (m *MockGitHubProviderFactory) CreateChangeLogger(ctx context.Context, chan
 	if m.CreateChangeLoggerFunc != nil {
 		return m.CreateChangeLoggerFunc(ctx, changelog, options)
 	}
+
 	return nil, nil
 }
 

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// Mock storage implementation for testing
+// Mock storage implementation for testing.
 type mockConfigStorage struct {
 	mock.Mock
 }
@@ -44,10 +44,11 @@ func (m *mockConfigStorage) GetOrganizationConfig(ctx context.Context, org strin
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
+
 	return args.Get(0).(*OrganizationWebhookConfig), args.Error(1)
 }
 
-// Test helper functions
+// Test helper functions.
 func createTestPolicy() *WebhookPolicy {
 	return &WebhookPolicy{
 		ID:           "test-policy",
@@ -479,7 +480,7 @@ func TestRuleAppliesTo(t *testing.T) {
 	}
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkValidatePolicyWebhook(b *testing.B) {
 	mockStorage := &mockConfigStorage{}
 	mockLogger := &mockLogger{}
@@ -491,6 +492,7 @@ func BenchmarkValidatePolicyWebhook(b *testing.B) {
 	policy := createTestPolicy()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		service.validatePolicy(policy)
 	}
@@ -510,6 +512,7 @@ func BenchmarkRuleAppliesTo(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		service.ruleAppliesTo("api-service", conditions)
 	}
