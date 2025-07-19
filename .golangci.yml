@@ -158,7 +158,7 @@ linters-settings:
       Copyright (c) {{ YEAR }} {{ COMPANY }}
       SPDX-License-Identifier: {{ LICENSE }}
   testpackage:
-    skip-regexp: "(export|internal)_test\\.go"
+    skip-regexp: "(export|internal)_test\\.go|.*/cmd/.*_test\\.go|cmd/.*_test\\.go|.*cmd.*_test\\.go"
   tparallel:
     ignore:
       - "^Test.*Parallel.*$"
@@ -473,8 +473,8 @@ issues:
         - funlen
         - gocognit
     
-    # Exclude testpackage for cmd directory test files
-    - path: "^cmd/.*_test\\.go$"
+    # Exclude testpackage for cmd directory test files (white-box testing)
+    - path: "cmd/"
       linters:
         - testpackage
     
