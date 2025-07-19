@@ -199,7 +199,7 @@ func (o *sshConfigGenerateOptions) generateHostConfig(provider, orgName string, 
 
 	var configLines []string
 
-	configLines = append(configLines, fmt.Sprintf("# %s organization: %s", strings.Title(provider), orgName))
+	configLines = append(configLines, fmt.Sprintf("# %s organization: %s", strings.ToUpper(provider[:1])+provider[1:], orgName))
 	configLines = append(configLines, fmt.Sprintf("Host %s", hostAlias))
 	configLines = append(configLines, fmt.Sprintf("    HostName %s", hostname))
 	configLines = append(configLines, "    User git")

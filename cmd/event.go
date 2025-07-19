@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -183,8 +184,9 @@ func runEventServer(cmd *cobra.Command, args []string, host string, port int, se
 	// Start server
 	addr := fmt.Sprintf("%s:%d", host, port)
 	srv := &http.Server{
-		Addr:    addr,
-		Handler: mux,
+		Addr:              addr,
+		Handler:           mux,
+		ReadHeaderTimeout: 30 * time.Second,
 	}
 
 	logger.Info("Webhook server started", "address", addr)
@@ -382,7 +384,11 @@ func runEventTest(cmd *cobra.Command, args []string, eventType, action, payload 
 
 	// Load custom payload if specified
 	if payload != "" {
-		file, err := os.Open(payload)
+		// Validate payload file path to prevent directory traversal
+		if !filepath.IsAbs(payload) {
+			return fmt.Errorf("payload file path must be absolute: %s", payload)
+		}
+		file, err := os.Open(filepath.Clean(payload))
 		if err != nil {
 			return fmt.Errorf("failed to open payload file: %w", err)
 		}

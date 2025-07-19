@@ -163,7 +163,7 @@ func createInteractiveConfig(outputFile string) error {
 
 	// Configure each provider
 	for _, provider := range providers {
-		fmt.Printf("\n🔧 Configuring %s\n", strings.Title(provider))
+		fmt.Printf("\n🔧 Configuring %s\n", strings.ToUpper(provider[:1])+provider[1:])
 		fmt.Println("────────────────────")
 
 		providerTemplate := configureProvider(reader, provider)

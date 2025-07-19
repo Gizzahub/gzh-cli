@@ -250,9 +250,20 @@ func (wm *WebhookMonitor) GetMetrics() *WebhookMetrics {
 	defer wm.metrics.mu.RUnlock()
 
 	// Create a copy to avoid data races
-	metricsCopy := *wm.metrics
-	metricsCopy.StatusDistribution = make(map[WebhookHealthStatus]int64)
-	metricsCopy.OrganizationMetrics = make(map[string]*OrganizationMetrics)
+	metricsCopy := WebhookMetrics{
+		TotalWebhooks:        wm.metrics.TotalWebhooks,
+		ActiveWebhooks:       wm.metrics.ActiveWebhooks,
+		HealthyWebhooks:      wm.metrics.HealthyWebhooks,
+		UnhealthyWebhooks:    wm.metrics.UnhealthyWebhooks,
+		TotalDeliveries:      wm.metrics.TotalDeliveries,
+		SuccessfulDeliveries: wm.metrics.SuccessfulDeliveries,
+		FailedDeliveries:     wm.metrics.FailedDeliveries,
+		AverageResponseTime:  wm.metrics.AverageResponseTime,
+		ActiveAlerts:         wm.metrics.ActiveAlerts,
+		StatusDistribution:   make(map[WebhookHealthStatus]int64),
+		OrganizationMetrics:  make(map[string]*OrganizationMetrics),
+		LastUpdated:          wm.metrics.LastUpdated,
+	}
 
 	for k, v := range wm.metrics.StatusDistribution {
 		metricsCopy.StatusDistribution[k] = v

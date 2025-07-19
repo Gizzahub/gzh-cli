@@ -892,7 +892,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 				fmt.Println("Configured Policies:")
 				fmt.Println("==================")
 
-				if config.Policies == nil || len(config.Policies) == 0 {
+				if len(config.Policies) == 0 {
 					fmt.Println("No policies configured")
 					return nil
 				}
@@ -1055,7 +1055,7 @@ func newCloudPolicyValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.C
 				}
 			} else {
 				// Validate all configured policies
-				if config.Policies == nil || len(config.Policies) == 0 {
+				if len(config.Policies) == 0 {
 					fmt.Println("No policies configured")
 					return nil
 				}

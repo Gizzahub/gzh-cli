@@ -149,7 +149,7 @@ repo_roots:
 
 // ExampleMultiProviderConfig demonstrates a comprehensive configuration
 // with multiple Git hosting providers.
-func ExampleMultiProviderConfig() {
+func ExampleLoadConfig_multiProvider() {
 	tempDir := "/tmp/bulk-clone-multi-provider-example"
 
 	os.MkdirAll(tempDir, 0o755)

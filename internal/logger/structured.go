@@ -36,7 +36,7 @@ type LogEntry struct {
 	Level       string                 `json:"level"`
 	Message     string                 `json:"message"`
 	Component   string                 `json:"component"`
-	SessionID   string                 `json:"session_id"`
+	SessionID   string                 `json:"sessionId"`
 	Context     map[string]interface{} `json:"context,omitempty"`
 	Caller      *CallerInfo            `json:"caller,omitempty"`
 	Error       *ErrorInfo             `json:"error,omitempty"`
@@ -54,14 +54,14 @@ type CallerInfo struct {
 type ErrorInfo struct {
 	Type       string `json:"type"`
 	Message    string `json:"message"`
-	StackTrace string `json:"stack_trace,omitempty"`
+	StackTrace string `json:"stackTrace,omitempty"`
 	Code       string `json:"code,omitempty"`
 }
 
 // PerformanceInfo represents performance metrics.
 type PerformanceInfo struct {
 	Duration    time.Duration          `json:"duration"`
-	MemoryUsage int64                  `json:"memory_usage"`
+	MemoryUsage int64                  `json:"memoryUsage"`
 	Operation   string                 `json:"operation"`
 	Metrics     map[string]interface{} `json:"metrics,omitempty"`
 }
@@ -186,10 +186,10 @@ func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}
 
 	attrs = append(attrs,
 		slog.String("component", l.component),
-		slog.String("session_id", l.sessionID),
-		slog.String("caller_file", caller.File),
-		slog.Int("caller_line", caller.Line),
-		slog.String("caller_function", caller.Function),
+		slog.String("sessionId", l.sessionID),
+		slog.String("callerFile", caller.File),
+		slog.Int("callerLine", caller.Line),
+		slog.String("callerFunction", caller.Function),
 	)
 
 	// Add context attributes
@@ -210,7 +210,7 @@ func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}
 }
 
 // logWithError logs a message with error information.
-func (l *StructuredLogger) logWithError(level slog.Level, err error, msg string, args ...interface{}) {
+func (l *StructuredLogger) logWithError(level slog.Level, err error, msg string, _ ...interface{}) {
 	if !l.logger.Enabled(context.Background(), level) {
 		return
 	}

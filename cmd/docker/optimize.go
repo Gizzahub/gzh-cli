@@ -91,13 +91,13 @@ func init() {
 
 // OptimizationAnalysis represents image analysis results.
 type OptimizationAnalysis struct {
-	ImageInfo      ImageInfo          `json:"image_info"`
-	LayerAnalysis  []LayerInfo        `json:"layer_analysis"`
-	SizeBreakdown  SizeBreakdown      `json:"size_breakdown"`
+	ImageInfo      ImageInfo          `json:"imageInfo"`
+	LayerAnalysis  []LayerInfo        `json:"layerAnalysis"`
+	SizeBreakdown  SizeBreakdown      `json:"sizeBreakdown"`
 	Suggestions    []Suggestion       `json:"suggestions"`
-	BaseImageRecs  []BaseImageRec     `json:"base_image_recommendations"`
-	WasteAnalysis  WasteAnalysis      `json:"waste_analysis"`
-	SecurityImpact SecurityImpact     `json:"security_impact"`
+	BaseImageRecs  []BaseImageRec     `json:"baseImageRecommendations"`
+	WasteAnalysis  WasteAnalysis      `json:"wasteAnalysis"`
+	SecurityImpact SecurityImpact     `json:"securityImpact"`
 	Performance    PerformanceMetrics `json:"performance"`
 	Timestamp      time.Time          `json:"timestamp"`
 }
@@ -108,7 +108,7 @@ type ImageInfo struct {
 	ID           string            `json:"id"`
 	Created      time.Time         `json:"created"`
 	Size         int64             `json:"size"`
-	VirtualSize  int64             `json:"virtual_size"`
+	VirtualSize  int64             `json:"virtualSize"`
 	Architecture string            `json:"architecture"`
 	OS           string            `json:"os"`
 	Labels       map[string]string `json:"labels"`
@@ -117,11 +117,11 @@ type ImageInfo struct {
 
 type ImageConfig struct {
 	User         string   `json:"user"`
-	ExposedPorts []string `json:"exposed_ports"`
+	ExposedPorts []string `json:"exposedPorts"`
 	Env          []string `json:"env"`
 	Entrypoint   []string `json:"entrypoint"`
 	Cmd          []string `json:"cmd"`
-	WorkingDir   string   `json:"working_dir"`
+	WorkingDir   string   `json:"workingDir"`
 	Volumes      []string `json:"volumes"`
 }
 
@@ -129,10 +129,10 @@ type LayerInfo struct {
 	ID          string     `json:"id"`
 	Size        int64      `json:"size"`
 	Command     string     `json:"command"`
-	CreatedBy   string     `json:"created_by"`
+	CreatedBy   string     `json:"createdBy"`
 	Created     time.Time  `json:"created"`
 	Empty       bool       `json:"empty"`
-	WastedBytes int64      `json:"wasted_bytes"`
+	WastedBytes int64      `json:"wastedBytes"`
 	Efficiency  float64    `json:"efficiency"`
 	Files       []FileInfo `json:"files,omitempty"`
 }
@@ -140,20 +140,20 @@ type LayerInfo struct {
 type FileInfo struct {
 	Path         string `json:"path"`
 	Size         int64  `json:"size"`
-	IsWasted     bool   `json:"is_wasted"`
+	IsWasted     bool   `json:"isWasted"`
 	Permissions  string `json:"permissions"`
 	Owner        string `json:"owner"`
-	ModifiedTime string `json:"modified_time"`
+	ModifiedTime string `json:"modifiedTime"`
 }
 
 type SizeBreakdown struct {
-	TotalSize       int64            `json:"total_size"`
-	BaseImageSize   int64            `json:"base_image_size"`
-	ApplicationSize int64            `json:"application_size"`
-	WastedSpace     int64            `json:"wasted_space"`
-	CacheSize       int64            `json:"cache_size"`
-	LayerSizes      map[string]int64 `json:"layer_sizes"`
-	FileTypes       map[string]int64 `json:"file_types"`
+	TotalSize       int64            `json:"totalSize"`
+	BaseImageSize   int64            `json:"baseImageSize"`
+	ApplicationSize int64            `json:"applicationSize"`
+	WastedSpace     int64            `json:"wastedSpace"`
+	CacheSize       int64            `json:"cacheSize"`
+	LayerSizes      map[string]int64 `json:"layerSizes"`
+	FileTypes       map[string]int64 `json:"fileTypes"`
 	Directories     map[string]int64 `json:"directories"`
 }
 
@@ -163,9 +163,9 @@ type Suggestion struct {
 	Title            string   `json:"title"`
 	Description      string   `json:"description"`
 	Impact           string   `json:"impact"`
-	SizeReduction    int64    `json:"size_reduction,omitempty"`
+	SizeReduction    int64    `json:"sizeReduction,omitempty"`
 	Implementation   string   `json:"implementation"`
-	DockerfileChange string   `json:"dockerfile_change,omitempty"`
+	DockerfileChange string   `json:"dockerfileChange,omitempty"`
 	References       []string `json:"references,omitempty"`
 }
 
@@ -173,21 +173,21 @@ type BaseImageRec struct {
 	Name          string  `json:"name"`
 	Tag           string  `json:"tag"`
 	Size          int64   `json:"size"`
-	SizeReduction int64   `json:"size_reduction"`
-	SecurityScore float64 `json:"security_score"`
+	SizeReduction int64   `json:"sizeReduction"`
+	SecurityScore float64 `json:"securityScore"`
 	Compatibility string  `json:"compatibility"`
 	Reason        string  `json:"reason"`
-	TrustScore    float64 `json:"trust_score"`
+	TrustScore    float64 `json:"trustScore"`
 }
 
 type WasteAnalysis struct {
-	TotalWaste      int64            `json:"total_waste"`
-	WastePercentage float64          `json:"waste_percentage"`
-	WastedFiles     []WastedFile     `json:"wasted_files"`
-	DuplicateFiles  []DuplicateGroup `json:"duplicate_files"`
-	LargeFiles      []FileInfo       `json:"large_files"`
-	EmptyDirs       []string         `json:"empty_dirs"`
-	UnusedPackages  []string         `json:"unused_packages"`
+	TotalWaste      int64            `json:"totalWaste"`
+	WastePercentage float64          `json:"wastePercentage"`
+	WastedFiles     []WastedFile     `json:"wastedFiles"`
+	DuplicateFiles  []DuplicateGroup `json:"duplicateFiles"`
+	LargeFiles      []FileInfo       `json:"largeFiles"`
+	EmptyDirs       []string         `json:"emptyDirs"`
+	UnusedPackages  []string         `json:"unusedPackages"`
 }
 
 type WastedFile struct {
@@ -205,34 +205,34 @@ type DuplicateGroup struct {
 }
 
 type SecurityImpact struct {
-	VulnerabilityCount int      `json:"vulnerability_count"`
-	CriticalVulns      int      `json:"critical_vulns"`
-	ExposedPorts       []string `json:"exposed_ports"`
-	RunAsRoot          bool     `json:"run_as_root"`
-	SensitiveFiles     []string `json:"sensitive_files"`
+	VulnerabilityCount int      `json:"vulnerabilityCount"`
+	CriticalVulns      int      `json:"criticalVulns"`
+	ExposedPorts       []string `json:"exposedPorts"`
+	RunAsRoot          bool     `json:"runAsRoot"`
+	SensitiveFiles     []string `json:"sensitiveFiles"`
 	Recommendations    []string `json:"recommendations"`
 }
 
 type PerformanceMetrics struct {
-	StartupTime   time.Duration `json:"startup_time"`
-	LayerCount    int           `json:"layer_count"`
-	MaxLayerSize  int64         `json:"max_layer_size"`
-	AvgLayerSize  int64         `json:"avg_layer_size"`
-	PullTime      time.Duration `json:"estimated_pull_time"`
-	CacheHitRatio float64       `json:"cache_hit_ratio"`
+	StartupTime   time.Duration `json:"startupTime"`
+	LayerCount    int           `json:"layerCount"`
+	MaxLayerSize  int64         `json:"maxLayerSize"`
+	AvgLayerSize  int64         `json:"avgLayerSize"`
+	PullTime      time.Duration `json:"estimatedPullTime"`
+	CacheHitRatio float64       `json:"cacheHitRatio"`
 }
 
 // OptimizationResult represents the optimization process result.
 type OptimizationResult struct {
 	Analysis       OptimizationAnalysis `json:"analysis"`
-	OriginalSize   int64                `json:"original_size"`
-	OptimizedSize  int64                `json:"optimized_size"`
-	SizeReduction  int64                `json:"size_reduction"`
-	PercentReduced float64              `json:"percent_reduced"`
-	OptimizedImage string               `json:"optimized_image,omitempty"`
-	GeneratedFiles []string             `json:"generated_files"`
-	Applied        []Suggestion         `json:"applied_suggestions"`
-	Skipped        []Suggestion         `json:"skipped_suggestions"`
+	OriginalSize   int64                `json:"originalSize"`
+	OptimizedSize  int64                `json:"optimizedSize"`
+	SizeReduction  int64                `json:"sizeReduction"`
+	PercentReduced float64              `json:"percentReduced"`
+	OptimizedImage string               `json:"optimizedImage,omitempty"`
+	GeneratedFiles []string             `json:"generatedFiles"`
+	Applied        []Suggestion         `json:"appliedSuggestions"`
+	Skipped        []Suggestion         `json:"skippedSuggestions"`
 	Duration       time.Duration        `json:"duration"`
 	Success        bool                 `json:"success"`
 	Error          string               `json:"error,omitempty"`
@@ -400,13 +400,13 @@ func getOptimizeImageInfo(imageName string) (*ImageInfo, error) {
 	created, _ := time.Parse(time.RFC3339Nano, img.Created)
 
 	// Extract exposed ports
-	var exposedPorts []string
+	exposedPorts := make([]string, 0, len(img.Config.ExposedPorts))
 	for port := range img.Config.ExposedPorts {
 		exposedPorts = append(exposedPorts, port)
 	}
 
 	// Extract volumes
-	var volumes []string
+	volumes := make([]string, 0, len(img.Config.Volumes))
 	for vol := range img.Config.Volumes {
 		volumes = append(volumes, vol)
 	}

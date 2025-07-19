@@ -399,7 +399,11 @@ func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, ex
 			switch action.OnFailure {
 			case ActionFailurePolicyStop:
 				rm.logger.Info("Stopping rule execution due to action failure", "rule_id", rule.ID)
-				break
+				execution.Status = ExecutionStatusFailed
+				endTime := time.Now()
+				execution.CompletedAt = &endTime
+				execution.Duration = endTime.Sub(startTime)
+				return execution, fmt.Errorf("rule execution stopped due to action failure")
 			case ActionFailurePolicyContinue:
 				rm.logger.Info("Continuing rule execution despite action failure", "rule_id", rule.ID)
 			case ActionFailurePolicyRetry:

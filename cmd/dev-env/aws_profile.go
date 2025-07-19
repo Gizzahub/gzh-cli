@@ -93,9 +93,7 @@ func (m *AWSProfileManager) loadProfiles() error {
 		}
 
 		profileName := section.Name()
-		if strings.HasPrefix(profileName, "profile ") {
-			profileName = strings.TrimPrefix(profileName, "profile ")
-		}
+		profileName = strings.TrimPrefix(profileName, "profile ")
 
 		profile := &AWSProfile{
 			Name:     profileName,
@@ -254,7 +252,7 @@ func (m *AWSProfileManager) updateShellConfig(profileName string) error {
 		}
 
 		// Write back
-		if err := os.WriteFile(configFile, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+		if err := os.WriteFile(configFile, []byte(strings.Join(lines, "\n")), 0o600); err != nil {
 			return fmt.Errorf("failed to update %s: %w", configFile, err)
 		}
 	}

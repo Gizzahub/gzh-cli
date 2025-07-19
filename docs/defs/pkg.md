@@ -1,5 +1,7 @@
 # PKG
 
+## 실행방식
+
 gz pkg ~
 
 gz always-latest를 없애고

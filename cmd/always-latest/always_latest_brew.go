@@ -378,7 +378,10 @@ func (o *alwaysLatestBrewOptions) confirmUpdate(packageName, packageType string)
 	fmt.Printf("   Update %s (%s)? (y/N): ", packageName, packageType)
 
 	var response string
-	fmt.Scanln(&response)
+	if _, err := fmt.Scanln(&response); err != nil {
+		// If reading fails, default to no
+		return false
+	}
 
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }

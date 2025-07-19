@@ -426,7 +426,7 @@ providers:
 # - Use environment-specific tokens (GITHUB_TOKEN_%s)
 # - Adjust clone directories for environment separation
 # - Consider different strategies per environment (reset for prod, pull for dev)
-`, strings.Title(profileName), profileName, profileName, profileName, strings.ToUpper(profileName), profileName, strings.ToUpper(profileName))
+`, strings.ToUpper(profileName[:1])+profileName[1:], profileName, profileName, profileName, strings.ToUpper(profileName), profileName, strings.ToUpper(profileName))
 
 	return template
 }

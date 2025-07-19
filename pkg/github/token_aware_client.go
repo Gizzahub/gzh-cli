@@ -197,7 +197,7 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 		url = fmt.Sprintf("%s/user/repos", c.baseURL)
 	} else {
 		// Organization or other user repositories
-		url = fmt.Sprintf("%s/users/%s/repos", c.baseURL)
+		url = fmt.Sprintf("%s/users/%s/repos", c.baseURL, owner)
 	}
 
 	// Add pagination parameters

@@ -28,6 +28,7 @@ func TestConfigBuilder(t *testing.T) {
 	github := config.Providers["github"]
 	if github == nil {
 		t.Error("Expected GitHub provider to be configured")
+		return
 	}
 
 	if github.Token != "test-token" {
@@ -60,6 +61,7 @@ func TestConfigBuilderWithDetails(t *testing.T) {
 	github := config.Providers["github"]
 	if github == nil {
 		t.Error("Expected GitHub provider to be configured")
+		return
 	}
 
 	if len(github.Organizations) != 1 {

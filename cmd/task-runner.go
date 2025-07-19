@@ -155,7 +155,11 @@ func findTodoFiles(dir string) ([]string, error) {
 }
 
 func parseTodoFile(filename string) ([]TodoItem, error) {
-	file, err := os.Open(filename)
+	// Validate filename to prevent directory traversal
+	if !filepath.IsAbs(filename) {
+		return nil, fmt.Errorf("filename must be absolute: %s", filename)
+	}
+	file, err := os.Open(filepath.Clean(filename))
 	if err != nil {
 		return nil, err
 	}
@@ -344,7 +348,7 @@ func moveCompletedFiles(files []string) error {
 	doneDir := filepath.Join(wd, "tasks", "done")
 
 	// Create done directory if it doesn't exist
-	if err := os.MkdirAll(doneDir, 0o755); err != nil {
+	if err := os.MkdirAll(doneDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create done directory: %w", err)
 	}
 

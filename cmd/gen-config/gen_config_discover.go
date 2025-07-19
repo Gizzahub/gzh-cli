@@ -145,7 +145,7 @@ func (o *genConfigDiscoverOptions) run(_ *cobra.Command, args []string) error {
 	fmt.Println("\nDiscovered repositories:")
 
 	for provider, orgs := range o.groupReposByProvider(repos) {
-		fmt.Printf("  %s:\n", strings.Title(provider))
+		fmt.Printf("  %s:\n", strings.ToUpper(provider[:1])+provider[1:])
 
 		for orgName, repoCount := range orgs {
 			fmt.Printf("    %s: %d repositories\n", orgName, repoCount)

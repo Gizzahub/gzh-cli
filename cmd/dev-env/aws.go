@@ -105,7 +105,10 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory to store saved configurations")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Overwrite existing saved configuration")
 
-	cmd.MarkFlagRequired("name")
+	if err := cmd.MarkFlagRequired("name"); err != nil {
+		// This should not happen with a valid flag name
+		panic(fmt.Sprintf("Failed to mark flag as required: %v", err))
+	}
 
 	return cmd
 }
@@ -135,7 +138,10 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory where saved configurations are stored")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Skip backup of current configuration")
 
-	cmd.MarkFlagRequired("name")
+	if err := cmd.MarkFlagRequired("name"); err != nil {
+		// This should not happen with a valid flag name
+		panic(fmt.Sprintf("Failed to mark flag as required: %v", err))
+	}
 
 	return cmd
 }
@@ -169,7 +175,7 @@ func (o *awsOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	// Create store directory if it doesn't exist
-	if err := os.MkdirAll(o.storePath, 0o755); err != nil {
+	if err := os.MkdirAll(o.storePath, 0o750); err != nil {
 		return fmt.Errorf("failed to create store directory: %w", err)
 	}
 
@@ -226,7 +232,7 @@ func (o *awsOptions) runLoad(_ *cobra.Command, args []string) error {
 
 	// Create target directory if it doesn't exist
 	targetDir := filepath.Dir(o.configPath)
-	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create target directory: %w", err)
 	}
 
@@ -295,8 +301,9 @@ func (o *awsOptions) runList(_ *cobra.Command, args []string) error {
 		}
 
 		// Display profile information
-		if err := o.displayConfigInfo(configPath); err == nil {
-			// Already displayed in displayConfigInfo
+		if err := o.displayConfigInfo(configPath); err != nil {
+			// Log error but don't fail the operation
+			fmt.Printf("Warning: Could not display config info: %v\n", err)
 		}
 
 		fmt.Println()
@@ -322,11 +329,15 @@ func (o *awsOptions) saveMetadata() error {
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
 
-	file, err := os.Create(metadataPath)
+	file, err := os.OpenFile(metadataPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("Warning: Failed to close file: %v\n", err)
+		}
+	}()
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
@@ -344,7 +355,11 @@ func (o *awsOptions) loadMetadata(name string) awsMetadata {
 
 	metadataPath := filepath.Join(o.storePath, name+".meta")
 
-	content, err := os.ReadFile(metadataPath)
+	// Validate metadataPath to prevent directory traversal
+	if !filepath.IsAbs(metadataPath) {
+		metadataPath = filepath.Join(o.storePath, filepath.Base(name)+".meta")
+	}
+	content, err := os.ReadFile(filepath.Clean(metadataPath))
 	if err != nil {
 		return metadata
 	}
@@ -378,7 +393,11 @@ func (o *awsOptions) loadMetadata(name string) awsMetadata {
 }
 
 func (o *awsOptions) copyFile(src, dst string) error {
-	sourceFile, err := os.Open(src)
+	// Validate source file path to prevent directory traversal
+	if !filepath.IsAbs(src) {
+		return fmt.Errorf("source path must be absolute: %s", src)
+	}
+	sourceFile, err := os.Open(filepath.Clean(src))
 	if err != nil {
 		return err
 	}
@@ -465,9 +484,7 @@ func (o *awsOptions) parseAwsConfig(content string) []awsProfile {
 			// Start new profile
 			profileName := strings.Trim(line, "[]")
 			// Handle both [default] and [profile name] formats
-			if strings.HasPrefix(profileName, "profile ") {
-				profileName = strings.TrimPrefix(profileName, "profile ")
-			}
+			profileName = strings.TrimPrefix(profileName, "profile ")
 
 			currentProfile = &awsProfile{Name: profileName}
 

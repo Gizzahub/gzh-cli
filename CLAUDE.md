@@ -148,6 +148,10 @@ make regenerate-mocks # Clean and regenerate all mocks
 - Environment variable support (GITHUB_TOKEN, GITLAB_TOKEN, etc.)
 - SSH key management and configuration
 
+## 문서 스키마
+
+이 프로젝트의 문서는 `~/.claude/schema.*.md` 파일들에 정의된 표준 스키마를 따릅니다.
+
 ## TODO Runner Workflow
 
 ### 🚀 TASK_RUNNER.todo 프롬프트

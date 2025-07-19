@@ -300,9 +300,7 @@ func (o *awsCredentialsOptions) runList(_ *cobra.Command, args []string) error {
 		}
 
 		// Display profile information (without sensitive data)
-		if err := o.displayCredentialsInfo(credentialsPath); err == nil {
-			// Already displayed in displayCredentialsInfo
-		}
+		o.displayCredentialsInfo(credentialsPath)
 
 		fmt.Println()
 	}

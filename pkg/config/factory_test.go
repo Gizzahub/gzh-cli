@@ -162,6 +162,7 @@ func TestDefaultProviderFactoryConfig(t *testing.T) {
 
 	if config == nil {
 		t.Error("Default config should not be nil")
+		return
 	}
 
 	if config.DefaultEnvironment == nil {

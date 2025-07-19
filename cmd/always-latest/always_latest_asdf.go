@@ -389,7 +389,10 @@ func (o *alwaysLatestAsdfOptions) confirmUpdate(tool, currentVersion, targetVers
 	fmt.Printf("   Update %s from %s to %s? (y/N): ", tool, currentVersion, targetVersion)
 
 	var response string
-	fmt.Scanln(&response)
+	if _, err := fmt.Scanln(&response); err != nil {
+		// If reading fails, default to no
+		return false
+	}
 
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }

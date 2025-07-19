@@ -14,7 +14,11 @@ func TestCreateMinimalConfig(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "config-init-test-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed to remove temp dir: %v", err)
+		}
+	}()
 
 	outputFile := filepath.Join(tmpDir, "test-gzh.yaml")
 
@@ -99,7 +103,11 @@ func TestInitializeConfig_FileExists(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "config-init-exists-test-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed to remove temp dir: %v", err)
+		}
+	}()
 
 	outputFile := filepath.Join(tmpDir, "existing.yaml")
 

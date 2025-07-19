@@ -91,9 +91,9 @@ func ExampleClone_defaultBranch() {
 	// Output: Project cloned with default branch
 }
 
-// ExampleGroupWorkflow demonstrates a complete workflow of discovering and cloning
+// ExampleList_groupWorkflow demonstrates a complete workflow of discovering and cloning
 // projects from a GitLab group.
-func ExampleGroupWorkflow() {
+func ExampleList_groupWorkflow() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
@@ -146,8 +146,8 @@ func ExampleGroupWorkflow() {
 	// Output: Group workflow demonstrates GitLab project management
 }
 
-// ExampleAuthentication demonstrates handling authentication for private projects.
-func ExampleAuthentication() {
+// ExampleGetDefaultBranch_authentication demonstrates handling authentication for private projects.
+func ExampleGetDefaultBranch_authentication() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -170,9 +170,9 @@ func ExampleAuthentication() {
 	// Output: Authentication setup guide for private repositories
 }
 
-// ExampleErrorHandling demonstrates proper error handling when working
+// ExampleGetDefaultBranch_errorHandling demonstrates proper error handling when working
 // with GitLab API operations.
-func ExampleErrorHandling() {
+func ExampleGetDefaultBranch_errorHandling() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

@@ -372,7 +372,6 @@ func getTopRiskCategory(categories RiskCategories) string {
 	}
 
 	if categories.OperationalSecurity > max {
-		max = categories.OperationalSecurity
 		category = "Operational"
 	}
 
@@ -534,7 +533,7 @@ func generateTableRows(assessments []RiskAssessment) string {
 			assessment.Repository,
 			assessment.OverallScore,
 			severityClass,
-			strings.Title(assessment.Severity),
+			strings.ToUpper(assessment.Severity[:1])+assessment.Severity[1:],
 			len(assessment.Vulnerabilities),
 			topCategory,
 			assessment.LastAssessed.Format("2006-01-02"))

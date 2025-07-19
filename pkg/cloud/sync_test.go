@@ -257,7 +257,11 @@ func TestDetectConflicts(t *testing.T) {
 		},
 	}
 
-	manager := NewSyncManager(config).(*DefaultSyncManager)
+	mgr := NewSyncManager(config)
+	manager, ok := mgr.(*DefaultSyncManager)
+	if !ok {
+		t.Fatalf("Expected DefaultSyncManager, got %T", mgr)
+	}
 
 	source := &Profile{
 		Name:        "test-profile",
@@ -310,7 +314,11 @@ func TestMergeProfiles(t *testing.T) {
 		},
 	}
 
-	manager := NewSyncManager(config).(*DefaultSyncManager)
+	mgr := NewSyncManager(config)
+	manager, ok := mgr.(*DefaultSyncManager)
+	if !ok {
+		t.Fatalf("Expected DefaultSyncManager, got %T", mgr)
+	}
 
 	source := &Profile{
 		Name:        "test-profile",
@@ -375,7 +383,11 @@ func TestMergeValues(t *testing.T) {
 		},
 	}
 
-	manager := NewSyncManager(config).(*DefaultSyncManager)
+	mgr := NewSyncManager(config)
+	manager, ok := mgr.(*DefaultSyncManager)
+	if !ok {
+		t.Fatalf("Expected DefaultSyncManager, got %T", mgr)
+	}
 
 	// Test string slice merge
 	source := []string{"a", "b", "c"}
@@ -410,7 +422,11 @@ func TestConflictResolution(t *testing.T) {
 		},
 	}
 
-	manager := NewSyncManager(config).(*DefaultSyncManager)
+	mgr := NewSyncManager(config)
+	manager, ok := mgr.(*DefaultSyncManager)
+	if !ok {
+		t.Fatalf("Expected DefaultSyncManager, got %T", mgr)
+	}
 
 	conflicts := []SyncConflict{
 		{

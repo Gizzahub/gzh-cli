@@ -306,7 +306,10 @@ func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface
 
 	switch s := source.(type) {
 	case []string:
-		t := target.([]string)
+		t, ok := target.([]string)
+		if !ok {
+			return nil, fmt.Errorf("target type mismatch: expected []string, got %T", target)
+		}
 		// Merge string slices, removing duplicates
 		merged := make([]string, 0, len(s)+len(t))
 		seen := make(map[string]bool)
@@ -328,7 +331,10 @@ func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface
 		return merged, nil
 
 	case map[string]string:
-		t := target.(map[string]string)
+		t, ok := target.(map[string]string)
+		if !ok {
+			return nil, fmt.Errorf("target type mismatch: expected map[string]string, got %T", target)
+		}
 		// Merge maps, source takes precedence
 		merged := make(map[string]string)
 		for k, v := range t {

@@ -215,7 +215,9 @@ func (c *Client) BulkClone(ctx context.Context, req BulkCloneRequest) (*BulkClon
 	// Create organization clone request for GitHub platforms
 	for _, platform := range req.Platforms {
 		if platform.Type == "github" {
-			for _, org := range platform.Organizations {
+			// Process first organization only for now (TODO: handle multiple organizations)
+			if len(platform.Organizations) > 0 {
+				org := platform.Organizations[0]
 				orgRequest := &bulkclone.OrganizationCloneRequest{
 					Provider:     platform.Type,
 					Organization: org,
