@@ -473,6 +473,11 @@ issues:
         - funlen
         - gocognit
     
+    # Exclude testpackage for cmd directory test files
+    - path: "^cmd/.*_test\\.go$"
+      linters:
+        - testpackage
+    
     # Exclude issues for cmd directory
     - path: "cmd/"
       linters:
