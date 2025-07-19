@@ -530,12 +530,12 @@ func BenchmarkEnforcePolicy(b *testing.B) {
 		Enabled:         true,
 	}
 
-	enforcer.policyManager.CreatePolicy(ctx, policy)
+	_ = enforcer.policyManager.CreatePolicy(ctx, policy)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		enforcer.EnforcePolicy(ctx, "bench-policy", "testorg", "testrepo")
+		_, _ = enforcer.EnforcePolicy(ctx, "bench-policy", "testorg", "testrepo")
 	}
 }
 
@@ -574,7 +574,10 @@ func BenchmarkValidatePolicy(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		enforcer.ValidatePolicy(ctx, policy, state)
+		_, err := enforcer.ValidatePolicy(ctx, policy, state)
+		if err != nil {
+			// Ignore error in benchmark
+		}
 	}
 }
 

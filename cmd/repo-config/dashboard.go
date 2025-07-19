@@ -71,16 +71,18 @@ func runDashboardCommand(flags GlobalFlags, port int, autoRefresh bool, refreshR
 }
 
 // handleDashboardHome serves the main dashboard page.
-func handleDashboardHome(w http.ResponseWriter, r *http.Request, organization string, autoRefresh bool, refreshRate int) {
+func handleDashboardHome(w http.ResponseWriter, _ *http.Request, organization string, autoRefresh bool, refreshRate int) {
 	html := generateDashboardHTML(organization, autoRefresh, refreshRate)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(html))
+	if _, err := w.Write([]byte(html)); err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+	}
 }
 
 // handleRepositoriesAPI serves repository data as JSON.
-func handleRepositoriesAPI(w http.ResponseWriter, r *http.Request, organization, token string) {
+func handleRepositoriesAPI(w http.ResponseWriter, _ *http.Request, organization, token string) {
 	// This would fetch real repository data
 	mockData := `{
 		"repositories": [
@@ -111,7 +113,9 @@ func handleRepositoriesAPI(w http.ResponseWriter, r *http.Request, organization,
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(mockData))
+	if _, err := w.Write([]byte(mockData)); err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+	}
 }
 
 // handleComplianceAPI serves compliance data as JSON.
@@ -139,7 +143,9 @@ func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, t
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(mockData))
+	if _, err := w.Write([]byte(mockData)); err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+	}
 }
 
 // handleStaticAssets serves static CSS/JS files.

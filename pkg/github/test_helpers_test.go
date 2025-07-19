@@ -113,6 +113,7 @@ type MockGitHubClient struct {
 
 // NewMockGitHubClient creates a new mock GitHub client.
 func NewMockGitHubClient(t *testing.T) *MockGitHubClient {
+	t.Helper()
 	ctrl := gomock.NewController(t)
 
 	return &MockGitHubClient{
@@ -194,6 +195,7 @@ type TestRepoConfigClient struct {
 
 // NewTestRepoConfigClient creates a new test repo config client.
 func NewTestRepoConfigClient(t *testing.T) *TestRepoConfigClient {
+	t.Helper()
 	mockClient := NewMockGitHubClient(t)
 	client := &RepoConfigClient{
 		token:       "test-token",
@@ -227,16 +229,9 @@ func SetupGetRepoExpectation(t *testing.T, ctx context.Context, client *github.C
 
 // Helper functions for creating pointers - removed boolPtr as it's already defined in automation_engine.go
 
-func intPtr(i int) *int {
-	return &i
-}
-
-func stringPtr(s string) *string {
-	return &s
-}
-
 // AssertRepositoryConfig asserts that two repository configurations are equal.
 func AssertRepositoryConfig(t *testing.T, expected, actual *Repository) {
+	t.Helper()
 	if expected == nil && actual == nil {
 		return
 	}
@@ -252,6 +247,7 @@ func AssertRepositoryConfig(t *testing.T, expected, actual *Repository) {
 
 // AssertSecuritySettings asserts that two security settings are equal.
 func AssertSecuritySettings(t *testing.T, expected, actual *RepositoryConfig) {
+	t.Helper()
 	if expected == nil && actual == nil {
 		return
 	}

@@ -19,12 +19,18 @@ type mockAPIClient struct {
 
 func (m *mockAPIClient) GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error) {
 	args := m.Called(ctx, owner, repo)
-	return args.Get(0).(*RepositoryInfo), args.Error(1)
+	if repo, ok := args.Get(0).(*RepositoryInfo); ok {
+		return repo, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockAPIClient) ListOrganizationRepositories(ctx context.Context, org string) ([]RepositoryInfo, error) {
 	args := m.Called(ctx, org)
-	return args.Get(0).([]RepositoryInfo), args.Error(1)
+	if repos, ok := args.Get(0).([]RepositoryInfo); ok {
+		return repos, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockAPIClient) GetDefaultBranch(ctx context.Context, owner, repo string) (string, error) {
@@ -38,12 +44,18 @@ func (m *mockAPIClient) SetToken(token string) {
 
 func (m *mockAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) {
 	args := m.Called(ctx)
-	return args.Get(0).(*RateLimit), args.Error(1)
+	if rateLimit, ok := args.Get(0).(*RateLimit); ok {
+		return rateLimit, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockAPIClient) GetRepositoryConfiguration(ctx context.Context, owner, repo string) (*RepositoryConfig, error) {
 	args := m.Called(ctx, owner, repo)
-	return args.Get(0).(*RepositoryConfig), args.Error(1)
+	if config, ok := args.Get(0).(*RepositoryConfig); ok {
+		return config, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockAPIClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
@@ -77,7 +89,10 @@ func (m *mockEventProcessor) ValidateSignature(payload []byte, signature, secret
 
 func (m *mockEventProcessor) ParseWebhookEvent(r *http.Request) (*GitHubEvent, error) {
 	args := m.Called(r)
-	return args.Get(0).(*GitHubEvent), args.Error(1)
+	if event, ok := args.Get(0).(*GitHubEvent); ok {
+		return event, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockEventProcessor) RegisterEventHandler(eventType EventType, handler EventHandler) error {
@@ -92,7 +107,10 @@ func (m *mockEventProcessor) UnregisterEventHandler(eventType EventType) error {
 
 func (m *mockEventProcessor) GetMetrics() *EventMetrics {
 	args := m.Called()
-	return args.Get(0).(*EventMetrics)
+	if metrics, ok := args.Get(0).(*EventMetrics); ok {
+		return metrics
+	}
+	return nil
 }
 
 type mockLogger struct {
@@ -119,25 +137,6 @@ func (m *mockLogger) Fatal(msg string, args ...interface{}) {
 	m.Called(msg, args)
 }
 
-type mockRuleManager struct {
-	mock.Mock
-}
-
-func (m *mockRuleManager) ListRules(ctx context.Context, org string, filter *RuleFilter) ([]*AutomationRule, error) {
-	args := m.Called(ctx, org, filter)
-	return args.Get(0).([]*AutomationRule), args.Error(1)
-}
-
-func (m *mockRuleManager) EvaluateConditions(ctx context.Context, rule *AutomationRule, event *GitHubEvent) (bool, error) {
-	args := m.Called(ctx, rule, event)
-	return args.Bool(0), args.Error(1)
-}
-
-func (m *mockRuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, execContext *AutomationExecutionContext) (*AutomationRuleExecution, error) {
-	args := m.Called(ctx, rule, execContext)
-	return args.Get(0).(*AutomationRuleExecution), args.Error(1)
-}
-
 type mockConditionEvaluator struct {
 	mock.Mock
 }
@@ -145,7 +144,9 @@ type mockConditionEvaluator struct {
 func (m *mockConditionEvaluator) EvaluateConditions(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent, context *EvaluationContext) (*EvaluationResult, error) {
 	args := m.Called(ctx, conditions, event, context)
 	if result := args.Get(0); result != nil {
-		return result.(*EvaluationResult), args.Error(1)
+		if evalResult, ok := result.(*EvaluationResult); ok {
+			return evalResult, args.Error(1)
+		}
 	}
 
 	return nil, args.Error(1)
@@ -179,7 +180,9 @@ func (m *mockConditionEvaluator) EvaluateContentConditions(ctx context.Context, 
 func (m *mockConditionEvaluator) ValidateConditions(conditions *AutomationConditions) (*ConditionValidationResult, error) {
 	args := m.Called(conditions)
 	if result := args.Get(0); result != nil {
-		return result.(*ConditionValidationResult), args.Error(1)
+		if validationResult, ok := result.(*ConditionValidationResult); ok {
+			return validationResult, args.Error(1)
+		}
 	}
 
 	return nil, args.Error(1)
@@ -188,7 +191,9 @@ func (m *mockConditionEvaluator) ValidateConditions(conditions *AutomationCondit
 func (m *mockConditionEvaluator) ExplainEvaluation(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent) (*EvaluationExplanation, error) {
 	args := m.Called(ctx, conditions, event)
 	if result := args.Get(0); result != nil {
-		return result.(*EvaluationExplanation), args.Error(1)
+		if explanation, ok := result.(*EvaluationExplanation); ok {
+			return explanation, args.Error(1)
+		}
 	}
 
 	return nil, args.Error(1)
@@ -201,7 +206,9 @@ type mockActionExecutor struct {
 func (m *mockActionExecutor) ExecuteAction(ctx context.Context, action *AutomationAction, execContext *AutomationExecutionContext) (*ActionExecutionResult, error) {
 	args := m.Called(ctx, action, execContext)
 	if result := args.Get(0); result != nil {
-		return result.(*ActionExecutionResult), args.Error(1)
+		if actionResult, ok := result.(*ActionExecutionResult); ok {
+			return actionResult, args.Error(1)
+		}
 	}
 
 	return nil, args.Error(1)
@@ -214,7 +221,10 @@ func (m *mockActionExecutor) ValidateAction(ctx context.Context, action *Automat
 
 func (m *mockActionExecutor) GetSupportedActions() []ActionType {
 	args := m.Called()
-	return args.Get(0).([]ActionType)
+	if actions, ok := args.Get(0).([]ActionType); ok {
+		return actions
+	}
+	return nil
 }
 
 // Test helper functions
@@ -269,31 +279,6 @@ func createTestEngineEvent() *GitHubEvent {
 				"title":  "Test PR",
 				"number": 1,
 			},
-		},
-	}
-}
-
-func createTestEngineRule() *AutomationRule {
-	return &AutomationRule{
-		ID:           "test-rule-001",
-		Name:         "Test Rule",
-		Organization: "testorg",
-		Enabled:      true,
-		Priority:     100,
-		Conditions: AutomationConditions{
-			EventTypes: []EventType{EventTypePullRequest},
-			Actions:    []EventAction{ActionOpened},
-		},
-		Actions: []AutomationAction{
-			{
-				ID:      "test-action-001",
-				Type:    ActionTypeAddLabel,
-				Name:    "Add Label",
-				Enabled: true,
-			},
-		},
-		Metadata: AutomationRuleMetadata{
-			Environment: "test",
 		},
 	}
 }
@@ -398,7 +383,11 @@ func TestAutomationEngine_ProcessEvent_ValidationFailed(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	err = engine.ProcessEvent(ctx, event)
 	assert.Error(t, err)
@@ -418,7 +407,11 @@ func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	err = engine.ProcessEvent(ctx, event)
 	assert.NoError(t, err)
@@ -443,7 +436,11 @@ func TestAutomationEngine_ProcessEvent_ExcludedEventType(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	err = engine.ProcessEvent(ctx, event)
 	assert.NoError(t, err)
@@ -478,7 +475,11 @@ func TestAutomationEngine_ProcessEvent_Success(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	err = engine.ProcessEvent(ctx, event)
 	assert.NoError(t, err)
@@ -508,7 +509,11 @@ func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	err = engine.ProcessEvent(ctx, event)
 	assert.NoError(t, err)
@@ -540,7 +545,11 @@ func TestAutomationEngine_ProcessEvent_ExecutionFailure(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	err = engine.ProcessEvent(ctx, event)
 	assert.NoError(t, err)
@@ -596,7 +605,11 @@ func TestAutomationEngine_SyncExecution(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	err = engine.ProcessEvent(ctx, event)
 	assert.NoError(t, err)
@@ -623,7 +636,11 @@ func TestAutomationEngine_EventChannelFull(t *testing.T) {
 	err := engine.Start(ctx)
 	require.NoError(t, err)
 
-	defer engine.Stop(ctx)
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			t.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	// Fill the channel
 	err = engine.ProcessEvent(ctx, event)
@@ -751,13 +768,21 @@ func BenchmarkAutomationEngine_ProcessEvent(b *testing.B) {
 	// TODO: Fix RuleManager mocking - ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
 	// TODO: Fix RuleManager mocking - ruleManager.On("EvaluateConditions", ctx, rule, event).Return(false, nil) // Don't execute for benchmark
 
-	engine.Start(ctx)
-	defer engine.Stop(ctx)
+	if err := engine.Start(ctx); err != nil {
+		b.Errorf("Failed to start engine: %v", err)
+	}
+	defer func() {
+		if err := engine.Stop(ctx); err != nil {
+			b.Logf("Failed to stop engine: %v", err)
+		}
+	}()
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		engine.ProcessEvent(ctx, event)
+		if err := engine.ProcessEvent(ctx, event); err != nil {
+			// Ignore errors in benchmark
+		}
 	}
 }
 

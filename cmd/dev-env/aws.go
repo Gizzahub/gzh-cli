@@ -315,8 +315,8 @@ func (o *awsOptions) runList(_ *cobra.Command, args []string) error {
 type awsMetadata struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	SavedAt     time.Time `json:"saved_at"`
-	SourcePath  string    `json:"source_path"`
+	SavedAt     time.Time `json:"savedAt"`
+	SourcePath  string    `json:"sourcePath"`
 }
 
 func (o *awsOptions) saveMetadata() error {
@@ -341,11 +341,17 @@ func (o *awsOptions) saveMetadata() error {
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
-		fmt.Fprintf(file, "description=%s\n", metadata.Description)
+		if _, err := fmt.Fprintf(file, "description=%s\n", metadata.Description); err != nil {
+			return fmt.Errorf("failed to write description: %w", err)
+		}
 	}
 
-	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
-	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
+	if _, err := fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339)); err != nil {
+		return fmt.Errorf("failed to write saved_at: %w", err)
+	}
+	if _, err := fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath); err != nil {
+		return fmt.Errorf("failed to write source_path: %w", err)
+	}
 
 	return nil
 }
@@ -401,13 +407,21 @@ func (o *awsOptions) copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() {
+		if err := sourceFile.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destFile.Close()
+	defer func() {
+		if err := destFile.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {

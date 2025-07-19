@@ -258,7 +258,7 @@ func (km *KubernetesNetworkManager) ListProfiles() ([]*KubernetesNetworkProfile,
 		return nil, fmt.Errorf("failed to list profile files: %w", err)
 	}
 
-	var profiles []*KubernetesNetworkProfile
+	profiles := make([]*KubernetesNetworkProfile, 0, len(files))
 
 	for _, file := range files {
 		name := strings.TrimSuffix(filepath.Base(file), ".yaml")

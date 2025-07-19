@@ -211,7 +211,7 @@ func (o *sshConfigValidateOptions) getExpectedKeyPaths(provider, orgName string)
 		"id_rsa",
 	}
 
-	var keyPaths []string
+	keyPaths := make([]string, 0, len(possibleKeys))
 	for _, keyName := range possibleKeys {
 		keyPaths = append(keyPaths, filepath.Join(o.keyDir, keyName))
 	}

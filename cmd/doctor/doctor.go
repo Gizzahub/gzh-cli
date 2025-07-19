@@ -18,6 +18,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	statusPass = "pass"
+	statusWarn = "warn"
+	statusFail = "fail"
+)
+
 // DoctorCmd represents the doctor command.
 var DoctorCmd = &cobra.Command{
 	Use:   "doctor",
@@ -62,7 +68,7 @@ type DiagnosticResult struct {
 	Status        string                 `json:"status"` // "pass", "warn", "fail", "skip"
 	Message       string                 `json:"message"`
 	Details       map[string]interface{} `json:"details,omitempty"`
-	FixSuggestion string                 `json:"fix_suggestion,omitempty"`
+	FixSuggestion string                 `json:"fixSuggestion,omitempty"`
 	Duration      time.Duration          `json:"duration"`
 	Timestamp     time.Time              `json:"timestamp"`
 }
@@ -72,11 +78,11 @@ type DiagnosticReport struct {
 	Timestamp       time.Time          `json:"timestamp"`
 	Version         string             `json:"version"`
 	Platform        string             `json:"platform"`
-	TotalChecks     int                `json:"total_checks"`
-	PassedChecks    int                `json:"passed_checks"`
-	WarnChecks      int                `json:"warn_checks"`
-	FailedChecks    int                `json:"failed_checks"`
-	SkippedChecks   int                `json:"skipped_checks"`
+	TotalChecks     int                `json:"totalChecks"`
+	PassedChecks    int                `json:"passedChecks"`
+	WarnChecks      int                `json:"warnChecks"`
+	FailedChecks    int                `json:"failedChecks"`
+	SkippedChecks   int                `json:"skippedChecks"`
 	Results         []DiagnosticResult `json:"results"`
 	Summary         string             `json:"summary"`
 	Recommendations []string           `json:"recommendations"`
@@ -87,14 +93,14 @@ type DiagnosticReport struct {
 type SystemInfo struct {
 	OS         string `json:"os"`
 	Arch       string `json:"arch"`
-	GoVersion  string `json:"go_version"`
+	GoVersion  string `json:"goVersion"`
 	Hostname   string `json:"hostname"`
 	Username   string `json:"username"`
-	WorkingDir string `json:"working_dir"`
-	HomeDir    string `json:"home_dir"`
-	PathEnv    string `json:"path_env"`
+	WorkingDir string `json:"workingDir"`
+	HomeDir    string `json:"homeDir"`
+	PathEnv    string `json:"pathEnv"`
 	Shell      string `json:"shell"`
-	TempDir    string `json:"temp_dir"`
+	TempDir    string `json:"tempDir"`
 }
 
 func runDoctor(cmd *cobra.Command, args []string) {
@@ -189,7 +195,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 		// Network checks
 		if !quickMode {
 			structuredLogger.Debug("Running network checks")
-			runNetworkChecks(report, structuredLogger, errorRecovery)
+			runNetworkChecks(cmd.Context(), report, structuredLogger, errorRecovery)
 		} else {
 			structuredLogger.Debug("Skipping network checks (quick mode)")
 		}
@@ -288,7 +294,7 @@ func runSystemChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	report.Results = append(report.Results, DiagnosticResult{
 		Name:      "System Information",
 		Category:  "system",
-		Status:    "pass",
+		Status:    statusPass,
 		Message:   fmt.Sprintf("Running on %s/%s", sysInfo.OS, sysInfo.Arch),
 		Details:   map[string]interface{}{"system_info": sysInfo},
 		Duration:  time.Since(start),
@@ -298,12 +304,12 @@ func runSystemChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	// Go version check
 	start = time.Now()
 	goVersion := runtime.Version()
-	status := "pass"
+	status := statusPass
 	message := fmt.Sprintf("Go version: %s", goVersion)
 
 	// Check if Go version is supported (1.19+)
 	if !isGoVersionSupported(goVersion) {
-		status = "warn"
+		status = statusWarn
 		message += " (consider upgrading to Go 1.21+)"
 	}
 
@@ -325,11 +331,11 @@ func runSystemChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	allocatedMB := float64(memStats.Alloc) / 1024 / 1024
 	goroutines := runtime.NumGoroutine()
 
-	status = "pass"
+	status = statusPass
 	message = fmt.Sprintf("Memory: %.2f MB allocated, %d goroutines", allocatedMB, goroutines)
 
 	if allocatedMB > 1000 {
-		status = "warn"
+		status = statusWarn
 		message += " (high memory usage)"
 	}
 
@@ -357,14 +363,14 @@ func runSystemChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	wd, _ := os.Getwd()
 	diskSpace := getDiskSpace(wd)
 
-	status = "pass"
+	status = statusPass
 	message = fmt.Sprintf("Disk space: %.2f GB available", diskSpace)
 
 	if diskSpace < 1.0 {
-		status = "fail"
+		status = statusFail
 		message += " (critically low)"
 	} else if diskSpace < 5.0 {
-		status = "warn"
+		status = statusWarn
 		message += " (low disk space)"
 	}
 
@@ -405,7 +411,7 @@ func runConfigChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	message := "No configuration files found"
 
 	if len(foundConfigs) > 0 {
-		status = "pass"
+		status = statusPass
 		message = fmt.Sprintf("Found %d configuration file(s): %s", len(foundConfigs), strings.Join(foundConfigs, ", "))
 	}
 
@@ -437,11 +443,11 @@ func runConfigChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 		}
 	}
 
-	status = "pass"
+	status = statusPass
 
 	message = fmt.Sprintf("Environment variables: %d set", len(setVars))
 	if len(setVars) == 0 {
-		status = "warn"
+		status = statusWarn
 		message += " (no tokens configured)"
 	}
 
@@ -457,7 +463,7 @@ func runConfigChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	})
 }
 
-func runNetworkChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runNetworkChecks(ctx context.Context, report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🌐 Checking network connectivity...")
 	}
@@ -479,11 +485,11 @@ func runNetworkChecks(report *DiagnosticReport, structuredLogger *logger.Structu
 		}
 	}
 
-	status := "pass"
+	status := statusPass
 
 	message := fmt.Sprintf("DNS resolution: %d/%d hosts resolved", len(resolvedHosts), len(hosts))
 	if len(failedHosts) > 0 {
-		status = "warn"
+		status = statusWarn
 		message += fmt.Sprintf(" (failed: %s)", strings.Join(failedHosts, ", "))
 	}
 
@@ -510,18 +516,18 @@ func runNetworkChecks(report *DiagnosticReport, structuredLogger *logger.Structu
 	)
 
 	for name, url := range apis {
-		if isURLReachable(url) {
+		if isURLReachable(ctx, url) {
 			workingAPIs = append(workingAPIs, name)
 		} else {
 			failedAPIs = append(failedAPIs, name)
 		}
 	}
 
-	status = "pass"
+	status = statusPass
 
 	message = fmt.Sprintf("API connectivity: %d/%d APIs reachable", len(workingAPIs), len(apis))
 	if len(failedAPIs) > 0 {
-		status = "warn"
+		status = statusWarn
 		message += fmt.Sprintf(" (failed: %s)", strings.Join(failedAPIs, ", "))
 	}
 
@@ -544,11 +550,11 @@ func runGitChecks(report *DiagnosticReport, structuredLogger *logger.StructuredL
 	// Git installation
 	start := time.Now()
 	gitPath, err := exec.LookPath("git")
-	status := "pass"
+	status := statusPass
 	message := fmt.Sprintf("Git found at: %s", gitPath)
 
 	if err != nil {
-		status = "fail"
+		status = statusFail
 		message = "Git not found in PATH"
 		report.Results = append(report.Results, DiagnosticResult{
 			Name:          "Git Installation",
@@ -578,10 +584,10 @@ func runGitChecks(report *DiagnosticReport, structuredLogger *logger.StructuredL
 
 	gitVersionOut, err := gitVersionCmd.Output()
 	if err != nil {
-		status = "warn"
+		status = statusWarn
 		message = "Could not determine Git version"
 	} else {
-		status = "pass"
+		status = statusPass
 		message = strings.TrimSpace(string(gitVersionOut))
 	}
 
@@ -597,11 +603,11 @@ func runGitChecks(report *DiagnosticReport, structuredLogger *logger.StructuredL
 	// Git configuration
 	start = time.Now()
 	gitConfig := getGitConfig()
-	status = "pass"
+	status = statusPass
 	message = "Git configuration looks good"
 
 	if gitConfig["user.name"] == "" || gitConfig["user.email"] == "" {
-		status = "warn"
+		status = statusWarn
 		message = "Git user configuration incomplete"
 	}
 
@@ -627,11 +633,11 @@ func runPermissionChecks(report *DiagnosticReport, structuredLogger *logger.Stru
 	wd, _ := os.Getwd()
 	writable := isDirectoryWritable(wd)
 
-	status := "pass"
+	status := statusPass
 	message := fmt.Sprintf("Working directory '%s' is writable", wd)
 
 	if !writable {
-		status = "fail"
+		status = statusFail
 		message = fmt.Sprintf("Working directory '%s' is not writable", wd)
 	}
 
@@ -651,11 +657,11 @@ func runPermissionChecks(report *DiagnosticReport, structuredLogger *logger.Stru
 	configDir := filepath.Join(homeDir, ".config", "gzh-manager")
 	canCreateConfig := canCreateDirectory(configDir)
 
-	status = "pass"
+	status = statusPass
 	message = "Can create configuration directory"
 
 	if !canCreateConfig {
-		status = "warn"
+		status = statusWarn
 		message = "Cannot create configuration directory"
 	}
 
@@ -678,11 +684,11 @@ func runPerformanceChecks(report *DiagnosticReport, structuredLogger *logger.Str
 	start := time.Now()
 	cpuScore := runCPUBenchmark()
 
-	status := "pass"
+	status := statusPass
 
 	message := fmt.Sprintf("CPU benchmark: %.2f ops/sec", cpuScore)
 	if cpuScore < 1000000 {
-		status = "warn"
+		status = statusWarn
 		message += " (slow)"
 	}
 
@@ -700,11 +706,11 @@ func runPerformanceChecks(report *DiagnosticReport, structuredLogger *logger.Str
 	start = time.Now()
 	diskScore := runDiskBenchmark()
 
-	status = "pass"
+	status = statusPass
 
 	message = fmt.Sprintf("Disk I/O: %.2f MB/s", diskScore)
 	if diskScore < 10 {
-		status = "warn"
+		status = statusWarn
 		message += " (slow)"
 	}
 
@@ -728,11 +734,11 @@ func runSecurityChecks(report *DiagnosticReport, structuredLogger *logger.Struct
 	start := time.Now()
 	sshKeyCount := countSSHKeys()
 
-	status := "pass"
+	status := statusPass
 
 	message := fmt.Sprintf("SSH keys: %d found", sshKeyCount)
 	if sshKeyCount == 0 {
-		status = "warn"
+		status = statusWarn
 		message += " (no SSH keys configured)"
 	}
 
@@ -750,11 +756,11 @@ func runSecurityChecks(report *DiagnosticReport, structuredLogger *logger.Struct
 	start = time.Now()
 	unsafeFiles := findUnsafePermissions()
 
-	status = "pass"
+	status = statusPass
 	message = "File permissions look secure"
 
 	if len(unsafeFiles) > 0 {
-		status = "warn"
+		status = statusWarn
 		message = fmt.Sprintf("Found %d files with unsafe permissions", len(unsafeFiles))
 	}
 
@@ -814,15 +820,24 @@ func getDiskSpace(path string) float64 {
 	return 50.0 // Placeholder: 50GB
 }
 
-func isURLReachable(url string) bool {
+func isURLReachable(ctx context.Context, url string) bool {
 	// Simple connectivity check with timeout
 	client := &http.Client{Timeout: 5 * time.Second}
 
-	resp, err := client.Head(url)
+	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
 	if err != nil {
 		return false
 	}
-	defer resp.Body.Close()
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	return resp.StatusCode < 400
 }
@@ -851,7 +866,9 @@ func isDirectoryWritable(dir string) bool {
 		return false
 	}
 
-	file.Close()
+	if err := file.Close(); err != nil {
+		// Log error but don't fail the check
+	}
 
 	if err := os.Remove(testFile); err != nil {
 		// Log error but don't fail the check
@@ -909,8 +926,12 @@ func runDiskBenchmark() float64 {
 	}
 
 	defer func() {
-		file.Close()
-		os.Remove(testFile)
+		if err := file.Close(); err != nil {
+			// Log error but don't fail the check
+		}
+		if err := os.Remove(testFile); err != nil {
+			// Log error but don't fail the check
+		}
 	}()
 
 	for i := 0; i < 10; i++ {
@@ -1054,7 +1075,11 @@ func saveReport(report *DiagnosticReport, filename string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")

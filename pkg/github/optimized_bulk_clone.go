@@ -20,7 +20,6 @@ type OptimizedBulkCloneManager struct {
 	workerPool      *workerpool.RepositoryWorkerPool
 	config          OptimizedCloneConfig
 	memoryMonitor   *MemoryMonitor
-	mu              sync.RWMutex
 }
 
 // OptimizedCloneConfig represents configuration for optimized bulk cloning.
@@ -376,6 +375,9 @@ func (m *OptimizedBulkCloneManager) processRepositoryJob(ctx context.Context, jo
 		}
 
 		return m.executeGitOperation(ctx, job.Path, "pull")
+	case workerpool.OperationConfig:
+		// Config operation - placeholder for configuration updates
+		return fmt.Errorf("config operation not yet implemented")
 	default:
 		return fmt.Errorf("unknown operation: %s", job.Operation)
 	}

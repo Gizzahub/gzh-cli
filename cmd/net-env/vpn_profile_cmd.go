@@ -533,7 +533,7 @@ func createVPNProfileManager(ctx context.Context, logger *zap.Logger, configDir 
 }
 
 func (vpm *VPNProfileManager) GetAllProfiles() ([]*VPNProfile, error) {
-	var profiles []*VPNProfile
+	profiles := make([]*VPNProfile, 0, len(vpm.profiles))
 	for _, profile := range vpm.profiles {
 		profiles = append(profiles, profile)
 	}

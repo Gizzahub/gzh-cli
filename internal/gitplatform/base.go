@@ -1,6 +1,7 @@
 package gitplatform
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -59,8 +60,8 @@ func (b *BaseClient) GetBaseURL() string {
 }
 
 // CreateAuthenticatedRequest creates an HTTP request with authentication headers.
-func (b *BaseClient) CreateAuthenticatedRequest(method, url string) (*http.Request, error) {
-	req, err := http.NewRequest(method, url, nil)
+func (b *BaseClient) CreateAuthenticatedRequest(ctx context.Context, method, url string) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +149,7 @@ func EnsureDir(dir string) error {
 }
 
 // BuildCloneURL constructs the clone URL based on protocol and repository info.
-func BuildCloneURL(protocol, baseURL, owner, repoName string, useSSH bool) string {
+func BuildCloneURL(protocol, baseURL, owner, repoName string, _ bool) string {
 	switch protocol {
 	case "ssh":
 		// Extract host from baseURL

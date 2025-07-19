@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"text/tabwriter"
 	"time"
 
@@ -451,94 +450,6 @@ func detectNetworkEnvironment(ctx context.Context) (string, error) {
 	// - Available services
 	// - DNS servers
 	return "office", nil
-}
-
-func printVPNHierarchy(hierarchy map[string]*cloud.VPNHierarchyNode) error {
-	fmt.Printf("🌐 VPN Hierarchy Tree\n\n")
-
-	if len(hierarchy) == 0 {
-		fmt.Println("  No VPN connections configured.")
-		return nil
-	}
-
-	// Find root nodes (nodes without dependencies)
-	var roots []*cloud.VPNHierarchyNode
-
-	for _, node := range hierarchy {
-		if len(node.Dependencies) == 0 {
-			roots = append(roots, node)
-		}
-	}
-
-	// Print each root tree
-	for i, root := range roots {
-		if i > 0 {
-			fmt.Println()
-		}
-
-		printHierarchyNode(root, 0)
-	}
-
-	return nil
-}
-
-func printHierarchyNode(node *cloud.VPNHierarchyNode, indent int) {
-	indentStr := ""
-	for i := 0; i < indent; i++ {
-		indentStr += "  "
-	}
-
-	conn := node.Connection
-	if conn != nil {
-		fmt.Printf("%s├─ %s (Layer %d, Priority %d)\n",
-			indentStr, conn.Name, node.Layer, conn.Priority)
-
-		if len(node.Dependencies) > 0 {
-			fmt.Printf("%s   Dependencies: %v\n", indentStr, node.Dependencies)
-		}
-	}
-
-	// Note: Children field not available in VPNHierarchyNode
-}
-
-func printVPNLayers(layers map[int][]*cloud.VPNConnection) error {
-	fmt.Printf("📊 VPN Connections by Layer\n\n")
-
-	if len(layers) == 0 {
-		fmt.Println("  No VPN connections configured.")
-		return nil
-	}
-
-	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "LAYER\tCONNECTION\tTYPE\tPRIORITY\tAUTO-CONNECT\tENDPOINT")
-
-	// Sort layers by number
-	var layerNumbers []int
-	for layer := range layers {
-		layerNumbers = append(layerNumbers, layer)
-	}
-
-	for _, layer := range layerNumbers {
-		connections := layers[layer]
-		for i, conn := range connections {
-			layerStr := ""
-			if i == 0 {
-				layerStr = strconv.Itoa(layer)
-			}
-
-			autoConnect := "No"
-			if conn.AutoConnect {
-				autoConnect = "Yes"
-			}
-
-			endpoint := fmt.Sprintf("%s:%d", conn.Server, conn.Port)
-
-			fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
-				layerStr, conn.Name, conn.Type, conn.Priority, autoConnect, endpoint)
-		}
-	}
-
-	return w.Flush()
 }
 
 func printVPNStatus(status map[string]*cloud.VPNStatus) error {

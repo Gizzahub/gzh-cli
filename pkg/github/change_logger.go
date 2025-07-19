@@ -94,7 +94,10 @@ func NewChangeLogger(changelog *ChangeLog, options *LoggerOptions) *ChangeLogger
 
 	// Ensure log directory exists
 	if options.LogDirectory != "" {
-		os.MkdirAll(options.LogDirectory, 0o755)
+		if err := os.MkdirAll(options.LogDirectory, 0o755); err != nil {
+			// Log directory creation failure is not critical, use temp dir
+			options.LogDirectory = os.TempDir()
+		}
 	}
 
 	return &ChangeLogger{
@@ -332,7 +335,13 @@ func (cl *ChangeLogger) writeToFile(entry *logEntry) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// File close errors in logging are typically not critical
+			// but we should at least log to stderr if possible
+			fmt.Fprintf(os.Stderr, "Warning: failed to close log file: %v\n", err)
+		}
+	}()
 
 	// Format entry based on configured format
 	var line string
@@ -410,7 +419,10 @@ func (cl *ChangeLogger) cleanupOldLogFiles() error {
 	// Sort files by modification time and remove oldest
 	// This is a simplified implementation
 	for i := 0; i < len(matches)-cl.options.MaxLogFiles; i++ {
-		os.Remove(matches[i])
+		if err := os.Remove(matches[i]); err != nil {
+			// Log cleanup failure is not critical, but log the error
+			fmt.Fprintf(os.Stderr, "Warning: failed to remove old log file %s: %v\n", matches[i], err)
+		}
 	}
 
 	return nil

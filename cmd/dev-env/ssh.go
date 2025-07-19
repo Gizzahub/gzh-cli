@@ -21,7 +21,7 @@ type sshOptions struct {
 	listAll     bool
 }
 
-func defaultSshOptions() *sshOptions {
+func defaultSSHOptions() *sshOptions {
 	homeDir, _ := os.UserHomeDir()
 
 	return &sshOptions{
@@ -30,7 +30,7 @@ func defaultSshOptions() *sshOptions {
 	}
 }
 
-func newSshCmd() *cobra.Command {
+func newSSHCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ssh",
 		Short: "Manage SSH configuration files",
@@ -69,15 +69,15 @@ Examples:
 		SilenceUsage: true,
 	}
 
-	cmd.AddCommand(newSshSaveCmd())
-	cmd.AddCommand(newSshLoadCmd())
-	cmd.AddCommand(newSshListCmd())
+	cmd.AddCommand(newSSHSaveCmd())
+	cmd.AddCommand(newSSHLoadCmd())
+	cmd.AddCommand(newSSHListCmd())
 
 	return cmd
 }
 
-func newSshSaveCmd() *cobra.Command {
-	o := defaultSshOptions()
+func newSSHSaveCmd() *cobra.Command {
+	o := defaultSSHOptions()
 
 	cmd := &cobra.Command{
 		Use:   "save",
@@ -111,8 +111,8 @@ Examples:
 	return cmd
 }
 
-func newSshLoadCmd() *cobra.Command {
-	o := defaultSshOptions()
+func newSSHLoadCmd() *cobra.Command {
+	o := defaultSSHOptions()
 
 	cmd := &cobra.Command{
 		Use:   "load",
@@ -141,8 +141,8 @@ Examples:
 	return cmd
 }
 
-func newSshListCmd() *cobra.Command {
-	o := defaultSshOptions()
+func newSSHListCmd() *cobra.Command {
+	o := defaultSSHOptions()
 
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -407,7 +407,7 @@ func (o *sshOptions) copyFile(src, dst string) error {
 
 func (o *sshOptions) displayConfigInfo(configPath string) error {
 	// Parse SSH config file to extract host information
-	hosts := o.parseSshConfig(configPath)
+	hosts := o.parseSSHConfig(configPath)
 
 	// Display host information
 	if len(hosts) > 0 {
@@ -443,7 +443,7 @@ type sshHost struct {
 	KeyFile  string
 }
 
-func (o *sshOptions) parseSshConfig(configPath string) []sshHost {
+func (o *sshOptions) parseSSHConfig(configPath string) []sshHost {
 	content, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil

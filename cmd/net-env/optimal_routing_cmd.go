@@ -738,7 +738,7 @@ func (oro *OptimalRouteOptimizer) ConfigureLoadBalancing(ctx context.Context, co
 	}
 
 	// Configure load balancing paths
-	var paths []LoadBalancePath
+	paths := make([]LoadBalancePath, 0, len(config.Interfaces))
 
 	totalWeight := 0
 
@@ -803,7 +803,7 @@ func (oro *OptimalRouteOptimizer) GetRoutingStatus(ctx context.Context) (*Routin
 }
 
 func (oro *OptimalRouteOptimizer) ListPolicies(ctx context.Context) ([]RoutingPolicy, error) {
-	var policies []RoutingPolicy
+	policies := make([]RoutingPolicy, 0, len(oro.policies))
 	for _, policy := range oro.policies {
 		policies = append(policies, *policy)
 	}

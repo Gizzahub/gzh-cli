@@ -39,7 +39,11 @@ func TestBulkClone_GitLab_Integration(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "bulk-clone-gitlab-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Create test configuration
 	cfg := &config.Config{
@@ -105,7 +109,11 @@ func TestBulkClone_Gitea_Integration(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "bulk-clone-gitea-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Create test configuration
 	cfg := &config.Config{
@@ -167,7 +175,11 @@ func TestBulkClone_Redis_Cache_Integration(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "bulk-clone-redis-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Create test configuration with Redis cache
 	cfg := &config.Config{
@@ -256,7 +268,11 @@ func TestMultiProvider_Integration(t *testing.T) {
 	// Create temporary directory for test configuration
 	tmpDir, err := os.MkdirTemp("", "bulk-clone-multi-*")
 	require.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Create comprehensive test configuration
 	cfg := &config.Config{

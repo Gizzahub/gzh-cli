@@ -395,7 +395,11 @@ func TestOptimizationManager(t *testing.T) {
 		batchProcessor := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
 			responses := make([]BatchResponse, len(requests))
 			for i, req := range requests {
-				data := req.Data.(map[string]string)
+				data, ok := req.Data.(map[string]string)
+				if !ok {
+					// Skip invalid data format
+					continue
+				}
 				responses[i] = BatchResponse{
 					ID:   req.ID,
 					Data: fmt.Sprintf("batch-result-%s-%s", data["org"], data["repo"]),
@@ -458,7 +462,11 @@ func TestRepositoryBatchProcessor(t *testing.T) {
 		batchFunc := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
 			responses := make([]BatchResponse, len(requests))
 			for i, req := range requests {
-				_ = req.Data.(map[string]string) // Acknowledge but don't use data
+				_, ok := req.Data.(map[string]string) // Check type but don't use data
+				if !ok {
+					// Skip invalid data format
+					continue
+				}
 				responses[i] = BatchResponse{
 					ID:   req.ID,
 					Data: "main", // Simulate default branch

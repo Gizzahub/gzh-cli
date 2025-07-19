@@ -34,7 +34,7 @@ func (l *SimpleLogger) Warn(msg string, keysAndValues ...interface{}) {
 }
 
 // With returns a logger with additional context.
-func (l *SimpleLogger) With(keysAndValues ...interface{}) interface{} {
+func (l *SimpleLogger) With(_ ...interface{}) interface{} {
 	return l
 }
 
@@ -44,7 +44,7 @@ func GetLogger() interface{} {
 }
 
 // FormatEvents formats events for output.
-func FormatEvents(events []*interface{}, format string) error {
+func FormatEvents(_ []*interface{}, format string) error {
 	switch format {
 	case "json":
 		// JSON formatting implementation

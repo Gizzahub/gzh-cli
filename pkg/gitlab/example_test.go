@@ -55,8 +55,14 @@ func ExampleClone() {
 	// Create a temporary directory for cloning
 	tempDir := "/tmp/gitlab-clone-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	if err := os.MkdirAll(tempDir, 0o755); err != nil {
+		log.Printf("Warning: failed to create temp dir: %v", err)
+	}
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			log.Printf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Clone a project with specific branch
 	err := gitlab.Clone(ctx, tempDir, "gitlab-org", "gitlab", "master")
@@ -77,8 +83,14 @@ func ExampleClone_defaultBranch() {
 	// Create a temporary directory for cloning
 	tempDir := "/tmp/gitlab-default-branch-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	if err := os.MkdirAll(tempDir, 0o755); err != nil {
+		log.Printf("Warning: failed to create temp dir: %v", err)
+	}
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			log.Printf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Clone a project without specifying branch (uses default)
 	err := gitlab.Clone(ctx, tempDir, "gitlab-org", "gitlab", "")
@@ -101,8 +113,14 @@ func ExampleList_groupWorkflow() {
 	targetDir := "/tmp/gitlab-workflow-example"
 
 	// Step 1: Create target directory
-	os.MkdirAll(targetDir, 0o755)
-	defer os.RemoveAll(targetDir)
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+		log.Printf("Warning: failed to create target dir: %v", err)
+	}
+	defer func() {
+		if err := os.RemoveAll(targetDir); err != nil {
+			log.Printf("Warning: failed to remove target dir: %v", err)
+		}
+	}()
 
 	// Step 2: List all projects in the group
 	projects, err := gitlab.List(ctx, groupName)

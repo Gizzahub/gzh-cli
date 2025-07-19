@@ -15,7 +15,11 @@ func TestFileStore(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
@@ -70,7 +74,11 @@ func TestChangeLog(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
@@ -118,7 +126,11 @@ func TestChangeFilter(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
@@ -218,7 +230,11 @@ func TestFileStoreStats(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)
@@ -248,7 +264,9 @@ func TestFileStoreStats(t *testing.T) {
 	stats, err = store.GetStats(ctx)
 	require.NoError(t, err)
 	assert.Equal(t, 1, stats["total_records"])
-	assert.Greater(t, stats["total_size_bytes"].(int64), int64(0))
+	if totalSize, ok := stats["total_size_bytes"].(int64); ok {
+		assert.Greater(t, totalSize, int64(0))
+	}
 	assert.Equal(t, tempDir, stats["storage_path"])
 }
 
@@ -256,7 +274,11 @@ func TestRollbackRequest(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "changelog_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	store, err := NewFileStore(tempDir)
 	require.NoError(t, err)

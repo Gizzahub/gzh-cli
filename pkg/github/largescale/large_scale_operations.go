@@ -42,10 +42,10 @@ func DefaultLargeScaleConfig() *LargeScaleConfig {
 // LargeScaleRepository represents a minimal repository structure for large-scale operations.
 type LargeScaleRepository struct {
 	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
-	HTMLURL       string `json:"html_url"`
-	CloneURL      string `json:"clone_url"`
-	DefaultBranch string `json:"default_branch"`
+	FullName      string `json:"fullName"`
+	HTMLURL       string `json:"htmlUrl"`
+	CloneURL      string `json:"cloneUrl"`
+	DefaultBranch string `json:"defaultBranch"`
 	Size          int    `json:"size"` // Size in KB
 	Fork          bool   `json:"fork"`
 	Archived      bool   `json:"archived"`
@@ -174,7 +174,12 @@ func (m *LargeScaleManager) fetchRepositoryPage(ctx context.Context, org string,
 	if err != nil {
 		return nil, false, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log but don't return error as this is cleanup
+			fmt.Printf("Warning: failed to close response body: %v\n", err)
+		}
+	}()
 
 	m.updateAPIStats(resp)
 

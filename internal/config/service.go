@@ -313,7 +313,9 @@ func (s *DefaultConfigService) WatchConfiguration(ctx context.Context, callback 
 	// Add the configuration file to the watcher
 	err = s.watcher.Add(s.configPath)
 	if err != nil {
-		s.watcher.Close()
+		if err := s.watcher.Close(); err != nil {
+			// Log error but don't fail the operation
+		}
 		s.watcher = nil
 
 		return fmt.Errorf("failed to watch configuration file: %w", err)
@@ -329,7 +331,9 @@ func (s *DefaultConfigService) WatchConfiguration(ctx context.Context, callback 
 func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 	defer func() {
 		if s.watcher != nil {
-			s.watcher.Close()
+			if err := s.watcher.Close(); err != nil {
+				// Log error but don't fail the operation
+			}
 		}
 	}()
 
@@ -384,7 +388,9 @@ func (s *DefaultConfigService) StopWatching() {
 	defer s.mu.Unlock()
 
 	if s.watcher != nil {
-		s.watcher.Close()
+		if err := s.watcher.Close(); err != nil {
+			// Log error but don't fail the operation
+		}
 		s.watcher = nil
 		s.watchCallback = nil
 	}

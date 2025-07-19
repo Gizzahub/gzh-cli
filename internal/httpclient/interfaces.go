@@ -17,7 +17,7 @@ type Request struct {
 
 // Response represents an HTTP response.
 type Response struct {
-	StatusCode int               `json:"status_code"`
+	StatusCode int               `json:"statusCode"`
 	Status     string            `json:"status"`
 	Headers    map[string]string `json:"headers"`
 	Body       []byte            `json:"body"`
@@ -126,7 +126,7 @@ type CacheStats struct {
 	Stores    int64 `json:"stores"`
 	Evictions int64 `json:"evictions"`
 	Size      int64 `json:"size"`
-	MaxSize   int64 `json:"max_size"`
+	MaxSize   int64 `json:"maxSize"`
 }
 
 // RequestLogger defines the interface for request logging.
@@ -159,11 +159,11 @@ const (
 type LogFilters struct {
 	Method      string        `json:"method,omitempty"`
 	URL         string        `json:"url,omitempty"`
-	StatusCode  int           `json:"status_code,omitempty"`
-	StartTime   time.Time     `json:"start_time,omitempty"`
-	EndTime     time.Time     `json:"end_time,omitempty"`
-	MinDuration time.Duration `json:"min_duration,omitempty"`
-	MaxDuration time.Duration `json:"max_duration,omitempty"`
+	StatusCode  int           `json:"statusCode,omitempty"`
+	StartTime   time.Time     `json:"startTime,omitempty"`
+	EndTime     time.Time     `json:"endTime,omitempty"`
+	MinDuration time.Duration `json:"minDuration,omitempty"`
+	MaxDuration time.Duration `json:"maxDuration,omitempty"`
 }
 
 // LogEntry represents a logged HTTP request/response.
@@ -172,13 +172,13 @@ type LogEntry struct {
 	Timestamp    time.Time     `json:"timestamp"`
 	Method       string        `json:"method"`
 	URL          string        `json:"url"`
-	StatusCode   int           `json:"status_code"`
+	StatusCode   int           `json:"statusCode"`
 	Duration     time.Duration `json:"duration"`
-	RequestSize  int64         `json:"request_size"`
-	ResponseSize int64         `json:"response_size"`
+	RequestSize  int64         `json:"requestSize"`
+	ResponseSize int64         `json:"responseSize"`
 	Error        string        `json:"error,omitempty"`
-	UserAgent    string        `json:"user_agent"`
-	RemoteAddr   string        `json:"remote_addr"`
+	UserAgent    string        `json:"userAgent"`
+	RemoteAddr   string        `json:"remoteAddr"`
 }
 
 // MockClient defines the interface for HTTP client mocking.
@@ -204,9 +204,9 @@ type Mock struct {
 	ID         string            `json:"id"`
 	Method     string            `json:"method"`
 	URL        string            `json:"url"`
-	URLPattern string            `json:"url_pattern,omitempty"`
+	URLPattern string            `json:"urlPattern,omitempty"`
 	Headers    map[string]string `json:"headers,omitempty"`
-	StatusCode int               `json:"status_code"`
+	StatusCode int               `json:"statusCode"`
 	Response   []byte            `json:"response"`
 	Delay      time.Duration     `json:"delay,omitempty"`
 	Times      int               `json:"times,omitempty"` // number of times to match, 0 = unlimited
@@ -246,19 +246,19 @@ type MetricsCollector interface {
 
 // HTTPMetrics represents collected HTTP metrics.
 type HTTPMetrics struct {
-	TotalRequests      int64            `json:"total_requests"`
-	SuccessfulRequests int64            `json:"successful_requests"`
-	FailedRequests     int64            `json:"failed_requests"`
-	TotalDuration      time.Duration    `json:"total_duration"`
-	AverageDuration    time.Duration    `json:"average_duration"`
-	MinDuration        time.Duration    `json:"min_duration"`
-	MaxDuration        time.Duration    `json:"max_duration"`
-	StatusCodeCounts   map[int]int64    `json:"status_code_counts"`
-	MethodCounts       map[string]int64 `json:"method_counts"`
-	ErrorCounts        map[string]int64 `json:"error_counts"`
-	ResponseSizes      *SizeStats       `json:"response_sizes"`
-	RequestSizes       *SizeStats       `json:"request_sizes"`
-	TopEndpoints       []EndpointStat   `json:"top_endpoints"`
+	TotalRequests      int64            `json:"totalRequests"`
+	SuccessfulRequests int64            `json:"successfulRequests"`
+	FailedRequests     int64            `json:"failedRequests"`
+	TotalDuration      time.Duration    `json:"totalDuration"`
+	AverageDuration    time.Duration    `json:"averageDuration"`
+	MinDuration        time.Duration    `json:"minDuration"`
+	MaxDuration        time.Duration    `json:"maxDuration"`
+	StatusCodeCounts   map[int]int64    `json:"statusCodeCounts"`
+	MethodCounts       map[string]int64 `json:"methodCounts"`
+	ErrorCounts        map[string]int64 `json:"errorCounts"`
+	ResponseSizes      *SizeStats       `json:"responseSizes"`
+	RequestSizes       *SizeStats       `json:"requestSizes"`
+	TopEndpoints       []EndpointStat   `json:"topEndpoints"`
 }
 
 // SizeStats represents size statistics.
@@ -276,8 +276,8 @@ type SizeStats struct {
 type EndpointStat struct {
 	URL             string        `json:"url"`
 	Count           int64         `json:"count"`
-	AverageDuration time.Duration `json:"average_duration"`
-	ErrorRate       float64       `json:"error_rate"`
+	AverageDuration time.Duration `json:"averageDuration"`
+	ErrorRate       float64       `json:"errorRate"`
 }
 
 // HTTPService provides a unified interface for all HTTP operations.

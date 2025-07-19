@@ -1069,7 +1069,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 
 // filterRepositories filters repositories based on include/exclude options.
 func (c *RepoConfigClient) filterRepositories(repos []*Repository, options *BulkApplyOptions) []*Repository {
-	var filtered []*Repository
+	filtered := make([]*Repository, 0, len(repos))
 
 	excludeMap := make(map[string]bool)
 	for _, repo := range options.ExcludeRepositories {

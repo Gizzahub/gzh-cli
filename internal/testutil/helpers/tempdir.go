@@ -32,7 +32,11 @@ func CreateTempFile(t *testing.T, dir, pattern string, content []byte) string {
 	if err != nil {
 		t.Fatalf("failed to create temp file: %v", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Logf("Warning: failed to close temp file: %v", err)
+		}
+	}()
 
 	if len(content) > 0 {
 		if _, err := file.Write(content); err != nil {

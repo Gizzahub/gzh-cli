@@ -204,7 +204,11 @@ func RefreshAllOptimizedStreamingWithCache(ctx context.Context, targetPath, org,
 	if err != nil {
 		return fmt.Errorf("failed to create cached bulk clone manager: %w", err)
 	}
-	defer manager.Close()
+	defer func() {
+		if err := manager.Close(); err != nil {
+			// Log close error but don't override main error
+		}
+	}()
 
 	// Execute cached refresh
 	stats, err := manager.RefreshAllOptimizedWithCache(ctx, targetPath, org, strategy)

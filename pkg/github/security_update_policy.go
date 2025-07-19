@@ -752,6 +752,33 @@ func (sm *SecurityUpdatePolicyManager) evaluateCondition(condition ApprovalCondi
 		if condition.Field == "score" {
 			result = sm.compareFloat(vuln.CVSS.Score, condition.Operator, condition.Value)
 		}
+	case ConditionTypeVersion:
+		switch condition.Field {
+		case "current_version":
+			result = sm.compareString(update.CurrentVersion, condition.Operator, condition.Value)
+		case "target_version":
+			result = sm.compareString(update.TargetVersion, condition.Operator, condition.Value)
+		case "version":
+			// Default to current version
+			result = sm.compareString(update.CurrentVersion, condition.Operator, condition.Value)
+		}
+	case ConditionTypeAge:
+		if condition.Field == "days" {
+			// Calculate age in days from vulnerability published date
+			age := time.Since(vuln.PublishedAt).Hours() / 24
+			result = sm.compareFloat(age, condition.Operator, condition.Value)
+		}
+	case ConditionTypeRepository:
+		if condition.Field == "name" {
+			result = sm.compareString(update.Repository, condition.Operator, condition.Value)
+		}
+	case ConditionTypeEcosystem:
+		if condition.Field == "ecosystem" {
+			result = sm.compareString(update.Package.Ecosystem, condition.Operator, condition.Value)
+		}
+	default:
+		// Unknown condition type
+		result = false
 	}
 
 	if condition.Negated {

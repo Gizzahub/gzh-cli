@@ -209,7 +209,11 @@ func (o *ideOptions) runMonitor(ctx context.Context, _ *cobra.Command, args []st
 	if err != nil {
 		return fmt.Errorf("failed to create file watcher: %w", err)
 	}
-	defer watcher.Close()
+	defer func() {
+		if err := watcher.Close(); err != nil {
+			fmt.Printf("Warning: Failed to close file watcher: %v\n", err)
+		}
+	}()
 
 	// Add directories to watcher
 	for _, dir := range watchDirs {
@@ -348,7 +352,7 @@ func (o *ideOptions) getWatchDirectories() ([]string, error) {
 		products = filtered
 	}
 
-	var dirs []string
+	dirs := make([]string, 0, len(products))
 	for _, product := range products {
 		dirs = append(dirs, product.BasePath)
 	}
@@ -456,7 +460,7 @@ func (o *ideOptions) formatProductName(dirName string) string {
 func (o *ideOptions) addWatchRecursive(watcher *fsnotify.Watcher, root string) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil // Skip directories we can't access
+			return err // Skip directories we can't access
 		}
 
 		if !info.IsDir() {
@@ -656,7 +660,7 @@ func (o *ideOptions) getDirSize(path string) int64 {
 
 	_ = filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil
+			return err
 		}
 
 		if !info.IsDir() {
@@ -688,7 +692,7 @@ func (o *ideOptions) countConfigFiles(path string) int {
 	count := 0
 	_ = filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil
+			return err
 		}
 
 		if !info.IsDir() && (strings.HasSuffix(info.Name(), ".xml") || strings.HasSuffix(info.Name(), ".json")) {

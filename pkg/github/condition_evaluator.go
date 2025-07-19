@@ -360,9 +360,9 @@ func (e *conditionEvaluatorImpl) EvaluateRepositoryConditions(ctx context.Contex
 	if len(conditions.RepositoryPatterns) > 0 {
 		matched := false
 		for _, pattern := range conditions.RepositoryPatterns {
-			if matched, err := regexp.MatchString(pattern, repoInfo.Name); err != nil {
+			if patternMatched, err := regexp.MatchString(pattern, repoInfo.Name); err != nil {
 				return false, fmt.Errorf("invalid repository pattern '%s': %w", pattern, err)
-			} else if matched {
+			} else if patternMatched {
 				matched = true
 				break
 			}
@@ -506,9 +506,9 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 	if len(conditions.BranchPatterns) > 0 && branch != "" {
 		matched := false
 		for _, pattern := range conditions.BranchPatterns {
-			if matched, err := regexp.MatchString(pattern, branch); err != nil {
+			if patternMatched, err := regexp.MatchString(pattern, branch); err != nil {
 				return false, fmt.Errorf("invalid branch pattern '%s': %w", pattern, err)
-			} else if matched {
+			} else if patternMatched {
 				matched = true
 				break
 			}
@@ -613,11 +613,27 @@ func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *Paylo
 		case MatchOperatorNotExists:
 			result.Matched = true
 			return result, nil
+		case MatchOperatorEquals, MatchOperatorNotEquals, MatchOperatorContains, MatchOperatorNotContains:
+			// These operators require the path to exist
+			result.Error = fmt.Sprintf("Path '%s' not found in payload", matcher.Path)
+			return result, fmt.Errorf("path not found: %s", matcher.Path)
+		case MatchOperatorStartsWith, MatchOperatorEndsWith, MatchOperatorRegex:
+			// These operators require the path to exist
+			result.Error = fmt.Sprintf("Path '%s' not found in payload", matcher.Path)
+			return result, fmt.Errorf("path not found: %s", matcher.Path)
+		case MatchOperatorGreaterThan, MatchOperatorLessThan:
+			// These operators require the path to exist
+			result.Error = fmt.Sprintf("Path '%s' not found in payload", matcher.Path)
+			return result, fmt.Errorf("path not found: %s", matcher.Path)
+		case MatchOperatorEmpty, MatchOperatorNotEmpty:
+			// These operators require the path to exist
+			result.Error = fmt.Sprintf("Path '%s' not found in payload", matcher.Path)
+			return result, fmt.Errorf("path not found: %s", matcher.Path)
+		default:
+			// Unknown operator
+			result.Error = fmt.Sprintf("Unknown operator: %s", matcher.Operator)
+			return result, fmt.Errorf("unknown operator: %s", matcher.Operator)
 		}
-
-		result.Error = fmt.Sprintf("Path '%s' not found in payload", matcher.Path)
-
-		return result, fmt.Errorf("path not found: %s", matcher.Path)
 	}
 
 	result.ActualValue = gjsonResult.Value()
@@ -866,7 +882,7 @@ func (e *conditionEvaluatorImpl) extractPathsFromPayload(payload map[string]inte
 		}
 	}
 
-	var paths []string
+	paths := make([]string, 0, len(pathMap))
 	for path := range pathMap {
 		paths = append(paths, path)
 	}

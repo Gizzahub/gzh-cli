@@ -52,9 +52,15 @@ func TestFileExists(t *testing.T) {
 	tmpFile, err := os.CreateTemp("", "test-*.yaml")
 	require.NoError(t, err)
 
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Warning: failed to remove temp file: %v", err)
+		}
+	}()
 
-	tmpFile.Close()
+	if err := tmpFile.Close(); err != nil {
+		t.Logf("Warning: failed to close temp file: %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -96,11 +102,17 @@ providers:
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
 
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Warning: failed to remove temp file: %v", err)
+		}
+	}()
 
 	_, err = tmpFile.WriteString(configContent)
 	require.NoError(t, err)
-	tmpFile.Close()
+	if err := tmpFile.Close(); err != nil {
+		t.Logf("Warning: failed to close temp file: %v", err)
+	}
 
 	config, err := LoadConfigFromFile(tmpFile.Name())
 	assert.NoError(t, err)
@@ -113,13 +125,21 @@ func TestCreateDefaultConfig(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "test-config-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	configPath := filepath.Join(tmpDir, "gzh.yaml")
 
 	// Set environment variables for test
-	os.Setenv("GITHUB_TOKEN", "test-github-token")
-	os.Setenv("GITLAB_TOKEN", "test-gitlab-token")
+	if err := os.Setenv("GITHUB_TOKEN", "test-github-token"); err != nil {
+		t.Logf("Warning: failed to set GITHUB_TOKEN: %v", err)
+	}
+	if err := os.Setenv("GITLAB_TOKEN", "test-gitlab-token"); err != nil {
+		t.Logf("Warning: failed to set GITLAB_TOKEN: %v", err)
+	}
 
 	defer func() {
 		os.Unsetenv("GITHUB_TOKEN")

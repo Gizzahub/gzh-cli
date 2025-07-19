@@ -82,12 +82,20 @@ providers:
         clone_dir: "${HOME}/repos"
 `,
 			setupEnv: func() {
-				os.Setenv("TEST_GITHUB_TOKEN", "test-token-value")
-				os.Setenv("HOME", "/home/testuser")
+				if err := os.Setenv("TEST_GITHUB_TOKEN", "test-token-value"); err != nil {
+					// Environment setup error in test is non-critical
+				}
+				if err := os.Setenv("HOME", "/home/testuser"); err != nil {
+					// Environment setup error in test is non-critical
+				}
 			},
 			cleanupEnv: func() {
-				os.Unsetenv("TEST_GITHUB_TOKEN")
-				os.Unsetenv("HOME")
+				if err := os.Unsetenv("TEST_GITHUB_TOKEN"); err != nil {
+					// Environment cleanup error in test is non-critical
+				}
+				if err := os.Unsetenv("HOME"); err != nil {
+					// Environment cleanup error in test is non-critical
+				}
 			},
 			expectError: false,
 		},
@@ -108,7 +116,11 @@ providers:
 			tmpDir, err := os.MkdirTemp("", "config-validate-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() {
+				if err := os.RemoveAll(tmpDir); err != nil {
+					t.Logf("Warning: failed to remove temp dir: %v", err)
+				}
+			}()
 
 			configFile := filepath.Join(tmpDir, "gzh.yaml")
 			err = os.WriteFile(configFile, []byte(tt.configContent), 0o644)
@@ -135,13 +147,21 @@ func TestFindConfigFile(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "find-config-test-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
 
-	defer os.Chdir(originalDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("Warning: failed to change back to original dir: %v", err)
+		}
+	}()
 
 	err = os.Chdir(tmpDir)
 	require.NoError(t, err)
@@ -157,7 +177,9 @@ func TestFindConfigFile(t *testing.T) {
 		{
 			name: "find gzh.yaml in current directory",
 			setupFiles: func() {
-				os.WriteFile("gzh.yaml", []byte("version: 1.0.0"), 0o644)
+				if err := os.WriteFile("gzh.yaml", []byte("version: 1.0.0"), 0o644); err != nil {
+					t.Errorf("failed to write test file: %v", err)
+				}
 			},
 			expectError:  false,
 			expectedFile: "gzh.yaml",
@@ -165,7 +187,9 @@ func TestFindConfigFile(t *testing.T) {
 		{
 			name: "find gzh.yml in current directory",
 			setupFiles: func() {
-				os.WriteFile("gzh.yml", []byte("version: 1.0.0"), 0o644)
+				if err := os.WriteFile("gzh.yml", []byte("version: 1.0.0"), 0o644); err != nil {
+					t.Errorf("failed to write test file: %v", err)
+				}
 			},
 			expectError:  false,
 			expectedFile: "gzh.yml",
@@ -174,11 +198,15 @@ func TestFindConfigFile(t *testing.T) {
 			name: "find via environment variable",
 			setupFiles: func() {
 				customFile := filepath.Join(tmpDir, "custom-config.yaml")
-				os.WriteFile(customFile, []byte("version: 1.0.0"), 0o644)
+				if err := os.WriteFile(customFile, []byte("version: 1.0.0"), 0o644); err != nil {
+					t.Errorf("failed to write test file: %v", err)
+				}
 			},
 			setupEnv: func() {
 				customFile := filepath.Join(tmpDir, "custom-config.yaml")
-				os.Setenv("GZH_CONFIG_PATH", customFile)
+				if err := os.Setenv("GZH_CONFIG_PATH", customFile); err != nil {
+					t.Errorf("failed to set environment variable: %v", err)
+				}
 			},
 			cleanupEnv: func() {
 				os.Unsetenv("GZH_CONFIG_PATH")

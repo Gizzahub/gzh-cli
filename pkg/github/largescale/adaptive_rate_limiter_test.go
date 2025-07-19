@@ -231,7 +231,9 @@ func TestRateLimiterReset(t *testing.T) {
 	// Make some requests to populate history
 	ctx := context.Background()
 	for i := 0; i < 5; i++ {
-		rl.Wait(ctx)
+		if err := rl.Wait(ctx); err != nil {
+			t.Logf("Warning: rate limiter wait failed: %v", err)
+		}
 	}
 
 	// Reset should restore defaults
@@ -282,7 +284,9 @@ func TestRateLimiterMemoryEfficiency(t *testing.T) {
 
 	// Make many requests to test history cleanup
 	for i := 0; i < 200; i++ {
-		rl.Wait(ctx)
+		if err := rl.Wait(ctx); err != nil {
+			t.Logf("Warning: rate limiter wait failed: %v", err)
+		}
 
 		if i%50 == 0 {
 			time.Sleep(time.Millisecond) // Small delay to vary timestamps
@@ -328,7 +332,9 @@ func BenchmarkRateLimiterWait(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		rl.Wait(ctx)
+		if err := rl.Wait(ctx); err != nil {
+			// Ignore errors in benchmark to not affect performance measurements
+		}
 	}
 }
 

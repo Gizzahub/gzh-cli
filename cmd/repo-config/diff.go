@@ -13,6 +13,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	changeTypeCreate = "create"
+	changeTypeUpdate = "update"
+	changeTypeDelete = "delete"
+)
+
 // newDiffCmd creates the diff subcommand.
 func newDiffCmd() *cobra.Command {
 	var (
@@ -145,10 +151,10 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, i
 type ConfigurationDifference struct {
 	Repository   string `json:"repository"`
 	Setting      string `json:"setting"`
-	CurrentValue string `json:"current_value"`
-	TargetValue  string `json:"target_value"`
-	ChangeType   string `json:"change_type"` // create, update, delete
-	Impact       string `json:"impact"`      // low, medium, high
+	CurrentValue string `json:"currentValue"`
+	TargetValue  string `json:"targetValue"`
+	ChangeType   string `json:"changeType"` // create, update, delete
+	Impact       string `json:"impact"`     // low, medium, high
 	Template     string `json:"template"`
 	Compliant    bool   `json:"compliant"`
 }
@@ -187,8 +193,8 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 
 				fmt.Printf("  %-28s %-15s %-15s %-12s %s\n",
 					truncateString(diff.Setting, 28),
-					colorizeValue(currentDisplay, diff.ChangeType == "delete"),
-					colorizeValue(truncateString(diff.TargetValue, 15), diff.ChangeType == "create"),
+					colorizeValue(currentDisplay, diff.ChangeType == changeTypeDelete),
+					colorizeValue(truncateString(diff.TargetValue, 15), diff.ChangeType == changeTypeCreate),
 					impactSymbol,
 					actionSymbol,
 				)
@@ -229,12 +235,12 @@ func displayDiffUnified(differences []ConfigurationDifference) {
 		fmt.Printf("@@ %s @@\n", diff.Setting)
 
 		switch diff.ChangeType {
-		case "create":
+		case changeTypeCreate:
 			fmt.Printf("+%s: %s\n", diff.Setting, diff.TargetValue)
 		case "update":
 			fmt.Printf("-%s: %s\n", diff.Setting, diff.CurrentValue)
 			fmt.Printf("+%s: %s\n", diff.Setting, diff.TargetValue)
-		case "delete":
+		case changeTypeDelete:
 			fmt.Printf("-%s: %s\n", diff.Setting, diff.CurrentValue)
 		}
 
@@ -253,9 +259,9 @@ func displayDiffSummary(differences []ConfigurationDifference) {
 	}
 
 	actionCounts := map[string]int{
-		"create": 0,
-		"update": 0,
-		"delete": 0,
+		changeTypeCreate: 0,
+		"update":         0,
+		changeTypeDelete: 0,
 	}
 
 	for _, diff := range differences {
@@ -275,9 +281,9 @@ func displayDiffSummary(differences []ConfigurationDifference) {
 	fmt.Println()
 
 	fmt.Printf("Change types:\n")
-	fmt.Printf("  ➕ Create: %d\n", actionCounts["create"])
+	fmt.Printf("  ➕ Create: %d\n", actionCounts[changeTypeCreate])
 	fmt.Printf("  🔄 Update: %d\n", actionCounts["update"])
-	fmt.Printf("  ➖ Delete: %d\n", actionCounts["delete"])
+	fmt.Printf("  ➖ Delete: %d\n", actionCounts[changeTypeDelete])
 }
 
 // getImpactSymbol returns the symbol for impact level.
@@ -479,7 +485,7 @@ func getAffectedRepositories(differences []ConfigurationDifference) []string {
 		repos[diff.Repository] = true
 	}
 
-	var result []string
+	result := make([]string, 0, len(repos))
 	for repo := range repos {
 		result = append(result, repo)
 	}
@@ -636,7 +642,7 @@ func compareRepositoryConfigurations(
 							Setting:      fmt.Sprintf("branch_protection.%s.required_reviews", branch),
 							CurrentValue: "0",
 							TargetValue:  fmt.Sprintf("%d", *targetRule.RequiredReviews),
-							ChangeType:   "create",
+							ChangeType:   changeTypeCreate,
 							Impact:       "high",
 							Template:     templateName,
 							Compliant:    false,
@@ -685,7 +691,7 @@ func compareRepositoryConfigurations(
 					Setting:      fmt.Sprintf("permissions.team.%s", team),
 					CurrentValue: "none",
 					TargetValue:  targetPerm,
-					ChangeType:   "create",
+					ChangeType:   changeTypeCreate,
 					Impact:       "medium",
 					Template:     templateName,
 					Compliant:    false,
@@ -714,11 +720,11 @@ func compareRepositoryConfigurations(
 // getChangeType determines the type of change.
 func getChangeType(current, target string) string {
 	if current == "" && target != "" {
-		return "create"
+		return changeTypeCreate
 	}
 
 	if current != "" && target == "" {
-		return "delete"
+		return changeTypeDelete
 	}
 
 	return "update"

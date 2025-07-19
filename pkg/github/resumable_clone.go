@@ -314,6 +314,10 @@ func processRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, org
 
 		return executeGitOperation(ctx, job.Path, "pull")
 
+	case workerpool.OperationConfig:
+		// Config operation - placeholder for configuration updates
+		return fmt.Errorf("config operation not yet implemented")
+
 	default:
 		return fmt.Errorf("unknown operation: %s", job.Operation)
 	}
@@ -369,6 +373,8 @@ func getProgressStatusFromOperation(operation workerpool.RepositoryOperation) bu
 		return bulkclonepkg.StatusFetching
 	case workerpool.OperationReset:
 		return bulkclonepkg.StatusResetting
+	case workerpool.OperationConfig:
+		return bulkclonepkg.StatusStarted // Config operations are quick, just show as started
 	default:
 		return bulkclonepkg.StatusStarted
 	}

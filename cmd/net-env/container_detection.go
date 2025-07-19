@@ -424,6 +424,8 @@ func (cd *ContainerDetector) getRuntimeServerInfo(ctx context.Context, runtime C
 		cmd = exec.CommandContext(ctx, string(runtime), "system", "info", "--format", "json")
 	case Nerdctl:
 		cmd = exec.CommandContext(ctx, string(runtime), "system", "info")
+	case Containerd:
+		cmd = exec.CommandContext(ctx, "ctr", "version")
 	default:
 		return nil, fmt.Errorf("unsupported runtime: %s", runtime)
 	}
@@ -564,6 +566,8 @@ func (cd *ContainerDetector) detectRunningContainers(ctx context.Context, runtim
 		cmd = exec.CommandContext(ctx, string(runtime), "ps", "--format", "json")
 	case Nerdctl:
 		cmd = exec.CommandContext(ctx, string(runtime), "ps", "--format", "json")
+	case Containerd:
+		cmd = exec.CommandContext(ctx, "ctr", "containers", "ls", "--format", "json")
 	default:
 		return nil, fmt.Errorf("unsupported runtime: %s", runtime)
 	}
@@ -573,9 +577,8 @@ func (cd *ContainerDetector) detectRunningContainers(ctx context.Context, runtim
 		return nil, err
 	}
 
-	var containers []DetectedContainer
-
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	containers := make([]DetectedContainer, 0, len(lines))
 
 	for _, line := range lines {
 		if line == "" {
@@ -917,9 +920,8 @@ func (cd *ContainerDetector) detectNetworks(ctx context.Context, runtime Contain
 		return nil, err
 	}
 
-	var networks []DetectedNetwork
-
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	networks := make([]DetectedNetwork, 0, len(lines))
 
 	for _, line := range lines {
 		if line == "" {
@@ -1366,7 +1368,7 @@ func (cd *ContainerDetector) getKubernetesNodes(ctx context.Context) ([]Kubernet
 		return nil, fmt.Errorf("invalid node list format")
 	}
 
-	var nodes []KubernetesNode
+	nodes := make([]KubernetesNode, 0, len(items))
 
 	for _, item := range items {
 		nodeData, ok := item.(map[string]interface{})

@@ -134,11 +134,13 @@ func TestIstioConfiguration(t *testing.T) {
 		assert.Equal(t, "networking.istio.io/v1beta1", manifest["apiVersion"])
 		assert.Equal(t, "VirtualService", manifest["kind"])
 
-		metadata := manifest["metadata"].(map[string]interface{})
+		metadata, ok := manifest["metadata"].(map[string]interface{})
+		assert.True(t, ok, "metadata should be a map")
 		assert.Equal(t, "test-vs", metadata["name"])
 		assert.Equal(t, "test-namespace", metadata["namespace"])
 
-		spec := manifest["spec"].(map[string]interface{})
+		spec, ok := manifest["spec"].(map[string]interface{})
+		assert.True(t, ok, "spec should be a map")
 		assert.Equal(t, []string{"test-service"}, spec["hosts"])
 		assert.NotNil(t, spec["http"])
 	})
@@ -189,7 +191,8 @@ func TestIstioConfiguration(t *testing.T) {
 		assert.Equal(t, "networking.istio.io/v1beta1", manifest["apiVersion"])
 		assert.Equal(t, "DestinationRule", manifest["kind"])
 
-		spec := manifest["spec"].(map[string]interface{})
+		spec, ok := manifest["spec"].(map[string]interface{})
+		assert.True(t, ok, "spec should be a map")
 		assert.Equal(t, "test-service", spec["host"])
 		assert.NotNil(t, spec["trafficPolicy"])
 		assert.NotNil(t, spec["subsets"])
@@ -216,7 +219,8 @@ func TestIstioConfiguration(t *testing.T) {
 		assert.Equal(t, "networking.istio.io/v1beta1", manifest["apiVersion"])
 		assert.Equal(t, "ServiceEntry", manifest["kind"])
 
-		spec := manifest["spec"].(map[string]interface{})
+		spec, ok := manifest["spec"].(map[string]interface{})
+		assert.True(t, ok, "spec should be a map")
 		assert.Equal(t, []string{"external.example.com"}, spec["hosts"])
 		assert.Equal(t, "MESH_EXTERNAL", spec["location"])
 		assert.Equal(t, "DNS", spec["resolution"])
@@ -255,9 +259,11 @@ func TestIstioConfiguration(t *testing.T) {
 		assert.Equal(t, "networking.istio.io/v1beta1", manifest["apiVersion"])
 		assert.Equal(t, "Gateway", manifest["kind"])
 
-		spec := manifest["spec"].(map[string]interface{})
+		spec, ok := manifest["spec"].(map[string]interface{})
+		assert.True(t, ok, "spec should be a map")
 		assert.Equal(t, map[string]string{"istio": "ingressgateway"}, spec["selector"])
-		servers := spec["servers"].([]map[string]interface{})
+		servers, ok := spec["servers"].([]map[string]interface{})
+		assert.True(t, ok, "servers should be a slice of maps")
 		assert.Len(t, servers, 2)
 	})
 }
@@ -307,8 +313,10 @@ func TestLinkerdConfiguration(t *testing.T) {
 		assert.Equal(t, "linkerd.io/v1alpha2", manifest["apiVersion"])
 		assert.Equal(t, "ServiceProfile", manifest["kind"])
 
-		spec := manifest["spec"].(map[string]interface{})
-		routes := spec["routes"].([]map[string]interface{})
+		spec, ok := manifest["spec"].(map[string]interface{})
+		assert.True(t, ok, "spec should be a map")
+		routes, ok := spec["routes"].([]map[string]interface{})
+		assert.True(t, ok, "routes should be a slice of maps")
 		assert.Len(t, routes, 2)
 		assert.NotNil(t, spec["retryBudget"])
 	})
@@ -335,9 +343,11 @@ func TestLinkerdConfiguration(t *testing.T) {
 		assert.Equal(t, "split.smi-spec.io/v1alpha1", manifest["apiVersion"])
 		assert.Equal(t, "TrafficSplit", manifest["kind"])
 
-		spec := manifest["spec"].(map[string]interface{})
+		spec, ok := manifest["spec"].(map[string]interface{})
+		assert.True(t, ok, "spec should be a map")
 		assert.Equal(t, "test-service", spec["service"])
-		backends := spec["backends"].([]map[string]interface{})
+		backends, ok := spec["backends"].([]map[string]interface{})
+		assert.True(t, ok, "backends should be a slice of maps")
 		assert.Len(t, backends, 2)
 
 		// Verify weights

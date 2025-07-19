@@ -7,6 +7,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	formatTable = "table"
+	formatJSON  = "json"
+	formatYAML  = "yaml"
+)
+
 // newTemplateCmd creates the template subcommand.
 func newTemplateCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -62,7 +68,7 @@ Examples:
 		},
 	}
 
-	cmd.Flags().StringVar(&format, "format", "table", "Output format (table, json)")
+	cmd.Flags().StringVar(&format, "format", formatTable, "Output format (table, json)")
 
 	return cmd
 }
@@ -89,7 +95,7 @@ Examples:
 		},
 	}
 
-	cmd.Flags().StringVar(&format, "format", "yaml", "Output format (yaml, json)")
+	cmd.Flags().StringVar(&format, "format", formatYAML, "Output format (yaml, json)")
 
 	return cmd
 }
@@ -177,9 +183,9 @@ func runTemplateListCommand(format string) error {
 	}
 
 	switch format {
-	case "table":
+	case formatTable:
 		displayTemplateTable(templates)
-	case "json":
+	case formatJSON:
 		displayTemplateJSON(templates)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
@@ -201,9 +207,9 @@ func runTemplateShowCommand(templateName, format string) error {
 	}
 
 	switch format {
-	case "yaml":
+	case formatYAML:
 		fmt.Println(templateConfig)
-	case "json":
+	case formatJSON:
 		fmt.Println("JSON template output not yet implemented")
 	default:
 		return fmt.Errorf("unsupported format: %s", format)

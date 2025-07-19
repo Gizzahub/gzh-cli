@@ -268,7 +268,7 @@ providers:
 		assert.Contains(t, foundPath, "gzh.yaml")
 	})
 
-	t.Run("print config summary", func(t *testing.T) {
+	t.Run("print config summary", func(_ *testing.T) {
 		// Create test configuration
 		testConfig := &configpkg.UnifiedConfig{
 			Version:         "1.0.0",

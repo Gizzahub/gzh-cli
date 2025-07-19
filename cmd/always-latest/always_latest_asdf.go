@@ -32,7 +32,7 @@ func defaultAlwaysLatestAsdfOptions() *alwaysLatestAsdfOptions {
 	}
 }
 
-func newAlwaysLatestAsdfCmd(ctx context.Context) *cobra.Command {
+func newAlwaysLatestAsdfCmd(_ context.Context) *cobra.Command {
 	o := defaultAlwaysLatestAsdfOptions()
 
 	cmd := &cobra.Command{
@@ -79,7 +79,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestAsdfOptions) run(_ *cobra.Command, args []string) error {
+func (o *alwaysLatestAsdfOptions) run(_ *cobra.Command, _ []string) error {
 	// Check if asdf is installed
 	if !o.isAsdfInstalled() {
 		return fmt.Errorf("asdf is not installed or not in PATH")
@@ -261,7 +261,7 @@ func (o *alwaysLatestAsdfOptions) getCurrentVersion(tool string) (string, error)
 
 	output, err := cmd.Output()
 	if err != nil {
-		return "", nil // Tool might not have a version set
+		return "", err // Tool might not have a version set
 	}
 
 	// Parse output: "nodejs          18.17.0         /path/to/.tool-versions"
@@ -334,7 +334,7 @@ func (o *alwaysLatestAsdfOptions) getTargetVersion(tool, currentVersion, latestV
 
 	currentMajor, err := o.extractMajorVersion(currentVersion)
 	if err != nil {
-		return latestVersion, nil // Fallback to latest if we can't parse
+		return latestVersion, err // Fallback to latest if we can't parse
 	}
 
 	// Get all versions and find the latest within the same major version
@@ -342,7 +342,7 @@ func (o *alwaysLatestAsdfOptions) getTargetVersion(tool, currentVersion, latestV
 
 	output, err := cmd.Output()
 	if err != nil {
-		return latestVersion, nil
+		return latestVersion, err
 	}
 
 	lines := strings.Split(string(output), "\n")

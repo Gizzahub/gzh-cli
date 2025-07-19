@@ -42,6 +42,7 @@ providers:
 			},
 			expectError: false,
 			validateConfig: func(t *testing.T, cfg *config.UnifiedConfig) {
+				t.Helper()
 				assert.Equal(t, "1.0.0", cfg.Version)
 				assert.Equal(t, "github", cfg.DefaultProvider)
 				assert.Len(t, cfg.Providers, 1)
@@ -74,7 +75,11 @@ providers:
 			tempDir, err := os.MkdirTemp("", "config-test-")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tempDir)
+			defer func() {
+				if err := os.RemoveAll(tempDir); err != nil {
+					t.Logf("Warning: failed to remove temp dir: %v", err)
+				}
+			}()
 
 			// Setup configuration file
 			configPath := tt.setupConfig(tempDir)
@@ -120,7 +125,11 @@ func TestConfigService_ReloadConfiguration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "config-reload-test-")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")
 
@@ -194,7 +203,11 @@ func TestConfigService_SaveConfiguration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "config-save-test-")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Create service
 	testEnv := env.NewMockEnvironment(map[string]string{
@@ -253,7 +266,11 @@ func TestConfigService_WatchConfiguration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "config-watch-test-")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")
 
@@ -381,7 +398,11 @@ func TestConfigService_BulkCloneIntegration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "config-bulk-test-")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")
 

@@ -78,11 +78,7 @@ func (d *DirectoryStructure) GetDescription() string {
 
 // GetExamplePath returns an example repository path.
 func (d *DirectoryStructure) GetExamplePath(repoName string) string {
-	if d.IsFlattened {
-		return filepath.Join(d.OrganizationPath, repoName)
-	} else {
-		return filepath.Join(d.OrganizationPath, repoName)
-	}
+	return filepath.Join(d.OrganizationPath, repoName)
 }
 
 // DirectoryPathGenerator provides utilities for generating directory paths.
@@ -97,7 +93,7 @@ func NewDirectoryPathGenerator() *DirectoryPathGenerator {
 func (g *DirectoryPathGenerator) GenerateRepositoryPaths(target BulkCloneTarget, repositories []Repository) []RepositoryPath {
 	resolver := NewDirectoryResolver(target)
 
-	var paths []RepositoryPath
+	paths := make([]RepositoryPath, 0, len(repositories))
 
 	for _, repo := range repositories {
 		path := RepositoryPath{

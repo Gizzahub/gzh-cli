@@ -85,10 +85,10 @@ func (m *MockComplexGitHubService) ResetState() {
 
 // ProcessResult represents the result of repository processing.
 type ProcessResult struct {
-	ProcessedCount int           `json:"processed_count"`
-	SkippedCount   int           `json:"skipped_count"`
-	ErrorCount     int           `json:"error_count"`
-	ProcessingTime time.Duration `json:"processing_time"`
+	ProcessedCount int           `json:"processedCount"`
+	SkippedCount   int           `json:"skippedCount"`
+	ErrorCount     int           `json:"errorCount"`
+	ProcessingTime time.Duration `json:"processingTime"`
 	State          int           `json:"state"`
 }
 
@@ -101,7 +101,7 @@ type ProgressUpdate struct {
 	Total       int           `json:"total"`
 	Repository  string        `json:"repository"`
 	Status      string        `json:"status"`
-	ElapsedTime time.Duration `json:"elapsed_time"`
+	ElapsedTime time.Duration `json:"elapsedTime"`
 }
 
 // MockStatefulFileSystem demonstrates stateful file system mocking.
@@ -170,7 +170,10 @@ func (m *MockStatefulFileSystem) ReadFile(ctx context.Context, path string) ([]b
 		return result, args.Error(1)
 	}
 
-	return args.Get(0).([]byte), args.Error(1)
+	if data, ok := args.Get(0).([]byte); ok {
+		return data, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 // MkdirAll simulates creating directories with state tracking.
@@ -312,7 +315,7 @@ func (m *MockRateLimitedClient) ResetRateLimit(limit int) {
 type APIResponse struct {
 	Status    int               `json:"status"`
 	Data      interface{}       `json:"data"`
-	RateLimit *github.RateLimit `json:"rate_limit"`
+	RateLimit *github.RateLimit `json:"rateLimit"`
 	Timestamp time.Time         `json:"timestamp"`
 }
 

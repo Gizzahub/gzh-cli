@@ -243,7 +243,7 @@ func ValidateConfigFile(filename string) (*ValidationResult, error) {
 			Valid:    false,
 			Errors:   []string{err.Error()},
 			Warnings: []string{},
-		}, nil
+		}, err
 	}
 
 	validator := NewValidator()

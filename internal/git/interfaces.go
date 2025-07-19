@@ -8,19 +8,19 @@ import (
 // Repository represents a Git repository.
 type Repository struct {
 	Path          string            `json:"path"`
-	RemoteURL     string            `json:"remote_url"`
-	CurrentBranch string            `json:"current_branch"`
-	DefaultBranch string            `json:"default_branch"`
+	RemoteURL     string            `json:"remoteUrl"`
+	CurrentBranch string            `json:"currentBranch"`
+	DefaultBranch string            `json:"defaultBranch"`
 	Remotes       map[string]string `json:"remotes"`
-	IsDirty       bool              `json:"is_dirty"`
-	IsDetached    bool              `json:"is_detached"`
-	LastCommit    *Commit           `json:"last_commit,omitempty"`
+	IsDirty       bool              `json:"isDirty"`
+	IsDetached    bool              `json:"isDetached"`
+	LastCommit    *Commit           `json:"lastCommit,omitempty"`
 }
 
 // Commit represents a Git commit.
 type Commit struct {
 	Hash      string    `json:"hash"`
-	ShortHash string    `json:"short_hash"`
+	ShortHash string    `json:"shortHash"`
 	Author    string    `json:"author"`
 	Email     string    `json:"email"`
 	Message   string    `json:"message"`
@@ -33,11 +33,11 @@ type CloneOptions struct {
 	Path         string `json:"path"`
 	Branch       string `json:"branch,omitempty"`
 	Depth        int    `json:"depth,omitempty"`
-	SingleBranch bool   `json:"single_branch"`
+	SingleBranch bool   `json:"singleBranch"`
 	Bare         bool   `json:"bare"`
 	Mirror       bool   `json:"mirror"`
 	Recursive    bool   `json:"recursive"`
-	SSHKeyPath   string `json:"ssh_key_path,omitempty"`
+	SSHKeyPath   string `json:"sshKeyPath,omitempty"`
 	Token        string `json:"token,omitempty"`
 }
 

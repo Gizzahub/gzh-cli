@@ -36,7 +36,8 @@
       "Bash(echo)",
       "Bash(done)",
       "Bash(golangci-lint:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(~/.config/go-lint-standards/scripts/install-lint.sh:*)"
     ],
     "deny": []
   }

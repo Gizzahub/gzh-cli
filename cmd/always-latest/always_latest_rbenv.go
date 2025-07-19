@@ -37,7 +37,7 @@ func defaultAlwaysLatestRbenvOptions() *alwaysLatestRbenvOptions {
 	}
 }
 
-func newAlwaysLatestRbenvCmd(ctx context.Context) *cobra.Command {
+func newAlwaysLatestRbenvCmd(_ context.Context) *cobra.Command {
 	o := defaultAlwaysLatestRbenvOptions()
 
 	cmd := &cobra.Command{
@@ -93,7 +93,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestRbenvOptions) run(_ *cobra.Command, args []string) error {
+func (o *alwaysLatestRbenvOptions) run(_ *cobra.Command, _ []string) error {
 	// Check if rbenv is installed
 	if !o.isRbenvInstalled() {
 		return fmt.Errorf("rbenv is not installed or not in PATH")

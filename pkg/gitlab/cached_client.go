@@ -78,7 +78,7 @@ func (c *CachedGitLabClient) fetchProjectsFromStream(ctx context.Context, groupI
 
 // GetProjectWithCache gets a specific project with caching - DISABLED (cache package removed)
 // Simple implementation without external cache dependency.
-func (c *CachedGitLabClient) GetProjectWithCache(ctx context.Context, projectID string) (*Project, error) {
+func (c *CachedGitLabClient) GetProjectWithCache(_ context.Context, projectID string) (*Project, error) {
 	// Try to get from simple cache first
 	cacheKey := fmt.Sprintf("project:%s", projectID)
 	if cached, found := c.cache.Load(cacheKey); found {

@@ -13,7 +13,7 @@ func NewConfigCmd() *cobra.Command {
 
 This command provides utilities for managing gzh.yaml configuration files,
 including validation, initialization, and migration tools.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return cmd.Help()
 		},
 	}
@@ -54,7 +54,7 @@ Examples:
   gz config validate --strict           # Strict validation mode
   gz config validate --verbose          # Verbose output`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			// Determine config file path
 			if len(args) > 0 {
 				configFile = args[0]

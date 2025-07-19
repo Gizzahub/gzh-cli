@@ -177,8 +177,8 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 type ConfigurationChange struct {
 	Repository   string `json:"repository"`
 	Setting      string `json:"setting"`
-	CurrentValue string `json:"current_value"`
-	NewValue     string `json:"new_value"`
+	CurrentValue string `json:"currentValue"`
+	NewValue     string `json:"newValue"`
 	Action       string `json:"action"` // create, update, delete
 }
 

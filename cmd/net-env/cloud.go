@@ -16,8 +16,6 @@ import (
 // cloudOptions contains options for cloud commands.
 type cloudOptions struct {
 	configFile string
-	provider   string
-	profile    string
 	verbose    bool
 }
 
@@ -81,16 +79,22 @@ func newCloudListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 				fmt.Println("Cloud Providers:")
 				fmt.Println("================")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintln(w, "NAME\tTYPE\tREGION\tAUTH METHOD")
+				if _, err := fmt.Fprintln(w, "NAME\tTYPE\tREGION\tAUTH METHOD"); err != nil {
+					return fmt.Errorf("failed to write header: %w", err)
+				}
 				for name, provider := range config.Providers {
-					fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
 						name,
 						provider.Type,
 						provider.Region,
 						provider.Auth.Method,
-					)
+					); err != nil {
+						return fmt.Errorf("failed to write provider info: %w", err)
+					}
 				}
-				w.Flush()
+				if err := w.Flush(); err != nil {
+					return fmt.Errorf("failed to flush output: %w", err)
+				}
 				fmt.Println()
 			}
 
@@ -99,21 +103,27 @@ func newCloudListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 				fmt.Println("Cloud Profiles:")
 				fmt.Println("===============")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintln(w, "NAME\tPROVIDER\tENVIRONMENT\tREGION\tVPC")
+				if _, err := fmt.Fprintln(w, "NAME\tPROVIDER\tENVIRONMENT\tREGION\tVPC"); err != nil {
+					return fmt.Errorf("failed to write profile header: %w", err)
+				}
 				for name, profile := range config.Profiles {
 					vpcId := profile.Network.VPCId
 					if vpcId == "" {
 						vpcId = "N/A"
 					}
-					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
 						name,
 						profile.Provider,
 						profile.Environment,
 						profile.Region,
 						vpcId,
-					)
+					); err != nil {
+						return fmt.Errorf("failed to write profile info: %w", err)
+					}
 				}
-				w.Flush()
+				if err := w.Flush(); err != nil {
+					return fmt.Errorf("failed to flush profile output: %w", err)
+				}
 			}
 
 			return nil
@@ -327,8 +337,12 @@ This command will:
 				if profile.Network.Proxy.HTTP != "" {
 					fmt.Printf("  Setting HTTP proxy: %s\n", profile.Network.Proxy.HTTP)
 					if !dryRun {
-						os.Setenv("HTTP_PROXY", profile.Network.Proxy.HTTP)
-						os.Setenv("http_proxy", profile.Network.Proxy.HTTP)
+						if err := os.Setenv("HTTP_PROXY", profile.Network.Proxy.HTTP); err != nil {
+							return fmt.Errorf("failed to set HTTP_PROXY: %w", err)
+						}
+						if err := os.Setenv("http_proxy", profile.Network.Proxy.HTTP); err != nil {
+							return fmt.Errorf("failed to set http_proxy: %w", err)
+						}
 					}
 				}
 				if profile.Network.Proxy.HTTPS != "" {
@@ -2072,34 +2086,3 @@ Examples:
 }
 
 // Helper functions for hierarchy display
-
-func getMaxLayer(layers map[int][]*cloud.VPNConnection) int {
-	maxLayer := 0
-	for layer := range layers {
-		if layer > maxLayer {
-			maxLayer = layer
-		}
-	}
-
-	return maxLayer
-}
-
-func displayHierarchyNode(node *cloud.VPNHierarchyNode, indent string) {
-	if node == nil {
-		return
-	}
-
-	conn := node.Connection
-	if conn != nil {
-		fmt.Printf("%s├─ %s (%s)\n", indent, conn.Name, conn.Type)
-		fmt.Printf("%s   │  Layer: %d\n", indent, node.Layer)
-
-		if len(node.Dependencies) > 0 {
-			fmt.Printf("%s   │  Dependencies: %v\n", indent, node.Dependencies)
-		}
-
-		if node.AutoReconnect {
-			fmt.Printf("%s   │  Auto-reconnect: enabled\n", indent)
-		}
-	}
-}

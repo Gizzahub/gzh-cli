@@ -133,9 +133,16 @@ func (pt *ProgressTracker) GetOverallProgress() (completed, failed, pending int,
 			failed++
 		case StatusPending:
 			pending++
-		default:
+		case StatusStarted, StatusCloning, StatusPulling, StatusFetching, StatusResetting:
 			// In-progress repositories contribute partial progress
 			totalProgress += repo.Progress
+		case StatusSkipped:
+			// Skipped repositories are considered completed for progress calculation
+			completed++
+			totalProgress += 1.0
+		default:
+			// Unknown status, treat as pending
+			pending++
 		}
 	}
 
@@ -188,6 +195,8 @@ func (pt *ProgressTracker) RenderProgress() string {
 		return ""
 	case DisplayModeDetailed:
 		return pt.renderDetailedProgress()
+	case DisplayModeCompact:
+		return pt.renderCompactProgress()
 	default:
 		return pt.renderCompactProgress()
 	}

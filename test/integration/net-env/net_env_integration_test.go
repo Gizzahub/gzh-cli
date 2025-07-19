@@ -463,6 +463,7 @@ func TestConcurrentOperations(t *testing.T) {
 
 // Helper function to create a mock network configuration.
 func createMockNetworkConfig(t *testing.T, configPath string) {
+	t.Helper()
 	mockConfig := `default: "home"
 
 profiles:

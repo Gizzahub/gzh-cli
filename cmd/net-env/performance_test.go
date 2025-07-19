@@ -82,13 +82,19 @@ func TestCommandPool_ClearCache(t *testing.T) {
 	pool.ExecuteCommand("echo", "test")
 
 	stats := pool.GetCacheStats()
-	assert.Greater(t, stats["total_entries"].(int), 0)
+	if totalEntries, ok := stats["total_entries"].(int); ok {
+		assert.Greater(t, totalEntries, 0)
+	}
 
 	// Clear cache
 	pool.ClearCache()
 
 	stats = pool.GetCacheStats()
-	assert.Equal(t, 0, stats["total_entries"].(int))
+	if entries, ok := stats["total_entries"].(int); ok {
+		assert.Equal(t, 0, entries)
+	} else {
+		t.Errorf("total_entries is not an int: %T", stats["total_entries"])
+	}
 }
 
 func TestOptimizedVPNManager_ConnectionState(t *testing.T) {

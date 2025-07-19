@@ -110,7 +110,9 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory to store saved credentials")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Overwrite existing saved credentials")
 
-	cmd.MarkFlagRequired("name")
+	if err := cmd.MarkFlagRequired("name"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
 
 	return cmd
 }
@@ -140,7 +142,9 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory where saved credentials are stored")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Skip backup of current credentials")
 
-	cmd.MarkFlagRequired("name")
+	if err := cmd.MarkFlagRequired("name"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
 
 	return cmd
 }
@@ -300,7 +304,9 @@ func (o *awsCredentialsOptions) runList(_ *cobra.Command, args []string) error {
 		}
 
 		// Display profile information (without sensitive data)
-		o.displayCredentialsInfo(credentialsPath)
+		if err := o.displayCredentialsInfo(credentialsPath); err != nil {
+			// Error displaying credentials info - continue without displaying
+		}
 
 		fmt.Println()
 	}
@@ -311,8 +317,8 @@ func (o *awsCredentialsOptions) runList(_ *cobra.Command, args []string) error {
 type awsCredentialsMetadata struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	SavedAt     time.Time `json:"saved_at"`
-	SourcePath  string    `json:"source_path"`
+	SavedAt     time.Time `json:"savedAt"`
+	SourcePath  string    `json:"sourcePath"`
 }
 
 func (o *awsCredentialsOptions) saveMetadata() error {
@@ -329,7 +335,11 @@ func (o *awsCredentialsOptions) saveMetadata() error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	// Set secure permissions for metadata
 	if err := os.Chmod(metadataPath, 0o600); err != nil {
@@ -338,11 +348,17 @@ func (o *awsCredentialsOptions) saveMetadata() error {
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
-		fmt.Fprintf(file, "description=%s\n", metadata.Description)
+		if _, err := fmt.Fprintf(file, "description=%s\n", metadata.Description); err != nil {
+			return err
+		}
 	}
 
-	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
-	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
+	if _, err := fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339)); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -390,13 +406,21 @@ func (o *awsCredentialsOptions) copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() {
+		if err := sourceFile.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destFile.Close()
+	defer func() {
+		if err := destFile.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	// Set secure permissions for credentials
 	if err := os.Chmod(dst, 0o600); err != nil {

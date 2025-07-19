@@ -409,6 +409,11 @@ func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, ex
 			case ActionFailurePolicyRetry:
 				// TODO: Implement retry logic
 				rm.logger.Info("Retry not yet implemented, continuing", "rule_id", rule.ID)
+			case ActionFailurePolicySkip:
+				rm.logger.Info("Skipping action and marking as failed", "rule_id", rule.ID)
+				actionResult.Status = ExecutionStatusFailed
+			default:
+				rm.logger.Warn("Unknown failure policy, continuing", "policy", action.OnFailure)
 			}
 		} else {
 			actionResult.Status = ExecutionStatusCompleted

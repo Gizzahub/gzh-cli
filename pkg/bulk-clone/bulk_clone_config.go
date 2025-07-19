@@ -19,42 +19,42 @@ type bulkCloneDefault struct {
 }
 
 type bulkCloneDefaultGithub struct {
-	RootPath string `yaml:"root_path"`
+	RootPath string `yaml:"rootPath"`
 	Provider string `yaml:"provider"`
 	Protocol string `yaml:"protocol"`
-	OrgName  string `yaml:"org_name"`
+	OrgName  string `yaml:"orgName"`
 }
 
 type bulkCloneDefaultGitlab struct {
-	RootPath  string `yaml:"root_path"`
+	RootPath  string `yaml:"rootPath"`
 	Provider  string `yaml:"provider"`
 	URL       string `yaml:"url"`
 	Recursive bool   `yaml:"recursive"`
 	Protocol  string `yaml:"protocol"`
-	GroupName string `yaml:"group_name"`
+	GroupName string `yaml:"groupName"`
 }
 
 type BulkCloneGithub struct {
-	RootPath string `yaml:"root_path" validate:"required"`
+	RootPath string `yaml:"rootPath" validate:"required"`
 	Provider string `yaml:"provider" validate:"required"`
 	Protocol string `yaml:"protocol" validate:"required,oneof=http https ssh"`
-	OrgName  string `yaml:"org_name" validate:"required"`
+	OrgName  string `yaml:"orgName" validate:"required"`
 }
 
 type BulkCloneGitlab struct {
-	RootPath  string `yaml:"root_path" validate:"required"`
+	RootPath  string `yaml:"rootPath" validate:"required"`
 	Provider  string `yaml:"provider" validate:"required"`
 	URL       string `yaml:"url"`
 	Recursive bool   `yaml:"recursive"`
 	Protocol  string `yaml:"protocol" validate:"required,oneof=http https ssh"`
-	GroupName string `yaml:"group_name" validate:"required"`
+	GroupName string `yaml:"groupName" validate:"required"`
 }
 
 type bulkCloneConfig struct {
 	Version           string            `yaml:"version"`
 	Default           bulkCloneDefault  `yaml:"default"`
-	IgnoreNameRegexes []string          `yaml:"ignore_names"`
-	RepoRoots         []BulkCloneGithub `yaml:"repo_roots"`
+	IgnoreNameRegexes []string          `yaml:"ignoreNames"`
+	RepoRoots         []BulkCloneGithub `yaml:"repoRoots"`
 }
 
 func fileExists(filePath string) bool {

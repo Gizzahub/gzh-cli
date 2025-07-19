@@ -425,6 +425,10 @@ func (wm *WebhookMonitor) updateMetrics() {
 			wm.metrics.HealthyWebhooks++
 		case WebhookStatusUnhealthy, WebhookStatusDegraded:
 			wm.metrics.UnhealthyWebhooks++
+		case WebhookStatusUnknown:
+			// Unknown status webhooks are not counted as healthy or unhealthy
+		case WebhookStatusDisabled:
+			// Disabled webhooks are not counted as healthy or unhealthy
 		}
 
 		// Count active alerts

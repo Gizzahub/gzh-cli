@@ -3,11 +3,11 @@ package repoconfig
 // getActionSymbol returns the symbol for action type.
 func getActionSymbol(changeType string) string {
 	switch changeType {
-	case "create":
+	case changeTypeCreate:
 		return "➕"
-	case "update":
+	case changeTypeUpdate:
 		return "🔄"
-	case "delete":
+	case changeTypeDelete:
 		return "➖"
 	default:
 		return "📝"
@@ -17,11 +17,11 @@ func getActionSymbol(changeType string) string {
 // getActionSymbolWithText returns the symbol with text for action type.
 func getActionSymbolWithText(changeType string) string {
 	switch changeType {
-	case "create":
+	case changeTypeCreate:
 		return "➕ Create"
-	case "update":
+	case changeTypeUpdate:
 		return "🔄 Update"
-	case "delete":
+	case changeTypeDelete:
 		return "➖ Delete"
 	default:
 		return "❓ Unknown"

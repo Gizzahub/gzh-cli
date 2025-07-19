@@ -23,12 +23,18 @@ func (m *mockRuleStorage) CreateRule(ctx context.Context, rule *AutomationRule) 
 
 func (m *mockRuleStorage) GetRule(ctx context.Context, org, ruleID string) (*AutomationRule, error) {
 	args := m.Called(ctx, org, ruleID)
-	return args.Get(0).(*AutomationRule), args.Error(1)
+	if rule, ok := args.Get(0).(*AutomationRule); ok {
+		return rule, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleStorage) ListRules(ctx context.Context, org string, filter *RuleFilter) ([]*AutomationRule, error) {
 	args := m.Called(ctx, org, filter)
-	return args.Get(0).([]*AutomationRule), args.Error(1)
+	if rules, ok := args.Get(0).([]*AutomationRule); ok {
+		return rules, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleStorage) UpdateRule(ctx context.Context, rule *AutomationRule) error {
@@ -48,12 +54,18 @@ func (m *mockRuleStorage) CreateRuleSet(ctx context.Context, ruleSet *Automation
 
 func (m *mockRuleStorage) GetRuleSet(ctx context.Context, org, setID string) (*AutomationRuleSet, error) {
 	args := m.Called(ctx, org, setID)
-	return args.Get(0).(*AutomationRuleSet), args.Error(1)
+	if ruleSet, ok := args.Get(0).(*AutomationRuleSet); ok {
+		return ruleSet, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleStorage) ListRuleSets(ctx context.Context, org string) ([]*AutomationRuleSet, error) {
 	args := m.Called(ctx, org)
-	return args.Get(0).([]*AutomationRuleSet), args.Error(1)
+	if ruleSets, ok := args.Get(0).([]*AutomationRuleSet); ok {
+		return ruleSets, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleStorage) UpdateRuleSet(ctx context.Context, ruleSet *AutomationRuleSet) error {
@@ -73,12 +85,18 @@ func (m *mockRuleStorage) SaveExecution(ctx context.Context, execution *Automati
 
 func (m *mockRuleStorage) GetExecution(ctx context.Context, executionID string) (*AutomationRuleExecution, error) {
 	args := m.Called(ctx, executionID)
-	return args.Get(0).(*AutomationRuleExecution), args.Error(1)
+	if execution, ok := args.Get(0).(*AutomationRuleExecution); ok {
+		return execution, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleStorage) ListExecutions(ctx context.Context, org string, filter *ExecutionFilter) ([]*AutomationRuleExecution, error) {
 	args := m.Called(ctx, org, filter)
-	return args.Get(0).([]*AutomationRuleExecution), args.Error(1)
+	if executions, ok := args.Get(0).([]*AutomationRuleExecution); ok {
+		return executions, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 type mockTemplateStorage struct {
@@ -92,12 +110,18 @@ func (m *mockTemplateStorage) CreateTemplate(ctx context.Context, template *Auto
 
 func (m *mockTemplateStorage) GetTemplate(ctx context.Context, templateID string) (*AutomationRuleTemplate, error) {
 	args := m.Called(ctx, templateID)
-	return args.Get(0).(*AutomationRuleTemplate), args.Error(1)
+	if template, ok := args.Get(0).(*AutomationRuleTemplate); ok {
+		return template, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockTemplateStorage) ListTemplates(ctx context.Context, category string) ([]*AutomationRuleTemplate, error) {
 	args := m.Called(ctx, category)
-	return args.Get(0).([]*AutomationRuleTemplate), args.Error(1)
+	if templates, ok := args.Get(0).([]*AutomationRuleTemplate); ok {
+		return templates, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockTemplateStorage) UpdateTemplate(ctx context.Context, template *AutomationRuleTemplate) error {
@@ -116,7 +140,10 @@ type mockRuleActionExecutor struct {
 
 func (m *mockRuleActionExecutor) ExecuteAction(ctx context.Context, action *AutomationAction, context *AutomationExecutionContext) (*ActionExecutionResult, error) {
 	args := m.Called(ctx, action, context)
-	return args.Get(0).(*ActionExecutionResult), args.Error(1)
+	if result, ok := args.Get(0).(*ActionExecutionResult); ok {
+		return result, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleActionExecutor) ValidateAction(ctx context.Context, action *AutomationAction) error {
@@ -126,7 +153,10 @@ func (m *mockRuleActionExecutor) ValidateAction(ctx context.Context, action *Aut
 
 func (m *mockRuleActionExecutor) GetSupportedActions() []ActionType {
 	args := m.Called()
-	return args.Get(0).([]ActionType)
+	if actions, ok := args.Get(0).([]ActionType); ok {
+		return actions
+	}
+	return nil
 }
 
 type mockRuleConditionEvaluator struct {
@@ -135,7 +165,10 @@ type mockRuleConditionEvaluator struct {
 
 func (m *mockRuleConditionEvaluator) EvaluateConditions(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent, context *EvaluationContext) (*EvaluationResult, error) {
 	args := m.Called(ctx, conditions, event, context)
-	return args.Get(0).(*EvaluationResult), args.Error(1)
+	if result, ok := args.Get(0).(*EvaluationResult); ok {
+		return result, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleConditionEvaluator) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error) {
@@ -165,12 +198,18 @@ func (m *mockRuleConditionEvaluator) EvaluateContentConditions(ctx context.Conte
 
 func (m *mockRuleConditionEvaluator) ValidateConditions(conditions *AutomationConditions) (*ConditionValidationResult, error) {
 	args := m.Called(conditions)
-	return args.Get(0).(*ConditionValidationResult), args.Error(1)
+	if result, ok := args.Get(0).(*ConditionValidationResult); ok {
+		return result, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockRuleConditionEvaluator) ExplainEvaluation(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent) (*EvaluationExplanation, error) {
 	args := m.Called(ctx, conditions, event)
-	return args.Get(0).(*EvaluationExplanation), args.Error(1)
+	if explanation, ok := args.Get(0).(*EvaluationExplanation); ok {
+		return explanation, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 // Test helper functions
@@ -576,7 +615,11 @@ func TestRuleManager_TestRule(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.True(t, result.ConditionsMatched)
 	assert.Len(t, result.ActionsExecuted, 1)
-	assert.True(t, result.ActionsExecuted[0].Result["simulated"].(bool))
+	if simulated, ok := result.ActionsExecuted[0].Result["simulated"].(bool); ok {
+		assert.True(t, simulated)
+	} else {
+		t.Errorf("Expected simulated to be a bool, got %T", result.ActionsExecuted[0].Result["simulated"])
+	}
 
 	evaluator.AssertExpectations(t)
 }

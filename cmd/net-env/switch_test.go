@@ -184,42 +184,6 @@ func TestExecuteScriptsEmpty(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// Mock implementations for network configuration functions.
-func mockConnectVPN(name, vpnType, configFile string) error {
-	// Mock implementation for testing
-	return nil
-}
-
-func mockDisconnectVPN(name string) error {
-	// Mock implementation for testing
-	return nil
-}
-
-func mockSetDNSServers(servers []string, iface string) error {
-	// Mock implementation for testing
-	return nil
-}
-
-func mockClearProxy() error {
-	// Mock implementation for testing
-	return nil
-}
-
-func mockSetProxy(http, https, socks string) error {
-	// Mock implementation for testing
-	return nil
-}
-
-func mockAddHostEntry(ip, host string) error {
-	// Mock implementation for testing
-	return nil
-}
-
-func mockRemoveHostEntry(host string) error {
-	// Mock implementation for testing
-	return nil
-}
-
 func TestApplyVPNConfig(t *testing.T) {
 	opts := &switchOptions{
 		dryRun: true,

@@ -88,7 +88,11 @@ func TestRepositoryFilters(t *testing.T) {
 	factory := &MockGitHubProviderFactory{}
 	logger := &MockLogger{}
 
-	manager := NewGitHubManager(factory, logger).(*gitHubManagerImpl)
+	githubManager := NewGitHubManager(factory, logger)
+	manager, ok := githubManager.(*gitHubManagerImpl)
+	if !ok {
+		t.Fatalf("Expected *gitHubManagerImpl, got %T", githubManager)
+	}
 
 	repositories := []string{"repo1", "repo2", "test-repo", "another-repo"}
 	filters := &RepositoryFilters{

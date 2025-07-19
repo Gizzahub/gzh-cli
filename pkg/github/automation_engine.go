@@ -225,7 +225,7 @@ func (ae *AutomationEngine) ProcessEvent(ctx context.Context, event *GitHubEvent
 	if ae.config.EnableRuleFiltering && ae.eventProcessor != nil {
 		if passed, err := ae.eventProcessor.FilterEvent(ctx, event, nil); err != nil || !passed {
 			ae.logger.Debug("Event filtered out", "event_id", event.ID, "event_type", event.Type)
-			return nil
+			return err
 		}
 	}
 

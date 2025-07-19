@@ -163,7 +163,11 @@ func parseTodoFile(filename string) ([]TodoItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	var items []TodoItem
 

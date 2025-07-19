@@ -13,9 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testToken = "test-token"
+
 func TestTokenAwareGitHubClient_Creation(t *testing.T) {
 	config := github.DefaultTokenAwareGitHubClientConfig()
-	config.PrimaryToken = "test-token"
+	config.PrimaryToken = testToken
 	config.FallbackTokens = []string{"fallback-1", "fallback-2"}
 
 	client, err := github.NewTokenAwareGitHubClient(config)
@@ -27,7 +29,7 @@ func TestTokenAwareGitHubClient_Creation(t *testing.T) {
 	// Test getting current token
 	token, err := client.GetCurrentToken()
 	require.NoError(t, err)
-	assert.Equal(t, "test-token", token)
+	assert.Equal(t, testToken, token)
 }
 
 func TestTokenAwareGitHubClient_WithOAuth2(t *testing.T) {
@@ -65,7 +67,9 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 				Name:  "Test User",
 				Email: "test@example.com",
 			}
-			json.NewEncoder(w).Encode(user)
+			if err := json.NewEncoder(w).Encode(user); err != nil {
+				http.Error(w, "Failed to encode user response", http.StatusInternalServerError)
+			}
 
 		case "/orgs/testorg":
 			org := github.GitHubOrganization{
@@ -74,7 +78,9 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 				Name:        "Test Organization",
 				Description: "A test organization",
 			}
-			json.NewEncoder(w).Encode(org)
+			if err := json.NewEncoder(w).Encode(org); err != nil {
+				http.Error(w, "Failed to encode org response", http.StatusInternalServerError)
+			}
 
 		case "/repos/testuser/testrepo":
 			repo := github.GitHubRepository{
@@ -85,7 +91,9 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 				DefaultBranch: "main",
 				Private:       false,
 			}
-			json.NewEncoder(w).Encode(repo)
+			if err := json.NewEncoder(w).Encode(repo); err != nil {
+				http.Error(w, "Failed to encode repo response", http.StatusInternalServerError)
+			}
 
 		case "/user/repos":
 			repos := []*github.GitHubRepository{
@@ -102,7 +110,9 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 					DefaultBranch: "master",
 				},
 			}
-			json.NewEncoder(w).Encode(repos)
+			if err := json.NewEncoder(w).Encode(repos); err != nil {
+				http.Error(w, "Failed to encode repos response", http.StatusInternalServerError)
+			}
 
 		case "/rate_limit":
 			rateLimit := map[string]interface{}{
@@ -115,7 +125,9 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 					},
 				},
 			}
-			json.NewEncoder(w).Encode(rateLimit)
+			if err := json.NewEncoder(w).Encode(rateLimit); err != nil {
+				http.Error(w, "Failed to encode rate limit response", http.StatusInternalServerError)
+			}
 
 		default:
 			w.WriteHeader(http.StatusNotFound)
@@ -126,7 +138,7 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 	// Create client with mock server
 	config := github.DefaultTokenAwareGitHubClientConfig()
 	config.BaseURL = server.URL
-	config.PrimaryToken = "test-token"
+	config.PrimaryToken = testToken
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)
@@ -208,7 +220,7 @@ func TestTokenAwareGitHubClient_ErrorHandling(t *testing.T) {
 
 	config := github.DefaultTokenAwareGitHubClientConfig()
 	config.BaseURL = server.URL
-	config.PrimaryToken = "test-token"
+	config.PrimaryToken = testToken
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)
@@ -292,7 +304,7 @@ func TestTokenAwareGitHubClient_TokenExpiration(t *testing.T) {
 
 func TestTokenAwareGitHubClient_TokenStatus(t *testing.T) {
 	config := github.DefaultTokenAwareGitHubClientConfig()
-	config.PrimaryToken = "test-token"
+	config.PrimaryToken = testToken
 
 	client, err := github.NewTokenAwareGitHubClient(config)
 	require.NoError(t, err)
@@ -303,7 +315,9 @@ func TestTokenAwareGitHubClient_TokenStatus(t *testing.T) {
 	require.NoError(t, err)
 
 	// GetTokenStatus returns a map[string]interface{}
-	assert.True(t, status["has_token"].(bool))
+	hasToken, ok := status["has_token"].(bool)
+	assert.True(t, ok, "has_token should be a bool")
+	assert.True(t, hasToken)
 	assert.Equal(t, "recovery package removed, using simple token management", status["note"])
 }
 

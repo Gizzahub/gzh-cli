@@ -22,7 +22,6 @@ type StreamingClient struct {
 	memoryPool     *MemoryPool
 	bufferPool     sync.Pool
 	requestMetrics *RequestMetrics
-	mu             sync.RWMutex
 }
 
 // RateLimiter manages GitLab API rate limiting.
@@ -275,7 +274,11 @@ func (sc *StreamingClient) fetchProjectPage(ctx context.Context, groupID string,
 	if err != nil {
 		return nil, CursorPagination{}, fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	// Update metrics
 	sc.updateRequestMetrics(time.Since(startTime))
@@ -314,7 +317,12 @@ func (sc *StreamingClient) parseProjectResponse(reader io.Reader) ([]*Project, e
 
 	projects := make([]*Project, 0, len(rawProjects))
 	for _, rawProject := range rawProjects {
-		project := sc.memoryPool.projectPool.Get().(*Project)
+		projectInterface := sc.memoryPool.projectPool.Get()
+		project, ok := projectInterface.(*Project)
+		if !ok {
+			// Skip this entry if type assertion fails
+			continue
+		}
 		if err := json.Unmarshal(rawProject, project); err != nil {
 			sc.memoryPool.projectPool.Put(project)
 			continue // Skip malformed entries
@@ -482,7 +490,12 @@ func (sc *StreamingClient) updateRequestMetrics(latency time.Duration) {
 
 // sendError sends an error to the result channel.
 func (sc *StreamingClient) sendError(resultChan chan<- ProjectStream, err error) {
-	result := sc.memoryPool.resultPool.Get().(*ProjectStream)
+	resultInterface := sc.memoryPool.resultPool.Get()
+	result, ok := resultInterface.(*ProjectStream)
+	if !ok {
+		// Can't send error if type assertion fails
+		return
+	}
 	result.Error = err
 	result.Project = nil
 	result.Metadata = StreamMetadata{

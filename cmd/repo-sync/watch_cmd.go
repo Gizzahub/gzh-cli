@@ -90,7 +90,11 @@ Examples:
 			if err != nil {
 				return fmt.Errorf("failed to create repository watcher: %w", err)
 			}
-			defer watcher.Close()
+			defer func() {
+				if err := watcher.Close(); err != nil {
+					logger.Error("Failed to close watcher", zap.Error(err))
+				}
+			}()
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -591,7 +595,11 @@ func (rw *RepositoryWatcher) calculateChecksum(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	hasher := sha256.New()
 	if _, err := io.Copy(hasher, file); err != nil {

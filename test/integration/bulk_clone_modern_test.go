@@ -316,31 +316,3 @@ providers:
 		// This test validates that the configuration and setup work correctly
 	})
 }
-
-// Helper function to skip tests if required environment variables are not set.
-func skipIfNoTestEnvironment(t *testing.T) {
-	if os.Getenv("GITHUB_TOKEN") == "" && os.Getenv("GITLAB_TOKEN") == "" {
-		t.Skip("No test tokens available, skipping integration test")
-	}
-}
-
-// Helper function to create a test configuration.
-func createTestConfig(tmpDir string) map[string]interface{} {
-	return map[string]interface{}{
-		"version":          "1.0.0",
-		"default_provider": "github",
-		"providers": map[string]interface{}{
-			"github": map[string]interface{}{
-				"token": "${GITHUB_TOKEN}",
-				"organizations": []map[string]interface{}{
-					{
-						"name":       "test-org",
-						"clone_dir":  tmpDir,
-						"visibility": "public",
-						"strategy":   "pull",
-					},
-				},
-			},
-		},
-	}
-}

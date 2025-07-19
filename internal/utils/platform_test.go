@@ -8,6 +8,11 @@ import (
 	"testing"
 )
 
+const (
+	windowsShell = "cmd"
+	unixShell    = "sh"
+)
+
 func TestGetCurrentUsername(t *testing.T) {
 	username := GetCurrentUsername()
 	if username == "" {
@@ -77,7 +82,11 @@ func TestGetConfigDir(t *testing.T) {
 func TestSetFilePermissions(t *testing.T) {
 	// Create a temporary file
 	tempFile := filepath.Join(os.TempDir(), "test-permissions")
-	defer os.Remove(tempFile)
+	defer func() {
+		if err := os.Remove(tempFile); err != nil {
+			t.Logf("Warning: failed to remove temp file: %v", err)
+		}
+	}()
 
 	// Create the file
 	file, err := os.Create(tempFile)
@@ -85,7 +94,9 @@ func TestSetFilePermissions(t *testing.T) {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
 
-	file.Close()
+	if err := file.Close(); err != nil {
+		t.Logf("Warning: failed to close file: %v", err)
+	}
 
 	// Test setting permissions
 	err = SetFilePermissions(tempFile, 0o644)
@@ -112,9 +123,9 @@ func TestIsExecutableAvailable(t *testing.T) {
 
 	switch runtime.GOOS {
 	case "windows":
-		testCommand = "cmd"
+		testCommand = windowsShell
 	default:
-		testCommand = "sh"
+		testCommand = unixShell
 	}
 
 	if !IsExecutableAvailable(testCommand) {
@@ -144,10 +155,8 @@ func TestGetExecutableName(t *testing.T) {
 			if result != expectedWithExt {
 				t.Errorf("On Windows, expected %s, got %s", expectedWithExt, result)
 			}
-		} else {
-			if result != tc.expected {
-				t.Errorf("Expected %s, got %s", tc.expected, result)
-			}
+		} else if result != tc.expected {
+			t.Errorf("Expected %s, got %s", tc.expected, result)
 		}
 	}
 
@@ -174,8 +183,8 @@ func TestGetShellCommand(t *testing.T) {
 	// Verify platform-specific behavior
 	switch runtime.GOOS {
 	case "windows":
-		if shell != "cmd" {
-			t.Errorf("On Windows, expected cmd, got %s", shell)
+		if shell != windowsShell {
+			t.Errorf("On Windows, expected %s, got %s", windowsShell, shell)
 		}
 
 		if len(args) != 1 || args[0] != "/C" {
@@ -321,7 +330,11 @@ func TestGetPlatformSpecificConfig(t *testing.T) {
 
 func TestCreateDirectoryIfNotExists(t *testing.T) {
 	testDir := filepath.Join(os.TempDir(), "test-create-dir")
-	defer os.RemoveAll(testDir)
+	defer func() {
+		if err := os.RemoveAll(testDir); err != nil {
+			t.Logf("Warning: failed to remove test dir: %v", err)
+		}
+	}()
 
 	// Directory shouldn't exist initially
 	if _, err := os.Stat(testDir); !os.IsNotExist(err) {

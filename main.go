@@ -16,7 +16,6 @@ var version = "dev"
 func main() {
 	// Create a context that will be cancelled on interrupt signals
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	// Set up signal handling for graceful shutdown
 	sigChan := make(chan os.Signal, 1)
@@ -29,7 +28,10 @@ func main() {
 	}()
 
 	if err := cmd.Execute(ctx, version); err != nil {
+		cancel()
 		fmt.Fprintf(os.Stderr, "%v", err)
 		os.Exit(1)
 	}
+
+	cancel()
 }

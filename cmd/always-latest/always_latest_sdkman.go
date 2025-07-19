@@ -39,7 +39,7 @@ func defaultAlwaysLatestSdkmanOptions() *alwaysLatestSdkmanOptions {
 	}
 }
 
-func newAlwaysLatestSdkmanCmd(ctx context.Context) *cobra.Command {
+func newAlwaysLatestSdkmanCmd(_ context.Context) *cobra.Command {
 	o := defaultAlwaysLatestSdkmanOptions()
 
 	cmd := &cobra.Command{
@@ -95,7 +95,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestSdkmanOptions) run(_ *cobra.Command, args []string) error {
+func (o *alwaysLatestSdkmanOptions) run(_ *cobra.Command, _ []string) error {
 	// Check if SDKMAN is installed
 	if !o.isSdkmanInstalled() {
 		return fmt.Errorf("SDKMAN is not installed or not properly configured")
@@ -344,7 +344,7 @@ func (o *alwaysLatestSdkmanOptions) getCurrentVersion(candidate string) (string,
 
 	output, err := cmd.Output()
 	if err != nil {
-		return "", nil // Candidate might not have a current version set
+		return "", err // Candidate might not have a current version set
 	}
 
 	// Parse output: "Using java version 11.0.19-tem"
@@ -454,7 +454,7 @@ func (o *alwaysLatestSdkmanOptions) getTargetVersion(candidate, currentVersion, 
 
 	currentMajor, err := o.extractMajorVersion(currentVersion)
 	if err != nil {
-		return latestVersion, nil // Fallback to latest if we can't parse
+		return latestVersion, err // Fallback to latest if we can't parse
 	}
 
 	// Get all versions and find the latest within the same major version
@@ -462,7 +462,7 @@ func (o *alwaysLatestSdkmanOptions) getTargetVersion(candidate, currentVersion, 
 
 	output, err := cmd.Output()
 	if err != nil {
-		return latestVersion, nil
+		return latestVersion, err
 	}
 
 	var candidateVersions []string

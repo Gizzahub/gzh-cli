@@ -57,7 +57,10 @@ func NewTestEnvironment(t *testing.T) *TestEnvironment {
 // Cleanup removes the test environment.
 func (env *TestEnvironment) Cleanup() {
 	if env.TempDir != "" {
-		os.RemoveAll(env.TempDir)
+		if err := os.RemoveAll(env.TempDir); err != nil {
+			// Log error but don't fail cleanup
+			_ = err
+		}
 	}
 }
 
@@ -110,7 +113,7 @@ func (env *TestEnvironment) SetEnv(key, value string) {
 }
 
 // SetTimeout sets the command timeout.
-func (env *TestEnvironment) SetTimeout(timeout string) {
+func (env *TestEnvironment) SetTimeout(_ string) {
 	// Parse timeout string and set on CLI
 	// This is a simplified version - you might want to use time.ParseDuration
 	env.CLI.SetTimeout(30) // Default to 30 seconds for now

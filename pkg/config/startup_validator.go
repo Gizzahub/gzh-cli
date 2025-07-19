@@ -374,7 +374,10 @@ func (sv *StartupValidator) validateEnvironmentToken(fl validator.FieldLevel) bo
 
 func (sv *StartupValidator) validateTimeout(fl validator.FieldLevel) bool {
 	// Timeout should be positive
-	duration := fl.Field().Interface().(time.Duration)
+	duration, ok := fl.Field().Interface().(time.Duration)
+	if !ok {
+		return false
+	}
 	return duration > 0
 }
 

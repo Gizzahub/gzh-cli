@@ -25,19 +25,19 @@ type AWSProfile struct {
 	Name              string            `json:"name"`
 	Region            string            `json:"region"`
 	Output            string            `json:"output"`
-	SourceProfile     string            `json:"source_profile,omitempty"`
-	RoleArn           string            `json:"role_arn,omitempty"`
-	MFASerial         string            `json:"mfa_serial,omitempty"`
-	SSOStartURL       string            `json:"sso_start_url,omitempty"`
-	SSORoleName       string            `json:"sso_role_name,omitempty"`
-	SSOAccountID      string            `json:"sso_account_id,omitempty"`
-	SSORegion         string            `json:"sso_region,omitempty"`
-	CredentialProcess string            `json:"credential_process,omitempty"`
-	ExternalID        string            `json:"external_id,omitempty"`
-	DurationSeconds   int               `json:"duration_seconds,omitempty"`
+	SourceProfile     string            `json:"sourceProfile,omitempty"`
+	RoleArn           string            `json:"roleArn,omitempty"`
+	MFASerial         string            `json:"mfaSerial,omitempty"`
+	SSOStartURL       string            `json:"ssoStartUrl,omitempty"`
+	SSORoleName       string            `json:"ssoRoleName,omitempty"`
+	SSOAccountID      string            `json:"ssoAccountId,omitempty"`
+	SSORegion         string            `json:"ssoRegion,omitempty"`
+	CredentialProcess string            `json:"credentialProcess,omitempty"`
+	ExternalID        string            `json:"externalId,omitempty"`
+	DurationSeconds   int               `json:"durationSeconds,omitempty"`
 	Tags              map[string]string `json:"tags,omitempty"`
-	LastUsed          *time.Time        `json:"last_used,omitempty"`
-	IsActive          bool              `json:"is_active"`
+	LastUsed          *time.Time        `json:"lastUsed,omitempty"`
+	IsActive          bool              `json:"isActive"`
 }
 
 // AWSProfileManager manages AWS profiles.
@@ -467,17 +467,21 @@ func newAWSProfileListCmd() *cobra.Command {
 						active = "✓"
 					}
 
-					table.Append(
+					if err := table.Append(
 						profile.Name,
 						profile.Region,
 						profileType,
 						profile.SSOStartURL,
 						profile.SSOAccountID,
 						active,
-					)
+					); err != nil {
+						// Log error but continue processing
+					}
 				}
 
-				table.Render()
+				if err := table.Render(); err != nil {
+					// Log error but continue
+				}
 			}
 
 			return nil
@@ -690,12 +694,14 @@ func newAWSProfileValidateCmd() *cobra.Command {
 					details = err.Error()
 				}
 
-				table.Append(
+				if err := table.Append(
 					profile.Name,
 					profileType,
 					status,
 					details,
-				)
+				); err != nil {
+					// Log error but continue processing
+				}
 			}
 
 			table.Render()

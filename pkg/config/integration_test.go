@@ -14,7 +14,11 @@ func TestIntegration_EndToEndConfiguration(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "gzh-integration-test-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Create a comprehensive test configuration
 	configContent := `# gzh-manager configuration
@@ -66,16 +70,32 @@ providers:
 	require.NoError(t, err)
 
 	// Set up environment variables
-	os.Setenv("GITHUB_TOKEN", "real-github-token")
-	os.Setenv("GITLAB_TOKEN", "real-gitlab-token")
-	os.Setenv("GITEA_TOKEN", "real-gitea-token")
-	os.Setenv("HOME", "/home/testuser")
+	if err := os.Setenv("GITHUB_TOKEN", "real-github-token"); err != nil {
+		t.Logf("Warning: failed to set GITHUB_TOKEN: %v", err)
+	}
+	if err := os.Setenv("GITLAB_TOKEN", "real-gitlab-token"); err != nil {
+		t.Logf("Warning: failed to set GITLAB_TOKEN: %v", err)
+	}
+	if err := os.Setenv("GITEA_TOKEN", "real-gitea-token"); err != nil {
+		t.Logf("Warning: failed to set GITEA_TOKEN: %v", err)
+	}
+	if err := os.Setenv("HOME", "/home/testuser"); err != nil {
+		t.Logf("Warning: failed to set HOME: %v", err)
+	}
 
 	defer func() {
-		os.Unsetenv("GITHUB_TOKEN")
-		os.Unsetenv("GITLAB_TOKEN")
-		os.Unsetenv("GITEA_TOKEN")
-		os.Unsetenv("HOME")
+		if err := os.Unsetenv("GITHUB_TOKEN"); err != nil {
+			t.Logf("Warning: failed to unset GITHUB_TOKEN: %v", err)
+		}
+		if err := os.Unsetenv("GITLAB_TOKEN"); err != nil {
+			t.Logf("Warning: failed to unset GITLAB_TOKEN: %v", err)
+		}
+		if err := os.Unsetenv("GITEA_TOKEN"); err != nil {
+			t.Logf("Warning: failed to unset GITEA_TOKEN: %v", err)
+		}
+		if err := os.Unsetenv("HOME"); err != nil {
+			t.Logf("Warning: failed to unset HOME: %v", err)
+		}
 	}()
 
 	// Load and parse the configuration
@@ -253,7 +273,11 @@ providers:
 			tmpDir, err := os.MkdirTemp("", "gzh-validation-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() {
+				if err := os.RemoveAll(tmpDir); err != nil {
+					t.Logf("Warning: failed to remove temp dir: %v", err)
+				}
+			}()
 
 			configPath := filepath.Join(tmpDir, "gzh.yaml")
 			err = os.WriteFile(configPath, []byte(tt.config), 0o644)
@@ -304,7 +328,7 @@ func TestIntegration_RepositoryFiltering(t *testing.T) {
 	// Excluded: test-repo2 (private), prod-repo (doesn't match), test-temp-file (excluded), test-backup (excluded)
 	assert.Len(t, filtered, 2)
 
-	var names []string
+	names := make([]string, 0, len(filtered))
 	for _, repo := range filtered {
 		names = append(names, repo.Name)
 	}
@@ -451,7 +475,11 @@ func TestIntegration_ConfigurationSearchPaths(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "gzh-search-test-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Create a config in the temporary directory
 	configContent := `

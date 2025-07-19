@@ -7,6 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	strategyMajor = "major"
+	strategyMinor = "minor"
+)
+
 func TestAlwaysLatestCommand(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
 		cmd := NewAlwaysLatestCmd(context.Background())
@@ -37,7 +42,7 @@ func TestAsdfCommand(t *testing.T) {
 		// Check flags
 		strategyFlag := cmd.Flags().Lookup("strategy")
 		assert.NotNil(t, strategyFlag)
-		assert.Equal(t, "minor", strategyFlag.DefValue)
+		assert.Equal(t, strategyMinor, strategyFlag.DefValue)
 
 		toolsFlag := cmd.Flags().Lookup("tools")
 		assert.NotNil(t, toolsFlag)
@@ -54,7 +59,7 @@ func TestAsdfCommand(t *testing.T) {
 
 	t.Run("default options", func(t *testing.T) {
 		opts := defaultAlwaysLatestAsdfOptions()
-		assert.Equal(t, "minor", opts.strategy)
+		assert.Equal(t, strategyMinor, opts.strategy)
 		assert.Equal(t, []string{}, opts.tools)
 		assert.False(t, opts.dryRun)
 		assert.True(t, opts.updateAsdf)
@@ -157,7 +162,7 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 	opts := &alwaysLatestAsdfOptions{}
 
 	t.Run("major strategy returns latest", func(t *testing.T) {
-		opts.strategy = "major"
+		opts.strategy = strategyMajor
 
 		target, err := opts.getTargetVersion("nodejs", "18.17.0", "20.0.0")
 		assert.NoError(t, err)
@@ -165,7 +170,7 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 	})
 
 	t.Run("minor strategy with no current version returns latest", func(t *testing.T) {
-		opts.strategy = "minor"
+		opts.strategy = strategyMinor
 
 		target, err := opts.getTargetVersion("nodejs", "", "20.0.0")
 		assert.NoError(t, err)
@@ -227,7 +232,7 @@ func TestBrewCommand(t *testing.T) {
 		// Check flags
 		strategyFlag := cmd.Flags().Lookup("strategy")
 		assert.NotNil(t, strategyFlag)
-		assert.Equal(t, "minor", strategyFlag.DefValue)
+		assert.Equal(t, strategyMinor, strategyFlag.DefValue)
 
 		packagesFlag := cmd.Flags().Lookup("packages")
 		assert.NotNil(t, packagesFlag)
@@ -253,7 +258,7 @@ func TestBrewCommand(t *testing.T) {
 
 	t.Run("default options", func(t *testing.T) {
 		opts := defaultAlwaysLatestBrewOptions()
-		assert.Equal(t, "minor", opts.strategy)
+		assert.Equal(t, strategyMinor, opts.strategy)
 		assert.Equal(t, []string{}, opts.packages)
 		assert.False(t, opts.dryRun)
 		assert.True(t, opts.updateBrew)

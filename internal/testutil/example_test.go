@@ -1,6 +1,7 @@
 package testutil_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -60,18 +61,18 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	}
 
 	// Make some requests
-	req1, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
-	req2, _ := http.NewRequest("GET", "https://api.github.com/repos", nil)
+	req1, _ := http.NewRequestWithContext(context.Background(), "GET", "https://api.github.com/user", nil)
+	req2, _ := http.NewRequestWithContext(context.Background(), "GET", "https://api.github.com/repos", nil)
 
 	resp1, err := mockClient.Do(req1)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp1.StatusCode)
-	resp1.Body.Close()
+	_ = resp1.Body.Close()
 
 	resp2, err := mockClient.Do(req2)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp2.StatusCode)
-	resp2.Body.Close()
+	_ = resp2.Body.Close()
 
 	// Verify calls were recorded
 	assert.Len(t, mockClient.Calls, 2)

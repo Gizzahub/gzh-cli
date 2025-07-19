@@ -848,7 +848,7 @@ func parseSelector(selector string) map[string]string {
 }
 
 func parsePorts(portSpecs []string) []NetworkPolicyPort {
-	var ports []NetworkPolicyPort
+	ports := make([]NetworkPolicyPort, 0, len(portSpecs))
 
 	for _, spec := range portSpecs {
 		port := NetworkPolicyPort{}

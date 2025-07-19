@@ -341,7 +341,7 @@ func getCurrentProfile() (string, error) {
 	linkTarget, err := os.Readlink("gzh.yaml")
 	if err != nil {
 		// Not a symlink or doesn't exist
-		return "", nil
+		return "", err
 	}
 
 	// Extract profile name from link target

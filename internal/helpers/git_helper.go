@@ -24,7 +24,7 @@ func CheckGitRepoType(dir string) (string, error) {
 
 	output, err := cmd.Output()
 	if err != nil {
-		return "empty", nil
+		return "empty", err
 	}
 
 	commitCount := strings.TrimSpace(string(output))

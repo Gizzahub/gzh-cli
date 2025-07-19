@@ -581,7 +581,7 @@ func (na *NetworkAnalyzer) AnalyzeLatencyPatterns(ctx context.Context, config La
 	}
 
 	// Collect latency measurements for each target
-	var targetAnalysis []TargetLatencyStats
+	targetAnalysis := make([]TargetLatencyStats, 0, len(config.Targets))
 
 	for _, target := range config.Targets {
 		stats, err := na.collectTargetLatencyStats(ctx, target, config)

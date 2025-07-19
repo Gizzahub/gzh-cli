@@ -88,6 +88,10 @@ func processGiteaRepositoryJob(ctx context.Context, job workerpool.RepositoryJob
 
 		return executeGitOperation(ctx, job.Path, "pull")
 
+	case workerpool.OperationConfig:
+		// Config operation - placeholder for configuration updates
+		return fmt.Errorf("config operation not yet implemented")
+
 	default:
 		return fmt.Errorf("unknown operation: %s", job.Operation)
 	}

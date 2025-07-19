@@ -58,17 +58,6 @@ Examples:
 	return cmd
 }
 
-// getDefaultConfigDir returns the default configuration directory.
-func getDefaultConfigDir() string {
-	if configDir := os.Getenv("GZH_CONFIG_DIR"); configDir != "" {
-		return configDir
-	}
-
-	homeDir, _ := os.UserHomeDir()
-
-	return filepath.Join(homeDir, ".config", "gzh-manager")
-}
-
 // validateRepositoryPath validates that the path is a valid Git repository.
 func validateRepositoryPath(path string) error {
 	// Check if path exists
@@ -87,16 +76,16 @@ func validateRepositoryPath(path string) error {
 
 // RepoSyncConfig represents the configuration for repository synchronization.
 type RepoSyncConfig struct {
-	RepositoryPath   string        `json:"repository_path"`
-	WatchPatterns    []string      `json:"watch_patterns"`
-	IgnorePatterns   []string      `json:"ignore_patterns"`
-	BatchSize        int           `json:"batch_size"`
-	BatchTimeout     time.Duration `json:"batch_timeout"`
+	RepositoryPath   string        `json:"repositoryPath"`
+	WatchPatterns    []string      `json:"watchPatterns"`
+	IgnorePatterns   []string      `json:"ignorePatterns"`
+	BatchSize        int           `json:"batchSize"`
+	BatchTimeout     time.Duration `json:"batchTimeout"`
 	Bidirectional    bool          `json:"bidirectional"`
-	ConflictStrategy string        `json:"conflict_strategy"`
-	RemoteName       string        `json:"remote_name"`
-	AutoCommit       bool          `json:"auto_commit"`
-	CommitMessage    string        `json:"commit_message"`
+	ConflictStrategy string        `json:"conflictStrategy"`
+	RemoteName       string        `json:"remoteName"`
+	AutoCommit       bool          `json:"autoCommit"`
+	CommitMessage    string        `json:"commitMessage"`
 }
 
 // DefaultRepoSyncConfig returns the default configuration.
@@ -118,7 +107,7 @@ func DefaultRepoSyncConfig() *RepoSyncConfig {
 type FileChangeEvent struct {
 	Path        string    `json:"path"`
 	Operation   string    `json:"operation"` // create, write, remove, rename, chmod
-	IsDirectory bool      `json:"is_directory"`
+	IsDirectory bool      `json:"isDirectory"`
 	Timestamp   time.Time `json:"timestamp"`
 	Size        int64     `json:"size"`
 	Checksum    string    `json:"checksum,omitempty"`
@@ -127,32 +116,32 @@ type FileChangeEvent struct {
 // FileChangeBatch represents a batch of file changes.
 type FileChangeBatch struct {
 	Events      []FileChangeEvent `json:"events"`
-	BatchID     string            `json:"batch_id"`
-	StartTime   time.Time         `json:"start_time"`
-	EndTime     time.Time         `json:"end_time"`
-	TotalEvents int               `json:"total_events"`
+	BatchID     string            `json:"batchId"`
+	StartTime   time.Time         `json:"startTime"`
+	EndTime     time.Time         `json:"endTime"`
+	TotalEvents int               `json:"totalEvents"`
 }
 
 // SyncResult represents the result of a synchronization operation.
 type SyncResult struct {
 	Success       bool           `json:"success"`
-	FilesModified int            `json:"files_modified"`
-	FilesCreated  int            `json:"files_created"`
-	FilesDeleted  int            `json:"files_deleted"`
+	FilesModified int            `json:"filesModified"`
+	FilesCreated  int            `json:"filesCreated"`
+	FilesDeleted  int            `json:"filesDeleted"`
 	Conflicts     []ConflictInfo `json:"conflicts"`
 	Errors        []string       `json:"errors"`
 	Duration      time.Duration  `json:"duration"`
-	CommitHash    string         `json:"commit_hash,omitempty"`
+	CommitHash    string         `json:"commitHash,omitempty"`
 }
 
 // ConflictInfo represents information about a merge conflict.
 type ConflictInfo struct {
 	Path         string    `json:"path"`
-	ConflictType string    `json:"conflict_type"` // content, rename, delete
-	LocalHash    string    `json:"local_hash"`
-	RemoteHash   string    `json:"remote_hash"`
+	ConflictType string    `json:"conflictType"` // content, rename, delete
+	LocalHash    string    `json:"localHash"`
+	RemoteHash   string    `json:"remoteHash"`
 	Resolution   string    `json:"resolution"` // manual, auto, skip
-	ResolvedAt   time.Time `json:"resolved_at,omitempty"`
+	ResolvedAt   time.Time `json:"resolvedAt,omitempty"`
 }
 
 // newWatchMultiCmd creates the watch-multi subcommand for monitoring multiple repositories.

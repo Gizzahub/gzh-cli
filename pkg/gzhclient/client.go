@@ -23,18 +23,18 @@ type Client struct {
 // ClientConfig holds configuration for the GZH client.
 type ClientConfig struct {
 	// Connection settings
-	ServerURL  string        `yaml:"server_url,omitempty" json:"server_url,omitempty"`
-	APIKey     string        `yaml:"api_key,omitempty" json:"api_key,omitempty"`
+	ServerURL  string        `yaml:"serverUrl,omitempty" json:"serverUrl,omitempty"`
+	APIKey     string        `yaml:"apiKey,omitempty" json:"apiKey,omitempty"`
 	Timeout    time.Duration `yaml:"timeout" json:"timeout"`
-	RetryCount int           `yaml:"retry_count" json:"retry_count"`
+	RetryCount int           `yaml:"retryCount" json:"retryCount"`
 
 	// Plugin settings (disabled - plugins package removed)
 	// PluginDir     string `yaml:"plugin_dir,omitempty" json:"plugin_dir,omitempty"`
 	// EnablePlugins bool   `yaml:"enable_plugins" json:"enable_plugins"`
 
 	// Logging settings
-	LogLevel string `yaml:"log_level" json:"log_level"`
-	LogFile  string `yaml:"log_file,omitempty" json:"log_file,omitempty"`
+	LogLevel string `yaml:"logLevel" json:"logLevel"`
+	LogFile  string `yaml:"logFile,omitempty" json:"logFile,omitempty"`
 
 	// Feature flags
 	Features FeatureFlags `yaml:"features" json:"features"`
@@ -42,9 +42,9 @@ type ClientConfig struct {
 
 // FeatureFlags enables/disables specific features.
 type FeatureFlags struct {
-	BulkClone  bool `yaml:"bulk_clone" json:"bulk_clone"`
-	DevEnv     bool `yaml:"dev_env" json:"dev_env"`
-	NetEnv     bool `yaml:"net_env" json:"net_env"`
+	BulkClone  bool `yaml:"bulkClone" json:"bulkClone"`
+	DevEnv     bool `yaml:"devEnv" json:"devEnv"`
+	NetEnv     bool `yaml:"netEnv" json:"netEnv"`
 	Monitoring bool `yaml:"monitoring" json:"monitoring"`
 	// Plugins    bool `yaml:"plugins" json:"plugins"` // Disabled - plugins package removed
 }
@@ -414,34 +414,6 @@ func (c *configManagerImpl) ValidateConfiguration(ctx context.Context, config *b
 	return nil
 }
 
-// loggerImpl implements bulkclone.Logger interface.
-type loggerImpl struct{}
-
-func (l *loggerImpl) Debug(msg string, args ...interface{}) {
-	fmt.Printf("[DEBUG] "+msg+"\n", args...)
-}
-
-func (l *loggerImpl) Info(msg string, args ...interface{}) {
-	// Format the message properly with key-value pairs
-	formatted := msg
-
-	for i := 0; i < len(args); i += 2 {
-		if i+1 < len(args) {
-			formatted += fmt.Sprintf(" %s=%v", args[i], args[i+1])
-		}
-	}
-
-	fmt.Printf("[INFO] %s\n", formatted)
-}
-
-func (l *loggerImpl) Warn(msg string, args ...interface{}) {
-	fmt.Printf("[WARN] "+msg+"\n", args...)
-}
-
-func (l *loggerImpl) Error(msg string, args ...interface{}) {
-	fmt.Printf("[ERROR] "+msg+"\n", args...)
-}
-
 // silentLoggerImpl implements bulkclone.Logger interface but doesn't output anything.
 type silentLoggerImpl struct{}
 
@@ -460,7 +432,11 @@ func (h *httpClientWrapper) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (h *httpClientWrapper) Get(url string) (*http.Response, error) {
-	return h.client.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return h.client.Do(req)
 }
 
 func (h *httpClientWrapper) Post(url, contentType string, body interface{}) (*http.Response, error) {
@@ -485,5 +461,10 @@ func (h *httpClientWrapper) Post(url, contentType string, body interface{}) (*ht
 		contentType = "application/json"
 	}
 
-	return h.client.Post(url, contentType, bytes.NewReader(bodyBytes))
+	req, err := http.NewRequestWithContext(context.Background(), "POST", url, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+	return h.client.Do(req)
 }

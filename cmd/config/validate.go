@@ -152,14 +152,11 @@ func validateFileAccess(configFile string) error {
 		return fmt.Errorf("cannot read file: %w", err)
 	}
 
-	file.Close()
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
 
 	return nil
-}
-
-// performLegacyValidations runs legacy validation checks for backwards compatibility.
-func performLegacyValidations(configFile string, verbose bool) error {
-	return performLegacyValidationsWithEnv(configFile, verbose, env.NewOSEnvironment())
 }
 
 // performLegacyValidationsWithEnv runs legacy validation checks with provided environment.
@@ -171,11 +168,6 @@ func performLegacyValidationsWithEnv(configFile string, verbose bool, environmen
 	}
 
 	return performAdditionalValidationsWithEnv(config, true, verbose, environment)
-}
-
-// performAdditionalValidations runs additional validation checks.
-func performAdditionalValidations(config *configpkg.Config, strict bool, verbose bool) error {
-	return performAdditionalValidationsWithEnv(config, strict, verbose, env.NewOSEnvironment())
 }
 
 // performAdditionalValidationsWithEnv runs additional validation checks with provided environment.
@@ -307,55 +299,6 @@ func validateCloneDirectory(cloneDir string, strict bool) error {
 	return nil
 }
 
-// validateEnvironmentVariables checks if required environment variables are accessible.
-func validateEnvironmentVariables(config *configpkg.Config, verbose bool) error {
-	return validateEnvironmentVariablesWithEnv(config, verbose, env.NewOSEnvironment())
-}
-
-// validateEnvironmentVariablesWithEnv checks if required environment variables are accessible using provided environment.
-func validateEnvironmentVariablesWithEnv(config *configpkg.Config, verbose bool, environment env.Environment) error {
-	var missingVars []string
-
-	for providerName, provider := range config.Providers {
-		// Check token environment variables
-		if strings.HasPrefix(provider.Token, "${") && strings.HasSuffix(provider.Token, "}") {
-			// Extract variable name from ${VAR} or ${VAR:default}
-			varExpr := provider.Token[2 : len(provider.Token)-1]
-			varName := varExpr
-
-			// Handle default syntax: ${VAR:default}
-			if colonIndex := strings.Index(varExpr, ":"); colonIndex != -1 {
-				varName = varExpr[:colonIndex]
-			}
-
-			if environment.Get(varName) == "" {
-				missingVars = append(missingVars, fmt.Sprintf("%s (for provider '%s')", varName, providerName))
-			} else if verbose {
-				fmt.Printf("✓ Environment variable found: %s\n", varName)
-			}
-		}
-
-		// Check clone directory environment variables
-		for _, org := range provider.Orgs {
-			if err := checkPathEnvironmentVariablesWithEnv(org.CloneDir, environment); err != nil {
-				missingVars = append(missingVars, err.Error())
-			}
-		}
-
-		for _, group := range provider.Groups {
-			if err := checkPathEnvironmentVariablesWithEnv(group.CloneDir, environment); err != nil {
-				missingVars = append(missingVars, err.Error())
-			}
-		}
-	}
-
-	if len(missingVars) > 0 {
-		return fmt.Errorf("missing environment variables:\n  - %s", strings.Join(missingVars, "\n  - "))
-	}
-
-	return nil
-}
-
 // checkPathEnvironmentVariables checks environment variables in path strings.
 func checkPathEnvironmentVariables(path string) error {
 	return checkPathEnvironmentVariablesWithEnv(path, env.NewOSEnvironment())
@@ -456,25 +399,6 @@ func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
 
 		if !config.Migration.MigrationDate.IsZero() {
 			fmt.Printf("    Migration Date: %s\n", config.Migration.MigrationDate.Format("2006-01-02 15:04:05"))
-		}
-	}
-}
-
-// printConfigurationSummary prints a summary of the legacy configuration.
-func printConfigurationSummary(config *configpkg.Config) {
-	fmt.Println("\n📋 Legacy Configuration Summary:")
-	fmt.Printf("  Version: %s\n", config.Version)
-	fmt.Printf("  Default Provider: %s\n", config.DefaultProvider)
-	fmt.Printf("  Total Providers: %d\n", len(config.Providers))
-
-	for providerName, provider := range config.Providers {
-		fmt.Printf("\n  📌 Provider: %s\n", providerName)
-		fmt.Printf("    Organizations: %d\n", len(provider.Orgs))
-		fmt.Printf("    Groups: %d\n", len(provider.Groups))
-
-		totalTargets := len(provider.Orgs) + len(provider.Groups)
-		if totalTargets > 0 {
-			fmt.Printf("    Total Targets: %d\n", totalTargets)
 		}
 	}
 }

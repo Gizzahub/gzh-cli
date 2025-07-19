@@ -169,7 +169,7 @@ Examples:
 	return cmd
 }
 
-func (o *gcloudCredentialsOptions) runSave(_ *cobra.Command, args []string) error {
+func (o *gcloudCredentialsOptions) runSave(_ *cobra.Command, _ []string) error {
 	// Check if source credentials directory exists
 	if _, err := os.Stat(o.configPath); os.IsNotExist(err) {
 		return fmt.Errorf("gcloud config directory not found at %s", o.configPath)
@@ -219,7 +219,7 @@ func (o *gcloudCredentialsOptions) runSave(_ *cobra.Command, args []string) erro
 	return nil
 }
 
-func (o *gcloudCredentialsOptions) runLoad(_ *cobra.Command, args []string) error {
+func (o *gcloudCredentialsOptions) runLoad(_ *cobra.Command, _ []string) error {
 	// Check if saved credentials exist
 	savedPath := filepath.Join(o.storePath, o.name)
 	if _, err := os.Stat(savedPath); os.IsNotExist(err) {
@@ -537,7 +537,7 @@ func (o *gcloudCredentialsOptions) copyFile(src, dst string) error {
 func (o *gcloudCredentialsOptions) getDirSize(path string) (int64, error) {
 	var size int64
 
-	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

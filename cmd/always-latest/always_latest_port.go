@@ -36,7 +36,7 @@ func defaultAlwaysLatestPortOptions() *alwaysLatestPortOptions {
 	}
 }
 
-func newAlwaysLatestPortCmd(ctx context.Context) *cobra.Command {
+func newAlwaysLatestPortCmd(_ context.Context) *cobra.Command {
 	o := defaultAlwaysLatestPortOptions()
 
 	cmd := &cobra.Command{
@@ -91,7 +91,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestPortOptions) run(_ *cobra.Command, args []string) error {
+func (o *alwaysLatestPortOptions) run(_ *cobra.Command, _ []string) error {
 	// Check if MacPorts is installed
 	if !o.isPortInstalled() {
 		return fmt.Errorf("MacPorts is not installed or not in PATH")

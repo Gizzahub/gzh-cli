@@ -238,6 +238,7 @@ type MockFactoryBuilder struct {
 
 // NewMockFactoryBuilder creates a new mock factory builder.
 func NewMockFactoryBuilder(t *testing.T) *MockFactoryBuilder {
+	t.Helper()
 	return &MockFactoryBuilder{
 		t:        t,
 		finished: false,

@@ -42,7 +42,7 @@ func (m *MockProvider) GetProfile(ctx context.Context, profileName string) (*Pro
 }
 
 func (m *MockProvider) ListProfiles(ctx context.Context) ([]*Profile, error) {
-	var profiles []*Profile
+	profiles := make([]*Profile, 0, len(m.profiles))
 	for _, profile := range m.profiles {
 		profiles = append(profiles, profile)
 	}
@@ -395,7 +395,8 @@ func TestMergeValues(t *testing.T) {
 	merged, err := manager.mergeValues(source, target)
 	assert.NoError(t, err)
 
-	mergedSlice := merged.([]string)
+	mergedSlice, ok := merged.([]string)
+	require.True(t, ok, "type assertion failed: expected []string")
 	assert.Len(t, mergedSlice, 4) // Should remove duplicates
 	assert.Contains(t, mergedSlice, "a")
 	assert.Contains(t, mergedSlice, "b")
@@ -408,7 +409,8 @@ func TestMergeValues(t *testing.T) {
 	merged, err = manager.mergeValues(sourceMap, targetMap)
 	assert.NoError(t, err)
 
-	mergedMap := merged.(map[string]string)
+	mergedMap, ok := merged.(map[string]string)
+	require.True(t, ok, "type assertion failed: expected map[string]string")
 	assert.Len(t, mergedMap, 3)
 	assert.Equal(t, "value1", mergedMap["key1"])
 	assert.Equal(t, "value2", mergedMap["key2"]) // Source wins

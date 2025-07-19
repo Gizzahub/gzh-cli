@@ -46,9 +46,6 @@ var (
 	buildContext   string
 	buildArgs      []string
 	buildLabels    []string
-	buildSecrets   []string
-	buildSSH       string
-	buildOutput    string
 	buildTarget    string
 	buildProgress  string
 	buildQuiet     bool
@@ -57,7 +54,6 @@ var (
 	// Multi-architecture settings.
 	enableMultiArch bool
 	builderName     string
-	builderInstance string
 
 	// Registry settings.
 	registryURL      string
@@ -93,7 +89,6 @@ var (
 	// Metadata and tracking.
 	enableMetrics   bool
 	metricsOutput   string
-	buildMetadata   map[string]string
 	notificationURL string
 	slackWebhook    string
 )
@@ -189,7 +184,7 @@ type SecurityConfig struct {
 	Scan     bool     `json:"scan"`
 	Scanners []string `json:"scanners"`
 	Severity string   `json:"severity"`
-	ExitCode bool     `json:"exit_code"`
+	ExitCode bool     `json:"exitCode"`
 	Report   string   `json:"report,omitempty"`
 	Sign     bool     `json:"sign"`
 	Verify   bool     `json:"verify"`
@@ -198,8 +193,8 @@ type SecurityConfig struct {
 type PerformanceConfig struct {
 	Parallel    bool          `json:"parallel"`
 	Concurrency int           `json:"concurrency"`
-	MemoryLimit string        `json:"memory_limit,omitempty"`
-	CPULimit    string        `json:"cpu_limit,omitempty"`
+	MemoryLimit string        `json:"memoryLimit,omitempty"`
+	CPULimit    string        `json:"cpuLimit,omitempty"`
 	Timeout     time.Duration `json:"timeout"`
 }
 
@@ -212,8 +207,8 @@ type BuildTimestamps struct {
 type BuildResult struct {
 	Config      BuildConfig      `json:"config"`
 	Success     bool             `json:"success"`
-	ImageID     string           `json:"image_id,omitempty"`
-	ImageDigest string           `json:"image_digest,omitempty"`
+	ImageID     string           `json:"imageId,omitempty"`
+	ImageDigest string           `json:"imageDigest,omitempty"`
 	Size        int64            `json:"size"`
 	Platforms   []PlatformResult `json:"platforms"`
 	Scans       []ScanResult     `json:"scans,omitempty"`
@@ -224,7 +219,7 @@ type BuildResult struct {
 
 type PlatformResult struct {
 	Platform string `json:"platform"`
-	ImageID  string `json:"image_id"`
+	ImageID  string `json:"imageId"`
 	Size     int64  `json:"size"`
 	Success  bool   `json:"success"`
 	Error    string `json:"error,omitempty"`
@@ -257,23 +252,23 @@ type SecurityFinding struct {
 	Score       float64           `json:"score,omitempty"`
 	Package     string            `json:"package"`
 	Version     string            `json:"version"`
-	FixedIn     string            `json:"fixed_in,omitempty"`
+	FixedIn     string            `json:"fixedIn,omitempty"`
 	Description string            `json:"description"`
 	References  []string          `json:"references,omitempty"`
 	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
 type BuildMetrics struct {
-	BuildTime        time.Duration `json:"build_time"`
-	PushTime         time.Duration `json:"push_time,omitempty"`
-	ScanTime         time.Duration `json:"scan_time,omitempty"`
-	CacheHitRate     float64       `json:"cache_hit_rate"`
-	LayerCount       int           `json:"layer_count"`
-	UncompressedSize int64         `json:"uncompressed_size"`
-	CompressedSize   int64         `json:"compressed_size"`
+	BuildTime        time.Duration `json:"buildTime"`
+	PushTime         time.Duration `json:"pushTime,omitempty"`
+	ScanTime         time.Duration `json:"scanTime,omitempty"`
+	CacheHitRate     float64       `json:"cacheHitRate"`
+	LayerCount       int           `json:"layerCount"`
+	UncompressedSize int64         `json:"uncompressedSize"`
+	CompressedSize   int64         `json:"compressedSize"`
 	Efficiency       float64       `json:"efficiency"` // compressed/uncompressed ratio
-	CPU              float64       `json:"cpu_usage"`
-	Memory           int64         `json:"memory_usage"`
+	CPU              float64       `json:"cpuUsage"`
+	Memory           int64         `json:"memoryUsage"`
 }
 
 func runBuild(cmd *cobra.Command, args []string) {

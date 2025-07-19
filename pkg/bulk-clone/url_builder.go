@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+const (
+	protocolSSH   = "ssh"
+	protocolHTTPS = "https"
+	protocolHTTP  = "http"
+)
+
 // GitURLBuilder provides protocol-aware Git URL construction.
 type GitURLBuilder struct {
 	Protocol string
@@ -21,11 +27,11 @@ func NewGitURLBuilder(protocol, hostname string) *GitURLBuilder {
 // BuildURL constructs a Git clone URL based on the protocol.
 func (b *GitURLBuilder) BuildURL(orgName, repoName string) string {
 	switch b.Protocol {
-	case "ssh":
+	case protocolSSH:
 		return fmt.Sprintf("git@%s:%s/%s.git", b.Hostname, orgName, repoName)
-	case "https":
+	case protocolHTTPS:
 		return fmt.Sprintf("https://%s/%s/%s.git", b.Hostname, orgName, repoName)
-	case "http":
+	case protocolHTTP:
 		return fmt.Sprintf("http://%s/%s/%s.git", b.Hostname, orgName, repoName)
 	default:
 		// Default to HTTPS for safety
@@ -36,7 +42,7 @@ func (b *GitURLBuilder) BuildURL(orgName, repoName string) string {
 // BuildSSHHostAlias returns the SSH host alias that should be used for SSH URLs
 // when custom SSH configurations are in use.
 func (b *GitURLBuilder) BuildSSHHostAlias(orgName string) string {
-	if b.Protocol != "ssh" {
+	if b.Protocol != protocolSSH {
 		return b.Hostname
 	}
 
@@ -56,7 +62,7 @@ func (b *GitURLBuilder) BuildSSHHostAlias(orgName string) string {
 
 // BuildURLWithHostAlias constructs a Git clone URL using SSH host aliases when appropriate.
 func (b *GitURLBuilder) BuildURLWithHostAlias(orgName, repoName string) string {
-	if b.Protocol == "ssh" {
+	if b.Protocol == protocolSSH {
 		hostAlias := b.BuildSSHHostAlias(orgName)
 		return fmt.Sprintf("git@%s:%s/%s.git", hostAlias, orgName, repoName)
 	}

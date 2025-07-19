@@ -1,0 +1,193 @@
+# See https://pre-commit.com for more information
+repos:
+  # Generic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # Go-specific hooks using tekwizely/pre-commit-golang
+  - repo: https://github.com/tekwizely/pre-commit-golang
+    rev: v1.0.0-rc.1
+    hooks:
+      - id: go-build-mod
+      - id: go-test-mod
+        args: [-short, -race]
+      - id: go-vet-mod
+      - id: go-staticcheck-mod
+      - id: go-fumpt
+      - id: golangci-lint-mod
+        args: [-c=.golangci.yml, --fix]
+
+  # Additional Go tooling
+  - repo: local
+    hooks:
+      # Go import formatting with gci
+      - id: gci
+        name: Format Go imports with gci
+        entry: gci
+        args: [write, --skip-generated]
+        language: system
+        files: \.go$
+        pass_filenames: true
+
+      # Go security scanning with gosec
+      - id: gosec
+        name: Security scan Go code with gosec
+        entry: gosec
+        args: [-fmt=json, -out=gosec-report.json, -stdout, -verbose=text, ./...]
+        language: system
+        files: \.go$
+        pass_filenames: false
+
+      # Go module checks
+      - id: go-mod-tidy
+        name: Tidy Go modules
+        entry: go
+        args: [mod, tidy]
+        language: system
+        files: (go\.mod|go\.sum)$
+        pass_filenames: false
+
+      # Go vulnerability check
+      - id: go-vuln-check
+        name: Check Go vulnerabilities
+        entry: govulncheck
+        args: [./...]
+        language: system
+        files: \.go$
+        pass_filenames: false
+      
+      # Check for TODO comments without issue references
+      - id: check-todos
+        name: Check TODO format
+        entry: bash -c 'todos=$(grep -rn "TODO" --include="*.go" . | grep -v vendor | grep -v .git | grep -v "// TODO(" | grep -v "// TODO:"); if [ -n "$todos" ]; then echo "Found TODOs without proper format. Use // TODO(username): description"; echo "$todos"; exit 1; fi'
+        language: system
+        types: [go]
+        pass_filenames: false
+      
+      # Check for large files in the codebase
+      - id: check-file-sizes
+        name: Check for oversized files
+        entry: bash -c 'large_files=$(find cmd pkg internal -name "*.go" -type f -exec wc -l {} + | awk "$1 > 500 {print $2, $1}" | sort -k2 -nr); if [ -n "$large_files" ]; then echo "Warning: Files over 500 lines found:"; echo "$large_files" | head -10; fi'
+        language: system
+        types: [go]
+        pass_filenames: false
+      
+      # Ensure go.mod is tidy
+      - id: go-mod-tidy-check
+        name: Check go.mod is tidy
+        entry: bash -c 'cp go.mod go.mod.bak && cp go.sum go.sum.bak && go mod tidy && if ! diff -q go.mod go.mod.bak >/dev/null || ! diff -q go.sum go.sum.bak >/dev/null; then rm go.mod.bak go.sum.bak; echo "go.mod is not tidy. Run '\''go mod tidy'\''"; exit 1; else rm go.mod.bak go.sum.bak; fi'
+        language: system
+        files: (go\.mod|go\.sum)$
+        pass_filenames: false
+      
+      # Check for missing package documentation
+      - id: check-package-docs
+        name: Check package documentation
+        entry: bash -c 'missing_docs=$(find cmd pkg internal -type d -exec bash -c '\''if [ -z "$(find "$1" -maxdepth 1 -name "*.go" -type f | head -1)" ]; then exit 0; fi; if ! [ -f "$1/doc.go" ] && ! grep -q "^// Package" "$1"/*.go 2>/dev/null; then echo "$1"; fi'\'' _ {} \;); if [ -n "$missing_docs" ]; then echo "Packages missing documentation:"; echo "$missing_docs"; fi'
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [push]
+      
+      # Run make targets
+      - id: make-lint-all
+        name: Run all linting checks
+        entry: make lint-all
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [push]
+      
+      # Coverage check on push
+      - id: coverage-check
+        name: Check test coverage
+        entry: bash -c './scripts/check-coverage.sh || echo "Warning: Coverage check failed"'
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [push]
+
+  # YAML/JSON/Markdown formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: \.(yaml|yml|json|md)$
+        exclude: |
+          (?x)(
+            ^test/.*\.yaml$|
+            ^test/.*\.yml$|
+            ^samples/.*\.yaml$|
+            ^samples/.*\.yml$|
+            ^docs/.*\.json$
+          )
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3009]
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [-e, SC1091, -e, SC2034]
+
+  # Commit message formatting
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--strict, --optional-scope]
+
+  # Secrets detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: |
+          (?x)(
+            ^test/.*\.go$|
+            ^.*_test\.go$|
+            ^samples/.*$|
+            ^docs/.*$
+          )
+
+# Configuration
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_stages: [pre-commit]
+
+# CI configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [go-test-mod, go-vuln-check, gosec]
+  submodules: false

@@ -45,8 +45,8 @@ func TestGzhError_WithContext(t *testing.T) {
 		Message: "VPN connection failed",
 	}
 
-	err.WithContext("server", "vpn.example.com")
-	err.WithContext("port", 1194)
+	_ = err.WithContext("server", "vpn.example.com")
+	_ = err.WithContext("port", 1194)
 
 	assert.Len(t, err.Context, 2)
 	assert.Equal(t, "vpn.example.com", err.Context["server"])
@@ -59,8 +59,12 @@ func TestGzhError_WithSuggestion(t *testing.T) {
 		Message: "Network connection failed",
 	}
 
-	err.WithSuggestion("Check your internet connection")
-	err.WithSuggestion("Try using a different network")
+	if retErr := err.WithSuggestion("Check your internet connection"); retErr != nil {
+		t.Logf("Warning: failed to add suggestion: %v", retErr)
+	}
+	if retErr := err.WithSuggestion("Try using a different network"); retErr != nil {
+		t.Logf("Warning: failed to add suggestion: %v", retErr)
+	}
 
 	assert.Len(t, err.Suggestions, 2)
 	assert.Equal(t, "Check your internet connection", err.Suggestions[0])
@@ -74,7 +78,7 @@ func TestGzhError_WithCause(t *testing.T) {
 		Message: "Internal error occurred",
 	}
 
-	err.WithCause(originalErr)
+	_ = err.WithCause(originalErr)
 
 	assert.Equal(t, originalErr, err.Cause)
 	assert.Equal(t, originalErr, err.Unwrap())
@@ -362,7 +366,7 @@ func TestRecoveryManager(t *testing.T) {
 
 	// Register a mock recovery strategy
 	callCount := 0
-	mockStrategy := func(err *GzhError) error {
+	mockStrategy := func(_ *GzhError) error {
 		callCount++
 		return nil
 	}

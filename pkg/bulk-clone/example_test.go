@@ -15,8 +15,8 @@ func ExampleLoadConfig() {
 	// Create a temporary configuration file
 	tempDir := "/tmp/bulk-clone-config-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	_ = os.MkdirAll(tempDir, 0o755)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "bulk-clone.yaml")
 	configContent := `
@@ -87,8 +87,8 @@ repo_roots:
 func ExampleLoadConfig_validation() {
 	tempDir := "/tmp/bulk-clone-validation-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	_ = os.MkdirAll(tempDir, 0o755)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	// Create an invalid configuration file
 	configPath := filepath.Join(tempDir, "invalid-config.yaml")
@@ -152,8 +152,8 @@ repo_roots:
 func ExampleLoadConfig_multiProvider() {
 	tempDir := "/tmp/bulk-clone-multi-provider-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	_ = os.MkdirAll(tempDir, 0o755)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "multi-provider.yaml")
 	multiProviderConfig := `
@@ -251,8 +251,8 @@ repo_roots:
 func ExampleLoadConfig_strategies() {
 	tempDir := "/tmp/bulk-clone-strategies-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	_ = os.MkdirAll(tempDir, 0o755)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "strategies.yaml")
 	strategiesConfig := `
@@ -309,18 +309,22 @@ func ExampleLoadConfig_environmentVariables() {
 	originalGitLab := os.Getenv("GITLAB_TOKEN")
 
 	defer func() {
-		os.Setenv("GITHUB_TOKEN", originalGitHub)
-		os.Setenv("GITLAB_TOKEN", originalGitLab)
+		_ = os.Setenv("GITHUB_TOKEN", originalGitHub)
+		_ = os.Setenv("GITLAB_TOKEN", originalGitLab)
 	}()
 
 	// Set example tokens (these would be real tokens in practice)
-	os.Setenv("GITHUB_TOKEN", "ghp_example_token_here")
-	os.Setenv("GITLAB_TOKEN", "glpat_example_token_here")
+	if err := os.Setenv("GITHUB_TOKEN", "ghp_example_token_here"); err != nil {
+		log.Printf("Warning: failed to set GITHUB_TOKEN: %v", err)
+	}
+	if err := os.Setenv("GITLAB_TOKEN", "glpat_example_token_here"); err != nil {
+		log.Printf("Warning: failed to set GITLAB_TOKEN: %v", err)
+	}
 
 	tempDir := "/tmp/bulk-clone-env-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	_ = os.MkdirAll(tempDir, 0o755)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "env-config.yaml")
 	envConfig := `

@@ -19,8 +19,14 @@ func TestFindConfigFile(t *testing.T) {
 		err := os.WriteFile(configPath, []byte("version: 0.1"), 0o644)
 		require.NoError(t, err)
 
-		os.Setenv("GZH_CONFIG_PATH", configPath)
-		defer os.Unsetenv("GZH_CONFIG_PATH")
+		if err := os.Setenv("GZH_CONFIG_PATH", configPath); err != nil {
+			t.Logf("Warning: failed to set GZH_CONFIG_PATH: %v", err)
+		}
+		defer func() {
+			if err := os.Unsetenv("GZH_CONFIG_PATH"); err != nil {
+				t.Logf("Warning: failed to unset GZH_CONFIG_PATH: %v", err)
+			}
+		}()
 
 		found, err := FindConfigFile()
 		assert.NoError(t, err)
@@ -29,8 +35,14 @@ func TestFindConfigFile(t *testing.T) {
 
 	// Test with non-existent environment variable path
 	t.Run("invalid environment variable", func(t *testing.T) {
-		os.Setenv("GZH_CONFIG_PATH", "/non/existent/path.yaml")
-		defer os.Unsetenv("GZH_CONFIG_PATH")
+		if err := os.Setenv("GZH_CONFIG_PATH", "/non/existent/path.yaml"); err != nil {
+			t.Logf("Warning: failed to set GZH_CONFIG_PATH: %v", err)
+		}
+		defer func() {
+			if err := os.Unsetenv("GZH_CONFIG_PATH"); err != nil {
+				t.Logf("Warning: failed to unset GZH_CONFIG_PATH: %v", err)
+			}
+		}()
 
 		_, err := FindConfigFile()
 		assert.Error(t, err)
@@ -41,9 +53,15 @@ func TestFindConfigFile(t *testing.T) {
 	t.Run("current directory", func(t *testing.T) {
 		// Change to temp directory
 		oldDir, _ := os.Getwd()
-		defer os.Chdir(oldDir)
+		defer func() {
+			if err := os.Chdir(oldDir); err != nil {
+				t.Logf("Warning: failed to change back to original dir: %v", err)
+			}
+		}()
 
-		os.Chdir(tempDir)
+		if err := os.Chdir(tempDir); err != nil {
+			t.Logf("Warning: failed to change to temp dir: %v", err)
+		}
 
 		configPath := filepath.Join(tempDir, "bulk-clone.yaml")
 		err := os.WriteFile(configPath, []byte("version: 0.1"), 0o644)

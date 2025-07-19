@@ -13,6 +13,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	protocolHTTPS  = "https"
+	providerGitlab = "gitlab"
+)
+
 type genConfigDiscoverOptions struct {
 	directory  string
 	outputFile string
@@ -43,7 +48,7 @@ type RepoRootConfig struct {
 	Protocol string
 }
 
-func newGenConfigDiscoverCmd(ctx context.Context) *cobra.Command {
+func newGenConfigDiscoverCmd(_ context.Context) *cobra.Command {
 	o := defaultGenConfigDiscoverOptions()
 
 	cmd := &cobra.Command{
@@ -166,7 +171,7 @@ func (o *genConfigDiscoverOptions) discoverRepositories(rootDir string) ([]Disco
 
 	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil // Skip inaccessible directories
+			return err // Skip inaccessible directories
 		}
 
 		// Skip if not recursive and not in root directory
@@ -265,9 +270,9 @@ func (o *genConfigDiscoverOptions) getRemoteURL(repoPath string) (string, error)
 func (o *genConfigDiscoverOptions) parseRemoteURL(remoteURL string) (provider, orgName, repoName, protocol string) {
 	// SSH URL patterns
 	sshPatterns := map[string]*regexp.Regexp{
-		"github": regexp.MustCompile(`^git@github\.com:([^/]+)/(.+?)(?:\.git)?$`),
-		"gitlab": regexp.MustCompile(`^git@gitlab\.com:([^/]+)/(.+?)(?:\.git)?$`),
-		"gitea":  regexp.MustCompile(`^git@gitea\.com:([^/]+)/(.+?)(?:\.git)?$`),
+		"github":       regexp.MustCompile(`^git@github\.com:([^/]+)/(.+?)(?:\.git)?$`),
+		providerGitlab: regexp.MustCompile(`^git@gitlab\.com:([^/]+)/(.+?)(?:\.git)?$`),
+		"gitea":        regexp.MustCompile(`^git@gitea\.com:([^/]+)/(.+?)(?:\.git)?$`),
 	}
 
 	// Check SSH patterns
@@ -294,20 +299,20 @@ func (o *genConfigDiscoverOptions) parseRemoteURL(remoteURL string) (provider, o
 
 	protocol = parsedURL.Scheme
 	if protocol == "" {
-		protocol = "https"
+		protocol = protocolHTTPS
 	}
 
 	switch host {
 	case "github.com":
 		return "github", pathParts[0], pathParts[1], protocol
 	case "gitlab.com":
-		return "gitlab", pathParts[0], pathParts[1], protocol
+		return providerGitlab, pathParts[0], pathParts[1], protocol
 	case "gitea.com":
 		return "gitea", pathParts[0], pathParts[1], protocol
 	default:
 		// Custom GitLab/Gitea instance
-		if strings.Contains(host, "gitlab") {
-			return "gitlab", pathParts[0], pathParts[1], protocol
+		if strings.Contains(host, providerGitlab) {
+			return providerGitlab, pathParts[0], pathParts[1], protocol
 		}
 
 		if strings.Contains(host, "gitea") {
@@ -321,7 +326,7 @@ func (o *genConfigDiscoverOptions) parseRemoteURL(remoteURL string) (provider, o
 func (o *genConfigDiscoverOptions) generateConfigFromRepos(repos []DiscoveredRepo, baseDir string) ConfigData {
 	config := ConfigData{
 		Version:   "0.1",
-		Protocol:  "https",
+		Protocol:  protocolHTTPS,
 		RepoRoots: []RepoRootConfig{},
 		Ignores:   []string{"test-.*", ".*-archive"},
 	}
@@ -411,7 +416,7 @@ func (o *genConfigDiscoverOptions) determineMostCommonProtocol(repos []Discovere
 	}
 
 	maxCount := 0
-	mostCommon := "https"
+	mostCommon := protocolHTTPS
 
 	for protocol, count := range protocolCount {
 		if count > maxCount {

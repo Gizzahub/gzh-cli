@@ -38,6 +38,7 @@ func TestTemplateInheritance(t *testing.T) {
 			},
 			template: "derived",
 			validate: func(t *testing.T, resolved *RepoTemplate) {
+				t.Helper()
 				require.NotNil(t, resolved.Settings)
 				assert.True(t, *resolved.Settings.Private)             // From base
 				assert.True(t, *resolved.Settings.HasIssues)           // From base
@@ -73,6 +74,7 @@ func TestTemplateInheritance(t *testing.T) {
 			},
 			template: "derived",
 			validate: func(t *testing.T, resolved *RepoTemplate) {
+				t.Helper()
 				require.NotNil(t, resolved.Settings)
 				assert.True(t, *resolved.Settings.Private)             // From base
 				assert.True(t, *resolved.Settings.HasIssues)           // From middle
@@ -100,6 +102,7 @@ func TestTemplateInheritance(t *testing.T) {
 			},
 			template: "derived",
 			validate: func(t *testing.T, resolved *RepoTemplate) {
+				t.Helper()
 				require.NotNil(t, resolved.Settings)
 				assert.False(t, *resolved.Settings.Private)   // Overridden
 				assert.False(t, *resolved.Settings.HasIssues) // From base
@@ -136,6 +139,7 @@ func TestTemplateInheritance(t *testing.T) {
 			},
 			template: "derived",
 			validate: func(t *testing.T, resolved *RepoTemplate) {
+				t.Helper()
 				require.NotNil(t, resolved.Security)
 				require.NotNil(t, resolved.Security.BranchProtection)
 

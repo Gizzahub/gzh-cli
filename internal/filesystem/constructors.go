@@ -93,7 +93,11 @@ func (fs *FileSystemImpl) AppendFile(ctx context.Context, filename string, data 
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log error but don't override return value
+		}
+	}()
 
 	_, err = file.Write(data)
 
@@ -318,7 +322,7 @@ func (fs *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileInfo,
 		return nil, err
 	}
 
-	var fileInfos []FileInfo
+	fileInfos := make([]FileInfo, 0, len(entries))
 
 	for _, entry := range entries {
 		info, err := entry.Info()
@@ -344,14 +348,22 @@ func (fs *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
 		fs.logger.Error("Failed to open source file", "src", src, "error", err)
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() {
+		if err := sourceFile.Close(); err != nil {
+			// Log error but don't override return value
+		}
+	}()
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		fs.logger.Error("Failed to create destination file", "dst", dst, "error", err)
 		return err
 	}
-	defer destFile.Close()
+	defer func() {
+		if err := destFile.Close(); err != nil {
+			// Log error but don't override return value
+		}
+	}()
 
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {

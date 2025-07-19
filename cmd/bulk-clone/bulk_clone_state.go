@@ -49,8 +49,14 @@ func newBulkCloneStateShowCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&provider, "provider", "p", "", "Provider (github, gitlab)")
 	cmd.Flags().StringVarP(&organization, "organization", "o", "", "Organization/group name")
-	cmd.MarkFlagRequired("provider")
-	cmd.MarkFlagRequired("organization")
+	if err := cmd.MarkFlagRequired("provider"); err != nil {
+		// Error marking flag required is unlikely in practice
+		panic(err)
+	}
+	if err := cmd.MarkFlagRequired("organization"); err != nil {
+		// Error marking flag required is unlikely in practice
+		panic(err)
+	}
 
 	return cmd
 }
@@ -96,24 +102,32 @@ func runStateList(cmd *cobra.Command, args []string) error {
 
 	// Create table writer
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "PROVIDER\tORGANIZATION\tSTATUS\tPROGRESS\tLAST UPDATED\tTARGET PATH")
-	fmt.Fprintln(w, "--------\t------------\t------\t--------\t------------\t-----------")
+	if _, err := fmt.Fprintln(w, "PROVIDER\tORGANIZATION\tSTATUS\tPROGRESS\tLAST UPDATED\tTARGET PATH"); err != nil {
+		return fmt.Errorf("failed to write header: %w", err)
+	}
+	if _, err := fmt.Fprintln(w, "--------\t------------\t------\t--------\t------------\t-----------"); err != nil {
+		return fmt.Errorf("failed to write separator: %w", err)
+	}
 
 	for _, state := range states {
 		progress := fmt.Sprintf("%.1f%%", state.GetProgressPercent())
 		lastUpdated := state.LastUpdated.Format("2006-01-02 15:04:05")
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
 			state.Provider,
 			state.Organization,
 			state.Status,
 			progress,
 			lastUpdated,
 			state.TargetPath,
-		)
+		); err != nil {
+			return fmt.Errorf("failed to write state row: %w", err)
+		}
 	}
 
-	w.Flush()
+	if err := w.Flush(); err != nil {
+		return fmt.Errorf("failed to flush output: %w", err)
+	}
 
 	return nil
 }

@@ -478,7 +478,7 @@ func (nmc *NetworkMetricsCollector) GetCurrentMetrics(ctx context.Context) (*Net
 }
 
 func (nmc *NetworkMetricsCollector) TestLatency(ctx context.Context, targets []string, count int) ([]LatencyResult, error) {
-	var results []LatencyResult
+	results := make([]LatencyResult, 0, len(targets))
 
 	for _, target := range targets {
 		result := nmc.pingTarget(ctx, target, count)

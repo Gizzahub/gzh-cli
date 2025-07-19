@@ -52,6 +52,7 @@ func TestPolicyTemplates(t *testing.T) {
 }
 
 func testSecurityTemplate(t *testing.T, config *RepoConfig) {
+	t.Helper()
 	// Check template exists
 	template, ok := config.Templates["security-enhanced"]
 	require.True(t, ok, "security-enhanced template not found")
@@ -91,6 +92,7 @@ func testSecurityTemplate(t *testing.T, config *RepoConfig) {
 }
 
 func testOpenSourceTemplate(t *testing.T, config *RepoConfig) {
+	t.Helper()
 	// Check template exists
 	template, ok := config.Templates["opensource-community"]
 	require.True(t, ok, "opensource-community template not found")
@@ -150,6 +152,7 @@ func testOpenSourceTemplate(t *testing.T, config *RepoConfig) {
 }
 
 func testEnterpriseTemplate(t *testing.T, config *RepoConfig) {
+	t.Helper()
 	// Check template exists
 	template, ok := config.Templates["enterprise-standard"]
 	require.True(t, ok, "enterprise-standard template not found")

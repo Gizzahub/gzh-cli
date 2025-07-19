@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -86,7 +87,9 @@ This command provides comprehensive webhook management including:
 	// Add flags
 	createCmd.Flags().String("name", "web", "Webhook name")
 	createCmd.Flags().String("url", "", "Webhook URL (required)")
-	createCmd.MarkFlagRequired("url")
+	if err := createCmd.MarkFlagRequired("url"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
 	createCmd.Flags().StringSlice("events", []string{"push"}, "Events to trigger webhook")
 	createCmd.Flags().Bool("active", true, "Whether webhook is active")
 	createCmd.Flags().String("content-type", "json", "Content type (json/form)")
@@ -142,14 +145,6 @@ func (f *WebhookCommandFactory) runCreateRepositoryWebhook(cmd *cobra.Command, a
 	return nil
 }
 
-// defaultLogger is a simple logger implementation.
-type defaultLogger struct{}
-
-func (l *defaultLogger) Info(msg string, keysAndValues ...interface{})             {}
-func (l *defaultLogger) Error(msg string, err error, keysAndValues ...interface{}) {}
-func (l *defaultLogger) Debug(msg string, keysAndValues ...interface{})            {}
-func (l *defaultLogger) Warn(msg string, keysAndValues ...interface{})             {}
-
 // simpleHTTPClient implements HTTPClientInterface.
 type simpleHTTPClient struct {
 	client *http.Client
@@ -160,7 +155,11 @@ func (c *simpleHTTPClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (c *simpleHTTPClient) Get(url string) (*http.Response, error) {
-	return c.client.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return c.client.Do(req)
 }
 
 func (c *simpleHTTPClient) Post(url, contentType string, body interface{}) (*http.Response, error) {
@@ -174,8 +173,18 @@ func (c *simpleHTTPClient) Post(url, contentType string, body interface{}) (*htt
 
 		bodyReader = bytes.NewReader(bodyBytes)
 
-		return c.client.Post(url, contentType, bodyReader)
+		req, err := http.NewRequestWithContext(context.Background(), "POST", url, bodyReader)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", contentType)
+		return c.client.Do(req)
 	}
 
-	return c.client.Post(url, contentType, nil)
+	req, err := http.NewRequestWithContext(context.Background(), "POST", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+	return c.client.Do(req)
 }

@@ -329,7 +329,7 @@ func (dm *DockerNetworkManager) ListProfiles() ([]*DockerNetworkProfile, error) 
 		return nil, fmt.Errorf("failed to list profile files: %w", err)
 	}
 
-	var profiles []*DockerNetworkProfile
+	profiles := make([]*DockerNetworkProfile, 0, len(files))
 
 	for _, file := range files {
 		name := strings.TrimSuffix(filepath.Base(file), ".yaml")
@@ -397,9 +397,8 @@ func (dm *DockerNetworkManager) GetNetworkStatus() ([]*DockerNetworkStatus, erro
 		return nil, fmt.Errorf("failed to list Docker networks: %w", err)
 	}
 
-	var networks []*DockerNetworkStatus
-
 	lines := strings.Split(strings.TrimSpace(result.Output), "\n")
+	networks := make([]*DockerNetworkStatus, 0, len(lines))
 	for _, line := range lines {
 		if line == "" {
 			continue
@@ -429,9 +428,8 @@ func (dm *DockerNetworkManager) GetContainerNetworkInfo() ([]*ContainerNetworkIn
 		return nil, fmt.Errorf("failed to list Docker containers: %w", err)
 	}
 
-	var containers []*ContainerNetworkInfo
-
 	lines := strings.Split(strings.TrimSpace(result.Output), "\n")
+	containers := make([]*ContainerNetworkInfo, 0, len(lines))
 	for _, line := range lines {
 		if line == "" {
 			continue

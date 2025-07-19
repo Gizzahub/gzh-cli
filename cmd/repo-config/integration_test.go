@@ -14,8 +14,14 @@ import (
 // TestDiffIntegration tests the diff command integration.
 func TestDiffIntegration(t *testing.T) {
 	// Set mock token for tests
-	os.Setenv("GITHUB_TOKEN", "mock-token-for-testing")
-	defer os.Unsetenv("GITHUB_TOKEN")
+	if err := os.Setenv("GITHUB_TOKEN", "mock-token-for-testing"); err != nil {
+		t.Fatalf("Failed to set env var: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("GITHUB_TOKEN"); err != nil {
+			t.Logf("Warning: failed to unset env var: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name         string
@@ -108,8 +114,14 @@ func TestDiffIntegration(t *testing.T) {
 // TestAuditIntegration tests the audit command integration.
 func TestAuditIntegration(t *testing.T) {
 	// Set mock token for tests
-	os.Setenv("GITHUB_TOKEN", "mock-token-for-testing")
-	defer os.Unsetenv("GITHUB_TOKEN")
+	if err := os.Setenv("GITHUB_TOKEN", "mock-token-for-testing"); err != nil {
+		t.Fatalf("Failed to set env var: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("GITHUB_TOKEN"); err != nil {
+			t.Logf("Warning: failed to unset env var: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name          string
@@ -275,11 +287,21 @@ func TestAuditTrendAnalysis(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "audit-trend-test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	// Set audit data directory
-	os.Setenv("GZH_AUDIT_DATA_DIR", tmpDir)
-	defer os.Unsetenv("GZH_AUDIT_DATA_DIR")
+	if err := os.Setenv("GZH_AUDIT_DATA_DIR", tmpDir); err != nil {
+		t.Logf("Warning: failed to set GZH_AUDIT_DATA_DIR: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("GZH_AUDIT_DATA_DIR"); err != nil {
+			t.Logf("Warning: failed to unset GZH_AUDIT_DATA_DIR: %v", err)
+		}
+	}()
 
 	t.Run("save trend", func(t *testing.T) {
 		cmd := &cobra.Command{Use: "repo-config"}
@@ -417,7 +439,11 @@ func TestOutputFileGeneration(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "audit-output-test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	formats := []struct {
 		format   string

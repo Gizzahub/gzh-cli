@@ -2,6 +2,7 @@ package reposync
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -21,7 +22,11 @@ func (m *MockGitCommandExecutor) ExecuteCommand(ctx context.Context, dir string,
 	callArgs := append([]interface{}{ctx, dir}, argsToInterfaces(args)...)
 	callResults := m.Called(callArgs...)
 
-	return callResults.Get(0).(*GitCommandResult), callResults.Error(1)
+	result, ok := callResults.Get(0).(*GitCommandResult)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failed: expected *GitCommandResult")
+	}
+	return result, callResults.Error(1)
 }
 
 // Helper function to convert string slice to interface slice.
@@ -36,12 +41,18 @@ func argsToInterfaces(args []string) []interface{} {
 
 func (m *MockGitCommandExecutor) GetStatus(ctx context.Context, dir string) (*GitStatus, error) {
 	args := m.Called(ctx, dir)
-	return args.Get(0).(*GitStatus), args.Error(1)
+	if status, ok := args.Get(0).(*GitStatus); ok {
+		return status, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *MockGitCommandExecutor) GetRemoteInfo(ctx context.Context, dir string, remote string) (*GitRemoteInfo, error) {
 	args := m.Called(ctx, dir, remote)
-	return args.Get(0).(*GitRemoteInfo), args.Error(1)
+	if remoteInfo, ok := args.Get(0).(*GitRemoteInfo); ok {
+		return remoteInfo, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func TestNewRepositorySynchronizer(t *testing.T) {

@@ -83,10 +83,10 @@ type ShellCommand struct {
 
 // ShellContext holds shell execution context.
 type ShellContext struct {
-	StartTime time.Time              `json:"start_time"`
+	StartTime time.Time              `json:"startTime"`
 	Uptime    time.Duration          `json:"uptime"`
-	Commands  int                    `json:"commands_executed"`
-	LastCmd   string                 `json:"last_command"`
+	Commands  int                    `json:"commandsExecuted"`
+	LastCmd   string                 `json:"lastCommand"`
 	Vars      map[string]interface{} `json:"variables"`
 }
 
@@ -104,9 +104,13 @@ func runShell(cmd *cobra.Command, args []string) {
 	client, err := gzhclient.NewClient(clientConfig)
 	if err != nil {
 		fmt.Printf("❌ Failed to create GZH client: %v\n", err)
-		os.Exit(1)
+		return
 	}
-	defer client.Close()
+	defer func() {
+		if err := client.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	// Create shell
 	shell := NewShell(client)
@@ -123,7 +127,7 @@ func runShell(cmd *cobra.Command, args []string) {
 	// Run shell
 	if err := shell.Run(); err != nil {
 		fmt.Printf("❌ Shell error: %v\n", err)
-		os.Exit(1)
+		return
 	}
 
 	if !quietMode {
@@ -362,7 +366,7 @@ func handleHelp(s *Shell, args []string) error {
 	fmt.Println()
 
 	// Sort commands for consistent output
-	var names []string
+	names := make([]string, 0, len(s.commands))
 	for name := range s.commands {
 		names = append(names, name)
 	}

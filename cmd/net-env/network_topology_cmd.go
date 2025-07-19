@@ -647,7 +647,7 @@ func generateTopologyHash(topology *NetworkTopology) string {
 		len(topology.Connections))
 
 	// Add network IDs for more precise change detection
-	var networkIDs []string
+	networkIDs := make([]string, 0, len(topology.Networks))
 	for _, network := range topology.Networks {
 		networkIDs = append(networkIDs, network.ID[:8])
 	}

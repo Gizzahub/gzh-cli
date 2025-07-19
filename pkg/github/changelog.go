@@ -264,7 +264,10 @@ func convertRepositoryToMap(repo *Repository) map[string]interface{} {
 
 	data := make(map[string]interface{})
 	repoBytes, _ := json.Marshal(repo)
-	json.Unmarshal(repoBytes, &data)
+	if err := json.Unmarshal(repoBytes, &data); err != nil {
+		// Log error but return partial data if marshaling worked
+		fmt.Printf("Warning: failed to unmarshal repository data: %v\n", err)
+	}
 
 	return data
 }

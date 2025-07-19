@@ -369,7 +369,7 @@ func (m *GCPProjectManager) loadProjects() error {
 	output, err := cmd.Output()
 	if err != nil {
 		// If gcloud is not available or not authenticated, return empty list
-		return nil
+		return err
 	}
 
 	var projects []struct {
@@ -444,7 +444,7 @@ func (m *GCPProjectManager) getActiveConfiguration() (string, error) {
 
 	content, err := os.ReadFile(activeConfigPath)
 	if err != nil {
-		return "default", nil // Default to "default" if no active config
+		return "default", err // Default to "default" if no active config
 	}
 
 	return strings.TrimSpace(string(content)), nil
@@ -530,7 +530,7 @@ func (m *GCPProjectManager) listProjects(format string) error {
 	}
 
 	// Sort projects by name
-	var projects []*GCPProject
+	projects := make([]*GCPProject, 0, len(m.projects))
 	for _, project := range m.projects {
 		projects = append(projects, project)
 	}
@@ -642,8 +642,8 @@ func (m *GCPProjectManager) selectProjectInteractively() (string, error) {
 	}
 
 	var (
-		projects []*GCPProject
-		items    []string
+		projects = make([]*GCPProject, 0, len(m.projects))
+		items    = make([]string, 0, len(m.projects))
 	)
 
 	for _, project := range m.projects {

@@ -38,7 +38,7 @@ func defaultAlwaysLatestBrewOptions() *alwaysLatestBrewOptions {
 	}
 }
 
-func newAlwaysLatestBrewCmd(ctx context.Context) *cobra.Command {
+func newAlwaysLatestBrewCmd(_ context.Context) *cobra.Command {
 	o := defaultAlwaysLatestBrewOptions()
 
 	cmd := &cobra.Command{
@@ -92,7 +92,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, args []string) error {
+func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, _ []string) error {
 	// Check if brew is installed
 	if !o.isBrewInstalled() {
 		return fmt.Errorf("homebrew is not installed or not in PATH")

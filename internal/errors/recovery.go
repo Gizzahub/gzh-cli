@@ -16,7 +16,6 @@ type ErrorRecovery struct {
 	maxRetries   int
 	retryDelay   time.Duration
 	errorCounts  map[string]int
-	mu           sync.RWMutex
 	recoveryFunc func(error) error
 }
 

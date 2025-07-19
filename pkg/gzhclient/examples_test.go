@@ -17,7 +17,7 @@ func Example_basicUsage() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// Check client health
 	health := client.Health()
@@ -35,7 +35,7 @@ func Example_bulkClone() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// Configure bulk clone request
 	req := gzhclient.BulkCloneRequest{
@@ -80,7 +80,7 @@ func Example_pluginManagement() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// Plugin functionality no longer available
 	fmt.Println("Plugin management has been disabled")
@@ -94,7 +94,7 @@ func Example_platformSpecificClients() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// GitHub operations
 	githubClient := client.GitHubClient("ghp_xxxxxxxxxxxxxxxxxxxx")
@@ -119,7 +119,7 @@ func Example_systemMonitoring() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// Get system metrics
 	metrics, err := client.GetSystemMetrics()
@@ -158,7 +158,7 @@ func Example_configurationOptions() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// Get current configuration
 	currentConfig := client.GetConfig()
@@ -185,7 +185,7 @@ func Example_errorHandling() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// Attempt to perform a bulk clone with invalid configuration
 	req := gzhclient.BulkCloneRequest{
@@ -220,7 +220,7 @@ func Example_contextCancellation() {
 		fmt.Printf("Client creation failed: %v\n", err)
 		return
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// This example shows how context cancellation would work in practice
 	// For demo purposes, we just show the pattern without actual cancellation

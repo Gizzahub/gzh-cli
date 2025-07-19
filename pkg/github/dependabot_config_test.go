@@ -416,6 +416,7 @@ func TestDependabotConfigManager_EcosystemSpecificDefaults(t *testing.T) {
 			name:      "go modules defaults",
 			ecosystem: EcosystemGoModules,
 			checkFunc: func(t *testing.T, rule DependabotUpdateRule) {
+				t.Helper()
 				assert.True(t, rule.VendorUpdates)
 				assert.NotNil(t, rule.CommitMessage)
 				assert.Equal(t, "deps", rule.CommitMessage.Prefix)
@@ -426,6 +427,7 @@ func TestDependabotConfigManager_EcosystemSpecificDefaults(t *testing.T) {
 			name:      "npm defaults",
 			ecosystem: EcosystemNPM,
 			checkFunc: func(t *testing.T, rule DependabotUpdateRule) {
+				t.Helper()
 				assert.Equal(t, VersioningStrategyIncrease, rule.VersioningStrategy)
 				assert.Len(t, rule.AllowedUpdates, 2)
 				assert.Equal(t, "direct", rule.AllowedUpdates[0].DependencyType)
@@ -435,6 +437,7 @@ func TestDependabotConfigManager_EcosystemSpecificDefaults(t *testing.T) {
 			name:      "dockerfile defaults",
 			ecosystem: EcosystemDockerfile,
 			checkFunc: func(t *testing.T, rule DependabotUpdateRule) {
+				t.Helper()
 				assert.Equal(t, IntervalMonthly, rule.Schedule.Interval)
 				assert.Equal(t, 3, rule.PullRequestLimit)
 			},
@@ -443,6 +446,7 @@ func TestDependabotConfigManager_EcosystemSpecificDefaults(t *testing.T) {
 			name:      "github-actions defaults",
 			ecosystem: EcosystemGitHubActions,
 			checkFunc: func(t *testing.T, rule DependabotUpdateRule) {
+				t.Helper()
 				assert.Equal(t, IntervalWeekly, rule.Schedule.Interval)
 				assert.NotNil(t, rule.Groups)
 				assert.Contains(t, rule.Groups, "github-actions")

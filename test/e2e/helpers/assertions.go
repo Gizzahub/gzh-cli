@@ -1,3 +1,4 @@
+// Package helpers provides testing utilities for end-to-end tests.
 package helpers
 
 import (
@@ -19,6 +20,7 @@ type CLIAssertions struct {
 
 // NewCLIAssertions creates a new CLI assertions helper.
 func NewCLIAssertions(t *testing.T, result *CLIResult) *CLIAssertions {
+	t.Helper()
 	return &CLIAssertions{
 		t:      t,
 		result: result,
@@ -140,6 +142,7 @@ type ConfigAssertions struct {
 
 // NewConfigAssertions creates config assertions for a file.
 func NewConfigAssertions(t *testing.T, env *TestEnvironment, configPath string) *ConfigAssertions {
+	t.Helper()
 	content := env.ReadFile(configPath)
 
 	return &ConfigAssertions{
@@ -246,6 +249,7 @@ type ProcessAssertions struct {
 
 // NewProcessAssertions creates process assertions.
 func NewProcessAssertions(t *testing.T, env *TestEnvironment) *ProcessAssertions {
+	t.Helper()
 	return &ProcessAssertions{
 		t:   t,
 		env: env,
@@ -289,6 +293,7 @@ type GitAssertions struct {
 
 // NewGitAssertions creates Git assertions.
 func NewGitAssertions(t *testing.T, env *TestEnvironment) *GitAssertions {
+	t.Helper()
 	return &GitAssertions{
 		t:   t,
 		env: env,
@@ -305,7 +310,7 @@ func (a *GitAssertions) IsValidRepo(repoPath string) *GitAssertions {
 }
 
 // HasRemote asserts that a repository has a specific remote.
-func (a *GitAssertions) HasRemote(repoPath, remoteName string) *GitAssertions {
+func (a *GitAssertions) HasRemote(repoPath, _ string) *GitAssertions {
 	a.t.Helper()
 	// This would typically check .git/config or run git commands
 	// For simplicity, we'll check if the .git directory exists
@@ -315,7 +320,7 @@ func (a *GitAssertions) HasRemote(repoPath, remoteName string) *GitAssertions {
 }
 
 // HasBranch asserts that a repository has a specific branch.
-func (a *GitAssertions) HasBranch(repoPath, branchName string) *GitAssertions {
+func (a *GitAssertions) HasBranch(repoPath, _ string) *GitAssertions {
 	a.t.Helper()
 	a.IsValidRepo(repoPath)
 	// In a real implementation, this would check git branches
@@ -330,6 +335,7 @@ type BulkCloneAssertions struct {
 
 // NewBulkCloneAssertions creates bulk clone assertions.
 func NewBulkCloneAssertions(t *testing.T, env *TestEnvironment) *BulkCloneAssertions {
+	t.Helper()
 	return &BulkCloneAssertions{
 		t:   t,
 		env: env,

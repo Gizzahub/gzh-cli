@@ -116,7 +116,9 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	if len(reposToProcess) == 0 {
 		fmt.Printf("✅ All repositories already processed\n")
 		state.MarkCompleted()
-		rcm.stateManager.SaveState(state)
+		if err := rcm.stateManager.SaveState(state); err != nil {
+			fmt.Printf("Warning: failed to save state: %v\n", err)
+		}
 
 		return nil
 	}
@@ -256,7 +258,9 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		case <-ctx.Done():
 			// Operation cancelled
 			state.MarkCancelled()
-			rcm.stateManager.SaveState(state)
+			if err := rcm.stateManager.SaveState(state); err != nil {
+				fmt.Printf("Warning: failed to save state: %v\n", err)
+			}
 
 			return fmt.Errorf("operation cancelled: %w", ctx.Err())
 		}
@@ -282,7 +286,9 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 
 	// Clean up state file if completed successfully
 	if state.Status == "completed" {
-		rcm.stateManager.DeleteState("gitlab", group)
+		if err := rcm.stateManager.DeleteState("gitlab", group); err != nil {
+			fmt.Printf("Warning: failed to delete state: %v\n", err)
+		}
 		fmt.Printf("✅ Clone operation completed successfully\n")
 	} else {
 		fmt.Printf("⚠️  Clone operation incomplete. Use --resume to continue\n")
@@ -314,6 +320,10 @@ func (rcm *ResumableCloneManager) processRepositoryJob(ctx context.Context, job 
 		}
 
 		return rcm.executeGitOperation(ctx, job.Path, "pull")
+
+	case workerpool.OperationConfig:
+		// Config operation - placeholder for configuration updates
+		return fmt.Errorf("config operation not yet implemented")
 
 	default:
 		return fmt.Errorf("unknown operation: %s", job.Operation)
@@ -352,6 +362,8 @@ func getProgressStatusFromOperation(operation workerpool.RepositoryOperation) bu
 		return bulkclonepkg.StatusFetching
 	case workerpool.OperationReset:
 		return bulkclonepkg.StatusResetting
+	case workerpool.OperationConfig:
+		return bulkclonepkg.StatusStarted // Config operations are quick, just show as started
 	default:
 		return bulkclonepkg.StatusStarted
 	}

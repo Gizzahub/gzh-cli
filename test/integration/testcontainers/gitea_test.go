@@ -90,14 +90,22 @@ func (g *GiteaTestContainer) WaitForReady(ctx context.Context) error {
 		case <-timeout:
 			return fmt.Errorf("timeout waiting for Gitea to be ready")
 		case <-ticker.C:
-			resp, err := http.Get(g.BaseURL + "/api/v1/version")
+			req, err := http.NewRequestWithContext(ctx, "GET", g.BaseURL+"/api/v1/version", nil)
+			if err != nil {
+				continue
+			}
+			resp, err := http.DefaultClient.Do(req)
 			if err == nil && resp.StatusCode == http.StatusOK {
-				resp.Body.Close()
+				if err := resp.Body.Close(); err != nil {
+					// Log but don't fail, this is a readiness check
+				}
 				return nil
 			}
 
 			if resp != nil {
-				resp.Body.Close()
+				if err := resp.Body.Close(); err != nil {
+					// Log but don't fail, this is a readiness check
+				}
 			}
 		}
 	}
@@ -122,10 +130,16 @@ func TestGiteaContainer_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test basic Gitea connectivity
-	resp, err := http.Get(gitea.BaseURL + "/api/v1/version")
+	req, err := http.NewRequestWithContext(ctx, "GET", gitea.BaseURL+"/api/v1/version", nil)
+	require.NoError(t, err)
+	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			t.Logf("Warning: failed to close response body: %v", err)
+		}
+	}()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	t.Logf("Gitea container is ready at %s", gitea.BaseURL)

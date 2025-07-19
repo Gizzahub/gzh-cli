@@ -21,12 +21,18 @@ func (m *mockConfigStorage) SavePolicy(ctx context.Context, policy *WebhookPolic
 
 func (m *mockConfigStorage) GetPolicy(ctx context.Context, org, policyID string) (*WebhookPolicy, error) {
 	args := m.Called(ctx, org, policyID)
-	return args.Get(0).(*WebhookPolicy), args.Error(1)
+	if policy, ok := args.Get(0).(*WebhookPolicy); ok {
+		return policy, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockConfigStorage) ListPolicies(ctx context.Context, org string) ([]*WebhookPolicy, error) {
 	args := m.Called(ctx, org)
-	return args.Get(0).([]*WebhookPolicy), args.Error(1)
+	if policies, ok := args.Get(0).([]*WebhookPolicy); ok {
+		return policies, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockConfigStorage) DeletePolicy(ctx context.Context, org, policyID string) error {
@@ -45,7 +51,10 @@ func (m *mockConfigStorage) GetOrganizationConfig(ctx context.Context, org strin
 		return nil, args.Error(1)
 	}
 
-	return args.Get(0).(*OrganizationWebhookConfig), args.Error(1)
+	if config, ok := args.Get(0).(*OrganizationWebhookConfig); ok {
+		return config, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 // Test helper functions.

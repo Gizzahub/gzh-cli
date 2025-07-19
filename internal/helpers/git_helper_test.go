@@ -14,27 +14,49 @@ func TestCheckGitRepoType(t *testing.T) {
 
 	// rmp tmp
 	// Clean up and create directories using Go's built-in functions for cross-platform compatibility
-	os.RemoveAll("tmp")
+	if err := os.RemoveAll("tmp"); err != nil {
+		t.Logf("Warning: failed to remove tmp dir: %v", err)
+	}
 
-	os.MkdirAll("tmp/git-commit0", 0o755)
-	os.MkdirAll("tmp/git-commit2", 0o755)
-	os.MkdirAll("tmp/nongit", 0o755)
+	if err := os.MkdirAll("tmp/git-commit0", 0o755); err != nil {
+		t.Fatalf("Failed to create tmp/git-commit0: %v", err)
+	}
+	if err := os.MkdirAll("tmp/git-commit2", 0o755); err != nil {
+		t.Fatalf("Failed to create tmp/git-commit2: %v", err)
+	}
+	if err := os.MkdirAll("tmp/nongit", 0o755); err != nil {
+		t.Fatalf("Failed to create tmp/nongit: %v", err)
+	}
 
 	cmd = exec.Command("git", "-C", "tmp/git-commit0", "init")
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		t.Logf("Warning: git init failed: %v", err)
+	}
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "init")
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		t.Logf("Warning: git init failed: %v", err)
+	}
 	// Create test file using Go's built-in function for cross-platform compatibility
-	os.WriteFile("tmp/git-commit2/test", []byte{}, 0o644)
+	if err := os.WriteFile("tmp/git-commit2/test", []byte{}, 0o644); err != nil {
+		t.Logf("Warning: failed to write test file: %v", err)
+	}
 
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "add", ".")
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		t.Logf("Warning: git add failed: %v", err)
+	}
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "commit", "-m", "test1")
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		t.Logf("Warning: git commit failed: %v", err)
+	}
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "add", ".")
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		t.Logf("Warning: git add failed: %v", err)
+	}
 	cmd = exec.Command("git", "-C", "tmp/git-commit2", "commit", "-m", "test2")
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		t.Logf("Warning: git commit failed: %v", err)
+	}
 
 	println("============")
 

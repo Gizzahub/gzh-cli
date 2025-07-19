@@ -21,16 +21,10 @@ type StreamingClient struct {
 	memoryPool     *MemoryPool
 	bufferPool     sync.Pool
 	requestMetrics *RequestMetrics
-	mu             sync.RWMutex
 }
 
 // StreamingRateLimiter manages API rate limiting for streaming.
-type StreamingRateLimiter struct {
-	remaining int
-	reset     time.Time
-	limit     int
-	mu        sync.RWMutex
-}
+type StreamingRateLimiter struct{}
 
 // MemoryPool manages reusable memory allocations.
 type MemoryPool struct {
@@ -321,7 +315,12 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 
 		repositories = make([]*Repository, 0, len(rawRepos))
 		for _, rawRepo := range rawRepos {
-			repo := sc.memoryPool.repositoryPool.Get().(*Repository)
+			repoInterface := sc.memoryPool.repositoryPool.Get()
+			repo, ok := repoInterface.(*Repository)
+			if !ok {
+				// Skip this entry if type assertion fails
+				continue
+			}
 			if err := json.Unmarshal(rawRepo, repo); err != nil {
 				sc.memoryPool.repositoryPool.Put(repo)
 				continue // Skip malformed entries
@@ -340,7 +339,12 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 
 		repositories = make([]*Repository, 0, len(response.Items))
 		for _, rawRepo := range response.Items {
-			repo := sc.memoryPool.repositoryPool.Get().(*Repository)
+			repoInterface := sc.memoryPool.repositoryPool.Get()
+			repo, ok := repoInterface.(*Repository)
+			if !ok {
+				// Skip this entry if type assertion fails
+				continue
+			}
 			if err := json.Unmarshal(rawRepo, repo); err != nil {
 				sc.memoryPool.repositoryPool.Put(repo)
 				continue
@@ -494,7 +498,12 @@ func (sc *StreamingClient) updateRequestMetrics(latency time.Duration) {
 
 // sendError sends an error to the result channel.
 func (sc *StreamingClient) sendError(resultChan chan<- RepositoryStream, err error) {
-	result := sc.memoryPool.resultPool.Get().(*RepositoryStream)
+	resultInterface := sc.memoryPool.resultPool.Get()
+	result, ok := resultInterface.(*RepositoryStream)
+	if !ok {
+		// Can't send error if type assertion fails
+		return
+	}
 	result.Error = err
 	result.Repository = nil
 	result.Metadata = StreamMetadata{

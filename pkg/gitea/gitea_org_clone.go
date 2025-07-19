@@ -44,7 +44,12 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log body close errors but don't fail the operation
+			fmt.Printf("Warning: failed to close response body: %v\n", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to get repository info: %s", resp.Status)
@@ -82,7 +87,12 @@ func List(ctx context.Context, org string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repositories: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log body close errors but don't fail the operation
+			fmt.Printf("Warning: failed to close response body: %v\n", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to get repositories: %s", resp.Status)
@@ -95,7 +105,7 @@ func List(ctx context.Context, org string) ([]string, error) {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	var repoNames []string
+	repoNames := make([]string, 0, len(repos))
 	for _, repo := range repos {
 		repoNames = append(repoNames, repo.Name)
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestDefaultSshOptions(t *testing.T) {
-	opts := defaultSshOptions()
+	opts := defaultSSHOptions()
 
 	assert.NotEmpty(t, opts.configPath)
 	assert.NotEmpty(t, opts.storePath)
@@ -19,7 +19,7 @@ func TestDefaultSshOptions(t *testing.T) {
 }
 
 func TestNewSshCmd(t *testing.T) {
-	cmd := newSshCmd()
+	cmd := newSSHCmd()
 
 	assert.Equal(t, "ssh", cmd.Use)
 	assert.Equal(t, "Manage SSH configuration files", cmd.Short)
@@ -48,7 +48,7 @@ func TestNewSshCmd(t *testing.T) {
 }
 
 func TestSshSaveCmd(t *testing.T) {
-	cmd := newSshSaveCmd()
+	cmd := newSSHSaveCmd()
 
 	assert.Equal(t, "save", cmd.Use)
 	assert.Equal(t, "Save current SSH config", cmd.Short)
@@ -63,7 +63,7 @@ func TestSshSaveCmd(t *testing.T) {
 }
 
 func TestSshLoadCmd(t *testing.T) {
-	cmd := newSshLoadCmd()
+	cmd := newSSHLoadCmd()
 
 	assert.Equal(t, "load", cmd.Use)
 	assert.Equal(t, "Load a saved SSH config", cmd.Short)
@@ -77,7 +77,7 @@ func TestSshLoadCmd(t *testing.T) {
 }
 
 func TestSshListCmd(t *testing.T) {
-	cmd := newSshListCmd()
+	cmd := newSSHListCmd()
 
 	assert.Equal(t, "list", cmd.Use)
 	assert.Equal(t, "List saved SSH configs", cmd.Short)
@@ -97,7 +97,7 @@ func TestSshSaveLoad(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a test SSH config file
-	testSshConfigContent := `# SSH Config for testing
+	testSSHConfigContent := `# SSH Config for testing
 
 Host production-server
     HostName prod.example.com
@@ -127,7 +127,7 @@ Host *
 `
 
 	configPath := filepath.Join(configDir, "config")
-	err = os.WriteFile(configPath, []byte(testSshConfigContent), 0o644)
+	err = os.WriteFile(configPath, []byte(testSSHConfigContent), 0o644)
 	require.NoError(t, err)
 
 	t.Run("save SSH config", func(t *testing.T) {
@@ -153,7 +153,7 @@ Host *
 		// Verify saved content
 		savedContent, err := os.ReadFile(savedPath)
 		require.NoError(t, err)
-		assert.Equal(t, testSshConfigContent, string(savedContent))
+		assert.Equal(t, testSSHConfigContent, string(savedContent))
 	})
 
 	t.Run("load SSH config", func(t *testing.T) {
@@ -176,7 +176,7 @@ Host *
 		// Check content matches
 		loadedContent, err := os.ReadFile(targetPath)
 		require.NoError(t, err)
-		assert.Equal(t, testSshConfigContent, string(loadedContent))
+		assert.Equal(t, testSSHConfigContent, string(loadedContent))
 	})
 
 	t.Run("list SSH configs", func(t *testing.T) {
@@ -247,7 +247,7 @@ func TestSshDisplayConfigInfo(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Create test SSH config
-	testSshConfigContent := `Host web-server
+	testSSHConfigContent := `Host web-server
     HostName web.example.com
     User admin
     Port 2222
@@ -272,7 +272,7 @@ Host *
 `
 
 	configPath := filepath.Join(tempDir, "config")
-	err := os.WriteFile(configPath, []byte(testSshConfigContent), 0o644)
+	err := os.WriteFile(configPath, []byte(testSSHConfigContent), 0o644)
 	require.NoError(t, err)
 
 	opts := &sshOptions{}
@@ -326,7 +326,7 @@ Host *
 	err := os.WriteFile(configPath, []byte(testConfig), 0o644)
 	require.NoError(t, err)
 
-	hosts := opts.parseSshConfig(configPath)
+	hosts := opts.parseSSHConfig(configPath)
 
 	// Should have 4 hosts (excluding wildcard patterns)
 	assert.Len(t, hosts, 4)
@@ -456,7 +456,7 @@ func TestSshErrorCases(t *testing.T) {
 		require.NoError(t, err)
 
 		opts := &sshOptions{}
-		hosts := opts.parseSshConfig(invalidConfigPath)
+		hosts := opts.parseSSHConfig(invalidConfigPath)
 
 		// Should return empty list for invalid config
 		assert.Empty(t, hosts)
@@ -464,7 +464,7 @@ func TestSshErrorCases(t *testing.T) {
 
 	t.Run("parse non-existent SSH config", func(t *testing.T) {
 		opts := &sshOptions{}
-		hosts := opts.parseSshConfig("/non/existent/config")
+		hosts := opts.parseSSHConfig("/non/existent/config")
 
 		// Should return nil for non-existent file
 		assert.Nil(t, hosts)
@@ -490,7 +490,7 @@ Host single-quoted
 	err := os.WriteFile(configPath, []byte(testConfig), 0o644)
 	require.NoError(t, err)
 
-	hosts := opts.parseSshConfig(configPath)
+	hosts := opts.parseSSHConfig(configPath)
 
 	assert.Len(t, hosts, 2)
 

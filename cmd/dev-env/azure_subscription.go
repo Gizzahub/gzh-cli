@@ -397,7 +397,7 @@ func (m *AzureSubscriptionManager) loadSubscriptions() error {
 	output, err := cmd.Output()
 	if err != nil {
 		// If Azure CLI is not available or not authenticated, return empty list
-		return nil
+		return err
 	}
 
 	var subscriptions []struct {

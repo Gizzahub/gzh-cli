@@ -35,7 +35,7 @@ func init() {
 var registryListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "레지스트리 목록 조회",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		fmt.Printf("📋 레지스트리 목록 (구현 예정)\n")
 	},
 }
@@ -43,7 +43,7 @@ var registryListCmd = &cobra.Command{
 var registrySyncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "레지스트리 간 동기화",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		fmt.Printf("🔄 레지스트리 동기화 (구현 예정)\n")
 	},
 }
@@ -51,12 +51,12 @@ var registrySyncCmd = &cobra.Command{
 var registryCleanupCmd = &cobra.Command{
 	Use:   "cleanup",
 	Short: "레지스트리 정리",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		fmt.Printf("🧹 레지스트리 정리 (구현 예정)\n")
 	},
 }
 
-func runRegistry(cmd *cobra.Command, args []string) {
+func runRegistry(_ *cobra.Command, args []string) {
 	fmt.Printf("🏪 이미지 레지스트리 관리\n")
 	fmt.Printf("사용 가능한 하위 명령어: list, sync, cleanup\n")
 }

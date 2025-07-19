@@ -25,12 +25,18 @@ func (m *mockEventStorage) StoreEvent(ctx context.Context, event *GitHubEvent) e
 
 func (m *mockEventStorage) GetEvent(ctx context.Context, eventID string) (*GitHubEvent, error) {
 	args := m.Called(ctx, eventID)
-	return args.Get(0).(*GitHubEvent), args.Error(1)
+	if val, ok := args.Get(0).(*GitHubEvent); ok {
+		return val, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockEventStorage) ListEvents(ctx context.Context, filter *EventFilter, limit, offset int) ([]*GitHubEvent, error) {
 	args := m.Called(ctx, filter, limit, offset)
-	return args.Get(0).([]*GitHubEvent), args.Error(1)
+	if val, ok := args.Get(0).([]*GitHubEvent); ok {
+		return val, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *mockEventStorage) DeleteEvent(ctx context.Context, eventID string) error {
@@ -54,7 +60,10 @@ func (m *mockEventHandler) HandleEvent(ctx context.Context, event *GitHubEvent) 
 
 func (m *mockEventHandler) GetSupportedActions() []EventAction {
 	args := m.Called()
-	return args.Get(0).([]EventAction)
+	if val, ok := args.Get(0).([]EventAction); ok {
+		return val
+	}
+	return nil
 }
 
 func (m *mockEventHandler) GetPriority() int {
@@ -111,7 +120,8 @@ func TestEventProcessor_NewEventProcessor(t *testing.T) {
 	processor := NewEventProcessor(mockStorage, mockLogger)
 
 	assert.NotNil(t, processor)
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
 	assert.NotNil(t, impl.handlers)
 	assert.Equal(t, mockStorage, impl.storage)
 	assert.Equal(t, mockLogger, impl.logger)
@@ -182,7 +192,8 @@ func TestEventProcessor_ValidateSignature(t *testing.T) {
 	mockLogger := &mockLogger{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
 
 	tests := []struct {
 		name      string
@@ -285,7 +296,8 @@ func TestEventProcessor_RegisterEventHandler(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
 	assert.Contains(t, impl.handlers, EventTypePush)
 	assert.Len(t, impl.handlers[EventTypePush], 1)
 	assert.Equal(t, mockHandler, impl.handlers[EventTypePush][0])
@@ -307,7 +319,8 @@ func TestEventProcessor_RegisterEventHandler_Priority(t *testing.T) {
 	processor.RegisterEventHandler(EventTypePush, handler1)
 	processor.RegisterEventHandler(EventTypePush, handler2)
 
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
 	handlers := impl.handlers[EventTypePush]
 
 	// Should be sorted by priority (highest first)
@@ -328,7 +341,8 @@ func TestEventProcessor_UnregisterEventHandler(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
 	assert.NotContains(t, impl.handlers, EventTypePush)
 }
 
@@ -450,7 +464,8 @@ func TestEventMetrics(t *testing.T) {
 	mockLogger := &mockLogger{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
 
 	event := createTestEventForEventSystem()
 	mockStorage.On("StoreEvent", mock.Anything, event).Return(nil)
@@ -472,7 +487,8 @@ func TestHandlerSupportsAction(t *testing.T) {
 	mockLogger := &mockLogger{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
 
 	mockHandler := &mockEventHandler{}
 
@@ -556,7 +572,10 @@ func BenchmarkSignatureValidation(b *testing.B) {
 	mockLogger := &mockLogger{}
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
-	impl := processor.(*eventProcessorImpl)
+	impl, ok := processor.(*eventProcessorImpl)
+	if !ok {
+		b.Fatal("processor should be of type *eventProcessorImpl")
+	}
 
 	payload := []byte("test payload for benchmarking")
 	signature := "sha256=test-signature"

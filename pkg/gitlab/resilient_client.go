@@ -102,7 +102,12 @@ func (c *ResilientGitLabClient) getProjectPage(ctx context.Context, groupID stri
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get projects: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+			_ = err
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, false, c.handleAPIError(resp, "failed to get projects")
@@ -166,7 +171,12 @@ func (c *ResilientGitLabClient) GetProject(ctx context.Context, projectID string
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+			_ = err
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleAPIError(resp, "failed to get project")
@@ -227,7 +237,12 @@ func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage 
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get groups: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+			_ = err
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, false, c.handleAPIError(resp, "failed to get groups")

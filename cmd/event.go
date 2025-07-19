@@ -17,6 +17,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	outputFormatJSON = "json"
+	outputFormatYAML = "yaml"
+)
+
 // NewEventCmd creates a new event command.
 func NewEventCmd() *cobra.Command {
 	// Command flags - declare as local variables
@@ -178,7 +183,9 @@ func runEventServer(cmd *cobra.Command, args []string, host string, port int, se
 		metrics := processor.GetMetrics()
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(metrics)
+		if err := json.NewEncoder(w).Encode(metrics); err != nil {
+			http.Error(w, "Failed to encode metrics", http.StatusInternalServerError)
+		}
 	})
 
 	// Start server
@@ -314,7 +321,7 @@ func runEventGet(cmd *cobra.Command, args []string, outputFormat string) error {
 	}
 
 	switch outputFormat {
-	case "yaml":
+	case outputFormatYAML:
 		return outputYAML(event)
 	default:
 		return outputJSON(event)
@@ -356,9 +363,9 @@ func runEventMetrics(cmd *cobra.Command, args []string, outputFormat string) err
 	}
 
 	switch outputFormat {
-	case "json":
+	case outputFormatJSON:
 		return outputJSON(metrics)
-	case "yaml":
+	case outputFormatYAML:
 		return outputYAML(metrics)
 	default:
 		return outputMetricsTable(metrics)
@@ -392,7 +399,11 @@ func runEventTest(cmd *cobra.Command, args []string, eventType, action, payload 
 		if err != nil {
 			return fmt.Errorf("failed to open payload file: %w", err)
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				// Log error but don't override main error
+			}
+		}()
 
 		if err := json.NewDecoder(file).Decode(&testPayload); err != nil {
 			return fmt.Errorf("failed to parse payload JSON: %w", err)
@@ -409,7 +420,7 @@ func runEventTest(cmd *cobra.Command, args []string, eventType, action, payload 
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", webhookURL, bytes.NewReader(jsonPayload))
+	req, err := http.NewRequestWithContext(cmd.Context(), "POST", webhookURL, bytes.NewReader(jsonPayload))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -424,7 +435,11 @@ func runEventTest(cmd *cobra.Command, args []string, eventType, action, payload 
 	if err != nil {
 		return fmt.Errorf("failed to send test webhook: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	fmt.Printf("Test webhook sent successfully\n")
 	fmt.Printf("Status: %s\n", resp.Status)

@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewAlwaysLatestCmd creates the always-latest command for keeping development tools updated.
 func NewAlwaysLatestCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "always-latest",

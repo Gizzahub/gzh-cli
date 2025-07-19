@@ -24,7 +24,7 @@ type Middleware interface {
 // CacheEntry represents a cached response.
 type CacheEntry struct {
 	Response  *http.Response `json:"response"`
-	CreatedAt time.Time      `json:"created_at"`
+	CreatedAt time.Time      `json:"createdAt"`
 	TTL       time.Duration  `json:"ttl"`
 }
 
@@ -107,7 +107,7 @@ func NewHTTPClient(
 
 // Do implements HTTPClient interface.
 func (c *HTTPClientImpl) Do(ctx context.Context, req *Request) (*Response, error) {
-	httpReq, err := http.NewRequest(req.Method, req.URL, req.Body)
+	httpReq, err := http.NewRequestWithContext(ctx, req.Method, req.URL, req.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,9 @@ func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (
 		return nil, err
 	}
 
-	resp.Body.Close()
+	if err := resp.Body.Close(); err != nil {
+		// Log error but continue
+	}
 
 	headers := make(map[string]string)
 
@@ -312,12 +314,12 @@ func (c *HTTPClientImpl) SetAPIKey(key, value string) {
 }
 
 // AddRequestMiddleware implements HTTPClient interface.
-func (c *HTTPClientImpl) AddRequestMiddleware(middleware RequestMiddleware) {
+func (c *HTTPClientImpl) AddRequestMiddleware(_ RequestMiddleware) {
 	// Implementation would wrap the middleware
 }
 
 // AddResponseMiddleware implements HTTPClient interface.
-func (c *HTTPClientImpl) AddResponseMiddleware(middleware ResponseMiddleware) {
+func (c *HTTPClientImpl) AddResponseMiddleware(_ ResponseMiddleware) {
 	// Implementation would wrap the middleware
 }
 
@@ -367,7 +369,7 @@ func NewRetryPolicy(config *RetryPolicyConfig, logger Logger) RetryPolicy {
 }
 
 // ShouldRetry implements RetryPolicy interface.
-func (rp *RetryPolicyImpl) ShouldRetry(ctx context.Context, req *Request, resp *Response, err error, attempt int) bool {
+func (rp *RetryPolicyImpl) ShouldRetry(_ context.Context, req *Request, resp *Response, err error, attempt int) bool {
 	if attempt >= rp.maxRetries {
 		return false
 	}
@@ -377,7 +379,7 @@ func (rp *RetryPolicyImpl) ShouldRetry(ctx context.Context, req *Request, resp *
 }
 
 // GetRetryDelay implements RetryPolicy interface.
-func (rp *RetryPolicyImpl) GetRetryDelay(ctx context.Context, attempt int) time.Duration {
+func (rp *RetryPolicyImpl) GetRetryDelay(_ context.Context, attempt int) time.Duration {
 	delay := rp.baseDelay * time.Duration(attempt)
 	if delay > rp.maxDelay {
 		delay = rp.maxDelay
@@ -455,7 +457,7 @@ func (rl *RateLimiterImpl) Wait(ctx context.Context) error {
 }
 
 // Allow implements RateLimiter interface.
-func (rl *RateLimiterImpl) Allow(ctx context.Context) bool {
+func (rl *RateLimiterImpl) Allow(_ context.Context) bool {
 	select {
 	case <-rl.tokens:
 		return true
@@ -522,7 +524,7 @@ func NewCache(config *CacheConfig, logger Logger) Cache {
 }
 
 // Get implements Cache interface.
-func (c *CacheImpl) Get(ctx context.Context, key string) (*http.Response, bool) {
+func (c *CacheImpl) Get(_ context.Context, key string) (*http.Response, bool) {
 	entry, exists := c.cache[key]
 	if !exists {
 		return nil, false
@@ -537,7 +539,7 @@ func (c *CacheImpl) Get(ctx context.Context, key string) (*http.Response, bool) 
 }
 
 // Set implements Cache interface.
-func (c *CacheImpl) Set(ctx context.Context, key string, response *http.Response, ttl time.Duration) {
+func (c *CacheImpl) Set(_ context.Context, key string, response *http.Response, ttl time.Duration) {
 	c.cache[key] = &CacheEntry{
 		Response:  response,
 		CreatedAt: time.Now(),

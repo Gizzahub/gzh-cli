@@ -12,20 +12,20 @@ import (
 // RiskAssessment represents a repository risk assessment.
 type RiskAssessment struct {
 	Repository      string              `json:"repository"`
-	OverallScore    float64             `json:"overall_score"`
+	OverallScore    float64             `json:"overallScore"`
 	Severity        string              `json:"severity"`
 	Categories      RiskCategories      `json:"categories"`
 	Vulnerabilities []RiskVulnerability `json:"vulnerabilities"`
 	Recommendations []string            `json:"recommendations"`
-	LastAssessed    time.Time           `json:"last_assessed"`
+	LastAssessed    time.Time           `json:"lastAssessed"`
 }
 
 // RiskCategories represents different risk category scores.
 type RiskCategories struct {
-	AccessControl       float64 `json:"access_control"`
-	DataProtection      float64 `json:"data_protection"`
-	InfrastructureSec   float64 `json:"infrastructure_security"`
-	OperationalSecurity float64 `json:"operational_security"`
+	AccessControl       float64 `json:"accessControl"`
+	DataProtection      float64 `json:"dataProtection"`
+	InfrastructureSec   float64 `json:"infrastructureSecurity"`
+	OperationalSecurity float64 `json:"operationalSecurity"`
 }
 
 // RiskVulnerability represents a specific vulnerability.
@@ -34,7 +34,7 @@ type RiskVulnerability struct {
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	Severity    string  `json:"severity"`
-	CVSSScore   float64 `json:"cvss_score"`
+	CVSSScore   float64 `json:"cvssScore"`
 	Category    string  `json:"category"`
 	Remediation string  `json:"remediation"`
 }
@@ -263,7 +263,11 @@ func displayRiskAssessmentCSV(assessments []RiskAssessment, outputFile string) e
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				fmt.Printf("Warning: failed to close file: %v\n", err)
+			}
+		}()
 
 		writer = csv.NewWriter(file)
 	} else {
@@ -511,12 +515,17 @@ func generateRiskAssessmentHTML(assessments []RiskAssessment, organization strin
 </body>
 </html>`, organization, organization, time.Now().Format("2006-01-02 15:04:05"),
 		len(assessments), summary["average_score"],
-		summary["severity_distribution"].(map[string]int)["critical"],
+		func() int {
+			if dist, ok := summary["severity_distribution"].(map[string]int); ok {
+				return dist["critical"]
+			}
+			return 0
+		}(),
 		generateTableRows(assessments))
 }
 
 func generateTableRows(assessments []RiskAssessment) string {
-	var rows []string
+	rows := make([]string, 0, len(assessments))
 
 	for _, assessment := range assessments {
 		severityClass := fmt.Sprintf("severity-%s", assessment.Severity)

@@ -36,8 +36,14 @@ configuration files, use:
 	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
 	cmd.Flags().StringVarP(&o.orgName, "orgName", "o", o.orgName, "orgName")
 
-	cmd.MarkFlagRequired("targetPath")
-	cmd.MarkFlagRequired("orgName")
+	if err := cmd.MarkFlagRequired("targetPath"); err != nil {
+		// Error marking flag required is unlikely in practice
+		panic(err)
+	}
+	if err := cmd.MarkFlagRequired("orgName"); err != nil {
+		// Error marking flag required is unlikely in practice
+		panic(err)
+	}
 
 	return cmd
 }
@@ -51,7 +57,7 @@ func (o *genConfigGithubOptions) run(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		// return err
 		// return fmt.Errorf("failed to refresh repositories: %w", err)
-		return nil
+		return err
 	}
 
 	return nil

@@ -34,7 +34,7 @@ func TestFileChangeEventDeduplication(t *testing.T) {
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
 
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	// Create test events with same file path but different timestamps
 	events := []FileChangeEvent{
@@ -67,7 +67,7 @@ func TestShouldIgnorePatterns(t *testing.T) {
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
 
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	tests := []struct {
 		path     string
@@ -98,7 +98,7 @@ func TestMatchesWatchPatterns(t *testing.T) {
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
 
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	tests := []struct {
 		path     string
@@ -129,7 +129,7 @@ func TestMapOperation(t *testing.T) {
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
 
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	tests := []struct {
 		op       uint32
@@ -159,7 +159,7 @@ func TestWatcherStats(t *testing.T) {
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
 
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	// Initial stats should be zero
 	assert.Equal(t, int64(0), watcher.stats.TotalEvents)
@@ -173,7 +173,7 @@ func TestValidateRepositoryPath(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "repo-sync-test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	// Create a mock .git directory
 	gitDir := filepath.Join(tempDir, ".git")
@@ -235,18 +235,18 @@ func TestCalculateChecksum(t *testing.T) {
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
 
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	// Create a temporary file for checksum testing
 	tempFile, err := os.CreateTemp("", "checksum-test")
 	require.NoError(t, err)
 
-	defer os.Remove(tempFile.Name())
+	defer func() { _ = os.Remove(tempFile.Name()) }()
 
 	testContent := "Hello, World!"
 	_, err = tempFile.WriteString(testContent)
 	require.NoError(t, err)
-	tempFile.Close()
+	_ = tempFile.Close()
 
 	checksum, err := watcher.calculateChecksum(tempFile.Name())
 	assert.NoError(t, err)
@@ -266,7 +266,7 @@ func TestMapOperationWithFsnotify(t *testing.T) {
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
 
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	tests := []struct {
 		op       fsnotify.Op

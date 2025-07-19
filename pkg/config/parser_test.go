@@ -247,6 +247,7 @@ providers:
 `,
 			wantErr: false,
 			validateFunc: func(t *testing.T, config *Config) {
+				t.Helper()
 				assert.Equal(t, "github", config.DefaultProvider)
 				assert.Len(t, config.Providers, 1)
 
@@ -277,6 +278,7 @@ providers:
 `,
 			wantErr: false,
 			validateFunc: func(t *testing.T, config *Config) {
+				t.Helper()
 				assert.Equal(t, "token-with-special!@#$%chars", config.Providers["github"].Token)
 				assert.Equal(t, "org-with-special/chars", config.Providers["github"].Orgs[0].Name)
 				assert.Equal(t, "/path/with spaces/and-special&chars", config.Providers["github"].Orgs[0].CloneDir)

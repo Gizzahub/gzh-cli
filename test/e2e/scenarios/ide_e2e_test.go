@@ -76,8 +76,12 @@ func TestIDE_MonitorDaemon_E2E(t *testing.T) {
 		env.AssertFileExists("ide-monitor.pid")
 
 		// Stop the daemon
-		cmd.Process.Kill()
-		cmd.Wait()
+		if err := cmd.Process.Kill(); err != nil {
+			t.Logf("Warning: failed to kill process: %v", err)
+		}
+		if err := cmd.Wait(); err != nil {
+			t.Logf("Warning: process wait failed: %v", err)
+		}
 	}
 }
 

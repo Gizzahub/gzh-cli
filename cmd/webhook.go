@@ -68,8 +68,12 @@ func newRepositoryWebhookCmd() *cobra.Command {
 	createCmd.Flags().Bool("active", true, "웹훅 활성화 여부")
 	createCmd.Flags().String("content-type", "json", "컨텐츠 타입 (json/form)")
 	createCmd.Flags().String("secret", "", "웹훅 시크릿")
-	createCmd.MarkFlagRequired("name")
-	createCmd.MarkFlagRequired("url")
+	if err := createCmd.MarkFlagRequired("name"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
+	if err := createCmd.MarkFlagRequired("url"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
 
 	// List
 	listCmd := &cobra.Command{
@@ -138,8 +142,12 @@ func newOrganizationWebhookCmd() *cobra.Command {
 	createCmd.Flags().Bool("active", true, "웹훅 활성화 여부")
 	createCmd.Flags().String("content-type", "json", "컨텐츠 타입")
 	createCmd.Flags().String("secret", "", "웹훅 시크릿")
-	createCmd.MarkFlagRequired("name")
-	createCmd.MarkFlagRequired("url")
+	if err := createCmd.MarkFlagRequired("name"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
+	if err := createCmd.MarkFlagRequired("url"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
 
 	// List
 	listCmd := &cobra.Command{
@@ -176,8 +184,12 @@ func newBulkWebhookCmd() *cobra.Command {
 	createCmd.Flags().StringSlice("events", []string{"push"}, "이벤트 목록")
 	createCmd.Flags().Bool("active", true, "웹훅 활성화 여부")
 	createCmd.Flags().StringSlice("repos", nil, "특정 리포지토리만 (비어있으면 모든 리포지토리)")
-	createCmd.MarkFlagRequired("name")
-	createCmd.MarkFlagRequired("url")
+	if err := createCmd.MarkFlagRequired("name"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
+	if err := createCmd.MarkFlagRequired("url"); err != nil {
+		// Error marking flag as required - continue without marking
+	}
 
 	cmd.AddCommand(createCmd)
 

@@ -13,7 +13,6 @@ type AdaptiveRateLimiter struct {
 	resetTime         time.Time
 	lastRequest       time.Time
 	requestHistory    []time.Time
-	avgRequestTime    time.Duration
 	backoffMultiplier float64
 	maxBackoff        time.Duration
 

@@ -91,7 +91,9 @@ type giteaClonerImpl struct {
 func (g *giteaClonerImpl) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
-		g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token)
+		if err := g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token); err != nil {
+			return fmt.Errorf("failed to set Gitea token: %w", err)
+		}
 	}
 
 	// Call the existing RefreshAll function
@@ -103,7 +105,9 @@ func (g *giteaClonerImpl) CloneOrganization(ctx context.Context, orgName, target
 func (g *giteaClonerImpl) CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
-		g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token)
+		if err := g.Environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.Token); err != nil {
+			return fmt.Errorf("failed to set Gitea token: %w", err)
+		}
 	}
 
 	// Implementation would call appropriate Gitea API functions

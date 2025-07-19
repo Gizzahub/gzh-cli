@@ -55,8 +55,8 @@ func ExampleClone() {
 	// Create a temporary directory for cloning
 	tempDir := "/tmp/github-clone-example"
 
-	os.MkdirAll(tempDir, 0o755)
-	defer os.RemoveAll(tempDir)
+	_ = os.MkdirAll(tempDir, 0o755)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	// Clone a repository
 	err := github.Clone(ctx, tempDir, "octocat", "Hello-World")
@@ -79,8 +79,8 @@ func ExampleCachedGitHubClient_workflow() {
 	targetDir := "/tmp/github-workflow-example"
 
 	// Step 1: Create target directory
-	os.MkdirAll(targetDir, 0o755)
-	defer os.RemoveAll(targetDir)
+	_ = os.MkdirAll(targetDir, 0o755)
+	defer func() { _ = os.RemoveAll(targetDir) }()
 
 	// Step 2: List all repositories in the organization
 	repos, err := github.List(ctx, orgName)

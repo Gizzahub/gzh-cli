@@ -527,7 +527,10 @@ func (km *KubernetesNetworkManager) GenerateIstioVirtualService(namespace string
 		},
 	}
 
-	spec := manifest["spec"].(map[string]interface{})
+	spec, ok := manifest["spec"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type in manifest")
+	}
 
 	if len(vs.Gateways) > 0 {
 		spec["gateways"] = vs.Gateways
@@ -590,7 +593,9 @@ func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[s
 				},
 			}
 			if r.Destination.Subset != "" {
-				rm["destination"].(map[string]interface{})["subset"] = r.Destination.Subset
+				if dest, ok := rm["destination"].(map[string]interface{}); ok {
+					dest["subset"] = r.Destination.Subset
+				}
 			}
 
 			if r.Weight > 0 {
@@ -612,7 +617,9 @@ func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[s
 			"attempts": route.Retries.Attempts,
 		}
 		if route.Retries.PerTryTimeout != "" {
-			httpRoute["retries"].(map[string]interface{})["perTryTimeout"] = route.Retries.PerTryTimeout
+			if retries, ok := httpRoute["retries"].(map[string]interface{}); ok {
+				retries["perTryTimeout"] = route.Retries.PerTryTimeout
+			}
 		}
 	}
 
@@ -662,7 +669,10 @@ func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace strin
 		},
 	}
 
-	spec := manifest["spec"].(map[string]interface{})
+	spec, ok := manifest["spec"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type in manifest")
+	}
 
 	if dr.TrafficPolicy != nil {
 		tp := make(map[string]interface{})
@@ -778,7 +788,10 @@ func (km *KubernetesNetworkManager) GenerateIstioServiceEntry(namespace string, 
 		},
 	}
 
-	spec := manifest["spec"].(map[string]interface{})
+	spec, ok := manifest["spec"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type in manifest")
+	}
 
 	if se.Resolution != "" {
 		spec["resolution"] = se.Resolution
@@ -906,7 +919,10 @@ func (km *KubernetesNetworkManager) GenerateLinkerdServiceProfile(namespace stri
 		"spec": map[string]interface{}{},
 	}
 
-	spec := manifest["spec"].(map[string]interface{})
+	spec, ok := manifest["spec"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type in manifest")
+	}
 
 	if len(sp.Routes) > 0 {
 		routes := make([]map[string]interface{}, 0, len(sp.Routes))
@@ -981,7 +997,10 @@ func (km *KubernetesNetworkManager) GenerateLinkerdTrafficSplit(namespace string
 		},
 	}
 
-	spec := manifest["spec"].(map[string]interface{})
+	spec, ok := manifest["spec"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid spec type in manifest")
+	}
 
 	if len(ts.Backends) > 0 {
 		backends := make([]map[string]interface{}, 0, len(ts.Backends))

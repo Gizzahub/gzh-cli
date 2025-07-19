@@ -776,17 +776,23 @@ func setProxyWithEnv(httpProxy, httpsProxy, socksProxy string, environment env.E
 	fmt.Printf("🌐 Setting proxy configuration...\n")
 
 	if httpProxy != "" {
-		environment.Set("http_proxy", httpProxy)
+		if err := environment.Set("http_proxy", httpProxy); err != nil {
+			return fmt.Errorf("failed to set http_proxy: %w", err)
+		}
 		fmt.Printf("   HTTP proxy: %s\n", httpProxy)
 	}
 
 	if httpsProxy != "" {
-		environment.Set("https_proxy", httpsProxy)
+		if err := environment.Set("https_proxy", httpsProxy); err != nil {
+			return fmt.Errorf("failed to set https_proxy: %w", err)
+		}
 		fmt.Printf("   HTTPS proxy: %s\n", httpsProxy)
 	}
 
 	if socksProxy != "" {
-		environment.Set("socks_proxy", socksProxy)
+		if err := environment.Set("socks_proxy", socksProxy); err != nil {
+			return fmt.Errorf("failed to set socks_proxy: %w", err)
+		}
 		fmt.Printf("   SOCKS proxy: %s\n", socksProxy)
 	}
 
@@ -803,10 +809,18 @@ func clearProxy() error {
 func clearProxyWithEnv(environment env.Environment) error {
 	fmt.Printf("🧹 Clearing proxy configuration...\n")
 
-	environment.Unset("http_proxy")
-	environment.Unset("https_proxy")
-	environment.Unset("socks_proxy")
-	environment.Unset("ftp_proxy")
+	if err := environment.Unset("http_proxy"); err != nil {
+		return fmt.Errorf("failed to unset http_proxy: %w", err)
+	}
+	if err := environment.Unset("https_proxy"); err != nil {
+		return fmt.Errorf("failed to unset https_proxy: %w", err)
+	}
+	if err := environment.Unset("socks_proxy"); err != nil {
+		return fmt.Errorf("failed to unset socks_proxy: %w", err)
+	}
+	if err := environment.Unset("ftp_proxy"); err != nil {
+		return fmt.Errorf("failed to unset ftp_proxy: %w", err)
+	}
 
 	fmt.Printf("✅ Proxy configuration cleared\n")
 
@@ -875,7 +889,11 @@ func addHostEntry(ip, host string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open hosts file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	if _, err := file.WriteString(entry); err != nil {
 		return fmt.Errorf("failed to write host entry: %w", err)
@@ -898,7 +916,7 @@ func removeHostEntry(host string) error {
 
 	lines := strings.Split(string(content), "\n")
 
-	var newLines []string
+	newLines := make([]string, 0, len(lines))
 
 	removed := false
 
@@ -942,7 +960,11 @@ func showHostsFile() error {
 	if err != nil {
 		return fmt.Errorf("failed to open hosts file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	lineNum := 1

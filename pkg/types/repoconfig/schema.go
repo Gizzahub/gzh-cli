@@ -121,11 +121,11 @@ type BranchProtectionRule struct {
 
 // WebhookConfig represents webhook configuration.
 type WebhookConfig struct {
-	URL         string   `yaml:"url"`
-	Events      []string `yaml:"events"`
-	Active      *bool    `yaml:"active,omitempty"`
-	ContentType string   `yaml:"content_type,omitempty"`
-	Secret      string   `yaml:"secret,omitempty"`
+	URL         string   `yaml:"url" json:"url"`
+	Events      []string `yaml:"events" json:"events"`
+	Active      *bool    `yaml:"active,omitempty" json:"active,omitempty"`
+	ContentType string   `yaml:"content_type,omitempty" json:"content_type,omitempty"`
+	Secret      string   `yaml:"secret,omitempty" json:"secret,omitempty"`
 }
 
 // PermissionSettings represents permission-related settings.

@@ -23,6 +23,7 @@ const (
 )
 
 func skipIfNoTestOrg(t *testing.T) {
+	t.Helper()
 	if os.Getenv(testOrgEnvVar) == "" || os.Getenv(tokenEnvVar) == "" {
 		t.Skipf("Skipping integration test: %s and %s environment variables must be set", testOrgEnvVar, tokenEnvVar)
 	}
@@ -39,7 +40,7 @@ func TestIntegration_RepoConfig_EndToEnd(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "repo-config-integration-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Create a test repository configuration
 	repoConfig := &config.RepoConfig{
@@ -352,57 +353,4 @@ func TestIntegration_RepoConfig_ErrorHandling(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "404")
 	})
-}
-
-// Helper functions
-// Note: boolPtr and intPtr are already defined in fixtures.go.
-func stringPtr(s string) *string {
-	return &s
-}
-
-// Test fixture creation.
-func createTestRepoConfig(org string) *config.RepoConfig {
-	return &config.RepoConfig{
-		Version:      "1.0.0",
-		Organization: org,
-		Templates: map[string]*config.RepoTemplate{
-			"test-template": {
-				Description: "Test template for integration tests",
-				Settings: &config.RepoSettings{
-					Private:          boolPtr(false),
-					HasIssues:        boolPtr(true),
-					HasWiki:          boolPtr(false),
-					HasProjects:      boolPtr(false),
-					AllowSquashMerge: boolPtr(true),
-					AllowMergeCommit: boolPtr(true),
-					AllowRebaseMerge: boolPtr(true),
-				},
-				Security: &config.SecuritySettings{
-					VulnerabilityAlerts: boolPtr(true),
-					SecretScanning:      boolPtr(false),
-				},
-			},
-		},
-		Repositories: &config.RepoTargets{
-			Specific: []config.RepoSpecificConfig{
-				{
-					Name:     "test-*",
-					Template: "test-template",
-				},
-			},
-		},
-	}
-}
-
-// Performance test helper.
-func measureOperationTime(t *testing.T, operation string, fn func() error) {
-	start := time.Now()
-	err := fn()
-	duration := time.Since(start)
-
-	if err != nil {
-		t.Errorf("%s failed: %v", operation, err)
-	} else {
-		t.Logf("%s completed in %v", operation, duration)
-	}
 }

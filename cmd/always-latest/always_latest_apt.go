@@ -40,7 +40,7 @@ func defaultAlwaysLatestAptOptions() *alwaysLatestAptOptions {
 	}
 }
 
-func newAlwaysLatestAptCmd(ctx context.Context) *cobra.Command {
+func newAlwaysLatestAptCmd(_ context.Context) *cobra.Command {
 	o := defaultAlwaysLatestAptOptions()
 
 	cmd := &cobra.Command{
@@ -101,7 +101,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestAptOptions) run(_ *cobra.Command, args []string) error {
+func (o *alwaysLatestAptOptions) run(_ *cobra.Command, _ []string) error {
 	// Check if APT is available
 	if !o.isAptInstalled() {
 		return fmt.Errorf("APT is not available on this system")

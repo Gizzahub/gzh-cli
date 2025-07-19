@@ -32,7 +32,9 @@ func TestOSEnvironment(t *testing.T) {
 	}
 
 	// Clean up
-	env.Unset(key)
+	if err := env.Unset(key); err != nil {
+		t.Logf("Warning: failed to unset environment variable: %v", err)
+	}
 }
 
 func TestMockEnvironment(t *testing.T) {
@@ -49,7 +51,9 @@ func TestMockEnvironment(t *testing.T) {
 	}
 
 	// Test setting new value
-	env.Set("NEW_VAR", "new_value")
+	if err := env.Set("NEW_VAR", "new_value"); err != nil {
+		t.Fatalf("Failed to set NEW_VAR: %v", err)
+	}
 
 	newValue := env.Get("NEW_VAR")
 	if newValue != "new_value" {
@@ -63,7 +67,9 @@ func TestMockEnvironment(t *testing.T) {
 	}
 
 	// Test Expand
-	env.Set("GREETING", "Hello")
+	if err := env.Set("GREETING", "Hello"); err != nil {
+		t.Fatalf("Failed to set GREETING: %v", err)
+	}
 
 	expanded := env.Expand("$GREETING World")
 	if expanded != "Hello World" {

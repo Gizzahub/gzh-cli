@@ -16,7 +16,9 @@ func newVersionCmd(version string) *cobra.Command {
 			if version == "" {
 				version = "dev"
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "gz version %s\n", version)
+			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "gz version %s\n", version); err != nil {
+				// Error writing version info - silently fail
+			}
 		},
 	}
 }

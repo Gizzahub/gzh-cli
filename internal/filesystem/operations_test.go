@@ -49,7 +49,7 @@ func TestFileSystemImpl_MkdirAll(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
@@ -110,7 +110,7 @@ func TestFileSystemImpl_ReadFile(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.filename)
@@ -185,7 +185,7 @@ func TestFileSystemImpl_WriteFile(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
@@ -193,8 +193,12 @@ func TestFileSystemImpl_WriteFile(t *testing.T) {
 			// Create existing file for overwrite test
 			if tt.name == "overwrite existing file" {
 				dir := filepath.Dir(targetPath)
-				os.MkdirAll(dir, 0o755)
-				os.WriteFile(targetPath, []byte("Original content"), 0o644)
+				if err := os.MkdirAll(dir, 0o755); err != nil {
+					t.Errorf("failed to create directory: %v", err)
+				}
+				if err := os.WriteFile(targetPath, []byte("Original content"), 0o644); err != nil {
+					t.Errorf("failed to write test file: %v", err)
+				}
 			}
 
 			err = fs.WriteFile(context.Background(), targetPath, tt.content, tt.perm)
@@ -251,7 +255,7 @@ func TestFileSystemImpl_RemoveAll(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
@@ -319,7 +323,7 @@ func TestFileSystemImpl_Exists(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			fs := NewFileSystem(nil, nil)
 			targetPath := filepath.Join(tmpDir, tt.path)
@@ -377,7 +381,7 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 		},
 		{
 			name:        "list empty directory",
-			setup:       func(dir string) error { return nil },
+			setup:       func(_ string) error { return nil },
 			wantEntries: []string{},
 			wantErr:     false,
 		},
@@ -395,7 +399,7 @@ func TestFileSystemImpl_ListDir(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "fs-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			testDir := filepath.Join(tmpDir, "test-dir")
 

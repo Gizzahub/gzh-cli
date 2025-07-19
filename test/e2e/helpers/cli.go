@@ -211,7 +211,7 @@ func FindProjectRoot() (string, error) {
 }
 
 // WaitForOutput waits for specific output from a running command.
-func WaitForOutput(cmd *exec.Cmd, expectedOutput string, timeout time.Duration) error {
+func WaitForOutput(cmd *exec.Cmd, _ string, timeout time.Duration) error {
 	done := make(chan error, 1)
 
 	go func() {
@@ -226,7 +226,10 @@ func WaitForOutput(cmd *exec.Cmd, expectedOutput string, timeout time.Duration) 
 	case err := <-done:
 		return err
 	case <-time.After(timeout):
-		cmd.Process.Kill()
+		if err := cmd.Process.Kill(); err != nil {
+			// Log error but don't fail the test
+			_ = err
+		}
 		return context.DeadlineExceeded
 	}
 }

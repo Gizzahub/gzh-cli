@@ -43,7 +43,7 @@ func NewTestFixtures() (*TestFixtures, error) {
 // Cleanup removes temporary files.
 func (f *TestFixtures) Cleanup() {
 	if f.BaseDir != "" {
-		os.RemoveAll(f.BaseDir)
+		_ = os.RemoveAll(f.BaseDir)
 	}
 }
 

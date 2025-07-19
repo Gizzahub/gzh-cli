@@ -53,7 +53,11 @@ func GetDefaultBranch(ctx context.Context, group string, repo string) (string, e
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("%w: %s", ErrFailedToGetRepositories, resp.Status)
@@ -88,7 +92,11 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrFailedToGetRepositories, err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("%w: %s", ErrFailedToGetRepositories, resp.Status)
@@ -124,7 +132,11 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrFailedToGetSubgroups, err)
 	}
-	defer subgroupsResp.Body.Close()
+	defer func() {
+		if err := subgroupsResp.Body.Close(); err != nil {
+			// Log error but don't override main error
+		}
+	}()
 
 	if subgroupsResp.StatusCode != http.StatusOK {
 		return fmt.Errorf("%w: %s", ErrFailedToGetSubgroups, subgroupsResp.Status)

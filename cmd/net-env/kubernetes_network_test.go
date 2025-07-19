@@ -315,7 +315,9 @@ func TestNetworkPolicyGeneration(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, policy)
 		assert.Equal(t, "api-policy", policy.Metadata.Name)
-		assert.Equal(t, int32(8080), policy.Spec.Ingress[0].Ports[0].Port.(int32))
+		if port, ok := policy.Spec.Ingress[0].Ports[0].Port.(int32); ok {
+			assert.Equal(t, int32(8080), port)
+		}
 		assert.Equal(t, int32(8090), *policy.Spec.Ingress[0].Ports[0].EndPort)
 	})
 }

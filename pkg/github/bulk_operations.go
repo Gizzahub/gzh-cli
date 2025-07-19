@@ -146,7 +146,9 @@ func (b *BulkOperationsManager) RefreshAllWithWorkerPool(ctx context.Context,
 			}
 
 			if bar != nil {
-				bar.Add(1)
+				if err := bar.Add(1); err != nil {
+					// Progress bar error is not critical
+				}
 			}
 
 		case <-ctx.Done():
@@ -180,6 +182,10 @@ func (b *BulkOperationsManager) processRepositoryJob(ctx context.Context,
 		}
 
 		return b.executeGitOperation(ctx, job.Path, "pull")
+
+	case workerpool.OperationConfig:
+		// Config operation - placeholder for configuration updates
+		return fmt.Errorf("config operation not yet implemented")
 
 	default:
 		return fmt.Errorf("unknown operation: %s", job.Operation)

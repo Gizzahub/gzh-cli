@@ -488,7 +488,7 @@ func (nta *NetworkTopologyAnalyzer) AnalyzeNetworkTopology(ctx context.Context) 
 
 // mapNetworks maps detected networks to topology networks.
 func (nta *NetworkTopologyAnalyzer) mapNetworks(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyNetwork, error) {
-	var topologyNetworks []TopologyNetwork
+	topologyNetworks := make([]TopologyNetwork, 0, len(containerEnv.Networks))
 
 	for _, network := range containerEnv.Networks {
 		topologyNetwork := TopologyNetwork{
@@ -528,7 +528,7 @@ func (nta *NetworkTopologyAnalyzer) mapNetworks(ctx context.Context, containerEn
 
 // mapContainers maps detected containers to topology containers.
 func (nta *NetworkTopologyAnalyzer) mapContainers(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyContainer, error) {
-	var topologyContainers []TopologyContainer
+	topologyContainers := make([]TopologyContainer, 0, len(containerEnv.RunningContainers))
 
 	for _, container := range containerEnv.RunningContainers {
 		topologyContainer := TopologyContainer{
@@ -625,7 +625,7 @@ func (nta *NetworkTopologyAnalyzer) discoverServices(ctx context.Context, contai
 	}
 
 	// Convert map to slice
-	var services []TopologyService
+	services := make([]TopologyService, 0, len(serviceMap))
 	for _, service := range serviceMap {
 		services = append(services, *service)
 	}
@@ -730,7 +730,7 @@ func (nta *NetworkTopologyAnalyzer) mapServiceDependencies(ctx context.Context, 
 
 // identifyNetworkClusters identifies logical network clusters.
 func (nta *NetworkTopologyAnalyzer) identifyNetworkClusters(ctx context.Context, networks []TopologyNetwork, containers []TopologyContainer, services []TopologyService) ([]NetworkCluster, error) {
-	var clusters []NetworkCluster
+	clusters := make([]NetworkCluster, 0, len(networks))
 
 	// Cluster by network
 	for _, network := range networks {
@@ -1197,8 +1197,19 @@ func (nta *NetworkTopologyAnalyzer) exportToCytoscape(topology *NetworkTopology)
 		},
 	}
 
-	nodes := cytoscapeData["elements"].(map[string]interface{})["nodes"].([]map[string]interface{})
-	edges := cytoscapeData["elements"].(map[string]interface{})["edges"].([]map[string]interface{})
+	// Safe type assertions for cytoscape data structure
+	elements, ok := cytoscapeData["elements"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid cytoscape data structure: elements not found")
+	}
+	nodes, ok := elements["nodes"].([]map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid cytoscape data structure: nodes not found")
+	}
+	edges, ok := elements["edges"].([]map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid cytoscape data structure: edges not found")
+	}
 
 	// Add container nodes
 	for _, container := range topology.Containers {
@@ -1242,8 +1253,11 @@ func (nta *NetworkTopologyAnalyzer) exportToCytoscape(topology *NetworkTopology)
 		edges = append(edges, edge)
 	}
 
-	cytoscapeData["elements"].(map[string]interface{})["nodes"] = nodes
-	cytoscapeData["elements"].(map[string]interface{})["edges"] = edges
+	// Update the elements with safe type assertion
+	if elements, ok := cytoscapeData["elements"].(map[string]interface{}); ok {
+		elements["nodes"] = nodes
+		elements["edges"] = edges
+	}
 
 	return json.MarshalIndent(cytoscapeData, "", "  ")
 }

@@ -88,7 +88,7 @@ func (w *webhookConfigurationServiceImpl) GetOrganizationConfig(ctx context.Cont
 	config, err := w.storage.GetOrganizationConfig(ctx, org)
 	if err != nil {
 		// Return default configuration if none exists
-		return w.getDefaultOrganizationConfig(org), nil
+		return w.getDefaultOrganizationConfig(org), err
 	}
 
 	return config, nil

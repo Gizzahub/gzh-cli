@@ -373,6 +373,7 @@ func TestGenConfigCommand(t *testing.T) {
 
 // Helper function to create mock Git repositories for testing.
 func createMockGitRepo(t *testing.T, baseDir, orgDir, repoName, remoteURL string) {
+	t.Helper()
 	repoPath := filepath.Join(baseDir, orgDir, repoName)
 	gitDir := filepath.Join(repoPath, ".git")
 

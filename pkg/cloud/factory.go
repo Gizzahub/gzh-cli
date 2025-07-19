@@ -523,7 +523,7 @@ func (m *defaultPolicyManager) ApplyPoliciesForProfile(ctx context.Context, prof
 // GetPolicyStatus gets the status of applied policies (mock implementation).
 func (m *defaultPolicyManager) GetPolicyStatus(ctx context.Context) ([]*PolicyStatus, error) {
 	// Mock implementation - in real implementation, this would return the status of applied policies
-	var statuses []*PolicyStatus
+	statuses := make([]*PolicyStatus, 0, len(m.policies))
 
 	// Get all policies and create status entries
 	for _, policy := range m.policies {

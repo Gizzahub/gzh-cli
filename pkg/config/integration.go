@@ -144,7 +144,7 @@ func (b *BulkCloneIntegration) ValidateProvider(providerName string) error {
 
 // GetConfiguredProviders returns a list of all configured providers.
 func (b *BulkCloneIntegration) GetConfiguredProviders() []string {
-	var providers []string
+	providers := make([]string, 0, len(b.config.Providers))
 	for name := range b.config.Providers {
 		providers = append(providers, name)
 	}

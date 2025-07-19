@@ -142,7 +142,8 @@ func TestConditionEvaluator_EvaluateConditions_Success(t *testing.T) {
 func TestConditionEvaluator_EvaluateEventConditions(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	tests := []struct {
 		name       string
@@ -206,7 +207,8 @@ func TestConditionEvaluator_EvaluateEventConditions(t *testing.T) {
 func TestConditionEvaluator_EvaluateRepositoryConditions(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	repoInfo := &RepositoryInfo{
 		Name:       "test-repo",
@@ -301,7 +303,8 @@ func TestConditionEvaluator_EvaluateRepositoryConditions(t *testing.T) {
 func TestConditionEvaluator_EvaluateTimeConditions(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	// Tuesday, 2:00 PM UTC
 	testTime := time.Date(2024, 1, 9, 14, 0, 0, 0, time.UTC)
@@ -396,7 +399,8 @@ func TestConditionEvaluator_EvaluateTimeConditions(t *testing.T) {
 func TestConditionEvaluator_EvaluateContentConditions(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	event := createTestEvent()
 
@@ -581,7 +585,8 @@ func TestConditionEvaluator_EvaluatePayloadMatcher(t *testing.T) {
 func TestConditionEvaluator_ValidateConditions(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	tests := []struct {
 		name       string
@@ -661,7 +666,8 @@ func TestConditionEvaluator_ValidateConditions(t *testing.T) {
 func TestConditionEvaluator_LogicalOperators(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	// Create test evaluation results
 	tests := []struct {
@@ -740,7 +746,8 @@ func TestConditionEvaluator_LogicalOperators(t *testing.T) {
 func TestConditionEvaluator_ExtractDataFromPayload(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	// Test branch extraction
 	t.Run("extract branch from push event", func(t *testing.T) {
@@ -787,7 +794,8 @@ func TestConditionEvaluator_ExtractDataFromPayload(t *testing.T) {
 func TestConditionEvaluator_HelperMethods(t *testing.T) {
 	logger := &mockLogger{}
 	apiClient := &mockAPIClient{}
-	evaluator := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	evaluator, ok := NewConditionEvaluator(logger, apiClient).(*conditionEvaluatorImpl)
+	require.True(t, ok, "evaluator should be of correct type")
 
 	// Test isEmpty
 	t.Run("isEmpty checks", func(t *testing.T) {

@@ -471,6 +471,8 @@ func (cp *ConfirmationPrompt) getRiskColor(risk RiskLevel) string {
 		return "\033[1;33m" // Yellow
 	case RiskLow:
 		return "\033[1;32m" // Green
+	case SecurityRiskLevelMinimal:
+		return "\033[1;90m" // Bright black (gray)
 	default:
 		return ""
 	}
@@ -486,6 +488,8 @@ func (cp *ConfirmationPrompt) getRiskIcon(risk RiskLevel) string {
 		return "⚡"
 	case RiskLow:
 		return "ℹ️"
+	case SecurityRiskLevelMinimal:
+		return "🔸"
 	default:
 		return "•"
 	}

@@ -41,7 +41,7 @@ func (f *gitLabProviderFactoryImpl) CreateCloner(ctx context.Context, token stri
 }
 
 // CreateClonerWithEnv creates a GitLab cloner with a specific environment.
-func (f *gitLabProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitLabCloner, error) {
+func (f *gitLabProviderFactoryImpl) CreateClonerWithEnv(_ context.Context, token string, environment env.Environment) (GitLabCloner, error) {
 	if token == "" {
 		// Try to get token from environment
 		token = environment.Get(env.CommonEnvironmentKeys.GitLabToken)
@@ -91,7 +91,9 @@ type gitLabClonerImpl struct {
 func (g *gitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
-		g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token)
+		if err := g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token); err != nil {
+			// Log error but don't fail the operation
+		}
 	}
 
 	// Call the existing RefreshAll function
@@ -99,10 +101,12 @@ func (g *gitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath
 }
 
 // CloneProject clones a specific project.
-func (g *gitLabClonerImpl) CloneProject(ctx context.Context, groupName, projectName, targetPath, strategy string) error {
+func (g *gitLabClonerImpl) CloneProject(_ context.Context, _, projectName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
-		g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token)
+		if err := g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token); err != nil {
+			// Log error but don't fail the operation
+		}
 	}
 
 	// Implementation would call appropriate GitLab API functions

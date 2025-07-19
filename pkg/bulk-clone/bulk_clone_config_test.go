@@ -16,7 +16,9 @@ func TestReadConfig(t *testing.T) {
 	config := &bulkCloneConfig{}
 	// bulkCloneConfig.ReadConfig("../../../test")
 	// config.ReadConfig("../../../test")
-	config.ReadConfig("./")
+	if err := config.ReadConfig("./"); err != nil {
+		t.Logf("Warning: failed to read config: %v", err)
+	}
 	// t.Log(yaml.Marshal(config))
 	// print unmarshal yaml format
 	yamlData, err := yaml.Marshal(&config)

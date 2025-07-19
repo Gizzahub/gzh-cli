@@ -97,14 +97,14 @@ func (fs *FileStore) List(ctx context.Context, filter ChangeFilter) ([]*ChangeRe
 
 		data, err := os.ReadFile(path)
 		if err != nil {
-			return nil // Skip files that can't be read
+			return err // Skip files that can't be read
 		}
 
 		var record ChangeRecord
 
 		err = json.Unmarshal(data, &record)
 		if err != nil {
-			return nil // Skip invalid files
+			return err // Skip invalid files
 		}
 
 		// Apply filters

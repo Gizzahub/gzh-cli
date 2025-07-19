@@ -638,8 +638,12 @@ func (ge *defaultGitExecutor) GetStatus(ctx context.Context, dir string) (*GitSt
 		if aheadBehindResult.Success {
 			parts := strings.Fields(strings.TrimSpace(aheadBehindResult.Output))
 			if len(parts) == 2 {
-				fmt.Sscanf(parts[0], "%d", &status.AheadBy)
-				fmt.Sscanf(parts[1], "%d", &status.BehindBy)
+				if _, err := fmt.Sscanf(parts[0], "%d", &status.AheadBy); err != nil {
+					// Log error but continue - not critical
+				}
+				if _, err := fmt.Sscanf(parts[1], "%d", &status.BehindBy); err != nil {
+					// Log error but continue - not critical
+				}
 			}
 		}
 	}

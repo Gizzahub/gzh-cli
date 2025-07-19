@@ -112,7 +112,7 @@ type MockClientFactory struct {
 }
 
 // CreateRepoConfigClient returns the mock client or error.
-func (m *MockClientFactory) CreateRepoConfigClient(token string) (*github.RepoConfigClient, error) {
+func (m *MockClientFactory) CreateRepoConfigClient(_ string) (*github.RepoConfigClient, error) {
 	if m.MockError != nil {
 		return nil, m.MockError
 	}
@@ -121,7 +121,7 @@ func (m *MockClientFactory) CreateRepoConfigClient(token string) (*github.RepoCo
 }
 
 // CreateGitHubClient returns the mock GitHub client or error.
-func (m *MockClientFactory) CreateGitHubClient(token string) (*gh.Client, error) {
+func (m *MockClientFactory) CreateGitHubClient(_ string) (*gh.Client, error) {
 	if m.MockError != nil {
 		return nil, m.MockError
 	}

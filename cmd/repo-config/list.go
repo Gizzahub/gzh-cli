@@ -14,6 +14,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	visibilityPublic  = "public"
+	visibilityPrivate = "private"
+	templateNone      = "none"
+)
+
 // newListCmd creates the list subcommand.
 func newListCmd() *cobra.Command {
 	var (
@@ -142,12 +148,12 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 	}
 
 	// Convert to RepositoryInfo format
-	var repositories []RepositoryInfo
+	repositories := make([]RepositoryInfo, 0, len(repos))
 
 	for _, repo := range repos {
-		visibility := "public"
+		visibility := visibilityPublic
 		if repo.Private {
-			visibility = "private"
+			visibility = visibilityPrivate
 		}
 
 		info := RepositoryInfo{
@@ -200,7 +206,7 @@ type RepositoryInfo struct {
 // detectTemplate attempts to detect which template a repository is using.
 func detectTemplate(repo *github.Repository, repoConfig *config.RepoConfig) string {
 	if repoConfig == nil || repoConfig.Repositories == nil {
-		return "none"
+		return templateNone
 	}
 
 	// Check specific repositories
@@ -230,7 +236,7 @@ func checkCompliance(repo *github.Repository, repoConfig *config.RepoConfig) boo
 	// Simple compliance check - can be expanded
 	// For now, just check if it has a template assigned
 	template := detectTemplate(repo, repoConfig)
-	return template != "none"
+	return template != templateNone
 }
 
 // matchPattern checks if a string matches a pattern (simple glob support).

@@ -216,7 +216,7 @@ func runAutoMigration(ctx context.Context, opts *MigrateOptions) error {
 	return runSingleMigration(ctx, opts)
 }
 
-func performMigration(ctx context.Context, sourceFile, targetFile string, opts *MigrateOptions) (*config.MigrationResult, error) {
+func performMigration(_ context.Context, sourceFile, targetFile string, opts *MigrateOptions) (*config.MigrationResult, error) {
 	if opts.DryRun {
 		fmt.Printf("🧪 Dry-run mode: previewing migration\n")
 	}

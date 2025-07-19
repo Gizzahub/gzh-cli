@@ -40,7 +40,11 @@ func TestOperations_Clone(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "git-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() {
+				if err := os.RemoveAll(tmpDir); err != nil {
+					t.Logf("Warning: failed to remove temp dir: %v", err)
+				}
+			}()
 
 			ops := NewOperations(tt.verbose)
 			targetPath := filepath.Join(tmpDir, tt.path)
@@ -95,7 +99,11 @@ func TestOperations_ExecuteStrategy(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "git-test-*")
 			require.NoError(t, err)
 
-			defer os.RemoveAll(tmpDir)
+			defer func() {
+				if err := os.RemoveAll(tmpDir); err != nil {
+					t.Logf("Warning: failed to remove temp dir: %v", err)
+				}
+			}()
 
 			ops := NewOperations(false)
 			targetPath := filepath.Join(tmpDir, tt.path)

@@ -156,7 +156,7 @@ func detectProjectInfo() (ProjectInfo, error) {
 	// Check for language-specific files
 	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil // ignore errors
+			return err // ignore errors
 		}
 
 		// Skip hidden files and directories

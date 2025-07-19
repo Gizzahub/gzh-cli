@@ -1,3 +1,4 @@
+// Package legacy provides legacy error handling and compatibility functions.
 package legacy
 
 import (
@@ -10,7 +11,7 @@ import (
 type ErrorCode string
 
 const (
-	// Network related errors.
+	// ErrorCodeNetworkConnection represents network connection errors.
 	ErrorCodeNetworkConnection  ErrorCode = "NETWORK_CONNECTION"
 	ErrorCodeNetworkTimeout     ErrorCode = "NETWORK_TIMEOUT"
 	ErrorCodeNetworkDNS         ErrorCode = "NETWORK_DNS"
@@ -174,17 +175,55 @@ func NewVPNError(code ErrorCode, message string) *GzhError {
 	// Add common VPN troubleshooting suggestions
 	switch code {
 	case ErrorCodeVPNConnection:
-		err.WithSuggestion("Check your internet connection")
-		err.WithSuggestion("Verify VPN server address and port")
-		err.WithSuggestion("Try connecting to a different VPN server")
+		_ = err.WithSuggestion("Check your internet connection")
+		_ = err.WithSuggestion("Verify VPN server address and port")
+		_ = err.WithSuggestion("Try connecting to a different VPN server")
 	case ErrorCodeVPNAuthentication:
-		err.WithSuggestion("Verify your username and password")
-		err.WithSuggestion("Check if your VPN subscription is active")
-		err.WithSuggestion("Try regenerating your VPN certificates")
+		_ = err.WithSuggestion("Verify your username and password")
+		_ = err.WithSuggestion("Check if your VPN subscription is active")
+		_ = err.WithSuggestion("Try regenerating your VPN certificates")
 	case ErrorCodeVPNConfiguration:
-		err.WithSuggestion("Validate your VPN configuration file syntax")
-		err.WithSuggestion("Check file permissions for VPN configuration")
-		err.WithSuggestion("Ensure all required VPN configuration fields are present")
+		_ = err.WithSuggestion("Validate your VPN configuration file syntax")
+		_ = err.WithSuggestion("Check file permissions for VPN configuration")
+		_ = err.WithSuggestion("Ensure all required VPN configuration fields are present")
+	case ErrorCodeVPNHierarchy:
+		_ = err.WithSuggestion("Check VPN hierarchy configuration")
+		_ = err.WithSuggestion("Verify VPN connection dependencies")
+		_ = err.WithSuggestion("Ensure VPN connections are properly layered")
+	case ErrorCodeNetworkConnection:
+		_ = err.WithSuggestion("Check network connectivity")
+		_ = err.WithSuggestion("Verify network adapter settings")
+		_ = err.WithSuggestion("Try restarting network services")
+	case ErrorCodeNetworkTimeout:
+		_ = err.WithSuggestion("Increase network timeout settings")
+		_ = err.WithSuggestion("Check for network congestion")
+		_ = err.WithSuggestion("Verify server responsiveness")
+	case ErrorCodeNetworkDNS:
+		_ = err.WithSuggestion("Check DNS server configuration")
+		_ = err.WithSuggestion("Try alternative DNS servers")
+		_ = err.WithSuggestion("Flush DNS cache")
+	case ErrorCodeNetworkUnreachable:
+		_ = err.WithSuggestion("Check network routing configuration")
+		_ = err.WithSuggestion("Verify firewall settings")
+		_ = err.WithSuggestion("Ensure network is available")
+	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
+		_ = err.WithSuggestion("Check configuration file syntax")
+		_ = err.WithSuggestion("Validate configuration against schema")
+		_ = err.WithSuggestion("Ensure all required fields are present")
+	case ErrorCodeAuthFailed, ErrorCodeAuthExpired, ErrorCodeAuthMissing, ErrorCodeAuthInvalid:
+		_ = err.WithSuggestion("Check authentication credentials")
+		_ = err.WithSuggestion("Verify token or certificate validity")
+		_ = err.WithSuggestion("Re-authenticate if necessary")
+	case ErrorCodePermissionDenied, ErrorCodeResourceNotFound, ErrorCodeResourceExists:
+		_ = err.WithSuggestion("Check access permissions")
+		_ = err.WithSuggestion("Verify resource availability")
+		_ = err.WithSuggestion("Ensure proper authorization")
+	case ErrorCodeSystemInternal, ErrorCodeSystemTimeout, ErrorCodeSystemResource:
+		_ = err.WithSuggestion("Check system resources")
+		_ = err.WithSuggestion("Monitor system performance")
+		_ = err.WithSuggestion("Contact system administrator if needed")
+	default:
+		// No specific suggestions for other error codes
 	}
 
 	return err
@@ -200,17 +239,43 @@ func NewConfigError(code ErrorCode, message string) *GzhError {
 	// Add common configuration troubleshooting suggestions
 	switch code {
 	case ErrorCodeConfigNotFound:
-		err.WithSuggestion("Create a configuration file using: gz gen-config")
-		err.WithSuggestion("Check if the configuration file path is correct")
-		err.WithSuggestion("Verify file permissions")
+		_ = err.WithSuggestion("Create a configuration file using: gz gen-config")
+		_ = err.WithSuggestion("Check if the configuration file path is correct")
+		_ = err.WithSuggestion("Verify file permissions")
 	case ErrorCodeConfigInvalid:
-		err.WithSuggestion("Validate configuration syntax using: gz validate")
-		err.WithSuggestion("Check for missing required fields")
-		err.WithSuggestion("Refer to the configuration schema documentation")
+		_ = err.WithSuggestion("Validate configuration syntax using: gz validate")
+		_ = err.WithSuggestion("Check for missing required fields")
+		_ = err.WithSuggestion("Refer to the configuration schema documentation")
 	case ErrorCodeConfigSyntax:
-		err.WithSuggestion("Check YAML/JSON syntax for errors")
-		err.WithSuggestion("Ensure proper indentation")
-		err.WithSuggestion("Remove any trailing commas or invalid characters")
+		_ = err.WithSuggestion("Check YAML/JSON syntax for errors")
+		_ = err.WithSuggestion("Ensure proper indentation")
+		_ = err.WithSuggestion("Remove any trailing commas or invalid characters")
+	case ErrorCodeConfigValidation:
+		_ = err.WithSuggestion("Check configuration validation rules")
+		_ = err.WithSuggestion("Ensure all fields meet validation criteria")
+		_ = err.WithSuggestion("Review configuration schema requirements")
+	case ErrorCodeNetworkConnection, ErrorCodeNetworkTimeout, ErrorCodeNetworkDNS, ErrorCodeNetworkUnreachable:
+		_ = err.WithSuggestion("Check network connectivity")
+		_ = err.WithSuggestion("Verify network configuration")
+		_ = err.WithSuggestion("Ensure network services are running")
+	case ErrorCodeVPNConnection, ErrorCodeVPNAuthentication, ErrorCodeVPNConfiguration, ErrorCodeVPNHierarchy:
+		_ = err.WithSuggestion("Check VPN configuration")
+		_ = err.WithSuggestion("Verify VPN connectivity")
+		_ = err.WithSuggestion("Ensure VPN services are running")
+	case ErrorCodeAuthFailed, ErrorCodeAuthExpired, ErrorCodeAuthMissing, ErrorCodeAuthInvalid:
+		_ = err.WithSuggestion("Check authentication configuration")
+		_ = err.WithSuggestion("Verify authentication credentials")
+		_ = err.WithSuggestion("Ensure authentication services are available")
+	case ErrorCodePermissionDenied, ErrorCodeResourceNotFound, ErrorCodeResourceExists:
+		_ = err.WithSuggestion("Check resource permissions")
+		_ = err.WithSuggestion("Verify resource availability")
+		_ = err.WithSuggestion("Ensure proper access rights")
+	case ErrorCodeSystemInternal, ErrorCodeSystemTimeout, ErrorCodeSystemResource:
+		_ = err.WithSuggestion("Check system configuration")
+		_ = err.WithSuggestion("Monitor system resources")
+		_ = err.WithSuggestion("Contact system administrator if needed")
+	default:
+		// No specific suggestions for other error codes
 	}
 
 	return err
@@ -226,17 +291,43 @@ func NewAuthError(code ErrorCode, message string) *GzhError {
 	// Add common authentication troubleshooting suggestions
 	switch code {
 	case ErrorCodeAuthMissing:
-		err.WithSuggestion("Set the required environment variable (e.g., GITHUB_TOKEN)")
-		err.WithSuggestion("Configure authentication in your profile settings")
-		err.WithSuggestion("Use the login command to authenticate")
+		_ = err.WithSuggestion("Set the required environment variable (e.g., GITHUB_TOKEN)")
+		_ = err.WithSuggestion("Configure authentication in your profile settings")
+		_ = err.WithSuggestion("Use the login command to authenticate")
 	case ErrorCodeAuthExpired:
-		err.WithSuggestion("Refresh your authentication token")
-		err.WithSuggestion("Re-authenticate using the login command")
-		err.WithSuggestion("Check token expiration settings")
+		_ = err.WithSuggestion("Refresh your authentication token")
+		_ = err.WithSuggestion("Re-authenticate using the login command")
+		_ = err.WithSuggestion("Check token expiration settings")
 	case ErrorCodeAuthFailed:
-		err.WithSuggestion("Verify your credentials are correct")
-		err.WithSuggestion("Check if two-factor authentication is required")
-		err.WithSuggestion("Ensure you have the necessary permissions")
+		_ = err.WithSuggestion("Verify your credentials are correct")
+		_ = err.WithSuggestion("Check if two-factor authentication is required")
+		_ = err.WithSuggestion("Ensure you have the necessary permissions")
+	case ErrorCodeAuthInvalid:
+		_ = err.WithSuggestion("Check authentication token format")
+		_ = err.WithSuggestion("Verify token is not corrupted")
+		_ = err.WithSuggestion("Generate a new authentication token")
+	case ErrorCodeNetworkConnection, ErrorCodeNetworkTimeout, ErrorCodeNetworkDNS, ErrorCodeNetworkUnreachable:
+		_ = err.WithSuggestion("Check network connectivity for authentication")
+		_ = err.WithSuggestion("Verify authentication server availability")
+		_ = err.WithSuggestion("Ensure network allows authentication traffic")
+	case ErrorCodeVPNConnection, ErrorCodeVPNAuthentication, ErrorCodeVPNConfiguration, ErrorCodeVPNHierarchy:
+		_ = err.WithSuggestion("Check VPN authentication configuration")
+		_ = err.WithSuggestion("Verify VPN credentials")
+		_ = err.WithSuggestion("Ensure VPN authentication servers are accessible")
+	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
+		_ = err.WithSuggestion("Check authentication configuration files")
+		_ = err.WithSuggestion("Verify authentication configuration syntax")
+		_ = err.WithSuggestion("Ensure authentication configuration is complete")
+	case ErrorCodePermissionDenied, ErrorCodeResourceNotFound, ErrorCodeResourceExists:
+		_ = err.WithSuggestion("Check authentication permissions")
+		_ = err.WithSuggestion("Verify access to authentication resources")
+		_ = err.WithSuggestion("Ensure proper authentication scope")
+	case ErrorCodeSystemInternal, ErrorCodeSystemTimeout, ErrorCodeSystemResource:
+		_ = err.WithSuggestion("Check authentication system resources")
+		_ = err.WithSuggestion("Monitor authentication service performance")
+		_ = err.WithSuggestion("Contact authentication administrator if needed")
+	default:
+		// No specific suggestions for other error codes
 	}
 
 	return err
@@ -252,17 +343,47 @@ func NewSystemError(code ErrorCode, message string) *GzhError {
 	// Add common system troubleshooting suggestions
 	switch code {
 	case ErrorCodeSystemResource:
-		err.WithSuggestion("Check available disk space")
-		err.WithSuggestion("Verify memory availability")
-		err.WithSuggestion("Close unnecessary applications")
+		_ = err.WithSuggestion("Check available disk space")
+		_ = err.WithSuggestion("Verify memory availability")
+		_ = err.WithSuggestion("Close unnecessary applications")
 	case ErrorCodeSystemTimeout:
-		err.WithSuggestion("Try again with a longer timeout")
-		err.WithSuggestion("Check network connectivity")
-		err.WithSuggestion("Verify the remote service is responding")
+		_ = err.WithSuggestion("Try again with a longer timeout")
+		_ = err.WithSuggestion("Check network connectivity")
+		_ = err.WithSuggestion("Verify the remote service is responding")
+	case ErrorCodeSystemInternal:
+		_ = err.WithSuggestion("Check system logs for details")
+		_ = err.WithSuggestion("Restart the service if necessary")
+		_ = err.WithSuggestion("Contact system administrator for assistance")
 	case ErrorCodePermissionDenied:
-		err.WithSuggestion("Run the command with appropriate permissions")
-		err.WithSuggestion("Check file/directory ownership")
-		err.WithSuggestion("Verify your user has the required access rights")
+		_ = err.WithSuggestion("Run the command with appropriate permissions")
+		_ = err.WithSuggestion("Check file/directory ownership")
+		_ = err.WithSuggestion("Verify your user has the required access rights")
+	case ErrorCodeResourceNotFound:
+		_ = err.WithSuggestion("Verify the resource path is correct")
+		_ = err.WithSuggestion("Check if the resource exists")
+		_ = err.WithSuggestion("Ensure proper resource configuration")
+	case ErrorCodeResourceExists:
+		_ = err.WithSuggestion("Choose a different resource name")
+		_ = err.WithSuggestion("Remove the existing resource first")
+		_ = err.WithSuggestion("Use force flag if appropriate")
+	case ErrorCodeNetworkConnection, ErrorCodeNetworkTimeout, ErrorCodeNetworkDNS, ErrorCodeNetworkUnreachable:
+		_ = err.WithSuggestion("Check system network configuration")
+		_ = err.WithSuggestion("Verify network connectivity")
+		_ = err.WithSuggestion("Ensure network services are running")
+	case ErrorCodeVPNConnection, ErrorCodeVPNAuthentication, ErrorCodeVPNConfiguration, ErrorCodeVPNHierarchy:
+		_ = err.WithSuggestion("Check system VPN configuration")
+		_ = err.WithSuggestion("Verify VPN connectivity")
+		_ = err.WithSuggestion("Ensure VPN services are operational")
+	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
+		_ = err.WithSuggestion("Check system configuration files")
+		_ = err.WithSuggestion("Verify configuration syntax")
+		_ = err.WithSuggestion("Ensure configuration is complete")
+	case ErrorCodeAuthFailed, ErrorCodeAuthExpired, ErrorCodeAuthMissing, ErrorCodeAuthInvalid:
+		_ = err.WithSuggestion("Check system authentication")
+		_ = err.WithSuggestion("Verify credentials")
+		_ = err.WithSuggestion("Ensure authentication services are available")
+	default:
+		// No specific suggestions for other error codes
 	}
 
 	return err
@@ -361,6 +482,27 @@ func NetworkRecoveryStrategy(err *GzhError) error {
 	case ErrorCodeNetworkDNS:
 		// Could implement alternative DNS resolution
 		return fmt.Errorf("DNS recovery not implemented yet")
+	case ErrorCodeNetworkConnection:
+		// Could implement connection retry with backoff
+		return fmt.Errorf("network connection recovery not implemented yet")
+	case ErrorCodeNetworkUnreachable:
+		// Could implement route discovery
+		return fmt.Errorf("network unreachable recovery not implemented yet")
+	case ErrorCodeVPNConnection, ErrorCodeVPNAuthentication, ErrorCodeVPNConfiguration, ErrorCodeVPNHierarchy:
+		// Network-related VPN issues
+		return fmt.Errorf("VPN network recovery not implemented yet")
+	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
+		// Network configuration issues
+		return fmt.Errorf("network configuration recovery not implemented yet")
+	case ErrorCodeAuthFailed, ErrorCodeAuthExpired, ErrorCodeAuthMissing, ErrorCodeAuthInvalid:
+		// Network authentication issues
+		return fmt.Errorf("network authentication recovery not implemented yet")
+	case ErrorCodePermissionDenied, ErrorCodeResourceNotFound, ErrorCodeResourceExists:
+		// Network resource issues
+		return fmt.Errorf("network resource recovery not implemented yet")
+	case ErrorCodeSystemInternal, ErrorCodeSystemTimeout, ErrorCodeSystemResource:
+		// System-level network issues
+		return fmt.Errorf("network system recovery not implemented yet")
 	default:
 		return err
 	}
@@ -372,6 +514,30 @@ func VPNRecoveryStrategy(err *GzhError) error {
 	case ErrorCodeVPNConnection:
 		// Could implement failover to alternative VPN servers
 		return fmt.Errorf("VPN connection recovery not implemented yet")
+	case ErrorCodeVPNAuthentication:
+		// Could implement credential refresh
+		return fmt.Errorf("VPN authentication recovery not implemented yet")
+	case ErrorCodeVPNConfiguration:
+		// Could implement configuration auto-repair
+		return fmt.Errorf("VPN configuration recovery not implemented yet")
+	case ErrorCodeVPNHierarchy:
+		// Could implement hierarchy repair
+		return fmt.Errorf("VPN hierarchy recovery not implemented yet")
+	case ErrorCodeNetworkConnection, ErrorCodeNetworkTimeout, ErrorCodeNetworkDNS, ErrorCodeNetworkUnreachable:
+		// VPN-related network issues
+		return fmt.Errorf("VPN network recovery not implemented yet")
+	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
+		// VPN configuration issues
+		return fmt.Errorf("VPN config recovery not implemented yet")
+	case ErrorCodeAuthFailed, ErrorCodeAuthExpired, ErrorCodeAuthMissing, ErrorCodeAuthInvalid:
+		// VPN authentication issues
+		return fmt.Errorf("VPN auth recovery not implemented yet")
+	case ErrorCodePermissionDenied, ErrorCodeResourceNotFound, ErrorCodeResourceExists:
+		// VPN resource issues
+		return fmt.Errorf("VPN resource recovery not implemented yet")
+	case ErrorCodeSystemInternal, ErrorCodeSystemTimeout, ErrorCodeSystemResource:
+		// System-level VPN issues
+		return fmt.Errorf("VPN system recovery not implemented yet")
 	default:
 		return err
 	}

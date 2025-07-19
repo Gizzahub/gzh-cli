@@ -86,8 +86,12 @@ Examples:
 	cmd.Flags().StringVar(&flags.Repository, "repo", "", "Repository name (required)")
 	cmd.Flags().StringVar(&flags.OutputFormat, "output", "table", "Output format (table, json, yaml)")
 
-	cmd.MarkFlagRequired("repo")
-	cmd.MarkFlagRequired("org")
+	if err := cmd.MarkFlagRequired("repo"); err != nil {
+		fmt.Printf("Warning: failed to mark repo flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("org"); err != nil {
+		fmt.Printf("Warning: failed to mark org flag as required: %v\n", err)
+	}
 
 	return cmd
 }
@@ -116,9 +120,15 @@ Examples:
 	cmd.Flags().StringVar(&flags.Secret, "secret", "", "Webhook secret")
 	cmd.Flags().StringVar(&flags.ContentType, "content-type", "json", "Content type (json or form)")
 
-	cmd.MarkFlagRequired("repo")
-	cmd.MarkFlagRequired("org")
-	cmd.MarkFlagRequired("url")
+	if err := cmd.MarkFlagRequired("repo"); err != nil {
+		fmt.Printf("Warning: failed to mark repo flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("org"); err != nil {
+		fmt.Printf("Warning: failed to mark org flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("url"); err != nil {
+		fmt.Printf("Warning: failed to mark url flag as required: %v\n", err)
+	}
 
 	return cmd
 }
@@ -148,9 +158,15 @@ Examples:
 	cmd.Flags().StringVar(&flags.Secret, "secret", "", "Webhook secret")
 	cmd.Flags().StringVar(&flags.ContentType, "content-type", "", "Content type (json or form)")
 
-	cmd.MarkFlagRequired("repo")
-	cmd.MarkFlagRequired("org")
-	cmd.MarkFlagRequired("id")
+	if err := cmd.MarkFlagRequired("repo"); err != nil {
+		fmt.Printf("Warning: failed to mark repo flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("org"); err != nil {
+		fmt.Printf("Warning: failed to mark org flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("id"); err != nil {
+		fmt.Printf("Warning: failed to mark id flag as required: %v\n", err)
+	}
 
 	return cmd
 }
@@ -174,9 +190,15 @@ Examples:
 	cmd.Flags().StringVar(&flags.Repository, "repo", "", "Repository name (required)")
 	cmd.Flags().Int64Var(&flags.ID, "id", 0, "Webhook ID (required)")
 
-	cmd.MarkFlagRequired("repo")
-	cmd.MarkFlagRequired("org")
-	cmd.MarkFlagRequired("id")
+	if err := cmd.MarkFlagRequired("repo"); err != nil {
+		fmt.Printf("Warning: failed to mark repo flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("org"); err != nil {
+		fmt.Printf("Warning: failed to mark org flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("id"); err != nil {
+		fmt.Printf("Warning: failed to mark id flag as required: %v\n", err)
+	}
 
 	return cmd
 }
@@ -202,9 +224,15 @@ Examples:
 	cmd.Flags().Int64Var(&flags.ID, "id", 0, "Webhook ID (required)")
 	cmd.Flags().StringVar(&flags.OutputFormat, "output", "table", "Output format (table, json, yaml)")
 
-	cmd.MarkFlagRequired("repo")
-	cmd.MarkFlagRequired("org")
-	cmd.MarkFlagRequired("id")
+	if err := cmd.MarkFlagRequired("repo"); err != nil {
+		fmt.Printf("Warning: failed to mark repo flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("org"); err != nil {
+		fmt.Printf("Warning: failed to mark org flag as required: %v\n", err)
+	}
+	if err := cmd.MarkFlagRequired("id"); err != nil {
+		fmt.Printf("Warning: failed to mark id flag as required: %v\n", err)
+	}
 
 	return cmd
 }

@@ -288,7 +288,7 @@ func TestAnalyzeConnections(t *testing.T) {
 	connections, _ := analyzer.analyzeConnections(ctx, containers, []TopologyNetwork{})
 
 	// Should find potential connections between containers
-	assert.True(t, len(connections) >= 0)
+	assert.True(t, len(connections) > 0)
 
 	for _, conn := range connections {
 		assert.NotEmpty(t, conn.ID)
@@ -499,20 +499,16 @@ type MockContainerDetector struct {
 
 func (m *MockContainerDetector) DetectContainerEnvironment(ctx context.Context) (*ContainerEnvironment, error) {
 	args := m.Called(ctx)
-	return args.Get(0).(*ContainerEnvironment), args.Error(1)
+	if env, ok := args.Get(0).(*ContainerEnvironment); ok {
+		return env, args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *MockContainerDetector) CheckRuntimeAvailability(runtime ContainerRuntime) RuntimeInfo {
 	args := m.Called(runtime)
-	return args.Get(0).(RuntimeInfo)
-}
-
-func (m *MockContainerDetector) detectDockerContainers(ctx context.Context) ([]DetectedContainer, error) {
-	args := m.Called(ctx)
-	return args.Get(0).([]DetectedContainer), args.Error(1)
-}
-
-func (m *MockContainerDetector) detectPodmanContainers(ctx context.Context) ([]DetectedContainer, error) {
-	args := m.Called(ctx)
-	return args.Get(0).([]DetectedContainer), args.Error(1)
+	if info, ok := args.Get(0).(RuntimeInfo); ok {
+		return info
+	}
+	return RuntimeInfo{}
 }

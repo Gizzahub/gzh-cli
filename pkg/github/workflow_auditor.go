@@ -149,6 +149,7 @@ const (
 	SecurityRiskMedium   SecurityRiskLevel = "medium"
 	SecurityRiskLow      SecurityRiskLevel = "low"
 	SecurityRiskNone     SecurityRiskLevel = "none"
+	SecurityRiskMinimal  SecurityRiskLevel = "minimal"
 )
 
 // Workflow structure for parsing YAML.
@@ -753,6 +754,10 @@ func (wa *WorkflowAuditor) calculateJobSecurityScore(job JobAuditInfo) int {
 			score -= 10
 		case SecurityRiskLow:
 			score -= 5
+		case SecurityRiskNone:
+			// No score adjustment for no risk
+		case SecurityRiskMinimal:
+			score -= 1
 		}
 	}
 
@@ -900,6 +905,8 @@ func (wa *WorkflowAuditor) generateSummary(result *WorkflowAuditResult) Workflow
 			summary.MediumRiskIssues++
 		case SeverityLow:
 			summary.LowRiskIssues++
+		case SeverityInfo:
+			// Info issues don't count toward risk totals
 		}
 	}
 
@@ -1014,6 +1021,10 @@ func (wa *WorkflowAuditor) mapRiskToSeverity(risk SecurityRiskLevel) SecurityIss
 		return SeverityMedium
 	case SecurityRiskLow:
 		return SeverityLow
+	case SecurityRiskNone:
+		return SeverityInfo
+	case SecurityRiskMinimal:
+		return SeverityInfo
 	default:
 		return SeverityInfo
 	}

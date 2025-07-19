@@ -2,11 +2,17 @@ package builders
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
+)
+
+// Sentinel errors for mock implementations.
+var (
+	ErrMockNotConfigured = errors.New("mock function not configured")
 )
 
 // MockLoggerBuilder provides a fluent interface for building test loggers.
@@ -139,7 +145,7 @@ func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
 		return response, nil
 	}
 
-	return nil, nil
+	return nil, ErrMockNotConfigured
 }
 
 func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
@@ -164,7 +170,7 @@ func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Re
 		return response, nil
 	}
 
-	return nil, nil
+	return nil, ErrMockNotConfigured
 }
 
 // MockGitHubProviderFactoryBuilder provides a fluent interface for building GitHub provider factories.
@@ -218,7 +224,7 @@ func (m *MockGitHubProviderFactory) CreateCloner(ctx context.Context, token stri
 		return m.CreateClonerFunc(ctx, token)
 	}
 
-	return nil, nil
+	return nil, ErrMockNotConfigured
 }
 
 func (m *MockGitHubProviderFactory) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (github.GitHubCloner, error) {
@@ -226,7 +232,7 @@ func (m *MockGitHubProviderFactory) CreateClonerWithEnv(ctx context.Context, tok
 		return m.CreateClonerWithEnvFunc(ctx, token, environment)
 	}
 
-	return nil, nil
+	return nil, ErrMockNotConfigured
 }
 
 func (m *MockGitHubProviderFactory) CreateChangeLogger(ctx context.Context, changelog *github.ChangeLog, options *github.LoggerOptions) (*github.ChangeLogger, error) {
@@ -234,7 +240,7 @@ func (m *MockGitHubProviderFactory) CreateChangeLogger(ctx context.Context, chan
 		return m.CreateChangeLoggerFunc(ctx, changelog, options)
 	}
 
-	return nil, nil
+	return nil, ErrMockNotConfigured
 }
 
 func (m *MockGitHubProviderFactory) GetProviderName() string {

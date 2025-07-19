@@ -19,7 +19,7 @@ type AuthConfig struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Token    string `json:"token"`
-	SSHKey   string `json:"ssh_key"`
+	SSHKey   string `json:"sshKey"`
 }
 
 // CommandExecutor interface for dependency injection.

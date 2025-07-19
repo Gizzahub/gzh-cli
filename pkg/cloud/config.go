@@ -24,7 +24,7 @@ type SyncConfig struct {
 	Enabled      bool             `yaml:"enabled"`
 	Interval     time.Duration    `yaml:"interval,omitempty"`
 	Targets      []SyncTarget     `yaml:"targets,omitempty"`
-	ConflictMode ConflictStrategy `yaml:"conflict_mode,omitempty"`
+	ConflictMode ConflictStrategy `yaml:"conflictMode,omitempty"`
 }
 
 // SyncTarget represents a sync target configuration.

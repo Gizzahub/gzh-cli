@@ -261,7 +261,10 @@ func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *Secu
 ) *PolicyViolation {
 	switch rule.Type {
 	case "visibility":
-		expected := rule.Value.(string)
+		expected, ok := rule.Value.(string)
+		if !ok {
+			return nil // Skip invalid rule value
+		}
 
 		actual := "public"
 		if state.Private {

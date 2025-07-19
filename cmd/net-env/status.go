@@ -166,13 +166,13 @@ func (o *statusOptions) getInterfacesFallback() ([]interfaceInfo, error) {
 
 func (o *statusOptions) parseIPOutput(output string) []interfaceInfo {
 	// Simplified JSON parsing - in real implementation would use json.Unmarshal
-	var interfaces []interfaceInfo
-
 	// For now, return basic interface info
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		return interfaces
+		return nil
 	}
+
+	interfaces := make([]interfaceInfo, 0, len(ifaces))
 
 	for _, iface := range ifaces {
 		info := interfaceInfo{

@@ -176,7 +176,7 @@ func (g *gitLabManagerImpl) BulkCloneRepositories(ctx context.Context, request *
 }
 
 // GetGroupInfo gets detailed information about a group.
-func (g *gitLabManagerImpl) GetGroupInfo(ctx context.Context, group string) (*GroupInfo, error) {
+func (g *gitLabManagerImpl) GetGroupInfo(_ context.Context, group string) (*GroupInfo, error) {
 	g.logger.Debug("Getting group info", "group", group)
 
 	// Implementation would make API call to get detailed group information
@@ -189,7 +189,7 @@ func (g *gitLabManagerImpl) GetGroupInfo(ctx context.Context, group string) (*Gr
 }
 
 // ListSubgroups lists all subgroups within a group.
-func (g *gitLabManagerImpl) ListSubgroups(ctx context.Context, group string) ([]string, error) {
+func (g *gitLabManagerImpl) ListSubgroups(_ context.Context, group string) ([]string, error) {
 	g.logger.Debug("Listing subgroups", "group", group)
 
 	// Implementation would make API call to get subgroups
