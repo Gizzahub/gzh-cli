@@ -353,7 +353,7 @@ func TestMakeRequestWithoutToken(t *testing.T) {
 	resp, err := client.makeRequest(context.Background(), "GET", "/test", nil)
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	resp.Body.Close()
+	defer resp.Body.Close()
 }
 
 func TestListRepositoriesWithPagination(t *testing.T) {

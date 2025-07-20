@@ -14,12 +14,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
-	
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // AWSProfile represents an AWS profile configuration.

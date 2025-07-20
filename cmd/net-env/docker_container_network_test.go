@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestContainerNetworkManagement(t *testing.T) {

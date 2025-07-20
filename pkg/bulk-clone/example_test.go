@@ -22,7 +22,7 @@ func ExampleLoadConfig() {
 	// Create a temporary configuration file
 	tempDir := "/tmp/bulk-clone-config-example"
 
-	_ = os.MkdirAll(tempDir, 0o755)
+	_ = os.MkdirAll(tempDir, 0o750)
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "bulk-clone.yaml")
@@ -83,7 +83,7 @@ repo_roots:
 	fmt.Printf("- GitLab groups: %d\n", gitlabCount)
 	fmt.Printf("- Gitea organizations: %d\n", giteaCount)
 
-	if len(config.RepoRoots) > 0 && config.RepoRoots[0].Provider == "github" {
+	if len(config.RepoRoots) > 0 && config.RepoRoots[0].Provider == providerGitHub {
 		fmt.Printf("- First GitHub org: %s\n", config.RepoRoots[0].OrgName)
 	}
 
@@ -94,7 +94,7 @@ repo_roots:
 func ExampleLoadConfig_validation() {
 	tempDir := "/tmp/bulk-clone-validation-example"
 
-	_ = os.MkdirAll(tempDir, 0o755)
+	_ = os.MkdirAll(tempDir, 0o750)
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	// Create an invalid configuration file
@@ -108,7 +108,7 @@ repo_roots:
 # Missing required fields
 `
 
-	err := os.WriteFile(configPath, []byte(invalidConfig), 0o644)
+	err := os.WriteFile(configPath, []byte(invalidConfig), 0o600)
 	if err != nil {
 		log.Printf("Error creating config file: %v", err)
 		return
@@ -132,7 +132,7 @@ repo_roots:
     org_name: "valid-org"
 `
 
-	err = os.WriteFile(validConfigPath, []byte(validConfig), 0o644)
+	err = os.WriteFile(validConfigPath, []byte(validConfig), 0o600)
 	if err != nil {
 		log.Printf("Error creating valid config: %v", err)
 		return
@@ -159,7 +159,7 @@ repo_roots:
 func ExampleLoadConfig_multiProvider() {
 	tempDir := "/tmp/bulk-clone-multi-provider-example"
 
-	_ = os.MkdirAll(tempDir, 0o755)
+	_ = os.MkdirAll(tempDir, 0o750)
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "multi-provider.yaml")
@@ -258,7 +258,7 @@ repo_roots:
 func ExampleLoadConfig_strategies() {
 	tempDir := "/tmp/bulk-clone-strategies-example"
 
-	_ = os.MkdirAll(tempDir, 0o755)
+	_ = os.MkdirAll(tempDir, 0o750)
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "strategies.yaml")
@@ -330,7 +330,7 @@ func ExampleLoadConfig_environmentVariables() {
 
 	tempDir := "/tmp/bulk-clone-env-example"
 
-	_ = os.MkdirAll(tempDir, 0o755)
+	_ = os.MkdirAll(tempDir, 0o750)
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	configPath := filepath.Join(tempDir, "env-config.yaml")

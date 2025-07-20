@@ -196,7 +196,7 @@ func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 ) error {
 	// Check if repository is valid
 	repoType, _ := helpers.CheckGitRepoType(repoPath)
-	if repoType == "empty" {
+	if repoType == helpers.RepoTypeEmpty {
 		return fmt.Errorf("repository is empty or not a git repository")
 	}
 

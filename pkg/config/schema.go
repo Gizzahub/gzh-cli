@@ -45,6 +45,7 @@ const (
 	ProviderGitHub = "github"
 	ProviderGitLab = "gitlab"
 	ProviderGitea  = "gitea"
+	ProviderGogs   = "gogs"
 )
 
 // SetDefaults sets default values for GitTarget.

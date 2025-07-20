@@ -8,12 +8,19 @@ import (
 	"strings"
 )
 
+// Repository type constants.
+const (
+	RepoTypeNone   = "none"   // Not a Git repository
+	RepoTypeEmpty  = "empty"  // Git repository with no commits
+	RepoTypeNormal = "normal" // Git repository with commits
+)
+
 // CheckGitRepoType checks the type of a Git repository.
 // Returns "none" if not a Git repo, "empty" if no commits, "normal" if has commits.
 func CheckGitRepoType(dir string) (string, error) {
 	// Check if .git directory exists
 	if _, err := os.Stat(fmt.Sprintf("%s/.git", dir)); os.IsNotExist(err) {
-		return "none", nil
+		return RepoTypeNone, nil
 	} else if err != nil {
 		return "", fmt.Errorf("failed to access directory: %w", err)
 	}
@@ -24,13 +31,13 @@ func CheckGitRepoType(dir string) (string, error) {
 
 	output, err := cmd.Output()
 	if err != nil {
-		return "empty", err
+		return RepoTypeEmpty, err
 	}
 
 	commitCount := strings.TrimSpace(string(output))
 	if commitCount == "0" {
-		return "empty", nil
+		return RepoTypeEmpty, nil
 	}
 
-	return "normal", nil
+	return RepoTypeNormal, nil
 }

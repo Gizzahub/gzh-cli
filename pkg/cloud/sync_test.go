@@ -7,10 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // MockProvider implements Provider interface for testing.
@@ -202,8 +201,8 @@ func TestSyncProfiles_WithConflicts(t *testing.T) {
 	// Verify sync (source should win)
 	syncedProfile := target.GetSyncedProfile("test-profile")
 	require.NotNil(t, syncedProfile)
-	assert.Equal(t, env.DevEnvironment, syncedProfile.Environment)  // Source wins
-	assert.Equal(t, "us-east-1", syncedProfile.Region) // Source wins
+	assert.Equal(t, env.DevEnvironment, syncedProfile.Environment) // Source wins
+	assert.Equal(t, "us-east-1", syncedProfile.Region)             // Source wins
 }
 
 func TestSyncAll(t *testing.T) {

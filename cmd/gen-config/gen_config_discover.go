@@ -209,7 +209,7 @@ func (o *genConfigDiscoverOptions) discoverRepositories(rootDir string) ([]Disco
 func (o *genConfigDiscoverOptions) analyzeRepository(repoPath string) (*DiscoveredRepo, error) {
 	// Check if it's actually a Git repository
 	repoType, _ := helpers.CheckGitRepoType(repoPath)
-	if repoType == "none" {
+	if repoType == helpers.RepoTypeNone {
 		return nil, fmt.Errorf("not a git repository: %s", repoPath)
 	}
 

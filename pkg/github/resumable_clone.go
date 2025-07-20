@@ -182,7 +182,9 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		case <-ctx.Done():
 			// Operation cancelled
 			state.MarkCancelled()
-			rcm.stateManager.SaveState(state)
+			if err := rcm.stateManager.SaveState(state); err != nil {
+				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
+			}
 
 			return fmt.Errorf("operation cancelled: %w", ctx.Err())
 		}

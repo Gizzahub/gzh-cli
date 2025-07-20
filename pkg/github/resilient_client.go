@@ -71,7 +71,12 @@ func (c *ResilientGitHubClient) GetDefaultBranch(ctx context.Context, org, repo 
 	if err != nil {
 		return "", fmt.Errorf("failed to get repository info: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Log error but don't override the main error
+			fmt.Printf("Warning: failed to close response body: %v\n", closeErr)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", c.handleAPIError(resp, "failed to get repository info")
@@ -132,7 +137,12 @@ func (c *ResilientGitHubClient) getRepositoryPage(ctx context.Context, org strin
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get repositories: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Log error but don't override the main error
+			fmt.Printf("Warning: failed to close response body: %v\n", closeErr)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, false, c.handleAPIError(resp, "failed to get repositories")
@@ -211,7 +221,12 @@ func (c *ResilientGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInf
 	if err != nil {
 		return nil, fmt.Errorf("failed to get rate limit: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Log error but don't override the main error
+			fmt.Printf("Warning: failed to close response body: %v\n", closeErr)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleAPIError(resp, "failed to get rate limit")

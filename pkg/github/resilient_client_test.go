@@ -19,7 +19,9 @@ func TestResilientGitHubClient_GetDefaultBranch(t *testing.T) {
 		}
 
 		repoInfo := RepoInfo{DefaultBranch: "main"}
-		json.NewEncoder(w).Encode(repoInfo)
+		if err := json.NewEncoder(w).Encode(repoInfo); err != nil {
+			t.Errorf("Failed to encode response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -84,7 +86,9 @@ func TestResilientGitHubClient_ListRepositories(t *testing.T) {
 			// No next link for last page
 		}
 
-		json.NewEncoder(w).Encode(repos)
+		if err := json.NewEncoder(w).Encode(repos); err != nil {
+			t.Errorf("Failed to encode response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -133,7 +137,9 @@ func TestResilientGitHubClient_GetRateLimit(t *testing.T) {
 			},
 		}
 
-		json.NewEncoder(w).Encode(rateLimitResponse)
+		if err := json.NewEncoder(w).Encode(rateLimitResponse); err != nil {
+			t.Errorf("Failed to encode response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -173,7 +179,9 @@ func TestResilientGitHubClient_Authentication(t *testing.T) {
 		}
 
 		// Return minimal response
-		json.NewEncoder(w).Encode(RepoInfo{DefaultBranch: "main"})
+		if err := json.NewEncoder(w).Encode(RepoInfo{DefaultBranch: "main"}); err != nil {
+			t.Errorf("Failed to encode response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -213,7 +221,9 @@ func TestResilientGitHubClient_ContextCancellation(t *testing.T) {
 	// Test server with delay
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(100 * time.Millisecond)
-		json.NewEncoder(w).Encode(RepoInfo{DefaultBranch: "main"})
+		if err := json.NewEncoder(w).Encode(RepoInfo{DefaultBranch: "main"}); err != nil {
+			t.Errorf("Failed to encode response: %v", err)
+		}
 	}))
 	defer server.Close()
 

@@ -411,7 +411,7 @@ func isValidStrategy(strategy string) bool {
 
 func isValidProvider(provider string) bool {
 	switch provider {
-	case "github", "gitlab", "gitea", "gogs":
+	case ProviderGitHub, ProviderGitLab, ProviderGitea, ProviderGogs:
 		return true
 	default:
 		return false
@@ -420,7 +420,7 @@ func isValidProvider(provider string) bool {
 
 func isValidVisibility(visibility string) bool {
 	switch visibility {
-	case "public", "private", "all":
+	case VisibilityPublic, VisibilityPrivate, VisibilityAll:
 		return true
 	default:
 		return false

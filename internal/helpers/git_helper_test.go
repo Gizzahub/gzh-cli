@@ -63,13 +63,13 @@ func TestCheckGitRepoType(t *testing.T) {
 
 	res, _ := CheckGitRepoType("tmp/git-commit0")
 	println("tmp/git-commit0:", res)
-	assert.Equal(t, "empty", res, "they should be equal")
+	assert.Equal(t, RepoTypeEmpty, res, "they should be equal")
 
 	res, _ = CheckGitRepoType("tmp/git-commit2")
 	println("tmp/git-commit2:", res)
-	assert.Equal(t, "normal", res, "they should be equal")
+	assert.Equal(t, RepoTypeNormal, res, "they should be equal")
 
 	res, _ = CheckGitRepoType("tmp/nongit")
 	println("tmp/nongit:", res)
-	assert.Equal(t, "none", res, "they should be equal")
+	assert.Equal(t, RepoTypeNone, res, "they should be equal")
 }

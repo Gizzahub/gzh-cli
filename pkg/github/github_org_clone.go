@@ -236,7 +236,7 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 		repoPath := filepath.Join(targetPath, repo)
 
 		repoType, _ := helpers.CheckGitRepoType(repoPath)
-		if !Contains(targetRepos, repo) || repoType == "none" {
+		if !Contains(targetRepos, repo) || repoType == helpers.RepoTypeNone {
 			if err := os.RemoveAll(repoPath); err != nil {
 				return fmt.Errorf("failed to delete repository %s: %w", repoPath, err)
 			}
@@ -287,7 +287,7 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 			} else {
 				// Execute git operation based on strategy
 				repoType, _ := helpers.CheckGitRepoType(repoPath)
-				if repoType != "empty" {
+				if repoType != helpers.RepoTypeEmpty {
 					switch strategy {
 					case "reset":
 						// Reset hard HEAD and pull
