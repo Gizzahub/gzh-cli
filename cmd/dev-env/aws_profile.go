@@ -18,6 +18,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // AWSProfile represents an AWS profile configuration.
@@ -230,7 +232,7 @@ func (m *AWSProfileManager) updateShellConfig(profileName string) error {
 		}
 
 		// Read existing content
-		content, err := os.ReadFile(configFile)
+		content, err := os.ReadFile(filepath.Clean(configFile))
 		if err != nil {
 			continue
 		}
@@ -440,7 +442,7 @@ func newAWSProfileListCmd() *cobra.Command {
 			profiles := manager.ListProfiles()
 
 			switch outputFormat {
-			case "json":
+			case env.FormatJSON:
 				data, err := json.MarshalIndent(profiles, "", "  ")
 				if err != nil {
 					return err
@@ -527,7 +529,7 @@ func newAWSProfileSwitchCmd() *cobra.Command {
 						desc += fmt.Sprintf(" (%s)", p.Region)
 					}
 					if p.IsActive {
-						desc += " [current]"
+						desc += env.CurrentSuffix
 					}
 					profileNames[i] = desc
 				}

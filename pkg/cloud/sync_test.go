@@ -9,6 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // MockProvider implements Provider interface for testing.
@@ -117,7 +119,7 @@ func TestSyncProfiles_Success(t *testing.T) {
 	sourceProfile := &Profile{
 		Name:        "test-profile",
 		Provider:    "aws",
-		Environment: "dev",
+		Environment: env.DevEnvironment,
 		Region:      "us-east-1",
 		Network: NetworkConfig{
 			VPCId:      "vpc-123",
@@ -139,7 +141,7 @@ func TestSyncProfiles_Success(t *testing.T) {
 	require.NotNil(t, syncedProfile)
 	assert.Equal(t, "test-profile", syncedProfile.Name)
 	assert.Equal(t, "gcp", syncedProfile.Provider)
-	assert.Equal(t, "dev", syncedProfile.Environment)
+	assert.Equal(t, env.DevEnvironment, syncedProfile.Environment)
 	assert.Equal(t, "us-east-1", syncedProfile.Region)
 	assert.Equal(t, "vpc-123", syncedProfile.Network.VPCId)
 	assert.Equal(t, []string{"8.8.8.8", "8.8.4.4"}, syncedProfile.Network.DNSServers)
@@ -165,7 +167,7 @@ func TestSyncProfiles_WithConflicts(t *testing.T) {
 	sourceProfile := &Profile{
 		Name:        "test-profile",
 		Provider:    "aws",
-		Environment: "dev",
+		Environment: env.DevEnvironment,
 		Region:      "us-east-1",
 		Network: NetworkConfig{
 			VPCId:      "vpc-123",
@@ -200,7 +202,7 @@ func TestSyncProfiles_WithConflicts(t *testing.T) {
 	// Verify sync (source should win)
 	syncedProfile := target.GetSyncedProfile("test-profile")
 	require.NotNil(t, syncedProfile)
-	assert.Equal(t, "dev", syncedProfile.Environment)  // Source wins
+	assert.Equal(t, env.DevEnvironment, syncedProfile.Environment)  // Source wins
 	assert.Equal(t, "us-east-1", syncedProfile.Region) // Source wins
 }
 
@@ -224,7 +226,7 @@ func TestSyncAll(t *testing.T) {
 		{
 			Name:        "profile1",
 			Provider:    "aws",
-			Environment: "dev",
+			Environment: env.DevEnvironment,
 			Region:      "us-east-1",
 		},
 		{
@@ -266,7 +268,7 @@ func TestDetectConflicts(t *testing.T) {
 
 	source := &Profile{
 		Name:        "test-profile",
-		Environment: "dev",
+		Environment: env.DevEnvironment,
 		Region:      "us-east-1",
 		Network: NetworkConfig{
 			VPCId:      "vpc-123",
@@ -324,7 +326,7 @@ func TestMergeProfiles(t *testing.T) {
 	source := &Profile{
 		Name:        "test-profile",
 		Provider:    "aws",
-		Environment: "dev",
+		Environment: env.DevEnvironment,
 		Region:      "us-east-1",
 		Network: NetworkConfig{
 			VPCId:      "vpc-123",
@@ -345,7 +347,7 @@ func TestMergeProfiles(t *testing.T) {
 	target := &Profile{
 		Name:        "test-profile",
 		Provider:    "gcp",
-		Environment: "dev",
+		Environment: env.DevEnvironment,
 		Region:      "us-east-1",
 		Services: map[string]ServiceConfig{
 			"db": {

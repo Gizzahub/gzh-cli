@@ -15,6 +15,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // newNetworkAnalysisCmd creates the network analysis command.
@@ -1552,7 +1554,7 @@ func (na *NetworkAnalyzer) calculateNetworkHealth(analysis *ComprehensiveAnalysi
 	if health.OverallScore >= 90 {
 		health.HealthStatus = "excellent"
 	} else if health.OverallScore >= 75 {
-		health.HealthStatus = "good"
+		health.HealthStatus = env.StatusGood
 	} else if health.OverallScore >= 60 {
 		health.HealthStatus = "fair"
 	} else {

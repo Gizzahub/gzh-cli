@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestContainerNetworkManagement(t *testing.T) {
@@ -31,13 +33,13 @@ func TestContainerNetworkManagement(t *testing.T) {
 		Networks: map[string]*DockerNetwork{
 			"frontend": {
 				Name:    "frontend",
-				Driver:  "bridge",
+				Driver:  env.NetworkTypeBridge,
 				Subnet:  "172.20.0.0/16",
 				Gateway: "172.20.0.1",
 			},
 			"backend": {
 				Name:   "backend",
-				Driver: "bridge",
+				Driver: env.NetworkTypeBridge,
 			},
 		},
 		Containers: map[string]*ContainerNetwork{},
@@ -259,17 +261,17 @@ func TestContainerNetworkManagement(t *testing.T) {
 			Networks: map[string]*DockerNetwork{
 				"public": {
 					Name:   "public",
-					Driver: "bridge",
+					Driver: env.NetworkTypeBridge,
 					Subnet: "172.30.0.0/16",
 				},
 				"internal": {
 					Name:   "internal",
-					Driver: "bridge",
+					Driver: env.NetworkTypeBridge,
 					Subnet: "172.31.0.0/16",
 				},
 				"database": {
 					Name:   "database",
-					Driver: "bridge",
+					Driver: env.NetworkTypeBridge,
 					Subnet: "172.32.0.0/16",
 				},
 			},
@@ -463,12 +465,12 @@ func TestContainerNetworkCommandValidation(t *testing.T) {
 			Networks: map[string]*DockerNetwork{
 				"dmz": {
 					Name:   "dmz",
-					Driver: "bridge",
+					Driver: env.NetworkTypeBridge,
 					Subnet: "10.0.1.0/24",
 				},
 				"secure": {
 					Name:   "secure",
-					Driver: "bridge",
+					Driver: env.NetworkTypeBridge,
 					Subnet: "10.0.2.0/24",
 					Options: map[string]string{
 						"com.docker.network.bridge.enable_icc": "false",

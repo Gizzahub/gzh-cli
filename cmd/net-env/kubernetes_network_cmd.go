@@ -178,7 +178,7 @@ func newK8sNetworkDeleteCmd(km *KubernetesNetworkManager) *cobra.Command {
 			if !force {
 				fmt.Printf("⚠️  Are you sure you want to delete profile '%s'? (y/N): ", profileName)
 				var response string
-				fmt.Scanln(&response)
+				_, _ = fmt.Scanln(&response)
 				if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
 					fmt.Println("❌ Deletion cancelled.")
 					return nil
@@ -603,7 +603,7 @@ func createK8sProfileInteractively(km *KubernetesNetworkManager, profile *Kubern
 	// Get namespace
 	if profile.Namespace == "" {
 		fmt.Print("Enter namespace [default]: ")
-		fmt.Scanln(&profile.Namespace)
+		_, _ = fmt.Scanln(&profile.Namespace)
 
 		if profile.Namespace == "" {
 			profile.Namespace = "default"
@@ -613,14 +613,14 @@ func createK8sProfileInteractively(km *KubernetesNetworkManager, profile *Kubern
 	// Get description
 	if profile.Description == "" {
 		fmt.Print("Enter description (optional): ")
-		fmt.Scanln(&profile.Description)
+		_, _ = fmt.Scanln(&profile.Description)
 	}
 
 	// Ask if user wants to add a network policy
 	fmt.Print("Add a network policy? (y/N): ")
 
 	var addPolicy string
-	fmt.Scanln(&addPolicy)
+	_, _ = fmt.Scanln(&addPolicy)
 
 	if strings.ToLower(addPolicy) == "y" || strings.ToLower(addPolicy) == "yes" {
 		// Simple deny-all policy as starting point
@@ -658,7 +658,7 @@ func printK8sProfilesYAML(profiles []*KubernetesNetworkProfile) error {
 
 func printK8sProfilesTable(profiles []*KubernetesNetworkProfile) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NAME\tNAMESPACE\tDESCRIPTION\tPOLICIES\tACTIVE\tCREATED")
+	_, _ = fmt.Fprintln(w, "NAME\tNAMESPACE\tDESCRIPTION\tPOLICIES\tACTIVE\tCREATED")
 
 	for _, profile := range profiles {
 		active := "No"
@@ -671,7 +671,7 @@ func printK8sProfilesTable(profiles []*KubernetesNetworkProfile) error {
 			created = "-"
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
 			profile.Name,
 			profile.Namespace,
 			truncateString(profile.Description, 40),

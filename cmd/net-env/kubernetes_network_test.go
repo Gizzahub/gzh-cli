@@ -18,7 +18,7 @@ func TestKubernetesNetworkManager(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_network_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -187,7 +187,7 @@ func TestNetworkPolicyGeneration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_policy_gen_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -327,7 +327,7 @@ func TestComplexNetworkProfile(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_complex_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -574,7 +574,7 @@ func TestNetworkPolicyValidation(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_validation_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -634,7 +634,7 @@ func TestServiceMeshIntegration(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "k8s_istio_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		km := NewKubernetesNetworkManager(logger, tempDir)
@@ -669,7 +669,7 @@ func TestServiceMeshIntegration(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "k8s_linkerd_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		km := NewKubernetesNetworkManager(logger, tempDir)
@@ -727,7 +727,7 @@ func TestKubernetesCommandExecutor(t *testing.T) {
 		// Apply commands should not be cached
 		cmd := "kubectl apply -f test.yaml"
 
-		executor.ExecuteWithTimeout(context.Background(), cmd, 5*time.Second)
+		_, _ = executor.ExecuteWithTimeout(context.Background(), cmd, 5*time.Second)
 
 		// Should not be cached
 		cached := executor.getCachedResult(cmd)

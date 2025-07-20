@@ -14,6 +14,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // newOptimalRoutingCmd creates the optimal routing command.
@@ -991,7 +993,7 @@ func (oro *OptimalRouteOptimizer) testRoute(route *NetworkRoute) {
 
 	// Update status
 	if latency > 0 && route.PacketLoss < 5 {
-		route.Status = "good"
+		route.Status = env.StatusGood
 	} else if latency > 0 {
 		route.Status = "degraded"
 	} else {
@@ -1190,7 +1192,7 @@ func (oro *OptimalRouteOptimizer) calculateRouteMetrics(routes []NetworkRoute) R
 	bestRoute := ""
 
 	for _, route := range routes {
-		if route.Status == "good" || route.Status == "degraded" {
+		if route.Status == env.StatusGood || route.Status == env.StatusDegraded {
 			metrics.ActiveRoutes++
 		}
 
@@ -1246,7 +1248,7 @@ func (oro *OptimalRouteOptimizer) generateRouteRecommendations(analysis *RouteAn
 	activeRoutes := 0
 
 	for _, route := range analysis.AvailableRoutes {
-		if route.Status == "good" {
+		if route.Status == env.StatusGood {
 			activeRoutes++
 		}
 	}
@@ -1279,7 +1281,7 @@ func (oro *OptimalRouteOptimizer) calculateDiscoverySummary(discovery *RouteDisc
 	for _, routes := range discovery.TargetRoutes {
 		totalRoutes += len(routes)
 		for _, route := range routes {
-			if route.Status == "good" {
+			if route.Status == env.StatusGood {
 				totalLatency += route.Latency
 				totalBandwidth += route.Bandwidth
 				totalQuality += route.QualityScore

@@ -352,7 +352,7 @@ func (c *RepoConfigClient) GetRepository(ctx context.Context, owner, repo string
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repository: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var repository Repository
 	if err := json.NewDecoder(resp.Body).Decode(&repository); err != nil {
@@ -431,7 +431,7 @@ func (c *RepoConfigClient) UpdateRepository(ctx context.Context, owner, repo str
 	if err != nil {
 		return nil, fmt.Errorf("failed to update repository: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var repository Repository
 	if err := json.NewDecoder(resp.Body).Decode(&repository); err != nil {
@@ -456,8 +456,11 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 		opCtx.Repository = fmt.Sprintf("%s/%s", owner, repo)
 
 		// Log operation start
-		c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
-			fmt.Sprintf("Starting repository configuration update for %s/%s", owner, repo), nil)
+		if err := c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+			fmt.Sprintf("Starting repository configuration update for %s/%s", owner, repo), nil); err != nil {
+			// Log operation errors are not critical, just warn
+			fmt.Printf("Warning: failed to log operation start: %v\n", err)
+		}
 	}
 
 	// Analyze changes for sensitivity if confirmation prompt is provided
@@ -470,16 +473,20 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 			fmt.Printf("Warning: Could not get current configuration for analysis: %v\n", err)
 
 			if c.logger != nil {
-				c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "configuration",
-					"Could not get current configuration for change analysis", err)
+				if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "configuration",
+					"Could not get current configuration for change analysis", err); logErr != nil {
+					fmt.Printf("Warning: failed to log operation warning: %v\n", logErr)
+				}
 			}
 		} else {
 			changes := confirmationPrompt.AnalyzeRepositoryChanges(ctx, owner, repo, currentConfig, config)
 
 			if len(changes) > 0 {
 				if c.logger != nil {
-					c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
-						fmt.Sprintf("Detected %d sensitive changes requiring confirmation", len(changes)), nil)
+					if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+						fmt.Sprintf("Detected %d sensitive changes requiring confirmation", len(changes)), nil); logErr != nil {
+						fmt.Printf("Warning: failed to log operation info: %v\n", logErr)
+					}
 				}
 
 				request := &ConfirmationRequest{
@@ -492,8 +499,10 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 				result, err := confirmationPrompt.RequestConfirmation(ctx, request)
 				if err != nil {
 					if c.logger != nil {
-						c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "confirmation",
-							"User confirmation failed", err)
+						if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "confirmation",
+							"User confirmation failed", err); logErr != nil {
+							fmt.Printf("Warning: failed to log operation error: %v\n", logErr)
+						}
 					}
 
 					return fmt.Errorf("confirmation failed: %w", err)
@@ -501,24 +510,30 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 
 				if !result.Confirmed {
 					if c.logger != nil {
-						c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "confirmation",
-							"Operation cancelled by user", nil)
+						if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelWarn, "repository_update", "confirmation",
+							"Operation cancelled by user", nil); logErr != nil {
+							fmt.Printf("Warning: failed to log operation warning: %v\n", logErr)
+						}
 					}
 
 					return fmt.Errorf("operation cancelled: %s", result.Reason)
 				}
 
 				if c.logger != nil {
-					c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "confirmation",
-						fmt.Sprintf("User confirmed operation: %s", result.UserChoice), nil)
+					if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "confirmation",
+						fmt.Sprintf("User confirmed operation: %s", result.UserChoice), nil); logErr != nil {
+						fmt.Printf("Warning: failed to log operation info: %v\n", logErr)
+					}
 				}
 
 				// If user chose to skip high/critical risk changes, filter them out
 				if len(result.SkippedRisks) > 0 {
 					config = c.filterConfigBySkippedRisks(currentConfig, config, result.SkippedRisks) //nolint:contextcheck // Filter function doesn't need context
 					if c.logger != nil {
-						c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
-							fmt.Sprintf("Filtered config to skip %d risk levels", len(result.SkippedRisks)), nil)
+						if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+							fmt.Sprintf("Filtered config to skip %d risk levels", len(result.SkippedRisks)), nil); logErr != nil {
+							fmt.Printf("Warning: failed to log operation info: %v\n", logErr)
+						}
 					}
 				}
 			}
@@ -562,8 +577,10 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 	// Update permissions
 	if err := c.UpdateRepositoryPermissions(ctx, owner, repo, config.Permissions); err != nil {
 		if c.logger != nil && opCtx != nil {
-			c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "permissions",
-				"Failed to update repository permissions", err)
+			if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelError, "repository_update", "permissions",
+				"Failed to update repository permissions", err); logErr != nil {
+				fmt.Printf("Warning: failed to log operation error: %v\n", logErr)
+			}
 		}
 
 		return fmt.Errorf("failed to update permissions: %w", err)
@@ -571,8 +588,10 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 
 	// Log successful completion
 	if c.logger != nil && opCtx != nil {
-		c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
-			fmt.Sprintf("Successfully updated repository configuration for %s/%s", owner, repo), nil)
+		if logErr := c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
+			fmt.Sprintf("Successfully updated repository configuration for %s/%s", owner, repo), nil); logErr != nil {
+			fmt.Printf("Warning: failed to log operation success: %v\n", logErr)
+		}
 	}
 
 	return nil
@@ -733,7 +752,7 @@ func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owne
 			return fmt.Errorf("failed to update team %s permission: %w", teamSlug, err)
 		}
 
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 
 	// Update user permissions (collaborators)
@@ -746,7 +765,7 @@ func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owne
 			return fmt.Errorf("failed to update user %s permission: %w", username, err)
 		}
 
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 
 	return nil
@@ -760,7 +779,7 @@ func (c *RepoConfigClient) GetBranchProtection(ctx context.Context, owner, repo,
 	if err != nil {
 		return nil, fmt.Errorf("failed to get branch protection: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var protection BranchProtection
 	if err := json.NewDecoder(resp.Body).Decode(&protection); err != nil {
@@ -778,7 +797,7 @@ func (c *RepoConfigClient) UpdateBranchProtection(ctx context.Context, owner, re
 	if err != nil {
 		return nil, fmt.Errorf("failed to update branch protection: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var updatedProtection BranchProtection
 	if err := json.NewDecoder(resp.Body).Decode(&updatedProtection); err != nil {
@@ -796,7 +815,7 @@ func (c *RepoConfigClient) DeleteBranchProtection(ctx context.Context, owner, re
 	if err != nil {
 		return fmt.Errorf("failed to delete branch protection: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	return nil
 }
@@ -849,7 +868,7 @@ func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, 
 	if err != nil {
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var teams []TeamPermission
 	if err := json.NewDecoder(resp.Body).Decode(&teams); err != nil {
@@ -867,7 +886,7 @@ func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, 
 	if err != nil {
 		return teamPerms, nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var users []UserPermission
 	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {

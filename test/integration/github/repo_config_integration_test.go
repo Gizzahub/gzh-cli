@@ -17,11 +17,6 @@ import (
 // Integration tests for GitHub repository configuration management
 // These tests require actual GitHub organization access with appropriate tokens
 
-const (
-	testOrgEnvVar = "GITHUB_TEST_ORG"
-	tokenEnvVar   = "GITHUB_TOKEN"
-)
-
 func skipIfNoTestOrg(t *testing.T) {
 	t.Helper()
 	if os.Getenv(testOrgEnvVar) == "" || os.Getenv(tokenEnvVar) == "" {

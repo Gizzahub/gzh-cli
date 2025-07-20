@@ -392,13 +392,13 @@ func (km *KubernetesNetworkManager) applyResource(resourceYAML []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 	if _, err := tmpFile.Write(resourceYAML); err != nil {
 		return fmt.Errorf("failed to write resource to temp file: %w", err)
 	}
 
-	tmpFile.Close()
+	_ = tmpFile.Close()
 
 	// Apply using kubectl
 	applyCmd := fmt.Sprintf("kubectl apply -f %s", tmpFile.Name())
@@ -438,7 +438,7 @@ func (km *KubernetesNetworkManager) DeleteProfile(name string) error {
 	defer km.mutex.Unlock()
 
 	profilePath := filepath.Join(km.profilesDir, name+".yaml")
-	if err := os.Remove(profilePath); err != nil && !os.IsNotExist(err) {
+	if err := os.Remove(filepath.Clean(profilePath)); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to delete profile file: %w", err)
 	}
 

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestContainerDetector_DetectContainerEnvironment(t *testing.T) {
@@ -243,7 +245,7 @@ def987654321,redis:alpine,redis-server,1 hour ago,Up 1 hour,6379/tcp,cache`
 	}
 
 	// Validate first container
-	if containers[0].ID != "abc123456789" {
+	if containers[0].ID != env.TestContainerID {
 		t.Errorf("Expected container ID 'abc123456789', got '%s'", containers[0].ID)
 	}
 
@@ -288,7 +290,7 @@ ghi123456789,mynetwork,bridge,local`
 	}
 
 	// Validate first network
-	if networks[0].ID != "abc123456789" {
+	if networks[0].ID != env.TestContainerID {
 		t.Errorf("Expected network ID 'abc123456789', got '%s'", networks[0].ID)
 	}
 
@@ -349,7 +351,7 @@ func TestRuntimeInfo_Validation(t *testing.T) {
 
 func TestDetectedContainer_Validation(t *testing.T) {
 	container := DetectedContainer{
-		ID:        "abc123456789",
+		ID:        env.TestContainerID,
 		Name:      "test-container",
 		Image:     "nginx:latest",
 		ImageID:   "sha256:def987654321",
@@ -377,7 +379,7 @@ func TestDetectedContainer_Validation(t *testing.T) {
 		Command:       []string{"nginx", "-g", "daemon off;"},
 	}
 
-	if container.ID != "abc123456789" {
+	if container.ID != env.TestContainerID {
 		t.Error("Container ID mismatch")
 	}
 

@@ -203,7 +203,7 @@ func (env *TestEnvironment) CreateGitRepo(relativePath string) string {
 
 	// Initialize git repo
 	gitDir := filepath.Join(repoPath, ".git")
-	require.NoError(env.t, os.MkdirAll(gitDir, 0o755))
+	require.NoError(env.t, os.MkdirAll(gitDir, 0o750))
 
 	// Create minimal git files
 	env.CreateFile(filepath.Join(relativePath, "README.md"), "# Test Repository\n")
@@ -215,7 +215,7 @@ func (env *TestEnvironment) CreateGitRepo(relativePath string) string {
 // CreateConfigDir creates the configuration directory structure.
 func (env *TestEnvironment) CreateConfigDir() string {
 	configDir := filepath.Join(env.HomeDir, ".config", "gzh-manager")
-	require.NoError(env.t, os.MkdirAll(configDir, 0o755))
+	require.NoError(env.t, os.MkdirAll(configDir, 0o750))
 
 	return configDir
 }
@@ -235,12 +235,12 @@ func (env *TestEnvironment) CopyFile(src, dst string) {
 	srcPath := filepath.Join(env.WorkDir, src)
 	dstPath := filepath.Join(env.WorkDir, dst)
 
-	srcContent, err := os.ReadFile(srcPath)
+	srcContent, err := os.ReadFile(filepath.Clean(srcPath))
 	require.NoError(env.t, err)
 
 	dstDir := filepath.Dir(dstPath)
-	require.NoError(env.t, os.MkdirAll(dstDir, 0o755))
-	require.NoError(env.t, os.WriteFile(dstPath, srcContent, 0o644))
+	require.NoError(env.t, os.MkdirAll(dstDir, 0o750))
+	require.NoError(env.t, os.WriteFile(dstPath, srcContent, 0o600))
 }
 
 // CreateSymlink creates a symbolic link.
@@ -249,7 +249,7 @@ func (env *TestEnvironment) CreateSymlink(target, link string) {
 	linkPath := filepath.Join(env.WorkDir, link)
 
 	linkDir := filepath.Dir(linkPath)
-	require.NoError(env.t, os.MkdirAll(linkDir, 0o755))
+	require.NoError(env.t, os.MkdirAll(linkDir, 0o750))
 	require.NoError(env.t, os.Symlink(targetPath, linkPath))
 }
 

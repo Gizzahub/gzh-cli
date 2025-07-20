@@ -49,6 +49,44 @@ const (
 	GZHGiteaAPI  = "GZH_GITEA_API"  // Gitea API base URL
 )
 
+// Common string constants to avoid duplication.
+const (
+	// Environment names.
+	DefaultEnvironment = "default"
+	DevEnvironment     = "dev"
+
+	// Network types.
+	NetworkTypeBridge = "bridge"
+
+	// Status types.
+	StatusGood     = "good"
+	StatusDegraded = "degraded"
+
+	// Test constants.
+	TestContainerID = "abc123456789"
+
+	// Common strings.
+	FormatJSON       = "json"
+	FormatYAML       = "yaml"
+	FieldDescription = "description"
+	OperationList    = "list"
+	OperationFetch   = "fetch"
+	CurrentSuffix    = " [current]"
+	DefaultRegion    = "us-east-1"
+	DefaultZone      = "us-east1-a"
+	DefaultLocation  = "US"
+	PolicyAllow      = "allow"
+	PolicyDeny       = "deny"
+	InterfaceEth0    = "eth0"
+	InterfaceWifi0   = "wlan0"
+	ProviderAWS      = "aws"
+	ProviderGCP      = "gcp"
+	ProviderAzure    = "azure"
+	StatusEnabled    = "enabled"
+	StatusYes        = "Yes"
+	ValueNA          = "N/A"
+)
+
 // GetToken returns the token for the specified provider, checking both standard
 // and GZH-prefixed environment variables.
 func GetToken(provider string) string {

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"time"
+	
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // DefaultSyncManager implements SyncManager interface.
@@ -533,31 +535,31 @@ func GetSyncRecommendations(config *Config) ([]SyncTarget, error) {
 	envProfiles := make(map[string][]string)
 
 	for name, profile := range config.Profiles {
-		env := profile.Environment
-		if env == "" {
-			env = "default"
+		environment := profile.Environment
+		if environment == "" {
+			environment = env.DefaultEnvironment
 		}
 
-		envProfiles[env] = append(envProfiles[env], name)
+		envProfiles[environment] = append(envProfiles[environment], name)
 	}
 
 	// Suggest sync targets for environments with multiple providers
 	providersByEnv := make(map[string]map[string]bool)
 
 	for _, profile := range config.Profiles {
-		env := profile.Environment
-		if env == "" {
-			env = "default"
+		environment := profile.Environment
+		if environment == "" {
+			environment = env.DefaultEnvironment
 		}
 
-		if providersByEnv[env] == nil {
-			providersByEnv[env] = make(map[string]bool)
+		if providersByEnv[environment] == nil {
+			providersByEnv[environment] = make(map[string]bool)
 		}
 
-		providersByEnv[env][profile.Provider] = true
+		providersByEnv[environment][profile.Provider] = true
 	}
 
-	for env, providers := range providersByEnv {
+	for environment, providers := range providersByEnv {
 		if len(providers) > 1 {
 			// Multiple providers for same environment - suggest sync
 			var providerList []string
@@ -571,7 +573,7 @@ func GetSyncRecommendations(config *Config) ([]SyncTarget, error) {
 					recommendations = append(recommendations, SyncTarget{
 						Source:   providerList[i],
 						Target:   providerList[j],
-						Profiles: envProfiles[env],
+						Profiles: envProfiles[environment],
 					})
 				}
 			}

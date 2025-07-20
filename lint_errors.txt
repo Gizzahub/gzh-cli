@@ -1,0 +1,8 @@
+test/integration/github/fixtures.go:1: : # github.com/gizzahub/gzh-manager-go/test/integration/github [github.com/gizzahub/gzh-manager-go/test/integration/github.test]
+test/integration/github/repo_config_integration_test.go:21:2: testOrgEnvVar redeclared in this block
+	test/integration/github/fixtures.go:14:2: other declaration of testOrgEnvVar
+test/integration/github/repo_config_integration_test.go:22:2: tokenEnvVar redeclared in this block
+	test/integration/github/fixtures.go:15:2: other declaration of tokenEnvVar (typecheck)
+// Package github_test provides integration test fixtures and scenarios for GitHub operations.
+1 issues:
+* typecheck: 1

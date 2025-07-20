@@ -1220,7 +1220,7 @@ func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[
 			countCmd := fmt.Sprintf("kubectl get %s -n %s --no-headers 2>/dev/null | wc -l", resource, namespace)
 			result, _ := km.executor.ExecuteWithTimeout(context.Background(), countCmd, 5*time.Second)
 			count := 0
-			fmt.Sscanf(strings.TrimSpace(result.Output), "%d", &count)
+			_, _ = fmt.Sscanf(strings.TrimSpace(result.Output), "%d", &count)
 			resourceCounts[resource] = count
 		}
 
@@ -1240,7 +1240,7 @@ func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[
 			countCmd := fmt.Sprintf("kubectl get %s -n %s --no-headers 2>/dev/null | wc -l", resource, namespace)
 			result, _ := km.executor.ExecuteWithTimeout(context.Background(), countCmd, 5*time.Second)
 			count := 0
-			fmt.Sscanf(strings.TrimSpace(result.Output), "%d", &count)
+			_, _ = fmt.Sscanf(strings.TrimSpace(result.Output), "%d", &count)
 			resourceCounts[resource] = count
 		}
 
