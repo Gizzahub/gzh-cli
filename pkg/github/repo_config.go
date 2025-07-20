@@ -270,7 +270,7 @@ func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string,
 
 		// Handle API errors
 		if resp.StatusCode >= 400 {
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			var apiError APIError
 			if err := json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
@@ -324,7 +324,7 @@ func (c *RepoConfigClient) ListRepositories(ctx context.Context, org string, opt
 		if err != nil {
 			return nil, fmt.Errorf("failed to list repositories: %w", err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		var repos []*Repository
 		if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {

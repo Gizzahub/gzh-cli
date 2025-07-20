@@ -248,10 +248,10 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 	_, _ = c.Printf("All Target %d >>>>>>>>>>>>>>>>>>>>\n", len(orgRepos)) //nolint:errcheck // User information display
 
 	for _, repo := range orgRepos {
-		c.Println(repo)
+		_, _ = c.Println(repo)
 	}
 
-	c.Println("All Target <<<<<<<<<<<<<<<<<<<")
+	_, _ = c.Println("All Target <<<<<<<<<<<<<<<<<<<")
 
 	// Use errgroup for concurrent repository processing
 	g, gCtx := errgroup.WithContext(ctx)
@@ -318,7 +318,7 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 
 			// Update progress bar safely
 			mu.Lock()
-			bar.Add(1)
+			_ = bar.Add(1)
 			mu.Unlock()
 
 			return nil

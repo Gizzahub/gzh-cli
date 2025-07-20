@@ -268,7 +268,7 @@ func TestRepoConfigClient_MakeRequestWithRetry(t *testing.T) {
 	resp, err := client.makeRequest(ctx, "GET", "/test", nil)
 	require.NoError(t, err)
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, 2, attempts)
