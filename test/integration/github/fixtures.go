@@ -10,6 +10,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	testOrgEnvVar = "GITHUB_TEST_ORG"
+	tokenEnvVar   = "GITHUB_TOKEN"
+)
+
 // TestFixtures provides test data for integration tests.
 type TestFixtures struct {
 	Organization string

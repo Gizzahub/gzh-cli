@@ -251,7 +251,7 @@ finish:
 	m.memoryMonitor.mu.RUnlock()
 
 	if m.config.ShowProgress && progressBar != nil {
-		progressBar.Finish()
+		_ = progressBar.Finish()
 	}
 
 	if m.config.VerboseLogging {
@@ -348,7 +348,7 @@ func (m *OptimizedBulkCloneManager) processBatch(ctx context.Context, targetPath
 			}
 
 			if progressBar != nil {
-				progressBar.Add(1)
+				_ = progressBar.Add(1)
 			}
 
 		case <-ctx.Done():

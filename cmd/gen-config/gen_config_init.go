@@ -139,13 +139,13 @@ func (o *genConfigInitOptions) runInteractiveWizard() ConfigData {
 
 	protocol := strings.TrimSpace(scanner.Text())
 	if protocol == "" {
-		protocol = "https"
+		protocol = protocolHTTPS
 	}
 
-	if protocol != "https" && protocol != "ssh" && protocol != "http" {
+	if protocol != protocolHTTPS && protocol != "ssh" && protocol != "http" {
 		fmt.Println("⚠️  Invalid protocol, using https")
 
-		protocol = "https"
+		protocol = protocolHTTPS
 	}
 
 	config.Protocol = protocol

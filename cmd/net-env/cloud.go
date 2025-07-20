@@ -13,6 +13,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	// valueNotAvailable is used when a value is not available.
+	valueNotAvailable = "N/A"
+)
+
 // cloudOptions contains options for cloud commands.
 type cloudOptions struct {
 	configFile string
@@ -109,7 +114,7 @@ func newCloudListCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 				for name, profile := range config.Profiles {
 					vpcId := profile.Network.VPCId
 					if vpcId == "" {
-						vpcId = "N/A"
+						vpcId = valueNotAvailable
 					}
 					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
 						name,

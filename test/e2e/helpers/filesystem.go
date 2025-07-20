@@ -30,8 +30,8 @@ func NewTestEnvironment(t *testing.T) *TestEnvironment {
 	homeDir := filepath.Join(tempDir, "home")
 	workDir := filepath.Join(tempDir, "work")
 
-	require.NoError(t, os.MkdirAll(homeDir, 0o755))
-	require.NoError(t, os.MkdirAll(workDir, 0o755))
+	require.NoError(t, os.MkdirAll(homeDir, 0o750))
+	require.NoError(t, os.MkdirAll(workDir, 0o750))
 
 	// Find and build binary
 	projectRoot, err := FindProjectRoot()
@@ -69,8 +69,8 @@ func (env *TestEnvironment) CreateFile(relativePath, content string) string {
 	fullPath := filepath.Join(env.WorkDir, relativePath)
 	dir := filepath.Dir(fullPath)
 
-	require.NoError(env.t, os.MkdirAll(dir, 0o755))
-	require.NoError(env.t, os.WriteFile(fullPath, []byte(content), 0o644))
+	require.NoError(env.t, os.MkdirAll(dir, 0o750))
+	require.NoError(env.t, os.WriteFile(fullPath, []byte(content), 0o600))
 
 	return fullPath
 }
@@ -78,7 +78,7 @@ func (env *TestEnvironment) CreateFile(relativePath, content string) string {
 // CreateDir creates a directory.
 func (env *TestEnvironment) CreateDir(relativePath string) string {
 	fullPath := filepath.Join(env.WorkDir, relativePath)
-	require.NoError(env.t, os.MkdirAll(fullPath, 0o755))
+	require.NoError(env.t, os.MkdirAll(fullPath, 0o750))
 
 	return fullPath
 }
@@ -91,7 +91,7 @@ func (env *TestEnvironment) WriteConfig(filename, content string) string {
 // ReadFile reads the content of a file.
 func (env *TestEnvironment) ReadFile(relativePath string) string {
 	fullPath := filepath.Join(env.WorkDir, relativePath)
-	content, err := os.ReadFile(fullPath)
+	content, err := os.ReadFile(filepath.Clean(fullPath))
 	require.NoError(env.t, err)
 
 	return string(content)

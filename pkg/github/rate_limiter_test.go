@@ -295,7 +295,7 @@ func TestRepoConfigClient_MakeRequestMaxRetries(t *testing.T) {
 
 	resp, err := client.makeRequest(ctx, "GET", "/test", nil)
 	if resp != nil {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 
 	assert.Error(t, err)

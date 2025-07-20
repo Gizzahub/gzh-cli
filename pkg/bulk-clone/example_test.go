@@ -48,7 +48,7 @@ repo_roots:
     strategy: "fetch"
 `
 
-	err := os.WriteFile(configPath, []byte(configContent), 0o644)
+	err := os.WriteFile(configPath, []byte(configContent), 0o600)
 	if err != nil {
 		log.Printf("Error creating config file: %v", err)
 		return

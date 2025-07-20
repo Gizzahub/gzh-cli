@@ -240,7 +240,7 @@ func TestMemoryMonitor(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create manager: %v", err)
 	}
-	defer manager.Close()
+	defer func() { _ = manager.Close() }()
 
 	// Test memory usage tracking
 	usage := manager.getCurrentMemoryUsage()
