@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
@@ -47,8 +48,12 @@ func (s *Server) Start(ctx context.Context) error {
 	// Start server
 	addr := fmt.Sprintf("%s:%d", s.host, s.port)
 	srv := &http.Server{
-		Addr:    addr,
-		Handler: mux,
+		Addr:              addr,
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,  // Prevent Slowloris attacks
+		ReadTimeout:       30 * time.Second,  // Total request read timeout
+		WriteTimeout:      30 * time.Second,  // Response write timeout
+		IdleTimeout:       120 * time.Second, // Keep-alive timeout
 	}
 
 	s.logger.Info("Webhook server started", "address", addr)
@@ -69,5 +74,5 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 	metrics := s.processor.GetMetrics()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(metrics)
+	_ = json.NewEncoder(w).Encode(metrics) // Ignore JSON encode error
 }

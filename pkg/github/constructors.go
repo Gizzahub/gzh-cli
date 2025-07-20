@@ -88,7 +88,7 @@ func (c *GitHubAPIClient) GetRepository(ctx context.Context, owner, repo string)
 
 	// Implementation would use c.httpClient instead of direct http calls
 	// This is just a placeholder showing the pattern
-	return nil, nil
+	return nil, fmt.Errorf("GetRepository not implemented")
 }
 
 // ListOrganizationRepositories implements APIClient interface.
@@ -96,7 +96,7 @@ func (c *GitHubAPIClient) ListOrganizationRepositories(ctx context.Context, org 
 	c.logger.Debug("Listing organization repositories", "org", org)
 
 	// Implementation would use c.httpClient instead of direct http calls
-	return nil, nil
+	return nil, fmt.Errorf("ListOrganizationRepositories not implemented")
 }
 
 // GetDefaultBranch implements APIClient interface.
@@ -125,7 +125,7 @@ func (c *GitHubAPIClient) GetRepositoryConfiguration(ctx context.Context, owner,
 	c.logger.Debug("Getting repository configuration", "owner", owner, "repo", repo)
 
 	// Implementation would use c.httpClient
-	return nil, nil
+	return nil, fmt.Errorf("GetRepositoryConfiguration not implemented")
 }
 
 // UpdateRepositoryConfiguration implements APIClient interface.

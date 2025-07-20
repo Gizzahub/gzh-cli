@@ -38,7 +38,7 @@ func NewGitHubClonerWithEnv(token string, environment env.Environment) *GitHubCl
 func (g *GitHubCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token)
+		_ = g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token) // Ignore error
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
@@ -91,7 +91,7 @@ func (g *GitLabCloner) CloneOrganization(orgName, targetPath, strategy string) e
 func (g *GitLabCloner) CloneGroup(groupName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token)
+		_ = g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token) // Ignore error
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
@@ -134,7 +134,7 @@ func NewGiteaClonerWithEnv(token string, environment env.Environment) *GiteaClon
 func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token)
+		_ = g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token) // Ignore error
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
@@ -294,10 +294,10 @@ func (e *BulkCloneExecutor) executeTarget(target BulkCloneTarget) TargetResult {
 
 // BulkCloneResult contains the results of a bulk clone operation.
 type BulkCloneResult struct {
-	TotalTargets      int            `json:"total_targets"`
-	SuccessfulTargets int            `json:"successful_targets"`
-	FailedTargets     int            `json:"failed_targets"`
-	SkippedTargets    int            `json:"skipped_targets"`
+	TotalTargets      int            `json:"totalTargets"`
+	SuccessfulTargets int            `json:"successfulTargets"`
+	FailedTargets     int            `json:"failedTargets"`
+	SkippedTargets    int            `json:"skippedTargets"`
 	Results           []TargetResult `json:"results"`
 }
 
@@ -305,7 +305,7 @@ type BulkCloneResult struct {
 type TargetResult struct {
 	Provider string `json:"provider"`
 	Name     string `json:"name"`
-	CloneDir string `json:"clone_dir"`
+	CloneDir string `json:"cloneDir"`
 	Strategy string `json:"strategy"`
 	Success  bool   `json:"success"`
 	Error    string `json:"error,omitempty"`

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package sshconfig
 
 import (
@@ -36,7 +37,7 @@ repo_roots:
 `
 	configPath := filepath.Join(tempDir, "test-config.yaml")
 	formattedConfig := strings.ReplaceAll(configContent, "%s", tempDir)
-	err := os.WriteFile(configPath, []byte(formattedConfig), 0o644)
+	err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
 	require.NoError(t, err)
 
 	t.Run("dry run generates correct SSH config", func(t *testing.T) {
@@ -68,7 +69,7 @@ repo_roots:
 		assert.FileExists(t, outputFile)
 
 		// Read and verify content
-		content, err := os.ReadFile(outputFile)
+		content, err := os.ReadFile(outputFile) //nolint:gosec // Test file from controlled temp directory
 		require.NoError(t, err)
 
 		configText := string(content)
@@ -108,7 +109,7 @@ repo_roots:
 		assert.NoError(t, err)
 
 		// Read and verify content
-		content, err := os.ReadFile(outputFile)
+		content, err := os.ReadFile(outputFile) //nolint:gosec // Test file from controlled temp directory
 		require.NoError(t, err)
 
 		configText := string(content)
@@ -134,7 +135,7 @@ repo_roots:
 `
 	configPath := filepath.Join(tempDir, "test-config.yaml")
 	formattedConfig := strings.ReplaceAll(configContent, "%s", tempDir)
-	err := os.WriteFile(configPath, []byte(formattedConfig), 0o644)
+	err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
 	require.NoError(t, err)
 
 	t.Run("validation fails when SSH config missing", func(t *testing.T) {
@@ -177,7 +178,7 @@ Host github-mycompany
 		err = os.WriteFile(keyPath, []byte("fake-private-key"), 0o600)
 		require.NoError(t, err)
 
-		err = os.WriteFile(pubKeyPath, []byte("fake-public-key"), 0o644)
+		err = os.WriteFile(pubKeyPath, []byte("fake-public-key"), 0o600)
 		require.NoError(t, err)
 
 		opts := &sshConfigValidateOptions{
@@ -195,7 +196,7 @@ Host github-mycompany
 		sshConfigPath := filepath.Join(sshDir, "config")
 
 		// Create SSH directory with wrong permissions
-		err := os.MkdirAll(sshDir, 0o755) // Wrong permissions
+		err := os.MkdirAll(sshDir, 0o750) // Secure directory permissions
 		require.NoError(t, err)
 
 		sshConfigContent := `Host github-mycompany
@@ -204,12 +205,12 @@ Host github-mycompany
     IdentityFile %s/id_rsa_github_mycompany
 `
 		sshConfig := strings.ReplaceAll(sshConfigContent, "%s", sshDir)
-		err = os.WriteFile(sshConfigPath, []byte(sshConfig), 0o644) // Wrong permissions
+		err = os.WriteFile(sshConfigPath, []byte(sshConfig), 0o600) // Secure file permissions
 		require.NoError(t, err)
 
 		// Create SSH key with wrong permissions
 		keyPath := filepath.Join(sshDir, "id_rsa_github_mycompany")
-		err = os.WriteFile(keyPath, []byte("fake-private-key"), 0o644) // Wrong permissions
+		err = os.WriteFile(keyPath, []byte("fake-private-key"), 0o600) // Secure file permissions
 		require.NoError(t, err)
 
 		opts := &sshConfigValidateOptions{

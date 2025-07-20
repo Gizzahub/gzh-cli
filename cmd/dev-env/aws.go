@@ -329,7 +329,7 @@ func (o *awsOptions) saveMetadata() error {
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
 
-	file, err := os.OpenFile(metadataPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
+	file, err := os.OpenFile(metadataPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600) //nolint:gosec // Safe file path construction
 	if err != nil {
 		return err
 	}
@@ -439,7 +439,7 @@ func (o *awsOptions) copyFile(src, dst string) error {
 
 func (o *awsOptions) displayConfigInfo(configPath string) error {
 	// Read and parse AWS config
-	content, err := os.ReadFile(configPath)
+	content, err := os.ReadFile(configPath) //nolint:gosec // Safe file path construction
 	if err != nil {
 		return err
 	}

@@ -155,7 +155,7 @@ without waiting for actual GitHub events.`,
 	return eventCmd
 }
 
-func runEventServer(cmd *cobra.Command, args []string, host string, port int, secret string) error {
+func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret string) error {
 	_ = context.Background() // ctx unused in mock implementation
 
 	logger := getLogger()
@@ -205,7 +205,7 @@ func runEventServer(cmd *cobra.Command, args []string, host string, port int, se
 	return srv.ListenAndServe()
 }
 
-func runEventList(cmd *cobra.Command, args []string, org, repo, eventType, action, sender, since, until string, limit, offset int, outputFormat string) error {
+func runEventList(_ *cobra.Command, _ []string, org, repo, eventType, action, sender, since, until string, limit, offset int, outputFormat string) error {
 	_ = context.Background() // ctx unused in mock implementation
 	_ = getLogger()          // logger unused in mock implementation
 
@@ -285,7 +285,7 @@ func runEventList(cmd *cobra.Command, args []string, org, repo, eventType, actio
 	}
 }
 
-func runEventGet(cmd *cobra.Command, args []string, outputFormat string) error {
+func runEventGet(_ *cobra.Command, args []string, outputFormat string) error {
 	eventID := args[0]
 	_ = context.Background() // ctx unused in mock implementation
 	_ = getLogger()          // logger unused in mock implementation
@@ -328,7 +328,7 @@ func runEventGet(cmd *cobra.Command, args []string, outputFormat string) error {
 	}
 }
 
-func runEventMetrics(cmd *cobra.Command, args []string, outputFormat string) error {
+func runEventMetrics(_ *cobra.Command, _ []string, outputFormat string) error {
 	_ = context.Background() // ctx unused in mock implementation
 	logger := getLogger()
 
@@ -372,7 +372,7 @@ func runEventMetrics(cmd *cobra.Command, args []string, outputFormat string) err
 	}
 }
 
-func runEventTest(cmd *cobra.Command, args []string, eventType, action, payload string, port int) error {
+func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload string, port int) error {
 	logger := getLogger()
 
 	// Default test payload
@@ -583,7 +583,7 @@ func (m *mockEventStorage) StoreEvent(ctx context.Context, event *github.GitHubE
 }
 
 func (m *mockEventStorage) GetEvent(ctx context.Context, eventID string) (*github.GitHubEvent, error) {
-	return nil, nil
+	return nil, fmt.Errorf("event not found: %s", eventID)
 }
 
 func (m *mockEventStorage) ListEvents(ctx context.Context, filter *github.EventFilter, limit, offset int) ([]*github.GitHubEvent, error) {

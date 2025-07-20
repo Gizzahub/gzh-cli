@@ -68,6 +68,7 @@ type StreamMetadata struct {
 }
 
 // Project represents a GitLab project with optimized memory layout.
+// nolint:tagliatelle // External API format - must match GitLab JSON output
 type Project struct {
 	ID                int64     `json:"id"`
 	Name              string    `json:"name"`

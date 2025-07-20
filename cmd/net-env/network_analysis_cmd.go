@@ -1,3 +1,4 @@
+//nolint:tagliatelle // Network analysis output may require specific JSON field naming conventions
 package netenv
 
 import (
@@ -312,35 +313,35 @@ type BandwidthAnalysisConfig struct {
 
 type ComprehensiveAnalysisConfig struct {
 	Duration       time.Duration `json:"duration"`
-	LatencyTargets []string      `json:"latency_targets"`
+	LatencyTargets []string      `json:"latencyTargets"`
 	Interfaces     []string      `json:"interfaces"`
-	IncludeQuality bool          `json:"include_quality"`
-	IncludeTrends  bool          `json:"include_trends"`
+	IncludeQuality bool          `json:"includeQuality"`
+	IncludeTrends  bool          `json:"includeTrends"`
 }
 
 type LatencyAnalysis struct {
 	Config           LatencyAnalysisConfig `json:"config"`
-	StartTime        time.Time             `json:"start_time"`
-	EndTime          time.Time             `json:"end_time"`
-	TargetAnalysis   []TargetLatencyStats  `json:"target_analysis"`
-	OverallStats     OverallLatencyStats   `json:"overall_stats"`
-	AnomalyDetection []LatencyAnomaly      `json:"anomaly_detection"`
+	StartTime        time.Time             `json:"startTime"`
+	EndTime          time.Time             `json:"endTime"`
+	TargetAnalysis   []TargetLatencyStats  `json:"targetAnalysis"`
+	OverallStats     OverallLatencyStats   `json:"overallStats"`
+	AnomalyDetection []LatencyAnomaly      `json:"anomalyDetection"`
 	Recommendations  []string              `json:"recommendations"`
-	QualityScore     float64               `json:"quality_score"`
+	QualityScore     float64               `json:"qualityScore"`
 }
 
 type TargetLatencyStats struct {
 	Target         string                `json:"target"`
 	Measurements   []LatencyMeasurement  `json:"measurements"`
 	Statistics     LatencyStatistics     `json:"statistics"`
-	TrendAnalysis  LatencyTrend          `json:"trend_analysis"`
-	QualityMetrics LatencyQualityMetrics `json:"quality_metrics"`
+	TrendAnalysis  LatencyTrend          `json:"trendAnalysis"`
+	QualityMetrics LatencyQualityMetrics `json:"qualityMetrics"`
 }
 
 type LatencyMeasurement struct {
 	Timestamp  time.Time     `json:"timestamp"`
 	Latency    time.Duration `json:"latency"`
-	PacketLoss float64       `json:"packet_loss"`
+	PacketLoss float64       `json:"packetLoss"`
 	Jitter     time.Duration `json:"jitter"`
 	Success    bool          `json:"success"`
 }
@@ -353,8 +354,8 @@ type LatencyStatistics struct {
 	Median      time.Duration `json:"median"`
 	P95         time.Duration `json:"p95"`
 	P99         time.Duration `json:"p99"`
-	StdDev      time.Duration `json:"std_dev"`
-	SuccessRate float64       `json:"success_rate"`
+	StdDev      time.Duration `json:"stdDev"`
+	SuccessRate float64       `json:"successRate"`
 }
 
 type LatencyTrend struct {
@@ -560,7 +561,7 @@ type BottleneckRecommendation struct {
 
 // Implementation functions
 
-func createNetworkAnalyzer(ctx context.Context, logger *zap.Logger, configDir string) (*NetworkAnalyzer, error) {
+func createNetworkAnalyzer(_ context.Context, logger *zap.Logger, configDir string) (*NetworkAnalyzer, error) {
 	analyzer := &NetworkAnalyzer{
 		logger:      logger,
 		configDir:   configDir,
@@ -866,7 +867,8 @@ func (na *NetworkAnalyzer) collectTargetLatencyStats(ctx context.Context, target
 	for time.Now().Before(endTime) {
 		select {
 		case <-ctx.Done():
-			break
+			stats.Measurements = measurements
+			return stats, ctx.Err()
 		case <-ticker.C:
 			measurement := na.measureLatency(target)
 			measurements = append(measurements, measurement)
@@ -1653,74 +1655,92 @@ func (na *NetworkAnalyzer) generateComprehensiveRecommendations(analysis *Compre
 }
 
 func (na *NetworkAnalyzer) checkSystemResourceBottlenecks(analysis *BottleneckAnalysis) {
-	// Check CPU usage impact on networking
-	result := na.commandPool.ExecuteCommand("top", "-bn1")
-	if result.Error == nil {
-		output := string(result.Output)
-		if strings.Contains(output, "Cpu(s):") {
-			// Parse CPU usage (simplified)
-			lines := strings.Split(output, "\n")
-			for _, line := range lines {
-				if strings.Contains(line, "Cpu(s):") {
-					// Extract CPU usage percentage
-					if strings.Contains(line, "us") {
-						bottleneck := NetworkBottleneck{
-							Type:        "cpu",
-							Location:    "system",
-							Severity:    "low",
-							Impact:      "May affect network processing capacity",
-							Description: "Monitor CPU usage during network intensive operations",
-							Confidence:  0.6,
-						}
-						analysis.DetectedBottlenecks = append(analysis.DetectedBottlenecks, bottleneck)
-					}
+	na.checkCPUUsage(analysis)
+	na.checkMemoryUsage(analysis)
+}
 
-					break
-				}
-			}
-		}
+// checkCPUUsage monitors CPU usage impact on networking.
+func (na *NetworkAnalyzer) checkCPUUsage(analysis *BottleneckAnalysis) {
+	result := na.commandPool.ExecuteCommand("top", "-bn1")
+	if result.Error != nil {
+		return
 	}
 
-	// Check memory usage
-	result = na.commandPool.ExecuteCommand("free", "-m")
-	if result.Error == nil {
-		output := string(result.Output)
+	output := string(result.Output)
+	if !strings.Contains(output, "Cpu(s):") {
+		return
+	}
 
-		lines := strings.Split(output, "\n")
-		for _, line := range lines {
-			if strings.HasPrefix(line, "Mem:") {
-				fields := strings.Fields(line)
-				if len(fields) >= 3 {
-					if total, err := strconv.ParseFloat(fields[1], 64); err == nil {
-						if used, err := strconv.ParseFloat(fields[2], 64); err == nil {
-							utilization := (used / total) * 100
-							limit := SystemLimit{
-								Resource:    "memory",
-								Current:     used,
-								Maximum:     total,
-								Utilization: utilization,
-								AtRisk:      utilization > 85,
-							}
-							analysis.SystemLimits = append(analysis.SystemLimits, limit)
-
-							if utilization > 90 {
-								bottleneck := NetworkBottleneck{
-									Type:        "memory",
-									Location:    "system",
-									Severity:    "medium",
-									Impact:      "May cause network buffer limitations",
-									Description: fmt.Sprintf("Memory utilization at %.1f%%", utilization),
-									Confidence:  0.8,
-								}
-								analysis.DetectedBottlenecks = append(analysis.DetectedBottlenecks, bottleneck)
-							}
-						}
-					}
-				}
-
-				break
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "Cpu(s):") && strings.Contains(line, "us") {
+			bottleneck := NetworkBottleneck{
+				Type:        "cpu",
+				Location:    "system",
+				Severity:    "low",
+				Impact:      "May affect network processing capacity",
+				Description: "Monitor CPU usage during network intensive operations",
+				Confidence:  0.6,
 			}
+			analysis.DetectedBottlenecks = append(analysis.DetectedBottlenecks, bottleneck)
+			break
 		}
+	}
+}
+
+// checkMemoryUsage monitors memory usage impact on networking.
+func (na *NetworkAnalyzer) checkMemoryUsage(analysis *BottleneckAnalysis) {
+	result := na.commandPool.ExecuteCommand("free", "-m")
+	if result.Error != nil {
+		return
+	}
+
+	output := string(result.Output)
+	lines := strings.Split(output, "\n")
+
+	for _, line := range lines {
+		if !strings.HasPrefix(line, "Mem:") {
+			continue
+		}
+
+		fields := strings.Fields(line)
+		if len(fields) < 3 {
+			break
+		}
+
+		total, err := strconv.ParseFloat(fields[1], 64)
+		if err != nil {
+			break
+		}
+
+		used, err := strconv.ParseFloat(fields[2], 64)
+		if err != nil {
+			break
+		}
+
+		utilization := (used / total) * 100
+		limit := SystemLimit{
+			Resource:    "memory",
+			Current:     used,
+			Maximum:     total,
+			Utilization: utilization,
+			AtRisk:      utilization > 85,
+		}
+		analysis.SystemLimits = append(analysis.SystemLimits, limit)
+
+		if utilization > 90 {
+			bottleneck := NetworkBottleneck{
+				Type:        "memory",
+				Location:    "system",
+				Severity:    "medium",
+				Impact:      "May cause network buffer limitations",
+				Description: fmt.Sprintf("Memory utilization at %.1f%%", utilization),
+				Confidence:  0.8,
+			}
+			analysis.DetectedBottlenecks = append(analysis.DetectedBottlenecks, bottleneck)
+		}
+
+		break
 	}
 }
 

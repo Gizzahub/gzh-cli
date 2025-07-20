@@ -21,18 +21,18 @@ type GCPProject struct {
 	ID             string            `json:"id"`
 	Name           string            `json:"name"`
 	Number         string            `json:"number"`
-	LifecycleState string            `json:"lifecycle_state"`
+	LifecycleState string            `json:"lifecycleState"`
 	Account        string            `json:"account"`
 	Region         string            `json:"region"`
 	Zone           string            `json:"zone"`
 	Configuration  string            `json:"configuration"`
-	ServiceAccount string            `json:"service_account,omitempty"`
-	BillingAccount string            `json:"billing_account,omitempty"`
-	IsActive       bool              `json:"is_active"`
-	LastUsed       *time.Time        `json:"last_used,omitempty"`
+	ServiceAccount string            `json:"serviceAccount,omitempty"`
+	BillingAccount string            `json:"billingAccount,omitempty"`
+	IsActive       bool              `json:"isActive"`
+	LastUsed       *time.Time        `json:"lastUsed,omitempty"`
 	Tags           map[string]string `json:"tags,omitempty"`
-	EnabledAPIs    []string          `json:"enabled_apis,omitempty"`
-	IAMPermissions []string          `json:"iam_permissions,omitempty"`
+	EnabledAPIs    []string          `json:"enabledApis,omitempty"`
+	IAMPermissions []string          `json:"iamPermissions,omitempty"`
 }
 
 // GCPProjectManager manages GCP projects and configurations.
@@ -50,8 +50,8 @@ type GCPConfiguration struct {
 	Account        string `json:"account"`
 	Region         string `json:"region"`
 	Zone           string `json:"zone"`
-	IsActive       bool   `json:"is_active"`
-	PropertiesPath string `json:"properties_path"`
+	IsActive       bool   `json:"isActive"`
+	PropertiesPath string `json:"propertiesPath"`
 }
 
 // NewGCPProjectManager creates a new GCP project manager.
@@ -451,7 +451,7 @@ func (m *GCPProjectManager) getActiveConfiguration() (string, error) {
 }
 
 // parseConfigurationProperties parses gcloud configuration properties.
-func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, config *GCPConfiguration) error {
+func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, config *GCPConfiguration) error { //nolint:gocognit // Complex GCP configuration properties parsing
 	content, err := os.ReadFile(propertiesPath)
 	if err != nil {
 		return err
@@ -556,7 +556,7 @@ func (m *GCPProjectManager) listProjects(format string) error {
 				active = "✓"
 			}
 
-			table.Append([]string{
+			_ = table.Append([]string{ //nolint:errcheck // Table operations are non-critical for CLI display
 				project.ID,
 				project.Name,
 				project.LifecycleState,
@@ -566,7 +566,7 @@ func (m *GCPProjectManager) listProjects(format string) error {
 			})
 		}
 
-		table.Render()
+		_ = table.Render() //nolint:errcheck // Table rendering errors are non-critical for CLI display
 
 		return nil
 
@@ -836,7 +836,7 @@ func newGCPProjectConfigCreateCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&region, "region", "r", "", "Default region")
 	cmd.Flags().StringVarP(&zone, "zone", "z", "", "Default zone")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -890,7 +890,7 @@ func (m *GCPProjectManager) listConfigurations() error {
 			active = "✓"
 		}
 
-		table.Append(
+		_ = table.Append( //nolint:errcheck // Table operations are non-critical for CLI display
 			config.Name,
 			config.Project,
 			config.Account,
@@ -900,7 +900,7 @@ func (m *GCPProjectManager) listConfigurations() error {
 		)
 	}
 
-	table.Render()
+	_ = table.Render() //nolint:errcheck // Table rendering errors are non-critical for CLI display
 
 	return nil
 }

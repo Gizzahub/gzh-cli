@@ -1,3 +1,4 @@
+//nolint:tagliatelle // GitHub API response formatting may require specific JSON field naming conventions
 package github
 
 import (
@@ -236,9 +237,9 @@ func (cp *ConfirmationPrompt) AnalyzeRepositoryChanges(ctx context.Context, owne
 
 	// Check visibility changes
 	if before.Private != after.Private {
-		risk := RiskHigh
+		var risk RiskLevel
+		var impact string
 
-		impact := "Repository access permissions will change"
 		if !before.Private && after.Private {
 			impact = "Repository will become private - public access will be lost"
 			risk = RiskCritical
@@ -262,14 +263,15 @@ func (cp *ConfirmationPrompt) AnalyzeRepositoryChanges(ctx context.Context, owne
 
 	// Check archive status changes
 	if before.Archived != after.Archived {
-		risk := RiskMedium
+		var risk RiskLevel
+		var impact string
 
-		impact := "Repository write access will change"
 		if after.Archived {
 			impact = "Repository will be archived - no further commits allowed"
 			risk = RiskHigh
 		} else {
 			impact = "Repository will be unarchived - write access restored"
+			risk = RiskMedium
 		}
 
 		changes = append(changes, SensitiveChange{

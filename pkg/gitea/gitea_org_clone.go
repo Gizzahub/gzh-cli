@@ -17,7 +17,7 @@ import (
 // It contains essential repository metadata used during clone operations.
 type RepoInfo struct {
 	// DefaultBranch is the name of the repository's default branch (e.g., "main", "master")
-	DefaultBranch string `json:"default_branch"`
+	DefaultBranch string `json:"defaultBranch"`
 }
 
 // GetDefaultBranch retrieves the default branch name for a Gitea repository.

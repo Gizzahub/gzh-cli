@@ -1,3 +1,4 @@
+// Package github_test provides integration test fixtures and scenarios for GitHub operations.
 package github_test
 
 import (

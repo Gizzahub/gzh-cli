@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package netenv
 
 import (
@@ -298,8 +299,8 @@ func TestSaveAndGetCurrentProfile(t *testing.T) {
 	// Set temporary config dir
 	tmpDir := t.TempDir()
 
-	os.Setenv("HOME", tmpDir)
-	defer os.Unsetenv("HOME")
+	_ = os.Setenv("HOME", tmpDir)              //nolint:errcheck // Test environment setup
+	defer func() { _ = os.Unsetenv("HOME") }() //nolint:errcheck // Test cleanup
 
 	// Test save
 	err := saveCurrentProfile("test-profile")
@@ -311,7 +312,7 @@ func TestSaveAndGetCurrentProfile(t *testing.T) {
 	assert.Equal(t, "test-profile", profile)
 
 	// Test get when file doesn't exist
-	os.Remove(filepath.Join(tmpDir, ".config", "gzh-manager", "current-cloud-profile"))
+	_ = os.Remove(filepath.Join(tmpDir, ".config", "gzh-manager", "current-cloud-profile")) //nolint:errcheck // Test cleanup
 
 	profile, err = getCurrentProfile()
 	assert.NoError(t, err)

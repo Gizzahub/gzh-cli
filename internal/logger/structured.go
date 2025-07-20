@@ -153,10 +153,16 @@ func (l *StructuredLogger) LogPerformance(operation string, duration time.Durati
 	runtime.ReadMemStats(&m)
 
 	perfInfo := &PerformanceInfo{
-		Duration:    duration,
-		MemoryUsage: int64(m.Alloc),
-		Operation:   operation,
-		Metrics:     metrics,
+		Duration: duration,
+		MemoryUsage: func() int64 {
+			const maxInt64 = uint64(1<<63 - 1) // Max value for int64
+			if m.Alloc > maxInt64 {            // Check for overflow
+				return 1<<63 - 1 // Return max int64 if overflow would occur
+			}
+			return int64(m.Alloc)
+		}(),
+		Operation: operation,
+		Metrics:   metrics,
 	}
 
 	entry := &LogEntry{

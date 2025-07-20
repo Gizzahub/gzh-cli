@@ -200,7 +200,7 @@ func RefreshAllOptimizedStreamingWithCache(ctx context.Context, targetPath, org,
 	// Create cached manager
 	config := DefaultOptimizedCloneConfig()
 
-	manager, err := NewCachedBulkCloneManager(token, config)
+	manager, err := NewCachedBulkCloneManager(token, config) //nolint:contextcheck // Manager creation doesn't require context propagation
 	if err != nil {
 		return fmt.Errorf("failed to create cached bulk clone manager: %w", err)
 	}

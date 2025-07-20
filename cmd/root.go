@@ -34,21 +34,21 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(newVersionCmd(version))
 	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
 	cmd.AddCommand(bulkclone.NewBulkCloneCmd(ctx))
-	cmd.AddCommand(config.NewConfigCmd())
+	cmd.AddCommand(config.NewConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(doctorcmd.DoctorCmd)
-	cmd.AddCommand(devenv.NewDevEnvCmd())
+	cmd.AddCommand(devenv.NewDevEnvCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(docker.DockerCmd)
 	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
 	cmd.AddCommand(ide.NewIDECmd(ctx))
-	cmd.AddCommand(migrate.NewMigrateCmd())
+	cmd.AddCommand(migrate.NewMigrateCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
-	cmd.AddCommand(repoconfig.NewRepoConfigCmd())
+	cmd.AddCommand(repoconfig.NewRepoConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
 	cmd.AddCommand(shell.ShellCmd)
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 	cmd.AddCommand(NewTaskRunnerCmd())
 	cmd.AddCommand(NewWebhookCmd())
-	cmd.AddCommand(NewEventCmd())
+	cmd.AddCommand(NewEventCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 
 	return cmd
 }

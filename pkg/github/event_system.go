@@ -551,7 +551,7 @@ func (s *EventWebhookServer) HandleWebhook(w http.ResponseWriter, r *http.Reques
 		"event_id": event.ID,
 		"message":  "Event processed successfully",
 	}
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response) //nolint:errcheck // HTTP response encoding
 }
 
 // GetHealthCheck provides a health check endpoint.
@@ -564,5 +564,5 @@ func (s *EventWebhookServer) GetHealthCheck(w http.ResponseWriter, r *http.Reque
 		"timestamp": time.Now().Format(time.RFC3339),
 		"service":   "github-event-processor",
 	}
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response) //nolint:errcheck // HTTP response encoding
 }

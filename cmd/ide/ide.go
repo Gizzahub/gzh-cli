@@ -44,6 +44,7 @@ func defaultIDEOptions() *ideOptions {
 	}
 }
 
+// NewIDECmd creates the IDE subcommand for monitoring and managing IDE configuration changes.
 func NewIDECmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ide",
@@ -182,7 +183,7 @@ Examples:
 	return cmd
 }
 
-func (o *ideOptions) runMonitor(ctx context.Context, _ *cobra.Command, args []string) error {
+func (o *ideOptions) runMonitor(ctx context.Context, _ *cobra.Command, _ []string) error {
 	watchDirs, err := o.getWatchDirectories()
 	if err != nil {
 		return fmt.Errorf("failed to get watch directories: %w", err)
@@ -249,11 +250,8 @@ func (o *ideOptions) runMonitor(ctx context.Context, _ *cobra.Command, args []st
 	}
 }
 
-func (o *ideOptions) runList(_ *cobra.Command, args []string) error {
-	products, err := o.detectJetBrainsProducts()
-	if err != nil {
-		return fmt.Errorf("failed to detect JetBrains products: %w", err)
-	}
+func (o *ideOptions) runList(_ *cobra.Command, _ []string) error {
+	products := o.detectJetBrainsProducts()
 
 	if len(products) == 0 {
 		fmt.Println("No JetBrains IDE installations found")
@@ -286,11 +284,8 @@ func (o *ideOptions) runList(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *ideOptions) runFixSync(_ *cobra.Command, args []string) error {
-	products, err := o.detectJetBrainsProducts()
-	if err != nil {
-		return fmt.Errorf("failed to detect JetBrains products: %w", err)
-	}
+func (o *ideOptions) runFixSync(_ *cobra.Command, _ []string) error {
+	products := o.detectJetBrainsProducts()
 
 	if o.product != "" {
 		// Filter to specific product
@@ -334,10 +329,7 @@ func (o *ideOptions) getWatchDirectories() ([]string, error) {
 	}
 
 	// Auto-detect JetBrains directories
-	products, err := o.detectJetBrainsProducts()
-	if err != nil {
-		return nil, err
-	}
+	products := o.detectJetBrainsProducts()
 
 	// Filter by specific product if specified
 	if o.product != "" {
@@ -360,7 +352,7 @@ func (o *ideOptions) getWatchDirectories() ([]string, error) {
 	return dirs, nil
 }
 
-func (o *ideOptions) detectJetBrainsProducts() ([]jetbrainsProduct, error) {
+func (o *ideOptions) detectJetBrainsProducts() []jetbrainsProduct {
 	var products []jetbrainsProduct
 
 	basePaths := o.getJetBrainsBasePaths()
@@ -392,7 +384,7 @@ func (o *ideOptions) detectJetBrainsProducts() ([]jetbrainsProduct, error) {
 		}
 	}
 
-	return products, nil
+	return products
 }
 
 func (o *ideOptions) getJetBrainsBasePaths() []string {

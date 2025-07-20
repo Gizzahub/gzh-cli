@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package devenv
 
 import (
@@ -8,6 +9,21 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+const testCredentialsContent = `[default]
+aws_access_key_id = AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+[dev]
+aws_access_key_id = AKIAI44QH8DHBEXAMPLE
+aws_secret_access_key = je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY
+aws_session_token = FwoGZXIvYXdzEDwaDFwXHpI4s4m+k1ppyiLABTJuCM7p5xOuJkzlXy...
+mfa_serial = arn:aws:iam::123456789012:mfa/dev-user
+
+[production]
+aws_access_key_id = AKIAIOSFODNN7PRODEXAMPLE
+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYPRODEXAMPLE
+`
 
 func TestDefaultAwsCredentialsOptions(t *testing.T) {
 	opts := defaultAwsCredentialsOptions()
@@ -97,20 +113,6 @@ func TestAwsCredentialsSaveLoad(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a test AWS credentials file
-	testCredentialsContent := `[default]
-aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
-[dev]
-aws_access_key_id = AKIAI44QH8DHBEXAMPLE
-aws_secret_access_key = je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY
-aws_session_token = FwoGZXIvYXdzEDwaDFwXHpI4s4m+k1ppyiLABTJuCM7p5xOuJkzlXy...
-mfa_serial = arn:aws:iam::123456789012:mfa/dev-user
-
-[production]
-aws_access_key_id = AKIAIOSFODNN7PRODEXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYPRODEXAMPLE
-`
 
 	configPath := filepath.Join(configDir, "credentials")
 	err = os.WriteFile(configPath, []byte(testCredentialsContent), 0o600)
@@ -246,20 +248,6 @@ func TestAwsCredentialsDisplayInfo(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Create test credentials
-	testCredentialsContent := `[default]
-aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
-[dev]
-aws_access_key_id = AKIAI44QH8DHBEXAMPLE
-aws_secret_access_key = je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY
-aws_session_token = FwoGZXIvYXdzEDwaDFwXHpI4s4m+k1ppyiLABTJuCM7p5xOuJkzlXy...
-mfa_serial = arn:aws:iam::123456789012:mfa/dev-user
-
-[production]
-aws_access_key_id = AKIAIOSFODNN7PRODEXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYPRODEXAMPLE
-`
 
 	credentialsPath := filepath.Join(tempDir, "credentials")
 	err := os.WriteFile(credentialsPath, []byte(testCredentialsContent), 0o600)
@@ -273,20 +261,7 @@ aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYPRODEXAMPLE
 func TestAwsCredentialsParseCredentials(t *testing.T) {
 	opts := &awsCredentialsOptions{}
 
-	testCredentials := `[default]
-aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
-[dev]
-aws_access_key_id = AKIAI44QH8DHBEXAMPLE
-aws_secret_access_key = je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY
-aws_session_token = FwoGZXIvYXdzEDwaDFwXHpI4s4m+k1ppyiLABTJuCM7p5xOuJkzlXy...
-mfa_serial = arn:aws:iam::123456789012:mfa/dev-user
-
-[production]
-aws_access_key_id = AKIAIOSFODNN7PRODEXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYPRODEXAMPLE
-`
+	testCredentials := testCredentialsContent
 
 	profiles := opts.parseAwsCredentials(testCredentials)
 

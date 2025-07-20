@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package bulkclone
 
 import (
@@ -198,7 +199,7 @@ repo_roots:
 `
 	configPath := filepath.Join(tempDir, "test-config.yaml")
 	formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir)
-	err := os.WriteFile(configPath, []byte(formattedConfig), 0o644)
+	err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
 	require.NoError(t, err)
 
 	t.Run("github with config file", func(t *testing.T) {
@@ -235,7 +236,7 @@ default:
 `
 		gitlabConfigPath := filepath.Join(tempDir, "gitlab-config.yaml")
 		formattedGitlabConfig := fmt.Sprintf(gitlabConfig, tempDir)
-		err := os.WriteFile(gitlabConfigPath, []byte(formattedGitlabConfig), 0o644)
+		err := os.WriteFile(gitlabConfigPath, []byte(formattedGitlabConfig), 0o600)
 		require.NoError(t, err)
 
 		opts := &bulkCloneGitlabOptions{
@@ -284,7 +285,7 @@ default:
 repo_roots: []
 `
 		configPath := filepath.Join(tempDir, "minimal-config.yaml")
-		err := os.WriteFile(configPath, []byte(configContent), 0o644)
+		err := os.WriteFile(configPath, []byte(configContent), 0o600)
 		require.NoError(t, err)
 
 		for _, strategy := range validStrategies {
@@ -344,7 +345,7 @@ repo_roots:
 `
 		configPath := filepath.Join(tempDir, "comprehensive-config.yaml")
 		formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir, tempDir, tempDir, tempDir)
-		err := os.WriteFile(configPath, []byte(formattedConfig), 0o644)
+		err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
 		require.NoError(t, err)
 
 		opts := &bulkCloneOptions{
@@ -381,7 +382,7 @@ default:
 repo_roots: []
 `
 		configPath := filepath.Join(tempDir, "empty-config.yaml")
-		err := os.WriteFile(configPath, []byte(configContent), 0o644)
+		err := os.WriteFile(configPath, []byte(configContent), 0o600)
 		require.NoError(t, err)
 
 		opts := &bulkCloneOptions{

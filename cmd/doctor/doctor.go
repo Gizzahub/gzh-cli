@@ -283,7 +283,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	structuredLogger.Info("Doctor diagnostic completed successfully")
 }
 
-func runSystemChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runSystemChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("💻 Checking system information...")
 	}
@@ -385,7 +385,7 @@ func runSystemChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	})
 }
 
-func runConfigChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runConfigChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("⚙️ Checking configuration...")
 	}
@@ -407,7 +407,7 @@ func runConfigChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 		}
 	}
 
-	status := "warn"
+	status := statusWarn
 	message := "No configuration files found"
 
 	if len(foundConfigs) > 0 {
@@ -463,7 +463,7 @@ func runConfigChecks(report *DiagnosticReport, structuredLogger *logger.Structur
 	})
 }
 
-func runNetworkChecks(ctx context.Context, report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🌐 Checking network connectivity...")
 	}
@@ -542,7 +542,7 @@ func runNetworkChecks(ctx context.Context, report *DiagnosticReport, structuredL
 	})
 }
 
-func runGitChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runGitChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🐙 Checking Git configuration...")
 	}
@@ -623,7 +623,7 @@ func runGitChecks(report *DiagnosticReport, structuredLogger *logger.StructuredL
 	})
 }
 
-func runPermissionChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runPermissionChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🔒 Checking permissions...")
 	}
@@ -675,7 +675,7 @@ func runPermissionChecks(report *DiagnosticReport, structuredLogger *logger.Stru
 	})
 }
 
-func runPerformanceChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runPerformanceChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🚀 Running performance benchmarks...")
 	}
@@ -725,7 +725,7 @@ func runPerformanceChecks(report *DiagnosticReport, structuredLogger *logger.Str
 	})
 }
 
-func runSecurityChecks(report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func runSecurityChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🔐 Checking security configuration...")
 	}
@@ -979,11 +979,11 @@ func calculateReportTotals(report *DiagnosticReport) {
 	report.TotalChecks = len(report.Results)
 	for _, result := range report.Results {
 		switch result.Status {
-		case "pass":
+		case statusPass:
 			report.PassedChecks++
-		case "warn":
+		case statusWarn:
 			report.WarnChecks++
-		case "fail":
+		case statusFail:
 			report.FailedChecks++
 		case "skip":
 			report.SkippedChecks++
@@ -1089,13 +1089,13 @@ func saveReport(report *DiagnosticReport, filename string) error {
 
 func attemptAutomaticFixes(ctx context.Context, report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
 	fmt.Printf("\n🔧 Attempting automatic fixes...\n")
-	structuredLogger.Info("Starting automatic fixes", "total_issues", report.FailedChecks+report.WarnChecks)
+	structuredLogger.Info("Starting automatic fixes", "total_issues", report.FailedChecks+report.WarnChecks) //nolint:contextcheck // Logger has its own context management
 
 	fixed := 0
 
 	for _, result := range report.Results {
 		if result.Status == "fail" || result.Status == "warn" {
-			fixErr := errorRecovery.Execute(ctx, fmt.Sprintf("fix-%s", result.Name), func() error {
+			fixErr := errorRecovery.Execute(ctx, fmt.Sprintf("fix-%s", result.Name), func() error { //nolint:contextcheck // Logger has its own context management
 				structuredLogger.Debug("Attempting fix", "check_name", result.Name, "status", result.Status)
 
 				if attemptFix := tryAutoFix(result); attemptFix {
@@ -1111,16 +1111,16 @@ func attemptAutomaticFixes(ctx context.Context, report *DiagnosticReport, struct
 				return nil
 			})
 			if fixErr != nil {
-				structuredLogger.ErrorWithStack(fixErr, "Auto-fix operation failed", "check_name", result.Name)
+				structuredLogger.ErrorWithStack(fixErr, "Auto-fix operation failed", "check_name", result.Name) //nolint:contextcheck // Logger has its own context management
 			}
 		}
 	}
 
-	structuredLogger.Info("Auto-fix completed", "fixed_count", fixed, "total_attempted", report.FailedChecks+report.WarnChecks)
+	structuredLogger.Info("Auto-fix completed", "fixed_count", fixed, "total_attempted", report.FailedChecks+report.WarnChecks) //nolint:contextcheck // Logger has its own context management
 	fmt.Printf("\n🎯 Auto-fix summary: %d issues resolved\n", fixed)
 
 	if fixed > 0 {
-		structuredLogger.Info("Recommend re-running diagnostic to verify fixes")
+		structuredLogger.Info("Recommend re-running diagnostic to verify fixes") //nolint:contextcheck // Logger has its own context management
 		fmt.Println("🔄 Re-run 'gz doctor' to verify fixes")
 	}
 }

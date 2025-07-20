@@ -559,7 +559,7 @@ Examples:
 	cmd.Flags().IntVar(&parallelJobs, "parallel-jobs", 5, "Number of parallel operations")
 	cmd.Flags().BoolVar(&dryRun, "dry-run-bulk", false, "Preview changes without applying")
 
-	cmd.MarkFlagRequired("operation")
+	_ = cmd.MarkFlagRequired("operation") // Ignore error
 
 	return cmd
 }

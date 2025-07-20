@@ -11,22 +11,22 @@ import (
 // CloneState represents the state of a bulk clone operation.
 type CloneState struct {
 	// Operation metadata
-	StartTime    time.Time `json:"start_time"`
-	LastUpdated  time.Time `json:"last_updated"`
+	StartTime    time.Time `json:"startTime"`
+	LastUpdated  time.Time `json:"lastUpdated"`
 	Provider     string    `json:"provider"`
 	Organization string    `json:"organization"`
-	TargetPath   string    `json:"target_path"`
+	TargetPath   string    `json:"targetPath"`
 	Strategy     string    `json:"strategy"`
 
 	// Progress tracking
-	TotalRepositories int                   `json:"total_repositories"`
-	CompletedRepos    []CompletedRepository `json:"completed_repos"`
-	FailedRepos       []FailedRepository    `json:"failed_repos"`
-	PendingRepos      []string              `json:"pending_repos"`
+	TotalRepositories int                   `json:"totalRepositories"`
+	CompletedRepos    []CompletedRepository `json:"completedRepos"`
+	FailedRepos       []FailedRepository    `json:"failedRepos"`
+	PendingRepos      []string              `json:"pendingRepos"`
 
 	// Configuration
 	Parallel   int `json:"parallel"`
-	MaxRetries int `json:"max_retries"`
+	MaxRetries int `json:"maxRetries"`
 
 	// Status
 	Status string `json:"status"` // "in_progress", "completed", "failed", "cancelled"
@@ -37,7 +37,7 @@ type CompletedRepository struct {
 	Name        string    `json:"name"`
 	Path        string    `json:"path"`
 	Operation   string    `json:"operation"` // "clone", "pull", "reset", "fetch"
-	CompletedAt time.Time `json:"completed_at"`
+	CompletedAt time.Time `json:"completedAt"`
 	Message     string    `json:"message,omitempty"`
 }
 
@@ -48,7 +48,7 @@ type FailedRepository struct {
 	Operation   string    `json:"operation"`
 	Error       string    `json:"error"`
 	Attempts    int       `json:"attempts"`
-	LastAttempt time.Time `json:"last_attempt"`
+	LastAttempt time.Time `json:"lastAttempt"`
 }
 
 // StateManager handles saving and loading clone states.

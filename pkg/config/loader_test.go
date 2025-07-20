@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package config
 
 import (
@@ -142,8 +143,12 @@ func TestCreateDefaultConfig(t *testing.T) {
 	}
 
 	defer func() {
-		os.Unsetenv("GITHUB_TOKEN")
-		os.Unsetenv("GITLAB_TOKEN")
+		if err := os.Unsetenv("GITHUB_TOKEN"); err != nil {
+			t.Logf("Warning: failed to unset GITHUB_TOKEN: %v", err)
+		}
+		if err := os.Unsetenv("GITLAB_TOKEN"); err != nil {
+			t.Logf("Warning: failed to unset GITLAB_TOKEN: %v", err)
+		}
 	}()
 
 	err = CreateDefaultConfig(configPath)
@@ -164,9 +169,15 @@ func TestFindConfigFile(t *testing.T) {
 	tmpFile, err := os.CreateTemp(".", "gzh-*.yaml")
 	require.NoError(t, err)
 
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Warning: failed to remove temp file: %v", err)
+		}
+	}()
 
-	tmpFile.Close()
+	if err := tmpFile.Close(); err != nil {
+		t.Logf("Warning: failed to close temp file: %v", err)
+	}
 
 	// Temporarily modify ConfigSearchPaths to include our test file
 	originalPaths := ConfigSearchPaths
@@ -193,15 +204,27 @@ providers:
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
 
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Warning: failed to remove temp file: %v", err)
+		}
+	}()
 
 	_, err = tmpFile.WriteString(configContent)
 	require.NoError(t, err)
-	tmpFile.Close()
+	if err := tmpFile.Close(); err != nil {
+		t.Logf("Warning: failed to close temp file: %v", err)
+	}
 
 	// Set environment variable
-	os.Setenv("GZH_CONFIG_PATH", tmpFile.Name())
-	defer os.Unsetenv("GZH_CONFIG_PATH")
+	if err := os.Setenv("GZH_CONFIG_PATH", tmpFile.Name()); err != nil {
+		t.Logf("Warning: failed to set GZH_CONFIG_PATH: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("GZH_CONFIG_PATH"); err != nil {
+			t.Logf("Warning: failed to unset GZH_CONFIG_PATH: %v", err)
+		}
+	}()
 
 	config, err := LoadConfig()
 	assert.NoError(t, err)
@@ -253,11 +276,17 @@ providers:
 			tmpFile, err := os.CreateTemp("", "test-*.yaml")
 			require.NoError(t, err)
 
-			defer os.Remove(tmpFile.Name())
+			defer func() {
+				if err := os.Remove(tmpFile.Name()); err != nil {
+					t.Logf("Warning: failed to remove temp file: %v", err)
+				}
+			}()
 
 			_, err = tmpFile.WriteString(tt.content)
 			require.NoError(t, err)
-			tmpFile.Close()
+			if err := tmpFile.Close(); err != nil {
+				t.Logf("Warning: failed to close temp file: %v", err)
+			}
 
 			result, err := ValidateConfigFile(tmpFile.Name())
 			assert.NoError(t, err) // ValidateConfigFile should not return an error, validation results are in the result

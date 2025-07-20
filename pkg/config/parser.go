@@ -47,7 +47,7 @@ func ParseYAML(reader io.Reader) (*Config, error) {
 
 // ParseYAMLFile parses a YAML file and returns a Config.
 func ParseYAMLFile(filename string) (*Config, error) {
-	file, err := os.Open(filename)
+	file, err := os.Open(filename) //nolint:gosec // filename is user-provided configuration file path
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("configuration file not found: %s", filename)
@@ -55,7 +55,7 @@ func ParseYAMLFile(filename string) (*Config, error) {
 
 		return nil, fmt.Errorf("failed to open file %s: %w", filename, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() // Ignore close error
 
 	return ParseYAML(file)
 }
@@ -68,7 +68,7 @@ func ExpandEnvironmentVariables(input string) string {
 
 // LoadYAMLWithEnvSubstitution loads YAML with environment variable substitution.
 func LoadYAMLWithEnvSubstitution(filename string) (*Config, error) {
-	content, err := os.ReadFile(filename)
+	content, err := os.ReadFile(filename) //nolint:gosec // filename is user-provided configuration file path
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, ErrFileNotFound

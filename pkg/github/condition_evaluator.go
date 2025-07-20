@@ -50,9 +50,9 @@ type OrganizationInfo struct {
 	Description       string            `json:"description"`
 	Type              string            `json:"type"`
 	Plan              string            `json:"plan"`
-	TwoFactorRequired bool              `json:"two_factor_required"`
-	MemberCount       int               `json:"member_count"`
-	RepoCount         int               `json:"repo_count"`
+	TwoFactorRequired bool              `json:"twoFactorRequired"`
+	MemberCount       int               `json:"memberCount"`
+	RepoCount         int               `json:"repoCount"`
 	Settings          map[string]string `json:"settings,omitempty"`
 }
 
@@ -62,7 +62,7 @@ type UserInfo struct {
 	Name      string `json:"name"`
 	Email     string `json:"email"`
 	Type      string `json:"type"`
-	SiteAdmin bool   `json:"site_admin"`
+	SiteAdmin bool   `json:"siteAdmin"`
 	Company   string `json:"company"`
 	Location  string `json:"location"`
 }
@@ -70,12 +70,12 @@ type UserInfo struct {
 // EvaluationResult represents the result of condition evaluation.
 type EvaluationResult struct {
 	Matched             bool                         `json:"matched"`
-	MatchedConditions   []string                     `json:"matched_conditions"`
-	FailedConditions    []string                     `json:"failed_conditions"`
-	SkippedConditions   []string                     `json:"skipped_conditions"`
-	EvaluationTime      time.Duration                `json:"evaluation_time"`
-	SubConditionResults map[string]*EvaluationResult `json:"sub_condition_results,omitempty"`
-	PayloadMatchResults []PayloadMatchResult         `json:"payload_match_results,omitempty"`
+	MatchedConditions   []string                     `json:"matchedConditions"`
+	FailedConditions    []string                     `json:"failedConditions"`
+	SkippedConditions   []string                     `json:"skippedConditions"`
+	EvaluationTime      time.Duration                `json:"evaluationTime"`
+	SubConditionResults map[string]*EvaluationResult `json:"subConditionResults,omitempty"`
+	PayloadMatchResults []PayloadMatchResult         `json:"payloadMatchResults,omitempty"`
 	Errors              []string                     `json:"errors,omitempty"`
 	Warnings            []string                     `json:"warnings,omitempty"`
 	Debug               map[string]interface{}       `json:"debug,omitempty"`
@@ -85,8 +85,8 @@ type EvaluationResult struct {
 type PayloadMatchResult struct {
 	Path          string        `json:"path"`
 	Operator      MatchOperator `json:"operator"`
-	ExpectedValue interface{}   `json:"expected_value"`
-	ActualValue   interface{}   `json:"actual_value"`
+	ExpectedValue interface{}   `json:"expectedValue"`
+	ActualValue   interface{}   `json:"actualValue"`
 	Matched       bool          `json:"matched"`
 	Error         string        `json:"error,omitempty"`
 }
@@ -96,8 +96,8 @@ type ConditionValidationResult struct {
 	Valid               bool                         `json:"valid"`
 	Errors              []ConditionValidationError   `json:"errors,omitempty"`
 	Warnings            []ConditionValidationWarning `json:"warnings,omitempty"`
-	JSONPathValidations []JSONPathValidationResult   `json:"jsonpath_validations,omitempty"`
-	RegexValidations    []RegexValidationResult      `json:"regex_validations,omitempty"`
+	JSONPathValidations []JSONPathValidationResult   `json:"jsonpathValidations,omitempty"`
+	RegexValidations    []RegexValidationResult      `json:"regexValidations,omitempty"`
 }
 
 // ConditionValidationError represents a validation error.
@@ -130,14 +130,14 @@ type RegexValidationResult struct {
 
 // EvaluationExplanation provides detailed explanation of how conditions were evaluated.
 type EvaluationExplanation struct {
-	RuleID               string                           `json:"rule_id"`
-	EventID              string                           `json:"event_id"`
-	OverallResult        bool                             `json:"overall_result"`
-	LogicalOperator      ConditionOperator                `json:"logical_operator"`
-	ConditionBreakdown   []ConditionExplanation           `json:"condition_breakdown"`
-	PayloadExplanations  []PayloadMatchExplanation        `json:"payload_explanations"`
-	TimeEvaluation       *TimeEvaluationExplanation       `json:"time_evaluation,omitempty"`
-	RepositoryEvaluation *RepositoryEvaluationExplanation `json:"repository_evaluation,omitempty"`
+	RuleID               string                           `json:"ruleId"`
+	EventID              string                           `json:"eventId"`
+	OverallResult        bool                             `json:"overallResult"`
+	LogicalOperator      ConditionOperator                `json:"logicalOperator"`
+	ConditionBreakdown   []ConditionExplanation           `json:"conditionBreakdown"`
+	PayloadExplanations  []PayloadMatchExplanation        `json:"payloadExplanations"`
+	TimeEvaluation       *TimeEvaluationExplanation       `json:"timeEvaluation,omitempty"`
+	RepositoryEvaluation *RepositoryEvaluationExplanation `json:"repositoryEvaluation,omitempty"`
 	Summary              string                           `json:"summary"`
 }
 
@@ -163,11 +163,11 @@ type PayloadMatchExplanation struct {
 
 // TimeEvaluationExplanation explains time-based condition evaluation.
 type TimeEvaluationExplanation struct {
-	EventTime     time.Time `json:"event_time"`
-	DayOfWeek     int       `json:"day_of_week"`
-	HourOfDay     int       `json:"hour_of_day"`
-	BusinessHours bool      `json:"business_hours"`
-	TimeZone      string    `json:"time_zone"`
+	EventTime     time.Time `json:"eventTime"`
+	DayOfWeek     int       `json:"dayOfWeek"`
+	HourOfDay     int       `json:"hourOfDay"`
+	BusinessHours bool      `json:"businessHours"`
+	TimeZone      string    `json:"timeZone"`
 	Result        bool      `json:"result"`
 	Reason        string    `json:"reason"`
 }
@@ -178,10 +178,10 @@ type RepositoryEvaluationExplanation struct {
 	Language     string   `json:"language"`
 	Topics       []string `json:"topics"`
 	Visibility   string   `json:"visibility"`
-	IsArchived   bool     `json:"is_archived"`
-	IsTemplate   bool     `json:"is_template"`
+	IsArchived   bool     `json:"isArchived"`
+	IsTemplate   bool     `json:"isTemplate"`
 	Result       bool     `json:"result"`
-	MatchedRules []string `json:"matched_rules"`
+	MatchedRules []string `json:"matchedRules"`
 }
 
 // conditionEvaluatorImpl implements the ConditionEvaluator interface.
@@ -263,7 +263,8 @@ func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditi
 
 	// Evaluate payload matchers
 	for i, matcher := range conditions.PayloadMatch {
-		matchResult, err := e.evaluatePayloadMatcherWithResult(&matcher, event.Payload)
+		m := matcher // Create copy to avoid memory aliasing
+		matchResult, err := e.evaluatePayloadMatcherWithResult(&m, event.Payload)
 		result.PayloadMatchResults = append(result.PayloadMatchResults, matchResult)
 
 		if err != nil {
@@ -279,7 +280,8 @@ func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditi
 	if len(conditions.SubConditions) > 0 {
 		result.SubConditionResults = make(map[string]*EvaluationResult)
 
-		for i, subCondition := range conditions.SubConditions {
+		for i := range conditions.SubConditions {
+			subCondition := conditions.SubConditions[i]
 			subResult, err := e.EvaluateConditions(ctx, &subCondition, event, evalContext)
 			if err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("Sub-condition %d error: %v", i, err))
@@ -530,9 +532,9 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 
 		for _, pattern := range conditions.FilePatterns {
 			for _, file := range files {
-				if matched, err := regexp.MatchString(pattern, file); err != nil {
+				if isMatch, err := regexp.MatchString(pattern, file); err != nil {
 					return false, fmt.Errorf("invalid file pattern '%s': %w", pattern, err)
-				} else if matched {
+				} else if isMatch {
 					matched = true
 					break
 				}
@@ -559,9 +561,9 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 
 		for _, pattern := range conditions.PathPatterns {
 			for _, path := range paths {
-				if matched, err := regexp.MatchString(pattern, path); err != nil {
+				if isMatch, err := regexp.MatchString(pattern, path); err != nil {
 					return false, fmt.Errorf("invalid path pattern '%s': %w", pattern, err)
-				} else if matched {
+				} else if isMatch {
 					matched = true
 					break
 				}

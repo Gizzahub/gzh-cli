@@ -12,7 +12,7 @@ type UnifiedConfig struct {
 	Version string `yaml:"version" json:"version" validate:"required,oneof=1.0.0"`
 
 	// Default provider to use when not specified
-	DefaultProvider string `yaml:"default_provider,omitempty" json:"default_provider,omitempty" validate:"omitempty,oneof=github gitlab gitea gogs"`
+	DefaultProvider string `yaml:"defaultProvider,omitempty" json:"defaultProvider,omitempty" validate:"omitempty,oneof=github gitlab gitea gogs"`
 
 	// Global settings that apply to all providers
 	Global *GlobalSettings `yaml:"global,omitempty" json:"global,omitempty"`
@@ -27,28 +27,28 @@ type UnifiedConfig struct {
 	IDE *IDEConfig `yaml:"ide,omitempty" json:"ide,omitempty"`
 
 	// Development environment configuration
-	DevEnv *DevEnvConfig `yaml:"dev_env,omitempty" json:"dev_env,omitempty"`
+	DevEnv *DevEnvConfig `yaml:"devEnv,omitempty" json:"devEnv,omitempty"`
 
 	// Network environment configuration
-	NetEnv *NetEnvConfig `yaml:"net_env,omitempty" json:"net_env,omitempty"`
+	NetEnv *NetEnvConfig `yaml:"netEnv,omitempty" json:"netEnv,omitempty"`
 
 	// SSH configuration management
-	SSHConfig *SSHConfigSettings `yaml:"ssh_config,omitempty" json:"ssh_config,omitempty"`
+	SSHConfig *SSHConfigSettings `yaml:"sshConfig,omitempty" json:"sshConfig,omitempty"`
 }
 
 // GlobalSettings contains settings that apply across all providers.
 type GlobalSettings struct {
 	// Default clone directory base path
-	CloneBaseDir string `yaml:"clone_base_dir,omitempty" json:"clone_base_dir,omitempty"`
+	CloneBaseDir string `yaml:"clone_base_dir,omitempty" json:"cloneBaseDir,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Default strategy for repository operations
-	DefaultStrategy string `yaml:"default_strategy,omitempty" json:"default_strategy,omitempty" validate:"omitempty,oneof=reset pull fetch"`
+	DefaultStrategy string `yaml:"default_strategy,omitempty" json:"defaultStrategy,omitempty" validate:"omitempty,oneof=reset pull fetch"` //nolint:tagliatelle // YAML compatibility required
 
 	// Global ignore patterns (regex)
-	GlobalIgnores []string `yaml:"global_ignores,omitempty" json:"global_ignores,omitempty"`
+	GlobalIgnores []string `yaml:"global_ignores,omitempty" json:"globalIgnores,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Default visibility filter
-	DefaultVisibility string `yaml:"default_visibility,omitempty" json:"default_visibility,omitempty" validate:"omitempty,oneof=public private all"`
+	DefaultVisibility string `yaml:"default_visibility,omitempty" json:"defaultVisibility,omitempty" validate:"omitempty,oneof=public private all"` //nolint:tagliatelle // YAML compatibility required
 
 	// Timeout settings
 	Timeouts *TimeoutSettings `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
@@ -60,25 +60,25 @@ type GlobalSettings struct {
 // TimeoutSettings contains timeout configurations.
 type TimeoutSettings struct {
 	// HTTP request timeout
-	HTTPTimeout time.Duration `yaml:"http_timeout,omitempty" json:"http_timeout,omitempty"`
+	HTTPTimeout time.Duration `yaml:"http_timeout,omitempty" json:"httpTimeout,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Git operation timeout
-	GitTimeout time.Duration `yaml:"git_timeout,omitempty" json:"git_timeout,omitempty"`
+	GitTimeout time.Duration `yaml:"git_timeout,omitempty" json:"gitTimeout,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// API rate limit timeout
-	RateLimitTimeout time.Duration `yaml:"rate_limit_timeout,omitempty" json:"rate_limit_timeout,omitempty"`
+	RateLimitTimeout time.Duration `yaml:"rate_limit_timeout,omitempty" json:"rateLimitTimeout,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // ConcurrencySettings contains concurrency configurations.
 type ConcurrencySettings struct {
 	// Maximum concurrent clone operations
-	CloneWorkers int `yaml:"clone_workers,omitempty" json:"clone_workers,omitempty" validate:"omitempty,min=1,max=50"`
+	CloneWorkers int `yaml:"clone_workers,omitempty" json:"cloneWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle // YAML compatibility required
 
 	// Maximum concurrent update operations
-	UpdateWorkers int `yaml:"update_workers,omitempty" json:"update_workers,omitempty" validate:"omitempty,min=1,max=50"`
+	UpdateWorkers int `yaml:"update_workers,omitempty" json:"updateWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle // YAML compatibility required
 
 	// Maximum concurrent API operations
-	APIWorkers int `yaml:"api_workers,omitempty" json:"api_workers,omitempty" validate:"omitempty,min=1,max=20"`
+	APIWorkers int `yaml:"api_workers,omitempty" json:"apiWorkers,omitempty" validate:"omitempty,min=1,max=20"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // ProviderConfig represents configuration for a specific Git provider.
@@ -87,7 +87,7 @@ type ProviderConfig struct {
 	Token string `yaml:"token,omitempty" json:"token,omitempty" validate:"required,envtoken"`
 
 	// API endpoint URL (for self-hosted instances)
-	APIURL string `yaml:"api_url,omitempty" json:"api_url,omitempty" validate:"omitempty,url"`
+	APIURL string `yaml:"api_url,omitempty" json:"apiUrl,omitempty" validate:"omitempty,url"` //nolint:tagliatelle // YAML compatibility required
 
 	// Organizations/groups to manage
 	Organizations []*OrganizationConfig `yaml:"organizations,omitempty" json:"organizations,omitempty" validate:"min=1"`
@@ -105,7 +105,7 @@ type OrganizationConfig struct {
 	Name string `yaml:"name" json:"name" validate:"required"`
 
 	// Clone directory for this organization
-	CloneDir string `yaml:"clone_dir" json:"clone_dir" validate:"required,dirpath"`
+	CloneDir string `yaml:"clone_dir" json:"cloneDir" validate:"required,dirpath"` //nolint:tagliatelle // YAML compatibility required
 
 	// Repository visibility filter
 	Visibility string `yaml:"visibility,omitempty" json:"visibility,omitempty" validate:"omitempty,oneof=public private all"`
@@ -126,7 +126,7 @@ type OrganizationConfig struct {
 	Recursive bool `yaml:"recursive,omitempty" json:"recursive,omitempty"`
 
 	// Repository management settings
-	RepoManagement *RepoManagementConfig `yaml:"repo_management,omitempty" json:"repo_management,omitempty"`
+	RepoManagement *RepoManagementConfig `yaml:"repo_management,omitempty" json:"repoManagement,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Custom labels for organization
 	Labels map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
@@ -135,7 +135,7 @@ type OrganizationConfig struct {
 // ProviderSettings contains provider-specific settings.
 type ProviderSettings struct {
 	// Rate limiting settings
-	RateLimit *RateLimitConfig `yaml:"rate_limit,omitempty" json:"rate_limit,omitempty"`
+	RateLimit *RateLimitConfig `yaml:"rate_limit,omitempty" json:"rateLimit,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Retry settings
 	Retry *RetryConfig `yaml:"retry,omitempty" json:"retry,omitempty"`
@@ -147,40 +147,40 @@ type ProviderSettings struct {
 // RateLimitConfig contains rate limiting configuration.
 type RateLimitConfig struct {
 	// Requests per hour
-	RequestsPerHour int `yaml:"requests_per_hour,omitempty" json:"requests_per_hour,omitempty"`
+	RequestsPerHour int `yaml:"requests_per_hour,omitempty" json:"requestsPerHour,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Burst limit
-	BurstLimit int `yaml:"burst_limit,omitempty" json:"burst_limit,omitempty"`
+	BurstLimit int `yaml:"burst_limit,omitempty" json:"burstLimit,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Enable automatic rate limit detection
-	AutoDetect bool `yaml:"auto_detect,omitempty" json:"auto_detect,omitempty"`
+	AutoDetect bool `yaml:"auto_detect,omitempty" json:"autoDetect,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // RetryConfig contains retry configuration.
 type RetryConfig struct {
 	// Maximum retry attempts
-	MaxAttempts int `yaml:"max_attempts,omitempty" json:"max_attempts,omitempty" validate:"omitempty,min=0,max=10"`
+	MaxAttempts int `yaml:"max_attempts,omitempty" json:"maxAttempts,omitempty" validate:"omitempty,min=0,max=10"` //nolint:tagliatelle // YAML compatibility required
 
 	// Base delay between retries
-	BaseDelay time.Duration `yaml:"base_delay,omitempty" json:"base_delay,omitempty"`
+	BaseDelay time.Duration `yaml:"base_delay,omitempty" json:"baseDelay,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Maximum delay between retries
-	MaxDelay time.Duration `yaml:"max_delay,omitempty" json:"max_delay,omitempty"`
+	MaxDelay time.Duration `yaml:"max_delay,omitempty" json:"maxDelay,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Enable exponential backoff
-	ExponentialBackoff bool `yaml:"exponential_backoff,omitempty" json:"exponential_backoff,omitempty"`
+	ExponentialBackoff bool `yaml:"exponential_backoff,omitempty" json:"exponentialBackoff,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // AuthConfig contains authentication configuration.
 type AuthConfig struct {
 	// Token environment variable name
-	TokenEnvVar string `yaml:"token_env_var,omitempty" json:"token_env_var,omitempty"`
+	TokenEnvVar string `yaml:"token_env_var,omitempty" json:"tokenEnvVar,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// SSH key path for Git operations
-	SSHKeyPath string `yaml:"ssh_key_path,omitempty" json:"ssh_key_path,omitempty"`
+	SSHKeyPath string `yaml:"ssh_key_path,omitempty" json:"sshKeyPath,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Use SSH for Git operations
-	UseSSH bool `yaml:"use_ssh,omitempty" json:"use_ssh,omitempty"`
+	UseSSH bool `yaml:"use_ssh,omitempty" json:"useSsh,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // RepoManagementConfig contains repository management settings.
@@ -192,7 +192,7 @@ type RepoManagementConfig struct {
 	Templates []string `yaml:"templates,omitempty" json:"templates,omitempty"`
 
 	// Branch protection settings
-	BranchProtection *BranchProtectionConfig `yaml:"branch_protection,omitempty" json:"branch_protection,omitempty"`
+	BranchProtection *BranchProtectionConfig `yaml:"branch_protection,omitempty" json:"branchProtection,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Security settings
 	Security *SecurityConfig `yaml:"security,omitempty" json:"security,omitempty"`
@@ -207,37 +207,37 @@ type BranchProtectionConfig struct {
 	Branches []string `yaml:"branches,omitempty" json:"branches,omitempty"`
 
 	// Require status checks
-	RequireStatusChecks bool `yaml:"require_status_checks,omitempty" json:"require_status_checks,omitempty"`
+	RequireStatusChecks bool `yaml:"require_status_checks,omitempty" json:"requireStatusChecks,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Require pull request reviews
-	RequirePRReviews bool `yaml:"require_pr_reviews,omitempty" json:"require_pr_reviews,omitempty"`
+	RequirePRReviews bool `yaml:"require_pr_reviews,omitempty" json:"requirePrReviews,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // SecurityConfig contains security settings.
 type SecurityConfig struct {
 	// Enable vulnerability alerts
-	VulnerabilityAlerts bool `yaml:"vulnerability_alerts,omitempty" json:"vulnerability_alerts,omitempty"`
+	VulnerabilityAlerts bool `yaml:"vulnerability_alerts,omitempty" json:"vulnerabilityAlerts,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Enable automated security fixes
-	AutomatedSecurityFixes bool `yaml:"automated_security_fixes,omitempty" json:"automated_security_fixes,omitempty"`
+	AutomatedSecurityFixes bool `yaml:"automated_security_fixes,omitempty" json:"automatedSecurityFixes,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Required security policies
-	RequiredPolicies []string `yaml:"required_policies,omitempty" json:"required_policies,omitempty"`
+	RequiredPolicies []string `yaml:"required_policies,omitempty" json:"requiredPolicies,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // LegacyProviderConfig supports migration from bulk-clone.yaml format.
 type LegacyProviderConfig struct {
 	// Legacy root path
-	RootPath string `yaml:"root_path,omitempty" json:"root_path,omitempty"`
+	RootPath string `yaml:"root_path,omitempty" json:"rootPath,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Legacy protocol
 	Protocol string `yaml:"protocol,omitempty" json:"protocol,omitempty"`
 
 	// Legacy organization name
-	OrgName string `yaml:"org_name,omitempty" json:"org_name,omitempty"`
+	OrgName string `yaml:"org_name,omitempty" json:"orgName,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Legacy group name (GitLab)
-	GroupName string `yaml:"group_name,omitempty" json:"group_name,omitempty"`
+	GroupName string `yaml:"group_name,omitempty" json:"groupName,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Legacy URL (for GitLab)
 	URL string `yaml:"url,omitempty" json:"url,omitempty"`
@@ -246,16 +246,16 @@ type LegacyProviderConfig struct {
 // MigrationInfo contains information about configuration migration.
 type MigrationInfo struct {
 	// Source format that was migrated from
-	SourceFormat string `yaml:"source_format,omitempty" json:"source_format,omitempty"`
+	SourceFormat string `yaml:"source_format,omitempty" json:"sourceFormat,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Migration date
-	MigrationDate time.Time `yaml:"migration_date,omitempty" json:"migration_date,omitempty"`
+	MigrationDate time.Time `yaml:"migration_date,omitempty" json:"migrationDate,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Original configuration file path
-	SourcePath string `yaml:"source_path,omitempty" json:"source_path,omitempty"`
+	SourcePath string `yaml:"source_path,omitempty" json:"sourcePath,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Migration tool version
-	ToolVersion string `yaml:"tool_version,omitempty" json:"tool_version,omitempty"`
+	ToolVersion string `yaml:"tool_version,omitempty" json:"toolVersion,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // DefaultUnifiedConfig returns a default unified configuration.
@@ -425,19 +425,19 @@ type IDEConfig struct {
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 
 	// Directories to watch for IDE settings changes
-	WatchDirectories []string `yaml:"watch_directories,omitempty" json:"watch_directories,omitempty"`
+	WatchDirectories []string `yaml:"watch_directories,omitempty" json:"watchDirectories,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Patterns to exclude from monitoring (regex)
-	ExcludePatterns []string `yaml:"exclude_patterns,omitempty" json:"exclude_patterns,omitempty" validate:"dive,regexpattern"`
+	ExcludePatterns []string `yaml:"exclude_patterns,omitempty" json:"excludePatterns,omitempty" validate:"dive,regexpattern"` //nolint:tagliatelle // YAML compatibility required
 
 	// JetBrains products to monitor
-	JetBrainsProducts []string `yaml:"jetbrains_products,omitempty" json:"jetbrains_products,omitempty"`
+	JetBrainsProducts []string `yaml:"jetbrains_products,omitempty" json:"jetbrainsProducts,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Enable automatic sync fixes
-	AutoFixSync bool `yaml:"auto_fix_sync,omitempty" json:"auto_fix_sync,omitempty"`
+	AutoFixSync bool `yaml:"auto_fix_sync,omitempty" json:"autoFixSync,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Settings synchronization configuration
-	SyncSettings *IDESyncSettings `yaml:"sync_settings,omitempty" json:"sync_settings,omitempty"`
+	SyncSettings *IDESyncSettings `yaml:"sync_settings,omitempty" json:"syncSettings,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Logging configuration
 	Logging *IDELoggingConfig `yaml:"logging,omitempty" json:"logging,omitempty"`
@@ -452,10 +452,10 @@ type IDESyncSettings struct {
 	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty"`
 
 	// Settings types to sync
-	SyncTypes []string `yaml:"sync_types,omitempty" json:"sync_types,omitempty"`
+	SyncTypes []string `yaml:"syncTypes,omitempty" json:"syncTypes,omitempty"`
 
 	// Backup settings before sync
-	BackupBeforeSync bool `yaml:"backup_before_sync,omitempty" json:"backup_before_sync,omitempty"`
+	BackupBeforeSync bool `yaml:"backupBeforeSync,omitempty" json:"backupBeforeSync,omitempty"`
 }
 
 // IDELoggingConfig contains IDE logging configuration.
@@ -464,7 +464,7 @@ type IDELoggingConfig struct {
 	Level string `yaml:"level,omitempty" json:"level,omitempty" validate:"omitempty,oneof=debug info warn error"`
 
 	// Log file path
-	FilePath string `yaml:"file_path,omitempty" json:"file_path,omitempty"`
+	FilePath string `yaml:"filePath,omitempty" json:"filePath,omitempty"`
 
 	// Enable console logging
 	Console bool `yaml:"console,omitempty" json:"console,omitempty"`
@@ -476,13 +476,13 @@ type IDELoggingConfig struct {
 // LogRotationConfig contains log rotation settings.
 type LogRotationConfig struct {
 	// Maximum log file size in MB
-	MaxSizeMB int `yaml:"max_size_mb,omitempty" json:"max_size_mb,omitempty"`
+	MaxSizeMB int `yaml:"maxSizeMb,omitempty" json:"maxSizeMb,omitempty"`
 
 	// Maximum number of backup files
-	MaxBackups int `yaml:"max_backups,omitempty" json:"max_backups,omitempty"`
+	MaxBackups int `yaml:"maxBackups,omitempty" json:"maxBackups,omitempty"`
 
 	// Maximum age in days
-	MaxAgeDays int `yaml:"max_age_days,omitempty" json:"max_age_days,omitempty"`
+	MaxAgeDays int `yaml:"maxAgeDays,omitempty" json:"maxAgeDays,omitempty"`
 
 	// Compress backup files
 	Compress bool `yaml:"compress,omitempty" json:"compress,omitempty"`
@@ -494,10 +494,10 @@ type DevEnvConfig struct {
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 
 	// Default backup location
-	BackupLocation string `yaml:"backup_location,omitempty" json:"backup_location,omitempty"`
+	BackupLocation string `yaml:"backupLocation,omitempty" json:"backupLocation,omitempty"`
 
 	// Enable automatic backups
-	AutoBackup bool `yaml:"auto_backup,omitempty" json:"auto_backup,omitempty"`
+	AutoBackup bool `yaml:"autoBackup,omitempty" json:"autoBackup,omitempty"`
 
 	// Cloud provider configurations
 	Providers *DevEnvProviders `yaml:"providers,omitempty" json:"providers,omitempty"`
@@ -527,10 +527,10 @@ type DevEnvProviders struct {
 // AWSConfig contains AWS configuration settings.
 type AWSConfig struct {
 	// Default AWS profile
-	DefaultProfile string `yaml:"default_profile,omitempty" json:"default_profile,omitempty"`
+	DefaultProfile string `yaml:"defaultProfile,omitempty" json:"defaultProfile,omitempty"`
 
 	// AWS region preferences
-	PreferredRegions []string `yaml:"preferred_regions,omitempty" json:"preferred_regions,omitempty"`
+	PreferredRegions []string `yaml:"preferredRegions,omitempty" json:"preferredRegions,omitempty"`
 
 	// Credential file path
 	CredentialsFile string `yaml:"credentials_file,omitempty" json:"credentials_file,omitempty"`
@@ -551,7 +551,7 @@ type GCPConfig struct {
 	ServiceAccountKey string `yaml:"service_account_key,omitempty" json:"service_account_key,omitempty"`
 
 	// Preferred regions
-	PreferredRegions []string `yaml:"preferred_regions,omitempty" json:"preferred_regions,omitempty"`
+	PreferredRegions []string `yaml:"preferredRegions,omitempty" json:"preferredRegions,omitempty"`
 
 	// Enable application default credentials
 	UseADC bool `yaml:"use_adc,omitempty" json:"use_adc,omitempty"`
@@ -566,7 +566,7 @@ type AzureConfig struct {
 	DefaultTenant string `yaml:"default_tenant,omitempty" json:"default_tenant,omitempty"`
 
 	// Preferred regions
-	PreferredRegions []string `yaml:"preferred_regions,omitempty" json:"preferred_regions,omitempty"`
+	PreferredRegions []string `yaml:"preferredRegions,omitempty" json:"preferredRegions,omitempty"`
 
 	// Use managed identity
 	UseManagedIdentity bool `yaml:"use_managed_identity,omitempty" json:"use_managed_identity,omitempty"`
@@ -653,7 +653,7 @@ type PodmanRemoteConfig struct {
 	Port int `yaml:"port,omitempty" json:"port,omitempty"`
 
 	// Use SSH tunnel
-	UseSSH bool `yaml:"use_ssh,omitempty" json:"use_ssh,omitempty"`
+	UseSSH bool `yaml:"use_ssh,omitempty" json:"useSsh,omitempty"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // KubernetesConfig contains Kubernetes configuration settings.
@@ -797,7 +797,7 @@ type VPNConfig struct {
 	Profiles map[string]*VPNProfile `yaml:"profiles,omitempty" json:"profiles,omitempty"`
 
 	// Default VPN profile
-	DefaultProfile string `yaml:"default_profile,omitempty" json:"default_profile,omitempty"`
+	DefaultProfile string `yaml:"defaultProfile,omitempty" json:"defaultProfile,omitempty"`
 
 	// Auto-connect settings
 	AutoConnect *VPNAutoConnect `yaml:"auto_connect,omitempty" json:"auto_connect,omitempty"`
@@ -881,7 +881,7 @@ type ProxyConfig struct {
 	Profiles map[string]*ProxyProfile `yaml:"profiles,omitempty" json:"profiles,omitempty"`
 
 	// Default proxy profile
-	DefaultProfile string `yaml:"default_profile,omitempty" json:"default_profile,omitempty"`
+	DefaultProfile string `yaml:"defaultProfile,omitempty" json:"defaultProfile,omitempty"`
 
 	// Auto-configure proxy
 	AutoConfigure bool `yaml:"auto_configure,omitempty" json:"auto_configure,omitempty"`

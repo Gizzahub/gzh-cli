@@ -499,7 +499,8 @@ func (m *defaultPolicyManager) GetApplicablePolicies(ctx context.Context, profil
 		for _, policy := range m.config.Policies {
 			// Simple matching - in real implementation, this would be more sophisticated
 			if policy.ProfileName == profileName || policy.ProfileName == "" {
-				applicablePolicies = append(applicablePolicies, &policy)
+				p := policy // Create copy to avoid memory aliasing
+				applicablePolicies = append(applicablePolicies, &p)
 			}
 		}
 	}

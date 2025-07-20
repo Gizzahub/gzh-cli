@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package utils
 
 import (
@@ -64,11 +65,11 @@ func TestGetConfigDir(t *testing.T) {
 
 	// Verify platform-specific behavior
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		if !strings.Contains(configDir, "AppData") && !strings.Contains(configDir, "APPDATA") {
 			t.Errorf("Windows config dir should contain AppData, got: %s", configDir)
 		}
-	case "darwin":
+	case platformDarwin:
 		if !strings.Contains(configDir, "Library/Application Support") {
 			t.Errorf("macOS config dir should contain Library/Application Support, got: %s", configDir)
 		}
@@ -89,7 +90,7 @@ func TestSetFilePermissions(t *testing.T) {
 	}()
 
 	// Create the file
-	file, err := os.Create(tempFile)
+	file, err := os.Create(tempFile) //nolint:gosec // Test file creation is safe
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -105,7 +106,7 @@ func TestSetFilePermissions(t *testing.T) {
 	}
 
 	// On Unix systems, verify permissions were set
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != platformWindows {
 		info, err := os.Stat(tempFile)
 		if err != nil {
 			t.Fatalf("Failed to stat file: %v", err)
@@ -122,7 +123,7 @@ func TestIsExecutableAvailable(t *testing.T) {
 	var testCommand string
 
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		testCommand = windowsShell
 	default:
 		testCommand = unixShell
@@ -150,7 +151,7 @@ func TestGetExecutableName(t *testing.T) {
 	for _, tc := range testCases {
 		result := GetExecutableName(tc.input)
 
-		if runtime.GOOS == "windows" {
+		if runtime.GOOS == platformWindows {
 			expectedWithExt := tc.expected + ".exe"
 			if result != expectedWithExt {
 				t.Errorf("On Windows, expected %s, got %s", expectedWithExt, result)
@@ -161,7 +162,7 @@ func TestGetExecutableName(t *testing.T) {
 	}
 
 	// Test with .exe already present
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == platformWindows {
 		result := GetExecutableName("test.exe")
 		if result != "test.exe" {
 			t.Errorf("Should not double-add .exe extension, got %s", result)
@@ -182,7 +183,7 @@ func TestGetShellCommand(t *testing.T) {
 
 	// Verify platform-specific behavior
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		if shell != windowsShell {
 			t.Errorf("On Windows, expected %s, got %s", windowsShell, shell)
 		}
@@ -222,7 +223,7 @@ func TestGetPathSeparator(t *testing.T) {
 
 	// Verify platform-specific behavior
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		if separator != "\\" {
 			t.Errorf("On Windows, expected \\, got %s", separator)
 		}
@@ -250,11 +251,11 @@ func TestPlatformDetection(t *testing.T) {
 
 	// Verify consistency with runtime.GOOS
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		if !IsWindows() {
 			t.Error("IsWindows() should return true on Windows")
 		}
-	case "darwin":
+	case platformDarwin:
 		if !IsMacOS() {
 			t.Error("IsMacOS() should return true on macOS")
 		}
@@ -286,7 +287,7 @@ func TestGetPlatformSpecificConfig(t *testing.T) {
 
 	// Verify platform-specific paths
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		hasAppData := false
 
 		for _, path := range paths {
@@ -299,7 +300,7 @@ func TestGetPlatformSpecificConfig(t *testing.T) {
 		if !hasAppData {
 			t.Error("Windows config paths should include AppData or PROGRAMDATA")
 		}
-	case "darwin":
+	case platformDarwin:
 		hasLibrary := false
 
 		for _, path := range paths {

@@ -41,6 +41,7 @@ type RecoveryConfig struct {
 type ErrorType string
 
 const (
+	// ErrorTypeNetwork represents network-related errors.
 	ErrorTypeNetwork    ErrorType = "network"
 	ErrorTypeAuth       ErrorType = "auth"
 	ErrorTypeValidation ErrorType = "validation"
@@ -220,7 +221,16 @@ func (er *ErrorRecovery) WithPanicRecovery(fn func()) (err error) {
 // calculateBackoff calculates the backoff delay for retries.
 func (er *ErrorRecovery) calculateBackoff(attempt int) time.Duration {
 	// Exponential backoff with jitter
-	delay := er.retryDelay * time.Duration(1<<uint(attempt))
+	// Limit attempt to prevent overflow (max 30 to stay within safe bit shift range)
+	if attempt > 30 {
+		attempt = 30
+	}
+	// Safe bit shift: ensure attempt is within range [0, 30] to prevent integer overflow
+	shiftAmount := uint(attempt)
+	if shiftAmount > 30 {
+		shiftAmount = 30
+	}
+	delay := er.retryDelay * time.Duration(1<<shiftAmount) //nolint:gosec // Bounded by max 30, safe from overflow
 	if delay > 30*time.Second {
 		delay = 30 * time.Second
 	}
@@ -242,6 +252,7 @@ type CircuitBreaker struct {
 type CircuitState int
 
 const (
+	// StateClosed represents a closed circuit breaker state.
 	StateClosed CircuitState = iota
 	StateOpen
 	StateHalfOpen

@@ -515,7 +515,7 @@ func (c *RepoConfigClient) UpdateRepositoryConfigurationWithConfirmation(ctx con
 
 				// If user chose to skip high/critical risk changes, filter them out
 				if len(result.SkippedRisks) > 0 {
-					config = c.filterConfigBySkippedRisks(currentConfig, config, result.SkippedRisks)
+					config = c.filterConfigBySkippedRisks(currentConfig, config, result.SkippedRisks) //nolint:contextcheck // Filter function doesn't need context
 					if c.logger != nil {
 						c.logger.LogOperation(ctx, opCtx, LogLevelInfo, "repository_update", "configuration",
 							fmt.Sprintf("Filtered config to skip %d risk levels", len(result.SkippedRisks)), nil)

@@ -154,6 +154,7 @@ type ArchiveService interface {
 // ArchiveFormat represents supported archive formats.
 type ArchiveFormat string
 
+// Archive format constants define the supported archive types.
 const (
 	ArchiveFormatTar    ArchiveFormat = "tar"
 	ArchiveFormatTarGz  ArchiveFormat = "tar.gz"
@@ -226,8 +227,8 @@ type SearchFilters struct {
 	MaxDepth       int       `json:"maxDepth"`
 }
 
-// FileSystemService provides a unified interface for all file system operations.
-type FileSystemService interface {
+// Service provides a unified interface for all file system operations.
+type Service interface {
 	FileSystem
 	WatchService
 	PermissionManager

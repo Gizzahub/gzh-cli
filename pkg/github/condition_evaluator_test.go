@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package github
 
 import (
@@ -884,7 +885,7 @@ func BenchmarkConditionEvaluator_EvaluateConditions(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		evaluator.EvaluateConditions(context.Background(), conditions, event, evalContext)
+		_, _ = evaluator.EvaluateConditions(context.Background(), conditions, event, evalContext) //nolint:errcheck // Benchmark test
 	}
 }
 
@@ -909,6 +910,6 @@ func BenchmarkConditionEvaluator_EvaluatePayloadMatcher(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		evaluator.EvaluatePayloadMatcher(context.Background(), matcher, payload)
+		_, _ = evaluator.EvaluatePayloadMatcher(context.Background(), matcher, payload) //nolint:errcheck // Benchmark test
 	}
 }

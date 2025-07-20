@@ -1,4 +1,4 @@
-// Package ssh_config provides SSH configuration management for Git operations
+// Package sshconfig provides SSH configuration management for Git operations
 // and repository access across multiple platforms.
 //
 // This package implements the ssh-config command that manages SSH keys,

@@ -14,7 +14,7 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org string) error
 	config := workerpool.DefaultRepositoryPoolConfig()
 
 	pool := workerpool.NewRepositoryWorkerPool(config)
-	if err := pool.Start(); err != nil {
+	if err := pool.Start(); err != nil { //nolint:contextcheck // Worker pool manages its own context lifecycle
 		return fmt.Errorf("failed to start worker pool: %w", err)
 	}
 	defer pool.Stop()
@@ -101,7 +101,7 @@ func processGiteaRepositoryJob(ctx context.Context, job workerpool.RepositoryJob
 func executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
 	// Build git command
 	gitArgs := append([]string{"-C", repoPath}, args...)
-	cmd := exec.CommandContext(ctx, "git", gitArgs...)
+	cmd := exec.CommandContext(ctx, "git", gitArgs...) //nolint:gosec // Git command with controlled arguments
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("git %s failed: %w", args[0], err)

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
 )
 
@@ -30,7 +31,7 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy s
 	}
 
 	pool := workerpool.NewRepositoryWorkerPool(config)
-	if err := pool.Start(); err != nil {
+	if err := pool.Start(); err != nil { //nolint:contextcheck // Worker pool start manages its own context
 		return fmt.Errorf("failed to start worker pool: %w", err)
 	}
 	defer pool.Stop()
@@ -57,11 +58,11 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy s
 			operation = workerpool.OperationClone
 		} else {
 			switch strategy {
-			case "reset":
+			case git.StrategyReset:
 				operation = workerpool.OperationReset
-			case "pull":
+			case git.StrategyPull:
 				operation = workerpool.OperationPull
-			case "fetch":
+			case git.StrategyFetch:
 				operation = workerpool.OperationFetch
 			default:
 				operation = workerpool.OperationPull
@@ -135,7 +136,7 @@ func processGitLabRepositoryJob(ctx context.Context, job workerpool.RepositoryJo
 func executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
 	// Build git command
 	gitArgs := append([]string{"-C", repoPath}, args...)
-	cmd := exec.CommandContext(ctx, "git", gitArgs...)
+	cmd := exec.CommandContext(ctx, "git", gitArgs...) //nolint:gosec // Git command with controlled arguments
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("git %s failed: %w", args[0], err)

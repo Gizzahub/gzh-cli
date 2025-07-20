@@ -1,3 +1,4 @@
+//nolint:tagliatelle // Dependabot configuration may require specific YAML/JSON field naming conventions
 package github
 
 import (
@@ -386,7 +387,8 @@ func (dm *DependabotConfigManager) ValidateConfig(config *DependabotConfig) erro
 	}
 
 	// Validate each update rule
-	for i, update := range config.Updates {
+	for i := range config.Updates {
+		update := config.Updates[i]
 		if err := dm.validateUpdateRule(&update); err != nil {
 			return fmt.Errorf("invalid update rule %d: %w", i, err)
 		}

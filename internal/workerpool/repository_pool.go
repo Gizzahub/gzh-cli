@@ -9,6 +9,7 @@ import (
 // RepositoryOperation represents a repository operation type.
 type RepositoryOperation string
 
+// Repository operation constants define the available operation types.
 const (
 	OperationClone  RepositoryOperation = "clone"
 	OperationPull   RepositoryOperation = "pull"

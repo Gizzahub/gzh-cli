@@ -35,7 +35,7 @@ type StartupValidationWarning struct {
 
 // StartupValidationResult contains the results of startup validation.
 type StartupValidationResult struct {
-	IsValid  bool                       `json:"is_valid"`
+	IsValid  bool                       `json:"isValid"`
 	Errors   []StartupValidationError   `json:"errors"`
 	Warnings []StartupValidationWarning `json:"warnings"`
 	Summary  string                     `json:"summary"`
@@ -60,28 +60,28 @@ func NewStartupValidator() *StartupValidator {
 // registerCustomValidators registers custom validation functions.
 func (sv *StartupValidator) registerCustomValidators() {
 	// Register custom strategy validator
-	sv.validator.RegisterValidation("strategy", sv.validateStrategy)
+	_ = sv.validator.RegisterValidation("strategy", sv.validateStrategy) //nolint:gosec // Validation registration in startup
 
 	// Register custom provider validator
-	sv.validator.RegisterValidation("provider", sv.validateProvider)
+	_ = sv.validator.RegisterValidation("provider", sv.validateProvider) //nolint:gosec // Validation registration in startup
 
 	// Register custom visibility validator
-	sv.validator.RegisterValidation("visibility", sv.validateVisibility)
+	_ = sv.validator.RegisterValidation("visibility", sv.validateVisibility) //nolint:gosec // Validation registration in startup
 
 	// Register custom directory path validator
-	sv.validator.RegisterValidation("dirpath", sv.validateDirectoryPath)
+	_ = sv.validator.RegisterValidation("dirpath", sv.validateDirectoryPath) //nolint:gosec // Validation registration in startup
 
 	// Register custom regex pattern validator
-	sv.validator.RegisterValidation("regexpattern", sv.validateRegexPattern)
+	_ = sv.validator.RegisterValidation("regexpattern", sv.validateRegexPattern) //nolint:gosec // Validation registration in startup
 
 	// Register custom environment token validator
-	sv.validator.RegisterValidation("envtoken", sv.validateEnvironmentToken)
+	_ = sv.validator.RegisterValidation("envtoken", sv.validateEnvironmentToken) //nolint:errcheck // Validation registration in startup
 
 	// Register custom timeout duration validator
-	sv.validator.RegisterValidation("timeout", sv.validateTimeout)
+	_ = sv.validator.RegisterValidation("timeout", sv.validateTimeout) //nolint:errcheck // Validation registration in startup
 
 	// Register custom concurrency validator
-	sv.validator.RegisterValidation("concurrency", sv.validateConcurrency)
+	_ = sv.validator.RegisterValidation("concurrency", sv.validateConcurrency) //nolint:errcheck // Validation registration in startup
 }
 
 // ValidateUnifiedConfig performs comprehensive validation of unified configuration.

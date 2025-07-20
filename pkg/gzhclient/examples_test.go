@@ -59,7 +59,8 @@ func Example_bulkClone() {
 	// Execute bulk clone
 	result, err := client.BulkClone(context.Background(), req)
 	if err != nil {
-		log.Fatal(err)
+		_ = client.Close()
+		log.Fatal(err) //nolint:gocritic // Example code intentionally uses log.Fatal
 	}
 
 	fmt.Printf("Total repositories: %d\n", result.TotalRepos)
@@ -124,7 +125,8 @@ func Example_systemMonitoring() {
 	// Get system metrics
 	metrics, err := client.GetSystemMetrics()
 	if err != nil {
-		log.Fatal(err)
+		_ = client.Close()
+		log.Fatal(err) //nolint:gocritic // Example code intentionally uses log.Fatal
 	}
 
 	fmt.Printf("CPU Cores: %d\n", metrics.CPU.Cores)

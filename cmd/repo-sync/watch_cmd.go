@@ -18,6 +18,12 @@ import (
 	"go.uber.org/zap"
 )
 
+// File operation constants.
+const (
+	opWrite  = "write"
+	opCreate = "create"
+)
+
 // newWatchCmd creates the watch subcommand for real-time file system monitoring.
 func newWatchCmd(logger *zap.Logger) *cobra.Command {
 	var (
@@ -60,7 +66,7 @@ Examples:
   # Watch with custom patterns
   gz repo-sync watch ./my-repo --watch-patterns "**/*.go,**/*.md" --ignore-patterns "vendor/**,*.tmp"`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			repoPath := "."
 			if len(args) > 0 {
 				repoPath = args[0]
@@ -72,7 +78,7 @@ Examples:
 			}
 
 			// Create configuration
-			config := DefaultRepoSyncConfig()
+			config := DefaultConfig()
 			config.RepositoryPath = repoPath
 			config.BatchSize = batchSize
 			config.BatchTimeout = batchTimeout
@@ -125,7 +131,7 @@ Examples:
 // RepositoryWatcher handles efficient file system monitoring for Git repositories.
 type RepositoryWatcher struct {
 	logger  *zap.Logger
-	config  *RepoSyncConfig
+	config  *Config
 	watcher *fsnotify.Watcher
 	events  chan FileChangeEvent
 	batches chan FileChangeBatch
@@ -136,16 +142,16 @@ type RepositoryWatcher struct {
 
 // WatcherStats tracks statistics about the file watcher.
 type WatcherStats struct {
-	StartTime        time.Time `json:"start_time"`
-	TotalEvents      int64     `json:"total_events"`
-	BatchesProcessed int64     `json:"batches_processed"`
-	FilesModified    int64     `json:"files_modified"`
-	LastEventTime    time.Time `json:"last_event_time"`
-	ErrorCount       int64     `json:"error_count"`
+	StartTime        time.Time `json:"startTime"`
+	TotalEvents      int64     `json:"totalEvents"`
+	BatchesProcessed int64     `json:"batchesProcessed"`
+	FilesModified    int64     `json:"filesModified"`
+	LastEventTime    time.Time `json:"lastEventTime"`
+	ErrorCount       int64     `json:"errorCount"`
 }
 
 // NewRepositoryWatcher creates a new repository file system watcher.
-func NewRepositoryWatcher(logger *zap.Logger, config *RepoSyncConfig) (*RepositoryWatcher, error) {
+func NewRepositoryWatcher(logger *zap.Logger, config *Config) (*RepositoryWatcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create fsnotify watcher: %w", err)
@@ -284,7 +290,7 @@ func (rw *RepositoryWatcher) handleFileEvent(event fsnotify.Event) {
 	}
 
 	// Add file size and checksum for relevant operations
-	if changeEvent.Operation == "write" || changeEvent.Operation == "create" {
+	if changeEvent.Operation == opWrite || changeEvent.Operation == opCreate {
 		if stat, err := os.Stat(event.Name); err == nil && !stat.IsDir() {
 			changeEvent.Size = stat.Size()
 
@@ -596,9 +602,7 @@ func (rw *RepositoryWatcher) calculateChecksum(path string) (string, error) {
 		return "", err
 	}
 	defer func() {
-		if err := file.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = file.Close() //nolint:errcheck // Not critical
 	}()
 
 	hasher := sha256.New()

@@ -10,9 +10,13 @@ import (
 type ActionsPermissionLevel string
 
 const (
-	ActionsPermissionDisabled        ActionsPermissionLevel = "disabled"
-	ActionsPermissionAll             ActionsPermissionLevel = "all"
-	ActionsPermissionLocalOnly       ActionsPermissionLevel = "local_only"
+	// ActionsPermissionDisabled disables GitHub Actions for the repository/organization.
+	ActionsPermissionDisabled ActionsPermissionLevel = "disabled"
+	// ActionsPermissionAll allows all GitHub Actions to run.
+	ActionsPermissionAll ActionsPermissionLevel = "all"
+	// ActionsPermissionLocalOnly allows only local actions and workflows to run.
+	ActionsPermissionLocalOnly ActionsPermissionLevel = "local_only"
+	// ActionsPermissionSelectedActions allows only selected actions to run.
 	ActionsPermissionSelectedActions ActionsPermissionLevel = "selected"
 )
 
@@ -23,19 +27,19 @@ type ActionsPolicy struct {
 	Description            string                  `json:"description" yaml:"description"`
 	Organization           string                  `json:"organization" yaml:"organization"`
 	Repository             string                  `json:"repository,omitempty" yaml:"repository,omitempty"`
-	PermissionLevel        ActionsPermissionLevel  `json:"permissionLevel" yaml:"permission_level"`
-	AllowedActions         []string                `json:"allowedActions,omitempty" yaml:"allowed_actions,omitempty"`
-	AllowedActionsPatterns []string                `json:"allowedActionsPatterns,omitempty" yaml:"allowed_actions_patterns,omitempty"`
-	WorkflowPermissions    WorkflowPermissions     `json:"workflowPermissions" yaml:"workflow_permissions"`
-	SecuritySettings       ActionsSecuritySettings `json:"securitySettings" yaml:"security_settings"`
-	SecretsPolicy          SecretsPolicy           `json:"secretsPolicy" yaml:"secrets_policy"`
+	PermissionLevel        ActionsPermissionLevel  `json:"permissionLevel" yaml:"permissionLevel"`
+	AllowedActions         []string                `json:"allowedActions,omitempty" yaml:"allowedActions,omitempty"`
+	AllowedActionsPatterns []string                `json:"allowedActionsPatterns,omitempty" yaml:"allowedActionsPatterns,omitempty"`
+	WorkflowPermissions    WorkflowPermissions     `json:"workflowPermissions" yaml:"workflowPermissions"`
+	SecuritySettings       ActionsSecuritySettings `json:"securitySettings" yaml:"securitySettings"`
+	SecretsPolicy          SecretsPolicy           `json:"secretsPolicy" yaml:"secretsPolicy"`
 	Variables              map[string]string       `json:"variables,omitempty" yaml:"variables,omitempty"`
 	Environments           []EnvironmentPolicy     `json:"environments,omitempty" yaml:"environments,omitempty"`
 	Runners                RunnerPolicy            `json:"runners" yaml:"runners"`
-	CreatedAt              time.Time               `json:"createdAt" yaml:"created_at"`
-	UpdatedAt              time.Time               `json:"updatedAt" yaml:"updated_at"`
-	CreatedBy              string                  `json:"createdBy" yaml:"created_by"`
-	UpdatedBy              string                  `json:"updatedBy" yaml:"updated_by"`
+	CreatedAt              time.Time               `json:"createdAt" yaml:"createdAt"`
+	UpdatedAt              time.Time               `json:"updatedAt" yaml:"updatedAt"`
+	CreatedBy              string                  `json:"createdBy" yaml:"createdBy"`
+	UpdatedBy              string                  `json:"updatedBy" yaml:"updatedBy"`
 	Version                int                     `json:"version" yaml:"version"`
 	Enabled                bool                    `json:"enabled" yaml:"enabled"`
 	Tags                   []string                `json:"tags,omitempty" yaml:"tags,omitempty"`
@@ -43,29 +47,32 @@ type ActionsPolicy struct {
 
 // WorkflowPermissions defines permissions for workflow tokens.
 type WorkflowPermissions struct {
-	DefaultPermissions       DefaultPermissions                `json:"defaultPermissions" yaml:"default_permissions"`
-	CanApproveOwnChanges     bool                              `json:"canApproveOwnChanges" yaml:"can_approve_own_changes"`
-	ActionsReadPermission    ActionsTokenPermission            `json:"actionsRead" yaml:"actions_read"`
+	DefaultPermissions       DefaultPermissions                `json:"defaultPermissions" yaml:"defaultPermissions"`
+	CanApproveOwnChanges     bool                              `json:"canApproveOwnChanges" yaml:"canApproveOwnChanges"`
+	ActionsReadPermission    ActionsTokenPermission            `json:"actionsRead" yaml:"actionsRead"`
 	ContentsPermission       ActionsTokenPermission            `json:"contents" yaml:"contents"`
 	MetadataPermission       ActionsTokenPermission            `json:"metadata" yaml:"metadata"`
 	PackagesPermission       ActionsTokenPermission            `json:"packages" yaml:"packages"`
-	PullRequestsPermission   ActionsTokenPermission            `json:"pullRequests" yaml:"pull_requests"`
+	PullRequestsPermission   ActionsTokenPermission            `json:"pullRequests" yaml:"pullRequests"`
 	IssuesPermission         ActionsTokenPermission            `json:"issues" yaml:"issues"`
 	DeploymentsPermission    ActionsTokenPermission            `json:"deployments" yaml:"deployments"`
 	ChecksPermission         ActionsTokenPermission            `json:"checks" yaml:"checks"`
 	StatusesPermission       ActionsTokenPermission            `json:"statuses" yaml:"statuses"`
-	SecurityEventsPermission ActionsTokenPermission            `json:"securityEvents" yaml:"security_events"`
-	IdTokenPermission        ActionsTokenPermission            `json:"idToken" yaml:"id_token"`
+	SecurityEventsPermission ActionsTokenPermission            `json:"securityEvents" yaml:"securityEvents"`
+	IdTokenPermission        ActionsTokenPermission            `json:"idToken" yaml:"idToken"`
 	AttestationsPermission   ActionsTokenPermission            `json:"attestations" yaml:"attestations"`
-	CustomPermissions        map[string]ActionsTokenPermission `json:"customPermissions,omitempty" yaml:"custom_permissions,omitempty"`
+	CustomPermissions        map[string]ActionsTokenPermission `json:"customPermissions,omitempty" yaml:"customPermissions,omitempty"`
 }
 
 // DefaultPermissions defines the default permission level for workflow tokens.
 type DefaultPermissions string
 
 const (
-	DefaultPermissionsRead       DefaultPermissions = "read"
-	DefaultPermissionsWrite      DefaultPermissions = "write"
+	// DefaultPermissionsRead grants read-only permissions to workflow tokens.
+	DefaultPermissionsRead DefaultPermissions = "read"
+	// DefaultPermissionsWrite grants write permissions to workflow tokens.
+	DefaultPermissionsWrite DefaultPermissions = "write"
+	// DefaultPermissionsRestricted restricts permissions for workflow tokens.
 	DefaultPermissionsRestricted DefaultPermissions = "restricted"
 )
 
@@ -80,19 +87,19 @@ const (
 
 // ActionsSecuritySettings defines security-related settings for Actions.
 type ActionsSecuritySettings struct {
-	RequireCodeScanningApproval   bool                     `json:"requireCodeScanningApproval" yaml:"require_code_scanning_approval"`
-	RequireSecretScanningApproval bool                     `json:"requireSecretScanningApproval" yaml:"require_secret_scanning_approval"`
-	AllowForkPRs                  bool                     `json:"allowForkPRs" yaml:"allow_fork_prs"`
-	RequireApprovalForForkPRs     bool                     `json:"requireApprovalForForkPRs" yaml:"require_approval_for_fork_prs"`
-	AllowPrivateRepoForkRun       bool                     `json:"allowPrivateRepoForkRun" yaml:"allow_private_repo_fork_run"`
-	RequireApprovalForPrivateFork bool                     `json:"requireApprovalForPrivateFork" yaml:"require_approval_for_private_fork"`
-	RestrictedActionsPatterns     []string                 `json:"restrictedActionsPatterns,omitempty" yaml:"restricted_actions_patterns,omitempty"`
-	AllowGitHubOwnedActions       bool                     `json:"allowGitHubOwnedActions" yaml:"allow_github_owned_actions"`
-	AllowVerifiedPartnerActions   bool                     `json:"allowVerifiedPartnerActions" yaml:"allow_verified_partner_actions"`
-	AllowMarketplaceActions       ActionsMarketplacePolicy `json:"allowMarketplaceActions" yaml:"allow_marketplace_actions"`
-	RequireSignedCommits          bool                     `json:"requireSignedCommits" yaml:"require_signed_commits"`
-	EnforceAdminsOnBranches       bool                     `json:"enforceAdminsOnBranches" yaml:"enforce_admins_on_branches"`
-	OIDCCustomClaims              map[string]string        `json:"oidcCustomClaims,omitempty" yaml:"oidc_custom_claims,omitempty"`
+	RequireCodeScanningApproval   bool                     `json:"requireCodeScanningApproval" yaml:"requireCodeScanningApproval"`
+	RequireSecretScanningApproval bool                     `json:"requireSecretScanningApproval" yaml:"requireSecretScanningApproval"`
+	AllowForkPRs                  bool                     `json:"allowForkPRs" yaml:"allowForkPrs"`
+	RequireApprovalForForkPRs     bool                     `json:"requireApprovalForForkPRs" yaml:"requireApprovalForForkPrs"`
+	AllowPrivateRepoForkRun       bool                     `json:"allowPrivateRepoForkRun" yaml:"allowPrivateRepoForkRun"`
+	RequireApprovalForPrivateFork bool                     `json:"requireApprovalForPrivateFork" yaml:"requireApprovalForPrivateFork"`
+	RestrictedActionsPatterns     []string                 `json:"restrictedActionsPatterns,omitempty" yaml:"restrictedActionsPatterns,omitempty"`
+	AllowGitHubOwnedActions       bool                     `json:"allowGitHubOwnedActions" yaml:"allowGithubOwnedActions"`
+	AllowVerifiedPartnerActions   bool                     `json:"allowVerifiedPartnerActions" yaml:"allowVerifiedPartnerActions"`
+	AllowMarketplaceActions       ActionsMarketplacePolicy `json:"allowMarketplaceActions" yaml:"allowMarketplaceActions"`
+	RequireSignedCommits          bool                     `json:"requireSignedCommits" yaml:"requireSignedCommits"`
+	EnforceAdminsOnBranches       bool                     `json:"enforceAdminsOnBranches" yaml:"enforceAdminsOnBranches"`
+	OIDCCustomClaims              map[string]string        `json:"oidcCustomClaims,omitempty" yaml:"oidcCustomClaims,omitempty"`
 }
 
 // ActionsMarketplacePolicy defines the policy for marketplace actions.
@@ -107,14 +114,14 @@ const (
 
 // SecretsPolicy defines policy for managing secrets.
 type SecretsPolicy struct {
-	AllowedSecrets               []string             `json:"allowedSecrets,omitempty" yaml:"allowed_secrets,omitempty"`
-	RestrictedSecrets            []string             `json:"restrictedSecrets,omitempty" yaml:"restricted_secrets,omitempty"`
-	RequireApprovalForNewSecrets bool                 `json:"requireApprovalForNewSecrets" yaml:"require_approval_for_new_secrets"`
-	SecretVisibility             SecretVisibility     `json:"secretVisibility" yaml:"secret_visibility"`
-	AllowSecretsInheritance      bool                 `json:"allowSecretsInheritance" yaml:"allow_secrets_inheritance"`
-	SecretNamingPatterns         []string             `json:"secretNamingPatterns,omitempty" yaml:"secret_naming_patterns,omitempty"`
-	MaxSecretCount               int                  `json:"maxSecretCount,omitempty" yaml:"max_secret_count,omitempty"`
-	SecretRotationPolicy         SecretRotationPolicy `json:"secretRotationPolicy" yaml:"secret_rotation_policy"`
+	AllowedSecrets               []string             `json:"allowedSecrets,omitempty" yaml:"allowedSecrets,omitempty"`
+	RestrictedSecrets            []string             `json:"restrictedSecrets,omitempty" yaml:"restrictedSecrets,omitempty"`
+	RequireApprovalForNewSecrets bool                 `json:"requireApprovalForNewSecrets" yaml:"requireApprovalForNewSecrets"`
+	SecretVisibility             SecretVisibility     `json:"secretVisibility" yaml:"secretVisibility"`
+	AllowSecretsInheritance      bool                 `json:"allowSecretsInheritance" yaml:"allowSecretsInheritance"`
+	SecretNamingPatterns         []string             `json:"secretNamingPatterns,omitempty" yaml:"secretNamingPatterns,omitempty"`
+	MaxSecretCount               int                  `json:"maxSecretCount,omitempty" yaml:"maxSecretCount,omitempty"`
+	SecretRotationPolicy         SecretRotationPolicy `json:"secretRotationPolicy" yaml:"secretRotationPolicy"`
 }
 
 // SecretVisibility defines the visibility scope for secrets.
@@ -129,23 +136,23 @@ const (
 // SecretRotationPolicy defines policy for secret rotation.
 type SecretRotationPolicy struct {
 	Enabled                bool          `json:"enabled" yaml:"enabled"`
-	RotationInterval       time.Duration `json:"rotationInterval" yaml:"rotation_interval"`
-	RequireRotationWarning bool          `json:"requireRotationWarning" yaml:"require_rotation_warning"`
-	WarningDays            int           `json:"warningDays" yaml:"warning_days"`
-	AutoRotateSecrets      []string      `json:"autoRotateSecrets,omitempty" yaml:"auto_rotate_secrets,omitempty"`
+	RotationInterval       time.Duration `json:"rotationInterval" yaml:"rotationInterval"`
+	RequireRotationWarning bool          `json:"requireRotationWarning" yaml:"requireRotationWarning"`
+	WarningDays            int           `json:"warningDays" yaml:"warningDays"`
+	AutoRotateSecrets      []string      `json:"autoRotateSecrets,omitempty" yaml:"autoRotateSecrets,omitempty"`
 }
 
 // EnvironmentPolicy defines policy for deployment environments.
 type EnvironmentPolicy struct {
 	Name                    string                  `json:"name" yaml:"name"`
-	RequiredReviewers       []string                `json:"requiredReviewers,omitempty" yaml:"required_reviewers,omitempty"`
-	RequiredReviewerTeams   []string                `json:"requiredReviewerTeams,omitempty" yaml:"required_reviewer_teams,omitempty"`
-	WaitTimer               time.Duration           `json:"waitTimer,omitempty" yaml:"wait_timer,omitempty"`
-	BranchPolicyType        EnvironmentBranchPolicy `json:"branchPolicyType" yaml:"branch_policy_type"`
-	ProtectedBranches       []string                `json:"protectedBranches,omitempty" yaml:"protected_branches,omitempty"`
-	BranchPatterns          []string                `json:"branchPatterns,omitempty" yaml:"branch_patterns,omitempty"`
-	RequireDeploymentBranch bool                    `json:"requireDeploymentBranch" yaml:"require_deployment_branch"`
-	PreventSelfReview       bool                    `json:"preventSelfReview" yaml:"prevent_self_review"`
+	RequiredReviewers       []string                `json:"requiredReviewers,omitempty" yaml:"requiredReviewers,omitempty"`
+	RequiredReviewerTeams   []string                `json:"requiredReviewerTeams,omitempty" yaml:"requiredReviewerTeams,omitempty"`
+	WaitTimer               time.Duration           `json:"waitTimer,omitempty" yaml:"waitTimer,omitempty"`
+	BranchPolicyType        EnvironmentBranchPolicy `json:"branchPolicyType" yaml:"branchPolicyType"`
+	ProtectedBranches       []string                `json:"protectedBranches,omitempty" yaml:"protectedBranches,omitempty"`
+	BranchPatterns          []string                `json:"branchPatterns,omitempty" yaml:"branchPatterns,omitempty"`
+	RequireDeploymentBranch bool                    `json:"requireDeploymentBranch" yaml:"requireDeploymentBranch"`
+	PreventSelfReview       bool                    `json:"preventSelfReview" yaml:"preventSelfReview"`
 	Secrets                 []string                `json:"secrets,omitempty" yaml:"secrets,omitempty"`
 	Variables               map[string]string       `json:"variables,omitempty" yaml:"variables,omitempty"`
 }
@@ -162,14 +169,14 @@ const (
 
 // RunnerPolicy defines policy for GitHub Actions runners.
 type RunnerPolicy struct {
-	AllowedRunnerTypes      []RunnerType           `json:"allowedRunnerTypes" yaml:"allowed_runner_types"`
-	RequireSelfHostedLabels []string               `json:"requireSelfHostedLabels,omitempty" yaml:"require_self_hosted_labels,omitempty"`
-	RestrictedRunnerLabels  []string               `json:"restrictedRunnerLabels,omitempty" yaml:"restricted_runner_labels,omitempty"`
-	MaxConcurrentJobs       int                    `json:"maxConcurrentJobs,omitempty" yaml:"max_concurrent_jobs,omitempty"`
-	MaxJobExecutionTime     time.Duration          `json:"maxJobExecutionTime,omitempty" yaml:"max_job_execution_time,omitempty"`
-	RunnerGroups            []string               `json:"runnerGroups,omitempty" yaml:"runner_groups,omitempty"`
-	RequireRunnerApproval   bool                   `json:"requireRunnerApproval" yaml:"require_runner_approval"`
-	SelfHostedRunnerPolicy  SelfHostedRunnerPolicy `json:"selfHostedRunnerPolicy" yaml:"self_hosted_runner_policy"`
+	AllowedRunnerTypes      []RunnerType           `json:"allowedRunnerTypes" yaml:"allowedRunnerTypes"`
+	RequireSelfHostedLabels []string               `json:"requireSelfHostedLabels,omitempty" yaml:"requireSelfHostedLabels,omitempty"`
+	RestrictedRunnerLabels  []string               `json:"restrictedRunnerLabels,omitempty" yaml:"restrictedRunnerLabels,omitempty"`
+	MaxConcurrentJobs       int                    `json:"maxConcurrentJobs,omitempty" yaml:"maxConcurrentJobs,omitempty"`
+	MaxJobExecutionTime     time.Duration          `json:"maxJobExecutionTime,omitempty" yaml:"maxJobExecutionTime,omitempty"`
+	RunnerGroups            []string               `json:"runnerGroups,omitempty" yaml:"runnerGroups,omitempty"`
+	RequireRunnerApproval   bool                   `json:"requireRunnerApproval" yaml:"requireRunnerApproval"`
+	SelfHostedRunnerPolicy  SelfHostedRunnerPolicy `json:"selfHostedRunnerPolicy" yaml:"selfHostedRunnerPolicy"`
 }
 
 // RunnerType defines the type of runner allowed.
@@ -184,13 +191,13 @@ const (
 
 // SelfHostedRunnerPolicy defines policy for self-hosted runners.
 type SelfHostedRunnerPolicy struct {
-	RequireRunnerRegistration  bool          `json:"requireRunnerRegistration" yaml:"require_runner_registration"`
-	AllowedOperatingSystems    []string      `json:"allowedOperatingSystems,omitempty" yaml:"allowed_operating_systems,omitempty"`
-	RequiredSecurityPatches    bool          `json:"requiredSecurityPatches" yaml:"required_security_patches"`
-	DisallowPublicRepositories bool          `json:"disallowPublicRepositories" yaml:"disallow_public_repositories"`
-	RequireEncryptedStorage    bool          `json:"requireEncryptedStorage" yaml:"require_encrypted_storage"`
-	RunnerTimeout              time.Duration `json:"runnerTimeout,omitempty" yaml:"runner_timeout,omitempty"`
-	MaxRunners                 int           `json:"maxRunners,omitempty" yaml:"max_runners,omitempty"`
+	RequireRunnerRegistration  bool          `json:"requireRunnerRegistration" yaml:"requireRunnerRegistration"`
+	AllowedOperatingSystems    []string      `json:"allowedOperatingSystems,omitempty" yaml:"allowedOperatingSystems,omitempty"`
+	RequiredSecurityPatches    bool          `json:"requiredSecurityPatches" yaml:"requiredSecurityPatches"`
+	DisallowPublicRepositories bool          `json:"disallowPublicRepositories" yaml:"disallowPublicRepositories"`
+	RequireEncryptedStorage    bool          `json:"requireEncryptedStorage" yaml:"requireEncryptedStorage"`
+	RunnerTimeout              time.Duration `json:"runnerTimeout,omitempty" yaml:"runnerTimeout,omitempty"`
+	MaxRunners                 int           `json:"maxRunners,omitempty" yaml:"maxRunners,omitempty"`
 }
 
 // ActionsPolicyViolation represents a policy violation.

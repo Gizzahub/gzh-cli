@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewEventCmd creates a new event command.
+// NewEventCmdRefactored creates a new event command.
 func NewEventCmdRefactored() *cobra.Command {
 	// Command flags - declare as local variables
 	var (
@@ -48,7 +48,7 @@ This command provides comprehensive event management capabilities including:
 	
 The server listens for incoming webhook requests from GitHub and processes them
 according to registered event handlers and policies.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			// Create dependencies
 			logger := event.NewLoggerAdapter()
 			storage := event.NewMockStorage()
@@ -66,7 +66,7 @@ according to registered event handlers and policies.`,
 	
 Supports filtering by organization, repository, event type, action, sender,
 and time range to help find specific events.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			// TODO: Implement event listing using the event package
 			fmt.Println("Event listing not yet implemented in refactored version")
 			return nil
@@ -81,7 +81,7 @@ and time range to help find specific events.`,
 Shows the complete event payload, headers, processing status, and any
 associated handler results.`,
 		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			// TODO: Implement event retrieval using the event package
 			fmt.Printf("Getting event: %s\n", args[0])
 			return nil
@@ -96,7 +96,7 @@ associated handler results.`,
 - Events by type and organization
 - Average processing time
 - Handler status and performance`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			// TODO: Implement metrics display using the event package
 			fmt.Println("Metrics display not yet implemented in refactored version")
 			return nil
@@ -110,7 +110,7 @@ associated handler results.`,
 	
 Useful for testing event handlers, policies, and webhook endpoints without
 waiting for actual GitHub events.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			// TODO: Implement test event sending using the event package
 			fmt.Println("Test event sending not yet implemented in refactored version")
 			return nil

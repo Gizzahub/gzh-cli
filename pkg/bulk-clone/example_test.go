@@ -9,6 +9,13 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
+// Provider constants.
+const (
+	providerGitHub = "github"
+	providerGitLab = "gitlab"
+	providerGitea  = "gitea"
+)
+
 // ExampleLoadConfig demonstrates how to load a bulk clone configuration
 // from a YAML file.
 func ExampleLoadConfig() {
@@ -63,11 +70,11 @@ repo_roots:
 
 	for _, root := range config.RepoRoots {
 		switch root.Provider {
-		case "github":
+		case providerGitHub:
 			githubCount++
-		case "gitlab":
+		case providerGitLab:
 			gitlabCount++
-		case "gitea":
+		case providerGitea:
 			giteaCount++
 		}
 	}
@@ -215,11 +222,11 @@ repo_roots:
 
 	for _, root := range config.RepoRoots {
 		switch root.Provider {
-		case "github":
+		case providerGitHub:
 			githubCount++
-		case "gitlab":
+		case providerGitLab:
 			gitlabCount++
-		case "gitea":
+		case providerGitea:
 			giteaCount++
 		case "gogs":
 			gogsCount++

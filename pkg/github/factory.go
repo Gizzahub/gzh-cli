@@ -105,7 +105,7 @@ type gitHubClonerImpl struct {
 func (g *gitHubClonerImpl) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
-		g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token)
+		_ = g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token) //nolint:errcheck // Environment setup for authentication
 	}
 
 	// Call the existing RefreshAll function
@@ -116,7 +116,7 @@ func (g *gitHubClonerImpl) CloneOrganization(ctx context.Context, orgName, targe
 func (g *gitHubClonerImpl) CloneRepository(ctx context.Context, owner, repo, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
-		g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token)
+		_ = g.Environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.Token) //nolint:errcheck // Environment setup for authentication
 	}
 
 	// Implementation would call appropriate GitHub API functions

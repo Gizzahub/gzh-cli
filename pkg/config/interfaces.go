@@ -47,8 +47,8 @@ type ValidationError struct {
 	Message      string `json:"message"`
 	Severity     string `json:"severity"` // error, warning, info
 	Suggestion   string `json:"suggestion,omitempty"`
-	LineNumber   int    `json:"line_number,omitempty"`
-	ColumnNumber int    `json:"column_number,omitempty"`
+	LineNumber   int    `json:"lineNumber,omitempty"`
+	ColumnNumber int    `json:"columnNumber,omitempty"`
 }
 
 // ConfigParser defines the interface for parsing configuration files.
@@ -132,13 +132,13 @@ type FilterService interface {
 
 // FilterStats represents statistics about filter application.
 type FilterStats struct {
-	TotalRepositories    int `json:"total_repositories"`
-	MatchingRepositories int `json:"matching_repositories"`
-	FilteredRepositories int `json:"filtered_repositories"`
-	IncludedByPattern    int `json:"included_by_pattern"`
-	ExcludedByPattern    int `json:"excluded_by_pattern"`
-	ExcludedByVisibility int `json:"excluded_by_visibility"`
-	ExcludedByArchived   int `json:"excluded_by_archived"`
+	TotalRepositories    int `json:"totalRepositories"`
+	MatchingRepositories int `json:"matchingRepositories"`
+	FilteredRepositories int `json:"filteredRepositories"`
+	IncludedByPattern    int `json:"includedByPattern"`
+	ExcludedByPattern    int `json:"excludedByPattern"`
+	ExcludedByVisibility int `json:"excludedByVisibility"`
+	ExcludedByArchived   int `json:"excludedByArchived"`
 }
 
 // IntegrationService defines the interface for bulk clone integration.

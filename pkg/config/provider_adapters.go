@@ -70,7 +70,7 @@ func (g *GitHubProviderAdapter) CloneOrganization(ctx context.Context, owner, ta
 func (g *GitHubProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token)
+		_ = g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token) // Ignore error
 	}
 }
 
@@ -151,7 +151,7 @@ func (g *GitLabProviderAdapter) CloneOrganization(ctx context.Context, owner, ta
 func (g *GitLabProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token)
+		_ = g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token) // Ignore error
 	}
 }
 
@@ -232,7 +232,7 @@ func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, tar
 func (g *GiteaProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token)
+		_ = g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token) // Ignore error
 	}
 }
 
@@ -403,7 +403,7 @@ func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *B
 	for providerName, providerConfig := range s.config.Providers {
 		config := ProviderConfig{Token: providerConfig.Token}
 
-		provider, err := s.factory.CreateProvider(context.Background(), providerName, config)
+		provider, err := s.factory.CreateProvider(ctx, providerName, config)
 		if err != nil {
 			result.RefreshFailed++
 			continue

@@ -62,7 +62,7 @@ func (c *CLIExecutor) Run(args ...string) *CLIResult {
 	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, c.BinaryPath, args...)
+	cmd := exec.CommandContext(ctx, c.BinaryPath, args...) //nolint:gosec // E2E test helper with controlled binary path
 	cmd.Dir = c.WorkDir
 	cmd.Env = c.Env
 
@@ -112,7 +112,7 @@ func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, c.BinaryPath, args...)
+	cmd := exec.CommandContext(ctx, c.BinaryPath, args...) //nolint:gosec // E2E test helper with controlled binary path
 	cmd.Dir = c.WorkDir
 	cmd.Env = c.Env
 
@@ -157,7 +157,7 @@ func (c *CLIExecutor) RunWithInput(input string, args ...string) *CLIResult {
 
 // RunAsync executes a command asynchronously (for daemon processes).
 func (c *CLIExecutor) RunAsync(args ...string) (*exec.Cmd, error) {
-	cmd := exec.Command(c.BinaryPath, args...)
+	cmd := exec.Command(c.BinaryPath, args...) //nolint:gosec // E2E test helper with controlled binary path
 	cmd.Dir = c.WorkDir
 	cmd.Env = c.Env
 
@@ -173,7 +173,7 @@ func (c *CLIExecutor) RunAsync(args ...string) (*exec.Cmd, error) {
 func BuildBinary(projectRoot string) (string, error) {
 	binaryPath := filepath.Join(projectRoot, "gz")
 
-	cmd := exec.Command("go", "build", "-o", binaryPath)
+	cmd := exec.Command("go", "build", "-o", binaryPath) //nolint:gosec // E2E test helper building known binary
 	cmd.Dir = projectRoot
 
 	var stderr bytes.Buffer

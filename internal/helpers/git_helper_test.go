@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package helpers
 
 import (
@@ -18,13 +19,13 @@ func TestCheckGitRepoType(t *testing.T) {
 		t.Logf("Warning: failed to remove tmp dir: %v", err)
 	}
 
-	if err := os.MkdirAll("tmp/git-commit0", 0o755); err != nil {
+	if err := os.MkdirAll("tmp/git-commit0", 0o750); err != nil {
 		t.Fatalf("Failed to create tmp/git-commit0: %v", err)
 	}
-	if err := os.MkdirAll("tmp/git-commit2", 0o755); err != nil {
+	if err := os.MkdirAll("tmp/git-commit2", 0o750); err != nil {
 		t.Fatalf("Failed to create tmp/git-commit2: %v", err)
 	}
-	if err := os.MkdirAll("tmp/nongit", 0o755); err != nil {
+	if err := os.MkdirAll("tmp/nongit", 0o750); err != nil {
 		t.Fatalf("Failed to create tmp/nongit: %v", err)
 	}
 
@@ -37,7 +38,7 @@ func TestCheckGitRepoType(t *testing.T) {
 		t.Logf("Warning: git init failed: %v", err)
 	}
 	// Create test file using Go's built-in function for cross-platform compatibility
-	if err := os.WriteFile("tmp/git-commit2/test", []byte{}, 0o644); err != nil {
+	if err := os.WriteFile("tmp/git-commit2/test", []byte{}, 0o600); err != nil {
 		t.Logf("Warning: failed to write test file: %v", err)
 	}
 

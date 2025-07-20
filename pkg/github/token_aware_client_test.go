@@ -271,7 +271,7 @@ func TestTokenAwareGitHubClient_TokenExpiration(t *testing.T) {
 				ID:    12345,
 				Login: "testuser",
 			}
-			json.NewEncoder(w).Encode(user)
+			_ = json.NewEncoder(w).Encode(user) // Ignore encode error
 
 			// Mark token as expired for next request
 			tokenExpired = true

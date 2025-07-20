@@ -70,7 +70,7 @@ func NewAWSProfileManager(ctx context.Context) (*AWSProfileManager, error) {
 }
 
 // loadProfiles loads all AWS profiles from config file.
-func (m *AWSProfileManager) loadProfiles() error {
+func (m *AWSProfileManager) loadProfiles() error { //nolint:gocognit // Complex AWS profile parsing with multiple configuration options
 	cfg, err := ini.Load(m.configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -453,13 +453,16 @@ func newAWSProfileListCmd() *cobra.Command {
 				table.Header("Profile", "Region", "Type", "SSO URL", "Account ID", "Active")
 
 				for _, profile := range profiles {
-					profileType := "Standard"
-					if profile.SSOStartURL != "" {
+					var profileType string
+					switch {
+					case profile.SSOStartURL != "":
 						profileType = "SSO"
-					} else if profile.RoleArn != "" {
+					case profile.RoleArn != "":
 						profileType = "AssumeRole"
-					} else if profile.CredentialProcess != "" {
+					case profile.CredentialProcess != "":
 						profileType = "Process"
+					default:
+						profileType = "Standard"
 					}
 
 					active := ""
@@ -476,6 +479,7 @@ func newAWSProfileListCmd() *cobra.Command {
 						active,
 					); err != nil {
 						// Log error but continue processing
+						fmt.Fprintf(os.Stderr, "Warning: failed to add profile to table: %v\n", err)
 					}
 				}
 
@@ -510,9 +514,10 @@ func newAWSProfileSwitchCmd() *cobra.Command {
 			}
 
 			var profileName string
-			if len(args) > 0 {
+			switch {
+			case len(args) > 0:
 				profileName = args[0]
-			} else if interactive {
+			case interactive:
 				// Interactive profile selection
 				profiles := manager.ListProfiles()
 				profileNames := make([]string, len(profiles))
@@ -538,7 +543,7 @@ func newAWSProfileSwitchCmd() *cobra.Command {
 				}
 
 				profileName = profiles[idx].Name
-			} else {
+			default:
 				return fmt.Errorf("profile name required or use --interactive")
 			}
 
@@ -653,15 +658,16 @@ func newAWSProfileValidateCmd() *cobra.Command {
 			}
 
 			var profiles []*AWSProfile
-			if all {
+			switch {
+			case all:
 				profiles = manager.ListProfiles()
-			} else if len(args) > 0 {
+			case len(args) > 0:
 				profile, err := manager.GetProfile(args[0])
 				if err != nil {
 					return err
 				}
 				profiles = []*AWSProfile{profile}
-			} else {
+			default:
 				// Validate current profile
 				currentProfile := os.Getenv("AWS_PROFILE")
 				if currentProfile == "" {
@@ -701,10 +707,11 @@ func newAWSProfileValidateCmd() *cobra.Command {
 					details,
 				); err != nil {
 					// Log error but continue processing
+					fmt.Fprintf(os.Stderr, "Warning: failed to add profile to validation table: %v\n", err)
 				}
 			}
 
-			table.Render()
+			table.Render() //nolint:errcheck,gosec // Table rendering errors are non-critical for CLI display
 			return nil
 		},
 	}

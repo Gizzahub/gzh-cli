@@ -202,7 +202,7 @@ func (m *LargeScaleManager) fetchRepositoryPage(ctx context.Context, org string,
 }
 
 // BulkCloneRepositories clones multiple repositories with optimized concurrency.
-func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []LargeScaleRepository, targetPath string) error {
+func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []LargeScaleRepository, targetPath string) error { //nolint:gocognit // Complex large-scale repository cloning with concurrency management
 	if len(repos) == 0 {
 		return nil
 	}
@@ -362,7 +362,7 @@ func (m *LargeScaleManager) calculateOptimalConcurrency(totalRepos int) int {
 	return maxInt(1, baseConcurrency)
 }
 
-func (m *LargeScaleManager) shouldTriggerGC(processed int) bool {
+func (m *LargeScaleManager) shouldTriggerGC(_ int) bool {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 

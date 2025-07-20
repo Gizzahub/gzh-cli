@@ -494,7 +494,7 @@ func getAffectedRepositories(differences []ConfigurationDifference) []string {
 }
 
 // compareRepositoryConfigurations compares current and target configurations.
-func compareRepositoryConfigurations(
+func compareRepositoryConfigurations( //nolint:gocognit // Large comparison function - refactoring requires architectural changes
 	repoName string,
 	current *github.RepositoryConfig,
 	targetSettings *config.RepoSettings,

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package reposync
 
 import (
@@ -14,7 +15,7 @@ import (
 
 func TestNewRepositoryWatcher(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
@@ -29,7 +30,7 @@ func TestNewRepositoryWatcher(t *testing.T) {
 
 func TestFileChangeEventDeduplication(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
@@ -62,7 +63,7 @@ func TestFileChangeEventDeduplication(t *testing.T) {
 
 func TestShouldIgnorePatterns(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
@@ -93,7 +94,7 @@ func TestShouldIgnorePatterns(t *testing.T) {
 
 func TestMatchesWatchPatterns(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
@@ -124,7 +125,7 @@ func TestMatchesWatchPatterns(t *testing.T) {
 
 func TestMapOperation(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
@@ -154,7 +155,7 @@ func TestMapOperation(t *testing.T) {
 
 func TestWatcherStats(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
@@ -214,8 +215,8 @@ func TestValidateRepositoryPath(t *testing.T) {
 	}
 }
 
-func TestDefaultRepoSyncConfig(t *testing.T) {
-	config := DefaultRepoSyncConfig()
+func TestDefaultConfig(t *testing.T) {
+	config := DefaultConfig()
 
 	assert.NotNil(t, config)
 	assert.Contains(t, config.WatchPatterns, "**/*.go")
@@ -230,7 +231,7 @@ func TestDefaultRepoSyncConfig(t *testing.T) {
 
 func TestCalculateChecksum(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)
@@ -261,7 +262,7 @@ func TestCalculateChecksum(t *testing.T) {
 
 func TestMapOperationWithFsnotify(t *testing.T) {
 	logger := zaptest.NewLogger(t)
-	config := DefaultRepoSyncConfig()
+	config := DefaultConfig()
 
 	watcher, err := NewRepositoryWatcher(logger, config)
 	require.NoError(t, err)

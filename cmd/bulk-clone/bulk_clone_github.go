@@ -114,7 +114,7 @@ func newBulkCloneGithubCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
+func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { //nolint:gocognit // Complex business logic for bulk clone operations
 	// Initialize structured logger for this operation
 	structuredLogger := logger.NewStructuredLogger("bulk-clone-github", logger.LevelInfo)
 	sessionID := fmt.Sprintf("github-%s-%d", o.orgName, time.Now().Unix())
@@ -180,7 +180,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 		var err error
 
 		// Determine which approach to use
-		if o.enableCache {
+		if o.enableCache { //nolint:gocritic // Complex boolean conditions not suitable for switch
 			// Use cached approach (Redis cache disabled, using local cache only)
 			structuredLogger.Info("Using cached API calls for improved performance")
 			fmt.Printf("🔄 Using cached API calls for improved performance\n")

@@ -14,6 +14,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	scannerGrype = "grype"
+	scannerTrivy = "trivy"
+	scannerSnyk  = "snyk"
+)
+
 // BuildCmd represents the build command.
 var BuildCmd = &cobra.Command{
 	Use:   "build",
@@ -127,7 +133,7 @@ func init() {
 
 	// Security flags
 	BuildCmd.Flags().BoolVar(&enableScan, "scan", false, "보안 스캔 활성화")
-	BuildCmd.Flags().StringSliceVar(&scanners, "scanners", []string{"trivy"}, "보안 스캐너 (trivy, grype, snyk)")
+	BuildCmd.Flags().StringSliceVar(&scanners, "scanners", []string{scannerTrivy}, "보안 스캐너 (trivy, grype, snyk)")
 	BuildCmd.Flags().StringVar(&scanSeverity, "scan-severity", "HIGH", "스캔 심각도 수준")
 	BuildCmd.Flags().BoolVar(&scanExitCode, "scan-exit-code", false, "스캔 실패 시 종료")
 	BuildCmd.Flags().StringVar(&scanReport, "scan-report", "", "스캔 보고서 출력 경로")
@@ -282,11 +288,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 	fmt.Printf("🏗️  플랫폼: %s\n", strings.Join(buildPlatforms, ", "))
 
 	// Create build configuration
-	config, err := createBuildConfig()
-	if err != nil {
-		fmt.Printf("❌ 빌드 설정 생성 실패: %v\n", err)
-		os.Exit(1)
-	}
+	config := createBuildConfig()
 
 	// Initialize builder if needed
 	if enableMultiArch {
@@ -354,7 +356,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 	fmt.Printf("✅ 이미지 빌드 완료\n")
 }
 
-func createBuildConfig() (*BuildConfig, error) {
+func createBuildConfig() *BuildConfig {
 	// Parse build args
 	args := make(map[string]string)
 
@@ -422,7 +424,7 @@ func createBuildConfig() (*BuildConfig, error) {
 		},
 	}
 
-	return config, nil
+	return config
 }
 
 func setupMultiArchBuilder() error {
@@ -446,7 +448,7 @@ func setupMultiArchBuilder() error {
 
 	if !strings.Contains(string(output), builderName) {
 		// Create new builder
-		cmd := exec.Command("docker", "buildx", "create", "--name", builderName, "--driver", "docker-container", "--use")
+		cmd := exec.Command("docker", "buildx", "create", "--name", builderName, "--driver", "docker-container", "--use") //nolint:gosec // Docker command with safe arguments
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("빌더 생성 실패: %w", err)
 		}
@@ -454,7 +456,7 @@ func setupMultiArchBuilder() error {
 		fmt.Printf("✅ 새 빌더 생성: %s\n", builderName)
 	} else {
 		// Use existing builder
-		cmd := exec.Command("docker", "buildx", "use", builderName)
+		cmd := exec.Command("docker", "buildx", "use", builderName) //nolint:gosec // Docker command with safe arguments
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("빌더 사용 설정 실패: %w", err)
 		}
@@ -475,15 +477,16 @@ func authenticateRegistry() error {
 	fmt.Printf("🔐 레지스트리 인증 중...\n")
 
 	var cmd *exec.Cmd
-	if registryToken != "" {
+	switch {
+	case registryToken != "":
 		// Use token authentication
-		cmd = exec.Command("docker", "login", registryURL, "--username", "oauth2accesstoken", "--password-stdin")
+		cmd = exec.Command("docker", "login", registryURL, "--username", "oauth2accesstoken", "--password-stdin") //nolint:gosec // Docker login command
 		cmd.Stdin = strings.NewReader(registryToken)
-	} else if registryUsername != "" && registryPassword != "" {
+	case registryUsername != "" && registryPassword != "":
 		// Use username/password authentication
-		cmd = exec.Command("docker", "login", registryURL, "--username", registryUsername, "--password-stdin")
+		cmd = exec.Command("docker", "login", registryURL, "--username", registryUsername, "--password-stdin") //nolint:gosec // Docker login command
 		cmd.Stdin = strings.NewReader(registryPassword)
-	} else {
+	default:
 		return fmt.Errorf("레지스트리 인증 정보가 필요합니다")
 	}
 
@@ -602,7 +605,7 @@ func performBuild(config *BuildConfig) (*BuildResult, error) {
 
 func getImageInfo(result *BuildResult) error {
 	// Get image ID and digest
-	cmd := exec.Command("docker", "images", "--format", "{{.ID}}\t{{.Size}}", result.Config.Tag)
+	cmd := exec.Command("docker", "images", "--format", "{{.ID}}\t{{.Size}}", result.Config.Tag) //nolint:gosec // Docker images command with controlled input
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -663,12 +666,12 @@ func runScanner(scanner, imageTag string) (*ScanResult, error) {
 	var cmd *exec.Cmd
 
 	switch scanner {
-	case "trivy":
-		cmd = exec.Command("trivy", "image", "--format", "json", imageTag)
-	case "grype":
-		cmd = exec.Command("grype", imageTag, "--output", "json")
-	case "snyk":
-		cmd = exec.Command("snyk", "container", "test", imageTag, "--json")
+	case scannerTrivy:
+		cmd = exec.Command(scannerTrivy, "image", "--format", "json", imageTag)
+	case scannerGrype:
+		cmd = exec.Command(scannerGrype, imageTag, "--output", "json")
+	case scannerSnyk:
+		cmd = exec.Command(scannerSnyk, "container", "test", imageTag, "--json")
 	default:
 		return nil, fmt.Errorf("지원하지 않는 스캐너: %s", scanner)
 	}
@@ -694,11 +697,11 @@ func runScanner(scanner, imageTag string) (*ScanResult, error) {
 func parseScannerOutput(scanner string, output []byte, result *ScanResult) error {
 	// This is a simplified parser - in reality, each scanner has different output formats
 	switch scanner {
-	case "trivy":
+	case scannerTrivy:
 		return parseTrivyOutput(output, result)
-	case "grype":
+	case scannerGrype:
 		return parseGrypeOutput(output, result)
-	case "snyk":
+	case scannerSnyk:
 		return parseSnykOutput(output, result)
 	}
 
@@ -707,6 +710,7 @@ func parseScannerOutput(scanner string, output []byte, result *ScanResult) error
 
 func parseTrivyOutput(output []byte, result *ScanResult) error {
 	// Simplified Trivy JSON parsing
+	// nolint:tagliatelle // External API format - must match Trivy JSON output
 	var trivyResult struct {
 		Results []struct {
 			Vulnerabilities []struct {
@@ -782,7 +786,7 @@ func pushImage(result *BuildResult) error {
 	startTime := time.Now()
 
 	for retry := 0; retry < result.Config.Registry.Retries; retry++ {
-		cmd := exec.Command("docker", "push", result.Config.Tag)
+		cmd := exec.Command("docker", "push", result.Config.Tag) //nolint:gosec // Docker push with controlled tag
 
 		err := cmd.Run()
 		if err == nil {
@@ -812,11 +816,11 @@ func saveMetrics(result *BuildResult) error {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(metricsOutput), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(metricsOutput), 0o750); err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(metricsOutput, data, 0o644); err != nil {
+	if err := os.WriteFile(metricsOutput, data, 0o600); err != nil {
 		return err
 	}
 

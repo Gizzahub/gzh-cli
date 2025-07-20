@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package github
 
 import (
@@ -142,7 +143,7 @@ func TestEventProcessor_ProcessEvent(t *testing.T) {
 	mockHandler.On("HandleEvent", mock.Anything, event).Return(nil)
 
 	// Register handler
-	processor.RegisterEventHandler(EventTypePush, mockHandler)
+	_ = processor.RegisterEventHandler(EventTypePush, mockHandler) //nolint:errcheck // Test setup
 
 	err := processor.ProcessEvent(context.Background(), event)
 
@@ -178,7 +179,7 @@ func TestEventProcessor_ProcessEvent_HandlerFailure(t *testing.T) {
 	mockHandler.On("GetSupportedActions").Return([]EventAction{ActionCreated})
 	mockHandler.On("HandleEvent", mock.Anything, event).Return(assert.AnError)
 
-	processor.RegisterEventHandler(EventTypePush, mockHandler)
+	_ = processor.RegisterEventHandler(EventTypePush, mockHandler) //nolint:errcheck // Test setup
 
 	err := processor.ProcessEvent(context.Background(), event)
 
@@ -316,8 +317,8 @@ func TestEventProcessor_RegisterEventHandler_Priority(t *testing.T) {
 	processor := NewEventProcessor(mockStorage, mockLogger)
 
 	// Register handlers in different priority order
-	processor.RegisterEventHandler(EventTypePush, handler1)
-	processor.RegisterEventHandler(EventTypePush, handler2)
+	_ = processor.RegisterEventHandler(EventTypePush, handler1) //nolint:errcheck // Test setup
+	_ = processor.RegisterEventHandler(EventTypePush, handler2) //nolint:errcheck // Test setup
 
 	impl, ok := processor.(*eventProcessorImpl)
 	assert.True(t, ok, "processor should be of type *eventProcessorImpl")
@@ -336,7 +337,7 @@ func TestEventProcessor_UnregisterEventHandler(t *testing.T) {
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
 
-	processor.RegisterEventHandler(EventTypePush, mockHandler)
+	_ = processor.RegisterEventHandler(EventTypePush, mockHandler) //nolint:errcheck // Test setup
 	err := processor.UnregisterEventHandler(EventTypePush)
 
 	assert.NoError(t, err)
@@ -542,7 +543,7 @@ func BenchmarkEventProcessor_ProcessEvent(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		processor.ProcessEvent(context.Background(), event)
+		_ = processor.ProcessEvent(context.Background(), event) //nolint:errcheck // Benchmark test
 	}
 }
 
@@ -563,7 +564,7 @@ func BenchmarkEventProcessor_ParseWebhookEvent(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		req := createTestWebhookRequest("push", "test-123", payload)
-		processor.ParseWebhookEvent(req)
+		_, _ = processor.ParseWebhookEvent(req) //nolint:errcheck // Benchmark test
 	}
 }
 
@@ -603,7 +604,7 @@ func ExampleEventProcessor() {
 	handler.On("GetPriority").Return(100)
 
 	// Register the handler for push events
-	processor.RegisterEventHandler(EventTypePush, handler)
+	_ = processor.RegisterEventHandler(EventTypePush, handler) //nolint:errcheck // Test setup
 
 	// Create a webhook server
 	server := NewEventWebhookServer(processor, "webhook-secret", logger)

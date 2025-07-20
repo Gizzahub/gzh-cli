@@ -242,7 +242,7 @@ func displayRiskAssessmentJSON(assessments []RiskAssessment, outputFile string) 
 	}
 
 	if outputFile != "" {
-		return os.WriteFile(outputFile, jsonBytes, 0o644)
+		return os.WriteFile(outputFile, jsonBytes, 0o600)
 	}
 
 	fmt.Println(string(jsonBytes))
@@ -259,7 +259,7 @@ func displayRiskAssessmentCSV(assessments []RiskAssessment, outputFile string) e
 	)
 
 	if outputFile != "" {
-		file, err = os.Create(outputFile)
+		file, err = os.Create(outputFile) //nolint:gosec // Safe file path construction
 		if err != nil {
 			return err
 		}
@@ -312,7 +312,7 @@ func displayRiskAssessmentHTML(assessments []RiskAssessment, outputFile, organiz
 	html := generateRiskAssessmentHTML(assessments, organization)
 
 	if outputFile != "" {
-		return os.WriteFile(outputFile, []byte(html), 0o644)
+		return os.WriteFile(outputFile, []byte(html), 0o600)
 	}
 
 	fmt.Println(html)

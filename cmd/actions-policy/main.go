@@ -490,7 +490,7 @@ func monitorCompliance(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func performComplianceCheck(ctx context.Context, policyManager *github.ActionsPolicyManager, org, webhookURL string) error {
+func performComplianceCheck(ctx context.Context, policyManager *github.ActionsPolicyManager, org, _ string) error {
 	policies, err := policyManager.ListPolicies(ctx, org)
 	if err != nil {
 		return err

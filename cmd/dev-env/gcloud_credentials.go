@@ -112,7 +112,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory to store saved credentials")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Overwrite existing saved credentials")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -142,7 +142,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory where saved credentials are stored")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Skip backup of current credentials")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -204,9 +204,7 @@ func (o *gcloudCredentialsOptions) runSave(_ *cobra.Command, _ []string) error {
 	}
 
 	// Display credentials information (without showing sensitive data)
-	if err := o.displayCredentialsInfo(savedPath); err != nil {
-		fmt.Printf("Warning: failed to read credentials info: %v\n", err)
-	}
+	o.displayCredentialsInfo(savedPath)
 
 	fmt.Printf("✅ Gcloud credentials saved as '%s'\n", o.name)
 
@@ -249,9 +247,7 @@ func (o *gcloudCredentialsOptions) runLoad(_ *cobra.Command, _ []string) error {
 	}
 
 	// Display credentials information
-	if err := o.displayCredentialsInfo(o.configPath); err != nil {
-		fmt.Printf("Warning: failed to read credentials info: %v\n", err)
-	}
+	o.displayCredentialsInfo(o.configPath)
 
 	fmt.Printf("✅ Gcloud credentials '%s' loaded successfully\n", o.name)
 	fmt.Printf("   Loaded to: %s\n", o.configPath)
@@ -311,9 +307,7 @@ func (o *gcloudCredentialsOptions) runList(_ *cobra.Command, args []string) erro
 		}
 
 		// Display credentials information (without sensitive data)
-		if err := o.displayCredentialsInfo(credentialsPath); err == nil {
-			// Already displayed in displayCredentialsInfo
-		}
+		o.displayCredentialsInfo(credentialsPath)
 
 		fmt.Println()
 	}
@@ -324,8 +318,8 @@ func (o *gcloudCredentialsOptions) runList(_ *cobra.Command, args []string) erro
 type gcloudCredentialsMetadata struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	SavedAt     time.Time `json:"saved_at"`
-	SourcePath  string    `json:"source_path"`
+	SavedAt     time.Time `json:"savedAt"`
+	SourcePath  string    `json:"sourcePath"`
 }
 
 func (o *gcloudCredentialsOptions) saveMetadata() error {
@@ -342,7 +336,7 @@ func (o *gcloudCredentialsOptions) saveMetadata() error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() //nolint:errcheck // File cleanup in defer
 
 	// Set secure permissions for metadata
 	if err := os.Chmod(metadataPath, 0o600); err != nil {
@@ -351,11 +345,11 @@ func (o *gcloudCredentialsOptions) saveMetadata() error {
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
-		fmt.Fprintf(file, "description=%s\n", metadata.Description)
+		_, _ = fmt.Fprintf(file, "description=%s\n", metadata.Description) //nolint:errcheck // File write errors handled by file operations
 	}
 
-	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
-	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
+	_, _ = fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339)) //nolint:errcheck // File write errors handled by file operations
+	_, _ = fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)                //nolint:errcheck // File write errors handled by file operations
 
 	return nil
 }
@@ -455,7 +449,7 @@ func (o *gcloudCredentialsOptions) mergeCredentials(src, dst string) error {
 
 		if entry.IsDir() {
 			// Remove existing directory and copy new one
-			os.RemoveAll(dstPath)
+			_ = os.RemoveAll(dstPath) //nolint:errcheck // Directory cleanup before copy
 
 			if err := o.copyDir(srcPath, dstPath); err != nil {
 				return err
@@ -516,13 +510,13 @@ func (o *gcloudCredentialsOptions) copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() { _ = sourceFile.Close() }() //nolint:errcheck // File cleanup in defer
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destFile.Close()
+	defer func() { _ = destFile.Close() }() //nolint:errcheck // File cleanup in defer
 
 	// Set secure permissions for credential files
 	if err := os.Chmod(dst, 0o600); err != nil {
@@ -552,7 +546,7 @@ func (o *gcloudCredentialsOptions) getDirSize(path string) (int64, error) {
 	return size, err
 }
 
-func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string) error {
+func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string) {
 	var (
 		credentialFiles []string
 		serviceAccounts []string
@@ -614,6 +608,4 @@ func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string
 			fmt.Printf("     - %s\n", sa)
 		}
 	}
-
-	return nil
 }

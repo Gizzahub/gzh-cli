@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package integration
 
 import (
@@ -23,7 +24,7 @@ func TestBulkClone_ConfigurationLoading(t *testing.T) {
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-config-*")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tmpDir)
+		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 		// Create test configuration
 		configPath := filepath.Join(tmpDir, "bulk-clone.yaml")
@@ -74,7 +75,7 @@ func TestBulkClone_StateManagement(t *testing.T) {
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-state-*")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tmpDir)
+		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 		// Create state manager
 		stateManager := bulkclone.NewStateManager(tmpDir)
@@ -230,7 +231,7 @@ func TestBulkClone_SchemaValidation(t *testing.T) {
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-schema-*")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tmpDir)
+		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 		// Create valid configuration
 		configPath := filepath.Join(tmpDir, "valid-config.yaml")
@@ -277,7 +278,7 @@ func TestBulkClone_EndToEnd(t *testing.T) {
 		tmpDir, err := os.MkdirTemp("", "bulk-clone-e2e-*")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tmpDir)
+		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 		// Create configuration file
 		configPath := filepath.Join(tmpDir, "bulk-clone.yaml")

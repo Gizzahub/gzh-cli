@@ -127,7 +127,7 @@ func runDockerfileGenerate(cmd *cobra.Command, args []string) {
 	}
 
 	// Write Dockerfile
-	err = os.WriteFile(outputPath, []byte(dockerfile), 0o644)
+	err = os.WriteFile(outputPath, []byte(dockerfile), 0o600)
 	if err != nil {
 		fmt.Printf("Error writing Dockerfile: %v\n", err)
 		os.Exit(1)
@@ -329,5 +329,5 @@ func generateDockerignore(info ProjectInfo) error {
 
 	content := getDockerignoreTemplate(info.Language)
 
-	return os.WriteFile(dockerignorePath, []byte(content), 0o644)
+	return os.WriteFile(dockerignorePath, []byte(content), 0o600)
 }

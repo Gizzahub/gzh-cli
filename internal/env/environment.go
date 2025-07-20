@@ -85,10 +85,8 @@ type MockEnvironment struct {
 func NewMockEnvironment(initialVars map[string]string) Environment {
 	vars := make(map[string]string)
 
-	if initialVars != nil {
-		for k, v := range initialVars {
-			vars[k] = v
-		}
+	for k, v := range initialVars {
+		vars[k] = v
 	}
 
 	return &MockEnvironment{vars: vars}

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package alwayslatest
 
 import (
@@ -5,11 +6,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-)
-
-const (
-	strategyMajor = "major"
-	strategyMinor = "minor"
 )
 
 func TestAlwaysLatestCommand(t *testing.T) {

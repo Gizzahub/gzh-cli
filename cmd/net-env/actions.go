@@ -52,7 +52,7 @@ type proxyActions struct {
 	HTTPS   string   `yaml:"https,omitempty"`
 	FTP     string   `yaml:"ftp,omitempty"`
 	SOCKS   string   `yaml:"socks,omitempty"`
-	NoProxy []string `yaml:"no_proxy,omitempty"`
+	NoProxy []string `yaml:"noProxy,omitempty"`
 	Clear   bool     `yaml:"clear,omitempty"`
 }
 

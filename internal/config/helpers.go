@@ -58,7 +58,7 @@ func LoadCommandConfig(ctx context.Context, configPath string, configType string
 }
 
 // loadConfigFromPath loads configuration from a specific path.
-func loadConfigFromPath(ctx context.Context, path string) (*config.UnifiedConfig, error) {
+func loadConfigFromPath(_ context.Context, path string) (*config.UnifiedConfig, error) {
 	// Use unified config loader
 	loader := config.NewUnifiedConfigLoader()
 

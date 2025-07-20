@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package scenarios
 
 import (
@@ -7,6 +8,8 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/test/e2e/helpers"
 )
+
+const ideSettingsPath = ".config/JetBrains/IntelliJIdea2024.1"
 
 func TestIDE_List_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
@@ -24,8 +27,7 @@ func TestIDE_Monitor_E2E(t *testing.T) {
 	defer env.Cleanup()
 
 	// Create mock IDE settings directory
-	ideSettingsDir := ".config/JetBrains/IntelliJIdea2024.1"
-	env.CreateDir(ideSettingsDir)
+	env.CreateDir(ideSettingsPath)
 
 	// Create mock settings files
 	settingsFiles := []string{
@@ -41,7 +43,7 @@ func TestIDE_Monitor_E2E(t *testing.T) {
     <option name="test" value="true" />
   </component>
 </application>`
-		env.CreateFile(ideSettingsDir+"/"+file, content)
+		env.CreateFile(ideSettingsPath+"/"+file, content)
 	}
 
 	// Test monitoring command with short timeout
@@ -57,8 +59,7 @@ func TestIDE_MonitorDaemon_E2E(t *testing.T) {
 	defer env.Cleanup()
 
 	// Create IDE settings directory
-	ideSettingsDir := ".config/JetBrains/IntelliJIdea2024.1"
-	env.CreateDir(ideSettingsDir)
+	env.CreateDir(ideSettingsPath)
 
 	// Test daemon mode (background process)
 	cmd, err := env.CLI.RunAsync("ide", "monitor", "--daemon", "--pid-file", "ide-monitor.pid")
@@ -90,8 +91,7 @@ func TestIDE_FixSync_E2E(t *testing.T) {
 	defer env.Cleanup()
 
 	// Create problematic settings file (filetypes.xml with duplicates)
-	ideSettingsDir := ".config/JetBrains/IntelliJIdea2024.1"
-	env.CreateDir(ideSettingsDir + "/options")
+	env.CreateDir(ideSettingsPath + "/options")
 
 	problematicContent := `<?xml version="1.0" encoding="UTF-8"?>
 <application>
@@ -103,17 +103,17 @@ func TestIDE_FixSync_E2E(t *testing.T) {
   </component>
 </application>`
 
-	env.CreateFile(ideSettingsDir+"/options/filetypes.xml", problematicContent)
+	env.CreateFile(ideSettingsPath+"/options/filetypes.xml", problematicContent)
 
 	// Test fix-sync command
-	result := env.RunCommand("ide", "fix-sync", "--target", ideSettingsDir)
+	result := env.RunCommand("ide", "fix-sync", "--target", ideSettingsPath)
 
 	assertions := helpers.NewCLIAssertions(t, result)
 	if result.ExitCode == 0 {
 		assertions.Success().OutputContains("fix")
 
 		// Verify duplicates were removed
-		fixedContent := env.ReadFile(ideSettingsDir + "/options/filetypes.xml")
+		fixedContent := env.ReadFile(ideSettingsPath + "/options/filetypes.xml")
 		lines := strings.Split(fixedContent, "\n")
 		txtMappings := 0
 
@@ -174,8 +174,7 @@ func TestIDE_SettingsBackup_E2E(t *testing.T) {
 	defer env.Cleanup()
 
 	// Create IDE settings
-	ideSettingsDir := ".config/JetBrains/IntelliJIdea2024.1"
-	env.CreateDir(ideSettingsDir + "/options")
+	env.CreateDir(ideSettingsPath + "/options")
 
 	originalContent := `<?xml version="1.0" encoding="UTF-8"?>
 <application>
@@ -184,10 +183,10 @@ func TestIDE_SettingsBackup_E2E(t *testing.T) {
   </component>
 </application>`
 
-	env.CreateFile(ideSettingsDir+"/options/test.xml", originalContent)
+	env.CreateFile(ideSettingsPath+"/options/test.xml", originalContent)
 
 	// Test backup command
-	result := env.RunCommand("ide", "backup", "--target", ideSettingsDir)
+	result := env.RunCommand("ide", "backup", "--target", ideSettingsPath)
 
 	if result.ExitCode == 0 {
 		assertions := helpers.NewCLIAssertions(t, result)
@@ -215,8 +214,7 @@ func TestIDE_SettingsRestore_E2E(t *testing.T) {
 	defer env.Cleanup()
 
 	// Create IDE settings and backup
-	ideSettingsDir := ".config/JetBrains/IntelliJIdea2024.1"
-	env.CreateDir(ideSettingsDir + "/options")
+	env.CreateDir(ideSettingsPath + "/options")
 
 	originalContent := `<?xml version="1.0" encoding="UTF-8"?>
 <application>
@@ -225,12 +223,12 @@ func TestIDE_SettingsRestore_E2E(t *testing.T) {
   </component>
 </application>`
 
-	env.CreateFile(ideSettingsDir+"/options/test.xml", originalContent)
+	env.CreateFile(ideSettingsPath+"/options/test.xml", originalContent)
 
 	// Create backup directory and file
 	backupDir := "ide-backup-" + time.Now().Format("20060102150405")
 	env.CreateDir(backupDir)
-	env.CopyFile(ideSettingsDir+"/options/test.xml", backupDir+"/test.xml")
+	env.CopyFile(ideSettingsPath+"/options/test.xml", backupDir+"/test.xml")
 
 	// Modify original file
 	modifiedContent := `<?xml version="1.0" encoding="UTF-8"?>
@@ -240,17 +238,17 @@ func TestIDE_SettingsRestore_E2E(t *testing.T) {
   </component>
 </application>`
 
-	env.CreateFile(ideSettingsDir+"/options/test.xml", modifiedContent)
+	env.CreateFile(ideSettingsPath+"/options/test.xml", modifiedContent)
 
 	// Test restore command
-	result := env.RunCommand("ide", "restore", "--backup", backupDir, "--target", ideSettingsDir)
+	result := env.RunCommand("ide", "restore", "--backup", backupDir, "--target", ideSettingsPath)
 
 	if result.ExitCode == 0 {
 		assertions := helpers.NewCLIAssertions(t, result)
 		assertions.Success().OutputContains("restore")
 
 		// Verify original content was restored
-		restoredContent := env.ReadFile(ideSettingsDir + "/options/test.xml")
+		restoredContent := env.ReadFile(ideSettingsPath + "/options/test.xml")
 		if strings.Contains(restoredContent, "original") && !strings.Contains(restoredContent, "modified") {
 			t.Log("Settings restored successfully")
 		}
@@ -312,8 +310,7 @@ func TestIDE_LogOutput_E2E(t *testing.T) {
 	defer env.Cleanup()
 
 	// Create IDE settings directory
-	ideSettingsDir := ".config/JetBrains/IntelliJIdea2024.1"
-	env.CreateDir(ideSettingsDir)
+	env.CreateDir(ideSettingsPath)
 
 	// Test with logging enabled
 	result := env.RunCommand("ide", "monitor", "--timeout", "1s", "--log-file", "ide-monitor.log", "--verbose")

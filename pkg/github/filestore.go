@@ -18,7 +18,7 @@ type FileStore struct {
 // NewFileStore creates a new file-based change store.
 func NewFileStore(basePath string) (*FileStore, error) {
 	// Create base directory if it doesn't exist
-	err := os.MkdirAll(basePath, 0o755)
+	err := os.MkdirAll(basePath, 0o750)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create base directory: %w", err)
 	}
@@ -37,7 +37,7 @@ func (fs *FileStore) Store(ctx context.Context, record *ChangeRecord) error {
 		fmt.Sprintf("%02d", date.Month()),
 		fmt.Sprintf("%02d", date.Day()))
 
-	err := os.MkdirAll(dirPath, 0o755)
+	err := os.MkdirAll(dirPath, 0o750)
 	if err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
@@ -50,7 +50,7 @@ func (fs *FileStore) Store(ctx context.Context, record *ChangeRecord) error {
 		return fmt.Errorf("failed to marshal change record: %w", err)
 	}
 
-	err = os.WriteFile(filePath, data, 0o644)
+	err = os.WriteFile(filePath, data, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write change record: %w", err)
 	}
@@ -66,7 +66,7 @@ func (fs *FileStore) Get(ctx context.Context, id string) (*ChangeRecord, error) 
 		return nil, fmt.Errorf("change record not found: %w", err)
 	}
 
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read change record: %w", err)
 	}

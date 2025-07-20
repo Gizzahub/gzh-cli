@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package workerpool
 
 import (
@@ -27,7 +28,7 @@ func TestPool_BasicFunctionality(t *testing.T) {
 	defer pool.Stop()
 
 	// Submit a simple job
-	processFn := func(ctx context.Context, data int) error {
+	processFn := func(_ context.Context, data int) error {
 		return nil
 	}
 
@@ -61,7 +62,7 @@ func TestPool_ConcurrentProcessing(t *testing.T) {
 
 	var processedCount int64
 
-	processFn := func(ctx context.Context, data int) error {
+	processFn := func(_ context.Context, data int) error {
 		time.Sleep(100 * time.Millisecond) // Simulate work
 		atomic.AddInt64(&processedCount, 1)
 
@@ -111,7 +112,7 @@ func TestPool_ErrorHandling(t *testing.T) {
 	defer pool.Stop()
 
 	// Submit jobs that will fail
-	processFn := func(ctx context.Context, data int) error {
+	processFn := func(_ context.Context, data int) error {
 		if data%2 == 0 {
 			return errors.New("simulated error")
 		}
@@ -164,7 +165,7 @@ func TestPool_SubmitWithoutStart(t *testing.T) {
 	config := DefaultConfig()
 	pool := New[int](config)
 
-	processFn := func(ctx context.Context, data int) error {
+	processFn := func(_ context.Context, data int) error {
 		return nil
 	}
 
@@ -180,7 +181,7 @@ func TestProcessBatch(t *testing.T) {
 		Timeout:     time.Second,
 	}
 
-	processFn := func(ctx context.Context, data int) error {
+	processFn := func(_ context.Context, data int) error {
 		time.Sleep(50 * time.Millisecond) // Simulate work
 		return nil
 	}
@@ -205,7 +206,7 @@ func TestProcessBatch_WithContext(t *testing.T) {
 		Timeout:     time.Second,
 	}
 
-	processFn := func(ctx context.Context, data int) error {
+	processFn := func(_ context.Context, data int) error {
 		time.Sleep(200 * time.Millisecond) // Simulate slow work
 		return nil
 	}
@@ -244,7 +245,7 @@ func BenchmarkPool_Processing(b *testing.B) {
 	require.NoError(b, pool.Start())
 	defer pool.Stop()
 
-	processFn := func(ctx context.Context, data int) error {
+	processFn := func(_ context.Context, data int) error {
 		// Simulate some CPU work
 		sum := 0
 		for i := 0; i < 1000; i++ {

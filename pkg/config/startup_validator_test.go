@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package config
 
 import (
@@ -173,8 +174,8 @@ func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
 			// Setup environment variables
 			if tt.setupEnv != nil {
 				for key, value := range tt.setupEnv {
-					os.Setenv(key, value)
-					defer os.Unsetenv(key)
+					_ = os.Setenv(key, value)               //nolint:errcheck // Test environment setup
+					defer func() { _ = os.Unsetenv(key) }() //nolint:errcheck // Test cleanup
 				}
 			}
 

@@ -31,12 +31,12 @@ type ProviderService interface {
 // Repository represents a repository across different providers.
 type Repository struct {
 	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
+	FullName      string `json:"fullName"`
 	Description   string `json:"description"`
-	DefaultBranch string `json:"default_branch"`
-	CloneURL      string `json:"clone_url"`
-	SSHURL        string `json:"ssh_url"`
-	HTMLURL       string `json:"html_url"`
+	DefaultBranch string `json:"defaultBranch"`
+	CloneURL      string `json:"cloneUrl"`
+	SSHURL        string `json:"sshUrl"`
+	HTMLURL       string `json:"htmlUrl"`
 	Private       bool   `json:"private"`
 	Archived      bool   `json:"archived"`
 	Language      string `json:"language"`
@@ -85,35 +85,35 @@ type BulkCloneRequest struct {
 	Providers     []string          `json:"providers,omitempty"`
 	Organizations []string          `json:"organizations,omitempty"`
 	Repositories  []string          `json:"repositories,omitempty"`
-	TargetPath    string            `json:"target_path"`
+	TargetPath    string            `json:"targetPath"`
 	Strategy      string            `json:"strategy"`
 	Filters       *RepositoryFilter `json:"filters,omitempty"`
 	Concurrency   int               `json:"concurrency"`
-	DryRun        bool              `json:"dry_run"`
+	DryRun        bool              `json:"dryRun"`
 	Credentials   map[string]string `json:"credentials,omitempty"`
 }
 
 // BulkRefreshRequest represents a request for bulk refresh operations.
 type BulkRefreshRequest struct {
-	TargetPath    string            `json:"target_path"`
+	TargetPath    string            `json:"targetPath"`
 	Strategy      string            `json:"strategy"`
 	Organizations []string          `json:"organizations,omitempty"`
 	Filters       *RepositoryFilter `json:"filters,omitempty"`
 	Concurrency   int               `json:"concurrency"`
-	DryRun        bool              `json:"dry_run"`
+	DryRun        bool              `json:"dryRun"`
 }
 
 // BulkCloneResult is defined in providers.go
 
 // BulkRefreshResult represents the result of bulk refresh operations.
 type BulkRefreshResult struct {
-	TotalRepositories int                   `json:"total_repositories"`
-	RefreshSuccessful int                   `json:"refresh_successful"`
-	RefreshFailed     int                   `json:"refresh_failed"`
-	RefreshSkipped    int                   `json:"refresh_skipped"`
-	OperationResults  []RepositoryOperation `json:"operation_results"`
-	ExecutionTimeMs   int64                 `json:"execution_time_ms"`
-	ErrorSummary      map[string]int        `json:"error_summary"`
+	TotalRepositories int                   `json:"totalRepositories"`
+	RefreshSuccessful int                   `json:"refreshSuccessful"`
+	RefreshFailed     int                   `json:"refreshFailed"`
+	RefreshSkipped    int                   `json:"refreshSkipped"`
+	OperationResults  []RepositoryOperation `json:"operationResults"`
+	ExecutionTimeMs   int64                 `json:"executionTimeMs"`
+	ErrorSummary      map[string]int        `json:"errorSummary"`
 }
 
 // RepositoryOperation represents the result of an operation on a single repository.
@@ -124,26 +124,26 @@ type RepositoryOperation struct {
 	Operation    string `json:"operation"`
 	Success      bool   `json:"success"`
 	Error        string `json:"error,omitempty"`
-	DurationMs   int64  `json:"duration_ms"`
+	DurationMs   int64  `json:"durationMs"`
 	Path         string `json:"path,omitempty"`
 }
 
 // DiscoveryResult represents the result of repository discovery operations.
 type DiscoveryResult struct {
-	TotalRepositories      int            `json:"total_repositories"`
-	RepositoriesByProvider map[string]int `json:"repositories_by_provider"`
+	TotalRepositories      int            `json:"totalRepositories"`
+	RepositoriesByProvider map[string]int `json:"repositoriesByProvider"`
 	Repositories           []Repository   `json:"repositories"`
-	ExecutionTimeMs        int64          `json:"execution_time_ms"`
+	ExecutionTimeMs        int64          `json:"executionTimeMs"`
 }
 
 // RepositoryStatus represents the status of repositories in a directory.
 type RepositoryStatus struct {
-	TotalRepositories    int                    `json:"total_repositories"`
-	HealthyRepositories  int                    `json:"healthy_repositories"`
-	BrokenRepositories   int                    `json:"broken_repositories"`
-	OutdatedRepositories int                    `json:"outdated_repositories"`
-	RepositoryDetails    []RepositoryStatusInfo `json:"repository_details"`
-	ScanTimeMs           int64                  `json:"scan_time_ms"`
+	TotalRepositories    int                    `json:"totalRepositories"`
+	HealthyRepositories  int                    `json:"healthyRepositories"`
+	BrokenRepositories   int                    `json:"brokenRepositories"`
+	OutdatedRepositories int                    `json:"outdatedRepositories"`
+	RepositoryDetails    []RepositoryStatusInfo `json:"repositoryDetails"`
+	ScanTimeMs           int64                  `json:"scanTimeMs"`
 }
 
 // RepositoryStatusInfo contains detailed status information for a single repository.
@@ -152,10 +152,10 @@ type RepositoryStatusInfo struct {
 	Name           string   `json:"name"`
 	Organization   string   `json:"organization"`
 	Provider       string   `json:"provider"`
-	IsHealthy      bool     `json:"is_healthy"`
+	IsHealthy      bool     `json:"isHealthy"`
 	Issues         []string `json:"issues,omitempty"`
-	CurrentBranch  string   `json:"current_branch"`
-	DefaultBranch  string   `json:"default_branch"`
-	RemoteURL      string   `json:"remote_url"`
-	LastCommitHash string   `json:"last_commit_hash,omitempty"`
+	CurrentBranch  string   `json:"currentBranch"`
+	DefaultBranch  string   `json:"defaultBranch"`
+	RemoteURL      string   `json:"remoteUrl"`
+	LastCommitHash string   `json:"lastCommitHash,omitempty"`
 }

@@ -103,16 +103,12 @@ func (o *alwaysLatestRbenvOptions) run(_ *cobra.Command, _ []string) error {
 
 	// Update rbenv itself
 	if o.updateRbenv {
-		if err := o.updateRbenvInstallation(); err != nil {
-			fmt.Printf("⚠️  Failed to update rbenv: %v\n", err)
-		}
+		o.updateRbenvInstallation()
 	}
 
 	// Update rbenv plugins
 	if o.updatePlugins {
-		if err := o.updateRbenvPlugins(); err != nil {
-			fmt.Printf("⚠️  Failed to update rbenv plugins: %v\n", err)
-		}
+		o.updateRbenvPlugins()
 	}
 
 	// Get available Ruby versions
@@ -186,12 +182,12 @@ func (o *alwaysLatestRbenvOptions) isRbenvInstalled() bool {
 	return err == nil
 }
 
-func (o *alwaysLatestRbenvOptions) updateRbenvInstallation() error {
+func (o *alwaysLatestRbenvOptions) updateRbenvInstallation() {
 	fmt.Println("🔄 Updating rbenv...")
 
 	if o.dryRun {
 		fmt.Println("   [DRY RUN] Would update rbenv installation")
-		return nil
+		return
 	}
 
 	// Try git pull if rbenv was installed via git
@@ -205,26 +201,24 @@ func (o *alwaysLatestRbenvOptions) updateRbenvInstallation() error {
 			brewCmd := exec.Command("brew", "upgrade", "rbenv")
 			if brewErr := brewCmd.Run(); brewErr == nil {
 				fmt.Println("✅ rbenv updated via Homebrew")
-				return nil
+				return
 			}
 		}
 
 		fmt.Println("⚠️  Could not update rbenv automatically")
 
-		return nil
+		return
 	}
 
 	fmt.Println("✅ rbenv updated via git")
-
-	return nil
 }
 
-func (o *alwaysLatestRbenvOptions) updateRbenvPlugins() error {
+func (o *alwaysLatestRbenvOptions) updateRbenvPlugins() {
 	fmt.Println("🔌 Updating rbenv plugins...")
 
 	if o.dryRun {
 		fmt.Println("   [DRY RUN] Would update rbenv plugins")
-		return nil
+		return
 	}
 
 	// Update ruby-build plugin specifically
@@ -240,8 +234,6 @@ func (o *alwaysLatestRbenvOptions) updateRbenvPlugins() error {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (o *alwaysLatestRbenvOptions) getAvailableRubyVersions() ([]string, error) {

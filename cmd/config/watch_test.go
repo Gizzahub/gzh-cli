@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package config
 
 import (
@@ -26,7 +27,7 @@ func TestWatchConfigHotReloading(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "config-hot-reload-test-")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }() // Ignore cleanup error
 
 	configPath := filepath.Join(tempDir, "gzh.yaml")
 
@@ -232,7 +233,7 @@ func TestWatchConfigCommand(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "config-watch-cmd-test-")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }() // Ignore cleanup error
 
 	configPath := filepath.Join(tempDir, "test-config.yaml")
 	content := `version: "1.0.0"
@@ -254,7 +255,7 @@ providers:
 		originalDir, err := os.Getwd()
 		require.NoError(t, err)
 
-		defer os.Chdir(originalDir)
+		defer func() { _ = os.Chdir(originalDir) }() // Ignore restore error
 
 		err = os.Chdir(tempDir)
 		require.NoError(t, err)

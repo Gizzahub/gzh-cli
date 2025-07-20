@@ -210,7 +210,7 @@ func (o *genConfigDiscoverOptions) analyzeRepository(repoPath string) (*Discover
 	// Check if it's actually a Git repository
 	repoType, _ := helpers.CheckGitRepoType(repoPath)
 	if repoType == "none" {
-		return nil, nil
+		return nil, fmt.Errorf("not a git repository: %s", repoPath)
 	}
 
 	// Get remote URL

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package netenv
 
 import (
@@ -17,7 +18,7 @@ func TestDockerNetworkManager(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "docker_network_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	dm := NewDockerNetworkManager(logger, tempDir)
@@ -183,7 +184,7 @@ func TestDockerNetworkProfileValidation(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_network_validation_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -204,7 +205,7 @@ func TestDockerNetworkProfileValidation(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_network_defaults_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -238,7 +239,7 @@ func TestDockerComposeIntegration(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_compose_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		// Create a test Docker Compose file
 		composeContent := `version: '3.8'
@@ -319,7 +320,7 @@ networks:
 		tempDir, err := os.MkdirTemp("", "docker_compose_nonexistent_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -335,7 +336,7 @@ func TestDockerNetworkConfiguration(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_complex_network_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -479,7 +480,7 @@ func TestDockerCommandIntegration(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_status_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -497,7 +498,7 @@ func TestDockerCommandIntegration(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_container_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -515,7 +516,7 @@ func TestDockerCommandIntegration(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_detect_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)

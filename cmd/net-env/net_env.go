@@ -174,16 +174,16 @@ Examples:
 	cmd.AddCommand(newSwitchCmd())
 	cmd.AddCommand(newActionsCmd())
 	cmd.AddCommand(newCloudCmd(ctx))
-	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))
-	cmd.AddCommand(newKubernetesNetworkCmd(logger, configDir))
-	cmd.AddCommand(newContainerDetectionCmd(logger, configDir))
-	cmd.AddCommand(newNetworkTopologyCmd(logger, configDir))
-	cmd.AddCommand(newVPNHierarchyCmd(logger, configDir))
-	cmd.AddCommand(newVPNProfileCmd(logger, configDir))
-	cmd.AddCommand(newVPNFailoverCmd(logger, configDir))
-	cmd.AddCommand(newNetworkMetricsCmd(logger, configDir))
-	cmd.AddCommand(newNetworkAnalysisCmd(logger, configDir))
-	cmd.AddCommand(newOptimalRoutingCmd(logger, configDir))
+	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))      //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newKubernetesNetworkCmd(logger, configDir))  //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newContainerDetectionCmd(logger, configDir)) //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newNetworkTopologyCmd(logger, configDir))    //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newVPNHierarchyCmd(logger, configDir))       //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newVPNProfileCmd(logger, configDir))         //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newVPNFailoverCmd(logger, configDir))        //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newNetworkMetricsCmd(logger, configDir))     //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newNetworkAnalysisCmd(logger, configDir))    //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newOptimalRoutingCmd(logger, configDir))     //nolint:contextcheck // Command setup doesn't require context propagation
 
 	return cmd
 }

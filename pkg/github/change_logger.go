@@ -62,13 +62,13 @@ type logEntry struct {
 	Timestamp  time.Time              `json:"timestamp"`
 	Level      LogLevel               `json:"level"`
 	Message    string                 `json:"message"`
-	ChangeID   string                 `json:"change_id,omitempty"`
+	ChangeID   string                 `json:"changeId,omitempty"`
 	Operation  string                 `json:"operation"`
 	Category   string                 `json:"category"`
 	Repository string                 `json:"repository,omitempty"`
 	User       string                 `json:"user"`
 	Source     string                 `json:"source"`
-	RequestID  string                 `json:"request_id,omitempty"`
+	RequestID  string                 `json:"requestId,omitempty"`
 	Context    map[string]interface{} `json:"context,omitempty"`
 	Error      string                 `json:"error,omitempty"`
 	Duration   *time.Duration         `json:"duration,omitempty"`
@@ -94,7 +94,7 @@ func NewChangeLogger(changelog *ChangeLog, options *LoggerOptions) *ChangeLogger
 
 	// Ensure log directory exists
 	if options.LogDirectory != "" {
-		if err := os.MkdirAll(options.LogDirectory, 0o755); err != nil {
+		if err := os.MkdirAll(options.LogDirectory, 0o750); err != nil {
 			// Log directory creation failure is not critical, use temp dir
 			options.LogDirectory = os.TempDir()
 		}
@@ -331,7 +331,7 @@ func (cl *ChangeLogger) writeToFile(entry *logEntry) error {
 	}
 
 	// Open or create log file
-	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	file, err := os.OpenFile(filepath.Clean(logFile), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
 		return err
 	}
@@ -538,9 +538,9 @@ func (cl *ChangeLogger) GetLogSummary(ctx context.Context, since time.Time) (*Lo
 // LogSummary provides a summary of logging activity.
 type LogSummary struct {
 	Period       string         `json:"period"`
-	TotalChanges int            `json:"total_changes"`
-	ByCategory   map[string]int `json:"by_category"`
-	ByOperation  map[string]int `json:"by_operation"`
-	ByUser       map[string]int `json:"by_user"`
+	TotalChanges int            `json:"totalChanges"`
+	ByCategory   map[string]int `json:"byCategory"`
+	ByOperation  map[string]int `json:"byOperation"`
+	ByUser       map[string]int `json:"byUser"`
 	Errors       []string       `json:"errors"`
 }

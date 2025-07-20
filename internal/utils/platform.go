@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+// Platform constants.
+const (
+	platformWindows = "windows"
+	platformDarwin  = "darwin"
+)
+
 // GetCurrentUsername returns the current username in a cross-platform way.
 func GetCurrentUsername() string {
 	// Try USER first (Unix/Linux/macOS)
@@ -42,14 +48,14 @@ func GetConfigDir() (string, error) {
 	}
 
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		// Use APPDATA on Windows
 		if appData := os.Getenv("APPDATA"); appData != "" {
 			return appData, nil
 		}
 
 		return filepath.Join(home, "AppData", "Roaming"), nil
-	case "darwin":
+	case platformDarwin:
 		// Use Library/Application Support on macOS
 		return filepath.Join(home, "Library", "Application Support"), nil
 	default:
@@ -92,7 +98,7 @@ func GetExecutableName(name string) string {
 // GetShellCommand returns the appropriate shell command for the platform.
 func GetShellCommand() (string, []string) {
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		return "cmd", []string{"/C"}
 	default:
 		// Try to find a shell
@@ -146,11 +152,11 @@ func GetPlatformSpecificConfig(appName string) ([]string, error) {
 
 	// System configuration directory
 	switch runtime.GOOS {
-	case "windows":
+	case platformWindows:
 		if programData := os.Getenv("PROGRAMDATA"); programData != "" {
 			paths = append(paths, filepath.Join(programData, appName))
 		}
-	case "darwin":
+	case platformDarwin:
 		paths = append(paths, filepath.Join("/Library", "Application Support", appName))
 	default:
 		paths = append(paths, filepath.Join("/etc", appName))

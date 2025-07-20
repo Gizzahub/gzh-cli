@@ -32,8 +32,8 @@ type DockerNetworkProfile struct {
 	Networks    map[string]*DockerNetwork    `yaml:"networks" json:"networks"`
 	Containers  map[string]*ContainerNetwork `yaml:"containers" json:"containers"`
 	Compose     *DockerComposeConfig         `yaml:"compose,omitempty" json:"compose,omitempty"`
-	CreatedAt   time.Time                    `yaml:"created_at" json:"created_at"`
-	UpdatedAt   time.Time                    `yaml:"updated_at" json:"updated_at"`
+	CreatedAt   time.Time                    `yaml:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time                    `yaml:"updatedAt" json:"updatedAt"`
 	Active      bool                         `yaml:"active" json:"active"`
 	Metadata    map[string]string            `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
@@ -53,16 +53,16 @@ type DockerNetwork struct {
 // ContainerNetwork represents container-specific network configuration.
 type ContainerNetwork struct {
 	Image        string            `yaml:"image" json:"image"`
-	NetworkMode  string            `yaml:"network_mode,omitempty" json:"network_mode,omitempty"`
+	NetworkMode  string            `yaml:"networkMode,omitempty" json:"networkMode,omitempty"`
 	Networks     []string          `yaml:"networks,omitempty" json:"networks,omitempty"`
 	Ports        []string          `yaml:"ports,omitempty" json:"ports,omitempty"`
 	Environment  map[string]string `yaml:"environment,omitempty" json:"environment,omitempty"`
 	DNSServers   []string          `yaml:"dns,omitempty" json:"dns,omitempty"`
-	DNSSearch    []string          `yaml:"dns_search,omitempty" json:"dns_search,omitempty"`
-	ExtraHosts   []string          `yaml:"extra_hosts,omitempty" json:"extra_hosts,omitempty"`
+	DNSSearch    []string          `yaml:"dnsSearch,omitempty" json:"dnsSearch,omitempty"`
+	ExtraHosts   []string          `yaml:"extraHosts,omitempty" json:"extraHosts,omitempty"`
 	Hostname     string            `yaml:"hostname,omitempty" json:"hostname,omitempty"`
 	Domainname   string            `yaml:"domainname,omitempty" json:"domainname,omitempty"`
-	NetworkAlias []string          `yaml:"network_alias,omitempty" json:"network_alias,omitempty"`
+	NetworkAlias []string          `yaml:"networkAlias,omitempty" json:"networkAlias,omitempty"`
 }
 
 // DockerComposeConfig represents Docker Compose integration settings.
@@ -71,12 +71,12 @@ type DockerComposeConfig struct {
 	Project     string            `yaml:"project,omitempty" json:"project,omitempty"`
 	Environment map[string]string `yaml:"environment,omitempty" json:"environment,omitempty"`
 	Overrides   []string          `yaml:"overrides,omitempty" json:"overrides,omitempty"`
-	AutoApply   bool              `yaml:"auto_apply" json:"auto_apply"`
+	AutoApply   bool              `yaml:"autoApply" json:"autoApply"`
 }
 
 // DockerNetworkStatus represents the current status of Docker networks.
 type DockerNetworkStatus struct {
-	NetworkID  string            `json:"network_id"`
+	NetworkID  string            `json:"networkId"`
 	Name       string            `json:"name"`
 	Driver     string            `json:"driver"`
 	Scope      string            `json:"scope"`
@@ -98,13 +98,13 @@ type IPAMConfig struct {
 type IPAMEntry struct {
 	Subnet     string            `json:"subnet"`
 	Gateway    string            `json:"gateway"`
-	IPRange    string            `json:"ip_range,omitempty"`
-	AuxAddress map[string]string `json:"aux_address,omitempty"`
+	IPRange    string            `json:"ipRange,omitempty"`
+	AuxAddress map[string]string `json:"auxAddress,omitempty"`
 }
 
 // ContainerNetworkInfo represents network information for a running container.
 type ContainerNetworkInfo struct {
-	ContainerID string                      `json:"container_id"`
+	ContainerID string                      `json:"containerId"`
 	Name        string                      `json:"name"`
 	Image       string                      `json:"image"`
 	State       string                      `json:"state"`
@@ -115,6 +115,7 @@ type ContainerNetworkInfo struct {
 }
 
 // NetworkEndpoint represents a container's connection to a network.
+// nolint:tagliatelle // External API format - must match Docker API JSON output
 type NetworkEndpoint struct {
 	NetworkID           string            `json:"network_id"`
 	EndpointID          string            `json:"endpoint_id"`
@@ -130,6 +131,7 @@ type NetworkEndpoint struct {
 }
 
 // PortMapping represents container port mapping.
+// nolint:tagliatelle // External API format - must match Docker API JSON output
 type PortMapping struct {
 	PrivatePort int    `json:"private_port"`
 	PublicPort  int    `json:"public_port,omitempty"`
@@ -473,9 +475,9 @@ func (dm *DockerNetworkManager) DetectDockerComposeProjects() ([]string, error) 
 }
 
 // CreateProfileFromCompose creates a network profile from an existing Docker Compose file.
-func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileName string) error {
+func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileName string) error { //nolint:gocognit // Complex Docker Compose profile creation with network parsing
 	if _, err := os.Stat(composePath); os.IsNotExist(err) {
-		return fmt.Errorf("Docker Compose file not found: %s", composePath)
+		return fmt.Errorf("docker Compose file not found: %s", composePath)
 	}
 
 	// Parse Docker Compose file
@@ -651,116 +653,84 @@ func (dm *DockerNetworkManager) createNetwork(name string, network *DockerNetwor
 
 // applyContainerNetworkConfig applies network configuration to a container.
 func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string, config *ContainerNetwork) error {
-	// Check if container is already running
-	inspectCmd := fmt.Sprintf("docker inspect %s", containerName)
-	result, err := dm.executor.ExecuteWithTimeout(context.Background(), inspectCmd, 5*time.Second)
-
-	containerExists := err == nil && result.ExitCode == 0
-
-	if containerExists {
-		// Container is running, we need to handle network connections
-		dm.logger.Info("Container already exists, updating network connections",
-			zap.String("container", containerName))
-
-		// Connect to specified networks
-		for _, network := range config.Networks {
-			connectCmd := fmt.Sprintf("docker network connect %s %s", network, containerName)
-
-			if config.NetworkAlias != nil && len(config.NetworkAlias) > 0 {
-				// Add network aliases
-				for _, alias := range config.NetworkAlias {
-					connectCmd += fmt.Sprintf(" --alias %s", alias)
-				}
-			}
-
-			// Check if already connected
-			checkCmd := fmt.Sprintf("docker inspect %s --format '{{json .NetworkSettings.Networks}}'", containerName)
-			checkResult, _ := dm.executor.ExecuteWithTimeout(context.Background(), checkCmd, 5*time.Second)
-
-			if !strings.Contains(checkResult.Output, fmt.Sprintf("\"%s\"", network)) {
-				// Not connected, connect now
-				connectResult, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
-				if err != nil || connectResult.ExitCode != 0 {
-					dm.logger.Warn("Failed to connect container to network",
-						zap.String("container", containerName),
-						zap.String("network", network),
-						zap.Error(err))
-				} else {
-					dm.logger.Info("Connected container to network",
-						zap.String("container", containerName),
-						zap.String("network", network))
-				}
-			}
-		}
-
-		// Update DNS settings if specified
-		if len(config.DNSServers) > 0 || len(config.DNSSearch) > 0 {
-			dm.logger.Warn("Cannot update DNS settings on running container",
-				zap.String("container", containerName),
-				zap.String("note", "Container must be recreated for DNS changes"))
-		}
-
-		return nil
+	exists, err := dm.containerExists(containerName)
+	if err != nil {
+		return fmt.Errorf("failed to check container existence: %w", err)
 	}
 
-	// Container doesn't exist, create it with the specified configuration
+	if exists {
+		return dm.updateExistingContainerNetworks(containerName, config)
+	}
+
+	return dm.createContainerWithNetworkConfig(containerName, config)
+}
+
+// containerExists checks if a container exists.
+func (dm *DockerNetworkManager) containerExists(containerName string) (bool, error) {
+	inspectCmd := fmt.Sprintf("docker inspect %s", containerName)
+	result, err := dm.executor.ExecuteWithTimeout(context.Background(), inspectCmd, 5*time.Second)
+	return err == nil && result.ExitCode == 0, nil
+}
+
+// updateExistingContainerNetworks updates network connections for an existing container.
+func (dm *DockerNetworkManager) updateExistingContainerNetworks(containerName string, config *ContainerNetwork) error {
+	dm.logger.Info("Container already exists, updating network connections",
+		zap.String("container", containerName))
+
+	for _, network := range config.Networks {
+		if err := dm.connectContainerToNetwork(containerName, network, config.NetworkAlias); err != nil {
+			dm.logger.Warn("Failed to connect container to network",
+				zap.String("container", containerName),
+				zap.String("network", network),
+				zap.Error(err))
+		}
+	}
+
+	if len(config.DNSServers) > 0 || len(config.DNSSearch) > 0 {
+		dm.logger.Warn("Cannot update DNS settings on running container",
+			zap.String("container", containerName),
+			zap.String("note", "Container must be recreated for DNS changes"))
+	}
+
+	return nil
+}
+
+// connectContainerToNetwork connects a container to a network if not already connected.
+func (dm *DockerNetworkManager) connectContainerToNetwork(containerName, network string, aliases []string) error {
+	// Check if already connected
+	checkCmd := fmt.Sprintf("docker inspect %s --format '{{json .NetworkSettings.Networks}}'", containerName)
+	checkResult, _ := dm.executor.ExecuteWithTimeout(context.Background(), checkCmd, 5*time.Second)
+
+	if strings.Contains(checkResult.Output, fmt.Sprintf("\"%s\"", network)) {
+		return nil // Already connected
+	}
+
+	// Build connect command
+	connectCmd := fmt.Sprintf("docker network connect %s %s", network, containerName)
+	for _, alias := range aliases {
+		connectCmd += fmt.Sprintf(" --alias %s", alias)
+	}
+
+	// Execute connect command
+	connectResult, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
+	if err != nil || connectResult.ExitCode != 0 {
+		return fmt.Errorf("failed to connect: %w", err)
+	}
+
+	dm.logger.Info("Connected container to network",
+		zap.String("container", containerName),
+		zap.String("network", network))
+
+	return nil
+}
+
+// createContainerWithNetworkConfig creates a new container with network configuration.
+func (dm *DockerNetworkManager) createContainerWithNetworkConfig(containerName string, config *ContainerNetwork) error {
 	dm.logger.Info("Creating new container with network configuration",
 		zap.String("container", containerName),
 		zap.String("image", config.Image))
 
-	// Build docker run command
-	runCmd := fmt.Sprintf("docker run -d --name %s", containerName)
-
-	// Add network mode if specified
-	if config.NetworkMode != "" {
-		runCmd += fmt.Sprintf(" --network-mode %s", config.NetworkMode)
-	} else if len(config.Networks) > 0 {
-		// Connect to the first network on creation
-		runCmd += fmt.Sprintf(" --network %s", config.Networks[0])
-	}
-
-	// Add network aliases
-	for _, alias := range config.NetworkAlias {
-		runCmd += fmt.Sprintf(" --network-alias %s", alias)
-	}
-
-	// Add port mappings
-	for _, port := range config.Ports {
-		runCmd += fmt.Sprintf(" -p %s", port)
-	}
-
-	// Add environment variables
-	for key, value := range config.Environment {
-		runCmd += fmt.Sprintf(" -e %s=%s", key, value)
-	}
-
-	// Add DNS servers
-	for _, dns := range config.DNSServers {
-		runCmd += fmt.Sprintf(" --dns %s", dns)
-	}
-
-	// Add DNS search domains
-	for _, search := range config.DNSSearch {
-		runCmd += fmt.Sprintf(" --dns-search %s", search)
-	}
-
-	// Add extra hosts
-	for _, host := range config.ExtraHosts {
-		runCmd += fmt.Sprintf(" --add-host %s", host)
-	}
-
-	// Add hostname if specified
-	if config.Hostname != "" {
-		runCmd += fmt.Sprintf(" --hostname %s", config.Hostname)
-	}
-
-	// Add domain name if specified
-	if config.Domainname != "" {
-		runCmd += fmt.Sprintf(" --domainname %s", config.Domainname)
-	}
-
-	// Add the image
-	runCmd += fmt.Sprintf(" %s", config.Image)
+	runCmd := dm.buildDockerRunCommand(containerName, config)
 
 	// Execute the run command
 	runResult, err := dm.executor.ExecuteWithTimeout(context.Background(), runCmd, 30*time.Second)
@@ -768,19 +738,9 @@ func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string
 		return fmt.Errorf("failed to create container: %w", err)
 	}
 
-	// Connect to additional networks (if more than one specified)
-	if len(config.Networks) > 1 {
-		for i := 1; i < len(config.Networks); i++ {
-			connectCmd := fmt.Sprintf("docker network connect %s %s", config.Networks[i], containerName)
-
-			connectResult, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
-			if err != nil || connectResult.ExitCode != 0 {
-				dm.logger.Warn("Failed to connect container to additional network",
-					zap.String("container", containerName),
-					zap.String("network", config.Networks[i]),
-					zap.Error(err))
-			}
-		}
+	// Connect to additional networks
+	if err := dm.connectToAdditionalNetworks(containerName, config.Networks); err != nil {
+		return err
 	}
 
 	dm.logger.Info("Successfully created container with network configuration",
@@ -790,10 +750,95 @@ func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string
 	return nil
 }
 
+// buildDockerRunCommand builds the docker run command with all configuration options.
+func (dm *DockerNetworkManager) buildDockerRunCommand(containerName string, config *ContainerNetwork) string {
+	runCmd := fmt.Sprintf("docker run -d --name %s", containerName)
+
+	// Add network configuration
+	runCmd = dm.addNetworkOptions(runCmd, config)
+
+	// Add other options
+	runCmd = dm.addContainerOptions(runCmd, config)
+
+	// Add the image
+	runCmd += fmt.Sprintf(" %s", config.Image)
+
+	return runCmd
+}
+
+// addNetworkOptions adds network-related options to the docker run command.
+func (dm *DockerNetworkManager) addNetworkOptions(runCmd string, config *ContainerNetwork) string {
+	if config.NetworkMode != "" {
+		runCmd += fmt.Sprintf(" --network-mode %s", config.NetworkMode)
+	} else if len(config.Networks) > 0 {
+		runCmd += fmt.Sprintf(" --network %s", config.Networks[0])
+	}
+
+	for _, alias := range config.NetworkAlias {
+		runCmd += fmt.Sprintf(" --network-alias %s", alias)
+	}
+
+	for _, dns := range config.DNSServers {
+		runCmd += fmt.Sprintf(" --dns %s", dns)
+	}
+
+	for _, search := range config.DNSSearch {
+		runCmd += fmt.Sprintf(" --dns-search %s", search)
+	}
+
+	for _, host := range config.ExtraHosts {
+		runCmd += fmt.Sprintf(" --add-host %s", host)
+	}
+
+	if config.Hostname != "" {
+		runCmd += fmt.Sprintf(" --hostname %s", config.Hostname)
+	}
+
+	if config.Domainname != "" {
+		runCmd += fmt.Sprintf(" --domainname %s", config.Domainname)
+	}
+
+	return runCmd
+}
+
+// addContainerOptions adds non-network options to the docker run command.
+func (dm *DockerNetworkManager) addContainerOptions(runCmd string, config *ContainerNetwork) string {
+	for _, port := range config.Ports {
+		runCmd += fmt.Sprintf(" -p %s", port)
+	}
+
+	for key, value := range config.Environment {
+		runCmd += fmt.Sprintf(" -e %s=%s", key, value)
+	}
+
+	return runCmd
+}
+
+// connectToAdditionalNetworks connects the container to additional networks.
+func (dm *DockerNetworkManager) connectToAdditionalNetworks(containerName string, networks []string) error {
+	if len(networks) <= 1 {
+		return nil
+	}
+
+	for i := 1; i < len(networks); i++ {
+		connectCmd := fmt.Sprintf("docker network connect %s %s", networks[i], containerName)
+
+		connectResult, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
+		if err != nil || connectResult.ExitCode != 0 {
+			dm.logger.Warn("Failed to connect container to additional network",
+				zap.String("container", containerName),
+				zap.String("network", networks[i]),
+				zap.Error(err))
+		}
+	}
+
+	return nil
+}
+
 // applyComposeConfig applies Docker Compose configuration.
 func (dm *DockerNetworkManager) applyComposeConfig(config *DockerComposeConfig) error {
 	if config.File == "" {
-		return fmt.Errorf("Docker Compose file not specified")
+		return fmt.Errorf("docker Compose file not specified")
 	}
 
 	composeCmd := fmt.Sprintf("docker-compose -f %s", config.File)

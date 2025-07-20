@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package repoconfig
 
 import (
@@ -502,7 +503,7 @@ func TestOutputFileGeneration(t *testing.T) {
 			assert.NoError(t, err, "Output file should be created")
 
 			// Read and verify content
-			content, err := os.ReadFile(outputPath)
+			content, err := os.ReadFile(outputPath) //nolint:gosec // Test file reading is safe
 			require.NoError(t, err)
 
 			for _, expected := range tc.contains {

@@ -21,7 +21,7 @@ type ChangeRecord struct {
 	After        map[string]interface{} `json:"after,omitempty"`
 	Description  string                 `json:"description"`
 	Source       string                 `json:"source"` // cli, api, web
-	RequestID    string                 `json:"request_id,omitempty"`
+	RequestID    string                 `json:"requestId,omitempty"`
 }
 
 // ChangeLog manages configuration change history.
@@ -53,20 +53,20 @@ type ChangeFilter struct {
 
 // RollbackRequest represents a rollback operation.
 type RollbackRequest struct {
-	ChangeID    string `json:"change_id"`
+	ChangeID    string `json:"changeId"`
 	Repository  string `json:"repository"`
 	Category    string `json:"category"`
-	DryRun      bool   `json:"dry_run"`
+	DryRun      bool   `json:"dryRun"`
 	Description string `json:"description"`
 }
 
 // RollbackResult contains the result of a rollback operation.
 type RollbackResult struct {
 	Success     bool     `json:"success"`
-	ChangeID    string   `json:"change_id"`
-	NewChangeID string   `json:"new_change_id,omitempty"`
+	ChangeID    string   `json:"changeId"`
+	NewChangeID string   `json:"newChangeId,omitempty"`
 	Errors      []string `json:"errors,omitempty"`
-	DryRun      bool     `json:"dry_run"`
+	DryRun      bool     `json:"dryRun"`
 }
 
 // NewChangeLog creates a new change log manager.

@@ -14,25 +14,25 @@ type LanguageOptimizer struct {
 
 // OptimizationConfig holds optimization settings.
 type OptimizationConfig struct {
-	BaseImage        string            `json:"base_image"`
-	BuildArgs        map[string]string `json:"build_args"`
-	RuntimePackages  []string          `json:"runtime_packages"`
-	BuildPackages    []string          `json:"build_packages"`
-	EnvironmentVars  map[string]string `json:"environment_vars"`
-	ExposedPorts     []int             `json:"exposed_ports"`
-	HealthCheckPath  string            `json:"health_check_path"`
-	StartCommand     []string          `json:"start_command"`
-	SecuritySettings SecuritySettings  `json:"security_settings"`
+	BaseImage        string            `json:"baseImage"`
+	BuildArgs        map[string]string `json:"buildArgs"`
+	RuntimePackages  []string          `json:"runtimePackages"`
+	BuildPackages    []string          `json:"buildPackages"`
+	EnvironmentVars  map[string]string `json:"environmentVars"`
+	ExposedPorts     []int             `json:"exposedPorts"`
+	HealthCheckPath  string            `json:"healthCheckPath"`
+	StartCommand     []string          `json:"startCommand"`
+	SecuritySettings SecuritySettings  `json:"securitySettings"`
 }
 
 // SecuritySettings holds security-related configurations.
 type SecuritySettings struct {
-	RunAsNonRoot     bool     `json:"run_as_non_root"`
-	ReadOnlyRootFS   bool     `json:"read_only_root_fs"`
-	DropCapabilities []string `json:"drop_capabilities"`
-	AddCapabilities  []string `json:"add_capabilities"`
-	SeccompProfile   string   `json:"seccomp_profile"`
-	ApparmorProfile  string   `json:"apparmor_profile"`
+	RunAsNonRoot     bool     `json:"runAsNonRoot"`
+	ReadOnlyRootFS   bool     `json:"readOnlyRootFs"`
+	DropCapabilities []string `json:"dropCapabilities"`
+	AddCapabilities  []string `json:"addCapabilities"`
+	SeccompProfile   string   `json:"seccompProfile"`
+	ApparmorProfile  string   `json:"apparmorProfile"`
 }
 
 // NewLanguageOptimizer creates a new language optimizer.
@@ -46,17 +46,17 @@ func NewLanguageOptimizer(language string, project ProjectInfo) *LanguageOptimiz
 // GetOptimizedConfig returns optimized configuration for the language.
 func (lo *LanguageOptimizer) GetOptimizedConfig() OptimizationConfig {
 	switch lo.Language {
-	case "go":
+	case langGo:
 		return lo.getGoOptimizations()
-	case "node":
+	case langNode:
 		return lo.getNodeOptimizations()
-	case "python":
+	case langPython:
 		return lo.getPythonOptimizations()
-	case "ruby":
+	case langRuby:
 		return lo.getRubyOptimizations()
 	case "rust":
 		return lo.getRustOptimizations()
-	case "java":
+	case langJava:
 		return lo.getJavaOptimizations()
 	default:
 		return lo.getGenericOptimizations()
@@ -475,15 +475,15 @@ func (lo *LanguageOptimizer) GetOptimizationSummary() map[string]interface{} {
 	switch lo.Language {
 	case "go":
 		framework = lo.detectGoFramework()
-	case "node":
+	case langNode:
 		framework = lo.detectNodeFramework()
-	case "python":
+	case langPython:
 		framework = lo.detectPythonFramework()
-	case "ruby":
+	case langRuby:
 		framework = lo.detectRubyFramework()
-	case "rust":
+	case langRust:
 		framework = lo.detectRustFramework()
-	case "java":
+	case langJava:
 		framework = lo.detectJavaFramework()
 	}
 

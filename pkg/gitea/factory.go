@@ -48,7 +48,7 @@ func (f *giteaProviderFactoryImpl) CreateClonerWithEnv(ctx context.Context, toke
 	}
 
 	if token == "" {
-		return nil, fmt.Errorf("Gitea token is required")
+		return nil, fmt.Errorf("gitea token is required")
 	}
 
 	// Create a specific Gitea cloner implementation

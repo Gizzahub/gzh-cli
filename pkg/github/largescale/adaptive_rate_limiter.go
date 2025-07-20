@@ -72,15 +72,16 @@ func (rl *AdaptiveRateLimiter) UpdateRemaining(remaining int) {
 	rl.remaining = remaining
 
 	// Adapt behavior based on remaining requests
-	if remaining < 100 {
+	switch {
+	case remaining < 100:
 		// Very low, be more conservative
 		rl.maxRequestsPerSecond = 2
 		rl.bufferRatio = 0.05 // 5% buffer
-	} else if remaining < 500 {
+	case remaining < 500:
 		// Low, reduce rate
 		rl.maxRequestsPerSecond = 5
 		rl.bufferRatio = 0.08 // 8% buffer
-	} else {
+	default:
 		// Normal operation
 		rl.maxRequestsPerSecond = 10
 		rl.bufferRatio = 0.1 // 10% buffer

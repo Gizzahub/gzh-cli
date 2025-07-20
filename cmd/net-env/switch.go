@@ -1,3 +1,4 @@
+//nolint:tagliatelle // Network configuration may require specific YAML field naming conventions
 package netenv
 
 import (

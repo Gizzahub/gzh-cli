@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const protocolSSH = "ssh"
+
 type sshConfigGenerateOptions struct {
 	configFile string
 	useConfig  bool
@@ -121,7 +123,7 @@ func (o *sshConfigGenerateOptions) generateSSHConfig(cfg *bulkclone.BulkCloneCon
 
 	// Generate config for each repository root
 	for _, repoRoot := range cfg.RepoRoots {
-		if repoRoot.Protocol != "ssh" {
+		if repoRoot.Protocol != protocolSSH {
 			continue // Skip non-SSH configurations
 		}
 
@@ -137,7 +139,7 @@ func (o *sshConfigGenerateOptions) generateSSHConfig(cfg *bulkclone.BulkCloneCon
 	}
 
 	// Generate config for default configurations if they use SSH
-	if cfg.Default.Protocol == "ssh" {
+	if cfg.Default.Protocol == protocolSSH {
 		if cfg.Default.Github.OrgName != "" {
 			hostConfig, err := o.generateHostConfig("github", cfg.Default.Github.OrgName, configuredHosts)
 			if err != nil {

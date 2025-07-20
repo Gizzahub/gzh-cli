@@ -100,6 +100,43 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, _ []string) error {
 
 	fmt.Println("🍺 Starting Homebrew update process...")
 
+	// Update Homebrew and taps
+	if err := o.performUpdates(); err != nil {
+		return err
+	}
+
+	// Get and filter outdated packages
+	outdatedPackages, outdatedCasks, err := o.getFilteredOutdatedPackages()
+	if err != nil {
+		return err
+	}
+
+	totalOutdated := len(outdatedPackages) + len(outdatedCasks)
+	if totalOutdated == 0 {
+		fmt.Println("✅ All packages are up to date")
+		return nil
+	}
+
+	fmt.Printf("📦 Found %d outdated package(s)\n", totalOutdated)
+
+	// Update packages and casks
+	updatedCount := o.updateAllPackages(outdatedPackages, outdatedCasks)
+
+	// Cleanup if requested
+	if o.cleanup && !o.dryRun {
+		if err := o.cleanupBrew(); err != nil {
+			fmt.Printf("⚠️  Failed to cleanup: %v\n", err)
+		}
+	}
+
+	// Summary
+	o.printSummary(updatedCount)
+
+	return nil
+}
+
+// performUpdates updates Homebrew itself and taps if requested.
+func (o *alwaysLatestBrewOptions) performUpdates() error {
 	// Update Homebrew itself
 	if o.updateBrew {
 		if err := o.updateHomebrew(); err != nil {
@@ -114,10 +151,15 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, _ []string) error {
 		}
 	}
 
+	return nil
+}
+
+// getFilteredOutdatedPackages gets outdated packages and casks, then filters them.
+func (o *alwaysLatestBrewOptions) getFilteredOutdatedPackages() ([]string, []string, error) {
 	// Get outdated packages
 	outdatedPackages, err := o.getOutdatedPackages()
 	if err != nil {
-		return fmt.Errorf("failed to get outdated packages: %w", err)
+		return nil, nil, fmt.Errorf("failed to get outdated packages: %w", err)
 	}
 
 	// Get outdated casks if requested
@@ -137,65 +179,50 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	totalOutdated := len(outdatedPackages) + len(outdatedCasks)
-	if totalOutdated == 0 {
-		fmt.Println("✅ All packages are up to date")
-		return nil
-	}
+	return outdatedPackages, outdatedCasks, nil
+}
 
-	fmt.Printf("📦 Found %d outdated package(s)\n", totalOutdated)
-
-	// Update packages
+// updateAllPackages updates both formulae and casks.
+func (o *alwaysLatestBrewOptions) updateAllPackages(outdatedPackages, outdatedCasks []string) int {
 	updatedCount := 0
 
 	if len(outdatedPackages) > 0 {
 		fmt.Printf("📦 Processing %d outdated formulae...\n", len(outdatedPackages))
-
-		for _, pkg := range outdatedPackages {
-			updated, err := o.updatePackage(pkg, false)
-			if err != nil {
-				fmt.Printf("⚠️  Failed to update %s: %v\n", pkg, err)
-				continue
-			}
-
-			if updated {
-				updatedCount++
-			}
-		}
+		updatedCount += o.updatePackageList(outdatedPackages, false)
 	}
 
-	// Update casks
 	if len(outdatedCasks) > 0 {
 		fmt.Printf("🍺 Processing %d outdated casks...\n", len(outdatedCasks))
-
-		for _, cask := range outdatedCasks {
-			updated, err := o.updatePackage(cask, true)
-			if err != nil {
-				fmt.Printf("⚠️  Failed to update %s: %v\n", cask, err)
-				continue
-			}
-
-			if updated {
-				updatedCount++
-			}
-		}
+		updatedCount += o.updatePackageList(outdatedCasks, true)
 	}
 
-	// Cleanup if requested
-	if o.cleanup && !o.dryRun {
-		if err := o.cleanupBrew(); err != nil {
-			fmt.Printf("⚠️  Failed to cleanup: %v\n", err)
+	return updatedCount
+}
+
+// updatePackageList updates a list of packages (formulae or casks).
+func (o *alwaysLatestBrewOptions) updatePackageList(packages []string, isCask bool) int {
+	updatedCount := 0
+	for _, pkg := range packages {
+		updated, err := o.updatePackage(pkg, isCask)
+		if err != nil {
+			fmt.Printf("⚠️  Failed to update %s: %v\n", pkg, err)
+			continue
+		}
+
+		if updated {
+			updatedCount++
 		}
 	}
+	return updatedCount
+}
 
-	// Summary
+// printSummary prints the final summary of the update process.
+func (o *alwaysLatestBrewOptions) printSummary(updatedCount int) {
 	if o.dryRun {
 		fmt.Printf("🔍 Dry run completed. %d packages would be updated\n", updatedCount)
 	} else {
 		fmt.Printf("✅ Update completed. %d packages were updated\n", updatedCount)
 	}
-
-	return nil
 }
 
 func (o *alwaysLatestBrewOptions) isBrewInstalled() bool {

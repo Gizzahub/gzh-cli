@@ -94,7 +94,7 @@ func (c *CachedGitLabClient) GetProjectWithCache(_ context.Context, projectID st
 
 // InvalidateGroupCache invalidates all cache entries for a group - DISABLED (cache package removed)
 // Simple implementation without external cache dependency.
-func (c *CachedGitLabClient) InvalidateGroupCache(ctx context.Context, groupID string) int {
+func (c *CachedGitLabClient) InvalidateGroupCache(_ context.Context, groupID string) int {
 	count := 0
 
 	cacheKey := fmt.Sprintf("projects:%s", groupID)
@@ -107,7 +107,7 @@ func (c *CachedGitLabClient) InvalidateGroupCache(ctx context.Context, groupID s
 
 // InvalidateProjectCache invalidates cache entries for a specific project - DISABLED (cache package removed)
 // Simple implementation without external cache dependency.
-func (c *CachedGitLabClient) InvalidateProjectCache(ctx context.Context, projectID string) int {
+func (c *CachedGitLabClient) InvalidateProjectCache(_ context.Context, projectID string) int {
 	count := 0
 
 	cacheKey := fmt.Sprintf("project:%s", projectID)

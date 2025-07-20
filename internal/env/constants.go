@@ -17,13 +17,13 @@ const (
 
 	// Authentication tokens
 	// Note: These follow industry standard naming conventions.
-	GitHubToken = "GITHUB_TOKEN" // GitHub personal access token
+	GitHubToken = "GITHUB_TOKEN" //nolint:gosec // Environment variable name, not credential
 	GitLabToken = "GITLAB_TOKEN" // GitLab personal access token
 	GiteaToken  = "GITEA_TOKEN"  // Gitea personal access token
 
 	// Alternative GZH-prefixed tokens (for avoiding conflicts).
-	GZHGitHubToken = "GZH_GITHUB_TOKEN" // Alternative GitHub token
-	GZHGitLabToken = "GZH_GITLAB_TOKEN" // Alternative GitLab token
+	GZHGitHubToken = "GZH_GITHUB_TOKEN" //nolint:gosec // Environment variable name, not credential
+	GZHGitLabToken = "GZH_GITLAB_TOKEN" //nolint:gosec // Environment variable name, not credential
 	GZHGiteaToken  = "GZH_GITEA_TOKEN"  // Alternative Gitea token
 
 	// Feature flags and settings.

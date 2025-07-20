@@ -25,39 +25,39 @@ type DependencyVersionPolicy struct {
 	Organization         string                            `json:"organization"`
 	Description          string                            `json:"description"`
 	Enabled              bool                              `json:"enabled"`
-	VersionConstraints   map[string]VersionConstraintRule  `json:"version_constraints"`
-	EcosystemPolicies    map[string]EcosystemVersionPolicy `json:"ecosystem_policies"`
-	BreakingChangePolicy BreakingChangePolicy              `json:"breaking_change_policy"`
-	CompatibilityChecks  CompatibilityCheckConfig          `json:"compatibility_checks"`
-	RollbackPolicy       RollbackPolicy                    `json:"rollback_policy"`
-	ApprovalRequirements VersionUpdateApprovalRequirements `json:"approval_requirements"`
-	NotificationSettings VersionPolicyNotificationConfig   `json:"notification_settings"`
-	TestingRequirements  TestingRequirements               `json:"testing_requirements"`
-	ReleaseWindows       []ReleaseWindow                   `json:"release_windows"`
-	MetricsTracking      MetricsTrackingConfig             `json:"metrics_tracking"`
-	CreatedAt            time.Time                         `json:"created_at"`
-	UpdatedAt            time.Time                         `json:"updated_at"`
+	VersionConstraints   map[string]VersionConstraintRule  `json:"versionConstraints"`
+	EcosystemPolicies    map[string]EcosystemVersionPolicy `json:"ecosystemPolicies"`
+	BreakingChangePolicy BreakingChangePolicy              `json:"breakingChangePolicy"`
+	CompatibilityChecks  CompatibilityCheckConfig          `json:"compatibilityChecks"`
+	RollbackPolicy       RollbackPolicy                    `json:"rollbackPolicy"`
+	ApprovalRequirements VersionUpdateApprovalRequirements `json:"approvalRequirements"`
+	NotificationSettings VersionPolicyNotificationConfig   `json:"notificationSettings"`
+	TestingRequirements  TestingRequirements               `json:"testingRequirements"`
+	ReleaseWindows       []ReleaseWindow                   `json:"releaseWindows"`
+	MetricsTracking      MetricsTrackingConfig             `json:"metricsTracking"`
+	CreatedAt            time.Time                         `json:"createdAt"`
+	UpdatedAt            time.Time                         `json:"updatedAt"`
 	Version              int                               `json:"version"`
 }
 
 // VersionConstraintRule defines version constraints for dependencies.
 type VersionConstraintRule struct {
-	RuleID            string                       `json:"rule_id"`
-	DependencyPattern string                       `json:"dependency_pattern"`
+	RuleID            string                       `json:"ruleId"`
+	DependencyPattern string                       `json:"dependencyPattern"`
 	Ecosystem         string                       `json:"ecosystem"`
-	AllowedVersions   []VersionRange               `json:"allowed_versions"`
-	BlockedVersions   []VersionRange               `json:"blocked_versions"`
-	PreferredVersions []VersionRange               `json:"preferred_versions"`
-	MinimumVersion    string                       `json:"minimum_version,omitempty"`
-	MaximumVersion    string                       `json:"maximum_version,omitempty"`
-	VersionPattern    string                       `json:"version_pattern,omitempty"`
-	AllowPrerelease   bool                         `json:"allow_prerelease"`
-	AllowBetaVersions bool                         `json:"allow_beta_versions"`
-	UpdateStrategy    DependencyUpdateStrategy     `json:"update_strategy"`
-	AutoUpdateEnabled bool                         `json:"auto_update_enabled"`
-	UpdateFrequency   UpdateFrequency              `json:"update_frequency"`
+	AllowedVersions   []VersionRange               `json:"allowedVersions"`
+	BlockedVersions   []VersionRange               `json:"blockedVersions"`
+	PreferredVersions []VersionRange               `json:"preferredVersions"`
+	MinimumVersion    string                       `json:"minimumVersion,omitempty"`
+	MaximumVersion    string                       `json:"maximumVersion,omitempty"`
+	VersionPattern    string                       `json:"versionPattern,omitempty"`
+	AllowPrerelease   bool                         `json:"allowPrerelease"`
+	AllowBetaVersions bool                         `json:"allowBetaVersions"`
+	UpdateStrategy    DependencyUpdateStrategy     `json:"updateStrategy"`
+	AutoUpdateEnabled bool                         `json:"autoUpdateEnabled"`
+	UpdateFrequency   UpdateFrequency              `json:"updateFrequency"`
 	Priority          ConstraintPriority           `json:"priority"`
-	ExpirationDate    *time.Time                   `json:"expiration_date,omitempty"`
+	ExpirationDate    *time.Time                   `json:"expirationDate,omitempty"`
 	Justification     string                       `json:"justification"`
 	Exceptions        []VersionConstraintException `json:"exceptions,omitempty"`
 }
@@ -66,74 +66,74 @@ type VersionConstraintRule struct {
 type EcosystemVersionPolicy struct {
 	Ecosystem               string                   `json:"ecosystem"`
 	Enabled                 bool                     `json:"enabled"`
-	DefaultUpdateStrategy   DependencyUpdateStrategy `json:"default_update_strategy"`
-	AllowMajorUpdates       bool                     `json:"allow_major_updates"`
-	AllowMinorUpdates       bool                     `json:"allow_minor_updates"`
-	AllowPatchUpdates       bool                     `json:"allow_patch_updates"`
-	RequireSecurityUpdates  bool                     `json:"require_security_updates"`
-	MaxVersionAge           time.Duration            `json:"max_version_age"`
-	DeprecationPolicy       DeprecationPolicy        `json:"deprecation_policy"`
-	LicenseRestrictions     []LicenseRestriction     `json:"license_restrictions"`
-	PerformanceRequirements PerformanceRequirements  `json:"performance_requirements"`
-	QualityGates            []QualityGate            `json:"quality_gates"`
-	CustomValidationRules   []CustomValidationRule   `json:"custom_validation_rules"`
+	DefaultUpdateStrategy   DependencyUpdateStrategy `json:"defaultUpdateStrategy"`
+	AllowMajorUpdates       bool                     `json:"allowMajorUpdates"`
+	AllowMinorUpdates       bool                     `json:"allowMinorUpdates"`
+	AllowPatchUpdates       bool                     `json:"allowPatchUpdates"`
+	RequireSecurityUpdates  bool                     `json:"requireSecurityUpdates"`
+	MaxVersionAge           time.Duration            `json:"maxVersionAge"`
+	DeprecationPolicy       DeprecationPolicy        `json:"deprecationPolicy"`
+	LicenseRestrictions     []LicenseRestriction     `json:"licenseRestrictions"`
+	PerformanceRequirements PerformanceRequirements  `json:"performanceRequirements"`
+	QualityGates            []QualityGate            `json:"qualityGates"`
+	CustomValidationRules   []CustomValidationRule   `json:"customValidationRules"`
 }
 
 // BreakingChangePolicy defines how to handle breaking changes.
 type BreakingChangePolicy struct {
-	AllowBreakingChanges        bool                    `json:"allow_breaking_changes"`
-	BreakingChangeDetection     BreakingChangeDetection `json:"breaking_change_detection"`
-	ImpactAnalysisRequired      bool                    `json:"impact_analysis_required"`
-	DeprecationNoticePeriod     time.Duration           `json:"deprecation_notice_period"`
-	MigrationGuidanceRequired   bool                    `json:"migration_guidance_required"`
-	BackwardCompatibilityPeriod time.Duration           `json:"backward_compatibility_period"`
-	BreakingChangeApprovers     []string                `json:"breaking_change_approvers"`
-	CommunicationPlan           CommunicationPlan       `json:"communication_plan"`
+	AllowBreakingChanges        bool                    `json:"allowBreakingChanges"`
+	BreakingChangeDetection     BreakingChangeDetection `json:"breakingChangeDetection"`
+	ImpactAnalysisRequired      bool                    `json:"impactAnalysisRequired"`
+	DeprecationNoticePeriod     time.Duration           `json:"deprecationNoticePeriod"`
+	MigrationGuidanceRequired   bool                    `json:"migrationGuidanceRequired"`
+	BackwardCompatibilityPeriod time.Duration           `json:"backwardCompatibilityPeriod"`
+	BreakingChangeApprovers     []string                `json:"breakingChangeApprovers"`
+	CommunicationPlan           CommunicationPlan       `json:"communicationPlan"`
 }
 
 // BreakingChangeDetection configures how breaking changes are detected.
 type BreakingChangeDetection struct {
 	Enabled                bool              `json:"enabled"`
 	Methods                []DetectionMethod `json:"methods"`
-	SemverStrictMode       bool              `json:"semver_strict_mode"`
-	APIChangeDetection     bool              `json:"api_change_detection"`
-	SchemaChangeDetection  bool              `json:"schema_change_detection"`
-	CustomDetectionRules   []DetectionRule   `json:"custom_detection_rules"`
-	IgnorePatterns         []string          `json:"ignore_patterns"`
-	ThresholdConfiguration ThresholdConfig   `json:"threshold_configuration"`
+	SemverStrictMode       bool              `json:"semverStrictMode"`
+	APIChangeDetection     bool              `json:"apiChangeDetection"`
+	SchemaChangeDetection  bool              `json:"schemaChangeDetection"`
+	CustomDetectionRules   []DetectionRule   `json:"customDetectionRules"`
+	IgnorePatterns         []string          `json:"ignorePatterns"`
+	ThresholdConfiguration ThresholdConfig   `json:"thresholdConfiguration"`
 }
 
 // CompatibilityCheckConfig defines compatibility checking requirements.
 type CompatibilityCheckConfig struct {
 	Enabled                   bool                       `json:"enabled"`
-	MatrixTesting             MatrixTestingConfig        `json:"matrix_testing"`
-	DependencyGraphAnalysis   bool                       `json:"dependency_graph_analysis"`
-	ConflictDetection         ConflictDetectionConfig    `json:"conflict_detection"`
-	IntegrationTesting        IntegrationTestingConfig   `json:"integration_testing"`
-	PerformanceImpactAnalysis bool                       `json:"performance_impact_analysis"`
-	SecurityImpactAnalysis    bool                       `json:"security_impact_analysis"`
-	CompatibilityMatrix       []CompatibilityMatrixEntry `json:"compatibility_matrix"`
-	RegressionTesting         RegressionTestingConfig    `json:"regression_testing"`
+	MatrixTesting             MatrixTestingConfig        `json:"matrixTesting"`
+	DependencyGraphAnalysis   bool                       `json:"dependencyGraphAnalysis"`
+	ConflictDetection         ConflictDetectionConfig    `json:"conflictDetection"`
+	IntegrationTesting        IntegrationTestingConfig   `json:"integrationTesting"`
+	PerformanceImpactAnalysis bool                       `json:"performanceImpactAnalysis"`
+	SecurityImpactAnalysis    bool                       `json:"securityImpactAnalysis"`
+	CompatibilityMatrix       []CompatibilityMatrixEntry `json:"compatibilityMatrix"`
+	RegressionTesting         RegressionTestingConfig    `json:"regressionTesting"`
 }
 
 // RollbackPolicy defines rollback procedures and conditions.
 type RollbackPolicy struct {
 	Enabled                 bool                     `json:"enabled"`
-	AutoRollbackTriggers    []RollbackTrigger        `json:"auto_rollback_triggers"`
-	ManualRollbackProcedure ManualRollbackProcedure  `json:"manual_rollback_procedure"`
-	RollbackTimeframe       time.Duration            `json:"rollback_timeframe"`
-	HealthCheckRequirements []HealthCheck            `json:"health_check_requirements"`
-	RollbackApprovers       []string                 `json:"rollback_approvers"`
-	DataMigrationHandling   DataMigrationHandling    `json:"data_migration_handling"`
-	NotificationPlan        RollbackNotificationPlan `json:"notification_plan"`
-	PostRollbackAnalysis    bool                     `json:"post_rollback_analysis"`
+	AutoRollbackTriggers    []RollbackTrigger        `json:"autoRollbackTriggers"`
+	ManualRollbackProcedure ManualRollbackProcedure  `json:"manualRollbackProcedure"`
+	RollbackTimeframe       time.Duration            `json:"rollbackTimeframe"`
+	HealthCheckRequirements []HealthCheck            `json:"healthCheckRequirements"`
+	RollbackApprovers       []string                 `json:"rollbackApprovers"`
+	DataMigrationHandling   DataMigrationHandling    `json:"dataMigrationHandling"`
+	NotificationPlan        RollbackNotificationPlan `json:"notificationPlan"`
+	PostRollbackAnalysis    bool                     `json:"postRollbackAnalysis"`
 }
 
 // VersionUpdateApprovalRequirements defines approval requirements for version updates.
 type VersionUpdateApprovalRequirements struct {
-	MajorVersionUpdates VersionApprovalRule            `json:"major_version_updates"`
-	MinorVersionUpdates VersionApprovalRule            `json:"minor_version_updates"`
-	PatchVersionUpdates VersionApprovalRule            `json:"patch_version_updates"`
+	MajorVersionUpdates VersionApprovalRule            `json:"majorVersionUpdates"`
+	MinorVersionUpdates VersionApprovalRule            `json:"minorVersionUpdates"`
+	PatchVersionUpdates VersionApprovalRule            `json:"patchVersionUpdates"`
 	SecurityUpdates     VersionApprovalRule            `json:"security_updates"`
 	PreReleaseUpdates   VersionApprovalRule            `json:"pre_release_updates"`
 	EmergencyUpdates    EmergencyApprovalRule          `json:"emergency_updates"`
@@ -562,14 +562,16 @@ func (dvm *DependencyVersionPolicyManager) validateDependencyVersionPolicy(polic
 	}
 
 	// Validate version constraints
-	for constraintID, constraint := range policy.VersionConstraints {
+	for constraintID := range policy.VersionConstraints {
+		constraint := policy.VersionConstraints[constraintID]
 		if err := dvm.validateVersionConstraintRule(&constraint); err != nil {
 			return fmt.Errorf("invalid version constraint %s: %w", constraintID, err)
 		}
 	}
 
 	// Validate ecosystem policies
-	for ecosystem, ecosystemPolicy := range policy.EcosystemPolicies {
+	for ecosystem := range policy.EcosystemPolicies {
+		ecosystemPolicy := policy.EcosystemPolicies[ecosystem]
 		if err := dvm.validateEcosystemVersionPolicy(&ecosystemPolicy); err != nil {
 			return fmt.Errorf("invalid ecosystem policy for %s: %w", ecosystem, err)
 		}
@@ -654,7 +656,8 @@ func (dvm *DependencyVersionPolicyManager) checkVersionConstraints(policy *Depen
 	}
 
 	// Check dependency-specific constraints
-	for _, constraint := range policy.VersionConstraints {
+	for i := range policy.VersionConstraints {
+		constraint := policy.VersionConstraints[i]
 		if constraint.Ecosystem == ecosystem {
 			matched, err := dvm.matchesDependencyPattern(dependencyName, constraint.DependencyPattern)
 			if err != nil {

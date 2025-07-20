@@ -28,96 +28,22 @@ func NewResumableCloneManager(config BulkOperationsConfig) *ResumableCloneManage
 
 // RefreshAllResumable performs bulk repository refresh with resumable support.
 func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targetPath, org, strategy string, parallel, maxRetries int, resume bool, progressMode string) error {
-	var (
-		state *bulkclonepkg.CloneState
-		err   error
-	)
-
-	// Load existing state if resuming
-
-	if resume {
-		state, err = rcm.stateManager.LoadState("github", org)
-		if err != nil {
-			return fmt.Errorf("failed to load state for resume: %w", err)
-		}
-
-		// Validate that the resume is compatible
-		if state.TargetPath != targetPath {
-			return fmt.Errorf("target path mismatch: state has %s, requested %s", state.TargetPath, targetPath)
-		}
-
-		if state.Strategy != strategy {
-			fmt.Printf("⚠️  Warning: strategy changed from %s to %s\n", state.Strategy, strategy)
-			state.Strategy = strategy
-		}
-
-		// Update configuration if different
-		if state.Parallel != parallel {
-			fmt.Printf("⚠️  Warning: parallel count changed from %d to %d\n", state.Parallel, parallel)
-			state.Parallel = parallel
-		}
-
-		if state.MaxRetries != maxRetries {
-			fmt.Printf("⚠️  Warning: max retries changed from %d to %d\n", state.MaxRetries, maxRetries)
-			state.MaxRetries = maxRetries
-		}
-
-		fmt.Printf("🔄 Resuming clone operation for %s (%.1f%% complete)\n", org, state.GetProgressPercent())
-	} else {
-		// Create new state
-		state = bulkclonepkg.NewCloneState("github", org, targetPath, strategy, parallel, maxRetries)
-
-		// Check if there's already a state file
-		if rcm.stateManager.HasState("github", org) {
-			return fmt.Errorf("existing state found for %s. Use --resume to continue or delete state file", org)
-		}
-	}
-
-	// Get all repositories from GitHub
-	allRepos, err := List(ctx, org)
+	// Initialize or load state
+	state, err := rcm.initializeOrLoadState(org, targetPath, strategy, parallel, maxRetries, resume)
 	if err != nil {
-		return fmt.Errorf("failed to list repositories: %w", err)
+		return err
 	}
 
-	if len(allRepos) == 0 {
-		fmt.Printf("No repositories found for organization: %s\n", org)
-		return nil
-	}
-
-	// Determine which repositories need to be processed
-	var reposToProcess []string
-	if resume {
-		// Use remaining repositories from state
-		reposToProcess = state.GetRemainingRepositories()
-
-		// Also check if any new repositories were added since last run
-		for _, repo := range allRepos {
-			if !state.IsCompleted(repo) && !state.IsFailed(repo) {
-				found := false
-
-				for _, pending := range reposToProcess {
-					if pending == repo {
-						found = true
-						break
-					}
-				}
-
-				if !found {
-					reposToProcess = append(reposToProcess, repo)
-				}
-			}
-		}
-	} else {
-		// Process all repositories
-		reposToProcess = allRepos
-		state.SetPendingRepositories(reposToProcess)
+	// Get repositories and determine processing list
+	allRepos, reposToProcess, err := rcm.prepareRepositoryList(ctx, org, state, resume)
+	if err != nil {
+		return err
 	}
 
 	if len(reposToProcess) == 0 {
 		fmt.Printf("✅ All repositories already processed\n")
 		state.MarkCompleted()
-		rcm.stateManager.SaveState(state)
-
+		_ = rcm.stateManager.SaveState(state) //nolint:errcheck // State save is best effort
 		return nil
 	}
 
@@ -146,7 +72,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 
 	// Create and start worker pool
 	pool := workerpool.NewRepositoryWorkerPool(config.PoolConfig)
-	if err := pool.Start(); err != nil {
+	if err := pool.Start(); err != nil { //nolint:contextcheck // Worker pool start manages its own context
 		return fmt.Errorf("failed to start worker pool: %w", err)
 	}
 	defer pool.Stop()
@@ -292,6 +218,112 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	}
 
 	return nil
+}
+
+// initializeOrLoadState handles state initialization and loading for resume operations.
+func (rcm *ResumableCloneManager) initializeOrLoadState(org, targetPath, strategy string, parallel, maxRetries int, resume bool) (*bulkclonepkg.CloneState, error) {
+	if resume {
+		return rcm.loadAndValidateState(org, targetPath, strategy, parallel, maxRetries)
+	}
+	return rcm.createNewState(org, targetPath, strategy, parallel, maxRetries)
+}
+
+// loadAndValidateState loads existing state and validates compatibility.
+func (rcm *ResumableCloneManager) loadAndValidateState(org, targetPath, strategy string, parallel, maxRetries int) (*bulkclonepkg.CloneState, error) {
+	state, err := rcm.stateManager.LoadState("github", org)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load state for resume: %w", err)
+	}
+
+	// Validate that the resume is compatible
+	if state.TargetPath != targetPath {
+		return nil, fmt.Errorf("target path mismatch: state has %s, requested %s", state.TargetPath, targetPath)
+	}
+
+	// Update configuration if different with warnings
+	rcm.updateStateWithWarnings(state, strategy, parallel, maxRetries)
+
+	fmt.Printf("🔄 Resuming clone operation for %s (%.1f%% complete)\n", org, state.GetProgressPercent())
+	return state, nil
+}
+
+// createNewState creates a new clone state and validates no existing state exists.
+func (rcm *ResumableCloneManager) createNewState(org, targetPath, strategy string, parallel, maxRetries int) (*bulkclonepkg.CloneState, error) {
+	// Check if there's already a state file
+	if rcm.stateManager.HasState("github", org) {
+		return nil, fmt.Errorf("existing state found for %s. Use --resume to continue or delete state file", org)
+	}
+
+	// Create new state
+	return bulkclonepkg.NewCloneState("github", org, targetPath, strategy, parallel, maxRetries), nil
+}
+
+// updateStateWithWarnings updates state configuration and prints warnings for changes.
+func (rcm *ResumableCloneManager) updateStateWithWarnings(state *bulkclonepkg.CloneState, strategy string, parallel, maxRetries int) {
+	if state.Strategy != strategy {
+		fmt.Printf("⚠️  Warning: strategy changed from %s to %s\n", state.Strategy, strategy)
+		state.Strategy = strategy
+	}
+
+	if state.Parallel != parallel {
+		fmt.Printf("⚠️  Warning: parallel count changed from %d to %d\n", state.Parallel, parallel)
+		state.Parallel = parallel
+	}
+
+	if state.MaxRetries != maxRetries {
+		fmt.Printf("⚠️  Warning: max retries changed from %d to %d\n", state.MaxRetries, maxRetries)
+		state.MaxRetries = maxRetries
+	}
+}
+
+// prepareRepositoryList gets all repositories and determines which need processing.
+func (rcm *ResumableCloneManager) prepareRepositoryList(ctx context.Context, org string, state *bulkclonepkg.CloneState, resume bool) ([]string, []string, error) {
+	// Get all repositories from GitHub
+	allRepos, err := List(ctx, org)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to list repositories: %w", err)
+	}
+
+	if len(allRepos) == 0 {
+		fmt.Printf("No repositories found for organization: %s\n", org)
+		return allRepos, []string{}, nil
+	}
+
+	// Determine which repositories need to be processed
+	var reposToProcess []string
+	if resume {
+		reposToProcess = rcm.getResumeRepositories(state, allRepos)
+	} else {
+		reposToProcess = allRepos
+		state.SetPendingRepositories(reposToProcess)
+	}
+
+	return allRepos, reposToProcess, nil
+}
+
+// getResumeRepositories determines which repositories to process on resume.
+func (rcm *ResumableCloneManager) getResumeRepositories(state *bulkclonepkg.CloneState, allRepos []string) []string {
+	// Use remaining repositories from state
+	reposToProcess := state.GetRemainingRepositories()
+
+	// Check if any new repositories were added since last run
+	for _, repo := range allRepos {
+		if !state.IsCompleted(repo) && !state.IsFailed(repo) && !rcm.containsString(reposToProcess, repo) {
+			reposToProcess = append(reposToProcess, repo)
+		}
+	}
+
+	return reposToProcess
+}
+
+// containsString checks if a string slice contains a specific string.
+func (rcm *ResumableCloneManager) containsString(slice []string, str string) bool {
+	for _, item := range slice {
+		if item == str {
+			return true
+		}
+	}
+	return false
 }
 
 // processRepositoryJob processes a single repository job for GitHub.

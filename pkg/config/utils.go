@@ -28,13 +28,13 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() { _ = sourceFile.Close() }() //nolint:errcheck // Deferred close
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destFile.Close()
+	defer func() { _ = destFile.Close() }() //nolint:errcheck // Deferred close
 
 	_, err = io.Copy(destFile, sourceFile)
 

@@ -91,7 +91,7 @@ func NewBatchProcessor(config BatchConfig) *BatchProcessor {
 }
 
 // Add adds a request to the appropriate batch.
-func (bp *BatchProcessor) Add(ctx context.Context, batchKey string, request *BatchRequest, processor BatchFunc) error {
+func (bp *BatchProcessor) Add(_ context.Context, batchKey string, request *BatchRequest, processor BatchFunc) error {
 	bp.mu.Lock()
 	defer bp.mu.Unlock()
 
@@ -110,7 +110,7 @@ func (bp *BatchProcessor) Add(ctx context.Context, batchKey string, request *Bat
 		bp.batches[batchKey] = batch
 
 		// Set timer to flush batch after interval
-		batch.timer = time.AfterFunc(bp.flushInterval, func() {
+		batch.timer = time.AfterFunc(bp.flushInterval, func() { //nolint:contextcheck // Timer callback doesn't need context
 			bp.flushBatch(batchKey)
 		})
 	}
@@ -127,7 +127,7 @@ func (bp *BatchProcessor) Add(ctx context.Context, batchKey string, request *Bat
 			batch.timer.Stop()
 		}
 		// Use a goroutine to avoid deadlock since flushBatch also tries to acquire the lock
-		go bp.flushBatch(batchKey)
+		go bp.flushBatch(batchKey) //nolint:contextcheck // Goroutine flushing doesn't need context
 	}
 
 	return nil

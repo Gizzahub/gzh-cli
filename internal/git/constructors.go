@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+const (
+	// Git strategy constants.
+	StrategyReset = "reset"
+	StrategyPull  = "pull"
+	StrategyFetch = "fetch"
+)
+
 // Logger interface for dependency injection.
 type Logger interface {
 	Debug(msg string, args ...interface{})
@@ -32,6 +39,7 @@ type CommandExecutor interface {
 type GitClientImpl struct {
 	executor CommandExecutor
 	logger   Logger
+	config   *GitClientConfig
 }
 
 // GitClientConfig holds configuration for Git client.
@@ -61,6 +69,7 @@ func NewGitClient(config *GitClientConfig, executor CommandExecutor, logger Logg
 	return &GitClientImpl{
 		executor: executor,
 		logger:   logger,
+		config:   config,
 	}
 }
 
@@ -360,11 +369,11 @@ func (s *StrategyExecutorImpl) ExecuteStrategy(ctx context.Context, repoPath, st
 	s.logger.Debug("Executing strategy", "strategy", strategy, "path", repoPath)
 
 	switch strategy {
-	case "reset":
+	case StrategyReset:
 		return s.gitClient.Reset(ctx, repoPath, ResetOptions{Mode: "hard"})
-	case "pull":
+	case StrategyPull:
 		return s.gitClient.Pull(ctx, repoPath, PullOptions{Remote: "origin"})
-	case "fetch":
+	case StrategyFetch:
 		return s.gitClient.Fetch(ctx, repoPath, "origin")
 	default:
 		s.logger.Warn("Unknown strategy, using default", "strategy", strategy)
@@ -417,6 +426,7 @@ type BulkOperatorImpl struct {
 	gitClient        GitClient
 	strategyExecutor StrategyExecutor
 	logger           Logger
+	config           *BulkOperatorConfig
 }
 
 // BulkOperatorConfig holds configuration for bulk operations.
@@ -448,6 +458,7 @@ func NewBulkOperator(
 		gitClient:        gitClient,
 		strategyExecutor: strategyExecutor,
 		logger:           logger,
+		config:           config,
 	}
 }
 

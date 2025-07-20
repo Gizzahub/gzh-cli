@@ -87,9 +87,7 @@ This command provides comprehensive webhook management including:
 	// Add flags
 	createCmd.Flags().String("name", "web", "Webhook name")
 	createCmd.Flags().String("url", "", "Webhook URL (required)")
-	if err := createCmd.MarkFlagRequired("url"); err != nil {
-		// Error marking flag as required - continue without marking
-	}
+	_ = createCmd.MarkFlagRequired("url") // Ignore error
 	createCmd.Flags().StringSlice("events", []string{"push"}, "Events to trigger webhook")
 	createCmd.Flags().Bool("active", true, "Whether webhook is active")
 	createCmd.Flags().String("content-type", "json", "Content type (json/form)")

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package migrate
 
 import (
@@ -46,7 +47,7 @@ repo_roots:
 `
 
 	legacyFile := filepath.Join(tmpDir, "bulk-clone.yaml")
-	require.NoError(t, os.WriteFile(legacyFile, []byte(legacyConfig), 0o644))
+	require.NoError(t, os.WriteFile(legacyFile, []byte(legacyConfig), 0o600))
 
 	// Test detection
 	isLegacy, err := detectLegacyFormat(legacyFile)
@@ -70,7 +71,7 @@ providers:
 `
 
 	unifiedFile := filepath.Join(tmpDir, "gzh.yaml")
-	require.NoError(t, os.WriteFile(unifiedFile, []byte(unifiedConfig), 0o644))
+	require.NoError(t, os.WriteFile(unifiedFile, []byte(unifiedConfig), 0o600))
 
 	// Test detection
 	isLegacy, err = detectLegacyFormat(unifiedFile)
@@ -91,7 +92,7 @@ func TestFindLegacyFiles(t *testing.T) {
 
 	for _, file := range legacyFiles {
 		filePath := filepath.Join(tmpDir, file)
-		require.NoError(t, os.WriteFile(filePath, []byte("test content"), 0o644))
+		require.NoError(t, os.WriteFile(filePath, []byte("test content"), 0o600))
 	}
 
 	// Change to temp directory
@@ -176,12 +177,12 @@ repo_roots:
 `
 
 	sourceFile := filepath.Join(tmpDir, "bulk-clone.yaml")
-	require.NoError(t, os.WriteFile(sourceFile, []byte(legacyConfig), 0o644))
+	require.NoError(t, os.WriteFile(sourceFile, []byte(legacyConfig), 0o600))
 
 	targetFile := filepath.Join(tmpDir, "gzh.yaml")
 
 	// Test options
-	opts := &MigrateOptions{
+	opts := &Options{
 		SourceFile: sourceFile,
 		TargetFile: targetFile,
 		DryRun:     false,
@@ -205,7 +206,7 @@ repo_roots:
 	assert.NoError(t, err)
 
 	// Check that target file contains unified format
-	content, err := os.ReadFile(targetFile)
+	content, err := os.ReadFile(targetFile) //nolint:gosec // Test file path is controlled
 	require.NoError(t, err)
 
 	assert.Contains(t, string(content), "version: 1.0.0")
@@ -227,12 +228,12 @@ default:
 `
 
 	sourceFile := filepath.Join(tmpDir, "bulk-clone.yaml")
-	require.NoError(t, os.WriteFile(sourceFile, []byte(legacyConfig), 0o644))
+	require.NoError(t, os.WriteFile(sourceFile, []byte(legacyConfig), 0o600))
 
 	targetFile := filepath.Join(tmpDir, "gzh.yaml")
 
 	// Test options with dry-run
-	opts := &MigrateOptions{
+	opts := &Options{
 		SourceFile: sourceFile,
 		TargetFile: targetFile,
 		DryRun:     true,
@@ -255,8 +256,8 @@ default:
 	assert.True(t, os.IsNotExist(err))
 }
 
-func TestMigrateOptionsDefaults(t *testing.T) {
-	opts := &MigrateOptions{}
+func TestOptionsDefaults(t *testing.T) {
+	opts := &Options{}
 
 	// Test default values
 	assert.False(t, opts.DryRun)
@@ -275,7 +276,7 @@ func TestCopyFile(t *testing.T) {
 	// Create source file
 	sourceFile := filepath.Join(tmpDir, "source.txt")
 	sourceContent := "test content"
-	require.NoError(t, os.WriteFile(sourceFile, []byte(sourceContent), 0o644))
+	require.NoError(t, os.WriteFile(sourceFile, []byte(sourceContent), 0o600))
 
 	// Copy file
 	targetFile := filepath.Join(tmpDir, "target.txt")
@@ -283,12 +284,12 @@ func TestCopyFile(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check that target file exists and has same content
-	targetContent, err := os.ReadFile(targetFile)
+	targetContent, err := os.ReadFile(targetFile) //nolint:gosec // Test file path is controlled
 	require.NoError(t, err)
 	assert.Equal(t, sourceContent, string(targetContent))
 
 	// Check file permissions
 	info, err := os.Stat(targetFile)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o644), info.Mode())
+	assert.Equal(t, os.FileMode(0o600), info.Mode())
 }

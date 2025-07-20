@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package config
 
 import (
@@ -251,12 +252,12 @@ func TestMatchPattern(t *testing.T) {
 
 func TestExpandEnvVars(t *testing.T) {
 	// Set test environment variables
-	os.Setenv("TEST_WEBHOOK_URL", "https://example.com/webhook")
-	os.Setenv("TEST_SECRET", "secret123")
+	_ = os.Setenv("TEST_WEBHOOK_URL", "https://example.com/webhook") //nolint:errcheck // Test environment setup
+	_ = os.Setenv("TEST_SECRET", "secret123")                        //nolint:errcheck // Test environment setup
 
 	defer func() {
-		os.Unsetenv("TEST_WEBHOOK_URL")
-		os.Unsetenv("TEST_SECRET")
+		_ = os.Unsetenv("TEST_WEBHOOK_URL") //nolint:errcheck // Test cleanup
+		_ = os.Unsetenv("TEST_SECRET")      //nolint:errcheck // Test cleanup
 	}()
 
 	config := &RepoConfig{

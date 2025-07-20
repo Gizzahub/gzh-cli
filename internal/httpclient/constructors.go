@@ -369,7 +369,7 @@ func NewRetryPolicy(config *RetryPolicyConfig, logger Logger) RetryPolicy {
 }
 
 // ShouldRetry implements RetryPolicy interface.
-func (rp *RetryPolicyImpl) ShouldRetry(_ context.Context, req *Request, resp *Response, err error, attempt int) bool {
+func (rp *RetryPolicyImpl) ShouldRetry(_ context.Context, _ *Request, resp *Response, err error, attempt int) bool {
 	if attempt >= rp.maxRetries {
 		return false
 	}
@@ -495,6 +495,7 @@ func (rl *RateLimiterImpl) Reset() {
 type CacheImpl struct {
 	cache  map[string]*CacheEntry
 	logger Logger
+	config *CacheConfig
 }
 
 // CacheConfig holds configuration for cache.
@@ -520,6 +521,7 @@ func NewCache(config *CacheConfig, logger Logger) Cache {
 	return &CacheImpl{
 		cache:  make(map[string]*CacheEntry),
 		logger: logger,
+		config: config,
 	}
 }
 
@@ -548,12 +550,12 @@ func (c *CacheImpl) Set(_ context.Context, key string, response *http.Response, 
 }
 
 // Delete implements Cache interface.
-func (c *CacheImpl) Delete(ctx context.Context, key string) {
+func (c *CacheImpl) Delete(_ context.Context, key string) {
 	delete(c.cache, key)
 }
 
 // Clear implements Cache interface.
-func (c *CacheImpl) Clear(ctx context.Context) {
+func (c *CacheImpl) Clear(_ context.Context) {
 	c.cache = make(map[string]*CacheEntry)
 }
 

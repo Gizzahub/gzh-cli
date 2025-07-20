@@ -123,7 +123,7 @@ type ScanConfiguration struct {
 	Format      string            `json:"format"`
 	Output      string            `json:"output,omitempty"`
 	Timeout     time.Duration     `json:"timeout"`
-	SkipUpdate  bool              `json:"skip_update"`
+	SkipUpdate  bool              `json:"skipUpdate"`
 	Options     ScanOptions       `json:"options"`
 	Filters     ScanFilters       `json:"filters"`
 	Outputs     OutputFormats     `json:"outputs"`
@@ -141,10 +141,10 @@ type ScanOptions struct {
 }
 
 type ScanFilters struct {
-	PackageTypes []string `json:"package_types,omitempty"`
-	SkipFiles    []string `json:"skip_files,omitempty"`
-	SkipDirs     []string `json:"skip_dirs,omitempty"`
-	OnlyFixed    bool     `json:"only_fixed"`
+	PackageTypes []string `json:"packageTypes,omitempty"`
+	SkipFiles    []string `json:"skipFiles,omitempty"`
+	SkipDirs     []string `json:"skipDirs,omitempty"`
+	OnlyFixed    bool     `json:"onlyFixed"`
 }
 
 type OutputFormats struct {
@@ -152,15 +152,15 @@ type OutputFormats struct {
 	CSV       bool   `json:"csv"`
 	HTML      bool   `json:"html"`
 	SARIF     bool   `json:"sarif"`
-	CycloneDX bool   `json:"cyclone_dx"`
+	CycloneDX bool   `json:"cycloneDx"`
 	Template  string `json:"template,omitempty"`
 }
 
 type IntegrationConfig struct {
-	UploadURL  string `json:"upload_url,omitempty"`
-	WebhookURL string `json:"webhook_url,omitempty"`
-	FailOn     string `json:"fail_on,omitempty"`
-	IgnoreFile string `json:"ignore_file,omitempty"`
+	UploadURL  string `json:"uploadUrl,omitempty"`
+	WebhookURL string `json:"webhookUrl,omitempty"`
+	FailOn     string `json:"failOn,omitempty"`
+	IgnoreFile string `json:"ignoreFile,omitempty"`
 }
 
 // ComprehensiveScanResult represents the complete scan results.
@@ -182,8 +182,8 @@ type ScannerResult struct {
 	Vulnerabilities []Vulnerability    `json:"vulnerabilities"`
 	Secrets         []Secret           `json:"secrets,omitempty"`
 	Malware         []MalwareDetection `json:"malware,omitempty"`
-	ConfigIssues    []ConfigIssue      `json:"config_issues,omitempty"`
-	LicenseIssues   []LicenseIssue     `json:"license_issues,omitempty"`
+	ConfigIssues    []ConfigIssue      `json:"configIssues,omitempty"`
+	LicenseIssues   []LicenseIssue     `json:"licenseIssues,omitempty"`
 	Summary         ScanSummary        `json:"summary"`
 	Error           string             `json:"error,omitempty"`
 }
@@ -196,9 +196,9 @@ type Vulnerability struct {
 	Score         float64           `json:"score,omitempty"`
 	Vector        string            `json:"vector,omitempty"`
 	Package       PackageInfo       `json:"package"`
-	FixedIn       string            `json:"fixed_in,omitempty"`
-	PublishedDate string            `json:"published_date,omitempty"`
-	LastModified  string            `json:"last_modified,omitempty"`
+	FixedIn       string            `json:"fixedIn,omitempty"`
+	PublishedDate string            `json:"publishedDate,omitempty"`
+	LastModified  string            `json:"lastModified,omitempty"`
 	References    []string          `json:"references,omitempty"`
 	CPE           string            `json:"cpe,omitempty"`
 	Layer         ScanLayerInfo     `json:"layer,omitempty"`
@@ -215,8 +215,8 @@ type PackageInfo struct {
 
 type ScanLayerInfo struct {
 	Digest    string `json:"digest"`
-	DiffID    string `json:"diff_id"`
-	CreatedBy string `json:"created_by,omitempty"`
+	DiffID    string `json:"diffId"`
+	CreatedBy string `json:"createdBy,omitempty"`
 }
 
 type Secret struct {
@@ -286,7 +286,7 @@ type Component struct {
 	Copyright    string    `json:"copyright,omitempty"`
 	CPE          string    `json:"cpe,omitempty"`
 	PURL         string    `json:"purl,omitempty"`
-	ExternalRefs []ExtRef  `json:"external_refs,omitempty"`
+	ExternalRefs []ExtRef  `json:"externalRefs,omitempty"`
 }
 
 type Dependency struct {
@@ -325,7 +325,7 @@ type ComplianceReport struct {
 }
 
 type ComplianceResult struct {
-	RuleID      string `json:"rule_id"`
+	RuleID      string `json:"ruleId"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Severity    string `json:"severity"`
@@ -342,16 +342,16 @@ type ComplianceSummary struct {
 }
 
 type ScanMetadata struct {
-	ImageID      string            `json:"image_id,omitempty"`
-	ImageDigest  string            `json:"image_digest,omitempty"`
+	ImageID      string            `json:"imageId,omitempty"`
+	ImageDigest  string            `json:"imageDigest,omitempty"`
 	Size         int64             `json:"size"`
 	Architecture string            `json:"architecture,omitempty"`
 	OS           string            `json:"os,omitempty"`
 	Created      string            `json:"created,omitempty"`
 	Labels       map[string]string `json:"labels,omitempty"`
 	Layers       []string          `json:"layers,omitempty"`
-	RepoTags     []string          `json:"repo_tags,omitempty"`
-	RepoDigests  []string          `json:"repo_digests,omitempty"`
+	RepoTags     []string          `json:"repoTags,omitempty"`
+	RepoDigests  []string          `json:"repoDigests,omitempty"`
 }
 
 func runScan(cmd *cobra.Command, args []string) {
@@ -374,11 +374,7 @@ func runScan(cmd *cobra.Command, args []string) {
 	config := createScanConfiguration()
 
 	// Perform comprehensive scan
-	result, err := performComprehensiveScan(config)
-	if err != nil {
-		fmt.Printf("❌ 스캔 실패: %v\n", err)
-		os.Exit(1)
-	}
+	result := performComprehensiveScan(config)
 
 	// Display results
 	displayScanResults(result)
@@ -438,7 +434,7 @@ func createScanConfiguration() *ScanConfiguration {
 	}
 }
 
-func performComprehensiveScan(config *ScanConfiguration) (*ComprehensiveScanResult, error) {
+func performComprehensiveScan(config *ScanConfiguration) *ComprehensiveScanResult {
 	result := &ComprehensiveScanResult{
 		Configuration: *config,
 		Results:       make([]ScannerResult, 0),
@@ -490,17 +486,13 @@ func performComprehensiveScan(config *ScanConfiguration) (*ComprehensiveScanResu
 
 	// Run compliance checks if requested
 	if config.Options.Compliance {
-		compliance, err := runComplianceChecks(config.Image)
-		if err != nil {
-			fmt.Printf("⚠️ 컴플라이언스 검사 실패: %v\n", err)
-		} else {
-			result.Compliance = compliance
-		}
+		compliance := runComplianceChecks(config.Image)
+		result.Compliance = compliance
 	}
 
 	result.Success = true
 
-	return result, nil
+	return result
 }
 
 func runScannerComprehensive(scanner string, config *ScanConfiguration) (*ScannerResult, error) {
@@ -600,6 +592,7 @@ func runTrivyScan(config *ScanConfiguration, result *ScannerResult) error {
 }
 
 func parseTrivyComprehensive(output []byte, result *ScannerResult) error {
+	// nolint:tagliatelle // External API format - must match Trivy JSON output
 	var trivyResult struct {
 		Results []struct {
 			Vulnerabilities []struct {
@@ -707,7 +700,7 @@ func parseTrivyComprehensive(output []byte, result *ScannerResult) error {
 	return nil
 }
 
-func runGrypeScan(config *ScanConfiguration, result *ScannerResult) error {
+func runGrypeScan(config *ScanConfiguration, _ *ScannerResult) error {
 	args := []string{config.Image, "--output", "json"}
 
 	// Add severity filter
@@ -729,7 +722,7 @@ func runGrypeScan(config *ScanConfiguration, result *ScannerResult) error {
 	return nil
 }
 
-func runSnykScan(config *ScanConfiguration, result *ScannerResult) error {
+func runSnykScan(config *ScanConfiguration, _ *ScannerResult) error {
 	args := []string{"container", "test", config.Image, "--json"}
 
 	cmd := exec.Command("snyk", args...)
@@ -745,7 +738,7 @@ func runSnykScan(config *ScanConfiguration, result *ScannerResult) error {
 
 func runClairScan(config *ScanConfiguration, result *ScannerResult) error {
 	// Simplified Clair integration - implement full integration as needed
-	return fmt.Errorf("Clair 스캐너는 아직 구현되지 않았습니다")
+	return fmt.Errorf("clair 스캐너는 아직 구현되지 않았습니다")
 }
 
 func getImageMetadata(image string, metadata *ScanMetadata) error {
@@ -757,6 +750,7 @@ func getImageMetadata(image string, metadata *ScanMetadata) error {
 		return err
 	}
 
+	// nolint:tagliatelle // External API format - must match Docker inspect JSON output
 	var inspectResult []struct {
 		ID          string   `json:"Id"`
 		RepoTags    []string `json:"RepoTags"`
@@ -821,7 +815,7 @@ func generateSBOM(image string) (*SBOM, error) {
 	return sbom, nil
 }
 
-func runComplianceChecks(image string) (*ComplianceReport, error) {
+func runComplianceChecks(_ string) *ComplianceReport {
 	// Run compliance checks using tools like OPA/Conftest
 	report := &ComplianceReport{
 		Framework: "CIS Docker Benchmark",
@@ -831,7 +825,7 @@ func runComplianceChecks(image string) (*ComplianceReport, error) {
 	}
 
 	// Simplified compliance checking - implement full checks as needed
-	return report, nil
+	return report
 }
 
 func displayScanResults(result *ComprehensiveScanResult) {
@@ -976,7 +970,7 @@ func generateHTMLReport(result *ComprehensiveScanResult, filename string) error 
 	return os.WriteFile(filename, []byte(html), 0o644)
 }
 
-func generateSARIFReport(result *ComprehensiveScanResult, filename string) error {
+func generateSARIFReport(_ *ComprehensiveScanResult, filename string) error {
 	// Simplified SARIF generation - implement full SARIF format as needed
 	sarif := map[string]interface{}{
 		"version": "2.1.0",

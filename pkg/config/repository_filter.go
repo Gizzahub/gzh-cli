@@ -140,9 +140,9 @@ func (m *RepositoryMatcher) GetStatistics(repos []Repository) *FilteringStatisti
 
 // FilteringStatistics provides statistics about repository filtering results.
 type FilteringStatistics struct {
-	OriginalStats VisibilityStatistics    `json:"original_stats"`
-	FilteredStats VisibilityStatistics    `json:"filtered_stats"`
-	FilterConfig  *RepositoryFilterConfig `json:"filter_config"`
+	OriginalStats VisibilityStatistics    `json:"originalStats"`
+	FilteredStats VisibilityStatistics    `json:"filteredStats"`
+	FilterConfig  *RepositoryFilterConfig `json:"filterConfig"`
 }
 
 // GetFilteringRatio returns the percentage of repositories that passed filtering.

@@ -11,6 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	strategyMajor = "major"
+	strategyMinor = "minor"
+)
+
 type alwaysLatestAsdfOptions struct {
 	strategy    string
 	tools       []string
@@ -323,7 +328,7 @@ func (o *alwaysLatestAsdfOptions) isStableVersion(version string) bool {
 }
 
 func (o *alwaysLatestAsdfOptions) getTargetVersion(tool, currentVersion, latestVersion string) (string, error) {
-	if o.strategy == "major" {
+	if o.strategy == strategyMajor {
 		return latestVersion, nil
 	}
 

@@ -78,45 +78,45 @@ type RepoSettings struct {
 	Archived    *bool    `yaml:"archived,omitempty"`
 
 	// Features
-	HasIssues    *bool `yaml:"has_issues,omitempty"`
-	HasProjects  *bool `yaml:"has_projects,omitempty"`
-	HasWiki      *bool `yaml:"has_wiki,omitempty"`
-	HasDownloads *bool `yaml:"has_downloads,omitempty"`
+	HasIssues    *bool `yaml:"hasIssues,omitempty"`
+	HasProjects  *bool `yaml:"hasProjects,omitempty"`
+	HasWiki      *bool `yaml:"hasWiki,omitempty"`
+	HasDownloads *bool `yaml:"hasDownloads,omitempty"`
 
 	// Merge settings
-	AllowSquashMerge    *bool `yaml:"allow_squash_merge,omitempty"`
-	AllowMergeCommit    *bool `yaml:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge    *bool `yaml:"allow_rebase_merge,omitempty"`
-	DeleteBranchOnMerge *bool `yaml:"delete_branch_on_merge,omitempty"`
+	AllowSquashMerge    *bool `yaml:"allowSquashMerge,omitempty"`
+	AllowMergeCommit    *bool `yaml:"allowMergeCommit,omitempty"`
+	AllowRebaseMerge    *bool `yaml:"allowRebaseMerge,omitempty"`
+	DeleteBranchOnMerge *bool `yaml:"deleteBranchOnMerge,omitempty"`
 
 	// Default branch
-	DefaultBranch *string `yaml:"default_branch,omitempty"`
+	DefaultBranch *string `yaml:"defaultBranch,omitempty"`
 }
 
 // SecuritySettings represents security-related settings.
 type SecuritySettings struct {
-	VulnerabilityAlerts           *bool                            `yaml:"vulnerability_alerts,omitempty"`
-	SecurityAdvisories            *bool                            `yaml:"security_advisories,omitempty"`
-	PrivateVulnerabilityReporting *bool                            `yaml:"private_vulnerability_reporting,omitempty"`
-	BranchProtection              map[string]*BranchProtectionRule `yaml:"branch_protection,omitempty"`
+	VulnerabilityAlerts           *bool                            `yaml:"vulnerabilityAlerts,omitempty"`
+	SecurityAdvisories            *bool                            `yaml:"securityAdvisories,omitempty"`
+	PrivateVulnerabilityReporting *bool                            `yaml:"privateVulnerabilityReporting,omitempty"`
+	BranchProtection              map[string]*BranchProtectionRule `yaml:"branchProtection,omitempty"`
 	Webhooks                      []WebhookConfig                  `yaml:"webhooks,omitempty"`
 }
 
 // BranchProtectionRule represents branch protection settings.
 type BranchProtectionRule struct {
-	RequiredReviews               *int     `yaml:"required_reviews,omitempty"`
-	DismissStaleReviews           *bool    `yaml:"dismiss_stale_reviews,omitempty"`
-	RequireCodeOwnerReviews       *bool    `yaml:"require_code_owner_reviews,omitempty"`
-	RequiredStatusChecks          []string `yaml:"required_status_checks,omitempty"`
-	StrictStatusChecks            *bool    `yaml:"strict_status_checks,omitempty"`
-	RestrictPushes                *bool    `yaml:"restrict_pushes,omitempty"`
-	AllowedUsers                  []string `yaml:"allowed_users,omitempty"`
-	AllowedTeams                  []string `yaml:"allowed_teams,omitempty"`
-	RequireUpToDateBranch         *bool    `yaml:"require_up_to_date_branch,omitempty"`
-	EnforceAdmins                 *bool    `yaml:"enforce_admins,omitempty"`
-	RequireConversationResolution *bool    `yaml:"require_conversation_resolution,omitempty"`
-	AllowForcePushes              *bool    `yaml:"allow_force_pushes,omitempty"`
-	AllowDeletions                *bool    `yaml:"allow_deletions,omitempty"`
+	RequiredReviews               *int     `yaml:"requiredReviews,omitempty"`
+	DismissStaleReviews           *bool    `yaml:"dismissStaleReviews,omitempty"`
+	RequireCodeOwnerReviews       *bool    `yaml:"requireCodeOwnerReviews,omitempty"`
+	RequiredStatusChecks          []string `yaml:"requiredStatusChecks,omitempty"`
+	StrictStatusChecks            *bool    `yaml:"strictStatusChecks,omitempty"`
+	RestrictPushes                *bool    `yaml:"restrictPushes,omitempty"`
+	AllowedUsers                  []string `yaml:"allowedUsers,omitempty"`
+	AllowedTeams                  []string `yaml:"allowedTeams,omitempty"`
+	RequireUpToDateBranch         *bool    `yaml:"requireUpToDateBranch,omitempty"`
+	EnforceAdmins                 *bool    `yaml:"enforceAdmins,omitempty"`
+	RequireConversationResolution *bool    `yaml:"requireConversationResolution,omitempty"`
+	AllowForcePushes              *bool    `yaml:"allowForcePushes,omitempty"`
+	AllowDeletions                *bool    `yaml:"allowDeletions,omitempty"`
 }
 
 // WebhookConfig represents webhook configuration.
@@ -124,14 +124,14 @@ type WebhookConfig struct {
 	URL         string   `yaml:"url" json:"url"`
 	Events      []string `yaml:"events" json:"events"`
 	Active      *bool    `yaml:"active,omitempty" json:"active,omitempty"`
-	ContentType string   `yaml:"content_type,omitempty" json:"content_type,omitempty"`
+	ContentType string   `yaml:"contentType,omitempty" json:"contentType,omitempty"`
 	Secret      string   `yaml:"secret,omitempty" json:"secret,omitempty"`
 }
 
 // PermissionSettings represents permission-related settings.
 type PermissionSettings struct {
-	TeamPermissions map[string]string `yaml:"team_permissions,omitempty"`
-	UserPermissions map[string]string `yaml:"user_permissions,omitempty"`
+	TeamPermissions map[string]string `yaml:"teamPermissions,omitempty"`
+	UserPermissions map[string]string `yaml:"userPermissions,omitempty"`
 }
 
 // PolicyTemplate represents a reusable policy configuration.
@@ -154,7 +154,7 @@ func LoadRepoConfig(path string) (*RepoConfig, error) {
 	path = os.ExpandEnv(path)
 
 	// Read the file
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // Loading config files is a legitimate use case
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package devenv
 
 import (
@@ -16,9 +17,9 @@ func TestNewAzureSubscriptionManager(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
 
-	os.Setenv("HOME", tmpDir)
+	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
 
 	ctx := context.Background()
 	manager, err := NewAzureSubscriptionManager(ctx)
@@ -94,9 +95,9 @@ func TestAzureSubscriptionManager_EmptyState(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
 
-	os.Setenv("HOME", tmpDir)
+	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
 
 	manager := &AzureSubscriptionManager{
 		configPath:    tmpDir + "/.azure",
@@ -339,9 +340,9 @@ func TestAzureSubscriptionManager_Integration(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
 
-	os.Setenv("HOME", tmpDir)
+	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
 
 	ctx := context.Background()
 	manager, err := NewAzureSubscriptionManager(ctx)
@@ -393,9 +394,9 @@ func BenchmarkAzureSubscriptionManager_LoadSubscriptions(b *testing.B) {
 	tmpDir := b.TempDir()
 
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
 
-	os.Setenv("HOME", tmpDir)
+	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
 
 	b.ResetTimer()
 

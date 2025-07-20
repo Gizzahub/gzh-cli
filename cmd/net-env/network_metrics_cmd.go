@@ -1,3 +1,4 @@
+//nolint:tagliatelle // Network metrics output may require specific JSON field naming conventions
 package netenv
 
 import (
@@ -755,7 +756,7 @@ func (nmc *NetworkMetricsCollector) getPacketStats(iface string) PacketStats {
 	return stats
 }
 
-func (nmc *NetworkMetricsCollector) pingTarget(ctx context.Context, target string, count int) LatencyResult {
+func (nmc *NetworkMetricsCollector) pingTarget(ctx context.Context, target string, count int) LatencyResult { //nolint:gocognit // Complex ping implementation with cross-platform support
 	result := LatencyResult{
 		Target:  target,
 		Success: false,

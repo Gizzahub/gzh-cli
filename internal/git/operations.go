@@ -27,7 +27,7 @@ func NewOperations(verbose bool) *Operations {
 func (o *Operations) Clone(cloneURL, targetPath string) error {
 	// Ensure parent directory exists
 	parentDir := filepath.Dir(targetPath)
-	if err := os.MkdirAll(parentDir, 0o755); err != nil {
+	if err := os.MkdirAll(parentDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create parent directory: %w", err)
 	}
 

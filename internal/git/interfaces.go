@@ -47,7 +47,7 @@ type PullOptions struct {
 	Branch     string `json:"branch,omitempty"`
 	Strategy   string `json:"strategy"` // merge, rebase, fast-forward
 	Force      bool   `json:"force"`
-	AllowDirty bool   `json:"allow_dirty"`
+	AllowDirty bool   `json:"allowDirty"`
 }
 
 // ResetOptions represents options for resetting repository state.
@@ -63,7 +63,7 @@ type OperationResult struct {
 	Message      string            `json:"message"`
 	Error        string            `json:"error,omitempty"`
 	Duration     time.Duration     `json:"duration"`
-	ChangedFiles []string          `json:"changed_files,omitempty"`
+	ChangedFiles []string          `json:"changedFiles,omitempty"`
 	Metadata     map[string]string `json:"metadata,omitempty"`
 }
 
@@ -109,10 +109,10 @@ type StatusResult struct {
 	Branch         string   `json:"branch"`
 	Ahead          int      `json:"ahead"`
 	Behind         int      `json:"behind"`
-	ModifiedFiles  []string `json:"modified_files"`
-	StagedFiles    []string `json:"staged_files"`
-	UntrackedFiles []string `json:"untracked_files"`
-	ConflictFiles  []string `json:"conflict_files"`
+	ModifiedFiles  []string `json:"modifiedFiles"`
+	StagedFiles    []string `json:"stagedFiles"`
+	UntrackedFiles []string `json:"untrackedFiles"`
+	ConflictFiles  []string `json:"conflictFiles"`
 }
 
 // StrategyExecutor defines the interface for executing different Git strategies.
@@ -153,13 +153,13 @@ type BulkOperation struct {
 type BulkOptions struct {
 	Concurrency      int                `json:"concurrency"`
 	Timeout          time.Duration      `json:"timeout"`
-	ContinueOnError  bool               `json:"continue_on_error"`
+	ContinueOnError  bool               `json:"continueOnError"`
 	ProgressCallback func(BulkProgress) `json:"-"`
 }
 
 // BulkResult represents the result of a bulk operation on a repository.
 type BulkResult struct {
-	RepoPath string           `json:"repo_path"`
+	RepoPath string           `json:"repoPath"`
 	Success  bool             `json:"success"`
 	Result   *OperationResult `json:"result,omitempty"`
 	Error    string           `json:"error,omitempty"`
@@ -168,13 +168,13 @@ type BulkResult struct {
 
 // BulkProgress represents progress information for bulk operations.
 type BulkProgress struct {
-	TotalRepos      int           `json:"total_repos"`
-	CompletedRepos  int           `json:"completed_repos"`
-	SuccessfulRepos int           `json:"successful_repos"`
-	FailedRepos     int           `json:"failed_repos"`
-	CurrentRepo     string        `json:"current_repo"`
-	ElapsedTime     time.Duration `json:"elapsed_time"`
-	EstimatedTime   time.Duration `json:"estimated_time"`
+	TotalRepos      int           `json:"totalRepos"`
+	CompletedRepos  int           `json:"completedRepos"`
+	SuccessfulRepos int           `json:"successfulRepos"`
+	FailedRepos     int           `json:"failedRepos"`
+	CurrentRepo     string        `json:"currentRepo"`
+	ElapsedTime     time.Duration `json:"elapsedTime"`
+	EstimatedTime   time.Duration `json:"estimatedTime"`
 }
 
 // AuthManager defines the interface for Git authentication.

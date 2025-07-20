@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package github
 
 import (
@@ -930,12 +931,12 @@ func BenchmarkAnalyzeDependencyVersionUpdate(b *testing.B) {
 	ctx := context.Background()
 
 	policy := createTestDependencyVersionPolicy()
-	manager.CreateDependencyVersionPolicy(ctx, policy)
+	_ = manager.CreateDependencyVersionPolicy(ctx, policy) //nolint:errcheck // Benchmark test setup
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		manager.AnalyzeDependencyVersionUpdate(ctx, policy.ID, "lodash", "4.17.20", "4.17.21", "npm")
+		_, _ = manager.AnalyzeDependencyVersionUpdate(ctx, policy.ID, "lodash", "4.17.20", "4.17.21", "npm") //nolint:errcheck // Benchmark test
 	}
 }
 
@@ -946,7 +947,7 @@ func BenchmarkVersionConstraintCheck(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		manager.checkVersionConstraints(policy, "lodash", "4.17.21", "npm")
+		_, _ = manager.checkVersionConstraints(policy, "lodash", "4.17.21", "npm") //nolint:errcheck // Benchmark test
 	}
 }
 
@@ -956,7 +957,7 @@ func BenchmarkDependencyPatternMatching(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		manager.matchesDependencyPattern("lodash", "^lo.*")
+		_, _ = manager.matchesDependencyPattern("lodash", "^lo.*") //nolint:errcheck // Benchmark test
 	}
 }
 

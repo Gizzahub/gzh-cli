@@ -146,9 +146,7 @@ func (b *BulkOperationsManager) RefreshAllWithWorkerPool(ctx context.Context,
 			}
 
 			if bar != nil {
-				if err := bar.Add(1); err != nil {
-					// Progress bar error is not critical
-				}
+				_ = bar.Add(1) // Progress bar error is not critical
 			}
 
 		case <-ctx.Done():
@@ -204,7 +202,7 @@ func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 
 	// Build git command
 	gitArgs := append([]string{"-C", repoPath}, args...)
-	cmd := exec.CommandContext(ctx, "git", gitArgs...)
+	cmd := exec.CommandContext(ctx, "git", gitArgs...) //nolint:gosec // git command with controlled arguments
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("git %s failed: %w", args[0], err)
@@ -233,7 +231,7 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy str
 	}
 
 	manager := NewBulkOperationsManager(config)
-	if err := manager.Start(); err != nil {
+	if err := manager.Start(); err != nil { //nolint:contextcheck // Manager start method manages its own context
 		return fmt.Errorf("failed to start bulk operations manager: %w", err)
 	}
 	defer manager.Stop()
@@ -270,7 +268,7 @@ func BulkCloneMultipleOrganizations(ctx context.Context, targetBasePath string,
 	}
 
 	manager := NewBulkOperationsManager(config)
-	if err := manager.Start(); err != nil {
+	if err := manager.Start(); err != nil { //nolint:contextcheck // Manager start method manages its own context
 		return fmt.Errorf("failed to start bulk operations manager: %w", err)
 	}
 	defer manager.Stop()
@@ -280,7 +278,7 @@ func BulkCloneMultipleOrganizations(ctx context.Context, targetBasePath string,
 		fmt.Printf("\n[%d/%d] Processing organization: %s\n", i+1, len(options.Organizations), org)
 
 		orgPath := filepath.Join(targetBasePath, org)
-		if err := os.MkdirAll(orgPath, 0o755); err != nil {
+		if err := os.MkdirAll(orgPath, 0o750); err != nil {
 			return fmt.Errorf("failed to create directory for %s: %w", org, err)
 		}
 

@@ -1,3 +1,4 @@
+//nolint:tagliatelle // VPN configuration may require specific JSON field naming conventions
 package netenv
 
 import (
@@ -93,12 +94,10 @@ func newVPNFailoverStartCmd(logger *zap.Logger, configDir string) *cobra.Command
 			fmt.Println("Press Ctrl+C to stop monitoring...")
 
 			// Keep monitoring running
-			select {
-			case <-ctx.Done():
-				fmt.Println("\n🛑 Stopping VPN failover monitoring...")
-				manager.StopFailoverMonitoring()
-				fmt.Println("✅ VPN failover monitoring stopped")
-			}
+			<-ctx.Done()
+			fmt.Println("\n🛑 Stopping VPN failover monitoring...")
+			manager.StopFailoverMonitoring()
+			fmt.Println("✅ VPN failover monitoring stopped")
 
 			return nil
 		},

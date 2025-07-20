@@ -82,7 +82,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	return cmd
 }
 
-func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, args []string) error {
+func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	// Use central configuration service for unified configuration management
 	return o.runWithCentralConfigService(ctx)
 }

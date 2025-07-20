@@ -26,47 +26,47 @@ type PolicyValidationRule interface {
 
 // PolicyValidationResult represents the result of a policy validation.
 type PolicyValidationResult struct {
-	RuleID        string                  `json:"rule_id"`
+	RuleID        string                  `json:"ruleId"`
 	Passed        bool                    `json:"passed"`
 	Severity      PolicyViolationSeverity `json:"severity"`
 	Message       string                  `json:"message"`
 	Details       map[string]interface{}  `json:"details,omitempty"`
 	Suggestions   []string                `json:"suggestions,omitempty"`
-	ActualValue   interface{}             `json:"actual_value,omitempty"`
-	ExpectedValue interface{}             `json:"expected_value,omitempty"`
+	ActualValue   interface{}             `json:"actualValue,omitempty"`
+	ExpectedValue interface{}             `json:"expectedValue,omitempty"`
 }
 
 // RepositoryActionsState represents the current Actions configuration state of a repository.
 type RepositoryActionsState struct {
 	Organization        string                  `json:"organization"`
 	Repository          string                  `json:"repository"`
-	ActionsEnabled      bool                    `json:"actions_enabled"`
-	PermissionLevel     ActionsPermissionLevel  `json:"permission_level"`
-	AllowedActions      []string                `json:"allowed_actions,omitempty"`
-	WorkflowPermissions WorkflowPermissions     `json:"workflow_permissions"`
-	SecuritySettings    ActionsSecuritySettings `json:"security_settings"`
+	ActionsEnabled      bool                    `json:"actionsEnabled"`
+	PermissionLevel     ActionsPermissionLevel  `json:"permissionLevel"`
+	AllowedActions      []string                `json:"allowedActions,omitempty"`
+	WorkflowPermissions WorkflowPermissions     `json:"workflowPermissions"`
+	SecuritySettings    ActionsSecuritySettings `json:"securitySettings"`
 	Secrets             []SecretInfo            `json:"secrets,omitempty"`
 	Variables           map[string]string       `json:"variables,omitempty"`
 	Environments        []EnvironmentInfo       `json:"environments,omitempty"`
 	Runners             []RunnerInfo            `json:"runners,omitempty"`
-	RecentWorkflows     []WorkflowInfo          `json:"recent_workflows,omitempty"`
-	LastUpdated         time.Time               `json:"last_updated"`
+	RecentWorkflows     []WorkflowInfo          `json:"recentWorkflows,omitempty"`
+	LastUpdated         time.Time               `json:"lastUpdated"`
 }
 
 // SecretInfo represents information about a repository secret.
 type SecretInfo struct {
 	Name        string    `json:"name"`
 	Visibility  string    `json:"visibility"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 	Environment string    `json:"environment,omitempty"`
 }
 
 // EnvironmentInfo represents information about a repository environment.
 type EnvironmentInfo struct {
 	Name               string            `json:"name"`
-	ProtectionRules    []ProtectionRule  `json:"protection_rules,omitempty"`
-	DeploymentBranches []string          `json:"deployment_branches,omitempty"`
+	ProtectionRules    []ProtectionRule  `json:"protectionRules,omitempty"`
+	DeploymentBranches []string          `json:"deploymentBranches,omitempty"`
 	Secrets            []SecretInfo      `json:"secrets,omitempty"`
 	Variables          map[string]string `json:"variables,omitempty"`
 }
@@ -75,7 +75,7 @@ type EnvironmentInfo struct {
 type ProtectionRule struct {
 	Type      string   `json:"type"`
 	Reviewers []string `json:"reviewers,omitempty"`
-	WaitTimer int      `json:"wait_timer,omitempty"`
+	WaitTimer int      `json:"waitTimer,omitempty"`
 }
 
 // RunnerInfo represents information about a repository runner.
@@ -96,20 +96,20 @@ type WorkflowInfo struct {
 	State       string            `json:"state"`
 	Permissions map[string]string `json:"permissions,omitempty"`
 	Actions     []string          `json:"actions,omitempty"`
-	LastRun     time.Time         `json:"last_run"`
+	LastRun     time.Time         `json:"lastRun"`
 }
 
 // PolicyEnforcementResult represents the result of applying a policy.
 type PolicyEnforcementResult struct {
-	PolicyID         string                   `json:"policy_id"`
+	PolicyID         string                   `json:"policyId"`
 	Organization     string                   `json:"organization"`
 	Repository       string                   `json:"repository"`
 	Success          bool                     `json:"success"`
-	AppliedChanges   []PolicyChange           `json:"applied_changes"`
-	FailedChanges    []PolicyChange           `json:"failed_changes"`
-	ValidationResult []PolicyValidationResult `json:"validation_result"`
+	AppliedChanges   []PolicyChange           `json:"appliedChanges"`
+	FailedChanges    []PolicyChange           `json:"failedChanges"`
+	ValidationResult []PolicyValidationResult `json:"validationResult"`
 	Violations       []ActionsPolicyViolation `json:"violations,omitempty"`
-	ExecutionTime    time.Duration            `json:"execution_time"`
+	ExecutionTime    time.Duration            `json:"executionTime"`
 	Timestamp        time.Time                `json:"timestamp"`
 }
 
@@ -118,8 +118,8 @@ type PolicyChange struct {
 	Type     string      `json:"type"`
 	Target   string      `json:"target"`
 	Action   string      `json:"action"`
-	OldValue interface{} `json:"old_value,omitempty"`
-	NewValue interface{} `json:"new_value"`
+	OldValue interface{} `json:"oldValue,omitempty"`
+	NewValue interface{} `json:"newValue"`
 	Success  bool        `json:"success"`
 	Error    string      `json:"error,omitempty"`
 }
@@ -226,7 +226,7 @@ func (ape *ActionsPolicyEnforcer) ValidatePolicy(ctx context.Context, policy *Ac
 }
 
 // GetRepositoryActionsState retrieves the current Actions configuration state.
-func (ape *ActionsPolicyEnforcer) getRepositoryActionsState(ctx context.Context, organization, repository string) (*RepositoryActionsState, error) {
+func (ape *ActionsPolicyEnforcer) getRepositoryActionsState(_ context.Context, organization, repository string) (*RepositoryActionsState, error) {
 	// This would typically make GitHub API calls to get the current state
 	// For now, return a mock state structure
 	state := &RepositoryActionsState{
@@ -364,7 +364,7 @@ func (ape *ActionsPolicyEnforcer) applySecuritySettingChanges(ctx context.Contex
 }
 
 // applySecretPolicyChanges applies secret policy changes.
-func (ape *ActionsPolicyEnforcer) applySecretPolicyChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
+func (ape *ActionsPolicyEnforcer) applySecretPolicyChanges(_ context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	// This would implement secret policy enforcement
 	// For now, just log that we would apply secret policies
 	ape.logger.Info("Applying secret policy changes",
@@ -376,7 +376,7 @@ func (ape *ActionsPolicyEnforcer) applySecretPolicyChanges(ctx context.Context, 
 }
 
 // applyEnvironmentPolicyChanges applies environment policy changes.
-func (ape *ActionsPolicyEnforcer) applyEnvironmentPolicyChanges(ctx context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
+func (ape *ActionsPolicyEnforcer) applyEnvironmentPolicyChanges(_ context.Context, policy *ActionsPolicy, currentState *RepositoryActionsState, result *PolicyEnforcementResult) error {
 	// This would implement environment policy enforcement
 	// For now, just log that we would apply environment policies
 	ape.logger.Info("Applying environment policy changes",

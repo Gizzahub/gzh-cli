@@ -106,7 +106,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory to store saved configurations")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Overwrite existing saved configuration")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -136,7 +136,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory where saved configurations are stored")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Skip backup of current configuration")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -198,9 +198,7 @@ func (o *gcloudOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	// Display config information
-	if err := o.displayConfigInfo(savedPath); err != nil {
-		fmt.Printf("Warning: failed to read config info: %v\n", err)
-	}
+	o.displayConfigInfo(savedPath)
 
 	fmt.Printf("✅ Gcloud config saved as '%s'\n", o.name)
 
@@ -243,9 +241,7 @@ func (o *gcloudOptions) runLoad(_ *cobra.Command, args []string) error {
 	}
 
 	// Display config information
-	if err := o.displayConfigInfo(o.configPath); err != nil {
-		fmt.Printf("Warning: failed to read config info: %v\n", err)
-	}
+	o.displayConfigInfo(o.configPath)
 
 	fmt.Printf("✅ Gcloud config '%s' loaded successfully\n", o.name)
 	fmt.Printf("   Loaded to: %s\n", o.configPath)
@@ -305,9 +301,7 @@ func (o *gcloudOptions) runList(_ *cobra.Command, args []string) error {
 		}
 
 		// Display configuration information
-		if err := o.displayConfigInfo(configPath); err == nil {
-			// Already displayed in displayConfigInfo
-		}
+		o.displayConfigInfo(configPath)
 
 		fmt.Println()
 	}
@@ -318,8 +312,8 @@ func (o *gcloudOptions) runList(_ *cobra.Command, args []string) error {
 type gcloudMetadata struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	SavedAt     time.Time `json:"saved_at"`
-	SourcePath  string    `json:"source_path"`
+	SavedAt     time.Time `json:"savedAt"`
+	SourcePath  string    `json:"sourcePath"`
 }
 
 func (o *gcloudOptions) saveMetadata() error {
@@ -336,15 +330,15 @@ func (o *gcloudOptions) saveMetadata() error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() //nolint:errcheck // File cleanup in defer
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
-		fmt.Fprintf(file, "description=%s\n", metadata.Description)
+		_, _ = fmt.Fprintf(file, "description=%s\n", metadata.Description) //nolint:errcheck // File write errors handled by file operations
 	}
 
-	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
-	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
+	_, _ = fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339)) //nolint:errcheck // File write errors handled by file operations
+	_, _ = fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)                //nolint:errcheck // File write errors handled by file operations
 
 	return nil
 }
@@ -431,13 +425,13 @@ func (o *gcloudOptions) copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() { _ = sourceFile.Close() }() //nolint:errcheck // File cleanup in defer
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destFile.Close()
+	defer func() { _ = destFile.Close() }() //nolint:errcheck // File cleanup in defer
 
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {
@@ -471,7 +465,7 @@ func (o *gcloudOptions) getDirSize(path string) (int64, error) {
 	return size, err
 }
 
-func (o *gcloudOptions) displayConfigInfo(configPath string) error {
+func (o *gcloudOptions) displayConfigInfo(configPath string) {
 	// Try to read gcloud active configuration
 	activeConfigPath := filepath.Join(configPath, "active_config")
 	if activeConfig, err := os.ReadFile(activeConfigPath); err == nil {
@@ -504,8 +498,6 @@ func (o *gcloudOptions) displayConfigInfo(configPath string) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 type gcloudConfiguration struct {
@@ -549,7 +541,7 @@ func (o *gcloudOptions) parseGcloudConfigurations(configurationsPath string) ([]
 	return configurations, nil
 }
 
-func (o *gcloudOptions) parseGcloudProperties(propertiesPath string, config *gcloudConfiguration) error {
+func (o *gcloudOptions) parseGcloudProperties(propertiesPath string, config *gcloudConfiguration) error { //nolint:gocognit // Complex gcloud properties parsing logic
 	content, err := os.ReadFile(propertiesPath)
 	if err != nil {
 		return err

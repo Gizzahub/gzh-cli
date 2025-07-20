@@ -193,7 +193,7 @@ func newDockerNetworkDeleteCmd(dm *DockerNetworkManager) *cobra.Command {
 			if !force {
 				fmt.Printf("⚠️  Are you sure you want to delete profile '%s'? (y/N): ", profileName)
 				var response string
-				fmt.Scanln(&response)
+				_, _ = fmt.Scanln(&response) //nolint:errcheck // User input scanning
 				if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
 					fmt.Println("❌ Deletion cancelled.")
 					return nil
@@ -392,35 +392,35 @@ func createProfileInteractively(dm *DockerNetworkManager, profile *DockerNetwork
 	// Get description
 	if profile.Description == "" {
 		fmt.Print("Enter description (optional): ")
-		fmt.Scanln(&profile.Description)
+		_, _ = fmt.Scanln(&profile.Description) //nolint:errcheck // User input scanning
 	}
 
 	// Ask if user wants to add networks
 	fmt.Print("Add a network? (y/N): ")
 
 	var addNetwork string
-	fmt.Scanln(&addNetwork)
+	_, _ = fmt.Scanln(&addNetwork)
 
 	if strings.ToLower(addNetwork) == "y" || strings.ToLower(addNetwork) == "yes" {
 		for {
 			var networkName, driver, subnet, gateway string
 
 			fmt.Print("Network name: ")
-			fmt.Scanln(&networkName)
+			_, _ = fmt.Scanln(&networkName)
 
 			fmt.Print("Driver (bridge/overlay/macvlan) [bridge]: ")
-			fmt.Scanln(&driver)
+			_, _ = fmt.Scanln(&driver)
 
 			if driver == "" {
 				driver = "bridge"
 			}
 
 			fmt.Print("Subnet (optional, e.g., 172.20.0.0/16): ")
-			fmt.Scanln(&subnet)
+			_, _ = fmt.Scanln(&subnet)
 
 			if subnet != "" {
 				fmt.Print("Gateway (optional, e.g., 172.20.0.1): ")
-				fmt.Scanln(&gateway)
+				_, _ = fmt.Scanln(&gateway)
 			}
 
 			network := &DockerNetwork{
@@ -436,7 +436,7 @@ func createProfileInteractively(dm *DockerNetworkManager, profile *DockerNetwork
 			fmt.Print("Add another network? (y/N): ")
 
 			var another string
-			fmt.Scanln(&another)
+			_, _ = fmt.Scanln(&another)
 
 			if strings.ToLower(another) != "y" && strings.ToLower(another) != "yes" {
 				break
@@ -464,7 +464,7 @@ func printProfilesYAML(profiles []*DockerNetworkProfile) error {
 
 func printProfilesTable(profiles []*DockerNetworkProfile) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NAME\tDESCRIPTION\tNETWORKS\tCONTAINERS\tACTIVE\tCREATED")
+	_, _ = fmt.Fprintln(w, "NAME\tDESCRIPTION\tNETWORKS\tCONTAINERS\tACTIVE\tCREATED")
 
 	for _, profile := range profiles {
 		active := "No"
@@ -477,7 +477,7 @@ func printProfilesTable(profiles []*DockerNetworkProfile) error {
 			created = "-"
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%s\t%s\n",
 			profile.Name,
 			truncateString(profile.Description, 40),
 			len(profile.Networks),
@@ -536,13 +536,13 @@ func printProfileDetails(profile *DockerNetworkProfile) error {
 
 func printNetworksTable(networks []*DockerNetworkStatus) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NETWORK ID\tNAME\tDRIVER\tSCOPE\tCONTAINERS")
+	_, _ = fmt.Fprintln(w, "NETWORK ID\tNAME\tDRIVER\tSCOPE\tCONTAINERS")
 
 	for _, network := range networks {
 		networkID := truncateString(network.NetworkID, 12)
 		containerCount := strconv.Itoa(len(network.Containers))
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
 			networkID,
 			network.Name,
 			network.Driver,
@@ -550,19 +550,19 @@ func printNetworksTable(networks []*DockerNetworkStatus) {
 			containerCount)
 	}
 
-	w.Flush()
+	_ = w.Flush()
 }
 
 func printContainersTable(containers []*ContainerNetworkInfo) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "CONTAINER ID\tNAME\tIMAGE\tSTATE\tNETWORKS")
+	_, _ = fmt.Fprintln(w, "CONTAINER ID\tNAME\tIMAGE\tSTATE\tNETWORKS")
 
 	for _, container := range containers {
 		containerID := truncateString(container.ContainerID, 12)
 		image := truncateString(container.Image, 30)
 		networkCount := strconv.Itoa(len(container.Networks))
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
 			containerID,
 			container.Name,
 			image,
@@ -570,7 +570,7 @@ func printContainersTable(containers []*ContainerNetworkInfo) {
 			networkCount)
 	}
 
-	w.Flush()
+	_ = w.Flush()
 }
 
 func truncateString(s string, maxLen int) string {
@@ -655,7 +655,7 @@ func newContainerAddCmd(dm *DockerNetworkManager) *cobra.Command {
 	}
 
 	cmd.Flags().StringP("image", "i", "", "Container image (required)")
-	cmd.MarkFlagRequired("image")
+	_ = cmd.MarkFlagRequired("image")
 	cmd.Flags().StringSliceP("network", "n", []string{}, "Networks to connect to")
 	cmd.Flags().StringSliceP("port", "p", []string{}, "Port mappings (e.g., 80:80)")
 	cmd.Flags().StringSliceP("env", "e", []string{}, "Environment variables (e.g., KEY=value)")

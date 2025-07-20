@@ -41,27 +41,27 @@ type AutomationEngine struct {
 // AutomationEngineConfig holds configuration for the automation engine.
 type AutomationEngineConfig struct {
 	// Worker configuration
-	MaxWorkers       int           `json:"max_workers" yaml:"max_workers"`
-	EventBufferSize  int           `json:"event_buffer_size" yaml:"event_buffer_size"`
-	ExecutionTimeout time.Duration `json:"execution_timeout" yaml:"execution_timeout"`
+	MaxWorkers       int           `json:"maxWorkers" yaml:"maxWorkers"`
+	EventBufferSize  int           `json:"eventBufferSize" yaml:"eventBufferSize"`
+	ExecutionTimeout time.Duration `json:"executionTimeout" yaml:"executionTimeout"`
 
 	// Rate limiting
-	EventsPerSecond     int `json:"events_per_second" yaml:"events_per_second"`
-	ExecutionsPerMinute int `json:"executions_per_minute" yaml:"executions_per_minute"`
+	EventsPerSecond     int `json:"eventsPerSecond" yaml:"eventsPerSecond"`
+	ExecutionsPerMinute int `json:"executionsPerMinute" yaml:"executionsPerMinute"`
 
 	// Feature flags
-	EnableAsyncExecution bool `json:"enable_async_execution" yaml:"enable_async_execution"`
-	EnableRuleFiltering  bool `json:"enable_rule_filtering" yaml:"enable_rule_filtering"`
-	EnableMetrics        bool `json:"enable_metrics" yaml:"enable_metrics"`
+	EnableAsyncExecution bool `json:"enableAsyncExecution" yaml:"enableAsyncExecution"`
+	EnableRuleFiltering  bool `json:"enableRuleFiltering" yaml:"enableRuleFiltering"`
+	EnableMetrics        bool `json:"enableMetrics" yaml:"enableMetrics"`
 
 	// Error handling
-	MaxRetries         int     `json:"max_retries" yaml:"max_retries"`
-	RetryBackoffFactor float64 `json:"retry_backoff_factor" yaml:"retry_backoff_factor"`
-	ErrorThreshold     int     `json:"error_threshold" yaml:"error_threshold"`
+	MaxRetries         int     `json:"maxRetries" yaml:"maxRetries"`
+	RetryBackoffFactor float64 `json:"retryBackoffFactor" yaml:"retryBackoffFactor"`
+	ErrorThreshold     int     `json:"errorThreshold" yaml:"errorThreshold"`
 
 	// Filtering
-	ExcludedEventTypes []EventType `json:"excluded_event_types" yaml:"excluded_event_types"`
-	IncludedEventTypes []EventType `json:"included_event_types" yaml:"included_event_types"`
+	ExcludedEventTypes []EventType `json:"excludedEventTypes" yaml:"excludedEventTypes"`
+	IncludedEventTypes []EventType `json:"includedEventTypes" yaml:"includedEventTypes"`
 	Organizations      []string    `json:"organizations" yaml:"organizations"`
 }
 
@@ -78,15 +78,15 @@ type ExecutionTask struct {
 // EngineMetrics holds metrics for the automation engine.
 type EngineMetrics struct {
 	mu                    sync.RWMutex
-	EventsProcessed       int64                     `json:"events_processed"`
-	RulesEvaluated        int64                     `json:"rules_evaluated"`
-	RulesExecuted         int64                     `json:"rules_executed"`
-	ExecutionErrors       int64                     `json:"execution_errors"`
-	AverageExecutionTime  time.Duration             `json:"average_execution_time"`
-	EventTypeDistribution map[string]int64          `json:"event_type_distribution"`
-	ExecutionsByStatus    map[ExecutionStatus]int64 `json:"executions_by_status"`
-	LastProcessedEvent    time.Time                 `json:"last_processed_event"`
-	StartTime             time.Time                 `json:"start_time"`
+	EventsProcessed       int64                     `json:"eventsProcessed"`
+	RulesEvaluated        int64                     `json:"rulesEvaluated"`
+	RulesExecuted         int64                     `json:"rulesExecuted"`
+	ExecutionErrors       int64                     `json:"executionErrors"`
+	AverageExecutionTime  time.Duration             `json:"averageExecutionTime"`
+	EventTypeDistribution map[string]int64          `json:"eventTypeDistribution"`
+	ExecutionsByStatus    map[ExecutionStatus]int64 `json:"executionsByStatus"`
+	LastProcessedEvent    time.Time                 `json:"lastProcessedEvent"`
+	StartTime             time.Time                 `json:"startTime"`
 }
 
 // AutomationEventProcessor defines the interface for processing GitHub events in automation.

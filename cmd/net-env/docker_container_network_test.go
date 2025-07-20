@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package netenv
 
 import (
@@ -16,7 +17,9 @@ func TestContainerNetworkManagement(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "docker_container_network_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
 
 	logger, _ := zap.NewDevelopment()
 	dm := NewDockerNetworkManager(logger, tempDir)
@@ -418,7 +421,9 @@ func TestContainerNetworkCommandValidation(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_network_mode_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() {
+			_ = os.RemoveAll(tempDir)
+		}()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -445,7 +450,9 @@ func TestContainerNetworkCommandValidation(t *testing.T) {
 		tempDir, err := os.MkdirTemp("", "docker_isolation_test")
 		require.NoError(t, err)
 
-		defer os.RemoveAll(tempDir)
+		defer func() {
+			_ = os.RemoveAll(tempDir)
+		}()
 
 		logger, _ := zap.NewDevelopment()
 		dm := NewDockerNetworkManager(logger, tempDir)
@@ -562,7 +569,7 @@ func TestDockerCommandExecutorCaching(t *testing.T) {
 	for _, cmd := range nonCacheableCommands {
 		t.Run("NoCache_"+cmd, func(t *testing.T) {
 			// Execute command
-			executor.ExecuteWithTimeout(context.Background(), cmd, 5*time.Second)
+			_, _ = executor.ExecuteWithTimeout(context.Background(), cmd, 5*time.Second)
 
 			// Should not be cached
 			cachedResult := executor.getCachedResult(cmd)

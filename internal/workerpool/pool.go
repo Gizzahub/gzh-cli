@@ -165,7 +165,7 @@ func (p *Pool[T]) StopWithTimeout(timeout time.Duration) error {
 }
 
 // worker is the main worker goroutine.
-func (p *Pool[T]) worker(id int) {
+func (p *Pool[T]) worker(_ int) {
 	defer p.wg.Done()
 
 	for job := range p.jobs {

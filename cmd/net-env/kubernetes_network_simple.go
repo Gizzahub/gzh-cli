@@ -85,105 +85,74 @@ func (km *KubernetesNetworkManager) GenerateNetworkPolicy(namespace string, conf
 
 	// Convert ingress rules
 	for _, ingressRule := range config.Ingress {
-		rule := NetworkPolicyIngressSpec{}
-
-		// Convert peers
-		for _, peer := range ingressRule.From {
-			policyPeer := NetworkPolicyPeerSpec{}
-
-			if len(peer.PodSelector) > 0 {
-				policyPeer.PodSelector = &LabelSelector{
-					MatchLabels: peer.PodSelector,
-				}
-			}
-
-			if len(peer.NamespaceSelector) > 0 {
-				policyPeer.NamespaceSelector = &LabelSelector{
-					MatchLabels: peer.NamespaceSelector,
-				}
-			}
-
-			if peer.IPBlock != nil {
-				policyPeer.IPBlock = &IPBlockSpec{
-					CIDR:   peer.IPBlock.CIDR,
-					Except: peer.IPBlock.Except,
-				}
-			}
-
-			rule.From = append(rule.From, policyPeer)
+		rule := NetworkPolicyIngressSpec{
+			From:  km.convertNetworkPolicyPeers(ingressRule.From),
+			Ports: km.convertNetworkPolicyPorts(ingressRule.Ports),
 		}
-
-		// Convert ports
-		for _, port := range ingressRule.Ports {
-			policyPort := NetworkPolicyPortSpec{
-				Protocol: port.Protocol,
-			}
-
-			if port.Port != nil {
-				policyPort.Port = *port.Port
-			}
-
-			if port.EndPort != nil {
-				policyPort.EndPort = port.EndPort
-			}
-
-			rule.Ports = append(rule.Ports, policyPort)
-		}
-
 		policy.Spec.Ingress = append(policy.Spec.Ingress, rule)
 	}
 
 	// Convert egress rules
 	for _, egressRule := range config.Egress {
-		rule := NetworkPolicyEgressSpec{}
-
-		// Convert peers
-		for _, peer := range egressRule.To {
-			policyPeer := NetworkPolicyPeerSpec{}
-
-			if len(peer.PodSelector) > 0 {
-				policyPeer.PodSelector = &LabelSelector{
-					MatchLabels: peer.PodSelector,
-				}
-			}
-
-			if len(peer.NamespaceSelector) > 0 {
-				policyPeer.NamespaceSelector = &LabelSelector{
-					MatchLabels: peer.NamespaceSelector,
-				}
-			}
-
-			if peer.IPBlock != nil {
-				policyPeer.IPBlock = &IPBlockSpec{
-					CIDR:   peer.IPBlock.CIDR,
-					Except: peer.IPBlock.Except,
-				}
-			}
-
-			rule.To = append(rule.To, policyPeer)
+		rule := NetworkPolicyEgressSpec{
+			To:    km.convertNetworkPolicyPeers(egressRule.To),
+			Ports: km.convertNetworkPolicyPorts(egressRule.Ports),
 		}
-
-		// Convert ports
-		for _, port := range egressRule.Ports {
-			policyPort := NetworkPolicyPortSpec{
-				Protocol: port.Protocol,
-			}
-
-			if port.Port != nil {
-				policyPort.Port = *port.Port
-			}
-
-			if port.EndPort != nil {
-				policyPort.EndPort = port.EndPort
-			}
-
-			rule.Ports = append(rule.Ports, policyPort)
-		}
-
 		policy.Spec.Egress = append(policy.Spec.Egress, rule)
 	}
 
 	return policy, nil
+}
+
+// convertNetworkPolicyPeers converts configuration peers to manifest format.
+func (km *KubernetesNetworkManager) convertNetworkPolicyPeers(peers []NetworkPolicyPeer) []NetworkPolicyPeerSpec {
+	result := make([]NetworkPolicyPeerSpec, 0, len(peers))
+	for _, peer := range peers {
+		policyPeer := NetworkPolicyPeerSpec{}
+
+		if len(peer.PodSelector) > 0 {
+			policyPeer.PodSelector = &LabelSelector{
+				MatchLabels: peer.PodSelector,
+			}
+		}
+
+		if len(peer.NamespaceSelector) > 0 {
+			policyPeer.NamespaceSelector = &LabelSelector{
+				MatchLabels: peer.NamespaceSelector,
+			}
+		}
+
+		if peer.IPBlock != nil {
+			policyPeer.IPBlock = &IPBlockSpec{
+				CIDR:   peer.IPBlock.CIDR,
+				Except: peer.IPBlock.Except,
+			}
+		}
+
+		result = append(result, policyPeer)
+	}
+	return result
+}
+
+// convertNetworkPolicyPorts converts configuration ports to manifest format.
+func (km *KubernetesNetworkManager) convertNetworkPolicyPorts(ports []NetworkPolicyPort) []NetworkPolicyPortSpec {
+	result := make([]NetworkPolicyPortSpec, 0, len(ports))
+	for _, port := range ports {
+		policyPort := NetworkPolicyPortSpec{
+			Protocol: port.Protocol,
+		}
+
+		if port.Port != nil {
+			policyPort.Port = *port.Port
+		}
+
+		if port.EndPort != nil {
+			policyPort.EndPort = port.EndPort
+		}
+
+		result = append(result, policyPort)
+	}
+	return result
 }
 
 // // ExecuteWithTimeout executes a kubectl command with timeout
@@ -269,6 +238,22 @@ func (km *KubernetesNetworkManager) ExportNamespacePolicies(namespace, profileNa
 		return fmt.Errorf("failed to get namespace policies: %w", err)
 	}
 
+	profile := km.createNetworkProfile(namespace, profileName, len(policies))
+
+	// Convert Kubernetes NetworkPolicies to our config format
+	for _, policyData := range policies {
+		config, err := km.convertPolicyToConfig(policyData)
+		if err != nil {
+			continue // Skip invalid policies
+		}
+		profile.Policies[config.Name] = config
+	}
+
+	return km.CreateProfile(profile)
+}
+
+// createNetworkProfile creates a new network profile with basic metadata.
+func (km *KubernetesNetworkManager) createNetworkProfile(namespace, profileName string, policyCount int) *KubernetesNetworkProfile {
 	profile := &KubernetesNetworkProfile{
 		Name:        profileName,
 		Description: fmt.Sprintf("Exported from namespace %s", namespace),
@@ -277,133 +262,216 @@ func (km *KubernetesNetworkManager) ExportNamespacePolicies(namespace, profileNa
 		Metadata:    make(map[string]string),
 	}
 
-	// Convert Kubernetes NetworkPolicies to our config format
-	for _, policyData := range policies {
-		metadata, _ := policyData["metadata"].(map[string]interface{})
-		name, _ := metadata["name"].(string)
+	profile.Metadata["exported_at"] = time.Now().Format(time.RFC3339)
+	profile.Metadata["total_policies"] = fmt.Sprintf("%d", policyCount)
 
-		spec, _ := policyData["spec"].(map[string]interface{})
+	return profile
+}
 
-		config := &NetworkPolicyConfig{
-			Name:        name,
-			PolicyTypes: make([]string, 0),
-		}
-
-		// Extract pod selector
-		if podSelector, ok := spec["podSelector"].(map[string]interface{}); ok {
-			if matchLabels, ok := podSelector["matchLabels"].(map[string]interface{}); ok {
-				config.PodSelector = make(map[string]string)
-				for k, v := range matchLabels {
-					config.PodSelector[k] = fmt.Sprintf("%v", v)
-				}
-			}
-		}
-
-		// Extract policy types
-		if policyTypes, ok := spec["policyTypes"].([]interface{}); ok {
-			for _, pt := range policyTypes {
-				if policyType, ok := pt.(string); ok {
-					config.PolicyTypes = append(config.PolicyTypes, policyType)
-				}
-			}
-		}
-
-		// Extract ingress rules
-		if ingressRules, ok := spec["ingress"].([]interface{}); ok {
-			config.Ingress = make([]NetworkPolicyIngressRule, 0)
-
-			for _, rule := range ingressRules {
-				if ruleMap, ok := rule.(map[string]interface{}); ok {
-					ingressRule := NetworkPolicyIngressRule{}
-
-					// Extract from peers
-					if fromPeers, ok := ruleMap["from"].([]interface{}); ok {
-						for _, peer := range fromPeers {
-							if peerMap, ok := peer.(map[string]interface{}); ok {
-								networkPeer := NetworkPolicyPeer{}
-
-								// Pod selector
-								if ps, ok := peerMap["podSelector"].(map[string]interface{}); ok {
-									if matchLabels, ok := ps["matchLabels"].(map[string]interface{}); ok {
-										networkPeer.PodSelector = make(map[string]string)
-										for k, v := range matchLabels {
-											networkPeer.PodSelector[k] = fmt.Sprintf("%v", v)
-										}
-									}
-								}
-
-								// Namespace selector
-								if ns, ok := peerMap["namespaceSelector"].(map[string]interface{}); ok {
-									if matchLabels, ok := ns["matchLabels"].(map[string]interface{}); ok {
-										networkPeer.NamespaceSelector = make(map[string]string)
-										for k, v := range matchLabels {
-											networkPeer.NamespaceSelector[k] = fmt.Sprintf("%v", v)
-										}
-									}
-								}
-
-								// IP block
-								if ipBlock, ok := peerMap["ipBlock"].(map[string]interface{}); ok {
-									networkPeer.IPBlock = &IPBlock{}
-									if cidr, ok := ipBlock["cidr"].(string); ok {
-										networkPeer.IPBlock.CIDR = cidr
-									}
-
-									if except, ok := ipBlock["except"].([]interface{}); ok {
-										for _, e := range except {
-											if exceptCIDR, ok := e.(string); ok {
-												networkPeer.IPBlock.Except = append(networkPeer.IPBlock.Except, exceptCIDR)
-											}
-										}
-									}
-								}
-
-								ingressRule.From = append(ingressRule.From, networkPeer)
-							}
-						}
-					}
-
-					// Extract ports
-					if ports, ok := ruleMap["ports"].([]interface{}); ok {
-						for _, port := range ports {
-							if portMap, ok := port.(map[string]interface{}); ok {
-								networkPort := NetworkPolicyPort{}
-
-								if protocol, ok := portMap["protocol"].(string); ok {
-									networkPort.Protocol = protocol
-								}
-
-								if portNum, ok := portMap["port"].(float64); ok {
-									p := int32(portNum)
-									networkPort.Port = &p
-								}
-
-								if endPort, ok := portMap["endPort"].(float64); ok {
-									ep := int32(endPort)
-									networkPort.EndPort = &ep
-								}
-
-								ingressRule.Ports = append(ingressRule.Ports, networkPort)
-							}
-						}
-					}
-
-					config.Ingress = append(config.Ingress, ingressRule)
-				}
-			}
-		}
-
-		// Extract egress rules (similar to ingress)
-		if _, ok := spec["egress"].([]interface{}); ok {
-			config.Egress = make([]NetworkPolicyEgressRule, 0)
-			// Similar parsing logic as ingress
-		}
-
-		profile.Policies[name] = config
+// convertPolicyToConfig converts a Kubernetes NetworkPolicy to our internal config format.
+func (km *KubernetesNetworkManager) convertPolicyToConfig(policyData map[string]interface{}) (*NetworkPolicyConfig, error) {
+	metadata, ok := policyData["metadata"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid metadata")
 	}
 
-	profile.Metadata["exported_at"] = time.Now().Format(time.RFC3339)
-	profile.Metadata["total_policies"] = fmt.Sprintf("%d", len(policies))
+	name, ok := metadata["name"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid policy name")
+	}
 
-	return km.CreateProfile(profile)
+	spec, ok := policyData["spec"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid policy spec")
+	}
+
+	config := &NetworkPolicyConfig{
+		Name:        name,
+		PolicyTypes: make([]string, 0),
+	}
+
+	// Extract pod selector
+	km.extractPodSelector(spec, config)
+
+	// Extract policy types
+	km.extractPolicyTypes(spec, config)
+
+	// Extract ingress rules
+	km.extractIngressRules(spec, config)
+
+	// Extract egress rules
+	km.extractEgressRules(spec, config)
+
+	return config, nil
+}
+
+// extractPodSelector extracts pod selector from policy spec.
+func (km *KubernetesNetworkManager) extractPodSelector(spec map[string]interface{}, config *NetworkPolicyConfig) {
+	if podSelector, ok := spec["podSelector"].(map[string]interface{}); ok {
+		config.PodSelector = km.extractMatchLabels(podSelector)
+	}
+}
+
+// extractPolicyTypes extracts policy types from policy spec.
+func (km *KubernetesNetworkManager) extractPolicyTypes(spec map[string]interface{}, config *NetworkPolicyConfig) {
+	if policyTypes, ok := spec["policyTypes"].([]interface{}); ok {
+		for _, pt := range policyTypes {
+			if policyType, ok := pt.(string); ok {
+				config.PolicyTypes = append(config.PolicyTypes, policyType)
+			}
+		}
+	}
+}
+
+// extractIngressRules extracts ingress rules from policy spec.
+func (km *KubernetesNetworkManager) extractIngressRules(spec map[string]interface{}, config *NetworkPolicyConfig) {
+	if ingressRules, ok := spec["ingress"].([]interface{}); ok {
+		config.Ingress = make([]NetworkPolicyIngressRule, 0)
+		for _, rule := range ingressRules {
+			if ruleMap, ok := rule.(map[string]interface{}); ok {
+				ingressRule := km.parseIngressRule(ruleMap)
+				config.Ingress = append(config.Ingress, ingressRule)
+			}
+		}
+	}
+}
+
+// extractEgressRules extracts egress rules from policy spec.
+func (km *KubernetesNetworkManager) extractEgressRules(spec map[string]interface{}, config *NetworkPolicyConfig) {
+	if egressRules, ok := spec["egress"].([]interface{}); ok {
+		config.Egress = make([]NetworkPolicyEgressRule, 0)
+		for _, rule := range egressRules {
+			if ruleMap, ok := rule.(map[string]interface{}); ok {
+				egressRule := km.parseEgressRule(ruleMap)
+				config.Egress = append(config.Egress, egressRule)
+			}
+		}
+	}
+}
+
+// parseIngressRule parses a single ingress rule from rule map.
+func (km *KubernetesNetworkManager) parseIngressRule(ruleMap map[string]interface{}) NetworkPolicyIngressRule {
+	ingressRule := NetworkPolicyIngressRule{}
+
+	// Extract from peers
+	if fromPeers, ok := ruleMap["from"].([]interface{}); ok {
+		for _, peer := range fromPeers {
+			if peerMap, ok := peer.(map[string]interface{}); ok {
+				networkPeer := km.parseNetworkPeer(peerMap)
+				ingressRule.From = append(ingressRule.From, networkPeer)
+			}
+		}
+	}
+
+	// Extract ports
+	if ports, ok := ruleMap["ports"].([]interface{}); ok {
+		ingressRule.Ports = km.parseNetworkPorts(ports)
+	}
+
+	return ingressRule
+}
+
+// parseEgressRule parses a single egress rule from rule map.
+func (km *KubernetesNetworkManager) parseEgressRule(ruleMap map[string]interface{}) NetworkPolicyEgressRule {
+	egressRule := NetworkPolicyEgressRule{}
+
+	// Extract to peers
+	if toPeers, ok := ruleMap["to"].([]interface{}); ok {
+		for _, peer := range toPeers {
+			if peerMap, ok := peer.(map[string]interface{}); ok {
+				networkPeer := km.parseNetworkPeer(peerMap)
+				egressRule.To = append(egressRule.To, networkPeer)
+			}
+		}
+	}
+
+	// Extract ports
+	if ports, ok := ruleMap["ports"].([]interface{}); ok {
+		egressRule.Ports = km.parseNetworkPorts(ports)
+	}
+
+	return egressRule
+}
+
+// parseNetworkPeer parses a network peer from peer map.
+func (km *KubernetesNetworkManager) parseNetworkPeer(peerMap map[string]interface{}) NetworkPolicyPeer {
+	networkPeer := NetworkPolicyPeer{}
+
+	// Pod selector
+	if ps, ok := peerMap["podSelector"].(map[string]interface{}); ok {
+		networkPeer.PodSelector = km.extractMatchLabels(ps)
+	}
+
+	// Namespace selector
+	if ns, ok := peerMap["namespaceSelector"].(map[string]interface{}); ok {
+		networkPeer.NamespaceSelector = km.extractMatchLabels(ns)
+	}
+
+	// IP block
+	if ipBlock, ok := peerMap["ipBlock"].(map[string]interface{}); ok {
+		networkPeer.IPBlock = km.parseIPBlock(ipBlock)
+	}
+
+	return networkPeer
+}
+
+// parseIPBlock parses an IP block from ipBlock map.
+func (km *KubernetesNetworkManager) parseIPBlock(ipBlock map[string]interface{}) *IPBlock {
+	block := &IPBlock{}
+
+	if cidr, ok := ipBlock["cidr"].(string); ok {
+		block.CIDR = cidr
+	}
+
+	if except, ok := ipBlock["except"].([]interface{}); ok {
+		for _, e := range except {
+			if exceptCIDR, ok := e.(string); ok {
+				block.Except = append(block.Except, exceptCIDR)
+			}
+		}
+	}
+
+	return block
+}
+
+// parseNetworkPorts parses network ports from ports interface slice.
+func (km *KubernetesNetworkManager) parseNetworkPorts(ports []interface{}) []NetworkPolicyPort {
+	var networkPorts []NetworkPolicyPort
+
+	for _, port := range ports {
+		if portMap, ok := port.(map[string]interface{}); ok {
+			networkPort := NetworkPolicyPort{}
+
+			if protocol, ok := portMap["protocol"].(string); ok {
+				networkPort.Protocol = protocol
+			}
+
+			if portNum, ok := portMap["port"].(float64); ok {
+				p := int32(portNum)
+				networkPort.Port = &p
+			}
+
+			if endPort, ok := portMap["endPort"].(float64); ok {
+				ep := int32(endPort)
+				networkPort.EndPort = &ep
+			}
+
+			networkPorts = append(networkPorts, networkPort)
+		}
+	}
+
+	return networkPorts
+}
+
+// extractMatchLabels extracts match labels from a selector map.
+func (km *KubernetesNetworkManager) extractMatchLabels(selector map[string]interface{}) map[string]string {
+	labels := make(map[string]string)
+
+	if matchLabels, ok := selector["matchLabels"].(map[string]interface{}); ok {
+		for k, v := range matchLabels {
+			labels[k] = fmt.Sprintf("%v", v)
+		}
+	}
+
+	return labels
 }

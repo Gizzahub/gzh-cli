@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package api
 
 import (
@@ -17,7 +18,7 @@ func TestRequestDeduplicator(t *testing.T) {
 
 	t.Run("Basic deduplication", func(t *testing.T) {
 		callCount := 0
-		testFunc := func(ctx context.Context) (interface{}, error) {
+		testFunc := func(_ context.Context) (interface{}, error) {
 			callCount++
 
 			time.Sleep(10 * time.Millisecond) // Simulate API call
@@ -48,7 +49,7 @@ func TestRequestDeduplicator(t *testing.T) {
 
 		var mu sync.Mutex
 
-		testFunc := func(ctx context.Context) (interface{}, error) {
+		testFunc := func(_ context.Context) (interface{}, error) {
 			mu.Lock()
 
 			callCount++
@@ -104,7 +105,7 @@ func TestRequestDeduplicator(t *testing.T) {
 		defer shortTTL.Close()
 
 		callCount := 0
-		testFunc := func(ctx context.Context) (interface{}, error) {
+		testFunc := func(_ context.Context) (interface{}, error) {
 			callCount++
 			return fmt.Sprintf("result-%d", callCount), nil
 		}
@@ -144,7 +145,7 @@ func TestBatchProcessor(t *testing.T) {
 
 		var mu sync.Mutex
 
-		batchFunc := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
+		batchFunc := func(_ context.Context, requests []*BatchRequest) []BatchResponse {
 			mu.Lock()
 
 			processedBatches = append(processedBatches, len(requests))
@@ -230,7 +231,7 @@ func TestBatchProcessor(t *testing.T) {
 
 		var mu sync.Mutex
 
-		batchFunc := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
+		batchFunc := func(_ context.Context, requests []*BatchRequest) []BatchResponse {
 			mu.Lock()
 
 			processed = true
@@ -357,7 +358,7 @@ func TestOptimizationManager(t *testing.T) {
 
 	t.Run("Request execution with optimizations", func(t *testing.T) {
 		callCount := 0
-		testExecutor := func(ctx context.Context) (interface{}, error) {
+		testExecutor := func(_ context.Context) (interface{}, error) {
 			callCount++
 
 			time.Sleep(10 * time.Millisecond)
@@ -392,7 +393,7 @@ func TestOptimizationManager(t *testing.T) {
 	})
 
 	t.Run("Batch execution", func(t *testing.T) {
-		batchProcessor := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
+		batchProcessor := func(_ context.Context, requests []*BatchRequest) []BatchResponse {
 			responses := make([]BatchResponse, len(requests))
 			for i, req := range requests {
 				data, ok := req.Data.(map[string]string)
@@ -459,7 +460,7 @@ func TestRepositoryBatchProcessor(t *testing.T) {
 	defer processor.Stop()
 
 	t.Run("Batch default branches", func(t *testing.T) {
-		batchFunc := func(ctx context.Context, requests []*BatchRequest) []BatchResponse {
+		batchFunc := func(_ context.Context, requests []*BatchRequest) []BatchResponse {
 			responses := make([]BatchResponse, len(requests))
 			for i, req := range requests {
 				_, ok := req.Data.(map[string]string) // Check type but don't use data
@@ -495,7 +496,7 @@ func BenchmarkDeduplication(b *testing.B) {
 	deduplicator := NewRequestDeduplicator(time.Minute)
 	defer deduplicator.Close()
 
-	testFunc := func(ctx context.Context) (interface{}, error) {
+	testFunc := func(_ context.Context) (interface{}, error) {
 		time.Sleep(time.Microsecond) // Simulate minimal work
 		return "result", nil
 	}

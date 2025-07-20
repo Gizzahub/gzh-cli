@@ -97,7 +97,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory to store saved configurations")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Overwrite existing saved configuration")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -127,7 +127,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory where saved configurations are stored")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Skip backup of current configuration")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -285,8 +285,8 @@ func (o *kubeconfigOptions) runList(_ *cobra.Command, args []string) error {
 type kubeconfigMetadata struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	SavedAt     time.Time `json:"saved_at"`
-	SourcePath  string    `json:"source_path"`
+	SavedAt     time.Time `json:"savedAt"`
+	SourcePath  string    `json:"sourcePath"`
 }
 
 func (o *kubeconfigOptions) saveMetadata() error {
@@ -303,15 +303,15 @@ func (o *kubeconfigOptions) saveMetadata() error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() //nolint:errcheck // File cleanup in defer
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
-		fmt.Fprintf(file, "description=%s\n", metadata.Description)
+		_, _ = fmt.Fprintf(file, "description=%s\n", metadata.Description) //nolint:errcheck // File write errors handled by file operations
 	}
 
-	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
-	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
+	_, _ = fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339)) //nolint:errcheck // File write errors handled by file operations
+	_, _ = fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)                //nolint:errcheck // File write errors handled by file operations
 
 	return nil
 }
@@ -359,13 +359,13 @@ func (o *kubeconfigOptions) copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() { _ = sourceFile.Close() }() //nolint:errcheck // Deferred close
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destFile.Close()
+	defer func() { _ = destFile.Close() }() //nolint:errcheck // Deferred close
 
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {

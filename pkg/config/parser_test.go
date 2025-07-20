@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package config
 
 import (
@@ -30,10 +31,10 @@ providers:
         visibility: "public"
 `,
 			setup: func() {
-				os.Setenv("TEST_TOKEN", "test-token-value")
+				_ = os.Setenv("TEST_TOKEN", "test-token-value") // Ignore error
 			},
 			cleanup: func() {
-				os.Unsetenv("TEST_TOKEN")
+				_ = os.Unsetenv("TEST_TOKEN") // Ignore error
 			},
 			wantErr: false,
 		},
@@ -115,8 +116,8 @@ func TestExpandEnvironmentVariables(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envVar != "" {
-				os.Setenv(tt.envVar, tt.envValue)
-				defer os.Unsetenv(tt.envVar)
+				_ = os.Setenv(tt.envVar, tt.envValue)         // Ignore error
+				defer func() { _ = os.Unsetenv(tt.envVar) }() // Ignore error
 			}
 
 			result := ExpandEnvironmentVariables(tt.input)
@@ -159,8 +160,8 @@ func TestProcessDefaultValues(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envVar != "" {
-				os.Setenv(tt.envVar, tt.envValue)
-				defer os.Unsetenv(tt.envVar)
+				_ = os.Setenv(tt.envVar, tt.envValue)         // Ignore error
+				defer func() { _ = os.Unsetenv(tt.envVar) }() // Ignore error
 			}
 
 			result := processDefaultValues(tt.input)
@@ -184,15 +185,15 @@ providers:
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
 	require.NoError(t, err)
 
-	defer os.Remove(tmpFile.Name())
+	defer func() { _ = os.Remove(tmpFile.Name()) }() // Ignore cleanup error
 
 	_, err = tmpFile.WriteString(content)
 	require.NoError(t, err)
-	tmpFile.Close()
+	_ = tmpFile.Close() // Ignore close error
 
 	// Set environment variable
-	os.Setenv("GITHUB_TOKEN", "test-token")
-	defer os.Unsetenv("GITHUB_TOKEN")
+	_ = os.Setenv("GITHUB_TOKEN", "test-token")        // Ignore error
+	defer func() { _ = os.Unsetenv("GITHUB_TOKEN") }() // Ignore error
 
 	config, err := ParseYAMLFile(tmpFile.Name())
 	assert.NoError(t, err)
@@ -356,8 +357,8 @@ func TestEnvironmentVariableExpansion_EdgeCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Set up environment variables
 			for key, value := range tt.envVars {
-				os.Setenv(key, value)
-				defer os.Unsetenv(key)
+				_ = os.Setenv(key, value)               // Ignore error
+				defer func() { _ = os.Unsetenv(key) }() // Ignore error
 			}
 
 			result := ExpandEnvironmentVariables(tt.input)

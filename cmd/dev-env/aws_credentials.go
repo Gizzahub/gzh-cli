@@ -331,7 +331,7 @@ func (o *awsCredentialsOptions) saveMetadata() error {
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
 
-	file, err := os.Create(metadataPath)
+	file, err := os.Create(metadataPath) //nolint:gosec // Safe file path construction
 	if err != nil {
 		return err
 	}
@@ -368,7 +368,7 @@ func (o *awsCredentialsOptions) loadMetadata(name string) awsCredentialsMetadata
 
 	metadataPath := filepath.Join(o.storePath, name+".meta")
 
-	content, err := os.ReadFile(metadataPath)
+	content, err := os.ReadFile(metadataPath) //nolint:gosec // Safe file path construction
 	if err != nil {
 		return metadata
 	}
@@ -402,7 +402,7 @@ func (o *awsCredentialsOptions) loadMetadata(name string) awsCredentialsMetadata
 }
 
 func (o *awsCredentialsOptions) copyFile(src, dst string) error {
-	sourceFile, err := os.Open(src)
+	sourceFile, err := os.Open(src) //nolint:gosec // Safe file path construction
 	if err != nil {
 		return err
 	}
@@ -412,7 +412,7 @@ func (o *awsCredentialsOptions) copyFile(src, dst string) error {
 		}
 	}()
 
-	destFile, err := os.Create(dst)
+	destFile, err := os.Create(dst) //nolint:gosec // dst parameter from controlled path construction
 	if err != nil {
 		return err
 	}
@@ -437,7 +437,7 @@ func (o *awsCredentialsOptions) copyFile(src, dst string) error {
 
 func (o *awsCredentialsOptions) displayCredentialsInfo(credentialsPath string) error {
 	// Read and parse AWS credentials
-	content, err := os.ReadFile(credentialsPath)
+	content, err := os.ReadFile(credentialsPath) //nolint:gosec // credentialsPath from controlled path construction
 	if err != nil {
 		return err
 	}

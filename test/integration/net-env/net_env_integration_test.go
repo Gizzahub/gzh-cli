@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package netenv_integration
 
 import (
@@ -25,7 +26,7 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 
 	t.Run("InitializeNetworkProfiles", func(t *testing.T) {
 		// Test gz net-env switch --init
-		cmd := exec.Command("gz", "net-env", "switch", "--init", "--config", configPath)
+		cmd := exec.Command("gz", "net-env", "switch", "--init", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
@@ -44,13 +45,13 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 
 	t.Run("ListNetworkProfiles", func(t *testing.T) {
 		// Test gz net-env switch --list
-		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
+		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing config parsing: %v", err)
 			// Test that we can read the config file
-			content, err := os.ReadFile(configPath)
+			content, err := os.ReadFile(configPath) //nolint:gosec // Test file from controlled temp directory //nolint:gosec // Test file from controlled temp directory
 			require.NoError(t, err)
 			assert.Contains(t, string(content), "profiles:")
 			assert.Contains(t, string(content), "home")
@@ -86,13 +87,13 @@ func TestNetEnvCLIIntegration(t *testing.T) {
 
 	t.Run("DryRunNetworkSwitch", func(t *testing.T) {
 		// Test gz net-env switch home --dry-run
-		cmd := exec.Command("gz", "net-env", "switch", "home", "--dry-run", "--config", configPath)
+		cmd := exec.Command("gz", "net-env", "switch", "home", "--dry-run", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing dry-run simulation: %v", err)
 			// Verify we have a valid config for dry-run testing
-			content, err := os.ReadFile(configPath)
+			content, err := os.ReadFile(configPath) //nolint:gosec // Test file from controlled temp directory
 			require.NoError(t, err)
 			assert.Contains(t, string(content), `name: "home"`)
 		} else {
@@ -160,13 +161,13 @@ profiles:
 		require.NoError(t, err, "Should write custom config")
 
 		// Test listing custom profiles
-		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
+		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing config validation: %v", err)
 			// Verify the config is valid YAML
-			content, err := os.ReadFile(configPath)
+			content, err := os.ReadFile(configPath) //nolint:gosec // Test file from controlled temp directory
 			require.NoError(t, err)
 			assert.Contains(t, string(content), "custom")
 			assert.Contains(t, string(content), "test-office")
@@ -184,13 +185,13 @@ profiles:
 		profiles := []string{"custom", "test-office"}
 
 		for _, profile := range profiles {
-			cmd := exec.Command("gz", "net-env", "switch", profile, "--dry-run", "--verbose", "--config", configPath)
+			cmd := exec.Command("gz", "net-env", "switch", profile, "--dry-run", "--verbose", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				t.Logf("gz binary not available for profile %s, simulating switch: %v", profile, err)
 				// Verify profile exists in config
-				content, err := os.ReadFile(configPath)
+				content, err := os.ReadFile(configPath) //nolint:gosec // Test file from controlled temp directory //nolint:gosec // Test file from controlled temp directory
 				require.NoError(t, err)
 				assert.Contains(t, string(content), `name: "`+profile+`"`)
 			} else {
@@ -288,13 +289,13 @@ profiles:
 			require.NoError(t, err)
 
 			// Test dry-run switch
-			cmd := exec.Command("gz", "net-env", "switch", scenario.profile, "--dry-run", "--config", configPath)
+			cmd := exec.Command("gz", "net-env", "switch", scenario.profile, "--dry-run", "--config", configPath) //nolint:gosec // Integration test with controlled arguments
 
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				t.Logf("gz binary not available for scenario %s, validating config: %v", scenario.name, err)
 				// Validate the configuration is properly formatted
-				content, err := os.ReadFile(configPath)
+				content, err := os.ReadFile(configPath) //nolint:gosec // Test file from controlled temp directory //nolint:gosec // Test file from controlled temp directory
 				require.NoError(t, err)
 				assert.Contains(t, string(content), scenario.profile)
 				assert.Contains(t, string(content), "profiles:")
@@ -336,13 +337,13 @@ profiles:
 		require.NoError(t, err)
 
 		// Test that valid config works
-		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
+		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 		_, err = cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("gz binary not available, testing config parsing: %v", err)
 			// Validate YAML can be parsed
-			content, err := os.ReadFile(configPath)
+			content, err := os.ReadFile(configPath) //nolint:gosec // Test file from controlled temp directory
 			require.NoError(t, err)
 			assert.Contains(t, string(content), "profiles:")
 			assert.Contains(t, string(content), "home")
@@ -367,7 +368,7 @@ profiles:
 		require.NoError(t, err)
 
 		// Test that invalid config is handled gracefully
-		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath)
+		cmd := exec.Command("gz", "net-env", "switch", "--list", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
@@ -434,7 +435,7 @@ func TestConcurrentOperations(t *testing.T) {
 		results := make(chan error, numGoroutines*numIterations)
 
 		for i := 0; i < numGoroutines; i++ {
-			go func(goroutineID int) {
+			go func(_ int) {
 				for j := 0; j < numIterations; j++ {
 					cmd := exec.CommandContext(ctx, "gz", "net-env", "status")
 
@@ -565,7 +566,7 @@ func TestPerformanceCharacteristics(t *testing.T) {
 	t.Run("SwitchCommandPerformance", func(t *testing.T) {
 		start := time.Now()
 
-		cmd := exec.Command("gz", "net-env", "switch", "home", "--dry-run", "--config", configPath)
+		cmd := exec.Command("gz", "net-env", "switch", "home", "--dry-run", "--config", configPath) //nolint:gosec // Controlled test environment with hardcoded binary
 
 		var stdout, stderr bytes.Buffer
 

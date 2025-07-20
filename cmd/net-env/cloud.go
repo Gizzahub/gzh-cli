@@ -52,7 +52,7 @@ This command allows you to:
 }
 
 // newCloudListCmd creates the list subcommand.
-func newCloudListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudListCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Large command builder - requires architectural refactoring
 	var (
 		showProfiles  bool
 		showProviders bool
@@ -137,7 +137,7 @@ func newCloudListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 }
 
 // newCloudShowCmd creates the show subcommand.
-func newCloudShowCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudShowCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex cloud show command with multiple display options
 	cmd := &cobra.Command{
 		Use:   "show [profile]",
 		Short: "Show detailed profile information",
@@ -247,7 +247,7 @@ func newCloudShowCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 }
 
 // newCloudSwitchCmd creates the switch subcommand.
-func newCloudSwitchCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudSwitchCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Large command builder - requires architectural refactoring
 	var (
 		dryRun      bool
 		applyPolicy bool
@@ -348,8 +348,12 @@ This command will:
 				if profile.Network.Proxy.HTTPS != "" {
 					fmt.Printf("  Setting HTTPS proxy: %s\n", profile.Network.Proxy.HTTPS)
 					if !dryRun {
-						os.Setenv("HTTPS_PROXY", profile.Network.Proxy.HTTPS)
-						os.Setenv("https_proxy", profile.Network.Proxy.HTTPS)
+						if err := os.Setenv("HTTPS_PROXY", profile.Network.Proxy.HTTPS); err != nil {
+							return fmt.Errorf("failed to set HTTPS_PROXY: %w", err)
+						}
+						if err := os.Setenv("https_proxy", profile.Network.Proxy.HTTPS); err != nil {
+							return fmt.Errorf("failed to set https_proxy: %w", err)
+						}
 					}
 				}
 			}
@@ -397,7 +401,7 @@ This command will:
 }
 
 // newCloudSyncCmd creates the sync subcommand.
-func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex cloud sync command with profile management
 	var (
 		source              string
 		target              string
@@ -449,13 +453,13 @@ multiple cloud environments with intelligent conflict resolution.`,
 				}
 
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintln(w, "PROFILE\tSOURCE\tTARGET\tSTATUS\tLAST SYNC\tERROR")
+				_, _ = fmt.Fprintln(w, "PROFILE\tSOURCE\tTARGET\tSTATUS\tLAST SYNC\tERROR") //nolint:errcheck // CLI output errors are non-critical
 				for _, s := range status {
 					errorMsg := s.Error
 					if errorMsg == "" {
 						errorMsg = "-"
 					}
-					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+					_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", //nolint:errcheck // CLI output errors are non-critical
 						s.ProfileName,
 						s.Source,
 						s.Target,
@@ -464,7 +468,7 @@ multiple cloud environments with intelligent conflict resolution.`,
 						errorMsg,
 					)
 				}
-				w.Flush()
+				_ = w.Flush() //nolint:errcheck // CLI output errors are non-critical
 				return nil
 			}
 
@@ -692,7 +696,7 @@ func newCloudPolicyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 }
 
 // newCloudPolicyApplyCmd creates the policy apply subcommand.
-func newCloudPolicyApplyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudPolicyApplyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex policy application command with validation
 	var (
 		environment string
 		profileName string
@@ -726,7 +730,8 @@ or by specific profile name.`,
 			}
 
 			// Apply policies by environment or profile
-			if environment != "" {
+			switch {
+			case environment != "":
 				fmt.Printf("Applying policies for environment: %s\n", environment)
 				if !dryRun {
 					if err := policyManager.ApplyEnvironmentPolicies(ctx, environment); err != nil {
@@ -751,7 +756,7 @@ or by specific profile name.`,
 						}
 					}
 				}
-			} else if profileName != "" {
+			case profileName != "":
 				fmt.Printf("Applying policies for profile: %s\n", profileName)
 				if !dryRun {
 					if err := policyManager.ApplyPoliciesForProfile(ctx, profileName); err != nil {
@@ -771,7 +776,7 @@ or by specific profile name.`,
 						}
 					}
 				}
-			} else {
+			default:
 				return fmt.Errorf("either --environment or --profile must be specified")
 			}
 
@@ -793,7 +798,7 @@ or by specific profile name.`,
 }
 
 // newCloudPolicyListCmd creates the policy list subcommand.
-func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex policy listing command with filtering
 	var (
 		profileName  string
 		environment  string
@@ -835,7 +840,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 				}
 
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintln(w, "NAME\tPRIORITY\tENABLED\tRULES\tACTIONS")
+				_, _ = fmt.Fprintln(w, "NAME\tPRIORITY\tENABLED\tRULES\tACTIONS") //nolint:errcheck // CLI output errors are non-critical
 
 				for _, policy := range policies {
 					if !showDisabled && !policy.Enabled {
@@ -847,7 +852,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 						enabled = "✗"
 					}
 
-					fmt.Fprintf(w, "%s\t%d\t%s\t%d\t%d\n",
+					_, _ = fmt.Fprintf(w, "%s\t%d\t%s\t%d\t%d\n", //nolint:errcheck // CLI output errors are non-critical
 						policy.Name,
 						policy.Priority,
 						enabled,
@@ -855,7 +860,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 						len(policy.Actions),
 					)
 				}
-				w.Flush()
+				_ = w.Flush() //nolint:errcheck // CLI output errors are non-critical
 			} else if environment != "" {
 				// List policies for environment
 				profiles := getProfilesForEnvironment(config, environment)
@@ -912,7 +917,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 				}
 
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintln(w, "NAME\tPROFILE\tENVIRONMENT\tPRIORITY\tENABLED\tRULES\tACTIONS")
+				_, _ = fmt.Fprintln(w, "NAME\tPROFILE\tENVIRONMENT\tPRIORITY\tENABLED\tRULES\tACTIONS") // Ignore print error
 
 				for _, policy := range config.Policies {
 					if !showDisabled && !policy.Enabled {
@@ -934,7 +939,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 						environment = "*"
 					}
 
-					fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%d\t%d\n",
+					_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%d\t%d\n",
 						policy.Name,
 						profileName,
 						environment,
@@ -944,7 +949,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 						len(policy.Actions),
 					)
 				}
-				w.Flush()
+				_ = w.Flush() // Ignore flush error
 			}
 
 			return nil
@@ -994,7 +999,7 @@ func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Com
 			}
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "POLICY\tPROFILE\tPROVIDER\tSTATUS\tAPPLIED\tERROR")
+			_, _ = fmt.Fprintln(w, "POLICY\tPROFILE\tPROVIDER\tSTATUS\tAPPLIED\tERROR") // Ignore print error
 
 			for _, s := range status {
 				errorMsg := s.Error
@@ -1004,7 +1009,7 @@ func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Com
 
 				appliedTime := s.Applied.Format("2006-01-02 15:04:05")
 
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+				_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
 					s.PolicyName,
 					s.ProfileName,
 					s.Provider,
@@ -1013,7 +1018,7 @@ func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Com
 					errorMsg,
 				)
 			}
-			w.Flush()
+			_ = w.Flush() // Ignore flush error
 
 			return nil
 		},
@@ -1193,7 +1198,7 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 			fmt.Println("===============")
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "NAME\tTYPE\tSERVER\tPRIORITY\tSTATUS\tAUTO-CONNECT")
+			_, _ = fmt.Fprintln(w, "NAME\tTYPE\tSERVER\tPRIORITY\tSTATUS\tAUTO-CONNECT") // Ignore print error
 
 			for name, s := range status {
 				// Get connection details from config
@@ -1219,7 +1224,7 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 					statusStr = "✗ Error"
 				}
 
-				fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
+				_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
 					name,
 					conn.Type,
 					conn.Server,
@@ -1229,7 +1234,7 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 				)
 			}
 
-			w.Flush()
+			_ = w.Flush() // Ignore flush error
 
 			if len(activeConnections) > 0 {
 				fmt.Printf("\nActive Connections: %d\n", len(activeConnections))
@@ -1396,7 +1401,7 @@ Examples:
 }
 
 // newCloudVPNStatusCmd creates the VPN status subcommand.
-func newCloudVPNStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex VPN status command with multiple providers
 	var (
 		showHealth bool
 		vpnName    string
@@ -1517,7 +1522,7 @@ Examples:
 }
 
 // newCloudVPNAddCmd creates the VPN add subcommand.
-func newCloudVPNAddCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNAddCmd(_ context.Context, opts *cloudOptions) *cobra.Command {
 	var (
 		vpnType     string
 		server      string
@@ -1571,9 +1576,7 @@ Examples:
 			// Note: ValidateConnection method not available in VPNManager interface
 
 			// Add VPN connection to config
-			if err := addVPNConnectionToConfig(config, vpnConn); err != nil {
-				return fmt.Errorf("failed to add VPN connection: %w", err)
-			}
+			addVPNConnectionToConfig(config, vpnConn)
 
 			// Save configuration
 			if err := cloud.SaveConfig(config, configPath); err != nil {
@@ -1644,9 +1647,7 @@ Examples:
 			}
 
 			// Remove VPN connection from config
-			if err := removeVPNConnectionFromConfig(config, vpnName); err != nil {
-				return fmt.Errorf("failed to remove VPN connection: %w", err)
-			}
+			removeVPNConnectionFromConfig(config, vpnName)
 
 			// Save configuration
 			if err := cloud.SaveConfig(config, configPath); err != nil {
@@ -1766,22 +1767,20 @@ func findVPNConnection(config *cloud.Config, name string) *cloud.VPNConnection {
 	return &vpnConn
 }
 
-func addVPNConnectionToConfig(config *cloud.Config, conn *cloud.VPNConnection) error {
+func addVPNConnectionToConfig(config *cloud.Config, conn *cloud.VPNConnection) {
 	// Add VPN connection to config
 	config.AddVPNConnection(*conn)
-	return nil
 }
 
-func removeVPNConnectionFromConfig(config *cloud.Config, name string) error {
+func removeVPNConnectionFromConfig(config *cloud.Config, name string) {
 	// Remove VPN connection from config
 	config.RemoveVPNConnection(name)
-	return nil
 }
 
 // Hierarchical VPN Management Commands
 
 // newCloudVPNHierarchyCmd creates the VPN hierarchy management subcommand.
-func newCloudVPNHierarchyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNHierarchyCmd(_ context.Context, opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "hierarchy",
 		Short: "Show VPN connection hierarchy",
@@ -1983,99 +1982,29 @@ Examples:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			envStr := args[0]
 
-			// Validate environment string
-			validEnvs := []string{"home", "office", "public", "mobile", "hotel"}
-			found := false
-			for _, validEnv := range validEnvs {
-				if envStr == validEnv {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return fmt.Errorf("unsupported network environment: %s (valid: %v)", envStr, validEnvs)
+			if err := validateEnvironment(envStr); err != nil {
+				return err
 			}
 
-			// Load configuration
-			configPath := opts.configFile
-			if configPath == "" {
-				configPath = cloud.GetDefaultConfigPath()
-			}
-
-			config, err := cloud.LoadConfig(configPath)
+			manager, err := setupVPNManager(opts)
 			if err != nil {
-				return fmt.Errorf("failed to load config: %w", err)
+				return err
 			}
 
-			// Create hierarchical VPN manager
-			baseManager := cloud.NewVPNManager()
-			hierarchicalManager := cloud.NewHierarchicalVPNManager(baseManager)
-
-			// Load VPN connections
-			if err := loadVPNConnections(hierarchicalManager, config); err != nil {
-				return fmt.Errorf("failed to load VPN connections: %w", err)
-			}
-
-			// Get all VPN connections and filter by environment
-			connections, err := hierarchicalManager.ListVPNConnections()
+			envConnections, err := getEnvironmentConnections(manager, envStr)
 			if err != nil {
-				return fmt.Errorf("failed to list VPN connections: %w", err)
-			}
-
-			// Filter connections by environment
-			var envConnections []*cloud.VPNConnection
-			for _, conn := range connections {
-				if conn.Environment == envStr {
-					envConnections = append(envConnections, conn)
-				}
+				return err
 			}
 
 			if listOnly {
-				fmt.Printf("VPN connections suitable for %s environment:\n", envStr)
-				fmt.Println("============================================")
-
-				if len(envConnections) == 0 {
-					fmt.Println("No VPN connections configured for this environment")
-					return nil
-				}
-
-				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintln(w, "NAME\tTYPE\tPRIORITY\tAUTO-CONNECT")
-				for _, conn := range envConnections {
-					fmt.Fprintf(w, "%s\t%s\t%d\t%v\n",
-						conn.Name,
-						conn.Type,
-						conn.Priority,
-						conn.AutoConnect,
-					)
-				}
-				w.Flush()
-				return nil
+				return displayVPNList(envStr, envConnections)
 			}
 
 			if autoConnect {
-				fmt.Printf("Auto-connecting VPNs for %s environment...\n", envStr)
-				// Connect all VPNs with auto-connect enabled in this environment
-				for _, conn := range envConnections {
-					if conn.AutoConnect {
-						fmt.Printf("Connecting to %s...\n", conn.Name)
-						if err := hierarchicalManager.ConnectVPN(ctx, conn.Name); err != nil {
-							fmt.Printf("Failed to connect to %s: %v\n", conn.Name, err)
-						} else {
-							fmt.Printf("✓ Connected to %s\n", conn.Name)
-						}
-					}
-				}
-				fmt.Println("✓ Auto-connection completed")
-			} else {
-				fmt.Printf("VPN connections available for %s environment:\n", envStr)
-				for _, conn := range envConnections {
-					fmt.Printf("- %s (priority: %d, auto-connect: %v)\n",
-						conn.Name, conn.Priority, conn.AutoConnect)
-				}
+				return autoConnectVPNs(ctx, manager, envStr, envConnections)
 			}
 
-			return nil
+			return displayVPNSummary(envStr, envConnections)
 		},
 	}
 
@@ -2083,6 +2012,109 @@ Examples:
 	cmd.Flags().BoolVar(&listOnly, "list", false, "Only list suitable VPNs without connecting")
 
 	return cmd
+}
+
+// validateEnvironment validates the network environment string.
+func validateEnvironment(envStr string) error {
+	validEnvs := []string{"home", "office", "public", "mobile", "hotel"}
+	for _, validEnv := range validEnvs {
+		if envStr == validEnv {
+			return nil
+		}
+	}
+	return fmt.Errorf("unsupported network environment: %s (valid: %v)", envStr, validEnvs)
+}
+
+// setupVPNManager creates and configures a hierarchical VPN manager.
+func setupVPNManager(opts *cloudOptions) (cloud.HierarchicalVPNManager, error) {
+	configPath := opts.configFile
+	if configPath == "" {
+		configPath = cloud.GetDefaultConfigPath()
+	}
+
+	config, err := cloud.LoadConfig(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+
+	baseManager := cloud.NewVPNManager()
+	hierarchicalManager := cloud.NewHierarchicalVPNManager(baseManager)
+
+	if err := loadVPNConnections(hierarchicalManager, config); err != nil {
+		return nil, fmt.Errorf("failed to load VPN connections: %w", err)
+	}
+
+	return hierarchicalManager, nil
+}
+
+// getEnvironmentConnections filters VPN connections by environment.
+func getEnvironmentConnections(manager cloud.HierarchicalVPNManager, envStr string) ([]*cloud.VPNConnection, error) {
+	connections, err := manager.ListVPNConnections()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list VPN connections: %w", err)
+	}
+
+	var envConnections []*cloud.VPNConnection
+	for _, conn := range connections {
+		if conn.Environment == envStr {
+			envConnections = append(envConnections, conn)
+		}
+	}
+
+	return envConnections, nil
+}
+
+// displayVPNList displays VPN connections in a table format.
+func displayVPNList(envStr string, envConnections []*cloud.VPNConnection) error {
+	fmt.Printf("VPN connections suitable for %s environment:\n", envStr)
+	fmt.Println("============================================")
+
+	if len(envConnections) == 0 {
+		fmt.Println("No VPN connections configured for this environment")
+		return nil
+	}
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	_, _ = fmt.Fprintln(w, "NAME\tTYPE\tPRIORITY\tAUTO-CONNECT") //nolint:errcheck // Table output
+	for _, conn := range envConnections {
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%v\n", //nolint:errcheck // Table output
+			conn.Name,
+			conn.Type,
+			conn.Priority,
+			conn.AutoConnect,
+		)
+	}
+	_ = w.Flush() //nolint:errcheck // Table output
+	return nil
+}
+
+// autoConnectVPNs automatically connects VPNs with auto-connect enabled.
+func autoConnectVPNs(ctx context.Context, manager cloud.HierarchicalVPNManager, envStr string, envConnections []*cloud.VPNConnection) error {
+	fmt.Printf("Auto-connecting VPNs for %s environment...\n", envStr)
+
+	for _, conn := range envConnections {
+		if conn.AutoConnect {
+			fmt.Printf("Connecting to %s...\n", conn.Name)
+			if err := manager.ConnectVPN(ctx, conn.Name); err != nil {
+				fmt.Printf("Failed to connect to %s: %v\n", conn.Name, err)
+			} else {
+				fmt.Printf("✓ Connected to %s\n", conn.Name)
+			}
+		}
+	}
+
+	fmt.Println("✓ Auto-connection completed")
+	return nil
+}
+
+// displayVPNSummary displays a summary of available VPN connections.
+func displayVPNSummary(envStr string, envConnections []*cloud.VPNConnection) error {
+	fmt.Printf("VPN connections available for %s environment:\n", envStr)
+	for _, conn := range envConnections {
+		fmt.Printf("- %s (priority: %d, auto-connect: %v)\n",
+			conn.Name, conn.Priority, conn.AutoConnect)
+	}
+	return nil
 }
 
 // Helper functions for hierarchy display

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package github
 
 import (
@@ -562,12 +563,12 @@ func BenchmarkEvaluateRepositoryCompliance(b *testing.B) {
 	ctx := context.Background()
 
 	policy := createTestDependabotPolicy()
-	policyManager.CreatePolicy(ctx, policy)
+	_ = policyManager.CreatePolicy(ctx, policy) //nolint:errcheck // Benchmark test setup
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		policyManager.EvaluateRepositoryCompliance(ctx, policy.ID, "testorg", "testrepo")
+		_, _ = policyManager.EvaluateRepositoryCompliance(ctx, policy.ID, "testorg", "testrepo") //nolint:errcheck // Benchmark test
 	}
 }
 

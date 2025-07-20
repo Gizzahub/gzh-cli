@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
@@ -24,6 +25,7 @@ var (
 
 // GitLabRepoInfo represents GitLab project information returned by the GitLab API.
 // It contains essential project metadata used during clone operations.
+// nolint:tagliatelle // External API format - must match GitLab JSON output
 type GitLabRepoInfo struct {
 	// DefaultBranch is the name of the project's default branch (e.g., "main", "master")
 	DefaultBranch string `json:"default_branch"`
@@ -54,9 +56,7 @@ func GetDefaultBranch(ctx context.Context, group string, repo string) (string, e
 		return "", err
 	}
 	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = resp.Body.Close() // Log error but don't override main error
 	}()
 
 	if resp.StatusCode != http.StatusOK {
@@ -93,9 +93,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 		return fmt.Errorf("%w: %w", ErrFailedToGetRepositories, err)
 	}
 	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = resp.Body.Close() // Log error but don't override main error
 	}()
 
 	if resp.StatusCode != http.StatusOK {
@@ -218,7 +216,7 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 		stderr bytes.Buffer
 	)
 	// cmd := exec.CommandContext(ctx, "git", "clone", "-b", branch, cloneURL, targetPath)
-	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath)
+	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath) //nolint:gosec // Git clone with controlled URL
 	cmd.Stdout = &out
 
 	cmd.Stderr = &stderr
@@ -226,7 +224,7 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 		fmt.Println(stderr.String())
 		fmt.Println(out.String())
 
-		return fmt.Errorf("Clone Failed  (url: %s, branch: %s, targetPath: %s, err: %w)\n", cloneURL, branch, targetPath, err)
+		return fmt.Errorf("clone failed (url: %s, branch: %s, targetPath: %s, err: %w)", cloneURL, branch, targetPath, err)
 	}
 
 	return nil
@@ -289,31 +287,7 @@ func RefreshAll(ctx context.Context, targetPath string, group string, strategy s
 				}
 			} else {
 				// Execute git operation based on strategy
-				switch strategy {
-				case "reset":
-					// Reset hard HEAD and pull
-					cmd := exec.CommandContext(gCtx, "git", "-C", repoPath, "reset", "--hard", "HEAD")
-					if err := cmd.Run(); err != nil {
-						fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
-					}
-
-					cmd = exec.CommandContext(gCtx, "git", "-C", repoPath, "pull")
-					if err := cmd.Run(); err != nil {
-						fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
-					}
-				case "pull":
-					// Only pull without reset
-					cmd := exec.CommandContext(gCtx, "git", "-C", repoPath, "pull")
-					if err := cmd.Run(); err != nil {
-						fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
-					}
-				case "fetch":
-					// Only fetch without modifying working directory
-					cmd := exec.CommandContext(gCtx, "git", "-C", repoPath, "fetch")
-					if err := cmd.Run(); err != nil {
-						fmt.Printf("execute git fetch fail for %s: %v\n", repo, err)
-					}
-				}
+				executeGitStrategy(gCtx, strategy, repoPath, repo)
 
 				// Thread-safe success message
 				mu.Lock()
@@ -331,6 +305,35 @@ func RefreshAll(ctx context.Context, targetPath string, group string, strategy s
 	}
 
 	return nil
+}
+
+// executeGitStrategy executes git operations based on the strategy.
+func executeGitStrategy(ctx context.Context, strategy, repoPath, repo string) {
+	switch strategy {
+	case git.StrategyReset:
+		// Reset hard HEAD and pull
+		cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "reset", "--hard", "HEAD")
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
+		}
+
+		cmd = exec.CommandContext(ctx, "git", "-C", repoPath, "pull")
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+		}
+	case git.StrategyPull:
+		// Only pull without reset
+		cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "pull")
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
+		}
+	case git.StrategyFetch:
+		// Only fetch without modifying working directory
+		cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "fetch")
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("execute git fetch fail for %s: %v\n", repo, err)
+		}
+	}
 }
 
 // getDirectories returns a list of directory names in the given path.

@@ -473,17 +473,17 @@ func newVPNProfileSwitchCmd(logger *zap.Logger, configDir string) *cobra.Command
 type VPNProfile struct {
 	Name            string              `json:"name"`
 	Description     string              `json:"description,omitempty"`
-	AutoConnect     bool                `json:"auto_connect"`
+	AutoConnect     bool                `json:"autoConnect"`
 	Priority        int                 `json:"priority"`
-	NetworkMappings []NetworkVPNMapping `json:"network_mappings"`
-	AutoSwitchRules []AutoSwitchRule    `json:"auto_switch_rules"`
-	CreatedAt       time.Time           `json:"created_at"`
-	UpdatedAt       time.Time           `json:"updated_at"`
+	NetworkMappings []NetworkVPNMapping `json:"networkMappings"`
+	AutoSwitchRules []AutoSwitchRule    `json:"autoSwitchRules"`
+	CreatedAt       time.Time           `json:"createdAt"`
+	UpdatedAt       time.Time           `json:"updatedAt"`
 }
 
 type NetworkVPNMapping struct {
-	NetworkPattern string `json:"network_pattern"`
-	VPNName        string `json:"vpn_name"`
+	NetworkPattern string `json:"networkPattern"`
+	VPNName        string `json:"vpnName"`
 	Priority       int    `json:"priority"`
 }
 
@@ -493,7 +493,7 @@ type AutoSwitchRule struct {
 	Action    AutoSwitchAction  `json:"action"`
 	Condition string            `json:"condition,omitempty"`
 	Enabled   bool              `json:"enabled"`
-	CreatedAt time.Time         `json:"created_at"`
+	CreatedAt time.Time         `json:"createdAt"`
 }
 
 type (
@@ -638,7 +638,7 @@ func (vpm *VPNProfileManager) GetActiveProfile() (*VPNProfile, error) {
 		return profile, nil
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("no active VPN profile found")
 }
 
 func (vpm *VPNProfileManager) SwitchToProfile(ctx context.Context, profileName string) error {

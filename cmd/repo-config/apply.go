@@ -61,7 +61,7 @@ Examples:
 }
 
 // runApplyCommand executes the apply command.
-func runApplyCommand(flags GlobalFlags, filter, template string, interactive, force bool) error {
+func runApplyCommand(flags GlobalFlags, filter, template string, interactive, force bool) error { //nolint:gocognit // Complex repository configuration application logic
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
 	}

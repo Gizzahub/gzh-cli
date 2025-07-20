@@ -37,8 +37,6 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 		return fmt.Errorf("no profiles specified for sync")
 	}
 
-	var allConflicts []SyncConflict
-
 	syncResults := make([]SyncStatus, 0, len(profileNames))
 
 	for _, profileName := range profileNames {
@@ -75,8 +73,6 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 		// Detect conflicts
 		conflicts := sm.detectConflicts(profileName, sourceProfile, targetProfile)
 		if len(conflicts) > 0 {
-			allConflicts = append(allConflicts, conflicts...)
-
 			// Apply conflict resolution strategy
 			strategy := sm.config.Sync.ConflictMode
 			if strategy == "" {
@@ -449,7 +445,7 @@ func (sm *DefaultSyncManager) saveSyncHistory() {
 
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(sm.statePath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		fmt.Printf("Warning: failed to create sync state directory: %v\n", err)
 		return
 	}
@@ -460,7 +456,7 @@ func (sm *DefaultSyncManager) saveSyncHistory() {
 		return
 	}
 
-	if err := os.WriteFile(sm.statePath, data, 0o644); err != nil {
+	if err := os.WriteFile(sm.statePath, data, 0o600); err != nil {
 		fmt.Printf("Warning: failed to save sync history: %v\n", err)
 	}
 }

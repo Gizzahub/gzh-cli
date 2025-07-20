@@ -30,9 +30,9 @@ type KubernetesNetworkProfile struct {
 	Policies    map[string]*NetworkPolicyConfig `yaml:"policies" json:"policies"`
 	Services    map[string]*ServiceConfig       `yaml:"services,omitempty" json:"services,omitempty"`
 	Ingress     map[string]*IngressConfig       `yaml:"ingress,omitempty" json:"ingress,omitempty"`
-	ServiceMesh *ServiceMeshConfig              `yaml:"service_mesh,omitempty" json:"service_mesh,omitempty"`
-	CreatedAt   time.Time                       `yaml:"created_at" json:"created_at"`
-	UpdatedAt   time.Time                       `yaml:"updated_at" json:"updated_at"`
+	ServiceMesh *ServiceMeshConfig              `yaml:"serviceMesh,omitempty" json:"serviceMesh,omitempty"`
+	CreatedAt   time.Time                       `yaml:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time                       `yaml:"updatedAt" json:"updatedAt"`
 	Active      bool                            `yaml:"active" json:"active"`
 	Metadata    map[string]string               `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
@@ -40,8 +40,8 @@ type KubernetesNetworkProfile struct {
 // NetworkPolicyConfig represents a Kubernetes NetworkPolicy configuration.
 type NetworkPolicyConfig struct {
 	Name        string                     `yaml:"name" json:"name"`
-	PodSelector map[string]string          `yaml:"pod_selector" json:"pod_selector"`
-	PolicyTypes []string                   `yaml:"policy_types" json:"policy_types"`
+	PodSelector map[string]string          `yaml:"podSelector" json:"podSelector"`
+	PolicyTypes []string                   `yaml:"policyTypes" json:"policyTypes"`
 	Ingress     []NetworkPolicyIngressRule `yaml:"ingress,omitempty" json:"ingress,omitempty"`
 	Egress      []NetworkPolicyEgressRule  `yaml:"egress,omitempty" json:"egress,omitempty"`
 }
@@ -60,9 +60,9 @@ type NetworkPolicyEgressRule struct {
 
 // NetworkPolicyPeer represents a peer in NetworkPolicy.
 type NetworkPolicyPeer struct {
-	PodSelector       map[string]string `yaml:"pod_selector,omitempty" json:"pod_selector,omitempty"`
-	NamespaceSelector map[string]string `yaml:"namespace_selector,omitempty" json:"namespace_selector,omitempty"`
-	IPBlock           *IPBlock          `yaml:"ip_block,omitempty" json:"ip_block,omitempty"`
+	PodSelector       map[string]string `yaml:"podSelector,omitempty" json:"podSelector,omitempty"`
+	NamespaceSelector map[string]string `yaml:"namespaceSelector,omitempty" json:"namespaceSelector,omitempty"`
+	IPBlock           *IPBlock          `yaml:"ipBlock,omitempty" json:"ipBlock,omitempty"`
 }
 
 // IPBlock represents IP block configuration.
@@ -75,7 +75,7 @@ type IPBlock struct {
 type NetworkPolicyPort struct {
 	Protocol string `yaml:"protocol,omitempty" json:"protocol,omitempty"`
 	Port     *int32 `yaml:"port,omitempty" json:"port,omitempty"`
-	EndPort  *int32 `yaml:"end_port,omitempty" json:"end_port,omitempty"`
+	EndPort  *int32 `yaml:"endPort,omitempty" json:"endPort,omitempty"`
 }
 
 // ServiceConfig represents a Kubernetes Service configuration.
@@ -84,8 +84,8 @@ type ServiceConfig struct {
 	Type        string            `yaml:"type" json:"type"`
 	Selector    map[string]string `yaml:"selector" json:"selector"`
 	Ports       []ServicePort     `yaml:"ports" json:"ports"`
-	ClusterIP   string            `yaml:"cluster_ip,omitempty" json:"cluster_ip,omitempty"`
-	ExternalIPs []string          `yaml:"external_ips,omitempty" json:"external_ips,omitempty"`
+	ClusterIP   string            `yaml:"clusterIp,omitempty" json:"clusterIp,omitempty"`
+	ExternalIPs []string          `yaml:"externalIps,omitempty" json:"externalIps,omitempty"`
 }
 
 // ServicePort represents a port configuration for a Service.
@@ -93,14 +93,14 @@ type ServicePort struct {
 	Name       string `yaml:"name,omitempty" json:"name,omitempty"`
 	Protocol   string `yaml:"protocol" json:"protocol"`
 	Port       int32  `yaml:"port" json:"port"`
-	TargetPort int32  `yaml:"target_port" json:"target_port"`
-	NodePort   int32  `yaml:"node_port,omitempty" json:"node_port,omitempty"`
+	TargetPort int32  `yaml:"targetPort" json:"targetPort"`
+	NodePort   int32  `yaml:"nodePort,omitempty" json:"nodePort,omitempty"`
 }
 
 // IngressConfig represents a Kubernetes Ingress configuration.
 type IngressConfig struct {
 	Name         string        `yaml:"name" json:"name"`
-	IngressClass string        `yaml:"ingress_class,omitempty" json:"ingress_class,omitempty"`
+	IngressClass string        `yaml:"ingressClass,omitempty" json:"ingressClass,omitempty"`
 	Rules        []IngressRule `yaml:"rules" json:"rules"`
 	TLS          []IngressTLS  `yaml:"tls,omitempty" json:"tls,omitempty"`
 }
@@ -114,15 +114,15 @@ type IngressRule struct {
 // IngressPath represents a path in an ingress rule.
 type IngressPath struct {
 	Path        string `yaml:"path" json:"path"`
-	PathType    string `yaml:"path_type" json:"path_type"`
-	ServiceName string `yaml:"service_name" json:"service_name"`
-	ServicePort int32  `yaml:"service_port" json:"service_port"`
+	PathType    string `yaml:"pathType" json:"pathType"`
+	ServiceName string `yaml:"serviceName" json:"serviceName"`
+	ServicePort int32  `yaml:"servicePort" json:"servicePort"`
 }
 
 // IngressTLS represents TLS configuration for ingress.
 type IngressTLS struct {
 	Hosts      []string `yaml:"hosts" json:"hosts"`
-	SecretName string   `yaml:"secret_name" json:"secret_name"`
+	SecretName string   `yaml:"secretName" json:"secretName"`
 }
 
 // ServiceMeshConfig represents service mesh integration configuration.
@@ -130,7 +130,7 @@ type ServiceMeshConfig struct {
 	Type          string                 `yaml:"type" json:"type"` // istio or linkerd
 	Enabled       bool                   `yaml:"enabled" json:"enabled"`
 	Namespace     string                 `yaml:"namespace" json:"namespace"`
-	TrafficPolicy map[string]interface{} `yaml:"traffic_policy,omitempty" json:"traffic_policy,omitempty"`
+	TrafficPolicy map[string]interface{} `yaml:"trafficPolicy,omitempty" json:"trafficPolicy,omitempty"`
 }
 
 // KubernetesCommandExecutor executes kubectl commands with timeout and error handling.

@@ -57,7 +57,7 @@ Examples:
 }
 
 // watchConfig implements the configuration watching functionality.
-func watchConfig(configFile string, verbose bool, interval time.Duration) error {
+func watchConfig(configFile string, verbose bool, interval time.Duration) error { //nolint:gocognit // Complex file watching logic with multiple state checks
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

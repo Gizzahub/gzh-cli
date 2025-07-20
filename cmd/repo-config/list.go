@@ -70,7 +70,7 @@ Examples:
 }
 
 // runListCommand executes the list command.
-func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, limit int) error {
+func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, limit int) error { //nolint:gocognit // Complex repository listing logic with multiple formatting options
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
@@ -312,7 +312,7 @@ func printJSONFormat(repos []RepositoryInfo) {
 
 // printYAMLFormat prints repositories in YAML format.
 func printYAMLFormat(repos []RepositoryInfo) {
-	data, err := yaml.Marshal(repos)
+	data, err := yaml.Marshal(repos) //nolint:musttag // RepositoryInfo struct already has yaml tags
 	if err != nil {
 		fmt.Printf("Error marshaling YAML: %v\n", err)
 		return

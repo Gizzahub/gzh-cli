@@ -1,3 +1,4 @@
+// Package shell provides an interactive shell interface for the gz command.
 package shell
 
 import (
@@ -73,7 +74,7 @@ type Shell struct {
 }
 
 // ShellCommand represents a shell command.
-type ShellCommand struct {
+type ShellCommand struct { //nolint:revive // Name is appropriate for package context
 	Name        string
 	Description string
 	Usage       string
@@ -82,7 +83,7 @@ type ShellCommand struct {
 }
 
 // ShellContext holds shell execution context.
-type ShellContext struct {
+type ShellContext struct { //nolint:revive // Name is appropriate for package context
 	StartTime time.Time              `json:"startTime"`
 	Uptime    time.Duration          `json:"uptime"`
 	Commands  int                    `json:"commandsExecuted"`
@@ -90,7 +91,7 @@ type ShellContext struct {
 	Vars      map[string]interface{} `json:"variables"`
 }
 
-func runShell(cmd *cobra.Command, args []string) {
+func runShell(_ *cobra.Command, args []string) {
 	if !quietMode {
 		fmt.Println("🚀 Starting GZH Manager Interactive Shell")
 		fmt.Println("Type 'help' for available commands, 'exit' to quit")
@@ -107,9 +108,7 @@ func runShell(cmd *cobra.Command, args []string) {
 		return
 	}
 	defer func() {
-		if err := client.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = client.Close() // Ignore close error
 	}()
 
 	// Create shell
@@ -384,7 +383,7 @@ func handleHelp(s *Shell, args []string) error {
 	return nil
 }
 
-func handleExit(s *Shell, args []string) error {
+func handleExit(s *Shell, _ []string) error {
 	s.Stop()
 	return nil
 }
@@ -421,7 +420,7 @@ func handleStatus(s *Shell, args []string) error {
 	return nil
 }
 
-func handleMemory(s *Shell, args []string) error {
+func handleMemory(_ *Shell, args []string) error {
 	jsonOutput := false
 	runGC := false
 
@@ -467,7 +466,7 @@ func handleMemory(s *Shell, args []string) error {
 	return nil
 }
 
-func handlePlugins(s *Shell, args []string) error {
+func handlePlugins(_ *Shell, args []string) error {
 	fmt.Println("Plugin functionality has been disabled in this version.")
 	fmt.Println("The plugins package has been removed from the codebase.")
 	fmt.Println("Available subcommands: list, exec (both non-functional)")

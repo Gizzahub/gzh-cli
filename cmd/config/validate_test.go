@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package config
 
 import (
@@ -82,12 +83,8 @@ providers:
         clone_dir: "${HOME}/repos"
 `,
 			setupEnv: func() {
-				if err := os.Setenv("TEST_GITHUB_TOKEN", "test-token-value"); err != nil {
-					// Environment setup error in test is non-critical
-				}
-				if err := os.Setenv("HOME", "/home/testuser"); err != nil {
-					// Environment setup error in test is non-critical
-				}
+				_ = os.Setenv("TEST_GITHUB_TOKEN", "test-token-value")
+				_ = os.Setenv("HOME", "/home/testuser")
 			},
 			cleanupEnv: func() {
 				if err := os.Unsetenv("TEST_GITHUB_TOKEN"); err != nil {
@@ -209,7 +206,9 @@ func TestFindConfigFile(t *testing.T) {
 				}
 			},
 			cleanupEnv: func() {
-				os.Unsetenv("GZH_CONFIG_PATH")
+				if err := os.Unsetenv("GZH_CONFIG_PATH"); err != nil {
+					t.Logf("Warning: failed to unset GZH_CONFIG_PATH: %v", err)
+				}
 			},
 			expectError:  false,
 			expectedFile: "custom-config.yaml",
@@ -224,8 +223,8 @@ func TestFindConfigFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Clean up any existing files
-			os.Remove("gzh.yaml")
-			os.Remove("gzh.yml")
+			_ = os.Remove("gzh.yaml") //nolint:errcheck // Test cleanup, errors are non-critical
+			_ = os.Remove("gzh.yml")  //nolint:errcheck // Test cleanup, errors are non-critical
 
 			if tt.setupEnv != nil {
 				tt.setupEnv()
@@ -254,7 +253,11 @@ func TestValidateFileAccess(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "file-access-test-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Warning: failed to remove temp dir: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name          string
@@ -266,7 +269,7 @@ func TestValidateFileAccess(t *testing.T) {
 			name: "valid file",
 			setupFile: func() string {
 				file := filepath.Join(tmpDir, "valid.yaml")
-				os.WriteFile(file, []byte("test"), 0o644)
+				_ = os.WriteFile(file, []byte("test"), 0o644) //nolint:errcheck // Test setup, errors handled by test framework
 				return file
 			},
 			expectError: false,
@@ -283,7 +286,7 @@ func TestValidateFileAccess(t *testing.T) {
 			name: "directory instead of file",
 			setupFile: func() string {
 				dir := filepath.Join(tmpDir, "notafile")
-				os.Mkdir(dir, 0o755)
+				_ = os.Mkdir(dir, 0o755) //nolint:errcheck // Test setup, errors handled by test framework
 				return dir
 			},
 			expectError:   true,
@@ -373,10 +376,10 @@ func TestCheckPathEnvironmentVariables(t *testing.T) {
 			name: "existing environment variable",
 			path: "${TEST_VAR}/repos",
 			setupEnv: func() {
-				os.Setenv("TEST_VAR", "/home/user")
+				_ = os.Setenv("TEST_VAR", "/home/user") //nolint:errcheck // Test setup, errors handled by test framework
 			},
 			cleanupEnv: func() {
-				os.Unsetenv("TEST_VAR")
+				_ = os.Unsetenv("TEST_VAR") //nolint:errcheck // Test cleanup, errors are non-critical
 			},
 			expectError: false,
 		},
@@ -390,10 +393,10 @@ func TestCheckPathEnvironmentVariables(t *testing.T) {
 			name: "environment variable with default",
 			path: "${TEST_VAR:default}/repos",
 			setupEnv: func() {
-				os.Setenv("TEST_VAR", "/home/user")
+				_ = os.Setenv("TEST_VAR", "/home/user") //nolint:errcheck // Test setup, errors handled by test framework
 			},
 			cleanupEnv: func() {
-				os.Unsetenv("TEST_VAR")
+				_ = os.Unsetenv("TEST_VAR") //nolint:errcheck // Test cleanup, errors are non-critical
 			},
 			expectError: false,
 		},
@@ -430,7 +433,7 @@ func TestValidateConfigWithEnvironmentAbstraction(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "env-abstraction-test-*")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 	// Create a test config file
 	configContent := `

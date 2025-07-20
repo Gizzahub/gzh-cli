@@ -184,7 +184,7 @@ func createProfile(profileName, fromProfile string, interactive bool) error {
 
 	var content string
 
-	if fromProfile != "" {
+	if fromProfile != "" { //nolint:gocritic // Simple if-else chain, switch would not improve readability
 		// Copy from existing profile
 		sourceFile := getProfilePath(fromProfile)
 		if _, err := os.Stat(sourceFile); os.IsNotExist(err) {

@@ -160,7 +160,7 @@ func newServiceAccountCreateCmd() *cobra.Command {
 	cmd.Flags().StringVar(&description, "description", "", "Description for the service account")
 	cmd.Flags().StringVarP(&projectID, "project", "p", "", "Project ID (defaults to current project)")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -383,7 +383,7 @@ func (m *GCPServiceAccountManager) listServiceAccounts(format string) error {
 				active = "✓"
 			}
 
-			table.Append([]string{
+			_ = table.Append([]string{ //nolint:errcheck // Table display errors are non-critical
 				account.Email,
 				account.DisplayName,
 				fmt.Sprintf("%d", account.KeyCount),
@@ -392,7 +392,7 @@ func (m *GCPServiceAccountManager) listServiceAccounts(format string) error {
 			})
 		}
 
-		table.Render()
+		_ = table.Render() //nolint:errcheck // Table display errors are non-critical
 
 		return nil
 
@@ -574,7 +574,7 @@ func (m *GCPServiceAccountManager) showServiceAccount(email, format string) erro
 		// Show keys if any exist
 		if account.KeyCount > 0 {
 			fmt.Printf("\nService Account Keys:\n")
-			m.listServiceAccountKeys(email)
+			_ = m.listServiceAccountKeys(email) //nolint:errcheck // Display function errors are non-critical
 		}
 
 		return nil
@@ -620,7 +620,7 @@ func (m *GCPServiceAccountManager) listServiceAccountKeys(email string) error {
 		parts := strings.Split(key.Name, "/")
 		keyID := parts[len(parts)-1]
 
-		table.Append([]string{
+		_ = table.Append([]string{ //nolint:errcheck // Table display errors are non-critical
 			keyID,
 			key.PrivateKeyType,
 			key.KeyAlgorithm,
@@ -630,7 +630,7 @@ func (m *GCPServiceAccountManager) listServiceAccountKeys(email string) error {
 		})
 	}
 
-	table.Render()
+	_ = table.Render() //nolint:errcheck // Table display errors are non-critical
 
 	return nil
 }

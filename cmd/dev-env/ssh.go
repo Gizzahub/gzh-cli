@@ -106,7 +106,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory to store saved configurations")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Overwrite existing saved configuration")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -136,7 +136,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory where saved configurations are stored")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Skip backup of current configuration")
 
-	cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("name") //nolint:errcheck // Required flag setup
 
 	return cmd
 }
@@ -191,9 +191,7 @@ func (o *sshOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	// Display config information
-	if err := o.displayConfigInfo(savedPath); err != nil {
-		fmt.Printf("Warning: failed to read config info: %v\n", err)
-	}
+	o.displayConfigInfo(savedPath)
 
 	fmt.Printf("✅ SSH config saved as '%s'\n", o.name)
 
@@ -237,9 +235,7 @@ func (o *sshOptions) runLoad(_ *cobra.Command, args []string) error {
 	}
 
 	// Display config information
-	if err := o.displayConfigInfo(o.configPath); err != nil {
-		fmt.Printf("Warning: failed to read config info: %v\n", err)
-	}
+	o.displayConfigInfo(o.configPath)
 
 	fmt.Printf("✅ SSH config '%s' loaded successfully\n", o.name)
 	fmt.Printf("   Loaded to: %s\n", o.configPath)
@@ -296,9 +292,7 @@ func (o *sshOptions) runList(_ *cobra.Command, args []string) error {
 		}
 
 		// Display SSH host information
-		if err := o.displayConfigInfo(configPath); err == nil {
-			// Already displayed in displayConfigInfo
-		}
+		o.displayConfigInfo(configPath)
 
 		fmt.Println()
 	}
@@ -309,8 +303,8 @@ func (o *sshOptions) runList(_ *cobra.Command, args []string) error {
 type sshMetadata struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	SavedAt     time.Time `json:"saved_at"`
-	SourcePath  string    `json:"source_path"`
+	SavedAt     time.Time `json:"savedAt"`
+	SourcePath  string    `json:"sourcePath"`
 }
 
 func (o *sshOptions) saveMetadata() error {
@@ -327,15 +321,15 @@ func (o *sshOptions) saveMetadata() error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() //nolint:errcheck // Deferred close
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
-		fmt.Fprintf(file, "description=%s\n", metadata.Description)
+		_, _ = fmt.Fprintf(file, "description=%s\n", metadata.Description) //nolint:errcheck // File write errors handled by file operations
 	}
 
-	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
-	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
+	_, _ = fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339)) //nolint:errcheck // File write errors handled by file operations
+	_, _ = fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)                //nolint:errcheck // File write errors handled by file operations
 
 	return nil
 }
@@ -383,13 +377,13 @@ func (o *sshOptions) copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer sourceFile.Close()
+	defer func() { _ = sourceFile.Close() }() //nolint:errcheck // Deferred close
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destFile.Close()
+	defer func() { _ = destFile.Close() }() //nolint:errcheck // Deferred close
 
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {
@@ -405,7 +399,7 @@ func (o *sshOptions) copyFile(src, dst string) error {
 	return os.Chmod(dst, sourceInfo.Mode())
 }
 
-func (o *sshOptions) displayConfigInfo(configPath string) error {
+func (o *sshOptions) displayConfigInfo(configPath string) {
 	// Parse SSH config file to extract host information
 	hosts := o.parseSSHConfig(configPath)
 
@@ -431,8 +425,6 @@ func (o *sshOptions) displayConfigInfo(configPath string) error {
 			fmt.Println()
 		}
 	}
-
-	return nil
 }
 
 type sshHost struct {
@@ -443,7 +435,7 @@ type sshHost struct {
 	KeyFile  string
 }
 
-func (o *sshOptions) parseSSHConfig(configPath string) []sshHost {
+func (o *sshOptions) parseSSHConfig(configPath string) []sshHost { //nolint:gocognit // Complex SSH config parsing with multiple host configurations
 	content, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil

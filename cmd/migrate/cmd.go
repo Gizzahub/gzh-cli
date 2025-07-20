@@ -1,3 +1,4 @@
+// Package migrate provides migration utilities for configuration and data transformations.
 package migrate
 
 import (
@@ -12,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// MigrateOptions holds the configuration for the migrate command.
-type MigrateOptions struct {
+// Options holds the configuration for the migrate command.
+type Options struct {
 	SourceFile string
 	TargetFile string
 	DryRun     bool
@@ -25,7 +26,7 @@ type MigrateOptions struct {
 
 // NewMigrateCmd creates a new migrate command.
 func NewMigrateCmd() *cobra.Command {
-	opts := &MigrateOptions{}
+	opts := &Options{}
 
 	cmd := &cobra.Command{
 		Use:   "migrate [source-file] [target-file]",
@@ -70,7 +71,7 @@ Examples:
 	return cmd
 }
 
-func runMigrate(cmd *cobra.Command, opts *MigrateOptions, args []string) error {
+func runMigrate(cmd *cobra.Command, opts *Options, args []string) error {
 	ctx := cmd.Context()
 
 	// Handle batch migration
@@ -94,7 +95,7 @@ func runMigrate(cmd *cobra.Command, opts *MigrateOptions, args []string) error {
 	return runSingleMigration(ctx, opts)
 }
 
-func runSingleMigration(ctx context.Context, opts *MigrateOptions) error {
+func runSingleMigration(ctx context.Context, opts *Options) error {
 	fmt.Printf("🔄 Migrating configuration: %s → %s\n", opts.SourceFile, opts.TargetFile)
 
 	// Check if source file exists
@@ -130,7 +131,7 @@ func runSingleMigration(ctx context.Context, opts *MigrateOptions) error {
 	return nil
 }
 
-func runBatchMigration(ctx context.Context, opts *MigrateOptions) error {
+func runBatchMigration(ctx context.Context, opts *Options) error {
 	fmt.Printf("🔄 Running batch migration in current directory\n")
 
 	// Find all legacy configuration files
@@ -180,7 +181,7 @@ func runBatchMigration(ctx context.Context, opts *MigrateOptions) error {
 	return nil
 }
 
-func runAutoMigration(ctx context.Context, opts *MigrateOptions) error {
+func runAutoMigration(ctx context.Context, opts *Options) error {
 	fmt.Printf("🔄 Auto-detecting configuration files\n")
 
 	// Look for legacy files in standard locations
@@ -216,7 +217,7 @@ func runAutoMigration(ctx context.Context, opts *MigrateOptions) error {
 	return runSingleMigration(ctx, opts)
 }
 
-func performMigration(_ context.Context, sourceFile, targetFile string, opts *MigrateOptions) (*config.MigrationResult, error) {
+func performMigration(_ context.Context, sourceFile, targetFile string, opts *Options) (*config.MigrationResult, error) {
 	if opts.DryRun {
 		fmt.Printf("🧪 Dry-run mode: previewing migration\n")
 	}
@@ -240,7 +241,7 @@ func performMigration(_ context.Context, sourceFile, targetFile string, opts *Mi
 	return result, nil
 }
 
-func displayMigrationResult(result *config.MigrationResult, opts *MigrateOptions) {
+func displayMigrationResult(result *config.MigrationResult, opts *Options) {
 	fmt.Printf("\n📊 Migration Results:\n")
 	fmt.Printf("  📁 Source: %s\n", result.SourcePath)
 	fmt.Printf("  📁 Target: %s\n", result.TargetPath)
@@ -322,10 +323,10 @@ func createBackupFilename(sourceFile string) string {
 }
 
 func copyFile(src, dst string) error {
-	input, err := os.ReadFile(src)
+	input, err := os.ReadFile(src) //nolint:gosec // File paths are validated by caller
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(dst, input, 0o644)
+	return os.WriteFile(dst, input, 0o600) // More secure file permissions
 }

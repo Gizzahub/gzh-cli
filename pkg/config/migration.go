@@ -349,7 +349,7 @@ func DetectLegacyFormat(configPath string) (bool, error) {
 		return false, fmt.Errorf("config file not found: %s", configPath)
 	}
 
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath) //nolint:gosec // configPath is user-provided configuration file path
 	if err != nil {
 		return false, fmt.Errorf("failed to read config file: %w", err)
 	}
@@ -390,7 +390,11 @@ func AutoMigrate(configPath string) (*MigrationResult, error) {
 	}
 
 	if !isLegacy {
-		return nil, nil // No migration needed
+		return &MigrationResult{
+			Success:    true,
+			SourcePath: configPath,
+			TargetPath: configPath,
+		}, nil // No migration needed
 	}
 
 	// Determine target path (same directory, different name)

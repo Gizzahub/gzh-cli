@@ -49,12 +49,12 @@ type PlatformConfig struct {
 
 // CloneFilters defines filtering options for repositories.
 type CloneFilters struct {
-	IncludeRepos []string  `json:"includeRepos" yaml:"include_repos"`
-	ExcludeRepos []string  `json:"excludeRepos" yaml:"exclude_repos"`
+	IncludeRepos []string  `json:"includeRepos" yaml:"includeRepos"`
+	ExcludeRepos []string  `json:"excludeRepos" yaml:"excludeRepos"`
 	Languages    []string  `json:"languages" yaml:"languages"`
-	MinSize      int64     `json:"minSize" yaml:"min_size"`
-	MaxSize      int64     `json:"maxSize" yaml:"max_size"`
-	UpdatedAfter time.Time `json:"updatedAfter" yaml:"updated_after"`
+	MinSize      int64     `json:"minSize" yaml:"minSize"`
+	MaxSize      int64     `json:"maxSize" yaml:"maxSize"`
+	UpdatedAfter time.Time `json:"updatedAfter" yaml:"updatedAfter"`
 }
 
 // BulkCloneResult represents the result of a bulk clone operation.

@@ -60,11 +60,11 @@ func (d *DirectoryResolver) GetDirectoryStructure() DirectoryStructure {
 
 // DirectoryStructure represents the resolved directory structure.
 type DirectoryStructure struct {
-	BasePath         string `json:"base_path"`
-	OrganizationPath string `json:"organization_path"`
-	IsFlattened      bool   `json:"is_flattened"`
+	BasePath         string `json:"basePath"`
+	OrganizationPath string `json:"organizationPath"`
+	IsFlattened      bool   `json:"isFlattened"`
 	Provider         string `json:"provider"`
-	TargetName       string `json:"target_name"`
+	TargetName       string `json:"targetName"`
 }
 
 // GetDescription returns a human-readable description of the structure.
@@ -119,8 +119,8 @@ func (g *DirectoryPathGenerator) getRelativePath(target BulkCloneTarget, repoNam
 // RepositoryPath represents the resolved path for a repository.
 type RepositoryPath struct {
 	Repository   Repository `json:"repository"`
-	FullPath     string     `json:"full_path"`
-	RelativePath string     `json:"relative_path"`
+	FullPath     string     `json:"fullPath"`
+	RelativePath string     `json:"relativePath"`
 }
 
 // GetParentDirectory returns the parent directory of the repository.
@@ -255,17 +255,17 @@ func (a *DirectoryStructureAnalyzer) calculateStatistics(paths []RepositoryPath)
 // StructureAnalysis contains the results of directory structure analysis.
 type StructureAnalysis struct {
 	Structure       DirectoryStructure  `json:"structure"`
-	RepositoryPaths []RepositoryPath    `json:"repository_paths"`
+	RepositoryPaths []RepositoryPath    `json:"repositoryPaths"`
 	Statistics      StructureStatistics `json:"statistics"`
-	StructureError  error               `json:"structure_error,omitempty"`
-	PathIssues      []ValidationIssue   `json:"path_issues,omitempty"`
-	IsValid         bool                `json:"is_valid"`
+	StructureError  error               `json:"structureError,omitempty"`
+	PathIssues      []ValidationIssue   `json:"pathIssues,omitempty"`
+	IsValid         bool                `json:"isValid"`
 }
 
 // StructureStatistics provides statistics about directory structure.
 type StructureStatistics struct {
-	TotalRepositories int `json:"total_repositories"`
-	UniqueDirectories int `json:"unique_directories"`
+	TotalRepositories int `json:"totalRepositories"`
+	UniqueDirectories int `json:"uniqueDirectories"`
 }
 
 // GetSummary returns a summary of the structure analysis.

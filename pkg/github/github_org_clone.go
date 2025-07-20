@@ -51,7 +51,7 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }() //nolint:errcheck // HTTP response body cleanup
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to get repository info: %s", resp.Status)
@@ -89,7 +89,7 @@ func List(ctx context.Context, org string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repositories: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }() //nolint:errcheck // HTTP response body cleanup
 
 	if resp.StatusCode != http.StatusOK {
 		// body, _ := io.ReadAll(resp.Body)
@@ -100,10 +100,10 @@ func List(ctx context.Context, org string) ([]string, error) {
 		resetTime, err := strconv.ParseInt(rateReset, 10, 64)
 		if err == nil {
 			c := color.New(color.FgCyan, color.Bold)
-			c.Println("Github RateLimit !!! you must wait until: ")
-			c.Println(time.Unix(resetTime, 0).Format(time.RFC1123))
-			c.Printf("%d minutes and %d seconds\n", int(time.Until(time.Unix(resetTime, 0)).Minutes()), int(time.Until(time.Unix(resetTime, 0)).Seconds())%60)
-			c.Println("or Use Github Token (not provided yet ^*)")
+			_, _ = c.Println("Github RateLimit !!! you must wait until: ")                                                                                            //nolint:errcheck // User information display
+			_, _ = c.Println(time.Unix(resetTime, 0).Format(time.RFC1123))                                                                                            //nolint:errcheck // User information display
+			_, _ = c.Printf("%d minutes and %d seconds\n", int(time.Until(time.Unix(resetTime, 0)).Minutes()), int(time.Until(time.Unix(resetTime, 0)).Seconds())%60) //nolint:errcheck // User information display
+			_, _ = c.Println("or Use Github Token (not provided yet ^*)")                                                                                             //nolint:errcheck // User information display
 		}
 		// try after
 		return nil, fmt.Errorf("failed to get repositories: %s", resp.Status)
@@ -185,11 +185,11 @@ func Clone(ctx context.Context, targetPath string, org string, repo string) erro
 func RefreshAllOptimizedStreaming(ctx context.Context, targetPath, org, strategy, token string) error {
 	config := DefaultOptimizedCloneConfig()
 
-	manager, err := NewOptimizedBulkCloneManager(token, config)
+	manager, err := NewOptimizedBulkCloneManager(token, config) //nolint:contextcheck // Manager creation doesn't require context propagation
 	if err != nil {
 		return fmt.Errorf("failed to create optimized bulk clone manager: %w", err)
 	}
-	defer manager.Close()
+	defer func() { _ = manager.Close() }() //nolint:errcheck // Resource cleanup
 
 	stats, err := manager.RefreshAllOptimized(ctx, targetPath, org, strategy)
 	if err != nil {
@@ -245,7 +245,7 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 
 	// print all orgs
 	c := color.New(color.FgCyan, color.Bold)
-	c.Printf("All Target %d >>>>>>>>>>>>>>>>>>>>\n", len(orgRepos))
+	_, _ = c.Printf("All Target %d >>>>>>>>>>>>>>>>>>>>\n", len(orgRepos)) //nolint:errcheck // User information display
 
 	for _, repo := range orgRepos {
 		c.Println(repo)

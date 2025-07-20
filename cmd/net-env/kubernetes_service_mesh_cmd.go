@@ -11,6 +11,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Service mesh constants.
+const (
+	serviceMeshIstio   = "istio"
+	serviceMeshLinkerd = "linkerd"
+)
+
 // newServiceMeshCmd creates the service-mesh subcommand.
 func newServiceMeshCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
@@ -191,9 +197,9 @@ func newServiceMeshConfigureCmd(km *KubernetesNetworkManager) *cobra.Command {
 
 			// Configure based on mesh type
 			switch profile.ServiceMesh.Type {
-			case "istio":
+			case serviceMeshIstio:
 				return configureIstioInteractive(km, profile)
-			case "linkerd":
+			case serviceMeshLinkerd:
 				return configureLinkerdInteractive(km, profile)
 			default:
 				return fmt.Errorf("unknown service mesh type: %s", profile.ServiceMesh.Type)

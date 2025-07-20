@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package devenv
 
 import (
@@ -276,8 +277,7 @@ Host *
 	require.NoError(t, err)
 
 	opts := &sshOptions{}
-	err = opts.displayConfigInfo(configPath)
-	assert.NoError(t, err)
+	opts.displayConfigInfo(configPath)
 }
 
 func TestSshParseSshConfig(t *testing.T) {

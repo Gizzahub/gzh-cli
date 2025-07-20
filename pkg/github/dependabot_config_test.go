@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package github
 
 import (
@@ -504,7 +505,7 @@ func BenchmarkCreateDefaultConfig(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		manager.CreateDefaultConfig(ctx, "testorg", "testrepo", ecosystems)
+		_, _ = manager.CreateDefaultConfig(ctx, "testorg", "testrepo", ecosystems) //nolint:errcheck // Benchmark test
 	}
 }
 
@@ -533,7 +534,7 @@ func BenchmarkValidateConfig(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		manager.ValidateConfig(config)
+		_ = manager.ValidateConfig(config) //nolint:errcheck // Benchmark test
 	}
 }
 
@@ -544,7 +545,7 @@ func BenchmarkDetectEcosystems(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		manager.DetectEcosystems(ctx, "testorg", "test-node-python-docker-repo")
+		_, _ = manager.DetectEcosystems(ctx, "testorg", "test-node-python-docker-repo") //nolint:errcheck // Benchmark test
 	}
 }
 

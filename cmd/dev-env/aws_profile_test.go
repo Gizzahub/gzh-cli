@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package devenv
 
 import (
@@ -28,26 +29,35 @@ func TestAWSProfileManager(t *testing.T) {
 	// Add default profile
 	defaultSection, err := cfg.NewSection("default")
 	require.NoError(t, err)
-	defaultSection.NewKey("region", "us-east-1")
-	defaultSection.NewKey("output", "json")
+	_, err = defaultSection.NewKey("region", "us-east-1")
+	require.NoError(t, err)
+	_, err = defaultSection.NewKey("output", "json")
+	require.NoError(t, err)
 
 	// Add SSO profile
 	ssoSection, err := cfg.NewSection("profile production")
 	require.NoError(t, err)
-	ssoSection.NewKey("sso_start_url", "https://mycompany.awsapps.com/start")
-	ssoSection.NewKey("sso_region", "us-east-1")
-	ssoSection.NewKey("sso_account_id", "123456789012")
-	ssoSection.NewKey("sso_role_name", "AdministratorAccess")
-	ssoSection.NewKey("region", "us-west-2")
-	ssoSection.NewKey("output", "json")
+	_, err = ssoSection.NewKey("sso_start_url", "https://mycompany.awsapps.com/start")
+	require.NoError(t, err)
+	_, err = ssoSection.NewKey("sso_region", "us-east-1")
+	require.NoError(t, err)
+	_, err = ssoSection.NewKey("sso_account_id", "123456789012")
+	require.NoError(t, err)
+	_, err = ssoSection.NewKey("sso_role_name", "AdministratorAccess")
+	require.NoError(t, err)
+	_, err = ssoSection.NewKey("region", "us-west-2")
+	require.NoError(t, err)
+	_, _ = ssoSection.NewKey("output", "json") // Ignore error
 
 	// Add assume role profile
 	roleSection, err := cfg.NewSection("profile staging")
 	require.NoError(t, err)
-	roleSection.NewKey("role_arn", "arn:aws:iam::123456789012:role/StagingRole")
-	roleSection.NewKey("source_profile", "default")
-	roleSection.NewKey("region", "eu-west-1")
-	roleSection.NewKey("mfa_serial", "arn:aws:iam::123456789012:mfa/user")
+	_, err = roleSection.NewKey("role_arn", "arn:aws:iam::123456789012:role/StagingRole")
+	require.NoError(t, err)
+	_, err = roleSection.NewKey("source_profile", "default")
+	require.NoError(t, err)
+	_, _ = roleSection.NewKey("region", "eu-west-1")                              // Ignore error
+	_, _ = roleSection.NewKey("mfa_serial", "arn:aws:iam::123456789012:mfa/user") // Ignore error
 
 	// Save config file
 	require.NoError(t, cfg.SaveTo(configPath))
@@ -58,16 +68,16 @@ func TestAWSProfileManager(t *testing.T) {
 
 	defaultCred, err := credCfg.NewSection("default")
 	require.NoError(t, err)
-	defaultCred.NewKey("aws_access_key_id", "AKIAIOSFODNN7EXAMPLE")
-	defaultCred.NewKey("aws_secret_access_key", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY")
+	_, _ = defaultCred.NewKey("aws_access_key_id", "AKIAIOSFODNN7EXAMPLE")                         // Ignore error
+	_, _ = defaultCred.NewKey("aws_secret_access_key", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY") // Ignore error
 
 	require.NoError(t, credCfg.SaveTo(credentialsPath))
 
 	// Override home directory for testing
 	oldHome := os.Getenv("HOME")
 
-	os.Setenv("HOME", tmpDir)
-	defer os.Setenv("HOME", oldHome)
+	_ = os.Setenv("HOME", tmpDir)                     //nolint:errcheck // Test environment setup
+	defer func() { _ = os.Setenv("HOME", oldHome) }() // Ignore error
 
 	t.Run("LoadProfiles", func(t *testing.T) {
 		ctx := context.Background()
@@ -142,8 +152,8 @@ func TestAWSProfileManager(t *testing.T) {
 
 	t.Run("ActiveProfile", func(t *testing.T) {
 		// Set AWS_PROFILE environment variable
-		os.Setenv("AWS_PROFILE", "staging")
-		defer os.Unsetenv("AWS_PROFILE")
+		_ = os.Setenv("AWS_PROFILE", "staging")           // Ignore error
+		defer func() { _ = os.Unsetenv("AWS_PROFILE") }() // Ignore error
 
 		ctx := context.Background()
 		manager, err := NewAWSProfileManager(ctx)
@@ -308,8 +318,8 @@ func TestUpdateShellConfig(t *testing.T) {
 	// Override home directory
 	oldHome := os.Getenv("HOME")
 
-	os.Setenv("HOME", tmpDir)
-	defer os.Setenv("HOME", oldHome)
+	_ = os.Setenv("HOME", tmpDir)                     //nolint:errcheck // Test environment setup
+	defer func() { _ = os.Setenv("HOME", oldHome) }() // Ignore error
 
 	ctx := context.Background()
 	manager := &AWSProfileManager{

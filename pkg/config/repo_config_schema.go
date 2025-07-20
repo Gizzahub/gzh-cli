@@ -16,8 +16,8 @@ type RepoConfig struct {
 	Templates     map[string]*RepoTemplate   `yaml:"templates,omitempty"`
 	Repositories  *RepoTargets               `yaml:"repositories,omitempty"`
 	Policies      map[string]*PolicyTemplate `yaml:"policies,omitempty"`
-	PolicyGroups  map[string]*PolicyGroup    `yaml:"policy_groups,omitempty"`  // Policy group configurations
-	PolicyPresets map[string]*PolicyPreset   `yaml:"policy_presets,omitempty"` // Predefined policy sets (SOC2, ISO27001, etc.)
+	PolicyGroups  map[string]*PolicyGroup    `yaml:"policyGroups,omitempty"`  // Policy group configurations
+	PolicyPresets map[string]*PolicyPreset   `yaml:"policyPresets,omitempty"` // Predefined policy sets (SOC2, ISO27001, etc.)
 }
 
 // RepoDefaults represents default settings for all repositories.
@@ -36,7 +36,7 @@ type RepoTemplate struct {
 	Security      *SecuritySettings   `yaml:"security,omitempty"`
 	Permissions   *PermissionSettings `yaml:"permissions,omitempty"`
 	Topics        []string            `yaml:"topics,omitempty"`
-	RequiredFiles []string            `yaml:"required_files,omitempty"`
+	RequiredFiles []string            `yaml:"requiredFiles,omitempty"`
 	Webhooks      []string            `yaml:"webhooks,omitempty"`
 	Environments  []string            `yaml:"environments,omitempty"`
 }
@@ -85,56 +85,56 @@ type RepoSettings struct {
 	Archived    *bool    `yaml:"archived,omitempty"`
 
 	// Features
-	HasIssues      *bool `yaml:"has_issues,omitempty"`
-	HasProjects    *bool `yaml:"has_projects,omitempty"`
-	HasWiki        *bool `yaml:"has_wiki,omitempty"`
-	HasDownloads   *bool `yaml:"has_downloads,omitempty"`
-	HasDiscussions *bool `yaml:"has_discussions,omitempty"`
-	HasPages       *bool `yaml:"has_pages,omitempty"`
+	HasIssues      *bool `yaml:"hasIssues,omitempty"`
+	HasProjects    *bool `yaml:"hasProjects,omitempty"`
+	HasWiki        *bool `yaml:"hasWiki,omitempty"`
+	HasDownloads   *bool `yaml:"hasDownloads,omitempty"`
+	HasDiscussions *bool `yaml:"hasDiscussions,omitempty"`
+	HasPages       *bool `yaml:"hasPages,omitempty"`
 
 	// Merge settings
-	AllowSquashMerge    *bool `yaml:"allow_squash_merge,omitempty"`
-	AllowMergeCommit    *bool `yaml:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge    *bool `yaml:"allow_rebase_merge,omitempty"`
-	AllowAutoMerge      *bool `yaml:"allow_auto_merge,omitempty"`
-	DeleteBranchOnMerge *bool `yaml:"delete_branch_on_merge,omitempty"`
+	AllowSquashMerge    *bool `yaml:"allowSquashMerge,omitempty"`
+	AllowMergeCommit    *bool `yaml:"allowMergeCommit,omitempty"`
+	AllowRebaseMerge    *bool `yaml:"allowRebaseMerge,omitempty"`
+	AllowAutoMerge      *bool `yaml:"allowAutoMerge,omitempty"`
+	DeleteBranchOnMerge *bool `yaml:"deleteBranchOnMerge,omitempty"`
 
 	// Advanced settings
-	AllowForking             *bool `yaml:"allow_forking,omitempty"`
-	WebCommitSignoffRequired *bool `yaml:"web_commit_signoff_required,omitempty"`
+	AllowForking             *bool `yaml:"allowForking,omitempty"`
+	WebCommitSignoffRequired *bool `yaml:"webCommitSignoffRequired,omitempty"`
 
 	// Default branch
-	DefaultBranch *string `yaml:"default_branch,omitempty"`
+	DefaultBranch *string `yaml:"defaultBranch,omitempty"`
 }
 
 // SecuritySettings represents security-related settings.
 type SecuritySettings struct {
-	VulnerabilityAlerts           *bool                            `yaml:"vulnerability_alerts,omitempty"`
-	AutomatedSecurityFixes        *bool                            `yaml:"automated_security_fixes,omitempty"`
-	SecurityAdvisories            *bool                            `yaml:"security_advisories,omitempty"`
-	PrivateVulnerabilityReporting *bool                            `yaml:"private_vulnerability_reporting,omitempty"`
-	SecretScanning                *bool                            `yaml:"secret_scanning,omitempty"`
-	SecretScanningPushProtection  *bool                            `yaml:"secret_scanning_push_protection,omitempty"`
-	BranchProtection              map[string]*BranchProtectionRule `yaml:"branch_protection,omitempty"`
+	VulnerabilityAlerts           *bool                            `yaml:"vulnerabilityAlerts,omitempty"`
+	AutomatedSecurityFixes        *bool                            `yaml:"automatedSecurityFixes,omitempty"`
+	SecurityAdvisories            *bool                            `yaml:"securityAdvisories,omitempty"`
+	PrivateVulnerabilityReporting *bool                            `yaml:"privateVulnerabilityReporting,omitempty"`
+	SecretScanning                *bool                            `yaml:"secretScanning,omitempty"`
+	SecretScanningPushProtection  *bool                            `yaml:"secretScanningPushProtection,omitempty"`
+	BranchProtection              map[string]*BranchProtectionRule `yaml:"branchProtection,omitempty"`
 	Webhooks                      []WebhookConfig                  `yaml:"webhooks,omitempty"`
 }
 
 // BranchProtectionRule represents branch protection settings.
 type BranchProtectionRule struct {
-	RequiredReviews               *int                       `yaml:"required_reviews,omitempty"`
-	DismissStaleReviews           *bool                      `yaml:"dismiss_stale_reviews,omitempty"`
-	RequireCodeOwnerReviews       *bool                      `yaml:"require_code_owner_reviews,omitempty"`
-	RequiredStatusChecks          []string                   `yaml:"required_status_checks,omitempty"`
-	StrictStatusChecks            *bool                      `yaml:"strict_status_checks,omitempty"`
-	RestrictPushes                *bool                      `yaml:"restrict_pushes,omitempty"`
-	AllowedUsers                  []string                   `yaml:"allowed_users,omitempty"`
-	AllowedTeams                  []string                   `yaml:"allowed_teams,omitempty"`
-	RequireUpToDateBranch         *bool                      `yaml:"require_up_to_date_branch,omitempty"`
-	EnforceAdmins                 *bool                      `yaml:"enforce_admins,omitempty"`
-	RequireConversationResolution *bool                      `yaml:"require_conversation_resolution,omitempty"`
-	AllowForcePushes              *bool                      `yaml:"allow_force_pushes,omitempty"`
-	AllowDeletions                *bool                      `yaml:"allow_deletions,omitempty"`
-	DeploymentProtectionRules     []DeploymentProtectionRule `yaml:"deployment_protection_rules,omitempty"`
+	RequiredReviews               *int                       `yaml:"requiredReviews,omitempty"`
+	DismissStaleReviews           *bool                      `yaml:"dismissStaleReviews,omitempty"`
+	RequireCodeOwnerReviews       *bool                      `yaml:"requireCodeOwnerReviews,omitempty"`
+	RequiredStatusChecks          []string                   `yaml:"requiredStatusChecks,omitempty"`
+	StrictStatusChecks            *bool                      `yaml:"strictStatusChecks,omitempty"`
+	RestrictPushes                *bool                      `yaml:"restrictPushes,omitempty"`
+	AllowedUsers                  []string                   `yaml:"allowedUsers,omitempty"`
+	AllowedTeams                  []string                   `yaml:"allowedTeams,omitempty"`
+	RequireUpToDateBranch         *bool                      `yaml:"requireUpToDateBranch,omitempty"`
+	EnforceAdmins                 *bool                      `yaml:"enforceAdmins,omitempty"`
+	RequireConversationResolution *bool                      `yaml:"requireConversationResolution,omitempty"`
+	AllowForcePushes              *bool                      `yaml:"allowForcePushes,omitempty"`
+	AllowDeletions                *bool                      `yaml:"allowDeletions,omitempty"`
+	DeploymentProtectionRules     []DeploymentProtectionRule `yaml:"deploymentProtectionRules,omitempty"`
 }
 
 // DeploymentProtectionRule represents deployment protection settings.
@@ -147,14 +147,14 @@ type WebhookConfig struct {
 	URL         string   `yaml:"url"`
 	Events      []string `yaml:"events"`
 	Active      *bool    `yaml:"active,omitempty"`
-	ContentType string   `yaml:"content_type,omitempty"`
+	ContentType string   `yaml:"contentType,omitempty"`
 	Secret      string   `yaml:"secret,omitempty"`
 }
 
 // PermissionSettings represents permission-related settings.
 type PermissionSettings struct {
-	TeamPermissions map[string]string `yaml:"team_permissions,omitempty"`
-	UserPermissions map[string]string `yaml:"user_permissions,omitempty"`
+	TeamPermissions map[string]string `yaml:"teamPermissions,omitempty"`
+	UserPermissions map[string]string `yaml:"userPermissions,omitempty"`
 }
 
 // PolicyTemplate represents a reusable policy configuration.
@@ -179,9 +179,9 @@ type PolicyException struct {
 	PolicyName   string   `yaml:"policy"`
 	RuleName     string   `yaml:"rule"`
 	Reason       string   `yaml:"reason"`
-	ApprovedBy   string   `yaml:"approved_by"`
-	ApprovalDate string   `yaml:"approval_date,omitempty"`
-	ExpiresAt    string   `yaml:"expires_at,omitempty"`
+	ApprovedBy   string   `yaml:"approvedBy"`
+	ApprovalDate string   `yaml:"approvalDate,omitempty"`
+	ExpiresAt    string   `yaml:"expiresAt,omitempty"`
 	Conditions   []string `yaml:"conditions,omitempty"`
 }
 
@@ -225,7 +225,7 @@ func LoadRepoConfig(path string) (*RepoConfig, error) {
 	path = os.ExpandEnv(path)
 
 	// Read the file
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is user-provided configuration file path
 	if err != nil {
 		return nil, fmt.Errorf("failed to read repo config file: %w", err)
 	}
@@ -587,28 +587,11 @@ func (rc *RepoConfig) resolveTemplateWithChain(templateName string, chain []stri
 
 // GetEffectiveConfig returns the effective configuration for a specific repository.
 func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *SecuritySettings, *PermissionSettings, []PolicyException, error) {
-	var (
-		settings    *RepoSettings
-		security    *SecuritySettings
-		permissions *PermissionSettings
-		exceptions  []PolicyException
-	)
+	config := &effectiveConfig{}
 
 	// Start with defaults
-
 	if rc.Defaults != nil {
-		if rc.Defaults.Template != "" {
-			template, err := rc.resolveTemplate(rc.Defaults.Template)
-			if err == nil {
-				settings = mergeRepoSettings(settings, template.Settings)
-				security = mergeSecuritySettings(security, template.Security)
-				permissions = mergePermissionSettings(permissions, template.Permissions)
-			}
-		}
-
-		settings = mergeRepoSettings(settings, rc.Defaults.Settings)
-		security = mergeSecuritySettings(security, rc.Defaults.Security)
-		permissions = mergePermissionSettings(permissions, rc.Defaults.Permissions)
+		rc.applyConfigLayer(config, rc.Defaults.Template, rc.Defaults.Settings, rc.Defaults.Security, rc.Defaults.Permissions, nil)
 	}
 
 	// Apply repository-specific configuration
@@ -616,61 +599,52 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 		// Check specific repositories
 		for _, specific := range rc.Repositories.Specific {
 			if specific.Name == repoName {
-				if specific.Template != "" {
-					template, err := rc.resolveTemplate(specific.Template)
-					if err == nil {
-						settings = mergeRepoSettings(settings, template.Settings)
-						security = mergeSecuritySettings(security, template.Security)
-						permissions = mergePermissionSettings(permissions, template.Permissions)
-					}
-				}
-
-				settings = mergeRepoSettings(settings, specific.Settings)
-				security = mergeSecuritySettings(security, specific.Security)
-				permissions = mergePermissionSettings(permissions, specific.Permissions)
-				exceptions = append(exceptions, specific.Exceptions...)
-
-				return settings, security, permissions, exceptions, nil
+				rc.applyConfigLayer(config, specific.Template, specific.Settings, specific.Security, specific.Permissions, specific.Exceptions)
+				return config.settings, config.security, config.permissions, config.exceptions, nil
 			}
 		}
 
 		// Check patterns
 		for _, pattern := range rc.Repositories.Patterns {
 			if matched, _ := matchPattern(repoName, pattern.Match); matched {
-				if pattern.Template != "" {
-					template, err := rc.resolveTemplate(pattern.Template)
-					if err == nil {
-						settings = mergeRepoSettings(settings, template.Settings)
-						security = mergeSecuritySettings(security, template.Security)
-						permissions = mergePermissionSettings(permissions, template.Permissions)
-					}
-				}
-
-				settings = mergeRepoSettings(settings, pattern.Settings)
-				security = mergeSecuritySettings(security, pattern.Security)
-				permissions = mergePermissionSettings(permissions, pattern.Permissions)
-				exceptions = append(exceptions, pattern.Exceptions...)
+				rc.applyConfigLayer(config, pattern.Template, pattern.Settings, pattern.Security, pattern.Permissions, pattern.Exceptions)
 			}
 		}
 
 		// Apply default if exists
 		if rc.Repositories.Default != nil {
-			if rc.Repositories.Default.Template != "" {
-				template, err := rc.resolveTemplate(rc.Repositories.Default.Template)
-				if err == nil {
-					settings = mergeRepoSettings(settings, template.Settings)
-					security = mergeSecuritySettings(security, template.Security)
-					permissions = mergePermissionSettings(permissions, template.Permissions)
-				}
-			}
-
-			settings = mergeRepoSettings(settings, rc.Repositories.Default.Settings)
-			security = mergeSecuritySettings(security, rc.Repositories.Default.Security)
-			permissions = mergePermissionSettings(permissions, rc.Repositories.Default.Permissions)
+			rc.applyConfigLayer(config, rc.Repositories.Default.Template, rc.Repositories.Default.Settings, rc.Repositories.Default.Security, rc.Repositories.Default.Permissions, nil)
 		}
 	}
 
-	return settings, security, permissions, exceptions, nil
+	return config.settings, config.security, config.permissions, config.exceptions, nil
+}
+
+// effectiveConfig holds the accumulated configuration during processing.
+type effectiveConfig struct {
+	settings    *RepoSettings
+	security    *SecuritySettings
+	permissions *PermissionSettings
+	exceptions  []PolicyException
+}
+
+// applyConfigLayer applies a configuration layer (template + direct settings).
+func (rc *RepoConfig) applyConfigLayer(config *effectiveConfig, templateName string, settings *RepoSettings, security *SecuritySettings, permissions *PermissionSettings, exceptions []PolicyException) {
+	// Apply template if specified
+	if templateName != "" {
+		template, err := rc.resolveTemplate(templateName)
+		if err == nil {
+			config.settings = mergeRepoSettings(config.settings, template.Settings)
+			config.security = mergeSecuritySettings(config.security, template.Security)
+			config.permissions = mergePermissionSettings(config.permissions, template.Permissions)
+		}
+	}
+
+	// Apply direct settings
+	config.settings = mergeRepoSettings(config.settings, settings)
+	config.security = mergeSecuritySettings(config.security, security)
+	config.permissions = mergePermissionSettings(config.permissions, permissions)
+	config.exceptions = append(config.exceptions, exceptions...)
 }
 
 // ValidatePolicyExceptions validates all policy exceptions in the configuration.
@@ -811,67 +785,44 @@ func mergeRepoSettings(base, override *RepoSettings) *RepoSettings {
 		}
 	}
 
-	// Override with new values
+	// Override with new values using helper functions
 	if override != nil {
-		if override.Description != nil {
-			result.Description = override.Description
-		}
+		mergeStringField(&result.Description, override.Description)
+		mergeStringField(&result.Homepage, override.Homepage)
+		mergeStringField(&result.DefaultBranch, override.DefaultBranch)
 
-		if override.Homepage != nil {
-			result.Homepage = override.Homepage
-		}
+		mergeBoolField(&result.Private, override.Private)
+		mergeBoolField(&result.Archived, override.Archived)
+		mergeBoolField(&result.HasIssues, override.HasIssues)
+		mergeBoolField(&result.HasProjects, override.HasProjects)
+		mergeBoolField(&result.HasWiki, override.HasWiki)
+		mergeBoolField(&result.HasDownloads, override.HasDownloads)
+		mergeBoolField(&result.AllowSquashMerge, override.AllowSquashMerge)
+		mergeBoolField(&result.AllowMergeCommit, override.AllowMergeCommit)
+		mergeBoolField(&result.AllowRebaseMerge, override.AllowRebaseMerge)
+		mergeBoolField(&result.DeleteBranchOnMerge, override.DeleteBranchOnMerge)
 
 		if override.Topics != nil {
 			result.Topics = make([]string, len(override.Topics))
 			copy(result.Topics, override.Topics)
 		}
-
-		if override.Private != nil {
-			result.Private = override.Private
-		}
-
-		if override.Archived != nil {
-			result.Archived = override.Archived
-		}
-
-		if override.HasIssues != nil {
-			result.HasIssues = override.HasIssues
-		}
-
-		if override.HasProjects != nil {
-			result.HasProjects = override.HasProjects
-		}
-
-		if override.HasWiki != nil {
-			result.HasWiki = override.HasWiki
-		}
-
-		if override.HasDownloads != nil {
-			result.HasDownloads = override.HasDownloads
-		}
-
-		if override.AllowSquashMerge != nil {
-			result.AllowSquashMerge = override.AllowSquashMerge
-		}
-
-		if override.AllowMergeCommit != nil {
-			result.AllowMergeCommit = override.AllowMergeCommit
-		}
-
-		if override.AllowRebaseMerge != nil {
-			result.AllowRebaseMerge = override.AllowRebaseMerge
-		}
-
-		if override.DeleteBranchOnMerge != nil {
-			result.DeleteBranchOnMerge = override.DeleteBranchOnMerge
-		}
-
-		if override.DefaultBranch != nil {
-			result.DefaultBranch = override.DefaultBranch
-		}
 	}
 
 	return result
+}
+
+// mergeStringField merges a string pointer field if the override is not nil.
+func mergeStringField(target **string, override *string) {
+	if override != nil {
+		*target = override
+	}
+}
+
+// mergeBoolField merges a bool pointer field if the override is not nil.
+func mergeBoolField(target **bool, override *bool) {
+	if override != nil {
+		*target = override
+	}
 }
 
 // mergeSecuritySettings merges two SecuritySettings, with the second taking precedence.

@@ -1,3 +1,4 @@
+//nolint:tagliatelle // Network topology output may require specific JSON field naming conventions
 package netenv
 
 import (
@@ -854,7 +855,7 @@ func (nta *NetworkTopologyAnalyzer) generateTopologySummary(topology *NetworkTop
 
 func (nta *NetworkTopologyAnalyzer) determineNetworkType(driver string) NetworkType {
 	switch driver {
-	case "bridge":
+	case string(NetworkTypeBridge):
 		return NetworkTypeBridge
 	case "host":
 		return NetworkTypeHost

@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
@@ -20,8 +21,8 @@ func (m *MockStorage) StoreEvent(_ context.Context, _ *github.GitHubEvent) error
 }
 
 // GetEvent retrieves an event by ID (mock implementation).
-func (m *MockStorage) GetEvent(_ context.Context, _ string) (*github.GitHubEvent, error) {
-	return nil, nil
+func (m *MockStorage) GetEvent(_ context.Context, eventID string) (*github.GitHubEvent, error) {
+	return nil, fmt.Errorf("event not found: %s", eventID)
 }
 
 // ListEvents lists events with filtering (mock implementation).

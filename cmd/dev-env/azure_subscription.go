@@ -18,21 +18,21 @@ import (
 // AzureSubscription represents an Azure subscription configuration.
 type AzureSubscription struct {
 	ID                string            `json:"id"`
-	DisplayName       string            `json:"display_name"`
+	DisplayName       string            `json:"displayName"`
 	Name              string            `json:"name"`
 	State             string            `json:"state"`
-	TenantID          string            `json:"tenant_id"`
-	TenantDisplayName string            `json:"tenant_display_name"`
+	TenantID          string            `json:"tenantId"`
+	TenantDisplayName string            `json:"tenantDisplayName"`
 	User              string            `json:"user"`
-	IsDefault         bool              `json:"is_default"`
-	IsActive          bool              `json:"is_active"`
-	LastUsed          *time.Time        `json:"last_used,omitempty"`
+	IsDefault         bool              `json:"isDefault"`
+	IsActive          bool              `json:"isActive"`
+	LastUsed          *time.Time        `json:"lastUsed,omitempty"`
 	Tags              map[string]string `json:"tags,omitempty"`
-	ResourceGroups    []string          `json:"resource_groups,omitempty"`
+	ResourceGroups    []string          `json:"resourceGroups,omitempty"`
 	Regions           []string          `json:"regions,omitempty"`
-	EnvironmentName   string            `json:"environment_name"`
-	HomeTenantID      string            `json:"home_tenant_id"`
-	ManagedByTenants  []string          `json:"managed_by_tenants,omitempty"`
+	EnvironmentName   string            `json:"environmentName"`
+	HomeTenantID      string            `json:"homeTenantId"`
+	ManagedByTenants  []string          `json:"managedByTenants,omitempty"`
 }
 
 // AzureSubscriptionManager manages Azure subscriptions and configurations.
@@ -454,7 +454,7 @@ func (m *AzureSubscriptionManager) loadSubscriptions() error {
 // enrichSubscriptionDetails adds additional details to a subscription.
 func (m *AzureSubscriptionManager) enrichSubscriptionDetails(subscription *AzureSubscription) {
 	// Get resource groups for this subscription
-	cmd := exec.CommandContext(m.ctx, "az", "group", "list", "--subscription", subscription.ID, "--query", "[].name", "--output", "tsv")
+	cmd := exec.CommandContext(m.ctx, "az", "group", "list", "--subscription", subscription.ID, "--query", "[].name", "--output", "tsv") //nolint:gosec // Azure CLI with controlled arguments
 	if output, err := cmd.Output(); err == nil {
 		resourceGroups := strings.Split(strings.TrimSpace(string(output)), "\n")
 		if len(resourceGroups) > 0 && resourceGroups[0] != "" {
@@ -463,7 +463,7 @@ func (m *AzureSubscriptionManager) enrichSubscriptionDetails(subscription *Azure
 	}
 
 	// Get available regions for this subscription
-	cmd = exec.CommandContext(m.ctx, "az", "account", "list-locations", "--subscription", subscription.ID, "--query", "[].name", "--output", "tsv")
+	cmd = exec.CommandContext(m.ctx, "az", "account", "list-locations", "--subscription", subscription.ID, "--query", "[].name", "--output", "tsv") //nolint:gosec // Azure CLI with controlled arguments
 	if output, err := cmd.Output(); err == nil {
 		regions := strings.Split(strings.TrimSpace(string(output)), "\n")
 		if len(regions) > 0 && regions[0] != "" {
@@ -535,17 +535,17 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 				displayID = displayID[:8] + "..." + displayID[len(displayID)-8:]
 			}
 
-			table.Append(
+			table.Append([]string{ //nolint:errcheck // Table operations are non-critical for CLI display
 				displayID,
 				subscription.DisplayName,
 				subscription.State,
 				subscription.TenantDisplayName,
 				subscription.User,
 				active,
-			)
+			})
 		}
 
-		table.Render()
+		table.Render() //nolint:errcheck // Table rendering errors are non-critical for CLI display
 
 		return nil
 
@@ -735,7 +735,7 @@ func (m *AzureSubscriptionManager) login(tenantID string, useDeviceCode, service
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Azure login failed: %w", err)
+		return fmt.Errorf("azure login failed: %w", err)
 	}
 
 	fmt.Printf("✅ Azure login successful\n")
@@ -836,14 +836,14 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 				}
 			}
 
-			table.Append(
+			table.Append([]string{ //nolint:errcheck // Table operations are non-critical for CLI display
 				tenantID,
 				displayName,
 				fmt.Sprintf("%d", subCount),
-			)
+			})
 		}
 
-		table.Render()
+		table.Render() //nolint:errcheck // Table rendering errors are non-critical for CLI display
 
 		return nil
 

@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package alwayslatest
 
 import (
@@ -123,7 +124,7 @@ func TestExtractMajorMinor(t *testing.T) {
 
 func TestFindVersionsToInstallMajorStrategy(t *testing.T) {
 	opts := defaultAlwaysLatestRbenvOptions()
-	opts.strategy = "major"
+	opts.strategy = strategyMajor
 
 	availableVersions := []string{"3.0.5", "3.1.3", "3.1.4", "3.2.0", "3.2.1"}
 	installedVersions := []string{"3.1.2"}

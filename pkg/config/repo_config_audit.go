@@ -9,8 +9,8 @@ import (
 // AuditReport represents a comprehensive compliance audit report.
 type AuditReport struct {
 	Organization string              `yaml:"organization" json:"organization"`
-	GeneratedAt  time.Time           `yaml:"generated_at" json:"generated_at"`
-	PolicyFile   string              `yaml:"policy_file" json:"policy_file"`
+	GeneratedAt  time.Time           `yaml:"generatedAt" json:"generatedAt"`
+	PolicyFile   string              `yaml:"policyFile" json:"policyFile"`
 	Summary      AuditSummary        `yaml:"summary" json:"summary"`
 	Policies     []PolicyAuditResult `yaml:"policies" json:"policies"`
 	Repositories []RepoAuditResult   `yaml:"repositories" json:"repositories"`
@@ -18,34 +18,34 @@ type AuditReport struct {
 
 // AuditSummary provides high-level compliance metrics.
 type AuditSummary struct {
-	TotalRepositories     int     `yaml:"total_repositories" json:"total_repositories"`
-	AuditedRepositories   int     `yaml:"audited_repositories" json:"audited_repositories"`
-	CompliantRepositories int     `yaml:"compliant_repositories" json:"compliant_repositories"`
-	CompliancePercentage  float64 `yaml:"compliance_percentage" json:"compliance_percentage"`
-	TotalPolicies         int     `yaml:"total_policies" json:"total_policies"`
-	TotalViolations       int     `yaml:"total_violations" json:"total_violations"`
-	TotalExceptions       int     `yaml:"total_exceptions" json:"total_exceptions"`
-	ActiveExceptions      int     `yaml:"active_exceptions" json:"active_exceptions"`
+	TotalRepositories     int     `yaml:"totalRepositories" json:"totalRepositories"`
+	AuditedRepositories   int     `yaml:"auditedRepositories" json:"auditedRepositories"`
+	CompliantRepositories int     `yaml:"compliantRepositories" json:"compliantRepositories"`
+	CompliancePercentage  float64 `yaml:"compliancePercentage" json:"compliancePercentage"`
+	TotalPolicies         int     `yaml:"totalPolicies" json:"totalPolicies"`
+	TotalViolations       int     `yaml:"totalViolations" json:"totalViolations"`
+	TotalExceptions       int     `yaml:"totalExceptions" json:"totalExceptions"`
+	ActiveExceptions      int     `yaml:"activeExceptions" json:"activeExceptions"`
 }
 
 // PolicyAuditResult represents audit results for a specific policy.
 type PolicyAuditResult struct {
-	PolicyName           string            `yaml:"policy_name" json:"policy_name"`
+	PolicyName           string            `yaml:"policyName" json:"policyName"`
 	Description          string            `yaml:"description" json:"description"`
 	Rules                []RuleAuditResult `yaml:"rules" json:"rules"`
-	CompliantRepos       int               `yaml:"compliant_repos" json:"compliant_repos"`
-	ViolatingRepos       int               `yaml:"violating_repos" json:"violating_repos"`
-	ExemptedRepos        int               `yaml:"exempted_repos" json:"exempted_repos"`
-	CompliancePercentage float64           `yaml:"compliance_percentage" json:"compliance_percentage"`
+	CompliantRepos       int               `yaml:"compliantRepos" json:"compliantRepos"`
+	ViolatingRepos       int               `yaml:"violatingRepos" json:"violatingRepos"`
+	ExemptedRepos        int               `yaml:"exemptedRepos" json:"exemptedRepos"`
+	CompliancePercentage float64           `yaml:"compliancePercentage" json:"compliancePercentage"`
 }
 
 // RuleAuditResult represents audit results for a specific rule within a policy.
 type RuleAuditResult struct {
-	RuleName       string   `yaml:"rule_name" json:"rule_name"`
+	RuleName       string   `yaml:"ruleName" json:"ruleName"`
 	Type           string   `yaml:"type" json:"type"`
 	Enforcement    string   `yaml:"enforcement" json:"enforcement"`
-	ViolatingRepos []string `yaml:"violating_repos" json:"violating_repos"`
-	ExemptedRepos  []string `yaml:"exempted_repos" json:"exempted_repos"`
+	ViolatingRepos []string `yaml:"violatingRepos" json:"violatingRepos"`
+	ExemptedRepos  []string `yaml:"exemptedRepos" json:"exemptedRepos"`
 }
 
 // RepoAuditResult represents audit results for a specific repository.
@@ -55,7 +55,7 @@ type RepoAuditResult struct {
 	Compliant    bool              `yaml:"compliant" json:"compliant"`
 	Violations   []PolicyViolation `yaml:"violations,omitempty" json:"violations,omitempty"`
 	Exceptions   []PolicyException `yaml:"exceptions,omitempty" json:"exceptions,omitempty"`
-	LastModified time.Time         `yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	LastModified time.Time         `yaml:"lastModified,omitempty" json:"lastModified,omitempty"`
 }
 
 // PolicyViolation represents a specific policy violation.
@@ -71,7 +71,7 @@ type PolicyViolation struct {
 }
 
 // RunComplianceAudit performs a compliance audit against configured policies.
-func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState) (*AuditReport, error) {
+func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState) (*AuditReport, error) { //nolint:gocognit // Complex compliance audit logic with multiple policy checks
 	report := &AuditReport{
 		Organization: rc.Organization,
 		GeneratedAt:  time.Now(),
@@ -256,7 +256,7 @@ type BranchProtectionState struct {
 }
 
 // checkRuleCompliance checks if a repository complies with a specific rule.
-func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *SecuritySettings,
+func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *SecuritySettings, //nolint:gocognit // Complex rule compliance checking with multiple policy types
 	permissions *PermissionSettings, state RepositoryState,
 ) *PolicyViolation {
 	switch rule.Type {

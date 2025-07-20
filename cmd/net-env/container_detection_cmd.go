@@ -14,7 +14,7 @@ import (
 )
 
 // newContainerDetectionCmd creates the container detection command.
-func newContainerDetectionCmd(logger *zap.Logger, configDir string) *cobra.Command {
+func newContainerDetectionCmd(logger *zap.Logger, _ string) *cobra.Command {
 	cd := NewContainerDetector(logger)
 
 	cmd := &cobra.Command{
@@ -142,12 +142,12 @@ func newContainerStatusCmd(cd *ContainerDetector) *cobra.Command {
 
 			if showContainers && len(env.RunningContainers) > 0 {
 				fmt.Printf("\n📦 Running Containers (%d):\n", len(env.RunningContainers))
-				printDetectedContainersTable(env.RunningContainers)
+				_ = printDetectedContainersTable(env.RunningContainers) //nolint:errcheck // CLI display operations are non-critical
 			}
 
 			if showNetworks && len(env.Networks) > 0 {
 				fmt.Printf("\n🌐 Networks (%d):\n", len(env.Networks))
-				printDetectedNetworksTable(env.Networks)
+				_ = printDetectedNetworksTable(env.Networks) //nolint:errcheck // CLI display operations are non-critical
 			}
 
 			if showResources && env.ResourceUsage != nil {
@@ -297,7 +297,7 @@ func newContainerListCmd(cd *ContainerDetector) *cobra.Command {
 					return nil
 				}
 				fmt.Printf("📦 Running Containers (%d):\n", len(containers))
-				printDetectedContainersTable(containers)
+				_ = printDetectedContainersTable(containers) //nolint:errcheck // CLI display operations are non-critical
 				return nil
 			}
 		},
@@ -368,7 +368,7 @@ func printEnvironmentSummary(env *ContainerEnvironment, detailed bool) error {
 
 	// Available runtimes
 	fmt.Printf("📋 Available Runtimes (%d):\n", len(env.AvailableRuntimes))
-	printRuntimesTable(env.AvailableRuntimes)
+	_ = printRuntimesTable(env.AvailableRuntimes) //nolint:errcheck // CLI display operations are non-critical
 
 	// Running containers
 	if len(env.RunningContainers) > 0 {
@@ -379,14 +379,14 @@ func printEnvironmentSummary(env *ContainerEnvironment, detailed bool) error {
 				printContainerSummary(&container)
 			}
 		} else {
-			printDetectedContainersTable(env.RunningContainers)
+			_ = printDetectedContainersTable(env.RunningContainers) //nolint:errcheck // CLI display operations are non-critical
 		}
 	}
 
 	// Networks
 	if len(env.Networks) > 0 {
 		fmt.Printf("\n🌐 Networks (%d):\n", len(env.Networks))
-		printDetectedNetworksTable(env.Networks)
+		_ = printDetectedNetworksTable(env.Networks) //nolint:errcheck // CLI display operations are non-critical
 	}
 
 	// Compose projects
@@ -412,7 +412,7 @@ func printEnvironmentSummary(env *ContainerEnvironment, detailed bool) error {
 
 func printRuntimesTable(runtimes []RuntimeInfo) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "RUNTIME\tVERSION\tAVAILABLE\tEXECUTABLE")
+	_, _ = fmt.Fprintln(w, "RUNTIME\tVERSION\tAVAILABLE\tEXECUTABLE") //nolint:errcheck // CLI table header output
 
 	for _, runtime := range runtimes {
 		available := "No"
@@ -420,7 +420,7 @@ func printRuntimesTable(runtimes []RuntimeInfo) error {
 			available = "Yes"
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", //nolint:errcheck // Table display errors are non-critical
 			runtime.Runtime,
 			runtime.Version,
 			available,
@@ -432,14 +432,14 @@ func printRuntimesTable(runtimes []RuntimeInfo) error {
 
 func printDetectedContainersTable(containers []DetectedContainer) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "CONTAINER ID\tNAME\tIMAGE\tSTATUS\tRUNTIME\tNETWORKS")
+	_, _ = fmt.Fprintln(w, "CONTAINER ID\tNAME\tIMAGE\tSTATUS\tRUNTIME\tNETWORKS") //nolint:errcheck // Table display errors are non-critical
 
 	for _, container := range containers {
 		containerID := truncateStringUtil(container.ID, 12)
 		image := truncateStringUtil(container.Image, 30)
 		networkCount := fmt.Sprintf("%d", len(container.Networks))
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", //nolint:errcheck // Table display errors are non-critical
 			containerID,
 			container.Name,
 			image,
@@ -453,7 +453,7 @@ func printDetectedContainersTable(containers []DetectedContainer) error {
 
 func printDetectedNetworksTable(networks []DetectedNetwork) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NETWORK ID\tNAME\tDRIVER\tSCOPE\tCREATED")
+	_, _ = fmt.Fprintln(w, "NETWORK ID\tNAME\tDRIVER\tSCOPE\tCREATED") //nolint:errcheck // Table display errors are non-critical
 
 	for _, network := range networks {
 		networkID := truncateStringUtil(network.ID, 12)
@@ -463,7 +463,7 @@ func printDetectedNetworksTable(networks []DetectedNetwork) error {
 			created = network.Created.Format("2006-01-02")
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", //nolint:errcheck // Table display errors are non-critical
 			networkID,
 			network.Name,
 			network.Driver,
@@ -535,7 +535,7 @@ func printContainerDetails(container *DetectedContainer) error {
 
 func printComposeProjects(projects []ComposeProject) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "PROJECT\tFILE\tSERVICES\tCONTAINERS")
+	_, _ = fmt.Fprintln(w, "PROJECT\tFILE\tSERVICES\tCONTAINERS") //nolint:errcheck // Table display errors are non-critical
 
 	for _, project := range projects {
 		configFile := project.ConfigPath
@@ -548,14 +548,14 @@ func printComposeProjects(projects []ComposeProject) {
 			containerCount += len(service.Containers)
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%d\t%d\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%d\n", //nolint:errcheck // Table display errors are non-critical
 			project.Name,
 			configFile,
 			len(project.Services),
 			containerCount)
 	}
 
-	w.Flush()
+	_ = w.Flush() //nolint:errcheck // Table display errors are non-critical
 }
 
 func printKubernetesInfo(info *KubernetesClusterInfo) {

@@ -56,6 +56,7 @@ func convertFileInfo(info os.FileInfo) FileInfo {
 // FileSystemImpl implements the FileSystem interface.
 type FileSystemImpl struct {
 	logger Logger
+	config *FileSystemConfig
 }
 
 // FileSystemConfig holds configuration for the file system.
@@ -82,11 +83,12 @@ func NewFileSystem(config *FileSystemConfig, logger Logger) FileSystem {
 
 	return &FileSystemImpl{
 		logger: logger,
+		config: config,
 	}
 }
 
 // AppendFile implements FileSystem interface.
-func (fs *FileSystemImpl) AppendFile(ctx context.Context, filename string, data []byte) error {
+func (fs *FileSystemImpl) AppendFile(_ context.Context, filename string, data []byte) error {
 	fs.logger.Debug("Appending to file", "filename", filename)
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
@@ -94,9 +96,7 @@ func (fs *FileSystemImpl) AppendFile(ctx context.Context, filename string, data 
 		return err
 	}
 	defer func() {
-		if err := file.Close(); err != nil {
-			// Log error but don't override return value
-		}
+		_ = file.Close() //nolint:errcheck // Not critical
 	}()
 
 	_, err = file.Write(data)
@@ -105,7 +105,7 @@ func (fs *FileSystemImpl) AppendFile(ctx context.Context, filename string, data 
 }
 
 // IsFile implements FileSystem interface.
-func (fs *FileSystemImpl) IsFile(ctx context.Context, path string) bool {
+func (fs *FileSystemImpl) IsFile(_ context.Context, path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -115,7 +115,7 @@ func (fs *FileSystemImpl) IsFile(ctx context.Context, path string) bool {
 }
 
 // IsDir implements FileSystem interface.
-func (fs *FileSystemImpl) IsDir(ctx context.Context, path string) bool {
+func (fs *FileSystemImpl) IsDir(_ context.Context, path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -125,7 +125,7 @@ func (fs *FileSystemImpl) IsDir(ctx context.Context, path string) bool {
 }
 
 // GetFileSize implements FileSystem interface.
-func (fs *FileSystemImpl) GetFileSize(ctx context.Context, path string) (int64, error) {
+func (fs *FileSystemImpl) GetFileSize(_ context.Context, path string) (int64, error) {
 	info, err := os.Stat(path)
 	if err != nil {
 		return 0, err
@@ -135,13 +135,13 @@ func (fs *FileSystemImpl) GetFileSize(ctx context.Context, path string) (int64, 
 }
 
 // MkdirAll implements FileSystem interface.
-func (fs *FileSystemImpl) MkdirAll(ctx context.Context, path string, perm fs.FileMode) error {
+func (fs *FileSystemImpl) MkdirAll(_ context.Context, path string, perm fs.FileMode) error {
 	fs.logger.Debug("Creating directory", "path", path)
 	return os.MkdirAll(path, perm)
 }
 
 // WalkDir implements FileSystem interface.
-func (fs *FileSystemImpl) WalkDir(ctx context.Context, root string, fn func(path string, info FileInfo, err error) error) error {
+func (fs *FileSystemImpl) WalkDir(_ context.Context, root string, fn func(path string, info FileInfo, err error) error) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return fn(path, FileInfo{}, err)
@@ -155,19 +155,19 @@ func (fs *FileSystemImpl) WalkDir(ctx context.Context, root string, fn func(path
 }
 
 // CreateSymlink implements FileSystem interface.
-func (fs *FileSystemImpl) CreateSymlink(ctx context.Context, oldname, newname string) error {
+func (fs *FileSystemImpl) CreateSymlink(_ context.Context, oldname, newname string) error {
 	fs.logger.Debug("Creating symlink", "oldname", oldname, "newname", newname)
 	return os.Symlink(oldname, newname)
 }
 
 // ReadSymlink implements FileSystem interface.
-func (fs *FileSystemImpl) ReadSymlink(ctx context.Context, name string) (string, error) {
+func (fs *FileSystemImpl) ReadSymlink(_ context.Context, name string) (string, error) {
 	fs.logger.Debug("Reading symlink", "name", name)
 	return os.Readlink(name)
 }
 
 // OpenFile implements FileSystem interface.
-func (fs *FileSystemImpl) OpenFile(ctx context.Context, name string, flag int, perm fs.FileMode) (File, error) {
+func (fs *FileSystemImpl) OpenFile(_ context.Context, name string, flag int, perm fs.FileMode) (File, error) {
 	fs.logger.Debug("Opening file", "name", name)
 
 	file, err := os.OpenFile(name, flag, perm)
@@ -179,7 +179,7 @@ func (fs *FileSystemImpl) OpenFile(ctx context.Context, name string, flag int, p
 }
 
 // CreateFile implements FileSystem interface.
-func (fs *FileSystemImpl) CreateFile(ctx context.Context, name string) (File, error) {
+func (fs *FileSystemImpl) CreateFile(_ context.Context, name string) (File, error) {
 	fs.logger.Debug("Creating file", "name", name)
 
 	file, err := os.Create(name)
@@ -221,13 +221,13 @@ func (fs *FileSystemImpl) Clean(path string) string {
 }
 
 // TempDir implements FileSystem interface.
-func (fs *FileSystemImpl) TempDir(ctx context.Context, dir, pattern string) (string, error) {
+func (fs *FileSystemImpl) TempDir(_ context.Context, dir, pattern string) (string, error) {
 	fs.logger.Debug("Creating temp directory", "dir", dir, "pattern", pattern)
 	return os.MkdirTemp(dir, pattern)
 }
 
 // TempFile implements FileSystem interface.
-func (fs *FileSystemImpl) TempFile(ctx context.Context, dir, pattern string) (File, error) {
+func (fs *FileSystemImpl) TempFile(_ context.Context, dir, pattern string) (File, error) {
 	fs.logger.Debug("Creating temp file", "dir", dir, "pattern", pattern)
 
 	file, err := os.CreateTemp(dir, pattern)
@@ -239,7 +239,7 @@ func (fs *FileSystemImpl) TempFile(ctx context.Context, dir, pattern string) (Fi
 }
 
 // ReadFile implements FileSystem interface.
-func (fs *FileSystemImpl) ReadFile(ctx context.Context, filename string) ([]byte, error) {
+func (fs *FileSystemImpl) ReadFile(_ context.Context, filename string) ([]byte, error) {
 	fs.logger.Debug("Reading file", "filename", filename)
 
 	data, err := os.ReadFile(filename)
@@ -349,9 +349,7 @@ func (fs *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
 		return err
 	}
 	defer func() {
-		if err := sourceFile.Close(); err != nil {
-			// Log error but don't override return value
-		}
+		_ = sourceFile.Close() //nolint:errcheck // Not critical
 	}()
 
 	destFile, err := os.Create(dst)
@@ -360,9 +358,7 @@ func (fs *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
 		return err
 	}
 	defer func() {
-		if err := destFile.Close(); err != nil {
-			// Log error but don't override return value
-		}
+		_ = destFile.Close() //nolint:errcheck // Not critical
 	}()
 
 	_, err = io.Copy(destFile, sourceFile)
@@ -547,21 +543,13 @@ func (pm *PermissionManagerImpl) GetPermissions(ctx context.Context, path string
 // IsReadable implements PermissionManager interface.
 func (pm *PermissionManagerImpl) IsReadable(ctx context.Context, path string) bool {
 	_, err := os.Open(path)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }
 
 // IsWritable implements PermissionManager interface.
 func (pm *PermissionManagerImpl) IsWritable(ctx context.Context, path string) bool {
 	_, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }
 
 // IsExecutable implements PermissionManager interface.
@@ -607,6 +595,7 @@ func (pm *PermissionManagerImpl) ValidatePermissions(ctx context.Context, path s
 type ArchiveServiceImpl struct {
 	fileSystem FileSystem
 	logger     Logger
+	config     *ArchiveServiceConfig
 }
 
 // ArchiveServiceConfig holds configuration for the archive service.
@@ -636,6 +625,7 @@ func NewArchiveService(
 	return &ArchiveServiceImpl{
 		fileSystem: fileSystem,
 		logger:     logger,
+		config:     config,
 	}
 }
 
@@ -679,8 +669,8 @@ func (as *ArchiveServiceImpl) GetSupportedFormats() []ArchiveFormat {
 	}
 }
 
-// FileSystemServiceImpl implements the unified file system service interface.
-type FileSystemServiceImpl struct {
+// ServiceImpl implements the unified file system service interface.
+type ServiceImpl struct {
 	FileSystem
 	WatchService
 	PermissionManager
@@ -762,29 +752,29 @@ func (ss *SearchServiceImpl) SearchWithFilters(ctx context.Context, root string,
 	return []SearchResult{}, nil
 }
 
-// FileSystemServiceConfig holds configuration for the file system service.
-type FileSystemServiceConfig struct {
+// ServiceConfig holds configuration for the file system service.
+type ServiceConfig struct {
 	FileSystem *FileSystemConfig
 	Watch      *WatchServiceConfig
 	Archive    *ArchiveServiceConfig
 }
 
-// DefaultFileSystemServiceConfig returns default configuration.
-func DefaultFileSystemServiceConfig() *FileSystemServiceConfig {
-	return &FileSystemServiceConfig{
+// DefaultServiceConfig returns default configuration.
+func DefaultServiceConfig() *ServiceConfig {
+	return &ServiceConfig{
 		FileSystem: DefaultFileSystemConfig(),
 		Watch:      DefaultWatchServiceConfig(),
 		Archive:    DefaultArchiveServiceConfig(),
 	}
 }
 
-// NewFileSystemService creates a new file system service with all dependencies.
-func NewFileSystemService(
-	config *FileSystemServiceConfig,
+// NewService creates a new file system service with all dependencies.
+func NewService(
+	config *ServiceConfig,
 	logger Logger,
-) FileSystemService {
+) Service {
 	if config == nil {
-		config = DefaultFileSystemServiceConfig()
+		config = DefaultServiceConfig()
 	}
 
 	fileSystem := NewFileSystem(config.FileSystem, logger)
@@ -794,7 +784,7 @@ func NewFileSystemService(
 	backupService := NewBackupService(logger)
 	searchService := NewSearchService(logger)
 
-	return &FileSystemServiceImpl{
+	return &ServiceImpl{
 		FileSystem:        fileSystem,
 		WatchService:      watchService,
 		PermissionManager: permissionManager,

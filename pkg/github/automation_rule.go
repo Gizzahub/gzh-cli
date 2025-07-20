@@ -18,47 +18,47 @@ type AutomationRule struct {
 	Actions      []AutomationAction     `json:"actions" yaml:"actions"`
 	Schedule     *AutomationSchedule    `json:"schedule,omitempty" yaml:"schedule,omitempty"`
 	Metadata     AutomationRuleMetadata `json:"metadata" yaml:"metadata"`
-	CreatedAt    time.Time              `json:"created_at" yaml:"created_at"`
-	UpdatedAt    time.Time              `json:"updated_at" yaml:"updated_at"`
-	CreatedBy    string                 `json:"created_by" yaml:"created_by"`
+	CreatedAt    time.Time              `json:"createdAt" yaml:"createdAt"`
+	UpdatedAt    time.Time              `json:"updatedAt" yaml:"updatedAt"`
+	CreatedBy    string                 `json:"createdBy" yaml:"createdBy"`
 	Tags         map[string]string      `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
 // AutomationConditions defines the conditions that must be met for a rule to trigger.
 type AutomationConditions struct {
 	// Event-based conditions
-	EventTypes   []EventType   `json:"event_types,omitempty" yaml:"event_types,omitempty"`
+	EventTypes   []EventType   `json:"eventTypes,omitempty" yaml:"eventTypes,omitempty"`
 	Actions      []EventAction `json:"actions,omitempty" yaml:"actions,omitempty"`
 	Organization string        `json:"organization,omitempty" yaml:"organization,omitempty"`
 	Repository   string        `json:"repository,omitempty" yaml:"repository,omitempty"`
 	Sender       string        `json:"sender,omitempty" yaml:"sender,omitempty"`
 
 	// Repository-based conditions
-	RepositoryPatterns []string `json:"repository_patterns,omitempty" yaml:"repository_patterns,omitempty"`
+	RepositoryPatterns []string `json:"repositoryPatterns,omitempty" yaml:"repositoryPatterns,omitempty"`
 	Languages          []string `json:"languages,omitempty" yaml:"languages,omitempty"`
 	Topics             []string `json:"topics,omitempty" yaml:"topics,omitempty"`
 	Visibility         []string `json:"visibility,omitempty" yaml:"visibility,omitempty"` // public, private, internal
-	IsArchived         *bool    `json:"is_archived,omitempty" yaml:"is_archived,omitempty"`
-	IsTemplate         *bool    `json:"is_template,omitempty" yaml:"is_template,omitempty"`
+	IsArchived         *bool    `json:"isArchived,omitempty" yaml:"isArchived,omitempty"`
+	IsTemplate         *bool    `json:"isTemplate,omitempty" yaml:"isTemplate,omitempty"`
 
 	// Content-based conditions
-	BranchPatterns []string `json:"branch_patterns,omitempty" yaml:"branch_patterns,omitempty"`
-	FilePatterns   []string `json:"file_patterns,omitempty" yaml:"file_patterns,omitempty"`
-	PathPatterns   []string `json:"path_patterns,omitempty" yaml:"path_patterns,omitempty"`
+	BranchPatterns []string `json:"branchPatterns,omitempty" yaml:"branchPatterns,omitempty"`
+	FilePatterns   []string `json:"filePatterns,omitempty" yaml:"filePatterns,omitempty"`
+	PathPatterns   []string `json:"pathPatterns,omitempty" yaml:"pathPatterns,omitempty"`
 
 	// Time-based conditions
-	TimeRange     *TimeRange `json:"time_range,omitempty" yaml:"time_range,omitempty"`
-	DaysOfWeek    []int      `json:"days_of_week,omitempty" yaml:"days_of_week,omitempty"`     // 0=Sunday, 1=Monday, etc.
-	HoursOfDay    []int      `json:"hours_of_day,omitempty" yaml:"hours_of_day,omitempty"`     // 0-23
-	BusinessHours bool       `json:"business_hours,omitempty" yaml:"business_hours,omitempty"` // 9-17 weekdays
+	TimeRange     *TimeRange `json:"timeRange,omitempty" yaml:"timeRange,omitempty"`
+	DaysOfWeek    []int      `json:"daysOfWeek,omitempty" yaml:"daysOfWeek,omitempty"`       // 0=Sunday, 1=Monday, etc.
+	HoursOfDay    []int      `json:"hoursOfDay,omitempty" yaml:"hoursOfDay,omitempty"`       // 0-23
+	BusinessHours bool       `json:"businessHours,omitempty" yaml:"businessHours,omitempty"` // 9-17 weekdays
 
 	// Advanced conditions
-	CustomFilters map[string]interface{} `json:"custom_filters,omitempty" yaml:"custom_filters,omitempty"`
-	PayloadMatch  []PayloadMatcher       `json:"payload_match,omitempty" yaml:"payload_match,omitempty"`
+	CustomFilters map[string]interface{} `json:"customFilters,omitempty" yaml:"customFilters,omitempty"`
+	PayloadMatch  []PayloadMatcher       `json:"payloadMatch,omitempty" yaml:"payloadMatch,omitempty"`
 
 	// Logical operators
-	LogicalOperator ConditionOperator      `json:"logical_operator,omitempty" yaml:"logical_operator,omitempty"`
-	SubConditions   []AutomationConditions `json:"sub_conditions,omitempty" yaml:"sub_conditions,omitempty"`
+	LogicalOperator ConditionOperator      `json:"logicalOperator,omitempty" yaml:"logicalOperator,omitempty"`
+	SubConditions   []AutomationConditions `json:"subConditions,omitempty" yaml:"subConditions,omitempty"`
 }
 
 // PayloadMatcher defines conditions for matching against event payload.
@@ -66,7 +66,7 @@ type PayloadMatcher struct {
 	Path          string        `json:"path" yaml:"path"`         // JSONPath expression (e.g., "$.pull_request.title")
 	Operator      MatchOperator `json:"operator" yaml:"operator"` // equals, contains, regex, etc.
 	Value         interface{}   `json:"value" yaml:"value"`       // Value to match against
-	CaseSensitive bool          `json:"case_sensitive,omitempty" yaml:"case_sensitive,omitempty"`
+	CaseSensitive bool          `json:"caseSensitive,omitempty" yaml:"caseSensitive,omitempty"`
 }
 
 // ConditionOperator defines how multiple conditions are combined.
@@ -106,8 +106,8 @@ type AutomationAction struct {
 	Enabled     bool                   `json:"enabled" yaml:"enabled"`
 	Parameters  map[string]interface{} `json:"parameters" yaml:"parameters"`
 	Timeout     time.Duration          `json:"timeout,omitempty" yaml:"timeout,omitempty"`
-	RetryPolicy *ActionRetryPolicy     `json:"retry_policy,omitempty" yaml:"retry_policy,omitempty"`
-	OnFailure   ActionFailurePolicy    `json:"on_failure,omitempty" yaml:"on_failure,omitempty"`
+	RetryPolicy *ActionRetryPolicy     `json:"retryPolicy,omitempty" yaml:"retryPolicy,omitempty"`
+	OnFailure   ActionFailurePolicy    `json:"onFailure,omitempty" yaml:"onFailure,omitempty"`
 }
 
 // ActionType defines the type of action to be executed.
@@ -152,10 +152,10 @@ const (
 
 // ActionRetryPolicy defines retry behavior for failed actions.
 type ActionRetryPolicy struct {
-	MaxRetries    int           `json:"max_retries" yaml:"max_retries"`
-	RetryInterval time.Duration `json:"retry_interval" yaml:"retry_interval"`
-	BackoffFactor float64       `json:"backoff_factor,omitempty" yaml:"backoff_factor,omitempty"`
-	MaxInterval   time.Duration `json:"max_interval,omitempty" yaml:"max_interval,omitempty"`
+	MaxRetries    int           `json:"maxRetries" yaml:"maxRetries"`
+	RetryInterval time.Duration `json:"retryInterval" yaml:"retryInterval"`
+	BackoffFactor float64       `json:"backoffFactor,omitempty" yaml:"backoffFactor,omitempty"`
+	MaxInterval   time.Duration `json:"maxInterval,omitempty" yaml:"maxInterval,omitempty"`
 }
 
 // ActionFailurePolicy defines what to do when an action fails.
@@ -173,8 +173,8 @@ type AutomationSchedule struct {
 	Type       ScheduleType `json:"type" yaml:"type"`
 	Expression string       `json:"expression" yaml:"expression"` // Cron expression
 	Timezone   string       `json:"timezone,omitempty" yaml:"timezone,omitempty"`
-	StartDate  *time.Time   `json:"start_date,omitempty" yaml:"start_date,omitempty"`
-	EndDate    *time.Time   `json:"end_date,omitempty" yaml:"end_date,omitempty"`
+	StartDate  *time.Time   `json:"startDate,omitempty" yaml:"startDate,omitempty"`
+	EndDate    *time.Time   `json:"endDate,omitempty" yaml:"endDate,omitempty"`
 }
 
 // ScheduleType defines the type of schedule.
@@ -194,19 +194,19 @@ type AutomationRuleMetadata struct {
 	Owner          string            `json:"owner,omitempty" yaml:"owner,omitempty"`
 	Team           string            `json:"team,omitempty" yaml:"team,omitempty"`
 	Documentation  string            `json:"documentation,omitempty" yaml:"documentation,omitempty"`
-	ExamplePayload json.RawMessage   `json:"example_payload,omitempty" yaml:"example_payload,omitempty"`
-	CustomMetadata map[string]string `json:"custom_metadata,omitempty" yaml:"custom_metadata,omitempty"`
+	ExamplePayload json.RawMessage   `json:"examplePayload,omitempty" yaml:"examplePayload,omitempty"`
+	CustomMetadata map[string]string `json:"customMetadata,omitempty" yaml:"customMetadata,omitempty"`
 }
 
 // AutomationRuleExecution represents an execution instance of an automation rule.
 type AutomationRuleExecution struct {
 	ID             string                     `json:"id"`
-	RuleID         string                     `json:"rule_id"`
-	TriggerEventID string                     `json:"trigger_event_id,omitempty"`
-	StartedAt      time.Time                  `json:"started_at"`
-	CompletedAt    *time.Time                 `json:"completed_at,omitempty"`
+	RuleID         string                     `json:"ruleId"`
+	TriggerEventID string                     `json:"triggerEventId,omitempty"`
+	StartedAt      time.Time                  `json:"startedAt"`
+	CompletedAt    *time.Time                 `json:"completedAt,omitempty"`
 	Status         ExecutionStatus            `json:"status"`
-	TriggerType    ExecutionTriggerType       `json:"trigger_type"`
+	TriggerType    ExecutionTriggerType       `json:"triggerType"`
 	Context        AutomationExecutionContext `json:"context"`
 	Actions        []ActionExecutionResult    `json:"actions"`
 	Error          string                     `json:"error,omitempty"`
@@ -249,15 +249,15 @@ type AutomationExecutionContext struct {
 
 // ActionExecutionResult represents the result of executing a single action.
 type ActionExecutionResult struct {
-	ActionID    string                 `json:"action_id"`
-	ActionType  ActionType             `json:"action_type"`
+	ActionID    string                 `json:"actionId"`
+	ActionType  ActionType             `json:"actionType"`
 	Status      ExecutionStatus        `json:"status"`
-	StartedAt   time.Time              `json:"started_at"`
-	CompletedAt *time.Time             `json:"completed_at,omitempty"`
+	StartedAt   time.Time              `json:"startedAt"`
+	CompletedAt *time.Time             `json:"completedAt,omitempty"`
 	Duration    time.Duration          `json:"duration,omitempty"`
 	Result      map[string]interface{} `json:"result,omitempty"`
 	Error       string                 `json:"error,omitempty"`
-	RetryCount  int                    `json:"retry_count,omitempty"`
+	RetryCount  int                    `json:"retryCount,omitempty"`
 }
 
 // AutomationRuleSet represents a collection of related automation rules.
@@ -269,9 +269,9 @@ type AutomationRuleSet struct {
 	Rules        []AutomationRule  `json:"rules" yaml:"rules"`
 	Enabled      bool              `json:"enabled" yaml:"enabled"`
 	Tags         map[string]string `json:"tags,omitempty" yaml:"tags,omitempty"`
-	CreatedAt    time.Time         `json:"created_at" yaml:"created_at"`
-	UpdatedAt    time.Time         `json:"updated_at" yaml:"updated_at"`
-	CreatedBy    string            `json:"created_by" yaml:"created_by"`
+	CreatedAt    time.Time         `json:"createdAt" yaml:"createdAt"`
+	UpdatedAt    time.Time         `json:"updatedAt" yaml:"updatedAt"`
+	CreatedBy    string            `json:"createdBy" yaml:"createdBy"`
 }
 
 // AutomationRuleTemplate represents a reusable rule template.
@@ -284,9 +284,9 @@ type AutomationRuleTemplate struct {
 	Variables   []TemplateVariable `json:"variables" yaml:"variables"`
 	Examples    []TemplateExample  `json:"examples,omitempty" yaml:"examples,omitempty"`
 	Tags        map[string]string  `json:"tags,omitempty" yaml:"tags,omitempty"`
-	CreatedAt   time.Time          `json:"created_at" yaml:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at" yaml:"updated_at"`
-	CreatedBy   string             `json:"created_by" yaml:"created_by"`
+	CreatedAt   time.Time          `json:"createdAt" yaml:"createdAt"`
+	UpdatedAt   time.Time          `json:"updatedAt" yaml:"updatedAt"`
+	CreatedBy   string             `json:"createdBy" yaml:"createdBy"`
 }
 
 // TemplateVariable defines a variable that can be customized in a template.
@@ -295,7 +295,7 @@ type TemplateVariable struct {
 	Type         string      `json:"type" yaml:"type"` // string, number, boolean, array, object
 	Description  string      `json:"description" yaml:"description"`
 	Required     bool        `json:"required" yaml:"required"`
-	DefaultValue interface{} `json:"default_value,omitempty" yaml:"default_value,omitempty"`
+	DefaultValue interface{} `json:"defaultValue,omitempty" yaml:"defaultValue,omitempty"`
 	Options      []string    `json:"options,omitempty" yaml:"options,omitempty"`
 	Validation   string      `json:"validation,omitempty" yaml:"validation,omitempty"` // Regex or validation rule
 }
@@ -354,19 +354,19 @@ type RuleFilter struct {
 	Enabled       *bool       `json:"enabled,omitempty"`
 	Tags          []string    `json:"tags,omitempty"`
 	Category      string      `json:"category,omitempty"`
-	EventTypes    []EventType `json:"event_types,omitempty"`
-	CreatedBy     string      `json:"created_by,omitempty"`
-	CreatedAfter  *time.Time  `json:"created_after,omitempty"`
-	CreatedBefore *time.Time  `json:"created_before,omitempty"`
+	EventTypes    []EventType `json:"eventTypes,omitempty"`
+	CreatedBy     string      `json:"createdBy,omitempty"`
+	CreatedAfter  *time.Time  `json:"createdAfter,omitempty"`
+	CreatedBefore *time.Time  `json:"createdBefore,omitempty"`
 }
 
 // ExecutionFilter defines criteria for filtering rule executions.
 type ExecutionFilter struct {
-	RuleID        string               `json:"rule_id,omitempty"`
+	RuleID        string               `json:"ruleId,omitempty"`
 	Status        ExecutionStatus      `json:"status,omitempty"`
-	TriggerType   ExecutionTriggerType `json:"trigger_type,omitempty"`
-	StartedAfter  *time.Time           `json:"started_after,omitempty"`
-	StartedBefore *time.Time           `json:"started_before,omitempty"`
+	TriggerType   ExecutionTriggerType `json:"triggerType,omitempty"`
+	StartedAfter  *time.Time           `json:"startedAfter,omitempty"`
+	StartedBefore *time.Time           `json:"startedBefore,omitempty"`
 }
 
 // RuleValidationResult represents the result of rule validation.
@@ -394,10 +394,10 @@ type RuleValidationWarning struct {
 
 // RuleTestResult represents the result of testing a rule.
 type RuleTestResult struct {
-	RuleID            string                     `json:"rule_id"`
-	ConditionsMatched bool                       `json:"conditions_matched"`
-	ActionsExecuted   []ActionExecutionResult    `json:"actions_executed"`
-	ExecutionTime     time.Duration              `json:"execution_time"`
+	RuleID            string                     `json:"ruleId"`
+	ConditionsMatched bool                       `json:"conditionsMatched"`
+	ActionsExecuted   []ActionExecutionResult    `json:"actionsExecuted"`
+	ExecutionTime     time.Duration              `json:"executionTime"`
 	Errors            []string                   `json:"errors,omitempty"`
 	Context           AutomationExecutionContext `json:"context"`
 }

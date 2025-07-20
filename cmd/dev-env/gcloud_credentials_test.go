@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package devenv
 
 import (
@@ -425,8 +426,7 @@ func TestGcloudCredentialsDisplayInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	opts := &gcloudCredentialsOptions{}
-	err = opts.displayCredentialsInfo(credentialsDir)
-	assert.NoError(t, err)
+	opts.displayCredentialsInfo(credentialsDir)
 }
 
 func TestGcloudCredentialsErrorCases(t *testing.T) {

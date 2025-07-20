@@ -9,6 +9,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// Severity levels.
+const (
+	severityCritical = "critical"
+	severityMajor    = "major"
+	severityMinor    = "minor"
+	severityInfo     = "info"
+)
+
 // QualityIssue represents a single quality issue found during analysis.
 type QualityIssue struct {
 	Type     string `json:"type"`     // "style", "bug", "security", "complexity", "type-error"
@@ -79,13 +87,13 @@ func (b *BaseQualityAnalyzer) CalculateScore(result *QualityResult) float64 {
 	// Deduct points for issues based on severity
 	for _, issue := range result.Issues {
 		switch issue.Severity {
-		case "critical":
+		case severityCritical:
 			score -= 5.0
-		case "major":
+		case severityMajor:
 			score -= 3.0
-		case "minor":
+		case severityMinor:
 			score -= 1.0
-		case "info":
+		case severityInfo:
 			score -= 0.5
 		}
 	}

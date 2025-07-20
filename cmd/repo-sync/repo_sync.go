@@ -12,7 +12,7 @@ import (
 )
 
 // NewRepoSyncCmd creates the repository synchronization command.
-func NewRepoSyncCmd(ctx context.Context) *cobra.Command {
+func NewRepoSyncCmd(_ context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo-sync",
 		Short: "Advanced repository synchronization and management",
@@ -48,8 +48,8 @@ Examples:
 	logger, _ := zap.NewProduction()
 
 	// Add subcommands
-	cmd.AddCommand(newWatchCmd(logger))
-	cmd.AddCommand(newSyncCmd(logger))
+	cmd.AddCommand(newWatchCmd(logger)) //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(newSyncCmd(logger))  //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(newWatchMultiCmd(logger))
 	cmd.AddCommand(newBranchPolicyCmd(logger))
 	cmd.AddCommand(newQualityCheckCmd(logger))
@@ -74,8 +74,8 @@ func validateRepositoryPath(path string) error {
 	return nil
 }
 
-// RepoSyncConfig represents the configuration for repository synchronization.
-type RepoSyncConfig struct {
+// Config represents the configuration for repository synchronization.
+type Config struct {
 	RepositoryPath   string        `json:"repositoryPath"`
 	WatchPatterns    []string      `json:"watchPatterns"`
 	IgnorePatterns   []string      `json:"ignorePatterns"`
@@ -88,9 +88,9 @@ type RepoSyncConfig struct {
 	CommitMessage    string        `json:"commitMessage"`
 }
 
-// DefaultRepoSyncConfig returns the default configuration.
-func DefaultRepoSyncConfig() *RepoSyncConfig {
-	return &RepoSyncConfig{
+// DefaultConfig returns the default configuration.
+func DefaultConfig() *Config {
+	return &Config{
 		WatchPatterns:    []string{"**/*.go", "**/*.md", "**/*.yaml", "**/*.yml", "**/*.json"},
 		IgnorePatterns:   []string{".git/**", "vendor/**", "node_modules/**", "*.tmp", "*.log"},
 		BatchSize:        100,
@@ -145,7 +145,7 @@ type ConflictInfo struct {
 }
 
 // newWatchMultiCmd creates the watch-multi subcommand for monitoring multiple repositories.
-func newWatchMultiCmd(logger *zap.Logger) *cobra.Command {
+func newWatchMultiCmd(_ *zap.Logger) *cobra.Command {
 	var (
 		configFile     string
 		batchSize      int
@@ -181,7 +181,7 @@ Examples:
   # Watch with auto-commit enabled
   gz repo-sync watch-multi ./repo1 ./repo2 --auto-commit --verbose`,
 		Args: cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			// Validate all repository paths
 			for _, repoPath := range args {
 				if err := validateRepositoryPath(repoPath); err != nil {
@@ -212,7 +212,7 @@ Examples:
 }
 
 // newBranchPolicyCmd creates the branch-policy subcommand for branch management.
-func newBranchPolicyCmd(logger *zap.Logger) *cobra.Command {
+func newBranchPolicyCmd(_ *zap.Logger) *cobra.Command {
 	var (
 		policyType      string
 		enforcePolicy   bool
@@ -250,7 +250,7 @@ Examples:
   # Dry run to see what would be enforced
   gz repo-sync branch-policy ./my-repo --enforce --policy gitflow --dry-run`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			repoPath := "."
 			if len(args) > 0 {
 				repoPath = args[0]
@@ -283,7 +283,7 @@ Examples:
 }
 
 // newQualityCheckCmd creates the quality-check subcommand for code quality monitoring.
-func newQualityCheckCmd(logger *zap.Logger) *cobra.Command {
+func newQualityCheckCmd(_ *zap.Logger) *cobra.Command {
 	var (
 		threshold       int
 		enableLinters   []string
@@ -329,7 +329,7 @@ Examples:
   # Fail build if threshold not met
   gz repo-sync quality-check ./my-repo --threshold 90 --fail-on-threshold`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			repoPath := "."
 			if len(args) > 0 {
 				repoPath = args[0]
@@ -365,7 +365,7 @@ Examples:
 }
 
 // newTrendAnalyzeCmd creates the trend-analyze subcommand for repository trend analysis.
-func newTrendAnalyzeCmd(logger *zap.Logger) *cobra.Command {
+func newTrendAnalyzeCmd(_ *zap.Logger) *cobra.Command {
 	var (
 		timeRange      string
 		metricTypes    []string
@@ -417,7 +417,7 @@ Examples:
   # Filter by specific authors
   gz repo-sync trend-analyze ./my-repo --include-authors alice,bob --time-range 90d`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			repoPath := "."
 			if len(args) > 0 {
 				repoPath = args[0]

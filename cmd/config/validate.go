@@ -171,7 +171,7 @@ func performLegacyValidationsWithEnv(configFile string, verbose bool, environmen
 }
 
 // performAdditionalValidationsWithEnv runs additional validation checks with provided environment.
-func performAdditionalValidationsWithEnv(config *configpkg.Config, strict bool, verbose bool, environment env.Environment) error {
+func performAdditionalValidationsWithEnv(config *configpkg.Config, strict bool, verbose bool, _ env.Environment) error {
 	var (
 		warnings []string
 		errors   []string

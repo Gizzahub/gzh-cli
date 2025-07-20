@@ -1,3 +1,4 @@
+//nolint:tagliatelle // Network routing output may require specific JSON field naming conventions
 package netenv
 
 import (

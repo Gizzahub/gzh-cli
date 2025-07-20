@@ -1,3 +1,4 @@
+//nolint:tagliatelle // Service mesh configurations may need to match external API formats
 package netenv
 
 import (
@@ -13,24 +14,24 @@ import (
 
 // IstioConfig represents Istio-specific configuration.
 type IstioConfig struct {
-	VirtualServices  map[string]*IstioVirtualService  `yaml:"virtual_services,omitempty" json:"virtual_services,omitempty"`
-	DestinationRules map[string]*IstioDestinationRule `yaml:"destination_rules,omitempty" json:"destination_rules,omitempty"`
-	ServiceEntries   map[string]*IstioServiceEntry    `yaml:"service_entries,omitempty" json:"service_entries,omitempty"`
+	VirtualServices  map[string]*IstioVirtualService  `yaml:"virtualServices,omitempty" json:"virtualServices,omitempty"`
+	DestinationRules map[string]*IstioDestinationRule `yaml:"destinationRules,omitempty" json:"destinationRules,omitempty"`
+	ServiceEntries   map[string]*IstioServiceEntry    `yaml:"serviceEntries,omitempty" json:"serviceEntries,omitempty"`
 	Gateways         map[string]*IstioGateway         `yaml:"gateways,omitempty" json:"gateways,omitempty"`
-	SidecarInjection bool                             `yaml:"sidecar_injection" json:"sidecar_injection"`
-	MTLSMode         string                           `yaml:"mtls_mode,omitempty" json:"mtls_mode,omitempty"` // DISABLE, SIMPLE, MUTUAL
-	CircuitBreaker   *CircuitBreakerConfig            `yaml:"circuit_breaker,omitempty" json:"circuit_breaker,omitempty"`
-	RetryPolicy      *RetryPolicyConfig               `yaml:"retry_policy,omitempty" json:"retry_policy,omitempty"`
+	SidecarInjection bool                             `yaml:"sidecarInjection" json:"sidecarInjection"`
+	MTLSMode         string                           `yaml:"mtlsMode,omitempty" json:"mtlsMode,omitempty"` // DISABLE, SIMPLE, MUTUAL
+	CircuitBreaker   *CircuitBreakerConfig            `yaml:"circuitBreaker,omitempty" json:"circuitBreaker,omitempty"`
+	RetryPolicy      *RetryPolicyConfig               `yaml:"retryPolicy,omitempty" json:"retryPolicy,omitempty"`
 }
 
 // LinkerdConfig represents Linkerd-specific configuration.
 type LinkerdConfig struct {
-	ServiceProfiles map[string]*LinkerdServiceProfile `yaml:"service_profiles,omitempty" json:"service_profiles,omitempty"`
-	TrafficSplits   map[string]*LinkerdTrafficSplit   `yaml:"traffic_splits,omitempty" json:"traffic_splits,omitempty"`
-	ProxyInjection  bool                              `yaml:"proxy_injection" json:"proxy_injection"`
-	ProxyResources  *ProxyResourceConfig              `yaml:"proxy_resources,omitempty" json:"proxy_resources,omitempty"`
-	TimeoutPolicy   *TimeoutPolicyConfig              `yaml:"timeout_policy,omitempty" json:"timeout_policy,omitempty"`
-	RetryBudget     *RetryBudgetConfig                `yaml:"retry_budget,omitempty" json:"retry_budget,omitempty"`
+	ServiceProfiles map[string]*LinkerdServiceProfile `yaml:"serviceProfiles,omitempty" json:"serviceProfiles,omitempty"`
+	TrafficSplits   map[string]*LinkerdTrafficSplit   `yaml:"trafficSplits,omitempty" json:"trafficSplits,omitempty"`
+	ProxyInjection  bool                              `yaml:"proxyInjection" json:"proxyInjection"`
+	ProxyResources  *ProxyResourceConfig              `yaml:"proxyResources,omitempty" json:"proxyResources,omitempty"`
+	TimeoutPolicy   *TimeoutPolicyConfig              `yaml:"timeoutPolicy,omitempty" json:"timeoutPolicy,omitempty"`
+	RetryBudget     *RetryBudgetConfig                `yaml:"retryBudget,omitempty" json:"retryBudget,omitempty"`
 }
 
 // IstioVirtualService represents an Istio VirtualService.
@@ -40,7 +41,7 @@ type IstioVirtualService struct {
 	Gateways []string         `yaml:"gateways,omitempty" json:"gateways,omitempty"`
 	HTTP     []IstioHTTPRoute `yaml:"http,omitempty" json:"http,omitempty"`
 	TCP      []IstioTCPRoute  `yaml:"tcp,omitempty" json:"tcp,omitempty"`
-	ExportTo []string         `yaml:"export_to,omitempty" json:"export_to,omitempty"`
+	ExportTo []string         `yaml:"exportTo,omitempty" json:"exportTo,omitempty"`
 }
 
 // IstioHTTPRoute represents HTTP routing rules in VirtualService.
@@ -54,7 +55,7 @@ type IstioHTTPRoute struct {
 	Retries       *IstioHTTPRetry             `yaml:"retries,omitempty" json:"retries,omitempty"`
 	Fault         *IstioHTTPFaultInjection    `yaml:"fault,omitempty" json:"fault,omitempty"`
 	Mirror        *IstioDestination           `yaml:"mirror,omitempty" json:"mirror,omitempty"`
-	MirrorPercent *int32                      `yaml:"mirror_percent,omitempty" json:"mirror_percent,omitempty"`
+	MirrorPercent *int32                      `yaml:"mirrorPercent,omitempty" json:"mirrorPercent,omitempty"`
 }
 
 // IstioHTTPMatchRequest represents HTTP match conditions.
@@ -62,7 +63,7 @@ type IstioHTTPMatchRequest struct {
 	URI         *StringMatch            `yaml:"uri,omitempty" json:"uri,omitempty"`
 	Headers     map[string]*StringMatch `yaml:"headers,omitempty" json:"headers,omitempty"`
 	Method      *StringMatch            `yaml:"method,omitempty" json:"method,omitempty"`
-	QueryParams map[string]*StringMatch `yaml:"query_params,omitempty" json:"query_params,omitempty"`
+	QueryParams map[string]*StringMatch `yaml:"queryParams,omitempty" json:"queryParams,omitempty"`
 }
 
 // StringMatch represents different string matching types.
@@ -102,7 +103,7 @@ type HeaderOperations struct {
 type IstioHTTPRedirect struct {
 	URI          string `yaml:"uri,omitempty" json:"uri,omitempty"`
 	Authority    string `yaml:"authority,omitempty" json:"authority,omitempty"`
-	RedirectCode int32  `yaml:"redirect_code,omitempty" json:"redirect_code,omitempty"`
+	RedirectCode int32  `yaml:"redirectCode,omitempty" json:"redirectCode,omitempty"`
 }
 
 // IstioHTTPRewrite represents HTTP rewrite.
@@ -114,8 +115,8 @@ type IstioHTTPRewrite struct {
 // IstioHTTPRetry represents retry configuration.
 type IstioHTTPRetry struct {
 	Attempts      int32  `yaml:"attempts" json:"attempts"`
-	PerTryTimeout string `yaml:"per_try_timeout,omitempty" json:"per_try_timeout,omitempty"`
-	RetryOn       string `yaml:"retry_on,omitempty" json:"retry_on,omitempty"`
+	PerTryTimeout string `yaml:"perTryTimeout,omitempty" json:"perTryTimeout,omitempty"`
+	RetryOn       string `yaml:"retryOn,omitempty" json:"retryOn,omitempty"`
 }
 
 // IstioHTTPFaultInjection represents fault injection.
@@ -127,13 +128,13 @@ type IstioHTTPFaultInjection struct {
 // FaultDelay represents delay injection.
 type FaultDelay struct {
 	Percentage int32  `yaml:"percentage" json:"percentage"`
-	FixedDelay string `yaml:"fixed_delay" json:"fixed_delay"`
+	FixedDelay string `yaml:"fixedDelay" json:"fixedDelay"`
 }
 
 // FaultAbort represents abort injection.
 type FaultAbort struct {
 	Percentage int32 `yaml:"percentage" json:"percentage"`
-	HTTPStatus int32 `yaml:"http_status" json:"http_status"`
+	HTTPStatus int32 `yaml:"httpStatus" json:"httpStatus"`
 }
 
 // IstioTCPRoute represents TCP routing rules.
@@ -144,9 +145,9 @@ type IstioTCPRoute struct {
 
 // IstioL4MatchAttributes represents L4 match attributes.
 type IstioL4MatchAttributes struct {
-	DestinationSubnets []string          `yaml:"destination_subnets,omitempty" json:"destination_subnets,omitempty"`
+	DestinationSubnets []string          `yaml:"destinationSubnets,omitempty" json:"destinationSubnets,omitempty"`
 	Port               int32             `yaml:"port,omitempty" json:"port,omitempty"`
-	SourceLabels       map[string]string `yaml:"source_labels,omitempty" json:"source_labels,omitempty"`
+	SourceLabels       map[string]string `yaml:"sourceLabels,omitempty" json:"sourceLabels,omitempty"`
 }
 
 // IstioRouteDestination represents route destination.
@@ -308,40 +309,40 @@ type LinkerdBackend struct {
 
 // CircuitBreakerConfig represents circuit breaker configuration.
 type CircuitBreakerConfig struct {
-	ConsecutiveErrors  int32  `yaml:"consecutive_errors" json:"consecutive_errors"`
+	ConsecutiveErrors  int32  `yaml:"consecutiveErrors" json:"consecutiveErrors"`
 	Interval           string `yaml:"interval" json:"interval"`
-	BaseEjectionTime   string `yaml:"base_ejection_time" json:"base_ejection_time"`
-	MaxEjectionPercent int32  `yaml:"max_ejection_percent" json:"max_ejection_percent"`
+	BaseEjectionTime   string `yaml:"baseEjectionTime" json:"baseEjectionTime"`
+	MaxEjectionPercent int32  `yaml:"maxEjectionPercent" json:"maxEjectionPercent"`
 }
 
 // RetryPolicyConfig represents retry policy configuration.
 type RetryPolicyConfig struct {
 	Attempts      int32    `yaml:"attempts" json:"attempts"`
-	PerTryTimeout string   `yaml:"per_try_timeout,omitempty" json:"per_try_timeout,omitempty"`
-	BackoffBase   string   `yaml:"backoff_base,omitempty" json:"backoff_base,omitempty"`
-	BackoffMax    string   `yaml:"backoff_max,omitempty" json:"backoff_max,omitempty"`
-	RetryOn       []string `yaml:"retry_on,omitempty" json:"retry_on,omitempty"`
+	PerTryTimeout string   `yaml:"perTryTimeout,omitempty" json:"perTryTimeout,omitempty"`
+	BackoffBase   string   `yaml:"backoffBase,omitempty" json:"backoffBase,omitempty"`
+	BackoffMax    string   `yaml:"backoffMax,omitempty" json:"backoffMax,omitempty"`
+	RetryOn       []string `yaml:"retryOn,omitempty" json:"retryOn,omitempty"`
 }
 
 // ProxyResourceConfig represents proxy resource configuration.
 type ProxyResourceConfig struct {
-	CPURequest    string `yaml:"cpu_request" json:"cpu_request"`
-	CPULimit      string `yaml:"cpu_limit" json:"cpu_limit"`
-	MemoryRequest string `yaml:"memory_request" json:"memory_request"`
-	MemoryLimit   string `yaml:"memory_limit" json:"memory_limit"`
+	CPURequest    string `yaml:"cpuRequest" json:"cpuRequest"`
+	CPULimit      string `yaml:"cpuLimit" json:"cpuLimit"`
+	MemoryRequest string `yaml:"memoryRequest" json:"memoryRequest"`
+	MemoryLimit   string `yaml:"memoryLimit" json:"memoryLimit"`
 }
 
 // TimeoutPolicyConfig represents timeout policy configuration.
 type TimeoutPolicyConfig struct {
-	RequestTimeout    string `yaml:"request_timeout" json:"request_timeout"`
-	IdleTimeout       string `yaml:"idle_timeout" json:"idle_timeout"`
-	StreamIdleTimeout string `yaml:"stream_idle_timeout" json:"stream_idle_timeout"`
+	RequestTimeout    string `yaml:"requestTimeout" json:"requestTimeout"`
+	IdleTimeout       string `yaml:"idleTimeout" json:"idleTimeout"`
+	StreamIdleTimeout string `yaml:"streamIdleTimeout" json:"streamIdleTimeout"`
 }
 
 // RetryBudgetConfig represents retry budget configuration.
 type RetryBudgetConfig struct {
-	RetryRatio          float32 `yaml:"retry_ratio" json:"retry_ratio"`
-	MinRetriesPerSecond int32   `yaml:"min_retries_per_second" json:"min_retries_per_second"`
+	RetryRatio          float32 `yaml:"retryRatio" json:"retryRatio"`
+	MinRetriesPerSecond int32   `yaml:"minRetriesPerSecond" json:"minRetriesPerSecond"`
 	TTL                 string  `yaml:"ttl" json:"ttl"`
 }
 
@@ -675,86 +676,101 @@ func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace strin
 	}
 
 	if dr.TrafficPolicy != nil {
-		tp := make(map[string]interface{})
-
-		if dr.TrafficPolicy.LoadBalancer != nil && dr.TrafficPolicy.LoadBalancer.Simple != "" {
-			tp["loadBalancer"] = map[string]interface{}{
-				"simple": dr.TrafficPolicy.LoadBalancer.Simple,
-			}
-		}
-
-		if dr.TrafficPolicy.ConnectionPool != nil {
-			cp := make(map[string]interface{})
-			if dr.TrafficPolicy.ConnectionPool.TCP != nil {
-				tcp := make(map[string]interface{})
-				if dr.TrafficPolicy.ConnectionPool.TCP.MaxConnections > 0 {
-					tcp["maxConnections"] = dr.TrafficPolicy.ConnectionPool.TCP.MaxConnections
-				}
-
-				if dr.TrafficPolicy.ConnectionPool.TCP.ConnectTimeout != "" {
-					tcp["connectTimeout"] = dr.TrafficPolicy.ConnectionPool.TCP.ConnectTimeout
-				}
-
-				cp["tcp"] = tcp
-			}
-
-			if dr.TrafficPolicy.ConnectionPool.HTTP != nil {
-				http := make(map[string]interface{})
-				if dr.TrafficPolicy.ConnectionPool.HTTP.HTTP1MaxPendingRequests > 0 {
-					http["http1MaxPendingRequests"] = dr.TrafficPolicy.ConnectionPool.HTTP.HTTP1MaxPendingRequests
-				}
-
-				if dr.TrafficPolicy.ConnectionPool.HTTP.HTTP2MaxRequests > 0 {
-					http["http2MaxRequests"] = dr.TrafficPolicy.ConnectionPool.HTTP.HTTP2MaxRequests
-				}
-
-				cp["http"] = http
-			}
-
-			tp["connectionPool"] = cp
-		}
-
-		if dr.TrafficPolicy.OutlierDetection != nil {
-			od := make(map[string]interface{})
-			if dr.TrafficPolicy.OutlierDetection.ConsecutiveErrors > 0 {
-				od["consecutiveErrors"] = dr.TrafficPolicy.OutlierDetection.ConsecutiveErrors
-			}
-
-			if dr.TrafficPolicy.OutlierDetection.Interval != "" {
-				od["interval"] = dr.TrafficPolicy.OutlierDetection.Interval
-			}
-
-			if dr.TrafficPolicy.OutlierDetection.BaseEjectionTime != "" {
-				od["baseEjectionTime"] = dr.TrafficPolicy.OutlierDetection.BaseEjectionTime
-			}
-
-			tp["outlierDetection"] = od
-		}
-
-		if dr.TrafficPolicy.TLS != nil {
-			tls := map[string]interface{}{
-				"mode": dr.TrafficPolicy.TLS.Mode,
-			}
-			tp["tls"] = tls
-		}
-
+		tp := km.buildTrafficPolicy(dr.TrafficPolicy)
 		spec["trafficPolicy"] = tp
 	}
 
 	if len(dr.Subsets) > 0 {
-		subsets := make([]map[string]interface{}, 0, len(dr.Subsets))
-		for _, subset := range dr.Subsets {
-			s := map[string]interface{}{
-				"name":   subset.Name,
-				"labels": subset.Labels,
-			}
-			subsets = append(subsets, s)
-		}
-
-		spec["subsets"] = subsets
+		spec["subsets"] = km.buildSubsets(dr.Subsets)
 	}
 
 	return manifest, nil
+}
+
+// buildTrafficPolicy builds the traffic policy configuration.
+func (km *KubernetesNetworkManager) buildTrafficPolicy(tp *IstioTrafficPolicy) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	if tp.LoadBalancer != nil && tp.LoadBalancer.Simple != "" {
+		result["loadBalancer"] = map[string]interface{}{
+			"simple": tp.LoadBalancer.Simple,
+		}
+	}
+
+	if tp.ConnectionPool != nil {
+		result["connectionPool"] = km.buildConnectionPool(tp.ConnectionPool)
+	}
+
+	if tp.OutlierDetection != nil {
+		result["outlierDetection"] = km.buildOutlierDetection(tp.OutlierDetection)
+	}
+
+	if tp.TLS != nil {
+		result["tls"] = map[string]interface{}{
+			"mode": tp.TLS.Mode,
+		}
+	}
+
+	return result
+}
+
+// buildConnectionPool builds the connection pool configuration.
+func (km *KubernetesNetworkManager) buildConnectionPool(cp *ConnectionPoolSettings) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	if cp.TCP != nil {
+		tcp := make(map[string]interface{})
+		if cp.TCP.MaxConnections > 0 {
+			tcp["maxConnections"] = cp.TCP.MaxConnections
+		}
+		if cp.TCP.ConnectTimeout != "" {
+			tcp["connectTimeout"] = cp.TCP.ConnectTimeout
+		}
+		result["tcp"] = tcp
+	}
+
+	if cp.HTTP != nil {
+		http := make(map[string]interface{})
+		if cp.HTTP.HTTP1MaxPendingRequests > 0 {
+			http["http1MaxPendingRequests"] = cp.HTTP.HTTP1MaxPendingRequests
+		}
+		if cp.HTTP.HTTP2MaxRequests > 0 {
+			http["http2MaxRequests"] = cp.HTTP.HTTP2MaxRequests
+		}
+		result["http"] = http
+	}
+
+	return result
+}
+
+// buildOutlierDetection builds the outlier detection configuration.
+func (km *KubernetesNetworkManager) buildOutlierDetection(od *OutlierDetection) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	if od.ConsecutiveErrors > 0 {
+		result["consecutiveErrors"] = od.ConsecutiveErrors
+	}
+	if od.Interval != "" {
+		result["interval"] = od.Interval
+	}
+	if od.BaseEjectionTime != "" {
+		result["baseEjectionTime"] = od.BaseEjectionTime
+	}
+
+	return result
+}
+
+// buildSubsets builds the subsets configuration.
+func (km *KubernetesNetworkManager) buildSubsets(subsets []IstioSubset) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(subsets))
+	for _, subset := range subsets {
+		s := map[string]interface{}{
+			"name":   subset.Name,
+			"labels": subset.Labels,
+		}
+		result = append(result, s)
+	}
+	return result
 }
 
 // applyIstioDestinationRule applies an Istio DestinationRule.

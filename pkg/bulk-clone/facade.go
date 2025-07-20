@@ -1,17 +1,17 @@
 package bulkclone
 
-//go:generate mockgen -source=facade.go -destination=mocks/bulk_clone_manager_mock.go -package=mocks BulkCloneManager
+//go:generate mockgen -source=facade.go -destination=mocks/bulk_clone_manager_mock.go -package=mocks Manager
 
 import (
 	"context"
 	"time"
 )
 
-// BulkCloneManager provides a high-level facade for bulk cloning operations
+// Manager provides a high-level facade for bulk cloning operations
 // across multiple Git hosting platforms. It abstracts the complexity of
 // platform-specific APIs and provides a unified interface for repository
 // discovery, cloning, and management operations.
-type BulkCloneManager interface {
+type Manager interface {
 	// Configuration Management
 	LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error)
 	LoadConfigurationFromFile(ctx context.Context, filename string) (*BulkCloneConfig, error)
@@ -249,14 +249,14 @@ type FilteringStatistics struct {
 	FiltersByType  map[string]int
 }
 
-// bulkCloneManagerImpl implements the BulkCloneManager interface.
+// bulkCloneManagerImpl implements the Manager interface.
 type bulkCloneManagerImpl struct {
 	configManager ConfigurationManager
 	logger        Logger
 }
 
 // NewBulkCloneManager creates a new bulk clone manager facade.
-func NewBulkCloneManager(configManager ConfigurationManager, logger Logger) BulkCloneManager {
+func NewBulkCloneManager(configManager ConfigurationManager, logger Logger) Manager {
 	return &bulkCloneManagerImpl{
 		configManager: configManager,
 		logger:        logger,
@@ -264,7 +264,7 @@ func NewBulkCloneManager(configManager ConfigurationManager, logger Logger) Bulk
 }
 
 // LoadConfiguration loads the bulk clone configuration.
-func (b *bulkCloneManagerImpl) LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error) {
+func (b *bulkCloneManagerImpl) LoadConfiguration(_ context.Context) (*BulkCloneConfig, error) {
 	b.logger.Debug("Loading bulk clone configuration")
 
 	configPath, err := FindConfigFile()
@@ -276,13 +276,13 @@ func (b *bulkCloneManagerImpl) LoadConfiguration(ctx context.Context) (*BulkClon
 }
 
 // LoadConfigurationFromFile loads configuration from a specific file.
-func (b *bulkCloneManagerImpl) LoadConfigurationFromFile(ctx context.Context, filename string) (*BulkCloneConfig, error) {
+func (b *bulkCloneManagerImpl) LoadConfigurationFromFile(_ context.Context, filename string) (*BulkCloneConfig, error) {
 	b.logger.Debug("Loading configuration from file", "file", filename)
 	return LoadConfig(filename)
 }
 
 // ValidateConfiguration validates a bulk clone configuration.
-func (b *bulkCloneManagerImpl) ValidateConfiguration(ctx context.Context, config *BulkCloneConfig) error {
+func (b *bulkCloneManagerImpl) ValidateConfiguration(_ context.Context, config *BulkCloneConfig) error {
 	b.logger.Debug("Validating configuration")
 
 	// Implementation would validate the configuration
@@ -291,7 +291,7 @@ func (b *bulkCloneManagerImpl) ValidateConfiguration(ctx context.Context, config
 }
 
 // CloneOrganization clones an entire organization.
-func (b *bulkCloneManagerImpl) CloneOrganization(ctx context.Context, request *OrganizationCloneRequest) (*CloneResult, error) {
+func (b *bulkCloneManagerImpl) CloneOrganization(_ context.Context, request *OrganizationCloneRequest) (*CloneResult, error) {
 	b.logger.Info("Starting organization clone", "org", request.Organization, "provider", request.Provider)
 
 	result := &CloneResult{
@@ -314,7 +314,7 @@ func (b *bulkCloneManagerImpl) CloneOrganization(ctx context.Context, request *O
 }
 
 // CloneRepositories clones specific repositories.
-func (b *bulkCloneManagerImpl) CloneRepositories(ctx context.Context, request *RepositoryCloneRequest) (*CloneResult, error) {
+func (b *bulkCloneManagerImpl) CloneRepositories(_ context.Context, request *RepositoryCloneRequest) (*CloneResult, error) {
 	b.logger.Info("Starting repository clone", "count", len(request.Repositories))
 
 	result := &CloneResult{

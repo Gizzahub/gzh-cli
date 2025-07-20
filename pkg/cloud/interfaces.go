@@ -456,7 +456,7 @@ type SyncManager interface {
 
 // SyncStatus represents synchronization status.
 type SyncStatus struct {
-	ProfileName string    `json:"profile_name"`
+	ProfileName string    `json:"profileName"`
 	Source      string    `json:"source"`
 	Target      string    `json:"target"`
 	Status      string    `json:"status"` // synced, pending, conflict, error
@@ -588,7 +588,7 @@ type VPNHierarchyNode struct {
 	HealthCheck *VPNHealthCheck `yaml:"healthCheck,omitempty" json:"healthCheck,omitempty"`
 
 	// Auto-reconnect configuration
-	AutoReconnect bool `yaml:"auto_reconnect,omitempty" json:"auto_reconnect,omitempty"`
+	AutoReconnect bool `yaml:"autoReconnect,omitempty" json:"autoReconnect,omitempty"`
 }
 
 // VPNHierarchyPolicy represents policy for VPN hierarchy connections.
@@ -597,13 +597,13 @@ type VPNHierarchyPolicy struct {
 	Strategy string `yaml:"strategy" json:"strategy"`
 
 	// Timeout for each connection attempt
-	ConnectionTimeout time.Duration `yaml:"connection_timeout,omitempty" json:"connection_timeout,omitempty"`
+	ConnectionTimeout time.Duration `yaml:"connectionTimeout,omitempty" json:"connectionTimeout,omitempty"`
 
 	// Maximum retries per connection
-	MaxRetries int `yaml:"max_retries,omitempty" json:"max_retries,omitempty"`
+	MaxRetries int `yaml:"maxRetries,omitempty" json:"maxRetries,omitempty"`
 
 	// Failure handling (stop, continue, failover)
-	FailureHandling string `yaml:"failure_handling,omitempty" json:"failure_handling,omitempty"`
+	FailureHandling string `yaml:"failureHandling,omitempty" json:"failureHandling,omitempty"`
 }
 
 // VPNFailoverConfig represents failover configuration for VPN connections.
@@ -612,16 +612,16 @@ type VPNFailoverConfig struct {
 	Enabled bool `yaml:"enabled" json:"enabled"`
 
 	// Backup VPN connections (in order of preference)
-	BackupConnections []string `yaml:"backup_connections,omitempty" json:"backup_connections,omitempty"`
+	BackupConnections []string `yaml:"backupConnections,omitempty" json:"backupConnections,omitempty"`
 
 	// Failover trigger conditions
-	TriggerConditions []string `yaml:"trigger_conditions,omitempty" json:"trigger_conditions,omitempty"`
+	TriggerConditions []string `yaml:"triggerConditions,omitempty" json:"triggerConditions,omitempty"`
 
 	// Failover timeout
-	FailoverTimeout time.Duration `yaml:"failover_timeout,omitempty" json:"failover_timeout,omitempty"`
+	FailoverTimeout time.Duration `yaml:"failoverTimeout,omitempty" json:"failoverTimeout,omitempty"`
 
 	// Auto-failback configuration
-	AutoFailback bool `yaml:"auto_failback,omitempty" json:"auto_failback,omitempty"`
+	AutoFailback bool `yaml:"autoFailback,omitempty" json:"autoFailback,omitempty"`
 }
 
 // VPNHierarchyStatus represents the status of a VPN hierarchy.

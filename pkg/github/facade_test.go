@@ -1,7 +1,9 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package github
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -13,11 +15,11 @@ import (
 type MockHTTPClient struct{}
 
 func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
-	return nil, nil
+	return nil, fmt.Errorf("mock HTTP Get not implemented for URL: %s", url)
 }
 
 func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
-	return nil, nil
+	return nil, fmt.Errorf("mock HTTP Post not implemented for URL: %s", url)
 }
 
 // MockLogger for testing.
@@ -32,15 +34,15 @@ func (m *MockLogger) Error(msg string, args ...interface{}) {}
 type MockGitHubProviderFactory struct{}
 
 func (m *MockGitHubProviderFactory) CreateCloner(ctx context.Context, token string) (GitHubCloner, error) {
-	return nil, nil
+	return nil, fmt.Errorf("mock CreateCloner not implemented")
 }
 
 func (m *MockGitHubProviderFactory) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (GitHubCloner, error) {
-	return nil, nil
+	return nil, fmt.Errorf("mock CreateClonerWithEnv not implemented")
 }
 
 func (m *MockGitHubProviderFactory) CreateChangeLogger(ctx context.Context, changelog *ChangeLog, options *LoggerOptions) (*ChangeLogger, error) {
-	return nil, nil
+	return nil, fmt.Errorf("mock CreateChangeLogger not implemented")
 }
 
 func (m *MockGitHubProviderFactory) GetProviderName() string {

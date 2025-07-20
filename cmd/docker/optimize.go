@@ -16,6 +16,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	priorityCritical = "critical"
+	priorityHigh     = "high"
+	priorityMedium   = "medium"
+	priorityLow      = "low"
+)
+
 // OptimizeCmd represents the optimize command.
 var OptimizeCmd = &cobra.Command{
 	Use:   "optimize",
@@ -335,12 +342,7 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	analysis.SizeBreakdown = *sizeBreakdown
 
 	// Analyze waste
-	wasteAnalysis, err := analyzeWaste(imageName, layers)
-	if err != nil {
-		fmt.Printf("⚠️ 낭비 분석 실패: %v\n", err)
-
-		wasteAnalysis = &WasteAnalysis{}
-	}
+	wasteAnalysis := analyzeWaste(imageName, layers)
 
 	analysis.WasteAnalysis = *wasteAnalysis
 
@@ -367,6 +369,7 @@ func getOptimizeImageInfo(imageName string) (*ImageInfo, error) {
 		return nil, err
 	}
 
+	// nolint:tagliatelle // External API format - must match Docker JSON output
 	var inspectResult []struct {
 		ID           string `json:"Id"`
 		Created      string `json:"Created"`
@@ -554,7 +557,7 @@ func calculateSizeBreakdown(imageInfo *ImageInfo, layers []LayerInfo) *SizeBreak
 	return breakdown
 }
 
-func analyzeWaste(imageName string, layers []LayerInfo) (*WasteAnalysis, error) {
+func analyzeWaste(_ string, layers []LayerInfo) *WasteAnalysis {
 	waste := &WasteAnalysis{
 		WastedFiles:    make([]WastedFile, 0),
 		DuplicateFiles: make([]DuplicateGroup, 0),
@@ -585,7 +588,7 @@ func analyzeWaste(imageName string, layers []LayerInfo) (*WasteAnalysis, error) 
 
 	waste.WastedFiles = append(waste.WastedFiles, commonWasteFiles...)
 
-	return waste, nil
+	return waste
 }
 
 func getBaseImageRecommendations(imageInfo *ImageInfo) []BaseImageRec {
@@ -796,7 +799,7 @@ func displayAnalysisResults(analysis *OptimizationAnalysis) {
 
 func displaySuggestions(suggestions []Suggestion) {
 	// Group suggestions by priority
-	priorityOrder := []string{"critical", "high", "medium", "low"}
+	priorityOrder := []string{priorityCritical, priorityHigh, priorityMedium, priorityLow}
 
 	for _, priority := range priorityOrder {
 		var prioritySuggestions []Suggestion
@@ -812,10 +815,10 @@ func displaySuggestions(suggestions []Suggestion) {
 		}
 
 		priorityEmoji := map[string]string{
-			"critical": "🚨",
-			"high":     "⚠️",
-			"medium":   "💡",
-			"low":      "ℹ️",
+			priorityCritical: "🚨",
+			"high":           "⚠️",
+			"medium":         "💡",
+			"low":            "ℹ️",
 		}
 
 		fmt.Printf("\n%s %s 우선순위:\n", priorityEmoji[priority], strings.ToUpper(priority))
@@ -885,7 +888,7 @@ func applyOptimizations(imageName string, analysis *OptimizationAnalysis, sugges
 
 	// Mark high priority suggestions as applied
 	for _, suggestion := range suggestions {
-		if suggestion.Priority == "high" || suggestion.Priority == "critical" {
+		if suggestion.Priority == priorityHigh || suggestion.Priority == priorityCritical {
 			result.Applied = append(result.Applied, suggestion)
 		} else {
 			result.Skipped = append(result.Skipped, suggestion)
@@ -919,7 +922,7 @@ func generateOptimizedDockerfile(analysis *OptimizationAnalysis, suggestions []S
 	dockerfile.WriteString("# Optimization strategies applied:\n")
 
 	for _, suggestion := range suggestions {
-		if suggestion.Priority == "high" || suggestion.Priority == "critical" {
+		if suggestion.Priority == priorityHigh || suggestion.Priority == priorityCritical {
 			dockerfile.WriteString(fmt.Sprintf("# - %s: %s\n", suggestion.Title, suggestion.Description))
 		}
 	}

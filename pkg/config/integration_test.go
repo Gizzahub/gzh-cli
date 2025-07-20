@@ -1,3 +1,4 @@
+//nolint:testpackage // White-box testing needed for internal function access
 package config
 
 import (
@@ -66,7 +67,7 @@ providers:
 `
 
 	configPath := filepath.Join(tmpDir, "gzh.yaml")
-	err = os.WriteFile(configPath, []byte(configContent), 0o644)
+	err = os.WriteFile(configPath, []byte(configContent), 0o600)
 	require.NoError(t, err)
 
 	// Set up environment variables
@@ -280,7 +281,7 @@ providers:
 			}()
 
 			configPath := filepath.Join(tmpDir, "gzh.yaml")
-			err = os.WriteFile(configPath, []byte(tt.config), 0o644)
+			err = os.WriteFile(configPath, []byte(tt.config), 0o600)
 			require.NoError(t, err)
 
 			config, err := ParseYAMLFile(configPath)
@@ -492,7 +493,7 @@ providers:
 `
 
 	configPath := filepath.Join(tmpDir, "gzh.yaml")
-	err = os.WriteFile(configPath, []byte(configContent), 0o644)
+	err = os.WriteFile(configPath, []byte(configContent), 0o600)
 	require.NoError(t, err)
 
 	// Test direct path loading

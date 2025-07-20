@@ -304,7 +304,7 @@ func TestIntegration_RepoConfig_RateLimiting(t *testing.T) {
 		results := make(chan error, 5)
 
 		for i := 0; i < 5; i++ {
-			go func(index int) {
+			go func(_ int) {
 				_, err := client.ListRepositories(ctx, testOrg, nil)
 				results <- err
 			}(i)

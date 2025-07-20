@@ -458,42 +458,9 @@ func (o *alwaysLatestSdkmanOptions) getTargetVersion(candidate, currentVersion, 
 	}
 
 	// Get all versions and find the latest within the same major version
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate))
-
-	output, err := cmd.Output()
+	candidateVersions, err := o.getCompatibleVersions(candidate, currentMajor)
 	if err != nil {
 		return latestVersion, err
-	}
-
-	var candidateVersions []string
-
-	scanner := bufio.NewScanner(strings.NewReader(string(output)))
-
-	inVersionSection := false
-
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-
-		if strings.Contains(line, "|") && inVersionSection {
-			parts := strings.Split(line, "|")
-			for _, part := range parts {
-				version := strings.TrimSpace(part)
-				if version != "" && o.isValidVersion(version) {
-					major, err := o.extractMajorVersion(version)
-					if err != nil {
-						continue
-					}
-
-					if major == currentMajor && o.isStableVersion(version) {
-						candidateVersions = append(candidateVersions, version)
-					}
-				}
-			}
-		}
-
-		if strings.Contains(line, "Available") || strings.Contains(line, "Vendor") {
-			inVersionSection = true
-		}
 	}
 
 	if len(candidateVersions) == 0 {
@@ -504,6 +471,56 @@ func (o *alwaysLatestSdkmanOptions) getTargetVersion(candidate, currentVersion, 
 	sort.Strings(candidateVersions)
 
 	return candidateVersions[len(candidateVersions)-1], nil
+}
+
+// getCompatibleVersions retrieves and filters versions compatible with the current major version.
+func (o *alwaysLatestSdkmanOptions) getCompatibleVersions(candidate, currentMajor string) ([]string, error) {
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate))
+
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var candidateVersions []string
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	inVersionSection := false
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		if strings.Contains(line, "|") && inVersionSection {
+			candidateVersions = append(candidateVersions, o.parseVersionsFromLine(line, currentMajor)...)
+		}
+
+		if strings.Contains(line, "Available") || strings.Contains(line, "Vendor") {
+			inVersionSection = true
+		}
+	}
+
+	return candidateVersions, nil
+}
+
+// parseVersionsFromLine extracts compatible versions from a single output line.
+func (o *alwaysLatestSdkmanOptions) parseVersionsFromLine(line, currentMajor string) []string {
+	var versions []string
+	parts := strings.Split(line, "|")
+
+	for _, part := range parts {
+		version := strings.TrimSpace(part)
+		if version != "" && o.isValidVersion(version) {
+			major, err := o.extractMajorVersion(version)
+			if err != nil {
+				continue
+			}
+
+			if major == currentMajor && o.isStableVersion(version) {
+				versions = append(versions, version)
+			}
+		}
+	}
+
+	return versions
 }
 
 func (o *alwaysLatestSdkmanOptions) extractMajorVersion(version string) (string, error) {
