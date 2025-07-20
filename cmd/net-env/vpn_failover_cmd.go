@@ -587,6 +587,7 @@ func newVPNFailoverPolicySetCmd(logger *zap.Logger, configDir string) *cobra.Com
 
 // Helper functions and types
 
+// FailoverVPNManager manages VPN failover operations and monitoring.
 type FailoverVPNManager struct {
 	logger     *zap.Logger
 	configDir  string
@@ -596,6 +597,7 @@ type FailoverVPNManager struct {
 	monitoring bool
 }
 
+// FailoverConfig contains configuration for VPN failover behavior.
 type FailoverConfig struct {
 	MonitorInterval time.Duration `json:"monitor_interval"`
 	MaxRetries      int           `json:"max_retries"`
@@ -604,6 +606,7 @@ type FailoverConfig struct {
 	NotifyOnFailure bool          `json:"notify_on_failure"`
 }
 
+// BackupVPNConfig defines a primary VPN and its backup configuration.
 type BackupVPNConfig struct {
 	PrimaryVPN   string            `json:"primary_vpn"`
 	BackupVPN    string            `json:"backup_vpn"`
@@ -620,6 +623,7 @@ type BackupVPNConfig struct {
 //	Endpoint string        `json:"endpoint,omitempty"`
 //}
 
+// FailoverPolicy defines the policy for handling VPN failovers.
 type FailoverPolicy struct {
 	Strategy        FailoverStrategy `json:"strategy"`
 	MaxRetries      int              `json:"max_retries"`
@@ -629,14 +633,18 @@ type FailoverPolicy struct {
 	NotifyOnRecover bool             `json:"notify_on_recover"`
 }
 
+// FailoverStrategy represents the strategy for VPN failover.
 type FailoverStrategy string
 
+// Failover strategy constants.
 const (
+	// StrategyPriority uses priority-based failover.
 	StrategyPriority         FailoverStrategy = "priority"
 	StrategyRoundRobin       FailoverStrategy = "round-robin"
 	StrategyLeastConnections FailoverStrategy = "least-connections"
 )
 
+// FailoverStatus represents the current status of VPN failover monitoring.
 type FailoverStatus struct {
 	Monitoring    bool                         `json:"monitoring"`
 	ActiveVPNs    []string                     `json:"active_vpns"`
@@ -647,6 +655,7 @@ type FailoverStatus struct {
 	HealthChecks  map[string]HealthCheckResult `json:"health_checks"`
 }
 
+// HealthCheckResult contains the result of a VPN health check.
 type HealthCheckResult struct {
 	VPNName      string        `json:"vpn_name"`
 	Status       string        `json:"status"`
@@ -655,6 +664,7 @@ type HealthCheckResult struct {
 	Error        string        `json:"error,omitempty"`
 }
 
+// FailoverTestResult contains the result of a failover test scenario.
 type FailoverTestResult struct {
 	Scenario string        `json:"scenario"`
 	Success  bool          `json:"success"`
@@ -663,6 +673,7 @@ type FailoverTestResult struct {
 	Error    string        `json:"error,omitempty"`
 }
 
+// TestStep represents a single step in a failover test.
 type TestStep struct {
 	Step        string        `json:"step"`
 	Success     bool          `json:"success"`

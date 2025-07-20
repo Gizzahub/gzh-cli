@@ -184,10 +184,7 @@ Examples:
 }
 
 func (o *ideOptions) runMonitor(ctx context.Context, _ *cobra.Command, _ []string) error {
-	watchDirs, err := o.getWatchDirectories()
-	if err != nil {
-		return fmt.Errorf("failed to get watch directories: %w", err)
-	}
+	watchDirs := o.getWatchDirectories()
 
 	if len(watchDirs) == 0 {
 		fmt.Println("⚠️  No JetBrains IDE installations found")
@@ -322,10 +319,10 @@ func (o *ideOptions) runFixSync(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func (o *ideOptions) getWatchDirectories() ([]string, error) {
+func (o *ideOptions) getWatchDirectories() []string {
 	if o.watchDir != "" {
 		// Use specific directory
-		return []string{o.watchDir}, nil
+		return []string{o.watchDir}
 	}
 
 	// Auto-detect JetBrains directories
@@ -349,7 +346,7 @@ func (o *ideOptions) getWatchDirectories() ([]string, error) {
 		dirs = append(dirs, product.BasePath)
 	}
 
-	return dirs, nil
+	return dirs
 }
 
 func (o *ideOptions) detectJetBrainsProducts() []jetbrainsProduct {
