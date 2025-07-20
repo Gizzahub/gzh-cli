@@ -17,7 +17,7 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/user":
+		case userEndpoint:
 			user := &User{
 				Login:     "testuser",
 				ID:        12345,
@@ -28,7 +28,7 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(user)
 
-		case "/rate_limit":
+		case rateLimitEndpoint:
 			rateLimit := map[string]interface{}{
 				"resources": map[string]interface{}{
 					"core": &RateLimitInfo{
@@ -69,7 +69,7 @@ func TestTokenValidator_ValidateForOperation(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/user":
+		case userEndpoint:
 			user := &User{
 				Login: "testuser",
 				ID:    12345,
@@ -79,7 +79,7 @@ func TestTokenValidator_ValidateForOperation(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(user)
 
-		case "/rate_limit":
+		case rateLimitEndpoint:
 			rateLimit := map[string]interface{}{
 				"resources": map[string]interface{}{
 					"core": &RateLimitInfo{
@@ -142,7 +142,7 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/user":
+		case userEndpoint:
 			user := &User{
 				Login: "testuser",
 				ID:    12345,
@@ -152,7 +152,7 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(user)
 
-		case "/rate_limit":
+		case rateLimitEndpoint:
 			rateLimit := map[string]interface{}{
 				"resources": map[string]interface{}{
 					"core": &RateLimitInfo{
@@ -166,7 +166,7 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(rateLimit)
 
-		case "/repos/testorg/testrepo":
+		case testRepoPath:
 			repo := &Repository{
 				ID:       1,
 				Name:     "testrepo",

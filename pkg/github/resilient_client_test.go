@@ -14,7 +14,7 @@ import (
 func TestResilientGitHubClient_GetDefaultBranch(t *testing.T) {
 	// Test server that returns repository info
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/repos/testorg/testrepo" {
+		if r.URL.Path != testRepoPath {
 			t.Errorf("Expected path /repos/testorg/testrepo, got %s", r.URL.Path)
 		}
 
@@ -115,7 +115,7 @@ func TestResilientGitHubClient_ListRepositories(t *testing.T) {
 func TestResilientGitHubClient_GetRateLimit(t *testing.T) {
 	// Test server that returns rate limit info
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/rate_limit" {
+		if r.URL.Path != rateLimitEndpoint {
 			t.Errorf("Expected path /rate_limit, got %s", r.URL.Path)
 		}
 

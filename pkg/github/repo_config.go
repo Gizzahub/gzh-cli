@@ -15,6 +15,11 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
+const (
+	// httpMethodPUT is the HTTP PUT method
+	httpMethodPUT = "PUT"
+)
+
 // RepoConfigClient provides GitHub API operations for repository configuration management.
 type RepoConfigClient struct {
 	token       string
@@ -747,7 +752,7 @@ func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owne
 		path := fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", owner, teamSlug, owner, repo)
 		body := map[string]string{"permission": permission}
 
-		resp, err := c.makeRequest(ctx, "PUT", path, body)
+		resp, err := c.makeRequest(ctx, httpMethodPUT, path, body)
 		if err != nil {
 			return fmt.Errorf("failed to update team %s permission: %w", teamSlug, err)
 		}
@@ -760,7 +765,7 @@ func (c *RepoConfigClient) UpdateRepositoryPermissions(ctx context.Context, owne
 		path := fmt.Sprintf("/repos/%s/%s/collaborators/%s", owner, repo, username)
 		body := map[string]string{"permission": permission}
 
-		resp, err := c.makeRequest(ctx, "PUT", path, body)
+		resp, err := c.makeRequest(ctx, httpMethodPUT, path, body)
 		if err != nil {
 			return fmt.Errorf("failed to update user %s permission: %w", username, err)
 		}
@@ -793,7 +798,7 @@ func (c *RepoConfigClient) GetBranchProtection(ctx context.Context, owner, repo,
 func (c *RepoConfigClient) UpdateBranchProtection(ctx context.Context, owner, repo, branch string, protection *BranchProtection) (*BranchProtection, error) {
 	path := fmt.Sprintf("/repos/%s/%s/branches/%s/protection", owner, repo, branch)
 
-	resp, err := c.makeRequest(ctx, "PUT", path, protection)
+	resp, err := c.makeRequest(ctx, httpMethodPUT, path, protection)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update branch protection: %w", err)
 	}

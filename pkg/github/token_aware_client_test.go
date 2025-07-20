@@ -15,6 +15,13 @@ import (
 
 const testToken = "test-token"
 
+const (
+	// userEndpoint is the GitHub API user endpoint
+	userEndpoint = "/user"
+	// rateLimitEndpoint is the GitHub API rate limit endpoint
+	rateLimitEndpoint = "/rate_limit"
+)
+
 func TestTokenAwareGitHubClient_Creation(t *testing.T) {
 	config := github.DefaultTokenAwareGitHubClientConfig()
 	config.PrimaryToken = testToken
@@ -58,7 +65,7 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 		}
 
 		switch r.URL.Path {
-		case "/user":
+		case userEndpoint:
 			w.Header().Set("X-OAuth-Scopes", "repo,read:org")
 
 			user := github.GitHubUser{
@@ -114,7 +121,7 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 				http.Error(w, "Failed to encode repos response", http.StatusInternalServerError)
 			}
 
-		case "/rate_limit":
+		case rateLimitEndpoint:
 			rateLimit := map[string]interface{}{
 				"resources": map[string]interface{}{
 					"core": map[string]interface{}{
@@ -266,7 +273,7 @@ func TestTokenAwareGitHubClient_TokenExpiration(t *testing.T) {
 		}
 
 		// First request succeeds
-		if r.URL.Path == "/user" {
+		if r.URL.Path == userEndpoint {
 			user := github.GitHubUser{
 				ID:    12345,
 				Login: "testuser",

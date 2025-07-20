@@ -4,6 +4,11 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
+const (
+	// defaultVersion is the default version string used in test configurations
+	defaultVersion = "1.0.0"
+)
+
 // ConfigFixtures provides common configuration fixtures for tests.
 type ConfigFixtures struct{}
 
@@ -15,7 +20,7 @@ func NewConfigFixtures() *ConfigFixtures {
 // SimpleGitHubConfig returns a simple GitHub configuration.
 func (f *ConfigFixtures) SimpleGitHubConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
-		WithVersion("1.0.0").
+		WithVersion(defaultVersion).
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
 		WithOrganization("github", "test-org", "~/repos/test-org").
@@ -25,7 +30,7 @@ func (f *ConfigFixtures) SimpleGitHubConfig() *config.UnifiedConfig {
 // MultiProviderConfig returns a configuration with multiple providers.
 func (f *ConfigFixtures) MultiProviderConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
-		WithVersion("1.0.0").
+		WithVersion(defaultVersion).
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
 		WithGitLabProvider("${GITLAB_TOKEN}").
@@ -39,7 +44,7 @@ func (f *ConfigFixtures) MultiProviderConfig() *config.UnifiedConfig {
 // ComplexGitHubConfig returns a complex GitHub configuration with multiple organizations.
 func (f *ConfigFixtures) ComplexGitHubConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
-		WithVersion("1.0.0").
+		WithVersion(defaultVersion).
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
 		WithOrganizationDetails("github", "public-org", "~/repos/public", "public", "reset").
@@ -59,7 +64,7 @@ func (f *ConfigFixtures) InvalidConfig() *config.UnifiedConfig {
 // ConfigWithEnvironmentVariables returns a configuration that uses environment variables.
 func (f *ConfigFixtures) ConfigWithEnvironmentVariables() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
-		WithVersion("1.0.0").
+		WithVersion(defaultVersion).
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
 		WithOrganization("github", "test-org", "${HOME}/repos/test").
@@ -69,7 +74,7 @@ func (f *ConfigFixtures) ConfigWithEnvironmentVariables() *config.UnifiedConfig 
 // MinimalConfig returns a minimal valid configuration.
 func (f *ConfigFixtures) MinimalConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
-		WithVersion("1.0.0").
+		WithVersion(defaultVersion).
 		WithDefaultProvider("github").
 		Build()
 }
@@ -85,7 +90,7 @@ func NewConfigYAMLFixtures() *ConfigYAMLFixtures {
 // SimpleGitHubYAML returns a simple GitHub configuration as YAML.
 func (f *ConfigYAMLFixtures) SimpleGitHubYAML() string {
 	return config.NewConfigBuilder().
-		WithVersion("1.0.0").
+		WithVersion(defaultVersion).
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
 		WithOrganization("github", "test-org", "~/repos/test-org").
@@ -95,7 +100,7 @@ func (f *ConfigYAMLFixtures) SimpleGitHubYAML() string {
 // MultiProviderYAML returns a multi-provider configuration as YAML.
 func (f *ConfigYAMLFixtures) MultiProviderYAML() string {
 	return config.NewConfigBuilder().
-		WithVersion("1.0.0").
+		WithVersion(defaultVersion).
 		WithDefaultProvider("github").
 		WithGitHubProvider("${GITHUB_TOKEN}").
 		WithGitLabProvider("${GITLAB_TOKEN}").
@@ -106,7 +111,7 @@ func (f *ConfigYAMLFixtures) MultiProviderYAML() string {
 
 // InvalidYAML returns invalid YAML for error testing.
 func (f *ConfigYAMLFixtures) InvalidYAML() string {
-	return `version: "1.0.0"
+	return `version: defaultVersion
 providers:
   github:
     token: "unclosed string
@@ -117,7 +122,7 @@ providers:
 
 // MalformedYAML returns malformed YAML for error testing.
 func (f *ConfigYAMLFixtures) MalformedYAML() string {
-	return `version: "1.0.0"
+	return `version: defaultVersion
 providers:
   github:
     token: "test-token"
@@ -128,7 +133,7 @@ providers:
 
 // EnvironmentVariableYAML returns YAML with environment variables.
 func (f *ConfigYAMLFixtures) EnvironmentVariableYAML() string {
-	return `version: "1.0.0"
+	return `version: defaultVersion
 default_provider: github
 providers:
   github:
@@ -142,7 +147,7 @@ providers:
 
 // MinimalYAML returns minimal valid YAML.
 func (f *ConfigYAMLFixtures) MinimalYAML() string {
-	return `version: "1.0.0"
+	return `version: defaultVersion
 default_provider: github
 providers:
   github:

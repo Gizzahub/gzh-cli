@@ -121,7 +121,7 @@ func TestGetRepository(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "GET", r.Method)
-		assert.Equal(t, "/repos/testorg/testrepo", r.URL.Path)
+		assert.Equal(t, testRepoPath, r.URL.Path)
 
 		repo := &Repository{
 			ID:            1,
@@ -159,7 +159,7 @@ func TestUpdateRepository(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "PATCH", r.Method)
-		assert.Equal(t, "/repos/testorg/testrepo", r.URL.Path)
+		assert.Equal(t, testRepoPath, r.URL.Path)
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 
 		// Verify request body
@@ -168,7 +168,7 @@ func TestUpdateRepository(t *testing.T) {
 		err := json.NewDecoder(r.Body).Decode(&update)
 		require.NoError(t, err)
 
-		assert.Equal(t, "Updated description", *update.Description)
+		assert.Equal(t, testUpdatedDescription, *update.Description)
 		assert.True(t, *update.HasIssues)
 		assert.False(t, *update.HasWiki)
 
@@ -176,7 +176,7 @@ func TestUpdateRepository(t *testing.T) {
 		repo := &Repository{
 			ID:          1,
 			Name:        "testrepo",
-			Description: "Updated description",
+			Description: testUpdatedDescription,
 			HasIssues:   true,
 			HasWiki:     false,
 		}
@@ -189,7 +189,7 @@ func TestUpdateRepository(t *testing.T) {
 	client := NewRepoConfigClient("test-token")
 	client.baseURL = server.URL
 
-	description := "Updated description"
+	description := testUpdatedDescription
 	hasIssues := true
 	hasWiki := false
 
@@ -202,7 +202,7 @@ func TestUpdateRepository(t *testing.T) {
 	repo, err := client.UpdateRepository(context.Background(), "testorg", "testrepo", update)
 
 	require.NoError(t, err)
-	assert.Equal(t, "Updated description", repo.Description)
+	assert.Equal(t, testUpdatedDescription, repo.Description)
 	assert.True(t, repo.HasIssues)
 	assert.False(t, repo.HasWiki)
 }
@@ -250,7 +250,7 @@ func TestGetBranchProtection(t *testing.T) {
 func TestUpdateBranchProtection(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "PUT", r.Method)
+		assert.Equal(t, httpMethodPUT, r.Method)
 		assert.Equal(t, "/repos/testorg/testrepo/branches/main/protection", r.URL.Path)
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 
@@ -442,7 +442,7 @@ func TestGetRepositoryConfiguration(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/repos/testorg/testrepo":
+		case testRepoPath:
 			repo := &Repository{
 				ID:                  1,
 				Name:                "testrepo",
@@ -635,14 +635,14 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 		requestCount++
 
 		switch {
-		case r.URL.Path == "/repos/testorg/testrepo" && r.Method == "PATCH":
+		case r.URL.Path == testRepoPath && r.Method == "PATCH":
 			// Update repository
 			var update RepositoryUpdate
 
 			err := json.NewDecoder(r.Body).Decode(&update)
 			require.NoError(t, err)
 
-			assert.Equal(t, "Updated description", *update.Description)
+			assert.Equal(t, testUpdatedDescription, *update.Description)
 			assert.True(t, *update.HasIssues)
 			assert.False(t, *update.HasWiki)
 
@@ -657,7 +657,7 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(repo)
 
-		case r.URL.Path == "/repos/testorg/testrepo/branches/main/protection" && r.Method == "PUT":
+		case r.URL.Path == "/repos/testorg/testrepo/branches/main/protection" && r.Method == httpMethodPUT:
 			// Update branch protection
 			var protection BranchProtection
 
@@ -671,7 +671,7 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(protection)
 
-		case strings.HasPrefix(r.URL.Path, "/orgs/testorg/teams/") && r.Method == "PUT":
+		case strings.HasPrefix(r.URL.Path, "/orgs/testorg/teams/") && r.Method == httpMethodPUT:
 			// Update team permission
 			var body map[string]string
 
@@ -680,7 +680,7 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 			assert.Contains(t, []string{"admin", "push"}, body["permission"])
 			w.WriteHeader(http.StatusNoContent)
 
-		case strings.HasPrefix(r.URL.Path, "/repos/testorg/testrepo/collaborators/") && r.Method == "PUT":
+		case strings.HasPrefix(r.URL.Path, "/repos/testorg/testrepo/collaborators/") && r.Method == httpMethodPUT:
 			// Update user permission
 			var body map[string]string
 
@@ -700,7 +700,7 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 
 	config := &RepositoryConfig{
 		Name:        "testrepo",
-		Description: "Updated description",
+		Description: testUpdatedDescription,
 		Homepage:    "https://example.com",
 		Private:     false,
 		Archived:    false,
@@ -746,7 +746,7 @@ func TestUpdateRepositoryConfiguration(t *testing.T) {
 func TestUpdateBranchProtectionConfig(t *testing.T) {
 	// Mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "PUT", r.Method)
+		assert.Equal(t, httpMethodPUT, r.Method)
 		assert.Equal(t, "/repos/testorg/testrepo/branches/main/protection", r.URL.Path)
 
 		var protection BranchProtection
@@ -795,7 +795,7 @@ func TestUpdateRepositoryPermissions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestCount++
 
-		assert.Equal(t, "PUT", r.Method)
+		assert.Equal(t, httpMethodPUT, r.Method)
 
 		var body map[string]string
 
@@ -885,7 +885,7 @@ func TestApplyConfigurationToOrganization(t *testing.T) {
 			repo := &Repository{
 				ID:          1,
 				Name:        "updated-repo",
-				Description: "Updated description",
+				Description: testUpdatedDescription,
 				Private:     false,
 			}
 

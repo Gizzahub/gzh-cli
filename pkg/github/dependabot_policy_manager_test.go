@@ -201,7 +201,7 @@ func TestDependabotPolicyManager_UpdatePolicy(t *testing.T) {
 	// Update the policy
 	originalVersion := policy.Version
 	originalCreatedAt := policy.CreatedAt
-	policy.Description = "Updated description"
+	policy.Description = testUpdatedDescription
 	policy.Enabled = false
 
 	err = policyManager.UpdatePolicy(ctx, policy)
@@ -210,7 +210,7 @@ func TestDependabotPolicyManager_UpdatePolicy(t *testing.T) {
 	// Verify the update
 	updated, err := policyManager.GetPolicy(ctx, policy.ID)
 	require.NoError(t, err)
-	assert.Equal(t, "Updated description", updated.Description)
+	assert.Equal(t, testUpdatedDescription, updated.Description)
 	assert.False(t, updated.Enabled)
 	assert.Equal(t, originalVersion+1, updated.Version)
 	assert.Equal(t, originalCreatedAt, updated.CreatedAt)

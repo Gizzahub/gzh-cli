@@ -190,7 +190,7 @@ func TestWebhookConfigurationService_UpdatePolicy(t *testing.T) {
 	service := NewWebhookConfigurationService(nil, nil, mockLogger, mockStorage)
 
 	policy := createTestPolicy()
-	policy.Description = "Updated description"
+	policy.Description = testUpdatedDescription
 
 	mockStorage.On("SavePolicy", mock.Anything, policy).Return(nil)
 

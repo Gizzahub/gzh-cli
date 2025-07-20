@@ -7,6 +7,11 @@ import (
 	"github.com/gizzahub/gzh-manager-go/test/e2e/helpers"
 )
 
+const (
+	// defaultVersion is the default version string used in test configurations
+	defaultVersion = "1.0.0"
+)
+
 func TestBulkClone_ConfigGeneration_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
@@ -30,7 +35,7 @@ func TestBulkClone_ConfigGeneration_E2E(t *testing.T) {
 	config.ValidYAML().
 		HasField("version").
 		HasField("providers").
-		FieldEquals("version", "1.0.0")
+		FieldEquals("version", defaultVersion)
 }
 
 func TestBulkClone_ConfigValidation_E2E(t *testing.T) {
@@ -39,7 +44,7 @@ func TestBulkClone_ConfigValidation_E2E(t *testing.T) {
 
 	// Create a valid configuration
 	validConfig := `
-version: "1.0.0"
+version: defaultVersion
 default_provider: github
 providers:
   github:
@@ -85,7 +90,7 @@ func TestBulkClone_DryRun_E2E(t *testing.T) {
 
 	// Create test configuration
 	config := `
-version: "1.0.0"
+version: defaultVersion
 default_provider: github
 providers:
   github:
@@ -116,7 +121,7 @@ func TestBulkClone_MultipleProviders_E2E(t *testing.T) {
 
 	// Create configuration with multiple providers
 	config := `
-version: "1.0.0"
+version: defaultVersion
 default_provider: github
 providers:
   github:
@@ -164,7 +169,7 @@ func TestBulkClone_StrategyOptions_E2E(t *testing.T) {
 	for _, strategy := range strategies {
 		t.Run("strategy_"+strategy, func(t *testing.T) {
 			config := `
-version: "1.0.0"
+version: defaultVersion
 providers:
   github:
     token: "test-token"
@@ -195,7 +200,7 @@ func TestBulkClone_VisibilityFiltering_E2E(t *testing.T) {
 	for _, visibility := range visibilityOptions {
 		t.Run("visibility_"+visibility, func(t *testing.T) {
 			config := `
-version: "1.0.0"
+version: defaultVersion
 providers:
   github:
     token: "test-token"
@@ -222,7 +227,7 @@ func TestBulkClone_PatternMatching_E2E(t *testing.T) {
 
 	// Test pattern matching and exclusion
 	config := `
-version: "1.0.0"
+version: defaultVersion
 providers:
   github:
     token: "test-token"
@@ -261,7 +266,7 @@ func TestBulkClone_ErrorHandling_E2E(t *testing.T) {
 
 	// Test with malformed YAML
 	malformedConfig := `
-version: "1.0.0"
+version: defaultVersion
 providers:
   github:
     token: "test"
@@ -285,7 +290,7 @@ func TestBulkClone_EnvironmentVariables_E2E(t *testing.T) {
 
 	// Create configuration using environment variables
 	config := `
-version: "1.0.0"
+version: defaultVersion
 providers:
   github:
     token: "${GITHUB_TOKEN}"
@@ -344,7 +349,7 @@ func TestBulkClone_CacheIntegration_E2E(t *testing.T) {
 
 	// Create configuration with cache enabled
 	config := `
-version: "1.0.0"
+version: defaultVersion
 cache:
   enabled: true
   type: "file"

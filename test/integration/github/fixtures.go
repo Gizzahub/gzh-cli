@@ -13,6 +13,8 @@ import (
 const (
 	testOrgEnvVar = "GITHUB_TEST_ORG"
 	tokenEnvVar   = "GITHUB_TOKEN"
+	// defaultVersion is the default version string used in test configurations
+	defaultVersion = "1.0.0"
 )
 
 // TestFixtures provides test data for integration tests.
@@ -79,7 +81,7 @@ var SampleRepoConfigs = struct {
 	WithExceptions *config.RepoConfig
 }{
 	Basic: &config.RepoConfig{
-		Version:      "1.0.0",
+		Version:      defaultVersion,
 		Organization: "test-org",
 		Templates: map[string]*config.RepoTemplate{
 			"basic": {
@@ -102,7 +104,7 @@ var SampleRepoConfigs = struct {
 	},
 
 	SecurityFocus: &config.RepoConfig{
-		Version:      "1.0.0",
+		Version:      defaultVersion,
 		Organization: "test-org",
 		Templates: map[string]*config.RepoTemplate{
 			"security-enhanced": {
@@ -161,7 +163,7 @@ var SampleRepoConfigs = struct {
 	},
 
 	OpenSource: &config.RepoConfig{
-		Version:      "1.0.0",
+		Version:      defaultVersion,
 		Organization: "test-org",
 		Templates: map[string]*config.RepoTemplate{
 			"opensource": {
@@ -192,7 +194,7 @@ var SampleRepoConfigs = struct {
 	},
 
 	Enterprise: &config.RepoConfig{
-		Version:      "1.0.0",
+		Version:      defaultVersion,
 		Organization: "test-org",
 		Templates: map[string]*config.RepoTemplate{
 			"enterprise-standard": {
@@ -234,7 +236,7 @@ var SampleRepoConfigs = struct {
 	},
 
 	WithExceptions: &config.RepoConfig{
-		Version:      "1.0.0",
+		Version:      defaultVersion,
 		Organization: "test-org",
 		Templates: map[string]*config.RepoTemplate{
 			"strict": {

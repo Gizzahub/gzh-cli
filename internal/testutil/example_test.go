@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	// userEndpoint is the GitHub API user endpoint
+	userEndpoint = "/user"
+)
+
 // Example of using test helpers.
 func TestExampleWithHelpers(t *testing.T) {
 	// Create temporary directory
@@ -76,7 +81,7 @@ func TestExampleWithMockHTTP(t *testing.T) {
 
 	// Verify calls were recorded
 	assert.Len(t, mockClient.Calls, 2)
-	assert.Equal(t, "/user", mockClient.Calls[0].URL.Path)
+	assert.Equal(t, userEndpoint, mockClient.Calls[0].URL.Path)
 	assert.Equal(t, "/repos", mockClient.Calls[1].URL.Path)
 }
 

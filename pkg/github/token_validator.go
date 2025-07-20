@@ -20,6 +20,11 @@ const (
 	PermissionRead  PermissionLevel = "read"
 	PermissionWrite PermissionLevel = "write"
 	PermissionAdmin PermissionLevel = "admin"
+
+	// userEndpoint is the GitHub API user endpoint
+	userEndpoint = "/user"
+	// rateLimitEndpoint is the GitHub API rate limit endpoint
+	rateLimitEndpoint = "/rate_limit"
 )
 
 // RequiredPermission represents a required permission for an operation.
@@ -214,7 +219,7 @@ func (tv *TokenValidator) getTokenInfo(ctx context.Context) (*TokenInfo, error) 
 
 // getCurrentUser gets the current authenticated user.
 func (tv *TokenValidator) getCurrentUser(ctx context.Context) (*User, error) {
-	resp, err := tv.client.makeRequest(ctx, "GET", "/user", nil)
+	resp, err := tv.client.makeRequest(ctx, "GET", userEndpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +237,7 @@ func (tv *TokenValidator) getCurrentUser(ctx context.Context) (*User, error) {
 
 // getRateLimit gets current rate limit information.
 func (tv *TokenValidator) getRateLimit(ctx context.Context) (*RateLimitInfo, error) {
-	resp, err := tv.client.makeRequest(ctx, "GET", "/rate_limit", nil)
+	resp, err := tv.client.makeRequest(ctx, "GET", rateLimitEndpoint, nil)
 	if err != nil {
 		return nil, err
 	}
