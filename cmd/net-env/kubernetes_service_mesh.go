@@ -12,6 +12,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	serviceMeshIstio = "istio"
+)
+
 // IstioConfig represents Istio-specific configuration.
 type IstioConfig struct {
 	VirtualServices  map[string]*IstioVirtualService  `yaml:"virtualServices,omitempty" json:"virtualServices,omitempty"`
@@ -359,7 +363,7 @@ func (km *KubernetesNetworkManager) DetectServiceMesh(ctx context.Context) (stri
 		pilotResult, err := km.executor.ExecuteWithTimeout(ctx, pilotCmd, 5*time.Second)
 		if err == nil && pilotResult.ExitCode == 0 {
 			km.logger.Info("Detected Istio service mesh")
-			return "istio", nil
+			return serviceMeshIstio, nil
 		}
 	}
 

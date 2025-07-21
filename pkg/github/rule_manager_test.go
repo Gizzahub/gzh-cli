@@ -676,7 +676,7 @@ func BenchmarkRuleManager_CreateRule(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		rule := createTestRule()
 		rule.ID = "" // Reset ID for creation
-		rm.CreateRule(context.Background(), rule)
+		_ = rm.CreateRule(context.Background(), rule)
 	}
 }
 
@@ -696,7 +696,7 @@ func BenchmarkRuleManager_EvaluateConditions(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		rm.EvaluateConditions(context.Background(), rule, event)
+		_, _ = rm.EvaluateConditions(context.Background(), rule, event)
 	}
 }
 

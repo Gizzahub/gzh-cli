@@ -439,13 +439,13 @@ func printTopologyAnalysis(topology *NetworkTopology, detailed bool) error {
 		printTopologyContainersTable(topology.Containers)
 
 		fmt.Printf("\n🚀 Service Details:\n")
-		printTopologyServices(topology.Services)
+		_ = printTopologyServices(topology.Services)
 
 		fmt.Printf("\n🔌 Connection Details:\n")
-		printTopologyConnections(topology.Connections)
+		_ = printTopologyConnections(topology.Connections)
 
 		fmt.Printf("\n🏷️  Cluster Details:\n")
-		printTopologyClusters(topology.Clusters)
+		_ = printTopologyClusters(topology.Clusters)
 	}
 
 	// Complexity metrics
@@ -519,7 +519,7 @@ func printTopologyNetworksTable(networks []TopologyNetwork) {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NETWORK ID\tNAME\tDRIVER\tSUBNET\tCONTAINERS\tTYPE")
+	_, _ = fmt.Fprintln(w, "NETWORK ID\tNAME\tDRIVER\tSUBNET\tCONTAINERS\tTYPE")
 
 	for _, network := range networks {
 		networkID := truncateStringUtil(network.ID, 12)
@@ -529,7 +529,7 @@ func printTopologyNetworksTable(networks []TopologyNetwork) {
 			subnet = "N/A"
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t%s\n",
 			networkID,
 			network.Name,
 			network.Driver,
@@ -538,7 +538,7 @@ func printTopologyNetworksTable(networks []TopologyNetwork) {
 			network.NetworkType)
 	}
 
-	w.Flush()
+	_ = w.Flush()
 }
 
 func printTopologyContainersTable(containers []TopologyContainer) {
@@ -548,13 +548,13 @@ func printTopologyContainersTable(containers []TopologyContainer) {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "CONTAINER ID\tNAME\tIMAGE\tSTATE\tNETWORKS\tPORTS")
+	_, _ = fmt.Fprintln(w, "CONTAINER ID\tNAME\tIMAGE\tSTATE\tNETWORKS\tPORTS")
 
 	for _, container := range containers {
 		containerID := truncateStringUtil(container.ID, 12)
 		image := truncateStringUtil(container.Image, 30)
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t%d\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t%d\n",
 			containerID,
 			container.Name,
 			image,
@@ -563,7 +563,7 @@ func printTopologyContainersTable(containers []TopologyContainer) {
 			len(container.ExposedPorts))
 	}
 
-	w.Flush()
+	_ = w.Flush()
 }
 
 func printTopologyServices(services []TopologyService) error {
@@ -573,10 +573,10 @@ func printTopologyServices(services []TopologyService) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "SERVICE\tTYPE\tCONTAINERS\tENDPOINTS\tHEALTH CHECKS")
+	_, _ = fmt.Fprintln(w, "SERVICE\tTYPE\tCONTAINERS\tENDPOINTS\tHEALTH CHECKS")
 
 	for _, service := range services {
-		fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%d\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%d\n",
 			service.Name,
 			service.Type,
 			len(service.Containers),
@@ -594,14 +594,14 @@ func printTopologyConnections(connections []NetworkConnection) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "SOURCE\tTARGET\tPROTOCOL\tPORT\tSTATUS\tLAST SEEN")
+	_, _ = fmt.Fprintln(w, "SOURCE\tTARGET\tPROTOCOL\tPORT\tSTATUS\tLAST SEEN")
 
 	for _, conn := range connections {
 		sourceName := truncateStringUtil(conn.Source.Name, 20)
 		targetName := truncateStringUtil(conn.Target.Name, 20)
 		lastSeen := conn.LastSeen.Format("15:04:05")
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
 			sourceName,
 			targetName,
 			conn.Protocol,
@@ -620,13 +620,13 @@ func printTopologyClusters(clusters []NetworkCluster) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "CLUSTER ID\tNAME\tTYPE\tMEMBERS\tSUBNETS\tISOLATION")
+	_, _ = fmt.Fprintln(w, "CLUSTER ID\tNAME\tTYPE\tMEMBERS\tSUBNETS\tISOLATION")
 
 	for _, cluster := range clusters {
 		clusterID := truncateStringUtil(cluster.ID, 15)
 		clusterName := truncateStringUtil(cluster.Name, 25)
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%d\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%d\t%s\n",
 			clusterID,
 			clusterName,
 			cluster.Type,

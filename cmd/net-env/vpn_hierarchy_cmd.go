@@ -127,7 +127,7 @@ func newVPNHierarchyConnectCmd(logger *zap.Logger, configDir string) *cobra.Comm
 	}
 
 	cmd.Flags().StringP("root", "r", "", "Root connection name to start hierarchy from")
-	cmd.MarkFlagRequired("root")
+	_ = cmd.MarkFlagRequired("root")
 
 	return cmd
 }
@@ -164,7 +164,7 @@ func newVPNHierarchyDisconnectCmd(logger *zap.Logger, configDir string) *cobra.C
 	}
 
 	cmd.Flags().StringP("root", "r", "", "Root connection name to start disconnection from")
-	cmd.MarkFlagRequired("root")
+	_ = cmd.MarkFlagRequired("root")
 
 	return cmd
 }
@@ -294,7 +294,7 @@ func newVPNHierarchyAddCmd(logger *zap.Logger, configDir string) *cobra.Command 
 	}
 
 	cmd.Flags().StringP("config", "c", "", "Path to VPN connection configuration file")
-	cmd.MarkFlagRequired("config")
+	_ = cmd.MarkFlagRequired("config")
 
 	return cmd
 }
@@ -461,7 +461,7 @@ func printVPNStatus(status map[string]*cloud.VPNStatus) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "CONNECTION\tSTATE\tUPTIME\tBYTES IN\tBYTES OUT\tLAST ERROR")
+	_, _ = fmt.Fprintln(w, "CONNECTION\tSTATE\tUPTIME\tBYTES IN\tBYTES OUT\tLAST ERROR")
 
 	for name, stat := range status {
 		uptime := "-"
@@ -477,7 +477,7 @@ func printVPNStatus(status map[string]*cloud.VPNStatus) error {
 			lastError = truncateStringUtil(stat.LastError, 30)
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
 			name, stat.Status, uptime, bytesIn, bytesOut, lastError)
 	}
 

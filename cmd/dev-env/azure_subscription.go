@@ -15,6 +15,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	outputFormatJSON = "json"
+)
+
 // AzureSubscription represents an Azure subscription configuration.
 type AzureSubscription struct {
 	ID                string            `json:"id"`
@@ -513,7 +517,7 @@ func (m *AzureSubscriptionManager) listSubscriptions(format, tenantID string) er
 	})
 
 	switch format {
-	case "json":
+	case outputFormatJSON:
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
 
@@ -656,7 +660,7 @@ func (m *AzureSubscriptionManager) showSubscription(subscriptionID string, forma
 	}
 
 	switch format {
-	case "json":
+	case outputFormatJSON:
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
 
@@ -816,7 +820,7 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 	}
 
 	switch format {
-	case "json":
+	case outputFormatJSON:
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
 

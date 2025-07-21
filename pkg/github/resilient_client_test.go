@@ -296,7 +296,7 @@ func TestResilientGitHubClient_SetToken(t *testing.T) {
 			t.Errorf("Expected 'token new-token', got '%s'", authHeader)
 		}
 
-		json.NewEncoder(w).Encode(RepoInfo{DefaultBranch: "main"})
+		_ = json.NewEncoder(w).Encode(RepoInfo{DefaultBranch: "main"})
 	}))
 	defer server.Close()
 

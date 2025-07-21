@@ -20,6 +20,8 @@ const (
 	Podman     ContainerRuntime = "podman"
 	Containerd ContainerRuntime = "containerd"
 	Nerdctl    ContainerRuntime = "nerdctl"
+
+	kubernetesDefaultNamespace = "default"
 )
 
 // ContainerEnvironment represents the detected container environment.
@@ -1318,7 +1320,7 @@ func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*Kuberne
 	}
 
 	if info.Namespace == "" {
-		info.Namespace = "default"
+		info.Namespace = kubernetesDefaultNamespace
 	}
 
 	// Get nodes

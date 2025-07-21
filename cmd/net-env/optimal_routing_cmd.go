@@ -1491,7 +1491,7 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 		fmt.Printf("🛤️  Available Routes:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "INTERFACE\tGATEWAY\tMETRIC\tLATENCY\tBANDWIDTH\tLOSS\tQUALITY\tSTATUS")
+		_, _ = fmt.Fprintln(w, "INTERFACE\tGATEWAY\tMETRIC\tLATENCY\tBANDWIDTH\tLOSS\tQUALITY\tSTATUS")
 
 		// Sort routes by quality score
 		routes := make([]NetworkRoute, len(analysis.AvailableRoutes))
@@ -1506,7 +1506,7 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 				status = "✅ " + status
 			}
 
-			fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%.1f Mbps\t%.1f%%\t%.1f%%\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%.1f Mbps\t%.1f%%\t%.1f%%\t%s\n",
 				route.Interface,
 				route.Gateway,
 				route.Metric,
@@ -1517,7 +1517,7 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 				status)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -1563,11 +1563,11 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 		fmt.Printf("⭐ Optimal Paths:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "TARGET\tINTERFACE\tGATEWAY\tLATENCY\tBANDWIDTH\tQUALITY")
+		_, _ = fmt.Fprintln(w, "TARGET\tINTERFACE\tGATEWAY\tLATENCY\tBANDWIDTH\tQUALITY")
 
 		for target, route := range discovery.OptimalPaths {
 			if route != nil {
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%.1f Mbps\t%.1f%%\n",
+				_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%.1f Mbps\t%.1f%%\n",
 					target,
 					route.Interface,
 					route.Gateway,
@@ -1577,7 +1577,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 			}
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -1589,7 +1589,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 
 		if len(routes) > 0 {
 			w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-			fmt.Fprintln(w, "  INTERFACE\tLATENCY\tBANDWIDTH\tLOSS\tQUALITY\tSTATUS")
+			_, _ = fmt.Fprintln(w, "  INTERFACE\tLATENCY\tBANDWIDTH\tLOSS\tQUALITY\tSTATUS")
 
 			// Sort by quality
 			sort.Slice(routes, func(i, j int) bool {
@@ -1597,7 +1597,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 			})
 
 			for _, route := range routes {
-				fmt.Fprintf(w, "  %s\t%s\t%.1f Mbps\t%.1f%%\t%.1f%%\t%s\n",
+				_, _ = fmt.Fprintf(w, "  %s\t%s\t%.1f Mbps\t%.1f%%\t%.1f%%\t%s\n",
 					route.Interface,
 					route.Latency.Round(time.Millisecond),
 					route.Bandwidth,
@@ -1606,7 +1606,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 					route.Status)
 			}
 
-			w.Flush()
+			_ = w.Flush()
 		}
 	}
 
@@ -1633,7 +1633,7 @@ func printApplyResult(result *RoutingApplyResult) error {
 		fmt.Printf("📝 Changes Applied:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "TYPE\tINTERFACE\tDESTINATION\tCHANGE\tREASON")
+		_, _ = fmt.Fprintln(w, "TYPE\tINTERFACE\tDESTINATION\tCHANGE\tREASON")
 
 		for _, change := range result.ChangesApplied {
 			changeDesc := ""
@@ -1647,7 +1647,7 @@ func printApplyResult(result *RoutingApplyResult) error {
 				changeDesc = "Delete route"
 			}
 
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
 				change.Type,
 				change.Interface,
 				change.Destination,
@@ -1655,7 +1655,7 @@ func printApplyResult(result *RoutingApplyResult) error {
 				change.Reason)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 	}
 
 	return nil
@@ -1698,17 +1698,17 @@ func printLoadBalanceResult(result *LoadBalanceResult) error {
 		fmt.Printf("📊 Configured Paths:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "INTERFACE\tWEIGHT\tTRAFFIC SHARE\tSTATUS")
+		_, _ = fmt.Fprintln(w, "INTERFACE\tWEIGHT\tTRAFFIC SHARE\tSTATUS")
 
 		for _, path := range result.ConfiguredPaths {
-			fmt.Fprintf(w, "%s\t%d\t%.1f%%\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%d\t%.1f%%\t%s\n",
 				path.Interface,
 				path.Weight,
 				path.Share,
 				path.Status)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 	}
 
 	return nil
@@ -1743,10 +1743,10 @@ func printRoutingStatus(status *RoutingStatus) error {
 		fmt.Printf("🛤️  Current Routes:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "INTERFACE\tGATEWAY\tMETRIC\tSTATUS\tQUALITY")
+		_, _ = fmt.Fprintln(w, "INTERFACE\tGATEWAY\tMETRIC\tSTATUS\tQUALITY")
 
 		for _, route := range status.CurrentRoutes {
-			fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%.1f%%\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%.1f%%\n",
 				route.Interface,
 				route.Gateway,
 				route.Metric,
@@ -1754,7 +1754,7 @@ func printRoutingStatus(status *RoutingStatus) error {
 				route.QualityScore)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -1802,10 +1802,10 @@ func printRoutingPolicies(policies []RoutingPolicy) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NAME\tCRITERIA\tLATENCY\tBANDWIDTH\tRELIABILITY\tCOST\tCREATED")
+	_, _ = fmt.Fprintln(w, "NAME\tCRITERIA\tLATENCY\tBANDWIDTH\tRELIABILITY\tCOST\tCREATED")
 
 	for _, policy := range policies {
-		fmt.Fprintf(w, "%s\t%s\t%.1f\t%.1f\t%.1f\t%.1f\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%.1f\t%.1f\t%.1f\t%.1f\t%s\n",
 			policy.Name,
 			policy.Criteria,
 			policy.LatencyWeight,

@@ -533,43 +533,43 @@ type AWSConfig struct {
 	PreferredRegions []string `yaml:"preferredRegions,omitempty" json:"preferredRegions,omitempty"`
 
 	// Credential file path
-	CredentialsFile string `yaml:"credentials_file,omitempty" json:"credentialsFile,omitempty"`
+	CredentialsFile string `yaml:"credentialsFile,omitempty" json:"credentialsFile,omitempty"`
 
 	// Config file path
-	ConfigFile string `yaml:"config_file,omitempty" json:"configFile,omitempty"`
+	ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
 
 	// Enable MFA
-	EnableMFA bool `yaml:"enable_mfa,omitempty" json:"enableMfa,omitempty"`
+	EnableMFA bool `yaml:"enableMfa,omitempty" json:"enableMfa,omitempty"`
 }
 
 // GCPConfig contains Google Cloud configuration settings.
 type GCPConfig struct {
 	// Default GCP project
-	DefaultProject string `yaml:"default_project,omitempty" json:"defaultProject,omitempty"`
+	DefaultProject string `yaml:"defaultProject,omitempty" json:"defaultProject,omitempty"`
 
 	// Service account key file
-	ServiceAccountKey string `yaml:"service_account_key,omitempty" json:"serviceAccountKey,omitempty"`
+	ServiceAccountKey string `yaml:"serviceAccountKey,omitempty" json:"serviceAccountKey,omitempty"` 
 
 	// Preferred regions
 	PreferredRegions []string `yaml:"preferredRegions,omitempty" json:"preferredRegions,omitempty"`
 
 	// Enable application default credentials
-	UseADC bool `yaml:"use_adc,omitempty" json:"useAdc,omitempty"`
+	UseADC bool `yaml:"useAdc,omitempty" json:"useAdc,omitempty"`
 }
 
 // AzureConfig contains Azure configuration settings.
 type AzureConfig struct {
 	// Default subscription ID
-	DefaultSubscription string `yaml:"default_subscription,omitempty" json:"defaultSubscription,omitempty"`
+	DefaultSubscription string `yaml:"defaultSubscription,omitempty" json:"defaultSubscription,omitempty"`
 
 	// Default tenant ID
-	DefaultTenant string `yaml:"default_tenant,omitempty" json:"defaultTenant,omitempty"`
+	DefaultTenant string `yaml:"defaultTenant,omitempty" json:"defaultTenant,omitempty"`
 
 	// Preferred regions
 	PreferredRegions []string `yaml:"preferredRegions,omitempty" json:"preferredRegions,omitempty"`
 
 	// Use managed identity
-	UseManagedIdentity bool `yaml:"use_managed_identity,omitempty" json:"useManagedIdentity,omitempty"`
+	UseManagedIdentity bool `yaml:"useManagedIdentity,omitempty" json:"useManagedIdentity,omitempty"`
 }
 
 // ContainerConfig contains container configuration settings.
@@ -581,7 +581,7 @@ type ContainerConfig struct {
 	Podman *PodmanConfig `yaml:"podman,omitempty" json:"podman,omitempty"`
 
 	// Default container runtime
-	DefaultRuntime string `yaml:"default_runtime,omitempty" json:"defaultRuntime,omitempty" validate:"omitempty,oneof=docker podman"`
+	DefaultRuntime string `yaml:"defaultRuntime,omitempty" json:"defaultRuntime,omitempty" validate:"omitempty,oneof=docker podman"` 
 }
 
 // DockerConfig contains Docker configuration settings.

@@ -504,7 +504,7 @@ func BenchmarkValidatePolicyWebhook(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		service.validatePolicy(policy)
+		_ = service.validatePolicy(policy)
 	}
 }
 

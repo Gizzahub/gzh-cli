@@ -67,10 +67,7 @@ func newNetworkAnalysisLatencyCmd(logger *zap.Logger, configDir string) *cobra.C
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			analyzer, err := createNetworkAnalyzer(ctx, logger, configDir)
-			if err != nil {
-				return fmt.Errorf("failed to create network analyzer: %w", err)
-			}
+			analyzer := createNetworkAnalyzer(ctx, logger, configDir)
 			defer analyzer.Close()
 
 			targets, _ := cmd.Flags().GetStringSlice("targets")
@@ -99,7 +96,8 @@ func newNetworkAnalysisLatencyCmd(logger *zap.Logger, configDir string) *cobra.C
 			case "json":
 				return json.NewEncoder(os.Stdout).Encode(analysis)
 			default:
-				return printLatencyAnalysis(analysis)
+				printLatencyAnalysis(analysis)
+				return nil
 			}
 		},
 	}
@@ -121,10 +119,7 @@ func newNetworkAnalysisBandwidthCmd(logger *zap.Logger, configDir string) *cobra
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			analyzer, err := createNetworkAnalyzer(ctx, logger, configDir)
-			if err != nil {
-				return fmt.Errorf("failed to create network analyzer: %w", err)
-			}
+			analyzer := createNetworkAnalyzer(ctx, logger, configDir)
 			defer analyzer.Close()
 
 			iface, _ := cmd.Flags().GetString("interface")
@@ -153,7 +148,8 @@ func newNetworkAnalysisBandwidthCmd(logger *zap.Logger, configDir string) *cobra
 			case "json":
 				return json.NewEncoder(os.Stdout).Encode(analysis)
 			default:
-				return printBandwidthAnalysis(analysis)
+				printBandwidthAnalysis(analysis)
+				return nil
 			}
 		},
 	}
@@ -175,10 +171,7 @@ func newNetworkAnalysisComprehensiveCmd(logger *zap.Logger, configDir string) *c
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			analyzer, err := createNetworkAnalyzer(ctx, logger, configDir)
-			if err != nil {
-				return fmt.Errorf("failed to create network analyzer: %w", err)
-			}
+			analyzer := createNetworkAnalyzer(ctx, logger, configDir)
 			defer analyzer.Close()
 
 			duration, _ := cmd.Flags().GetDuration("duration")
@@ -211,7 +204,8 @@ func newNetworkAnalysisComprehensiveCmd(logger *zap.Logger, configDir string) *c
 			case "json":
 				return json.NewEncoder(os.Stdout).Encode(analysis)
 			default:
-				return printComprehensiveAnalysis(analysis)
+				printComprehensiveAnalysis(analysis)
+				return nil
 			}
 		},
 	}
@@ -232,10 +226,7 @@ func newNetworkAnalysisTrendsCmd(logger *zap.Logger, configDir string) *cobra.Co
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			analyzer, err := createNetworkAnalyzer(ctx, logger, configDir)
-			if err != nil {
-				return fmt.Errorf("failed to create network analyzer: %w", err)
-			}
+			analyzer := createNetworkAnalyzer(ctx, logger, configDir)
 			defer analyzer.Close()
 
 			period, _ := cmd.Flags().GetDuration("period")
@@ -252,7 +243,8 @@ func newNetworkAnalysisTrendsCmd(logger *zap.Logger, configDir string) *cobra.Co
 			case "json":
 				return json.NewEncoder(os.Stdout).Encode(trends)
 			default:
-				return printPerformanceTrends(trends)
+				printPerformanceTrends(trends)
+				return nil
 			}
 		},
 	}
@@ -272,10 +264,7 @@ func newNetworkAnalysisBottleneckCmd(logger *zap.Logger, configDir string) *cobr
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			analyzer, err := createNetworkAnalyzer(ctx, logger, configDir)
-			if err != nil {
-				return fmt.Errorf("failed to create network analyzer: %w", err)
-			}
+			analyzer := createNetworkAnalyzer(ctx, logger, configDir)
 			defer analyzer.Close()
 
 			fmt.Println("🔍 Detecting network bottlenecks...")
@@ -285,7 +274,8 @@ func newNetworkAnalysisBottleneckCmd(logger *zap.Logger, configDir string) *cobr
 				return fmt.Errorf("failed to detect bottlenecks: %w", err)
 			}
 
-			return printBottleneckAnalysis(bottlenecks)
+			printBottleneckAnalysis(bottlenecks)
+			return nil
 		},
 	}
 
@@ -562,14 +552,14 @@ type BottleneckRecommendation struct {
 
 // Implementation functions
 
-func createNetworkAnalyzer(_ context.Context, logger *zap.Logger, configDir string) (*NetworkAnalyzer, error) {
+func createNetworkAnalyzer(_ context.Context, logger *zap.Logger, configDir string) *NetworkAnalyzer {
 	analyzer := &NetworkAnalyzer{
 		logger:      logger,
 		configDir:   configDir,
 		commandPool: NewCommandPool(15),
 	}
 
-	return analyzer, nil
+	return analyzer
 }
 
 func (na *NetworkAnalyzer) Close() {
@@ -1747,7 +1737,7 @@ func (na *NetworkAnalyzer) checkMemoryUsage(analysis *BottleneckAnalysis) {
 
 // Print functions
 
-func printLatencyAnalysis(analysis *LatencyAnalysis) error {
+func printLatencyAnalysis(analysis *LatencyAnalysis) {
 	fmt.Printf("🔍 Latency Analysis Report\n\n")
 	fmt.Printf("Analysis Period: %s to %s (Duration: %s)\n",
 		analysis.StartTime.Format("15:04:05"),
@@ -1760,10 +1750,10 @@ func printLatencyAnalysis(analysis *LatencyAnalysis) error {
 		fmt.Printf("📊 Target Analysis:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "TARGET\tMEAN\tMEDIAN\tP95\tP99\tSUCCESS\tQUALITY")
+		_, _ = fmt.Fprintln(w, "TARGET\tMEAN\tMEDIAN\tP95\tP99\tSUCCESS\tQUALITY")
 
 		for _, target := range analysis.TargetAnalysis {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%.1f%%\t%.1f%%\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%.1f%%\t%.1f%%\n",
 				target.Target,
 				target.Statistics.Mean.Round(time.Millisecond),
 				target.Statistics.Median.Round(time.Millisecond),
@@ -1773,7 +1763,7 @@ func printLatencyAnalysis(analysis *LatencyAnalysis) error {
 				target.QualityMetrics.OverallScore)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -1807,11 +1797,9 @@ func printLatencyAnalysis(analysis *LatencyAnalysis) error {
 
 		fmt.Println()
 	}
-
-	return nil
 }
 
-func printBandwidthAnalysis(analysis *BandwidthAnalysis) error {
+func printBandwidthAnalysis(analysis *BandwidthAnalysis) {
 	fmt.Printf("📊 Bandwidth Analysis Report\n\n")
 	fmt.Printf("Interface: %s\n", analysis.Config.Interface)
 	fmt.Printf("Analysis Period: %s to %s (Duration: %s)\n",
@@ -1862,11 +1850,9 @@ func printBandwidthAnalysis(analysis *BandwidthAnalysis) error {
 			fmt.Printf("  %d. %s\n", i+1, rec)
 		}
 	}
-
-	return nil
 }
 
-func printComprehensiveAnalysis(analysis *ComprehensiveAnalysis) error {
+func printComprehensiveAnalysis(analysis *ComprehensiveAnalysis) {
 	fmt.Printf("🔍 Comprehensive Network Analysis Report\n\n")
 	fmt.Printf("Analysis Period: %s to %s\n",
 		analysis.StartTime.Format("2006-01-02 15:04:05"),
@@ -1935,11 +1921,9 @@ func printComprehensiveAnalysis(analysis *ComprehensiveAnalysis) error {
 			fmt.Println()
 		}
 	}
-
-	return nil
 }
 
-func printPerformanceTrends(trends *PerformanceTrends) error {
+func printPerformanceTrends(trends *PerformanceTrends) {
 	fmt.Printf("📈 Performance Trends Analysis\n\n")
 	fmt.Printf("Analysis Period: %s\n\n", trends.Period)
 
@@ -1948,10 +1932,10 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 		fmt.Printf("🕐 Latency Trends:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "METRIC\tTARGET\tSTART\tEND\tCHANGE\tDIRECTION\tSIGNIFICANCE")
+		_, _ = fmt.Fprintln(w, "METRIC\tTARGET\tSTART\tEND\tCHANGE\tDIRECTION\tSIGNIFICANCE")
 
 		for _, trend := range trends.LatencyTrends {
-			fmt.Fprintf(w, "%s\t%s\t%.2f\t%.2f\t%.1f%%\t%s\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%.2f\t%.2f\t%.1f%%\t%s\t%s\n",
 				trend.Metric,
 				trend.Target,
 				trend.StartValue,
@@ -1961,7 +1945,7 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 				trend.Significance)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -1970,10 +1954,10 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 		fmt.Printf("📊 Bandwidth Trends:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "METRIC\tSTART\tEND\tCHANGE\tDIRECTION\tSIGNIFICANCE")
+		_, _ = fmt.Fprintln(w, "METRIC\tSTART\tEND\tCHANGE\tDIRECTION\tSIGNIFICANCE")
 
 		for _, trend := range trends.BandwidthTrends {
-			fmt.Fprintf(w, "%s\t%.2f\t%.2f\t%.1f%%\t%s\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%.2f\t%.2f\t%.1f%%\t%s\t%s\n",
 				trend.Metric,
 				trend.StartValue,
 				trend.EndValue,
@@ -1982,7 +1966,7 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 				trend.Significance)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -2012,11 +1996,9 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 
 		fmt.Println()
 	}
-
-	return nil
 }
 
-func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
+func printBottleneckAnalysis(analysis *BottleneckAnalysis) {
 	fmt.Printf("🔍 Network Bottleneck Analysis\n\n")
 	fmt.Printf("Overall Assessment: %s\n\n", analysis.OverallAssessment)
 
@@ -2025,10 +2007,10 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 		fmt.Printf("🚨 Detected Bottlenecks:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "TYPE\tLOCATION\tSEVERITY\tCONFIDENCE\tDESCRIPTION")
+		_, _ = fmt.Fprintln(w, "TYPE\tLOCATION\tSEVERITY\tCONFIDENCE\tDESCRIPTION")
 
 		for _, bottleneck := range analysis.DetectedBottlenecks {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%.0f%%\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%.0f%%\t%s\n",
 				bottleneck.Type,
 				bottleneck.Location,
 				bottleneck.Severity,
@@ -2036,7 +2018,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 				bottleneck.Description)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -2045,7 +2027,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 		fmt.Printf("⚡ System Resource Limits:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "RESOURCE\tCURRENT\tMAXIMUM\tUTILIZATION\tAT RISK")
+		_, _ = fmt.Fprintln(w, "RESOURCE\tCURRENT\tMAXIMUM\tUTILIZATION\tAT RISK")
 
 		for _, limit := range analysis.SystemLimits {
 			atRisk := ""
@@ -2055,7 +2037,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 				atRisk = "✅ No"
 			}
 
-			fmt.Fprintf(w, "%s\t%.2f\t%.2f\t%.1f%%\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%.2f\t%.2f\t%.1f%%\t%s\n",
 				limit.Resource,
 				limit.Current,
 				limit.Maximum,
@@ -2063,7 +2045,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 				atRisk)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
@@ -2082,6 +2064,4 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 			fmt.Println()
 		}
 	}
-
-	return nil
 }

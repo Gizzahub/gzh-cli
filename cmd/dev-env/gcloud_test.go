@@ -11,6 +11,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	cmdSave    = "save"
+	cmdLoad    = "load" 
+	cmdList    = "list"
+	defaultKeyNameName = "default"
+)
+
 func TestDefaultGcloudOptions(t *testing.T) {
 	opts := defaultGcloudOptions()
 
@@ -35,11 +42,11 @@ func TestNewGcloudCmd(t *testing.T) {
 
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
-		case "save":
+		case cmdSave:
 			saveCmd = true
-		case "load":
+		case cmdLoad:
 			loadCmd = true
-		case "list":
+		case cmdList:
 			listCmd = true
 		}
 	}
@@ -100,7 +107,7 @@ func TestGcloudSaveLoad(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create active_config file
-	activeConfigContent := "default"
+	activeConfigContent := defaultKeyNameName
 	err = os.WriteFile(filepath.Join(configDir, "active_config"), []byte(activeConfigContent), 0o644)
 	require.NoError(t, err)
 

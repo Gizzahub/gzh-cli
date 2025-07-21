@@ -127,7 +127,8 @@ func newNetworkMetricsShowCmd(logger *zap.Logger, configDir string) *cobra.Comma
 			case "json":
 				return json.NewEncoder(os.Stdout).Encode(metrics)
 			default:
-				return printNetworkMetrics(metrics)
+				printNetworkMetrics(metrics)
+				return nil
 			}
 		},
 	}
@@ -918,7 +919,7 @@ func (nmc *NetworkMetricsCollector) displayRealTimeMetrics(metrics *NetworkMetri
 
 // Print functions
 
-func printNetworkMetrics(metrics *NetworkMetrics) error {
+func printNetworkMetrics(metrics *NetworkMetrics) {
 	fmt.Printf("📊 Network Performance Metrics\n\n")
 	fmt.Printf("Timestamp: %s\n", metrics.Timestamp.Format("2006-01-02 15:04:05"))
 	fmt.Printf("Quality Score: %.1f%%\n\n", metrics.QualityScore)
@@ -928,10 +929,10 @@ func printNetworkMetrics(metrics *NetworkMetrics) error {
 		fmt.Printf("Interface Metrics:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "INTERFACE\tSTATE\tIP ADDRESS\tUPLOAD\tDOWNLOAD\tPACKET LOSS")
+		_, _ = fmt.Fprintln(w, "INTERFACE\tSTATE\tIP ADDRESS\tUPLOAD\tDOWNLOAD\tPACKET LOSS")
 
 		for _, iface := range metrics.Interfaces {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%.2f Mbps\t%.2f Mbps\t%.2f%%\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%.2f Mbps\t%.2f Mbps\t%.2f%%\n",
 				iface.Name,
 				iface.State,
 				iface.IPAddress,
@@ -940,22 +941,20 @@ func printNetworkMetrics(metrics *NetworkMetrics) error {
 				iface.PacketStats.LossRate)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 
 	// Latency results
 	if len(metrics.LatencyResults) > 0 {
 		fmt.Printf("Latency Test Results:\n")
-		printLatencyResults(metrics.LatencyResults)
+		_ = printLatencyResults(metrics.LatencyResults)
 	}
-
-	return nil
 }
 
 func printLatencyResults(results []LatencyResult) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "TARGET\tMIN\tAVG\tMAX\tJITTER\tPACKET LOSS\tSTATUS")
+	_, _ = fmt.Fprintln(w, "TARGET\tMIN\tAVG\tMAX\tJITTER\tPACKET LOSS\tSTATUS")
 
 	for _, result := range results {
 		status := "❌ Failed"
@@ -963,7 +962,7 @@ func printLatencyResults(results []LatencyResult) error {
 			status = "✅ Success"
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%.1f%%\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%.1f%%\t%s\n",
 			result.Target,
 			result.MinLatency.Round(time.Millisecond),
 			result.AvgLatency.Round(time.Millisecond),
@@ -985,10 +984,10 @@ func printBandwidthUsage(trends []BandwidthTrend) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "TIME\tINTERFACE\tUPLOAD\tDOWNLOAD\tUTILIZATION")
+	_, _ = fmt.Fprintln(w, "TIME\tINTERFACE\tUPLOAD\tDOWNLOAD\tUTILIZATION")
 
 	for _, trend := range trends {
-		fmt.Fprintf(w, "%s\t%s\t%.2f Mbps\t%.2f Mbps\t%.1f%%\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%.2f Mbps\t%.2f Mbps\t%.1f%%\n",
 			trend.Timestamp.Format("15:04:05"),
 			trend.Interface,
 			trend.Bandwidth.UploadMbps,
@@ -1024,7 +1023,7 @@ func printPerformanceReport(report *PerformanceReport) error {
 	// Recommendations
 	if len(report.Recommendations) > 0 {
 		fmt.Printf("💡 Optimization Recommendations:\n")
-		printOptimizationRecommendations(report.Recommendations, false)
+		_ = printOptimizationRecommendations(report.Recommendations, false)
 	}
 
 	return nil

@@ -293,12 +293,12 @@ ghi123456789,mynetwork,bridge,local`
 		t.Errorf("Expected network ID 'abc123456789', got '%s'", networks[0].ID)
 	}
 
-	if networks[0].Name != "bridge" {
-		t.Errorf("Expected network name 'bridge', got '%s'", networks[0].Name)
+	if networks[0].Name != string(NetworkTypeBridge) {
+		t.Errorf("Expected network name '%s', got '%s'", NetworkTypeBridge, networks[0].Name)
 	}
 
-	if networks[0].Driver != "bridge" {
-		t.Errorf("Expected driver 'bridge', got '%s'", networks[0].Driver)
+	if networks[0].Driver != string(NetworkTypeBridge) {
+		t.Errorf("Expected driver '%s', got '%s'", NetworkTypeBridge, networks[0].Driver)
 	}
 
 	if networks[0].Scope != "local" {

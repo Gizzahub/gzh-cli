@@ -11,6 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	metadataKeyDescription = "description"
+	metadataKeySavedAt     = "saved_at"
+	metadataKeySourcePath  = "source_path"
+)
+
 type awsOptions struct {
 	name        string
 	description string
@@ -384,13 +390,13 @@ func (o *awsOptions) loadMetadata(name string) awsMetadata {
 
 		key, value := parts[0], parts[1]
 		switch key {
-		case "description":
+		case metadataKeyDescription:
 			metadata.Description = value
-		case "saved_at":
+		case metadataKeySavedAt:
 			if t, err := time.Parse(time.RFC3339, value); err == nil {
 				metadata.SavedAt = t
 			}
-		case "source_path":
+		case metadataKeySourcePath:
 			metadata.SourcePath = value
 		}
 	}

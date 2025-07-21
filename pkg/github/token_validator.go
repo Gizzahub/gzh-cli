@@ -223,7 +223,7 @@ func (tv *TokenValidator) getCurrentUser(ctx context.Context) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var user User
 
@@ -241,7 +241,7 @@ func (tv *TokenValidator) getRateLimit(ctx context.Context) (*RateLimitInfo, err
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var rateLimitResp struct {
 		Resources struct {

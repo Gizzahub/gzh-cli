@@ -21,6 +21,11 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+const (
+	outputFormatTable = "table"
+	statusActive      = "✓"
+)
+
 // AWSProfile represents an AWS profile configuration.
 type AWSProfile struct {
 	Name              string            `json:"name"`
@@ -447,7 +452,7 @@ func newAWSProfileListCmd() *cobra.Command {
 					return err
 				}
 				fmt.Println(string(data))
-			case "table":
+			case outputFormatTable:
 				fallthrough
 			default:
 				table := tablewriter.NewWriter(os.Stdout)
@@ -468,7 +473,7 @@ func newAWSProfileListCmd() *cobra.Command {
 
 					active := ""
 					if profile.IsActive {
-						active = "✓"
+						active = statusActive
 					}
 
 					if err := table.Append(

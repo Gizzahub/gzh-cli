@@ -13,7 +13,7 @@ import (
 
 // Service mesh constants.
 const (
-	serviceMeshIstio   = "istio"
+	// serviceMeshIstio is already defined in kubernetes_service_mesh.go.
 	serviceMeshLinkerd = "linkerd"
 )
 

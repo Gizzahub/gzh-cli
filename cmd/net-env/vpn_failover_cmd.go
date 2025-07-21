@@ -234,8 +234,8 @@ func newVPNFailoverBackupAddCmd(logger *zap.Logger, configDir string) *cobra.Com
 	cmd.Flags().String("primary", "", "Primary VPN connection name")
 	cmd.Flags().String("backup", "", "Backup VPN connection name")
 	cmd.Flags().Int("priority", 100, "Backup priority (higher = preferred)")
-	cmd.MarkFlagRequired("primary")
-	cmd.MarkFlagRequired("backup")
+	_ = cmd.MarkFlagRequired("primary")
+	_ = cmd.MarkFlagRequired("backup")
 
 	return cmd
 }
@@ -276,7 +276,7 @@ func newVPNFailoverBackupRemoveCmd(logger *zap.Logger, configDir string) *cobra.
 
 	cmd.Flags().String("primary", "", "Primary VPN connection name")
 	cmd.Flags().String("backup", "", "Specific backup VPN to remove (optional)")
-	cmd.MarkFlagRequired("primary")
+	_ = cmd.MarkFlagRequired("primary")
 
 	return cmd
 }
@@ -449,7 +449,7 @@ func newVPNFailoverHealthConfigCmd(logger *zap.Logger, configDir string) *cobra.
 	cmd.Flags().Duration("interval", 30*time.Second, "Health check interval")
 	cmd.Flags().Duration("timeout", 10*time.Second, "Health check timeout")
 	cmd.Flags().String("endpoint", "", "Custom health check endpoint")
-	cmd.MarkFlagRequired("vpn")
+	_ = cmd.MarkFlagRequired("vpn")
 
 	return cmd
 }
@@ -885,17 +885,17 @@ func printFailoverStatus(status *FailoverStatus) error {
 		fmt.Printf("\nHealth Checks:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "VPN\tSTATUS\tRESPONSE TIME\tLAST CHECK")
+		_, _ = fmt.Fprintln(w, "VPN\tSTATUS\tRESPONSE TIME\tLAST CHECK")
 
 		for _, health := range status.HealthChecks {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
 				health.VPNName,
 				health.Status,
 				health.ResponseTime,
 				health.LastCheck.Format("15:04:05"))
 		}
 
-		w.Flush()
+		_ = w.Flush()
 	}
 
 	return nil
@@ -910,7 +910,7 @@ func printBackupVPNs(backups []BackupVPNConfig) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "PRIMARY\tBACKUP\tPRIORITY\tAUTO-ACTIVATE\tHEALTH CHECK")
+	_, _ = fmt.Fprintln(w, "PRIMARY\tBACKUP\tPRIORITY\tAUTO-ACTIVATE\tHEALTH CHECK")
 
 	for _, backup := range backups {
 		autoActivate := "No"
@@ -923,7 +923,7 @@ func printBackupVPNs(backups []BackupVPNConfig) error {
 			healthCheck = fmt.Sprintf("Every %s", backup.HealthCheck.Interval)
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\n",
 			backup.PrimaryVPN,
 			backup.BackupVPN,
 			backup.Priority,
@@ -970,7 +970,7 @@ func printHealthStatus(health map[string]HealthCheckResult) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "VPN\tSTATUS\tRESPONSE TIME\tLAST CHECK\tERROR")
+	_, _ = fmt.Fprintln(w, "VPN\tSTATUS\tRESPONSE TIME\tLAST CHECK\tERROR")
 
 	for _, result := range health {
 		errorMsg := "-"
@@ -978,7 +978,7 @@ func printHealthStatus(health map[string]HealthCheckResult) error {
 			errorMsg = truncateStringUtil(result.Error, 30)
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
 			result.VPNName,
 			result.Status,
 			result.ResponseTime,

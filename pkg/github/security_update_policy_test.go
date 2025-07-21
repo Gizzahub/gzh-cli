@@ -608,7 +608,7 @@ func BenchmarkEvaluateSecurityUpdate(b *testing.B) {
 	ctx := context.Background()
 
 	policy := createTestSecurityPolicy()
-	manager.CreateSecurityPolicy(ctx, policy)
+	_ = manager.CreateSecurityPolicy(ctx, policy)
 
 	update := &SecurityUpdateStatus{
 		UpdateID:        "bench-update",
@@ -625,7 +625,7 @@ func BenchmarkEvaluateSecurityUpdate(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		manager.EvaluateSecurityUpdate(ctx, policy.ID, update)
+		_, _ = manager.EvaluateSecurityUpdate(ctx, policy.ID, update)
 	}
 }
 

@@ -134,39 +134,39 @@ type VersionUpdateApprovalRequirements struct {
 	MajorVersionUpdates VersionApprovalRule            `json:"majorVersionUpdates"`
 	MinorVersionUpdates VersionApprovalRule            `json:"minorVersionUpdates"`
 	PatchVersionUpdates VersionApprovalRule            `json:"patchVersionUpdates"`
-	SecurityUpdates     VersionApprovalRule            `json:"security_updates"`
-	PreReleaseUpdates   VersionApprovalRule            `json:"pre_release_updates"`
-	EmergencyUpdates    EmergencyApprovalRule          `json:"emergency_updates"`
-	BulkUpdates         BulkUpdateApprovalRule         `json:"bulk_updates"`
-	DependencySpecific  map[string]VersionApprovalRule `json:"dependency_specific,omitempty"`
+	SecurityUpdates     VersionApprovalRule            `json:"securityUpdates"`
+	PreReleaseUpdates   VersionApprovalRule            `json:"preReleaseUpdates"`
+	EmergencyUpdates    EmergencyApprovalRule          `json:"emergencyUpdates"`
+	BulkUpdates         BulkUpdateApprovalRule         `json:"bulkUpdates"`
+	DependencySpecific  map[string]VersionApprovalRule `json:"dependencySpecific,omitempty"`
 }
 
 // VersionApprovalRule defines approval rules for version updates.
 type VersionApprovalRule struct {
-	RequiredApprovers          int                      `json:"required_approvers"`
-	RequiredApprovalTeams      []string                 `json:"required_approval_teams"`
-	AutoApprovalConditions     []AutoApprovalCondition  `json:"auto_approval_conditions"`
-	ManualReviewRequired       bool                     `json:"manual_review_required"`
-	SecurityReviewRequired     bool                     `json:"security_review_required"`
-	ArchitectureReviewRequired bool                     `json:"architecture_review_required"`
-	BusinessApprovalRequired   bool                     `json:"business_approval_required"`
-	TestingGateRequired        bool                     `json:"testing_gate_required"`
-	WaitingPeriod              time.Duration            `json:"waiting_period,omitempty"`
-	ApprovalTimeLimit          time.Duration            `json:"approval_time_limit,omitempty"`
-	EscalationRules            []ApprovalEscalationRule `json:"escalation_rules"`
+	RequiredApprovers          int                      `json:"requiredApprovers"`
+	RequiredApprovalTeams      []string                 `json:"requiredApprovalTeams"`
+	AutoApprovalConditions     []AutoApprovalCondition  `json:"autoApprovalConditions"`
+	ManualReviewRequired       bool                     `json:"manualReviewRequired"`
+	SecurityReviewRequired     bool                     `json:"securityReviewRequired"`
+	ArchitectureReviewRequired bool                     `json:"architectureReviewRequired"`
+	BusinessApprovalRequired   bool                     `json:"businessApprovalRequired"`
+	TestingGateRequired        bool                     `json:"testingGateRequired"`
+	WaitingPeriod              time.Duration            `json:"waitingPeriod,omitempty"`
+	ApprovalTimeLimit          time.Duration            `json:"approvalTimeLimit,omitempty"`
+	EscalationRules            []ApprovalEscalationRule `json:"escalationRules"`
 }
 
 // TestingRequirements defines testing requirements for version updates.
 type TestingRequirements struct {
 	Enabled                    bool                   `json:"enabled"`
-	UnitTestingRequired        bool                   `json:"unit_testing_required"`
-	IntegrationTestingRequired bool                   `json:"integration_testing_required"`
-	E2ETestingRequired         bool                   `json:"e2e_testing_required"`
-	PerformanceTestingRequired bool                   `json:"performance_testing_required"`
-	SecurityTestingRequired    bool                   `json:"security_testing_required"`
-	MinimumTestCoverage        float64                `json:"minimum_test_coverage"`
-	TestSuiteConfiguration     TestSuiteConfiguration `json:"test_suite_configuration"`
-	AutomatedTesting           AutomatedTestingConfig `json:"automated_testing"`
+	UnitTestingRequired        bool                   `json:"unitTestingRequired"`
+	IntegrationTestingRequired bool                   `json:"integrationTestingRequired"`
+	E2ETestingRequired         bool                   `json:"e2eTestingRequired"`
+	PerformanceTestingRequired bool                   `json:"performanceTestingRequired"`
+	SecurityTestingRequired    bool                   `json:"securityTestingRequired"`
+	MinimumTestCoverage        float64                `json:"minimumTestCoverage"`
+	TestSuiteConfiguration     TestSuiteConfiguration `json:"testSuiteConfiguration"`
+	AutomatedTesting           AutomatedTestingConfig `json:"automatedTesting"`
 	ManualTestingChecklist     []ManualTestingItem    `json:"manual_testing_checklist"`
 	TestEnvironments           []TestEnvironment      `json:"test_environments"`
 	TestDataRequirements       TestDataRequirements   `json:"test_data_requirements"`

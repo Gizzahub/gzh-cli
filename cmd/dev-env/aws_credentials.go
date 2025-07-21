@@ -110,9 +110,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory to store saved credentials")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Overwrite existing saved credentials")
 
-	if err := cmd.MarkFlagRequired("name"); err != nil {
-		// Error marking flag as required - continue without marking
-	}
+	_ = cmd.MarkFlagRequired("name")
 
 	return cmd
 }
@@ -142,9 +140,7 @@ Examples:
 	cmd.Flags().StringVar(&o.storePath, "store-path", o.storePath, "Directory where saved credentials are stored")
 	cmd.Flags().BoolVarP(&o.force, "force", "f", false, "Skip backup of current credentials")
 
-	if err := cmd.MarkFlagRequired("name"); err != nil {
-		// Error marking flag as required - continue without marking
-	}
+	_ = cmd.MarkFlagRequired("name")
 
 	return cmd
 }
@@ -171,7 +167,7 @@ Examples:
 	return cmd
 }
 
-func (o *awsCredentialsOptions) runSave(_ *cobra.Command, args []string) error {
+func (o *awsCredentialsOptions) runSave(_ *cobra.Command, _ []string) error {
 	// Check if source credentials file exists
 	if _, err := os.Stat(o.configPath); os.IsNotExist(err) {
 		return fmt.Errorf("AWS credentials file not found at %s", o.configPath)
@@ -214,7 +210,7 @@ func (o *awsCredentialsOptions) runSave(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *awsCredentialsOptions) runLoad(_ *cobra.Command, args []string) error {
+func (o *awsCredentialsOptions) runLoad(_ *cobra.Command, _ []string) error {
 	// Check if saved credentials exist
 	savedPath := filepath.Join(o.storePath, o.name+".credentials")
 	if _, err := os.Stat(savedPath); os.IsNotExist(err) {
@@ -255,7 +251,7 @@ func (o *awsCredentialsOptions) runLoad(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *awsCredentialsOptions) runList(_ *cobra.Command, args []string) error {
+func (o *awsCredentialsOptions) runList(_ *cobra.Command, _ []string) error {
 	// Check if store directory exists
 	if _, err := os.Stat(o.storePath); os.IsNotExist(err) {
 		fmt.Println("No saved AWS credentials found.")
@@ -304,9 +300,7 @@ func (o *awsCredentialsOptions) runList(_ *cobra.Command, args []string) error {
 		}
 
 		// Display profile information (without sensitive data)
-		if err := o.displayCredentialsInfo(credentialsPath); err != nil {
-			// Error displaying credentials info - continue without displaying
-		}
+		_ = o.displayCredentialsInfo(credentialsPath)
 
 		fmt.Println()
 	}

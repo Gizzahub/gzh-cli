@@ -209,7 +209,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 
 	// Clean up state file if completed successfully
 	if state.Status == "completed" {
-		rcm.stateManager.DeleteState("github", org)
+		_ = rcm.stateManager.DeleteState("github", org)
 		fmt.Printf("✅ Clone operation completed successfully\n")
 	} else {
 		fmt.Printf("⚠️  Clone operation incomplete. Use --resume to continue\n")

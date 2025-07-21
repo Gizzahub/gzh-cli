@@ -144,8 +144,8 @@ func newVPNProfileCreateCmd(logger *zap.Logger, configDir string) *cobra.Command
 	cmd.Flags().StringP("vpn", "v", "", "VPN connection name")
 	cmd.Flags().IntP("priority", "p", 100, "Priority (higher = more preferred)")
 	cmd.Flags().BoolP("auto-connect", "a", false, "Enable automatic connection")
-	cmd.MarkFlagRequired("network")
-	cmd.MarkFlagRequired("vpn")
+	_ = cmd.MarkFlagRequired("network")
+	_ = cmd.MarkFlagRequired("vpn")
 
 	return cmd
 }
@@ -224,8 +224,8 @@ func newVPNProfileMapCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd.Flags().StringP("vpn", "v", "", "VPN connection name")
 	cmd.Flags().IntP("priority", "p", 100, "Priority (higher = more preferred)")
 	cmd.Flags().String("profile", "default", "Profile name to add mapping to")
-	cmd.MarkFlagRequired("network")
-	cmd.MarkFlagRequired("vpn")
+	_ = cmd.MarkFlagRequired("network")
+	_ = cmd.MarkFlagRequired("vpn")
 
 	return cmd
 }
@@ -262,7 +262,7 @@ func newVPNProfileUnmapCmd(logger *zap.Logger, configDir string) *cobra.Command 
 
 	cmd.Flags().StringP("network", "n", "", "Network name or pattern")
 	cmd.Flags().String("profile", "default", "Profile name to remove mapping from")
-	cmd.MarkFlagRequired("network")
+	_ = cmd.MarkFlagRequired("network")
 
 	return cmd
 }
@@ -692,7 +692,7 @@ func printVPNProfiles(profiles []*VPNProfile) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NAME\tPRIORITY\tAUTO-CONNECT\tMAPPINGS\tRULES\tUPDATED")
+	_, _ = fmt.Fprintln(w, "NAME\tPRIORITY\tAUTO-CONNECT\tMAPPINGS\tRULES\tUPDATED")
 
 	for _, profile := range profiles {
 		autoConnect := "No"
@@ -702,7 +702,7 @@ func printVPNProfiles(profiles []*VPNProfile) error {
 
 		updated := profile.UpdatedAt.Format("2006-01-02 15:04")
 
-		fmt.Fprintf(w, "%s\t%d\t%s\t%d\t%d\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%d\t%s\t%d\t%d\t%s\n",
 			profile.Name, profile.Priority, autoConnect,
 			len(profile.NetworkMappings), len(profile.AutoSwitchRules), updated)
 	}
@@ -719,7 +719,7 @@ func printAutoSwitchRules(rules []AutoSwitchRule) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-	fmt.Fprintln(w, "NAME\tTRIGGER\tACTION\tCONDITION\tENABLED\tCREATED")
+	_, _ = fmt.Fprintln(w, "NAME\tTRIGGER\tACTION\tCONDITION\tENABLED\tCREATED")
 
 	for _, rule := range rules {
 		enabled := "No"
@@ -734,7 +734,7 @@ func printAutoSwitchRules(rules []AutoSwitchRule) error {
 
 		created := rule.CreatedAt.Format("2006-01-02")
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
 			rule.Name, rule.Trigger, rule.Action, condition, enabled, created)
 	}
 
@@ -753,14 +753,14 @@ func printActiveProfile(profile *VPNProfile) error {
 		fmt.Printf("Network Mappings:\n")
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-		fmt.Fprintln(w, "  NETWORK\tVPN\tPRIORITY")
+		_, _ = fmt.Fprintln(w, "  NETWORK\tVPN\tPRIORITY")
 
 		for _, mapping := range profile.NetworkMappings {
-			fmt.Fprintf(w, "  %s\t%s\t%d\n",
+			_, _ = fmt.Fprintf(w, "  %s\t%s\t%d\n",
 				mapping.NetworkPattern, mapping.VPNName, mapping.Priority)
 		}
 
-		w.Flush()
+		_ = w.Flush()
 		fmt.Println()
 	}
 

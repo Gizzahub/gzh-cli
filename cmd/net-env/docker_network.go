@@ -653,10 +653,7 @@ func (dm *DockerNetworkManager) createNetwork(name string, network *DockerNetwor
 
 // applyContainerNetworkConfig applies network configuration to a container.
 func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string, config *ContainerNetwork) error {
-	exists, err := dm.containerExists(containerName)
-	if err != nil {
-		return fmt.Errorf("failed to check container existence: %w", err)
-	}
+	exists := dm.containerExists(containerName)
 
 	if exists {
 		return dm.updateExistingContainerNetworks(containerName, config)
@@ -666,10 +663,10 @@ func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string
 }
 
 // containerExists checks if a container exists.
-func (dm *DockerNetworkManager) containerExists(containerName string) (bool, error) {
+func (dm *DockerNetworkManager) containerExists(containerName string) bool {
 	inspectCmd := fmt.Sprintf("docker inspect %s", containerName)
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(), inspectCmd, 5*time.Second)
-	return err == nil && result.ExitCode == 0, nil
+	return err == nil && result.ExitCode == 0
 }
 
 // updateExistingContainerNetworks updates network connections for an existing container.

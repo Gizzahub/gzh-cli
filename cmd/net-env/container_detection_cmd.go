@@ -13,6 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
+// valueNotAvailable is already defined in cloud.go
+
 // newContainerDetectionCmd creates the container detection command.
 func newContainerDetectionCmd(logger *zap.Logger, _ string) *cobra.Command {
 	cd := NewContainerDetector(logger)
@@ -81,9 +83,11 @@ func newContainerDetectCmd(cd *ContainerDetector) *cobra.Command {
 				return json.NewEncoder(os.Stdout).Encode(env)
 			case "yaml":
 				// For now, just use structured output
-				return printEnvironmentYAML(env)
+				printEnvironmentYAML(env)
+				return nil
 			default:
-				return printEnvironmentSummary(env, detailed)
+				printEnvironmentSummary(env, detailed)
+				return nil
 			}
 		},
 	}
@@ -345,7 +349,8 @@ func newContainerInspectCmd(cd *ContainerDetector) *cobra.Command {
 			case "json":
 				return json.NewEncoder(os.Stdout).Encode(container)
 			default:
-				return printContainerDetails(container)
+				printContainerDetails(container)
+				return nil
 			}
 		},
 	}
@@ -357,7 +362,7 @@ func newContainerInspectCmd(cd *ContainerDetector) *cobra.Command {
 
 // Helper functions for printing
 
-func printEnvironmentSummary(env *ContainerEnvironment, detailed bool) error {
+func printEnvironmentSummary(env *ContainerEnvironment, detailed bool) {
 	fmt.Printf("🐳 Container Environment Summary\n\n")
 
 	// Basic information
@@ -406,8 +411,6 @@ func printEnvironmentSummary(env *ContainerEnvironment, detailed bool) error {
 		fmt.Printf("\n📊 Resource Usage:\n")
 		printResourceUsage(env.ResourceUsage)
 	}
-
-	return nil
 }
 
 func printRuntimesTable(runtimes []RuntimeInfo) error {
@@ -458,7 +461,7 @@ func printDetectedNetworksTable(networks []DetectedNetwork) error {
 	for _, network := range networks {
 		networkID := truncateStringUtil(network.ID, 12)
 
-		created := "N/A"
+		created := valueNotAvailable
 		if !network.Created.IsZero() {
 			created = network.Created.Format("2006-01-02")
 		}
@@ -487,7 +490,7 @@ func printContainerSummary(container *DetectedContainer) {
 	fmt.Println()
 }
 
-func printContainerDetails(container *DetectedContainer) error {
+func printContainerDetails(container *DetectedContainer) {
 	fmt.Printf("📦 Container Details\n\n")
 	fmt.Printf("ID: %s\n", container.ID)
 	fmt.Printf("Name: %s\n", container.Name)
@@ -529,8 +532,6 @@ func printContainerDetails(container *DetectedContainer) error {
 			fmt.Printf("  %s -> %s (%s)\n", mount.Source, mount.Destination, mount.Type)
 		}
 	}
-
-	return nil
 }
 
 func printComposeProjects(projects []ComposeProject) {
@@ -584,7 +585,7 @@ func printResourceUsage(usage *ContainerResourceUsage) {
 	fmt.Printf("  Block Write: %d bytes\n", usage.ResourceSummary.BlockWrite)
 }
 
-func printEnvironmentYAML(env *ContainerEnvironment) error {
+func printEnvironmentYAML(env *ContainerEnvironment) {
 	// Simple YAML-like output for now
 	fmt.Printf("container_environment:\n")
 	fmt.Printf("  primary_runtime: %s\n", env.PrimaryRuntime)
@@ -605,8 +606,6 @@ func printEnvironmentYAML(env *ContainerEnvironment) error {
 	if len(env.ComposeProjects) > 0 {
 		fmt.Printf("  compose_projects: %d\n", len(env.ComposeProjects))
 	}
-
-	return nil
 }
 
 func truncateStringUtil(s string, maxLen int) string {

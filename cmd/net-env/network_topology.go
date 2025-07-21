@@ -996,7 +996,7 @@ func (nta *NetworkTopologyAnalyzer) testConnection(ctx context.Context, address 
 	if err != nil {
 		return StatusFailed
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	return StatusActive
 }

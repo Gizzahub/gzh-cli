@@ -265,7 +265,7 @@ func (sc *StreamingClient) fetchRepositoryPage(ctx context.Context, org string, 
 	if err != nil {
 		return nil, CursorPagination{}, fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Update metrics
 	sc.updateRequestMetrics(time.Since(startTime))

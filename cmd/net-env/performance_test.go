@@ -317,7 +317,7 @@ func TestPerformanceOptimization_Integration(t *testing.T) {
 	configs := []DNSConfig{
 		{Servers: []string{"8.8.8.8"}, Interface: "lo"},
 	}
-	dnsManager.SetDNSServersBatch(configs)
+	_ = dnsManager.SetDNSServersBatch(configs)
 
 	dnsDuration := time.Since(start)
 

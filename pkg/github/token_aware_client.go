@@ -132,7 +132,7 @@ func (c *TokenAwareGitHubClient) GetUser(ctx context.Context) (*GitHubUser, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleErrorResponse(resp, "get user")
@@ -168,7 +168,7 @@ func (c *TokenAwareGitHubClient) GetOrganization(ctx context.Context, org string
 	if err != nil {
 		return nil, fmt.Errorf("failed to get organization %s: %w", org, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleErrorResponse(resp, fmt.Sprintf("get organization %s", org))
@@ -221,7 +221,7 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 	if err != nil {
 		return nil, fmt.Errorf("failed to list repositories for %s: %w", owner, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleErrorResponse(resp, fmt.Sprintf("list repositories for %s", owner))
@@ -257,7 +257,7 @@ func (c *TokenAwareGitHubClient) GetRepository(ctx context.Context, owner, repo 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repository %s/%s: %w", owner, repo, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleErrorResponse(resp, fmt.Sprintf("get repository %s/%s", owner, repo))
@@ -307,7 +307,7 @@ func (c *TokenAwareGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitIn
 	if err != nil {
 		return nil, fmt.Errorf("failed to get rate limit: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleErrorResponse(resp, "get rate limit")
@@ -350,7 +350,7 @@ func (c *TokenAwareGitHubClient) ValidateTokenPermissions(ctx context.Context, r
 	if err != nil {
 		return fmt.Errorf("failed to validate token: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return c.handleErrorResponse(resp, "validate token")
