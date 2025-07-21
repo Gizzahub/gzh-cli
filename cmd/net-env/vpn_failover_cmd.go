@@ -681,7 +681,7 @@ type TestStep struct {
 	Description string        `json:"description"`
 }
 
-func createFailoverVPNManager(ctx context.Context, logger *zap.Logger, configDir string) (*FailoverVPNManager, error) {
+func createFailoverVPNManager(_ context.Context, logger *zap.Logger, configDir string) (*FailoverVPNManager, error) {
 	manager := &FailoverVPNManager{
 		logger:    logger,
 		configDir: configDir,

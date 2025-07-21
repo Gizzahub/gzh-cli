@@ -401,7 +401,7 @@ func newVPNHierarchyStatusCmd(logger *zap.Logger, configDir string) *cobra.Comma
 
 // Helper functions
 
-func createHierarchicalVPNManager(ctx context.Context, logger *zap.Logger, configDir string) (cloud.HierarchicalVPNManager, error) {
+func createHierarchicalVPNManager(_ context.Context, logger *zap.Logger, configDir string) (cloud.HierarchicalVPNManager, error) {
 	// Create base VPN manager
 	baseManager := cloud.NewVPNManager()
 
@@ -429,7 +429,7 @@ func loadVPNHierarchyConfig(manager cloud.HierarchicalVPNManager, configDir stri
 	return nil
 }
 
-func loadVPNConnectionConfig(configFile string) (*cloud.VPNConnection, error) {
+func loadVPNConnectionConfig(_ string) (*cloud.VPNConnection, error) {
 	// TODO: Implement VPN connection configuration loading
 	// This would parse YAML/JSON configuration files
 	return &cloud.VPNConnection{
@@ -442,7 +442,7 @@ func loadVPNConnectionConfig(configFile string) (*cloud.VPNConnection, error) {
 	}, nil
 }
 
-func detectNetworkEnvironment(ctx context.Context) (string, error) {
+func detectNetworkEnvironment(_ context.Context) (string, error) {
 	// TODO: Implement network environment detection logic
 	// This could check:
 	// - Current WiFi SSID

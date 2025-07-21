@@ -517,7 +517,7 @@ type VPNProfileManager struct {
 	profiles  map[string]*VPNProfile
 }
 
-func createVPNProfileManager(ctx context.Context, logger *zap.Logger, configDir string) (*VPNProfileManager, error) {
+func createVPNProfileManager(_ context.Context, logger *zap.Logger, configDir string) (*VPNProfileManager, error) {
 	manager := &VPNProfileManager{
 		logger:    logger,
 		configDir: configDir,

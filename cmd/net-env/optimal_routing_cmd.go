@@ -583,7 +583,7 @@ type RoutingPolicy struct {
 
 // Implementation functions
 
-func createOptimalRouteOptimizer(ctx context.Context, logger *zap.Logger, configDir string) (*OptimalRouteOptimizer, error) {
+func createOptimalRouteOptimizer(_ context.Context, logger *zap.Logger, configDir string) (*OptimalRouteOptimizer, error) {
 	optimizer := &OptimalRouteOptimizer{
 		logger:      logger,
 		configDir:   configDir,

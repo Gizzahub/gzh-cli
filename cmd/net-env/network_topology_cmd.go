@@ -15,7 +15,7 @@ import (
 )
 
 // newNetworkTopologyCmd creates the network topology command.
-func newNetworkTopologyCmd(logger *zap.Logger, configDir string) *cobra.Command {
+func newNetworkTopologyCmd(logger *zap.Logger, _ string) *cobra.Command {
 	containerDetector := NewContainerDetector(logger)
 	analyzer := NewNetworkTopologyAnalyzer(logger, containerDetector)
 
@@ -666,7 +666,7 @@ func printTopologyChanges(topology *NetworkTopology) {
 	fmt.Printf("   Clusters: %d\n", len(topology.Clusters))
 }
 
-func validateTopology(topology *NetworkTopology, strict bool) []string {
+func validateTopology(topology *NetworkTopology, _ bool) []string {
 	var issues []string
 
 	// Check for isolated containers

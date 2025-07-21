@@ -421,7 +421,7 @@ type OptimizationRecommendation struct {
 	Applied     bool   `json:"applied"`
 }
 
-func createNetworkMetricsCollector(ctx context.Context, logger *zap.Logger, configDir string) (*NetworkMetricsCollector, error) {
+func createNetworkMetricsCollector(_ context.Context, logger *zap.Logger, configDir string) (*NetworkMetricsCollector, error) {
 	collector := &NetworkMetricsCollector{
 		logger:      logger,
 		configDir:   configDir,
@@ -757,7 +757,7 @@ func (nmc *NetworkMetricsCollector) getPacketStats(iface string) PacketStats {
 	return stats
 }
 
-func (nmc *NetworkMetricsCollector) pingTarget(ctx context.Context, target string, count int) LatencyResult { //nolint:gocognit // Complex ping implementation with cross-platform support
+func (nmc *NetworkMetricsCollector) pingTarget(_ context.Context, target string, count int) LatencyResult { //nolint:gocognit // Complex ping implementation with cross-platform support
 	result := LatencyResult{
 		Target:  target,
 		Success: false,
@@ -847,7 +847,7 @@ func (nmc *NetworkMetricsCollector) getDefaultInterface() string {
 	return "eth0" // Fallback
 }
 
-func (nmc *NetworkMetricsCollector) calculateUtilization(bandwidth BandwidthMetrics, iface string) float64 {
+func (nmc *NetworkMetricsCollector) calculateUtilization(bandwidth BandwidthMetrics, _ string) float64 {
 	// TODO: Get interface speed and calculate actual utilization
 	// For now, return a simplified calculation
 	totalMbps := bandwidth.UploadMbps + bandwidth.DownloadMbps
