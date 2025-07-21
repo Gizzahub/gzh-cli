@@ -1,10 +1,14 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
 	"fmt"
 
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/spf13/cobra"
+
+	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 type bulkCloneValidateOptions struct {
@@ -51,11 +55,13 @@ func (o *bulkCloneValidateOptions) run(cmd *cobra.Command, args []string) error 
 	}
 
 	var configPath string
+
 	if useConfig {
 		path, err := bulkclonepkg.FindConfigFile()
 		if err != nil {
 			return fmt.Errorf("failed to find config file: %w", err)
 		}
+
 		configPath = path
 		fmt.Printf("Found config file at: %s\n", configPath)
 	} else {

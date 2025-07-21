@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -16,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GCPProject represents a GCP project configuration
+// GCPProject represents a GCP project configuration.
 type GCPProject struct {
 	ID             string            `json:"id"`
 	Name           string            `json:"name"`
@@ -35,7 +38,7 @@ type GCPProject struct {
 	IAMPermissions []string          `json:"iam_permissions,omitempty"`
 }
 
-// GCPProjectManager manages GCP projects and configurations
+// GCPProjectManager manages GCP projects and configurations.
 type GCPProjectManager struct {
 	gcloudConfigPath string
 	projects         map[string]*GCPProject
@@ -43,7 +46,7 @@ type GCPProjectManager struct {
 	ctx              context.Context
 }
 
-// GCPConfiguration represents a gcloud configuration
+// GCPConfiguration represents a gcloud configuration.
 type GCPConfiguration struct {
 	Name           string `json:"name"`
 	Project        string `json:"project"`
@@ -54,7 +57,7 @@ type GCPConfiguration struct {
 	PropertiesPath string `json:"properties_path"`
 }
 
-// NewGCPProjectManager creates a new GCP project manager
+// NewGCPProjectManager creates a new GCP project manager.
 func NewGCPProjectManager(ctx context.Context) (*GCPProjectManager, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -79,7 +82,7 @@ func NewGCPProjectManager(ctx context.Context) (*GCPProjectManager, error) {
 	return manager, nil
 }
 
-// newGCPProjectCmd creates the gcp-project command
+// newGCPProjectCmd creates the gcp-project command.
 func newGCPProjectCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gcp-project",
@@ -122,7 +125,7 @@ Examples:
 	return cmd
 }
 
-// newGCPProjectListCmd creates the list subcommand
+// newGCPProjectListCmd creates the list subcommand.
 func newGCPProjectListCmd() *cobra.Command {
 	var outputFormat string
 
@@ -158,9 +161,10 @@ Examples:
 	return cmd
 }
 
-// newGCPProjectSwitchCmd creates the switch subcommand
+// newGCPProjectSwitchCmd creates the switch subcommand.
 func newGCPProjectSwitchCmd() *cobra.Command {
 	var interactive bool
+
 	var configuration string
 
 	cmd := &cobra.Command{
@@ -204,7 +208,7 @@ Examples:
 	return cmd
 }
 
-// newGCPProjectShowCmd creates the show subcommand
+// newGCPProjectShowCmd creates the show subcommand.
 func newGCPProjectShowCmd() *cobra.Command {
 	var outputFormat string
 
@@ -244,7 +248,7 @@ Examples:
 	return cmd
 }
 
-// newGCPProjectConfigCmd creates the config subcommand
+// newGCPProjectConfigCmd creates the config subcommand.
 func newGCPProjectConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
@@ -274,10 +278,12 @@ Examples:
 	return cmd
 }
 
-// newGCPProjectValidateCmd creates the validate subcommand
+// newGCPProjectValidateCmd creates the validate subcommand.
 func newGCPProjectValidateCmd() *cobra.Command {
 	var checkAPIs bool
+
 	var checkBilling bool
+
 	var checkPermissions bool
 
 	cmd := &cobra.Command{
@@ -320,7 +326,7 @@ Examples:
 	return cmd
 }
 
-// loadConfigurations loads all gcloud configurations
+// loadConfigurations loads all gcloud configurations.
 func (m *GCPProjectManager) loadConfigurations() error {
 	configurationsPath := filepath.Join(m.gcloudConfigPath, "configurations")
 	if _, err := os.Stat(configurationsPath); os.IsNotExist(err) {
@@ -357,10 +363,11 @@ func (m *GCPProjectManager) loadConfigurations() error {
 	return nil
 }
 
-// loadProjects loads accessible GCP projects
+// loadProjects loads accessible GCP projects.
 func (m *GCPProjectManager) loadProjects() error {
 	// Use gcloud to list projects
 	cmd := exec.CommandContext(m.ctx, "gcloud", "projects", "list", "--format=json")
+
 	output, err := cmd.Output()
 	if err != nil {
 		// If gcloud is not available or not authenticated, return empty list
@@ -399,7 +406,7 @@ func (m *GCPProjectManager) loadProjects() error {
 	return nil
 }
 
-// enrichProjectDetails adds additional details to a project
+// enrichProjectDetails adds additional details to a project.
 func (m *GCPProjectManager) enrichProjectDetails(project *GCPProject) {
 	// Get billing account
 	if billingCmd := exec.CommandContext(m.ctx, "gcloud", "billing", "projects", "describe", project.ID, "--format=value(billingAccountName)"); billingCmd != nil {
@@ -415,32 +422,37 @@ func (m *GCPProjectManager) enrichProjectDetails(project *GCPProject) {
 			project.Region = config.Region
 			project.Zone = config.Zone
 			project.Configuration = config.Name
+
 			break
 		}
 	}
 }
 
-// getCurrentProject gets the current active project
+// getCurrentProject gets the current active project.
 func (m *GCPProjectManager) getCurrentProject() (string, error) {
 	cmd := exec.CommandContext(m.ctx, "gcloud", "config", "get-value", "project")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
+
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getActiveConfiguration gets the current active configuration
+// getActiveConfiguration gets the current active configuration.
 func (m *GCPProjectManager) getActiveConfiguration() (string, error) {
 	activeConfigPath := filepath.Join(m.gcloudConfigPath, "active_config")
+
 	content, err := os.ReadFile(activeConfigPath)
 	if err != nil {
 		return "default", nil // Default to "default" if no active config
 	}
+
 	return strings.TrimSpace(string(content)), nil
 }
 
-// parseConfigurationProperties parses gcloud configuration properties
+// parseConfigurationProperties parses gcloud configuration properties.
 func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, config *GCPConfiguration) error {
 	content, err := os.ReadFile(propertiesPath)
 	if err != nil {
@@ -454,24 +466,30 @@ func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, 
 			if project, ok := core["project"].(string); ok {
 				config.Project = project
 			}
+
 			if account, ok := core["account"].(string); ok {
 				config.Account = account
 			}
 		}
+
 		if compute, ok := properties["compute"].(map[string]interface{}); ok {
 			if region, ok := compute["region"].(string); ok {
 				config.Region = region
 			}
+
 			if zone, ok := compute["zone"].(string); ok {
 				config.Zone = zone
 			}
 		}
+
 		return nil
 	}
 
 	// Fallback to INI format
 	lines := strings.Split(string(content), "\n")
+
 	var currentSection string
+
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "#") {
@@ -506,7 +524,7 @@ func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, 
 	return nil
 }
 
-// listProjects lists all available projects
+// listProjects lists all available projects.
 func (m *GCPProjectManager) listProjects(format string) error {
 	if len(m.projects) == 0 {
 		fmt.Println("No GCP projects found. Make sure you are authenticated with gcloud.")
@@ -518,6 +536,7 @@ func (m *GCPProjectManager) listProjects(format string) error {
 	for _, project := range m.projects {
 		projects = append(projects, project)
 	}
+
 	sort.Slice(projects, func(i, j int) bool {
 		return projects[i].Name < projects[j].Name
 	})
@@ -526,6 +545,7 @@ func (m *GCPProjectManager) listProjects(format string) error {
 	case "json":
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(projects)
 
 	case "table":
@@ -549,6 +569,7 @@ func (m *GCPProjectManager) listProjects(format string) error {
 		}
 
 		table.Render()
+
 		return nil
 
 	default:
@@ -556,11 +577,12 @@ func (m *GCPProjectManager) listProjects(format string) error {
 	}
 }
 
-// switchProject switches to a specific project
+// switchProject switches to a specific project.
 func (m *GCPProjectManager) switchProject(projectID string, interactive bool, configuration string) error {
 	// Interactive selection if no project specified
 	if projectID == "" || interactive {
 		var err error
+
 		projectID, err = m.selectProjectInteractively()
 		if err != nil {
 			return err
@@ -594,16 +616,20 @@ func (m *GCPProjectManager) switchProject(projectID string, interactive bool, co
 
 	// Update project status
 	now := time.Now()
+
 	for _, p := range m.projects {
 		p.IsActive = false
 	}
+
 	project.IsActive = true
 	project.LastUsed = &now
 
 	fmt.Printf("✅ Switched to project: %s (%s)\n", project.Name, project.ID)
+
 	if project.Region != "" {
 		fmt.Printf("   Region: %s\n", project.Region)
 	}
+
 	if project.Zone != "" {
 		fmt.Printf("   Zone: %s\n", project.Zone)
 	}
@@ -611,21 +637,24 @@ func (m *GCPProjectManager) switchProject(projectID string, interactive bool, co
 	return nil
 }
 
-// selectProjectInteractively provides interactive project selection
+// selectProjectInteractively provides interactive project selection.
 func (m *GCPProjectManager) selectProjectInteractively() (string, error) {
 	if len(m.projects) == 0 {
 		return "", fmt.Errorf("no projects available")
 	}
 
 	var projects []*GCPProject
+
 	var items []string
 
 	for _, project := range m.projects {
 		projects = append(projects, project)
+
 		label := fmt.Sprintf("%s (%s)", project.Name, project.ID)
 		if project.IsActive {
 			label += " [current]"
 		}
+
 		items = append(items, label)
 	}
 
@@ -646,11 +675,12 @@ func (m *GCPProjectManager) selectProjectInteractively() (string, error) {
 	return projects[index].ID, nil
 }
 
-// showProject shows detailed information about a project
-func (m *GCPProjectManager) showProject(projectID string, format string) error {
+// showProject shows detailed information about a project.
+func (m *GCPProjectManager) showProject(projectID, format string) error {
 	// Get current project if none specified
 	if projectID == "" {
 		var err error
+
 		projectID, err = m.getCurrentProject()
 		if err != nil {
 			return fmt.Errorf("failed to get current project: %w", err)
@@ -666,6 +696,7 @@ func (m *GCPProjectManager) showProject(projectID string, format string) error {
 	case "json":
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(project)
 
 	case "table":
@@ -688,6 +719,7 @@ func (m *GCPProjectManager) showProject(projectID string, format string) error {
 
 		if len(project.Tags) > 0 {
 			fmt.Printf("\nTags:\n")
+
 			for key, value := range project.Tags {
 				fmt.Printf("  %s: %s\n", key, value)
 			}
@@ -695,6 +727,7 @@ func (m *GCPProjectManager) showProject(projectID string, format string) error {
 
 		if len(project.EnabledAPIs) > 0 {
 			fmt.Printf("\nEnabled APIs:\n")
+
 			for _, api := range project.EnabledAPIs {
 				fmt.Printf("  - %s\n", api)
 			}
@@ -707,11 +740,12 @@ func (m *GCPProjectManager) showProject(projectID string, format string) error {
 	}
 }
 
-// validateProject validates project access and configuration
+// validateProject validates project access and configuration.
 func (m *GCPProjectManager) validateProject(projectID string, checkAPIs, checkBilling, checkPermissions bool) error {
 	// Get current project if none specified
 	if projectID == "" {
 		var err error
+
 		projectID, err = m.getCurrentProject()
 		if err != nil {
 			return fmt.Errorf("failed to get current project: %w", err)
@@ -727,6 +761,7 @@ func (m *GCPProjectManager) validateProject(projectID string, checkAPIs, checkBi
 		fmt.Printf("❌ Project access: FAILED\n")
 		return fmt.Errorf("cannot access project '%s': %w", projectID, err)
 	}
+
 	fmt.Printf("✅ Project access: OK\n")
 
 	// Check billing if requested
@@ -762,10 +797,11 @@ func (m *GCPProjectManager) validateProject(projectID string, checkAPIs, checkBi
 	}
 
 	fmt.Printf("\nValidation completed for project: %s\n", projectID)
+
 	return nil
 }
 
-// Configuration management commands
+// Configuration management commands.
 func newGCPProjectConfigListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
@@ -866,6 +902,7 @@ func (m *GCPProjectManager) listConfigurations() error {
 	}
 
 	table.Render()
+
 	return nil
 }
 
@@ -906,6 +943,7 @@ func (m *GCPProjectManager) createConfiguration(name, project, account, region, 
 	}
 
 	fmt.Printf("✅ Configuration '%s' created successfully\n", name)
+
 	return nil
 }
 
@@ -916,6 +954,7 @@ func (m *GCPProjectManager) activateConfiguration(name string) error {
 	}
 
 	fmt.Printf("✅ Configuration '%s' activated\n", name)
+
 	return nil
 }
 
@@ -927,7 +966,7 @@ func (m *GCPProjectManager) deleteConfiguration(name string) error {
 	}
 
 	if _, err := prompt.Run(); err != nil {
-		return fmt.Errorf("operation cancelled")
+		return fmt.Errorf("operation canceled")
 	}
 
 	cmd := exec.CommandContext(m.ctx, "gcloud", "config", "configurations", "delete", name, "--quiet")
@@ -936,5 +975,6 @@ func (m *GCPProjectManager) deleteConfiguration(name string) error {
 	}
 
 	fmt.Printf("✅ Configuration '%s' deleted\n", name)
+
 	return nil
 }

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package alwayslatest
 
 import (
@@ -148,12 +151,14 @@ func (o *alwaysLatestAptOptions) run(_ *cobra.Command, args []string) error {
 
 	// Update packages
 	updatedCount := 0
+
 	for _, pkg := range upgradeablePackages {
 		updated, err := o.updatePackage(pkg)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to update %s: %v\n", pkg, err)
 			continue
 		}
+
 		if updated {
 			updatedCount++
 		}
@@ -188,12 +193,14 @@ func (o *alwaysLatestAptOptions) fixBrokenPackages() error {
 	}
 
 	cmd := exec.Command("sudo", "apt-get", "install", "-f", "-y")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("fix broken packages failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Fixed broken packages")
+
 	return nil
 }
 
@@ -206,12 +213,14 @@ func (o *alwaysLatestAptOptions) updatePackageLists() error {
 	}
 
 	cmd := exec.Command("sudo", "apt-get", "update")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("apt update failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Package lists updated successfully")
+
 	return nil
 }
 
@@ -224,28 +233,32 @@ func (o *alwaysLatestAptOptions) performFullUpgrade() error {
 	}
 
 	if o.interactive && !o.confirmFullUpgrade() {
-		fmt.Println("   Full upgrade cancelled")
+		fmt.Println("   Full upgrade canceled")
 		return nil
 	}
 
 	cmd := exec.Command("sudo", "apt-get", "full-upgrade", "-y")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("full upgrade failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Full upgrade completed")
+
 	return o.performCleanupIfRequested()
 }
 
 func (o *alwaysLatestAptOptions) getUpgradeablePackages() ([]string, error) {
 	cmd := exec.Command("apt", "list", "--upgradable")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get upgradeable packages: %w", err)
 	}
 
 	var packages []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -273,6 +286,7 @@ func (o *alwaysLatestAptOptions) filterPackages(allPackages, requestedPackages [
 	}
 
 	var filtered []string
+
 	for _, pkg := range allPackages {
 		if packageSet[pkg] {
 			filtered = append(filtered, pkg)
@@ -299,26 +313,32 @@ func (o *alwaysLatestAptOptions) updatePackage(packageName string) (bool, error)
 	// Upgrade the package
 	fmt.Printf("   Upgrading %s...\n", packageName)
 	cmd := exec.Command("sudo", "apt-get", "install", "--only-upgrade", "-y", packageName)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return false, fmt.Errorf("upgrade failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Printf("✅ Updated %s\n", packageName)
+
 	return true, nil
 }
 
 func (o *alwaysLatestAptOptions) confirmUpdate(packageName string) bool {
 	fmt.Printf("   Update %s? (y/N): ", packageName)
+
 	var response string
 	_, _ = fmt.Scanln(&response)
+
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
 func (o *alwaysLatestAptOptions) confirmFullUpgrade() bool {
 	fmt.Print("   Perform full system upgrade? This may remove packages (y/N): ")
+
 	var response string
 	_, _ = fmt.Scanln(&response)
+
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
@@ -342,12 +362,14 @@ func (o *alwaysLatestAptOptions) autoRemovePackages() error {
 	fmt.Println("🧹 Auto-removing unused packages...")
 
 	cmd := exec.Command("sudo", "apt-get", "autoremove", "-y")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("autoremove failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Auto-remove completed")
+
 	return nil
 }
 
@@ -355,17 +377,20 @@ func (o *alwaysLatestAptOptions) cleanupPackages() error {
 	fmt.Println("🧹 Cleaning up package cache...")
 
 	cmd := exec.Command("sudo", "apt-get", "autoclean")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("autoclean failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Package cache cleaned")
+
 	return nil
 }
 
 func (o *alwaysLatestAptOptions) getPackageVersion(packageName string) (string, error) {
 	cmd := exec.Command("dpkg", "-l", packageName)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -389,9 +414,11 @@ func (o *alwaysLatestAptOptions) getPackageVersion(packageName string) (string, 
 func (o *alwaysLatestAptOptions) extractVersionNumber(versionString string) string {
 	// Extract version number using regex
 	re := regexp.MustCompile(`(\d+\.[\d.]+)`)
+
 	matches := re.FindStringSubmatch(versionString)
 	if len(matches) > 1 {
 		return matches[1]
 	}
+
 	return versionString
 }

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -23,6 +26,7 @@ type gcloudCredentialsOptions struct {
 
 func defaultGcloudCredentialsOptions() *gcloudCredentialsOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &gcloudCredentialsOptions{
 		// gcloud credentials are typically stored in ~/.config/gcloud or ~/.gcloud
 		configPath: filepath.Join(homeDir, ".config", "gcloud"),
@@ -208,9 +212,11 @@ func (o *gcloudCredentialsOptions) runSave(_ *cobra.Command, args []string) erro
 	}
 
 	fmt.Printf("✅ Gcloud credentials saved as '%s'\n", o.name)
+
 	if o.description != "" {
 		fmt.Printf("   Description: %s\n", o.description)
 	}
+
 	fmt.Printf("   Saved to: %s\n", savedPath)
 
 	return nil
@@ -230,6 +236,7 @@ func (o *gcloudCredentialsOptions) runLoad(_ *cobra.Command, args []string) erro
 			if err := o.copyCredentials(o.configPath, backupPath); err != nil {
 				return fmt.Errorf("failed to backup current gcloud credentials: %w", err)
 			}
+
 			fmt.Printf("📦 Current gcloud credentials backed up to: %s\n", backupPath)
 		}
 	}
@@ -270,6 +277,7 @@ func (o *gcloudCredentialsOptions) runList(_ *cobra.Command, args []string) erro
 
 	// Filter for directories (excluding .meta files)
 	var credentials []string
+
 	for _, entry := range entries {
 		if entry.IsDir() {
 			credentials = append(credentials, entry.Name())
@@ -287,9 +295,11 @@ func (o *gcloudCredentialsOptions) runList(_ *cobra.Command, args []string) erro
 	for _, name := range credentials {
 		metadata := o.loadMetadata(name)
 		fmt.Printf("🔐 %s\n", name)
+
 		if metadata.Description != "" {
 			fmt.Printf("   Description: %s\n", metadata.Description)
 		}
+
 		if !metadata.SavedAt.IsZero() {
 			fmt.Printf("   Saved: %s\n", metadata.SavedAt.Format("2006-01-02 15:04:05"))
 		}
@@ -330,10 +340,12 @@ func (o *gcloudCredentialsOptions) saveMetadata() error {
 	}
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
+
 	file, err := os.Create(metadataPath)
 	if err != nil {
 		return err
 	}
+
 	defer file.Close()
 
 	// Set secure permissions for metadata
@@ -345,6 +357,7 @@ func (o *gcloudCredentialsOptions) saveMetadata() error {
 	if metadata.Description != "" {
 		fmt.Fprintf(file, "description=%s\n", metadata.Description)
 	}
+
 	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
 	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
 
@@ -355,6 +368,7 @@ func (o *gcloudCredentialsOptions) loadMetadata(name string) gcloudCredentialsMe
 	metadata := gcloudCredentialsMetadata{Name: name}
 
 	metadataPath := filepath.Join(o.storePath, name+".meta")
+
 	content, err := os.ReadFile(metadataPath)
 	if err != nil {
 		return metadata
@@ -388,7 +402,7 @@ func (o *gcloudCredentialsOptions) loadMetadata(name string) gcloudCredentialsMe
 	return metadata
 }
 
-// copyCredentials copies only credential-related files, not configuration
+// copyCredentials copies only credential-related files, not configuration.
 func (o *gcloudCredentialsOptions) copyCredentials(src, dst string) error {
 	// Create destination directory with secure permissions
 	if err := os.MkdirAll(dst, 0o700); err != nil {
@@ -430,7 +444,7 @@ func (o *gcloudCredentialsOptions) copyCredentials(src, dst string) error {
 	return nil
 }
 
-// mergeCredentials merges saved credentials into existing gcloud config
+// mergeCredentials merges saved credentials into existing gcloud config.
 func (o *gcloudCredentialsOptions) mergeCredentials(src, dst string) error {
 	// Read source directory
 	entries, err := os.ReadDir(src)
@@ -446,6 +460,7 @@ func (o *gcloudCredentialsOptions) mergeCredentials(src, dst string) error {
 		if entry.IsDir() {
 			// Remove existing directory and copy new one
 			os.RemoveAll(dstPath)
+
 			if err := o.copyDir(srcPath, dstPath); err != nil {
 				return err
 			}
@@ -519,25 +534,31 @@ func (o *gcloudCredentialsOptions) copyFile(src, dst string) error {
 	}
 
 	_, err = io.Copy(destFile, sourceFile)
+
 	return err
 }
 
 func (o *gcloudCredentialsOptions) getDirSize(path string) (int64, error) {
 	var size int64
+
 	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+
 		if !info.IsDir() {
 			size += info.Size()
 		}
+
 		return nil
 	})
+
 	return size, err
 }
 
 func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string) error {
 	var credentialFiles []string
+
 	var serviceAccounts []string
 
 	// Check for application default credentials
@@ -583,6 +604,7 @@ func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string
 	// Display information
 	if len(credentialFiles) > 0 {
 		fmt.Printf("   Credential types: %d found\n", len(credentialFiles))
+
 		for _, credFile := range credentialFiles {
 			fmt.Printf("     - %s\n", credFile)
 		}
@@ -590,6 +612,7 @@ func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string
 
 	if len(serviceAccounts) > 0 {
 		fmt.Printf("   Service accounts: %d found\n", len(serviceAccounts))
+
 		for _, sa := range serviceAccounts {
 			fmt.Printf("     - %s\n", sa)
 		}

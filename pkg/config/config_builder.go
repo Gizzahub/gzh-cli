@@ -1,11 +1,14 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
-// ConfigBuilder provides a fluent interface for building test configurations
+// ConfigBuilder provides a fluent interface for building test configurations.
 type ConfigBuilder struct {
 	config *UnifiedConfig
 }
 
-// NewConfigBuilder creates a new ConfigBuilder with default values
+// NewConfigBuilder creates a new ConfigBuilder with default values.
 func NewConfigBuilder() *ConfigBuilder {
 	return &ConfigBuilder{
 		config: &UnifiedConfig{
@@ -16,46 +19,49 @@ func NewConfigBuilder() *ConfigBuilder {
 	}
 }
 
-// WithVersion sets the configuration version
+// WithVersion sets the configuration version.
 func (b *ConfigBuilder) WithVersion(version string) *ConfigBuilder {
 	b.config.Version = version
 	return b
 }
 
-// WithDefaultProvider sets the default provider
+// WithDefaultProvider sets the default provider.
 func (b *ConfigBuilder) WithDefaultProvider(provider string) *ConfigBuilder {
 	b.config.DefaultProvider = provider
 	return b
 }
 
-// WithGitHubProvider adds a GitHub provider configuration
+// WithGitHubProvider adds a GitHub provider configuration.
 func (b *ConfigBuilder) WithGitHubProvider(token string) *ConfigBuilder {
 	b.config.Providers["github"] = &ProviderConfig{
 		Token:         token,
 		Organizations: []*OrganizationConfig{},
 	}
+
 	return b
 }
 
-// WithGitLabProvider adds a GitLab provider configuration
+// WithGitLabProvider adds a GitLab provider configuration.
 func (b *ConfigBuilder) WithGitLabProvider(token string) *ConfigBuilder {
 	b.config.Providers["gitlab"] = &ProviderConfig{
 		Token:         token,
 		Organizations: []*OrganizationConfig{},
 	}
+
 	return b
 }
 
-// WithGiteaProvider adds a Gitea provider configuration
+// WithGiteaProvider adds a Gitea provider configuration.
 func (b *ConfigBuilder) WithGiteaProvider(token string) *ConfigBuilder {
 	b.config.Providers["gitea"] = &ProviderConfig{
 		Token:         token,
 		Organizations: []*OrganizationConfig{},
 	}
+
 	return b
 }
 
-// WithOrganization adds an organization to the specified provider
+// WithOrganization adds an organization to the specified provider.
 func (b *ConfigBuilder) WithOrganization(provider, name, cloneDir string) *ConfigBuilder {
 	if b.config.Providers[provider] == nil {
 		b.config.Providers[provider] = &ProviderConfig{
@@ -74,10 +80,11 @@ func (b *ConfigBuilder) WithOrganization(provider, name, cloneDir string) *Confi
 		b.config.Providers[provider].Organizations,
 		org,
 	)
+
 	return b
 }
 
-// WithOrganizationDetails adds an organization with full configuration
+// WithOrganizationDetails adds an organization with full configuration.
 func (b *ConfigBuilder) WithOrganizationDetails(provider, name, cloneDir, visibility, strategy string) *ConfigBuilder {
 	if b.config.Providers[provider] == nil {
 		b.config.Providers[provider] = &ProviderConfig{
@@ -96,15 +103,16 @@ func (b *ConfigBuilder) WithOrganizationDetails(provider, name, cloneDir, visibi
 		b.config.Providers[provider].Organizations,
 		org,
 	)
+
 	return b
 }
 
-// Build returns the constructed configuration
+// Build returns the constructed configuration.
 func (b *ConfigBuilder) Build() *UnifiedConfig {
 	return b.config
 }
 
-// BuildYAML returns the configuration as YAML content
+// BuildYAML returns the configuration as YAML content.
 func (b *ConfigBuilder) BuildYAML() string {
 	orgs := ""
 	for provider, cfg := range b.config.Providers {
@@ -112,6 +120,7 @@ func (b *ConfigBuilder) BuildYAML() string {
 		if cfg.Token != "" {
 			orgs += "    token: \"" + cfg.Token + "\"\n"
 		}
+
 		if len(cfg.Organizations) > 0 {
 			orgs += "    organizations:\n"
 			for _, org := range cfg.Organizations {

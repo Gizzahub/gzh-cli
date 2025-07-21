@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -15,7 +18,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// DockerNetworkManager manages Docker network profiles and configurations
+// DockerNetworkManager manages Docker network profiles and configurations.
 type DockerNetworkManager struct {
 	logger      *zap.Logger
 	profilesDir string
@@ -24,7 +27,7 @@ type DockerNetworkManager struct {
 	executor    *DockerCommandExecutor
 }
 
-// DockerNetworkProfile represents a Docker network configuration profile
+// DockerNetworkProfile represents a Docker network configuration profile.
 type DockerNetworkProfile struct {
 	Name        string                       `yaml:"name" json:"name"`
 	Description string                       `yaml:"description" json:"description"`
@@ -37,7 +40,7 @@ type DockerNetworkProfile struct {
 	Metadata    map[string]string            `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
 
-// DockerNetwork represents a Docker network configuration
+// DockerNetwork represents a Docker network configuration.
 type DockerNetwork struct {
 	Name       string            `yaml:"name" json:"name"`
 	Driver     string            `yaml:"driver" json:"driver"`
@@ -49,7 +52,7 @@ type DockerNetwork struct {
 	Attachable bool              `yaml:"attachable,omitempty" json:"attachable,omitempty"`
 }
 
-// ContainerNetwork represents container-specific network configuration
+// ContainerNetwork represents container-specific network configuration.
 type ContainerNetwork struct {
 	Image        string            `yaml:"image" json:"image"`
 	NetworkMode  string            `yaml:"network_mode,omitempty" json:"network_mode,omitempty"`
@@ -64,7 +67,7 @@ type ContainerNetwork struct {
 	NetworkAlias []string          `yaml:"network_alias,omitempty" json:"network_alias,omitempty"`
 }
 
-// DockerComposeConfig represents Docker Compose integration settings
+// DockerComposeConfig represents Docker Compose integration settings.
 type DockerComposeConfig struct {
 	File        string            `yaml:"file,omitempty" json:"file,omitempty"`
 	Project     string            `yaml:"project,omitempty" json:"project,omitempty"`
@@ -73,7 +76,7 @@ type DockerComposeConfig struct {
 	AutoApply   bool              `yaml:"auto_apply" json:"auto_apply"`
 }
 
-// DockerNetworkStatus represents the current status of Docker networks
+// DockerNetworkStatus represents the current status of Docker networks.
 type DockerNetworkStatus struct {
 	NetworkID  string            `json:"network_id"`
 	Name       string            `json:"name"`
@@ -86,14 +89,14 @@ type DockerNetworkStatus struct {
 	IPAM       *IPAMConfig       `json:"ipam"`
 }
 
-// IPAMConfig represents IPAM (IP Address Management) configuration
+// IPAMConfig represents IPAM (IP Address Management) configuration.
 type IPAMConfig struct {
 	Driver  string            `json:"driver"`
 	Config  []IPAMEntry       `json:"config"`
 	Options map[string]string `json:"options"`
 }
 
-// IPAMEntry represents a single IPAM configuration entry
+// IPAMEntry represents a single IPAM configuration entry.
 type IPAMEntry struct {
 	Subnet     string            `json:"subnet"`
 	Gateway    string            `json:"gateway"`
@@ -101,7 +104,7 @@ type IPAMEntry struct {
 	AuxAddress map[string]string `json:"aux_address,omitempty"`
 }
 
-// ContainerNetworkInfo represents network information for a running container
+// ContainerNetworkInfo represents network information for a running container.
 type ContainerNetworkInfo struct {
 	ContainerID string                      `json:"container_id"`
 	Name        string                      `json:"name"`
@@ -113,7 +116,7 @@ type ContainerNetworkInfo struct {
 	Labels      map[string]string           `json:"labels"`
 }
 
-// NetworkEndpoint represents a container's connection to a network
+// NetworkEndpoint represents a container's connection to a network.
 type NetworkEndpoint struct {
 	NetworkID           string            `json:"network_id"`
 	EndpointID          string            `json:"endpoint_id"`
@@ -128,7 +131,7 @@ type NetworkEndpoint struct {
 	Aliases             []string          `json:"aliases"`
 }
 
-// PortMapping represents container port mapping
+// PortMapping represents container port mapping.
 type PortMapping struct {
 	PrivatePort int    `json:"private_port"`
 	PublicPort  int    `json:"public_port,omitempty"`
@@ -136,14 +139,14 @@ type PortMapping struct {
 	IP          string `json:"ip,omitempty"`
 }
 
-// DockerCommandExecutor executes Docker commands with timeout and error handling
+// DockerCommandExecutor executes Docker commands with timeout and error handling.
 type DockerCommandExecutor struct {
 	logger *zap.Logger
 	cache  map[string]*DockerCommandResult
 	mutex  sync.RWMutex
 }
 
-// DockerCommandResult represents the result of a Docker command execution
+// DockerCommandResult represents the result of a Docker command execution.
 type DockerCommandResult struct {
 	Output   string
 	Error    string
@@ -152,7 +155,7 @@ type DockerCommandResult struct {
 	CachedAt time.Time
 }
 
-// NewDockerCommandExecutor creates a new Docker command executor
+// NewDockerCommandExecutor creates a new Docker command executor.
 func NewDockerCommandExecutor(logger *zap.Logger) *DockerCommandExecutor {
 	return &DockerCommandExecutor{
 		logger: logger,
@@ -160,7 +163,7 @@ func NewDockerCommandExecutor(logger *zap.Logger) *DockerCommandExecutor {
 	}
 }
 
-// ExecuteWithTimeout executes a Docker command with timeout
+// ExecuteWithTimeout executes a Docker command with timeout.
 func (dce *DockerCommandExecutor) ExecuteWithTimeout(ctx context.Context, command string, timeout time.Duration) (*DockerCommandResult, error) {
 	// Check cache first (for read-only commands)
 	if strings.HasPrefix(command, "docker inspect") || strings.HasPrefix(command, "docker network ls") || strings.HasPrefix(command, "docker ps") {
@@ -207,7 +210,7 @@ func (dce *DockerCommandExecutor) ExecuteWithTimeout(ctx context.Context, comman
 	return result, nil
 }
 
-// getCachedResult retrieves a cached command result if still valid
+// getCachedResult retrieves a cached command result if still valid.
 func (dce *DockerCommandExecutor) getCachedResult(command string) *DockerCommandResult {
 	dce.mutex.RLock()
 	defer dce.mutex.RUnlock()
@@ -222,7 +225,7 @@ func (dce *DockerCommandExecutor) getCachedResult(command string) *DockerCommand
 	return nil
 }
 
-// setCachedResult stores a command result in cache
+// setCachedResult stores a command result in cache.
 func (dce *DockerCommandExecutor) setCachedResult(command string, result *DockerCommandResult) {
 	dce.mutex.Lock()
 	defer dce.mutex.Unlock()
@@ -230,7 +233,7 @@ func (dce *DockerCommandExecutor) setCachedResult(command string, result *Docker
 	dce.cache[command] = result
 }
 
-// NewDockerNetworkManager creates a new Docker network manager
+// NewDockerNetworkManager creates a new Docker network manager.
 func NewDockerNetworkManager(logger *zap.Logger, configDir string) *DockerNetworkManager {
 	profilesDir := filepath.Join(configDir, "docker", "network_profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
@@ -247,7 +250,7 @@ func NewDockerNetworkManager(logger *zap.Logger, configDir string) *DockerNetwor
 	}
 }
 
-// CreateProfile creates a new Docker network profile
+// CreateProfile creates a new Docker network profile.
 func (dm *DockerNetworkManager) CreateProfile(profile *DockerNetworkProfile) error {
 	dm.mutex.Lock()
 	defer dm.mutex.Unlock()
@@ -268,6 +271,7 @@ func (dm *DockerNetworkManager) CreateProfile(profile *DockerNetworkProfile) err
 
 	// Save to file
 	profilePath := filepath.Join(dm.profilesDir, profile.Name+".yaml")
+
 	data, err := yaml.Marshal(profile)
 	if err != nil {
 		return fmt.Errorf("failed to marshal profile: %w", err)
@@ -287,7 +291,7 @@ func (dm *DockerNetworkManager) CreateProfile(profile *DockerNetworkProfile) err
 	return nil
 }
 
-// LoadProfile loads a Docker network profile
+// LoadProfile loads a Docker network profile.
 func (dm *DockerNetworkManager) LoadProfile(name string) (*DockerNetworkProfile, error) {
 	dm.mutex.RLock()
 	if cached, exists := dm.cache[name]; exists {
@@ -297,6 +301,7 @@ func (dm *DockerNetworkManager) LoadProfile(name string) (*DockerNetworkProfile,
 	dm.mutex.RUnlock()
 
 	profilePath := filepath.Join(dm.profilesDir, name+".yaml")
+
 	data, err := os.ReadFile(profilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read profile: %w", err)
@@ -315,7 +320,7 @@ func (dm *DockerNetworkManager) LoadProfile(name string) (*DockerNetworkProfile,
 	return &profile, nil
 }
 
-// ListProfiles lists all available Docker network profiles
+// ListProfiles lists all available Docker network profiles.
 func (dm *DockerNetworkManager) ListProfiles() ([]*DockerNetworkProfile, error) {
 	files, err := filepath.Glob(filepath.Join(dm.profilesDir, "*.yaml"))
 	if err != nil {
@@ -323,20 +328,23 @@ func (dm *DockerNetworkManager) ListProfiles() ([]*DockerNetworkProfile, error) 
 	}
 
 	var profiles []*DockerNetworkProfile
+
 	for _, file := range files {
 		name := strings.TrimSuffix(filepath.Base(file), ".yaml")
+
 		profile, err := dm.LoadProfile(name)
 		if err != nil {
 			dm.logger.Warn("Failed to load profile", zap.String("file", file), zap.Error(err))
 			continue
 		}
+
 		profiles = append(profiles, profile)
 	}
 
 	return profiles, nil
 }
 
-// ApplyProfile applies a Docker network profile
+// ApplyProfile applies a Docker network profile.
 func (dm *DockerNetworkManager) ApplyProfile(name string) error {
 	profile, err := dm.LoadProfile(name)
 	if err != nil {
@@ -370,15 +378,17 @@ func (dm *DockerNetworkManager) ApplyProfile(name string) error {
 	// Mark profile as active
 	profile.Active = true
 	profile.UpdatedAt = time.Now()
+
 	if err := dm.saveProfile(profile); err != nil {
 		dm.logger.Warn("Failed to update profile status", zap.Error(err))
 	}
 
 	dm.logger.Info("Successfully applied Docker network profile", zap.String("name", name))
+
 	return nil
 }
 
-// GetNetworkStatus returns the current status of Docker networks
+// GetNetworkStatus returns the current status of Docker networks.
 func (dm *DockerNetworkManager) GetNetworkStatus() ([]*DockerNetworkStatus, error) {
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(), "docker network ls --format json", 10*time.Second)
 	if err != nil {
@@ -386,6 +396,7 @@ func (dm *DockerNetworkManager) GetNetworkStatus() ([]*DockerNetworkStatus, erro
 	}
 
 	var networks []*DockerNetworkStatus
+
 	lines := strings.Split(strings.TrimSpace(result.Output), "\n")
 	for _, line := range lines {
 		if line == "" {
@@ -409,7 +420,7 @@ func (dm *DockerNetworkManager) GetNetworkStatus() ([]*DockerNetworkStatus, erro
 	return networks, nil
 }
 
-// GetContainerNetworkInfo returns network information for running containers
+// GetContainerNetworkInfo returns network information for running containers.
 func (dm *DockerNetworkManager) GetContainerNetworkInfo() ([]*ContainerNetworkInfo, error) {
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(), "docker ps --format json", 10*time.Second)
 	if err != nil {
@@ -417,6 +428,7 @@ func (dm *DockerNetworkManager) GetContainerNetworkInfo() ([]*ContainerNetworkIn
 	}
 
 	var containers []*ContainerNetworkInfo
+
 	lines := strings.Split(strings.TrimSpace(result.Output), "\n")
 	for _, line := range lines {
 		if line == "" {
@@ -440,7 +452,7 @@ func (dm *DockerNetworkManager) GetContainerNetworkInfo() ([]*ContainerNetworkIn
 	return containers, nil
 }
 
-// DetectDockerComposeProjects detects running Docker Compose projects
+// DetectDockerComposeProjects detects running Docker Compose projects.
 func (dm *DockerNetworkManager) DetectDockerComposeProjects() ([]string, error) {
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(), "docker ps --filter label=com.docker.compose.project --format '{{.Label \"com.docker.compose.project\"}}' | sort | uniq", 10*time.Second)
 	if err != nil {
@@ -448,7 +460,9 @@ func (dm *DockerNetworkManager) DetectDockerComposeProjects() ([]string, error) 
 	}
 
 	projects := strings.Split(strings.TrimSpace(result.Output), "\n")
+
 	var validProjects []string
+
 	for _, project := range projects {
 		if project != "" {
 			validProjects = append(validProjects, project)
@@ -458,7 +472,7 @@ func (dm *DockerNetworkManager) DetectDockerComposeProjects() ([]string, error) 
 	return validProjects, nil
 }
 
-// CreateProfileFromCompose creates a network profile from an existing Docker Compose file
+// CreateProfileFromCompose creates a network profile from an existing Docker Compose file.
 func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileName string) error {
 	if _, err := os.Stat(composePath); os.IsNotExist(err) {
 		return fmt.Errorf("Docker Compose file not found: %s", composePath)
@@ -506,6 +520,7 @@ func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileNam
 							if subnet, ok := configMap["subnet"].(string); ok {
 								dockerNet.Subnet = subnet
 							}
+
 							if gateway, ok := configMap["gateway"].(string); ok {
 								dockerNet.Gateway = gateway
 							}
@@ -552,7 +567,7 @@ func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileNam
 	return dm.CreateProfile(profile)
 }
 
-// validateNetworks validates network configurations
+// validateNetworks validates network configurations.
 func (dm *DockerNetworkManager) validateNetworks(networks map[string]*DockerNetwork) error {
 	for name, network := range networks {
 		if network.Name == "" {
@@ -566,12 +581,14 @@ func (dm *DockerNetworkManager) validateNetworks(networks map[string]*DockerNetw
 		// Validate driver
 		validDrivers := []string{"bridge", "host", "overlay", "macvlan", "none"}
 		valid := false
+
 		for _, driver := range validDrivers {
 			if network.Driver == driver {
 				valid = true
 				break
 			}
 		}
+
 		if !valid {
 			return fmt.Errorf("invalid network driver: %s", network.Driver)
 		}
@@ -580,7 +597,7 @@ func (dm *DockerNetworkManager) validateNetworks(networks map[string]*DockerNetw
 	return nil
 }
 
-// createNetwork creates a Docker network
+// createNetwork creates a Docker network.
 func (dm *DockerNetworkManager) createNetwork(name string, network *DockerNetwork) error {
 	// Check if network already exists
 	if result, err := dm.executor.ExecuteWithTimeout(context.Background(), fmt.Sprintf("docker network inspect %s", name), 5*time.Second); err == nil && result.ExitCode == 0 {
@@ -628,10 +645,11 @@ func (dm *DockerNetworkManager) createNetwork(name string, network *DockerNetwor
 	}
 
 	dm.logger.Info("Created Docker network", zap.String("name", name))
+
 	return nil
 }
 
-// applyContainerNetworkConfig applies network configuration to a container
+// applyContainerNetworkConfig applies network configuration to a container.
 func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string, config *ContainerNetwork) error {
 	// Check if container is already running
 	inspectCmd := fmt.Sprintf("docker inspect %s", containerName)
@@ -647,6 +665,7 @@ func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string
 		// Connect to specified networks
 		for _, network := range config.Networks {
 			connectCmd := fmt.Sprintf("docker network connect %s %s", network, containerName)
+
 			if config.NetworkAlias != nil && len(config.NetworkAlias) > 0 {
 				// Add network aliases
 				for _, alias := range config.NetworkAlias {
@@ -753,6 +772,7 @@ func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string
 	if len(config.Networks) > 1 {
 		for i := 1; i < len(config.Networks); i++ {
 			connectCmd := fmt.Sprintf("docker network connect %s %s", config.Networks[i], containerName)
+
 			connectResult, err := dm.executor.ExecuteWithTimeout(context.Background(), connectCmd, 10*time.Second)
 			if err != nil || connectResult.ExitCode != 0 {
 				dm.logger.Warn("Failed to connect container to additional network",
@@ -770,7 +790,7 @@ func (dm *DockerNetworkManager) applyContainerNetworkConfig(containerName string
 	return nil
 }
 
-// applyComposeConfig applies Docker Compose configuration
+// applyComposeConfig applies Docker Compose configuration.
 func (dm *DockerNetworkManager) applyComposeConfig(config *DockerComposeConfig) error {
 	if config.File == "" {
 		return fmt.Errorf("Docker Compose file not specified")
@@ -800,10 +820,11 @@ func (dm *DockerNetworkManager) applyComposeConfig(config *DockerComposeConfig) 
 	}
 
 	dm.logger.Info("Applied Docker Compose configuration", zap.String("file", config.File))
+
 	return nil
 }
 
-// getDetailedNetworkInfo gets detailed information about a specific network
+// getDetailedNetworkInfo gets detailed information about a specific network.
 func (dm *DockerNetworkManager) getDetailedNetworkInfo(networkName string) (*DockerNetworkStatus, error) {
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(), fmt.Sprintf("docker network inspect %s", networkName), 10*time.Second)
 	if err != nil {
@@ -848,7 +869,7 @@ func (dm *DockerNetworkManager) getDetailedNetworkInfo(networkName string) (*Doc
 	return status, nil
 }
 
-// getDetailedContainerNetworkInfo gets detailed network information for a container
+// getDetailedContainerNetworkInfo gets detailed network information for a container.
 func (dm *DockerNetworkManager) getDetailedContainerNetworkInfo(containerID string) (*ContainerNetworkInfo, error) {
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(), fmt.Sprintf("docker inspect %s", containerID), 10*time.Second)
 	if err != nil {
@@ -896,9 +917,10 @@ func (dm *DockerNetworkManager) getDetailedContainerNetworkInfo(containerID stri
 	return info, nil
 }
 
-// saveProfile saves a profile to disk
+// saveProfile saves a profile to disk.
 func (dm *DockerNetworkManager) saveProfile(profile *DockerNetworkProfile) error {
 	profilePath := filepath.Join(dm.profilesDir, profile.Name+".yaml")
+
 	data, err := yaml.Marshal(profile)
 	if err != nil {
 		return fmt.Errorf("failed to marshal profile: %w", err)
@@ -916,7 +938,7 @@ func (dm *DockerNetworkManager) saveProfile(profile *DockerNetworkProfile) error
 	return nil
 }
 
-// DeleteProfile deletes a Docker network profile
+// DeleteProfile deletes a Docker network profile.
 func (dm *DockerNetworkManager) DeleteProfile(name string) error {
 	dm.mutex.Lock()
 	defer dm.mutex.Unlock()
@@ -928,10 +950,11 @@ func (dm *DockerNetworkManager) DeleteProfile(name string) error {
 
 	delete(dm.cache, name)
 	dm.logger.Info("Deleted Docker network profile", zap.String("name", name))
+
 	return nil
 }
 
-// UpdateContainerNetwork updates the network configuration for a specific container in a profile
+// UpdateContainerNetwork updates the network configuration for a specific container in a profile.
 func (dm *DockerNetworkManager) UpdateContainerNetwork(profileName, containerName string, config *ContainerNetwork) error {
 	profile, err := dm.LoadProfile(profileName)
 	if err != nil {
@@ -942,6 +965,7 @@ func (dm *DockerNetworkManager) UpdateContainerNetwork(profileName, containerNam
 	if profile.Containers == nil {
 		profile.Containers = make(map[string]*ContainerNetwork)
 	}
+
 	profile.Containers[containerName] = config
 	profile.UpdatedAt = time.Now()
 
@@ -957,7 +981,7 @@ func (dm *DockerNetworkManager) UpdateContainerNetwork(profileName, containerNam
 	return nil
 }
 
-// RemoveContainerFromProfile removes a container from a profile
+// RemoveContainerFromProfile removes a container from a profile.
 func (dm *DockerNetworkManager) RemoveContainerFromProfile(profileName, containerName string) error {
 	profile, err := dm.LoadProfile(profileName)
 	if err != nil {
@@ -983,7 +1007,7 @@ func (dm *DockerNetworkManager) RemoveContainerFromProfile(profileName, containe
 	return nil
 }
 
-// ValidateContainerNetwork validates container network configuration
+// ValidateContainerNetwork validates container network configuration.
 func (dm *DockerNetworkManager) ValidateContainerNetwork(config *ContainerNetwork) error {
 	if config.Image == "" {
 		return fmt.Errorf("container image cannot be empty")
@@ -993,12 +1017,14 @@ func (dm *DockerNetworkManager) ValidateContainerNetwork(config *ContainerNetwor
 	if config.NetworkMode != "" {
 		validModes := []string{"bridge", "host", "none", "container", "custom"}
 		valid := false
+
 		for _, mode := range validModes {
 			if config.NetworkMode == mode || strings.HasPrefix(config.NetworkMode, "container:") {
 				valid = true
 				break
 			}
 		}
+
 		if !valid {
 			return fmt.Errorf("invalid network mode: %s", config.NetworkMode)
 		}
@@ -1033,7 +1059,7 @@ func (dm *DockerNetworkManager) ValidateContainerNetwork(config *ContainerNetwor
 	return nil
 }
 
-// GetContainerStatus gets the current status of a container
+// GetContainerStatus gets the current status of a container.
 func (dm *DockerNetworkManager) GetContainerStatus(containerName string) (*ContainerNetworkInfo, error) {
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(),
 		fmt.Sprintf("docker inspect %s", containerName), 10*time.Second)
@@ -1044,7 +1070,7 @@ func (dm *DockerNetworkManager) GetContainerStatus(containerName string) (*Conta
 	return dm.getDetailedContainerNetworkInfo(containerName)
 }
 
-// DisconnectContainerFromNetwork disconnects a container from a network
+// DisconnectContainerFromNetwork disconnects a container from a network.
 func (dm *DockerNetworkManager) DisconnectContainerFromNetwork(containerName, networkName string) error {
 	disconnectCmd := fmt.Sprintf("docker network disconnect %s %s", networkName, containerName)
 	result, err := dm.executor.ExecuteWithTimeout(context.Background(), disconnectCmd, 10*time.Second)
@@ -1060,7 +1086,7 @@ func (dm *DockerNetworkManager) DisconnectContainerFromNetwork(containerName, ne
 	return nil
 }
 
-// CloneProfile creates a copy of an existing profile with a new name
+// CloneProfile creates a copy of an existing profile with a new name.
 func (dm *DockerNetworkManager) CloneProfile(sourceName, targetName string) error {
 	sourceProfile, err := dm.LoadProfile(sourceName)
 	if err != nil {
@@ -1092,6 +1118,7 @@ func (dm *DockerNetworkManager) CloneProfile(sourceName, targetName string) erro
 				targetProfile.Networks[name].Options[k] = v
 			}
 		}
+
 		if network.Labels != nil {
 			targetProfile.Networks[name].Labels = make(map[string]string)
 			for k, v := range network.Labels {
@@ -1126,6 +1153,7 @@ func (dm *DockerNetworkManager) CloneProfile(sourceName, targetName string) erro
 	for k, v := range sourceProfile.Metadata {
 		targetProfile.Metadata[k] = v
 	}
+
 	targetProfile.Metadata["cloned_from"] = sourceName
 	targetProfile.Metadata["cloned_at"] = time.Now().Format(time.RFC3339)
 

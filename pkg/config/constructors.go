@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -7,7 +10,7 @@ import (
 	"time"
 )
 
-// FileSystemInterface for dependency injection
+// FileSystemInterface for dependency injection.
 type FileSystemInterface interface {
 	ReadFile(filename string) ([]byte, error)
 	WriteFile(filename string, data []byte, perm int) error
@@ -16,14 +19,14 @@ type FileSystemInterface interface {
 	MkdirAll(path string, perm int) error
 }
 
-// FileInfo interface for file information
+// FileInfo interface for file information.
 type FileInfo interface {
 	IsDir() bool
 	ModTime() time.Time
 	Size() int64
 }
 
-// Logger interface for dependency injection
+// Logger interface for dependency injection.
 type Logger interface {
 	Debug(msg string, args ...interface{})
 	Info(msg string, args ...interface{})
@@ -31,7 +34,7 @@ type Logger interface {
 	Error(msg string, args ...interface{})
 }
 
-// configLoaderImpl implements the ConfigLoader interface
+// configLoaderImpl implements the ConfigLoader interface.
 type configLoaderImpl struct {
 	fileSystem  FileSystemInterface
 	parser      ConfigParser
@@ -40,7 +43,7 @@ type configLoaderImpl struct {
 	searchPaths []string
 }
 
-// ConfigLoaderConfig holds configuration for the config loader
+// ConfigLoaderConfig holds configuration for the config loader.
 type ConfigLoaderConfig struct {
 	SearchPaths    []string
 	EnableCache    bool
@@ -48,7 +51,7 @@ type ConfigLoaderConfig struct {
 	ValidateOnLoad bool
 }
 
-// DefaultConfigLoaderConfig returns default configuration
+// DefaultConfigLoaderConfig returns default configuration.
 func DefaultConfigLoaderConfig() *ConfigLoaderConfig {
 	return &ConfigLoaderConfig{
 		SearchPaths: []string{
@@ -67,7 +70,7 @@ func DefaultConfigLoaderConfig() *ConfigLoaderConfig {
 	}
 }
 
-// NewConfigLoader creates a new config loader with dependencies
+// NewConfigLoader creates a new config loader with dependencies.
 func NewConfigLoader(
 	config *ConfigLoaderConfig,
 	fileSystem FileSystemInterface,
@@ -88,7 +91,7 @@ func NewConfigLoader(
 	}
 }
 
-// LoadConfig implements ConfigLoader interface
+// LoadConfig implements ConfigLoader interface.
 func (l *configLoaderImpl) LoadConfig(ctx context.Context) (*Config, error) {
 	l.logger.Debug("Loading configuration from search paths")
 
@@ -103,7 +106,7 @@ func (l *configLoaderImpl) LoadConfig(ctx context.Context) (*Config, error) {
 	return nil, fmt.Errorf("no configuration file found in search paths")
 }
 
-// LoadConfigFromFile implements ConfigLoader interface
+// LoadConfigFromFile implements ConfigLoader interface.
 func (l *configLoaderImpl) LoadConfigFromFile(ctx context.Context, filename string) (*Config, error) {
 	l.logger.Debug("Loading configuration from file", "file", filename)
 
@@ -124,7 +127,7 @@ func (l *configLoaderImpl) LoadConfigFromFile(ctx context.Context, filename stri
 	return config, nil
 }
 
-// LoadConfigFromReader implements ConfigLoader interface
+// LoadConfigFromReader implements ConfigLoader interface.
 func (l *configLoaderImpl) LoadConfigFromReader(ctx context.Context, reader io.Reader) (*Config, error) {
 	l.logger.Debug("Loading configuration from reader")
 
@@ -136,29 +139,29 @@ func (l *configLoaderImpl) LoadConfigFromReader(ctx context.Context, reader io.R
 	return l.parser.ParseConfig(ctx, data)
 }
 
-// GetSearchPaths implements ConfigLoader interface
+// GetSearchPaths implements ConfigLoader interface.
 func (l *configLoaderImpl) GetSearchPaths() []string {
 	return l.searchPaths
 }
 
-// SetSearchPaths implements ConfigLoader interface
+// SetSearchPaths implements ConfigLoader interface.
 func (l *configLoaderImpl) SetSearchPaths(paths []string) {
 	l.searchPaths = paths
 }
 
-// expandPath expands environment variables and home directory
+// expandPath expands environment variables and home directory.
 func (l *configLoaderImpl) expandPath(path string) string {
 	// Implementation would expand ~ and environment variables
 	return path
 }
 
-// configValidatorImpl implements the ConfigValidator interface
+// configValidatorImpl implements the ConfigValidator interface.
 type configValidatorImpl struct {
 	schemaValidator SchemaValidator
 	logger          Logger
 }
 
-// NewConfigValidator creates a new config validator with dependencies
+// NewConfigValidator creates a new config validator with dependencies.
 func NewConfigValidator(schemaValidator SchemaValidator, logger Logger) ConfigValidator {
 	return &configValidatorImpl{
 		schemaValidator: schemaValidator,
@@ -166,14 +169,14 @@ func NewConfigValidator(schemaValidator SchemaValidator, logger Logger) ConfigVa
 	}
 }
 
-// ValidateConfig implements ConfigValidator interface
+// ValidateConfig implements ConfigValidator interface.
 func (v *configValidatorImpl) ValidateConfig(ctx context.Context, config *Config) error {
 	v.logger.Debug("Validating configuration")
 
 	return v.schemaValidator.ValidateStructure(ctx, config)
 }
 
-// ValidateConfigFile implements ConfigValidator interface
+// ValidateConfigFile implements ConfigValidator interface.
 func (v *configValidatorImpl) ValidateConfigFile(ctx context.Context, filename string) error {
 	v.logger.Debug("Validating configuration file", "file", filename)
 
@@ -181,7 +184,7 @@ func (v *configValidatorImpl) ValidateConfigFile(ctx context.Context, filename s
 	return nil
 }
 
-// GetValidationErrors implements ConfigValidator interface
+// GetValidationErrors implements ConfigValidator interface.
 func (v *configValidatorImpl) GetValidationErrors(ctx context.Context, config *Config) []ValidationError {
 	v.logger.Debug("Getting validation errors")
 
@@ -189,24 +192,24 @@ func (v *configValidatorImpl) GetValidationErrors(ctx context.Context, config *C
 	return nil
 }
 
-// IsValid implements ConfigValidator interface
+// IsValid implements ConfigValidator interface.
 func (v *configValidatorImpl) IsValid(ctx context.Context, config *Config) bool {
 	return v.ValidateConfig(ctx, config) == nil
 }
 
-// configParserImpl implements the ConfigParser interface
+// configParserImpl implements the ConfigParser interface.
 type configParserImpl struct {
 	logger Logger
 }
 
-// NewConfigParser creates a new config parser with dependencies
+// NewConfigParser creates a new config parser with dependencies.
 func NewConfigParser(logger Logger) ConfigParser {
 	return &configParserImpl{
 		logger: logger,
 	}
 }
 
-// ParseConfig implements ConfigParser interface
+// ParseConfig implements ConfigParser interface.
 func (p *configParserImpl) ParseConfig(ctx context.Context, data []byte) (*Config, error) {
 	p.logger.Debug("Parsing configuration data")
 
@@ -214,7 +217,7 @@ func (p *configParserImpl) ParseConfig(ctx context.Context, data []byte) (*Confi
 	return &Config{}, nil
 }
 
-// ParseConfigWithFormat implements ConfigParser interface
+// ParseConfigWithFormat implements ConfigParser interface.
 func (p *configParserImpl) ParseConfigWithFormat(ctx context.Context, data []byte, format string) (*Config, error) {
 	p.logger.Debug("Parsing configuration with format", "format", format)
 
@@ -222,28 +225,29 @@ func (p *configParserImpl) ParseConfigWithFormat(ctx context.Context, data []byt
 	return &Config{}, nil
 }
 
-// GetSupportedFormats implements ConfigParser interface
+// GetSupportedFormats implements ConfigParser interface.
 func (p *configParserImpl) GetSupportedFormats() []string {
 	return []string{"yaml", "yml", "json"}
 }
 
-// IsFormatSupported implements ConfigParser interface
+// IsFormatSupported implements ConfigParser interface.
 func (p *configParserImpl) IsFormatSupported(format string) bool {
 	for _, supported := range p.GetSupportedFormats() {
 		if format == supported {
 			return true
 		}
 	}
+
 	return false
 }
 
-// providerManagerImpl implements the ProviderManager interface
+// providerManagerImpl implements the ProviderManager interface.
 type providerManagerImpl struct {
 	config *Config
 	logger Logger
 }
 
-// NewProviderManager creates a new provider manager with dependencies
+// NewProviderManager creates a new provider manager with dependencies.
 func NewProviderManager(config *Config, logger Logger) ProviderManager {
 	return &providerManagerImpl{
 		config: config,
@@ -251,14 +255,14 @@ func NewProviderManager(config *Config, logger Logger) ProviderManager {
 	}
 }
 
-// GetProviders implements ProviderManager interface
+// GetProviders implements ProviderManager interface.
 func (m *providerManagerImpl) GetProviders(ctx context.Context) (map[string]Provider, error) {
 	m.logger.Debug("Getting all providers")
 
 	return m.config.Providers, nil
 }
 
-// GetProvider implements ProviderManager interface
+// GetProvider implements ProviderManager interface.
 func (m *providerManagerImpl) GetProvider(ctx context.Context, name string) (*Provider, error) {
 	m.logger.Debug("Getting provider", "name", name)
 
@@ -270,16 +274,17 @@ func (m *providerManagerImpl) GetProvider(ctx context.Context, name string) (*Pr
 	return &provider, nil
 }
 
-// CreateProviderCloner implements ProviderManager interface
+// CreateProviderCloner implements ProviderManager interface.
 func (m *providerManagerImpl) CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
 	m.logger.Debug("Creating provider cloner", "provider", providerName)
 
 	// Use factory pattern for provider creation
 	factory := NewProviderFactory(nil, m.logger)
+
 	return factory.CreateCloner(ctx, providerName, token)
 }
 
-// ValidateProvider implements ProviderManager interface
+// ValidateProvider implements ProviderManager interface.
 func (m *providerManagerImpl) ValidateProvider(ctx context.Context, provider *Provider) error {
 	m.logger.Debug("Validating provider")
 
@@ -287,12 +292,12 @@ func (m *providerManagerImpl) ValidateProvider(ctx context.Context, provider *Pr
 	return nil
 }
 
-// GetSupportedProviders implements ProviderManager interface
+// GetSupportedProviders implements ProviderManager interface.
 func (m *providerManagerImpl) GetSupportedProviders() []string {
 	return []string{"github", "gitlab", "gitea"}
 }
 
-// configServiceImpl implements the unified ConfigService interface
+// configServiceImpl implements the unified ConfigService interface.
 type configServiceImpl struct {
 	ConfigLoader
 	ConfigValidator
@@ -304,14 +309,14 @@ type configServiceImpl struct {
 	IntegrationService
 }
 
-// ConfigServiceConfig holds configuration for the config service
+// ConfigServiceConfig holds configuration for the config service.
 type ConfigServiceConfig struct {
 	Loader        *ConfigLoaderConfig
 	CacheSize     int
 	EnableMetrics bool
 }
 
-// DefaultConfigServiceConfig returns default configuration
+// DefaultConfigServiceConfig returns default configuration.
 func DefaultConfigServiceConfig() *ConfigServiceConfig {
 	return &ConfigServiceConfig{
 		Loader:        DefaultConfigLoaderConfig(),
@@ -320,7 +325,7 @@ func DefaultConfigServiceConfig() *ConfigServiceConfig {
 	}
 }
 
-// NewConfigService creates a new config service with all dependencies
+// NewConfigService creates a new config service with all dependencies.
 func NewConfigService(
 	config *ConfigServiceConfig,
 	fileSystem FileSystemInterface,
@@ -342,6 +347,7 @@ func NewConfigService(
 	configData, err := loader.LoadConfig(context.Background())
 	if err != nil {
 		logger.Warn("Failed to load config during service creation", "error", err)
+
 		configData = &Config{} // Use empty config as fallback
 	}
 
@@ -349,7 +355,9 @@ func NewConfigService(
 
 	// Other services would be created similarly
 	var directoryResolver DirectoryResolverInterface
+
 	var filterService FilterService
+
 	var integrationService IntegrationService
 
 	return &configServiceImpl{
@@ -364,13 +372,13 @@ func NewConfigService(
 	}
 }
 
-// ServiceDependencies holds all the dependencies needed for config services
+// ServiceDependencies holds all the dependencies needed for config services.
 type ServiceDependencies struct {
 	FileSystem FileSystemInterface
 	Logger     Logger
 }
 
-// NewServiceDependencies creates a default set of service dependencies
+// NewServiceDependencies creates a default set of service dependencies.
 func NewServiceDependencies(fileSystem FileSystemInterface, logger Logger) *ServiceDependencies {
 	return &ServiceDependencies{
 		FileSystem: fileSystem,

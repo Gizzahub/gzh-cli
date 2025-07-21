@@ -1,6 +1,9 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package fixtures
 
-// SampleBulkCloneConfig provides a sample bulk-clone configuration for testing
+// SampleBulkCloneConfig provides a sample bulk-clone configuration for testing.
 const SampleBulkCloneConfig = `version: "1.0"
 default_provider: github
 providers:
@@ -22,7 +25,7 @@ providers:
         strategy: pull
 `
 
-// MinimalConfig provides a minimal valid configuration
+// MinimalConfig provides a minimal valid configuration.
 const MinimalConfig = `version: "1.0"
 providers:
   github:
@@ -31,7 +34,7 @@ providers:
       - name: test-org
 `
 
-// InvalidConfig provides an invalid configuration for error testing
+// InvalidConfig provides an invalid configuration for error testing.
 const InvalidConfig = `version: ""
 providers:
   github:
@@ -39,7 +42,7 @@ providers:
       - name: test-org
 `
 
-// ComplexConfig provides a complex configuration with all features
+// ComplexConfig provides a complex configuration with all features.
 const ComplexConfig = `version: "1.0"
 default_provider: github
 providers:
@@ -73,7 +76,7 @@ providers:
         clone_dir: ./repos/gitea/gitea-org
 `
 
-// RepoConfigSample provides a sample repository configuration
+// RepoConfigSample provides a sample repository configuration.
 const RepoConfigSample = `name: test-repo
 description: Test repository configuration
 visibility: public

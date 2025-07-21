@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sshconfig
 
 import (
@@ -6,8 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/spf13/cobra"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 type sshConfigValidateOptions struct {
@@ -19,6 +23,7 @@ type sshConfigValidateOptions struct {
 
 func defaultSSHConfigValidateOptions() *sshConfigValidateOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &sshConfigValidateOptions{
 		sshConfig: filepath.Join(homeDir, ".ssh", "config"),
 		keyDir:    filepath.Join(homeDir, ".ssh"),
@@ -81,6 +86,7 @@ func (o *sshConfigValidateOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("❌ SSH configuration validation failed:")
+
 	for _, issue := range issues {
 		fmt.Printf("  • %s\n", issue)
 	}
@@ -134,6 +140,7 @@ func (o *sshConfigValidateOptions) validateSSHConfig(cfg *bulkclone.BulkCloneCon
 		if cfg.Default.Github.OrgName != "" {
 			issues = append(issues, o.validateProviderSSH("github", cfg.Default.Github.OrgName, sshConfigText)...)
 		}
+
 		if cfg.Default.Gitlab.GroupName != "" {
 			issues = append(issues, o.validateProviderSSH("gitlab", cfg.Default.Gitlab.GroupName, sshConfigText)...)
 		}
@@ -185,6 +192,7 @@ func (o *sshConfigValidateOptions) validateProviderSSH(provider, orgName, sshCon
 					}
 				}
 			}
+
 			break
 		}
 	}

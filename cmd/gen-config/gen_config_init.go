@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package genconfig
 
 import (
@@ -59,6 +62,7 @@ Examples:
 
 	// Add --no-interactive flag as the opposite of --interactive
 	cmd.Flags().BoolVar(&o.interactive, "no-interactive", false, "Skip interactive wizard")
+
 	cmd.Flag("no-interactive").NoOptDefVal = "false"
 
 	return cmd
@@ -71,7 +75,7 @@ func (o *genConfigInitOptions) run(_ *cobra.Command, _ []string) error {
 	if _, err := os.Stat(o.outputFile); err == nil {
 		if o.interactive {
 			if !o.confirmOverwrite() {
-				fmt.Println("Configuration generation cancelled.")
+				fmt.Println("Configuration generation canceled.")
 				return nil
 			}
 		} else {
@@ -96,6 +100,7 @@ func (o *genConfigInitOptions) run(_ *cobra.Command, _ []string) error {
 	}
 
 	fmt.Printf("✅ Configuration file generated successfully: %s\n", o.outputFile)
+
 	if o.interactive {
 		fmt.Println("\nNext steps:")
 		fmt.Println("1. Review and edit the configuration file as needed")
@@ -111,9 +116,11 @@ func (o *genConfigInitOptions) run(_ *cobra.Command, _ []string) error {
 
 func (o *genConfigInitOptions) confirmOverwrite() bool {
 	fmt.Printf("Configuration file '%s' already exists. Overwrite? (y/N): ", o.outputFile)
+
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	response := strings.ToLower(strings.TrimSpace(scanner.Text()))
+
 	return response == "y" || response == "yes"
 }
 
@@ -133,14 +140,18 @@ func (o *genConfigInitOptions) runInteractiveWizard() ConfigData {
 	// Ask for default protocol
 	fmt.Print("Default protocol (https/ssh) [https]: ")
 	scanner.Scan()
+
 	protocol := strings.TrimSpace(scanner.Text())
 	if protocol == "" {
 		protocol = "https"
 	}
+
 	if protocol != "https" && protocol != "ssh" && protocol != "http" {
 		fmt.Println("⚠️  Invalid protocol, using https")
+
 		protocol = "https"
 	}
+
 	config.Protocol = protocol
 
 	fmt.Println()
@@ -153,6 +164,7 @@ func (o *genConfigInitOptions) runInteractiveWizard() ConfigData {
 	for {
 		fmt.Printf("Add a repository root? (Y/n): ")
 		scanner.Scan()
+
 		if strings.ToLower(strings.TrimSpace(scanner.Text())) == "n" {
 			break
 		}
@@ -173,10 +185,12 @@ func (o *genConfigInitOptions) runInteractiveWizard() ConfigData {
 	for {
 		fmt.Print("Add ignore pattern (empty to finish): ")
 		scanner.Scan()
+
 		pattern := strings.TrimSpace(scanner.Text())
 		if pattern == "" {
 			break
 		}
+
 		config.Ignores = append(config.Ignores, pattern)
 		fmt.Printf("✅ Added ignore pattern: %s\n", pattern)
 	}
@@ -190,6 +204,7 @@ func (o *genConfigInitOptions) promptForRepoRoot(scanner *bufio.Scanner, default
 	// Provider
 	fmt.Print("Provider (github/gitlab/gitea): ")
 	scanner.Scan()
+
 	repoRoot.Provider = strings.ToLower(strings.TrimSpace(scanner.Text()))
 	if repoRoot.Provider == "" {
 		fmt.Println("⚠️  Provider is required")
@@ -198,14 +213,17 @@ func (o *genConfigInitOptions) promptForRepoRoot(scanner *bufio.Scanner, default
 
 	// Organization/Group name
 	var prompt string
+
 	switch repoRoot.Provider {
 	case "gitlab":
 		prompt = "GitLab group name: "
 	default:
 		prompt = "Organization name: "
 	}
+
 	fmt.Print(prompt)
 	scanner.Scan()
+
 	repoRoot.OrgName = strings.TrimSpace(scanner.Text())
 	if repoRoot.OrgName == "" {
 		fmt.Println("⚠️  Organization/group name is required")
@@ -215,6 +233,7 @@ func (o *genConfigInitOptions) promptForRepoRoot(scanner *bufio.Scanner, default
 	// Root path
 	fmt.Printf("Target directory [$HOME/%s]: ", repoRoot.OrgName)
 	scanner.Scan()
+
 	repoRoot.RootPath = strings.TrimSpace(scanner.Text())
 	if repoRoot.RootPath == "" {
 		repoRoot.RootPath = fmt.Sprintf("$HOME/%s", repoRoot.OrgName)
@@ -223,10 +242,12 @@ func (o *genConfigInitOptions) promptForRepoRoot(scanner *bufio.Scanner, default
 	// Protocol
 	fmt.Printf("Protocol for this organization (https/ssh) [%s]: ", defaultProtocol)
 	scanner.Scan()
+
 	protocol := strings.TrimSpace(scanner.Text())
 	if protocol == "" {
 		protocol = defaultProtocol
 	}
+
 	repoRoot.Protocol = protocol
 
 	return repoRoot
@@ -276,6 +297,7 @@ func (o *genConfigInitOptions) generateYAMLContent(config ConfigData) string {
 	// Repository roots
 	content.WriteString("# Repository configurations\n")
 	content.WriteString("repo_roots:\n")
+
 	for _, root := range config.RepoRoots {
 		content.WriteString(fmt.Sprintf("  - root_path: \"%s\"\n", root.RootPath))
 		content.WriteString(fmt.Sprintf("    provider: \"%s\"\n", root.Provider))
@@ -288,6 +310,7 @@ func (o *genConfigInitOptions) generateYAMLContent(config ConfigData) string {
 	if len(config.Ignores) > 0 {
 		content.WriteString("# Ignore patterns for repositories\n")
 		content.WriteString("ignore_names:\n")
+
 		for _, pattern := range config.Ignores {
 			content.WriteString(fmt.Sprintf("  - \"%s\"\n", pattern))
 		}

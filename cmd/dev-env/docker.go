@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -23,6 +26,7 @@ type dockerOptions struct {
 
 func defaultDockerOptions() *dockerOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &dockerOptions{
 		configPath: filepath.Join(homeDir, ".docker", "config.json"),
 		storePath:  filepath.Join(homeDir, ".gz", "docker-configs"),
@@ -194,9 +198,11 @@ func (o *dockerOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✅ Docker config saved as '%s'\n", o.name)
+
 	if o.description != "" {
 		fmt.Printf("   Description: %s\n", o.description)
 	}
+
 	fmt.Printf("   Saved to: %s\n", savedPath)
 
 	return nil
@@ -216,6 +222,7 @@ func (o *dockerOptions) runLoad(_ *cobra.Command, args []string) error {
 			if err := o.copyFile(o.configPath, backupPath); err != nil {
 				return fmt.Errorf("failed to backup current Docker config: %w", err)
 			}
+
 			fmt.Printf("📦 Current Docker config backed up to: %s\n", backupPath)
 		}
 	}
@@ -257,6 +264,7 @@ func (o *dockerOptions) runList(_ *cobra.Command, args []string) error {
 
 	// Filter for .json files
 	var configs []string
+
 	for _, entry := range entries {
 		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
 			name := strings.TrimSuffix(entry.Name(), ".json")
@@ -275,9 +283,11 @@ func (o *dockerOptions) runList(_ *cobra.Command, args []string) error {
 	for _, name := range configs {
 		metadata := o.loadMetadata(name)
 		fmt.Printf("🐳 %s\n", name)
+
 		if metadata.Description != "" {
 			fmt.Printf("   Description: %s\n", metadata.Description)
 		}
+
 		if !metadata.SavedAt.IsZero() {
 			fmt.Printf("   Saved: %s\n", metadata.SavedAt.Format("2006-01-02 15:04:05"))
 		}
@@ -314,16 +324,19 @@ func (o *dockerOptions) saveMetadata() error {
 	}
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
+
 	file, err := os.Create(metadataPath)
 	if err != nil {
 		return err
 	}
+
 	defer file.Close()
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
 		fmt.Fprintf(file, "description=%s\n", metadata.Description)
 	}
+
 	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
 	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
 
@@ -334,6 +347,7 @@ func (o *dockerOptions) loadMetadata(name string) dockerMetadata {
 	metadata := dockerMetadata{Name: name}
 
 	metadataPath := filepath.Join(o.storePath, name+".meta")
+
 	content, err := os.ReadFile(metadataPath)
 	if err != nil {
 		return metadata
@@ -394,7 +408,7 @@ func (o *dockerOptions) copyFile(src, dst string) error {
 	return os.Chmod(dst, sourceInfo.Mode())
 }
 
-// dockerConfig represents the structure of Docker's config.json
+// dockerConfig represents the structure of Docker's config.json.
 type dockerConfig struct {
 	Auths             map[string]interface{} `json:"auths,omitempty"`
 	CredsStore        string                 `json:"credsStore,omitempty"`
@@ -418,6 +432,7 @@ func (o *dockerOptions) displayConfigInfo(configPath string) error {
 	// Display authentication information
 	if len(config.Auths) > 0 {
 		fmt.Printf("   Registries: %d configured\n", len(config.Auths))
+
 		for registry := range config.Auths {
 			fmt.Printf("     - %s\n", registry)
 		}

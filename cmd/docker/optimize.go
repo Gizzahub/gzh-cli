@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package docker
 
 import (
@@ -16,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// OptimizeCmd represents the optimize command
+// OptimizeCmd represents the optimize command.
 var OptimizeCmd = &cobra.Command{
 	Use:   "optimize",
 	Short: "이미지 최적화 및 크기 분석",
@@ -89,7 +92,7 @@ func init() {
 	OptimizeCmd.Flags().StringSliceVar(&slimOptions, "slim-options", []string{}, "docker-slim 옵션")
 }
 
-// OptimizationAnalysis represents image analysis results
+// OptimizationAnalysis represents image analysis results.
 type OptimizationAnalysis struct {
 	ImageInfo      ImageInfo          `json:"image_info"`
 	LayerAnalysis  []LayerInfo        `json:"layer_analysis"`
@@ -222,7 +225,7 @@ type PerformanceMetrics struct {
 	CacheHitRatio float64       `json:"cache_hit_ratio"`
 }
 
-// OptimizationResult represents the optimization process result
+// OptimizationResult represents the optimization process result.
 type OptimizationResult struct {
 	Analysis       OptimizationAnalysis `json:"analysis"`
 	OriginalSize   int64                `json:"original_size"`
@@ -257,6 +260,7 @@ func runOptimize(cmd *cobra.Command, args []string) {
 
 	// 1. Analyze current image
 	fmt.Printf("🔍 이미지 분석 중...\n")
+
 	analysis, err := analyzeImage(optimizeImage)
 	if err != nil {
 		fmt.Printf("❌ 이미지 분석 실패: %v\n", err)
@@ -268,6 +272,7 @@ func runOptimize(cmd *cobra.Command, args []string) {
 
 	// 2. Generate optimization suggestions
 	fmt.Printf("💡 최적화 제안 생성 중...\n")
+
 	suggestions := generateSuggestions(analysis)
 
 	// 3. If analyze-only, just show suggestions and exit
@@ -280,11 +285,13 @@ func runOptimize(cmd *cobra.Command, args []string) {
 				fmt.Printf("⚠️ 보고서 저장 실패: %v\n", err)
 			}
 		}
+
 		return
 	}
 
 	// 4. Apply optimizations
 	fmt.Printf("⚙️ 최적화 적용 중...\n")
+
 	result, err := applyOptimizations(optimizeImage, analysis, suggestions)
 	if err != nil {
 		fmt.Printf("❌ 최적화 실패: %v\n", err)
@@ -315,6 +322,7 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	if err != nil {
 		return nil, fmt.Errorf("이미지 정보 조회 실패: %w", err)
 	}
+
 	analysis.ImageInfo = *imageInfo
 
 	// Analyze layers
@@ -322,6 +330,7 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	if err != nil {
 		return nil, fmt.Errorf("레이어 분석 실패: %w", err)
 	}
+
 	analysis.LayerAnalysis = layers
 
 	// Calculate size breakdown
@@ -332,8 +341,10 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	wasteAnalysis, err := analyzeWaste(imageName, layers)
 	if err != nil {
 		fmt.Printf("⚠️ 낭비 분석 실패: %v\n", err)
+
 		wasteAnalysis = &WasteAnalysis{}
 	}
+
 	analysis.WasteAnalysis = *wasteAnalysis
 
 	// Get base image recommendations
@@ -353,6 +364,7 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 
 func getOptimizeImageInfo(imageName string) (*ImageInfo, error) {
 	cmd := exec.Command("docker", "image", "inspect", imageName)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -427,16 +439,19 @@ func getOptimizeImageInfo(imageName string) (*ImageInfo, error) {
 
 func analyzeLayers(imageName string) ([]LayerInfo, error) {
 	cmd := exec.Command("docker", "history", "--no-trunc", "--format", "{{.ID}}\t{{.Size}}\t{{.CreatedBy}}\t{{.CreatedAt}}", imageName)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
 
 	var layers []LayerInfo
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 
 	for scanner.Scan() {
 		line := scanner.Text()
+
 		parts := strings.Split(line, "\t")
 		if len(parts) < 4 {
 			continue
@@ -444,7 +459,9 @@ func analyzeLayers(imageName string) ([]LayerInfo, error) {
 
 		// Parse size
 		sizeStr := parts[1]
+
 		var size int64
+
 		if sizeStr != "0B" && sizeStr != "<missing>" {
 			size = parseSize(sizeStr)
 		}
@@ -516,6 +533,7 @@ func calculateSizeBreakdown(imageInfo *ImageInfo, layers []LayerInfo) *SizeBreak
 	}
 
 	var totalLayerSize int64
+
 	for _, layer := range layers {
 		breakdown.LayerSizes[layer.ID] = layer.Size
 		totalLayerSize += layer.Size
@@ -649,10 +667,12 @@ func calculatePerformanceMetrics(imageInfo *ImageInfo, layers []LayerInfo) *Perf
 
 	if len(layers) > 0 {
 		var totalSize int64
+
 		maxSize := int64(0)
 
 		for _, layer := range layers {
 			totalSize += layer.Size
+
 			if layer.Size > maxSize {
 				maxSize = layer.Size
 			}
@@ -785,6 +805,7 @@ func displaySuggestions(suggestions []Suggestion) {
 
 	for _, priority := range priorityOrder {
 		var prioritySuggestions []Suggestion
+
 		for _, suggestion := range suggestions {
 			if suggestion.Priority == priority {
 				prioritySuggestions = append(prioritySuggestions, suggestion)
@@ -807,16 +828,21 @@ func displaySuggestions(suggestions []Suggestion) {
 		for i, suggestion := range prioritySuggestions {
 			fmt.Printf("  %d. %s\n", i+1, suggestion.Title)
 			fmt.Printf("     %s\n", suggestion.Description)
+
 			if suggestion.SizeReduction > 0 {
 				fmt.Printf("     💾 크기 절약: %s\n", formatBytes(suggestion.SizeReduction))
 			}
+
 			fmt.Printf("     🔧 구현: %s\n", suggestion.Implementation)
+
 			if suggestion.DockerfileChange != "" {
 				fmt.Printf("     📝 Dockerfile 변경:\n")
+
 				for _, line := range strings.Split(suggestion.DockerfileChange, "\n") {
 					fmt.Printf("        %s\n", line)
 				}
 			}
+
 			fmt.Printf("\n")
 		}
 	}
@@ -837,6 +863,7 @@ func applyOptimizations(imageName string, analysis *OptimizationAnalysis, sugges
 		if err := generateOptimizedDockerfile(analysis, suggestions, outputDockerfile); err != nil {
 			return nil, fmt.Errorf("최적화된 Dockerfile 생성 실패: %w", err)
 		}
+
 		result.GeneratedFiles = append(result.GeneratedFiles, outputDockerfile)
 		fmt.Printf("📝 최적화된 Dockerfile 생성: %s\n", outputDockerfile)
 	}
@@ -895,11 +922,13 @@ func generateOptimizedDockerfile(analysis *OptimizationAnalysis, suggestions []S
 
 	// Add optimization suggestions as comments and implementations
 	dockerfile.WriteString("# Optimization strategies applied:\n")
+
 	for _, suggestion := range suggestions {
 		if suggestion.Priority == "high" || suggestion.Priority == "critical" {
 			dockerfile.WriteString(fmt.Sprintf("# - %s: %s\n", suggestion.Title, suggestion.Description))
 		}
 	}
+
 	dockerfile.WriteString("\n")
 
 	// Security: Create non-root user
@@ -987,6 +1016,7 @@ func displayOptimizationResults(result *OptimizationResult) {
 
 	if len(result.GeneratedFiles) > 0 {
 		fmt.Printf("📝 생성된 파일:\n")
+
 		for _, file := range result.GeneratedFiles {
 			fmt.Printf("   - %s\n", file)
 		}
@@ -1023,5 +1053,6 @@ func saveOptimizationReport(analysis *OptimizationAnalysis, suggestions []Sugges
 	}
 
 	fmt.Printf("📄 최적화 보고서 저장: %s\n", filename)
+
 	return nil
 }

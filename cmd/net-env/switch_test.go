@@ -184,7 +184,7 @@ func TestExecuteScriptsEmpty(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// Mock implementations for network configuration functions
+// Mock implementations for network configuration functions.
 func mockConnectVPN(name, vpnType, configFile string) error {
 	// Mock implementation for testing
 	return nil

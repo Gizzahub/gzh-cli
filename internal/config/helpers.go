@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -10,9 +13,8 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
-// LoadCommandConfig provides a unified way to load configuration for commands
-// It follows the standard precedence: explicit path > env var > default locations
-func LoadCommandConfig(ctx context.Context, configPath string, configType string) (*config.UnifiedConfig, error) {
+// It follows the standard precedence: explicit path > env var > default locations.
+func LoadCommandConfig(ctx context.Context, configPath, configType string) (*config.UnifiedConfig, error) {
 	// 1. Use explicit config path if provided
 	if configPath != "" {
 		return loadConfigFromPath(ctx, configPath)
@@ -57,10 +59,11 @@ func LoadCommandConfig(ctx context.Context, configPath string, configType string
 	}, nil
 }
 
-// loadConfigFromPath loads configuration from a specific path
+// loadConfigFromPath loads configuration from a specific path.
 func loadConfigFromPath(ctx context.Context, path string) (*config.UnifiedConfig, error) {
 	// Use unified config loader
 	loader := config.NewUnifiedConfigLoader()
+
 	result, err := loader.LoadConfigFromPath(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config from %s: %w", path, err)
@@ -73,16 +76,17 @@ func loadConfigFromPath(ctx context.Context, path string) (*config.UnifiedConfig
 	return result.Config, nil
 }
 
-// GetConfiguredProvider returns the provider configuration for the specified provider type
+// GetConfiguredProvider returns the provider configuration for the specified provider type.
 func GetConfiguredProvider(cfg *config.UnifiedConfig, providerType string) (*config.ProviderConfig, error) {
 	provider, exists := cfg.Providers[providerType]
 	if !exists {
 		return nil, fmt.Errorf("provider '%s' not configured", providerType)
 	}
+
 	return provider, nil
 }
 
-// GetConfiguredOrganization returns the organization configuration for the specified provider and org
+// GetConfiguredOrganization returns the organization configuration for the specified provider and org.
 func GetConfiguredOrganization(cfg *config.UnifiedConfig, providerType, orgName string) (*config.GitTarget, error) {
 	provider, err := GetConfiguredProvider(cfg, providerType)
 	if err != nil {
@@ -102,8 +106,7 @@ func GetConfiguredOrganization(cfg *config.UnifiedConfig, providerType, orgName 
 	return nil, fmt.Errorf("organization '%s' not found in %s provider configuration", orgName, providerType)
 }
 
-// MergeConfigWithFlags merges CLI flags with configuration file values
-// CLI flags take precedence over config file values
+// CLI flags take precedence over config file values.
 func MergeConfigWithFlags(cfg *config.UnifiedConfig, flags map[string]interface{}) {
 	// This is a placeholder for flag merging logic
 	// Each command would pass its flags here to override config values

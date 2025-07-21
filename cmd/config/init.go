@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -9,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newInitCmd creates the config init subcommand
+// newInitCmd creates the config init subcommand.
 func newInitCmd() *cobra.Command {
 	var (
 		outputFile string
@@ -51,21 +54,21 @@ Examples:
 	return cmd
 }
 
-// ConfigTemplate represents a configuration template
+// ConfigTemplate represents a configuration template.
 type ConfigTemplate struct {
 	Version         string
 	DefaultProvider string
 	Providers       map[string]ProviderTemplate
 }
 
-// ProviderTemplate represents a provider configuration template
+// ProviderTemplate represents a provider configuration template.
 type ProviderTemplate struct {
 	Token  string
 	Orgs   []TargetTemplate
 	Groups []TargetTemplate
 }
 
-// TargetTemplate represents an organization or group template
+// TargetTemplate represents an organization or group template.
 type TargetTemplate struct {
 	Name       string
 	Visibility string
@@ -77,8 +80,8 @@ type TargetTemplate struct {
 	Recursive  bool
 }
 
-// initializeConfig runs the interactive configuration initialization
-func initializeConfig(outputFile string, force bool, minimal bool) error {
+// initializeConfig runs the interactive configuration initialization.
+func initializeConfig(outputFile string, force, minimal bool) error {
 	// Check if file exists and force flag
 	if _, err := os.Stat(outputFile); err == nil && !force {
 		return fmt.Errorf("file %s already exists. Use --force to overwrite", outputFile)
@@ -94,7 +97,7 @@ func initializeConfig(outputFile string, force bool, minimal bool) error {
 	return createInteractiveConfig(outputFile)
 }
 
-// createMinimalConfig creates a minimal configuration file
+// createMinimalConfig creates a minimal configuration file.
 func createMinimalConfig(outputFile string) error {
 	template := ConfigTemplate{
 		Version:         "1.0.0",
@@ -130,7 +133,7 @@ func createMinimalConfig(outputFile string) error {
 	return nil
 }
 
-// createInteractiveConfig creates configuration through interactive prompts
+// createInteractiveConfig creates configuration through interactive prompts.
 func createInteractiveConfig(outputFile string) error {
 	reader := bufio.NewReader(os.Stdin)
 	template := ConfigTemplate{
@@ -181,16 +184,18 @@ func createInteractiveConfig(outputFile string) error {
 	fmt.Println()
 	fmt.Println("Next steps:")
 	fmt.Println("1. Set your authentication tokens:")
+
 	for provider := range template.Providers {
 		fmt.Printf("   export %s_TOKEN=\"your_%s_token\"\n", strings.ToUpper(provider), provider)
 	}
+
 	fmt.Println("2. Validate the configuration: gz config validate")
 	fmt.Println("3. Test with dry run: gz bulk-clone --dry-run --use-gzh-config")
 
 	return nil
 }
 
-// configureProvider configures a specific provider
+// configureProvider configures a specific provider.
 func configureProvider(reader *bufio.Reader, provider string) ProviderTemplate {
 	template := ProviderTemplate{
 		Token: fmt.Sprintf("${%s_TOKEN}", strings.ToUpper(provider)),
@@ -199,6 +204,7 @@ func configureProvider(reader *bufio.Reader, provider string) ProviderTemplate {
 	// Determine if it's organization-based or group-based
 	isGroupBased := provider == "gitlab"
 	entityType := "organization"
+
 	if isGroupBased {
 		entityType = "group"
 	}
@@ -244,25 +250,30 @@ func configureProvider(reader *bufio.Reader, provider string) ProviderTemplate {
 	return template
 }
 
-// promptString prompts for a string input
+// promptString prompts for a string input.
 func promptString(reader *bufio.Reader, prompt string) string {
 	fmt.Printf("%s: ", prompt)
+
 	input, _ := reader.ReadString('\n')
+
 	return strings.TrimSpace(input)
 }
 
-// promptWithDefault prompts for input with a default value
+// promptWithDefault prompts for input with a default value.
 func promptWithDefault(reader *bufio.Reader, prompt, defaultValue string) string {
 	fmt.Printf("%s [%s]: ", prompt, defaultValue)
+
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
+
 	if input == "" {
 		return defaultValue
 	}
+
 	return input
 }
 
-// promptYesNo prompts for a yes/no answer
+// promptYesNo prompts for a yes/no answer.
 func promptYesNo(reader *bufio.Reader, prompt string, defaultValue bool) bool {
 	defaultStr := "y/N"
 	if defaultValue {
@@ -270,6 +281,7 @@ func promptYesNo(reader *bufio.Reader, prompt string, defaultValue bool) bool {
 	}
 
 	fmt.Printf("%s [%s]: ", prompt, defaultStr)
+
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(strings.ToLower(input))
 
@@ -280,7 +292,7 @@ func promptYesNo(reader *bufio.Reader, prompt string, defaultValue bool) bool {
 	return input == "y" || input == "yes"
 }
 
-// generateConfigContent generates the YAML configuration content
+// generateConfigContent generates the YAML configuration content.
 func generateConfigContent(template ConfigTemplate) string {
 	var content strings.Builder
 
@@ -299,6 +311,7 @@ func generateConfigContent(template ConfigTemplate) string {
 
 		if len(provider.Orgs) > 0 {
 			content.WriteString("    orgs:\n")
+
 			for _, org := range provider.Orgs {
 				writeTarget(&content, org, "      ")
 			}
@@ -306,6 +319,7 @@ func generateConfigContent(template ConfigTemplate) string {
 
 		if len(provider.Groups) > 0 {
 			content.WriteString("    groups:\n")
+
 			for _, group := range provider.Groups {
 				writeTarget(&content, group, "      ")
 			}
@@ -317,30 +331,31 @@ func generateConfigContent(template ConfigTemplate) string {
 	return content.String()
 }
 
-// writeTarget writes a target (org/group) configuration
+// writeTarget writes a target (org/group) configuration.
 func writeTarget(content *strings.Builder, target TargetTemplate, indent string) {
-	content.WriteString(fmt.Sprintf("%s- name: \"%s\"\n", indent, target.Name))
-	content.WriteString(fmt.Sprintf("%s  visibility: \"%s\"\n", indent, target.Visibility))
-	content.WriteString(fmt.Sprintf("%s  clone_dir: \"%s\"\n", indent, target.CloneDir))
+	fmt.Fprintf(content, "%s- name: \"%s\"\n", indent, target.Name)
+	fmt.Fprintf(content, "%s  visibility: \"%s\"\n", indent, target.Visibility)
+	fmt.Fprintf(content, "%s  clone_dir: \"%s\"\n", indent, target.CloneDir)
 
 	if target.Match != "" {
-		content.WriteString(fmt.Sprintf("%s  match: \"%s\"\n", indent, target.Match))
+		fmt.Fprintf(content, "%s  match: \"%s\"\n", indent, target.Match)
 	}
 
 	if len(target.Exclude) > 0 {
-		content.WriteString(fmt.Sprintf("%s  exclude:\n", indent))
+		fmt.Fprintf(content, "%s  exclude:\n", indent)
+
 		for _, pattern := range target.Exclude {
-			content.WriteString(fmt.Sprintf("%s    - \"%s\"\n", indent, pattern))
+			fmt.Fprintf(content, "%s    - \"%s\"\n", indent, pattern)
 		}
 	}
 
-	content.WriteString(fmt.Sprintf("%s  strategy: \"%s\"\n", indent, target.Strategy))
+	fmt.Fprintf(content, "%s  strategy: \"%s\"\n", indent, target.Strategy)
 
 	if target.Flatten {
-		content.WriteString(fmt.Sprintf("%s  flatten: true\n", indent))
+		fmt.Fprintf(content, "%s  flatten: true\n", indent)
 	}
 
 	if target.Recursive {
-		content.WriteString(fmt.Sprintf("%s  recursive: true\n", indent))
+		fmt.Fprintf(content, "%s  recursive: true\n", indent)
 	}
 }

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
@@ -6,8 +9,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/spf13/cobra"
+
+	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 func newBulkCloneStateCmd() *cobra.Command {
@@ -57,6 +61,7 @@ func newBulkCloneStateShowCmd() *cobra.Command {
 
 func newBulkCloneStateCleanCmd() *cobra.Command {
 	var provider, organization string
+
 	var all bool
 
 	cmd := &cobra.Command{
@@ -81,6 +86,7 @@ func newBulkCloneStateCleanCmd() *cobra.Command {
 
 func runStateList(cmd *cobra.Command, args []string) error {
 	stateManager := bulkclonepkg.NewStateManager("")
+
 	states, err := stateManager.ListStates()
 	if err != nil {
 		return fmt.Errorf("failed to list states: %w", err)
@@ -111,11 +117,13 @@ func runStateList(cmd *cobra.Command, args []string) error {
 	}
 
 	w.Flush()
+
 	return nil
 }
 
 func runStateShow(provider, organization string) error {
 	stateManager := bulkclonepkg.NewStateManager("")
+
 	state, err := stateManager.LoadState(provider, organization)
 	if err != nil {
 		return fmt.Errorf("failed to load state: %w", err)
@@ -135,6 +143,7 @@ func runStateShow(provider, organization string) error {
 
 	// Progress information
 	completed, failed, pending := state.GetProgress()
+
 	fmt.Printf("\nProgress\n")
 	fmt.Printf("--------\n")
 	fmt.Printf("Total Repositories: %d\n", state.TotalRepositories)
@@ -153,6 +162,7 @@ func runStateShow(provider, organization string) error {
 	if len(state.FailedRepos) > 0 {
 		fmt.Printf("\nFailed Repositories\n")
 		fmt.Printf("-------------------\n")
+
 		for _, failed := range state.FailedRepos {
 			fmt.Printf("• %s: %s (attempts: %d)\n", failed.Name, failed.Error, failed.Attempts)
 		}

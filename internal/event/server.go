@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package event
 
 import (
@@ -9,7 +12,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-// Server represents a GitHub webhook server
+// Server represents a GitHub webhook server.
 type Server struct {
 	processor github.EventProcessor
 	logger    github.Logger
@@ -18,9 +21,10 @@ type Server struct {
 	secret    string
 }
 
-// NewServer creates a new event server
+// NewServer creates a new event server.
 func NewServer(host string, port int, secret string, storage github.EventStorage, logger github.Logger) *Server {
 	processor := github.NewEventProcessor(storage, logger)
+
 	return &Server{
 		processor: processor,
 		logger:    logger,
@@ -30,7 +34,7 @@ func NewServer(host string, port int, secret string, storage github.EventStorage
 	}
 }
 
-// Start starts the webhook server
+// Start starts the webhook server.
 func (s *Server) Start(ctx context.Context) error {
 	s.logger.Info("Starting GitHub webhook server", "host", s.host, "port", s.port)
 

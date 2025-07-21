@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -12,18 +15,19 @@ import (
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
-// validateConfig performs configuration validation
-func validateConfig(configFile string, strict bool, verbose bool) error {
+// validateConfig performs configuration validation.
+func validateConfig(configFile string, strict, verbose bool) error {
 	return validateConfigWithEnv(configFile, strict, verbose, env.NewOSEnvironment())
 }
 
-// validateConfigWithEnv performs configuration validation with a specific environment
-func validateConfigWithEnv(configFile string, strict bool, verbose bool, environment env.Environment) error {
+// validateConfigWithEnv performs configuration validation with a specific environment.
+func validateConfigWithEnv(configFile string, strict, verbose bool, environment env.Environment) error {
 	ctx := context.Background()
 
 	// Step 1: Determine config file path
 	if configFile == "" {
 		var err error
+
 		configFile, err = findConfigFileWithEnv(environment)
 		if err != nil {
 			return fmt.Errorf("failed to find configuration file: %w", err)
@@ -46,6 +50,7 @@ func validateConfigWithEnv(configFile string, strict bool, verbose bool, environ
 	// Step 3: Create configuration service with enhanced validation
 	serviceOptions := configservice.DefaultConfigServiceOptions()
 	serviceOptions.ValidationEnabled = true
+
 	service, err := configservice.NewConfigService(serviceOptions)
 	if err != nil {
 		return fmt.Errorf("failed to create configuration service: %w", err)
@@ -59,6 +64,7 @@ func validateConfigWithEnv(configFile string, strict bool, verbose bool, environ
 
 	if verbose {
 		fmt.Println("✓ Configuration loading and startup validation successful")
+
 		if config != nil {
 			fmt.Printf("  - Version: %s\n", config.Version)
 			fmt.Printf("  - Default Provider: %s\n", config.DefaultProvider)
@@ -97,12 +103,12 @@ func validateConfigWithEnv(configFile string, strict bool, verbose bool, environ
 	return nil
 }
 
-// findConfigFile searches for configuration file in standard locations
+// findConfigFile searches for configuration file in standard locations.
 func findConfigFile() (string, error) {
 	return findConfigFileWithEnv(env.NewOSEnvironment())
 }
 
-// findConfigFileWithEnv searches for configuration file using provided environment
+// findConfigFileWithEnv searches for configuration file using provided environment.
 func findConfigFileWithEnv(environment env.Environment) (string, error) {
 	homeDir := environment.Get(env.CommonEnvironmentKeys.HomeDir)
 	searchPaths := []string{
@@ -126,7 +132,7 @@ func findConfigFileWithEnv(environment env.Environment) (string, error) {
 	return "", fmt.Errorf("no configuration file found in standard locations: %v", searchPaths)
 }
 
-// validateFileAccess checks if the file can be read
+// validateFileAccess checks if the file can be read.
 func validateFileAccess(configFile string) error {
 	// Check if file exists
 	info, err := os.Stat(configFile)
@@ -134,6 +140,7 @@ func validateFileAccess(configFile string) error {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("configuration file does not exist: %s", configFile)
 		}
+
 		return fmt.Errorf("failed to access file: %w", err)
 	}
 
@@ -147,17 +154,18 @@ func validateFileAccess(configFile string) error {
 	if err != nil {
 		return fmt.Errorf("cannot read file: %w", err)
 	}
+
 	file.Close()
 
 	return nil
 }
 
-// performLegacyValidations runs legacy validation checks for backwards compatibility
+// performLegacyValidations runs legacy validation checks for backwards compatibility.
 func performLegacyValidations(configFile string, verbose bool) error {
 	return performLegacyValidationsWithEnv(configFile, verbose, env.NewOSEnvironment())
 }
 
-// performLegacyValidationsWithEnv runs legacy validation checks with provided environment
+// performLegacyValidationsWithEnv runs legacy validation checks with provided environment.
 func performLegacyValidationsWithEnv(configFile string, verbose bool, environment env.Environment) error {
 	// Parse configuration using legacy parser
 	config, err := configpkg.ParseYAMLFile(configFile)
@@ -168,14 +176,15 @@ func performLegacyValidationsWithEnv(configFile string, verbose bool, environmen
 	return performAdditionalValidationsWithEnv(config, true, verbose, environment)
 }
 
-// performAdditionalValidations runs additional validation checks
-func performAdditionalValidations(config *configpkg.Config, strict bool, verbose bool) error {
+// performAdditionalValidations runs additional validation checks.
+func performAdditionalValidations(config *configpkg.Config, strict, verbose bool) error {
 	return performAdditionalValidationsWithEnv(config, strict, verbose, env.NewOSEnvironment())
 }
 
-// performAdditionalValidationsWithEnv runs additional validation checks with provided environment
-func performAdditionalValidationsWithEnv(config *configpkg.Config, strict bool, verbose bool, environment env.Environment) error {
+// performAdditionalValidationsWithEnv runs additional validation checks with provided environment.
+func performAdditionalValidationsWithEnv(config *configpkg.Config, strict, verbose bool, environment env.Environment) error {
 	var warnings []string
+
 	var errors []string
 
 	// Validate provider configurations
@@ -224,7 +233,7 @@ func performAdditionalValidationsWithEnv(config *configpkg.Config, strict bool, 
 	return nil
 }
 
-// validateOrganization validates an organization configuration
+// validateOrganization validates an organization configuration.
 func validateOrganization(providerName string, index int, org configpkg.GitTarget, strict bool) error {
 	prefix := fmt.Sprintf("provider '%s' org[%d]", providerName, index)
 
@@ -252,7 +261,7 @@ func validateOrganization(providerName string, index int, org configpkg.GitTarge
 	return nil
 }
 
-// validateGroup validates a group configuration (same as organization for now)
+// validateGroup validates a group configuration (same as organization for now).
 func validateGroup(providerName string, index int, group configpkg.GitTarget, strict bool) error {
 	prefix := fmt.Sprintf("provider '%s' group[%d]", providerName, index)
 
@@ -278,7 +287,7 @@ func validateGroup(providerName string, index int, group configpkg.GitTarget, st
 	return nil
 }
 
-// validateCloneDirectory validates clone directory path
+// validateCloneDirectory validates clone directory path.
 func validateCloneDirectory(cloneDir string, strict bool) error {
 	// Expand environment variables for validation
 	expandedDir := os.ExpandEnv(cloneDir)
@@ -299,12 +308,12 @@ func validateCloneDirectory(cloneDir string, strict bool) error {
 	return nil
 }
 
-// validateEnvironmentVariables checks if required environment variables are accessible
+// validateEnvironmentVariables checks if required environment variables are accessible.
 func validateEnvironmentVariables(config *configpkg.Config, verbose bool) error {
 	return validateEnvironmentVariablesWithEnv(config, verbose, env.NewOSEnvironment())
 }
 
-// validateEnvironmentVariablesWithEnv checks if required environment variables are accessible using provided environment
+// validateEnvironmentVariablesWithEnv checks if required environment variables are accessible using provided environment.
 func validateEnvironmentVariablesWithEnv(config *configpkg.Config, verbose bool, environment env.Environment) error {
 	var missingVars []string
 
@@ -348,12 +357,12 @@ func validateEnvironmentVariablesWithEnv(config *configpkg.Config, verbose bool,
 	return nil
 }
 
-// checkPathEnvironmentVariables checks environment variables in path strings
+// checkPathEnvironmentVariables checks environment variables in path strings.
 func checkPathEnvironmentVariables(path string) error {
 	return checkPathEnvironmentVariablesWithEnv(path, env.NewOSEnvironment())
 }
 
-// checkPathEnvironmentVariablesWithEnv checks environment variables in path strings using provided environment
+// checkPathEnvironmentVariablesWithEnv checks environment variables in path strings using provided environment.
 func checkPathEnvironmentVariablesWithEnv(path string, environment env.Environment) error {
 	if path == "" {
 		return nil
@@ -361,17 +370,20 @@ func checkPathEnvironmentVariablesWithEnv(path string, environment env.Environme
 
 	// Simple check for ${VAR} patterns
 	start := 0
+
 	for {
 		startIdx := strings.Index(path[start:], "${")
 		if startIdx == -1 {
 			break
 		}
+
 		startIdx += start
 
 		endIdx := strings.Index(path[startIdx:], "}")
 		if endIdx == -1 {
 			break
 		}
+
 		endIdx += startIdx
 
 		varExpr := path[startIdx+2 : endIdx]
@@ -392,7 +404,7 @@ func checkPathEnvironmentVariablesWithEnv(path string, environment env.Environme
 	return nil
 }
 
-// printUnifiedConfigurationSummary prints a summary of the unified configuration
+// printUnifiedConfigurationSummary prints a summary of the unified configuration.
 func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
 	fmt.Println("\n📋 Unified Configuration Summary:")
 	fmt.Printf("  Version: %s\n", config.Version)
@@ -401,15 +413,19 @@ func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
 
 	if config.Global != nil {
 		fmt.Println("\n  🌐 Global Settings:")
+
 		if config.Global.CloneBaseDir != "" {
 			fmt.Printf("    Clone Base Dir: %s\n", config.Global.CloneBaseDir)
 		}
+
 		if config.Global.DefaultStrategy != "" {
 			fmt.Printf("    Default Strategy: %s\n", config.Global.DefaultStrategy)
 		}
+
 		if config.Global.DefaultVisibility != "" {
 			fmt.Printf("    Default Visibility: %s\n", config.Global.DefaultVisibility)
 		}
+
 		if config.Global.Concurrency != nil {
 			fmt.Printf("    Concurrency: clone=%d, update=%d, api=%d\n",
 				config.Global.Concurrency.CloneWorkers,
@@ -421,6 +437,7 @@ func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
 	for providerName, provider := range config.Providers {
 		fmt.Printf("\n  📌 Provider: %s\n", providerName)
 		fmt.Printf("    Organizations: %d\n", len(provider.Organizations))
+
 		if provider.APIURL != "" {
 			fmt.Printf("    API URL: %s\n", provider.APIURL)
 		}
@@ -428,6 +445,7 @@ func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
 		totalOrgs := len(provider.Organizations)
 		if totalOrgs > 0 {
 			fmt.Printf("    Total Organizations: %d\n", totalOrgs)
+
 			for _, org := range provider.Organizations {
 				fmt.Printf("      - %s (%s)\n", org.Name, org.CloneDir)
 			}
@@ -437,13 +455,14 @@ func printUnifiedConfigurationSummary(config *configpkg.UnifiedConfig) {
 	if config.Migration != nil {
 		fmt.Println("\n  🔄 Migration Info:")
 		fmt.Printf("    Source Format: %s\n", config.Migration.SourceFormat)
+
 		if !config.Migration.MigrationDate.IsZero() {
 			fmt.Printf("    Migration Date: %s\n", config.Migration.MigrationDate.Format("2006-01-02 15:04:05"))
 		}
 	}
 }
 
-// printConfigurationSummary prints a summary of the legacy configuration
+// printConfigurationSummary prints a summary of the legacy configuration.
 func printConfigurationSummary(config *configpkg.Config) {
 	fmt.Println("\n📋 Legacy Configuration Summary:")
 	fmt.Printf("  Version: %s\n", config.Version)

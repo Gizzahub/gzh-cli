@@ -1,10 +1,13 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package docker
 
 import (
 	"github.com/spf13/cobra"
 )
 
-// DockerCmd represents the docker command
+// DockerCmd represents the docker command.
 var DockerCmd = &cobra.Command{
 	Use:   "docker",
 	Short: "컨테이너 이미지 관리 및 자동화",

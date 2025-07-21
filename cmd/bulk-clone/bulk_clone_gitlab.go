@@ -1,11 +1,15 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	gitlabpkg "github.com/gizzahub/gzh-manager-go/pkg/gitlab"
-	"github.com/spf13/cobra"
 )
 
 type bulkCloneGitlabOptions struct {
@@ -79,7 +83,9 @@ func (o *bulkCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 
 	// Use resumable clone if requested or if parallel/worker pool is enabled
 	ctx := cmd.Context()
+
 	var err error
+
 	if o.resume || o.parallel > 1 {
 		err = gitlabpkg.RefreshAllResumable(ctx, o.targetPath, o.groupName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 	} else {

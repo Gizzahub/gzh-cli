@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package utils
 
 import (
@@ -5,30 +8,32 @@ import (
 	"path/filepath"
 )
 
-// FileExists checks if a file exists
+// FileExists checks if a file exists.
 func FileExists(filePath string) bool {
 	_, err := os.Stat(filePath)
 	return !os.IsNotExist(err)
 }
 
-// DirExists checks if a directory exists
+// DirExists checks if a directory exists.
 func DirExists(dirPath string) bool {
 	info, err := os.Stat(dirPath)
 	if err != nil {
 		return false
 	}
+
 	return info.IsDir()
 }
 
-// EnsureDir creates a directory if it doesn't exist
+// EnsureDir creates a directory if it doesn't exist.
 func EnsureDir(dir string) error {
 	if !DirExists(dir) {
 		return os.MkdirAll(dir, 0o755)
 	}
+
 	return nil
 }
 
-// GetDirectories returns a list of directory names in the given path
+// GetDirectories returns a list of directory names in the given path.
 func GetDirectories(path string) ([]string, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
@@ -36,6 +41,7 @@ func GetDirectories(path string) ([]string, error) {
 	}
 
 	var dirs []string
+
 	for _, entry := range entries {
 		if entry.IsDir() {
 			dirs = append(dirs, entry.Name())
@@ -45,7 +51,7 @@ func GetDirectories(path string) ([]string, error) {
 	return dirs, nil
 }
 
-// GetFiles returns a list of file names in the given path
+// GetFiles returns a list of file names in the given path.
 func GetFiles(path string) ([]string, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
@@ -53,6 +59,7 @@ func GetFiles(path string) ([]string, error) {
 	}
 
 	var files []string
+
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			files = append(files, entry.Name())
@@ -62,7 +69,7 @@ func GetFiles(path string) ([]string, error) {
 	return files, nil
 }
 
-// FindFileInParents searches for a file in the current directory and parent directories
+// FindFileInParents searches for a file in the current directory and parent directories.
 func FindFileInParents(startPath, filename string) (string, error) {
 	current := startPath
 
@@ -77,6 +84,7 @@ func FindFileInParents(startPath, filename string) (string, error) {
 			// Reached root
 			break
 		}
+
 		current = parent
 	}
 

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package api
 
 import (
@@ -7,7 +10,7 @@ import (
 	"time"
 )
 
-// BatchProcessor provides efficient batch processing for API requests
+// BatchProcessor provides efficient batch processing for API requests.
 type BatchProcessor struct {
 	maxBatchSize  int
 	flushInterval time.Duration
@@ -19,7 +22,7 @@ type BatchProcessor struct {
 	wg            sync.WaitGroup
 }
 
-// BatchStats tracks batch processing performance metrics
+// BatchStats tracks batch processing performance metrics.
 type BatchStats struct {
 	TotalRequests    int64
 	TotalBatches     int64
@@ -28,21 +31,21 @@ type BatchStats struct {
 	LastProcessed    time.Time
 }
 
-// BatchRequest represents a single request in a batch
+// BatchRequest represents a single request in a batch.
 type BatchRequest struct {
 	ID       string
 	Data     interface{}
 	Response chan BatchResponse
 }
 
-// BatchResponse contains the result of a batch request
+// BatchResponse contains the result of a batch request.
 type BatchResponse struct {
 	ID    string
 	Data  interface{}
 	Error error
 }
 
-// BatchProcessor handles batching of similar requests
+// BatchProcessor handles batching of similar requests.
 type pendingBatch struct {
 	requests   []*BatchRequest
 	timer      *time.Timer
@@ -51,17 +54,17 @@ type pendingBatch struct {
 	lastUpdate time.Time
 }
 
-// BatchFunc processes a batch of requests and returns responses
+// BatchFunc processes a batch of requests and returns responses.
 type BatchFunc func(ctx context.Context, requests []*BatchRequest) []BatchResponse
 
-// BatchConfig configures batch processing behavior
+// BatchConfig configures batch processing behavior.
 type BatchConfig struct {
 	MaxBatchSize  int           // Maximum number of requests per batch
 	FlushInterval time.Duration // Maximum time to wait before processing batch
 	Concurrency   int           // Number of concurrent batch processors
 }
 
-// DefaultBatchConfig returns reasonable default configuration
+// DefaultBatchConfig returns reasonable default configuration.
 func DefaultBatchConfig() BatchConfig {
 	return BatchConfig{
 		MaxBatchSize:  50,
@@ -70,7 +73,7 @@ func DefaultBatchConfig() BatchConfig {
 	}
 }
 
-// NewBatchProcessor creates a new batch processor with the given configuration
+// NewBatchProcessor creates a new batch processor with the given configuration.
 func NewBatchProcessor(config BatchConfig) *BatchProcessor {
 	bp := &BatchProcessor{
 		maxBatchSize:  config.MaxBatchSize,
@@ -89,7 +92,7 @@ func NewBatchProcessor(config BatchConfig) *BatchProcessor {
 	return bp
 }
 
-// Add adds a request to the appropriate batch
+// Add adds a request to the appropriate batch.
 func (bp *BatchProcessor) Add(ctx context.Context, batchKey string, request *BatchRequest, processor BatchFunc) error {
 	bp.mu.Lock()
 	defer bp.mu.Unlock()
@@ -132,14 +135,16 @@ func (bp *BatchProcessor) Add(ctx context.Context, batchKey string, request *Bat
 	return nil
 }
 
-// flushBatch processes a batch of requests
+// flushBatch processes a batch of requests.
 func (bp *BatchProcessor) flushBatch(batchKey string) {
 	bp.mu.Lock()
+
 	batch, exists := bp.batches[batchKey]
 	if !exists {
 		bp.mu.Unlock()
 		return
 	}
+
 	delete(bp.batches, batchKey)
 	bp.mu.Unlock()
 
@@ -155,6 +160,7 @@ func (bp *BatchProcessor) flushBatch(batchKey string) {
 
 	// Update batch stats
 	bp.mu.Lock()
+
 	bp.stats.TotalBatches++
 	if bp.stats.TotalBatches > 0 {
 		bp.stats.AverageBatchSize = float64(bp.stats.TotalRequests) / float64(bp.stats.TotalBatches)
@@ -184,11 +190,12 @@ func (bp *BatchProcessor) flushBatch(batchKey string) {
 				Error: fmt.Errorf("no response found for request ID: %s", req.ID),
 			}
 		}
+
 		close(req.Response)
 	}
 }
 
-// processBatches is a worker goroutine that processes batches
+// processBatches is a worker goroutine that processes batches.
 func (bp *BatchProcessor) processBatches() {
 	defer bp.wg.Done()
 
@@ -205,7 +212,7 @@ func (bp *BatchProcessor) processBatches() {
 	}
 }
 
-// flushExpiredBatches flushes batches that have been waiting too long
+// flushExpiredBatches flushes batches that have been waiting too long.
 func (bp *BatchProcessor) flushExpiredBatches() {
 	bp.mu.RLock()
 	expiredKeys := make([]string, 0)
@@ -226,14 +233,15 @@ func (bp *BatchProcessor) flushExpiredBatches() {
 	}
 }
 
-// GetStats returns current batch processing statistics
+// GetStats returns current batch processing statistics.
 func (bp *BatchProcessor) GetStats() BatchStats {
 	bp.mu.RLock()
 	defer bp.mu.RUnlock()
+
 	return bp.stats
 }
 
-// Stop stops the batch processor and flushes all pending batches
+// Stop stops the batch processor and flushes all pending batches.
 func (bp *BatchProcessor) Stop() {
 	close(bp.stopCh)
 	bp.wg.Wait()
@@ -246,7 +254,7 @@ func (bp *BatchProcessor) Stop() {
 	bp.mu.Unlock()
 }
 
-// PrintStats prints detailed batch processing statistics
+// PrintStats prints detailed batch processing statistics.
 func (bp *BatchProcessor) PrintStats() {
 	stats := bp.GetStats()
 
@@ -258,13 +266,13 @@ func (bp *BatchProcessor) PrintStats() {
 	fmt.Printf("Last Processed: %v\n", stats.LastProcessed)
 }
 
-// RepositoryBatchProcessor specialized batch processor for repository metadata
+// RepositoryBatchProcessor specialized batch processor for repository metadata.
 type RepositoryBatchProcessor struct {
 	*BatchProcessor
 	serviceName string
 }
 
-// NewRepositoryBatchProcessor creates a batch processor optimized for repository operations
+// NewRepositoryBatchProcessor creates a batch processor optimized for repository operations.
 func NewRepositoryBatchProcessor(serviceName string) *RepositoryBatchProcessor {
 	config := BatchConfig{
 		MaxBatchSize:  100, // GitHub GraphQL can handle up to 100 repos per query
@@ -278,7 +286,7 @@ func NewRepositoryBatchProcessor(serviceName string) *RepositoryBatchProcessor {
 	}
 }
 
-// BatchRepositoryMetadata batches repository metadata requests
+// BatchRepositoryMetadata batches repository metadata requests.
 func (rbp *RepositoryBatchProcessor) BatchRepositoryMetadata(ctx context.Context, org string, repos []string, fetcher BatchFunc) (map[string]interface{}, error) {
 	responses := make(map[string]interface{})
 	respChans := make(map[string]chan BatchResponse)
@@ -295,6 +303,7 @@ func (rbp *RepositoryBatchProcessor) BatchRepositoryMetadata(ctx context.Context
 		}
 
 		batchKey := fmt.Sprintf("%s:metadata:%s", rbp.serviceName, org)
+
 		err := rbp.Add(ctx, batchKey, request, fetcher)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add request %d to batch: %w", i, err)
@@ -308,6 +317,7 @@ func (rbp *RepositoryBatchProcessor) BatchRepositoryMetadata(ctx context.Context
 			if resp.Error != nil {
 				return nil, fmt.Errorf("batch request failed for %s: %w", repo, resp.Error)
 			}
+
 			responses[repo] = resp.Data
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -317,7 +327,7 @@ func (rbp *RepositoryBatchProcessor) BatchRepositoryMetadata(ctx context.Context
 	return responses, nil
 }
 
-// BatchDefaultBranches batches default branch requests for multiple repositories
+// BatchDefaultBranches batches default branch requests for multiple repositories.
 func (rbp *RepositoryBatchProcessor) BatchDefaultBranches(ctx context.Context, org string, repos []string, fetcher BatchFunc) (map[string]string, error) {
 	responses := make(map[string]string)
 	respChans := make(map[string]chan BatchResponse)
@@ -334,6 +344,7 @@ func (rbp *RepositoryBatchProcessor) BatchDefaultBranches(ctx context.Context, o
 		}
 
 		batchKey := fmt.Sprintf("%s:branches:%s", rbp.serviceName, org)
+
 		err := rbp.Add(ctx, batchKey, request, fetcher)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add branch request for %s: %w", repo, err)
@@ -347,6 +358,7 @@ func (rbp *RepositoryBatchProcessor) BatchDefaultBranches(ctx context.Context, o
 			if resp.Error != nil {
 				return nil, fmt.Errorf("batch request failed for %s: %w", repo, resp.Error)
 			}
+
 			if branch, ok := resp.Data.(string); ok {
 				responses[repo] = branch
 			}

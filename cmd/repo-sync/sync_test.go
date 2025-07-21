@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-// MockGitCommandExecutor is a mock implementation of GitCommandExecutor
+// MockGitCommandExecutor is a mock implementation of GitCommandExecutor.
 type MockGitCommandExecutor struct {
 	mock.Mock
 }
@@ -23,7 +23,7 @@ func (m *MockGitCommandExecutor) ExecuteCommand(ctx context.Context, dir string,
 	return callResults.Get(0).(*GitCommandResult), callResults.Error(1)
 }
 
-// Helper function to convert string slice to interface slice
+// Helper function to convert string slice to interface slice.
 func argsToInterfaces(args []string) []interface{} {
 	interfaces := make([]interface{}, len(args))
 	for i, arg := range args {
@@ -37,7 +37,7 @@ func (m *MockGitCommandExecutor) GetStatus(ctx context.Context, dir string) (*Gi
 	return args.Get(0).(*GitStatus), args.Error(1)
 }
 
-func (m *MockGitCommandExecutor) GetRemoteInfo(ctx context.Context, dir string, remote string) (*GitRemoteInfo, error) {
+func (m *MockGitCommandExecutor) GetRemoteInfo(ctx context.Context, dir, remote string) (*GitRemoteInfo, error) {
 	args := m.Called(ctx, dir, remote)
 	return args.Get(0).(*GitRemoteInfo), args.Error(1)
 }

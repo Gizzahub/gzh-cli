@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -188,12 +191,13 @@ Examples:
 	return cmd
 }
 
-// getConfigDirectory returns the configuration directory for net-env
+// getConfigDirectory returns the configuration directory for net-env.
 func getConfigDirectory() string {
 	if configDir := os.Getenv("GZH_CONFIG_DIR"); configDir != "" {
 		return configDir
 	}
 
 	homeDir, _ := os.UserHomeDir()
+
 	return filepath.Join(homeDir, ".config", "gzh-manager")
 }

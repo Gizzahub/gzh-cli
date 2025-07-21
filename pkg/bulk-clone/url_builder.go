@@ -1,16 +1,19 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
 	"fmt"
 )
 
-// GitURLBuilder provides protocol-aware Git URL construction
+// GitURLBuilder provides protocol-aware Git URL construction.
 type GitURLBuilder struct {
 	Protocol string
 	Hostname string
 }
 
-// NewGitURLBuilder creates a new GitURLBuilder with the specified protocol and hostname
+// NewGitURLBuilder creates a new GitURLBuilder with the specified protocol and hostname.
 func NewGitURLBuilder(protocol, hostname string) *GitURLBuilder {
 	return &GitURLBuilder{
 		Protocol: protocol,
@@ -18,7 +21,7 @@ func NewGitURLBuilder(protocol, hostname string) *GitURLBuilder {
 	}
 }
 
-// BuildURL constructs a Git clone URL based on the protocol
+// BuildURL constructs a Git clone URL based on the protocol.
 func (b *GitURLBuilder) BuildURL(orgName, repoName string) string {
 	switch b.Protocol {
 	case "ssh":
@@ -33,8 +36,7 @@ func (b *GitURLBuilder) BuildURL(orgName, repoName string) string {
 	}
 }
 
-// BuildSSHHostAlias returns the SSH host alias that should be used for SSH URLs
-// when custom SSH configurations are in use
+// when custom SSH configurations are in use.
 func (b *GitURLBuilder) BuildSSHHostAlias(orgName string) string {
 	if b.Protocol != "ssh" {
 		return b.Hostname
@@ -54,7 +56,7 @@ func (b *GitURLBuilder) BuildSSHHostAlias(orgName string) string {
 	}
 }
 
-// BuildURLWithHostAlias constructs a Git clone URL using SSH host aliases when appropriate
+// BuildURLWithHostAlias constructs a Git clone URL using SSH host aliases when appropriate.
 func (b *GitURLBuilder) BuildURLWithHostAlias(orgName, repoName string) string {
 	if b.Protocol == "ssh" {
 		hostAlias := b.BuildSSHHostAlias(orgName)
@@ -64,7 +66,7 @@ func (b *GitURLBuilder) BuildURLWithHostAlias(orgName, repoName string) string {
 	return b.BuildURL(orgName, repoName)
 }
 
-// GetDefaultHostname returns the default hostname for a given provider
+// GetDefaultHostname returns the default hostname for a given provider.
 func GetDefaultHostname(provider string) string {
 	switch provider {
 	case "github":
@@ -78,16 +80,18 @@ func GetDefaultHostname(provider string) string {
 	}
 }
 
-// BuildURLForProvider is a convenience function that builds URLs for common Git providers
+// BuildURLForProvider is a convenience function that builds URLs for common Git providers.
 func BuildURLForProvider(provider, protocol, orgName, repoName string) string {
 	hostname := GetDefaultHostname(provider)
 	builder := NewGitURLBuilder(protocol, hostname)
+
 	return builder.BuildURL(orgName, repoName)
 }
 
-// BuildURLWithHostAliasForProvider is a convenience function that builds URLs with host aliases
+// BuildURLWithHostAliasForProvider is a convenience function that builds URLs with host aliases.
 func BuildURLWithHostAliasForProvider(provider, protocol, orgName, repoName string) string {
 	hostname := GetDefaultHostname(provider)
 	builder := NewGitURLBuilder(protocol, hostname)
+
 	return builder.BuildURLWithHostAlias(orgName, repoName)
 }

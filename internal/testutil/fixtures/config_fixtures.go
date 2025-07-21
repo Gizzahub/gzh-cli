@@ -1,18 +1,21 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package fixtures
 
 import (
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
-// ConfigFixtures provides common configuration fixtures for tests
+// ConfigFixtures provides common configuration fixtures for tests.
 type ConfigFixtures struct{}
 
-// NewConfigFixtures creates a new ConfigFixtures instance
+// NewConfigFixtures creates a new ConfigFixtures instance.
 func NewConfigFixtures() *ConfigFixtures {
 	return &ConfigFixtures{}
 }
 
-// SimpleGitHubConfig returns a simple GitHub configuration
+// SimpleGitHubConfig returns a simple GitHub configuration.
 func (f *ConfigFixtures) SimpleGitHubConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -22,7 +25,7 @@ func (f *ConfigFixtures) SimpleGitHubConfig() *config.UnifiedConfig {
 		Build()
 }
 
-// MultiProviderConfig returns a configuration with multiple providers
+// MultiProviderConfig returns a configuration with multiple providers.
 func (f *ConfigFixtures) MultiProviderConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -36,7 +39,7 @@ func (f *ConfigFixtures) MultiProviderConfig() *config.UnifiedConfig {
 		Build()
 }
 
-// ComplexGitHubConfig returns a complex GitHub configuration with multiple organizations
+// ComplexGitHubConfig returns a complex GitHub configuration with multiple organizations.
 func (f *ConfigFixtures) ComplexGitHubConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -48,7 +51,7 @@ func (f *ConfigFixtures) ComplexGitHubConfig() *config.UnifiedConfig {
 		Build()
 }
 
-// InvalidConfig returns an invalid configuration for error testing
+// InvalidConfig returns an invalid configuration for error testing.
 func (f *ConfigFixtures) InvalidConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
 		WithVersion(""). // Invalid empty version
@@ -56,7 +59,7 @@ func (f *ConfigFixtures) InvalidConfig() *config.UnifiedConfig {
 		Build()
 }
 
-// ConfigWithEnvironmentVariables returns a configuration that uses environment variables
+// ConfigWithEnvironmentVariables returns a configuration that uses environment variables.
 func (f *ConfigFixtures) ConfigWithEnvironmentVariables() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -66,7 +69,7 @@ func (f *ConfigFixtures) ConfigWithEnvironmentVariables() *config.UnifiedConfig 
 		Build()
 }
 
-// MinimalConfig returns a minimal valid configuration
+// MinimalConfig returns a minimal valid configuration.
 func (f *ConfigFixtures) MinimalConfig() *config.UnifiedConfig {
 	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -74,15 +77,15 @@ func (f *ConfigFixtures) MinimalConfig() *config.UnifiedConfig {
 		Build()
 }
 
-// ConfigYAMLFixtures provides YAML configuration fixtures
+// ConfigYAMLFixtures provides YAML configuration fixtures.
 type ConfigYAMLFixtures struct{}
 
-// NewConfigYAMLFixtures creates a new ConfigYAMLFixtures instance
+// NewConfigYAMLFixtures creates a new ConfigYAMLFixtures instance.
 func NewConfigYAMLFixtures() *ConfigYAMLFixtures {
 	return &ConfigYAMLFixtures{}
 }
 
-// SimpleGitHubYAML returns a simple GitHub configuration as YAML
+// SimpleGitHubYAML returns a simple GitHub configuration as YAML.
 func (f *ConfigYAMLFixtures) SimpleGitHubYAML() string {
 	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -92,7 +95,7 @@ func (f *ConfigYAMLFixtures) SimpleGitHubYAML() string {
 		BuildYAML()
 }
 
-// MultiProviderYAML returns a multi-provider configuration as YAML
+// MultiProviderYAML returns a multi-provider configuration as YAML.
 func (f *ConfigYAMLFixtures) MultiProviderYAML() string {
 	return config.NewConfigBuilder().
 		WithVersion("1.0.0").
@@ -104,7 +107,7 @@ func (f *ConfigYAMLFixtures) MultiProviderYAML() string {
 		BuildYAML()
 }
 
-// InvalidYAML returns invalid YAML for error testing
+// InvalidYAML returns invalid YAML for error testing.
 func (f *ConfigYAMLFixtures) InvalidYAML() string {
 	return `version: "1.0.0"
 providers:
@@ -115,7 +118,7 @@ providers:
 `
 }
 
-// MalformedYAML returns malformed YAML for error testing
+// MalformedYAML returns malformed YAML for error testing.
 func (f *ConfigYAMLFixtures) MalformedYAML() string {
 	return `version: "1.0.0"
 providers:
@@ -126,7 +129,7 @@ providers:
         match: "[invalid"`
 }
 
-// EnvironmentVariableYAML returns YAML with environment variables
+// EnvironmentVariableYAML returns YAML with environment variables.
 func (f *ConfigYAMLFixtures) EnvironmentVariableYAML() string {
 	return `version: "1.0.0"
 default_provider: github
@@ -140,7 +143,7 @@ providers:
         strategy: "reset"`
 }
 
-// MinimalYAML returns minimal valid YAML
+// MinimalYAML returns minimal valid YAML.
 func (f *ConfigYAMLFixtures) MinimalYAML() string {
 	return `version: "1.0.0"
 default_provider: github

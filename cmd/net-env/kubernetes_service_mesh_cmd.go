@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -11,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// newServiceMeshCmd creates the service-mesh subcommand
+// newServiceMeshCmd creates the service-mesh subcommand.
 func newServiceMeshCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "service-mesh",
@@ -32,7 +35,7 @@ func newServiceMeshCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newServiceMeshDetectCmd creates the detect subcommand
+// newServiceMeshDetectCmd creates the detect subcommand.
 func newServiceMeshDetectCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "detect",
@@ -60,7 +63,7 @@ func newServiceMeshDetectCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newServiceMeshEnableCmd creates the enable subcommand
+// newServiceMeshEnableCmd creates the enable subcommand.
 func newServiceMeshEnableCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "enable [profile-name]",
@@ -130,7 +133,7 @@ func newServiceMeshEnableCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newServiceMeshDisableCmd creates the disable subcommand
+// newServiceMeshDisableCmd creates the disable subcommand.
 func newServiceMeshDisableCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "disable [profile-name]",
@@ -169,7 +172,7 @@ func newServiceMeshDisableCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newServiceMeshConfigureCmd creates the configure subcommand
+// newServiceMeshConfigureCmd creates the configure subcommand.
 func newServiceMeshConfigureCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "configure [profile-name]",
@@ -204,7 +207,7 @@ func newServiceMeshConfigureCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newServiceMeshStatusCmd creates the status subcommand
+// newServiceMeshStatusCmd creates the status subcommand.
 func newServiceMeshStatusCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -236,7 +239,7 @@ func newServiceMeshStatusCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newServiceMeshIstioCmd creates the istio subcommand
+// newServiceMeshIstioCmd creates the istio subcommand.
 func newServiceMeshIstioCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "istio",
@@ -253,7 +256,7 @@ func newServiceMeshIstioCmd(km *KubernetesNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newServiceMeshLinkerdCmd creates the linkerd subcommand
+// newServiceMeshLinkerdCmd creates the linkerd subcommand.
 func newServiceMeshLinkerdCmd(km *KubernetesNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "linkerd",
@@ -895,8 +898,11 @@ func configureIstioInteractive(km *KubernetesNetworkManager, profile *Kubernetes
 
 	// Simple configuration for now
 	fmt.Print("Enable mTLS mode? (DISABLE/SIMPLE/MUTUAL/ISTIO_MUTUAL) [ISTIO_MUTUAL]: ")
+
 	var mtlsMode string
+
 	fmt.Scanln(&mtlsMode)
+
 	if mtlsMode == "" {
 		mtlsMode = "ISTIO_MUTUAL"
 	}
@@ -932,7 +938,9 @@ func configureLinkerdInteractive(km *KubernetesNetworkManager, profile *Kubernet
 
 	// Simple configuration for now
 	fmt.Print("Enable proxy injection? (y/N): ")
+
 	var enableProxy string
+
 	fmt.Scanln(&enableProxy)
 
 	// Initialize Linkerd config
@@ -941,7 +949,7 @@ func configureLinkerdInteractive(km *KubernetesNetworkManager, profile *Kubernet
 	}
 
 	linkerdConfig := &LinkerdConfig{
-		ProxyInjection:  strings.ToLower(enableProxy) == "y",
+		ProxyInjection:  strings.EqualFold(enableProxy, "y"),
 		ServiceProfiles: make(map[string]*LinkerdServiceProfile),
 		TrafficSplits:   make(map[string]*LinkerdTrafficSplit),
 	}
@@ -991,6 +999,7 @@ func printServiceMeshStatus(status map[string]interface{}) error {
 
 	if resources, ok := status["resources"].(map[string]int); ok {
 		fmt.Println("\n📊 Resources:")
+
 		for resource, count := range resources {
 			fmt.Printf("   - %s: %d\n", resource, count)
 		}

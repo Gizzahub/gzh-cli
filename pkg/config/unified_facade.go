@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -8,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// UnifiedConfigFacade provides a unified interface for configuration management
+// UnifiedConfigFacade provides a unified interface for configuration management.
 type UnifiedConfigFacade struct {
 	loader      *UnifiedConfigLoader
 	config      *UnifiedConfig
@@ -16,19 +19,19 @@ type UnifiedConfigFacade struct {
 	integration *BulkCloneIntegration
 }
 
-// NewUnifiedConfigFacade creates a new unified configuration facade
+// NewUnifiedConfigFacade creates a new unified configuration facade.
 func NewUnifiedConfigFacade() *UnifiedConfigFacade {
 	return &UnifiedConfigFacade{
 		loader: NewUnifiedConfigLoader(),
 	}
 }
 
-// LoadConfiguration loads configuration from available sources
+// LoadConfiguration loads configuration from available sources.
 func (f *UnifiedConfigFacade) LoadConfiguration() error {
 	return f.LoadConfigurationFromPath("")
 }
 
-// LoadConfigurationFromPath loads configuration from a specific path
+// LoadConfigurationFromPath loads configuration from a specific path.
 func (f *UnifiedConfigFacade) LoadConfigurationFromPath(configPath string) error {
 	result, err := f.loader.LoadConfigFromPath(configPath)
 	if err != nil {
@@ -45,22 +48,22 @@ func (f *UnifiedConfigFacade) LoadConfigurationFromPath(configPath string) error
 	return nil
 }
 
-// GetConfiguration returns the loaded configuration
+// GetConfiguration returns the loaded configuration.
 func (f *UnifiedConfigFacade) GetConfiguration() *UnifiedConfig {
 	return f.config
 }
 
-// GetLoadResult returns the load result with migration details
+// GetLoadResult returns the load result with migration details.
 func (f *UnifiedConfigFacade) GetLoadResult() *LoadResult {
 	return f.loadResult
 }
 
-// GetBulkCloneIntegration returns the bulk clone integration adapter
+// GetBulkCloneIntegration returns the bulk clone integration adapter.
 func (f *UnifiedConfigFacade) GetBulkCloneIntegration() *BulkCloneIntegration {
 	return f.integration
 }
 
-// SaveConfiguration saves the current configuration to a file
+// SaveConfiguration saves the current configuration to a file.
 func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 	if f.config == nil {
 		return fmt.Errorf("no configuration loaded")
@@ -95,104 +98,119 @@ func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 	return nil
 }
 
-// GetIDEConfig returns the IDE configuration
+// GetIDEConfig returns the IDE configuration.
 func (f *UnifiedConfigFacade) GetIDEConfig() *IDEConfig {
 	if f.config == nil {
 		return nil
 	}
+
 	return f.config.IDE
 }
 
-// GetDevEnvConfig returns the development environment configuration
+// GetDevEnvConfig returns the development environment configuration.
 func (f *UnifiedConfigFacade) GetDevEnvConfig() *DevEnvConfig {
 	if f.config == nil {
 		return nil
 	}
+
 	return f.config.DevEnv
 }
 
-// GetNetEnvConfig returns the network environment configuration
+// GetNetEnvConfig returns the network environment configuration.
 func (f *UnifiedConfigFacade) GetNetEnvConfig() *NetEnvConfig {
 	if f.config == nil {
 		return nil
 	}
+
 	return f.config.NetEnv
 }
 
-// GetSSHConfig returns the SSH configuration
+// GetSSHConfig returns the SSH configuration.
 func (f *UnifiedConfigFacade) GetSSHConfig() *SSHConfigSettings {
 	if f.config == nil {
 		return nil
 	}
+
 	return f.config.SSHConfig
 }
 
-// GetGlobalSettings returns the global settings
+// GetGlobalSettings returns the global settings.
 func (f *UnifiedConfigFacade) GetGlobalSettings() *GlobalSettings {
 	if f.config == nil {
 		return nil
 	}
+
 	return f.config.Global
 }
 
-// GetProviderConfig returns configuration for a specific provider
+// GetProviderConfig returns configuration for a specific provider.
 func (f *UnifiedConfigFacade) GetProviderConfig(provider string) *ProviderConfig {
 	if f.config == nil || f.config.Providers == nil {
 		return nil
 	}
+
 	return f.config.Providers[provider]
 }
 
-// UpdateIDEConfig updates the IDE configuration
+// UpdateIDEConfig updates the IDE configuration.
 func (f *UnifiedConfigFacade) UpdateIDEConfig(ideConfig *IDEConfig) error {
 	if f.config == nil {
 		return fmt.Errorf("no configuration loaded")
 	}
+
 	f.config.IDE = ideConfig
+
 	return nil
 }
 
-// UpdateDevEnvConfig updates the development environment configuration
+// UpdateDevEnvConfig updates the development environment configuration.
 func (f *UnifiedConfigFacade) UpdateDevEnvConfig(devEnvConfig *DevEnvConfig) error {
 	if f.config == nil {
 		return fmt.Errorf("no configuration loaded")
 	}
+
 	f.config.DevEnv = devEnvConfig
+
 	return nil
 }
 
-// UpdateNetEnvConfig updates the network environment configuration
+// UpdateNetEnvConfig updates the network environment configuration.
 func (f *UnifiedConfigFacade) UpdateNetEnvConfig(netEnvConfig *NetEnvConfig) error {
 	if f.config == nil {
 		return fmt.Errorf("no configuration loaded")
 	}
+
 	f.config.NetEnv = netEnvConfig
+
 	return nil
 }
 
-// UpdateSSHConfig updates the SSH configuration
+// UpdateSSHConfig updates the SSH configuration.
 func (f *UnifiedConfigFacade) UpdateSSHConfig(sshConfig *SSHConfigSettings) error {
 	if f.config == nil {
 		return fmt.Errorf("no configuration loaded")
 	}
+
 	f.config.SSHConfig = sshConfig
+
 	return nil
 }
 
-// ValidateUnifiedConfiguration validates the current configuration
+// ValidateUnifiedConfiguration validates the current configuration.
 func (f *UnifiedConfigFacade) ValidateUnifiedConfiguration() error {
 	if f.config == nil {
 		return fmt.Errorf("no configuration loaded")
 	}
+
 	return f.loader.validateUnifiedConfig(f.config)
 }
 
-// GetExpandedPath expands environment variables in a path
+// GetExpandedPath expands environment variables in a path.
 func (f *UnifiedConfigFacade) GetExpandedPath(path string) string {
 	return ExpandEnvironmentVariables(path)
 }
 
-// IsFeatureEnabled checks if a feature is enabled across all configurations
+// IsFeatureEnabled checks if a feature is enabled across all configurations.
 func (f *UnifiedConfigFacade) IsFeatureEnabled(feature string) bool {
 	if f.config == nil {
 		return false
@@ -212,7 +230,7 @@ func (f *UnifiedConfigFacade) IsFeatureEnabled(feature string) bool {
 	}
 }
 
-// GetConfigurationSummary returns a summary of the current configuration
+// GetConfigurationSummary returns a summary of the current configuration.
 func (f *UnifiedConfigFacade) GetConfigurationSummary() map[string]interface{} {
 	if f.config == nil {
 		return nil
@@ -244,7 +262,7 @@ func (f *UnifiedConfigFacade) GetConfigurationSummary() map[string]interface{} {
 	return summary
 }
 
-// CreateDefaultConfiguration creates a default configuration file
+// CreateDefaultConfiguration creates a default configuration file.
 func (f *UnifiedConfigFacade) CreateDefaultConfiguration(configPath string) error {
 	defaultConfig := DefaultUnifiedConfig()
 
@@ -263,10 +281,11 @@ func (f *UnifiedConfigFacade) CreateDefaultConfiguration(configPath string) erro
 	}
 
 	f.config = defaultConfig
+
 	return f.SaveConfiguration(configPath)
 }
 
-// ValidateConfiguration validates the current configuration
+// ValidateConfiguration validates the current configuration.
 func (f *UnifiedConfigFacade) ValidateConfiguration() error {
 	if f.config == nil {
 		return fmt.Errorf("no configuration loaded")
@@ -275,7 +294,7 @@ func (f *UnifiedConfigFacade) ValidateConfiguration() error {
 	return f.loader.validateUnifiedConfig(f.config)
 }
 
-// GetProviderTargets returns all targets for a specific provider
+// GetProviderTargets returns all targets for a specific provider.
 func (f *UnifiedConfigFacade) GetProviderTargets(providerName string) ([]BulkCloneTarget, error) {
 	if f.integration == nil {
 		return nil, fmt.Errorf("no configuration loaded")
@@ -284,7 +303,7 @@ func (f *UnifiedConfigFacade) GetProviderTargets(providerName string) ([]BulkClo
 	return f.integration.GetTargetsByProvider(providerName)
 }
 
-// GetAllTargets returns all configured targets
+// GetAllTargets returns all configured targets.
 func (f *UnifiedConfigFacade) GetAllTargets() ([]BulkCloneTarget, error) {
 	if f.integration == nil {
 		return nil, fmt.Errorf("no configuration loaded")
@@ -293,7 +312,7 @@ func (f *UnifiedConfigFacade) GetAllTargets() ([]BulkCloneTarget, error) {
 	return f.integration.GetAllTargets()
 }
 
-// GetConfiguredProviders returns all configured providers
+// GetConfiguredProviders returns all configured providers.
 func (f *UnifiedConfigFacade) GetConfiguredProviders() []string {
 	if f.integration == nil {
 		return []string{}
@@ -302,12 +321,12 @@ func (f *UnifiedConfigFacade) GetConfiguredProviders() []string {
 	return f.integration.GetConfiguredProviders()
 }
 
-// MigrateConfiguration migrates a legacy configuration to unified format
+// MigrateConfiguration migrates a legacy configuration to unified format.
 func (f *UnifiedConfigFacade) MigrateConfiguration(sourcePath, targetPath string) (*MigrationResult, error) {
 	return MigrateConfigFile(sourcePath, targetPath, false)
 }
 
-// GenerateConfigurationReport generates a configuration report
+// GenerateConfigurationReport generates a configuration report.
 func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 	if f.config == nil {
 		return "", fmt.Errorf("no configuration loaded")
@@ -384,7 +403,7 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 	return report, nil
 }
 
-// convertToLegacyFormat converts unified configuration to legacy format for compatibility
+// convertToLegacyFormat converts unified configuration to legacy format for compatibility.
 func (f *UnifiedConfigFacade) convertToLegacyFormat(unifiedConfig *UnifiedConfig) *Config {
 	legacyConfig := &Config{
 		Version:         unifiedConfig.Version,
@@ -426,7 +445,7 @@ func (f *UnifiedConfigFacade) convertToLegacyFormat(unifiedConfig *UnifiedConfig
 	return legacyConfig
 }
 
-// maskToken masks sensitive token information for display
+// maskToken masks sensitive token information for display.
 func maskToken(token string) string {
 	if token == "" {
 		return "Not configured"
@@ -445,48 +464,50 @@ func maskToken(token string) string {
 	return "***"
 }
 
-// IsConfigurationLoaded checks if a configuration is loaded
+// IsConfigurationLoaded checks if a configuration is loaded.
 func (f *UnifiedConfigFacade) IsConfigurationLoaded() bool {
 	return f.config != nil
 }
 
-// HasWarnings checks if there are any warnings from configuration loading
+// HasWarnings checks if there are any warnings from configuration loading.
 func (f *UnifiedConfigFacade) HasWarnings() bool {
 	return f.loadResult != nil && len(f.loadResult.Warnings) > 0
 }
 
-// HasRequiredActions checks if there are any required actions
+// HasRequiredActions checks if there are any required actions.
 func (f *UnifiedConfigFacade) HasRequiredActions() bool {
 	return f.loadResult != nil && len(f.loadResult.RequiredActions) > 0
 }
 
-// GetWarnings returns all warnings from configuration loading
+// GetWarnings returns all warnings from configuration loading.
 func (f *UnifiedConfigFacade) GetWarnings() []string {
 	if f.loadResult == nil {
 		return []string{}
 	}
+
 	return f.loadResult.Warnings
 }
 
-// GetRequiredActions returns all required actions
+// GetRequiredActions returns all required actions.
 func (f *UnifiedConfigFacade) GetRequiredActions() []string {
 	if f.loadResult == nil {
 		return []string{}
 	}
+
 	return f.loadResult.RequiredActions
 }
 
-// AutoMigrateIfNeeded automatically migrates configuration if legacy format is detected
+// AutoMigrateIfNeeded automatically migrates configuration if legacy format is detected.
 func (f *UnifiedConfigFacade) AutoMigrateIfNeeded(configPath string) (*MigrationResult, error) {
 	return AutoMigrate(configPath)
 }
 
-// SetAutoMigrate configures whether to automatically migrate legacy configurations
+// SetAutoMigrate configures whether to automatically migrate legacy configurations.
 func (f *UnifiedConfigFacade) SetAutoMigrate(autoMigrate bool) {
 	f.loader.AutoMigrate = autoMigrate
 }
 
-// SetPreferUnified configures whether to prefer unified format files
+// SetPreferUnified configures whether to prefer unified format files.
 func (f *UnifiedConfigFacade) SetPreferUnified(preferUnified bool) {
 	f.loader.PreferUnified = preferUnified
 }

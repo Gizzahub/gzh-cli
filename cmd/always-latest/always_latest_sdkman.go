@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package alwayslatest
 
 import (
@@ -137,12 +140,14 @@ func (o *alwaysLatestSdkmanOptions) run(_ *cobra.Command, args []string) error {
 
 	// Update each candidate
 	updatedCount := 0
+
 	for _, candidate := range candidates {
 		updated, err := o.updateCandidate(candidate)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to update %s: %v\n", candidate, err)
 			continue
 		}
+
 		if updated {
 			updatedCount++
 		}
@@ -172,6 +177,7 @@ func (o *alwaysLatestSdkmanOptions) isSdkmanInstalled() bool {
 
 	// Check if sdk command is available
 	_, err = exec.LookPath("sdk")
+
 	return err == nil
 }
 
@@ -184,12 +190,14 @@ func (o *alwaysLatestSdkmanOptions) updateSdkman() error {
 	}
 
 	cmd := exec.Command("bash", "-c", "source ~/.sdkman/bin/sdkman-init.sh && sdk selfupdate")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("SDKMAN update failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ SDKMAN updated successfully")
+
 	return nil
 }
 
@@ -197,24 +205,28 @@ func (o *alwaysLatestSdkmanOptions) flushArchives() error {
 	fmt.Println("🧹 Flushing SDKMAN archives...")
 
 	cmd := exec.Command("bash", "-c", "source ~/.sdkman/bin/sdkman-init.sh && sdk flush archives")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("flush archives failed: %w\n%s", err, string(output))
 	}
 
 	fmt.Println("✅ Archives flushed successfully")
+
 	return nil
 }
 
 func (o *alwaysLatestSdkmanOptions) getInstalledCandidates() ([]string, error) {
 	// Parse installed candidates from the output
 	var candidates []string
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
 
 	candidatesDir := filepath.Join(homeDir, ".sdkman", "candidates")
+
 	entries, err := os.ReadDir(candidatesDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read candidates directory: %w", err)
@@ -225,6 +237,7 @@ func (o *alwaysLatestSdkmanOptions) getInstalledCandidates() ([]string, error) {
 			candidate := entry.Name()
 			// Check if candidate has any versions installed
 			versionsDir := filepath.Join(candidatesDir, candidate)
+
 			versions, err := os.ReadDir(versionsDir)
 			if err != nil {
 				continue
@@ -232,6 +245,7 @@ func (o *alwaysLatestSdkmanOptions) getInstalledCandidates() ([]string, error) {
 
 			// Skip if no versions are installed (except 'current' symlink)
 			hasVersions := false
+
 			for _, version := range versions {
 				if version.Name() != "current" {
 					hasVersions = true
@@ -255,6 +269,7 @@ func (o *alwaysLatestSdkmanOptions) filterCandidates(allCandidates, requestedCan
 	}
 
 	var filtered []string
+
 	for _, candidate := range allCandidates {
 		if candidateSet[candidate] {
 			filtered = append(filtered, candidate)
@@ -323,11 +338,13 @@ func (o *alwaysLatestSdkmanOptions) updateCandidate(candidate string) (bool, err
 	}
 
 	fmt.Printf("✅ Updated %s to %s\n", candidate, targetVersion)
+
 	return true, nil
 }
 
 func (o *alwaysLatestSdkmanOptions) getCurrentVersion(candidate string) (string, error) {
 	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk current %s", candidate))
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", nil // Candidate might not have a current version set
@@ -347,6 +364,7 @@ func (o *alwaysLatestSdkmanOptions) getCurrentVersion(candidate string) (string,
 
 func (o *alwaysLatestSdkmanOptions) getLatestVersion(candidate string) (string, error) {
 	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate))
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to list versions for %s: %w", candidate, err)
@@ -354,9 +372,11 @@ func (o *alwaysLatestSdkmanOptions) getLatestVersion(candidate string) (string, 
 
 	// Parse the output to find available versions
 	var versions []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 
 	inVersionSection := false
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 
@@ -400,6 +420,7 @@ func (o *alwaysLatestSdkmanOptions) isValidVersion(version string) bool {
 
 func (o *alwaysLatestSdkmanOptions) filterStableVersions(versions []string) []string {
 	var stable []string
+
 	unstablePatterns := []string{
 		"ea", "beta", "alpha", "rc", "snapshot", "preview", "dev",
 		"nightly", "canary", "experimental", "test", "milestone",
@@ -441,15 +462,18 @@ func (o *alwaysLatestSdkmanOptions) getTargetVersion(candidate, currentVersion, 
 
 	// Get all versions and find the latest within the same major version
 	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate))
+
 	output, err := cmd.Output()
 	if err != nil {
 		return latestVersion, nil
 	}
 
 	var candidateVersions []string
+
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 
 	inVersionSection := false
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 
@@ -481,16 +505,19 @@ func (o *alwaysLatestSdkmanOptions) getTargetVersion(candidate, currentVersion, 
 
 	// Sort and return the latest version within the same major version
 	sort.Strings(candidateVersions)
+
 	return candidateVersions[len(candidateVersions)-1], nil
 }
 
 func (o *alwaysLatestSdkmanOptions) extractMajorVersion(version string) (string, error) {
 	// Extract major version number from version string
 	re := regexp.MustCompile(`^(\d+)`)
+
 	matches := re.FindStringSubmatch(version)
 	if len(matches) < 2 {
 		return "", fmt.Errorf("cannot extract major version from %s", version)
 	}
+
 	return matches[1], nil
 }
 
@@ -512,8 +539,10 @@ func (o *alwaysLatestSdkmanOptions) isStableVersion(version string) bool {
 
 func (o *alwaysLatestSdkmanOptions) confirmUpdate(candidate, currentVersion, targetVersion string) bool {
 	fmt.Printf("   Update %s from %s to %s? (y/N): ", candidate, currentVersion, targetVersion)
+
 	var response string
 	_, _ = fmt.Scanln(&response)
+
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
@@ -521,6 +550,7 @@ func (o *alwaysLatestSdkmanOptions) installVersion(candidate, version string) er
 	fmt.Printf("   Installing %s %s...\n", candidate, version)
 
 	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk install %s %s", candidate, version))
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("installation failed: %w\n%s", err, string(output))
@@ -531,6 +561,7 @@ func (o *alwaysLatestSdkmanOptions) installVersion(candidate, version string) er
 
 func (o *alwaysLatestSdkmanOptions) setDefaultVersion(candidate, version string) error {
 	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk default %s %s", candidate, version))
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to set default version: %w\n%s", err, string(output))
@@ -548,6 +579,7 @@ func (o *alwaysLatestSdkmanOptions) cleanupOldVersions(candidate, keepVersion st
 	}
 
 	candidateDir := filepath.Join(homeDir, ".sdkman", "candidates", candidate)
+
 	entries, err := os.ReadDir(candidateDir)
 	if err != nil {
 		return err

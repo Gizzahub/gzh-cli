@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -12,13 +15,13 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
-// GitHubProviderAdapter adapts the github package to implement ProviderService
+// GitHubProviderAdapter adapts the github package to implement ProviderService.
 type GitHubProviderAdapter struct {
 	token       string
 	environment env.Environment
 }
 
-// NewGitHubProviderAdapter creates a new GitHub provider adapter
+// NewGitHubProviderAdapter creates a new GitHub provider adapter.
 func NewGitHubProviderAdapter(token string, environment env.Environment) *GitHubProviderAdapter {
 	return &GitHubProviderAdapter{
 		token:       token,
@@ -33,6 +36,7 @@ func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	}
 
 	repositories := make([]Repository, 0, len(repoNames))
+
 	for _, name := range repoNames {
 		// Get additional repository information
 		defaultBranch, _ := github.GetDefaultBranch(ctx, owner, name)
@@ -93,13 +97,13 @@ func (g *GitHubProviderAdapter) IsHealthy(ctx context.Context) error {
 	return g.ValidateToken(ctx)
 }
 
-// GitLabProviderAdapter adapts the gitlab package to implement ProviderService
+// GitLabProviderAdapter adapts the gitlab package to implement ProviderService.
 type GitLabProviderAdapter struct {
 	token       string
 	environment env.Environment
 }
 
-// NewGitLabProviderAdapter creates a new GitLab provider adapter
+// NewGitLabProviderAdapter creates a new GitLab provider adapter.
 func NewGitLabProviderAdapter(token string, environment env.Environment) *GitLabProviderAdapter {
 	return &GitLabProviderAdapter{
 		token:       token,
@@ -114,6 +118,7 @@ func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	}
 
 	repositories := make([]Repository, 0, len(repoNames))
+
 	for _, name := range repoNames {
 		// Get additional repository information
 		defaultBranch, _ := gitlab.GetDefaultBranch(ctx, owner, name)
@@ -173,13 +178,13 @@ func (g *GitLabProviderAdapter) IsHealthy(ctx context.Context) error {
 	return g.ValidateToken(ctx)
 }
 
-// GiteaProviderAdapter adapts the gitea package to implement ProviderService
+// GiteaProviderAdapter adapts the gitea package to implement ProviderService.
 type GiteaProviderAdapter struct {
 	token       string
 	environment env.Environment
 }
 
-// NewGiteaProviderAdapter creates a new Gitea provider adapter
+// NewGiteaProviderAdapter creates a new Gitea provider adapter.
 func NewGiteaProviderAdapter(token string, environment env.Environment) *GiteaProviderAdapter {
 	return &GiteaProviderAdapter{
 		token:       token,
@@ -194,6 +199,7 @@ func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner strin
 	}
 
 	repositories := make([]Repository, 0, len(repoNames))
+
 	for _, name := range repoNames {
 		// Get additional repository information
 		defaultBranch, _ := gitea.GetDefaultBranch(ctx, owner, name)
@@ -254,12 +260,12 @@ func (g *GiteaProviderAdapter) IsHealthy(ctx context.Context) error {
 	return g.ValidateToken(ctx)
 }
 
-// DefaultProviderFactory implements ProviderFactory using adapter pattern
+// DefaultProviderFactory implements ProviderFactory using adapter pattern.
 type DefaultProviderFactory struct {
 	environment env.Environment
 }
 
-// NewDefaultProviderFactory creates a new default provider factory
+// NewDefaultProviderFactory creates a new default provider factory.
 func NewDefaultProviderFactory(environment env.Environment) *DefaultProviderFactory {
 	return &DefaultProviderFactory{
 		environment: environment,
@@ -306,13 +312,13 @@ func (f *DefaultProviderFactory) ValidateProviderConfig(providerName string, con
 	return nil
 }
 
-// DefaultBulkOperationService implements BulkOperationService
+// DefaultBulkOperationService implements BulkOperationService.
 type DefaultBulkOperationService struct {
 	factory *DefaultProviderFactory
 	config  *Config
 }
 
-// NewDefaultBulkOperationService creates a new bulk operation service
+// NewDefaultBulkOperationService creates a new bulk operation service.
 func NewDefaultBulkOperationService(factory *DefaultProviderFactory, config *Config) *DefaultBulkOperationService {
 	return &DefaultBulkOperationService{
 		factory: factory,
@@ -332,6 +338,7 @@ func (s *DefaultBulkOperationService) CloneAll(ctx context.Context, request *Bul
 		}
 
 		config := ProviderConfig{Token: providerConfig.Token}
+
 		provider, err := s.factory.CreateProvider(ctx, providerName, config)
 		if err != nil {
 			result.FailedTargets++
@@ -347,7 +354,9 @@ func (s *DefaultBulkOperationService) CloneAll(ctx context.Context, request *Bul
 					result.FailedTargets++
 					continue
 				}
+
 				result.TotalTargets += len(repos)
+
 				continue
 			}
 
@@ -379,6 +388,7 @@ func (s *DefaultBulkOperationService) CloneByProvider(ctx context.Context, provi
 	// Create a modified request that only includes the specified provider
 	modifiedRequest := *request
 	modifiedRequest.Providers = []string{providerName}
+
 	return s.CloneAll(ctx, &modifiedRequest)
 }
 
@@ -398,6 +408,7 @@ func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *B
 	// Process each configured provider
 	for providerName, providerConfig := range s.config.Providers {
 		config := ProviderConfig{Token: providerConfig.Token}
+
 		provider, err := s.factory.CreateProvider(context.Background(), providerName, config)
 		if err != nil {
 			result.RefreshFailed++
@@ -412,6 +423,7 @@ func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *B
 				if err != nil {
 					result.ErrorSummary[fmt.Sprintf("health_check_%s", providerName)]++
 				}
+
 				continue
 			}
 
@@ -453,6 +465,7 @@ func (s *DefaultBulkOperationService) GetRepositoryStatus(ctx context.Context, t
 		RepositoryDetails: make([]RepositoryStatusInfo, 0),
 		ScanTimeMs:        time.Since(startTime).Milliseconds(),
 	}
+
 	return status, nil
 }
 
@@ -469,6 +482,7 @@ func (s *DefaultBulkOperationService) DiscoverRepositories(ctx context.Context, 
 		}
 
 		config := ProviderConfig{Token: providerConfig.Token}
+
 		_, err := s.factory.CreateProvider(ctx, providerName, config)
 		if err != nil {
 			continue
@@ -483,12 +497,13 @@ func (s *DefaultBulkOperationService) DiscoverRepositories(ctx context.Context, 
 	return result, nil
 }
 
-// Helper function to check if a slice contains a string
+// Helper function to check if a slice contains a string.
 func contains(slice []string, item string) bool {
 	for _, s := range slice {
 		if s == item {
 			return true
 		}
 	}
+
 	return false
 }

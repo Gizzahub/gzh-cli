@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockProvider implements Provider interface for testing
+// MockProvider implements Provider interface for testing.
 type MockProvider struct {
 	name     string
 	profiles map[string]*Profile

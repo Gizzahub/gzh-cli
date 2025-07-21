@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -16,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// newDockerNetworkCmd creates the docker-network command
+// newDockerNetworkCmd creates the docker-network command.
 func newDockerNetworkCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	dm := NewDockerNetworkManager(logger, configDir)
 
@@ -41,7 +44,7 @@ func newDockerNetworkCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkCreateCmd creates the create subcommand
+// newDockerNetworkCreateCmd creates the create subcommand.
 func newDockerNetworkCreateCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create [profile-name]",
@@ -105,7 +108,7 @@ func newDockerNetworkCreateCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkListCmd creates the list subcommand
+// newDockerNetworkListCmd creates the list subcommand.
 func newDockerNetworkListCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -142,7 +145,7 @@ func newDockerNetworkListCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkApplyCmd creates the apply subcommand
+// newDockerNetworkApplyCmd creates the apply subcommand.
 func newDockerNetworkApplyCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "apply [profile-name]",
@@ -178,7 +181,7 @@ func newDockerNetworkApplyCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkDeleteCmd creates the delete subcommand
+// newDockerNetworkDeleteCmd creates the delete subcommand.
 func newDockerNetworkDeleteCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "delete [profile-name]",
@@ -194,8 +197,8 @@ func newDockerNetworkDeleteCmd(dm *DockerNetworkManager) *cobra.Command {
 				fmt.Printf("⚠️  Are you sure you want to delete profile '%s'? (y/N): ", profileName)
 				var response string
 				fmt.Scanln(&response)
-				if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
-					fmt.Println("❌ Deletion cancelled.")
+				if !strings.EqualFold(response, "y") && !strings.EqualFold(response, "yes") {
+					fmt.Println("❌ Deletion canceled.")
 					return nil
 				}
 			}
@@ -214,7 +217,7 @@ func newDockerNetworkDeleteCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkStatusCmd creates the status subcommand
+// newDockerNetworkStatusCmd creates the status subcommand.
 func newDockerNetworkStatusCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -279,7 +282,7 @@ func newDockerNetworkStatusCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkImportCmd creates the import subcommand
+// newDockerNetworkImportCmd creates the import subcommand.
 func newDockerNetworkImportCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "import [compose-file] [profile-name]",
@@ -310,7 +313,7 @@ func newDockerNetworkImportCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkExportCmd creates the export subcommand
+// newDockerNetworkExportCmd creates the export subcommand.
 func newDockerNetworkExportCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export [profile-name] [output-file]",
@@ -354,7 +357,7 @@ func newDockerNetworkExportCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkDetectCmd creates the detect subcommand
+// newDockerNetworkDetectCmd creates the detect subcommand.
 func newDockerNetworkDetectCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "detect",
@@ -397,10 +400,12 @@ func createProfileInteractively(dm *DockerNetworkManager, profile *DockerNetwork
 
 	// Ask if user wants to add networks
 	fmt.Print("Add a network? (y/N): ")
+
 	var addNetwork string
+
 	fmt.Scanln(&addNetwork)
 
-	if strings.ToLower(addNetwork) == "y" || strings.ToLower(addNetwork) == "yes" {
+	if strings.EqualFold(addNetwork, "y") || strings.EqualFold(addNetwork, "yes") {
 		for {
 			var networkName, driver, subnet, gateway string
 
@@ -409,6 +414,7 @@ func createProfileInteractively(dm *DockerNetworkManager, profile *DockerNetwork
 
 			fmt.Print("Driver (bridge/overlay/macvlan) [bridge]: ")
 			fmt.Scanln(&driver)
+
 			if driver == "" {
 				driver = "bridge"
 			}
@@ -429,12 +435,16 @@ func createProfileInteractively(dm *DockerNetworkManager, profile *DockerNetwork
 			}
 
 			profile.Networks[networkName] = network
+
 			fmt.Printf("✅ Added network: %s\n", networkName)
 
 			fmt.Print("Add another network? (y/N): ")
+
 			var another string
+
 			fmt.Scanln(&another)
-			if strings.ToLower(another) != "y" && strings.ToLower(another) != "yes" {
+
+			if !strings.EqualFold(another, "y") && !strings.EqualFold(another, "yes") {
 				break
 			}
 		}
@@ -452,7 +462,9 @@ func printProfilesYAML(profiles []*DockerNetworkProfile) error {
 	if err != nil {
 		return err
 	}
+
 	fmt.Print(string(data))
+
 	return nil
 }
 
@@ -485,34 +497,43 @@ func printProfilesTable(profiles []*DockerNetworkProfile) error {
 
 func printProfileDetails(profile *DockerNetworkProfile) error {
 	fmt.Printf("Profile: %s\n", profile.Name)
+
 	if profile.Description != "" {
 		fmt.Printf("Description: %s\n", profile.Description)
 	}
 
 	fmt.Printf("\nNetworks (%d):\n", len(profile.Networks))
+
 	for name, network := range profile.Networks {
 		fmt.Printf("  • %s (driver: %s", name, network.Driver)
+
 		if network.Subnet != "" {
 			fmt.Printf(", subnet: %s", network.Subnet)
 		}
+
 		fmt.Printf(")\n")
 	}
 
 	fmt.Printf("\nContainers (%d):\n", len(profile.Containers))
+
 	for name, container := range profile.Containers {
 		fmt.Printf("  • %s", name)
+
 		if container.Image != "" {
 			fmt.Printf(" (image: %s)", container.Image)
 		}
+
 		fmt.Printf("\n")
 	}
 
 	if profile.Compose != nil {
 		fmt.Printf("\nDocker Compose:\n")
 		fmt.Printf("  File: %s\n", profile.Compose.File)
+
 		if profile.Compose.Project != "" {
 			fmt.Printf("  Project: %s\n", profile.Compose.Project)
 		}
+
 		fmt.Printf("  Auto-apply: %t\n", profile.Compose.AutoApply)
 	}
 
@@ -562,10 +583,11 @@ func truncateString(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
 	}
+
 	return s[:maxLen-3] + "..."
 }
 
-// newDockerNetworkContainerCmd creates the container subcommand
+// newDockerNetworkContainerCmd creates the container subcommand.
 func newDockerNetworkContainerCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "container",
@@ -584,7 +606,7 @@ func newDockerNetworkContainerCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newContainerAddCmd creates the container add subcommand
+// newContainerAddCmd creates the container add subcommand.
 func newContainerAddCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add [profile-name] [container-name]",
@@ -650,7 +672,7 @@ func newContainerAddCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newContainerUpdateCmd creates the container update subcommand
+// newContainerUpdateCmd creates the container update subcommand.
 func newContainerUpdateCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update [profile-name] [container-name]",
@@ -734,7 +756,7 @@ func newContainerUpdateCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newContainerRemoveCmd creates the container remove subcommand
+// newContainerRemoveCmd creates the container remove subcommand.
 func newContainerRemoveCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "remove [profile-name] [container-name]",
@@ -758,7 +780,7 @@ func newContainerRemoveCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newContainerShowCmd creates the container show subcommand
+// newContainerShowCmd creates the container show subcommand.
 func newContainerShowCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show [profile-name] [container-name]",
@@ -832,7 +854,7 @@ func newContainerShowCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newContainerConnectCmd creates the container connect subcommand
+// newContainerConnectCmd creates the container connect subcommand.
 func newContainerConnectCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "connect [container-name] [network-name]",
@@ -870,7 +892,7 @@ func newContainerConnectCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newContainerDisconnectCmd creates the container disconnect subcommand
+// newContainerDisconnectCmd creates the container disconnect subcommand.
 func newContainerDisconnectCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "disconnect [container-name] [network-name]",
@@ -893,7 +915,7 @@ func newContainerDisconnectCmd(dm *DockerNetworkManager) *cobra.Command {
 	return cmd
 }
 
-// newDockerNetworkCloneCmd creates the clone subcommand
+// newDockerNetworkCloneCmd creates the clone subcommand.
 func newDockerNetworkCloneCmd(dm *DockerNetworkManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clone [source-profile] [target-profile]",

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package api
 
 import (
@@ -8,7 +11,7 @@ import (
 	"time"
 )
 
-// EnhancedRateLimiter provides intelligent rate limiting with adaptive behavior
+// EnhancedRateLimiter provides intelligent rate limiting with adaptive behavior.
 type EnhancedRateLimiter struct {
 	mu                sync.RWMutex
 	service           string
@@ -28,7 +31,7 @@ type EnhancedRateLimiter struct {
 	wg                sync.WaitGroup
 }
 
-// RateLimiterStats tracks rate limiter performance and behavior
+// RateLimiterStats tracks rate limiter performance and behavior.
 type RateLimiterStats struct {
 	TotalRequests     int64
 	ThrottledRequests int64
@@ -38,7 +41,7 @@ type RateLimiterStats struct {
 	EfficiencyRate    float64
 }
 
-// RateLimitWindow tracks rate limit information over time
+// RateLimitWindow tracks rate limit information over time.
 type RateLimitWindow struct {
 	Timestamp time.Time
 	Limit     int
@@ -46,14 +49,14 @@ type RateLimitWindow struct {
 	Reset     time.Time
 }
 
-// rateLimitedRequest represents a queued request waiting for rate limit clearance
+// rateLimitedRequest represents a queued request waiting for rate limit clearance.
 type rateLimitedRequest struct {
 	ctx        context.Context
 	responseCh chan error
 	timestamp  time.Time
 }
 
-// RateLimiterConfig configures the enhanced rate limiter
+// RateLimiterConfig configures the enhanced rate limiter.
 type RateLimiterConfig struct {
 	Service           string
 	InitialLimit      int
@@ -65,7 +68,7 @@ type RateLimiterConfig struct {
 	QueueSize         int
 }
 
-// ServiceRateLimits defines rate limits for different services
+// ServiceRateLimits defines rate limits for different services.
 var ServiceRateLimits = map[string]RateLimiterConfig{
 	"github": {
 		Service:           "github",
@@ -99,7 +102,7 @@ var ServiceRateLimits = map[string]RateLimiterConfig{
 	},
 }
 
-// NewEnhancedRateLimiter creates a new enhanced rate limiter for the specified service
+// NewEnhancedRateLimiter creates a new enhanced rate limiter for the specified service.
 func NewEnhancedRateLimiter(service string) *EnhancedRateLimiter {
 	config, exists := ServiceRateLimits[service]
 	if !exists {
@@ -129,7 +132,7 @@ func NewEnhancedRateLimiter(service string) *EnhancedRateLimiter {
 	return rl
 }
 
-// Wait blocks until a request can be made according to rate limit rules
+// Wait blocks until a request can be made according to rate limit rules.
 func (rl *EnhancedRateLimiter) Wait(ctx context.Context) error {
 	rl.mu.Lock()
 	rl.stats.TotalRequests++
@@ -161,7 +164,7 @@ func (rl *EnhancedRateLimiter) Wait(ctx context.Context) error {
 	}
 }
 
-// UpdateLimits updates rate limit information from API response headers
+// UpdateLimits updates rate limit information from API response headers.
 func (rl *EnhancedRateLimiter) UpdateLimits(limit, remaining int, resetTime time.Time) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -196,14 +199,14 @@ func (rl *EnhancedRateLimiter) UpdateLimits(limit, remaining int, resetTime time
 	rl.updateEfficiencyMetrics()
 }
 
-// SetRetryAfter sets the retry-after duration from API response
+// SetRetryAfter sets the retry-after duration from API response.
 func (rl *EnhancedRateLimiter) SetRetryAfter(duration time.Duration) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 	rl.retryAfter = duration
 }
 
-// canProceed checks if a request can proceed immediately
+// canProceed checks if a request can proceed immediately.
 func (rl *EnhancedRateLimiter) canProceed() bool {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
@@ -229,7 +232,7 @@ func (rl *EnhancedRateLimiter) canProceed() bool {
 	return rl.remaining > 0
 }
 
-// processRequests handles queued requests based on rate limit availability
+// processRequests handles queued requests based on rate limit availability.
 func (rl *EnhancedRateLimiter) processRequests() {
 	defer rl.wg.Done()
 
@@ -260,7 +263,7 @@ func (rl *EnhancedRateLimiter) processRequests() {
 	}
 }
 
-// processQueuedRequests processes requests that are waiting in the queue
+// processQueuedRequests processes requests that are waiting in the queue.
 func (rl *EnhancedRateLimiter) processQueuedRequests() {
 	for {
 		select {
@@ -272,6 +275,7 @@ func (rl *EnhancedRateLimiter) processQueuedRequests() {
 				go func() {
 					rl.requestQueue <- req
 				}()
+
 				return
 			}
 		default:
@@ -280,7 +284,7 @@ func (rl *EnhancedRateLimiter) processQueuedRequests() {
 	}
 }
 
-// approveRequest approves a queued request and decrements remaining quota
+// approveRequest approves a queued request and decrements remaining quota.
 func (rl *EnhancedRateLimiter) approveRequest(req *rateLimitedRequest) {
 	rl.mu.Lock()
 	rl.remaining--
@@ -291,7 +295,7 @@ func (rl *EnhancedRateLimiter) approveRequest(req *rateLimitedRequest) {
 	req.responseCh <- nil
 }
 
-// calculateBackoff calculates exponential backoff with jitter
+// calculateBackoff calculates exponential backoff with jitter.
 func (rl *EnhancedRateLimiter) calculateBackoff() time.Duration {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
@@ -324,7 +328,7 @@ func (rl *EnhancedRateLimiter) calculateBackoff() time.Duration {
 	return result
 }
 
-// adaptBackoffStrategy adjusts backoff parameters based on historical performance
+// adaptBackoffStrategy adjusts backoff parameters based on historical performance.
 func (rl *EnhancedRateLimiter) adaptBackoffStrategy() {
 	if len(rl.windowHistory) < 10 {
 		return // Need more data for adaptation
@@ -352,7 +356,7 @@ func (rl *EnhancedRateLimiter) adaptBackoffStrategy() {
 	}
 }
 
-// updateEfficiencyMetrics calculates efficiency metrics
+// updateEfficiencyMetrics calculates efficiency metrics.
 func (rl *EnhancedRateLimiter) updateEfficiencyMetrics() {
 	if rl.stats.TotalRequests == 0 {
 		rl.stats.EfficiencyRate = 1.0
@@ -363,28 +367,30 @@ func (rl *EnhancedRateLimiter) updateEfficiencyMetrics() {
 	rl.stats.EfficiencyRate = float64(successfulRequests) / float64(rl.stats.TotalRequests)
 }
 
-// GetStats returns current rate limiter statistics
+// GetStats returns current rate limiter statistics.
 func (rl *EnhancedRateLimiter) GetStats() RateLimiterStats {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
+
 	return rl.stats
 }
 
-// GetCurrentStatus returns current rate limit status
+// GetCurrentStatus returns current rate limit status.
 func (rl *EnhancedRateLimiter) GetCurrentStatus() (limit, remaining int, resetTime time.Time) {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
+
 	return rl.limit, rl.remaining, rl.resetTime
 }
 
-// Stop stops the rate limiter and cleans up resources
+// Stop stops the rate limiter and cleans up resources.
 func (rl *EnhancedRateLimiter) Stop() {
 	close(rl.stopCh)
 	rl.wg.Wait()
 	close(rl.requestQueue)
 }
 
-// PrintStats prints detailed rate limiter statistics
+// PrintStats prints detailed rate limiter statistics.
 func (rl *EnhancedRateLimiter) PrintStats() {
 	stats := rl.GetStats()
 	limit, remaining, resetTime := rl.GetCurrentStatus()
@@ -401,20 +407,20 @@ func (rl *EnhancedRateLimiter) PrintStats() {
 	fmt.Printf("Last Reset: %v\n", stats.LastReset)
 }
 
-// SharedRateLimiterManager manages multiple rate limiters for different services
+// SharedRateLimiterManager manages multiple rate limiters for different services.
 type SharedRateLimiterManager struct {
 	limiters map[string]*EnhancedRateLimiter
 	mu       sync.RWMutex
 }
 
-// NewSharedRateLimiterManager creates a new shared rate limiter manager
+// NewSharedRateLimiterManager creates a new shared rate limiter manager.
 func NewSharedRateLimiterManager() *SharedRateLimiterManager {
 	return &SharedRateLimiterManager{
 		limiters: make(map[string]*EnhancedRateLimiter),
 	}
 }
 
-// GetLimiter returns the rate limiter for the specified service
+// GetLimiter returns the rate limiter for the specified service.
 func (m *SharedRateLimiterManager) GetLimiter(service string) *EnhancedRateLimiter {
 	m.mu.RLock()
 	limiter, exists := m.limiters[service]
@@ -433,7 +439,7 @@ func (m *SharedRateLimiterManager) GetLimiter(service string) *EnhancedRateLimit
 	return limiter
 }
 
-// Stop stops all rate limiters
+// Stop stops all rate limiters.
 func (m *SharedRateLimiterManager) Stop() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -443,7 +449,7 @@ func (m *SharedRateLimiterManager) Stop() {
 	}
 }
 
-// PrintAllStats prints statistics for all managed rate limiters
+// PrintAllStats prints statistics for all managed rate limiters.
 func (m *SharedRateLimiterManager) PrintAllStats() {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

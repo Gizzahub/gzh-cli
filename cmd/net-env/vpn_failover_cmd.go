@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -13,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newVPNFailoverCmd creates the VPN failover management command
+// newVPNFailoverCmd creates the VPN failover management command.
 func newVPNFailoverCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vpn-failover",
@@ -57,7 +60,7 @@ Examples:
 	return cmd
 }
 
-// newVPNFailoverStartCmd creates the start subcommand
+// newVPNFailoverStartCmd creates the start subcommand.
 func newVPNFailoverStartCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
@@ -111,7 +114,7 @@ func newVPNFailoverStartCmd(logger *zap.Logger, configDir string) *cobra.Command
 	return cmd
 }
 
-// newVPNFailoverStopCmd creates the stop subcommand
+// newVPNFailoverStopCmd creates the stop subcommand.
 func newVPNFailoverStopCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stop",
@@ -137,7 +140,7 @@ func newVPNFailoverStopCmd(logger *zap.Logger, configDir string) *cobra.Command 
 	return cmd
 }
 
-// newVPNFailoverStatusCmd creates the status subcommand
+// newVPNFailoverStatusCmd creates the status subcommand.
 func newVPNFailoverStatusCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -172,7 +175,7 @@ func newVPNFailoverStatusCmd(logger *zap.Logger, configDir string) *cobra.Comman
 	return cmd
 }
 
-// newVPNFailoverBackupCmd creates the backup subcommand
+// newVPNFailoverBackupCmd creates the backup subcommand.
 func newVPNFailoverBackupCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "backup",
@@ -188,7 +191,7 @@ func newVPNFailoverBackupCmd(logger *zap.Logger, configDir string) *cobra.Comman
 	return cmd
 }
 
-// newVPNFailoverBackupAddCmd creates the backup add subcommand
+// newVPNFailoverBackupAddCmd creates the backup add subcommand.
 func newVPNFailoverBackupAddCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add",
@@ -241,7 +244,7 @@ func newVPNFailoverBackupAddCmd(logger *zap.Logger, configDir string) *cobra.Com
 	return cmd
 }
 
-// newVPNFailoverBackupRemoveCmd creates the backup remove subcommand
+// newVPNFailoverBackupRemoveCmd creates the backup remove subcommand.
 func newVPNFailoverBackupRemoveCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove",
@@ -282,7 +285,7 @@ func newVPNFailoverBackupRemoveCmd(logger *zap.Logger, configDir string) *cobra.
 	return cmd
 }
 
-// newVPNFailoverBackupListCmd creates the backup list subcommand
+// newVPNFailoverBackupListCmd creates the backup list subcommand.
 func newVPNFailoverBackupListCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -317,7 +320,7 @@ func newVPNFailoverBackupListCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newVPNFailoverTestCmd creates the test subcommand
+// newVPNFailoverTestCmd creates the test subcommand.
 func newVPNFailoverTestCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "test",
@@ -353,7 +356,7 @@ func newVPNFailoverTestCmd(logger *zap.Logger, configDir string) *cobra.Command 
 	return cmd
 }
 
-// newVPNFailoverHealthCmd creates the health subcommand
+// newVPNFailoverHealthCmd creates the health subcommand.
 func newVPNFailoverHealthCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "health",
@@ -369,7 +372,7 @@ func newVPNFailoverHealthCmd(logger *zap.Logger, configDir string) *cobra.Comman
 	return cmd
 }
 
-// newVPNFailoverHealthShowCmd creates the health show subcommand
+// newVPNFailoverHealthShowCmd creates the health show subcommand.
 func newVPNFailoverHealthShowCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
@@ -404,7 +407,7 @@ func newVPNFailoverHealthShowCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newVPNFailoverHealthConfigCmd creates the health config subcommand
+// newVPNFailoverHealthConfigCmd creates the health config subcommand.
 func newVPNFailoverHealthConfigCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
@@ -455,7 +458,7 @@ func newVPNFailoverHealthConfigCmd(logger *zap.Logger, configDir string) *cobra.
 	return cmd
 }
 
-// newVPNFailoverHealthTestCmd creates the health test subcommand
+// newVPNFailoverHealthTestCmd creates the health test subcommand.
 func newVPNFailoverHealthTestCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "test [vpn-name]",
@@ -491,7 +494,7 @@ func newVPNFailoverHealthTestCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newVPNFailoverPolicyCmd creates the policy subcommand
+// newVPNFailoverPolicyCmd creates the policy subcommand.
 func newVPNFailoverPolicyCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "policy",
@@ -506,7 +509,7 @@ func newVPNFailoverPolicyCmd(logger *zap.Logger, configDir string) *cobra.Comman
 	return cmd
 }
 
-// newVPNFailoverPolicyShowCmd creates the policy show subcommand
+// newVPNFailoverPolicyShowCmd creates the policy show subcommand.
 func newVPNFailoverPolicyShowCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show",
@@ -541,7 +544,7 @@ func newVPNFailoverPolicyShowCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newVPNFailoverPolicySetCmd creates the policy set subcommand
+// newVPNFailoverPolicySetCmd creates the policy set subcommand.
 func newVPNFailoverPolicySetCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set",
@@ -742,6 +745,7 @@ func (fvm *FailoverVPNManager) AddBackupVPN(config BackupVPNConfig) error {
 	}
 
 	fvm.backups[config.PrimaryVPN] = append(fvm.backups[config.PrimaryVPN], config)
+
 	return fvm.saveConfiguration()
 }
 
@@ -772,6 +776,7 @@ func (fvm *FailoverVPNManager) GetBackupVPNs() ([]BackupVPNConfig, error) {
 	for _, backups := range fvm.backups {
 		all = append(all, backups...)
 	}
+
 	return all, nil
 }
 
@@ -807,6 +812,7 @@ func (fvm *FailoverVPNManager) ConfigureHealthCheck(vpnName string, config Healt
 		zap.String("vpn", vpnName),
 		zap.String("type", config.Type),
 		zap.Duration("interval", config.Interval))
+
 	return nil
 }
 
@@ -842,7 +848,6 @@ func (fvm *FailoverVPNManager) loadConfiguration() error {
 
 func (fvm *FailoverVPNManager) saveConfiguration() error {
 	// configPath := filepath.Join(fvm.configDir, "vpn-failover.json")
-
 	// Ensure config directory exists
 	if err := os.MkdirAll(fvm.configDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
@@ -870,6 +875,7 @@ func printFailoverStatus(status *FailoverStatus) error {
 
 	if len(status.HealthChecks) > 0 {
 		fmt.Printf("\nHealth Checks:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "VPN\tSTATUS\tRESPONSE TIME\tLAST CHECK")
 
@@ -880,6 +886,7 @@ func printFailoverStatus(status *FailoverStatus) error {
 				health.ResponseTime,
 				health.LastCheck.Format("15:04:05"))
 		}
+
 		w.Flush()
 	}
 
@@ -935,11 +942,13 @@ func printFailoverTestResult(result *FailoverTestResult) {
 	}
 
 	fmt.Printf("Test Steps:\n")
+
 	for _, step := range result.Steps {
 		stepStatus := "❌"
 		if step.Success {
 			stepStatus = "✅"
 		}
+
 		fmt.Printf("  %s %s: %s (%s)\n", stepStatus, step.Step, step.Description, step.Duration)
 	}
 }

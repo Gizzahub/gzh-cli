@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
@@ -46,7 +49,7 @@ func (o *bulkCloneGiteaOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	// err := gitea_org.RefreshAll(o.targetPath, o.orgName, o.strategy)
-	//if err != nil {
+	// if err != nil {
 	//	return err
 	//}
 

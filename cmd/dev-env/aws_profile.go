@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -20,7 +23,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// AWSProfile represents an AWS profile configuration
+// AWSProfile represents an AWS profile configuration.
 type AWSProfile struct {
 	Name              string            `json:"name"`
 	Region            string            `json:"region"`
@@ -40,7 +43,7 @@ type AWSProfile struct {
 	IsActive          bool              `json:"is_active"`
 }
 
-// AWSProfileManager manages AWS profiles
+// AWSProfileManager manages AWS profiles.
 type AWSProfileManager struct {
 	configPath      string
 	credentialsPath string
@@ -48,7 +51,7 @@ type AWSProfileManager struct {
 	ctx             context.Context
 }
 
-// NewAWSProfileManager creates a new AWS profile manager
+// NewAWSProfileManager creates a new AWS profile manager.
 func NewAWSProfileManager(ctx context.Context) (*AWSProfileManager, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -69,7 +72,7 @@ func NewAWSProfileManager(ctx context.Context) (*AWSProfileManager, error) {
 	return manager, nil
 }
 
-// loadProfiles loads all AWS profiles from config file
+// loadProfiles loads all AWS profiles from config file.
 func (m *AWSProfileManager) loadProfiles() error {
 	cfg, err := ini.Load(m.configPath)
 	if err != nil {
@@ -77,6 +80,7 @@ func (m *AWSProfileManager) loadProfiles() error {
 			// Config file doesn't exist, create empty one
 			return nil
 		}
+
 		return fmt.Errorf("failed to load config file: %w", err)
 	}
 
@@ -105,36 +109,47 @@ func (m *AWSProfileManager) loadProfiles() error {
 		if key, err := section.GetKey("region"); err == nil {
 			profile.Region = key.String()
 		}
+
 		if key, err := section.GetKey("output"); err == nil {
 			profile.Output = key.String()
 		}
+
 		if key, err := section.GetKey("source_profile"); err == nil {
 			profile.SourceProfile = key.String()
 		}
+
 		if key, err := section.GetKey("role_arn"); err == nil {
 			profile.RoleArn = key.String()
 		}
+
 		if key, err := section.GetKey("mfa_serial"); err == nil {
 			profile.MFASerial = key.String()
 		}
+
 		if key, err := section.GetKey("sso_start_url"); err == nil {
 			profile.SSOStartURL = key.String()
 		}
+
 		if key, err := section.GetKey("sso_role_name"); err == nil {
 			profile.SSORoleName = key.String()
 		}
+
 		if key, err := section.GetKey("sso_account_id"); err == nil {
 			profile.SSOAccountID = key.String()
 		}
+
 		if key, err := section.GetKey("sso_region"); err == nil {
 			profile.SSORegion = key.String()
 		}
+
 		if key, err := section.GetKey("credential_process"); err == nil {
 			profile.CredentialProcess = key.String()
 		}
+
 		if key, err := section.GetKey("external_id"); err == nil {
 			profile.ExternalID = key.String()
 		}
+
 		if key, err := section.GetKey("duration_seconds"); err == nil {
 			profile.DurationSeconds = key.MustInt(3600)
 		}
@@ -145,28 +160,31 @@ func (m *AWSProfileManager) loadProfiles() error {
 	return nil
 }
 
-// ListProfiles returns all AWS profiles
+// ListProfiles returns all AWS profiles.
 func (m *AWSProfileManager) ListProfiles() []*AWSProfile {
 	profiles := make([]*AWSProfile, 0, len(m.profiles))
 	for _, profile := range m.profiles {
 		profiles = append(profiles, profile)
 	}
+
 	sort.Slice(profiles, func(i, j int) bool {
 		return profiles[i].Name < profiles[j].Name
 	})
+
 	return profiles
 }
 
-// GetProfile returns a specific profile
+// GetProfile returns a specific profile.
 func (m *AWSProfileManager) GetProfile(name string) (*AWSProfile, error) {
 	profile, exists := m.profiles[name]
 	if !exists {
 		return nil, fmt.Errorf("profile '%s' not found", name)
 	}
+
 	return profile, nil
 }
 
-// SwitchProfile switches to a different AWS profile
+// SwitchProfile switches to a different AWS profile.
 func (m *AWSProfileManager) SwitchProfile(profileName string) error {
 	profile, err := m.GetProfile(profileName)
 	if err != nil {
@@ -191,10 +209,11 @@ func (m *AWSProfileManager) SwitchProfile(profileName string) error {
 	}
 
 	fmt.Printf("Switched to AWS profile: %s\n", profileName)
+
 	return nil
 }
 
-// updateShellConfig updates shell configuration files with the new profile
+// updateShellConfig updates shell configuration files with the new profile.
 func (m *AWSProfileManager) updateShellConfig(profileName string) error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -223,10 +242,12 @@ func (m *AWSProfileManager) updateShellConfig(profileName string) error {
 
 		lines := strings.Split(string(content), "\n")
 		found := false
+
 		for i, line := range lines {
 			if strings.HasPrefix(line, "export AWS_PROFILE=") {
 				lines[i] = exportLine
 				found = true
+
 				break
 			}
 		}
@@ -244,7 +265,7 @@ func (m *AWSProfileManager) updateShellConfig(profileName string) error {
 	return nil
 }
 
-// validateSSOCredentials validates SSO credentials for a profile
+// validateSSOCredentials validates SSO credentials for a profile.
 func (m *AWSProfileManager) validateSSOCredentials(profile *AWSProfile) error {
 	cfg, err := config.LoadDefaultConfig(m.ctx,
 		config.WithRegion(profile.SSORegion),
@@ -256,6 +277,7 @@ func (m *AWSProfileManager) validateSSOCredentials(profile *AWSProfile) error {
 
 	// Try to get caller identity to validate credentials
 	stsClient := sts.NewFromConfig(cfg)
+
 	_, err = stsClient.GetCallerIdentity(m.ctx, &sts.GetCallerIdentityInput{})
 	if err != nil {
 		return fmt.Errorf("credentials validation failed: %w", err)
@@ -264,7 +286,7 @@ func (m *AWSProfileManager) validateSSOCredentials(profile *AWSProfile) error {
 	return nil
 }
 
-// LoginSSO performs SSO login for a profile
+// LoginSSO performs SSO login for a profile.
 func (m *AWSProfileManager) LoginSSO(profileName string) error {
 	profile, err := m.GetProfile(profileName)
 	if err != nil {
@@ -312,6 +334,7 @@ func (m *AWSProfileManager) LoginSSO(profileName string) error {
 
 	// Poll for token
 	var tokenResp *ssooidc.CreateTokenOutput
+
 	for {
 		tokenResp, err = oidcClient.CreateToken(m.ctx, &ssooidc.CreateTokenInput{
 			ClientId:     registerResp.ClientId,
@@ -324,8 +347,10 @@ func (m *AWSProfileManager) LoginSSO(profileName string) error {
 				time.Sleep(time.Duration(startResp.Interval) * time.Second)
 				continue
 			}
+
 			return fmt.Errorf("failed to create token: %w", err)
 		}
+
 		break
 	}
 
@@ -335,10 +360,11 @@ func (m *AWSProfileManager) LoginSSO(profileName string) error {
 	}
 
 	fmt.Printf("Successfully logged in to SSO for profile: %s\n", profileName)
+
 	return nil
 }
 
-// saveSSOToken saves SSO token to cache
+// saveSSOToken saves SSO token to cache.
 func (m *AWSProfileManager) saveSSOToken(profile *AWSProfile, tokenResp *ssooidc.CreateTokenOutput) error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -376,7 +402,7 @@ func (m *AWSProfileManager) saveSSOToken(profile *AWSProfile, tokenResp *ssooidc
 	return nil
 }
 
-// newAWSProfileCmd creates the AWS profile management command
+// newAWSProfileCmd creates the AWS profile management command.
 func newAWSProfileCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "aws-profile",
@@ -402,7 +428,7 @@ Features:
 	return cmd
 }
 
-// newAWSProfileListCmd creates the list command
+// newAWSProfileListCmd creates the list command.
 func newAWSProfileListCmd() *cobra.Command {
 	var outputFormat string
 
@@ -469,7 +495,7 @@ func newAWSProfileListCmd() *cobra.Command {
 	return cmd
 }
 
-// newAWSProfileSwitchCmd creates the switch command
+// newAWSProfileSwitchCmd creates the switch command.
 func newAWSProfileSwitchCmd() *cobra.Command {
 	var interactive bool
 
@@ -527,7 +553,7 @@ func newAWSProfileSwitchCmd() *cobra.Command {
 	return cmd
 }
 
-// newAWSProfileLoginCmd creates the login command
+// newAWSProfileLoginCmd creates the login command.
 func newAWSProfileLoginCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login [profile-name]",
@@ -548,7 +574,7 @@ func newAWSProfileLoginCmd() *cobra.Command {
 	return cmd
 }
 
-// newAWSProfileShowCmd creates the show command
+// newAWSProfileShowCmd creates the show command.
 func newAWSProfileShowCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show [profile-name]",
@@ -612,7 +638,7 @@ func newAWSProfileShowCmd() *cobra.Command {
 	return cmd
 }
 
-// newAWSProfileValidateCmd creates the validate command
+// newAWSProfileValidateCmd creates the validate command.
 func newAWSProfileValidateCmd() *cobra.Command {
 	var all bool
 

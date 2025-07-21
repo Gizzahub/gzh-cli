@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-// TestComprehensiveMockingStrategy demonstrates a complete mocking strategy
-// integrating gomock, testify/mock, and custom builders
+// integrating gomock, testify/mock, and custom builders.
 func TestComprehensiveMockingStrategy(t *testing.T) {
 	// Setup test context
 	ctx := context.Background()
@@ -241,7 +241,7 @@ func TestComprehensiveMockingStrategy(t *testing.T) {
 	})
 }
 
-// TestMockingBestPractices demonstrates best practices for mock usage
+// TestMockingBestPractices demonstrates best practices for mock usage.
 func TestMockingBestPractices(t *testing.T) {
 	t.Run("Mock Isolation", func(t *testing.T) {
 		// Each test should have its own mocks
@@ -323,7 +323,7 @@ func TestMockingBestPractices(t *testing.T) {
 	})
 }
 
-// BenchmarkMockingPerformance benchmarks different mocking approaches
+// BenchmarkMockingPerformance benchmarks different mocking approaches.
 func BenchmarkMockingPerformance(b *testing.B) {
 	b.Run("Gomock Creation", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

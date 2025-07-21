@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -7,13 +10,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/types/repoconfig"
 	"github.com/google/go-github/v66/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/types/repoconfig"
 )
 
-// WebhookFlags represents webhook command flags
+// WebhookFlags represents webhook command flags.
 type WebhookFlags struct {
 	GlobalFlags
 	Repository   string
@@ -26,7 +30,7 @@ type WebhookFlags struct {
 	OutputFormat string
 }
 
-// newWebhookCmd creates the webhook management command
+// newWebhookCmd creates the webhook management command.
 func newWebhookCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "webhook",
@@ -59,14 +63,14 @@ Examples:
 	return cmd
 }
 
-// addWebhookFlags adds common webhook flags to a command
+// addWebhookFlags adds common webhook flags to a command.
 func addWebhookFlags(cmd *cobra.Command, flags *WebhookFlags) {
 	addGlobalFlags(cmd, &flags.GlobalFlags)
 	cmd.Flags().StringVar(&flags.Repository, "repo", "", "Repository name")
 	cmd.Flags().StringVar(&flags.OutputFormat, "output", "table", "Output format (table, json, yaml)")
 }
 
-// newWebhookListCmd creates the webhook list command
+// newWebhookListCmd creates the webhook list command.
 func newWebhookListCmd() *cobra.Command {
 	flags := &WebhookFlags{}
 	cmd := &cobra.Command{
@@ -92,7 +96,7 @@ Examples:
 	return cmd
 }
 
-// newWebhookCreateCmd creates the webhook create command
+// newWebhookCreateCmd creates the webhook create command.
 func newWebhookCreateCmd() *cobra.Command {
 	flags := &WebhookFlags{}
 	cmd := &cobra.Command{
@@ -123,7 +127,7 @@ Examples:
 	return cmd
 }
 
-// newWebhookUpdateCmd creates the webhook update command
+// newWebhookUpdateCmd creates the webhook update command.
 func newWebhookUpdateCmd() *cobra.Command {
 	flags := &WebhookFlags{}
 	cmd := &cobra.Command{
@@ -155,7 +159,7 @@ Examples:
 	return cmd
 }
 
-// newWebhookDeleteCmd creates the webhook delete command
+// newWebhookDeleteCmd creates the webhook delete command.
 func newWebhookDeleteCmd() *cobra.Command {
 	flags := &WebhookFlags{}
 	cmd := &cobra.Command{
@@ -181,7 +185,7 @@ Examples:
 	return cmd
 }
 
-// newWebhookGetCmd creates the webhook get command
+// newWebhookGetCmd creates the webhook get command.
 func newWebhookGetCmd() *cobra.Command {
 	flags := &WebhookFlags{}
 	cmd := &cobra.Command{
@@ -209,7 +213,7 @@ Examples:
 	return cmd
 }
 
-// runWebhookList lists all webhooks for a repository
+// runWebhookList lists all webhooks for a repository.
 func runWebhookList(flags *WebhookFlags) error {
 	ctx := context.Background()
 	client := createGitHubClient(flags.Token)
@@ -222,7 +226,7 @@ func runWebhookList(flags *WebhookFlags) error {
 	return displayWebhooks(webhooks, flags.OutputFormat)
 }
 
-// runWebhookCreate creates a new webhook
+// runWebhookCreate creates a new webhook.
 func runWebhookCreate(flags *WebhookFlags) error {
 	ctx := context.Background()
 	client := createGitHubClient(flags.Token)
@@ -252,10 +256,11 @@ func runWebhookCreate(flags *WebhookFlags) error {
 	}
 
 	fmt.Printf("Successfully created webhook with ID: %d\n", createdHook.GetID())
+
 	return displayWebhook(createdHook, "table")
 }
 
-// runWebhookUpdate updates an existing webhook
+// runWebhookUpdate updates an existing webhook.
 func runWebhookUpdate(flags *WebhookFlags) error {
 	ctx := context.Background()
 	client := createGitHubClient(flags.Token)
@@ -276,9 +281,11 @@ func runWebhookUpdate(flags *WebhookFlags) error {
 	if flags.URL != "" {
 		config.URL = &flags.URL
 	}
+
 	if flags.ContentType != "" {
 		config.ContentType = &flags.ContentType
 	}
+
 	if flags.Secret != "" {
 		config.Secret = &flags.Secret
 	}
@@ -306,10 +313,11 @@ func runWebhookUpdate(flags *WebhookFlags) error {
 	}
 
 	fmt.Printf("Successfully updated webhook with ID: %d\n", flags.ID)
+
 	return displayWebhook(updatedHook, "table")
 }
 
-// runWebhookDelete deletes a webhook
+// runWebhookDelete deletes a webhook.
 func runWebhookDelete(flags *WebhookFlags) error {
 	ctx := context.Background()
 	client := createGitHubClient(flags.Token)
@@ -325,10 +333,11 @@ func runWebhookDelete(flags *WebhookFlags) error {
 	}
 
 	fmt.Printf("Successfully deleted webhook with ID: %d\n", flags.ID)
+
 	return nil
 }
 
-// runWebhookGet gets details of a specific webhook
+// runWebhookGet gets details of a specific webhook.
 func runWebhookGet(flags *WebhookFlags) error {
 	ctx := context.Background()
 	client := createGitHubClient(flags.Token)
@@ -341,7 +350,7 @@ func runWebhookGet(flags *WebhookFlags) error {
 	return displayWebhook(hook, flags.OutputFormat)
 }
 
-// createGitHubClient creates a GitHub API client
+// createGitHubClient creates a GitHub API client.
 func createGitHubClient(token string) *github.Client {
 	if token == "" {
 		return github.NewClient(nil)
@@ -349,10 +358,11 @@ func createGitHubClient(token string) *github.Client {
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(context.Background(), ts)
+
 	return github.NewClient(tc)
 }
 
-// displayWebhooks displays a list of webhooks
+// displayWebhooks displays a list of webhooks.
 func displayWebhooks(webhooks []*github.Hook, format string) error {
 	switch format {
 	case "json":
@@ -363,23 +373,29 @@ func displayWebhooks(webhooks []*github.Hook, format string) error {
 		for i, hook := range webhooks {
 			configs[i] = convertToWebhookConfig(hook)
 		}
+
 		data, err := json.MarshalIndent(configs, "", "  ")
 		if err != nil {
 			return err
 		}
+
 		fmt.Println(string(data))
+
 		return nil
 	default:
 		// Table format
 		fmt.Printf("%-8s %-20s %-40s %-8s %-20s\n", "ID", "EVENTS", "URL", "ACTIVE", "CONTENT_TYPE")
 		fmt.Println("-------- -------------------- ---------------------------------------- -------- --------------------")
+
 		for _, hook := range webhooks {
 			url := ""
 			contentType := ""
+
 			if hook.Config != nil {
 				if hook.Config.URL != nil {
 					url = *hook.Config.URL
 				}
+
 				if hook.Config.ContentType != nil {
 					contentType = *hook.Config.ContentType
 				}
@@ -400,22 +416,26 @@ func displayWebhooks(webhooks []*github.Hook, format string) error {
 				hook.GetActive(),
 				contentType)
 		}
+
 		return nil
 	}
 }
 
-// displayWebhook displays a single webhook
+// displayWebhook displays a single webhook.
 func displayWebhook(hook *github.Hook, format string) error {
 	switch format {
 	case "json":
 		return json.NewEncoder(os.Stdout).Encode(hook)
 	case "yaml":
 		config := convertToWebhookConfig(hook)
+
 		data, err := json.MarshalIndent(config, "", "  ")
 		if err != nil {
 			return err
 		}
+
 		fmt.Println(string(data))
+
 		return nil
 	default:
 		// Table format
@@ -426,11 +446,12 @@ func displayWebhook(hook *github.Hook, format string) error {
 		fmt.Printf("Content Type: %s\n", safeStringFromPointer(hook.Config.ContentType))
 		fmt.Printf("Created: %s\n", hook.GetCreatedAt().Format("2006-01-02 15:04:05"))
 		fmt.Printf("Updated: %s\n", hook.GetUpdatedAt().Format("2006-01-02 15:04:05"))
+
 		return nil
 	}
 }
 
-// convertToWebhookConfig converts a GitHub Hook to repoconfig.WebhookConfig
+// convertToWebhookConfig converts a GitHub Hook to repoconfig.WebhookConfig.
 func convertToWebhookConfig(hook *github.Hook) repoconfig.WebhookConfig {
 	config := repoconfig.WebhookConfig{
 		Events: hook.Events,
@@ -441,9 +462,11 @@ func convertToWebhookConfig(hook *github.Hook) repoconfig.WebhookConfig {
 		if hook.Config.URL != nil {
 			config.URL = *hook.Config.URL
 		}
+
 		if hook.Config.ContentType != nil {
 			config.ContentType = *hook.Config.ContentType
 		}
+
 		if hook.Config.Secret != nil {
 			config.Secret = *hook.Config.Secret
 		}
@@ -452,17 +475,19 @@ func convertToWebhookConfig(hook *github.Hook) repoconfig.WebhookConfig {
 	return config
 }
 
-// safeStringFromPointer safely gets a string value from a pointer
+// safeStringFromPointer safely gets a string value from a pointer.
 func safeStringFromPointer(ptr *string) string {
 	if ptr == nil {
 		return ""
 	}
+
 	return *ptr
 }
 
-// newWebhookBulkCmd creates the webhook bulk operations command
+// newWebhookBulkCmd creates the webhook bulk operations command.
 func newWebhookBulkCmd() *cobra.Command {
 	flags := &WebhookFlags{}
+
 	var (
 		operation    string
 		configFile   string
@@ -515,9 +540,10 @@ Examples:
 	return cmd
 }
 
-// newWebhookAutomationCmd creates the webhook automation command
+// newWebhookAutomationCmd creates the webhook automation command.
 func newWebhookAutomationCmd() *cobra.Command {
 	flags := &WebhookFlags{}
+
 	var (
 		ruleFile  string
 		action    string
@@ -571,7 +597,7 @@ Examples:
 	return cmd
 }
 
-// runWebhookBulkCommand executes bulk webhook operations
+// runWebhookBulkCommand executes bulk webhook operations.
 func runWebhookBulkCommand(flags WebhookFlags, operation, configFile string, parallelJobs int, dryRun bool) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -586,6 +612,7 @@ func runWebhookBulkCommand(flags WebhookFlags, operation, configFile string, par
 	if dryRun {
 		fmt.Println("Mode: DRY RUN (preview only)")
 	}
+
 	fmt.Println()
 
 	switch operation {
@@ -602,7 +629,7 @@ func runWebhookBulkCommand(flags WebhookFlags, operation, configFile string, par
 	}
 }
 
-// runWebhookAutomationCommand executes webhook automation operations
+// runWebhookAutomationCommand executes webhook automation operations.
 func runWebhookAutomationCommand(flags WebhookFlags, ruleFile, action string, enable, disable, listRules bool) error {
 	fmt.Printf("🤖 Webhook Automation\n")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -649,9 +676,11 @@ func runBulkCreateWebhooks(flags WebhookFlags, configFile string, parallelJobs i
 
 	// Mock implementation
 	fmt.Printf("✅ Would create webhooks for 15 repositories")
+
 	if dryRun {
 		fmt.Printf(" (DRY RUN)")
 	}
+
 	fmt.Println()
 
 	return nil
@@ -662,9 +691,11 @@ func runBulkUpdateWebhooks(flags WebhookFlags, configFile string, parallelJobs i
 
 	// Mock implementation
 	fmt.Printf("✅ Would update webhooks for 12 repositories")
+
 	if dryRun {
 		fmt.Printf(" (DRY RUN)")
 	}
+
 	fmt.Println()
 
 	return nil
@@ -675,9 +706,11 @@ func runBulkDeleteWebhooks(flags WebhookFlags, parallelJobs int, dryRun bool) er
 
 	// Mock implementation
 	fmt.Printf("✅ Would delete webhooks from 8 repositories")
+
 	if dryRun {
 		fmt.Printf(" (DRY RUN)")
 	}
+
 	fmt.Println()
 
 	return nil
@@ -688,9 +721,11 @@ func runBulkSyncWebhooks(flags WebhookFlags, configFile string, parallelJobs int
 
 	// Mock implementation
 	fmt.Printf("✅ Would sync webhooks for 20 repositories")
+
 	if dryRun {
 		fmt.Printf(" (DRY RUN)")
 	}
+
 	fmt.Println()
 
 	return nil
@@ -732,12 +767,14 @@ func listAutomationRules() error {
 func enableAutomationRule(flags WebhookFlags, ruleName string) error {
 	fmt.Printf("✅ Enabling automation rule: %s\n", ruleName)
 	fmt.Printf("Rule '%s' is now active for organization: %s\n", ruleName, flags.Organization)
+
 	return nil
 }
 
 func disableAutomationRule(flags WebhookFlags, ruleName string) error {
 	fmt.Printf("🔴 Disabling automation rule: %s\n", ruleName)
 	fmt.Printf("Rule '%s' is now inactive for organization: %s\n", ruleName, flags.Organization)
+
 	return nil
 }
 

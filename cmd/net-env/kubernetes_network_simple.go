@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -7,7 +10,7 @@ import (
 	"time"
 )
 
-// NetworkPolicyManifest represents a Kubernetes NetworkPolicy in YAML format
+// NetworkPolicyManifest represents a Kubernetes NetworkPolicy in YAML format.
 type NetworkPolicyManifest struct {
 	APIVersion string                    `yaml:"apiVersion"`
 	Kind       string                    `yaml:"kind"`
@@ -15,13 +18,13 @@ type NetworkPolicyManifest struct {
 	Spec       NetworkPolicySpecManifest `yaml:"spec"`
 }
 
-// NetworkPolicyMetadata represents metadata for NetworkPolicy
+// NetworkPolicyMetadata represents metadata for NetworkPolicy.
 type NetworkPolicyMetadata struct {
 	Name      string `yaml:"name"`
 	Namespace string `yaml:"namespace"`
 }
 
-// NetworkPolicySpecManifest represents the spec section of NetworkPolicy
+// NetworkPolicySpecManifest represents the spec section of NetworkPolicy.
 type NetworkPolicySpecManifest struct {
 	PodSelector LabelSelector              `yaml:"podSelector"`
 	PolicyTypes []string                   `yaml:"policyTypes,omitempty"`
@@ -29,44 +32,44 @@ type NetworkPolicySpecManifest struct {
 	Egress      []NetworkPolicyEgressSpec  `yaml:"egress,omitempty"`
 }
 
-// LabelSelector represents a label selector
+// LabelSelector represents a label selector.
 type LabelSelector struct {
 	MatchLabels map[string]string `yaml:"matchLabels,omitempty"`
 }
 
-// NetworkPolicyIngressSpec represents ingress rules in manifest format
+// NetworkPolicyIngressSpec represents ingress rules in manifest format.
 type NetworkPolicyIngressSpec struct {
 	From  []NetworkPolicyPeerSpec `yaml:"from,omitempty"`
 	Ports []NetworkPolicyPortSpec `yaml:"ports,omitempty"`
 }
 
-// NetworkPolicyEgressSpec represents egress rules in manifest format
+// NetworkPolicyEgressSpec represents egress rules in manifest format.
 type NetworkPolicyEgressSpec struct {
 	To    []NetworkPolicyPeerSpec `yaml:"to,omitempty"`
 	Ports []NetworkPolicyPortSpec `yaml:"ports,omitempty"`
 }
 
-// NetworkPolicyPeerSpec represents a peer in manifest format
+// NetworkPolicyPeerSpec represents a peer in manifest format.
 type NetworkPolicyPeerSpec struct {
 	PodSelector       *LabelSelector `yaml:"podSelector,omitempty"`
 	NamespaceSelector *LabelSelector `yaml:"namespaceSelector,omitempty"`
 	IPBlock           *IPBlockSpec   `yaml:"ipBlock,omitempty"`
 }
 
-// IPBlockSpec represents IP block in manifest format
+// IPBlockSpec represents IP block in manifest format.
 type IPBlockSpec struct {
 	CIDR   string   `yaml:"cidr"`
 	Except []string `yaml:"except,omitempty"`
 }
 
-// NetworkPolicyPortSpec represents port configuration in manifest format
+// NetworkPolicyPortSpec represents port configuration in manifest format.
 type NetworkPolicyPortSpec struct {
 	Protocol string      `yaml:"protocol,omitempty"`
 	Port     interface{} `yaml:"port,omitempty"`
 	EndPort  *int32      `yaml:"endPort,omitempty"`
 }
 
-// GenerateNetworkPolicy generates a Kubernetes NetworkPolicy from configuration
+// GenerateNetworkPolicy generates a Kubernetes NetworkPolicy from configuration.
 func (km *KubernetesNetworkManager) GenerateNetworkPolicy(namespace string, config *NetworkPolicyConfig) (*NetworkPolicyManifest, error) {
 	policy := &NetworkPolicyManifest{
 		APIVersion: "networking.k8s.io/v1",
@@ -186,55 +189,7 @@ func (km *KubernetesNetworkManager) GenerateNetworkPolicy(namespace string, conf
 	return policy, nil
 }
 
-// // ExecuteWithTimeout executes a kubectl command with timeout
-//
-//	func (executor *KubernetesCommandExecutor) ExecuteWithTimeout(ctx context.Context, command string, timeout time.Duration) (*KubernetesCommandResult, error) {
-//		// Check cache first (for read-only commands)
-//		if strings.Contains(command, "get") && !strings.Contains(command, "watch") {
-//			if cached := executor.getCachedResult(command); cached != nil {
-//				return cached, nil
-//			}
-//		}
-//
-//		// Create context with timeout
-//		timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
-//		defer cancel()
-//
-//		// Parse command
-//		parts := strings.Fields(command)
-//		if len(parts) == 0 {
-//			return nil, fmt.Errorf("empty command")
-//		}
-//
-//		start := time.Now()
-//		cmd := exec.CommandContext(timeoutCtx, parts[0], parts[1:]...)
-//		output, err := cmd.CombinedOutput()
-//		duration := time.Since(start)
-//
-//		result := &KubernetesCommandResult{
-//			Output:   string(output),
-//			Duration: duration,
-//			CachedAt: time.Now(),
-//		}
-//
-//		if err != nil {
-//			result.Error = err.Error()
-//			if exitError, ok := err.(*exec.ExitError); ok {
-//				result.ExitCode = exitError.ExitCode()
-//			} else {
-//				result.ExitCode = 1
-//			}
-//		}
-//
-//		// Cache read-only command results for 30 seconds
-//		if strings.Contains(command, "get") && !strings.Contains(command, "watch") {
-//			executor.setCachedResult(command, result)
-//		}
-//
-//		return result, nil
-//	}
-//
-// GetNamespaceNetworkPolicies gets all network policies in a namespace
+// GetNamespaceNetworkPolicies gets all network policies in a namespace.
 func (km *KubernetesNetworkManager) GetNamespaceNetworkPolicies(namespace string) ([]map[string]interface{}, error) {
 	cmd := fmt.Sprintf("kubectl get networkpolicies -n %s -o json", namespace)
 	result, err := km.executor.ExecuteWithTimeout(context.Background(), cmd, 10*time.Second)
@@ -250,18 +205,20 @@ func (km *KubernetesNetworkManager) GetNamespaceNetworkPolicies(namespace string
 
 	if items, ok := policyList["items"].([]interface{}); ok {
 		policies := make([]map[string]interface{}, 0, len(items))
+
 		for _, item := range items {
 			if policy, ok := item.(map[string]interface{}); ok {
 				policies = append(policies, policy)
 			}
 		}
+
 		return policies, nil
 	}
 
 	return []map[string]interface{}{}, nil
 }
 
-// ExportNamespacePolicies exports existing namespace policies to a profile
+// ExportNamespacePolicies exports existing namespace policies to a profile.
 func (km *KubernetesNetworkManager) ExportNamespacePolicies(namespace, profileName string) error {
 	policies, err := km.GetNamespaceNetworkPolicies(namespace)
 	if err != nil {
@@ -310,6 +267,7 @@ func (km *KubernetesNetworkManager) ExportNamespacePolicies(namespace, profileNa
 		// Extract ingress rules
 		if ingressRules, ok := spec["ingress"].([]interface{}); ok {
 			config.Ingress = make([]NetworkPolicyIngressRule, 0)
+
 			for _, rule := range ingressRules {
 				if ruleMap, ok := rule.(map[string]interface{}); ok {
 					ingressRule := NetworkPolicyIngressRule{}
@@ -346,6 +304,7 @@ func (km *KubernetesNetworkManager) ExportNamespacePolicies(namespace, profileNa
 									if cidr, ok := ipBlock["cidr"].(string); ok {
 										networkPeer.IPBlock.CIDR = cidr
 									}
+
 									if except, ok := ipBlock["except"].([]interface{}); ok {
 										for _, e := range except {
 											if exceptCIDR, ok := e.(string); ok {

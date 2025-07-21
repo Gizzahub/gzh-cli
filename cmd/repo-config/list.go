@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -7,16 +10,18 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
-// newListCmd creates the list subcommand
+// newListCmd creates the list subcommand.
 func newListCmd() *cobra.Command {
 	var flags GlobalFlags
+
 	var (
 		filter     string
 		format     string
@@ -63,7 +68,7 @@ Examples:
 	return cmd
 }
 
-// runListCommand executes the list command
+// runListCommand executes the list command.
 func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, limit int) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -72,21 +77,26 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 	// Get GitHub token
 	environment := env.NewOSEnvironment()
 	token := flags.Token
+
 	if token == "" {
 		token = environment.Get(env.CommonEnvironmentKeys.GitHubToken)
 	}
+
 	if token == "" {
 		return fmt.Errorf("GitHub token is required (use --token flag or GITHUB_TOKEN env var)")
 	}
 
 	if flags.Verbose {
 		fmt.Printf("Listing repositories for organization: %s\n", flags.Organization)
+
 		if filter != "" {
 			fmt.Printf("Filter pattern: %s\n", filter)
 		}
+
 		if limit > 0 {
 			fmt.Printf("Limit: %d\n", limit)
 		}
+
 		fmt.Println()
 	}
 
@@ -110,12 +120,15 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 		if err != nil {
 			return fmt.Errorf("invalid filter pattern: %w", err)
 		}
+
 		var filtered []*github.Repository
+
 		for _, repo := range repos {
 			if filterRegex.MatchString(repo.Name) {
 				filtered = append(filtered, repo)
 			}
 		}
+
 		repos = filtered
 	}
 
@@ -135,6 +148,7 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 
 	// Convert to RepositoryInfo format
 	var repositories []RepositoryInfo
+
 	for _, repo := range repos {
 		visibility := "public"
 		if repo.Private {
@@ -177,7 +191,7 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 	return nil
 }
 
-// RepositoryInfo represents repository information
+// RepositoryInfo represents repository information.
 type RepositoryInfo struct {
 	Name        string                   `json:"name" yaml:"name"`
 	Description string                   `json:"description" yaml:"description"`
@@ -188,7 +202,7 @@ type RepositoryInfo struct {
 	Config      *github.RepositoryConfig `json:"config,omitempty" yaml:"config,omitempty"`
 }
 
-// detectTemplate attempts to detect which template a repository is using
+// detectTemplate attempts to detect which template a repository is using.
 func detectTemplate(repo *github.Repository, repoConfig *config.RepoConfig) string {
 	if repoConfig == nil || repoConfig.Repositories == nil {
 		return "none"
@@ -216,7 +230,7 @@ func detectTemplate(repo *github.Repository, repoConfig *config.RepoConfig) stri
 	return "none"
 }
 
-// checkCompliance checks if a repository is compliant with its template
+// checkCompliance checks if a repository is compliant with its template.
 func checkCompliance(repo *github.Repository, repoConfig *config.RepoConfig) bool {
 	// Simple compliance check - can be expanded
 	// For now, just check if it has a template assigned
@@ -224,19 +238,21 @@ func checkCompliance(repo *github.Repository, repoConfig *config.RepoConfig) boo
 	return template != "none"
 }
 
-// matchPattern checks if a string matches a pattern (simple glob support)
+// matchPattern checks if a string matches a pattern (simple glob support).
 func matchPattern(str, pattern string) (bool, error) {
 	if strings.Contains(pattern, "*") {
 		// Convert simple glob to regex
 		pattern = strings.ReplaceAll(pattern, ".", "\\.")
 		pattern = strings.ReplaceAll(pattern, "*", ".*")
 		pattern = "^" + pattern + "$"
+
 		return regexp.MatchString(pattern, str)
 	}
+
 	return str == pattern, nil
 }
 
-// printTableFormat prints repositories in table format
+// printTableFormat prints repositories in table format.
 func printTableFormat(repos []RepositoryInfo, showConfig bool) {
 	fmt.Printf("%-20s %-12s %-12s %-10s %s\n", "NAME", "VISIBILITY", "TEMPLATE", "COMPLIANT", "ISSUES")
 	fmt.Println("────────────────────────────────────────────────────────────────────")
@@ -270,32 +286,36 @@ func printTableFormat(repos []RepositoryInfo, showConfig bool) {
 	fmt.Printf("Total repositories: %d\n", len(repos))
 
 	compliantCount := 0
+
 	for _, repo := range repos {
 		if repo.Compliant {
 			compliantCount++
 		}
 	}
+
 	fmt.Printf("Compliant: %d/%d (%.1f%%)\n",
 		compliantCount, len(repos),
 		float64(compliantCount)/float64(len(repos))*100)
 }
 
-// printJSONFormat prints repositories in JSON format
+// printJSONFormat prints repositories in JSON format.
 func printJSONFormat(repos []RepositoryInfo) {
 	data, err := json.MarshalIndent(repos, "", "  ")
 	if err != nil {
 		fmt.Printf("Error marshaling JSON: %v\n", err)
 		return
 	}
+
 	fmt.Println(string(data))
 }
 
-// printYAMLFormat prints repositories in YAML format
+// printYAMLFormat prints repositories in YAML format.
 func printYAMLFormat(repos []RepositoryInfo) {
 	data, err := yaml.Marshal(repos)
 	if err != nil {
 		fmt.Printf("Error marshaling YAML: %v\n", err)
 		return
 	}
+
 	fmt.Println(string(data))
 }

@@ -1,10 +1,14 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package genconfig
 
 import (
 	"fmt"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 type genConfigGithubOptions struct {

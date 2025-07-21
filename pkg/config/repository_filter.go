@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -5,14 +8,14 @@ import (
 	"strings"
 )
 
-// RepositoryFilterConfig represents repository filtering configuration from gzh.yaml
+// RepositoryFilterConfig represents repository filtering configuration from gzh.yaml.
 type RepositoryFilterConfig struct {
 	Visibility string   `json:"visibility"` // public, private, all
 	Match      string   `json:"match"`      // regex pattern for repository names
 	Exclude    []string `json:"exclude"`    // patterns to exclude repositories
 }
 
-// NewRepositoryFilterConfig creates a repository filter config from GitTarget
+// NewRepositoryFilterConfig creates a repository filter config from GitTarget.
 func NewRepositoryFilterConfig(target GitTarget) *RepositoryFilterConfig {
 	return &RepositoryFilterConfig{
 		Visibility: target.Visibility,
@@ -21,18 +24,18 @@ func NewRepositoryFilterConfig(target GitTarget) *RepositoryFilterConfig {
 	}
 }
 
-// CreateRepositoryFilter creates a RepositoryFilter from config
+// CreateRepositoryFilter creates a RepositoryFilter from config.
 func (r *RepositoryFilterConfig) CreateRepositoryFilter() (*RepositoryFilter, error) {
 	return NewRepositoryFilter(r.Visibility, r.Match, r.Exclude)
 }
 
-// RepositoryMatcher provides high-level repository matching functionality
+// RepositoryMatcher provides high-level repository matching functionality.
 type RepositoryMatcher struct {
 	filter *RepositoryFilter
 	config *RepositoryFilterConfig
 }
 
-// NewRepositoryMatcher creates a new repository matcher from config
+// NewRepositoryMatcher creates a new repository matcher from config.
 func NewRepositoryMatcher(config *RepositoryFilterConfig) (*RepositoryMatcher, error) {
 	filter, err := config.CreateRepositoryFilter()
 	if err != nil {
@@ -45,7 +48,7 @@ func NewRepositoryMatcher(config *RepositoryFilterConfig) (*RepositoryMatcher, e
 	}, nil
 }
 
-// ShouldCloneRepository determines if a repository should be cloned based on configuration
+// ShouldCloneRepository determines if a repository should be cloned based on configuration.
 func (m *RepositoryMatcher) ShouldCloneRepository(repo Repository) bool {
 	visRepo := VisibilityRepository{
 		Name:      repo.Name,
@@ -55,10 +58,11 @@ func (m *RepositoryMatcher) ShouldCloneRepository(repo Repository) bool {
 		SSHURL:    repo.SSHURL,
 		HTTPURL:   repo.HTMLURL,
 	}
+
 	return m.filter.ShouldIncludeRepository(visRepo)
 }
 
-// FilterRepositoryList filters a list of repositories based on configuration
+// FilterRepositoryList filters a list of repositories based on configuration.
 func (m *RepositoryMatcher) FilterRepositoryList(repos []Repository) []Repository {
 	// Convert Repository to VisibilityRepository
 	visRepos := make([]VisibilityRepository, len(repos))
@@ -92,12 +96,12 @@ func (m *RepositoryMatcher) FilterRepositoryList(repos []Repository) []Repositor
 	return result
 }
 
-// GetFilterSummary returns a summary of the filtering configuration
+// GetFilterSummary returns a summary of the filtering configuration.
 func (m *RepositoryMatcher) GetFilterSummary() string {
 	return m.filter.GetFilterSummary()
 }
 
-// GetStatistics returns filtering statistics for a repository list
+// GetStatistics returns filtering statistics for a repository list.
 func (m *RepositoryMatcher) GetStatistics(repos []Repository) *FilteringStatistics {
 	// Convert to VisibilityRepository for statistics
 	visRepos := make([]VisibilityRepository, len(repos))
@@ -137,22 +141,23 @@ func (m *RepositoryMatcher) GetStatistics(repos []Repository) *FilteringStatisti
 	}
 }
 
-// FilteringStatistics provides statistics about repository filtering results
+// FilteringStatistics provides statistics about repository filtering results.
 type FilteringStatistics struct {
 	OriginalStats VisibilityStatistics    `json:"original_stats"`
 	FilteredStats VisibilityStatistics    `json:"filtered_stats"`
 	FilterConfig  *RepositoryFilterConfig `json:"filter_config"`
 }
 
-// GetFilteringRatio returns the percentage of repositories that passed filtering
+// GetFilteringRatio returns the percentage of repositories that passed filtering.
 func (f *FilteringStatistics) GetFilteringRatio() float64 {
 	if f.OriginalStats.TotalRepositories == 0 {
 		return 0
 	}
+
 	return float64(f.FilteredStats.TotalRepositories) / float64(f.OriginalStats.TotalRepositories) * 100
 }
 
-// GetFilteringSummary returns a human-readable summary of filtering results
+// GetFilteringSummary returns a human-readable summary of filtering results.
 func (f *FilteringStatistics) GetFilteringSummary() string {
 	ratio := f.GetFilteringRatio()
 	excluded := f.OriginalStats.TotalRepositories - f.FilteredStats.TotalRepositories
@@ -161,15 +166,15 @@ func (f *FilteringStatistics) GetFilteringSummary() string {
 		f.FilteredStats.TotalRepositories, f.OriginalStats.TotalRepositories, ratio, excluded)
 }
 
-// RepositoryNameMatcher provides simple repository name matching utilities
+// RepositoryNameMatcher provides simple repository name matching utilities.
 type RepositoryNameMatcher struct{}
 
-// NewRepositoryNameMatcher creates a new repository name matcher
+// NewRepositoryNameMatcher creates a new repository name matcher.
 func NewRepositoryNameMatcher() *RepositoryNameMatcher {
 	return &RepositoryNameMatcher{}
 }
 
-// MatchesPattern checks if a repository name matches a pattern (glob or regex)
+// MatchesPattern checks if a repository name matches a pattern (glob or regex).
 func (m *RepositoryNameMatcher) MatchesPattern(repoName, pattern string) bool {
 	if pattern == "" {
 		return true // No pattern means match all
@@ -189,17 +194,18 @@ func (m *RepositoryNameMatcher) MatchesPattern(repoName, pattern string) bool {
 	return strings.Contains(repoName, pattern)
 }
 
-// MatchesExcludePatterns checks if a repository name matches any exclude pattern
+// MatchesExcludePatterns checks if a repository name matches any exclude pattern.
 func (m *RepositoryNameMatcher) MatchesExcludePatterns(repoName string, excludePatterns []string) bool {
 	for _, pattern := range excludePatterns {
 		if m.MatchesPattern(repoName, pattern) {
 			return true // Found a match in exclude patterns
 		}
 	}
+
 	return false // No exclude patterns matched
 }
 
-// matchesGlob provides simple glob pattern matching
+// matchesGlob provides simple glob pattern matching.
 func (m *RepositoryNameMatcher) matchesGlob(name, pattern string) bool {
 	// Simple glob implementation
 	// Convert glob to regex
@@ -213,7 +219,7 @@ func (m *RepositoryNameMatcher) matchesGlob(name, pattern string) bool {
 	return false
 }
 
-// ValidateFilterConfig validates a repository filter configuration
+// ValidateFilterConfig validates a repository filter configuration.
 func ValidateFilterConfig(config *RepositoryFilterConfig) error {
 	// Validate visibility
 	if config.Visibility != "" && !IsValidVisibility(config.Visibility) {
@@ -244,11 +250,12 @@ func ValidateFilterConfig(config *RepositoryFilterConfig) error {
 	return nil
 }
 
-// CreateRepositoryMatcherFromGitTarget creates a repository matcher from GitTarget
+// CreateRepositoryMatcherFromGitTarget creates a repository matcher from GitTarget.
 func CreateRepositoryMatcherFromGitTarget(target GitTarget) (*RepositoryMatcher, error) {
 	config := NewRepositoryFilterConfig(target)
 	if err := ValidateFilterConfig(config); err != nil {
 		return nil, fmt.Errorf("invalid filter config: %w", err)
 	}
+
 	return NewRepositoryMatcher(config)
 }

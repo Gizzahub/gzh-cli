@@ -104,7 +104,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 		{
 			name: "public repo matching pattern",
 			repo: Repository{
-				Name:      "test-repo",
+				Name:    "test-repo",
 				Private: false,
 			},
 			expected: true,
@@ -112,7 +112,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 		{
 			name: "private repo (filtered out)",
 			repo: Repository{
-				Name:      "test-private",
+				Name:    "test-private",
 				Private: true,
 			},
 			expected: false,
@@ -120,7 +120,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 		{
 			name: "public repo not matching pattern",
 			repo: Repository{
-				Name:      "prod-repo",
+				Name:    "prod-repo",
 				Private: false,
 			},
 			expected: false,
@@ -128,7 +128,7 @@ func TestRepositoryMatcher_ShouldCloneRepository(t *testing.T) {
 		{
 			name: "excluded repo",
 			repo: Repository{
-				Name:      "test-exclude",
+				Name:    "test-exclude",
 				Private: false,
 			},
 			expected: false,

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package mocking
 
 import (
@@ -6,27 +9,28 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/mock/gomock"
+
 	"github.com/gizzahub/gzh-manager-go/internal/filesystem/mocks"
 	gitmocks "github.com/gizzahub/gzh-manager-go/internal/git/mocks"
 	httpmocks "github.com/gizzahub/gzh-manager-go/internal/httpclient/mocks"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	githubmocks "github.com/gizzahub/gzh-manager-go/pkg/github/mocks"
-	"go.uber.org/mock/gomock"
 )
 
-// MockFactory provides factory methods for creating commonly used mocks
+// MockFactory provides factory methods for creating commonly used mocks.
 type MockFactory struct {
 	ctrl *gomock.Controller
 }
 
-// NewMockFactory creates a new mock factory with the given controller
+// NewMockFactory creates a new mock factory with the given controller.
 func NewMockFactory(ctrl *gomock.Controller) *MockFactory {
 	return &MockFactory{ctrl: ctrl}
 }
 
 // GitHub API Client Factories
 
-// CreateMockGitHubAPIClient creates a GitHub API client mock with common expectations
+// CreateMockGitHubAPIClient creates a GitHub API client mock with common expectations.
 func (f *MockFactory) CreateMockGitHubAPIClient() *githubmocks.MockAPIClient {
 	mock := githubmocks.NewMockAPIClient(f.ctrl)
 
@@ -42,7 +46,7 @@ func (f *MockFactory) CreateMockGitHubAPIClient() *githubmocks.MockAPIClient {
 	return mock
 }
 
-// CreateMockGitHubAPIClientWithRepo creates a GitHub API client mock with repository data
+// CreateMockGitHubAPIClientWithRepo creates a GitHub API client mock with repository data.
 func (f *MockFactory) CreateMockGitHubAPIClientWithRepo(owner, repo string) *githubmocks.MockAPIClient {
 	mock := f.CreateMockGitHubAPIClient()
 
@@ -72,7 +76,7 @@ func (f *MockFactory) CreateMockGitHubAPIClientWithRepo(owner, repo string) *git
 	return mock
 }
 
-// CreateMockGitHubCloneService creates a clone service mock with success expectations
+// CreateMockGitHubCloneService creates a clone service mock with success expectations.
 func (f *MockFactory) CreateMockGitHubCloneService() *githubmocks.MockCloneService {
 	mock := githubmocks.NewMockCloneService(f.ctrl)
 
@@ -86,7 +90,7 @@ func (f *MockFactory) CreateMockGitHubCloneService() *githubmocks.MockCloneServi
 	return mock
 }
 
-// CreateMockTokenValidator creates a token validator mock with valid token
+// CreateMockTokenValidator creates a token validator mock with valid token.
 func (f *MockFactory) CreateMockTokenValidator() *githubmocks.MockTokenValidatorInterface {
 	mock := githubmocks.NewMockTokenValidatorInterface(f.ctrl)
 
@@ -113,7 +117,7 @@ func (f *MockFactory) CreateMockTokenValidator() *githubmocks.MockTokenValidator
 
 // File System Factories
 
-// CreateMockFileSystem creates a file system mock with common operations
+// CreateMockFileSystem creates a file system mock with common operations.
 func (f *MockFactory) CreateMockFileSystem() *mocks.MockFileSystem {
 	mock := mocks.NewMockFileSystem(f.ctrl)
 
@@ -133,7 +137,7 @@ func (f *MockFactory) CreateMockFileSystem() *mocks.MockFileSystem {
 	return mock
 }
 
-// CreateMockFileSystemWithContent creates a file system mock with file content expectations
+// CreateMockFileSystemWithContent creates a file system mock with file content expectations.
 func (f *MockFactory) CreateMockFileSystemWithContent(filename string, content []byte) *mocks.MockFileSystem {
 	mock := f.CreateMockFileSystem()
 
@@ -148,7 +152,7 @@ func (f *MockFactory) CreateMockFileSystemWithContent(filename string, content [
 
 // HTTP Client Factories
 
-// CreateMockHTTPClient creates an HTTP client mock with success responses
+// CreateMockHTTPClient creates an HTTP client mock with success responses.
 func (f *MockFactory) CreateMockHTTPClient() *httpmocks.MockHTTPClient {
 	mock := httpmocks.NewMockHTTPClient(f.ctrl)
 
@@ -174,7 +178,7 @@ func (f *MockFactory) CreateMockHTTPClient() *httpmocks.MockHTTPClient {
 	return mock
 }
 
-// CreateMockHTTPClientWithResponse creates HTTP client mock with specific response
+// CreateMockHTTPClientWithResponse creates HTTP client mock with specific response.
 func (f *MockFactory) CreateMockHTTPClientWithResponse(statusCode int, body string) *httpmocks.MockHTTPClient {
 	mock := httpmocks.NewMockHTTPClient(f.ctrl)
 
@@ -192,7 +196,7 @@ func (f *MockFactory) CreateMockHTTPClientWithResponse(statusCode int, body stri
 
 // Git Client Factories
 
-// CreateMockGitClient creates a git client mock with common operations
+// CreateMockGitClient creates a git client mock with common operations.
 func (f *MockFactory) CreateMockGitClient() *gitmocks.MockGitClient {
 	mock := gitmocks.NewMockGitClient(f.ctrl)
 
@@ -219,24 +223,24 @@ func (f *MockFactory) CreateMockGitClient() *gitmocks.MockGitClient {
 
 // Utility Methods
 
-// CreateContextWithTimeout creates a context with timeout for testing
+// CreateContextWithTimeout creates a context with timeout for testing.
 func (f *MockFactory) CreateContextWithTimeout(timeout time.Duration) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), timeout)
 }
 
-// CreateCancelableContext creates a cancelable context for testing
+// CreateCancelableContext creates a cancelable context for testing.
 func (f *MockFactory) CreateCancelableContext() (context.Context, context.CancelFunc) {
 	return context.WithCancel(context.Background())
 }
 
-// MockFactoryBuilder provides a fluent interface for building mock factories
+// MockFactoryBuilder provides a fluent interface for building mock factories.
 type MockFactoryBuilder struct {
 	ctrl     *gomock.Controller
 	t        *testing.T
 	finished bool
 }
 
-// NewMockFactoryBuilder creates a new mock factory builder
+// NewMockFactoryBuilder creates a new mock factory builder.
 func NewMockFactoryBuilder(t *testing.T) *MockFactoryBuilder {
 	return &MockFactoryBuilder{
 		t:        t,
@@ -244,21 +248,22 @@ func NewMockFactoryBuilder(t *testing.T) *MockFactoryBuilder {
 	}
 }
 
-// WithController sets a custom controller
+// WithController sets a custom controller.
 func (b *MockFactoryBuilder) WithController(ctrl *gomock.Controller) *MockFactoryBuilder {
 	b.ctrl = ctrl
 	return b
 }
 
-// Build creates the mock factory
+// Build creates the mock factory.
 func (b *MockFactoryBuilder) Build() *MockFactory {
 	if b.ctrl == nil {
 		b.ctrl = gomock.NewController(b.t)
 	}
+
 	return NewMockFactory(b.ctrl)
 }
 
-// Finish cleans up the controller
+// Finish cleans up the controller.
 func (b *MockFactoryBuilder) Finish() {
 	if b.ctrl != nil && !b.finished {
 		b.ctrl.Finish()

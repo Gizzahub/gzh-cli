@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -5,11 +8,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"gopkg.in/yaml.v3"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
-// UnifiedConfigLoader loads configuration from both legacy and unified formats
+// UnifiedConfigLoader loads configuration from both legacy and unified formats.
 type UnifiedConfigLoader struct {
 	ConfigPaths   []string
 	AutoMigrate   bool
@@ -17,7 +21,7 @@ type UnifiedConfigLoader struct {
 	CreateBackup  bool
 }
 
-// NewUnifiedConfigLoader creates a new configuration loader
+// NewUnifiedConfigLoader creates a new configuration loader.
 func NewUnifiedConfigLoader() *UnifiedConfigLoader {
 	return &UnifiedConfigLoader{
 		ConfigPaths: []string{
@@ -36,7 +40,7 @@ func NewUnifiedConfigLoader() *UnifiedConfigLoader {
 	}
 }
 
-// LoadResult contains the result of loading a configuration
+// LoadResult contains the result of loading a configuration.
 type LoadResult struct {
 	Config          *UnifiedConfig
 	ConfigPath      string
@@ -47,12 +51,12 @@ type LoadResult struct {
 	RequiredActions []string
 }
 
-// LoadConfig loads configuration from available files
+// LoadConfig loads configuration from available files.
 func (l *UnifiedConfigLoader) LoadConfig() (*LoadResult, error) {
 	return l.LoadConfigFromPath("")
 }
 
-// LoadConfigFromPath loads configuration from a specific path
+// LoadConfigFromPath loads configuration from a specific path.
 func (l *UnifiedConfigLoader) LoadConfigFromPath(configPath string) (*LoadResult, error) {
 	// If specific path provided, use it
 	if configPath != "" {
@@ -72,7 +76,7 @@ func (l *UnifiedConfigLoader) LoadConfigFromPath(configPath string) (*LoadResult
 	return nil, fmt.Errorf("no configuration file found in search paths: %v", searchPaths)
 }
 
-// loadFromSpecificPath loads configuration from a specific file path
+// loadFromSpecificPath loads configuration from a specific file path.
 func (l *UnifiedConfigLoader) loadFromSpecificPath(configPath string) (*LoadResult, error) {
 	result := &LoadResult{
 		ConfigPath:      configPath,
@@ -100,7 +104,7 @@ func (l *UnifiedConfigLoader) loadFromSpecificPath(configPath string) (*LoadResu
 	return l.loadUnifiedConfig(configPath, result)
 }
 
-// loadUnifiedConfig loads a unified format configuration
+// loadUnifiedConfig loads a unified format configuration.
 func (l *UnifiedConfigLoader) loadUnifiedConfig(configPath string, result *LoadResult) (*LoadResult, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
@@ -118,10 +122,11 @@ func (l *UnifiedConfigLoader) loadUnifiedConfig(configPath string, result *LoadR
 	}
 
 	result.Config = &config
+
 	return result, nil
 }
 
-// loadLegacyConfig loads a legacy format configuration
+// loadLegacyConfig loads a legacy format configuration.
 func (l *UnifiedConfigLoader) loadLegacyConfig(configPath string, result *LoadResult) (*LoadResult, error) {
 	// Load legacy configuration
 	legacyConfig, err := bulkclone.LoadConfig(configPath)
@@ -154,7 +159,7 @@ func (l *UnifiedConfigLoader) loadLegacyConfig(configPath string, result *LoadRe
 	return result, nil
 }
 
-// performAutoMigration performs automatic migration from legacy to unified format
+// performAutoMigration performs automatic migration from legacy to unified format.
 func (l *UnifiedConfigLoader) performAutoMigration(configPath string, legacyConfig *bulkclone.BulkCloneConfig) (*MigrationResult, error) {
 	// Determine target path
 	dir := filepath.Dir(configPath)
@@ -174,14 +179,15 @@ func (l *UnifiedConfigLoader) performAutoMigration(configPath string, legacyConf
 	return migrator.MigrateFromBulkClone()
 }
 
-// convertLegacyToUnified converts legacy configuration to unified format in memory
+// convertLegacyToUnified converts legacy configuration to unified format in memory.
 func (l *UnifiedConfigLoader) convertLegacyToUnified(legacyConfig *bulkclone.BulkCloneConfig) *UnifiedConfig {
 	migrator := NewConfigMigrator("", "")
 	unifiedConfig, _, _ := migrator.convertBulkCloneToUnified(legacyConfig)
+
 	return unifiedConfig
 }
 
-// validateUnifiedConfig validates a unified configuration
+// validateUnifiedConfig validates a unified configuration.
 func (l *UnifiedConfigLoader) validateUnifiedConfig(config *UnifiedConfig) error {
 	if config.Version == "" {
 		return fmt.Errorf("version is required")
@@ -205,7 +211,7 @@ func (l *UnifiedConfigLoader) validateUnifiedConfig(config *UnifiedConfig) error
 	return nil
 }
 
-// validateProvider validates a provider configuration
+// validateProvider validates a provider configuration.
 func (l *UnifiedConfigLoader) validateProvider(providerName string, provider *ProviderConfig) error {
 	if provider.Token == "" {
 		return fmt.Errorf("token is required for provider %s", providerName)
@@ -225,7 +231,7 @@ func (l *UnifiedConfigLoader) validateProvider(providerName string, provider *Pr
 	return nil
 }
 
-// validateOrganization validates an organization configuration
+// validateOrganization validates an organization configuration.
 func (l *UnifiedConfigLoader) validateOrganization(org *OrganizationConfig) error {
 	if org.Name == "" {
 		return fmt.Errorf("organization name is required")
@@ -262,7 +268,7 @@ func (l *UnifiedConfigLoader) validateOrganization(org *OrganizationConfig) erro
 	return nil
 }
 
-// getSearchPaths returns all possible configuration file paths
+// getSearchPaths returns all possible configuration file paths.
 func (l *UnifiedConfigLoader) getSearchPaths() []string {
 	var paths []string
 
@@ -301,9 +307,10 @@ func (l *UnifiedConfigLoader) getSearchPaths() []string {
 	return paths
 }
 
-// sortPathsByPreference sorts paths to prefer unified format files
+// sortPathsByPreference sorts paths to prefer unified format files.
 func (l *UnifiedConfigLoader) sortPathsByPreference(paths []string) []string {
 	var unifiedPaths []string
+
 	var legacyPaths []string
 
 	for _, path := range paths {
@@ -318,14 +325,14 @@ func (l *UnifiedConfigLoader) sortPathsByPreference(paths []string) []string {
 	return append(unifiedPaths, legacyPaths...)
 }
 
-// isUnifiedFormatPath checks if a path is likely to be unified format
+// isUnifiedFormatPath checks if a path is likely to be unified format.
 func (l *UnifiedConfigLoader) isUnifiedFormatPath(path string) bool {
 	base := filepath.Base(path)
 	return base == "gzh.yaml" || base == "gzh.yml" ||
 		base == "config.yaml" || base == "config.yml"
 }
 
-// generateTimestamp generates a timestamp string for file naming
+// generateTimestamp generates a timestamp string for file naming.
 func generateTimestamp() string {
 	return GenerateTimestamp()
 }

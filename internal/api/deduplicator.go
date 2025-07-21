@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package api
 
 import (
@@ -9,8 +12,7 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
-// RequestDeduplicator provides request deduplication using singleflight pattern
-// This prevents multiple concurrent requests for the same resource
+// This prevents multiple concurrent requests for the same resource.
 type RequestDeduplicator struct {
 	group   singleflight.Group
 	stats   DeduplicationStats
@@ -20,7 +22,7 @@ type RequestDeduplicator struct {
 	cleanup chan struct{}
 }
 
-// DeduplicationStats tracks deduplication performance metrics
+// DeduplicationStats tracks deduplication performance metrics.
 type DeduplicationStats struct {
 	TotalRequests     int64
 	DeduplicatedCalls int64
@@ -30,17 +32,17 @@ type DeduplicationStats struct {
 	LastUpdated       time.Time
 }
 
-// cachedResult stores cached response with expiration
+// cachedResult stores cached response with expiration.
 type cachedResult struct {
 	value   interface{}
 	err     error
 	expires time.Time
 }
 
-// RequestFunc represents a function that performs an API request
+// RequestFunc represents a function that performs an API request.
 type RequestFunc func(ctx context.Context) (interface{}, error)
 
-// NewRequestDeduplicator creates a new request deduplicator with the given TTL
+// NewRequestDeduplicator creates a new request deduplicator with the given TTL.
 func NewRequestDeduplicator(ttl time.Duration) *RequestDeduplicator {
 	d := &RequestDeduplicator{
 		ttl:     ttl,
@@ -54,7 +56,7 @@ func NewRequestDeduplicator(ttl time.Duration) *RequestDeduplicator {
 	return d
 }
 
-// Do executes a request with deduplication, returning cached results for duplicate requests
+// Do executes a request with deduplication, returning cached results for duplicate requests.
 func (d *RequestDeduplicator) Do(ctx context.Context, key string, fn RequestFunc) (interface{}, error) {
 	d.mu.Lock()
 	d.stats.TotalRequests++
@@ -66,6 +68,7 @@ func (d *RequestDeduplicator) Do(ctx context.Context, key string, fn RequestFunc
 		d.mu.Lock()
 		d.stats.CacheHits++
 		d.mu.Unlock()
+
 		return result.value, result.err
 	}
 
@@ -94,7 +97,7 @@ func (d *RequestDeduplicator) Do(ctx context.Context, key string, fn RequestFunc
 	return result, err
 }
 
-// DoWithTimeout executes a request with deduplication and timeout
+// DoWithTimeout executes a request with deduplication and timeout.
 func (d *RequestDeduplicator) DoWithTimeout(ctx context.Context, key string, timeout time.Duration, fn RequestFunc) (interface{}, error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -102,7 +105,7 @@ func (d *RequestDeduplicator) DoWithTimeout(ctx context.Context, key string, tim
 	return d.Do(timeoutCtx, key, fn)
 }
 
-// getCached retrieves a cached result if it exists and hasn't expired
+// getCached retrieves a cached result if it exists and hasn't expired.
 func (d *RequestDeduplicator) getCached(key string) (cachedResult, bool) {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
@@ -121,7 +124,7 @@ func (d *RequestDeduplicator) getCached(key string) (cachedResult, bool) {
 	return result, true
 }
 
-// setCached stores a result in the cache with expiration
+// setCached stores a result in the cache with expiration.
 func (d *RequestDeduplicator) setCached(key string, value interface{}, err error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -133,14 +136,15 @@ func (d *RequestDeduplicator) setCached(key string, value interface{}, err error
 	}
 }
 
-// GetStats returns current deduplication statistics
+// GetStats returns current deduplication statistics.
 func (d *RequestDeduplicator) GetStats() DeduplicationStats {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
+
 	return d.stats
 }
 
-// Clear clears all cached results and resets statistics
+// Clear clears all cached results and resets statistics.
 func (d *RequestDeduplicator) Clear() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -150,13 +154,13 @@ func (d *RequestDeduplicator) Clear() {
 	d.group = singleflight.Group{} // Reset singleflight group
 }
 
-// Close stops the deduplicator and cleans up resources
+// Close stops the deduplicator and cleans up resources.
 func (d *RequestDeduplicator) Close() {
 	close(d.cleanup)
 	d.Clear()
 }
 
-// cleanupExpired periodically removes expired cache entries
+// cleanupExpired periodically removes expired cache entries.
 func (d *RequestDeduplicator) cleanupExpired() {
 	ticker := time.NewTicker(d.ttl / 2) // Cleanup at half the TTL interval
 	defer ticker.Stop()
@@ -171,7 +175,7 @@ func (d *RequestDeduplicator) cleanupExpired() {
 	}
 }
 
-// performCleanup removes expired entries from cache
+// performCleanup removes expired entries from cache.
 func (d *RequestDeduplicator) performCleanup() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -184,7 +188,7 @@ func (d *RequestDeduplicator) performCleanup() {
 	}
 }
 
-// ForgetKey removes a specific key from cache and singleflight group
+// ForgetKey removes a specific key from cache and singleflight group.
 func (d *RequestDeduplicator) ForgetKey(key string) {
 	d.mu.Lock()
 	delete(d.cache, key)
@@ -194,16 +198,17 @@ func (d *RequestDeduplicator) ForgetKey(key string) {
 	d.group.Forget(key)
 }
 
-// GenerateKey creates a standardized cache key from components
+// GenerateKey creates a standardized cache key from components.
 func GenerateKey(service, operation string, params ...string) string {
 	key := fmt.Sprintf("%s:%s", service, operation)
 	for _, param := range params {
 		key += ":" + param
 	}
+
 	return key
 }
 
-// GetEfficiencyRate calculates the efficiency of deduplication (0.0 to 1.0)
+// GetEfficiencyRate calculates the efficiency of deduplication (0.0 to 1.0).
 func (d *RequestDeduplicator) GetEfficiencyRate() float64 {
 	stats := d.GetStats()
 	if stats.TotalRequests == 0 {
@@ -211,10 +216,11 @@ func (d *RequestDeduplicator) GetEfficiencyRate() float64 {
 	}
 
 	savedRequests := stats.DeduplicatedCalls + stats.CacheHits
+
 	return float64(savedRequests) / float64(stats.TotalRequests)
 }
 
-// PrintStats prints detailed deduplication statistics
+// PrintStats prints detailed deduplication statistics.
 func (d *RequestDeduplicator) PrintStats() {
 	stats := d.GetStats()
 	efficiency := d.GetEfficiencyRate()

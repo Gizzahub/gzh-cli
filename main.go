@@ -1,4 +1,6 @@
-// Package main is the entry point for the gzh-manager-go CLI application.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package main
 
 import (
@@ -14,7 +16,11 @@ import (
 var version = "dev"
 
 func main() {
-	// Create a context that will be cancelled on interrupt signals
+	os.Exit(run())
+}
+
+func run() int {
+	// Create a context that will be canceled on interrupt signals
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -30,6 +36,8 @@ func main() {
 
 	if err := cmd.Execute(ctx, version); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
 }

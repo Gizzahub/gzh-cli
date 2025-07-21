@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -22,6 +25,7 @@ type kubeconfigOptions struct {
 
 func defaultKubeconfigOptions() *kubeconfigOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &kubeconfigOptions{
 		configPath: filepath.Join(homeDir, ".kube", "config"),
 		storePath:  filepath.Join(homeDir, ".gz", "kubeconfigs"),
@@ -181,9 +185,11 @@ func (o *kubeconfigOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✅ Kubeconfig saved as '%s'\n", o.name)
+
 	if o.description != "" {
 		fmt.Printf("   Description: %s\n", o.description)
 	}
+
 	fmt.Printf("   Saved to: %s\n", savedPath)
 
 	return nil
@@ -203,6 +209,7 @@ func (o *kubeconfigOptions) runLoad(_ *cobra.Command, args []string) error {
 			if err := o.copyFile(o.configPath, backupPath); err != nil {
 				return fmt.Errorf("failed to backup current kubeconfig: %w", err)
 			}
+
 			fmt.Printf("📦 Current kubeconfig backed up to: %s\n", backupPath)
 		}
 	}
@@ -239,6 +246,7 @@ func (o *kubeconfigOptions) runList(_ *cobra.Command, args []string) error {
 
 	// Filter for .yaml files
 	var configs []string
+
 	for _, entry := range entries {
 		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".yaml") {
 			name := strings.TrimSuffix(entry.Name(), ".yaml")
@@ -257,9 +265,11 @@ func (o *kubeconfigOptions) runList(_ *cobra.Command, args []string) error {
 	for _, name := range configs {
 		metadata := o.loadMetadata(name)
 		fmt.Printf("📋 %s\n", name)
+
 		if metadata.Description != "" {
 			fmt.Printf("   Description: %s\n", metadata.Description)
 		}
+
 		if !metadata.SavedAt.IsZero() {
 			fmt.Printf("   Saved: %s\n", metadata.SavedAt.Format("2006-01-02 15:04:05"))
 		}
@@ -268,6 +278,7 @@ func (o *kubeconfigOptions) runList(_ *cobra.Command, args []string) error {
 		if info, err := os.Stat(configPath); err == nil {
 			fmt.Printf("   Size: %d bytes\n", info.Size())
 		}
+
 		fmt.Println()
 	}
 
@@ -290,16 +301,19 @@ func (o *kubeconfigOptions) saveMetadata() error {
 	}
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
+
 	file, err := os.Create(metadataPath)
 	if err != nil {
 		return err
 	}
+
 	defer file.Close()
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
 		fmt.Fprintf(file, "description=%s\n", metadata.Description)
 	}
+
 	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
 	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
 
@@ -310,6 +324,7 @@ func (o *kubeconfigOptions) loadMetadata(name string) kubeconfigMetadata {
 	metadata := kubeconfigMetadata{Name: name}
 
 	metadataPath := filepath.Join(o.storePath, name+".meta")
+
 	content, err := os.ReadFile(metadataPath)
 	if err != nil {
 		return metadata

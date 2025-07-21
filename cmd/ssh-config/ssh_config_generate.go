@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sshconfig
 
 import (
@@ -6,8 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/spf13/cobra"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 type sshConfigGenerateOptions struct {
@@ -21,6 +25,7 @@ type sshConfigGenerateOptions struct {
 
 func defaultSSHConfigGenerateOptions() *sshConfigGenerateOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &sshConfigGenerateOptions{
 		outputFile: filepath.Join(homeDir, ".ssh", "config"),
 		keyDir:     filepath.Join(homeDir, ".ssh"),
@@ -92,6 +97,7 @@ func (o *sshConfigGenerateOptions) run(_ *cobra.Command, args []string) error {
 	if o.dryRun {
 		fmt.Println("# Generated SSH config (dry run):")
 		fmt.Println(sshConfig)
+
 		return nil
 	}
 
@@ -102,6 +108,7 @@ func (o *sshConfigGenerateOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✓ SSH config generated successfully: %s\n", o.outputFile)
+
 	return nil
 }
 
@@ -140,6 +147,7 @@ func (o *sshConfigGenerateOptions) generateSSHConfig(cfg *bulkclone.BulkCloneCon
 			if err != nil {
 				return "", err
 			}
+
 			if hostConfig != "" {
 				configLines = append(configLines, hostConfig)
 				configLines = append(configLines, "")
@@ -151,6 +159,7 @@ func (o *sshConfigGenerateOptions) generateSSHConfig(cfg *bulkclone.BulkCloneCon
 			if err != nil {
 				return "", err
 			}
+
 			if hostConfig != "" {
 				configLines = append(configLines, hostConfig)
 				configLines = append(configLines, "")
@@ -186,6 +195,7 @@ func (o *sshConfigGenerateOptions) generateHostConfig(provider, orgName string, 
 	if configuredHosts[hostAlias] {
 		return "", nil // Skip duplicate
 	}
+
 	configuredHosts[hostAlias] = true
 
 	// Generate SSH key path
@@ -242,6 +252,7 @@ func (o *sshConfigGenerateOptions) writeSSHConfig(content string) error {
 
 	// Check if file exists and append mode is requested
 	var existingContent string
+
 	if o.appendMode {
 		if data, err := os.ReadFile(o.outputFile); err == nil {
 			existingContent = string(data)

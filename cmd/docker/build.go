@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package docker
 
 import (
@@ -14,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// BuildCmd represents the build command
+// BuildCmd represents the build command.
 var BuildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "자동 이미지 빌드 및 배포",
@@ -39,7 +42,7 @@ Examples:
 }
 
 var (
-	// Build configuration
+	// Build configuration.
 	buildTag       string
 	buildPlatforms []string
 	buildFile      string
@@ -54,12 +57,12 @@ var (
 	buildQuiet     bool
 	buildVerbose   bool
 
-	// Multi-architecture settings
+	// Multi-architecture settings.
 	enableMultiArch bool
 	builderName     string
 	builderInstance string
 
-	// Registry settings
+	// Registry settings.
 	registryURL      string
 	registryUsername string
 	registryPassword string
@@ -67,14 +70,14 @@ var (
 	pushAfterBuild   bool
 	pushRetries      int
 
-	// Cache settings
+	// Cache settings.
 	cacheFrom        []string
 	cacheTo          []string
 	cacheMode        string
 	enableBuildCache bool
 	cacheRegistry    string
 
-	// Security and scanning
+	// Security and scanning.
 	enableScan      bool
 	scanners        []string
 	scanSeverity    string
@@ -83,14 +86,14 @@ var (
 	signImage       bool
 	verifySignature bool
 
-	// Performance and optimization
+	// Performance and optimization.
 	enableParallel   bool
 	buildConcurrency int
 	buildMemoryLimit string
 	buildCPULimit    string
 	buildTimeout     time.Duration
 
-	// Metadata and tracking
+	// Metadata and tracking.
 	enableMetrics   bool
 	metricsOutput   string
 	buildMetadata   map[string]string
@@ -153,7 +156,7 @@ func init() {
 	BuildCmd.Flags().StringVar(&slackWebhook, "slack", "", "Slack 웹훅 URL")
 }
 
-// BuildConfig represents build configuration
+// BuildConfig represents build configuration.
 type BuildConfig struct {
 	Tag         string            `json:"tag"`
 	Platforms   []string          `json:"platforms"`
@@ -323,6 +326,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 	if enableScan {
 		if err := performSecurityScan(result); err != nil {
 			fmt.Printf("⚠️ 보안 스캔 실패: %v\n", err)
+
 			if scanExitCode {
 				os.Exit(1)
 			}
@@ -361,6 +365,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 func createBuildConfig() (*BuildConfig, error) {
 	// Parse build args
 	args := make(map[string]string)
+
 	for _, arg := range buildArgs {
 		parts := strings.SplitN(arg, "=", 2)
 		if len(parts) == 2 {
@@ -370,6 +375,7 @@ func createBuildConfig() (*BuildConfig, error) {
 
 	// Parse labels
 	labels := make(map[string]string)
+
 	for _, label := range buildLabels {
 		parts := strings.SplitN(label, "=", 2)
 		if len(parts) == 2 {
@@ -452,6 +458,7 @@ func setupMultiArchBuilder() error {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("빌더 생성 실패: %w", err)
 		}
+
 		fmt.Printf("✅ 새 빌더 생성: %s\n", builderName)
 	} else {
 		// Use existing builder
@@ -459,6 +466,7 @@ func setupMultiArchBuilder() error {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("빌더 사용 설정 실패: %w", err)
 		}
+
 		fmt.Printf("✅ 기존 빌더 사용: %s\n", builderName)
 	}
 
@@ -492,6 +500,7 @@ func authenticateRegistry() error {
 	}
 
 	fmt.Printf("✅ 레지스트리 인증 완료\n")
+
 	return nil
 }
 
@@ -542,6 +551,7 @@ func performBuild(config *BuildConfig) (*BuildResult, error) {
 		for _, cacheFrom := range config.Cache.From {
 			args = append(args, "--cache-from", cacheFrom)
 		}
+
 		for _, cacheTo := range config.Cache.To {
 			args = append(args, "--cache-to", cacheTo)
 		}
@@ -584,6 +594,7 @@ func performBuild(config *BuildConfig) (*BuildResult, error) {
 	if err != nil {
 		result.Success = false
 		result.Error = err.Error()
+
 		return result, fmt.Errorf("빌드 실행 실패: %w", err)
 	}
 
@@ -593,12 +604,14 @@ func performBuild(config *BuildConfig) (*BuildResult, error) {
 	}
 
 	result.Success = true
+
 	return result, nil
 }
 
 func getImageInfo(result *BuildResult) error {
 	// Get image ID and digest
 	cmd := exec.Command("docker", "images", "--format", "{{.ID}}\t{{.Size}}", result.Config.Tag)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return err
@@ -656,6 +669,7 @@ func runScanner(scanner, imageTag string) (*ScanResult, error) {
 	}
 
 	var cmd *exec.Cmd
+
 	switch scanner {
 	case "trivy":
 		cmd = exec.Command("trivy", "image", "--format", "json", imageTag)
@@ -671,6 +685,7 @@ func runScanner(scanner, imageTag string) (*ScanResult, error) {
 	if err != nil {
 		scanResult.Success = false
 		scanResult.Error = err.Error()
+
 		return scanResult, err
 	}
 
@@ -680,6 +695,7 @@ func runScanner(scanner, imageTag string) (*ScanResult, error) {
 	}
 
 	scanResult.Success = true
+
 	return scanResult, nil
 }
 
@@ -693,6 +709,7 @@ func parseScannerOutput(scanner string, output []byte, result *ScanResult) error
 	case "snyk":
 		return parseSnykOutput(output, result)
 	}
+
 	return nil
 }
 
@@ -738,6 +755,7 @@ func parseTrivyOutput(output []byte, result *ScanResult) error {
 
 			// Update summary
 			result.Summary.Total++
+
 			switch strings.ToUpper(vuln.Severity) {
 			case "CRITICAL":
 				result.Summary.Critical++
@@ -777,7 +795,9 @@ func pushImage(result *BuildResult) error {
 
 		if err == nil {
 			result.Metrics.PushTime = time.Since(startTime)
+
 			fmt.Printf("✅ 이미지 푸시 완료\n")
+
 			return nil
 		}
 
@@ -809,6 +829,7 @@ func saveMetrics(result *BuildResult) error {
 	}
 
 	fmt.Printf("📊 빌드 메트릭 저장: %s\n", metricsOutput)
+
 	return nil
 }
 
@@ -827,6 +848,7 @@ func displayBuildResults(result *BuildResult) {
 
 	if len(result.Scans) > 0 {
 		fmt.Printf("\n🔍 보안 스캔 결과:\n")
+
 		for _, scan := range result.Scans {
 			if scan.Success {
 				fmt.Printf("  %s: 총 %d개 (치명적: %d, 높음: %d, 중간: %d, 낮음: %d)\n",
@@ -844,11 +866,13 @@ func formatBytes(bytes int64) string {
 	if bytes < unit {
 		return fmt.Sprintf("%d B", bytes)
 	}
+
 	div, exp := int64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
 	}
+
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
 
@@ -856,18 +880,22 @@ func formatBytes(bytes int64) string {
 
 func getGitRevision() string {
 	cmd := exec.Command("git", "rev-parse", "HEAD")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "unknown"
 	}
+
 	return strings.TrimSpace(string(output))
 }
 
 func getGitURL() string {
 	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "unknown"
 	}
+
 	return strings.TrimSpace(string(output))
 }

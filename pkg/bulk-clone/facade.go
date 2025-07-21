@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 //go:generate mockgen -source=facade.go -destination=mocks/bulk_clone_manager_mock.go -package=mocks BulkCloneManager
@@ -107,7 +110,7 @@ type CloneResult struct {
 	Statistics        *CloneStatistics
 }
 
-// RefreshResult represents the result of refresh operations
+// RefreshResult represents the result of refresh operations.
 type RefreshResult struct {
 	TotalRepositories int
 	RefreshSuccessful int
@@ -118,7 +121,7 @@ type RefreshResult struct {
 	ErrorSummary      map[string]int
 }
 
-// DiscoveryResult represents the result of discovery operations
+// DiscoveryResult represents the result of discovery operations.
 type DiscoveryResult struct {
 	TotalRepositories      int
 	RepositoriesByProvider map[string]int
@@ -127,7 +130,7 @@ type DiscoveryResult struct {
 	ExecutionTime          time.Duration
 }
 
-// CleanupResult represents the result of cleanup operations
+// CleanupResult represents the result of cleanup operations.
 type CleanupResult struct {
 	TotalDirectories     int
 	DirectoriesRemoved   int
@@ -137,7 +140,7 @@ type CleanupResult struct {
 	CleanupActions       []CleanupAction
 }
 
-// RepositoryResult represents the result of a single repository operation
+// RepositoryResult represents the result of a single repository operation.
 type RepositoryResult struct {
 	Repository   string
 	Organization string
@@ -151,7 +154,7 @@ type RepositoryResult struct {
 	CommitCount  int
 }
 
-// DiscoveredRepository represents a discovered repository
+// DiscoveredRepository represents a discovered repository.
 type DiscoveredRepository struct {
 	Name         string
 	FullName     string
@@ -166,7 +169,7 @@ type DiscoveredRepository struct {
 	Description  string
 }
 
-// RepositoryFilters contains filtering criteria for repositories
+// RepositoryFilters contains filtering criteria for repositories.
 type RepositoryFilters struct {
 	IncludeNames     []string
 	ExcludeNames     []string
@@ -181,7 +184,7 @@ type RepositoryFilters struct {
 	NamePattern      string
 }
 
-// RepositoryStatus contains status information about repositories
+// RepositoryStatus contains status information about repositories.
 type RepositoryStatus struct {
 	TotalRepositories    int
 	HealthyRepositories  int
@@ -191,7 +194,7 @@ type RepositoryStatus struct {
 	LastScanTime         time.Time
 }
 
-// RepositoryDetails contains detailed information about a repository
+// RepositoryDetails contains detailed information about a repository.
 type RepositoryDetails struct {
 	Path           string
 	Name           string
@@ -204,7 +207,7 @@ type RepositoryDetails struct {
 	RemoteInfo     *RemoteInfo
 }
 
-// BranchInfo contains information about repository branches
+// BranchInfo contains information about repository branches.
 type BranchInfo struct {
 	CurrentBranch string
 	TotalBranches int
@@ -212,7 +215,7 @@ type BranchInfo struct {
 	IsDetached    bool
 }
 
-// RemoteInfo contains information about repository remotes
+// RemoteInfo contains information about repository remotes.
 type RemoteInfo struct {
 	OriginURL     string
 	RemoteCount   int
@@ -220,7 +223,7 @@ type RemoteInfo struct {
 	LastFetchTime time.Time
 }
 
-// CleanupAction represents a cleanup action taken
+// CleanupAction represents a cleanup action taken.
 type CleanupAction struct {
 	Action    string
 	Path      string
@@ -230,7 +233,7 @@ type CleanupAction struct {
 	Error     string
 }
 
-// CloneStatistics contains statistics about clone operations
+// CloneStatistics contains statistics about clone operations.
 type CloneStatistics struct {
 	AverageCloneTime     time.Duration
 	TotalDataTransferred int64
@@ -240,7 +243,7 @@ type CloneStatistics struct {
 	ErrorsByType         map[string]int
 }
 
-// FilteringStatistics contains statistics about filtering operations
+// FilteringStatistics contains statistics about filtering operations.
 type FilteringStatistics struct {
 	TotalEvaluated int
 	FilteredOut    int
@@ -249,13 +252,13 @@ type FilteringStatistics struct {
 	FiltersByType  map[string]int
 }
 
-// bulkCloneManagerImpl implements the BulkCloneManager interface
+// bulkCloneManagerImpl implements the BulkCloneManager interface.
 type bulkCloneManagerImpl struct {
 	configManager ConfigurationManager
 	logger        Logger
 }
 
-// NewBulkCloneManager creates a new bulk clone manager facade
+// NewBulkCloneManager creates a new bulk clone manager facade.
 func NewBulkCloneManager(configManager ConfigurationManager, logger Logger) BulkCloneManager {
 	return &bulkCloneManagerImpl{
 		configManager: configManager,
@@ -263,7 +266,7 @@ func NewBulkCloneManager(configManager ConfigurationManager, logger Logger) Bulk
 	}
 }
 
-// LoadConfiguration loads the bulk clone configuration
+// LoadConfiguration loads the bulk clone configuration.
 func (b *bulkCloneManagerImpl) LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error) {
 	b.logger.Debug("Loading bulk clone configuration")
 
@@ -275,13 +278,13 @@ func (b *bulkCloneManagerImpl) LoadConfiguration(ctx context.Context) (*BulkClon
 	return LoadConfig(configPath)
 }
 
-// LoadConfigurationFromFile loads configuration from a specific file
+// LoadConfigurationFromFile loads configuration from a specific file.
 func (b *bulkCloneManagerImpl) LoadConfigurationFromFile(ctx context.Context, filename string) (*BulkCloneConfig, error) {
 	b.logger.Debug("Loading configuration from file", "file", filename)
 	return LoadConfig(filename)
 }
 
-// ValidateConfiguration validates a bulk clone configuration
+// ValidateConfiguration validates a bulk clone configuration.
 func (b *bulkCloneManagerImpl) ValidateConfiguration(ctx context.Context, config *BulkCloneConfig) error {
 	b.logger.Debug("Validating configuration")
 
@@ -290,7 +293,7 @@ func (b *bulkCloneManagerImpl) ValidateConfiguration(ctx context.Context, config
 	return nil
 }
 
-// CloneOrganization clones an entire organization
+// CloneOrganization clones an entire organization.
 func (b *bulkCloneManagerImpl) CloneOrganization(ctx context.Context, request *OrganizationCloneRequest) (*CloneResult, error) {
 	b.logger.Info("Starting organization clone", "org", request.Organization, "provider", request.Provider)
 
@@ -313,7 +316,7 @@ func (b *bulkCloneManagerImpl) CloneOrganization(ctx context.Context, request *O
 	return result, nil
 }
 
-// CloneRepositories clones specific repositories
+// CloneRepositories clones specific repositories.
 func (b *bulkCloneManagerImpl) CloneRepositories(ctx context.Context, request *RepositoryCloneRequest) (*CloneResult, error) {
 	b.logger.Info("Starting repository clone", "count", len(request.Repositories))
 
@@ -332,7 +335,7 @@ func (b *bulkCloneManagerImpl) CloneRepositories(ctx context.Context, request *R
 	return result, nil
 }
 
-// RefreshRepositories refreshes existing repositories
+// RefreshRepositories refreshes existing repositories.
 func (b *bulkCloneManagerImpl) RefreshRepositories(ctx context.Context, request *RefreshRequest) (*RefreshResult, error) {
 	b.logger.Info("Starting repository refresh", "path", request.TargetPath)
 
@@ -349,7 +352,7 @@ func (b *bulkCloneManagerImpl) RefreshRepositories(ctx context.Context, request 
 	return result, nil
 }
 
-// DiscoverRepositories discovers repositories across providers
+// DiscoverRepositories discovers repositories across providers.
 func (b *bulkCloneManagerImpl) DiscoverRepositories(ctx context.Context, request *DiscoveryRequest) (*DiscoveryResult, error) {
 	b.logger.Info("Starting repository discovery", "providers", request.Providers)
 
@@ -367,7 +370,7 @@ func (b *bulkCloneManagerImpl) DiscoverRepositories(ctx context.Context, request
 	return result, nil
 }
 
-// ListAvailableOrganizations lists available organizations for a provider
+// ListAvailableOrganizations lists available organizations for a provider.
 func (b *bulkCloneManagerImpl) ListAvailableOrganizations(ctx context.Context, provider string) ([]string, error) {
 	b.logger.Debug("Listing organizations", "provider", provider)
 
@@ -375,7 +378,7 @@ func (b *bulkCloneManagerImpl) ListAvailableOrganizations(ctx context.Context, p
 	return []string{}, nil
 }
 
-// GetRepositoryStatus gets the status of repositories in a directory
+// GetRepositoryStatus gets the status of repositories in a directory.
 func (b *bulkCloneManagerImpl) GetRepositoryStatus(ctx context.Context, targetPath string) (*RepositoryStatus, error) {
 	b.logger.Debug("Getting repository status", "path", targetPath)
 
@@ -388,7 +391,7 @@ func (b *bulkCloneManagerImpl) GetRepositoryStatus(ctx context.Context, targetPa
 	return status, nil
 }
 
-// CleanupRepositories cleans up repositories based on criteria
+// CleanupRepositories cleans up repositories based on criteria.
 func (b *bulkCloneManagerImpl) CleanupRepositories(ctx context.Context, request *CleanupRequest) (*CleanupResult, error) {
 	b.logger.Info("Starting repository cleanup", "path", request.TargetPath)
 
@@ -404,13 +407,13 @@ func (b *bulkCloneManagerImpl) CleanupRepositories(ctx context.Context, request 
 	return result, nil
 }
 
-// ConfigurationManager interface for configuration operations
+// ConfigurationManager interface for configuration operations.
 type ConfigurationManager interface {
 	LoadConfiguration(ctx context.Context) (*BulkCloneConfig, error)
 	ValidateConfiguration(ctx context.Context, config *BulkCloneConfig) error
 }
 
-// Logger interface for dependency injection
+// Logger interface for dependency injection.
 type Logger interface {
 	Debug(msg string, args ...interface{})
 	Info(msg string, args ...interface{})

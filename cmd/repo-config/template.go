@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -7,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newTemplateCmd creates the template subcommand
+// newTemplateCmd creates the template subcommand.
 func newTemplateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "template",
@@ -42,7 +45,7 @@ Examples:
 	return cmd
 }
 
-// newTemplateListCmd lists available templates
+// newTemplateListCmd lists available templates.
 func newTemplateListCmd() *cobra.Command {
 	var format string
 
@@ -67,7 +70,7 @@ Examples:
 	return cmd
 }
 
-// newTemplateShowCmd shows template details
+// newTemplateShowCmd shows template details.
 func newTemplateShowCmd() *cobra.Command {
 	var format string
 
@@ -94,7 +97,7 @@ Examples:
 	return cmd
 }
 
-// newTemplateValidateCmd validates a template
+// newTemplateValidateCmd validates a template.
 func newTemplateValidateCmd() *cobra.Command {
 	var strict bool
 
@@ -121,7 +124,7 @@ Examples:
 	return cmd
 }
 
-// runTemplateListCommand executes the template list command
+// runTemplateListCommand executes the template list command.
 func runTemplateListCommand(format string) error {
 	fmt.Printf("📋 Available Repository Configuration Templates\n")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -188,7 +191,7 @@ func runTemplateListCommand(format string) error {
 	return nil
 }
 
-// runTemplateShowCommand executes the template show command
+// runTemplateShowCommand executes the template show command.
 func runTemplateShowCommand(templateName, format string) error {
 	fmt.Printf("📄 Template Configuration: %s\n", templateName)
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -212,7 +215,7 @@ func runTemplateShowCommand(templateName, format string) error {
 	return nil
 }
 
-// runTemplateValidateCommand executes the template validate command
+// runTemplateValidateCommand executes the template validate command.
 func runTemplateValidateCommand(templateName string, strict bool) error {
 	fmt.Printf("🔍 Validating Template: %s\n", templateName)
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -268,6 +271,7 @@ func runTemplateValidateCommand(templateName string, strict bool) error {
 	// Summary
 	errorCount := 0
 	warningCount := 0
+
 	for _, result := range validationResults {
 		switch result.Severity {
 		case "error":
@@ -288,7 +292,7 @@ func runTemplateValidateCommand(templateName string, strict bool) error {
 	return nil
 }
 
-// ConfigTemplate represents a configuration template
+// ConfigTemplate represents a configuration template.
 type ConfigTemplate struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
@@ -299,7 +303,7 @@ type ConfigTemplate struct {
 	Policies    int      `json:"policies"`
 }
 
-// TemplateValidationResult represents a template validation check result
+// TemplateValidationResult represents a template validation check result.
 type TemplateValidationResult struct {
 	Check    string `json:"check"`
 	Status   string `json:"status"`
@@ -307,7 +311,7 @@ type TemplateValidationResult struct {
 	Severity string `json:"severity"`
 }
 
-// displayTemplateTable displays templates in table format
+// displayTemplateTable displays templates in table format.
 func displayTemplateTable(templates []ConfigTemplate) {
 	fmt.Printf("%-15s %-40s %-10s %-12s %s\n", "NAME", "DESCRIPTION", "VERSION", "CATEGORY", "INHERITS")
 	fmt.Println("─────────────────────────────────────────────────────────────────────────────────────────")
@@ -334,7 +338,7 @@ func displayTemplateTable(templates []ConfigTemplate) {
 	fmt.Printf("Total templates: %d\n", len(templates))
 }
 
-// displayTemplateJSON displays templates in JSON format
+// displayTemplateJSON displays templates in JSON format.
 func displayTemplateJSON(templates []ConfigTemplate) {
 	jsonData := map[string]interface{}{
 		"templates": templates,
@@ -348,7 +352,7 @@ func displayTemplateJSON(templates []ConfigTemplate) {
 	}
 }
 
-// getTemplateConfiguration returns mock template configuration
+// getTemplateConfiguration returns mock template configuration.
 func getTemplateConfiguration(templateName string) string {
 	templates := map[string]string{
 		"security": `# Security Template Configuration
@@ -417,5 +421,6 @@ settings:
 	if config, exists := templates[templateName]; exists {
 		return config
 	}
+
 	return ""
 }

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/config_mocks.go -package=mocks ConfigLoader,ConfigValidator,ConfigWatcher,ConfigProvider
@@ -7,7 +10,7 @@ import (
 	"io"
 )
 
-// ConfigLoader defines the interface for configuration loading operations
+// ConfigLoader defines the interface for configuration loading operations.
 type ConfigLoader interface {
 	// Load configuration from default search paths
 	LoadConfig(ctx context.Context) (*Config, error)
@@ -25,7 +28,7 @@ type ConfigLoader interface {
 	SetSearchPaths(paths []string)
 }
 
-// ConfigValidator defines the interface for configuration validation
+// ConfigValidator defines the interface for configuration validation.
 type ConfigValidator interface {
 	// Validate a configuration object
 	ValidateConfig(ctx context.Context, config *Config) error
@@ -40,7 +43,7 @@ type ConfigValidator interface {
 	IsValid(ctx context.Context, config *Config) bool
 }
 
-// ValidationError represents a configuration validation error
+// ValidationError represents a configuration validation error.
 type ValidationError struct {
 	Field        string `json:"field"`
 	Value        string `json:"value"`
@@ -51,7 +54,7 @@ type ValidationError struct {
 	ColumnNumber int    `json:"column_number,omitempty"`
 }
 
-// ConfigParser defines the interface for parsing configuration files
+// ConfigParser defines the interface for parsing configuration files.
 type ConfigParser interface {
 	// Parse configuration from bytes
 	ParseConfig(ctx context.Context, data []byte) (*Config, error)
@@ -66,7 +69,7 @@ type ConfigParser interface {
 	IsFormatSupported(format string) bool
 }
 
-// SchemaValidator defines the interface for schema validation
+// SchemaValidator defines the interface for schema validation.
 type SchemaValidator interface {
 	// Validate against JSON schema
 	ValidateSchema(ctx context.Context, data []byte, schemaPath string) error
@@ -78,7 +81,7 @@ type SchemaValidator interface {
 	ValidateStructure(ctx context.Context, config *Config) error
 }
 
-// ProviderManager defines the interface for managing provider configurations
+// ProviderManager defines the interface for managing provider configurations.
 type ProviderManager interface {
 	// Get all configured providers
 	GetProviders(ctx context.Context) (map[string]Provider, error)
@@ -96,7 +99,7 @@ type ProviderManager interface {
 	GetSupportedProviders() []string
 }
 
-// DirectoryResolverInterface defines the interface for resolving target directories
+// DirectoryResolverInterface defines the interface for resolving target directories.
 type DirectoryResolverInterface interface {
 	// Resolve directory paths for repositories
 	ResolveDirectories(ctx context.Context, config *Config) ([]RepositoryPath, error)
@@ -113,7 +116,7 @@ type DirectoryResolverInterface interface {
 
 // RepositoryPath is defined in directory_resolver.go
 
-// FilterService defines the interface for repository filtering
+// FilterService defines the interface for repository filtering.
 type FilterService interface {
 	// Apply filters to repository list
 	ApplyFilters(ctx context.Context, repositories []Repository, filters *RepositoryFilter) ([]Repository, error)
@@ -130,7 +133,7 @@ type FilterService interface {
 
 // Repository is defined in provider_interfaces.go
 
-// FilterStats represents statistics about filter application
+// FilterStats represents statistics about filter application.
 type FilterStats struct {
 	TotalRepositories    int `json:"total_repositories"`
 	MatchingRepositories int `json:"matching_repositories"`
@@ -141,7 +144,7 @@ type FilterStats struct {
 	ExcludedByArchived   int `json:"excluded_by_archived"`
 }
 
-// IntegrationService defines the interface for bulk clone integration
+// IntegrationService defines the interface for bulk clone integration.
 type IntegrationService interface {
 	// Get all clone targets
 	GetAllTargets(ctx context.Context) ([]BulkCloneTarget, error)
@@ -158,7 +161,7 @@ type IntegrationService interface {
 
 // BulkCloneTarget is defined in integration.go
 
-// ConfigService provides a unified interface for all configuration operations
+// ConfigService provides a unified interface for all configuration operations.
 type ConfigService interface {
 	ConfigLoader
 	ConfigValidator
@@ -170,7 +173,7 @@ type ConfigService interface {
 	IntegrationService
 }
 
-// ConfigWatcher defines the interface for watching configuration file changes
+// ConfigWatcher defines the interface for watching configuration file changes.
 type ConfigWatcher interface {
 	// Start watching configuration files
 	StartWatching(ctx context.Context, paths []string) error
@@ -185,7 +188,7 @@ type ConfigWatcher interface {
 	OnChange(callback func(event ConfigChangeEvent))
 }
 
-// ConfigChangeEvent represents a configuration file change event
+// ConfigChangeEvent represents a configuration file change event.
 type ConfigChangeEvent struct {
 	Path      string  `json:"path"`
 	Operation string  `json:"operation"` // create, write, remove, rename

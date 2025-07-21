@@ -689,7 +689,7 @@ func TestServiceMeshIntegration(t *testing.T) {
 	})
 }
 
-// TestKubernetesCommandExecutor tests the command executor
+// TestKubernetesCommandExecutor tests the command executor.
 func TestKubernetesCommandExecutor(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
 	executor := NewKubernetesCommandExecutor(logger)

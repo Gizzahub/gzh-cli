@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package docker
 
 import (
@@ -12,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ScanCmd represents the scan command
+// ScanCmd represents the scan command.
 var ScanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "컨테이너 이미지 보안 스캔",
@@ -47,7 +50,7 @@ var (
 	scanTimeout    time.Duration
 	scanSkipUpdate bool
 
-	// Advanced scanning options
+	// Advanced scanning options.
 	enableSBOM       bool
 	enableSecrets    bool
 	enableMalware    bool
@@ -55,20 +58,20 @@ var (
 	enableLicense    bool
 	enableCompliance bool
 
-	// Filter options
+	// Filter options.
 	scanPackageTypes []string
 	scanSkipFiles    []string
 	scanSkipDirs     []string
 	scanOnlyFixed    bool
 
-	// Output options
+	// Output options.
 	scanTemplate string
 	scanCSV      bool
 	scanHTML     bool
 	scanSARIF    bool
 	scanCyclone  bool
 
-	// Integration options
+	// Integration options.
 	scanUpload     string
 	scanWebhook    string
 	scanFailOn     string
@@ -115,7 +118,7 @@ func init() {
 	ScanCmd.Flags().StringVar(&scanIgnoreFile, "ignore-file", "", "무시할 취약점 파일")
 }
 
-// ScanConfiguration represents scan settings
+// ScanConfiguration represents scan settings.
 type ScanConfiguration struct {
 	Image       string            `json:"image"`
 	Scanners    []string          `json:"scanners"`
@@ -163,7 +166,7 @@ type IntegrationConfig struct {
 	IgnoreFile string `json:"ignore_file,omitempty"`
 }
 
-// ComprehensiveScanResult represents the complete scan results
+// ComprehensiveScanResult represents the complete scan results.
 type ComprehensiveScanResult struct {
 	Configuration ScanConfiguration `json:"configuration"`
 	Summary       ScanSummary       `json:"summary"`
@@ -499,6 +502,7 @@ func performComprehensiveScan(config *ScanConfiguration) (*ComprehensiveScanResu
 	}
 
 	result.Success = true
+
 	return result, nil
 }
 
@@ -542,6 +546,7 @@ func runScannerComprehensive(scanner string, config *ScanConfiguration) (*Scanne
 
 	result.Duration = time.Since(startTime)
 	result.Success = true
+
 	return result, nil
 }
 
@@ -558,12 +563,15 @@ func runTrivyScan(config *ScanConfiguration, result *ScannerResult) error {
 	if config.Options.SBOM {
 		scanTypes = append(scanTypes, "vuln")
 	}
+
 	if config.Options.Secrets {
 		scanTypes = append(scanTypes, "secret")
 	}
+
 	if config.Options.Config {
 		scanTypes = append(scanTypes, "config")
 	}
+
 	if config.Options.License {
 		scanTypes = append(scanTypes, "license")
 	}
@@ -585,6 +593,7 @@ func runTrivyScan(config *ScanConfiguration, result *ScannerResult) error {
 	args = append(args, config.Image)
 
 	cmd := exec.Command("trivy", args...)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("trivy 실행 실패: %w", err)
@@ -667,6 +676,7 @@ func parseTrivyComprehensive(output []byte, result *ScannerResult) error {
 
 			// Update summary
 			result.Summary.Total++
+
 			switch strings.ToUpper(vuln.Severity) {
 			case "CRITICAL":
 				result.Summary.Critical++
@@ -712,6 +722,7 @@ func runGrypeScan(config *ScanConfiguration, result *ScannerResult) error {
 	}
 
 	cmd := exec.Command("grype", args...)
+
 	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("grype 실행 실패: %w", err)
@@ -725,6 +736,7 @@ func runSnykScan(config *ScanConfiguration, result *ScannerResult) error {
 	args := []string{"container", "test", config.Image, "--json"}
 
 	cmd := exec.Command("snyk", args...)
+
 	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("snyk 실행 실패: %w", err)
@@ -742,6 +754,7 @@ func runClairScan(config *ScanConfiguration, result *ScannerResult) error {
 func getImageMetadata(image string, metadata *ScanMetadata) error {
 	// Get image inspect information
 	cmd := exec.Command("docker", "image", "inspect", image)
+
 	output, err := cmd.Output()
 	if err != nil {
 		return err
@@ -786,6 +799,7 @@ func getImageMetadata(image string, metadata *ScanMetadata) error {
 func generateSBOM(image string) (*SBOM, error) {
 	// Use syft to generate SBOM
 	cmd := exec.Command("syft", image, "--output", "json")
+
 	_, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("syft 실행 실패: %w", err)
@@ -844,12 +858,15 @@ func displayScanResults(result *ComprehensiveScanResult) {
 		if scanResult.Success {
 			fmt.Printf("\n📋 %s 결과:\n", scanResult.Scanner)
 			fmt.Printf("  취약점: %d개\n", len(scanResult.Vulnerabilities))
+
 			if len(scanResult.Secrets) > 0 {
 				fmt.Printf("  시크릿: %d개\n", len(scanResult.Secrets))
 			}
+
 			if len(scanResult.ConfigIssues) > 0 {
 				fmt.Printf("  설정 문제: %d개\n", len(scanResult.ConfigIssues))
 			}
+
 			if len(scanResult.LicenseIssues) > 0 {
 				fmt.Printf("  라이선스 문제: %d개\n", len(scanResult.LicenseIssues))
 			}
@@ -898,6 +915,7 @@ func saveOutputs(result *ComprehensiveScanResult) error {
 		if err := generateHTMLReport(result, htmlFile); err != nil {
 			return err
 		}
+
 		fmt.Printf("📄 HTML 보고서 저장: %s\n", htmlFile)
 	}
 
@@ -906,6 +924,7 @@ func saveOutputs(result *ComprehensiveScanResult) error {
 		if err := generateSARIFReport(result, sarifFile); err != nil {
 			return err
 		}
+
 		fmt.Printf("📄 SARIF 보고서 저장: %s\n", sarifFile)
 	}
 
@@ -914,6 +933,7 @@ func saveOutputs(result *ComprehensiveScanResult) error {
 		if err := generateCSVReport(result, csvFile); err != nil {
 			return err
 		}
+
 		fmt.Printf("📄 CSV 보고서 저장: %s\n", csvFile)
 	}
 

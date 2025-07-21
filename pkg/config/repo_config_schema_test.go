@@ -281,7 +281,7 @@ func TestExpandEnvVars(t *testing.T) {
 	assert.Equal(t, "secret123", webhook.Secret)
 }
 
-// Helper functions
+// Helper functions.
 func boolPtr(b bool) *bool {
 	return &b
 }

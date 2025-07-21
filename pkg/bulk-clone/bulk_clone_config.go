@@ -1,4 +1,6 @@
-// Package bulkclone provides configuration management for bulk cloning operations.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
@@ -69,39 +71,39 @@ func (cfg *bulkCloneConfig) ConfigExists(targetPath string) bool {
 func (cfg *bulkCloneConfig) ReadConfig(configPath string) error {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to read config file: %v", err)
+		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal config file: %v", err)
+		return fmt.Errorf("failed to unmarshal config file: %w", err)
 	}
 
 	err = cfg.validateConfig()
 	if err != nil {
 		printValidationErrors(err)
-		return fmt.Errorf("failed to validate config file: %v", err)
+		return fmt.Errorf("failed to validate config file: %w", err)
 	}
 
 	return nil
 }
 
-// ReadConfigWithoutValidation reads config file without validation (used for overlays)
+// ReadConfigWithoutValidation reads config file without validation (used for overlays).
 func (cfg *bulkCloneConfig) ReadConfigWithoutValidation(configPath string) error {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to read config file: %v", err)
+		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal config file: %v", err)
+		return fmt.Errorf("failed to unmarshal config file: %w", err)
 	}
 
 	return nil
 }
 
-// ReadConfigFromDir reads config from a directory (legacy support)
+// ReadConfigFromDir reads config from a directory (legacy support).
 func (cfg *bulkCloneConfig) ReadConfigFromDir(targetPath string) {
 	configPath := path.Join(targetPath, "bulk-clone.yaml")
 	if err := cfg.ReadConfig(configPath); err != nil {
@@ -109,14 +111,14 @@ func (cfg *bulkCloneConfig) ReadConfigFromDir(targetPath string) {
 	}
 }
 
-// errorMessages contains custom error messages for validation
+// errorMessages contains custom error messages for validation.
 var errorMessages = map[string]string{
 	"required": "This field is required.",
 	"url":      "Please enter a valid URL.",
 	"oneof":    "Invalid value (allowed: http, https, ssh).",
 }
 
-// printValidationErrors prints detailed validation error messages
+// printValidationErrors prints detailed validation error messages.
 func printValidationErrors(err error) {
 	var errs validator.ValidationErrors
 	if errors.As(err, &errs) {
@@ -137,7 +139,7 @@ func printValidationErrors(err error) {
 	}
 }
 
-// validateConfig validates the configuration structure
+// validateConfig validates the configuration structure.
 func (cfg *bulkCloneConfig) validateConfig() error {
 	validate := validator.New()
 	return validate.Struct(cfg)

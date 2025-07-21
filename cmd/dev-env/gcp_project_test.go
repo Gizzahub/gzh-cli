@@ -423,7 +423,7 @@ func TestGCPProjectManager_Integration(t *testing.T) {
 	assert.NoError(t, err) // Should handle empty project list gracefully
 }
 
-// Benchmark tests for performance
+// Benchmark tests for performance.
 func BenchmarkGCPProjectManager_LoadConfigurations(b *testing.B) {
 	// Create temporary directory with test data
 	tmpDir := b.TempDir()

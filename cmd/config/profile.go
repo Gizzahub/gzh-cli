@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -6,11 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/spf13/cobra"
+
+	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
-// newProfileCmd creates the config profile subcommand
+// newProfileCmd creates the config profile subcommand.
 func newProfileCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "profile",
@@ -45,7 +49,7 @@ Examples:
 	return cmd
 }
 
-// newProfileListCmd lists available profiles
+// newProfileListCmd lists available profiles.
 func newProfileListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
@@ -56,7 +60,7 @@ func newProfileListCmd() *cobra.Command {
 	}
 }
 
-// newProfileCreateCmd creates a new profile
+// newProfileCreateCmd creates a new profile.
 func newProfileCreateCmd() *cobra.Command {
 	var (
 		fromProfile string
@@ -79,7 +83,7 @@ func newProfileCreateCmd() *cobra.Command {
 	return cmd
 }
 
-// newProfileUseCmd switches to a profile
+// newProfileUseCmd switches to a profile.
 func newProfileUseCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "use <profile-name>",
@@ -92,7 +96,7 @@ func newProfileUseCmd() *cobra.Command {
 	}
 }
 
-// newProfileCurrentCmd shows current profile
+// newProfileCurrentCmd shows current profile.
 func newProfileCurrentCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "current",
@@ -103,7 +107,7 @@ func newProfileCurrentCmd() *cobra.Command {
 	}
 }
 
-// newProfileDeleteCmd deletes a profile
+// newProfileDeleteCmd deletes a profile.
 func newProfileDeleteCmd() *cobra.Command {
 	var force bool
 
@@ -124,7 +128,7 @@ func newProfileDeleteCmd() *cobra.Command {
 
 // Profile management functions
 
-// listProfiles lists all available configuration profiles
+// listProfiles lists all available configuration profiles.
 func listProfiles() error {
 	profiles, err := getAvailableProfiles()
 	if err != nil {
@@ -158,6 +162,7 @@ func listProfiles() error {
 	}
 
 	fmt.Println()
+
 	if currentProfile != "" {
 		fmt.Printf("Current profile: %s\n", currentProfile)
 	} else {
@@ -167,7 +172,7 @@ func listProfiles() error {
 	return nil
 }
 
-// createProfile creates a new configuration profile
+// createProfile creates a new configuration profile.
 func createProfile(profileName, fromProfile string, interactive bool) error {
 	// Validate profile name
 	if err := validateProfileName(profileName); err != nil {
@@ -194,6 +199,7 @@ func createProfile(profileName, fromProfile string, interactive bool) error {
 		if err != nil {
 			return fmt.Errorf("failed to read source profile: %w", err)
 		}
+
 		content = string(sourceContent)
 	} else if interactive {
 		// Create interactively
@@ -209,10 +215,11 @@ func createProfile(profileName, fromProfile string, interactive bool) error {
 	}
 
 	fmt.Printf("✓ Profile '%s' created: %s\n", profileName, profileFile)
+
 	return nil
 }
 
-// useProfile switches to a configuration profile
+// useProfile switches to a configuration profile.
 func useProfile(profileName string) error {
 	// Validate profile exists
 	profileFile := getProfilePath(profileName)
@@ -241,10 +248,11 @@ func useProfile(profileName string) error {
 	}
 
 	fmt.Printf("✓ Switched to profile: %s\n", profileName)
+
 	return nil
 }
 
-// showCurrentProfile shows the current active profile
+// showCurrentProfile shows the current active profile.
 func showCurrentProfile() error {
 	profile, err := getCurrentProfile()
 	if err != nil {
@@ -265,7 +273,7 @@ func showCurrentProfile() error {
 	return nil
 }
 
-// deleteProfile deletes a configuration profile
+// deleteProfile deletes a configuration profile.
 func deleteProfile(profileName string, force bool) error {
 	// Validate profile exists
 	profileFile := getProfilePath(profileName)
@@ -282,13 +290,15 @@ func deleteProfile(profileName string, force bool) error {
 	// Confirm deletion
 	if !force {
 		fmt.Printf("Delete profile '%s'? (y/N): ", profileName)
+
 		var response string
 		if _, err := fmt.Scanln(&response); err != nil {
 			// Handle scan error but continue with empty response (defaults to "no")
 			response = ""
 		}
-		if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
-			fmt.Println("Profile deletion cancelled")
+
+		if !strings.EqualFold(response, "y") && !strings.EqualFold(response, "yes") {
+			fmt.Println("Profile deletion canceled")
 			return nil
 		}
 	}
@@ -299,12 +309,13 @@ func deleteProfile(profileName string, force bool) error {
 	}
 
 	fmt.Printf("✓ Profile '%s' deleted\n", profileName)
+
 	return nil
 }
 
 // Helper functions
 
-// getAvailableProfiles returns list of available profiles
+// getAvailableProfiles returns list of available profiles.
 func getAvailableProfiles() ([]string, error) {
 	var profiles []string
 
@@ -328,7 +339,7 @@ func getAvailableProfiles() ([]string, error) {
 	return profiles, nil
 }
 
-// getCurrentProfile returns the name of the current active profile
+// getCurrentProfile returns the name of the current active profile.
 func getCurrentProfile() (string, error) {
 	// Check if gzh.yaml is a symlink
 	linkTarget, err := os.Readlink("gzh.yaml")
@@ -343,18 +354,19 @@ func getCurrentProfile() (string, error) {
 	if strings.HasPrefix(base, "gzh.") && strings.HasSuffix(base, ".yaml") {
 		profileName := strings.TrimPrefix(base, "gzh.")
 		profileName = strings.TrimSuffix(profileName, ".yaml")
+
 		return profileName, nil
 	}
 
 	return "", nil
 }
 
-// getProfilePath returns the file path for a profile
+// getProfilePath returns the file path for a profile.
 func getProfilePath(profileName string) string {
 	return fmt.Sprintf("gzh.%s.yaml", profileName)
 }
 
-// validateProfileName validates a profile name
+// validateProfileName validates a profile name.
 func validateProfileName(profileName string) error {
 	if profileName == "" {
 		return fmt.Errorf("profile name cannot be empty")
@@ -376,7 +388,7 @@ func validateProfileName(profileName string) error {
 	return nil
 }
 
-// getProfileInfo returns basic info about a profile
+// getProfileInfo returns basic info about a profile.
 func getProfileInfo(profileName string) string {
 	profileFile := getProfilePath(profileName)
 
@@ -386,6 +398,7 @@ func getProfileInfo(profileName string) string {
 	}
 
 	providerCount := len(config.Providers)
+
 	targetCount := 0
 	for _, provider := range config.Providers {
 		targetCount += len(provider.Orgs) + len(provider.Groups)
@@ -394,7 +407,7 @@ func getProfileInfo(profileName string) string {
 	return fmt.Sprintf("(%d providers, %d targets)", providerCount, targetCount)
 }
 
-// generateProfileTemplate generates a basic profile template
+// generateProfileTemplate generates a basic profile template.
 func generateProfileTemplate(profileName string) string {
 	template := fmt.Sprintf(`# gzh.yaml - %s profile
 # Generated by: gz config profile create %s

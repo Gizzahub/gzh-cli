@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package docker
 
 import (
@@ -6,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RegistryCmd represents the registry command
+// RegistryCmd represents the registry command.
 var RegistryCmd = &cobra.Command{
 	Use:   "registry",
 	Short: "이미지 레지스트리 관리",

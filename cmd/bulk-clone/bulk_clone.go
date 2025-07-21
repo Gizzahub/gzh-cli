@@ -1,14 +1,18 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/gizzahub/gzh-manager-go/internal/config"
 	pkgconfig "github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
-	"github.com/spf13/cobra"
 )
 
 type bulkCloneOptions struct {
@@ -87,7 +91,7 @@ func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, args []str
 	return o.runWithCentralConfigService(ctx)
 }
 
-// runWithCentralConfigService uses the central configuration service for unified config management
+// runWithCentralConfigService uses the central configuration service for unified config management.
 func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) error {
 	// Create configuration service
 	configService, err := config.CreateDefaultConfigService()
@@ -141,7 +145,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 		// Check for cancellation before starting each target
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("operation cancelled: %w", ctx.Err())
+			return fmt.Errorf("operation canceled: %w", ctx.Err())
 		default:
 		}
 
@@ -159,7 +163,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 	return nil
 }
 
-// executeProviderCloning executes the cloning operation for a specific provider
+// executeProviderCloning executes the cloning operation for a specific provider.
 func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target pkgconfig.BulkCloneTarget, targetPath string) error {
 	switch target.Provider {
 	case pkgconfig.ProviderGitHub:
@@ -167,12 +171,14 @@ func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target pk
 		if o.resume || o.parallel > 1 {
 			return github.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
+
 		return github.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case pkgconfig.ProviderGitLab:
 		// Use resumable clone if requested or if parallel/worker pool is enabled
 		if o.resume || o.parallel > 1 {
 			return gitlab.RefreshAllResumable(ctx, targetPath, target.Name, target.Strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		}
+
 		return gitlab.RefreshAll(ctx, targetPath, target.Name, target.Strategy)
 	case pkgconfig.ProviderGitea:
 		// Gitea support would go here

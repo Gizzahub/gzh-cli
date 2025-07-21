@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -7,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// RepoConfig represents the complete repository configuration schema
+// RepoConfig represents the complete repository configuration schema.
 type RepoConfig struct {
 	Version      string                     `yaml:"version"`
 	Organization string                     `yaml:"organization"`
@@ -17,7 +20,7 @@ type RepoConfig struct {
 	Policies     map[string]*PolicyTemplate `yaml:"policies,omitempty"`
 }
 
-// RepoDefaults represents default settings for all repositories
+// RepoDefaults represents default settings for all repositories.
 type RepoDefaults struct {
 	Template    string              `yaml:"template,omitempty"`
 	Settings    *RepoSettings       `yaml:"settings,omitempty"`
@@ -25,7 +28,7 @@ type RepoDefaults struct {
 	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
 }
 
-// RepoTemplate represents a reusable configuration template
+// RepoTemplate represents a reusable configuration template.
 type RepoTemplate struct {
 	Base        string              `yaml:"base,omitempty"`
 	Description string              `yaml:"description,omitempty"`
@@ -34,14 +37,14 @@ type RepoTemplate struct {
 	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
 }
 
-// RepoTargets represents repository targeting configuration
+// RepoTargets represents repository targeting configuration.
 type RepoTargets struct {
 	Specific []RepoSpecificConfig `yaml:"specific,omitempty"`
 	Patterns []RepoPatternConfig  `yaml:"patterns,omitempty"`
 	Default  *RepoDefaultConfig   `yaml:"default,omitempty"`
 }
 
-// RepoSpecificConfig represents configuration for specific repositories
+// RepoSpecificConfig represents configuration for specific repositories.
 type RepoSpecificConfig struct {
 	Name        string              `yaml:"name"`
 	Template    string              `yaml:"template,omitempty"`
@@ -51,7 +54,7 @@ type RepoSpecificConfig struct {
 	Exceptions  []PolicyException   `yaml:"exceptions,omitempty"`
 }
 
-// RepoPatternConfig represents configuration for repositories matching patterns
+// RepoPatternConfig represents configuration for repositories matching patterns.
 type RepoPatternConfig struct {
 	Match       string              `yaml:"match"`
 	Template    string              `yaml:"template,omitempty"`
@@ -61,7 +64,7 @@ type RepoPatternConfig struct {
 	Exceptions  []PolicyException   `yaml:"exceptions,omitempty"`
 }
 
-// RepoDefaultConfig represents default configuration for all repositories
+// RepoDefaultConfig represents default configuration for all repositories.
 type RepoDefaultConfig struct {
 	Template    string              `yaml:"template,omitempty"`
 	Settings    *RepoSettings       `yaml:"settings,omitempty"`
@@ -69,7 +72,7 @@ type RepoDefaultConfig struct {
 	Permissions *PermissionSettings `yaml:"permissions,omitempty"`
 }
 
-// RepoSettings represents basic repository settings
+// RepoSettings represents basic repository settings.
 type RepoSettings struct {
 	Description *string  `yaml:"description,omitempty"`
 	Homepage    *string  `yaml:"homepage,omitempty"`
@@ -93,7 +96,7 @@ type RepoSettings struct {
 	DefaultBranch *string `yaml:"default_branch,omitempty"`
 }
 
-// SecuritySettings represents security-related settings
+// SecuritySettings represents security-related settings.
 type SecuritySettings struct {
 	VulnerabilityAlerts           *bool                            `yaml:"vulnerability_alerts,omitempty"`
 	SecurityAdvisories            *bool                            `yaml:"security_advisories,omitempty"`
@@ -102,7 +105,7 @@ type SecuritySettings struct {
 	Webhooks                      []WebhookConfig                  `yaml:"webhooks,omitempty"`
 }
 
-// BranchProtectionRule represents branch protection settings
+// BranchProtectionRule represents branch protection settings.
 type BranchProtectionRule struct {
 	RequiredReviews               *int     `yaml:"required_reviews,omitempty"`
 	DismissStaleReviews           *bool    `yaml:"dismiss_stale_reviews,omitempty"`
@@ -119,7 +122,7 @@ type BranchProtectionRule struct {
 	AllowDeletions                *bool    `yaml:"allow_deletions,omitempty"`
 }
 
-// WebhookConfig represents webhook configuration
+// WebhookConfig represents webhook configuration.
 type WebhookConfig struct {
 	URL         string   `yaml:"url"`
 	Events      []string `yaml:"events"`
@@ -128,19 +131,19 @@ type WebhookConfig struct {
 	Secret      string   `yaml:"secret,omitempty"`
 }
 
-// PermissionSettings represents permission-related settings
+// PermissionSettings represents permission-related settings.
 type PermissionSettings struct {
 	TeamPermissions map[string]string `yaml:"team_permissions,omitempty"`
 	UserPermissions map[string]string `yaml:"user_permissions,omitempty"`
 }
 
-// PolicyTemplate represents a reusable policy configuration
+// PolicyTemplate represents a reusable policy configuration.
 type PolicyTemplate struct {
 	Description string                `yaml:"description"`
 	Rules       map[string]PolicyRule `yaml:"rules"`
 }
 
-// PolicyRule represents a single policy rule
+// PolicyRule represents a single policy rule.
 type PolicyRule struct {
 	Type        string      `yaml:"type"`
 	Value       interface{} `yaml:"value"`
@@ -148,7 +151,7 @@ type PolicyRule struct {
 	Message     string      `yaml:"message,omitempty"`
 }
 
-// LoadRepoConfig loads a repository configuration from a YAML file
+// LoadRepoConfig loads a repository configuration from a YAML file.
 func LoadRepoConfig(path string) (*RepoConfig, error) {
 	// Expand environment variables in path
 	path = os.ExpandEnv(path)

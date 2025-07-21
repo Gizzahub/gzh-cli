@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package migrate
 
 import (
@@ -8,11 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
-// MigrateOptions holds the configuration for the migrate command
+// MigrateOptions holds the configuration for the migrate command.
 type MigrateOptions struct {
 	SourceFile string
 	TargetFile string
@@ -23,7 +27,7 @@ type MigrateOptions struct {
 	Format     string
 }
 
-// NewMigrateCmd creates a new migrate command
+// NewMigrateCmd creates a new migrate command.
 func NewMigrateCmd() *cobra.Command {
 	opts := &MigrateOptions{}
 
@@ -145,6 +149,7 @@ func runBatchMigration(ctx context.Context, opts *MigrateOptions) error {
 	}
 
 	fmt.Printf("Found %d legacy configuration files:\n", len(legacyFiles))
+
 	for _, file := range legacyFiles {
 		fmt.Printf("  - %s\n", file)
 	}
@@ -163,9 +168,11 @@ func runBatchMigration(ctx context.Context, opts *MigrateOptions) error {
 
 		if err := runSingleMigration(ctx, &migrateOpts); err != nil {
 			fmt.Printf("❌ Migration failed: %v\n", err)
+
 			failureCount++
 		} else {
 			fmt.Printf("✅ Migration successful\n")
+
 			successCount++
 		}
 	}
@@ -189,6 +196,7 @@ func runAutoMigration(ctx context.Context, opts *MigrateOptions) error {
 	}
 
 	var sourceFile string
+
 	for _, file := range legacyFiles {
 		if _, err := os.Stat(file); err == nil {
 			sourceFile = file
@@ -223,6 +231,7 @@ func performMigration(ctx context.Context, sourceFile, targetFile string, opts *
 		if err := copyFile(sourceFile, backupFile); err != nil {
 			return nil, fmt.Errorf("failed to create backup: %w", err)
 		}
+
 		fmt.Printf("💾 Backup created: %s\n", backupFile)
 	}
 
@@ -247,6 +256,7 @@ func displayMigrationResult(result *config.MigrationResult, opts *MigrateOptions
 
 	if len(result.Warnings) > 0 {
 		fmt.Printf("  ⚠️  Warnings:\n")
+
 		for _, warning := range result.Warnings {
 			fmt.Printf("    - %s\n", warning)
 		}
@@ -254,6 +264,7 @@ func displayMigrationResult(result *config.MigrationResult, opts *MigrateOptions
 
 	if len(result.RequiredActions) > 0 {
 		fmt.Printf("  🔧 Required Actions:\n")
+
 		for _, action := range result.RequiredActions {
 			fmt.Printf("    - %s\n", action)
 		}
@@ -284,6 +295,7 @@ func findLegacyFiles(dir string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		legacyFiles = append(legacyFiles, matches...)
 	}
 
@@ -301,6 +313,7 @@ func generateTargetFilename(sourceFile string) string {
 	// Default transformation
 	ext := filepath.Ext(sourceFile)
 	base := strings.TrimSuffix(filepath.Base(sourceFile), ext)
+
 	return filepath.Join(dir, base+"-unified"+ext)
 }
 
@@ -308,6 +321,7 @@ func createBackupFilename(sourceFile string) string {
 	timestamp := time.Now().Format("20060102-150405")
 	ext := filepath.Ext(sourceFile)
 	base := strings.TrimSuffix(sourceFile, ext)
+
 	return fmt.Sprintf("%s.backup.%s%s", base, timestamp, ext)
 }
 

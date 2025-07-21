@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package shell
 
 import (
@@ -14,11 +17,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/gzhclient"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/gzhclient"
 )
 
-// ShellCmd represents the shell command
+// ShellCmd represents the shell command.
 var ShellCmd = &cobra.Command{
 	Use:   "shell",
 	Short: "Start interactive debugging shell (REPL)",
@@ -62,7 +66,7 @@ func init() {
 	ShellCmd.Flags().BoolVar(&noHistory, "no-history", false, "Disable command history")
 }
 
-// Shell represents the interactive debugging shell
+// Shell represents the interactive debugging shell.
 type Shell struct {
 	client   *gzhclient.Client
 	history  []string
@@ -72,7 +76,7 @@ type Shell struct {
 	cancel   context.CancelFunc
 }
 
-// ShellCommand represents a shell command
+// ShellCommand represents a shell command.
 type ShellCommand struct {
 	Name        string
 	Description string
@@ -81,7 +85,7 @@ type ShellCommand struct {
 	Completer   func(*Shell, string) []string
 }
 
-// ShellContext holds shell execution context
+// ShellContext holds shell execution context.
 type ShellContext struct {
 	StartTime time.Time              `json:"start_time"`
 	Uptime    time.Duration          `json:"uptime"`
@@ -100,11 +104,13 @@ func runShell(cmd *cobra.Command, args []string) {
 	// Create GZH client
 	clientConfig := gzhclient.DefaultConfig()
 	clientConfig.LogLevel = "warn" // Reduce noise in shell
+
 	client, err := gzhclient.NewClient(clientConfig)
 	if err != nil {
 		fmt.Printf("❌ Failed to create GZH client: %v\n", err)
 		os.Exit(1)
 	}
+
 	defer client.Close()
 
 	// Create shell
@@ -130,7 +136,7 @@ func runShell(cmd *cobra.Command, args []string) {
 	}
 }
 
-// NewShell creates a new interactive shell
+// NewShell creates a new interactive shell.
 func NewShell(client *gzhclient.Client) *Shell {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -149,7 +155,7 @@ func NewShell(client *gzhclient.Client) *Shell {
 	return shell
 }
 
-// Run starts the shell REPL loop
+// Run starts the shell REPL loop.
 func (s *Shell) Run() error {
 	// Setup signal handling
 	sigChan := make(chan os.Signal, 1)
@@ -197,13 +203,13 @@ func (s *Shell) Run() error {
 	return scanner.Err()
 }
 
-// Stop stops the shell
+// Stop stops the shell.
 func (s *Shell) Stop() {
 	s.running = false
 	s.cancel()
 }
 
-// addToHistory adds a command to the history
+// addToHistory adds a command to the history.
 func (s *Shell) addToHistory(cmd string) {
 	// Avoid duplicate consecutive commands
 	if len(s.history) > 0 && s.history[len(s.history)-1] == cmd {
@@ -218,7 +224,7 @@ func (s *Shell) addToHistory(cmd string) {
 	}
 }
 
-// executeCommand parses and executes a shell command
+// executeCommand parses and executes a shell command.
 func (s *Shell) executeCommand(input string) error {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
@@ -236,7 +242,7 @@ func (s *Shell) executeCommand(input string) error {
 	return fmt.Errorf("unknown command: %s (type 'help' for available commands)", cmdName)
 }
 
-// registerCommands registers all built-in shell commands
+// registerCommands registers all built-in shell commands.
 func (s *Shell) registerCommands() {
 	s.commands["help"] = ShellCommand{
 		Name:        "help",
@@ -352,6 +358,7 @@ func handleHelp(s *Shell, args []string) error {
 		} else {
 			return fmt.Errorf("unknown command: %s", cmdName)
 		}
+
 		return nil
 	}
 
@@ -364,6 +371,7 @@ func handleHelp(s *Shell, args []string) error {
 	for name := range s.commands {
 		names = append(names, name)
 	}
+
 	sort.Strings(names)
 
 	for _, name := range names {
@@ -373,6 +381,7 @@ func handleHelp(s *Shell, args []string) error {
 
 	fmt.Println()
 	fmt.Println("Use 'help <command>' for detailed usage information.")
+
 	return nil
 }
 
@@ -387,6 +396,7 @@ func handleStatus(s *Shell, args []string) error {
 	health := s.client.Health()
 
 	var m runtime.MemStats
+
 	runtime.ReadMemStats(&m)
 
 	status := map[string]interface{}{
@@ -432,6 +442,7 @@ func handleMemory(s *Shell, args []string) error {
 	}
 
 	var m runtime.MemStats
+
 	runtime.ReadMemStats(&m)
 
 	memStats := map[string]interface{}{
@@ -463,6 +474,7 @@ func handlePlugins(s *Shell, args []string) error {
 	fmt.Println("Plugin functionality has been disabled in this version.")
 	fmt.Println("The plugins package has been removed from the codebase.")
 	fmt.Println("Available subcommands: list, exec (both non-functional)")
+
 	return nil
 }
 
@@ -471,6 +483,7 @@ func handleConfig(s *Shell, args []string) error {
 	// this would integrate with the actual config system
 	fmt.Println("Configuration management not yet implemented in shell")
 	fmt.Println("Use 'gz config' command outside of shell for configuration management")
+
 	return nil
 }
 
@@ -489,6 +502,7 @@ func handleMetrics(s *Shell, args []string) error {
 
 	if watchMode {
 		fmt.Println("Watching metrics (press Ctrl+C to stop)...")
+
 		for {
 			select {
 			case <-s.ctx.Done():
@@ -528,6 +542,7 @@ func handleMetrics(s *Shell, args []string) error {
 			fmt.Printf("  Memory Total: %.1f MB\n", float64(metrics.Memory.Total)/1024/1024)
 			fmt.Printf("  Disk Used: %.1f GB\n", float64(metrics.Disk.Used)/1024/1024/1024)
 			fmt.Printf("  Uptime: %v\n", metrics.Uptime)
+
 			if len(metrics.LoadAvg) > 0 {
 				fmt.Printf("  Load Average: %.2f\n", metrics.LoadAvg[0])
 			}
@@ -610,7 +625,9 @@ func handleHistory(s *Shell, args []string) error {
 
 	if clearHistory {
 		s.history = []string{}
+
 		fmt.Println("Command history cleared")
+
 		return nil
 	}
 
@@ -620,6 +637,7 @@ func handleHistory(s *Shell, args []string) error {
 	}
 
 	fmt.Printf("Command History (last %d):\n", count)
+
 	start := len(s.history) - count
 	if start < 0 {
 		start = 0
@@ -697,21 +715,26 @@ func handleLogs(s *Shell, args []string) error {
 
 func completeHelp(s *Shell, input string) []string {
 	var completions []string
+
 	for name := range s.commands {
 		if strings.HasPrefix(name, input) {
 			completions = append(completions, name)
 		}
 	}
+
 	return completions
 }
 
 func completePlugins(s *Shell, input string) []string {
 	completions := []string{"list", "exec"}
+
 	var filtered []string
+
 	for _, comp := range completions {
 		if strings.HasPrefix(comp, input) {
 			filtered = append(filtered, comp)
 		}
 	}
+
 	return filtered
 }

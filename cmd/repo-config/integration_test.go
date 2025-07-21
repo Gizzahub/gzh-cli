@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestDiffIntegration tests the diff command integration
+// TestDiffIntegration tests the diff command integration.
 func TestDiffIntegration(t *testing.T) {
 	// Set mock token for tests
 	os.Setenv("GITHUB_TOKEN", "mock-token-for-testing")
@@ -102,7 +102,7 @@ func TestDiffIntegration(t *testing.T) {
 	}
 }
 
-// TestAuditIntegration tests the audit command integration
+// TestAuditIntegration tests the audit command integration.
 func TestAuditIntegration(t *testing.T) {
 	// Set mock token for tests
 	os.Setenv("GITHUB_TOKEN", "mock-token-for-testing")
@@ -227,7 +227,7 @@ func TestAuditIntegration(t *testing.T) {
 	}
 }
 
-// TestAuditCIIntegration tests CI/CD integration features
+// TestAuditCIIntegration tests CI/CD integration features.
 func TestAuditCIIntegration(t *testing.T) {
 	// Skip if not in CI environment
 	if os.Getenv("CI") == "" {
@@ -263,7 +263,7 @@ func TestAuditCIIntegration(t *testing.T) {
 	})
 }
 
-// TestAuditTrendAnalysis tests trend analysis features
+// TestAuditTrendAnalysis tests trend analysis features.
 func TestAuditTrendAnalysis(t *testing.T) {
 	// Create temporary directory for trend data
 	tmpDir, err := os.MkdirTemp("", "audit-trend-test")
@@ -316,7 +316,7 @@ func TestAuditTrendAnalysis(t *testing.T) {
 	})
 }
 
-// TestAuditNotifications tests notification features
+// TestAuditNotifications tests notification features.
 func TestAuditNotifications(t *testing.T) {
 	t.Run("webhook notification", func(t *testing.T) {
 		cmd := &cobra.Command{Use: "repo-config"}
@@ -359,7 +359,7 @@ func TestAuditNotifications(t *testing.T) {
 	})
 }
 
-// TestPolicyConfiguration tests policy configuration features
+// TestPolicyConfiguration tests policy configuration features.
 func TestPolicyConfiguration(t *testing.T) {
 	t.Run("list available presets", func(t *testing.T) {
 		// This is a feature suggestion - list available presets
@@ -405,7 +405,7 @@ func TestPolicyConfiguration(t *testing.T) {
 	})
 }
 
-// TestOutputFileGeneration tests file output features
+// TestOutputFileGeneration tests file output features.
 func TestOutputFileGeneration(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "audit-output-test")
 	require.NoError(t, err)

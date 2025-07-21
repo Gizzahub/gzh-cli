@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -8,7 +11,7 @@ import (
 	"time"
 )
 
-// CommandPool provides optimized command execution with caching and parallel processing
+// CommandPool provides optimized command execution with caching and parallel processing.
 type CommandPool struct {
 	maxWorkers int
 	cache      map[string]*CachedResult
@@ -19,7 +22,7 @@ type CommandPool struct {
 	cancel     context.CancelFunc
 }
 
-// CachedResult stores command execution results with TTL
+// CachedResult stores command execution results with TTL.
 type CachedResult struct {
 	Output    []byte
 	Error     error
@@ -27,7 +30,7 @@ type CachedResult struct {
 	TTL       time.Duration
 }
 
-// CommandResult represents the result of a command execution
+// CommandResult represents the result of a command execution.
 type CommandResult struct {
 	Command   string
 	Output    []byte
@@ -36,7 +39,7 @@ type CommandResult struct {
 	FromCache bool
 }
 
-// NewCommandPool creates a new optimized command pool
+// NewCommandPool creates a new optimized command pool.
 func NewCommandPool(maxWorkers int) *CommandPool {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -50,12 +53,12 @@ func NewCommandPool(maxWorkers int) *CommandPool {
 	}
 }
 
-// Close gracefully shuts down the command pool
+// Close gracefully shuts down the command pool.
 func (cp *CommandPool) Close() {
 	cp.cancel()
 }
 
-// ExecuteCommand executes a single command with caching
+// ExecuteCommand executes a single command with caching.
 func (cp *CommandPool) ExecuteCommand(name string, args ...string) *CommandResult {
 	cmdStr := fmt.Sprintf("%s %v", name, args)
 
@@ -92,13 +95,15 @@ func (cp *CommandPool) ExecuteCommand(name string, args ...string) *CommandResul
 	return result
 }
 
-// ExecuteBatch executes multiple commands in parallel
+// ExecuteBatch executes multiple commands in parallel.
 func (cp *CommandPool) ExecuteBatch(commands []Command) []*CommandResult {
 	results := make([]*CommandResult, len(commands))
+
 	var wg sync.WaitGroup
 
 	for i, cmd := range commands {
 		wg.Add(1)
+
 		go func(index int, command Command) {
 			defer wg.Done()
 
@@ -111,17 +116,18 @@ func (cp *CommandPool) ExecuteBatch(commands []Command) []*CommandResult {
 	}
 
 	wg.Wait()
+
 	return results
 }
 
-// Command represents a command to be executed
+// Command represents a command to be executed.
 type Command struct {
 	Name string
 	Args []string
 	TTL  time.Duration
 }
 
-// getCachedResult retrieves a cached result if valid
+// getCachedResult retrieves a cached result if valid.
 func (cp *CommandPool) getCachedResult(cmdStr string) *CachedResult {
 	cp.cacheMutex.RLock()
 	defer cp.cacheMutex.RUnlock()
@@ -139,7 +145,7 @@ func (cp *CommandPool) getCachedResult(cmdStr string) *CachedResult {
 	return result
 }
 
-// setCachedResult stores a result in cache
+// setCachedResult stores a result in cache.
 func (cp *CommandPool) setCachedResult(cmdStr string, result *CachedResult) {
 	cp.cacheMutex.Lock()
 	defer cp.cacheMutex.Unlock()
@@ -147,7 +153,7 @@ func (cp *CommandPool) setCachedResult(cmdStr string, result *CachedResult) {
 	cp.cache[cmdStr] = result
 }
 
-// ClearCache removes all cached results
+// ClearCache removes all cached results.
 func (cp *CommandPool) ClearCache() {
 	cp.cacheMutex.Lock()
 	defer cp.cacheMutex.Unlock()
@@ -155,7 +161,7 @@ func (cp *CommandPool) ClearCache() {
 	cp.cache = make(map[string]*CachedResult)
 }
 
-// ClearExpiredCache removes expired cache entries
+// ClearExpiredCache removes expired cache entries.
 func (cp *CommandPool) ClearExpiredCache() {
 	cp.cacheMutex.Lock()
 	defer cp.cacheMutex.Unlock()
@@ -168,7 +174,7 @@ func (cp *CommandPool) ClearExpiredCache() {
 	}
 }
 
-// GetCacheStats returns cache performance statistics
+// GetCacheStats returns cache performance statistics.
 func (cp *CommandPool) GetCacheStats() map[string]interface{} {
 	cp.cacheMutex.RLock()
 	defer cp.cacheMutex.RUnlock()

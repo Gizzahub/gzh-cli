@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -47,6 +50,7 @@ type networkProfiles struct {
 
 func defaultSwitchOptions() *switchOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &switchOptions{
 		configPath: filepath.Join(homeDir, ".gz", "network-profiles.yaml"),
 	}
@@ -103,6 +107,7 @@ func (o *switchOptions) runSwitch(cmd *cobra.Command, args []string) error {
 	if list, _ := cmd.Flags().GetBool("list"); list {
 		return o.listProfiles()
 	}
+
 	if init, _ := cmd.Flags().GetBool("init"); init {
 		return o.initConfig()
 	}
@@ -152,14 +157,17 @@ func (o *switchOptions) listProfiles() error {
 	if len(profiles.Profiles) == 0 {
 		fmt.Printf("No profiles configured.\n")
 		fmt.Printf("Create example configuration with: gz net-env switch --init\n")
+
 		return nil
 	}
 
 	for i, profile := range profiles.Profiles {
 		fmt.Printf("%d. %s", i+1, profile.Name)
+
 		if profile.Name == profiles.Default {
 			fmt.Printf(" (default)")
 		}
+
 		fmt.Printf("\n")
 
 		if profile.Description != "" {
@@ -171,15 +179,19 @@ func (o *switchOptions) listProfiles() error {
 		if profile.VPN != nil && (len(profile.VPN.Connect) > 0 || len(profile.VPN.Disconnect) > 0) {
 			features = append(features, "VPN")
 		}
+
 		if profile.DNS != nil && len(profile.DNS.Servers) > 0 {
 			features = append(features, "DNS")
 		}
+
 		if profile.Proxy != nil && (profile.Proxy.HTTP != "" || profile.Proxy.Clear) {
 			features = append(features, "Proxy")
 		}
+
 		if profile.Hosts != nil && (len(profile.Hosts.Add) > 0 || len(profile.Hosts.Remove) > 0) {
 			features = append(features, "Hosts")
 		}
+
 		if profile.Scripts != nil && (len(profile.Scripts.PreSwitch) > 0 || len(profile.Scripts.PostSwitch) > 0) {
 			features = append(features, "Scripts")
 		}
@@ -334,6 +346,7 @@ func (o *switchOptions) switchToProfile() error {
 
 	// Find the requested profile
 	var targetProfile *networkProfile
+
 	for _, profile := range profiles.Profiles {
 		if profile.Name == o.profileName {
 			targetProfile = &profile
@@ -346,6 +359,7 @@ func (o *switchOptions) switchToProfile() error {
 	}
 
 	fmt.Printf("🔄 Switching to network profile: %s\n", targetProfile.Name)
+
 	if targetProfile.Description != "" {
 		fmt.Printf("   %s\n", targetProfile.Description)
 	}
@@ -358,6 +372,7 @@ func (o *switchOptions) switchToProfile() error {
 	if !o.force && !o.checkConditions(targetProfile) {
 		fmt.Printf("⚠️  Profile conditions don't match current environment\n")
 		fmt.Printf("   Use --force to switch anyway\n")
+
 		return nil
 	}
 
@@ -377,6 +392,7 @@ func (o *switchOptions) switchToProfile() error {
 	}
 
 	fmt.Printf("✅ Successfully switched to profile: %s\n", targetProfile.Name)
+
 	return nil
 }
 
@@ -469,6 +485,7 @@ func (o *switchOptions) applyVPNConfig(vpn *vpnActions) error {
 		if o.verbose {
 			fmt.Printf("   Disconnecting: %s\n", vpnName)
 		}
+
 		if !o.dryRun {
 			if err := disconnectVPN(vpnName); err != nil {
 				fmt.Printf("   ⚠️  Warning: Failed to disconnect %s: %v\n", vpnName, err)
@@ -481,6 +498,7 @@ func (o *switchOptions) applyVPNConfig(vpn *vpnActions) error {
 		if o.verbose {
 			fmt.Printf("   Connecting: %s (type: %s)\n", vpnConfig.Name, vpnConfig.Type)
 		}
+
 		if !o.dryRun {
 			if err := connectVPN(vpnConfig.Name, vpnConfig.Type, vpnConfig.ConfigFile); err != nil {
 				return fmt.Errorf("failed to connect VPN %s: %w", vpnConfig.Name, err)
@@ -500,6 +518,7 @@ func (o *switchOptions) applyDNSConfig(dns *dnsActions) error {
 		if o.verbose {
 			fmt.Printf("   Setting DNS servers: %s\n", strings.Join(dns.Servers, ", "))
 		}
+
 		if !o.dryRun {
 			if err := setDNSServers(dns.Servers, dns.Interface); err != nil {
 				return err
@@ -519,6 +538,7 @@ func (o *switchOptions) applyProxyConfig(proxy *proxyActions) error {
 		if o.verbose {
 			fmt.Printf("   Clearing proxy configuration\n")
 		}
+
 		if !o.dryRun {
 			if err := clearProxy(); err != nil {
 				return err
@@ -528,6 +548,7 @@ func (o *switchOptions) applyProxyConfig(proxy *proxyActions) error {
 		if o.verbose {
 			fmt.Printf("   Setting proxy configuration\n")
 		}
+
 		if !o.dryRun {
 			if err := setProxy(proxy.HTTP, proxy.HTTPS, proxy.SOCKS); err != nil {
 				return err
@@ -548,6 +569,7 @@ func (o *switchOptions) applyHostsConfig(hosts *hostsActions) error {
 		if o.verbose {
 			fmt.Printf("   Removing host: %s\n", host)
 		}
+
 		if !o.dryRun {
 			if err := removeHostEntry(host); err != nil {
 				fmt.Printf("   ⚠️  Warning: Failed to remove %s: %v\n", host, err)
@@ -560,6 +582,7 @@ func (o *switchOptions) applyHostsConfig(hosts *hostsActions) error {
 		if o.verbose {
 			fmt.Printf("   Adding host: %s -> %s\n", entry.Host, entry.IP)
 		}
+
 		if !o.dryRun {
 			if err := addHostEntry(entry.IP, entry.Host); err != nil {
 				fmt.Printf("   ⚠️  Warning: Failed to add %s: %v\n", entry.Host, err)

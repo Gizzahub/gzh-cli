@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -16,7 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newNetworkAnalysisCmd creates the network analysis command
+// newNetworkAnalysisCmd creates the network analysis command.
 func newNetworkAnalysisCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "network-analysis",
@@ -56,7 +59,7 @@ Examples:
 	return cmd
 }
 
-// newNetworkAnalysisLatencyCmd creates the latency analysis subcommand
+// newNetworkAnalysisLatencyCmd creates the latency analysis subcommand.
 func newNetworkAnalysisLatencyCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "latency",
@@ -110,7 +113,7 @@ func newNetworkAnalysisLatencyCmd(logger *zap.Logger, configDir string) *cobra.C
 	return cmd
 }
 
-// newNetworkAnalysisBandwidthCmd creates the bandwidth analysis subcommand
+// newNetworkAnalysisBandwidthCmd creates the bandwidth analysis subcommand.
 func newNetworkAnalysisBandwidthCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bandwidth",
@@ -164,7 +167,7 @@ func newNetworkAnalysisBandwidthCmd(logger *zap.Logger, configDir string) *cobra
 	return cmd
 }
 
-// newNetworkAnalysisComprehensiveCmd creates the comprehensive analysis subcommand
+// newNetworkAnalysisComprehensiveCmd creates the comprehensive analysis subcommand.
 func newNetworkAnalysisComprehensiveCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "comprehensive",
@@ -221,7 +224,7 @@ func newNetworkAnalysisComprehensiveCmd(logger *zap.Logger, configDir string) *c
 	return cmd
 }
 
-// newNetworkAnalysisTrendsCmd creates the trends analysis subcommand
+// newNetworkAnalysisTrendsCmd creates the trends analysis subcommand.
 func newNetworkAnalysisTrendsCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "trends",
@@ -261,7 +264,7 @@ func newNetworkAnalysisTrendsCmd(logger *zap.Logger, configDir string) *cobra.Co
 	return cmd
 }
 
-// newNetworkAnalysisBottleneckCmd creates the bottleneck detection subcommand
+// newNetworkAnalysisBottleneckCmd creates the bottleneck detection subcommand.
 func newNetworkAnalysisBottleneckCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bottleneck",
@@ -582,12 +585,14 @@ func (na *NetworkAnalyzer) AnalyzeLatencyPatterns(ctx context.Context, config La
 
 	// Collect latency measurements for each target
 	var targetAnalysis []TargetLatencyStats
+
 	for _, target := range config.Targets {
 		stats, err := na.collectTargetLatencyStats(ctx, target, config)
 		if err != nil {
 			na.logger.Warn("Failed to collect latency stats", zap.String("target", target), zap.Error(err))
 			continue
 		}
+
 		targetAnalysis = append(targetAnalysis, stats)
 	}
 
@@ -652,6 +657,7 @@ func (na *NetworkAnalyzer) PerformComprehensiveAnalysis(ctx context.Context, con
 			Duration: config.Duration,
 			Interval: 5 * time.Second,
 		}
+
 		latencyAnalysis, err := na.AnalyzeLatencyPatterns(ctx, latencyConfig)
 		if err != nil {
 			na.logger.Warn("Failed to perform latency analysis", zap.Error(err))
@@ -667,6 +673,7 @@ func (na *NetworkAnalyzer) PerformComprehensiveAnalysis(ctx context.Context, con
 			Duration:  config.Duration,
 			Interval:  10 * time.Second,
 		}
+
 		bandwidthAnalysis, err := na.AnalyzeBandwidthUtilization(ctx, bandwidthConfig)
 		if err != nil {
 			na.logger.Warn("Failed to perform bandwidth analysis", zap.Error(err))
@@ -825,6 +832,7 @@ func (na *NetworkAnalyzer) getActiveInterfaces() []string {
 	}
 
 	var interfaces []string
+
 	lines := strings.Split(string(result.Output), "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "state UP") && strings.Contains(line, ":") {
@@ -855,6 +863,7 @@ func (na *NetworkAnalyzer) collectTargetLatencyStats(ctx context.Context, target
 	defer ticker.Stop()
 
 	endTime := time.Now().Add(config.Duration)
+
 	var measurements []LatencyMeasurement
 
 	for time.Now().Before(endTime) {
@@ -907,9 +916,11 @@ func (na *NetworkAnalyzer) measureLatency(target string) LatencyMeasurement {
 						if latency, err := time.ParseDuration(timeStr + "ms"); err == nil {
 							measurement.Latency = latency
 						}
+
 						break
 					}
 				}
+
 				break
 			}
 		}
@@ -932,6 +943,7 @@ func (na *NetworkAnalyzer) calculateLatencyStatistics(measurements []LatencyMeas
 	}
 
 	var latencies []time.Duration
+
 	successCount := 0
 
 	for _, m := range measurements {
@@ -960,6 +972,7 @@ func (na *NetworkAnalyzer) calculateLatencyStatistics(measurements []LatencyMeas
 	for _, lat := range latencies {
 		total += lat
 	}
+
 	stats.Mean = total / time.Duration(len(latencies))
 
 	// Calculate median
@@ -974,22 +987,26 @@ func (na *NetworkAnalyzer) calculateLatencyStatistics(measurements []LatencyMeas
 	if p95Index >= len(latencies) {
 		p95Index = len(latencies) - 1
 	}
+
 	stats.P95 = latencies[p95Index]
 
 	p99Index := int(float64(len(latencies)) * 0.99)
 	if p99Index >= len(latencies) {
 		p99Index = len(latencies) - 1
 	}
+
 	stats.P99 = latencies[p99Index]
 
 	// Calculate standard deviation
 	if len(latencies) > 1 {
 		var sumSquaredDiffs float64
+
 		meanFloat := float64(stats.Mean)
 		for _, lat := range latencies {
 			diff := float64(lat) - meanFloat
 			sumSquaredDiffs += diff * diff
 		}
+
 		variance := sumSquaredDiffs / float64(len(latencies)-1)
 		stats.StdDev = time.Duration(math.Sqrt(variance))
 	}
@@ -1039,6 +1056,7 @@ func (na *NetworkAnalyzer) analyzeLatencyTrend(measurements []LatencyMeasurement
 
 func (na *NetworkAnalyzer) calculateAverageLatency(measurements []LatencyMeasurement) time.Duration {
 	var total time.Duration
+
 	count := 0
 
 	for _, m := range measurements {
@@ -1099,8 +1117,11 @@ func (na *NetworkAnalyzer) calculateOverallLatencyStats(targetAnalysis []TargetL
 	}
 
 	var totalMeasurements int
+
 	var totalLatency time.Duration
+
 	var successCount int
+
 	bestScore := 0.0
 	worstScore := 100.0
 	bestTarget := ""
@@ -1120,6 +1141,7 @@ func (na *NetworkAnalyzer) calculateOverallLatencyStats(targetAnalysis []TargetL
 			bestScore = score
 			bestTarget = target.Target
 		}
+
 		if score < worstScore {
 			worstScore = score
 			worstTarget = target.Target
@@ -1294,6 +1316,7 @@ func (na *NetworkAnalyzer) measureBandwidth(iface string) BandwidthMeasurement {
 
 func (na *NetworkAnalyzer) measureCurrentBandwidth(iface string) BandwidthMetrics {
 	measurement := na.measureBandwidth(iface)
+
 	return BandwidthMetrics{
 		UploadMbps:   measurement.UploadMbps,
 		DownloadMbps: measurement.DownloadMbps,
@@ -1324,6 +1347,7 @@ func (na *NetworkAnalyzer) calculateBandwidthStatistics(measurements []Bandwidth
 	}
 
 	var totalUpload, totalDownload, totalUtil float64
+
 	var totalTraffic int64
 
 	for _, m := range measurements {
@@ -1335,9 +1359,11 @@ func (na *NetworkAnalyzer) calculateBandwidthStatistics(measurements []Bandwidth
 		if m.UploadMbps > stats.PeakUpload {
 			stats.PeakUpload = m.UploadMbps
 		}
+
 		if m.DownloadMbps > stats.PeakDownload {
 			stats.PeakDownload = m.DownloadMbps
 		}
+
 		if m.Utilization > stats.PeakUtilization {
 			stats.PeakUtilization = m.Utilization
 		}
@@ -1381,6 +1407,7 @@ func (na *NetworkAnalyzer) analyzeUtilizationTrends(measurements []BandwidthMeas
 
 	// Detect peak periods (utilization > 80%)
 	var currentPeak *PeakPeriod
+
 	for _, m := range measurements {
 		if m.Utilization > 80 {
 			if currentPeak == nil {
@@ -1495,6 +1522,7 @@ func (na *NetworkAnalyzer) calculateNetworkHealth(analysis *ComprehensiveAnalysi
 		} else {
 			health.BandwidthScore = 40 - (util-80)*2
 		}
+
 		health.BandwidthScore = math.Max(0, health.BandwidthScore)
 	}
 
@@ -1506,15 +1534,18 @@ func (na *NetworkAnalyzer) calculateNetworkHealth(analysis *ComprehensiveAnalysi
 	if health.LatencyScore > 0 {
 		scores = append(scores, health.LatencyScore)
 	}
+
 	if health.BandwidthScore > 0 {
 		scores = append(scores, health.BandwidthScore)
 	}
+
 	scores = append(scores, health.StabilityScore)
 
 	var total float64
 	for _, score := range scores {
 		total += score
 	}
+
 	health.OverallScore = total / float64(len(scores))
 
 	// Determine health status
@@ -1645,6 +1676,7 @@ func (na *NetworkAnalyzer) checkSystemResourceBottlenecks(analysis *BottleneckAn
 						}
 						analysis.DetectedBottlenecks = append(analysis.DetectedBottlenecks, bottleneck)
 					}
+
 					break
 				}
 			}
@@ -1655,6 +1687,7 @@ func (na *NetworkAnalyzer) checkSystemResourceBottlenecks(analysis *BottleneckAn
 	result = na.commandPool.ExecuteCommand("free", "-m")
 	if result.Error == nil {
 		output := string(result.Output)
+
 		lines := strings.Split(output, "\n")
 		for _, line := range lines {
 			if strings.HasPrefix(line, "Mem:") {
@@ -1686,6 +1719,7 @@ func (na *NetworkAnalyzer) checkSystemResourceBottlenecks(analysis *BottleneckAn
 						}
 					}
 				}
+
 				break
 			}
 		}
@@ -1705,6 +1739,7 @@ func printLatencyAnalysis(analysis *LatencyAnalysis) error {
 	// Target analysis
 	if len(analysis.TargetAnalysis) > 0 {
 		fmt.Printf("📊 Target Analysis:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "TARGET\tMEAN\tMEDIAN\tP95\tP99\tSUCCESS\tQUALITY")
 
@@ -1718,6 +1753,7 @@ func printLatencyAnalysis(analysis *LatencyAnalysis) error {
 				target.Statistics.SuccessRate,
 				target.QualityMetrics.OverallScore)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -1733,19 +1769,23 @@ func printLatencyAnalysis(analysis *LatencyAnalysis) error {
 	// Anomalies
 	if len(analysis.AnomalyDetection) > 0 {
 		fmt.Printf("⚠️  Anomalies Detected:\n")
+
 		for i, anomaly := range analysis.AnomalyDetection {
 			fmt.Printf("  %d. [%s] %s on %s: %s\n",
 				i+1, anomaly.Severity, anomaly.Type, anomaly.Target, anomaly.Description)
 		}
+
 		fmt.Println()
 	}
 
 	// Recommendations
 	if len(analysis.Recommendations) > 0 {
 		fmt.Printf("💡 Recommendations:\n")
+
 		for i, rec := range analysis.Recommendations {
 			fmt.Printf("  %d. %s\n", i+1, rec)
 		}
+
 		fmt.Println()
 	}
 
@@ -1775,6 +1815,7 @@ func printBandwidthAnalysis(analysis *BandwidthAnalysis) error {
 	fmt.Printf("\n📈 Utilization Trends:\n")
 	fmt.Printf("  Direction: %s\n", analysis.UtilizationTrends.Direction)
 	fmt.Printf("  Growth Rate: %.1f%%\n", analysis.UtilizationTrends.GrowthRate)
+
 	if len(analysis.UtilizationTrends.PeakPeriods) > 0 {
 		fmt.Printf("  Peak Periods: %d detected\n", len(analysis.UtilizationTrends.PeakPeriods))
 	}
@@ -1785,9 +1826,11 @@ func printBandwidthAnalysis(analysis *BandwidthAnalysis) error {
 	fmt.Printf("  Utilized Capacity: %.2f Mbps\n", analysis.CapacityAnalysis.UtilizedCapacity)
 	fmt.Printf("  Available Capacity: %.2f Mbps\n", analysis.CapacityAnalysis.AvailableCapacity)
 	fmt.Printf("  Utilization: %.1f%%\n", analysis.CapacityAnalysis.CapacityUtilization)
+
 	if analysis.CapacityAnalysis.TimeToCapacity != nil {
 		fmt.Printf("  Estimated Time to Capacity: %s\n", analysis.CapacityAnalysis.TimeToCapacity.Round(24*time.Hour))
 	}
+
 	if analysis.CapacityAnalysis.RecommendedUpgrade {
 		fmt.Printf("  Upgrade Recommended: Yes\n")
 	}
@@ -1795,6 +1838,7 @@ func printBandwidthAnalysis(analysis *BandwidthAnalysis) error {
 	// Recommendations
 	if len(analysis.Recommendations) > 0 {
 		fmt.Printf("\n💡 Recommendations:\n")
+
 		for i, rec := range analysis.Recommendations {
 			fmt.Printf("  %d. %s\n", i+1, rec)
 		}
@@ -1834,34 +1878,41 @@ func printComprehensiveAnalysis(analysis *ComprehensiveAnalysis) error {
 		fmt.Printf("📈 Bandwidth Summary:\n")
 		fmt.Printf("  Average Utilization: %.1f%%\n", analysis.BandwidthAnalysis.Statistics.AvgUtilization)
 		fmt.Printf("  Peak Utilization: %.1f%%\n", analysis.BandwidthAnalysis.Statistics.PeakUtilization)
+
 		if analysis.BandwidthAnalysis.CapacityAnalysis.RecommendedUpgrade {
 			fmt.Printf("  Capacity Status: Upgrade recommended\n")
 		} else {
 			fmt.Printf("  Capacity Status: Adequate\n")
 		}
+
 		fmt.Println()
 	}
 
 	// Correlations
 	if len(analysis.Correlations) > 0 {
 		fmt.Printf("🔗 Performance Correlations:\n")
+
 		for _, corr := range analysis.Correlations {
 			fmt.Printf("  • %s (%.2f correlation, %s significance)\n",
 				corr.Description, corr.Correlation, corr.Significance)
 		}
+
 		fmt.Println()
 	}
 
 	// Recommendations
 	if len(analysis.Recommendations) > 0 {
 		fmt.Printf("💡 Recommendations:\n")
+
 		for i, rec := range analysis.Recommendations {
 			fmt.Printf("  %d. [%s - %s] %s\n", i+1, rec.Priority, rec.Category, rec.Title)
 			fmt.Printf("     %s\n", rec.Description)
 			fmt.Printf("     Impact: %s | Effort: %s\n", rec.Impact, rec.Effort)
+
 			if rec.Command != "" {
 				fmt.Printf("     Command: %s\n", rec.Command)
 			}
+
 			fmt.Println()
 		}
 	}
@@ -1876,6 +1927,7 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 	// Latency trends
 	if len(trends.LatencyTrends) > 0 {
 		fmt.Printf("🕐 Latency Trends:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "METRIC\tTARGET\tSTART\tEND\tCHANGE\tDIRECTION\tSIGNIFICANCE")
 
@@ -1889,6 +1941,7 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 				trend.Direction,
 				trend.Significance)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -1896,6 +1949,7 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 	// Bandwidth trends
 	if len(trends.BandwidthTrends) > 0 {
 		fmt.Printf("📊 Bandwidth Trends:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "METRIC\tSTART\tEND\tCHANGE\tDIRECTION\tSIGNIFICANCE")
 
@@ -1908,6 +1962,7 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 				trend.Direction,
 				trend.Significance)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -1915,23 +1970,27 @@ func printPerformanceTrends(trends *PerformanceTrends) error {
 	// Regressions
 	if len(trends.Regressions) > 0 {
 		fmt.Printf("⚠️  Performance Regressions:\n")
+
 		for i, regression := range trends.Regressions {
 			fmt.Printf("  %d. [%s] %s: %s\n",
 				i+1, regression.Severity, regression.Metric, regression.Description)
 			fmt.Printf("     Detected: %s\n", regression.DetectedAt.Format("2006-01-02 15:04"))
 			fmt.Printf("     Impact: %s\n", regression.Impact)
 		}
+
 		fmt.Println()
 	}
 
 	// Improvements
 	if len(trends.Improvements) > 0 {
 		fmt.Printf("✅ Performance Improvements:\n")
+
 		for i, improvement := range trends.Improvements {
 			fmt.Printf("  %d. %s: %s (%.1f%% improvement)\n",
 				i+1, improvement.Metric, improvement.Description, improvement.Improvement)
 			fmt.Printf("     Detected: %s\n", improvement.DetectedAt.Format("2006-01-02 15:04"))
 		}
+
 		fmt.Println()
 	}
 
@@ -1945,6 +2004,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 	// Detected bottlenecks
 	if len(analysis.DetectedBottlenecks) > 0 {
 		fmt.Printf("🚨 Detected Bottlenecks:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "TYPE\tLOCATION\tSEVERITY\tCONFIDENCE\tDESCRIPTION")
 
@@ -1956,6 +2016,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 				bottleneck.Confidence*100,
 				bottleneck.Description)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -1963,6 +2024,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 	// System limits
 	if len(analysis.SystemLimits) > 0 {
 		fmt.Printf("⚡ System Resource Limits:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "RESOURCE\tCURRENT\tMAXIMUM\tUTILIZATION\tAT RISK")
 
@@ -1981,6 +2043,7 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 				limit.Utilization,
 				atRisk)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
@@ -1988,12 +2051,15 @@ func printBottleneckAnalysis(analysis *BottleneckAnalysis) error {
 	// Recommendations
 	if len(analysis.Recommendations) > 0 {
 		fmt.Printf("💡 Bottleneck Recommendations:\n")
+
 		for i, rec := range analysis.Recommendations {
 			fmt.Printf("  %d. [%s - %s] %s\n", i+1, rec.Priority, rec.Bottleneck, rec.Action)
 			fmt.Printf("     %s\n", rec.Description)
+
 			if rec.Command != "" {
 				fmt.Printf("     Command: %s\n", rec.Command)
 			}
+
 			fmt.Println()
 		}
 	}

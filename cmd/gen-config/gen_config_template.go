@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package genconfig
 
 import (
@@ -78,6 +81,7 @@ func (o *genConfigTemplateOptions) run(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✅ Configuration template '%s' generated: %s\n", templateName, o.outputFile)
+
 	return nil
 }
 

@@ -381,7 +381,7 @@ func TestAzureSubscriptionManager_InvalidFormat(t *testing.T) {
 	})
 }
 
-// Benchmark tests for performance
+// Benchmark tests for performance.
 func BenchmarkAzureSubscriptionManager_LoadSubscriptions(b *testing.B) {
 	tmpDir := b.TempDir()
 	originalHome := os.Getenv("HOME")

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package cmd
 
 import (
@@ -13,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewTaskRunnerCmd creates the task runner command
+// NewTaskRunnerCmd creates the task runner command.
 func NewTaskRunnerCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "task-runner [directory]",
@@ -61,6 +64,7 @@ func runTaskRunner(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
+
 	dir := filepath.Join(wd, "tasks", "todo")
 	if len(args) > 0 {
 		dir = args[0]
@@ -85,17 +89,20 @@ func runTaskRunner(cmd *cobra.Command, args []string) error {
 
 	// Parse all TODO items
 	allItems := []TodoItem{}
+
 	for _, file := range todoFiles {
 		items, err := parseTodoFile(file)
 		if err != nil {
 			fmt.Printf("⚠️  Warning: failed to parse %s: %v\n", file, err)
 			continue
 		}
+
 		allItems = append(allItems, items...)
 	}
 
 	// Filter incomplete items
 	incompleteItems := []TodoItem{}
+
 	for _, item := range allItems {
 		if !item.IsCompleted && !item.IsBlocked {
 			incompleteItems = append(incompleteItems, item)
@@ -118,6 +125,7 @@ func runTaskRunner(cmd *cobra.Command, args []string) error {
 		fmt.Printf("🎯 Next task to execute:\n")
 		fmt.Printf("   File: %s:%d\n", nextTask.File, nextTask.Line)
 		fmt.Printf("   Task: %s\n", nextTask.Content)
+
 		return nil
 	}
 
@@ -136,6 +144,7 @@ func findTodoFiles(dir string) ([]string, error) {
 		if !info.IsDir() && strings.HasSuffix(info.Name(), ".md") {
 			files = append(files, path)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -144,6 +153,7 @@ func findTodoFiles(dir string) ([]string, error) {
 
 	// Sort files alphabetically
 	sort.Strings(files)
+
 	return files, nil
 }
 
@@ -155,6 +165,7 @@ func parseTodoFile(filename string) ([]TodoItem, error) {
 	defer file.Close()
 
 	var items []TodoItem
+
 	scanner := bufio.NewScanner(file)
 	lineNum := 0
 
@@ -168,6 +179,7 @@ func parseTodoFile(filename string) ([]TodoItem, error) {
 		line := scanner.Text()
 
 		var content string
+
 		var isCompleted, isBlocked bool
 
 		if match := incompletePattern.FindStringSubmatch(line); match != nil {
@@ -219,6 +231,7 @@ func listIncompleteTasks(items []TodoItem) error {
 	}
 
 	fmt.Printf("\n🎯 Next task: %s:%d\n", items[0].File, items[0].Line)
+
 	return nil
 }
 
@@ -242,6 +255,7 @@ func executeTask(task TodoItem) error {
 
 	fmt.Println()
 	fmt.Println("🛠️  Implementation Steps:")
+
 	for i, step := range taskAnalysis.Steps {
 		fmt.Printf("   %d. %s\n", i+1, step)
 	}
@@ -315,6 +329,7 @@ func analyzeTask(content string) TaskAnalysis {
 	if strings.Contains(content, "웹훅") {
 		analysis.Dependencies = append(analysis.Dependencies, "GitHub API", "HTTP client")
 	}
+
 	if strings.Contains(content, "api") {
 		analysis.Dependencies = append(analysis.Dependencies, "REST framework", "authentication")
 	}
@@ -327,6 +342,7 @@ func moveCompletedFiles(files []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get working directory: %w", err)
 	}
+
 	doneDir := filepath.Join(wd, "tasks", "done")
 
 	// Create done directory if it doesn't exist
@@ -344,6 +360,7 @@ func moveCompletedFiles(files []string) error {
 		}
 
 		allCompleted := true
+
 		for _, item := range items {
 			if !item.IsCompleted && !item.IsBlocked {
 				allCompleted = false

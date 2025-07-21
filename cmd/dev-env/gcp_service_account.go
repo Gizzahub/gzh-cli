@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -14,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GCPServiceAccount represents a GCP service account
+// GCPServiceAccount represents a GCP service account.
 type GCPServiceAccount struct {
 	Email          string    `json:"email"`
 	Name           string    `json:"name"`
@@ -30,7 +33,7 @@ type GCPServiceAccount struct {
 	IsActive       bool      `json:"isActive"`
 }
 
-// GCPServiceAccountKey represents a service account key
+// GCPServiceAccountKey represents a service account key.
 type GCPServiceAccountKey struct {
 	Name            string    `json:"name"`
 	PrivateKeyType  string    `json:"privateKeyType"`
@@ -42,22 +45,24 @@ type GCPServiceAccountKey struct {
 	KeyType         string    `json:"keyType"`
 }
 
-// GCPServiceAccountManager manages service accounts
+// GCPServiceAccountManager manages service accounts.
 type GCPServiceAccountManager struct {
 	projectID       string
 	serviceAccounts map[string]*GCPServiceAccount
 	ctx             context.Context
 }
 
-// NewGCPServiceAccountManager creates a new service account manager
+// NewGCPServiceAccountManager creates a new service account manager.
 func NewGCPServiceAccountManager(ctx context.Context, projectID string) (*GCPServiceAccountManager, error) {
 	if projectID == "" {
 		// Get current project
 		cmd := exec.CommandContext(ctx, "gcloud", "config", "get-value", "project")
+
 		output, err := cmd.Output()
 		if err != nil {
 			return nil, fmt.Errorf("failed to get current project: %w", err)
 		}
+
 		projectID = strings.TrimSpace(string(output))
 	}
 
@@ -74,7 +79,7 @@ func NewGCPServiceAccountManager(ctx context.Context, projectID string) (*GCPSer
 	return manager, nil
 }
 
-// newGCPServiceAccountCmd creates the service account management command
+// newGCPServiceAccountCmd creates the service account management command.
 func newGCPServiceAccountCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "service-account",
@@ -116,6 +121,7 @@ Examples:
 
 func newServiceAccountListCmd() *cobra.Command {
 	var outputFormat string
+
 	var projectID string
 
 	cmd := &cobra.Command{
@@ -163,6 +169,7 @@ func newServiceAccountCreateCmd() *cobra.Command {
 
 func newServiceAccountDeleteCmd() *cobra.Command {
 	var projectID string
+
 	var force bool
 
 	cmd := &cobra.Command{
@@ -209,6 +216,7 @@ func newServiceAccountCreateKeyCmd() *cobra.Command {
 
 func newServiceAccountDeleteKeyCmd() *cobra.Command {
 	var projectID string
+
 	var force bool
 
 	cmd := &cobra.Command{
@@ -276,6 +284,7 @@ func newServiceAccountShowCmd() *cobra.Command {
 func (m *GCPServiceAccountManager) loadServiceAccounts() error {
 	cmd := exec.CommandContext(m.ctx, "gcloud", "iam", "service-accounts", "list",
 		"--project", m.projectID, "--format=json")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to list service accounts: %w", err)
@@ -337,6 +346,7 @@ func (m *GCPServiceAccountManager) getActiveServiceAccount() string {
 	if output, err := cmd.Output(); err == nil {
 		return strings.TrimSpace(string(output))
 	}
+
 	return ""
 }
 
@@ -352,8 +362,10 @@ func (m *GCPServiceAccountManager) listServiceAccounts(format string) error {
 		for _, account := range m.serviceAccounts {
 			accounts = append(accounts, account)
 		}
+
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(accounts)
 
 	case "table":
@@ -381,6 +393,7 @@ func (m *GCPServiceAccountManager) listServiceAccounts(format string) error {
 		}
 
 		table.Render()
+
 		return nil
 
 	default:
@@ -423,7 +436,7 @@ func (m *GCPServiceAccountManager) deleteServiceAccount(email string, force bool
 		}
 
 		if _, err := prompt.Run(); err != nil {
-			return fmt.Errorf("operation cancelled")
+			return fmt.Errorf("operation canceled")
 		}
 	}
 
@@ -434,6 +447,7 @@ func (m *GCPServiceAccountManager) deleteServiceAccount(email string, force bool
 	}
 
 	fmt.Printf("✅ Service account deleted: %s\n", email)
+
 	return nil
 }
 
@@ -456,7 +470,7 @@ func (m *GCPServiceAccountManager) createServiceAccountKey(email, keyType, outpu
 		}
 
 		if _, err := prompt.Run(); err != nil {
-			return fmt.Errorf("operation cancelled")
+			return fmt.Errorf("operation canceled")
 		}
 	}
 
@@ -487,7 +501,7 @@ func (m *GCPServiceAccountManager) deleteServiceAccountKey(email, keyID string, 
 		}
 
 		if _, err := prompt.Run(); err != nil {
-			return fmt.Errorf("operation cancelled")
+			return fmt.Errorf("operation canceled")
 		}
 	}
 
@@ -498,6 +512,7 @@ func (m *GCPServiceAccountManager) deleteServiceAccountKey(email, keyID string, 
 	}
 
 	fmt.Printf("✅ Service account key deleted: %s\n", keyID)
+
 	return nil
 }
 
@@ -537,6 +552,7 @@ func (m *GCPServiceAccountManager) showServiceAccount(email, format string) erro
 	case "json":
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(account)
 
 	case "table":
@@ -571,6 +587,7 @@ func (m *GCPServiceAccountManager) showServiceAccount(email, format string) erro
 func (m *GCPServiceAccountManager) listServiceAccountKeys(email string) error {
 	cmd := exec.CommandContext(m.ctx, "gcloud", "iam", "service-accounts", "keys", "list",
 		"--iam-account", email, "--project", m.projectID, "--format=json")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to list service account keys: %w", err)
@@ -614,5 +631,6 @@ func (m *GCPServiceAccountManager) listServiceAccountKeys(email string) error {
 	}
 
 	table.Render()
+
 	return nil
 }

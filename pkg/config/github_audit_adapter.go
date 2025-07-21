@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -8,19 +11,19 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-// GitHubAuditAdapter provides audit functionality for GitHub repositories
+// GitHubAuditAdapter provides audit functionality for GitHub repositories.
 type GitHubAuditAdapter struct {
 	client *github.RepoConfigClient
 }
 
-// NewGitHubAuditAdapter creates a new GitHub audit adapter
+// NewGitHubAuditAdapter creates a new GitHub audit adapter.
 func NewGitHubAuditAdapter(client *github.RepoConfigClient) *GitHubAuditAdapter {
 	return &GitHubAuditAdapter{
 		client: client,
 	}
 }
 
-// RunComplianceAudit performs a compliance audit for all repositories in an organization
+// RunComplianceAudit performs a compliance audit for all repositories in an organization.
 func (a *GitHubAuditAdapter) RunComplianceAudit(ctx context.Context, configPath, org string) (*AuditReport, error) {
 	// Load the repository configuration
 	repoConfig, err := LoadRepoConfig(configPath)
@@ -44,7 +47,7 @@ func (a *GitHubAuditAdapter) RunComplianceAudit(ctx context.Context, configPath,
 	return repoConfig.RunComplianceAudit(repoStates)
 }
 
-// convertGitHubStateToConfigState converts GitHub state data to config state
+// convertGitHubStateToConfigState converts GitHub state data to config state.
 func convertGitHubStateToConfigState(ghState github.RepositoryStateData) RepositoryState {
 	state := RepositoryState{
 		Name:                ghState.Name,

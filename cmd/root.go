@@ -1,9 +1,13 @@
-// Package cmd provides the command-line interface for the gzh-manager-go application.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package cmd
 
 import (
 	"context"
 	"fmt"
+
+	"github.com/spf13/cobra"
 
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
@@ -19,7 +23,6 @@ import (
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
-	"github.com/spf13/cobra"
 )
 
 func newRootCmd(ctx context.Context, version string) *cobra.Command {

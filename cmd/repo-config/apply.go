@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -6,9 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newApplyCmd creates the apply subcommand
+// newApplyCmd creates the apply subcommand.
 func newApplyCmd() *cobra.Command {
 	var flags GlobalFlags
+
 	var (
 		filter      string
 		template    string
@@ -60,7 +64,7 @@ Examples:
 	return cmd
 }
 
-// runApplyCommand executes the apply command
+// runApplyCommand executes the apply command.
 func runApplyCommand(flags GlobalFlags, filter, template string, interactive, force bool) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -68,15 +72,19 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 
 	if flags.Verbose {
 		fmt.Printf("🚀 Applying repository configuration to organization: %s\n", flags.Organization)
+
 		if filter != "" {
 			fmt.Printf("Filter pattern: %s\n", filter)
 		}
+
 		if template != "" {
 			fmt.Printf("Template: %s\n", template)
 		}
+
 		if flags.DryRun {
 			fmt.Println("Mode: DRY RUN (preview only)")
 		}
+
 		fmt.Println()
 	}
 
@@ -118,13 +126,15 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 	// Confirmation for non-force mode
 	if !force && !interactive {
 		fmt.Printf("Apply %d configuration changes? (y/N): ", len(changes))
+
 		var response string
 		if _, err := fmt.Scanln(&response); err != nil {
 			// Handle error but treat as "no" response
 			response = ""
 		}
+
 		if response != "y" && response != "yes" {
-			fmt.Println("Configuration application cancelled")
+			fmt.Println("Configuration application canceled")
 			return nil
 		}
 	}
@@ -136,11 +146,13 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 	for i, change := range changes {
 		if interactive {
 			fmt.Printf("Apply change %d/%d to %s? (y/N): ", i+1, len(changes), change.Repository)
+
 			var response string
 			if _, err := fmt.Scanln(&response); err != nil {
 				// Handle error but treat as "no" response
 				response = ""
 			}
+
 			if response != "y" && response != "yes" {
 				fmt.Printf("  ⏭️  Skipped %s\n", change.Repository)
 				continue
@@ -149,10 +161,12 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 
 		// Apply configuration change
 		fmt.Printf("  🔄 Updating %s...", change.Repository)
+
 		if err := applyConfigurationChange(change); err != nil {
 			fmt.Printf(" ❌ Failed: %v\n", err)
 			continue
 		}
+
 		fmt.Printf(" ✅\n")
 	}
 
@@ -163,7 +177,7 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 	return nil
 }
 
-// ConfigurationChange represents a pending configuration change
+// ConfigurationChange represents a pending configuration change.
 type ConfigurationChange struct {
 	Repository   string `json:"repository"`
 	Setting      string `json:"setting"`
@@ -172,23 +186,23 @@ type ConfigurationChange struct {
 	Action       string `json:"action"` // create, update, delete
 }
 
-// getAffectedRepoCount returns the number of unique repositories affected
+// getAffectedRepoCount returns the number of unique repositories affected.
 func getAffectedRepoCount(changes []ConfigurationChange) int {
 	repos := make(map[string]bool)
 	for _, change := range changes {
 		repos[change.Repository] = true
 	}
+
 	return len(repos)
 }
 
-// getConfigurationChanges retrieves configuration changes for an organization
+// getConfigurationChanges retrieves configuration changes for an organization.
 func getConfigurationChanges(organization, filter, template string) ([]ConfigurationChange, error) {
 	// This is a mock implementation - in reality, this would:
 	// 1. Fetch current repository configurations from GitHub API
 	// 2. Load target configurations from templates
 	// 3. Generate required changes
 	// 4. Apply filter and template constraints if specified
-
 	mockChanges := []ConfigurationChange{
 		{
 			Repository:   "api-server",
@@ -226,17 +240,15 @@ func getConfigurationChanges(organization, filter, template string) ([]Configura
 	return mockChanges, nil
 }
 
-// applyConfigurationChange applies a single configuration change
+// applyConfigurationChange applies a single configuration change.
 func applyConfigurationChange(change ConfigurationChange) error {
 	// This is a mock implementation - in reality, this would:
 	// 1. Use GitHub API to apply the configuration change
 	// 2. Handle authentication and rate limiting
 	// 3. Verify the change was applied successfully
 	// 4. Return appropriate errors if something fails
-
 	// Simulate some processing time
 	// time.Sleep(100 * time.Millisecond)
-
 	// For demonstration, we'll just return success
 	return nil
 }

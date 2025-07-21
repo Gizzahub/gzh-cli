@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -5,12 +8,12 @@ import (
 	"strings"
 )
 
-// VisibilityFilter represents a repository visibility filter
+// VisibilityFilter represents a repository visibility filter.
 type VisibilityFilter struct {
 	Filter string `json:"filter"` // public, private, all
 }
 
-// NewVisibilityFilter creates a new visibility filter
+// NewVisibilityFilter creates a new visibility filter.
 func NewVisibilityFilter(filter string) (*VisibilityFilter, error) {
 	filter = strings.ToLower(strings.TrimSpace(filter))
 
@@ -20,6 +23,7 @@ func NewVisibilityFilter(filter string) (*VisibilityFilter, error) {
 		if filter == "" {
 			filter = VisibilityAll
 		}
+
 		return &VisibilityFilter{Filter: filter}, nil
 	default:
 		return nil, fmt.Errorf("invalid visibility filter '%s': must be one of %s, %s, %s",
@@ -27,7 +31,7 @@ func NewVisibilityFilter(filter string) (*VisibilityFilter, error) {
 	}
 }
 
-// ShouldIncludeRepository determines if a repository should be included based on visibility
+// ShouldIncludeRepository determines if a repository should be included based on visibility.
 func (v *VisibilityFilter) ShouldIncludeRepository(isPrivate bool) bool {
 	switch v.Filter {
 	case VisibilityAll:
@@ -42,12 +46,12 @@ func (v *VisibilityFilter) ShouldIncludeRepository(isPrivate bool) bool {
 	}
 }
 
-// GetFilterString returns the filter string
+// GetFilterString returns the filter string.
 func (v *VisibilityFilter) GetFilterString() string {
 	return v.Filter
 }
 
-// IsValidVisibility checks if a visibility string is valid
+// IsValidVisibility checks if a visibility string is valid.
 func IsValidVisibility(visibility string) bool {
 	switch strings.ToLower(strings.TrimSpace(visibility)) {
 	case VisibilityPublic, VisibilityPrivate, VisibilityAll:
@@ -57,16 +61,17 @@ func IsValidVisibility(visibility string) bool {
 	}
 }
 
-// NormalizeVisibility normalizes a visibility string to standard format
+// NormalizeVisibility normalizes a visibility string to standard format.
 func NormalizeVisibility(visibility string) string {
 	normalized := strings.ToLower(strings.TrimSpace(visibility))
 	if normalized == "" {
 		return VisibilityAll
 	}
+
 	return normalized
 }
 
-// VisibilityRepository represents a repository with visibility information
+// VisibilityRepository represents a repository with visibility information.
 type VisibilityRepository struct {
 	Name      string `json:"name"`
 	FullName  string `json:"full_name"`
@@ -76,14 +81,14 @@ type VisibilityRepository struct {
 	HTTPURL   string `json:"http_url"`
 }
 
-// RepositoryFilter provides filtering capabilities for repositories
+// RepositoryFilter provides filtering capabilities for repositories.
 type RepositoryFilter struct {
 	VisibilityFilter *VisibilityFilter
 	NamePattern      string // regex pattern for name filtering
 	ExcludePatterns  []string
 }
 
-// NewRepositoryFilter creates a new repository filter
+// NewRepositoryFilter creates a new repository filter.
 func NewRepositoryFilter(visibility, namePattern string, excludePatterns []string) (*RepositoryFilter, error) {
 	visFilter, err := NewVisibilityFilter(visibility)
 	if err != nil {
@@ -117,7 +122,7 @@ func NewRepositoryFilter(visibility, namePattern string, excludePatterns []strin
 	}, nil
 }
 
-// ShouldIncludeRepository determines if a repository should be included
+// ShouldIncludeRepository determines if a repository should be included.
 func (f *RepositoryFilter) ShouldIncludeRepository(repo VisibilityRepository) bool {
 	// Check visibility filter
 	if !f.VisibilityFilter.ShouldIncludeRepository(repo.IsPrivate) {
@@ -143,7 +148,7 @@ func (f *RepositoryFilter) ShouldIncludeRepository(repo VisibilityRepository) bo
 	return true
 }
 
-// matchesPattern checks if a name matches a pattern (glob or regex)
+// matchesPattern checks if a name matches a pattern (glob or regex).
 func (f *RepositoryFilter) matchesPattern(name, pattern string) bool {
 	// Handle glob patterns
 	if strings.Contains(pattern, "*") {
@@ -159,7 +164,7 @@ func (f *RepositoryFilter) matchesPattern(name, pattern string) bool {
 	return strings.Contains(name, pattern)
 }
 
-// matchesGlob provides simple glob pattern matching
+// matchesGlob provides simple glob pattern matching.
 func (f *RepositoryFilter) matchesGlob(name, pattern string) bool {
 	// Simple glob implementation
 	// Convert glob to regex
@@ -173,7 +178,7 @@ func (f *RepositoryFilter) matchesGlob(name, pattern string) bool {
 	return false
 }
 
-// FilterRepositories filters a list of repositories based on the filter criteria
+// FilterRepositories filters a list of repositories based on the filter criteria.
 func (f *RepositoryFilter) FilterRepositories(repos []VisibilityRepository) []VisibilityRepository {
 	var filtered []VisibilityRepository
 
@@ -186,7 +191,7 @@ func (f *RepositoryFilter) FilterRepositories(repos []VisibilityRepository) []Vi
 	return filtered
 }
 
-// GetFilterSummary returns a summary of the filter configuration
+// GetFilterSummary returns a summary of the filter configuration.
 func (f *RepositoryFilter) GetFilterSummary() string {
 	var parts []string
 
@@ -203,14 +208,14 @@ func (f *RepositoryFilter) GetFilterSummary() string {
 	return strings.Join(parts, ", ")
 }
 
-// VisibilityStatistics provides statistics about repository visibility
+// VisibilityStatistics provides statistics about repository visibility.
 type VisibilityStatistics struct {
 	TotalRepositories   int `json:"total_repositories"`
 	PublicRepositories  int `json:"public_repositories"`
 	PrivateRepositories int `json:"private_repositories"`
 }
 
-// CalculateVisibilityStatistics calculates visibility statistics for a list of repositories
+// CalculateVisibilityStatistics calculates visibility statistics for a list of repositories.
 func CalculateVisibilityStatistics(repos []VisibilityRepository) VisibilityStatistics {
 	stats := VisibilityStatistics{
 		TotalRepositories: len(repos),
@@ -227,7 +232,7 @@ func CalculateVisibilityStatistics(repos []VisibilityRepository) VisibilityStati
 	return stats
 }
 
-// GetVisibilityPercentage returns the percentage of repositories by visibility
+// GetVisibilityPercentage returns the percentage of repositories by visibility.
 func (v *VisibilityStatistics) GetVisibilityPercentage() (publicPercent, privatePercent float64) {
 	if v.TotalRepositories == 0 {
 		return 0, 0
@@ -239,7 +244,7 @@ func (v *VisibilityStatistics) GetVisibilityPercentage() (publicPercent, private
 	return publicPercent, privatePercent
 }
 
-// GetSummary returns a human-readable summary of the statistics
+// GetSummary returns a human-readable summary of the statistics.
 func (v *VisibilityStatistics) GetSummary() string {
 	if v.TotalRepositories == 0 {
 		return "No repositories found"

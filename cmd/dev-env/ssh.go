@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -23,6 +26,7 @@ type sshOptions struct {
 
 func defaultSshOptions() *sshOptions {
 	homeDir, _ := os.UserHomeDir()
+
 	return &sshOptions{
 		configPath: filepath.Join(homeDir, ".ssh", "config"),
 		storePath:  filepath.Join(homeDir, ".gz", "ssh-configs"),
@@ -195,9 +199,11 @@ func (o *sshOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("✅ SSH config saved as '%s'\n", o.name)
+
 	if o.description != "" {
 		fmt.Printf("   Description: %s\n", o.description)
 	}
+
 	fmt.Printf("   Saved to: %s\n", savedPath)
 
 	return nil
@@ -217,6 +223,7 @@ func (o *sshOptions) runLoad(_ *cobra.Command, args []string) error {
 			if err := o.copyFile(o.configPath, backupPath); err != nil {
 				return fmt.Errorf("failed to backup current SSH config: %w", err)
 			}
+
 			fmt.Printf("📦 Current SSH config backed up to: %s\n", backupPath)
 		}
 	}
@@ -258,6 +265,7 @@ func (o *sshOptions) runList(_ *cobra.Command, args []string) error {
 
 	// Filter for .config files
 	var configs []string
+
 	for _, entry := range entries {
 		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".config") {
 			name := strings.TrimSuffix(entry.Name(), ".config")
@@ -276,9 +284,11 @@ func (o *sshOptions) runList(_ *cobra.Command, args []string) error {
 	for _, name := range configs {
 		metadata := o.loadMetadata(name)
 		fmt.Printf("🔐 %s\n", name)
+
 		if metadata.Description != "" {
 			fmt.Printf("   Description: %s\n", metadata.Description)
 		}
+
 		if !metadata.SavedAt.IsZero() {
 			fmt.Printf("   Saved: %s\n", metadata.SavedAt.Format("2006-01-02 15:04:05"))
 		}
@@ -315,16 +325,19 @@ func (o *sshOptions) saveMetadata() error {
 	}
 
 	metadataPath := filepath.Join(o.storePath, o.name+".meta")
+
 	file, err := os.Create(metadataPath)
 	if err != nil {
 		return err
 	}
+
 	defer file.Close()
 
 	// Write metadata as simple key-value pairs
 	if metadata.Description != "" {
 		fmt.Fprintf(file, "description=%s\n", metadata.Description)
 	}
+
 	fmt.Fprintf(file, "saved_at=%s\n", metadata.SavedAt.Format(time.RFC3339))
 	fmt.Fprintf(file, "source_path=%s\n", metadata.SourcePath)
 
@@ -335,6 +348,7 @@ func (o *sshOptions) loadMetadata(name string) sshMetadata {
 	metadata := sshMetadata{Name: name}
 
 	metadataPath := filepath.Join(o.storePath, name+".meta")
+
 	content, err := os.ReadFile(metadataPath)
 	if err != nil {
 		return metadata
@@ -402,17 +416,22 @@ func (o *sshOptions) displayConfigInfo(configPath string) error {
 	// Display host information
 	if len(hosts) > 0 {
 		fmt.Printf("   Hosts: %d configured\n", len(hosts))
+
 		for _, host := range hosts {
 			fmt.Printf("     - %s", host.Name)
+
 			if host.Hostname != "" && host.Hostname != host.Name {
 				fmt.Printf(" -> %s", host.Hostname)
 			}
+
 			if host.User != "" {
 				fmt.Printf(" (user: %s)", host.User)
 			}
+
 			if host.Port != "" && host.Port != "22" {
 				fmt.Printf(" (port: %s)", host.Port)
 			}
+
 			fmt.Println()
 		}
 	}
@@ -435,6 +454,7 @@ func (o *sshOptions) parseSshConfig(configPath string) []sshHost {
 	}
 
 	var hosts []sshHost
+
 	var currentHost *sshHost
 
 	lines := strings.Split(string(content), "\n")
@@ -499,6 +519,7 @@ func (o *sshOptions) parseSshConfig(configPath string) []sshHost {
 
 	// Filter out wildcard hosts for display
 	var filteredHosts []sshHost
+
 	wildcardPattern := regexp.MustCompile(`[*?]`)
 	for _, host := range hosts {
 		if !wildcardPattern.MatchString(host.Name) {

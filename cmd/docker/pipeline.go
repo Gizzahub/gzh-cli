@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package docker
 
 import (
@@ -6,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// PipelineCmd represents the pipeline command
+// PipelineCmd represents the pipeline command.
 var PipelineCmd = &cobra.Command{
 	Use:   "pipeline",
 	Short: "CI/CD 파이프라인 생성",

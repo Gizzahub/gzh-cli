@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -6,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// AuditOptions contains basic options for the audit command
+// AuditOptions contains basic options for the audit command.
 type AuditOptions struct {
 	GlobalFlags      GlobalFlags
 	Format           string
@@ -34,10 +37,12 @@ type AuditOptions struct {
 	DryRun           bool
 }
 
-// newAuditCmd creates the audit subcommand
+// newAuditCmd creates the audit subcommand.
 func newAuditCmd() *cobra.Command {
 	var flags GlobalFlags
+
 	var format string
+
 	var outputFile string
 
 	cmd := &cobra.Command{
@@ -77,12 +82,12 @@ Examples:
 	return cmd
 }
 
-// runAuditCommandWithOptions executes the audit command with all options
+// runAuditCommandWithOptions executes the audit command with all options.
 func runAuditCommandWithOptions(opts AuditOptions) error {
 	return fmt.Errorf("audit functionality has been simplified - use the basic audit command instead")
 }
 
-// hasNewFeatures checks if any new features are being used
+// hasNewFeatures checks if any new features are being used.
 func hasNewFeatures(opts AuditOptions) bool {
 	return false // All advanced features have been removed
 }

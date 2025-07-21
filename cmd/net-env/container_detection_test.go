@@ -406,7 +406,7 @@ func TestDetectedContainer_Validation(t *testing.T) {
 	}
 }
 
-// Benchmark tests for performance
+// Benchmark tests for performance.
 func BenchmarkContainerDetector_DetectAvailableRuntimes(b *testing.B) {
 	logger := zap.NewNop()
 	cd := NewContainerDetector(logger)
@@ -444,7 +444,7 @@ func BenchmarkContainerDetector_CalculateEnvironmentFingerprint(b *testing.B) {
 	}
 }
 
-// Integration tests that require Docker to be running
+// Integration tests that require Docker to be running.
 func TestContainerDetector_Integration_DockerRunning(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -504,18 +504,18 @@ func TestContainerDetector_Integration_DockerRunning(t *testing.T) {
 	}
 }
 
-// Test error conditions
+// Test error conditions.
 func TestContainerDetector_ErrorConditions(t *testing.T) {
 	logger := zap.NewNop()
 	cd := NewContainerDetector(logger)
 
-	// Test with cancelled context
+	// Test with canceled context
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
 
 	_, err := cd.DetectContainerEnvironment(ctx)
 	if err == nil {
-		t.Error("Should return error for cancelled context")
+		t.Error("Should return error for canceled context")
 	}
 
 	if !strings.Contains(err.Error(), "context") {

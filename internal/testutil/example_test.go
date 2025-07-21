@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/fixtures"
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/mocks"
-	"github.com/stretchr/testify/assert"
 )
 
-// Example of using test helpers
+// Example of using test helpers.
 func TestExampleWithHelpers(t *testing.T) {
 	// Create temporary directory
 	tempDir, cleanup := helpers.TempDir(t, "test-*")
@@ -42,7 +43,7 @@ func TestExampleWithHelpers(t *testing.T) {
 	helpers.AssertFileExists(t, repo+"/README.md")
 }
 
-// Example of using mock HTTP client
+// Example of using mock HTTP client.
 func TestExampleWithMockHTTP(t *testing.T) {
 	// Create mock HTTP client
 	mockClient := &mocks.MockHTTPClient{
@@ -60,8 +61,8 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	}
 
 	// Make some requests
-	req1, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
-	req2, _ := http.NewRequest("GET", "https://api.github.com/repos", nil)
+	req1, _ := http.NewRequest("GET", "https://api.github.com/user", http.NoBody)
+	req2, _ := http.NewRequest("GET", "https://api.github.com/repos", http.NoBody)
 
 	resp1, err := mockClient.Do(req1)
 	assert.NoError(t, err)
@@ -77,7 +78,7 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	assert.Equal(t, "/repos", mockClient.Calls[1].URL.Path)
 }
 
-// Example of using fixtures
+// Example of using fixtures.
 func TestExampleWithFixtures(t *testing.T) {
 	tempDir, cleanup := helpers.TempDir(t, "config-test-*")
 	defer cleanup()

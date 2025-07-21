@@ -192,8 +192,7 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 	})
 }
 
-// Integration tests would require asdf to be installed and would be more complex
-// These are unit tests for the core logic and parsing functions
+// These are unit tests for the core logic and parsing functions.
 func TestAsdfIntegration(t *testing.T) {
 	t.Run("asdf not installed scenario", func(t *testing.T) {
 		opts := &alwaysLatestAsdfOptions{}

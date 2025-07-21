@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -13,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// KubernetesNetworkManager manages Kubernetes network policies and configurations
+// KubernetesNetworkManager manages Kubernetes network policies and configurations.
 type KubernetesNetworkManager struct {
 	logger      *zap.Logger
 	profilesDir string
@@ -22,7 +25,7 @@ type KubernetesNetworkManager struct {
 	executor    *KubernetesCommandExecutor
 }
 
-// KubernetesNetworkProfile represents a Kubernetes network configuration profile
+// KubernetesNetworkProfile represents a Kubernetes network configuration profile.
 type KubernetesNetworkProfile struct {
 	Name        string                          `yaml:"name" json:"name"`
 	Description string                          `yaml:"description" json:"description"`
@@ -37,7 +40,7 @@ type KubernetesNetworkProfile struct {
 	Metadata    map[string]string               `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
 
-// NetworkPolicyConfig represents a Kubernetes NetworkPolicy configuration
+// NetworkPolicyConfig represents a Kubernetes NetworkPolicy configuration.
 type NetworkPolicyConfig struct {
 	Name        string                     `yaml:"name" json:"name"`
 	PodSelector map[string]string          `yaml:"pod_selector" json:"pod_selector"`
@@ -46,39 +49,39 @@ type NetworkPolicyConfig struct {
 	Egress      []NetworkPolicyEgressRule  `yaml:"egress,omitempty" json:"egress,omitempty"`
 }
 
-// NetworkPolicyIngressRule represents ingress rules for NetworkPolicy
+// NetworkPolicyIngressRule represents ingress rules for NetworkPolicy.
 type NetworkPolicyIngressRule struct {
 	From  []NetworkPolicyPeer `yaml:"from,omitempty" json:"from,omitempty"`
 	Ports []NetworkPolicyPort `yaml:"ports,omitempty" json:"ports,omitempty"`
 }
 
-// NetworkPolicyEgressRule represents egress rules for NetworkPolicy
+// NetworkPolicyEgressRule represents egress rules for NetworkPolicy.
 type NetworkPolicyEgressRule struct {
 	To    []NetworkPolicyPeer `yaml:"to,omitempty" json:"to,omitempty"`
 	Ports []NetworkPolicyPort `yaml:"ports,omitempty" json:"ports,omitempty"`
 }
 
-// NetworkPolicyPeer represents a peer in NetworkPolicy
+// NetworkPolicyPeer represents a peer in NetworkPolicy.
 type NetworkPolicyPeer struct {
 	PodSelector       map[string]string `yaml:"pod_selector,omitempty" json:"pod_selector,omitempty"`
 	NamespaceSelector map[string]string `yaml:"namespace_selector,omitempty" json:"namespace_selector,omitempty"`
 	IPBlock           *IPBlock          `yaml:"ip_block,omitempty" json:"ip_block,omitempty"`
 }
 
-// IPBlock represents IP block configuration
+// IPBlock represents IP block configuration.
 type IPBlock struct {
 	CIDR   string   `yaml:"cidr" json:"cidr"`
 	Except []string `yaml:"except,omitempty" json:"except,omitempty"`
 }
 
-// NetworkPolicyPort represents port configuration in NetworkPolicy
+// NetworkPolicyPort represents port configuration in NetworkPolicy.
 type NetworkPolicyPort struct {
 	Protocol string `yaml:"protocol,omitempty" json:"protocol,omitempty"`
 	Port     *int32 `yaml:"port,omitempty" json:"port,omitempty"`
 	EndPort  *int32 `yaml:"end_port,omitempty" json:"end_port,omitempty"`
 }
 
-// ServiceConfig represents a Kubernetes Service configuration
+// ServiceConfig represents a Kubernetes Service configuration.
 type ServiceConfig struct {
 	Name        string            `yaml:"name" json:"name"`
 	Type        string            `yaml:"type" json:"type"`
@@ -88,7 +91,7 @@ type ServiceConfig struct {
 	ExternalIPs []string          `yaml:"external_ips,omitempty" json:"external_ips,omitempty"`
 }
 
-// ServicePort represents a port configuration for a Service
+// ServicePort represents a port configuration for a Service.
 type ServicePort struct {
 	Name       string `yaml:"name,omitempty" json:"name,omitempty"`
 	Protocol   string `yaml:"protocol" json:"protocol"`
@@ -97,7 +100,7 @@ type ServicePort struct {
 	NodePort   int32  `yaml:"node_port,omitempty" json:"node_port,omitempty"`
 }
 
-// IngressConfig represents a Kubernetes Ingress configuration
+// IngressConfig represents a Kubernetes Ingress configuration.
 type IngressConfig struct {
 	Name         string        `yaml:"name" json:"name"`
 	IngressClass string        `yaml:"ingress_class,omitempty" json:"ingress_class,omitempty"`
@@ -105,13 +108,13 @@ type IngressConfig struct {
 	TLS          []IngressTLS  `yaml:"tls,omitempty" json:"tls,omitempty"`
 }
 
-// IngressRule represents an ingress rule
+// IngressRule represents an ingress rule.
 type IngressRule struct {
 	Host  string        `yaml:"host" json:"host"`
 	Paths []IngressPath `yaml:"paths" json:"paths"`
 }
 
-// IngressPath represents a path in an ingress rule
+// IngressPath represents a path in an ingress rule.
 type IngressPath struct {
 	Path        string `yaml:"path" json:"path"`
 	PathType    string `yaml:"path_type" json:"path_type"`
@@ -119,13 +122,13 @@ type IngressPath struct {
 	ServicePort int32  `yaml:"service_port" json:"service_port"`
 }
 
-// IngressTLS represents TLS configuration for ingress
+// IngressTLS represents TLS configuration for ingress.
 type IngressTLS struct {
 	Hosts      []string `yaml:"hosts" json:"hosts"`
 	SecretName string   `yaml:"secret_name" json:"secret_name"`
 }
 
-// ServiceMeshConfig represents service mesh integration configuration
+// ServiceMeshConfig represents service mesh integration configuration.
 type ServiceMeshConfig struct {
 	Type          string                 `yaml:"type" json:"type"` // istio or linkerd
 	Enabled       bool                   `yaml:"enabled" json:"enabled"`
@@ -133,14 +136,14 @@ type ServiceMeshConfig struct {
 	TrafficPolicy map[string]interface{} `yaml:"traffic_policy,omitempty" json:"traffic_policy,omitempty"`
 }
 
-// KubernetesCommandExecutor executes kubectl commands with timeout and error handling
+// KubernetesCommandExecutor executes kubectl commands with timeout and error handling.
 type KubernetesCommandExecutor struct {
 	logger *zap.Logger
 	cache  map[string]*KubernetesCommandResult
 	mutex  sync.RWMutex
 }
 
-// KubernetesCommandResult represents the result of a kubectl command execution
+// KubernetesCommandResult represents the result of a kubectl command execution.
 type KubernetesCommandResult struct {
 	Output   string
 	Error    string
@@ -149,7 +152,7 @@ type KubernetesCommandResult struct {
 	CachedAt time.Time
 }
 
-// NewKubernetesCommandExecutor creates a new Kubernetes command executor
+// NewKubernetesCommandExecutor creates a new Kubernetes command executor.
 func NewKubernetesCommandExecutor(logger *zap.Logger) *KubernetesCommandExecutor {
 	return &KubernetesCommandExecutor{
 		logger: logger,
@@ -157,7 +160,7 @@ func NewKubernetesCommandExecutor(logger *zap.Logger) *KubernetesCommandExecutor
 	}
 }
 
-// NewKubernetesNetworkManager creates a new Kubernetes network manager
+// NewKubernetesNetworkManager creates a new Kubernetes network manager.
 func NewKubernetesNetworkManager(logger *zap.Logger, configDir string) *KubernetesNetworkManager {
 	profilesDir := filepath.Join(configDir, "kubernetes", "network_profiles")
 	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
@@ -174,7 +177,7 @@ func NewKubernetesNetworkManager(logger *zap.Logger, configDir string) *Kubernet
 	}
 }
 
-// CreateProfile creates a new Kubernetes network profile
+// CreateProfile creates a new Kubernetes network profile.
 func (km *KubernetesNetworkManager) CreateProfile(profile *KubernetesNetworkProfile) error {
 	km.mutex.Lock()
 	defer km.mutex.Unlock()
@@ -199,6 +202,7 @@ func (km *KubernetesNetworkManager) CreateProfile(profile *KubernetesNetworkProf
 
 	// Save to file
 	profilePath := filepath.Join(km.profilesDir, profile.Name+".yaml")
+
 	data, err := yaml.Marshal(profile)
 	if err != nil {
 		return fmt.Errorf("failed to marshal profile: %w", err)
@@ -219,7 +223,7 @@ func (km *KubernetesNetworkManager) CreateProfile(profile *KubernetesNetworkProf
 	return nil
 }
 
-// LoadProfile loads a Kubernetes network profile
+// LoadProfile loads a Kubernetes network profile.
 func (km *KubernetesNetworkManager) LoadProfile(name string) (*KubernetesNetworkProfile, error) {
 	km.mutex.RLock()
 	if cached, exists := km.cache[name]; exists {
@@ -229,6 +233,7 @@ func (km *KubernetesNetworkManager) LoadProfile(name string) (*KubernetesNetwork
 	km.mutex.RUnlock()
 
 	profilePath := filepath.Join(km.profilesDir, name+".yaml")
+
 	data, err := os.ReadFile(profilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read profile: %w", err)
@@ -247,7 +252,7 @@ func (km *KubernetesNetworkManager) LoadProfile(name string) (*KubernetesNetwork
 	return &profile, nil
 }
 
-// ListProfiles lists all available Kubernetes network profiles
+// ListProfiles lists all available Kubernetes network profiles.
 func (km *KubernetesNetworkManager) ListProfiles() ([]*KubernetesNetworkProfile, error) {
 	files, err := filepath.Glob(filepath.Join(km.profilesDir, "*.yaml"))
 	if err != nil {
@@ -255,13 +260,16 @@ func (km *KubernetesNetworkManager) ListProfiles() ([]*KubernetesNetworkProfile,
 	}
 
 	var profiles []*KubernetesNetworkProfile
+
 	for _, file := range files {
 		name := strings.TrimSuffix(filepath.Base(file), ".yaml")
+
 		profile, err := km.LoadProfile(name)
 		if err != nil {
 			km.logger.Warn("Failed to load profile", zap.String("file", file), zap.Error(err))
 			continue
 		}
+
 		profiles = append(profiles, profile)
 	}
 
@@ -271,7 +279,7 @@ func (km *KubernetesNetworkManager) ListProfiles() ([]*KubernetesNetworkProfile,
 // GenerateNetworkPolicy is implemented in kubernetes_network_simple.go
 // This placeholder exists for interface compatibility
 
-// ApplyProfile applies a Kubernetes network profile
+// ApplyProfile applies a Kubernetes network profile.
 func (km *KubernetesNetworkManager) ApplyProfile(name string) error {
 	profile, err := km.LoadProfile(name)
 	if err != nil {
@@ -319,15 +327,17 @@ func (km *KubernetesNetworkManager) ApplyProfile(name string) error {
 	// Mark profile as active
 	profile.Active = true
 	profile.UpdatedAt = time.Now()
+
 	if err := km.saveProfile(profile); err != nil {
 		km.logger.Warn("Failed to update profile status", zap.Error(err))
 	}
 
 	km.logger.Info("Successfully applied Kubernetes network profile", zap.String("name", name))
+
 	return nil
 }
 
-// validateNetworkPolicies validates network policy configurations
+// validateNetworkPolicies validates network policy configurations.
 func (km *KubernetesNetworkManager) validateNetworkPolicies(policies map[string]*NetworkPolicyConfig) error {
 	for name, policy := range policies {
 		if policy.Name == "" {
@@ -352,7 +362,7 @@ func (km *KubernetesNetworkManager) validateNetworkPolicies(policies map[string]
 	return nil
 }
 
-// ensureNamespace ensures that a namespace exists
+// ensureNamespace ensures that a namespace exists.
 func (km *KubernetesNetworkManager) ensureNamespace(namespace string) error {
 	// Check if namespace exists
 	checkCmd := fmt.Sprintf("kubectl get namespace %s", namespace)
@@ -372,10 +382,11 @@ func (km *KubernetesNetworkManager) ensureNamespace(namespace string) error {
 	}
 
 	km.logger.Info("Created namespace", zap.String("namespace", namespace))
+
 	return nil
 }
 
-// applyResource applies a Kubernetes resource using kubectl
+// applyResource applies a Kubernetes resource using kubectl.
 func (km *KubernetesNetworkManager) applyResource(resourceYAML []byte) error {
 	// Create temporary file
 	tmpFile, err := os.CreateTemp("", "k8s-resource-*.yaml")
@@ -387,6 +398,7 @@ func (km *KubernetesNetworkManager) applyResource(resourceYAML []byte) error {
 	if _, err := tmpFile.Write(resourceYAML); err != nil {
 		return fmt.Errorf("failed to write resource to temp file: %w", err)
 	}
+
 	tmpFile.Close()
 
 	// Apply using kubectl
@@ -400,9 +412,10 @@ func (km *KubernetesNetworkManager) applyResource(resourceYAML []byte) error {
 	return nil
 }
 
-// saveProfile saves a profile to disk
+// saveProfile saves a profile to disk.
 func (km *KubernetesNetworkManager) saveProfile(profile *KubernetesNetworkProfile) error {
 	profilePath := filepath.Join(km.profilesDir, profile.Name+".yaml")
+
 	data, err := yaml.Marshal(profile)
 	if err != nil {
 		return fmt.Errorf("failed to marshal profile: %w", err)
@@ -420,7 +433,7 @@ func (km *KubernetesNetworkManager) saveProfile(profile *KubernetesNetworkProfil
 	return nil
 }
 
-// DeleteProfile deletes a Kubernetes network profile
+// DeleteProfile deletes a Kubernetes network profile.
 func (km *KubernetesNetworkManager) DeleteProfile(name string) error {
 	km.mutex.Lock()
 	defer km.mutex.Unlock()
@@ -432,6 +445,7 @@ func (km *KubernetesNetworkManager) DeleteProfile(name string) error {
 
 	delete(km.cache, name)
 	km.logger.Info("Deleted Kubernetes network profile", zap.String("name", name))
+
 	return nil
 }
 
@@ -441,7 +455,7 @@ func (km *KubernetesNetworkManager) DeleteProfile(name string) error {
 // ExportNamespacePolicies is implemented in kubernetes_network_simple.go
 // This placeholder exists for interface compatibility
 
-// ExecuteWithTimeout executes a kubectl command with timeout
+// ExecuteWithTimeout executes a kubectl command with timeout.
 func (executor *KubernetesCommandExecutor) ExecuteWithTimeout(ctx context.Context, command string, timeout time.Duration) (*KubernetesCommandResult, error) {
 	// Check cache first (for read-only commands)
 	if strings.Contains(command, "get") && !strings.Contains(command, "watch") {
@@ -472,7 +486,7 @@ func (executor *KubernetesCommandExecutor) ExecuteWithTimeout(ctx context.Contex
 	return result, nil
 }
 
-// getCachedResult retrieves a cached command result if still valid
+// getCachedResult retrieves a cached command result if still valid.
 func (executor *KubernetesCommandExecutor) getCachedResult(command string) *KubernetesCommandResult {
 	executor.mutex.RLock()
 	defer executor.mutex.RUnlock()
@@ -487,7 +501,7 @@ func (executor *KubernetesCommandExecutor) getCachedResult(command string) *Kube
 	return nil
 }
 
-// setCachedResult stores a command result in cache
+// setCachedResult stores a command result in cache.
 func (executor *KubernetesCommandExecutor) setCachedResult(command string, result *KubernetesCommandResult) {
 	executor.mutex.Lock()
 	defer executor.mutex.Unlock()

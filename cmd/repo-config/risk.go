@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -9,7 +12,7 @@ import (
 	"time"
 )
 
-// RiskAssessment represents a repository risk assessment
+// RiskAssessment represents a repository risk assessment.
 type RiskAssessment struct {
 	Repository      string              `json:"repository"`
 	OverallScore    float64             `json:"overall_score"`
@@ -20,7 +23,7 @@ type RiskAssessment struct {
 	LastAssessed    time.Time           `json:"last_assessed"`
 }
 
-// RiskCategories represents different risk category scores
+// RiskCategories represents different risk category scores.
 type RiskCategories struct {
 	AccessControl       float64 `json:"access_control"`
 	DataProtection      float64 `json:"data_protection"`
@@ -28,7 +31,7 @@ type RiskCategories struct {
 	OperationalSecurity float64 `json:"operational_security"`
 }
 
-// RiskVulnerability represents a specific vulnerability
+// RiskVulnerability represents a specific vulnerability.
 type RiskVulnerability struct {
 	ID          string  `json:"id"`
 	Title       string  `json:"title"`
@@ -39,7 +42,7 @@ type RiskVulnerability struct {
 	Remediation string  `json:"remediation"`
 }
 
-// runRiskAssessmentCommand executes the risk assessment command
+// runRiskAssessmentCommand executes the risk assessment command.
 func runRiskAssessmentCommand(flags GlobalFlags, format string, includeArchived bool, severityFilter, outputFile string, riskThreshold float64) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -49,9 +52,11 @@ func runRiskAssessmentCommand(flags GlobalFlags, format string, includeArchived 
 		fmt.Printf("🔍 Performing risk assessment for organization: %s\n", flags.Organization)
 		fmt.Printf("Format: %s\n", format)
 		fmt.Printf("Include archived: %t\n", includeArchived)
+
 		if severityFilter != "" {
 			fmt.Printf("Severity filter: %s\n", severityFilter)
 		}
+
 		fmt.Printf("Risk threshold: %.1f\n", riskThreshold)
 		fmt.Println()
 	}
@@ -105,14 +110,13 @@ func runRiskAssessmentCommand(flags GlobalFlags, format string, includeArchived 
 	return nil
 }
 
-// performRiskAssessments performs risk assessments for repositories
+// performRiskAssessments performs risk assessments for repositories.
 func performRiskAssessments(organization, token string, includeArchived bool) ([]RiskAssessment, error) {
 	// This is a mock implementation. In reality, this would:
 	// 1. Fetch repository configurations from GitHub API
 	// 2. Analyze security settings and configurations
 	// 3. Calculate CVSS scores based on vulnerabilities
 	// 4. Generate recommendations
-
 	mockAssessments := []RiskAssessment{
 		{
 			Repository:   "api-server",
@@ -204,7 +208,7 @@ func performRiskAssessments(organization, token string, includeArchived bool) ([
 	return mockAssessments, nil
 }
 
-// displayRiskAssessmentTable displays risk assessments in table format
+// displayRiskAssessmentTable displays risk assessments in table format.
 func displayRiskAssessmentTable(assessments []RiskAssessment) {
 	fmt.Printf("%-20s %-10s %-8s %-12s %-15s %s\n",
 		"REPOSITORY", "SEVERITY", "SCORE", "VULNS", "TOP CATEGORY", "LAST ASSESSED")
@@ -227,7 +231,7 @@ func displayRiskAssessmentTable(assessments []RiskAssessment) {
 	}
 }
 
-// displayRiskAssessmentJSON displays risk assessments in JSON format
+// displayRiskAssessmentJSON displays risk assessments in JSON format.
 func displayRiskAssessmentJSON(assessments []RiskAssessment, outputFile string) error {
 	data := map[string]interface{}{
 		"assessments":  assessments,
@@ -245,13 +249,16 @@ func displayRiskAssessmentJSON(assessments []RiskAssessment, outputFile string) 
 	}
 
 	fmt.Println(string(jsonBytes))
+
 	return nil
 }
 
-// displayRiskAssessmentCSV displays risk assessments in CSV format
+// displayRiskAssessmentCSV displays risk assessments in CSV format.
 func displayRiskAssessmentCSV(assessments []RiskAssessment, outputFile string) error {
 	var writer *csv.Writer
+
 	var file *os.File
+
 	var err error
 
 	if outputFile != "" {
@@ -259,11 +266,13 @@ func displayRiskAssessmentCSV(assessments []RiskAssessment, outputFile string) e
 		if err != nil {
 			return err
 		}
+
 		defer file.Close()
 		writer = csv.NewWriter(file)
 	} else {
 		writer = csv.NewWriter(os.Stdout)
 	}
+
 	defer writer.Flush()
 
 	// Write header
@@ -297,7 +306,7 @@ func displayRiskAssessmentCSV(assessments []RiskAssessment, outputFile string) e
 	return nil
 }
 
-// displayRiskAssessmentHTML displays risk assessments in HTML format
+// displayRiskAssessmentHTML displays risk assessments in HTML format.
 func displayRiskAssessmentHTML(assessments []RiskAssessment, outputFile, organization string) error {
 	html := generateRiskAssessmentHTML(assessments, organization)
 
@@ -306,6 +315,7 @@ func displayRiskAssessmentHTML(assessments []RiskAssessment, outputFile, organiz
 	}
 
 	fmt.Println(html)
+
 	return nil
 }
 
@@ -313,21 +323,25 @@ func displayRiskAssessmentHTML(assessments []RiskAssessment, outputFile, organiz
 
 func filterBySeverity(assessments []RiskAssessment, severity string) []RiskAssessment {
 	var filtered []RiskAssessment
+
 	for _, assessment := range assessments {
 		if assessment.Severity == severity {
 			filtered = append(filtered, assessment)
 		}
 	}
+
 	return filtered
 }
 
 func filterByRiskThreshold(assessments []RiskAssessment, threshold float64) []RiskAssessment {
 	var filtered []RiskAssessment
+
 	for _, assessment := range assessments {
 		if assessment.OverallScore >= threshold {
 			filtered = append(filtered, assessment)
 		}
 	}
+
 	return filtered
 }
 
@@ -354,10 +368,12 @@ func getTopRiskCategory(categories RiskCategories) string {
 		max = categories.DataProtection
 		category = "Data Protection"
 	}
+
 	if categories.InfrastructureSec > max {
 		max = categories.InfrastructureSec
 		category = "Infrastructure"
 	}
+
 	if categories.OperationalSecurity > max {
 		max = categories.OperationalSecurity
 		category = "Operational"
@@ -369,6 +385,7 @@ func getTopRiskCategory(categories RiskCategories) string {
 func generateAssessmentSummary(assessments []RiskAssessment) map[string]interface{} {
 	total := len(assessments)
 	severityCounts := make(map[string]int)
+
 	var totalScore float64
 
 	for _, assessment := range assessments {
@@ -394,12 +411,15 @@ func displayRiskSummary(assessments []RiskAssessment, threshold float64) {
 	fmt.Printf("Total repositories assessed: %d\n", len(assessments))
 
 	severityCounts := make(map[string]int)
+
 	var totalScore float64
+
 	aboveThreshold := 0
 
 	for _, assessment := range assessments {
 		severityCounts[assessment.Severity]++
 		totalScore += assessment.OverallScore
+
 		if assessment.OverallScore >= threshold {
 			aboveThreshold++
 		}
@@ -501,6 +521,7 @@ func generateRiskAssessmentHTML(assessments []RiskAssessment, organization strin
 
 func generateTableRows(assessments []RiskAssessment) string {
 	var rows []string
+
 	for _, assessment := range assessments {
 		severityClass := fmt.Sprintf("severity-%s", assessment.Severity)
 		topCategory := getTopRiskCategory(assessment.Categories)
@@ -523,5 +544,6 @@ func generateTableRows(assessments []RiskAssessment) string {
 
 		rows = append(rows, row)
 	}
+
 	return strings.Join(rows, "")
 }

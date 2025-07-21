@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -13,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newVPNProfileCmd creates the VPN profile management command
+// newVPNProfileCmd creates the VPN profile management command.
 func newVPNProfileCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vpn-profile",
@@ -57,7 +60,7 @@ Examples:
 	return cmd
 }
 
-// newVPNProfileListCmd creates the list subcommand
+// newVPNProfileListCmd creates the list subcommand.
 func newVPNProfileListCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -92,7 +95,7 @@ func newVPNProfileListCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	return cmd
 }
 
-// newVPNProfileCreateCmd creates the create subcommand
+// newVPNProfileCreateCmd creates the create subcommand.
 func newVPNProfileCreateCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create [profile-name]",
@@ -150,7 +153,7 @@ func newVPNProfileCreateCmd(logger *zap.Logger, configDir string) *cobra.Command
 	return cmd
 }
 
-// newVPNProfileDeleteCmd creates the delete subcommand
+// newVPNProfileDeleteCmd creates the delete subcommand.
 func newVPNProfileDeleteCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete [profile-name]",
@@ -182,7 +185,7 @@ func newVPNProfileDeleteCmd(logger *zap.Logger, configDir string) *cobra.Command
 	return cmd
 }
 
-// newVPNProfileMapCmd creates the map subcommand
+// newVPNProfileMapCmd creates the map subcommand.
 func newVPNProfileMapCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "map",
@@ -230,7 +233,7 @@ func newVPNProfileMapCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	return cmd
 }
 
-// newVPNProfileUnmapCmd creates the unmap subcommand
+// newVPNProfileUnmapCmd creates the unmap subcommand.
 func newVPNProfileUnmapCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unmap",
@@ -267,7 +270,7 @@ func newVPNProfileUnmapCmd(logger *zap.Logger, configDir string) *cobra.Command 
 	return cmd
 }
 
-// newVPNProfileRuleCmd creates the rule subcommand
+// newVPNProfileRuleCmd creates the rule subcommand.
 func newVPNProfileRuleCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "rule",
@@ -283,7 +286,7 @@ func newVPNProfileRuleCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	return cmd
 }
 
-// newVPNProfileRuleAddCmd creates the rule add subcommand
+// newVPNProfileRuleAddCmd creates the rule add subcommand.
 func newVPNProfileRuleAddCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add",
@@ -326,7 +329,7 @@ func newVPNProfileRuleAddCmd(logger *zap.Logger, configDir string) *cobra.Comman
 	return cmd
 }
 
-// newVPNProfileRuleRemoveCmd creates the rule remove subcommand
+// newVPNProfileRuleRemoveCmd creates the rule remove subcommand.
 func newVPNProfileRuleRemoveCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove [rule-name]",
@@ -358,7 +361,7 @@ func newVPNProfileRuleRemoveCmd(logger *zap.Logger, configDir string) *cobra.Com
 	return cmd
 }
 
-// newVPNProfileRuleListCmd creates the rule list subcommand
+// newVPNProfileRuleListCmd creates the rule list subcommand.
 func newVPNProfileRuleListCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -393,7 +396,7 @@ func newVPNProfileRuleListCmd(logger *zap.Logger, configDir string) *cobra.Comma
 	return cmd
 }
 
-// newVPNProfileActiveCmd creates the active subcommand
+// newVPNProfileActiveCmd creates the active subcommand.
 func newVPNProfileActiveCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "active",
@@ -433,7 +436,7 @@ func newVPNProfileActiveCmd(logger *zap.Logger, configDir string) *cobra.Command
 	return cmd
 }
 
-// newVPNProfileSwitchCmd creates the switch subcommand
+// newVPNProfileSwitchCmd creates the switch subcommand.
 func newVPNProfileSwitchCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "switch [profile-name]",
@@ -537,6 +540,7 @@ func (vpm *VPNProfileManager) GetAllProfiles() ([]*VPNProfile, error) {
 	for _, profile := range vpm.profiles {
 		profiles = append(profiles, profile)
 	}
+
 	return profiles, nil
 }
 
@@ -566,6 +570,7 @@ func (vpm *VPNProfileManager) AddNetworkMapping(profileName string, mapping Netw
 
 	profile.NetworkMappings = append(profile.NetworkMappings, mapping)
 	profile.UpdatedAt = time.Now()
+
 	return vpm.saveProfiles()
 }
 
@@ -579,6 +584,7 @@ func (vpm *VPNProfileManager) RemoveNetworkMapping(profileName, networkPattern s
 		if mapping.NetworkPattern == networkPattern {
 			profile.NetworkMappings = append(profile.NetworkMappings[:i], profile.NetworkMappings[i+1:]...)
 			profile.UpdatedAt = time.Now()
+
 			return vpm.saveProfiles()
 		}
 	}
@@ -600,6 +606,7 @@ func (vpm *VPNProfileManager) AddAutoSwitchRule(rule AutoSwitchRule) error {
 
 	profile.AutoSwitchRules = append(profile.AutoSwitchRules, rule)
 	profile.UpdatedAt = time.Now()
+
 	return vpm.saveProfiles()
 }
 
@@ -609,10 +616,12 @@ func (vpm *VPNProfileManager) RemoveAutoSwitchRule(ruleName string) error {
 			if rule.Name == ruleName {
 				profile.AutoSwitchRules = append(profile.AutoSwitchRules[:i], profile.AutoSwitchRules[i+1:]...)
 				profile.UpdatedAt = time.Now()
+
 				return vpm.saveProfiles()
 			}
 		}
 	}
+
 	return fmt.Errorf("auto-switch rule not found")
 }
 
@@ -621,6 +630,7 @@ func (vpm *VPNProfileManager) GetAutoSwitchRules() ([]AutoSwitchRule, error) {
 	for _, profile := range vpm.profiles {
 		rules = append(rules, profile.AutoSwitchRules...)
 	}
+
 	return rules, nil
 }
 
@@ -630,6 +640,7 @@ func (vpm *VPNProfileManager) GetActiveProfile() (*VPNProfile, error) {
 	if profile, exists := vpm.profiles["default"]; exists {
 		return profile, nil
 	}
+
 	return nil, nil
 }
 
@@ -646,6 +657,7 @@ func (vpm *VPNProfileManager) SwitchToProfile(ctx context.Context, profileName s
 	// 3. Connecting appropriate VPNs based on current network
 
 	vpm.logger.Info("Switching to VPN profile", zap.String("profile", profileName))
+
 	_ = profile // Use the profile
 
 	return nil
@@ -742,6 +754,7 @@ func printActiveProfile(profile *VPNProfile) error {
 
 	if len(profile.NetworkMappings) > 0 {
 		fmt.Printf("Network Mappings:\n")
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 		fmt.Fprintln(w, "  NETWORK\tVPN\tPRIORITY")
 
@@ -749,17 +762,20 @@ func printActiveProfile(profile *VPNProfile) error {
 			fmt.Fprintf(w, "  %s\t%s\t%d\n",
 				mapping.NetworkPattern, mapping.VPNName, mapping.Priority)
 		}
+
 		w.Flush()
 		fmt.Println()
 	}
 
 	if len(profile.AutoSwitchRules) > 0 {
 		fmt.Printf("Auto-Switch Rules:\n")
+
 		for _, rule := range profile.AutoSwitchRules {
 			status := "disabled"
 			if rule.Enabled {
 				status = "enabled"
 			}
+
 			fmt.Printf("  - %s: %s → %s (%s)\n",
 				rule.Name, rule.Trigger, rule.Action, status)
 		}

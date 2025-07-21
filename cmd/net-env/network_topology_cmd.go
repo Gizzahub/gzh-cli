@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -14,7 +17,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newNetworkTopologyCmd creates the network topology command
+// newNetworkTopologyCmd creates the network topology command.
 func newNetworkTopologyCmd(logger *zap.Logger, configDir string) *cobra.Command {
 	containerDetector := NewContainerDetector(logger)
 	analyzer := NewNetworkTopologyAnalyzer(logger, containerDetector)
@@ -63,7 +66,7 @@ Examples:
 	return cmd
 }
 
-// newTopologyAnalyzeCmd creates the analyze subcommand
+// newTopologyAnalyzeCmd creates the analyze subcommand.
 func newTopologyAnalyzeCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "analyze",
@@ -98,7 +101,7 @@ func newTopologyAnalyzeCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	return cmd
 }
 
-// newTopologySummaryCmd creates the summary subcommand
+// newTopologySummaryCmd creates the summary subcommand.
 func newTopologySummaryCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "summary",
@@ -129,7 +132,7 @@ func newTopologySummaryCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	return cmd
 }
 
-// newTopologyServicesCmd creates the services subcommand
+// newTopologyServicesCmd creates the services subcommand.
 func newTopologyServicesCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "services",
@@ -174,7 +177,7 @@ func newTopologyServicesCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	return cmd
 }
 
-// newTopologyConnectionsCmd creates the connections subcommand
+// newTopologyConnectionsCmd creates the connections subcommand.
 func newTopologyConnectionsCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "connections",
@@ -219,7 +222,7 @@ func newTopologyConnectionsCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command
 	return cmd
 }
 
-// newTopologyClustersCmd creates the clusters subcommand
+// newTopologyClustersCmd creates the clusters subcommand.
 func newTopologyClustersCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clusters",
@@ -264,7 +267,7 @@ func newTopologyClustersCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	return cmd
 }
 
-// newTopologyExportCmd creates the export subcommand
+// newTopologyExportCmd creates the export subcommand.
 func newTopologyExportCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
@@ -308,7 +311,7 @@ func newTopologyExportCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	return cmd
 }
 
-// newTopologyMonitorCmd creates the monitor subcommand
+// newTopologyMonitorCmd creates the monitor subcommand.
 func newTopologyMonitorCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "monitor",
@@ -368,7 +371,7 @@ func newTopologyMonitorCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	return cmd
 }
 
-// newTopologyValidateCmd creates the validate subcommand
+// newTopologyValidateCmd creates the validate subcommand.
 func newTopologyValidateCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
@@ -450,6 +453,7 @@ func printTopologyAnalysis(topology *NetworkTopology, detailed bool) error {
 
 	// Complexity metrics
 	fmt.Printf("📈 Complexity Metrics:\n")
+
 	complexity := topology.Summary.TopologyComplexity
 	fmt.Printf("  Network Complexity: %.2f\n", complexity.NetworkComplexity)
 	fmt.Printf("  Service Complexity: %.2f\n", complexity.ServiceComplexity)
@@ -472,29 +476,36 @@ func printTopologySummary(summary *TopologySummary) error {
 
 	if len(summary.NetworksByDriver) > 0 {
 		fmt.Printf("Networks by Driver:\n")
+
 		for driver, count := range summary.NetworksByDriver {
 			fmt.Printf("  %s: %d\n", driver, count)
 		}
+
 		fmt.Println()
 	}
 
 	if len(summary.ContainersByState) > 0 {
 		fmt.Printf("Containers by State:\n")
+
 		for state, count := range summary.ContainersByState {
 			fmt.Printf("  %s: %d\n", state, count)
 		}
+
 		fmt.Println()
 	}
 
 	if len(summary.ServicesByType) > 0 {
 		fmt.Printf("Services by Type:\n")
+
 		for serviceType, count := range summary.ServicesByType {
 			fmt.Printf("  %s: %d\n", serviceType, count)
 		}
+
 		fmt.Println()
 	}
 
 	complexity := summary.TopologyComplexity
+
 	fmt.Printf("Complexity Metrics:\n")
 	fmt.Printf("  Network Complexity: %.2f\n", complexity.NetworkComplexity)
 	fmt.Printf("  Service Complexity: %.2f\n", complexity.ServiceComplexity)
@@ -515,6 +526,7 @@ func printTopologyNetworksTable(networks []TopologyNetwork) {
 
 	for _, network := range networks {
 		networkID := truncateStringUtil(network.ID, 12)
+
 		subnet := network.Subnet
 		if subnet == "" {
 			subnet = "N/A"
@@ -642,6 +654,7 @@ func generateTopologyHash(topology *NetworkTopology) string {
 	for _, network := range topology.Networks {
 		networkIDs = append(networkIDs, network.ID[:8])
 	}
+
 	sort.Strings(networkIDs)
 	hash += ",net_ids:" + strings.Join(networkIDs, ",")
 
@@ -676,11 +689,13 @@ func validateTopology(topology *NetworkTopology, strict bool) []string {
 
 	// Check for failed connections
 	failedConnections := 0
+
 	for _, conn := range topology.Connections {
 		if conn.Status == StatusFailed {
 			failedConnections++
 		}
 	}
+
 	if failedConnections > 0 {
 		issues = append(issues, fmt.Sprintf("%d connections are in failed state", failedConnections))
 	}

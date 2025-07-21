@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package cmd
 
 import (
@@ -11,12 +14,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-// NewEventCmd creates a new event command
+// NewEventCmd creates a new event command.
 func NewEventCmd() *cobra.Command {
 	// Command flags - declare as local variables
 	var (
@@ -221,20 +225,25 @@ func runEventList(cmd *cobra.Command, args []string, org, repo, eventType, actio
 	// Parse time filters
 	if since != "" || until != "" {
 		timeRange := &github.TimeRange{}
+
 		if since != "" {
 			sinceTime, err := time.Parse(time.RFC3339, since)
 			if err != nil {
 				return fmt.Errorf("invalid since time format: %w", err)
 			}
+
 			timeRange.Start = sinceTime
 		}
+
 		if until != "" {
 			untilTime, err := time.Parse(time.RFC3339, until)
 			if err != nil {
 				return fmt.Errorf("invalid until time format: %w", err)
 			}
+
 			timeRange.End = untilTime
 		}
+
 		filter.TimeRange = timeRange
 	}
 
@@ -408,10 +417,12 @@ func runEventTest(cmd *cobra.Command, args []string, eventType, action, payload 
 	req.Header.Set("X-GitHub-Delivery", fmt.Sprintf("test-%d", time.Now().Unix()))
 
 	client := &http.Client{Timeout: 10 * time.Second}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send test webhook: %w", err)
 	}
+
 	defer resp.Body.Close()
 
 	fmt.Printf("Test webhook sent successfully\n")
@@ -428,7 +439,7 @@ func runEventTest(cmd *cobra.Command, args []string, eventType, action, payload 
 	return nil
 }
 
-// Output helper functions
+// Output helper functions.
 func outputEventTable(events []*github.GitHubEvent) error {
 	fmt.Printf("%-20s %-15s %-12s %-15s %-15s %-20s\n",
 		"EVENT ID", "TYPE", "ACTION", "ORGANIZATION", "REPOSITORY", "TIMESTAMP")
@@ -446,6 +457,7 @@ func outputEventTable(events []*github.GitHubEvent) error {
 	}
 
 	fmt.Printf("\nTotal: %d events\n", len(events))
+
 	return nil
 }
 
@@ -460,18 +472,21 @@ func outputMetricsTable(metrics *github.EventMetrics) error {
 
 	fmt.Println("\nEvents by Type:")
 	fmt.Println(strings.Repeat("-", 30))
+
 	for eventType, count := range metrics.EventsByType {
 		fmt.Printf("  %-15s %d\n", eventType, count)
 	}
 
 	fmt.Println("\nEvents by Organization:")
 	fmt.Println(strings.Repeat("-", 30))
+
 	for org, count := range metrics.EventsByOrganization {
 		fmt.Printf("  %-15s %d\n", org, count)
 	}
 
 	fmt.Println("\nHandler Status:")
 	fmt.Println(strings.Repeat("-", 30))
+
 	for handler, status := range metrics.HandlersStatus {
 		fmt.Printf("  %-15s %s\n", handler, status)
 	}
@@ -483,15 +498,16 @@ func truncate(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
 	}
+
 	return s[:maxLen-3] + "..."
 }
 
-// getLogger returns a logger that implements the github.Logger interface
+// getLogger returns a logger that implements the github.Logger interface.
 func getLogger() github.Logger {
 	return &simpleLogger{}
 }
 
-// simpleLogger implements the github.Logger interface
+// simpleLogger implements the github.Logger interface.
 type simpleLogger struct{}
 
 func (l *simpleLogger) Debug(msg string, args ...interface{}) {
@@ -510,35 +526,40 @@ func (l *simpleLogger) Error(msg string, args ...interface{}) {
 	log.Printf("[ERROR] %s", formatMessage(msg, args...))
 }
 
-// formatMessage formats a message with key-value pairs
+// formatMessage formats a message with key-value pairs.
 func formatMessage(msg string, args ...interface{}) string {
 	if len(args) == 0 {
 		return msg
 	}
+
 	return fmt.Sprintf("%s %v", msg, args)
 }
 
-// outputJSON marshals the data to JSON and prints it
+// outputJSON marshals the data to JSON and prints it.
 func outputJSON(data interface{}) error {
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
+
 	fmt.Println(string(jsonData))
+
 	return nil
 }
 
-// outputYAML marshals the data to YAML and prints it
+// outputYAML marshals the data to YAML and prints it.
 func outputYAML(data interface{}) error {
 	yamlData, err := yaml.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal YAML: %w", err)
 	}
+
 	fmt.Println(string(yamlData))
+
 	return nil
 }
 
-// Mock storage implementation for CLI demonstration
+// Mock storage implementation for CLI demonstration.
 type mockEventStorage struct{}
 
 func (m *mockEventStorage) StoreEvent(ctx context.Context, event *github.GitHubEvent) error {

@@ -464,7 +464,7 @@ func TestDockerNetworkConfiguration(t *testing.T) {
 	})
 }
 
-// Mock tests for external Docker commands (these would require Docker to be installed)
+// Mock tests for external Docker commands (these would require Docker to be installed).
 func TestDockerCommandIntegration(t *testing.T) {
 	t.Skip("Skipping Docker command integration tests - requires Docker installation")
 

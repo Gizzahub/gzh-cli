@@ -1,4 +1,6 @@
-// Package gzhclient provides programmatic access to GZH Manager functionality.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package gzhclient
 
 import (
@@ -13,14 +15,14 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-// Client provides programmatic access to GZH Manager functionality
+// Client provides programmatic access to GZH Manager functionality.
 type Client struct {
 	config ClientConfig
 	ctx    context.Context
 	cancel context.CancelFunc
 }
 
-// ClientConfig holds configuration for the GZH client
+// ClientConfig holds configuration for the GZH client.
 type ClientConfig struct {
 	// Connection settings
 	ServerURL  string        `yaml:"server_url,omitempty" json:"server_url,omitempty"`
@@ -40,7 +42,7 @@ type ClientConfig struct {
 	Features FeatureFlags `yaml:"features" json:"features"`
 }
 
-// FeatureFlags enables/disables specific features
+// FeatureFlags enables/disables specific features.
 type FeatureFlags struct {
 	BulkClone  bool `yaml:"bulk_clone" json:"bulk_clone"`
 	DevEnv     bool `yaml:"dev_env" json:"dev_env"`
@@ -49,7 +51,7 @@ type FeatureFlags struct {
 	// Plugins    bool `yaml:"plugins" json:"plugins"` // Disabled - plugins package removed
 }
 
-// DefaultConfig returns a default client configuration
+// DefaultConfig returns a default client configuration.
 func DefaultConfig() ClientConfig {
 	return ClientConfig{
 		Timeout:    30 * time.Second,
@@ -66,7 +68,7 @@ func DefaultConfig() ClientConfig {
 	}
 }
 
-// NewClient creates a new GZH Manager client
+// NewClient creates a new GZH Manager client.
 func NewClient(config ClientConfig) (*Client, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -87,7 +89,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 	return client, nil
 }
 
-// Close cleanly shuts down the client
+// Close cleanly shuts down the client.
 func (c *Client) Close() error {
 	// Plugin manager disabled - plugins package removed
 	// if c.pluginManager != nil {
@@ -95,17 +97,16 @@ func (c *Client) Close() error {
 	//		return fmt.Errorf("failed to shutdown plugin manager: %w", err)
 	//	}
 	// }
-
 	c.cancel()
 	return nil
 }
 
-// GetConfig returns the current client configuration
+// GetConfig returns the current client configuration.
 func (c *Client) GetConfig() ClientConfig {
 	return c.config
 }
 
-// UpdateConfig updates the client configuration
+// UpdateConfig updates the client configuration.
 func (c *Client) UpdateConfig(config ClientConfig) error {
 	c.config = config
 
@@ -122,7 +123,7 @@ func (c *Client) UpdateConfig(config ClientConfig) error {
 	return nil
 }
 
-// Health checks the health of the client and its components
+// Health checks the health of the client and its components.
 func (c *Client) Health() HealthStatus {
 	status := HealthStatus{
 		Overall:    StatusHealthy,
@@ -205,7 +206,7 @@ func (c *Client) Health() HealthStatus {
 //	return nil
 // }
 
-// BulkClone performs bulk repository cloning operation
+// BulkClone performs bulk repository cloning operation.
 func (c *Client) BulkClone(ctx context.Context, req BulkCloneRequest) (*BulkCloneResult, error) {
 	// Create bulk clone manager with configuration manager and logger
 	configManager := &configManagerImpl{}
@@ -272,15 +273,16 @@ func (c *Client) BulkClone(ctx context.Context, req BulkCloneRequest) (*BulkClon
 	return nil, fmt.Errorf("no supported platforms found in request")
 }
 
-// getStatus converts boolean success to string status
+// getStatus converts boolean success to string status.
 func getStatus(success bool) string {
 	if success {
 		return "success"
 	}
+
 	return "failed"
 }
 
-// GitHubClient returns a GitHub-specific API client
+// GitHubClient returns a GitHub-specific API client.
 func (c *Client) GitHubClient(token string) github.APIClient {
 	config := github.DefaultAPIClientConfig()
 	config.Token = token
@@ -291,14 +293,14 @@ func (c *Client) GitHubClient(token string) github.APIClient {
 	return github.NewAPIClient(config, httpClient, logger)
 }
 
-// GitLabClient returns a GitLab-specific client (placeholder)
+// GitLabClient returns a GitLab-specific client (placeholder).
 func (c *Client) GitLabClient(baseURL, token string) interface{} {
 	// GitLab client would be implemented here
 	// For now, return a placeholder
 	return struct{}{}
 }
 
-// GiteaClient returns a Gitea-specific client (placeholder)
+// GiteaClient returns a Gitea-specific client (placeholder).
 func (c *Client) GiteaClient(baseURL, token string) interface{} {
 	// Gitea client would be implemented here
 	// For now, return a placeholder
@@ -368,7 +370,7 @@ func (c *Client) GiteaClient(baseURL, token string) interface{} {
 //	return response, nil
 // }
 
-// GetSystemMetrics returns current system metrics
+// GetSystemMetrics returns current system metrics.
 func (c *Client) GetSystemMetrics() (*SystemMetrics, error) {
 	// This would integrate with system monitoring packages
 	// For now, return a basic implementation
@@ -387,20 +389,20 @@ func (c *Client) GetSystemMetrics() (*SystemMetrics, error) {
 	}, nil
 }
 
-// Subscribe creates an event subscription
+// Subscribe creates an event subscription.
 func (c *Client) Subscribe(subscription EventSubscription) error {
 	// This would integrate with event system
 	// Implementation depends on event bus architecture
 	return fmt.Errorf("event subscription not yet implemented")
 }
 
-// Unsubscribe removes an event subscription
+// Unsubscribe removes an event subscription.
 func (c *Client) Unsubscribe(subscriptionID string) error {
 	// This would integrate with event system
 	return fmt.Errorf("event unsubscription not yet implemented")
 }
 
-// configManagerImpl implements bulkclone.ConfigurationManager interface
+// configManagerImpl implements bulkclone.ConfigurationManager interface.
 type configManagerImpl struct{}
 
 func (c *configManagerImpl) LoadConfiguration(ctx context.Context) (*bulkclone.BulkCloneConfig, error) {
@@ -412,7 +414,7 @@ func (c *configManagerImpl) ValidateConfiguration(ctx context.Context, config *b
 	return nil
 }
 
-// loggerImpl implements bulkclone.Logger interface
+// loggerImpl implements bulkclone.Logger interface.
 type loggerImpl struct{}
 
 func (l *loggerImpl) Debug(msg string, args ...interface{}) {
@@ -422,11 +424,13 @@ func (l *loggerImpl) Debug(msg string, args ...interface{}) {
 func (l *loggerImpl) Info(msg string, args ...interface{}) {
 	// Format the message properly with key-value pairs
 	formatted := msg
+
 	for i := 0; i < len(args); i += 2 {
 		if i+1 < len(args) {
 			formatted += fmt.Sprintf(" %s=%v", args[i], args[i+1])
 		}
 	}
+
 	fmt.Printf("[INFO] %s\n", formatted)
 }
 
@@ -438,7 +442,7 @@ func (l *loggerImpl) Error(msg string, args ...interface{}) {
 	fmt.Printf("[ERROR] "+msg+"\n", args...)
 }
 
-// silentLoggerImpl implements bulkclone.Logger interface but doesn't output anything
+// silentLoggerImpl implements bulkclone.Logger interface but doesn't output anything.
 type silentLoggerImpl struct{}
 
 func (l *silentLoggerImpl) Debug(msg string, args ...interface{}) {}
@@ -446,7 +450,7 @@ func (l *silentLoggerImpl) Info(msg string, args ...interface{})  {}
 func (l *silentLoggerImpl) Warn(msg string, args ...interface{})  {}
 func (l *silentLoggerImpl) Error(msg string, args ...interface{}) {}
 
-// httpClientWrapper wraps http.Client to implement github.HTTPClientInterface
+// httpClientWrapper wraps http.Client to implement github.HTTPClientInterface.
 type httpClientWrapper struct {
 	client *http.Client
 }
@@ -461,6 +465,7 @@ func (h *httpClientWrapper) Get(url string) (*http.Response, error) {
 
 func (h *httpClientWrapper) Post(url, contentType string, body interface{}) (*http.Response, error) {
 	var bodyBytes []byte
+
 	var err error
 
 	switch v := body.(type) {
@@ -475,6 +480,7 @@ func (h *httpClientWrapper) Post(url, contentType string, body interface{}) (*ht
 		if err != nil {
 			return nil, err
 		}
+
 		contentType = "application/json"
 	}
 

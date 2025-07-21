@@ -490,7 +490,7 @@ func TestValidateTopology(t *testing.T) {
 	assert.Contains(t, issueText, "many containers")
 }
 
-// MockContainerDetector for testing
+// MockContainerDetector for testing.
 type MockContainerDetector struct {
 	mock.Mock
 }

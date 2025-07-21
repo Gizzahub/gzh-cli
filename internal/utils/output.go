@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package utils
 
 import (
@@ -9,13 +12,13 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-// OutputFormatter provides consistent output formatting
+// OutputFormatter provides consistent output formatting.
 type OutputFormatter struct {
 	useColor bool
 	verbose  bool
 }
 
-// NewOutputFormatter creates a new output formatter
+// NewOutputFormatter creates a new output formatter.
 func NewOutputFormatter(useColor, verbose bool) *OutputFormatter {
 	return &OutputFormatter{
 		useColor: useColor,
@@ -23,7 +26,7 @@ func NewOutputFormatter(useColor, verbose bool) *OutputFormatter {
 	}
 }
 
-// Success prints a success message
+// Success prints a success message.
 func (of *OutputFormatter) Success(format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	if of.useColor {
@@ -33,7 +36,7 @@ func (of *OutputFormatter) Success(format string, args ...interface{}) {
 	}
 }
 
-// Error prints an error message
+// Error prints an error message.
 func (of *OutputFormatter) Error(format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	if of.useColor {
@@ -43,7 +46,7 @@ func (of *OutputFormatter) Error(format string, args ...interface{}) {
 	}
 }
 
-// Warning prints a warning message
+// Warning prints a warning message.
 func (of *OutputFormatter) Warning(format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	if of.useColor {
@@ -53,7 +56,7 @@ func (of *OutputFormatter) Warning(format string, args ...interface{}) {
 	}
 }
 
-// Info prints an info message
+// Info prints an info message.
 func (of *OutputFormatter) Info(format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	if of.useColor {
@@ -63,7 +66,7 @@ func (of *OutputFormatter) Info(format string, args ...interface{}) {
 	}
 }
 
-// Debug prints a debug message if verbose is enabled
+// Debug prints a debug message if verbose is enabled.
 func (of *OutputFormatter) Debug(format string, args ...interface{}) {
 	if of.verbose {
 		msg := fmt.Sprintf(format, args...)
@@ -75,7 +78,7 @@ func (of *OutputFormatter) Debug(format string, args ...interface{}) {
 	}
 }
 
-// ProgressBar creates a new progress bar
+// ProgressBar creates a new progress bar.
 func (of *OutputFormatter) ProgressBar(max int, description string) *progressbar.ProgressBar {
 	options := []progressbar.Option{
 		progressbar.OptionSetDescription(description),
@@ -100,7 +103,7 @@ func (of *OutputFormatter) ProgressBar(max int, description string) *progressbar
 	return progressbar.NewOptions(max, options...)
 }
 
-// Table formats data as a simple table
+// Table formats data as a simple table.
 func (of *OutputFormatter) Table(headers []string, rows [][]string) {
 	// Calculate column widths
 	widths := make([]int, len(headers))
@@ -119,6 +122,7 @@ func (of *OutputFormatter) Table(headers []string, rows [][]string) {
 	// Print headers
 	headerLine := ""
 	separator := ""
+
 	for i, h := range headers {
 		headerLine += fmt.Sprintf("%-*s  ", widths[i], h)
 		separator += strings.Repeat("-", widths[i]) + "  "
@@ -131,16 +135,19 @@ func (of *OutputFormatter) Table(headers []string, rows [][]string) {
 	} else {
 		fmt.Println(headerLine)
 	}
+
 	fmt.Println(separator)
 
 	// Print rows
 	for _, row := range rows {
 		rowLine := ""
+
 		for i, cell := range row {
 			if i < len(widths) {
 				rowLine += fmt.Sprintf("%-*s  ", widths[i], cell)
 			}
 		}
+
 		fmt.Println(rowLine)
 	}
 }

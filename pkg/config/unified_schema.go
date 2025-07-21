@@ -1,12 +1,13 @@
-// Package config provides unified configuration management for gzh-manager
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
 	"time"
 )
 
-// UnifiedConfig represents the new unified configuration format
-// This merges the functionality of both bulk-clone.yaml and gzh.yaml formats
+// This merges the functionality of both bulk-clone.yaml and gzh.yaml formats.
 type UnifiedConfig struct {
 	// Schema version for the configuration format
 	Version string `yaml:"version" json:"version" validate:"required,oneof=1.0.0"`
@@ -36,7 +37,7 @@ type UnifiedConfig struct {
 	SSHConfig *SSHConfigSettings `yaml:"ssh_config,omitempty" json:"ssh_config,omitempty"`
 }
 
-// GlobalSettings contains settings that apply across all providers
+// GlobalSettings contains settings that apply across all providers.
 type GlobalSettings struct {
 	// Default clone directory base path
 	CloneBaseDir string `yaml:"clone_base_dir,omitempty" json:"clone_base_dir,omitempty"`
@@ -57,7 +58,7 @@ type GlobalSettings struct {
 	Concurrency *ConcurrencySettings `yaml:"concurrency,omitempty" json:"concurrency,omitempty"`
 }
 
-// TimeoutSettings contains timeout configurations
+// TimeoutSettings contains timeout configurations.
 type TimeoutSettings struct {
 	// HTTP request timeout
 	HTTPTimeout time.Duration `yaml:"http_timeout,omitempty" json:"http_timeout,omitempty"`
@@ -69,7 +70,7 @@ type TimeoutSettings struct {
 	RateLimitTimeout time.Duration `yaml:"rate_limit_timeout,omitempty" json:"rate_limit_timeout,omitempty"`
 }
 
-// ConcurrencySettings contains concurrency configurations
+// ConcurrencySettings contains concurrency configurations.
 type ConcurrencySettings struct {
 	// Maximum concurrent clone operations
 	CloneWorkers int `yaml:"clone_workers,omitempty" json:"clone_workers,omitempty" validate:"omitempty,min=1,max=50"`
@@ -81,7 +82,7 @@ type ConcurrencySettings struct {
 	APIWorkers int `yaml:"api_workers,omitempty" json:"api_workers,omitempty" validate:"omitempty,min=1,max=20"`
 }
 
-// ProviderConfig represents configuration for a specific Git provider
+// ProviderConfig represents configuration for a specific Git provider.
 type ProviderConfig struct {
 	// Authentication token (supports environment variables)
 	Token string `yaml:"token,omitempty" json:"token,omitempty" validate:"required,envtoken"`
@@ -99,7 +100,7 @@ type ProviderConfig struct {
 	Legacy *LegacyProviderConfig `yaml:"legacy,omitempty" json:"legacy,omitempty"`
 }
 
-// OrganizationConfig represents configuration for an organization/group
+// OrganizationConfig represents configuration for an organization/group.
 type OrganizationConfig struct {
 	// Organization/group name
 	Name string `yaml:"name" json:"name" validate:"required"`
@@ -132,7 +133,7 @@ type OrganizationConfig struct {
 	Labels map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 }
 
-// ProviderSettings contains provider-specific settings
+// ProviderSettings contains provider-specific settings.
 type ProviderSettings struct {
 	// Rate limiting settings
 	RateLimit *RateLimitConfig `yaml:"rate_limit,omitempty" json:"rate_limit,omitempty"`
@@ -144,7 +145,7 @@ type ProviderSettings struct {
 	Auth *AuthConfig `yaml:"auth,omitempty" json:"auth,omitempty"`
 }
 
-// RateLimitConfig contains rate limiting configuration
+// RateLimitConfig contains rate limiting configuration.
 type RateLimitConfig struct {
 	// Requests per hour
 	RequestsPerHour int `yaml:"requests_per_hour,omitempty" json:"requests_per_hour,omitempty"`
@@ -156,7 +157,7 @@ type RateLimitConfig struct {
 	AutoDetect bool `yaml:"auto_detect,omitempty" json:"auto_detect,omitempty"`
 }
 
-// RetryConfig contains retry configuration
+// RetryConfig contains retry configuration.
 type RetryConfig struct {
 	// Maximum retry attempts
 	MaxAttempts int `yaml:"max_attempts,omitempty" json:"max_attempts,omitempty" validate:"omitempty,min=0,max=10"`
@@ -171,7 +172,7 @@ type RetryConfig struct {
 	ExponentialBackoff bool `yaml:"exponential_backoff,omitempty" json:"exponential_backoff,omitempty"`
 }
 
-// AuthConfig contains authentication configuration
+// AuthConfig contains authentication configuration.
 type AuthConfig struct {
 	// Token environment variable name
 	TokenEnvVar string `yaml:"token_env_var,omitempty" json:"token_env_var,omitempty"`
@@ -183,7 +184,7 @@ type AuthConfig struct {
 	UseSSH bool `yaml:"use_ssh,omitempty" json:"use_ssh,omitempty"`
 }
 
-// RepoManagementConfig contains repository management settings
+// RepoManagementConfig contains repository management settings.
 type RepoManagementConfig struct {
 	// Enable repository configuration management
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -198,7 +199,7 @@ type RepoManagementConfig struct {
 	Security *SecurityConfig `yaml:"security,omitempty" json:"security,omitempty"`
 }
 
-// BranchProtectionConfig contains branch protection settings
+// BranchProtectionConfig contains branch protection settings.
 type BranchProtectionConfig struct {
 	// Enable branch protection
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -213,7 +214,7 @@ type BranchProtectionConfig struct {
 	RequirePRReviews bool `yaml:"require_pr_reviews,omitempty" json:"require_pr_reviews,omitempty"`
 }
 
-// SecurityConfig contains security settings
+// SecurityConfig contains security settings.
 type SecurityConfig struct {
 	// Enable vulnerability alerts
 	VulnerabilityAlerts bool `yaml:"vulnerability_alerts,omitempty" json:"vulnerability_alerts,omitempty"`
@@ -225,7 +226,7 @@ type SecurityConfig struct {
 	RequiredPolicies []string `yaml:"required_policies,omitempty" json:"required_policies,omitempty"`
 }
 
-// LegacyProviderConfig supports migration from bulk-clone.yaml format
+// LegacyProviderConfig supports migration from bulk-clone.yaml format.
 type LegacyProviderConfig struct {
 	// Legacy root path
 	RootPath string `yaml:"root_path,omitempty" json:"root_path,omitempty"`
@@ -243,7 +244,7 @@ type LegacyProviderConfig struct {
 	URL string `yaml:"url,omitempty" json:"url,omitempty"`
 }
 
-// MigrationInfo contains information about configuration migration
+// MigrationInfo contains information about configuration migration.
 type MigrationInfo struct {
 	// Source format that was migrated from
 	SourceFormat string `yaml:"source_format,omitempty" json:"source_format,omitempty"`
@@ -258,7 +259,7 @@ type MigrationInfo struct {
 	ToolVersion string `yaml:"tool_version,omitempty" json:"tool_version,omitempty"`
 }
 
-// DefaultUnifiedConfig returns a default unified configuration
+// DefaultUnifiedConfig returns a default unified configuration.
 func DefaultUnifiedConfig() *UnifiedConfig {
 	return &UnifiedConfig{
 		Version:         "1.0.0",
@@ -403,22 +404,23 @@ func DefaultUnifiedConfig() *UnifiedConfig {
 	}
 }
 
-// SupportedProviders returns a list of supported Git providers
+// SupportedProviders returns a list of supported Git providers.
 func SupportedProviders() []string {
 	return []string{"github", "gitlab", "gitea", "gogs"}
 }
 
-// ValidateProvider checks if a provider name is supported
+// ValidateProvider checks if a provider name is supported.
 func ValidateProvider(provider string) bool {
 	for _, supported := range SupportedProviders() {
 		if provider == supported {
 			return true
 		}
 	}
+
 	return false
 }
 
-// IDEConfig contains configuration for IDE monitoring and management
+// IDEConfig contains configuration for IDE monitoring and management.
 type IDEConfig struct {
 	// Enable IDE monitoring
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -442,7 +444,7 @@ type IDEConfig struct {
 	Logging *IDELoggingConfig `yaml:"logging,omitempty" json:"logging,omitempty"`
 }
 
-// IDESyncSettings contains IDE synchronization settings
+// IDESyncSettings contains IDE synchronization settings.
 type IDESyncSettings struct {
 	// Enable settings sync
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -457,7 +459,7 @@ type IDESyncSettings struct {
 	BackupBeforeSync bool `yaml:"backup_before_sync,omitempty" json:"backup_before_sync,omitempty"`
 }
 
-// IDELoggingConfig contains IDE logging configuration
+// IDELoggingConfig contains IDE logging configuration.
 type IDELoggingConfig struct {
 	// Log level
 	Level string `yaml:"level,omitempty" json:"level,omitempty" validate:"omitempty,oneof=debug info warn error"`
@@ -472,7 +474,7 @@ type IDELoggingConfig struct {
 	Rotation *LogRotationConfig `yaml:"rotation,omitempty" json:"rotation,omitempty"`
 }
 
-// LogRotationConfig contains log rotation settings
+// LogRotationConfig contains log rotation settings.
 type LogRotationConfig struct {
 	// Maximum log file size in MB
 	MaxSizeMB int `yaml:"max_size_mb,omitempty" json:"max_size_mb,omitempty"`
@@ -487,7 +489,7 @@ type LogRotationConfig struct {
 	Compress bool `yaml:"compress,omitempty" json:"compress,omitempty"`
 }
 
-// DevEnvConfig contains configuration for development environment management
+// DevEnvConfig contains configuration for development environment management.
 type DevEnvConfig struct {
 	// Enable development environment management
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -511,7 +513,7 @@ type DevEnvConfig struct {
 	Backup *BackupConfig `yaml:"backup,omitempty" json:"backup,omitempty"`
 }
 
-// DevEnvProviders contains cloud provider configurations
+// DevEnvProviders contains cloud provider configurations.
 type DevEnvProviders struct {
 	// AWS configuration
 	AWS *AWSConfig `yaml:"aws,omitempty" json:"aws,omitempty"`
@@ -523,7 +525,7 @@ type DevEnvProviders struct {
 	Azure *AzureConfig `yaml:"azure,omitempty" json:"azure,omitempty"`
 }
 
-// AWSConfig contains AWS configuration settings
+// AWSConfig contains AWS configuration settings.
 type AWSConfig struct {
 	// Default AWS profile
 	DefaultProfile string `yaml:"default_profile,omitempty" json:"default_profile,omitempty"`
@@ -541,7 +543,7 @@ type AWSConfig struct {
 	EnableMFA bool `yaml:"enable_mfa,omitempty" json:"enable_mfa,omitempty"`
 }
 
-// GCPConfig contains Google Cloud configuration settings
+// GCPConfig contains Google Cloud configuration settings.
 type GCPConfig struct {
 	// Default GCP project
 	DefaultProject string `yaml:"default_project,omitempty" json:"default_project,omitempty"`
@@ -556,7 +558,7 @@ type GCPConfig struct {
 	UseADC bool `yaml:"use_adc,omitempty" json:"use_adc,omitempty"`
 }
 
-// AzureConfig contains Azure configuration settings
+// AzureConfig contains Azure configuration settings.
 type AzureConfig struct {
 	// Default subscription ID
 	DefaultSubscription string `yaml:"default_subscription,omitempty" json:"default_subscription,omitempty"`
@@ -571,7 +573,7 @@ type AzureConfig struct {
 	UseManagedIdentity bool `yaml:"use_managed_identity,omitempty" json:"use_managed_identity,omitempty"`
 }
 
-// ContainerConfig contains container configuration settings
+// ContainerConfig contains container configuration settings.
 type ContainerConfig struct {
 	// Docker configuration
 	Docker *DockerConfig `yaml:"docker,omitempty" json:"docker,omitempty"`
@@ -583,7 +585,7 @@ type ContainerConfig struct {
 	DefaultRuntime string `yaml:"default_runtime,omitempty" json:"default_runtime,omitempty" validate:"omitempty,oneof=docker podman"`
 }
 
-// DockerConfig contains Docker configuration settings
+// DockerConfig contains Docker configuration settings.
 type DockerConfig struct {
 	// Docker daemon socket
 	SocketPath string `yaml:"socket_path,omitempty" json:"socket_path,omitempty"`
@@ -598,7 +600,7 @@ type DockerConfig struct {
 	BuildOptions *DockerBuildOptions `yaml:"build_options,omitempty" json:"build_options,omitempty"`
 }
 
-// PodmanConfig contains Podman configuration settings
+// PodmanConfig contains Podman configuration settings.
 type PodmanConfig struct {
 	// Podman socket path
 	SocketPath string `yaml:"socket_path,omitempty" json:"socket_path,omitempty"`
@@ -610,7 +612,7 @@ type PodmanConfig struct {
 	DefaultConnection string `yaml:"default_connection,omitempty" json:"default_connection,omitempty"`
 }
 
-// RegistryAuthConfig contains registry authentication settings
+// RegistryAuthConfig contains registry authentication settings.
 type RegistryAuthConfig struct {
 	// Username
 	Username string `yaml:"username,omitempty" json:"username,omitempty"`
@@ -625,7 +627,7 @@ type RegistryAuthConfig struct {
 	Auth string `yaml:"auth,omitempty" json:"auth,omitempty"`
 }
 
-// DockerBuildOptions contains Docker build options
+// DockerBuildOptions contains Docker build options.
 type DockerBuildOptions struct {
 	// Default build context
 	DefaultContext string `yaml:"default_context,omitempty" json:"default_context,omitempty"`
@@ -640,7 +642,7 @@ type DockerBuildOptions struct {
 	EnableBuildKit bool `yaml:"enable_buildkit,omitempty" json:"enable_buildkit,omitempty"`
 }
 
-// PodmanRemoteConfig contains Podman remote connection settings
+// PodmanRemoteConfig contains Podman remote connection settings.
 type PodmanRemoteConfig struct {
 	// Remote host
 	Host string `yaml:"host,omitempty" json:"host,omitempty"`
@@ -655,7 +657,7 @@ type PodmanRemoteConfig struct {
 	UseSSH bool `yaml:"use_ssh,omitempty" json:"use_ssh,omitempty"`
 }
 
-// KubernetesConfig contains Kubernetes configuration settings
+// KubernetesConfig contains Kubernetes configuration settings.
 type KubernetesConfig struct {
 	// Default context
 	DefaultContext string `yaml:"default_context,omitempty" json:"default_context,omitempty"`
@@ -673,7 +675,7 @@ type KubernetesConfig struct {
 	AutoDiscovery bool `yaml:"auto_discovery,omitempty" json:"auto_discovery,omitempty"`
 }
 
-// K8sClusterConfig contains Kubernetes cluster configuration
+// K8sClusterConfig contains Kubernetes cluster configuration.
 type K8sClusterConfig struct {
 	// Cluster endpoint
 	Server string `yaml:"server,omitempty" json:"server,omitempty"`
@@ -691,7 +693,7 @@ type K8sClusterConfig struct {
 	AuthConfig map[string]interface{} `yaml:"auth_config,omitempty" json:"auth_config,omitempty"`
 }
 
-// BackupConfig contains backup configuration settings
+// BackupConfig contains backup configuration settings.
 type BackupConfig struct {
 	// Enable automatic backups
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -712,7 +714,7 @@ type BackupConfig struct {
 	Encryption *BackupEncryption `yaml:"encryption,omitempty" json:"encryption,omitempty"`
 }
 
-// BackupEncryption contains backup encryption settings
+// BackupEncryption contains backup encryption settings.
 type BackupEncryption struct {
 	// Enable encryption
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -727,7 +729,7 @@ type BackupEncryption struct {
 	GPGRecipient string `yaml:"gpg_recipient,omitempty" json:"gpg_recipient,omitempty"`
 }
 
-// NetEnvConfig contains configuration for network environment management
+// NetEnvConfig contains configuration for network environment management.
 type NetEnvConfig struct {
 	// Enable network environment monitoring
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -751,7 +753,7 @@ type NetEnvConfig struct {
 	Daemon *DaemonConfig `yaml:"daemon,omitempty" json:"daemon,omitempty"`
 }
 
-// WiFiMonitoringConfig contains WiFi monitoring settings
+// WiFiMonitoringConfig contains WiFi monitoring settings.
 type WiFiMonitoringConfig struct {
 	// Enable WiFi monitoring
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -766,7 +768,7 @@ type WiFiMonitoringConfig struct {
 	DefaultActions []string `yaml:"default_actions,omitempty" json:"default_actions,omitempty"`
 }
 
-// NetworkProfile contains network-specific configuration
+// NetworkProfile contains network-specific configuration.
 type NetworkProfile struct {
 	// Network SSID
 	SSID string `yaml:"ssid,omitempty" json:"ssid,omitempty"`
@@ -790,7 +792,7 @@ type NetworkProfile struct {
 	OnDisconnect []string `yaml:"on_disconnect,omitempty" json:"on_disconnect,omitempty"`
 }
 
-// VPNConfig contains VPN configuration settings
+// VPNConfig contains VPN configuration settings.
 type VPNConfig struct {
 	// VPN profiles
 	Profiles map[string]*VPNProfile `yaml:"profiles,omitempty" json:"profiles,omitempty"`
@@ -802,7 +804,7 @@ type VPNConfig struct {
 	AutoConnect *VPNAutoConnect `yaml:"auto_connect,omitempty" json:"auto_connect,omitempty"`
 }
 
-// VPNProfile contains VPN profile settings
+// VPNProfile contains VPN profile settings.
 type VPNProfile struct {
 	// VPN type (openvpn, wireguard, etc.)
 	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"omitempty,oneof=openvpn wireguard ipsec"`
@@ -823,7 +825,7 @@ type VPNProfile struct {
 	AutoConnectNetworks []string `yaml:"auto_connect_networks,omitempty" json:"auto_connect_networks,omitempty"`
 }
 
-// VPNAutoConnect contains VPN auto-connect settings
+// VPNAutoConnect contains VPN auto-connect settings.
 type VPNAutoConnect struct {
 	// Enable auto-connect
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -841,7 +843,7 @@ type VPNAutoConnect struct {
 	RetryDelay time.Duration `yaml:"retry_delay,omitempty" json:"retry_delay,omitempty"`
 }
 
-// DNSConfig contains DNS configuration settings
+// DNSConfig contains DNS configuration settings.
 type DNSConfig struct {
 	// Default DNS servers
 	DefaultServers []string `yaml:"default_servers,omitempty" json:"default_servers,omitempty"`
@@ -859,7 +861,7 @@ type DNSConfig struct {
 	CustomMappings map[string]string `yaml:"custom_mappings,omitempty" json:"custom_mappings,omitempty"`
 }
 
-// DNSProfile contains DNS profile settings
+// DNSProfile contains DNS profile settings.
 type DNSProfile struct {
 	// DNS servers
 	Servers []string `yaml:"servers,omitempty" json:"servers,omitempty"`
@@ -874,7 +876,7 @@ type DNSProfile struct {
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty"`
 }
 
-// ProxyConfig contains proxy configuration settings
+// ProxyConfig contains proxy configuration settings.
 type ProxyConfig struct {
 	// Proxy profiles
 	Profiles map[string]*ProxyProfile `yaml:"profiles,omitempty" json:"profiles,omitempty"`
@@ -889,7 +891,7 @@ type ProxyConfig struct {
 	PACUrl string `yaml:"pac_url,omitempty" json:"pac_url,omitempty"`
 }
 
-// ProxyProfile contains proxy profile settings
+// ProxyProfile contains proxy profile settings.
 type ProxyProfile struct {
 	// Proxy type (http, https, socks5)
 	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"omitempty,oneof=http https socks4 socks5"`
@@ -913,7 +915,7 @@ type ProxyProfile struct {
 	HTTPSProxy bool `yaml:"https_proxy,omitempty" json:"https_proxy,omitempty"`
 }
 
-// NetworkActions contains network action configurations
+// NetworkActions contains network action configurations.
 type NetworkActions struct {
 	// Actions to execute on network change
 	OnNetworkChange []string `yaml:"on_network_change,omitempty" json:"on_network_change,omitempty"`
@@ -934,7 +936,7 @@ type NetworkActions struct {
 	CustomActions map[string]*CustomAction `yaml:"custom_actions,omitempty" json:"custom_actions,omitempty"`
 }
 
-// CustomAction contains custom action configuration
+// CustomAction contains custom action configuration.
 type CustomAction struct {
 	// Action name
 	Name string `yaml:"name,omitempty" json:"name,omitempty"`
@@ -961,7 +963,7 @@ type CustomAction struct {
 	Retry *ActionRetryConfig `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
-// ActionRetryConfig contains action retry settings
+// ActionRetryConfig contains action retry settings.
 type ActionRetryConfig struct {
 	// Maximum retry attempts
 	MaxAttempts int `yaml:"max_attempts,omitempty" json:"max_attempts,omitempty"`
@@ -973,7 +975,7 @@ type ActionRetryConfig struct {
 	BackoffMultiplier float64 `yaml:"backoff_multiplier,omitempty" json:"backoff_multiplier,omitempty"`
 }
 
-// DaemonConfig contains daemon configuration settings
+// DaemonConfig contains daemon configuration settings.
 type DaemonConfig struct {
 	// Enable daemon mode
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -1000,7 +1002,7 @@ type DaemonConfig struct {
 	SystemdIntegration bool `yaml:"systemd_integration,omitempty" json:"systemd_integration,omitempty"`
 }
 
-// SSHConfigSettings contains SSH configuration management settings
+// SSHConfigSettings contains SSH configuration management settings.
 type SSHConfigSettings struct {
 	// Enable SSH configuration management
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -1024,7 +1026,7 @@ type SSHConfigSettings struct {
 	HostAliases map[string]*SSHHostAlias `yaml:"host_aliases,omitempty" json:"host_aliases,omitempty"`
 }
 
-// SSHProviderConfig contains SSH configuration for Git providers
+// SSHProviderConfig contains SSH configuration for Git providers.
 type SSHProviderConfig struct {
 	// Provider hostname
 	Hostname string `yaml:"hostname,omitempty" json:"hostname,omitempty"`
@@ -1045,7 +1047,7 @@ type SSHProviderConfig struct {
 	Options map[string]string `yaml:"options,omitempty" json:"options,omitempty"`
 }
 
-// SSHKeyManagement contains SSH key management settings
+// SSHKeyManagement contains SSH key management settings.
 type SSHKeyManagement struct {
 	// Enable key management
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -1066,7 +1068,7 @@ type SSHKeyManagement struct {
 	SSHAgentSocket string `yaml:"ssh_agent_socket,omitempty" json:"ssh_agent_socket,omitempty"`
 }
 
-// SSHHostAlias contains SSH host alias configuration
+// SSHHostAlias contains SSH host alias configuration.
 type SSHHostAlias struct {
 	// Real hostname
 	RealHostname string `yaml:"real_hostname,omitempty" json:"real_hostname,omitempty"`

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
@@ -5,13 +8,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	internalconfig "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/spf13/cobra"
 )
 
 type bulkCloneGithubOptions struct {
@@ -137,6 +141,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
 
 	structuredLogger.Info("Starting GitHub bulk clone operation")
+
 	start := time.Now()
 
 	// Execute with error recovery
@@ -175,6 +180,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 
 		// Use optimized streaming approach for large-scale operations
 		ctx := cmd.Context()
+
 		var err error
 
 		// Determine which approach to use
@@ -182,6 +188,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 			// Use cached approach (Redis cache disabled, using local cache only)
 			structuredLogger.Info("Using cached API calls for improved performance")
 			fmt.Printf("🔄 Using cached API calls for improved performance\n")
+
 			err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
 		} else if o.optimized || o.streamingMode || token != "" {
 			if token == "" {
@@ -192,6 +199,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 
 			structuredLogger.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
 			fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
+
 			if o.memoryLimit != "" {
 				fmt.Printf("🧠 Memory limit: %s\n", o.memoryLimit)
 			}
@@ -202,12 +210,14 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 			err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		} else {
 			structuredLogger.Info("Using standard cloning approach")
+
 			err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
 		}
 
 		if err != nil {
 			// Create recoverable error for retry handling
 			var errorType errors.ErrorType
+
 			switch {
 			case err.Error() == "context canceled":
 				errorType = errors.ErrorTypeTimeout
@@ -236,6 +246,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error {
 		})
 
 		structuredLogger.Info("GitHub bulk clone operation completed successfully", "duration", duration.String())
+
 		return nil
 	})
 }
@@ -263,6 +274,7 @@ func (o *bulkCloneGithubOptions) loadFromConfig() error {
 
 	// Find the organization configuration
 	var orgConfig *config.OrganizationConfig
+
 	if githubProvider, exists := cfg.Providers[config.ProviderGitHub]; exists {
 		for _, org := range githubProvider.Organizations {
 			if org.Name == o.orgName {

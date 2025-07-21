@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package fixtures
 
 import (
@@ -5,15 +8,15 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-// GitHubFixtures provides common GitHub-related fixtures for tests
+// GitHubFixtures provides common GitHub-related fixtures for tests.
 type GitHubFixtures struct{}
 
-// NewGitHubFixtures creates a new GitHubFixtures instance
+// NewGitHubFixtures creates a new GitHubFixtures instance.
 func NewGitHubFixtures() *GitHubFixtures {
 	return &GitHubFixtures{}
 }
 
-// SimpleBulkCloneRequest returns a simple bulk clone request
+// SimpleBulkCloneRequest returns a simple bulk clone request.
 func (f *GitHubFixtures) SimpleBulkCloneRequest() *github.BulkCloneRequest {
 	return builders.NewBulkCloneRequestBuilder().
 		WithOrganization("test-org").
@@ -24,7 +27,7 @@ func (f *GitHubFixtures) SimpleBulkCloneRequest() *github.BulkCloneRequest {
 		Build()
 }
 
-// LargeBulkCloneRequest returns a bulk clone request with many repositories
+// LargeBulkCloneRequest returns a bulk clone request with many repositories.
 func (f *GitHubFixtures) LargeBulkCloneRequest() *github.BulkCloneRequest {
 	repos := make([]string, 100)
 	for i := 0; i < 100; i++ {
@@ -40,7 +43,7 @@ func (f *GitHubFixtures) LargeBulkCloneRequest() *github.BulkCloneRequest {
 		Build()
 }
 
-// SuccessfulBulkCloneResult returns a successful bulk clone result
+// SuccessfulBulkCloneResult returns a successful bulk clone result.
 func (f *GitHubFixtures) SuccessfulBulkCloneResult() *github.BulkCloneResult {
 	return builders.NewBulkCloneResultBuilder().
 		WithTotalRepositories(3).
@@ -53,7 +56,7 @@ func (f *GitHubFixtures) SuccessfulBulkCloneResult() *github.BulkCloneResult {
 		Build()
 }
 
-// MixedBulkCloneResult returns a bulk clone result with mixed outcomes
+// MixedBulkCloneResult returns a bulk clone result with mixed outcomes.
 func (f *GitHubFixtures) MixedBulkCloneResult() *github.BulkCloneResult {
 	return builders.NewBulkCloneResultBuilder().
 		WithTotalRepositories(5).
@@ -68,7 +71,7 @@ func (f *GitHubFixtures) MixedBulkCloneResult() *github.BulkCloneResult {
 		Build()
 }
 
-// FailedBulkCloneResult returns a bulk clone result with all failures
+// FailedBulkCloneResult returns a bulk clone result with all failures.
 func (f *GitHubFixtures) FailedBulkCloneResult() *github.BulkCloneResult {
 	return builders.NewBulkCloneResultBuilder().
 		WithTotalRepositories(2).
@@ -80,7 +83,7 @@ func (f *GitHubFixtures) FailedBulkCloneResult() *github.BulkCloneResult {
 		Build()
 }
 
-// SimpleRepositoryInfo returns a simple repository information object
+// SimpleRepositoryInfo returns a simple repository information object.
 func (f *GitHubFixtures) SimpleRepositoryInfo() *github.RepositoryInfo {
 	return builders.NewRepositoryInfoBuilder().
 		WithName("test-repo").
@@ -91,7 +94,7 @@ func (f *GitHubFixtures) SimpleRepositoryInfo() *github.RepositoryInfo {
 		Build()
 }
 
-// PrivateRepositoryInfo returns a private repository information object
+// PrivateRepositoryInfo returns a private repository information object.
 func (f *GitHubFixtures) PrivateRepositoryInfo() *github.RepositoryInfo {
 	return builders.NewRepositoryInfoBuilder().
 		WithName("private-repo").
@@ -102,7 +105,7 @@ func (f *GitHubFixtures) PrivateRepositoryInfo() *github.RepositoryInfo {
 		Build()
 }
 
-// LegacyRepositoryInfo returns a repository with legacy default branch
+// LegacyRepositoryInfo returns a repository with legacy default branch.
 func (f *GitHubFixtures) LegacyRepositoryInfo() *github.RepositoryInfo {
 	return builders.NewRepositoryInfoBuilder().
 		WithName("legacy-repo").
@@ -113,7 +116,7 @@ func (f *GitHubFixtures) LegacyRepositoryInfo() *github.RepositoryInfo {
 		Build()
 }
 
-// RepositoryInfoList returns a list of repository information objects
+// RepositoryInfoList returns a list of repository information objects.
 func (f *GitHubFixtures) RepositoryInfoList() []*github.RepositoryInfo {
 	return []*github.RepositoryInfo{
 		f.SimpleRepositoryInfo(),
@@ -122,7 +125,7 @@ func (f *GitHubFixtures) RepositoryInfoList() []*github.RepositoryInfo {
 	}
 }
 
-// SimpleRepositoryFilters returns simple repository filters
+// SimpleRepositoryFilters returns simple repository filters.
 func (f *GitHubFixtures) SimpleRepositoryFilters() *github.RepositoryFilters {
 	return builders.NewRepositoryFiltersBuilder().
 		WithIncludeNames([]string{"repo1", "test-repo"}).
@@ -130,26 +133,26 @@ func (f *GitHubFixtures) SimpleRepositoryFilters() *github.RepositoryFilters {
 		Build()
 }
 
-// IncludeOnlyFilters returns filters that only include specific repositories
+// IncludeOnlyFilters returns filters that only include specific repositories.
 func (f *GitHubFixtures) IncludeOnlyFilters() *github.RepositoryFilters {
 	return builders.NewRepositoryFiltersBuilder().
 		WithIncludeNames([]string{"important-repo", "critical-repo"}).
 		Build()
 }
 
-// ExcludeOnlyFilters returns filters that exclude specific repositories
+// ExcludeOnlyFilters returns filters that exclude specific repositories.
 func (f *GitHubFixtures) ExcludeOnlyFilters() *github.RepositoryFilters {
 	return builders.NewRepositoryFiltersBuilder().
 		WithExcludeNames([]string{"test-repo", "temp-repo", "archive-repo"}).
 		Build()
 }
 
-// EmptyFilters returns empty repository filters
+// EmptyFilters returns empty repository filters.
 func (f *GitHubFixtures) EmptyFilters() *github.RepositoryFilters {
 	return builders.NewRepositoryFiltersBuilder().Build()
 }
 
-// TestRepositoryList returns a list of test repository names
+// TestRepositoryList returns a list of test repository names.
 func (f *GitHubFixtures) TestRepositoryList() []string {
 	return []string{
 		"repo1",
@@ -162,11 +165,12 @@ func (f *GitHubFixtures) TestRepositoryList() []string {
 	}
 }
 
-// LargeRepositoryList returns a large list of repository names for performance testing
+// LargeRepositoryList returns a large list of repository names for performance testing.
 func (f *GitHubFixtures) LargeRepositoryList() []string {
 	repos := make([]string, 1000)
 	for i := 0; i < 1000; i++ {
 		repos[i] = "repo" + string(rune(i))
 	}
+
 	return repos
 }
