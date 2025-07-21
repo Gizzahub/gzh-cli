@@ -9,7 +9,7 @@ organization: "your-organization"
 templates:
   security-enhanced:
     description: "Maximum security repository configuration for sensitive projects"
-    
+
     # Basic repository settings
     settings:
       private: true  # Must be private
@@ -25,7 +25,7 @@ templates:
       allow_update_branch: true
       use_squash_pr_title_as_default: true
       web_commit_signoff_required: true  # Require DCO
-      
+
     # Security configurations
     security:
       # Enable all security features
@@ -33,7 +33,7 @@ templates:
       automated_security_fixes: true
       private_vulnerability_reporting: true
       security_advisories: true
-      
+
       # Strict branch protection for main/master
       branch_protection:
         main:
@@ -43,7 +43,7 @@ templates:
           require_code_owner_reviews: true
           required_approving_review_count: 2
           require_last_push_approval: true
-          
+
           # Status checks
           required_status_checks:
             - "security/vulnerability-scan"
@@ -54,23 +54,23 @@ templates:
             - "ci/code-coverage"
             - "compliance/license-check"
           strict_status_checks: true
-          
+
           # Push restrictions
           restrict_pushes: true
           allowed_teams:
             - "security-team"
             - "platform-team"
           allowed_users: []  # No individual users
-          
+
           # Admin enforcement
           enforce_admins: true
           allow_force_pushes: false
           allow_deletions: false
           lock_branch: false
-          
+
           # Conversation resolution
           required_conversation_resolution: true
-          
+
         # Also protect development branch
         develop:
           required_reviews: 2
@@ -82,7 +82,7 @@ templates:
           enforce_admins: false
           allow_force_pushes: false
           allow_deletions: false
-    
+
     # Permissions configuration
     permissions:
       # Team permissions (least privilege principle)
@@ -91,16 +91,16 @@ templates:
         "platform-team": "maintain"
         "dev-team": "write"
         "contractors": "read"  # External contributors get read-only
-      
+
       # No individual user permissions (manage through teams only)
       user_permissions: {}
-    
+
     # Topics for categorization
     topics:
       - "secure"
       - "restricted"
       - "compliance-required"
-    
+
     # Webhooks for security monitoring
     webhooks:
       - url: "${SECURITY_WEBHOOK_URL}"
@@ -115,29 +115,29 @@ templates:
         content_type: "json"
         secret: "${WEBHOOK_SECRET}"
         active: true
-    
+
     # Required files for compliance
     required_files:
       - path: "SECURITY.md"
         content: |
           # Security Policy
-          
+
           ## Reporting Security Vulnerabilities
-          
+
           Please report security vulnerabilities to security@company.com
-          
+
           Do not report security issues through public GitHub issues.
-      
+
       - path: ".github/CODEOWNERS"
         content: |
           # Global owners
           * @organization/security-team
-          
+
           # Infrastructure files
           *.tf @organization/platform-team
           *.yml @organization/platform-team
           *.yaml @organization/platform-team
-          
+
           # Security-sensitive files
           /secrets/ @organization/security-team
           /config/ @organization/security-team
@@ -155,14 +155,14 @@ policies:
         value: true
         enforcement: "required"
         message: "Main branch must have protection enabled"
-      
+
       # Minimum reviewers
       min_reviewers:
         type: "min_reviews"
         value: 3
         enforcement: "required"
         message: "At least 3 reviewers required for security repositories"
-      
+
       # Security features must be enabled
       vulnerability_scanning:
         type: "security_feature"
@@ -172,7 +172,7 @@ policies:
           - "private_vulnerability_reporting"
         enforcement: "required"
         message: "All security features must be enabled"
-      
+
       # Required security files
       security_documentation:
         type: "file_exists"
@@ -181,14 +181,14 @@ policies:
           - ".github/CODEOWNERS"
         enforcement: "required"
         message: "Security documentation files are required"
-      
+
       # No public repositories allowed
       privacy_requirement:
         type: "repository_privacy"
         value: "private"
         enforcement: "required"
         message: "Security repositories must be private"
-      
+
       # Signed commits
       commit_signing:
         type: "commit_signing"
@@ -203,7 +203,7 @@ repositories:
       template: "security-enhanced"
       settings:
         description: "Core infrastructure configuration and secrets"
-        
+
     - name: "payment-service"
       template: "security-enhanced"
       settings:
@@ -211,19 +211,19 @@ repositories:
         topics:
           - "pci-compliant"
           - "financial"
-      
+
     - name: "auth-service"
       template: "security-enhanced"
       settings:
         description: "Authentication and authorization service"
-  
+
   # Apply to all repositories matching patterns
   patterns:
     - match: "*-secrets"
       template: "security-enhanced"
-    
+
     - match: "infra-*"
       template: "security-enhanced"
-    
+
     - match: "*-security"
       template: "security-enhanced"

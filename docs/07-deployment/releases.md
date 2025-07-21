@@ -245,7 +245,7 @@ After release:
    ```bash
    # Check configuration
    make release-check
-   
+
    # Verify scripts are executable
    chmod +x scripts/*.sh
    ```

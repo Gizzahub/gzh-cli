@@ -17,16 +17,16 @@ providers:
         exclude: [".*-deprecated", ".*-experimental"]
         strategy: "reset"                  # Ensure consistency
         flatten: false
-      
+
       # Microservices ecosystem
       - name: "microservices"
-        visibility: "private" 
+        visibility: "private"
         clone_dir: "${WORKSPACE}/platform/services"
         match: "^service-.*"
         exclude: ["service-legacy-*", "service-archived-*"]
         strategy: "pull"
         flatten: true                      # Easier service discovery
-      
+
       # Frontend applications
       - name: "frontend-apps"
         visibility: "private"
@@ -35,7 +35,7 @@ providers:
         exclude: [".*-poc", ".*-prototype"]
         strategy: "pull"
         flatten: false
-      
+
       # Data and analytics
       - name: "data-platform"
         visibility: "private"
@@ -43,7 +43,7 @@ providers:
         match: "^(etl|pipeline|warehouse|analytics)-.*"
         strategy: "reset"                  # Critical data consistency
         flatten: false
-      
+
       # Infrastructure as Code
       - name: "infrastructure"
         visibility: "private"
@@ -52,7 +52,7 @@ providers:
         exclude: [".*-sandbox", ".*-experiment"]
         strategy: "reset"                  # Infrastructure must be consistent
         flatten: false
-      
+
       # Security and compliance
       - name: "security"
         visibility: "private"
@@ -60,7 +60,7 @@ providers:
         match: "^(security|compliance|audit)-.*"
         strategy: "reset"
         flatten: false
-      
+
       # Open source contributions
       - name: "opensource"
         visibility: "public"
@@ -79,7 +79,7 @@ providers:
         clone_dir: "${BACKUP_DIR}/gitlab"
         strategy: "fetch"                  # Backup purposes only
         flatten: false
-      
+
       # Cross-team collaboration
       - name: "enterprise/shared"
         visibility: "private"
@@ -90,6 +90,6 @@ providers:
 
 # Environment variables typically used in enterprise:
 # WORKSPACE=/enterprise/projects
-# BACKUP_DIR=/enterprise/backups  
+# BACKUP_DIR=/enterprise/backups
 # GITHUB_ENTERPRISE_TOKEN=token_for_github_enterprise
 # GITLAB_ENTERPRISE_TOKEN=token_for_gitlab_enterprise

@@ -44,7 +44,7 @@ resource "github_repository" "example" {
   has_issues   = true
   has_wiki     = false
   has_projects = false
-  
+
   allow_merge_commit     = true
   allow_squash_merge     = true
   allow_rebase_merge     = false
@@ -190,11 +190,11 @@ repositories:
    resource "github_repository" "app" {
      name = "my-app"
    }
-   
+
    resource "aws_ecr_repository" "app" {
      name = "my-app"
    }
-   
+
    resource "kubernetes_namespace" "app" {
      metadata {
        name = "my-app"
@@ -208,11 +208,11 @@ repositories:
    resource "github_team" "developers" {
      name = "developers"
    }
-   
+
    resource "github_repository" "app" {
      name = "my-app"
    }
-   
+
    resource "github_team_repository" "developers_app" {
      team_id    = github_team.developers.id
      repository = github_repository.app.name
@@ -280,13 +280,13 @@ repositories:
    ```bash
    # List all managed repositories
    terraform state list | grep github_repository
-   
+
    # Generate configuration
    gz repo-config generate --from-github --org my-org
    ```
 
 2. **Convert HCL to YAML**
-   
+
    Terraform:
    ```hcl
    resource "github_repository" "example" {
@@ -295,7 +295,7 @@ repositories:
      has_issues = true
    }
    ```
-   
+
    gz repo-config:
    ```yaml
    repositories:
@@ -309,7 +309,7 @@ repositories:
    ```bash
    # Dry run first
    gz repo-config apply --dry-run
-   
+
    # Apply changes
    gz repo-config apply
    ```

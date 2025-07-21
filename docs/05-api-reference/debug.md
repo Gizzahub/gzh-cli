@@ -47,21 +47,21 @@ type StructuredLogEntry struct {
     ProcID    string          `json:"procid"`
     MsgID     string          `json:"msgid,omitempty"`
     Message   string          `json:"message"`
-    
+
     // Distributed Tracing Fields
     TraceID string `json:"trace_id,omitempty"`
     SpanID  string `json:"span_id,omitempty"`
-    
+
     // Source Code Fields
     Caller struct {
         File     string `json:"file,omitempty"`
         Line     int    `json:"line,omitempty"`
         Function string `json:"function,omitempty"`
     } `json:"caller,omitempty"`
-    
+
     // Structured Data
     Fields map[string]interface{} `json:"fields,omitempty"`
-    
+
     // Performance Fields
     Duration  *time.Duration `json:"duration,omitempty"`
     Latency   *time.Duration `json:"latency,omitempty"`
@@ -409,17 +409,17 @@ type StructuredLoggerConfig struct {
     AppName     string          `json:"app_name"`
     Version     string          `json:"version"`
     Environment string          `json:"environment"`
-    
+
     // Trace Configuration
     EnableTracing bool `json:"enable_tracing"`
     EnableCaller  bool `json:"enable_caller"`
     CallerSkip    int  `json:"caller_skip"`
-    
+
     // Sampling Configuration
     EnableSampling  bool    `json:"enable_sampling"`
     SampleRate      float64 `json:"sample_rate"`
     SampleThreshold int     `json:"sample_threshold"`
-    
+
     // Performance Configuration
     AsyncLogging  bool          `json:"async_logging"`
     BufferSize    int           `json:"buffer_size"`
@@ -427,7 +427,7 @@ type StructuredLoggerConfig struct {
     MaxFileSize   int64         `json:"max_file_size"`
     MaxBackups    int           `json:"max_backups"`
     Compress      bool          `json:"compress"`
-    
+
     // Filter Configuration
     ModuleLevels map[string]RFC5424Severity `json:"module_levels,omitempty"`
     IgnoreFields []string                   `json:"ignore_fields,omitempty"`
@@ -442,18 +442,18 @@ type IntegratedLoggingConfig struct {
     AppName     string `json:"app_name" yaml:"app_name"`
     Environment string `json:"environment" yaml:"environment"`
     Version     string `json:"version" yaml:"version"`
-    
+
     // Log levels and output
     Level     string `json:"level" yaml:"level"`
     Format    string `json:"format" yaml:"format"`
     Directory string `json:"directory" yaml:"directory"`
-    
+
     // Structured logging specific
     StructuredConfig *StructuredLoggerConfig `json:"structured" yaml:"structured"`
-    
+
     // Centralized logging specific
     CentralizedConfig *logging.CentralizedLoggingConfig `json:"centralized" yaml:"centralized"`
-    
+
     // Integration settings
     EnableCentralizedForwarding bool                     `json:"enable_centralized_forwarding" yaml:"enable_centralized_forwarding"`
     BridgeConfig                *CentralizedBridgeConfig `json:"bridge" yaml:"bridge"`
@@ -471,7 +471,7 @@ package main
 import (
     "context"
     "log"
-    
+
     "github.com/gizzahub/gzh-manager-go/pkg/debug"
 )
 
@@ -482,7 +482,7 @@ func main() {
         log.Fatal(err)
     }
     defer logger.Close()
-    
+
     ctx := context.Background()
     logger.InfoLevel(ctx, "Application started", map[string]interface{}{
         "version": "1.0.0",
@@ -499,7 +499,7 @@ package main
 import (
     "context"
     "log"
-    
+
     "github.com/gizzahub/gzh-manager-go/pkg/debug"
 )
 
@@ -510,13 +510,13 @@ func main() {
         "service": "gzh-manager",
         "env":     "production",
     })
-    
+
     setup, err := debug.NewIntegratedLoggingSetup(config)
     if err != nil {
         log.Fatal(err)
     }
     defer setup.Shutdown()
-    
+
     logger := setup.GetLogger()
     ctx := context.Background()
     logger.InfoLevel(ctx, "Processing request", map[string]interface{}{
@@ -534,7 +534,7 @@ package main
 import (
     "context"
     "log"
-    
+
     "github.com/gizzahub/gzh-manager-go/pkg/debug"
 )
 
@@ -545,18 +545,18 @@ func main() {
         log.Fatal(err)
     }
     defer logger.Close()
-    
+
     manager, err := debug.NewLogLevelManager(debug.DefaultLogLevelManagerConfig(), logger)
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Apply production profile
     manager.ApplyProfile("production")
-    
+
     // Start HTTP API for runtime control
     manager.StartHTTPServer(8080)
-    
+
     // Add custom rule
     rule := debug.LogLevelRule{
         ID:      "debug-module",
@@ -584,7 +584,7 @@ import (
     "context"
     "log"
     "time"
-    
+
     "github.com/gizzahub/gzh-manager-go/pkg/debug"
 )
 
@@ -593,15 +593,15 @@ func main() {
     config.CPUProfile = true
     config.MemoryProfile = true
     config.Duration = 30 * time.Second
-    
+
     profiler := debug.NewProfiler(config)
-    
+
     ctx := context.Background()
     if err := profiler.Start(ctx); err != nil {
         log.Fatal(err)
     }
     defer profiler.Stop()
-    
+
     // Application logic here
     time.Sleep(config.Duration)
 }

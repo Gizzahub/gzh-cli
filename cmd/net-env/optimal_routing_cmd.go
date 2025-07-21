@@ -35,16 +35,16 @@ This command provides intelligent routing optimization:
 Examples:
   # Analyze available routes to a destination
   gz net-env optimal-routing analyze --destination 8.8.8.8
-  
+
   # Find optimal routes to multiple destinations
   gz net-env optimal-routing discover --targets google.com,cloudflare.com
-  
+
   # Apply optimal routing configuration
   gz net-env optimal-routing apply --policy latency-optimized
-  
+
   # Enable automatic route optimization
   gz net-env optimal-routing auto-optimize --enable
-  
+
   # Configure load balancing
   gz net-env optimal-routing load-balance --interfaces eth0,wlan0 --policy round-robin`,
 		SilenceUsage: true,

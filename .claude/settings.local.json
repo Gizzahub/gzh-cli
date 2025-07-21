@@ -37,7 +37,17 @@
       "Bash(done)",
       "Bash(golangci-lint:*)",
       "Bash(mv:*)",
-      "Bash(~/.config/go-lint-standards/scripts/install-lint.sh:*)"
+      "Bash(~/.config/go-lint-standards/scripts/install-lint.sh:*)",
+      "Bash(./analyzer --help)",
+      "Bash(./analyzer analyze:*)",
+      "Bash(diff:*)",
+      "Bash(./main_extraction_pattern)",
+      "Bash(./structural_refactorer)",
+      "Bash(./analytics template --help)",
+      "Bash(./analytics examples list)",
+      "Bash(./analytics scripts list)",
+      "Bash(pre-commit:*)",
+      "Bash(go:*)"
     ],
     "deny": []
   }

@@ -58,16 +58,16 @@ Update strategies:
 Examples:
   # Update all asdf tools using minor strategy (default)
   gz always-latest asdf
-  
+
   # Update specific tools only
   gz always-latest asdf --tools nodejs,python,ruby
-  
+
   # Update with major version strategy (includes breaking changes)
   gz always-latest asdf --strategy major
-  
+
   # Dry run to see what would be updated
   gz always-latest asdf --dry-run
-  
+
   # Update global versions (affects all projects)
   gz always-latest asdf --global`,
 		RunE: o.run,

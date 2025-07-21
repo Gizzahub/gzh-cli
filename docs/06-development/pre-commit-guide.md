@@ -199,7 +199,7 @@ Most hooks respect tool-specific config files:
    ```bash
    # Ensure git is initialized
    git init
-   
+
    # Check pre-commit version
    pre-commit --version
    ```
@@ -208,7 +208,7 @@ Most hooks respect tool-specific config files:
    ```bash
    # Install required tools
    make bootstrap
-   
+
    # Ensure GOPATH/bin is in PATH
    export PATH=$PATH:$(go env GOPATH)/bin
    ```
@@ -217,7 +217,7 @@ Most hooks respect tool-specific config files:
    ```bash
    # Update baseline if false positive
    detect-secrets scan --baseline .secrets.baseline
-   
+
    # Or add inline comment
    secret = "not-a-real-secret"  # pragma: allowlist secret
    ```
@@ -226,7 +226,7 @@ Most hooks respect tool-specific config files:
    ```bash
    # Add to .gitattributes if needed
    *.bin filter=lfs diff=lfs merge=lfs -text
-   
+
    # Or increase limit in .pre-commit-config.yaml
    args: [--maxkb=1000]
    ```

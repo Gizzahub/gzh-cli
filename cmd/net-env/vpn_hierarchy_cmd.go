@@ -31,16 +31,16 @@ structures, allowing for:
 Examples:
   # Show VPN hierarchy
   gz net-env vpn-hierarchy show
-  
+
   # Connect hierarchical VPN starting from root
   gz net-env vpn-hierarchy connect --root corp-vpn
-  
+
   # List connections by layer
   gz net-env vpn-hierarchy layers
-  
+
   # Auto-connect for current environment
   gz net-env vpn-hierarchy auto-connect
-  
+
   # Add new hierarchical connection
   gz net-env vpn-hierarchy add --config connection.yaml`,
 		SilenceUsage: true,

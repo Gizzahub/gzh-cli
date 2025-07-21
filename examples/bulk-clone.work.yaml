@@ -21,19 +21,19 @@ repo_roots:
     provider: "github"
     protocol: "https"
     org_name: "company-main-org"
-  
+
   # DevOps and infrastructure
   - root_path: "$HOME/work/infrastructure"
     provider: "github"
     protocol: "https"
     org_name: "company-infra-team"
-  
+
   # Client projects
   - root_path: "$HOME/work/client-projects"
     provider: "github"
     protocol: "https"
     org_name: "client-project-org"
-  
+
   # Open source contributions related to work
   - root_path: "$HOME/work/opensource-contrib"
     provider: "github"

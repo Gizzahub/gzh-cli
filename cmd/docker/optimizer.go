@@ -68,7 +68,7 @@ func (lo *LanguageOptimizer) getGoOptimizations() OptimizationConfig {
 	framework := lo.detectGoFramework()
 
 	config := OptimizationConfig{
-		BaseImage: "golang:1.21-alpine",
+		BaseImage: "golang:1.24-alpine",
 		BuildArgs: map[string]string{
 			"CGO_ENABLED": "0",
 			"GOOS":        "${TARGETOS:-linux}",

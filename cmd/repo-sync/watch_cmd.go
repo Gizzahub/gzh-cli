@@ -56,13 +56,13 @@ The watcher uses an intelligent batching algorithm that:
 Examples:
   # Watch current directory with default settings
   gz repo-sync watch .
-  
+
   # Watch with custom batch settings
   gz repo-sync watch ./my-repo --batch-size 50 --batch-timeout 10s
-  
+
   # Watch with auto-commit enabled
   gz repo-sync watch ./my-repo --auto-commit --verbose
-  
+
   # Watch with custom patterns
   gz repo-sync watch ./my-repo --watch-patterns "**/*.go,**/*.md" --ignore-patterns "vendor/**,*.tmp"`,
 		Args: cobra.MaximumNArgs(1),

@@ -1,6 +1,6 @@
 # gzh.yaml 설정 가이드
 
-<!-- 
+<!--
 통합된 파일 출처:
 - yaml-quick-reference.md (빠른 참조)
 - yaml-usage-guide.md (상세 사용 가이드)
@@ -37,7 +37,7 @@ providers:
   github:
     token: "${GITHUB_TOKEN}"
     organizations: ["my-org"]
-  
+
   gitlab:
     token: "${GITLAB_TOKEN}"
     groups: ["my-group"]
@@ -51,7 +51,7 @@ network:
   profiles:
     - name: "home"
       dns: ["8.8.8.8", "1.1.1.1"]
-    - name: "office" 
+    - name: "office"
       proxy: "http://proxy.company.com:8080"
 ```
 
@@ -69,7 +69,7 @@ providers:
   github:
     token: "${GITHUB_TOKEN}"
     api_url: "https://api.github.com"  # Enterprise의 경우 변경
-    organizations: 
+    organizations:
       - "org1"
       - "org2"
     exclude_repos:
@@ -118,12 +118,12 @@ network:
       routes:
         - destination: "192.168.1.0/24"
           gateway: "192.168.1.1"
-    
+
     - name: "office"
       proxy: "http://proxy.company.com:8080"
       no_proxy: "localhost,127.0.0.1,.company.com"
       dns: ["192.168.10.1"]
-      
+
     - name: "vpn"
       vpn:
         provider: "openvpn"
@@ -143,15 +143,15 @@ development:
           secret_access_key: "${AWS_DEV_SECRET_KEY}"
         - name: "prod"
           role_arn: "arn:aws:iam::123456789012:role/ProductionRole"
-    
+
     gcp:
       default_project: "my-project-dev"
       service_account_key: "${GCP_SERVICE_ACCOUNT_KEY}"
-      
+
   containers:
     docker:
       network: "development"
-      compose_files: 
+      compose_files:
         - "docker-compose.dev.yml"
     kubernetes:
       context: "minikube"
@@ -165,7 +165,7 @@ development:
 version: "1.0"
 metadata:
   name: "personal-dev"
-  
+
 providers:
   github:
     token: "${GITHUB_TOKEN}"
@@ -183,17 +183,17 @@ clone:
 version: "1.0"
 metadata:
   name: "team-development"
-  
+
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    organizations: 
+    organizations:
       - "company-org"
       - "open-source-org"
     exclude_repos:
       - "archived-*"
       - "*-backup"
-      
+
   gitlab:
     token: "${GITLAB_TOKEN}"
     groups: ["internal-projects"]
@@ -202,7 +202,7 @@ clone:
   destination: "./team-repos"
   strategy: "reset"
   concurrent: 5
-  
+
 network:
   auto_switch: true
   profiles:
@@ -219,7 +219,7 @@ version: "1.0"
 metadata:
   name: "enterprise-setup"
   organization: "company"
-  
+
 providers:
   github:
     api_url: "https://github.company.com/api/v3"
@@ -227,12 +227,12 @@ providers:
     organizations: ["platform", "security", "infrastructure"]
     rate_limit:
       requests_per_hour: 10000
-      
+
 security:
   allowed_domains: ["*.company.com", "github.company.com"]
   require_ssl: true
   audit_log: "/var/log/gzh/audit.log"
-  
+
     port: 9090
   logging:
     level: "info"

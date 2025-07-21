@@ -60,19 +60,19 @@ Update strategies:
 Examples:
   # Update all outdated ports (default)
   gz always-latest port
-  
+
   # Update specific ports only
   gz always-latest port --ports python39,git,wget
-  
+
   # Update and cleanup old versions
   gz always-latest port --cleanup
-  
+
   # Dry run to see what would be updated
   gz always-latest port --dry-run
-  
+
   # Update all ports without prompting
   gz always-latest port --upgrade-all
-  
+
   # Skip MacPorts self-update
   gz always-latest port --self-update=false`,
 		RunE: o.run,

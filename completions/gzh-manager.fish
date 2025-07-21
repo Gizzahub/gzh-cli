@@ -174,4 +174,3 @@ complete -c gzh-manager -e
 # The call to __gzh_manager_prepare_completions will setup __gzh_manager_comp_results
 # which provides the program's completion choices.
 complete -c gzh-manager -n '__gzh_manager_prepare_completions' -f -a '$__gzh_manager_comp_results'
-

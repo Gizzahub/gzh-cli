@@ -40,13 +40,13 @@ policies:
     description: "Ensures CI/CD webhooks are configured"
     enabled: true
     priority: 100
-    
+
   - id: "security-webhook-policy"
     name: "Security Webhook Policy"
     description: "Ensures security webhooks are configured"
     enabled: true
     priority: 200
-    
+
   - id: "notification-webhook-policy"
     name: "Notification Webhook Policy"
     description: "Configures team notification webhooks"
@@ -56,16 +56,16 @@ policies:
 settings:
   # Allow individual repositories to override organization policies
   allow_repository_override: true
-  
+
   # Require approval for webhook changes
   require_approval: false
-  
+
   # Maximum number of webhooks per repository
   max_webhooks_per_repo: 5
-  
+
   # Retry failed webhook deliveries
   retry_on_failure: true
-  
+
   # Notification settings for policy operations
   notification_settings:
     on_success: true
@@ -80,11 +80,11 @@ validation:
   # Required events that all webhooks should support
   required_events:
     - "push"
-  
+
   # Events that are forbidden for security reasons
   forbidden_events:
     - "workflow_job" # Too noisy
-  
+
   # Allowed webhook domains (whitelist)
   allowed_domains:
     - "company.com"
@@ -93,14 +93,14 @@ validation:
     - "slack.com"
     - "discord.com"
     - "teams.microsoft.com"
-  
+
   # Forbidden webhook domains (blacklist)
   forbidden_domains:
     - "malicious-site.com"
     - "old-ci.company.com"
-  
+
   # Require HTTPS for all webhooks
   require_ssl: true
-  
+
   # Require webhook secret for security
   require_secret: true

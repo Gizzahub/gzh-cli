@@ -233,7 +233,7 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "mycompany"
-  
+
   - root_path: "$HOME/opensource"
     provider: "github"
     protocol: "https"
@@ -402,7 +402,7 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
    ```yaml
    version: "1.0.0"
    organization: "your-org"
-   
+
    templates:
      standard:
        description: "Standard repository settings"
@@ -416,7 +416,7 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
            main:
              required_reviews: 2
              enforce_admins: true
-   
+
    repositories:
      - name: "*"
        template: "standard"
@@ -426,7 +426,7 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
    ```bash
    # Preview changes (dry run)
    gz repo-config apply --config repo-config.yaml --dry-run
-   
+
    # Apply configuration
    gz repo-config apply --config repo-config.yaml
    ```
@@ -440,10 +440,10 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
    ```bash
    # Individual webhook management
    gz repo-config webhook create --org myorg --repo myrepo --url https://example.com/webhook
-   
+
    # Bulk webhook operations
    gz repo-config webhook bulk create --org myorg --config webhook-bulk-config.yaml
-   
+
    # Event-based automation
    gz repo-config webhook automation server --config automation-rules.yaml
    ```
@@ -647,7 +647,7 @@ func main() {
 # Features
 - [goreleaser](https://goreleaser.com/) with `deb.` and `.rpm` packer and container (`docker.hub` and `ghcr.io`) releasing including `manpages` and `shell completions` and grouped Changelog generation.
 - [golangci-lint](https://golangci-lint.run/) for linting and formatting
-- [Github Actions](.github/worflows) Stages (Lint, Test (`windows`, `linux`, `mac-os`), Build, Release) 
+- [Github Actions](.github/worflows) Stages (Lint, Test (`windows`, `linux`, `mac-os`), Build, Release)
 - [Gitlab CI](.gitlab-ci.yml) Configuration (Lint, Test, Build, Release)
 - [cobra](https://cobra.dev/) example setup including tests
 - [Makefile](Makefile) - with various useful targets and documentation (see Makefile Targets)
@@ -661,7 +661,7 @@ func main() {
 * [pkg/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg)  => packages that are okay to import for other projects
 * [internal/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg)  => packages that are only for project internal purposes
 - [`tools/`](tools/) => for automatically shipping all required dependencies when running `go get` (or `make bootstrap`) such as `golang-ci-lint` (see: https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module)
-- [`scripts/`](scripts/) => build scripts 
+- [`scripts/`](scripts/) => build scripts
 
 # Makefile Targets
 ```sh

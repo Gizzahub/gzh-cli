@@ -273,7 +273,7 @@ providers:
         visibility: "all"
         clone_dir: "/path/with spaces/and-special&chars"
         match: "^test-.*\\.go$"
-        exclude: 
+        exclude:
           - "temp-*"
           - "*-backup"
 `,

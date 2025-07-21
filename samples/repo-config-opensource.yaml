@@ -9,7 +9,7 @@ organization: "your-organization"
 templates:
   opensource-community:
     description: "Open source repository configuration optimized for community collaboration"
-    
+
     # Basic repository settings
     settings:
       private: false  # Public by default
@@ -30,13 +30,13 @@ templates:
       merge_commit_message: "PR_BODY"
       squash_merge_commit_title: "PR_TITLE"
       squash_merge_commit_message: "PR_BODY"
-      
+
     # Security configurations (balanced for open source)
     security:
       vulnerability_alerts: true
       automated_security_fixes: true  # Dependabot updates
       private_vulnerability_reporting: true
-      
+
       # Branch protection for main branch
       branch_protection:
         main:
@@ -46,7 +46,7 @@ templates:
           require_code_owner_reviews: false  # Optional CODEOWNERS
           required_approving_review_count: 1
           require_last_push_approval: false  # Allow maintainer edits
-          
+
           # Status checks
           required_status_checks:
             - "ci/build"
@@ -55,33 +55,33 @@ templates:
             - "license/cla"  # Contributor License Agreement
             - "dco"  # Developer Certificate of Origin
           strict_status_checks: false  # Allow admins to merge urgent fixes
-          
+
           # No push restrictions for open source
           restrict_pushes: false
-          
+
           # Admin permissions
           enforce_admins: false  # Allow admin overrides
           allow_force_pushes: false
           allow_deletions: false
-          
+
           # Encourage discussion
           required_conversation_resolution: false
-    
+
     # Community-friendly permissions
     permissions:
       # Default permissions for all users
       default_permission: "read"  # Everyone can read
-      
+
       # Team permissions
       team_permissions:
         "maintainers": "admin"
         "core-contributors": "write"
         "documentation": "write"
         "community-moderators": "triage"
-      
+
       # Allow forking
       allow_forking: true
-    
+
     # Topics for discoverability
     topics:
       - "open-source"
@@ -89,129 +89,129 @@ templates:
       - "hacktoberfest"  # Participate in Hacktoberfest
       - "good-first-issue"
       - "help-wanted"
-    
+
     # Community health files
     required_files:
       - path: "README.md"
         content: |
           # Project Name
-          
+
           [![License](https://img.shields.io/github/license/org/repo)](LICENSE)
           [![Contributors](https://img.shields.io/github/contributors/org/repo)](https://github.com/org/repo/graphs/contributors)
           [![Issues](https://img.shields.io/github/issues/org/repo)](https://github.com/org/repo/issues)
           [![Pull Requests](https://img.shields.io/github/issues-pr/org/repo)](https://github.com/org/repo/pulls)
-          
+
           ## Description
-          
+
           Brief description of your project.
-          
+
           ## Installation
-          
+
           ```bash
           # Installation instructions
           ```
-          
+
           ## Usage
-          
+
           ```bash
           # Usage examples
           ```
-          
+
           ## Contributing
-          
+
           Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-          
+
           ## License
-          
+
           This project is licensed under the [LICENSE_NAME] - see the [LICENSE](LICENSE) file for details.
-      
+
       - path: "CONTRIBUTING.md"
         content: |
           # Contributing to [Project Name]
-          
+
           First off, thank you for considering contributing to this project!
-          
+
           ## Code of Conduct
-          
+
           This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md).
-          
+
           ## How Can I Contribute?
-          
+
           ### Reporting Bugs
-          
+
           Before creating bug reports, please check existing issues. When creating a bug report, include:
           - A clear and descriptive title
           - Steps to reproduce the issue
           - Expected behavior
           - Actual behavior
           - Environment details
-          
+
           ### Suggesting Enhancements
-          
+
           Enhancement suggestions are tracked as GitHub issues. Include:
           - A clear and descriptive title
           - Step-by-step description of the enhancement
           - Explain why this enhancement would be useful
-          
+
           ### Pull Requests
-          
+
           1. Fork the repo and create your branch from `main`
           2. If you've added code, add tests
           3. Ensure the test suite passes
           4. Make sure your code follows the existing style
           5. Issue that pull request!
-          
+
           ## Development Setup
-          
+
           ```bash
           # Setup instructions
           ```
-          
+
           ## Style Guide
-          
+
           [Language-specific style guide]
-      
+
       - path: "CODE_OF_CONDUCT.md"
         content: |
           # Contributor Covenant Code of Conduct
-          
+
           ## Our Pledge
-          
+
           We as members, contributors, and leaders pledge to make participation in our
           community a harassment-free experience for everyone.
-          
+
           ## Our Standards
-          
+
           Examples of behavior that contributes to a positive environment:
-          
+
           * Using welcoming and inclusive language
           * Being respectful of differing viewpoints and experiences
           * Gracefully accepting constructive criticism
           * Focusing on what is best for the community
           * Showing empathy towards other community members
-          
+
           ## Enforcement
-          
+
           Instances of abusive, harassing, or otherwise unacceptable behavior may be
           reported to the community leaders responsible for enforcement at
           [INSERT CONTACT METHOD].
-      
+
       - path: "LICENSE"
         content: |
           MIT License
-          
+
           Copyright (c) [year] [fullname]
-          
+
           Permission is hereby granted, free of charge, to any person obtaining a copy
           of this software and associated documentation files (the "Software"), to deal
           in the Software without restriction, including without limitation the rights
           to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
           copies of the Software, and to permit persons to whom the Software is
           furnished to do so, subject to the following conditions:
-          
+
           The above copyright notice and this permission notice shall be included in all
           copies or substantial portions of the Software.
-      
+
       - path: ".github/ISSUE_TEMPLATE/bug_report.md"
         content: |
           ---
@@ -221,30 +221,30 @@ templates:
           labels: 'bug'
           assignees: ''
           ---
-          
+
           **Describe the bug**
           A clear and concise description of what the bug is.
-          
+
           **To Reproduce**
           Steps to reproduce the behavior:
           1. Go to '...'
           2. Click on '....'
           3. Scroll down to '....'
           4. See error
-          
+
           **Expected behavior**
           A clear and concise description of what you expected to happen.
-          
+
           **Screenshots**
           If applicable, add screenshots to help explain your problem.
-          
+
           **Environment:**
            - OS: [e.g. Ubuntu 20.04]
            - Version: [e.g. 1.0.0]
-          
+
           **Additional context**
           Add any other context about the problem here.
-      
+
       - path: ".github/ISSUE_TEMPLATE/feature_request.md"
         content: |
           ---
@@ -254,36 +254,36 @@ templates:
           labels: 'enhancement'
           assignees: ''
           ---
-          
+
           **Is your feature request related to a problem? Please describe.**
           A clear and concise description of what the problem is.
-          
+
           **Describe the solution you'd like**
           A clear and concise description of what you want to happen.
-          
+
           **Describe alternatives you've considered**
           A clear and concise description of any alternative solutions or features.
-          
+
           **Additional context**
           Add any other context or screenshots about the feature request here.
-      
+
       - path: ".github/pull_request_template.md"
         content: |
           ## Description
-          
+
           Please include a summary of the changes and which issue is fixed.
-          
+
           Fixes # (issue)
-          
+
           ## Type of change
-          
+
           - [ ] Bug fix (non-breaking change which fixes an issue)
           - [ ] New feature (non-breaking change which adds functionality)
           - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
           - [ ] Documentation update
-          
+
           ## Checklist
-          
+
           - [ ] My code follows the style guidelines of this project
           - [ ] I have performed a self-review of my code
           - [ ] I have commented my code, particularly in hard-to-understand areas
@@ -291,7 +291,7 @@ templates:
           - [ ] My changes generate no new warnings
           - [ ] I have added tests that prove my fix is effective or that my feature works
           - [ ] New and existing unit tests pass locally with my changes
-    
+
     # Webhooks for community engagement
     webhooks:
       - url: "${DISCORD_WEBHOOK_URL}"  # Community notifications
@@ -316,42 +316,42 @@ policies:
         value: "public"
         enforcement: "required"
         message: "Open source repositories must be public"
-      
+
       # License file required
       license_file:
         type: "file_exists"
         value: "LICENSE"
         enforcement: "required"
         message: "Open source projects must have a LICENSE file"
-      
+
       # README required
       readme_file:
         type: "file_exists"
         value: "README.md"
         enforcement: "required"
         message: "README.md is required for documentation"
-      
+
       # Contributing guidelines
       contributing_guide:
         type: "file_exists"
         value: "CONTRIBUTING.md"
         enforcement: "recommended"
         message: "CONTRIBUTING.md helps onboard new contributors"
-      
+
       # Code of conduct
       code_of_conduct:
         type: "file_exists"
         value: "CODE_OF_CONDUCT.md"
         enforcement: "recommended"
         message: "Code of Conduct creates a welcoming community"
-      
+
       # Issue templates
       issue_templates:
         type: "directory_exists"
         value: ".github/ISSUE_TEMPLATE"
         enforcement: "recommended"
         message: "Issue templates improve issue quality"
-      
+
       # Security policy
       security_policy:
         type: "file_exists"
@@ -371,7 +371,7 @@ repositories:
           - "javascript"
           - "nodejs"
           - "cli-tool"
-      
+
     - name: "documentation"
       template: "opensource-community"
       settings:
@@ -381,7 +381,7 @@ repositories:
           - "documentation"
           - "markdown"
           - "docusaurus"
-      
+
     - name: "community-toolkit"
       template: "opensource-community"
       settings:
@@ -390,7 +390,7 @@ repositories:
           - "community"
           - "tools"
           - "utilities"
-  
+
   # Apply to patterns
   patterns:
     - match: "example-*"
@@ -399,7 +399,7 @@ repositories:
         topics:
           - "example"
           - "tutorial"
-    
+
     - match: "*-starter"
       template: "opensource-community"
       settings:

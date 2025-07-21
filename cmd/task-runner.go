@@ -20,7 +20,7 @@ func NewTaskRunnerCmd() *cobra.Command {
 		Short: "🚀 TASK_RUNNER.todo - 자동 TODO 작업 실행기",
 		Long: `TASK_RUNNER.todo 프롬프트 시스템
 
-/tasks/todo/ 디렉터리의 미완료 TODO 파일을 순차적으로 읽어 
+/tasks/todo/ 디렉터리의 미완료 TODO 파일을 순차적으로 읽어
 작업 → 커밋 → 완료 파일 이동을 자동화합니다.
 
 사용법:
@@ -29,7 +29,7 @@ func NewTaskRunnerCmd() *cobra.Command {
 
 절차:
 1. 다음 [ ] 미완료 항목 하나 선택 (파일명 오름차순 → 항목 순서)
-2. 분석 & 의존성 파악 
+2. 분석 & 의존성 파악
 3. 구현 & 테스트 & 문서화
 4. 포맷 & 커밋 ([x] 체크 후)
 5. 모든 항목 완료시 파일을 /tasks/done/으로 이동`,

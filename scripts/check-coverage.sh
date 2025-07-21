@@ -39,10 +39,10 @@ while IFS= read -r line; do
     if [[ $line == *"total"* ]]; then
         continue
     fi
-    
+
     PACKAGE=$(echo "$line" | awk '{print $1}')
     COVERAGE=$(echo "$line" | awk '{print $3}' | sed 's/%//')
-    
+
     if [[ -n "$COVERAGE" ]] && (( $(echo "$COVERAGE < $PACKAGE_THRESHOLD" | bc -l) )); then
         FAILED_PACKAGES+=("$PACKAGE: ${COVERAGE}%")
     fi

@@ -51,10 +51,10 @@ for different organizations or services. It supports:
 Examples:
   # Generate SSH config from bulk-clone.yaml (dry run)
   gz ssh-config generate --config bulk-clone.yaml --dry-run
-  
+
   # Generate and append to ~/.ssh/config
   gz ssh-config generate --config bulk-clone.yaml
-  
+
   # Generate to custom file
   gz ssh-config generate --config bulk-clone.yaml --output ~/custom-ssh-config`,
 		RunE: o.run,

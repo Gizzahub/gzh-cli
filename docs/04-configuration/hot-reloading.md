@@ -55,7 +55,7 @@ config, err := service.LoadConfiguration(ctx, "gzh.yaml")
 // Set up change callback
 callback := func(newConfig *config.UnifiedConfig) {
     fmt.Printf("Configuration changed! New provider: %s\n", newConfig.DefaultProvider)
-    
+
     // Check validation results
     result := service.GetValidationResult()
     if !result.IsValid {

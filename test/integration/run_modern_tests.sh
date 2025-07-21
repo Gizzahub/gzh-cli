@@ -156,7 +156,7 @@ check_environment() {
     log "Checking environment variables..."
 
     local tokens_found=0
-    
+
     if [[ -n "${GITHUB_TOKEN:-}" ]]; then
         log "GitHub token found"
         tokens_found=$((tokens_found + 1))
@@ -189,50 +189,50 @@ check_environment() {
 # Build test flags
 build_test_flags() {
     local flags=()
-    
+
     flags+=("-timeout" "$TIMEOUT")
-    
+
     if [[ "$VERBOSE" == "true" ]]; then
         flags+=("-v")
     fi
-    
+
     if [[ "$COVERAGE" == "true" ]]; then
         flags+=("-cover" "-coverprofile=coverage.out")
     fi
-    
+
     if [[ "$PARALLEL" == "false" ]]; then
         flags+=("-p" "1")
     fi
-    
+
     # Add race detection
     flags+=("-race")
-    
+
     # Add test tags for integration tests
     flags+=("-tags" "integration")
-    
+
     echo "${flags[@]}"
 }
 
 # Run integration tests
 run_tests() {
     log "Starting integration tests..."
-    
+
     local test_flags
     test_flags=$(build_test_flags)
-    
+
     # Change to project root
     cd "$PROJECT_ROOT"
-    
+
     # Run the modern integration tests
     local test_cmd="go test $test_flags ./test/integration/bulk_clone_modern_test.go"
-    
+
     if [[ "${DRY_RUN:-false}" == "true" ]]; then
         log "DRY RUN - would execute: $test_cmd"
         return 0
     fi
-    
+
     log "Executing: $test_cmd"
-    
+
     if eval "$test_cmd"; then
         success "Integration tests completed successfully"
         return 0
@@ -247,16 +247,16 @@ generate_coverage() {
     if [[ "$COVERAGE" != "true" ]] || [[ ! -f "coverage.out" ]]; then
         return 0
     fi
-    
+
     log "Generating coverage report..."
-    
+
     # Generate HTML coverage report
     go tool cover -html=coverage.out -o coverage.html
-    
+
     # Display coverage summary
     local coverage_percent
     coverage_percent=$(go tool cover -func=coverage.out | grep total: | awk '{print $3}')
-    
+
     log "Coverage report generated: coverage.html"
     log "Total coverage: $coverage_percent"
 }
@@ -264,7 +264,7 @@ generate_coverage() {
 # Cleanup function
 cleanup() {
     log "Cleaning up..."
-    
+
     # Remove temporary files if they exist
     if [[ -f "coverage.out" ]] && [[ "$COVERAGE" != "true" ]]; then
         rm -f coverage.out
@@ -274,7 +274,7 @@ cleanup() {
 # Main execution
 main() {
     parse_args "$@"
-    
+
     log "Starting modern integration test runner..."
     log "Project root: $PROJECT_ROOT"
     log "Script directory: $SCRIPT_DIR"
@@ -282,16 +282,16 @@ main() {
     log "Verbose: $VERBOSE"
     log "Coverage: $COVERAGE"
     log "Parallel: $PARALLEL"
-    
+
     # Set up cleanup trap
     trap cleanup EXIT
-    
+
     # Run all checks and tests
     check_prerequisites || exit 1
     check_environment
     run_tests || exit 1
     generate_coverage
-    
+
     success "All integration tests completed successfully!"
 }
 

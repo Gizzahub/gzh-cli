@@ -54,16 +54,16 @@ The configurations are saved to ~/.gz/ssh-configs/ by default.
 Examples:
   # Save current SSH config with a name
   gz dev-env ssh save --name production
-  
+
   # Save with description
   gz dev-env ssh save --name work --description "Work SSH config"
-  
+
   # Load a saved SSH config
   gz dev-env ssh load --name production
-  
+
   # List all saved configurations
   gz dev-env ssh list
-  
+
   # Save from specific path
   gz dev-env ssh save --name custom --config-path /path/to/ssh_config`,
 		SilenceUsage: true,
@@ -91,10 +91,10 @@ host definitions, connection settings, and SSH client options.
 Examples:
   # Save current SSH config as "production"
   gz dev-env ssh save --name production
-  
+
   # Save with description
   gz dev-env ssh save --name work --description "Work environment"
-  
+
   # Save from specific path
   gz dev-env ssh save --name custom --config-path /path/to/ssh_config`,
 		RunE: o.runSave,
@@ -125,7 +125,7 @@ The current SSH config will be backed up before loading the new one.
 Examples:
   # Load the "production" configuration
   gz dev-env ssh load --name production
-  
+
   # Load to specific path
   gz dev-env ssh load --name work --config-path /path/to/ssh_config`,
 		RunE: o.runLoad,

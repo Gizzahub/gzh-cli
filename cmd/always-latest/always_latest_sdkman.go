@@ -64,19 +64,19 @@ Update strategies:
 Examples:
   # Update all installed SDKMAN candidates
   gz always-latest sdkman
-  
+
   # Update specific candidates only
   gz always-latest sdkman --candidates java,gradle,maven
-  
+
   # Update with major version strategy (includes breaking changes)
   gz always-latest sdkman --strategy major
-  
+
   # Dry run to see what would be updated
   gz always-latest sdkman --dry-run
-  
+
   # Update and set as default versions
   gz always-latest sdkman --global
-  
+
   # Flush archives before updating (clean install)
   gz always-latest sdkman --flush-before`,
 		RunE: o.run,

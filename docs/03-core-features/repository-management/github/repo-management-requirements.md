@@ -86,14 +86,14 @@ repositories:
             required_status_checks:
               - "ci/build"
               - "ci/test"
-      
+
   # Apply to repositories matching patterns
   patterns:
     - match: "^service-.*"
       template: "microservice"
     - match: "^lib-.*"
       template: "library"
-      
+
   # Apply to all repositories
   default:
     template: "default"

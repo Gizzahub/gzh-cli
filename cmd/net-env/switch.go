@@ -76,13 +76,13 @@ you to quickly switch between different network environments
 Examples:
   # Switch to office profile
   gz net-env switch office
-  
+
   # Switch with dry-run to see what would be changed
   gz net-env switch office --dry-run
-  
+
   # List available profiles
   gz net-env switch --list
-  
+
   # Create example configuration
   gz net-env switch --init`,
 		Args: cobra.MaximumNArgs(1),

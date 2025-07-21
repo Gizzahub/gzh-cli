@@ -23,10 +23,10 @@ run_test() {
     local test_name="$1"
     local test_command="$2"
     local expected_exit_code="${3:-0}"
-    
+
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     echo -e "\n🧪 Testing: $test_name"
-    
+
     if eval "$test_command"; then
         if [ "$expected_exit_code" -eq 0 ]; then
             echo -e "${GREEN}✓ PASSED${NC}: $test_name"
@@ -146,7 +146,7 @@ docker_profiles:
       http: ""
       https: ""
       no_proxy: "localhost,127.0.0.1"
-  
+
   testing:
     networks:
       - name: test_network
@@ -210,7 +210,7 @@ vpn_hierarchy:
       priority: 2
       routes:
         - 192.168.0.0/16
-  
+
   personal:
     - name: personal-vpn
       server: vpn.personal.com
@@ -220,7 +220,7 @@ vpn_hierarchy:
       conditions:
         - type: wifi_ssid
           not_matches: ["CompanyWiFi", "OfficeGuest"]
-  
+
   failover:
     primary: office-vpn
     backup: datacenter-vpn

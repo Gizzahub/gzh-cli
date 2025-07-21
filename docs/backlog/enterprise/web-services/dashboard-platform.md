@@ -151,15 +151,15 @@ function Dashboard() {
       <Grid item xs={12} md={6} lg={3}>
         <StatusCard title="System Load" value={systemLoad} />
       </Grid>
-      
+
       <Grid item xs={12}>
         <RecentActivity activities={activities} />
       </Grid>
-      
+
       <Grid item xs={12} md={6}>
         <RepositoryChart data={repositoryData} />
       </Grid>
-      
+
       <Grid item xs={12} md={6}>
         <SystemMetrics metrics={systemMetrics} />
       </Grid>
@@ -174,14 +174,14 @@ function Dashboard() {
 function RepositoryManager() {
   const [repositories, setRepositories] = useState([]);
   const [selectedRepo, setSelectedRepo] = useState(null);
-  
+
   return (
     <Paper>
       <Toolbar>
         <Typography variant="h6">Repositories</Typography>
         <Button onClick={handleAddRepository}>Add Repository</Button>
       </Toolbar>
-      
+
       <DataGrid
         rows={repositories}
         columns={columns}
@@ -189,7 +189,7 @@ function RepositoryManager() {
         pageSize={25}
         checkboxSelection
       />
-      
+
       {selectedRepo && (
         <RepositoryDetails repository={selectedRepo} />
       )}
@@ -204,14 +204,14 @@ function RepositoryManager() {
 function RealTimeMonitoring() {
   const [metrics, setMetrics] = useState([]);
   const ws = useWebSocket('/ws/metrics');
-  
+
   useEffect(() => {
     ws.onmessage = (event) => {
       const newMetric = JSON.parse(event.data);
       setMetrics(prev => [...prev.slice(-99), newMetric]);
     };
   }, [ws]);
-  
+
   return (
     <Paper>
       <Typography variant="h6">Real-time Metrics</Typography>
@@ -229,18 +229,18 @@ function LogViewer() {
   const [logs, setLogs] = useState([]);
   const [filter, setFilter] = useState('');
   const ws = useWebSocket('/ws/logs');
-  
+
   useEffect(() => {
     ws.onmessage = (event) => {
       const logEntry = JSON.parse(event.data);
       setLogs(prev => [logEntry, ...prev.slice(0, 999)]);
     };
   }, [ws]);
-  
-  const filteredLogs = logs.filter(log => 
+
+  const filteredLogs = logs.filter(log =>
     log.message.includes(filter) || log.level.includes(filter)
   );
-  
+
   return (
     <Paper>
       <TextField
@@ -265,23 +265,23 @@ web:
     port: 8080
     read_timeout: 30s
     write_timeout: 30s
-    
+
   cors:
     allowed_origins: ["http://localhost:3000"]
     allowed_methods: ["GET", "POST", "PUT", "DELETE"]
     allowed_headers: ["*"]
     credentials: true
-    
+
   auth:
     jwt_secret: ${JWT_SECRET}
     token_expiry: 24h
     refresh_expiry: 7d
-    
+
   websocket:
     read_buffer_size: 1024
     write_buffer_size: 1024
     check_origin: false
-    
+
   static:
     directory: "./web/dist"
     cache_duration: 24h
@@ -342,14 +342,14 @@ func AuthMiddleware() gin.HandlerFunc {
             c.Abort()
             return
         }
-        
+
         claims, err := validateJWT(token)
         if err != nil {
             c.JSON(401, gin.H{"error": "Invalid token"})
             c.Abort()
             return
         }
-        
+
         c.Set("user_id", claims.UserID)
         c.Set("role", claims.Role)
         c.Next()

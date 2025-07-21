@@ -96,16 +96,16 @@ This command provides functionality to:
 Examples:
   # List all available projects
   gz dev-env gcp-project list
-  
+
   # Switch to a specific project
   gz dev-env gcp-project switch my-project-id
-  
+
   # Show current project details
   gz dev-env gcp-project show
-  
+
   # Create a new gcloud configuration for a project
   gz dev-env gcp-project config create --name prod --project my-prod-project
-  
+
   # Manage service accounts
   gz dev-env gcp-project service-account list
   gz dev-env gcp-project service-account create --name my-service`,
@@ -141,7 +141,7 @@ This command shows:
 Examples:
   # List projects in table format
   gz dev-env gcp-project list
-  
+
   # List projects in JSON format
   gz dev-env gcp-project list --output json`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -179,10 +179,10 @@ This command:
 Examples:
   # Switch to a specific project
   gz dev-env gcp-project switch my-project-id
-  
+
   # Interactive project selection
   gz dev-env gcp-project switch --interactive
-  
+
   # Switch using a specific configuration
   gz dev-env gcp-project switch my-project-id --config my-config`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -220,10 +220,10 @@ If no project ID is specified, shows information about the current active projec
 Examples:
   # Show current active project
   gz dev-env gcp-project show
-  
+
   # Show specific project details
   gz dev-env gcp-project show my-project-id
-  
+
   # Show project details in JSON format
   gz dev-env gcp-project show --output json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -259,10 +259,10 @@ for different environments or projects.
 Examples:
   # List all configurations
   gz dev-env gcp-project config list
-  
+
   # Create a new configuration
   gz dev-env gcp-project config create --name prod --project my-prod-project
-  
+
   # Switch to a configuration
   gz dev-env gcp-project config activate prod`,
 		SilenceUsage: true,
@@ -299,7 +299,7 @@ This command checks:
 Examples:
   # Validate current project
   gz dev-env gcp-project validate
-  
+
   # Validate specific project with all checks
   gz dev-env gcp-project validate my-project-id --check-apis --check-billing --check-permissions`,
 		RunE: func(cmd *cobra.Command, args []string) error {

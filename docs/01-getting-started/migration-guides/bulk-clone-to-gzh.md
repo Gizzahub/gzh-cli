@@ -120,7 +120,7 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "mycompany"
-  
+
   - root_path: "$HOME/opensource"
     provider: "github"
     protocol: "https"
@@ -144,7 +144,7 @@ providers:
         clone_dir: "$HOME/work/mycompany"
         exclude: ["test-.*", ".*-archive"]
         strategy: "reset"
-      
+
       - name: "kubernetes"
         clone_dir: "$HOME/opensource"
         exclude: ["test-.*", ".*-archive"]
@@ -171,7 +171,7 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "mycompany"
-  
+
   - root_path: "$HOME/personal"
     provider: "github"
     protocol: "https"
@@ -196,7 +196,7 @@ providers:
         clone_dir: "$HOME/work/company"
         exclude: ["^test-.*", ".*-deprecated$"]
         strategy: "reset"
-      
+
       - name: "myusername"
         visibility: "public"
         clone_dir: "$HOME/personal"
@@ -261,11 +261,11 @@ repo_roots:
   - root_path: "$HOME/work/frontend"
     provider: "github"
     org_name: "frontend-team"
-  
+
   - root_path: "$HOME/work/backend"
     provider: "github"
     org_name: "backend-team"
-  
+
   - root_path: "$HOME/opensource"
     provider: "github"
     protocol: "https"
@@ -294,7 +294,7 @@ providers:
         exclude: [".*-archive", "temp-.*", "test-.*"]
         strategy: "pull"
         flatten: true
-      
+
       - name: "backend-team"
         visibility: "private"
         clone_dir: "$HOME/work/backend"
@@ -302,7 +302,7 @@ providers:
         exclude: [".*-archive", "temp-.*", "test-.*"]
         strategy: "pull"
         flatten: true
-      
+
       - name: "kubernetes"
         visibility: "public"
         clone_dir: "$HOME/opensource"
@@ -329,7 +329,7 @@ repo_roots:
   - root_path: "$HOME/work/platform"
     provider: "github"
     org_name: "company-platform"
-  
+
   - root_path: "$HOME/work/tools"
     provider: "github"
     org_name: "company-tools"
@@ -358,7 +358,7 @@ providers:
         exclude: [".*-deprecated", ".*-archive", "test-.*", "temp-.*"]
         strategy: "reset"
         flatten: false
-      
+
       - name: "company-tools"
         visibility: "private"
         clone_dir: "$HOME/work/tools"

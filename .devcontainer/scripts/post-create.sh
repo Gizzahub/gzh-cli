@@ -34,13 +34,13 @@ echo "✅ Go environment setup complete"
 if [[ -d "bindings/nodejs" ]]; then
     echo "🟡 Setting up Node.js binding environment..."
     cd /workspace/bindings/nodejs
-    
+
     # Install Node.js dependencies
     npm ci
-    
+
     # Build TypeScript
     npm run build:ts || echo "⚠️ TypeScript build failed - this is normal on first setup"
-    
+
     cd /workspace
     echo "✅ Node.js binding environment setup complete"
 fi
@@ -49,15 +49,15 @@ fi
 if [[ -d "bindings/python" ]]; then
     echo "🔵 Setting up Python binding environment..."
     cd /workspace/bindings/python
-    
+
     # Create virtual environment
     python3 -m venv venv
     source venv/bin/activate
-    
+
     # Install dependencies
     pip install --upgrade pip
     pip install -r requirements.txt || pip install -e . || echo "⚠️ Python setup incomplete - dependencies may need manual installation"
-    
+
     deactivate
     cd /workspace
     echo "✅ Python binding environment setup complete"
@@ -67,10 +67,10 @@ fi
 if [[ -d "web" ]]; then
     echo "⚙️ Setting up React dashboard environment..."
     cd /workspace/web
-    
+
     # Install React dependencies
     npm ci
-    
+
     cd /workspace
     echo "✅ React dashboard environment setup complete"
 fi

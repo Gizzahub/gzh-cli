@@ -44,7 +44,7 @@ if [ $# -eq 1 ]; then
 else
     # Find running GZH processes
     GZH_PROCESSES=$(find_gzh_processes)
-    
+
     if [ -z "$GZH_PROCESSES" ]; then
         echo -e "${RED}❌ No running GZH processes found${NC}"
         echo -e "${YELLOW}💡 Start a GZH process first:${NC}"
@@ -53,14 +53,14 @@ else
         echo -e "   ./gz bulk-clone --config samples/bulk-clone-simple.yaml &"
         exit 1
     fi
-    
+
     echo -e "${GREEN}🎯 Found GZH processes:${NC}"
     echo "$GZH_PROCESSES"
     echo ""
-    
+
     # Extract PIDs
     PIDS=($(echo "$GZH_PROCESSES" | awk '{print $2}'))
-    
+
     if [ ${#PIDS[@]} -eq 1 ]; then
         TARGET_PID="${PIDS[0]}"
         echo -e "${GREEN}✅ Auto-selecting PID: $TARGET_PID${NC}"
@@ -73,14 +73,14 @@ else
         done
         echo ""
         read -p "Enter PID or selection number: " SELECTION
-        
+
         # Check if selection is a number (1-based index)
         if [[ "$SELECTION" =~ ^[0-9]+$ ]] && [ "$SELECTION" -ge 1 ] && [ "$SELECTION" -le ${#PIDS[@]} ]; then
             TARGET_PID="${PIDS[$((SELECTION-1))]}"
         else
             TARGET_PID="$SELECTION"
         fi
-        
+
         # Validate selected PID
         if ! kill -0 "$TARGET_PID" 2>/dev/null; then
             echo -e "${RED}❌ Invalid PID: $TARGET_PID${NC}"

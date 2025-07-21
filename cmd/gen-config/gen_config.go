@@ -24,10 +24,10 @@ multiple Git repositories across different hosting services:
 Examples:
   # Interactive configuration creation
   gz gen-config init
-  
+
   # Generate from template
   gz gen-config template simple
-  
+
   # Auto-discover from existing repositories
   gz gen-config discover ~/projects --recursive`,
 	}

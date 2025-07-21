@@ -93,13 +93,13 @@ This command provides functionality to:
 Examples:
   # List service accounts
   gz dev-env gcp-project service-account list
-  
+
   # Create a new service account
   gz dev-env gcp-project service-account create --name my-service --display-name "My Service Account"
-  
+
   # Create a key for a service account
   gz dev-env gcp-project service-account create-key my-service@project.iam.gserviceaccount.com
-  
+
   # Set active service account
   gz dev-env gcp-project service-account activate my-service@project.iam.gserviceaccount.com`,
 		SilenceUsage: true,

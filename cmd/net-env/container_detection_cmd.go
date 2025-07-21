@@ -23,7 +23,7 @@ func newContainerDetectionCmd(logger *zap.Logger, _ string) *cobra.Command {
 		Use:   "container-detection",
 		Short: "Detect running containers and environments",
 		Long: `Detect and analyze running container environments including Docker, Podman, containerd, and nerdctl.
-		
+
 This command provides comprehensive container environment detection including:
 - Available container runtimes (Docker, Podman, containerd, nerdctl)
 - Running containers with network information
@@ -35,13 +35,13 @@ This command provides comprehensive container environment detection including:
 Examples:
   # Detect current container environment
   gz net-env container-detection detect
-  
+
   # Show detailed container information
   gz net-env container-detection status --detailed
-  
+
   # List available container runtimes
   gz net-env container-detection runtimes
-  
+
   # Monitor container changes
   gz net-env container-detection monitor --interval 30s`,
 		SilenceUsage: true,

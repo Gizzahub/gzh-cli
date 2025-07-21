@@ -10,13 +10,13 @@ echo "Adding build tags to integration tests..."
 add_build_tags() {
     local file=$1
     local tag=$2
-    
+
     # Check if file already has build tags
     if head -n 3 "$file" | grep -q "//go:build\|// +build"; then
         echo "Skipping $file - already has build tags"
         return
     fi
-    
+
     # Create temporary file with build tags
     {
         echo "//go:build $tag"
@@ -24,7 +24,7 @@ add_build_tags() {
         echo ""
         cat "$file"
     } > "$file.tmp"
-    
+
     # Replace original file
     mv "$file.tmp" "$file"
     echo "Added $tag tag to $file"

@@ -58,16 +58,16 @@ storage location is properly secured and consider encrypting the stored files.
 Examples:
   # Save current gcloud credentials with a name
   gz dev-env gcloud-credentials save --name production
-  
+
   # Save with description
   gz dev-env gcloud-credentials save --name staging --description "Staging GCP credentials"
-  
+
   # Load a saved gcloud credentials set
   gz dev-env gcloud-credentials load --name production
-  
+
   # List all saved credentials
   gz dev-env gcloud-credentials list
-  
+
   # Save from specific path
   gz dev-env gcloud-credentials save --name custom --config-path /path/to/gcloud`,
 		SilenceUsage: true,
@@ -97,10 +97,10 @@ SECURITY WARNING: This stores sensitive credential information.
 Examples:
   # Save current gcloud credentials as "production"
   gz dev-env gcloud-credentials save --name production
-  
+
   # Save with description
   gz dev-env gcloud-credentials save --name staging --description "Staging environment"
-  
+
   # Save from specific path
   gz dev-env gcloud-credentials save --name custom --config-path /path/to/gcloud`,
 		RunE: o.runSave,
@@ -131,7 +131,7 @@ The current gcloud credentials will be backed up before loading the new ones.
 Examples:
   # Load the "production" credentials
   gz dev-env gcloud-credentials load --name production
-  
+
   # Load to specific path
   gz dev-env gcloud-credentials load --name staging --config-path /path/to/gcloud`,
 		RunE: o.runLoad,

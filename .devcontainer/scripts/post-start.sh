@@ -41,7 +41,7 @@ echo "🟢 Checking Go environment..."
 if go version >/dev/null 2>&1; then
     GO_VERSION=$(go version | cut -d' ' -f3)
     echo "✅ Go $GO_VERSION is available"
-    
+
     # Verify GOPATH and modules
     if [[ -f "go.mod" ]]; then
         echo "✅ Go module detected"
@@ -57,7 +57,7 @@ echo "🟡 Checking Node.js environment..."
 if node --version >/dev/null 2>&1; then
     NODE_VERSION=$(node --version)
     echo "✅ Node.js $NODE_VERSION is available"
-    
+
     # Check npm
     if npm --version >/dev/null 2>&1; then
         NPM_VERSION=$(npm --version)
@@ -72,7 +72,7 @@ echo "🔵 Checking Python environment..."
 if python3 --version >/dev/null 2>&1; then
     PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
     echo "✅ Python $PYTHON_VERSION is available"
-    
+
     # Check pip
     if pip3 --version >/dev/null 2>&1; then
         PIP_VERSION=$(pip3 --version | cut -d' ' -f2)
@@ -87,7 +87,7 @@ echo "🐳 Checking Docker environment..."
 if docker --version >/dev/null 2>&1; then
     DOCKER_VERSION=$(docker --version | cut -d' ' -f3 | sed 's/,//')
     echo "✅ Docker $DOCKER_VERSION is available"
-    
+
     # Check if Docker daemon is accessible
     if docker info >/dev/null 2>&1; then
         echo "✅ Docker daemon is accessible"

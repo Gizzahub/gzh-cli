@@ -23,7 +23,7 @@ func newNetworkTopologyCmd(logger *zap.Logger, _ string) *cobra.Command {
 		Use:   "network-topology",
 		Short: "Analyze and visualize network topology",
 		Long: `Analyze network topology including containers, services, connections, and dependencies.
-		
+
 This command provides comprehensive network topology analysis including:
 - Container network mapping and relationships
 - Service discovery and dependency analysis
@@ -35,16 +35,16 @@ This command provides comprehensive network topology analysis including:
 Examples:
   # Analyze current network topology
   gz net-env network-topology analyze
-  
+
   # Show topology summary
   gz net-env network-topology summary
-  
+
   # List discovered services
   gz net-env network-topology services
-  
+
   # Show network connections
   gz net-env network-topology connections
-  
+
   # Export topology visualization
   gz net-env network-topology export --format dot --output topology.dot`,
 		SilenceUsage: true,

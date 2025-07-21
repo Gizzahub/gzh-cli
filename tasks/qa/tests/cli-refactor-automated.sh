@@ -23,10 +23,10 @@ run_test() {
     local test_name="$1"
     local test_command="$2"
     local expected_exit_code="${3:-0}"
-    
+
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     echo -e "\n🧪 Testing: $test_name"
-    
+
     if eval "$test_command"; then
         if [ "$expected_exit_code" -eq 0 ]; then
             echo -e "${GREEN}✓ PASSED${NC}: $test_name"
@@ -71,7 +71,7 @@ network_profiles:
     hosts:
       - "10.0.1.100 internal.company.com"
       - "10.0.1.101 gitlab.company.com"
-  
+
   home:
     dns_servers:
       - 1.1.1.1
@@ -79,7 +79,7 @@ network_profiles:
     proxy: none
     vpn: none
     hosts: []
-  
+
   mobile:
     dns_servers:
       - 9.9.9.9

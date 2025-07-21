@@ -43,7 +43,7 @@ This command checks:
 Examples:
   # Validate SSH config based on bulk-clone.yaml
   gz ssh-config validate --config bulk-clone.yaml
-  
+
   # Validate with custom SSH config file
   gz ssh-config validate --config bulk-clone.yaml --ssh-config ~/custom-ssh-config`,
 		RunE: o.run,

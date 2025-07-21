@@ -16,24 +16,24 @@ locals {
     "order-service",
     # ... 47 more
   ]
-  
+
   common_topics = ["microservice", "backend", "production"]
 }
 
 # Create module for standard configuration
 module "microservice_repo" {
   source = "./modules/github-repo"
-  
+
   for_each = toset(local.microservice_repos)
-  
+
   name        = each.key
   visibility  = "private"
   topics      = local.common_topics
-  
+
   has_issues   = true
   has_wiki     = false
   has_projects = false
-  
+
   branch_protection = {
     pattern = "main"
     required_reviews = 2
@@ -86,13 +86,13 @@ patterns:
 # Example with Sentinel (Terraform Cloud/Enterprise only)
 policy "github-security" {
   enforcement_level = "hard-mandatory"
-  
+
   rule {
     condition = all github_repository.* as r {
       r.visibility == "private" and
       r.vulnerability_alerts_enabled == true
     }
-    
+
     error_message = "All repositories must be private with vulnerability alerts"
   }
 }
@@ -128,13 +128,13 @@ policies:
         value: "private"
         enforcement: "required"
         message: "All repositories must be private"
-      
+
       vulnerability_scanning:
         type: "security_feature"
         value: true
         enforcement: "required"
         message: "Vulnerability alerts must be enabled"
-      
+
       branch_protection:
         type: "branch_protection"
         value: true
@@ -153,7 +153,7 @@ patterns:
 # - Total repositories: 150
 # - Compliant: 142 (94.7%)
 # - Non-compliant: 8 (5.3%)
-# 
+#
 # Violations:
 # - api-gateway: missing branch protection
 # - legacy-service: repository is public
@@ -167,31 +167,31 @@ patterns:
 # Define different modules
 module "backend_repos" {
   source = "./modules/backend-repo"
-  
+
   for_each = {
     "user-service"    = { language = "go" }
     "payment-service" = { language = "java" }
     "order-service"   = { language = "python" }
   }
-  
+
   name     = each.key
   language = each.value.language
 }
 
 module "frontend_repos" {
   source = "./modules/frontend-repo"
-  
+
   for_each = toset(["web-app", "mobile-app", "admin-portal"])
-  
+
   name = each.key
   has_pages = true
 }
 
 module "library_repos" {
   source = "./modules/library-repo"
-  
+
   for_each = toset(["common-utils", "auth-lib", "logging-lib"])
-  
+
   name = each.key
   visibility = "public"
 }
@@ -259,14 +259,14 @@ patterns:
 resource "github_repository" "public_docs" {
   name       = "public-docs"
   visibility = "public"  # Exception to private-only policy
-  
+
   # No built-in way to document why this is an exception
 }
 
 # Or use conditional logic
 resource "github_repository" "standard" {
   for_each = toset(var.repository_names)
-  
+
   name       = each.key
   visibility = contains(var.public_exceptions, each.key) ? "public" : "private"
 }
@@ -317,15 +317,15 @@ variable "pilot_repos" {
 
 resource "github_repository" "managed" {
   for_each = var.repository_names
-  
+
   name = each.key
-  
+
   # Complex conditional logic
   delete_branch_on_merge = var.enable_new_settings || contains(var.pilot_repos, each.key)
-  
+
   dynamic "branch_protection" {
     for_each = var.enable_new_settings || contains(var.pilot_repos, each.key) ? [1] : []
-    
+
     content {
       # New protection rules
     }
@@ -383,9 +383,9 @@ locals {
       )
     }
   }
-  
+
   non_compliant = {
-    for name, status in local.compliance_report : 
+    for name, status in local.compliance_report :
     name => status.issues if !status.compliant
   }
 }

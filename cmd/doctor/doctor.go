@@ -811,7 +811,8 @@ func isGoVersionSupported(version string) bool {
 		strings.Contains(version, "go1.20") ||
 		strings.Contains(version, "go1.21") ||
 		strings.Contains(version, "go1.22") ||
-		strings.Contains(version, "go1.23")
+		strings.Contains(version, "go1.23") ||
+		strings.Contains(version, "go1.24")
 }
 
 func getDiskSpace(path string) float64 {

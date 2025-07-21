@@ -29,16 +29,16 @@ This command provides comprehensive VPN profile management including:
 Examples:
   # List all VPN profiles
   gz net-env vpn-profile list
-  
+
   # Create new VPN profile
   gz net-env vpn-profile create office-profile --network "Office WiFi" --vpn corp-vpn --priority 100
-  
+
   # Map network to VPN
   gz net-env vpn-profile map --network "Home WiFi" --vpn home-vpn --priority 50
-  
+
   # Set automatic switching rules
   gz net-env vpn-profile rule add --trigger network-change --action auto-connect
-  
+
   # Show current active profile
   gz net-env vpn-profile active`,
 		SilenceUsage: true,

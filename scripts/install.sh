@@ -20,4 +20,4 @@ echo "template successfully installed."
 
 go run main.go
 
-exit 0 
+exit 0

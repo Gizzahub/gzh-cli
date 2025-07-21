@@ -59,16 +59,16 @@ The configurations are saved to ~/.gz/aws-configs/ by default.
 Examples:
   # Save current AWS config with a name
   gz dev-env aws save --name production
-  
+
   # Save with description
   gz dev-env aws save --name staging --description "Staging AWS config"
-  
+
   # Load a saved AWS config
   gz dev-env aws load --name production
-  
+
   # List all saved configurations
   gz dev-env aws list
-  
+
   # Save from specific path
   gz dev-env aws save --name custom --config-path /path/to/config`,
 		SilenceUsage: true,
@@ -96,10 +96,10 @@ profiles, regions, output formats, and other AWS CLI settings.
 Examples:
   # Save current AWS config as "production"
   gz dev-env aws save --name production
-  
+
   # Save with description
   gz dev-env aws save --name staging --description "Staging environment"
-  
+
   # Save from specific path
   gz dev-env aws save --name custom --config-path /path/to/config`,
 		RunE: o.runSave,
@@ -133,7 +133,7 @@ The current AWS config will be backed up before loading the new one.
 Examples:
   # Load the "production" configuration
   gz dev-env aws load --name production
-  
+
   # Load to specific path
   gz dev-env aws load --name staging --config-path /path/to/config`,
 		RunE: o.runLoad,

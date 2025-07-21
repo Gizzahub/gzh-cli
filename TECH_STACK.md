@@ -71,12 +71,12 @@ pkg/
 ### Binary Distribution
 - **Binary Name**: `gz`
 - **Platforms**: Linux, macOS, Windows
-- **Installation**: 
+- **Installation**:
   - Go install: `go install github.com/gizzahub/gzh-manager-go@latest`
   - Manual build: `make build && make install`
 
 ### Configuration
-- **Config Hierarchy**: 
+- **Config Hierarchy**:
   1. Environment variable: `GZH_CONFIG_PATH`
   2. Current directory: `./bulk-clone.yaml`
   3. User config: `~/.config/gzh-manager/bulk-clone.yaml`

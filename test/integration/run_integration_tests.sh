@@ -25,7 +25,7 @@ print_status() {
 # Function to check prerequisites
 check_prerequisites() {
     print_status "$YELLOW" "Checking prerequisites..."
-    
+
     # Check for required environment variables
     if [[ -z "$GITHUB_TOKEN" ]]; then
         print_status "$RED" "Error: GITHUB_TOKEN environment variable is not set"
@@ -33,20 +33,20 @@ check_prerequisites() {
         echo "  export GITHUB_TOKEN='your-token-here'"
         return 1
     fi
-    
+
     if [[ -z "$GITHUB_TEST_ORG" ]]; then
         print_status "$RED" "Error: GITHUB_TEST_ORG environment variable is not set"
         echo "Please set your test organization name:"
         echo "  export GITHUB_TEST_ORG='your-test-org'"
         return 1
     fi
-    
+
     # Check if Go is installed
     if ! command -v go &> /dev/null; then
         print_status "$RED" "Error: Go is not installed"
         return 1
     fi
-    
+
     print_status "$GREEN" "✓ All prerequisites met"
     return 0
 }
@@ -55,17 +55,17 @@ check_prerequisites() {
 run_tests_with_coverage() {
     local test_path=$1
     local coverage_file="${PROJECT_ROOT}/coverage/integration.out"
-    
+
     mkdir -p "${PROJECT_ROOT}/coverage"
-    
+
     print_status "$YELLOW" "Running integration tests with coverage..."
-    
+
     cd "$PROJECT_ROOT"
     go test -v -coverprofile="$coverage_file" -covermode=atomic "$test_path" || return 1
-    
+
     # Generate HTML coverage report
     go tool cover -html="$coverage_file" -o "${PROJECT_ROOT}/coverage/integration.html"
-    
+
     print_status "$GREEN" "✓ Coverage report generated: coverage/integration.html"
 }
 
@@ -73,9 +73,9 @@ run_tests_with_coverage() {
 run_specific_test() {
     local test_name=$1
     local test_path="./test/integration/..."
-    
+
     print_status "$YELLOW" "Running test: $test_name"
-    
+
     cd "$PROJECT_ROOT"
     go test -v "$test_path" -run "$test_name" || return 1
 }
@@ -83,9 +83,9 @@ run_specific_test() {
 # Function to run all integration tests
 run_all_tests() {
     local test_path="./test/integration/..."
-    
+
     print_status "$YELLOW" "Running all integration tests..."
-    
+
     cd "$PROJECT_ROOT"
     go test -v -timeout 30m "$test_path" || return 1
 }
@@ -93,9 +93,9 @@ run_all_tests() {
 # Function to run tests with race detection
 run_tests_with_race() {
     local test_path="./test/integration/..."
-    
+
     print_status "$YELLOW" "Running integration tests with race detection..."
-    
+
     cd "$PROJECT_ROOT"
     go test -v -race "$test_path" || return 1
 }
@@ -103,11 +103,11 @@ run_tests_with_race() {
 # Function to clean test artifacts
 clean_test_artifacts() {
     print_status "$YELLOW" "Cleaning test artifacts..."
-    
+
     # Remove temporary test directories
     rm -rf /tmp/repo-config-integration-*
     rm -rf /tmp/github-integration-test-*
-    
+
     print_status "$GREEN" "✓ Test artifacts cleaned"
 }
 
@@ -136,7 +136,7 @@ show_usage() {
 # Main execution
 main() {
     local command=${1:-all}
-    
+
     case "$command" in
         all)
             check_prerequisites || exit 1

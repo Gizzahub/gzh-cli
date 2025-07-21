@@ -27,7 +27,7 @@ policies:
         value: true
         enforcement: "required"
         message: "Vulnerability alerts must be enabled for security scanning"
-      
+
       default_branch_protection:
         type: "branch_protection"
         value: true
@@ -49,28 +49,28 @@ policies:
         value: "private"
         enforcement: "required"
         message: "Sensitive repositories must be private"
-      
+
       vulnerability_alerts:
         type: "security_feature"
         value: true
         enforcement: "required"
         message: "Vulnerability alerts are mandatory"
-      
+
       secret_scanning:
         type: "security_feature"
         value: true
         enforcement: "required"
         message: "Secret scanning must be enabled"
-      
+
       automated_security_fixes:
         type: "security_feature"
         value: true
         enforcement: "recommended"
         message: "Automated security fixes are recommended"
-      
+
       branch_protection_reviews:
         type: "branch_protection_setting"
-        value: 
+        value:
           required_reviews: 2
           dismiss_stale_reviews: true
         enforcement: "required"
@@ -91,7 +91,7 @@ policies:
         value: "private"
         enforcement: "required"
         message: "All repositories must be private"
-      
+
       all_security_features:
         type: "security_features"
         value:
@@ -103,7 +103,7 @@ policies:
           security_advisories: true
         enforcement: "required"
         message: "All security features must be enabled"
-      
+
       strict_branch_protection:
         type: "branch_protection"
         value:
@@ -115,7 +115,7 @@ policies:
           required_signatures: true
         enforcement: "required"
         message: "Strict branch protection required"
-      
+
       no_force_push:
         type: "branch_protection_setting"
         value:
@@ -141,7 +141,7 @@ policies:
         value: true
         enforcement: "required"
         message: "Audit logging must be enabled for SOC2"
-      
+
       code_review_required:
         type: "branch_protection_setting"
         value:
@@ -149,13 +149,13 @@ policies:
           require_code_owner_reviews: true
         enforcement: "required"
         message: "Code review is mandatory for SOC2"
-      
+
       vulnerability_management:
         type: "security_feature"
         value: true
         enforcement: "required"
         message: "Vulnerability scanning required for SOC2"
-      
+
       signed_commits:
         type: "branch_protection_setting"
         value:
@@ -178,7 +178,7 @@ policies:
         value: "private"
         enforcement: "required"
         message: "GDPR data must be in private repositories"
-      
+
       access_control:
         type: "permissions"
         value:
@@ -186,7 +186,7 @@ policies:
           require_2fa: true
         enforcement: "required"
         message: "Strict access control for GDPR compliance"
-      
+
       data_retention:
         type: "retention_policy"
         value:
@@ -194,7 +194,7 @@ policies:
           require_approval_for_extension: true
         enforcement: "required"
         message: "Data retention limits for GDPR"
-      
+
       audit_trail:
         type: "audit_log"
         value: true
@@ -216,7 +216,7 @@ policies:
         value: "private"
         enforcement: "required"
         message: "PHI must be in private repositories"
-      
+
       access_controls:
         type: "permissions"
         value:
@@ -225,13 +225,13 @@ policies:
           review_required_for_admin: true
         enforcement: "required"
         message: "HIPAA requires strict access controls"
-      
+
       audit_logging:
         type: "audit_log"
         value: true
         enforcement: "required"
         message: "HIPAA requires comprehensive audit logging"
-      
+
       vulnerability_scanning:
         type: "security_features"
         value:
@@ -258,19 +258,19 @@ policies:
         value: "public"
         enforcement: "required"
         message: "Open source projects must be public"
-      
+
       has_license:
         type: "file_exists"
         value: "LICENSE"
         enforcement: "required"
         message: "Open source projects must have a license"
-      
+
       has_readme:
         type: "file_exists"
         value: "README.md"
         enforcement: "required"
         message: "README is required for open source projects"
-      
+
       community_features:
         type: "settings"
         value:
@@ -294,7 +294,7 @@ policies:
         value: "public"
         enforcement: "required"
         message: "Community projects must be public"
-      
+
       required_files:
         type: "files_exist"
         value:
@@ -304,7 +304,7 @@ policies:
           - "CODE_OF_CONDUCT.md"
         enforcement: "required"
         message: "Community files are required"
-      
+
       community_settings:
         type: "settings"
         value:
@@ -314,7 +314,7 @@ policies:
           has_projects: true
         enforcement: "required"
         message: "All community features must be enabled"
-      
+
       branch_protection:
         type: "branch_protection"
         value:
@@ -338,7 +338,7 @@ policies:
         value: "public"
         enforcement: "required"
         message: "Enterprise OSS must be public"
-      
+
       legal_files:
         type: "files_exist"
         value:
@@ -349,7 +349,7 @@ policies:
           - "SECURITY.md"
         enforcement: "required"
         message: "Legal and community files required"
-      
+
       quality_controls:
         type: "branch_protection"
         value:
@@ -361,7 +361,7 @@ policies:
             - "license/cla"
         enforcement: "required"
         message: "Quality controls are mandatory"
-      
+
       security_scanning:
         type: "security_feature"
         value: true
@@ -385,7 +385,7 @@ policies:
         value: "private"
         enforcement: "recommended"
         message: "Enterprise repos should be private by default"
-      
+
       branch_protection:
         type: "branch_protection"
         value:
@@ -394,7 +394,7 @@ policies:
           require_code_owner_reviews: true
         enforcement: "required"
         message: "Code review is mandatory"
-      
+
       ci_integration:
         type: "status_checks"
         value:
@@ -402,7 +402,7 @@ policies:
           - "security-scan"
         enforcement: "required"
         message: "CI/CD integration is required"
-      
+
       documentation:
         type: "file_exists"
         value: "README.md"
@@ -424,7 +424,7 @@ policies:
         value: "private"
         enforcement: "required"
         message: "Production repos must be private"
-      
+
       strict_protection:
         type: "branch_protection"
         value:
@@ -436,7 +436,7 @@ policies:
             - "release-team"
         enforcement: "required"
         message: "Strict protection for production"
-      
+
       deployment_gates:
         type: "status_checks"
         value:
@@ -447,7 +447,7 @@ policies:
           - "approval/production"
         enforcement: "required"
         message: "All deployment gates must pass"
-      
+
       change_management:
         type: "pull_request_settings"
         value:
@@ -476,7 +476,7 @@ policies:
           allow_force_pushes: true
         enforcement: "recommended"
         message: "Feature branches should have light protection"
-      
+
       main_protection:
         type: "branch_protection"
         value:
@@ -486,7 +486,7 @@ policies:
             - "ci/test"
         enforcement: "required"
         message: "Main branch must be protected"
-      
+
       project_management:
         type: "settings"
         value:
@@ -516,7 +516,7 @@ policies:
             - "hotfix/*"
         enforcement: "required"
         message: "GitFlow branches must exist and be protected"
-      
+
       main_branch:
         type: "branch_protection"
         value:
@@ -526,7 +526,7 @@ policies:
           allow_force_pushes: false
         enforcement: "required"
         message: "Main branch requires strict protection"
-      
+
       develop_branch:
         type: "branch_protection"
         value:
@@ -537,7 +537,7 @@ policies:
             - "ci/test"
         enforcement: "required"
         message: "Develop branch requires protection"
-      
+
       release_branches:
         type: "branch_protection"
         value:
@@ -595,7 +595,7 @@ policies:
         value: "README.md"
         enforcement: "required"
         message: "All repos need documentation"
-      
+
       basic_protection:
         type: "branch_protection"
         value: true
@@ -682,7 +682,7 @@ policies:
         value: "private"
         enforcement: "recommended"
         message: "Repositories should be private"
-      
+
       vulnerability_scanning:
         type: "security_feature"
         value: true
@@ -698,7 +698,7 @@ policies:
           required_reviews: 2
         enforcement: "required"
         message: "Code review is required for compliance"
-      
+
       audit_log:
         type: "audit_log"
         value: true
@@ -715,7 +715,7 @@ policies:
           enforce_admins: false
         enforcement: "required"
         message: "Production requires strict controls"
-      
+
       deployment_approvals:
         type: "environment_protection"
         value:
@@ -728,15 +728,15 @@ patterns:
   - pattern: "*-service"
     template: "microservice"
     policies: ["security-baseline", "compliance"]
-  
+
   - pattern: "*-ui"
     template: "frontend"
     policies: ["security-baseline"]
-  
+
   - pattern: "*-data"
     template: "data-service"
     policies: ["security-baseline", "compliance", "production"]
-  
+
   - pattern: "prod-*"
     policies: ["production"]
 
@@ -780,12 +780,12 @@ templates:
   base:
     settings:
       has_issues: true
-  
+
   secure:
     base: "base"
     settings:
       private: true
-  
+
   production:
     base: "secure"
     security:

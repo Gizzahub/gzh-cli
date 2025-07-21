@@ -64,12 +64,12 @@ Use testify/mock for complex scenarios that require custom behavior or stateful 
 func TestExample(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    
+
     mockClient := mocks.NewMockAPIClient(ctrl)
     mockClient.EXPECT().
         GetRepository(gomock.Any(), "owner", "repo").
         Return(&github.RepositoryInfo{Name: "repo"}, nil)
-    
+
     // Test with mock
 }
 ```
@@ -81,7 +81,7 @@ func TestExample(t *testing.T) {
     mockEnv := builders.NewEnvironmentBuilder().
         WithGitHubToken("token").
         Build()
-    
+
     // Test with builders
 }
 ```
@@ -100,7 +100,7 @@ func (m *MockComplexService) ProcessData(data []byte) error {
 func TestComplexScenario(t *testing.T) {
     mockService := new(MockComplexService)
     mockService.On("ProcessData", mock.AnythingOfType("[]byte")).Return(nil)
-    
+
     // Test with complex mock
     mockService.AssertExpectations(t)
 }

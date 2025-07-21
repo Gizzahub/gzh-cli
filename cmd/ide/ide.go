@@ -68,13 +68,13 @@ Supported IDEs:
 Examples:
   # Monitor all JetBrains settings
   gz ide monitor
-  
+
   # Monitor specific product
   gz ide monitor --product IntelliJIdea2023.2
-  
+
   # Fix settings sync issues
   gz ide fix-sync
-  
+
   # List detected JetBrains installations
   gz ide list`,
 		SilenceUsage: true,
@@ -102,13 +102,13 @@ and monitor configuration changes across different IDE installations.
 Examples:
   # Monitor all JetBrains products
   gz ide monitor
-  
+
   # Monitor specific product with verbose output
   gz ide monitor --product PyCharm2024.3 --verbose
-  
+
   # Run as daemon with logging
   gz ide monitor --daemon --log /var/log/ide-monitor.log
-  
+
   # Monitor with custom directory
   gz ide monitor --watch-dir ~/.config/JetBrains/IntelliJIdea2023.2`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -141,7 +141,7 @@ their configuration directories, versions, and status information.
 Examples:
   # List all detected installations
   gz ide list
-  
+
   # List with verbose information
   gz ide list --verbose`,
 		RunE: o.runList,
@@ -168,10 +168,10 @@ This command identifies and fixes common settings sync problems, such as:
 Examples:
   # Fix sync issues for all products
   gz ide fix-sync
-  
+
   # Fix specific product
   gz ide fix-sync --product PyCharm2024.3
-  
+
   # Verbose mode with detailed output
   gz ide fix-sync --verbose`,
 		RunE: o.runFixSync,

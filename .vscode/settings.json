@@ -23,14 +23,14 @@
         "GO111MODULE": "on"
     },
     "go.buildFlags": ["-ldflags", "-X main.version=dev"],
-    
+
     // TypeScript/JavaScript settings
     "typescript.preferences.includePackageJsonAutoImports": "on",
     "typescript.updateImportsOnFileMove.enabled": "always",
     "typescript.suggest.autoImports": true,
     "javascript.suggest.autoImports": true,
     "typescript.preferences.importModuleSpecifier": "relative",
-    
+
     // Python settings
     "python.defaultInterpreterPath": "./bindings/python/venv/bin/python",
     "python.linting.enabled": true,
@@ -43,7 +43,7 @@
     "python.testing.pytestArgs": [
         "bindings/python"
     ],
-    
+
     // Editor settings
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
@@ -56,7 +56,7 @@
     "editor.tabSize": 4,
     "editor.insertSpaces": false,
     "editor.detectIndentation": true,
-    
+
     // File settings
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
@@ -83,7 +83,7 @@
         "**/.git/subtree-cache/**": true,
         "**/tmp/**": true
     },
-    
+
     // Terminal settings
     "terminal.integrated.defaultProfile.linux": "zsh",
     "terminal.integrated.defaultProfile.osx": "zsh",
@@ -95,7 +95,7 @@
         "GZH_DEV_MODE": "true",
         "GO111MODULE": "on"
     },
-    
+
     // YAML schema associations
     "yaml.schemas": {
         "./docs/bulk-clone-schema.json": [
@@ -119,7 +119,7 @@
             ".goreleaser.yaml"
         ]
     },
-    
+
     // JSON schema associations
     "json.schemas": [
         {
@@ -136,22 +136,22 @@
             "url": "https://json.schemastore.org/tsconfig.json"
         }
     ],
-    
+
     // Makefile settings
     "makefile.configureOnOpen": true,
-    
+
     // Docker settings
     "docker.defaultRegistryPath": "gizzahub",
-    
+
     // Git settings
     "git.autofetch": true,
     "git.enableSmartCommit": true,
     "git.confirmSync": false,
     "git.postCommitCommand": "none",
-    
+
     // Security settings
     "security.workspace.trust.enabled": false,
-    
+
     // Search settings
     "search.exclude": {
         "**/node_modules": true,
@@ -162,7 +162,7 @@
         "**/tmp": true,
         "**/*.log": true
     },
-    
+
     // Language-specific settings
     "[go]": {
         "editor.tabSize": 4,
@@ -218,7 +218,7 @@
         "editor.tabSize": 4,
         "editor.insertSpaces": true
     },
-    
+
     // Extension-specific settings
     "eslint.workingDirectories": [
         "web",
@@ -226,16 +226,16 @@
     ],
     "prettier.configPath": "web/.prettierrc",
     "prettier.ignorePath": "web/.prettierignore",
-    
+
     // Testing settings
     "go.testTimeout": "30s",
     "testing.automaticallyOpenPeekView": "never",
-    
+
     // Debugging settings
     "debug.console.acceptSuggestionOnEnter": "off",
     "debug.console.fontSize": 14,
     "debug.console.wordWrap": false,
-    
+
     // Performance settings
     "typescript.preferences.includePackageJsonAutoImports": "on",
     "typescript.suggest.includeAutomaticOptionalChainCompletions": true,

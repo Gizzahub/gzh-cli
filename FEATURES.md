@@ -64,7 +64,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 
 ### Always-Latest Package Updates
 - **Multi-package manager support**: Automated updates for asdf, Homebrew, SDKMAN, MacPorts, APT, and rbenv
-- **Flexible update strategies**: 
+- **Flexible update strategies**:
   - Minor latest: Update to latest minor version within the same major version
   - Major latest: Update to the absolute latest version
 - **Bulk package operations**: Update multiple packages and tools simultaneously

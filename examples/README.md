@@ -41,7 +41,7 @@ This directory contains example configurations and usage patterns for the gz CLI
    ```bash
    # Set your GitHub token
    export GZH_GITHUB_TOKEN="your-token-here"
-   
+
    # Or add to the config file
    vim ~/.config/gzh-manager/bulk-clone.yaml
    ```

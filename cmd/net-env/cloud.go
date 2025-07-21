@@ -1974,7 +1974,7 @@ func newCloudVPNEnvironmentCmd(ctx context.Context, opts *cloudOptions) *cobra.C
 
 Supported environments:
 - home: Home network environment
-- office: Office network environment  
+- office: Office network environment
 - public: Public network (cafes, airports, etc.)
 - mobile: Mobile network environment
 - hotel: Hotel network environment

@@ -195,7 +195,7 @@ for _, repo := range repos {
         log.Printf("Warning: %v", err)
         continue
     }
-    
+
     // Process configuration
     fmt.Printf("Repository: %s\n", config.Name)
     fmt.Printf("  Template: %s\n", detectTemplate(repo, templateConfig))

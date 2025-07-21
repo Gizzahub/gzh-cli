@@ -261,7 +261,7 @@ net_env:
       scripts:
         post_switch:
           - "echo 'Switched to home network'"
-    
+
     office:
       name: "office"
       description: "Office network with corporate VPN"
@@ -288,7 +288,7 @@ net_env:
           - "echo 'Connecting to office network...'"
         post_switch:
           - "echo 'Connected to office network'"
-    
+
     public:
       name: "public"
       description: "Public WiFi with VPN for security"

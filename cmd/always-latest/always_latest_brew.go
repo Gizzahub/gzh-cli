@@ -60,19 +60,19 @@ Update strategies:
 Examples:
   # Update all outdated packages (default)
   gz always-latest brew
-  
+
   # Update specific packages only
   gz always-latest brew --packages node,python,git
-  
+
   # Include cask applications in updates
   gz always-latest brew --casks
-  
+
   # Update and cleanup old versions
   gz always-latest brew --cleanup
-  
+
   # Dry run to see what would be updated
   gz always-latest brew --dry-run
-  
+
   # Update all packages without prompting
   gz always-latest brew --upgrade-all`,
 		RunE: o.run,

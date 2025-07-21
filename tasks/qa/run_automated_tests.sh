@@ -26,7 +26,7 @@ log_test() {
     local test_name="$1"
     local status="$2"
     local details="$3"
-    
+
     echo -e "${BLUE}[TEST]${NC} $test_name: $status"
     echo "## $test_name" >> "$RESULTS_FILE"
     echo "Status: $status" >> "$RESULTS_FILE"
@@ -39,9 +39,9 @@ run_test_command() {
     local test_name="$1"
     local command="$2"
     local expected_behavior="$3"
-    
+
     echo -e "${YELLOW}Running:${NC} $command"
-    
+
     if eval "$command" 2>&1; then
         log_test "$test_name" "✅ PASSED" "Command executed successfully: $command"
         return 0
@@ -148,7 +148,7 @@ echo -e "${BLUE}=== Running Comprehensive Test Suites ===${NC}"
 # Check if test directory exists
 if [ -d "${SCRIPT_DIR}/tests" ]; then
     echo "Found test directory, running additional test suites..."
-    
+
     # Run CLI refactor tests
     if [ -f "${SCRIPT_DIR}/tests/cli-refactor-automated.sh" ]; then
         echo -e "\n${YELLOW}Running CLI Refactor Automated Tests${NC}"
@@ -158,7 +158,7 @@ if [ -d "${SCRIPT_DIR}/tests" ]; then
             log_test "CLI Refactor Test Suite" "❌ FAILED" "Some CLI refactor tests failed"
         fi
     fi
-    
+
     # Run network environment tests
     if [ -f "${SCRIPT_DIR}/tests/network-env-automated.sh" ]; then
         echo -e "\n${YELLOW}Running Network Environment Automated Tests${NC}"
@@ -168,7 +168,7 @@ if [ -d "${SCRIPT_DIR}/tests" ]; then
             log_test "Network Environment Test Suite" "❌ FAILED" "Some network environment tests failed"
         fi
     fi
-    
+
     # Run user experience tests
     if [ -f "${SCRIPT_DIR}/tests/user-experience-automated.sh" ]; then
         echo -e "\n${YELLOW}Running User Experience Automated Tests${NC}"

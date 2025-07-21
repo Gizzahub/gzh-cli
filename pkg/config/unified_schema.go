@@ -548,7 +548,7 @@ type GCPConfig struct {
 	DefaultProject string `yaml:"defaultProject,omitempty" json:"defaultProject,omitempty"`
 
 	// Service account key file
-	ServiceAccountKey string `yaml:"serviceAccountKey,omitempty" json:"serviceAccountKey,omitempty"` 
+	ServiceAccountKey string `yaml:"serviceAccountKey,omitempty" json:"serviceAccountKey,omitempty"`
 
 	// Preferred regions
 	PreferredRegions []string `yaml:"preferredRegions,omitempty" json:"preferredRegions,omitempty"`
@@ -581,7 +581,7 @@ type ContainerConfig struct {
 	Podman *PodmanConfig `yaml:"podman,omitempty" json:"podman,omitempty"`
 
 	// Default container runtime
-	DefaultRuntime string `yaml:"defaultRuntime,omitempty" json:"defaultRuntime,omitempty" validate:"omitempty,oneof=docker podman"` 
+	DefaultRuntime string `yaml:"defaultRuntime,omitempty" json:"defaultRuntime,omitempty" validate:"omitempty,oneof=docker podman"`
 }
 
 // DockerConfig contains Docker configuration settings.

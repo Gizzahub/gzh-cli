@@ -71,10 +71,10 @@ Features:
 Examples:
   # Discover repositories in current directory
   gz gen-config discover
-  
+
   # Discover repositories recursively in ~/work
   gz gen-config discover ~/work --recursive
-  
+
   # Generate to custom output file
   gz gen-config discover ~/projects --output my-discovered-config.yaml`,
 		Args: cobra.MaximumNArgs(1),

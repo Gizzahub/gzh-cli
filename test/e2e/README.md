@@ -206,13 +206,13 @@ func TestNewFeature_E2E(t *testing.T) {
     // Setup test environment
     env := helpers.NewTestEnvironment(t)
     defer env.Cleanup()
-    
+
     // Given: Initial state setup
     env.CreateConfig("feature-config.yaml", configData)
-    
+
     // When: Execute CLI commands
     result := env.RunCommand("gz", "feature", "command", "--flag", "value")
-    
+
     // Then: Validate results
     require.NoError(t, result.Error)
     assert.Contains(t, result.Output, "expected-output")
@@ -336,10 +336,10 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: 1.24
-    
+
     - name: Build Application
       run: make build
-    
+
     - name: Run E2E Tests
       env:
         GITHUB_TOKEN: ${{ secrets.E2E_GITHUB_TOKEN }}

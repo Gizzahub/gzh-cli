@@ -594,7 +594,7 @@ go mod tidy
    ```bash
    # Use make parallel jobs
    make -j$(nproc) build
-   
+
    # Go parallel compilation
    export GOMAXPROCS=$(nproc)
    ```
@@ -603,7 +603,7 @@ go mod tidy
    ```bash
    # Only rebuild changed packages
    go install ./cmd/...
-   
+
    # Use go build cache
    export GOCACHE=/workspace/.gocache
    ```
@@ -613,7 +613,7 @@ go mod tidy
    # Cache Go modules
    COPY go.mod go.sum ./
    RUN go mod download
-   
+
    # Cache npm dependencies
    COPY package*.json ./
    RUN npm ci
@@ -643,7 +643,7 @@ go mod tidy
    # Weekly dependency updates
    go get -u ./...
    go mod tidy
-   
+
    cd web && npm update
    ```
 
@@ -654,7 +654,7 @@ go mod tidy
    # Never commit secrets
    echo "*.env" >> .gitignore
    echo "secrets/" >> .gitignore
-   
+
    # Use environment variables
    export GITHUB_TOKEN="$(cat ~/.github_token)"
    ```
@@ -663,7 +663,7 @@ go mod tidy
    ```bash
    # Run as non-root user
    USER vscode
-   
+
    # Minimal attack surface
    RUN apt-get autoremove -y
    RUN rm -rf /var/lib/apt/lists/*
@@ -683,7 +683,7 @@ go mod tidy
    # Monitor memory usage
    htop
    docker stats
-   
+
    # Tune Go GC
    export GOGC=100
    export GOMEMLIMIT=6GiB
@@ -694,7 +694,7 @@ go mod tidy
    # Clean build artifacts
    make clean
    docker system prune
-   
+
    # Monitor disk usage
    du -sh /workspace/*
    df -h

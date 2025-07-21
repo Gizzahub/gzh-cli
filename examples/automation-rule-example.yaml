@@ -20,7 +20,7 @@ spec:
   organization: "myorg"
   enabled: true
   priority: 100
-  
+
   conditions:
     logical_operator: "AND"
     event_types:
@@ -41,7 +41,7 @@ spec:
       - path: "$.pull_request.base.ref"
         operator: "equals"
         value: "main"
-  
+
   actions:
     - id: "assign-go-reviewers"
       type: "assign_reviewer"
@@ -60,7 +60,7 @@ spec:
         retry_interval: "10s"
         backoff_factor: 2.0
       on_failure: "continue"
-    
+
     - id: "add-review-label"
       type: "add_label"
       name: "Add Review Required Label"
@@ -99,7 +99,7 @@ spec:
   organization: "myorg"
   enabled: true
   priority: 200
-  
+
   conditions:
     logical_operator: "OR"
     event_types:
@@ -107,7 +107,7 @@ spec:
       - "security_advisory"
     custom_filters:
       severity: ["high", "critical"]
-  
+
   actions:
     - id: "create-security-issue"
       type: "create_issue"
@@ -117,23 +117,23 @@ spec:
         title: "🚨 Security Alert: {{.alert.title}}"
         body: |
           ## Security Alert Details
-          
+
           **Severity:** {{.alert.severity}}
           **Package:** {{.alert.package}}
           **Vulnerable Version:** {{.alert.vulnerable_version}}
           **Patched Version:** {{.alert.patched_version}}
-          
+
           **Description:**
           {{.alert.description}}
-          
+
           **Recommendation:**
           {{.alert.recommendation}}
-          
+
           **References:**
           {{range .alert.references}}
           - {{.}}
           {{end}}
-          
+
           ---
           *This issue was automatically created by the security automation system.*
         labels:
@@ -149,7 +149,7 @@ spec:
         max_retries: 2
         retry_interval: "30s"
       on_failure: "stop"
-    
+
     - id: "notify-security-team"
       type: "slack_message"
       name: "Notify Security Team"
@@ -158,11 +158,11 @@ spec:
         channel: "#security-alerts"
         message: |
           🚨 **Security Alert Detected**
-          
+
           Repository: {{.repository.name}}
           Severity: {{.alert.severity}}
           Package: {{.alert.package}}
-          
+
           Issue created: {{.issue.url}}
         urgent: true
         mention_users:
@@ -190,7 +190,7 @@ spec:
   organization: "myorg"
   enabled: true
   priority: 150
-  
+
   conditions:
     logical_operator: "AND"
     event_types:
@@ -201,7 +201,7 @@ spec:
       - "^release/.*"
     business_hours: true
     days_of_week: [1, 2, 3, 4, 5] # Monday to Friday
-    
+
   actions:
     - id: "trigger-deployment-workflow"
       type: "trigger_workflow"
@@ -219,7 +219,7 @@ spec:
         max_retries: 1
         retry_interval: "60s"
       on_failure: "stop"
-    
+
     - id: "create-deployment-issue"
       type: "create_issue"
       name: "Create Deployment Tracking Issue"
@@ -228,18 +228,18 @@ spec:
         title: "🚀 Production Deployment: {{.branch}}"
         body: |
           ## Deployment Information
-          
+
           **Branch:** {{.branch}}
           **Version:** {{.tag}}
           **Triggered by:** {{.sender.login}}
           **Started at:** {{.timestamp}}
-          
+
           ## Checklist
           - [ ] Deployment workflow completed
           - [ ] Health checks passed
           - [ ] Monitoring alerts reviewed
           - [ ] Stakeholders notified
-          
+
           ## Links
           - [Deployment Workflow]({{.workflow.url}})
           - [Monitoring Dashboard](https://monitoring.company.com)
@@ -272,7 +272,7 @@ spec:
   organization: "myorg"
   enabled: true
   priority: 80
-  
+
   conditions:
     logical_operator: "AND"
     event_types:
@@ -291,7 +291,7 @@ spec:
       - path: "$.pull_request.draft"
         operator: "equals"
         value: false
-  
+
   actions:
     - id: "run-linter"
       type: "trigger_workflow"
@@ -305,7 +305,7 @@ spec:
           pr_number: "{{.pull_request.number}}"
       timeout: "120s"
       on_failure: "continue"
-    
+
     - id: "run-security-scan"
       type: "trigger_workflow"
       name: "Run Security Scan"
@@ -318,7 +318,7 @@ spec:
           pr_number: "{{.pull_request.number}}"
       timeout: "180s"
       on_failure: "continue"
-    
+
     - id: "add-quality-labels"
       type: "add_label"
       name: "Add Quality Check Labels"
@@ -350,7 +350,7 @@ spec:
   organization: "myorg"
   enabled: true
   priority: 90
-  
+
   conditions:
     logical_operator: "AND"
     event_types:
@@ -361,7 +361,7 @@ spec:
       - path: "$.issue.user.type"
         operator: "not_equals"
         value: "Bot"
-  
+
   actions:
     - id: "categorize-bug-report"
       type: "add_label"
@@ -383,7 +383,7 @@ spec:
           - "triage-needed"
         priority: "medium"
       timeout: "20s"
-    
+
     - id: "categorize-feature-request"
       type: "add_label"
       name: "Categorize Feature Request"
@@ -401,7 +401,7 @@ spec:
           - "triage-needed"
         priority: "low"
       timeout: "20s"
-    
+
     - id: "assign-initial-triager"
       type: "assign_reviewer"
       name: "Assign Initial Triager"
@@ -411,7 +411,7 @@ spec:
           - "triage-bot"
         notify: false
       timeout: "15s"
-    
+
     - id: "send-acknowledgment"
       type: "create_issue_comment"
       name: "Send Acknowledgment Comment"
@@ -419,14 +419,14 @@ spec:
       parameters:
         body: |
           Thank you for opening this issue! 🙏
-          
+
           This issue has been automatically triaged and labeled. A team member will review it soon.
-          
+
           **Next Steps:**
           - We'll review the issue within 2 business days
           - If you need urgent assistance, please contact our support team
           - You can track the progress of this issue using the labels above
-          
+
           ---
           *This is an automated message from the issue triage system.*
       timeout: "30s"

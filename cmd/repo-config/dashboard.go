@@ -95,7 +95,7 @@ func handleRepositoriesAPI(w http.ResponseWriter, _ *http.Request, organization,
 				"lastUpdated": "2024-01-15T10:30:00Z"
 			},
 			{
-				"name": "web-frontend", 
+				"name": "web-frontend",
 				"visibility": "public",
 				"template": "standard",
 				"compliant": false,
@@ -195,7 +195,7 @@ func generateDashboardHTML(organization string, autoRefresh bool, refreshRate in
         <h1>Repository Compliance Dashboard</h1>
         <p>Organization: %s</p>
     </div>
-    
+
     <div class="dashboard">
         <div class="card">
             <h2>📊 Compliance Overview</h2>
@@ -210,7 +210,7 @@ func generateDashboardHTML(organization string, autoRefresh bool, refreshRate in
                 </div>
             </div>
         </div>
-        
+
         <div class="card">
             <h2>🔍 Issues Summary</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
@@ -228,7 +228,7 @@ func generateDashboardHTML(organization string, autoRefresh bool, refreshRate in
                 </div>
             </div>
         </div>
-        
+
         <div class="card">
             <h2>🏆 Top Performing Repositories</h2>
             <ul style="list-style: none; padding: 0;">
@@ -243,7 +243,7 @@ func generateDashboardHTML(organization string, autoRefresh bool, refreshRate in
                 </li>
             </ul>
         </div>
-        
+
         <div class="card">
             <h2>⚠️ Needs Attention</h2>
             <ul style="list-style: none; padding: 0;">
@@ -259,7 +259,7 @@ func generateDashboardHTML(organization string, autoRefresh bool, refreshRate in
             </ul>
         </div>
     </div>
-    
+
     <div class="refresh-info">
         <p>🕐 Last updated: %s</p>
         %s

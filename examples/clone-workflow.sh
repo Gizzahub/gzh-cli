@@ -32,13 +32,13 @@ warn() {
 # Check prerequisites
 check_prerequisites() {
     log "Checking prerequisites..."
-    
+
     # Check if gz is installed
     if ! command -v gz &> /dev/null; then
         error "gz command not found. Please install gzh-manager-go first."
         exit 1
     fi
-    
+
     # Check if config exists
     if [[ ! -f "$CONFIG_FILE" ]]; then
         warn "Config file not found at $CONFIG_FILE"
@@ -51,7 +51,7 @@ github:
     token: "\${GITHUB_TOKEN}"
     targetPath: "${REPOS_DIR}/github"
     strategy: "reset"
-    
+
 settings:
   concurrency: 5
   retryAttempts: 3
@@ -60,7 +60,7 @@ EOF
         log "Please edit $CONFIG_FILE with your settings"
         exit 1
     fi
-    
+
     # Check tokens
     if [[ -z "$GITHUB_TOKEN" ]]; then
         warn "GITHUB_TOKEN not set. Only public repos will be accessible."
@@ -70,26 +70,26 @@ EOF
 # Validate configuration
 validate_config() {
     log "Validating configuration..."
-    
+
     if ! gz bulk-clone validate --config "$CONFIG_FILE"; then
         error "Configuration validation failed"
         exit 1
     fi
-    
+
     log "Configuration is valid"
 }
 
 # Discovery phase - see what would be cloned
 discover_repos() {
     log "Discovering repositories..."
-    
+
     # Run in dry-run mode to see what would be cloned
     gz bulk-clone \
         --config "$CONFIG_FILE" \
         --dry-run \
         --log-level info \
         2>&1 | tee -a "$LOG_FILE"
-    
+
     echo
     read -p "Proceed with cloning? (y/N) " -n 1 -r
     echo
@@ -104,10 +104,10 @@ clone_repos() {
     log "Starting bulk clone operation..."
     log "Target directory: $REPOS_DIR"
     log "Log file: $LOG_FILE"
-    
+
     # Create target directory
     mkdir -p "$REPOS_DIR"
-    
+
     # Run bulk clone
     if gz bulk-clone \
         --config "$CONFIG_FILE" \
@@ -124,13 +124,13 @@ clone_repos() {
 # Post-clone operations
 post_clone() {
     log "Running post-clone operations..."
-    
+
     # Generate summary
     log "Generating repository summary..."
-    
+
     total_repos=$(find "$REPOS_DIR" -name ".git" -type d | wc -l)
     total_size=$(du -sh "$REPOS_DIR" 2>/dev/null | cut -f1)
-    
+
     cat >> "$LOG_FILE" <<EOF
 
 === Clone Summary ===
@@ -140,11 +140,11 @@ Target directory: $REPOS_DIR
 Timestamp: $(date)
 ====================
 EOF
-    
+
     log "Summary:"
     log "  - Total repositories: $total_repos"
     log "  - Total disk usage: $total_size"
-    
+
     # Optional: Update all repos
     read -p "Update all repositories now? (y/N) " -n 1 -r
     echo
@@ -160,13 +160,13 @@ EOF
 # Main workflow
 main() {
     log "Starting gz bulk clone workflow"
-    
+
     check_prerequisites
     validate_config
     discover_repos
     clone_repos
     post_clone
-    
+
     log "Workflow completed. Log saved to: $LOG_FILE"
 }
 

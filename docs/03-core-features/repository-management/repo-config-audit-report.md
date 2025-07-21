@@ -156,7 +156,7 @@ To add custom metrics to the report:
   run: |
     gz repo-config audit --org ${{ github.repository_owner }} \
       --format html --output audit-report.html
-    
+
 - name: Upload Report
   uses: actions/upload-artifact@v3
   with:

@@ -53,7 +53,7 @@ rules:
   G401:
     # Allowed weak hash functions (none recommended)
     allowed: []
-  
+
   G402:
     # Minimum TLS version
     min_version: "1.2"

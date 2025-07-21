@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	cmdSave    = "save"
-	cmdLoad    = "load" 
-	cmdList    = "list"
+	cmdSave            = "save"
+	cmdLoad            = "load"
+	cmdList            = "list"
 	defaultKeyNameName = "default"
 )
 

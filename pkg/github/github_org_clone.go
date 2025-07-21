@@ -262,7 +262,6 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 
 	for _, repo := range orgRepos {
 		// Capture loop variable
-		repo := repo
 
 		g.Go(func() error {
 			// Acquire semaphore to limit concurrency

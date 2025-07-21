@@ -85,16 +85,16 @@ This command provides functionality to:
 Examples:
   # List all available subscriptions
   gz dev-env azure-subscription list
-  
+
   # Switch to a specific subscription
   gz dev-env azure-subscription switch my-subscription-id
-  
+
   # Show current subscription details
   gz dev-env azure-subscription show
-  
+
   # Login to Azure
   gz dev-env azure-subscription login
-  
+
   # Validate subscription access
   gz dev-env azure-subscription validate`,
 		SilenceUsage: true,
@@ -132,10 +132,10 @@ This command shows:
 Examples:
   # List subscriptions in table format
   gz dev-env azure-subscription list
-  
+
   # List subscriptions in JSON format
   gz dev-env azure-subscription list --output json
-  
+
   # List subscriptions for specific tenant
   gz dev-env azure-subscription list --tenant my-tenant-id`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -174,10 +174,10 @@ This command:
 Examples:
   # Switch to a specific subscription
   gz dev-env azure-subscription switch my-subscription-id
-  
+
   # Interactive subscription selection
   gz dev-env azure-subscription switch --interactive
-  
+
   # Switch with specific tenant context
   gz dev-env azure-subscription switch my-subscription-id --tenant my-tenant-id`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -215,10 +215,10 @@ If no subscription ID is specified, shows information about the current active s
 Examples:
   # Show current active subscription
   gz dev-env azure-subscription show
-  
+
   # Show specific subscription details
   gz dev-env azure-subscription show my-subscription-id
-  
+
   # Show subscription details in JSON format
   gz dev-env azure-subscription show --output json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -262,13 +262,13 @@ This command supports different authentication methods:
 Examples:
   # Interactive browser login
   gz dev-env azure-subscription login
-  
+
   # Login with device code
   gz dev-env azure-subscription login --device-code
-  
+
   # Login to specific tenant
   gz dev-env azure-subscription login --tenant my-tenant-id
-  
+
   # Service principal login (requires environment variables)
   gz dev-env azure-subscription login --service-principal`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -310,7 +310,7 @@ This command checks:
 Examples:
   # Validate current subscription
   gz dev-env azure-subscription validate
-  
+
   # Validate specific subscription with all checks
   gz dev-env azure-subscription validate my-subscription-id --check-resource-groups --check-permissions --check-quotas`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -350,7 +350,7 @@ This command provides functionality for:
 Examples:
   # List available tenants
   gz dev-env azure-subscription tenant list
-  
+
   # Switch tenant context
   gz dev-env azure-subscription tenant switch my-tenant-id`,
 		SilenceUsage: true,

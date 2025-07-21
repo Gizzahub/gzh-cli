@@ -162,7 +162,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 #### ✅ 절차
 
-1. **다음 `[ ]` 미완료 항목 하나 선택**   
+1. **다음 `[ ]` 미완료 항목 하나 선택**  
    - 파일 이름 오름차순 → 항목 순서대로 탐색  
    - 한 번에 1 개 작업만 처리
 

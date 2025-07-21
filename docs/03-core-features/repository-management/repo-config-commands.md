@@ -403,12 +403,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Install gzh-manager
         run: |
           curl -L https://github.com/gizzahub/gzh-manager-go/releases/latest/download/gz-linux-amd64 -o gz
           chmod +x gz
-          
+
       - name: Run Compliance Audit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -420,12 +420,12 @@ jobs:
             --output results.sarif \
             --exit-on-fail \
             --fail-threshold 85
-            
+
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: results.sarif
-          
+
       - name: Generate HTML Report
         if: always()
         run: |
@@ -433,7 +433,7 @@ jobs:
             --org ${{ github.repository_owner }} \
             --format html \
             --output compliance-report.html
-            
+
       - name: Upload HTML Report
         if: always()
         uses: actions/upload-artifact@v3

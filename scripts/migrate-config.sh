@@ -79,7 +79,7 @@ show_usage() {
 create_basic_gzh_yaml() {
     local output="$1"
     local dry_run="$2"
-    
+
     local content=$(cat << 'EOF'
 # Migrated from bulk-clone.yaml
 # Please review and update as needed
@@ -106,7 +106,7 @@ providers:
 # 2. Update repo_roots entries to providers.github.orgs
 # 3. Move ignore_names to exclude patterns per organization
 # 4. Set up environment variables for authentication
-# 
+#
 # See migration guide: docs/migration-guide-bulk-clone-to-gzh.md
 EOF
 )
@@ -122,15 +122,15 @@ EOF
 
 extract_organizations() {
     local input="$1"
-    
+
     print_step "Analyzing existing configuration..."
-    
+
     if command -v yq >/dev/null 2>&1; then
         print_step "Using yq to extract organizations..."
-        
+
         # Extract organizations using yq
         local orgs=$(yq '.repo_roots[].org_name' "$input" 2>/dev/null | grep -v null | sort -u)
-        
+
         if [[ -n "$orgs" ]]; then
             echo -e "${BLUE}Found organizations:${NC}"
             echo "$orgs" | while read -r org; do
@@ -138,10 +138,10 @@ extract_organizations() {
             done
             echo
         fi
-        
+
         # Extract ignore patterns
         local ignore_patterns=$(yq '.ignore_names[]' "$input" 2>/dev/null | grep -v null)
-        
+
         if [[ -n "$ignore_patterns" ]]; then
             echo -e "${BLUE}Found ignore patterns:${NC}"
             echo "$ignore_patterns" | while read -r pattern; do
@@ -157,14 +157,14 @@ extract_organizations() {
 
 check_environment() {
     print_step "Checking environment..."
-    
+
     # Check for required tools
     local missing_tools=()
-    
+
     if ! command -v yq >/dev/null 2>&1; then
         missing_tools+=("yq")
     fi
-    
+
     if [[ ${#missing_tools[@]} -gt 0 ]]; then
         print_warning "Optional tools not found: ${missing_tools[*]}"
         print_warning "For better migration experience, install:"
@@ -173,7 +173,7 @@ check_environment() {
         done
         echo
     fi
-    
+
     # Check for existing tokens
     if [[ -z "$GITHUB_TOKEN" ]]; then
         print_warning "GITHUB_TOKEN environment variable not set"
@@ -188,7 +188,7 @@ main() {
     local output_file="$GZH_YAML_FILE"
     local dry_run="false"
     local create_backup="false"
-    
+
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -219,9 +219,9 @@ main() {
                 ;;
         esac
     done
-    
+
     print_header
-    
+
     # Check if input file exists
     if ! check_file_exists "$input_file"; then
         print_error "Cannot proceed without input file"
@@ -230,24 +230,24 @@ main() {
         echo "  $0 -i /path/to/your/bulk-clone.yaml"
         exit 1
     fi
-    
+
     # Create backup if requested
     if [[ "$create_backup" == "true" ]]; then
         print_step "Creating backups..."
         backup_file "$input_file"
         [[ -f "$output_file" ]] && backup_file "$output_file"
     fi
-    
+
     # Check environment
     check_environment
-    
+
     # Extract information from existing config
     extract_organizations "$input_file"
-    
+
     # Generate new configuration
     print_step "Generating gzh.yaml configuration..."
     create_basic_gzh_yaml "$output_file" "$dry_run"
-    
+
     # Provide next steps
     echo
     print_success "Migration preparation complete!"
@@ -265,7 +265,7 @@ main() {
     echo -e "${BLUE}For detailed migration instructions, see:${NC}"
     echo "  docs/migration-guide-bulk-clone-to-gzh.md"
     echo
-    
+
     if [[ "$dry_run" != "true" ]]; then
         print_success "Configuration template created: $output_file"
     fi

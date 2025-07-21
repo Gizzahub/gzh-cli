@@ -69,25 +69,25 @@ plugins:
     mirrors:
       - https://mirror1.example.com/plugins
       - https://mirror2.example.com/plugins
-      
+
   security:
     verify_signatures: true
     allowed_publishers:
       - official
       - verified-developers
     sandbox_enabled: true
-    
+
   runtime:
     max_memory: 512MB
     max_cpu: 1000m
     timeout: 30s
     network_access: restricted
-    
+
   auto_update:
     enabled: true
     schedule: "0 2 * * *"
     include_prereleases: false
-    
+
   installed:
     - name: git-flow-enhancer
       version: 1.2.3
@@ -95,7 +95,7 @@ plugins:
       config:
         default_branch: main
         auto_delete_feature: true
-        
+
     - name: slack-notifier
       version: 2.1.0
       enabled: true
@@ -104,14 +104,14 @@ plugins:
         channels:
           success: "#deployments"
           failure: "#alerts"
-          
+
     - name: jira-integration
       version: 1.5.2
       enabled: false
       config:
         server_url: https://company.atlassian.net
         project_key: PROJ
-        
+
   development:
     workspace: ~/.gzh-plugins/dev
     templates:
@@ -129,12 +129,12 @@ type Plugin interface {
     Name() string
     Version() string
     Description() string
-    
+
     // 생명주기
     Initialize(config map[string]interface{}) error
     Execute(ctx context.Context, args []string) error
     Cleanup() error
-    
+
     // 메타데이터
     Commands() []Command
     Hooks() []Hook
@@ -165,7 +165,7 @@ license: MIT
 homepage: https://github.com/example/git-flow-enhancer
 
 runtime:
-  go_version: ">=1.19"
+  go_version: ">=1.24"
   os: [linux, darwin, windows]
   arch: [amd64, arm64]
 
@@ -216,7 +216,7 @@ sandbox:
     readonly_paths:
       - /etc
       - /usr
-      
+
   network:
     allowed_domains:
       - github.com
@@ -225,7 +225,7 @@ sandbox:
     blocked_ports:
       - 22
       - 3389
-      
+
   process:
     allowed_commands:
       - git
@@ -321,12 +321,12 @@ development:
   mock_services:
     - github_api
     - slack_webhook
-    
+
 testing:
   unit_tests:
     framework: testify
     coverage_threshold: 80
-    
+
   integration_tests:
     environment: docker
     services:
@@ -382,7 +382,7 @@ func (s *SlackNotifier) Execute(ctx context.Context, args []string) error {
         "text":    args[0],
         "channel": s.channel,
     }
-    
+
     // Slack 웹훅 호출
     return s.sendToSlack(message)
 }

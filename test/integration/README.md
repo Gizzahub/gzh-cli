@@ -107,16 +107,16 @@ Integration tests are automatically skipped if required environment variables ar
 func TestIntegration_Feature_Scenario(t *testing.T) {
     // Skip if environment not configured
     skipIfNoTestOrg(t)
-    
+
     // Setup
     ctx := context.Background()
     client := createTestClient()
-    
+
     // Test
     t.Run("SubTest", func(t *testing.T) {
         // Test implementation
     })
-    
+
     // Cleanup
     defer cleanup()
 }

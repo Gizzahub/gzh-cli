@@ -54,16 +54,16 @@ The configurations are saved to ~/.gz/gcloud-configs/ by default.
 Examples:
   # Save current gcloud config with a name
   gz dev-env gcloud save --name production
-  
+
   # Save with description
   gz dev-env gcloud save --name staging --description "Staging GCP config"
-  
+
   # Load a saved gcloud config
   gz dev-env gcloud load --name production
-  
+
   # List all saved configurations
   gz dev-env gcloud list
-  
+
   # Save from specific path
   gz dev-env gcloud save --name custom --config-path /path/to/gcloud`,
 		SilenceUsage: true,
@@ -91,10 +91,10 @@ project settings, account information, and other GCP SDK settings.
 Examples:
   # Save current gcloud config as "production"
   gz dev-env gcloud save --name production
-  
+
   # Save with description
   gz dev-env gcloud save --name staging --description "Staging environment"
-  
+
   # Save from specific path
   gz dev-env gcloud save --name custom --config-path /path/to/gcloud`,
 		RunE: o.runSave,
@@ -125,7 +125,7 @@ The current gcloud config will be backed up before loading the new one.
 Examples:
   # Load the "production" configuration
   gz dev-env gcloud load --name production
-  
+
   # Load to specific path
   gz dev-env gcloud load --name staging --config-path /path/to/gcloud`,
 		RunE: o.runLoad,

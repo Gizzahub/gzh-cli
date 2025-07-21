@@ -69,20 +69,20 @@ cloudformation:
         Environment: production
         Project: myapp
       capabilities: [CAPABILITY_IAM]
-      
+
     - name: myapp-compute
       template: templates/compute.yaml
       parameters_file: params/compute-prod.json
       depends_on: [myapp-network]
-      
+
   settings:
     region: us-west-2
     timeout: 30m
     rollback_on_failure: true
-    
+
   notifications:
     sns_topic: arn:aws:sns:us-west-2:123456789:cloudformation-updates
-    
+
   validation:
     check_security: true
     check_costs: true

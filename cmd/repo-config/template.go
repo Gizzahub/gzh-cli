@@ -371,7 +371,7 @@ settings:
     wiki: false
     projects: false
     downloads: false
-  
+
   security:
     branch_protection:
       main:
@@ -384,10 +384,10 @@ settings:
           - "ci/build"
           - "ci/test"
           - "security/scan"
-    
+
     vulnerability_alerts: true
     security_advisories: true
-    
+
   collaboration:
     delete_head_branches: true
     squash_merge: true
@@ -406,7 +406,7 @@ settings:
     issues: true
     wiki: false
     projects: true
-  
+
   security:
     branch_protection:
       main:
@@ -415,7 +415,7 @@ settings:
         required_status_checks:
           - "ci/build"
           - "ci/test"
-    
+
   collaboration:
     delete_head_branches: true
     squash_merge: true`,

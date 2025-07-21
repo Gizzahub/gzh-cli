@@ -81,7 +81,7 @@ policies:
       - Ingress
       - Egress
     # No rules = deny all traffic
-  
+
   allow-dns:
     name: allow-dns
     pod_selector: {}  # All pods need DNS
@@ -136,7 +136,7 @@ policies:
         ports:
         - protocol: UDP
           port: 53
-  
+
   api-policy:
     name: api-policy
     pod_selector:
@@ -166,7 +166,7 @@ policies:
         ports:
         - protocol: TCP
           port: 6379  # Redis
-  
+
   database-policy:
     name: database-policy
     pod_selector:

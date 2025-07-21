@@ -1,7 +1,7 @@
 # Comprehensive bulk-clone.yaml Example
 # ===========================================
 # This file demonstrates all available configuration options for gzh-manager bulk-clone
-# 
+#
 # Configuration File Locations (searched in order):
 # 1. $GZH_CONFIG_PATH (environment variable)
 # 2. ./bulk-clone.yaml or ./bulk-clone.yml
@@ -18,39 +18,39 @@ default:
   # Default protocol for Git operations
   # Options: http, https, ssh
   protocol: https
-  
+
   # GitHub-specific defaults
   github:
     # Base directory for GitHub repositories
     # Supports environment variables like $HOME, $USER
     root_path: "$HOME/repos/github"
-    
+
     # Provider identifier (do not change)
     provider: "github"
-    
+
     # Default protocol (can be overridden per organization)
     protocol: ""
-    
+
     # Default organization name (usually left empty)
     org_name: ""
-  
+
   # GitLab-specific defaults
   gitlab:
     # Base directory for GitLab repositories
     root_path: "$HOME/repos/gitlab"
-    
+
     # Provider identifier (do not change)
     provider: "gitlab"
-    
+
     # GitLab instance URL (for self-hosted instances)
     url: "https://gitlab.com"
-    
+
     # Whether to clone subgroups recursively
     recursive: false
-    
+
     # Default protocol (can be overridden per group)
     protocol: ""
-    
+
     # Default group name (usually left empty)
     group_name: ""
 
@@ -64,25 +64,25 @@ repo_roots:
     provider: "github"
     protocol: "ssh"              # Use SSH for private repos
     org_name: "mycompany"
-  
+
   # Example 2: Open source GitHub organization using HTTPS
   - root_path: "$HOME/opensource/kubernetes"
     provider: "github"
     protocol: "https"            # HTTPS for public repos
     org_name: "kubernetes"
-  
+
   # Example 3: Personal GitHub repos
   - root_path: "$HOME/personal/github"
     provider: "github"
     protocol: "ssh"
     org_name: "myusername"       # Your GitHub username
-  
+
   # Example 4: Another open source project
   - root_path: "$HOME/opensource/golang"
     provider: "github"
     protocol: "https"
     org_name: "golang"
-  
+
   # Example 5: Work-related tools
   - root_path: "$HOME/work/devtools"
     provider: "github"
@@ -113,12 +113,12 @@ ignore_names:
 #     auth: token                  # Authentication method: token, ssh, or basic
 #     proto: ssh                   # Protocol override
 #     targetPath: "$HOME/work/mycompany"
-#     
+#
 #     # Default strategy for this organization
 #     default:
 #       strategy: include          # Strategy: include or exclude
 #       branch: main               # Default branch to checkout
-#     
+#
 #     # Specific repositories to include (when strategy is 'include')
 #     include:
 #       api-server:
@@ -127,12 +127,12 @@ ignore_names:
 #         branch: main
 #       mobile-app:
 #         branch: release/2.0
-#     
+#
 #     # Patterns to exclude (when strategy is 'exclude')
 #     exclude:
 #       - "test-*"                 # Exclude test repositories
 #       - "*-legacy"               # Exclude legacy code
-#   
+#
 #   # Another organization with different settings
 #   opensource-contrib:
 #     auth: ssh
@@ -154,7 +154,7 @@ ignore_names:
 #     url: "https://gitlab.company.com"
 #     group_name: "backend-team"
 #     recursive: true
-#   
+#
 #   - root_path: "$HOME/opensource/gitlab"
 #     provider: "gitlab"
 #     protocol: "https"
@@ -185,7 +185,7 @@ ignore_names:
 #     gitlab:
 #       default: "${GITLAB_TOKEN}"
 #       "gitlab.company.com": "${COMPANY_GITLAB_TOKEN}"
-#   
+#
 #   ssh_keys:
 #     default: "~/.ssh/id_rsa"
 #     github.com: "~/.ssh/github_rsa"
@@ -195,7 +195,7 @@ ignore_names:
 # sync:
 #   # Global sync strategy (can be overridden with -s flag)
 #   strategy: reset                # Options: reset, pull, fetch
-#   
+#
 #   # Auto-sync configuration
 #   auto_sync:
 #     enabled: false
@@ -205,7 +205,7 @@ ignore_names:
 # Hooks Configuration (Planned)
 # hooks:
 #   # Run commands before/after operations
-#   pre_clone: 
+#   pre_clone:
 #     - "echo 'Starting bulk clone operation'"
 #   post_clone:
 #     - "echo 'Bulk clone completed'"

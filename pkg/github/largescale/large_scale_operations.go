@@ -244,7 +244,7 @@ func (m *LargeScaleManager) BulkCloneRepositories(ctx context.Context, repos []L
 
 	// Process repositories in batches
 	for i, repo := range repos {
-		repo := repo // Capture loop variable
+		// Capture loop variable
 		index := i
 
 		g.Go(func() error {

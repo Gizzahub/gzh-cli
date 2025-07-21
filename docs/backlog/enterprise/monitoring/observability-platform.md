@@ -69,41 +69,41 @@ observability:
       listen_address: "0.0.0.0:9090"
       scrape_interval: 15s
       evaluation_interval: 15s
-      
+
       scrape_configs:
         - job_name: 'myapp'
           static_configs:
             - targets: ['localhost:8080']
           metrics_path: /metrics
           scrape_interval: 5s
-          
+
         - job_name: 'node-exporter'
           static_configs:
             - targets: ['localhost:9100']
-            
+
     grafana:
       listen_address: "0.0.0.0:3000"
       admin_user: admin
       admin_password: ${GRAFANA_PASSWORD}
-      
+
       datasources:
         - name: Prometheus
           type: prometheus
           url: http://localhost:9090
           access: proxy
           is_default: true
-          
+
       dashboards:
         - name: Application Metrics
           file: dashboards/app-metrics.json
         - name: Infrastructure Metrics
           file: dashboards/infra-metrics.json
-          
+
   logging:
     elasticsearch:
       hosts: ["localhost:9200"]
       index_template: "logs-%{+YYYY.MM.dd}"
-      
+
     logstash:
       host: "localhost:5044"
       input:
@@ -115,7 +115,7 @@ observability:
       output:
         elasticsearch:
           hosts: ["localhost:9200"]
-          
+
     filebeat:
       inputs:
         - type: log
@@ -124,12 +124,12 @@ observability:
           fields:
             service: myapp
             environment: production
-            
+
   tracing:
     jaeger:
       collector_endpoint: "http://localhost:14268/api/traces"
       agent_endpoint: "localhost:6831"
-      
+
     opentelemetry:
       receivers:
         otlp:
@@ -138,16 +138,16 @@ observability:
               endpoint: 0.0.0.0:4317
             http:
               endpoint: 0.0.0.0:4318
-              
+
       processors:
         batch:
           timeout: 1s
           send_batch_size: 1024
-          
+
       exporters:
         jaeger:
           endpoint: http://localhost:14250
-          
+
   alerting:
     rules:
       - name: high_cpu_usage
@@ -157,7 +157,7 @@ observability:
           severity: warning
         annotations:
           summary: "High CPU usage detected"
-          
+
       - name: high_error_rate
         expr: error_rate > 0.05
         for: 2m
@@ -165,17 +165,17 @@ observability:
           severity: critical
         annotations:
           summary: "High error rate detected"
-          
+
     notification_channels:
       - name: slack
         type: slack
         webhook_url: https://hooks.slack.com/...
         channel: "#alerts"
-        
+
       - name: email
         type: email
         addresses: [devops@company.com]
-        
+
   retention:
     metrics: 30d
     logs: 7d
@@ -310,7 +310,7 @@ groups:
           severity: warning
         annotations:
           summary: "High CPU usage on {{ $labels.instance }}"
-          
+
       - alert: HighMemoryUsage
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
         for: 5m
@@ -318,7 +318,7 @@ groups:
           severity: critical
         annotations:
           summary: "High memory usage on {{ $labels.instance }}"
-          
+
       - alert: DiskSpaceLow
         expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
         for: 5m
@@ -340,7 +340,7 @@ groups:
           severity: critical
         annotations:
           summary: "High error rate detected"
-          
+
       - alert: SlowResponseTime
         expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
         for: 5m

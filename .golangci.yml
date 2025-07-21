@@ -9,7 +9,7 @@ run:
   tests: true
   build-tags: []
   modules-download-mode: readonly
-  go: "1.21"
+  go: "1.24"
 
 output:
   formats:
@@ -252,7 +252,7 @@ linters:
     - staticcheck
     - unused
     - ineffassign
-    
+
     # Code quality
     - revive
     - gocritic
@@ -263,24 +263,24 @@ linters:
     - prealloc
     - nakedret
     - exhaustive
-    
+
     # Security
     - gosec
-    
+
     # Complexity
     - gocyclo
     - gocognit
-    
+
     # Style
     - whitespace
     - godot
     - goheader
-    
+
     # Performance
     - bodyclose
     - rowserrcheck
     - sqlclosecheck
-    
+
     # Bugs
     - nilerr
     - nilnil
@@ -295,15 +295,15 @@ linters:
     - errorlint
     - forcetypeassert
     - gomoddirectives
-    
+
     # Dependencies
     - gomodguard
     # - depguard  # Disabled due to configuration issues
-    
+
     # Testing
     - testpackage
     - thelper
-    
+
     # Naming
     - tagliatelle
 
@@ -334,7 +334,7 @@ issues:
         - gocognit
         - revive
         - errcheck
-    
+
     # Exclude generated files
     - path: ".*\\.pb\\.go$"
       linters:
@@ -342,7 +342,7 @@ issues:
     - path: ".*\\.gen\\.go$"
       linters:
         - all
-    
+
     # Exclude integration tests with outdated API usage
     - path: "test/integration/docker/.*\\.go$"
       linters:
@@ -356,7 +356,7 @@ issues:
     - path: ".*/pkg/bulk-clone/example_test\\.go$"
       linters:
         - all
-    
+
     # Exclude common false positives
     - text: "Error return value of.*Close.*is not checked"
       linters:
@@ -376,7 +376,7 @@ issues:
     - text: "Error return value of.*MarkFlagRequired.*is not checked"
       linters:
         - errcheck
-    
+
     # Exclude specific staticcheck rules
     - text: "SA4006.*this value.*is never used"
       linters:
@@ -390,18 +390,18 @@ issues:
     - text: "S1008.*should use.*instead of.*if.*return"
       linters:
         - staticcheck
-    
+
     # Exclude ineffassign for config pattern
     - text: "ineffectual assignment to.*config"
       linters:
         - ineffassign
-    
+
     # Exclude unused for specific patterns
     - text: ".*is unused"
       linters:
         - unused
       path: "_test\\.go"
-    
+
     # Exclude specific function patterns
     - text: "func.*runWithGZHConfig.*is unused"
       linters:
@@ -412,7 +412,7 @@ issues:
     - text: "field.*mu.*is unused"
       linters:
         - unused
-    
+
     # Exclude linters for test files
     - path: "_test\\.go"
       linters:
@@ -425,45 +425,45 @@ issues:
         - gocyclo
         - contextcheck
         - tagliatelle
-    
+
     # Exclude godox for specific files
     - path: "(cmd/|internal/)"
       text: "TODO|FIXME|BUG"
       linters:
         - godox
-    
+
     # Exclude header check for generated and test files
     - path: "(.*_test\\.go|.*\\.pb\\.go|.*\\.gen\\.go)"
       linters:
         - goheader
-    
+
     # Exclude exhaustive for command handlers
     - path: "cmd/"
       linters:
         - exhaustive
-    
+
     # Exclude tagliatelle for existing structs
     - path: "(pkg/config/|pkg/bulk-clone/)"
       linters:
         - tagliatelle
-    
+
     # Exclude errorlint for legacy code
     - path: "pkg/legacy/"
       linters:
         - errorlint
         - contextcheck
-    
+
     # Allow longer variable names in table tests
     - path: "_test\\.go"
       text: "tt.*is too short"
       linters:
         - varnamelen
-    
+
     # Allow context.Background() in main and test
     - path: "(main\\.go|.*_test\\.go)"
       linters:
         - contextcheck
-    
+
     # Exclude nestif for complex command logic
     - path: "cmd/net-env/"
       linters:
@@ -472,12 +472,12 @@ issues:
         - contextcheck
         - funlen
         - gocognit
-    
+
     # Exclude testpackage for cmd directory test files (white-box testing)
     - path: "cmd/"
       linters:
         - testpackage
-    
+
     # Exclude issues for cmd directory
     - path: "cmd/"
       linters:

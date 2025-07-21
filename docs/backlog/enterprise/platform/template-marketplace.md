@@ -68,46 +68,46 @@ templates:
     official: https://templates.gzh-manager.io
     company: https://templates.company.com
     local: file:///usr/local/share/gzh-templates
-    
+
   cache:
     directory: ~/.gzh-templates/cache
     ttl: 24h
     max_size: 1GB
-    
+
   generation:
     output_directory: ./
     overwrite_policy: prompt
     backup_existing: true
-    
+
   installed:
     - name: react-typescript-app
       version: 2.1.0
       registry: official
       installed_at: 2024-01-15T10:30:00Z
-      
+
     - name: go-microservice
       version: 1.5.0
       registry: official
       customizations:
         - add_grpc: true
         - add_swagger: true
-        
+
     - name: company-backend-api
       version: 1.0.0
       registry: company
       private: true
-      
+
   defaults:
     author: "Company Dev Team"
     license: "MIT"
     git_init: true
     install_deps: true
-    
+
   variables:
     global:
       COMPANY_NAME: "ACME Corp"
       DEFAULT_LICENSE: "MIT"
-    
+
     user:
       AUTHOR_NAME: "John Doe"
       AUTHOR_EMAIL: "john@company.com"
@@ -132,35 +132,35 @@ keywords: [frontend, spa, modern]
 requirements:
   node_version: ">=16.0.0"
   npm_version: ">=8.0.0"
-  
+
 variables:
   - name: project_name
     type: string
     description: Project name
     required: true
     pattern: "^[a-z][a-z0-9-]*[a-z0-9]$"
-    
+
   - name: description
     type: string
     description: Project description
     default: "A React TypeScript application"
-    
+
   - name: author
     type: string
     description: Author name
     default: "{{ .User.Name }}"
-    
+
   - name: use_router
     type: boolean
     description: Include React Router
     default: true
-    
+
   - name: ui_framework
     type: choice
     description: UI framework
     choices: [none, material-ui, chakra-ui, antd]
     default: none
-    
+
   - name: testing_framework
     type: choice
     description: Testing framework
@@ -170,11 +170,11 @@ variables:
 conditions:
   - if: "{{ .Variables.use_router }}"
     include: ["src/pages/**", "src/router/**"]
-    
+
   - if: "{{ eq .Variables.ui_framework 'material-ui' }}"
     include: ["src/theme/**"]
     dependencies: ["@mui/material", "@emotion/react"]
-    
+
   - if: "{{ eq .Variables.testing_framework 'jest' }}"
     include: ["jest.config.js"]
     exclude: ["vitest.config.ts"]
@@ -182,23 +182,23 @@ conditions:
 files:
   - path: "package.json"
     template: true
-    
+
   - path: "src/App.tsx"
     template: true
-    
+
   - path: "public/index.html"
     template: true
-    
+
   - path: ".gitignore"
     static: true
-    
+
   - path: "README.md"
     template: true
 
 hooks:
   pre_generate:
     - validate_environment
-    
+
   post_generate:
     - npm_install
     - git_init
@@ -373,7 +373,7 @@ hooks:
 conditions:
   - if: "{{ .Variables.include_docker }}"
     files: ["Dockerfile", "docker-compose.yml"]
-    
+
   - if: "{{ and .Variables.use_database (eq .Variables.db_type 'postgres') }}"
     files: ["migrations/*.sql"]
     dependencies: ["pg"]

@@ -56,16 +56,16 @@ storage location is properly secured and consider encrypting the stored files.
 Examples:
   # Save current AWS credentials with a name
   gz dev-env aws-credentials save --name production
-  
+
   # Save with description
   gz dev-env aws-credentials save --name staging --description "Staging AWS credentials"
-  
+
   # Load a saved AWS credentials file
   gz dev-env aws-credentials load --name production
-  
+
   # List all saved credentials
   gz dev-env aws-credentials list
-  
+
   # Save from specific path
   gz dev-env aws-credentials save --name custom --config-path /path/to/credentials`,
 		SilenceUsage: true,
@@ -95,10 +95,10 @@ SECURITY WARNING: This stores sensitive credential information.
 Examples:
   # Save current AWS credentials as "production"
   gz dev-env aws-credentials save --name production
-  
+
   # Save with description
   gz dev-env aws-credentials save --name staging --description "Staging environment"
-  
+
   # Save from specific path
   gz dev-env aws-credentials save --name custom --config-path /path/to/credentials`,
 		RunE: o.runSave,
@@ -129,7 +129,7 @@ The current AWS credentials will be backed up before loading the new ones.
 Examples:
   # Load the "production" credentials
   gz dev-env aws-credentials load --name production
-  
+
   # Load to specific path
   gz dev-env aws-credentials load --name staging --config-path /path/to/credentials`,
 		RunE: o.runLoad,

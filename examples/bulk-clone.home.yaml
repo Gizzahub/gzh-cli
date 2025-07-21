@@ -20,13 +20,13 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "my-company"
-  
+
   # Add personal repositories
   - root_path: "$HOME/personal/side-projects"
     provider: "github"
     protocol: "ssh"
     org_name: "my-personal-username"
-  
+
   # Add hobby projects
   - root_path: "$HOME/personal/hobby"
     provider: "github"

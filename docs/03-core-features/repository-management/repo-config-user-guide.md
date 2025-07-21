@@ -159,7 +159,7 @@ templates:
     settings:
       has_issues: true
       has_wiki: true
-  
+
   extended-template:
     base: "base-template"
     settings:
@@ -197,7 +197,7 @@ security:
   secret_scanning_push_protection: true/false
   dependency_graph: true/false
   security_advisories: true/false
-  
+
   branch_protection:
     branch-name:
       required_reviews: 2
@@ -512,7 +512,7 @@ templates:
     settings:
       has_issues: true
       delete_branch_on_merge: true
-  
+
   backend:
     base: "base"
     description: "Backend service template"
@@ -520,7 +520,7 @@ templates:
       private: true
     security:
       secret_scanning: true
-  
+
   frontend:
     base: "base"
     description: "Frontend application template"
@@ -556,7 +556,7 @@ templates:
   security-baseline:
     security:
       vulnerability_alerts: true
-  
+
   security-enhanced:
     base: "security-baseline"
     security:

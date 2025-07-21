@@ -215,7 +215,7 @@ type GCPServiceAccount struct {
 
 ## Security Considerations
 
-1. **Service Account Keys**: 
+1. **Service Account Keys**:
    - Generated key files have secure permissions (0600)
    - Users are warned about secure handling
    - Keys should not be committed to version control

@@ -49,23 +49,23 @@ find_project_root() {
         fi
         dir=$(dirname "$dir")
     done
-    
+
     error "Could not find project root (go.mod not found)"
     exit 1
 }
 
 check_prerequisites() {
     log "Checking prerequisites..."
-    
+
     # Check Go
     if ! command -v go &> /dev/null; then
         error "Go is not installed or not in PATH"
         exit 1
     fi
-    
+
     # Check if we're in the right directory
     find_project_root
-    
+
     # Check if binary exists or can be built
     if [[ ! -f "$PROJECT_ROOT/gz" ]]; then
         log "Binary not found, building..."
@@ -74,14 +74,14 @@ check_prerequisites() {
             exit 1
         fi
     fi
-    
+
     success "Prerequisites check passed"
 }
 
 build_binary() {
     log "Building gz binary..."
     cd "$PROJECT_ROOT"
-    
+
     if make build; then
         success "Binary built successfully"
         return 0
@@ -94,13 +94,13 @@ build_binary() {
 cleanup_test_artifacts() {
     if [[ "$CLEANUP" == "true" ]]; then
         log "Cleaning up test artifacts..."
-        
+
         # Remove temporary test directories
         find /tmp -name "gz-e2e-test-*" -type d -exec rm -rf {} + 2>/dev/null || true
-        
+
         # Remove any stray gz binaries in temp directories
         find /tmp -name "gz" -type f -delete 2>/dev/null || true
-        
+
         success "Cleanup completed"
     fi
 }
@@ -108,31 +108,31 @@ cleanup_test_artifacts() {
 run_tests() {
     local test_pattern="$1"
     local test_name="$2"
-    
+
     log "Running $test_name tests..."
-    
+
     local go_test_args=("-timeout" "$TIMEOUT")
-    
+
     if [[ "$VERBOSE" == "true" ]]; then
         go_test_args+=("-v")
     fi
-    
+
     if [[ "$SHORT_MODE" == "true" ]]; then
         go_test_args+=("-short")
     fi
-    
+
     if [[ "$PARALLEL" != "1" ]]; then
         go_test_args+=("-parallel" "$PARALLEL")
     fi
-    
+
     if [[ -n "$test_pattern" ]]; then
         go_test_args+=("-run" "$test_pattern")
     fi
-    
+
     go_test_args+=("$E2E_TEST_DIR")
-    
+
     cd "$PROJECT_ROOT"
-    
+
     if go test "${go_test_args[@]}"; then
         success "$test_name tests passed"
         return 0
@@ -154,7 +154,7 @@ Commands:
     config              Run configuration E2E tests
     ide                 Run IDE E2E tests
     help                Show help for specific test scenarios
-    
+
 Options:
     -t, --timeout TIMEOUT    Test timeout (default: 20m)
     -v, --verbose           Enable verbose output (default: true)
@@ -177,12 +177,12 @@ Examples:
     $0 -s all                      # Run all tests in short mode
     $0 -t 30m --parallel 2 all     # Run with 30m timeout and 2 parallel tests
     $0 config                      # Run configuration tests only
-    
+
 Test Scenarios:
     bulk-clone    - Repository bulk cloning workflows
     config        - Configuration management and validation
     ide           - JetBrains IDE integration and monitoring
-    
+
 EOF
 }
 
@@ -220,14 +220,14 @@ Debug Mode:
     Set environment variables for debugging:
     export GZ_DEBUG=true
     export GZ_TRACE=true
-    
+
 EOF
 }
 
 main() {
     local command="all"
     local force_build=false
-    
+
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -274,22 +274,22 @@ main() {
                 ;;
         esac
     done
-    
+
     log "Starting E2E tests..."
     log "Configuration: timeout=$TIMEOUT, verbose=$VERBOSE, short=$SHORT_MODE, parallel=$PARALLEL"
-    
+
     # Setup
     check_prerequisites
-    
+
     if [[ "$force_build" == "true" ]]; then
         build_binary
     fi
-    
+
     # Trap cleanup on exit
     trap cleanup_test_artifacts EXIT
-    
+
     local test_failed=false
-    
+
     # Run tests based on command
     case $command in
         all)
@@ -312,10 +312,10 @@ main() {
             run_tests "TestIDE" "IDE" || test_failed=true
             ;;
     esac
-    
+
     # Final cleanup
     cleanup_test_artifacts
-    
+
     # Report results
     if [[ "$test_failed" == "true" ]]; then
         error "Some E2E tests failed"

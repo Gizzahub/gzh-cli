@@ -44,7 +44,7 @@ templates:
             - "ci/test"
           strict_status_checks: true
           enforce_admins: false
-  
+
   # High security template for sensitive repositories
   security:
     base: "standard"  # Inherit from standard template
@@ -68,7 +68,7 @@ templates:
       team_permissions:
         "security-team": "admin"
         "dev-team": "push"
-      
+
   # Open source template for public repositories
   opensource:
     description: "Open source repository configuration"
@@ -89,7 +89,7 @@ templates:
             - "ci/build"
             - "ci/test"
             - "ci/license-check"
-  
+
   # Microservice template
   microservice:
     base: "standard"
@@ -124,7 +124,7 @@ repositories:
         branch_protection:
           main:
             required_reviews: 3  # Override template setting
-    
+
     - name: "documentation"
       template: "opensource"
       settings:
@@ -132,7 +132,7 @@ repositories:
         homepage: "https://docs.example.com"
         has_wiki: true
         has_projects: true
-    
+
     - name: "infrastructure"
       template: "security"
       settings:
@@ -141,7 +141,7 @@ repositories:
           - "terraform"
           - "infrastructure"
           - "iac"
-  
+
   # Pattern-based configurations
   patterns:
     - match: "service-*"
@@ -149,21 +149,21 @@ repositories:
       settings:
         topics:
           - "microservice"
-    
+
     - match: "lib-*"
       template: "standard"
       settings:
         topics:
           - "library"
         has_downloads: true
-    
+
     - match: "*-frontend"
       settings:
         topics:
           - "frontend"
           - "react"
         has_projects: true
-  
+
   # Default configuration for repositories not matching above
   default:
     template: "standard"
@@ -177,17 +177,17 @@ policies:
         type: "branch_protection"
         value: true
         enforcement: "required"
-      
+
       min_reviewers:
         type: "min_reviews"
         value: 1
         enforcement: "required"
-      
+
       vulnerability_scanning:
         type: "security_feature"
         value: "vulnerability_alerts"
         enforcement: "required"
-  
+
   opensource_compliance:
     description: "Open source compliance policy"
     rules:
@@ -195,12 +195,12 @@ policies:
         type: "file_exists"
         value: "LICENSE"
         enforcement: "required"
-      
+
       readme_required:
         type: "file_exists"
         value: "README.md"
         enforcement: "required"
-      
+
       contributing_guide:
         type: "file_exists"
         value: "CONTRIBUTING.md"

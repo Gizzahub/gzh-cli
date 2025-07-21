@@ -42,7 +42,7 @@ providers:
         clone_dir: "${HOME}/repos/github-flat"
         flatten: true
         strategy: "pull"
-  
+
   gitlab:
     token: "${GITLAB_TOKEN}"
     groups:

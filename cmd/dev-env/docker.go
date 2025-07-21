@@ -53,16 +53,16 @@ The configurations are saved to ~/.gz/docker-configs/ by default.
 Examples:
   # Save current Docker config with a name
   gz dev-env docker save --name production
-  
+
   # Save with description
   gz dev-env docker save --name staging --description "Staging Docker config"
-  
+
   # Load a saved Docker config
   gz dev-env docker load --name production
-  
+
   # List all saved configurations
   gz dev-env docker list
-  
+
   # Save from specific path
   gz dev-env docker save --name custom --config-path /path/to/config.json`,
 		SilenceUsage: true,
@@ -90,10 +90,10 @@ registry authentication, daemon settings, and other Docker client preferences.
 Examples:
   # Save current Docker config as "production"
   gz dev-env docker save --name production
-  
+
   # Save with description
   gz dev-env docker save --name staging --description "Staging environment"
-  
+
   # Save from specific path
   gz dev-env docker save --name custom --config-path /path/to/config.json`,
 		RunE: o.runSave,
@@ -124,7 +124,7 @@ The current Docker config will be backed up before loading the new one.
 Examples:
   # Load the "production" configuration
   gz dev-env docker load --name production
-  
+
   # Load to specific path
   gz dev-env docker load --name staging --config-path /path/to/config.json`,
 		RunE: o.runLoad,

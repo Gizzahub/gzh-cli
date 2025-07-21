@@ -31,16 +31,16 @@ This command provides comprehensive VPN failover management including:
 Examples:
   # Start VPN failover monitoring
   gz net-env vpn-failover start
-  
+
   # Stop VPN failover monitoring
   gz net-env vpn-failover stop
-  
+
   # Show failover status
   gz net-env vpn-failover status
-  
+
   # Configure backup VPN
   gz net-env vpn-failover backup add --primary corp-vpn --backup home-vpn --priority 50
-  
+
   # Test failover scenario
   gz net-env vpn-failover test --scenario connection-loss`,
 		SilenceUsage: true,

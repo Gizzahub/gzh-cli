@@ -5,7 +5,7 @@ This directory contains Docker-based integration tests using testcontainers-go. 
 ## Prerequisites
 
 ### Docker Environment
-- Docker Engine 20.10+ 
+- Docker Engine 20.10+
 - Docker Compose 2.0+
 - At least 4GB RAM available for containers
 - Internet connection for pulling container images
@@ -60,7 +60,7 @@ go test ./test/integration/docker/... -v -timeout 30m
 ### 1. GitLab Integration (`TestBulkClone_GitLab_Integration`)
 - **Duration**: ~15 minutes
 - **Resources**: GitLab CE container (2GB RAM)
-- **Tests**: 
+- **Tests**:
   - GitLab container startup and readiness
   - Configuration loading with GitLab provider
   - GitLab API connectivity validation
@@ -211,15 +211,15 @@ jobs:
       docker:
         image: docker:20.10-dind
         options: --privileged
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: 1.24
-    
+
     - name: Run Docker Integration Tests
       run: |
         go test ./test/integration/docker/... -v -timeout 30m

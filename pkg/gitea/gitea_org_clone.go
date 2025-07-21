@@ -177,7 +177,6 @@ func RefreshAll(ctx context.Context, targetPath string, org string) error {
 
 	for _, repo := range repos {
 		// Capture loop variable
-		repo := repo
 
 		g.Go(func() error {
 			// Acquire semaphore to limit concurrency

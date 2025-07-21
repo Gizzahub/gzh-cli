@@ -68,7 +68,7 @@ repos, err := client.ListRepositories(ctx, "myorg", &github.ListOptions{
 
 // Check current rate limit status
 remaining, limit, resetTime := client.GetRateLimitStatus()
-fmt.Printf("Rate limit: %d/%d (resets at %s)\n", 
+fmt.Printf("Rate limit: %d/%d (resets at %s)\n",
     remaining, limit, resetTime.Format(time.RFC3339))
 ```
 

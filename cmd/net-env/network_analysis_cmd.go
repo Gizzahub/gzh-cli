@@ -36,13 +36,13 @@ This command provides advanced analysis capabilities:
 Examples:
   # Analyze current network latency patterns
   gz net-env network-analysis latency --duration 10m --targets 8.8.8.8,1.1.1.1,google.com
-  
+
   # Perform bandwidth utilization analysis
   gz net-env network-analysis bandwidth --interface eth0 --duration 5m
-  
+
   # Comprehensive network performance analysis
   gz net-env network-analysis comprehensive --duration 15m
-  
+
   # Generate performance trend report
   gz net-env network-analysis trends --period 24h --format json`,
 		SilenceUsage: true,

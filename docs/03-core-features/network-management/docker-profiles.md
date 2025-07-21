@@ -91,7 +91,7 @@ networks:
   database:
     driver: bridge
     subnet: 172.32.0.0/24
-    
+
 containers:
   nginx:
     image: nginx:alpine
@@ -100,7 +100,7 @@ containers:
     ports:
       - "80:80"
       - "443:443"
-  
+
   api:
     image: myapp/api:latest
     networks:
@@ -110,14 +110,14 @@ containers:
     environment:
       DB_HOST: postgres
       CACHE_HOST: redis
-  
+
   postgres:
     image: postgres:13
     networks:
       - database
     environment:
       POSTGRES_PASSWORD: secret
-  
+
   redis:
     image: redis:6-alpine
     networks:
@@ -212,14 +212,14 @@ networks:
     subnet: 172.20.0.0/24
     labels:
       tier: edge
-  
+
   services:
     driver: overlay
     subnet: 172.21.0.0/24
     attachable: true
     labels:
       tier: application
-  
+
   data:
     driver: bridge
     subnet: 172.22.0.0/24
@@ -243,7 +243,7 @@ containers:
     network_alias:
       - gateway
       - api
-  
+
   user-service:
     image: myapp/user-service:latest
     networks:
@@ -254,7 +254,7 @@ containers:
       REDIS_HOST: redis
     network_alias:
       - users
-  
+
   order-service:
     image: myapp/order-service:latest
     networks:
@@ -265,7 +265,7 @@ containers:
       REDIS_HOST: redis
     network_alias:
       - orders
-  
+
   postgres:
     image: postgres:13
     networks:
@@ -277,7 +277,7 @@ containers:
     network_alias:
       - db
       - postgres
-  
+
   redis:
     image: redis:6-alpine
     networks:
@@ -318,7 +318,7 @@ containers:
     network_alias:
       - db
       - mysql
-  
+
   phpmyadmin:
     image: phpmyadmin:latest
     networks:
@@ -328,7 +328,7 @@ containers:
     environment:
       PMA_HOST: mysql
       PMA_PORT: "3306"
-  
+
   mailhog:
     image: mailhog/mailhog:latest
     networks:

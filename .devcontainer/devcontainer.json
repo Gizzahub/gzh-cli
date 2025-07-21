@@ -50,7 +50,7 @@
 				// Go Development
 				"golang.go",
 				"golang.go-nightly",
-				
+
 				// Node.js/TypeScript Development
 				"ms-vscode.vscode-typescript-next",
 				"bradlc.vscode-tailwindcss",
@@ -58,40 +58,40 @@
 				"esbenp.prettier-vscode",
 				"dbaeumer.vscode-eslint",
 				"ms-vscode.vscode-react-native",
-				
+
 				// Python Development
 				"ms-python.python",
 				"ms-python.pylint",
 				"ms-python.black-formatter",
 				"ms-python.isort",
-				
+
 				// Docker Support
 				"ms-azuretools.vscode-docker",
-				
+
 				// YAML/JSON Support
 				"redhat.vscode-yaml",
 				"ms-vscode.vscode-json",
-				
+
 				// Git Support
 				"eamodio.gitlens",
 				"github.vscode-pull-request-github",
-				
+
 				// Code Quality
 				"streetsidesoftware.code-spell-checker",
 				"editorconfig.editorconfig",
 				"ms-vscode.vscode-github-issue-notebooks",
-				
+
 				// Productivity
 				"ms-vscode.makefile-tools",
 				"ms-vscode.remote-containers",
 				"ms-vscode.remote-ssh",
 				"formulahendry.auto-rename-tag",
 				"ms-vscode.vscode-todo-highlight",
-				
+
 				// Testing Support
 				"hbenl.vscode-test-explorer",
 				"ms-vscode.test-adapter-converter",
-				
+
 				// Security
 				"ms-vscode.vscode-security"
 			],

@@ -33,7 +33,7 @@ func NewEventCmdRefactored() *cobra.Command {
 		Use:   "event",
 		Short: "GitHub event management and webhook server",
 		Long: `Manage GitHub events, run webhook servers, and monitor event processing.
-	
+
 This command provides comprehensive event management capabilities including:
 - Running webhook servers to receive GitHub events
 - Querying and filtering stored events
@@ -45,7 +45,7 @@ This command provides comprehensive event management capabilities including:
 		Use:   "server",
 		Short: "Start GitHub webhook server",
 		Long: `Start a webhook server to receive and process GitHub events.
-	
+
 The server listens for incoming webhook requests from GitHub and processes them
 according to registered event handlers and policies.`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -63,7 +63,7 @@ according to registered event handlers and policies.`,
 		Use:   "list",
 		Short: "List stored GitHub events",
 		Long: `List GitHub events stored in the system with optional filtering.
-	
+
 Supports filtering by organization, repository, event type, action, sender,
 and time range to help find specific events.`,
 		RunE: func(_ *cobra.Command, _ []string) error {
@@ -77,7 +77,7 @@ and time range to help find specific events.`,
 		Use:   "get [event-id]",
 		Short: "Get details of a specific event",
 		Long: `Retrieve detailed information about a specific GitHub event by its ID.
-	
+
 Shows the complete event payload, headers, processing status, and any
 associated handler results.`,
 		Args: cobra.ExactArgs(1),
@@ -107,7 +107,7 @@ associated handler results.`,
 		Use:   "test",
 		Short: "Send test webhook events",
 		Long: `Send test webhook events to validate event processing configuration.
-	
+
 Useful for testing event handlers, policies, and webhook endpoints without
 waiting for actual GitHub events.`,
 		RunE: func(_ *cobra.Command, _ []string) error {

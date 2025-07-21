@@ -70,7 +70,7 @@ jenkins:
     url: http://jenkins.company.com:8080
     username: admin
     api_token: ${JENKINS_API_TOKEN}
-    
+
   pipelines:
     - name: myapp-backend
       type: multibranch
@@ -79,14 +79,14 @@ jenkins:
       scan_triggers:
         - webhook
         - periodic: "H/15 * * * *"
-      
+
     - name: myapp-frontend
       type: pipeline
       repository: https://github.com/company/myapp-frontend
       branch: main
       parameters:
         DEPLOY_ENV: staging
-        
+
   jobs:
     - name: nightly-tests
       type: freestyle
@@ -97,7 +97,7 @@ jenkins:
       post_actions:
         - archive_artifacts: "test-results/**/*"
         - publish_junit: "test-results/junit.xml"
-        
+
   agents:
     cloud_templates:
       - name: docker-agent
@@ -105,13 +105,13 @@ jenkins:
         instance_type: t3.medium
         labels: [docker, linux]
         max_instances: 5
-        
+
     static_nodes:
       - name: build-server-01
         host: build01.company.com
         labels: [maven, java]
         executors: 4
-        
+
   plugins:
     required:
       - workflow-aggregator
@@ -119,13 +119,13 @@ jenkins:
       - kubernetes
       - slack
       - github-branch-source
-      
+
   security:
     enable_csrf: true
     matrix_auth:
       admins: [admin, devops-team]
       developers: [dev-team]
-    
+
   backup:
     schedule: "H 3 * * 0"
     retention_days: 30

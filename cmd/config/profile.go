@@ -22,7 +22,7 @@ Profiles allow you to maintain different configurations for different environmen
 
 Configuration profiles are stored as:
 - gzh.dev.yaml (development profile)
-- gzh.staging.yaml (staging profile)  
+- gzh.staging.yaml (staging profile)
 - gzh.prod.yaml (production profile)
 
 Examples:

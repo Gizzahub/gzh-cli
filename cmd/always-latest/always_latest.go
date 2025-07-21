@@ -29,10 +29,10 @@ Supports two update strategies:
 Examples:
   # Update asdf and its tools
   gz always-latest asdf
-  
+
   # Update with major version strategy
   gz always-latest asdf --strategy major
-  
+
   # Update all supported package managers
   gz always-latest --all`,
 	}

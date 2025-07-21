@@ -14,13 +14,13 @@ properties:
     description: "Configuration schema version"
     pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     example: "1.0.0"
-  
+
   default_provider:
     type: string
     description: "Default Git provider when not specified"
     enum: ["github", "gitlab", "gitea", "gogs"]
     default: "github"
-  
+
   providers:
     type: object
     description: "Git provider configurations"
@@ -46,19 +46,19 @@ definitions:
         description: "Authentication token (supports environment variables)"
         pattern: "^(\\$\\{[A-Z_]+\\}|[a-zA-Z0-9_-]+)$"
         example: "${GITHUB_TOKEN}"
-      
+
       orgs:
         type: array
         description: "Organizations to manage (GitHub/Gitea/Gogs)"
         items:
           $ref: "#/definitions/gitTarget"
-      
+
       groups:
         type: array
         description: "Groups to manage (GitLab)"
         items:
           $ref: "#/definitions/gitTarget"
-  
+
   gitTarget:
     type: object
     required:
@@ -68,40 +68,40 @@ definitions:
         type: string
         description: "Organization/group name"
         example: "gizzahub"
-      
+
       visibility:
         type: string
         description: "Repository visibility filter"
         enum: ["public", "private", "all"]
         default: "all"
-      
+
       recursive:
         type: boolean
         description: "Include subgroups (GitLab)"
         default: false
-      
+
       flatten:
         type: boolean
         description: "Flatten directory structure"
         default: false
-      
+
       match:
         type: string
         description: "Regex pattern to filter repositories"
         example: "^gzh-.*"
-      
+
       clone_dir:
         type: string
         description: "Target directory for cloning"
         example: "./github"
-      
+
       exclude:
         type: array
         description: "Repository names to exclude"
         items:
           type: string
         example: ["test-repo", "archived-*"]
-      
+
       strategy:
         type: string
         description: "Clone/update strategy"

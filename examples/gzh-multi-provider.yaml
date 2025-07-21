@@ -17,7 +17,7 @@ providers:
         exclude: [".*-archive", ".*-backup"] # Exclude archived and backup repos
         strategy: "pull"                   # Use git pull for updates
         flatten: false                     # Maintain org/repo structure
-      
+
       # Open source organization
       - name: "oss-org"
         visibility: "public"
@@ -36,7 +36,7 @@ providers:
         clone_dir: "${HOME}/work/gitlab"
         exclude: [".*-temp", "experiment-.*"]
         strategy: "reset"
-      
+
       # Public projects group
       - name: "opensource"
         visibility: "public"

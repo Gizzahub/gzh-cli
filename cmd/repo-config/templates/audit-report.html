@@ -14,12 +14,12 @@
             --danger-color: #dc3545;
             --info-color: #17a2b8;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background-color: #f6f8fa;
         }
-        
+
         .header {
             background: linear-gradient(135deg, var(--primary-color) 0%, #0052cc 100%);
             color: white;
@@ -27,7 +27,7 @@
             margin-bottom: 2rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .metric-card {
             border: none;
             border-radius: 10px;
@@ -35,36 +35,36 @@
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%;
         }
-        
+
         .metric-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        
+
         .metric-value {
             font-size: 2.5rem;
             font-weight: 700;
             margin: 0;
         }
-        
+
         .metric-label {
             color: #6c757d;
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .compliance-score {
             position: relative;
             display: inline-block;
             width: 200px;
             height: 200px;
         }
-        
+
         .compliance-score svg {
             transform: rotate(-90deg);
         }
-        
+
         .compliance-score-text {
             position: absolute;
             top: 50%;
@@ -73,7 +73,7 @@
             font-size: 3rem;
             font-weight: 700;
         }
-        
+
         .policy-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -81,23 +81,23 @@
             font-size: 0.875rem;
             font-weight: 500;
         }
-        
+
         .policy-enforced {
             background-color: #d1f2eb;
             color: #1e7e34;
         }
-        
+
         .policy-recommended {
             background-color: #fff3cd;
             color: #856404;
         }
-        
+
         .violation-item {
             border-left: 4px solid var(--danger-color);
             padding-left: 1rem;
             margin-bottom: 1rem;
         }
-        
+
         .repo-status {
             display: inline-block;
             width: 10px;
@@ -105,19 +105,19 @@
             border-radius: 50%;
             margin-right: 0.5rem;
         }
-        
+
         .status-compliant {
             background-color: var(--success-color);
         }
-        
+
         .status-violations {
             background-color: var(--danger-color);
         }
-        
+
         .status-warnings {
             background-color: var(--warning-color);
         }
-        
+
         .filter-section {
             background: white;
             padding: 1.5rem;
@@ -125,7 +125,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 2rem;
         }
-        
+
         .trend-chart {
             height: 300px;
             background: white;
@@ -133,12 +133,12 @@
             padding: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        
+
         @media print {
             .no-print {
                 display: none !important;
             }
-            
+
             .metric-card {
                 break-inside: avoid;
             }
@@ -353,28 +353,28 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const policyFilter = document.getElementById('policyFilter').value.toLowerCase();
-            
+
             const rows = document.querySelectorAll('#repoTable tbody tr');
-            
+
             rows.forEach(row => {
                 const repoName = row.cells[0].textContent.toLowerCase();
                 const status = row.getAttribute('data-status');
                 const policies = row.getAttribute('data-policies').toLowerCase();
-                
+
                 let show = true;
-                
+
                 if (searchTerm && !repoName.includes(searchTerm)) {
                     show = false;
                 }
-                
+
                 if (statusFilter && status !== statusFilter) {
                     show = false;
                 }
-                
+
                 if (policyFilter && !policies.includes(policyFilter)) {
                     show = false;
                 }
-                
+
                 row.style.display = show ? '' : 'none';
             });
         }

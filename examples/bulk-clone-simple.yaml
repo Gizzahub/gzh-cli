@@ -18,12 +18,12 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "mycompany"
-  
+
   - root_path: "$HOME/opensource"
-    provider: "github" 
+    provider: "github"
     protocol: "https"
     org_name: "kubernetes"
-  
+
   - root_path: "$HOME/personal"
     provider: "github"
     protocol: "ssh"

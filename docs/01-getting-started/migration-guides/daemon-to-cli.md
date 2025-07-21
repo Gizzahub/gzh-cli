@@ -24,7 +24,7 @@
 # 기존 WiFi 설정 백업 (있다면)
 cp ~/.config/gzh-manager/wifi-config.yaml ~/.config/gzh-manager/wifi-config.yaml.backup
 
-# 기존 액션 설정 백업 (있다면) 
+# 기존 액션 설정 백업 (있다면)
 cp ~/.config/gzh-manager/actions-config.yaml ~/.config/gzh-manager/actions-config.yaml.backup
 
 # 기존 통합 설정 백업
@@ -165,7 +165,7 @@ gz net-env status --verbose
 
 ### 시나리오 2: 카페에서 작업
 
-**이전 방식**: 
+**이전 방식**:
 ```bash
 # WiFi 변경 감지 후 자동으로 공용 WiFi 설정 적용
 ```
@@ -208,7 +208,7 @@ gz net-env switch office --dry-run --verbose
 ### 📋 권장 워크플로우
 
 1. **일과 시작시**: `gz net-env switch office`
-2. **점심시간 외부**: `gz net-env switch public` 
+2. **점심시간 외부**: `gz net-env switch public`
 3. **재택근무 전환**: `gz net-env switch home`
 4. **문제 발생시**: `gz net-env status --verbose`
 

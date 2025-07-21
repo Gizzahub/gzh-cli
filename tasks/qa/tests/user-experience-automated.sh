@@ -29,12 +29,12 @@ run_test() {
     local test_name="$1"
     local test_command="$2"
     local expected_exit_code="${3:-0}"
-    
+
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     echo -e "\n🧪 Testing: $test_name"
-    
+
     local start_time=$(date +%s%N)
-    
+
     if eval "$test_command"; then
         if [ "$expected_exit_code" -eq 0 ]; then
             echo -e "${GREEN}✓ PASSED${NC}: $test_name"
@@ -55,7 +55,7 @@ run_test() {
             FAILED_TEST_NAMES+=("$test_name")
         fi
     fi
-    
+
     local end_time=$(date +%s%N)
     local execution_time=$(( (end_time - start_time) / 1000000 ))
     PERFORMANCE_METRICS["$test_name"]=$execution_time
@@ -65,11 +65,11 @@ measure_memory() {
     local command="$1"
     local pid
     local max_memory=0
-    
+
     # Start command in background
     eval "$command" &
     pid=$!
-    
+
     # Monitor memory usage
     while kill -0 $pid 2>/dev/null; do
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -79,16 +79,16 @@ measure_memory() {
             # Linux
             local mem=$(ps -o rss= -p $pid 2>/dev/null || echo "0")
         fi
-        
+
         if [ "$mem" -gt "$max_memory" ]; then
             max_memory=$mem
         fi
         sleep 0.1
     done
-    
+
     wait $pid
     local exit_code=$?
-    
+
     # Convert KB to MB
     echo $(( max_memory / 1024 ))
     return $exit_code
@@ -107,7 +107,7 @@ cat > "$TEST_DIR/configs/invalid-config.yaml" << 'EOF'
 version: invalid_version
 network_profiles
   home:
-  dns_servers: 
+  dns_servers:
     - 1.1.1.1
 this is invalid yaml
 EOF

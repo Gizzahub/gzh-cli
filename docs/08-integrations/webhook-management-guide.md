@@ -194,16 +194,16 @@ gz repo-config webhook bulk delete \
 targets:
   # 모든 리포지토리
   all: true
-  
+
   # 특정 리포지토리들
   repositories:
     - my-app
     - my-api
     - my-lib
-  
+
   # 패턴 매칭
   pattern: "^(api-|service-)"
-  
+
   # 제외할 리포지토리들
   exclude:
     - test-repo
@@ -243,7 +243,7 @@ rules:
         parameters:
           labels:
             - "needs-review"
-  
+
   # 첫 기여자 환영 메시지
   - id: "welcome-first-time-contributor"
     name: "Welcome First-Time Contributors"
@@ -360,11 +360,11 @@ conditions:
   - type: "event_type"
     operator: "equals"
     value: "pull_request.opened"
-  
+
   - type: "event_type"
     operator: "in"
     value: ["push", "pull_request"]
-  
+
   - type: "event_type"
     operator: "matches"
     value: "workflow_run.*"
@@ -377,7 +377,7 @@ conditions:
     field: "pull_request.base.ref"
     operator: "equals"
     value: "main"
-  
+
   - type: "sender"
     field: "login"
     operator: "equals"
@@ -476,7 +476,7 @@ actions:
     parameters:
       body: |
         Hello @{{sender.login}}!
-        
+
         Repository: {{repo.name}}
         Event: {{event_type}}
         PR Number: {{payload.pull_request.number}}
@@ -546,7 +546,7 @@ Error: insufficient permissions
 ```bash
 Error: webhook creation failed: validation failed
 ```
-**해결방법**: 
+**해결방법**:
 - URL이 유효한 HTTPS 엔드포인트인지 확인
 - 이벤트 타입이 올바른지 확인
 - secret가 너무 길지 않은지 확인

@@ -247,7 +247,7 @@ import (
     "context"
     "fmt"
     "log"
-    
+
     "github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
@@ -257,26 +257,26 @@ func main() {
     apiClient := github.NewGitHubClient("your-token", logger)
     policyManager := github.NewActionsPolicyManager(logger, apiClient)
     enforcer := github.NewActionsPolicyEnforcer(logger, apiClient, policyManager)
-    
+
     ctx := context.Background()
-    
+
     // 정책 생성
     policy := github.GetDefaultActionsPolicy()
     policy.ID = "example-policy"
     policy.Organization = "myorg"
     policy.Name = "Example Policy"
-    
+
     err := policyManager.CreatePolicy(ctx, policy)
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // 정책 적용
     result, err := enforcer.EnforcePolicy(ctx, "example-policy", "myorg", "myrepo")
     if err != nil {
         log.Fatal(err)
     }
-    
+
     fmt.Printf("Enforcement successful: %t\n", result.Success)
     fmt.Printf("Applied changes: %d\n", len(result.AppliedChanges))
     fmt.Printf("Violations: %d\n", len(result.Violations))
@@ -300,7 +300,7 @@ func (r *CustomValidationRule) Validate(ctx context.Context, policy *github.Acti
     result := &github.PolicyValidationResult{
         RuleID: r.GetRuleID(),
     }
-    
+
     // 사용자 정의 검증 로직
     if customSecurityCheck(policy, currentState) {
         result.Passed = true
@@ -314,7 +314,7 @@ func (r *CustomValidationRule) Validate(ctx context.Context, policy *github.Acti
             "Update configuration to meet custom security requirements",
         }
     }
-    
+
     return result, nil
 }
 
@@ -331,10 +331,10 @@ func enforceOrgPolicy(ctx context.Context, enforcer *github.ActionsPolicyEnforce
     if err != nil {
         return err
     }
-    
+
     results := make(chan *github.PolicyEnforcementResult, len(repos))
     errors := make(chan error, len(repos))
-    
+
     // 병렬 처리
     for _, repo := range repos {
         go func(repoName string) {
@@ -346,11 +346,11 @@ func enforceOrgPolicy(ctx context.Context, enforcer *github.ActionsPolicyEnforce
             results <- result
         }(repo.Name)
     }
-    
+
     // 결과 수집
     successCount := 0
     failCount := 0
-    
+
     for i := 0; i < len(repos); i++ {
         select {
         case result := <-results:
@@ -364,7 +364,7 @@ func enforceOrgPolicy(ctx context.Context, enforcer *github.ActionsPolicyEnforce
             failCount++
         }
     }
-    
+
     fmt.Printf("Policy enforcement completed: %d success, %d failed\n", successCount, failCount)
     return nil
 }
@@ -378,7 +378,7 @@ func enforceOrgPolicy(ctx context.Context, enforcer *github.ActionsPolicyEnforce
 func monitorCompliance(ctx context.Context, enforcer *github.ActionsPolicyEnforcer, org string) {
     ticker := time.NewTicker(5 * time.Minute)
     defer ticker.Stop()
-    
+
     for {
         select {
         case <-ticker.C:
@@ -394,17 +394,17 @@ func monitorCompliance(ctx context.Context, enforcer *github.ActionsPolicyEnforc
 
 func checkOrgCompliance(ctx context.Context, enforcer *github.ActionsPolicyEnforcer, org string) []github.ActionsPolicyViolation {
     var allViolations []github.ActionsPolicyViolation
-    
+
     // 조직의 정책들을 조회하여 각 리포지토리에 대해 검증
     // 실제 구현에서는 병렬 처리 및 에러 핸들링 추가
-    
+
     return allViolations
 }
 
 func sendAlerts(violations []github.ActionsPolicyViolation) {
     critical := 0
     high := 0
-    
+
     for _, v := range violations {
         switch v.Severity {
         case github.ViolationSeverityCritical:
@@ -413,12 +413,12 @@ func sendAlerts(violations []github.ActionsPolicyViolation) {
             high++
         }
     }
-    
+
     if critical > 0 {
         // 즉시 알림 발송
         sendCriticalAlert(critical, violations)
     }
-    
+
     if high > 0 {
         // 일반 알림 발송
         sendHighPriorityAlert(high, violations)
@@ -446,15 +446,15 @@ func generateComplianceDashboard(ctx context.Context, org string) (*ComplianceDa
         ViolationsByType: make(map[string]int),
         LastUpdated:      time.Now(),
     }
-    
+
     // 정책 수집
     policies, err := policyManager.ListPolicies(ctx, org)
     if err != nil {
         return nil, err
     }
-    
+
     dashboard.TotalPolicies = len(policies)
-    
+
     activePolicies := 0
     for _, policy := range policies {
         if policy.Enabled {
@@ -462,15 +462,15 @@ func generateComplianceDashboard(ctx context.Context, org string) (*ComplianceDa
         }
     }
     dashboard.ActivePolicies = activePolicies
-    
+
     // 리포지토리 규정 준수 상태 수집
     repos, err := apiClient.ListOrganizationRepositories(ctx, org)
     if err != nil {
         return nil, err
     }
-    
+
     dashboard.TotalRepos = len(repos)
-    
+
     compliantCount := 0
     for _, repo := range repos {
         isCompliant := checkRepositoryCompliance(ctx, repo.Name, policies)
@@ -479,7 +479,7 @@ func generateComplianceDashboard(ctx context.Context, org string) (*ComplianceDa
         }
     }
     dashboard.CompliantRepos = compliantCount
-    
+
     return dashboard, nil
 }
 ```

@@ -67,12 +67,12 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "frontend-team"
-  
+
   - root_path: "$HOME/work/backend"
     provider: "github"
     protocol: "ssh"
     org_name: "backend-team"
-  
+
   - root_path: "$HOME/opensource"
     provider: "github"
     protocol: "https"
@@ -100,7 +100,7 @@ providers:
         exclude: ["test-.*", ".*-archive", "temp-.*"]
         strategy: "pull"
         flatten: true
-      
+
       - name: "backend-team"
         visibility: "private"
         clone_dir: "$HOME/work/backend"
@@ -108,7 +108,7 @@ providers:
         exclude: ["test-.*", ".*-archive", "temp-.*"]
         strategy: "pull"
         flatten: true
-      
+
       - name: "kubernetes"
         visibility: "public"
         clone_dir: "$HOME/opensource"

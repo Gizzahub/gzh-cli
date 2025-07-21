@@ -24,7 +24,7 @@ repositories:
           - "infrastructure"
           - "terraform"
           - "aws"
-    
+
     # Public community projects
     - name: "awesome-cli-tool"
       template: "opensource-community"
@@ -35,7 +35,7 @@ repositories:
           - "cli"
           - "developer-tools"
           - "golang"
-    
+
     # Enterprise applications
     - name: "customer-management-system"
       template: "enterprise-standard"
@@ -45,27 +45,27 @@ repositories:
           - "crm"
           - "enterprise"
           - "internal"
-  
+
   # Pattern-based template application
   patterns:
     # All infrastructure repositories use security template
     - match: "infra-*"
       template: "security-enhanced"
-    
+
     - match: "terraform-*"
       template: "security-enhanced"
-    
+
     # All example/demo repositories are open source
     - match: "example-*"
       template: "opensource-community"
-    
+
     - match: "demo-*"
       template: "opensource-community"
-    
+
     # All service repositories use enterprise template
     - match: "*-service"
       template: "enterprise-standard"
-    
+
     - match: "*-api"
       template: "enterprise-standard"
 

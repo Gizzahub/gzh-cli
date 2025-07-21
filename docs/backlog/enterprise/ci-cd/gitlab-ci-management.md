@@ -69,22 +69,22 @@ gitlab_ci:
   projects:
     - name: myapp-backend
       path: company/myapp-backend
-      
+
       pipeline:
         stages:
           - build
           - test
           - security
           - deploy
-          
+
         variables:
           DOCKER_DRIVER: overlay2
           POSTGRES_DB: testdb
-          
+
         before_script:
           - apt-get update -qq
           - apt-get install -qq git
-          
+
         jobs:
           build:
             stage: build
@@ -99,7 +99,7 @@ gitlab_ci:
             cache:
               paths:
                 - node_modules/
-                
+
           test:
             stage: test
             image: node:18
@@ -113,7 +113,7 @@ gitlab_ci:
                 coverage_report:
                   coverage_format: cobertura
                   path: coverage/cobertura-coverage.xml
-                  
+
           security_scan:
             stage: security
             image: owasp/zap2docker-stable
@@ -122,7 +122,7 @@ gitlab_ci:
             artifacts:
               reports:
                 sast: gl-sast-report.json
-                
+
           deploy_staging:
             stage: deploy
             image: alpine:latest
@@ -134,7 +134,7 @@ gitlab_ci:
               url: https://staging.company.com
             only:
               - develop
-              
+
           deploy_production:
             stage: deploy
             image: alpine:latest
@@ -147,58 +147,58 @@ gitlab_ci:
             when: manual
             only:
               - main
-              
+
   runners:
     shared:
       - name: docker-runner-01
         executor: docker
         tags: [linux, docker]
         concurrent: 4
-        
+
     group_runners:
       - name: kubernetes-runner
         executor: kubernetes
         tags: [k8s, production]
         concurrent: 10
-        
+
   variables:
     global:
       DOCKER_REGISTRY: registry.company.com
-      
+
     project_level:
       - project: company/myapp-backend
         variables:
           DATABASE_URL: postgres://localhost/myapp
           API_ENDPOINT: https://api.company.com
-          
+
     group_level:
       - group: company
         variables:
           AWS_DEFAULT_REGION: us-west-2
-          
+
   environments:
     - name: development
       project: company/myapp-backend
       url: https://dev.company.com
       auto_stop_in: 1 week
-      
+
     - name: staging
       project: company/myapp-backend
       url: https://staging.company.com
       deployment_tier: staging
-      
+
     - name: production
       project: company/myapp-backend
       url: https://app.company.com
       deployment_tier: production
       protected: true
-      
+
   schedules:
     - description: "Nightly tests"
       ref: main
       cron: "0 2 * * *"
       active: true
-      
+
   notifications:
     email:
       on_failure: [devops@company.com]

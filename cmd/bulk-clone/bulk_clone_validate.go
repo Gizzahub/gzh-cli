@@ -22,7 +22,7 @@ func newBulkCloneValidateCmd() *cobra.Command {
 		Use:   "validate",
 		Short: "Validate a bulk-clone configuration file",
 		Long: `Validate a bulk-clone configuration file against the schema.
-		
+
 This command checks that your configuration file:
 - Has all required fields
 - Uses valid values for enums (protocol, provider, etc.)
@@ -30,7 +30,7 @@ This command checks that your configuration file:
 - Has valid regex patterns in ignore_names`,
 		Example: `  # Validate a config file
   gzh bulk-clone validate -c bulk-clone.yaml
-  
+
   # Validate config from standard location
   gzh bulk-clone validate --use-config`,
 		Args: cobra.NoArgs,

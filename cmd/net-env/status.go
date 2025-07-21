@@ -70,10 +70,10 @@ This command provides a comprehensive overview of the current network state:
 Examples:
   # Show basic network status
   gz net-env status
-  
+
   # Show detailed status with verbose output
   gz net-env status --verbose
-  
+
   # Output status in JSON format
   gz net-env status --json`,
 		RunE: o.runStatus,

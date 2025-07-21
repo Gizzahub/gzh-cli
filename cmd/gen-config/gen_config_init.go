@@ -44,10 +44,10 @@ The wizard will ask about:
 Examples:
   # Interactive configuration creation
   gz gen-config init
-  
+
   # Non-interactive with simple template
   gz gen-config init --template simple --no-interactive
-  
+
   # Generate to custom file
   gz gen-config init --output my-config.yaml`,
 		RunE: o.run,

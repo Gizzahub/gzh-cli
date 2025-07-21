@@ -15,7 +15,7 @@ POTENTIAL LINT ERRORS FOUND:
      Line: 162-242 (runWithGZHConfig function)
      Issue: The function runWithGZHConfig is defined but appears to be unused based on the current execution flow
      Linter: unused
-     
+
    - File: cmd/doctor/doctor.go
      Line: 162-242 (runWithGZHConfig function)
      Issue: Several variables in doctor.go may be unused in specific code paths
@@ -26,7 +26,7 @@ POTENTIAL LINT ERRORS FOUND:
      Line: 828, 838, 874, 875, 876
      Issue: Error return values not checked for os.Remove, os.RemoveAll, file.Write, file.Sync
      Linter: errcheck
-     
+
    - File: internal/errors/recovery.go
      Line: Multiple instances where error returns are not checked
      Issue: Some error return values may not be properly handled
@@ -37,7 +37,7 @@ POTENTIAL LINT ERRORS FOUND:
      Line: 100-278 (runDoctor function)
      Issue: Function exceeds maximum length of 100 lines (178 lines)
      Linter: funlen
-     
+
    - File: cmd/doctor/doctor.go
      Line: 381-453 (runConfigChecks function)
      Issue: Function may exceed complexity limits
@@ -48,7 +48,7 @@ POTENTIAL LINT ERRORS FOUND:
      Line: 100-278 (runDoctor function)
      Issue: High cognitive complexity due to nested conditions and error handling
      Linter: gocognit
-     
+
    - File: cmd/bulk-clone/bulk_clone.go
      Line: 162-242 (runWithGZHConfig function)
      Issue: High complexity due to nested loops and error handling
@@ -71,7 +71,7 @@ POTENTIAL LINT ERRORS FOUND:
      Line: 534, 564, 811 (exec.Command usage)
      Issue: Command execution with user input - potential security risk
      Linter: gosec (G204)
-     
+
    - File: cmd/doctor/doctor.go
      Line: 833, 864 (file operations)
      Issue: File operations with user-controlled paths

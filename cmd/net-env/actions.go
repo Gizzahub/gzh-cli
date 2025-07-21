@@ -95,13 +95,13 @@ Supported actions:
 Examples:
   # Execute actions from configuration file
   gz net-env actions run
-  
+
   # Test configuration without executing
   gz net-env actions run --dry-run
-  
+
   # Create example configuration
   gz net-env actions config init
-  
+
   # Apply specific action type
   gz net-env actions vpn connect --name office
   gz net-env actions dns set --servers 1.1.1.1,1.0.0.1`,
@@ -133,10 +133,10 @@ testing configurations without making actual changes.
 Examples:
   # Run all configured actions
   gz net-env actions run
-  
+
   # Test configuration without executing
   gz net-env actions run --dry-run
-  
+
   # Run with detailed output
   gz net-env actions run --verbose`,
 		RunE: o.runActions,
@@ -206,10 +206,10 @@ func newActionsVPNCmd() *cobra.Command {
 Examples:
   # Connect to VPN
   gz net-env actions vpn connect --name office
-  
+
   # Disconnect from VPN
   gz net-env actions vpn disconnect --name office
-  
+
   # List VPN status
   gz net-env actions vpn status`,
 	}
@@ -230,10 +230,10 @@ func newActionsDNSCmd() *cobra.Command {
 Examples:
   # Set DNS servers
   gz net-env actions dns set --servers 1.1.1.1,1.0.0.1
-  
+
   # Show current DNS configuration
   gz net-env actions dns status
-  
+
   # Reset to default DNS
   gz net-env actions dns reset`,
 	}
@@ -254,13 +254,13 @@ func newActionsProxyCmd() *cobra.Command {
 Examples:
   # Set HTTP proxy
   gz net-env actions proxy set --http http://proxy.company.com:8080
-  
+
   # Set SOCKS proxy
   gz net-env actions proxy set --socks socks5://proxy.company.com:1080
-  
+
   # Clear proxy settings
   gz net-env actions proxy clear
-  
+
   # Show proxy status
   gz net-env actions proxy status`,
 	}
@@ -281,10 +281,10 @@ func newActionsHostsCmd() *cobra.Command {
 Examples:
   # Add host entry
   gz net-env actions hosts add --ip 192.168.1.100 --host myserver.local
-  
+
   # Remove host entry
   gz net-env actions hosts remove --host myserver.local
-  
+
   # Show hosts file
   gz net-env actions hosts show`,
 	}

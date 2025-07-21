@@ -49,7 +49,7 @@ func NewBulkCloneCmd(ctx context.Context) *cobra.Command {
 		Short:        "Clone repositories from multiple Git hosting services",
 		SilenceUsage: true,
 		Long: `Clone multiple repositories from various Git hosting services.
-		
+
 You can use a configuration file (bulk-clone.yaml) to define multiple organizations
 and their settings. This command will process all repository roots defined in the
 configuration file regardless of the provider (GitHub, GitLab, Gitea).

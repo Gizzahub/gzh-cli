@@ -65,22 +65,22 @@ Update strategies:
 Examples:
   # Update all upgradeable packages (default)
   gz always-latest apt
-  
+
   # Update specific packages only
   gz always-latest apt --packages curl,git,vim
-  
+
   # Perform full system upgrade
   gz always-latest apt --full-upgrade
-  
+
   # Update and auto-remove unused packages
   gz always-latest apt --auto-remove
-  
+
   # Dry run to see what would be updated
   gz always-latest apt --dry-run
-  
+
   # Update all packages without prompting
   gz always-latest apt --upgrade-all
-  
+
   # Fix broken packages before updating
   gz always-latest apt --fix-broken`,
 		RunE: o.run,

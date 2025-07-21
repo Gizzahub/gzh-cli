@@ -211,7 +211,7 @@ func getCurrentDir() string {
 func getDefaultBaseImage(language string) string {
 	switch language {
 	case "go":
-		return "golang:1.21-alpine"
+		return "golang:1.24-alpine"
 	case "node":
 		return "node:20-alpine"
 	case "python":

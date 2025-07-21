@@ -114,7 +114,7 @@ go build -o gz ./cmd
 ## 🎯 다음 단계
 
 ### 우선순위 높음
-1. **컴파일 에러 수정** 
+1. **컴파일 에러 수정**
    - 현재 빌드 실패로 자동 테스트 실행 불가
    - `pkg/gzhclient/`, `cmd/repo-sync/`, `cmd/net-env/` 에러 해결
 

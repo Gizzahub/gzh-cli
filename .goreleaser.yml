@@ -220,10 +220,10 @@ aurs:
     package: |-
       # bin
       install -Dm755 "./gz" "${pkgdir}/usr/bin/gz"
-      
+
       # license
       install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/gz/LICENSE"
-      
+
       # completions
       mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
       mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
@@ -231,7 +231,7 @@ aurs:
       install -Dm644 "./completions/gzh-manager.bash" "${pkgdir}/usr/share/bash-completion/completions/gz"
       install -Dm644 "./completions/gzh-manager.zsh" "${pkgdir}/usr/share/zsh/site-functions/_gz"
       install -Dm644 "./completions/gzh-manager.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/gz.fish"
-      
+
       # man pages
       install -Dm644 "./manpages/gzh-manager.1.gz" "${pkgdir}/usr/share/man/man1/gz.1.gz"
 
@@ -310,13 +310,13 @@ release:
   mode: replace
   header: |
     ## gz {{ .Tag }} ({{ .Date }})
-    
+
     Welcome to this new release!
   footer: |
     ## Thanks!
-    
+
     Those were the changes on {{ .Tag }}!
-    
+
     **Full Changelog**: https://github.com/Gizzahub/gzh-manager-go/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 milestones:
@@ -331,6 +331,6 @@ announcements:
   - provider: discord
     enabled: '{{ .Env.DISCORD_WEBHOOK_URL }}'
     message_template: 'gz {{ .Tag }} has been released! 🎉'
-    
+
 metadata:
   mod_timestamp: '{{ .CommitTimestamp }}'

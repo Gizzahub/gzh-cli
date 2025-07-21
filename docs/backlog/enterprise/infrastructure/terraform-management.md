@@ -67,16 +67,16 @@ terraform:
         bucket: terraform-state-prod
         key: myapp/terraform.tfstate
         region: us-west-2
-  
+
   providers:
     aws:
       regions: [us-west-2, us-east-1]
       profiles: [default, prod]
-    
+
   modules:
     auto_generate: true
     structure: modular
-    
+
   approval:
     required_for: [production]
     reviewers: [devops-team]

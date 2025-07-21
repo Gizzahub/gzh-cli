@@ -32,7 +32,7 @@ func newSyncCmd(logger *zap.Logger) *cobra.Command {
 
 This command provides sophisticated synchronization capabilities:
 - Local → Remote: Push local changes to remote repository
-- Remote → Local: Pull remote changes to local repository  
+- Remote → Local: Pull remote changes to local repository
 - Bidirectional: Automatic synchronization in both directions
 - Intelligent conflict resolution with multiple strategies
 - Atomic operations with rollback capabilities
@@ -48,13 +48,13 @@ Conflict Resolution Strategies:
 Examples:
   # Basic one-way sync (local to remote)
   gz repo-sync sync ./my-repo --remote origin
-  
+
   # Bidirectional sync with auto-merge
   gz repo-sync sync ./my-repo --bidirectional --conflict-strategy auto-merge
-  
+
   # Dry run to see what would be synchronized
   gz repo-sync sync ./my-repo --bidirectional --dry-run
-  
+
   # Sync with auto-commit and custom message
   gz repo-sync sync ./my-repo --auto-commit --commit-message "Auto-sync: {{.Timestamp}}"`,
 		Args: cobra.MaximumNArgs(1),

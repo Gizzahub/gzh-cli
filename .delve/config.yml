@@ -5,23 +5,23 @@
 debugger:
   # Enable or disable colors in debugger output
   colors: true
-  
+
   # Set the default behavior when hitting a breakpoint
   # Options: "next", "step", "continue"
   default-breakpoint-action: "next"
-  
+
   # Show more detailed stack traces
   show-location-expr: true
-  
+
   # Enable source map support for better debugging
   source-list-line-color: ""  # Use default terminal colors
-  
+
   # Set the maximum string length to display
   max-string-len: 300
-  
+
   # Set the maximum array/slice length to display
   max-array-values: 100
-  
+
   # Show local variables when stopped
   show-location-info: true
 
@@ -39,31 +39,31 @@ aliases:
   vars: "vars"
   funcs: "funcs"
   bt: "stack"
-  
+
   # Debugging helpers
   goroutines: "goroutines"
   threads: "threads"
-  
+
   # Step commands
   s: "step"
   n: "next"
   c: "continue"
   r: "restart"
-  
+
   # Breakpoint management
   bp: "break"
   bps: "breakpoints"
   clear: "clearall"
-  
+
   # Inspection
   p: "print"
   pp: "print -v"
   whatis: "whatis"
-  
-  # Source navigation  
+
+  # Source navigation
   list: "list"
   edit: "edit"
-  
+
   # Exit
   q: "quit"
   exit: "quit"
@@ -76,15 +76,15 @@ env:
   GZH_DEV_MODE: "true"
   GO111MODULE: "on"
   GORACE: "halt_on_error=1"
-  
+
 # Logging configuration
 log:
   # Enable debug logging
   debug: false
-  
+
   # Log level: trace, debug, info, warn, error
   level: "info"
-  
+
   # Log to file instead of stderr
   # file: "/tmp/delve.log"
 
@@ -92,10 +92,10 @@ log:
 api:
   # Listen address for API server
   listen: "127.0.0.1:2345"
-  
+
   # Enable API server logging
   log: false
-  
+
   # Check Go version
   check-go-version: true
 

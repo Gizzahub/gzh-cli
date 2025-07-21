@@ -15,53 +15,53 @@ spec:
   name: "PR Auto Assignment Template"
   description: "Automatically assign reviewers based on file changes and repository patterns"
   category: "code-review"
-  
+
   variables:
     - name: "organization"
       type: "string"
       description: "GitHub organization name"
       required: true
-    
+
     - name: "repository_patterns"
       type: "array"
       description: "Repository name patterns to match"
       required: true
       default_value: [".*"]
-    
+
     - name: "file_patterns"
       type: "array"
       description: "File patterns that trigger reviewer assignment"
       required: true
       default_value: ["*"]
-    
+
     - name: "reviewers"
       type: "array"
       description: "List of reviewer usernames"
       required: true
-    
+
     - name: "labels"
       type: "array"
       description: "Labels to add to the PR"
       required: false
       default_value: ["review-required"]
-    
+
     - name: "slack_channel"
       type: "string"
       description: "Slack channel for notifications"
       required: false
-    
+
     - name: "priority"
       type: "number"
       description: "Rule priority (higher numbers = higher priority)"
       required: false
       default_value: 100
-    
+
     - name: "target_branches"
       type: "array"
       description: "Target branches that trigger the rule"
       required: false
       default_value: ["main", "master", "develop"]
-  
+
   template:
     id: "{{.organization}}-pr-auto-assignment"
     name: "PR Auto Assignment - {{.organization}}"
@@ -69,7 +69,7 @@ spec:
     organization: "{{.organization}}"
     enabled: true
     priority: "{{.priority}}"
-    
+
     conditions:
       logical_operator: "AND"
       event_types:
@@ -86,7 +86,7 @@ spec:
         - path: "$.pull_request.base.ref"
           operator: "in"
           value: "{{.target_branches}}"
-    
+
     actions:
       - id: "assign-reviewers"
         type: "assign_reviewer"
@@ -102,7 +102,7 @@ spec:
           max_retries: 3
           retry_interval: "10s"
         on_failure: "continue"
-      
+
       - id: "add-labels"
         type: "add_label"
         name: "Add Review Labels"
@@ -110,7 +110,7 @@ spec:
         parameters:
           labels: "{{.labels}}"
         timeout: "15s"
-  
+
   examples:
     - name: "Backend Team Setup"
       description: "Configuration for backend team repositories"
@@ -133,7 +133,7 @@ spec:
         slack_channel: "#backend-reviews"
         priority: 120
         target_branches: ["main", "develop"]
-    
+
     - name: "Frontend Team Setup"
       description: "Configuration for frontend team repositories"
       variables:
@@ -172,47 +172,47 @@ spec:
   name: "Security Issue Automation Template"
   description: "Automatically create issues and notifications for security alerts"
   category: "security"
-  
+
   variables:
     - name: "organization"
       type: "string"
       description: "GitHub organization name"
       required: true
-    
+
     - name: "security_team"
       type: "array"
       description: "Security team member usernames"
       required: true
-    
+
     - name: "severity_levels"
       type: "array"
       description: "Security severity levels to handle"
       required: false
       default_value: ["high", "critical"]
-    
+
     - name: "slack_channel"
       type: "string"
       description: "Slack channel for security notifications"
       required: true
-    
+
     - name: "issue_labels"
       type: "array"
       description: "Labels to add to security issues"
       required: false
       default_value: ["security", "high-priority", "automated"]
-    
+
     - name: "milestone"
       type: "string"
       description: "Milestone for security issues"
       required: false
       default_value: "Security Fixes"
-    
+
     - name: "priority"
       type: "number"
       description: "Rule priority"
       required: false
       default_value: 200
-  
+
   template:
     id: "{{.organization}}-security-automation"
     name: "Security Alert Handler - {{.organization}}"
@@ -220,7 +220,7 @@ spec:
     organization: "{{.organization}}"
     enabled: true
     priority: "{{.priority}}"
-    
+
     conditions:
       logical_operator: "OR"
       event_types:
@@ -228,7 +228,7 @@ spec:
         - "security_advisory"
       custom_filters:
         severity: "{{.severity_levels}}"
-    
+
     actions:
       - id: "create-security-issue"
         type: "create_issue"
@@ -238,18 +238,18 @@ spec:
           title: "🚨 Security Alert: {{`{{.alert.title}}`}}"
           body: |
             ## Security Alert Details
-            
+
             **Severity:** {{`{{.alert.severity}}`}}
             **Package:** {{`{{.alert.package}}`}}
             **Vulnerable Version:** {{`{{.alert.vulnerable_version}}`}}
             **Patched Version:** {{`{{.alert.patched_version}}`}}
-            
+
             **Description:**
             {{`{{.alert.description}}`}}
-            
+
             **Recommendation:**
             {{`{{.alert.recommendation}}`}}
-            
+
             ---
             *This issue was automatically created by the security automation system.*
           labels: "{{.issue_labels}}"
@@ -260,7 +260,7 @@ spec:
           max_retries: 2
           retry_interval: "30s"
         on_failure: "stop"
-      
+
       - id: "notify-security-team"
         type: "slack_message"
         name: "Notify Security Team"
@@ -269,11 +269,11 @@ spec:
           channel: "{{.slack_channel}}"
           message: |
             🚨 **Security Alert Detected**
-            
+
             Repository: {{`{{.repository.name}}`}}
             Severity: {{`{{.alert.severity}}`}}
             Package: {{`{{.alert.package}}`}}
-            
+
             Issue created: {{`{{.issue.url}}`}}
           urgent: true
           mention_users: "{{.security_team}}"
@@ -293,41 +293,41 @@ spec:
   name: "Deployment Automation Template"
   description: "Automate deployment workflows for release branches"
   category: "deployment"
-  
+
   variables:
     - name: "organization"
       type: "string"
       description: "GitHub organization name"
       required: true
-    
+
     - name: "environment"
       type: "string"
       description: "Deployment environment"
       required: true
       options: ["staging", "production", "development"]
-    
+
     - name: "branch_patterns"
       type: "array"
       description: "Branch patterns that trigger deployment"
       required: true
       default_value: ["^release/.*", "^hotfix/.*"]
-    
+
     - name: "workflow_file"
       type: "string"
       description: "GitHub Actions workflow file name"
       required: true
-    
+
     - name: "devops_team"
       type: "array"
       description: "DevOps team member usernames"
       required: true
-    
+
     - name: "business_hours_only"
       type: "boolean"
       description: "Only deploy during business hours"
       required: false
       default_value: true
-    
+
     - name: "notification_channels"
       type: "object"
       description: "Notification channels configuration"
@@ -336,13 +336,13 @@ spec:
         slack: "#deployments"
         teams: ""
         email: []
-    
+
     - name: "priority"
       type: "number"
       description: "Rule priority"
       required: false
       default_value: 150
-  
+
   template:
     id: "{{.organization}}-{{.environment}}-deployment"
     name: "{{.environment | title}} Deployment - {{.organization}}"
@@ -350,7 +350,7 @@ spec:
     organization: "{{.organization}}"
     enabled: true
     priority: "{{.priority}}"
-    
+
     conditions:
       logical_operator: "AND"
       event_types:
@@ -361,7 +361,7 @@ spec:
       branch_patterns: "{{.branch_patterns}}"
       business_hours: "{{.business_hours_only}}"
       days_of_week: [1, 2, 3, 4, 5]
-    
+
     actions:
       - id: "trigger-deployment"
         type: "trigger_workflow"
@@ -379,7 +379,7 @@ spec:
           max_retries: 1
           retry_interval: "60s"
         on_failure: "stop"
-      
+
       - id: "create-deployment-issue"
         type: "create_issue"
         name: "Create Deployment Tracking Issue"
@@ -388,19 +388,19 @@ spec:
           title: "🚀 {{.environment | title}} Deployment: {{`{{.branch}}`}}"
           body: |
             ## Deployment Information
-            
+
             **Environment:** {{.environment}}
             **Branch:** {{`{{.branch}}`}}
             **Version:** {{`{{.tag}}`}}
             **Triggered by:** {{`{{.sender.login}}`}}
             **Started at:** {{`{{.timestamp}}`}}
-            
+
             ## Checklist
             - [ ] Deployment workflow completed
             - [ ] Health checks passed
             - [ ] Monitoring alerts reviewed
             - [ ] Stakeholders notified
-            
+
             ## Links
             - [Deployment Workflow]({{`{{.workflow.url}}`}})
             - [Monitoring Dashboard](https://monitoring.company.com)
@@ -411,7 +411,7 @@ spec:
           assignees: "{{.devops_team}}"
           milestone: "{{.environment | title}} Releases"
         timeout: "45s"
-      
+
       - id: "notify-teams"
         type: "slack_message"
         name: "Notify Teams"
@@ -420,15 +420,15 @@ spec:
           channel: "{{.notification_channels.slack}}"
           message: |
             🚀 **{{.environment | title}} Deployment Started**
-            
+
             Repository: {{`{{.repository.name}}`}}
             Branch: {{`{{.branch}}`}}
             Version: {{`{{.tag}}`}}
             Triggered by: {{`{{.sender.login}}`}}
-            
+
             [Track Progress]({{`{{.issue.url}}`}})
         timeout: "30s"
-  
+
   examples:
     - name: "Production Deployment"
       description: "Production deployment configuration"
@@ -447,7 +447,7 @@ spec:
           teams: "Production Team"
           email: ["devops@company.com"]
         priority: 200
-    
+
     - name: "Staging Deployment"
       description: "Staging deployment configuration"
       variables:

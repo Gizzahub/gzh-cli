@@ -37,10 +37,10 @@ Available templates:
 Examples:
   # Generate simple template
   gz gen-config template simple
-  
+
   # Generate comprehensive template to custom file
   gz gen-config template comprehensive --output my-config.yaml
-  
+
   # Force overwrite existing file
   gz gen-config template work --force`,
 		Args:       cobra.ExactArgs(1),
@@ -149,25 +149,25 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "mycompany"
-  
+
   # Open source GitHub repositories (HTTPS for public access)
   - root_path: "$HOME/opensource/kubernetes"
     provider: "github"
     protocol: "https"
     org_name: "kubernetes"
-  
+
   # Personal GitHub repositories
   - root_path: "$HOME/personal/github"
     provider: "github"
     protocol: "ssh"
     org_name: "myusername"
-  
+
   # GitLab group repositories
   - root_path: "$HOME/gitlab/mygroup"
     provider: "gitlab"
     protocol: "ssh"
     org_name: "mygroup"
-  
+
   # Gitea organization repositories
   - root_path: "$HOME/gitea/myorg"
     provider: "gitea"
@@ -207,13 +207,13 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "company"
-  
+
   # DevOps and infrastructure repositories
   - root_path: "$HOME/work/devops"
     provider: "github"
     protocol: "ssh"
     org_name: "company-devops"
-  
+
   # Internal GitLab groups
   - root_path: "$HOME/work/internal"
     provider: "gitlab"
@@ -254,23 +254,23 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "yourusername"
-  
+
   # Open source contributions
   - root_path: "$HOME/opensource/kubernetes"
     provider: "github"
     protocol: "https"
     org_name: "kubernetes"
-  
+
   - root_path: "$HOME/opensource/golang"
     provider: "github"
     protocol: "https"
     org_name: "golang"
-  
+
   - root_path: "$HOME/opensource/docker"
     provider: "github"
     protocol: "https"
     org_name: "docker"
-  
+
   # Personal GitLab projects
   - root_path: "$HOME/personal/gitlab"
     provider: "gitlab"
@@ -311,39 +311,39 @@ repo_roots:
     provider: "github"
     protocol: "ssh"
     org_name: "company"
-  
+
   - root_path: "$HOME/work/company-labs"
     provider: "github"
     protocol: "ssh"
     org_name: "company-labs"
-  
+
   # Client organizations
   - root_path: "$HOME/clients/client1"
     provider: "github"
     protocol: "ssh"
     org_name: "client1"
-  
+
   - root_path: "$HOME/clients/client2"
     provider: "gitlab"
     protocol: "ssh"
     org_name: "client2-group"
-  
+
   # Open source organizations
   - root_path: "$HOME/opensource/kubernetes"
     provider: "github"
     protocol: "https"
     org_name: "kubernetes"
-  
+
   - root_path: "$HOME/opensource/hashicorp"
     provider: "github"
     protocol: "https"
     org_name: "hashicorp"
-  
+
   - root_path: "$HOME/opensource/gitlab-org"
     provider: "gitlab"
     protocol: "https"
     org_name: "gitlab-org"
-  
+
   # Personal repositories
   - root_path: "$HOME/personal"
     provider: "github"

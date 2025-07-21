@@ -170,31 +170,31 @@ templates:
       - path: "README.md"
         content: |
           # Repository Name
-          
+
           ## Description
           Add your description here
-          
+
           ## Getting Started
-          
+
           ## Contributing
           Please read CONTRIBUTING.md
-          
+
       - path: ".github/CODEOWNERS"
         content: |
           # Global owners
           * @your-org/dev-team
-          
+
       - path: ".gitignore"
         content: |
           # IDE
           .idea/
           .vscode/
           *.swp
-          
+
           # OS
           .DS_Store
           Thumbs.db
-          
+
           # Build
           dist/
           build/
@@ -265,7 +265,7 @@ policies:
         value: "private"
         enforcement: "required"
         message: "Production services must be private"
-      
+
       security_scanning:
         type: "security_feature"
         value: true
@@ -277,10 +277,10 @@ patterns:
   - pattern: "*-service"
     template: "private-service"
     policies: ["production"]
-  
+
   - pattern: "*-sdk"
     template: "public-library"
-  
+
   - pattern: "*-client"
     template: "public-library"
 

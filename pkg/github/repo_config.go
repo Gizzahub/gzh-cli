@@ -1037,7 +1037,7 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 
 	for i, repo := range filteredRepos {
 		// Capture loop variables
-		repo := repo
+
 		index := i
 
 		g.Go(func() error {

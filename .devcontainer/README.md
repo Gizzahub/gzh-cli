@@ -243,7 +243,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
    ```bash
    # Check Docker is running
    docker info
-   
+
    # Rebuild container
    # Command Palette: "Remote-Containers: Rebuild Container"
    ```
@@ -259,7 +259,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
    ```bash
    # Clear npm cache
    npm cache clean --force
-   
+
    # Rebuild node-gyp
    cd bindings/nodejs
    npm run clean
@@ -280,7 +280,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
    ```bash
    # Fix ownership
    sudo chown -R vscode:vscode /workspace
-   
+
    # Fix permissions
    chmod +x .devcontainer/scripts/*.sh
    ```

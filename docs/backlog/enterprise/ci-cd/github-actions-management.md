@@ -75,7 +75,7 @@ github_actions:
             - push: [main, develop]
             - pull_request: [main]
             - schedule: "0 2 * * *"
-          
+
           jobs:
             test:
               runs_on: ubuntu-latest
@@ -88,7 +88,7 @@ github_actions:
                 - install_dependencies
                 - run_tests
                 - upload_coverage
-                
+
             build:
               needs: test
               runs_on: ubuntu-latest
@@ -97,7 +97,7 @@ github_actions:
                 - setup_node: 18
                 - build_application
                 - upload_artifacts
-                
+
             deploy:
               needs: build
               runs_on: ubuntu-latest
@@ -106,36 +106,36 @@ github_actions:
               steps:
                 - download_artifacts
                 - deploy_to_aws
-                
+
   secrets:
     organization_level:
       AWS_ACCESS_KEY_ID: ${{ secrets.ORG_AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.ORG_AWS_SECRET_KEY }}
-      
+
     repository_level:
       - repo: myapp-backend
         secrets:
           DATABASE_URL: postgres://user:pass@host:5432/db
           API_KEY: secret-api-key
-          
+
   environments:
     - name: development
       protection_rules:
         required_reviewers: 0
         wait_timer: 0
-        
+
     - name: staging
       protection_rules:
         required_reviewers: 1
         wait_timer: 5
-        
+
     - name: production
       protection_rules:
         required_reviewers: 2
         wait_timer: 30
         deployment_branches:
           - main
-          
+
   runners:
     self_hosted:
       - name: linux-runners
@@ -146,21 +146,21 @@ github_actions:
           min: 1
           max: 10
           target_utilization: 80
-          
+
     github_hosted:
       default: ubuntu-latest
       matrix:
         - ubuntu-latest
         - windows-latest
         - macos-latest
-        
+
   notifications:
     slack:
       webhook_url: https://hooks.slack.com/...
       channels:
         success: "#deployments"
         failure: "#alerts"
-    
+
     email:
       on_failure: [devops@company.com]
       on_success: [team@company.com]
@@ -184,7 +184,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16, 18, 20]
-    
+
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
@@ -192,11 +192,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    
+
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
-    
+
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
       with:
@@ -207,17 +207,17 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     environment: production
-    
+
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
-    
+
     - run: npm ci
     - run: npm run build
-    
+
     - name: Deploy to AWS
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -244,24 +244,24 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
+
     - name: Log in to Container Registry
       uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-    
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
@@ -283,18 +283,18 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        go-version: [1.19, 1.20, 1.21]
-    
+        go-version: [1.23, 1.24]
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
-    
+
     - name: Build
       run: go build -v ./...
-    
+
     - name: Test
       run: go test -v ./...
 ```

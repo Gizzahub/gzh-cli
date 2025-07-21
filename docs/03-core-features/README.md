@@ -172,7 +172,7 @@ performance:
   timeout: "5m"
   retry_attempts: 3
   batch_size: 50
-  
+
 cache:
   enabled: true
   ttl: "1h"

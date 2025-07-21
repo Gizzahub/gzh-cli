@@ -71,35 +71,35 @@ ansible:
       inventory: inventories/production
       vars_file: vars/production.yml
       tags: [setup, deploy]
-      
+
     - name: database-setup
       file: playbooks/database.yml
       inventory: inventories/production
       vault_password_file: .vault_pass
-      
+
   inventories:
     production:
       type: static
       file: inventories/production.ini
-      
+
     staging:
       type: dynamic
       provider: aws
       regions: [us-west-2]
       filters:
         tag:Environment: staging
-        
+
   settings:
     remote_user: deploy
     become: true
     gather_facts: true
     host_key_checking: false
-    
+
   deployment:
     strategy: rolling
     batch_size: 5
     max_fail_percentage: 10
-    
+
   notifications:
     slack_webhook: https://hooks.slack.com/...
     email: devops@company.com

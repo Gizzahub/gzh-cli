@@ -46,16 +46,16 @@ The configurations are saved to ~/.gz/kubeconfigs/ by default.
 Examples:
   # Save current kubeconfig with a name
   gz dev-env kubeconfig save --name production
-  
+
   # Save with description
   gz dev-env kubeconfig save --name staging --description "Staging cluster config"
-  
+
   # Load a saved kubeconfig
   gz dev-env kubeconfig load --name production
-  
+
   # List all saved configurations
   gz dev-env kubeconfig list
-  
+
   # Save from specific path
   gz dev-env kubeconfig save --name custom --config-path /path/to/config`,
 		SilenceUsage: true,
@@ -82,10 +82,10 @@ restored later using the 'load' command.
 Examples:
   # Save current kubeconfig as "production"
   gz dev-env kubeconfig save --name production
-  
+
   # Save with description
   gz dev-env kubeconfig save --name staging --description "Staging environment"
-  
+
   # Save from specific path
   gz dev-env kubeconfig save --name custom --config-path /path/to/kubeconfig`,
 		RunE: o.runSave,
@@ -116,7 +116,7 @@ The current kubeconfig will be backed up before loading the new one.
 Examples:
   # Load the "production" configuration
   gz dev-env kubeconfig load --name production
-  
+
   # Load to specific path
   gz dev-env kubeconfig load --name staging --config-path /path/to/kubeconfig`,
 		RunE: o.runLoad,

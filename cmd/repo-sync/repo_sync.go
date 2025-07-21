@@ -29,16 +29,16 @@ This command provides sophisticated repository management capabilities:
 Examples:
   # Start real-time repository monitoring
   gz repo-sync watch ./my-repo
-  
+
   # Enable bidirectional sync with remote
   gz repo-sync sync --bidirectional --remote origin
-  
+
   # Monitor multiple repositories
   gz repo-sync watch-multi ./repo1 ./repo2 ./repo3
-  
+
   # Setup branch policies
   gz repo-sync branch-policy --enforce gitflow --auto-cleanup
-  
+
   # Analyze code quality metrics
   gz repo-sync quality-check --threshold 80`,
 		SilenceUsage: true,
@@ -174,10 +174,10 @@ repositories concurrently with efficient resource usage:
 Examples:
   # Watch multiple repositories
   gz repo-sync watch-multi ./repo1 ./repo2 ./repo3
-  
+
   # Watch with custom settings
   gz repo-sync watch-multi ./repo1 ./repo2 --batch-size 50 --max-concurrent 5
-  
+
   # Watch with auto-commit enabled
   gz repo-sync watch-multi ./repo1 ./repo2 --auto-commit --verbose`,
 		Args: cobra.MinimumNArgs(1),
@@ -229,7 +229,7 @@ func newBranchPolicyCmd(_ *zap.Logger) *cobra.Command {
 
 This command provides advanced branch management capabilities:
 - Gitflow workflow enforcement
-- GitHub flow workflow enforcement  
+- GitHub flow workflow enforcement
 - Custom branch naming conventions
 - Automatic branch cleanup for merged branches
 - Branch protection rule validation
@@ -243,10 +243,10 @@ Supported Policy Types:
 Examples:
   # Enforce gitflow workflow
   gz repo-sync branch-policy ./my-repo --enforce --policy gitflow
-  
+
   # Auto-cleanup merged branches
   gz repo-sync branch-policy ./my-repo --auto-cleanup --protected-branch main
-  
+
   # Dry run to see what would be enforced
   gz repo-sync branch-policy ./my-repo --enforce --policy gitflow --dry-run`,
 		Args: cobra.MaximumNArgs(1),
@@ -319,13 +319,13 @@ Supported Linters:
 Examples:
   # Run comprehensive quality check
   gz repo-sync quality-check ./my-repo --threshold 80
-  
+
   # Run specific linters only
   gz repo-sync quality-check ./my-repo --enable-linters golangci-lint,go-vet
-  
+
   # Generate detailed report
   gz repo-sync quality-check ./my-repo --generate-report --report-path ./quality-report.json
-  
+
   # Fail build if threshold not met
   gz repo-sync quality-check ./my-repo --threshold 90 --fail-on-threshold`,
 		Args: cobra.MaximumNArgs(1),
@@ -407,13 +407,13 @@ Time Range Options:
 Examples:
   # Analyze last 30 days
   gz repo-sync trend-analyze ./my-repo --time-range 30d
-  
+
   # Generate commit and author trends
   gz repo-sync trend-analyze ./my-repo --metrics commits,authors --generate-graphs
-  
+
   # Export detailed analysis
   gz repo-sync trend-analyze ./my-repo --export-path ./trends.json --output json
-  
+
   # Filter by specific authors
   gz repo-sync trend-analyze ./my-repo --include-authors alice,bob --time-range 90d`,
 		Args: cobra.MaximumNArgs(1),

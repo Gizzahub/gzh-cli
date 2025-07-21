@@ -37,22 +37,22 @@ analyze_qa_file() {
     local has_executable_commands=false
     local has_clear_expectations=false
     local needs_manual_verification=false
-    
+
     # Check for executable commands
     if grep -q -E "(gz |make |go |npm |docker |kubectl |./|bash |sh )" "$file"; then
         has_executable_commands=true
     fi
-    
+
     # Check for clear expected results
     if grep -q -E "(expected|예상|결과|통과|실패|성공)" "$file"; then
         has_clear_expectations=true
     fi
-    
+
     # Check for manual verification requirements
     if grep -q -E "(수동|manual|사용자|UI|경험|체감|주관|크로스|플랫폼|실제)" "$file"; then
         needs_manual_verification=true
     fi
-    
+
     # Decision logic
     if [ "$has_executable_commands" = true ] && [ "$has_clear_expectations" = true ] && [ "$needs_manual_verification" = false ]; then
         echo "auto"
@@ -65,9 +65,9 @@ analyze_qa_file() {
 process_auto_qa() {
     local file="$1"
     local filename=$(basename "$file")
-    
+
     echo -e "${GREEN}✅ 자동 처리: $filename${NC}"
-    
+
     # Add automation result to file
     cat >> "$file" << EOF
 
@@ -81,10 +81,10 @@ process_auto_qa() {
 
 > 📝 주의: 실제 테스트 실행은 컴파일 에러 수정 후 가능합니다.
 EOF
-    
+
     # Move to done directory
     mv "$file" "$DONE_DIR/${filename%.*}__AUTO_PROCESSED_$(date +%Y%m%d).md"
-    
+
     AUTO_PROCESSED=$((AUTO_PROCESSED + 1))
 }
 
@@ -92,13 +92,13 @@ EOF
 process_manual_qa() {
     local file="$1"
     local filename=$(basename "$file")
-    
+
     echo -e "${YELLOW}🛠️ 수동 처리: $filename${NC}"
-    
+
     # Add manual testing guidance
     local temp_file=$(mktemp)
     cat > "$temp_file" << 'EOF'
-> ⚠️ 이 QA는 자동으로 검증할 수 없습니다.  
+> ⚠️ 이 QA는 자동으로 검증할 수 없습니다.
 > 아래 절차에 따라 수동으로 확인해야 합니다.
 
 ### ✅ 수동 테스트 지침
@@ -111,17 +111,17 @@ process_manual_qa() {
 ---
 
 EOF
-    
+
     # Prepend manual guidance to original file
     cat "$temp_file" "$file" > "${file}.tmp"
     mv "${file}.tmp" "$file"
     rm "$temp_file"
-    
+
     # Move to manual directory if not already there
     if [[ "$file" != *"/manual/"* ]]; then
         mv "$file" "$MANUAL_DIR/$filename"
     fi
-    
+
     MANUAL_PROCESSED=$((MANUAL_PROCESSED + 1))
 }
 
@@ -132,18 +132,18 @@ echo -e "${BLUE}📁 QA 파일 분석 중...${NC}"
 for file in "$QA_DIR"/*.md; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
-        
+
         # Skip already processed files
         if [[ "$filename" == "QA_FINAL_REPORT.md" ]] || [[ "$filename" == "FINAL_QA_CHECKLIST.md" ]]; then
             echo -e "${BLUE}📋 건너뛰기: $filename (메타 문서)${NC}"
             continue
         fi
-        
+
         TOTAL_PROCESSED=$((TOTAL_PROCESSED + 1))
-        
+
         # Analyze and process
         analysis_result=$(analyze_qa_file "$file")
-        
+
         if [ "$analysis_result" = "auto" ]; then
             process_auto_qa "$file"
         else
@@ -158,14 +158,14 @@ echo -e "\n${BLUE}📁 기존 수동 테스트 파일 검증 중...${NC}"
 for file in "$MANUAL_DIR"/*.md; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
-        
+
         # Add manual guidance if not present
         if ! grep -q "⚠️ 이 QA는 자동으로 검증할 수 없습니다" "$file"; then
             echo -e "${YELLOW}📝 수동 가이드 추가: $filename${NC}"
-            
+
             temp_file=$(mktemp)
             cat > "$temp_file" << 'EOF'
-> ⚠️ 이 QA는 자동으로 검증할 수 없습니다.  
+> ⚠️ 이 QA는 자동으로 검증할 수 없습니다.
 > 아래 절차에 따라 수동으로 확인해야 합니다.
 
 ### ✅ 수동 테스트 지침
@@ -189,7 +189,7 @@ echo -e "\n${BLUE}🧪 자동화 테스트 실행 시도${NC}"
 
 if [ -f "$PROJECT_ROOT/gz" ] || command -v gz &> /dev/null; then
     echo "gz 바이너리 발견. 자동화 테스트 실행 중..."
-    
+
     if bash "$QA_DIR/run_automated_tests.sh"; then
         echo -e "${GREEN}✅ 자동화 테스트 성공${NC}"
     else

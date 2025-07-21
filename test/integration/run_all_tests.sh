@@ -207,7 +207,7 @@ check_environment() {
     log "Checking environment variables..."
 
     local tokens_found=0
-    
+
     if [[ -n "${GITHUB_TOKEN:-}" ]]; then
         info "GitHub token found"
         tokens_found=$((tokens_found + 1))
@@ -245,14 +245,14 @@ build_binary() {
     fi
 
     log "Building gz binary..."
-    
+
     cd "$PROJECT_ROOT"
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         info "DRY RUN - would execute: make build"
         return 0
     fi
-    
+
     if make build; then
         success "Binary build completed"
     else
@@ -263,27 +263,27 @@ build_binary() {
 # Build test flags
 build_test_flags() {
     local flags=()
-    
+
     flags+=("-timeout" "$TIMEOUT")
-    
+
     if [[ "$VERBOSE" == "true" ]]; then
         flags+=("-v")
     fi
-    
+
     if [[ "$COVERAGE" == "true" ]]; then
         flags+=("-cover" "-coverprofile=coverage.out")
     fi
-    
+
     if [[ "$PARALLEL" == "false" ]]; then
         flags+=("-p" "1")
     fi
-    
+
     # Add race detection
     flags+=("-race")
-    
+
     # Add test tags for integration tests
     flags+=("-tags" "integration")
-    
+
     echo "${flags[@]}"
 }
 
@@ -295,21 +295,21 @@ run_bulk_clone_tests() {
     fi
 
     log "Running bulk-clone integration tests..."
-    
+
     local test_flags
     test_flags=$(build_test_flags)
-    
+
     cd "$PROJECT_ROOT"
-    
+
     local test_cmd="go test $test_flags ./test/integration/bulk_clone_modern_test.go"
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         info "DRY RUN - would execute: $test_cmd"
         return 0
     fi
-    
+
     info "Executing: $test_cmd"
-    
+
     if eval "$test_cmd"; then
         success "Bulk-clone integration tests passed"
         return 0
@@ -327,21 +327,21 @@ run_net_env_tests() {
     fi
 
     log "Running net-env integration tests..."
-    
+
     local test_flags
     test_flags=$(build_test_flags)
-    
+
     cd "$PROJECT_ROOT"
-    
+
     local test_cmd="go test $test_flags ./test/integration/net-env/..."
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         info "DRY RUN - would execute: $test_cmd"
         return 0
     fi
-    
+
     info "Executing: $test_cmd"
-    
+
     if eval "$test_cmd"; then
         success "Net-env integration tests passed"
         return 0
@@ -359,13 +359,13 @@ run_cli_tests() {
     fi
 
     log "Running CLI integration tests..."
-    
+
     # Check if gz binary exists
     if [[ ! -f "$PROJECT_ROOT/gz" ]] && [[ ! -f "$(which gz 2>/dev/null)" ]]; then
         warn "gz binary not found - building first"
         build_binary
     fi
-    
+
     # Run CLI tests through the existing net-env integration test
     # which includes CLI testing scenarios
     run_net_env_tests
@@ -376,28 +376,28 @@ generate_coverage() {
     if [[ "$COVERAGE" != "true" ]] || [[ ! -f "coverage.out" ]]; then
         return 0
     fi
-    
+
     log "Generating comprehensive coverage report..."
-    
+
     # Generate HTML coverage report
     go tool cover -html=coverage.out -o coverage.html
-    
+
     # Generate JSON coverage report for CI
     go tool cover -func=coverage.out -o coverage.txt
-    
+
     # Display coverage summary
     local coverage_percent
     coverage_percent=$(go tool cover -func=coverage.out | grep total: | awk '{print $3}')
-    
+
     info "Coverage report generated: coverage.html"
     info "Coverage summary: coverage.txt"
     info "Total coverage: $coverage_percent"
-    
+
     # Check coverage threshold (optional)
     local threshold="${COVERAGE_THRESHOLD:-50.0}"
     local coverage_num
     coverage_num=$(echo "$coverage_percent" | sed 's/%//')
-    
+
     if (( $(echo "$coverage_num >= $threshold" | bc -l) )); then
         success "Coverage $coverage_percent meets threshold of $threshold%"
     else
@@ -412,18 +412,18 @@ run_benchmarks() {
     fi
 
     log "Running integration benchmarks..."
-    
+
     cd "$PROJECT_ROOT"
-    
+
     local bench_cmd="go test -bench=. -benchmem ./test/integration/..."
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         info "DRY RUN - would execute: $bench_cmd"
         return 0
     fi
-    
+
     info "Executing: $bench_cmd"
-    
+
     if eval "$bench_cmd"; then
         success "Benchmarks completed"
     else
@@ -434,12 +434,12 @@ run_benchmarks() {
 # Cleanup function
 cleanup() {
     log "Cleaning up..."
-    
+
     # Remove temporary files if they exist
     if [[ -f "coverage.out" ]] && [[ "$COVERAGE" != "true" ]]; then
         rm -f coverage.out
     fi
-    
+
     # Clean up any temporary test artifacts
     find "$SCRIPT_DIR" -name "*.tmp" -delete 2>/dev/null || true
 }
@@ -451,23 +451,23 @@ print_summary() {
     info "Project: gzh-manager-go"
     info "Total duration: $1"
     info "Tests run:"
-    
+
     if [[ "$RUN_BULK_CLONE" == "true" ]]; then
         info "  ✓ Bulk-clone integration tests"
     fi
-    
+
     if [[ "$RUN_NET_ENV" == "true" ]]; then
         info "  ✓ Net-env integration tests"
     fi
-    
+
     if [[ "$RUN_CLI" == "true" ]]; then
         info "  ✓ CLI integration tests"
     fi
-    
+
     if [[ "$COVERAGE" == "true" ]]; then
         info "  ✓ Coverage reporting enabled"
     fi
-    
+
     info "==============================================="
 }
 
@@ -475,9 +475,9 @@ print_summary() {
 main() {
     local start_time
     start_time=$(date +%s)
-    
+
     parse_args "$@"
-    
+
     log "Starting comprehensive integration test runner..."
     info "Project root: $PROJECT_ROOT"
     info "Script directory: $SCRIPT_DIR"
@@ -486,44 +486,44 @@ main() {
     info "Coverage: $COVERAGE"
     info "Parallel: $PARALLEL"
     info "Dry run: $DRY_RUN"
-    
+
     # Set up cleanup trap
     trap cleanup EXIT
-    
+
     # Run all checks and tests
     check_prerequisites || exit 1
     check_environment
     build_binary
-    
+
     local test_failures=0
-    
+
     # Run test suites
     if ! run_bulk_clone_tests; then
         test_failures=$((test_failures + 1))
     fi
-    
+
     if ! run_net_env_tests; then
         test_failures=$((test_failures + 1))
     fi
-    
+
     if ! run_cli_tests; then
         test_failures=$((test_failures + 1))
     fi
-    
+
     # Generate reports
     generate_coverage
     run_benchmarks
-    
+
     # Calculate duration
     local end_time
     end_time=$(date +%s)
     local duration=$((end_time - start_time))
     local duration_str
     duration_str=$(printf "%02d:%02d" $((duration/60)) $((duration%60)))
-    
+
     # Print summary
     print_summary "$duration_str"
-    
+
     if [[ $test_failures -eq 0 ]]; then
         success "All integration tests completed successfully!"
         exit 0

@@ -16,8 +16,8 @@ providers:
         exclude: [".*-archive", ".*-deprecated"]
         strategy: "pull"                   # Active development - use pull
         flatten: true                      # Flat structure for easy access
-      
-      # Backend development projects  
+
+      # Backend development projects
       - name: "backend-team"
         visibility: "all"
         clone_dir: "./projects/backend"
@@ -25,7 +25,7 @@ providers:
         exclude: [".*-archive", ".*-deprecated", ".*-legacy"]
         strategy: "pull"                   # Active development - use pull
         flatten: true
-      
+
       # DevOps and infrastructure
       - name: "devops-team"
         visibility: "private"              # Usually private infrastructure
@@ -33,7 +33,7 @@ providers:
         match: "^(infra|deploy|ci|cd|config)-.*"
         strategy: "reset"                  # Ensure clean state for infra
         flatten: false                     # Keep organized structure
-      
+
       # Shared libraries and tools
       - name: "shared-libraries"
         visibility: "all"
@@ -41,7 +41,7 @@ providers:
         match: "^(lib|tool|util|helper)-.*"
         strategy: "fetch"                  # Libraries - fetch only
         flatten: true
-      
+
       # Documentation and resources
       - name: "docs-team"
         visibility: "public"
@@ -52,5 +52,5 @@ providers:
 
 # Environment-specific settings can be handled with multiple config files:
 # - gzh.dev.yaml (this file)
-# - gzh.staging.yaml  
+# - gzh.staging.yaml
 # - gzh.prod.yaml

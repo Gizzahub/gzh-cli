@@ -214,7 +214,7 @@ integration-tests:
     - uses: actions/checkout@v3
     - uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.24'
     - name: Run Integration Tests
       env:
         GITHUB_TOKEN: ${{ secrets.INTEGRATION_TEST_TOKEN }}

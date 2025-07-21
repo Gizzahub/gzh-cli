@@ -147,7 +147,7 @@ providers:
       - name: "your-org-name"
         visibility: all
         clone_dir: "./github"
-        
+
   gitlab:
     token: "${GITLAB_TOKEN}"
     groups:

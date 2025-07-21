@@ -53,18 +53,18 @@ SHA1=$3
 if [ -z "$COMMIT_SOURCE" ]; then
     # Get current branch name
     BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-    
+
     # Extract issue number if present (e.g., feature/ISSUE-123-description)
     ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -oE '[A-Z]+-[0-9]+' || true)
-    
+
     # Don't modify if on main/master/develop
     if [[ "$BRANCH_NAME" =~ ^(main|master|develop)$ ]]; then
         exit 0
     fi
-    
+
     # Read current commit message
     CURRENT_MSG=$(cat "$COMMIT_MSG_FILE")
-    
+
     # If message is empty and we have an issue number, prepend it
     if [ -z "$CURRENT_MSG" ] && [ -n "$ISSUE_NUMBER" ]; then
         echo "[$ISSUE_NUMBER] " > "$COMMIT_MSG_FILE"

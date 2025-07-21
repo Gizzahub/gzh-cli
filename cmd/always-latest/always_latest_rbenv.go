@@ -62,19 +62,19 @@ Update strategies:
 Examples:
   # Update rbenv and install latest Ruby versions
   gz always-latest rbenv
-  
+
   # Install specific Ruby versions only
   gz always-latest rbenv --versions 3.1,3.2
-  
+
   # Update with major version strategy (includes breaking changes)
   gz always-latest rbenv --strategy major
-  
+
   # Dry run to see what would be updated
   gz always-latest rbenv --dry-run
-  
+
   # Update and set as global version
   gz always-latest rbenv --global
-  
+
   # Skip rbenv update, only install Ruby versions
   gz always-latest rbenv --update-rbenv=false`,
 		RunE: o.run,

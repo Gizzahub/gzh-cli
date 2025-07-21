@@ -472,7 +472,7 @@ func generateRiskAssessmentHTML(assessments []RiskAssessment, organization strin
         <h1>🛡️ Security Risk Assessment Report</h1>
         <p>Organization: %s | Generated: %s</p>
     </div>
-    
+
     <div class="summary">
         <div class="card">
             <div class="metric">
@@ -493,7 +493,7 @@ func generateRiskAssessmentHTML(assessments []RiskAssessment, organization strin
             </div>
         </div>
     </div>
-    
+
     <div class="card">
         <h2>📋 Detailed Assessment Results</h2>
         <table class="assessment-table">
