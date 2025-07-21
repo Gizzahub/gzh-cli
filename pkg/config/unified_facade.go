@@ -429,7 +429,7 @@ func (f *UnifiedConfigFacade) convertToLegacyFormat(unifiedConfig *UnifiedConfig
 				Strategy:   org.Strategy,
 			}
 
-			if providerName == "gitlab" {
+			if providerName == ProviderGitLab {
 				legacyProvider.Groups = append(legacyProvider.Groups, target)
 			} else {
 				legacyProvider.Orgs = append(legacyProvider.Orgs, target)

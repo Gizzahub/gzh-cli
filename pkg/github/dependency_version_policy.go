@@ -665,9 +665,7 @@ func (dvm *DependencyVersionPolicyManager) checkVersionConstraints(policy *Depen
 			}
 
 			if matched {
-				if err := dvm.evaluateVersionConstraint(&constraint, proposedVersion, result); err != nil {
-					return nil, err
-				}
+				dvm.evaluateVersionConstraint(&constraint, proposedVersion, result)
 			}
 		}
 	}
@@ -690,7 +688,7 @@ func (dvm *DependencyVersionPolicyManager) matchesDependencyPattern(dependencyNa
 	return regex.MatchString(dependencyName), nil
 }
 
-func (dvm *DependencyVersionPolicyManager) evaluateVersionConstraint(constraint *VersionConstraintRule, proposedVersion string, result *VersionConstraintCheckResult) error {
+func (dvm *DependencyVersionPolicyManager) evaluateVersionConstraint(constraint *VersionConstraintRule, proposedVersion string, result *VersionConstraintCheckResult) {
 	// Check blocked versions
 	for _, blockedRange := range constraint.BlockedVersions {
 		if dvm.versionInRange(proposedVersion, blockedRange) {
@@ -720,8 +718,6 @@ func (dvm *DependencyVersionPolicyManager) evaluateVersionConstraint(constraint 
 		result.Allowed = false
 		result.ViolatedConstraints = append(result.ViolatedConstraints, "Prerelease versions not allowed")
 	}
-
-	return nil
 }
 
 func (dvm *DependencyVersionPolicyManager) versionInRange(version string, versionRange VersionRange) bool {

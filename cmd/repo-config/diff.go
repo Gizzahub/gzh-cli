@@ -126,13 +126,13 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, i
 	}
 
 	switch format {
-	case "table":
+	case formatTable:
 		if groupByImpact {
 			displayDiffTableByImpact(differences, showValues, detailed)
 		} else {
 			displayDiffTable(differences, showValues)
 		}
-	case "json":
+	case formatJSON:
 		displayDiffJSON(differences)
 	case "unified":
 		displayDiffUnified(differences)
@@ -237,7 +237,7 @@ func displayDiffUnified(differences []ConfigurationDifference) {
 		switch diff.ChangeType {
 		case changeTypeCreate:
 			fmt.Printf("+%s: %s\n", diff.Setting, diff.TargetValue)
-		case "update":
+		case changeTypeUpdate:
 			fmt.Printf("-%s: %s\n", diff.Setting, diff.CurrentValue)
 			fmt.Printf("+%s: %s\n", diff.Setting, diff.TargetValue)
 		case changeTypeDelete:
@@ -450,7 +450,7 @@ func formatValue(value string) string {
 func analyzeSettingChange(diff ConfigurationDifference) string {
 	switch {
 	case strings.Contains(diff.Setting, "visibility"):
-		if diff.TargetValue == "private" {
+		if diff.TargetValue == visibilityPrivate {
 			return "Making repository private will restrict access to organization members only"
 		}
 

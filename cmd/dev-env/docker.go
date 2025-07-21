@@ -162,7 +162,7 @@ Examples:
 	return cmd
 }
 
-func (o *dockerOptions) runSave(_ *cobra.Command, args []string) error {
+func (o *dockerOptions) runSave(_ *cobra.Command, _ []string) error {
 	// Check if source config exists
 	if _, err := os.Stat(o.configPath); os.IsNotExist(err) {
 		return fmt.Errorf("docker config file not found at %s", o.configPath)
@@ -205,7 +205,7 @@ func (o *dockerOptions) runSave(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *dockerOptions) runLoad(_ *cobra.Command, args []string) error {
+func (o *dockerOptions) runLoad(_ *cobra.Command, _ []string) error {
 	// Check if saved config exists
 	savedPath := filepath.Join(o.storePath, o.name+".json")
 	if _, err := os.Stat(savedPath); os.IsNotExist(err) {
@@ -246,7 +246,7 @@ func (o *dockerOptions) runLoad(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *dockerOptions) runList(_ *cobra.Command, args []string) error {
+func (o *dockerOptions) runList(_ *cobra.Command, _ []string) error {
 	// Check if store directory exists
 	if _, err := os.Stat(o.storePath); os.IsNotExist(err) {
 		fmt.Println("No saved Docker configs found.")
@@ -295,8 +295,8 @@ func (o *dockerOptions) runList(_ *cobra.Command, args []string) error {
 		}
 
 		// Display registry information
-		if err := o.displayConfigInfo(configPath); err == nil {
-			// Already displayed in displayConfigInfo
+		if err := o.displayConfigInfo(configPath); err != nil {
+			fmt.Printf("   Warning: could not read config details: %v\n", err)
 		}
 
 		fmt.Println()

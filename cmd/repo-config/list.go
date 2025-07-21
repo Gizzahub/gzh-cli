@@ -183,7 +183,7 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 		printTableFormat(repositories, showConfig)
 	case "json":
 		printJSONFormat(repositories)
-	case "yaml":
+	case formatYAML:
 		printYAMLFormat(repositories)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)

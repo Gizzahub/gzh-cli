@@ -18,7 +18,7 @@ func TestConfigBuilder(t *testing.T) {
 		t.Errorf("Expected version '1.0.0', got '%s'", config.Version)
 	}
 
-	if config.DefaultProvider != "github" {
+	if config.DefaultProvider != ProviderGitHub {
 		t.Errorf("Expected default provider 'github', got '%s'", config.DefaultProvider)
 	}
 

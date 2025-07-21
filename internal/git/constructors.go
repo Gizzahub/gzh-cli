@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	// Git strategy constants.
+	// StrategyReset performs a hard reset followed by pull.
 	StrategyReset = "reset"
+	// StrategyPull merges remote changes with local changes.
 	StrategyPull  = "pull"
 	StrategyFetch = "fetch"
 )
@@ -35,24 +36,24 @@ type CommandExecutor interface {
 	ExecuteInDir(ctx context.Context, dir, command string, args ...string) ([]byte, error)
 }
 
-// GitClientImpl implements the GitClient interface.
-type GitClientImpl struct {
+// ClientImpl implements the Client interface.
+type ClientImpl struct {
 	executor CommandExecutor
 	logger   Logger
-	config   *GitClientConfig
+	config   *ClientConfig
 }
 
-// GitClientConfig holds configuration for Git client.
-type GitClientConfig struct {
+// ClientConfig holds configuration for Git client.
+type ClientConfig struct {
 	Timeout       time.Duration
 	RetryCount    int
 	RetryDelay    time.Duration
 	DefaultBranch string
 }
 
-// DefaultGitClientConfig returns default configuration.
-func DefaultGitClientConfig() *GitClientConfig {
-	return &GitClientConfig{
+// DefaultClientConfig returns default configuration.
+func DefaultClientConfig() *ClientConfig {
+	return &ClientConfig{
 		Timeout:       30 * time.Second,
 		RetryCount:    3,
 		RetryDelay:    time.Second,
@@ -60,21 +61,21 @@ func DefaultGitClientConfig() *GitClientConfig {
 	}
 }
 
-// NewGitClient creates a new Git client with dependencies.
-func NewGitClient(config *GitClientConfig, executor CommandExecutor, logger Logger) GitClient {
+// NewClient creates a new Git client with dependencies.
+func NewClient(config *ClientConfig, executor CommandExecutor, logger Logger) Client {
 	if config == nil {
-		config = DefaultGitClientConfig()
+		config = DefaultClientConfig()
 	}
 
-	return &GitClientImpl{
+	return &ClientImpl{
 		executor: executor,
 		logger:   logger,
 		config:   config,
 	}
 }
 
-// Clone implements GitClient interface.
-func (g *GitClientImpl) Clone(ctx context.Context, options CloneOptions) (*OperationResult, error) {
+// Clone implements Client interface.
+func (g *ClientImpl) Clone(ctx context.Context, options CloneOptions) (*OperationResult, error) {
 	g.logger.Info("Cloning repository", "url", options.URL, "path", options.Path)
 
 	args := []string{"clone"}
@@ -108,8 +109,8 @@ func (g *GitClientImpl) Clone(ctx context.Context, options CloneOptions) (*Opera
 	}, nil
 }
 
-// Pull implements GitClient interface.
-func (g *GitClientImpl) Pull(ctx context.Context, repoPath string, options PullOptions) (*OperationResult, error) {
+// Pull implements Client interface.
+func (g *ClientImpl) Pull(ctx context.Context, repoPath string, options PullOptions) (*OperationResult, error) {
 	g.logger.Debug("Pulling repository", "path", repoPath)
 
 	args := []string{"pull"}
@@ -137,8 +138,8 @@ func (g *GitClientImpl) Pull(ctx context.Context, repoPath string, options PullO
 	}, nil
 }
 
-// Fetch implements GitClient interface.
-func (g *GitClientImpl) Fetch(ctx context.Context, repoPath string, remote string) (*OperationResult, error) {
+// Fetch implements Client interface.
+func (g *ClientImpl) Fetch(ctx context.Context, repoPath string, remote string) (*OperationResult, error) {
 	g.logger.Debug("Fetching repository", "path", repoPath, "remote", remote)
 
 	args := []string{"fetch"}
@@ -162,8 +163,8 @@ func (g *GitClientImpl) Fetch(ctx context.Context, repoPath string, remote strin
 	}, nil
 }
 
-// Reset implements GitClient interface.
-func (g *GitClientImpl) Reset(ctx context.Context, repoPath string, options ResetOptions) (*OperationResult, error) {
+// Reset implements Client interface.
+func (g *ClientImpl) Reset(ctx context.Context, repoPath string, options ResetOptions) (*OperationResult, error) {
 	g.logger.Debug("Resetting repository", "path", repoPath, "mode", options.Mode)
 
 	args := []string{"reset"}
@@ -199,8 +200,8 @@ func (g *GitClientImpl) Reset(ctx context.Context, repoPath string, options Rese
 	}, nil
 }
 
-// GetStatus implements GitClient interface.
-func (g *GitClientImpl) GetStatus(ctx context.Context, repoPath string) (*StatusResult, error) {
+// GetStatus implements Client interface.
+func (g *ClientImpl) GetStatus(ctx context.Context, repoPath string) (*StatusResult, error) {
 	g.logger.Debug("Getting repository status", "path", repoPath)
 
 	output, err := g.executor.ExecuteInDir(ctx, repoPath, "git", "status", "--porcelain")
@@ -216,8 +217,8 @@ func (g *GitClientImpl) GetStatus(ctx context.Context, repoPath string) (*Status
 	}, nil
 }
 
-// GetCurrentBranch implements GitClient interface.
-func (g *GitClientImpl) GetCurrentBranch(ctx context.Context, repoPath string) (string, error) {
+// GetCurrentBranch implements Client interface.
+func (g *ClientImpl) GetCurrentBranch(ctx context.Context, repoPath string) (string, error) {
 	g.logger.Debug("Getting current branch", "path", repoPath)
 
 	output, err := g.executor.ExecuteInDir(ctx, repoPath, "git", "rev-parse", "--abbrev-ref", "HEAD")
@@ -229,14 +230,14 @@ func (g *GitClientImpl) GetCurrentBranch(ctx context.Context, repoPath string) (
 	return string(output), nil
 }
 
-// CheckoutBranch implements GitClient interface.
-func (g *GitClientImpl) CheckoutBranch(ctx context.Context, repoPath, branch string) (*OperationResult, error) {
+// CheckoutBranch implements Client interface.
+func (g *ClientImpl) CheckoutBranch(_ context.Context, repoPath, branch string) (*OperationResult, error) {
 	g.logger.Debug("Checking out branch", "path", repoPath, "branch", branch)
 	return &OperationResult{Success: true, Message: "Branch checked out"}, nil
 }
 
-// AddRemote implements GitClient interface.
-func (g *GitClientImpl) AddRemote(ctx context.Context, repoPath, name, url string) (*OperationResult, error) {
+// AddRemote implements Client interface.
+func (g *ClientImpl) AddRemote(ctx context.Context, repoPath, name, url string) (*OperationResult, error) {
 	g.logger.Debug("Adding remote", "path", repoPath, "name", name, "url", url)
 
 	_, err := g.executor.Execute(ctx, "git", "-C", repoPath, "remote", "add", name, url)
@@ -253,16 +254,16 @@ func (g *GitClientImpl) AddRemote(ctx context.Context, repoPath, name, url strin
 	}, nil
 }
 
-// IsRepository implements GitClient interface.
-func (g *GitClientImpl) IsRepository(ctx context.Context, path string) bool {
+// IsRepository implements Client interface.
+func (g *ClientImpl) IsRepository(ctx context.Context, path string) bool {
 	_, err := g.executor.ExecuteInDir(ctx, path, "git", "rev-parse", "--git-dir")
 	return err == nil
 }
 
 // Missing interface methods - placeholder implementations
 
-// GetRepository implements GitClient interface.
-func (g *GitClientImpl) GetRepository(ctx context.Context, path string) (*Repository, error) {
+// GetRepository implements Client interface.
+func (g *ClientImpl) GetRepository(_ context.Context, path string) (*Repository, error) {
 	g.logger.Debug("Getting repository info", "path", path)
 
 	return &Repository{
@@ -272,8 +273,8 @@ func (g *GitClientImpl) GetRepository(ctx context.Context, path string) (*Reposi
 	}, nil
 }
 
-// IsDirty implements GitClient interface.
-func (g *GitClientImpl) IsDirty(ctx context.Context, repoPath string) (bool, error) {
+// IsDirty implements Client interface.
+func (g *ClientImpl) IsDirty(ctx context.Context, repoPath string) (bool, error) {
 	statusResult, err := g.GetStatus(ctx, repoPath)
 	if err != nil {
 		return false, err
@@ -282,50 +283,50 @@ func (g *GitClientImpl) IsDirty(ctx context.Context, repoPath string) (bool, err
 	return !statusResult.Clean, nil
 }
 
-// GetDefaultBranch implements GitClient interface.
-func (g *GitClientImpl) GetDefaultBranch(ctx context.Context, repoPath string) (string, error) {
+// GetDefaultBranch implements Client interface.
+func (g *ClientImpl) GetDefaultBranch(_ context.Context, repoPath string) (string, error) {
 	g.logger.Debug("Getting default branch", "path", repoPath)
 	return "main", nil
 }
 
-// ListBranches implements GitClient interface.
-func (g *GitClientImpl) ListBranches(ctx context.Context, repoPath string) ([]string, error) {
+// ListBranches implements Client interface.
+func (g *ClientImpl) ListBranches(_ context.Context, repoPath string) ([]string, error) {
 	g.logger.Debug("Listing branches", "path", repoPath)
 	return []string{"main"}, nil
 }
 
-// CreateBranch implements GitClient interface.
-func (g *GitClientImpl) CreateBranch(ctx context.Context, repoPath, branchName string) (*OperationResult, error) {
+// CreateBranch implements Client interface.
+func (g *ClientImpl) CreateBranch(_ context.Context, repoPath, branchName string) (*OperationResult, error) {
 	g.logger.Debug("Creating branch", "path", repoPath, "branch", branchName)
 	return &OperationResult{Success: true, Message: "Branch created"}, nil
 }
 
-// DeleteBranch implements GitClient interface.
-func (g *GitClientImpl) DeleteBranch(ctx context.Context, repoPath, branchName string) (*OperationResult, error) {
+// DeleteBranch implements Client interface.
+func (g *ClientImpl) DeleteBranch(ctx context.Context, repoPath, branchName string) (*OperationResult, error) {
 	g.logger.Debug("Deleting branch", "path", repoPath, "branch", branchName)
 	return &OperationResult{Success: true, Message: "Branch deleted"}, nil
 }
 
-// ListRemotes implements GitClient interface.
-func (g *GitClientImpl) ListRemotes(ctx context.Context, repoPath string) (map[string]string, error) {
+// ListRemotes implements Client interface.
+func (g *ClientImpl) ListRemotes(ctx context.Context, repoPath string) (map[string]string, error) {
 	g.logger.Debug("Listing remotes", "path", repoPath)
 	return map[string]string{"origin": "https://github.com/example/repo.git"}, nil
 }
 
-// RemoveRemote implements GitClient interface.
-func (g *GitClientImpl) RemoveRemote(ctx context.Context, repoPath, name string) (*OperationResult, error) {
+// RemoveRemote implements Client interface.
+func (g *ClientImpl) RemoveRemote(ctx context.Context, repoPath, name string) (*OperationResult, error) {
 	g.logger.Debug("Removing remote", "path", repoPath, "name", name)
 	return &OperationResult{Success: true, Message: "Remote removed"}, nil
 }
 
-// SetRemoteURL implements GitClient interface.
-func (g *GitClientImpl) SetRemoteURL(ctx context.Context, repoPath, remote, url string) (*OperationResult, error) {
+// SetRemoteURL implements Client interface.
+func (g *ClientImpl) SetRemoteURL(ctx context.Context, repoPath, remote, url string) (*OperationResult, error) {
 	g.logger.Debug("Setting remote URL", "path", repoPath, "remote", remote, "url", url)
 	return &OperationResult{Success: true, Message: "Remote URL set"}, nil
 }
 
-// GetLastCommit implements GitClient interface.
-func (g *GitClientImpl) GetLastCommit(ctx context.Context, repoPath string) (*Commit, error) {
+// GetLastCommit implements Client interface.
+func (g *ClientImpl) GetLastCommit(ctx context.Context, repoPath string) (*Commit, error) {
 	g.logger.Debug("Getting last commit", "path", repoPath)
 
 	return &Commit{
@@ -335,14 +336,14 @@ func (g *GitClientImpl) GetLastCommit(ctx context.Context, repoPath string) (*Co
 	}, nil
 }
 
-// GetCommitHistory implements GitClient interface.
-func (g *GitClientImpl) GetCommitHistory(ctx context.Context, repoPath string, limit int) ([]Commit, error) {
+// GetCommitHistory implements Client interface.
+func (g *ClientImpl) GetCommitHistory(ctx context.Context, repoPath string, limit int) ([]Commit, error) {
 	g.logger.Debug("Getting commit history", "path", repoPath, "limit", limit)
 	return []Commit{}, nil
 }
 
-// ValidateRepository implements GitClient interface.
-func (g *GitClientImpl) ValidateRepository(ctx context.Context, path string) error {
+// ValidateRepository implements Client interface.
+func (g *ClientImpl) ValidateRepository(ctx context.Context, path string) error {
 	if !g.IsRepository(ctx, path) {
 		return fmt.Errorf("path is not a git repository: %s", path)
 	}
@@ -352,12 +353,12 @@ func (g *GitClientImpl) ValidateRepository(ctx context.Context, path string) err
 
 // StrategyExecutorImpl implements the StrategyExecutor interface.
 type StrategyExecutorImpl struct {
-	gitClient GitClient
+	gitClient Client
 	logger    Logger
 }
 
 // NewStrategyExecutor creates a new strategy executor with dependencies.
-func NewStrategyExecutor(gitClient GitClient, logger Logger) StrategyExecutor {
+func NewStrategyExecutor(gitClient Client, logger Logger) StrategyExecutor {
 	return &StrategyExecutorImpl{
 		gitClient: gitClient,
 		logger:    logger,
@@ -423,7 +424,7 @@ func (s *StrategyExecutorImpl) ValidateStrategy(strategy string) error {
 
 // BulkOperatorImpl implements the BulkOperator interface.
 type BulkOperatorImpl struct {
-	gitClient        GitClient
+	gitClient        Client
 	strategyExecutor StrategyExecutor
 	logger           Logger
 	config           *BulkOperatorConfig
@@ -446,7 +447,7 @@ func DefaultBulkOperatorConfig() *BulkOperatorConfig {
 // NewBulkOperator creates a new bulk operator with dependencies.
 func NewBulkOperator(
 	config *BulkOperatorConfig,
-	gitClient GitClient,
+	gitClient Client,
 	strategyExecutor StrategyExecutor,
 	logger Logger,
 ) BulkOperator {
@@ -592,47 +593,47 @@ func (a *AuthManagerImpl) ValidateAuth(ctx context.Context, remoteURL string) er
 	return nil
 }
 
-// GitServiceImpl implements the unified Git service interface.
-type GitServiceImpl struct {
-	GitClient
+// ServiceImpl implements the unified Git service interface.
+type ServiceImpl struct {
+	Client
 	StrategyExecutor
 	BulkOperator
 	AuthManager
 }
 
-// GitServiceConfig holds configuration for the Git service.
-type GitServiceConfig struct {
-	Client     *GitClientConfig
+// ServiceConfig holds configuration for the Git service.
+type ServiceConfig struct {
+	Client     *ClientConfig
 	BulkOp     *BulkOperatorConfig
 	EnableAuth bool
 }
 
-// DefaultGitServiceConfig returns default configuration.
-func DefaultGitServiceConfig() *GitServiceConfig {
-	return &GitServiceConfig{
-		Client:     DefaultGitClientConfig(),
+// DefaultServiceConfig returns default configuration.
+func DefaultServiceConfig() *ServiceConfig {
+	return &ServiceConfig{
+		Client:     DefaultClientConfig(),
 		BulkOp:     DefaultBulkOperatorConfig(),
 		EnableAuth: true,
 	}
 }
 
-// NewGitService creates a new Git service with all dependencies.
-func NewGitService(
-	config *GitServiceConfig,
+// NewService creates a new Git service with all dependencies.
+func NewService(
+	config *ServiceConfig,
 	executor CommandExecutor,
 	logger Logger,
-) GitService {
+) Service {
 	if config == nil {
-		config = DefaultGitServiceConfig()
+		config = DefaultServiceConfig()
 	}
 
-	gitClient := NewGitClient(config.Client, executor, logger)
+	gitClient := NewClient(config.Client, executor, logger)
 	strategyExecutor := NewStrategyExecutor(gitClient, logger)
 	bulkOperator := NewBulkOperator(config.BulkOp, gitClient, strategyExecutor, logger)
 	authManager := NewAuthManager(logger)
 
-	return &GitServiceImpl{
-		GitClient:        gitClient,
+	return &ServiceImpl{
+		Client:           gitClient,
 		StrategyExecutor: strategyExecutor,
 		BulkOperator:     bulkOperator,
 		AuthManager:      authManager,

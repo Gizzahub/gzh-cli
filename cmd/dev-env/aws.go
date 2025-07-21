@@ -410,6 +410,7 @@ func (o *awsOptions) copyFile(src, dst string) error {
 	defer func() {
 		if err := sourceFile.Close(); err != nil {
 			// Log error but don't override main error
+			fmt.Printf("Warning: failed to close source file: %v\n", err)
 		}
 	}()
 
@@ -420,6 +421,7 @@ func (o *awsOptions) copyFile(src, dst string) error {
 	defer func() {
 		if err := destFile.Close(); err != nil {
 			// Log error but don't override main error
+			fmt.Printf("Warning: failed to close destination file: %v\n", err)
 		}
 	}()
 

@@ -53,7 +53,7 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 		// Get source profile
 		sourceProfile, err := source.GetProfile(ctx, profileName)
 		if err != nil {
-			status.Status = "error"
+			status.Status = VPNStateError
 			status.Error = fmt.Sprintf("failed to get source profile: %v", err)
 			syncResults = append(syncResults, status)
 
@@ -95,7 +95,7 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 
 		// Sync to target provider
 		if err := target.SyncProfile(ctx, mergedProfile); err != nil {
-			status.Status = "error"
+			status.Status = VPNStateError
 			status.Error = fmt.Sprintf("failed to sync to target: %v", err)
 		} else {
 			status.Status = "synced"
@@ -110,7 +110,7 @@ func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target P
 
 	// Return error if any sync failed
 	for _, result := range syncResults {
-		if result.Status == "error" || result.Status == "conflict" {
+		if result.Status == VPNStateError || result.Status == "conflict" {
 			return fmt.Errorf("sync completed with errors - check sync status for details")
 		}
 	}

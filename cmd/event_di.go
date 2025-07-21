@@ -63,7 +63,7 @@ This command provides comprehensive event management capabilities including:
 	
 The server listens for incoming webhook requests from GitHub and processes them
 according to registered event handlers and policies.`,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			// Use injected dependencies
 			server := event.NewServer(
 				eventServerHost,

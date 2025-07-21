@@ -237,9 +237,7 @@ func LoadRepoConfig(path string) (*RepoConfig, error) {
 	}
 
 	// Expand environment variables in the config
-	if err := expandRepoConfigEnvVars(&config); err != nil {
-		return nil, fmt.Errorf("failed to expand environment variables: %w", err)
-	}
+	expandRepoConfigEnvVars(&config)
 
 	// Validate the configuration
 	if err := validateRepoConfig(&config); err != nil {
@@ -250,7 +248,7 @@ func LoadRepoConfig(path string) (*RepoConfig, error) {
 }
 
 // expandRepoConfigEnvVars expands environment variables in the configuration.
-func expandRepoConfigEnvVars(config *RepoConfig) error {
+func expandRepoConfigEnvVars(config *RepoConfig) {
 	// Expand environment variables in webhook URLs and secrets
 	if config.Templates != nil {
 		for _, template := range config.Templates {
@@ -275,8 +273,6 @@ func expandRepoConfigEnvVars(config *RepoConfig) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 // validateRepoConfig validates the repository configuration.
@@ -606,7 +602,7 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 
 		// Check patterns
 		for _, pattern := range rc.Repositories.Patterns {
-			if matched, _ := matchPattern(repoName, pattern.Match); matched {
+			if matchPattern(repoName, pattern.Match) {
 				rc.applyConfigLayer(config, pattern.Template, pattern.Settings, pattern.Security, pattern.Permissions, pattern.Exceptions)
 			}
 		}
@@ -956,7 +952,7 @@ func copyBranchProtectionRule(rule *BranchProtectionRule) *BranchProtectionRule 
 }
 
 // matchPattern checks if a string matches a pattern (simple glob support).
-func matchPattern(str, pattern string) (bool, error) {
+func matchPattern(str, pattern string) bool {
 	// Simple implementation - can be enhanced with more sophisticated pattern matching
 	if strings.Contains(pattern, "*") {
 		// Convert simple glob to regex
@@ -964,8 +960,8 @@ func matchPattern(str, pattern string) (bool, error) {
 		pattern = strings.ReplaceAll(pattern, "*", ".*")
 		pattern = "^" + pattern + "$"
 
-		return strings.Contains(str, strings.Trim(pattern, "^.*$")), nil
+		return strings.Contains(str, strings.Trim(pattern, "^.*$"))
 	}
 
-	return str == pattern, nil
+	return str == pattern
 }

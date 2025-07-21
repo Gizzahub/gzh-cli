@@ -221,43 +221,47 @@ func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditi
 
 	// Evaluate event-based conditions
 	eventMatched, err := e.EvaluateEventConditions(event, conditions)
-	if err != nil {
+	switch {
+	case err != nil:
 		result.Errors = append(result.Errors, fmt.Sprintf("Event evaluation error: %v", err))
-	} else if eventMatched {
+	case eventMatched:
 		result.MatchedConditions = append(result.MatchedConditions, "event_conditions")
-	} else {
+	default:
 		result.FailedConditions = append(result.FailedConditions, "event_conditions")
 	}
 
 	// Evaluate time-based conditions
 	timeMatched, err := e.EvaluateTimeConditions(event.Timestamp.In(evalContext.Timezone), conditions)
-	if err != nil {
+	switch {
+	case err != nil:
 		result.Errors = append(result.Errors, fmt.Sprintf("Time evaluation error: %v", err))
-	} else if timeMatched {
+	case timeMatched:
 		result.MatchedConditions = append(result.MatchedConditions, "time_conditions")
-	} else if e.hasTimeConditions(conditions) {
+	case e.hasTimeConditions(conditions):
 		result.FailedConditions = append(result.FailedConditions, "time_conditions")
 	}
 
 	// Evaluate repository conditions if repository info is available
 	if evalContext.Repository != nil {
 		repoMatched, err := e.EvaluateRepositoryConditions(ctx, evalContext.Repository, conditions)
-		if err != nil {
+		switch {
+		case err != nil:
 			result.Errors = append(result.Errors, fmt.Sprintf("Repository evaluation error: %v", err))
-		} else if repoMatched {
+		case repoMatched:
 			result.MatchedConditions = append(result.MatchedConditions, "repository_conditions")
-		} else {
+		default:
 			result.FailedConditions = append(result.FailedConditions, "repository_conditions")
 		}
 	}
 
 	// Evaluate content-based conditions
 	contentMatched, err := e.EvaluateContentConditions(ctx, event, conditions)
-	if err != nil {
+	switch {
+	case err != nil:
 		result.Errors = append(result.Errors, fmt.Sprintf("Content evaluation error: %v", err))
-	} else if contentMatched {
+	case contentMatched:
 		result.MatchedConditions = append(result.MatchedConditions, "content_conditions")
-	} else if e.hasContentConditions(conditions) {
+	case e.hasContentConditions(conditions):
 		result.FailedConditions = append(result.FailedConditions, "content_conditions")
 	}
 
@@ -267,11 +271,12 @@ func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditi
 		matchResult, err := e.evaluatePayloadMatcherWithResult(&m, event.Payload)
 		result.PayloadMatchResults = append(result.PayloadMatchResults, matchResult)
 
-		if err != nil {
+		switch {
+		case err != nil:
 			result.Errors = append(result.Errors, fmt.Sprintf("Payload matcher %d error: %v", i, err))
-		} else if matchResult.Matched {
+		case matchResult.Matched:
 			result.MatchedConditions = append(result.MatchedConditions, fmt.Sprintf("payload_matcher_%d", i))
-		} else {
+		default:
 			result.FailedConditions = append(result.FailedConditions, fmt.Sprintf("payload_matcher_%d", i))
 		}
 	}

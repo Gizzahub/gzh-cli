@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	// userEndpoint is the GitHub API user endpoint
+	// userEndpoint is the GitHub API user endpoint.
 	userEndpoint = "/user"
 )
 

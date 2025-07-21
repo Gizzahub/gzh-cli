@@ -21,9 +21,9 @@ const (
 	PermissionWrite PermissionLevel = "write"
 	PermissionAdmin PermissionLevel = "admin"
 
-	// userEndpoint is the GitHub API user endpoint
+	// userEndpoint is the GitHub API user endpoint.
 	userEndpoint = "/user"
-	// rateLimitEndpoint is the GitHub API rate limit endpoint
+	// rateLimitEndpoint is the GitHub API rate limit endpoint.
 	rateLimitEndpoint = "/rate_limit"
 )
 
@@ -262,7 +262,7 @@ func (tv *TokenValidator) getRateLimit(ctx context.Context) (*RateLimitInfo, err
 }
 
 // detectTokenType determines if the token is classic or fine-grained.
-func (tv *TokenValidator) detectTokenType(ctx context.Context, info *TokenInfo) error {
+func (tv *TokenValidator) detectTokenType(_ context.Context, info *TokenInfo) error {
 	// Try to get the token's scopes from the response headers
 	// This is a simplified implementation - in reality, you'd need to check headers from authenticated requests
 

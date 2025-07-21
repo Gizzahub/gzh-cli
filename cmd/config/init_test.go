@@ -41,7 +41,7 @@ func TestCreateMinimalConfig(t *testing.T) {
 }
 
 func TestGenerateConfigContent(t *testing.T) {
-	template := ConfigTemplate{
+	template := Template{
 		Version:         "1.0.0",
 		DefaultProvider: "github",
 		Providers: map[string]ProviderTemplate{

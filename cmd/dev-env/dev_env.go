@@ -2,6 +2,7 @@ package devenv
 
 import "github.com/spf13/cobra"
 
+// NewDevEnvCmd creates the development environment command.
 func NewDevEnvCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dev-env",

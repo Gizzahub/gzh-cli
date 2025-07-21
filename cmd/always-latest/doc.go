@@ -1,4 +1,4 @@
-// Package always_latest provides automated package manager update functionality
+// Package alwayslatest provides automated package manager update functionality
 // for keeping development tools and dependencies up to date.
 //
 // This package implements the always-latest command that automatically updates

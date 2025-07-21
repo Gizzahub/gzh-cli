@@ -243,8 +243,7 @@ func TestMatchPattern(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.str+" vs "+tt.pattern, func(t *testing.T) {
-			got, err := matchPattern(tt.str, tt.pattern)
-			require.NoError(t, err)
+			got := matchPattern(tt.str, tt.pattern)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -275,8 +274,7 @@ func TestExpandEnvVars(t *testing.T) {
 		},
 	}
 
-	err := expandRepoConfigEnvVars(config)
-	require.NoError(t, err)
+	expandRepoConfigEnvVars(config)
 
 	webhook := config.Templates["test"].Security.Webhooks[0]
 	assert.Equal(t, "https://example.com/webhook", webhook.URL)

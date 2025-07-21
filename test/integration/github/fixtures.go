@@ -13,7 +13,7 @@ import (
 const (
 	testOrgEnvVar = "GITHUB_TEST_ORG"
 	tokenEnvVar   = "GITHUB_TOKEN"
-	// defaultVersion is the default version string used in test configurations
+	// defaultVersion is the default version string used in test configurations.
 	defaultVersion = "1.0.0"
 )
 

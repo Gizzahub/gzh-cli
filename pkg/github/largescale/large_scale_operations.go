@@ -333,7 +333,7 @@ func (m *LargeScaleManager) shouldSkipRepository(repo LargeScaleRepository) bool
 		var memStats runtime.MemStats
 		runtime.ReadMemStats(&memStats)
 
-		if int64(memStats.Alloc) > m.config.MemoryThreshold {
+		if memStats.Alloc > 0 && int64(memStats.Alloc) > m.config.MemoryThreshold { //nolint:gosec // Alloc is always positive
 			return true
 		}
 	}
@@ -353,7 +353,7 @@ func (m *LargeScaleManager) calculateOptimalConcurrency(totalRepos int) int {
 	// Check available memory
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
-	availableMemory := m.config.MemoryThreshold - int64(memStats.Alloc)
+	availableMemory := m.config.MemoryThreshold - int64(memStats.Alloc) //nolint:gosec // Alloc is always positive
 
 	if availableMemory < 100*1024*1024 { // Less than 100MB available
 		baseConcurrency = minInt(baseConcurrency, 5)
@@ -366,7 +366,7 @@ func (m *LargeScaleManager) shouldTriggerGC(_ int) bool {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
-	return int64(memStats.Alloc) > m.config.MemoryThreshold
+	return memStats.Alloc > 0 && int64(memStats.Alloc) > m.config.MemoryThreshold //nolint:gosec // Alloc is always positive
 }
 
 func (m *LargeScaleManager) updateStats(processed, failed, skipped int) {

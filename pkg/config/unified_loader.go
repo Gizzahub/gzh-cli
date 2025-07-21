@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const defaultConfigVersion = "1.0.0"
+
 // UnifiedConfigLoader loads configuration from both legacy and unified formats.
 type UnifiedConfigLoader struct {
 	ConfigPaths   []string
@@ -189,7 +191,7 @@ func (l *UnifiedConfigLoader) validateUnifiedConfig(config *UnifiedConfig) error
 		return fmt.Errorf("version is required")
 	}
 
-	if config.Version != "1.0.0" {
+	if config.Version != defaultConfigVersion {
 		return fmt.Errorf("unsupported version: %s (expected: 1.0.0)", config.Version)
 	}
 

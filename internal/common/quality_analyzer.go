@@ -1,4 +1,4 @@
-// Package common provides shared quality analysis interfaces and types
+// Package common provides shared quality analysis interfaces and types.
 package common
 
 //go:generate mockgen -source=quality_analyzer.go -destination=mocks/quality_analyzer_mock.go -package=mocks QualityAnalyzer

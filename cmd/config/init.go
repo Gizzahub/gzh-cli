@@ -31,7 +31,7 @@ Examples:
   gz config init --minimal             # Create minimal configuration
   gz config init --force              # Overwrite existing file`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			// Determine output file path
 			if len(args) > 0 {
 				outputFile = args[0]
@@ -51,8 +51,8 @@ Examples:
 	return cmd
 }
 
-// ConfigTemplate represents a configuration template.
-type ConfigTemplate struct {
+// Template represents a configuration template.
+type Template struct {
 	Version         string
 	DefaultProvider string
 	Providers       map[string]ProviderTemplate
@@ -96,7 +96,7 @@ func initializeConfig(outputFile string, force bool, minimal bool) error {
 
 // createMinimalConfig creates a minimal configuration file.
 func createMinimalConfig(outputFile string) error {
-	template := ConfigTemplate{
+	template := Template{
 		Version:         "1.0.0",
 		DefaultProvider: "github",
 		Providers: map[string]ProviderTemplate{
@@ -133,7 +133,7 @@ func createMinimalConfig(outputFile string) error {
 // createInteractiveConfig creates configuration through interactive prompts.
 func createInteractiveConfig(outputFile string) error {
 	reader := bufio.NewReader(os.Stdin)
-	template := ConfigTemplate{
+	template := Template{
 		Version:   "1.0.0",
 		Providers: make(map[string]ProviderTemplate),
 	}
@@ -290,7 +290,7 @@ func promptYesNo(reader *bufio.Reader, prompt string, defaultValue bool) bool {
 }
 
 // generateConfigContent generates the YAML configuration content.
-func generateConfigContent(template ConfigTemplate) string {
+func generateConfigContent(template Template) string {
 	var content strings.Builder
 
 	content.WriteString("# gzh.yaml - Generated configuration file\n")

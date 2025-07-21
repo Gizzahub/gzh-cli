@@ -144,7 +144,7 @@ Examples:
   
   # List projects in JSON format
   gz dev-env gcp-project list --output json`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			manager, err := NewGCPProjectManager(cmd.Context())
 			if err != nil {
 				return err
@@ -805,7 +805,7 @@ func newGCPProjectConfigListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all gcloud configurations",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			manager, err := NewGCPProjectManager(cmd.Context())
 			if err != nil {
 				return err

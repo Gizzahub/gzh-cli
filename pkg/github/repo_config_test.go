@@ -25,7 +25,7 @@ func TestNewRepoConfigClient(t *testing.T) {
 	// assert.Equal(t, 30*time.Second, client.httpClient.Timeout)
 }
 
-func TestSetTimeout(t *testing.T) {
+func TestSetTimeout(_ *testing.T) {
 	client := NewRepoConfigClient("test-token")
 
 	client.SetTimeout(60 * time.Second)
@@ -309,7 +309,7 @@ func TestDeleteBranchProtection(t *testing.T) {
 
 func TestAPIErrorHandling(t *testing.T) {
 	// Mock server that returns errors
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "application/json")
 
@@ -359,7 +359,7 @@ func TestMakeRequestWithoutToken(t *testing.T) {
 func TestListRepositoriesWithPagination(t *testing.T) {
 	page := 0
 	// Mock server that returns different responses for different pages
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		page++
 
 		var repos []*Repository
@@ -397,7 +397,7 @@ func TestListRepositoriesWithPagination(t *testing.T) {
 
 func TestContextCancellation(t *testing.T) {
 	// Mock server with delay
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		time.Sleep(100 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("{}"))

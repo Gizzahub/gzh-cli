@@ -309,12 +309,8 @@ func (cd *ContainerDetector) DetectContainerEnvironment(ctx context.Context) (*C
 	}
 
 	// Calculate resource usage
-	resourceUsage, err := cd.calculateResourceUsage(ctx, env)
-	if err != nil {
-		cd.logger.Warn("Failed to calculate resource usage", zap.Error(err))
-	} else {
-		env.ResourceUsage = resourceUsage
-	}
+	resourceUsage := cd.calculateResourceUsage(ctx, env)
+	env.ResourceUsage = resourceUsage
 
 	// Generate environment fingerprint
 	env.EnvironmentFingerprint = cd.generateEnvironmentFingerprint(env)
@@ -1344,10 +1340,8 @@ func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*Kuberne
 	}
 
 	// Detect ingress controllers
-	ingressControllers, err := cd.detectIngressControllers(ctx)
-	if err == nil {
-		info.IngressControllers = ingressControllers
-	}
+	ingressControllers := cd.detectIngressControllers(ctx)
+	info.IngressControllers = ingressControllers
 
 	return info, nil
 }
@@ -1494,7 +1488,7 @@ func (cd *ContainerDetector) detectServiceMesh(ctx context.Context) (*ServiceMes
 }
 
 // detectIngressControllers detects ingress controllers.
-func (cd *ContainerDetector) detectIngressControllers(ctx context.Context) ([]string, error) {
+func (cd *ContainerDetector) detectIngressControllers(ctx context.Context) []string {
 	var controllers []string
 
 	// Check for common ingress controllers
@@ -1512,11 +1506,11 @@ func (cd *ContainerDetector) detectIngressControllers(ctx context.Context) ([]st
 		}
 	}
 
-	return controllers, nil
+	return controllers
 }
 
 // calculateResourceUsage calculates overall resource usage.
-func (cd *ContainerDetector) calculateResourceUsage(ctx context.Context, env *ContainerEnvironment) (*ContainerResourceUsage, error) {
+func (cd *ContainerDetector) calculateResourceUsage(ctx context.Context, env *ContainerEnvironment) *ContainerResourceUsage {
 	usage := &ContainerResourceUsage{
 		TotalContainers: len(env.RunningContainers),
 		Networks:        len(env.Networks),
@@ -1558,7 +1552,7 @@ func (cd *ContainerDetector) calculateResourceUsage(ctx context.Context, env *Co
 		}
 	}
 
-	return usage, nil
+	return usage
 }
 
 // getContainerStats gets aggregated container statistics.

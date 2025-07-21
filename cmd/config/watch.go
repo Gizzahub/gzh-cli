@@ -38,7 +38,7 @@ Examples:
   gz config watch --verbose          # Verbose output with detailed changes
   gz config watch --interval 5s      # Custom status display interval`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			// Determine config file path
 			if len(args) > 0 {
 				configFile = args[0]

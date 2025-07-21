@@ -50,7 +50,7 @@ func newProfileListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List available configuration profiles",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return listProfiles()
 		},
 	}
@@ -67,7 +67,7 @@ func newProfileCreateCmd() *cobra.Command {
 		Use:   "create <profile-name>",
 		Short: "Create a new configuration profile",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			profileName := args[0]
 			return createProfile(profileName, fromProfile, interactive)
 		},
@@ -85,7 +85,7 @@ func newProfileUseCmd() *cobra.Command {
 		Use:   "use <profile-name>",
 		Short: "Switch to a configuration profile",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			profileName := args[0]
 			return useProfile(profileName)
 		},
@@ -97,7 +97,7 @@ func newProfileCurrentCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "current",
 		Short: "Show current configuration profile",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return showCurrentProfile()
 		},
 	}

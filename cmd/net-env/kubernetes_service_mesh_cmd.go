@@ -394,7 +394,7 @@ func newIstioVirtualServiceCmd(km *KubernetesNetworkManager) *cobra.Command {
 				}
 
 				w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
-				fmt.Fprintln(w, "NAME\tHOSTS\tGATEWAYS\tROUTES")
+				_, _ = fmt.Fprintln(w, "NAME\tHOSTS\tGATEWAYS\tROUTES")
 				for name, vs := range istioConfig.VirtualServices {
 					hosts := strings.Join(vs.Hosts, ", ")
 					gateways := strings.Join(vs.Gateways, ", ")
@@ -405,9 +405,9 @@ func newIstioVirtualServiceCmd(km *KubernetesNetworkManager) *cobra.Command {
 					if len(vs.TCP) > 0 {
 						routes += fmt.Sprintf(", %d TCP", len(vs.TCP))
 					}
-					fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", name, hosts, gateways, routes)
+					_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", name, hosts, gateways, routes)
 				}
-				w.Flush()
+				_ = w.Flush()
 			}
 
 			return nil
@@ -567,7 +567,7 @@ func newIstioServiceEntryCmd(km *KubernetesNetworkManager) *cobra.Command {
 				parts := strings.Split(portSpec, ":")
 				if len(parts) == 3 {
 					var port int32
-					fmt.Sscanf(parts[1], "%d", &port)
+					_, _ = fmt.Sscanf(parts[1], "%d", &port)
 					se.Ports = append(se.Ports, ServicePort{
 						Name:     parts[0],
 						Port:     port,
@@ -847,7 +847,7 @@ func newLinkerdTrafficSplitCmd(km *KubernetesNetworkManager) *cobra.Command {
 				parts := strings.Split(backend, ":")
 				if len(parts) == 2 {
 					var weight int32
-					fmt.Sscanf(parts[1], "%d", &weight)
+					_, _ = fmt.Sscanf(parts[1], "%d", &weight)
 					ts.Backends = append(ts.Backends, LinkerdBackend{
 						Service: parts[0],
 						Weight:  weight,
@@ -903,7 +903,7 @@ func configureIstioInteractive(km *KubernetesNetworkManager, profile *Kubernetes
 	fmt.Print("Enable mTLS mode? (DISABLE/SIMPLE/MUTUAL/ISTIO_MUTUAL) [ISTIO_MUTUAL]: ")
 
 	var mtlsMode string
-	fmt.Scanln(&mtlsMode)
+	_, _ = fmt.Scanln(&mtlsMode)
 
 	if mtlsMode == "" {
 		mtlsMode = "ISTIO_MUTUAL"
@@ -942,7 +942,7 @@ func configureLinkerdInteractive(km *KubernetesNetworkManager, profile *Kubernet
 	fmt.Print("Enable proxy injection? (y/N): ")
 
 	var enableProxy string
-	fmt.Scanln(&enableProxy)
+	_, _ = fmt.Scanln(&enableProxy)
 
 	// Initialize Linkerd config
 	if profile.ServiceMesh.TrafficPolicy == nil {

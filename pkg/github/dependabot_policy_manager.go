@@ -332,7 +332,7 @@ func NewDependabotPolicyManager(logger Logger, apiClient APIClient, configManage
 }
 
 // CreatePolicy creates a new organization-wide Dependabot policy.
-func (pm *DependabotPolicyManager) CreatePolicy(ctx context.Context, policy *DependabotPolicyConfig) error {
+func (pm *DependabotPolicyManager) CreatePolicy(_ context.Context, policy *DependabotPolicyConfig) error {
 	pm.logger.Info("Creating Dependabot policy", "organization", policy.Organization, "policy", policy.Name)
 
 	pm.policyMutex.Lock()
@@ -357,7 +357,7 @@ func (pm *DependabotPolicyManager) CreatePolicy(ctx context.Context, policy *Dep
 }
 
 // GetPolicy retrieves a policy by ID.
-func (pm *DependabotPolicyManager) GetPolicy(ctx context.Context, policyID string) (*DependabotPolicyConfig, error) {
+func (pm *DependabotPolicyManager) GetPolicy(_ context.Context, policyID string) (*DependabotPolicyConfig, error) {
 	pm.policyMutex.RLock()
 	defer pm.policyMutex.RUnlock()
 
@@ -370,7 +370,7 @@ func (pm *DependabotPolicyManager) GetPolicy(ctx context.Context, policyID strin
 }
 
 // UpdatePolicy updates an existing policy.
-func (pm *DependabotPolicyManager) UpdatePolicy(ctx context.Context, policy *DependabotPolicyConfig) error {
+func (pm *DependabotPolicyManager) UpdatePolicy(_ context.Context, policy *DependabotPolicyConfig) error {
 	pm.logger.Info("Updating Dependabot policy", "policy_id", policy.ID)
 
 	pm.policyMutex.Lock()

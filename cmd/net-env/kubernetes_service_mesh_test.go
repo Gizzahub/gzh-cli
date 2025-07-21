@@ -17,7 +17,7 @@ func TestServiceMeshIntegrationAdvanced(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "k8s_service_mesh_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -91,7 +91,7 @@ func TestIstioConfiguration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "istio_config_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -273,7 +273,7 @@ func TestLinkerdConfiguration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "linkerd_config_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -361,7 +361,7 @@ func TestServiceMeshProfileIntegration(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "mesh_profile_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -523,7 +523,7 @@ func TestServiceMeshValidation(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "mesh_validation_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)
@@ -591,7 +591,7 @@ func TestServiceMeshStatus(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "mesh_status_test")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	logger, _ := zap.NewDevelopment()
 	km := NewKubernetesNetworkManager(logger, tempDir)

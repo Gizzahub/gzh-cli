@@ -40,7 +40,7 @@ func TestResilientGitHubClient_GetDefaultBranch(t *testing.T) {
 
 func TestResilientGitHubClient_GetDefaultBranch_NotFound(t *testing.T) {
 	// Test server that returns 404
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer server.Close()
@@ -198,7 +198,7 @@ func TestResilientGitHubClient_RateLimitHandling(t *testing.T) {
 	resetTime := time.Now().Add(time.Hour).Unix()
 
 	// Test server that returns rate limit error
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("X-RateLimit-Reset", string(rune(resetTime)))
 		w.WriteHeader(http.StatusTooManyRequests)
 	}))

@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	// httpMethodPUT is the HTTP PUT method
+	// httpMethodPUT is the HTTP PUT method.
 	httpMethodPUT = "PUT"
 )
 

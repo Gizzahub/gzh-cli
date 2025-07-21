@@ -49,12 +49,7 @@ func (c *RepoConfigClient) CollectRepositoryStates(ctx context.Context, org stri
 	states := make(map[string]RepositoryStateData)
 
 	for _, repo := range repos {
-		state, err := c.collectRepositoryState(ctx, org, repo)
-		if err != nil {
-			// Log error but continue with other repos
-			continue
-		}
-
+		state := c.collectRepositoryState(ctx, org, repo)
 		states[repo.Name] = state
 	}
 
@@ -62,7 +57,7 @@ func (c *RepoConfigClient) CollectRepositoryStates(ctx context.Context, org stri
 }
 
 // collectRepositoryState collects the current state of a repository.
-func (c *RepoConfigClient) collectRepositoryState(ctx context.Context, org string, repo *Repository) (RepositoryStateData, error) {
+func (c *RepoConfigClient) collectRepositoryState(ctx context.Context, org string, repo *Repository) RepositoryStateData {
 	state := RepositoryStateData{
 		Name:             repo.Name,
 		Private:          repo.Private,
@@ -99,7 +94,7 @@ func (c *RepoConfigClient) collectRepositoryState(ctx context.Context, org strin
 	// Check for workflows
 	state.Workflows = c.listRepoWorkflows(ctx, org, repo.Name)
 
-	return state, nil
+	return state
 }
 
 // getBranchProtectionRequiredReviews extracts the required review count from branch protection.

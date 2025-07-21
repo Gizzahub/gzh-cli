@@ -70,7 +70,7 @@ func GetConfigDir() (string, error) {
 
 // SetFilePermissions sets file permissions in a cross-platform way.
 func SetFilePermissions(path string, mode os.FileMode) error {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == platformWindows {
 		// Windows doesn't support Unix-style permissions, so we just ignore them
 		return nil
 	}
@@ -86,7 +86,7 @@ func IsExecutableAvailable(name string) bool {
 
 // GetExecutableName returns the platform-appropriate executable name.
 func GetExecutableName(name string) string {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == platformWindows {
 		if !strings.HasSuffix(name, ".exe") {
 			return name + ".exe"
 		}
@@ -125,7 +125,7 @@ func GetListSeparator() string {
 
 // IsWindows returns true if running on Windows.
 func IsWindows() bool {
-	return runtime.GOOS == "windows"
+	return runtime.GOOS == platformWindows
 }
 
 // IsMacOS returns true if running on macOS.

@@ -165,10 +165,7 @@ func (ape *ActionsPolicyEnforcer) EnforcePolicy(ctx context.Context, policyID, o
 	}
 
 	// Get current repository state
-	currentState, err := ape.getRepositoryActionsState(ctx, organization, repository)
-	if err != nil {
-		return result, fmt.Errorf("failed to get repository state: %w", err)
-	}
+	currentState := ape.getRepositoryActionsState(ctx, organization, repository)
 
 	// Validate policy before enforcement
 	validationResults, err := ape.ValidatePolicy(ctx, policy, currentState)
@@ -226,7 +223,7 @@ func (ape *ActionsPolicyEnforcer) ValidatePolicy(ctx context.Context, policy *Ac
 }
 
 // GetRepositoryActionsState retrieves the current Actions configuration state.
-func (ape *ActionsPolicyEnforcer) getRepositoryActionsState(_ context.Context, organization, repository string) (*RepositoryActionsState, error) {
+func (ape *ActionsPolicyEnforcer) getRepositoryActionsState(_ context.Context, organization, repository string) *RepositoryActionsState {
 	// This would typically make GitHub API calls to get the current state
 	// For now, return a mock state structure
 	state := &RepositoryActionsState{
@@ -246,7 +243,7 @@ func (ape *ActionsPolicyEnforcer) getRepositoryActionsState(_ context.Context, o
 		LastUpdated: time.Now(),
 	}
 
-	return state, nil
+	return state
 }
 
 // applyPolicyChanges applies the necessary changes to enforce the policy.

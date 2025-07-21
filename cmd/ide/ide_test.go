@@ -257,7 +257,7 @@ func TestCopyFile(t *testing.T) {
 	content := "test content"
 
 	// Write source file
-	err := os.WriteFile(srcFile, []byte(content), 0o644)
+	err := os.WriteFile(srcFile, []byte(content), 0o600)
 	assert.NoError(t, err)
 
 	// Test copy

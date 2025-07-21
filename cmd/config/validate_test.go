@@ -89,9 +89,11 @@ providers:
 			cleanupEnv: func() {
 				if err := os.Unsetenv("TEST_GITHUB_TOKEN"); err != nil {
 					// Environment cleanup error in test is non-critical
+					t.Logf("Failed to unset TEST_GITHUB_TOKEN: %v", err)
 				}
 				if err := os.Unsetenv("HOME"); err != nil {
 					// Environment cleanup error in test is non-critical
+					t.Logf("Failed to unset HOME: %v", err)
 				}
 			},
 			expectError: false,

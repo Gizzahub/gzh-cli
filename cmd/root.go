@@ -26,7 +26,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gz",
 		Short: "Cli 종합 Manager by Gizzahub",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return cmd.Help()
 		},
 	}

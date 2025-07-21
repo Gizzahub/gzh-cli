@@ -67,8 +67,8 @@ type OperationResult struct {
 	Metadata     map[string]string `json:"metadata,omitempty"`
 }
 
-// GitClient defines the interface for Git operations.
-type GitClient interface {
+// Client defines the interface for Git operations.
+type Client interface {
 	// Repository operations
 	Clone(ctx context.Context, options CloneOptions) (*OperationResult, error)
 	Pull(ctx context.Context, repoPath string, options PullOptions) (*OperationResult, error)
@@ -195,9 +195,9 @@ type AuthManager interface {
 	ValidateAuth(ctx context.Context, remoteURL string) error
 }
 
-// GitService provides a unified interface for all Git operations.
-type GitService interface {
-	GitClient
+// Service provides a unified interface for all Git operations.
+type Service interface {
+	Client
 	StrategyExecutor
 	BulkOperator
 	AuthManager

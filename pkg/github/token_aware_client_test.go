@@ -16,9 +16,9 @@ import (
 const testToken = "test-token"
 
 const (
-	// userEndpoint is the GitHub API user endpoint
+	// userEndpoint is the GitHub API user endpoint.
 	userEndpoint = "/user"
-	// rateLimitEndpoint is the GitHub API rate limit endpoint
+	// rateLimitEndpoint is the GitHub API rate limit endpoint.
 	rateLimitEndpoint = "/rate_limit"
 )
 

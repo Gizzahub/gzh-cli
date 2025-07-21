@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	// defaultVersion is the default version string used in test configurations
+	// defaultVersion is the default version string used in test configurations.
 	defaultVersion = "1.0.0"
 )
 

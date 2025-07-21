@@ -42,6 +42,7 @@ func NewTaskRunnerCmd() *cobra.Command {
 	return cmd
 }
 
+// TodoItem represents a single TODO task item with completion status.
 type TodoItem struct {
 	File        string
 	Line        int
@@ -50,6 +51,7 @@ type TodoItem struct {
 	IsBlocked   bool // [>] blocked items
 }
 
+// TodoFile represents a file containing multiple TODO items.
 type TodoFile struct {
 	Path  string
 	Items []TodoItem
@@ -166,6 +168,7 @@ func parseTodoFile(filename string) ([]TodoItem, error) {
 	defer func() {
 		if err := file.Close(); err != nil {
 			// Log error but don't override main error
+			fmt.Printf("Warning: failed to close file %s: %v\n", filename, err)
 		}
 	}()
 
@@ -274,6 +277,7 @@ func executeTask(task TodoItem) error {
 	return nil
 }
 
+// TaskAnalysis represents the analysis result of a TODO task.
 type TaskAnalysis struct {
 	Type         string
 	Complexity   string
