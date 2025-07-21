@@ -19,7 +19,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.24'
 
       - name: Run tests
         run: go test ./...
@@ -29,12 +29,12 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
-            
+
             // Only auto-merge minor and patch updates
             const title = pr.title;
-            const isMinorOrPatch = /bump.*from.*to.*\d+\.\d+\.\d+/.test(title) && 
+            const isMinorOrPatch = /bump.*from.*to.*\d+\.\d+\.\d+/.test(title) &&
                                    !title.includes('major');
-            
+
             if (isMinorOrPatch) {
               await github.rest.pulls.createReview({
                 owner: context.repo.owner,
@@ -42,7 +42,7 @@ jobs:
                 pull_number: pr.number,
                 event: 'APPROVE'
               });
-              
+
               await github.rest.pulls.merge({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
