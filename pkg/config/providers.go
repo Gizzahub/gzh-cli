@@ -64,10 +64,12 @@ func (g *GitHubCloner) CloneGroup(groupName, targetPath, strategy string) error 
 	return g.CloneOrganization(groupName, targetPath, strategy)
 }
 
+// SetToken configures the GitHub authentication token for cloning operations.
 func (g *GitHubCloner) SetToken(token string) {
 	g.token = token
 }
 
+// GetName returns the provider name identifier for GitHub.
 func (g *GitHubCloner) GetName() string {
 	return ProviderGitHub
 }
@@ -91,11 +93,13 @@ func NewGitLabClonerWithEnv(token string, environment env.Environment) *GitLabCl
 	}
 }
 
+// CloneOrganization clones all repositories from a GitLab organization (implemented as group).
 func (g *GitLabCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// GitLab organizations are groups
 	return g.CloneGroup(orgName, targetPath, strategy)
 }
 
+// CloneGroup clones all repositories from a GitLab group.
 func (g *GitLabCloner) CloneGroup(groupName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
@@ -115,10 +119,12 @@ func (g *GitLabCloner) CloneGroup(groupName, targetPath, strategy string) error 
 	return provider.RefreshAll(context.Background(), targetPath, groupName, strategy)
 }
 
+// SetToken configures the GitLab authentication token.
 func (g *GitLabCloner) SetToken(token string) {
 	g.token = token
 }
 
+// GetName returns the provider name identifier for GitLab.
 func (g *GitLabCloner) GetName() string {
 	return ProviderGitLab
 }
@@ -142,6 +148,7 @@ func NewGiteaClonerWithEnv(token string, environment env.Environment) *GiteaClon
 	}
 }
 
+// CloneOrganization clones all repositories from a Gitea organization.
 func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
@@ -161,6 +168,7 @@ func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) er
 	return provider.RefreshAll(context.Background(), targetPath, orgName, strategy)
 }
 
+// CloneGroup clones all repositories from a Gitea group (implemented as organization).
 func (g *GiteaCloner) CloneGroup(groupName, targetPath, strategy string) error {
 	// Gitea doesn't have groups, use organization instead
 	return g.CloneOrganization(groupName, targetPath, strategy)

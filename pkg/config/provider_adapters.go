@@ -62,22 +62,27 @@ func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	return repositories, nil
 }
 
+// CloneRepository clones a single repository from GitHub to the target path.
 func (g *GitHubProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
 	return github.Clone(ctx, targetPath, owner, repository)
 }
 
+// GetDefaultBranch retrieves the default branch name for a GitHub repository.
 func (g *GitHubProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
 	return github.GetDefaultBranch(ctx, owner, repository)
 }
 
+// RefreshAll updates all repositories in the target path using the specified strategy.
 func (g *GitHubProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
 	return github.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
+// CloneOrganization clones all repositories from a GitHub organization.
 func (g *GitHubProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
 	return github.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
+// SetToken configures the GitHub authentication token.
 func (g *GitHubProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
@@ -88,16 +93,19 @@ func (g *GitHubProviderAdapter) SetToken(token string) {
 	}
 }
 
+// ValidateToken verifies that the configured GitHub token is valid.
 func (g *GitHubProviderAdapter) ValidateToken(ctx context.Context) error {
 	// Simple validation - try to make an API call
 	_, err := github.List(ctx, "github") // Try to list github's own repositories
 	return err
 }
 
+// GetProviderName returns the name identifier for this provider.
 func (g *GitHubProviderAdapter) GetProviderName() string {
 	return ProviderGitHub
 }
 
+// GetAPIEndpoint returns the base URL for the GitHub API.
 func (g *GitHubProviderAdapter) GetAPIEndpoint() string {
 	return "https://api.github.com"
 }

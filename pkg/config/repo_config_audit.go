@@ -299,21 +299,21 @@ func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *Secu
 	case "min_reviews":
 		if expectedReviews, ok := getIntValue(rule.Value); ok {
 			// Check main branch review requirements
-			if mainProtection, exists := state.BranchProtection["main"]; exists {
-				if mainProtection.RequiredReviews < expectedReviews {
-					return &PolicyViolation{
-						Type:        rule.Type,
-						Expected:    expectedReviews,
-						Actual:      mainProtection.RequiredReviews,
-						Remediation: fmt.Sprintf("Increase required reviewers to %d", expectedReviews),
-					}
-				}
-			} else {
+			mainProtection, exists := state.BranchProtection["main"]
+			if !exists {
 				return &PolicyViolation{
 					Type:        rule.Type,
 					Expected:    expectedReviews,
 					Actual:      0,
 					Remediation: "Enable branch protection with required reviews",
+				}
+			}
+			if mainProtection.RequiredReviews < expectedReviews {
+				return &PolicyViolation{
+					Type:        rule.Type,
+					Expected:    expectedReviews,
+					Actual:      mainProtection.RequiredReviews,
+					Remediation: fmt.Sprintf("Increase required reviewers to %d", expectedReviews),
 				}
 			}
 		}

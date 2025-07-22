@@ -1,7 +1,8 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package common //nolint:revive // Internal package - "common" name is appropriate for shared quality analysis types
+// Package common provides shared quality analysis types and interfaces for repository analysis
+package common
 
 //go:generate mockgen -source=quality_analyzer.go -destination=mocks/quality_analyzer_mock.go -package=mocks QualityAnalyzer
 
