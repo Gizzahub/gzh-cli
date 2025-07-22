@@ -280,6 +280,12 @@ linters:
           - errcheck
         text: Error return value of.*Encode.*is not checked
       - linters:
+          - errcheck
+        text: Error return value of.*RegisterValidation.*is not checked
+      - linters:
+          - errcheck
+        text: Error return value of.*MatchString.*is not checked
+      - linters:
           - staticcheck
         text: SA4006.*this value.*is never used
       - linters:

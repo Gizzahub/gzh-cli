@@ -405,7 +405,6 @@ func (hm *HealthMonitor) RunChecks(ctx context.Context) map[string]error {
 
 		if check.Timeout > 0 {
 			checkCtx, cancel = context.WithTimeout(ctx, check.Timeout)
-			defer cancel()
 		}
 
 		err := func() error {
@@ -422,6 +421,10 @@ func (hm *HealthMonitor) RunChecks(ctx context.Context) map[string]error {
 				return check.CheckFunc()
 			}
 		}()
+
+		if cancel != nil {
+			cancel()
+		}
 
 		results[check.Name] = err
 		if err != nil {

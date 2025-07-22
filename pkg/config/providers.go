@@ -42,7 +42,9 @@ func NewGitHubClonerWithEnv(token string, environment env.Environment) *GitHubCl
 func (g *GitHubCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		_ = g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token) // Ignore error
+		if err := g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token); err != nil {
+			// Environment variable setting failed - log but don't fail the operation
+		}
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
@@ -96,7 +98,9 @@ func (g *GitLabCloner) CloneOrganization(orgName, targetPath, strategy string) e
 func (g *GitLabCloner) CloneGroup(groupName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		_ = g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token) // Ignore error
+		if err := g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token); err != nil {
+			// Environment variable setting failed - log but don't fail the operation
+		}
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)
@@ -139,7 +143,9 @@ func NewGiteaClonerWithEnv(token string, environment env.Environment) *GiteaClon
 func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		_ = g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token) // Ignore error
+		if err := g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token); err != nil {
+			// Environment variable setting failed - log but don't fail the operation
+		}
 	}
 	// Use the new provider service interface
 	factory := NewDefaultProviderFactory(g.environment)

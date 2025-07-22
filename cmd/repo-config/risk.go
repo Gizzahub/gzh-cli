@@ -366,20 +366,20 @@ func getSeveritySymbol(severity string) string {
 }
 
 func getTopRiskCategory(categories RiskCategories) string {
-	max := categories.AccessControl
+	maxValue := categories.AccessControl
 	category := "Access Control"
 
-	if categories.DataProtection > max {
-		max = categories.DataProtection
+	if categories.DataProtection > maxValue {
+		maxValue = categories.DataProtection
 		category = "Data Protection"
 	}
 
-	if categories.InfrastructureSec > max {
-		max = categories.InfrastructureSec
+	if categories.InfrastructureSec > maxValue {
+		maxValue = categories.InfrastructureSec
 		category = "Infrastructure"
 	}
 
-	if categories.OperationalSecurity > max {
+	if categories.OperationalSecurity > maxValue {
 		category = "Operational"
 	}
 

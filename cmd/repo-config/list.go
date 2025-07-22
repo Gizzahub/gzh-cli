@@ -170,9 +170,9 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 
 		if showConfig {
 			// Get detailed configuration
-			config, err := client.GetRepositoryConfiguration(ctx, flags.Organization, repo.Name)
+			repoConfig, err := client.GetRepositoryConfiguration(ctx, flags.Organization, repo.Name)
 			if err == nil {
-				info.Config = config
+				info.Config = repoConfig
 			} else if flags.Verbose {
 				fmt.Printf("Warning: Could not get config for %s: %v\n", repo.Name, err)
 			}

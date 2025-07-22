@@ -39,8 +39,8 @@ func LoadCommandConfig(ctx context.Context, configPath, configType string) (*con
 		filepath.Join(os.Getenv("HOME"), ".config", "gzh-manager", fmt.Sprintf("%s.yml", configType)),
 
 		// System config directory
-		filepath.Join("/etc", "gzh-manager", configName),
-		filepath.Join("/etc", "gzh-manager", fmt.Sprintf("%s.yml", configType)),
+		filepath.Join(string(filepath.Separator), "etc", "gzh-manager", configName),
+		filepath.Join(string(filepath.Separator), "etc", "gzh-manager", fmt.Sprintf("%s.yml", configType)),
 	}
 
 	for _, path := range searchPaths {
