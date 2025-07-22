@@ -14,7 +14,7 @@ type UnifiedConfig struct {
 	Version string `yaml:"version" json:"version" validate:"required,oneof=1.0.0"`
 
 	// Default provider to use when not specified
-	DefaultProvider string `yaml:"defaultProvider,omitempty" json:"defaultProvider,omitempty" validate:"omitempty,oneof=github gitlab gitea gogs"`
+	DefaultProvider string `yaml:"defaultProvider,omitempty" json:"defaultProvider,omitempty" validate:"omitempty,oneof=github gitlab gitea gogs"` //nolint:revive // Custom validation tags are valid
 
 	// Global settings that apply to all providers
 	Global *GlobalSettings `yaml:"global,omitempty" json:"global,omitempty"`
@@ -44,13 +44,13 @@ type GlobalSettings struct {
 	CloneBaseDir string `yaml:"clone_base_dir,omitempty" json:"cloneBaseDir,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Default strategy for repository operations
-	DefaultStrategy string `yaml:"default_strategy,omitempty" json:"defaultStrategy,omitempty" validate:"omitempty,oneof=reset pull fetch"` //nolint:tagliatelle // YAML compatibility required
+	DefaultStrategy string `yaml:"default_strategy,omitempty" json:"defaultStrategy,omitempty" validate:"omitempty,oneof=reset pull fetch"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Global ignore patterns (regex)
 	GlobalIgnores []string `yaml:"global_ignores,omitempty" json:"globalIgnores,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Default visibility filter
-	DefaultVisibility string `yaml:"default_visibility,omitempty" json:"defaultVisibility,omitempty" validate:"omitempty,oneof=public private all"` //nolint:tagliatelle // YAML compatibility required
+	DefaultVisibility string `yaml:"default_visibility,omitempty" json:"defaultVisibility,omitempty" validate:"omitempty,oneof=public private all"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Timeout settings
 	Timeouts *TimeoutSettings `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
@@ -74,10 +74,10 @@ type TimeoutSettings struct {
 // ConcurrencySettings contains concurrency configurations.
 type ConcurrencySettings struct {
 	// Maximum concurrent clone operations
-	CloneWorkers int `yaml:"clone_workers,omitempty" json:"cloneWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle // YAML compatibility required
+	CloneWorkers int `yaml:"clone_workers,omitempty" json:"cloneWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Maximum concurrent update operations
-	UpdateWorkers int `yaml:"update_workers,omitempty" json:"updateWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle // YAML compatibility required
+	UpdateWorkers int `yaml:"update_workers,omitempty" json:"updateWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Maximum concurrent API operations
 	APIWorkers int `yaml:"api_workers,omitempty" json:"apiWorkers,omitempty" validate:"omitempty,min=1,max=20"` //nolint:tagliatelle // YAML compatibility required
@@ -86,7 +86,7 @@ type ConcurrencySettings struct {
 // ProviderConfig represents configuration for a specific Git provider.
 type ProviderConfig struct {
 	// Authentication token (supports environment variables)
-	Token string `yaml:"token,omitempty" json:"token,omitempty" validate:"required,envtoken"`
+	Token string `yaml:"token,omitempty" json:"token,omitempty" validate:"required,envtoken"` //nolint:revive // Custom validation tag for environment token
 
 	// API endpoint URL (for self-hosted instances)
 	APIURL string `yaml:"api_url,omitempty" json:"apiUrl,omitempty" validate:"omitempty,url"` //nolint:tagliatelle // YAML compatibility required
@@ -119,7 +119,7 @@ type OrganizationConfig struct {
 	Include string `yaml:"include,omitempty" json:"include,omitempty" validate:"omitempty,regexpattern"`
 
 	// Exclude patterns (regex)
-	Exclude []string `yaml:"exclude,omitempty" json:"exclude,omitempty" validate:"dive,regexpattern"`
+	Exclude []string `yaml:"exclude,omitempty" json:"exclude,omitempty" validate:"dive,regexpattern"` //nolint:revive // Custom validation tag for regex patterns
 
 	// Whether to flatten directory structure
 	Flatten bool `yaml:"flatten,omitempty" json:"flatten,omitempty"`

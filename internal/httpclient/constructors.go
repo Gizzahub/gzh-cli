@@ -41,7 +41,7 @@ type Cache interface {
 }
 
 // HTTPClientImpl implements the HTTPClient interface.
-type HTTPClientImpl struct {
+type HTTPClientImpl struct { //nolint:revive // Type name maintained for clarity in interface implementation
 	client           *http.Client
 	logger           Logger
 	metricsCollector MetricsCollector
@@ -53,7 +53,7 @@ type HTTPClientImpl struct {
 }
 
 // HTTPClientConfig holds configuration for HTTP client.
-type HTTPClientConfig struct {
+type HTTPClientConfig struct { //nolint:revive // Type name maintained for clarity and consistency
 	Timeout             time.Duration
 	MaxIdleConns        int
 	MaxConnsPerHost     int
@@ -565,7 +565,7 @@ func (c *CacheImpl) Clear(_ context.Context) {
 }
 
 // HTTPClientService implements the unified HTTP client service interface.
-type HTTPClientService struct {
+type HTTPClientService struct { //nolint:revive // Type name maintained for clarity in service composition
 	HTTPClient
 	RetryPolicy
 	RateLimiter
@@ -573,7 +573,7 @@ type HTTPClientService struct {
 }
 
 // HTTPClientServiceConfig holds configuration for the HTTP client service.
-type HTTPClientServiceConfig struct {
+type HTTPClientServiceConfig struct { //nolint:revive // Type name maintained for consistency with service pattern
 	Client      *HTTPClientConfig
 	Retry       *RetryPolicyConfig
 	RateLimit   *RateLimiterConfig

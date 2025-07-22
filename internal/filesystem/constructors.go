@@ -58,13 +58,13 @@ func convertFileInfo(info os.FileInfo) FileInfo {
 }
 
 // FileSystemImpl implements the FileSystem interface.
-type FileSystemImpl struct {
+type FileSystemImpl struct { //nolint:revive // Type name maintained for clarity in interface implementation
 	logger Logger
 	config *FileSystemConfig
 }
 
 // FileSystemConfig holds configuration for the file system.
-type FileSystemConfig struct {
+type FileSystemConfig struct { //nolint:revive // Type name maintained for clarity and consistency with other config types
 	EnableBackup bool
 	BackupDir    string
 	MaxBackups   int

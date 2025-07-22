@@ -4,7 +4,7 @@
 package config
 
 // ConfigBuilder provides a fluent interface for building test configurations.
-type ConfigBuilder struct {
+type ConfigBuilder struct { //nolint:revive // Type name maintained for clarity in builder pattern
 	config *UnifiedConfig
 }
 

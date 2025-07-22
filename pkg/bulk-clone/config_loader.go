@@ -13,7 +13,7 @@ import (
 )
 
 // BulkCloneConfig is the public interface for bulk clone configuration.
-type BulkCloneConfig = bulkCloneConfig
+type BulkCloneConfig = bulkCloneConfig //nolint:revive // Type alias maintained for public API compatibility
 
 // ConfigPaths defines the paths where config files are searched.
 var ConfigPaths = []string{

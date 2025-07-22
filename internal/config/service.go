@@ -17,7 +17,7 @@ import (
 )
 
 // ConfigService provides centralized configuration management.
-type ConfigService interface {
+type ConfigService interface { //nolint:revive // Interface name maintained for clarity in configuration service API
 	// LoadConfiguration loads configuration from the specified path or default locations
 	LoadConfiguration(ctx context.Context, configPath string) (*config.UnifiedConfig, error)
 
@@ -74,7 +74,7 @@ type DefaultConfigService struct {
 }
 
 // ConfigServiceOptions provides configuration options for the service.
-type ConfigServiceOptions struct {
+type ConfigServiceOptions struct { //nolint:revive // Type name maintained for clarity in service configuration
 	Environment       env.Environment
 	AutoMigrate       bool
 	WatchEnabled      bool

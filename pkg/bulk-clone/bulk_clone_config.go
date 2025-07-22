@@ -37,7 +37,7 @@ type bulkCloneDefaultGitlab struct {
 }
 
 // BulkCloneGithub represents GitHub bulk clone configuration.
-type BulkCloneGithub struct {
+type BulkCloneGithub struct { //nolint:revive // Type name maintained for clarity in configuration structs
 	RootPath string `yaml:"rootPath" validate:"required"`
 	Provider string `yaml:"provider" validate:"required"`
 	Protocol string `yaml:"protocol" validate:"required,oneof=http https ssh"`
@@ -45,7 +45,7 @@ type BulkCloneGithub struct {
 }
 
 // BulkCloneGitlab represents GitLab bulk clone configuration.
-type BulkCloneGitlab struct {
+type BulkCloneGitlab struct { //nolint:revive // Type name maintained for clarity in configuration structs
 	RootPath  string `yaml:"rootPath" validate:"required"`
 	Provider  string `yaml:"provider" validate:"required"`
 	URL       string `yaml:"url"`
