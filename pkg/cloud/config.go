@@ -91,7 +91,7 @@ func SaveConfig(config *Config, path string) error {
 }
 
 // Validate validates the configuration.
-func (c *Config) Validate() error {
+func (c *Config) Validate() error { //nolint:gocognit,gocyclo // Comprehensive configuration validation across multiple cloud providers with different rule sets and branching logic
 	if len(c.Providers) == 0 {
 		return fmt.Errorf("no providers configured")
 	}

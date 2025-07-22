@@ -170,7 +170,7 @@ func (b *BulkCloneIntegration) GetDefaultProvider() string {
 }
 
 // ShouldProcessTarget determines if a target should be processed based on filters.
-func (b *BulkCloneIntegration) ShouldProcessTarget(target BulkCloneTarget, filters map[string]interface{}) bool {
+func (b *BulkCloneIntegration) ShouldProcessTarget(target BulkCloneTarget, filters map[string]interface{}) bool { //nolint:gocognit // Complex filtering logic with multiple criteria and regex pattern matching
 	// Check provider filter
 	if providerFilter, ok := filters["provider"]; ok {
 		if providerStr, ok := providerFilter.(string); ok && providerStr != target.Provider {

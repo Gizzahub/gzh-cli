@@ -455,7 +455,7 @@ func (m *GCPProjectManager) getActiveConfiguration() (string, error) {
 }
 
 // parseConfigurationProperties parses gcloud configuration properties.
-func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, config *GCPConfiguration) error { //nolint:gocognit // Complex GCP configuration properties parsing
+func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, config *GCPConfiguration) error { //nolint:gocognit,gocyclo // Complex GCP configuration properties parsing with multiple branches
 	content, err := os.ReadFile(propertiesPath)
 	if err != nil {
 		return err

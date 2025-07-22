@@ -391,7 +391,7 @@ func (km *KubernetesNetworkManager) parseIPBlock(ipBlock map[string]interface{})
 
 // parseNetworkPorts parses network ports from ports interface slice.
 func (km *KubernetesNetworkManager) parseNetworkPorts(ports []interface{}) []NetworkPolicyPort {
-	var networkPorts []NetworkPolicyPort
+	networkPorts := make([]NetworkPolicyPort, 0, len(ports))
 
 	for _, port := range ports {
 		portMap, ok := port.(map[string]interface{})

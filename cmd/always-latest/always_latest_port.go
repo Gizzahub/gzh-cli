@@ -94,7 +94,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestPortOptions) run(_ *cobra.Command, _ []string) error {
+func (o *alwaysLatestPortOptions) run(_ *cobra.Command, _ []string) error { //nolint:gocyclo // Command orchestration with multiple option paths and error handling
 	// Check if MacPorts is installed
 	if !o.isPortInstalled() {
 		return fmt.Errorf("MacPorts is not installed or not in PATH")

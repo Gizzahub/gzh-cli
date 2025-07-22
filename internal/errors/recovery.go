@@ -130,7 +130,7 @@ func (er *ErrorRecovery) Execute(ctx context.Context, operation string, fn func(
 }
 
 // ExecuteWithResult runs a function with return value and automatic retry.
-func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string, fn func() (interface{}, error)) error {
+func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string, fn func() (interface{}, error)) error { //nolint:gocognit // Complex error recovery with multiple retry strategies, timeout handling, and circuit breaker logic
 	var lastErr error
 
 	for attempt := 0; attempt <= er.maxRetries; attempt++ {

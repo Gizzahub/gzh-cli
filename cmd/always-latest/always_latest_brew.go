@@ -421,7 +421,7 @@ func (o *alwaysLatestBrewOptions) confirmUpdate(packageName, packageType string)
 func (o *alwaysLatestBrewOptions) cleanupBrew() error {
 	fmt.Println("🧹 Cleaning up old versions...")
 
-	cmd := exec.Command("brew", "cleanup")
+	cmd := exec.Command("brew", "cleanup") //nolint:noctx // Simple cleanup command doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

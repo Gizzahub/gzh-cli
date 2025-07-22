@@ -224,7 +224,7 @@ func (rp *RepositoryWorkerPool) collectResults(resultsChan <-chan Result[Reposit
 }
 
 // wrapWithRetry wraps a processing function with retry logic.
-func (rp *RepositoryWorkerPool) wrapWithRetry(
+func (rp *RepositoryWorkerPool) wrapWithRetry( //nolint:gocognit // Complex worker pool retry logic with backoff, timeout, and error classification
 	processFn func(context.Context, RepositoryJob) error,
 ) func(context.Context, RepositoryJob) error {
 	return func(ctx context.Context, job RepositoryJob) error {

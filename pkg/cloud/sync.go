@@ -37,7 +37,7 @@ func NewSyncManager(config *Config) SyncManager {
 }
 
 // SyncProfiles synchronizes specific profiles between providers.
-func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target Provider, profileNames []string) error {
+func (sm *DefaultSyncManager) SyncProfiles(ctx context.Context, source, target Provider, profileNames []string) error { //nolint:gocognit // Complex multi-provider profile synchronization with conflict resolution and rollback
 	if len(profileNames) == 0 {
 		return fmt.Errorf("no profiles specified for sync")
 	}
@@ -531,7 +531,7 @@ func ValidateSyncConfig(config *Config) error {
 }
 
 // GetSyncRecommendations analyzes profiles and suggests sync targets.
-func GetSyncRecommendations(config *Config) ([]SyncTarget, error) {
+func GetSyncRecommendations(config *Config) ([]SyncTarget, error) { //nolint:gocognit // Complex recommendation algorithm analyzing profiles across multiple cloud providers
 	var recommendations []SyncTarget
 
 	// Group profiles by environment

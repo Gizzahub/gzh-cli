@@ -478,7 +478,7 @@ func (dm *DockerNetworkManager) DetectDockerComposeProjects() ([]string, error) 
 }
 
 // CreateProfileFromCompose creates a network profile from an existing Docker Compose file.
-func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileName string) error { //nolint:gocognit // Complex Docker Compose profile creation with network parsing
+func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileName string) error { //nolint:gocognit,gocyclo // Complex Docker Compose profile creation with network parsing and multiple configuration paths
 	if _, err := os.Stat(composePath); os.IsNotExist(err) {
 		return fmt.Errorf("docker Compose file not found: %s", composePath)
 	}

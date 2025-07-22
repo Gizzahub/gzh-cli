@@ -638,7 +638,7 @@ func (cd *ContainerDetector) detectRunningContainers(ctx context.Context, runtim
 }
 
 // inspectContainer gets detailed container information.
-func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime ContainerRuntime, containerID string) (*DetectedContainer, error) { //nolint:gocognit // Complex container inspection - requires architectural refactoring
+func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime ContainerRuntime, containerID string) (*DetectedContainer, error) { //nolint:gocognit,gocyclo // Complex container inspection with multiple runtime support - requires architectural refactoring
 	cmd := exec.CommandContext(ctx, string(runtime), "inspect", containerID)
 
 	output, err := cmd.Output()
@@ -983,7 +983,7 @@ func (cd *ContainerDetector) detectNetworks(ctx context.Context, runtime Contain
 }
 
 // inspectNetwork gets detailed network information.
-func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime ContainerRuntime, networkID string) (*DetectedNetwork, error) { //nolint:gocognit // Complex network inspection with multiple runtime support
+func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime ContainerRuntime, networkID string) (*DetectedNetwork, error) { //nolint:gocognit,gocyclo // Complex network inspection with multiple runtime support and branching logic
 	cmd := exec.CommandContext(ctx, string(runtime), "network", "inspect", networkID)
 
 	output, err := cmd.Output()
@@ -1131,7 +1131,7 @@ func (cd *ContainerDetector) mergeNetworkInfo(basic DetectedNetwork, detailed *D
 }
 
 // detectComposeProjects detects Docker Compose projects.
-func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime ContainerRuntime) ([]ComposeProject, error) { //nolint:gocognit // Complex compose project detection logic
+func (cd *ContainerDetector) detectComposeProjects(ctx context.Context, runtime ContainerRuntime) ([]ComposeProject, error) { //nolint:gocognit,gocyclo // Complex compose project detection logic with multiple parsing branches
 	// Only supported for Docker and Podman with compose
 	if runtime != Docker && runtime != Podman {
 		return []ComposeProject{}, nil
@@ -1362,7 +1362,7 @@ func (cd *ContainerDetector) detectKubernetesInfo(ctx context.Context) (*Kuberne
 }
 
 // getKubernetesNodes gets Kubernetes node information.
-func (cd *ContainerDetector) getKubernetesNodes(ctx context.Context) ([]KubernetesNode, error) { //nolint:gocognit // Complex Kubernetes node detection with multiple API calls
+func (cd *ContainerDetector) getKubernetesNodes(ctx context.Context) ([]KubernetesNode, error) { //nolint:gocognit,gocyclo // Complex Kubernetes node detection with multiple API calls and status checks
 	cmd := exec.CommandContext(ctx, "kubectl", "get", "nodes", "-o", "json")
 
 	output, err := cmd.Output()

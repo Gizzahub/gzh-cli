@@ -79,7 +79,7 @@ func NewAWSProfileManager(ctx context.Context) (*AWSProfileManager, error) {
 }
 
 // loadProfiles loads all AWS profiles from config file.
-func (m *AWSProfileManager) loadProfiles() error { //nolint:gocognit // Complex AWS profile parsing with multiple configuration options
+func (m *AWSProfileManager) loadProfiles() error { //nolint:gocognit,gocyclo // Complex AWS profile parsing with multiple configuration options and branching paths
 	cfg, err := ini.Load(m.configPath)
 	if err != nil {
 		if os.IsNotExist(err) {

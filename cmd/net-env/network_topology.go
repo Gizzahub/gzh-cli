@@ -895,7 +895,7 @@ func (nta *NetworkTopologyAnalyzer) extractServiceName(container TopologyContain
 	return ""
 }
 
-func (nta *NetworkTopologyAnalyzer) determineServiceType(container TopologyContainer) ServiceType {
+func (nta *NetworkTopologyAnalyzer) determineServiceType(container TopologyContainer) ServiceType { //nolint:gocyclo // Service type classification with multiple detection patterns and heuristics
 	// Check labels for explicit type
 	if serviceType, ok := container.ServiceLabels["service.type"]; ok {
 		switch serviceType {

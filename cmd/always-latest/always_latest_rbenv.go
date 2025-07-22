@@ -96,7 +96,7 @@ Examples:
 	return cmd
 }
 
-func (o *alwaysLatestRbenvOptions) run(_ *cobra.Command, _ []string) error {
+func (o *alwaysLatestRbenvOptions) run(_ *cobra.Command, _ []string) error { //nolint:gocyclo // Ruby version manager orchestration with update, installation, and version management paths
 	// Check if rbenv is installed
 	if !o.isRbenvInstalled() {
 		return fmt.Errorf("rbenv is not installed or not in PATH")

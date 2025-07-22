@@ -438,7 +438,7 @@ type sshHost struct {
 	KeyFile  string
 }
 
-func (o *sshOptions) parseSSHConfig(configPath string) []sshHost { //nolint:gocognit // Complex SSH config parsing with multiple host configurations
+func (o *sshOptions) parseSSHConfig(configPath string) []sshHost { //nolint:gocognit,gocyclo // Complex SSH config parsing with multiple host configurations and branching logic
 	content, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil

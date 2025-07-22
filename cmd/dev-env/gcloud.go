@@ -544,7 +544,7 @@ func (o *gcloudOptions) parseGcloudConfigurations(configurationsPath string) ([]
 	return configurations, nil
 }
 
-func (o *gcloudOptions) parseGcloudProperties(propertiesPath string, config *gcloudConfiguration) error { //nolint:gocognit // Complex gcloud properties parsing logic
+func (o *gcloudOptions) parseGcloudProperties(propertiesPath string, config *gcloudConfiguration) error { //nolint:gocognit,gocyclo // Complex gcloud properties parsing logic with multiple configuration branches
 	content, err := os.ReadFile(propertiesPath)
 	if err != nil {
 		return err

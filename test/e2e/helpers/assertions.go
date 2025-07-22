@@ -201,12 +201,12 @@ func (a *ConfigAssertions) HasField(fieldPath string) *ConfigAssertions {
 
 		if i < len(fields)-1 {
 			// Not the last field, should be a map
-			if nextMap, ok := value.(map[string]interface{}); ok {
-				current = nextMap
-			} else {
+			nextMap, ok := value.(map[string]interface{})
+			if !ok {
 				a.t.Errorf("Field %s is not a map (required for nested access)", field)
 				return a
 			}
+			current = nextMap
 		}
 	}
 

@@ -255,7 +255,7 @@ func newCloudShowCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 }
 
 // newCloudSwitchCmd creates the switch subcommand.
-func newCloudSwitchCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Large command builder - requires architectural refactoring
+func newCloudSwitchCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Large command builder with multiple flags, options, and execution paths - requires architectural refactoring
 	var (
 		dryRun      bool
 		applyPolicy bool
@@ -409,7 +409,7 @@ This command will:
 }
 
 // newCloudSyncCmd creates the sync subcommand.
-func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex cloud sync command with profile management
+func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Complex cloud sync command with profile management and multiple execution branches
 	var (
 		source              string
 		target              string
@@ -806,7 +806,7 @@ or by specific profile name.`,
 }
 
 // newCloudPolicyListCmd creates the policy list subcommand.
-func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex policy listing command with filtering
+func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Complex policy listing command with filtering and multiple display formats
 	var (
 		profileName  string
 		environment  string

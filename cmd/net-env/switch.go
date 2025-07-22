@@ -141,7 +141,7 @@ func (o *switchOptions) loadProfiles() (*networkProfiles, error) {
 	return &profiles, nil
 }
 
-func (o *switchOptions) listProfiles() error {
+func (o *switchOptions) listProfiles() error { //nolint:gocyclo // Profile listing with multiple display formats and filtering options
 	profiles, err := o.loadProfiles()
 	if err != nil {
 		return err

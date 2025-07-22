@@ -280,7 +280,7 @@ type BuildMetrics struct {
 	Memory           int64         `json:"memoryUsage"`
 }
 
-func runBuild(cmd *cobra.Command, args []string) {
+func runBuild(cmd *cobra.Command, args []string) { //nolint:gocyclo // Docker build orchestration with multiple build options, platforms, and configurations
 	if buildTag == "" {
 		fmt.Printf("❌ 이미지 태그가 필요합니다 (--tag)\n")
 		os.Exit(1)

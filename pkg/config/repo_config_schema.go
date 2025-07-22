@@ -251,7 +251,7 @@ func LoadRepoConfig(path string) (*RepoConfig, error) {
 }
 
 // expandRepoConfigEnvVars expands environment variables in the configuration.
-func expandRepoConfigEnvVars(config *RepoConfig) {
+func expandRepoConfigEnvVars(config *RepoConfig) { //nolint:gocognit // Complex environment variable expansion across nested configuration structures
 	// Expand environment variables in webhook URLs and secrets
 	if config.Templates != nil {
 		for _, template := range config.Templates {
@@ -406,7 +406,7 @@ func (rc *RepoConfig) ValidateTemplateOverrides() []string {
 }
 
 // checkTemplateConflicts identifies potential conflicts between derived and base templates.
-func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []string {
+func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []string { //nolint:gocognit // Comprehensive template conflict analysis across security, branch protection, and workflow settings
 	var conflicts []string
 
 	// Check security settings conflicts

@@ -168,7 +168,7 @@ func (sm *StateManager) ListStates() ([]CloneState, error) {
 		return nil, fmt.Errorf("failed to read state directory: %w", err)
 	}
 
-	var states []CloneState
+	states := make([]CloneState, 0, len(entries))
 
 	for _, entry := range entries {
 		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
