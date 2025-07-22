@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+
 // GCPProject represents a GCP project configuration.
 type GCPProject struct {
 	ID             string            `json:"id"`
@@ -543,20 +544,20 @@ func (m *GCPProjectManager) listProjects(format string) error {
 	})
 
 	switch format {
-	case "json":
+	case outputFormatJSON:
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
 
 		return encoder.Encode(projects)
 
-	case "table":
+	case outputFormatTable:
 		table := tablewriter.NewWriter(os.Stdout)
 		table.Header("Project ID", "Name", "State", "Account", "Region", "Active")
 
 		for _, project := range projects {
 			active := ""
 			if project.IsActive {
-				active = "✓"
+				active = statusActive
 			}
 
 			_ = table.Append([]string{ //nolint:errcheck // Table operations are non-critical for CLI display
@@ -695,13 +696,13 @@ func (m *GCPProjectManager) showProject(projectID string, format string) error {
 	}
 
 	switch format {
-	case "json":
+	case outputFormatJSON:
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
 
 		return encoder.Encode(project)
 
-	case "table":
+	case outputFormatTable:
 		fmt.Printf("Project Details\n")
 		fmt.Printf("===============\n")
 		fmt.Printf("ID:               %s\n", project.ID)
@@ -890,7 +891,7 @@ func (m *GCPProjectManager) listConfigurations() error {
 	for _, config := range m.configurations {
 		active := ""
 		if config.IsActive {
-			active = "✓"
+			active = statusActive
 		}
 
 		_ = table.Append( //nolint:errcheck // Table operations are non-critical for CLI display

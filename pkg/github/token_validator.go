@@ -209,10 +209,7 @@ func (tv *TokenValidator) getTokenInfo(ctx context.Context) (*TokenInfo, error) 
 	}
 
 	// Determine token type and scopes
-	err = tv.detectTokenType(ctx, info)
-	if err != nil {
-		return nil, fmt.Errorf("failed to detect token type: %w", err)
-	}
+	tv.detectTokenType(ctx, info)
 
 	return info, nil
 }
@@ -262,7 +259,7 @@ func (tv *TokenValidator) getRateLimit(ctx context.Context) (*RateLimitInfo, err
 }
 
 // detectTokenType determines if the token is classic or fine-grained.
-func (tv *TokenValidator) detectTokenType(_ context.Context, info *TokenInfo) error {
+func (tv *TokenValidator) detectTokenType(_ context.Context, info *TokenInfo) {
 	// Try to get the token's scopes from the response headers
 	// This is a simplified implementation - in reality, you'd need to check headers from authenticated requests
 
@@ -275,8 +272,6 @@ func (tv *TokenValidator) detectTokenType(_ context.Context, info *TokenInfo) er
 		level := tv.scopeToPermissionLevel(scope)
 		info.Permissions[scope] = level
 	}
-
-	return nil
 }
 
 // scopeToPermissionLevel converts a scope string to permission level.

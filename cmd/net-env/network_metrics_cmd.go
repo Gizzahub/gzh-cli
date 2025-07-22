@@ -259,7 +259,8 @@ func newNetworkMetricsReportCmd(logger *zap.Logger, configDir string) *cobra.Com
 				return saveReport(report, outputFile, format)
 			}
 
-			return printPerformanceReport(report)
+			printPerformanceReport(report)
+			return nil
 		},
 	}
 
@@ -294,7 +295,8 @@ func newNetworkMetricsOptimizeCmd(logger *zap.Logger, configDir string) *cobra.C
 				return fmt.Errorf("failed to analyze network: %w", err)
 			}
 
-			return printOptimizationRecommendations(recommendations, apply)
+			printOptimizationRecommendations(recommendations, apply)
+			return nil
 		},
 	}
 
@@ -998,7 +1000,7 @@ func printBandwidthUsage(trends []BandwidthTrend) error {
 	return w.Flush()
 }
 
-func printPerformanceReport(report *PerformanceReport) error {
+func printPerformanceReport(report *PerformanceReport) {
 	fmt.Printf("📊 Network Performance Report\n\n")
 	fmt.Printf("Generated: %s\n", report.GeneratedAt.Format("2006-01-02 15:04:05"))
 	fmt.Printf("Duration: %s\n\n", report.Duration)
@@ -1023,16 +1025,14 @@ func printPerformanceReport(report *PerformanceReport) error {
 	// Recommendations
 	if len(report.Recommendations) > 0 {
 		fmt.Printf("💡 Optimization Recommendations:\n")
-		_ = printOptimizationRecommendations(report.Recommendations, false)
+		printOptimizationRecommendations(report.Recommendations, false)
 	}
-
-	return nil
 }
 
-func printOptimizationRecommendations(recommendations []OptimizationRecommendation, applied bool) error {
+func printOptimizationRecommendations(recommendations []OptimizationRecommendation, applied bool) {
 	if len(recommendations) == 0 {
 		fmt.Println("No optimization recommendations at this time.")
-		return nil
+		return
 	}
 
 	for i, rec := range recommendations {
@@ -1056,8 +1056,6 @@ func printOptimizationRecommendations(recommendations []OptimizationRecommendati
 
 		fmt.Println()
 	}
-
-	return nil
 }
 
 func saveReport(report *PerformanceReport, filename, format string) error {

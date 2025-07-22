@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+
 type dockerOptions struct {
 	name        string
 	description string
@@ -368,7 +369,7 @@ func (o *dockerOptions) loadMetadata(name string) dockerMetadata {
 		switch key {
 		case "description":
 			metadata.Description = value
-		case "saved_at":
+		case metadataKeySavedAt:
 			if t, err := time.Parse(time.RFC3339, value); err == nil {
 				metadata.SavedAt = t
 			}

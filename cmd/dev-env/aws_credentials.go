@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+
 type awsCredentialsOptions struct {
 	name        string
 	description string
@@ -384,13 +385,13 @@ func (o *awsCredentialsOptions) loadMetadata(name string) awsCredentialsMetadata
 
 		key, value := parts[0], parts[1]
 		switch key {
-		case "description":
+		case metadataKeyDescription:
 			metadata.Description = value
 		case "saved_at":
 			if t, err := time.Parse(time.RFC3339, value); err == nil {
 				metadata.SavedAt = t
 			}
-		case "source_path":
+		case metadataKeySourcePath:
 			metadata.SourcePath = value
 		}
 	}
