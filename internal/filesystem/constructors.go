@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package filesystem provides file system operations and utilities for managing files and directories.
 package filesystem
 
 import (

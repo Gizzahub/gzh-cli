@@ -83,6 +83,7 @@ func (g *GitHubProviderAdapter) SetToken(token string) {
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		if err := g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token); err != nil {
 			// Environment variable setting failed - log but don't fail the operation
+			fmt.Printf("Warning: failed to set GitHub token environment variable: %v\n", err)
 		}
 	}
 }
@@ -169,6 +170,7 @@ func (g *GitLabProviderAdapter) SetToken(token string) {
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		if err := g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token); err != nil {
 			// Environment variable setting failed - log but don't fail the operation
+			fmt.Printf("Warning: failed to set GitLab token environment variable: %v\n", err)
 		}
 	}
 }
@@ -255,6 +257,7 @@ func (g *GiteaProviderAdapter) SetToken(token string) {
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		if err := g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token); err != nil {
 			// Environment variable setting failed - log but don't fail the operation
+			fmt.Printf("Warning: failed to set Gitea token environment variable: %v\n", err)
 		}
 	}
 }
