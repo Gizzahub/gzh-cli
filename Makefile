@@ -3,15 +3,17 @@ executablename?=gz
 export GOPROXY=https://proxy.golang.org,direct
 export GOSUMDB=sum.golang.org
 
+# Include lint-related targets
+include Makefile.lint.mk
+
+# Include dependency management targets
+include Makefile.deps.mk
+
 default: help
 
 .PHONY: help
 help: ## list makefile targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-depup: ## update dependencies
-	go mod tidy
-	go get -u ./...
 
 .PHONY: build
 build: ## build golang binary
@@ -138,80 +140,9 @@ test-e2e-ide: build ## run IDE E2E tests only
 .PHONY: test-all
 test-all: test test-docker test-e2e ## run all tests (unit, integration, e2e)
 
-PHONY: fmt
-fmt: ## format go files
-	gofumpt -w .
-	gci write .
 
-PHONY: lint
-lint: ## lint go files
-	golangci-lint run -c .golangci.yml --fix
 
-PHONY: format
-format: ## format go files (alias for lint)
-	golangci-lint run -c .golangci.yml --fix
 
-.PHONY: security
-security: ## run security analysis with gosec
-	@echo "Running security analysis..."
-	@command -v gosec >/dev/null 2>&1 || { echo "gosec not found. Installing..."; go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
-	@gosec -config=.gosec.yaml ./...
-
-.PHONY: security-json
-security-json: ## run security analysis and output JSON report
-	@echo "Running security analysis with JSON output..."
-	@command -v gosec >/dev/null 2>&1 || { echo "gosec not found. Installing..."; go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
-	@gosec -fmt=json -out=gosec-report.json -config=.gosec.yaml ./...
-
-.PHONY: generate-mocks
-generate-mocks: ## generate all mock files using gomock
-	@echo "Generating mocks..."
-	@command -v mockgen >/dev/null 2>&1 || { echo "mockgen not found. Installing..."; go install go.uber.org/mock/mockgen@latest; }
-	@mockgen -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks
-	@mockgen -source=internal/filesystem/interfaces.go -destination=internal/filesystem/mocks/filesystem_mocks.go -package=mocks
-	@mockgen -source=internal/httpclient/interfaces.go -destination=internal/httpclient/mocks/httpclient_mocks.go -package=mocks
-	@mockgen -source=internal/git/interfaces.go -destination=internal/git/mocks/git_mocks.go -package=mocks
-	@echo "Mock generation complete!"
-
-.PHONY: clean-mocks
-clean-mocks: ## remove all generated mock files
-	@echo "Cleaning generated mocks..."
-	@rm -f pkg/github/mocks/github_mocks.go
-	@rm -f internal/filesystem/mocks/filesystem_mocks.go
-	@rm -f internal/httpclient/mocks/httpclient_mocks.go
-	@rm -f internal/git/mocks/git_mocks.go
-	@echo "Mock cleanup complete!"
-
-.PHONY: regenerate-mocks
-regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
-
-.PHONY: pre-commit-install
-pre-commit-install: ## install pre-commit hooks
-	@echo "Installing pre-commit hooks..."
-	@command -v pre-commit >/dev/null 2>&1 || { echo "pre-commit not found. Install with: pip install pre-commit"; exit 1; }
-	@./scripts/setup-git-hooks.sh
-
-.PHONY: pre-commit
-pre-commit:	## run pre-commit hooks
-	pre-commit run --all-files
-
-.PHONY: pre-push
-pre-push: ## run pre-push hooks (same as pre-commit for consistency)
-	pre-commit run --all-files --hook-stage pre-push
-
-.PHONY: lint-all
-lint-all: fmt lint pre-commit ## run all linting steps (format, lint, pre-commit)
-
-.PHONY: check-consistency
-check-consistency: ## verify lint configuration consistency
-	@echo "Checking lint configuration consistency..."
-	@echo "✓ Makefile uses: .golangci.yml"
-	@grep -q "\.golangci\.yml" .pre-commit-config.yaml && echo "✓ Pre-commit uses: .golangci.yml" || echo "✗ Pre-commit config mismatch"
-	@echo "✓ All configurations aligned"
-
-.PHONY: pre-commit-update
-pre-commit-update: ## update pre-commit hooks to latest versions
-	pre-commit autoupdate
 
 .PHONY: release-dry-run
 release-dry-run: ## run goreleaser in dry-run mode
@@ -241,36 +172,6 @@ deploy: release-dry-run ## alias for release-dry-run
 
 ## Development Workflow Targets
 
-.PHONY: dev
-dev: fmt lint test ## run standard development workflow (format, lint, test)
-
-.PHONY: dev-fast
-dev-fast: fmt test-unit ## quick development cycle (format and unit tests only)
-
-.PHONY: verify
-verify: fmt lint test cover-report check-consistency ## complete verification before PR
-
-.PHONY: deps-check
-deps-check: ## check for outdated dependencies
-	@echo "Checking for outdated dependencies..."
-	@go list -u -m all | grep '\[' || echo "All dependencies are up to date"
-
-.PHONY: deps-upgrade
-deps-upgrade: ## upgrade all dependencies to latest versions
-	@echo "Upgrading all dependencies..."
-	@go get -u ./...
-	@go mod tidy
-
-.PHONY: deps-verify
-deps-verify: ## verify dependency checksums
-	@echo "Verifying dependency checksums..."
-	@go mod verify
-
-.PHONY: deps-why
-deps-why: ## show why a module is needed (usage: make deps-why MOD=github.com/pkg/errors)
-	@go mod why -m $(MOD)
-
-.PHONY: deps-graph
 deps-graph: ## show module dependency graph
 	@go mod graph
 
@@ -300,30 +201,6 @@ docs-check: ## check for missing package documentation
 		fi; \
 	done
 
-## Code Analysis Targets
-
-.PHONY: complexity
-complexity: ## analyze code complexity
-	@echo "Analyzing code complexity..."
-	@command -v gocyclo >/dev/null 2>&1 || { echo "gocyclo not found. Installing..."; go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; }
-	@gocyclo -over 10 -avg .
-
-.PHONY: ineffassign
-ineffassign: ## detect ineffectual assignments
-	@echo "Checking for ineffectual assignments..."
-	@command -v ineffassign >/dev/null 2>&1 || { echo "ineffassign not found. Installing..."; go install github.com/gordonklaus/ineffassign@latest; }
-	@ineffassign ./...
-
-.PHONY: dupl
-dupl: ## find duplicate code
-	@echo "Checking for duplicate code..."
-	@command -v dupl >/dev/null 2>&1 || { echo "dupl not found. Installing..."; go install github.com/mibk/dupl@latest; }
-	@dupl -threshold 50 .
-
-.PHONY: vuln
-vuln: ## check for known vulnerabilities
-	@echo "Checking for known vulnerabilities..."
-	@go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 ## Benchmarking Targets
 
@@ -342,45 +219,26 @@ bench-compare: ## compare benchmark results (requires benchstat)
 
 ## Quick Commands
 
-.PHONY: todo
-todo: ## show all TODO comments in codebase
+.PHONY: comments
+comments: ## show all TODO/FIXME/NOTE comments in codebase
+	@echo "=== TODO comments ==="
 	@grep -r "TODO" --include="*.go" . | grep -v vendor | grep -v .git || echo "No TODOs found!"
-
-.PHONY: fixme
-fixme: ## show all FIXME comments in codebase
+	@echo ""
+	@echo "=== FIXME comments ==="
 	@grep -r "FIXME" --include="*.go" . | grep -v vendor | grep -v .git || echo "No FIXMEs found!"
-
-.PHONY: notes
-notes: ## show all NOTE comments in codebase
+	@echo ""
+	@echo "=== NOTE comments ==="
 	@grep -r "NOTE" --include="*.go" . | grep -v vendor | grep -v .git || echo "No NOTEs found!"
 
+# Aliases for backward compatibility
+.PHONY: todo fixme notes
+todo: comments ## show all TODO comments (alias for comments)
+fixme: comments ## show all FIXME comments (alias for comments)
+notes: comments ## show all NOTE comments (alias for comments)
+
 ## CI/CD Helpers
-
-.PHONY: ci-local
-ci-local: clean verify test-all ## run full CI pipeline locally
-
-.PHONY: pr-check
-pr-check: fmt lint test cover-report check-consistency ## pre-PR submission check
 
 .PHONY: changelog
 changelog: ## generate changelog (requires git-chglog)
 	@command -v git-chglog >/dev/null 2>&1 || { echo "git-chglog not found. Install from: https://github.com/git-chglog/git-chglog"; exit 1; }
 	@git-chglog -o CHANGELOG.md
-
-## Module Management
-
-.PHONY: mod-tidy-check
-mod-tidy-check: ## check if go.mod and go.sum are tidy
-	@echo "Checking if go.mod is tidy..."
-	@cp go.mod go.mod.bak
-	@cp go.sum go.sum.bak
-	@go mod tidy
-	@if ! diff -q go.mod go.mod.bak >/dev/null || ! diff -q go.sum go.sum.bak >/dev/null; then \
-		echo "❌ go.mod or go.sum is not tidy. Run 'go mod tidy'"; \
-		mv go.mod.bak go.mod; \
-		mv go.sum.bak go.sum; \
-		exit 1; \
-	else \
-		echo "✅ go.mod is tidy"; \
-		rm go.mod.bak go.sum.bak; \
-	fi
