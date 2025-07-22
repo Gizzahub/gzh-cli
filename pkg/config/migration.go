@@ -162,6 +162,9 @@ func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkClone
 		Organizations: []*OrganizationConfig{},
 	}
 
+	// Track if we're processing deprecated configurations
+	_ = warnings // Parameter reserved for future warning messages
+
 	hasGitHubConfig := false
 
 	// Convert from repo_roots

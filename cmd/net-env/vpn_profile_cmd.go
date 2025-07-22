@@ -528,9 +528,7 @@ func createVPNProfileManager(_ context.Context, logger *zap.Logger, configDir st
 	}
 
 	// Load existing profiles
-	if err := manager.loadProfiles(); err != nil {
-		logger.Warn("Failed to load VPN profiles", zap.Error(err))
-	}
+	manager.loadProfiles()
 
 	return manager, nil
 }
@@ -663,15 +661,14 @@ func (vpm *VPNProfileManager) SwitchToProfile(ctx context.Context, profileName s
 	return nil
 }
 
-func (vpm *VPNProfileManager) loadProfiles() error {
+func (vpm *VPNProfileManager) loadProfiles() {
 	configPath := filepath.Join(vpm.configDir, "vpn-profiles.json")
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return nil // Config file doesn't exist, that's ok
+		return // Config file doesn't exist, that's ok
 	}
 
 	// TODO: Implement JSON profile loading
-	return nil
 }
 
 func (vpm *VPNProfileManager) saveProfiles() error {
