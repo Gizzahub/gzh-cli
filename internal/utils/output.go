@@ -79,7 +79,7 @@ func (of *OutputFormatter) Debug(format string, args ...interface{}) {
 }
 
 // ProgressBar creates a new progress bar.
-func (of *OutputFormatter) ProgressBar(max int, description string) *progressbar.ProgressBar {
+func (of *OutputFormatter) ProgressBar(maxValue int, description string) *progressbar.ProgressBar {
 	options := []progressbar.Option{
 		progressbar.OptionSetDescription(description),
 		progressbar.OptionSetWidth(50),
@@ -100,7 +100,7 @@ func (of *OutputFormatter) ProgressBar(max int, description string) *progressbar
 		}))
 	}
 
-	return progressbar.NewOptions(max, options...)
+	return progressbar.NewOptions(maxValue, options...)
 }
 
 // Table formats data as a simple table.

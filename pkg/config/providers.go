@@ -147,6 +147,7 @@ func (g *GiteaCloner) CloneOrganization(orgName, targetPath, strategy string) er
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		if err := g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token); err != nil {
 			// Environment variable setting failed - log but don't fail the operation
+			fmt.Printf("Warning: failed to set Gitea token environment variable: %v\n", err)
 		}
 	}
 	// Use the new provider service interface

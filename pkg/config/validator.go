@@ -76,7 +76,7 @@ func (v *Validator) validateVersion(version string) {
 	}
 
 	// Validate semantic version format (major.minor.patch)
-	versionRegex := regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
+	versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 	if !versionRegex.MatchString(version) {
 		v.addError(fmt.Sprintf("invalid version format '%s', expected semantic version (e.g., '1.0.0')", version))
 	}

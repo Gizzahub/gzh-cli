@@ -134,13 +134,13 @@ func TestGcloudCredentialsSaveLoad(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create credentials.db (mock file)
-	credDbPath := filepath.Join(configDir, "credentials.db")
-	err = os.WriteFile(credDbPath, []byte("mock credentials database"), 0o600)
+	credDBPath := filepath.Join(configDir, "credentials.db")
+	err = os.WriteFile(credDBPath, []byte("mock credentials database"), 0o600)
 	require.NoError(t, err)
 
 	// Create access_tokens.db (mock file)
-	tokensDbPath := filepath.Join(configDir, "access_tokens.db")
-	err = os.WriteFile(tokensDbPath, []byte("mock access tokens database"), 0o600)
+	tokensDBPath := filepath.Join(configDir, "access_tokens.db")
+	err = os.WriteFile(tokensDBPath, []byte("mock access tokens database"), 0o600)
 	require.NoError(t, err)
 
 	t.Run("save gcloud credentials", func(t *testing.T) {
@@ -175,8 +175,8 @@ func TestGcloudCredentialsSaveLoad(t *testing.T) {
 		savedLegacyDir := filepath.Join(savedPath, "legacy_credentials")
 		assert.DirExists(t, savedLegacyDir)
 
-		savedCredDbPath := filepath.Join(savedPath, "credentials.db")
-		assert.FileExists(t, savedCredDbPath)
+		savedCredDBPath := filepath.Join(savedPath, "credentials.db")
+		assert.FileExists(t, savedCredDBPath)
 
 		// Check file permissions (should be 0600 for security)
 		adcInfo, err := os.Stat(savedAdcPath)

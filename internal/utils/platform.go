@@ -99,7 +99,7 @@ func GetExecutableName(name string) string {
 }
 
 // GetShellCommand returns the appropriate shell command for the platform.
-func GetShellCommand() (string, []string) {
+func GetShellCommand() (command string, args []string) {
 	switch runtime.GOOS {
 	case platformWindows:
 		return "cmd", []string{"/C"}
@@ -190,11 +190,11 @@ func GetBackupLocations(appName string) []string {
 		locations = append(locations, filepath.Join(configDir, appName, "backup"))
 	}
 
-	// Temporary directory backup
-	locations = append(locations, filepath.Join(GetTempDir(), appName+"-backup"))
-
-	// Current directory backup
-	locations = append(locations, "./backup")
+	// Temporary directory backup and current directory backup
+	locations = append(locations,
+		filepath.Join(GetTempDir(), appName+"-backup"),
+		"./backup",
+	)
 
 	return locations
 }

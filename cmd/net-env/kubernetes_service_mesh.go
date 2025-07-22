@@ -1004,7 +1004,7 @@ func (km *KubernetesNetworkManager) applyLinkerdServiceProfile(namespace, name s
 }
 
 // GenerateLinkerdTrafficSplit generates a Linkerd TrafficSplit manifest.
-func (km *KubernetesNetworkManager) GenerateLinkerdTrafficSplit(namespace string, name string, ts *LinkerdTrafficSplit) (map[string]interface{}, error) {
+func (km *KubernetesNetworkManager) GenerateLinkerdTrafficSplit(namespace, name string, ts *LinkerdTrafficSplit) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "split.smi-spec.io/v1alpha1",
 		"kind":       "TrafficSplit",

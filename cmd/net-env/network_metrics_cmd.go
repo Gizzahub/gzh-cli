@@ -786,16 +786,16 @@ func (nmc *NetworkMetricsCollector) pingTarget(_ context.Context, target string,
 
 					parts := strings.Split(statsStr, "/")
 					if len(parts) >= 3 {
-						if min, err := time.ParseDuration(parts[0] + "ms"); err == nil {
-							result.MinLatency = min
+						if minLatency, err := time.ParseDuration(parts[0] + "ms"); err == nil {
+							result.MinLatency = minLatency
 						}
 
 						if avg, err := time.ParseDuration(parts[1] + "ms"); err == nil {
 							result.AvgLatency = avg
 						}
 
-						if max, err := time.ParseDuration(parts[2] + "ms"); err == nil {
-							result.MaxLatency = max
+						if maxLatency, err := time.ParseDuration(parts[2] + "ms"); err == nil {
+							result.MaxLatency = maxLatency
 						}
 
 						if len(parts) >= 4 {

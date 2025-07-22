@@ -49,7 +49,7 @@ func TestRequestDeduplicator(t *testing.T) {
 
 		var mu sync.Mutex
 
-		testFunc := func(_ context.Context) (interface{}, error) {
+		testFunc := func(_ context.Context) (interface{}, error) { //nolint:unparam // Error always nil in test, but signature required by interface
 			mu.Lock()
 
 			callCount++
@@ -59,7 +59,7 @@ func TestRequestDeduplicator(t *testing.T) {
 
 			time.Sleep(50 * time.Millisecond) // Simulate longer API call
 
-			return fmt.Sprintf("result-%d", currentCall), nil
+			return fmt.Sprintf("result-%d", currentCall), nil // Test function never errors
 		}
 
 		ctx := context.Background()

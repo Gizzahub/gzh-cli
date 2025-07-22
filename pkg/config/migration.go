@@ -95,13 +95,8 @@ func (m *ConfigMigrator) MigrateFromBulkClone() (*MigrationResult, error) {
 }
 
 // convertBulkCloneToUnified converts bulk-clone.yaml format to unified format.
-func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) (*UnifiedConfig, []string, []string) {
-	config := DefaultUnifiedConfig()
-
-	var (
-		warnings []string
-		actions  []string
-	)
+func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) (config *UnifiedConfig, warnings []string, actions []string) {
+	config = DefaultUnifiedConfig()
 
 	// Set migration information
 	config.Migration = &MigrationInfo{
@@ -121,9 +116,9 @@ func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneCo
 
 	// Convert default provider (infer from configured providers)
 	if legacy.Default.Github.RootPath != "" || len(legacy.RepoRoots) > 0 {
-		config.DefaultProvider = "github"
+		config.DefaultProvider = ProviderGitHub
 	} else if legacy.Default.Gitlab.RootPath != "" {
-		config.DefaultProvider = "gitlab"
+		config.DefaultProvider = ProviderGitLab
 	}
 
 	// Convert global ignore patterns
@@ -156,7 +151,8 @@ func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneCo
 }
 
 // convertGitHubConfigurations converts GitHub-specific configurations.
-func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error {
+// Note: Currently always returns nil, but maintains error interface for future validation.
+func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
 	githubProvider := &ProviderConfig{
 		Token:         "${GITHUB_TOKEN}",
 		Organizations: []*OrganizationConfig{},
@@ -217,7 +213,8 @@ func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkClone
 }
 
 // convertGitLabConfigurations converts GitLab-specific configurations.
-func (m *ConfigMigrator) convertGitLabConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error {
+// Note: Currently always returns nil, but maintains error interface for future validation.
+func (m *ConfigMigrator) convertGitLabConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
 	if legacy.Default.Gitlab.RootPath == "" {
 		return nil // No GitLab configuration
 	}

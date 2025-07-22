@@ -102,7 +102,7 @@ func expandPath(path string) string {
 
 // expandPathWithEnv expands ~ to home directory and resolves relative paths using the provided environment.
 func expandPathWithEnv(path string, environment env.Environment) string {
-	if len(path) > 0 && path[0] == '~' {
+	if path != "" && path[0] == '~' {
 		// Try to get home directory from environment first
 		homeDir := environment.Get(env.CommonEnvironmentKeys.HomeDir)
 		if homeDir == "" {

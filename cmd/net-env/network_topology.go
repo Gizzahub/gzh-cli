@@ -1176,7 +1176,7 @@ func (nta *NetworkTopologyAnalyzer) exportToDOT(topology *NetworkTopology) []byt
 
 	// Add containers as nodes
 	for _, container := range topology.Containers {
-		dot.WriteString(fmt.Sprintf("  \"%s\" [label=\"%s\\n%s\" shape=box style=filled fillcolor=lightblue];\n",
+		dot.WriteString(fmt.Sprintf("  %q [label=\"%s\\n%s\" shape=box style=filled fillcolor=lightblue];\n",
 			container.ID[:12], container.Name, container.Image))
 	}
 
