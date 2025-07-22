@@ -172,14 +172,18 @@ func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup environment variables
+			var envKeys []string
 			if tt.setupEnv != nil {
 				for key, value := range tt.setupEnv {
 					_ = os.Setenv(key, value) //nolint:errcheck // Test environment setup
-					defer func(k string) {
-						_ = os.Unsetenv(k) //nolint:errcheck // Test cleanup
-					}(key)
+					envKeys = append(envKeys, key)
 				}
 			}
+			defer func() {
+				for _, key := range envKeys {
+					_ = os.Unsetenv(key) //nolint:errcheck // Test cleanup
+				}
+			}()
 
 			result := validator.ValidateUnifiedConfig(tt.config)
 

@@ -158,7 +158,7 @@ func TestContainerDetector_CalculateEnvironmentFingerprint(t *testing.T) {
 	logger := zap.NewNop()
 	cd := NewContainerDetector(logger)
 
-	env := &ContainerEnvironment{
+	testEnv := &ContainerEnvironment{
 		PrimaryRuntime:        Docker,
 		OrchestrationPlatform: "standalone",
 		RunningContainers: []DetectedContainer{
@@ -171,24 +171,24 @@ func TestContainerDetector_CalculateEnvironmentFingerprint(t *testing.T) {
 		},
 	}
 
-	fingerprint := cd.CalculateEnvironmentFingerprint(env)
+	fingerprint := cd.CalculateEnvironmentFingerprint(testEnv)
 
 	if fingerprint == "" {
 		t.Error("Fingerprint should not be empty")
 	}
 
 	// Fingerprint should be consistent
-	fingerprint2 := cd.CalculateEnvironmentFingerprint(env)
+	fingerprint2 := cd.CalculateEnvironmentFingerprint(testEnv)
 	if fingerprint != fingerprint2 {
 		t.Error("Fingerprint should be consistent for same environment")
 	}
 
 	// Fingerprint should change when environment changes
-	containerEnv.RunningContainers = append(containerEnv.RunningContainers, DetectedContainer{
+	testEnv.RunningContainers = append(testEnv.RunningContainers, DetectedContainer{
 		ID: "container3", Name: "test3", Image: "postgres:13",
 	})
 
-	fingerprint3 := cd.CalculateEnvironmentFingerprint(env)
+	fingerprint3 := cd.CalculateEnvironmentFingerprint(testEnv)
 	if fingerprint == fingerprint3 {
 		t.Error("Fingerprint should change when environment changes")
 	}
@@ -418,7 +418,7 @@ func BenchmarkContainerDetector_CalculateEnvironmentFingerprint(b *testing.B) {
 	logger := zap.NewNop()
 	cd := NewContainerDetector(logger)
 
-	env := &ContainerEnvironment{
+	testEnv := &ContainerEnvironment{
 		PrimaryRuntime:        Docker,
 		OrchestrationPlatform: "standalone",
 		RunningContainers: []DetectedContainer{
@@ -434,7 +434,7 @@ func BenchmarkContainerDetector_CalculateEnvironmentFingerprint(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_ = cd.CalculateEnvironmentFingerprint(env)
+		_ = cd.CalculateEnvironmentFingerprint(testEnv)
 	}
 }
 

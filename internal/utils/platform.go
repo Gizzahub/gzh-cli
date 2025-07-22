@@ -160,9 +160,9 @@ func GetPlatformSpecificConfig(appName string) ([]string, error) {
 			paths = append(paths, filepath.Join(programData, appName))
 		}
 	case platformDarwin:
-		paths = append(paths, filepath.Join("/Library", "Application Support", appName))
+		paths = append(paths, filepath.Join(string(filepath.Separator), "Library", "Application Support", appName))
 	default:
-		paths = append(paths, filepath.Join("/etc", appName))
+		paths = append(paths, filepath.Join(string(filepath.Separator), "etc", appName))
 	}
 
 	return paths, nil

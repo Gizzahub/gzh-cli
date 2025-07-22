@@ -555,7 +555,7 @@ func TestIntegration_FlattenDirectoryStructure(t *testing.T) {
 	// Test directory resolver with the target
 	resolver := NewDirectoryResolver(target)
 	repoPath := resolver.ResolveRepositoryPath("test-repo")
-	expectedPath := filepath.Join("/tmp/test-repos/github", "test-repo")
+	expectedPath := filepath.Join(string(filepath.Separator), "tmp", "test-repos", "github", "test-repo")
 
 	assert.Equal(t, expectedPath, repoPath)
 

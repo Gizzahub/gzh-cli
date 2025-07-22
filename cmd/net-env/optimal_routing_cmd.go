@@ -992,11 +992,12 @@ func (oro *OptimalRouteOptimizer) testRoute(route *NetworkRoute) {
 	route.QualityScore = oro.calculateQualityScore(route)
 
 	// Update status
-	if latency > 0 && route.PacketLoss < 5 {
+	switch {
+	case latency > 0 && route.PacketLoss < 5:
 		route.Status = env.StatusGood
-	} else if latency > 0 {
+	case latency > 0:
 		route.Status = "degraded"
-	} else {
+	default:
 		route.Status = "unreachable"
 	}
 
@@ -1117,11 +1118,12 @@ func (oro *OptimalRouteOptimizer) calculateReliabilityScore(route *NetworkRoute)
 
 func (oro *OptimalRouteOptimizer) estimateCostScore(iface string) float64 {
 	// Cost estimates (lower is better, inverted for scoring)
-	if strings.HasPrefix(iface, "eth") {
+	switch {
+	case strings.HasPrefix(iface, "eth"):
 		return 90.0 // Wired is usually cheaper
-	} else if strings.HasPrefix(iface, "wlan") {
+	case strings.HasPrefix(iface, "wlan"):
 		return 85.0 // WiFi might have data costs
-	} else if strings.Contains(iface, "cellular") || strings.Contains(iface, "mobile") {
+	case strings.Contains(iface, "cellular") || strings.Contains(iface, "mobile"):
 		return 30.0 // Cellular is expensive
 	}
 
@@ -1136,11 +1138,12 @@ func (oro *OptimalRouteOptimizer) calculateQualityScore(route *NetworkRoute) flo
 
 	if route.Latency > 0 {
 		latencyMs := float64(route.Latency) / float64(time.Millisecond)
-		if latencyMs <= 10 {
+		switch {
+		case latencyMs <= 10:
 			latencyScore = 100
-		} else if latencyMs <= 50 {
+		case latencyMs <= 50:
 			latencyScore = 90 - (latencyMs-10)*2
-		} else {
+		default:
 			latencyScore = maxFloat64(0, 50-latencyMs/10)
 		}
 	}
