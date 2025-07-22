@@ -12,9 +12,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	"github.com/gizzahub/gzh-manager-go/internal/helpers"
+	"github.com/spf13/cobra"
 )
 
 const (

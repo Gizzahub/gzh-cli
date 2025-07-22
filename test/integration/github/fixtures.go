@@ -6,9 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"gopkg.in/yaml.v3"
 )
 
 const (

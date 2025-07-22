@@ -135,7 +135,6 @@ func TestCreateRepositoryWebhookFlags(t *testing.T) {
 	assert.NotNil(t, secretFlag)
 }
 
-
 // Helper function to find a subcommand by name or use pattern.
 func findSubcommand(parent *cobra.Command, name string) *cobra.Command {
 	for _, cmd := range parent.Commands() {

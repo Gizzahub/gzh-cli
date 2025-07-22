@@ -8,9 +8,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/stretchr/testify/mock"
-
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/stretchr/testify/mock"
 )
 
 // MockComplexGitHubService demonstrates testify mock for complex stateful scenarios.

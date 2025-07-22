@@ -8,14 +8,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/cobra"
-
 	internalconfig "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/spf13/cobra"
 )
 
 type bulkCloneGithubOptions struct {

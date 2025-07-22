@@ -7,12 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
-
-	"github.com/gizzahub/gzh-manager-go/pkg/config"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 // Integration tests for GitHub repository configuration management

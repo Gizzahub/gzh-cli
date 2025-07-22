@@ -7,10 +7,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/schollz/progressbar/v3"
-
 	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
+	"github.com/schollz/progressbar/v3"
 )
 
 // BulkOperationsConfig represents configuration for bulk operations.

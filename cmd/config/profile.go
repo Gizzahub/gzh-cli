@@ -9,9 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/spf13/cobra"
 )
 
 // newProfileCmd creates the config profile subcommand.

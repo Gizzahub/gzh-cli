@@ -6,9 +6,8 @@ package genconfig
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/spf13/cobra"
 )
 
 type genConfigGithubOptions struct {

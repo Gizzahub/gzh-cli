@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
-
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 // TestBulkClone_ConfigurationLoading tests the configuration loading functionality.
