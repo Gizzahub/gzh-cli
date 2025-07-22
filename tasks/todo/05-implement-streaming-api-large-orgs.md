@@ -1,12 +1,15 @@
 # Task: Implement Streaming API for Large Organizations
 
 ## Priority: MEDIUM
+
 ## Estimated Time: 2.5 hours
 
 ## Context
+
 Remote branch includes `pkg/github/streaming_api.go` and `pkg/gitlab/streaming_api.go` for handling large organizations with thousands of repositories. Need to implement efficient streaming with backpressure control.
 
 ## Pre-requisites
+
 - [ ] Tasks 01-03 completed
 - [ ] Understanding of Go channels and goroutines
 - [ ] Access to large GitHub/GitLab organizations for testing
@@ -16,6 +19,7 @@ Remote branch includes `pkg/github/streaming_api.go` and `pkg/gitlab/streaming_a
 ### 1. Analyze Current Streaming Implementation
 
 #### Review Existing Code
+
 ```bash
 # Check current streaming implementations
 cat pkg/github/streaming_api.go
@@ -28,6 +32,7 @@ grep -r "streaming" pkg/ --include="*.go"
 ### 2. Design Streaming Architecture
 
 #### Create Streaming Interfaces
+
 ```go
 // pkg/bulk-clone/streaming.go
 package bulkclone
@@ -41,16 +46,16 @@ import (
 type StreamOptions struct {
     // Buffer size for repository channel
     BufferSize int
-    
+
     // Max concurrent API requests
     MaxConcurrency int
-    
+
     // Enable backpressure when buffer is full
     EnableBackpressure bool
-    
+
     // Checkpoint interval for resume capability
     CheckpointInterval time.Duration
-    
+
     // State file for resume capability
     StateFile string
 }
@@ -59,13 +64,13 @@ type StreamOptions struct {
 type RepositoryStream interface {
     // Next returns the next repository or blocks until available
     Next(ctx context.Context) (*Repository, error)
-    
+
     // HasNext returns true if more repositories are available
     HasNext() bool
-    
+
     // Close releases resources
     Close() error
-    
+
     // Stats returns streaming statistics
     Stats() StreamStats
 }
@@ -84,6 +89,7 @@ type StreamStats struct {
 ### 3. Implement GitHub Streaming with Pagination
 
 #### Enhanced GitHub Streaming
+
 ```go
 // pkg/github/streaming_enhanced.go
 package github
@@ -118,25 +124,25 @@ func NewEnhancedStreamer(client *github.Client, opts StreamOptions) *EnhancedStr
 // StreamOrganizationRepos streams all repositories from an organization
 func (s *EnhancedStreamer) StreamOrganizationRepos(ctx context.Context, org string) error {
     g, ctx := errgroup.WithContext(ctx)
-    
+
     // Producer: Fetch repositories with pagination
     g.Go(func() error {
         defer close(s.repoChannel)
         return s.fetchWithPagination(ctx, org)
     })
-    
+
     // Monitor: Track statistics
     g.Go(func() error {
         return s.monitorProgress(ctx)
     })
-    
+
     // Checkpointer: Save progress periodically
     if s.options.CheckpointInterval > 0 {
         g.Go(func() error {
             return s.runCheckpointer(ctx)
         })
     }
-    
+
     return g.Wait()
 }
 
@@ -146,18 +152,18 @@ func (s *EnhancedStreamer) fetchWithPagination(ctx context.Context, org string) 
             PerPage: 100, // Maximum allowed by GitHub
         },
     }
-    
+
     // Resume from checkpoint if available
     if checkpoint, err := s.checkpointer.Load(); err == nil {
         opt.ListOptions.Page = checkpoint.LastPage
     }
-    
+
     for {
         // Apply rate limiting with backpressure
         if err := s.rateLimiter.Wait(ctx); err != nil {
             return err
         }
-        
+
         // Fetch page of repositories
         repos, resp, err := s.client.Repositories.ListByOrg(ctx, org, opt)
         if err != nil {
@@ -170,10 +176,10 @@ func (s *EnhancedStreamer) fetchWithPagination(ctx context.Context, org string) 
             }
             return err
         }
-        
+
         // Update statistics
         s.updateStats(len(repos), resp.Size)
-        
+
         // Stream repositories with backpressure
         for _, repo := range repos {
             select {
@@ -195,14 +201,14 @@ func (s *EnhancedStreamer) fetchWithPagination(ctx context.Context, org string) 
                 }
             }
         }
-        
+
         // Check if more pages
         if resp.NextPage == 0 {
             break
         }
         opt.Page = resp.NextPage
     }
-    
+
     return nil
 }
 
@@ -210,14 +216,14 @@ func (s *EnhancedStreamer) handleRateLimit(ctx context.Context, resp *github.Res
     if resp == nil {
         return nil
     }
-    
+
     resetTime := time.Unix(resp.Rate.Reset.Unix(), 0)
     waitDuration := time.Until(resetTime)
-    
+
     // Log rate limit information
-    log.Printf("Rate limit exceeded. Waiting %v until reset at %v", 
+    log.Printf("Rate limit exceeded. Waiting %v until reset at %v",
         waitDuration, resetTime)
-    
+
     select {
     case <-time.After(waitDuration):
         return nil
@@ -230,6 +236,7 @@ func (s *EnhancedStreamer) handleRateLimit(ctx context.Context, resp *github.Res
 ### 4. Implement Checkpoint and Resume Capability
 
 #### Checkpoint System
+
 ```go
 // pkg/bulk-clone/checkpoint.go
 package bulkclone
@@ -266,37 +273,37 @@ func NewCheckpointer(filepath string) *Checkpointer {
 func (c *Checkpointer) Save() error {
     c.mutex.Lock()
     defer c.mutex.Unlock()
-    
+
     c.current.Timestamp = time.Now()
-    
+
     data, err := json.MarshalIndent(c.current, "", "  ")
     if err != nil {
         return err
     }
-    
+
     // Write atomically
     tmpFile := c.filepath + ".tmp"
     if err := os.WriteFile(tmpFile, data, 0644); err != nil {
         return err
     }
-    
+
     return os.Rename(tmpFile, c.filepath)
 }
 
 func (c *Checkpointer) Load() (*Checkpoint, error) {
     c.mutex.Lock()
     defer c.mutex.Unlock()
-    
+
     data, err := os.ReadFile(c.filepath)
     if err != nil {
         return nil, err
     }
-    
+
     checkpoint := &Checkpoint{}
     if err := json.Unmarshal(data, checkpoint); err != nil {
         return nil, err
     }
-    
+
     c.current = checkpoint
     return checkpoint, nil
 }
@@ -304,7 +311,7 @@ func (c *Checkpointer) Load() (*Checkpoint, error) {
 func (c *Checkpointer) UpdateProgress(org string, page int, repo string) {
     c.mutex.Lock()
     defer c.mutex.Unlock()
-    
+
     c.current.Organization = org
     c.current.LastPage = page
     c.current.LastRepo = repo
@@ -314,7 +321,7 @@ func (c *Checkpointer) UpdateProgress(org string, page int, repo string) {
 func (c *Checkpointer) IsProcessed(repoName string) bool {
     c.mutex.Lock()
     defer c.mutex.Unlock()
-    
+
     for _, processed := range c.current.ProcessedRepos {
         if processed == repoName {
             return true
@@ -327,6 +334,7 @@ func (c *Checkpointer) IsProcessed(repoName string) bool {
 ### 5. Implement Consumer Pattern with Worker Pool
 
 #### Streaming Consumer
+
 ```go
 // pkg/bulk-clone/streaming_consumer.go
 package bulkclone
@@ -358,7 +366,7 @@ func NewStreamingConsumer(stream RepositoryStream, workers int) *StreamingConsum
 
 func (sc *StreamingConsumer) Consume(ctx context.Context) error {
     g, ctx := errgroup.WithContext(ctx)
-    
+
     // Start workers
     for i := 0; i < sc.workerCount; i++ {
         workerID := i
@@ -366,12 +374,12 @@ func (sc *StreamingConsumer) Consume(ctx context.Context) error {
             return sc.worker(ctx, workerID)
         })
     }
-    
+
     // Progress aggregator
     g.Go(func() error {
         return sc.aggregateProgress(ctx)
     })
-    
+
     return g.Wait()
 }
 
@@ -384,12 +392,12 @@ func (sc *StreamingConsumer) worker(ctx context.Context, id int) error {
             }
             return err
         }
-        
+
         // Process repository
         start := time.Now()
         err = sc.processor.Process(ctx, repo)
         duration := time.Since(start)
-        
+
         // Report progress
         progress := Progress{
             WorkerID:   id,
@@ -399,7 +407,7 @@ func (sc *StreamingConsumer) worker(ctx context.Context, id int) error {
             Duration:   duration,
             Timestamp:  time.Now(),
         }
-        
+
         select {
         case sc.progressChan <- progress:
         case <-ctx.Done():
@@ -413,18 +421,18 @@ func (sc *StreamingConsumer) aggregateProgress(ctx context.Context) error {
         WorkerStats: make(map[int]*WorkerStat),
         StartTime:   time.Now(),
     }
-    
+
     ticker := time.NewTicker(5 * time.Second)
     defer ticker.Stop()
-    
+
     for {
         select {
         case progress := <-sc.progressChan:
             stats.Update(progress)
-            
+
         case <-ticker.C:
             sc.printStats(stats)
-            
+
         case <-ctx.Done():
             sc.printFinalStats(stats)
             return ctx.Err()
@@ -436,6 +444,7 @@ func (sc *StreamingConsumer) aggregateProgress(ctx context.Context) error {
 ### 6. Create Memory-Efficient Large Organization Handler
 
 #### Large Org Handler
+
 ```go
 // pkg/bulk-clone/large_org_handler.go
 package bulkclone
@@ -456,7 +465,7 @@ func NewLargeOrgHandler(config *Config) *LargeOrgHandler {
     var m runtime.MemStats
     runtime.ReadMemStats(&m)
     memoryLimit := m.Sys / 2
-    
+
     return &LargeOrgHandler{
         config:      config,
         memoryLimit: memoryLimit,
@@ -470,10 +479,10 @@ func (h *LargeOrgHandler) HandleOrganization(ctx context.Context, org string) er
     if err != nil {
         return err
     }
-    
-    log.Printf("Organization %s has approximately %s repositories", 
+
+    log.Printf("Organization %s has approximately %s repositories",
         org, humanize.Comma(int64(size)))
-    
+
     // Choose strategy based on size
     var strategy CloneStrategy
     switch {
@@ -484,7 +493,7 @@ func (h *LargeOrgHandler) HandleOrganization(ctx context.Context, org string) er
     default:
         strategy = NewDistributedStrategy(h.config)
     }
-    
+
     return strategy.Execute(ctx, org)
 }
 
@@ -506,31 +515,31 @@ func NewDistributedStrategy(config *Config) *DistributedStrategy {
 func (s *DistributedStrategy) Execute(ctx context.Context, org string) error {
     // Create shards based on repository name hash
     shards := s.coordinator.CreateShards(s.shardCount)
-    
+
     g, ctx := errgroup.WithContext(ctx)
-    
+
     for i, shard := range shards {
         shardID := i
         shardRange := shard
-        
+
         g.Go(func() error {
             return s.processShard(ctx, org, shardID, shardRange)
         })
     }
-    
+
     return g.Wait()
 }
 
-func (s *DistributedStrategy) processShard(ctx context.Context, org string, 
+func (s *DistributedStrategy) processShard(ctx context.Context, org string,
     shardID int, shard ShardRange) error {
-    
-    log.Printf("Shard %d: Processing repositories %s to %s", 
+
+    log.Printf("Shard %d: Processing repositories %s to %s",
         shardID, shard.Start, shard.End)
-    
+
     // Create dedicated streamer for this shard
     streamer := NewShardedStreamer(s.config, shard)
     consumer := NewStreamingConsumer(streamer, s.config.WorkersPerShard)
-    
+
     return consumer.Consume(ctx)
 }
 ```
@@ -538,6 +547,7 @@ func (s *DistributedStrategy) processShard(ctx context.Context, org string,
 ### 7. Integration Testing with Large Organizations
 
 #### Create Integration Test
+
 ```go
 // test/integration/streaming_large_org_test.go
 package integration
@@ -546,7 +556,7 @@ import (
     "context"
     "testing"
     "time"
-    
+
     "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
     "github.com/stretchr/testify/require"
 )
@@ -555,12 +565,12 @@ func TestStreamingLargeOrganization(t *testing.T) {
     if testing.Short() {
         t.Skip("Skipping integration test")
     }
-    
+
     token := os.Getenv("GITHUB_TOKEN")
     if token == "" {
         t.Skip("GITHUB_TOKEN not set")
     }
-    
+
     // Test with a large organization
     config := &bulk-clone.Config{
         GitHub: bulk-clone.GitHubConfig{
@@ -575,27 +585,27 @@ func TestStreamingLargeOrganization(t *testing.T) {
             EnableBackpressure: true,
         },
     }
-    
+
     handler := bulk-clone.NewLargeOrgHandler(config)
-    
+
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
     defer cancel()
-    
+
     // Track memory usage
     initialMem := getMemoryUsage()
-    
+
     err := handler.HandleOrganization(ctx, "apache")
     require.NoError(t, err)
-    
+
     // Verify memory didn't grow excessively
     finalMem := getMemoryUsage()
     memGrowth := finalMem - initialMem
-    
+
     t.Logf("Memory usage: Initial=%s, Final=%s, Growth=%s",
         humanize.Bytes(initialMem),
         humanize.Bytes(finalMem),
         humanize.Bytes(memGrowth))
-    
+
     // Memory growth should be less than 500MB for streaming
     require.Less(t, memGrowth, uint64(500*1024*1024))
 }
@@ -610,23 +620,24 @@ func getMemoryUsage() uint64 {
 ### 8. Add CLI Support for Streaming
 
 #### Update Bulk Clone Command
+
 ```go
 // cmd/bulk-clone/bulk_clone.go
 func init() {
     // Add streaming flags
-    bulkCloneCmd.Flags().Bool("stream", false, 
+    bulkCloneCmd.Flags().Bool("stream", false,
         "Enable streaming mode for large organizations")
-    bulkCloneCmd.Flags().Int("stream-buffer", 1000, 
+    bulkCloneCmd.Flags().Int("stream-buffer", 1000,
         "Buffer size for streaming mode")
-    bulkCloneCmd.Flags().Bool("stream-checkpoint", true, 
+    bulkCloneCmd.Flags().Bool("stream-checkpoint", true,
         "Enable checkpoint/resume for streaming")
-    bulkCloneCmd.Flags().String("checkpoint-file", ".gzh-checkpoint.json", 
+    bulkCloneCmd.Flags().String("checkpoint-file", ".gzh-checkpoint.json",
         "Checkpoint file for resume capability")
 }
 
 func runBulkClone(cmd *cobra.Command, args []string) error {
     // ... existing code ...
-    
+
     // Configure streaming if enabled
     if viper.GetBool("stream") {
         config.Streaming = bulk-clone.StreamingConfig{
@@ -637,12 +648,12 @@ func runBulkClone(cmd *cobra.Command, args []string) error {
             WorkerCount:        runtime.NumCPU() * 2,
             EnableBackpressure: true,
         }
-        
+
         // Use streaming facade
         facade := bulk-clone.NewStreamingFacade(config)
         return facade.StreamCloneAll()
     }
-    
+
     // Use regular facade
     facade := bulk-clone.NewFacade(config)
     return facade.CloneAll()
@@ -650,6 +661,7 @@ func runBulkClone(cmd *cobra.Command, args []string) error {
 ```
 
 ## Expected Outcomes
+
 - [ ] Streaming API handles organizations with 1000+ repos efficiently
 - [ ] Memory usage stays constant regardless of org size
 - [ ] Checkpoint/resume capability works correctly
@@ -658,6 +670,7 @@ func runBulkClone(cmd *cobra.Command, args []string) error {
 - [ ] Integration tests pass for large organizations
 
 ## Verification Commands
+
 ```bash
 # Test streaming with large organization
 gz bulk-clone --stream --org apache --stream-buffer 500
@@ -676,11 +689,13 @@ go test -bench=BenchmarkStreaming ./pkg/bulk-clone/...
 ```
 
 ## Performance Metrics
+
 - Target: Handle 10,000+ repository organizations
 - Memory: < 500MB constant usage
 - Throughput: 100+ repos/second with parallel workers
 - Resume: < 5 second checkpoint recovery time
 
 ## Next Steps
+
 - Task 06: Add Kubernetes network topology analysis
 - Task 07: Implement GitLab group streaming
