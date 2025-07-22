@@ -30,21 +30,25 @@ To run GitHub integration tests, you need:
 ## Running Integration Tests
 
 ### Run All Integration Tests
+
 ```bash
 go test ./test/integration/... -v
 ```
 
 ### Run Only GitHub Integration Tests
+
 ```bash
 go test ./test/integration/github -v
 ```
 
 ### Run Specific Test
+
 ```bash
 go test ./test/integration/github -v -run TestIntegration_RepoConfig_EndToEnd
 ```
 
 ### Skip Integration Tests
+
 Integration tests are automatically skipped if required environment variables are not set.
 
 ## Test Organization Setup
@@ -71,6 +75,7 @@ Integration tests are automatically skipped if required environment variables ar
 ## Test Scenarios
 
 ### 1. Repository Configuration Management
+
 - List repositories in organization
 - Get repository configuration
 - Update repository settings
@@ -78,23 +83,27 @@ Integration tests are automatically skipped if required environment variables ar
 - Bulk operations on multiple repositories
 
 ### 2. Policy Compliance
+
 - Define security policies
 - Run compliance audits
 - Generate compliance reports
 - Test policy exceptions
 
 ### 3. Branch Protection
+
 - Get branch protection rules
 - Update branch protection settings
 - Test required status checks
 - Test review requirements
 
 ### 4. Rate Limiting
+
 - Test rate limit handling
 - Concurrent request management
 - Retry logic with backoff
 
 ### 5. Error Handling
+
 - Invalid authentication
 - Non-existent resources
 - Permission errors
@@ -103,6 +112,7 @@ Integration tests are automatically skipped if required environment variables ar
 ## Writing New Integration Tests
 
 ### Test Structure
+
 ```go
 func TestIntegration_Feature_Scenario(t *testing.T) {
     // Skip if environment not configured
@@ -134,6 +144,7 @@ func TestIntegration_Feature_Scenario(t *testing.T) {
 ## Continuous Integration
 
 ### GitHub Actions Setup
+
 ```yaml
 - name: Run Integration Tests
   env:
@@ -144,6 +155,7 @@ func TestIntegration_Feature_Scenario(t *testing.T) {
 ```
 
 ### Security Notes
+
 - Never commit tokens or sensitive data
 - Use GitHub Secrets for CI/CD
 - Rotate test tokens regularly
@@ -176,6 +188,7 @@ func TestIntegration_Feature_Scenario(t *testing.T) {
 ## Test Data Management
 
 ### Creating Test Data
+
 ```bash
 # Create test repositories
 ./scripts/setup-test-org.sh
@@ -185,6 +198,7 @@ func TestIntegration_Feature_Scenario(t *testing.T) {
 ```
 
 ### Cleaning Test Data
+
 ```bash
 # Remove test artifacts
 ./scripts/cleanup-test-org.sh

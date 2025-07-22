@@ -10,7 +10,8 @@ run:
   go: "1.24"
 
 output:
-  format: colored-line-number
+  formats:
+    - format: colored-line-number
   print-issued-line: true
   print-linter-name: true
   sort-results: true
@@ -100,16 +101,9 @@ linters-settings:
       - experimental
       - opinionated
     disabled-checks:
-      - hugeParam  # Too restrictive for some use cases
-      - rangeValCopy  # Sometimes copying is intentional
-      - commentedOutCode  # False positives in test data
-    settings:
-      hugeParam:
-        sizeThreshold: 512
-      rangeValCopy:
-        sizeThreshold: 512
-      rangeExprCopy:
-        sizeThreshold: 512
+      - hugeParam # Too restrictive for some use cases
+      - rangeValCopy # Sometimes copying is intentional
+      - commentedOutCode # False positives in test data
   goconst:
     min-len: 3
     min-occurrences: 3
@@ -309,7 +303,7 @@ issues:
     - vendor
     - .git
     - tmp
-    - test/integration  # Exclude all integration tests with outdated API usage
+    - test/integration # Exclude all integration tests with outdated API usage
   exclude-files:
     - ".*\\.pb\\.go$"
     - ".*\\.gen\\.go$"

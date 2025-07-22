@@ -33,6 +33,7 @@ gz net-env actions hosts add --ip 192.168.1.100 --host server.local
 ### Configuration File Location
 
 The network actions configuration is stored by default at:
+
 - `~/.gz/network-actions.yaml`
 
 You can specify a custom location with the `--config` flag.
@@ -62,7 +63,7 @@ dns:
     - "1.1.1.1"
     - "1.0.0.1"
   interface: "wlan0"
-  method: "resolvectl"  # resolvectl, networkmanager, manual
+  method: "resolvectl" # resolvectl, networkmanager, manual
 
 # Proxy Configuration
 proxy:
@@ -92,6 +93,7 @@ hosts:
 ### VPN Actions
 
 #### Connect VPN
+
 ```bash
 gz net-env actions vpn connect --name office --type networkmanager
 gz net-env actions vpn connect --name home --type openvpn --config /etc/openvpn/home.conf
@@ -99,16 +101,19 @@ gz net-env actions vpn connect --name mobile --type wireguard
 ```
 
 **Supported VPN Types:**
+
 - `networkmanager`: Uses NetworkManager VPN connections
 - `openvpn`: Uses OpenVPN with systemd service
 - `wireguard`: Uses WireGuard with wg-quick
 
 #### Disconnect VPN
+
 ```bash
 gz net-env actions vpn disconnect --name office
 ```
 
 #### VPN Status
+
 ```bash
 gz net-env actions vpn status
 ```
@@ -116,17 +121,20 @@ gz net-env actions vpn status
 ### DNS Actions
 
 #### Set DNS Servers
+
 ```bash
 gz net-env actions dns set --servers 1.1.1.1,1.0.0.1
 gz net-env actions dns set --servers 8.8.8.8,8.8.4.4 --interface wlan0
 ```
 
 #### DNS Status
+
 ```bash
 gz net-env actions dns status
 ```
 
 #### Reset DNS
+
 ```bash
 gz net-env actions dns reset
 ```
@@ -134,17 +142,20 @@ gz net-env actions dns reset
 ### Proxy Actions
 
 #### Set Proxy
+
 ```bash
 gz net-env actions proxy set --http http://proxy:8080
 gz net-env actions proxy set --https https://proxy:8080 --socks socks5://proxy:1080
 ```
 
 #### Clear Proxy
+
 ```bash
 gz net-env actions proxy clear
 ```
 
 #### Proxy Status
+
 ```bash
 gz net-env actions proxy status
 ```
@@ -152,16 +163,19 @@ gz net-env actions proxy status
 ### Hosts Actions
 
 #### Add Host Entry
+
 ```bash
 gz net-env actions hosts add --ip 192.168.1.100 --host server.local
 ```
 
 #### Remove Host Entry
+
 ```bash
 gz net-env actions hosts remove --host server.local
 ```
 
 #### Show Hosts File
+
 ```bash
 gz net-env actions hosts show
 ```
@@ -169,6 +183,7 @@ gz net-env actions hosts show
 ## Configuration Management
 
 ### Initialize Configuration
+
 ```bash
 gz net-env actions config init
 ```
@@ -176,6 +191,7 @@ gz net-env actions config init
 Creates an example configuration file with all sections populated.
 
 ### Validate Configuration
+
 ```bash
 gz net-env actions config validate
 ```
@@ -216,84 +232,84 @@ actions:
 
 ### Main Commands
 
-| Command | Description |
-|---------|-------------|
-| `gz net-env actions run` | Execute all actions from configuration file |
-| `gz net-env actions config init` | Create example configuration file |
-| `gz net-env actions config validate` | Validate configuration file |
+| Command                              | Description                                 |
+| ------------------------------------ | ------------------------------------------- |
+| `gz net-env actions run`             | Execute all actions from configuration file |
+| `gz net-env actions config init`     | Create example configuration file           |
+| `gz net-env actions config validate` | Validate configuration file                 |
 
 ### VPN Commands
 
-| Command | Description |
-|---------|-------------|
-| `gz net-env actions vpn connect` | Connect to VPN |
+| Command                             | Description         |
+| ----------------------------------- | ------------------- |
+| `gz net-env actions vpn connect`    | Connect to VPN      |
 | `gz net-env actions vpn disconnect` | Disconnect from VPN |
-| `gz net-env actions vpn status` | Show VPN status |
+| `gz net-env actions vpn status`     | Show VPN status     |
 
 ### DNS Commands
 
-| Command | Description |
-|---------|-------------|
-| `gz net-env actions dns set` | Set DNS servers |
+| Command                         | Description            |
+| ------------------------------- | ---------------------- |
+| `gz net-env actions dns set`    | Set DNS servers        |
 | `gz net-env actions dns status` | Show DNS configuration |
-| `gz net-env actions dns reset` | Reset DNS to default |
+| `gz net-env actions dns reset`  | Reset DNS to default   |
 
 ### Proxy Commands
 
-| Command | Description |
-|---------|-------------|
-| `gz net-env actions proxy set` | Set proxy configuration |
-| `gz net-env actions proxy clear` | Clear proxy configuration |
-| `gz net-env actions proxy status` | Show proxy status |
+| Command                           | Description               |
+| --------------------------------- | ------------------------- |
+| `gz net-env actions proxy set`    | Set proxy configuration   |
+| `gz net-env actions proxy clear`  | Clear proxy configuration |
+| `gz net-env actions proxy status` | Show proxy status         |
 
 ### Hosts Commands
 
-| Command | Description |
-|---------|-------------|
-| `gz net-env actions hosts add` | Add entry to hosts file |
+| Command                           | Description                  |
+| --------------------------------- | ---------------------------- |
+| `gz net-env actions hosts add`    | Add entry to hosts file      |
 | `gz net-env actions hosts remove` | Remove entry from hosts file |
-| `gz net-env actions hosts show` | Show hosts file contents |
+| `gz net-env actions hosts show`   | Show hosts file contents     |
 
 ## Flags
 
 ### Global Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--config` | Path to configuration file | `~/.gz/network-actions.yaml` |
-| `--dry-run` | Show what would be executed without running | `false` |
-| `--verbose` | Enable verbose logging | `false` |
-| `--backup` | Create backup files before modifications | `true` |
+| Flag        | Description                                 | Default                      |
+| ----------- | ------------------------------------------- | ---------------------------- |
+| `--config`  | Path to configuration file                  | `~/.gz/network-actions.yaml` |
+| `--dry-run` | Show what would be executed without running | `false`                      |
+| `--verbose` | Enable verbose logging                      | `false`                      |
+| `--backup`  | Create backup files before modifications    | `true`                       |
 
 ### VPN Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--name` | VPN connection name | Required |
-| `--type` | VPN type (networkmanager, openvpn, wireguard) | `networkmanager` |
-| `--config` | VPN configuration file path | Auto-detected |
+| Flag       | Description                                   | Default          |
+| ---------- | --------------------------------------------- | ---------------- |
+| `--name`   | VPN connection name                           | Required         |
+| `--type`   | VPN type (networkmanager, openvpn, wireguard) | `networkmanager` |
+| `--config` | VPN configuration file path                   | Auto-detected    |
 
 ### DNS Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--servers` | Comma-separated DNS servers | Required |
-| `--interface` | Network interface | Auto-detected |
+| Flag          | Description                 | Default       |
+| ------------- | --------------------------- | ------------- |
+| `--servers`   | Comma-separated DNS servers | Required      |
+| `--interface` | Network interface           | Auto-detected |
 
 ### Proxy Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--http` | HTTP proxy URL | |
-| `--https` | HTTPS proxy URL | |
-| `--socks` | SOCKS proxy URL | |
+| Flag      | Description     | Default |
+| --------- | --------------- | ------- |
+| `--http`  | HTTP proxy URL  |         |
+| `--https` | HTTPS proxy URL |         |
+| `--socks` | SOCKS proxy URL |         |
 
 ### Hosts Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--ip` | IP address | Required for add |
-| `--host` | Hostname | Required |
+| Flag     | Description | Default          |
+| -------- | ----------- | ---------------- |
+| `--ip`   | IP address  | Required for add |
+| `--host` | Hostname    | Required         |
 
 ## Examples
 
@@ -372,16 +388,19 @@ gz net-env actions proxy clear
 ### Common Issues
 
 1. **Permission Denied**: Some actions require sudo privileges
+
    ```bash
    sudo gz net-env actions vpn connect --name office
    ```
 
 2. **VPN Connection Fails**: Check VPN configuration and credentials
+
    ```bash
    gz net-env actions vpn status
    ```
 
 3. **DNS Changes Not Taking Effect**: Restart network service
+
    ```bash
    sudo systemctl restart systemd-resolved
    ```
@@ -394,6 +413,7 @@ gz net-env actions proxy clear
 ### Debug Mode
 
 Use `--verbose` flag for detailed output:
+
 ```bash
 gz net-env actions run --verbose
 ```
@@ -401,6 +421,7 @@ gz net-env actions run --verbose
 ### Dry Run
 
 Test configuration without making changes:
+
 ```bash
 gz net-env actions run --dry-run
 ```

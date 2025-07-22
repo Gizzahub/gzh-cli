@@ -45,8 +45,8 @@ type BranchProtectionState struct {
 // AuditReport represents a comprehensive compliance audit report.
 type AuditReport struct {
 	Organization string              `yaml:"organization" json:"organization"`
-	GeneratedAt  time.Time           `yaml:"generatedAt" json:"generatedAt"`
-	PolicyFile   string              `yaml:"policyFile" json:"policyFile"`
+	GeneratedAt  time.Time           `yaml:"generatedAt" json:"generated_at"`
+	PolicyFile   string              `yaml:"policyFile" json:"policy_file"`
 	Summary      AuditSummary        `yaml:"summary" json:"summary"`
 	Policies     []PolicyAuditResult `yaml:"policies" json:"policies"`
 	Repositories []RepoAuditResult   `yaml:"repositories" json:"repositories"`
@@ -54,34 +54,34 @@ type AuditReport struct {
 
 // AuditSummary provides high-level compliance metrics.
 type AuditSummary struct {
-	TotalRepositories     int     `yaml:"totalRepositories" json:"totalRepositories"`
-	AuditedRepositories   int     `yaml:"auditedRepositories" json:"auditedRepositories"`
-	CompliantRepositories int     `yaml:"compliantRepositories" json:"compliantRepositories"`
-	CompliancePercentage  float64 `yaml:"compliancePercentage" json:"compliancePercentage"`
-	TotalPolicies         int     `yaml:"totalPolicies" json:"totalPolicies"`
-	TotalViolations       int     `yaml:"totalViolations" json:"totalViolations"`
-	TotalExceptions       int     `yaml:"totalExceptions" json:"totalExceptions"`
-	ActiveExceptions      int     `yaml:"activeExceptions" json:"activeExceptions"`
+	TotalRepositories     int     `yaml:"totalRepositories" json:"total_repositories"`
+	AuditedRepositories   int     `yaml:"auditedRepositories" json:"audited_repositories"`
+	CompliantRepositories int     `yaml:"compliantRepositories" json:"compliant_repositories"`
+	CompliancePercentage  float64 `yaml:"compliancePercentage" json:"compliance_percentage"`
+	TotalPolicies         int     `yaml:"totalPolicies" json:"total_policies"`
+	TotalViolations       int     `yaml:"totalViolations" json:"total_violations"`
+	TotalExceptions       int     `yaml:"totalExceptions" json:"total_exceptions"`
+	ActiveExceptions      int     `yaml:"activeExceptions" json:"active_exceptions"`
 }
 
 // PolicyAuditResult represents audit results for a specific policy.
 type PolicyAuditResult struct {
-	PolicyName           string            `yaml:"policyName" json:"policyName"`
+	PolicyName           string            `yaml:"policyName" json:"policy_name"`
 	Description          string            `yaml:"description" json:"description"`
 	Rules                []RuleAuditResult `yaml:"rules" json:"rules"`
-	CompliantRepos       int               `yaml:"compliantRepos" json:"compliantRepos"`
-	ViolatingRepos       int               `yaml:"violatingRepos" json:"violatingRepos"`
-	ExemptedRepos        int               `yaml:"exemptedRepos" json:"exemptedRepos"`
-	CompliancePercentage float64           `yaml:"compliancePercentage" json:"compliancePercentage"`
+	CompliantRepos       int               `yaml:"compliantRepos" json:"compliant_repos"`
+	ViolatingRepos       int               `yaml:"violatingRepos" json:"violating_repos"`
+	ExemptedRepos        int               `yaml:"exemptedRepos" json:"exempted_repos"`
+	CompliancePercentage float64           `yaml:"compliancePercentage" json:"compliance_percentage"`
 }
 
 // RuleAuditResult represents audit results for a specific rule within a policy.
 type RuleAuditResult struct {
-	RuleName       string   `yaml:"ruleName" json:"ruleName"`
+	RuleName       string   `yaml:"ruleName" json:"rule_name"`
 	Type           string   `yaml:"type" json:"type"`
 	Enforcement    string   `yaml:"enforcement" json:"enforcement"`
-	ViolatingRepos []string `yaml:"violatingRepos" json:"violatingRepos"`
-	ExemptedRepos  []string `yaml:"exemptedRepos" json:"exemptedRepos"`
+	ViolatingRepos []string `yaml:"violatingRepos" json:"violating_repos"`
+	ExemptedRepos  []string `yaml:"exemptedRepos" json:"exempted_repos"`
 }
 
 // RepoAuditResult represents audit results for a specific repository.
@@ -91,13 +91,13 @@ type RepoAuditResult struct {
 	Compliant    bool              `yaml:"compliant" json:"compliant"`
 	Violations   []PolicyViolation `yaml:"violations,omitempty" json:"violations,omitempty"`
 	Exceptions   []PolicyException `yaml:"exceptions,omitempty" json:"exceptions,omitempty"`
-	LastModified time.Time         `yaml:"lastModified,omitempty" json:"lastModified,omitempty"`
+	LastModified time.Time         `yaml:"lastModified,omitempty" json:"last_modified,omitempty"`
 }
 
 // PolicyViolation represents a specific policy violation.
 type PolicyViolation struct {
-	PolicyName  string      `yaml:"policy" json:"policy"`
-	RuleName    string      `yaml:"rule" json:"rule"`
+	PolicyName  string      `yaml:"policyName" json:"policy_name"`
+	RuleName    string      `yaml:"ruleName" json:"rule_name"`
 	Type        string      `yaml:"type" json:"type"`
 	Expected    interface{} `yaml:"expected" json:"expected"`
 	Actual      interface{} `yaml:"actual,omitempty" json:"actual,omitempty"`
@@ -108,14 +108,14 @@ type PolicyViolation struct {
 
 // PolicyException represents an exception to a policy rule.
 type PolicyException struct {
-	PolicyName  string     `yaml:"policy" json:"policy"`
-	RuleName    string     `yaml:"rule" json:"rule"`
+	PolicyName  string     `yaml:"policyName" json:"policy_name"`
+	RuleName    string     `yaml:"ruleName" json:"rule_name"`
 	Reason      string     `yaml:"reason" json:"reason"`
-	ApprovedBy  string     `yaml:"approvedBy" json:"approvedBy"`
-	ApprovedAt  time.Time  `yaml:"approvedAt" json:"approvedAt"`
-	ExpiresAt   *time.Time `yaml:"expiresAt,omitempty" json:"expiresAt,omitempty"`
-	JiraTicket  string     `yaml:"jiraTicket,omitempty" json:"jiraTicket,omitempty"`
-	ReviewNotes string     `yaml:"reviewNotes,omitempty" json:"reviewNotes,omitempty"`
+	ApprovedBy  string     `yaml:"approvedBy" json:"approved_by"`
+	ApprovedAt  time.Time  `yaml:"approvedAt" json:"approved_at"`
+	ExpiresAt   *time.Time `yaml:"expiresAt,omitempty" json:"expires_at,omitempty"`
+	JiraTicket  string     `yaml:"jiraTicket,omitempty" json:"jira_ticket,omitempty"`
+	ReviewNotes string     `yaml:"reviewNotes,omitempty" json:"review_notes,omitempty"`
 }
 
 // IsExceptionActive checks if an exception is currently active.

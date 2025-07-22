@@ -418,14 +418,15 @@ func (m *GCPProjectManager) enrichProjectDetails(project *GCPProject) {
 
 	// Get current configuration details
 	for _, config := range m.configurations {
-		if config.Project == project.ID {
-			project.Account = config.Account
-			project.Region = config.Region
-			project.Zone = config.Zone
-			project.Configuration = config.Name
-
-			break
+		if config.Project != project.ID {
+			continue
 		}
+		project.Account = config.Account
+		project.Region = config.Region
+		project.Zone = config.Zone
+		project.Configuration = config.Name
+
+		break
 	}
 }
 
@@ -678,7 +679,7 @@ func (m *GCPProjectManager) selectProjectInteractively() (string, error) {
 }
 
 // showProject shows detailed information about a project.
-func (m *GCPProjectManager) showProject(projectID string, format string) error {
+func (m *GCPProjectManager) showProject(projectID, format string) error {
 	// Get current project if none specified
 	if projectID == "" {
 		var err error

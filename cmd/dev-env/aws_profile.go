@@ -17,11 +17,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 const (
@@ -456,7 +457,7 @@ func newAWSProfileListCmd() *cobra.Command {
 				}
 				fmt.Println(string(data))
 			case outputFormatTable:
-				fallthrough
+				fallthrough //nolint:gocritic // Intended fallthrough to default case
 			default:
 				table := tablewriter.NewWriter(os.Stdout)
 				table.Header("Profile", "Region", "Type", "SSO URL", "Account ID", "Active")
@@ -492,9 +493,7 @@ func newAWSProfileListCmd() *cobra.Command {
 					}
 				}
 
-				if err := table.Render(); err != nil {
-					// Log error but continue
-				}
+				_ = table.Render() // Ignore render error
 			}
 
 			return nil

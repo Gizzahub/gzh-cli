@@ -1,11 +1,13 @@
 # Terraform 관리 기능
 
 ## 개요
+
 Infrastructure as Code(IaC)를 위한 Terraform 통합 관리 기능
 
 ## 제거된 기능
 
 ### 1. Terraform 계획 및 적용
+
 - **명령어**: `gz terraform plan`, `gz terraform apply`
 - **기능**: Terraform 계획 생성 및 인프라 변경 적용
 - **특징**:
@@ -15,6 +17,7 @@ Infrastructure as Code(IaC)를 위한 Terraform 통합 관리 기능
   - 롤백 기능
 
 ### 2. Terraform 코드 생성
+
 - **명령어**: `gz terraform generate`
 - **기능**: 기존 인프라로부터 Terraform 코드 자동 생성
 - **특징**:
@@ -24,6 +27,7 @@ Infrastructure as Code(IaC)를 위한 Terraform 통합 관리 기능
   - 베스트 프랙티스 적용
 
 ### 3. 상태 관리
+
 - **명령어**: `gz terraform state`
 - **기능**: Terraform 상태 파일 관리 및 조작
 - **특징**:

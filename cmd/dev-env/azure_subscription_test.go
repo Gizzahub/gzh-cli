@@ -269,8 +269,8 @@ func TestAzureSubscriptionManager_TenantManagement(t *testing.T) {
 
 func TestAzureSubscription_DefaultValues(t *testing.T) {
 	subscription := &AzureSubscription{
-		ID:          "test-subscription",
-		DisplayName: "Test Subscription",
+		// ID:          "test-subscription",  // Unused field removed
+		// DisplayName: "Test Subscription",  // Unused field removed
 	}
 
 	// Verify default values for optional fields

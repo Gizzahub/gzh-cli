@@ -320,7 +320,7 @@ type awsCredentialsMetadata struct {
 
 func (o *awsCredentialsOptions) saveMetadata() error {
 	metadata := awsCredentialsMetadata{
-		Name:        o.name,
+		// Name:        o.name,  // Unused field removed
 		Description: o.description,
 		SavedAt:     time.Now(),
 		SourcePath:  o.configPath,
@@ -333,9 +333,7 @@ func (o *awsCredentialsOptions) saveMetadata() error {
 		return err
 	}
 	defer func() {
-		if err := file.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = file.Close() // Ignore close error
 	}()
 
 	// Set secure permissions for metadata
@@ -404,9 +402,7 @@ func (o *awsCredentialsOptions) copyFile(src, dst string) error {
 		return err
 	}
 	defer func() {
-		if err := sourceFile.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = sourceFile.Close() // Ignore close error
 	}()
 
 	destFile, err := os.Create(dst) //nolint:gosec // dst parameter from controlled path construction
@@ -414,9 +410,7 @@ func (o *awsCredentialsOptions) copyFile(src, dst string) error {
 		return err
 	}
 	defer func() {
-		if err := destFile.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = destFile.Close() // Ignore close error
 	}()
 
 	// Set secure permissions for credentials

@@ -1,194 +1,197 @@
 {
-	"name": "GZH Manager Go Development Environment",
-	"dockerFile": "Dockerfile",
-	"context": "..",
-	"workspaceFolder": "/workspace",
-	"shutdownAction": "stopContainer",
+  "name": "GZH Manager Go Development Environment",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopContainer",
 
-	"features": {
-		"ghcr.io/devcontainers/features/common-utils:2": {
-			"installZsh": true,
-			"installOhMyZsh": true,
-			"upgradePackages": true,
-			"username": "vscode",
-			"userUid": "1000",
-			"userGid": "1000"
-		},
-		"ghcr.io/devcontainers/features/go:1": {
-			"version": "1.24",
-			"golangciLintVersion": "1.63.4"
-		},
-		"ghcr.io/devcontainers/features/node:1": {
-			"version": "20",
-			"nodeGypDependencies": true,
-			"installYarnUsingApt": true
-		},
-		"ghcr.io/devcontainers/features/python:1": {
-			"version": "3.12",
-			"installTools": true
-		},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {
-			"moby": true,
-			"azureDnsAutoDetection": true,
-			"installDockerBuildx": true,
-			"version": "latest",
-			"dockerDashComposeVersion": "v2"
-		},
-		"ghcr.io/devcontainers/features/git:1": {
-			"ppa": true,
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers/features/github-cli:1": {
-			"installDirectlyFromGitHubRelease": true,
-			"version": "latest"
-		}
-	},
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true,
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.24",
+      "golangciLintVersion": "1.63.4"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+      "nodeGypDependencies": true,
+      "installYarnUsingApt": true
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "azureDnsAutoDetection": true,
+      "installDockerBuildx": true,
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
+  },
 
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				// Go Development
-				"golang.go",
-				"golang.go-nightly",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Go Development
+        "golang.go",
+        "golang.go-nightly",
 
-				// Node.js/TypeScript Development
-				"ms-vscode.vscode-typescript-next",
-				"bradlc.vscode-tailwindcss",
-				"ms-vscode.vscode-json",
-				"esbenp.prettier-vscode",
-				"dbaeumer.vscode-eslint",
-				"ms-vscode.vscode-react-native",
+        // Node.js/TypeScript Development
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-json",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-react-native",
 
-				// Python Development
-				"ms-python.python",
-				"ms-python.pylint",
-				"ms-python.black-formatter",
-				"ms-python.isort",
+        // Python Development
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "ms-python.isort",
 
-				// Docker Support
-				"ms-azuretools.vscode-docker",
+        // Docker Support
+        "ms-azuretools.vscode-docker",
 
-				// YAML/JSON Support
-				"redhat.vscode-yaml",
-				"ms-vscode.vscode-json",
+        // YAML/JSON Support
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-json",
 
-				// Git Support
-				"eamodio.gitlens",
-				"github.vscode-pull-request-github",
+        // Git Support
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
 
-				// Code Quality
-				"streetsidesoftware.code-spell-checker",
-				"editorconfig.editorconfig",
-				"ms-vscode.vscode-github-issue-notebooks",
+        // Code Quality
+        "streetsidesoftware.code-spell-checker",
+        "editorconfig.editorconfig",
+        "ms-vscode.vscode-github-issue-notebooks",
 
-				// Productivity
-				"ms-vscode.makefile-tools",
-				"ms-vscode.remote-containers",
-				"ms-vscode.remote-ssh",
-				"formulahendry.auto-rename-tag",
-				"ms-vscode.vscode-todo-highlight",
+        // Productivity
+        "ms-vscode.makefile-tools",
+        "ms-vscode.remote-containers",
+        "ms-vscode.remote-ssh",
+        "formulahendry.auto-rename-tag",
+        "ms-vscode.vscode-todo-highlight",
 
-				// Testing Support
-				"hbenl.vscode-test-explorer",
-				"ms-vscode.test-adapter-converter",
+        // Testing Support
+        "hbenl.vscode-test-explorer",
+        "ms-vscode.test-adapter-converter",
 
-				// Security
-				"ms-vscode.vscode-security"
-			],
-			"settings": {
-				"go.useLanguageServer": true,
-				"go.languageServerExperimentalFeatures": {
-					"diagnostics": true,
-					"documentLink": true
-				},
-				"go.lintTool": "golangci-lint",
-				"go.lintFlags": ["-c", ".golang-ci.yml"],
-				"go.buildTags": "integration",
-				"go.testTags": "integration",
-				"go.testFlags": ["-v", "-race"],
-				"go.coverOnSave": true,
-				"go.formatTool": "gofumpt",
-				"go.alternateTools": {
-					"go": "/usr/local/go/bin/go",
-					"gofmt": "gofumpt",
-					"goimports": "gci"
-				},
-				"typescript.preferences.includePackageJsonAutoImports": "on",
-				"typescript.updateImportsOnFileMove.enabled": "always",
-				"python.defaultInterpreterPath": "/usr/local/bin/python3",
-				"python.linting.enabled": true,
-				"python.linting.pylintEnabled": true,
-				"python.formatting.provider": "black",
-				"python.sorting.provider": "isort",
-				"editor.formatOnSave": true,
-				"editor.formatOnPaste": true,
-				"editor.codeActionsOnSave": {
-					"source.organizeImports": "explicit",
-					"source.fixAll.eslint": "explicit"
-				},
-				"files.trimTrailingWhitespace": true,
-				"files.insertFinalNewline": true,
-				"files.trimFinalNewlines": true,
-				"terminal.integrated.defaultProfile.linux": "zsh",
-				"yaml.schemas": {
-					"./docs/bulk-clone-schema.json": ["samples/bulk-clone*.yaml", "samples/bulk-clone*.yml"],
-					"./docs/gzh-schema.json": ["samples/gzh*.yaml", "examples/gzh*.yaml"]
-				},
-				"makefile.configureOnOpen": true,
-				"security.workspace.trust.enabled": false
-			}
-		}
-	},
+        // Security
+        "ms-vscode.vscode-security"
+      ],
+      "settings": {
+        "go.useLanguageServer": true,
+        "go.languageServerExperimentalFeatures": {
+          "diagnostics": true,
+          "documentLink": true
+        },
+        "go.lintTool": "golangci-lint",
+        "go.lintFlags": ["-c", ".golang-ci.yml"],
+        "go.buildTags": "integration",
+        "go.testTags": "integration",
+        "go.testFlags": ["-v", "-race"],
+        "go.coverOnSave": true,
+        "go.formatTool": "gofumpt",
+        "go.alternateTools": {
+          "go": "/usr/local/go/bin/go",
+          "gofmt": "gofumpt",
+          "goimports": "gci"
+        },
+        "typescript.preferences.includePackageJsonAutoImports": "on",
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        "python.defaultInterpreterPath": "/usr/local/bin/python3",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "python.sorting.provider": "isort",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit",
+          "source.fixAll.eslint": "explicit"
+        },
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "yaml.schemas": {
+          "./docs/bulk-clone-schema.json": [
+            "samples/bulk-clone*.yaml",
+            "samples/bulk-clone*.yml"
+          ],
+          "./docs/gzh-schema.json": ["samples/gzh*.yaml", "examples/gzh*.yaml"]
+        },
+        "makefile.configureOnOpen": true,
+        "security.workspace.trust.enabled": false
+      }
+    }
+  },
 
-	"forwardPorts": [8080, 3000, 9090, 9093, 6060],
-	"portsAttributes": {
-		"8080": {
-			"label": "GZH API Server",
-			"onAutoForward": "notify"
-		},
-		"3000": {
-			"label": "React Development Server",
-			"onAutoForward": "openPreview"
-		},
-		"9090": {
-			"label": "Prometheus",
-			"onAutoForward": "ignore"
-		},
-		"9093": {
-			"label": "Alertmanager",
-			"onAutoForward": "ignore"
-		},
-		"6060": {
-			"label": "Go pprof",
-			"onAutoForward": "ignore"
-		}
-	},
+  "forwardPorts": [8080, 3000, 9090, 9093, 6060],
+  "portsAttributes": {
+    "8080": {
+      "label": "GZH API Server",
+      "onAutoForward": "notify"
+    },
+    "3000": {
+      "label": "React Development Server",
+      "onAutoForward": "openPreview"
+    },
+    "9090": {
+      "label": "Prometheus",
+      "onAutoForward": "ignore"
+    },
+    "9093": {
+      "label": "Alertmanager",
+      "onAutoForward": "ignore"
+    },
+    "6060": {
+      "label": "Go pprof",
+      "onAutoForward": "ignore"
+    }
+  },
 
-	"postCreateCommand": ".devcontainer/scripts/post-create.sh",
-	"postStartCommand": ".devcontainer/scripts/post-start.sh",
-	"postAttachCommand": ".devcontainer/scripts/post-attach.sh",
+  "postCreateCommand": ".devcontainer/scripts/post-create.sh",
+  "postStartCommand": ".devcontainer/scripts/post-start.sh",
+  "postAttachCommand": ".devcontainer/scripts/post-attach.sh",
 
-	"mounts": [
-		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
-		"source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
-	],
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
+  ],
 
-	"containerEnv": {
-		"GZH_DEV_MODE": "true",
-		"GO111MODULE": "on",
-		"GOPROXY": "https://proxy.golang.org,direct",
-		"GOSUMDB": "sum.golang.org",
-		"CGO_ENABLED": "1",
-		"DOCKER_BUILDKIT": "1",
-		"COMPOSE_DOCKER_CLI_BUILD": "1"
-	},
+  "containerEnv": {
+    "GZH_DEV_MODE": "true",
+    "GO111MODULE": "on",
+    "GOPROXY": "https://proxy.golang.org,direct",
+    "GOSUMDB": "sum.golang.org",
+    "CGO_ENABLED": "1",
+    "DOCKER_BUILDKIT": "1",
+    "COMPOSE_DOCKER_CLI_BUILD": "1"
+  },
 
-	"remoteUser": "vscode",
-	"updateRemoteUserUID": true,
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
 
-	"initializeCommand": ".devcontainer/scripts/initialize.sh",
-	"onCreateCommand": "echo 'Container created successfully'",
+  "initializeCommand": ".devcontainer/scripts/initialize.sh",
+  "onCreateCommand": "echo 'Container created successfully'",
 
-	"waitFor": "postCreateCommand"
+  "waitFor": "postCreateCommand"
 }

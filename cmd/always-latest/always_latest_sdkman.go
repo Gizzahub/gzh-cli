@@ -233,29 +233,31 @@ func (o *alwaysLatestSdkmanOptions) getInstalledCandidates() ([]string, error) {
 	}
 
 	for _, entry := range entries {
-		if entry.IsDir() {
-			candidate := entry.Name()
-			// Check if candidate has any versions installed
-			versionsDir := filepath.Join(candidatesDir, candidate)
+		if !entry.IsDir() {
+			continue
+		}
 
-			versions, err := os.ReadDir(versionsDir)
-			if err != nil {
-				continue
+		candidate := entry.Name()
+		// Check if candidate has any versions installed
+		versionsDir := filepath.Join(candidatesDir, candidate)
+
+		versions, err := os.ReadDir(versionsDir)
+		if err != nil {
+			continue
+		}
+
+		// Skip if no versions are installed (except 'current' symlink)
+		hasVersions := false
+
+		for _, version := range versions {
+			if version.Name() != "current" {
+				hasVersions = true
+				break
 			}
+		}
 
-			// Skip if no versions are installed (except 'current' symlink)
-			hasVersions := false
-
-			for _, version := range versions {
-				if version.Name() != "current" {
-					hasVersions = true
-					break
-				}
-			}
-
-			if hasVersions {
-				candidates = append(candidates, candidate)
-			}
+		if hasVersions {
+			candidates = append(candidates, candidate)
 		}
 	}
 
@@ -414,7 +416,7 @@ func (o *alwaysLatestSdkmanOptions) getLatestVersion(candidate string) (string, 
 
 func (o *alwaysLatestSdkmanOptions) isValidVersion(version string) bool {
 	// Check if string looks like a version number
-	re := regexp.MustCompile(`\d+\.[\d.\w]+`)
+	re := regexp.MustCompile(`\d+\.[\d.]+\w*`)
 	return re.MatchString(version)
 }
 

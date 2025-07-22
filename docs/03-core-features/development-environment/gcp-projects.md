@@ -7,18 +7,21 @@ The GCP Project Management feature provides comprehensive tools for managing Goo
 ## Features
 
 ### Project Management
+
 - **List Projects**: View all accessible GCP projects with details
 - **Switch Projects**: Change active project context
 - **Project Details**: View comprehensive project information
 - **Project Validation**: Verify access, billing, APIs, and permissions
 
 ### Configuration Management
+
 - **gcloud Configurations**: Manage multiple gcloud configurations
 - **Configuration Switching**: Switch between different environments
 - **Configuration Creation**: Create new configurations with specific settings
 - **Active Configuration Tracking**: Monitor which configuration is currently active
 
 ### Service Account Management
+
 - **List Service Accounts**: View all service accounts in a project
 - **Create/Delete Service Accounts**: Manage service account lifecycle
 - **Key Management**: Create, list, and delete service account keys
@@ -120,6 +123,7 @@ gz dev-env gcp-project service-account delete \
 The GCP project manager supports both JSON and INI format configuration files used by gcloud:
 
 ### JSON Format (Modern gcloud)
+
 ```json
 {
   "core": {
@@ -134,6 +138,7 @@ The GCP project manager supports both JSON and INI format configuration files us
 ```
 
 ### INI Format (Legacy gcloud)
+
 ```ini
 [core]
 project = my-project-id
@@ -156,6 +161,7 @@ The GCP project management follows the same patterns as the existing AWS profile
 ## Data Structures
 
 ### GCPProject
+
 ```go
 type GCPProject struct {
     ID               string            `json:"id"`
@@ -177,6 +183,7 @@ type GCPProject struct {
 ```
 
 ### GCPConfiguration
+
 ```go
 type GCPConfiguration struct {
     Name           string `json:"name"`
@@ -190,6 +197,7 @@ type GCPConfiguration struct {
 ```
 
 ### GCPServiceAccount
+
 ```go
 type GCPServiceAccount struct {
     Email       string    `json:"email"`
@@ -250,6 +258,7 @@ The implementation includes comprehensive test coverage:
 - **Benchmark Tests**: Performance testing for large project lists
 
 Run tests with:
+
 ```bash
 go test ./cmd/dev-env -run "TestGCPProject" -v
 ```

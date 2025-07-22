@@ -17,15 +17,15 @@ The project includes debugging configurations for:
 
 Access via the Debug panel (`Ctrl+Shift+D`) or Command Palette (`F5`):
 
-| Configuration | Purpose | Arguments |
-|---------------|---------|----------|
-| **Debug GZH CLI** | Main application help | `--help` |
-| **Debug GZH Bulk Clone** | Bulk clone with sample config | `bulk-clone --config samples/bulk-clone-simple.yaml --dry-run` |
-| **Debug GZH Config Validate** | Configuration validation | `bulk-clone validate --config samples/bulk-clone-example.yaml` |
-| **Debug Current Go File** | Debug the currently open file | N/A |
-| **Debug Go Test (Current Package)** | Test debugging | Test files in current directory |
-| **Debug Go Test (Current File)** | Specific test function | Prompts for test name |
-| **Attach to Running Process** | Attach to running process | Prompts for process selection |
+| Configuration                       | Purpose                       | Arguments                                                      |
+| ----------------------------------- | ----------------------------- | -------------------------------------------------------------- |
+| **Debug GZH CLI**                   | Main application help         | `--help`                                                       |
+| **Debug GZH Bulk Clone**            | Bulk clone with sample config | `bulk-clone --config samples/bulk-clone-simple.yaml --dry-run` |
+| **Debug GZH Config Validate**       | Configuration validation      | `bulk-clone validate --config samples/bulk-clone-example.yaml` |
+| **Debug Current Go File**           | Debug the currently open file | N/A                                                            |
+| **Debug Go Test (Current Package)** | Test debugging                | Test files in current directory                                |
+| **Debug Go Test (Current File)**    | Specific test function        | Prompts for test name                                          |
+| **Attach to Running Process**       | Attach to running process     | Prompts for process selection                                  |
 
 ### Quick Start
 
@@ -45,6 +45,7 @@ Access via the Debug panel (`Ctrl+Shift+D`) or Command Palette (`F5`):
 Access via Command Palette (`Ctrl+Shift+P` → "Tasks: Run Task"):
 
 #### Build Tasks
+
 - **go: build** - Build the gz binary
 - **go: clean** - Clean build artifacts
 - **go: bootstrap** - Install dependencies
@@ -53,11 +54,13 @@ Access via Command Palette (`Ctrl+Shift+P` → "Tasks: Run Task"):
 - **go: security scan** - Run security analysis
 
 #### Test Tasks
+
 - **go: test** - Run all tests
 - **go: test (current package)** - Test current package
 - **docker: test integration** - Run integration tests
 
 #### Development Tasks
+
 - **react: start dev server** - Start React development
 - **react: build** - Build React app
 - **docker: build image** - Build Docker image
@@ -157,25 +160,25 @@ dlv attach <pid>
 
 ### Delve Commands
 
-| Command | Description | Example |
-|---------|-------------|--------|
-| `b <location>` | Set breakpoint | `b main.main`, `b main.go:42` |
-| `c` | Continue | `c` |
-| `n` | Next line | `n` |
-| `s` | Step into | `s` |
-| `so` | Step out | `so` |
-| `p <var>` | Print variable | `p myVar` |
-| `pp <var>` | Pretty print | `pp complexStruct` |
-| `locals` | Show local variables | `locals` |
-| `args` | Show function arguments | `args` |
-| `vars` | Show package variables | `vars` |
-| `bt` | Stack trace | `bt` |
-| `goroutines` | List goroutines | `goroutines` |
-| `goroutine <id>` | Switch to goroutine | `goroutine 5` |
-| `list` | Show source code | `list`, `list main.main` |
-| `edit <file>` | Open file in editor | `edit main.go` |
-| `restart` | Restart program | `restart` |
-| `quit` | Exit debugger | `quit` |
+| Command          | Description             | Example                       |
+| ---------------- | ----------------------- | ----------------------------- |
+| `b <location>`   | Set breakpoint          | `b main.main`, `b main.go:42` |
+| `c`              | Continue                | `c`                           |
+| `n`              | Next line               | `n`                           |
+| `s`              | Step into               | `s`                           |
+| `so`             | Step out                | `so`                          |
+| `p <var>`        | Print variable          | `p myVar`                     |
+| `pp <var>`       | Pretty print            | `pp complexStruct`            |
+| `locals`         | Show local variables    | `locals`                      |
+| `args`           | Show function arguments | `args`                        |
+| `vars`           | Show package variables  | `vars`                        |
+| `bt`             | Stack trace             | `bt`                          |
+| `goroutines`     | List goroutines         | `goroutines`                  |
+| `goroutine <id>` | Switch to goroutine     | `goroutine 5`                 |
+| `list`           | Show source code        | `list`, `list main.main`      |
+| `edit <file>`    | Open file in editor     | `edit main.go`                |
+| `restart`        | Restart program         | `restart`                     |
+| `quit`           | Exit debugger           | `quit`                        |
 
 ## Debug Scripts
 
@@ -193,6 +196,7 @@ Convenience scripts in `scripts/debug/`:
 ```
 
 **Features:**
+
 - Automatic debug symbol building
 - Web UI on http://127.0.0.1:2345
 - Helpful command reference
@@ -212,6 +216,7 @@ Convenience scripts in `scripts/debug/`:
 ```
 
 **Features:**
+
 - Package validation
 - Test filtering
 - Web UI on http://127.0.0.1:2346
@@ -228,6 +233,7 @@ Convenience scripts in `scripts/debug/`:
 ```
 
 **Features:**
+
 - Process discovery
 - Interactive selection
 - Web UI on http://127.0.0.1:2347
@@ -345,7 +351,6 @@ npm start
 # Access React DevTools in browser
 # Debug in Chrome DevTools (F12)
 ```
-
 
 ### Integration Tests
 

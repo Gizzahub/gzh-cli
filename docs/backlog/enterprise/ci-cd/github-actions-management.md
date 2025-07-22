@@ -1,11 +1,13 @@
 # GitHub Actions 관리 기능
 
 ## 개요
+
 GitHub Actions 워크플로우 관리 및 자동화 기능
 
 ## 제거된 기능
 
 ### 1. 워크플로우 생성 및 관리
+
 - **명령어**: `gz github-actions create`, `gz github-actions sync`
 - **기능**: GitHub Actions 워크플로우 자동 생성 및 동기화
 - **특징**:
@@ -15,6 +17,7 @@ GitHub Actions 워크플로우 관리 및 자동화 기능
   - 매트릭스 빌드 설정
 
 ### 2. 시크릿 관리
+
 - **명령어**: `gz github-actions secrets set`, `gz github-actions secrets sync`
 - **기능**: GitHub 저장소 및 조직 시크릿 관리
 - **특징**:
@@ -24,6 +27,7 @@ GitHub Actions 워크플로우 관리 및 자동화 기능
   - 권한 기반 접근
 
 ### 3. 러너 관리
+
 - **명령어**: `gz github-actions runner deploy`, `gz github-actions runner scale`
 - **기능**: 셀프 호스팅 러너 관리
 - **특징**:
@@ -33,6 +37,7 @@ GitHub Actions 워크플로우 관리 및 자동화 기능
   - 보안 그룹 관리
 
 ### 4. 워크플로우 모니터링
+
 - **명령어**: `gz github-actions status`, `gz github-actions logs`
 - **기능**: 워크플로우 실행 상태 모니터링
 - **특징**:
@@ -169,14 +174,15 @@ github_actions:
 ## 워크플로우 템플릿
 
 ### 1. Node.js CI/CD
+
 ```yaml
 name: Node.js CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -186,21 +192,21 @@ jobs:
         node-version: [16, 18, 20]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
 
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
 
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   deploy:
     needs: test
@@ -209,30 +215,31 @@ jobs:
     environment: production
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
 
-    - run: npm ci
-    - run: npm run build
+      - run: npm ci
+      - run: npm run build
 
-    - name: Deploy to AWS
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: npm run deploy
+      - name: Deploy to AWS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: npm run deploy
 ```
 
 ### 2. Docker 이미지 빌드/배포
+
 ```yaml
 name: Docker Build and Deploy
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ["v*"]
 
 env:
   REGISTRY: ghcr.io
@@ -246,32 +253,33 @@ jobs:
       packages: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 ```
 
 ### 3. 멀티플랫폼 테스트
+
 ```yaml
 name: Multi-platform Test
 
@@ -286,40 +294,44 @@ jobs:
         go-version: [1.23, 1.24]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
 
-    - name: Build
-      run: go build -v ./...
+      - name: Build
+        run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: go test -v ./...
 ```
 
 ## 고급 기능
 
 ### 1. 매트릭스 빌드
+
 - 다중 버전/환경 테스트
 - 병렬 실행 최적화
 - 조건부 매트릭스 설정
 - 실패 시 빠른 중단
 
 ### 2. 환경 보호 규칙
+
 - 배포 승인 워크플로우
 - 시간 지연 설정
 - 브랜치 보호 규칙
 - 환경별 시크릿 분리
 
 ### 3. 재사용 가능한 워크플로우
+
 - 조직 차원 워크플로우 공유
 - 매개변수화된 워크플로우
 - 버전 관리
 - 상속 및 오버라이드
 
 ### 4. 아티팩트 관리
+
 - 빌드 결과물 보관
 - 크로스 잡 아티팩트 공유
 - 자동 정리
@@ -328,18 +340,21 @@ jobs:
 ## 통합 기능
 
 ### 1. 패키지 레지스트리
+
 - GitHub Packages 연동
 - npm, Maven, Docker 지원
 - 자동 버전 태깅
 - 의존성 보안 스캔
 
 ### 2. 보안 스캔
+
 - CodeQL 정적 분석
 - Dependabot 취약점 스캔
 - 시크릿 스캔
 - 라이선스 검사
 
 ### 3. 이슈 및 PR 연동
+
 - 자동 라벨링
 - 브랜치 상태 체크
 - 자동 머지

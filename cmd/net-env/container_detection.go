@@ -747,56 +747,62 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 	if networkSettings, ok := data["NetworkSettings"].(map[string]interface{}); ok {
 		if networks, ok := networkSettings["Networks"].(map[string]interface{}); ok {
 			for networkName, networkData := range networks {
-				if netInfo, ok := networkData.(map[string]interface{}); ok {
-					detectedNet := DetectedNetworkInfo{
-						NetworkName: networkName,
-					}
-					if networkID, ok := netInfo["NetworkID"].(string); ok {
-						detectedNet.NetworkID = networkID
-					}
-
-					if ipAddress, ok := netInfo["IPAddress"].(string); ok {
-						detectedNet.IPAddress = ipAddress
-					}
-
-					if macAddress, ok := netInfo["MacAddress"].(string); ok {
-						detectedNet.MacAddress = macAddress
-					}
-
-					if gateway, ok := netInfo["Gateway"].(string); ok {
-						detectedNet.Gateway = gateway
-					}
-
-					container.Networks = append(container.Networks, detectedNet)
+				netInfo, ok := networkData.(map[string]interface{})
+				if !ok {
+					continue
 				}
+				detectedNet := DetectedNetworkInfo{
+					NetworkName: networkName,
+				}
+				if networkID, ok := netInfo["NetworkID"].(string); ok {
+					detectedNet.NetworkID = networkID
+				}
+
+				if ipAddress, ok := netInfo["IPAddress"].(string); ok {
+					detectedNet.IPAddress = ipAddress
+				}
+
+				if macAddress, ok := netInfo["MacAddress"].(string); ok {
+					detectedNet.MacAddress = macAddress
+				}
+
+				if gateway, ok := netInfo["Gateway"].(string); ok {
+					detectedNet.Gateway = gateway
+				}
+
+				container.Networks = append(container.Networks, detectedNet)
 			}
 		}
 
 		// Extract port mappings
 		if ports, ok := networkSettings["Ports"].(map[string]interface{}); ok {
 			for containerPort, hostPorts := range ports {
-				if hostPortList, ok := hostPorts.([]interface{}); ok {
-					for _, hostPortData := range hostPortList {
-						if hostPort, ok := hostPortData.(map[string]interface{}); ok {
-							portMapping := DetectedPortMapping{}
+				hostPortList, ok := hostPorts.([]interface{})
+				if !ok {
+					continue
+				}
+				for _, hostPortData := range hostPortList {
+					hostPort, ok := hostPortData.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					portMapping := DetectedPortMapping{}
 
-							// Parse container port
-							portParts := strings.Split(containerPort, "/")
-							if len(portParts) == 2 {
-								if port, err := fmt.Sscanf(portParts[0], "%d", &portMapping.ContainerPort); err == nil && port == 1 {
-									portMapping.Protocol = portParts[1]
-								}
-							}
+					// Parse container port
+					portParts := strings.Split(containerPort, "/")
+					if len(portParts) == 2 {
+						if port, err := fmt.Sscanf(portParts[0], "%d", &portMapping.ContainerPort); err == nil && port == 1 {
+							portMapping.Protocol = portParts[1]
+						}
+					}
 
-							if hostIP, ok := hostPort["HostIp"].(string); ok {
-								portMapping.HostIP = hostIP
-							}
+					if hostIP, ok := hostPort["HostIp"].(string); ok {
+						portMapping.HostIP = hostIP
+					}
 
-							if hostPortStr, ok := hostPort["HostPort"].(string); ok {
-								if port, err := fmt.Sscanf(hostPortStr, "%d", &portMapping.HostPort); err == nil && port == 1 {
-									container.Ports = append(container.Ports, portMapping)
-								}
-							}
+					if hostPortStr, ok := hostPort["HostPort"].(string); ok {
+						if port, err := fmt.Sscanf(hostPortStr, "%d", &portMapping.HostPort); err == nil && port == 1 {
+							container.Ports = append(container.Ports, portMapping)
 						}
 					}
 				}
@@ -807,30 +813,32 @@ func (cd *ContainerDetector) inspectContainer(ctx context.Context, runtime Conta
 	// Extract mount information
 	if mounts, ok := data["Mounts"].([]interface{}); ok {
 		for _, mountData := range mounts {
-			if mount, ok := mountData.(map[string]interface{}); ok {
-				detectedMount := DetectedMount{}
-				if mountType, ok := mount["Type"].(string); ok {
-					detectedMount.Type = mountType
-				}
-
-				if source, ok := mount["Source"].(string); ok {
-					detectedMount.Source = source
-				}
-
-				if destination, ok := mount["Destination"].(string); ok {
-					detectedMount.Destination = destination
-				}
-
-				if mode, ok := mount["Mode"].(string); ok {
-					detectedMount.Mode = mode
-				}
-
-				if rw, ok := mount["RW"].(bool); ok {
-					detectedMount.ReadWrite = rw
-				}
-
-				container.Mounts = append(container.Mounts, detectedMount)
+			mount, ok := mountData.(map[string]interface{})
+			if !ok {
+				continue
 			}
+			detectedMount := DetectedMount{}
+			if mountType, ok := mount["Type"].(string); ok {
+				detectedMount.Type = mountType
+			}
+
+			if source, ok := mount["Source"].(string); ok {
+				detectedMount.Source = source
+			}
+
+			if destination, ok := mount["Destination"].(string); ok {
+				detectedMount.Destination = destination
+			}
+
+			if mode, ok := mount["Mode"].(string); ok {
+				detectedMount.Mode = mode
+			}
+
+			if rw, ok := mount["RW"].(bool); ok {
+				detectedMount.ReadWrite = rw
+			}
+
+			container.Mounts = append(container.Mounts, detectedMount)
 		}
 	}
 
@@ -1029,22 +1037,24 @@ func (cd *ContainerDetector) inspectNetwork(ctx context.Context, runtime Contain
 
 		if config, ok := ipam["Config"].([]interface{}); ok {
 			for _, configData := range config {
-				if configMap, ok := configData.(map[string]interface{}); ok {
-					ipamConfig := ContainerIPAMConfig{}
-					if subnet, ok := configMap["Subnet"].(string); ok {
-						ipamConfig.Subnet = subnet
-					}
-
-					if gateway, ok := configMap["Gateway"].(string); ok {
-						ipamConfig.Gateway = gateway
-					}
-
-					if ipRange, ok := configMap["IPRange"].(string); ok {
-						ipamConfig.IPRange = ipRange
-					}
-
-					network.IPAM.Config = append(network.IPAM.Config, ipamConfig)
+				configMap, ok := configData.(map[string]interface{})
+				if !ok {
+					continue
 				}
+				ipamConfig := ContainerIPAMConfig{}
+				if subnet, ok := configMap["Subnet"].(string); ok {
+					ipamConfig.Subnet = subnet
+				}
+
+				if gateway, ok := configMap["Gateway"].(string); ok {
+					ipamConfig.Gateway = gateway
+				}
+
+				if ipRange, ok := configMap["IPRange"].(string); ok {
+					ipamConfig.IPRange = ipRange
+				}
+
+				network.IPAM.Config = append(network.IPAM.Config, ipamConfig)
 			}
 		}
 
@@ -1720,18 +1730,13 @@ func (cd *ContainerDetector) getVolumeCount(ctx context.Context, runtime Contain
 func (cd *ContainerDetector) generateEnvironmentFingerprint(env *ContainerEnvironment) string {
 	var elements []string
 
-	// Include runtime information
-	elements = append(elements, string(env.PrimaryRuntime))
-	elements = append(elements, env.OrchestrationPlatform)
-
-	// Include container count
-	elements = append(elements, fmt.Sprintf("containers:%d", len(env.RunningContainers)))
-
-	// Include network count
-	elements = append(elements, fmt.Sprintf("networks:%d", len(env.Networks)))
-
-	// Include compose projects
-	elements = append(elements, fmt.Sprintf("compose:%d", len(env.ComposeProjects)))
+	// Include runtime information and counts
+	elements = append(elements,
+		string(env.PrimaryRuntime),
+		env.OrchestrationPlatform,
+		fmt.Sprintf("containers:%d", len(env.RunningContainers)),
+		fmt.Sprintf("networks:%d", len(env.Networks)),
+		fmt.Sprintf("compose:%d", len(env.ComposeProjects)))
 
 	// Include Kubernetes info if available
 	if env.KubernetesInfo != nil && env.KubernetesInfo.Available {

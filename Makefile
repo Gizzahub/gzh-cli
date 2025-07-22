@@ -1,244 +1,192 @@
-projectname?=gzh-manager
-executablename?=gz
+# Makefile - gzh-manager-go CLI Tool
+# Modular Makefile structure with comprehensive functionality
+# Git Repository Management CLI Tool
+
+# ==============================================================================
+# Project Configuration
+# ==============================================================================
+
+# Project metadata
+projectname := gzh-manager
+executablename := gz
+VERSION ?= $(shell git describe --always --abbrev=0 --tags 2>/dev/null || echo "dev")
+
+# Go configuration
 export GOPROXY=https://proxy.golang.org,direct
 export GOSUMDB=sum.golang.org
 
-# Include lint-related targets
-include Makefile.lint.mk
+# Colors for output
+CYAN := \\033[36m
+GREEN := \\033[32m
+YELLOW := \\033[33m
+RED := \\033[31m
+BLUE := \\033[34m
+MAGENTA := \\033[35m
+RESET := \\033[0m
 
-# Include dependency management targets
-include Makefile.deps.mk
+# ==============================================================================
+# Include Modular Makefiles
+# ==============================================================================
 
-default: help
+include Makefile.deps.mk    # Dependency management
+include Makefile.build.mk   # Build and installation
+include Makefile.test.mk    # Testing and coverage
+include Makefile.quality.mk # Code quality and linting
+include Makefile.tools.mk   # Tool installation and management
+include Makefile.dev.mk     # Development workflow
+include Makefile.docker.mk  # Docker operations
 
-.PHONY: help
-help: ## list makefile targets
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+# ==============================================================================
+# Enhanced Help System
+# ==============================================================================
 
-.PHONY: build
-build: ## build golang binary
-	@echo "Building $(executablename)..."
-	@go build -ldflags "-X main.version=$(shell git describe --always --abbrev=0 --tags)" -o $(executablename)
+.DEFAULT_GOAL := help
 
-.PHONY: install
-install: build ## install golang binary
-#	@go install -ldflags "-X main.version=$(shell git describe --always --abbrev=0 --tags)"
-	@echo "Installing $(executablename)..."
-	@mv $(executablename) $(shell go env GOPATH)/bin/
+.PHONY: help help-build help-test help-quality help-deps help-dev help-docker help-tools
 
-.PHONY: run
-run: ## run the app
-	@go run -ldflags "-X main.version=$(shell git describe --always --abbrev=0 --tags)"  main.go
-
-.PHONY: bootstrap
-bootstrap: ## install build deps
-	go generate -tags tools tools/tools.go
-
-PHONY: test
-test: clean ## run all tests with coverage
-	go test --cover -parallel=1 -v -coverprofile=coverage.out ./...
-	go tool cover -func=coverage.out | sort -rnk3
-
-PHONY: test-unit
-test-unit: ## run only unit tests (exclude integration and e2e)
-	go test -short --cover -parallel=1 -v -coverprofile=coverage-unit.out \
-		$(shell go list ./... | grep -v -E '(test/integration|test/e2e)')
-	go tool cover -func=coverage-unit.out | sort -rnk3
-
-PHONY: test-integration-only
-test-integration-only: ## run only integration tests with build tag
-	go test -tags=integration -v ./test/integration/...
-
-PHONY: test-e2e-only
-test-e2e-only: ## run only e2e tests with build tag
-	go test -tags=e2e -v ./test/e2e/...
-
-PHONY: clean
-clean: ## clean up environment
-	rm -rf coverage.out dist/ $(executablename)
-	rm -f $(shell go env GOPATH)/bin/$(executablename)
-	rm -f $(shell go env GOPATH)/bin/$(projectname)
-
-
-PHONY: cover
-cover: ## display test coverage
-	go test -v -race $(shell go list ./... | grep -v /vendor/) -v -coverprofile=coverage.out
-	go tool cover -func=coverage.out
-
-PHONY: cover-html
-cover-html: ## generate HTML coverage report
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-	go tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage report generated: coverage.html"
-
-PHONY: cover-report
-cover-report: ## generate detailed coverage report
-	@echo "Generating coverage report..."
-	@go test -coverprofile=coverage.out -covermode=atomic ./...
+help: ## show main help menu with categories
+	@echo "$(CYAN)"
+	@echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+	@echo "║                           $(MAGENTA)gzh-manager-go Makefile Help$(CYAN)                       ║"
+	@echo "║                    $(YELLOW)Git Repository Management CLI Tool$(CYAN)                      ║"
+	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
+	@echo "$(RESET)"
+	@echo "$(GREEN)📋 Main Categories:$(RESET)"
+	@echo "  $(YELLOW)make help-build$(RESET)    🔨 Build, installation, and deployment"
+	@echo "  $(YELLOW)make help-test$(RESET)     🧪 Testing, benchmarks, and validation"
+	@echo "  $(YELLOW)make help-quality$(RESET)  ✨ Code quality, formatting, and linting"
+	@echo "  $(YELLOW)make help-deps$(RESET)     📦 Dependency management and updates"
+	@echo "  $(YELLOW)make help-dev$(RESET)      🛠️  Development tools and workflow"
+	@echo "  $(YELLOW)make help-docker$(RESET)   🐳 Docker operations and containers"
+	@echo "  $(YELLOW)make help-tools$(RESET)    🔧 Tool installation and management"
 	@echo ""
-	@echo "=== Coverage Summary ==="
-	@go tool cover -func=coverage.out | grep total | awk '{print "Total Coverage: " $$3}'
+	@echo "$(GREEN)🚀 Quick Commands:$(RESET)"
+	@echo "  $(CYAN)make start$(RESET)         Start development (run)"
+	@echo "  $(CYAN)make stop$(RESET)          Stop development server"
+	@echo "  $(CYAN)make restart$(RESET)       Restart development server"
+	@echo "  $(CYAN)make status$(RESET)        Check development server status"
+	@echo "  $(CYAN)make quick$(RESET)         Quick check (format + lint + unit tests)"
+	@echo "  $(CYAN)make full$(RESET)          Full quality check (comprehensive)"
+	@echo "  $(CYAN)make setup-all$(RESET)     Complete project setup"
 	@echo ""
-	@echo "=== Package Coverage ==="
-	@go tool cover -func=coverage.out | grep -v total | sort -k3 -nr | head -20
+	@echo "$(GREEN)💡 Pro Tips:$(RESET)"
+	@echo "  • Use $(YELLOW)'make quick'$(RESET) for fast development iteration"
+	@echo "  • Use $(YELLOW)'make full'$(RESET) before pushing to ensure quality"
+	@echo "  • Use $(YELLOW)'make setup-all'$(RESET) for first-time project setup"
+	@echo "  • All commands support tab completion if bash-completion is installed"
 	@echo ""
-	@echo "For detailed HTML report, run: make cover-html"
+	@echo "$(BLUE)📖 Documentation: $(RESET)https://github.com/gizzahub/gzh-manager-go"
 
-.PHONY: test-docker
-test-docker: ## run Docker-based integration tests
-	@echo "Running Docker integration tests..."
-	@./test/integration/run_docker_tests.sh all
+help-build: ## show build and deployment help
+	@echo "$(GREEN)🔨 Build and Installation Commands:$(RESET)"
+	@echo "  $(CYAN)build$(RESET)              Build golang binary ($(executablename))"
+	@echo "  $(CYAN)install$(RESET)            Install golang binary to GOPATH/bin"
+	@echo "  $(CYAN)run$(RESET)                Run the application"
+	@echo "  $(CYAN)bootstrap$(RESET)          Install build dependencies"
+	@echo "  $(CYAN)clean$(RESET)              Clean up build artifacts and binaries"
+	@echo "  $(CYAN)release-dry-run$(RESET)    Run goreleaser in dry-run mode"
+	@echo "  $(CYAN)release-snapshot$(RESET)   Create a snapshot release"
+	@echo "  $(CYAN)release-check$(RESET)      Check goreleaser configuration"
+	@echo "  $(CYAN)build-info$(RESET)         Show build environment information"
 
-.PHONY: test-docker-short
-test-docker-short: ## run integration tests in short mode (skip Docker)
-	@echo "Running integration tests in short mode..."
-	@./test/integration/run_docker_tests.sh -s all
+help-test: ## show testing help
+	@echo "$(GREEN)🧪 Testing and Validation Commands:$(RESET)"
+	@echo "  $(CYAN)test$(RESET)               Run all tests with coverage"
+	@echo "  $(CYAN)test-unit$(RESET)          Run only unit tests (exclude integration/e2e)"
+	@echo "  $(CYAN)test-integration$(RESET)   Run Docker-based integration tests"
+	@echo "  $(CYAN)test-e2e$(RESET)           Run End-to-End test scenarios"
+	@echo "  $(CYAN)test-all$(RESET)           Run all tests (unit, integration, e2e)"
+	@echo "  $(CYAN)cover$(RESET)              Display test coverage"
+	@echo "  $(CYAN)cover-html$(RESET)         Generate HTML coverage report"
+	@echo "  $(CYAN)cover-report$(RESET)       Generate detailed coverage report"
+	@echo "  $(CYAN)bench$(RESET)              Run all benchmarks"
+	@echo "  $(CYAN)test-info$(RESET)          Show testing information and targets"
 
-.PHONY: test-gitlab
-test-gitlab: ## run GitLab integration tests only
-	@echo "Running GitLab integration tests..."
-	@./test/integration/run_docker_tests.sh gitlab
+help-quality: ## show quality help
+	@echo "$(GREEN)✨ Code Quality Commands:$(RESET)"
+	@echo "  $(CYAN)fmt$(RESET)                Format Go files with gofumpt and gci"
+	@echo "  $(CYAN)lint-check$(RESET)         Check lint issues without fixing"
+	@echo "  $(CYAN)lint-fix$(RESET)           Run golangci-lint with auto-fix"
+	@echo "  $(CYAN)security$(RESET)           Run all security checks"
+	@echo "  $(CYAN)analyze$(RESET)            Run comprehensive code analysis"
+	@echo "  $(CYAN)quality$(RESET)            Run comprehensive quality checks"
+	@echo "  $(CYAN)quality-fix$(RESET)        Apply automatic quality fixes"
+	@echo "  $(CYAN)pre-commit$(RESET)         Run pre-commit hooks"
+	@echo "  $(CYAN)quality-info$(RESET)       Show quality tools and targets"
 
-.PHONY: test-gitea
-test-gitea: ## run Gitea integration tests only
-	@echo "Running Gitea integration tests..."
-	@./test/integration/run_docker_tests.sh gitea
+help-deps: ## show dependency help
+	@echo "$(GREEN)📦 Dependency Management Commands:$(RESET)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile.deps 2>/dev/null | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(RESET) %s\\n", $$1, $$2}' | head -10 || echo "  $(YELLOW)Run 'make deps-help' for dependency commands$(RESET)"
 
-.PHONY: test-redis
-test-redis: ## run Redis integration tests only
-	@echo "Running Redis integration tests..."
-	@./test/integration/run_docker_tests.sh redis
+help-dev: ## show development workflow help
+	@echo "$(GREEN)🛠️  Development Workflow Commands:$(RESET)"
+	@echo "  $(CYAN)dev$(RESET)                Standard development workflow (format, lint, test)"
+	@echo "  $(CYAN)dev-fast$(RESET)           Quick development cycle (format and unit tests only)"
+	@echo "  $(CYAN)verify$(RESET)             Complete verification before PR"
+	@echo "  $(CYAN)ci-local$(RESET)           Run full CI pipeline locally"
+	@echo "  $(CYAN)pr-check$(RESET)           Pre-PR submission check"
+	@echo "  $(CYAN)comments$(RESET)           Show all TODO/FIXME/NOTE comments in codebase"
+	@echo "  $(CYAN)changelog$(RESET)          Generate changelog"
+	@echo "  $(CYAN)docs-serve$(RESET)         Serve documentation locally"
+	@echo "  $(CYAN)dev-info$(RESET)           Show development environment information"
 
-.PHONY: test-integration
-test-integration: test-docker ## alias for test-docker
+help-docker: ## show Docker help
+	@echo "$(GREEN)🐳 Docker Commands:$(RESET)"
+	@echo "  $(CYAN)docker-build$(RESET)       Build Docker image"
+	@echo "  $(CYAN)docker-run$(RESET)         Run Docker container"
+	@echo "  $(CYAN)docker-stop$(RESET)        Stop and remove Docker containers"
+	@echo "  $(CYAN)docker-logs$(RESET)        Show Docker container logs"
+	@echo "  $(CYAN)docker-optimize$(RESET)    Analyze Docker image for optimization"
+	@echo "  $(CYAN)docker-scan$(RESET)        Scan Docker image for vulnerabilities"
+	@echo "  $(CYAN)docker-clean$(RESET)       Clean up Docker containers and images"
+	@echo "  $(CYAN)docker-info$(RESET)        Show Docker information and targets"
 
-.PHONY: test-e2e
-test-e2e: build ## run End-to-End test scenarios
-	@echo "Running E2E tests..."
-	@./test/e2e/run_e2e_tests.sh all
+help-tools: ## show tools help
+	@echo "$(GREEN)🔧 Tool Management Commands:$(RESET)"
+	@echo "  $(CYAN)install-tools$(RESET)      Install all development tools"
+	@echo "  $(CYAN)tools-status$(RESET)       Check installed tool status"
+	@echo "  $(CYAN)generate-mocks$(RESET)     Generate all mock files using gomock"
+	@echo "  $(CYAN)pre-commit-install$(RESET) Install pre-commit hooks"
+	@echo "  $(CYAN)tools-info$(RESET)         Show comprehensive tool information"
 
-.PHONY: test-e2e-short
-test-e2e-short: build ## run E2E tests in short mode
-	@echo "Running E2E tests in short mode..."
-	@./test/e2e/run_e2e_tests.sh -s all
+# ==============================================================================
+# Project Information
+# ==============================================================================
 
-.PHONY: test-e2e-bulk-clone
-test-e2e-bulk-clone: build ## run bulk clone E2E tests only
-	@echo "Running bulk clone E2E tests..."
-	@./test/e2e/run_e2e_tests.sh bulk-clone
+.PHONY: info about
 
-.PHONY: test-e2e-config
-test-e2e-config: build ## run configuration E2E tests only
-	@echo "Running configuration E2E tests..."
-	@./test/e2e/run_e2e_tests.sh config
-
-.PHONY: test-e2e-ide
-test-e2e-ide: build ## run IDE E2E tests only
-	@echo "Running IDE E2E tests..."
-	@./test/e2e/run_e2e_tests.sh ide
-
-.PHONY: test-all
-test-all: test test-docker test-e2e ## run all tests (unit, integration, e2e)
-
-
-
-
-
-.PHONY: release-dry-run
-release-dry-run: ## run goreleaser in dry-run mode
-	@echo "Running goreleaser in dry-run mode..."
-	@command -v goreleaser >/dev/null 2>&1 || { echo "goreleaser not found. Install with: go install github.com/goreleaser/goreleaser@latest"; exit 1; }
-	@goreleaser release --snapshot --clean --skip=publish
-
-.PHONY: release-snapshot
-release-snapshot: ## create a snapshot release
-	@echo "Creating snapshot release..."
-	@command -v goreleaser >/dev/null 2>&1 || { echo "goreleaser not found. Install with: go install github.com/goreleaser/goreleaser@latest"; exit 1; }
-	@goreleaser release --snapshot --clean
-
-.PHONY: release-check
-release-check: ## check goreleaser configuration
-	@echo "Checking goreleaser configuration..."
-	@command -v goreleaser >/dev/null 2>&1 || { echo "goreleaser not found. Install with: go install github.com/goreleaser/goreleaser@latest"; exit 1; }
-	@goreleaser check
-
-.PHONY: install-goreleaser
-install-goreleaser: ## install goreleaser
-	@echo "Installing goreleaser..."
-	@go install github.com/goreleaser/goreleaser@latest
-
-.PHONY: deploy
-deploy: release-dry-run ## alias for release-dry-run
-
-## Development Workflow Targets
-
-deps-graph: ## show module dependency graph
-	@go mod graph
-
-## Documentation Targets
-
-.PHONY: docs-serve
-docs-serve: ## serve documentation locally (requires mkdocs)
-	@command -v mkdocs >/dev/null 2>&1 || { echo "mkdocs not found. Install with: pip install mkdocs mkdocs-material"; exit 1; }
-	@mkdocs serve
-
-.PHONY: docs-build
-docs-build: ## build documentation site
-	@command -v mkdocs >/dev/null 2>&1 || { echo "mkdocs not found. Install with: pip install mkdocs mkdocs-material"; exit 1; }
-	@mkdocs build
-
-.PHONY: godoc
-godoc: ## run godoc server
-	@echo "Starting godoc server on http://localhost:6060"
-	@godoc -http=:6060
-
-.PHONY: docs-check
-docs-check: ## check for missing package documentation
-	@echo "Checking for missing package documentation..."
-	@for pkg in $$(go list ./...); do \
-		if ! go doc -short $$pkg | grep -q "^package"; then \
-			echo "Missing documentation for: $$pkg"; \
-		fi; \
-	done
-
-
-## Benchmarking Targets
-
-.PHONY: bench
-bench: ## run all benchmarks
-	@go test -bench=. -benchmem ./...
-
-.PHONY: bench-compare
-bench-compare: ## compare benchmark results (requires benchstat)
-	@command -v benchstat >/dev/null 2>&1 || { echo "benchstat not found. Installing..."; go install golang.org/x/perf/cmd/benchstat@latest; }
-	@echo "Run benchmarks and save results:"
-	@echo "  go test -bench=. -count=10 ./... > old.txt"
-	@echo "  # make changes"
-	@echo "  go test -bench=. -count=10 ./... > new.txt"
-	@echo "  benchstat old.txt new.txt"
-
-## Quick Commands
-
-.PHONY: comments
-comments: ## show all TODO/FIXME/NOTE comments in codebase
-	@echo "=== TODO comments ==="
-	@grep -r "TODO" --include="*.go" . | grep -v vendor | grep -v .git || echo "No TODOs found!"
+info: ## show project information and current configuration
+	@echo "$(CYAN)"
+	@echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+	@echo "║                         $(MAGENTA)gzh-manager-go Project Information$(CYAN)                   ║"
+	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
+	@echo "$(RESET)"
+	@echo "$(GREEN)📋 Project Details:$(RESET)"
+	@echo "  Name:           $(YELLOW)$(projectname)$(RESET)"
+	@echo "  Executable:     $(YELLOW)$(executablename)$(RESET)"
+	@echo "  Version:        $(YELLOW)$(VERSION)$(RESET)"
 	@echo ""
-	@echo "=== FIXME comments ==="
-	@grep -r "FIXME" --include="*.go" . | grep -v vendor | grep -v .git || echo "No FIXMEs found!"
+	@echo "$(GREEN)🏗️  Build Environment:$(RESET)"
+	@echo "  Go Version:     $$(go version | cut -d' ' -f3)"
+	@echo "  GOPROXY:        $(GOPROXY)"
+	@echo "  GOSUMDB:        $(GOSUMDB)"
+	@echo "  GOPATH:         $$(go env GOPATH)"
+	@echo "  GOROOT:         $$(go env GOROOT)"
 	@echo ""
-	@echo "=== NOTE comments ==="
-	@grep -r "NOTE" --include="*.go" . | grep -v vendor | grep -v .git || echo "No NOTEs found!"
+	@echo "$(GREEN)📁 Key Features:$(RESET)"
+	@echo "  • Multi-platform Git repository cloning (GitHub, GitLab, Gitea, Gogs)"
+	@echo "  • Package manager updates (asdf, Homebrew, SDKMAN)"
+	@echo "  • Development environment management (AWS, Docker, Kubernetes)"
+	@echo "  • Network environment transitions (WiFi, VPN, DNS, proxy)"
+	@echo "  • JetBrains IDE settings monitoring and sync fixes"
+	@echo ""
+	@echo "$(GREEN)🔧 Available Modules:$(RESET)"
+	@echo "  • $(CYAN)Build & Deploy$(RESET)      (Makefile.build.mk)  - Build, installation, and release"
+	@echo "  • $(CYAN)Testing$(RESET)             (Makefile.test.mk)   - Unit, integration, and e2e tests"
+	@echo "  • $(CYAN)Code Quality$(RESET)        (Makefile.quality.mk) - Formatting, linting, and security"
+	@echo "  • $(CYAN)Dependencies$(RESET)        (Makefile.deps.mk)   - Dependency management and updates"
+	@echo "  • $(CYAN)Development$(RESET)         (Makefile.dev.mk)    - Development workflow and tools"
+	@echo "  • $(CYAN)Docker$(RESET)              (Makefile.docker.mk) - Container operations and optimization"
+	@echo "  • $(CYAN)Tools$(RESET)               (Makefile.tools.mk)  - Tool installation and management"
 
-# Aliases for backward compatibility
-.PHONY: todo fixme notes
-todo: comments ## show all TODO comments (alias for comments)
-fixme: comments ## show all FIXME comments (alias for comments)
-notes: comments ## show all NOTE comments (alias for comments)
-
-## CI/CD Helpers
-
-.PHONY: changelog
-changelog: ## generate changelog (requires git-chglog)
-	@command -v git-chglog >/dev/null 2>&1 || { echo "git-chglog not found. Install from: https://github.com/git-chglog/git-chglog"; exit 1; }
-	@git-chglog -o CHANGELOG.md
+about: info ## alias for info command

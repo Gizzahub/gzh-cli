@@ -6,6 +6,7 @@
 # Project specific
 samples
 data/
+lint-report.json
 
 # =============================================================================
 # Original Project Specific Settings

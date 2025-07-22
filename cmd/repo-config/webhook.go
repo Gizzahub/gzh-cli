@@ -10,10 +10,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/types/repoconfig"
 	"github.com/google/go-github/v66/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/types/repoconfig"
 )
 
 // WebhookFlags represents webhook command flags.
@@ -698,7 +699,7 @@ func runWebhookAutomationCommand(flags WebhookFlags, ruleFile, action string, en
 
 // Helper functions for bulk operations
 
-func runBulkCreateWebhooks(flags WebhookFlags, configFile string, parallelJobs int, dryRun bool) error {
+func runBulkCreateWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
 	fmt.Println("📥 Bulk creating webhooks...")
 
 	// Mock implementation
@@ -713,7 +714,7 @@ func runBulkCreateWebhooks(flags WebhookFlags, configFile string, parallelJobs i
 	return nil
 }
 
-func runBulkUpdateWebhooks(flags WebhookFlags, configFile string, parallelJobs int, dryRun bool) error {
+func runBulkUpdateWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
 	fmt.Println("🔄 Bulk updating webhooks...")
 
 	// Mock implementation
@@ -728,7 +729,7 @@ func runBulkUpdateWebhooks(flags WebhookFlags, configFile string, parallelJobs i
 	return nil
 }
 
-func runBulkDeleteWebhooks(flags WebhookFlags, parallelJobs int, dryRun bool) error {
+func runBulkDeleteWebhooks(_ WebhookFlags, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
 	fmt.Println("🗑️  Bulk deleting webhooks...")
 
 	// Mock implementation
@@ -743,7 +744,7 @@ func runBulkDeleteWebhooks(flags WebhookFlags, parallelJobs int, dryRun bool) er
 	return nil
 }
 
-func runBulkSyncWebhooks(flags WebhookFlags, configFile string, parallelJobs int, dryRun bool) error {
+func runBulkSyncWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
 	fmt.Println("🔄 Synchronizing webhooks with configuration...")
 
 	// Mock implementation

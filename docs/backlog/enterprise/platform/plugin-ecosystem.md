@@ -1,11 +1,13 @@
 # 플러그인 생태계 기능
 
 ## 개요
+
 확장 가능한 플러그인 아키텍처 및 마켓플레이스 생태계
 
 ## 제거된 기능
 
 ### 1. 플러그인 관리
+
 - **명령어**: `gz plugin install`, `gz plugin list`, `gz plugin remove`
 - **기능**: 플러그인 설치, 업데이트, 제거 관리
 - **특징**:
@@ -15,6 +17,7 @@
   - 자동 업데이트
 
 ### 2. 플러그인 개발 도구
+
 - **명령어**: `gz plugin create`, `gz plugin build`, `gz plugin publish`
 - **기능**: 플러그인 개발 및 배포 도구
 - **특징**:
@@ -24,6 +27,7 @@
   - 문서 자동 생성
 
 ### 3. 플러그인 실행 환경
+
 - **명령어**: `gz plugin run`, `gz plugin configure`
 - **기능**: 플러그인 실행 및 설정 관리
 - **특징**:
@@ -33,6 +37,7 @@
   - 설정 검증
 
 ### 4. 플러그인 마켓플레이스
+
 - **명령어**: `gz plugin search`, `gz plugin info`
 - **기능**: 플러그인 검색 및 정보 조회
 - **특징**:
@@ -123,6 +128,7 @@ plugins:
 ## 플러그인 아키텍처
 
 ### 1. 플러그인 인터페이스
+
 ```go
 type Plugin interface {
     // 플러그인 정보
@@ -156,6 +162,7 @@ type Hook struct {
 ```
 
 ### 2. 플러그인 매니페스트
+
 ```yaml
 name: git-flow-enhancer
 version: 1.2.3
@@ -207,6 +214,7 @@ configuration:
 ```
 
 ### 3. 보안 모델
+
 ```yaml
 sandbox:
   filesystem:
@@ -244,36 +252,42 @@ sandbox:
 ## 플러그인 카테고리
 
 ### 1. Git 통합
+
 - Git Flow 확장
 - 커밋 메시지 검증
 - 브랜치 정책 관리
 - 코드 리뷰 자동화
 
 ### 2. CI/CD 통합
+
 - Jenkins 파이프라인
 - GitHub Actions 워크플로우
 - GitLab CI 통합
 - 배포 자동화
 
 ### 3. 이슈 추적
+
 - Jira 통합
 - GitHub Issues
 - GitLab Issues
 - Trello 연동
 
 ### 4. 알림 및 커뮤니케이션
+
 - Slack 통합
 - Microsoft Teams
 - Discord 봇
 - 이메일 알림
 
 ### 5. 개발 도구
+
 - 코드 포맷팅
 - 린터 통합
 - 테스트 러너
 - 문서 생성
 
 ### 6. 클라우드 서비스
+
 - AWS CLI 확장
 - GCP 도구
 - Azure 통합
@@ -282,6 +296,7 @@ sandbox:
 ## 플러그인 개발 가이드
 
 ### 1. 플러그인 템플릿
+
 ```bash
 # 새 플러그인 생성
 gz plugin create --name my-plugin --type git-hook
@@ -298,6 +313,7 @@ my-plugin/
 ```
 
 ### 2. 빌드 및 패키징
+
 ```bash
 # 로컬 빌드
 gz plugin build
@@ -313,6 +329,7 @@ gz plugin publish --registry official
 ```
 
 ### 3. 개발 환경
+
 ```yaml
 development:
   hot_reload: true
@@ -337,24 +354,28 @@ testing:
 ## 마켓플레이스 기능
 
 ### 1. 플러그인 검색
+
 - 이름, 설명, 태그로 검색
 - 카테고리별 필터링
 - 평점 및 다운로드 수 정렬
 - 호환성 검증
 
 ### 2. 플러그인 정보
+
 - 상세 설명 및 스크린샷
 - 사용법 및 예제
 - 변경 로그
 - 사용자 리뷰
 
 ### 3. 보안 스캔
+
 - 코드 취약점 분석
 - 악성 코드 검출
 - 권한 분석
 - 의존성 보안 체크
 
 ### 4. 품질 관리
+
 - 코드 품질 메트릭
 - 테스트 커버리지
 - 문서 완성도
@@ -363,6 +384,7 @@ testing:
 ## 통합 예시
 
 ### 1. Slack 알림 플러그인
+
 ```go
 package main
 
@@ -398,6 +420,7 @@ func (s *SlackNotifier) Hooks() []Hook {
 ```
 
 ### 2. Git Flow 플러그인
+
 ```go
 type GitFlow struct {
     defaultBranch string

@@ -62,20 +62,20 @@ repo_roots:
   # Example 1: Company GitHub organization using SSH
   - root_path: "$HOME/work/mycompany"
     provider: "github"
-    protocol: "ssh"              # Use SSH for private repos
+    protocol: "ssh" # Use SSH for private repos
     org_name: "mycompany"
 
   # Example 2: Open source GitHub organization using HTTPS
   - root_path: "$HOME/opensource/kubernetes"
     provider: "github"
-    protocol: "https"            # HTTPS for public repos
+    protocol: "https" # HTTPS for public repos
     org_name: "kubernetes"
 
   # Example 3: Personal GitHub repos
   - root_path: "$HOME/personal/github"
     provider: "github"
     protocol: "ssh"
-    org_name: "myusername"       # Your GitHub username
+    org_name: "myusername" # Your GitHub username
 
   # Example 4: Another open source project
   - root_path: "$HOME/opensource/golang"
@@ -94,11 +94,11 @@ repo_roots:
 # Repository names matching these patterns will be ignored
 # Uses Go regex syntax
 ignore_names:
-  - "^test-.*"                   # Repos starting with 'test-'
-  - ".*-archive$"                # Repos ending with '-archive'
-  - "^temp.*"                    # Repos starting with 'temp'
-  - ".*-deprecated$"             # Deprecated repositories
-  - "^\\."                       # Hidden repositories (starting with .)
+  - "^test-.*" # Repos starting with 'test-'
+  - ".*-archive$" # Repos ending with '-archive'
+  - "^temp.*" # Repos starting with 'temp'
+  - ".*-deprecated$" # Deprecated repositories
+  - "^\\." # Hidden repositories (starting with .)
 
 # ============================================
 # ADVANCED CONFIGURATION (Planned Features)

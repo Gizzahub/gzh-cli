@@ -262,6 +262,7 @@ type BranchProtectionState struct {
 func checkRuleCompliance(rule PolicyRule, settings *RepoSettings, security *SecuritySettings, //nolint:gocognit // Complex rule compliance checking with multiple policy types
 	permissions *PermissionSettings, state RepositoryState,
 ) *PolicyViolation {
+	_ = permissions // permissions unused in current implementation
 	switch rule.Type {
 	case "visibility":
 		expected, ok := rule.Value.(string)

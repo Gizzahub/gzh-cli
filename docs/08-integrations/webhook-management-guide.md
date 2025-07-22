@@ -139,7 +139,7 @@ webhooks:
 
 # 대상 리포지토리 지정
 targets:
-  all: true  # 모든 리포지토리에 적용
+  all: true # 모든 리포지토리에 적용
   exclude:
     - test-repo
     - archived-repo
@@ -296,6 +296,7 @@ gz repo-config webhook automation example > automation-rules.yaml
 ### 지원되는 액션 타입
 
 #### 1. 라벨 관리
+
 ```yaml
 - type: "add_label"
   parameters:
@@ -305,6 +306,7 @@ gz repo-config webhook automation example > automation-rules.yaml
 ```
 
 #### 2. 이슈 생성
+
 ```yaml
 - type: "create_issue"
   parameters:
@@ -317,6 +319,7 @@ gz repo-config webhook automation example > automation-rules.yaml
 ```
 
 #### 3. 댓글 생성
+
 ```yaml
 - type: "create_comment"
   parameters:
@@ -326,23 +329,26 @@ gz repo-config webhook automation example > automation-rules.yaml
 ```
 
 #### 4. PR 머지
+
 ```yaml
 - type: "merge_pr"
   parameters:
-    merge_method: "squash"  # merge, squash, rebase
+    merge_method: "squash" # merge, squash, rebase
     commit_title: "Auto-merge: {{payload.title}}"
 ```
 
 #### 5. 알림 전송
+
 ```yaml
 - type: "notification"
   parameters:
-    type: "slack"  # slack, discord, teams
+    type: "slack" # slack, discord, teams
     message: "New PR opened: {{payload.title}}"
     async: true
 ```
 
 #### 6. 워크플로우 실행
+
 ```yaml
 - type: "run_workflow"
   parameters:
@@ -355,6 +361,7 @@ gz repo-config webhook automation example > automation-rules.yaml
 ### 조건 표현식
 
 #### 이벤트 타입
+
 ```yaml
 conditions:
   - type: "event_type"
@@ -371,6 +378,7 @@ conditions:
 ```
 
 #### 페이로드 조건
+
 ```yaml
 conditions:
   - type: "payload"
@@ -385,6 +393,7 @@ conditions:
 ```
 
 #### 복합 조건
+
 ```yaml
 conditions:
   - type: "event_type"
@@ -401,49 +410,49 @@ conditions:
 ### 대량 웹훅 설정 스키마
 
 ```yaml
-version: "1.0"  # 필수
+version: "1.0" # 필수
 
-webhooks:  # 필수
-  - url: string  # 필수
-    events: [string]  # 필수
-    active: boolean  # 선택 (기본값: true)
-    content_type: string  # 선택 (기본값: json)
-    secret: string  # 선택
+webhooks: # 필수
+  - url: string # 필수
+    events: [string] # 필수
+    active: boolean # 선택 (기본값: true)
+    content_type: string # 선택 (기본값: json)
+    secret: string # 선택
 
-targets:  # 필수
-  all: boolean  # 선택
-  repositories: [string]  # 선택
-  pattern: string  # 선택
-  exclude: [string]  # 선택
+targets: # 필수
+  all: boolean # 선택
+  repositories: [string] # 선택
+  pattern: string # 선택
+  exclude: [string] # 선택
 
-options:  # 선택
-  skip_existing: boolean  # 기본값: false
-  max_workers: integer  # 기본값: 5
-  continue_on_error: boolean  # 기본값: true
+options: # 선택
+  skip_existing: boolean # 기본값: false
+  max_workers: integer # 기본값: 5
+  continue_on_error: boolean # 기본값: true
 ```
 
 ### 자동화 규칙 설정 스키마
 
 ```yaml
-version: "1.0"  # 필수
+version: "1.0" # 필수
 
-global:  # 선택
-  enabled: boolean  # 기본값: true
-  default_timeout: string  # 기본값: "30s"
-  max_concurrency: integer  # 기본값: 10
+global: # 선택
+  enabled: boolean # 기본값: true
+  default_timeout: string # 기본값: "30s"
+  max_concurrency: integer # 기본값: 10
   notification_urls:
     slack: string
     discord: string
     teams: string
 
-rules:  # 필수
-  - id: string  # 필수
-    name: string  # 필수
-    description: string  # 선택
-    enabled: boolean  # 기본값: true
-    priority: integer  # 기본값: 100
-    conditions: [object]  # 필수
-    actions: [object]  # 필수
+rules: # 필수
+  - id: string # 필수
+    name: string # 필수
+    description: string # 선택
+    enabled: boolean # 기본값: true
+    priority: integer # 기본값: 100
+    conditions: [object] # 필수
+    actions: [object] # 필수
 ```
 
 ## 고급 사용법
@@ -527,9 +536,11 @@ gz repo-config webhook bulk create \
 ### 일반적인 오류
 
 #### 1. 인증 오류
+
 ```bash
 Error: authentication failed
 ```
+
 **해결방법**: GitHub 토큰이 올바른지 확인하고 적절한 권한이 있는지 확인
 
 ```bash
@@ -537,24 +548,31 @@ export GITHUB_TOKEN=ghp_your_token_here
 ```
 
 #### 2. 권한 부족
+
 ```bash
 Error: insufficient permissions
 ```
+
 **해결방법**: 토큰에 `admin:repo_hook` 스코프가 있는지 확인
 
 #### 3. 웹훅 생성 실패
+
 ```bash
 Error: webhook creation failed: validation failed
 ```
+
 **해결방법**:
+
 - URL이 유효한 HTTPS 엔드포인트인지 확인
 - 이벤트 타입이 올바른지 확인
 - secret가 너무 길지 않은지 확인
 
 #### 4. 설정 파일 오류
+
 ```bash
 Error: invalid configuration: missing required field
 ```
+
 **해결방법**: 설정 파일 검증 실행
 
 ```bash
@@ -586,17 +604,17 @@ gz repo-config webhook bulk create \
 
 ```yaml
 options:
-  max_workers: 10  # API 제한에 맞게 조정
-  continue_on_error: true  # 일부 실패해도 계속 진행
-  skip_existing: true  # 중복 생성 방지
+  max_workers: 10 # API 제한에 맞게 조정
+  continue_on_error: true # 일부 실패해도 계속 진행
+  skip_existing: true # 중복 생성 방지
 ```
 
 #### 자동화 엔진 최적화
 
 ```yaml
 global:
-  max_concurrency: 20  # 동시 처리할 이벤트 수
-  default_timeout: "60s"  # 액션 타임아웃
+  max_concurrency: 20 # 동시 처리할 이벤트 수
+  default_timeout: "60s" # 액션 타임아웃
 ```
 
 ### 모니터링
@@ -701,6 +719,7 @@ rules:
 gzh-manager-go의 웹훅 관리 기능은 GitHub 리포지토리의 자동화를 위한 강력하고 유연한 도구입니다. 개별 웹훅 관리부터 조직 전체의 대량 작업, 그리고 이벤트 기반 자동화까지 포괄적인 기능을 제공하여 개발 워크플로우를 크게 개선할 수 있습니다.
 
 더 자세한 정보는 다음 문서를 참조하세요:
+
 - [API 참조](webhook-api-reference.md)
 - [고급 설정](webhook-advanced-configuration.md)
 - [문제 해결 가이드](webhook-troubleshooting.md)

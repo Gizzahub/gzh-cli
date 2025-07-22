@@ -14,6 +14,7 @@ The `gz repo-config` command provides powerful tools for managing GitHub reposit
 ## Overview
 
 Repository configuration management helps organizations:
+
 - Ensure consistent repository settings across all projects
 - Identify configuration drift from desired state
 - Enforce security and compliance policies
@@ -32,21 +33,22 @@ gz repo-config diff --org <organization> [flags]
 
 ### Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--org` | GitHub organization name | Required |
-| `--config` | Configuration file path | Auto-detected |
-| `--filter` | Filter repositories by name pattern (regex) | All repos |
-| `--format` | Output format (table, json, unified) | table |
-| `--show-values` | Include current values in output | false |
-| `--dry-run` | Preview changes without applying | false |
-| `--parallel` | Number of parallel operations | 5 |
-| `--timeout` | API timeout duration | 30s |
-| `--token` | GitHub personal access token | $GITHUB_TOKEN |
+| Flag            | Description                                 | Default       |
+| --------------- | ------------------------------------------- | ------------- |
+| `--org`         | GitHub organization name                    | Required      |
+| `--config`      | Configuration file path                     | Auto-detected |
+| `--filter`      | Filter repositories by name pattern (regex) | All repos     |
+| `--format`      | Output format (table, json, unified)        | table         |
+| `--show-values` | Include current values in output            | false         |
+| `--dry-run`     | Preview changes without applying            | false         |
+| `--parallel`    | Number of parallel operations               | 5             |
+| `--timeout`     | API timeout duration                        | 30s           |
+| `--token`       | GitHub personal access token                | $GITHUB_TOKEN |
 
 ### Output Formats
 
 #### Table Format (Default)
+
 ```bash
 gz repo-config diff --org myorg
 
@@ -64,6 +66,7 @@ docs-site        -           5             LOW       📋 Features
 ```
 
 #### JSON Format
+
 ```bash
 gz repo-config diff --org myorg --format json
 ```
@@ -95,6 +98,7 @@ gz repo-config diff --org myorg --format json
 ```
 
 #### Unified Diff Format
+
 ```bash
 gz repo-config diff --org myorg --format unified
 ```
@@ -133,56 +137,64 @@ gz repo-config audit --org <organization> [flags]
 ### Flags
 
 #### Basic Options
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--org` | GitHub organization name | Required |
-| `--format` | Output format (table, json, html, csv, sarif, junit) | table |
-| `--output` | Output file path | stdout |
-| `--detailed` | Include detailed violation information | false |
-| `--policy` | Audit specific policy only | All policies |
+
+| Flag         | Description                                          | Default      |
+| ------------ | ---------------------------------------------------- | ------------ |
+| `--org`      | GitHub organization name                             | Required     |
+| `--format`   | Output format (table, json, html, csv, sarif, junit) | table        |
+| `--output`   | Output file path                                     | stdout       |
+| `--detailed` | Include detailed violation information               | false        |
+| `--policy`   | Audit specific policy only                           | All policies |
 
 #### Repository Filters
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--filter-visibility` | Filter by visibility (public, private, all) | `--filter-visibility private` |
-| `--filter-template` | Filter by template name | `--filter-template backend` |
-| `--filter-topics` | Filter by repository topics | `--filter-topics security,compliance` |
-| `--filter-team` | Filter by team ownership | `--filter-team platform` |
-| `--filter-modified` | Filter by last modified time | `--filter-modified 30d` |
-| `--filter-pattern` | Filter by repository name pattern (regex) | `--filter-pattern ^api-.*` |
+
+| Flag                  | Description                                 | Example                               |
+| --------------------- | ------------------------------------------- | ------------------------------------- |
+| `--filter-visibility` | Filter by visibility (public, private, all) | `--filter-visibility private`         |
+| `--filter-template`   | Filter by template name                     | `--filter-template backend`           |
+| `--filter-topics`     | Filter by repository topics                 | `--filter-topics security,compliance` |
+| `--filter-team`       | Filter by team ownership                    | `--filter-team platform`              |
+| `--filter-modified`   | Filter by last modified time                | `--filter-modified 30d`               |
+| `--filter-pattern`    | Filter by repository name pattern (regex)   | `--filter-pattern ^api-.*`            |
 
 #### Policy Options
-| Flag | Description | Available Options |
-|------|-------------|-------------------|
-| `--policy-group` | Audit specific policy group | security, compliance, best-practice |
+
+| Flag              | Description                  | Available Options                                               |
+| ----------------- | ---------------------------- | --------------------------------------------------------------- |
+| `--policy-group`  | Audit specific policy group  | security, compliance, best-practice                             |
 | `--policy-preset` | Use predefined policy preset | soc2, iso27001, nist, pci-dss, hipaa, gdpr, minimal, enterprise |
 
 #### CI/CD Integration
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--exit-on-fail` | Exit with non-zero code if compliance fails | false |
-| `--fail-threshold` | Compliance percentage threshold for failure | 80.0 |
-| `--baseline` | Compare against baseline file | none |
+
+| Flag               | Description                                 | Default |
+| ------------------ | ------------------------------------------- | ------- |
+| `--exit-on-fail`   | Exit with non-zero code if compliance fails | false   |
+| `--fail-threshold` | Compliance percentage threshold for failure | 80.0    |
+| `--baseline`       | Compare against baseline file               | none    |
 
 #### Trend Analysis
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--save-trend` | Save audit results for trend analysis | false |
-| `--show-trend` | Show trend analysis report | false |
-| `--trend-period` | Trend analysis period | 30d |
+
+| Flag             | Description                           | Default |
+| ---------------- | ------------------------------------- | ------- |
+| `--save-trend`   | Save audit results for trend analysis | false   |
+| `--show-trend`   | Show trend analysis report            | false   |
+| `--trend-period` | Trend analysis period                 | 30d     |
 
 #### Notifications
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--notify-webhook` | Send audit results to webhook URL | `--notify-webhook https://slack.com/webhook` |
-| `--notify-email` | Send audit results to email address | `--notify-email admin@company.com` |
+
+| Flag               | Description                         | Example                                      |
+| ------------------ | ----------------------------------- | -------------------------------------------- |
+| `--notify-webhook` | Send audit results to webhook URL   | `--notify-webhook https://slack.com/webhook` |
+| `--notify-email`   | Send audit results to email address | `--notify-email admin@company.com`           |
 
 ### Output Formats
 
 #### Table Format (Default)
+
 Shows human-readable compliance summary with risk analysis.
 
 #### HTML Format
+
 Generates interactive HTML report with charts and visualizations.
 
 ```bash
@@ -190,6 +202,7 @@ gz repo-config audit --org myorg --format html --output audit-report.html
 ```
 
 #### SARIF Format
+
 Static Analysis Results Interchange Format for integration with GitHub Advanced Security.
 
 ```bash
@@ -197,6 +210,7 @@ gz repo-config audit --org myorg --format sarif --output results.sarif
 ```
 
 #### JUnit XML Format
+
 For CI/CD integration and test reporting.
 
 ```bash
@@ -206,27 +220,35 @@ gz repo-config audit --org myorg --format junit --output junit.xml
 ### Policy Presets
 
 #### SOC 2 Type II
+
 ```bash
 gz repo-config audit --org myorg --policy-preset soc2
 ```
+
 Enforces Service Organization Control 2 compliance requirements.
 
 #### ISO 27001:2022
+
 ```bash
 gz repo-config audit --org myorg --policy-preset iso27001
 ```
+
 Information Security Management System requirements.
 
 #### NIST Cybersecurity Framework
+
 ```bash
 gz repo-config audit --org myorg --policy-preset nist
 ```
+
 NIST CSF security controls.
 
 #### PCI DSS v4.0
+
 ```bash
 gz repo-config audit --org myorg --policy-preset pci-dss
 ```
+
 Payment Card Industry Data Security Standard.
 
 ### Examples
@@ -358,6 +380,7 @@ Repositories are assessed across multiple risk factors:
 - **Exposure Risk**: Public repositories with violations
 
 Risk levels:
+
 - **Critical**: Score ≥ 75
 - **High**: Score ≥ 50
 - **Medium**: Score ≥ 25
@@ -395,7 +418,7 @@ name: Repository Compliance Check
 
 on:
   schedule:
-    - cron: '0 0 * * 1' # Weekly on Monday
+    - cron: "0 0 * * 1" # Weekly on Monday
   workflow_dispatch:
 
 jobs:

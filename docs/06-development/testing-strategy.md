@@ -5,17 +5,20 @@
 gzh-manager uses a three-tier testing strategy:
 
 ### 1. Unit Tests
+
 - Located alongside the code in each package
 - Fast, isolated tests with no external dependencies
 - Run with `make test-unit`
 
 ### 2. Integration Tests
+
 - Located in `test/integration/`
 - Test interactions with external systems (Docker, APIs)
 - Use build tag `//go:build integration`
 - Run with `make test-integration`
 
 ### 3. End-to-End (E2E) Tests
+
 - Located in `test/e2e/`
 - Test complete user workflows
 - Use build tag `//go:build e2e`
@@ -24,16 +27,19 @@ gzh-manager uses a three-tier testing strategy:
 ## Running Tests
 
 ### Run all tests
+
 ```bash
 make test-all
 ```
 
 ### Run only unit tests (fast)
+
 ```bash
 make test-unit
 ```
 
 ### Run integration tests
+
 ```bash
 make test-integration
 # or with Docker
@@ -41,6 +47,7 @@ make test-docker
 ```
 
 ### Run E2E tests
+
 ```bash
 make test-e2e
 ```
@@ -48,6 +55,7 @@ make test-e2e
 ## Writing Tests
 
 ### Unit Test Example
+
 ```go
 // internal/git/operations_test.go
 package git
@@ -65,6 +73,7 @@ func TestOperations_Clone(t *testing.T) {
 ```
 
 ### Integration Test Example
+
 ```go
 //go:build integration
 // +build integration
@@ -86,6 +95,7 @@ func TestGitHubIntegration(t *testing.T) {
 ```
 
 ### E2E Test Example
+
 ```go
 //go:build e2e
 // +build e2e
@@ -108,6 +118,7 @@ func TestBulkCloneE2E(t *testing.T) {
 ## Test Coverage
 
 ### Generate coverage report
+
 ```bash
 # Unit test coverage
 make test-unit
@@ -122,6 +133,7 @@ go tool cover -html=coverage.out
 ```
 
 ### Coverage Goals
+
 - Unit tests: 80% coverage minimum
 - Critical packages: 90% coverage
 - Integration tests: Focus on API contracts
@@ -148,21 +160,25 @@ Tests run in different stages:
 ## Debugging Tests
 
 ### Run specific test
+
 ```bash
 go test -v -run TestOperations_Clone ./internal/git/
 ```
 
 ### Run with race detector
+
 ```bash
 go test -race ./...
 ```
 
 ### Verbose output
+
 ```bash
 go test -v ./...
 ```
 
 ### Test with specific tags
+
 ```bash
 go test -tags=integration -v ./test/integration/github/...
 ```

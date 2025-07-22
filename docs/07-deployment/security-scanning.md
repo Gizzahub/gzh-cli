@@ -15,35 +15,35 @@ Security scanning is performed at multiple levels:
 
 ### gosec Rules Enabled
 
-| Rule | Description | Severity |
-|------|-------------|----------|
-| G101 | Hardcoded credentials | HIGH |
-| G102 | Bind to all interfaces | MEDIUM |
-| G103 | Unsafe blocks | HIGH |
-| G104 | Unchecked errors | MEDIUM |
-| G106 | SSH InsecureIgnoreHostKey | HIGH |
-| G107 | URL injection | MEDIUM |
-| G108 | Profiling endpoint exposed | MEDIUM |
-| G109 | Integer overflow | MEDIUM |
-| G110 | DoS via decompression | HIGH |
-| G201 | SQL injection (format) | HIGH |
-| G202 | SQL injection (concat) | HIGH |
-| G203 | Unescaped HTML templates | MEDIUM |
-| G204 | Command injection | HIGH |
-| G301 | Poor directory permissions | MEDIUM |
-| G302 | Poor file permissions (chmod) | MEDIUM |
-| G303 | Predictable tempfile | MEDIUM |
-| G304 | File path injection | MEDIUM |
-| G305 | ZIP/TAR traversal | HIGH |
-| G306 | Poor file permissions (write) | MEDIUM |
-| G307 | Deferred error not checked | LOW |
-| G401 | Weak crypto (DES, RC4, MD5, SHA1) | HIGH |
-| G402 | Bad TLS settings | HIGH |
-| G403 | Weak RSA keys (<2048 bits) | HIGH |
-| G404 | Insecure random source | MEDIUM |
-| G501-G505 | Crypto import blocklist | HIGH |
-| G601 | Implicit memory aliasing | MEDIUM |
-| G602 | Slice bounds checking | MEDIUM |
+| Rule      | Description                       | Severity |
+| --------- | --------------------------------- | -------- |
+| G101      | Hardcoded credentials             | HIGH     |
+| G102      | Bind to all interfaces            | MEDIUM   |
+| G103      | Unsafe blocks                     | HIGH     |
+| G104      | Unchecked errors                  | MEDIUM   |
+| G106      | SSH InsecureIgnoreHostKey         | HIGH     |
+| G107      | URL injection                     | MEDIUM   |
+| G108      | Profiling endpoint exposed        | MEDIUM   |
+| G109      | Integer overflow                  | MEDIUM   |
+| G110      | DoS via decompression             | HIGH     |
+| G201      | SQL injection (format)            | HIGH     |
+| G202      | SQL injection (concat)            | HIGH     |
+| G203      | Unescaped HTML templates          | MEDIUM   |
+| G204      | Command injection                 | HIGH     |
+| G301      | Poor directory permissions        | MEDIUM   |
+| G302      | Poor file permissions (chmod)     | MEDIUM   |
+| G303      | Predictable tempfile              | MEDIUM   |
+| G304      | File path injection               | MEDIUM   |
+| G305      | ZIP/TAR traversal                 | HIGH     |
+| G306      | Poor file permissions (write)     | MEDIUM   |
+| G307      | Deferred error not checked        | LOW      |
+| G401      | Weak crypto (DES, RC4, MD5, SHA1) | HIGH     |
+| G402      | Bad TLS settings                  | HIGH     |
+| G403      | Weak RSA keys (<2048 bits)        | HIGH     |
+| G404      | Insecure random source            | MEDIUM   |
+| G501-G505 | Crypto import blocklist           | HIGH     |
+| G601      | Implicit memory aliasing          | MEDIUM   |
+| G602      | Slice bounds checking             | MEDIUM   |
 
 ### Configuration Files
 
@@ -105,12 +105,14 @@ hash := md5.Sum(data) // #nosec G401
 ### Credential Management
 
 ❌ **Don't do this:**
+
 ```go
 const apiKey = "sk-1234567890abcdef"  // G101: Hardcoded credential
 token := "github_pat_" + userInput    // G101: Potential credential leak
 ```
 
 ✅ **Do this:**
+
 ```go
 apiKey := os.Getenv("API_KEY")
 if apiKey == "" {
@@ -121,6 +123,7 @@ if apiKey == "" {
 ### File Operations
 
 ❌ **Don't do this:**
+
 ```go
 // G304: File path from user input
 file, err := os.Open(userProvidedPath)
@@ -130,6 +133,7 @@ os.WriteFile("config.json", data, 0777)
 ```
 
 ✅ **Do this:**
+
 ```go
 // Validate and sanitize file paths
 cleanPath := filepath.Clean(userProvidedPath)
@@ -144,12 +148,14 @@ os.WriteFile("config.json", data, 0600)
 ### Command Execution
 
 ❌ **Don't do this:**
+
 ```go
 // G204: Command injection vulnerability
 cmd := exec.Command("sh", "-c", userInput)
 ```
 
 ✅ **Do this:**
+
 ```go
 // Use allowlist of safe commands
 allowedCommands := map[string]bool{
@@ -167,6 +173,7 @@ cmd := exec.Command(command, "--help")
 ### Cryptography
 
 ❌ **Don't do this:**
+
 ```go
 // G401: Weak hash function
 import "crypto/md5"
@@ -177,6 +184,7 @@ tls.Config{InsecureSkipVerify: true}
 ```
 
 ✅ **Do this:**
+
 ```go
 // Use strong hash functions
 import "crypto/sha256"
@@ -195,6 +203,7 @@ tls.Config{
 ### Error Handling
 
 ❌ **Don't do this:**
+
 ```go
 // G104: Unchecked error
 file.Close()
@@ -202,6 +211,7 @@ json.Unmarshal(data, &result)
 ```
 
 ✅ **Do this:**
+
 ```go
 // Always check errors
 if err := file.Close(); err != nil {
@@ -246,6 +256,7 @@ Security scanning is automatically integrated into pre-commit hooks:
 ### Common Issues
 
 1. **gosec not found**
+
    ```bash
    go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
    ```

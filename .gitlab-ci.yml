@@ -21,16 +21,16 @@ build:
     - go build
 
 test:
-    stage: test
-    script:
-      - go test -v -race "$(go list ./... | grep -v /vendor/)" -v -coverprofile=coverage.out
-      - go tool cover -func=coverage.out
+  stage: test
+  script:
+    - go test -v -race "$(go list ./... | grep -v /vendor/)" -v -coverprofile=coverage.out
+    - go tool cover -func=coverage.out
 
 release:
   stage: release
   image:
-      name: goreleaser/goreleaser:v0.164.0
-      entrypoint: ["/bin/bash", "-c"]
+    name: goreleaser/goreleaser:v0.164.0
+    entrypoint: ["/bin/bash", "-c"]
   only:
     refs:
       - tags

@@ -124,9 +124,9 @@ root:
       type: string
       description: Regex pattern for repository names to ignore
     examples:
-      - "^test-.*"      # Ignore repos starting with 'test-'
-      - ".*-archive$"   # Ignore repos ending with '-archive'
-      - "^temp.*"       # Ignore repos starting with 'temp'
+      - "^test-.*" # Ignore repos starting with 'test-'
+      - ".*-archive$" # Ignore repos ending with '-archive'
+      - "^temp.*" # Ignore repos starting with 'temp'
 
 # Environment Variables
 # ====================

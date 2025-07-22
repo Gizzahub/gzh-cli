@@ -25,15 +25,24 @@ type RepositoryProgress struct {
 type ProgressStatus string
 
 const (
-	StatusPending   ProgressStatus = "pending"
-	StatusStarted   ProgressStatus = "started"
-	StatusCloning   ProgressStatus = "cloning"
-	StatusPulling   ProgressStatus = "pulling"
-	StatusFetching  ProgressStatus = "fetching"
+	// StatusPending indicates the repository operation is pending.
+	StatusPending ProgressStatus = "pending"
+	// StatusStarted indicates the repository operation has started.
+	StatusStarted ProgressStatus = "started"
+	// StatusCloning indicates the repository is being cloned.
+	StatusCloning ProgressStatus = "cloning"
+	// StatusPulling indicates the repository is being pulled.
+	StatusPulling ProgressStatus = "pulling"
+	// StatusFetching indicates the repository is being fetched.
+	StatusFetching ProgressStatus = "fetching"
+	// StatusResetting indicates the repository is being reset.
 	StatusResetting ProgressStatus = "resetting"
+	// StatusCompleted indicates the repository operation completed successfully.
 	StatusCompleted ProgressStatus = "completed"
-	StatusFailed    ProgressStatus = "failed"
-	StatusSkipped   ProgressStatus = "skipped"
+	// StatusFailed indicates the repository operation failed.
+	StatusFailed ProgressStatus = "failed"
+	// StatusSkipped indicates the repository operation was skipped.
+	StatusSkipped ProgressStatus = "skipped"
 )
 
 // ProgressTracker tracks progress for multiple repositories.
@@ -49,9 +58,12 @@ type ProgressTracker struct {
 type DisplayMode string
 
 const (
-	DisplayModeCompact  DisplayMode = "compact"  // Single line with overall progress
+	// DisplayModeCompact shows single line with overall progress.
+	DisplayModeCompact DisplayMode = "compact" // Single line with overall progress
+	// DisplayModeDetailed shows multiple lines with per-repo status.
 	DisplayModeDetailed DisplayMode = "detailed" // Multiple lines with per-repo status
-	DisplayModeQuiet    DisplayMode = "quiet"    // No progress display
+	// DisplayModeQuiet shows no progress display.
+	DisplayModeQuiet DisplayMode = "quiet" // No progress display
 )
 
 // NewProgressTracker creates a new progress tracker.
@@ -95,7 +107,7 @@ func (pt *ProgressTracker) UpdateRepository(name string, status ProgressStatus, 
 }
 
 // SetRepositoryError sets an error for a specific repository.
-func (pt *ProgressTracker) SetRepositoryError(name string, err string) {
+func (pt *ProgressTracker) SetRepositoryError(name, err string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
 
@@ -108,7 +120,7 @@ func (pt *ProgressTracker) SetRepositoryError(name string, err string) {
 }
 
 // CompleteRepository marks a repository as completed.
-func (pt *ProgressTracker) CompleteRepository(name string, message string) {
+func (pt *ProgressTracker) CompleteRepository(name, message string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
 

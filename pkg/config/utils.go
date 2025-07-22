@@ -11,12 +11,12 @@ import (
 
 // CreateDirectory creates a directory if it doesn't exist.
 func CreateDirectory(dir string) error {
-	return os.MkdirAll(dir, 0o755)
+	return os.MkdirAll(dir, 0o750)
 }
 
 // WriteFile writes content to a file.
 func WriteFile(filename, content string) error {
-	return os.WriteFile(filename, []byte(content), 0o644)
+	return os.WriteFile(filename, []byte(content), 0o600)
 }
 
 // FileExists checks if a file exists.

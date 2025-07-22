@@ -36,6 +36,7 @@ type bulkCloneDefaultGitlab struct {
 	GroupName string `yaml:"groupName"`
 }
 
+// BulkCloneGithub represents GitHub bulk clone configuration.
 type BulkCloneGithub struct {
 	RootPath string `yaml:"rootPath" validate:"required"`
 	Provider string `yaml:"provider" validate:"required"`
@@ -43,6 +44,7 @@ type BulkCloneGithub struct {
 	OrgName  string `yaml:"orgName" validate:"required"`
 }
 
+// BulkCloneGitlab represents GitLab bulk clone configuration.
 type BulkCloneGitlab struct {
 	RootPath  string `yaml:"rootPath" validate:"required"`
 	Provider  string `yaml:"provider" validate:"required"`

@@ -1,5 +1,4 @@
-Gizzahub Manager
-================
+# Gizzahub Manager
 
 <div style="text-align: center;">
 Comprehensive CLI Tool
@@ -14,16 +13,17 @@ Comprehensive CLI Tool
 <img src="https://img.shields.io/github/downloads/Gizzahub/gzh-manager-go/total.svg" alt="Total Downloads"/>
 </div>
 
-
 # Table of Contents
+
 <!--ts-->
-  * [Usage](#usage)
-  * [Features](#features)
-  * [Project Layout](#project-layout)
-  * [How to use this template](#how-to-use-this-template)
-  * [Demo Application](#demo-application)
-  * [Makefile Targets](#makefile-targets)
-  * [Contribute](#contribute)
+
+- [Usage](#usage)
+- [Features](#features)
+- [Project Layout](#project-layout)
+- [How to use this template](#how-to-use-this-template)
+- [Demo Application](#demo-application)
+- [Makefile Targets](#makefile-targets)
+- [Contribute](#contribute)
 
 <!-- Added by: morelly_t1, at: Tue 10 Aug 2021 08:54:24 AM CEST -->
 
@@ -36,12 +36,14 @@ Comprehensive CLI Tool
 `gzh-manager-go`는 개발자를 위한 종합적인 CLI 도구로, 다음과 같은 주요 기능을 제공합니다:
 
 ### 📦 리포지토리 관리
+
 - **대량 클론 도구**: GitHub, GitLab, Gitea, Gogs에서 전체 조직의 리포지토리를 일괄 클론
 - **고급 클론 전략**: reset, pull, fetch 모드 지원으로 기존 리포지토리 동기화 방식 제어
 - **재개 가능한 작업**: 중단된 클론 작업을 이어서 진행할 수 있는 상태 관리 시스템
 - **병렬 처리**: 최대 50개의 동시 클론 작업으로 대규모 조직 처리 성능 향상
 
 ### 🏢 GitHub 조직 관리
+
 - **리포지토리 설정 관리**: 조직 전체 리포지토리의 설정을 템플릿 기반으로 일괄 관리
 - **설정 비교 도구**: `gz repo-config diff`로 현재 설정과 목표 설정 간 차이점 시각화
 - **정책 준수 감사**: `gz repo-config audit`로 SOC2, ISO27001, NIST 등 컴플라이언스 프레임워크 준수 확인
@@ -50,22 +52,26 @@ Comprehensive CLI Tool
 - **다양한 출력 형식**: 테이블, JSON, HTML, CSV, SARIF, JUnit 형식 지원으로 CI/CD 통합 가능
 
 ### 🔧 통합 설정 시스템
+
 - **gzh.yaml 통합 설정**: 모든 명령어의 설정을 하나의 파일로 통합 관리
 - **설정 우선순위 체계**: CLI 플래그 > 환경변수 > 설정파일 > 기본값 순서
 - **설정 마이그레이션**: 기존 bulk-clone.yaml을 gzh.yaml로 자동 변환
 - **스키마 검증**: JSON/YAML 스키마를 통한 설정 파일 유효성 검사
 
 ### 🌐 네트워크 환경 관리
+
 - **네트워크 프로필 전환**: VPN, DNS, 프록시, 호스트 파일을 한번의 명령어로 전환
 - **수동 환경 관리**: 필요시 `gz net-env switch` 명령어로 네트워크 환경 변경
 - **상태 확인**: `gz net-env status`로 현재 네트워크 설정 상태 조회
 
 ### 🏠 개발 환경 관리
+
 - **패키지 관리자 통합**: asdf, Homebrew, SDKMAN, MacPorts 등의 패키지를 최신 버전으로 일괄 업데이트
 - **설정 백업/복원**: AWS, Docker, Kubernetes, SSH 등의 설정을 안전하게 백업 및 복원
 - **JetBrains IDE 지원**: IDE 설정 동기화 문제 자동 감지 및 수정
 
 ### 🩺 시스템 진단
+
 - **종합 진단 도구**: `gz doctor`로 시스템 상태, 의존성, 네트워크 연결성 등을 자동 진단
 - **문제 해결 제안**: 발견된 문제에 대한 구체적인 해결 방안 제시
 - **성능 벤치마크**: CPU, 디스크 I/O 성능 측정 및 최적화 권고
@@ -74,6 +80,7 @@ Comprehensive CLI Tool
 ## 🚀 빠른 시작
 
 ### 1. 설치
+
 ```bash
 # 최신 릴리스 다운로드 (권장)
 wget https://github.com/gizzahub/gzh-manager-go/releases/latest/download/gz-linux-amd64
@@ -87,6 +94,7 @@ make build
 ```
 
 ### 2. 기본 사용법
+
 ```sh
 # 시스템 상태 진단
 gz doctor
@@ -166,12 +174,14 @@ The bulk-clone command now supports configuration files to manage multiple organ
 The gzh-manager tool uses a strict priority hierarchy where higher priority sources override lower priority ones:
 
 **Priority Order (Highest to Lowest):**
+
 1. **Command-Line Flags** (Highest Priority)
 2. **Environment Variables** (Second Priority)
 3. **Configuration Files** (Third Priority)
 4. **Default Values** (Lowest Priority)
 
 **Examples:**
+
 ```bash
 # CLI flag overrides all other sources
 gz bulk-clone --strategy=pull --parallel=20
@@ -189,6 +199,7 @@ gz bulk-clone  # Uses settings from config file
 #### Configuration File Locations
 
 The tool searches for configuration files in the following order:
+
 1. Environment variable: `GZH_CONFIG_PATH`
 2. Current directory: `./gzh.yaml`, `./gzh.yml`, `./bulk-clone.yaml`, `./bulk-clone.yml`
 3. User config directory: `~/.config/gzh-manager/gzh.yaml`, `~/.config/gzh-manager/bulk-clone.yaml`
@@ -249,6 +260,7 @@ See `samples/bulk-clone-example.yaml` for a comprehensive example with all avail
 #### Configuration Schema
 
 The configuration file structure is formally defined in:
+
 - **JSON Schema**: `docs/bulk-clone-schema.json` - Machine-readable schema definition
 - **YAML Schema**: `docs/bulk-clone-schema.yaml` - Human-readable schema documentation
 
@@ -265,6 +277,7 @@ gzh bulk-clone validate --use-config
 ```
 
 The validator checks:
+
 - Required fields are present
 - Values match allowed enums (protocol, provider, etc.)
 - Structure follows the schema
@@ -276,23 +289,23 @@ The validator checks:
 # bulk-clone.yaml (advanced example for future implementation)
 github:
   ScriptonBasestar:
-   auth: token
-   proto: https
-   targetPath: $HOME/mywork/ScriptonBasestar
-   default:
-    strategy: include
-    branch: develop
-   include:
-    proxynd:
+    auth: token
+    proto: https
+    targetPath: $HOME/mywork/ScriptonBasestar
+    default:
+      strategy: include
       branch: develop
-    devops-minim-engine:
-      branch: dev
-   exclude:
-    - sb-wp-*
-   override:
     include:
+      proxynd:
+        branch: develop
+      devops-minim-engine:
+        branch: dev
+    exclude:
+      - sb-wp-*
+    override:
+      include:
   nginxinc:
-   targetPath: $HOME/mywork/nginxinc
+    targetPath: $HOME/mywork/nginxinc
 ```
 
 ```bash
@@ -311,6 +324,7 @@ The `-s` or `--strategy` flag controls how existing repositories are synchronize
 - `fetch`: Only performs `git fetch` without modifying the working directory. This updates remote tracking branches but doesn't change your local files.
 
 Example usage:
+
 ```bash
 # Default behavior (reset strategy)
 gzh bulk-clone github -o myorg -t ~/repos
@@ -335,6 +349,7 @@ The `--max-retries` flag controls how many times failed operations are retried:
 - Range: 0-10
 
 Example usage:
+
 ```bash
 # Clone with 20 parallel workers
 gzh bulk-clone github -o myorg -t ~/repos -p 20
@@ -347,6 +362,7 @@ gzh bulk-clone github -o myorg -t ~/repos -p 1
 ```
 
 **Performance Tips:**
+
 - For large organizations (100+ repos), use `-p 20` or higher
 - For rate-limited accounts, use `-p 5` or lower
 - Network speed and CPU cores affect optimal parallel value
@@ -368,12 +384,14 @@ gzh bulk-clone github -o large-org -t ~/repos -p 10 --resume
 ```
 
 **State Management:**
+
 - States are automatically saved to `~/.gzh/state/`
 - Resume works across different parallel settings
 - States are cleaned up after successful completion
 - Failed repositories are tracked and can be retried
 
 **State Commands:**
+
 ```bash
 # List all saved states
 gzh bulk-clone state list
@@ -387,6 +405,7 @@ gzh bulk-clone state clean --all
 ```
 
 **Benefits:**
+
 - No need to restart from beginning after interruption
 - Handles network failures gracefully
 - Tracks progress across sessions
@@ -399,6 +418,7 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
 ### Quick Start
 
 1. **Create a configuration file** (`repo-config.yaml`):
+
    ```yaml
    version: "1.0.0"
    organization: "your-org"
@@ -423,6 +443,7 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
    ```
 
 2. **Apply configuration**:
+
    ```bash
    # Preview changes (dry run)
    gz repo-config apply --config repo-config.yaml --dry-run
@@ -432,11 +453,13 @@ The `gz repo-config` command allows you to manage GitHub repository configuratio
    ```
 
 3. **Audit compliance**:
+
    ```bash
    gz repo-config audit --config repo-config.yaml
    ```
 
 4. **Manage webhooks**:
+
    ```bash
    # Individual webhook management
    gz repo-config webhook create --org myorg --repo myrepo --url https://example.com/webhook
@@ -504,6 +527,7 @@ patterns:
 ## 🚀 빠른 시작
 
 ### 1. 설치
+
 ```bash
 # 바이너리 다운로드 및 설치
 make install
@@ -513,6 +537,7 @@ make build
 ```
 
 ### 2. 기본 설정
+
 ```bash
 # 통합 설정 파일 생성
 gz config init
@@ -522,6 +547,7 @@ gz net-env switch --init
 ```
 
 ### 3. 대량 클론 시작
+
 ```bash
 # GitHub 조직 클론
 gz bulk-clone github -o myorg -t ~/repos
@@ -531,6 +557,7 @@ gz bulk-clone github --use-config -o myorg
 ```
 
 ### 4. 네트워크 환경 관리
+
 ```bash
 # 네트워크 프로필 목록 확인
 gz net-env switch --list
@@ -547,12 +574,14 @@ gz net-env switch office
 ## 🎯 프로젝트 현황
 
 ### 구현 완료도
+
 - **핵심 기능**: 100% 완료 ✅
 - **테스트 커버리지**: 포괄적인 테스트 완료 ✅
 - **문서화**: 완벽한 문서 체계 구축 ✅
 - **프로덕션 준비**: 실제 운영 환경에서 사용 가능 ✅
 
 ### 주요 성과
+
 - 📊 수백 개의 리포지토리를 효율적으로 관리하는 도구 완성
 - 🔧 개발자의 네트워크 환경 전환 작업을 CLI 명령어로 간소화
 - ⚙️ 모든 도구를 하나의 설정 파일로 관리하는 통합 체계 구축
@@ -560,6 +589,7 @@ gz net-env switch office
 - 📚 사용자 가이드부터 개발자 문서까지 완벽한 문서 체계
 
 ### 기술적 특징
+
 - **Go 언어 기반**: 크로스 플랫폼 지원, 높은 성능
 - **모듈화 설계**: 확장 가능한 아키텍처
 - **테스트 주도 개발**: 포괄적인 테스트 커버리지
@@ -641,10 +671,12 @@ func main() {
 ### 더 많은 예제
 
 완전한 사용 예제와 API 문서는 다음에서 확인하세요:
+
 - [GoDoc](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg/gzhclient)
 - [Example Code](pkg/gzhclient/examples_test.go)
 
 # Features
+
 - [goreleaser](https://goreleaser.com/) with `deb.` and `.rpm` packer and container (`docker.hub` and `ghcr.io`) releasing including `manpages` and `shell completions` and grouped Changelog generation.
 - [golangci-lint](https://golangci-lint.run/) for linting and formatting
 - [Github Actions](.github/worflows) Stages (Lint, Test (`windows`, `linux`, `mac-os`), Build, Release)
@@ -656,14 +688,17 @@ func main() {
 - [pre-commit-hooks](https://pre-commit.com/) for formatting and validating code before committing
 
 ## Project Layout
-* [assets/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/assets) => docs, images, etc
-* [cmd/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/cmd)  => command-line configurations (flags, subcommands)
-* [pkg/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg)  => packages that are okay to import for other projects
-* [internal/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg)  => packages that are only for project internal purposes
-- [`tools/`](tools/) => for automatically shipping all required dependencies when running `go get` (or `make bootstrap`) such as `golang-ci-lint` (see: https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module)
-- [`scripts/`](scripts/) => build scripts
+
+- [assets/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/assets) => docs, images, etc
+- [cmd/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/cmd) => command-line configurations (flags, subcommands)
+- [pkg/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg) => packages that are okay to import for other projects
+- [internal/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg) => packages that are only for project internal purposes
+
+* [`tools/`](tools/) => for automatically shipping all required dependencies when running `go get` (or `make bootstrap`) such as `golang-ci-lint` (see: https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module)
+* [`scripts/`](scripts/) => build scripts
 
 # Makefile Targets
+
 ```sh
 $> make
 bootstrap                      install build deps

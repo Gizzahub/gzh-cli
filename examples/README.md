@@ -33,11 +33,13 @@ This directory contains example configurations and usage patterns for the gz CLI
 ## Quick Start
 
 1. Copy the appropriate example file:
+
    ```bash
    cp examples/bulk-clone-simple.yaml ~/.config/gzh-manager/bulk-clone.yaml
    ```
 
 2. Edit the configuration with your settings:
+
    ```bash
    # Set your GitHub token
    export GZH_GITHUB_TOKEN="your-token-here"
@@ -56,7 +58,7 @@ This directory contains example configurations and usage patterns for the gz CLI
 The gz tool loads configuration in the following order (highest to lowest priority):
 
 1. Command-line flags
-2. Environment variables (GZH_* prefix)
+2. Environment variables (GZH\_\* prefix)
 3. Config file in current directory (./bulk-clone.yaml)
 4. User config (~/.config/gzh-manager/bulk-clone.yaml)
 5. System config (/etc/gzh-manager/bulk-clone.yaml)

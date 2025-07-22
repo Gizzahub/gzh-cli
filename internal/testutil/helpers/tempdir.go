@@ -51,17 +51,17 @@ func CreateTempFile(t *testing.T, dir, pattern string, content []byte) string {
 }
 
 // CreateTestRepo creates a test git repository structure.
-func CreateTestRepo(t *testing.T, baseDir string, name string, files map[string]string) string {
+func CreateTestRepo(t *testing.T, baseDir, name string, files map[string]string) string {
 	t.Helper()
 
 	repoPath := filepath.Join(baseDir, name)
-	if err := os.MkdirAll(repoPath, 0o755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o750); err != nil {
 		t.Fatalf("failed to create repo directory: %v", err)
 	}
 
 	// Create .git directory to simulate a git repo
 	gitDir := filepath.Join(repoPath, ".git")
-	if err := os.MkdirAll(gitDir, 0o755); err != nil {
+	if err := os.MkdirAll(gitDir, 0o750); err != nil {
 		t.Fatalf("failed to create .git directory: %v", err)
 	}
 
@@ -70,11 +70,11 @@ func CreateTestRepo(t *testing.T, baseDir string, name string, files map[string]
 		fullPath := filepath.Join(repoPath, path)
 		dir := filepath.Dir(fullPath)
 
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
 			t.Fatalf("failed to create directory %s: %v", dir, err)
 		}
 
-		if err := os.WriteFile(fullPath, []byte(content), 0o644); err != nil {
+		if err := os.WriteFile(fullPath, []byte(content), 0o600); err != nil {
 			t.Fatalf("failed to write file %s: %v", fullPath, err)
 		}
 	}
@@ -83,7 +83,7 @@ func CreateTestRepo(t *testing.T, baseDir string, name string, files map[string]
 }
 
 // CreateTestConfig creates a test configuration file.
-func CreateTestConfig(t *testing.T, dir string, content string) string {
+func CreateTestConfig(t *testing.T, dir, content string) string {
 	t.Helper()
 
 	configPath := filepath.Join(dir, "test-config.yaml")

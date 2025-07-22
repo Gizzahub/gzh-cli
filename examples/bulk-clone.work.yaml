@@ -5,13 +5,13 @@ version: "0.1"
 
 # Override default settings for work environment
 default:
-  protocol: https  # Use HTTPS for work environment (some companies block SSH)
+  protocol: https # Use HTTPS for work environment (some companies block SSH)
   github:
     root_path: "$HOME/work/github"
     org_name: "company-main-org"
   gitlab:
     root_path: "$HOME/work/gitlab"
-    url: "https://gitlab.company.com"  # Company GitLab instance
+    url: "https://gitlab.company.com" # Company GitLab instance
     recursive: false
 
 # Work-specific repositories
@@ -42,7 +42,7 @@ repo_roots:
 
 # Work-specific ignore patterns
 ignore_names:
-  - ".*-legacy$"      # Ignore legacy repositories
-  - "^archive-.*"     # Ignore archived repositories
-  - ".*-deprecated$"  # Ignore deprecated repositories
-  - "test-.*-temp$"   # Ignore temporary test repositories
+  - ".*-legacy$" # Ignore legacy repositories
+  - "^archive-.*" # Ignore archived repositories
+  - ".*-deprecated$" # Ignore deprecated repositories
+  - "test-.*-temp$" # Ignore temporary test repositories

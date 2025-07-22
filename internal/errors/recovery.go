@@ -45,13 +45,19 @@ type ErrorType string
 
 const (
 	// ErrorTypeNetwork represents network-related errors.
-	ErrorTypeNetwork    ErrorType = "network"
-	ErrorTypeAuth       ErrorType = "auth"
+	ErrorTypeNetwork ErrorType = "network"
+	// ErrorTypeAuth represents authentication-related errors.
+	ErrorTypeAuth ErrorType = "auth"
+	// ErrorTypeValidation represents validation-related errors.
 	ErrorTypeValidation ErrorType = "validation"
-	ErrorTypeSystem     ErrorType = "system"
-	ErrorTypeTimeout    ErrorType = "timeout"
-	ErrorTypeRateLimit  ErrorType = "rate_limit"
-	ErrorTypeUnknown    ErrorType = "unknown"
+	// ErrorTypeSystem represents system-related errors.
+	ErrorTypeSystem ErrorType = "system"
+	// ErrorTypeTimeout represents timeout-related errors.
+	ErrorTypeTimeout ErrorType = "timeout"
+	// ErrorTypeRateLimit represents rate limit-related errors.
+	ErrorTypeRateLimit ErrorType = "rate_limit"
+	// ErrorTypeUnknown represents unknown error types.
+	ErrorTypeUnknown ErrorType = "unknown"
 )
 
 // RecoverableError represents an error that can be recovered from.
@@ -257,7 +263,9 @@ type CircuitState int
 const (
 	// StateClosed represents a closed circuit breaker state.
 	StateClosed CircuitState = iota
+	// StateOpen represents an open circuit breaker state.
 	StateOpen
+	// StateHalfOpen represents a half-open circuit breaker state.
 	StateHalfOpen
 )
 

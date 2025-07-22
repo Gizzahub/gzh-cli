@@ -175,7 +175,7 @@ func parseTodoFile(filename string) ([]TodoItem, error) {
 		}
 	}()
 
-	var items []TodoItem
+	items := make([]TodoItem, 0, 20) // Pre-allocate with reasonable capacity
 
 	scanner := bufio.NewScanner(file)
 	lineNum := 0

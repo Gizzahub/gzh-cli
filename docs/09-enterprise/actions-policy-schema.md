@@ -38,29 +38,29 @@ type ActionsPolicy struct {
 
 ## 권한 수준 (ActionsPermissionLevel)
 
-| 값 | 설명 |
-|---|---|
-| `disabled` | Actions 완전 비활성화 |
-| `all` | 모든 Actions 허용 |
-| `local_only` | 로컬 Actions만 허용 |
-| `selected` | 선택된 Actions만 허용 |
+| 값           | 설명                  |
+| ------------ | --------------------- |
+| `disabled`   | Actions 완전 비활성화 |
+| `all`        | 모든 Actions 허용     |
+| `local_only` | 로컬 Actions만 허용   |
+| `selected`   | 선택된 Actions만 허용 |
 
 ## 워크플로우 권한 (WorkflowPermissions)
 
 ### 기본 권한 (DefaultPermissions)
 
-| 값 | 설명 |
-|---|---|
-| `read` | 읽기 권한만 부여 |
-| `write` | 읽기/쓰기 권한 부여 |
-| `restricted` | 최소 권한만 부여 |
+| 값           | 설명                |
+| ------------ | ------------------- |
+| `read`       | 읽기 권한만 부여    |
+| `write`      | 읽기/쓰기 권한 부여 |
+| `restricted` | 최소 권한만 부여    |
 
 ### 토큰 권한 (ActionsTokenPermission)
 
-| 값 | 설명 |
-|---|---|
-| `none` | 권한 없음 |
-| `read` | 읽기 권한 |
+| 값      | 설명      |
+| ------- | --------- |
+| `none`  | 권한 없음 |
+| `read`  | 읽기 권한 |
 | `write` | 쓰기 권한 |
 
 ### 세부 권한 설정
@@ -107,12 +107,12 @@ type ActionsSecuritySettings struct {
 
 ### 마켓플레이스 정책 (ActionsMarketplacePolicy)
 
-| 값 | 설명 |
-|---|---|
-| `disabled` | 마켓플레이스 Actions 비활성화 |
-| `verified_only` | 검증된 Actions만 허용 |
-| `all` | 모든 마켓플레이스 Actions 허용 |
-| `selected` | 선택된 Actions만 허용 |
+| 값              | 설명                           |
+| --------------- | ------------------------------ |
+| `disabled`      | 마켓플레이스 Actions 비활성화  |
+| `verified_only` | 검증된 Actions만 허용          |
+| `all`           | 모든 마켓플레이스 Actions 허용 |
+| `selected`      | 선택된 Actions만 허용          |
 
 ## 시크릿 정책 (SecretsPolicy)
 
@@ -131,11 +131,11 @@ type SecretsPolicy struct {
 
 ### 시크릿 가시성 (SecretVisibility)
 
-| 값 | 설명 |
-|---|---|
-| `all` | 모든 리포지토리에서 접근 가능 |
-| `private` | 프라이빗 리포지토리만 접근 가능 |
-| `selected` | 선택된 리포지토리만 접근 가능 |
+| 값         | 설명                            |
+| ---------- | ------------------------------- |
+| `all`      | 모든 리포지토리에서 접근 가능   |
+| `private`  | 프라이빗 리포지토리만 접근 가능 |
+| `selected` | 선택된 리포지토리만 접근 가능   |
 
 ### 시크릿 교체 정책 (SecretRotationPolicy)
 
@@ -169,12 +169,12 @@ type EnvironmentPolicy struct {
 
 ### 환경 브랜치 정책 (EnvironmentBranchPolicy)
 
-| 값 | 설명 |
-|---|---|
-| `all` | 모든 브랜치에서 배포 허용 |
+| 값          | 설명                          |
+| ----------- | ----------------------------- |
+| `all`       | 모든 브랜치에서 배포 허용     |
 | `protected` | 보호된 브랜치에서만 배포 허용 |
-| `selected` | 선택된 브랜치에서만 배포 허용 |
-| `none` | 브랜치 제한 없음 |
+| `selected`  | 선택된 브랜치에서만 배포 허용 |
+| `none`      | 브랜치 제한 없음              |
 
 ## 러너 정책 (RunnerPolicy)
 
@@ -193,12 +193,12 @@ type RunnerPolicy struct {
 
 ### 러너 유형 (RunnerType)
 
-| 값 | 설명 |
-|---|---|
+| 값              | 설명                 |
+| --------------- | -------------------- |
 | `github_hosted` | GitHub 호스티드 러너 |
-| `self_hosted` | 셀프 호스티드 러너 |
-| `organization` | 조직 러너 |
-| `repository` | 리포지토리 러너 |
+| `self_hosted`   | 셀프 호스티드 러너   |
+| `organization`  | 조직 러너            |
+| `repository`    | 리포지토리 러너      |
 
 ### 셀프 호스티드 러너 정책 (SelfHostedRunnerPolicy)
 
@@ -233,33 +233,33 @@ type ActionsPolicyViolation struct {
 
 ### 위반 유형 (ActionsPolicyViolationType)
 
-| 값 | 설명 |
-|---|---|
-| `unauthorized_action` | 허가되지 않은 Action 사용 |
-| `excessive_permissions` | 과도한 권한 사용 |
-| `secret_misuse` | 시크릿 남용 |
-| `runner_policy_breach` | 러너 정책 위반 |
-| `environment_breach` | 환경 정책 위반 |
-| `workflow_permission_breach` | 워크플로우 권한 위반 |
-| `security_settings_breach` | 보안 설정 위반 |
+| 값                           | 설명                      |
+| ---------------------------- | ------------------------- |
+| `unauthorized_action`        | 허가되지 않은 Action 사용 |
+| `excessive_permissions`      | 과도한 권한 사용          |
+| `secret_misuse`              | 시크릿 남용               |
+| `runner_policy_breach`       | 러너 정책 위반            |
+| `environment_breach`         | 환경 정책 위반            |
+| `workflow_permission_breach` | 워크플로우 권한 위반      |
+| `security_settings_breach`   | 보안 설정 위반            |
 
 ### 위반 심각도 (PolicyViolationSeverity)
 
-| 값 | 설명 |
-|---|---|
-| `low` | 낮음 |
-| `medium` | 보통 |
-| `high` | 높음 |
+| 값         | 설명   |
+| ---------- | ------ |
+| `low`      | 낮음   |
+| `medium`   | 보통   |
+| `high`     | 높음   |
 | `critical` | 치명적 |
 
 ### 위반 상태 (PolicyViolationStatus)
 
-| 값 | 설명 |
-|---|---|
-| `open` | 열림 |
+| 값            | 설명    |
+| ------------- | ------- |
+| `open`        | 열림    |
 | `in_progress` | 진행 중 |
-| `resolved` | 해결됨 |
-| `ignored` | 무시됨 |
+| `resolved`    | 해결됨  |
+| `ignored`     | 무시됨  |
 
 ## 사용 예제
 
@@ -388,21 +388,25 @@ if err != nil {
 ## 모범 사례
 
 ### 1. 점진적 권한 부여
+
 - 최소 권한 원칙으로 시작
 - 필요에 따라 단계적으로 권한 확장
 - 정기적인 권한 검토 및 정리
 
 ### 2. 환경별 정책 분리
+
 - 개발, 스테이징, 프로덕션 환경별 다른 정책 적용
 - 프로덕션 환경에 더 엄격한 정책 적용
 - 환경별 시크릿 및 변수 관리
 
 ### 3. 모니터링 및 감사
+
 - 정책 위반 모니터링
 - 정기적인 정책 준수 감사
 - 위반 사항에 대한 자동 알림 설정
 
 ### 4. 문서화 및 교육
+
 - 정책 변경 사항 문서화
 - 개발팀 대상 정책 교육
 - 정책 위반 시 대응 절차 수립

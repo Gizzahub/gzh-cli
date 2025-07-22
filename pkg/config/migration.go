@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"gopkg.in/yaml.v3"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 // MigrationResult contains the results of a configuration migration.
@@ -156,7 +157,7 @@ func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneCo
 }
 
 // convertGitHubConfigurations converts GitHub-specific configurations.
-func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings *[]string, actions *[]string) error {
+func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error {
 	githubProvider := &ProviderConfig{
 		Token:         "${GITHUB_TOKEN}",
 		Organizations: []*OrganizationConfig{},
@@ -214,7 +215,7 @@ func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkClone
 }
 
 // convertGitLabConfigurations converts GitLab-specific configurations.
-func (m *ConfigMigrator) convertGitLabConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings *[]string, actions *[]string) error {
+func (m *ConfigMigrator) convertGitLabConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error {
 	if legacy.Default.Gitlab.RootPath == "" {
 		return nil // No GitLab configuration
 	}

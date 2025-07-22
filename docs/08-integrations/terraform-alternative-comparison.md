@@ -20,14 +20,14 @@ Both Terraform and `gz repo-config` can manage GitHub repository configurations 
 
 ### Key Differences
 
-| Aspect | Terraform | gz repo-config |
-|--------|-----------|----------------|
-| **Primary Purpose** | General infrastructure management | GitHub repository management |
-| **Learning Curve** | Steeper (HCL syntax, Terraform concepts) | Gentler (YAML, focused feature set) |
-| **State Management** | Required (backend configuration) | Stateless (queries GitHub directly) |
-| **Bulk Operations** | Resource-by-resource | Optimized for bulk operations |
-| **Policy Enforcement** | External tools needed | Built-in policy engine |
-| **Compliance Auditing** | Third-party tools | Built-in audit reports |
+| Aspect                  | Terraform                                | gz repo-config                      |
+| ----------------------- | ---------------------------------------- | ----------------------------------- |
+| **Primary Purpose**     | General infrastructure management        | GitHub repository management        |
+| **Learning Curve**      | Steeper (HCL syntax, Terraform concepts) | Gentler (YAML, focused feature set) |
+| **State Management**    | Required (backend configuration)         | Stateless (queries GitHub directly) |
+| **Bulk Operations**     | Resource-by-resource                     | Optimized for bulk operations       |
+| **Policy Enforcement**  | External tools needed                    | Built-in policy engine              |
+| **Compliance Auditing** | Third-party tools                        | Built-in audit reports              |
 
 ## Feature Comparison
 
@@ -102,39 +102,39 @@ repositories:
   - name: "example-repo"
     template: "standard"
     description: "Example repository"
-    topics: ["example"]  # Merged with template topics
+    topics: ["example"] # Merged with template topics
 ```
 
 ### Feature Support Matrix
 
-| Feature | Terraform | gz repo-config |
-|---------|-----------|----------------|
-| **Basic Settings** |
-| Repository creation | ✅ | ❌ (configuration only) |
-| Visibility control | ✅ | ✅ |
-| Feature flags (issues, wiki, etc.) | ✅ | ✅ |
-| Default branch | ✅ | ✅ |
-| Topics | ✅ | ✅ |
-| **Security** |
-| Branch protection | ✅ | ✅ |
-| Required status checks | ✅ | ✅ |
-| Review requirements | ✅ | ✅ |
-| Push restrictions | ✅ | ✅ |
-| Vulnerability alerts | ✅ | ✅ |
-| Secret scanning | ✅ | ✅ |
-| **Advanced Features** |
-| Webhooks | ✅ | ✅ |
-| Deploy keys | ✅ | ❌ (planned) |
-| Environments | ✅ | ❌ (planned) |
-| GitHub Actions permissions | ✅ | ✅ |
-| **Management Features** |
-| Templates/Modules | ✅ (modules) | ✅ (templates) |
-| Bulk operations | ❌ (foreach) | ✅ (native) |
-| Policy enforcement | ❌ (external) | ✅ (built-in) |
-| Compliance auditing | ❌ | ✅ |
-| Dry run | ✅ (plan) | ✅ |
-| State management | ✅ (required) | ❌ (stateless) |
-| Import existing | ✅ | ✅ (automatic) |
+| Feature                            | Terraform     | gz repo-config          |
+| ---------------------------------- | ------------- | ----------------------- |
+| **Basic Settings**                 |
+| Repository creation                | ✅            | ❌ (configuration only) |
+| Visibility control                 | ✅            | ✅                      |
+| Feature flags (issues, wiki, etc.) | ✅            | ✅                      |
+| Default branch                     | ✅            | ✅                      |
+| Topics                             | ✅            | ✅                      |
+| **Security**                       |
+| Branch protection                  | ✅            | ✅                      |
+| Required status checks             | ✅            | ✅                      |
+| Review requirements                | ✅            | ✅                      |
+| Push restrictions                  | ✅            | ✅                      |
+| Vulnerability alerts               | ✅            | ✅                      |
+| Secret scanning                    | ✅            | ✅                      |
+| **Advanced Features**              |
+| Webhooks                           | ✅            | ✅                      |
+| Deploy keys                        | ✅            | ❌ (planned)            |
+| Environments                       | ✅            | ❌ (planned)            |
+| GitHub Actions permissions         | ✅            | ✅                      |
+| **Management Features**            |
+| Templates/Modules                  | ✅ (modules)  | ✅ (templates)          |
+| Bulk operations                    | ❌ (foreach)  | ✅ (native)             |
+| Policy enforcement                 | ❌ (external) | ✅ (built-in)           |
+| Compliance auditing                | ❌            | ✅                      |
+| Dry run                            | ✅ (plan)     | ✅                      |
+| State management                   | ✅ (required) | ❌ (stateless)          |
+| Import existing                    | ✅            | ✅ (automatic)          |
 
 ## Architecture Comparison
 
@@ -154,6 +154,7 @@ repositories:
 ```
 
 **Characteristics:**
+
 - Requires state management
 - Tracks resource lifecycle
 - Supports cross-provider dependencies
@@ -175,6 +176,7 @@ repositories:
 ```
 
 **Characteristics:**
+
 - Stateless operation
 - Direct GitHub API queries
 - Built-in policy engine
@@ -185,6 +187,7 @@ repositories:
 ### When to Use Terraform
 
 1. **Mixed Infrastructure Management**
+
    ```hcl
    # Managing GitHub alongside other providers
    resource "github_repository" "app" {
@@ -203,6 +206,7 @@ repositories:
    ```
 
 2. **Complex Dependencies**
+
    ```hcl
    # Repository depends on team creation
    resource "github_team" "developers" {
@@ -228,6 +232,7 @@ repositories:
 ### When to Use gz repo-config
 
 1. **Bulk Repository Management**
+
    ```yaml
    # Apply settings to hundreds of repos
    patterns:
@@ -240,6 +245,7 @@ repositories:
    ```
 
 2. **Policy Enforcement**
+
    ```yaml
    policies:
      security-baseline:
@@ -255,6 +261,7 @@ repositories:
    ```
 
 3. **Compliance Auditing**
+
    ```bash
    # Generate compliance reports
    gz repo-config audit --format html --output compliance-report.html
@@ -277,6 +284,7 @@ repositories:
 ### From Terraform to gz repo-config
 
 1. **Export Current State**
+
    ```bash
    # List all managed repositories
    terraform state list | grep github_repository
@@ -288,6 +296,7 @@ repositories:
 2. **Convert HCL to YAML**
 
    Terraform:
+
    ```hcl
    resource "github_repository" "example" {
      name       = "example"
@@ -297,6 +306,7 @@ repositories:
    ```
 
    gz repo-config:
+
    ```yaml
    repositories:
      - name: "example"
@@ -306,6 +316,7 @@ repositories:
    ```
 
 3. **Apply Configuration**
+
    ```bash
    # Dry run first
    gz repo-config apply --dry-run
@@ -317,6 +328,7 @@ repositories:
 ### From gz repo-config to Terraform
 
 1. **Generate Terraform Code**
+
    ```bash
    # For each repository in config
    for repo in $(gz repo-config list); do
@@ -390,12 +402,12 @@ repositories:
 
 ## Cost Comparison
 
-| Aspect | Terraform | gz repo-config |
-|--------|-----------|----------------|
-| **Tool Cost** | Free (OSS) / Paid (Cloud) | Free (OSS) |
-| **State Storage** | Required (S3, etc.) | None |
-| **Learning Investment** | High | Low |
-| **Maintenance** | State management overhead | Minimal |
+| Aspect                  | Terraform                 | gz repo-config |
+| ----------------------- | ------------------------- | -------------- |
+| **Tool Cost**           | Free (OSS) / Paid (Cloud) | Free (OSS)     |
+| **State Storage**       | Required (S3, etc.)       | None           |
+| **Learning Investment** | High                      | Low            |
+| **Maintenance**         | State management overhead | Minimal        |
 
 ## Conclusion
 
@@ -407,6 +419,7 @@ Both tools are valuable for different scenarios:
 For most GitHub-focused teams managing existing repositories, `gz repo-config` provides a simpler, more focused solution. For teams already using Terraform for broader infrastructure, the GitHub provider maintains consistency.
 
 Consider your specific needs:
+
 - Repository lifecycle (creation vs configuration)
 - Scale (few vs many repositories)
 - Compliance requirements

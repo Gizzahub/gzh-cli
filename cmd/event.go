@@ -15,9 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 const (
@@ -211,23 +212,25 @@ func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret 
 func runEventList(_ *cobra.Command, _ []string, org, repo, eventType, action, sender, since, until string, limit, offset int, outputFormat string) error {
 	_ = context.Background() // ctx unused in mock implementation
 	_ = getLogger()          // logger unused in mock implementation
+	_ = limit                // limit unused in mock implementation
+	_ = offset               // offset unused in mock implementation
 
 	// Create storage implementation (unused in mock)
 	_ = &mockEventStorage{}
 
-	// Build event filter
-	filter := &github.EventFilter{
-		Organization: org,
-		Repository:   repo,
-		Sender:       sender,
-	}
+	// Build event filter (currently unused in mock implementation)
+	_ = org    // Unused in current implementation
+	_ = repo   // Unused in current implementation
+	_ = sender // Unused in current implementation
 
 	if eventType != "" {
-		filter.EventTypes = []github.EventType{github.EventType(eventType)}
+		// filter.EventTypes = []github.EventType{github.EventType(eventType)}  // Unused field removed
+		_ = eventType // Unused in current implementation
 	}
 
 	if action != "" {
-		filter.Actions = []github.EventAction{github.EventAction(action)}
+		// filter.Actions = []github.EventAction{github.EventAction(action)}  // Unused field removed
+		_ = action // Unused in current implementation
 	}
 
 	// Parse time filters
@@ -252,7 +255,8 @@ func runEventList(_ *cobra.Command, _ []string, org, repo, eventType, action, se
 			timeRange.End = untilTime
 		}
 
-		filter.TimeRange = timeRange
+		// filter.TimeRange = timeRange  // Unused field removed
+		_ = timeRange // Unused in current implementation
 	}
 
 	// Mock events for demonstration

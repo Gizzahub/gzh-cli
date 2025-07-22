@@ -82,12 +82,4 @@ Examples:
 	return cmd
 }
 
-// runAuditCommandWithOptions executes the audit command with all options.
-func runAuditCommandWithOptions(opts AuditOptions) error {
-	return fmt.Errorf("audit functionality has been simplified - use the basic audit command instead")
-}
-
-// hasNewFeatures checks if any new features are being used.
-func hasNewFeatures(opts AuditOptions) bool {
-	return false // All advanced features have been removed
-}
+// Unused functions removed to fix linter issues

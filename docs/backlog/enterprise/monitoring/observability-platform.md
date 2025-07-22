@@ -1,11 +1,13 @@
 # 관찰성 플랫폼 기능
 
 ## 개요
+
 종합적인 모니터링, 로깅, 추적 및 메트릭 수집 플랫폼
 
 ## 제거된 기능
 
 ### 1. 메트릭 수집 및 모니터링
+
 - **명령어**: `gz serve metrics`, `gz monitoring start`
 - **기능**: Prometheus 메트릭 수집 및 Grafana 대시보드
 - **특징**:
@@ -15,6 +17,7 @@
   - 다중 데이터 소스 지원
 
 ### 2. 로그 집계 및 분석
+
 - **명령어**: `gz logs collect`, `gz logs analyze`
 - **기능**: 중앙집중식 로그 관리 및 분석
 - **특징**:
@@ -24,6 +27,7 @@
   - 로그 보관 정책
 
 ### 3. 분산 추적
+
 - **명령어**: `gz tracing setup`, `gz tracing analyze`
 - **기능**: 마이크로서비스 간 요청 추적
 - **특징**:
@@ -33,6 +37,7 @@
   - 에러 전파 추적
 
 ### 4. 성능 모니터링
+
 - **명령어**: `gz performance monitor`, `gz performance analyze`
 - **기능**: 애플리케이션 성능 모니터링 (APM)
 - **특징**:
@@ -71,15 +76,15 @@ observability:
       evaluation_interval: 15s
 
       scrape_configs:
-        - job_name: 'myapp'
+        - job_name: "myapp"
           static_configs:
-            - targets: ['localhost:8080']
+            - targets: ["localhost:8080"]
           metrics_path: /metrics
           scrape_interval: 5s
 
-        - job_name: 'node-exporter'
+        - job_name: "node-exporter"
           static_configs:
-            - targets: ['localhost:9100']
+            - targets: ["localhost:9100"]
 
     grafana:
       listen_address: "0.0.0.0:3000"
@@ -185,24 +190,28 @@ observability:
 ## 고급 기능
 
 ### 1. 서비스 디스커버리
+
 - Kubernetes 서비스 자동 발견
 - Consul 연동
 - DNS 기반 발견
 - 동적 타겟 관리
 
 ### 2. 멀티 테넌시
+
 - 조직별 데이터 분리
 - 사용자 권한 관리
 - 리소스 할당량
 - 독립적인 대시보드
 
 ### 3. 고가용성
+
 - 클러스터 구성
 - 데이터 복제
 - 자동 장애조치
 - 로드 밸런싱
 
 ### 4. 데이터 압축 및 샘플링
+
 - 메트릭 다운샘플링
 - 로그 압축
 - 추적 샘플링
@@ -211,6 +220,7 @@ observability:
 ## 대시보드 템플릿
 
 ### 1. 애플리케이션 메트릭
+
 ```json
 {
   "dashboard": {
@@ -252,6 +262,7 @@ observability:
 ```
 
 ### 2. 인프라 메트릭
+
 ```json
 {
   "dashboard": {
@@ -299,6 +310,7 @@ observability:
 ## 알림 규칙
 
 ### 1. 시스템 알림
+
 ```yaml
 groups:
   - name: system.rules
@@ -329,6 +341,7 @@ groups:
 ```
 
 ### 2. 애플리케이션 알림
+
 ```yaml
 groups:
   - name: application.rules
@@ -353,18 +366,21 @@ groups:
 ## 통합 기능
 
 ### 1. 클라우드 모니터링
+
 - AWS CloudWatch 연동
 - GCP Monitoring 연동
 - Azure Monitor 연동
 - 클라우드 네이티브 메트릭
 
 ### 2. 컨테이너 모니터링
+
 - Docker 컨테이너 메트릭
 - Kubernetes 클러스터 모니터링
 - Pod 및 서비스 추적
 - 리소스 사용량 분석
 
 ### 3. 데이터베이스 모니터링
+
 - MySQL, PostgreSQL 메트릭
 - MongoDB, Redis 모니터링
 - 쿼리 성능 분석

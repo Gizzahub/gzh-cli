@@ -887,11 +887,11 @@ func saveOutputs(result *ComprehensiveScanResult) error {
 			return err
 		}
 
-		if err := os.MkdirAll(filepath.Dir(scanOutput), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(scanOutput), 0o750); err != nil {
 			return err
 		}
 
-		if err := os.WriteFile(scanOutput, data, 0o644); err != nil {
+		if err := os.WriteFile(scanOutput, data, 0o600); err != nil {
 			return err
 		}
 
@@ -970,7 +970,7 @@ func generateHTMLReport(result *ComprehensiveScanResult, filename string) error 
 		result.Summary.Medium,
 		result.Summary.Low)
 
-	return os.WriteFile(filename, []byte(html), 0o644)
+	return os.WriteFile(filename, []byte(html), 0o600)
 }
 
 func generateSARIFReport(_ *ComprehensiveScanResult, filename string) error {
@@ -994,7 +994,7 @@ func generateSARIFReport(_ *ComprehensiveScanResult, filename string) error {
 		return err
 	}
 
-	return os.WriteFile(filename, data, 0o644)
+	return os.WriteFile(filename, data, 0o600)
 }
 
 func generateCSVReport(result *ComprehensiveScanResult, filename string) error {
@@ -1009,7 +1009,7 @@ func generateCSVReport(result *ComprehensiveScanResult, filename string) error {
 		}
 	}
 
-	return os.WriteFile(filename, []byte(csv), 0o644)
+	return os.WriteFile(filename, []byte(csv), 0o600)
 }
 
 func shouldFail(result *ComprehensiveScanResult) bool {

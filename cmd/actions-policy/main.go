@@ -14,8 +14,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 var rootCmd = &cobra.Command{

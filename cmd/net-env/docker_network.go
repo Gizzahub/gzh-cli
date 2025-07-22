@@ -701,7 +701,7 @@ func (dm *DockerNetworkManager) connectContainerToNetwork(containerName, network
 	checkCmd := fmt.Sprintf("docker inspect %s --format '{{json .NetworkSettings.Networks}}'", containerName)
 	checkResult, _ := dm.executor.ExecuteWithTimeout(context.Background(), checkCmd, 5*time.Second)
 
-	if strings.Contains(checkResult.Output, fmt.Sprintf("\"%s\"", network)) {
+	if strings.Contains(checkResult.Output, fmt.Sprintf("%q", network)) {
 		return nil // Already connected
 	}
 

@@ -648,7 +648,7 @@ func (m *AzureSubscriptionManager) selectSubscriptionInteractively(tenantID stri
 }
 
 // showSubscription shows detailed information about a subscription.
-func (m *AzureSubscriptionManager) showSubscription(subscriptionID string, format string) error {
+func (m *AzureSubscriptionManager) showSubscription(subscriptionID, format string) error {
 	// Get current subscription if none specified
 	if subscriptionID == "" {
 		subscriptionID = m.getCurrentSubscription()

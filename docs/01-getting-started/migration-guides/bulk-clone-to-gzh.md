@@ -36,21 +36,21 @@ version: "1.0.0"
 
 ### Structure Changes
 
-| bulk-clone.yaml | gzh.yaml | Notes |
-|----------------|----------|-------|
-| `repo_roots[]` | `providers.{provider}.orgs[]` | More organized provider structure |
-| `ignore_names[]` | `exclude[]` per organization | Per-organization exclusion patterns |
-| `default.github.root_path` | `clone_dir` per organization | More flexible path management |
-| `protocol` | Removed | Authentication handled via tokens |
-| `org_name` | `name` | Simpler naming |
+| bulk-clone.yaml            | gzh.yaml                      | Notes                               |
+| -------------------------- | ----------------------------- | ----------------------------------- |
+| `repo_roots[]`             | `providers.{provider}.orgs[]` | More organized provider structure   |
+| `ignore_names[]`           | `exclude[]` per organization  | Per-organization exclusion patterns |
+| `default.github.root_path` | `clone_dir` per organization  | More flexible path management       |
+| `protocol`                 | Removed                       | Authentication handled via tokens   |
+| `org_name`                 | `name`                        | Simpler naming                      |
 
 ### Authentication
 
 ```yaml
 # OLD: Protocol-based authentication
-protocol: "ssh"  # or "https"
+protocol: "ssh" # or "https"
 
-# NEW: Token-based authentication  
+# NEW: Token-based authentication
 token: "${GITHUB_TOKEN}"
 ```
 
@@ -107,6 +107,7 @@ gzh bulk-clone --dry-run --use-gzh-config
 ### Basic Organization Migration
 
 #### Before (bulk-clone.yaml)
+
 ```yaml
 version: "0.1"
 
@@ -132,6 +133,7 @@ ignore_names:
 ```
 
 #### After (gzh.yaml)
+
 ```yaml
 version: "1.0.0"
 default_provider: github
@@ -154,6 +156,7 @@ providers:
 ### Advanced Migration with Multiple Providers
 
 #### Before (bulk-clone.yaml)
+
 ```yaml
 version: "0.1"
 
@@ -183,6 +186,7 @@ ignore_names:
 ```
 
 #### After (gzh.yaml)
+
 ```yaml
 version: "1.0.0"
 default_provider: github
@@ -219,6 +223,7 @@ providers:
 ### Example 1: Simple Personal Setup
 
 #### Old Configuration
+
 ```yaml
 # bulk-clone.yaml
 version: "0.1"
@@ -234,6 +239,7 @@ ignore_names:
 ```
 
 #### New Configuration
+
 ```yaml
 # gzh.yaml
 version: "1.0.0"
@@ -250,6 +256,7 @@ providers:
 ### Example 2: Multi-Organization Development
 
 #### Old Configuration
+
 ```yaml
 # bulk-clone.yaml
 version: "0.1"
@@ -278,6 +285,7 @@ ignore_names:
 ```
 
 #### New Configuration
+
 ```yaml
 # gzh.yaml
 version: "1.0.0"
@@ -313,6 +321,7 @@ providers:
 ### Example 3: Enterprise with Multiple Providers
 
 #### Old Configuration
+
 ```yaml
 # bulk-clone.yaml
 version: "0.1"
@@ -342,6 +351,7 @@ ignore_names:
 ```
 
 #### New Configuration
+
 ```yaml
 # gzh.yaml
 version: "1.0.0"
@@ -404,6 +414,7 @@ gzh config migrate --input bulk-clone.yaml --dry-run
 ## Post-Migration Checklist
 
 ### 1. Environment Setup
+
 ```bash
 # Set required environment variables
 export GITHUB_TOKEN="your_github_personal_access_token"
@@ -412,6 +423,7 @@ export GITEA_TOKEN="your_gitea_token"           # if using Gitea
 ```
 
 ### 2. Validation
+
 ```bash
 # Validate the new configuration
 gzh config validate
@@ -421,6 +433,7 @@ gzh config validate --strict
 ```
 
 ### 3. Test Run
+
 ```bash
 # Perform a dry run to see what would be cloned
 gzh bulk-clone --dry-run --use-gzh-config
@@ -430,6 +443,7 @@ gzh bulk-clone --dry-run --verbose --use-gzh-config
 ```
 
 ### 4. Update Command Usage
+
 ```bash
 # OLD: Using bulk-clone.yaml
 gzh bulk-clone github --use-config -o myorg
@@ -443,46 +457,54 @@ gzh bulk-clone --use-gzh-config
 ### Common Migration Issues
 
 #### 1. Authentication Errors
+
 ```
 Error: missing required field: token
 ```
 
 **Solution**: Set up environment variables for authentication:
+
 ```bash
 export GITHUB_TOKEN="ghp_your_token_here"
 ```
 
 #### 2. Path Resolution Issues
+
 ```
 Error: failed to create directory
 ```
 
 **Solution**: Check if environment variables are properly resolved:
+
 ```yaml
 # Ensure environment variables are accessible
-clone_dir: "${HOME}/repos"  # Use ${HOME} instead of ~
+clone_dir: "${HOME}/repos" # Use ${HOME} instead of ~
 ```
 
 #### 3. Regex Pattern Issues
+
 ```
 Error: invalid regex pattern
 ```
 
 **Solution**: Update regex patterns to use Go regex syntax:
+
 ```yaml
 # OLD: Shell glob patterns
 exclude: ["test-*"]
 
-# NEW: Go regex patterns  
+# NEW: Go regex patterns
 exclude: ["^test-.*", ".*-test$"]
 ```
 
 #### 4. Provider Configuration
+
 ```
 Error: unsupported provider
 ```
 
 **Solution**: Update provider structure:
+
 ```yaml
 # OLD: Mixed in repo_roots
 repo_roots:

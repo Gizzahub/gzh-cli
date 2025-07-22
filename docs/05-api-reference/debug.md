@@ -25,6 +25,7 @@ type RFC5424Severity int
 RFC5424Severity represents syslog severity levels as defined in RFC 5424. These numeric values correspond to standard syslog severity levels, with lower numbers indicating higher severity.
 
 **Constants:**
+
 - `SeverityEmergency` (0): Emergency: system is unusable
 - `SeverityAlert` (1): Alert: action must be taken immediately
 - `SeverityCritical` (2): Critical: critical conditions
@@ -85,6 +86,7 @@ type StructuredLogger struct {
 StructuredLogger provides RFC 5424 compliant structured logging with advanced features including async logging, sampling, caller information, and distributed tracing integration.
 
 **Key Features:**
+
 - Multiple output formats (JSON, logfmt, console)
 - Configurable log levels and module-specific levels
 - Async logging with buffering for high-performance scenarios
@@ -219,6 +221,7 @@ type CentralizedLoggerBridge struct {
 CentralizedLoggerBridge provides a seamless bridge between StructuredLogger and CentralizedLogger, enabling automatic forwarding of structured log entries to the centralized logging system.
 
 **Key Features:**
+
 - Asynchronous log forwarding with configurable buffer sizes
 - Automatic conversion between structured and centralized log formats
 - Error handling with fallback to structured logging
@@ -316,6 +319,7 @@ type LogLevelManager struct {
 LogLevelManager provides advanced log level management with dynamic rule evaluation, profile switching, and performance-aware sampling.
 
 **Key Features:**
+
 - Dynamic rule evaluation based on conditions
 - Profile-based configuration management
 - HTTP API for runtime control
@@ -371,6 +375,7 @@ type Profiler struct {
 Profiler provides comprehensive profiling capabilities for performance analysis, memory debugging, and concurrency analysis.
 
 **Features:**
+
 - Multiple profiling types (CPU, memory, goroutine, block, mutex)
 - Continuous and on-demand profiling modes
 - HTTP endpoint integration with Go's pprof package

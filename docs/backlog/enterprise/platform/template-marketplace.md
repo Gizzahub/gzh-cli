@@ -1,11 +1,13 @@
 # 템플릿 마켓플레이스 기능
 
 ## 개요
+
 프로젝트 템플릿 및 코드 생성기 마켓플레이스
 
 ## 제거된 기능
 
 ### 1. 템플릿 관리
+
 - **명령어**: `gz template install`, `gz template list`, `gz template remove`
 - **기능**: 프로젝트 템플릿 설치 및 관리
 - **특징**:
@@ -15,6 +17,7 @@
   - 자동 업데이트
 
 ### 2. 프로젝트 생성
+
 - **명령어**: `gz template generate`, `gz template scaffold`
 - **기능**: 템플릿 기반 프로젝트 생성
 - **특징**:
@@ -24,6 +27,7 @@
   - 후처리 스크립트
 
 ### 3. 템플릿 개발 도구
+
 - **명령어**: `gz template create`, `gz template validate`, `gz template publish`
 - **기능**: 템플릿 개발 및 배포 도구
 - **특징**:
@@ -33,6 +37,7 @@
   - 문서 자동 생성
 
 ### 4. 커스터마이제이션
+
 - **명령어**: `gz template customize`, `gz template extend`
 - **기능**: 기존 템플릿 커스터마이징 및 확장
 - **특징**:
@@ -117,6 +122,7 @@ templates:
 ## 템플릿 구조
 
 ### 1. 템플릿 매니페스트
+
 ```yaml
 name: react-typescript-app
 version: 2.1.0
@@ -208,6 +214,7 @@ extends: base-typescript-template
 ```
 
 ### 2. 템플릿 파일 예시
+
 ```typescript
 // src/App.tsx.tpl
 import React from 'react';
@@ -247,6 +254,7 @@ export default App;
 ```
 
 ### 3. 패키지 정의
+
 ```json
 {
   "name": "{{ .Variables.project_name }}",
@@ -296,6 +304,7 @@ export default App;
 ## 템플릿 카테고리
 
 ### 1. 웹 애플리케이션
+
 - React/Next.js 앱
 - Vue.js/Nuxt.js 앱
 - Angular 애플리케이션
@@ -303,6 +312,7 @@ export default App;
 - 정적 사이트 생성기
 
 ### 2. 백엔드 서비스
+
 - REST API 서버
 - GraphQL 서버
 - 마이크로서비스
@@ -310,12 +320,14 @@ export default App;
 - gRPC 서비스
 
 ### 3. 모바일 애플리케이션
+
 - React Native 앱
 - Flutter 앱
 - Ionic 앱
 - 네이티브 모바일 앱
 
 ### 4. 라이브러리/패키지
+
 - NPM 패키지
 - Go 모듈
 - Python 패키지
@@ -323,6 +335,7 @@ export default App;
 - Docker 이미지
 
 ### 5. 인프라/DevOps
+
 - Kubernetes 매니페스트
 - Terraform 모듈
 - Ansible 플레이북
@@ -330,6 +343,7 @@ export default App;
 - Docker Compose
 
 ### 6. 문서/설정
+
 - README 템플릿
 - API 문서
 - 프로젝트 설정
@@ -339,6 +353,7 @@ export default App;
 ## 고급 기능
 
 ### 1. 템플릿 상속
+
 ```yaml
 # child-template.yaml
 extends: parent-template
@@ -352,6 +367,7 @@ overrides:
 ```
 
 ### 2. 믹스인 지원
+
 ```yaml
 # main-template.yaml
 mixins:
@@ -369,6 +385,7 @@ hooks:
 ```
 
 ### 3. 조건부 생성
+
 ```yaml
 conditions:
   - if: "{{ .Variables.include_docker }}"
@@ -380,6 +397,7 @@ conditions:
 ```
 
 ### 4. 후처리 스크립트
+
 ```bash
 #!/bin/bash
 # hooks/post_generate.sh
@@ -406,24 +424,28 @@ echo "Project setup complete!"
 ## 마켓플레이스 기능
 
 ### 1. 템플릿 검색
+
 - 카테고리별 분류
 - 태그 기반 필터링
 - 인기도 및 평점 정렬
 - 호환성 검증
 
 ### 2. 템플릿 정보
+
 - 상세 설명 및 미리보기
 - 사용법 및 예제
 - 변경 로그
 - 사용자 리뷰
 
 ### 3. 품질 관리
+
 - 템플릿 검증
 - 보안 스캔
 - 베스트 프랙티스 체크
 - 커뮤니티 피드백
 
 ### 4. 기업용 기능
+
 - 프라이빗 레지스트리
 - 조직별 템플릿
 - 접근 권한 관리
@@ -432,12 +454,13 @@ echo "Project setup complete!"
 ## 통합 예시
 
 ### 1. CI/CD 통합
+
 ```yaml
 # GitHub Actions 워크플로우
 name: Template Test
 on:
   push:
-    paths: ['templates/**']
+    paths: ["templates/**"]
 
 jobs:
   test:
@@ -452,6 +475,7 @@ jobs:
 ```
 
 ### 2. IDE 통합
+
 ```json
 {
   "contributes": {

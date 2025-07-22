@@ -11,6 +11,7 @@ The GitHub repository management feature allows users to manage repository setti
 ### 1. Repository Configuration Management
 
 #### 1.1 Supported Settings
+
 - **Basic Settings**
   - Repository name and description
   - Homepage URL and topics
@@ -102,6 +103,7 @@ repositories:
 ### 2. Template System
 
 #### 2.1 Policy Templates
+
 - **Security Template**: High security standards for production repositories
 - **Open Source Template**: Standard configuration for public repositories
 - **Enterprise Template**: Corporate policies and compliance requirements
@@ -109,12 +111,14 @@ repositories:
 - **Microservice Template**: Standard microservice configuration
 
 #### 2.2 Template Inheritance
+
 - Base templates with common settings
 - Environment-specific overrides (dev/staging/prod)
 - Organization-specific customizations
 - Repository-specific exceptions
 
 #### 2.3 Template Structure
+
 ```yaml
 templates:
   security:
@@ -143,6 +147,7 @@ templates:
 ### 3. Command Interface
 
 #### 3.1 Main Commands
+
 ```bash
 # Repository configuration management
 gz repo-config list                    # List repositories with current settings
@@ -163,6 +168,7 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ```
 
 #### 3.2 Command Options
+
 - `--org <organization>`: Target specific organization
 - `--config <file>`: Use specific configuration file
 - `--template <name>`: Apply specific template
@@ -175,6 +181,7 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 4. Safety and Validation
 
 #### 4.1 Pre-flight Checks
+
 - **Permission Validation**: Verify required GitHub permissions
 - **Configuration Validation**: Validate YAML syntax and schema
 - **Template Validation**: Ensure templates are valid and complete
@@ -182,12 +189,14 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 - **Dependency Validation**: Check for required teams, users, or webhooks
 
 #### 4.2 Change Management
+
 - **Change Preview**: Show detailed diff of proposed changes
 - **Rollback Capability**: Ability to revert to previous configurations
 - **Change History**: Track all configuration changes with timestamps
 - **Approval Workflow**: Optional approval process for sensitive changes
 
 #### 4.3 Error Handling
+
 - **Graceful Failures**: Continue processing other repositories if one fails
 - **Detailed Error Reporting**: Clear error messages with suggested fixes
 - **Retry Logic**: Automatic retry for transient failures
@@ -196,16 +205,19 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 5. Authentication and Permissions
 
 #### 5.1 Required GitHub Permissions
+
 - **Repository Administration**: `admin:repo_hook`, `repo`
 - **Organization Management**: `admin:org` (for organization-level settings)
 - **Team Management**: `admin:org` (for team-based restrictions)
 
 #### 5.2 Authentication Methods
+
 - **Personal Access Tokens**: For individual use
 - **GitHub Apps**: For organization-wide deployment
 - **Organization Tokens**: For enterprise use
 
 #### 5.3 Security Considerations
+
 - **Token Security**: Secure storage and rotation of access tokens
 - **Audit Logging**: Log all configuration changes for security audits
 - **Least Privilege**: Request only necessary permissions
@@ -214,6 +226,7 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 6. Configuration File Management
 
 #### 6.1 File Structure
+
 ```
 .gzh/
 ├── repo-config.yaml          # Main configuration file
@@ -231,6 +244,7 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ```
 
 #### 6.2 Configuration Discovery
+
 - Search paths: `./.gzh/`, `~/.config/gzh/`, `/etc/gzh/`
 - Environment variables: `GZH_REPO_CONFIG_PATH`
 - Command-line flags: `--config`
@@ -238,11 +252,13 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 7. Integration and Automation
 
 #### 7.1 CI/CD Integration
+
 - **GitHub Actions**: Workflow for automated configuration management
 - **GitOps**: Git-based configuration management workflow
 - **Webhook Integration**: Automatic configuration updates on repository creation
 
 #### 7.2 Alerting and Notifications
+
 - **Configuration Drift Detection**: Alert when repositories drift from policy
 - **Compliance Reporting**: Regular compliance status reports
 - **Change Notifications**: Notify on configuration changes
@@ -250,11 +266,13 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 8. Reporting and Analytics
 
 #### 8.1 Audit Reports
+
 - **Compliance Status**: Which repositories comply with policies
 - **Security Posture**: Security configuration analysis
 - **Configuration Coverage**: Which repositories have managed configurations
 
 #### 8.2 Metrics and Dashboards
+
 - **Repository Count**: Total managed repositories
 - **Policy Compliance**: Percentage of compliant repositories
 - **Change Frequency**: Configuration change frequency
@@ -263,16 +281,19 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 9. Use Cases and Scenarios
 
 #### 9.1 Initial Setup
+
 1. **Organization Onboarding**: Apply standard configurations to all repositories
 2. **Policy Enforcement**: Ensure all repositories meet security requirements
 3. **Template Deployment**: Roll out new organizational standards
 
 #### 9.2 Ongoing Management
+
 1. **New Repository Setup**: Automatically configure new repositories
 2. **Policy Updates**: Update security policies across all repositories
 3. **Compliance Auditing**: Regular compliance checks and reporting
 
 #### 9.3 Special Scenarios
+
 1. **Repository Migration**: Migrate repositories between organizations
 2. **Security Incident Response**: Quickly apply security patches
 3. **Compliance Requirements**: Meet regulatory compliance requirements
@@ -280,24 +301,28 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 10. Implementation Phases
 
 #### Phase 1: Core Functionality
+
 - Basic repository listing and configuration reading
 - Simple configuration application (non-security settings)
 - Template system foundation
 - CLI interface implementation
 
 #### Phase 2: Security Features
+
 - Branch protection rule management
 - Webhook configuration
 - Security policy templates
 - Permission validation
 
 #### Phase 3: Advanced Features
+
 - Complex template inheritance
 - GitOps integration
 - Compliance reporting
 - Automated drift detection
 
 #### Phase 4: Enterprise Features
+
 - Advanced audit logging
 - Multi-organization support
 - Custom policy engines
@@ -306,12 +331,14 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 11. Success Criteria
 
 #### 11.1 Functional Requirements
+
 - [ ] Successfully manage repository configurations for 100+ repositories
 - [ ] Apply security policies consistently across organization
 - [ ] Reduce manual repository configuration time by 90%
 - [ ] Zero configuration drift for critical security settings
 
 #### 11.2 Non-Functional Requirements
+
 - [ ] API rate limit compliance (< 5000 requests/hour)
 - [ ] Configuration application within 5 minutes for 100 repositories
 - [ ] 99.9% reliability for configuration operations
@@ -320,16 +347,19 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 12. Risks and Mitigations
 
 #### 12.1 Technical Risks
+
 - **API Rate Limiting**: Implement intelligent rate limiting and queuing
 - **Large Organization Scale**: Optimize for batch operations and parallel processing
 - **GitHub API Changes**: Abstract API interactions and version compatibility
 
 #### 12.2 Security Risks
+
 - **Unauthorized Access**: Implement proper authentication and authorization
 - **Configuration Errors**: Extensive validation and dry-run capabilities
 - **Data Exposure**: Secure handling of sensitive configuration data
 
 #### 12.3 Operational Risks
+
 - **Service Disruption**: Gradual rollout and rollback capabilities
 - **User Adoption**: Comprehensive documentation and training
 - **Maintenance Overhead**: Automated testing and alerts
@@ -337,18 +367,22 @@ gz repo-config apply --filter "pattern" # Apply to repositories matching pattern
 ### 13. Alternative Solutions Comparison
 
 #### 13.1 Terraform GitHub Provider
+
 **Pros**: Mature, widely adopted, infrastructure-as-code standard
 **Cons**: Complex for simple use cases, requires Terraform knowledge
 
 #### 13.2 GitHub REST API Scripts
+
 **Pros**: Simple, direct control
 **Cons**: No standardization, difficult to maintain, error-prone
 
 #### 13.3 GitHub CLI with Scripts
+
 **Pros**: Official tool, comprehensive
 **Cons**: Limited batch operations, scripting complexity
 
 #### 13.4 gzh-manager Advantages
+
 - **Integrated**: Part of existing Git management workflow
 - **Specialized**: Purpose-built for repository configuration
 - **User-Friendly**: Simple YAML configuration format

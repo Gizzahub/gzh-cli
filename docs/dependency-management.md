@@ -5,7 +5,7 @@
 ## 🎯 Dependabot 문제점
 
 - **소스 트리 오염**: 자동 PR로 인한 브랜치 혼잡
-- **제어 불가**: 업데이트 타이밍과 범위 조절 어려움  
+- **제어 불가**: 업데이트 타이밍과 범위 조절 어려움
 - **테스트 부족**: 자동 업데이트 후 충분한 검증 없음
 - **충돌 가능성**: 여러 의존성 동시 업데이트로 인한 문제
 
@@ -37,7 +37,7 @@ make deps-interactive
 # 가장 안전 (patch 버전만)
 make deps-update-patch
 
-# 중간 수준 (minor 버전까지)  
+# 중간 수준 (minor 버전까지)
 make deps-update-minor
 
 # 주의 필요 (major 버전, 브레이킹 체인지 가능)
@@ -73,7 +73,7 @@ make deps-report
 # GitHub Actions 업데이트 확인
 make deps-update-actions
 
-# Docker 이미지 업데이트 확인  
+# Docker 이미지 업데이트 확인
 make deps-update-docker
 
 # 특정 모듈이 필요한 이유 확인
@@ -100,14 +100,14 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 0  # PR 생성 차단
+    open-pull-requests-limit: 0 # PR 생성 차단
 ```
 
 ### 방법 3: Repository 설정에서 비활성화
 
 1. GitHub 저장소 → Settings
 2. Security & analysis
-3. Dependabot alerts → Disable  
+3. Dependabot alerts → Disable
 4. Dependabot security updates → Disable
 
 ## 📅 권장 워크플로우
@@ -119,7 +119,7 @@ updates:
 make deps-weekly
 
 # 매월 첫째 주
-make deps-monthly  
+make deps-monthly
 ```
 
 ### 팀 워크플로우
@@ -140,7 +140,7 @@ make deps-report
 name: Dependency Check
 on:
   schedule:
-    - cron: '0 9 * * 1'  # 매주 월요일 9시
+    - cron: "0 9 * * 1" # 매주 월요일 9시
 jobs:
   deps-check:
     runs-on: ubuntu-latest

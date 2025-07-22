@@ -75,25 +75,30 @@ gz repo-config audit --org myorg --format csv --output report.csv
 ## HTML Report Structure
 
 ### 1. Header Section
+
 - Organization name
 - Report generation timestamp
 - Print and export buttons
 
 ### 2. Metrics Dashboard
+
 - Four key metric cards showing compliance statistics
 - Visual compliance score with circular progress
 
 ### 3. Policy Overview
+
 - Active policies with enforcement levels (required/recommended)
 - Violation counts per policy
 
 ### 4. Filter Controls
+
 - Search box for repository names
 - Status filter (All/Compliant/Non-Compliant)
 - Policy filter
 - Reset button
 
 ### 5. Repository Details Table
+
 - Repository information
 - Compliance status
 - Detailed violations
@@ -101,6 +106,7 @@ gz repo-config audit --org myorg --format csv --output report.csv
 - Last checked time
 
 ### 6. Compliance Trend Chart
+
 - Line chart showing compliant vs non-compliant repositories over time
 - 30-day historical view
 
@@ -116,6 +122,7 @@ The HTML template is embedded in the binary but can be customized by:
 ### Styling
 
 The template uses:
+
 - Bootstrap 5.3 for responsive layout
 - Font Awesome 6.4 for icons
 - Chart.js 4.3 for visualizations
@@ -199,6 +206,7 @@ gz repo-config audit --org large-org --filter "^api-.*"
 ### Template Issues
 
 If the HTML template fails to render:
+
 - The system falls back to a simple HTML format
 - Check console output for template parsing errors
 - Verify the template file is properly embedded
@@ -206,6 +214,7 @@ If the HTML template fails to render:
 ## Future Enhancements
 
 Planned improvements include:
+
 - PDF export functionality
 - Email report scheduling
 - Custom branding options

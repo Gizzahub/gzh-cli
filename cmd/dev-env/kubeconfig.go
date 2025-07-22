@@ -164,7 +164,7 @@ func (o *kubeconfigOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	// Create store directory if it doesn't exist
-	if err := os.MkdirAll(o.storePath, 0o755); err != nil {
+	if err := os.MkdirAll(o.storePath, 0o750); err != nil {
 		return fmt.Errorf("failed to create store directory: %w", err)
 	}
 
@@ -216,7 +216,7 @@ func (o *kubeconfigOptions) runLoad(_ *cobra.Command, args []string) error {
 
 	// Create target directory if it doesn't exist
 	targetDir := filepath.Dir(o.configPath)
-	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create target directory: %w", err)
 	}
 
@@ -294,7 +294,7 @@ type kubeconfigMetadata struct {
 
 func (o *kubeconfigOptions) saveMetadata() error {
 	metadata := kubeconfigMetadata{
-		Name:        o.name,
+		// Name:        o.name,  // Unused field removed
 		Description: o.description,
 		SavedAt:     time.Now(),
 		SourcePath:  o.configPath,

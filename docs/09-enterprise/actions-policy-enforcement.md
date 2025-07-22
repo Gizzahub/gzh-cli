@@ -9,24 +9,28 @@ Actions 정책 적용 및 검증 시스템은 GitHub Actions 정책을 실제 �
 ## 주요 기능
 
 ### 🔧 정책 적용 (Policy Enforcement)
+
 - GitHub API를 통한 실제 설정 변경
 - 단계별 적용 및 롤백 지원
 - 배치 처리를 통한 대량 리포지토리 관리
 - 적용 결과 추적 및 로깅
 
 ### 🔍 정책 검증 (Policy Validation)
+
 - 실시간 정책 준수 검증
 - 다양한 검증 규칙 엔진
 - 위반 사항 심각도 분류
 - 자동 개선 제안 생성
 
 ### 📊 규정 준수 모니터링
+
 - 조직/리포지토리별 준수 현황 추적
 - 정책 위반 추세 분석
 - 자동 알림 및 보고서 생성
 - 대시보드를 통한 시각화
 
 ### 🚨 위반 사항 관리
+
 - 정책 위반 자동 탐지
 - 위반 유형별 분류 및 우선순위 설정
 - 위반 사항 해결 과정 추적
@@ -78,6 +82,7 @@ type ActionsPolicyEnforcer struct {
 ```
 
 **주요 메서드:**
+
 - `EnforcePolicy()`: 정책을 리포지토리에 적용
 - `ValidatePolicy()`: 정책 준수 여부 검증
 - `GetRepositoryActionsState()`: 현재 설정 상태 조회
@@ -87,37 +92,49 @@ type ActionsPolicyEnforcer struct {
 각 정책 영역별로 특화된 검증 규칙을 제공합니다.
 
 #### PermissionLevelValidationRule
+
 Actions 권한 수준 검증
+
 - 권한 상승 탐지
 - 정책 불일치 확인
 - 보안 위험도 평가
 
 #### WorkflowPermissionsValidationRule
+
 워크플로우 토큰 권한 검증
+
 - 기본 권한 수준 확인
 - 개별 권한 범위 검증
 - 과도한 권한 탐지
 
 #### SecuritySettingsValidationRule
+
 보안 설정 검증
+
 - 포크 PR 정책 확인
 - 마켓플레이스 Actions 정책 검증
 - 중요 보안 설정 위반 탐지
 
 #### AllowedActionsValidationRule
+
 허용된 Actions 검증
+
 - 승인되지 않은 Actions 탐지
 - 패턴 매칭을 통한 허용 여부 확인
 - 워크플로우 히스토리 분석
 
 #### SecretPolicyValidationRule
+
 시크릿 정책 검증
+
 - 시크릿 수량 제한 확인
 - 네이밍 패턴 준수 검증
 - 제한된 시크릿 탐지
 
 #### RunnerPolicyValidationRule
+
 러너 정책 검증
+
 - 허용된 러너 유형 확인
 - 셀프 호스티드 러너 제한 검증
 - 필수 라벨 확인
@@ -138,6 +155,7 @@ type ActionsPolicyViolation struct {
 ```
 
 **위반 유형:**
+
 - `unauthorized_action`: 승인되지 않은 Action 사용
 - `excessive_permissions`: 과도한 권한 사용
 - `secret_misuse`: 시크릿 남용
@@ -147,6 +165,7 @@ type ActionsPolicyViolation struct {
 - `security_settings_breach`: 보안 설정 위반
 
 **심각도 분류:**
+
 - `low`: 낮음 - 모니터링 필요
 - `medium`: 보통 - 개선 권장
 - `high`: 높음 - 조속한 해결 필요
@@ -487,6 +506,7 @@ func generateComplianceDashboard(ctx context.Context, org string) (*ComplianceDa
 ## 모범 사례
 
 ### 1. 단계별 정책 적용
+
 ```go
 // 1단계: 검증만 수행
 result, err := enforcer.ValidatePolicy(ctx, policy, currentState)
@@ -501,6 +521,7 @@ enforcer.EnforcePolicy(ctx, policyID, org, repo)
 ```
 
 ### 2. 정책 버전 관리
+
 ```go
 // 정책 업데이트 시 버전 증가
 policy.Version++
@@ -514,6 +535,7 @@ if err := validateBackwardCompatibility(oldPolicy, policy); err != nil {
 ```
 
 ### 3. 점진적 배포
+
 ```go
 // 소수의 리포지토리에서 테스트
 testRepos := []string{"test-repo-1", "test-repo-2"}
@@ -529,6 +551,7 @@ enforceOrgPolicy(ctx, enforcer, policyID, org)
 ```
 
 ### 4. 예외 처리
+
 ```go
 type PolicyException struct {
     Repository  string    `json:"repository"`
@@ -547,16 +570,19 @@ func isExempt(repo, policyID string) bool {
 ## 성능 최적화
 
 ### 1. 배치 처리
+
 - 동시성 제어를 통한 병렬 처리
 - API 레이트 리밋 고려
 - 에러 복구 및 재시도 로직
 
 ### 2. 캐싱
+
 - 정책 정보 캐싱
 - 리포지토리 상태 캐싱
 - 검증 결과 캐싱
 
 ### 3. 증분 업데이트
+
 - 변경된 항목만 업데이트
 - 델타 기반 적용
 - 최적화된 API 호출
@@ -564,16 +590,19 @@ func isExempt(repo, policyID string) bool {
 ## 보안 고려사항
 
 ### 1. 권한 관리
+
 - 최소 권한 원칙 적용
 - 정책별 접근 제어
 - 감사 로그 유지
 
 ### 2. 민감 정보 보호
+
 - 시크릿 정보 암호화
 - 로그에서 민감 정보 제거
 - 안전한 토큰 관리
 
 ### 3. 무결성 검증
+
 - 정책 변경 추적
 - 변경 사항 승인 프로세스
 - 롤백 기능 제공
@@ -613,14 +642,17 @@ actions-policy validate policy-123 myorg myrepo --severity high --detailed
 ## 확장성
 
 ### 1. 사용자 정의 규칙
+
 새로운 검증 규칙을 쉽게 추가할 수 있는 플러그인 시스템
 
 ### 2. 다양한 백엔드 지원
+
 - GitHub Enterprise Server
 - GitHub.com
 - 기타 Git 플랫폼
 
 ### 3. 통합 지원
+
 - CI/CD 파이프라인 통합
 - 모니터링 시스템 연동
 - 알림 채널 확장

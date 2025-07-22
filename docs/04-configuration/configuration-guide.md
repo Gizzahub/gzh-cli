@@ -18,9 +18,11 @@ The configuration system follows a strict priority order where higher priority s
 ### Detailed Priority Explanation
 
 #### 1. Command-Line Flags (Highest Priority)
+
 Command-line flags always take precedence over all other configuration sources. When a flag is specified, it overrides any corresponding setting from environment variables, configuration files, or default values.
 
 **Examples:**
+
 ```bash
 # Override configuration file strategy
 gz bulk-clone --strategy=pull
@@ -33,15 +35,18 @@ gz bulk-clone --parallel=20
 ```
 
 #### 2. Environment Variables (Second Priority)
+
 Environment variables override configuration file values but are overridden by command-line flags.
 
 **Key Environment Variables:**
+
 - `GZH_CONFIG_PATH`: Override config file location
 - `GITHUB_TOKEN`: GitHub authentication token
 - `GITLAB_TOKEN`: GitLab authentication token
 - `GITEA_TOKEN`: Gitea authentication token
 
 **Examples:**
+
 ```bash
 # Environment variable overrides config file
 export GITHUB_TOKEN=ghp_env_token
@@ -52,19 +57,23 @@ gz bulk-clone --token=ghp_flag_token  # Uses ghp_flag_token
 ```
 
 #### 3. Configuration Files (Third Priority)
+
 Configuration files provide the base configuration but are overridden by environment variables and command-line flags.
 
 **In configuration files, you can reference environment variables:**
+
 ```yaml
 providers:
   github:
-    token: "${GITHUB_TOKEN}"  # Expands to environment variable value
+    token: "${GITHUB_TOKEN}" # Expands to environment variable value
 ```
 
 #### 4. Default Values (Lowest Priority)
+
 Default values are used when no higher priority source provides a value.
 
 **Common defaults:**
+
 - `strategy: reset`
 - `parallel: 10`
 - `visibility: all`
@@ -73,6 +82,7 @@ Default values are used when no higher priority source provides a value.
 ### Priority Resolution Examples
 
 #### Example 1: Token Resolution
+
 ```yaml
 # config.yaml
 providers:
@@ -91,6 +101,7 @@ gz bulk-clone --token=ghp_flag_token
 **Resolution:** `ghp_flag_token` (CLI flag wins)
 
 #### Example 2: Strategy Resolution
+
 ```yaml
 # config.yaml
 global:
@@ -106,6 +117,7 @@ gz bulk-clone --strategy=pull
 **Resolution:** `pull` (CLI flag overrides config file)
 
 #### Example 3: Parallel Workers Resolution
+
 ```yaml
 # config.yaml
 global:
@@ -129,10 +141,11 @@ Configuration files support environment variable expansion using `${VAR_NAME}` s
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    api_url: "${GITHUB_API_URL:-https://api.github.com}"  # With default
+    api_url: "${GITHUB_API_URL:-https://api.github.com}" # With default
 ```
 
 **Priority for expanded variables:**
+
 1. Command-line flags (if applicable)
 2. Environment variables (used in expansion)
 3. Default values in expansion syntax

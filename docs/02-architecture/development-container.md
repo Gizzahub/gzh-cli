@@ -23,6 +23,7 @@ The development container provides a consistent, reproducible development enviro
 ### Opening the Project
 
 1. Clone and open the repository:
+
    ```bash
    git clone https://github.com/gizzahub/gzh-manager-go.git
    cd gzh-manager-go
@@ -51,6 +52,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 ### Installed Tools
 
 #### Go Development
+
 - **Go 1.24.0** - Primary language
 - **golangci-lint 1.63.4** - Comprehensive linting
 - **gosec** - Security analysis
@@ -61,6 +63,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 - **staticcheck** - Static analysis
 
 #### Node.js/JavaScript Development
+
 - **Node.js 20** - JavaScript runtime
 - **npm/yarn/pnpm** - Package managers
 - **TypeScript** - Type-safe JavaScript
@@ -69,6 +72,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 - **node-gyp** - Native addon builds
 
 #### Python Development
+
 - **Python 3.12** - Latest Python
 - **pip** - Package installer
 - **black** - Code formatting
@@ -78,6 +82,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 - **pytest** - Testing framework
 
 #### Development Tools
+
 - **Docker CLI** - Container management
 - **Docker Compose** - Multi-container apps
 - **GitHub CLI** - GitHub integration
@@ -86,6 +91,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 - **git/git-lfs** - Version control
 
 #### System Tools
+
 - **zsh + Oh My Zsh** - Enhanced shell
 - **vim/nano** - Text editors
 - **htop** - Process monitor
@@ -117,6 +123,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 ### Go Development
 
 #### Building and Testing
+
 ```bash
 # Full build process
 make bootstrap    # Install dependencies
@@ -132,6 +139,7 @@ golangci-lint run ./cmd/...
 ```
 
 #### Debugging
+
 1. Open VS Code Debug panel (`Ctrl+Shift+D`)
 2. Select a debug configuration:
    - **Debug GZH CLI** - Debug main application
@@ -140,6 +148,7 @@ golangci-lint run ./cmd/...
 3. Set breakpoints and press `F5`
 
 #### Package Development
+
 ```bash
 # Test specific packages
 go test ./pkg/github -v
@@ -157,6 +166,7 @@ gosec ./...
 ### React Dashboard Development
 
 #### Setup and Development
+
 ```bash
 # Navigate to web directory
 cd web
@@ -173,6 +183,7 @@ npm run build
 ```
 
 #### Testing
+
 ```bash
 # Run React tests
 cd web
@@ -183,10 +194,10 @@ npm run lint
 npm run format
 ```
 
-
 ### Docker Development
 
 #### Building Images
+
 ```bash
 # Build project Docker image
 docker build -t gzh-manager .
@@ -199,6 +210,7 @@ docker run -v $(pwd):/workspace gzh-manager bulk-clone --help
 ```
 
 #### Integration Testing
+
 ```bash
 # Run Docker-based integration tests
 make test-docker
@@ -213,13 +225,13 @@ make test-redis
 
 The container automatically forwards these ports:
 
-| Port | Service | Auto-Open | Description |
-|------|---------|-----------|-------------|
-| 8080 | GZH API | Notify | Main API server |
-| 3000 | React Dev | Preview | React development server |
-| 9090 | Prometheus | No | Metrics collection |
-| 9093 | Alertmanager | No | Alert management |
-| 6060 | Go pprof | No | Performance profiling |
+| Port | Service      | Auto-Open | Description              |
+| ---- | ------------ | --------- | ------------------------ |
+| 8080 | GZH API      | Notify    | Main API server          |
+| 3000 | React Dev    | Preview   | React development server |
+| 9090 | Prometheus   | No        | Metrics collection       |
+| 9093 | Alertmanager | No        | Alert management         |
+| 6060 | Go pprof     | No        | Performance profiling    |
 
 ### Accessing Services
 
@@ -272,11 +284,13 @@ export GZH_TRACE_ENABLED="true"
 ### Setting Variables
 
 1. **In VS Code Terminal**:
+
    ```bash
    export GITHUB_TOKEN="your-token"
    ```
 
 2. **In devcontainer.json**:
+
    ```json
    {
      "containerEnv": {
@@ -298,21 +312,25 @@ export GZH_TRACE_ENABLED="true"
 The container includes these extensions:
 
 #### Go Development
+
 - `golang.go` - Official Go extension
 - `golang.go-nightly` - Latest Go features
 
 #### JavaScript/TypeScript
+
 - `ms-vscode.vscode-typescript-next` - TypeScript support
 - `esbenp.prettier-vscode` - Code formatting
 - `dbaeumer.vscode-eslint` - Linting
 
 #### Python
+
 - `ms-python.python` - Python support
 - `ms-python.black-formatter` - Code formatting
 - `ms-python.pylint` - Linting
 - `ms-python.isort` - Import sorting
 
 #### Development Tools
+
 - `ms-azuretools.vscode-docker` - Docker support
 - `eamodio.gitlens` - Enhanced Git features
 - `github.vscode-pull-request-github` - GitHub integration
@@ -389,10 +407,7 @@ Edit `.devcontainer/devcontainer.json`:
 {
   "customizations": {
     "vscode": {
-      "extensions": [
-        "existing.extension",
-        "your.new.extension"
-      ]
+      "extensions": ["existing.extension", "your.new.extension"]
     }
   }
 }
@@ -501,7 +516,6 @@ echo $GOPATH
 echo $GOROOT
 ```
 
-
 #### Git Configuration Issues
 
 ```bash
@@ -569,6 +583,7 @@ go mod tidy
    - Disk: SSD recommended
 
 2. **Optimize file syncing**:
+
    ```dockerfile
    # Add to .dockerignore
    node_modules
@@ -591,6 +606,7 @@ go mod tidy
 ### Build Performance
 
 1. **Parallel builds**:
+
    ```bash
    # Use make parallel jobs
    make -j$(nproc) build
@@ -600,6 +616,7 @@ go mod tidy
    ```
 
 2. **Incremental builds**:
+
    ```bash
    # Only rebuild changed packages
    go install ./cmd/...
@@ -609,6 +626,7 @@ go mod tidy
    ```
 
 3. **Dependency caching**:
+
    ```dockerfile
    # Cache Go modules
    COPY go.mod go.sum ./
@@ -624,12 +642,14 @@ go mod tidy
 ### Development Workflow
 
 1. **Regular container updates**:
+
    ```bash
    # Weekly container rebuild
    # Command Palette: "Remote-Containers: Rebuild Container"
    ```
 
 2. **Code quality checks**:
+
    ```bash
    # Before committing
    make fmt
@@ -639,6 +659,7 @@ go mod tidy
    ```
 
 3. **Dependency management**:
+
    ```bash
    # Weekly dependency updates
    go get -u ./...
@@ -650,6 +671,7 @@ go mod tidy
 ### Security
 
 1. **Secret management**:
+
    ```bash
    # Never commit secrets
    echo "*.env" >> .gitignore
@@ -660,6 +682,7 @@ go mod tidy
    ```
 
 2. **Container security**:
+
    ```bash
    # Run as non-root user
    USER vscode
@@ -679,6 +702,7 @@ go mod tidy
 ### Resource Management
 
 1. **Memory management**:
+
    ```bash
    # Monitor memory usage
    htop
@@ -690,6 +714,7 @@ go mod tidy
    ```
 
 2. **Disk management**:
+
    ```bash
    # Clean build artifacts
    make clean

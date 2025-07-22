@@ -15,7 +15,7 @@ providers:
         clone_dir: "${WORKSPACE}/platform/core"
         match: "^(auth|user|payment|notification)-service$"
         exclude: [".*-deprecated", ".*-experimental"]
-        strategy: "reset"                  # Ensure consistency
+        strategy: "reset" # Ensure consistency
         flatten: false
 
       # Microservices ecosystem
@@ -25,7 +25,7 @@ providers:
         match: "^service-.*"
         exclude: ["service-legacy-*", "service-archived-*"]
         strategy: "pull"
-        flatten: true                      # Easier service discovery
+        flatten: true # Easier service discovery
 
       # Frontend applications
       - name: "frontend-apps"
@@ -41,7 +41,7 @@ providers:
         visibility: "private"
         clone_dir: "${WORKSPACE}/data"
         match: "^(etl|pipeline|warehouse|analytics)-.*"
-        strategy: "reset"                  # Critical data consistency
+        strategy: "reset" # Critical data consistency
         flatten: false
 
       # Infrastructure as Code
@@ -50,7 +50,7 @@ providers:
         clone_dir: "${WORKSPACE}/infrastructure"
         match: "^(terraform|ansible|kubernetes|docker)-.*"
         exclude: [".*-sandbox", ".*-experiment"]
-        strategy: "reset"                  # Infrastructure must be consistent
+        strategy: "reset" # Infrastructure must be consistent
         flatten: false
 
       # Security and compliance
@@ -65,7 +65,7 @@ providers:
       - name: "opensource"
         visibility: "public"
         clone_dir: "${WORKSPACE}/opensource"
-        strategy: "fetch"                  # Read-only contributions
+        strategy: "fetch" # Read-only contributions
         flatten: true
 
   # GitLab Enterprise configuration (backup/mirror)
@@ -77,7 +77,7 @@ providers:
         visibility: "private"
         recursive: true
         clone_dir: "${BACKUP_DIR}/gitlab"
-        strategy: "fetch"                  # Backup purposes only
+        strategy: "fetch" # Backup purposes only
         flatten: false
 
       # Cross-team collaboration
@@ -87,7 +87,6 @@ providers:
         clone_dir: "${WORKSPACE}/shared/gitlab"
         match: "^shared-.*"
         strategy: "pull"
-
 # Environment variables typically used in enterprise:
 # WORKSPACE=/enterprise/projects
 # BACKUP_DIR=/enterprise/backups

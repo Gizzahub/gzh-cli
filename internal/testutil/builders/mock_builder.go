@@ -54,15 +54,17 @@ func (b *MockLoggerBuilder) Build() *MockLogger {
 	return b.logger
 }
 
-// MockLogger method implementations.
+// Debug logs a debug message.
 func (m *MockLogger) Debug(msg string, args ...interface{}) {
 	m.DebugCalls = append(m.DebugCalls, LogCall{Message: msg, Args: args})
 }
 
+// Info logs an info message.
 func (m *MockLogger) Info(msg string, args ...interface{}) {
 	m.InfoCalls = append(m.InfoCalls, LogCall{Message: msg, Args: args})
 }
 
+// Warn logs a warning message.
 func (m *MockLogger) Warn(msg string, args ...interface{}) {
 	m.WarnCalls = append(m.WarnCalls, LogCall{Message: msg, Args: args})
 }
@@ -136,7 +138,7 @@ func (b *MockHTTPClientBuilder) Build() *MockHTTPClient {
 	return b.client
 }
 
-// MockHTTPClient method implementations.
+// Get performs a mock HTTP GET request.
 func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
 	m.GetCalls = append(m.GetCalls, url)
 
@@ -151,12 +153,15 @@ func (m *MockHTTPClient) Get(url string) (*http.Response, error) {
 	return nil, ErrMockNotConfigured
 }
 
+// Post performs a mock HTTP POST request.
 func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
 	bodyStr := ""
 
 	if body != nil {
-		bodyBytes, _ := io.ReadAll(body)
-		bodyStr = string(bodyBytes)
+		bodyBytes, err := io.ReadAll(body)
+		if err == nil {
+			bodyStr = string(bodyBytes)
+		}
 	}
 
 	m.PostCalls = append(m.PostCalls, PostCall{
@@ -221,7 +226,7 @@ func (b *MockGitHubProviderFactoryBuilder) Build() *MockGitHubProviderFactory {
 	return b.factory
 }
 
-// MockGitHubProviderFactory method implementations.
+// CreateCloner creates a mock GitHub cloner.
 func (m *MockGitHubProviderFactory) CreateCloner(ctx context.Context, token string) (github.GitHubCloner, error) {
 	if m.CreateClonerFunc != nil {
 		return m.CreateClonerFunc(ctx, token)
@@ -230,6 +235,7 @@ func (m *MockGitHubProviderFactory) CreateCloner(ctx context.Context, token stri
 	return nil, ErrMockNotConfigured
 }
 
+// CreateClonerWithEnv creates a mock GitHub cloner with environment.
 func (m *MockGitHubProviderFactory) CreateClonerWithEnv(ctx context.Context, token string, environment env.Environment) (github.GitHubCloner, error) {
 	if m.CreateClonerWithEnvFunc != nil {
 		return m.CreateClonerWithEnvFunc(ctx, token, environment)
@@ -238,6 +244,7 @@ func (m *MockGitHubProviderFactory) CreateClonerWithEnv(ctx context.Context, tok
 	return nil, ErrMockNotConfigured
 }
 
+// CreateChangeLogger creates a mock change logger.
 func (m *MockGitHubProviderFactory) CreateChangeLogger(ctx context.Context, changelog *github.ChangeLog, options *github.LoggerOptions) (*github.ChangeLogger, error) {
 	if m.CreateChangeLoggerFunc != nil {
 		return m.CreateChangeLoggerFunc(ctx, changelog, options)
@@ -246,6 +253,7 @@ func (m *MockGitHubProviderFactory) CreateChangeLogger(ctx context.Context, chan
 	return nil, ErrMockNotConfigured
 }
 
+// GetProviderName returns the mock provider name.
 func (m *MockGitHubProviderFactory) GetProviderName() string {
 	return m.ProviderName
 }

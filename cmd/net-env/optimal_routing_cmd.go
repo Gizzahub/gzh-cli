@@ -12,9 +12,10 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // newOptimalRoutingCmd creates the optimal routing command.
@@ -583,7 +584,7 @@ type RoutingPolicy struct {
 
 // Implementation functions
 
-func createOptimalRouteOptimizer(_ context.Context, logger *zap.Logger, configDir string) (*OptimalRouteOptimizer, error) {
+func createOptimalRouteOptimizer(_ context.Context, logger *zap.Logger, configDir string) (*OptimalRouteOptimizer, error) { //nolint:unparam // Error always nil but kept for consistency
 	optimizer := &OptimalRouteOptimizer{
 		logger:      logger,
 		configDir:   configDir,
@@ -1301,7 +1302,7 @@ func (oro *OptimalRouteOptimizer) calculateDiscoverySummary(discovery *RouteDisc
 	return summary
 }
 
-func (oro *OptimalRouteOptimizer) planRoutingChanges(policy string) []RouteChange {
+func (oro *OptimalRouteOptimizer) planRoutingChanges(_ string) []RouteChange { //nolint:unparam // Policy unused in current implementation
 	// In a real implementation, this would analyze current routes
 	// and plan optimizations based on the policy
 	changes := []RouteChange{
@@ -1341,7 +1342,7 @@ func (oro *OptimalRouteOptimizer) backupCurrentRoutes() (string, error) {
 	return backupPath, nil
 }
 
-func (oro *OptimalRouteOptimizer) applyRoutingChanges(policy string) ([]RouteChange, error) {
+func (oro *OptimalRouteOptimizer) applyRoutingChanges(policy string) ([]RouteChange, error) { //nolint:unparam // Error always nil but kept for consistency
 	changes := oro.planRoutingChanges(policy)
 
 	// In a real implementation, this would apply actual routing changes
@@ -1472,7 +1473,7 @@ func min(a, b float64) float64 {
 
 // Print functions
 
-func printRouteAnalysis(analysis *RouteAnalysis) error {
+func printRouteAnalysis(analysis *RouteAnalysis) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("🔍 Route Analysis for %s\n\n", analysis.Config.Destination)
 
 	// Metrics summary
@@ -1545,7 +1546,7 @@ func printRouteAnalysis(analysis *RouteAnalysis) error {
 	return nil
 }
 
-func printRouteDiscovery(discovery *RouteDiscovery) error {
+func printRouteDiscovery(discovery *RouteDiscovery) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("🌐 Route Discovery Results\n\n")
 
 	// Summary
@@ -1613,7 +1614,7 @@ func printRouteDiscovery(discovery *RouteDiscovery) error {
 	return nil
 }
 
-func printApplyResult(result *RoutingApplyResult) error {
+func printApplyResult(result *RoutingApplyResult) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("⚙️  Routing Apply Result\n\n")
 
 	if result.Config.DryRun {
@@ -1661,7 +1662,7 @@ func printApplyResult(result *RoutingApplyResult) error {
 	return nil
 }
 
-func printAutoOptimizeStatus(status *AutoOptimizeStatus) error {
+func printAutoOptimizeStatus(status *AutoOptimizeStatus) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("🤖 Auto-Optimization Status\n\n")
 
 	fmt.Printf("Status: ")
@@ -1689,7 +1690,7 @@ func printAutoOptimizeStatus(status *AutoOptimizeStatus) error {
 	return nil
 }
 
-func printLoadBalanceResult(result *LoadBalanceResult) error {
+func printLoadBalanceResult(result *LoadBalanceResult) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("⚖️  Load Balancing Configuration\n\n")
 	fmt.Printf("Status: %s\n", result.Message)
 	fmt.Printf("Policy: %s\n\n", result.Config.Policy)
@@ -1714,7 +1715,7 @@ func printLoadBalanceResult(result *LoadBalanceResult) error {
 	return nil
 }
 
-func printRoutingStatus(status *RoutingStatus) error {
+func printRoutingStatus(status *RoutingStatus) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("🔍 Routing Status Overview\n\n")
 
 	// System health

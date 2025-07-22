@@ -38,6 +38,7 @@ func NewGitHubClonerWithEnv(token string, environment env.Environment) *GitHubCl
 	}
 }
 
+// CloneOrganization clones all repositories from a GitHub organization.
 func (g *GitHubCloner) CloneOrganization(orgName, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
@@ -54,6 +55,7 @@ func (g *GitHubCloner) CloneOrganization(orgName, targetPath, strategy string) e
 	return provider.RefreshAll(context.Background(), targetPath, orgName, strategy)
 }
 
+// CloneGroup clones all repositories from a GitHub group (alias for organization).
 func (g *GitHubCloner) CloneGroup(groupName, targetPath, strategy string) error {
 	// GitHub doesn't have groups, use organization instead
 	return g.CloneOrganization(groupName, targetPath, strategy)

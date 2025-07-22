@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	gh "github.com/google/go-github/v66/github"
 	"golang.org/x/oauth2"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 // ClientFactory creates GitHub clients with proper dependency injection.
@@ -73,7 +74,8 @@ func (f *DefaultClientFactory) CreateRepoConfigClient(token string) (*github.Rep
 
 	// Apply optional configuration
 	if f.baseURL != "" {
-		// client.SetBaseURL(f.baseURL) // If such method exists
+		// TODO: client.SetBaseURL(f.baseURL) // If such method exists
+		_ = f.baseURL // Suppress unused field warning
 	}
 
 	// Note: In a real implementation, you would pass these dependencies

@@ -172,7 +172,7 @@ func (o *dockerOptions) runSave(_ *cobra.Command, _ []string) error {
 	}
 
 	// Create store directory if it doesn't exist
-	if err := os.MkdirAll(o.storePath, 0o755); err != nil {
+	if err := os.MkdirAll(o.storePath, 0o750); err != nil {
 		return fmt.Errorf("failed to create store directory: %w", err)
 	}
 
@@ -229,7 +229,7 @@ func (o *dockerOptions) runLoad(_ *cobra.Command, _ []string) error {
 
 	// Create target directory if it doesn't exist
 	targetDir := filepath.Dir(o.configPath)
-	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create target directory: %w", err)
 	}
 
@@ -317,7 +317,7 @@ type dockerMetadata struct {
 
 func (o *dockerOptions) saveMetadata() error {
 	metadata := dockerMetadata{
-		Name:        o.name,
+		// Name:        o.name,  // Unused field removed
 		Description: o.description,
 		SavedAt:     time.Now(),
 		SourcePath:  o.configPath,

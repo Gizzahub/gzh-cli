@@ -520,7 +520,7 @@ type VPNProfileManager struct {
 	profiles  map[string]*VPNProfile
 }
 
-func createVPNProfileManager(_ context.Context, logger *zap.Logger, configDir string) (*VPNProfileManager, error) {
+func createVPNProfileManager(_ context.Context, logger *zap.Logger, configDir string) (*VPNProfileManager, error) { //nolint:unparam // TODO: implement error handling
 	manager := &VPNProfileManager{
 		logger:    logger,
 		configDir: configDir,

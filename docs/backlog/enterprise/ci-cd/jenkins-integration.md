@@ -1,11 +1,13 @@
 # Jenkins 통합 기능
 
 ## 개요
+
 Jenkins CI/CD 파이프라인 관리 및 자동화 기능
 
 ## 제거된 기능
 
 ### 1. Jenkins 파이프라인 관리
+
 - **명령어**: `gz jenkins pipeline create`, `gz jenkins pipeline run`
 - **기능**: Jenkinsfile 생성 및 파이프라인 실행 관리
 - **특징**:
@@ -15,6 +17,7 @@ Jenkins CI/CD 파이프라인 관리 및 자동화 기능
   - 조건부 스테이지
 
 ### 2. 작업(Job) 관리
+
 - **명령어**: `gz jenkins job create`, `gz jenkins job sync`
 - **기능**: Jenkins 작업 생성 및 동기화
 - **특징**:
@@ -24,6 +27,7 @@ Jenkins CI/CD 파이프라인 관리 및 자동화 기능
   - 웹훅 트리거
 
 ### 3. 플러그인 관리
+
 - **명령어**: `gz jenkins plugin install`, `gz jenkins plugin list`
 - **기능**: Jenkins 플러그인 설치 및 관리
 - **특징**:
@@ -33,6 +37,7 @@ Jenkins CI/CD 파이프라인 관리 및 자동화 기능
   - 플러그인 백업
 
 ### 4. 노드 및 에이전트 관리
+
 - **명령어**: `gz jenkins node add`, `gz jenkins agent deploy`
 - **기능**: Jenkins 빌드 노드 관리
 - **특징**:
@@ -135,24 +140,28 @@ jenkins:
 ## 고급 기능
 
 ### 1. 멀티브랜치 파이프라인
+
 - 자동 브랜치 감지
 - 풀 리퀘스트 빌드
 - 브랜치별 환경 설정
 - 머지 후 자동 정리
 
 ### 2. 블루 오션 인터페이스
+
 - 시각적 파이프라인 편집
 - 실시간 빌드 상태
 - 직관적 로그 분석
 - 단계별 진행 추적
 
 ### 3. 분산 빌드
+
 - 마스터-슬레이브 아키텍처
 - 클라우드 기반 에이전트
 - 컨테이너 기반 빌드
 - 자동 스케일링
 
 ### 4. 보안 및 권한 관리
+
 - 역할 기반 접근 제어
 - LDAP/AD 통합
 - API 키 관리
@@ -161,24 +170,28 @@ jenkins:
 ## 통합 기능
 
 ### 1. 소스 제어 시스템
+
 - Git, SVN, Mercurial 지원
 - 웹훅 자동 설정
 - 브랜치 전략 지원
 - 태그 기반 릴리스
 
 ### 2. 알림 시스템
+
 - 이메일, Slack, Teams 통합
 - 빌드 상태 알림
 - 실패 시 즉시 알림
 - 보고서 자동 전송
 
 ### 3. 아티팩트 관리
+
 - Maven, npm 저장소 연동
 - Docker 이미지 빌드/푸시
 - 아티팩트 보관 및 배포
 - 버전 관리
 
 ### 4. 테스트 통합
+
 - 단위 테스트 자동 실행
 - 코드 커버리지 보고
 - 통합 테스트 환경
@@ -187,6 +200,7 @@ jenkins:
 ## 파이프라인 템플릿
 
 ### 1. 기본 Java 애플리케이션
+
 ```groovy
 pipeline {
     agent any
@@ -233,6 +247,7 @@ pipeline {
 ```
 
 ### 2. Node.js 애플리케이션
+
 ```groovy
 pipeline {
     agent {

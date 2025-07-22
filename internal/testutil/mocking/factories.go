@@ -9,12 +9,13 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/mock/gomock"
+
 	"github.com/gizzahub/gzh-manager-go/internal/filesystem/mocks"
 	gitmocks "github.com/gizzahub/gzh-manager-go/internal/git/mocks"
 	httpmocks "github.com/gizzahub/gzh-manager-go/internal/httpclient/mocks"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	githubmocks "github.com/gizzahub/gzh-manager-go/pkg/github/mocks"
-	"go.uber.org/mock/gomock"
 )
 
 // MockFactory provides factory methods for creating commonly used mocks.

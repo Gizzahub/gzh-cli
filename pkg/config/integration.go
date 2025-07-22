@@ -190,7 +190,7 @@ func (b *BulkCloneIntegration) ShouldProcessTarget(target BulkCloneTarget, filte
 	// Check name pattern filter
 	if nameFilter, ok := filters["name_pattern"]; ok {
 		if pattern, ok := nameFilter.(string); ok && pattern != "" {
-			if matched, _ := CompileRegex(pattern); matched != nil {
+			if matched, err := CompileRegex(pattern); err == nil && matched != nil {
 				if !matched.MatchString(target.Name) {
 					return false
 				}

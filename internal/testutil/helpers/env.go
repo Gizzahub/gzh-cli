@@ -82,7 +82,7 @@ func RequireEnv(t *testing.T, key string) string {
 }
 
 // RequireAnyEnv skips the test if none of the environment variables are set.
-func RequireAnyEnv(t *testing.T, keys ...string) (string, string) {
+func RequireAnyEnv(t *testing.T, keys ...string) (key, value string) {
 	t.Helper()
 
 	for _, key := range keys {

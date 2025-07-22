@@ -515,5 +515,5 @@ func (lo *LanguageOptimizer) SaveOptimizationConfig(filename string) error {
 		return err
 	}
 
-	return os.WriteFile(filename, data, 0o644)
+	return os.WriteFile(filename, data, 0o600)
 }

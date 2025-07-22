@@ -27,7 +27,7 @@ type Middleware interface {
 // CacheEntry represents a cached response.
 type CacheEntry struct {
 	Response  *http.Response `json:"response"`
-	CreatedAt time.Time      `json:"createdAt"`
+	CreatedAt time.Time      `json:"created_at"`
 	TTL       time.Duration  `json:"ttl"`
 }
 

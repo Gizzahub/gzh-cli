@@ -10,11 +10,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 const (

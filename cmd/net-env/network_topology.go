@@ -488,7 +488,8 @@ func (nta *NetworkTopologyAnalyzer) AnalyzeNetworkTopology(ctx context.Context) 
 }
 
 // mapNetworks maps detected networks to topology networks.
-func (nta *NetworkTopologyAnalyzer) mapNetworks(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyNetwork, error) {
+func (nta *NetworkTopologyAnalyzer) mapNetworks(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyNetwork, error) { //nolint:unparam // Error always nil but kept for consistency
+	_ = ctx // ctx unused in current implementation
 	topologyNetworks := make([]TopologyNetwork, 0, len(containerEnv.Networks))
 
 	for _, network := range containerEnv.Networks {
@@ -528,7 +529,8 @@ func (nta *NetworkTopologyAnalyzer) mapNetworks(ctx context.Context, containerEn
 }
 
 // mapContainers maps detected containers to topology containers.
-func (nta *NetworkTopologyAnalyzer) mapContainers(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyContainer, error) {
+func (nta *NetworkTopologyAnalyzer) mapContainers(ctx context.Context, containerEnv *ContainerEnvironment) ([]TopologyContainer, error) { //nolint:unparam // Error always nil but kept for consistency
+	_ = ctx // ctx unused in current implementation
 	topologyContainers := make([]TopologyContainer, 0, len(containerEnv.RunningContainers))
 
 	for _, container := range containerEnv.RunningContainers {
@@ -579,7 +581,8 @@ func (nta *NetworkTopologyAnalyzer) mapContainers(ctx context.Context, container
 }
 
 // discoverServices discovers logical services from containers.
-func (nta *NetworkTopologyAnalyzer) discoverServices(ctx context.Context, containers []TopologyContainer) ([]TopologyService, error) {
+func (nta *NetworkTopologyAnalyzer) discoverServices(ctx context.Context, containers []TopologyContainer) ([]TopologyService, error) { //nolint:unparam // Error always nil but kept for consistency
+	_ = ctx // ctx unused in current implementation
 	serviceMap := make(map[string]*TopologyService)
 
 	for _, container := range containers {
@@ -635,7 +638,8 @@ func (nta *NetworkTopologyAnalyzer) discoverServices(ctx context.Context, contai
 }
 
 // analyzeConnections analyzes network connections between containers.
-func (nta *NetworkTopologyAnalyzer) analyzeConnections(ctx context.Context, containers []TopologyContainer, networks []TopologyNetwork) ([]NetworkConnection, error) {
+func (nta *NetworkTopologyAnalyzer) analyzeConnections(ctx context.Context, containers []TopologyContainer, networks []TopologyNetwork) ([]NetworkConnection, error) { //nolint:unparam // Error always nil but kept for consistency
+	_ = networks // networks unused in current implementation
 	var connections []NetworkConnection
 
 	// Analyze container-to-container connections within same networks
@@ -686,7 +690,8 @@ func (nta *NetworkTopologyAnalyzer) analyzeConnections(ctx context.Context, cont
 }
 
 // mapServiceDependencies maps dependencies between services.
-func (nta *NetworkTopologyAnalyzer) mapServiceDependencies(ctx context.Context, services []TopologyService, connections []NetworkConnection) ([]ServiceDependency, error) {
+func (nta *NetworkTopologyAnalyzer) mapServiceDependencies(ctx context.Context, services []TopologyService, connections []NetworkConnection) ([]ServiceDependency, error) { //nolint:unparam // Error always nil but kept for consistency
+	_ = ctx // ctx unused in current implementation
 	var dependencies []ServiceDependency
 
 	serviceContainerMap := nta.buildServiceContainerMap(services)
@@ -730,7 +735,9 @@ func (nta *NetworkTopologyAnalyzer) mapServiceDependencies(ctx context.Context, 
 }
 
 // identifyNetworkClusters identifies logical network clusters.
-func (nta *NetworkTopologyAnalyzer) identifyNetworkClusters(ctx context.Context, networks []TopologyNetwork, containers []TopologyContainer, services []TopologyService) ([]NetworkCluster, error) {
+func (nta *NetworkTopologyAnalyzer) identifyNetworkClusters(ctx context.Context, networks []TopologyNetwork, containers []TopologyContainer, services []TopologyService) ([]NetworkCluster, error) { //nolint:unparam // Error always nil but kept for consistency
+	_ = ctx      // ctx unused in current implementation
+	_ = services // services unused in current implementation
 	clusters := make([]NetworkCluster, 0, len(networks))
 
 	// Cluster by network
@@ -986,6 +993,7 @@ func (nta *NetworkTopologyAnalyzer) findSharedNetworks(container1, container2 To
 }
 
 func (nta *NetworkTopologyAnalyzer) testConnection(ctx context.Context, address string, port int) ConnectionStatus {
+	_ = ctx // ctx unused in current implementation
 	if address == "" {
 		return StatusUnknown
 	}

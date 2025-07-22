@@ -12,8 +12,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 )
 
 const (
@@ -181,9 +182,9 @@ func newCloudShowCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 			fmt.Println("\nNetwork Configuration:")
 			fmt.Printf("  VPC ID: %s\n", profile.Network.VPCId)
 
-			if len(profile.Network.SubnetIds) > 0 {
+			if len(profile.Network.SubnetIDs) > 0 {
 				fmt.Println("  Subnets:")
-				for _, subnet := range profile.Network.SubnetIds {
+				for _, subnet := range profile.Network.SubnetIDs {
 					fmt.Printf("    - %s\n", subnet)
 				}
 			}
@@ -336,7 +337,7 @@ This command will:
 			if len(profile.Network.DNSServers) > 0 {
 				fmt.Printf("  Setting DNS servers: %v\n", profile.Network.DNSServers)
 				if !dryRun {
-					// TODO: Implement DNS configuration
+					_ = profile.Network.DNSServers // TODO: Implement DNS configuration
 				}
 			}
 
@@ -370,7 +371,7 @@ This command will:
 			if profile.Network.VPN != nil && profile.Network.VPN.AutoConnect {
 				fmt.Printf("  Connecting to VPN: %s\n", profile.Network.VPN.Server)
 				if !dryRun {
-					// TODO: Implement VPN connection
+					_ = profile.Network.VPN // TODO: Implement VPN connection
 				}
 			}
 
@@ -380,7 +381,7 @@ This command will:
 				for _, route := range profile.Network.Routes {
 					fmt.Printf("    %s via %s\n", route.Destination, route.Gateway)
 					if !dryRun {
-						// TODO: Implement route addition
+						_ = route // TODO: Implement route addition
 					}
 				}
 			}

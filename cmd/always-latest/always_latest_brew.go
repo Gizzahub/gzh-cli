@@ -158,7 +158,7 @@ func (o *alwaysLatestBrewOptions) performUpdates() error {
 }
 
 // getFilteredOutdatedPackages gets outdated packages and casks, then filters them.
-func (o *alwaysLatestBrewOptions) getFilteredOutdatedPackages() ([]string, []string, error) {
+func (o *alwaysLatestBrewOptions) getFilteredOutdatedPackages() (packages, casks []string, err error) {
 	// Get outdated packages
 	outdatedPackages, err := o.getOutdatedPackages()
 	if err != nil {

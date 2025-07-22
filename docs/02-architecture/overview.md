@@ -433,7 +433,6 @@ graph TB
    - HTTP/2 connection reuse
    - Retry mechanisms with exponential backoff
 
-
 ### Metrics Collection
 
 ```mermaid

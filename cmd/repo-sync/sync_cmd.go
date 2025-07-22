@@ -545,7 +545,8 @@ func (rs *RepositorySynchronizer) resolveByTimestamp(ctx context.Context, status
 	return fmt.Errorf("timestamp-based resolution not yet implemented")
 }
 
-func (rs *RepositorySynchronizer) promptManualResolution(ctx context.Context, status *GitStatus, result *SyncResult) error {
+func (rs *RepositorySynchronizer) promptManualResolution(ctx context.Context, status *GitStatus, _ *SyncResult) error { //nolint:unparam // Result unused but kept for consistency
+	_ = ctx // ctx unused in current implementation
 	fmt.Printf("🔄 Manual resolution required:\n")
 	fmt.Printf("   Local commits ahead: %d\n", status.AheadBy)
 	fmt.Printf("   Remote commits behind: %d\n", status.BehindBy)
@@ -678,7 +679,7 @@ func (ge *defaultGitExecutor) GetStatus(ctx context.Context, dir string) (*GitSt
 	return status, nil
 }
 
-func (ge *defaultGitExecutor) GetRemoteInfo(ctx context.Context, dir string, remote string) (*GitRemoteInfo, error) {
+func (ge *defaultGitExecutor) GetRemoteInfo(ctx context.Context, dir, remote string) (*GitRemoteInfo, error) {
 	// Get remote URL
 	urlResult, err := ge.ExecuteCommand(ctx, dir, "remote", "get-url", remote)
 	if err != nil {

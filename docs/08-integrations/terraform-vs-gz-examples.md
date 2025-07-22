@@ -7,6 +7,7 @@ This document provides side-by-side comparisons of common GitHub management task
 ### 1. Standardize 50 Microservice Repositories
 
 **Terraform Approach:**
+
 ```hcl
 # Define locals for common settings
 locals {
@@ -48,6 +49,7 @@ module "microservice_repo" {
 ```
 
 **gz repo-config Approach:**
+
 ```yaml
 version: "1.0.0"
 organization: "my-company"
@@ -70,7 +72,6 @@ templates:
 patterns:
   - pattern: "*-service"
     template: "microservice"
-
 # Single command
 # gz repo-config apply --config microservice-standard.yaml
 # Time: ~5 minutes for 50 repos (parallel operations)
@@ -79,6 +80,7 @@ patterns:
 ### 2. Enforce Security Policy Across Organization
 
 **Terraform Approach:**
+
 ```hcl
 # No built-in policy enforcement
 # Must use external tools like OPA or Sentinel
@@ -115,6 +117,7 @@ output "non_compliant_repos" {
 ```
 
 **gz repo-config Approach:**
+
 ```yaml
 version: "1.0.0"
 organization: "my-company"
@@ -144,7 +147,6 @@ policies:
 patterns:
   - pattern: "*"
     policies: ["security-baseline"]
-
 # Check compliance
 # gz repo-config audit --config security-policy.yaml
 
@@ -163,6 +165,7 @@ patterns:
 ### 3. Different Configurations by Repository Type
 
 **Terraform Approach:**
+
 ```hcl
 # Define different modules
 module "backend_repos" {
@@ -202,6 +205,7 @@ module "library_repos" {
 ```
 
 **gz repo-config Approach:**
+
 ```yaml
 version: "1.0.0"
 organization: "my-company"
@@ -246,7 +250,6 @@ patterns:
     template: "frontend"
   - pattern: "*-lib"
     template: "library"
-
 # Single file: 50 lines
 # One command to apply all
 ```
@@ -254,6 +257,7 @@ patterns:
 ### 4. Handle Exceptions
 
 **Terraform Approach:**
+
 ```hcl
 # Must handle each exception individually
 resource "github_repository" "public_docs" {
@@ -277,6 +281,7 @@ variable "public_exceptions" {
 ```
 
 **gz repo-config Approach:**
+
 ```yaml
 policies:
   private-only:
@@ -290,14 +295,13 @@ repositories:
   - name: "public-docs"
     template: "standard"
     settings:
-      private: false  # Override
+      private: false # Override
     exceptions:
       - policy: "private-only"
         rule: "must_be_private"
         reason: "Public documentation site required for customers"
         approved_by: "security-team@company.com"
         expires_at: "2024-12-31"
-
 # Exceptions are documented and auditable
 # gz repo-config audit shows exceptions
 ```
@@ -305,6 +309,7 @@ repositories:
 ### 5. Gradual Rollout
 
 **Terraform Approach:**
+
 ```hcl
 # Use workspace or variables for gradual rollout
 variable "enable_new_settings" {
@@ -334,6 +339,7 @@ resource "github_repository" "managed" {
 ```
 
 **gz repo-config Approach:**
+
 ```yaml
 # Phase 1: Pilot repos only
 repositories:
@@ -359,6 +365,7 @@ patterns:
 ### 6. Compliance Reporting
 
 **Terraform Approach:**
+
 ```hcl
 # No built-in compliance reporting
 # Must build custom solution
@@ -400,6 +407,7 @@ output "compliance_summary" {
 ```
 
 **gz repo-config Approach:**
+
 ```yaml
 # Built-in compliance reporting
 policies:
@@ -417,7 +425,6 @@ policies:
         type: "branch_protection"
         value: true
         enforcement: "required"
-
 # Single command for full report
 # gz repo-config audit --format html --output report.html
 
@@ -431,6 +438,7 @@ policies:
 ### Bulk Operations (100 repositories)
 
 **Terraform:**
+
 ```bash
 # Sequential API calls
 # Time: ~45-60 minutes
@@ -439,6 +447,7 @@ policies:
 ```
 
 **gz repo-config:**
+
 ```bash
 # Parallel operations with built-in rate limiting
 # Time: ~5-10 minutes
@@ -449,6 +458,7 @@ policies:
 ## Developer Experience
 
 ### Terraform Workflow:
+
 ```bash
 # 1. Write HCL code
 # 2. Initialize
@@ -470,6 +480,7 @@ terraform import github_repository.example org/example
 ```
 
 ### gz repo-config Workflow:
+
 ```bash
 # 1. Write YAML config
 # 2. Validate
@@ -487,13 +498,13 @@ gz repo-config apply
 
 ## Summary
 
-| Use Case | Better Tool | Why |
-|----------|-------------|-----|
-| Create new repos | Terraform | Manages full lifecycle |
-| Configure 100+ existing repos | gz repo-config | Bulk operations, no state |
-| Enforce security policies | gz repo-config | Built-in policy engine |
-| Mixed infrastructure | Terraform | Single tool for all resources |
-| Compliance auditing | gz repo-config | Native audit features |
-| Team collaboration | Both work | Different trade-offs |
-| Simple standardization | gz repo-config | Easier to learn and use |
-| Complex dependencies | Terraform | Better dependency management |
+| Use Case                      | Better Tool    | Why                           |
+| ----------------------------- | -------------- | ----------------------------- |
+| Create new repos              | Terraform      | Manages full lifecycle        |
+| Configure 100+ existing repos | gz repo-config | Bulk operations, no state     |
+| Enforce security policies     | gz repo-config | Built-in policy engine        |
+| Mixed infrastructure          | Terraform      | Single tool for all resources |
+| Compliance auditing           | gz repo-config | Native audit features         |
+| Team collaboration            | Both work      | Different trade-offs          |
+| Simple standardization        | gz repo-config | Easier to learn and use       |
+| Complex dependencies          | Terraform      | Better dependency management  |

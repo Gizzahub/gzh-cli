@@ -166,12 +166,12 @@ func TestExpandPath(t *testing.T) {
 		{
 			name:     "expand home directory",
 			input:    "~/test/path",
-			expected: filepath.Join(homeDir, "test/path"),
+			expected: filepath.Join(homeDir, "test", "path"),
 		},
 		{
 			name:     "expand environment variable",
 			input:    "$HOME/test/path",
-			expected: filepath.Join(homeDir, "test/path"),
+			expected: filepath.Join(homeDir, "test", "path"),
 		},
 		{
 			name:     "no expansion needed",

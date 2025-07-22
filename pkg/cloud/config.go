@@ -18,7 +18,7 @@ type Config struct {
 	Providers map[string]ProviderConfig `yaml:"providers"`
 	Profiles  map[string]Profile        `yaml:"profiles"`
 	Policies  []NetworkPolicy           `yaml:"policies,omitempty"`
-	VPNs      map[string]VPNConnection  `yaml:"vpns,omitempty"`
+	VPNs      map[string]VPNConnection  `yaml:"vpNs,omitempty"`
 	Sync      SyncConfig                `yaml:"sync,omitempty"`
 }
 

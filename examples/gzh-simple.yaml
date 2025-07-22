@@ -12,6 +12,6 @@ providers:
     orgs:
       # Clone all repositories from your organization
       - name: "your-org-name"
-        visibility: "all"          # Include public and private repos
-        clone_dir: "./github"      # Clone to ./github directory
-        strategy: "reset"          # Hard reset to match remote
+        visibility: "all" # Include public and private repos
+        clone_dir: "./github" # Clone to ./github directory
+        strategy: "reset" # Hard reset to match remote

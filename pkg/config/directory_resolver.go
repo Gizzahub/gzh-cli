@@ -28,10 +28,9 @@ func (d *DirectoryResolver) ResolveRepositoryPath(repositoryName string) string 
 	if d.target.Flatten {
 		// Flatten structure: base/{repository}
 		return filepath.Join(basePath, repositoryName)
-	} else {
-		// Normal structure: base/{organization}/{repository}
-		return filepath.Join(basePath, d.target.Name, repositoryName)
 	}
+	// Normal structure: base/{organization}/{repository}
+	return filepath.Join(basePath, d.target.Name, repositoryName)
 }
 
 // GetBasePath returns the base directory path for the target.
@@ -44,10 +43,9 @@ func (d *DirectoryResolver) GetOrganizationPath() string {
 	if d.target.Flatten {
 		// For flattened structure, org path is the same as base path
 		return d.target.CloneDir
-	} else {
-		// For normal structure, org path includes the organization name
-		return filepath.Join(d.target.CloneDir, d.target.Name)
 	}
+	// For normal structure, org path includes the organization name
+	return filepath.Join(d.target.CloneDir, d.target.Name)
 }
 
 // GetDirectoryStructure returns a description of the directory structure.
@@ -74,9 +72,8 @@ type DirectoryStructure struct {
 func (d *DirectoryStructure) GetDescription() string {
 	if d.IsFlattened {
 		return "Flattened structure: all repositories in " + d.OrganizationPath
-	} else {
-		return "Nested structure: repositories in " + d.OrganizationPath
 	}
+	return "Nested structure: repositories in " + d.OrganizationPath
 }
 
 // GetExamplePath returns an example repository path.
@@ -114,9 +111,8 @@ func (g *DirectoryPathGenerator) GenerateRepositoryPaths(target BulkCloneTarget,
 func (g *DirectoryPathGenerator) getRelativePath(target BulkCloneTarget, repoName string) string {
 	if target.Flatten {
 		return repoName
-	} else {
-		return filepath.Join(target.Name, repoName)
 	}
+	return filepath.Join(target.Name, repoName)
 }
 
 // RepositoryPath represents the resolved path for a repository.
@@ -280,8 +276,7 @@ func (s *StructureAnalysis) GetSummary() string {
 	if s.Structure.IsFlattened {
 		return fmt.Sprintf("Flattened structure: %d repositories in %d directories",
 			s.Statistics.TotalRepositories, s.Statistics.UniqueDirectories)
-	} else {
-		return fmt.Sprintf("Nested structure: %d repositories in %d directories",
-			s.Statistics.TotalRepositories, s.Statistics.UniqueDirectories)
 	}
+	return fmt.Sprintf("Nested structure: %d repositories in %d directories",
+		s.Statistics.TotalRepositories, s.Statistics.UniqueDirectories)
 }

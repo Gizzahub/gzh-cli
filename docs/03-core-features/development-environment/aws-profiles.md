@@ -18,6 +18,7 @@ The `gz dev-env aws-profile` command provides comprehensive AWS profile manageme
 ### 1. Profile Management
 
 #### List All Profiles
+
 ```bash
 # List all AWS profiles in table format
 gz dev-env aws-profile list
@@ -27,6 +28,7 @@ gz dev-env aws-profile list --output json
 ```
 
 Output example:
+
 ```
 +------------+-----------+------------+--------------------------------+----------------+--------+
 | PROFILE    | REGION    | TYPE       | SSO URL                        | ACCOUNT ID     | ACTIVE |
@@ -38,6 +40,7 @@ Output example:
 ```
 
 #### Switch Profiles
+
 ```bash
 # Switch to a specific profile
 gz dev-env aws-profile switch production
@@ -47,6 +50,7 @@ gz dev-env aws-profile switch --interactive
 ```
 
 The switch command:
+
 - Updates the `AWS_PROFILE` environment variable
 - Updates shell configuration files (.bashrc, .zshrc, .profile)
 - Validates credentials if available
@@ -54,12 +58,14 @@ The switch command:
 ### 2. SSO Integration
 
 #### SSO Login
+
 ```bash
 # Login to AWS SSO for a profile
 gz dev-env aws-profile login production
 ```
 
 The SSO login process:
+
 1. Opens a browser window for authentication
 2. Displays a user code for verification
 3. Waits for authentication completion
@@ -84,6 +90,7 @@ output = json
 The tool supports various AWS profile types:
 
 #### Standard Profile
+
 ```ini
 [default]
 region = us-east-1
@@ -91,6 +98,7 @@ output = json
 ```
 
 #### SSO Profile
+
 ```ini
 [profile production]
 sso_start_url = https://mycompany.awsapps.com/start
@@ -101,6 +109,7 @@ region = us-west-2
 ```
 
 #### AssumeRole Profile
+
 ```ini
 [profile staging]
 role_arn = arn:aws:iam::123456789012:role/StagingRole
@@ -111,6 +120,7 @@ external_id = unique-external-id
 ```
 
 #### Credential Process Profile
+
 ```ini
 [profile custom]
 credential_process = /usr/local/bin/aws-credential-helper
@@ -120,12 +130,14 @@ region = us-east-1
 ### 4. Profile Information
 
 #### Show Profile Details
+
 ```bash
 # Display detailed profile information
 gz dev-env aws-profile show production
 ```
 
 Output example:
+
 ```
 Profile: production
 Region: us-west-2
@@ -144,6 +156,7 @@ Status: ✅ Valid
 ### 5. Credential Validation
 
 #### Validate Single Profile
+
 ```bash
 # Validate current profile
 gz dev-env aws-profile validate
@@ -153,12 +166,14 @@ gz dev-env aws-profile validate production
 ```
 
 #### Validate All Profiles
+
 ```bash
 # Validate all configured profiles
 gz dev-env aws-profile validate --all
 ```
 
 Output example:
+
 ```
 +------------+------------+------------+---------------------------+
 | PROFILE    | TYPE       | STATUS     | DETAILS                   |
@@ -232,6 +247,7 @@ The tool automatically updates shell configuration files:
 - `~/.profile` - Generic shell profile
 
 To apply changes immediately:
+
 ```bash
 # For bash
 source ~/.bashrc
@@ -252,6 +268,7 @@ source ~/.zshrc
 ### SSO Login Issues
 
 If SSO login fails:
+
 1. Check your SSO start URL is correct
 2. Ensure you have access to the SSO portal
 3. Verify your browser can open the authentication page
@@ -260,6 +277,7 @@ If SSO login fails:
 ### Profile Not Found
 
 If a profile is not found:
+
 1. Verify the profile exists in `~/.aws/config`
 2. Check the profile name spelling
 3. Ensure proper formatting in the config file
@@ -267,6 +285,7 @@ If a profile is not found:
 ### Credential Validation Failures
 
 If credentials fail validation:
+
 1. Re-login for SSO profiles: `gz dev-env aws-profile login <profile>`
 2. Check MFA token for AssumeRole profiles
 3. Verify IAM permissions are correct
@@ -284,6 +303,7 @@ If credentials fail validation:
 ## Configuration Examples
 
 ### Enterprise SSO Setup
+
 ```ini
 [profile prod-readonly]
 sso_start_url = https://company.awsapps.com/start
@@ -301,6 +321,7 @@ region = us-west-2
 ```
 
 ### Multi-Environment Setup
+
 ```ini
 [profile dev]
 sso_start_url = https://company.awsapps.com/start

@@ -681,7 +681,7 @@ type TestStep struct {
 	Description string        `json:"description"`
 }
 
-func createFailoverVPNManager(_ context.Context, logger *zap.Logger, configDir string) (*FailoverVPNManager, error) {
+func createFailoverVPNManager(_ context.Context, logger *zap.Logger, configDir string) (*FailoverVPNManager, error) { //nolint:unparam // Error always nil but kept for consistency
 	manager := &FailoverVPNManager{
 		logger:    logger,
 		configDir: configDir,
@@ -842,7 +842,7 @@ func (fvm *FailoverVPNManager) SetFailoverPolicy(policy FailoverPolicy) error {
 	return fvm.saveConfiguration()
 }
 
-func (fvm *FailoverVPNManager) loadConfiguration() error {
+func (fvm *FailoverVPNManager) loadConfiguration() error { //nolint:unparam // Error always nil but kept for consistency
 	configPath := filepath.Join(fvm.configDir, "vpn-failover.json")
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {

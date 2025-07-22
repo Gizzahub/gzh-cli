@@ -5,6 +5,7 @@ This document describes the code quality standards and linting configuration for
 ## Overview
 
 We use `golangci-lint` as our primary code quality tool, configured with a comprehensive set of linters to ensure:
+
 - Code correctness and bug prevention
 - Security best practices
 - Performance optimization
@@ -32,6 +33,7 @@ make vuln    # Check for vulnerabilities
 ## Linter Categories
 
 ### Core Linters
+
 - **errcheck**: Ensures all errors are handled
 - **govet**: Reports suspicious constructs
 - **staticcheck**: Advanced static analysis
@@ -39,6 +41,7 @@ make vuln    # Check for vulnerabilities
 - **ineffassign**: Detects ineffectual assignments
 
 ### Code Quality
+
 - **revive**: Extensible linter with many rules
 - **gocritic**: Opinionated linter with many checks
 - **goconst**: Finds repeated strings that could be constants
@@ -49,12 +52,14 @@ make vuln    # Check for vulnerabilities
 - **nakedret**: Finds naked returns in long functions
 
 ### Security
+
 - **gosec**: Security-focused linter
 - **G104**: Unchecked errors (handled by errcheck)
 - **G204**: Command execution (allowed for CLI tools)
 - **G304**: File path from user input (allowed for CLI tools)
 
 ### Complexity
+
 - **gocyclo**: Cyclomatic complexity (max: 15)
 - **funlen**: Function length (max: 100 lines, 50 statements)
 - **gocognit**: Cognitive complexity (max: 20)
@@ -63,6 +68,7 @@ make vuln    # Check for vulnerabilities
 - **maintidx**: Maintainability index (min: 20)
 
 ### Style
+
 - **lll**: Line length limit (180 characters)
 - **whitespace**: Whitespace issues
 - **wsl**: Whitespace linter with strict rules
@@ -73,11 +79,13 @@ make vuln    # Check for vulnerabilities
 - **goheader**: License header checker
 
 ### Performance
+
 - **bodyclose**: HTTP response body closure
 - **rowserrcheck**: SQL rows.Err() checking
 - **sqlclosecheck**: SQL rows/stmt closure
 
 ### Bug Prevention
+
 - **nilerr**: Finds code returning nil instead of error
 - **nilnil**: Finds functions returning (nil, nil)
 - **noctx**: HTTP requests without context
@@ -87,10 +95,12 @@ make vuln    # Check for vulnerabilities
 - **errorlint**: Error wrapping best practices
 
 ### Dependencies
+
 - **gomodguard**: Blocks specific modules
 - **depguard**: Dependency constraints
 
 ### Testing
+
 - **testpackage**: Separate test packages
 - **tparallel**: Parallel test detection
 - **thelper**: Test helper function checks
@@ -99,20 +109,24 @@ make vuln    # Check for vulnerabilities
 ## Configuration Details
 
 ### Line Length
+
 - Maximum: 180 characters
 - Rationale: Modern monitors can display longer lines comfortably
 
 ### Complexity Thresholds
+
 - Cyclomatic complexity: 15
 - Cognitive complexity: 20
 - Function length: 100 lines, 50 statements
 - Maintainability index: 20
 
 ### Variable Naming
+
 - Minimum length: 2 characters
 - Allowed short names: err, ok, id, i, j, k, v, tt, tc, t, mu, fn, op
 
 ### Excluded Patterns
+
 - Test files have relaxed rules for:
   - Function length
   - Complexity
@@ -124,6 +138,7 @@ make vuln    # Check for vulnerabilities
 ## Custom Rules
 
 ### Error Handling
+
 - All errors must be checked except in specific cases:
   - Print functions
   - File.Close() in deferred calls
@@ -131,17 +146,20 @@ make vuln    # Check for vulnerabilities
   - Remove operations in cleanup
 
 ### Context Usage
+
 - Production code must propagate context
 - context.Background() only allowed in:
   - main.go
   - Test files
 
 ### Dependencies
+
 - Prohibited packages:
   - `github.com/pkg/errors` (use stdlib errors)
   - `io/ioutil` (deprecated)
 
 ### TODO Comments
+
 - Tracked by godox linter
 - Must be addressed or converted to issues
 - Keywords: TODO, FIXME, BUG, HACK, OPTIMIZE, XXX
@@ -161,6 +179,7 @@ make pre-commit
 ## Continuous Integration
 
 All pull requests are automatically checked for:
+
 1. Formatting issues
 2. Linting violations
 3. Test coverage
@@ -186,6 +205,7 @@ Always provide a reason when suppressing linters.
 ## Adding New Linters
 
 When adding a new linter:
+
 1. Add it to `.golangci.yml`
 2. Configure appropriate settings
 3. Add exclusions for false positives

@@ -29,6 +29,7 @@ func NewGitHubProviderAdapter(token string, environment env.Environment) *GitHub
 	}
 }
 
+// ListRepositories lists all repositories for a GitHub owner.
 func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
 	repoNames, err := github.List(ctx, owner)
 	if err != nil {
@@ -38,7 +39,10 @@ func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	repositories := make([]Repository, 0, len(repoNames))
 	for _, name := range repoNames {
 		// Get additional repository information
-		defaultBranch, _ := github.GetDefaultBranch(ctx, owner, name)
+		defaultBranch, err := github.GetDefaultBranch(ctx, owner, name)
+		if err != nil {
+			defaultBranch = "main" // fallback to main if error
+		}
 
 		repo := Repository{
 			Name:          name,
@@ -119,7 +123,10 @@ func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	repositories := make([]Repository, 0, len(repoNames))
 	for _, name := range repoNames {
 		// Get additional repository information
-		defaultBranch, _ := gitlab.GetDefaultBranch(ctx, owner, name)
+		defaultBranch, err := gitlab.GetDefaultBranch(ctx, owner, name)
+		if err != nil {
+			defaultBranch = "main" // fallback to main if error
+		}
 
 		repo := Repository{
 			Name:          name,
@@ -199,7 +206,10 @@ func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner strin
 	repositories := make([]Repository, 0, len(repoNames))
 	for _, name := range repoNames {
 		// Get additional repository information
-		defaultBranch, _ := gitea.GetDefaultBranch(ctx, owner, name)
+		defaultBranch, err := gitea.GetDefaultBranch(ctx, owner, name)
+		if err != nil {
+			defaultBranch = "main" // fallback to main if error
+		}
 
 		repo := Repository{
 			Name:          name,

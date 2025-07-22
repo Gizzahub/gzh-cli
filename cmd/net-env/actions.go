@@ -13,8 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 type actionsOptions struct {
@@ -892,11 +893,7 @@ func addHostEntry(ip, host string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open hosts file: %w", err)
 	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			// Log error but don't override main error
-		}
-	}()
+	defer func() { _ = file.Close() }() //nolint:errcheck // Deferred close
 
 	if _, err := file.WriteString(entry); err != nil {
 		return fmt.Errorf("failed to write host entry: %w", err)
@@ -963,11 +960,7 @@ func showHostsFile() error {
 	if err != nil {
 		return fmt.Errorf("failed to open hosts file: %w", err)
 	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			// Log error but don't override main error
-		}
-	}()
+	defer func() { _ = file.Close() }() //nolint:errcheck // Deferred close
 
 	scanner := bufio.NewScanner(file)
 	lineNum := 1

@@ -5,6 +5,7 @@ Get started with `gz repo-config` in 5 minutes!
 ## Prerequisites
 
 1. Install gzh-manager:
+
    ```bash
    go install github.com/gizzahub/gzh-manager-go@latest
    ```
@@ -39,6 +40,7 @@ repositories:
 ```
 
 Apply it:
+
 ```bash
 gz repo-config apply --config repo-config.yaml --dry-run
 ```
@@ -83,6 +85,7 @@ repositories:
 ```
 
 Check compliance:
+
 ```bash
 gz repo-config audit --config repo-config.yaml
 ```
@@ -148,7 +151,7 @@ repositories:
   - name: "public-api-docs"
     template: "documentation"
     settings:
-      private: false  # Override to make public
+      private: false # Override to make public
 ```
 
 ## 4. Add Required Files (4 minutes)
@@ -299,26 +302,31 @@ repositories:
 ## Common Commands
 
 ### Check what would change:
+
 ```bash
 gz repo-config apply --config repo-config.yaml --dry-run
 ```
 
 ### Apply configuration:
+
 ```bash
 gz repo-config apply --config repo-config.yaml
 ```
 
 ### Check compliance:
+
 ```bash
 gz repo-config audit --config repo-config.yaml
 ```
 
 ### Generate HTML report:
+
 ```bash
 gz repo-config audit --config repo-config.yaml --format html --output report.html
 ```
 
 ### Apply to specific repositories:
+
 ```bash
 gz repo-config apply --config repo-config.yaml --repos "repo1,repo2"
 ```

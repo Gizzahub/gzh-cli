@@ -417,7 +417,7 @@ func newTopologyValidateCmd(analyzer *NetworkTopologyAnalyzer) *cobra.Command {
 
 // Helper functions for printing
 
-func printTopologyAnalysis(topology *NetworkTopology, detailed bool) error {
+func printTopologyAnalysis(topology *NetworkTopology, detailed bool) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("🌐 Network Topology Analysis\n\n")
 
 	// Basic summary
@@ -464,7 +464,7 @@ func printTopologyAnalysis(topology *NetworkTopology, detailed bool) error {
 	return nil
 }
 
-func printTopologySummary(summary *TopologySummary) error {
+func printTopologySummary(summary *TopologySummary) error { //nolint:unparam // Error always nil but kept for consistency
 	fmt.Printf("📊 Network Topology Summary\n\n")
 
 	fmt.Printf("Total Resources:\n")

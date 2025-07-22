@@ -14,7 +14,7 @@ debugger:
   show-location-expr: true
 
   # Enable source map support for better debugging
-  source-list-line-color: ""  # Use default terminal colors
+  source-list-line-color: "" # Use default terminal colors
 
   # Set the maximum string length to display
   max-string-len: 300
@@ -100,7 +100,7 @@ api:
   check-go-version: true
 
 # Backend configuration
-backend: "default"  # Options: "default", "native", "lldb", "rr"
+backend: "default" # Options: "default", "native", "lldb", "rr"
 
 # Disable go version check
 check-go-version: true

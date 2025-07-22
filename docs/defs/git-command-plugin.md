@@ -10,7 +10,6 @@ gz clone-or-update처럼 쓸 수도 있는데
 git-gz 형태의 실행파일을 만들어서 git gz ~처럼 실행할 수 있도록 만든다.
 git gz clone-or-update https://github.com/gizzahub/gzh-maanger-go 와 같은 형태로 clone-or-update실행
 
-
 `gz clone-or-update https://github.com/gizzahub/`
 `git gz clone-or-update <https://github.com/gizzahub/`
 

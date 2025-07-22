@@ -26,18 +26,21 @@ type ComponentHealth struct {
 type StatusType string
 
 const (
-	StatusHealthy   StatusType = "healthy"
-	StatusDegraded  StatusType = "degraded"
+	// StatusHealthy indicates the service is operating normally.
+	StatusHealthy StatusType = "healthy"
+	// StatusDegraded indicates the service is operational but with reduced performance.
+	StatusDegraded StatusType = "degraded"
+	// StatusUnhealthy indicates the service is not operational.
 	StatusUnhealthy StatusType = "unhealthy"
 )
 
 // BulkCloneRequest represents a bulk clone operation request.
 type BulkCloneRequest struct {
 	Platforms      []PlatformConfig `json:"platforms" yaml:"platforms"`
-	OutputDir      string           `json:"outputDir" yaml:"outputDir"`
+	OutputDir      string           `json:"output_dir" yaml:"outputDir"`
 	Concurrency    int              `json:"concurrency" yaml:"concurrency"`
 	Strategy       string           `json:"strategy" yaml:"strategy"` // reset, pull, fetch
-	IncludePrivate bool             `json:"includePrivate" yaml:"includePrivate"`
+	IncludePrivate bool             `json:"include_private" yaml:"includePrivate"`
 	Filters        CloneFilters     `json:"filters" yaml:"filters"`
 }
 
@@ -52,20 +55,20 @@ type PlatformConfig struct {
 
 // CloneFilters defines filtering options for repositories.
 type CloneFilters struct {
-	IncludeRepos []string  `json:"includeRepos" yaml:"includeRepos"`
-	ExcludeRepos []string  `json:"excludeRepos" yaml:"excludeRepos"`
+	IncludeRepos []string  `json:"include_repos" yaml:"includeRepos"`
+	ExcludeRepos []string  `json:"exclude_repos" yaml:"excludeRepos"`
 	Languages    []string  `json:"languages" yaml:"languages"`
-	MinSize      int64     `json:"minSize" yaml:"minSize"`
-	MaxSize      int64     `json:"maxSize" yaml:"maxSize"`
-	UpdatedAfter time.Time `json:"updatedAfter" yaml:"updatedAfter"`
+	MinSize      int64     `json:"min_size" yaml:"minSize"`
+	MaxSize      int64     `json:"max_size" yaml:"maxSize"`
+	UpdatedAfter time.Time `json:"updated_after" yaml:"updatedAfter"`
 }
 
 // BulkCloneResult represents the result of a bulk clone operation.
 type BulkCloneResult struct {
-	TotalRepos   int                     `json:"totalRepos"`
-	SuccessCount int                     `json:"successCount"`
-	FailureCount int                     `json:"failureCount"`
-	SkippedCount int                     `json:"skippedCount"`
+	TotalRepos   int                     `json:"total_repos"`
+	SuccessCount int                     `json:"success_count"`
+	FailureCount int                     `json:"failure_count"`
+	SkippedCount int                     `json:"skipped_count"`
 	Results      []RepositoryCloneResult `json:"results"`
 	Duration     time.Duration           `json:"duration"`
 	Summary      map[string]interface{}  `json:"summary"`
@@ -73,10 +76,10 @@ type BulkCloneResult struct {
 
 // RepositoryCloneResult represents the result of cloning a single repository.
 type RepositoryCloneResult struct {
-	RepoName  string        `json:"repoName"`
+	RepoName  string        `json:"repo_name"`
 	Platform  string        `json:"platform"`
 	URL       string        `json:"url"`
-	LocalPath string        `json:"localPath"`
+	LocalPath string        `json:"local_path"`
 	Status    string        `json:"status"` // success, failed, skipped
 	Error     string        `json:"error,omitempty"`
 	Duration  time.Duration `json:"duration"`
@@ -177,7 +180,7 @@ type SystemMetrics struct {
 	CPU       CPUMetrics    `json:"cpu"`
 	Memory    MemoryMetrics `json:"memory"`
 	Disk      DiskMetrics   `json:"disk"`
-	LoadAvg   []float64     `json:"loadAvg"`
+	LoadAvg   []float64     `json:"load_avg"`
 	Uptime    time.Duration `json:"uptime"`
 	Timestamp time.Time     `json:"timestamp"`
 }
@@ -186,9 +189,9 @@ type SystemMetrics struct {
 type CPUMetrics struct {
 	Usage      float64 `json:"usage"`
 	Cores      int     `json:"cores"`
-	UserTime   float64 `json:"userTime"`
-	SystemTime float64 `json:"systemTime"`
-	IdleTime   float64 `json:"idleTime"`
+	UserTime   float64 `json:"user_time"`
+	SystemTime float64 `json:"system_time"`
+	IdleTime   float64 `json:"idle_time"`
 }
 
 // MemoryMetrics represents memory metrics.
@@ -207,10 +210,10 @@ type DiskMetrics struct {
 	Used       uint64  `json:"used"`
 	Available  uint64  `json:"available"`
 	Usage      float64 `json:"usage"`
-	ReadOps    uint64  `json:"readOps"`
-	WriteOps   uint64  `json:"writeOps"`
-	ReadBytes  uint64  `json:"readBytes"`
-	WriteBytes uint64  `json:"writeBytes"`
+	ReadOps    uint64  `json:"read_ops"`
+	WriteOps   uint64  `json:"write_ops"`
+	ReadBytes  uint64  `json:"read_bytes"`
+	WriteBytes uint64  `json:"write_bytes"`
 }
 
 // ServiceMetrics represents service-level metrics.
@@ -237,18 +240,18 @@ type ServiceInfo struct {
 // NetworkMetrics represents network metrics.
 type NetworkMetrics struct {
 	Interfaces []NetworkInterface `json:"interfaces"`
-	TotalRx    uint64             `json:"totalRx"`
-	TotalTx    uint64             `json:"totalTx"`
+	TotalRx    uint64             `json:"total_rx"`
+	TotalTx    uint64             `json:"total_tx"`
 }
 
 // NetworkInterface represents network interface information.
 type NetworkInterface struct {
 	Name      string   `json:"name"`
 	Addresses []string `json:"addresses"`
-	RxBytes   uint64   `json:"rxBytes"`
-	TxBytes   uint64   `json:"txBytes"`
-	RxPackets uint64   `json:"rxPackets"`
-	TxPackets uint64   `json:"txPackets"`
+	RxBytes   uint64   `json:"rx_bytes"`
+	TxBytes   uint64   `json:"tx_bytes"`
+	RxPackets uint64   `json:"rx_packets"`
+	TxPackets uint64   `json:"tx_packets"`
 	Status    string   `json:"status"`
 }
 
@@ -258,7 +261,7 @@ type TaskStatus struct {
 	Name      string                 `json:"name"`
 	Status    string                 `json:"status"`
 	Progress  float64                `json:"progress"`
-	StartTime time.Time              `json:"startTime"`
+	StartTime time.Time              `json:"start_time"`
 	Duration  time.Duration          `json:"duration"`
 	Result    map[string]interface{} `json:"result,omitempty"`
 	Error     string                 `json:"error,omitempty"`
@@ -323,7 +326,7 @@ type APIError struct {
 	Message   string                 `json:"message"`
 	Details   map[string]interface{} `json:"details,omitempty"`
 	Timestamp time.Time              `json:"timestamp"`
-	RequestID string                 `json:"requestId,omitempty"`
+	RequestID string                 `json:"request_id,omitempty"`
 }
 
 // Error implements the error interface.
@@ -334,15 +337,15 @@ func (e APIError) Error() string {
 // PaginationInfo represents pagination information.
 type PaginationInfo struct {
 	Page       int `json:"page"`
-	PerPage    int `json:"perPage"`
+	PerPage    int `json:"per_page"`
 	Total      int `json:"total"`
-	TotalPages int `json:"totalPages"`
+	TotalPages int `json:"total_pages"`
 }
 
 // ListOptions represents options for list operations.
 type ListOptions struct {
 	Page    int               `json:"page,omitempty"`
-	PerPage int               `json:"perPage,omitempty"`
+	PerPage int               `json:"per_page,omitempty"`
 	Sort    string            `json:"sort,omitempty"`
 	Order   string            `json:"order,omitempty"` // asc, desc
 	Filters map[string]string `json:"filters,omitempty"`

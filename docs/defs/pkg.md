@@ -34,7 +34,6 @@ gz always-latest를 없애고
       - --latest
       - list
 
-
 설치를 지원할지는 고민좀해봐야하고.. 너무 복잡해져서
 fix할 버전 이외에는 다 latest로 계속 업데이트 하도록 하는 시나리오
 strategy = latest, lts, minor

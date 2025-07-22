@@ -14,6 +14,7 @@
 ## 🔧 기본 설정
 
 ### 1. 도구 설치 및 초기 설정
+
 ```bash
 # 프로젝트 빌드
 make build
@@ -29,6 +30,7 @@ cat ~/.config/gzh-manager/gzh.yaml
 ```
 
 ### 2. 기본 명령어 구조
+
 ```bash
 # 도움말 확인
 gz --help
@@ -42,6 +44,7 @@ gz repo-config --help
 ## 📦 리포지토리 대량 클론
 
 ### 기본 클론 작업
+
 ```bash
 # GitHub 조직 전체 클론
 gz bulk-clone github -o myorganization -t ~/repos/myorg
@@ -54,6 +57,7 @@ gz bulk-clone gitea -o myorg -t ~/repos/gitea
 ```
 
 ### 고급 클론 옵션
+
 ```bash
 # 병렬 처리 (기본값: 10개)
 gz bulk-clone github -o myorg -t ~/repos -p 20
@@ -72,6 +76,7 @@ gz bulk-clone github -o myorg -t ~/repos --private
 ```
 
 ### 설정 파일 사용
+
 ```bash
 # 설정 파일 생성
 gz bulk-clone config init
@@ -84,6 +89,7 @@ gz bulk-clone github -c /path/to/config.yaml -o myorg
 ```
 
 ### 상태 관리
+
 ```bash
 # 저장된 상태 목록 확인
 gz bulk-clone state list
@@ -99,6 +105,7 @@ gz bulk-clone state clean --all
 ## 🏢 GitHub 조직 관리
 
 ### 리포지토리 설정 관리
+
 ```bash
 # 현재 조직의 리포지토리 설정 확인
 gz repo-config list -o myorg
@@ -117,6 +124,7 @@ gz repo-config audit --config repo-config.yaml
 ```
 
 ### 정책 템플릿 사용
+
 ```bash
 # 보안 강화 템플릿 적용
 gz repo-config template apply --type security -o myorg
@@ -131,6 +139,7 @@ gz repo-config template apply --type enterprise -o myorg
 ## 🌐 네트워크 환경 관리
 
 ### 네트워크 프로필 설정
+
 ```bash
 # 네트워크 프로필 설정 파일 생성
 gz net-env switch --init
@@ -146,6 +155,7 @@ gz net-env status --verbose
 ```
 
 ### 네트워크 환경 전환
+
 ```bash
 # 특정 네트워크 프로필로 전환
 gz net-env switch home
@@ -163,6 +173,7 @@ gz net-env switch office --verbose
 ```
 
 ### 네트워크 프로필 구성 예시
+
 ```bash
 # 홈 네트워크 프로필로 전환
 # - VPN 연결 해제
@@ -170,7 +181,7 @@ gz net-env switch office --verbose
 # - 프록시 비활성화
 gz net-env switch home
 
-# 오피스 네트워크 프로필로 전환  
+# 오피스 네트워크 프로필로 전환
 # - 회사 VPN 연결
 # - 회사 DNS 서버 설정
 # - 프록시 설정 적용
@@ -185,6 +196,7 @@ gz net-env switch public
 ```
 
 ### 네트워크 프로필 설정 파일 예시
+
 ```yaml
 # ~/.gz/network-profiles.yaml
 default: "home"
@@ -220,11 +232,12 @@ profiles:
 ```
 
 ### 네트워크 구성 요소별 상태 확인
+
 ```bash
 # 현재 DNS 설정 상태 확인
 gz net-env status --verbose | grep -A 5 "DNS Configuration"
 
-# 현재 VPN 연결 상태 확인  
+# 현재 VPN 연결 상태 확인
 gz net-env status --verbose | grep -A 5 "VPN Connections"
 
 # 현재 프록시 설정 확인
@@ -239,6 +252,7 @@ gz net-env status --verbose | grep -A 10 "Network Interfaces"
 ## 🏠 개발 환경 관리
 
 ### 패키지 관리자 업데이트
+
 ```bash
 # 모든 패키지 관리자 업데이트
 gz always-latest all
@@ -253,6 +267,7 @@ gz always-latest asdf --strategy minor-latest
 ```
 
 ### 개발 환경 설정 백업/복원
+
 ```bash
 # AWS 설정 백업
 gz dev-env backup aws --description "production aws config"
@@ -268,6 +283,7 @@ gz dev-env list aws
 ```
 
 ### JetBrains IDE 관리
+
 ```bash
 # 설치된 IDE 목록 확인
 gz ide list
@@ -285,6 +301,7 @@ gz ide status --ide IntelliJ
 ## ⚙️ 설정 관리
 
 ### 통합 설정 시스템
+
 ```bash
 # 설정 파일 생성
 gz config init
@@ -300,6 +317,7 @@ gz config validate --config /path/to/gzh.yaml
 ```
 
 ### 설정 마이그레이션
+
 ```bash
 # 기존 설정을 통합 설정으로 마이그레이션
 gz migrate config --from bulk-clone.yaml --to gzh.yaml
@@ -312,6 +330,7 @@ gz migrate config --dry-run --from bulk-clone.yaml
 ```
 
 ### 설정 우선순위 테스트
+
 ```bash
 # CLI 플래그가 최우선 (다른 설정 무시)
 gz bulk-clone github -o myorg --parallel 20
@@ -327,6 +346,7 @@ gz bulk-clone github --use-config -o myorg
 ## 🔄 실제 사용 시나리오
 
 ### 시나리오 1: 사무실 네트워크 환경 설정
+
 ```bash
 # 1. WiFi 설정 파일에 사무실 네트워크 추가
 gz net-env wifi config init
@@ -351,6 +371,7 @@ gz net-env wifi monitor --daemon
 ```
 
 ### 시나리오 2: 대규모 조직 리포지토리 관리
+
 ```bash
 # 1. 통합 설정 파일 생성
 gz config init
@@ -367,6 +388,7 @@ gz repo-config audit --config enterprise-policy.yaml
 ```
 
 ### 시나리오 3: 개발 환경 완전 자동화
+
 ```bash
 # 1. 모든 설정 파일 초기화
 gz config init
@@ -390,6 +412,7 @@ gz ide monitor
 ## 🐛 문제 해결
 
 ### 일반적인 문제
+
 ```bash
 # 설정 파일 검증
 gz config validate
@@ -402,6 +425,7 @@ gz net-env actions run --dry-run
 ```
 
 ### 권한 문제
+
 ```bash
 # 일부 네트워크 액션은 sudo 권한 필요
 sudo gz net-env actions vpn connect --name office
@@ -409,6 +433,7 @@ sudo gz net-env actions dns set --servers 1.1.1.1,1.0.0.1
 ```
 
 ### 설정 파일 문제
+
 ```bash
 # 설정 파일 위치 확인
 gz config show --paths

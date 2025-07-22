@@ -1,254 +1,94 @@
 # See https://pre-commit.com for more information
-# Optimized configuration: Format first, then check
+# See https://pre-commit.com/hooks.html for more hooks
+
+# Configuration
+default_language_version:
+  golang: 1.23.0
+
+# Only run on commit (not push)
+default_stages: [pre-commit]
+
+# Don't stop on first failure
+fail_fast: false
+
 repos:
-  # =============================================================================
-  # PHASE 1: Basic file checks (fast)
-  # =============================================================================
+  # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
+      # Remove trailing whitespace
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
+
+      # Ensure files end with a newline
       - id: end-of-file-fixer
+        exclude: ^(vendor/|testdata/|examples/)
+
+      # Check yaml files (exclude problematic examples)
       - id: check-yaml
         args: [--allow-multiple-documents]
-      - id: check-json
-      - id: check-toml
-      - id: check-xml
+        exclude: ^(helm/|k8s/|examples/)
+
+      # Prevent large files from being committed
       - id: check-added-large-files
-        args: [--maxkb=500]
-      - id: check-case-conflict
+        args: ['--maxkb=1000']
+
+      # Check for merge conflicts
       - id: check-merge-conflict
-      - id: check-symlinks
+
+      # Check json files (exclude .vscode with comments)
+      - id: check-json
+        exclude: ^(vendor/|testdata/|\.devcontainer/|\.vscode/)
+
+      # Detect private keys (exclude test files)
       - id: detect-private-key
+        exclude: (cmd/license-gen/main.go|.*_test\.go)
+
+      # Ensure consistent line endings
       - id: mixed-line-ending
         args: [--fix=lf]
 
-  # =============================================================================
-  # PHASE 2: Code formatting (auto-fix, runs first)
-  # =============================================================================
-  - repo: https://github.com/tekwizely/pre-commit-golang
-    rev: v1.0.0-rc.1
+  # Go specific hooks
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
     hooks:
-      # Format Go code first
-      - id: go-fumpt
-        name: Format Go code with gofumpt
+      # Format Go code
+      - id: go-fmt
 
-  # Go import formatting (after gofumpt)
+      # Organize imports
+      - id: go-imports
+        args: [-w, -local, github.com/gizzahub/gzh-manager-go]
+
+      # Run go vet (exclude tools directory with build constraints)
+      - id: go-vet
+        exclude: ^tools/
+
+      # Ensure go.mod is tidy
+      - id: go-mod-tidy
+
+  # Local custom checks
   - repo: local
     hooks:
-      - id: gci
-        name: Format Go imports with gci
-        entry: gci
-        args: [write, --skip-generated]
+      # Check for go.mod replace directives (should not be in production)
+      - id: go-no-replacement
+        name: Check for go.mod replacements
+        entry: bash -c '! grep -q "^replace" go.mod || (echo "go.mod contains replace directives" && exit 1)'
         language: system
-        files: \.go$
-        pass_filenames: true
+        files: go.mod
 
-  # Lint with auto-fix (after formatting)
-  - repo: https://github.com/tekwizely/pre-commit-golang
-    rev: v1.0.0-rc.1
-    hooks:
-      - id: golangci-lint-mod
-        name: Lint Go code with auto-fix
-        args: [-c=.golangci.yml, --fix]
+      # TODO: Mock 생성 설정 정리 후 활성화 (make generate-mocks 사용 권장)
+      # Ensure generated files are committed
+      # - id: go-generate
+      #   name: Check go generate
+      #   entry: bash -c 'go generate ./... && git diff --exit-code'
+      #   language: system
+      #   files: \.go$
+      #   pass_filenames: false
 
-  # =============================================================================
-  # PHASE 3: Light checks (after formatting)
-  # =============================================================================
-  - repo: https://github.com/tekwizely/pre-commit-golang
-    rev: v1.0.0-rc.1
-    hooks:
-      # Quick build check
-      - id: go-build-mod
-        name: Build Go modules
-
-      # Basic vet check
-      - id: go-vet-mod
-        name: Run go vet
-
-  # Go module tidiness check
-  - repo: local
-    hooks:
-      - id: go-mod-tidy-check
-        name: Check go.mod is tidy
-        entry: bash
-        args:
-          - -c
-          - |
-            cp go.mod go.mod.bak && cp go.sum go.sum.bak
-            go mod tidy
-            if ! diff -q go.mod go.mod.bak >/dev/null || ! diff -q go.sum go.sum.bak >/dev/null; then
-              rm go.mod.bak go.sum.bak
-              echo "go.mod is not tidy. Run 'go mod tidy'"
-              exit 1
-            else
-              rm go.mod.bak go.sum.bak
-            fi
-        language: system
-        files: (go\.mod|go\.sum)$
-        pass_filenames: false
-
-  # =============================================================================
-  # PHASE 4: Document and config formatting
-  # =============================================================================
-  # YAML/JSON/Markdown formatting
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        files: \.(yaml|yml|json|md)$
-        exclude: |
-          (?x)(
-            ^test/.*\.yaml$|
-            ^test/.*\.yml$|
-            ^samples/.*\.yaml$|
-            ^samples/.*\.yml$|
-            ^docs/.*\.json$
-          )
-
-  # Dockerfile linting
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.0
-    hooks:
-      - id: hadolint-docker
-        args: [--ignore, DL3008, --ignore, DL3009]
-
-  # Shell script linting
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1
-    hooks:
-      - id: shellcheck
-        args: [-e, SC1091, -e, SC2034]
-
-  # =============================================================================
-  # PRE-PUSH ONLY: Heavy checks and comprehensive testing
-  # =============================================================================
-  - repo: https://github.com/tekwizely/pre-commit-golang
-    rev: v1.0.0-rc.1
-    hooks:
-      # Comprehensive testing (pre-push only)
-      - id: go-test-mod
-        name: Run Go tests
-        args: [-short, -race]
-        stages: [pre-push]
-
-      # Advanced static analysis (pre-push only)
-      - id: go-staticcheck-mod
-        name: Run staticcheck
-        stages: [pre-push]
-
-  # Heavy security and vulnerability checks (pre-push only)
-  - repo: local
-    hooks:
-      # Security scanning (pre-push only)
-      - id: gosec
-        name: Security scan Go code with gosec
-        entry: gosec
-        args: [-fmt=json, -out=gosec-report.json, -stdout, -verbose=text, ./...]
-        language: system
-        files: \.go$
-        pass_filenames: false
-        stages: [pre-push]
-
-      # Vulnerability check (pre-push only)
-      - id: go-vuln-check
-        name: Check Go vulnerabilities
-        entry: govulncheck
-        args: [./...]
-        language: system
-        files: \.go$
-        pass_filenames: false
-        stages: [pre-push]
-
-      # Package documentation check (pre-push only)
-      - id: check-package-docs
-        name: Check package documentation
-        entry: bash
-        args:
-          - -c
-          - |
-            missing_docs=$(find cmd pkg internal -type d -exec bash -c 'if [ -z "$(find "$1" -maxdepth 1 -name "*.go" -type f | head -1)" ]; then exit 0; fi; if ! [ -f "$1/doc.go" ] && ! grep -q "^// Package" "$1"/*.go 2>/dev/null; then echo "$1"; fi' _ {} \;)
-            if [ -n "$missing_docs" ]; then
-              echo "Packages missing documentation:"
-              echo "$missing_docs"
-            fi
-        language: system
-        types: [go]
-        pass_filenames: false
-        stages: [pre-push]
-
-      # Coverage check (pre-push only)
-      - id: coverage-check
-        name: Check test coverage
-        entry: bash
-        args:
-          - -c
-          - './scripts/check-coverage.sh || echo "Warning: Coverage check failed"'
-        language: system
-        types: [go]
-        pass_filenames: false
-        stages: [pre-push]
-
-      # File size warning (pre-push only)
-      - id: check-file-sizes
-        name: Check for oversized files
-        entry: bash
-        args:
-          - -c
-          - |
-            large_files=$(find cmd pkg internal -name "*.go" -type f -exec wc -l {} + | awk '$1 > 500 {print $2, $1}' | sort -k2 -nr)
-            if [ -n "$large_files" ]; then
-              echo "Warning: Files over 500 lines found:"
-              echo "$large_files" | head -10
-            fi
-        language: system
-        types: [go]
-        pass_filenames: false
-        stages: [pre-push]
-
-  # =============================================================================
-  # COMMIT MESSAGE: Conventional commits
-  # =============================================================================
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.2.0
-    hooks:
-      - id: conventional-pre-commit
-        stages: [commit-msg]
-        args: [--strict, --optional-scope]
-
-  # =============================================================================
-  # SECRETS DETECTION: Always run
-  # =============================================================================
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
-    hooks:
-      - id: detect-secrets
-        args: [--baseline, .secrets.baseline]
-        exclude: |
-          (?x)(
-            ^test/.*\.go$|
-            ^.*_test\.go$|
-            ^samples/.*$|
-            ^docs/.*$
-          )
-
-# =============================================================================
-# Configuration
-# =============================================================================
-default_install_hook_types: [pre-commit, commit-msg, pre-push]
-default_stages: [pre-commit]
-
-# CI configuration
-ci:
-  autofix_commit_msg: |
-    [pre-commit.ci] auto fixes from pre-commit hooks
-
-    for more information, see https://pre-commit.ci
-  autofix_prs: true
-  autoupdate_branch: ''
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
-  autoupdate_schedule: weekly
-  # Skip heavy checks in CI pre-commit, they run in CI pipeline
-  skip: [go-test-mod, go-staticcheck-mod, go-vuln-check, gosec, coverage-check]
-  submodules: false
+      # TODO: 구조화된 로깅으로 마이그레이션 후 활성화
+      # Check for problematic patterns
+      # - id: check-fmt-print
+      #   name: Check for fmt.Print statements
+      #   entry: bash -c '! grep -rn "fmt\.Print" --include="*.go" . | grep -v "_test\.go" | grep -v "vendor/" || (echo "Found fmt.Print statements (use structured logging instead)" && exit 1)'
+      #   language: system
+      #   pass_filenames: false

@@ -19,6 +19,7 @@ Pre-commit hooks help maintain code quality by automatically checking and fixing
 ### Prerequisites
 
 1. Install pre-commit:
+
    ```bash
    # Using pip
    pip install pre-commit
@@ -46,6 +47,7 @@ make pre-commit-install
 ```
 
 This will:
+
 - Install pre-commit hooks
 - Install commit-msg hooks for conventional commits
 - Install pre-push hooks for additional checks
@@ -88,6 +90,7 @@ Run before each commit:
 ### Commit-msg Hooks
 
 Validates commit messages follow conventional format:
+
 ```
 type(scope): description
 
@@ -97,6 +100,7 @@ type(scope): description
 ```
 
 Examples:
+
 - `feat(bulk-clone): add retry logic for failed clones`
 - `fix(config): resolve env var precedence issue`
 - `docs(readme): update installation instructions`
@@ -105,6 +109,7 @@ Examples:
 ### Pre-push Hooks
 
 Run before pushing to remote:
+
 - Full test suite (`go test`)
 - Coverage checks
 - Comprehensive linting (`make lint-all`)
@@ -112,6 +117,7 @@ Run before pushing to remote:
 ### Prepare-commit-msg Hook
 
 Automatically adds issue numbers from branch names:
+
 - Branch: `feature/ISSUE-123-add-retry-logic`
 - Commit message: `[ISSUE-123] <your message>`
 
@@ -187,6 +193,7 @@ Add patterns to exclude files:
 ### Hook-specific Configuration
 
 Most hooks respect tool-specific config files:
+
 - `golangci-lint`: `.golangci.yml`
 - `prettier`: `.prettierrc`
 - `hadolint`: `.hadolint.yaml`
@@ -196,6 +203,7 @@ Most hooks respect tool-specific config files:
 ### Common Issues
 
 1. **Hook Installation Fails**
+
    ```bash
    # Ensure git is initialized
    git init
@@ -205,6 +213,7 @@ Most hooks respect tool-specific config files:
    ```
 
 2. **Go Tools Not Found**
+
    ```bash
    # Install required tools
    make bootstrap
@@ -214,6 +223,7 @@ Most hooks respect tool-specific config files:
    ```
 
 3. **Secrets Detected**
+
    ```bash
    # Update baseline if false positive
    detect-secrets scan --baseline .secrets.baseline
@@ -223,6 +233,7 @@ Most hooks respect tool-specific config files:
    ```
 
 4. **Large File Blocked**
+
    ```bash
    # Add to .gitattributes if needed
    *.bin filter=lfs diff=lfs merge=lfs -text
@@ -234,6 +245,7 @@ Most hooks respect tool-specific config files:
 ### Performance Tips
 
 1. **Stage Specific Files**
+
    ```bash
    # Only check staged files
    git add specific-file.go
@@ -241,6 +253,7 @@ Most hooks respect tool-specific config files:
    ```
 
 2. **Skip Expensive Hooks**
+
    ```bash
    # Skip specific hooks
    SKIP=go-test-mod,gosec git commit
@@ -255,6 +268,7 @@ Most hooks respect tool-specific config files:
 ## CI Integration
 
 Pre-commit hooks are also run in CI:
+
 - GitHub Actions runs the same checks
 - Ensures consistency between local and CI environments
 - Auto-fixes are applied in PRs when possible

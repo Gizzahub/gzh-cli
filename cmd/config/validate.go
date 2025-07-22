@@ -16,7 +16,7 @@ import (
 )
 
 // validateConfig performs configuration validation.
-func validateConfig(configFile string, strict bool, verbose bool) error {
+func validateConfig(configFile string, strict, verbose bool) error {
 	return validateConfigWithEnv(configFile, strict, verbose, env.NewOSEnvironment())
 }
 
@@ -174,7 +174,7 @@ func performLegacyValidationsWithEnv(configFile string, verbose bool, environmen
 }
 
 // performAdditionalValidationsWithEnv runs additional validation checks with provided environment.
-func performAdditionalValidationsWithEnv(config *configpkg.Config, strict bool, verbose bool, _ env.Environment) error {
+func performAdditionalValidationsWithEnv(config *configpkg.Config, strict, verbose bool, _ env.Environment) error {
 	var (
 		warnings []string
 		errors   []string
@@ -294,7 +294,7 @@ func validateCloneDirectory(cloneDir string, strict bool) error {
 	// In strict mode, check if directory can be created
 	if strict {
 		// Try to create the directory (or check if it exists)
-		if err := os.MkdirAll(expandedDir, 0o755); err != nil {
+		if err := os.MkdirAll(expandedDir, 0o750); err != nil {
 			return fmt.Errorf("cannot create clone directory '%s': %w", expandedDir, err)
 		}
 	}

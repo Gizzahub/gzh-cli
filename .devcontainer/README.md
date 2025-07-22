@@ -42,12 +42,14 @@ This directory contains the development container configuration for the GZH Mana
 ### Opening the Project
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/gizzahub/gzh-manager-go.git
    cd gzh-manager-go
    ```
 
 2. **Open in VS Code**:
+
    ```bash
    code .
    ```
@@ -95,13 +97,13 @@ make test
 
 ### Port Forwarding
 
-| Port | Service | Auto-forward |
-|------|---------|-------------|
-| 8080 | GZH API Server | Yes |
+| Port | Service                  | Auto-forward        |
+| ---- | ------------------------ | ------------------- |
+| 8080 | GZH API Server           | Yes                 |
 | 3000 | React Development Server | Yes (opens preview) |
-| 9090 | Prometheus | No |
-| 9093 | Alertmanager | No |
-| 6060 | Go pprof | No |
+| 9090 | Prometheus               | No                  |
+| 9093 | Alertmanager             | No                  |
+| 6060 | Go pprof                 | No                  |
 
 ### Volume Mounts
 
@@ -182,19 +184,19 @@ docker run -it gzh-manager --help
 
 ### Required for Development
 
-| Variable | Purpose | Default |
-|----------|---------|--------|
-| `GZH_DEV_MODE` | Enable development mode | `true` |
-| `GO111MODULE` | Go modules support | `on` |
-| `CGO_ENABLED` | CGO support for bindings | `1` |
+| Variable       | Purpose                  | Default |
+| -------------- | ------------------------ | ------- |
+| `GZH_DEV_MODE` | Enable development mode  | `true`  |
+| `GO111MODULE`  | Go modules support       | `on`    |
+| `CGO_ENABLED`  | CGO support for bindings | `1`     |
 
 ### Optional for Features
 
-| Variable | Purpose | Default |
-|----------|---------|--------|
-| `GITHUB_TOKEN` | GitHub API access | (none) |
-| `GITLAB_TOKEN` | GitLab API access | (none) |
-| `DOCKER_BUILDKIT` | Enhanced Docker builds | `1` |
+| Variable          | Purpose                | Default |
+| ----------------- | ---------------------- | ------- |
+| `GITHUB_TOKEN`    | GitHub API access      | (none)  |
+| `GITLAB_TOKEN`    | GitLab API access      | (none)  |
+| `DOCKER_BUILDKIT` | Enhanced Docker builds | `1`     |
 
 ## Customization
 
@@ -206,9 +208,7 @@ Edit `.devcontainer/devcontainer.json`:
 {
   "customizations": {
     "vscode": {
-      "extensions": [
-        "your.extension.id"
-      ]
+      "extensions": ["your.extension.id"]
     }
   }
 }
@@ -240,6 +240,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
 ### Common Issues
 
 1. **Container won't start**:
+
    ```bash
    # Check Docker is running
    docker info
@@ -249,6 +250,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
    ```
 
 2. **Go modules issues**:
+
    ```bash
    # Inside container
    go clean -modcache
@@ -256,6 +258,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
    ```
 
 3. **Node.js build failures**:
+
    ```bash
    # Clear npm cache
    npm cache clean --force
@@ -267,6 +270,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
    ```
 
 4. **Python environment issues**:
+
    ```bash
    # Recreate virtual environment
    cd bindings/python
@@ -277,6 +281,7 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
    ```
 
 5. **Permission issues**:
+
    ```bash
    # Fix ownership
    sudo chown -R vscode:vscode /workspace
@@ -288,12 +293,14 @@ Add scripts to `.devcontainer/scripts/` and reference them in `devcontainer.json
 ### Performance Tips
 
 1. **Use Docker volume for node_modules**:
+
    ```bash
    # Avoid mounting node_modules from host
    echo "node_modules" >> .dockerignore
    ```
 
 2. **Exclude build artifacts**:
+
    ```bash
    # Add to .dockerignore
    dist/

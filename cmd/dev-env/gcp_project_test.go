@@ -391,8 +391,8 @@ func TestGCPProjectManager_EnrichProjectDetails(t *testing.T) {
 
 func TestGCPProject_DefaultValues(t *testing.T) {
 	project := &GCPProject{
-		ID:   "test-project",
-		Name: "Test Project",
+		// ID:   "test-project",  // Unused field removed
+		// Name: "Test Project",  // Unused field removed
 	}
 
 	// Verify default values for optional fields

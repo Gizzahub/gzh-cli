@@ -5,6 +5,7 @@ The Kubernetes network policy management feature in `gz net-env kubernetes-netwo
 ## Overview
 
 Kubernetes network profiles allow you to:
+
 - Define and manage NetworkPolicies for namespace-specific network segmentation
 - Automatically generate NetworkPolicy YAML manifests
 - Export existing namespace policies to reusable profiles
@@ -76,7 +77,7 @@ description: Zero trust network security baseline
 policies:
   default-deny-all:
     name: default-deny-all
-    pod_selector: {}  # Empty selector applies to all pods
+    pod_selector: {} # Empty selector applies to all pods
     policy_types:
       - Ingress
       - Egress
@@ -84,18 +85,18 @@ policies:
 
   allow-dns:
     name: allow-dns
-    pod_selector: {}  # All pods need DNS
+    pod_selector: {} # All pods need DNS
     policy_types:
       - Egress
     egress:
       - to:
-        - namespace_selector:
-            name: kube-system
-          pod_selector:
-            k8s-app: kube-dns
+          - namespace_selector:
+              name: kube-system
+            pod_selector:
+              k8s-app: kube-dns
         ports:
-        - protocol: UDP
-          port: 53
+          - protocol: UDP
+            port: 53
 ```
 
 ### Microservices Network Policies
@@ -116,26 +117,26 @@ policies:
       - Egress
     ingress:
       - from:
-        - ip_block:
-            cidr: 0.0.0.0/0  # Allow from internet
+          - ip_block:
+              cidr: 0.0.0.0/0 # Allow from internet
         ports:
-        - protocol: TCP
-          port: 80
-        - protocol: TCP
-          port: 443
+          - protocol: TCP
+            port: 80
+          - protocol: TCP
+            port: 443
     egress:
       - to:
-        - pod_selector:
-            tier: api
+          - pod_selector:
+              tier: api
         ports:
-        - protocol: TCP
-          port: 8080
-      - to:  # DNS resolution
-        - namespace_selector:
-            name: kube-system
+          - protocol: TCP
+            port: 8080
+      - to: # DNS resolution
+          - namespace_selector:
+              name: kube-system
         ports:
-        - protocol: UDP
-          port: 53
+          - protocol: UDP
+            port: 53
 
   api-policy:
     name: api-policy
@@ -146,26 +147,26 @@ policies:
       - Egress
     ingress:
       - from:
-        - pod_selector:
-            tier: frontend
-        - namespace_selector:
-            name: monitoring
+          - pod_selector:
+              tier: frontend
+          - namespace_selector:
+              name: monitoring
         ports:
-        - protocol: TCP
-          port: 8080
+          - protocol: TCP
+            port: 8080
     egress:
       - to:
-        - pod_selector:
-            tier: database
+          - pod_selector:
+              tier: database
         ports:
-        - protocol: TCP
-          port: 5432  # PostgreSQL
+          - protocol: TCP
+            port: 5432 # PostgreSQL
       - to:
-        - pod_selector:
-            tier: cache
+          - pod_selector:
+              tier: cache
         ports:
-        - protocol: TCP
-          port: 6379  # Redis
+          - protocol: TCP
+            port: 6379 # Redis
 
   database-policy:
     name: database-policy
@@ -175,13 +176,13 @@ policies:
       - Ingress
     ingress:
       - from:
-        - pod_selector:
-            tier: api
-        - pod_selector:
-            app: backup
+          - pod_selector:
+              tier: api
+          - pod_selector:
+              app: backup
         ports:
-        - protocol: TCP
-          port: 5432
+          - protocol: TCP
+            port: 5432
 ```
 
 ### Multi-Tenant Isolation
@@ -201,20 +202,20 @@ policies:
       - Egress
     ingress:
       - from:
-        - pod_selector: {}  # Only from same namespace
+          - pod_selector: {} # Only from same namespace
     egress:
       - to:
-        - pod_selector: {}  # Only to same namespace
-      - to:  # Allow external services
-        - namespace_selector:
-            name: kube-system
-      - to:  # Allow internet access
-        - ip_block:
-            cidr: 0.0.0.0/0
-            except:
-              - 10.0.0.0/8
-              - 172.16.0.0/12
-              - 192.168.0.0/16
+          - pod_selector: {} # Only to same namespace
+      - to: # Allow external services
+          - namespace_selector:
+              name: kube-system
+      - to: # Allow internet access
+          - ip_block:
+              cidr: 0.0.0.0/0
+              except:
+                - 10.0.0.0/8
+                - 172.16.0.0/12
+                - 192.168.0.0/16
 ```
 
 ## Network Policy Examples
@@ -285,12 +286,12 @@ policies:
       - Egress
     ingress:
       - from:
-        - namespace_selector:
-            name: istio-system
+          - namespace_selector:
+              name: istio-system
     egress:
       - to:
-        - namespace_selector:
-            name: istio-system
+          - namespace_selector:
+              name: istio-system
 ```
 
 ### Linkerd Integration
@@ -407,6 +408,7 @@ gz net-env kubernetes-network apply prod-profile --namespace staging
 ### From Other Tools
 
 Convert policies from other formats:
+
 - Calico policies can be manually converted to NetworkPolicy format
 - Cilium policies may need adjustment for standard NetworkPolicy API
 - Service mesh policies (Istio/Linkerd) can coexist with NetworkPolicies
@@ -443,6 +445,7 @@ gz net-env kubernetes-network service-mesh enable production-profile --type isti
 ### Istio Configuration
 
 #### Virtual Services
+
 ```bash
 # Add a VirtualService for traffic routing
 gz net-env kubernetes-network service-mesh istio virtual-service add production-profile frontend \
@@ -454,6 +457,7 @@ gz net-env kubernetes-network service-mesh istio virtual-service add production-
 ```
 
 #### Destination Rules
+
 ```bash
 # Add a DestinationRule for load balancing and circuit breaking
 gz net-env kubernetes-network service-mesh istio destination-rule add production-profile frontend \
@@ -466,6 +470,7 @@ gz net-env kubernetes-network service-mesh istio destination-rule add production
 ```
 
 #### Service Entries
+
 ```bash
 # Add external service to mesh
 gz net-env kubernetes-network service-mesh istio service-entry add production-profile external-api \
@@ -476,6 +481,7 @@ gz net-env kubernetes-network service-mesh istio service-entry add production-pr
 ```
 
 #### Gateways
+
 ```bash
 # Add ingress gateway
 gz net-env kubernetes-network service-mesh istio gateway add production-profile main-gateway \
@@ -489,6 +495,7 @@ gz net-env kubernetes-network service-mesh istio gateway add production-profile 
 ### Linkerd Configuration
 
 #### Service Profiles
+
 ```bash
 # Add a ServiceProfile with retry budget
 gz net-env kubernetes-network service-mesh linkerd service-profile add production-profile api-service \
@@ -502,6 +509,7 @@ gz net-env kubernetes-network service-mesh linkerd service-profile add productio
 ```
 
 #### Traffic Splits
+
 ```bash
 # Add canary deployment traffic split
 gz net-env kubernetes-network service-mesh linkerd traffic-split add production-profile api-canary \
@@ -622,9 +630,9 @@ policies:
               name: istio-system
         ports:
           - protocol: TCP
-            port: 15090  # Envoy admin
+            port: 15090 # Envoy admin
           - protocol: TCP
-            port: 15021  # Health checks
+            port: 15021 # Health checks
 ```
 
 ### Service Mesh Best Practices

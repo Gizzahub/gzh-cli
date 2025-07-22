@@ -7,8 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"go.uber.org/zap"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestContainerDetector_DetectContainerEnvironment(t *testing.T) {
@@ -309,10 +310,10 @@ ghi123456789,mynetwork,bridge,local`
 func TestRuntimeInfo_Validation(t *testing.T) {
 	// Test valid runtime
 	runtime := RuntimeInfo{
-		Runtime:    Docker,
-		Version:    "20.10.0",
-		Available:  true,
-		Executable: "/usr/bin/docker",
+		Runtime: Docker,
+		// Version:    "20.10.0",  // Unused field removed
+		Available: true,
+		// Executable: "/usr/bin/docker",  // Unused field removed
 	}
 
 	if runtime.Runtime != Docker {
@@ -350,12 +351,12 @@ func TestRuntimeInfo_Validation(t *testing.T) {
 
 func TestDetectedContainer_Validation(t *testing.T) {
 	container := DetectedContainer{
-		ID:        env.TestContainerID,
-		Name:      "test-container",
-		Image:     "nginx:latest",
-		ImageID:   "sha256:def987654321",
-		Status:    "Up 2 hours",
-		State:     "running",
+		ID: env.TestContainerID,
+		// Name:      "test-container",  // Unused field removed
+		// Image:     "nginx:latest",  // Unused field removed
+		// ImageID:   "sha256:def987654321",  // Unused field removed
+		// Status:    "Up 2 hours",  // Unused field removed
+		// State:     "running",  // Unused field removed
 		Runtime:   Docker,
 		Created:   time.Now().Add(-2 * time.Hour),
 		StartedAt: time.Now().Add(-2 * time.Hour),

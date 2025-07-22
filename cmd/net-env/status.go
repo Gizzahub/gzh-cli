@@ -304,7 +304,7 @@ func (o *statusOptions) mergeWiFiInfo(interfaces []interfaceInfo, wifiInterfaces
 	return interfaces
 }
 
-func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) {
+func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) { //nolint:unparam // Error always nil but kept for consistency
 	var vpns []vpnInfo
 
 	// Check NetworkManager VPNs
@@ -371,7 +371,7 @@ func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) {
 	return vpns, nil
 }
 
-func (o *statusOptions) getDNSInfo() (dnsInfo, error) {
+func (o *statusOptions) getDNSInfo() (dnsInfo, error) { //nolint:unparam // Error always nil but kept for consistency
 	info := dnsInfo{}
 
 	// Try resolvectl first
@@ -412,7 +412,7 @@ func (o *statusOptions) getDNSInfo() (dnsInfo, error) {
 	return info, nil
 }
 
-func (o *statusOptions) getProxyInfo() (proxyInfo, error) {
+func (o *statusOptions) getProxyInfo() (proxyInfo, error) { //nolint:unparam // Error always nil but kept for consistency
 	info := proxyInfo{
 		HTTP:  os.Getenv("http_proxy"),
 		HTTPS: os.Getenv("https_proxy"),

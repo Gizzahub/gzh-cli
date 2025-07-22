@@ -8,6 +8,7 @@
 -->
 
 ## 📋 목차
+
 1. [빠른 시작](#빠른-시작)
 2. [기본 설정](#기본-설정)
 3. [고급 설정](#고급-설정)
@@ -17,6 +18,7 @@
 ## 🚀 빠른 시작
 
 ### 최소 설정
+
 ```yaml
 # gzh.yaml
 version: "1.0"
@@ -26,6 +28,7 @@ providers:
 ```
 
 ### 기본 설정 템플릿
+
 ```yaml
 # gzh.yaml
 version: "1.0"
@@ -44,7 +47,7 @@ providers:
 
 clone:
   destination: "./repositories"
-  strategy: "reset"  # reset, pull, fetch
+  strategy: "reset" # reset, pull, fetch
   concurrent: 5
 
 network:
@@ -64,11 +67,12 @@ network:
 ### 프로바이더 설정
 
 #### GitHub 설정
+
 ```yaml
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    api_url: "https://api.github.com"  # Enterprise의 경우 변경
+    api_url: "https://api.github.com" # Enterprise의 경우 변경
     organizations:
       - "org1"
       - "org2"
@@ -82,6 +86,7 @@ providers:
 ```
 
 #### GitLab 설정
+
 ```yaml
 providers:
   gitlab:
@@ -95,6 +100,7 @@ providers:
 ```
 
 ### 클론 설정
+
 ```yaml
 clone:
   destination: "./repos"
@@ -109,6 +115,7 @@ clone:
 ```
 
 ### 네트워크 환경 설정
+
 ```yaml
 network:
   auto_switch: true
@@ -132,6 +139,7 @@ network:
 ```
 
 ### 개발 환경 설정
+
 ```yaml
 development:
   cloud_profiles:
@@ -161,6 +169,7 @@ development:
 ## 📚 설정 예제
 
 ### 개인 개발자용 설정
+
 ```yaml
 version: "1.0"
 metadata:
@@ -179,6 +188,7 @@ clone:
 ```
 
 ### 팀 개발용 설정
+
 ```yaml
 version: "1.0"
 metadata:
@@ -214,6 +224,7 @@ network:
 ```
 
 ### 엔터프라이즈용 설정
+
 ```yaml
 version: "1.0"
 metadata:
@@ -242,6 +253,7 @@ security:
 ## 🔧 환경 변수
 
 ### 필수 환경 변수
+
 ```bash
 # GitHub
 export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
@@ -258,6 +270,7 @@ export GZH_CONFIG_PATH="/path/to/gzh.yaml"
 ```
 
 ### 설정 파일 우선순위
+
 1. `GZH_CONFIG_PATH` 환경 변수로 지정된 경로
 2. 현재 디렉토리의 `gzh.yaml` 또는 `gzh.yml`
 3. `~/.config/gzh-manager/gzh.yaml`
@@ -268,6 +281,7 @@ export GZH_CONFIG_PATH="/path/to/gzh.yaml"
 ### 일반적인 문제
 
 #### 1. 토큰 권한 오류
+
 ```bash
 # 토큰 검증
 gz config validate
@@ -277,6 +291,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
 ```
 
 #### 2. 설정 파일 검증
+
 ```bash
 # 설정 파일 문법 검사
 gz config validate
@@ -286,6 +301,7 @@ gz config show --verbose
 ```
 
 #### 3. 네트워크 연결 문제
+
 ```bash
 # 네트워크 프로필 확인
 gz net-env status
@@ -295,6 +311,7 @@ gz net-env proxy status
 ```
 
 ### 디버깅 모드
+
 ```yaml
 debug:
   enabled: true

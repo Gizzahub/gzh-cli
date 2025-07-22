@@ -5,7 +5,7 @@ version: "0.1"
 
 # Override default protocol for home use
 default:
-  protocol: ssh  # Use SSH for home environment
+  protocol: ssh # Use SSH for home environment
   github:
     root_path: "$HOME/personal/github"
     org_name: "my-personal-org"
@@ -35,6 +35,6 @@ repo_roots:
 
 # Add home-specific ignore patterns
 ignore_names:
-  - ".*-backup$"      # Ignore backup repositories
-  - "^draft-.*"       # Ignore draft repositories
+  - ".*-backup$" # Ignore backup repositories
+  - "^draft-.*" # Ignore draft repositories
   - ".*-experimental$" # Ignore experimental repositories

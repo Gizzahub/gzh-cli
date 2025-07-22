@@ -65,4 +65,4 @@ repository:
     - name: SENTRY_DSN
       value: https://example.com/sentry-dsn/production
     - name: API_KEY
-      value: $ENV:PRODUCTION_API_KEY  # 실행 환경의 ENV에서 가져오는 방식도 지원
+      value: $ENV:PRODUCTION_API_KEY # 실행 환경의 ENV에서 가져오는 방식도 지원

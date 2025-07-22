@@ -9,7 +9,7 @@ organization: "my-organization"
 
 # Default settings applied to all repositories unless overridden
 defaults:
-  template: "standard"  # Reference to a template
+  template: "standard" # Reference to a template
   settings:
     private: true
     has_issues: true
@@ -47,7 +47,7 @@ templates:
 
   # High security template for sensitive repositories
   security:
-    base: "standard"  # Inherit from standard template
+    base: "standard" # Inherit from standard template
     description: "High security repository configuration"
     settings:
       private: true
@@ -123,7 +123,7 @@ repositories:
       security:
         branch_protection:
           main:
-            required_reviews: 3  # Override template setting
+            required_reviews: 3 # Override template setting
 
     - name: "documentation"
       template: "opensource"

@@ -14,37 +14,53 @@ type ErrorCode string
 
 const (
 	// ErrorCodeNetworkConnection represents network connection errors.
-	ErrorCodeNetworkConnection  ErrorCode = "NETWORK_CONNECTION"
-	ErrorCodeNetworkTimeout     ErrorCode = "NETWORK_TIMEOUT"
-	ErrorCodeNetworkDNS         ErrorCode = "NETWORK_DNS"
+	ErrorCodeNetworkConnection ErrorCode = "NETWORK_CONNECTION"
+	// ErrorCodeNetworkTimeout represents network timeout errors.
+	ErrorCodeNetworkTimeout ErrorCode = "NETWORK_TIMEOUT"
+	// ErrorCodeNetworkDNS represents DNS resolution errors.
+	ErrorCodeNetworkDNS ErrorCode = "NETWORK_DNS"
+	// ErrorCodeNetworkUnreachable represents network unreachable errors.
 	ErrorCodeNetworkUnreachable ErrorCode = "NETWORK_UNREACHABLE"
 
-	// VPN related errors.
-	ErrorCodeVPNConnection     ErrorCode = "VPN_CONNECTION"
+	// ErrorCodeVPNConnection represents VPN connection errors.
+	ErrorCodeVPNConnection ErrorCode = "VPN_CONNECTION"
+	// ErrorCodeVPNAuthentication represents VPN authentication errors.
 	ErrorCodeVPNAuthentication ErrorCode = "VPN_AUTHENTICATION"
-	ErrorCodeVPNConfiguration  ErrorCode = "VPN_CONFIGURATION"
-	ErrorCodeVPNHierarchy      ErrorCode = "VPN_HIERARCHY"
+	// ErrorCodeVPNConfiguration represents VPN configuration errors.
+	ErrorCodeVPNConfiguration ErrorCode = "VPN_CONFIGURATION"
+	// ErrorCodeVPNHierarchy represents VPN hierarchy errors.
+	ErrorCodeVPNHierarchy ErrorCode = "VPN_HIERARCHY"
 
-	// Configuration related errors.
-	ErrorCodeConfigInvalid    ErrorCode = "CONFIG_INVALID"
-	ErrorCodeConfigNotFound   ErrorCode = "CONFIG_NOT_FOUND"
-	ErrorCodeConfigSyntax     ErrorCode = "CONFIG_SYNTAX"
+	// ErrorCodeConfigInvalid represents invalid configuration errors.
+	ErrorCodeConfigInvalid ErrorCode = "CONFIG_INVALID"
+	// ErrorCodeConfigNotFound represents configuration not found errors.
+	ErrorCodeConfigNotFound ErrorCode = "CONFIG_NOT_FOUND"
+	// ErrorCodeConfigSyntax represents configuration syntax errors.
+	ErrorCodeConfigSyntax ErrorCode = "CONFIG_SYNTAX"
+	// ErrorCodeConfigValidation represents configuration validation errors.
 	ErrorCodeConfigValidation ErrorCode = "CONFIG_VALIDATION"
 
-	// Authentication related errors.
-	ErrorCodeAuthFailed  ErrorCode = "AUTH_FAILED"
+	// ErrorCodeAuthFailed represents authentication failure errors.
+	ErrorCodeAuthFailed ErrorCode = "AUTH_FAILED"
+	// ErrorCodeAuthExpired represents expired authentication errors.
 	ErrorCodeAuthExpired ErrorCode = "AUTH_EXPIRED"
+	// ErrorCodeAuthMissing represents missing authentication errors.
 	ErrorCodeAuthMissing ErrorCode = "AUTH_MISSING"
+	// ErrorCodeAuthInvalid represents invalid authentication errors.
 	ErrorCodeAuthInvalid ErrorCode = "AUTH_INVALID"
 
-	// Permission related errors.
+	// ErrorCodePermissionDenied represents permission denied errors.
 	ErrorCodePermissionDenied ErrorCode = "PERMISSION_DENIED"
+	// ErrorCodeResourceNotFound represents resource not found errors.
 	ErrorCodeResourceNotFound ErrorCode = "RESOURCE_NOT_FOUND"
-	ErrorCodeResourceExists   ErrorCode = "RESOURCE_EXISTS"
+	// ErrorCodeResourceExists represents resource already exists errors.
+	ErrorCodeResourceExists ErrorCode = "RESOURCE_EXISTS"
 
-	// System related errors.
+	// ErrorCodeSystemInternal represents internal system errors.
 	ErrorCodeSystemInternal ErrorCode = "SYSTEM_INTERNAL"
-	ErrorCodeSystemTimeout  ErrorCode = "SYSTEM_TIMEOUT"
+	// ErrorCodeSystemTimeout represents system timeout errors.
+	ErrorCodeSystemTimeout ErrorCode = "SYSTEM_TIMEOUT"
+	// ErrorCodeSystemResource represents system resource errors.
 	ErrorCodeSystemResource ErrorCode = "SYSTEM_RESOURCE"
 )
 

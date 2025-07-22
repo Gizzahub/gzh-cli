@@ -15,7 +15,7 @@ import (
 
 // LoadCommandConfig provides a unified way to load configuration for commands
 // It follows the standard precedence: explicit path > env var > default locations.
-func LoadCommandConfig(ctx context.Context, configPath string, configType string) (*config.UnifiedConfig, error) {
+func LoadCommandConfig(ctx context.Context, configPath, configType string) (*config.UnifiedConfig, error) {
 	// 1. Use explicit config path if provided
 	if configPath != "" {
 		return loadConfigFromPath(ctx, configPath)

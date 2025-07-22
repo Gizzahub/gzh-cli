@@ -5,12 +5,14 @@
 ## 📋 변경 사항 개요
 
 ### ❌ 제거된 기능
+
 - **WiFi 변경 자동 감지**: 실시간 WiFi 변경 모니터링 기능 제거
 - **백그라운드 데몬 모드**: `gz net-env wifi monitor --daemon` 명령어 제거
 - **자동 네트워크 전환**: WiFi 변경 시 자동으로 네트워크 설정 변경하는 기능 제거
 - **복잡한 이벤트 시스템**: 네트워크 이벤트 기반 자동화 시스템 제거
 
 ### ✅ 새로 추가된 기능
+
 - **네트워크 프로필 시스템**: YAML 기반 네트워크 프로필 관리
 - **수동 전환 명령어**: `gz net-env switch` 명령어를 통한 즉시 전환
 - **상태 확인 도구**: `gz net-env status` 명령어로 현재 네트워크 상태 조회
@@ -46,6 +48,7 @@ cat ~/.gz/network-profiles.yaml
 #### 기존 WiFi 설정을 프로필로 변환
 
 **이전 방식** (`wifi-config.yaml`):
+
 ```yaml
 known_networks:
   "Home-WiFi":
@@ -65,6 +68,7 @@ known_networks:
 ```
 
 **새로운 방식** (`~/.gz/network-profiles.yaml`):
+
 ```yaml
 default: "home"
 
@@ -106,6 +110,7 @@ profiles:
 ### 4단계: 새로운 워크플로우 적용
 
 #### 이전 워크플로우
+
 ```bash
 # 데몬 시작 (자동 모니터링)
 gz net-env wifi monitor --daemon
@@ -115,6 +120,7 @@ gz net-env wifi monitor --daemon
 ```
 
 #### 새로운 워크플로우
+
 ```bash
 # 사용 가능한 프로필 확인
 gz net-env switch --list
@@ -150,11 +156,13 @@ ps aux | grep gzh-manager
 ### 시나리오 1: 재택근무 → 사무실 출근
 
 **이전 방식**: 자동으로 WiFi 변경 감지하여 자동 전환
+
 ```bash
 # 자동으로 실행됨 - 사용자 개입 없음
 ```
 
 **새로운 방식**: 수동으로 프로필 전환
+
 ```bash
 # 사무실 도착 후 수동으로 전환
 gz net-env switch office
@@ -166,11 +174,13 @@ gz net-env status --verbose
 ### 시나리오 2: 카페에서 작업
 
 **이전 방식**:
+
 ```bash
 # WiFi 변경 감지 후 자동으로 공용 WiFi 설정 적용
 ```
 
 **새로운 방식**:
+
 ```bash
 # 카페 WiFi 연결 후 보안 프로필로 전환
 gz net-env switch public
@@ -182,12 +192,14 @@ gz net-env status | grep VPN
 ### 시나리오 3: 문제 발생시 디버깅
 
 **이전 방식**: 데몬 로그 확인 필요
+
 ```bash
 # 로그 파일 확인 필요
 tail -f /var/log/gzh-manager-netenv.log
 ```
 
 **새로운 방식**: 즉시 상태 확인 가능
+
 ```bash
 # 현재 상태 즉시 확인
 gz net-env status --verbose
@@ -233,6 +245,7 @@ cafe  # 공용 WiFi 모드로 전환
 ### 일반적인 문제
 
 **Q: 네트워크 전환이 안 됩니다**
+
 ```bash
 # 1. 설정 파일 확인
 gz net-env switch --list
@@ -245,6 +258,7 @@ gz net-env status --verbose
 ```
 
 **Q: VPN 연결이 실패합니다**
+
 ```bash
 # VPN 연결 상태 확인
 systemctl status openvpn@myconfig  # OpenVPN
@@ -253,6 +267,7 @@ wg show                           # WireGuard
 ```
 
 **Q: DNS 설정이 적용되지 않습니다**
+
 ```bash
 # DNS 설정 확인
 resolvectl status

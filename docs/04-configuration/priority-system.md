@@ -16,6 +16,7 @@ The gzh-manager tool implements a robust configuration priority system that ensu
 Command-line flags always take precedence over all other configuration sources. This ensures that explicit user intent via CLI arguments is always respected.
 
 **Common CLI Flags:**
+
 - `--config`, `-c`: Configuration file path
 - `--strategy`, `-s`: Clone/sync strategy
 - `--parallel`, `-p`: Number of parallel workers
@@ -24,6 +25,7 @@ Command-line flags always take precedence over all other configuration sources. 
 - `--dry-run`: Preview mode
 
 **Example:**
+
 ```bash
 # All flags override any configuration file or environment variable
 gz bulk-clone --strategy=pull --parallel=20 --token=ghp_override_token
@@ -34,6 +36,7 @@ gz bulk-clone --strategy=pull --parallel=20 --token=ghp_override_token
 Environment variables provide a way to configure the tool without modifying files, but they are overridden by command-line flags.
 
 **Key Environment Variables:**
+
 - `GZH_CONFIG_PATH`: Override default configuration file location
 - `GITHUB_TOKEN`: GitHub API authentication token
 - `GITLAB_TOKEN`: GitLab API authentication token
@@ -41,6 +44,7 @@ Environment variables provide a way to configure the tool without modifying file
 - `GOGS_TOKEN`: Gogs API authentication token
 
 **Example:**
+
 ```bash
 # Environment variable sets the default
 export GITHUB_TOKEN=ghp_env_token
@@ -55,6 +59,7 @@ gz bulk-clone --token=ghp_flag_token  # Uses ghp_flag_token
 Configuration files provide the base configuration but can be overridden by environment variables and command-line flags.
 
 **Configuration File Search Order:**
+
 1. Path specified by `GZH_CONFIG_PATH` environment variable
 2. Path specified by `--config` CLI flag
 3. Current directory: `./gzh.yaml`, `./gzh.yml`
@@ -63,6 +68,7 @@ Configuration files provide the base configuration but can be overridden by envi
 6. Legacy files: `./bulk-clone.yaml`, `./bulk-clone.yml` (auto-migrated)
 
 **Example:**
+
 ```yaml
 # gzh.yaml
 version: "1.0.0"
@@ -80,6 +86,7 @@ providers:
 Default values are hardcoded in the application and used when no higher priority source provides a value.
 
 **Common Defaults:**
+
 - `strategy`: `reset`
 - `parallel`: `10`
 - `visibility`: `all`
@@ -91,6 +98,7 @@ Default values are hardcoded in the application and used when no higher priority
 ### Example 1: Token Configuration
 
 **Sources:**
+
 ```yaml
 # ~/.config/gzh-manager/gzh.yaml
 providers:
@@ -111,6 +119,7 @@ gz bulk-clone --token=ghp_flag_token
 ### Example 2: Strategy Configuration
 
 **Sources:**
+
 ```yaml
 # gzh.yaml
 global:
@@ -127,6 +136,7 @@ gz bulk-clone --strategy=pull
 ### Example 3: Parallel Workers
 
 **Sources:**
+
 ```yaml
 # gzh.yaml
 global:
@@ -144,6 +154,7 @@ gz bulk-clone
 ### Example 4: Configuration File Location
 
 **Sources:**
+
 ```bash
 # Environment variable
 export GZH_CONFIG_PATH=/custom/path/config.yaml
@@ -162,10 +173,11 @@ Configuration files support environment variable expansion using `${VAR_NAME}` s
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    api_url: "${GITHUB_API_URL:-https://api.github.com}"  # With default value
+    api_url: "${GITHUB_API_URL:-https://api.github.com}" # With default value
 ```
 
 **Priority for expanded variables:**
+
 1. Command-line flags (if applicable)
 2. Environment variables (used in expansion)
 3. Default values in expansion syntax (`${VAR:-default}`)
@@ -176,21 +188,25 @@ providers:
 Different commands may have different configuration sections but follow the same priority rules:
 
 ### bulk-clone Command
+
 - CLI flags: `--strategy`, `--parallel`, `--token`, `--provider`
 - Environment: `GITHUB_TOKEN`, `GITLAB_TOKEN`, `GITEA_TOKEN`
 - Config: `global.default_strategy`, `global.concurrency.clone_workers`
 
 ### ide Command
+
 - CLI flags: `--ide-type`, `--sync-interval`, `--backup-enabled`
 - Environment: `GZH_IDE_TYPE`, `GZH_SYNC_INTERVAL`
 - Config: `ide.enabled`, `ide.sync_interval`, `ide.backup_enabled`
 
 ### dev-env Command
+
 - CLI flags: `--profile`, `--auto-switch`
 - Environment: `GZH_DEV_PROFILE`, `AWS_PROFILE`
 - Config: `dev_env.enabled`, `dev_env.profiles`
 
 ### net-env Command
+
 - CLI flags: `--wifi-monitor`, `--auto-switch`
 - Environment: `GZH_WIFI_MONITOR`
 - Config: `net_env.enabled`, `net_env.wifi_detection`

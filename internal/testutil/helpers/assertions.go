@@ -38,7 +38,7 @@ func AssertDirExists(t *testing.T, path string, msgAndArgs ...interface{}) {
 }
 
 // AssertFileContains checks if a file contains the expected content.
-func AssertFileContains(t *testing.T, path string, expected string, msgAndArgs ...interface{}) {
+func AssertFileContains(t *testing.T, path, expected string, msgAndArgs ...interface{}) {
 	t.Helper()
 
 	content, err := os.ReadFile(path)
@@ -47,7 +47,7 @@ func AssertFileContains(t *testing.T, path string, expected string, msgAndArgs .
 }
 
 // AssertFileEquals checks if a file's content exactly matches expected.
-func AssertFileEquals(t *testing.T, path string, expected string, msgAndArgs ...interface{}) {
+func AssertFileEquals(t *testing.T, path, expected string, msgAndArgs ...interface{}) {
 	t.Helper()
 
 	content, err := os.ReadFile(path)

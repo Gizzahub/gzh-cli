@@ -86,6 +86,8 @@ func handleDashboardHome(w http.ResponseWriter, _ *http.Request, organization st
 
 // handleRepositoriesAPI serves repository data as JSON.
 func handleRepositoriesAPI(w http.ResponseWriter, _ *http.Request, organization, token string) {
+	_ = organization // organization unused in mock implementation
+	_ = token        // token unused in mock implementation
 	// This would fetch real repository data
 	mockData := `{
 		"repositories": [
@@ -122,7 +124,9 @@ func handleRepositoriesAPI(w http.ResponseWriter, _ *http.Request, organization,
 }
 
 // handleComplianceAPI serves compliance data as JSON.
-func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, token string) {
+func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, _ string) { //nolint:unparam // Token unused in current implementation
+	_ = r            // r unused in mock implementation
+	_ = organization // organization unused in mock implementation
 	// This would fetch real compliance data
 	mockData := `{
 		"compliance": {
@@ -153,6 +157,7 @@ func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, t
 
 // handleStaticAssets serves static CSS/JS files.
 func handleStaticAssets(w http.ResponseWriter, r *http.Request) {
+	_ = r // r unused in mock implementation
 	// For a real implementation, this would serve actual static files
 	w.WriteHeader(http.StatusNotFound)
 }

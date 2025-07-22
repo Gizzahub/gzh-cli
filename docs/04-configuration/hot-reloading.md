@@ -105,6 +105,7 @@ gz config watch --interval 10s
 ### Debouncing
 
 The system includes a 100ms delay after file changes to handle:
+
 - Multiple rapid writes during file editing
 - Temporary file operations by editors
 - Atomic file operations (rename/move)
@@ -145,7 +146,7 @@ func TestWatchConfigHotReloading(t *testing.T)          // Comprehensive hot-rel
 # Run configuration service tests
 go test ./internal/config -v -run TestConfigService_WatchConfiguration
 
-# Run watch command tests  
+# Run watch command tests
 go test ./cmd/config -v -run TestWatchConfigHotReloading
 
 # Skip file watching tests in CI (optional)
@@ -189,11 +190,13 @@ providers:
 ### Debugging
 
 Enable verbose mode for detailed information:
+
 ```bash
 gz config watch --verbose --interval 5s
 ```
 
 This shows:
+
 - Configuration loading details
 - Validation results with specific errors
 - Change timestamps and frequencies

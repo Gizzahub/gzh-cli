@@ -16,21 +16,21 @@ The project uses a fully automated release pipeline that:
 
 ### Package Managers
 
-| Platform | Package Manager | Installation Command |
-|----------|----------------|---------------------|
-| **macOS** | Homebrew | `brew install gizzahub/tap/gz` |
-| **Windows** | Chocolatey | `choco install gz` |
-| **Windows** | Scoop | `scoop bucket add gizzahub https://github.com/Gizzahub/scoop-bucket && scoop install gz` |
-| **Arch Linux** | AUR | `yay -S gz-bin` |
-| **Linux** | APT (deb) | `dpkg -i gz_*.deb` |
-| **Linux** | YUM/DNF (rpm) | `rpm -i gz_*.rpm` |
-| **Alpine** | APK | `apk add gz_*.apk` |
+| Platform       | Package Manager | Installation Command                                                                     |
+| -------------- | --------------- | ---------------------------------------------------------------------------------------- |
+| **macOS**      | Homebrew        | `brew install gizzahub/tap/gz`                                                           |
+| **Windows**    | Chocolatey      | `choco install gz`                                                                       |
+| **Windows**    | Scoop           | `scoop bucket add gizzahub https://github.com/Gizzahub/scoop-bucket && scoop install gz` |
+| **Arch Linux** | AUR             | `yay -S gz-bin`                                                                          |
+| **Linux**      | APT (deb)       | `dpkg -i gz_*.deb`                                                                       |
+| **Linux**      | YUM/DNF (rpm)   | `rpm -i gz_*.rpm`                                                                        |
+| **Alpine**     | APK             | `apk add gz_*.apk`                                                                       |
 
 ### Container Images
 
-| Registry | Image | Pull Command |
-|----------|-------|--------------|
-| **Docker Hub** | `gizzahub/gzh-manager-go` | `docker pull gizzahub/gzh-manager-go:latest` |
+| Registry                      | Image                             | Pull Command                                         |
+| ----------------------------- | --------------------------------- | ---------------------------------------------------- |
+| **Docker Hub**                | `gizzahub/gzh-manager-go`         | `docker pull gizzahub/gzh-manager-go:latest`         |
 | **GitHub Container Registry** | `ghcr.io/gizzahub/gzh-manager-go` | `docker pull ghcr.io/gizzahub/gzh-manager-go:latest` |
 
 ### Direct Downloads
@@ -43,6 +43,7 @@ The project uses a fully automated release pipeline that:
 ### Automated Release (Recommended)
 
 1. **Create and push a git tag**:
+
    ```bash
    git tag v1.0.0
    git push origin v1.0.0
@@ -85,14 +86,14 @@ The project follows [Semantic Versioning (SemVer)](https://semver.org/):
 
 ### Version Examples
 
-| Version | Type | Description |
-|---------|------|-------------|
-| `v1.0.0` | Major | Breaking changes, new major features |
-| `v1.1.0` | Minor | New features, backward compatible |
-| `v1.1.1` | Patch | Bug fixes, security updates |
-| `v1.2.0-rc.1` | Release Candidate | Pre-release testing |
-| `v1.2.0-beta.1` | Beta | Feature complete, testing |
-| `v1.2.0-alpha.1` | Alpha | Early development, unstable |
+| Version          | Type              | Description                          |
+| ---------------- | ----------------- | ------------------------------------ |
+| `v1.0.0`         | Major             | Breaking changes, new major features |
+| `v1.1.0`         | Minor             | New features, backward compatible    |
+| `v1.1.1`         | Patch             | Bug fixes, security updates          |
+| `v1.2.0-rc.1`    | Release Candidate | Pre-release testing                  |
+| `v1.2.0-beta.1`  | Beta              | Feature complete, testing            |
+| `v1.2.0-alpha.1` | Alpha             | Early development, unstable          |
 
 ## Release Configuration
 
@@ -125,6 +126,7 @@ gz version
 ```
 
 Build-time information embedded in binaries:
+
 - **Version**: Git tag (e.g., `v1.0.0`)
 - **Commit**: Git commit SHA
 - **Date**: Build timestamp
@@ -159,16 +161,16 @@ cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig
 
 Required secrets for automated releases:
 
-| Secret | Purpose | Required |
-|--------|---------|----------|
-| `GITHUB_TOKEN` | GitHub API access | ✅ |
-| `DOCKERHUB_USERNAME` | Docker Hub publishing | ✅ |
-| `DOCKERHUB_TOKEN` | Docker Hub authentication | ✅ |
-| `HOMEBREW_TAP_GITHUB_TOKEN` | Homebrew formula updates | Optional |
-| `SCOOP_BUCKET_GITHUB_TOKEN` | Scoop manifest updates | Optional |
-| `AUR_KEY` | Arch Linux AUR publishing | Optional |
-| `SLACK_WEBHOOK_URL` | Slack notifications | Optional |
-| `DISCORD_WEBHOOK_URL` | Discord notifications | Optional |
+| Secret                      | Purpose                   | Required |
+| --------------------------- | ------------------------- | -------- |
+| `GITHUB_TOKEN`              | GitHub API access         | ✅       |
+| `DOCKERHUB_USERNAME`        | Docker Hub publishing     | ✅       |
+| `DOCKERHUB_TOKEN`           | Docker Hub authentication | ✅       |
+| `HOMEBREW_TAP_GITHUB_TOKEN` | Homebrew formula updates  | Optional |
+| `SCOOP_BUCKET_GITHUB_TOKEN` | Scoop manifest updates    | Optional |
+| `AUR_KEY`                   | Arch Linux AUR publishing | Optional |
+| `SLACK_WEBHOOK_URL`         | Slack notifications       | Optional |
+| `DISCORD_WEBHOOK_URL`       | Discord notifications     | Optional |
 
 ## Changelog Generation
 
@@ -198,7 +200,7 @@ chore(deps): bump golang.org/x/text from 0.3.7 to 0.3.8
 ### Changelog Sections
 
 - **New Features**: `feat:` commits
-- **Bug Fixes**: `fix:` commits  
+- **Bug Fixes**: `fix:` commits
 - **Security Updates**: `sec:` commits
 - **Performance Improvements**: `perf:` commits
 - **Documentation Updates**: `docs:` commits
@@ -211,11 +213,13 @@ chore(deps): bump golang.org/x/text from 0.3.7 to 0.3.8
 Before tagging a release:
 
 1. **Run full test suite**:
+
    ```bash
    make test-all
    ```
 
 2. **Test release configuration**:
+
    ```bash
    make release-check
    make release-dry-run
@@ -242,6 +246,7 @@ After release:
 ### Common Issues
 
 1. **GoReleaser fails**:
+
    ```bash
    # Check configuration
    make release-check

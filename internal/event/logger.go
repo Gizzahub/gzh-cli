@@ -41,7 +41,7 @@ func (l *SimpleLogger) With(_ ...interface{}) interface{} {
 	return l
 }
 
-// getLogger returns an EventLogger implementation.
+// GetLogger returns an EventLogger implementation.
 func GetLogger() interface{} {
 	return NewSimpleLogger()
 }

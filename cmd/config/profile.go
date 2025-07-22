@@ -9,8 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/spf13/cobra"
+
+	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
 )
 
 // newProfileCmd creates the config profile subcommand.
@@ -209,7 +210,7 @@ func createProfile(profileName, fromProfile string, interactive bool) error {
 	}
 
 	// Write profile file
-	if err := os.WriteFile(profileFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(profileFile, []byte(content), 0o600); err != nil {
 		return fmt.Errorf("failed to create profile: %w", err)
 	}
 

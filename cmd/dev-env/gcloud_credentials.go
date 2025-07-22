@@ -327,7 +327,7 @@ type gcloudCredentialsMetadata struct {
 
 func (o *gcloudCredentialsOptions) saveMetadata() error {
 	metadata := gcloudCredentialsMetadata{
-		Name:        o.name,
+		// Name:        o.name,  // Unused field removed
 		Description: o.description,
 		SavedAt:     time.Now(),
 		SourcePath:  o.configPath,

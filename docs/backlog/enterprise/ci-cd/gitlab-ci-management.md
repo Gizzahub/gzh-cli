@@ -1,11 +1,13 @@
 # GitLab CI/CD 관리 기능
 
 ## 개요
+
 GitLab CI/CD 파이프라인 관리 및 자동화 기능
 
 ## 제거된 기능
 
 ### 1. GitLab CI 파이프라인 관리
+
 - **명령어**: `gz gitlab-ci create`, `gz gitlab-ci deploy`
 - **기능**: .gitlab-ci.yml 생성 및 파이프라인 관리
 - **특징**:
@@ -15,6 +17,7 @@ GitLab CI/CD 파이프라인 관리 및 자동화 기능
   - 수동 배포 승인
 
 ### 2. 러너 관리
+
 - **명령어**: `gz gitlab-ci runner register`, `gz gitlab-ci runner scale`
 - **기능**: GitLab Runner 등록 및 관리
 - **특징**:
@@ -24,6 +27,7 @@ GitLab CI/CD 파이프라인 관리 및 자동화 기능
   - 태그 기반 작업 분배
 
 ### 3. 변수 및 시크릿 관리
+
 - **명령어**: `gz gitlab-ci variables set`, `gz gitlab-ci variables sync`
 - **기능**: GitLab CI/CD 변수 및 시크릿 관리
 - **특징**:
@@ -33,6 +37,7 @@ GitLab CI/CD 파이프라인 관리 및 자동화 기능
   - 그룹/프로젝트 레벨 변수
 
 ### 4. 환경 및 배포 관리
+
 - **명령어**: `gz gitlab-ci environment create`, `gz gitlab-ci deploy`
 - **기능**: GitLab 환경 관리 및 배포 추적
 - **특징**:
@@ -209,24 +214,28 @@ gitlab_ci:
 ## 고급 기능
 
 ### 1. 멀티 프로젝트 파이프라인
+
 - 프로젝트 간 의존성 관리
 - 크로스 프로젝트 아티팩트 공유
 - 통합 배포 워크플로우
 - 마이크로서비스 조정
 
 ### 2. 동적 파이프라인
+
 - 조건부 작업 실행
 - 매트릭스 빌드
 - include/extends 활용
 - 런타임 파이프라인 생성
 
 ### 3. 보안 스캔 통합
+
 - SAST/DAST 스캔
 - 의존성 스캔
 - 라이선스 스캔
 - 컨테이너 스캔
 
 ### 4. 아티팩트 관리
+
 - 패키지 레지스트리 연동
 - 빌드 아티팩트 보관
 - 테스트 보고서 수집
@@ -235,6 +244,7 @@ gitlab_ci:
 ## 파이프라인 템플릿
 
 ### 1. Node.js 애플리케이션
+
 ```yaml
 stages:
   - build
@@ -287,6 +297,7 @@ deploy:
 ```
 
 ### 2. Docker 이미지 빌드
+
 ```yaml
 stages:
   - build
@@ -325,6 +336,7 @@ release:
 ```
 
 ### 3. Kubernetes 배포
+
 ```yaml
 stages:
   - build
@@ -350,18 +362,21 @@ deploy:
 ## 통합 기능
 
 ### 1. GitLab 페이지
+
 - 정적 사이트 호스팅
 - 문서 자동 배포
 - 아티팩트 기반 배포
 - 커스텀 도메인 지원
 
 ### 2. 모니터링 연동
+
 - Prometheus 메트릭
 - 애플리케이션 성능 모니터링
 - 에러 추적
 - 로그 수집
 
 ### 3. 이슈 추적 연동
+
 - 자동 이슈 닫기
 - MR과 이슈 연결
 - 릴리스 노트 생성

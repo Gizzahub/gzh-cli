@@ -111,7 +111,8 @@ func runRiskAssessmentCommand(flags GlobalFlags, format string, includeArchived 
 }
 
 // performRiskAssessments performs risk assessments for repositories.
-func performRiskAssessments(organization, token string, includeArchived bool) ([]RiskAssessment, error) {
+func performRiskAssessments(organization, _ string, includeArchived bool) ([]RiskAssessment, error) { //nolint:unparam // Token unused in current implementation
+	_ = organization // organization unused in mock implementation
 	// This is a mock implementation. In reality, this would:
 	// 1. Fetch repository configurations from GitHub API
 	// 2. Analyze security settings and configurations

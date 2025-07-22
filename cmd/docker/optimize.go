@@ -448,7 +448,7 @@ func analyzeLayers(imageName string) ([]LayerInfo, error) {
 		return nil, err
 	}
 
-	var layers []LayerInfo
+	layers := make([]LayerInfo, 0, 10) // Pre-allocate with reasonable capacity
 
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
 
@@ -759,27 +759,26 @@ func generateSuggestions(analysis *OptimizationAnalysis) []Suggestion {
 		})
 	}
 
-	// Multi-stage build suggestion
-	suggestions = append(suggestions, Suggestion{
-		Type:             "size",
-		Priority:         "medium",
-		Title:            "멀티 스테이지 빌드 적용",
-		Description:      "빌드 도구와 의존성을 최종 이미지에서 제거",
-		Impact:           "이미지 크기 감소, 공격 표면 축소",
-		Implementation:   "빌드 스테이지와 런타임 스테이지 분리",
-		DockerfileChange: "FROM node:18 AS builder\n...\nFROM node:18-alpine AS runtime\nCOPY --from=builder ...",
-	})
-
-	// .dockerignore suggestion
-	suggestions = append(suggestions, Suggestion{
-		Type:             "size",
-		Priority:         "medium",
-		Title:            ".dockerignore 파일 사용",
-		Description:      "불필요한 파일들이 빌드 컨텍스트에 포함되지 않도록 방지",
-		Impact:           "빌드 시간 단축, 이미지 크기 감소",
-		Implementation:   ".dockerignore 파일에 제외할 패턴 추가",
-		DockerfileChange: "# .dockerignore 파일 생성\n*.log\nnode_modules\n.git\n*.tmp",
-	})
+	// Multi-stage build suggestion and .dockerignore suggestion
+	suggestions = append(suggestions,
+		Suggestion{
+			Type:             "size",
+			Priority:         "medium",
+			Title:            "멀티 스테이지 빌드 적용",
+			Description:      "빌드 도구와 의존성을 최종 이미지에서 제거",
+			Impact:           "이미지 크기 감소, 공격 표면 축소",
+			Implementation:   "빌드 스테이지와 런타임 스테이지 분리",
+			DockerfileChange: "FROM node:18 AS builder\n...\nFROM node:18-alpine AS runtime\nCOPY --from=builder ...",
+		},
+		Suggestion{
+			Type:             "size",
+			Priority:         "medium",
+			Title:            ".dockerignore 파일 사용",
+			Description:      "불필요한 파일들이 빌드 컨텍스트에 포함되지 않도록 방지",
+			Impact:           "빌드 시간 단축, 이미지 크기 감소",
+			Implementation:   ".dockerignore 파일에 제외할 패턴 추가",
+			DockerfileChange: "# .dockerignore 파일 생성\n*.log\nnode_modules\n.git\n*.tmp",
+		})
 
 	return suggestions
 }
@@ -974,11 +973,11 @@ func generateOptimizedDockerfile(analysis *OptimizationAnalysis, suggestions []S
 	dockerfile.WriteString("CMD [\"echo\", \"Optimized container ready\"]\n")
 
 	// Write to file
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 		return err
 	}
 
-	return os.WriteFile(outputPath, []byte(dockerfile.String()), 0o644)
+	return os.WriteFile(outputPath, []byte(dockerfile.String()), 0o600)
 }
 
 func applyDockerSlim(imageName string) (string, error) {
@@ -1045,11 +1044,11 @@ func saveOptimizationReport(analysis *OptimizationAnalysis, suggestions []Sugges
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(filename), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(filename), 0o750); err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(filename, data, 0o644); err != nil {
+	if err := os.WriteFile(filename, data, 0o600); err != nil {
 		return err
 	}
 

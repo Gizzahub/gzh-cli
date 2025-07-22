@@ -1,11 +1,13 @@
 # CloudFormation 관리 기능
 
 ## 개요
+
 AWS CloudFormation을 통한 인프라 관리 및 자동화 기능
 
 ## 제거된 기능
 
 ### 1. CloudFormation 스택 배포
+
 - **명령어**: `gz cloudformation deploy`
 - **기능**: CloudFormation 스택 생성 및 업데이트
 - **특징**:
@@ -15,6 +17,7 @@ AWS CloudFormation을 통한 인프라 관리 및 자동화 기능
   - 태그 기반 리소스 분류
 
 ### 2. 변경 세트 관리
+
 - **명령어**: `gz cloudformation changeset`
 - **기능**: 변경사항 미리보기 및 관리
 - **특징**:
@@ -24,6 +27,7 @@ AWS CloudFormation을 통한 인프라 관리 및 자동화 기능
   - 변경 이력 추적
 
 ### 3. 템플릿 생성 및 검증
+
 - **명령어**: `gz cloudformation generate`, `gz cloudformation validate`
 - **기능**: CloudFormation 템플릿 자동 생성 및 검증
 - **특징**:
@@ -92,16 +96,19 @@ cloudformation:
 ## 고급 기능
 
 ### 1. 스택 드리프트 감지
+
 - 실제 리소스와 템플릿 간 차이 감지
 - 자동 복구 또는 알림
 - 정기적 드리프트 스캔
 
 ### 2. 비용 분석
+
 - 스택별 비용 추적
 - 예상 비용 계산
 - 비용 최적화 제안
 
 ### 3. 보안 분석
+
 - IAM 권한 검토
 - 보안 그룹 분석
 - 암호화 설정 검증

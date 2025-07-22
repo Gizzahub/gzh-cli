@@ -16,9 +16,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -838,9 +839,7 @@ func isURLReachable(ctx context.Context, url string) bool {
 		return false
 	}
 	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = resp.Body.Close() // Ignore close error
 	}()
 
 	return resp.StatusCode < 400
@@ -870,9 +869,7 @@ func isDirectoryWritable(dir string) bool {
 		return false
 	}
 
-	if err := file.Close(); err != nil {
-		// Log error but don't fail the check
-	}
+	_ = file.Close() // Ignore close error
 
 	if err := os.Remove(testFile); err != nil {
 		// Log error but don't fail the check
@@ -930,12 +927,8 @@ func runDiskBenchmark() float64 {
 	}
 
 	defer func() {
-		if err := file.Close(); err != nil {
-			// Log error but don't fail the check
-		}
-		if err := os.Remove(testFile); err != nil {
-			// Log error but don't fail the check
-		}
+		_ = file.Close()        // Ignore close error
+		_ = os.Remove(testFile) // Ignore remove error
 	}()
 
 	for i := 0; i < 10; i++ {
@@ -1080,9 +1073,7 @@ func saveReport(report *DiagnosticReport, filename string) error {
 		return err
 	}
 	defer func() {
-		if err := file.Close(); err != nil {
-			// Log error but don't override main error
-		}
+		_ = file.Close() // Ignore close error
 	}()
 
 	encoder := json.NewEncoder(file)

@@ -6,10 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 // TestComprehensiveMockingStrategy demonstrates a complete mocking strategy
@@ -167,7 +168,7 @@ func TestComprehensiveMockingStrategy(t *testing.T) {
 		done := make(chan bool, concurrency)
 
 		for i := 0; i < concurrency; i++ {
-			go func(id int) {
+			go func(_ int) { //nolint:unparam // Parameter unused but needed for goroutine pattern
 				defer func() { done <- true }()
 
 				// Each goroutine makes API calls

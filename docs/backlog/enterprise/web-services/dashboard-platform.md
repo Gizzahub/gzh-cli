@@ -1,11 +1,13 @@
 # 웹 대시보드 플랫폼 기능
 
 ## 개요
+
 실시간 모니터링 및 관리를 위한 웹 기반 대시보드 플랫폼
 
 ## 제거된 기능
 
 ### 1. 웹 서버 및 API
+
 - **명령어**: `gz serve`, `gz serve --port 8080`
 - **기능**: REST API 서버 및 웹 대시보드 제공
 - **특징**:
@@ -15,6 +17,7 @@
   - CORS 설정 및 보안 헤더
 
 ### 2. 실시간 웹소켓 통신
+
 - **기능**: 실시간 데이터 스트리밍 및 양방향 통신
 - **특징**:
   - WebSocket 연결 관리
@@ -23,6 +26,7 @@
   - 멀티 클라이언트 지원
 
 ### 3. React 기반 프론트엔드
+
 - **기능**: 모던 웹 대시보드 인터페이스
 - **특징**:
   - Material-UI 컴포넌트
@@ -31,6 +35,7 @@
   - 사용자 인터페이스 커스터마이제이션
 
 ### 4. 인증 및 권한 관리
+
 - **기능**: 사용자 인증 및 역할 기반 접근 제어
 - **특징**:
   - JWT 토큰 기반 인증
@@ -89,6 +94,7 @@ cmd/monitoring/
 ## 제거된 API 엔드포인트
 
 ### 1. 인증 API
+
 ```
 POST   /api/auth/login       # 사용자 로그인
 POST   /api/auth/logout      # 사용자 로그아웃
@@ -97,6 +103,7 @@ GET    /api/auth/profile     # 사용자 프로필
 ```
 
 ### 2. 저장소 관리 API
+
 ```
 GET    /api/repositories     # 저장소 목록
 GET    /api/repositories/:id # 저장소 상세 정보
@@ -107,6 +114,7 @@ POST   /api/repositories/sync # 저장소 동기화
 ```
 
 ### 3. 모니터링 API
+
 ```
 GET    /api/monitoring/status    # 시스템 상태
 GET    /api/monitoring/metrics   # 성능 메트릭
@@ -116,6 +124,7 @@ POST   /api/monitoring/alerts    # 알림 생성
 ```
 
 ### 4. 설정 API
+
 ```
 GET    /api/config              # 설정 조회
 PUT    /api/config              # 설정 업데이트
@@ -124,6 +133,7 @@ POST   /api/config/validate     # 설정 검증
 ```
 
 ### 5. WebSocket 엔드포인트
+
 ```
 /ws/logs                       # 실시간 로그 스트림
 /ws/metrics                    # 실시간 메트릭
@@ -134,6 +144,7 @@ POST   /api/config/validate     # 설정 검증
 ## 제거된 웹 대시보드 기능
 
 ### 1. 메인 대시보드
+
 ```jsx
 // Dashboard.jsx
 function Dashboard() {
@@ -169,6 +180,7 @@ function Dashboard() {
 ```
 
 ### 2. 저장소 관리 인터페이스
+
 ```jsx
 // RepositoryManager.jsx
 function RepositoryManager() {
@@ -190,25 +202,24 @@ function RepositoryManager() {
         checkboxSelection
       />
 
-      {selectedRepo && (
-        <RepositoryDetails repository={selectedRepo} />
-      )}
+      {selectedRepo && <RepositoryDetails repository={selectedRepo} />}
     </Paper>
   );
 }
 ```
 
 ### 3. 실시간 모니터링 컴포넌트
+
 ```jsx
 // RealTimeMonitoring.jsx
 function RealTimeMonitoring() {
   const [metrics, setMetrics] = useState([]);
-  const ws = useWebSocket('/ws/metrics');
+  const ws = useWebSocket("/ws/metrics");
 
   useEffect(() => {
     ws.onmessage = (event) => {
       const newMetric = JSON.parse(event.data);
-      setMetrics(prev => [...prev.slice(-99), newMetric]);
+      setMetrics((prev) => [...prev.slice(-99), newMetric]);
     };
   }, [ws]);
 
@@ -223,22 +234,23 @@ function RealTimeMonitoring() {
 ```
 
 ### 4. 로그 뷰어
+
 ```jsx
 // LogViewer.jsx
 function LogViewer() {
   const [logs, setLogs] = useState([]);
-  const [filter, setFilter] = useState('');
-  const ws = useWebSocket('/ws/logs');
+  const [filter, setFilter] = useState("");
+  const ws = useWebSocket("/ws/logs");
 
   useEffect(() => {
     ws.onmessage = (event) => {
       const logEntry = JSON.parse(event.data);
-      setLogs(prev => [logEntry, ...prev.slice(0, 999)]);
+      setLogs((prev) => [logEntry, ...prev.slice(0, 999)]);
     };
   }, [ws]);
 
-  const filteredLogs = logs.filter(log =>
-    log.message.includes(filter) || log.level.includes(filter)
+  const filteredLogs = logs.filter(
+    (log) => log.message.includes(filter) || log.level.includes(filter),
   );
 
   return (
@@ -258,6 +270,7 @@ function LogViewer() {
 ## 제거된 설정 관리
 
 ### 1. 웹 서버 설정
+
 ```yaml
 web:
   server:
@@ -288,14 +301,15 @@ web:
 ```
 
 ### 2. 프론트엔드 빌드 설정
+
 ```javascript
 // webpack.config.js
 module.exports = {
-  entry: './src/index.js',
+  entry: "./src/index.js",
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contenthash].js',
-    publicPath: '/',
+    path: path.resolve(__dirname, "dist"),
+    filename: "[name].[contenthash].js",
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -303,35 +317,36 @@ module.exports = {
         test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-react']
-          }
-        }
-      }
-    ]
+            presets: ["@babel/preset-react"],
+          },
+        },
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './public/index.html'
-    })
+      template: "./public/index.html",
+    }),
   ],
   devServer: {
     historyApiFallback: true,
     proxy: {
-      '/api': 'http://localhost:8080',
-      '/ws': {
-        target: 'ws://localhost:8080',
-        ws: true
-      }
-    }
-  }
+      "/api": "http://localhost:8080",
+      "/ws": {
+        target: "ws://localhost:8080",
+        ws: true,
+      },
+    },
+  },
 };
 ```
 
 ## 제거된 인증 시스템
 
 ### 1. JWT 인증 미들웨어
+
 ```go
 // middleware/auth.go
 func AuthMiddleware() gin.HandlerFunc {
@@ -358,6 +373,7 @@ func AuthMiddleware() gin.HandlerFunc {
 ```
 
 ### 2. 사용자 관리
+
 ```go
 // models/user.go
 type User struct {
@@ -378,16 +394,19 @@ func (u *User) ValidatePassword(password string) bool {
 ## 제거 이유
 
 ### 1. 복잡성 증가
+
 - CLI 도구의 핵심 목적과 거리가 먼 기능
 - 웹 서버 관리의 추가 복잡성
 - 프론트엔드 빌드 및 배포 과정
 
 ### 2. 유지보수 부담
+
 - 웹 보안 취약점 관리
 - 브라우저 호환성 문제
 - UI/UX 지속적 개선 필요
 
 ### 3. 사용성 문제
+
 - CLI 사용자들이 웹 인터페이스를 선호하지 않음
 - 원격 서버 접근의 보안 우려
 - 추가 포트 및 방화벽 설정 필요

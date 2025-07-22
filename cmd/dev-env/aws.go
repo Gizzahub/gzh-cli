@@ -330,7 +330,7 @@ type awsMetadata struct {
 
 func (o *awsOptions) saveMetadata() error {
 	metadata := awsMetadata{
-		Name:        o.name,
+		// Name:        o.name,  // Unused field removed
 		Description: o.description,
 		SavedAt:     time.Now(),
 		SourcePath:  o.configPath,

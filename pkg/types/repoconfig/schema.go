@@ -127,7 +127,7 @@ type WebhookConfig struct {
 	URL         string   `yaml:"url" json:"url"`
 	Events      []string `yaml:"events" json:"events"`
 	Active      *bool    `yaml:"active,omitempty" json:"active,omitempty"`
-	ContentType string   `yaml:"contentType,omitempty" json:"contentType,omitempty"`
+	ContentType string   `yaml:"contentType,omitempty" json:"content_type,omitempty"`
 	Secret      string   `yaml:"secret,omitempty" json:"secret,omitempty"`
 }
 

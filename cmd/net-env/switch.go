@@ -394,7 +394,7 @@ func (o *switchOptions) switchToProfile() error {
 	return nil
 }
 
-func (o *switchOptions) checkConditions(profile *networkProfile) bool {
+func (o *switchOptions) checkConditions(profile *networkProfile) bool { //nolint:unparam // TODO: implement condition checking
 	if profile.Conditions == nil {
 		return true // No conditions means always applicable
 	}
@@ -557,7 +557,7 @@ func (o *switchOptions) applyProxyConfig(proxy *proxyActions) error {
 	return nil
 }
 
-func (o *switchOptions) applyHostsConfig(hosts *hostsActions) error {
+func (o *switchOptions) applyHostsConfig(hosts *hostsActions) error { //nolint:unparam // Error always nil but kept for consistency
 	if o.verbose {
 		fmt.Printf("📝 Configuring hosts file...\n")
 	}

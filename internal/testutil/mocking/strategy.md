@@ -9,19 +9,22 @@ The mocking strategy combines **gomock** for interface mocking and **testify/moc
 ## 📁 Mock Organization
 
 ### Generated Mocks (gomock)
+
 - `pkg/github/mocks/` - GitHub API client mocks
-- `internal/filesystem/mocks/` - File system operation mocks  
+- `internal/filesystem/mocks/` - File system operation mocks
 - `internal/httpclient/mocks/` - HTTP client interface mocks
 - `internal/git/mocks/` - Git operation interface mocks
 - `pkg/config/mocks/` - Configuration service mocks
 
 ### Manual Mocks (testify/mock)
+
 - `internal/testutil/mocks/` - Custom mocks for complex scenarios
 - `internal/testutil/builders/` - Builder-based mocks (existing)
 
 ## 🔧 Mock Generation
 
 ### Automatic Generation
+
 ```bash
 # Generate all mocks
 make generate-mocks
@@ -31,28 +34,34 @@ mockgen -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mo
 ```
 
 ### Manual Mock Implementation
+
 Use testify/mock for complex scenarios that require custom behavior or stateful mocking.
 
 ## 📋 Interface Coverage
 
 ### GitHub Package
+
 - ✅ `APIClient` - GitHub API operations
 - ✅ `CloneService` - Repository cloning
 - ✅ `TokenValidatorInterface` - Token validation
 
-### Filesystem Package  
+### Filesystem Package
+
 - ✅ `FileSystem` - File system operations
 - ✅ `File` - File handle operations
 
 ### HTTP Client Package
+
 - ✅ `HTTPClient` - HTTP request/response handling
 - ✅ `RequestBuilder` - HTTP request construction
 
 ### Git Package
+
 - ✅ `GitClient` - Git repository operations
 - ✅ `RepositoryService` - Repository management
 
 ### Config Package
+
 - ✅ `ConfigService` - Configuration management
 - ✅ `ConfigLoader` - Configuration loading
 - ✅ `ConfigValidator` - Configuration validation
@@ -60,6 +69,7 @@ Use testify/mock for complex scenarios that require custom behavior or stateful 
 ## 🧪 Testing Patterns
 
 ### 1. Basic Interface Mocking
+
 ```go
 func TestExample(t *testing.T) {
     ctrl := gomock.NewController(t)
@@ -75,6 +85,7 @@ func TestExample(t *testing.T) {
 ```
 
 ### 2. Builder-Based Mocking
+
 ```go
 func TestExample(t *testing.T) {
     mockLogger := builders.NewMockLoggerBuilder().Build()
@@ -87,6 +98,7 @@ func TestExample(t *testing.T) {
 ```
 
 ### 3. Testify Mock for Complex Scenarios
+
 ```go
 type MockComplexService struct {
     mock.Mock
@@ -109,21 +121,25 @@ func TestComplexScenario(t *testing.T) {
 ## 🔄 Mock Lifecycle
 
 ### Setup
+
 1. **Controller Creation**: `ctrl := gomock.NewController(t)`
 2. **Mock Creation**: `mock := mocks.NewMockInterface(ctrl)`
 3. **Expectation Setting**: `mock.EXPECT().Method().Return()`
 
 ### Execution
+
 1. **Test Execution**: Run test with mocked dependencies
 2. **Assertion**: Verify behavior and interactions
 
 ### Cleanup
+
 1. **Controller Finish**: `defer ctrl.Finish()`
 2. **Expectation Verification**: Automatic with gomock
 
 ## 📊 Mock Coverage Goals
 
 ### High Priority Interfaces
+
 - **GitHub API Client** - Core business logic
 - **File System** - I/O operations
 - **HTTP Client** - Network operations
@@ -131,17 +147,20 @@ func TestComplexScenario(t *testing.T) {
 - **Config Service** - Configuration management
 
 ### Medium Priority Interfaces
+
 - **Token Validator** - Security operations
 - **Clone Service** - Repository management
 - **Directory Resolver** - Path operations
 
 ### Low Priority Interfaces
+
 - **Filter Service** - Data filtering
 - **Schema Validator** - Structure validation
 
 ## 🛠 Utilities and Helpers
 
 ### Mock Factories
+
 Create factory functions for common mock setups:
 
 ```go
@@ -154,6 +173,7 @@ func CreateMockGitHubClient(ctrl *gomock.Controller) *mocks.MockAPIClient {
 ```
 
 ### Mock Builders
+
 Extend existing builders to support gomock integration:
 
 ```go
@@ -173,21 +193,25 @@ func NewMockAPIClientBuilder(ctrl *gomock.Controller) *MockAPIClientBuilder {
 ## 📝 Best Practices
 
 ### 1. Mock Isolation
+
 - Each test should have isolated mocks
 - Use fresh controller per test
 - Avoid shared mock state
 
 ### 2. Expectation Clarity
+
 - Be explicit about expected calls
 - Use descriptive parameter matchers
 - Document complex expectations
 
 ### 3. Error Simulation
+
 - Test both success and failure paths
 - Use realistic error scenarios
 - Test edge cases with mocks
 
 ### 4. Mock Maintenance
+
 - Keep mocks in sync with interfaces
 - Regenerate after interface changes
 - Document breaking changes
@@ -195,10 +219,12 @@ func NewMockAPIClientBuilder(ctrl *gomock.Controller) *MockAPIClientBuilder {
 ## 🔍 Mock Verification
 
 ### Automatic Verification
+
 - gomock automatically verifies expectations
 - Use `ctrl.Finish()` for complete verification
 
 ### Manual Verification
+
 - Use `AssertExpectations(t)` with testify/mock
 - Verify call counts and parameters
 - Check interaction order when relevant
@@ -206,14 +232,18 @@ func NewMockAPIClientBuilder(ctrl *gomock.Controller) *MockAPIClientBuilder {
 ## 📚 Documentation
 
 ### Interface Documentation
+
 Each mocked interface should have:
+
 - Purpose and responsibilities
 - Key methods and their behavior
 - Usage examples
 - Mock generation commands
 
 ### Test Documentation
+
 Each test using mocks should include:
+
 - Mock setup explanation
 - Expected interactions
 - Verification strategy

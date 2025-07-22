@@ -173,7 +173,7 @@ func (o *gcloudOptions) runSave(_ *cobra.Command, args []string) error {
 	}
 
 	// Create store directory if it doesn't exist
-	if err := os.MkdirAll(o.storePath, 0o755); err != nil {
+	if err := os.MkdirAll(o.storePath, 0o750); err != nil {
 		return fmt.Errorf("failed to create store directory: %w", err)
 	}
 
@@ -321,7 +321,7 @@ type gcloudMetadata struct {
 
 func (o *gcloudOptions) saveMetadata() error {
 	metadata := gcloudMetadata{
-		Name:        o.name,
+		// Name:        o.name,  // Unused field removed
 		Description: o.description,
 		SavedAt:     time.Now(),
 		SourcePath:  o.configPath,

@@ -5,24 +5,28 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 ## 🚀 최근 완료된 주요 기능들
 
 ### GitHub Organization & Repository 관리 고도화
+
 - **정책 템플릿 시스템**: 보안 강화, 오픈소스, 엔터프라이즈용 정책 템플릿 미리 제공
 - **정책 준수 감사**: 조직 전체 정책 준수 여부 자동 검사 및 상세 리포트 생성
 - **예외 처리**: 리포지토리별 정책 예외 처리 및 문서화 지원
 - **상속 및 오버라이드**: 템플릿 상속 구조로 유연한 정책 관리 가능
 
 ### 성능 개선 사항
+
 - **병렬 처리**: 최대 50개 리포지토리 동시 클론 지원으로 대규모 조직 처리 속도 향상
 - **중단된 작업 재개**: 상태 저장 시스템으로 중단된 작업을 이어서 진행 가능
 - **프로그레스 바 세분화**: 리포지토리별 진행률 표시로 세밀한 진행 상황 파악
 - **고급 클론 전략**: reset, pull, fetch 전략으로 기존 리포지토리 효율적 관리
 
 ### 통합 설정 시스템 완성
+
 - **gzh.yaml 통합 설정**: 모든 도구의 설정을 하나의 파일로 통합 관리
 - **설정 마이그레이션 도구**: 기존 bulk-clone.yaml을 gzh.yaml로 자동 변환
 - **대화형 설정 생성**: `gz config init` 명령으로 안내식 설정 파일 생성
 - **설정 우선순위 체계**: CLI 플래그 > 환경변수 > 설정파일 > 기본값 순서 확립
 
 ### 네트워크 환경 자동화 완성
+
 - **이벤트 기반 자동화**: WiFi 변경 감지 → 자동 VPN/DNS/프록시 설정 전환
 - **포괄적인 네트워크 액션**: VPN, DNS, 프록시, 호스트 파일 관리 통합
 - **안전한 설정 변경**: 모든 변경사항 자동 백업 및 롤백 기능
@@ -31,6 +35,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 ## Repository Management
 
 ### Bulk Repository Cloning
+
 - **Multi-platform Git hosting support**: Clone entire organizations from GitHub, GitLab, Gitea, and Gogs
 - **Flexible cloning strategies**: Choose between reset, pull, or fetch strategies for existing repositories
 - **Protocol flexibility**: Support for both HTTPS and SSH protocols with automatic authentication
@@ -44,11 +49,13 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Flexible directory structure**: Flatten option to control directory hierarchy and organization
 
 ### SSH Configuration Management
+
 - **Automated SSH config generation**: Create SSH configurations for Git repositories
 - **Multi-service support**: Generate configs for GitHub, GitLab, Gitea, and Gogs
 - **Key management**: Automatic SSH key association and configuration
 
 ### GitHub Organization & Repository Management
+
 - **Repository configuration management**: Comprehensive GitHub repository settings control through `gz repo-config` command
 - **Bulk operations**: Apply configuration changes across entire organizations or selected repositories
 - **Schema-driven configuration**: YAML-based repository settings with validation and templating
@@ -63,6 +70,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 ## Package Management
 
 ### Always-Latest Package Updates
+
 - **Multi-package manager support**: Automated updates for asdf, Homebrew, SDKMAN, MacPorts, APT, and rbenv
 - **Flexible update strategies**:
   - Minor latest: Update to latest minor version within the same major version
@@ -73,6 +81,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 ## Development Environment Management
 
 ### Configuration Backup and Restore
+
 - **Cloud service configurations**: Save and restore AWS, Google Cloud (gcloud) configurations and credentials
 - **Container configurations**: Docker configuration management
 - **Kubernetes integration**: kubeconfig backup and restore for cluster management
@@ -83,6 +92,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 ## Network Environment Management
 
 ### System Service Monitoring
+
 - **Comprehensive daemon monitoring**: Monitor and manage system services (daemons) with real-time status updates
 - **Network service filtering**: Identify and monitor network-related services specifically
 - **Service dependency tracking**: Understand service relationships and dependencies
@@ -90,6 +100,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Cross-platform support**: Works with systemctl, service managers across different operating systems
 
 ### WiFi Network Automation
+
 - **WiFi change detection**: Automatically detect network connections, disconnections, and network switches
 - **Event-driven actions**: Trigger customizable actions based on network state changes
 - **YAML-based action configuration**: Define network-specific actions using flexible configuration files
@@ -97,6 +108,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Dry-run testing**: Test configurations safely without executing actual commands
 
 ### 네트워크 설정 액션
+
 - **VPN 연결 관리**: OpenVPN, WireGuard, NetworkManager를 통한 VPN 연결/해제 자동화
 - **DNS 설정 전환**: resolvectl, NetworkManager를 사용하여 네트워크 환경에 맞는 DNS 서버 자동 설정
 - **프록시 관리**: HTTP/HTTPS/SOCKS 프록시 설정 및 환경 변수를 통한 시스템 전체 적용
@@ -105,12 +117,14 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **안전 기능**: 자동 백업, 드라이런 모드, 시스템 변경 전 검증 기능
 
 ### 네트워크 환경 전환
+
 - **원활한 환경 전환**: 네트워크 간 이동 시 (집, 사무실, 공공 WiFi) 시스템 설정 자동 적응
 - **프로필 기반 설정**: 각 네트워크별 VPN, DNS, 프록시, 호스트 설정을 프로필로 관리
 - **이벤트 연동**: WiFi 네트워크 변경을 적절한 시스템 설정 변경과 연결하는 이벤트 기반 시스템
 - **롤백 기능**: 안전한 설정 변경을 위한 자동 백업 및 복원 기능
 
 ### 완료된 네트워크 환경 관리 기능
+
 - **✅ 데몬 모니터링**: 시스템 서비스 상태 실시간 모니터링 및 관리
 - **✅ WiFi 이벤트 훅**: 네트워크 연결 상태 변화 감지 및 자동 액션 트리거
 - **✅ 네트워크 액션 시스템**: VPN, DNS, 프록시, 호스트 파일 변경 자동화 완료
@@ -118,6 +132,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 ## Configuration Management
 
 ### 통합 설정 시스템 (gzh.yaml)
+
 - **✅ 통합 설정 포맷**: 모든 도구 설정을 하나의 gzh.yaml 파일로 통합 관리하는 포괄적인 스키마 정의 완료
 - **✅ 스키마 검증**: JSON/YAML 스키마 검증 기능과 내장된 필드 검증 및 열거형 검사 완료
 - **✅ 설정 파일 계층 구조**: 자동 발견 기능과 우선순위 (./gzh.yaml → ~/.config/gzh.yaml → 시스템 전체) 완료
@@ -129,12 +144,14 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **✅ 공급자 기반 구조**: GitHub, GitLab, Gitea, Gogs 등 다양한 Git 호스팅 공급자별 체계적인 설정 구조
 
 ### YAML Configuration System
+
 - **Hierarchical configurations**: Layer multiple YAML files for different environments and contexts
 - **Example configurations**: Built-in templates and examples for all major features
 - **Configuration validation**: Syntax checking and validation for all configuration files
 - **Environment-specific overrides**: Separate configurations for home, work, and other environments
 
 ### CLI Interface
+
 - **Comprehensive help system**: Detailed help documentation for all commands and options
 - **Consistent command structure**: Logical command hierarchy across all functionality
 - **Rich output formatting**: Color-coded, emoji-enhanced output for better user experience
@@ -143,6 +160,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 ## IDE and Development Tools
 
 ### JetBrains IDE Settings Management
+
 - **Cross-platform IDE detection**: Automatic detection of JetBrains products on Linux, macOS, and Windows
 - **Real-time settings monitoring**: Track configuration changes across all JetBrains IDE installations using fsnotify
 - **Settings synchronization fixes**: Detect and repair common sync issues, particularly with filetypes.xml corruption
@@ -152,6 +170,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Backup and recovery**: Automatic backup creation before applying sync fixes
 
 ## Cross-Platform Support
+
 - **Operating system compatibility**: Linux, macOS, and Windows support where applicable
 - **Multiple backend support**: Fallback mechanisms for different system tools and package managers
 - **Flexible authentication**: Support for various authentication methods across different services

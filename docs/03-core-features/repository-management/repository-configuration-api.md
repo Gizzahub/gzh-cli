@@ -5,6 +5,7 @@ This document describes the GitHub repository configuration API implementation i
 ## Overview
 
 The repository configuration API provides comprehensive access to GitHub repository settings, including:
+
 - Basic repository metadata
 - Feature settings (issues, wiki, projects)
 - Security settings (branch protection, vulnerability alerts)
@@ -22,6 +23,7 @@ repo, err := client.GetRepository(ctx, "owner", "repo")
 ```
 
 Returns:
+
 - Repository name, description, homepage
 - Visibility (public/private)
 - Default branch
@@ -37,6 +39,7 @@ config, err := client.GetRepositoryConfiguration(ctx, "owner", "repo")
 ```
 
 Returns a `RepositoryConfig` structure containing:
+
 - Basic repository settings
 - Branch protection rules for default branch
 - Team and user permissions
@@ -51,6 +54,7 @@ protection, err := client.GetBranchProtection(ctx, "owner", "repo", "main")
 ```
 
 Returns:
+
 - Required status checks
 - Pull request review requirements
 - Push restrictions
@@ -65,6 +69,7 @@ teamPerms, userPerms, err := client.GetRepositoryPermissions(ctx, "owner", "repo
 ```
 
 Returns:
+
 - Map of team slugs to permission levels
 - Map of usernames to permission levels
 
@@ -139,6 +144,7 @@ The `gz repo-config list` command uses these APIs to:
 4. Display results in various formats
 
 Example:
+
 ```bash
 # List repositories with basic info
 gz repo-config list --org myorg
@@ -172,6 +178,7 @@ The API handles various error scenarios:
 ## Security
 
 Required GitHub token permissions:
+
 - `repo`: Full repository access
 - `read:org`: Read organization data (for team permissions)
 - `admin:repo_hook`: For webhook configuration (future)
@@ -249,6 +256,7 @@ err := client.UpdateRepositoryConfiguration(ctx, "owner", "repo", config)
 ```
 
 This method performs multiple API calls:
+
 1. Updates repository settings
 2. Updates branch protection rules
 3. Updates team and user permissions

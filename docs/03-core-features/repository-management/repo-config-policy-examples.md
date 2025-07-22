@@ -767,7 +767,6 @@ policies:
         type: "file_exists"
         value: "README.md"
         enforcement: "required"
-
 # Then add more rules as needed
 ```
 
@@ -808,6 +807,7 @@ exceptions:
 ### 4. Regular Reviews
 
 Schedule regular policy reviews:
+
 - Monthly: Review exceptions
 - Quarterly: Update policies
 - Annually: Major policy revision

@@ -44,7 +44,7 @@ archives:
   - id: default
     builds:
       - gz
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 \"v1\") }}{{ .Amd64 }}{{ end }}"
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format_overrides:
       - goos: windows
         format: zip
@@ -92,8 +92,8 @@ dockers:
     ids:
       - gz
     image_templates:
-      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
-      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
+      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -113,8 +113,8 @@ dockers:
     ids:
       - gz
     image_templates:
-      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
-      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
+      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -131,22 +131,22 @@ dockers:
     goarch: arm64
 
 docker_manifests:
-  - name_template: 'gizzahub/{{ .ProjectName }}:{{ .Tag }}'
+  - name_template: "gizzahub/{{ .ProjectName }}:{{ .Tag }}"
     image_templates:
-      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
-      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
-  - name_template: 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}'
+      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}"
     image_templates:
-      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
-      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
-  - name_template: 'gizzahub/{{ .ProjectName }}:latest'
+      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
+  - name_template: "gizzahub/{{ .ProjectName }}:latest"
     image_templates:
-      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
-      - 'gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
-  - name_template: 'ghcr.io/gizzahub/{{ .ProjectName }}:latest'
+      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/gizzahub/{{ .ProjectName }}:latest"
     image_templates:
-      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64'
-      - 'ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64'
+      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
 
 brews:
   - name: gz
@@ -175,7 +175,7 @@ chocolateys:
     authors: Gizzahub
     project_url: https://github.com/Gizzahub/gzh-manager-go
     url_template: "https://github.com/Gizzahub/gzh-manager-go/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    icon_url: 'https://raw.githubusercontent.com/Gizzahub/gzh-manager-go/main/assets/logo.png'
+    icon_url: "https://raw.githubusercontent.com/Gizzahub/gzh-manager-go/main/assets/logo.png"
     copyright: 2025 Gizzahub
     license_url: https://github.com/Gizzahub/gzh-manager-go/blob/main/LICENSE
     require_license_acceptance: false
@@ -211,10 +211,10 @@ aurs:
     homepage: https://github.com/Gizzahub/gzh-manager-go
     description: "Comprehensive CLI tool for managing development environments and Git repositories"
     maintainers:
-      - 'Gizzahub <support@gizzahub.com>'
+      - "Gizzahub <support@gizzahub.com>"
     license: GPL-3.0
-    private_key: '{{ .Env.AUR_KEY }}'
-    git_url: 'ssh://aur@aur.archlinux.org/gz-bin.git'
+    private_key: "{{ .Env.AUR_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/gz-bin.git"
     depends:
       - git
     package: |-
@@ -245,12 +245,12 @@ signs:
   - cmd: cosign
     env:
       - COSIGN_EXPERIMENTAL=1
-    certificate: '${artifact}.pem'
+    certificate: "${artifact}.pem"
     args:
       - sign-blob
-      - '--output-certificate=${certificate}'
-      - '--output-signature=${signature}'
-      - '${artifact}'
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
       - "--yes" # needed on cosign 2.0.0+
     artifacts: checksum
     output: true
@@ -262,8 +262,8 @@ docker_signs:
     artifacts: images
     output: true
     args:
-      - 'sign'
-      - '${artifact}@${digest}'
+      - "sign"
+      - "${artifact}@${digest}"
       - "--yes" # needed on cosign 2.0.0+
 
 changelog:
@@ -271,34 +271,34 @@ changelog:
   use: github
   filters:
     exclude:
-      - '^test:'
-      - '^chore'
-      - '^docs:'
-      - 'merge conflict'
+      - "^test:"
+      - "^chore"
+      - "^docs:"
+      - "merge conflict"
       - Merge pull request
       - Merge remote-tracking branch
       - Merge branch
       - go mod tidy
   groups:
-    - title: 'New Features'
+    - title: "New Features"
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 100
-    - title: 'Security Updates'
+    - title: "Security Updates"
       regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
       order: 150
-    - title: 'Bug Fixes'
+    - title: "Bug Fixes"
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 200
-    - title: 'Performance Improvements'
+    - title: "Performance Improvements"
       regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
       order: 250
-    - title: 'Dependency Updates'
+    - title: "Dependency Updates"
       regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
       order: 300
-    - title: 'Documentation Updates'
+    - title: "Documentation Updates"
       regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
       order: 400
-    - title: 'Other Changes'
+    - title: "Other Changes"
       order: 9999
 
 release:
@@ -326,11 +326,11 @@ milestones:
 
 announcements:
   - provider: slack
-    enabled: '{{ .Env.SLACK_WEBHOOK_URL }}'
-    message_template: 'gz {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    enabled: "{{ .Env.SLACK_WEBHOOK_URL }}"
+    message_template: "gz {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"
   - provider: discord
-    enabled: '{{ .Env.DISCORD_WEBHOOK_URL }}'
-    message_template: 'gz {{ .Tag }} has been released! 🎉'
+    enabled: "{{ .Env.DISCORD_WEBHOOK_URL }}"
+    message_template: "gz {{ .Tag }} has been released! 🎉"
 
 metadata:
-  mod_timestamp: '{{ .CommitTimestamp }}'
+  mod_timestamp: "{{ .CommitTimestamp }}"

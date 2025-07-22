@@ -12,9 +12,10 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 )
 
 // newVPNHierarchyCmd creates the VPN hierarchy management command.
@@ -404,7 +405,7 @@ func newVPNHierarchyStatusCmd(logger *zap.Logger, configDir string) *cobra.Comma
 
 // Helper functions
 
-func createHierarchicalVPNManager(_ context.Context, logger *zap.Logger, configDir string) (cloud.HierarchicalVPNManager, error) {
+func createHierarchicalVPNManager(_ context.Context, logger *zap.Logger, configDir string) (cloud.HierarchicalVPNManager, error) { //nolint:unparam // TODO: implement error handling
 	// Create base VPN manager
 	baseManager := cloud.NewVPNManager()
 
@@ -419,7 +420,7 @@ func createHierarchicalVPNManager(_ context.Context, logger *zap.Logger, configD
 	return hierarchicalManager, nil
 }
 
-func loadVPNHierarchyConfig(manager cloud.HierarchicalVPNManager, configDir string) error {
+func loadVPNHierarchyConfig(_ cloud.HierarchicalVPNManager, configDir string) error { //nolint:unparam // Manager unused in current implementation
 	configPath := filepath.Join(configDir, "vpn-hierarchy.yaml")
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -432,7 +433,7 @@ func loadVPNHierarchyConfig(manager cloud.HierarchicalVPNManager, configDir stri
 	return nil
 }
 
-func loadVPNConnectionConfig(_ string) (*cloud.VPNConnection, error) {
+func loadVPNConnectionConfig(_ string) (*cloud.VPNConnection, error) { //nolint:unparam // TODO: implement error handling
 	// TODO: Implement VPN connection configuration loading
 	// This would parse YAML/JSON configuration files
 	return &cloud.VPNConnection{

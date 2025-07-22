@@ -11,16 +11,16 @@ billing_email: finance@gizzahub.dev
 twitter_username: gizzahub
 website_url: https://gizzahub.dev
 
-default_repository_permission: read         # read | write | admin | none
+default_repository_permission: read # read | write | admin | none
 members_can_create_repositories: true
-members_allowed_repository_creation_type: all  # all | private | internal | none
+members_allowed_repository_creation_type: all # all | private | internal | none
 web_commit_signoff_required: true
 two_factor_requirement_enabled: true
 
 teams:
   - name: core-devs
     description: 핵심 개발자 그룹
-    privacy: closed                       # closed | secret
+    privacy: closed # closed | secret
     maintainers:
       - daeve
     members:

@@ -207,8 +207,10 @@ func (m *defaultVPNManager) GetAllVPNStatuses(ctx context.Context) (map[string]*
 	statuses := make(map[string]*VPNStatus)
 
 	for name := range m.connections {
-		status, _ := m.GetVPNStatus(ctx, name)
-		statuses[name] = status
+		status, err := m.GetVPNStatus(ctx, name)
+		if err == nil {
+			statuses[name] = status
+		}
 	}
 
 	return statuses, nil

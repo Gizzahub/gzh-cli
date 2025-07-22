@@ -86,6 +86,7 @@ pre-commit autoupdate
 ## Configured Hooks
 
 ### File Validation
+
 - **trailing-whitespace**: Removes trailing whitespace
 - **end-of-file-fixer**: Ensures files end with a newline
 - **check-yaml**: Validates YAML syntax
@@ -100,6 +101,7 @@ pre-commit autoupdate
 - **mixed-line-ending**: Normalizes line endings to LF
 
 ### Go Code Quality
+
 - **go-build-mod**: Verifies code compiles
 - **go-test-mod**: Runs unit tests with race detection
 - **go-vet-mod**: Runs `go vet` static analysis
@@ -112,6 +114,7 @@ pre-commit autoupdate
 - **go-vuln-check**: Checks for known vulnerabilities
 
 ### Additional Linting
+
 - **prettier**: Formats YAML, JSON, and Markdown files
 - **hadolint-docker**: Lints Dockerfiles
 - **shellcheck**: Lints shell scripts
@@ -129,7 +132,7 @@ default_install_hook_types: [pre-commit, commit-msg, pre-push]
 default_stages: [pre-commit]
 
 ci:
-  skip: [go-test-mod, go-vuln-check, gosec]  # Skip slow hooks in CI
+  skip: [go-test-mod, go-vuln-check, gosec] # Skip slow hooks in CI
 ```
 
 ### Secrets Detection
@@ -173,6 +176,7 @@ Edit `.pre-commit-config.yaml` to exclude files or disable hooks:
 ### Common Issues
 
 1. **Hook fails with "command not found"**
+
    ```bash
    # Ensure Go tools are installed and in PATH
    go install mvdan.cc/gofumpt@latest
@@ -180,12 +184,14 @@ Edit `.pre-commit-config.yaml` to exclude files or disable hooks:
    ```
 
 2. **Slow hook execution**
+
    ```bash
    # Skip slow hooks during development
    SKIP=go-test-mod,gosec git commit -m "wip: development"
    ```
 
 3. **Pre-commit not found**
+
    ```bash
    # Install pre-commit
    pip install pre-commit

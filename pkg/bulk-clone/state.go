@@ -63,8 +63,11 @@ type StateManager struct {
 func NewStateManager(stateDir string) *StateManager {
 	if stateDir == "" {
 		// Default to ~/.gzh/state
-		homeDir, _ := os.UserHomeDir()
-		stateDir = filepath.Join(homeDir, ".gzh", "state")
+		if homeDir, err := os.UserHomeDir(); err == nil {
+			stateDir = filepath.Join(homeDir, ".gzh", "state")
+		} else {
+			stateDir = ".gzh/state" // Fallback to current directory
+		}
 	}
 
 	return &StateManager{
@@ -81,7 +84,7 @@ func (sm *StateManager) GetStateFilePath(provider, organization string) string {
 // SaveState saves the clone state to disk.
 func (sm *StateManager) SaveState(state *CloneState) error {
 	// Ensure state directory exists
-	if err := os.MkdirAll(sm.stateDir, 0o755); err != nil {
+	if err := os.MkdirAll(sm.stateDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create state directory: %w", err)
 	}
 
@@ -98,7 +101,7 @@ func (sm *StateManager) SaveState(state *CloneState) error {
 	}
 
 	// Write to file
-	if err := os.WriteFile(statePath, data, 0o644); err != nil {
+	if err := os.WriteFile(statePath, data, 0o600); err != nil {
 		return fmt.Errorf("failed to write state file: %w", err)
 	}
 

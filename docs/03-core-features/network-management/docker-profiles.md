@@ -5,6 +5,7 @@ The Docker network profile management feature in `gz net-env docker-network` pro
 ## Overview
 
 Docker network profiles allow you to:
+
 - Define and manage custom Docker networks with specific configurations
 - Configure container-specific network settings including ports, DNS, and network aliases
 - Import existing Docker Compose configurations
@@ -132,7 +133,7 @@ Each container can have detailed network configurations:
 containers:
   web:
     image: nginx:alpine
-    network_mode: bridge  # or host, none, container:name
+    network_mode: bridge # or host, none, container:name
     networks:
       - frontend
       - backend

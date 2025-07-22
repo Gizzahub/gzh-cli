@@ -29,9 +29,11 @@ The `gz repo-config` feature allows you to:
 ### Prerequisites
 
 1. **GitHub Personal Access Token**
+
    ```bash
    export GITHUB_TOKEN="your-github-token"
    ```
+
    Required scopes:
    - `repo` - Full control of private repositories
    - `admin:org` - Read and write org and team membership
@@ -45,11 +47,13 @@ The `gz repo-config` feature allows you to:
 ### Quick Start
 
 1. Create a basic configuration file:
+
    ```bash
    gz repo-config init --org your-org-name
    ```
 
 2. Apply configuration to all repositories:
+
    ```bash
    gz repo-config apply --config repo-config.yaml
    ```
@@ -96,32 +100,38 @@ repositories:
 ### Configuration Sections
 
 #### Version
+
 - **Required**: Yes
 - **Type**: String
 - **Description**: Configuration schema version
 - **Current**: "1.0.0"
 
 #### Organization
+
 - **Required**: Yes
 - **Type**: String
 - **Description**: GitHub organization name
 
 #### Templates
+
 - **Required**: No
 - **Type**: Map of template definitions
 - **Description**: Reusable configuration templates
 
 #### Policies
+
 - **Required**: No
 - **Type**: Map of policy definitions
 - **Description**: Compliance and security policies
 
 #### Repositories
+
 - **Required**: No
 - **Type**: List of repository configurations
 - **Description**: Repository-specific settings
 
 #### Patterns
+
 - **Required**: No
 - **Type**: List of pattern-based configurations
 - **Description**: Apply settings based on repository name patterns
@@ -136,7 +146,7 @@ Templates define reusable repository configurations that can be applied to multi
 templates:
   template-name:
     description: "Template description"
-    base: "parent-template"  # Optional: inherit from another template
+    base: "parent-template" # Optional: inherit from another template
     settings:
       # Repository settings
     security:
@@ -163,13 +173,14 @@ templates:
   extended-template:
     base: "base-template"
     settings:
-      has_wiki: false  # Override parent setting
-      has_projects: true  # Add new setting
+      has_wiki: false # Override parent setting
+      has_projects: true # Add new setting
 ```
 
 ### Settings Reference
 
 #### Repository Settings
+
 ```yaml
 settings:
   private: true/false
@@ -189,6 +200,7 @@ settings:
 ```
 
 #### Security Settings
+
 ```yaml
 security:
   vulnerability_alerts: true/false
@@ -218,6 +230,7 @@ security:
 ```
 
 #### Permissions
+
 ```yaml
 permissions:
   teams:
@@ -227,6 +240,7 @@ permissions:
 ```
 
 #### Webhooks
+
 ```yaml
 webhooks:
   - name: "webhook-name"
@@ -236,10 +250,11 @@ webhooks:
       - pull_request
       - issues
     active: true
-    secret: "${WEBHOOK_SECRET}"  # Use environment variable
+    secret: "${WEBHOOK_SECRET}" # Use environment variable
 ```
 
 #### Required Files
+
 ```yaml
 required_files:
   - path: "README.md"
@@ -274,6 +289,7 @@ policies:
 ### Rule Types
 
 #### Visibility Rules
+
 ```yaml
 rules:
   must_be_private:
@@ -284,6 +300,7 @@ rules:
 ```
 
 #### Security Feature Rules
+
 ```yaml
 rules:
   vulnerability_alerts:
@@ -294,6 +311,7 @@ rules:
 ```
 
 #### Branch Protection Rules
+
 ```yaml
 rules:
   main_branch_protected:
@@ -304,6 +322,7 @@ rules:
 ```
 
 #### File Existence Rules
+
 ```yaml
 rules:
   has_readme:
@@ -314,6 +333,7 @@ rules:
 ```
 
 #### Webhook Rules
+
 ```yaml
 rules:
   has_ci_webhook:
@@ -344,6 +364,7 @@ repositories:
 ### Initialize Configuration
 
 Create a new configuration file:
+
 ```bash
 gz repo-config init --org your-org-name [--output config.yaml]
 ```
@@ -351,6 +372,7 @@ gz repo-config init --org your-org-name [--output config.yaml]
 ### Validate Configuration
 
 Check if your configuration file is valid:
+
 ```bash
 gz repo-config validate --config repo-config.yaml
 ```
@@ -358,6 +380,7 @@ gz repo-config validate --config repo-config.yaml
 ### Apply Configuration
 
 Apply configuration to repositories:
+
 ```bash
 # Dry run (preview changes)
 gz repo-config apply --config repo-config.yaml --dry-run
@@ -375,6 +398,7 @@ gz repo-config apply --config repo-config.yaml --force
 ### Audit Compliance
 
 Run compliance audit:
+
 ```bash
 # Basic audit
 gz repo-config audit --config repo-config.yaml
@@ -390,6 +414,7 @@ gz repo-config audit --config repo-config.yaml --format markdown
 ### Show Differences
 
 Compare current state with desired state:
+
 ```bash
 gz repo-config diff --config repo-config.yaml --repo repo-name
 ```
@@ -397,6 +422,7 @@ gz repo-config diff --config repo-config.yaml --repo repo-name
 ### List Templates
 
 Show available templates:
+
 ```bash
 gz repo-config templates --config repo-config.yaml
 ```
@@ -404,6 +430,7 @@ gz repo-config templates --config repo-config.yaml
 ### Generate Report
 
 Generate detailed configuration report:
+
 ```bash
 gz repo-config report --config repo-config.yaml --output report.html
 ```
@@ -543,6 +570,7 @@ patterns:
 ### 1. Use Templates for Consistency
 
 Create templates for different types of repositories:
+
 - `backend-service`
 - `frontend-app`
 - `documentation`
@@ -551,6 +579,7 @@ Create templates for different types of repositories:
 ### 2. Implement Progressive Security
 
 Start with baseline security and add stricter rules:
+
 ```yaml
 templates:
   security-baseline:
@@ -569,6 +598,7 @@ templates:
 ### 3. Use Pattern Matching
 
 Apply configurations based on naming conventions:
+
 ```yaml
 patterns:
   - pattern: "*-prod"
@@ -582,6 +612,7 @@ patterns:
 ### 4. Document Exceptions
 
 Always document why exceptions are needed:
+
 ```yaml
 exceptions:
   - policy: "must-be-private"
@@ -594,6 +625,7 @@ exceptions:
 ### 5. Regular Audits
 
 Schedule regular compliance audits:
+
 ```bash
 # Add to CI/CD pipeline
 gz repo-config audit --config repo-config.yaml --fail-on-violations
@@ -602,6 +634,7 @@ gz repo-config audit --config repo-config.yaml --fail-on-violations
 ### 6. Version Control
 
 Keep your configuration files in version control:
+
 ```
 repo-config/
 ├── repo-config.yaml
@@ -623,6 +656,7 @@ repo-config/
 **Problem**: "Bad credentials" or "401 Unauthorized"
 
 **Solution**:
+
 - Check your GitHub token has required scopes
 - Ensure token hasn't expired
 - Verify `GITHUB_TOKEN` environment variable is set
@@ -632,6 +666,7 @@ repo-config/
 **Problem**: "403 Forbidden" when updating repositories
 
 **Solution**:
+
 - Ensure you have admin access to the repository
 - Check organization settings allow token access
 - Verify token has `admin:org` scope
@@ -641,6 +676,7 @@ repo-config/
 **Problem**: "API rate limit exceeded"
 
 **Solution**:
+
 - Use `--concurrency` flag to limit parallel requests
 - Add delays between operations with `--delay`
 - Consider using GitHub App for higher limits
@@ -650,6 +686,7 @@ repo-config/
 **Problem**: "Template 'x' not found"
 
 **Solution**:
+
 - Check template name spelling
 - Ensure template is defined before use
 - Verify no circular dependencies
@@ -659,6 +696,7 @@ repo-config/
 **Problem**: Repositories failing compliance checks
 
 **Solution**:
+
 - Review audit report for specific violations
 - Add exceptions for legitimate cases
 - Update repository settings to comply
@@ -666,6 +704,7 @@ repo-config/
 ### Debug Mode
 
 Enable debug logging for troubleshooting:
+
 ```bash
 gz repo-config apply --config repo-config.yaml --debug
 ```
@@ -675,12 +714,14 @@ gz repo-config apply --config repo-config.yaml --debug
 Common validation errors and fixes:
 
 1. **Missing required field**
+
    ```
    Error: organization is required
    Fix: Add 'organization: "your-org"' to config
    ```
 
 2. **Invalid template reference**
+
    ```
    Error: Unknown template 'invalid'
    Fix: Check template name exists in templates section

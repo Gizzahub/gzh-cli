@@ -8,8 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"gopkg.in/yaml.v3"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 const defaultConfigVersion = "1.0.0"
@@ -162,6 +163,7 @@ func (l *UnifiedConfigLoader) loadLegacyConfig(configPath string, result *LoadRe
 
 // performAutoMigration performs automatic migration from legacy to unified format.
 func (l *UnifiedConfigLoader) performAutoMigration(configPath string, legacyConfig *bulkclone.BulkCloneConfig) (*MigrationResult, error) {
+	_ = legacyConfig // legacyConfig unused in current implementation
 	// Determine target path
 	dir := filepath.Dir(configPath)
 	targetPath := filepath.Join(dir, "gzh.yaml")

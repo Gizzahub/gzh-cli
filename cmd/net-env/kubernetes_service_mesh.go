@@ -519,7 +519,7 @@ func (km *KubernetesNetworkManager) enableLinkerdProxyInjection(namespace string
 }
 
 // GenerateIstioVirtualService generates an Istio VirtualService manifest.
-func (km *KubernetesNetworkManager) GenerateIstioVirtualService(namespace string, name string, vs *IstioVirtualService) (map[string]interface{}, error) {
+func (km *KubernetesNetworkManager) GenerateIstioVirtualService(namespace, name string, vs *IstioVirtualService) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
 		"kind":       "VirtualService",
@@ -661,7 +661,7 @@ func (km *KubernetesNetworkManager) applyIstioVirtualService(namespace, name str
 }
 
 // GenerateIstioDestinationRule generates an Istio DestinationRule manifest.
-func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace string, name string, dr *IstioDestinationRule) (map[string]interface{}, error) {
+func (km *KubernetesNetworkManager) GenerateIstioDestinationRule(namespace, name string, dr *IstioDestinationRule) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
 		"kind":       "DestinationRule",
@@ -793,7 +793,7 @@ func (km *KubernetesNetworkManager) applyIstioDestinationRule(namespace, name st
 }
 
 // GenerateIstioServiceEntry generates an Istio ServiceEntry manifest.
-func (km *KubernetesNetworkManager) GenerateIstioServiceEntry(namespace string, name string, se *IstioServiceEntry) (map[string]interface{}, error) {
+func (km *KubernetesNetworkManager) GenerateIstioServiceEntry(namespace, name string, se *IstioServiceEntry) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
 		"kind":       "ServiceEntry",
@@ -871,7 +871,7 @@ func (km *KubernetesNetworkManager) applyIstioServiceEntry(namespace, name strin
 }
 
 // GenerateIstioGateway generates an Istio Gateway manifest.
-func (km *KubernetesNetworkManager) GenerateIstioGateway(namespace string, name string, gw *IstioGateway) (map[string]interface{}, error) {
+func (km *KubernetesNetworkManager) GenerateIstioGateway(namespace, name string, gw *IstioGateway) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
 		"kind":       "Gateway",
@@ -928,7 +928,7 @@ func (km *KubernetesNetworkManager) applyIstioGateway(namespace, name string, gw
 }
 
 // GenerateLinkerdServiceProfile generates a Linkerd ServiceProfile manifest.
-func (km *KubernetesNetworkManager) GenerateLinkerdServiceProfile(namespace string, name string, sp *LinkerdServiceProfile) (map[string]interface{}, error) {
+func (km *KubernetesNetworkManager) GenerateLinkerdServiceProfile(namespace, name string, sp *LinkerdServiceProfile) (map[string]interface{}, error) {
 	manifest := map[string]interface{}{
 		"apiVersion": "linkerd.io/v1alpha2",
 		"kind":       "ServiceProfile",

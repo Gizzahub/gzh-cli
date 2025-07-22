@@ -27,9 +27,13 @@ type StructuredLogger struct {
 type LogLevel string
 
 const (
+	// LevelDebug represents debug log level.
 	LevelDebug LogLevel = "debug"
-	LevelInfo  LogLevel = "info"
-	LevelWarn  LogLevel = "warn"
+	// LevelInfo represents info log level.
+	LevelInfo LogLevel = "info"
+	// LevelWarn represents warning log level.
+	LevelWarn LogLevel = "warn"
+	// LevelError represents error log level.
 	LevelError LogLevel = "error"
 )
 
@@ -39,7 +43,7 @@ type LogEntry struct {
 	Level       string                 `json:"level"`
 	Message     string                 `json:"message"`
 	Component   string                 `json:"component"`
-	SessionID   string                 `json:"sessionId"`
+	SessionID   string                 `json:"session_id"`
 	Context     map[string]interface{} `json:"context,omitempty"`
 	Caller      *CallerInfo            `json:"caller,omitempty"`
 	Error       *ErrorInfo             `json:"error,omitempty"`
@@ -57,14 +61,14 @@ type CallerInfo struct {
 type ErrorInfo struct {
 	Type       string `json:"type"`
 	Message    string `json:"message"`
-	StackTrace string `json:"stackTrace,omitempty"`
+	StackTrace string `json:"stack_trace,omitempty"`
 	Code       string `json:"code,omitempty"`
 }
 
 // PerformanceInfo represents performance metrics.
 type PerformanceInfo struct {
 	Duration    time.Duration          `json:"duration"`
-	MemoryUsage int64                  `json:"memoryUsage"`
+	MemoryUsage int64                  `json:"memory_usage"`
 	Operation   string                 `json:"operation"`
 	Metrics     map[string]interface{} `json:"metrics,omitempty"`
 }
@@ -319,10 +323,12 @@ func (l *StructuredLogger) LoggerMiddleware(next func() error) error {
 // SetGlobalLogger sets a global logger instance.
 var globalLogger *StructuredLogger
 
+// SetGlobalLogger sets a global logger instance.
 func SetGlobalLogger(logger *StructuredLogger) {
 	globalLogger = logger
 }
 
+// GetGlobalLogger returns the global logger instance.
 func GetGlobalLogger() *StructuredLogger {
 	if globalLogger == nil {
 		globalLogger = NewStructuredLogger("global", LevelInfo)
@@ -331,23 +337,27 @@ func GetGlobalLogger() *StructuredLogger {
 	return globalLogger
 }
 
-// Convenience functions for global logger.
+// Debug logs a debug message using the global logger.
 func Debug(msg string, args ...interface{}) {
 	GetGlobalLogger().Debug(msg, args...)
 }
 
+// Info logs an info message using the global logger.
 func Info(msg string, args ...interface{}) {
 	GetGlobalLogger().Info(msg, args...)
 }
 
+// Warn logs a warning message using the global logger.
 func Warn(msg string, args ...interface{}) {
 	GetGlobalLogger().Warn(msg, args...)
 }
 
+// Error logs an error message using the global logger.
 func Error(msg string, args ...interface{}) {
 	GetGlobalLogger().Error(msg, args...)
 }
 
+// ErrorWithStack logs an error message with stack trace using the global logger.
 func ErrorWithStack(err error, msg string, args ...interface{}) {
 	GetGlobalLogger().ErrorWithStack(err, msg, args...)
 }

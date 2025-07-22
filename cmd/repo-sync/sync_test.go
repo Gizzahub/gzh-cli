@@ -48,7 +48,7 @@ func (m *MockGitCommandExecutor) GetStatus(ctx context.Context, dir string) (*Gi
 	return nil, args.Error(1)
 }
 
-func (m *MockGitCommandExecutor) GetRemoteInfo(ctx context.Context, dir string, remote string) (*GitRemoteInfo, error) {
+func (m *MockGitCommandExecutor) GetRemoteInfo(ctx context.Context, dir, remote string) (*GitRemoteInfo, error) {
 	args := m.Called(ctx, dir, remote)
 	if remoteInfo, ok := args.Get(0).(*GitRemoteInfo); ok {
 		return remoteInfo, args.Error(1)

@@ -196,7 +196,8 @@ func getAffectedRepoCount(changes []ConfigurationChange) int {
 }
 
 // getConfigurationChanges retrieves configuration changes for an organization.
-func getConfigurationChanges(organization, filter, template string) ([]ConfigurationChange, error) {
+func getConfigurationChanges(organization, filter, template string) ([]ConfigurationChange, error) { //nolint:unparam // Error always nil but kept for consistency
+	_ = organization // organization unused in mock implementation
 	// This is a mock implementation - in reality, this would:
 	// 1. Fetch current repository configurations from GitHub API
 	// 2. Load target configurations from templates
@@ -228,12 +229,14 @@ func getConfigurationChanges(organization, filter, template string) ([]Configura
 
 	// Apply filter if specified
 	if filter != "" {
-		// In a real implementation, this would use regex to filter repositories
+		// TODO: In a real implementation, this would use regex to filter repositories
+		_ = filter // Suppress unused parameter warning
 	}
 
 	// Apply template filter if specified
 	if template != "" {
-		// In a real implementation, this would filter changes based on template
+		// TODO: In a real implementation, this would filter changes based on template
+		_ = template // Suppress unused parameter warning
 	}
 
 	return mockChanges, nil

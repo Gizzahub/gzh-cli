@@ -423,7 +423,7 @@ type OptimizationRecommendation struct {
 	Applied     bool   `json:"applied"`
 }
 
-func createNetworkMetricsCollector(_ context.Context, logger *zap.Logger, configDir string) (*NetworkMetricsCollector, error) {
+func createNetworkMetricsCollector(_ context.Context, logger *zap.Logger, configDir string) (*NetworkMetricsCollector, error) { //nolint:unparam // Error always nil but kept for consistency
 	collector := &NetworkMetricsCollector{
 		logger:      logger,
 		configDir:   configDir,

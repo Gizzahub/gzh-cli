@@ -12,34 +12,34 @@ providers:
       - name: "frontend-team"
         visibility: "all"
         clone_dir: "./projects/frontend"
-        match: "^(web|app|mobile|ui)-.*"   # Frontend project patterns
+        match: "^(web|app|mobile|ui)-.*" # Frontend project patterns
         exclude: [".*-archive", ".*-deprecated"]
-        strategy: "pull"                   # Active development - use pull
-        flatten: true                      # Flat structure for easy access
+        strategy: "pull" # Active development - use pull
+        flatten: true # Flat structure for easy access
 
       # Backend development projects
       - name: "backend-team"
         visibility: "all"
         clone_dir: "./projects/backend"
-        match: "^(api|service|worker|job)-.*"  # Backend project patterns
+        match: "^(api|service|worker|job)-.*" # Backend project patterns
         exclude: [".*-archive", ".*-deprecated", ".*-legacy"]
-        strategy: "pull"                   # Active development - use pull
+        strategy: "pull" # Active development - use pull
         flatten: true
 
       # DevOps and infrastructure
       - name: "devops-team"
-        visibility: "private"              # Usually private infrastructure
+        visibility: "private" # Usually private infrastructure
         clone_dir: "./projects/infrastructure"
         match: "^(infra|deploy|ci|cd|config)-.*"
-        strategy: "reset"                  # Ensure clean state for infra
-        flatten: false                     # Keep organized structure
+        strategy: "reset" # Ensure clean state for infra
+        flatten: false # Keep organized structure
 
       # Shared libraries and tools
       - name: "shared-libraries"
         visibility: "all"
         clone_dir: "./projects/libs"
         match: "^(lib|tool|util|helper)-.*"
-        strategy: "fetch"                  # Libraries - fetch only
+        strategy: "fetch" # Libraries - fetch only
         flatten: true
 
       # Documentation and resources
@@ -49,7 +49,6 @@ providers:
         match: "^(docs|wiki|guide|tutorial)-.*"
         strategy: "pull"
         flatten: true
-
 # Environment-specific settings can be handled with multiple config files:
 # - gzh.dev.yaml (this file)
 # - gzh.staging.yaml

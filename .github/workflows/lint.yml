@@ -2,7 +2,7 @@ name: golangci-lint
 on:
   push:
     paths:
-      - '**.go'
+      - "**.go"
     branches:
       - master
   pull_request:
@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: "1.24"
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8

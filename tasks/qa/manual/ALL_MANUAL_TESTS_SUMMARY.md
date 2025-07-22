@@ -2,8 +2,9 @@
 > 아래 절차에 따라 수동으로 확인해야 합니다.
 
 ### ✅ 수동 테스트 지침
+
 - [ ] 실제 환경에서 테스트 수행
-- [ ] 외부 서비스 연동 확인  
+- [ ] 외부 서비스 연동 확인
 - [ ] 사용자 시나리오 검증
 - [ ] 결과 문서화
 - [ ] 크로스 플랫폼 호환성 확인 (Linux/macOS/Windows)
@@ -17,7 +18,7 @@
 ## Files Moved to Manual Testing:
 
 1. **github-organization-management.qa.md** - ALL tests require GitHub org setup
-2. **Network Environment Manual Tests** - Docker, K8s, VPN setup required  
+2. **Network Environment Manual Tests** - Docker, K8s, VPN setup required
 3. **UI/UX Manual Verification** - Visual inspection required
 
 ## How to Use:

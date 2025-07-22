@@ -38,6 +38,7 @@ func (rl *RateLimiter) Wait(ctx context.Context) error
 ```
 
 The Wait method:
+
 1. Checks if we need to wait for retry-after (secondary limit)
 2. Checks if we've exhausted the primary rate limit
 3. Blocks until the rate limit resets or context is cancelled
@@ -46,11 +47,13 @@ The Wait method:
 ### Retry Logic
 
 The system automatically retries requests that fail due to:
+
 - Rate limit errors (429 Too Many Requests)
 - Server errors (5xx status codes)
 - Secondary rate limits (403 with specific headers)
 
 Retry behavior:
+
 - Maximum 3 retries per request
 - Exponential backoff: 1s, 2s, 4s, 8s... (capped at 60s)
 - 10% jitter added to prevent thundering herd
@@ -77,6 +80,7 @@ fmt.Printf("Rate limit: %d/%d (resets at %s)\n",
 ### Rate Limit Exhausted
 
 When the primary rate limit is exhausted:
+
 1. The system waits until the reset time
 2. If context is cancelled during wait, returns context error
 3. Automatically resumes operation after reset
@@ -84,11 +88,13 @@ When the primary rate limit is exhausted:
 ### Secondary Rate Limits
 
 GitHub may impose secondary rate limits for:
+
 - Rapid creation of content
 - Aggressive crawling behavior
 - Concurrent requests from same user
 
 The system handles these by:
+
 1. Detecting 403 responses with X-GitHub-Request-Id header
 2. Respecting Retry-After header
 3. Backing off appropriately
@@ -103,6 +109,7 @@ The system handles these by:
 ## Configuration
 
 The rate limiter is configured with sensible defaults:
+
 - Initial limit: 5000 (GitHub's default for authenticated requests)
 - Max retries: 3
 - Max backoff: 60 seconds
@@ -117,6 +124,7 @@ rateLimiter.maxRetries = 5  // Increase retry attempts
 ## Testing
 
 The implementation includes comprehensive tests for:
+
 - Rate limit waiting behavior
 - Context cancellation
 - Retry logic with backoff
@@ -124,6 +132,7 @@ The implementation includes comprehensive tests for:
 - Error handling
 
 Run tests with:
+
 ```bash
 go test ./pkg/github/... -v
 ```

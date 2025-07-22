@@ -9,6 +9,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 **Purpose**: Debug the main GZH CLI application with any command and arguments.
 
 **Usage**:
+
 ```bash
 # Debug with default help command
 ./scripts/debug/debug-cli.sh
@@ -21,6 +22,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 ```
 
 **Features**:
+
 - Builds with debug symbols automatically
 - Sets up proper environment variables
 - Starts headless Delve server on port 2345
@@ -33,6 +35,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 **Purpose**: Debug Go tests in specific packages or functions.
 
 **Usage**:
+
 ```bash
 # Debug all tests in a package
 ./scripts/debug/debug-test.sh ./cmd/bulk-clone
@@ -48,6 +51,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 ```
 
 **Features**:
+
 - Package validation and existence checking
 - Test filtering with regex patterns
 - Starts headless Delve server on port 2346
@@ -60,6 +64,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 **Purpose**: Attach the debugger to an already running GZH process.
 
 **Usage**:
+
 ```bash
 # Auto-detect and attach to GZH processes
 ./scripts/debug/debug-attach.sh
@@ -69,6 +74,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 ```
 
 **Features**:
+
 - Automatic GZH process discovery
 - Interactive process selection for multiple processes
 - Process validation and error handling
@@ -126,7 +132,7 @@ dlv connect 127.0.0.1:2347
 All debug scripts provide web UI access for easier debugging:
 
 - **CLI Debugging**: http://127.0.0.1:2345
-- **Test Debugging**: http://127.0.0.1:2346  
+- **Test Debugging**: http://127.0.0.1:2346
 - **Process Attachment**: http://127.0.0.1:2347
 
 ### Web UI Features
@@ -152,53 +158,53 @@ export GORACE="halt_on_error=1"
 
 ### Basic Commands
 
-| Command | Description | Example |
-|---------|-------------|--------|
-| `c` | Continue execution | `c` |
-| `n` | Next line (step over) | `n` |
-| `s` | Step into function | `s` |
-| `so` | Step out of function | `so` |
-| `r` | Restart program | `r` |
-| `q` | Quit debugger | `q` |
+| Command | Description           | Example |
+| ------- | --------------------- | ------- |
+| `c`     | Continue execution    | `c`     |
+| `n`     | Next line (step over) | `n`     |
+| `s`     | Step into function    | `s`     |
+| `so`    | Step out of function  | `so`    |
+| `r`     | Restart program       | `r`     |
+| `q`     | Quit debugger         | `q`     |
 
 ### Breakpoints
 
-| Command | Description | Example |
-|---------|-------------|--------|
-| `b <location>` | Set breakpoint | `b main.main`, `b main.go:42` |
-| `bp` | List breakpoints | `bp` |
-| `clear <id>` | Clear breakpoint | `clear 1` |
-| `clearall` | Clear all breakpoints | `clearall` |
-| `on <id> <cmd>` | Execute command on breakpoint | `on 1 p myVar` |
+| Command         | Description                   | Example                       |
+| --------------- | ----------------------------- | ----------------------------- |
+| `b <location>`  | Set breakpoint                | `b main.main`, `b main.go:42` |
+| `bp`            | List breakpoints              | `bp`                          |
+| `clear <id>`    | Clear breakpoint              | `clear 1`                     |
+| `clearall`      | Clear all breakpoints         | `clearall`                    |
+| `on <id> <cmd>` | Execute command on breakpoint | `on 1 p myVar`                |
 
 ### Variable Inspection
 
-| Command | Description | Example |
-|---------|-------------|--------|
-| `p <var>` | Print variable | `p myVar` |
-| `pp <var>` | Pretty print | `pp complexStruct` |
-| `locals` | Show local variables | `locals` |
-| `args` | Show function arguments | `args` |
-| `vars` | Show package variables | `vars` |
-| `whatis <var>` | Show variable type | `whatis myVar` |
+| Command        | Description             | Example            |
+| -------------- | ----------------------- | ------------------ |
+| `p <var>`      | Print variable          | `p myVar`          |
+| `pp <var>`     | Pretty print            | `pp complexStruct` |
+| `locals`       | Show local variables    | `locals`           |
+| `args`         | Show function arguments | `args`             |
+| `vars`         | Show package variables  | `vars`             |
+| `whatis <var>` | Show variable type      | `whatis myVar`     |
 
 ### Navigation
 
-| Command | Description | Example |
-|---------|-------------|--------|
-| `bt` | Stack trace | `bt` |
-| `up` | Move up stack frame | `up` |
-| `down` | Move down stack frame | `down` |
-| `frame <n>` | Jump to frame | `frame 2` |
-| `list` | Show source code | `list`, `list main.main` |
-| `disassemble` | Show assembly | `disassemble main.main` |
+| Command       | Description           | Example                  |
+| ------------- | --------------------- | ------------------------ |
+| `bt`          | Stack trace           | `bt`                     |
+| `up`          | Move up stack frame   | `up`                     |
+| `down`        | Move down stack frame | `down`                   |
+| `frame <n>`   | Jump to frame         | `frame 2`                |
+| `list`        | Show source code      | `list`, `list main.main` |
+| `disassemble` | Show assembly         | `disassemble main.main`  |
 
 ### Goroutines
 
-| Command | Description | Example |
-|---------|-------------|--------|
-| `goroutines` | List all goroutines | `goroutines` |
-| `goroutine <id>` | Switch to goroutine | `goroutine 5` |
+| Command             | Description           | Example          |
+| ------------------- | --------------------- | ---------------- |
+| `goroutines`        | List all goroutines   | `goroutines`     |
+| `goroutine <id>`    | Switch to goroutine   | `goroutine 5`    |
 | `goroutine <id> bt` | Goroutine stack trace | `goroutine 5 bt` |
 
 ## Troubleshooting
@@ -208,6 +214,7 @@ export GORACE="halt_on_error=1"
 #### 1. "Permission denied" when attaching
 
 **Linux**: Use sudo or add ptrace capability
+
 ```bash
 sudo ./scripts/debug/debug-attach.sh
 # OR
@@ -215,6 +222,7 @@ sudo setcap cap_sys_ptrace+ep $(which dlv)
 ```
 
 **macOS**: Code sign Delve or disable SIP
+
 ```bash
 codesign -s - -f --entitlements=debug.entitlements $(which dlv)
 ```
@@ -222,6 +230,7 @@ codesign -s - -f --entitlements=debug.entitlements $(which dlv)
 #### 2. "Connection refused" on web UI
 
 **Solution**: Check if debugger is running and ports are available
+
 ```bash
 # Check if debugger is running
 ps aux | grep dlv
@@ -236,6 +245,7 @@ dlv debug --listen=:2348 main.go
 #### 3. "Breakpoints not hit"
 
 **Solution**: Ensure debug symbols are present
+
 ```bash
 # Check if built with debug symbols
 go build -gcflags="-N -l" main.go
@@ -249,6 +259,7 @@ file gz  # Should show "not stripped"
 #### 4. "Source code not found"
 
 **Solution**: Check source path mapping
+
 ```bash
 # Verify working directory
 (dlv) pwd
@@ -262,12 +273,14 @@ file gz  # Should show "not stripped"
 #### Slow debugging
 
 1. **Limit variable inspection**:
+
    ```bash
    (dlv) config max-string-len 50
    (dlv) config max-array-values 10
    ```
 
 2. **Use conditional breakpoints**:
+
    ```bash
    (dlv) b main.go:42 if myVar > 100
    ```
