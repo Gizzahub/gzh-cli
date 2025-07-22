@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func TestDefaultKubeconfigOptions(t *testing.T) {
 	opts := defaultKubeconfigOptions()
 

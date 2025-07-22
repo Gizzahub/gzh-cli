@@ -19,7 +19,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 // GCPProject represents a GCP project configuration.
 type GCPProject struct {
 	ID             string            `json:"id"`

@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 type awsCredentialsOptions struct {
 	name        string
 	description string

@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 type dockerOptions struct {
 	name        string
 	description string

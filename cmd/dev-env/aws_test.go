@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func TestDefaultAwsOptions(t *testing.T) {
 	opts := defaultAwsOptions()
 
