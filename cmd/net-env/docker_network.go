@@ -541,31 +541,33 @@ func (dm *DockerNetworkManager) CreateProfileFromCompose(composePath, profileNam
 	// Extract services
 	if services, ok := compose["services"].(map[string]interface{}); ok {
 		for name, serviceConfig := range services {
-			if serviceMap, ok := serviceConfig.(map[string]interface{}); ok {
-				container := &ContainerNetwork{}
-
-				if image, ok := serviceMap["image"].(string); ok {
-					container.Image = image
-				}
-
-				if networks, ok := serviceMap["networks"].([]interface{}); ok {
-					for _, net := range networks {
-						if netName, ok := net.(string); ok {
-							container.Networks = append(container.Networks, netName)
-						}
-					}
-				}
-
-				if ports, ok := serviceMap["ports"].([]interface{}); ok {
-					for _, port := range ports {
-						if portStr, ok := port.(string); ok {
-							container.Ports = append(container.Ports, portStr)
-						}
-					}
-				}
-
-				profile.Containers[name] = container
+			serviceMap, ok := serviceConfig.(map[string]interface{})
+			if !ok {
+				continue
 			}
+			container := &ContainerNetwork{}
+
+			if image, ok := serviceMap["image"].(string); ok {
+				container.Image = image
+			}
+
+			if networks, ok := serviceMap["networks"].([]interface{}); ok {
+				for _, net := range networks {
+					if netName, ok := net.(string); ok {
+						container.Networks = append(container.Networks, netName)
+					}
+				}
+			}
+
+			if ports, ok := serviceMap["ports"].([]interface{}); ok {
+				for _, port := range ports {
+					if portStr, ok := port.(string); ok {
+						container.Ports = append(container.Ports, portStr)
+					}
+				}
+			}
+
+			profile.Containers[name] = container
 		}
 	}
 

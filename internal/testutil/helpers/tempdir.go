@@ -10,21 +10,22 @@ import (
 )
 
 // TempDir creates a temporary directory and returns a cleanup function.
-func TempDir(t *testing.T, pattern string) (string, func()) {
+func TempDir(t *testing.T, pattern string) (dir string, cleanup func()) {
 	t.Helper()
 
-	dir, err := os.MkdirTemp("", pattern)
+	var err error
+	dir, err = os.MkdirTemp("", pattern)
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
 
-	cleanup := func() {
+	cleanup = func() {
 		if err := os.RemoveAll(dir); err != nil {
 			t.Errorf("failed to remove temp dir %s: %v", dir, err)
 		}
 	}
 
-	return dir, cleanup
+	return
 }
 
 // CreateTempFile creates a temporary file with the given content.

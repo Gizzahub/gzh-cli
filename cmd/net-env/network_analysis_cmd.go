@@ -1206,8 +1206,9 @@ func (na *NetworkAnalyzer) generateLatencyRecommendations(analysis *LatencyAnaly
 
 	// Check overall quality
 	if analysis.QualityScore < 70 {
-		recommendations = append(recommendations, "Consider switching to faster DNS servers (1.1.1.1, 8.8.8.8)")
-		recommendations = append(recommendations, "Check for network congestion and optimize traffic routing")
+		recommendations = append(recommendations,
+			"Consider switching to faster DNS servers (1.1.1.1, 8.8.8.8)",
+			"Check for network congestion and optimize traffic routing")
 	}
 
 	// Check for specific issues
@@ -1476,8 +1477,9 @@ func (na *NetworkAnalyzer) generateBandwidthRecommendations(analysis *BandwidthA
 	}
 
 	if len(analysis.UtilizationTrends.PeakPeriods) > 0 {
-		recommendations = append(recommendations, "Implement traffic shaping during peak usage periods")
-		recommendations = append(recommendations, "Consider load balancing across multiple interfaces")
+		recommendations = append(recommendations,
+			"Implement traffic shaping during peak usage periods",
+			"Consider load balancing across multiple interfaces")
 	}
 
 	if analysis.UtilizationTrends.GrowthRate > 20 {
