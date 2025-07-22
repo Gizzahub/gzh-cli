@@ -174,10 +174,12 @@ func (g *GiteaCloner) CloneGroup(groupName, targetPath, strategy string) error {
 	return g.CloneOrganization(groupName, targetPath, strategy)
 }
 
+// SetToken configures the Gitea authentication token.
 func (g *GiteaCloner) SetToken(token string) {
 	g.token = token
 }
 
+// GetName returns the provider name identifier for Gitea.
 func (g *GiteaCloner) GetName() string {
 	return ProviderGitea
 }

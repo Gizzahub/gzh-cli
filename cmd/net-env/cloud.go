@@ -1220,27 +1220,7 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 					continue
 				}
 
-				autoConnect := "No"
-				if conn.AutoConnect {
-					autoConnect = "Yes"
-				}
-
-				statusStr := s.Status
-				switch s.Status {
-				case cloud.VPNStateConnected:
-					statusStr = "✓ Connected"
-				case cloud.VPNStateError:
-					statusStr = "✗ Error"
-				}
-
-				_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
-					name,
-					conn.Type,
-					conn.Server,
-					conn.Priority,
-					statusStr,
-					autoConnect,
-				)
+				displayVPNConnectionRow(w, name, conn, s)
 			}
 
 			_ = w.Flush() // Ignore flush error
@@ -2124,6 +2104,25 @@ func displayVPNSummary(envStr string, envConnections []*cloud.VPNConnection) err
 			conn.Name, conn.Priority, conn.AutoConnect)
 	}
 	return nil
+}
+
+// displayVPNConnectionRow formats and displays a single VPN connection row in the table.
+func displayVPNConnectionRow(w *tabwriter.Writer, name string, conn *cloud.VPNConnection, s *cloud.VPNStatus) {
+	autoConnect := "No"
+	if conn.AutoConnect {
+		autoConnect = "Yes"
+	}
+
+	statusStr := s.Status
+	switch s.Status {
+	case cloud.VPNStateConnected:
+		statusStr = "✓ Connected"
+	case cloud.VPNStateError:
+		statusStr = "✗ Error"
+	}
+
+	_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
+		name, conn.Type, conn.Server, conn.Priority, statusStr, autoConnect)
 }
 
 // Helper functions for hierarchy display
