@@ -21,7 +21,7 @@ func validateConfig(configFile string, strict, verbose bool) error {
 }
 
 // validateConfigWithEnv performs configuration validation with a specific environment.
-func validateConfigWithEnv(configFile string, strict bool, verbose bool, environment env.Environment) error {
+func validateConfigWithEnv(configFile string, strict, verbose bool, environment env.Environment) error {
 	ctx := context.Background()
 
 	// Step 1: Determine config file path

@@ -18,31 +18,31 @@ func TestContainerDetector_DetectContainerEnvironment(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	env, err := cd.DetectContainerEnvironment(ctx)
+	containerEnv, err := cd.DetectContainerEnvironment(ctx)
 	if err != nil {
 		t.Fatalf("DetectContainerEnvironment failed: %v", err)
 	}
 
 	// Basic validations
-	if env == nil {
+	if containerEnv == nil {
 		t.Fatal("Environment should not be nil")
 	}
 
-	if env.DetectedAt.IsZero() {
+	if containerEnv.DetectedAt.IsZero() {
 		t.Error("DetectedAt should be set")
 	}
 
-	if env.EnvironmentFingerprint == "" {
+	if containerEnv.EnvironmentFingerprint == "" {
 		t.Error("EnvironmentFingerprint should not be empty")
 	}
 
 	// At least one runtime should be detected (even if unavailable)
-	if len(env.AvailableRuntimes) == 0 {
+	if len(containerEnv.AvailableRuntimes) == 0 {
 		t.Error("Should detect at least one runtime")
 	}
 
 	// Primary runtime should be set
-	if env.PrimaryRuntime == "" {
+	if containerEnv.PrimaryRuntime == "" {
 		t.Error("PrimaryRuntime should be set")
 	}
 
@@ -51,23 +51,23 @@ func TestContainerDetector_DetectContainerEnvironment(t *testing.T) {
 	found := false
 
 	for _, platform := range validPlatforms {
-		if env.OrchestrationPlatform == platform {
+		if containerEnv.OrchestrationPlatform == platform {
 			found = true
 			break
 		}
 	}
 
 	if !found {
-		t.Errorf("Invalid orchestration platform: %s", env.OrchestrationPlatform)
+		t.Errorf("Invalid orchestration platform: %s", containerEnv.OrchestrationPlatform)
 	}
 
 	t.Logf("Detected environment:")
-	t.Logf("  Primary Runtime: %s", env.PrimaryRuntime)
-	t.Logf("  Orchestration: %s", env.OrchestrationPlatform)
-	t.Logf("  Available Runtimes: %d", len(env.AvailableRuntimes))
-	t.Logf("  Running Containers: %d", len(env.RunningContainers))
-	t.Logf("  Networks: %d", len(env.Networks))
-	t.Logf("  Compose Projects: %d", len(env.ComposeProjects))
+	t.Logf("  Primary Runtime: %s", containerEnv.PrimaryRuntime)
+	t.Logf("  Orchestration: %s", containerEnv.OrchestrationPlatform)
+	t.Logf("  Available Runtimes: %d", len(containerEnv.AvailableRuntimes))
+	t.Logf("  Running Containers: %d", len(containerEnv.RunningContainers))
+	t.Logf("  Networks: %d", len(containerEnv.Networks))
+	t.Logf("  Compose Projects: %d", len(containerEnv.ComposeProjects))
 }
 
 func TestContainerDetector_DetectAvailableRuntimes(t *testing.T) {
@@ -184,7 +184,7 @@ func TestContainerDetector_CalculateEnvironmentFingerprint(t *testing.T) {
 	}
 
 	// Fingerprint should change when environment changes
-	env.RunningContainers = append(env.RunningContainers, DetectedContainer{
+	containerEnv.RunningContainers = append(containerEnv.RunningContainers, DetectedContainer{
 		ID: "container3", Name: "test3", Image: "postgres:13",
 	})
 

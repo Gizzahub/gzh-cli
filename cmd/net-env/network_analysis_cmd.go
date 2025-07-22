@@ -1084,13 +1084,14 @@ func (na *NetworkAnalyzer) calculateLatencyQualityMetrics(measurements []Latency
 
 	// Performance: Based on average latency (lower is better)
 	avgLatencyMs := float64(stats.Mean) / float64(time.Millisecond)
-	if avgLatencyMs <= 10 {
+	switch {
+	case avgLatencyMs <= 10:
 		metrics.Performance = 100
-	} else if avgLatencyMs <= 50 {
+	case avgLatencyMs <= 50:
 		metrics.Performance = 90 - (avgLatencyMs-10)*2
-	} else if avgLatencyMs <= 100 {
+	case avgLatencyMs <= 100:
 		metrics.Performance = 50 - (avgLatencyMs-50)*0.8
-	} else {
+	default:
 		metrics.Performance = math.Max(0, 10-avgLatencyMs/100)
 	}
 
@@ -1509,11 +1510,12 @@ func (na *NetworkAnalyzer) calculateNetworkHealth(analysis *ComprehensiveAnalysi
 	if analysis.BandwidthAnalysis != nil {
 		// Convert bandwidth utilization to a score (lower utilization = higher score for available capacity)
 		util := analysis.BandwidthAnalysis.Statistics.AvgUtilization
-		if util < 50 {
+		switch {
+		case util < 50:
 			health.BandwidthScore = 100
-		} else if util < 80 {
+		case util < 80:
 			health.BandwidthScore = 100 - (util-50)*2
-		} else {
+		default:
 			health.BandwidthScore = 40 - (util-80)*2
 		}
 
@@ -1543,13 +1545,14 @@ func (na *NetworkAnalyzer) calculateNetworkHealth(analysis *ComprehensiveAnalysi
 	health.OverallScore = total / float64(len(scores))
 
 	// Determine health status
-	if health.OverallScore >= 90 {
+	switch {
+	case health.OverallScore >= 90:
 		health.HealthStatus = "excellent"
-	} else if health.OverallScore >= 75 {
+	case health.OverallScore >= 75:
 		health.HealthStatus = env.StatusGood
-	} else if health.OverallScore >= 60 {
+	case health.OverallScore >= 60:
 		health.HealthStatus = "fair"
-	} else {
+	default:
 		health.HealthStatus = "poor"
 	}
 

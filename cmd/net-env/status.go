@@ -285,7 +285,7 @@ func (o *statusOptions) getWiFiDetails(ctx context.Context, device string) *inte
 	return nil
 }
 
-func (o *statusOptions) mergeWiFiInfo(interfaces []interfaceInfo, wifiInterfaces []interfaceInfo) []interfaceInfo {
+func (o *statusOptions) mergeWiFiInfo(interfaces, wifiInterfaces []interfaceInfo) []interfaceInfo {
 	wifiMap := make(map[string]interfaceInfo)
 	for _, wifi := range wifiInterfaces {
 		wifiMap[wifi.Name] = wifi

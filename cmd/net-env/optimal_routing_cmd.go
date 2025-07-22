@@ -245,13 +245,14 @@ func newOptimalRoutingAutoOptimizeCmd(logger *zap.Logger, configDir string) *cob
 				ChangeThreshold: threshold,
 			}
 
-			if enable {
+			switch {
+			case enable:
 				fmt.Printf("🚀 Enabling automatic route optimization (interval: %s)...\n", interval)
 				return optimizer.StartAutoOptimization(ctx, config)
-			} else if disable {
+			case disable:
 				fmt.Println("🛑 Disabling automatic route optimization...")
 				return optimizer.StopAutoOptimization(ctx)
-			} else {
+			default:
 				status, err := optimizer.GetAutoOptimizationStatus(ctx)
 				if err != nil {
 					return fmt.Errorf("failed to get status: %w", err)
