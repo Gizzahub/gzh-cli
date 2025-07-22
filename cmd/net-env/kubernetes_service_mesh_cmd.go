@@ -287,90 +287,7 @@ func newIstioVirtualServiceCmd(km *KubernetesNetworkManager) *cobra.Command {
 	}
 
 	// Add VirtualService
-	addCmd := &cobra.Command{
-		Use:   "add [profile-name] [service-name]",
-		Short: "Add a VirtualService to a profile",
-		Args:  cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			profileName := args[0]
-			serviceName := args[1]
-
-			profile, err := km.LoadProfile(profileName)
-			if err != nil {
-				return fmt.Errorf("failed to load profile: %w", err)
-			}
-
-			if profile.ServiceMesh == nil || profile.ServiceMesh.Type != "istio" {
-				return fmt.Errorf("profile '%s' is not configured for Istio", profileName)
-			}
-
-			// Get flags
-			hosts, _ := cmd.Flags().GetStringSlice("hosts")
-			gateways, _ := cmd.Flags().GetStringSlice("gateways")
-			destination, _ := cmd.Flags().GetString("destination")
-			subset, _ := cmd.Flags().GetString("subset")
-			weight, _ := cmd.Flags().GetInt32("weight")
-			timeout, _ := cmd.Flags().GetString("timeout")
-
-			// Create VirtualService
-			vs := &IstioVirtualService{
-				Name:     serviceName,
-				Hosts:    hosts,
-				Gateways: gateways,
-			}
-
-			// Add basic HTTP route
-			if destination != "" {
-				route := IstioHTTPRoute{
-					Route: []IstioHTTPRouteDestination{
-						{
-							Destination: &IstioDestination{
-								Host:   destination,
-								Subset: subset,
-							},
-							Weight: weight,
-						},
-					},
-				}
-				if timeout != "" {
-					route.Timeout = timeout
-				}
-				vs.HTTP = []IstioHTTPRoute{route}
-			}
-
-			// Add to profile
-			if profile.ServiceMesh.TrafficPolicy == nil {
-				profile.ServiceMesh.TrafficPolicy = make(map[string]interface{})
-			}
-
-			istioConfig, ok := profile.ServiceMesh.TrafficPolicy["istio"].(*IstioConfig)
-			if !ok {
-				istioConfig = &IstioConfig{
-					VirtualServices:  make(map[string]*IstioVirtualService),
-					DestinationRules: make(map[string]*IstioDestinationRule),
-					ServiceEntries:   make(map[string]*IstioServiceEntry),
-					Gateways:         make(map[string]*IstioGateway),
-				}
-				profile.ServiceMesh.TrafficPolicy["istio"] = istioConfig
-			}
-
-			istioConfig.VirtualServices[serviceName] = vs
-
-			if err := km.saveProfile(profile); err != nil {
-				return fmt.Errorf("failed to save profile: %w", err)
-			}
-
-			fmt.Printf("✅ Added VirtualService '%s' to profile '%s'\n", serviceName, profileName)
-			return nil
-		},
-	}
-
-	addCmd.Flags().StringSlice("hosts", []string{}, "Destination hosts")
-	addCmd.Flags().StringSlice("gateways", []string{}, "Gateways (leave empty for mesh)")
-	addCmd.Flags().String("destination", "", "Destination service")
-	addCmd.Flags().String("subset", "", "Destination subset")
-	addCmd.Flags().Int32("weight", 100, "Route weight")
-	addCmd.Flags().String("timeout", "", "Request timeout (e.g., 30s)")
+	addCmd := createVirtualServiceAddCmd(km)
 
 	// List VirtualServices
 	listCmd := &cobra.Command{
@@ -1010,4 +927,94 @@ func printServiceMeshStatus(status map[string]interface{}) error {
 	}
 
 	return nil
+}
+
+// createVirtualServiceAddCmd creates the add subcommand for VirtualService management.
+func createVirtualServiceAddCmd(km *KubernetesNetworkManager) *cobra.Command {
+	addCmd := &cobra.Command{
+		Use:   "add [profile-name] [service-name]",
+		Short: "Add a VirtualService to a profile",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			profileName := args[0]
+			serviceName := args[1]
+
+			profile, err := km.LoadProfile(profileName)
+			if err != nil {
+				return fmt.Errorf("failed to load profile: %w", err)
+			}
+
+			if profile.ServiceMesh == nil || profile.ServiceMesh.Type != "istio" {
+				return fmt.Errorf("profile '%s' is not configured for Istio", profileName)
+			}
+
+			// Get flags
+			hosts, _ := cmd.Flags().GetStringSlice("hosts")
+			gateways, _ := cmd.Flags().GetStringSlice("gateways")
+			destination, _ := cmd.Flags().GetString("destination")
+			subset, _ := cmd.Flags().GetString("subset")
+			weight, _ := cmd.Flags().GetInt32("weight")
+			timeout, _ := cmd.Flags().GetString("timeout")
+
+			// Create VirtualService
+			vs := &IstioVirtualService{
+				Name:     serviceName,
+				Hosts:    hosts,
+				Gateways: gateways,
+			}
+
+			// Add basic HTTP route
+			if destination != "" {
+				route := IstioHTTPRoute{
+					Route: []IstioHTTPRouteDestination{
+						{
+							Destination: &IstioDestination{
+								Host:   destination,
+								Subset: subset,
+							},
+							Weight: weight,
+						},
+					},
+				}
+				if timeout != "" {
+					route.Timeout = timeout
+				}
+				vs.HTTP = []IstioHTTPRoute{route}
+			}
+
+			// Add to profile
+			if profile.ServiceMesh.TrafficPolicy == nil {
+				profile.ServiceMesh.TrafficPolicy = make(map[string]interface{})
+			}
+
+			istioConfig, ok := profile.ServiceMesh.TrafficPolicy["istio"].(*IstioConfig)
+			if !ok {
+				istioConfig = &IstioConfig{
+					VirtualServices:  make(map[string]*IstioVirtualService),
+					DestinationRules: make(map[string]*IstioDestinationRule),
+					ServiceEntries:   make(map[string]*IstioServiceEntry),
+					Gateways:         make(map[string]*IstioGateway),
+				}
+				profile.ServiceMesh.TrafficPolicy["istio"] = istioConfig
+			}
+
+			istioConfig.VirtualServices[serviceName] = vs
+
+			if err := km.saveProfile(profile); err != nil {
+				return fmt.Errorf("failed to save profile: %w", err)
+			}
+
+			fmt.Printf("✅ Added VirtualService '%s' to profile '%s'\n", serviceName, profileName)
+			return nil
+		},
+	}
+
+	addCmd.Flags().StringSlice("hosts", []string{}, "Destination hosts")
+	addCmd.Flags().StringSlice("gateways", []string{}, "Gateways (leave empty for mesh)")
+	addCmd.Flags().String("destination", "", "Destination service")
+	addCmd.Flags().String("subset", "", "Destination subset")
+	addCmd.Flags().Int32("weight", 100, "Route weight")
+	addCmd.Flags().String("timeout", "", "Request timeout (e.g., 30s)")
+
+	return addCmd
 }
