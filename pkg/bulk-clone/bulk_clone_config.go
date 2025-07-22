@@ -1,4 +1,6 @@
-// Package bulkclone provides configuration management for bulk cloning operations.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (

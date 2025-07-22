@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package cmd
 
 import (
@@ -153,7 +156,7 @@ func (c *simpleHTTPClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (c *simpleHTTPClient) Get(url string) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +182,7 @@ func (c *simpleHTTPClient) Post(url, contentType string, body interface{}) (*htt
 		return c.client.Do(req)
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), "POST", url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), "POST", url, http.NoBody)
 	if err != nil {
 		return nil, err
 	}

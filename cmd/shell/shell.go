@@ -1,4 +1,6 @@
-// Package shell provides an interactive shell interface for the gz command.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package shell
 
 import (

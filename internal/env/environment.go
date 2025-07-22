@@ -1,4 +1,6 @@
-// Package env provides an abstraction layer for environment variable access
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package env
 
 import (

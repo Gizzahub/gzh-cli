@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package reposync
 
 import (
@@ -193,7 +196,7 @@ func (rw *RepositoryWatcher) Start(ctx context.Context, verbose bool) error {
 	for {
 		select {
 		case <-ctx.Done():
-			rw.logger.Info("Context cancelled, stopping watcher")
+			rw.logger.Info("Context canceled, stopping watcher")
 			return nil
 
 		case sig := <-sigChan:

@@ -1,4 +1,6 @@
-// Package config provides unified configuration management for gzh-manager
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (

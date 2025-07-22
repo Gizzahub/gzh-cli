@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -965,7 +968,7 @@ func (m *GCPProjectManager) deleteConfiguration(name string) error {
 	}
 
 	if _, err := prompt.Run(); err != nil {
-		return fmt.Errorf("operation cancelled")
+		return fmt.Errorf("operation canceled")
 	}
 
 	cmd := exec.CommandContext(m.ctx, "gcloud", "config", "configurations", "delete", name, "--quiet")

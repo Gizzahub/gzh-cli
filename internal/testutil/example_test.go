@@ -66,8 +66,8 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	}
 
 	// Make some requests
-	req1, _ := http.NewRequestWithContext(context.Background(), "GET", "https://api.github.com/user", nil)
-	req2, _ := http.NewRequestWithContext(context.Background(), "GET", "https://api.github.com/repos", nil)
+	req1, _ := http.NewRequestWithContext(context.Background(), "GET", "https://api.github.com/user", http.NoBody)
+	req2, _ := http.NewRequestWithContext(context.Background(), "GET", "https://api.github.com/repos", http.NoBody)
 
 	resp1, err := mockClient.Do(req1)
 	assert.NoError(t, err)

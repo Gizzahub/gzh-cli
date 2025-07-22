@@ -109,7 +109,7 @@
 // # Thread Safety
 //
 // The client is safe for concurrent use by multiple goroutines.
-// Each operation creates its own context and can be cancelled independently.
+// Each operation creates its own context and can be canceled independently.
 //
 // # Platform-Specific Clients
 //

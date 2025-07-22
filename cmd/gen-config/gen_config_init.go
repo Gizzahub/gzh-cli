@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package genconfig
 
 import (
@@ -71,7 +74,7 @@ func (o *genConfigInitOptions) run(_ *cobra.Command, _ []string) error {
 	if _, err := os.Stat(o.outputFile); err == nil {
 		if o.interactive {
 			if !o.confirmOverwrite() {
-				fmt.Println("Configuration generation cancelled.")
+				fmt.Println("Configuration generation canceled.")
 				return nil
 			}
 		} else {

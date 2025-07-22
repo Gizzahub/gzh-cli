@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
@@ -29,7 +32,7 @@ type CloneState struct {
 	MaxRetries int `json:"maxRetries"`
 
 	// Status
-	Status string `json:"status"` // "in_progress", "completed", "failed", "cancelled"
+	Status string `json:"status"` // "in_progress", "completed", "failed", "canceled"
 }
 
 // CompletedRepository represents a successfully processed repository.
@@ -327,8 +330,8 @@ func (cs *CloneState) MarkFailed() {
 	cs.LastUpdated = time.Now()
 }
 
-// MarkCancelled marks the operation as cancelled.
+// MarkCancelled marks the operation as canceled.
 func (cs *CloneState) MarkCancelled() {
-	cs.Status = "cancelled"
+	cs.Status = "canceled"
 	cs.LastUpdated = time.Now()
 }

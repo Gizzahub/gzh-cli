@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package repoconfig
 
 import (
@@ -130,7 +133,7 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 		}
 
 		if response != "y" && response != "yes" {
-			fmt.Println("Configuration application cancelled")
+			fmt.Println("Configuration application canceled")
 			return nil
 		}
 	}

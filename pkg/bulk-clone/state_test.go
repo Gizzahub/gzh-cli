@@ -290,7 +290,7 @@ func TestCloneState_MarkStatus(t *testing.T) {
 	state.MarkFailed()
 	assert.Equal(t, "failed", state.Status)
 
-	// Mark as cancelled
+	// Mark as canceled
 	state.MarkCancelled()
-	assert.Equal(t, "cancelled", state.Status)
+	assert.Equal(t, "canceled", state.Status)
 }

@@ -47,7 +47,9 @@
       "Bash(./analytics examples list)",
       "Bash(./analytics scripts list)",
       "Bash(pre-commit:*)",
-      "Bash(go:*)"
+      "Bash(go:*)",
+      "Bash(git fetch:*)",
+      "Bash(git cherry-pick:*)"
     ],
     "deny": []
   }

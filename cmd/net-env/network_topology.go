@@ -1019,7 +1019,7 @@ func (nta *NetworkTopologyAnalyzer) findServiceByContainer(serviceMap map[string
 
 func (nta *NetworkTopologyAnalyzer) determineDependencyType(connection NetworkConnection) DependencyType {
 	// Simple heuristic based on port and protocol
-	if strings.ToLower(connection.Protocol) == "tcp" {
+	if strings.EqualFold(connection.Protocol, "tcp") {
 		return DependencySynchronous
 	}
 

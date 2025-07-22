@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package doctor
 
 import (
@@ -825,7 +828,7 @@ func isURLReachable(ctx context.Context, url string) bool {
 	// Simple connectivity check with timeout
 	client := &http.Client{Timeout: 5 * time.Second}
 
-	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "HEAD", url, http.NoBody)
 	if err != nil {
 		return false
 	}

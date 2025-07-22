@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -194,8 +197,8 @@ func newDockerNetworkDeleteCmd(dm *DockerNetworkManager) *cobra.Command {
 				fmt.Printf("⚠️  Are you sure you want to delete profile '%s'? (y/N): ", profileName)
 				var response string
 				_, _ = fmt.Scanln(&response) //nolint:errcheck // User input scanning
-				if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
-					fmt.Println("❌ Deletion cancelled.")
+				if !strings.EqualFold(response, "y") && !strings.EqualFold(response, "yes") {
+					fmt.Println("❌ Deletion canceled.")
 					return nil
 				}
 			}
@@ -401,7 +404,7 @@ func createProfileInteractively(dm *DockerNetworkManager, profile *DockerNetwork
 	var addNetwork string
 	_, _ = fmt.Scanln(&addNetwork)
 
-	if strings.ToLower(addNetwork) == "y" || strings.ToLower(addNetwork) == "yes" {
+	if strings.EqualFold(addNetwork, "y") || strings.EqualFold(addNetwork, "yes") {
 		for {
 			var networkName, driver, subnet, gateway string
 
@@ -438,7 +441,7 @@ func createProfileInteractively(dm *DockerNetworkManager, profile *DockerNetwork
 			var another string
 			_, _ = fmt.Scanln(&another)
 
-			if strings.ToLower(another) != "y" && strings.ToLower(another) != "yes" {
+			if !strings.EqualFold(another, "y") && !strings.EqualFold(another, "yes") {
 				break
 			}
 		}

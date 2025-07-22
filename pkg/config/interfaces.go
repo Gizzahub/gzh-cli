@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/config_mocks.go -package=mocks ConfigLoader,ConfigValidator,ConfigWatcher,ConfigProvider

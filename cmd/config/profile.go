@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -293,8 +296,8 @@ func deleteProfile(profileName string, force bool) error {
 			response = ""
 		}
 
-		if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
-			fmt.Println("Profile deletion cancelled")
+		if !strings.EqualFold(response, "y") && !strings.EqualFold(response, "yes") {
+			fmt.Println("Profile deletion canceled")
 			return nil
 		}
 	}

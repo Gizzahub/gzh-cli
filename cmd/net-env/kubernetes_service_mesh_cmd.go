@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -950,7 +953,7 @@ func configureLinkerdInteractive(km *KubernetesNetworkManager, profile *Kubernet
 	}
 
 	linkerdConfig := &LinkerdConfig{
-		ProxyInjection:  strings.ToLower(enableProxy) == "y",
+		ProxyInjection:  strings.EqualFold(enableProxy, "y"),
 		ServiceProfiles: make(map[string]*LinkerdServiceProfile),
 		TrafficSplits:   make(map[string]*LinkerdTrafficSplit),
 	}

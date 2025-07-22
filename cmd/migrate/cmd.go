@@ -1,4 +1,6 @@
-// Package migrate provides migration utilities for configuration and data transformations.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package migrate
 
 import (

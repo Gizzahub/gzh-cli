@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 import (
@@ -156,7 +159,7 @@ func watchConfig(configFile string, verbose bool, interval time.Duration) error 
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("\n🛑 Context cancelled, stopping watch\n")
+			fmt.Printf("\n🛑 Context canceled, stopping watch\n")
 			return nil
 
 		case sig := <-sigChan:

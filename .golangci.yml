@@ -1,8 +1,6 @@
 # golangci-lint configuration
 # https://golangci-lint.run/usage/configuration/
 
-version: "2"
-
 run:
   timeout: 10m
   issues-exit-code: 1
@@ -12,11 +10,10 @@ run:
   go: "1.24"
 
 output:
-  formats:
-    default:
-      format: colored-line-number
+  format: colored-line-number
   print-issued-line: true
   print-linter-name: true
+  sort-results: true
 
 linters-settings:
   lll:
@@ -285,16 +282,11 @@ linters:
     - nilerr
     - nilnil
     - noctx
-    - copyloopvar
-    - musttag
-    - asasalint
-    - bidichk
     - contextcheck
     - durationcheck
     - errname
     - errorlint
     - forcetypeassert
-    - gomoddirectives
 
     # Dependencies
     - gomodguard

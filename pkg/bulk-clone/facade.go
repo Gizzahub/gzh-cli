@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 //go:generate mockgen -source=facade.go -destination=mocks/bulk_clone_manager_mock.go -package=mocks Manager

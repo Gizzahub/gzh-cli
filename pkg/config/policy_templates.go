@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package config
 
 // GetPredefinedPolicyTemplates returns predefined policy templates for common compliance frameworks.

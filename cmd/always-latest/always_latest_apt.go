@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package alwayslatest
 
 import (
@@ -230,7 +233,7 @@ func (o *alwaysLatestAptOptions) performFullUpgrade() error {
 	}
 
 	if o.interactive && !o.confirmFullUpgrade() {
-		fmt.Println("   Full upgrade cancelled")
+		fmt.Println("   Full upgrade canceled")
 		return nil
 	}
 

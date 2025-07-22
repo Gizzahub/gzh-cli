@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package devenv
 
 import (
@@ -436,7 +439,7 @@ func (m *GCPServiceAccountManager) deleteServiceAccount(email string, force bool
 		}
 
 		if _, err := prompt.Run(); err != nil {
-			return fmt.Errorf("operation cancelled")
+			return fmt.Errorf("operation canceled")
 		}
 	}
 
@@ -470,7 +473,7 @@ func (m *GCPServiceAccountManager) createServiceAccountKey(email, keyType, outpu
 		}
 
 		if _, err := prompt.Run(); err != nil {
-			return fmt.Errorf("operation cancelled")
+			return fmt.Errorf("operation canceled")
 		}
 	}
 
@@ -501,7 +504,7 @@ func (m *GCPServiceAccountManager) deleteServiceAccountKey(email, keyID string, 
 		}
 
 		if _, err := prompt.Run(); err != nil {
-			return fmt.Errorf("operation cancelled")
+			return fmt.Errorf("operation canceled")
 		}
 	}
 

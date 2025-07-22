@@ -518,13 +518,13 @@ func TestContainerDetector_ErrorConditions(t *testing.T) {
 	logger := zap.NewNop()
 	cd := NewContainerDetector(logger)
 
-	// Test with cancelled context
+	// Test with canceled context
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
 
 	_, err := cd.DetectContainerEnvironment(ctx)
 	if err == nil {
-		t.Error("Should return error for cancelled context")
+		t.Error("Should return error for canceled context")
 	}
 
 	if !strings.Contains(err.Error(), "context") {

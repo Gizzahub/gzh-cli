@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package bulkclone
 
 import (
@@ -141,7 +144,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 		// Check for cancellation before starting each target
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("operation cancelled: %w", ctx.Err())
+			return fmt.Errorf("operation canceled: %w", ctx.Err())
 		default:
 		}
 

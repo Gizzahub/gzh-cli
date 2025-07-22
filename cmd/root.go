@@ -1,4 +1,6 @@
-// Package cmd provides the command-line interface for the gzh-manager-go application.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package cmd
 
 import (

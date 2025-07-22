@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package errors
 
 import (
@@ -130,7 +133,7 @@ func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("operation cancelled: %w", ctx.Err())
+				return fmt.Errorf("operation canceled: %w", ctx.Err())
 			case <-time.After(er.calculateBackoff(attempt)):
 				// Continue with retry
 			}

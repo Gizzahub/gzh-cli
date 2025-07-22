@@ -1,4 +1,6 @@
-// Package common provides shared quality analysis interfaces and types.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package common
 
 //go:generate mockgen -source=quality_analyzer.go -destination=mocks/quality_analyzer_mock.go -package=mocks QualityAnalyzer

@@ -1,4 +1,6 @@
-// Package helpers provides testing utilities for end-to-end tests.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package helpers
 
 import (

@@ -1,4 +1,6 @@
-// Package workerpool provides configurable worker pool implementations for bulk operations.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package workerpool
 
 import (

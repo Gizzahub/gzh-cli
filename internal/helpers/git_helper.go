@@ -1,4 +1,6 @@
-// Package helpers provides utility functions for Git operations.
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package helpers
 
 import (

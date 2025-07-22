@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package netenv
 
 import (
@@ -179,8 +182,8 @@ func newK8sNetworkDeleteCmd(km *KubernetesNetworkManager) *cobra.Command {
 				fmt.Printf("⚠️  Are you sure you want to delete profile '%s'? (y/N): ", profileName)
 				var response string
 				_, _ = fmt.Scanln(&response)
-				if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
-					fmt.Println("❌ Deletion cancelled.")
+				if !strings.EqualFold(response, "y") && !strings.EqualFold(response, "yes") {
+					fmt.Println("❌ Deletion canceled.")
 					return nil
 				}
 			}
@@ -622,7 +625,7 @@ func createK8sProfileInteractively(km *KubernetesNetworkManager, profile *Kubern
 	var addPolicy string
 	_, _ = fmt.Scanln(&addPolicy)
 
-	if strings.ToLower(addPolicy) == "y" || strings.ToLower(addPolicy) == "yes" {
+	if strings.EqualFold(addPolicy, "y") || strings.EqualFold(addPolicy, "yes") {
 		// Simple deny-all policy as starting point
 		fmt.Println("\nCreating a default deny-all policy...")
 
