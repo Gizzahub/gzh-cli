@@ -84,53 +84,15 @@ func newCloudListCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 
 			// Show providers if requested or by default
 			if showProviders || (!showProfiles && !showProviders) {
-				fmt.Println("Cloud Providers:")
-				fmt.Println("================")
-				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				if _, err := fmt.Fprintln(w, "NAME\tTYPE\tREGION\tAUTH METHOD"); err != nil {
-					return fmt.Errorf("failed to write header: %w", err)
+				if err := displayCloudProviders(config); err != nil {
+					return err
 				}
-				for name, provider := range config.Providers {
-					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
-						name,
-						provider.Type,
-						provider.Region,
-						provider.Auth.Method,
-					); err != nil {
-						return fmt.Errorf("failed to write provider info: %w", err)
-					}
-				}
-				if err := w.Flush(); err != nil {
-					return fmt.Errorf("failed to flush output: %w", err)
-				}
-				fmt.Println()
 			}
 
 			// Show profiles if requested
 			if showProfiles || (!showProfiles && !showProviders) {
-				fmt.Println("Cloud Profiles:")
-				fmt.Println("===============")
-				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				if _, err := fmt.Fprintln(w, "NAME\tPROVIDER\tENVIRONMENT\tREGION\tVPC"); err != nil {
-					return fmt.Errorf("failed to write profile header: %w", err)
-				}
-				for name, profile := range config.Profiles {
-					vpcID := profile.Network.VPCId
-					if vpcID == "" {
-						vpcID = valueNotAvailable
-					}
-					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
-						name,
-						profile.Provider,
-						profile.Environment,
-						profile.Region,
-						vpcID,
-					); err != nil {
-						return fmt.Errorf("failed to write profile info: %w", err)
-					}
-				}
-				if err := w.Flush(); err != nil {
-					return fmt.Errorf("failed to flush profile output: %w", err)
+				if err := displayCloudProfiles(config); err != nil {
+					return err
 				}
 			}
 
@@ -2102,6 +2064,60 @@ func displayVPNSummary(envStr string, envConnections []*cloud.VPNConnection) err
 	for _, conn := range envConnections {
 		fmt.Printf("- %s (priority: %d, auto-connect: %v)\n",
 			conn.Name, conn.Priority, conn.AutoConnect)
+	}
+	return nil
+}
+
+// displayCloudProviders displays configured cloud providers in a table format.
+func displayCloudProviders(config *cloud.Config) error {
+	fmt.Println("Cloud Providers:")
+	fmt.Println("================")
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	if _, err := fmt.Fprintln(w, "NAME\tTYPE\tREGION\tAUTH METHOD"); err != nil {
+		return fmt.Errorf("failed to write header: %w", err)
+	}
+	for name, provider := range config.Providers {
+		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+			name,
+			provider.Type,
+			provider.Region,
+			provider.Auth.Method,
+		); err != nil {
+			return fmt.Errorf("failed to write provider info: %w", err)
+		}
+	}
+	if err := w.Flush(); err != nil {
+		return fmt.Errorf("failed to flush output: %w", err)
+	}
+	fmt.Println()
+	return nil
+}
+
+// displayCloudProfiles displays configured cloud profiles in a table format.
+func displayCloudProfiles(config *cloud.Config) error {
+	fmt.Println("Cloud Profiles:")
+	fmt.Println("===============")
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	if _, err := fmt.Fprintln(w, "NAME\tPROVIDER\tENVIRONMENT\tREGION\tVPC"); err != nil {
+		return fmt.Errorf("failed to write profile header: %w", err)
+	}
+	for name, profile := range config.Profiles {
+		vpcID := profile.Network.VPCId
+		if vpcID == "" {
+			vpcID = valueNotAvailable
+		}
+		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+			name,
+			profile.Provider,
+			profile.Environment,
+			profile.Region,
+			vpcID,
+		); err != nil {
+			return fmt.Errorf("failed to write profile info: %w", err)
+		}
+	}
+	if err := w.Flush(); err != nil {
+		return fmt.Errorf("failed to flush profile output: %w", err)
 	}
 	return nil
 }
