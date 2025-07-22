@@ -5,6 +5,7 @@ package httpclient
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -166,6 +167,7 @@ func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (
 
 	if err := resp.Body.Close(); err != nil {
 		// Log error but continue
+		fmt.Printf("Warning: failed to close response body: %v\n", err)
 	}
 
 	headers := make(map[string]string)

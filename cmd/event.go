@@ -408,6 +408,7 @@ func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload str
 		defer func() {
 			if err := file.Close(); err != nil {
 				// Log error but don't override main error
+				fmt.Printf("Warning: failed to close file: %v\n", err)
 			}
 		}()
 
@@ -444,6 +445,7 @@ func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload str
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
 			// Log error but don't override main error
+			fmt.Printf("Warning: failed to close response body: %v\n", err)
 		}
 	}()
 

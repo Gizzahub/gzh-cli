@@ -73,9 +73,11 @@ func newRepositoryWebhookCmd() *cobra.Command {
 	createCmd.Flags().String("secret", "", "웹훅 시크릿")
 	if err := createCmd.MarkFlagRequired("name"); err != nil {
 		// Error marking flag as required - continue without marking
+		fmt.Printf("Warning: could not mark 'name' flag as required: %v\n", err)
 	}
 	if err := createCmd.MarkFlagRequired("url"); err != nil {
 		// Error marking flag as required - continue without marking
+		fmt.Printf("Warning: could not mark 'url' flag as required: %v\n", err)
 	}
 
 	// List
@@ -147,9 +149,11 @@ func newOrganizationWebhookCmd() *cobra.Command {
 	createCmd.Flags().String("secret", "", "웹훅 시크릿")
 	if err := createCmd.MarkFlagRequired("name"); err != nil {
 		// Error marking flag as required - continue without marking
+		fmt.Printf("Warning: could not mark 'name' flag as required: %v\n", err)
 	}
 	if err := createCmd.MarkFlagRequired("url"); err != nil {
 		// Error marking flag as required - continue without marking
+		fmt.Printf("Warning: could not mark 'url' flag as required: %v\n", err)
 	}
 
 	// List
@@ -189,9 +193,11 @@ func newBulkWebhookCmd() *cobra.Command {
 	createCmd.Flags().StringSlice("repos", nil, "특정 리포지토리만 (비어있으면 모든 리포지토리)")
 	if err := createCmd.MarkFlagRequired("name"); err != nil {
 		// Error marking flag as required - continue without marking
+		fmt.Printf("Warning: could not mark 'name' flag as required: %v\n", err)
 	}
 	if err := createCmd.MarkFlagRequired("url"); err != nil {
 		// Error marking flag as required - continue without marking
+		fmt.Printf("Warning: could not mark 'url' flag as required: %v\n", err)
 	}
 
 	cmd.AddCommand(createCmd)
