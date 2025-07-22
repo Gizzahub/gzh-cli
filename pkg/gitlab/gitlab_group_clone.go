@@ -13,10 +13,9 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
-
-	"github.com/gizzahub/gzh-manager-go/internal/git"
 )
 
 var (

@@ -7,8 +7,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
@@ -23,6 +21,7 @@ import (
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
+	"github.com/spf13/cobra"
 )
 
 func newRootCmd(ctx context.Context, version string) *cobra.Command {

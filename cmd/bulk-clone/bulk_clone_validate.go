@@ -6,9 +6,8 @@ package bulkclone
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	"github.com/spf13/cobra"
 )
 
 type bulkCloneValidateOptions struct {

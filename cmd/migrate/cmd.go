@@ -11,9 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
-
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/spf13/cobra"
 )
 
 // Options holds the configuration for the migrate command.

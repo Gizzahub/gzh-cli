@@ -9,10 +9,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/xeipuuv/gojsonschema"
 	"gopkg.in/yaml.v3"
-
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // LoadSchemaFromFile loads the JSON schema from the docs directory.

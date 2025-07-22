@@ -4,6 +4,7 @@
 package netenv
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -67,7 +68,8 @@ func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]stri
 	status := make(map[string]string)
 
 	// Check NetworkManager connections
-	cmd := exec.Command("nmcli", "-t", "-f", "NAME,STATE", "connection", "show", "--active")
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "NAME,STATE", "connection", "show", "--active")
 	if output, err := cmd.Output(); err == nil {
 		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 		for _, line := range lines {
@@ -99,24 +101,29 @@ func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]stri
 func (m *OptimizedVPNManager) connectSingleVPN(config vpnConfig) error {
 	switch config.Type {
 	case "networkmanager":
-		return exec.Command("nmcli", "connection", "up", config.Name).Run()
+		ctx := context.Background()
+		return exec.CommandContext(ctx, "nmcli", "connection", "up", config.Name).Run()
 	case "openvpn":
 		if config.Service != "" {
-			return exec.Command("systemctl", "start", config.Service).Run()
+			ctx := context.Background()
+			return exec.CommandContext(ctx, "systemctl", "start", config.Service).Run()
 		}
 
 		if config.ConfigFile != "" {
-			cmd := exec.Command("openvpn", "--config", config.ConfigFile, "--daemon")
+			ctx := context.Background()
+			cmd := exec.CommandContext(ctx, "openvpn", "--config", config.ConfigFile, "--daemon")
 			return cmd.Run()
 		}
 
 		return fmt.Errorf("openvpn requires either service or config file")
 	case "wireguard":
 		if config.ConfigFile != "" {
-			return exec.Command("wg-quick", "up", config.ConfigFile).Run()
+			ctx := context.Background()
+			return exec.CommandContext(ctx, "wg-quick", "up", config.ConfigFile).Run()
 		}
 
-		return exec.Command("wg-quick", "up", config.Name).Run()
+		ctx := context.Background()
+		return exec.CommandContext(ctx, "wg-quick", "up", config.Name).Run()
 	default:
 		return fmt.Errorf("unsupported VPN type: %s", config.Type)
 	}
@@ -155,10 +162,12 @@ func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
 		args := []string{"dns", iface}
 		args = append(args, config.Servers...)
 
-		return exec.Command("resolvectl", args...).Run()
+		ctx := context.Background()
+		return exec.CommandContext(ctx, "resolvectl", args...).Run()
 	case "networkmanager":
 		servers := strings.Join(config.Servers, ",")
-		return exec.Command("nmcli", "connection", "modify", iface, "ipv4.dns", servers).Run()
+		ctx := context.Background()
+		return exec.CommandContext(ctx, "nmcli", "connection", "modify", iface, "ipv4.dns", servers).Run()
 	default:
 		return fmt.Errorf("unsupported DNS method: %s", config.Method)
 	}
@@ -166,7 +175,8 @@ func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
 
 // detectPrimaryInterface detects the primary network interface.
 func (m *OptimizedDNSManager) detectPrimaryInterface() (string, error) {
-	cmd := exec.Command("ip", "route", "show", "default")
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, "ip", "route", "show", "default")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -191,6 +201,7 @@ func (m *OptimizedDNSManager) detectPrimaryInterface() (string, error) {
 
 // executeShellCommand executes a shell command.
 func executeShellCommand(command string) error {
-	cmd := exec.Command("sh", "-c", command)
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, "sh", "-c", command)
 	return cmd.Run()
 }

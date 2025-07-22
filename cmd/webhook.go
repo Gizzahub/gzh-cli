@@ -10,9 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
-
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/spf13/cobra"
 )
 
 // NewWebhookCmd creates the webhook management command.

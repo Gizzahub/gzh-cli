@@ -4,6 +4,7 @@
 package docker
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -377,7 +378,7 @@ func runScan(cmd *cobra.Command, args []string) {
 	config := createScanConfiguration()
 
 	// Perform comprehensive scan
-	result := performComprehensiveScan(config)
+	result := performComprehensiveScan(cmd.Context(), config)
 
 	// Display results
 	displayScanResults(result)
@@ -437,7 +438,7 @@ func createScanConfiguration() *ScanConfiguration {
 	}
 }
 
-func performComprehensiveScan(config *ScanConfiguration) *ComprehensiveScanResult {
+func performComprehensiveScan(ctx context.Context, config *ScanConfiguration) *ComprehensiveScanResult {
 	result := &ComprehensiveScanResult{
 		Configuration: *config,
 		Results:       make([]ScannerResult, 0),
@@ -456,7 +457,7 @@ func performComprehensiveScan(config *ScanConfiguration) *ComprehensiveScanResul
 			fmt.Printf("🔍 %s 스캔 실행 중...\n", scanner)
 		}
 
-		scannerResult, err := runScannerComprehensive(scanner, config)
+		scannerResult, err := runScannerComprehensive(ctx, scanner, config)
 		if err != nil {
 			fmt.Printf("⚠️ %s 스캔 실패: %v\n", scanner, err)
 			scannerResult = &ScannerResult{
@@ -498,7 +499,7 @@ func performComprehensiveScan(config *ScanConfiguration) *ComprehensiveScanResul
 	return result
 }
 
-func runScannerComprehensive(scanner string, config *ScanConfiguration) (*ScannerResult, error) {
+func runScannerComprehensive(ctx context.Context, scanner string, config *ScanConfiguration) (*ScannerResult, error) {
 	result := &ScannerResult{
 		Scanner:         scanner,
 		Vulnerabilities: make([]Vulnerability, 0),
@@ -513,7 +514,7 @@ func runScannerComprehensive(scanner string, config *ScanConfiguration) (*Scanne
 
 	switch scanner {
 	case "trivy":
-		err := runTrivyScan(config, result)
+		err := runTrivyScan(ctx, config, result)
 		if err != nil {
 			return result, err
 		}
@@ -542,7 +543,7 @@ func runScannerComprehensive(scanner string, config *ScanConfiguration) (*Scanne
 	return result, nil
 }
 
-func runTrivyScan(config *ScanConfiguration, result *ScannerResult) error {
+func runTrivyScan(ctx context.Context, config *ScanConfiguration, result *ScannerResult) error {
 	args := []string{"image", "--format", "json"}
 
 	// Add severity filter
@@ -584,7 +585,7 @@ func runTrivyScan(config *ScanConfiguration, result *ScannerResult) error {
 
 	args = append(args, config.Image)
 
-	cmd := exec.Command("trivy", args...)
+	cmd := exec.CommandContext(ctx, "trivy", args...)
 
 	output, err := cmd.Output()
 	if err != nil {

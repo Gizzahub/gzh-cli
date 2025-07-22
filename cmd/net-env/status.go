@@ -4,6 +4,7 @@
 package netenv
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -91,24 +92,25 @@ Examples:
 func (o *statusOptions) runStatus(cmd *cobra.Command, args []string) error {
 	fmt.Printf("🌐 Network Environment Status\n\n")
 
+	ctx := cmd.Context()
 	status := &networkStatus{}
 
 	// Collect network interface information
-	if interfaces, err := o.getNetworkInterfaces(); err == nil {
+	if interfaces, err := o.getNetworkInterfaces(ctx); err == nil {
 		status.Interfaces = interfaces
 	} else if o.verbose {
 		fmt.Printf("⚠️  Warning: Could not get interface information: %v\n", err)
 	}
 
 	// Collect VPN status
-	if vpns, err := o.getVPNStatus(); err == nil {
+	if vpns, err := o.getVPNStatus(ctx); err == nil {
 		status.VPN = vpns
 	} else if o.verbose {
 		fmt.Printf("⚠️  Warning: Could not get VPN status: %v\n", err)
 	}
 
 	// Collect DNS information
-	if dns, err := o.getDNSInfo(); err == nil {
+	if dns, err := o.getDNSInfo(ctx); err == nil {
 		status.DNS = dns
 	} else if o.verbose {
 		fmt.Printf("⚠️  Warning: Could not get DNS information: %v\n", err)
@@ -128,34 +130,34 @@ func (o *statusOptions) runStatus(cmd *cobra.Command, args []string) error {
 	return o.printHuman(status)
 }
 
-func (o *statusOptions) getNetworkInterfaces() ([]interfaceInfo, error) {
+func (o *statusOptions) getNetworkInterfaces(ctx context.Context) ([]interfaceInfo, error) {
 	var interfaces []interfaceInfo
 
 	// Get interface list using 'ip' command
-	cmd := exec.Command("ip", "-json", "addr", "show")
+	cmd := exec.CommandContext(ctx, "ip", "-json", "addr", "show")
 
 	output, err := cmd.Output()
 	if err != nil {
 		// Fallback to non-JSON output
-		return o.getInterfacesFallback()
+		return o.getInterfacesFallback(ctx)
 	}
 
 	// Parse JSON output (simplified - would need proper JSON parsing in real implementation)
 	interfaces = o.parseIPOutput(string(output))
 
 	// Enhance with WiFi information
-	if wifiInterfaces, err := o.getWiFiInfo(); err == nil {
+	if wifiInterfaces, err := o.getWiFiInfo(ctx); err == nil {
 		interfaces = o.mergeWiFiInfo(interfaces, wifiInterfaces)
 	}
 
 	return interfaces, nil
 }
 
-func (o *statusOptions) getInterfacesFallback() ([]interfaceInfo, error) {
+func (o *statusOptions) getInterfacesFallback(ctx context.Context) ([]interfaceInfo, error) {
 	var interfaces []interfaceInfo
 
 	// Get basic interface information
-	cmd := exec.Command("ip", "addr", "show")
+	cmd := exec.CommandContext(ctx, "ip", "addr", "show")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -227,11 +229,11 @@ func (o *statusOptions) parseIPTextOutput(output string) []interfaceInfo {
 	return o.parseIPOutput(output) // Reuse the Go net package approach for simplicity
 }
 
-func (o *statusOptions) getWiFiInfo() ([]interfaceInfo, error) {
+func (o *statusOptions) getWiFiInfo(ctx context.Context) ([]interfaceInfo, error) {
 	var wifiInterfaces []interfaceInfo
 
 	// Try nmcli first
-	cmd := exec.Command("nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device", "status")
+	cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device", "status")
 
 	output, err := cmd.Output()
 	if err == nil {
@@ -246,7 +248,7 @@ func (o *statusOptions) getWiFiInfo() ([]interfaceInfo, error) {
 				}
 
 				// Get SSID and signal strength
-				if ssidInfo := o.getWiFiDetails(fields[0]); ssidInfo != nil {
+				if ssidInfo := o.getWiFiDetails(ctx, fields[0]); ssidInfo != nil {
 					info.SSID = ssidInfo.SSID
 					info.Signal = ssidInfo.Signal
 					info.Frequency = ssidInfo.Frequency
@@ -260,8 +262,8 @@ func (o *statusOptions) getWiFiInfo() ([]interfaceInfo, error) {
 	return wifiInterfaces, err
 }
 
-func (o *statusOptions) getWiFiDetails(device string) *interfaceInfo {
-	cmd := exec.Command("nmcli", "-t", "-f", "SSID,SIGNAL,FREQ", "device", "wifi", "list", "ifname", device)
+func (o *statusOptions) getWiFiDetails(ctx context.Context, device string) *interfaceInfo {
+	cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "SSID,SIGNAL,FREQ", "device", "wifi", "list", "ifname", device)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -304,11 +306,11 @@ func (o *statusOptions) mergeWiFiInfo(interfaces []interfaceInfo, wifiInterfaces
 	return interfaces
 }
 
-func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) { //nolint:unparam // Error always nil but kept for consistency
+func (o *statusOptions) getVPNStatus(ctx context.Context) ([]vpnInfo, error) { //nolint:unparam // Error always nil but kept for consistency
 	var vpns []vpnInfo
 
 	// Check NetworkManager VPNs
-	cmd := exec.Command("nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show")
+	cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show")
 
 	output, err := cmd.Output()
 	if err == nil {
@@ -326,7 +328,7 @@ func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) { //nolint:unparam // 
 	}
 
 	// Check OpenVPN services
-	cmd = exec.Command("systemctl", "list-units", "--type=service", "openvpn@*", "--no-legend")
+	cmd = exec.CommandContext(ctx, "systemctl", "list-units", "--type=service", "openvpn@*", "--no-legend")
 	if output, err := cmd.Output(); err == nil {
 		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 		for _, line := range lines {
@@ -352,7 +354,7 @@ func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) { //nolint:unparam // 
 	}
 
 	// Check WireGuard interfaces
-	cmd = exec.Command("wg", "show")
+	cmd = exec.CommandContext(ctx, "wg", "show")
 	if output, err := cmd.Output(); err == nil && strings.TrimSpace(string(output)) != "" {
 		// Parse WireGuard output for interface names
 		lines := strings.Split(string(output), "\n")
@@ -371,11 +373,11 @@ func (o *statusOptions) getVPNStatus() ([]vpnInfo, error) { //nolint:unparam // 
 	return vpns, nil
 }
 
-func (o *statusOptions) getDNSInfo() (dnsInfo, error) { //nolint:unparam // Error always nil but kept for consistency
+func (o *statusOptions) getDNSInfo(ctx context.Context) (dnsInfo, error) { //nolint:unparam // Error always nil but kept for consistency
 	info := dnsInfo{}
 
 	// Try resolvectl first
-	cmd := exec.Command("resolvectl", "status")
+	cmd := exec.CommandContext(ctx, "resolvectl", "status")
 
 	output, err := cmd.Output()
 	if err == nil {
@@ -395,7 +397,7 @@ func (o *statusOptions) getDNSInfo() (dnsInfo, error) { //nolint:unparam // Erro
 
 	// Fallback to /etc/resolv.conf
 	if len(info.Servers) == 0 {
-		cmd = exec.Command("grep", "nameserver", "/etc/resolv.conf")
+		cmd = exec.CommandContext(ctx, "grep", "nameserver", "/etc/resolv.conf")
 		if output, err := cmd.Output(); err == nil {
 			lines := strings.Split(string(output), "\n")
 			for _, line := range lines {

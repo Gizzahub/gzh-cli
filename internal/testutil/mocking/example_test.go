@@ -6,12 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/git"
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-
-	"github.com/gizzahub/gzh-manager-go/internal/git"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 // TestMockFactoryUsage demonstrates how to use the mock factory.

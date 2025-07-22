@@ -14,9 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/spf13/cobra"
-
 	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/spf13/cobra"
 )
 
 type actionsOptions struct {
@@ -343,7 +342,7 @@ func newVPNStatusCmd() *cobra.Command {
 		Use:   "status",
 		Short: "Show VPN status",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return showVPNStatus()
+			return showVPNStatus(cmd.Context())
 		},
 	}
 
@@ -375,7 +374,7 @@ func newDNSStatusCmd() *cobra.Command {
 		Use:   "status",
 		Short: "Show current DNS configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return showDNSStatus()
+			return showDNSStatus(cmd.Context())
 		},
 	}
 
@@ -387,7 +386,7 @@ func newDNSResetCmd() *cobra.Command {
 		Use:   "reset",
 		Short: "Reset DNS to default configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return resetDNS()
+			return resetDNS(cmd.Context())
 		},
 	}
 
@@ -663,7 +662,7 @@ func disconnectVPN(ctx context.Context, name string) error {
 	return fmt.Errorf("failed to disconnect VPN '%s' using any method", name)
 }
 
-func showVPNStatus() error {
+func showVPNStatus(ctx context.Context) error {
 	fmt.Printf("🔐 VPN Status:\n\n")
 
 	initOptimizedManagers()
@@ -694,7 +693,7 @@ func showVPNStatus() error {
 		// NetworkManager VPN connections
 		fmt.Printf("NetworkManager VPN connections:\n")
 
-		cmd := exec.Command("nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show")
+		cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show")
 		if output, err := cmd.Output(); err == nil {
 			lines := strings.Split(string(output), "\n")
 			for _, line := range lines {
@@ -708,7 +707,7 @@ func showVPNStatus() error {
 		// OpenVPN services
 		fmt.Printf("\nOpenVPN services:\n")
 
-		cmd = exec.Command("systemctl", "list-units", "--type=service", "--state=active", "openvpn@*")
+		cmd = exec.CommandContext(ctx, "systemctl", "list-units", "--type=service", "--state=active", "openvpn@*")
 		if output, err := cmd.Output(); err == nil {
 			if strings.Contains(string(output), "openvpn@") {
 				fmt.Printf("  %s", output)
@@ -743,10 +742,10 @@ func setDNSServers(servers []string, iface string) error {
 	return nil
 }
 
-func showDNSStatus() error {
+func showDNSStatus(ctx context.Context) error {
 	fmt.Printf("🌐 DNS Configuration:\n\n")
 
-	cmd := exec.Command("resolvectl", "status")
+	cmd := exec.CommandContext(ctx, "resolvectl", "status")
 	if output, err := cmd.Output(); err == nil {
 		fmt.Printf("%s", output)
 	} else {
@@ -759,10 +758,10 @@ func showDNSStatus() error {
 	return nil
 }
 
-func resetDNS() error {
+func resetDNS(ctx context.Context) error {
 	fmt.Printf("🔄 Resetting DNS to default configuration...\n")
 
-	cmd := exec.Command("resolvectl", "revert")
+	cmd := exec.CommandContext(ctx, "resolvectl", "revert")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to reset DNS: %w", err)
 	}

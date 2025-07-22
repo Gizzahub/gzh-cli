@@ -2,6 +2,7 @@
 package netenv
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -199,7 +200,8 @@ func TestGetWiFiDetails(t *testing.T) {
 	opts := &statusOptions{}
 
 	// Test with non-existent device - should return nil
-	info := opts.getWiFiDetails("nonexistent")
+	ctx := context.Background()
+	info := opts.getWiFiDetails(ctx, "nonexistent")
 	assert.Nil(t, info)
 }
 

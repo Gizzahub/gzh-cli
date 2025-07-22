@@ -301,7 +301,7 @@ func runOptimize(cmd *cobra.Command, args []string) {
 	// 4. Apply optimizations
 	fmt.Printf("⚙️ 최적화 적용 중...\n")
 
-	result, err := applyOptimizations(optimizeImage, analysis, suggestions)
+	result, err := applyOptimizations(ctx, optimizeImage, analysis, suggestions)
 	if err != nil {
 		fmt.Printf("❌ 최적화 실패: %v\n", err)
 		os.Exit(1)
@@ -850,7 +850,7 @@ func displaySuggestions(suggestions []Suggestion) {
 	}
 }
 
-func applyOptimizations(imageName string, analysis *OptimizationAnalysis, suggestions []Suggestion) (*OptimizationResult, error) {
+func applyOptimizations(ctx context.Context, imageName string, analysis *OptimizationAnalysis, suggestions []Suggestion) (*OptimizationResult, error) {
 	result := &OptimizationResult{
 		Analysis:       *analysis,
 		OriginalSize:   analysis.ImageInfo.Size,
@@ -872,7 +872,7 @@ func applyOptimizations(imageName string, analysis *OptimizationAnalysis, sugges
 
 	// Apply docker-slim if enabled
 	if enableSlim {
-		optimizedImage, err := applyDockerSlim(imageName)
+		optimizedImage, err := applyDockerSlim(ctx, imageName)
 		if err != nil {
 			fmt.Printf("⚠️ docker-slim 적용 실패: %v\n", err)
 		} else {
@@ -983,7 +983,7 @@ func generateOptimizedDockerfile(analysis *OptimizationAnalysis, suggestions []S
 	return os.WriteFile(outputPath, []byte(dockerfile.String()), 0o600)
 }
 
-func applyDockerSlim(imageName string) (string, error) {
+func applyDockerSlim(ctx context.Context, imageName string) (string, error) {
 	// Check if docker-slim is available
 	if _, err := exec.LookPath("docker-slim"); err != nil {
 		return "", fmt.Errorf("docker-slim이 설치되어 있지 않습니다")
@@ -995,7 +995,7 @@ func applyDockerSlim(imageName string) (string, error) {
 	args = append(args, slimOptions...)
 	args = append(args, imageName)
 
-	cmd := exec.Command("docker-slim", args...)
+	cmd := exec.CommandContext(ctx, "docker-slim", args...)
 	if err := cmd.Run(); err != nil {
 		return "", fmt.Errorf("docker-slim 실행 실패: %w", err)
 	}

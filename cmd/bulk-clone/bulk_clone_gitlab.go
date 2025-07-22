@@ -6,10 +6,9 @@ package bulkclone
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	gitlabpkg "github.com/gizzahub/gzh-manager-go/pkg/gitlab"
+	"github.com/spf13/cobra"
 )
 
 type bulkCloneGitlabOptions struct {

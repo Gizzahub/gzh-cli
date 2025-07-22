@@ -9,9 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	"github.com/spf13/cobra"
 )
 
 type sshConfigValidateOptions struct {

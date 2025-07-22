@@ -6,11 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestDefaultActionsOptions(t *testing.T) {
