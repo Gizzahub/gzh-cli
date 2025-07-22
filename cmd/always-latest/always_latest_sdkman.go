@@ -189,7 +189,7 @@ func (o *alwaysLatestSdkmanOptions) updateSdkman() error {
 		return nil
 	}
 
-	cmd := exec.Command("bash", "-c", "source ~/.sdkman/bin/sdkman-init.sh && sdk selfupdate")
+	cmd := exec.Command("bash", "-c", "source ~/.sdkman/bin/sdkman-init.sh && sdk selfupdate") //nolint:noctx // SDKMAN self-update command doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -204,7 +204,7 @@ func (o *alwaysLatestSdkmanOptions) updateSdkman() error {
 func (o *alwaysLatestSdkmanOptions) flushArchives() error {
 	fmt.Println("🧹 Flushing SDKMAN archives...")
 
-	cmd := exec.Command("bash", "-c", "source ~/.sdkman/bin/sdkman-init.sh && sdk flush archives")
+	cmd := exec.Command("bash", "-c", "source ~/.sdkman/bin/sdkman-init.sh && sdk flush archives") //nolint:noctx // SDKMAN cache flush command doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -345,7 +345,7 @@ func (o *alwaysLatestSdkmanOptions) updateCandidate(candidate string) (bool, err
 }
 
 func (o *alwaysLatestSdkmanOptions) getCurrentVersion(candidate string) (string, error) {
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk current %s", candidate))
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk current %s", candidate)) //nolint:noctx // SDKMAN current version query doesn't need context cancellation
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -365,7 +365,7 @@ func (o *alwaysLatestSdkmanOptions) getCurrentVersion(candidate string) (string,
 }
 
 func (o *alwaysLatestSdkmanOptions) getLatestVersion(candidate string) (string, error) {
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate))
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate)) //nolint:noctx // SDKMAN version listing query doesn't need context cancellation
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -480,7 +480,7 @@ func (o *alwaysLatestSdkmanOptions) getTargetVersion(candidate, currentVersion, 
 
 // getCompatibleVersions retrieves and filters versions compatible with the current major version.
 func (o *alwaysLatestSdkmanOptions) getCompatibleVersions(candidate, currentMajor string) ([]string, error) {
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate))
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk list %s", candidate)) //nolint:noctx // SDKMAN version listing query doesn't need context cancellation
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -569,7 +569,7 @@ func (o *alwaysLatestSdkmanOptions) confirmUpdate(candidate, currentVersion, tar
 func (o *alwaysLatestSdkmanOptions) installVersion(candidate, version string) error {
 	fmt.Printf("   Installing %s %s...\n", candidate, version)
 
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk install %s %s", candidate, version))
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk install %s %s", candidate, version)) //nolint:noctx // SDKMAN package installation doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -580,7 +580,7 @@ func (o *alwaysLatestSdkmanOptions) installVersion(candidate, version string) er
 }
 
 func (o *alwaysLatestSdkmanOptions) setDefaultVersion(candidate, version string) error {
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk default %s %s", candidate, version))
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.sdkman/bin/sdkman-init.sh && sdk default %s %s", candidate, version)) //nolint:noctx // SDKMAN default version setting doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

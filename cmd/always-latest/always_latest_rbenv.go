@@ -194,14 +194,14 @@ func (o *alwaysLatestRbenvOptions) updateRbenvInstallation() {
 	}
 
 	// Try git pull if rbenv was installed via git
-	gitCmd := exec.Command("git", "-C", "$(rbenv root)", "pull")
+	gitCmd := exec.Command("git", "-C", "$(rbenv root)", "pull") //nolint:noctx // Git update command doesn't need context cancellation
 	if err := gitCmd.Run(); err != nil {
 		// If git update fails, try package manager update
 		fmt.Println("   Git update failed, trying package manager...")
 
 		// Try Homebrew if available
 		if _, err := exec.LookPath("brew"); err == nil {
-			brewCmd := exec.Command("brew", "upgrade", "rbenv")
+			brewCmd := exec.Command("brew", "upgrade", "rbenv") //nolint:noctx // Package manager update doesn't need context cancellation
 			if brewErr := brewCmd.Run(); brewErr == nil {
 				fmt.Println("✅ rbenv updated via Homebrew")
 				return
@@ -225,13 +225,13 @@ func (o *alwaysLatestRbenvOptions) updateRbenvPlugins() {
 	}
 
 	// Update ruby-build plugin specifically
-	rubyBuildCmd := exec.Command("git", "-C", "$(rbenv root)/plugins/ruby-build", "pull")
+	rubyBuildCmd := exec.Command("git", "-C", "$(rbenv root)/plugins/ruby-build", "pull") //nolint:noctx // Plugin update command doesn't need context cancellation
 	if err := rubyBuildCmd.Run(); err == nil {
 		fmt.Println("✅ ruby-build plugin updated")
 	} else {
 		// Try Homebrew ruby-build if git fails
 		if _, err := exec.LookPath("brew"); err == nil {
-			brewCmd := exec.Command("brew", "upgrade", "ruby-build")
+			brewCmd := exec.Command("brew", "upgrade", "ruby-build") //nolint:noctx // Package manager update doesn't need context cancellation
 			if brewErr := brewCmd.Run(); brewErr == nil {
 				fmt.Println("✅ ruby-build updated via Homebrew")
 			}
@@ -240,7 +240,7 @@ func (o *alwaysLatestRbenvOptions) updateRbenvPlugins() {
 }
 
 func (o *alwaysLatestRbenvOptions) getAvailableRubyVersions() ([]string, error) {
-	cmd := exec.Command("rbenv", "install", "--list")
+	cmd := exec.Command("rbenv", "install", "--list") //nolint:noctx // Ruby version listing command doesn't need context cancellation
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -325,7 +325,7 @@ func (o *alwaysLatestRbenvOptions) filterRequestedVersions(availableVersions []s
 }
 
 func (o *alwaysLatestRbenvOptions) getInstalledRubyVersions() ([]string, error) {
-	cmd := exec.Command("rbenv", "versions", "--bare")
+	cmd := exec.Command("rbenv", "versions", "--bare") //nolint:noctx // Installed version listing command doesn't need context cancellation
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -440,7 +440,7 @@ func (o *alwaysLatestRbenvOptions) installRubyVersion(version string) (bool, err
 
 	// Install the version
 	fmt.Printf("   Installing Ruby %s...\n", version)
-	cmd := exec.Command("rbenv", "install", version)
+	cmd := exec.Command("rbenv", "install", version) //nolint:noctx // Ruby version installation command doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -485,7 +485,7 @@ func (o *alwaysLatestRbenvOptions) setGlobalVersion(version string) error {
 		return nil
 	}
 
-	cmd := exec.Command("rbenv", "global", version)
+	cmd := exec.Command("rbenv", "global", version) //nolint:noctx // Ruby global version setting command doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -500,7 +500,7 @@ func (o *alwaysLatestRbenvOptions) setGlobalVersion(version string) error {
 func (o *alwaysLatestRbenvOptions) rehashRbenv() error {
 	fmt.Println("🔄 Rehashing rbenv shims...")
 
-	cmd := exec.Command("rbenv", "rehash")
+	cmd := exec.Command("rbenv", "rehash") //nolint:noctx // Rbenv rehash command doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

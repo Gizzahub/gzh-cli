@@ -178,7 +178,7 @@ func (o *alwaysLatestPortOptions) updateMacPorts() error {
 		return nil
 	}
 
-	cmd := exec.Command("sudo", "port", "selfupdate")
+	cmd := exec.Command("sudo", "port", "selfupdate") //nolint:noctx // System package manager update command
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -198,7 +198,7 @@ func (o *alwaysLatestPortOptions) syncPortsTree() error {
 		return nil
 	}
 
-	cmd := exec.Command("sudo", "port", "sync")
+	cmd := exec.Command("sudo", "port", "sync") //nolint:noctx // Port tree synchronization command
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -211,7 +211,7 @@ func (o *alwaysLatestPortOptions) syncPortsTree() error {
 }
 
 func (o *alwaysLatestPortOptions) getOutdatedPorts() ([]string, error) {
-	cmd := exec.Command("port", "outdated")
+	cmd := exec.Command("port", "outdated") //nolint:noctx // Query command for outdated packages
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -270,7 +270,7 @@ func (o *alwaysLatestPortOptions) updatePort(portName string) (bool, error) {
 
 	// Upgrade the port
 	fmt.Printf("   Upgrading %s...\n", portName)
-	cmd := exec.Command("sudo", "port", "upgrade", portName)
+	cmd := exec.Command("sudo", "port", "upgrade", portName) //nolint:noctx // Package upgrade command
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -295,7 +295,7 @@ func (o *alwaysLatestPortOptions) confirmUpdate(portName string) bool {
 func (o *alwaysLatestPortOptions) cleanupPorts() error {
 	fmt.Println("🧹 Cleaning up inactive ports...")
 
-	cmd := exec.Command("sudo", "port", "uninstall", "inactive")
+	cmd := exec.Command("sudo", "port", "uninstall", "inactive") //nolint:noctx // Package cleanup command doesn't need context cancellation
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -308,7 +308,7 @@ func (o *alwaysLatestPortOptions) cleanupPorts() error {
 }
 
 func (o *alwaysLatestPortOptions) getPortVersion(portName string) (string, error) {
-	cmd := exec.Command("port", "list", "installed", portName)
+	cmd := exec.Command("port", "list", "installed", portName) //nolint:noctx // Package version query command doesn't need context cancellation
 
 	output, err := cmd.Output()
 	if err != nil {

@@ -715,7 +715,7 @@ func runGrypeScan(config *ScanConfiguration, _ *ScannerResult) error {
 		}
 	}
 
-	cmd := exec.Command("grype", args...)
+	cmd := exec.Command("grype", args...) //nolint:noctx // Security scanning tool invocation doesn't need context cancellation
 
 	_, err := cmd.Output()
 	if err != nil {
@@ -729,7 +729,7 @@ func runGrypeScan(config *ScanConfiguration, _ *ScannerResult) error {
 func runSnykScan(config *ScanConfiguration, _ *ScannerResult) error {
 	args := []string{"container", "test", config.Image, "--json"}
 
-	cmd := exec.Command("snyk", args...)
+	cmd := exec.Command("snyk", args...) //nolint:noctx // Security scanning tool invocation doesn't need context cancellation
 
 	_, err := cmd.Output()
 	if err != nil {
@@ -747,7 +747,7 @@ func runClairScan(config *ScanConfiguration, result *ScannerResult) error {
 
 func getImageMetadata(image string, metadata *ScanMetadata) error {
 	// Get image inspect information
-	cmd := exec.Command("docker", "image", "inspect", image)
+	cmd := exec.Command("docker", "image", "inspect", image) //nolint:noctx // Docker image inspection command doesn't need context cancellation
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -793,7 +793,7 @@ func getImageMetadata(image string, metadata *ScanMetadata) error {
 
 func generateSBOM(image string) (*SBOM, error) {
 	// Use syft to generate SBOM
-	cmd := exec.Command("syft", image, "--output", "json")
+	cmd := exec.Command("syft", image, "--output", "json") //nolint:noctx // SBOM generation tool doesn't need context cancellation
 
 	_, err := cmd.Output()
 	if err != nil {
