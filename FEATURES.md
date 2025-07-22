@@ -13,7 +13,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 
 ### 성능 개선 사항
 
-- **병렬 처리**: 최대 50개 리포지토리 동시 클론 지원으로 대규모 조직 처리 속도 향상
+- **병렬 처리**: 최대 5개 리포지토리 동시 클론 지원으로 안정적인 처리 보장
 - **중단된 작업 재개**: 상태 저장 시스템으로 중단된 작업을 이어서 진행 가능
 - **프로그레스 바 세분화**: 리포지토리별 진행률 표시로 세밀한 진행 상황 파악
 - **고급 클론 전략**: reset, pull, fetch 전략으로 기존 리포지토리 효율적 관리
@@ -25,9 +25,9 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **대화형 설정 생성**: `gz config init` 명령으로 안내식 설정 파일 생성
 - **설정 우선순위 체계**: CLI 플래그 > 환경변수 > 설정파일 > 기본값 순서 확립
 
-### 네트워크 환경 자동화 완성
+### 네트워크 환경 관리 시스템
 
-- **이벤트 기반 자동화**: WiFi 변경 감지 → 자동 VPN/DNS/프록시 설정 전환
+- **수동 네트워크 전환**: 명령어를 통한 VPN/DNS/프록시 설정 전환
 - **포괄적인 네트워크 액션**: VPN, DNS, 프록시, 호스트 파일 관리 통합
 - **안전한 설정 변경**: 모든 변경사항 자동 백업 및 롤백 기능
 - **크로스 플랫폼 지원**: Linux, macOS, Windows에서 동작
@@ -59,7 +59,7 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Repository configuration management**: Comprehensive GitHub repository settings control through `gz repo-config` command
 - **Bulk operations**: Apply configuration changes across entire organizations or selected repositories
 - **Schema-driven configuration**: YAML-based repository settings with validation and templating
-- **API integration**: Full GitHub API client with rate limiting and retry logic
+- **API integration**: Full GitHub API client with rate limiting and retry logic (concurrent operations limited to 5)
 - **Security features**: Token permission validation and confirmation prompts for sensitive operations
 - **Change tracking**: Configuration change history logging with rollback capabilities
 - **Dry-run mode**: Preview changes before applying them to repositories
@@ -99,12 +99,12 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Live monitoring**: Real-time service status updates with configurable intervals
 - **Cross-platform support**: Works with systemctl, service managers across different operating systems
 
-### WiFi Network Automation
+### Network Profile Management
 
-- **WiFi change detection**: Automatically detect network connections, disconnections, and network switches
-- **Event-driven actions**: Trigger customizable actions based on network state changes
+- **Network profile switching**: Manually switch between different network configurations
+- **Command-driven actions**: Execute network-specific actions via CLI commands
 - **YAML-based action configuration**: Define network-specific actions using flexible configuration files
-- **Daemon mode support**: Run as background service for continuous monitoring
+- **Profile management**: Save and apply different network profiles for various environments
 - **Dry-run testing**: Test configurations safely without executing actual commands
 
 ### 네트워크 설정 액션
@@ -118,22 +118,22 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 
 ### 네트워크 환경 전환
 
-- **원활한 환경 전환**: 네트워크 간 이동 시 (집, 사무실, 공공 WiFi) 시스템 설정 자동 적응
+- **원활한 환경 전환**: 네트워크 간 이동 시 (집, 사무실, 공공 WiFi) 수동으로 시스템 설정 전환
 - **프로필 기반 설정**: 각 네트워크별 VPN, DNS, 프록시, 호스트 설정을 프로필로 관리
-- **이벤트 연동**: WiFi 네트워크 변경을 적절한 시스템 설정 변경과 연결하는 이벤트 기반 시스템
+- **명령어 기반 전환**: CLI 명령어를 통해 네트워크 프로필과 설정을 전환
 - **롤백 기능**: 안전한 설정 변경을 위한 자동 백업 및 복원 기능
 
 ### 완료된 네트워크 환경 관리 기능
 
 - **✅ 데몬 모니터링**: 시스템 서비스 상태 실시간 모니터링 및 관리
-- **✅ WiFi 이벤트 훅**: 네트워크 연결 상태 변화 감지 및 자동 액션 트리거
-- **✅ 네트워크 액션 시스템**: VPN, DNS, 프록시, 호스트 파일 변경 자동화 완료
+- **✅ 수동 네트워크 액션 시스템**: 명령어를 통한 네트워크 프로필 전환
+- **✅ 네트워크 설정 관리**: VPN, DNS, 프록시, 호스트 파일 변경 기능 완료
 
 ## Configuration Management
 
 ### 통합 설정 시스템 (gzh.yaml)
 
-- **✅ 통합 설정 포맷**: 모든 도구 설정을 하나의 gzh.yaml 파일로 통합 관리하는 포괄적인 스키마 정의 완료
+- **✅ 통합 설정 포맷**: 도구별 설정을 gzh.yaml 파일로 관리하는 스키마 정의 (부분 지원)
 - **✅ 스키마 검증**: JSON/YAML 스키마 검증 기능과 내장된 필드 검증 및 열거형 검사 완료
 - **✅ 설정 파일 계층 구조**: 자동 발견 기능과 우선순위 (./gzh.yaml → ~/.config/gzh.yaml → 시스템 전체) 완료
 - **✅ 환경 변수 치환**: os.ExpandEnv를 사용한 동적 설정 값 지원으로 유연한 배포 가능
@@ -168,6 +168,18 @@ This document describes the implemented functionality of gzh-manager-go (gz CLI 
 - **Smart file filtering**: Ignore temporary files and focus on meaningful configuration changes
 - **Installation discovery**: List all detected JetBrains IDE installations with detailed information
 - **Backup and recovery**: Automatic backup creation before applying sync fixes
+
+## Event Management and Automation
+
+### GitHub Event and Webhook Management
+
+- **GitHub event handler**: Process and respond to GitHub webhook events
+- **Webhook management**: Create, update, delete, and list webhooks via CLI
+- **Bulk webhook operations**: Manage webhooks across multiple repositories simultaneously
+- **Event filtering**: Configure which events trigger webhook notifications
+- **Webhook validation**: Verify webhook signatures and payloads for security
+- **Event routing**: Route events to different handlers based on event type
+- **Automation rules**: Define custom automation rules for event processing
 
 ## Cross-Platform Support
 

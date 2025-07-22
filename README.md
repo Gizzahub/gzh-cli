@@ -132,13 +132,11 @@ Available Commands:
   help          Help about any command
   ide           Monitor and manage IDE configuration changes
   migrate       Migrate configuration files to unified format
-  monitoring    Run monitoring and alerting system
   net-env       Manage network environment transitions
   repo-config   GitHub repository configuration management
   repo-sync     Advanced repository synchronization and management
   shell         Start interactive debugging shell (REPL)
   ssh-config    SSH configuration management for Git operations
-  task-runner   🚀 TASK_RUNNER.todo - 자동 TODO 작업 실행기
   version       gz version information
   webhook       🔗 GitHub 웹훅 관리 도구
 
@@ -692,7 +690,7 @@ func main() {
 - [assets/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/assets) => docs, images, etc
 - [cmd/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/cmd) => command-line configurations (flags, subcommands)
 - [pkg/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg) => packages that are okay to import for other projects
-- [internal/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg) => packages that are only for project internal purposes
+- [internal/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/internal) => packages that are only for project internal purposes
 
 * [`tools/`](tools/) => for automatically shipping all required dependencies when running `go get` (or `make bootstrap`) such as `golang-ci-lint` (see: https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module)
 * [`scripts/`](scripts/) => build scripts

@@ -135,23 +135,6 @@ func TestCreateRepositoryWebhookFlags(t *testing.T) {
 	assert.NotNil(t, secretFlag)
 }
 
-func TestTaskRunnerCmd(t *testing.T) {
-	cmd := NewTaskRunnerCmd()
-
-	assert.NotNil(t, cmd)
-	assert.Equal(t, "task-runner [directory]", cmd.Use)
-	assert.Contains(t, cmd.Short, "TASK_RUNNER.todo")
-	assert.Contains(t, cmd.Long, "TASK_RUNNER.todo 프롬프트 시스템")
-
-	// Check flags
-	dryRunFlag := cmd.Flag("dry-run")
-	assert.NotNil(t, dryRunFlag)
-	assert.Equal(t, "n", dryRunFlag.Shorthand)
-
-	listFlag := cmd.Flag("list")
-	assert.NotNil(t, listFlag)
-	assert.Equal(t, "l", listFlag.Shorthand)
-}
 
 // Helper function to find a subcommand by name or use pattern.
 func findSubcommand(parent *cobra.Command, name string) *cobra.Command {

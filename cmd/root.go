@@ -49,7 +49,6 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
 	cmd.AddCommand(shell.ShellCmd)
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
-	cmd.AddCommand(NewTaskRunnerCmd())
 	cmd.AddCommand(NewWebhookCmd())
 	cmd.AddCommand(NewEventCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 
