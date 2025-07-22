@@ -2,6 +2,7 @@
 package netenv
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -119,7 +120,7 @@ func (o *switchOptions) runSwitch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("profile name is required. Use --list to see available profiles")
 	}
 
-	return o.switchToProfile()
+	return o.switchToProfile(cmd.Context())
 }
 
 func (o *switchOptions) loadProfiles() (*networkProfiles, error) {
@@ -336,7 +337,7 @@ profiles:
 	return nil
 }
 
-func (o *switchOptions) switchToProfile() error {
+func (o *switchOptions) switchToProfile(ctx context.Context) error {
 	profiles, err := o.loadProfiles()
 	if err != nil {
 		return err
@@ -380,7 +381,7 @@ func (o *switchOptions) switchToProfile() error {
 	}
 
 	// Apply network configurations
-	if err := o.applyNetworkConfig(targetProfile); err != nil {
+	if err := o.applyNetworkConfig(ctx, targetProfile); err != nil {
 		return fmt.Errorf("failed to apply network configuration: %w", err)
 	}
 
@@ -441,10 +442,10 @@ func (o *switchOptions) executeScripts(scripts []string, phase string) error {
 	return nil
 }
 
-func (o *switchOptions) applyNetworkConfig(profile *networkProfile) error {
+func (o *switchOptions) applyNetworkConfig(ctx context.Context, profile *networkProfile) error {
 	// Apply VPN configuration
 	if profile.VPN != nil {
-		if err := o.applyVPNConfig(profile.VPN); err != nil {
+		if err := o.applyVPNConfig(ctx, profile.VPN); err != nil {
 			return fmt.Errorf("VPN configuration failed: %w", err)
 		}
 	}
@@ -473,7 +474,7 @@ func (o *switchOptions) applyNetworkConfig(profile *networkProfile) error {
 	return nil
 }
 
-func (o *switchOptions) applyVPNConfig(vpn *vpnActions) error {
+func (o *switchOptions) applyVPNConfig(ctx context.Context, vpn *vpnActions) error {
 	if o.verbose {
 		fmt.Printf("🔐 Configuring VPN connections...\n")
 	}
@@ -485,7 +486,7 @@ func (o *switchOptions) applyVPNConfig(vpn *vpnActions) error {
 		}
 
 		if !o.dryRun {
-			if err := disconnectVPN(vpnName); err != nil {
+			if err := disconnectVPN(ctx, vpnName); err != nil {
 				fmt.Printf("   ⚠️  Warning: Failed to disconnect %s: %v\n", vpnName, err)
 			}
 		}

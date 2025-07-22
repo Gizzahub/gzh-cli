@@ -5,6 +5,7 @@ package docker
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -268,7 +269,8 @@ func runOptimize(cmd *cobra.Command, args []string) {
 	// 1. Analyze current image
 	fmt.Printf("🔍 이미지 분석 중...\n")
 
-	analysis, err := analyzeImage(optimizeImage)
+	ctx := context.Background()
+	analysis, err := analyzeImage(ctx, optimizeImage)
 	if err != nil {
 		fmt.Printf("❌ 이미지 분석 실패: %v\n", err)
 		os.Exit(1)
@@ -319,13 +321,13 @@ func runOptimize(cmd *cobra.Command, args []string) {
 	fmt.Printf("✅ 이미지 최적화 완료\n")
 }
 
-func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
+func analyzeImage(ctx context.Context, imageName string) (*OptimizationAnalysis, error) {
 	analysis := &OptimizationAnalysis{
 		Timestamp: time.Now(),
 	}
 
 	// Get image info
-	imageInfo, err := getOptimizeImageInfo(imageName)
+	imageInfo, err := getOptimizeImageInfo(ctx, imageName)
 	if err != nil {
 		return nil, fmt.Errorf("이미지 정보 조회 실패: %w", err)
 	}
@@ -333,7 +335,7 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	analysis.ImageInfo = *imageInfo
 
 	// Analyze layers
-	layers, err := analyzeLayers(imageName)
+	layers, err := analyzeLayers(ctx, imageName)
 	if err != nil {
 		return nil, fmt.Errorf("레이어 분석 실패: %w", err)
 	}
@@ -364,8 +366,8 @@ func analyzeImage(imageName string) (*OptimizationAnalysis, error) {
 	return analysis, nil
 }
 
-func getOptimizeImageInfo(imageName string) (*ImageInfo, error) {
-	cmd := exec.Command("docker", "image", "inspect", imageName)
+func getOptimizeImageInfo(ctx context.Context, imageName string) (*ImageInfo, error) {
+	cmd := exec.CommandContext(ctx, "docker", "image", "inspect", imageName)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -440,8 +442,8 @@ func getOptimizeImageInfo(imageName string) (*ImageInfo, error) {
 	return imageInfo, nil
 }
 
-func analyzeLayers(imageName string) ([]LayerInfo, error) {
-	cmd := exec.Command("docker", "history", "--no-trunc", "--format", "{{.ID}}\t{{.Size}}\t{{.CreatedBy}}\t{{.CreatedAt}}", imageName)
+func analyzeLayers(ctx context.Context, imageName string) ([]LayerInfo, error) {
+	cmd := exec.CommandContext(ctx, "docker", "history", "--no-trunc", "--format", "{{.ID}}\t{{.Size}}\t{{.CreatedBy}}\t{{.CreatedAt}}", imageName)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -877,7 +879,8 @@ func applyOptimizations(imageName string, analysis *OptimizationAnalysis, sugges
 			result.OptimizedImage = optimizedImage
 
 			// Get optimized image size
-			optimizedInfo, err := getOptimizeImageInfo(optimizedImage)
+			ctx := context.Background()
+			optimizedInfo, err := getOptimizeImageInfo(ctx, optimizedImage)
 			if err == nil {
 				result.OptimizedSize = optimizedInfo.Size
 				result.SizeReduction = result.OriginalSize - result.OptimizedSize

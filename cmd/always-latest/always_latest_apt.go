@@ -114,25 +114,29 @@ func (o *alwaysLatestAptOptions) run(_ *cobra.Command, _ []string) error {
 
 	// Fix broken packages if requested
 	if o.fixBroken {
-		if err := o.fixBrokenPackages(); err != nil {
+		ctx := context.Background()
+		if err := o.fixBrokenPackages(ctx); err != nil {
 			fmt.Printf("⚠️  Failed to fix broken packages: %v\n", err)
 		}
 	}
 
 	// Update APT package lists
 	if o.updateApt {
-		if err := o.updatePackageLists(); err != nil {
+		ctx := context.Background()
+		if err := o.updatePackageLists(ctx); err != nil {
 			return fmt.Errorf("failed to update APT package lists: %w", err)
 		}
 	}
 
 	// Handle full upgrade mode
 	if o.fullUpgrade {
-		return o.performFullUpgrade()
+		ctx := context.Background()
+		return o.performFullUpgrade(ctx)
 	}
 
 	// Get upgradeable packages
-	upgradeablePackages, err := o.getUpgradeablePackages()
+	ctx := context.Background()
+	upgradeablePackages, err := o.getUpgradeablePackages(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get upgradeable packages: %w", err)
 	}
@@ -151,9 +155,10 @@ func (o *alwaysLatestAptOptions) run(_ *cobra.Command, _ []string) error {
 
 	// Update packages
 	updatedCount := 0
+	updateCtx := context.Background()
 
 	for _, pkg := range upgradeablePackages {
-		updated, err := o.updatePackage(pkg)
+		updated, err := o.updatePackage(updateCtx, pkg)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to update %s: %v\n", pkg, err)
 			continue
@@ -184,7 +189,7 @@ func (o *alwaysLatestAptOptions) isAptInstalled() bool {
 	return err == nil
 }
 
-func (o *alwaysLatestAptOptions) fixBrokenPackages() error {
+func (o *alwaysLatestAptOptions) fixBrokenPackages(ctx context.Context) error {
 	fmt.Println("🔧 Fixing broken packages...")
 
 	if o.dryRun {
@@ -192,7 +197,7 @@ func (o *alwaysLatestAptOptions) fixBrokenPackages() error {
 		return nil
 	}
 
-	cmd := exec.Command("sudo", "apt-get", "install", "-f", "-y")
+	cmd := exec.CommandContext(ctx, "sudo", "apt-get", "install", "-f", "-y")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -204,7 +209,7 @@ func (o *alwaysLatestAptOptions) fixBrokenPackages() error {
 	return nil
 }
 
-func (o *alwaysLatestAptOptions) updatePackageLists() error {
+func (o *alwaysLatestAptOptions) updatePackageLists(ctx context.Context) error {
 	fmt.Println("🔄 Updating APT package lists...")
 
 	if o.dryRun {
@@ -212,7 +217,7 @@ func (o *alwaysLatestAptOptions) updatePackageLists() error {
 		return nil
 	}
 
-	cmd := exec.Command("sudo", "apt-get", "update")
+	cmd := exec.CommandContext(ctx, "sudo", "apt-get", "update")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -224,7 +229,7 @@ func (o *alwaysLatestAptOptions) updatePackageLists() error {
 	return nil
 }
 
-func (o *alwaysLatestAptOptions) performFullUpgrade() error {
+func (o *alwaysLatestAptOptions) performFullUpgrade(ctx context.Context) error {
 	fmt.Println("🔄 Performing full system upgrade...")
 
 	if o.dryRun {
@@ -237,7 +242,7 @@ func (o *alwaysLatestAptOptions) performFullUpgrade() error {
 		return nil
 	}
 
-	cmd := exec.Command("sudo", "apt-get", "full-upgrade", "-y")
+	cmd := exec.CommandContext(ctx, "sudo", "apt-get", "full-upgrade", "-y")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -249,8 +254,8 @@ func (o *alwaysLatestAptOptions) performFullUpgrade() error {
 	return o.performCleanupIfRequested()
 }
 
-func (o *alwaysLatestAptOptions) getUpgradeablePackages() ([]string, error) {
-	cmd := exec.Command("apt", "list", "--upgradable")
+func (o *alwaysLatestAptOptions) getUpgradeablePackages(ctx context.Context) ([]string, error) {
+	cmd := exec.CommandContext(ctx, "apt", "list", "--upgradable")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -296,7 +301,7 @@ func (o *alwaysLatestAptOptions) filterPackages(allPackages, requestedPackages [
 	return filtered
 }
 
-func (o *alwaysLatestAptOptions) updatePackage(packageName string) (bool, error) {
+func (o *alwaysLatestAptOptions) updatePackage(ctx context.Context, packageName string) (bool, error) {
 	fmt.Printf("🔍 Checking %s...\n", packageName)
 
 	if o.dryRun {
@@ -312,7 +317,7 @@ func (o *alwaysLatestAptOptions) updatePackage(packageName string) (bool, error)
 
 	// Upgrade the package
 	fmt.Printf("   Upgrading %s...\n", packageName)
-	cmd := exec.Command("sudo", "apt-get", "install", "--only-upgrade", "-y", packageName)
+	cmd := exec.CommandContext(ctx, "sudo", "apt-get", "install", "--only-upgrade", "-y", packageName)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -345,14 +350,15 @@ func (o *alwaysLatestAptOptions) confirmFullUpgrade() bool {
 }
 
 func (o *alwaysLatestAptOptions) performCleanupIfRequested() error {
+	ctx := context.Background()
 	if o.autoRemove && !o.dryRun {
-		if err := o.autoRemovePackages(); err != nil {
+		if err := o.autoRemovePackages(ctx); err != nil {
 			return err
 		}
 	}
 
 	if o.cleanup && !o.dryRun {
-		if err := o.cleanupPackages(); err != nil {
+		if err := o.cleanupPackages(ctx); err != nil {
 			return err
 		}
 	}
@@ -360,10 +366,10 @@ func (o *alwaysLatestAptOptions) performCleanupIfRequested() error {
 	return nil
 }
 
-func (o *alwaysLatestAptOptions) autoRemovePackages() error {
+func (o *alwaysLatestAptOptions) autoRemovePackages(ctx context.Context) error {
 	fmt.Println("🧹 Auto-removing unused packages...")
 
-	cmd := exec.Command("sudo", "apt-get", "autoremove", "-y")
+	cmd := exec.CommandContext(ctx, "sudo", "apt-get", "autoremove", "-y")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -375,10 +381,10 @@ func (o *alwaysLatestAptOptions) autoRemovePackages() error {
 	return nil
 }
 
-func (o *alwaysLatestAptOptions) cleanupPackages() error {
+func (o *alwaysLatestAptOptions) cleanupPackages(ctx context.Context) error {
 	fmt.Println("🧹 Cleaning up package cache...")
 
-	cmd := exec.Command("sudo", "apt-get", "autoclean")
+	cmd := exec.CommandContext(ctx, "sudo", "apt-get", "autoclean")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -390,8 +396,8 @@ func (o *alwaysLatestAptOptions) cleanupPackages() error {
 	return nil
 }
 
-func (o *alwaysLatestAptOptions) getPackageVersion(packageName string) (string, error) {
-	cmd := exec.Command("dpkg", "-l", packageName)
+func (o *alwaysLatestAptOptions) getPackageVersion(ctx context.Context, packageName string) (string, error) {
+	cmd := exec.CommandContext(ctx, "dpkg", "-l", packageName)
 
 	output, err := cmd.Output()
 	if err != nil {

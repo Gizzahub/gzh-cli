@@ -5,6 +5,7 @@ package netenv
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,8 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 type actionsOptions struct {
@@ -326,7 +328,7 @@ func newVPNDisconnectCmd() *cobra.Command {
 		Use:   "disconnect",
 		Short: "Disconnect from VPN",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return disconnectVPN(vpnName)
+			return disconnectVPN(cmd.Context(), vpnName)
 		},
 	}
 
@@ -637,23 +639,23 @@ func connectVPN(name, vpnType, configFile string) error {
 	return nil
 }
 
-func disconnectVPN(name string) error {
+func disconnectVPN(ctx context.Context, name string) error {
 	fmt.Printf("🔓 Disconnecting from VPN: %s\n", name)
 
 	// Try NetworkManager first
-	if err := exec.Command("nmcli", "connection", "down", name).Run(); err == nil {
+	if err := exec.CommandContext(ctx, "nmcli", "connection", "down", name).Run(); err == nil {
 		fmt.Printf("✅ Disconnected NetworkManager VPN: %s\n", name)
 		return nil
 	}
 
 	// Try OpenVPN
-	if err := exec.Command("systemctl", "stop", fmt.Sprintf("openvpn@%s", name)).Run(); err == nil {
+	if err := exec.CommandContext(ctx, "systemctl", "stop", fmt.Sprintf("openvpn@%s", name)).Run(); err == nil {
 		fmt.Printf("✅ Stopped OpenVPN service: %s\n", name)
 		return nil
 	}
 
 	// Try WireGuard
-	if err := exec.Command("wg-quick", "down", name).Run(); err == nil {
+	if err := exec.CommandContext(ctx, "wg-quick", "down", name).Run(); err == nil {
 		fmt.Printf("✅ Stopped WireGuard connection: %s\n", name)
 		return nil
 	}
@@ -878,8 +880,9 @@ func addHostEntry(ip, host string) error {
 	}
 
 	// Create backup
+	ctx := context.Background()
 	backupFile := hostsFile + ".backup." + time.Now().Format("20060102-150405")
-	if err := exec.Command("cp", hostsFile, backupFile).Run(); err != nil {
+	if err := exec.CommandContext(ctx, "cp", hostsFile, backupFile).Run(); err != nil {
 		fmt.Printf("⚠️  Warning: Could not create backup: %v\n", err)
 	} else {
 		fmt.Printf("📦 Backup created: %s\n", backupFile)
@@ -936,8 +939,9 @@ func removeHostEntry(host string) error {
 	}
 
 	// Create backup
+	ctx := context.Background()
 	backupFile := hostsFile + ".backup." + time.Now().Format("20060102-150405")
-	if err := exec.Command("cp", hostsFile, backupFile).Run(); err != nil {
+	if err := exec.CommandContext(ctx, "cp", hostsFile, backupFile).Run(); err != nil {
 		fmt.Printf("⚠️  Warning: Could not create backup: %v\n", err)
 	}
 

@@ -95,15 +95,17 @@ func (o *alwaysLatestAsdfOptions) run(_ *cobra.Command, _ []string) error {
 
 	fmt.Println("🔄 Starting asdf update process...")
 
+	ctx := context.Background()
+
 	// Update asdf plugins first
 	if o.updateAsdf {
-		if err := o.updateAsdfPlugins(); err != nil {
+		if err := o.updateAsdfPlugins(ctx); err != nil {
 			return fmt.Errorf("failed to update asdf plugins: %w", err)
 		}
 	}
 
 	// Get installed tools
-	tools, err := o.getInstalledTools()
+	tools, err := o.getInstalledTools(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get installed tools: %w", err)
 	}
@@ -124,7 +126,7 @@ func (o *alwaysLatestAsdfOptions) run(_ *cobra.Command, _ []string) error {
 	updatedCount := 0
 
 	for _, tool := range tools {
-		updated, err := o.updateTool(tool)
+		updated, err := o.updateTool(ctx, tool)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to update %s: %v\n", tool, err)
 			continue
@@ -150,7 +152,7 @@ func (o *alwaysLatestAsdfOptions) isAsdfInstalled() bool {
 	return err == nil
 }
 
-func (o *alwaysLatestAsdfOptions) updateAsdfPlugins() error {
+func (o *alwaysLatestAsdfOptions) updateAsdfPlugins(ctx context.Context) error {
 	fmt.Println("🔌 Updating asdf plugins...")
 
 	if o.dryRun {
@@ -158,7 +160,7 @@ func (o *alwaysLatestAsdfOptions) updateAsdfPlugins() error {
 		return nil
 	}
 
-	cmd := exec.Command("asdf", "plugin", "update", "--all")
+	cmd := exec.CommandContext(ctx, "asdf", "plugin", "update", "--all")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -170,8 +172,8 @@ func (o *alwaysLatestAsdfOptions) updateAsdfPlugins() error {
 	return nil
 }
 
-func (o *alwaysLatestAsdfOptions) getInstalledTools() ([]string, error) {
-	cmd := exec.Command("asdf", "plugin", "list")
+func (o *alwaysLatestAsdfOptions) getInstalledTools(ctx context.Context) ([]string, error) {
+	cmd := exec.CommandContext(ctx, "asdf", "plugin", "list")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -208,23 +210,23 @@ func (o *alwaysLatestAsdfOptions) filterTools(allTools, requestedTools []string)
 	return filtered
 }
 
-func (o *alwaysLatestAsdfOptions) updateTool(tool string) (bool, error) {
+func (o *alwaysLatestAsdfOptions) updateTool(ctx context.Context, tool string) (bool, error) {
 	fmt.Printf("🔍 Checking %s...\n", tool)
 
 	// Get current version
-	currentVersion, err := o.getCurrentVersion(tool)
+	currentVersion, err := o.getCurrentVersion(ctx, tool)
 	if err != nil {
 		return false, fmt.Errorf("failed to get current version: %w", err)
 	}
 
 	// Get latest version
-	latestVersion, err := o.getLatestVersion(tool)
+	latestVersion, err := o.getLatestVersion(ctx, tool)
 	if err != nil {
 		return false, fmt.Errorf("failed to get latest version: %w", err)
 	}
 
 	// Determine target version based on strategy
-	targetVersion, err := o.getTargetVersion(tool, currentVersion, latestVersion)
+	targetVersion, err := o.getTargetVersion(ctx, tool, currentVersion, latestVersion)
 	if err != nil {
 		return false, fmt.Errorf("failed to determine target version: %w", err)
 	}
@@ -248,13 +250,13 @@ func (o *alwaysLatestAsdfOptions) updateTool(tool string) (bool, error) {
 	}
 
 	// Install the new version
-	if err := o.installVersion(tool, targetVersion); err != nil {
+	if err := o.installVersion(ctx, tool, targetVersion); err != nil {
 		return false, err
 	}
 
 	// Set as global version if requested
 	if o.global {
-		if err := o.setGlobalVersion(tool, targetVersion); err != nil {
+		if err := o.setGlobalVersion(ctx, tool, targetVersion); err != nil {
 			return false, err
 		}
 	}
@@ -264,8 +266,8 @@ func (o *alwaysLatestAsdfOptions) updateTool(tool string) (bool, error) {
 	return true, nil
 }
 
-func (o *alwaysLatestAsdfOptions) getCurrentVersion(tool string) (string, error) {
-	cmd := exec.Command("asdf", "current", tool)
+func (o *alwaysLatestAsdfOptions) getCurrentVersion(ctx context.Context, tool string) (string, error) {
+	cmd := exec.CommandContext(ctx, "asdf", "current", tool)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -281,8 +283,8 @@ func (o *alwaysLatestAsdfOptions) getCurrentVersion(tool string) (string, error)
 	return "", nil
 }
 
-func (o *alwaysLatestAsdfOptions) getLatestVersion(tool string) (string, error) {
-	cmd := exec.Command("asdf", "list", "all", tool)
+func (o *alwaysLatestAsdfOptions) getLatestVersion(ctx context.Context, tool string) (string, error) {
+	cmd := exec.CommandContext(ctx, "asdf", "list", "all", tool)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -330,7 +332,7 @@ func (o *alwaysLatestAsdfOptions) isStableVersion(version string) bool {
 	return true
 }
 
-func (o *alwaysLatestAsdfOptions) getTargetVersion(tool, currentVersion, latestVersion string) (string, error) {
+func (o *alwaysLatestAsdfOptions) getTargetVersion(ctx context.Context, tool, currentVersion, latestVersion string) (string, error) {
 	if o.strategy == strategyMajor {
 		return latestVersion, nil
 	}
@@ -346,7 +348,7 @@ func (o *alwaysLatestAsdfOptions) getTargetVersion(tool, currentVersion, latestV
 	}
 
 	// Get all versions and find the latest within the same major version
-	cmd := exec.Command("asdf", "list", "all", tool)
+	cmd := exec.CommandContext(ctx, "asdf", "list", "all", tool)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -405,10 +407,10 @@ func (o *alwaysLatestAsdfOptions) confirmUpdate(tool, currentVersion, targetVers
 	return strings.ToLower(strings.TrimSpace(response)) == "y"
 }
 
-func (o *alwaysLatestAsdfOptions) installVersion(tool, version string) error {
+func (o *alwaysLatestAsdfOptions) installVersion(ctx context.Context, tool, version string) error {
 	fmt.Printf("   Installing %s %s...\n", tool, version)
 
-	cmd := exec.Command("asdf", "install", tool, version)
+	cmd := exec.CommandContext(ctx, "asdf", "install", tool, version)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -418,8 +420,8 @@ func (o *alwaysLatestAsdfOptions) installVersion(tool, version string) error {
 	return nil
 }
 
-func (o *alwaysLatestAsdfOptions) setGlobalVersion(tool, version string) error {
-	cmd := exec.Command("asdf", "global", tool, version)
+func (o *alwaysLatestAsdfOptions) setGlobalVersion(ctx context.Context, tool, version string) error {
+	cmd := exec.CommandContext(ctx, "asdf", "global", tool, version)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

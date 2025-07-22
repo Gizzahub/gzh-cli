@@ -16,9 +16,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -205,7 +206,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 
 		// Git checks
 		structuredLogger.Debug("Running git checks")
-		runGitChecks(report, structuredLogger, errorRecovery)
+		runGitChecks(cmd.Context(), report, structuredLogger, errorRecovery)
 
 		// Permission checks
 		structuredLogger.Debug("Running permission checks")
@@ -480,8 +481,9 @@ func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ *logger.S
 		failedHosts   []string
 	)
 
+	resolver := &net.Resolver{}
 	for _, host := range hosts {
-		if _, err := net.LookupHost(host); err == nil {
+		if _, err := resolver.LookupHost(ctx, host); err == nil {
 			resolvedHosts = append(resolvedHosts, host)
 		} else {
 			failedHosts = append(failedHosts, host)
@@ -545,7 +547,7 @@ func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ *logger.S
 	})
 }
 
-func runGitChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runGitChecks(ctx context.Context, report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🐙 Checking Git configuration...")
 	}
@@ -583,7 +585,7 @@ func runGitChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *error
 
 	// Git version
 	start = time.Now()
-	gitVersionCmd := exec.Command("git", "--version")
+	gitVersionCmd := exec.CommandContext(ctx, "git", "--version")
 
 	gitVersionOut, err := gitVersionCmd.Output()
 	if err != nil {
@@ -605,7 +607,7 @@ func runGitChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *error
 
 	// Git configuration
 	start = time.Now()
-	gitConfig := getGitConfig()
+	gitConfig := getGitConfig(ctx)
 	status = statusPass
 	message = "Git configuration looks good"
 
@@ -844,12 +846,12 @@ func isURLReachable(ctx context.Context, url string) bool {
 	return resp.StatusCode < 400
 }
 
-func getGitConfig() map[string]string {
+func getGitConfig(ctx context.Context) map[string]string {
 	config := make(map[string]string)
 
 	keys := []string{"user.name", "user.email", "core.editor", "init.defaultBranch"}
 	for _, key := range keys {
-		cmd := exec.Command("git", "config", "--global", key)
+		cmd := exec.CommandContext(ctx, "git", "config", "--global", key)
 
 		output, err := cmd.Output()
 		if err == nil {

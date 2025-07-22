@@ -993,14 +993,14 @@ func (nta *NetworkTopologyAnalyzer) findSharedNetworks(container1, container2 To
 }
 
 func (nta *NetworkTopologyAnalyzer) testConnection(ctx context.Context, address string, port int) ConnectionStatus {
-	_ = ctx // ctx unused in current implementation
 	if address == "" {
 		return StatusUnknown
 	}
 
 	timeout := 3 * time.Second
+	dialer := &net.Dialer{Timeout: timeout}
 
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", address, port), timeout)
+	conn, err := dialer.DialContext(ctx, "tcp", fmt.Sprintf("%s:%d", address, port))
 	if err != nil {
 		return StatusFailed
 	}

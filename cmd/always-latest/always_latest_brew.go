@@ -103,13 +103,15 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, _ []string) error {
 
 	fmt.Println("🍺 Starting Homebrew update process...")
 
+	ctx := context.Background()
+
 	// Update Homebrew and taps
-	if err := o.performUpdates(); err != nil {
+	if err := o.performUpdates(ctx); err != nil {
 		return err
 	}
 
 	// Get and filter outdated packages
-	outdatedPackages, outdatedCasks, err := o.getFilteredOutdatedPackages()
+	outdatedPackages, outdatedCasks, err := o.getFilteredOutdatedPackages(ctx)
 	if err != nil {
 		return err
 	}
@@ -123,7 +125,7 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, _ []string) error {
 	fmt.Printf("📦 Found %d outdated package(s)\n", totalOutdated)
 
 	// Update packages and casks
-	updatedCount := o.updateAllPackages(outdatedPackages, outdatedCasks)
+	updatedCount := o.updateAllPackages(ctx, outdatedPackages, outdatedCasks)
 
 	// Cleanup if requested
 	if o.cleanup && !o.dryRun {
@@ -139,17 +141,17 @@ func (o *alwaysLatestBrewOptions) run(_ *cobra.Command, _ []string) error {
 }
 
 // performUpdates updates Homebrew itself and taps if requested.
-func (o *alwaysLatestBrewOptions) performUpdates() error {
+func (o *alwaysLatestBrewOptions) performUpdates(ctx context.Context) error {
 	// Update Homebrew itself
 	if o.updateBrew {
-		if err := o.updateHomebrew(); err != nil {
+		if err := o.updateHomebrew(ctx); err != nil {
 			return fmt.Errorf("failed to update Homebrew: %w", err)
 		}
 	}
 
 	// Update taps if requested
 	if o.taps {
-		if err := o.updateTaps(); err != nil {
+		if err := o.updateTaps(ctx); err != nil {
 			fmt.Printf("⚠️  Failed to update taps: %v\n", err)
 		}
 	}
@@ -158,9 +160,9 @@ func (o *alwaysLatestBrewOptions) performUpdates() error {
 }
 
 // getFilteredOutdatedPackages gets outdated packages and casks, then filters them.
-func (o *alwaysLatestBrewOptions) getFilteredOutdatedPackages() (packages, casks []string, err error) {
+func (o *alwaysLatestBrewOptions) getFilteredOutdatedPackages(ctx context.Context) (packages, casks []string, err error) {
 	// Get outdated packages
-	outdatedPackages, err := o.getOutdatedPackages()
+	outdatedPackages, err := o.getOutdatedPackages(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get outdated packages: %w", err)
 	}
@@ -168,7 +170,7 @@ func (o *alwaysLatestBrewOptions) getFilteredOutdatedPackages() (packages, casks
 	// Get outdated casks if requested
 	var outdatedCasks []string
 	if o.casks {
-		outdatedCasks, err = o.getOutdatedCasks()
+		outdatedCasks, err = o.getOutdatedCasks(ctx)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to get outdated casks: %v\n", err)
 		}
@@ -186,27 +188,27 @@ func (o *alwaysLatestBrewOptions) getFilteredOutdatedPackages() (packages, casks
 }
 
 // updateAllPackages updates both formulae and casks.
-func (o *alwaysLatestBrewOptions) updateAllPackages(outdatedPackages, outdatedCasks []string) int {
+func (o *alwaysLatestBrewOptions) updateAllPackages(ctx context.Context, outdatedPackages, outdatedCasks []string) int {
 	updatedCount := 0
 
 	if len(outdatedPackages) > 0 {
 		fmt.Printf("📦 Processing %d outdated formulae...\n", len(outdatedPackages))
-		updatedCount += o.updatePackageList(outdatedPackages, false)
+		updatedCount += o.updatePackageList(ctx, outdatedPackages, false)
 	}
 
 	if len(outdatedCasks) > 0 {
 		fmt.Printf("🍺 Processing %d outdated casks...\n", len(outdatedCasks))
-		updatedCount += o.updatePackageList(outdatedCasks, true)
+		updatedCount += o.updatePackageList(ctx, outdatedCasks, true)
 	}
 
 	return updatedCount
 }
 
 // updatePackageList updates a list of packages (formulae or casks).
-func (o *alwaysLatestBrewOptions) updatePackageList(packages []string, isCask bool) int {
+func (o *alwaysLatestBrewOptions) updatePackageList(ctx context.Context, packages []string, isCask bool) int {
 	updatedCount := 0
 	for _, pkg := range packages {
-		updated, err := o.updatePackage(pkg, isCask)
+		updated, err := o.updatePackage(ctx, pkg, isCask)
 		if err != nil {
 			fmt.Printf("⚠️  Failed to update %s: %v\n", pkg, err)
 			continue
@@ -233,7 +235,7 @@ func (o *alwaysLatestBrewOptions) isBrewInstalled() bool {
 	return err == nil
 }
 
-func (o *alwaysLatestBrewOptions) updateHomebrew() error {
+func (o *alwaysLatestBrewOptions) updateHomebrew(ctx context.Context) error {
 	fmt.Println("🔄 Updating Homebrew...")
 
 	if o.dryRun {
@@ -241,7 +243,7 @@ func (o *alwaysLatestBrewOptions) updateHomebrew() error {
 		return nil
 	}
 
-	cmd := exec.Command("brew", "update")
+	cmd := exec.CommandContext(ctx, "brew", "update")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -253,7 +255,7 @@ func (o *alwaysLatestBrewOptions) updateHomebrew() error {
 	return nil
 }
 
-func (o *alwaysLatestBrewOptions) updateTaps() error {
+func (o *alwaysLatestBrewOptions) updateTaps(ctx context.Context) error {
 	fmt.Println("🔄 Updating taps...")
 
 	if o.dryRun {
@@ -262,7 +264,7 @@ func (o *alwaysLatestBrewOptions) updateTaps() error {
 	}
 
 	// Get list of taps
-	cmd := exec.Command("brew", "tap")
+	cmd := exec.CommandContext(ctx, "brew", "tap")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -278,7 +280,7 @@ func (o *alwaysLatestBrewOptions) updateTaps() error {
 
 		fmt.Printf("   Updating tap: %s\n", tap)
 
-		updateCmd := exec.Command("brew", "tap", tap)
+		updateCmd := exec.CommandContext(ctx, "brew", "tap", tap)
 		if updateOutput, updateErr := updateCmd.CombinedOutput(); updateErr != nil {
 			fmt.Printf("   ⚠️  Failed to update tap %s: %v\n%s", tap, updateErr, string(updateOutput))
 		}
@@ -289,8 +291,8 @@ func (o *alwaysLatestBrewOptions) updateTaps() error {
 	return nil
 }
 
-func (o *alwaysLatestBrewOptions) getOutdatedPackages() ([]string, error) {
-	cmd := exec.Command("brew", "outdated", "--formula")
+func (o *alwaysLatestBrewOptions) getOutdatedPackages(ctx context.Context) ([]string, error) {
+	cmd := exec.CommandContext(ctx, "brew", "outdated", "--formula")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -316,8 +318,8 @@ func (o *alwaysLatestBrewOptions) getOutdatedPackages() ([]string, error) {
 	return packages, nil
 }
 
-func (o *alwaysLatestBrewOptions) getOutdatedCasks() ([]string, error) {
-	cmd := exec.Command("brew", "outdated", "--cask")
+func (o *alwaysLatestBrewOptions) getOutdatedCasks(ctx context.Context) ([]string, error) {
+	cmd := exec.CommandContext(ctx, "brew", "outdated", "--cask")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -360,7 +362,7 @@ func (o *alwaysLatestBrewOptions) filterPackages(allPackages, requestedPackages 
 	return filtered
 }
 
-func (o *alwaysLatestBrewOptions) updatePackage(packageName string, isCask bool) (bool, error) {
+func (o *alwaysLatestBrewOptions) updatePackage(ctx context.Context, packageName string, isCask bool) (bool, error) {
 	packageType := "formula"
 	if isCask {
 		packageType = "cask"
@@ -387,9 +389,9 @@ func (o *alwaysLatestBrewOptions) updatePackage(packageName string, isCask bool)
 	// Upgrade the package
 	var cmd *exec.Cmd
 	if isCask {
-		cmd = exec.Command("brew", "upgrade", "--cask", packageName)
+		cmd = exec.CommandContext(ctx, "brew", "upgrade", "--cask", packageName)
 	} else {
-		cmd = exec.Command("brew", "upgrade", packageName)
+		cmd = exec.CommandContext(ctx, "brew", "upgrade", packageName)
 	}
 
 	fmt.Printf("   Upgrading %s...\n", packageName)

@@ -2,6 +2,7 @@
 package scenarios
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -62,7 +63,8 @@ func TestIDE_MonitorDaemon_E2E(t *testing.T) {
 	env.CreateDir(ideSettingsPath)
 
 	// Test daemon mode (background process)
-	cmd, err := env.CLI.RunAsync("ide", "monitor", "--daemon", "--pid-file", "ide-monitor.pid")
+	ctx := context.Background()
+	cmd, err := env.CLI.RunAsync(ctx, "ide", "monitor", "--daemon", "--pid-file", "ide-monitor.pid")
 	if err != nil {
 		t.Skipf("Daemon mode not available: %v", err)
 		return

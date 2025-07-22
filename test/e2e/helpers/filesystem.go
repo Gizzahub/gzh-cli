@@ -4,6 +4,7 @@
 package helpers
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,7 +41,8 @@ func NewTestEnvironment(t *testing.T) *TestEnvironment {
 	projectRoot, err := FindProjectRoot()
 	require.NoError(t, err)
 
-	binaryPath, err := BuildBinary(projectRoot)
+	ctx := context.Background()
+	binaryPath, err := BuildBinary(ctx, projectRoot)
 	require.NoError(t, err)
 
 	// Create CLI executor

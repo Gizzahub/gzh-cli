@@ -2,6 +2,7 @@
 package netenv
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -200,7 +201,8 @@ func TestApplyVPNConfig(t *testing.T) {
 		Disconnect: []string{"old-vpn"},
 	}
 
-	err := opts.applyVPNConfig(vpnConfig)
+	ctx := context.Background()
+	err := opts.applyVPNConfig(ctx, vpnConfig)
 	assert.NoError(t, err)
 }
 

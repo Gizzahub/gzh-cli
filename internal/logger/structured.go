@@ -253,14 +253,16 @@ func (l *StructuredLogger) writeStructuredLog(entry *LogEntry) {
 	data, err := json.Marshal(entry)
 	if err != nil {
 		// Fallback to simple logging
-		l.logger.Error("Failed to marshal log entry", "error", err, "message", entry.Message)
+		ctx := context.Background()
+		l.logger.ErrorContext(ctx, "Failed to marshal log entry", "error", err, "message", entry.Message)
 		return
 	}
 
 	// Write to stdout
 	if _, writeErr := fmt.Println(string(data)); writeErr != nil {
 		// Silent fallback - avoid recursive logging
-		l.logger.Error("Failed to write log entry", "error", writeErr)
+		ctx := context.Background()
+		l.logger.ErrorContext(ctx, "Failed to write log entry", "error", writeErr)
 	}
 }
 

@@ -292,10 +292,11 @@ func runBuild(cmd *cobra.Command, args []string) {
 
 	// Create build configuration
 	config := createBuildConfig()
+	ctx := context.Background()
 
 	// Initialize builder if needed
 	if enableMultiArch {
-		if err := setupMultiArchBuilder(); err != nil {
+		if err := setupMultiArchBuilder(ctx); err != nil {
 			fmt.Printf("❌ 멀티 아키텍처 빌더 설정 실패: %v\n", err)
 			os.Exit(1)
 		}
@@ -303,7 +304,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 
 	// Authenticate with registry if needed
 	if pushAfterBuild && registryURL != "" {
-		if err := authenticateRegistry(); err != nil {
+		if err := authenticateRegistry(ctx); err != nil {
 			fmt.Printf("❌ 레지스트리 인증 실패: %v\n", err)
 			os.Exit(1)
 		}
@@ -321,7 +322,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 
 	// Perform security scan if enabled
 	if enableScan {
-		if err := performSecurityScan(result); err != nil {
+		if err := performSecurityScan(ctx, result); err != nil {
 			fmt.Printf("⚠️ 보안 스캔 실패: %v\n", err)
 
 			if scanExitCode {
@@ -332,7 +333,8 @@ func runBuild(cmd *cobra.Command, args []string) {
 
 	// Push to registry if enabled
 	if pushAfterBuild {
-		if err := pushImage(result); err != nil {
+		ctx := context.Background()
+		if err := pushImage(ctx, result); err != nil {
 			fmt.Printf("❌ 이미지 푸시 실패: %v\n", err)
 			os.Exit(1)
 		}
@@ -381,9 +383,10 @@ func createBuildConfig() *BuildConfig {
 	}
 
 	// Add automatic labels
+	ctx := context.Background()
 	labels["org.opencontainers.image.created"] = time.Now().Format(time.RFC3339)
-	labels["org.opencontainers.image.revision"] = getGitRevision()
-	labels["org.opencontainers.image.source"] = getGitURL()
+	labels["org.opencontainers.image.revision"] = getGitRevision(ctx)
+	labels["org.opencontainers.image.source"] = getGitURL(ctx)
 
 	config := &BuildConfig{
 		Tag:        buildTag,
@@ -430,11 +433,11 @@ func createBuildConfig() *BuildConfig {
 	return config
 }
 
-func setupMultiArchBuilder() error {
+func setupMultiArchBuilder(ctx context.Context) error {
 	fmt.Printf("🏗️ 멀티 아키텍처 빌더 설정 중...\n")
 
 	// Check if buildx is available
-	if err := exec.Command("docker", "buildx", "version").Run(); err != nil {
+	if err := exec.CommandContext(ctx, "docker", "buildx", "version").Run(); err != nil {
 		return fmt.Errorf("docker buildx가 필요합니다: %w", err)
 	}
 
@@ -444,14 +447,14 @@ func setupMultiArchBuilder() error {
 	}
 
 	// Check if builder exists
-	output, err := exec.Command("docker", "buildx", "ls").Output()
+	output, err := exec.CommandContext(ctx, "docker", "buildx", "ls").Output()
 	if err != nil {
 		return fmt.Errorf("빌더 목록 조회 실패: %w", err)
 	}
 
 	if !strings.Contains(string(output), builderName) {
 		// Create new builder
-		cmd := exec.Command("docker", "buildx", "create", "--name", builderName, "--driver", "docker-container", "--use") //nolint:gosec // Docker command with safe arguments
+		cmd := exec.CommandContext(ctx, "docker", "buildx", "create", "--name", builderName, "--driver", "docker-container", "--use") //nolint:gosec // Docker command with safe arguments
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("빌더 생성 실패: %w", err)
 		}
@@ -459,7 +462,7 @@ func setupMultiArchBuilder() error {
 		fmt.Printf("✅ 새 빌더 생성: %s\n", builderName)
 	} else {
 		// Use existing builder
-		cmd := exec.Command("docker", "buildx", "use", builderName) //nolint:gosec // Docker command with safe arguments
+		cmd := exec.CommandContext(ctx, "docker", "buildx", "use", builderName) //nolint:gosec // Docker command with safe arguments
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("빌더 사용 설정 실패: %w", err)
 		}
@@ -468,7 +471,7 @@ func setupMultiArchBuilder() error {
 	}
 
 	// Bootstrap builder
-	cmd := exec.Command("docker", "buildx", "inspect", "--bootstrap")
+	cmd := exec.CommandContext(ctx, "docker", "buildx", "inspect", "--bootstrap")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("빌더 부트스트랩 실패: %w", err)
 	}
@@ -476,18 +479,18 @@ func setupMultiArchBuilder() error {
 	return nil
 }
 
-func authenticateRegistry() error {
+func authenticateRegistry(ctx context.Context) error {
 	fmt.Printf("🔐 레지스트리 인증 중...\n")
 
 	var cmd *exec.Cmd
 	switch {
 	case registryToken != "":
 		// Use token authentication
-		cmd = exec.Command("docker", "login", registryURL, "--username", "oauth2accesstoken", "--password-stdin") //nolint:gosec // Docker login command
+		cmd = exec.CommandContext(ctx, "docker", "login", registryURL, "--username", "oauth2accesstoken", "--password-stdin") //nolint:gosec // Docker login command
 		cmd.Stdin = strings.NewReader(registryToken)
 	case registryUsername != "" && registryPassword != "":
 		// Use username/password authentication
-		cmd = exec.Command("docker", "login", registryURL, "--username", registryUsername, "--password-stdin") //nolint:gosec // Docker login command
+		cmd = exec.CommandContext(ctx, "docker", "login", registryURL, "--username", registryUsername, "--password-stdin") //nolint:gosec // Docker login command
 		cmd.Stdin = strings.NewReader(registryPassword)
 	default:
 		return fmt.Errorf("레지스트리 인증 정보가 필요합니다")
@@ -597,7 +600,7 @@ func performBuild(config *BuildConfig) (*BuildResult, error) {
 	}
 
 	// Get image information
-	if err := getImageInfo(result); err != nil {
+	if err := getImageInfo(ctx, result); err != nil {
 		fmt.Printf("⚠️ 이미지 정보 조회 실패: %v\n", err)
 	}
 
@@ -606,9 +609,9 @@ func performBuild(config *BuildConfig) (*BuildResult, error) {
 	return result, nil
 }
 
-func getImageInfo(result *BuildResult) error {
+func getImageInfo(ctx context.Context, result *BuildResult) error {
 	// Get image ID and digest
-	cmd := exec.Command("docker", "images", "--format", "{{.ID}}\t{{.Size}}", result.Config.Tag) //nolint:gosec // Docker images command with controlled input
+	cmd := exec.CommandContext(ctx, "docker", "images", "--format", "{{.ID}}\t{{.Size}}", result.Config.Tag) //nolint:gosec // Docker images command with controlled input
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -637,11 +640,11 @@ func getImageInfo(result *BuildResult) error {
 	return nil
 }
 
-func performSecurityScan(result *BuildResult) error {
+func performSecurityScan(ctx context.Context, result *BuildResult) error {
 	fmt.Printf("🔍 보안 스캔 실행 중...\n")
 
 	for _, scanner := range scanners {
-		scanResult, err := runScanner(scanner, result.Config.Tag)
+		scanResult, err := runScanner(ctx, scanner, result.Config.Tag)
 		if err != nil {
 			fmt.Printf("⚠️ %s 스캔 실패: %v\n", scanner, err)
 			continue
@@ -658,7 +661,7 @@ func performSecurityScan(result *BuildResult) error {
 	return nil
 }
 
-func runScanner(scanner, imageTag string) (*ScanResult, error) {
+func runScanner(ctx context.Context, scanner, imageTag string) (*ScanResult, error) {
 	scanResult := &ScanResult{
 		Scanner:   scanner,
 		Timestamp: time.Now(),
@@ -670,11 +673,11 @@ func runScanner(scanner, imageTag string) (*ScanResult, error) {
 
 	switch scanner {
 	case scannerTrivy:
-		cmd = exec.Command(scannerTrivy, "image", "--format", "json", imageTag)
+		cmd = exec.CommandContext(ctx, scannerTrivy, "image", "--format", "json", imageTag)
 	case scannerGrype:
-		cmd = exec.Command(scannerGrype, imageTag, "--output", "json")
+		cmd = exec.CommandContext(ctx, scannerGrype, imageTag, "--output", "json")
 	case scannerSnyk:
-		cmd = exec.Command(scannerSnyk, "container", "test", imageTag, "--json")
+		cmd = exec.CommandContext(ctx, scannerSnyk, "container", "test", imageTag, "--json")
 	default:
 		return nil, fmt.Errorf("지원하지 않는 스캐너: %s", scanner)
 	}
@@ -783,13 +786,13 @@ func parseSnykOutput(output []byte, result *ScanResult) error {
 	return nil
 }
 
-func pushImage(result *BuildResult) error {
+func pushImage(ctx context.Context, result *BuildResult) error {
 	fmt.Printf("📤 이미지 푸시 중...\n")
 
 	startTime := time.Now()
 
 	for retry := 0; retry < result.Config.Registry.Retries; retry++ {
-		cmd := exec.Command("docker", "push", result.Config.Tag) //nolint:gosec // Docker push with controlled tag
+		cmd := exec.CommandContext(ctx, "docker", "push", result.Config.Tag) //nolint:gosec // Docker push with controlled tag
 
 		err := cmd.Run()
 		if err == nil {
@@ -877,8 +880,8 @@ func formatBytes(bytes int64) string {
 
 // Utility functions
 
-func getGitRevision() string {
-	cmd := exec.Command("git", "rev-parse", "HEAD")
+func getGitRevision(ctx context.Context) string {
+	cmd := exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -888,8 +891,8 @@ func getGitRevision() string {
 	return strings.TrimSpace(string(output))
 }
 
-func getGitURL() string {
-	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
+func getGitURL(ctx context.Context) string {
+	cmd := exec.CommandContext(ctx, "git", "config", "--get", "remote.origin.url")
 
 	output, err := cmd.Output()
 	if err != nil {

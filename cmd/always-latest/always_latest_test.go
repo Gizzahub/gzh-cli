@@ -160,7 +160,8 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 	t.Run("major strategy returns latest", func(t *testing.T) {
 		opts.strategy = strategyMajor
 
-		target, err := opts.getTargetVersion("nodejs", "18.17.0", "20.0.0")
+		ctx := context.Background()
+		target, err := opts.getTargetVersion(ctx, "nodejs", "18.17.0", "20.0.0")
 		assert.NoError(t, err)
 		assert.Equal(t, "20.0.0", target)
 	})
@@ -168,7 +169,8 @@ func TestAsdfTargetVersionLogic(t *testing.T) {
 	t.Run("minor strategy with no current version returns latest", func(t *testing.T) {
 		opts.strategy = strategyMinor
 
-		target, err := opts.getTargetVersion("nodejs", "", "20.0.0")
+		ctx := context.Background()
+		target, err := opts.getTargetVersion(ctx, "nodejs", "", "20.0.0")
 		assert.NoError(t, err)
 		assert.Equal(t, "20.0.0", target)
 	})
