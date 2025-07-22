@@ -394,25 +394,28 @@ func (km *KubernetesNetworkManager) parseNetworkPorts(ports []interface{}) []Net
 	var networkPorts []NetworkPolicyPort
 
 	for _, port := range ports {
-		if portMap, ok := port.(map[string]interface{}); ok {
-			networkPort := NetworkPolicyPort{}
-
-			if protocol, ok := portMap["protocol"].(string); ok {
-				networkPort.Protocol = protocol
-			}
-
-			if portNum, ok := portMap["port"].(float64); ok {
-				p := int32(portNum)
-				networkPort.Port = &p
-			}
-
-			if endPort, ok := portMap["endPort"].(float64); ok {
-				ep := int32(endPort)
-				networkPort.EndPort = &ep
-			}
-
-			networkPorts = append(networkPorts, networkPort)
+		portMap, ok := port.(map[string]interface{})
+		if !ok {
+			continue
 		}
+
+		networkPort := NetworkPolicyPort{}
+
+		if protocol, ok := portMap["protocol"].(string); ok {
+			networkPort.Protocol = protocol
+		}
+
+		if portNum, ok := portMap["port"].(float64); ok {
+			p := int32(portNum)
+			networkPort.Port = &p
+		}
+
+		if endPort, ok := portMap["endPort"].(float64); ok {
+			ep := int32(endPort)
+			networkPort.EndPort = &ep
+		}
+
+		networkPorts = append(networkPorts, networkPort)
 	}
 
 	return networkPorts

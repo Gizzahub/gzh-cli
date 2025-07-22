@@ -355,10 +355,12 @@ func TestEnvironmentVariableExpansion_EdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Set up environment variables
+			// Set up environment variables with proper cleanup
 			for key, value := range tt.envVars {
-				_ = os.Setenv(key, value)               // Ignore error
-				defer func() { _ = os.Unsetenv(key) }() // Ignore error
+				_ = os.Setenv(key, value) // Ignore error
+				defer func(k string) {
+					_ = os.Unsetenv(k) // Ignore error
+				}(key)
 			}
 
 			result := ExpandEnvironmentVariables(tt.input)

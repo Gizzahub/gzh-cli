@@ -92,8 +92,8 @@ func NewFileSystem(config *FileSystemConfig, logger Logger) FileSystem {
 }
 
 // AppendFile implements FileSystem interface.
-func (fs *FileSystemImpl) AppendFile(_ context.Context, filename string, data []byte) error {
-	fs.logger.Debug("Appending to file", "filename", filename)
+func (fsImpl *FileSystemImpl) AppendFile(_ context.Context, filename string, data []byte) error {
+	fsImpl.logger.Debug("Appending to file", "filename", filename)
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
@@ -109,7 +109,7 @@ func (fs *FileSystemImpl) AppendFile(_ context.Context, filename string, data []
 }
 
 // IsFile implements FileSystem interface.
-func (fs *FileSystemImpl) IsFile(_ context.Context, path string) bool {
+func (fsImpl *FileSystemImpl) IsFile(_ context.Context, path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -119,7 +119,7 @@ func (fs *FileSystemImpl) IsFile(_ context.Context, path string) bool {
 }
 
 // IsDir implements FileSystem interface.
-func (fs *FileSystemImpl) IsDir(_ context.Context, path string) bool {
+func (fsImpl *FileSystemImpl) IsDir(_ context.Context, path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -129,7 +129,7 @@ func (fs *FileSystemImpl) IsDir(_ context.Context, path string) bool {
 }
 
 // GetFileSize implements FileSystem interface.
-func (fs *FileSystemImpl) GetFileSize(_ context.Context, path string) (int64, error) {
+func (fsImpl *FileSystemImpl) GetFileSize(_ context.Context, path string) (int64, error) {
 	info, err := os.Stat(path)
 	if err != nil {
 		return 0, err
@@ -139,13 +139,13 @@ func (fs *FileSystemImpl) GetFileSize(_ context.Context, path string) (int64, er
 }
 
 // MkdirAll implements FileSystem interface.
-func (fs *FileSystemImpl) MkdirAll(_ context.Context, path string, perm fs.FileMode) error {
-	fs.logger.Debug("Creating directory", "path", path)
+func (fsImpl *FileSystemImpl) MkdirAll(_ context.Context, path string, perm fs.FileMode) error {
+	fsImpl.logger.Debug("Creating directory", "path", path)
 	return os.MkdirAll(path, perm)
 }
 
 // WalkDir implements FileSystem interface.
-func (fs *FileSystemImpl) WalkDir(_ context.Context, root string, fn func(path string, info FileInfo, err error) error) error {
+func (fsImpl *FileSystemImpl) WalkDir(_ context.Context, root string, fn func(path string, info FileInfo, err error) error) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return fn(path, FileInfo{}, err)
@@ -159,20 +159,20 @@ func (fs *FileSystemImpl) WalkDir(_ context.Context, root string, fn func(path s
 }
 
 // CreateSymlink implements FileSystem interface.
-func (fs *FileSystemImpl) CreateSymlink(_ context.Context, oldname, newname string) error {
-	fs.logger.Debug("Creating symlink", "oldname", oldname, "newname", newname)
+func (fsImpl *FileSystemImpl) CreateSymlink(_ context.Context, oldname, newname string) error {
+	fsImpl.logger.Debug("Creating symlink", "oldname", oldname, "newname", newname)
 	return os.Symlink(oldname, newname)
 }
 
 // ReadSymlink implements FileSystem interface.
-func (fs *FileSystemImpl) ReadSymlink(_ context.Context, name string) (string, error) {
-	fs.logger.Debug("Reading symlink", "name", name)
+func (fsImpl *FileSystemImpl) ReadSymlink(_ context.Context, name string) (string, error) {
+	fsImpl.logger.Debug("Reading symlink", "name", name)
 	return os.Readlink(name)
 }
 
 // OpenFile implements FileSystem interface.
-func (fs *FileSystemImpl) OpenFile(_ context.Context, name string, flag int, perm fs.FileMode) (File, error) {
-	fs.logger.Debug("Opening file", "name", name)
+func (fsImpl *FileSystemImpl) OpenFile(_ context.Context, name string, flag int, perm fs.FileMode) (File, error) {
+	fsImpl.logger.Debug("Opening file", "name", name)
 
 	file, err := os.OpenFile(name, flag, perm)
 	if err != nil {
@@ -183,8 +183,8 @@ func (fs *FileSystemImpl) OpenFile(_ context.Context, name string, flag int, per
 }
 
 // CreateFile implements FileSystem interface.
-func (fs *FileSystemImpl) CreateFile(_ context.Context, name string) (File, error) {
-	fs.logger.Debug("Creating file", "name", name)
+func (fsImpl *FileSystemImpl) CreateFile(_ context.Context, name string) (File, error) {
+	fsImpl.logger.Debug("Creating file", "name", name)
 
 	file, err := os.Create(name)
 	if err != nil {
@@ -195,44 +195,44 @@ func (fs *FileSystemImpl) CreateFile(_ context.Context, name string) (File, erro
 }
 
 // Abs implements FileSystem interface.
-func (fs *FileSystemImpl) Abs(path string) (string, error) {
+func (fsImpl *FileSystemImpl) Abs(path string) (string, error) {
 	return filepath.Abs(path)
 }
 
 // Join implements FileSystem interface.
-func (fs *FileSystemImpl) Join(paths ...string) string {
+func (fsImpl *FileSystemImpl) Join(paths ...string) string {
 	return filepath.Join(paths...)
 }
 
 // Dir implements FileSystem interface.
-func (fs *FileSystemImpl) Dir(path string) string {
+func (fsImpl *FileSystemImpl) Dir(path string) string {
 	return filepath.Dir(path)
 }
 
 // Base implements FileSystem interface.
-func (fs *FileSystemImpl) Base(path string) string {
+func (fsImpl *FileSystemImpl) Base(path string) string {
 	return filepath.Base(path)
 }
 
 // Ext implements FileSystem interface.
-func (fs *FileSystemImpl) Ext(path string) string {
+func (fsImpl *FileSystemImpl) Ext(path string) string {
 	return filepath.Ext(path)
 }
 
 // Clean implements FileSystem interface.
-func (fs *FileSystemImpl) Clean(path string) string {
+func (fsImpl *FileSystemImpl) Clean(path string) string {
 	return filepath.Clean(path)
 }
 
 // TempDir implements FileSystem interface.
-func (fs *FileSystemImpl) TempDir(_ context.Context, dir, pattern string) (string, error) {
-	fs.logger.Debug("Creating temp directory", "dir", dir, "pattern", pattern)
+func (fsImpl *FileSystemImpl) TempDir(_ context.Context, dir, pattern string) (string, error) {
+	fsImpl.logger.Debug("Creating temp directory", "dir", dir, "pattern", pattern)
 	return os.MkdirTemp(dir, pattern)
 }
 
 // TempFile implements FileSystem interface.
-func (fs *FileSystemImpl) TempFile(_ context.Context, dir, pattern string) (File, error) {
-	fs.logger.Debug("Creating temp file", "dir", dir, "pattern", pattern)
+func (fsImpl *FileSystemImpl) TempFile(_ context.Context, dir, pattern string) (File, error) {
+	fsImpl.logger.Debug("Creating temp file", "dir", dir, "pattern", pattern)
 
 	file, err := os.CreateTemp(dir, pattern)
 	if err != nil {
@@ -243,12 +243,12 @@ func (fs *FileSystemImpl) TempFile(_ context.Context, dir, pattern string) (File
 }
 
 // ReadFile implements FileSystem interface.
-func (fs *FileSystemImpl) ReadFile(_ context.Context, filename string) ([]byte, error) {
-	fs.logger.Debug("Reading file", "filename", filename)
+func (fsImpl *FileSystemImpl) ReadFile(_ context.Context, filename string) ([]byte, error) {
+	fsImpl.logger.Debug("Reading file", "filename", filename)
 
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		fs.logger.Error("Failed to read file", "filename", filename, "error", err)
+		fsImpl.logger.Error("Failed to read file", "filename", filename, "error", err)
 		return nil, err
 	}
 
@@ -256,12 +256,12 @@ func (fs *FileSystemImpl) ReadFile(_ context.Context, filename string) ([]byte, 
 }
 
 // WriteFile implements FileSystem interface.
-func (fs *FileSystemImpl) WriteFile(ctx context.Context, filename string, data []byte, perm os.FileMode) error {
-	fs.logger.Debug("Writing file", "filename", filename, "size", len(data))
+func (fsImpl *FileSystemImpl) WriteFile(ctx context.Context, filename string, data []byte, perm os.FileMode) error {
+	fsImpl.logger.Debug("Writing file", "filename", filename, "size", len(data))
 
 	err := os.WriteFile(filename, data, perm)
 	if err != nil {
-		fs.logger.Error("Failed to write file", "filename", filename, "error", err)
+		fsImpl.logger.Error("Failed to write file", "filename", filename, "error", err)
 		return err
 	}
 
@@ -269,12 +269,12 @@ func (fs *FileSystemImpl) WriteFile(ctx context.Context, filename string, data [
 }
 
 // CreateDir implements FileSystem interface.
-func (fs *FileSystemImpl) CreateDir(ctx context.Context, path string, perm os.FileMode) error {
-	fs.logger.Debug("Creating directory", "path", path)
+func (fsImpl *FileSystemImpl) CreateDir(ctx context.Context, path string, perm os.FileMode) error {
+	fsImpl.logger.Debug("Creating directory", "path", path)
 
 	err := os.MkdirAll(path, perm)
 	if err != nil {
-		fs.logger.Error("Failed to create directory", "path", path, "error", err)
+		fsImpl.logger.Error("Failed to create directory", "path", path, "error", err)
 		return err
 	}
 
@@ -282,12 +282,12 @@ func (fs *FileSystemImpl) CreateDir(ctx context.Context, path string, perm os.Fi
 }
 
 // RemoveAll implements FileSystem interface.
-func (fs *FileSystemImpl) RemoveAll(ctx context.Context, path string) error {
-	fs.logger.Debug("Removing directory", "path", path)
+func (fsImpl *FileSystemImpl) RemoveAll(ctx context.Context, path string) error {
+	fsImpl.logger.Debug("Removing directory", "path", path)
 
 	err := os.RemoveAll(path)
 	if err != nil {
-		fs.logger.Error("Failed to remove directory", "path", path, "error", err)
+		fsImpl.logger.Error("Failed to remove directory", "path", path, "error", err)
 		return err
 	}
 
@@ -295,18 +295,18 @@ func (fs *FileSystemImpl) RemoveAll(ctx context.Context, path string) error {
 }
 
 // Exists implements FileSystem interface.
-func (fs *FileSystemImpl) Exists(ctx context.Context, path string) bool {
+func (fsImpl *FileSystemImpl) Exists(ctx context.Context, path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
 
 // GetFileInfo implements FileSystem interface.
-func (fs *FileSystemImpl) GetFileInfo(ctx context.Context, path string) (*FileInfo, error) {
-	fs.logger.Debug("Getting file info", "path", path)
+func (fsImpl *FileSystemImpl) GetFileInfo(ctx context.Context, path string) (*FileInfo, error) {
+	fsImpl.logger.Debug("Getting file info", "path", path)
 
 	info, err := os.Stat(path)
 	if err != nil {
-		fs.logger.Error("Failed to get file info", "path", path, "error", err)
+		fsImpl.logger.Error("Failed to get file info", "path", path, "error", err)
 		return nil, err
 	}
 
@@ -317,12 +317,12 @@ func (fs *FileSystemImpl) GetFileInfo(ctx context.Context, path string) (*FileIn
 }
 
 // ListDir implements FileSystem interface.
-func (fs *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileInfo, error) {
-	fs.logger.Debug("Listing directory", "path", path)
+func (fsImpl *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileInfo, error) {
+	fsImpl.logger.Debug("Listing directory", "path", path)
 
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		fs.logger.Error("Failed to list directory", "path", path, "error", err)
+		fsImpl.logger.Error("Failed to list directory", "path", path, "error", err)
 		return nil, err
 	}
 
@@ -331,7 +331,7 @@ func (fs *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileInfo,
 	for _, entry := range entries {
 		info, err := entry.Info()
 		if err != nil {
-			fs.logger.Warn("Failed to get file info for entry", "entry", entry.Name(), "error", err)
+			fsImpl.logger.Warn("Failed to get file info for entry", "entry", entry.Name(), "error", err)
 			continue
 		}
 
@@ -344,12 +344,12 @@ func (fs *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileInfo,
 }
 
 // CopyFile implements FileSystem interface.
-func (fs *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
-	fs.logger.Debug("Copying file", "src", src, "dst", dst)
+func (fsImpl *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
+	fsImpl.logger.Debug("Copying file", "src", src, "dst", dst)
 
 	sourceFile, err := os.Open(src)
 	if err != nil {
-		fs.logger.Error("Failed to open source file", "src", src, "error", err)
+		fsImpl.logger.Error("Failed to open source file", "src", src, "error", err)
 		return err
 	}
 	defer func() {
@@ -358,7 +358,7 @@ func (fs *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
 
 	destFile, err := os.Create(dst)
 	if err != nil {
-		fs.logger.Error("Failed to create destination file", "dst", dst, "error", err)
+		fsImpl.logger.Error("Failed to create destination file", "dst", dst, "error", err)
 		return err
 	}
 	defer func() {
@@ -367,7 +367,7 @@ func (fs *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
 
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {
-		fs.logger.Error("Failed to copy file content", "src", src, "dst", dst, "error", err)
+		fsImpl.logger.Error("Failed to copy file content", "src", src, "dst", dst, "error", err)
 		return err
 	}
 
@@ -375,12 +375,12 @@ func (fs *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
 }
 
 // MoveFile implements FileSystem interface.
-func (fs *FileSystemImpl) MoveFile(ctx context.Context, src, dst string) error {
-	fs.logger.Debug("Moving file", "src", src, "dst", dst)
+func (fsImpl *FileSystemImpl) MoveFile(ctx context.Context, src, dst string) error {
+	fsImpl.logger.Debug("Moving file", "src", src, "dst", dst)
 
 	err := os.Rename(src, dst)
 	if err != nil {
-		fs.logger.Error("Failed to move file", "src", src, "dst", dst, "error", err)
+		fsImpl.logger.Error("Failed to move file", "src", src, "dst", dst, "error", err)
 		return err
 	}
 

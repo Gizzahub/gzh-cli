@@ -1111,7 +1111,7 @@ func (oro *OptimalRouteOptimizer) calculateReliabilityScore(route *NetworkRoute)
 		score -= 10 // Wireless is less reliable
 	}
 
-	return max(0, score)
+	return maxFloat64(0, score)
 }
 
 func (oro *OptimalRouteOptimizer) estimateCostScore(iface string) float64 {
@@ -1140,11 +1140,11 @@ func (oro *OptimalRouteOptimizer) calculateQualityScore(route *NetworkRoute) flo
 		} else if latencyMs <= 50 {
 			latencyScore = 90 - (latencyMs-10)*2
 		} else {
-			latencyScore = max(0, 50-latencyMs/10)
+			latencyScore = maxFloat64(0, 50-latencyMs/10)
 		}
 	}
 
-	bandwidthScore := min(100, route.Bandwidth/10) // Normalize to 100 for 1 Gbps
+	bandwidthScore := minFloat64(100, route.Bandwidth/10) // Normalize to 100 for 1 Gbps
 
 	qualityScore := (latencyScore*policy.LatencyWeight +
 		bandwidthScore*policy.BandwidthWeight +
@@ -1454,7 +1454,7 @@ func createPolicyFromFlags(cmd *cobra.Command) *RoutingPolicy {
 
 // Helper functions
 
-func max(a, b float64) float64 {
+func maxFloat64(a, b float64) float64 {
 	if a > b {
 		return a
 	}
@@ -1462,7 +1462,7 @@ func max(a, b float64) float64 {
 	return b
 }
 
-func min(a, b float64) float64 {
+func minFloat64(a, b float64) float64 {
 	if a < b {
 		return a
 	}

@@ -171,20 +171,22 @@ func (sm *StateManager) ListStates() ([]CloneState, error) {
 	var states []CloneState
 
 	for _, entry := range entries {
-		if !entry.IsDir() && filepath.Ext(entry.Name()) == ".json" {
-			// Read and parse each state file
-			data, err := os.ReadFile(filepath.Join(sm.stateDir, entry.Name()))
-			if err != nil {
-				continue // Skip invalid files
-			}
-
-			var state CloneState
-			if err := json.Unmarshal(data, &state); err != nil {
-				continue // Skip invalid JSON
-			}
-
-			states = append(states, state)
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+			continue
 		}
+
+		// Read and parse each state file
+		data, err := os.ReadFile(filepath.Join(sm.stateDir, entry.Name()))
+		if err != nil {
+			continue // Skip invalid files
+		}
+
+		var state CloneState
+		if err := json.Unmarshal(data, &state); err != nil {
+			continue // Skip invalid JSON
+		}
+
+		states = append(states, state)
 	}
 
 	return states, nil

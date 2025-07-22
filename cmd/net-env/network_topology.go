@@ -1004,7 +1004,7 @@ func (nta *NetworkTopologyAnalyzer) testConnection(ctx context.Context, address 
 	if err != nil {
 		return StatusFailed
 	}
-	defer func() { _ = conn.Close() }()
+	_ = conn.Close() // Connection test successful, close immediately
 
 	return StatusActive
 }
@@ -1182,14 +1182,14 @@ func (nta *NetworkTopologyAnalyzer) exportToDOT(topology *NetworkTopology) []byt
 
 	// Add services as nodes
 	for _, service := range topology.Services {
-		dot.WriteString(fmt.Sprintf("  \"%s\" [label=\"%s\\n%s\" shape=ellipse style=filled fillcolor=lightgreen];\n",
-			service.Name, service.Name, service.Type))
+		dot.WriteString(fmt.Sprintf("  %q [label=%q shape=ellipse style=filled fillcolor=lightgreen];\n",
+			service.Name, service.Name+"\\n"+string(service.Type)))
 	}
 
 	// Add connections as edges
 	for _, conn := range topology.Connections {
-		dot.WriteString(fmt.Sprintf("  \"%s\" -> \"%s\" [label=\"%s:%d\"];\n",
-			conn.Source.ID[:12], conn.Target.ID[:12], conn.Protocol, conn.Port))
+		dot.WriteString(fmt.Sprintf("  %q -> %q [label=%q];\n",
+			conn.Source.ID[:12], conn.Target.ID[:12], fmt.Sprintf("%s:%d", conn.Protocol, conn.Port)))
 	}
 
 	dot.WriteString("}\n")

@@ -174,8 +174,10 @@ func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
 			// Setup environment variables
 			if tt.setupEnv != nil {
 				for key, value := range tt.setupEnv {
-					_ = os.Setenv(key, value)               //nolint:errcheck // Test environment setup
-					defer func() { _ = os.Unsetenv(key) }() //nolint:errcheck // Test cleanup
+					_ = os.Setenv(key, value) //nolint:errcheck // Test environment setup
+					defer func(k string) {
+						_ = os.Unsetenv(k) //nolint:errcheck // Test cleanup
+					}(key)
 				}
 			}
 

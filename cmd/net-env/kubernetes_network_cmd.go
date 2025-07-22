@@ -324,15 +324,16 @@ func newPolicyAddCmd(km *KubernetesNetworkManager) *cobra.Command {
 
 				for _, from := range allowFrom {
 					peer := NetworkPolicyPeer{}
-					if strings.HasPrefix(from, "pod:") {
+					switch {
+					case strings.HasPrefix(from, "pod:"):
 						// Pod selector format: pod:app=frontend
 						selector := strings.TrimPrefix(from, "pod:")
 						peer.PodSelector = parseSelector(selector)
-					} else if strings.HasPrefix(from, "ns:") {
+					case strings.HasPrefix(from, "ns:"):
 						// Namespace selector format: ns:name=production
 						selector := strings.TrimPrefix(from, "ns:")
 						peer.NamespaceSelector = parseSelector(selector)
-					} else if strings.Contains(from, "/") {
+					case strings.Contains(from, "/"):
 						// IP block format: 10.0.0.0/8
 						peer.IPBlock = &IPBlock{CIDR: from}
 					}
@@ -352,13 +353,14 @@ func newPolicyAddCmd(km *KubernetesNetworkManager) *cobra.Command {
 
 				for _, to := range allowTo {
 					peer := NetworkPolicyPeer{}
-					if strings.HasPrefix(to, "pod:") {
+					switch {
+					case strings.HasPrefix(to, "pod:"):
 						selector := strings.TrimPrefix(to, "pod:")
 						peer.PodSelector = parseSelector(selector)
-					} else if strings.HasPrefix(to, "ns:") {
+					case strings.HasPrefix(to, "ns:"):
 						selector := strings.TrimPrefix(to, "ns:")
 						peer.NamespaceSelector = parseSelector(selector)
-					} else if strings.Contains(to, "/") {
+					case strings.Contains(to, "/"):
 						peer.IPBlock = &IPBlock{CIDR: to}
 					}
 					egressRule.To = append(egressRule.To, peer)

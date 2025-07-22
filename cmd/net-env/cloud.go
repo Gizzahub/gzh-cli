@@ -832,7 +832,8 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 			// Create policy manager
 			policyManager := cloud.NewPolicyManager(config)
 
-			if profileName != "" {
+			switch {
+			case profileName != "":
 				// List policies for specific profile
 				policies, err := policyManager.GetApplicablePolicies(ctx, profileName)
 				if err != nil {
@@ -869,7 +870,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 					)
 				}
 				_ = w.Flush() //nolint:errcheck // CLI output errors are non-critical
-			} else if environment != "" {
+			case environment != "":
 				// List policies for environment
 				profiles := getProfilesForEnvironment(config, environment)
 				if len(profiles) == 0 {
@@ -914,7 +915,7 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 						)
 					}
 				}
-			} else {
+			default:
 				// List all configured policies
 				fmt.Println("Configured Policies:")
 				fmt.Println("==================")

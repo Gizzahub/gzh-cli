@@ -1027,13 +1027,14 @@ func (na *NetworkAnalyzer) analyzeLatencyTrend(measurements []LatencyMeasurement
 		change := (float64(secondAvg) - float64(firstAvg)) / float64(firstAvg) * 100
 		trend.Magnitude = math.Abs(change)
 
-		if change > 5 {
+		switch {
+		case change > 5:
 			trend.Direction = "degrading"
 			trend.Description = fmt.Sprintf("Latency increased by %.1f%%", change)
-		} else if change < -5 {
+		case change < -5:
 			trend.Direction = "improving"
 			trend.Description = fmt.Sprintf("Latency improved by %.1f%%", math.Abs(change))
-		} else {
+		default:
 			trend.Description = "Latency remains stable"
 		}
 

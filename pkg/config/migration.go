@@ -95,7 +95,7 @@ func (m *ConfigMigrator) MigrateFromBulkClone() (*MigrationResult, error) {
 }
 
 // convertBulkCloneToUnified converts bulk-clone.yaml format to unified format.
-func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) (config *UnifiedConfig, warnings []string, actions []string) {
+func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) (config *UnifiedConfig, warnings, actions []string) {
 	config = DefaultUnifiedConfig()
 
 	// Set migration information

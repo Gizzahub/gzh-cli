@@ -634,11 +634,12 @@ func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[s
 // convertStringMatch converts StringMatch to map.
 func (km *KubernetesNetworkManager) convertStringMatch(sm *StringMatch) map[string]interface{} {
 	match := make(map[string]interface{})
-	if sm.Exact != "" {
+	switch {
+	case sm.Exact != "":
 		match["exact"] = sm.Exact
-	} else if sm.Prefix != "" {
+	case sm.Prefix != "":
 		match["prefix"] = sm.Prefix
-	} else if sm.Regex != "" {
+	case sm.Regex != "":
 		match["regex"] = sm.Regex
 	}
 
