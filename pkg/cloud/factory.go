@@ -375,6 +375,7 @@ func (m *defaultHierarchicalVPNManager) ConnectVPNHierarchy(ctx context.Context,
 				if err := m.baseManager.ConnectVPN(ctx, node.Connection.Name); err != nil {
 					// Log error but continue with other connections in mock implementation
 					// In real implementation, this might need different error handling
+					fmt.Printf("Warning: failed to connect VPN %s: %v\n", node.Connection.Name, err)
 				}
 			}
 		}
@@ -396,6 +397,7 @@ func (m *defaultHierarchicalVPNManager) DisconnectVPNHierarchy(ctx context.Conte
 				if err := m.baseManager.DisconnectVPN(ctx, node.Connection.Name); err != nil {
 					// Log error but continue with other disconnections in mock implementation
 					// In real implementation, this might need different error handling
+					fmt.Printf("Warning: failed to disconnect VPN %s: %v\n", node.Connection.Name, err)
 				}
 			}
 		}

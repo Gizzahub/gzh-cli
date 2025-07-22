@@ -53,7 +53,7 @@ Examples:
 	return cmd
 }
 
-// Global flags for all repo-config commands.
+// GlobalFlags represents global flags for all repo-config commands.
 type GlobalFlags struct {
 	Organization string
 	ConfigFile   string

@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package logger provides structured logging capabilities with JSON formatting and context support.
 package logger
 
 import (

@@ -102,7 +102,9 @@ func (f *DefaultClientFactory) CreateGitHubClient(token string) (*gh.Client, err
 
 	// Apply base URL if configured
 	if f.baseURL != "" {
-		// client.BaseURL = f.baseURL // If needed
+		// TODO: Configure base URL when needed
+		// client.BaseURL = f.baseURL
+		_ = f.baseURL // Placeholder to avoid empty branch warning
 	}
 
 	return client, nil

@@ -115,16 +115,16 @@ func newCloudListCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 					return fmt.Errorf("failed to write profile header: %w", err)
 				}
 				for name, profile := range config.Profiles {
-					vpcId := profile.Network.VPCId
-					if vpcId == "" {
-						vpcId = valueNotAvailable
+					vpcID := profile.Network.VPCId
+					if vpcID == "" {
+						vpcID = valueNotAvailable
 					}
 					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
 						name,
 						profile.Provider,
 						profile.Environment,
 						profile.Region,
-						vpcId,
+						vpcID,
 					); err != nil {
 						return fmt.Errorf("failed to write profile info: %w", err)
 					}

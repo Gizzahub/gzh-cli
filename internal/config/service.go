@@ -318,6 +318,7 @@ func (s *DefaultConfigService) WatchConfiguration(ctx context.Context, callback 
 	if err != nil {
 		if err := s.watcher.Close(); err != nil {
 			// Log error but don't fail the operation
+			fmt.Printf("Warning: failed to close watcher: %v\n", err)
 		}
 		s.watcher = nil
 
@@ -336,6 +337,7 @@ func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 		if s.watcher != nil {
 			if err := s.watcher.Close(); err != nil {
 				// Log error but don't fail the operation
+				fmt.Printf("Warning: failed to close watcher during shutdown: %v\n", err)
 			}
 		}
 	}()
@@ -393,6 +395,7 @@ func (s *DefaultConfigService) StopWatching() {
 	if s.watcher != nil {
 		if err := s.watcher.Close(); err != nil {
 			// Log error but don't fail the operation
+			fmt.Printf("Warning: failed to close watcher: %v\n", err)
 		}
 		s.watcher = nil
 		s.watchCallback = nil

@@ -158,7 +158,7 @@ func (km *KubernetesNetworkManager) convertNetworkPolicyPorts(ports []NetworkPol
 	return result
 }
 
-// // ExecuteWithTimeout executes a kubectl command with timeout
+// ExecuteWithTimeout executes a kubectl command with timeout
 //
 //	func (executor *KubernetesCommandExecutor) ExecuteWithTimeout(ctx context.Context, command string, timeout time.Duration) (*KubernetesCommandResult, error) {
 //		// Check cache first (for read-only commands)

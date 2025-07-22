@@ -211,7 +211,7 @@ const (
 	IsolationPermissive IsolationLevel = "permissive"
 )
 
-// Supporting data structures.
+// ContainerNetworkInterface represents network interface information for containers.
 type ContainerNetworkInterface struct {
 	NetworkID   string `json:"network_id"`
 	NetworkName string `json:"network_name"`
