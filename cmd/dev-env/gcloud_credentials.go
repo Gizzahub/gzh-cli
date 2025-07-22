@@ -578,14 +578,14 @@ func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string
 	}
 
 	// Check for credentials database
-	credDbPath := filepath.Join(credentialsPath, "credentials.db")
-	if _, err := os.Stat(credDbPath); err == nil {
+	credDBPath := filepath.Join(credentialsPath, "credentials.db")
+	if _, err := os.Stat(credDBPath); err == nil {
 		credentialFiles = append(credentialFiles, "Credentials Database")
 	}
 
 	// Check for access tokens database
-	tokensDbPath := filepath.Join(credentialsPath, "access_tokens.db")
-	if _, err := os.Stat(tokensDbPath); err == nil {
+	tokensDBPath := filepath.Join(credentialsPath, "access_tokens.db")
+	if _, err := os.Stat(tokensDBPath); err == nil {
 		credentialFiles = append(credentialFiles, "Access Tokens Database")
 	}
 
