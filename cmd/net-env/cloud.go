@@ -134,80 +134,11 @@ func newCloudShowCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 			}
 
 			// Display profile information
-			fmt.Printf("Profile: %s\n", profile.Name)
-			fmt.Printf("Provider: %s\n", profile.Provider)
-			fmt.Printf("Environment: %s\n", profile.Environment)
-			fmt.Printf("Region: %s\n", profile.Region)
-
-			// Network configuration
-			fmt.Println("\nNetwork Configuration:")
-			fmt.Printf("  VPC ID: %s\n", profile.Network.VPCId)
-
-			if len(profile.Network.SubnetIDs) > 0 {
-				fmt.Println("  Subnets:")
-				for _, subnet := range profile.Network.SubnetIDs {
-					fmt.Printf("    - %s\n", subnet)
-				}
-			}
-
-			if len(profile.Network.SecurityGroups) > 0 {
-				fmt.Println("  Security Groups:")
-				for _, sg := range profile.Network.SecurityGroups {
-					fmt.Printf("    - %s\n", sg)
-				}
-			}
-
-			if len(profile.Network.DNSServers) > 0 {
-				fmt.Println("  DNS Servers:")
-				for _, dns := range profile.Network.DNSServers {
-					fmt.Printf("    - %s\n", dns)
-				}
-			}
-
-			// Proxy configuration
-			if profile.Network.Proxy != nil {
-				fmt.Println("  Proxy:")
-				if profile.Network.Proxy.HTTP != "" {
-					fmt.Printf("    HTTP: %s\n", profile.Network.Proxy.HTTP)
-				}
-				if profile.Network.Proxy.HTTPS != "" {
-					fmt.Printf("    HTTPS: %s\n", profile.Network.Proxy.HTTPS)
-				}
-			}
-
-			// VPN configuration
-			if profile.Network.VPN != nil {
-				fmt.Println("  VPN:")
-				fmt.Printf("    Type: %s\n", profile.Network.VPN.Type)
-				fmt.Printf("    Server: %s\n", profile.Network.VPN.Server)
-				if profile.Network.VPN.AutoConnect {
-					fmt.Println("    Auto-connect: enabled")
-				}
-			}
-
-			// Services
-			if len(profile.Services) > 0 {
-				fmt.Println("\nServices:")
-				for name, service := range profile.Services {
-					fmt.Printf("  %s:\n", name)
-					fmt.Printf("    Endpoint: %s\n", service.Endpoint)
-					if service.Port > 0 {
-						fmt.Printf("    Port: %d\n", service.Port)
-					}
-				}
-			}
-
-			// Tags
-			if len(profile.Tags) > 0 {
-				fmt.Println("\nTags:")
-				for key, value := range profile.Tags {
-					fmt.Printf("  %s: %s\n", key, value)
-				}
-			}
-
-			if !profile.LastSync.IsZero() {
-				fmt.Printf("\nLast Sync: %s\n", profile.LastSync.Format("2006-01-02 15:04:05"))
-			}
+			displayProfileBasicInfo(profile)
+			displayProfileNetworkConfig(profile)
+			displayProfileServices(profile)
+			displayProfileTags(profile)
+			displayProfileSyncInfo(profile)
 
 			return nil
 		},
@@ -2120,6 +2051,93 @@ func displayCloudProfiles(config *cloud.Config) error {
 		return fmt.Errorf("failed to flush profile output: %w", err)
 	}
 	return nil
+}
+
+// displayProfileBasicInfo displays basic profile information.
+func displayProfileBasicInfo(profile cloud.Profile) {
+	fmt.Printf("Profile: %s\n", profile.Name)
+	fmt.Printf("Provider: %s\n", profile.Provider)
+	fmt.Printf("Environment: %s\n", profile.Environment)
+	fmt.Printf("Region: %s\n", profile.Region)
+}
+
+// displayProfileNetworkConfig displays network configuration details.
+func displayProfileNetworkConfig(profile cloud.Profile) {
+	fmt.Println("\nNetwork Configuration:")
+	fmt.Printf("  VPC ID: %s\n", profile.Network.VPCId)
+
+	if len(profile.Network.SubnetIDs) > 0 {
+		fmt.Println("  Subnets:")
+		for _, subnet := range profile.Network.SubnetIDs {
+			fmt.Printf("    - %s\n", subnet)
+		}
+	}
+
+	if len(profile.Network.SecurityGroups) > 0 {
+		fmt.Println("  Security Groups:")
+		for _, sg := range profile.Network.SecurityGroups {
+			fmt.Printf("    - %s\n", sg)
+		}
+	}
+
+	if len(profile.Network.DNSServers) > 0 {
+		fmt.Println("  DNS Servers:")
+		for _, dns := range profile.Network.DNSServers {
+			fmt.Printf("    - %s\n", dns)
+		}
+	}
+
+	// Proxy configuration
+	if profile.Network.Proxy != nil {
+		fmt.Println("  Proxy:")
+		if profile.Network.Proxy.HTTP != "" {
+			fmt.Printf("    HTTP: %s\n", profile.Network.Proxy.HTTP)
+		}
+		if profile.Network.Proxy.HTTPS != "" {
+			fmt.Printf("    HTTPS: %s\n", profile.Network.Proxy.HTTPS)
+		}
+	}
+
+	// VPN configuration
+	if profile.Network.VPN != nil {
+		fmt.Println("  VPN:")
+		fmt.Printf("    Type: %s\n", profile.Network.VPN.Type)
+		fmt.Printf("    Server: %s\n", profile.Network.VPN.Server)
+		if profile.Network.VPN.AutoConnect {
+			fmt.Println("    Auto-connect: enabled")
+		}
+	}
+}
+
+// displayProfileServices displays service configuration details.
+func displayProfileServices(profile cloud.Profile) {
+	if len(profile.Services) > 0 {
+		fmt.Println("\nServices:")
+		for name, service := range profile.Services {
+			fmt.Printf("  %s:\n", name)
+			fmt.Printf("    Endpoint: %s\n", service.Endpoint)
+			if service.Port > 0 {
+				fmt.Printf("    Port: %d\n", service.Port)
+			}
+		}
+	}
+}
+
+// displayProfileTags displays profile tags.
+func displayProfileTags(profile cloud.Profile) {
+	if len(profile.Tags) > 0 {
+		fmt.Println("\nTags:")
+		for key, value := range profile.Tags {
+			fmt.Printf("  %s: %s\n", key, value)
+		}
+	}
+}
+
+// displayProfileSyncInfo displays profile synchronization information.
+func displayProfileSyncInfo(profile cloud.Profile) {
+	if !profile.LastSync.IsZero() {
+		fmt.Printf("\nLast Sync: %s\n", profile.LastSync.Format("2006-01-02 15:04:05"))
+	}
 }
 
 // displayVPNConnectionRow formats and displays a single VPN connection row in the table.

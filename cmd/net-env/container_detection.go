@@ -797,65 +797,9 @@ func (cd *ContainerDetector) mergeContainerInfo(basic DetectedContainer, detaile
 
 	// Prefer detailed information when available
 	result := basic
-	if detailed.Name != "" {
-		result.Name = detailed.Name
-	}
-
-	if detailed.Image != "" {
-		result.Image = detailed.Image
-	}
-
-	if detailed.State != "" {
-		result.State = detailed.State
-	}
-
-	if detailed.WorkingDir != "" {
-		result.WorkingDir = detailed.WorkingDir
-	}
-
-	if len(detailed.Command) > 0 {
-		result.Command = detailed.Command
-	}
-
-	if len(detailed.Environment) > 0 {
-		result.Environment = detailed.Environment
-	}
-
-	if len(detailed.Labels) > 0 {
-		result.Labels = detailed.Labels
-	}
-
-	if len(detailed.Networks) > 0 {
-		result.Networks = detailed.Networks
-	}
-
-	if len(detailed.Ports) > 0 {
-		result.Ports = detailed.Ports
-	}
-
-	if len(detailed.Mounts) > 0 {
-		result.Mounts = detailed.Mounts
-	}
-
-	if detailed.ResourceLimits != nil {
-		result.ResourceLimits = detailed.ResourceLimits
-	}
-
-	if detailed.HealthStatus != "" {
-		result.HealthStatus = detailed.HealthStatus
-	}
-
-	if detailed.RestartPolicy != "" {
-		result.RestartPolicy = detailed.RestartPolicy
-	}
-
-	if !detailed.Created.IsZero() {
-		result.Created = detailed.Created
-	}
-
-	if !detailed.StartedAt.IsZero() {
-		result.StartedAt = detailed.StartedAt
-	}
+	mergeBasicContainerFields(&result, detailed)
+	mergeContainerCollections(&result, detailed)
+	mergeContainerTimestamps(&result, detailed)
 
 	return result
 }
@@ -1867,4 +1811,73 @@ func parseNerdctlInfo(output []byte) (*ServerInfo, error) {
 	}
 
 	return serverInfo, nil
+}
+
+// mergeBasicContainerFields merges basic string and simple fields from detailed container info.
+func mergeBasicContainerFields(result *DetectedContainer, detailed *DetectedContainer) {
+	if detailed.Name != "" {
+		result.Name = detailed.Name
+	}
+
+	if detailed.Image != "" {
+		result.Image = detailed.Image
+	}
+
+	if detailed.State != "" {
+		result.State = detailed.State
+	}
+
+	if detailed.WorkingDir != "" {
+		result.WorkingDir = detailed.WorkingDir
+	}
+
+	if detailed.HealthStatus != "" {
+		result.HealthStatus = detailed.HealthStatus
+	}
+
+	if detailed.RestartPolicy != "" {
+		result.RestartPolicy = detailed.RestartPolicy
+	}
+
+	if detailed.ResourceLimits != nil {
+		result.ResourceLimits = detailed.ResourceLimits
+	}
+}
+
+// mergeContainerCollections merges slice and map fields from detailed container info.
+func mergeContainerCollections(result *DetectedContainer, detailed *DetectedContainer) {
+	if len(detailed.Command) > 0 {
+		result.Command = detailed.Command
+	}
+
+	if len(detailed.Environment) > 0 {
+		result.Environment = detailed.Environment
+	}
+
+	if len(detailed.Labels) > 0 {
+		result.Labels = detailed.Labels
+	}
+
+	if len(detailed.Networks) > 0 {
+		result.Networks = detailed.Networks
+	}
+
+	if len(detailed.Ports) > 0 {
+		result.Ports = detailed.Ports
+	}
+
+	if len(detailed.Mounts) > 0 {
+		result.Mounts = detailed.Mounts
+	}
+}
+
+// mergeContainerTimestamps merges timestamp fields from detailed container info.
+func mergeContainerTimestamps(result *DetectedContainer, detailed *DetectedContainer) {
+	if !detailed.Created.IsZero() {
+		result.Created = detailed.Created
+	}
+
+	if !detailed.StartedAt.IsZero() {
+		result.StartedAt = detailed.StartedAt
+	}
 }
