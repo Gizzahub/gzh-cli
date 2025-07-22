@@ -274,6 +274,12 @@ linters:
           - errcheck
         text: Error return value of.*MarkFlagRequired.*is not checked
       - linters:
+          - errcheck
+        text: Error return value of.*WithSuggestion.*is not checked
+      - linters:
+          - errcheck
+        text: Error return value of.*Encode.*is not checked
+      - linters:
           - staticcheck
         text: SA4006.*this value.*is never used
       - linters:

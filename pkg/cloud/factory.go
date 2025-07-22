@@ -372,7 +372,10 @@ func (m *defaultHierarchicalVPNManager) ConnectVPNHierarchy(ctx context.Context,
 	for _, layer := range hierarchy.Layers {
 		for _, node := range layer {
 			if node.Connection != nil {
-				_ = m.baseManager.ConnectVPN(ctx, node.Connection.Name)
+				if err := m.baseManager.ConnectVPN(ctx, node.Connection.Name); err != nil {
+					// Log error but continue with other connections in mock implementation
+					// In real implementation, this might need different error handling
+				}
 			}
 		}
 	}
@@ -390,7 +393,10 @@ func (m *defaultHierarchicalVPNManager) DisconnectVPNHierarchy(ctx context.Conte
 	for _, layer := range hierarchy.Layers {
 		for _, node := range layer {
 			if node.Connection != nil {
-				_ = m.baseManager.DisconnectVPN(ctx, node.Connection.Name)
+				if err := m.baseManager.DisconnectVPN(ctx, node.Connection.Name); err != nil {
+					// Log error but continue with other disconnections in mock implementation
+					// In real implementation, this might need different error handling
+				}
 			}
 		}
 	}

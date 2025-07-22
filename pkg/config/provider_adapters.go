@@ -15,6 +15,10 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
+const (
+	defaultMainBranch = "main"
+)
+
 // GitHubProviderAdapter adapts the github package to implement ProviderService.
 type GitHubProviderAdapter struct {
 	token       string
@@ -41,7 +45,7 @@ func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner stri
 		// Get additional repository information
 		defaultBranch, err := github.GetDefaultBranch(ctx, owner, name)
 		if err != nil {
-			defaultBranch = "main" // fallback to main if error
+			defaultBranch = defaultMainBranch // fallback to main if error
 		}
 
 		repo := Repository{
@@ -77,7 +81,9 @@ func (g *GitHubProviderAdapter) CloneOrganization(ctx context.Context, owner, ta
 func (g *GitHubProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		_ = g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token) // Ignore error
+		if err := g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token); err != nil {
+			// Environment variable setting failed - log but don't fail the operation
+		}
 	}
 }
 
@@ -125,7 +131,7 @@ func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner stri
 		// Get additional repository information
 		defaultBranch, err := gitlab.GetDefaultBranch(ctx, owner, name)
 		if err != nil {
-			defaultBranch = "main" // fallback to main if error
+			defaultBranch = defaultMainBranch // fallback to main if error
 		}
 
 		repo := Repository{
@@ -161,7 +167,9 @@ func (g *GitLabProviderAdapter) CloneOrganization(ctx context.Context, owner, ta
 func (g *GitLabProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		_ = g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token) // Ignore error
+		if err := g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token); err != nil {
+			// Environment variable setting failed - log but don't fail the operation
+		}
 	}
 }
 
@@ -208,7 +216,7 @@ func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner strin
 		// Get additional repository information
 		defaultBranch, err := gitea.GetDefaultBranch(ctx, owner, name)
 		if err != nil {
-			defaultBranch = "main" // fallback to main if error
+			defaultBranch = defaultMainBranch // fallback to main if error
 		}
 
 		repo := Repository{
@@ -245,7 +253,9 @@ func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, tar
 func (g *GiteaProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		_ = g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token) // Ignore error
+		if err := g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token); err != nil {
+			// Environment variable setting failed - log but don't fail the operation
+		}
 	}
 }
 

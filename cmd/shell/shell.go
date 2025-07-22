@@ -656,7 +656,7 @@ func handleClear(s *Shell, args []string) error {
 func handleContext(s *Shell, args []string) error {
 	jsonOutput := len(args) > 0 && args[0] == "--json"
 
-	context := ShellContext{
+	shellContext := ShellContext{
 		StartTime: time.Now(), // Current time used as placeholder for actual start time
 		Uptime:    time.Since(time.Now()),
 		Commands:  len(s.history),
@@ -665,18 +665,18 @@ func handleContext(s *Shell, args []string) error {
 	}
 
 	if len(s.history) > 0 {
-		context.LastCmd = s.history[len(s.history)-1]
+		shellContext.LastCmd = s.history[len(s.history)-1]
 	}
 
 	if jsonOutput {
-		data, _ := json.MarshalIndent(context, "", "  ")
+		data, _ := json.MarshalIndent(shellContext, "", "  ")
 		fmt.Println(string(data))
 	} else {
 		fmt.Printf("Shell Context:\n")
-		fmt.Printf("  Start Time: %v\n", context.StartTime.Format("2006-01-02 15:04:05"))
-		fmt.Printf("  Uptime: %v\n", context.Uptime)
-		fmt.Printf("  Commands Executed: %d\n", context.Commands)
-		fmt.Printf("  Last Command: %s\n", context.LastCmd)
+		fmt.Printf("  Start Time: %v\n", shellContext.StartTime.Format("2006-01-02 15:04:05"))
+		fmt.Printf("  Uptime: %v\n", shellContext.Uptime)
+		fmt.Printf("  Commands Executed: %d\n", shellContext.Commands)
+		fmt.Printf("  Last Command: %s\n", shellContext.LastCmd)
 	}
 
 	return nil

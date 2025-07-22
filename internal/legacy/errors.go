@@ -193,53 +193,53 @@ func NewVPNError(code ErrorCode, message string) *GzhError {
 	// Add common VPN troubleshooting suggestions
 	switch code {
 	case ErrorCodeVPNConnection:
-		_ = err.WithSuggestion("Check your internet connection")
-		_ = err.WithSuggestion("Verify VPN server address and port")
-		_ = err.WithSuggestion("Try connecting to a different VPN server")
+		_ = err.WithSuggestion("Check your internet connection").
+			WithSuggestion("Verify VPN server address and port").
+			WithSuggestion("Try connecting to a different VPN server")
 	case ErrorCodeVPNAuthentication:
-		_ = err.WithSuggestion("Verify your username and password")
-		_ = err.WithSuggestion("Check if your VPN subscription is active")
-		_ = err.WithSuggestion("Try regenerating your VPN certificates")
+		_ = err.WithSuggestion("Verify your username and password").
+			WithSuggestion("Check if your VPN subscription is active").
+			WithSuggestion("Try regenerating your VPN certificates")
 	case ErrorCodeVPNConfiguration:
-		_ = err.WithSuggestion("Validate your VPN configuration file syntax")
-		_ = err.WithSuggestion("Check file permissions for VPN configuration")
-		_ = err.WithSuggestion("Ensure all required VPN configuration fields are present")
+		_ = err.WithSuggestion("Validate your VPN configuration file syntax").
+			WithSuggestion("Check file permissions for VPN configuration").
+			WithSuggestion("Ensure all required VPN configuration fields are present")
 	case ErrorCodeVPNHierarchy:
-		_ = err.WithSuggestion("Check VPN hierarchy configuration")
-		_ = err.WithSuggestion("Verify VPN connection dependencies")
-		_ = err.WithSuggestion("Ensure VPN connections are properly layered")
+		_ = err.WithSuggestion("Check VPN hierarchy configuration").
+			WithSuggestion("Verify VPN connection dependencies").
+			WithSuggestion("Ensure VPN connections are properly layered")
 	case ErrorCodeNetworkConnection:
-		_ = err.WithSuggestion("Check network connectivity")
-		_ = err.WithSuggestion("Verify network adapter settings")
-		_ = err.WithSuggestion("Try restarting network services")
+		_ = err.WithSuggestion("Check network connectivity").
+			WithSuggestion("Verify network adapter settings").
+			WithSuggestion("Try restarting network services")
 	case ErrorCodeNetworkTimeout:
-		_ = err.WithSuggestion("Increase network timeout settings")
-		_ = err.WithSuggestion("Check for network congestion")
-		_ = err.WithSuggestion("Verify server responsiveness")
+		_ = err.WithSuggestion("Increase network timeout settings").
+			WithSuggestion("Check for network congestion").
+			WithSuggestion("Verify server responsiveness")
 	case ErrorCodeNetworkDNS:
-		_ = err.WithSuggestion("Check DNS server configuration")
-		_ = err.WithSuggestion("Try alternative DNS servers")
-		_ = err.WithSuggestion("Flush DNS cache")
+		_ = err.WithSuggestion("Check DNS server configuration").
+			WithSuggestion("Try alternative DNS servers").
+			WithSuggestion("Flush DNS cache")
 	case ErrorCodeNetworkUnreachable:
-		_ = err.WithSuggestion("Check network routing configuration")
-		_ = err.WithSuggestion("Verify firewall settings")
-		_ = err.WithSuggestion("Ensure network is available")
+		_ = err.WithSuggestion("Check network routing configuration").
+			WithSuggestion("Verify firewall settings").
+			WithSuggestion("Ensure network is available")
 	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
-		_ = err.WithSuggestion("Check configuration file syntax")
-		_ = err.WithSuggestion("Validate configuration against schema")
-		_ = err.WithSuggestion("Ensure all required fields are present")
+		_ = err.WithSuggestion("Check configuration file syntax").
+			WithSuggestion("Validate configuration against schema").
+			WithSuggestion("Ensure all required fields are present")
 	case ErrorCodeAuthFailed, ErrorCodeAuthExpired, ErrorCodeAuthMissing, ErrorCodeAuthInvalid:
-		_ = err.WithSuggestion("Check authentication credentials")
-		_ = err.WithSuggestion("Verify token or certificate validity")
-		_ = err.WithSuggestion("Re-authenticate if necessary")
+		_ = err.WithSuggestion("Check authentication credentials").
+			WithSuggestion("Verify token or certificate validity").
+			WithSuggestion("Re-authenticate if necessary")
 	case ErrorCodePermissionDenied, ErrorCodeResourceNotFound, ErrorCodeResourceExists:
-		_ = err.WithSuggestion("Check access permissions")
-		_ = err.WithSuggestion("Verify resource availability")
-		_ = err.WithSuggestion("Ensure proper authorization")
+		_ = err.WithSuggestion("Check access permissions").
+			WithSuggestion("Verify resource availability").
+			WithSuggestion("Ensure proper authorization")
 	case ErrorCodeSystemInternal, ErrorCodeSystemTimeout, ErrorCodeSystemResource:
-		_ = err.WithSuggestion("Check system resources")
-		_ = err.WithSuggestion("Monitor system performance")
-		_ = err.WithSuggestion("Contact system administrator if needed")
+		_ = err.WithSuggestion("Check system resources").
+			WithSuggestion("Monitor system performance").
+			WithSuggestion("Contact system administrator if needed")
 	default:
 		// No specific suggestions for other error codes
 	}

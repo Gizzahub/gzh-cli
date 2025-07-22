@@ -161,8 +161,7 @@ func (o *sshConfigGenerateOptions) generateSSHConfig(cfg *bulkclone.BulkCloneCon
 			}
 
 			if hostConfig != "" {
-				configLines = append(configLines, hostConfig)
-				configLines = append(configLines, "")
+				configLines = append(configLines, hostConfig, "")
 			}
 		}
 	}
@@ -203,12 +202,13 @@ func (o *sshConfigGenerateOptions) generateHostConfig(provider, orgName string, 
 
 	var configLines []string
 
-	configLines = append(configLines, fmt.Sprintf("# %s organization: %s", strings.ToUpper(provider[:1])+provider[1:], orgName))
-	configLines = append(configLines, fmt.Sprintf("Host %s", hostAlias))
-	configLines = append(configLines, fmt.Sprintf("    HostName %s", hostname))
-	configLines = append(configLines, "    User git")
-	configLines = append(configLines, fmt.Sprintf("    IdentityFile %s", keyPath))
-	configLines = append(configLines, "    IdentitiesOnly yes")
+	configLines = append(configLines,
+		fmt.Sprintf("# %s organization: %s", strings.ToUpper(provider[:1])+provider[1:], orgName),
+		fmt.Sprintf("Host %s", hostAlias),
+		fmt.Sprintf("    HostName %s", hostname),
+		"    User git",
+		fmt.Sprintf("    IdentityFile %s", keyPath),
+		"    IdentitiesOnly yes")
 
 	return strings.Join(configLines, "\n"), nil
 }

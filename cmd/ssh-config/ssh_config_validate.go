@@ -169,31 +169,32 @@ func (o *sshConfigValidateOptions) validateProviderSSH(provider, orgName, sshCon
 	keyFound := false
 
 	for _, keyPath := range expectedKeyPaths {
-		if _, err := os.Stat(keyPath); err == nil {
-			keyFound = true
-
-			// Validate key permissions
-			if info, err := os.Stat(keyPath); err == nil {
-				if info.Mode().Perm() != 0o600 {
-					issues = append(issues, fmt.Sprintf("SSH key has incorrect permissions: %s (%o, should be 600)", keyPath, info.Mode().Perm()))
-				}
-			}
-
-			// Check if public key exists
-			pubKeyPath := keyPath + ".pub"
-			if _, err := os.Stat(pubKeyPath); os.IsNotExist(err) {
-				issues = append(issues, fmt.Sprintf("SSH public key missing: %s", pubKeyPath))
-			} else {
-				// Validate public key permissions
-				if info, err := os.Stat(pubKeyPath); err == nil {
-					if info.Mode().Perm() != 0o644 {
-						issues = append(issues, fmt.Sprintf("SSH public key has incorrect permissions: %s (%o, should be 644)", pubKeyPath, info.Mode().Perm()))
-					}
-				}
-			}
-
-			break
+		if _, err := os.Stat(keyPath); err != nil {
+			continue
 		}
+		keyFound = true
+
+		// Validate key permissions
+		if info, err := os.Stat(keyPath); err == nil {
+			if info.Mode().Perm() != 0o600 {
+				issues = append(issues, fmt.Sprintf("SSH key has incorrect permissions: %s (%o, should be 600)", keyPath, info.Mode().Perm()))
+			}
+		}
+
+		// Check if public key exists
+		pubKeyPath := keyPath + ".pub"
+		if _, err := os.Stat(pubKeyPath); os.IsNotExist(err) {
+			issues = append(issues, fmt.Sprintf("SSH public key missing: %s", pubKeyPath))
+		} else {
+			// Validate public key permissions
+			if info, err := os.Stat(pubKeyPath); err == nil {
+				if info.Mode().Perm() != 0o644 {
+					issues = append(issues, fmt.Sprintf("SSH public key has incorrect permissions: %s (%o, should be 644)", pubKeyPath, info.Mode().Perm()))
+				}
+			}
+		}
+
+		break
 	}
 
 	if !keyFound {
