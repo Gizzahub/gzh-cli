@@ -439,76 +439,13 @@ func (cd *ContainerDetector) getRuntimeServerInfo(ctx context.Context, runtime C
 		return nil, err
 	}
 
-	// Parse JSON output for Docker/Podman
+	// Parse output based on runtime type
 	if runtime == Docker || runtime == Podman {
-		var info map[string]interface{}
-		if err := json.Unmarshal(output, &info); err != nil {
-			return nil, err
-		}
-
-		serverInfo := &ServerInfo{
-			RuntimeConfig: make(map[string]string),
-		}
-
-		// Extract common fields
-		if version, ok := info["ServerVersion"].(string); ok {
-			serverInfo.Version = version
-		}
-
-		if os, ok := info["OperatingSystem"].(string); ok {
-			serverInfo.OS = os
-		}
-
-		if arch, ok := info["Architecture"].(string); ok {
-			serverInfo.Architecture = arch
-		}
-
-		if kernel, ok := info["KernelVersion"].(string); ok {
-			serverInfo.KernelVersion = kernel
-		}
-
-		if cpus, ok := info["NCPU"].(float64); ok {
-			serverInfo.CPUs = int(cpus)
-		}
-
-		if memory, ok := info["MemTotal"].(float64); ok {
-			serverInfo.TotalMemory = fmt.Sprintf("%.0f", memory)
-		}
-
-		if storage, ok := info["Driver"].(string); ok {
-			serverInfo.StorageDriver = storage
-		}
-
-		if logging, ok := info["LoggingDriver"].(string); ok {
-			serverInfo.LoggingDriver = logging
-		}
-
-		if cgroup, ok := info["CgroupDriver"].(string); ok {
-			serverInfo.CgroupDriver = cgroup
-		}
-
-		return serverInfo, nil
+		return parseDockerPodmanInfo(output)
 	}
 
 	// For nerdctl, parse text output
-	lines := strings.Split(string(output), "\n")
-	serverInfo := &ServerInfo{
-		RuntimeConfig: make(map[string]string),
-	}
-
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, ":") {
-			parts := strings.SplitN(line, ":", 2)
-			if len(parts) == 2 {
-				key := strings.TrimSpace(parts[0])
-				value := strings.TrimSpace(parts[1])
-				serverInfo.RuntimeConfig[key] = value
-			}
-		}
-	}
-
-	return serverInfo, nil
+	return parseNerdctlInfo(output)
 }
 
 // determinePrimaryRuntime determines the primary container runtime to use.
@@ -1857,4 +1794,77 @@ func (cd *ContainerDetector) ParseDockerNetworkOutput(output string) ([]Detected
 // CalculateEnvironmentFingerprint calculates environment fingerprint.
 func (cd *ContainerDetector) CalculateEnvironmentFingerprint(env *ContainerEnvironment) string {
 	return cd.generateEnvironmentFingerprint(env)
+}
+
+// parseDockerPodmanInfo parses JSON output from Docker/Podman system info.
+func parseDockerPodmanInfo(output []byte) (*ServerInfo, error) {
+	var info map[string]interface{}
+	if err := json.Unmarshal(output, &info); err != nil {
+		return nil, err
+	}
+
+	serverInfo := &ServerInfo{
+		RuntimeConfig: make(map[string]string),
+	}
+
+	// Extract common fields
+	if version, ok := info["ServerVersion"].(string); ok {
+		serverInfo.Version = version
+	}
+
+	if os, ok := info["OperatingSystem"].(string); ok {
+		serverInfo.OS = os
+	}
+
+	if arch, ok := info["Architecture"].(string); ok {
+		serverInfo.Architecture = arch
+	}
+
+	if kernel, ok := info["KernelVersion"].(string); ok {
+		serverInfo.KernelVersion = kernel
+	}
+
+	if cpus, ok := info["NCPU"].(float64); ok {
+		serverInfo.CPUs = int(cpus)
+	}
+
+	if memory, ok := info["MemTotal"].(float64); ok {
+		serverInfo.TotalMemory = fmt.Sprintf("%.0f", memory)
+	}
+
+	if storage, ok := info["Driver"].(string); ok {
+		serverInfo.StorageDriver = storage
+	}
+
+	if logging, ok := info["LoggingDriver"].(string); ok {
+		serverInfo.LoggingDriver = logging
+	}
+
+	if cgroup, ok := info["CgroupDriver"].(string); ok {
+		serverInfo.CgroupDriver = cgroup
+	}
+
+	return serverInfo, nil
+}
+
+// parseNerdctlInfo parses text output from nerdctl system info.
+func parseNerdctlInfo(output []byte) (*ServerInfo, error) {
+	lines := strings.Split(string(output), "\n")
+	serverInfo := &ServerInfo{
+		RuntimeConfig: make(map[string]string),
+	}
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.Contains(line, ":") {
+			parts := strings.SplitN(line, ":", 2)
+			if len(parts) == 2 {
+				key := strings.TrimSpace(parts[0])
+				value := strings.TrimSpace(parts[1])
+				serverInfo.RuntimeConfig[key] = value
+			}
+		}
+	}
+
+	return serverInfo, nil
 }

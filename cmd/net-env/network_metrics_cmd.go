@@ -774,61 +774,9 @@ func (nmc *NetworkMetricsCollector) pingTarget(_ context.Context, target string,
 	output := string(pingResult.Output)
 	result.Success = true
 
-	// Parse ping output for statistics
-	// Example: "round-trip min/avg/max/stddev = 10.123/15.456/20.789/3.123 ms"
-	if strings.Contains(output, "round-trip") {
-		if idx := strings.Index(output, "round-trip"); idx != -1 {
-			line := output[idx:]
-			if eqIdx := strings.Index(line, "="); eqIdx != -1 {
-				statsStr := line[eqIdx+1:]
-				if spaceIdx := strings.Index(statsStr, " ms"); spaceIdx != -1 {
-					statsStr = strings.TrimSpace(statsStr[:spaceIdx])
-
-					parts := strings.Split(statsStr, "/")
-					if len(parts) >= 3 {
-						if minLatency, err := time.ParseDuration(parts[0] + "ms"); err == nil {
-							result.MinLatency = minLatency
-						}
-
-						if avg, err := time.ParseDuration(parts[1] + "ms"); err == nil {
-							result.AvgLatency = avg
-						}
-
-						if maxLatency, err := time.ParseDuration(parts[2] + "ms"); err == nil {
-							result.MaxLatency = maxLatency
-						}
-
-						if len(parts) >= 4 {
-							if jitter, err := time.ParseDuration(parts[3] + "ms"); err == nil {
-								result.Jitter = jitter
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// Parse packet loss
-	if strings.Contains(output, "% packet loss") {
-		lines := strings.Split(output, "\n")
-		for _, line := range lines {
-			if strings.Contains(line, "% packet loss") {
-				fields := strings.Fields(line)
-				for i, field := range fields {
-					if strings.Contains(field, "%") && i > 0 {
-						if loss, err := strconv.ParseFloat(strings.TrimSuffix(field, "%"), 64); err == nil {
-							result.PacketLoss = loss
-						}
-
-						break
-					}
-				}
-
-				break
-			}
-		}
-	}
+	// Parse ping output for statistics and packet loss
+	parsePingStatistics(output, &result)
+	parsePingPacketLoss(output, &result)
 
 	return result
 }
@@ -1087,4 +1035,77 @@ func saveReport(report *PerformanceReport, filename, format string) error {
 	fmt.Printf("✅ Report saved to: %s\n", filename)
 
 	return nil
+}
+
+// parsePingStatistics parses round-trip statistics from ping output.
+func parsePingStatistics(output string, result *LatencyResult) {
+	// Example: "round-trip min/avg/max/stddev = 10.123/15.456/20.789/3.123 ms"
+	if !strings.Contains(output, "round-trip") {
+		return
+	}
+
+	idx := strings.Index(output, "round-trip")
+	if idx == -1 {
+		return
+	}
+
+	line := output[idx:]
+	eqIdx := strings.Index(line, "=")
+	if eqIdx == -1 {
+		return
+	}
+
+	statsStr := line[eqIdx+1:]
+	spaceIdx := strings.Index(statsStr, " ms")
+	if spaceIdx == -1 {
+		return
+	}
+
+	statsStr = strings.TrimSpace(statsStr[:spaceIdx])
+	parts := strings.Split(statsStr, "/")
+	if len(parts) < 3 {
+		return
+	}
+
+	if minLatency, err := time.ParseDuration(parts[0] + "ms"); err == nil {
+		result.MinLatency = minLatency
+	}
+
+	if avg, err := time.ParseDuration(parts[1] + "ms"); err == nil {
+		result.AvgLatency = avg
+	}
+
+	if maxLatency, err := time.ParseDuration(parts[2] + "ms"); err == nil {
+		result.MaxLatency = maxLatency
+	}
+
+	if len(parts) >= 4 {
+		if jitter, err := time.ParseDuration(parts[3] + "ms"); err == nil {
+			result.Jitter = jitter
+		}
+	}
+}
+
+// parsePingPacketLoss parses packet loss information from ping output.
+func parsePingPacketLoss(output string, result *LatencyResult) {
+	if !strings.Contains(output, "% packet loss") {
+		return
+	}
+
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if !strings.Contains(line, "% packet loss") {
+			continue
+		}
+
+		fields := strings.Fields(line)
+		for i, field := range fields {
+			if strings.Contains(field, "%") && i > 0 {
+				if loss, err := strconv.ParseFloat(strings.TrimSuffix(field, "%"), 64); err == nil {
+					result.PacketLoss = loss
+				}
+				return
+			}
+		}
+	}
 }
