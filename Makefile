@@ -15,14 +15,14 @@ VERSION ?= $(shell git describe --always --abbrev=0 --tags 2>/dev/null || echo "
 export GOPROXY=https://proxy.golang.org,direct
 export GOSUMDB=sum.golang.org
 
-# Colors for output
-CYAN := \\033[36m
-GREEN := \\033[32m
-YELLOW := \\033[33m
-RED := \\033[31m
-BLUE := \\033[34m
-MAGENTA := \\033[35m
-RESET := \\033[0m
+# Colors for output (shared across all include files)
+export CYAN := \\033[36m
+export GREEN := \\033[32m
+export YELLOW := \\033[33m
+export RED := \\033[31m
+export BLUE := \\033[34m
+export MAGENTA := \\033[35m
+export RESET := \\033[0m
 
 # ==============================================================================
 # Include Modular Makefiles
@@ -116,7 +116,7 @@ help-quality: ## show quality help
 
 help-deps: ## show dependency help
 	@echo "$(GREEN)📦 Dependency Management Commands:$(RESET)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile.deps 2>/dev/null | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(RESET) %s\\n", $$1, $$2}' | head -10 || echo "  $(YELLOW)Run 'make deps-help' for dependency commands$(RESET)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile.deps.mk 2>/dev/null | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(RESET) %s\\n", $$1, $$2}' | head -10 || echo "  $(YELLOW)Run 'make deps-help' for dependency commands$(RESET)"
 
 help-dev: ## show development workflow help
 	@echo "$(GREEN)🛠️  Development Workflow Commands:$(RESET)"
@@ -188,5 +188,3 @@ info: ## show project information and current configuration
 	@echo "  • $(CYAN)Development$(RESET)         (Makefile.dev.mk)    - Development workflow and tools"
 	@echo "  • $(CYAN)Docker$(RESET)              (Makefile.docker.mk) - Container operations and optimization"
 	@echo "  • $(CYAN)Tools$(RESET)               (Makefile.tools.mk)  - Tool installation and management"
-
-about: info ## alias for info command

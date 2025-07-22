@@ -88,7 +88,7 @@ func CreateTestConfig(t *testing.T, dir, content string) string {
 	t.Helper()
 
 	configPath := filepath.Join(dir, "test-config.yaml")
-	if err := os.WriteFile(configPath, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil {
 		t.Fatalf("failed to create test config: %v", err)
 	}
 

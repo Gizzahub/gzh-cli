@@ -125,6 +125,8 @@ func TestTargetResult(t *testing.T) {
 
 	assert.Equal(t, ProviderGitHub, result.Provider)
 	assert.Equal(t, "test-org", result.Name)
+	assert.Equal(t, "/path/to/clone", result.CloneDir)
+	assert.Equal(t, StrategyReset, result.Strategy)
 	assert.True(t, result.Success)
 	assert.Empty(t, result.Error)
 }

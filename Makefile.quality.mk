@@ -5,23 +5,12 @@
 # Quality Configuration
 # ==============================================================================
 
-# Colors for output
-CYAN := \\033[36m
-GREEN := \\033[32m
-YELLOW := \\033[33m
-RED := \\033[31m
-BLUE := \\033[34m
-MAGENTA := \\033[35m
-RESET := \\033[0m
-
 # ==============================================================================
 # Code Formatting Targets
 # ==============================================================================
 
 .PHONY: fmt format format-all format-check format-diff format-imports format-simplify format-ci
-.PHONY: install-format-tools install-golangci-lint install-analysis-tools
-.PHONY: generate-mocks clean-mocks regenerate-mocks pre-commit-install
-.PHONY: dev dev-fast verify ci-local pr-check lint-help
+.PHONY: pre-commit-install dev dev-fast verify ci-local pr-check lint-help
 
 fmt: ## format go files with gofumpt and gci
 	@echo "$(CYAN)Formatting Go code...$(RESET)"
@@ -68,12 +57,6 @@ format-simplify: ## simplify code with gofmt -s
 	@gofmt -s -w .
 	@echo "$(GREEN)✅ Code simplified!$(RESET)"
 
-install-format-tools: ## install advanced formatting tools
-	@echo "$(CYAN)Installing formatting tools...$(RESET)"
-	@which gofumpt > /dev/null || (echo "Installing gofumpt..." && go install mvdan.cc/gofumpt@latest)
-	@which gci > /dev/null || (echo "Installing gci..." && go install github.com/daixiang0/gci@latest)
-	@echo "$(GREEN)✅ All formatting tools installed!$(RESET)"
-
 format-ci: format-check ## CI-friendly format check
 	@echo "$(GREEN)✅ CI format check passed!$(RESET)"
 
@@ -82,11 +65,6 @@ format-ci: format-check ## CI-friendly format check
 # ==============================================================================
 
 .PHONY: lint format lint-check lint-fix lint-new lint-ci lint-count lint-summary lint-stats lint-status lint-json
-
-install-golangci-lint: ## install golangci-lint
-	@echo "$(CYAN)Installing golangci-lint...$(RESET)"
-	@which golangci-lint > /dev/null || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin
-	@echo "$(GREEN)✅ golangci-lint installed!$(RESET)"
 
 lint-check: install-golangci-lint ## check lint issues without fixing (exit code reflects status)
 	@echo "$(CYAN)Running golangci-lint...$(RESET)"
@@ -97,8 +75,6 @@ lint: lint-check ## alias for lint-check
 lint-fix: install-golangci-lint ## run golangci-lint with auto-fix
 	@echo "$(CYAN)Running golangci-lint with auto-fix...$(RESET)"
 	golangci-lint run -c .golangci.yml --fix
-
-format: lint-fix ## format go files (alias for lint-fix)
 
 lint-new: install-golangci-lint ## run golangci-lint on new code only
 	@echo "$(CYAN)Running golangci-lint on new code only...$(RESET)"
@@ -160,14 +136,6 @@ lint-json: install-golangci-lint ## export lint results to JSON for further anal
 # Enhanced Code Analysis
 # ==============================================================================
 
-install-analysis-tools: ## install code analysis tools
-	@echo "$(CYAN)Installing code analysis tools...$(RESET)"
-	@command -v gocyclo >/dev/null 2>&1 || { echo "Installing gocyclo..." && go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; }
-	@command -v ineffassign >/dev/null 2>&1 || { echo "Installing ineffassign..." && go install github.com/gordonklaus/ineffassign@latest; }
-	@command -v dupl >/dev/null 2>&1 || { echo "Installing dupl..." && go install github.com/mibk/dupl@latest; }
-	@command -v staticcheck >/dev/null 2>&1 || { echo "Installing staticcheck..." && go install honnef.co/go/tools/cmd/staticcheck@latest; }
-	@echo "$(GREEN)✅ All analysis tools installed!$(RESET)"
-
 # ==============================================================================
 # Security Analysis
 # ==============================================================================
@@ -193,8 +161,6 @@ security-json: ## run security analysis and output JSON report
 		gosec -fmt=json -out=gosec-report.json ./... 2>/dev/null || true
 	@echo "$(GREEN)✅ Security report generated: gosec-report.json$(RESET)"
 
-vuln: security-deps ## check for known vulnerabilities (legacy alias)
-
 # ==============================================================================
 # Code Analysis
 # ==============================================================================
@@ -218,62 +184,6 @@ analyze-dupl: ## find duplicate code
 	@echo "$(CYAN)Checking for duplicate code...$(RESET)"
 	@command -v dupl >/dev/null 2>&1 || { echo "Installing dupl..." && go install github.com/mibk/dupl@latest; }
 	@dupl -threshold 50 .
-
-# Legacy aliases for backward compatibility
-complexity: analyze-complexity ## analyze code complexity (legacy alias)
-ineffassign: ## detect ineffectual assignments (legacy)
-	@echo "$(CYAN)Checking for ineffectual assignments...$(RESET)"
-	@command -v ineffassign >/dev/null 2>&1 || { echo "Installing ineffassign..." && go install github.com/gordonklaus/ineffassign@latest; }
-	@ineffassign ./...
-
-dupl: analyze-dupl ## find duplicate code (legacy alias)
-
-# ==============================================================================
-# Enhanced Mock Generation
-# ==============================================================================
-
-generate-mocks: ## generate all mock files using gomock
-	@echo "$(CYAN)Generating mocks...$(RESET)"
-	@command -v mockgen >/dev/null 2>&1 || { echo "Installing mockgen..." && go install go.uber.org/mock/mockgen@latest; }
-	@echo "Generating GitHub interface mocks..."
-	@if [ -f "pkg/github/interfaces.go" ]; then \
-		mockgen -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks; \
-		echo "  ✅ GitHub mocks generated"; \
-	else \
-		echo "  ⚠️  pkg/github/interfaces.go not found"; \
-	fi
-	@echo "Generating filesystem interface mocks..."
-	@if [ -f "internal/filesystem/interfaces.go" ]; then \
-		mockgen -source=internal/filesystem/interfaces.go -destination=internal/filesystem/mocks/filesystem_mocks.go -package=mocks; \
-		echo "  ✅ Filesystem mocks generated"; \
-	else \
-		echo "  ⚠️  internal/filesystem/interfaces.go not found"; \
-	fi
-	@echo "Generating HTTP client interface mocks..."
-	@if [ -f "internal/httpclient/interfaces.go" ]; then \
-		mockgen -source=internal/httpclient/interfaces.go -destination=internal/httpclient/mocks/httpclient_mocks.go -package=mocks; \
-		echo "  ✅ HTTP client mocks generated"; \
-	else \
-		echo "  ⚠️  internal/httpclient/interfaces.go not found"; \
-	fi
-	@echo "Generating Git interface mocks..."
-	@if [ -f "internal/git/interfaces.go" ]; then \
-		mockgen -source=internal/git/interfaces.go -destination=internal/git/mocks/git_mocks.go -package=mocks; \
-		echo "  ✅ Git mocks generated"; \
-	else \
-		echo "  ⚠️  internal/git/interfaces.go not found"; \
-	fi
-	@echo "$(GREEN)✅ Mock generation complete!$(RESET)"
-
-clean-mocks: ## remove all generated mock files
-	@echo "$(CYAN)Cleaning generated mocks...$(RESET)"
-	@rm -f pkg/github/mocks/github_mocks.go
-	@rm -f internal/filesystem/mocks/filesystem_mocks.go
-	@rm -f internal/httpclient/mocks/httpclient_mocks.go
-	@rm -f internal/git/mocks/git_mocks.go
-	@echo "$(GREEN)✅ Mock cleanup complete!$(RESET)"
-
-regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
 
 # ==============================================================================
 # Pre-commit Integration
@@ -331,25 +241,6 @@ quality-fix: fmt lint-fix ## apply automatic quality fixes
 
 lint-all: fmt lint-check pre-commit ## run all linting steps (format, lint, pre-commit)
 	@echo "$(GREEN)✅ All linting steps completed!$(RESET)"
-
-# ==============================================================================
-# Enhanced Development Workflow Targets
-# ==============================================================================
-
-dev: fmt lint-check test ## run standard development workflow (format, lint, test)
-	@echo "$(GREEN)✅ Standard development workflow completed!$(RESET)"
-
-dev-fast: fmt test-unit ## quick development cycle (format and unit tests only)
-	@echo "$(GREEN)✅ Fast development cycle completed!$(RESET)"
-
-verify: fmt lint-check test cover-report check-consistency ## complete verification before PR
-	@echo "$(GREEN)✅ Complete verification completed!$(RESET)"
-
-ci-local: clean verify test-all security ## run full CI pipeline locally
-	@echo "$(GREEN)✅ Local CI pipeline completed!$(RESET)"
-
-pr-check: fmt lint-check test cover-report check-consistency ## pre-PR submission check
-	@echo "$(GREEN)✅ Pre-PR check completed - ready for submission!$(RESET)"
 
 # ==============================================================================
 # Quality Information and Help

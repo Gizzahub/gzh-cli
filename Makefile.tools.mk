@@ -5,14 +5,6 @@
 # Tool Configuration
 # ==============================================================================
 
-# Colors for output
-CYAN := \\033[36m
-GREEN := \\033[32m
-YELLOW := \\033[33m
-RED := \\033[31m
-BLUE := \\033[34m
-RESET := \\033[0m
-
 # ==============================================================================
 # Core Tool Installation
 # ==============================================================================
@@ -105,22 +97,12 @@ regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
 # Pre-commit and Git Hooks
 # ==============================================================================
 
-.PHONY: install-pre-commit-tools pre-commit-install pre-commit-update
+.PHONY: install-pre-commit-tools pre-commit-update
 
 install-pre-commit-tools: ## install pre-commit and related tools
 	@echo "$(CYAN)Installing pre-commit tools...$(RESET)"
 	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; }
 	@echo "$(GREEN)✅ Pre-commit tools ready!$(RESET)"
-
-pre-commit-install: install-pre-commit-tools ## install pre-commit hooks
-	@echo "$(CYAN)Installing pre-commit hooks...$(RESET)"
-	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
-	@if [ -f "./scripts/setup-git-hooks.sh" ]; then \
-		./scripts/setup-git-hooks.sh; \
-	else \
-		pre-commit install --hook-type pre-commit --hook-type commit-msg --hook-type pre-push; \
-	fi
-	@echo "$(GREEN)✅ Pre-commit hooks installed!$(RESET)"
 
 
 # ==============================================================================

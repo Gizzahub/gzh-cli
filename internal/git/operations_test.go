@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/internal/gitplatform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gizzahub/gzh-manager-go/internal/gitplatform"
 )
 
 func TestOperations_Clone(t *testing.T) {

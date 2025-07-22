@@ -7,8 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"go.uber.org/zap"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestContainerDetector_DetectContainerEnvironment(t *testing.T) {
@@ -351,14 +352,9 @@ func TestRuntimeInfo_Validation(t *testing.T) {
 func TestDetectedContainer_Validation(t *testing.T) {
 	container := DetectedContainer{
 		ID: env.TestContainerID,
-		// Name:      "test-container",  // Unused field removed
-		// Image:     "nginx:latest",  // Unused field removed
-		// ImageID:   "sha256:def987654321",  // Unused field removed
-		// Status:    "Up 2 hours",  // Unused field removed
-		// State:     "running",  // Unused field removed
-		Runtime:   Docker,
-		Created:   time.Now().Add(-2 * time.Hour),
-		StartedAt: time.Now().Add(-2 * time.Hour),
+		// Note: Only ID and Runtime are tested, other fields are for completeness
+		Runtime: Docker,
+		// Test fixture data - these fields are not currently validated in this test
 		Ports: []DetectedPortMapping{
 			{ContainerPort: 80, HostPort: 8080, HostIP: "0.0.0.0", Protocol: "tcp"},
 		},
@@ -368,14 +364,6 @@ func TestDetectedContainer_Validation(t *testing.T) {
 		Labels: map[string]string{
 			"app": "nginx",
 		},
-		Environment: []string{
-			"PATH=/usr/local/sbin:/usr/local/bin",
-			"NGINX_VERSION=1.21.0",
-		},
-		HealthStatus:  "healthy",
-		RestartPolicy: "always",
-		WorkingDir:    "/usr/share/nginx/html",
-		Command:       []string{"nginx", "-g", "daemon off;"},
 	}
 
 	if container.ID != env.TestContainerID {

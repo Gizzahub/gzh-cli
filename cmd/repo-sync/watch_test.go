@@ -302,6 +302,7 @@ func TestFileChangeEventCreation(t *testing.T) {
 	assert.Equal(t, "/test/file.go", event.Path)
 	assert.Equal(t, "write", event.Operation)
 	assert.False(t, event.IsDirectory)
+	assert.NotZero(t, event.Timestamp) // Verify timestamp is set
 	assert.Equal(t, int64(1024), event.Size)
 	assert.Equal(t, "abc123", event.Checksum)
 }
@@ -322,5 +323,7 @@ func TestFileChangeBatchCreation(t *testing.T) {
 
 	assert.Len(t, batch.Events, 2)
 	assert.Equal(t, "test-batch-1", batch.BatchID)
+	assert.NotZero(t, batch.StartTime) // Verify start time is set
+	assert.NotZero(t, batch.EndTime)   // Verify end time is set
 	assert.Equal(t, 2, batch.TotalEvents)
 }

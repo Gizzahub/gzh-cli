@@ -12,9 +12,10 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 // newOptimalRoutingCmd creates the optimal routing command.

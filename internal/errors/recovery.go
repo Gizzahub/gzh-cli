@@ -235,7 +235,7 @@ func (er *ErrorRecovery) calculateBackoff(attempt int) time.Duration {
 		attempt = 30
 	}
 	// Safe bit shift: ensure attempt is within range [0, 30] to prevent integer overflow
-	shiftAmount := uint(attempt)
+	shiftAmount := uint(attempt) //nolint:gosec // G115: bounds-checked above, safe conversion
 	if shiftAmount > 30 {
 		shiftAmount = 30
 	}

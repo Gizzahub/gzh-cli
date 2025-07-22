@@ -15,9 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
 const (
@@ -232,30 +233,19 @@ func runEventList(_ *cobra.Command, _ []string, org, repo, eventType, action, se
 		_ = action // Unused in current implementation
 	}
 
-	// Parse time filters
-	if since != "" || until != "" {
-		timeRange := &github.TimeRange{}
-
-		if since != "" {
-			sinceTime, err := time.Parse(time.RFC3339, since)
-			if err != nil {
-				return fmt.Errorf("invalid since time format: %w", err)
-			}
-
-			timeRange.Start = sinceTime
+	// Parse time filters (validate format but not currently used in implementation)
+	if since != "" {
+		if _, err := time.Parse(time.RFC3339, since); err != nil {
+			return fmt.Errorf("invalid since time format: %w", err)
 		}
+		// TODO: Use parsed since time when implementing time filtering
+	}
 
-		if until != "" {
-			untilTime, err := time.Parse(time.RFC3339, until)
-			if err != nil {
-				return fmt.Errorf("invalid until time format: %w", err)
-			}
-
-			timeRange.End = untilTime
+	if until != "" {
+		if _, err := time.Parse(time.RFC3339, until); err != nil {
+			return fmt.Errorf("invalid until time format: %w", err)
 		}
-
-		// filter.TimeRange = timeRange  // Unused field removed
-		_ = timeRange // Unused in current implementation
+		// TODO: Use parsed until time when implementing time filtering
 	}
 
 	// Mock events for demonstration

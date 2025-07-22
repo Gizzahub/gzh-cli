@@ -5,14 +5,6 @@
 # Docker Configuration
 # ==============================================================================
 
-# Colors for output
-CYAN := \\033[36m
-GREEN := \\033[32m
-YELLOW := \\033[33m
-RED := \\033[31m
-BLUE := \\033[34m
-RESET := \\033[0m
-
 # Docker configuration
 DOCKER_REGISTRY ?= gizzahub
 DOCKER_IMAGE_NAME ?= $(projectname)

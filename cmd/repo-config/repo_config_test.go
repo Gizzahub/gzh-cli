@@ -184,6 +184,9 @@ func TestConfigurationChange(t *testing.T) {
 	}
 
 	assert.Equal(t, "test-repo", change.Repository)
+	assert.Equal(t, "branch_protection.main.required_reviews", change.Setting)
+	assert.Equal(t, "1", change.CurrentValue)
+	assert.Equal(t, "2", change.NewValue)
 	assert.Equal(t, "update", change.Action)
 }
 
@@ -246,6 +249,7 @@ func TestValidationResult(t *testing.T) {
 
 	assert.Equal(t, "Test Check", result.Check)
 	assert.Equal(t, "pass", result.Status)
+	assert.Equal(t, "Test message", result.Message)
 	assert.Equal(t, "info", result.Severity)
 }
 

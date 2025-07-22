@@ -189,6 +189,9 @@ func TestDevEnvConfig(t *testing.T) {
 	assert.Equal(t, "docker", config.Containers.DefaultRuntime)
 	assert.Equal(t, "/var/run/docker.sock", config.Containers.Docker.SocketPath)
 	assert.True(t, config.Containers.Docker.BuildOptions.EnableBuildKit)
+	assert.Equal(t, "$HOME/.kube/config", config.Kubernetes.KubeconfigPath)
+	assert.Equal(t, "default", config.Kubernetes.DefaultNamespace)
+	assert.True(t, config.Kubernetes.AutoDiscovery)
 }
 
 func TestNetEnvConfig(t *testing.T) {

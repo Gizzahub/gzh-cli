@@ -94,7 +94,7 @@ func NewFileSystem(config *FileSystemConfig, logger Logger) FileSystem {
 func (fs *FileSystemImpl) AppendFile(_ context.Context, filename string, data []byte) error {
 	fs.logger.Debug("Appending to file", "filename", filename)
 
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
 		return err
 	}

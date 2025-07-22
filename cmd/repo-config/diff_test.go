@@ -4,9 +4,10 @@ package repoconfig
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCompareRepositoryConfigurations(t *testing.T) {

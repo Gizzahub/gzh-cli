@@ -97,6 +97,7 @@ func TestInterfaceInfoStructure(t *testing.T) {
 	assert.Equal(t, "WiFi", iface.Type)
 	assert.Len(t, iface.IP, 2)
 	assert.Equal(t, "192.168.1.101", iface.IP[0])
+	assert.Equal(t, "aa:bb:cc:dd:ee:ff", iface.MAC)
 	assert.Equal(t, "TestWiFi", iface.SSID)
 	assert.Equal(t, "-45 dBm", iface.Signal)
 	assert.Equal(t, "2437 MHz", iface.Frequency)

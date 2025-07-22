@@ -9,8 +9,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"github.com/spf13/cobra"
+
+	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 func newBulkCloneStateCmd() *cobra.Command {
