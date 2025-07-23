@@ -29,7 +29,7 @@ func defaultBulkCloneGitlabOptions() *bulkCloneGitlabOptions {
 		strategy:     "reset",
 		parallel:     10,
 		maxRetries:   3,
-		progressMode: "compact",
+		progressMode: "bar",
 	}
 }
 
@@ -52,7 +52,7 @@ func newBulkCloneGitlabCmd() *cobra.Command {
 	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
-	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: compact, detailed, quiet")
+	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: bar, dots, spinner, quiet")
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")

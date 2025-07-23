@@ -32,7 +32,7 @@ func defaultBulkCloneOptions() *bulkCloneOptions {
 		strategy:     "reset",
 		parallel:     10,
 		maxRetries:   3,
-		progressMode: "compact",
+		progressMode: "bar",
 	}
 }
 
@@ -72,7 +72,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.Flags().IntVarP(&o.parallel, "parallel", "p", o.parallel, "Number of parallel workers for cloning")
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
-	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: compact, detailed, quiet")
+	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: bar, dots, spinner, quiet")
 
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
@@ -113,7 +113,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 			fmt.Println("No configuration file found. Please provide a configuration file or use one of the subcommands.")
 			fmt.Println("\nAvailable subcommands:")
 			fmt.Println("  github   - Clone from GitHub organizations")
-			fmt.Println("  gitlab   - Clone from GitLab groups")  
+			fmt.Println("  gitlab   - Clone from GitLab groups")
 			fmt.Println("  gitea    - Clone from Gitea organizations")
 			fmt.Println("  validate - Validate configuration file")
 			fmt.Println("  state    - Manage operation state")
@@ -207,7 +207,7 @@ func isConfigNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	errMsg := strings.ToLower(err.Error())
 	return strings.Contains(errMsg, "no configuration file found") ||
 		strings.Contains(errMsg, "config file not found") ||

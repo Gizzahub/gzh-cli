@@ -60,7 +60,7 @@ func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
 		optimized:     false,
 		streamingMode: false,
 		memoryLimit:   "500MB",
-		progressMode:  "compact",
+		progressMode:  "bar",
 	}
 }
 
