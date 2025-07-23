@@ -13,22 +13,22 @@
 .PHONY: install-golangci-lint install-pre-commit-tools install-docs-tools
 
 install-tools: install-format-tools install-analysis-tools install-golangci-lint install-goreleaser ## install all development tools
-	@echo "$(GREEN)✅ All development tools installed!$(RESET)"
+	@echo -e "$(GREEN)✅ All development tools installed!$(RESET)"
 
 install-format-tools: ## install advanced formatting tools
-	@echo "$(CYAN)Installing formatting tools...$(RESET)"
+	@echo -e "$(CYAN)Installing formatting tools...$(RESET)"
 	@which gofumpt > /dev/null || (echo "Installing gofumpt..." && go install mvdan.cc/gofumpt@latest)
 	@which gci > /dev/null || (echo "Installing gci..." && go install github.com/daixiang0/gci@latest)
-	@echo "$(GREEN)✅ All formatting tools installed!$(RESET)"
+	@echo -e "$(GREEN)✅ All formatting tools installed!$(RESET)"
 
 install-analysis-tools: ## install code analysis tools
-	@echo "$(CYAN)Installing code analysis tools...$(RESET)"
+	@echo -e "$(CYAN)Installing code analysis tools...$(RESET)"
 	@command -v gocyclo >/dev/null 2>&1 || { echo "Installing gocyclo..." && go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; }
 	@command -v ineffassign >/dev/null 2>&1 || { echo "Installing ineffassign..." && go install github.com/gordonklaus/ineffassign@latest; }
 	@command -v dupl >/dev/null 2>&1 || { echo "Installing dupl..." && go install github.com/mibk/dupl@latest; }
 	@command -v staticcheck >/dev/null 2>&1 || { echo "Installing staticcheck..." && go install honnef.co/go/tools/cmd/staticcheck@latest; }
 	@command -v gosec >/dev/null 2>&1 || { echo "Installing gosec..." && go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
-	@echo "$(GREEN)✅ All analysis tools installed!$(RESET)"
+	@echo -e "$(GREEN)✅ All analysis tools installed!$(RESET)"
 
 install-golangci-lint: ## install golangci-lint
 	@echo -e "$(CYAN)Installing golangci-lint...$(RESET)"
@@ -36,9 +36,9 @@ install-golangci-lint: ## install golangci-lint
 	@echo -e "$(GREEN)✅ golangci-lint installed!$(RESET)"
 
 install-goreleaser: ## install goreleaser
-	@echo "$(CYAN)Installing goreleaser...$(RESET)"
+	@echo -e "$(CYAN)Installing goreleaser...$(RESET)"
 	@go install github.com/goreleaser/goreleaser@latest
-	@echo "$(GREEN)✅ goreleaser installed$(RESET)"
+	@echo -e "$(GREEN)✅ goreleaser installed$(RESET)"
 
 # ==============================================================================
 # Mock and Generation Tools
@@ -47,12 +47,12 @@ install-goreleaser: ## install goreleaser
 .PHONY: install-mock-tools generate-mocks clean-mocks regenerate-mocks
 
 install-mock-tools: ## install mock generation tools
-	@echo "$(CYAN)Installing mock generation tools...$(RESET)"
+	@echo -e "$(CYAN)Installing mock generation tools...$(RESET)"
 	@command -v mockgen >/dev/null 2>&1 || { echo "Installing mockgen..." && go install go.uber.org/mock/mockgen@latest; }
-	@echo "$(GREEN)✅ Mock generation tools installed!$(RESET)"
+	@echo -e "$(GREEN)✅ Mock generation tools installed!$(RESET)"
 
 generate-mocks: install-mock-tools ## generate all mock files using gomock
-	@echo "$(CYAN)Generating mocks...$(RESET)"
+	@echo -e "$(CYAN)Generating mocks...$(RESET)"
 	@echo "Generating GitHub interface mocks..."
 	@if [ -f "pkg/github/interfaces.go" ]; then \
 		mockgen -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks; \
@@ -81,15 +81,15 @@ generate-mocks: install-mock-tools ## generate all mock files using gomock
 	else \
 		echo "  ⚠️  internal/git/interfaces.go not found"; \
 	fi
-	@echo "$(GREEN)✅ Mock generation complete!$(RESET)"
+	@echo -e "$(GREEN)✅ Mock generation complete!$(RESET)"
 
 clean-mocks: ## remove all generated mock files
-	@echo "$(CYAN)Cleaning generated mocks...$(RESET)"
+	@echo -e "$(CYAN)Cleaning generated mocks...$(RESET)"
 	@rm -f pkg/github/mocks/github_mocks.go
 	@rm -f internal/filesystem/mocks/filesystem_mocks.go
 	@rm -f internal/httpclient/mocks/httpclient_mocks.go
 	@rm -f internal/git/mocks/git_mocks.go
-	@echo "$(GREEN)✅ Mock cleanup complete!$(RESET)"
+	@echo -e "$(GREEN)✅ Mock cleanup complete!$(RESET)"
 
 regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
 
@@ -100,9 +100,9 @@ regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
 .PHONY: install-pre-commit-tools pre-commit-update
 
 install-pre-commit-tools: ## install pre-commit and related tools
-	@echo "$(CYAN)Installing pre-commit tools...$(RESET)"
+	@echo -e "$(CYAN)Installing pre-commit tools...$(RESET)"
 	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; }
-	@echo "$(GREEN)✅ Pre-commit tools ready!$(RESET)"
+	@echo -e "$(GREEN)✅ Pre-commit tools ready!$(RESET)"
 
 
 # ==============================================================================
@@ -112,12 +112,12 @@ install-pre-commit-tools: ## install pre-commit and related tools
 .PHONY: install-docs-tools
 
 install-docs-tools: ## install documentation tools
-	@echo "$(CYAN)Installing documentation tools...$(RESET)"
+	@echo -e "$(CYAN)Installing documentation tools...$(RESET)"
 	@go install golang.org/x/perf/cmd/benchstat@latest
 	@go install golang.org/x/tools/cmd/godoc@latest
 	@which git-chglog >/dev/null 2>&1 || echo "$(YELLOW)Consider installing git-chglog for changelog generation$(RESET)"
 	@which mkdocs >/dev/null 2>&1 || echo "$(YELLOW)Consider installing mkdocs for documentation: pip install mkdocs mkdocs-material$(RESET)"
-	@echo "$(GREEN)✅ Documentation tools installed$(RESET)"
+	@echo -e "$(GREEN)✅ Documentation tools installed$(RESET)"
 
 # ==============================================================================
 # Security Tools
@@ -126,9 +126,9 @@ install-docs-tools: ## install documentation tools
 .PHONY: install-security-tools
 
 install-security-tools: ## install security analysis tools
-	@echo "$(CYAN)Installing security tools...$(RESET)"
+	@echo -e "$(CYAN)Installing security tools...$(RESET)"
 	@command -v gosec >/dev/null 2>&1 || { echo "Installing gosec..." && go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
-	@echo "$(GREEN)✅ Security tools installed!$(RESET)"
+	@echo -e "$(GREEN)✅ Security tools installed!$(RESET)"
 
 # ==============================================================================
 # Vulnerability Scanning
@@ -137,9 +137,9 @@ install-security-tools: ## install security analysis tools
 .PHONY: install-vuln-tools
 
 install-vuln-tools: ## install vulnerability scanning tools
-	@echo "$(CYAN)Installing vulnerability scanning tools...$(RESET)"
+	@echo -e "$(CYAN)Installing vulnerability scanning tools...$(RESET)"
 	@echo "govulncheck is available as: go run golang.org/x/vuln/cmd/govulncheck@latest"
-	@echo "$(GREEN)✅ Vulnerability tools ready!$(RESET)"
+	@echo -e "$(GREEN)✅ Vulnerability tools ready!$(RESET)"
 
 # ==============================================================================
 # Tool Status and Information
@@ -148,54 +148,54 @@ install-vuln-tools: ## install vulnerability scanning tools
 .PHONY: tools-status tools-info
 
 tools-status: ## show installed tool status
-	@echo "$(CYAN)Checking development tool status...$(RESET)"
+	@echo -e "$(CYAN)Checking development tool status...$(RESET)"
 	@echo ""
-	@echo "$(GREEN)📦 Core Tools:$(RESET)"
+	@echo -e "$(GREEN)📦 Core Tools:$(RESET)"
 	@printf "  %-20s " "go:"; go version 2>/dev/null | cut -d' ' -f3 || echo "$(RED)Not found$(RESET)"
 	@printf "  %-20s " "git:"; git --version 2>/dev/null | cut -d' ' -f3 || echo "$(RED)Not found$(RESET)"
 	@echo ""
-	@echo "$(GREEN)🔧 Build Tools:$(RESET)"
+	@echo -e "$(GREEN)🔧 Build Tools:$(RESET)"
 	@printf "  %-20s " "goreleaser:"; goreleaser --version 2>/dev/null | head -1 | awk '{print $3}' || echo "$(RED)Not installed$(RESET)"
 	@echo ""
-	@echo "$(GREEN)✨ Format Tools:$(RESET)"
+	@echo -e "$(GREEN)✨ Format Tools:$(RESET)"
 	@printf "  %-20s " "gofumpt:"; gofumpt --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
 	@printf "  %-20s " "gci:"; gci --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
 	@echo ""
-	@echo "$(GREEN)🔍 Lint Tools:$(RESET)"
+	@echo -e "$(GREEN)🔍 Lint Tools:$(RESET)"
 	@printf "  %-20s " "golangci-lint:"; golangci-lint --version 2>/dev/null | cut -d' ' -f4 || echo "$(RED)Not installed$(RESET)"
 	@printf "  %-20s " "staticcheck:"; staticcheck -version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
 	@echo ""
-	@echo "$(GREEN)🛡️  Security Tools:$(RESET)"
+	@echo -e "$(GREEN)🛡️  Security Tools:$(RESET)"
 	@printf "  %-20s " "gosec:"; gosec -version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
 	@echo ""
-	@echo "$(GREEN)🎭 Mock Tools:$(RESET)"
+	@echo -e "$(GREEN)🎭 Mock Tools:$(RESET)"
 	@printf "  %-20s " "mockgen:"; mockgen --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
 	@echo ""
-	@echo "$(GREEN)🎣 Git Hooks:$(RESET)"
+	@echo -e "$(GREEN)🎣 Git Hooks:$(RESET)"
 	@printf "  %-20s " "pre-commit:"; pre-commit --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
 
 tools-info: ## show comprehensive tool information
-	@echo "$(CYAN)"
+	@echo -e "$(CYAN)"
 	@echo "╔══════════════════════════════════════════════════════════════════════════════╗"
-	@echo "║                         $(YELLOW)Development Tools Information$(CYAN)                   ║"
+	@echo -e "║                         $(YELLOW)Development Tools Information$(CYAN)                   ║"
 	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
-	@echo "$(RESET)"
-	@echo "$(GREEN)🔧 Available Tool Categories:$(RESET)"
-	@echo "  • $(CYAN)Format Tools$(RESET)        Code formatting (gofumpt, gci)"
-	@echo "  • $(CYAN)Analysis Tools$(RESET)      Static analysis (staticcheck, gosec)"
-	@echo "  • $(CYAN)Lint Tools$(RESET)          Code linting (golangci-lint)"
-	@echo "  • $(CYAN)Build Tools$(RESET)         Build and release (goreleaser)"
-	@echo "  • $(CYAN)Mock Tools$(RESET)          Mock generation (mockgen)"
-	@echo "  • $(CYAN)Security Tools$(RESET)      Security scanning (gosec, govulncheck)"
-	@echo "  • $(CYAN)Git Hooks$(RESET)           Pre-commit hooks and validation"
-	@echo "  • $(CYAN)Documentation$(RESET)       Documentation tools (godoc, benchstat)"
+	@echo -e "$(RESET)"
+	@echo -e "$(GREEN)🔧 Available Tool Categories:$(RESET)"
+	@echo -e "  • $(CYAN)Format Tools$(RESET)        Code formatting (gofumpt, gci)"
+	@echo -e "  • $(CYAN)Analysis Tools$(RESET)      Static analysis (staticcheck, gosec)"
+	@echo -e "  • $(CYAN)Lint Tools$(RESET)          Code linting (golangci-lint)"
+	@echo -e "  • $(CYAN)Build Tools$(RESET)         Build and release (goreleaser)"
+	@echo -e "  • $(CYAN)Mock Tools$(RESET)          Mock generation (mockgen)"
+	@echo -e "  • $(CYAN)Security Tools$(RESET)      Security scanning (gosec, govulncheck)"
+	@echo -e "  • $(CYAN)Git Hooks$(RESET)           Pre-commit hooks and validation"
+	@echo -e "  • $(CYAN)Documentation$(RESET)       Documentation tools (godoc, benchstat)"
 	@echo ""
-	@echo "$(GREEN)🚀 Quick Installation:$(RESET)"
-	@echo "  $(CYAN)make install-tools$(RESET)        Install all development tools"
-	@echo "  $(CYAN)make tools-status$(RESET)         Check current tool installation status"
+	@echo -e "$(GREEN)🚀 Quick Installation:$(RESET)"
+	@echo -e "  $(CYAN)make install-tools$(RESET)        Install all development tools"
+	@echo -e "  $(CYAN)make tools-status$(RESET)         Check current tool installation status"
 	@echo ""
-	@echo "$(GREEN)💡 Individual Categories:$(RESET)"
-	@echo "  $(CYAN)make install-format-tools$(RESET)     Format tools only"
-	@echo "  $(CYAN)make install-analysis-tools$(RESET)   Analysis tools only"
-	@echo "  $(CYAN)make install-security-tools$(RESET)   Security tools only"
-	@echo "  $(CYAN)make install-mock-tools$(RESET)       Mock generation tools only"
+	@echo -e "$(GREEN)💡 Individual Categories:$(RESET)"
+	@echo -e "  $(CYAN)make install-format-tools$(RESET)     Format tools only"
+	@echo -e "  $(CYAN)make install-analysis-tools$(RESET)   Analysis tools only"
+	@echo -e "  $(CYAN)make install-security-tools$(RESET)   Security tools only"
+	@echo -e "  $(CYAN)make install-mock-tools$(RESET)       Mock generation tools only"
