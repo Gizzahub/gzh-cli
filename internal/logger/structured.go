@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -74,38 +73,15 @@ type PerformanceInfo struct {
 	Metrics     map[string]interface{} `json:"metrics,omitempty"`
 }
 
-// NewStructuredLogger creates a new structured logger.
+// NewStructuredLogger creates a new structured logger with dual output.
 func NewStructuredLogger(component string, level LogLevel) *StructuredLogger {
-	var slogLevel slog.Level
-
-	switch level {
-	case LevelDebug:
-		slogLevel = slog.LevelDebug
-	case LevelInfo:
-		slogLevel = slog.LevelInfo
-	case LevelWarn:
-		slogLevel = slog.LevelWarn
-	case LevelError:
-		slogLevel = slog.LevelError
-	default:
-		slogLevel = slog.LevelInfo
+	// Use dual logger that outputs to both console and file
+	logger, err := NewDualLogger(component, level)
+	if err != nil {
+		// Fallback to console-only logger if dual logger fails
+		return NewConsoleOnlyLogger(component, level)
 	}
-
-	opts := &slog.HandlerOptions{
-		Level:     slogLevel,
-		AddSource: true,
-	}
-
-	handler := slog.NewJSONHandler(os.Stdout, opts)
-	logger := slog.New(handler)
-
-	return &StructuredLogger{
-		logger:    logger,
-		level:     slogLevel,
-		context:   make(map[string]interface{}),
-		sessionID: generateSessionID(),
-		component: component,
-	}
+	return logger
 }
 
 // WithContext adds context to the logger.
@@ -293,8 +269,8 @@ func getCaller(skip int) *CallerInfo {
 }
 
 // generateSessionID generates a unique session ID.
-func generateSessionID() string {
-	return fmt.Sprintf("sess_%d_%d", time.Now().Unix(), time.Now().Nanosecond()%1000000)
+func generateSessionID(component string) string {
+	return fmt.Sprintf("%s_%d_%d", component, time.Now().Unix(), time.Now().Nanosecond()%1000000)
 }
 
 // LoggerMiddleware provides logging middleware functionality.
