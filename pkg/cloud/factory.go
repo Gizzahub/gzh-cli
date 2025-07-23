@@ -161,7 +161,7 @@ func (m *defaultVPNManager) ListVPNConnections() ([]*VPNConnection, error) {
 }
 
 // ConnectVPN connects to a VPN (mock implementation).
-func (m *defaultVPNManager) ConnectVPN(ctx context.Context, name string) error {
+func (m *defaultVPNManager) ConnectVPN(_ context.Context, name string) error {
 	conn, err := m.GetVPNConnection(name)
 	if err != nil {
 		return err
@@ -176,7 +176,7 @@ func (m *defaultVPNManager) ConnectVPN(ctx context.Context, name string) error {
 }
 
 // DisconnectVPN disconnects from a VPN (mock implementation).
-func (m *defaultVPNManager) DisconnectVPN(ctx context.Context, name string) error {
+func (m *defaultVPNManager) DisconnectVPN(_ context.Context, name string) error {
 	_, err := m.GetVPNConnection(name)
 	if err != nil {
 		return err
@@ -190,7 +190,7 @@ func (m *defaultVPNManager) DisconnectVPN(ctx context.Context, name string) erro
 }
 
 // GetVPNStatus returns the status of a VPN connection.
-func (m *defaultVPNManager) GetVPNStatus(ctx context.Context, name string) (*VPNStatus, error) {
+func (m *defaultVPNManager) GetVPNStatus(_ context.Context, name string) (*VPNStatus, error) {
 	status, exists := m.statuses[name]
 	if !exists {
 		return &VPNStatus{
@@ -407,7 +407,7 @@ func (m *defaultHierarchicalVPNManager) DisconnectVPNHierarchy(ctx context.Conte
 }
 
 // GetVPNHierarchyStatus returns the status of a VPN hierarchy (mock implementation).
-func (m *defaultHierarchicalVPNManager) GetVPNHierarchyStatus(ctx context.Context, name string) (*VPNHierarchyStatus, error) {
+func (m *defaultHierarchicalVPNManager) GetVPNHierarchyStatus(_ context.Context, name string) (*VPNHierarchyStatus, error) {
 	hierarchy, err := m.GetVPNHierarchy(name)
 	if err != nil {
 		return nil, err
@@ -477,7 +477,7 @@ func (m *defaultPolicyManager) ListPolicies() ([]*NetworkPolicy, error) {
 }
 
 // ApplyPolicy applies a network policy (mock implementation).
-func (m *defaultPolicyManager) ApplyPolicy(ctx context.Context, name string) error {
+func (m *defaultPolicyManager) ApplyPolicy(_ context.Context, name string) error {
 	_, err := m.GetPolicy(name)
 	if err != nil {
 		return err
@@ -487,7 +487,7 @@ func (m *defaultPolicyManager) ApplyPolicy(ctx context.Context, name string) err
 }
 
 // RemoveAppliedPolicy removes a network policy (mock implementation).
-func (m *defaultPolicyManager) RemoveAppliedPolicy(ctx context.Context, name string) error {
+func (m *defaultPolicyManager) RemoveAppliedPolicy(_ context.Context, name string) error {
 	_, err := m.GetPolicy(name)
 	if err != nil {
 		return err
@@ -497,13 +497,13 @@ func (m *defaultPolicyManager) RemoveAppliedPolicy(ctx context.Context, name str
 }
 
 // ApplyEnvironmentPolicies applies policies for an environment (mock implementation).
-func (m *defaultPolicyManager) ApplyEnvironmentPolicies(ctx context.Context, environment string) error {
+func (m *defaultPolicyManager) ApplyEnvironmentPolicies(_ context.Context, _ string) error {
 	// Mock implementation - in real implementation, this would apply policies for the environment
 	return nil
 }
 
 // GetApplicablePolicies gets applicable policies for a profile (mock implementation).
-func (m *defaultPolicyManager) GetApplicablePolicies(ctx context.Context, profileName string) ([]*NetworkPolicy, error) {
+func (m *defaultPolicyManager) GetApplicablePolicies(_ context.Context, profileName string) ([]*NetworkPolicy, error) {
 	// Mock implementation - in real implementation, this would return applicable policies for the profile
 	var applicablePolicies []*NetworkPolicy
 
@@ -529,13 +529,13 @@ func (m *defaultPolicyManager) GetApplicablePolicies(ctx context.Context, profil
 }
 
 // ApplyPoliciesForProfile applies policies for a specific profile (mock implementation).
-func (m *defaultPolicyManager) ApplyPoliciesForProfile(ctx context.Context, profileName string) error {
+func (m *defaultPolicyManager) ApplyPoliciesForProfile(_ context.Context, _ string) error {
 	// Mock implementation - in real implementation, this would apply policies for the profile
 	return nil
 }
 
 // GetPolicyStatus gets the status of applied policies (mock implementation).
-func (m *defaultPolicyManager) GetPolicyStatus(ctx context.Context) ([]*PolicyStatus, error) {
+func (m *defaultPolicyManager) GetPolicyStatus(_ context.Context) ([]*PolicyStatus, error) {
 	// Mock implementation - in real implementation, this would return the status of applied policies
 	statuses := make([]*PolicyStatus, 0, len(m.policies))
 
@@ -589,7 +589,7 @@ func (m *defaultPolicyManager) GetPolicyStatusForProfile(ctx context.Context, pr
 }
 
 // ValidatePolicy validates a network policy (mock implementation).
-func (m *defaultPolicyManager) ValidatePolicy(ctx context.Context, policy *NetworkPolicy) error {
+func (m *defaultPolicyManager) ValidatePolicy(_ context.Context, policy *NetworkPolicy) error {
 	// Mock implementation - in real implementation, this would validate the policy
 	if policy == nil {
 		return fmt.Errorf("policy cannot be nil")

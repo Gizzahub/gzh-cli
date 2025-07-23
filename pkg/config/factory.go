@@ -49,7 +49,7 @@ func (f *providerFactoryImpl) CreateCloner(ctx context.Context, providerName, to
 }
 
 // CreateClonerWithEnv creates a provider cloner with a specific environment.
-func (f *providerFactoryImpl) CreateClonerWithEnv(ctx context.Context, providerName, token string, environment env.Environment) (ProviderCloner, error) {
+func (f *providerFactoryImpl) CreateClonerWithEnv(_ context.Context, providerName, token string, environment env.Environment) (ProviderCloner, error) {
 	f.logger.Debug("Creating provider cloner", "provider", providerName)
 
 	if !f.IsProviderSupported(providerName) {

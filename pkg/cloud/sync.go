@@ -143,7 +143,7 @@ func (sm *DefaultSyncManager) SyncAll(ctx context.Context, source, target Provid
 }
 
 // GetSyncStatus returns sync status for profiles.
-func (sm *DefaultSyncManager) GetSyncStatus(ctx context.Context) ([]SyncStatus, error) {
+func (sm *DefaultSyncManager) GetSyncStatus(_ context.Context) ([]SyncStatus, error) {
 	return sm.syncHistory, nil
 }
 

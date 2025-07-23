@@ -256,7 +256,7 @@ func (fsImpl *FileSystemImpl) ReadFile(_ context.Context, filename string) ([]by
 }
 
 // WriteFile implements FileSystem interface.
-func (fsImpl *FileSystemImpl) WriteFile(ctx context.Context, filename string, data []byte, perm os.FileMode) error {
+func (fsImpl *FileSystemImpl) WriteFile(_ context.Context, filename string, data []byte, perm os.FileMode) error {
 	fsImpl.logger.Debug("Writing file", "filename", filename, "size", len(data))
 
 	err := os.WriteFile(filename, data, perm)
@@ -269,7 +269,7 @@ func (fsImpl *FileSystemImpl) WriteFile(ctx context.Context, filename string, da
 }
 
 // CreateDir implements FileSystem interface.
-func (fsImpl *FileSystemImpl) CreateDir(ctx context.Context, path string, perm os.FileMode) error {
+func (fsImpl *FileSystemImpl) CreateDir(_ context.Context, path string, perm os.FileMode) error {
 	fsImpl.logger.Debug("Creating directory", "path", path)
 
 	err := os.MkdirAll(path, perm)
@@ -282,7 +282,7 @@ func (fsImpl *FileSystemImpl) CreateDir(ctx context.Context, path string, perm o
 }
 
 // RemoveAll implements FileSystem interface.
-func (fsImpl *FileSystemImpl) RemoveAll(ctx context.Context, path string) error {
+func (fsImpl *FileSystemImpl) RemoveAll(_ context.Context, path string) error {
 	fsImpl.logger.Debug("Removing directory", "path", path)
 
 	err := os.RemoveAll(path)
@@ -295,13 +295,13 @@ func (fsImpl *FileSystemImpl) RemoveAll(ctx context.Context, path string) error 
 }
 
 // Exists implements FileSystem interface.
-func (fsImpl *FileSystemImpl) Exists(ctx context.Context, path string) bool {
+func (fsImpl *FileSystemImpl) Exists(_ context.Context, path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
 
 // GetFileInfo implements FileSystem interface.
-func (fsImpl *FileSystemImpl) GetFileInfo(ctx context.Context, path string) (*FileInfo, error) {
+func (fsImpl *FileSystemImpl) GetFileInfo(_ context.Context, path string) (*FileInfo, error) {
 	fsImpl.logger.Debug("Getting file info", "path", path)
 
 	info, err := os.Stat(path)
@@ -317,7 +317,7 @@ func (fsImpl *FileSystemImpl) GetFileInfo(ctx context.Context, path string) (*Fi
 }
 
 // ListDir implements FileSystem interface.
-func (fsImpl *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileInfo, error) {
+func (fsImpl *FileSystemImpl) ListDir(_ context.Context, path string) ([]FileInfo, error) {
 	fsImpl.logger.Debug("Listing directory", "path", path)
 
 	entries, err := os.ReadDir(path)
@@ -344,7 +344,7 @@ func (fsImpl *FileSystemImpl) ListDir(ctx context.Context, path string) ([]FileI
 }
 
 // CopyFile implements FileSystem interface.
-func (fsImpl *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) error {
+func (fsImpl *FileSystemImpl) CopyFile(_ context.Context, src, dst string) error {
 	fsImpl.logger.Debug("Copying file", "src", src, "dst", dst)
 
 	sourceFile, err := os.Open(src)
@@ -375,7 +375,7 @@ func (fsImpl *FileSystemImpl) CopyFile(ctx context.Context, src, dst string) err
 }
 
 // MoveFile implements FileSystem interface.
-func (fsImpl *FileSystemImpl) MoveFile(ctx context.Context, src, dst string) error {
+func (fsImpl *FileSystemImpl) MoveFile(_ context.Context, src, dst string) error {
 	fsImpl.logger.Debug("Moving file", "src", src, "dst", dst)
 
 	err := os.Rename(src, dst)
@@ -461,7 +461,7 @@ func NewWatchService(config *WatchServiceConfig, logger Logger) WatchService {
 }
 
 // Watch implements WatchService interface.
-func (ws *WatchServiceImpl) Watch(ctx context.Context, paths []string) error {
+func (ws *WatchServiceImpl) Watch(_ context.Context, paths []string) error {
 	ws.logger.Debug("Starting to watch paths", "paths", paths)
 
 	for _, path := range paths {
@@ -491,7 +491,7 @@ func (ws *WatchServiceImpl) Errors() <-chan error {
 }
 
 // AddPath implements WatchService interface.
-func (ws *WatchServiceImpl) AddPath(ctx context.Context, path string) error {
+func (ws *WatchServiceImpl) AddPath(_ context.Context, path string) error {
 	ws.logger.Debug("Adding path to watch", "path", path)
 	ws.watchDirs[path] = true
 
@@ -499,7 +499,7 @@ func (ws *WatchServiceImpl) AddPath(ctx context.Context, path string) error {
 }
 
 // RemovePath implements WatchService interface.
-func (ws *WatchServiceImpl) RemovePath(ctx context.Context, path string) error {
+func (ws *WatchServiceImpl) RemovePath(_ context.Context, path string) error {
 	ws.logger.Debug("Removing path from watch", "path", path)
 	delete(ws.watchDirs, path)
 
@@ -519,7 +519,7 @@ func NewPermissionManager(logger Logger) PermissionManager {
 }
 
 // SetPermissions implements PermissionManager interface.
-func (pm *PermissionManagerImpl) SetPermissions(ctx context.Context, path string, perm os.FileMode) error {
+func (pm *PermissionManagerImpl) SetPermissions(_ context.Context, path string, perm os.FileMode) error {
 	pm.logger.Debug("Setting permissions", "path", path, "perm", perm)
 
 	err := os.Chmod(path, perm)
@@ -532,7 +532,7 @@ func (pm *PermissionManagerImpl) SetPermissions(ctx context.Context, path string
 }
 
 // GetPermissions implements PermissionManager interface.
-func (pm *PermissionManagerImpl) GetPermissions(ctx context.Context, path string) (os.FileMode, error) {
+func (pm *PermissionManagerImpl) GetPermissions(_ context.Context, path string) (os.FileMode, error) {
 	pm.logger.Debug("Getting permissions", "path", path)
 
 	info, err := os.Stat(path)
@@ -545,19 +545,19 @@ func (pm *PermissionManagerImpl) GetPermissions(ctx context.Context, path string
 }
 
 // IsReadable implements PermissionManager interface.
-func (pm *PermissionManagerImpl) IsReadable(ctx context.Context, path string) bool {
+func (pm *PermissionManagerImpl) IsReadable(_ context.Context, path string) bool {
 	_, err := os.Open(path)
 	return err == nil
 }
 
 // IsWritable implements PermissionManager interface.
-func (pm *PermissionManagerImpl) IsWritable(ctx context.Context, path string) bool {
+func (pm *PermissionManagerImpl) IsWritable(_ context.Context, path string) bool {
 	_, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0)
 	return err == nil
 }
 
 // IsExecutable implements PermissionManager interface.
-func (pm *PermissionManagerImpl) IsExecutable(ctx context.Context, path string) bool {
+func (pm *PermissionManagerImpl) IsExecutable(_ context.Context, path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -567,13 +567,13 @@ func (pm *PermissionManagerImpl) IsExecutable(ctx context.Context, path string) 
 }
 
 // GetOwner implements PermissionManager interface.
-func (pm *PermissionManagerImpl) GetOwner(ctx context.Context, path string) (string, error) {
+func (pm *PermissionManagerImpl) GetOwner(_ context.Context, _ string) (string, error) {
 	// Simplified implementation - would need platform-specific code
 	return "owner", nil
 }
 
 // ChangeOwner implements PermissionManager interface.
-func (pm *PermissionManagerImpl) ChangeOwner(ctx context.Context, path, owner string) error {
+func (pm *PermissionManagerImpl) ChangeOwner(_ context.Context, path, owner string) error {
 	pm.logger.Debug("Changing owner", "path", path, "owner", owner)
 	// Simplified implementation - would need platform-specific code
 	return nil
@@ -634,7 +634,7 @@ func NewArchiveService(
 }
 
 // CreateArchive implements ArchiveService interface.
-func (as *ArchiveServiceImpl) CreateArchive(ctx context.Context, sourcePath, archivePath string, format ArchiveFormat) error {
+func (as *ArchiveServiceImpl) CreateArchive(_ context.Context, sourcePath, archivePath string, format ArchiveFormat) error {
 	as.logger.Debug("Creating archive", "source", sourcePath, "archive", archivePath, "format", format)
 
 	// Implementation would create tar.gz or zip archive
@@ -642,7 +642,7 @@ func (as *ArchiveServiceImpl) CreateArchive(ctx context.Context, sourcePath, arc
 }
 
 // ExtractArchive implements ArchiveService interface.
-func (as *ArchiveServiceImpl) ExtractArchive(ctx context.Context, archivePath, destPath string) error {
+func (as *ArchiveServiceImpl) ExtractArchive(_ context.Context, archivePath, destPath string) error {
 	as.logger.Debug("Extracting archive", "archive", archivePath, "dest", destPath)
 
 	// Implementation would extract archive
@@ -650,7 +650,7 @@ func (as *ArchiveServiceImpl) ExtractArchive(ctx context.Context, archivePath, d
 }
 
 // ListArchiveContents implements ArchiveService interface.
-func (as *ArchiveServiceImpl) ListArchiveContents(ctx context.Context, archivePath string) ([]string, error) {
+func (as *ArchiveServiceImpl) ListArchiveContents(_ context.Context, archivePath string) ([]string, error) {
 	as.logger.Debug("Listing archive contents", "archive", archivePath)
 
 	// Implementation would list archive contents
@@ -658,7 +658,7 @@ func (as *ArchiveServiceImpl) ListArchiveContents(ctx context.Context, archivePa
 }
 
 // ListArchive implements ArchiveService interface.
-func (as *ArchiveServiceImpl) ListArchive(ctx context.Context, archivePath string) ([]FileInfo, error) {
+func (as *ArchiveServiceImpl) ListArchive(_ context.Context, archivePath string) ([]FileInfo, error) {
 	as.logger.Debug("Listing archive", "archive", archivePath)
 	return []FileInfo{}, nil
 }
@@ -694,30 +694,30 @@ func NewBackupService(logger Logger) BackupService {
 }
 
 // CreateBackup implements BackupService interface.
-func (bs *BackupServiceImpl) CreateBackup(ctx context.Context, sourcePath, backupPath string) error {
+func (bs *BackupServiceImpl) CreateBackup(_ context.Context, sourcePath, backupPath string) error {
 	bs.logger.Debug("Creating backup", "source", sourcePath, "backup", backupPath)
 	return nil
 }
 
 // RestoreBackup implements BackupService interface.
-func (bs *BackupServiceImpl) RestoreBackup(ctx context.Context, backupPath, destPath string) error {
+func (bs *BackupServiceImpl) RestoreBackup(_ context.Context, backupPath, destPath string) error {
 	bs.logger.Debug("Restoring backup", "backup", backupPath, "dest", destPath)
 	return nil
 }
 
 // ListBackups implements BackupService interface.
-func (bs *BackupServiceImpl) ListBackups(ctx context.Context, path string) ([]BackupInfo, error) {
+func (bs *BackupServiceImpl) ListBackups(_ context.Context, _ string) ([]BackupInfo, error) {
 	return []BackupInfo{}, nil
 }
 
 // DeleteBackup implements BackupService interface.
-func (bs *BackupServiceImpl) DeleteBackup(ctx context.Context, backupPath string) error {
+func (bs *BackupServiceImpl) DeleteBackup(_ context.Context, backupPath string) error {
 	bs.logger.Debug("Deleting backup", "backup", backupPath)
 	return nil
 }
 
 // VerifyBackup implements BackupService interface.
-func (bs *BackupServiceImpl) VerifyBackup(ctx context.Context, backupPath string) error {
+func (bs *BackupServiceImpl) VerifyBackup(_ context.Context, backupPath string) error {
 	bs.logger.Debug("Verifying backup", "backup", backupPath)
 	return nil
 }
@@ -733,25 +733,25 @@ func NewSearchService(logger Logger) SearchService {
 }
 
 // FindFiles implements SearchService interface.
-func (ss *SearchServiceImpl) FindFiles(ctx context.Context, root, pattern string) ([]string, error) {
+func (ss *SearchServiceImpl) FindFiles(_ context.Context, root, pattern string) ([]string, error) {
 	ss.logger.Debug("Finding files", "root", root, "pattern", pattern)
 	return []string{}, nil
 }
 
 // FindInFiles implements SearchService interface.
-func (ss *SearchServiceImpl) FindInFiles(ctx context.Context, root, pattern string) ([]SearchResult, error) {
+func (ss *SearchServiceImpl) FindInFiles(_ context.Context, root, pattern string) ([]SearchResult, error) {
 	ss.logger.Debug("Finding in files", "root", root, "pattern", pattern)
 	return []SearchResult{}, nil
 }
 
 // FindDirectories implements SearchService interface.
-func (ss *SearchServiceImpl) FindDirectories(ctx context.Context, root, pattern string) ([]string, error) {
+func (ss *SearchServiceImpl) FindDirectories(_ context.Context, root, pattern string) ([]string, error) {
 	ss.logger.Debug("Finding directories", "root", root, "pattern", pattern)
 	return []string{}, nil
 }
 
 // SearchWithFilters implements SearchService interface.
-func (ss *SearchServiceImpl) SearchWithFilters(ctx context.Context, root string, filters SearchFilters) ([]SearchResult, error) {
+func (ss *SearchServiceImpl) SearchWithFilters(_ context.Context, root string, _ SearchFilters) ([]SearchResult, error) {
 	ss.logger.Debug("Searching with filters", "root", root)
 	return []SearchResult{}, nil
 }

@@ -178,7 +178,7 @@ func (f *MockFactory) CreateMockHTTPClient() *httpmocks.MockHTTPClient {
 }
 
 // CreateMockHTTPClientWithResponse creates HTTP client mock with specific response.
-func (f *MockFactory) CreateMockHTTPClientWithResponse(statusCode int, body string) *httpmocks.MockHTTPClient {
+func (f *MockFactory) CreateMockHTTPClientWithResponse(statusCode int, _ string) *httpmocks.MockHTTPClient {
 	mock := httpmocks.NewMockHTTPClient(f.ctrl)
 
 	response := &http.Response{

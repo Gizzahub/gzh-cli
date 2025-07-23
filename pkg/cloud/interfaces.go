@@ -62,10 +62,10 @@ type AuthConfig struct {
 	Method string `yaml:"method" json:"method"`
 
 	// Credentials file path (optional)
-	CredentialsFile string `yaml:"credentialsFile,omitempty" json:"credentials_file,omitempty"`
+	CredentialsFile string `yaml:"credentialsFile,omitempty" json:"credentialsFile,omitempty"`
 
 	// Environment variable prefix for credentials
-	EnvPrefix string `yaml:"envPrefix,omitempty" json:"env_prefix,omitempty"`
+	EnvPrefix string `yaml:"envPrefix,omitempty" json:"envPrefix,omitempty"`
 
 	// Additional auth parameters
 	Params map[string]string `yaml:"params,omitempty" json:"params,omitempty"`
@@ -95,25 +95,25 @@ type Profile struct {
 	Tags map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
 
 	// Last sync timestamp
-	LastSync time.Time `yaml:"lastSync,omitempty" json:"last_sync,omitempty"`
+	LastSync time.Time `yaml:"lastSync,omitempty" json:"lastSync,omitempty"`
 }
 
 // NetworkConfig represents network configuration for a profile.
 type NetworkConfig struct {
 	// VPC/VNet ID
-	VPCId string `yaml:"vpcId,omitempty" json:"vpc_id,omitempty"`
+	VPCId string `yaml:"vpcId,omitempty" json:"vpcId,omitempty"`
 
 	// Subnet IDs
-	SubnetIDs []string `yaml:"subnetIDs,omitempty" json:"subnet_i_ds,omitempty"`
+	SubnetIDs []string `yaml:"subnetIDs,omitempty" json:"subnetIDs,omitempty"`
 
 	// Security groups
-	SecurityGroups []string `yaml:"securityGroups,omitempty" json:"security_groups,omitempty"`
+	SecurityGroups []string `yaml:"securityGroups,omitempty" json:"securityGroups,omitempty"`
 
 	// CIDR blocks
-	CIDRBlocks []string `yaml:"cidrBlocks,omitempty" json:"cidr_blocks,omitempty"`
+	CIDRBlocks []string `yaml:"cidrBlocks,omitempty" json:"cidrBlocks,omitempty"`
 
 	// DNS servers
-	DNSServers []string `yaml:"dnsServers,omitempty" json:"dns_servers,omitempty"`
+	DNSServers []string `yaml:"dnsServers,omitempty" json:"dnsServers,omitempty"`
 
 	// Proxy configuration
 	Proxy *ProxyConfig `yaml:"proxy,omitempty" json:"proxy,omitempty"`
@@ -134,7 +134,7 @@ type ServiceConfig struct {
 	Port int `yaml:"port,omitempty" json:"port,omitempty"`
 
 	// Authentication required
-	AuthRequired bool `yaml:"authRequired,omitempty" json:"auth_required,omitempty"`
+	AuthRequired bool `yaml:"authRequired,omitempty" json:"authRequired,omitempty"`
 
 	// TLS/SSL configuration
 	TLS *TLSConfig `yaml:"tls,omitempty" json:"tls,omitempty"`
@@ -149,7 +149,7 @@ type ProxyConfig struct {
 	HTTPS string `yaml:"https,omitempty" json:"https,omitempty"`
 
 	// No proxy hosts
-	NoProxy []string `yaml:"noProxy,omitempty" json:"no_proxy,omitempty"`
+	NoProxy []string `yaml:"noProxy,omitempty" json:"noProxy,omitempty"`
 
 	// Proxy authentication
 	Auth *ProxyAuth `yaml:"auth,omitempty" json:"auth,omitempty"`
@@ -173,10 +173,10 @@ type VPNConfig struct {
 	Port int `yaml:"port,omitempty" json:"port,omitempty"`
 
 	// Configuration file path
-	ConfigFile string `yaml:"configFile,omitempty" json:"config_file,omitempty"`
+	ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
 
 	// Auto-connect on network change
-	AutoConnect bool `yaml:"autoConnect,omitempty" json:"auto_connect,omitempty"`
+	AutoConnect bool `yaml:"autoConnect,omitempty" json:"autoConnect,omitempty"`
 }
 
 // VPNConnection represents a VPN connection configuration.
@@ -194,7 +194,7 @@ type VPNConnection struct {
 	Port int `yaml:"port,omitempty" json:"port,omitempty"`
 
 	// Configuration file path
-	ConfigFile string `yaml:"configFile,omitempty" json:"config_file,omitempty"`
+	ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
 
 	// Username for authentication
 	Username string `yaml:"username,omitempty" json:"username,omitempty"`
@@ -203,28 +203,28 @@ type VPNConnection struct {
 	Password string `yaml:"password,omitempty" json:"password,omitempty"`
 
 	// Certificate files for authentication
-	CertFile string `yaml:"certFile,omitempty" json:"cert_file,omitempty"`
-	KeyFile  string `yaml:"keyFile,omitempty" json:"key_file,omitempty"`
-	CAFile   string `yaml:"caFile,omitempty" json:"ca_file,omitempty"`
+	CertFile string `yaml:"certFile,omitempty" json:"certFile,omitempty"`
+	KeyFile  string `yaml:"keyFile,omitempty" json:"keyFile,omitempty"`
+	CAFile   string `yaml:"caFile,omitempty" json:"caFile,omitempty"`
 
 	// Auto-connect on network change
-	AutoConnect bool `yaml:"autoConnect,omitempty" json:"auto_connect,omitempty"`
+	AutoConnect bool `yaml:"autoConnect,omitempty" json:"autoConnect,omitempty"`
 
 	// Connection timeout
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty"`
 
 	// Retry configuration
-	MaxRetries    int           `yaml:"maxRetries,omitempty" json:"max_retries,omitempty"`
-	RetryInterval time.Duration `yaml:"retryInterval,omitempty" json:"retry_interval,omitempty"`
+	MaxRetries    int           `yaml:"maxRetries,omitempty" json:"maxRetries,omitempty"`
+	RetryInterval time.Duration `yaml:"retryInterval,omitempty" json:"retryInterval,omitempty"`
 
 	// Health check configuration
-	HealthCheck *VPNHealthCheck `yaml:"healthCheck,omitempty" json:"health_check,omitempty"`
+	HealthCheck *VPNHealthCheck `yaml:"healthCheck,omitempty" json:"healthCheck,omitempty"`
 
 	// Route configuration for this VPN
 	Routes []RouteConfig `yaml:"routes,omitempty" json:"routes,omitempty"`
 
 	// DNS servers to use when connected
-	DNSServers []string `yaml:"dnsServers,omitempty" json:"dns_servers,omitempty"`
+	DNSServers []string `yaml:"dnsServers,omitempty" json:"dnsServers,omitempty"`
 
 	// Environment this VPN connection belongs to
 	Environment string `yaml:"environment,omitempty" json:"environment,omitempty"`
@@ -251,10 +251,10 @@ type VPNHealthCheck struct {
 	Target string `yaml:"target,omitempty" json:"target,omitempty"`
 
 	// Number of failed checks before marking as unhealthy
-	FailureThreshold int `yaml:"failureThreshold,omitempty" json:"failure_threshold,omitempty"`
+	FailureThreshold int `yaml:"failureThreshold,omitempty" json:"failureThreshold,omitempty"`
 
 	// Number of successful checks before marking as healthy
-	SuccessThreshold int `yaml:"successThreshold,omitempty" json:"success_threshold,omitempty"`
+	SuccessThreshold int `yaml:"successThreshold,omitempty" json:"successThreshold,omitempty"`
 }
 
 // RouteConfig represents custom route configuration.
@@ -272,16 +272,16 @@ type RouteConfig struct {
 // TLSConfig represents TLS/SSL configuration.
 type TLSConfig struct {
 	// Skip verification (insecure)
-	SkipVerify bool `yaml:"skipVerify,omitempty" json:"skip_verify,omitempty"`
+	SkipVerify bool `yaml:"skipVerify,omitempty" json:"skipVerify,omitempty"`
 
 	// CA certificate file
-	CAFile string `yaml:"caFile,omitempty" json:"ca_file,omitempty"`
+	CAFile string `yaml:"caFile,omitempty" json:"caFile,omitempty"`
 
 	// Client certificate file
-	CertFile string `yaml:"certFile,omitempty" json:"cert_file,omitempty"`
+	CertFile string `yaml:"certFile,omitempty" json:"certFile,omitempty"`
 
 	// Client key file
-	KeyFile string `yaml:"keyFile,omitempty" json:"key_file,omitempty"`
+	KeyFile string `yaml:"keyFile,omitempty" json:"keyFile,omitempty"`
 }
 
 // NetworkPolicy represents network policy that can be applied.
@@ -290,7 +290,7 @@ type NetworkPolicy struct {
 	Name string `yaml:"name" json:"name"`
 
 	// Profile name this policy belongs to
-	ProfileName string `yaml:"profileName,omitempty" json:"profile_name,omitempty"`
+	ProfileName string `yaml:"profileName,omitempty" json:"profileName,omitempty"`
 
 	// Environment this policy applies to
 	Environment string `yaml:"environment,omitempty" json:"environment,omitempty"`
@@ -459,20 +459,20 @@ type SyncManager interface {
 
 // SyncStatus represents synchronization status.
 type SyncStatus struct {
-	ProfileName string    `json:"profile_name"`
+	ProfileName string    `json:"profileName"`
 	Source      string    `json:"source"`
 	Target      string    `json:"target"`
 	Status      string    `json:"status"` // synced, pending, conflict, error
-	LastSync    time.Time `json:"last_sync"`
+	LastSync    time.Time `json:"lastSync"`
 	Error       string    `json:"error,omitempty"`
 }
 
 // SyncConflict represents a synchronization conflict.
 type SyncConflict struct {
-	ProfileName string      `json:"profile_name"`
+	ProfileName string      `json:"profileName"`
 	Field       string      `json:"field"`
-	SourceValue interface{} `json:"source_value"`
-	TargetValue interface{} `json:"target_value"`
+	SourceValue interface{} `json:"sourceValue"`
+	TargetValue interface{} `json:"targetValue"`
 }
 
 // ConflictStrategy represents how to resolve sync conflicts.
@@ -509,23 +509,23 @@ type VPNStatus struct {
 	Status string `json:"status"`
 
 	// IP address assigned to the VPN connection
-	IPAddress string `json:"ip_address,omitempty"`
+	IPAddress string `json:"ipAddress,omitempty"`
 
 	// Connection uptime
 	Uptime time.Duration `json:"uptime,omitempty"`
 
 	// Data transferred
-	BytesReceived uint64 `json:"bytes_received,omitempty"`
-	BytesSent     uint64 `json:"bytes_sent,omitempty"`
+	BytesReceived uint64 `json:"bytesReceived,omitempty"`
+	BytesSent     uint64 `json:"bytesSent,omitempty"`
 
 	// Last error (if any)
-	LastError string `json:"last_error,omitempty"`
+	LastError string `json:"lastError,omitempty"`
 
 	// Connection timestamp
-	ConnectedAt time.Time `json:"connected_at,omitempty"`
+	ConnectedAt time.Time `json:"connectedAt,omitempty"`
 
 	// Health check status
-	HealthCheck *VPNHealthStatus `json:"health_check,omitempty"`
+	HealthCheck *VPNHealthStatus `json:"healthCheck,omitempty"`
 }
 
 // VPNHealthStatus represents health check status for VPN.
@@ -534,19 +534,19 @@ type VPNHealthStatus struct {
 	Status string `json:"status"`
 
 	// Last health check timestamp
-	LastCheck time.Time `json:"last_check"`
+	LastCheck time.Time `json:"lastCheck"`
 
 	// Health check target
 	Target string `json:"target"`
 
 	// Response time
-	ResponseTime time.Duration `json:"response_time,omitempty"`
+	ResponseTime time.Duration `json:"responseTime,omitempty"`
 
 	// Failure count
-	FailureCount int `json:"failure_count"`
+	FailureCount int `json:"failureCount"`
 
 	// Success count
-	SuccessCount int `json:"success_count"`
+	SuccessCount int `json:"successCount"`
 }
 
 // VPNHierarchy represents a hierarchical VPN configuration.
@@ -588,10 +588,10 @@ type VPNHierarchyNode struct {
 	Failover *VPNFailoverConfig `yaml:"failover,omitempty" json:"failover,omitempty"`
 
 	// Health check configuration
-	HealthCheck *VPNHealthCheck `yaml:"healthCheck,omitempty" json:"health_check,omitempty"`
+	HealthCheck *VPNHealthCheck `yaml:"healthCheck,omitempty" json:"healthCheck,omitempty"`
 
 	// Auto-reconnect configuration
-	AutoReconnect bool `yaml:"autoReconnect,omitempty" json:"auto_reconnect,omitempty"`
+	AutoReconnect bool `yaml:"autoReconnect,omitempty" json:"autoReconnect,omitempty"`
 }
 
 // VPNHierarchyPolicy represents policy for VPN hierarchy connections.
@@ -600,13 +600,13 @@ type VPNHierarchyPolicy struct {
 	Strategy string `yaml:"strategy" json:"strategy"`
 
 	// Timeout for each connection attempt
-	ConnectionTimeout time.Duration `yaml:"connectionTimeout,omitempty" json:"connection_timeout,omitempty"`
+	ConnectionTimeout time.Duration `yaml:"connectionTimeout,omitempty" json:"connectionTimeout,omitempty"`
 
 	// Maximum retries per connection
-	MaxRetries int `yaml:"maxRetries,omitempty" json:"max_retries,omitempty"`
+	MaxRetries int `yaml:"maxRetries,omitempty" json:"maxRetries,omitempty"`
 
 	// Failure handling (stop, continue, failover)
-	FailureHandling string `yaml:"failureHandling,omitempty" json:"failure_handling,omitempty"`
+	FailureHandling string `yaml:"failureHandling,omitempty" json:"failureHandling,omitempty"`
 }
 
 // VPNFailoverConfig represents failover configuration for VPN connections.
@@ -615,16 +615,16 @@ type VPNFailoverConfig struct {
 	Enabled bool `yaml:"enabled" json:"enabled"`
 
 	// Backup VPN connections (in order of preference)
-	BackupConnections []string `yaml:"backupConnections,omitempty" json:"backup_connections,omitempty"`
+	BackupConnections []string `yaml:"backupConnections,omitempty" json:"backupConnections,omitempty"`
 
 	// Failover trigger conditions
-	TriggerConditions []string `yaml:"triggerConditions,omitempty" json:"trigger_conditions,omitempty"`
+	TriggerConditions []string `yaml:"triggerConditions,omitempty" json:"triggerConditions,omitempty"`
 
 	// Failover timeout
-	FailoverTimeout time.Duration `yaml:"failoverTimeout,omitempty" json:"failover_timeout,omitempty"`
+	FailoverTimeout time.Duration `yaml:"failoverTimeout,omitempty" json:"failoverTimeout,omitempty"`
 
 	// Auto-failback configuration
-	AutoFailback bool `yaml:"autoFailback,omitempty" json:"auto_failback,omitempty"`
+	AutoFailback bool `yaml:"autoFailback,omitempty" json:"autoFailback,omitempty"`
 }
 
 // VPNHierarchyStatus represents the status of a VPN hierarchy.
@@ -636,19 +636,19 @@ type VPNHierarchyStatus struct {
 	Status string `json:"status"`
 
 	// Status of each layer
-	LayerStatuses map[int]*VPNLayerStatus `json:"layer_statuses"`
+	LayerStatuses map[int]*VPNLayerStatus `json:"layerStatuses"`
 
 	// Node statuses
-	NodeStatuses map[string]*VPNStatus `json:"node_statuses"`
+	NodeStatuses map[string]*VPNStatus `json:"nodeStatuses"`
 
 	// Last connection attempt
-	LastConnectionAttempt time.Time `json:"last_connection_attempt"`
+	LastConnectionAttempt time.Time `json:"lastConnectionAttempt"`
 
 	// Active connections count
-	ActiveConnections int `json:"active_connections"`
+	ActiveConnections int `json:"activeConnections"`
 
 	// Total connections count
-	TotalConnections int `json:"total_connections"`
+	TotalConnections int `json:"totalConnections"`
 }
 
 // VPNLayerStatus represents the status of a layer in VPN hierarchy.
@@ -660,13 +660,13 @@ type VPNLayerStatus struct {
 	Status string `json:"status"`
 
 	// Connected nodes count
-	ConnectedNodes int `json:"connected_nodes"`
+	ConnectedNodes int `json:"connectedNodes"`
 
 	// Total nodes count
-	TotalNodes int `json:"total_nodes"`
+	TotalNodes int `json:"totalNodes"`
 
 	// Layer connection time
-	ConnectedAt time.Time `json:"connected_at,omitempty"`
+	ConnectedAt time.Time `json:"connectedAt,omitempty"`
 }
 
 // NetworkEnvironment represents a network environment configuration.
@@ -681,10 +681,10 @@ type NetworkEnvironment struct {
 	Network NetworkConfig `yaml:"network" json:"network"`
 
 	// VPN connections for this environment
-	VPNConnections map[string]*VPNConnection `yaml:"vpnConnections,omitempty" json:"vpn_connections,omitempty"`
+	VPNConnections map[string]*VPNConnection `yaml:"vpnConnections,omitempty" json:"vpnConnections,omitempty"`
 
 	// Network policies for this environment
-	NetworkPolicies []*NetworkPolicy `yaml:"networkPolicies,omitempty" json:"network_policies,omitempty"`
+	NetworkPolicies []*NetworkPolicy `yaml:"networkPolicies,omitempty" json:"networkPolicies,omitempty"`
 
 	// Environment variables
 	Environment map[string]string `yaml:"environment,omitempty" json:"environment,omitempty"`
@@ -696,10 +696,10 @@ type NetworkEnvironment struct {
 // PolicyStatus represents the status of a network policy.
 type PolicyStatus struct {
 	// Policy name
-	PolicyName string `json:"policy_name"`
+	PolicyName string `json:"policyName"`
 
 	// Profile name
-	ProfileName string `json:"profile_name"`
+	ProfileName string `json:"profileName"`
 
 	// Provider name
 	Provider string `json:"provider"`

@@ -63,7 +63,7 @@ func (f *DefaultServiceFactory) CreateConfigServiceWithEnvironment(environment e
 }
 
 // Global factory instance for convenience.
-var globalFactory ServiceFactory = NewServiceFactory()
+var globalFactory = NewServiceFactory()
 
 // CreateConfigService creates a configuration service using the global factory.
 func CreateConfigService(options *ConfigServiceOptions) (ConfigService, error) {
@@ -88,7 +88,7 @@ func SetGlobalFactory(factory ServiceFactory) {
 // Unified Configuration Management Functions
 
 // GlobalConfigManager is a singleton configuration manager instance.
-var GlobalConfigManager *ConfigManager
+var GlobalConfigManager *Manager
 
 // InitializeGlobalManager initializes the global configuration manager.
 func InitializeGlobalManager() error {
@@ -96,20 +96,20 @@ func InitializeGlobalManager() error {
 		return nil // Already initialized
 	}
 
-	options := ConfigOptions{
-		Sources:         []ConfigSource{SourceDefaults, SourceFile, SourceEnvironment},
+	options := Options{
+		Sources:         []Source{SourceDefaults, SourceFile, SourceEnvironment},
 		WatchForChanges: true,
 		ValidateOnLoad:  true,
 	}
 
-	GlobalConfigManager = NewConfigManager(options)
+	GlobalConfigManager = NewManager(options)
 	RegisterDefaultValidators(GlobalConfigManager)
 
 	return nil
 }
 
 // GetGlobalManager returns the global configuration manager, initializing it if needed.
-func GetGlobalManager() (*ConfigManager, error) {
+func GetGlobalManager() (*Manager, error) {
 	if GlobalConfigManager == nil {
 		if err := InitializeGlobalManager(); err != nil {
 			return nil, err
@@ -125,8 +125,8 @@ func LoadConfig[T any](ctx context.Context, component string, target *T) error {
 		return err
 	}
 
-	options := ConfigOptions{
-		Sources:         []ConfigSource{SourceDefaults, SourceFile, SourceEnvironment},
+	options := Options{
+		Sources:         []Source{SourceDefaults, SourceFile, SourceEnvironment},
 		ConfigPaths:     discoverConfigPaths(component),
 		EnvPrefix:       "GZH_",
 		WatchForChanges: false,
@@ -137,7 +137,7 @@ func LoadConfig[T any](ctx context.Context, component string, target *T) error {
 }
 
 // LoadConfigWithOptions loads configuration with custom options.
-func LoadConfigWithOptions[T any](ctx context.Context, component string, target *T, options ConfigOptions) error {
+func LoadConfigWithOptions[T any](ctx context.Context, component string, target *T, options Options) error {
 	manager, err := GetGlobalManager()
 	if err != nil {
 		return err
@@ -161,8 +161,8 @@ func ReloadConfig(ctx context.Context, component string) error {
 		return err
 	}
 
-	options := ConfigOptions{
-		Sources:         []ConfigSource{SourceDefaults, SourceFile, SourceEnvironment},
+	options := Options{
+		Sources:         []Source{SourceDefaults, SourceFile, SourceEnvironment},
 		ConfigPaths:     discoverConfigPaths(component),
 		EnvPrefix:       "GZH_",
 		WatchForChanges: false,
@@ -205,7 +205,7 @@ func UpdateConfig(component string, config interface{}) error {
 }
 
 // RegisterWatcher registers a configuration change watcher.
-func RegisterWatcher(component string, watcher ConfigWatcher) error {
+func RegisterWatcher(component string, watcher Watcher) error {
 	manager, err := GetGlobalManager()
 	if err != nil {
 		return err
@@ -216,7 +216,7 @@ func RegisterWatcher(component string, watcher ConfigWatcher) error {
 }
 
 // RegisterValidator registers a configuration validator.
-func RegisterValidator(component string, validator ConfigValidator) error {
+func RegisterValidator(component string, validator Validator) error {
 	manager, err := GetGlobalManager()
 	if err != nil {
 		return err

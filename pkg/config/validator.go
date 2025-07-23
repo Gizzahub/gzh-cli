@@ -27,7 +27,7 @@ func NewConfigValidator() *ConfigValidator {
 }
 
 // ValidateConfig performs comprehensive validation of a configuration.
-func (v *ConfigValidator) ValidateConfig(ctx context.Context, config *Config) error {
+func (v *ConfigValidator) ValidateConfig(_ context.Context, config *Config) error {
 	v.reset()
 
 	// Validate required fields

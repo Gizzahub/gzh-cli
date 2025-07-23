@@ -36,7 +36,7 @@ func NewServer(host string, port int, secret string, storage github.EventStorage
 }
 
 // Start starts the webhook server.
-func (s *Server) Start(ctx context.Context) error {
+func (s *Server) Start(_ context.Context) error {
 	s.logger.Info("Starting GitHub webhook server", "host", s.host, "port", s.port)
 
 	// Create webhook server

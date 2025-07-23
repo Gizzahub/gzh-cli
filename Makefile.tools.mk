@@ -31,9 +31,9 @@ install-analysis-tools: ## install code analysis tools
 	@echo "$(GREEN)✅ All analysis tools installed!$(RESET)"
 
 install-golangci-lint: ## install golangci-lint
-	@echo "$(CYAN)Installing golangci-lint...$(RESET)"
+	@echo -e "$(CYAN)Installing golangci-lint...$(RESET)"
 	@which golangci-lint > /dev/null || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin
-	@echo "$(GREEN)✅ golangci-lint installed!$(RESET)"
+	@echo -e "$(GREEN)✅ golangci-lint installed!$(RESET)"
 
 install-goreleaser: ## install goreleaser
 	@echo "$(CYAN)Installing goreleaser...$(RESET)"

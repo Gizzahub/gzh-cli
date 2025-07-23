@@ -285,7 +285,7 @@ func (b *bulkCloneManagerImpl) LoadConfigurationFromFile(_ context.Context, file
 }
 
 // ValidateConfiguration validates a bulk clone configuration.
-func (b *bulkCloneManagerImpl) ValidateConfiguration(_ context.Context, config *BulkCloneConfig) error {
+func (b *bulkCloneManagerImpl) ValidateConfiguration(_ context.Context, _ *BulkCloneConfig) error {
 	b.logger.Debug("Validating configuration")
 
 	// Implementation would validate the configuration
@@ -336,7 +336,7 @@ func (b *bulkCloneManagerImpl) CloneRepositories(_ context.Context, request *Rep
 }
 
 // RefreshRepositories refreshes existing repositories.
-func (b *bulkCloneManagerImpl) RefreshRepositories(ctx context.Context, request *RefreshRequest) (*RefreshResult, error) {
+func (b *bulkCloneManagerImpl) RefreshRepositories(_ context.Context, request *RefreshRequest) (*RefreshResult, error) {
 	b.logger.Info("Starting repository refresh", "path", request.TargetPath)
 
 	result := &RefreshResult{
@@ -353,7 +353,7 @@ func (b *bulkCloneManagerImpl) RefreshRepositories(ctx context.Context, request 
 }
 
 // DiscoverRepositories discovers repositories across providers.
-func (b *bulkCloneManagerImpl) DiscoverRepositories(ctx context.Context, request *DiscoveryRequest) (*DiscoveryResult, error) {
+func (b *bulkCloneManagerImpl) DiscoverRepositories(_ context.Context, request *DiscoveryRequest) (*DiscoveryResult, error) {
 	b.logger.Info("Starting repository discovery", "providers", request.Providers)
 
 	result := &DiscoveryResult{
@@ -371,7 +371,7 @@ func (b *bulkCloneManagerImpl) DiscoverRepositories(ctx context.Context, request
 }
 
 // ListAvailableOrganizations lists available organizations for a provider.
-func (b *bulkCloneManagerImpl) ListAvailableOrganizations(ctx context.Context, provider string) ([]string, error) {
+func (b *bulkCloneManagerImpl) ListAvailableOrganizations(_ context.Context, provider string) ([]string, error) {
 	b.logger.Debug("Listing organizations", "provider", provider)
 
 	// Implementation would query the provider for organizations
@@ -379,7 +379,7 @@ func (b *bulkCloneManagerImpl) ListAvailableOrganizations(ctx context.Context, p
 }
 
 // GetRepositoryStatus gets the status of repositories in a directory.
-func (b *bulkCloneManagerImpl) GetRepositoryStatus(ctx context.Context, targetPath string) (*RepositoryStatus, error) {
+func (b *bulkCloneManagerImpl) GetRepositoryStatus(_ context.Context, targetPath string) (*RepositoryStatus, error) {
 	b.logger.Debug("Getting repository status", "path", targetPath)
 
 	status := &RepositoryStatus{
@@ -392,7 +392,7 @@ func (b *bulkCloneManagerImpl) GetRepositoryStatus(ctx context.Context, targetPa
 }
 
 // CleanupRepositories cleans up repositories based on criteria.
-func (b *bulkCloneManagerImpl) CleanupRepositories(ctx context.Context, request *CleanupRequest) (*CleanupResult, error) {
+func (b *bulkCloneManagerImpl) CleanupRepositories(_ context.Context, request *CleanupRequest) (*CleanupResult, error) {
 	b.logger.Info("Starting repository cleanup", "path", request.TargetPath)
 
 	result := &CleanupResult{

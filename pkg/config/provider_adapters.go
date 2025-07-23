@@ -266,13 +266,13 @@ func (g *GiteaProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repo
 }
 
 // RefreshAll refreshes all repositories in the target path for the given Gitea owner.
-func (g *GiteaProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
+func (g *GiteaProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, _ string) error {
 	// Note: gitea.RefreshAll doesn't support strategy parameter
 	return gitea.RefreshAll(ctx, targetPath, owner)
 }
 
 // CloneOrganization clones all repositories from a Gitea organization.
-func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
+func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, _ string) error {
 	return gitea.RefreshAll(ctx, targetPath, owner)
 }
 
@@ -322,7 +322,7 @@ func NewDefaultProviderFactory(environment env.Environment) *DefaultProviderFact
 }
 
 // CreateProvider creates a provider service for the given provider name and configuration.
-func (f *DefaultProviderFactory) CreateProvider(ctx context.Context, providerName string, config ProviderConfig) (ProviderService, error) {
+func (f *DefaultProviderFactory) CreateProvider(_ context.Context, providerName string, config ProviderConfig) (ProviderService, error) {
 	switch strings.ToLower(providerName) {
 	case ProviderGitHub:
 		adapter := NewGitHubProviderAdapter(config.Token, f.environment)
@@ -447,7 +447,7 @@ func (s *DefaultBulkOperationService) CloneByProvider(ctx context.Context, provi
 }
 
 // CloneByFilter clones repositories based on specified filter criteria.
-func (s *DefaultBulkOperationService) CloneByFilter(ctx context.Context, filter RepositoryFilter, request *BulkCloneRequest) (*BulkCloneResult, error) {
+func (s *DefaultBulkOperationService) CloneByFilter(ctx context.Context, _ RepositoryFilter, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	// Implementation would filter repositories based on the provided filter
 	// For now, delegate to CloneAll
 	return s.CloneAll(ctx, request)
@@ -510,13 +510,13 @@ func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *B
 }
 
 // RefreshByProvider refreshes repositories from a specific provider.
-func (s *DefaultBulkOperationService) RefreshByProvider(ctx context.Context, providerName string, request *BulkRefreshRequest) (*BulkRefreshResult, error) {
+func (s *DefaultBulkOperationService) RefreshByProvider(ctx context.Context, _ string, request *BulkRefreshRequest) (*BulkRefreshResult, error) {
 	// Implementation would refresh only for the specified provider
 	return s.RefreshAll(ctx, request)
 }
 
 // GetRepositoryStatus retrieves the status of repositories in the target path.
-func (s *DefaultBulkOperationService) GetRepositoryStatus(ctx context.Context, targetPath string) (*RepositoryStatus, error) {
+func (s *DefaultBulkOperationService) GetRepositoryStatus(_ context.Context, _ string) (*RepositoryStatus, error) {
 	startTime := time.Now()
 	// Implementation would scan the target path and return status
 	status := &RepositoryStatus{

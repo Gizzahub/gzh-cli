@@ -28,7 +28,7 @@ type Middleware interface {
 // CacheEntry represents a cached response.
 type CacheEntry struct {
 	Response  *http.Response `json:"response"`
-	CreatedAt time.Time      `json:"created_at"`
+	CreatedAt time.Time      `json:"createdAt"`
 	TTL       time.Duration  `json:"ttl"`
 }
 
@@ -374,7 +374,7 @@ func NewRetryPolicy(config *RetryPolicyConfig, logger Logger) RetryPolicy {
 }
 
 // ShouldRetry implements RetryPolicy interface.
-func (rp *RetryPolicyImpl) ShouldRetry(_ context.Context, _ *Request, resp *Response, err error, attempt int) bool {
+func (rp *RetryPolicyImpl) ShouldRetry(_ context.Context, _ *Request, _ *Response, _ error, attempt int) bool {
 	if attempt >= rp.maxRetries {
 		return false
 	}

@@ -43,7 +43,7 @@ func LoadSchemaFromFileWithEnv(environment env.Environment) (string, error) {
 }
 
 // bulkCloneSchemaJSON contains the embedded JSON schema for validating bulk-clone configuration files.
-var bulkCloneSchemaJSON string = `{
+var bulkCloneSchemaJSON = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Bulk Clone Configuration Schema",
   "description": "Schema for gzh-manager bulk-clone configuration files",

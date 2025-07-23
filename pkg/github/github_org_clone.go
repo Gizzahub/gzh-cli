@@ -12,13 +12,12 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/schollz/progressbar/v3"
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/sync/semaphore"
-
 	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
+	"github.com/schollz/progressbar/v3"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 // RepoInfo represents GitHub repository information returned by the GitHub API.

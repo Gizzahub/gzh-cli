@@ -177,7 +177,7 @@ func (v *configValidatorImpl) ValidateConfig(ctx context.Context, config *Config
 }
 
 // ValidateConfigFile implements Validator interface.
-func (v *configValidatorImpl) ValidateConfigFile(ctx context.Context, filename string) error {
+func (v *configValidatorImpl) ValidateConfigFile(_ context.Context, filename string) error {
 	v.logger.Debug("Validating configuration file", "file", filename)
 
 	// Implementation would load and validate file
@@ -185,7 +185,7 @@ func (v *configValidatorImpl) ValidateConfigFile(ctx context.Context, filename s
 }
 
 // GetValidationErrors implements Validator interface.
-func (v *configValidatorImpl) GetValidationErrors(ctx context.Context, config *Config) []ValidationError {
+func (v *configValidatorImpl) GetValidationErrors(_ context.Context, _ *Config) []ValidationError {
 	v.logger.Debug("Getting validation errors")
 
 	// Implementation would return detailed validation errors
@@ -210,7 +210,7 @@ func NewParser(logger Logger) Parser {
 }
 
 // ParseConfig implements Parser interface.
-func (p *configParserImpl) ParseConfig(ctx context.Context, data []byte) (*Config, error) {
+func (p *configParserImpl) ParseConfig(_ context.Context, _ []byte) (*Config, error) {
 	p.logger.Debug("Parsing configuration data")
 
 	// Implementation would parse YAML/JSON data
@@ -218,7 +218,7 @@ func (p *configParserImpl) ParseConfig(ctx context.Context, data []byte) (*Confi
 }
 
 // ParseConfigWithFormat implements Parser interface.
-func (p *configParserImpl) ParseConfigWithFormat(ctx context.Context, data []byte, format string) (*Config, error) {
+func (p *configParserImpl) ParseConfigWithFormat(_ context.Context, _ []byte, format string) (*Config, error) {
 	p.logger.Debug("Parsing configuration with format", "format", format)
 
 	// Implementation would parse based on format
@@ -256,14 +256,14 @@ func NewProviderManager(config *Config, logger Logger) ProviderManager {
 }
 
 // GetProviders implements ProviderManager interface.
-func (m *providerManagerImpl) GetProviders(ctx context.Context) (map[string]Provider, error) {
+func (m *providerManagerImpl) GetProviders(_ context.Context) (map[string]Provider, error) {
 	m.logger.Debug("Getting all providers")
 
 	return m.config.Providers, nil
 }
 
 // GetProvider implements ProviderManager interface.
-func (m *providerManagerImpl) GetProvider(ctx context.Context, name string) (*Provider, error) {
+func (m *providerManagerImpl) GetProvider(_ context.Context, name string) (*Provider, error) {
 	m.logger.Debug("Getting provider", "name", name)
 
 	provider, exists := m.config.Providers[name]
@@ -285,7 +285,7 @@ func (m *providerManagerImpl) CreateProviderCloner(ctx context.Context, provider
 }
 
 // ValidateProvider implements ProviderManager interface.
-func (m *providerManagerImpl) ValidateProvider(ctx context.Context, provider *Provider) error {
+func (m *providerManagerImpl) ValidateProvider(_ context.Context, _ *Provider) error {
 	m.logger.Debug("Validating provider")
 
 	// Implementation would validate provider configuration

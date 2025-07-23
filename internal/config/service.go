@@ -141,7 +141,7 @@ func NewConfigService(options *ConfigServiceOptions) (ConfigService, error) {
 }
 
 // LoadConfiguration loads configuration from the specified path or default locations.
-func (s *DefaultConfigService) LoadConfiguration(ctx context.Context, configPath string) (*config.UnifiedConfig, error) {
+func (s *DefaultConfigService) LoadConfiguration(_ context.Context, configPath string) (*config.UnifiedConfig, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -188,7 +188,7 @@ func (s *DefaultConfigService) GetConfiguration() *config.UnifiedConfig {
 }
 
 // ReloadConfiguration reloads configuration from disk.
-func (s *DefaultConfigService) ReloadConfiguration(ctx context.Context) error {
+func (s *DefaultConfigService) ReloadConfiguration(_ context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -212,7 +212,7 @@ func (s *DefaultConfigService) ReloadConfiguration(ctx context.Context) error {
 }
 
 // SaveConfiguration saves configuration to disk.
-func (s *DefaultConfigService) SaveConfiguration(ctx context.Context, cfg *config.UnifiedConfig, path string) error {
+func (s *DefaultConfigService) SaveConfiguration(_ context.Context, cfg *config.UnifiedConfig, path string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -230,7 +230,7 @@ func (s *DefaultConfigService) SaveConfiguration(ctx context.Context, cfg *confi
 }
 
 // ValidateConfiguration validates the current configuration.
-func (s *DefaultConfigService) ValidateConfiguration(ctx context.Context) error {
+func (s *DefaultConfigService) ValidateConfiguration(_ context.Context) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -509,7 +509,7 @@ func (s *DefaultConfigService) SetValidationEnabled(enabled bool) {
 }
 
 // CreateDefaultConfiguration creates a default configuration file.
-func (s *DefaultConfigService) CreateDefaultConfiguration(ctx context.Context, path string) error {
+func (s *DefaultConfigService) CreateDefaultConfiguration(_ context.Context, path string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -524,7 +524,7 @@ func (s *DefaultConfigService) CreateDefaultConfiguration(ctx context.Context, p
 }
 
 // GetBulkCloneTargets returns bulk clone targets for integration.
-func (s *DefaultConfigService) GetBulkCloneTargets(ctx context.Context, providerFilter string) ([]config.BulkCloneTarget, error) {
+func (s *DefaultConfigService) GetBulkCloneTargets(_ context.Context, providerFilter string) ([]config.BulkCloneTarget, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -552,7 +552,7 @@ func (s *DefaultConfigService) GetConfiguredProviders() []string {
 }
 
 // GenerateReport generates a configuration report.
-func (s *DefaultConfigService) GenerateReport(ctx context.Context) (string, error) {
+func (s *DefaultConfigService) GenerateReport(_ context.Context) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

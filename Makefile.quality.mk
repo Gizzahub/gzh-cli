@@ -85,9 +85,9 @@ lint-ci: install-golangci-lint ## run golangci-lint for CI
 	golangci-lint run -c .golangci.yml --out-format=github-actions
 
 lint-count: install-golangci-lint ## count total lint issues without fixing
-	@echo "$(CYAN)Counting lint issues...$(RESET)"
+	@echo -e "$(CYAN)Counting lint issues...$(RESET)"
 	@ISSUES=$$(golangci-lint run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --out-format=line-number 2>/dev/null | grep -E "^[^[:space:]].*\\([^)]+\\)$$" | wc -l); \
-	echo "$(YELLOW)Total lint issues: $$ISSUES$(RESET)"
+	echo -e "$(YELLOW)Total lint issues: $$ISSUES$(RESET)"
 
 lint-summary: install-golangci-lint ## show lint issues summary by linter
 	@echo "$(CYAN)Lint issues summary:$(RESET)"

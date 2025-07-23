@@ -15,8 +15,8 @@ type FileInfo struct {
 	Name    string      `json:"name"`
 	Size    int64       `json:"size"`
 	Mode    fs.FileMode `json:"mode"`
-	ModTime time.Time   `json:"mod_time"`
-	IsDir   bool        `json:"is_dir"`
+	ModTime time.Time   `json:"modTime"`
+	IsDir   bool        `json:"isDir"`
 	Path    string      `json:"path"`
 }
 
@@ -111,7 +111,7 @@ type WatchService interface {
 type WatchEvent struct {
 	Path      string    `json:"path"`
 	Operation string    `json:"operation"` // create, write, remove, rename, chmod
-	IsDir     bool      `json:"is_dir"`
+	IsDir     bool      `json:"isDir"`
 	Time      time.Time `json:"time"`
 }
 
@@ -186,9 +186,9 @@ type BackupService interface {
 // BackupInfo represents information about a backup.
 type BackupInfo struct {
 	Path         string    `json:"path"`
-	OriginalPath string    `json:"original_path"`
+	OriginalPath string    `json:"originalPath"`
 	Size         int64     `json:"size"`
-	CreatedAt    time.Time `json:"created_at"`
+	CreatedAt    time.Time `json:"createdAt"`
 	Checksum     string    `json:"checksum"`
 }
 
@@ -218,16 +218,16 @@ type SearchResult struct {
 
 // SearchFilters represents search filter options.
 type SearchFilters struct {
-	NamePattern    string    `json:"name_pattern"`
-	ContentPattern string    `json:"content_pattern"`
+	NamePattern    string    `json:"namePattern"`
+	ContentPattern string    `json:"contentPattern"`
 	Extensions     []string  `json:"extensions"`
-	MinSize        int64     `json:"min_size"`
-	MaxSize        int64     `json:"max_size"`
-	ModifiedAfter  time.Time `json:"modified_after"`
-	ModifiedBefore time.Time `json:"modified_before"`
-	IncludeDirs    bool      `json:"include_dirs"`
-	FollowSymlinks bool      `json:"follow_symlinks"`
-	MaxDepth       int       `json:"max_depth"`
+	MinSize        int64     `json:"minSize"`
+	MaxSize        int64     `json:"maxSize"`
+	ModifiedAfter  time.Time `json:"modifiedAfter"`
+	ModifiedBefore time.Time `json:"modifiedBefore"`
+	IncludeDirs    bool      `json:"includeDirs"`
+	FollowSymlinks bool      `json:"followSymlinks"`
+	MaxDepth       int       `json:"maxDepth"`
 }
 
 // Service provides a unified interface for all file system operations.

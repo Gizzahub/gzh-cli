@@ -149,7 +149,7 @@ func (f *SecureHTTPClientFactory) CreateClient() *http.Client {
 	client := &http.Client{
 		Transport: transport,
 		Timeout:   f.config.Timeout,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		CheckRedirect: func(_ *http.Request, via []*http.Request) error {
 			// Limit redirects to prevent redirect loops
 			if len(via) >= constants.MaxRedirectsAllowed {
 				return fmt.Errorf("too many redirects")

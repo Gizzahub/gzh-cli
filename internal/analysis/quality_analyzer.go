@@ -34,11 +34,11 @@ type QualityIssue struct {
 
 // QualityMetrics holds various quality metrics.
 type QualityMetrics struct {
-	TotalFiles       int     `json:"total_files"`
-	TotalLinesOfCode int     `json:"total_lines_of_code"`
-	AvgComplexity    float64 `json:"avg_complexity"`
-	TestCoverage     float64 `json:"test_coverage"`
-	DuplicationRate  float64 `json:"duplication_rate"`
+	TotalFiles       int     `json:"totalFiles"`
+	TotalLinesOfCode int     `json:"totalLinesOfCode"`
+	AvgComplexity    float64 `json:"avgComplexity"`
+	TestCoverage     float64 `json:"testCoverage"`
+	DuplicationRate  float64 `json:"duplicationRate"`
 }
 
 // QualityResult represents the complete analysis result.
@@ -46,7 +46,7 @@ type QualityResult struct {
 	Repository   string         `json:"repository"`
 	Issues       []QualityIssue `json:"issues"`
 	Metrics      QualityMetrics `json:"metrics"`
-	OverallScore float64        `json:"overall_score"`
+	OverallScore float64        `json:"overallScore"`
 }
 
 // FileMetrics holds file-level metrics.

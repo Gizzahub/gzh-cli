@@ -25,18 +25,18 @@ type Client struct {
 // ClientConfig holds configuration for the GZH client.
 type ClientConfig struct {
 	// Connection settings
-	ServerURL  string        `yaml:"serverUrl,omitempty" json:"server_url,omitempty"`
-	APIKey     string        `yaml:"apiKey,omitempty" json:"api_key,omitempty"`
+	ServerURL  string        `yaml:"serverUrl,omitempty" json:"serverUrl,omitempty"`
+	APIKey     string        `yaml:"apiKey,omitempty" json:"apiKey,omitempty"`
 	Timeout    time.Duration `yaml:"timeout" json:"timeout"`
-	RetryCount int           `yaml:"retryCount" json:"retry_count"`
+	RetryCount int           `yaml:"retryCount" json:"retryCount"`
 
 	// Plugin settings (disabled - plugins package removed)
 	// PluginDir     string `yaml:"plugin_dir,omitempty" json:"plugin_dir,omitempty"`
 	// EnablePlugins bool   `yaml:"enable_plugins" json:"enable_plugins"`
 
 	// Logging settings
-	LogLevel string `yaml:"logLevel" json:"log_level"`
-	LogFile  string `yaml:"logFile,omitempty" json:"log_file,omitempty"`
+	LogLevel string `yaml:"logLevel" json:"logLevel"`
+	LogFile  string `yaml:"logFile,omitempty" json:"logFile,omitempty"`
 
 	// Feature flags
 	Features FeatureFlags `yaml:"features" json:"features"`
@@ -44,9 +44,9 @@ type ClientConfig struct {
 
 // FeatureFlags enables/disables specific features.
 type FeatureFlags struct {
-	BulkClone  bool `yaml:"bulkClone" json:"bulk_clone"`
-	DevEnv     bool `yaml:"devEnv" json:"dev_env"`
-	NetEnv     bool `yaml:"netEnv" json:"net_env"`
+	BulkClone  bool `yaml:"bulkClone" json:"bulkClone"`
+	DevEnv     bool `yaml:"devEnv" json:"devEnv"`
+	NetEnv     bool `yaml:"netEnv" json:"netEnv"`
 	Monitoring bool `yaml:"monitoring" json:"monitoring"`
 	// Plugins    bool `yaml:"plugins" json:"plugins"` // Disabled - plugins package removed
 }
@@ -349,14 +349,14 @@ func (c *Client) GitHubClient(token string) github.APIClient {
 }
 
 // GitLabClient returns a GitLab-specific client (placeholder).
-func (c *Client) GitLabClient(baseURL, token string) interface{} {
+func (c *Client) GitLabClient(_, _ string) interface{} {
 	// GitLab client would be implemented here
 	// For now, return a placeholder
 	return struct{}{}
 }
 
 // GiteaClient returns a Gitea-specific client (placeholder).
-func (c *Client) GiteaClient(baseURL, token string) interface{} {
+func (c *Client) GiteaClient(_, _ string) interface{} {
 	// Gitea client would be implemented here
 	// For now, return a placeholder
 	return struct{}{}
@@ -445,14 +445,14 @@ func (c *Client) GetSystemMetrics() (*SystemMetrics, error) {
 }
 
 // Subscribe creates an event subscription.
-func (c *Client) Subscribe(subscription EventSubscription) error {
+func (c *Client) Subscribe(_ EventSubscription) error {
 	// This would integrate with event system
 	// Implementation depends on event bus architecture
 	return fmt.Errorf("event subscription not yet implemented")
 }
 
 // Unsubscribe removes an event subscription.
-func (c *Client) Unsubscribe(subscriptionID string) error {
+func (c *Client) Unsubscribe(_ string) error {
 	// This would integrate with event system
 	return fmt.Errorf("event unsubscription not yet implemented")
 }
@@ -460,11 +460,11 @@ func (c *Client) Unsubscribe(subscriptionID string) error {
 // configManagerImpl implements bulkclone.ConfigurationManager interface.
 type configManagerImpl struct{}
 
-func (c *configManagerImpl) LoadConfiguration(ctx context.Context) (*bulkclone.BulkCloneConfig, error) {
+func (c *configManagerImpl) LoadConfiguration(_ context.Context) (*bulkclone.BulkCloneConfig, error) {
 	return bulkclone.LoadConfig("")
 }
 
-func (c *configManagerImpl) ValidateConfiguration(ctx context.Context, config *bulkclone.BulkCloneConfig) error {
+func (c *configManagerImpl) ValidateConfiguration(_ context.Context, _ *bulkclone.BulkCloneConfig) error {
 	// Validation logic would go here
 	return nil
 }
@@ -472,10 +472,10 @@ func (c *configManagerImpl) ValidateConfiguration(ctx context.Context, config *b
 // silentLoggerImpl implements bulkclone.Logger interface but doesn't output anything.
 type silentLoggerImpl struct{}
 
-func (l *silentLoggerImpl) Debug(msg string, args ...interface{}) {}
-func (l *silentLoggerImpl) Info(msg string, args ...interface{})  {}
-func (l *silentLoggerImpl) Warn(msg string, args ...interface{})  {}
-func (l *silentLoggerImpl) Error(msg string, args ...interface{}) {}
+func (l *silentLoggerImpl) Debug(_ string, _ ...interface{}) {}
+func (l *silentLoggerImpl) Info(_ string, _ ...interface{})  {}
+func (l *silentLoggerImpl) Warn(_ string, _ ...interface{})  {}
+func (l *silentLoggerImpl) Error(_ string, _ ...interface{}) {}
 
 // httpClientWrapper wraps http.Client to implement github.HTTPClientInterface.
 type httpClientWrapper struct {

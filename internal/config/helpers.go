@@ -109,7 +109,7 @@ func GetConfiguredOrganization(cfg *config.UnifiedConfig, providerType, orgName 
 
 // MergeConfigWithFlags merges CLI flags with configuration file values
 // CLI flags take precedence over config file values.
-func MergeConfigWithFlags(cfg *config.UnifiedConfig, flags map[string]interface{}) {
+func MergeConfigWithFlags(_ *config.UnifiedConfig, _ map[string]interface{}) {
 	// This is a placeholder for flag merging logic
 	// Each command would pass its flags here to override config values
 }

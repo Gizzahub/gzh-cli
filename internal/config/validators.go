@@ -295,11 +295,11 @@ func (v *LoggingConfigValidator) Validate(config interface{}) error {
 
 // CompositeValidator combines multiple validators.
 type CompositeValidator struct {
-	validators []ConfigValidator
+	validators []Validator
 }
 
 // NewCompositeValidator creates a new composite validator.
-func NewCompositeValidator(validators ...ConfigValidator) *CompositeValidator {
+func NewCompositeValidator(validators ...Validator) *CompositeValidator {
 	return &CompositeValidator{validators: validators}
 }
 
@@ -314,7 +314,7 @@ func (cv *CompositeValidator) Validate(config interface{}) error {
 }
 
 // RegisterDefaultValidators registers default validators for all config types.
-func RegisterDefaultValidators(manager *ConfigManager) {
+func RegisterDefaultValidators(manager *Manager) {
 	manager.RegisterValidator("bulk-clone", &BulkCloneConfigValidator{})
 	manager.RegisterValidator("http-client", &HTTPClientConfigValidator{})
 	manager.RegisterValidator("auth", &AuthConfigValidator{})

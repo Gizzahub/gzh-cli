@@ -16,41 +16,41 @@ import (
 type ErrorCode string
 
 const (
-	// Configuration errors
+	// Configuration errors..
 	ErrorCodeInvalidConfig  ErrorCode = "INVALID_CONFIG"
 	ErrorCodeMissingConfig  ErrorCode = "MISSING_CONFIG"
 	ErrorCodeConfigNotFound ErrorCode = "CONFIG_NOT_FOUND"
 
-	// Authentication errors
+	// Authentication errors..
 	ErrorCodeInvalidToken      ErrorCode = "INVALID_TOKEN"
 	ErrorCodeTokenExpired      ErrorCode = "TOKEN_EXPIRED"
 	ErrorCodeInsufficientPerms ErrorCode = "INSUFFICIENT_PERMISSIONS"
 	ErrorCodeAuthFailed        ErrorCode = "AUTHENTICATION_FAILED"
 
-	// Network errors
+	// Network errors..
 	ErrorCodeNetworkTimeout    ErrorCode = "NETWORK_TIMEOUT"
 	ErrorCodeConnectionFailed  ErrorCode = "CONNECTION_FAILED"
 	ErrorCodeRateLimitExceeded ErrorCode = "RATE_LIMIT_EXCEEDED"
 	ErrorCodeAPIUnavailable    ErrorCode = "API_UNAVAILABLE"
 
-	// Repository errors
+	// Repository errors..
 	ErrorCodeRepoNotFound       ErrorCode = "REPOSITORY_NOT_FOUND"
 	ErrorCodeCloneFailed        ErrorCode = "CLONE_FAILED"
 	ErrorCodeGitOperationFailed ErrorCode = "GIT_OPERATION_FAILED"
 	ErrorCodePermissionDenied   ErrorCode = "PERMISSION_DENIED"
 
-	// Validation errors
+	// Validation errors..
 	ErrorCodeInvalidInput     ErrorCode = "INVALID_INPUT"
 	ErrorCodeValidationFailed ErrorCode = "VALIDATION_FAILED"
 	ErrorCodeInvalidFormat    ErrorCode = "INVALID_FORMAT"
 
-	// System errors
+	// System errors.
 	ErrorCodeInternalError     ErrorCode = "INTERNAL_ERROR"
 	ErrorCodeResourceExhausted ErrorCode = "RESOURCE_EXHAUSTED"
 	ErrorCodeOperationFailed   ErrorCode = "OPERATION_FAILED"
 	ErrorCodeTimeout           ErrorCode = "TIMEOUT"
 
-	// File system errors
+	// File system errors.
 	ErrorCodeFileNotFound ErrorCode = "FILE_NOT_FOUND"
 	ErrorCodeAccessDenied ErrorCode = "ACCESS_DENIED"
 	ErrorCodeDiskFull     ErrorCode = "DISK_FULL"
@@ -75,7 +75,7 @@ type StandardError struct {
 	Timestamp   time.Time              `json:"timestamp"`
 	Context     map[string]interface{} `json:"context,omitempty"`
 	Cause       error                  `json:"cause,omitempty"`
-	StackTrace  string                 `json:"stack_trace,omitempty"`
+	StackTrace  string                 `json:"stackTrace,omitempty"`
 	Suggestions []string               `json:"suggestions,omitempty"`
 	Retryable   bool                   `json:"retryable"`
 }

@@ -224,7 +224,7 @@ func (c *configurationManagerImpl) ValidateConfigurationFile(ctx context.Context
 }
 
 // MergeConfigurations merges two configurations.
-func (c *configurationManagerImpl) MergeConfigurations(ctx context.Context, base, overlay *Config) (*Config, error) {
+func (c *configurationManagerImpl) MergeConfigurations(_ context.Context, _, overlay *Config) (*Config, error) {
 	c.logger.Debug("Merging configurations")
 
 	// Implementation would merge the configurations
@@ -238,7 +238,7 @@ func (c *configurationManagerImpl) GetConfigurationPaths() []string {
 }
 
 // FindConfigurationFile finds the first available configuration file.
-func (c *configurationManagerImpl) FindConfigurationFile(ctx context.Context) (string, error) {
+func (c *configurationManagerImpl) FindConfigurationFile(_ context.Context) (string, error) {
 	c.logger.Debug("Finding configuration file")
 
 	// Implementation would search for configuration files
@@ -270,7 +270,7 @@ func (c *configurationManagerImpl) CreateProviderInstance(ctx context.Context, p
 }
 
 // CreateRepositoryFilter creates a repository filter.
-func (c *configurationManagerImpl) CreateRepositoryFilter(ctx context.Context, config *RepositoryFilterConfig) (*RepositoryFilter, error) {
+func (c *configurationManagerImpl) CreateRepositoryFilter(_ context.Context, config *RepositoryFilterConfig) (*RepositoryFilter, error) {
 	c.logger.Debug("Creating repository filter")
 	return config.CreateRepositoryFilter()
 }

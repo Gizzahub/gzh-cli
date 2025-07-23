@@ -212,7 +212,7 @@ func NewBulkCloneExecutor(config *Config) (*BulkCloneExecutor, error) {
 }
 
 // NewBulkCloneExecutorWithFactory creates a new bulk clone executor with a custom factory.
-func NewBulkCloneExecutorWithFactory(config *Config, factory ProviderFactory) (*BulkCloneExecutor, error) {
+func NewBulkCloneExecutorWithFactory(config *Config, _ ProviderFactory) (*BulkCloneExecutor, error) {
 	integration := NewBulkCloneIntegration(config)
 	cloners := make(map[string]ProviderCloner)
 

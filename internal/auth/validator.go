@@ -46,8 +46,8 @@ type TokenInfo struct {
 	Valid       bool                   `json:"valid"`
 	Username    string                 `json:"username,omitempty"`
 	Scopes      []string               `json:"scopes,omitempty"`
-	ExpiresAt   *time.Time             `json:"expires_at,omitempty"`
-	RateLimit   *RateLimitInfo         `json:"rate_limit,omitempty"`
+	ExpiresAt   *time.Time             `json:"expiresAt,omitempty"`
+	RateLimit   *RateLimitInfo         `json:"rateLimit,omitempty"`
 	Permissions map[string]bool        `json:"permissions,omitempty"`
 	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }
@@ -56,31 +56,31 @@ type TokenInfo struct {
 type RateLimitInfo struct {
 	Limit     int       `json:"limit"`
 	Remaining int       `json:"remaining"`
-	ResetTime time.Time `json:"reset_time"`
+	ResetTime time.Time `json:"resetTime"`
 }
 
 // ValidationResult contains comprehensive validation results.
 type ValidationResult struct {
 	Valid       bool            `json:"valid"`
-	TokenInfo   *TokenInfo      `json:"token_info,omitempty"`
+	TokenInfo   *TokenInfo      `json:"tokenInfo,omitempty"`
 	Errors      []string        `json:"errors,omitempty"`
 	Warnings    []string        `json:"warnings,omitempty"`
 	Suggestions []string        `json:"suggestions,omitempty"`
-	TestResults map[string]bool `json:"test_results,omitempty"`
+	TestResults map[string]bool `json:"testResults,omitempty"`
 	Duration    time.Duration   `json:"duration"`
 	Timestamp   time.Time       `json:"timestamp"`
 }
 
-// AuthValidator provides comprehensive authentication validation.
-type AuthValidator struct {
+// Validator provides comprehensive authentication validation.
+type Validator struct {
 	httpClient *http.Client
 	validator  *validation.Validator
 	patterns   map[TokenType]*regexp.Regexp
 }
 
-// NewAuthValidator creates a new authentication validator.
-func NewAuthValidator() *AuthValidator {
-	return &AuthValidator{
+// NewValidator creates a new authentication validator.
+func NewValidator() *Validator {
+	return &Validator{
 		httpClient: httpclient.GetGlobalClient("default"),
 		validator:  validation.New(),
 		patterns:   initializeTokenPatterns(),
@@ -101,7 +101,7 @@ func initializeTokenPatterns() map[TokenType]*regexp.Regexp {
 }
 
 // ValidateToken performs comprehensive token validation.
-func (av *AuthValidator) ValidateToken(ctx context.Context, token string, tokenType TokenType) (*ValidationResult, error) {
+func (av *Validator) ValidateToken(ctx context.Context, token string, tokenType TokenType) (*ValidationResult, error) {
 	start := time.Now()
 	result := &ValidationResult{
 		Timestamp:   start,
@@ -146,7 +146,7 @@ func (av *AuthValidator) ValidateToken(ctx context.Context, token string, tokenT
 }
 
 // validateTokenPattern checks if token matches expected format for the platform.
-func (av *AuthValidator) validateTokenPattern(token string, tokenType TokenType) bool {
+func (av *Validator) validateTokenPattern(token string, tokenType TokenType) bool {
 	pattern, exists := av.patterns[tokenType]
 	if !exists {
 		return false
@@ -155,7 +155,7 @@ func (av *AuthValidator) validateTokenPattern(token string, tokenType TokenType)
 }
 
 // validateTokenFunctionality tests token by making actual API calls.
-func (av *AuthValidator) validateTokenFunctionality(ctx context.Context, token string, tokenType TokenType) (*TokenInfo, error) {
+func (av *Validator) validateTokenFunctionality(ctx context.Context, token string, tokenType TokenType) (*TokenInfo, error) {
 	switch tokenType {
 	case TokenTypeGitHub:
 		return av.validateGitHubToken(ctx, token)
@@ -171,7 +171,7 @@ func (av *AuthValidator) validateTokenFunctionality(ctx context.Context, token s
 }
 
 // validateGitHubToken validates GitHub tokens using the GitHub API.
-func (av *AuthValidator) validateGitHubToken(ctx context.Context, token string) (*TokenInfo, error) {
+func (av *Validator) validateGitHubToken(ctx context.Context, token string) (*TokenInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, constants.MediumHTTPTimeout)
 	defer cancel()
 
@@ -220,7 +220,7 @@ func (av *AuthValidator) validateGitHubToken(ctx context.Context, token string) 
 }
 
 // validateGitLabToken validates GitLab tokens using the GitLab API.
-func (av *AuthValidator) validateGitLabToken(ctx context.Context, token string) (*TokenInfo, error) {
+func (av *Validator) validateGitLabToken(ctx context.Context, token string) (*TokenInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, constants.MediumHTTPTimeout)
 	defer cancel()
 
@@ -261,7 +261,7 @@ func (av *AuthValidator) validateGitLabToken(ctx context.Context, token string) 
 }
 
 // validateGiteaToken validates Gitea tokens.
-func (av *AuthValidator) validateGiteaToken(ctx context.Context, token string) (*TokenInfo, error) {
+func (av *Validator) validateGiteaToken(ctx context.Context, token string) (*TokenInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, constants.MediumHTTPTimeout)
 	defer cancel()
 
@@ -287,7 +287,7 @@ func (av *AuthValidator) validateGiteaToken(ctx context.Context, token string) (
 }
 
 // validateGenericToken provides basic validation for generic tokens.
-func (av *AuthValidator) validateGenericToken(_ context.Context, token string, tokenType TokenType) (*TokenInfo, error) {
+func (av *Validator) validateGenericToken(_ context.Context, token string, tokenType TokenType) (*TokenInfo, error) {
 	return &TokenInfo{
 		Type:        tokenType,
 		Valid:       len(token) >= constants.MinTokenLength,
@@ -297,7 +297,7 @@ func (av *AuthValidator) validateGenericToken(_ context.Context, token string, t
 }
 
 // performSecurityChecks performs additional security validations.
-func (av *AuthValidator) performSecurityChecks(token string, _ TokenType, result *ValidationResult) {
+func (av *Validator) performSecurityChecks(token string, _ TokenType, result *ValidationResult) {
 	// Check for common insecure patterns
 	if strings.Contains(strings.ToLower(token), "test") ||
 		strings.Contains(strings.ToLower(token), "demo") ||
@@ -319,7 +319,7 @@ func (av *AuthValidator) performSecurityChecks(token string, _ TokenType, result
 }
 
 // analyzeRateLimit analyzes rate limit information and provides recommendations.
-func (av *AuthValidator) analyzeRateLimit(rateLimit *RateLimitInfo, result *ValidationResult) {
+func (av *Validator) analyzeRateLimit(rateLimit *RateLimitInfo, result *ValidationResult) {
 	if rateLimit.Remaining < rateLimit.Limit/10 { // Less than 10% remaining
 		result.Warnings = append(result.Warnings, "Rate limit is nearly exhausted")
 		result.Suggestions = append(result.Suggestions, "Consider implementing rate limiting in your application")
@@ -333,7 +333,7 @@ func (av *AuthValidator) analyzeRateLimit(rateLimit *RateLimitInfo, result *Vali
 }
 
 // SecureTokenComparison compares tokens using constant-time comparison.
-func (av *AuthValidator) SecureTokenComparison(token1, token2 string) bool {
+func (av *Validator) SecureTokenComparison(token1, token2 string) bool {
 	return subtle.ConstantTimeCompare([]byte(token1), []byte(token2)) == 1
 }
 

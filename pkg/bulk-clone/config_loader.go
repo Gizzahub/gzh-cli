@@ -127,7 +127,7 @@ func LoadConfig(configPath string) (*BulkCloneConfig, error) {
 }
 
 // LoadConfigWithOverlays loads base config and applies overlay configurations.
-func LoadConfigWithOverlays(basePath string, overlayPaths ...string) (*bulkCloneConfig, error) {
+func LoadConfigWithOverlays(basePath string, overlayPaths ...string) (*BulkCloneConfig, error) {
 	// Load base configuration
 	cfg := &bulkCloneConfig{}
 	if err := cfg.ReadConfig(basePath); err != nil {
