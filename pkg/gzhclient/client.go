@@ -211,68 +211,121 @@ func (c *Client) BulkClone(ctx context.Context, req BulkCloneRequest) (*BulkClon
 	// Create bulk clone manager with configuration manager and logger
 	configManager := &configManagerImpl{}
 	logger := &silentLoggerImpl{}
-
 	manager := bulkclone.NewBulkCloneManager(configManager, logger)
 
-	// Create organization clone request for GitHub platforms
+	// Process all platforms and organizations
+	allResults := make([]*BulkCloneResult, 0)
+
 	for _, platform := range req.Platforms {
 		if platform.Type == "github" {
-			// Process first organization only for now (TODO: handle multiple organizations)
-			if len(platform.Organizations) > 0 {
-				org := platform.Organizations[0]
-				orgRequest := &bulkclone.OrganizationCloneRequest{
-					Provider:     platform.Type,
-					Organization: org,
-					TargetPath:   req.OutputDir,
-					Strategy:     req.Strategy,
-					Token:        platform.Token,
-					Concurrency:  req.Concurrency,
-					DryRun:       false,
-				}
-
-				result, err := manager.CloneOrganization(ctx, orgRequest)
-				if err != nil {
-					return nil, fmt.Errorf("bulk clone operation failed for org %s: %w", org, err)
-				}
-
-				// Convert result to client response format
-				response := &BulkCloneResult{
-					TotalRepos:   result.TotalRepositories,
-					SuccessCount: result.ClonesSuccessful,
-					FailureCount: result.ClonesFailed,
-					SkippedCount: result.ClonesSkipped,
-					Duration:     result.ExecutionTime,
-					Results:      make([]RepositoryCloneResult, len(result.RepositoryResults)),
-					Summary:      make(map[string]interface{}),
-				}
-
-				for i, repo := range result.RepositoryResults {
-					response.Results[i] = RepositoryCloneResult{
-						RepoName:  repo.Repository,
-						Platform:  repo.Provider,
-						URL:       "", // Not available in RepositoryResult
-						LocalPath: repo.Path,
-						Status:    getStatus(repo.Success),
-						Error:     repo.Error,
-						Duration:  repo.Duration,
-						Size:      repo.SizeBytes,
-					}
-				}
-
-				// Add statistics to summary
-				if result.Statistics != nil {
-					response.Summary["average_clone_time"] = result.Statistics.AverageCloneTime
-					response.Summary["total_data_transferred"] = result.Statistics.TotalDataTransferred
-					response.Summary["largest_repository"] = result.Statistics.LargestRepository
-					response.Summary["errors_by_type"] = result.Statistics.ErrorsByType
-				}
-
-				return response, nil
-			}
+			platformResults := c.processPlatformOrganizations(ctx, manager, platform, req, logger)
+			allResults = append(allResults, platformResults...)
 		}
 	}
 
-	return nil, fmt.Errorf("no supported platforms found in request")
+	return c.consolidateResults(allResults)
+}
+
+// processPlatformOrganizations processes all organizations for a given platform.
+func (c *Client) processPlatformOrganizations(ctx context.Context, manager bulkclone.Manager, platform PlatformConfig, req BulkCloneRequest, logger *silentLoggerImpl) []*BulkCloneResult {
+	results := make([]*BulkCloneResult, 0)
+
+	for _, org := range platform.Organizations {
+		result := c.processOrganization(ctx, manager, platform, org, req, logger)
+		if result != nil {
+			results = append(results, result)
+		}
+	}
+
+	return results
+}
+
+// processOrganization processes a single organization.
+func (c *Client) processOrganization(ctx context.Context, manager bulkclone.Manager, platform PlatformConfig, org string, req BulkCloneRequest, logger *silentLoggerImpl) *BulkCloneResult {
+	orgRequest := &bulkclone.OrganizationCloneRequest{
+		Provider:     platform.Type,
+		Organization: org,
+		TargetPath:   req.OutputDir,
+		Strategy:     req.Strategy,
+		Token:        platform.Token,
+		Concurrency:  req.Concurrency,
+		DryRun:       false,
+	}
+
+	result, err := manager.CloneOrganization(ctx, orgRequest)
+	if err != nil {
+		logger.Error("bulk clone operation failed", "org", org, "error", err)
+		return nil
+	}
+
+	return c.convertToBulkCloneResult(result)
+}
+
+// convertToBulkCloneResult converts manager result to client response format.
+func (c *Client) convertToBulkCloneResult(result *bulkclone.CloneResult) *BulkCloneResult {
+	response := &BulkCloneResult{
+		TotalRepos:   result.TotalRepositories,
+		SuccessCount: result.ClonesSuccessful,
+		FailureCount: result.ClonesFailed,
+		SkippedCount: result.ClonesSkipped,
+		Duration:     result.ExecutionTime,
+		Results:      make([]RepositoryCloneResult, len(result.RepositoryResults)),
+		Summary:      make(map[string]interface{}),
+	}
+
+	for i, repo := range result.RepositoryResults {
+		response.Results[i] = RepositoryCloneResult{
+			RepoName:  repo.Repository,
+			Platform:  repo.Provider,
+			URL:       "", // Not available in RepositoryResult
+			LocalPath: repo.Path,
+			Status:    getStatus(repo.Success),
+			Error:     repo.Error,
+			Duration:  repo.Duration,
+			Size:      repo.SizeBytes,
+		}
+	}
+
+	// Add statistics to summary
+	if result.Statistics != nil {
+		response.Summary["average_clone_time"] = result.Statistics.AverageCloneTime
+		response.Summary["total_data_transferred"] = result.Statistics.TotalDataTransferred
+		response.Summary["largest_repository"] = result.Statistics.LargestRepository
+		response.Summary["errors_by_type"] = result.Statistics.ErrorsByType
+	}
+
+	return response
+}
+
+// consolidateResults consolidates multiple organization results into a single response.
+func (c *Client) consolidateResults(allResults []*BulkCloneResult) (*BulkCloneResult, error) {
+	if len(allResults) == 0 {
+		return nil, fmt.Errorf("no organizations were successfully processed")
+	}
+
+	if len(allResults) == 1 {
+		return allResults[0], nil
+	}
+
+	// Merge multiple organization results
+	consolidatedResult := &BulkCloneResult{
+		Results: make([]RepositoryCloneResult, 0),
+		Summary: make(map[string]interface{}),
+	}
+
+	for _, result := range allResults {
+		consolidatedResult.TotalRepos += result.TotalRepos
+		consolidatedResult.SuccessCount += result.SuccessCount
+		consolidatedResult.FailureCount += result.FailureCount
+		consolidatedResult.SkippedCount += result.SkippedCount
+		consolidatedResult.Duration += result.Duration
+		consolidatedResult.Results = append(consolidatedResult.Results, result.Results...)
+	}
+
+	consolidatedResult.Summary["organizations_processed"] = len(allResults)
+	consolidatedResult.Summary["average_duration_per_org"] = consolidatedResult.Duration / time.Duration(len(allResults))
+
+	return consolidatedResult, nil
 }
 
 // getStatus converts boolean success to string status.

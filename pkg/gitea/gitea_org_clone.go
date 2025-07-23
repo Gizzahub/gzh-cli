@@ -1,16 +1,17 @@
 package gitea
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os/exec"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+
+	"github.com/gizzahub/gzh-manager-go/internal/git"
+	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 )
 
 // RepoInfo represents Gitea repository information returned by the Gitea API.
@@ -38,7 +39,7 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	client := &http.Client{}
+	client := httpclient.GetGlobalClient("gitea")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -81,7 +82,7 @@ func List(ctx context.Context, org string) ([]string, error) {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	client := &http.Client{}
+	client := httpclient.GetGlobalClient("gitea")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -139,20 +140,15 @@ func Clone(ctx context.Context, targetPath string, org string, repo string, bran
 
 	cloneURL := fmt.Sprintf("https://gitea.com/%s/%s.git", org, repo)
 
-	var (
-		out    bytes.Buffer
-		stderr bytes.Buffer
-	)
+	// Use secure git executor to prevent command injection
+	executor, err := git.NewSecureGitExecutor()
+	if err != nil {
+		return fmt.Errorf("failed to create secure git executor: %w", err)
+	}
 
-	cmd := exec.CommandContext(ctx, "git", "clone", "-b", branch, cloneURL, targetPath)
-	cmd.Stdout = &out
-
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		fmt.Println(stderr.String())
-		fmt.Println(out.String())
-
-		return fmt.Errorf("Clone Failed (url: %s, branch: %s, targetPath: %s, err: %w)\n", cloneURL, branch, targetPath, err)
+	// Execute git clone with secure validation
+	if err := executor.ExecuteSecure(ctx, targetPath, "clone", "-b", branch, cloneURL, "."); err != nil {
+		return fmt.Errorf("clone failed (url: %s, branch: %s, targetPath: %s): %w", cloneURL, branch, targetPath, err)
 	}
 
 	return nil

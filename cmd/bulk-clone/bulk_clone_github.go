@@ -8,13 +8,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	internalconfig "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
+	"github.com/gizzahub/gzh-manager-go/internal/validation"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/spf13/cobra"
 )
 
 type bulkCloneGithubOptions struct {
@@ -154,16 +156,39 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			}
 		}
 
-		if o.targetPath == "" || o.orgName == "" {
-			return errors.NewRecoverableError(errors.ErrorTypeValidation, "Missing required parameters",
-				fmt.Errorf("both targetPath and orgName must be specified"), false)
+		// Comprehensive input validation
+		validator := validation.NewBulkCloneValidator()
+		opts := &validation.BulkCloneOptions{
+			TargetPath:     o.targetPath,
+			OrgName:        o.orgName,
+			Strategy:       o.strategy,
+			ConfigFile:     o.configFile,
+			Parallel:       o.parallel,
+			MaxRetries:     o.maxRetries,
+			Token:          o.token,
+			MemoryLimit:    o.memoryLimit,
+			ProgressMode:   o.progressMode,
+			RedisAddr:      o.redisAddr,
+			IncludePattern: o.includePattern,
+			ExcludePattern: o.excludePattern,
+			IncludeTopics:  o.includeTopics,
+			ExcludeTopics:  o.excludeTopics,
+			LanguageFilter: o.languageFilter,
+			MinStars:       o.minStars,
+			MaxStars:       o.maxStars,
+			UpdatedAfter:   o.updatedAfter,
+			UpdatedBefore:  o.updatedBefore,
 		}
 
-		// Validate strategy
-		if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
-			return errors.NewRecoverableError(errors.ErrorTypeValidation, "Invalid strategy",
-				fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy), false)
+		if err := validator.ValidateOptions(opts); err != nil {
+			return errors.NewRecoverableError(errors.ErrorTypeValidation, "Input validation failed", err, false)
 		}
+
+		// Sanitize inputs for additional security
+		sanitized := validator.SanitizeOptions(opts)
+		o.targetPath = sanitized.TargetPath
+		o.orgName = sanitized.OrgName
+		o.strategy = sanitized.Strategy
 
 		// Get GitHub token
 		token := o.token

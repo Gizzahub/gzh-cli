@@ -2,6 +2,7 @@
 package config
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -152,8 +153,8 @@ func TestValidator_ValidateConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := NewValidator()
-			err := validator.ValidateConfig(tt.config)
+			validator := NewConfigValidator()
+			err := validator.ValidateConfig(context.Background(), tt.config)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -217,7 +218,7 @@ func TestValidateToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := NewValidator()
+			validator := NewConfigValidator()
 			validator.validateToken(tt.providerName, tt.token)
 
 			if tt.expectWarn {
@@ -299,7 +300,7 @@ func TestValidateGitTarget(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := NewValidator()
+			validator := NewConfigValidator()
 			validator.validateGitTarget("test", tt.target)
 
 			if tt.expectError {

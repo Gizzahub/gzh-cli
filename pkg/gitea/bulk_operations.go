@@ -3,9 +3,9 @@ package gitea
 import (
 	"context"
 	"fmt"
-	"os/exec"
 	"path/filepath"
 
+	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
 )
 
@@ -97,14 +97,17 @@ func processGiteaRepositoryJob(ctx context.Context, job workerpool.RepositoryJob
 	}
 }
 
-// executeGitOperation executes a git command in the repository path.
+// executeGitOperation executes a git command in the repository path with security validation.
 func executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
-	// Build git command
-	gitArgs := append([]string{"-C", repoPath}, args...)
-	cmd := exec.CommandContext(ctx, "git", gitArgs...) //nolint:gosec // Git command with controlled arguments
+	// Use secure git executor to prevent command injection
+	executor, err := git.NewSecureGitExecutor()
+	if err != nil {
+		return fmt.Errorf("failed to create secure git executor: %w", err)
+	}
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git %s failed: %w", args[0], err)
+	// Execute with validation
+	if err := executor.ExecuteSecure(ctx, repoPath, args...); err != nil {
+		return fmt.Errorf("secure git operation failed: %w", err)
 	}
 
 	return nil

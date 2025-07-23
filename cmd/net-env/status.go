@@ -172,6 +172,8 @@ func (o *statusOptions) getInterfacesFallback(ctx context.Context) ([]interfaceI
 func (o *statusOptions) parseIPOutput(output string) []interfaceInfo {
 	// Simplified JSON parsing - in real implementation would use json.Unmarshal
 	// For now, return basic interface info
+	// TODO: Parse the provided output string once full JSON parsing is implemented
+	_ = output // Suppress unused parameter warning until parsing is implemented
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		return nil
@@ -180,44 +182,7 @@ func (o *statusOptions) parseIPOutput(output string) []interfaceInfo {
 	interfaces := make([]interfaceInfo, 0, len(ifaces))
 
 	for _, iface := range ifaces {
-		info := interfaceInfo{
-			Name: iface.Name,
-			MAC:  iface.HardwareAddr.String(),
-		}
-
-		// Get IP addresses
-		addrs, err := iface.Addrs()
-		if err == nil {
-			for _, addr := range addrs {
-				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-					if ipnet.IP.To4() != nil {
-						info.IP = append(info.IP, ipnet.IP.String())
-					}
-				}
-			}
-		}
-
-		// Set state based on flags
-		if iface.Flags&net.FlagUp != 0 {
-			info.State = "UP"
-		} else {
-			info.State = "DOWN"
-		}
-
-		// Determine type
-		switch {
-		case strings.Contains(iface.Name, "wlan") || strings.Contains(iface.Name, "wifi"):
-			info.Type = "WiFi"
-		case strings.Contains(iface.Name, "eth") || strings.Contains(iface.Name, "en"):
-			info.Type = "Ethernet"
-		case strings.Contains(iface.Name, "lo"):
-			info.Type = "Loopback"
-		case strings.Contains(iface.Name, "tun") || strings.Contains(iface.Name, "tap"):
-			info.Type = "VPN"
-		default:
-			info.Type = "Other"
-		}
-
+		info := o.buildInterfaceInfo(iface)
 		interfaces = append(interfaces, info)
 	}
 
@@ -437,85 +402,142 @@ func (o *statusOptions) printJSON(status *networkStatus) error {
 }
 
 func (o *statusOptions) printHuman(status *networkStatus) error {
-	// Print Network Interfaces
+	o.printNetworkInterfaces(status.Interfaces)
+	o.printVPNConnections(status.VPN)
+	o.printDNSConfiguration(status.DNS)
+	o.printProxyConfiguration(status.Proxy)
+	return nil
+}
+
+// printNetworkInterfaces displays network interface information in human-readable format.
+func (o *statusOptions) printNetworkInterfaces(interfaces []interfaceInfo) {
 	fmt.Printf("📡 Network Interfaces:\n")
 
-	if len(status.Interfaces) == 0 {
+	if len(interfaces) == 0 {
 		fmt.Printf("   No interfaces found\n")
-	} else {
-		for _, iface := range status.Interfaces {
-			fmt.Printf("   %s (%s): %s\n", iface.Name, iface.Type, iface.State)
-
-			if len(iface.IP) > 0 {
-				fmt.Printf("      IP: %s\n", strings.Join(iface.IP, ", "))
-			}
-
-			if iface.SSID != "" {
-				fmt.Printf("      SSID: %s", iface.SSID)
-
-				if iface.Signal != "" {
-					fmt.Printf(" (Signal: %s)", iface.Signal)
-				}
-
-				fmt.Printf("\n")
-			}
-
-			if iface.MAC != "" && o.verbose {
-				fmt.Printf("      MAC: %s\n", iface.MAC)
-			}
-		}
+		return
 	}
 
-	// Print VPN Status
+	for _, iface := range interfaces {
+		fmt.Printf("   %s (%s): %s\n", iface.Name, iface.Type, iface.State)
+
+		if len(iface.IP) > 0 {
+			fmt.Printf("      IP: %s\n", strings.Join(iface.IP, ", "))
+		}
+
+		if iface.SSID != "" {
+			fmt.Printf("      SSID: %s", iface.SSID)
+			if iface.Signal != "" {
+				fmt.Printf(" (Signal: %s)", iface.Signal)
+			}
+			fmt.Printf("\n")
+		}
+
+		if iface.MAC != "" && o.verbose {
+			fmt.Printf("      MAC: %s\n", iface.MAC)
+		}
+	}
+}
+
+// printVPNConnections displays VPN connection information in human-readable format.
+func (o *statusOptions) printVPNConnections(vpns []vpnInfo) {
 	fmt.Printf("\n🔐 VPN Connections:\n")
 
-	if len(status.VPN) == 0 {
+	if len(vpns) == 0 {
 		fmt.Printf("   No VPN connections found\n")
-	} else {
-		for _, vpn := range status.VPN {
-			fmt.Printf("   %s (%s): %s\n", vpn.Name, vpn.Type, vpn.State)
-		}
+		return
 	}
 
-	// Print DNS Status
+	for _, vpn := range vpns {
+		fmt.Printf("   %s (%s): %s\n", vpn.Name, vpn.Type, vpn.State)
+	}
+}
+
+// printDNSConfiguration displays DNS configuration in human-readable format.
+func (o *statusOptions) printDNSConfiguration(dns dnsInfo) {
 	fmt.Printf("\n🌐 DNS Configuration:\n")
 
-	if len(status.DNS.Servers) == 0 {
+	if len(dns.Servers) == 0 {
 		fmt.Printf("   No DNS servers configured\n")
-	} else {
-		fmt.Printf("   Servers: %s\n", strings.Join(status.DNS.Servers, ", "))
-
-		if status.DNS.Method != "" {
-			fmt.Printf("   Method: %s\n", status.DNS.Method)
-		}
+		return
 	}
 
-	// Print Proxy Status
+	fmt.Printf("   Servers: %s\n", strings.Join(dns.Servers, ", "))
+	if dns.Method != "" {
+		fmt.Printf("   Method: %s\n", dns.Method)
+	}
+}
+
+// printProxyConfiguration displays proxy configuration in human-readable format.
+func (o *statusOptions) printProxyConfiguration(proxy proxyInfo) {
 	fmt.Printf("\n🌐 Proxy Configuration:\n")
 
 	hasProxy := false
 
-	if status.Proxy.HTTP != "" {
-		fmt.Printf("   HTTP: %s\n", status.Proxy.HTTP)
-
+	if proxy.HTTP != "" {
+		fmt.Printf("   HTTP: %s\n", proxy.HTTP)
 		hasProxy = true
 	}
 
-	if status.Proxy.HTTPS != "" {
-		fmt.Printf("   HTTPS: %s\n", status.Proxy.HTTPS)
-
+	if proxy.HTTPS != "" {
+		fmt.Printf("   HTTPS: %s\n", proxy.HTTPS)
 		hasProxy = true
 	}
 
-	if status.Proxy.SOCKS != "" {
-		fmt.Printf("   SOCKS: %s\n", status.Proxy.SOCKS)
-
+	if proxy.SOCKS != "" {
+		fmt.Printf("   SOCKS: %s\n", proxy.SOCKS)
 		hasProxy = true
 	}
 
 	if !hasProxy {
 		fmt.Printf("   No proxy configured\n")
 	}
+}
 
-	return nil
+// buildInterfaceInfo constructs interface information from net.Interface.
+func (o *statusOptions) buildInterfaceInfo(iface net.Interface) interfaceInfo {
+	info := interfaceInfo{
+		Name: iface.Name,
+		MAC:  iface.HardwareAddr.String(),
+	}
+
+	// Get IP addresses
+	addrs, err := iface.Addrs()
+	if err == nil {
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					info.IP = append(info.IP, ipnet.IP.String())
+				}
+			}
+		}
+	}
+
+	// Set state based on flags
+	if iface.Flags&net.FlagUp != 0 {
+		info.State = "UP"
+	} else {
+		info.State = "DOWN"
+	}
+
+	// Determine interface type
+	info.Type = o.determineInterfaceType(iface.Name)
+
+	return info
+}
+
+// determineInterfaceType determines network interface type based on name.
+func (o *statusOptions) determineInterfaceType(name string) string {
+	switch {
+	case strings.Contains(name, "wlan") || strings.Contains(name, "wifi"):
+		return "WiFi"
+	case strings.Contains(name, "eth") || strings.Contains(name, "en"):
+		return "Ethernet"
+	case strings.Contains(name, "lo"):
+		return "Loopback"
+	case strings.Contains(name, "tun") || strings.Contains(name, "tap"):
+		return "VPN"
+	default:
+		return "Other"
+	}
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package utils //nolint:revive // Internal package - \"utils\" name is appropriate for general utility functions
+package helpers //nolint:revive // Internal package - \"utils\" name is appropriate for general utility functions
 
 import (
 	"fmt"

@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package utils
+package helpers
 
 // Contains checks if a slice contains a specific element.
 func Contains(list []string, element string) bool {

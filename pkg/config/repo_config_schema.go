@@ -410,31 +410,59 @@ func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []
 	var conflicts []string
 
 	// Check security settings conflicts
+	conflicts = append(conflicts, checkSecurityConflicts(templateName, derived, base)...)
+	// Check permission conflicts
+	conflicts = append(conflicts, checkPermissionConflicts(templateName, derived, base)...)
+	// Check repository visibility conflicts
+	conflicts = append(conflicts, checkVisibilityConflicts(templateName, derived, base)...)
+
+	return conflicts
+}
+
+// checkSecurityConflicts checks for security-related conflicts between templates.
+func checkSecurityConflicts(templateName string, derived, base *RepoTemplate) []string {
+	var conflicts []string
+
 	if derived.Security != nil && base.Security != nil {
 		// Check branch protection conflicts
 		for branch, derivedRule := range derived.Security.BranchProtection {
 			if baseRule, exists := base.Security.BranchProtection[branch]; exists {
-				// Warn if derived has weaker protection
-				if derivedRule.RequiredReviews != nil && baseRule.RequiredReviews != nil {
-					if *derivedRule.RequiredReviews < *baseRule.RequiredReviews {
-						conflicts = append(conflicts, fmt.Sprintf(
-							"Template '%s': Reduces required reviews for branch '%s' from %d to %d",
-							templateName, branch, *baseRule.RequiredReviews, *derivedRule.RequiredReviews))
-					}
-				}
-
-				// Warn if derived disables protections that base enables
-				if baseRule.EnforceAdmins != nil && *baseRule.EnforceAdmins &&
-					derivedRule.EnforceAdmins != nil && !*derivedRule.EnforceAdmins {
-					conflicts = append(conflicts, fmt.Sprintf(
-						"Template '%s': Disables admin enforcement for branch '%s'",
-						templateName, branch))
-				}
+				conflicts = append(conflicts, checkBranchProtectionConflicts(templateName, branch, derivedRule, baseRule)...)
 			}
 		}
 	}
 
-	// Check permission conflicts
+	return conflicts
+}
+
+// checkBranchProtectionConflicts checks for conflicts in branch protection settings.
+func checkBranchProtectionConflicts(templateName, branch string, derivedRule, baseRule *BranchProtectionRule) []string {
+	var conflicts []string
+
+	// Warn if derived has weaker protection
+	if derivedRule.RequiredReviews != nil && baseRule.RequiredReviews != nil {
+		if *derivedRule.RequiredReviews < *baseRule.RequiredReviews {
+			conflicts = append(conflicts, fmt.Sprintf(
+				"Template '%s': Reduces required reviews for branch '%s' from %d to %d",
+				templateName, branch, *baseRule.RequiredReviews, *derivedRule.RequiredReviews))
+		}
+	}
+
+	// Warn if derived disables protections that base enables
+	if baseRule.EnforceAdmins != nil && *baseRule.EnforceAdmins &&
+		derivedRule.EnforceAdmins != nil && !*derivedRule.EnforceAdmins {
+		conflicts = append(conflicts, fmt.Sprintf(
+			"Template '%s': Disables admin enforcement for branch '%s'",
+			templateName, branch))
+	}
+
+	return conflicts
+}
+
+// checkPermissionConflicts checks for permission-related conflicts between templates.
+func checkPermissionConflicts(templateName string, derived, base *RepoTemplate) []string {
+	var conflicts []string
+
 	if derived.Permissions != nil && base.Permissions != nil {
 		// Warn if derived grants higher permissions than base
 		for team, derivedPerm := range derived.Permissions.TeamPermissions {
@@ -448,7 +476,13 @@ func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []
 		}
 	}
 
-	// Check repository visibility conflicts
+	return conflicts
+}
+
+// checkVisibilityConflicts checks for repository visibility conflicts between templates.
+func checkVisibilityConflicts(templateName string, derived, base *RepoTemplate) []string {
+	var conflicts []string
+
 	if derived.Settings != nil && base.Settings != nil {
 		if base.Settings.Private != nil && *base.Settings.Private &&
 			derived.Settings.Private != nil && !*derived.Settings.Private {

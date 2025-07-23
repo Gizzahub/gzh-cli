@@ -11,6 +11,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gizzahub/gzh-manager-go/internal/constants"
+	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 )
 
 // StreamingClient provides streaming API access for GitLab large-scale operations.
@@ -111,14 +114,14 @@ type StreamingConfig struct {
 // DefaultStreamingConfig returns optimized defaults for GitLab large-scale operations.
 func DefaultStreamingConfig() StreamingConfig {
 	return StreamingConfig{
-		PageSize:        100, // GitLab's max per page
-		MaxConcurrency:  8,   // Conservative for GitLab rate limits
+		PageSize:        100,                              // GitLab's max per page
+		MaxConcurrency:  constants.DefaultParallelism + 3, // Conservative for GitLab rate limits
 		BufferSize:      1000,
-		MemoryLimit:     500 * 1024 * 1024, // 500MB
+		MemoryLimit:     500 * constants.BytesPerMB, // 500MB
 		CacheEnabled:    true,
 		CacheTTL:        10 * time.Minute,
-		RetryAttempts:   3,
-		RetryDelay:      2 * time.Second,
+		RetryAttempts:   constants.DefaultMaxRetries,
+		RetryDelay:      constants.RetryDelay * 2,
 		RateLimitBuffer: 50,
 	}
 }
@@ -129,20 +132,13 @@ func NewStreamingClient(token, baseURL string, config StreamingConfig) *Streamin
 		baseURL = "https://gitlab.com"
 	}
 
-	httpClient := &http.Client{
-		Timeout: 30 * time.Second,
-		Transport: &http.Transport{
-			MaxIdleConns:        config.MaxConcurrency * 2,
-			MaxIdleConnsPerHost: config.MaxConcurrency,
-			IdleConnTimeout:     90 * time.Second,
-			DisableCompression:  false,
-		},
-	}
+	// Use secure HTTP client instead of creating one directly
+	httpClient := httpclient.GetGlobalClient("gitlab")
 
 	memoryPool := &MemoryPool{
 		bufferPool: sync.Pool{
 			New: func() interface{} {
-				return make([]byte, 0, 64*1024) // 64KB initial capacity
+				return make([]byte, 0, constants.BytesPerKB*64) // 64KB initial capacity
 			},
 		},
 		projectPool: sync.Pool{
@@ -172,7 +168,7 @@ func NewStreamingClient(token, baseURL string, config StreamingConfig) *Streamin
 		requestMetrics: &RequestMetrics{},
 		bufferPool: sync.Pool{
 			New: func() interface{} {
-				return make([]byte, 0, 32*1024) // 32KB buffers
+				return make([]byte, 0, constants.BytesPerKB*32) // 32KB buffers
 			},
 		},
 	}

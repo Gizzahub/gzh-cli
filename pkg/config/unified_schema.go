@@ -14,7 +14,7 @@ type UnifiedConfig struct {
 	Version string `yaml:"version" json:"version" validate:"required,oneof=1.0.0"`
 
 	// Default provider to use when not specified
-	DefaultProvider string `yaml:"defaultProvider,omitempty" json:"defaultProvider,omitempty" validate:"omitempty,oneof=github gitlab gitea gogs"` //nolint:revive // Custom validation tags are valid
+	DefaultProvider string `yaml:"defaultProvider,omitempty" json:"defaultProvider,omitempty" validate:"oneof=github gitlab gitea gogs"` //nolint:revive // Custom validation tags are valid
 
 	// Global settings that apply to all providers
 	Global *GlobalSettings `yaml:"global,omitempty" json:"global,omitempty"`
@@ -44,13 +44,13 @@ type GlobalSettings struct {
 	CloneBaseDir string `yaml:"clone_base_dir,omitempty" json:"cloneBaseDir,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Default strategy for repository operations
-	DefaultStrategy string `yaml:"default_strategy,omitempty" json:"defaultStrategy,omitempty" validate:"omitempty,oneof=reset pull fetch"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
+	DefaultStrategy string `yaml:"default_strategy,omitempty" json:"defaultStrategy,omitempty" validate:"oneof=reset pull fetch"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Global ignore patterns (regex)
 	GlobalIgnores []string `yaml:"global_ignores,omitempty" json:"globalIgnores,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Default visibility filter
-	DefaultVisibility string `yaml:"default_visibility,omitempty" json:"defaultVisibility,omitempty" validate:"omitempty,oneof=public private all"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
+	DefaultVisibility string `yaml:"default_visibility,omitempty" json:"defaultVisibility,omitempty" validate:"oneof=public private all"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Timeout settings
 	Timeouts *TimeoutSettings `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
@@ -74,22 +74,22 @@ type TimeoutSettings struct {
 // ConcurrencySettings contains concurrency configurations.
 type ConcurrencySettings struct {
 	// Maximum concurrent clone operations
-	CloneWorkers int `yaml:"clone_workers,omitempty" json:"cloneWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
+	CloneWorkers int `yaml:"clone_workers,omitempty" json:"cloneWorkers,omitempty" validate:"min=1,max=50"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Maximum concurrent update operations
-	UpdateWorkers int `yaml:"update_workers,omitempty" json:"updateWorkers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
+	UpdateWorkers int `yaml:"update_workers,omitempty" json:"updateWorkers,omitempty" validate:"min=1,max=50"` //nolint:tagliatelle,revive // YAML compatibility and custom validation tags
 
 	// Maximum concurrent API operations
-	APIWorkers int `yaml:"api_workers,omitempty" json:"apiWorkers,omitempty" validate:"omitempty,min=1,max=20"` //nolint:tagliatelle // YAML compatibility required
+	APIWorkers int `yaml:"api_workers,omitempty" json:"apiWorkers,omitempty" validate:"min=1,max=20"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // ProviderConfig represents configuration for a specific Git provider.
 type ProviderConfig struct {
 	// Authentication token (supports environment variables)
-	Token string `yaml:"token,omitempty" json:"token,omitempty" validate:"required,envtoken"` //nolint:revive // Custom validation tag for environment token
+	Token string `yaml:"token,omitempty" json:"token,omitempty" ` //nolint:revive // Custom validation tag for environment token
 
 	// API endpoint URL (for self-hosted instances)
-	APIURL string `yaml:"api_url,omitempty" json:"apiUrl,omitempty" validate:"omitempty,url"` //nolint:tagliatelle // YAML compatibility required
+	APIURL string `yaml:"api_url,omitempty" json:"apiUrl,omitempty" validate:"url"` //nolint:tagliatelle // YAML compatibility required
 
 	// Organizations/groups to manage
 	Organizations []*OrganizationConfig `yaml:"organizations,omitempty" json:"organizations,omitempty" validate:"min=1"`
@@ -110,16 +110,16 @@ type OrganizationConfig struct {
 	CloneDir string `yaml:"clone_dir" json:"cloneDir" validate:"required,dirpath"` //nolint:tagliatelle // YAML compatibility required
 
 	// Repository visibility filter
-	Visibility string `yaml:"visibility,omitempty" json:"visibility,omitempty" validate:"omitempty,oneof=public private all"`
+	Visibility string `yaml:"visibility,omitempty" json:"visibility,omitempty" validate:"oneof=public private all"`
 
 	// Update strategy for existing repositories
-	Strategy string `yaml:"strategy,omitempty" json:"strategy,omitempty" validate:"omitempty,oneof=reset pull fetch"`
+	Strategy string `yaml:"strategy,omitempty" json:"strategy,omitempty" validate:"oneof=reset pull fetch"`
 
 	// Include pattern (regex)
-	Include string `yaml:"include,omitempty" json:"include,omitempty" validate:"omitempty,regexpattern"`
+	Include string `yaml:"include,omitempty" json:"include,omitempty"`
 
 	// Exclude patterns (regex)
-	Exclude []string `yaml:"exclude,omitempty" json:"exclude,omitempty" validate:"dive,regexpattern"` //nolint:revive // Custom validation tag for regex patterns
+	Exclude []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
 
 	// Whether to flatten directory structure
 	Flatten bool `yaml:"flatten,omitempty" json:"flatten,omitempty"`
@@ -161,7 +161,7 @@ type RateLimitConfig struct {
 // RetryConfig contains retry configuration.
 type RetryConfig struct {
 	// Maximum retry attempts
-	MaxAttempts int `yaml:"max_attempts,omitempty" json:"maxAttempts,omitempty" validate:"omitempty,min=0,max=10"` //nolint:tagliatelle // YAML compatibility required
+	MaxAttempts int `yaml:"max_attempts,omitempty" json:"maxAttempts,omitempty" validate:"min=0,max=10"` //nolint:tagliatelle // YAML compatibility required
 
 	// Base delay between retries
 	BaseDelay time.Duration `yaml:"base_delay,omitempty" json:"baseDelay,omitempty"` //nolint:tagliatelle // YAML compatibility required
@@ -430,7 +430,7 @@ type IDEConfig struct {
 	WatchDirectories []string `yaml:"watch_directories,omitempty" json:"watchDirectories,omitempty"` //nolint:tagliatelle // YAML compatibility required
 
 	// Patterns to exclude from monitoring (regex)
-	ExcludePatterns []string `yaml:"exclude_patterns,omitempty" json:"excludePatterns,omitempty" validate:"dive,regexpattern"` //nolint:tagliatelle // YAML compatibility required
+	ExcludePatterns []string `yaml:"exclude_patterns,omitempty" json:"excludePatterns,omitempty" validate:"dive"` //nolint:tagliatelle // YAML compatibility required
 
 	// JetBrains products to monitor
 	JetBrainsProducts []string `yaml:"jetbrains_products,omitempty" json:"jetbrainsProducts,omitempty"` //nolint:tagliatelle // YAML compatibility required
@@ -463,7 +463,7 @@ type IDESyncSettings struct {
 // IDELoggingConfig contains IDE logging configuration.
 type IDELoggingConfig struct {
 	// Log level
-	Level string `yaml:"level,omitempty" json:"level,omitempty" validate:"omitempty,oneof=debug info warn error"`
+	Level string `yaml:"level,omitempty" json:"level,omitempty" validate:"oneof=debug info warn error"`
 
 	// Log file path
 	FilePath string `yaml:"filePath,omitempty" json:"filePath,omitempty"`
@@ -583,7 +583,7 @@ type ContainerConfig struct {
 	Podman *PodmanConfig `yaml:"podman,omitempty" json:"podman,omitempty"`
 
 	// Default container runtime
-	DefaultRuntime string `yaml:"defaultRuntime,omitempty" json:"defaultRuntime,omitempty" validate:"omitempty,oneof=docker podman"`
+	DefaultRuntime string `yaml:"defaultRuntime,omitempty" json:"defaultRuntime,omitempty" validate:"oneof=docker podman"`
 }
 
 // DockerConfig contains Docker configuration settings.
@@ -619,7 +619,7 @@ type RegistryAuthConfig struct {
 	Username string `yaml:"username,omitempty" json:"username,omitempty"`
 
 	// Password (supports environment variables)
-	Password string `yaml:"password,omitempty" json:"password,omitempty" validate:"omitempty,envtoken"`
+	Password string `yaml:"password,omitempty" json:"password,omitempty" `
 
 	// Email
 	Email string `yaml:"email,omitempty" json:"email,omitempty"`
@@ -688,7 +688,7 @@ type K8sClusterConfig struct {
 	InsecureSkipTLSVerify bool `yaml:"insecure_skip_tls_verify,omitempty" json:"insecure_skip_tls_verify,omitempty"`
 
 	// Authentication method
-	AuthMethod string `yaml:"auth_method,omitempty" json:"auth_method,omitempty" validate:"omitempty,oneof=token certificate exec"`
+	AuthMethod string `yaml:"auth_method,omitempty" json:"auth_method,omitempty" validate:"oneof=token certificate exec"`
 
 	// Authentication configuration
 	AuthConfig map[string]interface{} `yaml:"auth_config,omitempty" json:"auth_config,omitempty"`
@@ -706,7 +706,7 @@ type BackupConfig struct {
 	RetentionPeriod time.Duration `yaml:"retention_period,omitempty" json:"retention_period,omitempty"`
 
 	// Backup compression
-	Compression string `yaml:"compression,omitempty" json:"compression,omitempty" validate:"omitempty,oneof=none gzip xz"`
+	Compression string `yaml:"compression,omitempty" json:"compression,omitempty" validate:"oneof=none gzip xz"`
 
 	// Backup destinations
 	Destinations []string `yaml:"destinations,omitempty" json:"destinations,omitempty"`
@@ -721,7 +721,7 @@ type BackupEncryption struct {
 	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 
 	// Encryption method
-	Method string `yaml:"method,omitempty" json:"method,omitempty" validate:"omitempty,oneof=aes256 gpg"`
+	Method string `yaml:"method,omitempty" json:"method,omitempty" validate:"oneof=aes256 gpg"`
 
 	// Encryption key path
 	KeyPath string `yaml:"key_path,omitempty" json:"key_path,omitempty"`
@@ -775,7 +775,7 @@ type NetworkProfile struct {
 	SSID string `yaml:"ssid,omitempty" json:"ssid,omitempty"`
 
 	// Network type (home, work, public)
-	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"omitempty,oneof=home work public"`
+	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"oneof=home work public"`
 
 	// VPN configuration for this network
 	VPNConfig string `yaml:"vpn_config,omitempty" json:"vpn_config,omitempty"`
@@ -808,7 +808,7 @@ type VPNConfig struct {
 // VPNProfile contains VPN profile settings.
 type VPNProfile struct {
 	// VPN type (openvpn, wireguard, etc.)
-	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"omitempty,oneof=openvpn wireguard ipsec"`
+	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"oneof=openvpn wireguard ipsec"`
 
 	// Configuration file path
 	ConfigFile string `yaml:"config_file,omitempty" json:"config_file,omitempty"`
@@ -895,7 +895,7 @@ type ProxyConfig struct {
 // ProxyProfile contains proxy profile settings.
 type ProxyProfile struct {
 	// Proxy type (http, https, socks5)
-	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"omitempty,oneof=http https socks4 socks5"`
+	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"oneof=http https socks4 socks5"`
 
 	// Proxy host
 	Host string `yaml:"host,omitempty" json:"host,omitempty"`
@@ -907,7 +907,7 @@ type ProxyProfile struct {
 	Username string `yaml:"username,omitempty" json:"username,omitempty"`
 
 	// Password for authentication
-	Password string `yaml:"password,omitempty" json:"password,omitempty" validate:"omitempty,envtoken"`
+	Password string `yaml:"password,omitempty" json:"password,omitempty" `
 
 	// Bypass proxy for these hosts
 	NoProxy []string `yaml:"no_proxy,omitempty" json:"no_proxy,omitempty"`
@@ -988,7 +988,7 @@ type DaemonConfig struct {
 	LogFile string `yaml:"log_file,omitempty" json:"log_file,omitempty"`
 
 	// Daemon log level
-	LogLevel string `yaml:"log_level,omitempty" json:"log_level,omitempty" validate:"omitempty,oneof=debug info warn error"`
+	LogLevel string `yaml:"log_level,omitempty" json:"log_level,omitempty" validate:"oneof=debug info warn error"`
 
 	// Daemon user
 	User string `yaml:"user,omitempty" json:"user,omitempty"`
@@ -1057,7 +1057,7 @@ type SSHKeyManagement struct {
 	KeyDir string `yaml:"key_dir,omitempty" json:"key_dir,omitempty"`
 
 	// Default key type
-	DefaultKeyType string `yaml:"default_key_type,omitempty" json:"default_key_type,omitempty" validate:"omitempty,oneof=rsa ed25519 ecdsa"`
+	DefaultKeyType string `yaml:"default_key_type,omitempty" json:"default_key_type,omitempty" validate:"oneof=rsa ed25519 ecdsa"`
 
 	// Default key size (for RSA keys)
 	DefaultKeySize int `yaml:"default_key_size,omitempty" json:"default_key_size,omitempty"`

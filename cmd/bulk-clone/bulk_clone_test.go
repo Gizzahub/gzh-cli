@@ -81,6 +81,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := newBulkCloneGithubCmd()
+			cmd.SetContext(context.Background())
 			err := tt.options.run(cmd, []string{})
 
 			if tt.wantErr {
@@ -128,9 +129,10 @@ func TestStrategyValidation(t *testing.T) {
 				strategy:   strategy,
 			}
 			cmd := newBulkCloneGithubCmd()
+			cmd.SetContext(context.Background())
 			err := githubOpts.run(cmd, []string{})
 			// We expect an error from RefreshAll (network), not from validation
-			assert.True(t, err == nil || !contains(err.Error(), "invalid strategy"))
+			assert.True(t, err == nil || !contains(err.Error(), "Input validation failed"))
 
 			// GitLab
 			gitlabOpts := &bulkCloneGitlabOptions{
@@ -139,8 +141,9 @@ func TestStrategyValidation(t *testing.T) {
 				strategy:   strategy,
 			}
 			gitlabCmd := newBulkCloneGitlabCmd()
+			gitlabCmd.SetContext(context.Background())
 			err = gitlabOpts.run(gitlabCmd, []string{})
-			assert.True(t, err == nil || !contains(err.Error(), "invalid strategy"))
+			assert.True(t, err == nil || !contains(err.Error(), "Input validation failed"))
 		})
 	}
 
@@ -153,11 +156,11 @@ func TestStrategyValidation(t *testing.T) {
 				strategy:   strategy,
 			}
 			cmd := newBulkCloneGithubCmd()
-
+			cmd.SetContext(context.Background())
 			err := githubOpts.run(cmd, []string{})
 			if strategy != "" {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "invalid strategy")
+				assert.Contains(t, err.Error(), "Input validation failed")
 			}
 
 			// GitLab
@@ -167,11 +170,11 @@ func TestStrategyValidation(t *testing.T) {
 				strategy:   strategy,
 			}
 			gitlabCmd := newBulkCloneGitlabCmd()
-
+			gitlabCmd.SetContext(context.Background())
 			err = gitlabOpts.run(gitlabCmd, []string{})
 			if strategy != "" {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "invalid strategy")
+				assert.Contains(t, err.Error(), "Input validation failed")
 			}
 		})
 	}

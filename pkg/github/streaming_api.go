@@ -11,6 +11,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gizzahub/gzh-manager-go/internal/constants"
+	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 )
 
 // StreamingClient provides streaming API access for large-scale operations.
@@ -104,34 +107,27 @@ type StreamingConfig struct {
 // DefaultStreamingConfig returns optimized defaults for large-scale operations.
 func DefaultStreamingConfig() StreamingConfig {
 	return StreamingConfig{
-		PageSize:        100, // GitHub's max per page
-		MaxConcurrency:  10,  // Conservative to avoid rate limits
+		PageSize:        100,                              // GitHub's max per page
+		MaxConcurrency:  constants.DefaultParallelism * 2, // Conservative to avoid rate limits
 		BufferSize:      1000,
-		MemoryLimit:     500 * 1024 * 1024, // 500MB
+		MemoryLimit:     500 * constants.BytesPerMB, // 500MB
 		CacheEnabled:    true,
 		CacheTTL:        10 * time.Minute,
-		RetryAttempts:   3,
-		RetryDelay:      2 * time.Second,
+		RetryAttempts:   constants.DefaultMaxRetries,
+		RetryDelay:      constants.RetryDelay * 2,
 		RateLimitBuffer: 100,
 	}
 }
 
 // NewStreamingClient creates a new streaming GitHub API client.
 func NewStreamingClient(token string, config StreamingConfig) *StreamingClient {
-	httpClient := &http.Client{
-		Timeout: 30 * time.Second,
-		Transport: &http.Transport{
-			MaxIdleConns:        config.MaxConcurrency * 2,
-			MaxIdleConnsPerHost: config.MaxConcurrency,
-			IdleConnTimeout:     90 * time.Second,
-			DisableCompression:  false,
-		},
-	}
+	// Use secure HTTP client instead of creating one directly
+	httpClient := httpclient.GetGlobalClient("github")
 
 	memoryPool := &MemoryPool{
 		bufferPool: sync.Pool{
 			New: func() interface{} {
-				return make([]byte, 0, 64*1024) // 64KB initial capacity
+				return make([]byte, 0, constants.BytesPerKB*64) // 64KB initial capacity
 			},
 		},
 		repositoryPool: sync.Pool{
@@ -160,7 +156,7 @@ func NewStreamingClient(token string, config StreamingConfig) *StreamingClient {
 		requestMetrics: &RequestMetrics{},
 		bufferPool: sync.Pool{
 			New: func() interface{} {
-				return make([]byte, 0, 32*1024) // 32KB buffers
+				return make([]byte, 0, constants.BytesPerKB*32) // 32KB buffers
 			},
 		},
 	}
@@ -284,7 +280,7 @@ func (sc *StreamingClient) fetchRepositoryPage(ctx context.Context, org string, 
 // parseRepositoryResponse parses JSON response with streaming to minimize memory usage.
 func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor CursorPagination) ([]*Repository, CursorPagination, error) {
 	// Use buffered reader for efficient streaming
-	bufReader := bufio.NewReaderSize(reader, 64*1024)
+	bufReader := bufio.NewReaderSize(reader, constants.BytesPerKB*64)
 
 	var response struct {
 		Items []json.RawMessage `json:"items,omitempty"`
@@ -473,7 +469,7 @@ func (sc *StreamingClient) optimizeMemory() {
 	// Reset pools periodically to prevent memory leaks
 	sc.memoryPool.bufferPool = sync.Pool{
 		New: func() interface{} {
-			return make([]byte, 0, 64*1024)
+			return make([]byte, 0, constants.BytesPerKB*64)
 		},
 	}
 }

@@ -23,5 +23,5 @@ func TestVersionCommand(t *testing.T) {
 	out, err := io.ReadAll(b)
 	require.NoError(t, err)
 
-	assert.Equal(t, fmt.Sprintf("bulk-clone: %s\n", version), string(out))
+	assert.Equal(t, fmt.Sprintf("gz version %s\n", version), string(out))
 }

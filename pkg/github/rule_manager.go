@@ -407,8 +407,32 @@ func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, ex
 			case ActionFailurePolicyContinue:
 				rm.logger.Info("Continuing rule execution despite action failure", "rule_id", rule.ID)
 			case ActionFailurePolicyRetry:
-				// TODO: Implement retry logic
-				rm.logger.Info("Retry not yet implemented, continuing", "rule_id", rule.ID)
+				// Implement retry logic with exponential backoff
+				if rm.shouldRetryAction(&action, &actionResult) {
+					retryErr := rm.retryActionWithBackoff(ctx, &action, &actionResult, rule.ID)
+					if retryErr != nil {
+						rm.logger.Error("All retry attempts failed",
+							"action_id", action.ID,
+							"rule_id", rule.ID,
+							"retry_count", actionResult.RetryCount,
+							"error", retryErr)
+						actionResult.Status = ExecutionStatusFailed
+						actionResult.Error = fmt.Sprintf("Failed after %d retries: %v", actionResult.RetryCount, retryErr)
+					} else {
+						rm.logger.Info("Action succeeded after retry",
+							"action_id", action.ID,
+							"rule_id", rule.ID,
+							"retry_count", actionResult.RetryCount)
+						actionResult.Status = ExecutionStatusCompleted
+						actionResult.Error = ""
+					}
+				} else {
+					rm.logger.Info("Max retries exceeded, marking as failed",
+						"action_id", action.ID,
+						"rule_id", rule.ID,
+						"retry_count", actionResult.RetryCount)
+					actionResult.Status = ExecutionStatusFailed
+				}
 			case ActionFailurePolicySkip:
 				rm.logger.Info("Skipping action and marking as failed", "rule_id", rule.ID)
 				actionResult.Status = ExecutionStatusFailed
@@ -907,4 +931,90 @@ func (rm *RuleManager) applyVariableSubstitution(rule *AutomationRule, variables
 
 	// Convert back to rule
 	return json.Unmarshal([]byte(ruleStr), rule)
+}
+
+// shouldRetryAction determines if an action should be retried based on its retry policy.
+func (rm *RuleManager) shouldRetryAction(action *AutomationAction, result *ActionExecutionResult) bool {
+	if action.RetryPolicy == nil {
+		return false
+	}
+
+	return result.RetryCount < action.RetryPolicy.MaxRetries
+}
+
+// retryActionWithBackoff retries an action with exponential backoff.
+func (rm *RuleManager) retryActionWithBackoff(ctx context.Context, action *AutomationAction, result *ActionExecutionResult, ruleID string) error {
+	if action.RetryPolicy == nil {
+		return fmt.Errorf("no retry policy configured for action %s", action.ID)
+	}
+
+	policy := action.RetryPolicy
+	interval := policy.RetryInterval
+	if interval == 0 {
+		interval = 1 * time.Second // Default retry interval
+	}
+
+	backoffFactor := policy.BackoffFactor
+	if backoffFactor <= 0 {
+		backoffFactor = 2.0 // Default exponential backoff factor
+	}
+
+	maxInterval := policy.MaxInterval
+	if maxInterval == 0 {
+		maxInterval = 60 * time.Second // Default max interval
+	}
+
+	var lastErr error
+	for attempt := result.RetryCount; attempt < policy.MaxRetries; attempt++ {
+		// Calculate retry delay with exponential backoff
+		retryDelay := time.Duration(float64(interval) * pow(backoffFactor, float64(attempt)))
+		if retryDelay > maxInterval {
+			retryDelay = maxInterval
+		}
+
+		rm.logger.Info("Retrying action",
+			"action_id", action.ID,
+			"rule_id", ruleID,
+			"attempt", attempt+1,
+			"max_retries", policy.MaxRetries,
+			"delay", retryDelay)
+
+		// Wait before retry
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(retryDelay):
+		}
+
+		// Increment retry count
+		result.RetryCount = attempt + 1
+
+		// Execute the action again
+		_, executionErr := rm.actionExecutor.ExecuteAction(ctx, action, nil)
+		if executionErr == nil {
+			rm.logger.Info("Action retry succeeded",
+				"action_id", action.ID,
+				"rule_id", ruleID,
+				"attempt", attempt+1)
+			return nil
+		}
+
+		lastErr = executionErr
+		rm.logger.Warn("Action retry failed",
+			"action_id", action.ID,
+			"rule_id", ruleID,
+			"attempt", attempt+1,
+			"error", executionErr)
+	}
+
+	return fmt.Errorf("action failed after %d retry attempts: %w", policy.MaxRetries, lastErr)
+}
+
+// pow is a simple integer power function for exponential backoff calculation.
+func pow(base float64, exp float64) float64 {
+	result := 1.0
+	for i := 0; i < int(exp); i++ {
+		result *= base
+	}
+	return result
 }

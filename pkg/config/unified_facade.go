@@ -13,7 +13,7 @@ import (
 
 // UnifiedConfigFacade provides a unified interface for configuration management.
 type UnifiedConfigFacade struct {
-	loader      *UnifiedConfigLoader
+	loader      *UnifiedLoader
 	config      *UnifiedConfig
 	loadResult  *LoadResult
 	integration *BulkCloneIntegration
@@ -22,7 +22,7 @@ type UnifiedConfigFacade struct {
 // NewUnifiedConfigFacade creates a new unified configuration facade.
 func NewUnifiedConfigFacade() *UnifiedConfigFacade {
 	return &UnifiedConfigFacade{
-		loader: NewUnifiedConfigLoader(),
+		loader: NewUnifiedLoader(),
 	}
 }
 

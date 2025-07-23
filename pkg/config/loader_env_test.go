@@ -7,7 +7,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
-func TestConfigLoaderWithEnvironment(t *testing.T) {
+func TestLoaderWithEnvironment(t *testing.T) {
 	// Create a mock environment for testing
 	mockEnv := env.NewMockEnvironment(map[string]string{
 		"GZH_CONFIG_PATH": "/test/config.yaml",

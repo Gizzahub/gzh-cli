@@ -4,27 +4,30 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 )
 
-// Validator provides configuration validation functionality.
-type Validator struct {
+// ConfigValidator provides configuration validation functionality.
+//
+//nolint:revive // Name conflict with interface Validator requires this name
+type ConfigValidator struct {
 	errors   []string
 	warnings []string
 }
 
-// NewValidator creates a new configuration validator.
-func NewValidator() *Validator {
-	return &Validator{
+// NewConfigValidator creates a new configuration validator.
+func NewConfigValidator() *ConfigValidator {
+	return &ConfigValidator{
 		errors:   make([]string, 0),
 		warnings: make([]string, 0),
 	}
 }
 
 // ValidateConfig performs comprehensive validation of a configuration.
-func (v *Validator) ValidateConfig(config *Config) error {
+func (v *ConfigValidator) ValidateConfig(ctx context.Context, config *Config) error {
 	v.reset()
 
 	// Validate required fields
@@ -48,18 +51,18 @@ func (v *Validator) ValidateConfig(config *Config) error {
 }
 
 // GetWarnings returns validation warnings.
-func (v *Validator) GetWarnings() []string {
+func (v *ConfigValidator) GetWarnings() []string {
 	return v.warnings
 }
 
 // reset clears previous validation results.
-func (v *Validator) reset() {
+func (v *ConfigValidator) reset() {
 	v.errors = v.errors[:0]
 	v.warnings = v.warnings[:0]
 }
 
 // validateRequiredFields checks for required configuration fields.
-func (v *Validator) validateRequiredFields(config *Config) {
+func (v *ConfigValidator) validateRequiredFields(config *Config) {
 	if config.Version == "" {
 		v.addError("missing required field 'version'")
 	}
@@ -70,7 +73,7 @@ func (v *Validator) validateRequiredFields(config *Config) {
 }
 
 // validateVersion validates the version format.
-func (v *Validator) validateVersion(version string) {
+func (v *ConfigValidator) validateVersion(version string) {
 	if version == "" {
 		return // Already handled in required fields
 	}
@@ -83,7 +86,7 @@ func (v *Validator) validateVersion(version string) {
 }
 
 // validateDefaultProvider validates the default provider setting.
-func (v *Validator) validateDefaultProvider(provider string) {
+func (v *ConfigValidator) validateDefaultProvider(provider string) {
 	if provider == "" {
 		return // Optional field
 	}
@@ -96,14 +99,14 @@ func (v *Validator) validateDefaultProvider(provider string) {
 }
 
 // validateProviders validates all provider configurations.
-func (v *Validator) validateProviders(providers map[string]Provider) {
+func (v *ConfigValidator) validateProviders(providers map[string]Provider) {
 	for name, provider := range providers {
 		v.validateProvider(name, provider)
 	}
 }
 
 // validateProvider validates a single provider configuration.
-func (v *Validator) validateProvider(name string, provider Provider) {
+func (v *ConfigValidator) validateProvider(name string, provider Provider) {
 	// Validate provider name
 	validProviders := []string{ProviderGitHub, ProviderGitLab, ProviderGitea}
 	if !contains(validProviders, name) {
@@ -145,7 +148,7 @@ func (v *Validator) validateProvider(name string, provider Provider) {
 }
 
 // validateToken validates token format and provides warnings.
-func (v *Validator) validateToken(providerName, token string) {
+func (v *ConfigValidator) validateToken(providerName, token string) {
 	// Check for environment variable format
 	if strings.HasPrefix(token, "${") && strings.HasSuffix(token, "}") {
 		envVar := token[2 : len(token)-1]
@@ -175,7 +178,7 @@ func (v *Validator) validateToken(providerName, token string) {
 }
 
 // validateGitTarget validates a GitTarget configuration.
-func (v *Validator) validateGitTarget(path string, target GitTarget) {
+func (v *ConfigValidator) validateGitTarget(path string, target GitTarget) {
 	// Validate required fields
 	if target.Name == "" {
 		v.addError(fmt.Sprintf("%s: missing required field 'name'", path))
@@ -226,12 +229,12 @@ func (v *Validator) validateGitTarget(path string, target GitTarget) {
 }
 
 // addError adds a validation error.
-func (v *Validator) addError(message string) {
+func (v *ConfigValidator) addError(message string) {
 	v.errors = append(v.errors, fmt.Sprintf("ERROR: %s", message))
 }
 
 // addWarning adds a validation warning.
-func (v *Validator) addWarning(message string) {
+func (v *ConfigValidator) addWarning(message string) {
 	v.warnings = append(v.warnings, fmt.Sprintf("WARNING: %s", message))
 }
 
@@ -249,8 +252,8 @@ func ValidateConfigFile(filename string) (*ValidationResult, error) {
 		}, err
 	}
 
-	validator := NewValidator()
-	err = validator.ValidateConfig(config)
+	validator := NewConfigValidator()
+	err = validator.ValidateConfig(context.Background(), config)
 
 	return &ValidationResult{
 		Valid:    err == nil,
@@ -269,4 +272,57 @@ type ValidationResult struct {
 // HasIssues returns true if there are any errors or warnings.
 func (r *ValidationResult) HasIssues() bool {
 	return len(r.Errors) > 0 || len(r.Warnings) > 0
+}
+
+// ValidateConfigFile implements the Validator interface for validating a config file.
+func (v *ConfigValidator) ValidateConfigFile(ctx context.Context, filename string) error {
+	config, err := LoadConfigFromFile(filename)
+	if err != nil {
+		return err
+	}
+	return v.ValidateConfig(ctx, config)
+}
+
+// GetValidationErrors implements the Validator interface for getting detailed validation errors.
+func (v *ConfigValidator) GetValidationErrors(ctx context.Context, config *Config) []ValidationError {
+	// Temporarily store current errors and warnings
+	originalErrors := make([]string, len(v.errors))
+	originalWarnings := make([]string, len(v.warnings))
+	copy(originalErrors, v.errors)
+	copy(originalWarnings, v.warnings)
+
+	// Run validation to populate errors (ignore return value as we use v.errors and v.warnings)
+	_ = v.ValidateConfig(ctx, config) //nolint:errcheck // Error return value intentionally ignored - we use v.errors field
+
+	// Convert errors and warnings to ValidationError format
+	validationErrors := make([]ValidationError, 0, len(v.errors)+len(v.warnings))
+
+	for _, errMsg := range v.errors {
+		validationErrors = append(validationErrors, ValidationError{
+			Field:    "",
+			Value:    "",
+			Message:  errMsg,
+			Severity: "error",
+		})
+	}
+
+	for _, warnMsg := range v.warnings {
+		validationErrors = append(validationErrors, ValidationError{
+			Field:    "",
+			Value:    "",
+			Message:  warnMsg,
+			Severity: "warning",
+		})
+	}
+
+	// Restore original errors and warnings
+	v.errors = originalErrors
+	v.warnings = originalWarnings
+
+	return validationErrors
+}
+
+// IsValid implements the Validator interface for checking if config is valid.
+func (v *ConfigValidator) IsValid(ctx context.Context, config *Config) bool {
+	return v.ValidateConfig(ctx, config) == nil
 }

@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"gopkg.in/yaml.v3"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 // MigrationResult contains the results of a configuration migration.
@@ -28,17 +29,17 @@ type MigrationResult struct {
 	MigrationReport string
 }
 
-// ConfigMigrator handles migration from legacy bulk-clone.yaml to unified format.
-type ConfigMigrator struct {
+// Migrator handles migration from legacy bulk-clone.yaml to unified format.
+type Migrator struct {
 	SourcePath   string
 	TargetPath   string
 	CreateBackup bool
 	DryRun       bool
 }
 
-// NewConfigMigrator creates a new configuration migrator.
-func NewConfigMigrator(sourcePath, targetPath string) *ConfigMigrator {
-	return &ConfigMigrator{
+// NewMigrator creates a new configuration migrator.
+func NewMigrator(sourcePath, targetPath string) *Migrator {
+	return &Migrator{
 		SourcePath:   sourcePath,
 		TargetPath:   targetPath,
 		CreateBackup: true,
@@ -47,7 +48,7 @@ func NewConfigMigrator(sourcePath, targetPath string) *ConfigMigrator {
 }
 
 // MigrateFromBulkClone migrates from bulk-clone.yaml to unified gzh.yaml format.
-func (m *ConfigMigrator) MigrateFromBulkClone() (*MigrationResult, error) {
+func (m *Migrator) MigrateFromBulkClone() (*MigrationResult, error) {
 	result := &MigrationResult{
 		SourcePath:      m.SourcePath,
 		TargetPath:      m.TargetPath,
@@ -95,7 +96,7 @@ func (m *ConfigMigrator) MigrateFromBulkClone() (*MigrationResult, error) {
 }
 
 // convertBulkCloneToUnified converts bulk-clone.yaml format to unified format.
-func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) (config *UnifiedConfig, warnings, actions []string) {
+func (m *Migrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) (config *UnifiedConfig, warnings, actions []string) {
 	config = DefaultUnifiedConfig()
 
 	// Set migration information
@@ -152,7 +153,7 @@ func (m *ConfigMigrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneCo
 
 // convertGitHubConfigurations converts GitHub-specific configurations.
 // Note: Currently always returns nil, but maintains error interface for future validation.
-func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
+func (m *Migrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
 	githubProvider := &ProviderConfig{
 		Token:         "${GITHUB_TOKEN}",
 		Organizations: []*OrganizationConfig{},
@@ -214,7 +215,7 @@ func (m *ConfigMigrator) convertGitHubConfigurations(legacy *bulkclone.BulkClone
 
 // convertGitLabConfigurations converts GitLab-specific configurations.
 // Note: Currently always returns nil, but maintains error interface for future validation.
-func (m *ConfigMigrator) convertGitLabConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
+func (m *Migrator) convertGitLabConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
 	if legacy.Default.Gitlab.RootPath == "" {
 		return nil // No GitLab configuration
 	}
@@ -253,7 +254,7 @@ func (m *ConfigMigrator) convertGitLabConfigurations(legacy *bulkclone.BulkClone
 }
 
 // countTargets counts the total number of targets in the unified configuration.
-func (m *ConfigMigrator) countTargets(config *UnifiedConfig) int {
+func (m *Migrator) countTargets(config *UnifiedConfig) int {
 	count := 0
 	for _, provider := range config.Providers {
 		count += len(provider.Organizations)
@@ -263,7 +264,7 @@ func (m *ConfigMigrator) countTargets(config *UnifiedConfig) int {
 }
 
 // saveUnifiedConfig saves the unified configuration to a file.
-func (m *ConfigMigrator) saveUnifiedConfig(config *UnifiedConfig) error {
+func (m *Migrator) saveUnifiedConfig(config *UnifiedConfig) error {
 	// Ensure target directory exists
 	if err := CreateDirectory(filepath.Dir(m.TargetPath)); err != nil {
 		return fmt.Errorf("failed to create target directory: %w", err)
@@ -295,7 +296,7 @@ func (m *ConfigMigrator) saveUnifiedConfig(config *UnifiedConfig) error {
 }
 
 // generateMigrationReport generates a detailed migration report.
-func (m *ConfigMigrator) generateMigrationReport(result *MigrationResult) string {
+func (m *Migrator) generateMigrationReport(result *MigrationResult) string {
 	var report strings.Builder
 
 	report.WriteString("# Configuration Migration Report\n\n")
@@ -379,7 +380,7 @@ func DetectLegacyFormat(configPath string) (bool, error) {
 
 // MigrateConfigFile migrates a configuration file from legacy to unified format.
 func MigrateConfigFile(sourcePath, targetPath string, dryRun bool) (*MigrationResult, error) {
-	migrator := NewConfigMigrator(sourcePath, targetPath)
+	migrator := NewMigrator(sourcePath, targetPath)
 	migrator.DryRun = dryRun
 
 	return migrator.MigrateFromBulkClone()

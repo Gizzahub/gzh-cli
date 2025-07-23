@@ -11,9 +11,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -497,7 +498,7 @@ func getAffectedRepositories(differences []ConfigurationDifference) []string {
 }
 
 // compareRepositoryConfigurations compares current and target configurations.
-func compareRepositoryConfigurations( //nolint:gocognit // Large comparison function - refactoring requires architectural changes
+func compareRepositoryConfigurations(
 	repoName string,
 	current *github.RepositoryConfig,
 	targetSettings *config.RepoSettings,
@@ -508,211 +509,10 @@ func compareRepositoryConfigurations( //nolint:gocognit // Large comparison func
 ) []ConfigurationDifference {
 	var differences []ConfigurationDifference
 
-	// Compare basic settings
-	if targetSettings != nil {
-		// Description
-		if targetSettings.Description != nil && current.Description != *targetSettings.Description {
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "description",
-				CurrentValue: current.Description,
-				TargetValue:  *targetSettings.Description,
-				ChangeType:   getChangeType(current.Description, *targetSettings.Description),
-				Impact:       "low",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-
-		// Homepage
-		if targetSettings.Homepage != nil && current.Homepage != *targetSettings.Homepage {
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "homepage",
-				CurrentValue: current.Homepage,
-				TargetValue:  *targetSettings.Homepage,
-				ChangeType:   getChangeType(current.Homepage, *targetSettings.Homepage),
-				Impact:       "low",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-
-		// Private/Visibility
-		if targetSettings.Private != nil && current.Private != *targetSettings.Private {
-			visibility := "public"
-			targetVisibility := "public"
-
-			if current.Private {
-				visibility = "private"
-			}
-
-			if *targetSettings.Private {
-				targetVisibility = "private"
-			}
-
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "visibility",
-				CurrentValue: visibility,
-				TargetValue:  targetVisibility,
-				ChangeType:   "update",
-				Impact:       "high",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-
-		// Features
-		if targetSettings.HasIssues != nil && current.Settings.HasIssues != *targetSettings.HasIssues {
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "features.issues",
-				CurrentValue: fmt.Sprintf("%t", current.Settings.HasIssues),
-				TargetValue:  fmt.Sprintf("%t", *targetSettings.HasIssues),
-				ChangeType:   "update",
-				Impact:       "low",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-
-		if targetSettings.HasWiki != nil && current.Settings.HasWiki != *targetSettings.HasWiki {
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "features.wiki",
-				CurrentValue: fmt.Sprintf("%t", current.Settings.HasWiki),
-				TargetValue:  fmt.Sprintf("%t", *targetSettings.HasWiki),
-				ChangeType:   "update",
-				Impact:       "low",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-
-		if targetSettings.HasProjects != nil && current.Settings.HasProjects != *targetSettings.HasProjects {
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "features.projects",
-				CurrentValue: fmt.Sprintf("%t", current.Settings.HasProjects),
-				TargetValue:  fmt.Sprintf("%t", *targetSettings.HasProjects),
-				ChangeType:   "update",
-				Impact:       "low",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-
-		// Merge settings
-		if targetSettings.DeleteBranchOnMerge != nil && current.Settings.DeleteBranchOnMerge != *targetSettings.DeleteBranchOnMerge {
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "merge.delete_branch_on_merge",
-				CurrentValue: fmt.Sprintf("%t", current.Settings.DeleteBranchOnMerge),
-				TargetValue:  fmt.Sprintf("%t", *targetSettings.DeleteBranchOnMerge),
-				ChangeType:   "update",
-				Impact:       "medium",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-
-		if targetSettings.AllowSquashMerge != nil && current.Settings.AllowSquashMerge != *targetSettings.AllowSquashMerge {
-			differences = append(differences, ConfigurationDifference{
-				Repository:   repoName,
-				Setting:      "merge.allow_squash_merge",
-				CurrentValue: fmt.Sprintf("%t", current.Settings.AllowSquashMerge),
-				TargetValue:  fmt.Sprintf("%t", *targetSettings.AllowSquashMerge),
-				ChangeType:   "update",
-				Impact:       "medium",
-				Template:     templateName,
-				Compliant:    false,
-			})
-		}
-	}
-
-	// Compare security settings
-	if targetSecurity != nil {
-		// Branch protection
-		if targetSecurity.BranchProtection != nil {
-			for branch, targetRule := range targetSecurity.BranchProtection {
-				currentRule, exists := current.BranchProtection[branch]
-				if !exists {
-					// Branch protection doesn't exist
-					if targetRule.RequiredReviews != nil && *targetRule.RequiredReviews > 0 {
-						differences = append(differences, ConfigurationDifference{
-							Repository:   repoName,
-							Setting:      fmt.Sprintf("branch_protection.%s.required_reviews", branch),
-							CurrentValue: "0",
-							TargetValue:  fmt.Sprintf("%d", *targetRule.RequiredReviews),
-							ChangeType:   changeTypeCreate,
-							Impact:       "high",
-							Template:     templateName,
-							Compliant:    false,
-						})
-					}
-				} else {
-					// Compare existing branch protection
-					if targetRule.RequiredReviews != nil && currentRule.RequiredReviews != *targetRule.RequiredReviews {
-						differences = append(differences, ConfigurationDifference{
-							Repository:   repoName,
-							Setting:      fmt.Sprintf("branch_protection.%s.required_reviews", branch),
-							CurrentValue: fmt.Sprintf("%d", currentRule.RequiredReviews),
-							TargetValue:  fmt.Sprintf("%d", *targetRule.RequiredReviews),
-							ChangeType:   "update",
-							Impact:       "medium",
-							Template:     templateName,
-							Compliant:    false,
-						})
-					}
-
-					if targetRule.EnforceAdmins != nil && currentRule.EnforceAdmins != *targetRule.EnforceAdmins {
-						differences = append(differences, ConfigurationDifference{
-							Repository:   repoName,
-							Setting:      fmt.Sprintf("branch_protection.%s.enforce_admins", branch),
-							CurrentValue: fmt.Sprintf("%t", currentRule.EnforceAdmins),
-							TargetValue:  fmt.Sprintf("%t", *targetRule.EnforceAdmins),
-							ChangeType:   "update",
-							Impact:       "high",
-							Template:     templateName,
-							Compliant:    false,
-						})
-					}
-				}
-			}
-		}
-	}
-
-	// Compare permissions
-	if targetPermissions != nil {
-		// Team permissions
-		for team, targetPerm := range targetPermissions.TeamPermissions {
-			currentPerm, exists := current.Permissions.Teams[team]
-			if !exists {
-				differences = append(differences, ConfigurationDifference{
-					Repository:   repoName,
-					Setting:      fmt.Sprintf("permissions.team.%s", team),
-					CurrentValue: "none",
-					TargetValue:  targetPerm,
-					ChangeType:   changeTypeCreate,
-					Impact:       "medium",
-					Template:     templateName,
-					Compliant:    false,
-				})
-			} else if currentPerm != targetPerm {
-				differences = append(differences, ConfigurationDifference{
-					Repository:   repoName,
-					Setting:      fmt.Sprintf("permissions.team.%s", team),
-					CurrentValue: currentPerm,
-					TargetValue:  targetPerm,
-					ChangeType:   "update",
-					Impact:       "medium",
-					Template:     templateName,
-					Compliant:    false,
-				})
-			}
-		}
-	}
+	// Compare different configuration categories
+	differences = append(differences, compareBasicSettings(repoName, current, targetSettings, templateName)...)
+	differences = append(differences, compareSecuritySettings(repoName, current, targetSecurity, templateName)...)
+	differences = append(differences, comparePermissionSettings(repoName, current, targetPermissions, templateName)...)
 
 	// Apply policy exceptions to differences
 	differences = applyPolicyExceptions(differences, exceptions)
@@ -881,4 +681,244 @@ func getConfigurationDifferences(organization, filter, token, configPath string)
 	}
 
 	return differences, nil
+}
+
+// compareBasicSettings compares basic repository settings.
+func compareBasicSettings(repoName string, current *github.RepositoryConfig, targetSettings *config.RepoSettings, templateName string) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	if targetSettings == nil {
+		return differences
+	}
+
+	// Description
+	if targetSettings.Description != nil && current.Description != *targetSettings.Description {
+		differences = append(differences, createConfigurationDifference(
+			repoName, "description", current.Description, *targetSettings.Description, "low", templateName))
+	}
+
+	// Homepage
+	if targetSettings.Homepage != nil && current.Homepage != *targetSettings.Homepage {
+		differences = append(differences, createConfigurationDifference(
+			repoName, "homepage", current.Homepage, *targetSettings.Homepage, "low", templateName))
+	}
+
+	// Private/Visibility
+	if targetSettings.Private != nil && current.Private != *targetSettings.Private {
+		visibility := "public"
+		targetVisibility := "public"
+		if current.Private {
+			visibility = "private"
+		}
+		if *targetSettings.Private {
+			targetVisibility = "private"
+		}
+		differences = append(differences, ConfigurationDifference{
+			Repository:   repoName,
+			Setting:      "visibility",
+			CurrentValue: visibility,
+			TargetValue:  targetVisibility,
+			ChangeType:   "update",
+			Impact:       "high",
+			Template:     templateName,
+			Compliant:    false,
+		})
+	}
+
+	// Repository features
+	differences = append(differences, compareRepositoryFeatures(repoName, current, targetSettings, templateName)...)
+
+	// Merge settings
+	differences = append(differences, compareMergeSettings(repoName, current, targetSettings, templateName)...)
+
+	return differences
+}
+
+// compareRepositoryFeatures compares repository feature settings.
+func compareRepositoryFeatures(repoName string, current *github.RepositoryConfig, targetSettings *config.RepoSettings, templateName string) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	// Issues feature
+	if targetSettings.HasIssues != nil && current.Settings.HasIssues != *targetSettings.HasIssues {
+		differences = append(differences, createBooleanConfigurationDifference(
+			repoName, "features.issues", current.Settings.HasIssues, *targetSettings.HasIssues, "low", templateName))
+	}
+
+	// Wiki feature
+	if targetSettings.HasWiki != nil && current.Settings.HasWiki != *targetSettings.HasWiki {
+		differences = append(differences, createBooleanConfigurationDifference(
+			repoName, "features.wiki", current.Settings.HasWiki, *targetSettings.HasWiki, "low", templateName))
+	}
+
+	// Projects feature
+	if targetSettings.HasProjects != nil && current.Settings.HasProjects != *targetSettings.HasProjects {
+		differences = append(differences, createBooleanConfigurationDifference(
+			repoName, "features.projects", current.Settings.HasProjects, *targetSettings.HasProjects, "low", templateName))
+	}
+
+	return differences
+}
+
+// compareMergeSettings compares merge-related settings.
+func compareMergeSettings(repoName string, current *github.RepositoryConfig, targetSettings *config.RepoSettings, templateName string) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	// Delete branch on merge
+	if targetSettings.DeleteBranchOnMerge != nil && current.Settings.DeleteBranchOnMerge != *targetSettings.DeleteBranchOnMerge {
+		differences = append(differences, createBooleanConfigurationDifference(
+			repoName, "merge.delete_branch_on_merge", current.Settings.DeleteBranchOnMerge, *targetSettings.DeleteBranchOnMerge, "medium", templateName))
+	}
+
+	// Allow squash merge
+	if targetSettings.AllowSquashMerge != nil && current.Settings.AllowSquashMerge != *targetSettings.AllowSquashMerge {
+		differences = append(differences, createBooleanConfigurationDifference(
+			repoName, "merge.allow_squash_merge", current.Settings.AllowSquashMerge, *targetSettings.AllowSquashMerge, "medium", templateName))
+	}
+
+	return differences
+}
+
+// compareSecuritySettings compares security-related settings.
+func compareSecuritySettings(repoName string, current *github.RepositoryConfig, targetSecurity *config.SecuritySettings, templateName string) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	if targetSecurity == nil || targetSecurity.BranchProtection == nil {
+		return differences
+	}
+
+	// Compare branch protection settings
+	for branch, targetRule := range targetSecurity.BranchProtection {
+		currentRule, exists := current.BranchProtection[branch]
+		if !exists {
+			// Branch protection doesn't exist, check if we need to create it
+			differences = append(differences, compareMissingBranchProtection(repoName, branch, targetRule, templateName)...)
+		} else {
+			// Compare existing branch protection
+			differences = append(differences, compareExistingBranchProtection(repoName, branch, currentRule, targetRule, templateName)...)
+		}
+	}
+
+	return differences
+}
+
+// compareMissingBranchProtection handles cases where branch protection doesn't exist.
+func compareMissingBranchProtection(repoName, branch string, targetRule *config.BranchProtectionRule, templateName string) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	if targetRule.RequiredReviews != nil && *targetRule.RequiredReviews > 0 {
+		differences = append(differences, ConfigurationDifference{
+			Repository:   repoName,
+			Setting:      fmt.Sprintf("branch_protection.%s.required_reviews", branch),
+			CurrentValue: "0",
+			TargetValue:  fmt.Sprintf("%d", *targetRule.RequiredReviews),
+			ChangeType:   changeTypeCreate,
+			Impact:       "high",
+			Template:     templateName,
+			Compliant:    false,
+		})
+	}
+
+	return differences
+}
+
+// compareExistingBranchProtection compares existing branch protection settings.
+func compareExistingBranchProtection(repoName, branch string, currentRule github.BranchProtectionConfig, targetRule *config.BranchProtectionRule, templateName string) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	// Required reviews comparison
+	if targetRule.RequiredReviews != nil && currentRule.RequiredReviews != *targetRule.RequiredReviews {
+		differences = append(differences, ConfigurationDifference{
+			Repository:   repoName,
+			Setting:      fmt.Sprintf("branch_protection.%s.required_reviews", branch),
+			CurrentValue: fmt.Sprintf("%d", currentRule.RequiredReviews),
+			TargetValue:  fmt.Sprintf("%d", *targetRule.RequiredReviews),
+			ChangeType:   "update",
+			Impact:       "medium",
+			Template:     templateName,
+			Compliant:    false,
+		})
+	}
+
+	// Enforce admins comparison
+	if targetRule.EnforceAdmins != nil && currentRule.EnforceAdmins != *targetRule.EnforceAdmins {
+		differences = append(differences, ConfigurationDifference{
+			Repository:   repoName,
+			Setting:      fmt.Sprintf("branch_protection.%s.enforce_admins", branch),
+			CurrentValue: fmt.Sprintf("%t", currentRule.EnforceAdmins),
+			TargetValue:  fmt.Sprintf("%t", *targetRule.EnforceAdmins),
+			ChangeType:   "update",
+			Impact:       "high",
+			Template:     templateName,
+			Compliant:    false,
+		})
+	}
+
+	return differences
+}
+
+// comparePermissionSettings compares permission-related settings.
+func comparePermissionSettings(repoName string, current *github.RepositoryConfig, targetPermissions *config.PermissionSettings, templateName string) []ConfigurationDifference {
+	var differences []ConfigurationDifference
+
+	if targetPermissions == nil {
+		return differences
+	}
+
+	// Team permissions
+	for team, targetPerm := range targetPermissions.TeamPermissions {
+		currentPerm, exists := current.Permissions.Teams[team]
+		if !exists {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      fmt.Sprintf("permissions.team.%s", team),
+				CurrentValue: "none",
+				TargetValue:  targetPerm,
+				ChangeType:   changeTypeCreate,
+				Impact:       "medium",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		} else if currentPerm != targetPerm {
+			differences = append(differences, ConfigurationDifference{
+				Repository:   repoName,
+				Setting:      fmt.Sprintf("permissions.team.%s", team),
+				CurrentValue: currentPerm,
+				TargetValue:  targetPerm,
+				ChangeType:   "update",
+				Impact:       "medium",
+				Template:     templateName,
+				Compliant:    false,
+			})
+		}
+	}
+
+	return differences
+}
+
+// createConfigurationDifference creates a configuration difference for string values.
+func createConfigurationDifference(repoName, setting, currentValue, targetValue, impact, templateName string) ConfigurationDifference {
+	return ConfigurationDifference{
+		Repository:   repoName,
+		Setting:      setting,
+		CurrentValue: currentValue,
+		TargetValue:  targetValue,
+		ChangeType:   getChangeType(currentValue, targetValue),
+		Impact:       impact,
+		Template:     templateName,
+		Compliant:    false,
+	}
+}
+
+// createBooleanConfigurationDifference creates a configuration difference for boolean values.
+func createBooleanConfigurationDifference(repoName, setting string, currentValue, targetValue bool, impact, templateName string) ConfigurationDifference {
+	return ConfigurationDifference{
+		Repository:   repoName,
+		Setting:      setting,
+		CurrentValue: fmt.Sprintf("%t", currentValue),
+		TargetValue:  fmt.Sprintf("%t", targetValue),
+		ChangeType:   "update",
+		Impact:       impact,
+		Template:     templateName,
+		Compliant:    false,
+	}
 }

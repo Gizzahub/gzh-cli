@@ -1814,7 +1814,7 @@ func parseNerdctlInfo(output []byte) (*ServerInfo, error) {
 }
 
 // mergeBasicContainerFields merges basic string and simple fields from detailed container info.
-func mergeBasicContainerFields(result *DetectedContainer, detailed *DetectedContainer) {
+func mergeBasicContainerFields(result, detailed *DetectedContainer) {
 	if detailed.Name != "" {
 		result.Name = detailed.Name
 	}
@@ -1845,7 +1845,7 @@ func mergeBasicContainerFields(result *DetectedContainer, detailed *DetectedCont
 }
 
 // mergeContainerCollections merges slice and map fields from detailed container info.
-func mergeContainerCollections(result *DetectedContainer, detailed *DetectedContainer) {
+func mergeContainerCollections(result, detailed *DetectedContainer) {
 	if len(detailed.Command) > 0 {
 		result.Command = detailed.Command
 	}
@@ -1872,7 +1872,7 @@ func mergeContainerCollections(result *DetectedContainer, detailed *DetectedCont
 }
 
 // mergeContainerTimestamps merges timestamp fields from detailed container info.
-func mergeContainerTimestamps(result *DetectedContainer, detailed *DetectedContainer) {
+func mergeContainerTimestamps(result, detailed *DetectedContainer) {
 	if !detailed.Created.IsZero() {
 		result.Created = detailed.Created
 	}

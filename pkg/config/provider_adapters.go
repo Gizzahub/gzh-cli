@@ -110,6 +110,7 @@ func (g *GitHubProviderAdapter) GetAPIEndpoint() string {
 	return "https://api.github.com"
 }
 
+// IsHealthy checks if the GitHub provider is healthy and accessible.
 func (g *GitHubProviderAdapter) IsHealthy(ctx context.Context) error {
 	// Check if we can reach the GitHub API
 	return g.ValidateToken(ctx)
@@ -129,6 +130,7 @@ func NewGitLabProviderAdapter(token string, environment env.Environment) *GitLab
 	}
 }
 
+// ListRepositories retrieves all repositories for the given GitLab owner.
 func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
 	repoNames, err := gitlab.List(ctx, owner)
 	if err != nil {
@@ -157,22 +159,27 @@ func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner stri
 	return repositories, nil
 }
 
+// CloneRepository clones a specific GitLab repository to the target path.
 func (g *GitLabProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
 	return gitlab.Clone(ctx, targetPath, owner, repository, "")
 }
 
+// GetDefaultBranch retrieves the default branch name for a GitLab repository.
 func (g *GitLabProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
 	return gitlab.GetDefaultBranch(ctx, owner, repository)
 }
 
+// RefreshAll refreshes all repositories in the target path for the given GitLab owner.
 func (g *GitLabProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
 	return gitlab.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
+// CloneOrganization clones all repositories from a GitLab organization.
 func (g *GitLabProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
 	return gitlab.RefreshAll(ctx, targetPath, owner, strategy)
 }
 
+// SetToken sets the authentication token for the GitLab provider.
 func (g *GitLabProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
@@ -183,20 +190,24 @@ func (g *GitLabProviderAdapter) SetToken(token string) {
 	}
 }
 
+// ValidateToken validates the GitLab authentication token.
 func (g *GitLabProviderAdapter) ValidateToken(ctx context.Context) error {
 	// Simple validation - try to make an API call
 	_, err := gitlab.List(ctx, "gitlab-org") // Try to list gitlab-org repositories
 	return err
 }
 
+// GetProviderName returns the provider name for GitLab.
 func (g *GitLabProviderAdapter) GetProviderName() string {
 	return ProviderGitLab
 }
 
+// GetAPIEndpoint returns the API endpoint for GitLab.
 func (g *GitLabProviderAdapter) GetAPIEndpoint() string {
 	return "https://gitlab.com/api/v4"
 }
 
+// IsHealthy checks if the GitLab provider is healthy and accessible.
 func (g *GitLabProviderAdapter) IsHealthy(ctx context.Context) error {
 	return g.ValidateToken(ctx)
 }
@@ -215,6 +226,7 @@ func NewGiteaProviderAdapter(token string, environment env.Environment) *GiteaPr
 	}
 }
 
+// ListRepositories retrieves all repositories for the given Gitea owner.
 func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
 	repoNames, err := gitea.List(ctx, owner)
 	if err != nil {
@@ -243,23 +255,28 @@ func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner strin
 	return repositories, nil
 }
 
+// CloneRepository clones a specific Gitea repository to the target path.
 func (g *GiteaProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
 	return gitea.Clone(ctx, targetPath, owner, repository, "")
 }
 
+// GetDefaultBranch retrieves the default branch name for a Gitea repository.
 func (g *GiteaProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
 	return gitea.GetDefaultBranch(ctx, owner, repository)
 }
 
+// RefreshAll refreshes all repositories in the target path for the given Gitea owner.
 func (g *GiteaProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
 	// Note: gitea.RefreshAll doesn't support strategy parameter
 	return gitea.RefreshAll(ctx, targetPath, owner)
 }
 
+// CloneOrganization clones all repositories from a Gitea organization.
 func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
 	return gitea.RefreshAll(ctx, targetPath, owner)
 }
 
+// SetToken sets the authentication token for the Gitea provider.
 func (g *GiteaProviderAdapter) SetToken(token string) {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
@@ -270,20 +287,24 @@ func (g *GiteaProviderAdapter) SetToken(token string) {
 	}
 }
 
+// ValidateToken validates the Gitea authentication token.
 func (g *GiteaProviderAdapter) ValidateToken(ctx context.Context) error {
 	// Simple validation - try to make an API call
 	_, err := gitea.List(ctx, "gitea") // Try to list gitea's own repositories
 	return err
 }
 
+// GetProviderName returns the provider name for Gitea.
 func (g *GiteaProviderAdapter) GetProviderName() string {
 	return ProviderGitea
 }
 
+// GetAPIEndpoint returns the API endpoint for Gitea.
 func (g *GiteaProviderAdapter) GetAPIEndpoint() string {
 	return "https://gitea.com/api/v1"
 }
 
+// IsHealthy checks if the Gitea provider is healthy and accessible.
 func (g *GiteaProviderAdapter) IsHealthy(ctx context.Context) error {
 	return g.ValidateToken(ctx)
 }
@@ -300,6 +321,7 @@ func NewDefaultProviderFactory(environment env.Environment) *DefaultProviderFact
 	}
 }
 
+// CreateProvider creates a provider service for the given provider name and configuration.
 func (f *DefaultProviderFactory) CreateProvider(ctx context.Context, providerName string, config ProviderConfig) (ProviderService, error) {
 	switch strings.ToLower(providerName) {
 	case ProviderGitHub:
@@ -316,10 +338,12 @@ func (f *DefaultProviderFactory) CreateProvider(ctx context.Context, providerNam
 	}
 }
 
+// GetSupportedProviders returns a list of supported provider names.
 func (f *DefaultProviderFactory) GetSupportedProviders() []string {
 	return []string{ProviderGitHub, ProviderGitLab, ProviderGitea}
 }
 
+// ValidateProviderConfig validates the configuration for a given provider.
 func (f *DefaultProviderFactory) ValidateProviderConfig(providerName string, config ProviderConfig) error {
 	// Basic validation
 	if config.Token == "" {
@@ -354,6 +378,7 @@ func NewDefaultBulkOperationService(factory *DefaultProviderFactory, config *Con
 	}
 }
 
+// CloneAll clones repositories from all configured providers.
 func (s *DefaultBulkOperationService) CloneAll(ctx context.Context, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	result := &BulkCloneResult{
 		Results: make([]TargetResult, 0),
@@ -412,6 +437,7 @@ func (s *DefaultBulkOperationService) CloneAll(ctx context.Context, request *Bul
 	return result, nil
 }
 
+// CloneByProvider clones repositories from a specific provider.
 func (s *DefaultBulkOperationService) CloneByProvider(ctx context.Context, providerName string, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	// Create a modified request that only includes the specified provider
 	modifiedRequest := *request
@@ -420,12 +446,14 @@ func (s *DefaultBulkOperationService) CloneByProvider(ctx context.Context, provi
 	return s.CloneAll(ctx, &modifiedRequest)
 }
 
+// CloneByFilter clones repositories based on specified filter criteria.
 func (s *DefaultBulkOperationService) CloneByFilter(ctx context.Context, filter RepositoryFilter, request *BulkCloneRequest) (*BulkCloneResult, error) {
 	// Implementation would filter repositories based on the provided filter
 	// For now, delegate to CloneAll
 	return s.CloneAll(ctx, request)
 }
 
+// RefreshAll refreshes all repositories from configured providers.
 func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *BulkRefreshRequest) (*BulkRefreshResult, error) {
 	startTime := time.Now()
 	result := &BulkRefreshResult{
@@ -481,11 +509,13 @@ func (s *DefaultBulkOperationService) RefreshAll(ctx context.Context, request *B
 	return result, nil
 }
 
+// RefreshByProvider refreshes repositories from a specific provider.
 func (s *DefaultBulkOperationService) RefreshByProvider(ctx context.Context, providerName string, request *BulkRefreshRequest) (*BulkRefreshResult, error) {
 	// Implementation would refresh only for the specified provider
 	return s.RefreshAll(ctx, request)
 }
 
+// GetRepositoryStatus retrieves the status of repositories in the target path.
 func (s *DefaultBulkOperationService) GetRepositoryStatus(ctx context.Context, targetPath string) (*RepositoryStatus, error) {
 	startTime := time.Now()
 	// Implementation would scan the target path and return status
@@ -497,6 +527,7 @@ func (s *DefaultBulkOperationService) GetRepositoryStatus(ctx context.Context, t
 	return status, nil
 }
 
+// DiscoverRepositories discovers repositories from the specified providers.
 func (s *DefaultBulkOperationService) DiscoverRepositories(ctx context.Context, providers []string) (*DiscoveryResult, error) {
 	result := &DiscoveryResult{
 		RepositoriesByProvider: make(map[string]int),

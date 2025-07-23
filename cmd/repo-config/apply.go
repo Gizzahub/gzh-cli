@@ -69,32 +69,8 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
 
-	if flags.Verbose {
-		fmt.Printf("🚀 Applying repository configuration to organization: %s\n", flags.Organization)
-
-		if filter != "" {
-			fmt.Printf("Filter pattern: %s\n", filter)
-		}
-
-		if template != "" {
-			fmt.Printf("Template: %s\n", template)
-		}
-
-		if flags.DryRun {
-			fmt.Println("Mode: DRY RUN (preview only)")
-		}
-
-		fmt.Println()
-	}
-
-	fmt.Printf("⚙️  Repository Configuration Application\n")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println()
-
-	if flags.DryRun {
-		fmt.Println("🔍 DRY RUN MODE - No changes will be applied")
-		fmt.Println()
-	}
+	// Setup and display header
+	displayApplyHeader(flags, filter, template)
 
 	// Get configuration changes to apply
 	changes, err := getConfigurationChanges(flags.Organization, filter, template)
@@ -107,73 +83,22 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 		return nil
 	}
 
-	fmt.Printf("📋 Planned Changes (%d repositories affected)\n", getAffectedRepoCount(changes))
-	fmt.Println()
-
-	for _, change := range changes {
-		actionSymbol := getActionSymbol(change.Action)
-		fmt.Printf("  %s %s\n", actionSymbol, change.Repository)
-		fmt.Printf("    %s: %s → %s\n", change.Setting, change.CurrentValue, change.NewValue)
-		fmt.Println()
-	}
+	// Display planned changes
+	displayPlannedChanges(changes)
 
 	if flags.DryRun {
 		fmt.Println("💡 Run without --dry-run to apply these changes")
 		return nil
 	}
 
-	// Confirmation for non-force mode
-	if !force && !interactive {
-		fmt.Printf("Apply %d configuration changes? (y/N): ", len(changes))
-
-		var response string
-		if _, err := fmt.Scanln(&response); err != nil {
-			// Handle error but treat as "no" response
-			response = ""
-		}
-
-		if response != "y" && response != "yes" {
-			fmt.Println("Configuration application canceled")
-			return nil
-		}
+	// Handle confirmation
+	if !confirmApplyChanges(changes, force, interactive) {
+		fmt.Println("Configuration application canceled")
+		return nil
 	}
 
-	// Apply changes
-	fmt.Println("🔄 Applying configuration changes...")
-	fmt.Println()
-
-	for i, change := range changes {
-		if interactive {
-			fmt.Printf("Apply change %d/%d to %s? (y/N): ", i+1, len(changes), change.Repository)
-
-			var response string
-			if _, err := fmt.Scanln(&response); err != nil {
-				// Handle error but treat as "no" response
-				response = ""
-			}
-
-			if response != "y" && response != "yes" {
-				fmt.Printf("  ⏭️  Skipped %s\n", change.Repository)
-				continue
-			}
-		}
-
-		// Apply configuration change
-		fmt.Printf("  🔄 Updating %s...", change.Repository)
-
-		if err := applyConfigurationChange(change); err != nil {
-			fmt.Printf(" ❌ Failed: %v\n", err)
-			continue
-		}
-
-		fmt.Printf(" ✅\n")
-	}
-
-	fmt.Println()
-	fmt.Printf("✅ Configuration application completed successfully\n")
-	fmt.Printf("📊 %d repositories updated\n", len(changes))
-
-	return nil
+	// Apply the changes
+	return applyChanges(changes, interactive)
 }
 
 // ConfigurationChange represents a pending configuration change.
@@ -254,5 +179,119 @@ func applyConfigurationChange(change ConfigurationChange) error {
 	// time.Sleep(100 * time.Millisecond)
 
 	// For demonstration, we'll just return success
+	return nil
+}
+
+// displayApplyHeader displays the command header and verbose information.
+func displayApplyHeader(flags GlobalFlags, filter, template string) {
+	if flags.Verbose {
+		fmt.Printf("🚀 Applying repository configuration to organization: %s\n", flags.Organization)
+
+		if filter != "" {
+			fmt.Printf("Filter pattern: %s\n", filter)
+		}
+
+		if template != "" {
+			fmt.Printf("Template: %s\n", template)
+		}
+
+		if flags.DryRun {
+			fmt.Println("Mode: DRY RUN (preview only)")
+		}
+
+		fmt.Println()
+	}
+
+	fmt.Printf("⚙️  Repository Configuration Application\n")
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println()
+
+	if flags.DryRun {
+		fmt.Println("🔍 DRY RUN MODE - No changes will be applied")
+		fmt.Println()
+	}
+}
+
+// displayPlannedChanges displays the list of planned configuration changes.
+func displayPlannedChanges(changes []ConfigurationChange) {
+	fmt.Printf("📋 Planned Changes (%d repositories affected)\n", getAffectedRepoCount(changes))
+	fmt.Println()
+
+	for _, change := range changes {
+		actionSymbol := getActionSymbol(change.Action)
+		fmt.Printf("  %s %s\n", actionSymbol, change.Repository)
+		fmt.Printf("    %s: %s → %s\n", change.Setting, change.CurrentValue, change.NewValue)
+		fmt.Println()
+	}
+}
+
+// confirmApplyChanges handles user confirmation for applying changes.
+func confirmApplyChanges(changes []ConfigurationChange, force, interactive bool) bool {
+	// Skip confirmation for force mode or when interactive mode will handle individual confirmations
+	if force || interactive {
+		return true
+	}
+
+	fmt.Printf("Apply %d configuration changes? (y/N): ", len(changes))
+
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		// Handle error but treat as "no" response
+		response = ""
+	}
+
+	return response == "y" || response == "yes"
+}
+
+// applyChanges applies the configuration changes with optional interactive confirmation.
+func applyChanges(changes []ConfigurationChange, interactive bool) error {
+	fmt.Println("🔄 Applying configuration changes...")
+	fmt.Println()
+
+	appliedCount := 0
+
+	for i, change := range changes {
+		if interactive && !confirmSingleChange(i+1, len(changes), change) {
+			fmt.Printf("  ⏭️  Skipped %s\n", change.Repository)
+			continue
+		}
+
+		if err := applySingleChange(change); err != nil {
+			fmt.Printf("  ❌ Failed: %v\n", err)
+			continue
+		}
+
+		appliedCount++
+	}
+
+	fmt.Println()
+	fmt.Printf("✅ Configuration application completed successfully\n")
+	fmt.Printf("📊 %d repositories updated\n", appliedCount)
+
+	return nil
+}
+
+// confirmSingleChange handles confirmation for a single change in interactive mode.
+func confirmSingleChange(current, total int, change ConfigurationChange) bool {
+	fmt.Printf("Apply change %d/%d to %s? (y/N): ", current, total, change.Repository)
+
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		// Handle error but treat as "no" response
+		response = ""
+	}
+
+	return response == "y" || response == "yes"
+}
+
+// applySingleChange applies a single configuration change.
+func applySingleChange(change ConfigurationChange) error {
+	fmt.Printf("  🔄 Updating %s...", change.Repository)
+
+	if err := applyConfigurationChange(change); err != nil {
+		return err
+	}
+
+	fmt.Printf(" ✅\n")
 	return nil
 }

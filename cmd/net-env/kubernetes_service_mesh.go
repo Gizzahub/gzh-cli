@@ -562,71 +562,9 @@ func (km *KubernetesNetworkManager) convertHTTPRoute(route IstioHTTPRoute) map[s
 		httpRoute["name"] = route.Name
 	}
 
-	if len(route.Match) > 0 {
-		matches := make([]map[string]interface{}, 0, len(route.Match))
-		for _, match := range route.Match {
-			m := make(map[string]interface{})
-			if match.URI != nil {
-				m["uri"] = km.convertStringMatch(match.URI)
-			}
-
-			if match.Method != nil {
-				m["method"] = km.convertStringMatch(match.Method)
-			}
-
-			if len(match.Headers) > 0 {
-				headers := make(map[string]interface{})
-				for k, v := range match.Headers {
-					headers[k] = km.convertStringMatch(v)
-				}
-
-				m["headers"] = headers
-			}
-
-			matches = append(matches, m)
-		}
-
-		httpRoute["match"] = matches
-	}
-
-	if len(route.Route) > 0 {
-		routes := make([]map[string]interface{}, 0, len(route.Route))
-		for _, r := range route.Route {
-			rm := map[string]interface{}{
-				"destination": map[string]interface{}{
-					"host": r.Destination.Host,
-				},
-			}
-			if r.Destination.Subset != "" {
-				if dest, ok := rm["destination"].(map[string]interface{}); ok {
-					dest["subset"] = r.Destination.Subset
-				}
-			}
-
-			if r.Weight > 0 {
-				rm["weight"] = r.Weight
-			}
-
-			routes = append(routes, rm)
-		}
-
-		httpRoute["route"] = routes
-	}
-
-	if route.Timeout != "" {
-		httpRoute["timeout"] = route.Timeout
-	}
-
-	if route.Retries != nil {
-		httpRoute["retries"] = map[string]interface{}{
-			"attempts": route.Retries.Attempts,
-		}
-		if route.Retries.PerTryTimeout != "" {
-			if retries, ok := httpRoute["retries"].(map[string]interface{}); ok {
-				retries["perTryTimeout"] = route.Retries.PerTryTimeout
-			}
-		}
-	}
+	km.addHTTPRouteMatches(httpRoute, route.Match)
+	km.addHTTPRouteDestinations(httpRoute, route.Route)
+	km.addHTTPRouteConfig(httpRoute, route)
 
 	return httpRoute
 }
@@ -1256,4 +1194,80 @@ func (km *KubernetesNetworkManager) GetServiceMeshStatus(namespace string) (map[
 	}
 
 	return status, nil
+}
+
+// addHTTPRouteMatches adds match conditions to HTTP route configuration.
+func (km *KubernetesNetworkManager) addHTTPRouteMatches(httpRoute map[string]interface{}, matches []IstioHTTPMatchRequest) {
+	if len(matches) == 0 {
+		return
+	}
+
+	matchList := make([]map[string]interface{}, 0, len(matches))
+	for _, match := range matches {
+		m := make(map[string]interface{})
+		if match.URI != nil {
+			m["uri"] = km.convertStringMatch(match.URI)
+		}
+
+		if match.Method != nil {
+			m["method"] = km.convertStringMatch(match.Method)
+		}
+
+		if len(match.Headers) > 0 {
+			headers := make(map[string]interface{})
+			for k, v := range match.Headers {
+				headers[k] = km.convertStringMatch(v)
+			}
+			m["headers"] = headers
+		}
+
+		matchList = append(matchList, m)
+	}
+	httpRoute["match"] = matchList
+}
+
+// addHTTPRouteDestinations adds destination routing to HTTP route configuration.
+func (km *KubernetesNetworkManager) addHTTPRouteDestinations(httpRoute map[string]interface{}, routes []IstioHTTPRouteDestination) {
+	if len(routes) == 0 {
+		return
+	}
+
+	routeList := make([]map[string]interface{}, 0, len(routes))
+	for _, r := range routes {
+		rm := map[string]interface{}{
+			"destination": map[string]interface{}{
+				"host": r.Destination.Host,
+			},
+		}
+		if r.Destination.Subset != "" {
+			if dest, ok := rm["destination"].(map[string]interface{}); ok {
+				dest["subset"] = r.Destination.Subset
+			}
+		}
+
+		if r.Weight > 0 {
+			rm["weight"] = r.Weight
+		}
+
+		routeList = append(routeList, rm)
+	}
+	httpRoute["route"] = routeList
+}
+
+// addHTTPRouteConfig adds timeout and retry configuration to HTTP route.
+func (km *KubernetesNetworkManager) addHTTPRouteConfig(httpRoute map[string]interface{}, route IstioHTTPRoute) {
+	if route.Timeout != "" {
+		httpRoute["timeout"] = route.Timeout
+	}
+
+	if route.Retries != nil {
+		httpRoute["retries"] = map[string]interface{}{
+			"attempts": route.Retries.Attempts,
+		}
+		if route.Retries.PerTryTimeout != "" {
+			if retries, ok := httpRoute["retries"].(map[string]interface{}); ok {
+				retries["perTryTimeout"] = route.Retries.PerTryTimeout
+			}
+		}
+	}
 }

@@ -12,8 +12,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
 )
 
 const (
@@ -612,82 +613,7 @@ func newCloudPolicyApplyCmd(ctx context.Context, opts *cloudOptions) *cobra.Comm
 This command can apply policies either by environment (all profiles in an environment)
 or by specific profile name.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Load configuration
-			configPath := opts.configFile
-			if configPath == "" {
-				configPath = cloud.GetDefaultConfigPath()
-			}
-
-			config, err := cloud.LoadConfig(configPath)
-			if err != nil {
-				return fmt.Errorf("failed to load config: %w", err)
-			}
-
-			// Create policy manager
-			policyManager := cloud.NewPolicyManager(config)
-
-			if dryRun {
-				fmt.Println("[DRY RUN] Would apply the following policies:")
-			}
-
-			// Apply policies by environment or profile
-			switch {
-			case environment != "":
-				fmt.Printf("Applying policies for environment: %s\n", environment)
-				if !dryRun {
-					if err := policyManager.ApplyEnvironmentPolicies(ctx, environment); err != nil {
-						return fmt.Errorf("failed to apply environment policies: %w", err)
-					}
-				} else {
-					// Show what would be applied
-					profiles := getProfilesForEnvironment(config, environment)
-					for _, profile := range profiles {
-						fmt.Printf("  - Profile: %s (Provider: %s)\n", profile.Name, profile.Provider)
-
-						policies, err := policyManager.GetApplicablePolicies(ctx, profile.Name)
-						if err != nil {
-							fmt.Printf("    Warning: failed to get policies: %v\n", err)
-							continue
-						}
-
-						for _, policy := range policies {
-							if policy.Enabled {
-								fmt.Printf("    - Policy: %s (Priority: %d)\n", policy.Name, policy.Priority)
-							}
-						}
-					}
-				}
-			case profileName != "":
-				fmt.Printf("Applying policies for profile: %s\n", profileName)
-				if !dryRun {
-					if err := policyManager.ApplyPoliciesForProfile(ctx, profileName); err != nil {
-						return fmt.Errorf("failed to apply profile policies: %w", err)
-					}
-				} else {
-					// Show what would be applied
-					policies, err := policyManager.GetApplicablePolicies(ctx, profileName)
-					if err != nil {
-						return fmt.Errorf("failed to get policies: %w", err)
-					}
-
-					for _, policy := range policies {
-						if policy.Enabled {
-							fmt.Printf("  - Policy: %s (Priority: %d)\n", policy.Name, policy.Priority)
-							fmt.Printf("    Rules: %d, Actions: %d\n", len(policy.Rules), len(policy.Actions))
-						}
-					}
-				}
-			default:
-				return fmt.Errorf("either --environment or --profile must be specified")
-			}
-
-			if dryRun {
-				fmt.Println("\n[DRY RUN] No policies were actually applied")
-			} else {
-				fmt.Println("✓ Policies applied successfully")
-			}
-
-			return nil
+			return runPolicyApplyCommand(ctx, opts, environment, profileName, dryRun)
 		},
 	}
 
@@ -1302,99 +1228,7 @@ Examples:
 			if len(args) > 0 {
 				vpnName = args[0]
 			}
-
-			// Load configuration
-			configPath := opts.configFile
-			if configPath == "" {
-				configPath = cloud.GetDefaultConfigPath()
-			}
-
-			config, err := cloud.LoadConfig(configPath)
-			if err != nil {
-				return fmt.Errorf("failed to load config: %w", err)
-			}
-
-			// Create VPN manager
-			vpnManager := cloud.NewVPNManager()
-
-			// Add VPN connections from config
-			if err := loadVPNConnections(vpnManager, config); err != nil {
-				return fmt.Errorf("failed to load VPN connections: %w", err)
-			}
-
-			// Get connection status
-			status, err := vpnManager.GetAllVPNStatuses(ctx)
-			if err != nil {
-				return fmt.Errorf("failed to get VPN statuses: %w", err)
-			}
-
-			if len(status) == 0 {
-				fmt.Println("No VPN connections configured")
-				return nil
-			}
-
-			fmt.Println("VPN Connection Status:")
-			fmt.Println("=====================")
-
-			for name, s := range status {
-				if vpnName != "" && name != vpnName {
-					continue
-				}
-
-				conn := findVPNConnection(config, name)
-				if conn == nil {
-					continue
-				}
-
-				fmt.Printf("\nConnection: %s\n", name)
-				fmt.Printf("  Type: %s\n", conn.Type)
-				fmt.Printf("  Server: %s\n", conn.Server)
-				fmt.Printf("  Priority: %d\n", conn.Priority)
-				fmt.Printf("  State: %s\n", s.Status)
-
-				if s.Status == cloud.VPNStateConnected {
-					fmt.Printf("  Connected: %s\n", s.ConnectedAt.Format("2006-01-02 15:04:05"))
-					if s.IPAddress != "" {
-						fmt.Printf("  IP Address: %s\n", s.IPAddress)
-					}
-				}
-
-				if s.LastError != "" {
-					fmt.Printf("  Error: %s\n", s.LastError)
-				}
-
-				if showHealth && s.HealthCheck != nil {
-					fmt.Printf("  Last Health Check:\n")
-					fmt.Printf("    Time: %s\n", s.HealthCheck.LastCheck.Format("2006-01-02 15:04:05"))
-					fmt.Printf("    Status: %s\n", s.HealthCheck.Status)
-					fmt.Printf("    Target: %s\n", s.HealthCheck.Target)
-					if s.HealthCheck.ResponseTime > 0 {
-						fmt.Printf("    Response Time: %v\n", s.HealthCheck.ResponseTime)
-					}
-					fmt.Printf("    Success Count: %d\n", s.HealthCheck.SuccessCount)
-					fmt.Printf("    Failure Count: %d\n", s.HealthCheck.FailureCount)
-				}
-
-				if conn.AutoConnect {
-					fmt.Printf("  Auto-Connect: Enabled\n")
-				}
-
-				// Note: Failover configuration not available in VPNConnection type
-
-				if conn.HealthCheck != nil && conn.HealthCheck.Enabled {
-					fmt.Printf("  Health Check: Enabled\n")
-					fmt.Printf("    Interval: %v\n", conn.HealthCheck.Interval)
-					fmt.Printf("    Target: %s\n", conn.HealthCheck.Target)
-				}
-			}
-
-			if vpnName != "" {
-				if _, exists := status[vpnName]; !exists {
-					return fmt.Errorf("VPN connection not found: %s", vpnName)
-				}
-			}
-
-			return nil
+			return runVPNStatusCommand(ctx, opts, vpnName, showHealth)
 		},
 	}
 
@@ -2160,3 +1994,240 @@ func displayVPNConnectionRow(w *tabwriter.Writer, name string, conn *cloud.VPNCo
 }
 
 // Helper functions for hierarchy display
+
+// runVPNStatusCommand handles the VPN status command execution.
+func runVPNStatusCommand(ctx context.Context, opts *cloudOptions, vpnName string, showHealth bool) error {
+	// Load configuration
+	configPath := opts.configFile
+	if configPath == "" {
+		configPath = cloud.GetDefaultConfigPath()
+	}
+
+	config, err := cloud.LoadConfig(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	// Create VPN manager
+	vpnManager := cloud.NewVPNManager()
+
+	// Add VPN connections from config
+	if err := loadVPNConnections(vpnManager, config); err != nil {
+		return fmt.Errorf("failed to load VPN connections: %w", err)
+	}
+
+	// Get connection status
+	status, err := vpnManager.GetAllVPNStatuses(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get VPN statuses: %w", err)
+	}
+
+	if len(status) == 0 {
+		fmt.Println("No VPN connections configured")
+		return nil
+	}
+
+	return displayVPNStatusResults(*config, status, vpnName, showHealth)
+}
+
+// displayVPNStatusResults displays VPN status information.
+func displayVPNStatusResults(config cloud.Config, status map[string]*cloud.VPNStatus, vpnName string, showHealth bool) error {
+	fmt.Println("VPN Connection Status:")
+	fmt.Println("=====================")
+
+	for name, s := range status {
+		if vpnName != "" && name != vpnName {
+			continue
+		}
+
+		conn := findVPNConnection(&config, name)
+		if conn == nil {
+			continue
+		}
+
+		displaySingleVPNStatus(name, conn, *s, showHealth)
+	}
+
+	if vpnName != "" {
+		if _, exists := status[vpnName]; !exists {
+			return fmt.Errorf("VPN connection not found: %s", vpnName)
+		}
+	}
+
+	return nil
+}
+
+// displaySingleVPNStatus displays status information for a single VPN connection.
+func displaySingleVPNStatus(name string, conn *cloud.VPNConnection, status cloud.VPNStatus, showHealth bool) {
+	fmt.Printf("\nConnection: %s\n", name)
+	fmt.Printf("  Type: %s\n", conn.Type)
+	fmt.Printf("  Server: %s\n", conn.Server)
+	fmt.Printf("  Priority: %d\n", conn.Priority)
+	fmt.Printf("  State: %s\n", status.Status)
+
+	displayVPNConnectionDetails(status)
+
+	if showHealth {
+		displayVPNHealthCheck(status.HealthCheck)
+	}
+
+	displayVPNConfiguration(conn)
+}
+
+// displayVPNConnectionDetails displays connection-specific details.
+func displayVPNConnectionDetails(status cloud.VPNStatus) {
+	if status.Status == cloud.VPNStateConnected {
+		fmt.Printf("  Connected: %s\n", status.ConnectedAt.Format("2006-01-02 15:04:05"))
+		if status.IPAddress != "" {
+			fmt.Printf("  IP Address: %s\n", status.IPAddress)
+		}
+	}
+
+	if status.LastError != "" {
+		fmt.Printf("  Error: %s\n", status.LastError)
+	}
+}
+
+// displayVPNHealthCheck displays health check information.
+func displayVPNHealthCheck(healthCheck *cloud.VPNHealthStatus) {
+	if healthCheck == nil {
+		return
+	}
+
+	fmt.Printf("  Last Health Check:\n")
+	fmt.Printf("    Time: %s\n", healthCheck.LastCheck.Format("2006-01-02 15:04:05"))
+	fmt.Printf("    Status: %s\n", healthCheck.Status)
+	fmt.Printf("    Target: %s\n", healthCheck.Target)
+	if healthCheck.ResponseTime > 0 {
+		fmt.Printf("    Response Time: %v\n", healthCheck.ResponseTime)
+	}
+	fmt.Printf("    Success Count: %d\n", healthCheck.SuccessCount)
+	fmt.Printf("    Failure Count: %d\n", healthCheck.FailureCount)
+}
+
+// displayVPNConfiguration displays VPN configuration details.
+func displayVPNConfiguration(conn *cloud.VPNConnection) {
+	if conn.AutoConnect {
+		fmt.Printf("  Auto-Connect: Enabled\n")
+	}
+
+	if conn.HealthCheck != nil && conn.HealthCheck.Enabled {
+		fmt.Printf("  Health Check: Enabled\n")
+		fmt.Printf("    Interval: %v\n", conn.HealthCheck.Interval)
+		fmt.Printf("    Target: %s\n", conn.HealthCheck.Target)
+	}
+}
+
+// runPolicyApplyCommand handles the policy apply command execution.
+func runPolicyApplyCommand(ctx context.Context, opts *cloudOptions, environment, profileName string, dryRun bool) error {
+	// Load configuration
+	configPath := opts.configFile
+	if configPath == "" {
+		configPath = cloud.GetDefaultConfigPath()
+	}
+
+	config, err := cloud.LoadConfig(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	// Create policy manager
+	policyManager := cloud.NewPolicyManager(config)
+
+	if dryRun {
+		fmt.Println("[DRY RUN] Would apply the following policies:")
+	}
+
+	// Apply policies by environment or profile
+	if err := applyPoliciesByTarget(ctx, policyManager, config, environment, profileName, dryRun); err != nil {
+		return err
+	}
+
+	if dryRun {
+		fmt.Println("\n[DRY RUN] No policies were actually applied")
+	} else {
+		fmt.Println("✓ Policies applied successfully")
+	}
+
+	return nil
+}
+
+// applyPoliciesByTarget applies policies based on environment or profile target.
+func applyPoliciesByTarget(ctx context.Context, policyManager cloud.PolicyManager, config *cloud.Config, environment, profileName string, dryRun bool) error {
+	switch {
+	case environment != "":
+		return applyEnvironmentPolicies(ctx, policyManager, config, environment, dryRun)
+	case profileName != "":
+		return applyProfilePolicies(ctx, policyManager, profileName, dryRun)
+	default:
+		return fmt.Errorf("either --environment or --profile must be specified")
+	}
+}
+
+// applyEnvironmentPolicies applies policies for an entire environment.
+func applyEnvironmentPolicies(ctx context.Context, policyManager cloud.PolicyManager, config *cloud.Config, environment string, dryRun bool) error {
+	fmt.Printf("Applying policies for environment: %s\n", environment)
+
+	if !dryRun {
+		if err := policyManager.ApplyEnvironmentPolicies(ctx, environment); err != nil {
+			return fmt.Errorf("failed to apply environment policies: %w", err)
+		}
+	} else {
+		return showEnvironmentPolicyDryRun(ctx, policyManager, config, environment)
+	}
+
+	return nil
+}
+
+// showEnvironmentPolicyDryRun displays what policies would be applied for an environment.
+func showEnvironmentPolicyDryRun(ctx context.Context, policyManager cloud.PolicyManager, config *cloud.Config, environment string) error {
+	profiles := getProfilesForEnvironment(config, environment)
+	for _, profile := range profiles {
+		fmt.Printf("  - Profile: %s (Provider: %s)\n", profile.Name, profile.Provider)
+
+		policies, err := policyManager.GetApplicablePolicies(ctx, profile.Name)
+		if err != nil {
+			fmt.Printf("    Warning: failed to get policies: %v\n", err)
+			continue
+		}
+
+		for _, policy := range policies {
+			if policy.Enabled {
+				fmt.Printf("    - Policy: %s (Priority: %d)\n", policy.Name, policy.Priority)
+			}
+		}
+	}
+	return nil
+}
+
+// applyProfilePolicies applies policies for a specific profile.
+func applyProfilePolicies(ctx context.Context, policyManager cloud.PolicyManager, profileName string, dryRun bool) error {
+	fmt.Printf("Applying policies for profile: %s\n", profileName)
+
+	if !dryRun {
+		if err := policyManager.ApplyPoliciesForProfile(ctx, profileName); err != nil {
+			return fmt.Errorf("failed to apply profile policies: %w", err)
+		}
+	} else {
+		return showProfilePolicyDryRun(ctx, policyManager, profileName)
+	}
+
+	return nil
+}
+
+// showProfilePolicyDryRun displays what policies would be applied for a profile.
+func showProfilePolicyDryRun(ctx context.Context, policyManager cloud.PolicyManager, profileName string) error {
+	policies, err := policyManager.GetApplicablePolicies(ctx, profileName)
+	if err != nil {
+		return fmt.Errorf("failed to get policies: %w", err)
+	}
+
+	for _, policy := range policies {
+		if policy.Enabled {
+			fmt.Printf("  - Policy: %s (Priority: %d)\n", policy.Name, policy.Priority)
+			fmt.Printf("    Rules: %d, Actions: %d\n", len(policy.Rules), len(policy.Actions))
+		}
+	}
+
+	return nil
+}

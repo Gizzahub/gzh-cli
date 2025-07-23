@@ -166,9 +166,9 @@ type ActivityStatistics struct {
 
 // configurationManagerImpl implements the ConfigurationManager interface.
 type configurationManagerImpl struct {
-	loader        ConfigLoader
-	validator     ConfigValidator
-	parser        ConfigParser
+	loader        Loader
+	validator     Validator
+	parser        Parser
 	providerMgr   ProviderManager
 	filterService FilterService
 	logger        Logger
@@ -176,9 +176,9 @@ type configurationManagerImpl struct {
 
 // NewConfigurationManager creates a new configuration manager facade.
 func NewConfigurationManager(
-	loader ConfigLoader,
-	validator ConfigValidator,
-	parser ConfigParser,
+	loader Loader,
+	validator Validator,
+	parser Parser,
 	providerMgr ProviderManager,
 	filterService FilterService,
 	logger Logger,

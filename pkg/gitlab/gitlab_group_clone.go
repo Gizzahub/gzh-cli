@@ -1,7 +1,6 @@
 package gitlab
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,13 +8,14 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sync"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+
+	"github.com/gizzahub/gzh-manager-go/internal/git"
+	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 )
 
 var (
@@ -49,7 +49,7 @@ func GetDefaultBranch(ctx context.Context, group string, repo string) (string, e
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	client := &http.Client{}
+	client := httpclient.GetGlobalClient("gitlab")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -86,7 +86,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	client := &http.Client{}
+	client := httpclient.GetGlobalClient("gitlab")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -211,19 +211,14 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 
 	cloneURL := fmt.Sprintf("https://gitlab.com/%s/%s.git", group, repo)
 
-	var (
-		out    bytes.Buffer
-		stderr bytes.Buffer
-	)
-	// cmd := exec.CommandContext(ctx, "git", "clone", "-b", branch, cloneURL, targetPath)
-	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath) //nolint:gosec // Git clone with controlled URL
-	cmd.Stdout = &out
+	// Use secure git executor to prevent command injection
+	executor, err := git.NewSecureGitExecutor()
+	if err != nil {
+		return fmt.Errorf("failed to create secure git executor: %w", err)
+	}
 
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		fmt.Println(stderr.String())
-		fmt.Println(out.String())
-
+	// Execute secure git clone operation
+	if err := executor.ExecuteSecure(ctx, targetPath, "clone", cloneURL, "."); err != nil {
 		return fmt.Errorf("clone failed (url: %s, branch: %s, targetPath: %s, err: %w)", cloneURL, branch, targetPath, err)
 	}
 
@@ -308,28 +303,29 @@ func RefreshAll(ctx context.Context, targetPath string, group string, strategy s
 
 // executeGitStrategy executes git operations based on the strategy.
 func executeGitStrategy(ctx context.Context, strategy, repoPath, repo string) {
+	executor, err := git.NewSecureGitExecutor()
+	if err != nil {
+		fmt.Printf("failed to create secure git executor for %s: %v\n", repo, err)
+		return
+	}
+
 	switch strategy {
 	case git.StrategyReset:
 		// Reset hard HEAD and pull
-		cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "reset", "--hard", "HEAD")
-		if err := cmd.Run(); err != nil {
+		if err := executor.ExecuteSecure(ctx, repoPath, "reset", "--hard", "HEAD"); err != nil {
 			fmt.Printf("execute git reset fail for %s: %v\n", repo, err)
 		}
-
-		cmd = exec.CommandContext(ctx, "git", "-C", repoPath, "pull")
-		if err := cmd.Run(); err != nil {
+		if err := executor.ExecuteSecure(ctx, repoPath, "pull"); err != nil {
 			fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
 		}
 	case git.StrategyPull:
 		// Only pull without reset
-		cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "pull")
-		if err := cmd.Run(); err != nil {
+		if err := executor.ExecuteSecure(ctx, repoPath, "pull"); err != nil {
 			fmt.Printf("execute git pull fail for %s: %v\n", repo, err)
 		}
 	case git.StrategyFetch:
 		// Only fetch without modifying working directory
-		cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "fetch")
-		if err := cmd.Run(); err != nil {
+		if err := executor.ExecuteSecure(ctx, repoPath, "fetch"); err != nil {
 			fmt.Printf("execute git fetch fail for %s: %v\n", repo, err)
 		}
 	}

@@ -10,11 +10,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -78,121 +79,20 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
 
-	// Get GitHub token
-	environment := env.NewOSEnvironment()
-
-	token := flags.Token
-	if token == "" {
-		token = environment.Get(env.CommonEnvironmentKeys.GitHubToken)
-	}
-
-	if token == "" {
-		return fmt.Errorf("GitHub token is required (use --token flag or GITHUB_TOKEN env var)")
-	}
-
-	if flags.Verbose {
-		fmt.Printf("Listing repositories for organization: %s\n", flags.Organization)
-
-		if filter != "" {
-			fmt.Printf("Filter pattern: %s\n", filter)
-		}
-
-		if limit > 0 {
-			fmt.Printf("Limit: %d\n", limit)
-		}
-
-		fmt.Println()
-	}
-
-	// Create GitHub client
-	client := github.NewRepoConfigClient(token)
-	ctx := context.Background()
-
-	fmt.Printf("📋 Repository Configuration Status for %s\n", flags.Organization)
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println()
-
-	// List repositories
-	repos, err := client.ListRepositories(ctx, flags.Organization, nil)
+	// Setup client and dependencies
+	client, repoConfig, err := setupListCommand(flags)
 	if err != nil {
-		return fmt.Errorf("failed to list repositories: %w", err)
+		return err
 	}
 
-	// Filter repositories if pattern provided
-	if filter != "" {
-		filterRegex, err := regexp.Compile(filter)
-		if err != nil {
-			return fmt.Errorf("invalid filter pattern: %w", err)
-		}
-
-		var filtered []*github.Repository
-
-		for _, repo := range repos {
-			if filterRegex.MatchString(repo.Name) {
-				filtered = append(filtered, repo)
-			}
-		}
-
-		repos = filtered
+	// List and filter repositories
+	repositories, err := listAndProcessRepositories(client, flags, filter, limit, showConfig, repoConfig)
+	if err != nil {
+		return err
 	}
 
-	// Apply limit if specified
-	if limit > 0 && len(repos) > limit {
-		repos = repos[:limit]
-	}
-
-	// Load repository configuration to check compliance
-	var repoConfig *config.RepoConfig
-	if flags.ConfigFile != "" {
-		repoConfig, err = config.LoadRepoConfig(flags.ConfigFile)
-		if err != nil && flags.Verbose {
-			fmt.Printf("Warning: Could not load repo config: %v\n", err)
-		}
-	}
-
-	// Convert to RepositoryInfo format
-	repositories := make([]RepositoryInfo, 0, len(repos))
-
-	for _, repo := range repos {
-		visibility := visibilityPublic
-		if repo.Private {
-			visibility = visibilityPrivate
-		}
-
-		info := RepositoryInfo{
-			Name:        repo.Name,
-			Description: repo.Description,
-			Visibility:  visibility,
-			Template:    detectTemplate(repo, repoConfig),
-			Compliant:   checkCompliance(repo, repoConfig),
-			Issues:      0, // Could be calculated based on actual compliance checks
-		}
-
-		if showConfig {
-			// Get detailed configuration
-			repoConfig, err := client.GetRepositoryConfiguration(ctx, flags.Organization, repo.Name)
-			if err == nil {
-				info.Config = repoConfig
-			} else if flags.Verbose {
-				fmt.Printf("Warning: Could not get config for %s: %v\n", repo.Name, err)
-			}
-		}
-
-		repositories = append(repositories, info)
-	}
-
-	switch format {
-	case "table":
-		printTableFormat(repositories, showConfig)
-	case "json":
-		printJSONFormat(repositories)
-	case formatYAML:
-		printYAMLFormat(repositories)
-	default:
-		return fmt.Errorf("unsupported format: %s", format)
-	}
-
-	return nil
+	// Display results
+	return displayRepositoryList(repositories, format, showConfig)
 }
 
 // RepositoryInfo represents repository information.
@@ -322,4 +222,147 @@ func printYAMLFormat(repos []RepositoryInfo) {
 	}
 
 	fmt.Println(string(data))
+}
+
+// setupListCommand initializes client and configuration for the list command.
+func setupListCommand(flags GlobalFlags) (*github.RepoConfigClient, *config.RepoConfig, error) {
+	// Get GitHub token
+	environment := env.NewOSEnvironment()
+
+	token := flags.Token
+	if token == "" {
+		token = environment.Get(env.CommonEnvironmentKeys.GitHubToken)
+	}
+
+	if token == "" {
+		return nil, nil, fmt.Errorf("GitHub token is required (use --token flag or GITHUB_TOKEN env var)")
+	}
+
+	if flags.Verbose {
+		fmt.Printf("Listing repositories for organization: %s\n", flags.Organization)
+		fmt.Println()
+	}
+
+	// Create GitHub client
+	client := github.NewRepoConfigClient(token)
+
+	// Load repository configuration to check compliance
+	var repoConfig *config.RepoConfig
+	if flags.ConfigFile != "" {
+		var err error
+		repoConfig, err = config.LoadRepoConfig(flags.ConfigFile)
+		if err != nil && flags.Verbose {
+			fmt.Printf("Warning: Could not load repo config: %v\n", err)
+		}
+	}
+
+	return client, repoConfig, nil
+}
+
+// listAndProcessRepositories retrieves and processes repository information.
+func listAndProcessRepositories(client *github.RepoConfigClient, flags GlobalFlags, filter string, limit int, showConfig bool, repoConfig *config.RepoConfig) ([]RepositoryInfo, error) {
+	ctx := context.Background()
+
+	fmt.Printf("📋 Repository Configuration Status for %s\n", flags.Organization)
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println()
+
+	// List repositories
+	repos, err := client.ListRepositories(ctx, flags.Organization, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list repositories: %w", err)
+	}
+
+	// Apply filters and limits
+	repos = applyFiltersAndLimits(repos, filter, limit, flags.Verbose)
+
+	// Convert to RepositoryInfo format
+	return convertToRepositoryInfo(repos, client, flags, showConfig, repoConfig), nil
+}
+
+// applyFiltersAndLimits applies filtering and limiting to the repository list.
+func applyFiltersAndLimits(repos []*github.Repository, filter string, limit int, verbose bool) []*github.Repository {
+	// Filter repositories if pattern provided
+	if filter != "" {
+		filterRegex, err := regexp.Compile(filter)
+		if err != nil && verbose {
+			fmt.Printf("Warning: Invalid filter pattern: %v\n", err)
+		} else {
+			var filtered []*github.Repository
+			for _, repo := range repos {
+				if filterRegex.MatchString(repo.Name) {
+					filtered = append(filtered, repo)
+				}
+			}
+			repos = filtered
+		}
+	}
+
+	// Apply limit if specified
+	if limit > 0 && len(repos) > limit {
+		repos = repos[:limit]
+	}
+
+	return repos
+}
+
+// convertToRepositoryInfo converts GitHub repositories to RepositoryInfo format.
+func convertToRepositoryInfo(repos []*github.Repository, client *github.RepoConfigClient, flags GlobalFlags, showConfig bool, repoConfig *config.RepoConfig) []RepositoryInfo {
+	repositories := make([]RepositoryInfo, 0, len(repos))
+
+	for _, repo := range repos {
+		info := createRepositoryInfo(repo, repoConfig)
+
+		if showConfig {
+			addDetailedConfiguration(client, flags, &info)
+		}
+
+		repositories = append(repositories, info)
+	}
+
+	return repositories
+}
+
+// createRepositoryInfo creates a RepositoryInfo from a GitHub repository.
+func createRepositoryInfo(repo *github.Repository, repoConfig *config.RepoConfig) RepositoryInfo {
+	visibility := visibilityPublic
+	if repo.Private {
+		visibility = visibilityPrivate
+	}
+
+	return RepositoryInfo{
+		Name:        repo.Name,
+		Description: repo.Description,
+		Visibility:  visibility,
+		Template:    detectTemplate(repo, repoConfig),
+		Compliant:   checkCompliance(repo, repoConfig),
+		Issues:      0, // Could be calculated based on actual compliance checks
+	}
+}
+
+// addDetailedConfiguration adds detailed repository configuration if requested.
+func addDetailedConfiguration(client *github.RepoConfigClient, flags GlobalFlags, info *RepositoryInfo) {
+	ctx := context.Background()
+	repoConfig, err := client.GetRepositoryConfiguration(ctx, flags.Organization, info.Name)
+	if err == nil {
+		info.Config = repoConfig
+	} else if flags.Verbose {
+		fmt.Printf("Warning: Could not get config for %s: %v\n", info.Name, err)
+	}
+}
+
+// displayRepositoryList displays the repository list in the specified format.
+func displayRepositoryList(repositories []RepositoryInfo, format string, showConfig bool) error {
+	switch format {
+	case "table":
+		printTableFormat(repositories, showConfig)
+	case "json":
+		printJSONFormat(repositories)
+	case formatYAML:
+		printYAMLFormat(repositories)
+	default:
+		return fmt.Errorf("unsupported format: %s", format)
+	}
+
+	return nil
 }

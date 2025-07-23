@@ -3,15 +3,15 @@
 
 package config
 
-//go:generate mockgen -source=interfaces.go -destination=mocks/config_mocks.go -package=mocks ConfigLoader,ConfigValidator,ConfigWatcher,ConfigProvider
+//go:generate mockgen -source=interfaces.go -destination=mocks/config_mocks.go -package=mocks Loader,Validator,Watcher,ConfigProvider
 
 import (
 	"context"
 	"io"
 )
 
-// ConfigLoader defines the interface for configuration loading operations.
-type ConfigLoader interface {
+// Loader defines the interface for configuration loading operations.
+type Loader interface {
 	// Load configuration from default search paths
 	LoadConfig(ctx context.Context) (*Config, error)
 
@@ -28,8 +28,8 @@ type ConfigLoader interface {
 	SetSearchPaths(paths []string)
 }
 
-// ConfigValidator defines the interface for configuration validation.
-type ConfigValidator interface {
+// Validator defines the interface for configuration validation.
+type Validator interface {
 	// Validate a configuration object
 	ValidateConfig(ctx context.Context, config *Config) error
 
@@ -54,8 +54,8 @@ type ValidationError struct {
 	ColumnNumber int    `json:"columnNumber,omitempty"`
 }
 
-// ConfigParser defines the interface for parsing configuration files.
-type ConfigParser interface {
+// Parser defines the interface for parsing configuration files.
+type Parser interface {
 	// Parse configuration from bytes
 	ParseConfig(ctx context.Context, data []byte) (*Config, error)
 
@@ -161,11 +161,11 @@ type IntegrationService interface {
 
 // BulkCloneTarget is defined in integration.go
 
-// ConfigService provides a unified interface for all configuration operations.
-type ConfigService interface {
-	ConfigLoader
-	ConfigValidator
-	ConfigParser
+// Service provides a unified interface for all configuration operations.
+type Service interface {
+	Loader
+	Validator
+	Parser
 	SchemaValidator
 	ProviderManager
 	DirectoryResolverInterface
@@ -173,8 +173,8 @@ type ConfigService interface {
 	IntegrationService
 }
 
-// ConfigWatcher defines the interface for watching configuration file changes.
-type ConfigWatcher interface {
+// Watcher defines the interface for watching configuration file changes.
+type Watcher interface {
 	// Start watching configuration files
 	StartWatching(ctx context.Context, paths []string) error
 
@@ -182,14 +182,14 @@ type ConfigWatcher interface {
 	StopWatching() error
 
 	// Get notification channel for configuration changes
-	Changes() <-chan ConfigChangeEvent
+	Changes() <-chan ChangeEvent
 
 	// Set callback for configuration changes
-	OnChange(callback func(event ConfigChangeEvent))
+	OnChange(callback func(event ChangeEvent))
 }
 
-// ConfigChangeEvent represents a configuration file change event.
-type ConfigChangeEvent struct {
+// ChangeEvent represents a configuration file change event.
+type ChangeEvent struct {
 	Path      string  `json:"path"`
 	Operation string  `json:"operation"` // create, write, remove, rename
 	Config    *Config `json:"config,omitempty"`

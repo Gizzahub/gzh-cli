@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 
+	"github.com/schollz/progressbar/v3"
+
+	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
-	"github.com/schollz/progressbar/v3"
 )
 
 // BulkOperationsConfig represents configuration for bulk operations.
@@ -190,7 +191,7 @@ func (b *BulkOperationsManager) processRepositoryJob(ctx context.Context,
 	}
 }
 
-// executeGitOperation executes a git command in the repository path.
+// executeGitOperation executes a git command in the repository path with security validation.
 func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 	repoPath string, args ...string,
 ) error {
@@ -200,12 +201,15 @@ func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 		return fmt.Errorf("repository is empty or not a git repository")
 	}
 
-	// Build git command
-	gitArgs := append([]string{"-C", repoPath}, args...)
-	cmd := exec.CommandContext(ctx, "git", gitArgs...) //nolint:gosec // git command with controlled arguments
+	// Use secure git executor to prevent command injection
+	executor, err := git.NewSecureGitExecutor()
+	if err != nil {
+		return fmt.Errorf("failed to create secure git executor: %w", err)
+	}
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git %s failed: %w", args[0], err)
+	// Execute with validation
+	if err := executor.ExecuteSecure(ctx, repoPath, args...); err != nil {
+		return fmt.Errorf("secure git operation failed: %w", err)
 	}
 
 	return nil
