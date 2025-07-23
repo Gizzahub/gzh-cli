@@ -6,6 +6,7 @@ package bulkclone
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gizzahub/gzh-manager-go/internal/config"
 	pkgconfig "github.com/gizzahub/gzh-manager-go/pkg/config"
@@ -106,6 +107,20 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 
 	_, err = configService.LoadConfiguration(ctx, configPath)
 	if err != nil {
+		// If no configuration file is found and no specific config file was provided,
+		// show help instead of erroring out
+		if configPath == "" && isConfigNotFoundError(err) {
+			fmt.Println("No configuration file found. Please provide a configuration file or use one of the subcommands.")
+			fmt.Println("\nAvailable subcommands:")
+			fmt.Println("  github   - Clone from GitHub organizations")
+			fmt.Println("  gitlab   - Clone from GitLab groups")  
+			fmt.Println("  gitea    - Clone from Gitea organizations")
+			fmt.Println("  validate - Validate configuration file")
+			fmt.Println("  state    - Manage operation state")
+			fmt.Println("\nExample configuration files can be found in the samples/ directory.")
+			fmt.Println("Use --help or -h for more detailed usage information.")
+			return nil
+		}
 		return fmt.Errorf("failed to load configuration: %w", err)
 	}
 
@@ -185,4 +200,16 @@ func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target pk
 	default:
 		return fmt.Errorf("unsupported provider: %s", target.Provider)
 	}
+}
+
+// isConfigNotFoundError checks if the error indicates a configuration file was not found.
+func isConfigNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	
+	errMsg := strings.ToLower(err.Error())
+	return strings.Contains(errMsg, "no configuration file found") ||
+		strings.Contains(errMsg, "config file not found") ||
+		strings.Contains(errMsg, "configuration not found")
 }
