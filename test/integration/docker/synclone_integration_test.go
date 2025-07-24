@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/test/integration/testcontainers"
 )
@@ -73,7 +73,7 @@ func TestSyncClone_GitLab_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test configuration loading
-	loadedConfig, err := bulkclone.LoadConfig(configPath)
+	loadedConfig, err := synclone.LoadConfig(configPath)
 	// We expect this to pass loading but may fail validation due to test setup
 	if err != nil {
 		// This is expected in test environment without real GitLab API access
@@ -143,7 +143,7 @@ func TestSyncClone_Gitea_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test configuration loading
-	loadedConfig, err := bulkclone.LoadConfig(configPath)
+	loadedConfig, err := synclone.LoadConfig(configPath)
 	// We expect this to pass loading but may fail validation due to test setup
 	if err != nil {
 		// This is expected in test environment without real Gitea API access
@@ -218,7 +218,7 @@ func TestSyncClone_Redis_Cache_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test configuration loading
-	loadedConfig, err := bulkclone.LoadConfig(configPath)
+	loadedConfig, err := synclone.LoadConfig(configPath)
 	// We expect this to pass loading
 	if err != nil {
 		t.Logf("Error during Redis cache integration test: %v", err)
@@ -330,7 +330,7 @@ func TestMultiProvider_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test configuration loading
-	loadedConfig, err := bulkclone.LoadConfig(configPath)
+	loadedConfig, err := synclone.LoadConfig(configPath)
 	if err != nil {
 		// This is expected in test environment without real API access
 		t.Logf("Expected error during multi-provider integration test: %v", err)

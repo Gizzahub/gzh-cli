@@ -9,19 +9,19 @@ import (
 	"time"
 
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclonepkg "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 // ResumableCloneManager handles resumable clone operations.
 type ResumableCloneManager struct {
-	stateManager *bulkclonepkg.StateManager
+	stateManager *synclonepkg.StateManager
 	config       BulkOperationsConfig
 }
 
 // NewResumableCloneManager creates a new resumable clone manager.
 func NewResumableCloneManager(config BulkOperationsConfig) *ResumableCloneManager {
 	return &ResumableCloneManager{
-		stateManager: bulkclonepkg.NewStateManager(""),
+		stateManager: synclonepkg.NewStateManager(""),
 		config:       config,
 	}
 }
@@ -79,7 +79,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 
 	// Create progress tracker with specified mode
 	displayMode := getDisplayMode(progressMode)
-	progressTracker := bulkclonepkg.NewProgressTracker(allRepos, displayMode)
+	progressTracker := synclonepkg.NewProgressTracker(allRepos, displayMode)
 
 	// Update progress tracker with existing state
 	for _, completed := range state.CompletedRepos {
@@ -223,7 +223,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 }
 
 // initializeOrLoadState handles state initialization and loading for resume operations.
-func (rcm *ResumableCloneManager) initializeOrLoadState(org, targetPath, strategy string, parallel, maxRetries int, resume bool) (*bulkclonepkg.CloneState, error) {
+func (rcm *ResumableCloneManager) initializeOrLoadState(org, targetPath, strategy string, parallel, maxRetries int, resume bool) (*synclonepkg.CloneState, error) {
 	if resume {
 		return rcm.loadAndValidateState(org, targetPath, strategy, parallel, maxRetries)
 	}
@@ -231,7 +231,7 @@ func (rcm *ResumableCloneManager) initializeOrLoadState(org, targetPath, strateg
 }
 
 // loadAndValidateState loads existing state and validates compatibility.
-func (rcm *ResumableCloneManager) loadAndValidateState(org, targetPath, strategy string, parallel, maxRetries int) (*bulkclonepkg.CloneState, error) {
+func (rcm *ResumableCloneManager) loadAndValidateState(org, targetPath, strategy string, parallel, maxRetries int) (*synclonepkg.CloneState, error) {
 	state, err := rcm.stateManager.LoadState("github", org)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load state for resume: %w", err)
@@ -250,18 +250,18 @@ func (rcm *ResumableCloneManager) loadAndValidateState(org, targetPath, strategy
 }
 
 // createNewState creates a new clone state and validates no existing state exists.
-func (rcm *ResumableCloneManager) createNewState(org, targetPath, strategy string, parallel, maxRetries int) (*bulkclonepkg.CloneState, error) {
+func (rcm *ResumableCloneManager) createNewState(org, targetPath, strategy string, parallel, maxRetries int) (*synclonepkg.CloneState, error) {
 	// Check if there's already a state file
 	if rcm.stateManager.HasState("github", org) {
 		return nil, fmt.Errorf("existing state found for %s. Use --resume to continue or delete state file", org)
 	}
 
 	// Create new state
-	return bulkclonepkg.NewCloneState("github", org, targetPath, strategy, parallel, maxRetries), nil
+	return synclonepkg.NewCloneState("github", org, targetPath, strategy, parallel, maxRetries), nil
 }
 
 // updateStateWithWarnings updates state configuration and prints warnings for changes.
-func (rcm *ResumableCloneManager) updateStateWithWarnings(state *bulkclonepkg.CloneState, strategy string, parallel, maxRetries int) {
+func (rcm *ResumableCloneManager) updateStateWithWarnings(state *synclonepkg.CloneState, strategy string, parallel, maxRetries int) {
 	if state.Strategy != strategy {
 		fmt.Printf("⚠️  Warning: strategy changed from %s to %s\n", state.Strategy, strategy)
 		state.Strategy = strategy
@@ -279,7 +279,7 @@ func (rcm *ResumableCloneManager) updateStateWithWarnings(state *bulkclonepkg.Cl
 }
 
 // prepareRepositoryList gets all repositories and determines which need processing.
-func (rcm *ResumableCloneManager) prepareRepositoryList(ctx context.Context, org string, state *bulkclonepkg.CloneState, resume bool) ([]string, []string, error) {
+func (rcm *ResumableCloneManager) prepareRepositoryList(ctx context.Context, org string, state *synclonepkg.CloneState, resume bool) ([]string, []string, error) {
 	// Get all repositories from GitHub
 	allRepos, err := List(ctx, org)
 	if err != nil {
@@ -304,7 +304,7 @@ func (rcm *ResumableCloneManager) prepareRepositoryList(ctx context.Context, org
 }
 
 // getResumeRepositories determines which repositories to process on resume.
-func (rcm *ResumableCloneManager) getResumeRepositories(state *bulkclonepkg.CloneState, allRepos []string) []string {
+func (rcm *ResumableCloneManager) getResumeRepositories(state *synclonepkg.CloneState, allRepos []string) []string {
 	// Use remaining repositories from state
 	reposToProcess := state.GetRemainingRepositories()
 
@@ -379,51 +379,51 @@ func RefreshAllResumable(ctx context.Context, targetPath, org, strategy string, 
 }
 
 // GetCloneState returns the current clone state for an organization.
-func GetCloneState(org string) (*bulkclonepkg.CloneState, error) {
-	stateManager := bulkclonepkg.NewStateManager("")
+func GetCloneState(org string) (*synclonepkg.CloneState, error) {
+	stateManager := synclonepkg.NewStateManager("")
 	return stateManager.LoadState("github", org)
 }
 
 // DeleteCloneState removes the state file for an organization.
 func DeleteCloneState(org string) error {
-	stateManager := bulkclonepkg.NewStateManager("")
+	stateManager := synclonepkg.NewStateManager("")
 	return stateManager.DeleteState("github", org)
 }
 
 // ListCloneStates returns all saved clone states.
-func ListCloneStates() ([]bulkclonepkg.CloneState, error) {
-	stateManager := bulkclonepkg.NewStateManager("")
+func ListCloneStates() ([]synclonepkg.CloneState, error) {
+	stateManager := synclonepkg.NewStateManager("")
 	return stateManager.ListStates()
 }
 
 // getProgressStatusFromOperation converts worker pool operation to progress status.
-func getProgressStatusFromOperation(operation workerpool.RepositoryOperation) bulkclonepkg.ProgressStatus {
+func getProgressStatusFromOperation(operation workerpool.RepositoryOperation) synclonepkg.ProgressStatus {
 	switch operation {
 	case workerpool.OperationClone:
-		return bulkclonepkg.StatusCloning
+		return synclonepkg.StatusCloning
 	case workerpool.OperationPull:
-		return bulkclonepkg.StatusPulling
+		return synclonepkg.StatusPulling
 	case workerpool.OperationFetch:
-		return bulkclonepkg.StatusFetching
+		return synclonepkg.StatusFetching
 	case workerpool.OperationReset:
-		return bulkclonepkg.StatusResetting
+		return synclonepkg.StatusResetting
 	case workerpool.OperationConfig:
-		return bulkclonepkg.StatusStarted // Config operations are quick, just show as started
+		return synclonepkg.StatusStarted // Config operations are quick, just show as started
 	default:
-		return bulkclonepkg.StatusStarted
+		return synclonepkg.StatusStarted
 	}
 }
 
 // getDisplayMode converts string to DisplayMode.
-func getDisplayMode(mode string) bulkclonepkg.DisplayMode {
+func getDisplayMode(mode string) synclonepkg.DisplayMode {
 	switch mode {
 	case "compact":
-		return bulkclonepkg.DisplayModeCompact
+		return synclonepkg.DisplayModeCompact
 	case "detailed":
-		return bulkclonepkg.DisplayModeDetailed
+		return synclonepkg.DisplayModeDetailed
 	case "quiet":
-		return bulkclonepkg.DisplayModeQuiet
+		return synclonepkg.DisplayModeQuiet
 	default:
-		return bulkclonepkg.DisplayModeCompact
+		return synclonepkg.DisplayModeCompact
 	}
 }

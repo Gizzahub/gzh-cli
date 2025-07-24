@@ -10,7 +10,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 const defaultConfigVersion = "1.0.0"
@@ -131,7 +131,7 @@ func (l *UnifiedLoader) loadUnifiedConfig(configPath string, result *LoadResult)
 // loadLegacyConfig loads a legacy format configuration.
 func (l *UnifiedLoader) loadLegacyConfig(configPath string, result *LoadResult) (*LoadResult, error) {
 	// Load legacy configuration
-	legacyConfig, err := bulkclone.LoadConfig(configPath)
+	legacyConfig, err := synclone.LoadConfig(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load legacy configuration: %w", err)
 	}
@@ -162,7 +162,7 @@ func (l *UnifiedLoader) loadLegacyConfig(configPath string, result *LoadResult) 
 }
 
 // performAutoMigration performs automatic migration from legacy to unified format.
-func (l *UnifiedLoader) performAutoMigration(configPath string, legacyConfig *bulkclone.BulkCloneConfig) (*MigrationResult, error) {
+func (l *UnifiedLoader) performAutoMigration(configPath string, legacyConfig *synclone.BulkCloneConfig) (*MigrationResult, error) {
 	_ = legacyConfig // legacyConfig unused in current implementation
 	// Determine target path
 	dir := filepath.Dir(configPath)
@@ -183,7 +183,7 @@ func (l *UnifiedLoader) performAutoMigration(configPath string, legacyConfig *bu
 }
 
 // convertLegacyToUnified converts legacy configuration to unified format in memory.
-func (l *UnifiedLoader) convertLegacyToUnified(legacyConfig *bulkclone.BulkCloneConfig) *UnifiedConfig {
+func (l *UnifiedLoader) convertLegacyToUnified(legacyConfig *synclone.BulkCloneConfig) *UnifiedConfig {
 	migrator := NewMigrator("", "")
 	unifiedConfig, _, _ := migrator.convertBulkCloneToUnified(legacyConfig)
 

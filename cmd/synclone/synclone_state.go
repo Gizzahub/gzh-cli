@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclonepkg "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 func newSyncCloneStateCmd() *cobra.Command {
@@ -92,7 +92,7 @@ func newBulkCloneStateCleanCmd() *cobra.Command {
 }
 
 func runStateList(cmd *cobra.Command, args []string) error {
-	stateManager := bulkclonepkg.NewStateManager("")
+	stateManager := synclonepkg.NewStateManager("")
 
 	states, err := stateManager.ListStates()
 	if err != nil {
@@ -137,7 +137,7 @@ func runStateList(cmd *cobra.Command, args []string) error {
 }
 
 func runStateShow(provider, organization string) error {
-	stateManager := bulkclonepkg.NewStateManager("")
+	stateManager := synclonepkg.NewStateManager("")
 
 	state, err := stateManager.LoadState(provider, organization)
 	if err != nil {
@@ -206,7 +206,7 @@ func runStateShow(provider, organization string) error {
 }
 
 func runStateClean(provider, organization string, all bool) error {
-	stateManager := bulkclonepkg.NewStateManager("")
+	stateManager := synclonepkg.NewStateManager("")
 
 	if all {
 		// Clean all states

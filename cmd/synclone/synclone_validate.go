@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclonepkg "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 type syncCloneValidateOptions struct {
@@ -57,7 +57,7 @@ func (o *syncCloneValidateOptions) run(cmd *cobra.Command, args []string) error 
 	var configPath string
 
 	if useConfig {
-		path, err := bulkclonepkg.FindConfigFile()
+		path, err := synclonepkg.FindConfigFile()
 		if err != nil {
 			return fmt.Errorf("failed to find config file: %w", err)
 		}
@@ -69,13 +69,13 @@ func (o *syncCloneValidateOptions) run(cmd *cobra.Command, args []string) error 
 	}
 
 	// First try to load the config using existing validation
-	cfg, err := bulkclonepkg.LoadConfig(configPath)
+	cfg, err := synclonepkg.LoadConfig(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// Then validate against schema
-	if err := bulkclonepkg.ValidateConfigWithSchema(configPath); err != nil {
+	if err := synclonepkg.ValidateConfigWithSchema(configPath); err != nil {
 		return fmt.Errorf("schema validation failed: %w", err)
 	}
 

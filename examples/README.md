@@ -7,21 +7,17 @@ This directory contains example configurations and usage patterns for the gz CLI
 ### Basic Usage
 
 - **`synclone-simple.yaml`** - Minimal configuration for synclone operations
-- **`bulk-clone-simple.yaml`** - Legacy: Minimal configuration for cloning a single organization
 - **`gzh-simple.yaml`** - Basic unified configuration example
 
 ### Advanced Configurations
 
 - **`synclone-example.yaml`** - Comprehensive synclone configuration with all options
 - **`synclone.yml`** - Advanced synclone configuration features
-- **`bulk-clone-example.yaml`** - Legacy: Comprehensive bulk clone configuration with all options
 - **`gzh-unified-example.yaml`** - Complete unified configuration showing all features
 - **`gzh-multi-provider.yaml`** - Multi-provider setup (GitHub, GitLab, Gitea)
 
 ### Environment-Specific
 
-- **`bulk-clone.home.yaml`** - Personal/home environment configuration
-- **`bulk-clone.work.yaml`** - Work environment configuration
 - **`gzh-development.yaml`** - Development environment setup
 - **`gzh-enterprise.yaml`** - Enterprise deployment configuration
 

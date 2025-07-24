@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclonepkg "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 	gitlabpkg "github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
@@ -104,7 +104,7 @@ func (o *syncCloneGitlabOptions) loadFromConfig() error {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclonepkg.LoadConfig(configPath)
+	cfg, err := synclonepkg.LoadConfig(configPath)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (o *syncCloneGitlabOptions) loadFromConfig() error {
 
 	// Apply config values (CLI flags take precedence)
 	if o.targetPath == "" && groupConfig.RootPath != "" {
-		o.targetPath = bulkclonepkg.ExpandPath(groupConfig.RootPath)
+		o.targetPath = synclonepkg.ExpandPath(groupConfig.RootPath)
 	}
 
 	if !o.recursively && groupConfig.Recursive {

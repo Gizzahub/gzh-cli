@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 const protocolSSH = "ssh"
@@ -85,7 +85,7 @@ func (o *sshConfigGenerateOptions) run(_ *cobra.Command, args []string) error {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclone.LoadConfig(configPath)
+	cfg, err := synclone.LoadConfig(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
@@ -114,7 +114,7 @@ func (o *sshConfigGenerateOptions) run(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *sshConfigGenerateOptions) generateSSHConfig(cfg *bulkclone.BulkCloneConfig) (string, error) {
+func (o *sshConfigGenerateOptions) generateSSHConfig(cfg *synclone.BulkCloneConfig) (string, error) {
 	var configLines []string
 
 	// Add header comment

@@ -9,19 +9,19 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/internal/git"
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
-	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclonepkg "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 // ResumableCloneManager handles resumable clone operations for GitLab.
 type ResumableCloneManager struct {
-	stateManager *bulkclonepkg.StateManager
+	stateManager *synclonepkg.StateManager
 	config       workerpool.RepositoryPoolConfig
 }
 
 // NewResumableCloneManager creates a new resumable clone manager for GitLab.
 func NewResumableCloneManager(config workerpool.RepositoryPoolConfig) *ResumableCloneManager {
 	return &ResumableCloneManager{
-		stateManager: bulkclonepkg.NewStateManager(""),
+		stateManager: synclonepkg.NewStateManager(""),
 		config:       config,
 	}
 }
@@ -107,31 +107,31 @@ func RefreshAllResumable(ctx context.Context, targetPath, group, strategy string
 }
 
 // getProgressStatusFromOperation converts worker pool operation to progress status.
-func getProgressStatusFromOperation(operation workerpool.RepositoryOperation) bulkclonepkg.ProgressStatus {
+func getProgressStatusFromOperation(operation workerpool.RepositoryOperation) synclonepkg.ProgressStatus {
 	switch operation {
 	case workerpool.OperationClone:
-		return bulkclonepkg.StatusCloning
+		return synclonepkg.StatusCloning
 	case workerpool.OperationPull:
-		return bulkclonepkg.StatusPulling
+		return synclonepkg.StatusPulling
 	case workerpool.OperationFetch:
-		return bulkclonepkg.StatusFetching
+		return synclonepkg.StatusFetching
 	case workerpool.OperationReset:
-		return bulkclonepkg.StatusResetting
+		return synclonepkg.StatusResetting
 	case workerpool.OperationConfig:
-		return bulkclonepkg.StatusStarted // Config operations are quick, just show as started
+		return synclonepkg.StatusStarted // Config operations are quick, just show as started
 	default:
-		return bulkclonepkg.StatusStarted
+		return synclonepkg.StatusStarted
 	}
 }
 
 // initializeState initializes or loads the clone state for resumable operations.
-func (rcm *ResumableCloneManager) initializeState(group, targetPath, strategy string, parallel, maxRetries int, resume bool) (*bulkclonepkg.CloneState, error) {
+func (rcm *ResumableCloneManager) initializeState(group, targetPath, strategy string, parallel, maxRetries int, resume bool) (*synclonepkg.CloneState, error) {
 	if resume {
 		return rcm.loadAndValidateState(group, targetPath, strategy, parallel, maxRetries)
 	}
 
 	// Create new state
-	state := bulkclonepkg.NewCloneState("gitlab", group, targetPath, strategy, parallel, maxRetries)
+	state := synclonepkg.NewCloneState("gitlab", group, targetPath, strategy, parallel, maxRetries)
 
 	// Check if there's already a state file
 	if rcm.stateManager.HasState("gitlab", group) {
@@ -142,7 +142,7 @@ func (rcm *ResumableCloneManager) initializeState(group, targetPath, strategy st
 }
 
 // loadAndValidateState loads existing state and validates compatibility.
-func (rcm *ResumableCloneManager) loadAndValidateState(group, targetPath, strategy string, parallel, maxRetries int) (*bulkclonepkg.CloneState, error) {
+func (rcm *ResumableCloneManager) loadAndValidateState(group, targetPath, strategy string, parallel, maxRetries int) (*synclonepkg.CloneState, error) {
 	state, err := rcm.stateManager.LoadState("gitlab", group)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load state for resume: %w", err)
@@ -160,7 +160,7 @@ func (rcm *ResumableCloneManager) loadAndValidateState(group, targetPath, strate
 }
 
 // updateStateWithWarnings updates state configuration and shows warnings for changes.
-func (rcm *ResumableCloneManager) updateStateWithWarnings(state *bulkclonepkg.CloneState, strategy string, parallel, maxRetries int, group string) {
+func (rcm *ResumableCloneManager) updateStateWithWarnings(state *synclonepkg.CloneState, strategy string, parallel, maxRetries int, group string) {
 	if state.Strategy != strategy {
 		fmt.Printf("⚠️  Warning: strategy changed from %s to %s\n", state.Strategy, strategy)
 		state.Strategy = strategy
@@ -180,7 +180,7 @@ func (rcm *ResumableCloneManager) updateStateWithWarnings(state *bulkclonepkg.Cl
 }
 
 // determineRepositoriesToProcess determines which repositories need to be processed.
-func (rcm *ResumableCloneManager) determineRepositoriesToProcess(ctx context.Context, group string, state *bulkclonepkg.CloneState, resume bool) ([]string, []string, error) {
+func (rcm *ResumableCloneManager) determineRepositoriesToProcess(ctx context.Context, group string, state *synclonepkg.CloneState, resume bool) ([]string, []string, error) {
 	// Get all repositories from GitLab
 	allRepos, err := List(ctx, group)
 	if err != nil {
@@ -204,7 +204,7 @@ func (rcm *ResumableCloneManager) determineRepositoriesToProcess(ctx context.Con
 }
 
 // getResumableRepositories gets repositories that need to be processed during resume.
-func (rcm *ResumableCloneManager) getResumableRepositories(state *bulkclonepkg.CloneState, allRepos []string) []string {
+func (rcm *ResumableCloneManager) getResumableRepositories(state *synclonepkg.CloneState, allRepos []string) []string {
 	// Use remaining repositories from state
 	reposToProcess := state.GetRemainingRepositories()
 
@@ -228,7 +228,7 @@ func (rcm *ResumableCloneManager) getResumableRepositories(state *bulkclonepkg.C
 }
 
 // handleNoRemainingRepositories handles the case where all repositories are already processed.
-func (rcm *ResumableCloneManager) handleNoRemainingRepositories(state *bulkclonepkg.CloneState) error {
+func (rcm *ResumableCloneManager) handleNoRemainingRepositories(state *synclonepkg.CloneState) error {
 	fmt.Printf("✅ All repositories already processed\n")
 	state.MarkCompleted()
 	if err := rcm.stateManager.SaveState(state); err != nil {
@@ -238,7 +238,7 @@ func (rcm *ResumableCloneManager) handleNoRemainingRepositories(state *bulkclone
 }
 
 // executeCloneOperation executes the main clone operation with worker pool and progress tracking.
-func (rcm *ResumableCloneManager) executeCloneOperation(ctx context.Context, state *bulkclonepkg.CloneState, allRepos, reposToProcess []string, targetPath, group, strategy string, parallel, maxRetries int, progressMode string) error {
+func (rcm *ResumableCloneManager) executeCloneOperation(ctx context.Context, state *synclonepkg.CloneState, allRepos, reposToProcess []string, targetPath, group, strategy string, parallel, maxRetries int, progressMode string) error {
 	fmt.Printf("📦 Processing %d repositories (%d remaining)\n", len(allRepos), len(reposToProcess))
 
 	// Save initial state
@@ -258,7 +258,7 @@ func (rcm *ResumableCloneManager) executeCloneOperation(ctx context.Context, sta
 }
 
 // setupWorkerPoolAndProgress sets up the worker pool and progress tracker.
-func (rcm *ResumableCloneManager) setupWorkerPoolAndProgress(allRepos, reposToProcess []string, targetPath, strategy string, parallel, maxRetries int, progressMode string, state *bulkclonepkg.CloneState) (*workerpool.RepositoryWorkerPool, *bulkclonepkg.ProgressTracker, error) {
+func (rcm *ResumableCloneManager) setupWorkerPoolAndProgress(allRepos, reposToProcess []string, targetPath, strategy string, parallel, maxRetries int, progressMode string, state *synclonepkg.CloneState) (*workerpool.RepositoryWorkerPool, *synclonepkg.ProgressTracker, error) {
 	// Configure worker pool
 	config := rcm.config
 	if parallel > 0 {
@@ -281,7 +281,7 @@ func (rcm *ResumableCloneManager) setupWorkerPoolAndProgress(allRepos, reposToPr
 
 	// Create progress tracker with specified mode
 	displayMode := getDisplayMode(progressMode)
-	progressTracker := bulkclonepkg.NewProgressTracker(allRepos, displayMode)
+	progressTracker := synclonepkg.NewProgressTracker(allRepos, displayMode)
 
 	// Update progress tracker with existing state
 	rcm.updateProgressTrackerWithState(progressTracker, state)
@@ -293,7 +293,7 @@ func (rcm *ResumableCloneManager) setupWorkerPoolAndProgress(allRepos, reposToPr
 }
 
 // updateProgressTrackerWithState updates progress tracker with existing state data.
-func (rcm *ResumableCloneManager) updateProgressTrackerWithState(progressTracker *bulkclonepkg.ProgressTracker, state *bulkclonepkg.CloneState) {
+func (rcm *ResumableCloneManager) updateProgressTrackerWithState(progressTracker *synclonepkg.ProgressTracker, state *synclonepkg.CloneState) {
 	for _, completed := range state.CompletedRepos {
 		progressTracker.CompleteRepository(completed.Name, completed.Message)
 	}
@@ -303,7 +303,7 @@ func (rcm *ResumableCloneManager) updateProgressTrackerWithState(progressTracker
 }
 
 // processRepositoriesWithTracking processes all repositories with progress tracking and state management.
-func (rcm *ResumableCloneManager) processRepositoriesWithTracking(ctx context.Context, pool *workerpool.RepositoryWorkerPool, reposToProcess []string, targetPath, strategy, group string, state *bulkclonepkg.CloneState, progressTracker *bulkclonepkg.ProgressTracker) error {
+func (rcm *ResumableCloneManager) processRepositoriesWithTracking(ctx context.Context, pool *workerpool.RepositoryWorkerPool, reposToProcess []string, targetPath, strategy, group string, state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker) error {
 	// Create and submit jobs
 	jobs := rcm.createRepositoryJobs(reposToProcess, targetPath, strategy)
 
@@ -377,7 +377,7 @@ func (rcm *ResumableCloneManager) submitJobs(pool *workerpool.RepositoryWorkerPo
 }
 
 // trackResultsWithPeriodicSaving tracks job results with periodic state saving and progress updates.
-func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Context, pool *workerpool.RepositoryWorkerPool, jobs []workerpool.RepositoryJob, state *bulkclonepkg.CloneState, progressTracker *bulkclonepkg.ProgressTracker) (int, int, error) {
+func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Context, pool *workerpool.RepositoryWorkerPool, jobs []workerpool.RepositoryJob, state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker) (int, int, error) {
 	resultsChan := pool.Results()
 	successCount := 0
 	failureCount := 0
@@ -411,7 +411,7 @@ func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Con
 }
 
 // handleJobResult handles individual job results and updates state and progress.
-func (rcm *ResumableCloneManager) handleJobResult(result workerpool.RepositoryResult, state *bulkclonepkg.CloneState, progressTracker *bulkclonepkg.ProgressTracker, successCount, failureCount *int) {
+func (rcm *ResumableCloneManager) handleJobResult(result workerpool.RepositoryResult, state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker, successCount, failureCount *int) {
 	if result.Error != nil {
 		*failureCount++
 		state.AddFailedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Error.Error(), 1)
@@ -424,7 +424,7 @@ func (rcm *ResumableCloneManager) handleJobResult(result workerpool.RepositoryRe
 }
 
 // finalizeOperation finalizes the clone operation with final state updates and cleanup.
-func (rcm *ResumableCloneManager) finalizeOperation(state *bulkclonepkg.CloneState, progressTracker *bulkclonepkg.ProgressTracker, group string, failureCount int) error {
+func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker, group string, failureCount int) error {
 	// Final progress update
 	fmt.Printf("\r\033[K%s\n", progressTracker.RenderProgress())
 
@@ -461,33 +461,33 @@ func (rcm *ResumableCloneManager) finalizeOperation(state *bulkclonepkg.CloneSta
 }
 
 // getDisplayMode converts string to DisplayMode.
-func getDisplayMode(mode string) bulkclonepkg.DisplayMode {
+func getDisplayMode(mode string) synclonepkg.DisplayMode {
 	switch mode {
 	case "compact":
-		return bulkclonepkg.DisplayModeCompact
+		return synclonepkg.DisplayModeCompact
 	case "detailed":
-		return bulkclonepkg.DisplayModeDetailed
+		return synclonepkg.DisplayModeDetailed
 	case "quiet":
-		return bulkclonepkg.DisplayModeQuiet
+		return synclonepkg.DisplayModeQuiet
 	default:
-		return bulkclonepkg.DisplayModeCompact
+		return synclonepkg.DisplayModeCompact
 	}
 }
 
 // GetCloneState returns the current clone state for a group.
-func GetCloneState(group string) (*bulkclonepkg.CloneState, error) {
-	stateManager := bulkclonepkg.NewStateManager("")
+func GetCloneState(group string) (*synclonepkg.CloneState, error) {
+	stateManager := synclonepkg.NewStateManager("")
 	return stateManager.LoadState("gitlab", group)
 }
 
 // DeleteCloneState removes the state file for a group.
 func DeleteCloneState(group string) error {
-	stateManager := bulkclonepkg.NewStateManager("")
+	stateManager := synclonepkg.NewStateManager("")
 	return stateManager.DeleteState("gitlab", group)
 }
 
 // ListCloneStates returns all saved clone states.
-func ListCloneStates() ([]bulkclonepkg.CloneState, error) {
-	stateManager := bulkclonepkg.NewStateManager("")
+func ListCloneStates() ([]synclonepkg.CloneState, error) {
+	stateManager := synclonepkg.NewStateManager("")
 	return stateManager.ListStates()
 }

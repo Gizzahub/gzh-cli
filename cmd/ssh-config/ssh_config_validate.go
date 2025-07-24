@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 type sshConfigValidateOptions struct {
@@ -72,7 +72,7 @@ func (o *sshConfigValidateOptions) run(_ *cobra.Command, args []string) error {
 		configPath = o.configFile
 	}
 
-	cfg, err := bulkclone.LoadConfig(configPath)
+	cfg, err := synclone.LoadConfig(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
@@ -94,7 +94,7 @@ func (o *sshConfigValidateOptions) run(_ *cobra.Command, args []string) error {
 	return fmt.Errorf("SSH configuration validation failed with %d issues", len(issues))
 }
 
-func (o *sshConfigValidateOptions) validateSSHConfig(cfg *bulkclone.BulkCloneConfig) []string {
+func (o *sshConfigValidateOptions) validateSSHConfig(cfg *synclone.BulkCloneConfig) []string {
 	var issues []string
 
 	// Check if SSH config file exists
@@ -149,7 +149,7 @@ func (o *sshConfigValidateOptions) validateSSHConfig(cfg *bulkclone.BulkCloneCon
 	return issues
 }
 
-func (o *sshConfigValidateOptions) validateRepoRootSSH(repoRoot bulkclone.BulkCloneGithub, sshConfigText string) []string {
+func (o *sshConfigValidateOptions) validateRepoRootSSH(repoRoot synclone.BulkCloneGithub, sshConfigText string) []string {
 	return o.validateProviderSSH(repoRoot.Provider, repoRoot.OrgName, sshConfigText)
 }
 

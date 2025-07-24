@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 // Provider constants.
@@ -55,7 +55,7 @@ repo_roots:
 	}
 
 	// Load the configuration
-	config, err := bulkclone.LoadConfig(configPath)
+	config, err := synclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
@@ -115,7 +115,7 @@ repo_roots:
 	}
 
 	// Attempt to load and validate
-	_, err = bulkclone.LoadConfig(configPath)
+	_, err = synclone.LoadConfig(configPath)
 	if err != nil {
 		fmt.Printf("Validation caught error: %v\n", err)
 	}
@@ -138,7 +138,7 @@ repo_roots:
 		return
 	}
 
-	config, err := bulkclone.LoadConfig(validConfigPath)
+	config, err := synclone.LoadConfig(validConfigPath)
 	if err != nil {
 		log.Printf("Error loading valid config: %v", err)
 		return
@@ -210,7 +210,7 @@ repo_roots:
 		return
 	}
 
-	config, err := bulkclone.LoadConfig(configPath)
+	config, err := synclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
@@ -290,7 +290,7 @@ repo_roots:
 		return
 	}
 
-	config, err := bulkclone.LoadConfig(configPath)
+	config, err := synclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return
@@ -357,7 +357,7 @@ repo_roots:
 		return
 	}
 
-	_, err = bulkclone.LoadConfig(configPath)
+	_, err = synclone.LoadConfig(configPath)
 	if err != nil {
 		log.Printf("Error loading config: %v", err)
 		return

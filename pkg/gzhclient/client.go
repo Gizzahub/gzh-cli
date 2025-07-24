@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
@@ -211,7 +211,7 @@ func (c *Client) BulkClone(ctx context.Context, req BulkCloneRequest) (*BulkClon
 	// Create bulk clone manager with configuration manager and logger
 	configManager := &configManagerImpl{}
 	logger := &silentLoggerImpl{}
-	manager := bulkclone.NewBulkCloneManager(configManager, logger)
+	manager := synclone.NewBulkCloneManager(configManager, logger)
 
 	// Process all platforms and organizations
 	allResults := make([]*BulkCloneResult, 0)
@@ -227,7 +227,7 @@ func (c *Client) BulkClone(ctx context.Context, req BulkCloneRequest) (*BulkClon
 }
 
 // processPlatformOrganizations processes all organizations for a given platform.
-func (c *Client) processPlatformOrganizations(ctx context.Context, manager bulkclone.Manager, platform PlatformConfig, req BulkCloneRequest, logger *silentLoggerImpl) []*BulkCloneResult {
+func (c *Client) processPlatformOrganizations(ctx context.Context, manager synclone.Manager, platform PlatformConfig, req BulkCloneRequest, logger *silentLoggerImpl) []*BulkCloneResult {
 	results := make([]*BulkCloneResult, 0)
 
 	for _, org := range platform.Organizations {
@@ -241,8 +241,8 @@ func (c *Client) processPlatformOrganizations(ctx context.Context, manager bulkc
 }
 
 // processOrganization processes a single organization.
-func (c *Client) processOrganization(ctx context.Context, manager bulkclone.Manager, platform PlatformConfig, org string, req BulkCloneRequest, logger *silentLoggerImpl) *BulkCloneResult {
-	orgRequest := &bulkclone.OrganizationCloneRequest{
+func (c *Client) processOrganization(ctx context.Context, manager synclone.Manager, platform PlatformConfig, org string, req BulkCloneRequest, logger *silentLoggerImpl) *BulkCloneResult {
+	orgRequest := &synclone.OrganizationCloneRequest{
 		Provider:     platform.Type,
 		Organization: org,
 		TargetPath:   req.OutputDir,
@@ -262,7 +262,7 @@ func (c *Client) processOrganization(ctx context.Context, manager bulkclone.Mana
 }
 
 // convertToBulkCloneResult converts manager result to client response format.
-func (c *Client) convertToBulkCloneResult(result *bulkclone.CloneResult) *BulkCloneResult {
+func (c *Client) convertToBulkCloneResult(result *synclone.CloneResult) *BulkCloneResult {
 	response := &BulkCloneResult{
 		TotalRepos:   result.TotalRepositories,
 		SuccessCount: result.ClonesSuccessful,
@@ -457,19 +457,19 @@ func (c *Client) Unsubscribe(_ string) error {
 	return fmt.Errorf("event unsubscription not yet implemented")
 }
 
-// configManagerImpl implements bulkclone.ConfigurationManager interface.
+// configManagerImpl implements synclone.ConfigurationManager interface.
 type configManagerImpl struct{}
 
-func (c *configManagerImpl) LoadConfiguration(_ context.Context) (*bulkclone.BulkCloneConfig, error) {
-	return bulkclone.LoadConfig("")
+func (c *configManagerImpl) LoadConfiguration(_ context.Context) (*synclone.BulkCloneConfig, error) {
+	return synclone.LoadConfig("")
 }
 
-func (c *configManagerImpl) ValidateConfiguration(_ context.Context, _ *bulkclone.BulkCloneConfig) error {
+func (c *configManagerImpl) ValidateConfiguration(_ context.Context, _ *synclone.BulkCloneConfig) error {
 	// Validation logic would go here
 	return nil
 }
 
-// silentLoggerImpl implements bulkclone.Logger interface but doesn't output anything.
+// silentLoggerImpl implements synclone.Logger interface but doesn't output anything.
 type silentLoggerImpl struct{}
 
 func (l *silentLoggerImpl) Debug(_ string, _ ...interface{}) {}

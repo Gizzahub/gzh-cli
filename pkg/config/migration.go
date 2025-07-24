@@ -12,7 +12,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 // MigrationResult contains the results of a configuration migration.
@@ -25,7 +25,7 @@ type MigrationResult struct {
 	Warnings        []string
 	RequiredActions []string
 	UnifiedConfig   *UnifiedConfig
-	LegacyConfig    *bulkclone.BulkCloneConfig
+	LegacyConfig    *synclone.BulkCloneConfig
 	MigrationReport string
 }
 
@@ -57,7 +57,7 @@ func (m *Migrator) MigrateFromBulkClone() (*MigrationResult, error) {
 	}
 
 	// Load legacy configuration
-	legacyConfig, err := bulkclone.LoadConfig(m.SourcePath)
+	legacyConfig, err := synclone.LoadConfig(m.SourcePath)
 	if err != nil {
 		return result, fmt.Errorf("failed to load legacy configuration: %w", err)
 	}
@@ -96,7 +96,7 @@ func (m *Migrator) MigrateFromBulkClone() (*MigrationResult, error) {
 }
 
 // convertBulkCloneToUnified converts bulk-clone.yaml format to unified format.
-func (m *Migrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) (config *UnifiedConfig, warnings, actions []string) {
+func (m *Migrator) convertBulkCloneToUnified(legacy *synclone.BulkCloneConfig) (config *UnifiedConfig, warnings, actions []string) {
 	config = DefaultUnifiedConfig()
 
 	// Set migration information
@@ -153,7 +153,7 @@ func (m *Migrator) convertBulkCloneToUnified(legacy *bulkclone.BulkCloneConfig) 
 
 // convertGitHubConfigurations converts GitHub-specific configurations.
 // Note: Currently always returns nil, but maintains error interface for future validation.
-func (m *Migrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
+func (m *Migrator) convertGitHubConfigurations(legacy *synclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
 	githubProvider := &ProviderConfig{
 		Token:         "${GITHUB_TOKEN}",
 		Organizations: []*OrganizationConfig{},
@@ -215,7 +215,7 @@ func (m *Migrator) convertGitHubConfigurations(legacy *bulkclone.BulkCloneConfig
 
 // convertGitLabConfigurations converts GitLab-specific configurations.
 // Note: Currently always returns nil, but maintains error interface for future validation.
-func (m *Migrator) convertGitLabConfigurations(legacy *bulkclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
+func (m *Migrator) convertGitLabConfigurations(legacy *synclone.BulkCloneConfig, config *UnifiedConfig, warnings, actions *[]string) error { //nolint:unparam // Always returns nil currently, but interface preserved for future validation
 	if legacy.Default.Gitlab.RootPath == "" {
 		return nil // No GitLab configuration
 	}

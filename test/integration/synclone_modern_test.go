@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 // TestSyncClone_ConfigurationLoading tests the configuration loading functionality.
@@ -53,7 +53,7 @@ func TestSyncClone_ConfigurationLoading(t *testing.T) {
 		require.NoError(t, err)
 
 		// Test loading configuration
-		config, err := bulkclone.LoadConfig(configPath)
+		config, err := synclone.LoadConfig(configPath)
 		if err != nil {
 			// Configuration loading may fail due to validation, but should not panic
 			t.Logf("Config loading failed (expected in test environment): %v", err)
@@ -79,11 +79,11 @@ func TestSyncClone_StateManagement(t *testing.T) {
 		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 		// Create state manager
-		stateManager := bulkclone.NewStateManager(tmpDir)
+		stateManager := synclone.NewStateManager(tmpDir)
 		assert.NotNil(t, stateManager)
 
 		// Create test state
-		state := bulkclone.NewCloneState("github", "test-org", tmpDir, "pull", 5, 3)
+		state := synclone.NewCloneState("github", "test-org", tmpDir, "pull", 5, 3)
 		assert.NotNil(t, state)
 
 		// Set pending repositories
@@ -133,15 +133,15 @@ func TestSyncClone_ProgressTracking(t *testing.T) {
 		repos := []string{"repo1", "repo2", "repo3", "repo4", "repo5"}
 
 		// Test different display modes
-		displayModes := []bulkclone.DisplayMode{
-			bulkclone.DisplayModeCompact,
-			bulkclone.DisplayModeDetailed,
-			bulkclone.DisplayModeQuiet,
+		displayModes := []synclone.DisplayMode{
+			synclone.DisplayModeCompact,
+			synclone.DisplayModeDetailed,
+			synclone.DisplayModeQuiet,
 		}
 
 		for _, mode := range displayModes {
 			t.Run(string(mode), func(t *testing.T) {
-				tracker := bulkclone.NewProgressTracker(repos, mode)
+				tracker := synclone.NewProgressTracker(repos, mode)
 				assert.NotNil(t, tracker)
 
 				// Test initial state
@@ -152,7 +152,7 @@ func TestSyncClone_ProgressTracking(t *testing.T) {
 				assert.Equal(t, 0.0, progressPercent)
 
 				// Update progress for some repositories
-				tracker.UpdateRepository("repo1", bulkclone.StatusCloning, "Cloning...", 0.5)
+				tracker.UpdateRepository("repo1", synclone.StatusCloning, "Cloning...", 0.5)
 				tracker.CompleteRepository("repo2", "Successfully cloned")
 				tracker.SetRepositoryError("repo3", "Network timeout")
 
@@ -202,17 +202,17 @@ func TestSyncClone_URLBuilder(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.provider+"_"+tc.protocol, func(t *testing.T) {
 				// Test default hostname
-				hostname := bulkclone.GetDefaultHostname(tc.provider)
+				hostname := synclone.GetDefaultHostname(tc.provider)
 				assert.NotEmpty(t, hostname)
 
 				// Test URL building
-				url := bulkclone.BuildURLForProvider(tc.provider, tc.protocol, tc.orgName, tc.repoName)
+				url := synclone.BuildURLForProvider(tc.provider, tc.protocol, tc.orgName, tc.repoName)
 				assert.NotEmpty(t, url)
 				assert.Contains(t, url, tc.orgName)
 				assert.Contains(t, url, tc.repoName)
 
 				// Test URL builder with host alias
-				urlWithAlias := bulkclone.BuildURLWithHostAliasForProvider(tc.provider, tc.protocol, tc.orgName, tc.repoName)
+				urlWithAlias := synclone.BuildURLWithHostAliasForProvider(tc.provider, tc.protocol, tc.orgName, tc.repoName)
 				assert.NotEmpty(t, urlWithAlias)
 
 				t.Logf("Provider: %s, Protocol: %s, URL: %s", tc.provider, tc.protocol, url)
@@ -253,7 +253,7 @@ providers:
 		require.NoError(t, err)
 
 		// Test schema validation
-		err = bulkclone.ValidateConfigWithSchema(configPath)
+		err = synclone.ValidateConfigWithSchema(configPath)
 		if err != nil {
 			// Schema validation may fail in test environment, but should not panic
 			t.Logf("Schema validation failed (expected in test environment): %v", err)
@@ -301,7 +301,7 @@ providers:
 		require.NoError(t, err)
 
 		// Test configuration loading
-		config, err := bulkclone.LoadConfig(configPath)
+		config, err := synclone.LoadConfig(configPath)
 		if err != nil {
 			t.Skipf("Configuration loading failed: %v", err)
 		}

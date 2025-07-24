@@ -152,7 +152,7 @@ Use "gzh-manager [command] --help" for more information about a command.
 ```
 
 First, create a configuration file in the desired path. Refer to
-[bulk-clone.yaml](pkg/bulk-clone/bulk-clone.yaml)
+[synclone.yaml](pkg/synclone/synclone.yaml)
 
 ```sh
 $> gzh bulk-clone -t $HOME/mywork
