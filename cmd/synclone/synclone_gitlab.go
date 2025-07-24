@@ -12,7 +12,7 @@ import (
 	gitlabpkg "github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
-type bulkCloneGitlabOptions struct {
+type syncCloneGitlabOptions struct {
 	targetPath   string
 	groupName    string
 	recursively  bool
@@ -25,8 +25,8 @@ type bulkCloneGitlabOptions struct {
 	progressMode string
 }
 
-func defaultBulkCloneGitlabOptions() *bulkCloneGitlabOptions {
-	return &bulkCloneGitlabOptions{
+func defaultSyncCloneGitlabOptions() *syncCloneGitlabOptions {
+	return &syncCloneGitlabOptions{
 		strategy:     "reset",
 		parallel:     10,
 		maxRetries:   3,
@@ -35,7 +35,7 @@ func defaultBulkCloneGitlabOptions() *bulkCloneGitlabOptions {
 }
 
 func newSyncCloneGitlabCmd() *cobra.Command {
-	o := defaultBulkCloneGitlabOptions()
+	o := defaultSyncCloneGitlabOptions()
 
 	cmd := &cobra.Command{
 		Use:   "gitlab",
@@ -63,7 +63,7 @@ func newSyncCloneGitlabCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *bulkCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
+func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	// Load config if specified
 	if o.configFile != "" || o.useConfig {
 		err := o.loadFromConfig()
@@ -98,7 +98,7 @@ func (o *bulkCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *bulkCloneGitlabOptions) loadFromConfig() error {
+func (o *syncCloneGitlabOptions) loadFromConfig() error {
 	var configPath string
 	if o.configFile != "" {
 		configPath = o.configFile

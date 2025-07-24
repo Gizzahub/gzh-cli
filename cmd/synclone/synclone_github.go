@@ -259,12 +259,12 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 	}
 	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
 
-	simpleLogger.Info("Starting GitHub bulk clone operation")
+	simpleLogger.Info("Starting GitHub synclone operation")
 
 	start := time.Now()
 
 	// Execute with error recovery
-	return errorRecovery.Execute(cmd.Context(), "github-bulk-clone", func() error {
+	return errorRecovery.Execute(cmd.Context(), "github-synclone", func() error {
 		// Load config if specified
 		if o.configFile != "" || o.useConfig {
 			err := o.loadFromConfig()
@@ -275,8 +275,8 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 		}
 
 		// Comprehensive input validation
-		validator := validation.NewBulkCloneValidator()
-		opts := &validation.BulkCloneOptions{
+		validator := validation.NewSyncCloneValidator()
+		opts := &validation.SyncCloneOptions{
 			TargetPath:     o.targetPath,
 			OrgName:        o.orgName,
 			Strategy:       o.strategy,
@@ -400,14 +400,14 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
 			recErr = recErr.WithContext("operation_duration", time.Since(start).String())
 
-			simpleLogger.ErrorWithStack(err, "GitHub bulk clone operation failed")
+			simpleLogger.ErrorWithStack(err, "GitHub synclone operation failed")
 
 			// Return the error properly for error handling
 			return recErr
 		}
 
 		duration := time.Since(start)
-		simpleLogger.LogPerformance("github-bulk-clone-completed", duration, map[string]interface{}{
+		simpleLogger.LogPerformance("github-synclone-completed", duration, map[string]interface{}{
 			"org_name":     o.orgName,
 			"target_path":  o.targetPath,
 			"strategy":     o.strategy,
@@ -415,7 +415,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			"memory_stats": errors.GetMemoryStats(),
 		})
 
-		simpleLogger.Info("GitHub bulk clone operation completed successfully", "duration", duration.String())
+		simpleLogger.Info("GitHub synclone operation completed successfully", "duration", duration.String())
 
 		return nil
 	})
@@ -423,7 +423,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 
 func (o *syncCloneGithubOptions) loadFromConfig() error {
 	// Use unified config loading
-	cfg, err := internalconfig.LoadCommandConfig(context.Background(), o.configFile, "bulk-clone")
+	cfg, err := internalconfig.LoadCommandConfig(context.Background(), o.configFile, "synclone")
 	if err != nil {
 		return err
 	}

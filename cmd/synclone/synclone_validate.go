@@ -11,21 +11,21 @@ import (
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
-type bulkCloneValidateOptions struct {
+type syncCloneValidateOptions struct {
 	configFile string
 }
 
-func defaultBulkCloneValidateOptions() *bulkCloneValidateOptions {
-	return &bulkCloneValidateOptions{}
+func defaultSyncCloneValidateOptions() *syncCloneValidateOptions {
+	return &syncCloneValidateOptions{}
 }
 
 func newSyncCloneValidateCmd() *cobra.Command {
-	o := defaultBulkCloneValidateOptions()
+	o := defaultSyncCloneValidateOptions()
 
 	cmd := &cobra.Command{
 		Use:   "validate",
-		Short: "Validate a bulk-clone configuration file",
-		Long: `Validate a bulk-clone configuration file against the schema.
+		Short: "Validate a synclone configuration file",
+		Long: `Validate a synclone configuration file against the schema.
 
 This command checks that your configuration file:
 - Has all required fields
@@ -33,10 +33,10 @@ This command checks that your configuration file:
 - Follows the correct structure
 - Has valid regex patterns in ignore_names`,
 		Example: `  # Validate a config file
-  gzh bulk-clone validate -c bulk-clone.yaml
+  gzh synclone validate -c synclone.yaml
 
   # Validate config from standard location
-  gzh bulk-clone validate --use-config`,
+  gzh synclone validate --use-config`,
 		Args: cobra.NoArgs,
 		RunE: o.run,
 	}
@@ -47,7 +47,7 @@ This command checks that your configuration file:
 	return cmd
 }
 
-func (o *bulkCloneValidateOptions) run(cmd *cobra.Command, args []string) error {
+func (o *syncCloneValidateOptions) run(cmd *cobra.Command, args []string) error {
 	useConfig, _ := cmd.Flags().GetBool("use-config")
 
 	if o.configFile == "" && !useConfig {

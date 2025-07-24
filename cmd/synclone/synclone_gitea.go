@@ -9,20 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type bulkCloneGiteaOptions struct {
+type syncCloneGiteaOptions struct {
 	targetPath string
 	orgName    string
 	strategy   string
 }
 
-func defaultBulkCloneGiteaOptions() *bulkCloneGiteaOptions {
-	return &bulkCloneGiteaOptions{
+func defaultSyncCloneGiteaOptions() *syncCloneGiteaOptions {
+	return &syncCloneGiteaOptions{
 		strategy: "reset",
 	}
 }
 
 func newSyncCloneGiteaCmd() *cobra.Command {
-	o := defaultBulkCloneGiteaOptions()
+	o := defaultSyncCloneGiteaOptions()
 
 	cmd := &cobra.Command{
 		Use:   "gitea",
@@ -38,7 +38,7 @@ func newSyncCloneGiteaCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *bulkCloneGiteaOptions) run(_ *cobra.Command, args []string) error {
+func (o *syncCloneGiteaOptions) run(_ *cobra.Command, args []string) error {
 	if o.targetPath == "" || o.orgName == "" {
 		return fmt.Errorf("both targetPath and orgName must be specified")
 	}

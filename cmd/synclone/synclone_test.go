@@ -12,16 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBulkCloneGithubOptions_Validate(t *testing.T) {
+func TestSyncCloneGithubOptions_Validate(t *testing.T) {
 	tests := []struct {
 		name        string
-		options     *bulkCloneGithubOptions
+		options     *syncCloneGithubOptions
 		wantErr     bool
 		errContains string
 	}{
 		{
 			name: "valid reset strategy",
-			options: &bulkCloneGithubOptions{
+			options: &syncCloneGithubOptions{
 				targetPath: "/tmp/test",
 				orgName:    "test-org",
 				strategy:   "reset",
@@ -30,7 +30,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 		},
 		{
 			name: "valid pull strategy",
-			options: &bulkCloneGithubOptions{
+			options: &syncCloneGithubOptions{
 				targetPath: "/tmp/test",
 				orgName:    "test-org",
 				strategy:   "pull",
@@ -39,7 +39,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 		},
 		{
 			name: "valid fetch strategy",
-			options: &bulkCloneGithubOptions{
+			options: &syncCloneGithubOptions{
 				targetPath: "/tmp/test",
 				orgName:    "test-org",
 				strategy:   "fetch",
@@ -48,7 +48,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 		},
 		{
 			name: "invalid strategy",
-			options: &bulkCloneGithubOptions{
+			options: &syncCloneGithubOptions{
 				targetPath: "/tmp/test",
 				orgName:    "test-org",
 				strategy:   "invalid",
@@ -58,7 +58,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 		},
 		{
 			name: "missing targetPath",
-			options: &bulkCloneGithubOptions{
+			options: &syncCloneGithubOptions{
 				targetPath: "",
 				orgName:    "test-org",
 				strategy:   "reset",
@@ -68,7 +68,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 		},
 		{
 			name: "missing orgName",
-			options: &bulkCloneGithubOptions{
+			options: &syncCloneGithubOptions{
 				targetPath: "/tmp/test",
 				orgName:    "",
 				strategy:   "reset",
@@ -99,19 +99,19 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 	}
 }
 
-func TestDefaultBulkCloneOptions(t *testing.T) {
+func TestDefaultSyncCloneOptions(t *testing.T) {
 	t.Run("github default options", func(t *testing.T) {
-		opts := defaultBulkCloneGithubOptions()
+		opts := defaultSyncCloneGithubOptions()
 		assert.Equal(t, "reset", opts.strategy)
 	})
 
 	t.Run("gitlab default options", func(t *testing.T) {
-		opts := defaultBulkCloneGitlabOptions()
+		opts := defaultSyncCloneGitlabOptions()
 		assert.Equal(t, "reset", opts.strategy)
 	})
 
 	t.Run("gitea default options", func(t *testing.T) {
-		opts := defaultBulkCloneGiteaOptions()
+		opts := defaultSyncCloneGiteaOptions()
 		assert.Equal(t, "reset", opts.strategy)
 	})
 }
@@ -123,7 +123,7 @@ func TestStrategyValidation(t *testing.T) {
 	for _, strategy := range validStrategies {
 		t.Run("valid strategy: "+strategy, func(t *testing.T) {
 			// GitHub
-			githubOpts := &bulkCloneGithubOptions{
+			githubOpts := &syncCloneGithubOptions{
 				targetPath: "/tmp/test",
 				orgName:    "test-org",
 				strategy:   strategy,
@@ -135,7 +135,7 @@ func TestStrategyValidation(t *testing.T) {
 			assert.True(t, err == nil || !contains(err.Error(), "Input validation failed"))
 
 			// GitLab
-			gitlabOpts := &bulkCloneGitlabOptions{
+			gitlabOpts := &syncCloneGitlabOptions{
 				targetPath: "/tmp/test",
 				groupName:  "test-group",
 				strategy:   strategy,
@@ -150,7 +150,7 @@ func TestStrategyValidation(t *testing.T) {
 	for _, strategy := range invalidStrategies {
 		t.Run("invalid strategy: "+strategy, func(t *testing.T) {
 			// GitHub
-			githubOpts := &bulkCloneGithubOptions{
+			githubOpts := &syncCloneGithubOptions{
 				targetPath: "/tmp/test",
 				orgName:    "test-org",
 				strategy:   strategy,
@@ -164,7 +164,7 @@ func TestStrategyValidation(t *testing.T) {
 			}
 
 			// GitLab
-			gitlabOpts := &bulkCloneGitlabOptions{
+			gitlabOpts := &syncCloneGitlabOptions{
 				targetPath: "/tmp/test",
 				groupName:  "test-group",
 				strategy:   strategy,
@@ -206,7 +206,7 @@ repo_roots:
 	require.NoError(t, err)
 
 	t.Run("github with config file", func(t *testing.T) {
-		opts := &bulkCloneGithubOptions{
+		opts := &syncCloneGithubOptions{
 			configFile: configPath,
 			orgName:    "my-test-org",
 		}
@@ -217,7 +217,7 @@ repo_roots:
 	})
 
 	t.Run("github with config use default org", func(t *testing.T) {
-		opts := &bulkCloneGithubOptions{
+		opts := &syncCloneGithubOptions{
 			configFile: configPath,
 			orgName:    "test-default-org",
 		}
@@ -242,7 +242,7 @@ default:
 		err := os.WriteFile(gitlabConfigPath, []byte(formattedGitlabConfig), 0o600)
 		require.NoError(t, err)
 
-		opts := &bulkCloneGitlabOptions{
+		opts := &syncCloneGitlabOptions{
 			configFile: gitlabConfigPath,
 			groupName:  "test-group",
 		}
@@ -254,7 +254,7 @@ default:
 	})
 
 	t.Run("cli flags override config", func(t *testing.T) {
-		opts := &bulkCloneGithubOptions{
+		opts := &syncCloneGithubOptions{
 			configFile: configPath,
 			orgName:    "my-test-org",
 			targetPath: "/override/path",
@@ -267,11 +267,11 @@ default:
 	})
 }
 
-func TestMainBulkCloneCommand(t *testing.T) {
+func TestMainSyncCloneCommand(t *testing.T) {
 	tempDir := t.TempDir()
 
-	t.Run("default bulk clone options", func(t *testing.T) {
-		opts := defaultBulkCloneOptions()
+	t.Run("default synclone options", func(t *testing.T) {
+		opts := defaultSyncCloneOptions()
 		assert.Equal(t, "reset", opts.strategy)
 		assert.Equal(t, "", opts.configFile)
 		assert.False(t, opts.useConfig)
@@ -399,11 +399,11 @@ repo_roots: []
 	})
 }
 
-func TestMainBulkCloneCommandFlags(t *testing.T) {
+func TestMainSyncCloneCommandFlags(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := NewBulkCloneCmd(context.Background())
+		cmd := NewSyncCloneCmd(context.Background())
 		assert.NotNil(t, cmd)
-		assert.Equal(t, "bulk-clone", cmd.Use)
+		assert.Equal(t, "synclone", cmd.Use)
 		assert.Contains(t, cmd.Short, "Clone repositories from multiple Git hosting services")
 
 		// Check that it has the right flags

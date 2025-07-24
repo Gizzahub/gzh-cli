@@ -8,8 +8,8 @@ import (
 	"strconv"
 )
 
-// BulkCloneOptions represents the options that need validation for bulk clone operations.
-type BulkCloneOptions struct {
+// SyncCloneOptions represents the options that need validation for synclone operations.
+type SyncCloneOptions struct {
 	TargetPath     string
 	OrgName        string
 	Strategy       string
@@ -31,20 +31,20 @@ type BulkCloneOptions struct {
 	UpdatedBefore  string
 }
 
-// BulkCloneValidator provides validation specifically for bulk clone operations.
-type BulkCloneValidator struct {
+// SyncCloneValidator provides validation specifically for synclone operations.
+type SyncCloneValidator struct {
 	validator *Validator
 }
 
-// NewBulkCloneValidator creates a new bulk clone validator.
-func NewBulkCloneValidator() *BulkCloneValidator {
-	return &BulkCloneValidator{
+// NewSyncCloneValidator creates a new synclone validator.
+func NewSyncCloneValidator() *SyncCloneValidator {
+	return &SyncCloneValidator{
 		validator: New(),
 	}
 }
 
-// ValidateOptions performs comprehensive validation of bulk clone options.
-func (v *BulkCloneValidator) ValidateOptions(opts *BulkCloneOptions) error {
+// ValidateOptions performs comprehensive validation of synclone options.
+func (v *SyncCloneValidator) ValidateOptions(opts *SyncCloneOptions) error {
 	// Required field validation
 	if err := v.validateRequiredFields(opts); err != nil {
 		return fmt.Errorf("required field validation failed: %w", err)
@@ -88,7 +88,7 @@ func (v *BulkCloneValidator) ValidateOptions(opts *BulkCloneOptions) error {
 	return nil
 }
 
-func (v *BulkCloneValidator) validateRequiredFields(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validateRequiredFields(opts *SyncCloneOptions) error {
 	if opts.TargetPath == "" {
 		return fmt.Errorf("target path is required")
 	}
@@ -100,7 +100,7 @@ func (v *BulkCloneValidator) validateRequiredFields(opts *BulkCloneOptions) erro
 	return nil
 }
 
-func (v *BulkCloneValidator) validatePaths(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validatePaths(opts *SyncCloneOptions) error {
 	// Validate target path
 	if err := v.validator.ValidatePath(opts.TargetPath); err != nil {
 		return fmt.Errorf("invalid target path: %w", err)
@@ -116,7 +116,7 @@ func (v *BulkCloneValidator) validatePaths(opts *BulkCloneOptions) error {
 	return nil
 }
 
-func (v *BulkCloneValidator) validateOrganizationAndStrategy(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validateOrganizationAndStrategy(opts *SyncCloneOptions) error {
 	// Validate organization name
 	if err := v.validator.ValidateOrganizationName(opts.OrgName); err != nil {
 		return fmt.Errorf("invalid organization name: %w", err)
@@ -133,7 +133,7 @@ func (v *BulkCloneValidator) validateOrganizationAndStrategy(opts *BulkCloneOpti
 	return nil
 }
 
-func (v *BulkCloneValidator) validateNumericParams(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validateNumericParams(opts *SyncCloneOptions) error {
 	// Validate parallelism
 	if opts.Parallel <= 0 {
 		opts.Parallel = 5 // Set default
@@ -166,7 +166,7 @@ func (v *BulkCloneValidator) validateNumericParams(opts *BulkCloneOptions) error
 	return nil
 }
 
-func (v *BulkCloneValidator) validateToken(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validateToken(opts *SyncCloneOptions) error {
 	if err := v.validator.ValidateToken(opts.Token); err != nil {
 		return fmt.Errorf("invalid token: %w", err)
 	}
@@ -174,7 +174,7 @@ func (v *BulkCloneValidator) validateToken(opts *BulkCloneOptions) error {
 	return nil
 }
 
-func (v *BulkCloneValidator) validatePerformanceSettings(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validatePerformanceSettings(opts *SyncCloneOptions) error {
 	// Validate memory limit
 	if err := v.validator.ValidateMemoryLimit(opts.MemoryLimit); err != nil {
 		return fmt.Errorf("invalid memory limit: %w", err)
@@ -193,7 +193,7 @@ func (v *BulkCloneValidator) validatePerformanceSettings(opts *BulkCloneOptions)
 	return nil
 }
 
-func (v *BulkCloneValidator) validateFilters(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validateFilters(opts *SyncCloneOptions) error {
 	// Validate include pattern
 	if err := v.validator.ValidatePattern(opts.IncludePattern); err != nil {
 		return fmt.Errorf("invalid include pattern: %w", err)
@@ -228,7 +228,7 @@ func (v *BulkCloneValidator) validateFilters(opts *BulkCloneOptions) error {
 	return nil
 }
 
-func (v *BulkCloneValidator) validateDateRanges(opts *BulkCloneOptions) error {
+func (v *SyncCloneValidator) validateDateRanges(opts *SyncCloneOptions) error {
 	// Validate updated after date
 	if err := v.validator.ValidateDateRange(opts.UpdatedAfter); err != nil {
 		return fmt.Errorf("invalid updated after date: %w", err)
@@ -242,9 +242,9 @@ func (v *BulkCloneValidator) validateDateRanges(opts *BulkCloneOptions) error {
 	return nil
 }
 
-// SanitizeOptions sanitizes all string inputs in bulk clone options.
-func (v *BulkCloneValidator) SanitizeOptions(opts *BulkCloneOptions) *BulkCloneOptions {
-	sanitized := &BulkCloneOptions{
+// SanitizeOptions sanitizes all string inputs in synclone options.
+func (v *SyncCloneValidator) SanitizeOptions(opts *SyncCloneOptions) *SyncCloneOptions {
+	sanitized := &SyncCloneOptions{
 		TargetPath:     v.validator.SanitizeString(opts.TargetPath),
 		OrgName:        v.validator.SanitizeString(opts.OrgName),
 		Strategy:       v.validator.SanitizeString(opts.Strategy),
@@ -277,7 +277,7 @@ func (v *BulkCloneValidator) SanitizeOptions(opts *BulkCloneOptions) *BulkCloneO
 }
 
 // ValidateFlagValue validates individual flag values as they're parsed.
-func (v *BulkCloneValidator) ValidateFlagValue(flagName, value string) error {
+func (v *SyncCloneValidator) ValidateFlagValue(flagName, value string) error {
 	switch flagName {
 	case "org", "organization":
 		return v.validator.ValidateOrganizationName(value)

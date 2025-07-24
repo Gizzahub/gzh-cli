@@ -16,7 +16,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/test/integration/testcontainers"
 )
 
-func TestBulkClone_GitLab_Integration(t *testing.T) {
+func TestSyncClone_GitLab_Integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping Docker integration test in short mode")
 	}
@@ -37,7 +37,7 @@ func TestBulkClone_GitLab_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create temporary directory for test configuration
-	tmpDir, err := os.MkdirTemp("", "bulk-clone-gitlab-*")
+	tmpDir, err := os.MkdirTemp("", "synclone-gitlab-*")
 	require.NoError(t, err)
 
 	defer func() {
@@ -66,7 +66,7 @@ func TestBulkClone_GitLab_Integration(t *testing.T) {
 	}
 
 	// Write configuration to file
-	configPath := filepath.Join(tmpDir, "bulk-clone.yaml")
+	configPath := filepath.Join(tmpDir, "synclone.yaml")
 	configData, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
 	err = os.WriteFile(configPath, configData, 0o644)
@@ -82,11 +82,11 @@ func TestBulkClone_GitLab_Integration(t *testing.T) {
 	}
 
 	assert.NotNil(t, loadedConfig)
-	// BulkCloneConfig doesn't have these fields - it uses a different structure
+	// SyncCloneConfig doesn't have these fields - it uses a different structure
 	// Just verify the config was loaded successfully
 }
 
-func TestBulkClone_Gitea_Integration(t *testing.T) {
+func TestSyncClone_Gitea_Integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping Docker integration test in short mode")
 	}
@@ -107,7 +107,7 @@ func TestBulkClone_Gitea_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create temporary directory for test configuration
-	tmpDir, err := os.MkdirTemp("", "bulk-clone-gitea-*")
+	tmpDir, err := os.MkdirTemp("", "synclone-gitea-*")
 	require.NoError(t, err)
 
 	defer func() {
@@ -136,7 +136,7 @@ func TestBulkClone_Gitea_Integration(t *testing.T) {
 	}
 
 	// Write configuration to file
-	configPath := filepath.Join(tmpDir, "bulk-clone.yaml")
+	configPath := filepath.Join(tmpDir, "synclone.yaml")
 	configData, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
 	err = os.WriteFile(configPath, configData, 0o644)
@@ -152,11 +152,11 @@ func TestBulkClone_Gitea_Integration(t *testing.T) {
 	}
 
 	assert.NotNil(t, loadedConfig)
-	// BulkCloneConfig doesn't have these fields - it uses a different structure
+	// SyncCloneConfig doesn't have these fields - it uses a different structure
 	// Just verify the config was loaded successfully
 }
 
-func TestBulkClone_Redis_Cache_Integration(t *testing.T) {
+func TestSyncClone_Redis_Cache_Integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping Docker integration test in short mode")
 	}
@@ -173,7 +173,7 @@ func TestBulkClone_Redis_Cache_Integration(t *testing.T) {
 	}()
 
 	// Create temporary directory for test configuration
-	tmpDir, err := os.MkdirTemp("", "bulk-clone-redis-*")
+	tmpDir, err := os.MkdirTemp("", "synclone-redis-*")
 	require.NoError(t, err)
 
 	defer func() {
@@ -211,7 +211,7 @@ func TestBulkClone_Redis_Cache_Integration(t *testing.T) {
 	}
 
 	// Write configuration to file
-	configPath := filepath.Join(tmpDir, "bulk-clone.yaml")
+	configPath := filepath.Join(tmpDir, "synclone.yaml")
 	configData, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
 	err = os.WriteFile(configPath, configData, 0o644)
@@ -226,11 +226,11 @@ func TestBulkClone_Redis_Cache_Integration(t *testing.T) {
 	}
 
 	assert.NotNil(t, loadedConfig)
-	// BulkCloneConfig doesn't have cache fields - it uses a different structure
+	// SyncCloneConfig doesn't have cache fields - it uses a different structure
 	// Just verify the config was loaded successfully
 }
 
-// Commented out - BulkCloneConfig structure doesn't support these fields
+// Commented out - SyncCloneConfig structure doesn't support these fields
 /*
 func TestMultiProvider_Integration(t *testing.T) {
 	if testing.Short() {
@@ -267,7 +267,7 @@ func TestMultiProvider_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create temporary directory for test configuration
-	tmpDir, err := os.MkdirTemp("", "bulk-clone-multi-*")
+	tmpDir, err := os.MkdirTemp("", "synclone-multi-*")
 	require.NoError(t, err)
 	defer func() {
 		if err := os.RemoveAll(tmpDir); err != nil {
@@ -323,7 +323,7 @@ func TestMultiProvider_Integration(t *testing.T) {
 	}
 
 	// Write configuration to file
-	configPath := filepath.Join(tmpDir, "bulk-clone.yaml")
+	configPath := filepath.Join(tmpDir, "synclone.yaml")
 	configData, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
 	err = os.WriteFile(configPath, configData, 0o644)

@@ -14,21 +14,21 @@ import (
 	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
-// TestBulkClone_ConfigurationLoading tests the configuration loading functionality.
-func TestBulkClone_ConfigurationLoading(t *testing.T) {
+// TestSyncClone_ConfigurationLoading tests the configuration loading functionality.
+func TestSyncClone_ConfigurationLoading(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
 	t.Run("LoadConfigFromFile", func(t *testing.T) {
 		// Create temporary directory for test configuration
-		tmpDir, err := os.MkdirTemp("", "bulk-clone-config-*")
+		tmpDir, err := os.MkdirTemp("", "synclone-config-*")
 		require.NoError(t, err)
 
 		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 		// Create test configuration
-		configPath := filepath.Join(tmpDir, "bulk-clone.yaml")
+		configPath := filepath.Join(tmpDir, "synclone.yaml")
 		testConfig := map[string]interface{}{
 			"version":          "1.0.0",
 			"default_provider": "github",
@@ -65,15 +65,15 @@ func TestBulkClone_ConfigurationLoading(t *testing.T) {
 	})
 }
 
-// TestBulkClone_StateManagement tests the state management functionality.
-func TestBulkClone_StateManagement(t *testing.T) {
+// TestSyncClone_StateManagement tests the state management functionality.
+func TestSyncClone_StateManagement(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
 	t.Run("StateManager_Operations", func(t *testing.T) {
 		// Create temporary directory for state files
-		tmpDir, err := os.MkdirTemp("", "bulk-clone-state-*")
+		tmpDir, err := os.MkdirTemp("", "synclone-state-*")
 		require.NoError(t, err)
 
 		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
@@ -123,8 +123,8 @@ func TestBulkClone_StateManagement(t *testing.T) {
 	})
 }
 
-// TestBulkClone_ProgressTracking tests the progress tracking functionality.
-func TestBulkClone_ProgressTracking(t *testing.T) {
+// TestSyncClone_ProgressTracking tests the progress tracking functionality.
+func TestSyncClone_ProgressTracking(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -181,8 +181,8 @@ func TestBulkClone_ProgressTracking(t *testing.T) {
 	})
 }
 
-// TestBulkClone_URLBuilder tests the URL building functionality.
-func TestBulkClone_URLBuilder(t *testing.T) {
+// TestSyncClone_URLBuilder tests the URL building functionality.
+func TestSyncClone_URLBuilder(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -221,15 +221,15 @@ func TestBulkClone_URLBuilder(t *testing.T) {
 	})
 }
 
-// TestBulkClone_SchemaValidation tests the schema validation functionality.
-func TestBulkClone_SchemaValidation(t *testing.T) {
+// TestSyncClone_SchemaValidation tests the schema validation functionality.
+func TestSyncClone_SchemaValidation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
 	t.Run("SchemaValidation_Operations", func(t *testing.T) {
 		// Create temporary directory for test configuration
-		tmpDir, err := os.MkdirTemp("", "bulk-clone-schema-*")
+		tmpDir, err := os.MkdirTemp("", "synclone-schema-*")
 		require.NoError(t, err)
 
 		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
@@ -263,8 +263,8 @@ providers:
 	})
 }
 
-// TestBulkClone_EndToEnd tests the complete workflow.
-func TestBulkClone_EndToEnd(t *testing.T) {
+// TestSyncClone_EndToEnd tests the complete workflow.
+func TestSyncClone_EndToEnd(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -276,13 +276,13 @@ func TestBulkClone_EndToEnd(t *testing.T) {
 
 	t.Run("EndToEnd_Workflow", func(t *testing.T) {
 		// Create temporary directory for test
-		tmpDir, err := os.MkdirTemp("", "bulk-clone-e2e-*")
+		tmpDir, err := os.MkdirTemp("", "synclone-e2e-*")
 		require.NoError(t, err)
 
 		defer func() { _ = os.RemoveAll(tmpDir) }() // Ignore cleanup error
 
 		// Create configuration file
-		configPath := filepath.Join(tmpDir, "bulk-clone.yaml")
+		configPath := filepath.Join(tmpDir, "synclone.yaml")
 		configContent := `
 version: "1.0.0"
 default_provider: "github"

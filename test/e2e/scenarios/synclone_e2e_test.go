@@ -12,7 +12,7 @@ const (
 	defaultVersion = "1.0.0"
 )
 
-func TestBulkClone_ConfigGeneration_E2E(t *testing.T) {
+func TestSyncClone_ConfigGeneration_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -28,17 +28,17 @@ func TestBulkClone_ConfigGeneration_E2E(t *testing.T) {
 	assertions.Success().OutputContains("Configuration generated")
 
 	// Verify configuration file was created
-	env.AssertFileExists("bulk-clone.yaml")
+	env.AssertFileExists("synclone.yaml")
 
 	// Validate configuration content
-	config := helpers.NewConfigAssertions(t, env, "bulk-clone.yaml")
+	config := helpers.NewConfigAssertions(t, env, "synclone.yaml")
 	config.ValidYAML().
 		HasField("version").
 		HasField("providers").
 		FieldEquals("version", defaultVersion)
 }
 
-func TestBulkClone_ConfigValidation_E2E(t *testing.T) {
+func TestSyncClone_ConfigValidation_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -64,7 +64,7 @@ providers:
 	assertions.Success().OutputContains("Configuration is valid")
 }
 
-func TestBulkClone_ConfigValidation_Invalid_E2E(t *testing.T) {
+func TestSyncClone_ConfigValidation_Invalid_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -84,7 +84,7 @@ providers:
 	assertions.Failure().OutputContains("Configuration is invalid")
 }
 
-func TestBulkClone_DryRun_E2E(t *testing.T) {
+func TestSyncClone_DryRun_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -105,7 +105,7 @@ providers:
 	env.WriteConfig("test-config.yaml", config)
 
 	// Run bulk clone in dry-run mode
-	result := env.RunCommand("bulk-clone", "--config", "test-config.yaml", "--dry-run")
+	result := env.RunCommand("synclone", "--config", "test-config.yaml", "--dry-run")
 
 	assertions := helpers.NewCLIAssertions(t, result)
 	// In dry-run mode, it should show what would be done without actual API calls
@@ -115,7 +115,7 @@ providers:
 	env.AssertFileNotExists("repos")
 }
 
-func TestBulkClone_MultipleProviders_E2E(t *testing.T) {
+func TestSyncClone_MultipleProviders_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -151,7 +151,7 @@ providers:
 	assertions.Success().OutputContains("Configuration is valid")
 
 	// Test dry-run with multiple providers
-	result = env.RunCommand("bulk-clone", "--config", "multi-provider-config.yaml", "--dry-run")
+	result = env.RunCommand("synclone", "--config", "multi-provider-config.yaml", "--dry-run")
 
 	assertions = helpers.NewCLIAssertions(t, result)
 	assertions.OutputContains("github-org").
@@ -159,7 +159,7 @@ providers:
 		OutputContains("gitea-org")
 }
 
-func TestBulkClone_StrategyOptions_E2E(t *testing.T) {
+func TestSyncClone_StrategyOptions_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -190,7 +190,7 @@ providers:
 	}
 }
 
-func TestBulkClone_VisibilityFiltering_E2E(t *testing.T) {
+func TestSyncClone_VisibilityFiltering_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -221,7 +221,7 @@ providers:
 	}
 }
 
-func TestBulkClone_PatternMatching_E2E(t *testing.T) {
+func TestSyncClone_PatternMatching_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -248,18 +248,18 @@ providers:
 	assertions.Success()
 
 	// Test dry-run to see pattern matching in action
-	result = env.RunCommand("bulk-clone", "--config", "pattern-config.yaml", "--dry-run")
+	result = env.RunCommand("synclone", "--config", "pattern-config.yaml", "--dry-run")
 
 	assertions = helpers.NewCLIAssertions(t, result)
 	assertions.OutputContains("awesome-")
 }
 
-func TestBulkClone_ErrorHandling_E2E(t *testing.T) {
+func TestSyncClone_ErrorHandling_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
 	// Test with non-existent config file
-	result := env.RunCommand("bulk-clone", "--config", "non-existent.yaml")
+	result := env.RunCommand("synclone", "--config", "non-existent.yaml")
 
 	assertions := helpers.NewCLIAssertions(t, result)
 	assertions.Failure().OutputContains("config")
@@ -274,13 +274,13 @@ providers:
 `
 	env.WriteConfig("malformed.yaml", malformedConfig)
 
-	result = env.RunCommand("bulk-clone", "--config", "malformed.yaml")
+	result = env.RunCommand("synclone", "--config", "malformed.yaml")
 
 	assertions = helpers.NewCLIAssertions(t, result)
 	assertions.Failure()
 }
 
-func TestBulkClone_EnvironmentVariables_E2E(t *testing.T) {
+func TestSyncClone_EnvironmentVariables_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -312,7 +312,7 @@ providers:
 	assertions.Success()
 }
 
-func TestBulkClone_ConfigMigration_E2E(t *testing.T) {
+func TestSyncClone_ConfigMigration_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -343,7 +343,7 @@ github:
 	}
 }
 
-func TestBulkClone_CacheIntegration_E2E(t *testing.T) {
+func TestSyncClone_CacheIntegration_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
@@ -370,22 +370,22 @@ providers:
 	assertions.Success()
 
 	// Test with cache in dry-run mode
-	result = env.RunCommand("bulk-clone", "--config", "cache-config.yaml", "--dry-run")
+	result = env.RunCommand("synclone", "--config", "cache-config.yaml", "--dry-run")
 
 	assertions = helpers.NewCLIAssertions(t, result)
 	assertions.OutputContains("cached-org")
 }
 
-func TestBulkClone_HelpAndVersion_E2E(t *testing.T) {
+func TestSyncClone_HelpAndVersion_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
 	// Test help command
-	result := env.RunCommand("bulk-clone", "--help")
+	result := env.RunCommand("synclone", "--help")
 
 	assertions := helpers.NewCLIAssertions(t, result)
 	assertions.Success().
-		OutputContains("bulk-clone").
+		OutputContains("synclone").
 		OutputContains("Usage:")
 
 	// Test version command
