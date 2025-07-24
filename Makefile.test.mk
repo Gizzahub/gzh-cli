@@ -40,7 +40,7 @@ test-integration: ## run Docker-based integration tests (alias for test-docker)
 	@if [ -f "./test/integration/run_docker_tests.sh" ]; then \
 		./test/integration/run_docker_tests.sh all; \
 	else \
-		echo "$(YELLOW)No Docker integration test script found$(RESET)"; \
+		echo -e "$(YELLOW)No Docker integration test script found$(RESET)"; \
 		make test-integration-only; \
 	fi
 	@echo -e "$(GREEN)✅ Integration tests completed$(RESET)"
@@ -50,7 +50,7 @@ test-e2e: build ## run End-to-End test scenarios
 	@if [ -f "./test/e2e/run_e2e_tests.sh" ]; then \
 		./test/e2e/run_e2e_tests.sh all; \
 	else \
-		echo "$(YELLOW)No E2E test script found$(RESET)"; \
+		echo -e "$(YELLOW)No E2E test script found$(RESET)"; \
 		make test-e2e-only; \
 	fi
 	@echo -e "$(GREEN)✅ E2E tests completed$(RESET)"

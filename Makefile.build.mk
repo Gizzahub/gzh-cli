@@ -44,17 +44,17 @@ clean: ## clean up environment
 
 release-dry-run: ## run goreleaser in dry-run mode
 	@echo -e "$(CYAN)Running goreleaser in dry-run mode...$(RESET)"
-	@command -v goreleaser >/dev/null 2>&1 || { echo "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
+	@command -v goreleaser >/dev/null 2>&1 || { echo -e "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
 	@goreleaser release --snapshot --clean --skip=publish
 
 release-snapshot: ## create a snapshot release
 	@echo -e "$(CYAN)Creating snapshot release...$(RESET)"
-	@command -v goreleaser >/dev/null 2>&1 || { echo "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
+	@command -v goreleaser >/dev/null 2>&1 || { echo -e "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
 	@goreleaser release --snapshot --clean
 
 release-check: ## check goreleaser configuration
 	@echo -e "$(CYAN)Checking goreleaser configuration...$(RESET)"
-	@command -v goreleaser >/dev/null 2>&1 || { echo "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
+	@command -v goreleaser >/dev/null 2>&1 || { echo -e "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
 	@goreleaser check
 
 deploy: release-dry-run ## alias for release-dry-run

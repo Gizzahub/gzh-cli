@@ -65,30 +65,30 @@ format-install-tools: ## install advanced formatting tools
 
 format-file: ## format specific files with gofumpt and goimports (usage: make format-file file1.go file2.go ...)
 	@if [ -z "$(MAKECMDGOALS)" ] || [ "$(words $(MAKECMDGOALS))" -eq 1 ]; then \
-		echo "$(RED)❌ Error: At least one file must be specified$(RESET)"; \
-		echo "$(YELLOW)Usage: make format-file file1.go file2.go ...$(RESET)"; \
+		echo -e "$(RED)❌ Error: At least one file must be specified$(RESET)"; \
+		echo -e "$(YELLOW)Usage: make format-file file1.go file2.go ...$(RESET)"; \
 		exit 1; \
 	fi
-	@echo "$(CYAN)🔄 Processing files...$(RESET)"
+	@echo -e "$(CYAN)🔄 Processing files...$(RESET)"
 	@for file in $(filter-out format-file,$(MAKECMDGOALS)); do \
 		if [ -n "$$file" ]; then \
 			if [ ! -f "$$file" ]; then \
-				echo "$(RED)❌ Error: File '$$file' does not exist$(RESET)"; \
+				echo -e "$(RED)❌ Error: File '$$file' does not exist$(RESET)"; \
 				continue; \
 			fi; \
 			if ! echo "$$file" | grep -q "\.go$$"; then \
-				echo "$(YELLOW)⚠️  Warning: File '$$file' is not a Go file (.go extension), skipping$(RESET)"; \
+				echo -e "$(YELLOW)⚠️  Warning: File '$$file' is not a Go file (.go extension), skipping$(RESET)"; \
 				continue; \
 			fi; \
-			echo "$(CYAN)📝 Formatting file: $$file$(RESET)"; \
+			echo -e "$(CYAN)📝 Formatting file: $$file$(RESET)"; \
 			echo "  1. Running gofumpt..."; \
-			gofumpt -w "$$file" || echo "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
+			gofumpt -w "$$file" || echo -e "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
 			echo "  2. Running goimports..."; \
-			goimports -w -local github.com/gizzahub/gzh-manager-go "$$file" || echo "$(RED)❌ goimports failed for $$file$(RESET)"; \
-			echo "$(GREEN)✅ File '$$file' formatted successfully!$(RESET)"; \
+			goimports -w -local github.com/gizzahub/gzh-manager-go "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
+			echo -e "$(GREEN)✅ File '$$file' formatted successfully!$(RESET)"; \
 		fi; \
 	done
-	@echo "$(GREEN)🎉 All files processed!$(RESET)"
+	@echo -e "$(GREEN)🎉 All files processed!$(RESET)"
 
 # ==============================================================================
 # Linting and Static Analysis
@@ -157,7 +157,7 @@ lint-json: install-golangci-lint ## export lint results to JSON for further anal
 	@echo -e "$(GREEN)✅ Report saved to lint-report.json$(RESET)"
 	@if command -v jq >/dev/null 2>&1; then \
 		echo ""; \
-		echo "$(YELLOW)📈 JSON Report Summary:$(RESET)"; \
+		echo -e "$(YELLOW)📈 JSON Report Summary:$(RESET)"; \
 		echo "  Total Issues: $$(jq '.Issues | length' lint-report.json 2>/dev/null || echo '0')"; \
 		echo "  Unique Files: $$(jq -r '.Issues[]? | .Pos.Filename' lint-report.json 2>/dev/null | sort | uniq | wc -l || echo '0')"; \
 	fi
@@ -177,12 +177,12 @@ security: security-deps security-code ## run all security checks
 
 security-deps: ## check dependencies for vulnerabilities
 	@echo -e "$(CYAN)Checking dependencies for vulnerabilities...$(RESET)"
-	@go run golang.org/x/vuln/cmd/govulncheck@latest ./... || echo "$(RED)❌ Vulnerabilities found$(RESET)"
+	@go run golang.org/x/vuln/cmd/govulncheck@latest ./... || echo -e "$(RED)❌ Vulnerabilities found$(RESET)"
 
 security-code: ## run security code analysis
 	@echo -e "$(CYAN)Running security code analysis with gosec...$(RESET)"
 	@command -v gosec >/dev/null 2>&1 || { echo "Installing gosec..." && go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
-	@gosec -config=.gosec.yaml ./... 2>/dev/null || echo "$(YELLOW)No gosec config found, using defaults$(RESET)"
+	@gosec -config=.gosec.yaml ./... 2>/dev/null || echo -e "$(YELLOW)No gosec config found, using defaults$(RESET)"
 
 security-json: ## run security analysis and output JSON report
 	@echo -e "$(CYAN)Running security analysis with JSON output...$(RESET)"
@@ -223,7 +223,7 @@ analyze-dupl: ## find duplicate code
 
 pre-commit-install: ## install pre-commit hooks
 	@echo -e "$(CYAN)Installing pre-commit hooks...$(RESET)"
-	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
+	@command -v pre-commit >/dev/null 2>&1 || { echo -e "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
 	@if [ -f "./scripts/setup-git-hooks.sh" ]; then \
 		./scripts/setup-git-hooks.sh; \
 	else \
@@ -233,27 +233,27 @@ pre-commit-install: ## install pre-commit hooks
 
 pre-commit: ## run pre-commit hooks (format + light checks)
 	@echo -e "$(CYAN)Running pre-commit hooks...$(RESET)"
-	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
+	@command -v pre-commit >/dev/null 2>&1 || { echo -e "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
 	pre-commit run --all-files
 
 pre-push: ## run pre-push hooks (comprehensive checks)
 	@echo -e "$(CYAN)Running pre-push hooks...$(RESET)"
-	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
+	@command -v pre-commit >/dev/null 2>&1 || { echo -e "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
 	pre-commit run --all-files --hook-stage pre-push
 
 check-consistency: ## verify lint configuration consistency
 	@echo -e "$(CYAN)Checking lint configuration consistency...$(RESET)"
 	@echo -e "$(GREEN)✓$(RESET) Makefile uses: .golangci.yml"
 	@if [ -f ".pre-commit-config.yaml" ]; then \
-		grep -q "\\.golangci\\.yml" .pre-commit-config.yaml && echo "$(GREEN)✓$(RESET) Pre-commit uses: .golangci.yml" || echo "$(RED)✗$(RESET) Pre-commit config mismatch"; \
+		grep -q "\\.golangci\\.yml" .pre-commit-config.yaml && echo -e "$(GREEN)✓$(RESET) Pre-commit uses: .golangci.yml" || echo -e "$(RED)✗$(RESET) Pre-commit config mismatch"; \
 	else \
-		echo "$(YELLOW)⚠$(RESET) No pre-commit config found"; \
+		echo -e "$(YELLOW)⚠$(RESET) No pre-commit config found"; \
 	fi
 	@echo -e "$(GREEN)✅ Configuration consistency checked$(RESET)"
 
 pre-commit-update: ## update pre-commit hooks to latest versions
 	@echo -e "$(CYAN)Updating pre-commit hooks...$(RESET)"
-	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
+	@command -v pre-commit >/dev/null 2>&1 || { echo -e "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; exit 1; }
 	pre-commit autoupdate
 	@echo -e "$(GREEN)✅ Pre-commit hooks updated!$(RESET)"
 

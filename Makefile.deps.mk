@@ -16,7 +16,7 @@
 
 deps-check: ## check for outdated Go dependencies
 	@echo -e "$(CYAN)Checking for outdated Go dependencies...$(RESET)"
-	@go list -u -m all | grep '\[' || echo "$(GREEN)✅ All Go dependencies are up to date$(RESET)"
+	@go list -u -m all | grep '\[' || echo -e "$(GREEN)✅ All Go dependencies are up to date$(RESET)"
 
 deps-outdated: ## detailed report of outdated dependencies
 	@echo -e "$(CYAN)Generating detailed outdated dependencies report...$(RESET)"
@@ -88,17 +88,17 @@ deps-interactive: ## interactive dependency update (choose which ones to update)
 	@echo -e "$(CYAN)Interactive dependency update...$(RESET)"
 	@outdated=$$(go list -u -m all | grep '\['); \
 	if [ -z "$$outdated" ]; then \
-		echo "$(GREEN)✅ All dependencies are up to date$(RESET)"; \
+		echo -e "$(GREEN)✅ All dependencies are up to date$(RESET)"; \
 		exit 0; \
 	fi; \
 	echo "$$outdated" | while read line; do \
 		pkg=$$(echo $$line | cut -d' ' -f1); \
 		current=$$(echo $$line | cut -d' ' -f2); \
 		latest=$$(echo $$line | sed 's/.*\[\(.*\)\].*/\1/'); \
-		echo "$(YELLOW)Update $$pkg from $$current to $$latest? [y/N]$(RESET)"; \
+		echo -e "$(YELLOW)Update $$pkg from $$current to $$latest? [y/N]$(RESET)"; \
 		read -r confirm; \
 		if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
-			echo "$(CYAN)Updating $$pkg...$(RESET)"; \
+			echo -e "$(CYAN)Updating $$pkg...$(RESET)"; \
 			go get $$pkg@$$latest; \
 		fi; \
 	done; \
@@ -111,17 +111,17 @@ deps-interactive: ## interactive dependency update (choose which ones to update)
 deps-update-actions: ## check and show GitHub Actions that need updates
 	@echo -e "$(CYAN)Checking GitHub Actions dependencies...$(RESET)"
 	@if [ -d ".github/workflows" ]; then \
-		echo "$(YELLOW)GitHub Actions in use:$(RESET)"; \
+		echo -e "$(YELLOW)GitHub Actions in use:$(RESET)"; \
 		grep -r "uses:" .github/workflows/ | sed 's/.*uses: */  → /' | sort | uniq; \
 		echo ""; \
-		echo "$(YELLOW)To update GitHub Actions, manually edit .github/workflows/*.yml files$(RESET)"; \
-		echo "$(YELLOW)Common updates:$(RESET)"; \
+		echo -e "$(YELLOW)To update GitHub Actions, manually edit .github/workflows/*.yml files$(RESET)"; \
+		echo -e "$(YELLOW)Common updates:$(RESET)"; \
 		echo "  → actions/checkout@v4"; \
 		echo "  → actions/setup-go@v5"; \
 		echo "  → actions/cache@v4"; \
 		echo "  → codecov/codecov-action@v4"; \
 	else \
-		echo "$(GREEN)✅ No GitHub Actions found$(RESET)"; \
+		echo -e "$(GREEN)✅ No GitHub Actions found$(RESET)"; \
 	fi
 
 # ==============================================================================
@@ -131,17 +131,17 @@ deps-update-actions: ## check and show GitHub Actions that need updates
 deps-update-docker: ## check and show Docker base images that need updates
 	@echo -e "$(CYAN)Checking Docker dependencies...$(RESET)"
 	@if [ -f "Dockerfile" ]; then \
-		echo "$(YELLOW)Docker base images in use:$(RESET)"; \
+		echo -e "$(YELLOW)Docker base images in use:$(RESET)"; \
 		grep -E "^FROM" Dockerfile | sed 's/FROM */  → /'; \
 		echo ""; \
-		echo "$(YELLOW)To update Docker images, manually edit Dockerfile$(RESET)"; \
-		echo "$(YELLOW)Consider using specific version tags instead of 'latest'$(RESET)"; \
+		echo -e "$(YELLOW)To update Docker images, manually edit Dockerfile$(RESET)"; \
+		echo -e "$(YELLOW)Consider using specific version tags instead of 'latest'$(RESET)"; \
 	else \
-		echo "$(GREEN)✅ No Dockerfile found$(RESET)"; \
+		echo -e "$(GREEN)✅ No Dockerfile found$(RESET)"; \
 	fi
 	@if [ -f "docker-compose.yml" ]; then \
 		echo ""; \
-		echo "$(YELLOW)Docker Compose images in use:$(RESET)"; \
+		echo -e "$(YELLOW)Docker Compose images in use:$(RESET)"; \
 		grep -E "image:" docker-compose.yml | sed 's/.*image: */  → /' | sort | uniq; \
 	fi
 
@@ -152,7 +152,7 @@ deps-update-docker: ## check and show Docker base images that need updates
 deps-security: ## run security audit on dependencies
 	@echo -e "$(CYAN)Running security audit...$(RESET)"
 	@echo -e "$(YELLOW)Checking for known vulnerabilities...$(RESET)"
-	@go run golang.org/x/vuln/cmd/govulncheck@latest ./... || echo "$(RED)❌ Vulnerabilities found$(RESET)"
+	@go run golang.org/x/vuln/cmd/govulncheck@latest ./... || echo -e "$(RED)❌ Vulnerabilities found$(RESET)"
 
 deps-audit: ## comprehensive dependency audit and report
 	@echo -e "$(CYAN)Comprehensive dependency audit...$(RESET)"
@@ -177,7 +177,7 @@ deps-verify: ## verify dependency checksums
 
 deps-why: ## show why a specific module is needed (usage: make deps-why MOD=github.com/spf13/cobra)
 	@if [ -z "$(MOD)" ]; then \
-		echo "$(RED)Usage: make deps-why MOD=github.com/spf13/cobra$(RESET)"; \
+		echo -e "$(RED)Usage: make deps-why MOD=github.com/spf13/cobra$(RESET)"; \
 		exit 1; \
 	fi
 	@echo -e "$(CYAN)Showing why $(MOD) is needed...$(RESET)"
@@ -209,7 +209,7 @@ deps-report: ## generate comprehensive dependency report
 	echo "\`\`\`" >> $$report_file; \
 	go list -u -m all | grep '\[' >> $$report_file || echo "All dependencies are up to date" >> $$report_file; \
 	echo "\`\`\`" >> $$report_file; \
-	echo "$(GREEN)✅ Report generated: $$report_file$(RESET)"
+	echo -e "$(GREEN)✅ Report generated: $$report_file$(RESET)"
 
 # ==============================================================================
 # Cleanup and Maintenance
@@ -259,7 +259,7 @@ deps-monthly: ## run monthly dependency maintenance (minor updates)
 	@make --no-print-directory deps-security
 	@echo ""
 	@if [ -f "go.mod.monthly-backup" ]; then \
-		echo "$(YELLOW)Backup files created:$(RESET)"; \
+		echo -e "$(YELLOW)Backup files created:$(RESET)"; \
 		echo "  → go.mod.monthly-backup"; \
 		echo "  → go.sum.monthly-backup"; \
 	fi

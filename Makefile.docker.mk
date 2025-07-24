@@ -74,11 +74,11 @@ docker-stop: ## stop and remove Docker container
 
 docker-logs: ## show Docker container logs
 	@echo -e "$(CYAN)Docker container logs:$(RESET)"
-	@docker logs $(executablename) 2>/dev/null || docker logs $(executablename)-dev 2>/dev/null || echo "$(YELLOW)No containers running$(RESET)"
+	@docker logs $(executablename) 2>/dev/null || docker logs $(executablename)-dev 2>/dev/null || echo -e "$(YELLOW)No containers running$(RESET)"
 
 docker-exec: ## execute shell in running container
 	@echo -e "$(CYAN)Executing shell in container...$(RESET)"
-	@docker exec -it $(executablename) /bin/sh 2>/dev/null || docker exec -it $(executablename)-dev /bin/sh 2>/dev/null || echo "$(RED)No containers running$(RESET)"
+	@docker exec -it $(executablename) /bin/sh 2>/dev/null || docker exec -it $(executablename)-dev /bin/sh 2>/dev/null || echo -e "$(RED)No containers running$(RESET)"
 
 # ==============================================================================
 # Docker Optimization and Analysis
@@ -106,10 +106,10 @@ docker-scan: ## scan Docker image for vulnerabilities
 	@if command -v trivy >/dev/null 2>&1; then \
 		trivy image $(DOCKER_FULL_IMAGE); \
 	elif command -v docker >/dev/null 2>&1 && docker version | grep -q "Engine"; then \
-		echo "$(YELLOW)Using docker scan (requires Docker Desktop)...$(RESET)"; \
-		docker scan $(DOCKER_FULL_IMAGE) || echo "$(YELLOW)Docker scan not available$(RESET)"; \
+		echo -e "$(YELLOW)Using docker scan (requires Docker Desktop)...$(RESET)"; \
+		docker scan $(DOCKER_FULL_IMAGE) || echo -e "$(YELLOW)Docker scan not available$(RESET)"; \
 	else \
-		echo "$(YELLOW)Install trivy for vulnerability scanning: https://github.com/aquasecurity/trivy$(RESET)"; \
+		echo -e "$(YELLOW)Install trivy for vulnerability scanning: https://github.com/aquasecurity/trivy$(RESET)"; \
 	fi
 
 docker-size: ## analyze Docker image size
@@ -129,9 +129,9 @@ docker-lint: ## lint Dockerfile
 	@echo -e "$(CYAN)Linting Dockerfile...$(RESET)"
 	@if command -v hadolint >/dev/null 2>&1; then \
 		hadolint Dockerfile; \
-		echo "$(GREEN)✅ Dockerfile linting completed$(RESET)"; \
+		echo -e "$(GREEN)✅ Dockerfile linting completed$(RESET)"; \
 	else \
-		echo "$(YELLOW)Install hadolint for Dockerfile linting: https://github.com/hadolint/hadolint$(RESET)"; \
+		echo -e "$(YELLOW)Install hadolint for Dockerfile linting: https://github.com/hadolint/hadolint$(RESET)"; \
 	fi
 
 # ==============================================================================
@@ -169,18 +169,18 @@ docker-compose-up: ## start services with docker-compose
 	@echo -e "$(CYAN)Starting services with docker-compose...$(RESET)"
 	@if [ -f "docker-compose.yml" ]; then \
 		docker-compose up -d; \
-		echo "$(GREEN)✅ Services started$(RESET)"; \
+		echo -e "$(GREEN)✅ Services started$(RESET)"; \
 	else \
-		echo "$(YELLOW)No docker-compose.yml found$(RESET)"; \
+		echo -e "$(YELLOW)No docker-compose.yml found$(RESET)"; \
 	fi
 
 docker-compose-down: ## stop services with docker-compose
 	@echo -e "$(CYAN)Stopping services with docker-compose...$(RESET)"
 	@if [ -f "docker-compose.yml" ]; then \
 		docker-compose down; \
-		echo "$(GREEN)✅ Services stopped$(RESET)"; \
+		echo -e "$(GREEN)✅ Services stopped$(RESET)"; \
 	else \
-		echo "$(YELLOW)No docker-compose.yml found$(RESET)"; \
+		echo -e "$(YELLOW)No docker-compose.yml found$(RESET)"; \
 	fi
 
 docker-compose-logs: ## show docker-compose logs
@@ -188,16 +188,16 @@ docker-compose-logs: ## show docker-compose logs
 	@if [ -f "docker-compose.yml" ]; then \
 		docker-compose logs -f; \
 	else \
-		echo "$(YELLOW)No docker-compose.yml found$(RESET)"; \
+		echo -e "$(YELLOW)No docker-compose.yml found$(RESET)"; \
 	fi
 
 docker-compose-build: ## build services with docker-compose
 	@echo -e "$(CYAN)Building services with docker-compose...$(RESET)"
 	@if [ -f "docker-compose.yml" ]; then \
 		docker-compose build; \
-		echo "$(GREEN)✅ Services built$(RESET)"; \
+		echo -e "$(GREEN)✅ Services built$(RESET)"; \
 	else \
-		echo "$(YELLOW)No docker-compose.yml found$(RESET)"; \
+		echo -e "$(YELLOW)No docker-compose.yml found$(RESET)"; \
 	fi
 
 # ==============================================================================
@@ -242,8 +242,8 @@ docker-status: ## show current Docker status
 	@echo -e "$(BLUE)==============$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🐳 Docker Environment:$(RESET)"
-	@printf "  %-20s " "Docker Version:"; docker --version 2>/dev/null | cut -d' ' -f3 | cut -d',' -f1 || echo "$(RED)Not installed$(RESET)"
-	@printf "  %-20s " "Docker Running:"; if docker info >/dev/null 2>&1; then echo "$(GREEN)Yes$(RESET)"; else echo "$(RED)No$(RESET)"; fi
+	@printf "  %-20s " "Docker Version:"; docker --version 2>/dev/null | cut -d' ' -f3 | cut -d',' -f1 || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "Docker Running:"; if docker info >/dev/null 2>&1; then echo -e "$(GREEN)Yes$(RESET)"; else echo -e "$(RED)No$(RESET)"; fi
 	@echo ""
 	@echo -e "$(GREEN)📦 Project Images:$(RESET)"
 	@docker images $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME) --format "  {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  $(YELLOW)No project images found$(RESET)"

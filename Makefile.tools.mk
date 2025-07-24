@@ -101,7 +101,7 @@ regenerate-mocks: clean-mocks generate-mocks ## clean and regenerate all mocks
 
 install-pre-commit-tools: ## install pre-commit and related tools
 	@echo -e "$(CYAN)Installing pre-commit tools...$(RESET)"
-	@command -v pre-commit >/dev/null 2>&1 || { echo "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; }
+	@command -v pre-commit >/dev/null 2>&1 || { echo -e "$(RED)pre-commit not found. Install with: pip install pre-commit$(RESET)"; }
 	@echo -e "$(GREEN)✅ Pre-commit tools ready!$(RESET)"
 
 
@@ -115,8 +115,8 @@ install-docs-tools: ## install documentation tools
 	@echo -e "$(CYAN)Installing documentation tools...$(RESET)"
 	@go install golang.org/x/perf/cmd/benchstat@latest
 	@go install golang.org/x/tools/cmd/godoc@latest
-	@which git-chglog >/dev/null 2>&1 || echo "$(YELLOW)Consider installing git-chglog for changelog generation$(RESET)"
-	@which mkdocs >/dev/null 2>&1 || echo "$(YELLOW)Consider installing mkdocs for documentation: pip install mkdocs mkdocs-material$(RESET)"
+	@which git-chglog >/dev/null 2>&1 || echo -e "$(YELLOW)Consider installing git-chglog for changelog generation$(RESET)"
+	@which mkdocs >/dev/null 2>&1 || echo -e "$(YELLOW)Consider installing mkdocs for documentation: pip install mkdocs mkdocs-material$(RESET)"
 	@echo -e "$(GREEN)✅ Documentation tools installed$(RESET)"
 
 # ==============================================================================
@@ -151,28 +151,28 @@ tools-status: ## show installed tool status
 	@echo -e "$(CYAN)Checking development tool status...$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)📦 Core Tools:$(RESET)"
-	@printf "  %-20s " "go:"; go version 2>/dev/null | cut -d' ' -f3 || echo "$(RED)Not found$(RESET)"
-	@printf "  %-20s " "git:"; git --version 2>/dev/null | cut -d' ' -f3 || echo "$(RED)Not found$(RESET)"
+	@printf "  %-20s " "go:"; go version 2>/dev/null | cut -d' ' -f3 || echo -e "$(RED)Not found$(RESET)"
+	@printf "  %-20s " "git:"; git --version 2>/dev/null | cut -d' ' -f3 || echo -e "$(RED)Not found$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🔧 Build Tools:$(RESET)"
-	@printf "  %-20s " "goreleaser:"; goreleaser --version 2>/dev/null | head -1 | awk '{print $3}' || echo "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "goreleaser:"; goreleaser --version 2>/dev/null | head -1 | awk '{print $3}' || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)✨ Format Tools:$(RESET)"
-	@printf "  %-20s " "gofumpt:"; gofumpt --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
-	@printf "  %-20s " "gci:"; gci --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "gofumpt:"; gofumpt --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "gci:"; gci --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🔍 Lint Tools:$(RESET)"
-	@printf "  %-20s " "golangci-lint:"; golangci-lint --version 2>/dev/null | cut -d' ' -f4 || echo "$(RED)Not installed$(RESET)"
-	@printf "  %-20s " "staticcheck:"; staticcheck -version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "golangci-lint:"; golangci-lint --version 2>/dev/null | cut -d' ' -f4 || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "staticcheck:"; staticcheck -version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🛡️  Security Tools:$(RESET)"
-	@printf "  %-20s " "gosec:"; gosec -version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "gosec:"; gosec -version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🎭 Mock Tools:$(RESET)"
-	@printf "  %-20s " "mockgen:"; mockgen --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "mockgen:"; mockgen --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🎣 Git Hooks:$(RESET)"
-	@printf "  %-20s " "pre-commit:"; pre-commit --version 2>/dev/null || echo "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "pre-commit:"; pre-commit --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 
 tools-info: ## show comprehensive tool information
 	@echo -e "$(CYAN)"

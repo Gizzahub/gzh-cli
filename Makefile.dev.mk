@@ -15,17 +15,17 @@
 start: run                     ## quick start: run development server
 stop:                         ## stop running development server
 	@echo -e "$(YELLOW)Stopping development server...$(RESET)"
-	@pkill -f "$(executablename)" || echo "$(GREEN)No running $(executablename) processes found$(RESET)"
+	@pkill -f "$(executablename)" || echo -e "$(GREEN)No running $(executablename) processes found$(RESET)"
 
 restart: stop start           ## restart development server
 
 status:                       ## check development server status
 	@echo -e "$(CYAN)Checking for running $(executablename) processes...$(RESET)"
-	@pgrep -f "$(executablename)" > /dev/null && echo "$(GREEN)✅ $(executablename) is running$(RESET)" || echo "$(RED)❌ $(executablename) is not running$(RESET)"
+	@pgrep -f "$(executablename)" > /dev/null && echo -e "$(GREEN)✅ $(executablename) is running$(RESET)" || echo -e "$(RED)❌ $(executablename) is not running$(RESET)"
 
 logs:                         ## show recent log files
 	@echo -e "$(CYAN)Recent log files:$(RESET)"
-	@find . -name "*.log" -type f -exec ls -la {} \; 2>/dev/null || echo "$(YELLOW)No log files found$(RESET)"
+	@find . -name "*.log" -type f -exec ls -la {} \; 2>/dev/null || echo -e "$(YELLOW)No log files found$(RESET)"
 
 # ==============================================================================
 # Development Workflow Targets
@@ -69,13 +69,13 @@ setup-all: bootstrap install-tools ## complete project setup (dependencies + all
 
 comments: ## show all TODO/FIXME/NOTE comments in codebase
 	@echo -e "$(CYAN)=== TODO comments ===$(RESET)"
-	@grep -r "TODO" --include="*.go" . | grep -v vendor | grep -v .git || echo "$(GREEN)No TODOs found!$(RESET)"
+	@grep -r "TODO" --include="*.go" . | grep -v vendor | grep -v .git || echo -e "$(GREEN)No TODOs found!$(RESET)"
 	@echo ""
 	@echo -e "$(CYAN)=== FIXME comments ===$(RESET)"
-	@grep -r "FIXME" --include="*.go" . | grep -v vendor | grep -v .git || echo "$(GREEN)No FIXMEs found!$(RESET)"
+	@grep -r "FIXME" --include="*.go" . | grep -v vendor | grep -v .git || echo -e "$(GREEN)No FIXMEs found!$(RESET)"
 	@echo ""
 	@echo -e "$(CYAN)=== NOTE comments ===$(RESET)"
-	@grep -r "NOTE" --include="*.go" . | grep -v vendor | grep -v .git || echo "$(GREEN)No NOTEs found!$(RESET)"
+	@grep -r "NOTE" --include="*.go" . | grep -v vendor | grep -v .git || echo -e "$(GREEN)No NOTEs found!$(RESET)"
 
 # Aliases for backward compatibility
 todo: comments ## show all TODO comments (alias for comments)
@@ -93,18 +93,18 @@ deps-graph: ## show module dependency graph
 .PHONY: changelog docs-serve docs-build godoc docs-check
 
 changelog: ## generate changelog (requires git-chglog)
-	@command -v git-chglog >/dev/null 2>&1 || { echo "$(RED)git-chglog not found. Install from: https://github.com/git-chglog/git-chglog$(RESET)"; exit 1; }
+	@command -v git-chglog >/dev/null 2>&1 || { echo -e "$(RED)git-chglog not found. Install from: https://github.com/git-chglog/git-chglog$(RESET)"; exit 1; }
 	@echo -e "$(CYAN)Generating changelog...$(RESET)"
 	@git-chglog -o CHANGELOG.md
 	@echo -e "$(GREEN)✅ Changelog generated: CHANGELOG.md$(RESET)"
 
 docs-serve: ## serve documentation locally (requires mkdocs)
-	@command -v mkdocs >/dev/null 2>&1 || { echo "$(RED)mkdocs not found. Install with: pip install mkdocs mkdocs-material$(RESET)"; exit 1; }
+	@command -v mkdocs >/dev/null 2>&1 || { echo -e "$(RED)mkdocs not found. Install with: pip install mkdocs mkdocs-material$(RESET)"; exit 1; }
 	@echo -e "$(CYAN)Starting documentation server...$(RESET)"
 	@mkdocs serve
 
 docs-build: ## build documentation site
-	@command -v mkdocs >/dev/null 2>&1 || { echo "$(RED)mkdocs not found. Install with: pip install mkdocs mkdocs-material$(RESET)"; exit 1; }
+	@command -v mkdocs >/dev/null 2>&1 || { echo -e "$(RED)mkdocs not found. Install with: pip install mkdocs mkdocs-material$(RESET)"; exit 1; }
 	@echo -e "$(CYAN)Building documentation site...$(RESET)"
 	@mkdocs build
 
@@ -116,9 +116,9 @@ docs-check: ## check for missing package documentation
 	@echo -e "$(CYAN)Checking for missing package documentation...$(RESET)"
 	@for pkg in $$(go list ./...); do \
 		if ! go doc -short $$pkg | grep -q "^package"; then \
-			echo "$(RED)Missing documentation for: $$pkg$(RESET)"; \
+			echo -e "$(RED)Missing documentation for: $$pkg$(RESET)"; \
 		fi; \
-	done || echo "$(GREEN)✅ All packages have documentation$(RESET)"
+	done || echo -e "$(GREEN)✅ All packages have documentation$(RESET)"
 
 # ==============================================================================
 # Development Environment Information
@@ -160,13 +160,13 @@ dev-status: ## show current development status
 	@echo -e "$(BLUE)========================$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)📊 Project Status:$(RESET)"
-	@printf "  %-20s " "Git Status:"; if git status --porcelain | grep -q .; then echo "$(YELLOW)Modified files$(RESET)"; else echo "$(GREEN)Clean$(RESET)"; fi
-	@printf "  %-20s " "Current Branch:"; git branch --show-current 2>/dev/null || echo "$(RED)Unknown$(RESET)"
-	@printf "  %-20s " "Last Commit:"; git log -1 --format="%h %s" 2>/dev/null | cut -c1-50 || echo "$(RED)No commits$(RESET)"
+	@printf "  %-20s " "Git Status:"; if git status --porcelain | grep -q .; then echo -e "$(YELLOW)Modified files$(RESET)"; else echo -e "$(GREEN)Clean$(RESET)"; fi
+	@printf "  %-20s " "Current Branch:"; git branch --show-current 2>/dev/null || echo -e "$(RED)Unknown$(RESET)"
+	@printf "  %-20s " "Last Commit:"; git log -1 --format="%h %s" 2>/dev/null | cut -c1-50 || echo -e "$(RED)No commits$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🔧 Build Status:$(RESET)"
-	@printf "  %-20s " "Binary Exists:"; if [ -f "$(executablename)" ]; then echo "$(GREEN)Yes$(RESET)"; else echo "$(YELLOW)No$(RESET)"; fi
-	@printf "  %-20s " "Coverage File:"; if [ -f "coverage.out" ]; then echo "$(GREEN)Yes$(RESET)"; else echo "$(YELLOW)No$(RESET)"; fi
+	@printf "  %-20s " "Binary Exists:"; if [ -f "$(executablename)" ]; then echo -e "$(GREEN)Yes$(RESET)"; else echo -e "$(YELLOW)No$(RESET)"; fi
+	@printf "  %-20s " "Coverage File:"; if [ -f "coverage.out" ]; then echo -e "$(GREEN)Yes$(RESET)"; else echo -e "$(YELLOW)No$(RESET)"; fi
 	@echo ""
 	@echo -e "$(GREEN)🎯 Quick Actions:$(RESET)"
 	@echo -e "  • $(CYAN)make quick$(RESET)          Quick development check"

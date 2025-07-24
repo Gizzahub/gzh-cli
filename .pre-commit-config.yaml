@@ -2,7 +2,7 @@
 # https://golangci-lint.run/usage/configuration/
 
 # This field is required for golangci-lint >= v1.50.0
-version: 2
+version: "2"
 
 run:
   # timeout for analysis
