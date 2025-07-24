@@ -253,7 +253,14 @@ func (rcm *ResumableCloneManager) loadAndValidateState(org, targetPath, strategy
 func (rcm *ResumableCloneManager) createNewState(org, targetPath, strategy string, parallel, maxRetries int) (*synclonepkg.CloneState, error) {
 	// Check if there's already a state file
 	if rcm.stateManager.HasState("github", org) {
-		return nil, fmt.Errorf("existing state found for %s. Use --resume to continue or delete state file", org)
+		// Load existing state to check if it's for the same target path
+		existingState, err := rcm.stateManager.LoadState("github", org)
+		if err == nil && existingState.TargetPath == targetPath {
+			// If it's the same target path, suggest using --resume
+			return nil, fmt.Errorf("existing state found for %s at %s. Use --resume to continue or 'gz synclone state clean --all' to start fresh", org, targetPath)
+		}
+		// Different target path, clean up old state
+		_ = rcm.stateManager.DeleteState("github", org)
 	}
 
 	// Create new state

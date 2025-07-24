@@ -1,0 +1,215 @@
+# Repository Audit Policy Configuration
+# This configuration defines policies for compliance auditing
+
+version: "1.0.0"
+organization: "your-organization"
+
+# Define compliance policies that will be audited
+policies:
+  # Security compliance policy
+  security_compliance:
+    description: "Enterprise security requirements for all repositories"
+    rules:
+      # Repository visibility
+      private_repositories:
+        type: "visibility"
+        value: "private"
+        enforcement: "required"
+        message: "All repositories must be private for security"
+      
+      # Branch protection requirements
+      branch_protection_enabled:
+        type: "branch_protection"
+        value: true
+        enforcement: "required"
+        message: "Main branch must have protection enabled"
+      
+      # Minimum reviewers
+      minimum_reviewers:
+        type: "min_reviews"
+        value: 2
+        enforcement: "required"
+        message: "At least 2 reviewers required for all changes"
+      
+      # Security features
+      vulnerability_scanning:
+        type: "security_feature"
+        value: "vulnerability_alerts"
+        enforcement: "required"
+        message: "Vulnerability scanning must be enabled"
+      
+      security_advisories:
+        type: "security_feature"
+        value: "security_advisories"
+        enforcement: "required"
+        message: "Security advisories must be enabled"
+  
+  # Development standards policy
+  development_standards:
+    description: "Standard development practices and tooling"
+    rules:
+      # Required files
+      readme_required:
+        type: "file_exists"
+        value: "README.md"
+        enforcement: "required"
+        message: "README.md is required for documentation"
+      
+      license_required:
+        type: "file_exists"
+        value: "LICENSE"
+        enforcement: "required"
+        message: "LICENSE file is required"
+      
+      codeowners_required:
+        type: "file_exists"
+        value: ".github/CODEOWNERS"
+        enforcement: "recommended"
+        message: "CODEOWNERS file is recommended for code review"
+      
+      # CI/CD workflows
+      ci_workflow:
+        type: "workflow_exists"
+        value: ".github/workflows/ci.yml"
+        enforcement: "required"
+        message: "CI workflow is required for automated testing"
+      
+      security_workflow:
+        type: "workflow_exists"
+        value: ".github/workflows/security.yml"
+        enforcement: "recommended"
+        message: "Security scanning workflow is recommended"
+  
+  # Open source compliance (for public repositories)
+  opensource_compliance:
+    description: "Requirements for open source and public repositories"
+    rules:
+      # Community files
+      contributing_guide:
+        type: "file_exists"
+        value: "CONTRIBUTING.md"
+        enforcement: "required"
+        message: "Contributing guidelines required for open source"
+      
+      code_of_conduct:
+        type: "file_exists"
+        value: "CODE_OF_CONDUCT.md"
+        enforcement: "required"
+        message: "Code of Conduct required for community projects"
+      
+      issue_templates:
+        type: "file_exists"
+        value: ".github/ISSUE_TEMPLATE"
+        enforcement: "recommended"
+        message: "Issue templates help maintain quality"
+  
+  # Compliance and governance
+  governance_compliance:
+    description: "Corporate governance and compliance requirements"
+    rules:
+      # Security documentation
+      security_policy:
+        type: "file_exists"
+        value: "SECURITY.md"
+        enforcement: "required"
+        message: "Security policy required for vulnerability reporting"
+      
+      # Compliance documentation
+      compliance_docs:
+        type: "file_exists"
+        value: "COMPLIANCE.md"
+        enforcement: "required"
+        message: "Compliance documentation required"
+
+# Repository-specific configurations with exceptions
+repositories:
+  # Specific repositories with policy exceptions
+  specific:
+    # Legacy application with temporary exceptions
+    - name: "legacy-app"
+      exceptions:
+        - policy: "security_compliance"
+          rule: "minimum_reviewers"
+          reason: "Legacy app with single maintainer - migrating to new team in Q3"
+          approved_by: "cto@company.com"
+          approval_date: "2024-01-01"
+          expires_at: "2024-12-31"
+        
+        - policy: "development_standards"
+          rule: "ci_workflow"
+          reason: "Legacy build system - CI migration planned for Q2"
+          approved_by: "engineering-director@company.com"
+          expires_at: "2024-06-30"
+    
+    # Public documentation repository
+    - name: "public-docs"
+      exceptions:
+        - policy: "security_compliance"
+          rule: "private_repositories"
+          reason: "Public documentation site"
+          approved_by: "security-team@company.com"
+          # No expiration - permanent exception
+  
+  # Pattern-based exceptions
+  patterns:
+    # Proof of concept repositories
+    - match: "poc-*"
+      exceptions:
+        - policy: "development_standards"
+          rule: "ci_workflow"
+          reason: "POC repositories - CI not required during experimentation"
+          approved_by: "innovation-team@company.com"
+          expires_at: "2024-12-31"
+        
+        - policy: "security_compliance"
+          rule: "minimum_reviewers"
+          reason: "POC repositories - single developer experiments allowed"
+          approved_by: "tech-lead@company.com"
+          expires_at: "2024-12-31"
+    
+    # Archive repositories
+    - match: "*-archived"
+      exceptions:
+        - policy: "development_standards"
+          rule: "ci_workflow"
+          reason: "Archived repositories - no active development"
+          approved_by: "compliance@company.com"
+        
+        - policy: "security_compliance"
+          rule: "branch_protection_enabled"
+          reason: "Archived repositories - read-only"
+          approved_by: "compliance@company.com"
+
+# Templates can still be used for configuration
+templates:
+  standard:
+    description: "Standard repository configuration"
+    settings:
+      private: true
+      has_issues: true
+      has_wiki: false
+      has_projects: false
+
+# Audit Command Usage:
+# 
+# Generate basic audit report:
+# gz repo-config audit
+#
+# Generate detailed audit with specific format:
+# gz repo-config audit --format json --output audit-report.json
+# gz repo-config audit --format html --output audit-report.html
+# gz repo-config audit --format markdown --output audit-report.md
+#
+# Audit specific policy:
+# gz repo-config audit --policy security_compliance
+#
+# The audit will:
+# 1. Fetch all repositories from the organization
+# 2. Check each repository against defined policies
+# 3. Apply exceptions where configured
+# 4. Generate compliance report with:
+#    - Overall compliance percentage
+#    - Policy-by-policy breakdown
+#    - Repository-specific violations
+#    - Active exceptions
+#    - Remediation guidance

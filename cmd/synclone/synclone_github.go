@@ -7,7 +7,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -24,26 +26,16 @@ import (
 
 // GzhYamlConfig represents the structure of gzh.yaml file generated in target directory
 type GzhYamlConfig struct {
-	Organization string     `yaml:"organization"`
-	Provider     string     `yaml:"provider"`
-	GeneratedAt  time.Time  `yaml:"generated_at"`
-	SyncMode     SyncMode   `yaml:"sync_mode"`
-	Repositories []RepoInfo `yaml:"repositories"`
+	Organization string            `yaml:"organization"`
+	Provider     string            `yaml:"provider"`
+	GeneratedAt  time.Time         `yaml:"generated_at"`
+	SyncMode     SyncMode          `yaml:"sync_mode"`
+	Repositories []github.RepoInfo `yaml:"repositories"`
 }
 
 // SyncMode represents synchronization configuration
 type SyncMode struct {
 	CleanupOrphans bool `yaml:"cleanup_orphans"`
-}
-
-// RepoInfo represents repository information
-type RepoInfo struct {
-	Name        string `yaml:"name"`
-	CloneURL    string `yaml:"clone_url"`
-	Description string `yaml:"description"`
-	Private     bool   `yaml:"private"`
-	Archived    bool   `yaml:"archived"`
-	Fork        bool   `yaml:"fork"`
 }
 
 // generateGzhYaml creates a gzh.yaml file in the target directory with repository information
@@ -55,12 +47,12 @@ func (o *syncCloneGithubOptions) generateGzhYaml(targetPath string, repos []gith
 		SyncMode: SyncMode{
 			CleanupOrphans: o.cleanupOrphans,
 		},
-		Repositories: make([]RepoInfo, len(repos)),
+		Repositories: make([]github.RepoInfo, len(repos)),
 	}
 
 	// Convert github.RepoInfo to our RepoInfo using actual data
 	for i, repo := range repos {
-		gzhConfig.Repositories[i] = RepoInfo{
+		gzhConfig.Repositories[i] = github.RepoInfo{
 			Name:        repo.Name,
 			CloneURL:    repo.CloneURL,
 			Description: repo.Description,
@@ -327,27 +319,75 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 
 		// New synclone workflow: 1. Get repo list -> 2. Generate gzh.yaml -> 3. Cleanup orphans -> 4. Clone repos
 		simpleLogger.Info("Starting synclone workflow: fetching repository list from GitHub")
-		fmt.Printf("🔍 Fetching repository list from GitHub organization: %s\n", o.orgName)
 
-		// Step 1: Get repository list from GitHub API
-		repos, err := github.ListRepos(ctx, o.orgName)
-		if err != nil {
-			return fmt.Errorf("failed to fetch repository list: %w", err)
+		// Check if gzh.yaml already exists
+		gzhYamlPath := filepath.Join(o.targetPath, "gzh.yaml")
+		var repos []github.RepoInfo
+		existingYaml := false
+
+		if _, err := os.Stat(gzhYamlPath); err == nil {
+			// gzh.yaml exists, try to load it
+			simpleLogger.Info("Found existing gzh.yaml, loading repository list from file")
+			fmt.Printf("📄 Found existing gzh.yaml, loading repository list...\n")
+
+			data, err := os.ReadFile(gzhYamlPath)
+			if err == nil {
+				var gzhConfig GzhYamlConfig
+				if err := yaml.Unmarshal(data, &gzhConfig); err == nil && gzhConfig.Organization == o.orgName {
+					repos = gzhConfig.Repositories
+					existingYaml = true
+					fmt.Printf("✅ Loaded %d repositories from existing gzh.yaml\n", len(repos))
+				}
+			}
 		}
 
-		fmt.Printf("📋 Found %d repositories in organization %s\n", len(repos), o.orgName)
+		// If no existing yaml or failed to load, fetch from API
+		if !existingYaml {
+			fmt.Printf("🔍 Fetching repository list from GitHub organization: %s\n", o.orgName)
+
+			// Step 1: Get repository list from GitHub API
+			repos, err = github.ListRepos(ctx, o.orgName)
+			if err != nil {
+				// Check if it's a rate limit error
+				if strings.Contains(err.Error(), "rate limit") || strings.Contains(err.Error(), "403") {
+					recErr := errors.NewRecoverableError(errors.ErrorTypeRateLimit, "GitHub API rate limit exceeded", err, false)
+					return recErr.WithContext("organization", o.orgName).WithContext("action", "list_repositories")
+				}
+				// Check for authentication errors
+				if strings.Contains(err.Error(), "401") || strings.Contains(err.Error(), "Unauthorized") {
+					recErr := errors.NewRecoverableError(errors.ErrorTypeAuth, "GitHub authentication failed", err, false)
+					return recErr.WithContext("organization", o.orgName).WithContext("hint", "Check your GitHub token")
+				}
+				return fmt.Errorf("failed to fetch repository list: %w", err)
+			}
+
+			fmt.Printf("📋 Found %d repositories in organization %s\n", len(repos), o.orgName)
+		}
 
 		// Create target directory if it doesn't exist
 		if err := os.MkdirAll(o.targetPath, 0o755); err != nil {
 			return fmt.Errorf("failed to create target directory: %w", err)
 		}
 
-		// Step 2: Generate gzh.yaml file with repository information
-		if err := o.generateGzhYaml(o.targetPath, repos); err != nil {
-			return fmt.Errorf("failed to generate gzh.yaml: %w", err)
+		// Step 2: Generate/Update gzh.yaml file with repository information
+		if !existingYaml {
+			if err := o.generateGzhYaml(o.targetPath, repos); err != nil {
+				return fmt.Errorf("failed to generate gzh.yaml: %w", err)
+			}
 		}
 
-		// Step 3: Cleanup orphan directories if requested
+		// Step 3: Verify existing clones if gzh.yaml existed
+		if existingYaml {
+			validClones, invalidClones := o.verifyExistingClones(repos)
+			if len(validClones) > 0 {
+				fmt.Printf("✅ Found %d valid existing clones\n", len(validClones))
+			}
+			if len(invalidClones) > 0 {
+				fmt.Printf("⚠️  Found %d invalid/incomplete clones that will be re-cloned\n", len(invalidClones))
+			}
+		}
+
+		// Step 4: Cleanup orphan directories if requested
 		if err := o.cleanupOrphanDirectories(o.targetPath, repos); err != nil {
 			return fmt.Errorf("failed to cleanup orphan directories: %w", err)
 		}
@@ -468,4 +508,35 @@ func (o *syncCloneGithubOptions) loadFromConfig() error {
 	// For now, this is documented for future implementation
 
 	return nil
+}
+
+// verifyExistingClones checks if existing clone directories are valid git repositories
+func (o *syncCloneGithubOptions) verifyExistingClones(repos []github.RepoInfo) ([]string, []string) {
+	validClones := []string{}
+	invalidClones := []string{}
+
+	for _, repo := range repos {
+		repoPath := filepath.Join(o.targetPath, repo.Name)
+
+		// Check if directory exists
+		if info, err := os.Stat(repoPath); err == nil && info.IsDir() {
+			// Check if it's a valid git repository
+			gitPath := filepath.Join(repoPath, ".git")
+			if gitInfo, err := os.Stat(gitPath); err == nil && gitInfo.IsDir() {
+				// Verify remote URL matches
+				cmd := exec.Command("git", "-C", repoPath, "remote", "get-url", "origin")
+				if output, err := cmd.Output(); err == nil {
+					remoteURL := strings.TrimSpace(string(output))
+					if remoteURL == repo.CloneURL || remoteURL == strings.Replace(repo.CloneURL, "https://", "git@", 1) {
+						validClones = append(validClones, repo.Name)
+						continue
+					}
+				}
+			}
+			// Directory exists but is not a valid git repo or has wrong remote
+			invalidClones = append(invalidClones, repo.Name)
+		}
+	}
+
+	return validClones, invalidClones
 }

@@ -1,0 +1,173 @@
+# Repository Configuration with Policy Exceptions
+# This example shows how to grant exceptions to specific repositories
+
+version: "1.0.0"
+organization: "enterprise-org"
+
+# Define policies that repositories must comply with
+policies:
+  security_compliance:
+    description: "Enterprise security compliance requirements"
+    rules:
+      min_reviewers:
+        type: "min_reviews"
+        value: 2
+        enforcement: "required"
+        message: "All repositories must require at least 2 reviewers"
+      
+      branch_protection:
+        type: "branch_protection"
+        value: true
+        enforcement: "required"
+        message: "Main branch must have protection enabled"
+      
+      private_repos:
+        type: "visibility"
+        value: "private"
+        enforcement: "required"
+        message: "All repositories must be private"
+  
+  enterprise_standards:
+    description: "Enterprise development standards"
+    rules:
+      codeowners_required:
+        type: "file_exists"
+        value: ".github/CODEOWNERS"
+        enforcement: "required"
+        message: "CODEOWNERS file is required"
+      
+      security_scanning:
+        type: "workflow_exists"
+        value: ".github/workflows/security.yml"
+        enforcement: "required"
+        message: "Security scanning workflow required"
+
+# Repository configurations with exceptions
+repositories:
+  specific:
+    # Legacy application with temporary exceptions
+    - name: "legacy-monolith"
+      template: "enterprise-standard"
+      exceptions:
+        - policy: "security_compliance"
+          rule: "min_reviewers"
+          reason: "Legacy app maintained by single developer during transition"
+          approved_by: "cto@enterprise.com"
+          approval_date: "2024-01-15"
+          expires_at: "2024-12-31"
+          conditions:
+            - "Must add second maintainer by Q3 2024"
+            - "Weekly security reviews required"
+        
+        - policy: "enterprise_standards"
+          rule: "codeowners_required"
+          reason: "Legacy codebase - CODEOWNERS will be added during modernization"
+          approved_by: "engineering-director@enterprise.com"
+          approval_date: "2024-01-20"
+          expires_at: "2024-06-30"
+    
+    # Public demo repository
+    - name: "public-api-demo"
+      template: "enterprise-standard"
+      settings:
+        private: false  # Override template setting
+        description: "Public API demonstration repository"
+      exceptions:
+        - policy: "security_compliance"
+          rule: "private_repos"
+          reason: "Approved public demo for developer community"
+          approved_by: "security-team@enterprise.com"
+          approval_date: "2024-02-01"
+          # No expiration - permanent exception
+    
+    # Experimental project with reduced requirements
+    - name: "ai-experiment-2024"
+      exceptions:
+        - policy: "security_compliance"
+          rule: "branch_protection"
+          reason: "Rapid experimentation phase - will enable before production"
+          approved_by: "research-lead@enterprise.com"
+          approval_date: "2024-03-01"
+          expires_at: "2024-09-01"
+          conditions:
+            - "No production data allowed"
+            - "Must pass security review before deployment"
+  
+  # Pattern-based exceptions
+  patterns:
+    # Proof of concept repositories
+    - match: "poc-*"
+      settings:
+        topics:
+          - "proof-of-concept"
+          - "experimental"
+      exceptions:
+        - policy: "enterprise_standards"
+          rule: "security_scanning"
+          reason: "POC repositories - security scanning added before production"
+          approved_by: "innovation-team@enterprise.com"
+          approval_date: "2024-01-01"
+          expires_at: "2024-12-31"
+    
+    # Archived repositories
+    - match: "*-archived"
+      settings:
+        archived: true
+      exceptions:
+        - policy: "security_compliance"
+          rule: "min_reviewers"
+          reason: "Archived repositories - no active development"
+          approved_by: "compliance@enterprise.com"
+          approval_date: "2024-01-01"
+        
+        - policy: "enterprise_standards"
+          rule: "codeowners_required"
+          reason: "Archived repositories - no maintainers"
+          approved_by: "compliance@enterprise.com"
+          approval_date: "2024-01-01"
+
+# Templates referenced above
+templates:
+  enterprise-standard:
+    description: "Standard enterprise repository configuration"
+    settings:
+      private: true
+      has_issues: true
+      has_wiki: false
+      has_projects: false
+      allow_squash_merge: true
+      allow_merge_commit: false
+      allow_rebase_merge: false
+      delete_branch_on_merge: true
+    
+    security:
+      vulnerability_alerts: true
+      automated_security_fixes: true
+      branch_protection:
+        main:
+          required_reviews: 2
+          dismiss_stale_reviews: true
+          require_code_owner_reviews: true
+          required_status_checks:
+            - "ci/build"
+            - "ci/test"
+            - "security/scan"
+          strict_status_checks: true
+          enforce_admins: true
+          allow_force_pushes: false
+          allow_deletions: false
+    
+    permissions:
+      team_permissions:
+        "engineering": "write"
+        "security-team": "admin"
+        "qa-team": "write"
+        "contractors": "read"
+
+# Exception Report Generation
+# Run: gz repo-config exceptions-report
+# This will generate a report showing:
+# - All active exceptions
+# - Expired exceptions that need removal
+# - Exceptions nearing expiration
+# - Repositories without required approvals
