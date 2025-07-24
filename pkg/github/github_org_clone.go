@@ -22,8 +22,20 @@ import (
 )
 
 // RepoInfo represents GitHub repository information returned by the GitHub API.
-// It contains essential repository metadata used during clone operations.
+// It contains essential repository metadata used during clone operations and gzh.yaml generation.
 type RepoInfo struct {
+	// Name is the repository name
+	Name string `json:"name"`
+	// CloneURL is the HTTPS clone URL for the repository
+	CloneURL string `json:"clone_url"`
+	// Description is the repository description
+	Description string `json:"description"`
+	// Private indicates if the repository is private
+	Private bool `json:"private"`
+	// Archived indicates if the repository is archived
+	Archived bool `json:"archived"`
+	// Fork indicates if the repository is a fork
+	Fork bool `json:"fork"`
 	// DefaultBranch is the name of the repository's default branch (e.g., "main", "master")
 	DefaultBranch string `json:"default_branch"`
 }
@@ -66,7 +78,7 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 	return repoInfo.DefaultBranch, nil
 }
 
-// List retrieves all repository names for a GitHub organization.
+// ListRepos retrieves complete repository information for a GitHub organization.
 // It makes paginated requests to the GitHub API to fetch all repositories
 // in the specified organization, handling pagination automatically.
 //
@@ -74,9 +86,9 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 //   - ctx: Context for request cancellation and timeout control
 //   - org: GitHub organization name
 //
-// Returns a slice of repository names or an error if the organization
+// Returns a slice of RepoInfo with complete repository metadata or an error if the organization
 // doesn't exist, access is denied, or the API request fails.
-func List(ctx context.Context, org string) ([]string, error) {
+func ListRepos(ctx context.Context, org string) ([]RepoInfo, error) {
 	url := fmt.Sprintf("https://api.github.com/orgs/%s/repos", org)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -116,22 +128,37 @@ func List(ctx context.Context, org string) ([]string, error) {
 		return nil, fmt.Errorf("failed to get repositories: %s", resp.Status)
 	}
 
-	// Use standard JSON decoding - DISABLED (memory package removed)
-	// Simple implementation without external memory dependency
-	var repos []struct {
-		Name string `json:"name"`
-	}
+	// Decode the response directly into RepoInfo structs
+	var repos []RepoInfo
 	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Create result slice
-	result := make([]string, len(repos))
-	for i, repo := range repos {
-		result[i] = repo.Name
+	return repos, nil
+}
+
+// List retrieves all repository names for a GitHub organization.
+// This is a convenience function that returns only repository names for backward compatibility.
+//
+// Parameters:
+//   - ctx: Context for request cancellation and timeout control
+//   - org: GitHub organization name
+//
+// Returns a slice of repository names or an error if the organization
+// doesn't exist, access is denied, or the API request fails.
+func List(ctx context.Context, org string) ([]string, error) {
+	repos, err := ListRepos(ctx, org)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	// Extract just the names for backward compatibility
+	names := make([]string, len(repos))
+	for i, repo := range repos {
+		names[i] = repo.Name
+	}
+
+	return names, nil
 }
 
 // Clone downloads a GitHub repository to the specified local path.

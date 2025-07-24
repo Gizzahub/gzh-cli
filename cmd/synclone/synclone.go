@@ -17,16 +17,16 @@ import (
 )
 
 type syncCloneOptions struct {
-	configFile        string
-	useConfig         bool
-	useGZHConfig      bool
-	strategy          string
-	providerFilter    string
-	parallel          int
-	maxRetries        int
-	resume            bool
-	progressMode      string
-	cleanupOrphans    bool
+	configFile     string
+	useConfig      bool
+	useGZHConfig   bool
+	strategy       string
+	providerFilter string
+	parallel       int
+	maxRetries     int
+	resume         bool
+	progressMode   string
+	cleanupOrphans bool
 }
 
 func defaultSyncCloneOptions() *syncCloneOptions {

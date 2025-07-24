@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
-	synclone "github.com/gizzahub/gzh-manager-go/cmd/synclone"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/docker"
@@ -23,6 +22,7 @@ import (
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
+	synclone "github.com/gizzahub/gzh-manager-go/cmd/synclone"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 

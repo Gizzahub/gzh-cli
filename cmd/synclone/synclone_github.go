@@ -24,11 +24,11 @@ import (
 
 // GzhYamlConfig represents the structure of gzh.yaml file generated in target directory
 type GzhYamlConfig struct {
-	Organization string      `yaml:"organization"`
-	Provider     string      `yaml:"provider"`
-	GeneratedAt  time.Time   `yaml:"generated_at"`
-	SyncMode     SyncMode    `yaml:"sync_mode"`
-	Repositories []RepoInfo  `yaml:"repositories"`
+	Organization string     `yaml:"organization"`
+	Provider     string     `yaml:"provider"`
+	GeneratedAt  time.Time  `yaml:"generated_at"`
+	SyncMode     SyncMode   `yaml:"sync_mode"`
+	Repositories []RepoInfo `yaml:"repositories"`
 }
 
 // SyncMode represents synchronization configuration
@@ -58,16 +58,15 @@ func (o *syncCloneGithubOptions) generateGzhYaml(targetPath string, repos []gith
 		Repositories: make([]RepoInfo, len(repos)),
 	}
 
-	// Convert github.RepoInfo to our RepoInfo
-	// TODO: Update when GitHub RepoInfo struct is expanded with more fields
-	for i := range repos {
+	// Convert github.RepoInfo to our RepoInfo using actual data
+	for i, repo := range repos {
 		gzhConfig.Repositories[i] = RepoInfo{
-			Name:        "repository_" + fmt.Sprint(i), // TODO: Get actual name from GitHub API
-			CloneURL:    fmt.Sprintf("https://github.com/%s/repository_%d.git", o.orgName, i), // TODO: Get actual clone URL
-			Description: "Repository description", // TODO: Get actual description
-			Private:     false, // TODO: Get actual private status
-			Archived:    false, // TODO: Get actual archived status
-			Fork:        false, // TODO: Get actual fork status
+			Name:        repo.Name,
+			CloneURL:    repo.CloneURL,
+			Description: repo.Description,
+			Private:     repo.Private,
+			Archived:    repo.Archived,
+			Fork:        repo.Fork,
 		}
 	}
 
@@ -78,10 +77,11 @@ func (o *syncCloneGithubOptions) generateGzhYaml(targetPath string, repos []gith
 		return fmt.Errorf("failed to marshal gzh.yaml: %w", err)
 	}
 
-	if err := os.WriteFile(gzhPath, data, 0644); err != nil {
+	if err := os.WriteFile(gzhPath, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write gzh.yaml: %w", err)
 	}
 
+	fmt.Printf("📝 Generated gzh.yaml with %d repositories\n", len(repos))
 	return nil
 }
 
@@ -91,12 +91,10 @@ func (o *syncCloneGithubOptions) cleanupOrphanDirectories(targetPath string, rep
 		return nil
 	}
 
-	// Get list of expected repository directories
+	// Get list of expected repository directories using actual repository names
 	repoNames := make(map[string]bool)
-	for i := range repos {
-		// TODO: Use actual repository names when available
-		repoName := "repository_" + fmt.Sprint(i)
-		repoNames[repoName] = true
+	for _, repo := range repos {
+		repoNames[repo.Name] = true
 	}
 
 	// Read target directory
@@ -105,6 +103,7 @@ func (o *syncCloneGithubOptions) cleanupOrphanDirectories(targetPath string, rep
 		return fmt.Errorf("failed to read target directory: %w", err)
 	}
 
+	var orphansRemoved int
 	// Check each directory and remove orphans
 	for _, entry := range entries {
 		if !entry.IsDir() {
@@ -124,7 +123,12 @@ func (o *syncCloneGithubOptions) cleanupOrphanDirectories(targetPath string, rep
 			if err := os.RemoveAll(orphanPath); err != nil {
 				return fmt.Errorf("failed to remove orphan directory %s: %w", name, err)
 			}
+			orphansRemoved++
 		}
+	}
+
+	if orphansRemoved > 0 {
+		fmt.Printf("✅ Removed %d orphan directories\n", orphansRemoved)
 	}
 
 	return nil
@@ -167,10 +171,10 @@ type syncCloneGithubOptions struct {
 
 func defaultSyncCloneGithubOptions() *syncCloneGithubOptions {
 	return &syncCloneGithubOptions{
-		strategy:      "reset",
-		parallel:      10,
-		maxRetries:    3,
-		optimized:     false,
+		strategy:       "reset",
+		parallel:       10,
+		maxRetries:     3,
+		optimized:      false,
 		streamingMode:  false,
 		memoryLimit:    "500MB",
 		progressMode:   "bar",
@@ -321,7 +325,34 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 
 		var err error
 
-		// Determine which approach to use
+		// New synclone workflow: 1. Get repo list -> 2. Generate gzh.yaml -> 3. Cleanup orphans -> 4. Clone repos
+		simpleLogger.Info("Starting synclone workflow: fetching repository list from GitHub")
+		fmt.Printf("🔍 Fetching repository list from GitHub organization: %s\n", o.orgName)
+
+		// Step 1: Get repository list from GitHub API
+		repos, err := github.ListRepos(ctx, o.orgName)
+		if err != nil {
+			return fmt.Errorf("failed to fetch repository list: %w", err)
+		}
+
+		fmt.Printf("📋 Found %d repositories in organization %s\n", len(repos), o.orgName)
+
+		// Create target directory if it doesn't exist
+		if err := os.MkdirAll(o.targetPath, 0o755); err != nil {
+			return fmt.Errorf("failed to create target directory: %w", err)
+		}
+
+		// Step 2: Generate gzh.yaml file with repository information
+		if err := o.generateGzhYaml(o.targetPath, repos); err != nil {
+			return fmt.Errorf("failed to generate gzh.yaml: %w", err)
+		}
+
+		// Step 3: Cleanup orphan directories if requested
+		if err := o.cleanupOrphanDirectories(o.targetPath, repos); err != nil {
+			return fmt.Errorf("failed to cleanup orphan directories: %w", err)
+		}
+
+		// Step 4: Clone/sync repositories using appropriate method
 		if o.enableCache { //nolint:gocritic // Complex boolean conditions not suitable for switch
 			// Use cached approach (Redis cache disabled, using local cache only)
 			simpleLogger.Info("Using cached API calls for improved performance")
@@ -348,6 +379,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		} else {
 			simpleLogger.Info("Using standard cloning approach")
+			fmt.Printf("⚙️ Starting repository synchronization with strategy: %s\n", o.strategy)
 
 			err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
 		}
