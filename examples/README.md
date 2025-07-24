@@ -59,7 +59,9 @@ This directory contains example configurations and usage patterns for the gz CLI
    gz synclone github -o your-org -t ~/repos --cleanup-orphans
    ```
 
-### Legacy Bulk-Clone
+### Legacy Bulk-Clone (Deprecated)
+
+**Note**: The bulk-clone command has been replaced by synclone. Please use synclone for new projects.
 
 1. Copy the bulk-clone example file:
 
@@ -77,15 +79,20 @@ This directory contains example configurations and usage patterns for the gz CLI
    vim ~/.config/gzh-manager/bulk-clone.yaml
    ```
 
-3. Run the command:
-   ```bash
-   gz bulk-clone
-   ```
+3. **Command no longer available** - use `gz synclone` instead
 
 ## Configuration Precedence
 
 The gz tool loads configuration in the following order (highest to lowest priority):
 
+### For Synclone (Recommended)
+1. Command-line flags
+2. Environment variables (GZH\_\* prefix)
+3. Config file in current directory (./synclone.yaml)
+4. User config (~/.config/gzh-manager/synclone.yaml)
+5. System config (/etc/gzh-manager/synclone.yaml)
+
+### For Legacy Bulk-Clone (Deprecated)
 1. Command-line flags
 2. Environment variables (GZH\_\* prefix)
 3. Config file in current directory (./bulk-clone.yaml)
@@ -115,10 +122,10 @@ export GZH_CONCURRENCY="10"
 
 ### Personal Repository Management
 
-Use `bulk-clone.home.yaml` as a starting point for managing personal projects:
+Use `synclone-simple.yaml` as a starting point for managing personal projects:
 
 ```bash
-gz bulk-clone --config examples/bulk-clone.home.yaml
+gz synclone github -o your-username -t ~/personal --config examples/synclone-simple.yaml
 ```
 
 ### Enterprise Deployment
@@ -126,7 +133,7 @@ gz bulk-clone --config examples/bulk-clone.home.yaml
 For enterprise environments with multiple teams and platforms:
 
 ```bash
-gz bulk-clone --config examples/gzh-enterprise.yaml
+gz synclone github -o company-org -t ~/work --config examples/synclone-example.yaml
 ```
 
 ### CI/CD Integration
@@ -134,17 +141,21 @@ gz bulk-clone --config examples/gzh-enterprise.yaml
 For automated environments, use environment variables:
 
 ```bash
-export GZH_GITHUB_TOKEN="${GITHUB_TOKEN}"
+export GITHUB_TOKEN="${GITHUB_TOKEN}"
 export GZH_DRY_RUN="true"
-gz bulk-clone --config examples/bulk-clone-simple.yaml
+gz synclone github -o your-org -t ~/repos --config examples/synclone-simple.yaml
 ```
 
 ### Multi-Platform Setup
 
-Clone from multiple providers simultaneously:
+Use synclone with different providers:
 
 ```bash
-gz bulk-clone --config examples/gzh-multi-provider.yaml
+# GitHub organization
+gz synclone github -o your-org -t ~/repos/github
+
+# GitLab group (when implemented)
+# gz synclone gitlab -g your-group -t ~/repos/gitlab
 ```
 
 ## Validation
@@ -152,24 +163,29 @@ gz bulk-clone --config examples/gzh-multi-provider.yaml
 Validate your configuration before use:
 
 ```bash
+# For synclone (recommended)
+gz synclone validate --config my-config.yaml
+
+# For legacy bulk-clone (deprecated)  
 gz bulk-clone validate --config my-config.yaml
 ```
 
 ## Schema Documentation
 
-- JSON Schema: `docs/bulk-clone-schema.json`
-- YAML Schema: `docs/bulk-clone-schema.yaml`
+- Synclone Schema: `docs/synclone-schema.json` (planned)
+- Legacy Bulk-Clone Schema: `docs/bulk-clone-schema.json`
+- Legacy YAML Schema: `docs/bulk-clone-schema.yaml`
 
 ## Tips
 
-1. **Start Simple**: Begin with `bulk-clone-simple.yaml` and add features as needed
+1. **Start Simple**: Begin with `synclone-simple.yaml` and add features as needed
 2. **Use Dry Run**: Always test with `--dry-run` flag first
 3. **Check Logs**: Enable debug logging with `--log-level debug`
-4. **Validate First**: Use `gz bulk-clone validate` to check configuration
+4. **Generate gzh.yaml**: synclone automatically generates repository manifests
 5. **Version Control**: Keep your configurations in version control
 
 ## Need Help?
 
-- Run `gz help bulk-clone` for command documentation
+- Run `gz help synclone` for command documentation
 - Check `docs/` directory for detailed guides
 - Run `gz doctor` to diagnose configuration issues

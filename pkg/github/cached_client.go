@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// BulkCloneStats represents statistics from bulk clone operations.
-type BulkCloneStats struct {
+// SyncCloneStats represents statistics from sync clone operations.
+type SyncCloneStats struct {
 	TotalRepositories int
 	StartTime         time.Time
 	EndTime           time.Time
@@ -115,15 +115,15 @@ func (c *CachedGitHubClient) GetCacheStats() map[string]interface{} {
 	}
 }
 
-// CachedBulkCloneManager extends OptimizedSyncCloneManager with caching.
-type CachedBulkCloneManager struct {
+// CachedSyncCloneManager extends OptimizedSyncCloneManager with caching.
+type CachedSyncCloneManager struct {
 	*OptimizedSyncCloneManager
 	cachedClient *CachedGitHubClient
 }
 
-// NewCachedBulkCloneManager creates a new cached bulk clone manager - DISABLED (cache package removed)
+// NewCachedSyncCloneManager creates a new cached sync clone manager - DISABLED (cache package removed)
 // Simple implementation without external cache dependency.
-func NewCachedBulkCloneManager(token string, config OptimizedCloneConfig) (*CachedBulkCloneManager, error) {
+func NewCachedSyncCloneManager(token string, config OptimizedCloneConfig) (*CachedSyncCloneManager, error) {
 	// Create cached client with simple cache
 	cachedClient := NewCachedGitHubClient(token)
 
@@ -133,20 +133,20 @@ func NewCachedBulkCloneManager(token string, config OptimizedCloneConfig) (*Cach
 		return nil, fmt.Errorf("failed to create optimized manager: %w", err)
 	}
 
-	return &CachedBulkCloneManager{
+	return &CachedSyncCloneManager{
 		OptimizedSyncCloneManager: optimizedManager,
 		cachedClient:              cachedClient,
 	}, nil
 }
 
 // RefreshAllOptimizedWithCache performs optimized refresh with caching.
-func (cbm *CachedBulkCloneManager) RefreshAllOptimizedWithCache(ctx context.Context, targetPath, org, strategy string) (BulkCloneStats, error) {
-	fmt.Printf("🚀 Starting cached bulk clone for organization: %s\n", org)
+func (cbm *CachedSyncCloneManager) RefreshAllOptimizedWithCache(ctx context.Context, targetPath, org, strategy string) (SyncCloneStats, error) {
+	fmt.Printf("🚀 Starting cached sync clone for organization: %s\n", org)
 
 	// Use cached client for repository listing
 	repos, err := cbm.cachedClient.ListRepositoriesWithCache(ctx, org)
 	if err != nil {
-		return BulkCloneStats{}, fmt.Errorf("failed to list repositories with cache: %w", err)
+		return SyncCloneStats{}, fmt.Errorf("failed to list repositories with cache: %w", err)
 	}
 
 	fmt.Printf("📦 Found %d repositories (cached result: %v)\n", len(repos), true)
@@ -156,8 +156,8 @@ func (cbm *CachedBulkCloneManager) RefreshAllOptimizedWithCache(ctx context.Cont
 }
 
 // processRepositoriesOptimized processes repositories with caching optimizations.
-func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Context, targetPath, org, strategy string, repos []string) (BulkCloneStats, error) {
-	stats := BulkCloneStats{
+func (cbm *CachedSyncCloneManager) processRepositoriesOptimized(ctx context.Context, targetPath, org, strategy string, repos []string) (SyncCloneStats, error) {
+	stats := SyncCloneStats{
 		TotalRepositories: len(repos),
 		StartTime:         time.Now(),
 	}
@@ -169,11 +169,11 @@ func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Cont
 	// In a full implementation, this would use the cached repos list
 	_, err := cbm.RefreshAllOptimized(ctx, targetPath, org, strategy)
 	if err != nil {
-		return BulkCloneStats{}, err
+		return SyncCloneStats{}, err
 	}
 
-	// Convert CloneStats to BulkCloneStats
-	bulkStats := BulkCloneStats{
+	// Convert CloneStats to SyncCloneStats
+	syncStats := SyncCloneStats{
 		TotalRepositories: stats.TotalRepositories,
 		StartTime:         stats.StartTime,
 		EndTime:           time.Now(),
@@ -183,12 +183,12 @@ func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Cont
 		Failed:            0, // TODO: Extract from cloneStats
 	}
 
-	return bulkStats, nil
+	return syncStats, nil
 }
 
 // Close cleans up cached manager resources - DISABLED (cache package removed)
 // Simple implementation without external cache dependency.
-func (cbm *CachedBulkCloneManager) Close() error {
+func (cbm *CachedSyncCloneManager) Close() error {
 	// No cache manager to close - using simple sync.Map
 	// Close optimized manager
 	return cbm.OptimizedSyncCloneManager.Close()
@@ -200,9 +200,9 @@ func RefreshAllOptimizedStreamingWithCache(ctx context.Context, targetPath, org,
 	// Create cached manager
 	config := DefaultOptimizedCloneConfig()
 
-	manager, err := NewCachedBulkCloneManager(token, config) //nolint:contextcheck // Manager creation doesn't require context propagation
+	manager, err := NewCachedSyncCloneManager(token, config) //nolint:contextcheck // Manager creation doesn't require context propagation
 	if err != nil {
-		return fmt.Errorf("failed to create cached bulk clone manager: %w", err)
+		return fmt.Errorf("failed to create cached sync clone manager: %w", err)
 	}
 	defer func() {
 		if err := manager.Close(); err != nil {
@@ -213,13 +213,13 @@ func RefreshAllOptimizedStreamingWithCache(ctx context.Context, targetPath, org,
 	// Execute cached refresh
 	stats, err := manager.RefreshAllOptimizedWithCache(ctx, targetPath, org, strategy)
 	if err != nil {
-		return fmt.Errorf("cached bulk clone failed: %w", err)
+		return fmt.Errorf("cached sync clone failed: %w", err)
 	}
 
 	// Print summary with cache information
 	cacheStats := manager.cachedClient.GetCacheStats()
 
-	fmt.Printf("\n🎉 Cached bulk clone completed: %d successful, %d failed (%.1f%% success rate)\n",
+	fmt.Printf("\n🎉 Cached sync clone completed: %d successful, %d failed (%.1f%% success rate)\n",
 		stats.Successful, stats.Failed,
 		float64(stats.Successful)/float64(stats.TotalRepositories)*100)
 
