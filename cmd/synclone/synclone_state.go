@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package bulkclone
+package synclone
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	bulkclonepkg "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
-func newBulkCloneStateCmd() *cobra.Command {
+func newSyncCloneStateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "state",
 		Short: "Manage bulk clone operation states",

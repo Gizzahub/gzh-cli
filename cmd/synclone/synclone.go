@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package bulkclone
+package synclone
 
 import (
 	"context"
@@ -16,28 +16,30 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
-type bulkCloneOptions struct {
-	configFile     string
-	useConfig      bool
-	useGZHConfig   bool
-	strategy       string
-	providerFilter string
-	parallel       int
-	maxRetries     int
-	resume         bool
-	progressMode   string
+type syncCloneOptions struct {
+	configFile        string
+	useConfig         bool
+	useGZHConfig      bool
+	strategy          string
+	providerFilter    string
+	parallel          int
+	maxRetries        int
+	resume            bool
+	progressMode      string
+	cleanupOrphans    bool
 }
 
-func defaultBulkCloneOptions() *bulkCloneOptions {
-	return &bulkCloneOptions{
-		strategy:     "reset",
-		parallel:     10,
-		maxRetries:   3,
-		progressMode: "bar",
+func defaultSyncCloneOptions() *syncCloneOptions {
+	return &syncCloneOptions{
+		strategy:       "reset",
+		parallel:       10,
+		maxRetries:     3,
+		progressMode:   "bar",
+		cleanupOrphans: false,
 	}
 }
 
-// NewBulkCloneCmd creates a new cobra command for bulk repository cloning.
+// NewSyncCloneCmd creates a new cobra command for synchronous repository cloning.
 // This command enables cloning multiple repositories from various Git hosting
 // services including GitHub, GitLab, Gitea, and Gogs using configuration files
 // or command-line flags.
@@ -46,18 +48,21 @@ func defaultBulkCloneOptions() *bulkCloneOptions {
 //   - ctx: Context for operation cancellation and timeout control
 //
 // Returns a configured cobra.Command ready for execution.
-func NewBulkCloneCmd(ctx context.Context) *cobra.Command {
-	o := defaultBulkCloneOptions()
+func NewSyncCloneCmd(ctx context.Context) *cobra.Command {
+	o := defaultSyncCloneOptions()
 
 	cmd := &cobra.Command{
-		Use:          "bulk-clone",
-		Short:        "Clone repositories from multiple Git hosting services",
+		Use:          "synclone",
+		Short:        "Synchronize and clone repositories from multiple Git hosting services",
 		SilenceUsage: true,
-		Long: `Clone multiple repositories from various Git hosting services.
+		Long: `Synchronize and clone multiple repositories from various Git hosting services.
 
-You can use a configuration file (bulk-clone.yaml) to define multiple organizations
+You can use a configuration file (synclone.yaml) to define multiple organizations
 and their settings. This command will process all repository roots defined in the
 configuration file regardless of the provider (GitHub, GitLab, Gitea).
+
+When targeting an organization, a gzh.yaml file will be created in the target directory
+containing the repository list for future reference and synchronization.
 
 For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -74,26 +79,27 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	cmd.Flags().IntVar(&o.maxRetries, "max-retries", o.maxRetries, "Maximum retry attempts for failed operations")
 	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
 	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: bar, dots, spinner, quiet")
+	cmd.Flags().BoolVar(&o.cleanupOrphans, "cleanup-orphans", o.cleanupOrphans, "Remove directories not present in the organization's repositories")
 
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
 
-	cmd.AddCommand(newBulkCloneGiteaCmd())
-	cmd.AddCommand(newBulkCloneGithubCmd())
-	cmd.AddCommand(newBulkCloneGitlabCmd())
-	cmd.AddCommand(newBulkCloneValidateCmd())
-	cmd.AddCommand(newBulkCloneStateCmd())
+	cmd.AddCommand(newSyncCloneGiteaCmd())
+	cmd.AddCommand(newSyncCloneGithubCmd())
+	cmd.AddCommand(newSyncCloneGitlabCmd())
+	cmd.AddCommand(newSyncCloneValidateCmd())
+	cmd.AddCommand(newSyncCloneStateCmd())
 
 	return cmd
 }
 
-func (o *bulkCloneOptions) run(ctx context.Context, _ *cobra.Command, _ []string) error {
+func (o *syncCloneOptions) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	// Use central configuration service for unified configuration management
 	return o.runWithCentralConfigService(ctx)
 }
 
 // runWithCentralConfigService uses the central configuration service for unified config management.
-func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) error {
+func (o *syncCloneOptions) runWithCentralConfigService(ctx context.Context) error {
 	// Create configuration service
 	configService, err := config.CreateDefaultConfigService()
 	if err != nil {
@@ -179,7 +185,7 @@ func (o *bulkCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 }
 
 // executeProviderCloning executes the cloning operation for a specific provider.
-func (o *bulkCloneOptions) executeProviderCloning(ctx context.Context, target pkgconfig.BulkCloneTarget, targetPath string) error {
+func (o *syncCloneOptions) executeProviderCloning(ctx context.Context, target pkgconfig.BulkCloneTarget, targetPath string) error {
 	switch target.Provider {
 	case pkgconfig.ProviderGitHub:
 		// Use resumable clone if requested or if parallel/worker pool is enabled

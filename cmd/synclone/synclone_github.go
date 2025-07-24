@@ -1,14 +1,17 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package bulkclone
+package synclone
 
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	internalconfig "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
@@ -19,7 +22,115 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
-type bulkCloneGithubOptions struct {
+// GzhYamlConfig represents the structure of gzh.yaml file generated in target directory
+type GzhYamlConfig struct {
+	Organization string      `yaml:"organization"`
+	Provider     string      `yaml:"provider"`
+	GeneratedAt  time.Time   `yaml:"generated_at"`
+	SyncMode     SyncMode    `yaml:"sync_mode"`
+	Repositories []RepoInfo  `yaml:"repositories"`
+}
+
+// SyncMode represents synchronization configuration
+type SyncMode struct {
+	CleanupOrphans bool `yaml:"cleanup_orphans"`
+}
+
+// RepoInfo represents repository information
+type RepoInfo struct {
+	Name        string `yaml:"name"`
+	CloneURL    string `yaml:"clone_url"`
+	Description string `yaml:"description"`
+	Private     bool   `yaml:"private"`
+	Archived    bool   `yaml:"archived"`
+	Fork        bool   `yaml:"fork"`
+}
+
+// generateGzhYaml creates a gzh.yaml file in the target directory with repository information
+func (o *syncCloneGithubOptions) generateGzhYaml(targetPath string, repos []github.RepoInfo) error {
+	gzhConfig := GzhYamlConfig{
+		Organization: o.orgName,
+		Provider:     "github",
+		GeneratedAt:  time.Now(),
+		SyncMode: SyncMode{
+			CleanupOrphans: o.cleanupOrphans,
+		},
+		Repositories: make([]RepoInfo, len(repos)),
+	}
+
+	// Convert github.RepoInfo to our RepoInfo
+	// TODO: Update when GitHub RepoInfo struct is expanded with more fields
+	for i := range repos {
+		gzhConfig.Repositories[i] = RepoInfo{
+			Name:        "repository_" + fmt.Sprint(i), // TODO: Get actual name from GitHub API
+			CloneURL:    fmt.Sprintf("https://github.com/%s/repository_%d.git", o.orgName, i), // TODO: Get actual clone URL
+			Description: "Repository description", // TODO: Get actual description
+			Private:     false, // TODO: Get actual private status
+			Archived:    false, // TODO: Get actual archived status
+			Fork:        false, // TODO: Get actual fork status
+		}
+	}
+
+	// Write to gzh.yaml file
+	gzhPath := filepath.Join(targetPath, "gzh.yaml")
+	data, err := yaml.Marshal(gzhConfig)
+	if err != nil {
+		return fmt.Errorf("failed to marshal gzh.yaml: %w", err)
+	}
+
+	if err := os.WriteFile(gzhPath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write gzh.yaml: %w", err)
+	}
+
+	return nil
+}
+
+// cleanupOrphanDirectories removes directories in targetPath that are not in the repository list
+func (o *syncCloneGithubOptions) cleanupOrphanDirectories(targetPath string, repos []github.RepoInfo) error {
+	if !o.cleanupOrphans {
+		return nil
+	}
+
+	// Get list of expected repository directories
+	repoNames := make(map[string]bool)
+	for i := range repos {
+		// TODO: Use actual repository names when available
+		repoName := "repository_" + fmt.Sprint(i)
+		repoNames[repoName] = true
+	}
+
+	// Read target directory
+	entries, err := os.ReadDir(targetPath)
+	if err != nil {
+		return fmt.Errorf("failed to read target directory: %w", err)
+	}
+
+	// Check each directory and remove orphans
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue // Skip files
+		}
+
+		// Skip special files/directories
+		name := entry.Name()
+		if name == "gzh.yaml" || name == ".git" || name[0] == '.' {
+			continue
+		}
+
+		// Remove directory if it's not in the repository list
+		if !repoNames[name] {
+			orphanPath := filepath.Join(targetPath, name)
+			fmt.Printf("🗑️ Removing orphan directory: %s\n", name)
+			if err := os.RemoveAll(orphanPath); err != nil {
+				return fmt.Errorf("failed to remove orphan directory %s: %w", name, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+type syncCloneGithubOptions struct {
 	targetPath    string
 	orgName       string
 	strategy      string
@@ -51,22 +162,24 @@ type bulkCloneGithubOptions struct {
 	includePrivate  bool
 	onlyEmpty       bool
 	sizeLimit       int64
+	cleanupOrphans  bool
 }
 
-func defaultBulkCloneGithubOptions() *bulkCloneGithubOptions {
-	return &bulkCloneGithubOptions{
+func defaultSyncCloneGithubOptions() *syncCloneGithubOptions {
+	return &syncCloneGithubOptions{
 		strategy:      "reset",
 		parallel:      10,
 		maxRetries:    3,
 		optimized:     false,
-		streamingMode: false,
-		memoryLimit:   "500MB",
-		progressMode:  "bar",
+		streamingMode:  false,
+		memoryLimit:    "500MB",
+		progressMode:   "bar",
+		cleanupOrphans: false,
 	}
 }
 
-func newBulkCloneGithubCmd() *cobra.Command {
-	o := defaultBulkCloneGithubOptions()
+func newSyncCloneGithubCmd() *cobra.Command {
+	o := defaultSyncCloneGithubOptions()
 
 	cmd := &cobra.Command{
 		Use:   "github",
@@ -110,6 +223,7 @@ func newBulkCloneGithubCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&o.includePrivate, "include-private", false, "Include private repositories (requires token)")
 	cmd.Flags().BoolVar(&o.onlyEmpty, "only-empty", false, "Include only empty repositories")
 	cmd.Flags().Int64Var(&o.sizeLimit, "size-limit", 0, "Maximum repository size in KB (0 = no limit)")
+	cmd.Flags().BoolVar(&o.cleanupOrphans, "cleanup-orphans", false, "Remove directories not present in the organization's repositories")
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
@@ -119,9 +233,9 @@ func newBulkCloneGithubCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { //nolint:gocognit // Complex business logic for bulk clone operations
+func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { //nolint:gocognit // Complex business logic for sync clone operations
 	// Initialize simple logger for this operation
-	simpleLogger := logger.NewSimpleLogger("bulk-clone-github")
+	simpleLogger := logger.NewSimpleLogger("synclone-github")
 	sessionID := fmt.Sprintf("github-%s-%d", o.orgName, time.Now().Unix())
 	simpleLogger = simpleLogger.WithSession(sessionID).
 		WithContext("org_name", o.orgName).
@@ -275,7 +389,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 	})
 }
 
-func (o *bulkCloneGithubOptions) loadFromConfig() error {
+func (o *syncCloneGithubOptions) loadFromConfig() error {
 	// Use unified config loading
 	cfg, err := internalconfig.LoadCommandConfig(context.Background(), o.configFile, "bulk-clone")
 	if err != nil {

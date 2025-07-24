@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package bulkclone
+package synclone
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ func defaultBulkCloneGitlabOptions() *bulkCloneGitlabOptions {
 	}
 }
 
-func newBulkCloneGitlabCmd() *cobra.Command {
+func newSyncCloneGitlabCmd() *cobra.Command {
 	o := defaultBulkCloneGitlabOptions()
 
 	cmd := &cobra.Command{

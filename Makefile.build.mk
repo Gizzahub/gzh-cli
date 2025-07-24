@@ -21,9 +21,22 @@ install: build ## install golang binary
 	@mv $(executablename) $(shell go env GOPATH)/bin/
 	@echo -e "$(GREEN)✅ Installed $(executablename) to $(shell go env GOPATH)/bin/$(RESET)"
 
-run: ## run the application
+run: ## run the application (usage: make run [args...] or ARGS="args" make run)
 	@echo -e "$(CYAN)Running application with version $(VERSION)...$(RESET)"
-	@go run -ldflags "-X main.version=$(VERSION)" main.go
+	@if [ "$(words $(MAKECMDGOALS))" -gt 1 ]; then \
+		ARGS="$(filter-out run,$(MAKECMDGOALS))"; \
+		echo -e "$(YELLOW)Arguments: $$ARGS$(RESET)"; \
+		go run -ldflags "-X main.version=$(VERSION)" main.go $$ARGS; \
+	elif [ -n "$(ARGS)" ]; then \
+		echo -e "$(YELLOW)Arguments: $(ARGS)$(RESET)"; \
+		go run -ldflags "-X main.version=$(VERSION)" main.go $(ARGS); \
+	else \
+		go run -ldflags "-X main.version=$(VERSION)" main.go; \
+	fi
+
+# Prevent make from interpreting arguments as targets
+%:
+	@:
 
 bootstrap: ## install build dependencies
 	@echo -e "$(CYAN)Installing build dependencies...$(RESET)"

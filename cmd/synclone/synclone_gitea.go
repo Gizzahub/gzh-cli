@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package bulkclone
+package synclone
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func defaultBulkCloneGiteaOptions() *bulkCloneGiteaOptions {
 	}
 }
 
-func newBulkCloneGiteaCmd() *cobra.Command {
+func newSyncCloneGiteaCmd() *cobra.Command {
 	o := defaultBulkCloneGiteaOptions()
 
 	cmd := &cobra.Command{

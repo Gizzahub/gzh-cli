@@ -7,6 +7,9 @@
 version: "1.0.0"
 default_provider: github
 
+sync_mode:
+  cleanup_orphans: true
+
 # Global settings that apply to all commands
 global:
   clone_base_dir: "$HOME/repos"

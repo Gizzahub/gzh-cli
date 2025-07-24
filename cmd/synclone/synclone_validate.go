@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package bulkclone
+package synclone
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func defaultBulkCloneValidateOptions() *bulkCloneValidateOptions {
 	return &bulkCloneValidateOptions{}
 }
 
-func newBulkCloneValidateCmd() *cobra.Command {
+func newSyncCloneValidateCmd() *cobra.Command {
 	o := defaultBulkCloneValidateOptions()
 
 	cmd := &cobra.Command{

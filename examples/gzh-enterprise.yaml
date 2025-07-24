@@ -4,6 +4,9 @@
 version: "1.0.0"
 default_provider: github
 
+sync_mode:
+  cleanup_orphans: true
+
 providers:
   # GitHub Enterprise configuration
   github:

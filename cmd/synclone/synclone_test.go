@@ -1,5 +1,5 @@
 //nolint:testpackage // White-box testing needed for internal function access
-package bulkclone
+package synclone
 
 import (
 	"context"
@@ -80,7 +80,7 @@ func TestBulkCloneGithubOptions_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := newBulkCloneGithubCmd()
+			cmd := newSyncCloneGithubCmd()
 			cmd.SetContext(context.Background())
 			err := tt.options.run(cmd, []string{})
 
@@ -128,7 +128,7 @@ func TestStrategyValidation(t *testing.T) {
 				orgName:    "test-org",
 				strategy:   strategy,
 			}
-			cmd := newBulkCloneGithubCmd()
+			cmd := newSyncCloneGithubCmd()
 			cmd.SetContext(context.Background())
 			err := githubOpts.run(cmd, []string{})
 			// We expect an error from RefreshAll (network), not from validation
@@ -140,7 +140,7 @@ func TestStrategyValidation(t *testing.T) {
 				groupName:  "test-group",
 				strategy:   strategy,
 			}
-			gitlabCmd := newBulkCloneGitlabCmd()
+			gitlabCmd := newSyncCloneGitlabCmd()
 			gitlabCmd.SetContext(context.Background())
 			err = gitlabOpts.run(gitlabCmd, []string{})
 			assert.True(t, err == nil || !contains(err.Error(), "Input validation failed"))
@@ -155,7 +155,7 @@ func TestStrategyValidation(t *testing.T) {
 				orgName:    "test-org",
 				strategy:   strategy,
 			}
-			cmd := newBulkCloneGithubCmd()
+			cmd := newSyncCloneGithubCmd()
 			cmd.SetContext(context.Background())
 			err := githubOpts.run(cmd, []string{})
 			if strategy != "" {
@@ -169,7 +169,7 @@ func TestStrategyValidation(t *testing.T) {
 				groupName:  "test-group",
 				strategy:   strategy,
 			}
-			gitlabCmd := newBulkCloneGitlabCmd()
+			gitlabCmd := newSyncCloneGitlabCmd()
 			gitlabCmd.SetContext(context.Background())
 			err = gitlabOpts.run(gitlabCmd, []string{})
 			if strategy != "" {
