@@ -7,8 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"go.uber.org/zap"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestContainerDetector_DetectContainerEnvironment(t *testing.T) {

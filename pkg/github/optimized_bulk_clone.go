@@ -9,9 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/schollz/progressbar/v3"
+
 	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
-	"github.com/schollz/progressbar/v3"
 )
 
 // OptimizedBulkCloneManager handles large-scale repository operations with memory optimization.

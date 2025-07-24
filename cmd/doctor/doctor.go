@@ -16,9 +16,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -107,10 +108,10 @@ type SystemInfo struct {
 }
 
 func runDoctor(cmd *cobra.Command, args []string) {
-	// Initialize structured logger for doctor operations
-	structuredLogger := logger.NewStructuredLogger("doctor", logger.LevelInfo)
+	// Initialize simple logger for doctor operations
+	simpleLogger := logger.NewSimpleLogger("doctor")
 	sessionID := fmt.Sprintf("doctor-%d", time.Now().Unix())
-	structuredLogger = structuredLogger.WithSession(sessionID).
+	simpleLogger = simpleLogger.WithSession(sessionID).
 		WithContext("quick_mode", quickMode).
 		WithContext("attempt_fix", attemptFix).
 		WithContext("verbose", verbose)
@@ -119,16 +120,16 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	recoveryConfig := errors.RecoveryConfig{
 		MaxRetries: 3,
 		RetryDelay: time.Second,
-		Logger:     structuredLogger,
+		Logger:     simpleLogger,
 		RecoveryFunc: func(err error) error {
-			structuredLogger.Warn("Doctor diagnostic encountered recoverable error", "error_type", fmt.Sprintf("%T", err))
+			simpleLogger.Warn("Doctor diagnostic encountered recoverable error", "error_type", fmt.Sprintf("%T", err))
 			return nil
 		},
 	}
 	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
 
 	// Initialize health monitor
-	healthMonitor := errors.NewHealthMonitor(structuredLogger)
+	healthMonitor := errors.NewHealthMonitor(simpleLogger)
 
 	// Add system health checks
 	healthMonitor.AddCheck(errors.HealthCheck{
@@ -157,7 +158,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	})
 
 	fmt.Println("🩺 Starting GZH Manager diagnostic...")
-	structuredLogger.Info("Starting GZH Manager diagnostic session")
+	simpleLogger.Info("Starting GZH Manager diagnostic session")
 
 	startTime := time.Now()
 	report := &DiagnosticReport{
@@ -174,9 +175,9 @@ func runDoctor(cmd *cobra.Command, args []string) {
 		healthResults := healthMonitor.RunChecks(cmd.Context())
 		for checkName, checkErr := range healthResults {
 			if checkErr != nil {
-				structuredLogger.Warn("Pre-diagnostic health check failed", "check", checkName, "error", checkErr)
+				simpleLogger.Warn("Pre-diagnostic health check failed", "check", checkName, "error", checkErr)
 			} else {
-				structuredLogger.Debug("Pre-diagnostic health check passed", "check", checkName)
+				simpleLogger.Debug("Pre-diagnostic health check passed", "check", checkName)
 			}
 		}
 
@@ -185,48 +186,48 @@ func runDoctor(cmd *cobra.Command, args []string) {
 			fmt.Println("🔍 Running diagnostic checks...")
 		}
 
-		structuredLogger.Info("Running diagnostic checks", "total_categories", 7)
+		simpleLogger.Info("Running diagnostic checks", "total_categories", 7)
 
 		// System checks
-		structuredLogger.Debug("Running system checks")
-		runSystemChecks(report, structuredLogger, errorRecovery)
+		simpleLogger.Debug("Running system checks")
+		runSystemChecks(report, simpleLogger, errorRecovery)
 
 		// Configuration checks
-		structuredLogger.Debug("Running configuration checks")
-		runConfigChecks(report, structuredLogger, errorRecovery)
+		simpleLogger.Debug("Running configuration checks")
+		runConfigChecks(report, simpleLogger, errorRecovery)
 
 		// Network checks
 		if !quickMode {
-			structuredLogger.Debug("Running network checks")
-			runNetworkChecks(cmd.Context(), report, structuredLogger, errorRecovery)
+			simpleLogger.Debug("Running network checks")
+			runNetworkChecks(cmd.Context(), report, simpleLogger, errorRecovery)
 		} else {
-			structuredLogger.Debug("Skipping network checks (quick mode)")
+			simpleLogger.Debug("Skipping network checks (quick mode)")
 		}
 
 		// Git checks
-		structuredLogger.Debug("Running git checks")
-		runGitChecks(cmd.Context(), report, structuredLogger, errorRecovery)
+		simpleLogger.Debug("Running git checks")
+		runGitChecks(cmd.Context(), report, simpleLogger, errorRecovery)
 
 		// Permission checks
-		structuredLogger.Debug("Running permission checks")
-		runPermissionChecks(report, structuredLogger, errorRecovery)
+		simpleLogger.Debug("Running permission checks")
+		runPermissionChecks(report, simpleLogger, errorRecovery)
 
 		// Performance checks
 		if !quickMode {
-			structuredLogger.Debug("Running performance checks")
-			runPerformanceChecks(report, structuredLogger, errorRecovery)
+			simpleLogger.Debug("Running performance checks")
+			runPerformanceChecks(report, simpleLogger, errorRecovery)
 		} else {
-			structuredLogger.Debug("Skipping performance checks (quick mode)")
+			simpleLogger.Debug("Skipping performance checks (quick mode)")
 		}
 
 		// Security checks
-		structuredLogger.Debug("Running security checks")
-		runSecurityChecks(report, structuredLogger, errorRecovery)
+		simpleLogger.Debug("Running security checks")
+		runSecurityChecks(report, simpleLogger, errorRecovery)
 
 		return nil
 	})
 	if diagnosticErr != nil {
-		structuredLogger.ErrorWithStack(diagnosticErr, "Diagnostic execution failed")
+		simpleLogger.ErrorWithStack(diagnosticErr, "Diagnostic execution failed")
 		fmt.Printf("❌ Diagnostic execution failed: %v\n", diagnosticErr)
 		os.Exit(1)
 	}
@@ -236,7 +237,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	report.Duration = time.Since(startTime)
 
 	// Log performance metrics
-	structuredLogger.LogPerformance("doctor-diagnostic-completed", report.Duration, map[string]interface{}{
+	simpleLogger.LogPerformance("doctor-diagnostic-completed", report.Duration, map[string]interface{}{
 		"total_checks":   report.TotalChecks,
 		"passed_checks":  report.PassedChecks,
 		"failed_checks":  report.FailedChecks,
@@ -251,7 +252,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	// Print results
 	printResults(report)
 
-	structuredLogger.Info("Diagnostic completed",
+	simpleLogger.Info("Diagnostic completed",
 		"duration", report.Duration.String(),
 		"success_rate", fmt.Sprintf("%.1f%%", float64(report.PassedChecks)/float64(report.TotalChecks)*100),
 		"critical_issues", report.FailedChecks,
@@ -260,33 +261,33 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	// Save report if requested
 	if reportFile != "" {
 		if err := saveReport(report, reportFile); err != nil {
-			structuredLogger.ErrorWithStack(err, "Failed to save diagnostic report")
+			simpleLogger.ErrorWithStack(err, "Failed to save diagnostic report")
 			fmt.Printf("❌ Failed to save report: %v\n", err)
 		} else {
-			structuredLogger.Info("Diagnostic report saved", "file", reportFile)
+			simpleLogger.Info("Diagnostic report saved", "file", reportFile)
 			fmt.Printf("💾 Report saved to: %s\n", reportFile)
 		}
 	}
 
 	// Attempt fixes if requested
 	if attemptFix {
-		structuredLogger.Info("Attempting automatic fixes")
-		attemptAutomaticFixes(cmd.Context(), report, structuredLogger, errorRecovery)
+		simpleLogger.Info("Attempting automatic fixes")
+		attemptAutomaticFixes(cmd.Context(), report, simpleLogger, errorRecovery)
 	}
 
 	// Exit with appropriate code
 	if report.FailedChecks > 0 {
-		structuredLogger.Error("Doctor diagnostic completed with critical issues", "failed_checks", report.FailedChecks)
+		simpleLogger.Error("Doctor diagnostic completed with critical issues", "failed_checks", report.FailedChecks)
 		os.Exit(1)
 	} else if report.WarnChecks > 0 {
-		structuredLogger.Warn("Doctor diagnostic completed with warnings", "warn_checks", report.WarnChecks)
+		simpleLogger.Warn("Doctor diagnostic completed with warnings", "warn_checks", report.WarnChecks)
 		os.Exit(2)
 	}
 
-	structuredLogger.Info("Doctor diagnostic completed successfully")
+	simpleLogger.Info("Doctor diagnostic completed successfully")
 }
 
-func runSystemChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runSystemChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("💻 Checking system information...")
 	}
@@ -388,7 +389,7 @@ func runSystemChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *er
 	})
 }
 
-func runConfigChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runConfigChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("⚙️ Checking configuration...")
 	}
@@ -466,7 +467,7 @@ func runConfigChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *er
 	})
 }
 
-func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ logger.CommonLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🌐 Checking network connectivity...")
 	}
@@ -546,7 +547,7 @@ func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ *logger.S
 	})
 }
 
-func runGitChecks(ctx context.Context, report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runGitChecks(ctx context.Context, report *DiagnosticReport, _ logger.CommonLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🐙 Checking Git configuration...")
 	}
@@ -627,7 +628,7 @@ func runGitChecks(ctx context.Context, report *DiagnosticReport, _ *logger.Struc
 	})
 }
 
-func runPermissionChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runPermissionChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🔒 Checking permissions...")
 	}
@@ -679,7 +680,7 @@ func runPermissionChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _
 	})
 }
 
-func runPerformanceChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runPerformanceChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🚀 Running performance benchmarks...")
 	}
@@ -729,7 +730,7 @@ func runPerformanceChecks(report *DiagnosticReport, _ *logger.StructuredLogger, 
 	})
 }
 
-func runSecurityChecks(report *DiagnosticReport, _ *logger.StructuredLogger, _ *errors.ErrorRecovery) {
+func runSecurityChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.ErrorRecovery) {
 	if verbose {
 		fmt.Println("🔐 Checking security configuration...")
 	}
@@ -1082,40 +1083,40 @@ func saveReport(report *DiagnosticReport, filename string) error {
 	return encoder.Encode(report)
 }
 
-func attemptAutomaticFixes(ctx context.Context, report *DiagnosticReport, structuredLogger *logger.StructuredLogger, errorRecovery *errors.ErrorRecovery) {
+func attemptAutomaticFixes(ctx context.Context, report *DiagnosticReport, simpleLogger logger.CommonLogger, errorRecovery *errors.ErrorRecovery) {
 	fmt.Printf("\n🔧 Attempting automatic fixes...\n")
-	structuredLogger.Info("Starting automatic fixes", "total_issues", report.FailedChecks+report.WarnChecks) //nolint:contextcheck // Logger has its own context management
+	simpleLogger.Info("Starting automatic fixes", "total_issues", report.FailedChecks+report.WarnChecks) //nolint:contextcheck // Logger has its own context management
 
 	fixed := 0
 
 	for _, result := range report.Results {
 		if result.Status == "fail" || result.Status == "warn" {
 			fixErr := errorRecovery.Execute(ctx, fmt.Sprintf("fix-%s", result.Name), func() error { //nolint:contextcheck // Logger has its own context management
-				structuredLogger.Debug("Attempting fix", "check_name", result.Name, "status", result.Status)
+				simpleLogger.Debug("Attempting fix", "check_name", result.Name, "status", result.Status)
 
 				if attemptFix := tryAutoFix(result); attemptFix {
-					structuredLogger.Info("Successfully applied automatic fix", "check_name", result.Name)
+					simpleLogger.Info("Successfully applied automatic fix", "check_name", result.Name)
 					fmt.Printf("  ✅ Fixed: %s\n", result.Name)
 
 					fixed++
 				} else {
-					structuredLogger.Warn("Cannot auto-fix issue", "check_name", result.Name, "reason", "no_fix_available")
+					simpleLogger.Warn("Cannot auto-fix issue", "check_name", result.Name, "reason", "no_fix_available")
 					fmt.Printf("  ❌ Cannot auto-fix: %s\n", result.Name)
 				}
 
 				return nil
 			})
 			if fixErr != nil {
-				structuredLogger.ErrorWithStack(fixErr, "Auto-fix operation failed", "check_name", result.Name) //nolint:contextcheck // Logger has its own context management
+				simpleLogger.ErrorWithStack(fixErr, "Auto-fix operation failed", "check_name", result.Name) //nolint:contextcheck // Logger has its own context management
 			}
 		}
 	}
 
-	structuredLogger.Info("Auto-fix completed", "fixed_count", fixed, "total_attempted", report.FailedChecks+report.WarnChecks) //nolint:contextcheck // Logger has its own context management
+	simpleLogger.Info("Auto-fix completed", "fixed_count", fixed, "total_attempted", report.FailedChecks+report.WarnChecks) //nolint:contextcheck // Logger has its own context management
 	fmt.Printf("\n🎯 Auto-fix summary: %d issues resolved\n", fixed)
 
 	if fixed > 0 {
-		structuredLogger.Info("Recommend re-running diagnostic to verify fixes") //nolint:contextcheck // Logger has its own context management
+		simpleLogger.Info("Recommend re-running diagnostic to verify fixes") //nolint:contextcheck // Logger has its own context management
 		fmt.Println("🔄 Re-run 'gz doctor' to verify fixes")
 	}
 }

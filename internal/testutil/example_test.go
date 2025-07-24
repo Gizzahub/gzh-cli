@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/fixtures"
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/testutil/mocks"
-	"github.com/stretchr/testify/assert"
 )
 
 const (

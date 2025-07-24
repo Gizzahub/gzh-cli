@@ -8,8 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"gopkg.in/yaml.v3"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 const defaultConfigVersion = "1.0.0"

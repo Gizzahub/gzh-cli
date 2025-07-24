@@ -5,60 +5,90 @@
 # Quality Configuration
 # ==============================================================================
 
+.PHONY: fmt format format-all format-check format-diff format-imports format-simplify format-ci format-strict format-list format-file format-install-tools
+.PHONY: pre-commit-install dev dev-fast verify ci-local pr-check lint-help
+
 # ==============================================================================
 # Code Formatting Targets
 # ==============================================================================
 
-.PHONY: fmt format format-all format-check format-diff format-imports format-simplify format-ci
-.PHONY: pre-commit-install dev dev-fast verify ci-local pr-check lint-help
+format: format-simplify ## quick and simple formatting (default)
+fmt: format-simplify
 
-fmt: ## format go files with gofumpt and gci
-	@echo -e "$(CYAN)Formatting Go code...$(RESET)"
-	@echo "1. Running gofumpt..."
+format-simplify: ## quick basic formatting with gofumpt and goimports
+	@echo -e "$(CYAN)🚀 Quick formatting...$(RESET)"
+	@echo "1. Running gofumpt (includes go fmt + simplification)..."
 	@gofumpt -w .
+	@echo "2. Organizing imports..."
+	@goimports -w -local github.com/gizzahub/gzh-manager-go .
+	@echo -e "$(GREEN)✅ Quick formatting complete!$(RESET)"
+
+format-strict: format-install-tools ## comprehensive formatting with all tools
+	@echo -e "$(CYAN)🔧 Strict formatting (all tools)...$(RESET)"
+	@echo "1. Running gofumpt (strict formatting + simplification)..."
+	@gofumpt -w -extra .
 	@echo "2. Running gci (import organization)..."
 	@gci write --skip-generated .
-	@echo -e "$(GREEN)✅ Code formatting complete!$(RESET)"
-
-format-all: install-format-tools ## run all formatters including advanced ones
-	@echo -e "$(CYAN)Running comprehensive code formatting...$(RESET)"
-	@echo "1. Standard formatting..."
-	@gofmt -w .
-	@echo "2. Simplifying code..."
-	@gofmt -s -w .
-	@echo "3. Running gofumpt (strict formatting)..."
-	@gofumpt -w -extra .
-	@echo "4. Running gci (import grouping)..."
+	@echo "3. Organizing imports with goimports..."
+	@goimports -w -local github.com/gizzahub/gzh-manager-go .
+	@echo "4. Final gci (import grouping)..."
 	@gci write --skip-generated -s standard -s default -s "prefix(github.com/gizzahub/gzh-manager-go)" .
-	@echo -e "$(GREEN)✅ All formatting complete!$(RESET)"
+	@echo -e "$(GREEN)✅ Strict formatting complete!$(RESET)"
 
-format-check: ## check code formatting without fixing
-	@echo -e "$(CYAN)Checking code formatting...$(RESET)"
-	@if [ -n "$$(gofumpt -l .)" ]; then \
-		echo "$(RED)❌ The following files need formatting:$(RESET)"; \
-		gofumpt -l .; \
-		echo "$(YELLOW)Run 'make fmt' to fix.$(RESET)"; \
-		exit 1; \
+format-list: ## show files that need formatting
+	@echo -e "$(CYAN)📋 Files that need formatting:$(RESET)"
+	@FILES=$$(gofmt -l .); \
+	if [ -n "$$FILES" ]; then \
+		echo "$$FILES" | while read file; do echo "  $(YELLOW)$$file$(RESET)"; done; \
+		echo ""; \
+		echo -e "$(YELLOW)Total: $$(echo "$$FILES" | wc -l) files need formatting$(RESET)"; \
+		echo -e "$(CYAN)Run 'make format-simplify' or 'make format-strict' to fix$(RESET)"; \
 	else \
-		echo "$(GREEN)✅ All files are properly formatted$(RESET)"; \
+		echo -e "$(GREEN)✅ All files are properly formatted!$(RESET)"; \
 	fi
 
 format-diff: ## show formatting differences
-	@echo -e "$(CYAN)Showing formatting differences...$(RESET)"
-	@gofumpt -d .
+	@echo -e "$(CYAN)📝 Formatting differences:$(RESET)"
+	@DIFF_OUTPUT=$$(gofmt -d .); \
+	if [ -n "$$DIFF_OUTPUT" ]; then \
+		echo "$$DIFF_OUTPUT"; \
+	else \
+		echo -e "$(GREEN)✅ No formatting differences found!$(RESET)"; \
+	fi
 
-format-imports: ## organize imports only
-	@echo -e "$(CYAN)Organizing imports...$(RESET)"
-	@gci write --skip-generated .
-	@echo -e "$(GREEN)✅ Imports organized!$(RESET)"
+format-install-tools: ## install advanced formatting tools
+	@echo -e "$(CYAN)Installing formatting tools...$(RESET)"
+	@which goimports > /dev/null || (echo "Installing goimports..." && go install golang.org/x/tools/cmd/goimports@latest)
+	@which gofumpt > /dev/null || (echo "Installing gofumpt..." && go install mvdan.cc/gofumpt@latest)
+	@which gci > /dev/null || (echo "Installing gci..." && go install github.com/daixiang0/gci@latest)
+	@echo -e "$(GREEN)✅ All formatting tools installed!$(RESET)"
 
-format-simplify: ## simplify code with gofmt -s
-	@echo -e "$(CYAN)Simplifying code...$(RESET)"
-	@gofmt -s -w .
-	@echo -e "$(GREEN)✅ Code simplified!$(RESET)"
-
-format-ci: format-check ## CI-friendly format check
-	@echo -e "$(GREEN)✅ CI format check passed!$(RESET)"
+format-file: ## format specific files with gofumpt and goimports (usage: make format-file file1.go file2.go ...)
+	@if [ -z "$(MAKECMDGOALS)" ] || [ "$(words $(MAKECMDGOALS))" -eq 1 ]; then \
+		echo "$(RED)❌ Error: At least one file must be specified$(RESET)"; \
+		echo "$(YELLOW)Usage: make format-file file1.go file2.go ...$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(CYAN)🔄 Processing files...$(RESET)"
+	@for file in $(filter-out format-file,$(MAKECMDGOALS)); do \
+		if [ -n "$$file" ]; then \
+			if [ ! -f "$$file" ]; then \
+				echo "$(RED)❌ Error: File '$$file' does not exist$(RESET)"; \
+				continue; \
+			fi; \
+			if ! echo "$$file" | grep -q "\.go$$"; then \
+				echo "$(YELLOW)⚠️  Warning: File '$$file' is not a Go file (.go extension), skipping$(RESET)"; \
+				continue; \
+			fi; \
+			echo "$(CYAN)📝 Formatting file: $$file$(RESET)"; \
+			echo "  1. Running gofumpt..."; \
+			gofumpt -w "$$file" || echo "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
+			echo "  2. Running goimports..."; \
+			goimports -w -local github.com/gizzahub/gzh-manager-go "$$file" || echo "$(RED)❌ goimports failed for $$file$(RESET)"; \
+			echo "$(GREEN)✅ File '$$file' formatted successfully!$(RESET)"; \
+		fi; \
+	done
+	@echo "$(GREEN)🎉 All files processed!$(RESET)"
 
 # ==============================================================================
 # Linting and Static Analysis
@@ -255,10 +285,12 @@ quality-info: ## show code quality information and targets
 	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
 	@echo -e "$(RESET)"
 	@echo -e "$(GREEN)🎨 Formatting Tools:$(RESET)"
-	@echo -e "  • $(CYAN)fmt$(RESET)                   Standard Go formatting with gofumpt + gci"
-	@echo -e "  • $(CYAN)format-all$(RESET)            Comprehensive formatting including advanced"
-	@echo -e "  • $(CYAN)format-check$(RESET)          Check formatting without making changes"
-	@echo -e "  • $(CYAN)format-diff$(RESET)           Show formatting differences"
+	@echo -e "  • $(CYAN)format$(RESET)                기본 포맷팅 (format-simplify 실행)"
+	@echo -e "  • $(CYAN)format-simplify$(RESET)       신속한 기본 포맷팅"
+	@echo -e "  • $(CYAN)format-strict$(RESET)         엄격한 포맷팅 (모든 도구 사용)"
+	@echo -e "  • $(CYAN)format-list$(RESET)           포맷팅 필요한 파일 목록"
+	@echo -e "  • $(CYAN)format-diff$(RESET)           포맷팅 차이점 표시"
+	@echo -e "  • $(CYAN)format-file$(RESET)           특정 파일 포맷팅"
 	@echo ""
 	@echo -e "$(GREEN)🔍 Linting & Analysis:$(RESET)"
 	@echo -e "  • $(CYAN)lint-check$(RESET)            Run golangci-lint checks"
@@ -286,12 +318,16 @@ lint-help: ## show comprehensive help for linting targets
 	@echo -e "$(BLUE)Code Quality and Linting Commands:$(RESET)"
 	@echo ""
 	@echo -e "$(YELLOW)🎨 Formatting:$(RESET)"
-	@echo -e "  $(CYAN)fmt$(RESET)                   Format Go files with gofumpt and gci"
-	@echo -e "  $(CYAN)format-all$(RESET)            Run all formatters including advanced ones"
+	@echo -e "  $(CYAN)format$(RESET)                기본 포맷팅 (format-simplify 실행)"
+	@echo -e "  $(CYAN)format-simplify$(RESET)       신속한 기본 포맷팅"
+	@echo -e "  $(CYAN)format-strict$(RESET)         엄격한 포맷팅 (모든 도구 사용)"
+	@echo -e "  $(CYAN)format-list$(RESET)           포맷팅 필요한 파일 목록"
+	@echo -e "  $(CYAN)format-diff$(RESET)           포맷팅 차이점 표시"
+	@echo -e "  $(CYAN)format-file$(RESET)           특정 파일 포맷팅 (FILE= 옵션 사용)"
 	@echo -e "  $(CYAN)format-check$(RESET)          Check code formatting without fixing"
-	@echo -e "  $(CYAN)format-diff$(RESET)           Show formatting differences"
 	@echo -e "  $(CYAN)format-imports$(RESET)        Organize imports only"
-	@echo -e "  $(CYAN)format-simplify$(RESET)       Simplify code with gofmt -s"
+	@echo -e "  $(CYAN)fmt$(RESET)                   Alias for format-simplify (backward compatibility)"
+	@echo -e "  $(CYAN)format-all$(RESET)            Alias for format-strict (backward compatibility)"
 	@echo ""
 	@echo -e "$(YELLOW)🔍 Linting:$(RESET)"
 	@echo -e "  $(CYAN)lint$(RESET)                  Check lint issues without fixing"

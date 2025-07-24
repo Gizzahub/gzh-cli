@@ -15,9 +15,10 @@ import (
 	"sync"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/gizzahub/gzh-manager-go/internal/constants"
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
-	"gopkg.in/yaml.v3"
 )
 
 // Source represents different configuration sources.

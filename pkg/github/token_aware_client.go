@@ -186,18 +186,19 @@ func (c *TokenAwareGitHubClient) GetOrganization(ctx context.Context, org string
 func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner string, page, perPage int) ([]*GitHubRepository, error) {
 	var url string
 
-	// Determine if it's a user or organization
-	user, err := c.GetUser(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get current user: %w", err)
-	}
-
-	if user.Login == owner {
-		// User's own repositories
-		url = fmt.Sprintf("%s/user/repos", c.baseURL)
+	// If we have a token, try to determine if it's the current user's repos
+	if c.primaryToken != "" {
+		user, err := c.GetUser(ctx)
+		if err == nil && user.Login == owner {
+			// User's own repositories
+			url = fmt.Sprintf("%s/user/repos", c.baseURL)
+		} else {
+			// Try organization first, then fallback to user
+			url = fmt.Sprintf("%s/orgs/%s/repos", c.baseURL, owner)
+		}
 	} else {
-		// Organization or other user repositories
-		url = fmt.Sprintf("%s/users/%s/repos", c.baseURL, owner)
+		// No token - try organization endpoint for public repos
+		url = fmt.Sprintf("%s/orgs/%s/repos", c.baseURL, owner)
 	}
 
 	// Add pagination parameters
@@ -208,13 +209,13 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Add authentication
-	token, err := c.GetCurrentToken()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get token: %w", err)
+	// Add authentication if token is available
+	if c.primaryToken != "" {
+		token, err := c.GetCurrentToken()
+		if err == nil {
+			req.Header.Set("Authorization", "token "+token)
+		}
 	}
-
-	req.Header.Set("Authorization", "token "+token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	resp, err := c.httpClient.Do(req)
@@ -222,6 +223,23 @@ func (c *TokenAwareGitHubClient) ListRepositories(ctx context.Context, owner str
 		return nil, fmt.Errorf("failed to list repositories for %s: %w", owner, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
+
+	// If organization endpoint fails and we don't have a token, try user endpoint
+	if resp.StatusCode == http.StatusNotFound && c.primaryToken == "" {
+		userURL := fmt.Sprintf("%s/users/%s/repos?page=%d&per_page=%d&sort=updated&direction=desc", c.baseURL, owner, page, perPage)
+		userReq, err := http.NewRequestWithContext(ctx, "GET", userURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create user request: %w", err)
+		}
+		userReq.Header.Set("Accept", "application/vnd.github.v3+json")
+
+		resp.Body.Close() // Close the previous response
+		resp, err = c.httpClient.Do(userReq)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list user repositories for %s: %w", owner, err)
+		}
+		defer func() { _ = resp.Body.Close() }()
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleErrorResponse(resp, fmt.Sprintf("list repositories for %s", owner))

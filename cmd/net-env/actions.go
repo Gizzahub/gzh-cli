@@ -14,8 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
 
 type actionsOptions struct {

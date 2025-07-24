@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	internalconfig "github.com/gizzahub/gzh-manager-go/internal/config"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/internal/errors"
@@ -15,7 +17,6 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/validation"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/spf13/cobra"
 )
 
 type bulkCloneGithubOptions struct {
@@ -119,10 +120,10 @@ func newBulkCloneGithubCmd() *cobra.Command {
 }
 
 func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { //nolint:gocognit // Complex business logic for bulk clone operations
-	// Initialize structured logger for this operation
-	structuredLogger := logger.NewStructuredLogger("bulk-clone-github", logger.LevelInfo)
+	// Initialize simple logger for this operation
+	simpleLogger := logger.NewSimpleLogger("bulk-clone-github")
 	sessionID := fmt.Sprintf("github-%s-%d", o.orgName, time.Now().Unix())
-	structuredLogger = structuredLogger.WithSession(sessionID).
+	simpleLogger = simpleLogger.WithSession(sessionID).
 		WithContext("org_name", o.orgName).
 		WithContext("target_path", o.targetPath).
 		WithContext("strategy", o.strategy).
@@ -132,15 +133,15 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 	recoveryConfig := errors.RecoveryConfig{
 		MaxRetries: o.maxRetries,
 		RetryDelay: time.Second * 2,
-		Logger:     structuredLogger,
+		Logger:     simpleLogger,
 		RecoveryFunc: func(err error) error {
-			structuredLogger.Warn("Attempting automatic recovery", "error_type", fmt.Sprintf("%T", err))
+			simpleLogger.Warn("Attempting automatic recovery", "error_type", fmt.Sprintf("%T", err))
 			return nil
 		},
 	}
 	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
 
-	structuredLogger.Info("Starting GitHub bulk clone operation")
+	simpleLogger.Info("Starting GitHub bulk clone operation")
 
 	start := time.Now()
 
@@ -195,7 +196,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			token = env.GetToken("github")
 		}
 
-		structuredLogger.Debug("Configuration validated",
+		simpleLogger.Debug("Configuration validated",
 			"has_token", token != "",
 			"optimized", o.optimized,
 			"streaming", o.streamingMode,
@@ -209,18 +210,18 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 		// Determine which approach to use
 		if o.enableCache { //nolint:gocritic // Complex boolean conditions not suitable for switch
 			// Use cached approach (Redis cache disabled, using local cache only)
-			structuredLogger.Info("Using cached API calls for improved performance")
+			simpleLogger.Info("Using cached API calls for improved performance")
 			fmt.Printf("🔄 Using cached API calls for improved performance\n")
 
 			err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
 		} else if o.optimized || o.streamingMode || token != "" {
 			if token == "" {
-				structuredLogger.Warn("No GitHub token provided - API rate limits may apply")
+				simpleLogger.Warn("No GitHub token provided - API rate limits may apply")
 				fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
 				fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
 			}
 
-			structuredLogger.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
+			simpleLogger.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
 			fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
 
 			if o.memoryLimit != "" {
@@ -229,10 +230,10 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 
 			err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
 		} else if o.resume || o.parallel > 1 {
-			structuredLogger.Info("Using resumable parallel cloning", "resume", o.resume, "progress_mode", o.progressMode)
+			simpleLogger.Info("Using resumable parallel cloning", "resume", o.resume, "progress_mode", o.progressMode)
 			err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		} else {
-			structuredLogger.Info("Using standard cloning approach")
+			simpleLogger.Info("Using standard cloning approach")
 
 			err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
 		}
@@ -253,14 +254,14 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
 			recErr = recErr.WithContext("operation_duration", time.Since(start).String())
 
-			structuredLogger.ErrorWithStack(err, "GitHub bulk clone operation failed")
+			simpleLogger.ErrorWithStack(err, "GitHub bulk clone operation failed")
 
 			// Return the error properly for error handling
 			return recErr
 		}
 
 		duration := time.Since(start)
-		structuredLogger.LogPerformance("github-bulk-clone-completed", duration, map[string]interface{}{
+		simpleLogger.LogPerformance("github-bulk-clone-completed", duration, map[string]interface{}{
 			"org_name":     o.orgName,
 			"target_path":  o.targetPath,
 			"strategy":     o.strategy,
@@ -268,7 +269,7 @@ func (o *bulkCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			"memory_stats": errors.GetMemoryStats(),
 		})
 
-		structuredLogger.Info("GitHub bulk clone operation completed successfully", "duration", duration.String())
+		simpleLogger.Info("GitHub bulk clone operation completed successfully", "duration", duration.String())
 
 		return nil
 	})

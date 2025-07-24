@@ -7,12 +7,13 @@ import (
 	"testing"
 	"time"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
-	"github.com/gizzahub/gzh-manager-go/pkg/config"
-	"github.com/gizzahub/gzh-manager-go/test/integration/testcontainers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
+	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/gizzahub/gzh-manager-go/test/integration/testcontainers"
 )
 
 func TestBulkClone_GitLab_Integration(t *testing.T) {

@@ -8,11 +8,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/gizzahub/gzh-manager-go/internal/config"
 	pkgconfig "github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
-	"github.com/spf13/cobra"
 )
 
 type bulkCloneOptions struct {

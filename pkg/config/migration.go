@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 	"gopkg.in/yaml.v3"
+
+	bulkclone "github.com/gizzahub/gzh-manager-go/pkg/bulk-clone"
 )
 
 // MigrationResult contains the results of a configuration migration.

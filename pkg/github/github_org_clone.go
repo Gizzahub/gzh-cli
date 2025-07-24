@@ -12,12 +12,13 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/gizzahub/gzh-manager-go/internal/git"
-	"github.com/gizzahub/gzh-manager-go/internal/helpers"
-	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 	"github.com/schollz/progressbar/v3"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+
+	"github.com/gizzahub/gzh-manager-go/internal/git"
+	"github.com/gizzahub/gzh-manager-go/internal/helpers"
+	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 )
 
 // RepoInfo represents GitHub repository information returned by the GitHub API.
@@ -82,6 +83,12 @@ func List(ctx context.Context, org string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+
+	// Add GitHub token if available
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		req.Header.Set("Authorization", "token "+token)
+	}
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	client := httpclient.GetGlobalClient("github")
 

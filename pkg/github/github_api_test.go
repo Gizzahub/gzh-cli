@@ -5,11 +5,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/gizzahub/gzh-manager-go/pkg/github/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/gizzahub/gzh-manager-go/pkg/github/mocks"
 )
 
 func TestAPIClient_GetRepository(t *testing.T) {

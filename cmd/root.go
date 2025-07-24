@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
 	bulkclone "github.com/gizzahub/gzh-manager-go/cmd/bulk-clone"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
@@ -21,13 +23,23 @@ import (
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
-	"github.com/spf13/cobra"
+	"github.com/gizzahub/gzh-manager-go/internal/logger"
+)
+
+var (
+	verbose bool
+	debug   bool
+	quiet   bool
 )
 
 func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gz",
 		Short: "Cli 종합 Manager by Gizzahub",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// Set global logging configuration based on flags
+			logger.SetGlobalLoggingFlags(verbose, debug, quiet)
+		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return cmd.Help()
 		},
@@ -50,6 +62,11 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 	cmd.AddCommand(NewWebhookCmd())
 	cmd.AddCommand(NewEventCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
+
+	// Add global flags
+	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose logging")
+	cmd.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug logging (shows all log levels)")
+	cmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Suppress all logs except critical errors")
 
 	return cmd
 }

@@ -42,11 +42,11 @@ func (ch *ConsoleHandler) Enabled(_ context.Context, level slog.Level) bool {
 func (ch *ConsoleHandler) Handle(_ context.Context, record slog.Record) error {
 	timestamp := record.Time.Format("15:04:05")
 	level := ch.formatLevel(record.Level)
-	
+
 	// Extract key information from attributes
 	var component, operation, orgName string
 	var errorMsg string
-	
+
 	record.Attrs(func(a slog.Attr) bool {
 		switch a.Key {
 		case "component":
@@ -72,7 +72,7 @@ func (ch *ConsoleHandler) Handle(_ context.Context, record slog.Record) error {
 	if operation != "" {
 		contextParts = append(contextParts, fmt.Sprintf("op=%s", operation))
 	}
-	
+
 	contextStr := ""
 	if len(contextParts) > 0 {
 		contextStr = fmt.Sprintf(" [%s]", strings.Join(contextParts, " "))
@@ -86,7 +86,7 @@ func (ch *ConsoleHandler) Handle(_ context.Context, record slog.Record) error {
 
 	// Output format: TIME LEVEL[CONTEXT] MESSAGE
 	output := fmt.Sprintf("%s %s%s %s\n", timestamp, level, contextStr, message)
-	
+
 	_, err := ch.writer.Write([]byte(output))
 	return err
 }

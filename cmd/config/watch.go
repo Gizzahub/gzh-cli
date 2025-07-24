@@ -11,9 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	configservice "github.com/gizzahub/gzh-manager-go/internal/config"
 	configpkg "github.com/gizzahub/gzh-manager-go/pkg/config"
-	"github.com/spf13/cobra"
 )
 
 // newWatchCmd creates the config watch subcommand.

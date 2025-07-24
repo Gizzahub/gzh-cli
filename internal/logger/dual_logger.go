@@ -12,19 +12,13 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/config"
 )
 
-// DualLogger wraps multiple loggers to provide dual output.
-type DualLogger struct {
-	fileLogger    *slog.Logger
-	hasFileLogger bool
-}
-
 // NewDualLogger creates a logger that outputs to both console (human-readable) and file (JSON).
 func NewDualLogger(component string, level LogLevel) (*StructuredLogger, error) {
 	// Load global config
 	globalConfig, err := config.LoadGlobalConfig()
 	if err != nil {
 		// Fallback to console-only logging if config loading fails
-		return NewConsoleOnlyLogger(component, level), nil
+		return NewConsoleOnlyLogger(component, level), err
 	}
 
 	var slogLevel slog.Level
@@ -55,7 +49,7 @@ func NewDualLogger(component string, level LogLevel) (*StructuredLogger, error) 
 	// Create file handler (JSON) if enabled
 	if globalConfig.Logging.Enabled {
 		if err := ensureLogDir(globalConfig.Logging.FilePath); err == nil {
-			if fileWriter, err := os.OpenFile(globalConfig.Logging.FilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666); err == nil {
+			if fileWriter, err := os.OpenFile(globalConfig.Logging.FilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666); err == nil {
 				jsonHandler := slog.NewJSONHandler(fileWriter, opts)
 				fileLogger = slog.New(jsonHandler)
 				hasFileLogger = true
@@ -118,7 +112,7 @@ func NewConsoleOnlyLogger(component string, level LogLevel) *StructuredLogger {
 // ensureLogDir creates the log directory if it doesn't exist.
 func ensureLogDir(logPath string) error {
 	dir := filepath.Dir(logPath)
-	return os.MkdirAll(dir, 0755)
+	return os.MkdirAll(dir, 0o755)
 }
 
 // MultiHandler implements slog.Handler to write to multiple handlers.
