@@ -1,0 +1,17 @@
+# Advanced synclone configuration
+# Note: This shows planned features not yet fully implemented
+# For working examples, see synclone-simple.yaml and synclone-example.yaml
+
+github:
+  myorg:
+    auth: token
+    proto: https
+    targetPath: $HOME/mywork/myorg
+    default:
+      strategy: include
+      branch: main
+    include:
+      myrepo:
+        branch: develop
+    exclude:
+      - test-*

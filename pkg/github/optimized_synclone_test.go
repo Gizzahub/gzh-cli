@@ -213,16 +213,16 @@ func TestNewStreamingClient(t *testing.T) {
 }
 
 // Test optimized bulk clone manager creation.
-func TestNewOptimizedBulkCloneManager(t *testing.T) {
+func TestNewOptimizedSyncCloneManager(t *testing.T) {
 	config := DefaultOptimizedCloneConfig()
 
-	manager, err := NewOptimizedBulkCloneManager("test-token", config)
+	manager, err := NewOptimizedSyncCloneManager("test-token", config)
 	if err != nil {
 		t.Fatalf("Unexpected error creating manager: %v", err)
 	}
 
 	if manager == nil {
-		t.Fatal("NewOptimizedBulkCloneManager returned nil")
+		t.Fatal("NewOptimizedSyncCloneManager returned nil")
 	}
 
 	// Test closing the manager
@@ -236,7 +236,7 @@ func TestNewOptimizedBulkCloneManager(t *testing.T) {
 func TestMemoryMonitor(t *testing.T) {
 	config := DefaultOptimizedCloneConfig()
 
-	manager, err := NewOptimizedBulkCloneManager("test-token", config)
+	manager, err := NewOptimizedSyncCloneManager("test-token", config)
 	if err != nil {
 		t.Fatalf("Failed to create manager: %v", err)
 	}

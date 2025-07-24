@@ -6,12 +6,15 @@ This directory contains example configurations and usage patterns for the gz CLI
 
 ### Basic Usage
 
-- **`bulk-clone-simple.yaml`** - Minimal configuration for cloning a single organization
+- **`synclone-simple.yaml`** - Minimal configuration for synclone operations
+- **`bulk-clone-simple.yaml`** - Legacy: Minimal configuration for cloning a single organization
 - **`gzh-simple.yaml`** - Basic unified configuration example
 
 ### Advanced Configurations
 
-- **`bulk-clone-example.yaml`** - Comprehensive bulk clone configuration with all options
+- **`synclone-example.yaml`** - Comprehensive synclone configuration with all options
+- **`synclone.yml`** - Advanced synclone configuration features
+- **`bulk-clone-example.yaml`** - Legacy: Comprehensive bulk clone configuration with all options
 - **`gzh-unified-example.yaml`** - Complete unified configuration showing all features
 - **`gzh-multi-provider.yaml`** - Multi-provider setup (GitHub, GitLab, Gitea)
 
@@ -32,7 +35,33 @@ This directory contains example configurations and usage patterns for the gz CLI
 
 ## Quick Start
 
-1. Copy the appropriate example file:
+### Synclone (Recommended)
+
+1. Copy the synclone example file:
+
+   ```bash
+   cp examples/synclone-simple.yaml ~/.config/gzh-manager/synclone.yaml
+   ```
+
+2. Edit the configuration with your settings:
+
+   ```bash
+   # Set your GitHub token
+   export GITHUB_TOKEN="your-token-here"
+
+   # Or add to the config file
+   vim ~/.config/gzh-manager/synclone.yaml
+   ```
+
+3. Run synclone:
+
+   ```bash
+   gz synclone github -o your-org -t ~/repos --cleanup-orphans
+   ```
+
+### Legacy Bulk-Clone
+
+1. Copy the bulk-clone example file:
 
    ```bash
    cp examples/bulk-clone-simple.yaml ~/.config/gzh-manager/bulk-clone.yaml

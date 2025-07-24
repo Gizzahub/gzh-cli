@@ -15,8 +15,8 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
 )
 
-// OptimizedBulkCloneManager handles large-scale repository operations with memory optimization.
-type OptimizedBulkCloneManager struct {
+// OptimizedSyncCloneManager handles large-scale repository operations with memory optimization.
+type OptimizedSyncCloneManager struct {
 	streamingClient *StreamingClient
 	workerPool      *workerpool.RepositoryWorkerPool
 	config          OptimizedCloneConfig
@@ -115,8 +115,8 @@ func DefaultOptimizedCloneConfig() OptimizedCloneConfig {
 	}
 }
 
-// NewOptimizedBulkCloneManager creates a new optimized bulk clone manager.
-func NewOptimizedBulkCloneManager(token string, config OptimizedCloneConfig) (*OptimizedBulkCloneManager, error) {
+// NewOptimizedSyncCloneManager creates a new optimized bulk clone manager.
+func NewOptimizedSyncCloneManager(token string, config OptimizedCloneConfig) (*OptimizedSyncCloneManager, error) {
 	streamingClient := NewStreamingClient(token, config.StreamingConfig)
 
 	workerPool := workerpool.NewRepositoryWorkerPool(config.WorkerPoolConfig)
@@ -130,7 +130,7 @@ func NewOptimizedBulkCloneManager(token string, config OptimizedCloneConfig) (*O
 		lastGC:    time.Now(),
 	}
 
-	manager := &OptimizedBulkCloneManager{
+	manager := &OptimizedSyncCloneManager{
 		streamingClient: streamingClient,
 		workerPool:      workerPool,
 		config:          config,
@@ -144,7 +144,7 @@ func NewOptimizedBulkCloneManager(token string, config OptimizedCloneConfig) (*O
 }
 
 // RefreshAllOptimized performs optimized bulk repository refresh with streaming and memory management.
-func (m *OptimizedBulkCloneManager) RefreshAllOptimized(ctx context.Context, targetPath, org, strategy string) (*CloneStats, error) {
+func (m *OptimizedSyncCloneManager) RefreshAllOptimized(ctx context.Context, targetPath, org, strategy string) (*CloneStats, error) {
 	stats := &CloneStats{
 		ErrorDetails: make([]CloneError, 0),
 	}
@@ -263,7 +263,7 @@ finish:
 }
 
 // processBatch processes a batch of repositories using the worker pool.
-func (m *OptimizedBulkCloneManager) processBatch(ctx context.Context, targetPath, org, strategy string,
+func (m *OptimizedSyncCloneManager) processBatch(ctx context.Context, targetPath, org, strategy string,
 	repositories []*Repository, progressBar *progressbar.ProgressBar,
 ) *CloneStats {
 	batchStats := &CloneStats{
@@ -361,7 +361,7 @@ func (m *OptimizedBulkCloneManager) processBatch(ctx context.Context, targetPath
 }
 
 // processRepositoryJob processes a single repository job.
-func (m *OptimizedBulkCloneManager) processRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, org string) error {
+func (m *OptimizedSyncCloneManager) processRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, org string) error {
 	switch job.Operation {
 	case workerpool.OperationClone:
 		return Clone(ctx, job.Path, org, job.Repository)
@@ -385,7 +385,7 @@ func (m *OptimizedBulkCloneManager) processRepositoryJob(ctx context.Context, jo
 }
 
 // executeGitOperation executes a git command in the repository path.
-func (m *OptimizedBulkCloneManager) executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
+func (m *OptimizedSyncCloneManager) executeGitOperation(ctx context.Context, repoPath string, args ...string) error {
 	// Check if repository is valid
 	repoType, _ := helpers.CheckGitRepoType(repoPath)
 	if repoType == helpers.RepoTypeEmpty {
@@ -397,7 +397,7 @@ func (m *OptimizedBulkCloneManager) executeGitOperation(ctx context.Context, rep
 }
 
 // startMemoryMonitoring starts the memory monitoring goroutine.
-func (m *OptimizedBulkCloneManager) startMemoryMonitoring() {
+func (m *OptimizedSyncCloneManager) startMemoryMonitoring() {
 	ticker := time.NewTicker(m.config.GCInterval)
 	defer ticker.Stop()
 
@@ -424,7 +424,7 @@ func (m *OptimizedBulkCloneManager) startMemoryMonitoring() {
 }
 
 // updateMemoryUsage updates current memory usage statistics.
-func (m *OptimizedBulkCloneManager) updateMemoryUsage() {
+func (m *OptimizedSyncCloneManager) updateMemoryUsage() {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
@@ -434,7 +434,7 @@ func (m *OptimizedBulkCloneManager) updateMemoryUsage() {
 }
 
 // getCurrentMemoryUsage returns current memory usage.
-func (m *OptimizedBulkCloneManager) getCurrentMemoryUsage() int64 {
+func (m *OptimizedSyncCloneManager) getCurrentMemoryUsage() int64 {
 	m.memoryMonitor.mu.RLock()
 	defer m.memoryMonitor.mu.RUnlock()
 
@@ -442,7 +442,7 @@ func (m *OptimizedBulkCloneManager) getCurrentMemoryUsage() int64 {
 }
 
 // checkAndOptimizeMemory checks memory usage and optimizes if needed.
-func (m *OptimizedBulkCloneManager) checkAndOptimizeMemory() error {
+func (m *OptimizedSyncCloneManager) checkAndOptimizeMemory() error {
 	m.updateMemoryUsage()
 
 	m.memoryMonitor.mu.RLock()
@@ -474,7 +474,7 @@ func (m *OptimizedBulkCloneManager) checkAndOptimizeMemory() error {
 }
 
 // forceMemoryCleanup forces garbage collection and pool cleanup.
-func (m *OptimizedBulkCloneManager) forceMemoryCleanup() {
+func (m *OptimizedSyncCloneManager) forceMemoryCleanup() {
 	m.memoryMonitor.mu.Lock()
 	m.memoryMonitor.gcCount++
 	m.memoryMonitor.lastGC = time.Now()
@@ -489,7 +489,7 @@ func (m *OptimizedBulkCloneManager) forceMemoryCleanup() {
 }
 
 // mergeStats merges batch statistics into total statistics.
-func (m *OptimizedBulkCloneManager) mergeStats(total, batch *CloneStats) {
+func (m *OptimizedSyncCloneManager) mergeStats(total, batch *CloneStats) {
 	total.Successful += batch.Successful
 	total.Failed += batch.Failed
 	total.Skipped += batch.Skipped
@@ -497,7 +497,7 @@ func (m *OptimizedBulkCloneManager) mergeStats(total, batch *CloneStats) {
 }
 
 // printFinalStats prints final operation statistics.
-func (m *OptimizedBulkCloneManager) printFinalStats(stats *CloneStats) {
+func (m *OptimizedSyncCloneManager) printFinalStats(stats *CloneStats) {
 	fmt.Printf("\n📊 Bulk Clone Operation Complete\n")
 	fmt.Printf("Total Repositories: %d\n", stats.TotalRepositories)
 	fmt.Printf("✅ Successful: %d\n", stats.Successful)
@@ -523,7 +523,7 @@ func (m *OptimizedBulkCloneManager) printFinalStats(stats *CloneStats) {
 }
 
 // Close cleans up resources.
-func (m *OptimizedBulkCloneManager) Close() error {
+func (m *OptimizedSyncCloneManager) Close() error {
 	if m.workerPool != nil {
 		m.workerPool.Stop()
 	}

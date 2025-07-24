@@ -204,7 +204,7 @@ func Clone(ctx context.Context, targetPath string, org string, repo string) erro
 func RefreshAllOptimizedStreaming(ctx context.Context, targetPath, org, strategy, token string) error {
 	config := DefaultOptimizedCloneConfig()
 
-	manager, err := NewOptimizedBulkCloneManager(token, config) //nolint:contextcheck // Manager creation doesn't require context propagation
+	manager, err := NewOptimizedSyncCloneManager(token, config) //nolint:contextcheck // Manager creation doesn't require context propagation
 	if err != nil {
 		return fmt.Errorf("failed to create optimized bulk clone manager: %w", err)
 	}

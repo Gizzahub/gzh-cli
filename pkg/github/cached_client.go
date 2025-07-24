@@ -115,9 +115,9 @@ func (c *CachedGitHubClient) GetCacheStats() map[string]interface{} {
 	}
 }
 
-// CachedBulkCloneManager extends OptimizedBulkCloneManager with caching.
+// CachedBulkCloneManager extends OptimizedSyncCloneManager with caching.
 type CachedBulkCloneManager struct {
-	*OptimizedBulkCloneManager
+	*OptimizedSyncCloneManager
 	cachedClient *CachedGitHubClient
 }
 
@@ -128,13 +128,13 @@ func NewCachedBulkCloneManager(token string, config OptimizedCloneConfig) (*Cach
 	cachedClient := NewCachedGitHubClient(token)
 
 	// Create optimized manager
-	optimizedManager, err := NewOptimizedBulkCloneManager(token, config)
+	optimizedManager, err := NewOptimizedSyncCloneManager(token, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create optimized manager: %w", err)
 	}
 
 	return &CachedBulkCloneManager{
-		OptimizedBulkCloneManager: optimizedManager,
+		OptimizedSyncCloneManager: optimizedManager,
 		cachedClient:              cachedClient,
 	}, nil
 }
@@ -163,7 +163,7 @@ func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Cont
 	}
 
 	// Use the existing optimized processing logic but with cached repository data
-	// This would integrate with the existing OptimizedBulkCloneManager methods
+	// This would integrate with the existing OptimizedSyncCloneManager methods
 
 	// For now, delegate to the existing optimized method
 	// In a full implementation, this would use the cached repos list
@@ -191,7 +191,7 @@ func (cbm *CachedBulkCloneManager) processRepositoriesOptimized(ctx context.Cont
 func (cbm *CachedBulkCloneManager) Close() error {
 	// No cache manager to close - using simple sync.Map
 	// Close optimized manager
-	return cbm.OptimizedBulkCloneManager.Close()
+	return cbm.OptimizedSyncCloneManager.Close()
 }
 
 // RefreshAllOptimizedStreamingWithCache is the cached version of the streaming API - DISABLED (cache package removed)
