@@ -1,0 +1,64 @@
+# Bulk Webhook Configuration
+# This file defines webhooks to be applied across multiple repositories
+
+version: "1.0"
+
+# Define the webhooks to create/sync
+webhooks:
+  # CI/CD webhook
+  - url: https://ci.example.com/github/webhook
+    events:
+      - push
+      - pull_request
+    active: true
+    content_type: json
+    secret: ${WEBHOOK_SECRET}  # Can use environment variables
+
+  # Issue tracking webhook
+  - url: https://tracker.example.com/github/webhook
+    events:
+      - issues
+      - issue_comment
+      - pull_request_review
+    active: true
+    content_type: json
+
+  # Deployment webhook
+  - url: https://deploy.example.com/github/webhook
+    events:
+      - release
+      - deployment
+      - deployment_status
+    active: true
+    content_type: json
+
+# Specify target repositories
+targets:
+  # Apply to all repositories
+  all: true
+  
+  # Or specify specific repositories
+  # repositories:
+  #   - my-app
+  #   - my-api
+  #   - my-lib
+  
+  # Or use pattern matching
+  # pattern: "^(api-|service-)"
+  
+  # Exclude specific repositories
+  exclude:
+    - test-repo
+    - archived-repo
+    - legacy-app
+
+# Operation options
+options:
+  # Skip repositories that already have webhooks
+  skip_existing: false
+  
+  # Number of parallel operations
+  max_workers: 5
+  
+  # Continue even if some operations fail
+  continue_on_error: true

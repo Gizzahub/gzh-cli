@@ -1,0 +1,139 @@
+# AWS Cloud Configuration Example
+version: "1.0"
+
+# Provider configurations
+providers:
+  # Production AWS account
+  aws-prod:
+    type: aws
+    region: us-east-1
+    auth:
+      method: iam  # Options: iam, key, profile, env
+      # For key method:
+      # params:
+      #   access_key: "AKIAIOSFODNN7EXAMPLE"
+      #   secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      # For profile method:
+      # params:
+      #   profile: "production"
+    settings:
+      timeout: 30s
+
+  # Development AWS account
+  aws-dev:
+    type: aws
+    region: us-west-2
+    auth:
+      method: profile
+      params:
+        profile: "development"
+
+# Profile configurations
+profiles:
+  # Production environment profile
+  production:
+    provider: aws-prod
+    environment: prod
+    region: us-east-1
+    network:
+      vpc_id: vpc-0123456789abcdef0
+      subnet_ids:
+        - subnet-0123456789abcdef0
+        - subnet-0123456789abcdef1
+      security_groups:
+        - sg-0123456789abcdef0  # Web servers
+        - sg-0123456789abcdef1  # Application servers
+      dns_servers:
+        - 10.0.0.2
+        - 10.0.0.3
+      proxy:
+        http: http://proxy.company.com:8080
+        https: https://proxy.company.com:8080
+        no_proxy:
+          - localhost
+          - 127.0.0.1
+          - .company.internal
+          - 10.0.0.0/8
+    services:
+      rds:
+        endpoint: prod-db.cluster-xyz.us-east-1.rds.amazonaws.com
+        port: 5432
+        auth_required: true
+        tls:
+          skip_verify: false
+          ca_file: /etc/ssl/certs/rds-ca-2019.pem
+      elasticache:
+        endpoint: prod-cache.xyz.cache.amazonaws.com
+        port: 6379
+    tags:
+      environment: production
+      team: platform
+      cost-center: engineering
+
+  # Development environment profile
+  development:
+    provider: aws-dev
+    environment: dev
+    region: us-west-2
+    network:
+      vpc_id: vpc-dev123456789abcdef
+      subnet_ids:
+        - subnet-dev123456789abcde
+      security_groups:
+        - sg-dev123456789abcdef
+      dns_servers:
+        - 10.1.0.2
+      vpn:
+        type: openvpn
+        server: vpn.dev.company.com
+        port: 1194
+        config_file: /etc/openvpn/dev.ovpn
+        auto_connect: true
+      routes:
+        - destination: 192.168.0.0/16
+          gateway: 10.1.0.1
+          metric: 100
+    services:
+      rds:
+        endpoint: dev-db.cluster-abc.us-west-2.rds.amazonaws.com
+        port: 5432
+    tags:
+      environment: development
+      team: platform
+
+  # Staging environment profile
+  staging:
+    provider: aws-prod
+    environment: staging
+    region: us-east-1
+    network:
+      vpc_id: vpc-stg123456789abcdef
+      subnet_ids:
+        - subnet-stg123456789abcde
+        - subnet-stg223456789abcde
+      security_groups:
+        - sg-stg123456789abcdef
+      dns_servers:
+        - 10.2.0.2
+        - 10.2.0.3
+      proxy:
+        http: http://proxy.staging.company.com:8080
+        https: https://proxy.staging.company.com:8080
+    tags:
+      environment: staging
+      team: platform
+
+# Synchronization configuration
+sync:
+  enabled: true
+  interval: 1h
+  conflict_mode: ask  # Options: source_wins, target_wins, merge, ask
+  targets:
+    # Sync dev profiles to staging
+    - source: aws-dev
+      target: aws-prod
+      profiles:
+        - development
+    # Sync all prod profiles to DR region
+    - source: aws-prod
+      target: aws-dr

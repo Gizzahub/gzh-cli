@@ -1,0 +1,366 @@
+# Webhook Automation Rules Configuration
+# This file defines automated actions triggered by GitHub webhook events
+
+version: "1.0"
+
+# Global settings
+global:
+  enabled: true
+  default_timeout: "30s"
+  max_concurrency: 10
+  notification_urls:
+    slack: "${SLACK_WEBHOOK_URL}"
+    discord: "${DISCORD_WEBHOOK_URL}"
+    teams: "${TEAMS_WEBHOOK_URL}"
+
+# Automation rules
+rules:
+  # Auto-label pull requests based on size
+  - id: "auto-label-pr-size"
+    name: "Auto-label Pull Request Size"
+    description: "Automatically add size labels to PRs based on changes"
+    enabled: true
+    priority: 100
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "pull_request.opened"
+    actions:
+      - type: "add_label"
+        parameters:
+          labels:
+            - "needs-review"
+
+  # Welcome new contributors
+  - id: "welcome-first-time-contributor"
+    name: "Welcome First-Time Contributors"
+    description: "Post a welcome message for first-time contributors"
+    enabled: true
+    priority: 90
+    conditions:
+      - type: "event_type"
+        operator: "in"
+        value: ["pull_request.opened", "issues.opened"]
+      - type: "sender"
+        field: "type"
+        operator: "equals"
+        value: "User"
+    actions:
+      - type: "create_comment"
+        parameters:
+          body: |
+            Welcome @{{sender.login}}! 👋
+            
+            Thank you for your contribution to {{repo.name}}!
+            A maintainer will review your submission soon.
+            
+            Please make sure to:
+            - [ ] Read our contributing guidelines
+            - [ ] Add tests for new features
+            - [ ] Update documentation if needed
+
+  # Auto-merge dependabot PRs for patch updates
+  - id: "auto-merge-dependabot-patch"
+    name: "Auto-merge Dependabot Patch Updates"
+    description: "Automatically merge patch-level dependency updates from Dependabot"
+    enabled: true
+    priority: 80
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "pull_request.opened"
+      - type: "sender"
+        field: "login"
+        operator: "equals"
+        value: "dependabot[bot]"
+    actions:
+      - type: "add_label"
+        parameters:
+          labels:
+            - "dependencies"
+            - "automerge"
+      - type: "create_comment"
+        parameters:
+          body: |
+            🤖 This dependency update will be auto-merged once CI passes.
+            
+            If you need to make changes, please close this PR and create a new one.
+
+  # Notify team on security vulnerabilities
+  - id: "security-vulnerability-alert"
+    name: "Security Vulnerability Alert"
+    description: "Create urgent issue and notify team for security vulnerabilities"
+    enabled: true
+    priority: 100
+    conditions:
+      - type: "event_type"
+        operator: "matches"
+        value: "security_advisory.*"
+    actions:
+      - type: "create_issue"
+        parameters:
+          title: "🔒 URGENT: Security Vulnerability - {{payload.security_advisory.summary}}"
+          body: |
+            ⚠️ **URGENT SECURITY ALERT** ⚠️
+            
+            A security vulnerability has been detected in {{repo.name}}.
+            
+            **Severity:** {{payload.security_advisory.severity}}
+            **Package:** {{payload.security_advisory.affected_package_name}}
+            **CVSS Score:** {{payload.security_advisory.cvss_score}}
+            
+            **Description:**
+            {{payload.security_advisory.description}}
+            
+            **Recommendation:**
+            {{payload.security_advisory.recommendation}}
+            
+            **Action Required:**
+            1. Review the vulnerability details
+            2. Update the affected package immediately
+            3. Test the application thoroughly
+            4. Deploy the fix as soon as possible
+            
+            **References:**
+            - [Security Advisory]({{payload.security_advisory.html_url}})
+            - [CVE Details]({{payload.security_advisory.cve_id}})
+          labels:
+            - "security"
+            - "urgent"
+            - "high-priority"
+          assignees:
+            - "security-team"
+      - type: "notification"
+        parameters:
+          type: "slack"
+          message: "🚨 URGENT: Security vulnerability detected in {{repo.name}}: {{payload.security_advisory.summary}} (Severity: {{payload.security_advisory.severity}})"
+        async: true
+
+  # Notify on release
+  - id: "notify-release-published"
+    name: "Notify on Release Published"
+    description: "Send notifications when a new release is published"
+    enabled: true
+    priority: 70
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "release.published"
+    actions:
+      - type: "notification"
+        parameters:
+          type: "slack"
+          message: |
+            🚀 **New Release Published!**
+            
+            **Repository:** {{repo.name}}
+            **Version:** {{payload.release.tag_name}}
+            **Release Notes:** {{payload.release.html_url}}
+            
+            {{payload.release.body}}
+        async: true
+      - type: "notification"
+        parameters:
+          type: "discord"
+          message: "🚀 {{repo.name}} v{{payload.release.tag_name}} is now available! Check it out: {{payload.release.html_url}}"
+        async: true
+
+  # Create issue for failed critical workflows
+  - id: "critical-workflow-failure"
+    name: "Critical Workflow Failure Handler"
+    description: "Create an issue when critical workflows fail"
+    enabled: true
+    priority: 85
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "workflow_run.completed"
+      - type: "payload"
+        field: "workflow_run.conclusion"
+        operator: "equals"
+        value: "failure"
+      - type: "payload"
+        field: "workflow_run.name"
+        operator: "in"
+        value: ["CI/CD", "Deploy to Production", "Release", "Security Scan"]
+    actions:
+      - type: "create_issue"
+        parameters:
+          title: "🔥 Critical Workflow Failed: {{payload.workflow_run.name}}"
+          body: |
+            **Critical workflow failure detected!**
+            
+            **Workflow:** {{payload.workflow_run.name}}
+            **Branch:** {{payload.workflow_run.head_branch}}
+            **Commit:** {{payload.workflow_run.head_sha}}
+            **Triggered by:** @{{payload.workflow_run.triggering_actor.login}}
+            **Run URL:** {{payload.workflow_run.html_url}}
+            **Started:** {{payload.workflow_run.created_at}}
+            **Duration:** {{payload.workflow_run.updated_at}} - {{payload.workflow_run.created_at}}
+            
+            **Next Steps:**
+            1. Review the workflow logs
+            2. Identify the root cause
+            3. Fix the issue
+            4. Re-run the workflow
+            
+            **Priority:** HIGH - This may block deployments or releases.
+          labels:
+            - "bug"
+            - "ci/cd"
+            - "high-priority"
+          assignees:
+            - "{{payload.workflow_run.triggering_actor.login}}"
+      - type: "notification"
+        parameters:
+          type: "slack"
+          message: "⚠️ Critical workflow failed in {{repo.name}}: {{payload.workflow_run.name}} (Branch: {{payload.workflow_run.head_branch}})"
+        async: true
+
+  # Auto-assign reviewers for specific paths
+  - id: "auto-assign-reviewers-backend"
+    name: "Auto-assign Backend Reviewers"
+    description: "Automatically assign backend team for API changes"
+    enabled: true
+    priority: 75
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "pull_request.opened"
+      # Note: In a real implementation, you'd check changed files
+      # This is a simplified example
+    actions:
+      - type: "add_label"
+        parameters:
+          labels:
+            - "backend"
+      - type: "create_comment"
+        parameters:
+          body: |
+            👋 Backend changes detected! 
+            
+            The backend team has been notified and will review this PR.
+            
+            **Review Checklist:**
+            - [ ] Code follows our style guidelines
+            - [ ] Tests are included and passing
+            - [ ] Documentation is updated
+            - [ ] No breaking changes (or properly documented)
+            - [ ] Performance impact is considered
+
+  # Handle stale PRs
+  - id: "stale-pr-reminder"
+    name: "Stale PR Reminder"
+    description: "Add labels and comments to stale PRs"
+    enabled: true
+    priority: 60
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "schedule.daily"  # This would be triggered by a scheduled job
+    actions:
+      - type: "add_label"
+        parameters:
+          labels:
+            - "stale"
+      - type: "create_comment"
+        parameters:
+          body: |
+            This PR has been automatically marked as stale because it has not had recent activity.
+            
+            **Next Steps:**
+            - Update the PR with recent changes
+            - Respond to review comments
+            - Close if no longer needed
+            
+            This PR will be closed in 7 days if no further activity occurs.
+
+  # Auto-close invalid issues
+  - id: "auto-close-invalid-issues"
+    name: "Auto-close Invalid Issues"
+    description: "Automatically close issues that don't follow the template"
+    enabled: false  # Disabled by default as it can be aggressive
+    priority: 50
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "issues.opened"
+      # Note: In a real implementation, you'd check issue body content
+    actions:
+      - type: "add_label"
+        parameters:
+          labels:
+            - "invalid"
+            - "needs-template"
+      - type: "create_comment"
+        parameters:
+          body: |
+            Thank you for opening an issue! 
+            
+            However, this issue doesn't follow our issue template. To help us better understand and address your concern, please:
+            
+            1. Use our issue template
+            2. Provide a clear description of the problem
+            3. Include steps to reproduce (if applicable)
+            4. Specify your environment details
+            
+            You can edit this issue or create a new one with the proper format.
+
+  # Monitor deployment success
+  - id: "deployment-success-notification"
+    name: "Deployment Success Notification"
+    description: "Notify team when deployments succeed"
+    enabled: true
+    priority: 65
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "deployment_status.success"
+    actions:
+      - type: "notification"
+        parameters:
+          type: "slack"
+          message: |
+            ✅ **Deployment Successful!**
+            
+            **Repository:** {{repo.name}}
+            **Environment:** {{payload.deployment.environment}}
+            **URL:** {{payload.deployment_status.target_url}}
+            **Deployed by:** @{{payload.deployment.creator.login}}
+        async: true
+
+  # Handle repository archival
+  - id: "repository-archived"
+    name: "Repository Archived Handler"
+    description: "Handle actions when repository is archived"
+    enabled: true
+    priority: 90
+    conditions:
+      - type: "event_type"
+        operator: "equals"
+        value: "repository.archived"
+    actions:
+      - type: "create_issue"
+        parameters:
+          title: "📦 Repository Archived - Cleanup Required"
+          body: |
+            This repository has been archived. Please ensure:
+            
+            **Cleanup Tasks:**
+            - [ ] Remove from active monitoring
+            - [ ] Update documentation links
+            - [ ] Notify dependent projects
+            - [ ] Archive related resources (CI/CD, deployments)
+            - [ ] Update team access permissions
+            
+            **Archive Information:**
+            - Archived by: @{{sender.login}}
+            - Date: {{event.received_at}}
+          labels:
+            - "archived"
+            - "cleanup"
+      - type: "notification"
+        parameters:
+          type: "slack"
+          message: "📦 Repository {{repo.name}} has been archived by @{{sender.login}}"
+        async: true

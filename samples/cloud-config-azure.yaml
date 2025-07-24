@@ -1,0 +1,291 @@
+# Azure Cloud Provider Configuration Sample
+# This file demonstrates how to configure Azure cloud provider settings
+
+# Azure provider configuration
+provider:
+  type: azure
+  region: eastus
+  timeout: 30s
+  
+  # Azure authentication configuration
+  auth:
+    # Authentication method options:
+    # - service_principal: Use service principal with client ID and secret
+    # - default: Use Azure Default Credentials (managed identity, CLI, etc.)
+    # - cli: Use Azure CLI credentials
+    # - managed_identity: Use Azure managed identity
+    method: service_principal
+    
+    # Parameters for service principal authentication
+    params:
+      client_id: "12345678-1234-1234-1234-123456789012"
+      client_secret: "${AZURE_CLIENT_SECRET}"  # Use environment variable for security
+      tenant_id: "12345678-1234-1234-1234-123456789012"
+      subscription_id: "12345678-1234-1234-1234-123456789012"
+      resource_group: "my-resource-group"
+  
+  # Provider-specific settings
+  settings:
+    # Default location for resources
+    location: eastus
+    
+    # Tags to apply to all resources
+    default_tags:
+      environment: development
+      project: gzh-manager
+      managed_by: gzh-manager-go
+
+# Network profiles for different environments
+profiles:
+  - name: development
+    provider: azure
+    environment: dev
+    region: eastus
+    
+    network:
+      # Virtual Network configuration
+      vpc_id: "dev-vnet"
+      subnet_ids:
+        - "dev-subnet-1"
+        - "dev-subnet-2"
+      
+      # Network address spaces
+      cidr_blocks:
+        - "10.0.0.0/16"
+        - "10.1.0.0/16"
+      
+      # DNS configuration
+      dns_servers:
+        - "8.8.8.8"
+        - "8.8.4.4"
+      
+      # Proxy configuration (optional)
+      proxy:
+        http: "http://proxy.company.com:8080"
+        https: "https://proxy.company.com:8080"
+        no_proxy:
+          - "localhost"
+          - "127.0.0.1"
+          - "*.company.com"
+      
+      # VPN configuration (optional)
+      vpn:
+        type: openvpn
+        server: "vpn.company.com"
+        port: 1194
+        auto_connect: true
+        config_file: "/etc/openvpn/client.conf"
+      
+      # Custom routes (optional)
+      routes:
+        - destination: "192.168.1.0/24"
+          gateway: "10.0.1.1"
+          metric: 100
+    
+    # Service endpoints
+    services:
+      api:
+        endpoint: "https://api.dev.company.com"
+        port: 443
+        auth_required: true
+        tls:
+          skip_verify: false
+      
+      database:
+        endpoint: "db.dev.company.com"
+        port: 5432
+        auth_required: true
+    
+    # Profile tags
+    tags:
+      environment: development
+      cost_center: "eng-001"
+      owner: "dev-team"
+
+  - name: staging
+    provider: azure
+    environment: staging
+    region: westus2
+    
+    network:
+      vpc_id: "staging-vnet"
+      subnet_ids:
+        - "staging-subnet-1"
+        - "staging-subnet-2"
+      
+      cidr_blocks:
+        - "10.10.0.0/16"
+      
+      dns_servers:
+        - "8.8.8.8"
+        - "1.1.1.1"
+      
+      # Different proxy for staging
+      proxy:
+        http: "http://staging-proxy.company.com:8080"
+        https: "https://staging-proxy.company.com:8080"
+        no_proxy:
+          - "localhost"
+          - "127.0.0.1"
+          - "*.company.com"
+    
+    services:
+      api:
+        endpoint: "https://api.staging.company.com"
+        port: 443
+        auth_required: true
+        tls:
+          skip_verify: false
+      
+      database:
+        endpoint: "db.staging.company.com"
+        port: 5432
+        auth_required: true
+    
+    tags:
+      environment: staging
+      cost_center: "eng-001"
+      owner: "staging-team"
+
+  - name: production
+    provider: azure
+    environment: prod
+    region: eastus
+    
+    network:
+      vpc_id: "prod-vnet"
+      subnet_ids:
+        - "prod-subnet-1"
+        - "prod-subnet-2"
+        - "prod-subnet-3"
+      
+      cidr_blocks:
+        - "10.100.0.0/16"
+        - "10.101.0.0/16"
+      
+      dns_servers:
+        - "8.8.8.8"
+        - "1.1.1.1"
+      
+      # Production VPN configuration
+      vpn:
+        type: wireguard
+        server: "prod-vpn.company.com"
+        port: 51820
+        auto_connect: true
+        config_file: "/etc/wireguard/prod.conf"
+      
+      # Production routes
+      routes:
+        - destination: "192.168.100.0/24"
+          gateway: "10.100.1.1"
+          metric: 50
+    
+    services:
+      api:
+        endpoint: "https://api.company.com"
+        port: 443
+        auth_required: true
+        tls:
+          skip_verify: false
+          ca_file: "/etc/ssl/certs/company-ca.pem"
+      
+      database:
+        endpoint: "db.company.com"
+        port: 5432
+        auth_required: true
+    
+    tags:
+      environment: production
+      cost_center: "eng-001"
+      owner: "prod-team"
+      backup_schedule: "daily"
+
+# Network policies for automated management
+policies:
+  - name: development-policy
+    profile_name: development
+    priority: 100
+    enabled: true
+    
+    rules:
+      - type: allow
+        source: "10.0.0.0/16"
+        destination: "0.0.0.0/0"
+        protocol: tcp
+        port: "443"
+      
+      - type: allow
+        source: "10.0.0.0/16"
+        destination: "0.0.0.0/0"
+        protocol: tcp
+        port: "80"
+    
+    actions:
+      - type: configure_dns
+        params:
+          servers: "8.8.8.8,8.8.4.4"
+        order: 1
+      
+      - type: setup_proxy
+        params:
+          http_proxy: "http://proxy.company.com:8080"
+          https_proxy: "https://proxy.company.com:8080"
+        order: 2
+      
+      - type: connect_vpn
+        params:
+          server: "vpn.company.com"
+          type: "openvpn"
+        order: 3
+
+  - name: production-policy
+    profile_name: production
+    priority: 200
+    enabled: true
+    
+    rules:
+      - type: allow
+        source: "10.100.0.0/16"
+        destination: "0.0.0.0/0"
+        protocol: tcp
+        port: "443"
+      
+      - type: deny
+        source: "10.100.0.0/16"
+        destination: "0.0.0.0/0"
+        protocol: tcp
+        port: "80"
+    
+    actions:
+      - type: configure_dns
+        params:
+          servers: "8.8.8.8,1.1.1.1"
+        order: 1
+      
+      - type: connect_vpn
+        params:
+          server: "prod-vpn.company.com"
+          type: "wireguard"
+        order: 2
+      
+      - type: add_route
+        params:
+          destination: "192.168.100.0/24"
+          gateway: "10.100.1.1"
+        order: 3
+
+# Synchronization settings
+sync:
+  # Conflict resolution strategy
+  conflict_strategy: source_wins
+  
+  # Auto-sync interval
+  interval: 5m
+  
+  # Retry settings
+  retry:
+    max_attempts: 3
+    backoff: exponential
+    initial_delay: 1s
+    max_delay: 30s
