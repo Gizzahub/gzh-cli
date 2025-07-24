@@ -352,7 +352,7 @@ Key VS Code settings configured:
     "source.fixAll.eslint": "explicit"
   },
   "yaml.schemas": {
-    "./docs/bulk-clone-schema.json": ["samples/bulk-clone*.yaml"]
+    "./docs/bulk-clone-schema.json": ["examples/bulk-clone*.yaml"]
   }
 }
 ```

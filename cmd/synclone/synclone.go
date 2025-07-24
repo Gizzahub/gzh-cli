@@ -124,7 +124,7 @@ func (o *syncCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 			fmt.Println("  gitea    - Clone from Gitea organizations")
 			fmt.Println("  validate - Validate configuration file")
 			fmt.Println("  state    - Manage operation state")
-			fmt.Println("\nExample configuration files can be found in the samples/ directory.")
+			fmt.Println("\nExample configuration files can be found in the examples/ directory.")
 			fmt.Println("Use --help or -h for more detailed usage information.")
 			return nil
 		}

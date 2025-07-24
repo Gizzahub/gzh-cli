@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	synclone "github.com/gizzahub/gzh-manager-go/pkg/synclone"
 	"github.com/gizzahub/gzh-manager-go/test/integration/testcontainers"
 )
 

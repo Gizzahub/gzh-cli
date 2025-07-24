@@ -50,7 +50,7 @@ else
         echo -e "${YELLOW}💡 Start a GZH process first:${NC}"
         echo -e "   ./gz serve --port 8080 &"
         echo -e "   ./gz monitoring start &"
-        echo -e "   ./gz bulk-clone --config samples/bulk-clone-simple.yaml &"
+        echo -e "   ./gz bulk-clone --config examples/bulk-clone/bulk-clone-simple.yaml &"
         exit 1
     fi
 

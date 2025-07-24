@@ -165,7 +165,7 @@
 1. **README.md** - 프로젝트 개요 및 빠른 시작
 2. **docs/webhook-management-guide.md** - 웹훅 관리 완전 가이드
 3. **docs/release-notes-v1.0.0.md** - v1.0.0 릴리즈 정보
-4. **samples/** - 실용적인 설정 파일 예제
+4. **examples/** - 실용적인 설정 파일 예제
 
 ### 개발자 대상 문서
 

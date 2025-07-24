@@ -52,8 +52,8 @@
   - [x] README.md 업데이트 - 새로운 기능 반영
 
 - [x] **설정 및 예제**
-  - [x] 웹훅 대량 설정 예제 (`samples/webhook-bulk-config.yaml`)
-  - [x] 자동화 규칙 예제 (`samples/webhook-automation-rules.yaml`)
+  - [x] 웹훅 대량 설정 예제 (`examples/webhook-bulk-config.yaml`)
+  - [x] 자동화 규칙 예제 (`examples/webhook-automation-rules.yaml`)
   - [x] CHANGELOG.md 업데이트
 
 #### 4. 설정 시스템

@@ -143,5 +143,5 @@ root:
 
 # Examples
 # ========
-# See samples/bulk-clone-simple.yaml for a minimal example
-# See samples/bulk-clone-example.yaml for a comprehensive example with comments
+# See examples/bulk-clone-simple.yaml for a minimal example
+# See examples/bulk-clone-example.yaml for a comprehensive example with comments

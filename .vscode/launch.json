@@ -25,7 +25,7 @@
       "args": [
         "bulk-clone",
         "--config",
-        "samples/bulk-clone-simple.yaml",
+        "examples/bulk-clone/bulk-clone-simple.yaml",
         "--dry-run"
       ],
       "env": {
@@ -46,7 +46,7 @@
         "bulk-clone",
         "validate",
         "--config",
-        "samples/bulk-clone-example.yaml"
+        "examples/bulk-clone/bulk-clone-example.yaml"
       ],
       "env": {
         "GZH_DEV_MODE": "true",

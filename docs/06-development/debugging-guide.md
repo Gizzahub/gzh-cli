@@ -20,8 +20,8 @@ Access via the Debug panel (`Ctrl+Shift+D`) or Command Palette (`F5`):
 | Configuration                       | Purpose                       | Arguments                                                      |
 | ----------------------------------- | ----------------------------- | -------------------------------------------------------------- |
 | **Debug GZH CLI**                   | Main application help         | `--help`                                                       |
-| **Debug GZH Bulk Clone**            | Bulk clone with sample config | `bulk-clone --config samples/bulk-clone-simple.yaml --dry-run` |
-| **Debug GZH Config Validate**       | Configuration validation      | `bulk-clone validate --config samples/bulk-clone-example.yaml` |
+| **Debug GZH Bulk Clone**            | Bulk clone with sample config | `bulk-clone --config examples/bulk-clone-simple.yaml --dry-run` |
+| **Debug GZH Config Validate**       | Configuration validation      | `bulk-clone validate --config examples/bulk-clone-example.yaml` |
 | **Debug Current Go File**           | Debug the currently open file | N/A                                                            |
 | **Debug Go Test (Current Package)** | Test debugging                | Test files in current directory                                |
 | **Debug Go Test (Current File)**    | Specific test function        | Prompts for test name                                          |
@@ -129,7 +129,7 @@ Delve configuration in `.delve/config.yml` includes:
 dlv debug main.go -- --help
 
 # Debug with arguments
-dlv debug main.go -- bulk-clone --config samples/bulk-clone-simple.yaml
+dlv debug main.go -- bulk-clone --config examples/bulk-clone-simple.yaml
 
 # Debug tests
 dlv test ./cmd/bulk-clone
@@ -191,7 +191,7 @@ Convenience scripts in `scripts/debug/`:
 ./scripts/debug/debug-cli.sh
 
 # Debug with specific command
-./scripts/debug/debug-cli.sh bulk-clone --config samples/bulk-clone-simple.yaml
+./scripts/debug/debug-cli.sh bulk-clone --config examples/bulk-clone-simple.yaml
 
 ```
 
@@ -300,7 +300,7 @@ p runtime.NumGoroutine()
 
 ```bash
 # Debug config validation
-./scripts/debug/debug-cli.sh bulk-clone validate --config samples/bulk-clone-example.yaml
+./scripts/debug/debug-cli.sh bulk-clone validate --config examples/bulk-clone-example.yaml
 
 # Set breakpoints in config package
 b pkg/config/loader.go:LoadConfig
@@ -337,7 +337,7 @@ pp result
 dlv debug main.go -- bulk-clone --help
 
 # Specific commands
-dlv debug main.go -- bulk-clone --config samples/bulk-clone-simple.yaml --dry-run
+dlv debug main.go -- bulk-clone --config examples/bulk-clone-simple.yaml --dry-run
 dlv debug main.go -- serve --port 8080
 ```
 

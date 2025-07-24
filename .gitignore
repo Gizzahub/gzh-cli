@@ -4,7 +4,6 @@
 # Add your custom ignore patterns here
 
 # Project specific
-samples
 data/
 lint-report.json
 

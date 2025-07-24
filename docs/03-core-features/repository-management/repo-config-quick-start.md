@@ -351,4 +351,4 @@ gz repo-config apply --config repo-config.yaml --repos "repo1,repo2"
 - Run `gz repo-config --help` for all options
 - Check the [full user guide](./repo-config-user-guide.md)
 - See [policy examples](./repo-config-policy-examples.md)
-- View [sample configurations](../samples/)
+- View [sample configurations](../examples/)

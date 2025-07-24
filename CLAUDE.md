@@ -94,7 +94,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 ### Key Patterns
 
 1. **Service-specific implementations**: Each Git platform (GitHub, GitLab, Gitea, Gogs) has dedicated packages following common interfaces
-2. **Configuration-driven design**: Extensive YAML configuration support with schema validation (see `samples/` directory)
+2. **Configuration-driven design**: Extensive YAML configuration support with schema validation (see `examples/` directory)
 3. **Cobra CLI framework**: All commands use cobra with consistent flag patterns and help documentation
 4. **Cross-platform support**: Native OS detection and platform-specific implementations (Linux, macOS, Windows)
 5. **Environment variable integration**: Support for token authentication and configuration overrides
@@ -118,9 +118,9 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ### Sample Configurations
 
-- `samples/bulk-clone-simple.yaml` - Minimal working example
-- `samples/bulk-clone-example.yaml` - Comprehensive with comments
-- `samples/bulk-clone.yml` - Advanced features
+- `examples/bulk-clone-simple.yaml` - Minimal working example
+- `examples/bulk-clone-example.yaml` - Comprehensive with comments
+- `examples/bulk-clone.yml` - Advanced features
 
 ## Testing Guidelines
 
@@ -175,8 +175,8 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ### 🚀 TASK_RUNNER.todo 프롬프트
 
-> **역할**  
-> /tasks/todo/ 디렉터리의 미완료 TODO 파일을 순차적으로 읽어 **작업 → 커밋 → 완료 파일 이동**을 자동화합니다.  
+> **역할**
+> /tasks/todo/ 디렉터리의 미완료 TODO 파일을 순차적으로 읽어 **작업 → 커밋 → 완료 파일 이동**을 자동화합니다.
 > 프롬프트 사용 시 `{DIR=/tasks/todo}` 나 `{DIR=/tasks/todo/my-feature}` 처럼 디렉터리를 지정할 수 있습니다.
 
 #### ✅ 절차
@@ -202,7 +202,7 @@ make regenerate-mocks # Clean and regenerate all mocks
      ```
 
 5. **파일 이동**
-   - 모든 항목이 `[x]` 되면 파일을 `/tasks/done/` 으로 이동  
+   - 모든 항목이 `[x]` 되면 파일을 `/tasks/done/` 으로 이동
      → 파일명 뒤에 `__DONE_YYYYMMDD.md` 자동 추가
 
 #### ⚠️ 유의

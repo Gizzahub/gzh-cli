@@ -218,7 +218,7 @@ gzh bulk-clone github -c config.yaml -o myorg -t /different/path
 
 #### Configuration File Examples
 
-Several example configuration files are provided in the `samples/` directory:
+Several example configuration files are provided in the `examples/` directory:
 
 1. **bulk-clone-simple.yaml** - A minimal working configuration
 2. **bulk-clone-example.yaml** - A comprehensive example with detailed comments
@@ -253,7 +253,7 @@ ignore_names:
   - ".*-archive"
 ```
 
-See `samples/bulk-clone-example.yaml` for a comprehensive example with all available options and detailed comments.
+See `examples/bulk-clone-example.yaml` for a comprehensive example with all available options and detailed comments.
 
 #### Configuration Schema
 

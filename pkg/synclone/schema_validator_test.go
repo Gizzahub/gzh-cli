@@ -12,12 +12,12 @@ import (
 
 func TestValidateConfigWithSchema(t *testing.T) {
 	t.Run("valid simple config", func(t *testing.T) {
-		err := ValidateConfigWithSchema("../../samples/bulk-clone-simple.yaml")
+		err := ValidateConfigWithSchema("../../examples/bulk-clone/bulk-clone-simple.yaml")
 		assert.NoError(t, err, "Simple config should be valid against schema")
 	})
 
 	t.Run("valid comprehensive config", func(t *testing.T) {
-		err := ValidateConfigWithSchema("../../samples/bulk-clone-example.yaml")
+		err := ValidateConfigWithSchema("../../examples/bulk-clone/bulk-clone-example.yaml")
 		assert.NoError(t, err, "Example config should be valid against schema")
 	})
 

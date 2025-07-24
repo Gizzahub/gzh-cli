@@ -105,13 +105,12 @@
   // YAML schema associations
   "yaml.schemas": {
     "./docs/bulk-clone-schema.json": [
-      "samples/bulk-clone*.yaml",
-      "samples/bulk-clone*.yml",
-      "examples/bulk-clone*.yaml"
+      "examples/bulk-clone/*.yaml",
+      "examples/bulk-clone/*.yml"
     ],
     "./docs/gzh-schema.json": [
-      "samples/gzh*.yaml",
-      "examples/gzh*.yaml"
+      "examples/gzh-unified/*.yaml",
+      "examples/gzh-unified/*.yml"
     ],
     "https://json.schemastore.org/github-workflow.json": [
       ".github/workflows/*.yml",

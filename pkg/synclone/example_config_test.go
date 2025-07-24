@@ -12,8 +12,8 @@ import (
 func TestExampleConfigs(t *testing.T) {
 	// Test that example config files are valid
 	exampleFiles := []string{
-		"../../samples/bulk-clone-simple.yaml",
-		"../../samples/bulk-clone-example.yaml",
+		"../../examples/bulk-clone/bulk-clone-simple.yaml",
+		"../../examples/bulk-clone/bulk-clone-example.yaml",
 	}
 
 	for _, file := range exampleFiles {
@@ -48,7 +48,7 @@ func TestExampleConfigs(t *testing.T) {
 
 func TestSimpleExampleConfig(t *testing.T) {
 	cfg := &bulkCloneConfig{}
-	err := cfg.ReadConfig("../../samples/bulk-clone-simple.yaml")
+	err := cfg.ReadConfig("../../examples/bulk-clone/bulk-clone-simple.yaml")
 	require.NoError(t, err)
 
 	// Test specific content of simple example
@@ -83,7 +83,7 @@ func TestSimpleExampleConfig(t *testing.T) {
 
 func TestComprehensiveExampleConfig(t *testing.T) {
 	cfg := &bulkCloneConfig{}
-	err := cfg.ReadConfig("../../samples/bulk-clone-example.yaml")
+	err := cfg.ReadConfig("../../examples/bulk-clone/bulk-clone-example.yaml")
 	require.NoError(t, err)
 
 	t.Run("has_all_sections", func(t *testing.T) {
@@ -130,7 +130,7 @@ func TestComprehensiveExampleConfig(t *testing.T) {
 func TestIgnorePatternsValidity(t *testing.T) {
 	// Test that ignore patterns in examples are valid regex
 	cfg := &bulkCloneConfig{}
-	err := cfg.ReadConfig("../../samples/bulk-clone-example.yaml")
+	err := cfg.ReadConfig("../../examples/bulk-clone/bulk-clone-example.yaml")
 	require.NoError(t, err)
 
 	for _, pattern := range cfg.IgnoreNameRegexes {

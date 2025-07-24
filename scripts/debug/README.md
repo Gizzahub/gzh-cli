@@ -15,7 +15,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 ./scripts/debug/debug-cli.sh
 
 # Debug specific commands
-./scripts/debug/debug-cli.sh bulk-clone --config samples/bulk-clone-simple.yaml --dry-run
+./scripts/debug/debug-cli.sh bulk-clone --config examples/bulk-clone/bulk-clone-simple.yaml --dry-run
 ./scripts/debug/debug-cli.sh monitoring start --port 8080
 ./scripts/debug/debug-cli.sh serve --port 8080 --static-dir web/build
 ./scripts/debug/debug-cli.sh ide monitor --interval 5s
@@ -88,7 +88,7 @@ This directory contains debugging scripts for the GZH Manager Go project. These 
 
 ```bash
 # Start debugging session
-./scripts/debug/debug-cli.sh bulk-clone --config samples/bulk-clone-simple.yaml
+./scripts/debug/debug-cli.sh bulk-clone --config examples/bulk-clone/bulk-clone-simple.yaml
 
 # In another terminal, connect to debugger
 dlv connect 127.0.0.1:2345

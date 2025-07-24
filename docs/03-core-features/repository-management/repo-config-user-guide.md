@@ -738,6 +738,6 @@ Common validation errors and fixes:
 For additional help:
 
 1. Run `gz repo-config --help` for command options
-2. Check the [examples directory](../samples/) for more configurations
+2. Check the [examples directory](../examples/) for more configurations
 3. Open an issue on [GitHub](https://github.com/gizzahub/gzh-manager-go/issues)
 4. Review the [API documentation](./repository-configuration-api.md)

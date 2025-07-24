@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -111,21 +112,50 @@ func ListRepos(ctx context.Context, org string) ([]RepoInfo, error) {
 	defer func() { _ = resp.Body.Close() }() //nolint:errcheck // HTTP response body cleanup
 
 	if resp.StatusCode != http.StatusOK {
-		// body, _ := io.ReadAll(resp.Body)
-		// fmt.Println(string(body))
-		// resp.Header.Write(os.Stdout)
-		rateReset := resp.Header.Get("X-RateLimit-Reset")
+		// Read response body for error details
+		body, _ := io.ReadAll(resp.Body)
 
-		resetTime, err := strconv.ParseInt(rateReset, 10, 64)
-		if err == nil {
-			c := color.New(color.FgCyan, color.Bold)
-			_, _ = c.Println("Github RateLimit !!! you must wait until: ")                                                                                            //nolint:errcheck // User information display
-			_, _ = c.Println(time.Unix(resetTime, 0).Format(time.RFC1123))                                                                                            //nolint:errcheck // User information display
-			_, _ = c.Printf("%d minutes and %d seconds\n", int(time.Until(time.Unix(resetTime, 0)).Minutes()), int(time.Until(time.Unix(resetTime, 0)).Seconds())%60) //nolint:errcheck // User information display
-			_, _ = c.Println("or Use Github Token (not provided yet ^*)")                                                                                             //nolint:errcheck // User information display
+		// Check for rate limit error
+		if resp.StatusCode == http.StatusForbidden {
+			rateLimit := resp.Header.Get("X-RateLimit-Limit")
+			rateRemaining := resp.Header.Get("X-RateLimit-Remaining")
+			rateReset := resp.Header.Get("X-RateLimit-Reset")
+
+			if rateRemaining == "0" {
+				resetTime, err := strconv.ParseInt(rateReset, 10, 64)
+				if err == nil {
+					c := color.New(color.FgRed, color.Bold)
+					_, _ = c.Println("\n🚫 GitHub API Rate Limit Exceeded!")
+
+					c = color.New(color.FgYellow)
+					_, _ = c.Printf("   Rate Limit: %s requests/hour\n", rateLimit)
+					_, _ = c.Printf("   Remaining: %s\n", rateRemaining)
+					_, _ = c.Printf("   Reset Time: %s\n", time.Unix(resetTime, 0).Format(time.RFC1123))
+
+					duration := time.Until(time.Unix(resetTime, 0))
+					_, _ = c.Printf("   Wait Time: %d minutes %d seconds\n\n", int(duration.Minutes()), int(duration.Seconds())%60)
+
+					// Check if token is set
+					token := os.Getenv("GITHUB_TOKEN")
+					if token == "" {
+						c = color.New(color.FgGreen)
+						_, _ = c.Println("💡 Solution: Set GITHUB_TOKEN environment variable to bypass rate limits")
+						_, _ = c.Println("   export GITHUB_TOKEN=\"your_github_personal_access_token\"")
+					} else {
+						c = color.New(color.FgMagenta)
+						_, _ = c.Println("⚠️  Token is set but rate limit still exceeded. Token may be invalid or have insufficient permissions.")
+					}
+				}
+				return nil, fmt.Errorf("GitHub API rate limit exceeded")
+			}
 		}
-		// try after
-		return nil, fmt.Errorf("failed to get repositories: %s", resp.Status)
+
+		// For other errors, show the status and body
+		errorMsg := fmt.Sprintf("failed to get repositories: %s", resp.Status)
+		if len(body) > 0 {
+			errorMsg = fmt.Sprintf("%s - %s", errorMsg, string(body))
+		}
+		return nil, fmt.Errorf(errorMsg)
 	}
 
 	// Decode the response directly into RepoInfo structs
@@ -192,7 +222,8 @@ func Clone(ctx context.Context, targetPath string, org string, repo string) erro
 	}
 
 	// Execute secure git clone operation
-	if err := executor.ExecuteSecure(ctx, targetPath, "clone", cloneURL, "."); err != nil {
+	// Clone directly to the target path
+	if err := executor.ExecuteSecure(ctx, filepath.Dir(targetPath), "clone", cloneURL, filepath.Base(targetPath)); err != nil {
 		return fmt.Errorf("Clone Failed (url: %s, targetPath: %s, err: %w)", cloneURL, targetPath, err)
 	}
 
