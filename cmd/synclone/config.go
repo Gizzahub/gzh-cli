@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newSyncCloneConfigCmd creates the config subcommand for synclone
+// newSyncCloneConfigCmd creates the config subcommand for synclone.
 func newSyncCloneConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",

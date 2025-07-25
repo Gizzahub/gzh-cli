@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// newConfigConvertCmd creates the convert subcommand for config
+// newConfigConvertCmd creates the convert subcommand for config.
 func newConfigConvertCmd() *cobra.Command {
 	var (
 		inputFile  string
@@ -93,7 +93,7 @@ Supported conversions:
 	return cmd
 }
 
-// convertV1ToV2 converts bulk-clone v1 format to synclone v2 format
+// convertV1ToV2 converts bulk-clone v1 format to synclone v2 format.
 func convertV1ToV2(data []byte) ([]byte, error) {
 	// Parse v1 format
 	var v1Config map[string]interface{}

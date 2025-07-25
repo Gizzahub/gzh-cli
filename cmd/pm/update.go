@@ -112,10 +112,10 @@ func runUpdateAll(ctx context.Context, strategy string, dryRun bool) error {
 	return nil
 }
 
-// updateBrew updates Homebrew packages
+// updateBrew updates Homebrew packages.
 func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 	// Check if brew is installed
-	cmd := exec.Command("brew", "--version")
+	cmd := exec.CommandContext(ctx, "brew", "--version")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("brew is not installed or not in PATH")
 	}
@@ -124,7 +124,7 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 
 	// Update brew itself
 	if !dryRun {
-		cmd = exec.Command("brew", "update")
+		cmd = exec.CommandContext(ctx, "brew", "update")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -137,7 +137,7 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 	// Upgrade packages based on strategy
 	if strategy == "latest" || strategy == "stable" {
 		if !dryRun {
-			cmd = exec.Command("brew", "upgrade")
+			cmd = exec.CommandContext(ctx, "brew", "upgrade")
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
@@ -150,7 +150,7 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 
 	// Cleanup old versions
 	if !dryRun {
-		cmd = exec.Command("brew", "cleanup")
+		cmd = exec.CommandContext(ctx, "brew", "cleanup")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -165,7 +165,7 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 
 func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
 	// Check if asdf is installed
-	cmd := exec.Command("asdf", "--version")
+	cmd := exec.CommandContext(ctx, "asdf", "--version")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("asdf is not installed or not in PATH")
 	}

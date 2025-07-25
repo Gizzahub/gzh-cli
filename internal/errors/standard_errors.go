@@ -41,37 +41,53 @@ const (
 	// ErrorCodeAPIUnavailable indicates API is unavailable.
 	ErrorCodeAPIUnavailable    ErrorCode = "API_UNAVAILABLE"
 
-	// Repository errors..
+	// ErrorCodeRepoNotFound indicates repository not found.
 	ErrorCodeRepoNotFound       ErrorCode = "REPOSITORY_NOT_FOUND"
+	// ErrorCodeCloneFailed indicates repository clone failure.
 	ErrorCodeCloneFailed        ErrorCode = "CLONE_FAILED"
+	// ErrorCodeGitOperationFailed indicates git operation failure.
 	ErrorCodeGitOperationFailed ErrorCode = "GIT_OPERATION_FAILED"
+	// ErrorCodePermissionDenied indicates permission denied.
 	ErrorCodePermissionDenied   ErrorCode = "PERMISSION_DENIED"
 
-	// Validation errors..
+	// ErrorCodeInvalidInput indicates invalid input data.
 	ErrorCodeInvalidInput     ErrorCode = "INVALID_INPUT"
+	// ErrorCodeValidationFailed indicates validation failure.
 	ErrorCodeValidationFailed ErrorCode = "VALIDATION_FAILED"
+	// ErrorCodeInvalidFormat indicates invalid format.
 	ErrorCodeInvalidFormat    ErrorCode = "INVALID_FORMAT"
 
-	// System errors.
+	// ErrorCodeInternalError indicates internal system error.
 	ErrorCodeInternalError     ErrorCode = "INTERNAL_ERROR"
+	// ErrorCodeResourceExhausted indicates resources exhausted.
 	ErrorCodeResourceExhausted ErrorCode = "RESOURCE_EXHAUSTED"
+	// ErrorCodeOperationFailed indicates operation failure.
 	ErrorCodeOperationFailed   ErrorCode = "OPERATION_FAILED"
+	// ErrorCodeTimeout indicates operation timeout.
 	ErrorCodeTimeout           ErrorCode = "TIMEOUT"
 
-	// File system errors.
+	// ErrorCodeFileNotFound indicates file not found.
 	ErrorCodeFileNotFound ErrorCode = "FILE_NOT_FOUND"
+	// ErrorCodeAccessDenied indicates access denied.
 	ErrorCodeAccessDenied ErrorCode = "ACCESS_DENIED"
+	// ErrorCodeDiskFull indicates disk full.
 	ErrorCodeDiskFull     ErrorCode = "DISK_FULL"
+	// ErrorCodeIOError indicates I/O error.
 	ErrorCodeIOError      ErrorCode = "IO_ERROR"
 )
 
 // ErrorSeverity represents the severity level of an error.
 type ErrorSeverity string
 
+// Error severity levels.
 const (
+	// SeverityLow indicates low severity error.
 	SeverityLow      ErrorSeverity = "low"
+	// SeverityMedium indicates medium severity error.
 	SeverityMedium   ErrorSeverity = "medium"
+	// SeverityHigh indicates high severity error.
 	SeverityHigh     ErrorSeverity = "high"
+	// SeverityCritical indicates critical severity error.
 	SeverityCritical ErrorSeverity = "critical"
 )
 
