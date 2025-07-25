@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Legacy package manager specific commands
-// These provide compatibility with the old always-latest command structure
+// Legacy package manager specific commands.
+// These provide compatibility with the old always-latest command structure.
 
 func newAsdfCmd(ctx context.Context) *cobra.Command {
 	return &cobra.Command{

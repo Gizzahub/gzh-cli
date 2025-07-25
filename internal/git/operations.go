@@ -2,6 +2,7 @@ package git
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -24,14 +25,14 @@ func NewOperations(verbose bool) *Operations {
 }
 
 // Clone clones a repository to the specified path.
-func (o *Operations) Clone(cloneURL, targetPath string) error {
+func (o *Operations) Clone(ctx context.Context, cloneURL, targetPath string) error {
 	// Ensure parent directory exists
 	parentDir := filepath.Dir(targetPath)
 	if err := os.MkdirAll(parentDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create parent directory: %w", err)
 	}
 
-	cmd := exec.Command("git", "clone", cloneURL, targetPath)
+	cmd := exec.CommandContext(ctx, "git", "clone", cloneURL, targetPath)
 
 	if o.verbose {
 		cmd.Stdout = os.Stdout
@@ -46,23 +47,23 @@ func (o *Operations) Clone(cloneURL, targetPath string) error {
 }
 
 // ExecuteStrategy executes the specified git strategy in the repository path.
-func (o *Operations) ExecuteStrategy(repoPath string, strategy gitplatform.CloneStrategy) error {
+func (o *Operations) ExecuteStrategy(ctx context.Context, repoPath string, strategy gitplatform.CloneStrategy) error {
 	switch strategy {
 	case gitplatform.StrategyReset:
-		return o.resetStrategy(repoPath)
+		return o.resetStrategy(ctx, repoPath)
 	case gitplatform.StrategyPull:
-		return o.pullStrategy(repoPath)
+		return o.pullStrategy(ctx, repoPath)
 	case gitplatform.StrategyFetch:
-		return o.fetchStrategy(repoPath)
+		return o.fetchStrategy(ctx, repoPath)
 	default:
 		return fmt.Errorf("unknown strategy: %s", strategy)
 	}
 }
 
 // resetStrategy performs git reset --hard and git pull.
-func (o *Operations) resetStrategy(repoPath string) error {
+func (o *Operations) resetStrategy(ctx context.Context, repoPath string) error {
 	// First, reset any local changes
-	resetCmd := exec.Command("git", "reset", "--hard")
+	resetCmd := exec.CommandContext(ctx, "git", "reset", "--hard")
 	resetCmd.Dir = repoPath
 
 	var resetBuf bytes.Buffer
@@ -75,7 +76,7 @@ func (o *Operations) resetStrategy(repoPath string) error {
 	}
 
 	// Then pull latest changes
-	pullCmd := exec.Command("git", "pull")
+	pullCmd := exec.CommandContext(ctx, "git", "pull")
 	pullCmd.Dir = repoPath
 
 	var pullBuf bytes.Buffer
@@ -95,8 +96,8 @@ func (o *Operations) resetStrategy(repoPath string) error {
 }
 
 // pullStrategy performs git pull.
-func (o *Operations) pullStrategy(repoPath string) error {
-	pullCmd := exec.Command("git", "pull")
+func (o *Operations) pullStrategy(ctx context.Context, repoPath string) error {
+	pullCmd := exec.CommandContext(ctx, "git", "pull")
 	pullCmd.Dir = repoPath
 
 	var buf bytes.Buffer
@@ -116,8 +117,8 @@ func (o *Operations) pullStrategy(repoPath string) error {
 }
 
 // fetchStrategy performs git fetch.
-func (o *Operations) fetchStrategy(repoPath string) error {
-	fetchCmd := exec.Command("git", "fetch")
+func (o *Operations) fetchStrategy(ctx context.Context, repoPath string) error {
+	fetchCmd := exec.CommandContext(ctx, "git", "fetch")
 	fetchCmd.Dir = repoPath
 
 	var buf bytes.Buffer
@@ -149,8 +150,8 @@ func IsGitRepository(path string) bool {
 }
 
 // GetRemoteURL gets the remote URL for a repository.
-func GetRemoteURL(repoPath string) (string, error) {
-	cmd := exec.Command("git", "remote", "get-url", "origin")
+func GetRemoteURL(ctx context.Context, repoPath string) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "remote", "get-url", "origin")
 	cmd.Dir = repoPath
 
 	output, err := cmd.Output()
@@ -162,8 +163,8 @@ func GetRemoteURL(repoPath string) (string, error) {
 }
 
 // GetCurrentBranch gets the current branch name.
-func GetCurrentBranch(repoPath string) (string, error) {
-	cmd := exec.Command("git", "branch", "--show-current")
+func GetCurrentBranch(ctx context.Context, repoPath string) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "branch", "--show-current")
 	cmd.Dir = repoPath
 
 	output, err := cmd.Output()
@@ -175,8 +176,8 @@ func GetCurrentBranch(repoPath string) (string, error) {
 }
 
 // CheckoutBranch checks out a specific branch.
-func CheckoutBranch(repoPath, branch string) error {
-	cmd := exec.Command("git", "checkout", branch)
+func CheckoutBranch(ctx context.Context, repoPath, branch string) error {
+	cmd := exec.CommandContext(ctx, "git", "checkout", branch)
 	cmd.Dir = repoPath
 
 	var buf bytes.Buffer
@@ -192,8 +193,8 @@ func CheckoutBranch(repoPath, branch string) error {
 }
 
 // HasUncommittedChanges checks if the repository has uncommitted changes.
-func HasUncommittedChanges(repoPath string) (bool, error) {
-	cmd := exec.Command("git", "status", "--porcelain")
+func HasUncommittedChanges(ctx context.Context, repoPath string) (bool, error) {
+	cmd := exec.CommandContext(ctx, "git", "status", "--porcelain")
 	cmd.Dir = repoPath
 
 	output, err := cmd.Output()

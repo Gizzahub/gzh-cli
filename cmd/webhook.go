@@ -373,7 +373,7 @@ func newWebhookConfigCmd() *cobra.Command {
 	return cmd
 }
 
-// Command implementations
+// Command implementations.
 
 func runCreateRepositoryWebhook(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
@@ -731,7 +731,7 @@ func (l *mockLogger) Error(_ string, _ ...interface{}) {
 	// No-op for demo
 }
 
-// Webhook configuration command implementations
+// Webhook configuration command implementations.
 
 func runCreateWebhookPolicy(cmd *cobra.Command, args []string) error {
 	org, policyFile := args[0], args[1]

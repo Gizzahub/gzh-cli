@@ -2,6 +2,7 @@
 package git
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -53,7 +54,8 @@ func TestOperations_Clone(t *testing.T) {
 
 			// For actual testing, we would need to mock the git command
 			// This is a basic structure test
-			err = ops.Clone(tt.url, targetPath)
+			ctx := context.Background()
+			err = ops.Clone(ctx, tt.url, targetPath)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -115,7 +117,8 @@ func TestOperations_ExecuteStrategy(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = ops.ExecuteStrategy(targetPath, tt.strategy)
+			ctx := context.Background()
+			err = ops.ExecuteStrategy(ctx, targetPath, tt.strategy)
 
 			if tt.wantErr {
 				assert.Error(t, err)
