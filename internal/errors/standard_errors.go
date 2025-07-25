@@ -99,7 +99,7 @@ type StandardError struct {
 	Timestamp   time.Time              `json:"timestamp"`
 	Context     map[string]interface{} `json:"context,omitempty"`
 	Cause       error                  `json:"cause,omitempty"`
-	StackTrace  string                 `json:"stackTrace,omitempty"`
+	StackTrace  string                 `json:"stack_trace,omitempty"`
 	Suggestions []string               `json:"suggestions,omitempty"`
 	Retryable   bool                   `json:"retryable"`
 }

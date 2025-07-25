@@ -110,10 +110,10 @@ type NetworkConfig struct {
 	SecurityGroups []string `yaml:"securityGroups,omitempty" json:"securityGroups,omitempty"`
 
 	// CIDR blocks
-	CIDRBlocks []string `yaml:"cidrBlocks,omitempty" json:"cidrBlocks,omitempty"`
+	CIDRBlocks []string `yaml:"cidrBlocks,omitempty" json:"cidr_blocks,omitempty"`
 
 	// DNS servers
-	DNSServers []string `yaml:"dnsServers,omitempty" json:"dnsServers,omitempty"`
+	DNSServers []string `yaml:"dnsServers,omitempty" json:"dns_servers,omitempty"`
 
 	// Proxy configuration
 	Proxy *ProxyConfig `yaml:"proxy,omitempty" json:"proxy,omitempty"`
@@ -134,7 +134,7 @@ type ServiceConfig struct {
 	Port int `yaml:"port,omitempty" json:"port,omitempty"`
 
 	// Authentication required
-	AuthRequired bool `yaml:"authRequired,omitempty" json:"authRequired,omitempty"`
+	AuthRequired bool `yaml:"authRequired,omitempty" json:"auth_required,omitempty"`
 
 	// TLS/SSL configuration
 	TLS *TLSConfig `yaml:"tls,omitempty" json:"tls,omitempty"`
@@ -149,7 +149,7 @@ type ProxyConfig struct {
 	HTTPS string `yaml:"https,omitempty" json:"https,omitempty"`
 
 	// No proxy hosts
-	NoProxy []string `yaml:"noProxy,omitempty" json:"noProxy,omitempty"`
+	NoProxy []string `yaml:"noProxy,omitempty" json:"no_proxy,omitempty"`
 
 	// Proxy authentication
 	Auth *ProxyAuth `yaml:"auth,omitempty" json:"auth,omitempty"`

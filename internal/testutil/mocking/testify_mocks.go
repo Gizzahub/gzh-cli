@@ -89,10 +89,10 @@ func (m *MockComplexGitHubService) ResetState() {
 
 // ProcessResult represents the result of repository processing.
 type ProcessResult struct {
-	ProcessedCount int           `json:"processedCount"`
-	SkippedCount   int           `json:"skippedCount"`
-	ErrorCount     int           `json:"errorCount"`
-	ProcessingTime time.Duration `json:"processingTime"`
+	ProcessedCount int           `json:"processed_count"`
+	SkippedCount   int           `json:"skipped_count"`
+	ErrorCount     int           `json:"error_count"`
+	ProcessingTime time.Duration `json:"processing_time"`
 	State          int           `json:"state"`
 }
 
