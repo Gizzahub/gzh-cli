@@ -51,7 +51,6 @@ func NewEventCmd() *cobra.Command {
 	eventCmd := &cobra.Command{
 		Use:        "event",
 		Short:      "GitHub event management and webhook server",
-		Deprecated: "use 'gz repo-sync event' instead",
 		Long: `Manage GitHub events, run webhook servers, and monitor event processing.
 
 This command provides comprehensive event management capabilities including:
