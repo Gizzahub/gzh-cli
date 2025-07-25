@@ -6,10 +6,21 @@ The `net-env` command provides comprehensive network environment management capa
 
 ## Commands
 
-### Core Commands
+### Simplified Command Structure
 
-- `gz net-env status` - Show current network status
+The enhanced net-env command provides a streamlined interface with five main commands and an interactive TUI mode:
+
+#### Core Commands
+
+- `gz net-env` - Launch interactive TUI dashboard
+- `gz net-env status` - Show comprehensive network status
 - `gz net-env switch` - Switch between network profiles
+- `gz net-env profile` - Manage network profiles
+- `gz net-env quick` - Quick network actions
+- `gz net-env monitor` - Network monitoring and analysis
+
+#### Legacy Commands (for advanced users)
+
 - `gz net-env actions` - Execute network configuration actions
 - `gz net-env docker-network` - Manage Docker network profiles
 - `gz net-env kubernetes-network` - Manage Kubernetes network policies
@@ -22,40 +33,170 @@ The `net-env` command provides comprehensive network environment management capa
 - `gz net-env network-analysis` - Analyze network performance
 - `gz net-env optimal-routing` - Manage optimal routing
 
-### Network Status (`gz net-env status`)
+### Interactive TUI Dashboard (`gz net-env`)
 
-**Purpose**: Display current network configuration and status
+**Purpose**: Provides a visual interface for managing all network configurations
 
 **Features**:
-- Show network interface information
-- Display WiFi connection details
-- Show VPN connection status
-- Display DNS server configuration
-- Show proxy settings
+- Real-time network status display
+- Quick profile switching
+- VPN connection management
+- DNS and proxy configuration
+- Network health monitoring
+- Keyboard shortcuts for common actions
+
+**TUI Layout**:
+```
+┌─ GZH Network Environment Manager ─────────────────────────────────────────┐
+│ Current Profile: office                     Network: Corporate WiFi        │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Component    │ Status      │ Details                    │ Health         │
+├──────────────┼─────────────┼────────────────────────────┼────────────────┤
+│ WiFi         │ ● Connected │ Corporate WiFi (5GHz)      │ Excellent     │
+│ VPN          │ ● Active    │ corp-vpn (10.0.0.1)        │ 15ms latency  │
+│ DNS          │ ● Custom    │ 10.0.0.1, 10.0.0.2         │ <5ms response │
+│ Proxy        │ ● Enabled   │ proxy.corp.com:8080        │ Connected     │
+│ Docker       │ ○ Default   │ office context             │ -             │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Quick Actions: [s]witch [v]pn [d]ns [p]roxy [r]efresh [?]help [Q]uit    │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Usage**:
+```bash
+gz net-env                    # Launch TUI dashboard
+gz net-env --compact          # Compact mode for small terminals
+gz net-env --monitor          # Start with monitoring view
+```
+
+### Network Status (`gz net-env status`)
+
+**Purpose**: Display comprehensive network configuration and status
+
+**Features**:
+- Unified status view of all network components
+- Network interface and WiFi details
+- VPN connection status with latency
+- DNS server configuration and response times
+- Proxy settings and connectivity
+- Active network profile indication
+- Network health summary
 
 **Usage**:
 ```bash
 gz net-env status                  # Show current network status
 gz net-env status --verbose       # Show detailed network information
 gz net-env status --json          # Output in JSON format
+gz net-env status --health        # Include health checks
+gz net-env status --watch         # Real-time status updates
+```
+
+**Output Example**:
+```
+Network Environment Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Profile: office (auto-detected)
+Network: Corporate WiFi (5GHz, -45 dBm)
+Security: WPA2-Enterprise
+
+Components:
+  WiFi      ✓ Connected     Corporate WiFi
+  VPN       ✓ Active        corp-vpn (15ms)
+  DNS       ✓ Custom        10.0.0.1, 10.0.0.2
+  Proxy     ✓ Enabled       proxy.corp.com:8080
+  Docker    ✓ Configured    office context
+
+Network Health: Excellent
+Last Profile Switch: 2 hours ago
 ```
 
 ### Network Profile Switching (`gz net-env switch`)
 
-**Purpose**: Switch between predefined network profiles
+**Purpose**: Intelligently switch between network profiles with auto-detection
 
 **Features**:
-- Load network profiles from configuration files
-- Switch between different network environments
-- Apply multiple network configurations at once
-- Support for environment-specific profiles
+- Smart profile detection based on network environment
+- Interactive profile selection with preview
+- Atomic profile switching (all or nothing)
+- Profile validation before applying
+- Rollback on failure
+- History of recent profiles
 
 **Usage**:
 ```bash
+gz net-env switch                 # Auto-detect and suggest profile
 gz net-env switch office          # Switch to office network profile
-gz net-env switch home           # Switch to home network profile
-gz net-env switch --list         # List available network profiles
-gz net-env switch --init         # Create example configuration
+gz net-env switch --interactive   # Interactive profile selection
+gz net-env switch --list         # List available profiles with status
+gz net-env switch --preview office # Preview changes before applying
+gz net-env switch --last         # Switch to last used profile
+```
+
+### Profile Management (`gz net-env profile`)
+
+**Purpose**: Comprehensive network profile management
+
+**Features**:
+- Create, edit, delete profiles
+- Import/export profiles
+- Profile templates and inheritance
+- Profile validation and testing
+- Profile sharing via URL/file
+
+**Usage**:
+```bash
+gz net-env profile list           # List all profiles
+gz net-env profile create         # Create new profile interactively
+gz net-env profile edit office    # Edit existing profile
+gz net-env profile clone office work # Clone profile
+gz net-env profile export office > office.yaml # Export profile
+gz net-env profile import < shared-profile.yaml # Import profile
+gz net-env profile validate office # Validate profile configuration
+```
+
+### Quick Actions (`gz net-env quick`)
+
+**Purpose**: Fast access to common network operations
+
+**Features**:
+- Single command for frequent tasks
+- Minimal typing required
+- Smart defaults
+- Status feedback
+- Undo last action
+
+**Usage**:
+```bash
+gz net-env quick vpn              # Toggle VPN (on/off)
+gz net-env quick vpn on           # Connect VPN
+gz net-env quick vpn off          # Disconnect VPN
+gz net-env quick dns cloudflare   # Switch to Cloudflare DNS
+gz net-env quick dns google       # Switch to Google DNS
+gz net-env quick dns reset        # Reset to system default
+gz net-env quick proxy on         # Enable proxy from current profile
+gz net-env quick proxy off        # Disable proxy
+gz net-env quick reset            # Reset all to defaults
+gz net-env quick undo             # Undo last quick action
+```
+
+### Network Monitoring (`gz net-env monitor`)
+
+**Purpose**: Unified network monitoring and analysis
+
+**Features**:
+- Real-time network metrics dashboard
+- Component health monitoring
+- Performance analysis
+- Alert notifications
+- Historical data and trends
+
+**Usage**:
+```bash
+gz net-env monitor                # Start monitoring dashboard
+gz net-env monitor --metrics      # Focus on performance metrics
+gz net-env monitor --health       # Focus on health checks
+gz net-env monitor --alerts       # Show only alerts
+gz net-env monitor --export       # Export monitoring data
 ```
 
 ### Network Actions (`gz net-env actions`)
@@ -275,6 +416,136 @@ Network environment configurations are stored in:
 
 ```yaml
 # Network Environment Configuration
+version: "1.0.0"
+
+# Smart Network Detection
+smart_detection:
+  enabled: true
+  auto_switch: true
+  detection_methods:
+    - wifi_ssid
+    - network_gateway
+    - dns_servers
+    - location
+  rules:
+    - ssid: "Corporate WiFi"
+      profile: "office"
+      confidence: 100
+    - ssid: "Home_Network_5G"
+      profile: "home"
+      confidence: 100
+    - gateway: "192.168.1.1"
+      profile: "home"
+      confidence: 80
+    - location: "office_building"
+      profile: "office"
+      confidence: 90
+
+# Profile Presets
+profile_presets:
+  secure-public:
+    name: "Secure Public WiFi"
+    description: "Maximum security for public networks"
+    vpn:
+      auto_connect: true
+      kill_switch: true
+    dns:
+      servers: ["1.1.1.1", "1.0.0.1"]
+      dnssec: true
+    proxy:
+      enabled: false
+    firewall:
+      enabled: true
+      mode: "strict"
+  
+  home-basic:
+    name: "Home Network"
+    description: "Standard home network configuration"
+    vpn:
+      auto_connect: false
+    dns:
+      servers: ["router", "8.8.8.8"]
+    proxy:
+      enabled: false
+  
+  office-standard:
+    name: "Office Network"
+    description: "Corporate network with VPN"
+    vpn:
+      name: "corporate-vpn"
+      auto_connect: true
+    dns:
+      servers: ["10.0.0.1", "10.0.0.2"]
+    proxy:
+      http: "proxy.company.com:8080"
+      https: "proxy.company.com:8080"
+      no_proxy: "localhost,*.company.com"
+  
+  development:
+    name: "Development Environment"
+    description: "Optimized for development work"
+    vpn:
+      auto_connect: false
+    dns:
+      servers: ["8.8.8.8", "8.8.4.4"]
+    proxy:
+      enabled: false
+    docker:
+      context: "development"
+    kubernetes:
+      context: "local"
+
+# Auto-Recovery Settings
+auto_recovery:
+  enabled: true
+  vpn_reconnect:
+    enabled: true
+    max_retries: 3
+    retry_delay: "10s"
+  dns_fallback:
+    enabled: true
+    fallback_servers: ["1.1.1.1", "8.8.8.8"]
+    health_check_interval: "30s"
+  proxy_fallback:
+    enabled: true
+    bypass_on_failure: true
+  profile_rollback:
+    enabled: true
+    rollback_timeout: "30s"
+
+# Quick Actions Configuration
+quick_actions:
+  vpn:
+    default_vpn: "primary-vpn"
+    toggle_behavior: "smart"  # smart, always_reconnect, always_disconnect
+  dns:
+    presets:
+      cloudflare: ["1.1.1.1", "1.0.0.1"]
+      google: ["8.8.8.8", "8.8.4.4"]
+      quad9: ["9.9.9.9", "149.112.112.112"]
+      opendns: ["208.67.222.222", "208.67.220.220"]
+  proxy:
+    quick_toggle: true
+    remember_settings: true
+
+# Network Health Monitoring
+health_monitoring:
+  enabled: true
+  components:
+    wifi:
+      check_interval: "10s"
+      signal_threshold: -70  # dBm
+    vpn:
+      check_interval: "30s"
+      latency_threshold: 100  # ms
+    dns:
+      check_interval: "60s"
+      timeout: "2s"
+      test_domains: ["google.com", "cloudflare.com"]
+    proxy:
+      check_interval: "60s"
+      test_url: "http://www.google.com"
+
 net_env:
   # Network Profiles
   profiles:
@@ -436,23 +707,113 @@ net_env:
 - `GZH_VPN_AUTO_CONNECT` - Enable/disable automatic VPN connection
 - `GZH_DNS_OVERRIDE` - Enable/disable DNS override functionality
 - `GZH_PROXY_AUTO_CONFIG` - Enable/disable automatic proxy configuration
+- `GZH_NET_ENV_AUTO_DETECT` - Enable/disable smart network detection
+- `GZH_NET_ENV_AUTO_RECOVERY` - Enable/disable auto-recovery features
+- `GZH_NET_ENV_TUI_MODE` - Default TUI mode (full/compact/monitor)
 
 ## Examples
 
-### Network Profile Switching
+### Interactive TUI Mode
+
+```bash
+# Launch interactive network manager
+gz net-env
+
+# Start in compact mode
+gz net-env --compact
+
+# Start with monitoring view
+gz net-env --monitor
+```
+
+### Smart Network Detection
+
+```bash
+# Auto-detect and switch profile
+gz net-env switch
+
+# Check what profile would be selected
+gz net-env switch --detect-only
+
+# Force auto-detection refresh
+gz net-env switch --refresh
+
+# Disable auto-switch temporarily
+GZH_NET_ENV_AUTO_DETECT=false gz net-env switch office
+```
+
+### Quick Actions
+
+```bash
+# Quick VPN management
+gz net-env quick vpn          # Toggle VPN
+gz net-env quick vpn on       # Connect VPN
+gz net-env quick vpn off      # Disconnect VPN
+
+# Quick DNS switching
+gz net-env quick dns cloudflare
+gz net-env quick dns google
+gz net-env quick dns reset
+
+# Quick proxy management
+gz net-env quick proxy on
+gz net-env quick proxy off
+
+# Undo last action
+gz net-env quick undo
+```
+
+### Profile Management
+
+```bash
+# Create new profile interactively
+gz net-env profile create
+
+# Create from preset
+gz net-env profile create --preset secure-public --name "Coffee Shop"
+
+# Clone and modify existing profile
+gz net-env profile clone home home-guest
+gz net-env profile edit home-guest
+
+# Share profiles
+gz net-env profile export office > office-profile.yaml
+gz net-env profile import < office-profile.yaml
+
+# Validate profile
+gz net-env profile validate office
+```
+
+### Network Monitoring
+
+```bash
+# Start monitoring dashboard
+gz net-env monitor
+
+# Monitor specific components
+gz net-env monitor --component vpn,dns
+
+# Export monitoring data
+gz net-env monitor --export --duration 1h > network-report.json
+
+# Show only alerts
+gz net-env monitor --alerts
+```
+
+### Traditional Profile Switching
 
 ```bash
 # Switch to office network profile
 gz net-env switch office
 
-# Switch to home network profile
-gz net-env switch home
+# Preview changes before applying
+gz net-env switch --preview office
 
 # List available profiles
 gz net-env switch --list
 
-# Create example configuration
-gz net-env switch --init
+# Switch to last used profile
+gz net-env switch --last
 ```
 
 ### VPN Management
@@ -561,3 +922,35 @@ gz net-env optimal-routing apply --policy latency-optimized
 - **Windows**: Limited support through netsh and PowerShell modules
 - **Container Environments**: Docker and Kubernetes network management
 - **Cloud Platforms**: AWS, GCP, Azure network service integration
+
+## Summary of Enhancements
+
+The enhanced `net-env` command provides a comprehensive solution for network environment management with focus on:
+
+### User Experience
+- **Interactive TUI**: Visual dashboard for easy network management
+- **Smart Detection**: Automatic profile selection based on network environment
+- **Quick Actions**: Single commands for common tasks
+- **Simplified Commands**: Reduced from 23 to 5 main commands
+
+### Automation
+- **Auto-Detection**: WiFi SSID, gateway, and location-based profile switching
+- **Auto-Recovery**: Automatic reconnection and fallback mechanisms
+- **Profile Presets**: Ready-to-use configurations for common scenarios
+- **Health Monitoring**: Continuous network component monitoring
+
+### Safety and Reliability
+- **Atomic Operations**: All-or-nothing profile switching
+- **Validation**: Profile validation before applying
+- **Rollback Support**: Automatic rollback on failures
+- **History Tracking**: Recent profile history for quick switching
+
+### Common Use Cases
+
+1. **Coffee Shop WiFi**: Auto-detect public network and apply secure profile
+2. **Office Arrival**: Automatically connect to corporate VPN
+3. **Home Network**: Switch to relaxed security settings
+4. **Travel**: Quick profile switching between locations
+5. **Development**: Optimized settings for local development
+
+These enhancements make `gz net-env` a powerful yet simple tool for managing complex network environments, reducing manual configuration while maintaining security and reliability.
