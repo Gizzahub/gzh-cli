@@ -26,25 +26,25 @@ gz() {
             command gz synclone config generate "$@"
             ;;
         
-        # repo-config -> repo-sync config
+        # repo-config -> kept as is
         "repo-config")
-            _gz_deprecation_warning "repo-config" "repo-sync config"
+            # Still available, no deprecation needed
             shift
-            command gz repo-sync config "$@"
+            command gz repo-config "$@"
             ;;
         
-        # event -> repo-sync event
+        # event -> kept as is
         "event")
-            _gz_deprecation_warning "event" "repo-sync event"
+            # Still available, no deprecation needed
             shift
-            command gz repo-sync event "$@"
+            command gz event "$@"
             ;;
         
-        # webhook -> repo-sync webhook
+        # webhook -> kept as is
         "webhook")
-            _gz_deprecation_warning "webhook" "repo-sync webhook"
+            # Still available, no deprecation needed
             shift
-            command gz repo-sync webhook "$@"
+            command gz webhook "$@"
             ;;
         
         # ssh-config -> dev-env ssh
@@ -54,11 +54,11 @@ gz() {
             command gz dev-env ssh "$@"
             ;;
         
-        # doctor -> validate --all
+        # doctor -> still available
         "doctor")
-            _gz_deprecation_warning "doctor" "validate --all"
+            # Still available, no deprecation needed
             shift
-            command gz validate --all "$@"
+            command gz doctor "$@"
             ;;
         
         # shell -> error with instruction
@@ -69,17 +69,21 @@ gz() {
             return 1
             ;;
         
-        # config -> special handling
+        # config -> removed
         "config")
-            if [[ -n "$2" ]]; then
-                echo -e "${RED}Error:${NC} 'gz config' has been distributed to individual commands." >&2
-                echo -e "Use: ${YELLOW}gz [command] config${NC} instead. For example:" >&2
-                echo -e "  - gz synclone config" >&2
-                echo -e "  - gz dev-env config" >&2
-                echo -e "  - gz net-env config" >&2
-                echo -e "  - gz repo-sync config" >&2
-                return 1
-            fi
+            echo -e "${RED}Error:${NC} 'gz config' has been removed." >&2
+            echo -e "Use: ${YELLOW}gz [command] config${NC} instead. For example:" >&2
+            echo -e "  - gz synclone config" >&2
+            echo -e "  - gz dev-env config" >&2
+            echo -e "  - gz net-env config" >&2
+            return 1
+            ;;
+        
+        # docker -> removed
+        "docker")
+            echo -e "${RED}Error:${NC} 'gz docker' has been removed." >&2
+            echo -e "Please use Docker CLI directly for container management." >&2
+            return 1
             ;;
         
         # always-latest -> pm
@@ -89,33 +93,12 @@ gz() {
             command gz pm "$@"
             ;;
         
-        # migrate -> special command for migration help
+        # migrate -> removed
         "migrate")
-            if [[ "$2" == "help" ]] || [[ -z "$2" ]]; then
-                echo "GZ Migration Guide - Command Changes in v2.0"
-                echo "==========================================="
-                echo ""
-                echo "The following commands have been renamed or restructured:"
-                echo ""
-                echo "  Old Command          →  New Command"
-                echo "  -----------             -----------"
-                echo "  gz gen-config        →  gz synclone config generate"
-                echo "  gz repo-config       →  gz repo-sync config"
-                echo "  gz event             →  gz repo-sync event"
-                echo "  gz webhook           →  gz repo-sync webhook"
-                echo "  gz ssh-config        →  gz dev-env ssh"
-                echo "  gz doctor            →  gz validate --all"
-                echo "  gz shell             →  gz --debug-shell (hidden)"
-                echo "  gz config            →  gz [command] config"
-                echo ""
-                echo "To install backward compatibility aliases:"
-                echo "  source ~/.config/gzh-manager/aliases.bash"
-                echo ""
-                echo "For more details, see: docs/migration/command-migration-guide.md"
-                return 0
-            fi
-            shift
-            command gz "$@"
+            echo -e "${RED}Error:${NC} 'gz migrate' has been removed." >&2
+            echo -e "The migration tool was for v1.x to v2.0 transition only." >&2
+            echo -e "For migration help, see: docs/migration/command-migration-guide.md" >&2
+            return 1
             ;;
         
         # Default: pass through to actual gz command

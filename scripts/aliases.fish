@@ -19,24 +19,24 @@ function gz
             command gz synclone config generate $argv[2..-1]
         
         case "repo-config"
-            _gz_deprecation_warning "repo-config" "repo-sync config"
-            command gz repo-sync config $argv[2..-1]
+            # Still available, no deprecation needed
+            command gz repo-config $argv[2..-1]
         
         case "event"
-            _gz_deprecation_warning "event" "repo-sync event"
-            command gz repo-sync event $argv[2..-1]
+            # Still available, no deprecation needed
+            command gz event $argv[2..-1]
         
         case "webhook"
-            _gz_deprecation_warning "webhook" "repo-sync webhook"
-            command gz repo-sync webhook $argv[2..-1]
+            # Still available, no deprecation needed
+            command gz webhook $argv[2..-1]
         
         case "ssh-config"
             _gz_deprecation_warning "ssh-config" "dev-env ssh"
             command gz dev-env ssh $argv[2..-1]
         
         case "doctor"
-            _gz_deprecation_warning "doctor" "validate --all"
-            command gz validate --all $argv[2..-1]
+            # Still available, no deprecation needed
+            command gz doctor $argv[2..-1]
         
         case "shell"
             echo (set_color red)"Error:"(set_color normal) "'gz shell' has been removed." >&2
@@ -45,47 +45,27 @@ function gz
             return 1
         
         case "config"
-            if test (count $argv) -gt 1
-                echo (set_color red)"Error:"(set_color normal) \
-                     "'gz config' has been distributed to individual commands." >&2
-                echo "Use:" (set_color yellow)"gz [command] config"(set_color normal) "instead. For example:" >&2
-                echo "  - gz synclone config" >&2
-                echo "  - gz dev-env config" >&2
-                echo "  - gz net-env config" >&2
-                echo "  - gz repo-sync config" >&2
-                return 1
-            end
+            echo (set_color red)"Error:"(set_color normal) "'gz config' has been removed." >&2
+            echo "Use:" (set_color yellow)"gz [command] config"(set_color normal) "instead. For example:" >&2
+            echo "  - gz synclone config" >&2
+            echo "  - gz dev-env config" >&2
+            echo "  - gz net-env config" >&2
+            return 1
+        
+        case "docker"
+            echo (set_color red)"Error:"(set_color normal) "'gz docker' has been removed." >&2
+            echo "Please use Docker CLI directly for container management." >&2
+            return 1
         
         case "always-latest"
             _gz_deprecation_warning "always-latest" "pm"
             command gz pm $argv[2..-1]
         
         case "migrate"
-            if test "$argv[2]" = "help" -o (count $argv) -eq 1
-                echo "GZ Migration Guide - Command Changes in v2.0"
-                echo "==========================================="
-                echo ""
-                echo "The following commands have been renamed or restructured:"
-                echo ""
-                echo "  Old Command          →  New Command"
-                echo "  -----------             -----------"
-                echo "  gz gen-config        →  gz synclone config generate"
-                echo "  gz repo-config       →  gz repo-sync config"
-                echo "  gz event             →  gz repo-sync event"
-                echo "  gz webhook           →  gz repo-sync webhook"
-                echo "  gz ssh-config        →  gz dev-env ssh"
-                echo "  gz doctor            →  gz validate --all"
-                echo "  gz shell             →  gz --debug-shell (hidden)"
-                echo "  gz config            →  gz [command] config"
-                echo ""
-                echo "To install backward compatibility aliases:"
-                echo "  source ~/.config/gzh-manager/aliases.fish"
-                echo ""
-                echo "For more details, see: docs/migration/command-migration-guide.md"
-                return 0
-            else
-                command gz $argv
-            end
+            echo (set_color red)"Error:"(set_color normal) "'gz migrate' has been removed." >&2
+            echo "The migration tool was for v1.x to v2.0 transition only." >&2
+            echo "For migration help, see: docs/migration/command-migration-guide.md" >&2
+            return 1
         
         case "*"
             command gz $argv
