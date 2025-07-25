@@ -10,18 +10,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/cmd/config"
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
-	"github.com/gizzahub/gzh-manager-go/cmd/docker"
 	doctorcmd "github.com/gizzahub/gzh-manager-go/cmd/doctor"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
-	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/pm"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
-	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
-	sshconfig "github.com/gizzahub/gzh-manager-go/cmd/ssh-config"
 	synclone "github.com/gizzahub/gzh-manager-go/cmd/synclone"
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
@@ -49,22 +44,17 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(newVersionCmd(version))
 	cmd.AddCommand(pm.NewPMCmd(ctx))
 	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx))
-	cmd.AddCommand(config.NewConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(doctorcmd.DoctorCmd)
 	cmd.AddCommand(devenv.NewDevEnvCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(docker.DockerCmd)
 	cmd.AddCommand(ide.NewIDECmd(ctx))
-	cmd.AddCommand(migrate.NewMigrateCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(reposync.NewRepoSyncCmd(ctx))
 	// Shell command is now hidden - only add if debug mode is enabled
 	if debugShell || os.Getenv("GZH_DEBUG_SHELL") == "1" {
 		shellCmd := shell.ShellCmd
 		shellCmd.Hidden = true
 		cmd.AddCommand(shellCmd)
 	}
-	cmd.AddCommand(sshconfig.NewSSHConfigCmd())
 	cmd.AddCommand(NewWebhookCmd())
 	cmd.AddCommand(NewEventCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 
