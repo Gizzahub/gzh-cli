@@ -10,7 +10,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	alwayslatest "github.com/gizzahub/gzh-manager-go/cmd/always-latest"
 	"github.com/gizzahub/gzh-manager-go/cmd/config"
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/docker"
@@ -49,7 +48,6 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 
 	cmd.AddCommand(newVersionCmd(version))
 	cmd.AddCommand(pm.NewPMCmd(ctx))
-	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
 	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx))
 	cmd.AddCommand(config.NewConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(doctorcmd.DoctorCmd)

@@ -65,7 +65,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 - **cmd/** - CLI commands using cobra framework
   - `root.go` - Main entry point with all command registrations
   - `bulk-clone/` - Multi-platform repository cloning (GitHub, GitLab, Gitea, Gogs)
-  - `always-latest/` - Package manager updates (asdf, Homebrew, SDKMAN, etc.)
+  - `pm/` - Package manager updates (asdf, Homebrew, SDKMAN, npm, pip, etc.)
   - `dev-env/` - Development environment management (AWS, Docker, Kubernetes configs)
   - `net-env/` - Network environment transitions (WiFi monitoring, VPN, DNS, proxy)
   - `ide/` - JetBrains IDE settings monitoring and sync fixes
@@ -146,7 +146,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 ### Development Environment
 
 - `gz dev-env` - Manage AWS, Docker, Kubernetes configurations
-- `gz always-latest` - Update package managers (asdf, Homebrew, SDKMAN)
+- `gz pm` - Update package managers (asdf, Homebrew, SDKMAN, npm, pip, etc.)
 - `gz ide` - Monitor JetBrains IDE settings and fix sync issues
 
 ### Network Management

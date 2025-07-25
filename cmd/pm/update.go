@@ -6,6 +6,9 @@ package pm
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -109,28 +112,187 @@ func runUpdateAll(ctx context.Context, strategy string, dryRun bool) error {
 	return nil
 }
 
-// Placeholder functions - will be replaced with unified implementation
+// updateBrew updates Homebrew packages
 func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
-	fmt.Println("Would update Homebrew packages...")
-	// TODO: Implement based on configuration
+	// Check if brew is installed
+	cmd := exec.Command("brew", "--version")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("brew is not installed or not in PATH")
+	}
+
+	fmt.Println("🍺 Updating Homebrew...")
+
+	// Update brew itself
+	if !dryRun {
+		cmd = exec.Command("brew", "update")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to update brew: %w", err)
+		}
+	} else {
+		fmt.Println("Would run: brew update")
+	}
+
+	// Upgrade packages based on strategy
+	if strategy == "latest" || strategy == "stable" {
+		if !dryRun {
+			cmd = exec.Command("brew", "upgrade")
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				return fmt.Errorf("failed to upgrade brew packages: %w", err)
+			}
+		} else {
+			fmt.Println("Would run: brew upgrade")
+		}
+	}
+
+	// Cleanup old versions
+	if !dryRun {
+		cmd = exec.Command("brew", "cleanup")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("Warning: cleanup failed: %v\n", err)
+		}
+	} else {
+		fmt.Println("Would run: brew cleanup")
+	}
+
 	return nil
 }
 
 func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
-	fmt.Println("Would update asdf plugins and tools...")
-	// TODO: Implement based on configuration
+	// Check if asdf is installed
+	cmd := exec.Command("asdf", "--version")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("asdf is not installed or not in PATH")
+	}
+
+	fmt.Println("🔄 Updating asdf plugins...")
+
+	// Update asdf plugins
+	if !dryRun {
+		cmd = exec.Command("asdf", "plugin", "update", "--all")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to update asdf plugins: %w", err)
+		}
+	} else {
+		fmt.Println("Would run: asdf plugin update --all")
+	}
+
+	// Get list of installed plugins
+	cmd = exec.Command("asdf", "plugin", "list")
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to list asdf plugins: %w", err)
+	}
+
+	plugins := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, plugin := range plugins {
+		if plugin == "" {
+			continue
+		}
+		fmt.Printf("Checking %s for updates...\n", plugin)
+		
+		// Install latest version based on strategy
+		if strategy == "latest" || strategy == "stable" {
+			if !dryRun {
+				cmd = exec.Command("asdf", "install", plugin, "latest")
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err != nil {
+					fmt.Printf("Warning: failed to install latest %s: %v\n", plugin, err)
+				}
+			} else {
+				fmt.Printf("Would run: asdf install %s latest\n", plugin)
+			}
+		}
+	}
+
 	return nil
 }
 
 func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
-	fmt.Println("Would update SDKMAN candidates...")
-	// TODO: Implement based on configuration
+	// Check if SDKMAN is installed
+	sdkmanDir := os.Getenv("SDKMAN_DIR")
+	if sdkmanDir == "" {
+		sdkmanDir = os.Getenv("HOME") + "/.sdkman"
+	}
+	
+	if _, err := os.Stat(sdkmanDir); os.IsNotExist(err) {
+		return fmt.Errorf("SDKMAN is not installed")
+	}
+
+	fmt.Println("☕ Updating SDKMAN...")
+
+	// Update SDKMAN itself
+	if !dryRun {
+		cmd := exec.Command("bash", "-c", "source "+sdkmanDir+"/bin/sdkman-init.sh && sdk selfupdate")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("Warning: failed to update SDKMAN: %v\n", err)
+		}
+	} else {
+		fmt.Println("Would run: sdk selfupdate")
+	}
+
+	// Update candidates based on strategy
+	if strategy == "latest" || strategy == "stable" {
+		if !dryRun {
+			cmd := exec.Command("bash", "-c", "source "+sdkmanDir+"/bin/sdkman-init.sh && sdk update")
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				fmt.Printf("Warning: failed to update SDKMAN candidates: %v\n", err)
+			}
+		} else {
+			fmt.Println("Would run: sdk update")
+		}
+	}
+
 	return nil
 }
 
 func updateApt(ctx context.Context, strategy string, dryRun bool) error {
-	fmt.Println("Would update APT packages...")
-	// TODO: Implement based on configuration
+	// Check if apt is available
+	cmd := exec.Command("apt", "--version")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("apt is not available on this system")
+	}
+
+	fmt.Println("📦 Updating APT packages...")
+
+	// Update package lists
+	if !dryRun {
+		cmd = exec.Command("sudo", "apt", "update")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to update apt package lists: %w", err)
+		}
+	} else {
+		fmt.Println("Would run: sudo apt update")
+	}
+
+	// Upgrade packages based on strategy
+	if strategy == "latest" || strategy == "stable" {
+		if !dryRun {
+			cmd = exec.Command("sudo", "apt", "upgrade", "-y")
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				return fmt.Errorf("failed to upgrade apt packages: %w", err)
+			}
+		} else {
+			fmt.Println("Would run: sudo apt upgrade -y")
+		}
+	}
+
 	return nil
 }
 

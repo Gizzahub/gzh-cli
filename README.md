@@ -120,7 +120,6 @@ Usage:
   gz [command]
 
 Available Commands:
-  always-latest Keep development tools and package managers up to date
   bulk-clone    Clone repositories from multiple Git hosting services
   completion    Generate the autocompletion script for the specified shell
   config        Configuration management commands
