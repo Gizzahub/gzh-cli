@@ -19,9 +19,9 @@ echo ""
 echo "  Old Command          →  New Command"
 echo "  ─────────────────────────────────────────"
 echo "  gz gen-config        →  gz synclone config generate"
-echo "  gz repo-config       →  gz repo-sync config"
-echo "  gz event             →  gz repo-sync event"
-echo "  gz webhook           →  gz repo-sync webhook"
+echo "  gz repo-config       →  (still available)"
+echo "  gz event             →  (still available)"
+echo "  gz webhook           →  (still available)"
 echo "  gz ssh-config        →  gz dev-env ssh"
 echo ""
 echo "Note: The old commands will show deprecation warnings."
@@ -85,9 +85,8 @@ cat > "$ALIAS_FILE" << 'EOF'
 
 # Command aliases
 alias "gz-gen-config"="echo 'Deprecated: use gz synclone config generate' && gz synclone config generate"
-alias "gz-repo-config"="echo 'Deprecated: use gz repo-sync config' && gz repo-sync config"
-alias "gz-event"="echo 'Deprecated: use gz repo-sync event' && gz repo-sync event"
-alias "gz-webhook"="echo 'Deprecated: use gz repo-sync webhook' && gz repo-sync webhook"
+# repo-config, event, webhook are still available as standalone commands
+# No aliases needed for these
 alias "gz-ssh-config"="echo 'Deprecated: use gz dev-env ssh' && gz dev-env ssh"
 
 # Function to intercept gz commands and show deprecation warnings
@@ -98,21 +97,8 @@ gz_compat() {
             shift
             command gz synclone config generate "$@"
             ;;
-        repo-config)
-            echo "Warning: 'gz repo-config' is deprecated. Use 'gz repo-sync config' instead." >&2
-            shift
-            command gz repo-sync config "$@"
-            ;;
-        event)
-            echo "Warning: 'gz event' is deprecated. Use 'gz repo-sync event' instead." >&2
-            shift
-            command gz repo-sync event "$@"
-            ;;
-        webhook)
-            echo "Warning: 'gz webhook' is deprecated. Use 'gz repo-sync webhook' instead." >&2
-            shift
-            command gz repo-sync webhook "$@"
-            ;;
+        # repo-config, event, webhook are still available
+        # No deprecation needed
         ssh-config)
             echo "Warning: 'gz ssh-config' is deprecated. Use 'gz dev-env ssh' instead." >&2
             shift
