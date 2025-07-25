@@ -13,6 +13,7 @@ import (
 func NewAlwaysLatestCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "always-latest",
+		Deprecated:   "use 'gz pm' instead",
 		Short:        "Keep development tools and package managers up to date",
 		SilenceUsage: true,
 		Long: `Keep development tools and package managers updated to their latest versions.

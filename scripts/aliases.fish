@@ -56,6 +56,10 @@ function gz
                 return 1
             end
         
+        case "always-latest"
+            _gz_deprecation_warning "always-latest" "pm"
+            command gz pm $argv[2..-1]
+        
         case "migrate"
             if test "$argv[2]" = "help" -o (count $argv) -eq 1
                 echo "GZ Migration Guide - Command Changes in v2.0"

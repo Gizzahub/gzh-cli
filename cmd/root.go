@@ -19,6 +19,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
+	"github.com/gizzahub/gzh-manager-go/cmd/pm"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 	reposync "github.com/gizzahub/gzh-manager-go/cmd/repo-sync"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
@@ -48,6 +49,7 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	}
 
 	cmd.AddCommand(newVersionCmd(version))
+	cmd.AddCommand(pm.NewPMCmd(ctx))
 	cmd.AddCommand(alwayslatest.NewAlwaysLatestCmd(ctx))
 	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx))
 	cmd.AddCommand(config.NewConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation

@@ -82,6 +82,13 @@ gz() {
             fi
             ;;
         
+        # always-latest -> pm
+        "always-latest")
+            _gz_deprecation_warning "always-latest" "pm"
+            shift
+            command gz pm "$@"
+            ;;
+        
         # migrate -> special command for migration help
         "migrate")
             if [[ "$2" == "help" ]] || [[ -z "$2" ]]; then

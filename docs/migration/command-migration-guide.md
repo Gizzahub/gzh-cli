@@ -15,6 +15,7 @@ The following commands have been reorganized for better consistency:
 | `gz event` | `gz repo-sync event` | Deprecated with warning |
 | `gz webhook` | `gz repo-sync webhook` | Deprecated with warning |
 | `gz ssh-config` | `gz dev-env ssh` | Still works, planned deprecation |
+| `gz always-latest` | `gz pm` | Deprecated with warning |
 
 ## Migration Methods
 
@@ -73,6 +74,10 @@ gz repo-config apply --org myorg
 
 # Setup webhook server
 gz webhook create --org myorg
+
+# Update package managers
+gz always-latest brew
+gz always-latest asdf --strategy major
 ```
 
 ### After
@@ -85,6 +90,10 @@ gz repo-sync config apply --org myorg
 
 # Setup webhook server
 gz repo-sync webhook create --org myorg
+
+# Update package managers
+gz pm update --manager brew
+gz pm update --manager asdf --strategy major
 ```
 
 ## Rollback
