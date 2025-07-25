@@ -18,8 +18,9 @@ import (
 // NewWebhookCmd creates the webhook management command.
 func NewWebhookCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "webhook",
-		Short: "🔗 GitHub 웹훅 관리 도구",
+		Use:        "webhook",
+		Short:      "🔗 GitHub 웹훅 관리 도구",
+		Deprecated: "use 'gz repo-sync webhook' instead",
 		Long: `GitHub 웹훅 CRUD API 관리 도구
 
 리포지토리 및 조직 웹훅을 생성, 조회, 수정, 삭제할 수 있습니다.

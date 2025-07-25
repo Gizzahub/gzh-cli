@@ -57,6 +57,11 @@ Examples:
 	cmd.AddCommand(newBranchPolicyCmd(logger))
 	cmd.AddCommand(newQualityCheckCmd(logger))
 	cmd.AddCommand(newTrendAnalyzeCmd(logger))
+	
+	// Add consolidated commands from repo-config, webhook, and event
+	cmd.AddCommand(newConfigCmd())
+	cmd.AddCommand(newWebhookCmd())
+	cmd.AddCommand(newEventCmd())
 
 	return cmd
 }
