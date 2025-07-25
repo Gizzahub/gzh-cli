@@ -1,0 +1,46 @@
+# Alpine Linux test environment for gz pm functionality
+FROM alpine:3.19
+
+# Install base dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    wget \
+    git \
+    build-base \
+    sudo \
+    shadow \
+    openssh \
+    ca-certificates \
+    python3 \
+    python3-dev \
+    py3-pip \
+    nodejs \
+    npm \
+    ruby \
+    ruby-dev
+
+# Create test user
+RUN adduser -D -s /bin/bash testuser && \
+    echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Switch to test user
+USER testuser
+WORKDIR /home/testuser
+
+# Install asdf
+RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0 && \
+    echo '. $HOME/.asdf/asdf.sh' >> ~/.bashrc && \
+    echo '. $HOME/.asdf/completions/asdf.bash' >> ~/.bashrc
+
+# Note: Homebrew is not well-supported on Alpine, so we skip it
+# Note: nvm, rbenv, pyenv have limited Alpine support due to musl libc
+
+# Create directories for gz
+RUN mkdir -p ~/.gzh/pm ~/.config/gzh-manager
+
+# Set up environment
+ENV PATH="/home/testuser/.asdf/bin:$PATH"
+
+# Default command
+CMD ["/bin/bash", "-l"]

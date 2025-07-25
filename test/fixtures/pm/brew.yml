@@ -1,0 +1,49 @@
+# Test Homebrew configuration for integration tests
+version: "1.0.0"
+generated_at: "2025-01-25T10:00:00Z"
+platform: "linux"  # Testing on Linux containers
+
+# Homebrew settings
+settings:
+  HOMEBREW_PREFIX: "/home/linuxbrew/.linuxbrew"
+  HOMEBREW_NO_ANALYTICS: "1"
+  HOMEBREW_NO_AUTO_UPDATE: "1"  # Disable auto-update for tests
+
+# Version management strategy
+strategy:
+  default: "latest"
+  auto_cleanup: false  # Disable for faster tests
+  
+# Cleanup policy
+cleanup_policy: "preserve"
+
+# Minimal taps for testing
+taps:
+  - homebrew/core
+
+# Test formulae (minimal set for fast testing)
+formulae:
+  # Basic tools
+  - name: jq
+    version: "latest"
+    
+  - name: tree
+    version: "latest"
+    
+  - name: htop
+    version: "latest"
+    
+  # Development tool for testing
+  - name: ripgrep
+    version: "latest"
+
+# No casks for Linux testing
+casks: []
+
+# No services for testing
+services: []
+
+# Post-install hooks
+hooks:
+  post_install:
+    - "echo 'Brew packages installed for testing'"

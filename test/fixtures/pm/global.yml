@@ -1,0 +1,77 @@
+# Test global configuration for pm integration tests
+version: "1.0.0"
+
+# Default settings for all package managers
+defaults:
+  strategy: "preserve"
+  auto_update: false
+  backup_before_changes: true
+  parallel_operations: true
+  max_workers: 2
+
+# Package manager enablement and priority
+managers:
+  brew:
+    enabled: true
+    config_file: "brew.yml"
+    priority: 1
+  asdf:
+    enabled: true
+    config_file: "asdf.yml"
+    priority: 2
+  npm:
+    enabled: true
+    config_file: "npm.yml"
+    priority: 3
+  pip:
+    enabled: true
+    config_file: "pip.yml"
+    priority: 4
+
+# Global version strategies
+version_strategies:
+  default: "stable"
+  development: "latest"
+  production: "fixed"
+
+# Cleanup policies
+cleanup:
+  remove_orphans: false
+  remove_unused_deps: true
+  keep_cache: false
+  dry_run_default: true
+
+# Package manager bootstrap configuration
+bootstrap:
+  auto_install: true
+  check_on_startup: true
+  managers:
+    brew:
+      darwin:
+        install_script: "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+        check_command: "brew --version"
+      linux:
+        install_script: "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+        check_command: "brew --version"
+    nvm:
+      install_script: "https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh"
+      check_command: "nvm --version"
+
+# Version manager coordination
+version_coordination:
+  node_npm_sync:
+    enabled: true
+    strategy: "bundled"
+    npm_version_matrix:
+      "20.x": "10.x"
+      "18.x": "9.x"
+  ruby_gem_migration:
+    enabled: true
+    strategy: "copy"
+    backup_before_switch: true
+
+# Logging for tests
+logging:
+  level: "debug"
+  file: "/tmp/gz-pm-test.log"
+  format: "json"

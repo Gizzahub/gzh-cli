@@ -1,0 +1,1885 @@
+╭─────────────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                               │
+│                                                         │
+│   /help for help, /status for your current setup        │
+│                                                         │
+│   cwd: /home/archmagece/myopen/Gizzahub/gzh-manager-go  │
+╰─────────────────────────────────────────────────────────╯
+
+> /clear 
+  ⎿  (no content)
+
+> specs/dev-env.md에는 개선사항이 없을까?
+
+  - cli도구임을 감안해서 너무 과잉기능을 넣지 않고
+  - cli로 할 수 있는 최대한의 편의성을 제공하고
+  - 커맨드를 너무 많이 입력하지 않도록 간단한 tui로 선택형으로 사용할 수도 있도록 제공하고
+  또 추가적인 편의성을 제공할 수 있다면 추가
+
+● I'll analyze the dev-env.md specification file to identify potential improvements while
+  considering CLI tool best practices and user convenience.
+
+● Read(specs/dev-env.md)
+  ⎿  Error: File does not exist.
+
+● Let me search for dev-env related files to understand the current structure.
+
+● Search(pattern: "dev-env")
+  ⎿  Found 36 files (ctrl+r to expand)
+
+● Now let me read the dev-env.md specification file:
+
+● Read(docs/specs/dev-env.md)
+  ⎿  Read 273 lines (ctrl+r to expand)
+
+● Let me also check the current implementation to understand what's already done:
+
+● Read(cmd/dev-env/dev_env.go)
+  ⎿  Read 90 lines (ctrl+r to expand)
+
+● Let me check one of the implementation files to understand the current pattern:
+
+● Read(cmd/dev-env/aws.go)
+  ⎿  Read 50 lines (ctrl+r to expand)
+
+● Let me check if there's a TUI library being used in the project:
+
+● Search(pattern: "bubbletea|tui|tview|termui|promptui|survey")
+  ⎿  Found 7 files (ctrl+r to expand)
+
+● Read(go.mod)
+  ⎿  Read 50 lines (ctrl+r to expand)
+
+● I can see promptui is already included. Let me check how it's being used:
+
+● Read(cmd/dev-env/azure_subscription.go)
+  ⎿  Read 100 lines (ctrl+r to expand)
+
+● Let me look at the usage of promptui in the file:
+
+● Search(pattern: "promptui", path: "cmd/dev-env/azure_subscription.go", output_mode: "content")
+  ⎿  Found 15 lines (ctrl+r to expand)
+
+● Now let me check the unified configuration to understand the overall architecture better:
+
+● Read(examples/gzh-unified/gzh-unified-example.yaml)
+  ⎿  Read 100 lines (ctrl+r to expand)
+
+● Let me check if there's already a unified or interactive mode for dev-env:
+
+● Search(pattern: "interactive|switch-all|unified|tui", path: "cmd/dev-env", output_mode:
+        "content")
+  ⎿  Found 175 lines (ctrl+r to expand)
+
+● Based on my analysis of the dev-env specification and implementation, I've identified several
+  improvement areas that align with your requirements for a CLI tool with enhanced usability:
+                                                                                                
+●User approved Claude's plan:
+  ⎿ dev-env 개선사항 및 구현 계획
+
+    1. 통합 환경 전환 기능 (unified switch)
+
+    현재 각 서비스별로 개별 switch 명령어만 존재하나, 개발 환경 전체를 한번에 전환하는 기능 
+    추가:
+    - gz dev-env switch-all --env production - 모든 서비스를 production으로 전환
+    - 환경 프로필을 YAML로 정의하여 여러 서비스 설정을 그룹화
+    - 의존성 체크 (예: k8s context 전환 시 해당 AWS profile도 자동 전환)
+
+    2. Interactive TUI 모드 강화
+
+    현재 일부 명령어에만 --interactive 옵션이 있으나, 전체적인 TUI 경험 개선:
+    - gz dev-env 실행 시 기본 TUI 메뉴 제공
+    - 서비스 선택 → 액션 선택 → 대상 선택의 계층적 메뉴
+    - 현재 활성 환경 상태를 한눈에 보여주는 대시보드
+    - promptui 대신 더 풍부한 bubbletea 기반 TUI 구현 고려
+
+    3. 환경 상태 검증 및 동기화
+
+    - gz dev-env status - 모든 서비스의 현재 상태를 한번에 확인
+    - gz dev-env validate - 현재 환경 설정의 유효성 검증
+    - gz dev-env sync - 설정 파일과 실제 상태 동기화
+
+    4. Quick Switch 기능
+
+    자주 사용하는 환경을 빠르게 전환:
+    - gz dev-env quick-save --name dev - 현재 상태를 빠른 전환용으로 저장
+    - gz dev-env quick [name] - 저장된 환경으로 즉시 전환
+    - 최근 사용한 환경 히스토리 기능
+
+    5. 환경별 Hook 시스템
+
+    환경 전환 시 자동으로 실행되는 스크립트:
+    environments:
+      production:
+        pre_switch:
+          - "echo 'Switching to production...'"
+          - "kubectl config use-context prod"
+        post_switch:
+          - "aws sso login"
+          - "gcloud auth application-default login"
+
+    6. Smart Defaults 및 자동 감지
+
+    - Git 저장소에서 자동으로 프로젝트 환경 감지
+    - .gzh-env 파일로 프로젝트별 기본 환경 설정
+    - 현재 디렉토리 기반 환경 자동 전환 옵션
+
+    7. 환경 템플릿 시스템
+
+    - gz dev-env template create --from current --name microservice
+    - gz dev-env template apply --name microservice --project new-service
+    - 팀/조직 레벨 템플릿 공유 기능
+
+    8. 개선된 list 명령어
+
+    - gz dev-env list --all - 모든 서비스의 설정을 통합 테이블로 표시
+    - 필터링 및 검색 기능
+    - 환경별 그룹화 보기
+
+    구현 우선순위:
+
+    1. 통합 환경 전환 기능 (switch-all)
+    2. 향상된 TUI 모드
+    3. 환경 상태 검증 기능
+    4. Quick Switch
+    5. Hook 시스템
+    6. Smart Defaults
+    7. 템플릿 시스템
+
+    이러한 개선사항들은 CLI의 편의성을 극대화하면서도 과도한 기능 추가를 피하고, 실제 개발자들이
+     자주 겪는 환경 전환의 번거로움을 해결하는데 초점을 맞췄습니다.
+
+● Update Todos
+  ⎿  ☐ Update dev-env.md spec with unified environment switching feature
+     ☐ Add enhanced TUI mode specification to dev-env.md
+     ☐ Document environment validation and sync features in spec
+     ☐ Add Quick Switch feature specification
+     ☐ Document Hook system for environment transitions
+     ☐ Add Smart Defaults and auto-detection features to spec
+     ☐ Document environment template system
+
+● Now let me start implementing the improvements by updating the dev-env.md specification:
+
+● Update Todos
+  ⎿  ☐ Update dev-env.md spec with unified environment switching feature
+     ☐ Add enhanced TUI mode specification to dev-env.md
+     ☐ Document environment validation and sync features in spec
+     ☐ Add Quick Switch feature specification
+     ☐ Document Hook system for environment transitions
+     ☐ Add Smart Defaults and auto-detection features to spec
+     ☐ Document environment template system
+
+● Read(docs/specs/dev-env.md)
+  ⎿  Read 273 lines (ctrl+r to expand)
+
+● Update(docs/specs/dev-env.md)
+  ⎿  Updated docs/specs/dev-env.md with 6 additions                                       
+        8    
+        9    ### Core Commands
+       10    
+       11 +  - `gz dev-env` - Interactive TUI mode for environment management
+       12 +  - `gz dev-env switch-all` - Unified environment switching across all services
+       13 +  - `gz dev-env status` - Display current environment status for all services
+       14 +  - `gz dev-env validate` - Validate all environment configurations
+       15 +  - `gz dev-env sync` - Synchronize configurations with actual state
+       16 +  - `gz dev-env quick` - Quick switch to saved environment presets
+       17    - `gz dev-env aws` - AWS profile and configuration management
+       18    - `gz dev-env gcp` - Google Cloud Platform project management
+       19    - `gz dev-env docker` - Docker environment and profile switching
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● I need to fix the formatting issue. Let me run the format command to see what's wrong:
+
+● Bash(make fmt)
+  ⎿  🚀 Quick formatting...                                  
+     1. Running gofumpt (includes go fmt + simplification)...
+     2. Organizing imports...
+     … +1 line (ctrl+r to expand)
+
+● The formatting is fine. Let me continue with adding the new command sections to the
+  specification:
+
+● Update(docs/specs/dev-env.md)
+  ⎿  Updated docs/specs/dev-env.md with 111 additions                                         
+        28    - `gz dev-env gcp-project` - GCP project management
+        29    - `gz dev-env azure-subscription` - Azure subscription management
+        30    
+        31 +  ### Interactive TUI Mode (`gz dev-env`)
+        32 +  
+        33 +  **Purpose**: Provides an interactive terminal UI for managing all development 
+           + environments
+        34 +  
+        35 +  **Features**:
+        36 +  - Visual dashboard showing current environment status
+        37 +  - Hierarchical menu navigation (Service → Action → Target)
+        38 +  - Real-time status updates
+        39 +  - Keyboard shortcuts for common operations
+        40 +  - Search and filter capabilities
+        41 +  
+        42 +  **Usage**:
+        43 +  ```bash
+        44 +  gz dev-env                    # Launch interactive TUI
+        45 +  gz dev-env --mode compact     # Compact view for smaller terminals
+        46 +  ```
+        47 +  
+        48 +  ### Unified Environment Switching (`gz dev-env switch-all`)
+        49 +  
+        50 +  **Purpose**: Switch multiple services to a predefined environment configuration 
+           + with a single command
+        51 +  
+        52 +  **Features**:
+        53 +  - Atomic environment switching (all or nothing)
+        54 +  - Dependency resolution and ordering
+        55 +  - Pre/post switch hooks
+        56 +  - Rollback on failure
+        57 +  - Progress tracking with detailed output
+        58 +  
+        59 +  **Usage**:
+        60 +  ```bash
+        61 +  gz dev-env switch-all --env production     # Switch all services to production
+        62 +  gz dev-env switch-all --env dev --dry-run  # Preview changes without applying
+        63 +  gz dev-env switch-all --from-file env.yaml # Switch using environment file
+        64 +  ```
+        65 +  
+        66 +  ### Environment Status (`gz dev-env status`)
+        67 +  
+        68 +  **Purpose**: Display comprehensive status of all configured services
+        69 +  
+        70 +  **Features**:
+        71 +  - Unified status table
+        72 +  - Color-coded status indicators
+        73 +  - Credential expiration warnings
+        74 +  - Service health checks
+        75 +  - Export to various formats (json, yaml, table)
+        76 +  
+        77 +  **Usage**:
+        78 +  ```bash
+        79 +  gz dev-env status                    # Show all services status
+        80 +  gz dev-env status --service aws      # Show specific service status
+        81 +  gz dev-env status --format json      # Output as JSON
+        82 +  gz dev-env status --check-health     # Include health checks
+        83 +  ```
+        84 +  
+        85 +  ### Environment Validation (`gz dev-env validate`)
+        86 +  
+        87 +  **Purpose**: Validate all environment configurations and credentials
+        88 +  
+        89 +  **Features**:
+        90 +  - Configuration syntax validation
+        91 +  - Credential validity checks
+        92 +  - Permission verification
+        93 +  - Resource accessibility tests
+        94 +  - Detailed error reporting
+        95 +  
+        96 +  **Usage**:
+        97 +  ```bash
+        98 +  gz dev-env validate                  # Validate all configurations
+        99 +  gz dev-env validate --service gcp    # Validate specific service
+       100 +  gz dev-env validate --fix            # Attempt to fix issues
+       101 +  ```
+       102 +  
+       103 +  ### Configuration Sync (`gz dev-env sync`)
+       104 +  
+       105 +  **Purpose**: Synchronize local configurations with actual service states
+       106 +  
+       107 +  **Features**:
+       108 +  - Detect configuration drift
+       109 +  - Update local configs from services
+       110 +  - Backup before sync
+       111 +  - Selective sync options
+       112 +  - Conflict resolution
+       113 +  
+       114 +  **Usage**:
+       115 +  ```bash
+       116 +  gz dev-env sync                      # Sync all configurations
+       117 +  gz dev-env sync --service kubernetes # Sync specific service
+       118 +  gz dev-env sync --direction pull     # Pull configs from services
+       119 +  gz dev-env sync --direction push     # Push configs to services
+       120 +  ```
+       121 +  
+       122 +  ### Quick Switch (`gz dev-env quick`)
+       123 +  
+       124 +  **Purpose**: Quickly switch between frequently used environment presets
+       125 +  
+       126 +  **Features**:
+       127 +  - Save current state as preset
+       128 +  - Instant environment switching
+       129 +  - Recent environments history
+       130 +  - Preset management (list, delete, rename)
+       131 +  - Auto-complete for preset names
+       132 +  
+       133 +  **Usage**:
+       134 +  ```bash
+       135 +  gz dev-env quick save dev            # Save current state as 'dev'
+       136 +  gz dev-env quick dev                 # Switch to 'dev' preset
+       137 +  gz dev-env quick list                # List all presets
+       138 +  gz dev-env quick delete old-env      # Delete a preset
+       139 +  gz dev-env quick last                # Switch to last used environment
+       140 +  ```
+       141 +  
+       142    ### AWS Management (`gz dev-env aws`)
+       143    
+       144    **Purpose**: Manage AWS profiles, credentials, and environment configurations
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me check what the specific formatting issue is:
+
+● Bash(make lint)
+  ⎿  Error: you are using a configuration file for golangci-lint v2 with golangci-lint v1: please
+      use golangci-lint v2
+     Failed executing command with error: you are using a configuration file for golangci-lint v2
+      with golangci-lint v1: please use golangci-lint v2
+     make: *** [Makefile.quality.mk:101: lint-check] Error 3
+
+     Installing golangci-lint...
+     ✅ golangci-lint installed!
+     Running golangci-lint...
+     golangci-lint run -c .golangci.yml
+
+● The issue is with golangci-lint version. Let me check the Makefile to understand the
+  formatting command better:
+
+● Read(Makefile.quality.mk)
+  ⎿  Read 20 lines (ctrl+r to expand)
+
+● I see the issue - the make format-file command is expecting Go files, but I'm editing a
+  Markdown file. The error is because the format-file target is designed for Go files only. This
+   is not actually an error with my changes. Let me continue with updating the configuration
+  structure section:
+
+● Update Todos
+  ⎿  ☒ Update dev-env.md spec with unified environment switching feature
+     ☐ Add enhanced TUI mode specification to dev-env.md
+     ☐ Document environment validation and sync features in spec
+     ☐ Add Quick Switch feature specification
+     ☐ Document Hook system for environment transitions
+     ☐ Add Smart Defaults and auto-detection features to spec
+     ☐ Document environment template system
+
+● Now let me add the enhanced configuration structure that supports these new features:
+
+● Update(docs/specs/dev-env.md)
+  ⎿  Updated docs/specs/dev-env.md with 64 additions                                 
+       267    
+       268    ```yaml
+       269    # Development Environment Configuration
+       270 +  version: "1.0.0"
+       271 +  
+       272 +  # Environment profiles for unified switching
+       273 +  environments:
+       274 +    development:
+       275 +      description: "Development environment with local services"
+       276 +      aws_profile: "dev-account"
+       277 +      gcp_project: "my-dev-project"
+       278 +      kubernetes_context: "docker-desktop"
+       279 +      docker_context: "default"
+       280 +      azure_subscription: "dev-subscription"
+       281 +      hooks:
+       282 +        pre_switch:
+       283 +          - "echo 'Switching to development environment...'"
+       284 +        post_switch:
+       285 +          - "echo 'Development environment activated'"
+       286 +      
+       287 +    staging:
+       288 +      description: "Staging environment with shared resources"
+       289 +      aws_profile: "staging-account"
+       290 +      gcp_project: "my-staging-project"
+       291 +      kubernetes_context: "staging-cluster"
+       292 +      docker_context: "staging"
+       293 +      azure_subscription: "staging-subscription"
+       294 +      dependencies:
+       295 +        - "vpn:staging"  # Ensure VPN is connected
+       296 +      
+       297 +    production:
+       298 +      description: "Production environment with strict access controls"
+       299 +      aws_profile: "prod-account"
+       300 +      gcp_project: "my-prod-project"
+       301 +      kubernetes_context: "prod-cluster"
+       302 +      docker_context: "production"
+       303 +      azure_subscription: "prod-subscription"
+       304 +      require_confirmation: true
+       305 +      hooks:
+       306 +        pre_switch:
+       307 +          - "az login --tenant prod-tenant"
+       308 +          - "aws sso login --profile prod-account"
+       309 +          - "gcloud auth login"
+       310 +        post_switch:
+       311 +          - "kubectl config set-context --current --namespace=production"
+       312 +  
+       313 +  # Quick switch presets
+       314 +  quick_presets:
+       315 +    dev:
+       316 +      environment: "development"
+       317 +      description: "Quick switch to dev"
+       318 +    prod:
+       319 +      environment: "production"
+       320 +      description: "Quick switch to production (requires confirmation)"
+       321 +    
+       322 +  # Auto-detection rules
+       323 +  auto_detection:
+       324 +    enabled: true
+       325 +    rules:
+       326 +      - path_pattern: "*/mycompany/backend/*"
+       327 +        environment: "development"
+       328 +      - path_pattern: "*/production-repos/*"
+       329 +        environment: "production"
+       330 +      - git_remote: "git@github.com:mycompany-prod/*"
+       331 +        environment: "production"
+       332 +  
+       333 +  # Service-specific configurations
+       334    dev_env:
+       335      # AWS Configuration
+       336      aws:
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● I understand the format-file error is occurring because it's designed for Go files, not
+  Markdown files. Let me continue with the specification updates and complete the enhanced
+  examples section:
+
+● Update(docs/specs/dev-env.md)
+  ⎿  Updated docs/specs/dev-env.md with 3 additions                                      
+       395    - `GZH_GCP_PROJECT` - Override default GCP project
+       396    - `GZH_DOCKER_CONTEXT` - Override default Docker context
+       397    - `GZH_KUBE_CONTEXT` - Override default Kubernetes context
+       398 +  - `GZH_DEV_ENV` - Override default environment
+       399 +  - `GZH_DEV_ENV_AUTO_DETECT` - Enable/disable auto-detection (true/false)
+       400 +  - `GZH_DEV_ENV_HOOKS_ENABLED` - Enable/disable hooks execution (true/false)
+       401    
+       402    ## Examples
+       403    
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● I'll continue updating the spec file despite the format-file errors (which are happening
+  because it's designed for Go files, not Markdown). Let me update the examples section to
+  include the new features:
+
+● Update(docs/specs/dev-env.md)
+  ⎿  Updated docs/specs/dev-env.md with 128 additions and 20 removals                    
+       401    
+       402    ## Examples
+       403    
+       404 -  ### Switching Between Development Environments
+       404 +  ### Interactive TUI Mode
+       405    
+       406    ```bash
+       407 -  # Switch to development environment
+       407 +  # Launch interactive environment manager
+       408 +  gz dev-env
+       409 +  
+       410 +  # Use compact mode for smaller terminals
+       411 +  gz dev-env --mode compact
+       412 +  
+       413 +  # Start with specific service selected
+       414 +  gz dev-env --service aws
+       415 +  ```
+       416 +  
+       417 +  ### Unified Environment Switching
+       418 +  
+       419 +  ```bash
+       420 +  # Switch all services to production environment
+       421 +  gz dev-env switch-all --env production
+       422 +  
+       423 +  # Preview changes before applying
+       424 +  gz dev-env switch-all --env staging --dry-run
+       425 +  
+       426 +  # Force switch without confirmation
+       427 +  gz dev-env switch-all --env development --force
+       428 +  
+       429 +  # Switch with custom timeout
+       430 +  gz dev-env switch-all --env production --timeout 5m
+       431 +  ```
+       432 +  
+       433 +  ### Quick Environment Switching
+       434 +  
+       435 +  ```bash
+       436 +  # Save current state as a preset
+       437 +  gz dev-env quick save myproject
+       438 +  
+       439 +  # Switch to saved preset
+       440 +  gz dev-env quick myproject
+       441 +  
+       442 +  # Switch to last used environment
+       443 +  gz dev-env quick last
+       444 +  
+       445 +  # List all presets
+       446 +  gz dev-env quick list
+       447 +  
+       448 +  # Delete old preset
+       449 +  gz dev-env quick delete old-project
+       450 +  ```
+       451 +  
+       452 +  ### Environment Status and Validation
+       453 +  
+       454 +  ```bash
+       455 +  # Show comprehensive status
+       456 +  gz dev-env status
+       457 +  
+       458 +  # Check specific service status
+       459 +  gz dev-env status --service kubernetes
+       460 +  
+       461 +  # Export status as JSON
+       462 +  gz dev-env status --format json > env-status.json
+       463 +  
+       464 +  # Validate all configurations
+       465 +  gz dev-env validate
+       466 +  
+       467 +  # Validate and attempt fixes
+       468 +  gz dev-env validate --fix
+       469 +  
+       470 +  # Validate specific service
+       471 +  gz dev-env validate --service aws
+       472 +  ```
+       473 +  
+       474 +  ### Configuration Synchronization
+       475 +  
+       476 +  ```bash
+       477 +  # Sync all configurations with actual state
+       478 +  gz dev-env sync
+       479 +  
+       480 +  # Pull configurations from services
+       481 +  gz dev-env sync --direction pull
+       482 +  
+       483 +  # Push local configs to services
+       484 +  gz dev-env sync --direction push --confirm
+       485 +  
+       486 +  # Sync specific service only
+       487 +  gz dev-env sync --service gcp
+       488 +  ```
+       489 +  
+       490 +  ### Individual Service Management
+       491 +  
+       492 +  ```bash
+       493 +  # Switch to development environment (traditional way)
+       494    gz dev-env aws switch --profile development
+       495    gz dev-env gcp switch --project my-dev-project
+       496    gz dev-env docker switch --context development
+       497    gz dev-env kubernetes switch --context dev-cluster
+       498    
+       499 -  # Validate all configurations
+       500 -  gz dev-env aws validate
+       501 -  gz dev-env gcp validate
+       502 -  gz dev-env docker validate
+       503 -  gz dev-env kubernetes validate
+       499 +  # Interactive service switching
+       500 +  gz dev-env aws-profile switch --interactive
+       501 +  gz dev-env gcp-project switch --interactive
+       502 +  gz dev-env azure-subscription switch --interactive
+       503    ```
+       504    
+       505 -  ### Setting Up New Environment
+       505 +  ### Environment Templates
+       506    
+       507    ```bash
+       508 -  # Setup new staging environment
+       509 -  gz dev-env aws save --name staging
+       510 -  gz dev-env gcp save --name staging
+       511 -  gz dev-env docker save --name staging
+       512 -  gz dev-env kubernetes save --name staging
+       508 +  # Create template from current environment
+       509 +  gz dev-env template create --name microservice --from current
+       510 +  
+       511 +  # Apply template to new project
+       512 +  gz dev-env template apply --name microservice --project new-api
+       513 +  
+       514 +  # List available templates
+       515 +  gz dev-env template list
+       516 +  
+       517 +  # Export template for sharing
+       518 +  gz dev-env template export --name microservice > microservice-env.yaml
+       519 +  
+       520 +  # Import shared template
+       521 +  gz dev-env template import --file team-template.yaml
+       522    ```
+       523    
+       524 -  ### Environment Automation
+       524 +  ### Auto-Detection and Smart Defaults
+       525    
+       526    ```bash
+       527 -  # Switch entire environment with single command (future feature)
+       528 -  gz dev-env switch-all --environment production
+       527 +  # Enable auto-detection for current directory
+       528 +  cd ~/projects/backend-api
+       529 +  gz dev-env auto-detect enable
+       530    
+       531 -  # Backup current environment settings
+       532 -  gz dev-env backup --output /backup/dev-env-backup.yaml
+       531 +  # Check which environment would be auto-selected
+       532 +  gz dev-env auto-detect check
+       533    
+       534 -  # Restore environment from backup
+       535 -  gz dev-env restore --input /backup/dev-env-backup.yaml
+       534 +  # Override auto-detection temporarily
+       535 +  GZH_DEV_ENV_AUTO_DETECT=false gz dev-env status
+       536    ```
+       537    
+       538 +  ### Hook Management
+       539 +  
+       540 +  ```bash
+       541 +  # Test hooks without switching
+       542 +  gz dev-env hooks test --env production
+       543 +  
+       544 +  # Skip hooks during switch
+       545 +  gz dev-env switch-all --env staging --skip-hooks
+       546 +  
+       547 +  # Run only specific hook
+       548 +  gz dev-env hooks run --env production --hook pre_switch
+       549 +  ```
+       550 +  
+       551    ## Integration Points
+       552    
+       553    - **Network Environment**: Coordinates with `net-env` for network-specific 
+             configurations
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me add a new section for TUI Interface Design and complete the remaining tasks:
+
+● Update Todos
+  ⎿  ☒ Update dev-env.md spec with unified environment switching feature
+     ☒ Add enhanced TUI mode specification to dev-env.md
+     ☒ Document environment validation and sync features in spec
+     ☒ Add Quick Switch feature specification
+     ☐ Document Hook system for environment transitions
+     ☐ Add Smart Defaults and auto-detection features to spec
+     ☐ Document environment template system
+
+● Update(docs/specs/dev-env.md)
+  ⎿  Updated docs/specs/dev-env.md with 179 additions and 3 removals                            
+       555    - **Configuration Generation**: Works with `gen-config` for environment-specific 
+             configuration files
+       556    - **IDE Settings**: Synchronizes with `ide` command for environment-specific IDE 
+             configurations
+       557    
+       558 +  ## TUI Interface Design
+       559 +  
+       560 +  ### Main Dashboard
+       561 +  
+       562 +  The interactive TUI provides a comprehensive view of all environment 
+           + configurations:
+       563 +  
+       564 +  ```
+       565 +  ┌─ GZH Development Environment Manager ─────────────────────────────────────┐
+       566 +  │ Current Environment: development                    [↑↓] Navigate [Enter] Select 
+           + │
+       567 +  ├─────────────────────────────────────────────────────────────────────────┤
+       568 +  │ Service          │ Status    │ Current Config         │ Last Updated     │
+       569 +  ├──────────────────┼───────────┼────────────────────────┼──────────────────┤
+       570 +  │ AWS              │ ● Active  │ dev-account           │ 2 hours ago      │
+       571 +  │ GCP              │ ● Active  │ my-dev-project        │ 1 day ago        │
+       572 +  │ Kubernetes       │ ○ Warning │ docker-desktop        │ 3 days ago       │
+       573 +  │ Docker           │ ● Active  │ default               │ Just now         │
+       574 +  │ Azure            │ ○ Expired │ dev-subscription      │ 5 days ago       │
+       575 +  ├─────────────────────────────────────────────────────────────────────────┤
+       576 +  │ Quick Actions: [s]witch-all [v]alidate [y]nc [q]uick [?]help [Q]uit     │
+       577 +  └─────────────────────────────────────────────────────────────────────────┘
+       578 +  ```
+       579 +  
+       580 +  ### Service Detail View
+       581 +  
+       582 +  ```
+       583 +  ┌─ AWS Configuration ───────────────────────────────────────────────────────┐
+       584 +  │ Profile: dev-account                                                      │
+       585 +  │ Region: us-west-2                                                         │
+       586 +  │ Status: ● Active (SSO session valid for 8h)                             │
+       587 +  ├─────────────────────────────────────────────────────────────────────────┤
+       588 +  │ Available Actions:                                                        │
+       589 +  │   [1] Switch Profile          [4] Validate Credentials                   │
+       590 +  │   [2] Login (SSO)            [5] View Configuration                     │
+       591 +  │   [3] Save Current State     [6] Back to Dashboard                      │
+       592 +  ├─────────────────────────────────────────────────────────────────────────┤
+       593 +  │ Recent Profiles:                                                          │
+       594 +  │   • dev-account (current)                                                 │
+       595 +  │   • staging-account                                                       │
+       596 +  │   • prod-account                                                         │
+       597 +  └─────────────────────────────────────────────────────────────────────────┘
+       598 +  ```
+       599 +  
+       600 +  ## Hook System
+       601 +  
+       602 +  ### Hook Configuration
+       603 +  
+       604 +  Hooks allow automatic execution of commands during environment transitions:
+       605 +  
+       606 +  ```yaml
+       607 +  environments:
+       608 +    production:
+       609 +      hooks:
+       610 +        pre_switch:
+       611 +          - command: "aws sso login --profile prod-account"
+       612 +            description: "Authenticate with AWS SSO"
+       613 +            timeout: "5m"
+       614 +            on_failure: "abort"  # abort | continue | retry
+       615 +          
+       616 +          - command: "kubectl config use-context prod-cluster"
+       617 +            description: "Switch Kubernetes context"
+       618 +            on_failure: "retry"
+       619 +            max_retries: 3
+       620 +        
+       621 +        post_switch:
+       622 +          - command: "notify-slack 'Switched to production environment'"
+       623 +            description: "Send notification"
+       624 +            on_failure: "continue"
+       625 +        
+       626 +        on_error:
+       627 +          - command: "gz dev-env switch-all --env development"
+       628 +            description: "Rollback to development"
+       629 +  ```
+       630 +  
+       631 +  ### Hook Types
+       632 +  
+       633 +  - **pre_switch**: Execute before switching environments
+       634 +  - **post_switch**: Execute after successful switch
+       635 +  - **on_error**: Execute if switch fails
+       636 +  - **validate**: Execute during validation phase
+       637 +  
+       638 +  ## Smart Defaults and Auto-Detection
+       639 +  
+       640 +  ### Project-Level Configuration
+       641 +  
+       642 +  Create `.gzh-env` file in project root:
+       643 +  
+       644 +  ```yaml
+       645 +  # .gzh-env
+       646 +  default_environment: "development"
+       647 +  auto_switch: true
+       648 +  required_services:
+       649 +    - aws
+       650 +    - kubernetes
+       651 +    - docker
+       652 +  ```
+       653 +  
+       654 +  ### Auto-Detection Rules
+       655 +  
+       656 +  ```yaml
+       657 +  auto_detection:
+       658 +    enabled: true
+       659 +    priority: # Order of precedence
+       660 +      - explicit_override    # Command line flags
+       661 +      - environment_var      # GZH_DEV_ENV variable
+       662 +      - project_file        # .gzh-env file
+       663 +      - git_remote          # Git remote URL patterns
+       664 +      - path_pattern        # Directory path patterns
+       665 +      - last_used           # Last used in this directory
+       666 +    
+       667 +    rules:
+       668 +      - name: "Production repos"
+       669 +        git_remote_pattern: ".*production.*"
+       670 +        environment: "production"
+       671 +        require_confirmation: true
+       672 +      
+       673 +      - name: "Dev workspace"
+       674 +        path_pattern: "~/dev/.*"
+       675 +        environment: "development"
+       676 +      
+       677 +      - name: "Client projects"
+       678 +        path_pattern: "~/clients/([^/]+)/.*"
+       679 +        environment: "client-${1}"  # Dynamic environment
+       680 +  ```
+       681 +  
+       682 +  ## Environment Templates
+       683 +  
+       684 +  ### Template Structure
+       685 +  
+       686 +  ```yaml
+       687 +  # Template: microservice-dev
+       688 +  template:
+       689 +    name: "microservice-dev"
+       690 +    description: "Standard microservice development setup"
+       691 +    version: "1.0.0"
+       692 +    
+       693 +    services:
+       694 +      aws:
+       695 +        profile_template: "${project}-dev"
+       696 +        region: "us-west-2"
+       697 +      
+       698 +      kubernetes:
+       699 +        context_template: "${project}-dev-cluster"
+       700 +        namespace: "${project}"
+       701 +      
+       702 +      docker:
+       703 +        context: "default"
+       704 +        registry: "docker.io/${org}/${project}"
+       705 +    
+       706 +    variables:
+       707 +      - name: "project"
+       708 +        description: "Project name"
+       709 +        required: true
+       710 +      - name: "org"
+       711 +        description: "Organization name"
+       712 +        default: "mycompany"
+       713 +  ```
+       714 +  
+       715 +  ### Template Commands
+       716 +  
+       717 +  ```bash
+       718 +  # Create template from current state
+       719 +  gz dev-env template create --name webapp --description "Web application template"
+       720 +  
+       721 +  # Apply template with variables
+       722 +  gz dev-env template apply --name microservice-dev \
+       723 +    --var project=user-service \
+       724 +    --var org=acme-corp
+       725 +  
+       726 +  # Share templates
+       727 +  gz dev-env template export --name webapp > webapp-template.yaml
+       728 +  gz dev-env template import --url https://templates.example.com/webapp.yaml
+       729 +  ```
+       730 +  
+       731    ## Security Considerations
+       732    
+       733 -  - Credential encryption at rest
+       734 -  - Secure credential rotation workflows
+       733 +  - Credential encryption at rest using OS keychain
+       734 +  - Secure credential rotation workflows with automatic expiry detection
+       735    - MFA support for sensitive operations
+       736 -  - Audit logging for environment changes
+       736 +  - Comprehensive audit logging for all environment changes
+       737    - Role-based access control integration
+       738 +  - Hook script sandboxing and timeout enforcement
+       739 +  - Template validation and sanitization
+       740 +  - Confirmation prompts for production environments
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me complete the remaining tasks and add a summary section to the specification:
+
+● Update Todos
+  ⎿  ☒ Update dev-env.md spec with unified environment switching feature
+     ☒ Add enhanced TUI mode specification to dev-env.md
+     ☒ Document environment validation and sync features in spec
+     ☒ Add Quick Switch feature specification
+     ☒ Document Hook system for environment transitions
+     ☒ Add Smart Defaults and auto-detection features to spec
+     ☒ Document environment template system
+
+● Now let me add a final summary section to highlight the improvements:
+
+● Update(docs/specs/dev-env.md)
+  ⎿  Updated docs/specs/dev-env.md with 24 additions                                           
+       738    - Hook script sandboxing and timeout enforcement
+       739    - Template validation and sanitization
+       740    - Confirmation prompts for production environments
+       741 +  
+       742 +  ## Summary of Enhancements
+       743 +  
+       744 +  The enhanced `dev-env` command provides a comprehensive solution for managing 
+           + development environments with focus on:
+       745 +  
+       746 +  ### User Experience
+       747 +  - **Interactive TUI**: Visual dashboard for easy environment management
+       748 +  - **Unified Switching**: Single command to switch entire development stack
+       749 +  - **Quick Presets**: Fast switching between frequently used environments
+       750 +  - **Smart Defaults**: Automatic environment detection based on context
+       751 +  
+       752 +  ### Automation
+       753 +  - **Hook System**: Automated tasks during environment transitions
+       754 +  - **Template System**: Reusable environment configurations
+       755 +  - **Validation**: Automatic configuration and credential validation
+       756 +  - **Synchronization**: Keep local configs in sync with actual state
+       757 +  
+       758 +  ### Safety and Security
+       759 +  - **Atomic Operations**: All-or-nothing environment switches
+       760 +  - **Rollback Support**: Automatic rollback on failures
+       761 +  - **Production Safeguards**: Confirmation prompts and access controls
+       762 +  - **Audit Trail**: Comprehensive logging of all environment changes
+       763 +  
+       764 +  These enhancements make `gz dev-env` a powerful tool for developers working with 
+           + multiple environments, reducing context switching overhead while maintaining 
+           + security and consistency.
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me commit the changes to the dev-env specification:
+
+● Bash(git add docs/specs/dev-env.md)
+  ⎿  (No content)
+
+● Bash(git commit -m "feat(dev-env): enhance specification with unified switching and TUI
+      features…)
+  ⎿ [develop 5dd6cdf] feat(dev-env): enhance specification with unified switching and TUI featur
+    es
+     1 file changed, 515 insertions(+), 23 deletions(-)
+
+
+● Summary
+
+  I've successfully enhanced the dev-env.md specification with the following improvements:
+
+  1. Unified Environment Switching (switch-all)
+
+  - Atomic switching across all services with a single command
+  - Dependency resolution and ordering
+  - Rollback on failure support
+
+  2. Interactive TUI Mode
+
+  - Visual dashboard showing all service statuses
+  - Hierarchical navigation (Service → Action → Target)
+  - Keyboard shortcuts and search capabilities
+
+  3. Environment Validation & Sync
+
+  - status command for comprehensive environment overview
+  - validate command for configuration and credential checks
+  - sync command to synchronize configs with actual state
+
+  4. Quick Switch Feature
+
+  - Save and restore environment presets instantly
+  - Recent environment history
+  - Simple preset management
+
+  5. Hook System
+
+  - Pre/post switch hooks for automation
+  - Error handling and rollback hooks
+  - Configurable timeout and retry logic
+
+  6. Smart Defaults & Auto-Detection
+
+  - Project-level .gzh-env files
+  - Path and git remote pattern matching
+  - Automatic environment selection based on context
+
+  7. Environment Templates
+
+  - Reusable environment configurations
+  - Variable substitution support
+  - Template sharing and import/export
+
+  These enhancements focus on:
+  - User convenience: Reducing repetitive commands with TUI and unified switching
+  - Safety: Atomic operations, validation, and production safeguards
+  - Automation: Hooks and templates for repeatable workflows
+  - Flexibility: Supporting both CLI and interactive modes
+
+  The specification now provides a comprehensive blueprint for a modern, user-friendly
+  development environment management tool that maintains the simplicity expected from a CLI
+  while offering advanced features for power users.
+
+> specs/net-env.md에는 개선사항이 없을까?
+
+  - cli도구임을 감안해서 너무 과잉기능을 넣지 않고
+  - cli로 할 수 있는 최대한의 편의성을 제공하고
+  - 커맨드를 너무 많이 입력하지 않도록 간단한 tui로 선택형으로 사용할 수도 있도록 제공하고
+  또 추가적인 편의성을 제공할 수 있다면 추가
+
+● I'll analyze the net-env.md specification to identify potential improvements while keeping in
+  mind the CLI tool principles you mentioned.
+
+● Read(docs/specs/net-env.md)
+  ⎿  Read 564 lines (ctrl+r to expand)
+
+● Let me check the current implementation to understand what's already done:
+
+● Search(pattern: "net-env", path: "cmd")
+  ⎿  Found 19 files (ctrl+r to expand)
+
+● Read(cmd/net-env/net_env.go)
+  ⎿  Read 50 lines (ctrl+r to expand)
+
+● Let me check if there's already an interactive mode:
+
+● Search(pattern: "interactive|promptui|tui", path: "cmd/net-env", output_mode: "content")
+  ⎿  Found 47 lines (ctrl+r to expand)
+
+● Based on my analysis of the net-env.md specification and current implementation, I've
+  identified several areas for improvement:
+                                                                                                
+●User approved Claude's plan:
+  ⎿ net-env 개선사항 및 구현 계획
+
+    1. Interactive TUI Mode 강화
+
+    현재 일부 명령어에만 --interactive 옵션이 있으나, 전체적인 TUI 경험 개선:
+    - gz net-env 실행 시 기본 TUI 대시보드 제공
+    - 현재 네트워크 상태를 한눈에 보여주는 시각적 인터페이스
+    - WiFi/VPN/DNS/Proxy 상태를 실시간으로 표시
+    - 빠른 프로필 전환을 위한 단축키 지원
+
+    2. Smart Network Detection
+
+    네트워크 환경을 자동으로 감지하고 적절한 프로필 적용:
+    - WiFi SSID 기반 자동 프로필 전환
+    - 네트워크 변경 시 자동 감지 및 알림
+    - 위치 기반 프로필 추천
+    - 최근 사용한 네트워크 기억 및 빠른 전환
+
+    3. Unified Profile Management
+
+    모든 네트워크 관련 설정을 통합 관리:
+    - gz net-env profile - 통합 프로필 관리 명령어
+    - 프로필 템플릿 시스템
+    - 프로필 가져오기/내보내기 기능
+    - 프로필 병합 및 상속 지원
+
+    4. Quick Actions
+
+    자주 사용하는 작업을 위한 간단한 명령어:
+    - gz net-env quick vpn - VPN 빠른 연결/해제
+    - gz net-env quick dns - DNS 빠른 전환
+    - gz net-env quick proxy - 프록시 빠른 설정
+    - gz net-env quick reset - 기본 설정으로 재설정
+
+    5. Network Health Dashboard
+
+    네트워크 상태를 종합적으로 보여주는 대시보드:
+    - 연결 상태, 대역폭, 지연시간 실시간 표시
+    - VPN 연결 상태 및 보안 수준 표시
+    - DNS 응답 시간 및 상태
+    - 프록시 연결 상태
+
+    6. Simplified Commands
+
+    명령어 간소화 및 통합:
+    - 현재 23개의 하위 명령어를 주요 기능별로 그룹화
+    - status, switch, profile, quick, monitor 5개 주요 명령어로 재구성
+    - 나머지는 하위 옵션으로 제공
+
+    7. Profile Presets
+
+    일반적인 사용 시나리오를 위한 사전 정의 프로필:
+    - secure-public - 공용 WiFi용 보안 설정
+    - home-basic - 기본 홈 네트워크 설정
+    - office-standard - 표준 오피스 설정
+    - development - 개발 환경용 설정
+
+    8. Auto-Recovery
+
+    네트워크 문제 자동 복구:
+    - VPN 연결 끊김 시 자동 재연결
+    - DNS 문제 감지 시 대체 서버로 자동 전환
+    - 프록시 연결 실패 시 직접 연결 시도
+    - 네트워크 프로필 적용 실패 시 이전 설정으로 롤백
+
+    구현 우선순위:
+
+    1. Interactive TUI 대시보드
+    2. Smart Network Detection
+    3. Simplified Commands 구조
+    4. Quick Actions
+    5. Unified Profile Management
+    6. Network Health Dashboard
+    7. Profile Presets
+    8. Auto-Recovery
+
+    명령어 구조 개선안:
+
+    # 기본 TUI 실행
+    gz net-env
+
+    # 주요 명령어
+    gz net-env status         # 현재 상태 확인
+    gz net-env switch         # 프로필 전환
+    gz net-env profile        # 프로필 관리
+    gz net-env quick          # 빠른 작업
+    gz net-env monitor        # 모니터링
+
+    # 빠른 작업 예시
+    gz net-env quick vpn on
+    gz net-env quick dns cloudflare
+    gz net-env quick proxy off
+
+    이러한 개선사항들은 CLI의 강력함을 유지하면서도 사용자 편의성을 극대화하고, 일상적인 
+    네트워크 관리 작업을 단순화하는데 초점을 맞췄습니다.
+
+● Update Todos
+  ⎿  ☐ Update net-env.md spec with Interactive TUI dashboard
+     ☐ Add Smart Network Detection feature to spec
+     ☐ Document simplified command structure in spec
+     ☐ Add Quick Actions feature specification
+     ☐ Document Unified Profile Management system
+     ☐ Add Network Health Dashboard specification
+     ☐ Document Profile Presets feature
+     ☐ Add Auto-Recovery feature specification
+
+● Let me start by updating the net-env.md specification:
+
+● Update Todos
+  ⎿  ☐ Update net-env.md spec with Interactive TUI dashboard
+     ☐ Add Smart Network Detection feature to spec
+     ☐ Document simplified command structure in spec
+     ☐ Add Quick Actions feature specification
+     ☐ Document Unified Profile Management system
+     ☐ Add Network Health Dashboard specification
+     ☐ Document Profile Presets feature
+     ☐ Add Auto-Recovery feature specification
+
+● Update(docs/specs/net-env.md)
+  ⎿  Updated docs/specs/net-env.md with 49 additions and 2 removals                             
+        6    
+        7    ## Commands
+        8    
+        9 -  ### Core Commands
+        9 +  ### Simplified Command Structure
+       10    
+       11 -  - `gz net-env status` - Show current network status
+       11 +  The enhanced net-env command provides a streamlined interface with five main 
+     commands and an interactive TUI mode:
+          + commands and an interactive TUI mode:
+       12 +  
+       13 +  #### Core Commands
+       14 +  
+       15 +  - `gz net-env` - Launch interactive TUI dashboard
+       16 +  - `gz net-env status` - Show comprehensive network status
+       17    - `gz net-env switch` - Switch between network profiles
+       18 +  - `gz net-env profile` - Manage network profiles
+       19 +  - `gz net-env quick` - Quick network actions
+       20 +  - `gz net-env monitor` - Network monitoring and analysis
+       21 +  
+       22 +  #### Legacy Commands (for advanced users)
+       23 +  
+       24    - `gz net-env actions` - Execute network configuration actions
+       25    - `gz net-env docker-network` - Manage Docker network profiles
+       26    - `gz net-env kubernetes-network` - Manage Kubernetes network policies
+     ...
+       22    - `gz net-env network-analysis` - Analyze network performance
+       23    - `gz net-env optimal-routing` - Manage optimal routing
+       24    
+       25 +  ### Interactive TUI Dashboard (`gz net-env`)
+       26 +  
+       27 +  **Purpose**: Provides a visual interface for managing all network configurations
+       28 +  
+       29 +  **Features**:
+       30 +  - Real-time network status display
+       31 +  - Quick profile switching
+       32 +  - VPN connection management
+       33 +  - DNS and proxy configuration
+       34 +  - Network health monitoring
+       35 +  - Keyboard shortcuts for common actions
+       36 +  
+       37 +  **TUI Layout**:
+       38 +  ```
+       39 +  ┌─ GZH Network Environment Manager ─────────────────────────────────────────┐
+       40 +  │ Current Profile: office                     Network: Corporate WiFi        │
+       41 +  ├─────────────────────────────────────────────────────────────────────────┤
+       42 +  │ Component    │ Status      │ Details                    │ Health         │
+       43 +  ├──────────────┼─────────────┼────────────────────────────┼────────────────┤
+       44 +  │ WiFi         │ ● Connected │ Corporate WiFi (5GHz)      │ Excellent     │
+       45 +  │ VPN          │ ● Active    │ corp-vpn (10.0.0.1)        │ 15ms latency  │
+       46 +  │ DNS          │ ● Custom    │ 10.0.0.1, 10.0.0.2         │ <5ms response │
+       47 +  │ Proxy        │ ● Enabled   │ proxy.corp.com:8080        │ Connected     │
+       48 +  │ Docker       │ ○ Default   │ office context             │ -             │
+       49 +  ├─────────────────────────────────────────────────────────────────────────┤
+       50 +  │ Quick Actions: [s]witch [v]pn [d]ns [p]roxy [r]efresh [?]help [Q]uit    │
+       51 +  └─────────────────────────────────────────────────────────────────────────┘
+       52 +  ```
+       53 +  
+       54 +  **Usage**:
+       55 +  ```bash
+       56 +  gz net-env                    # Launch TUI dashboard
+       57 +  gz net-env --compact          # Compact mode for small terminals
+       58 +  gz net-env --monitor          # Start with monitoring view
+       59 +  ```
+       60 +  
+       61    ### Network Status (`gz net-env status`)
+       62    
+       63    **Purpose**: Display current network configuration and status
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● I'll continue updating the specification. The format-file error is expected since it's
+  designed for Go files, not Markdown.
+
+● Update(docs/specs/net-env.md)
+  ⎿  Updated docs/specs/net-env.md with 29 additions and 6 removals                
+        71    
+        72    ### Network Status (`gz net-env status`)
+        73    
+        74 -  **Purpose**: Display current network configuration and status
+        74 +  **Purpose**: Display comprehensive network configuration and status
+        75    
+        76    **Features**:
+        77 -  - Show network interface information
+        78 -  - Display WiFi connection details
+        79 -  - Show VPN connection status
+        80 -  - Display DNS server configuration
+        81 -  - Show proxy settings
+        77 +  - Unified status view of all network components
+        78 +  - Network interface and WiFi details
+        79 +  - VPN connection status with latency
+        80 +  - DNS server configuration and response times
+        81 +  - Proxy settings and connectivity
+        82 +  - Active network profile indication
+        83 +  - Network health summary
+        84    
+        85    **Usage**:
+        86    ```bash
+        87    gz net-env status                  # Show current network status
+        88    gz net-env status --verbose       # Show detailed network information
+        89    gz net-env status --json          # Output in JSON format
+        90 +  gz net-env status --health        # Include health checks
+        91 +  gz net-env status --watch         # Real-time status updates
+        92    ```
+        93    
+        94 +  **Output Example**:
+        95 +  ```
+        96 +  Network Environment Status
+        97 +  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        98 +  Profile: office (auto-detected)
+        99 +  Network: Corporate WiFi (5GHz, -45 dBm)
+       100 +  Security: WPA2-Enterprise
+       101 +  
+       102 +  Components:
+       103 +    WiFi      ✓ Connected     Corporate WiFi
+       104 +    VPN       ✓ Active        corp-vpn (15ms)
+       105 +    DNS       ✓ Custom        10.0.0.1, 10.0.0.2
+       106 +    Proxy     ✓ Enabled       proxy.corp.com:8080
+       107 +    Docker    ✓ Configured    office context
+       108 +  
+       109 +  Network Health: Excellent
+       110 +  Last Profile Switch: 2 hours ago
+       111 +  ```
+       112 +  
+       113    ### Network Profile Switching (`gz net-env switch`)
+       114    
+       115    **Purpose**: Switch between predefined network profiles
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me continue updating the specification with the new features:
+
+● Update(docs/specs/net-env.md)
+  ⎿  Updated docs/specs/net-env.md with 79 additions and 8 removals                         
+       112    
+       113    ### Network Profile Switching (`gz net-env switch`)
+       114    
+       115 -  **Purpose**: Switch between predefined network profiles
+       115 +  **Purpose**: Intelligently switch between network profiles with auto-detection
+       116    
+       117    **Features**:
+       118 -  - Load network profiles from configuration files
+       119 -  - Switch between different network environments
+       120 -  - Apply multiple network configurations at once
+       121 -  - Support for environment-specific profiles
+       118 +  - Smart profile detection based on network environment
+       119 +  - Interactive profile selection with preview
+       120 +  - Atomic profile switching (all or nothing)
+       121 +  - Profile validation before applying
+       122 +  - Rollback on failure
+       123 +  - History of recent profiles
+       124    
+       125    **Usage**:
+       126    ```bash
+       127 +  gz net-env switch                 # Auto-detect and suggest profile
+       128    gz net-env switch office          # Switch to office network profile
+       129 -  gz net-env switch home           # Switch to home network profile
+       130 -  gz net-env switch --list         # List available network profiles
+       131 -  gz net-env switch --init         # Create example configuration
+       129 +  gz net-env switch --interactive   # Interactive profile selection
+       130 +  gz net-env switch --list         # List available profiles with status
+       131 +  gz net-env switch --preview office # Preview changes before applying
+       132 +  gz net-env switch --last         # Switch to last used profile
+       133    ```
+       134    
+       135 +  ### Profile Management (`gz net-env profile`)
+       136 +  
+       137 +  **Purpose**: Comprehensive network profile management
+       138 +  
+       139 +  **Features**:
+       140 +  - Create, edit, delete profiles
+       141 +  - Import/export profiles
+       142 +  - Profile templates and inheritance
+       143 +  - Profile validation and testing
+       144 +  - Profile sharing via URL/file
+       145 +  
+       146 +  **Usage**:
+       147 +  ```bash
+       148 +  gz net-env profile list           # List all profiles
+       149 +  gz net-env profile create         # Create new profile interactively
+       150 +  gz net-env profile edit office    # Edit existing profile
+       151 +  gz net-env profile clone office work # Clone profile
+       152 +  gz net-env profile export office > office.yaml # Export profile
+       153 +  gz net-env profile import < shared-profile.yaml # Import profile
+       154 +  gz net-env profile validate office # Validate profile configuration
+       155 +  ```
+       156 +  
+       157 +  ### Quick Actions (`gz net-env quick`)
+       158 +  
+       159 +  **Purpose**: Fast access to common network operations
+       160 +  
+       161 +  **Features**:
+       162 +  - Single command for frequent tasks
+       163 +  - Minimal typing required
+       164 +  - Smart defaults
+       165 +  - Status feedback
+       166 +  - Undo last action
+       167 +  
+       168 +  **Usage**:
+       169 +  ```bash
+       170 +  gz net-env quick vpn              # Toggle VPN (on/off)
+       171 +  gz net-env quick vpn on           # Connect VPN
+       172 +  gz net-env quick vpn off          # Disconnect VPN
+       173 +  gz net-env quick dns cloudflare   # Switch to Cloudflare DNS
+       174 +  gz net-env quick dns google       # Switch to Google DNS
+       175 +  gz net-env quick dns reset        # Reset to system default
+       176 +  gz net-env quick proxy on         # Enable proxy from current profile
+       177 +  gz net-env quick proxy off        # Disable proxy
+       178 +  gz net-env quick reset            # Reset all to defaults
+       179 +  gz net-env quick undo             # Undo last quick action
+       180 +  ```
+       181 +  
+       182 +  ### Network Monitoring (`gz net-env monitor`)
+       183 +  
+       184 +  **Purpose**: Unified network monitoring and analysis
+       185 +  
+       186 +  **Features**:
+       187 +  - Real-time network metrics dashboard
+       188 +  - Component health monitoring
+       189 +  - Performance analysis
+       190 +  - Alert notifications
+       191 +  - Historical data and trends
+       192 +  
+       193 +  **Usage**:
+       194 +  ```bash
+       195 +  gz net-env monitor                # Start monitoring dashboard
+       196 +  gz net-env monitor --metrics      # Focus on performance metrics
+       197 +  gz net-env monitor --health       # Focus on health checks
+       198 +  gz net-env monitor --alerts       # Show only alerts
+       199 +  gz net-env monitor --export       # Export monitoring data
+       200 +  ```
+       201 +  
+       202    ### Network Actions (`gz net-env actions`)
+       203    
+       204    **Purpose**: Execute predefined network configuration actions
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me complete the todos and add the new features to the configuration section:
+
+● Update Todos
+  ⎿  ☒ Update net-env.md spec with Interactive TUI dashboard
+     ☒ Document simplified command structure in spec
+     ☒ Add Quick Actions feature specification
+     ☒ Document Unified Profile Management system
+     ☒ Add Network Health Dashboard specification
+     ☐ Add Smart Network Detection feature to spec
+     ☐ Document Profile Presets feature
+     ☐ Add Auto-Recovery feature specification
+
+● Update(docs/specs/net-env.md)
+  ⎿  Updated docs/specs/net-env.md with 130 additions                                   
+       416    
+       417    ```yaml
+       418    # Network Environment Configuration
+       419 +  version: "1.0.0"
+       420 +  
+       421 +  # Smart Network Detection
+       422 +  smart_detection:
+       423 +    enabled: true
+       424 +    auto_switch: true
+       425 +    detection_methods:
+       426 +      - wifi_ssid
+       427 +      - network_gateway
+       428 +      - dns_servers
+       429 +      - location
+       430 +    rules:
+       431 +      - ssid: "Corporate WiFi"
+       432 +        profile: "office"
+       433 +        confidence: 100
+       434 +      - ssid: "Home_Network_5G"
+       435 +        profile: "home"
+       436 +        confidence: 100
+       437 +      - gateway: "192.168.1.1"
+       438 +        profile: "home"
+       439 +        confidence: 80
+       440 +      - location: "office_building"
+       441 +        profile: "office"
+       442 +        confidence: 90
+       443 +  
+       444 +  # Profile Presets
+       445 +  profile_presets:
+       446 +    secure-public:
+       447 +      name: "Secure Public WiFi"
+       448 +      description: "Maximum security for public networks"
+       449 +      vpn:
+       450 +        auto_connect: true
+       451 +        kill_switch: true
+       452 +      dns:
+       453 +        servers: ["1.1.1.1", "1.0.0.1"]
+       454 +        dnssec: true
+       455 +      proxy:
+       456 +        enabled: false
+       457 +      firewall:
+       458 +        enabled: true
+       459 +        mode: "strict"
+       460 +    
+       461 +    home-basic:
+       462 +      name: "Home Network"
+       463 +      description: "Standard home network configuration"
+       464 +      vpn:
+       465 +        auto_connect: false
+       466 +      dns:
+       467 +        servers: ["router", "8.8.8.8"]
+       468 +      proxy:
+       469 +        enabled: false
+       470 +    
+       471 +    office-standard:
+       472 +      name: "Office Network"
+       473 +      description: "Corporate network with VPN"
+       474 +      vpn:
+       475 +        name: "corporate-vpn"
+       476 +        auto_connect: true
+       477 +      dns:
+       478 +        servers: ["10.0.0.1", "10.0.0.2"]
+       479 +      proxy:
+       480 +        http: "proxy.company.com:8080"
+       481 +        https: "proxy.company.com:8080"
+       482 +        no_proxy: "localhost,*.company.com"
+       483 +    
+       484 +    development:
+       485 +      name: "Development Environment"
+       486 +      description: "Optimized for development work"
+       487 +      vpn:
+       488 +        auto_connect: false
+       489 +      dns:
+       490 +        servers: ["8.8.8.8", "8.8.4.4"]
+       491 +      proxy:
+       492 +        enabled: false
+       493 +      docker:
+       494 +        context: "development"
+       495 +      kubernetes:
+       496 +        context: "local"
+       497 +  
+       498 +  # Auto-Recovery Settings
+       499 +  auto_recovery:
+       500 +    enabled: true
+       501 +    vpn_reconnect:
+       502 +      enabled: true
+       503 +      max_retries: 3
+       504 +      retry_delay: "10s"
+       505 +    dns_fallback:
+       506 +      enabled: true
+       507 +      fallback_servers: ["1.1.1.1", "8.8.8.8"]
+       508 +      health_check_interval: "30s"
+       509 +    proxy_fallback:
+       510 +      enabled: true
+       511 +      bypass_on_failure: true
+       512 +    profile_rollback:
+       513 +      enabled: true
+       514 +      rollback_timeout: "30s"
+       515 +  
+       516 +  # Quick Actions Configuration
+       517 +  quick_actions:
+       518 +    vpn:
+       519 +      default_vpn: "primary-vpn"
+       520 +      toggle_behavior: "smart"  # smart, always_reconnect, always_disconnect
+       521 +    dns:
+       522 +      presets:
+       523 +        cloudflare: ["1.1.1.1", "1.0.0.1"]
+       524 +        google: ["8.8.8.8", "8.8.4.4"]
+       525 +        quad9: ["9.9.9.9", "149.112.112.112"]
+       526 +        opendns: ["208.67.222.222", "208.67.220.220"]
+       527 +    proxy:
+       528 +      quick_toggle: true
+       529 +      remember_settings: true
+       530 +  
+       531 +  # Network Health Monitoring
+       532 +  health_monitoring:
+       533 +    enabled: true
+       534 +    components:
+       535 +      wifi:
+       536 +        check_interval: "10s"
+       537 +        signal_threshold: -70  # dBm
+       538 +      vpn:
+       539 +        check_interval: "30s"
+       540 +        latency_threshold: 100  # ms
+       541 +      dns:
+       542 +        check_interval: "60s"
+       543 +        timeout: "2s"
+       544 +        test_domains: ["google.com", "cloudflare.com"]
+       545 +      proxy:
+       546 +        check_interval: "60s"
+       547 +        test_url: "http://www.google.com"
+       548 +  
+       549    net_env:
+       550      # Network Profiles
+       551      profiles:
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me update the Environment Variables section and add more documentation for the new
+  features:
+
+● Update(docs/specs/net-env.md)
+  ⎿  Updated docs/specs/net-env.md with 3 additions                                   
+       707    - `GZH_VPN_AUTO_CONNECT` - Enable/disable automatic VPN connection
+       708    - `GZH_DNS_OVERRIDE` - Enable/disable DNS override functionality
+       709    - `GZH_PROXY_AUTO_CONFIG` - Enable/disable automatic proxy configuration
+       710 +  - `GZH_NET_ENV_AUTO_DETECT` - Enable/disable smart network detection
+       711 +  - `GZH_NET_ENV_AUTO_RECOVERY` - Enable/disable auto-recovery features
+       712 +  - `GZH_NET_ENV_TUI_MODE` - Default TUI mode (full/compact/monitor)
+       713    
+       714    ## Examples
+       715    
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me update the Examples section to include the new features:
+
+● Update(docs/specs/net-env.md)
+  ⎿  Updated docs/specs/net-env.md with 92 additions and 5 removals                
+       713    
+       714    ## Examples
+       715    
+       716 -  ### Network Profile Switching
+       716 +  ### Interactive TUI Mode
+       717    
+       718    ```bash
+       719 +  # Launch interactive network manager
+       720 +  gz net-env
+       721 +  
+       722 +  # Start in compact mode
+       723 +  gz net-env --compact
+       724 +  
+       725 +  # Start with monitoring view
+       726 +  gz net-env --monitor
+       727 +  ```
+       728 +  
+       729 +  ### Smart Network Detection
+       730 +  
+       731 +  ```bash
+       732 +  # Auto-detect and switch profile
+       733 +  gz net-env switch
+       734 +  
+       735 +  # Check what profile would be selected
+       736 +  gz net-env switch --detect-only
+       737 +  
+       738 +  # Force auto-detection refresh
+       739 +  gz net-env switch --refresh
+       740 +  
+       741 +  # Disable auto-switch temporarily
+       742 +  GZH_NET_ENV_AUTO_DETECT=false gz net-env switch office
+       743 +  ```
+       744 +  
+       745 +  ### Quick Actions
+       746 +  
+       747 +  ```bash
+       748 +  # Quick VPN management
+       749 +  gz net-env quick vpn          # Toggle VPN
+       750 +  gz net-env quick vpn on       # Connect VPN
+       751 +  gz net-env quick vpn off      # Disconnect VPN
+       752 +  
+       753 +  # Quick DNS switching
+       754 +  gz net-env quick dns cloudflare
+       755 +  gz net-env quick dns google
+       756 +  gz net-env quick dns reset
+       757 +  
+       758 +  # Quick proxy management
+       759 +  gz net-env quick proxy on
+       760 +  gz net-env quick proxy off
+       761 +  
+       762 +  # Undo last action
+       763 +  gz net-env quick undo
+       764 +  ```
+       765 +  
+       766 +  ### Profile Management
+       767 +  
+       768 +  ```bash
+       769 +  # Create new profile interactively
+       770 +  gz net-env profile create
+       771 +  
+       772 +  # Create from preset
+       773 +  gz net-env profile create --preset secure-public --name "Coffee Shop"
+       774 +  
+       775 +  # Clone and modify existing profile
+       776 +  gz net-env profile clone home home-guest
+       777 +  gz net-env profile edit home-guest
+       778 +  
+       779 +  # Share profiles
+       780 +  gz net-env profile export office > office-profile.yaml
+       781 +  gz net-env profile import < office-profile.yaml
+       782 +  
+       783 +  # Validate profile
+       784 +  gz net-env profile validate office
+       785 +  ```
+       786 +  
+       787 +  ### Network Monitoring
+       788 +  
+       789 +  ```bash
+       790 +  # Start monitoring dashboard
+       791 +  gz net-env monitor
+       792 +  
+       793 +  # Monitor specific components
+       794 +  gz net-env monitor --component vpn,dns
+       795 +  
+       796 +  # Export monitoring data
+       797 +  gz net-env monitor --export --duration 1h > network-report.json
+       798 +  
+       799 +  # Show only alerts
+       800 +  gz net-env monitor --alerts
+       801 +  ```
+       802 +  
+       803 +  ### Traditional Profile Switching
+       804 +  
+       805 +  ```bash
+       806    # Switch to office network profile
+       807    gz net-env switch office
+       808    
+       809 -  # Switch to home network profile
+       810 -  gz net-env switch home
+       809 +  # Preview changes before applying
+       810 +  gz net-env switch --preview office
+       811    
+       812    # List available profiles
+       813    gz net-env switch --list
+       814    
+       815 -  # Create example configuration
+       816 -  gz net-env switch --init
+       815 +  # Switch to last used profile
+       816 +  gz net-env switch --last
+       817    ```
+       818    
+       819    ### VPN Management
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Let me complete the remaining todos and add a summary section:
+
+● Update Todos
+  ⎿  ☒ Update net-env.md spec with Interactive TUI dashboard
+     ☒ Add Smart Network Detection feature to spec
+     ☒ Document simplified command structure in spec
+     ☒ Add Quick Actions feature specification
+     ☒ Document Unified Profile Management system
+     ☒ Add Network Health Dashboard specification
+     ☒ Document Profile Presets feature
+     ☒ Add Auto-Recovery feature specification
+
+● Update(docs/specs/net-env.md)
+  ⎿  Updated docs/specs/net-env.md with 32 additions                                         
+       922    - **Windows**: Limited support through netsh and PowerShell modules
+       923    - **Container Environments**: Docker and Kubernetes network management
+       924    - **Cloud Platforms**: AWS, GCP, Azure network service integration
+       925 +  
+       926 +  ## Summary of Enhancements
+       927 +  
+       928 +  The enhanced `net-env` command provides a comprehensive solution for network 
+           + environment management with focus on:
+       929 +  
+       930 +  ### User Experience
+       931 +  - **Interactive TUI**: Visual dashboard for easy network management
+       932 +  - **Smart Detection**: Automatic profile selection based on network environment
+       933 +  - **Quick Actions**: Single commands for common tasks
+       934 +  - **Simplified Commands**: Reduced from 23 to 5 main commands
+       935 +  
+       936 +  ### Automation
+       937 +  - **Auto-Detection**: WiFi SSID, gateway, and location-based profile switching
+       938 +  - **Auto-Recovery**: Automatic reconnection and fallback mechanisms
+       939 +  - **Profile Presets**: Ready-to-use configurations for common scenarios
+       940 +  - **Health Monitoring**: Continuous network component monitoring
+       941 +  
+       942 +  ### Safety and Reliability
+       943 +  - **Atomic Operations**: All-or-nothing profile switching
+       944 +  - **Validation**: Profile validation before applying
+       945 +  - **Rollback Support**: Automatic rollback on failures
+       946 +  - **History Tracking**: Recent profile history for quick switching
+       947 +  
+       948 +  ### Common Use Cases
+       949 +  
+       950 +  1. **Coffee Shop WiFi**: Auto-detect public network and apply secure profile
+       951 +  2. **Office Arrival**: Automatically connect to corporate VPN
+       952 +  3. **Home Network**: Switch to relaxed security settings
+       953 +  4. **Travel**: Quick profile switching between locations
+       954 +  5. **Development**: Optimized settings for local development
+       955 +  
+       956 +  These enhancements make `gz net-env` a powerful yet simple tool for managing 
+           + complex network environments, reducing manual configuration while maintaining 
+           + security and reliability.
+
+> Edit operation feedback:
+  - [make format-file $CLAUDE_FILES]: make: *** [Makefile.quality.mk:67: format-file] Error 1
+
+● Now let me commit the changes to the net-env specification:
+
+● Bash(git add docs/specs/net-env.md)
+  ⎿  (No content)
+
+● Bash(git commit -m "feat(net-env): enhance specification with TUI and simplified commands…)
+  ⎿  [develop 72af404] feat(net-env): enhance specification with TUI and simplified commands
+      1 file changed, 414 insertions(+), 21 deletions(-)
+
+● Summary
+
+  I've successfully enhanced both dev-env.md and net-env.md specifications with the following
+  improvements:
+
+  dev-env.md Enhancements:
+
+  1. Interactive TUI Mode - Visual dashboard for environment management
+  2. Unified Environment Switching - Single command to switch all services
+  3. Environment Status & Validation - Comprehensive status and validation commands
+  4. Quick Switch - Fast switching between saved presets
+  5. Hook System - Automated tasks during environment transitions
+  6. Smart Defaults - Auto-detection based on project context
+  7. Environment Templates - Reusable configurations
+
+  net-env.md Enhancements:
+
+  1. Interactive TUI Dashboard - Real-time network status visualization
+  2. Smart Network Detection - Auto-profile switching based on WiFi/location
+  3. Simplified Commands - Reduced from 23 to 5 main commands
+  4. Quick Actions - Single commands for VPN, DNS, proxy management
+  5. Unified Profile Management - Create, edit, import/export profiles
+  6. Network Health Dashboard - Continuous monitoring and alerts
+  7. Profile Presets - Ready-to-use configurations (secure-public, home, office, dev)
+  8. Auto-Recovery - Automatic reconnection and fallback mechanisms
+
+  Both specifications now focus on:
+  - User Convenience: Reducing repetitive commands with TUI and smart features
+  - Simplicity: Maintaining CLI philosophy while offering advanced features
+  - Safety: Atomic operations, validation, and automatic recovery
+  - Flexibility: Supporting both quick actions and detailed configurations
+
+  The enhancements provide a balance between powerful functionality and ease of use, making
+  these tools more accessible for daily development workflows while preserving the flexibility
+  that power users expect from CLI tools.
+
+> docs/specs/**를 기반으로 프로젝트를 리뉴얼 한다고 할 때 사라져야 할 기능은 뭐가 있을까?
+
+  Available Commands:
+    always-latest Keep development tools and package managers up to date
+    completion    Generate the autocompletion script for the specified shell
+    config        Configuration management commands
+    dev-env       Manage development environment configurations
+    docker        컨테이너 이미지 관리 및 자동화
+    doctor        Diagnose system health and configuration issues
+    event         GitHub event management and webhook server
+    gen-config    Generate bulk-clone configuration files
+    help          Help about any command
+    ide           Monitor and manage IDE configuration changes
+    migrate       Migrate configuration files to unified format
+    net-env       Manage network environment transitions
+    repo-config   GitHub repository configuration management
+    repo-sync     Advanced repository synchronization and management
+    shell         Start interactive debugging shell (REPL)
+    ssh-config    SSH configuration management for Git operations
+    synclone      Synchronize and clone repositories from multiple Git hosting services
+    version       gz version information
+    webhook       🔗 GitHub 웹훅 관리 도구
+
+● Based on the specifications in docs/specs/** and the current command list, here are the
+  features/commands that should be considered for removal or consolidation in a project renewal:
+
+  Commands to Remove/Consolidate:
+
+  1. gen-config → Merge into synclone
+
+  - The functionality of generating bulk-clone configuration files should be integrated into
+  synclone as a subcommand
+  - Example: gz synclone config generate
+
+  2. config → Distribute to relevant commands
+
+  - Generic configuration management should be part of each specific command
+  - Each command should have its own config subcommand (e.g., gz dev-env config, gz net-env 
+  config)
+
+  3. migrate → One-time utility, move to documentation
+
+  - Migration from old to new format is a transitional feature
+  - Should be a standalone migration script in the docs/migration folder
+  - Not needed as a permanent command
+
+  4. event and webhook → Consolidate into repo-sync
+
+  - Both handle GitHub-related events and webhooks
+  - Should be unified under gz repo-sync webhook and gz repo-sync event
+
+  5. repo-config → Merge into repo-sync
+
+  - Repository configuration is closely related to repository synchronization
+  - Consolidate as gz repo-sync config
+
+  6. ssh-config → Merge into dev-env
+
+  - SSH configuration is part of development environment setup
+  - Already exists as gz dev-env ssh
+
+  7. shell → Remove or make it hidden
+
+  - Interactive debugging shell is rarely used in production
+  - Could be a hidden command for developers only
+  - Or activated with a debug flag: gz --debug-shell
+
+  8. doctor → Integrate into each command
+
+  - Each command should have its own validate or check subcommand
+  - Example: gz dev-env validate, gz net-env validate
+
+  Proposed Simplified Command Structure:
+
+  gz
+  ├── synclone      # Repository management (includes gen-config functionality)
+  ├── dev-env       # Development environment (includes ssh-config)
+  ├── net-env       # Network environment management
+  ├── repo-sync     # Advanced repo sync (includes webhook, event, repo-config)
+  ├── ide           # IDE configuration management
+  ├── always-latest # Package manager updates
+  ├── docker        # Container management
+  ├── completion    # Shell completion
+  ├── version       # Version information
+  └── help          # Help system
+
+  Commands to Enhance Instead of Remove:
+
+  1. always-latest - Keep but consider renaming to pkg-update or update-tools for clarity
+  2. docker - Keep as is, valuable standalone functionality
+  3. ide - Keep as is, unique functionality
+
+  Summary of Benefits:
+
+  1. Reduced Complexity: From 18 commands to 10 core commands
+  2. Better Organization: Related functionalities grouped together
+  3. Clearer Purpose: Each command has a distinct, non-overlapping purpose
+  4. Easier Discovery: Users can find features more intuitively
+  5. Maintenance: Fewer top-level commands to maintain and document
+
+  This consolidation aligns with the CLI tool design principles:
+  - Avoiding over-engineering
+  - Providing maximum convenience
+  - Reducing the number of commands users need to remember
+  - Maintaining powerful functionality through well-organized subcommands
+
+> OK
+
+● Great! This consolidation plan will make the gz tool much more streamlined and user-friendly.
+  The reduction from 18 to 10 core commands will significantly improve the user experience while
+   maintaining all the powerful functionality through better organization.
+
+  Would you like me to:
+  1. Create a detailed migration plan for consolidating these commands?
+  2. Update the root command structure to reflect these changes?
+  3. Create documentation for the new simplified command structure?
+  4. Start implementing the command consolidations?
+
+  The simplified structure will make it easier for users to discover and use the tool's
+  features, while also reducing maintenance overhead for the development team.
+
+> 지금 계획을 /tasks/todo/에 만들어줘. 파일한개당 하나의 작업단위로. 파일 하나가 너무 큰 
+  작업단위가 되지 않게.
+  ⎿  Claude usage limit reached. Your limit will reset at 7pm (Asia/Seoul).
+
+      • /upgrade to increase your usage limit.
+
+> /export /tasks/todo/exp
+  ⎿  Failed to export conversation: ENOENT: no such file or directory, open 
+     '/home/archmagece/myopen/Gizzahub/gzh-manager-go/tasks/todo/exp.txt'
+

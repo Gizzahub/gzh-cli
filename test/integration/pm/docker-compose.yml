@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  ubuntu-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: gz-pm-ubuntu-test
+    volumes:
+      - ./gz:/usr/local/bin/gz:ro
+      - ../../../test/fixtures/pm:/home/testuser/.gzh/pm:ro
+      - /tmp/gz-pm-ubuntu-logs:/tmp/logs
+    command: sleep infinity
+    networks:
+      - gz-test
+
+  alpine-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.alpine
+    container_name: gz-pm-alpine-test
+    volumes:
+      - ./gz:/usr/local/bin/gz:ro
+      - ../../../test/fixtures/pm:/home/testuser/.gzh/pm:ro
+      - /tmp/gz-pm-alpine-logs:/tmp/logs
+    command: sleep infinity
+    networks:
+      - gz-test
+
+  fedora-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.fedora
+    container_name: gz-pm-fedora-test
+    volumes:
+      - ./gz:/usr/local/bin/gz:ro
+      - ../../../test/fixtures/pm:/home/testuser/.gzh/pm:ro
+      - /tmp/gz-pm-fedora-logs:/tmp/logs
+    command: sleep infinity
+    networks:
+      - gz-test
+
+networks:
+  gz-test:
+    driver: bridge

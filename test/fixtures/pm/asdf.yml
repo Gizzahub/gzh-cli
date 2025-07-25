@@ -1,0 +1,45 @@
+# Test ASDF configuration for integration tests
+version: "1.0.0"
+generated_at: "2025-01-25T10:00:00Z"
+
+# ASDF settings
+settings:
+  legacy_version_file: true
+  
+# Version management strategy
+strategy:
+  default: "stable"
+  update_plugins: false  # Disable for faster tests
+  
+# Cleanup policy
+cleanup_policy: "preserve"
+
+# Test plugins and versions (minimal set)
+plugins:
+  # Node.js for testing
+  nodejs:
+    repository: "https://github.com/asdf-vm/asdf-nodejs.git"
+    versions:
+      - version: "20.11.0"
+        global: true
+        install: true
+    post_install:
+      - "npm install -g npm@latest"
+      
+  # Python for testing
+  python:
+    repository: "https://github.com/asdf-vm/asdf-python.git"
+    versions:
+      - version: "3.11.7"
+        global: true
+        install: true
+
+# Global tool versions for testing
+global_versions:
+  nodejs: "20.11.0"
+  python: "3.11.7"
+
+# Hooks
+hooks:
+  post_install:
+    - "asdf reshim"

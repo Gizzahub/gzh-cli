@@ -1,0 +1,40 @@
+# Test NPM configuration for integration tests
+version: "1.0.0"
+generated_at: "2025-01-25T10:00:00Z"
+
+# Package manager settings
+settings:
+  package_manager: "npm"
+  registry: "https://registry.npmjs.org/"
+  prefix: "~/.npm-global"
+  
+# Version strategy
+strategy:
+  default: "latest"
+  
+# Cleanup policy
+cleanup_policy: "preserve"
+
+# Test global packages (minimal set)
+packages:
+  # Essential package managers
+  - name: yarn
+    version: "latest"
+    
+  # Build tool for testing
+  - name: typescript
+    version: "^5.3.0"
+    
+  # CLI tool for testing
+  - name: json-server
+    version: "latest"
+    
+  # Development tool
+  - name: nodemon
+    version: "latest"
+
+# NPM configuration
+npm_config:
+  init-author-name: "Test User"
+  init-author-email: "test@example.com"
+  init-license: "MIT"
