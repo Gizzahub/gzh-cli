@@ -260,7 +260,7 @@ func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
 
 func updateApt(ctx context.Context, strategy string, dryRun bool) error {
 	// Check if apt is available
-	cmd := exec.Command("apt", "--version")
+	cmd := exec.CommandContext(ctx, "apt", "--version")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("apt is not available on this system")
 	}
@@ -269,7 +269,7 @@ func updateApt(ctx context.Context, strategy string, dryRun bool) error {
 
 	// Update package lists
 	if !dryRun {
-		cmd = exec.Command("sudo", "apt", "update")
+		cmd = exec.CommandContext(ctx, "sudo", "apt", "update")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -282,7 +282,7 @@ func updateApt(ctx context.Context, strategy string, dryRun bool) error {
 	// Upgrade packages based on strategy
 	if strategy == "latest" || strategy == "stable" {
 		if !dryRun {
-			cmd = exec.Command("sudo", "apt", "upgrade", "-y")
+			cmd = exec.CommandContext(ctx, "sudo", "apt", "upgrade", "-y")
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {

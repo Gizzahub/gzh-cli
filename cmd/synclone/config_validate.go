@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// newConfigValidateCmd creates the validate subcommand for config
+// newConfigValidateCmd creates the validate subcommand for config.
 func newConfigValidateCmd() *cobra.Command {
 	var (
 		configFile string
@@ -76,7 +76,7 @@ This command checks:
 	return cmd
 }
 
-// findConfigFile looks for configuration files in standard locations
+// findConfigFile looks for configuration files in standard locations.
 func findConfigFile() string {
 	// Check in order of precedence
 	locations := []string{
