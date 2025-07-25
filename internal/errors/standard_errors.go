@@ -16,21 +16,29 @@ import (
 type ErrorCode string
 
 const (
-	// Configuration errors..
+	// ErrorCodeInvalidConfig indicates invalid configuration data.
 	ErrorCodeInvalidConfig  ErrorCode = "INVALID_CONFIG"
+	// ErrorCodeMissingConfig indicates missing required configuration.
 	ErrorCodeMissingConfig  ErrorCode = "MISSING_CONFIG"
+	// ErrorCodeConfigNotFound indicates configuration file not found.
 	ErrorCodeConfigNotFound ErrorCode = "CONFIG_NOT_FOUND"
 
-	// Authentication errors..
+	// ErrorCodeInvalidToken indicates an invalid authentication token.
 	ErrorCodeInvalidToken      ErrorCode = "INVALID_TOKEN"
+	// ErrorCodeTokenExpired indicates an expired authentication token.
 	ErrorCodeTokenExpired      ErrorCode = "TOKEN_EXPIRED"
+	// ErrorCodeInsufficientPerms indicates insufficient permissions.
 	ErrorCodeInsufficientPerms ErrorCode = "INSUFFICIENT_PERMISSIONS"
+	// ErrorCodeAuthFailed indicates authentication failure.
 	ErrorCodeAuthFailed        ErrorCode = "AUTHENTICATION_FAILED"
 
-	// Network errors..
+	// ErrorCodeNetworkTimeout indicates a network timeout occurred.
 	ErrorCodeNetworkTimeout    ErrorCode = "NETWORK_TIMEOUT"
+	// ErrorCodeConnectionFailed indicates connection failure.
 	ErrorCodeConnectionFailed  ErrorCode = "CONNECTION_FAILED"
+	// ErrorCodeRateLimitExceeded indicates API rate limit exceeded.
 	ErrorCodeRateLimitExceeded ErrorCode = "RATE_LIMIT_EXCEEDED"
+	// ErrorCodeAPIUnavailable indicates API is unavailable.
 	ErrorCodeAPIUnavailable    ErrorCode = "API_UNAVAILABLE"
 
 	// Repository errors..

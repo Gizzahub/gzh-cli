@@ -328,23 +328,27 @@ func GetGlobalSimpleLogger() *SimpleLogger {
 	return globalSimpleLogger
 }
 
-// Simple logging functions using the global logger.
+// SimpleDebug logs a debug message using the global logger.
 func SimpleDebug(msg string, args ...interface{}) {
 	GetGlobalSimpleLogger().Debug(msg, args...)
 }
 
+// SimpleInfo logs an info message using the global logger.
 func SimpleInfo(msg string, args ...interface{}) {
 	GetGlobalSimpleLogger().Info(msg, args...)
 }
 
+// SimpleWarn logs a warning message using the global logger.
 func SimpleWarn(msg string, args ...interface{}) {
 	GetGlobalSimpleLogger().Warn(msg, args...)
 }
 
+// SimpleError logs an error message using the global logger.
 func SimpleError(msg string, args ...interface{}) {
 	GetGlobalSimpleLogger().Error(msg, args...)
 }
 
+// SimpleErrorWithStack logs an error with stack trace using the global logger.
 func SimpleErrorWithStack(err error, msg string, args ...interface{}) {
 	GetGlobalSimpleLogger().ErrorWithStack(err, msg, args...)
 }

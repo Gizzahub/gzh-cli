@@ -24,10 +24,15 @@ import (
 // Source represents different configuration sources.
 type Source string
 
+// Configuration source constants.
 const (
+	// SourceEnvironment represents configuration from environment variables.
 	SourceEnvironment Source = "environment"
+	// SourceFile represents configuration from files.
 	SourceFile        Source = "file"
+	// SourceDefaults represents default configuration values.
 	SourceDefaults    Source = "defaults"
+	// SourceAPI represents configuration from external APIs.
 	SourceAPI         Source = "api"
 )
 
