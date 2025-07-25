@@ -25,18 +25,18 @@ type Client struct {
 // ClientConfig holds configuration for the GZH client.
 type ClientConfig struct {
 	// Connection settings
-	ServerURL  string        `yaml:"serverUrl,omitempty" json:"serverUrl,omitempty"`
-	APIKey     string        `yaml:"apiKey,omitempty" json:"apiKey,omitempty"`
+	ServerURL  string        `yaml:"serverUrl,omitempty" json:"server_url,omitempty"`
+	APIKey     string        `yaml:"apiKey,omitempty" json:"api_key,omitempty"`
 	Timeout    time.Duration `yaml:"timeout" json:"timeout"`
-	RetryCount int           `yaml:"retryCount" json:"retryCount"`
+	RetryCount int           `yaml:"retryCount" json:"retry_count"`
 
 	// Plugin settings (disabled - plugins package removed)
 	// PluginDir     string `yaml:"plugin_dir,omitempty" json:"plugin_dir,omitempty"`
 	// EnablePlugins bool   `yaml:"enable_plugins" json:"enable_plugins"`
 
 	// Logging settings
-	LogLevel string `yaml:"logLevel" json:"logLevel"`
-	LogFile  string `yaml:"logFile,omitempty" json:"logFile,omitempty"`
+	LogLevel string `yaml:"logLevel" json:"log_level"`
+	LogFile  string `yaml:"logFile,omitempty" json:"log_file,omitempty"`
 
 	// Feature flags
 	Features FeatureFlags `yaml:"features" json:"features"`
@@ -44,9 +44,9 @@ type ClientConfig struct {
 
 // FeatureFlags enables/disables specific features.
 type FeatureFlags struct {
-	BulkClone  bool `yaml:"bulkClone" json:"bulkClone"`
-	DevEnv     bool `yaml:"devEnv" json:"devEnv"`
-	NetEnv     bool `yaml:"netEnv" json:"netEnv"`
+	BulkClone  bool `yaml:"bulkClone" json:"bulk_clone"`
+	DevEnv     bool `yaml:"devEnv" json:"dev_env"`
+	NetEnv     bool `yaml:"netEnv" json:"net_env"`
 	Monitoring bool `yaml:"monitoring" json:"monitoring"`
 	// Plugins    bool `yaml:"plugins" json:"plugins"` // Disabled - plugins package removed
 }
