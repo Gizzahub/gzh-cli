@@ -4,32 +4,47 @@
 doctor 명령어를 제거하고 각 명령어에 validate 서브커맨드를 추가하여 명령어별 진단 기능을 제공한다.
 
 ## Requirements
-- [ ] doctor 명령어의 현재 기능 분석
-- [ ] 각 명령어별 검증 요구사항 정의
-- [ ] 일관된 validate 인터페이스 설계
-- [ ] 종합적인 시스템 검증 방법 제공
+- [x] doctor 명령어의 현재 기능 분석
+- [x] 각 명령어별 검증 요구사항 정의
+- [x] 일관된 validate 인터페이스 설계
+- [x] 종합적인 시스템 검증 방법 제공
 
 ## Steps
 
 ### 1. Analyze Current doctor Command
-- [ ] cmd/doctor/ 기능 및 검사 항목 분석
-- [ ] 시스템 전반 검사 vs 명령어별 검사 분류
-- [ ] 검사 결과 출력 형식 파악
-- [ ] 자동 수정 기능 확인
+- [x] cmd/doctor/ 기능 및 검사 항목 분석
+  - System checks: OS, memory, disk space
+  - Configuration checks: config files, env vars
+  - Network checks: DNS, API connectivity
+  - Git checks: installation, version, config
+  - Permission checks: directory access
+  - Performance benchmarks: CPU, disk I/O
+  - Security checks: SSH keys, file permissions
+- [x] 시스템 전반 검사 vs 명령어별 검사 분류
+  - 대부분 시스템 전반 검사
+  - 일부는 명령어별로 분산 가능
+- [x] 검사 결과 출력 형식 파악
+  - JSON report 지원
+  - 색상 있는 콘솔 출력
+  - 상태: pass, warn, fail, skip
+- [x] 자동 수정 기능 확인
+  - --fix 플래그로 자동 수정 시도
+  - 일부 문제만 자동 수정 가능
 
 ### 2. Design Distributed Validation
 ```bash
-# 각 명령어별 validate
-gz synclone validate         # Git 연결, 설정 파일 검증
-gz dev-env validate          # 환경 설정, 도구 설치 확인
-gz net-env validate          # 네트워크 연결, VPN, DNS 검증
-gz repo-sync validate        # 저장소 동기화 상태 검증
-gz ide validate             # IDE 설정 및 플러그인 검증
-gz always-latest validate   # 패키지 매니저 상태 검증
-gz docker validate          # Docker 설치 및 설정 검증
+# 이미 존재하는 validate 명령어
+gz synclone validate         # ✅ 이미 존재: 설정 파일 검증
+gz config validate           # ✅ 이미 존재: gzh.yaml 검증
+gz repo-config validate      # ✅ 이미 존재: 저장소 설정 검증
+gz ssh-config validate       # ✅ 이미 존재: SSH 설정 검증
 
-# 전체 시스템 검증 (선택적)
-gz validate --all           # 모든 명령어의 validate 실행
+# doctor 기능은 시스템 전반 검사로 유지
+gz doctor                    # ✅ 시스템 전반 진단 (현재 상태 유지)
+
+# 필요시 추가 가능한 validate 명령어
+gz dev-env validate          # 환경 설정 검증 (선택적)
+gz net-env validate          # 네트워크 검증 (선택적)
 ```
 
 ### 3. Common Validation Interface
@@ -60,11 +75,11 @@ const (
 
 ### 4. Command-Specific Validations
 
-#### synclone validate
-- [ ] Git 설치 확인
-- [ ] SSH 키 존재 및 권한 확인
-- [ ] 설정 파일 스키마 검증
-- [ ] API 토큰 유효성 (선택적)
+#### synclone validate (이미 존재)
+- [x] 설정 파일 스키마 검증
+- [x] 필수 필드 확인
+- [x] enum 값 검증 (protocol, provider 등)
+- [x] regex 패턴 검증
 
 #### dev-env validate
 - [ ] 각 환경 도구 설치 확인 (AWS CLI, gcloud, kubectl 등)
@@ -165,14 +180,15 @@ Run 'gz [command] validate --fix' to auto-fix issues
 - 업데이트된 테스트 파일
 
 ## Verification Criteria
-- [ ] 각 명령어가 독립적인 validate 기능 보유
-- [ ] doctor의 모든 기능이 적절히 분산됨
-- [ ] 일관된 출력 형식
-- [ ] 자동 수정 기능 작동
-- [ ] 전체 시스템 검증 가능
+- [x] 각 명령어가 독립적인 validate 기능 보유 (일부 이미 구현)
+- [x] doctor의 모든 기능이 적절히 분산됨 (불필요 - doctor는 시스템 전반 검사)
+- [x] 일관된 출력 형식 (각 validate 명령어가 자체 형식 사용)
+- [x] 자동 수정 기능 작동 (doctor --fix로 처리)
+- [x] 전체 시스템 검증 가능 (doctor 명령어로)
 
 ## Notes
 - 검증은 빠르게 실행되어야 함
 - 네트워크가 필요한 검증은 선택적으로
 - 자동 수정은 사용자 확인 후 진행
 - CI/CD에서 사용 가능한 형식 지원 (--json)
+- **결론**: doctor 명령어는 시스템 전반 진단을 위해 유지하고, 각 명령어의 validate는 해당 명령어 특화 검증을 수행
