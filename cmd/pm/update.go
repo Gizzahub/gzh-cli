@@ -197,7 +197,7 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
 			continue
 		}
 		fmt.Printf("Checking %s for updates...\n", plugin)
-		
+
 		// Install latest version based on strategy
 		if strategy == "latest" || strategy == "stable" {
 			if !dryRun {
@@ -222,7 +222,7 @@ func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
 	if sdkmanDir == "" {
 		sdkmanDir = os.Getenv("HOME") + "/.sdkman"
 	}
-	
+
 	if _, err := os.Stat(sdkmanDir); os.IsNotExist(err) {
 		return fmt.Errorf("SDKMAN is not installed")
 	}

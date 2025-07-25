@@ -36,7 +36,11 @@ type CLILoggingConfig struct {
 
 // DefaultGlobalConfig returns the default global configuration.
 func DefaultGlobalConfig() *GlobalConfig {
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		// Fallback to /tmp if home directory cannot be determined
+		homeDir = "/tmp"
+	}
 	defaultLogPath := filepath.Join(homeDir, ".scripton", "gzh", "logs", "gzh.log")
 
 	return &GlobalConfig{

@@ -196,14 +196,14 @@ func NewNetworkError(message string, cause error) *StandardError {
 }
 
 // NewValidationError creates a validation-related error.
-func NewValidationError(message string, field string) *StandardError {
+func NewValidationError(message, field string) *StandardError {
 	return NewStandardError(ErrorCodeValidationFailed, message, SeverityMedium).
 		WithContext("field", field).
 		WithSuggestion("Check input format and constraints")
 }
 
 // NewRepositoryError creates a repository-related error.
-func NewRepositoryError(message string, repository string, cause error) *StandardError {
+func NewRepositoryError(message, repository string, cause error) *StandardError {
 	return WrapError(cause, ErrorCodeRepoNotFound, message, SeverityMedium).
 		WithContext("repository", repository).
 		WithSuggestion("Verify repository exists and is accessible").
@@ -211,7 +211,7 @@ func NewRepositoryError(message string, repository string, cause error) *Standar
 }
 
 // NewFileSystemError creates a file system-related error.
-func NewFileSystemError(message string, path string, cause error) *StandardError {
+func NewFileSystemError(message, path string, cause error) *StandardError {
 	return WrapError(cause, ErrorCodeIOError, message, SeverityMedium).
 		WithContext("path", path).
 		WithSuggestion("Check file permissions and disk space").

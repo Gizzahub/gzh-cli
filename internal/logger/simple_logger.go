@@ -47,7 +47,11 @@ type SimpleLogger struct {
 
 // NewSimpleLogger creates a new simple terminal logger.
 func NewSimpleLogger(component string) *SimpleLogger {
-	globalConfig, _ := config.LoadGlobalConfig()
+	globalConfig, err := config.LoadGlobalConfig()
+	if err != nil {
+		// Use default config if loading fails
+		globalConfig = config.DefaultGlobalConfig()
+	}
 	cliConfig := &globalConfig.Logging.CLILogging
 
 	return &SimpleLogger{

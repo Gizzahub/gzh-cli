@@ -240,14 +240,15 @@ repo_roots:
 
 	// Demonstrate accessing specific configuration details
 	for _, root := range config.RepoRoots {
-		if root.Provider == "github" {
-			fmt.Printf("\nGitHub org details:\n")
-			fmt.Printf("  Name: %s\n", root.OrgName)
-			fmt.Printf("  Target: %s\n", root.RootPath)
-			fmt.Printf("  Protocol: %s\n", root.Protocol)
-
-			break
+		if root.Provider != "github" {
+			continue
 		}
+		fmt.Printf("\nGitHub org details:\n")
+		fmt.Printf("  Name: %s\n", root.OrgName)
+		fmt.Printf("  Target: %s\n", root.RootPath)
+		fmt.Printf("  Protocol: %s\n", root.Protocol)
+
+		break
 	}
 
 	// Output: Multi-provider configuration demonstrates comprehensive setup

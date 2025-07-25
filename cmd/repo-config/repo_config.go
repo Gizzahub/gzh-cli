@@ -10,8 +10,8 @@ import (
 // NewRepoConfigCmd creates the repo-config command with subcommands.
 func NewRepoConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:        "repo-config",
-		Short:      "GitHub repository configuration management",
+		Use:   "repo-config",
+		Short: "GitHub repository configuration management",
 		Long: `Manage GitHub repository configurations across organizations.
 
 This command provides tools for managing repository settings, security policies,

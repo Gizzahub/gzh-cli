@@ -49,7 +49,7 @@ func NewDualLogger(component string, level LogLevel) (*StructuredLogger, error) 
 	// Create file handler (JSON) if enabled
 	if globalConfig.Logging.Enabled {
 		if err := ensureLogDir(globalConfig.Logging.FilePath); err == nil {
-			if fileWriter, err := os.OpenFile(globalConfig.Logging.FilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666); err == nil {
+			if fileWriter, err := os.OpenFile(globalConfig.Logging.FilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600); err == nil {
 				jsonHandler := slog.NewJSONHandler(fileWriter, opts)
 				fileLogger = slog.New(jsonHandler)
 				hasFileLogger = true
@@ -112,7 +112,7 @@ func NewConsoleOnlyLogger(component string, level LogLevel) *StructuredLogger {
 // ensureLogDir creates the log directory if it doesn't exist.
 func ensureLogDir(logPath string) error {
 	dir := filepath.Dir(logPath)
-	return os.MkdirAll(dir, 0o755)
+	return os.MkdirAll(dir, 0o750)
 }
 
 // MultiHandler implements slog.Handler to write to multiple handlers.

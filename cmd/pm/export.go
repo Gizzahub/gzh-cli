@@ -59,11 +59,12 @@ func runExport(ctx context.Context, all bool, manager, outputDir, format string)
 	fmt.Printf("Exporting package configurations to %s\n", outputDir)
 	fmt.Printf("Format: %s\n", format)
 
-	if manager != "" {
+	switch {
+	case manager != "":
 		fmt.Printf("Exporting %s packages...\n", manager)
-	} else if all {
+	case all:
 		fmt.Println("Exporting all package managers...")
-	} else {
+	default:
 		return fmt.Errorf("specify --manager or --all")
 	}
 

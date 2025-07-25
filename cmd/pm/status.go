@@ -92,7 +92,7 @@ func runStatus(ctx context.Context, specificManager string, jsonOutput bool) err
 
 	// Check status of each manager
 	for i := range managers {
-		checkManagerStatus(&managers[i])
+		checkManagerStatus(ctx, &managers[i])
 		checkConfiguration(&managers[i])
 	}
 
@@ -103,24 +103,24 @@ func runStatus(ctx context.Context, specificManager string, jsonOutput bool) err
 	return outputTable(managers)
 }
 
-func checkManagerStatus(info *PackageManagerInfo) {
+func checkManagerStatus(ctx context.Context, info *PackageManagerInfo) {
 	// Check if installed
 	switch info.Name {
 	case "brew":
-		if out, err := exec.Command(info.Command, "--version").Output(); err == nil {
+		if out, err := exec.CommandContext(ctx, info.Command, "--version").Output(); err == nil {
 			info.Installed = true
 			info.Version = strings.TrimSpace(strings.Split(string(out), "\n")[0])
 			// Count installed packages
-			if out, err := exec.Command(info.Command, "list", "--formula").Output(); err == nil {
+			if out, err := exec.CommandContext(ctx, info.Command, "list", "--formula").Output(); err == nil {
 				info.PackageCount = len(strings.Split(strings.TrimSpace(string(out)), "\n"))
 			}
 		}
 	case "asdf":
-		if out, err := exec.Command(info.Command, "version").Output(); err == nil {
+		if out, err := exec.CommandContext(ctx, info.Command, "version").Output(); err == nil {
 			info.Installed = true
 			info.Version = strings.TrimSpace(string(out))
 			// Count plugins
-			if out, err := exec.Command(info.Command, "plugin", "list").Output(); err == nil {
+			if out, err := exec.CommandContext(ctx, info.Command, "plugin", "list").Output(); err == nil {
 				info.PackageCount = len(strings.Split(strings.TrimSpace(string(out)), "\n"))
 			}
 		}
@@ -140,7 +140,7 @@ func checkManagerStatus(info *PackageManagerInfo) {
 			}
 		}
 	case "pip", "npm", "gem", "cargo", "go":
-		if out, err := exec.Command(info.Command, "--version").Output(); err == nil {
+		if out, err := exec.CommandContext(ctx, info.Command, "--version").Output(); err == nil {
 			info.Installed = true
 			info.Version = strings.TrimSpace(string(out))
 		}
@@ -148,7 +148,7 @@ func checkManagerStatus(info *PackageManagerInfo) {
 		// Generic check
 		if _, err := exec.LookPath(info.Command); err == nil {
 			info.Installed = true
-			if out, err := exec.Command(info.Command, "--version").Output(); err == nil {
+			if out, err := exec.CommandContext(ctx, info.Command, "--version").Output(); err == nil {
 				info.Version = strings.TrimSpace(string(out))
 			}
 		}

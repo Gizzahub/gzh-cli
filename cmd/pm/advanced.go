@@ -60,11 +60,12 @@ func newUpgradeManagersCmd(ctx context.Context) *cobra.Command {
 		Short: "Upgrade package managers themselves",
 		Long:  `Upgrade the package manager tools to their latest versions.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if check {
+			switch {
+			case check:
 				fmt.Println("Checking for package manager updates...")
-			} else if all {
+			case all:
 				fmt.Println("Upgrading all package managers...")
-			} else if manager != "" {
+			case manager != "":
 				fmt.Printf("Upgrading %s...\n", manager)
 			}
 			return fmt.Errorf("upgrade-managers command not yet implemented")
