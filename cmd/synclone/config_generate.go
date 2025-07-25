@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newConfigGenerateCmd creates the generate subcommand for config
+// newConfigGenerateCmd creates the generate subcommand for config.
 func newConfigGenerateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",

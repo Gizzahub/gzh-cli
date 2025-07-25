@@ -174,7 +174,7 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
 
 	// Update asdf plugins
 	if !dryRun {
-		cmd = exec.Command("asdf", "plugin", "update", "--all")
+		cmd = exec.CommandContext(ctx, "asdf", "plugin", "update", "--all")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -185,7 +185,7 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
 	}
 
 	// Get list of installed plugins
-	cmd = exec.Command("asdf", "plugin", "list")
+	cmd = exec.CommandContext(ctx, "asdf", "plugin", "list")
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to list asdf plugins: %w", err)
@@ -201,7 +201,7 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
 		// Install latest version based on strategy
 		if strategy == "latest" || strategy == "stable" {
 			if !dryRun {
-				cmd = exec.Command("asdf", "install", plugin, "latest")
+				cmd = exec.CommandContext(ctx, "asdf", "install", plugin, "latest")
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 				if err := cmd.Run(); err != nil {
@@ -231,7 +231,7 @@ func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
 
 	// Update SDKMAN itself
 	if !dryRun {
-		cmd := exec.Command("bash", "-c", "source "+sdkmanDir+"/bin/sdkman-init.sh && sdk selfupdate")
+		cmd := exec.CommandContext(ctx, "bash", "-c", "source "+sdkmanDir+"/bin/sdkman-init.sh && sdk selfupdate")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -244,7 +244,7 @@ func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
 	// Update candidates based on strategy
 	if strategy == "latest" || strategy == "stable" {
 		if !dryRun {
-			cmd := exec.Command("bash", "-c", "source "+sdkmanDir+"/bin/sdkman-init.sh && sdk update")
+			cmd := exec.CommandContext(ctx, "bash", "-c", "source "+sdkmanDir+"/bin/sdkman-init.sh && sdk update")
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {

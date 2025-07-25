@@ -113,7 +113,7 @@ func convertV1ToV2(data []byte) ([]byte, error) {
 	return yaml.Marshal(v2Config)
 }
 
-// transformProviders transforms v1 provider configuration to v2 format
+// transformProviders transforms v1 provider configuration to v2 format.
 func transformProviders(v1Config map[string]interface{}) []map[string]interface{} {
 	var providers []map[string]interface{}
 
@@ -134,7 +134,7 @@ func transformProviders(v1Config map[string]interface{}) []map[string]interface{
 	return providers
 }
 
-// transformProvider transforms a single provider configuration
+// transformProvider transforms a single provider configuration.
 func transformProvider(v1Provider map[string]interface{}) map[string]interface{} {
 	provider := make(map[string]interface{})
 
@@ -178,7 +178,7 @@ func transformProvider(v1Provider map[string]interface{}) map[string]interface{}
 	return provider
 }
 
-// convertJSONToYAML converts JSON configuration to YAML
+// convertJSONToYAML converts JSON configuration to YAML.
 func convertJSONToYAML(data []byte) ([]byte, error) {
 	var config interface{}
 	if err := yaml.Unmarshal(data, &config); err != nil {
@@ -187,7 +187,7 @@ func convertJSONToYAML(data []byte) ([]byte, error) {
 	return yaml.Marshal(config)
 }
 
-// convertYAMLToJSON converts YAML configuration to JSON
+// convertYAMLToJSON converts YAML configuration to JSON.
 func convertYAMLToJSON(data []byte) ([]byte, error) {
 	// For now, just return an error - would need JSON encoding
 	return nil, fmt.Errorf("YAML to JSON conversion not yet implemented")
