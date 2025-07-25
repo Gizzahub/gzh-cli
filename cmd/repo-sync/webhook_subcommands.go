@@ -19,7 +19,7 @@ func newWebhookRepositoryCmd() *cobra.Command {
 			return fmt.Errorf("not yet implemented - use 'gz webhook repository' for now")
 		},
 	}
-	
+
 	cmd.AddCommand(&cobra.Command{
 		Use:   "create",
 		Short: "Create a repository webhook",
@@ -27,7 +27,7 @@ func newWebhookRepositoryCmd() *cobra.Command {
 			return fmt.Errorf("not yet implemented - use 'gz webhook repository create' for now")
 		},
 	})
-	
+
 	cmd.AddCommand(&cobra.Command{
 		Use:   "list",
 		Short: "List repository webhooks",
@@ -35,7 +35,7 @@ func newWebhookRepositoryCmd() *cobra.Command {
 			return fmt.Errorf("not yet implemented - use 'gz webhook repository list' for now")
 		},
 	})
-	
+
 	return cmd
 }
 

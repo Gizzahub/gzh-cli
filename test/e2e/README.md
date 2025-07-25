@@ -23,7 +23,7 @@ Complete repository cloning workflow across multiple Git providers.
 **Commands Tested:**
 
 - `gz bulk-clone --config config.yaml`
-- `gz gen-config --provider github --org myorg`
+- `gz synclone config generate --provider github --org myorg`
 - `gz config validate --config config.yaml`
 
 ### 2. **Development Environment Setup** (`dev_env_e2e_test.go`)

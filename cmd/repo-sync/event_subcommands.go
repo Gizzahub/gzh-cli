@@ -17,7 +17,7 @@ func newEventServerCmd() *cobra.Command {
 		secret string
 		host   string
 	)
-	
+
 	cmd := &cobra.Command{
 		Use:   "server",
 		Short: "Start webhook event server",
@@ -26,11 +26,11 @@ func newEventServerCmd() *cobra.Command {
 			return fmt.Errorf("not yet implemented - use 'gz event server' for now")
 		},
 	}
-	
+
 	cmd.Flags().IntVarP(&port, "port", "p", 8080, "Server port")
 	cmd.Flags().StringVar(&secret, "secret", "", "Webhook secret for validation")
 	cmd.Flags().StringVar(&host, "host", "0.0.0.0", "Server host")
-	
+
 	return cmd
 }
 
@@ -40,7 +40,7 @@ func newEventListCmd() *cobra.Command {
 		offset int
 		format string
 	)
-	
+
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List webhook events",
@@ -48,11 +48,11 @@ func newEventListCmd() *cobra.Command {
 			return fmt.Errorf("not yet implemented - use 'gz event list' for now")
 		},
 	}
-	
+
 	cmd.Flags().IntVar(&limit, "limit", 50, "Maximum number of events to display")
 	cmd.Flags().IntVar(&offset, "offset", 0, "Number of events to skip")
 	cmd.Flags().StringVar(&format, "format", "json", "Output format (json/yaml)")
-	
+
 	return cmd
 }
 

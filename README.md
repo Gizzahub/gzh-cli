@@ -128,7 +128,6 @@ Available Commands:
   docker        컨테이너 이미지 관리 및 자동화
   doctor        Diagnose system health and configuration issues
   event         GitHub event management and webhook server
-  gen-config    Generate bulk-clone configuration files
   help          Help about any command
   ide           Monitor and manage IDE configuration changes
   migrate       Migrate configuration files to unified format

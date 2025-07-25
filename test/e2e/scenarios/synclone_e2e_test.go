@@ -22,7 +22,7 @@ func TestSyncClone_ConfigGeneration_E2E(t *testing.T) {
 	env.CreateGitRepo("org2/repo3")
 
 	// Generate configuration from existing directory structure
-	result := env.RunCommand("gen-config", "--provider", "github", "--scan-dir", ".")
+	result := env.RunCommand("synclone", "config", "generate", "discover", ".")
 
 	assertions := helpers.NewCLIAssertions(t, result)
 	assertions.Success().OutputContains("Configuration generated")

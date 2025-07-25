@@ -6,7 +6,6 @@ package repoconfig
 import (
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +14,7 @@ import (
 func MakeDeprecatedCommand(cmd *cobra.Command) *cobra.Command {
 	// Mark as deprecated
 	cmd.Deprecated = "use 'gz repo-sync config' instead"
-	
+
 	// Override the run function
 	originalRun := cmd.RunE
 	cmd.RunE = func(c *cobra.Command, args []string) error {
@@ -30,30 +29,30 @@ func MakeDeprecatedCommand(cmd *cobra.Command) *cobra.Command {
 			"║                                                                ║\n"+
 			"║  For more information: gz help migrate                        ║\n"+
 			"╚════════════════════════════════════════════════════════════════╝\n\n")
-		
+
 		// Set environment variable to indicate deprecated command usage
 		os.Setenv("GZ_DEPRECATED_COMMAND", "repo-config")
-		
+
 		// Try to run the original command
 		if originalRun != nil {
 			return originalRun(c, args)
 		}
-		
+
 		// If no original run function, suggest the new command
 		newArgs := []string{"repo-sync", "config"}
 		if len(args) > 0 {
 			newArgs = append(newArgs, args...)
 		}
-		
-		fmt.Fprintf(os.Stderr, "Suggested command: gz %s\n", 
+
+		fmt.Fprintf(os.Stderr, "Suggested command: gz %s\n",
 			stringSliceToString(newArgs))
-		
+
 		return fmt.Errorf("command has been restructured")
 	}
-	
+
 	// Update help text
 	cmd.Short = "(DEPRECATED) " + cmd.Short
-	
+
 	return cmd
 }
 

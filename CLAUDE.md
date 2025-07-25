@@ -69,7 +69,6 @@ make regenerate-mocks # Clean and regenerate all mocks
   - `dev-env/` - Development environment management (AWS, Docker, Kubernetes configs)
   - `net-env/` - Network environment transitions (WiFi monitoring, VPN, DNS, proxy)
   - `ide/` - JetBrains IDE settings monitoring and sync fixes
-  - `gen-config/` - Configuration file generation and discovery
   - `ssh-config/` - SSH configuration management for Git services
 
 ### Core Packages
@@ -85,7 +84,6 @@ make regenerate-mocks # Clean and regenerate all mocks
   - `gitlab/` - GitLab API integration and group cloning
   - `gitea/` - Gitea API integration and organization cloning
   - `gogs/` - Gogs API integration (planned)
-  - `gen-config/` - Directory-based configuration generation
   - `example/` - Example package structure
 
 - **helpers/** - Utility functions
@@ -142,7 +140,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 ### Repository Operations
 
 - `gz bulk-clone` - Clone entire organizations from GitHub, GitLab, Gitea, Gogs
-- `gz gen-config` - Generate configuration files from existing repositories
+- `gz synclone` - Advanced repository synchronization with configuration generation
 - `gz ssh-config` - Manage SSH configurations for Git services
 
 ### Development Environment

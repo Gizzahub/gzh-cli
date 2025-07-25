@@ -4,10 +4,10 @@
 기존 사용자의 스크립트와 워크플로우가 깨지지 않도록 이전 명령어에 대한 백워드 호환성 별칭을 제공한다.
 
 ## Requirements
-- [ ] 모든 deprecated 명령어에 대한 alias 생성
-- [ ] 다양한 shell 환경 지원 (bash, zsh, fish)
-- [ ] Deprecation 경고 메시지 표시
-- [ ] 일정 기간 후 제거 계획
+- [x] 모든 deprecated 명령어에 대한 alias 생성
+- [x] 다양한 shell 환경 지원 (bash, zsh, fish)
+- [x] Deprecation 경고 메시지 표시
+- [x] 일정 기간 후 제거 계획
 
 ## Steps
 
@@ -321,12 +321,12 @@ _gz_check_deprecation_date() {
 - `~/.config/gzh-manager/deprecation-schedule.yaml` - Removal timeline
 
 ## Verification Criteria
-- [ ] All deprecated commands show warning messages
-- [ ] Commands redirect to correct new versions
-- [ ] Aliases work in bash, zsh, and fish
-- [ ] Installation script correctly modifies shell configs
-- [ ] Usage tracking works (if implemented)
-- [ ] Removal date is clearly communicated
+- [x] All deprecated commands show warning messages
+- [x] Commands redirect to correct new versions
+- [x] Aliases work in bash, zsh, and fish
+- [x] Installation script correctly modifies shell configs
+- [x] Usage tracking works (if implemented)
+- [x] Removal date is clearly communicated
 
 ## Notes
 - 최소 6개월의 deprecation 기간 제공

@@ -257,7 +257,7 @@ func NewConfigError(code ErrorCode, message string) *GzhError {
 	// Add common configuration troubleshooting suggestions
 	switch code {
 	case ErrorCodeConfigNotFound:
-		_ = err.WithSuggestion("Create a configuration file using: gz gen-config")
+		_ = err.WithSuggestion("Create a configuration file using: gz synclone config generate init")
 		_ = err.WithSuggestion("Check if the configuration file path is correct")
 		_ = err.WithSuggestion("Verify file permissions")
 	case ErrorCodeConfigInvalid:

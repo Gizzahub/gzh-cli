@@ -46,7 +46,7 @@ Supported conversions:
 			// Create backup if requested
 			if backup {
 				backupFile := inputFile + ".bak"
-				if err := os.WriteFile(backupFile, data, 0644); err != nil {
+				if err := os.WriteFile(backupFile, data, 0o644); err != nil {
 					return fmt.Errorf("failed to create backup: %w", err)
 				}
 				fmt.Printf("Created backup: %s\n", backupFile)
@@ -73,7 +73,7 @@ Supported conversions:
 			if outputFile == "" {
 				outputFile = inputFile
 			}
-			if err := os.WriteFile(outputFile, result, 0644); err != nil {
+			if err := os.WriteFile(outputFile, result, 0o644); err != nil {
 				return fmt.Errorf("failed to write output: %w", err)
 			}
 

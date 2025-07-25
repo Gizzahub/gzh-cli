@@ -293,7 +293,7 @@ repo_roots: []
 
 		for _, strategy := range validStrategies {
 			t.Run("valid strategy: "+strategy, func(t *testing.T) {
-				opts := &bulkCloneOptions{
+				opts := &syncCloneOptions{
 					configFile: configPath,
 					strategy:   strategy,
 				}
@@ -309,7 +309,7 @@ repo_roots: []
 
 		for _, strategy := range invalidStrategies {
 			t.Run("invalid strategy: "+strategy, func(t *testing.T) {
-				opts := &bulkCloneOptions{
+				opts := &syncCloneOptions{
 					configFile: configPath,
 					strategy:   strategy,
 				}
@@ -351,7 +351,7 @@ repo_roots:
 		err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
 		require.NoError(t, err)
 
-		opts := &bulkCloneOptions{
+		opts := &syncCloneOptions{
 			configFile: configPath,
 			strategy:   "fetch",
 		}
@@ -367,7 +367,7 @@ repo_roots:
 	})
 
 	t.Run("missing config", func(t *testing.T) {
-		opts := &bulkCloneOptions{
+		opts := &syncCloneOptions{
 			configFile: "/non/existent/config.yaml",
 			strategy:   "reset",
 		}
@@ -388,7 +388,7 @@ repo_roots: []
 		err := os.WriteFile(configPath, []byte(configContent), 0o600)
 		require.NoError(t, err)
 
-		opts := &bulkCloneOptions{
+		opts := &syncCloneOptions{
 			configFile: configPath,
 			strategy:   "reset",
 		}

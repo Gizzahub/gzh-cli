@@ -425,7 +425,7 @@ func runConfigChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 		Status:        status,
 		Message:       message,
 		Details:       map[string]interface{}{"found_configs": foundConfigs},
-		FixSuggestion: "Create a configuration file using 'gz gen-config'",
+		FixSuggestion: "Create a configuration file using 'gz synclone config generate init'",
 		Duration:      time.Since(start),
 		Timestamp:     time.Now(),
 	})

@@ -4,14 +4,10 @@
 package synclone
 
 import (
-	"context"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
-	
-	// Import gen-config functionality - will be moved to pkg/synclone/config later
-	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
 )
 
 // newConfigGenerateCmd creates the generate subcommand for config
@@ -42,14 +38,14 @@ Examples:
 			if len(args) == 0 {
 				return fmt.Errorf("subcommand required: init, template, discover, or github")
 			}
-			
+
 			// Show deprecation notice if called through old command
 			if os.Getenv("GZ_DEPRECATED_COMMAND") == "gen-config" {
 				fmt.Fprintf(os.Stderr, "\nWarning: 'gen-config' is deprecated and will be removed in v3.0.\n")
 				fmt.Fprintf(os.Stderr, "Please use 'gz synclone config generate' instead.\n")
 				fmt.Fprintf(os.Stderr, "Run 'gz help migrate' for more information.\n\n")
 			}
-			
+
 			return nil
 		},
 	}
@@ -70,27 +66,15 @@ func newConfigGenerateInitCmd() *cobra.Command {
 		Long:  `Create a new synclone configuration file using an interactive wizard.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement interactive wizard
-			// For now, use existing gen-config logic
-			ctx := cmd.Context()
-			if ctx == nil {
-				ctx = context.Background()
-			}
-			
-			// Temporary: Create gen-config command and run it
-			genConfigCmd := genconfig.NewGenConfigCmd(ctx)
-			initCmd, _, err := genConfigCmd.Find([]string{"init"})
-			if err != nil {
-				return err
-			}
-			
-			return initCmd.RunE(initCmd, args)
+			// This functionality needs to be reimplemented here
+			return fmt.Errorf("config generate init: not yet implemented - previously provided by gen-config")
 		},
 	}
 }
 
 func newConfigGenerateTemplateCmd() *cobra.Command {
 	var outputFile string
-	
+
 	cmd := &cobra.Command{
 		Use:   "template [template-name]",
 		Short: "Generate configuration from template",
@@ -103,24 +87,14 @@ Available templates:
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement template generation
-			// For now, use existing gen-config logic
-			ctx := cmd.Context()
-			if ctx == nil {
-				ctx = context.Background()
-			}
-			
-			genConfigCmd := genconfig.NewGenConfigCmd(ctx)
-			templateCmd, _, err := genConfigCmd.Find([]string{"template"})
-			if err != nil {
-				return err
-			}
-			
-			return templateCmd.RunE(templateCmd, args)
+			// This functionality needs to be reimplemented here
+			templateName := args[0]
+			return fmt.Errorf("config generate template %s: not yet implemented - previously provided by gen-config", templateName)
 		},
 	}
-	
+
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "synclone.yaml", "Output file path")
-	
+
 	return cmd
 }
 
@@ -130,7 +104,7 @@ func newConfigGenerateDiscoverCmd() *cobra.Command {
 		recursive  bool
 		maxDepth   int
 	)
-	
+
 	cmd := &cobra.Command{
 		Use:   "discover [directory]",
 		Short: "Discover repositories from directory",
@@ -141,26 +115,16 @@ a synclone configuration file based on the discovered structure.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement discovery logic
-			// For now, use existing gen-config logic
-			ctx := cmd.Context()
-			if ctx == nil {
-				ctx = context.Background()
-			}
-			
-			genConfigCmd := genconfig.NewGenConfigCmd(ctx)
-			discoverCmd, _, err := genConfigCmd.Find([]string{"discover"})
-			if err != nil {
-				return err
-			}
-			
-			return discoverCmd.RunE(discoverCmd, args)
+			// This functionality needs to be reimplemented here
+			scanPath := args[0]
+			return fmt.Errorf("config generate discover %s: not yet implemented - previously provided by gen-config", scanPath)
 		},
 	}
-	
+
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "synclone.yaml", "Output file path")
 	cmd.Flags().BoolVarP(&recursive, "recursive", "r", true, "Scan directories recursively")
 	cmd.Flags().IntVar(&maxDepth, "max-depth", 3, "Maximum directory depth for recursive scan")
-	
+
 	return cmd
 }
 
@@ -170,7 +134,7 @@ func newConfigGenerateGithubCmd() *cobra.Command {
 		token      string
 		targetDir  string
 	)
-	
+
 	cmd := &cobra.Command{
 		Use:        "github [organization]",
 		Short:      "Generate configuration from GitHub organization (legacy)",
@@ -179,25 +143,15 @@ func newConfigGenerateGithubCmd() *cobra.Command {
 		Args:       cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement GitHub org scanning
-			// For now, use existing gen-config logic
-			ctx := cmd.Context()
-			if ctx == nil {
-				ctx = context.Background()
-			}
-			
-			genConfigCmd := genconfig.NewGenConfigCmd(ctx)
-			githubCmd, _, err := genConfigCmd.Find([]string{"github"})
-			if err != nil {
-				return err
-			}
-			
-			return githubCmd.RunE(githubCmd, args)
+			// This functionality needs to be reimplemented here
+			org := args[0]
+			return fmt.Errorf("config generate github %s: not yet implemented - previously provided by gen-config", org)
 		},
 	}
-	
+
 	cmd.Flags().StringVarP(&outputFile, "output", "o", "synclone.yaml", "Output file path")
 	cmd.Flags().StringVar(&token, "token", "", "GitHub personal access token")
 	cmd.Flags().StringVar(&targetDir, "target-dir", ".", "Target directory for organization")
-	
+
 	return cmd
 }

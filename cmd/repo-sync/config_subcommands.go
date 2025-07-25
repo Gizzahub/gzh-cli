@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	
+
 	// Import repo-config functionality - will be moved to pkg/repo-sync/config later
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 )
@@ -25,14 +25,14 @@ func newConfigListCmd() *cobra.Command {
 			if ctx == nil {
 				ctx = context.Background()
 			}
-			
+
 			// Temporary: Use existing repo-config logic
 			repoConfigCmd := repoconfig.NewRepoConfigCmd()
 			listCmd, _, err := repoConfigCmd.Find([]string{"list"})
 			if err != nil {
 				return err
 			}
-			
+
 			return listCmd.RunE(listCmd, args)
 		},
 	}

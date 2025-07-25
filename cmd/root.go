@@ -15,7 +15,6 @@ import (
 	devenv "github.com/gizzahub/gzh-manager-go/cmd/dev-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/docker"
 	doctorcmd "github.com/gizzahub/gzh-manager-go/cmd/doctor"
-	genconfig "github.com/gizzahub/gzh-manager-go/cmd/gen-config"
 	"github.com/gizzahub/gzh-manager-go/cmd/ide"
 	"github.com/gizzahub/gzh-manager-go/cmd/migrate"
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
@@ -56,7 +55,6 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd.AddCommand(doctorcmd.DoctorCmd)
 	cmd.AddCommand(devenv.NewDevEnvCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(docker.DockerCmd)
-	cmd.AddCommand(genconfig.NewGenConfigCmd(ctx))
 	cmd.AddCommand(ide.NewIDECmd(ctx))
 	cmd.AddCommand(migrate.NewMigrateCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
