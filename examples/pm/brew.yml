@@ -1,0 +1,83 @@
+# Homebrew Package Configuration
+version: "1.0.0"
+generated_at: "2025-01-25T10:00:00Z"
+platform: "darwin"  # darwin, linux
+
+# Homebrew settings
+settings:
+  HOMEBREW_PREFIX: "/opt/homebrew"
+  HOMEBREW_CASK_OPTS: "--appdir=/Applications"
+  HOMEBREW_NO_ANALYTICS: "1"
+
+# Version management strategy
+strategy:
+  default: "latest"        # latest, stable, fixed
+  update_frequency: "weekly"
+  auto_cleanup: true
+  
+# Cleanup policy
+cleanup_policy: "preserve"  # preserve, remove, quarantine
+
+# Taps (third-party repositories)
+taps:
+  - homebrew/core
+  - homebrew/cask
+  - homebrew/services
+
+# Formulae (command-line packages)
+formulae:
+  # Development tools
+  - name: git
+    version: "latest"
+    
+  - name: vim
+    version: "latest"
+    
+  - name: tmux
+    version: "stable"
+    
+  - name: docker
+    version: "latest"
+    start_service: true
+    
+  # Programming languages
+  - name: go
+    version: "1.21.5"      # Fixed version
+    
+  - name: node
+    version: "latest"
+    
+  # Utilities
+  - name: jq
+    version: "latest"
+    
+  - name: ripgrep
+    version: "latest"
+    
+  - name: fzf
+    version: "latest"
+
+# Casks (GUI applications)
+casks:
+  # Development tools
+  - name: visual-studio-code
+    version: "latest"
+    
+  - name: iterm2
+    version: "stable"
+    
+  - name: docker
+    version: "latest"
+
+# Services
+services:
+  - name: postgresql@15
+    status: "started"
+    run_at: "login"
+
+# Post-install hooks
+hooks:
+  post_install:
+    - "brew cleanup"
+  post_update:
+    - "brew cleanup --prune=7"

@@ -1,0 +1,74 @@
+# Ruby Gem Configuration
+version: "1.0.0"
+generated_at: "2025-01-25T10:00:00Z"
+
+# Package manager settings
+settings:
+  package_manager: "gem"
+  use_bundler: true
+  rubygems_url: "https://rubygems.org"
+  
+# Version strategy
+strategy:
+  default: "compatible"      # latest, compatible, fixed
+  
+# Cleanup policy
+cleanup_policy: "preserve"
+
+# Migration settings for rbenv version changes
+migration:
+  strategy: "intelligent"    # intelligent, copy-all, reinstall
+  backup_before_migration: true
+  gem_sets:
+    - name: "development"
+      gems:
+        - bundler
+        - rails
+        - rspec
+        - rubocop
+        - pry
+    - name: "deployment"
+      gems:
+        - capistrano
+        - mina
+
+# Global gems
+gems:
+  # Essential tools
+  - name: bundler
+    version: "latest"
+    
+  - name: rake
+    version: "latest"
+    
+  # Development tools
+  - name: rails
+    version: "~> 7.1.0"
+    
+  - name: rspec
+    version: "~> 3.12"
+    
+  - name: rubocop
+    version: "~> 1.50"
+    
+  # Debugging
+  - name: pry
+    version: "latest"
+    
+  - name: byebug
+    version: "latest"
+    
+  # Documentation
+  - name: yard
+    version: "latest"
+
+# Gem sources
+sources:
+  - https://rubygems.org
+  # - https://gems.company.com  # Private gem server
+
+# Bundler configuration
+bundler_config:
+  path: "vendor/bundle"
+  without: "production"
+  jobs: 4

@@ -1,6 +1,68 @@
 # Features
+!Ai 편집금지문서
 
-This document describes the implemented functionality of gzh-manager-go (gz CLI tool).
+## 주요 기능
+
+### Synclone
+
+git repository를 한번에 clone
+- github의 org/user
+- gitlab의 group/user
+- gitea의 org/user
+- 설정파일기반
+
+전략 설정
+```
+# gzh.yaml의 repos목록에 있는것만 받고 없는것은 삭제
+orphan_removal: true
+
+기존 리포지터리
+
+```
+
+fetch
+remote의 변경이 있고 로컬에 변경이 없는경우 pull
+설정에 있는 특정 브랜치로 전환
+remo-te의 변경이 없고 로컬에 변경이 있는경우 push
+충돌발생시 그 리포지터리 패스
+
+gz synclone github -o Gizzahub
+현 디렉토리에서 Gizzahub에 받기
+gz synclone github -o Gizzahub -t gizzahub
+gz synclone github -o Gizzahub -t ~/workspace/gizzahub
+
+gz synclone github -o Gizzahub
+
+
+#### github
+
+github의 org/user, gitlab의
+
+### net
+
+hosts
+vpn
+lan
+
+### latest
+
+- asdf
+- sdkman
+- brew
+- yay
+- pacman
+- apt
+
+각 언어별
+아예 바이너리 배포 아닌 실행가능한 패키지 형태로 저장소에 올리는 경우가 많아서
+- py
+- node
+- ruby
+- go
+
+### repo
+
+github, gitlab을 설정기반으로
 
 ## 🚀 최근 완료된 주요 기능들
 

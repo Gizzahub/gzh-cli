@@ -1,0 +1,96 @@
+# Global Package Manager Configuration
+# This file controls the behavior of all package managers
+version: "1.0.0"
+
+# Default settings for all package managers
+defaults:
+  strategy: "preserve"          # preserve, strict, latest
+  auto_update: false
+  backup_before_changes: true
+  parallel_operations: true
+  max_workers: 4
+
+# Package manager enablement and priority
+managers:
+  brew:
+    enabled: true
+    config_file: "brew.yml"
+    priority: 1                 # System packages first
+  asdf:
+    enabled: true
+    config_file: "asdf.yml"
+    priority: 2                 # Version managers second
+  sdkman:
+    enabled: true
+    config_file: "sdkman.yml"
+    priority: 3
+  pip:
+    enabled: true
+    config_file: "pip.yml"
+    priority: 4                 # Language packages last
+  npm:
+    enabled: true
+    config_file: "npm.yml"
+    priority: 5
+  gem:
+    enabled: true
+    config_file: "gem.yml"
+    priority: 6
+
+# Global version strategies
+version_strategies:
+  default: "stable"            # latest, stable, fixed
+  development: "latest"
+  production: "fixed"
+
+# Cleanup policies
+cleanup:
+  remove_orphans: false        # Remove packages not in config
+  remove_unused_deps: true     # Remove unused dependencies
+  keep_cache: false           # Keep package caches
+  dry_run_default: true       # Default to dry-run for safety
+
+# Package manager bootstrap configuration
+bootstrap:
+  auto_install: true
+  check_on_startup: true
+  managers:
+    brew:
+      darwin:
+        install_script: "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+        check_command: "brew --version"
+        min_version: "4.0.0"
+    nvm:
+      install_script: "https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh"
+      check_command: "nvm --version"
+      min_version: "0.39.0"
+    rbenv:
+      darwin:
+        install_method: "brew"
+        brew_formula: "rbenv ruby-build"
+      check_command: "rbenv --version"
+
+# Version manager coordination
+version_coordination:
+  node_npm_sync:
+    enabled: true
+    strategy: "bundled"         # bundled, latest, compatible
+    npm_version_matrix:
+      "20.x": "10.x"
+      "18.x": "9.x"
+  ruby_gem_migration:
+    enabled: true
+    strategy: "copy"           # copy, reinstall, selective
+    backup_before_switch: true
+  python_pip_migration:
+    enabled: true
+    strategy: "venv"           # venv, reinstall, requirements
+
+# Logging
+logging:
+  level: "info"
+  file: "~/.gzh/logs/pm.log"
+  format: "json"
+  rotate: true
+  max_size: "10MB"
+  max_files: 5

@@ -1,0 +1,60 @@
+# Node.js Package Configuration
+version: "1.0.0"
+generated_at: "2025-01-25T10:00:00Z"
+
+# Package manager settings
+settings:
+  package_manager: "npm"     # npm, pnpm, yarn
+  registry: "https://registry.npmjs.org/"
+  prefix: "~/.npm-global"
+  
+# Version strategy
+strategy:
+  default: "latest"
+  
+# Cleanup policy
+cleanup_policy: "preserve"
+
+# Global packages
+packages:
+  # Package managers
+  - name: pnpm
+    version: "latest"
+    
+  - name: yarn
+    version: "latest"
+    
+  # Build tools
+  - name: typescript
+    version: "^5.3.0"
+    
+  - name: ts-node
+    version: "latest"
+    
+  # Linting and formatting
+  - name: eslint
+    version: "^8.56.0"
+    
+  - name: prettier
+    version: "^3.1.0"
+    
+  # CLI tools
+  - name: "@angular/cli"
+    version: "^17.0.0"
+    
+  - name: create-react-app
+    version: "latest"
+    
+  # Development tools
+  - name: nodemon
+    version: "latest"
+    
+  - name: npm-check-updates
+    version: "latest"
+
+# NPM configuration
+npm_config:
+  init-author-name: "Your Name"
+  init-author-email: "your.email@example.com"
+  init-license: "MIT"
+  save-exact: false

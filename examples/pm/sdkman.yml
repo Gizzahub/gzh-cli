@@ -1,0 +1,53 @@
+# SDKMAN JVM Tools Configuration
+version: "1.0.0"
+generated_at: "2025-01-25T10:00:00Z"
+
+# SDKMAN settings
+settings:
+  auto_answer: true
+  auto_selfupdate: true
+  colour_enable: true
+  
+# Version strategy
+strategy:
+  default: "stable"
+  
+# Cleanup policy
+cleanup_policy: "remove"    # Remove old versions
+
+# Candidates (JVM tools)
+candidates:
+  # Java versions
+  java:
+    versions:
+      - version: "21-tem"
+        default: true
+        install: true
+      - version: "17.0.9-tem"
+        install: true
+        
+  # Build tools
+  gradle:
+    versions:
+      - version: "8.5"
+        default: true
+        install: true
+        
+  maven:
+    versions:
+      - version: "3.9.6"
+        default: true
+        install: true
+        
+  # Kotlin
+  kotlin:
+    versions:
+      - version: "1.9.22"
+        default: true
+        install: true
+
+# Environment variables
+environment:
+  JAVA_HOME: "$SDKMAN_DIR/candidates/java/current"
+  GRADLE_HOME: "$SDKMAN_DIR/candidates/gradle/current"
+  MAVEN_HOME: "$SDKMAN_DIR/candidates/maven/current"
