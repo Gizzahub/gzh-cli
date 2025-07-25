@@ -13,6 +13,7 @@ func NewGenConfigCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "gen-config",
 		Short:        "Generate bulk-clone configuration files",
+		Deprecated:   "use 'gz synclone config generate' instead",
 		SilenceUsage: true,
 		Long: `Generate and manage bulk-clone.yaml configuration files.
 

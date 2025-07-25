@@ -84,6 +84,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
 
+	cmd.AddCommand(newSyncCloneConfigCmd())
 	cmd.AddCommand(newSyncCloneGiteaCmd())
 	cmd.AddCommand(newSyncCloneGithubCmd())
 	cmd.AddCommand(newSyncCloneGitlabCmd())
