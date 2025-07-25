@@ -45,7 +45,7 @@ make check-consistency    # Verify lint configuration consistency
 ```bash
 make test       # Run unit tests with coverage
 make cover      # Show coverage with race detection
-go test ./cmd/bulk-clone -v        # Run specific package tests
+go test ./cmd/synclone -v          # Run specific package tests
 go test ./cmd/ide -v               # Run IDE package tests
 go test ./pkg/github -v            # Run GitHub integration tests
 ```
@@ -64,12 +64,14 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 - **cmd/** - CLI commands using cobra framework
   - `root.go` - Main entry point with all command registrations
-  - `bulk-clone/` - Multi-platform repository cloning (GitHub, GitLab, Gitea, Gogs)
+  - `synclone/` - Multi-platform repository cloning (GitHub, GitLab, Gitea, Gogs)
   - `pm/` - Package manager updates (asdf, Homebrew, SDKMAN, npm, pip, etc.)
-  - `dev-env/` - Development environment management (AWS, Docker, Kubernetes configs)
+  - `dev-env/` - Development environment management (AWS, Docker, Kubernetes, SSH configs)
   - `net-env/` - Network environment transitions (WiFi monitoring, VPN, DNS, proxy)
   - `ide/` - JetBrains IDE settings monitoring and sync fixes
-  - `ssh-config/` - SSH configuration management for Git services
+  - `repo-config/` - GitHub repository configuration management
+  - `event.go` - GitHub event management and webhook server
+  - `webhook.go` - GitHub webhook management
 
 ### Core Packages
 
@@ -79,7 +81,7 @@ make regenerate-mocks # Clean and regenerate all mocks
   - `testlib/` - Testing utilities and environment checkers
 
 - **pkg/** - Public packages (importable by other projects)
-  - `bulk-clone/` - Configuration loading, schema validation, URL building
+  - `synclone/` - Configuration loading, schema validation, URL building
   - `github/` - GitHub API integration and organization cloning
   - `gitlab/` - GitLab API integration and group cloning
   - `gitea/` - Gitea API integration and organization cloning
@@ -104,21 +106,21 @@ make regenerate-mocks # Clean and regenerate all mocks
 ### Configuration File Hierarchy
 
 1. Environment variable: `GZH_CONFIG_PATH`
-2. Current directory: `./bulk-clone.yaml` or `./bulk-clone.yml`
-3. User config: `~/.config/gzh-manager/bulk-clone.yaml`
-4. System config: `/etc/gzh-manager/bulk-clone.yaml`
+2. Current directory: `./synclone.yaml` or `./synclone.yml`
+3. User config: `~/.config/gzh-manager/synclone.yaml`
+4. System config: `/etc/gzh-manager/synclone.yaml`
 
 ### Schema Validation
 
-- JSON Schema: `docs/bulk-clone-schema.json`
-- YAML Schema: `docs/bulk-clone-schema.yaml`
-- Built-in validator: `gz bulk-clone validate`
+- JSON Schema: `docs/synclone-schema.json`
+- YAML Schema: `docs/synclone-schema.yaml`
+- Built-in validator: `gz synclone validate`
 
 ### Sample Configurations
 
-- `examples/bulk-clone-simple.yaml` - Minimal working example
-- `examples/bulk-clone-example.yaml` - Comprehensive with comments
-- `examples/bulk-clone.yml` - Advanced features
+- `examples/synclone-simple.yaml` - Minimal working example
+- `examples/synclone-example.yaml` - Comprehensive with comments
+- `examples/synclone.yml` - Advanced features
 
 ## Testing Guidelines
 
@@ -139,15 +141,17 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ### Repository Operations
 
-- `gz bulk-clone` - Clone entire organizations from GitHub, GitLab, Gitea, Gogs
-- `gz synclone` - Advanced repository synchronization with configuration generation
-- `gz ssh-config` - Manage SSH configurations for Git services
+- `gz synclone` - Clone entire organizations from GitHub, GitLab, Gitea, Gogs
+- `gz repo-config` - GitHub repository configuration management
+- `gz event` - GitHub event management and webhook server
+- `gz webhook` - GitHub webhook management
 
 ### Development Environment
 
-- `gz dev-env` - Manage AWS, Docker, Kubernetes configurations
+- `gz dev-env` - Manage AWS, Docker, Kubernetes, SSH configurations
 - `gz pm` - Update package managers (asdf, Homebrew, SDKMAN, npm, pip, etc.)
 - `gz ide` - Monitor JetBrains IDE settings and fix sync issues
+- `gz doctor` - Diagnose system health and configuration issues
 
 ### Network Management
 

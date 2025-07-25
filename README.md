@@ -100,10 +100,10 @@ make build
 gz doctor
 
 # 설정 파일 검증
-gz bulk-clone validate --config examples/bulk-clone-simple.yaml
+gz synclone validate --config examples/synclone.yaml
 
 # GitHub 조직의 저장소 클론
-gz bulk-clone github --orgName myorg --targetPath ~/repos/myorg --token $GITHUB_TOKEN
+gz synclone github --orgName myorg --targetPath ~/repos/myorg --token $GITHUB_TOKEN
 
 # 리포지토리 설정 감사
 gz repo-config audit --org myorg --framework SOC2
@@ -120,21 +120,16 @@ Usage:
   gz [command]
 
 Available Commands:
-  bulk-clone    Clone repositories from multiple Git hosting services
   completion    Generate the autocompletion script for the specified shell
-  config        Configuration management commands
   dev-env       Manage development environment configurations
-  docker        컨테이너 이미지 관리 및 자동화
   doctor        Diagnose system health and configuration issues
   event         GitHub event management and webhook server
   help          Help about any command
   ide           Monitor and manage IDE configuration changes
-  migrate       Migrate configuration files to unified format
   net-env       Manage network environment transitions
+  pm            Manage development tools and package managers
   repo-config   GitHub repository configuration management
-  repo-sync     Advanced repository synchronization and management
-  shell         Start interactive debugging shell (REPL)
-  ssh-config    SSH configuration management for Git operations
+  synclone      Synchronize and clone repositories from multiple Git hosting services
   version       gz version information
   webhook       🔗 GitHub 웹훅 관리 도구
 

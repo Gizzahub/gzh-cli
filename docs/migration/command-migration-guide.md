@@ -11,9 +11,9 @@ The following commands have been reorganized for better consistency:
 | Old Command | New Command | Status |
 |-------------|-------------|---------|
 | `gz gen-config` | `gz synclone config generate` | Deprecated with warning |
-| `gz repo-config` | `gz repo-sync config` | Deprecated with warning |
-| `gz event` | `gz repo-sync event` | Deprecated with warning |
-| `gz webhook` | `gz repo-sync webhook` | Deprecated with warning |
+| `gz repo-config` | (still available) | No change |
+| `gz event` | (still available) | No change |
+| `gz webhook` | (still available) | No change |
 | `gz ssh-config` | `gz dev-env ssh` | Still works, planned deprecation |
 | `gz always-latest` | `gz pm` | Deprecated with warning |
 
@@ -86,10 +86,10 @@ gz always-latest asdf --strategy major
 gz synclone config generate github myorg
 
 # Manage repository configurations
-gz repo-sync config apply --org myorg
+gz repo-config apply --org myorg
 
 # Setup webhook server
-gz repo-sync webhook create --org myorg
+gz webhook create --org myorg
 
 # Update package managers
 gz pm update --manager brew
