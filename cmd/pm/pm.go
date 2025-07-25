@@ -1,6 +1,9 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package pm provides package manager commands for managing various package managers
+// including Homebrew, asdf, SDKMAN, and others. It offers functionality for updating,
+// syncing, installing, and managing packages across different systems.
 package pm
 
 import (

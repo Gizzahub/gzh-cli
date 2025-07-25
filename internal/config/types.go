@@ -11,12 +11,12 @@ import (
 type BulkCloneConfig struct {
 	Concurrency      int           `json:"concurrency" yaml:"concurrency"`
 	Timeout          time.Duration `json:"timeout" yaml:"timeout"`
-	RetryAttempts    int           `json:"retryAttempts" yaml:"retryAttempts"`
-	RetryDelay       time.Duration `json:"retryDelay" yaml:"retryDelay"`
-	BufferSize       int           `json:"bufferSize" yaml:"bufferSize"`
-	MaxRepositories  int           `json:"maxRepositories" yaml:"maxRepositories"`
-	EnableStreaming  bool          `json:"enableStreaming" yaml:"enableStreaming"`
-	ProgressInterval time.Duration `json:"progressInterval" yaml:"progressInterval"`
+	RetryAttempts    int           `json:"retry_attempts" yaml:"retryAttempts"`
+	RetryDelay       time.Duration `json:"retry_delay" yaml:"retryDelay"`
+	BufferSize       int           `json:"buffer_size" yaml:"bufferSize"`
+	MaxRepositories  int           `json:"max_repositories" yaml:"maxRepositories"`
+	EnableStreaming  bool          `json:"enable_streaming" yaml:"enableStreaming"`
+	ProgressInterval time.Duration `json:"progress_interval" yaml:"progressInterval"`
 }
 
 // HTTPClientConfig represents configuration for HTTP clients.
