@@ -330,7 +330,7 @@ github:
 	// Test config validation instead
 	result := env.RunCommand("synclone", "config", "validate", "--file", "old-config.yaml")
 	assertions := helpers.NewCLIAssertions(t, result)
-	
+
 	if result.ExitCode == 0 {
 		assertions.Success()
 
