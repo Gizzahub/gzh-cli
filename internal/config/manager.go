@@ -29,11 +29,11 @@ const (
 	// SourceEnvironment represents configuration from environment variables.
 	SourceEnvironment Source = "environment"
 	// SourceFile represents configuration from files.
-	SourceFile        Source = "file"
+	SourceFile Source = "file"
 	// SourceDefaults represents default configuration values.
-	SourceDefaults    Source = "defaults"
+	SourceDefaults Source = "defaults"
 	// SourceAPI represents configuration from external APIs.
-	SourceAPI         Source = "api"
+	SourceAPI Source = "api"
 )
 
 // Manager provides centralized configuration management.

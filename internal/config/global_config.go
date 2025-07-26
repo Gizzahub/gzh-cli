@@ -28,10 +28,10 @@ type GlobalLoggingConfig struct {
 
 // CLILoggingConfig represents CLI-specific logging configuration.
 type CLILoggingConfig struct {
-	Enabled    bool   `yaml:"enabled" json:"enabled"`       // Show logs in CLI by default
-	Level      string `yaml:"level" json:"level"`           // CLI log level (error, warn, info, debug)
+	Enabled    bool   `yaml:"enabled" json:"enabled"`        // Show logs in CLI by default
+	Level      string `yaml:"level" json:"level"`            // CLI log level (error, warn, info, debug)
 	OnlyErrors bool   `yaml:"onlyErrors" json:"only_errors"` // Show only errors and warnings
-	Quiet      bool   `yaml:"quiet" json:"quiet"`           // Suppress all logs except critical errors
+	Quiet      bool   `yaml:"quiet" json:"quiet"`            // Suppress all logs except critical errors
 }
 
 // DefaultGlobalConfig returns the default global configuration.

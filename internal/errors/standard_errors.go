@@ -17,63 +17,63 @@ type ErrorCode string
 
 const (
 	// ErrorCodeInvalidConfig indicates invalid configuration data.
-	ErrorCodeInvalidConfig  ErrorCode = "INVALID_CONFIG"
+	ErrorCodeInvalidConfig ErrorCode = "INVALID_CONFIG"
 	// ErrorCodeMissingConfig indicates missing required configuration.
-	ErrorCodeMissingConfig  ErrorCode = "MISSING_CONFIG"
+	ErrorCodeMissingConfig ErrorCode = "MISSING_CONFIG"
 	// ErrorCodeConfigNotFound indicates configuration file not found.
 	ErrorCodeConfigNotFound ErrorCode = "CONFIG_NOT_FOUND"
 
 	// ErrorCodeInvalidToken indicates an invalid authentication token.
-	ErrorCodeInvalidToken      ErrorCode = "INVALID_TOKEN"
+	ErrorCodeInvalidToken ErrorCode = "INVALID_TOKEN"
 	// ErrorCodeTokenExpired indicates an expired authentication token.
-	ErrorCodeTokenExpired      ErrorCode = "TOKEN_EXPIRED"
+	ErrorCodeTokenExpired ErrorCode = "TOKEN_EXPIRED"
 	// ErrorCodeInsufficientPerms indicates insufficient permissions.
 	ErrorCodeInsufficientPerms ErrorCode = "INSUFFICIENT_PERMISSIONS"
 	// ErrorCodeAuthFailed indicates authentication failure.
-	ErrorCodeAuthFailed        ErrorCode = "AUTHENTICATION_FAILED"
+	ErrorCodeAuthFailed ErrorCode = "AUTHENTICATION_FAILED"
 
 	// ErrorCodeNetworkTimeout indicates a network timeout occurred.
-	ErrorCodeNetworkTimeout    ErrorCode = "NETWORK_TIMEOUT"
+	ErrorCodeNetworkTimeout ErrorCode = "NETWORK_TIMEOUT"
 	// ErrorCodeConnectionFailed indicates connection failure.
-	ErrorCodeConnectionFailed  ErrorCode = "CONNECTION_FAILED"
+	ErrorCodeConnectionFailed ErrorCode = "CONNECTION_FAILED"
 	// ErrorCodeRateLimitExceeded indicates API rate limit exceeded.
 	ErrorCodeRateLimitExceeded ErrorCode = "RATE_LIMIT_EXCEEDED"
 	// ErrorCodeAPIUnavailable indicates API is unavailable.
-	ErrorCodeAPIUnavailable    ErrorCode = "API_UNAVAILABLE"
+	ErrorCodeAPIUnavailable ErrorCode = "API_UNAVAILABLE"
 
 	// ErrorCodeRepoNotFound indicates repository not found.
-	ErrorCodeRepoNotFound       ErrorCode = "REPOSITORY_NOT_FOUND"
+	ErrorCodeRepoNotFound ErrorCode = "REPOSITORY_NOT_FOUND"
 	// ErrorCodeCloneFailed indicates repository clone failure.
-	ErrorCodeCloneFailed        ErrorCode = "CLONE_FAILED"
+	ErrorCodeCloneFailed ErrorCode = "CLONE_FAILED"
 	// ErrorCodeGitOperationFailed indicates git operation failure.
 	ErrorCodeGitOperationFailed ErrorCode = "GIT_OPERATION_FAILED"
 	// ErrorCodePermissionDenied indicates permission denied.
-	ErrorCodePermissionDenied   ErrorCode = "PERMISSION_DENIED"
+	ErrorCodePermissionDenied ErrorCode = "PERMISSION_DENIED"
 
 	// ErrorCodeInvalidInput indicates invalid input data.
-	ErrorCodeInvalidInput     ErrorCode = "INVALID_INPUT"
+	ErrorCodeInvalidInput ErrorCode = "INVALID_INPUT"
 	// ErrorCodeValidationFailed indicates validation failure.
 	ErrorCodeValidationFailed ErrorCode = "VALIDATION_FAILED"
 	// ErrorCodeInvalidFormat indicates invalid format.
-	ErrorCodeInvalidFormat    ErrorCode = "INVALID_FORMAT"
+	ErrorCodeInvalidFormat ErrorCode = "INVALID_FORMAT"
 
 	// ErrorCodeInternalError indicates internal system error.
-	ErrorCodeInternalError     ErrorCode = "INTERNAL_ERROR"
+	ErrorCodeInternalError ErrorCode = "INTERNAL_ERROR"
 	// ErrorCodeResourceExhausted indicates resources exhausted.
 	ErrorCodeResourceExhausted ErrorCode = "RESOURCE_EXHAUSTED"
 	// ErrorCodeOperationFailed indicates operation failure.
-	ErrorCodeOperationFailed   ErrorCode = "OPERATION_FAILED"
+	ErrorCodeOperationFailed ErrorCode = "OPERATION_FAILED"
 	// ErrorCodeTimeout indicates operation timeout.
-	ErrorCodeTimeout           ErrorCode = "TIMEOUT"
+	ErrorCodeTimeout ErrorCode = "TIMEOUT"
 
 	// ErrorCodeFileNotFound indicates file not found.
 	ErrorCodeFileNotFound ErrorCode = "FILE_NOT_FOUND"
 	// ErrorCodeAccessDenied indicates access denied.
 	ErrorCodeAccessDenied ErrorCode = "ACCESS_DENIED"
 	// ErrorCodeDiskFull indicates disk full.
-	ErrorCodeDiskFull     ErrorCode = "DISK_FULL"
+	ErrorCodeDiskFull ErrorCode = "DISK_FULL"
 	// ErrorCodeIOError indicates I/O error.
-	ErrorCodeIOError      ErrorCode = "IO_ERROR"
+	ErrorCodeIOError ErrorCode = "IO_ERROR"
 )
 
 // ErrorSeverity represents the severity level of an error.
@@ -82,11 +82,11 @@ type ErrorSeverity string
 // Error severity levels.
 const (
 	// SeverityLow indicates low severity error.
-	SeverityLow      ErrorSeverity = "low"
+	SeverityLow ErrorSeverity = "low"
 	// SeverityMedium indicates medium severity error.
-	SeverityMedium   ErrorSeverity = "medium"
+	SeverityMedium ErrorSeverity = "medium"
 	// SeverityHigh indicates high severity error.
-	SeverityHigh     ErrorSeverity = "high"
+	SeverityHigh ErrorSeverity = "high"
 	// SeverityCritical indicates critical severity error.
 	SeverityCritical ErrorSeverity = "critical"
 )
