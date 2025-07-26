@@ -161,7 +161,6 @@ func TestUnifiedConfigFacadeFeatureEnabled(t *testing.T) {
 	assert.True(t, facade.IsFeatureEnabled("ide"))
 	assert.True(t, facade.IsFeatureEnabled("dev-env"))
 	assert.True(t, facade.IsFeatureEnabled("net-env"))
-	assert.True(t, facade.IsFeatureEnabled("ssh-config"))
 
 	// Test unknown feature
 	assert.False(t, facade.IsFeatureEnabled("unknown"))
@@ -175,9 +174,6 @@ func TestUnifiedConfigFacadeFeatureEnabled(t *testing.T) {
 
 	facade.config.NetEnv.Enabled = false
 	assert.False(t, facade.IsFeatureEnabled("net-env"))
-
-	facade.config.SSHConfig.Enabled = false
-	assert.False(t, facade.IsFeatureEnabled("ssh-config"))
 }
 
 func TestUnifiedConfigFacadeFeatureEnabledWithoutConfig(t *testing.T) {
@@ -188,7 +184,6 @@ func TestUnifiedConfigFacadeFeatureEnabledWithoutConfig(t *testing.T) {
 	assert.False(t, facade.IsFeatureEnabled("ide"))
 	assert.False(t, facade.IsFeatureEnabled("dev-env"))
 	assert.False(t, facade.IsFeatureEnabled("net-env"))
-	assert.False(t, facade.IsFeatureEnabled("ssh-config"))
 }
 
 func TestUnifiedConfigFacadeConfigurationSummary(t *testing.T) {
@@ -223,7 +218,6 @@ func TestUnifiedConfigFacadeConfigurationSummary(t *testing.T) {
 	assert.True(t, features["ide"])
 	assert.True(t, features["dev-env"])
 	assert.True(t, features["net-env"])
-	assert.True(t, features["ssh-config"])
 }
 
 func TestUnifiedConfigFacadeConfigurationSummaryWithoutConfig(t *testing.T) {

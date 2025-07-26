@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # Repository Synchronization and Cloning Specification
 
 ## Overview
@@ -495,8 +498,8 @@ sync:
 
 - **Development Environment**: Coordinates with `dev-env` for environment-specific repository access
 - **Network Management**: Integrates with `net-env` for proxy and VPN-aware cloning
-- **SSH Configuration**: Works with `ssh-config` for Git authentication
-- **Configuration Generation**: Generates repository-specific configurations through `gen-config`
+- **SSH Configuration**: Works with SSH keys for Git authentication
+- **Configuration Generation**: Generates repository-specific configurations through config subcommands
 
 ## Security Considerations
 

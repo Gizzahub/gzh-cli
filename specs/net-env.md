@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # Network Environment Management Specification
 
 ## Overview

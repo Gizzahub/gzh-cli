@@ -421,41 +421,6 @@ net_env:
     log_level: info
     systemd_integration: true
 
-# SSH configuration management
-ssh_config:
-  enabled: true
-  config_file: "$HOME/.ssh/config"
-  backup_enabled: true
-  backup_dir: "$HOME/.ssh/backups"
-  provider_configs:
-    github:
-      hostname: "github.com"
-      user: git
-      port: 22
-      identity_file: "$HOME/.ssh/id_ed25519"
-      host_alias: "gh"
-    gitlab:
-      hostname: "gitlab.com"
-      user: git
-      port: 22
-      identity_file: "$HOME/.ssh/id_ed25519"
-      host_alias: "gl"
-  key_management:
-    enabled: true
-    key_dir: "$HOME/.ssh"
-    default_key_type: ed25519
-    use_ssh_agent: true
-  host_aliases:
-    gh:
-      real_hostname: "github.com"
-      user: git
-      port: 22
-      identity_file: "$HOME/.ssh/id_ed25519"
-    gl:
-      real_hostname: "gitlab.com"
-      user: git
-      port: 22
-      identity_file: "$HOME/.ssh/id_ed25519"
 ```
 
 ## Environment Variable Support
@@ -540,17 +505,6 @@ gz net-env daemon start
 gz net-env status
 ```
 
-### ssh-config Command
-
-Uses the `ssh_config` section:
-
-```bash
-# Generate SSH configuration
-gz ssh-config generate
-
-# Add provider configuration
-gz ssh-config add github
-```
 
 ## Best Practices
 
@@ -572,9 +526,6 @@ gz config show
 
 # Create default configuration
 gz config init
-
-# Migrate legacy configuration
-gz config migrate
 
 # Test configuration
 gz config test

@@ -79,37 +79,6 @@ func newUpgradeManagersCmd(ctx context.Context) *cobra.Command {
 	return cmd
 }
 
-func newMigrateCmd(ctx context.Context) *cobra.Command {
-	var (
-		manager string
-		from    string
-		to      string
-	)
-
-	cmd := &cobra.Command{
-		Use:   "migrate",
-		Short: "Migrate packages between language versions",
-		Long: `Migrate packages when switching between language versions.
-
-Examples:
-  # Migrate Ruby gems
-  gz pm migrate --manager ruby --from 3.2.0 --to 3.3.0
-
-  # Migrate Node.js packages
-  gz pm migrate --manager node --from 18.19.0 --to 20.11.0`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Printf("Migrating %s packages from %s to %s...\n", manager, from, to)
-			return fmt.Errorf("migrate command not yet implemented")
-		},
-	}
-
-	cmd.Flags().StringVar(&manager, "manager", "", "Package manager to migrate")
-	cmd.Flags().StringVar(&from, "from", "", "Source version")
-	cmd.Flags().StringVar(&to, "to", "", "Target version")
-
-	return cmd
-}
-
 func newSyncVersionsCmd(ctx context.Context) *cobra.Command {
 	var (
 		check bool

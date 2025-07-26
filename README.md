@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # Gizzahub Manager
 
 <div style="text-align: center;">

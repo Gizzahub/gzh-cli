@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # Development Environment Management Specification
 
 ## Overview
@@ -552,7 +555,7 @@ gz dev-env hooks run --env production --hook pre_switch
 
 - **Network Environment**: Coordinates with `net-env` for network-specific configurations
 - **Repository Management**: Integrates with `synclone` for environment-specific repository access
-- **Configuration Generation**: Works with `gen-config` for environment-specific configuration files
+- **Configuration Generation**: Works with configuration commands for environment-specific configuration files
 - **IDE Settings**: Synchronizes with `ide` command for environment-specific IDE configurations
 
 ## TUI Interface Design

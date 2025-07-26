@@ -1,5 +1,7 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # Features
-!Ai 편집금지문서
 
 ## 주요 기능
 

@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # gzh-manager-go 사용법
 
 이 문서는 gzh-manager-go (`gz` 명령어)의 실제 사용법을 단계별로 안내합니다.
@@ -319,14 +322,11 @@ gz config validate --config /path/to/gzh.yaml
 ### 설정 마이그레이션
 
 ```bash
-# 기존 설정을 통합 설정으로 마이그레이션
-gz migrate config --from bulk-clone.yaml --to gzh.yaml
+# 설정 파일 검증
+gz synclone config validate --file synclone.yaml
 
-# 배치 마이그레이션
-gz migrate config --batch --auto
-
-# 드라이런 마이그레이션 (실제 변경 없이 테스트)
-gz migrate config --dry-run --from bulk-clone.yaml
+# 설정 파일 생성
+gz synclone config generate
 ```
 
 ### 설정 우선순위 테스트
@@ -442,7 +442,7 @@ gz config show --paths
 gz config init --force
 
 # 마이그레이션 문제 시 백업에서 복원
-gz migrate config --restore --backup-id backup_timestamp
+# 백업에서 복원 (수동으로 파일 복사)
 ```
 
 ## 📚 추가 자료

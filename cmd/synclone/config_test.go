@@ -105,9 +105,3 @@ func TestConfigConvert(t *testing.T) {
 	assert.Contains(t, string(v2Content), "version:")
 	assert.Contains(t, string(v2Content), "synclone:")
 }
-
-func TestDeprecatedGenConfigRedirect(t *testing.T) {
-	// This test would verify that gen-config shows deprecation warning
-	// and redirects to synclone config generate
-	// Actual implementation would depend on how we handle command execution
-}

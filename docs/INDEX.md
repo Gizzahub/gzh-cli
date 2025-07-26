@@ -27,7 +27,6 @@
   - [🔄 마이그레이션 가이드](01-getting-started/migration-guides/)
     - [bulk-clone → gzh 마이그레이션](01-getting-started/migration-guides/bulk-clone-to-gzh.md)
     - [daemon → CLI 마이그레이션](01-getting-started/migration-guides/daemon-to-cli.md)
-    - [migrate 명령어 가이드](01-getting-started/migration-guides/migrate-command.md)
 
 ### 🏗️ 2. 아키텍처 및 설계
 

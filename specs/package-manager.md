@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # Unified Package Manager Specification
 
 ## Overview
@@ -43,7 +46,6 @@ The unified package manager feature provides centralized management for multiple
 - `gz pm clean` - Clean unused packages based on strategy
 - `gz pm bootstrap` - Install and configure package managers
 - `gz pm upgrade-managers` - Upgrade package managers themselves
-- `gz pm migrate` - Migrate packages between language versions
 - `gz pm sync-versions` - Synchronize version manager and package manager versions
 
 ### Package Manager Specific Commands
@@ -89,10 +91,6 @@ gz pm bootstrap --install brew,nvm,rbenv
 # Upgrade package managers
 gz pm upgrade-managers --all
 gz pm upgrade-managers --manager brew
-
-# Migrate packages between versions
-gz pm migrate --manager ruby --from 3.2.0 --to 3.3.0
-gz pm migrate --manager node --from 18.19.0 --to 20.11.0
 
 # Synchronize versions
 gz pm sync-versions --check
@@ -792,7 +790,7 @@ version_coordination:
     enabled: true
     strategy: "copy"           # copy, reinstall, selective, manual
     backup_before_switch: true
-    gem_sets:                  # Define gem sets to migrate
+    gem_sets:                  # Define gem sets
       - name: "development"
         gems: ["bundler", "rails", "rspec", "rubocop"]
       - name: "deployment"
@@ -898,8 +896,8 @@ node_migration:
       # Fall back to compatible versions
       fallback_strategy: "compatible"
       
-  # Global packages to always migrate
-  always_migrate:
+  # Global packages to always install
+  always_install:
     - "npm"
     - "yarn"
     - "pnpm"
@@ -945,50 +943,6 @@ python_migration:
     - "virtualenv"
 ```
 
-### Migration Commands
-
-#### `gz pm migrate`
-
-Migrates packages between language versions.
-
-```bash
-# Migrate Ruby gems
-gz pm migrate --manager ruby --from 3.2.0 --to 3.3.0
-gz pm migrate --manager ruby --to 3.3.0 --strategy intelligent
-
-# Migrate Node.js packages
-gz pm migrate --manager node --from 18.19.0 --to 20.11.0
-gz pm migrate --manager node --to latest --include-global
-
-# Migrate Python packages
-gz pm migrate --manager python --from 3.11 --to 3.12
-gz pm migrate --manager python --to 3.12 --venv myproject
-
-# Batch migration
-gz pm migrate --all --to latest
-```
-
-### Migration Workflow Example
-
-```bash
-# 1. Check current state
-gz pm status
-
-# 2. Backup current packages
-gz pm export --all
-
-# 3. Upgrade Ruby version
-rbenv install 3.3.0
-
-# 4. Migrate gems
-gz pm migrate --manager ruby --from 3.2.2 --to 3.3.0 --strategy intelligent
-
-# 5. Verify migration
-gz pm status --verify
-
-# 6. Rollback if needed
-gz pm migrate --rollback --manager ruby
-```
 
 ## Version Management Strategies
 

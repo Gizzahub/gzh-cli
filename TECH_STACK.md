@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # Tech Stack
 
 ## Core Technologies
@@ -49,8 +52,7 @@ cmd/
 ├── dev-env/            # Development environment management
 ├── net-env/            # Network environment transitions
 ├── ide/                # IDE settings management
-├── gen-config/         # Configuration generation
-└── ssh-config/         # SSH configuration management
+└── webhook/            # Webhook management
 ```
 
 ### Package Architecture
@@ -62,7 +64,6 @@ pkg/
 ├── gitlab/            # GitLab API integration
 ├── gitea/             # Gitea API integration
 ├── gogs/              # Gogs API integration (planned)
-├── gen-config/        # Directory-based config generation
 └── cloud/             # Cloud provider abstractions
 ```
 

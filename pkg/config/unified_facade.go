@@ -223,8 +223,6 @@ func (f *UnifiedConfigFacade) IsFeatureEnabled(feature string) bool {
 		return f.config.DevEnv != nil && f.config.DevEnv.Enabled
 	case "net-env":
 		return f.config.NetEnv != nil && f.config.NetEnv.Enabled
-	case "ssh-config":
-		return f.config.SSHConfig != nil && f.config.SSHConfig.Enabled
 	default:
 		return false
 	}
@@ -256,7 +254,6 @@ func (f *UnifiedConfigFacade) GetConfigurationSummary() map[string]interface{} {
 	features["ide"] = f.IsFeatureEnabled("ide")
 	features["dev-env"] = f.IsFeatureEnabled("dev-env")
 	features["net-env"] = f.IsFeatureEnabled("net-env")
-	features["ssh-config"] = f.IsFeatureEnabled("ssh-config")
 	summary["features"] = features
 
 	return summary

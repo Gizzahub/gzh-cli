@@ -92,17 +92,14 @@ alias "gz-ssh-config"="echo 'Deprecated: use gz dev-env ssh' && gz dev-env ssh"
 # Function to intercept gz commands and show deprecation warnings
 gz_compat() {
     case "$1" in
-        gen-config)
-            echo "Warning: 'gz gen-config' is deprecated. Use 'gz synclone config generate' instead." >&2
+        doctor)
+            echo "Warning: 'gz doctor' is deprecated. Use 'gz validate --all' instead." >&2
             shift
-            command gz synclone config generate "$@"
+            command gz validate --all "$@"
             ;;
-        # repo-config, event, webhook are still available
-        # No deprecation needed
-        ssh-config)
-            echo "Warning: 'gz ssh-config' is deprecated. Use 'gz dev-env ssh' instead." >&2
-            shift
-            command gz dev-env ssh "$@"
+        shell)
+            echo "Warning: 'gz shell' has been removed. Use 'gz --debug-shell' instead." >&2
+            return 1
             ;;
         *)
             command gz "$@"
@@ -123,4 +120,4 @@ echo ""
 echo "Or to use the basic compatibility aliases created here:"
 echo "  source $ALIAS_FILE"
 echo ""
-echo "For more information, run: gz migrate help"
+echo "For more information, see: docs/migration/command-migration-guide.md"

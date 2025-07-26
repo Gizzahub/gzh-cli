@@ -16,9 +16,6 @@ gzh-manager-go CLI 도구 사용을 위한 기본 가이드입니다.
   - 데몬 기반에서 CLI 기반으로 전환
   - 설정 및 워크플로우 변경사항
 
-- [🛠️ migrate 명령어 가이드](migration-guides/migrate-command.md)
-  - `gz migrate` 명령어 상세 사용법
-  - 자동 마이그레이션 도구 활용
 
 ## 🎯 주요 기능 소개
 

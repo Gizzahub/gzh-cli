@@ -326,16 +326,13 @@ github:
 `
 	env.WriteConfig("old-config.yaml", oldConfig)
 
-	// Test configuration migration
-	result := env.RunCommand("config", "migrate", "--from", "old-config.yaml", "--to", "new-config.yaml")
-
-	// Migration might not be implemented yet, so we check if the command exists
+	// Configuration migration has been removed
+	// Test config validation instead
+	result := env.RunCommand("synclone", "config", "validate", "--file", "old-config.yaml")
+	assertions := helpers.NewCLIAssertions(t, result)
+	
 	if result.ExitCode == 0 {
-		assertions := helpers.NewCLIAssertions(t, result)
 		assertions.Success()
-
-		// Verify new configuration was created
-		env.AssertFileExists("new-config.yaml")
 
 		// Validate migrated configuration
 		newConfig := helpers.NewConfigAssertions(t, env, "new-config.yaml")

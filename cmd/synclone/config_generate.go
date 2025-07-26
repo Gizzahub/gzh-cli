@@ -5,7 +5,6 @@ package synclone
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -33,24 +32,15 @@ Examples:
   # Auto-discover from existing repositories
   gz synclone config generate discover ~/projects --recursive`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// For now, delegate to gen-config functionality
-			// TODO: Move this logic to pkg/synclone/config/generate.go
 			if len(args) == 0 {
 				return fmt.Errorf("subcommand required: init, template, discover, or github")
-			}
-
-			// Show deprecation notice if called through old command
-			if os.Getenv("GZ_DEPRECATED_COMMAND") == "gen-config" {
-				fmt.Fprintf(os.Stderr, "\nWarning: 'gen-config' is deprecated and will be removed in v3.0.\n")
-				fmt.Fprintf(os.Stderr, "Please use 'gz synclone config generate' instead.\n")
-				fmt.Fprintf(os.Stderr, "Run 'gz help migrate' for more information.\n\n")
 			}
 
 			return nil
 		},
 	}
 
-	// Add subcommands that mirror gen-config functionality
+	// Add subcommands
 	cmd.AddCommand(newConfigGenerateInitCmd())
 	cmd.AddCommand(newConfigGenerateTemplateCmd())
 	cmd.AddCommand(newConfigGenerateDiscoverCmd())
@@ -66,8 +56,7 @@ func newConfigGenerateInitCmd() *cobra.Command {
 		Long:  `Create a new synclone configuration file using an interactive wizard.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement interactive wizard
-			// This functionality needs to be reimplemented here
-			return fmt.Errorf("config generate init: not yet implemented - previously provided by gen-config")
+			return fmt.Errorf("config generate init: not yet implemented")
 		},
 	}
 }
@@ -87,9 +76,8 @@ Available templates:
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement template generation
-			// This functionality needs to be reimplemented here
 			templateName := args[0]
-			return fmt.Errorf("config generate template %s: not yet implemented - previously provided by gen-config", templateName)
+			return fmt.Errorf("config generate template %s: not yet implemented", templateName)
 		},
 	}
 
@@ -115,9 +103,8 @@ a synclone configuration file based on the discovered structure.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement discovery logic
-			// This functionality needs to be reimplemented here
 			scanPath := args[0]
-			return fmt.Errorf("config generate discover %s: not yet implemented - previously provided by gen-config", scanPath)
+			return fmt.Errorf("config generate discover %s: not yet implemented", scanPath)
 		},
 	}
 
@@ -143,9 +130,8 @@ func newConfigGenerateGithubCmd() *cobra.Command {
 		Args:       cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Implement GitHub org scanning
-			// This functionality needs to be reimplemented here
 			org := args[0]
-			return fmt.Errorf("config generate github %s: not yet implemented - previously provided by gen-config", org)
+			return fmt.Errorf("config generate github %s: not yet implemented", org)
 		},
 	}
 

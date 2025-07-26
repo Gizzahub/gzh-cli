@@ -30,7 +30,6 @@ Features:
 - Synchronize packages across environments
 - Bootstrap missing package managers
 - Coordinate version managers with package managers
-- Migrate packages between language versions
 
 Examples:
   # Show status of all package managers
@@ -61,7 +60,6 @@ For detailed configuration, see: ~/.gzh/pm/`,
 	cmd.AddCommand(newCleanCmd(ctx))
 	cmd.AddCommand(newBootstrapCmd(ctx))
 	cmd.AddCommand(newUpgradeManagersCmd(ctx))
-	cmd.AddCommand(newMigrateCmd(ctx))
 	cmd.AddCommand(newSyncVersionsCmd(ctx))
 
 	// Package manager specific commands (legacy compatibility)

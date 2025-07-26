@@ -19,13 +19,6 @@ _gz_deprecation_warning() {
 # Function wrapper for gz command
 gz() {
     case "$1" in
-        # gen-config -> synclone config
-        "gen-config")
-            _gz_deprecation_warning "gen-config" "synclone config generate"
-            shift
-            command gz synclone config generate "$@"
-            ;;
-        
         # repo-config -> kept as is
         "repo-config")
             # Still available, no deprecation needed
@@ -45,13 +38,6 @@ gz() {
             # Still available, no deprecation needed
             shift
             command gz webhook "$@"
-            ;;
-        
-        # ssh-config -> dev-env ssh
-        "ssh-config")
-            _gz_deprecation_warning "ssh-config" "dev-env ssh"
-            shift
-            command gz dev-env ssh "$@"
             ;;
         
         # doctor -> still available
@@ -91,14 +77,6 @@ gz() {
             _gz_deprecation_warning "always-latest" "pm"
             shift
             command gz pm "$@"
-            ;;
-        
-        # migrate -> removed
-        "migrate")
-            echo -e "${RED}Error:${NC} 'gz migrate' has been removed." >&2
-            echo -e "The migration tool was for v1.x to v2.0 transition only." >&2
-            echo -e "For migration help, see: docs/migration/command-migration-guide.md" >&2
-            return 1
             ;;
         
         # Default: pass through to actual gz command

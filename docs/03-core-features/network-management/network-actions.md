@@ -437,4 +437,4 @@ gz net-env actions run --dry-run
 - `gz net-env wifi monitor`: Monitor WiFi changes and trigger actions
 - `gz net-env daemon`: Monitor system daemons and services
 - `gz dev-env`: Development environment configuration
-- `gz ssh-config`: SSH configuration management
+- `gz dev-env ssh`: SSH configuration management

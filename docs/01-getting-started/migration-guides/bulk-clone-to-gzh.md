@@ -1,6 +1,6 @@
 # Migration Guide: bulk-clone.yaml → gzh.yaml
 
-This guide helps you migrate from the legacy `bulk-clone.yaml` configuration format to the new unified `gzh.yaml` configuration system.
+This guide helps you convert from the legacy `bulk-clone.yaml` configuration format to the new unified `gzh.yaml` configuration system.
 
 ## Table of Contents
 
@@ -388,28 +388,19 @@ providers:
         strategy: "reset"
 ```
 
-## Automated Migration Tool
+## Manual Conversion
 
-We provide a command-line tool to help automate the migration process:
+To convert your configuration:
+
+1. Create a new `gzh.yaml` file
+2. Copy the structure from the examples above
+3. Transfer your settings from `bulk-clone.yaml`
+4. Update any field names as shown in the comparison
+5. Validate your new configuration:
 
 ```bash
-# Convert existing bulk-clone.yaml to gzh.yaml
-gzh config migrate --input bulk-clone.yaml --output gzh.yaml
-
-# Migrate with validation
-gzh config migrate --input bulk-clone.yaml --output gzh.yaml --validate
-
-# Preview migration without writing file
-gzh config migrate --input bulk-clone.yaml --dry-run
+gz synclone config validate --file gzh.yaml
 ```
-
-### Migration Tool Features
-
-- **Automatic conversion**: Converts structure and field mappings
-- **Token guidance**: Provides instructions for setting up authentication
-- **Validation**: Checks the converted configuration for correctness
-- **Backup creation**: Automatically creates backups of original files
-- **Interactive mode**: Asks for user input when automatic conversion isn't possible
 
 ## Post-Migration Checklist
 
