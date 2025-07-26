@@ -155,7 +155,7 @@ func ListRepos(ctx context.Context, org string) ([]RepoInfo, error) {
 		if len(body) > 0 {
 			errorMsg = fmt.Sprintf("%s - %s", errorMsg, string(body))
 		}
-		return nil, fmt.Errorf(errorMsg)
+		return nil, fmt.Errorf("%s", errorMsg)
 	}
 
 	// Decode the response directly into RepoInfo structs
