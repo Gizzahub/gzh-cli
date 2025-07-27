@@ -6,6 +6,9 @@
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
+      ],
+      "alwaysAllow": [
+        "move_file"
       ]
     }
   }
