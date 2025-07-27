@@ -69,6 +69,8 @@ For detailed configuration, see: ~/.gzh/pm/`,
 	cmd.AddCommand(newAptCmd(ctx))
 	cmd.AddCommand(newPortCmd(ctx))
 	cmd.AddCommand(newRbenvCmd(ctx))
+	cmd.AddCommand(newPipCmd(ctx))
+	cmd.AddCommand(newNpmCmd(ctx))
 
 	return cmd
 }

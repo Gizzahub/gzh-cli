@@ -108,3 +108,35 @@ For new features, use the unified commands like 'gz pm update --manager rbenv'.`
 		},
 	}
 }
+
+func newPipCmd(ctx context.Context) *cobra.Command {
+	return &cobra.Command{
+		Use:     "pip",
+		Aliases: []string{"update-pip"},
+		Short:   "Manage Python packages via pip",
+		Long: `Manage Python packages using pip/uv package manager.
+
+This command provides direct access to pip package management.
+For configuration-based management, use the unified commands like 'gz pm update --manager pip'.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("Use 'gz pm update --manager pip' for the new unified interface")
+			return updatePip(ctx, "stable", false)
+		},
+	}
+}
+
+func newNpmCmd(ctx context.Context) *cobra.Command {
+	return &cobra.Command{
+		Use:     "npm",
+		Aliases: []string{"update-npm"},
+		Short:   "Manage Node.js packages via npm",
+		Long: `Manage Node.js packages using npm/pnpm/yarn package manager.
+
+This command provides direct access to npm package management.
+For configuration-based management, use the unified commands like 'gz pm update --manager npm'.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("Use 'gz pm update --manager npm' for the new unified interface")
+			return updateNpm(ctx, "stable", false)
+		},
+	}
+}

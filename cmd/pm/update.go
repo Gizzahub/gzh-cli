@@ -297,13 +297,179 @@ func updateApt(ctx context.Context, strategy string, dryRun bool) error {
 }
 
 func updatePip(ctx context.Context, strategy string, dryRun bool) error {
-	fmt.Println("Would update Python packages...")
-	// TODO: Implement based on configuration
+	// Check if pip is installed
+	pipCmd := findPipCommand(ctx)
+	if pipCmd == "" {
+		return fmt.Errorf("pip is not installed or not in PATH")
+	}
+
+	fmt.Println("🐍 Updating Python packages...")
+
+	// Update pip itself
+	if err := upgradePip(ctx, pipCmd, dryRun); err != nil {
+		return err
+	}
+
+	// Update packages based on strategy
+	if strategy == "latest" || strategy == "stable" {
+		return updateOutdatedPackages(ctx, pipCmd, dryRun)
+	}
+
+	return nil
+}
+
+// findPipCommand finds available pip command (python -m pip or pip3).
+func findPipCommand(ctx context.Context) string {
+	// Try python -m pip first
+	cmd := exec.CommandContext(ctx, "python", "-m", "pip", "--version")
+	if err := cmd.Run(); err == nil {
+		return "python -m pip"
+	}
+
+	// Try pip3
+	cmd = exec.CommandContext(ctx, "pip3", "--version")
+	if err := cmd.Run(); err == nil {
+		return "pip3"
+	}
+
+	return ""
+}
+
+// upgradePip upgrades pip itself.
+func upgradePip(ctx context.Context, pipCmd string, dryRun bool) error {
+	if !dryRun {
+		args := strings.Split(pipCmd, " ")
+		args = append(args, "install", "--upgrade", "pip")
+		cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to upgrade pip: %w", err)
+		}
+	} else {
+		fmt.Printf("Would run: %s install --upgrade pip\n", pipCmd)
+	}
+	return nil
+}
+
+// updateOutdatedPackages updates all outdated packages.
+func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool) error {
+	fmt.Println("Checking for outdated packages...")
+
+	// Get list of outdated packages
+	args := strings.Split(pipCmd, " ")
+	args = append(args, "list", "--outdated", "--format=freeze")
+	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+	output, err := cmd.Output()
+	if err != nil {
+		fmt.Printf("Warning: failed to list outdated packages: %v\n", err)
+		return nil
+	}
+
+	packages := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(packages) == 0 || (len(packages) == 1 && packages[0] == "") {
+		fmt.Println("All packages are up to date")
+		return nil
+	}
+
+	fmt.Println("Found outdated packages")
+	if dryRun {
+		fmt.Println("Would update all outdated packages")
+		return nil
+	}
+
+	// Update each package
+	for _, pkg := range packages {
+		if pkg == "" {
+			continue
+		}
+		// Extract package name (before ==)
+		parts := strings.Split(pkg, "==")
+		if len(parts) > 0 {
+			pkgName := parts[0]
+			fmt.Printf("Updating %s...\n", pkgName)
+			args := strings.Split(pipCmd, " ")
+			args = append(args, "install", "--upgrade", pkgName)
+			cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				fmt.Printf("Warning: failed to update %s: %v\n", pkgName, err)
+			}
+		}
+	}
+
 	return nil
 }
 
 func updateNpm(ctx context.Context, strategy string, dryRun bool) error {
-	fmt.Println("Would update npm packages...")
-	// TODO: Implement based on configuration
+	// Check if npm is installed
+	cmd := exec.CommandContext(ctx, "npm", "--version")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("npm is not installed or not in PATH")
+	}
+
+	fmt.Println("📦 Updating Node.js packages...")
+
+	// Update npm itself
+	if !dryRun {
+		cmd = exec.CommandContext(ctx, "npm", "install", "-g", "npm@latest")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to upgrade npm: %w", err)
+		}
+	} else {
+		fmt.Println("Would run: npm install -g npm@latest")
+	}
+
+	// Update global packages based on strategy
+	if strategy == "latest" || strategy == "stable" {
+		return updateGlobalNpmPackages(ctx, dryRun)
+	}
+
+	return nil
+}
+
+// updateGlobalNpmPackages updates globally installed npm packages.
+func updateGlobalNpmPackages(ctx context.Context, dryRun bool) error {
+	fmt.Println("Checking for outdated global packages...")
+
+	// Get list of outdated global packages
+	cmd := exec.CommandContext(ctx, "npm", "outdated", "-g", "--json")
+	output, err := cmd.Output()
+	
+	// npm outdated returns exit code 1 when packages are outdated
+	if err != nil && len(output) == 0 {
+		fmt.Printf("Warning: failed to list outdated packages: %v\n", err)
+		return nil
+	}
+
+	// Check if there are outdated packages
+	if len(output) == 0 || string(output) == "{}\n" || string(output) == "{}" {
+		fmt.Println("All global packages are up to date")
+		return nil
+	}
+
+	fmt.Println("Found outdated global packages")
+	if dryRun {
+		// Show what would be updated
+		cmd = exec.CommandContext(ctx, "npm", "outdated", "-g")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		_ = cmd.Run() // Ignore error as npm outdated returns 1 when packages are outdated
+		fmt.Println("\nWould update all outdated global packages")
+		return nil
+	}
+
+	// Update all global packages
+	fmt.Println("Updating global packages...")
+	cmd = exec.CommandContext(ctx, "npm", "update", "-g")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Warning: some packages may have failed to update: %v\n", err)
+	}
+
 	return nil
 }
