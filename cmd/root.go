@@ -55,8 +55,10 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 		shellCmd.Hidden = true
 		cmd.AddCommand(shellCmd)
 	}
-	cmd.AddCommand(NewWebhookCmd())
-	cmd.AddCommand(NewEventCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(NewGitCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
+
+	// Hide completion command
+	cmd.CompletionOptions.DisableDefaultCmd = true
 
 	// Add global flags
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose logging")
