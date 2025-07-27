@@ -50,7 +50,8 @@
       "Bash(go:*)",
       "Bash(git fetch:*)",
       "Bash(git cherry-pick:*)",
-      "Bash(timeout 30 make lint)"
+      "Bash(timeout 30 make lint)",
+      "Bash(markdownlint:*)"
     ],
     "deny": []
   }
