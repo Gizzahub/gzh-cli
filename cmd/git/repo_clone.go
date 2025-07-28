@@ -123,9 +123,15 @@ func runRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 	// Create provider factory
 	factory := provider.NewProviderFactory()
 
+	// Check if we should use legacy adapter
+	if clone.ShouldUseLegacy(opts.Provider) {
+		return runWithLegacyAdapter(ctx, opts)
+	}
+
 	// Register provider constructors
 	if err := registerProviderConstructors(factory); err != nil {
-		return fmt.Errorf("failed to register providers: %w", err)
+		// Fall back to legacy adapter if providers are not available
+		return runWithLegacyAdapter(ctx, opts)
 	}
 
 	// Create provider configuration
@@ -200,6 +206,44 @@ func runResumeClone(ctx context.Context, opts *clone.CloneOptions) error {
 
 	// Run with original options
 	return runRepoClone(ctx, originalOpts)
+}
+
+// runWithLegacyAdapter executes clone using the legacy synclone functionality.
+func runWithLegacyAdapter(ctx context.Context, opts *clone.CloneOptions) error {
+	// Create legacy adapter
+	adapter := clone.NewLegacyAdapter(opts)
+
+	// Validate options for legacy usage
+	if err := adapter.ValidateLegacyOptions(); err != nil {
+		return fmt.Errorf("invalid options for legacy adapter: %w", err)
+	}
+
+	// Handle dry run
+	if opts.DryRun {
+		fmt.Printf("Dry run - would clone %s organization: %s\n", opts.Provider, opts.Org)
+		fmt.Printf("Target directory: %s\n", opts.Target)
+		fmt.Printf("Strategy: %s\n", opts.Strategy)
+		fmt.Printf("Parallel workers: %d\n", opts.Parallel)
+		return nil
+	}
+
+	// Execute clone operation
+	if err := adapter.ExecuteClone(ctx); err != nil {
+		return fmt.Errorf("legacy clone failed: %w", err)
+	}
+
+	// Create GZH metadata file if requested
+	if opts.CreateGZHFile {
+		targetPath := opts.Target
+		if targetPath == "." {
+			targetPath = opts.Org
+		}
+		if err := adapter.CreateGZHFile(targetPath); err != nil {
+			fmt.Printf("Warning: failed to create .gzh file: %v\n", err)
+		}
+	}
+
+	return nil
 }
 
 // registerProviderConstructors registers provider constructors with the factory.
