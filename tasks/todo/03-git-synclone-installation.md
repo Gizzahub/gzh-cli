@@ -140,14 +140,14 @@ echo "Git extensions uninstalled"
 ```
 
 ## 구현 체크리스트
-- [ ] Makefile에 build-git-extensions 타겟 추가
-- [ ] 설치 스크립트 작성
-- [ ] go install 지원 확인
-- [ ] Homebrew formula 작성
-- [ ] APT 패키지 설정
-- [ ] 온라인 설치 스크립트
-- [ ] doctor 명령어 구현
-- [ ] 언인스톨 스크립트
+- [x] Makefile에 build-git-extensions 타겟 추가
+- [x] 설치 스크립트 작성
+- [x] go install 지원 확인
+- [x] Homebrew formula 작성
+- [x] APT 패키지 설정
+- [x] 온라인 설치 스크립트
+- [x] doctor 명령어 구현
+- [x] 언인스톨 스크립트
 
 ## 테스트 요구사항
 - [ ] 각 OS별 설치 테스트 (macOS, Linux, Windows)

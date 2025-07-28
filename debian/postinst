@@ -1,0 +1,18 @@
+#!/bin/bash
+# Post-installation script for gzh-git-extensions
+
+set -e
+
+# Ensure the binary is executable
+chmod +x /usr/bin/git-synclone
+
+# Create config directory for users
+if [ ! -d "/etc/skel/.config/gzh-manager" ]; then
+    mkdir -p /etc/skel/.config/gzh-manager
+fi
+
+echo "gzh-git-extensions installed successfully!"
+echo "You can now use: git synclone --help"
+echo "Configuration: ~/.config/gzh-manager/synclone.yaml"
+
+exit 0

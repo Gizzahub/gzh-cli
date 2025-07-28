@@ -70,6 +70,7 @@ repositories from various Git hosting services.`,
 	cmd.AddCommand(newConfigCmd(ctx))
 	cmd.AddCommand(newStateCmd(ctx))
 	cmd.AddCommand(newValidateCmd(ctx))
+	cmd.AddCommand(newDoctorCmd())
 
 	// Global flags that apply to all subcommands
 	cmd.PersistentFlags().StringP("config", "c", "", "Path to configuration file")
