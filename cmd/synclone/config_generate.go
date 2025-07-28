@@ -61,59 +61,9 @@ func newConfigGenerateInitCmd() *cobra.Command {
 	}
 }
 
-func newConfigGenerateTemplateCmd() *cobra.Command {
-	var outputFile string
+// newConfigGenerateTemplateCmd is implemented in config_generate_template.go
 
-	cmd := &cobra.Command{
-		Use:   "template [template-name]",
-		Short: "Generate configuration from template",
-		Long: `Generate a synclone configuration file from predefined templates.
-
-Available templates:
-  simple     - Basic configuration for single organization
-  multi      - Multi-organization setup
-  enterprise - Enterprise configuration with advanced options`,
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: Implement template generation
-			templateName := args[0]
-			return fmt.Errorf("config generate template %s: not yet implemented", templateName)
-		},
-	}
-
-	cmd.Flags().StringVarP(&outputFile, "output", "o", "synclone.yaml", "Output file path")
-
-	return cmd
-}
-
-func newConfigGenerateDiscoverCmd() *cobra.Command {
-	var (
-		outputFile string
-		recursive  bool
-		maxDepth   int
-	)
-
-	cmd := &cobra.Command{
-		Use:   "discover [directory]",
-		Short: "Discover repositories from directory",
-		Long: `Auto-discover Git repositories from a directory and generate configuration.
-
-This command scans the specified directory for Git repositories and creates
-a synclone configuration file based on the discovered structure.`,
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: Implement discovery logic
-			scanPath := args[0]
-			return fmt.Errorf("config generate discover %s: not yet implemented", scanPath)
-		},
-	}
-
-	cmd.Flags().StringVarP(&outputFile, "output", "o", "synclone.yaml", "Output file path")
-	cmd.Flags().BoolVarP(&recursive, "recursive", "r", true, "Scan directories recursively")
-	cmd.Flags().IntVar(&maxDepth, "max-depth", 3, "Maximum directory depth for recursive scan")
-
-	return cmd
-}
+// newConfigGenerateDiscoverCmd is implemented in config_generate_discover.go
 
 func newConfigGenerateGithubCmd() *cobra.Command {
 	var (
