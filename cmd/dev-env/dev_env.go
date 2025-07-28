@@ -77,6 +77,9 @@ Examples:
 	// Add switch-all command for unified environment switching
 	cmd.AddCommand(newSwitchAllCmd())
 
+	// Add status command for unified status display
+	cmd.AddCommand(newStatusCmd())
+
 	cmd.AddCommand(newKubeconfigCmd())
 	cmd.AddCommand(newDockerCmd())
 	cmd.AddCommand(newAwsCmd())

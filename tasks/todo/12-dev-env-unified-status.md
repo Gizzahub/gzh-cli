@@ -1,6 +1,6 @@
 # TODO: dev-env 통합 상태 표시 구현
 
-- status: [ ]
+- status: [x]
 - priority: high
 - category: dev-env
 - estimated_effort: 2-3 days
