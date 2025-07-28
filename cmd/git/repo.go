@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/internal/git/sync"
 )
 
 // NewGitRepoCmd creates the unified repository lifecycle management command.
@@ -58,13 +60,65 @@ This command provides comprehensive repository management capabilities:
 // Placeholder implementations for unimplemented commands
 
 func newRepoSyncCmd() *cobra.Command {
-	return &cobra.Command{
+	var opts sync.Options
+
+	cmd := &cobra.Command{
 		Use:   "sync",
-		Short: "Synchronize repositories across platforms",
+		Short: "Synchronize repositories across Git platforms",
+		Long: `Synchronize repositories between different Git platforms including:
+- Repository code and branches
+- Issues and pull requests (if supported)
+- Wiki content
+- Releases and tags
+- Repository settings and metadata`,
+		Example: `
+  # Sync a single repository
+  gz git repo sync --from github:myorg/repo --to gitlab:mygroup/repo
+
+  # Sync entire organization
+  gz git repo sync --from github:myorg --to gitea:myorg --create-missing
+
+  # Sync with specific features
+  gz git repo sync --from github:org/repo --to gitlab:group/repo \
+    --include-issues --include-wiki --include-releases
+
+  # Dry run to preview changes
+  gz git repo sync --from github:org/repo --to gitlab:group/repo --dry-run`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return fmt.Errorf("sync command not yet implemented")
+			return runSync(cmd.Context(), opts)
 		},
 	}
+
+	// Source and destination
+	cmd.Flags().StringVar(&opts.From, "from", "", "Source (provider:org/repo or provider:org)")
+	cmd.Flags().StringVar(&opts.To, "to", "", "Destination (provider:org/repo or provider:org)")
+
+	// Sync options
+	cmd.Flags().BoolVar(&opts.CreateMissing, "create-missing", false, "Create repos that don't exist in destination")
+	cmd.Flags().BoolVar(&opts.UpdateExisting, "update-existing", true, "Update existing repositories")
+	cmd.Flags().BoolVar(&opts.Force, "force", false, "Force push (destructive)")
+
+	// Include options
+	cmd.Flags().BoolVar(&opts.IncludeCode, "include-code", true, "Sync repository code")
+	cmd.Flags().BoolVar(&opts.IncludeIssues, "include-issues", false, "Sync issues")
+	cmd.Flags().BoolVar(&opts.IncludePRs, "include-prs", false, "Sync pull/merge requests")
+	cmd.Flags().BoolVar(&opts.IncludeWiki, "include-wiki", false, "Sync wiki")
+	cmd.Flags().BoolVar(&opts.IncludeReleases, "include-releases", false, "Sync releases")
+	cmd.Flags().BoolVar(&opts.IncludeSettings, "include-settings", false, "Sync repository settings")
+
+	// Filtering
+	cmd.Flags().StringVar(&opts.Match, "match", "", "Repository name pattern")
+	cmd.Flags().StringVar(&opts.Exclude, "exclude", "", "Exclude pattern")
+
+	// Execution options
+	cmd.Flags().IntVar(&opts.Parallel, "parallel", 1, "Parallel sync workers")
+	cmd.Flags().BoolVar(&opts.DryRun, "dry-run", false, "Preview without making changes")
+	cmd.Flags().BoolVar(&opts.Verbose, "verbose", false, "Verbose output")
+
+	cmd.MarkFlagRequired("from")
+	cmd.MarkFlagRequired("to")
+
+	return cmd
 }
 
 func newRepoMigrateCmd() *cobra.Command {

@@ -106,8 +106,6 @@ func runGitHub(ctx context.Context, opts *githubOptions) error {
 		return fmt.Errorf("invalid target path: %w", err)
 	}
 
-	// For now, use the existing github.RefreshAll function
-	// This maintains compatibility with the existing implementation
 	fmt.Printf("🚀 Starting GitHub repository synchronization\n")
 	fmt.Printf("   Organization: %s\n", opts.orgName)
 	fmt.Printf("   Target: %s\n", absTarget)
@@ -115,12 +113,12 @@ func runGitHub(ctx context.Context, opts *githubOptions) error {
 
 	if opts.dryRun {
 		fmt.Printf("\n⚠️ DRY RUN MODE - No actual changes will be made\n")
-		// TODO: Implement dry run logic
+		// TODO: Implement dry run logic via provider adapter
 		return nil
 	}
 
-	// Use the existing RefreshAll function from the github package
-	// TODO: Add support for more advanced options like filtering, resume, etc.
+	// Use the existing RefreshAll function from the github package for now
+	// TODO: Migrate to use provider adapter in future iterations
 	if opts.parallel > 1 {
 		// Use the resumable version if parallel is specified
 		return github.RefreshAllResumable(ctx, absTarget, opts.orgName, opts.strategy, opts.parallel, 3, opts.resume, opts.progressMode)
