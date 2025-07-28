@@ -173,6 +173,14 @@ Examples:
 	// Get config directory
 	configDir := getConfigDirectory()
 
+	// New unified commands (5 core commands)
+	cmd.AddCommand(newStatusUnifiedCmd())
+	cmd.AddCommand(newSwitchUnifiedCmd())
+	cmd.AddCommand(newProfileUnifiedCmd())
+	cmd.AddCommand(newQuickUnifiedCmd())
+	cmd.AddCommand(newMonitorUnifiedCmd())
+
+	// Legacy commands (deprecated but maintained for compatibility)
 	cmd.AddCommand(newStatusCmd())
 	cmd.AddCommand(newSwitchCmd())
 	cmd.AddCommand(newActionsCmd())

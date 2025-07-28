@@ -1,6 +1,6 @@
 # TODO: net-env 간소화된 인터페이스 구현
 
-- status: [ ]
+- status: [x]
 - priority: high
 - category: net-env
 - estimated_effort: 4-5 days
