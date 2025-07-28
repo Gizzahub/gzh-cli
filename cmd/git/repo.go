@@ -55,73 +55,7 @@ This command provides comprehensive repository management capabilities:
 	return cmd
 }
 
-// newRepoCloneCmd creates the clone subcommand with synclone integration.
-func newRepoCloneCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "clone",
-		Short: "Clone repositories from Git platforms",
-		Long: `Clone repositories with advanced features like bulk operations,
-parallel execution, and resume capability.
-
-This command integrates with the existing synclone functionality to provide
-enhanced repository cloning capabilities including:
-- Parallel cloning with configurable worker count
-- Resume interrupted clone operations
-- Bulk organization/group cloning
-- Advanced filtering and matching
-- Multiple clone strategies (reset, pull, fetch)
-- Support for multiple Git platforms (GitHub, GitLab, Gitea)`,
-		Example: `
-  # Clone all repositories from a GitHub organization
-  gz git repo clone --provider github --org myorg --target ./github-repos
-
-  # Clone with parallel workers and resume capability
-  gz git repo clone --provider gitlab --org mygroup --parallel 10 --resume
-
-  # Clone with filtering
-  gz git repo clone --provider github --org myorg --match "api-*" --visibility public
-
-  # Clone using configuration file
-  gz git repo clone --config synclone.yaml --dry-run`,
-		RunE: runRepoClone,
-	}
-
-	// Provider and target flags
-	cmd.Flags().String("provider", "", "Git provider (github, gitlab, gitea)")
-	cmd.Flags().String("org", "", "Organization/Group name")
-	cmd.Flags().StringP("target", "t", "", "Target directory for cloning")
-	cmd.Flags().StringP("config", "c", "", "Configuration file path")
-
-	// Advanced options
-	cmd.Flags().IntP("parallel", "p", 5, "Number of parallel clone workers")
-	cmd.Flags().String("strategy", "reset", "Clone strategy (reset, pull, fetch)")
-	cmd.Flags().Bool("resume", false, "Resume interrupted clone operation")
-	cmd.Flags().Bool("cleanup-orphans", false, "Clean up orphaned directories")
-
-	// Filtering options
-	cmd.Flags().String("match", "", "Repository name pattern (glob)")
-	cmd.Flags().String("visibility", "all", "Repository visibility (public, private, all)")
-	cmd.Flags().Bool("archived", true, "Include archived repositories")
-	cmd.Flags().Bool("forks", true, "Include forked repositories")
-	cmd.Flags().String("language", "", "Filter by primary language")
-	cmd.Flags().Int("min-stars", 0, "Minimum star count")
-	cmd.Flags().Int("max-stars", 0, "Maximum star count (0 = no limit)")
-
-	// Protocol and authentication
-	cmd.Flags().String("protocol", "https", "Clone protocol (https, ssh)")
-	cmd.Flags().String("token", "", "Access token (or use environment variables)")
-
-	// Output and debugging
-	cmd.Flags().Bool("dry-run", false, "Show what would be cloned without doing it")
-	cmd.Flags().String("progress-mode", "bar", "Progress display mode (bar, quiet, verbose)")
-	cmd.Flags().Bool("verbose", false, "Enable verbose output")
-
-	// Mark required flags
-	cmd.MarkFlagRequired("provider")
-	cmd.MarkFlagRequired("org")
-
-	return cmd
-}
+// Note: newRepoCloneCmd is now implemented in repo_clone.go
 
 // newRepoListCmd creates the list subcommand.
 func newRepoListCmd() *cobra.Command {
@@ -498,10 +432,7 @@ This command provides comprehensive repository search including:
 }
 
 // Command execution functions (placeholder implementations)
-func runRepoClone(cmd *cobra.Command, args []string) error {
-	// TODO: Integrate with existing synclone functionality
-	return fmt.Errorf("clone command not yet implemented")
-}
+// Note: runRepoClone is now implemented in repo_clone.go
 
 func runRepoList(cmd *cobra.Command, args []string) error {
 	// TODO: Implement repository listing
