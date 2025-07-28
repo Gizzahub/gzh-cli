@@ -6,6 +6,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/gizzahub/gzh-manager-go/cmd/git"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 )
 
@@ -23,11 +24,13 @@ This command provides comprehensive Git platform management capabilities includi
 - Cross-platform operations
 
 Available Resources:
+  repo       Repository lifecycle management (clone, create, sync, etc.)
   config     Repository configuration management
   webhook    Webhook management and automation
   event      Event processing and monitoring
 
 Examples:
+  gz git repo clone --provider github --org myorg --target ./repos
   gz git config audit --org myorg --framework SOC2
   gz git webhook create --org myorg --repo myrepo --url https://example.com/webhook
   gz git event server --port 8080 --secret mysecret`,
@@ -37,6 +40,7 @@ Examples:
 	}
 
 	// Add subcommands for each resource
+	cmd.AddCommand(git.NewGitRepoCmd())
 	cmd.AddCommand(newGitConfigCmd())
 	cmd.AddCommand(newGitWebhookCmd())
 	cmd.AddCommand(newGitEventCmd())
