@@ -9,17 +9,28 @@
 # Build Targets
 # ==============================================================================
 
-.PHONY: build install run bootstrap clean release-dry-run release-snapshot release-check deploy
+.PHONY: build build-git-extensions install run bootstrap clean release-dry-run release-snapshot release-check deploy
 
 build: ## build golang binary
 	@echo -e "$(CYAN)Building $(executablename)...$(RESET)"
 	@go build -ldflags "-X main.version=$(VERSION)" -o $(executablename)
 	@echo -e "$(GREEN)✅ Built $(executablename) successfully$(RESET)"
 
+build-git-extensions: ## build git extension binaries
+	@echo -e "$(CYAN)Building git-synclone...$(RESET)"
+	@go build -ldflags "-X main.Version=$(VERSION) -X main.BuildTime=$$(date -u +%Y-%m-%d_%H:%M:%S)" -o git-synclone ./cmd/git-synclone
+	@echo -e "$(GREEN)✅ Built git-synclone successfully$(RESET)"
+
 install: build ## install golang binary
 	@echo -e "$(CYAN)Installing $(executablename)...$(RESET)"
 	@mv $(executablename) $(shell go env GOPATH)/bin/
 	@echo -e "$(GREEN)✅ Installed $(executablename) to $(shell go env GOPATH)/bin/$(RESET)"
+
+install-git-extensions: build-git-extensions ## install git extension binaries
+	@echo -e "$(CYAN)Installing git-synclone...$(RESET)"
+	@mv git-synclone $(shell go env GOPATH)/bin/
+	@echo -e "$(GREEN)✅ Installed git-synclone to $(shell go env GOPATH)/bin/$(RESET)"
+	@echo -e "$(YELLOW)You can now use: git synclone$(RESET)"
 
 run: ## run the application (usage: make run [args...] or ARGS="args" make run)
 	@echo -e "$(CYAN)Running application with version $(VERSION)...$(RESET)"
@@ -45,9 +56,10 @@ bootstrap: ## install build dependencies
 
 clean: ## clean up environment
 	@echo -e "$(CYAN)Cleaning up build artifacts...$(RESET)"
-	@rm -rf coverage.out coverage.html dist/ $(executablename)
+	@rm -rf coverage.out coverage.html dist/ $(executablename) git-synclone
 	@rm -f $(shell go env GOPATH)/bin/$(executablename)
 	@rm -f $(shell go env GOPATH)/bin/$(projectname)
+	@rm -f $(shell go env GOPATH)/bin/git-synclone
 	@rm -f lint-report.json gosec-report.json
 	@echo -e "$(GREEN)✅ Cleanup completed$(RESET)"
 

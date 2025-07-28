@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 )
 

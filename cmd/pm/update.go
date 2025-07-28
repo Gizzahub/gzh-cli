@@ -438,7 +438,7 @@ func updateGlobalNpmPackages(ctx context.Context, dryRun bool) error {
 	// Get list of outdated global packages
 	cmd := exec.CommandContext(ctx, "npm", "outdated", "-g", "--json")
 	output, err := cmd.Output()
-	
+
 	// npm outdated returns exit code 1 when packages are outdated
 	if err != nil && len(output) == 0 {
 		fmt.Printf("Warning: failed to list outdated packages: %v\n", err)

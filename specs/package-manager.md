@@ -7,17 +7,53 @@
 
 The unified package manager feature provides centralized management for multiple package managers through configuration files. It enables developers to maintain consistent development environments across machines by managing packages from various package managers including system-level (apt, brew, port), language-specific (pip, gem, npm), and version managers (asdf, rbenv, sdkman).
 
+## Implementation Status
+
+### ✅ Fully Implemented
+
+**Configuration-based unified commands** - All managers support: `install`, `update`, `sync`, `export`
+
+- System package managers: `brew`, `apt`, `port`
+- Version managers: `asdf`, `sdkman`, `rbenv`
+
+**Legacy direct access commands** - For backward compatibility:
+
+- `gz pm brew` - Direct Homebrew commands
+- `gz pm asdf` - Direct asdf commands
+- `gz pm sdkman` - Direct SDKMAN commands
+- `gz pm apt` - Direct APT commands
+- `gz pm port` - Direct MacPorts commands
+- `gz pm rbenv` - Direct rbenv commands
+- `gz pm pip` - Direct pip commands (recently implemented)
+- `gz pm npm` - Direct npm commands (recently implemented)
+
+### 📋 Configuration-Only
+
+These package managers are supported through configuration files but don't have direct commands:
+
+- `gem` - Ruby packages
+- `cargo` - Rust packages
+- `go` - Go modules
+- `composer` - PHP packages
+- `yarn`, `pnpm` - Alternative Node.js package managers
+
+### 🔮 Future Enhancement
+
+- `gz pm [manager]` - Generic pattern for any package manager (see Future Considerations section)
+
 ## Supported Package Managers
 
 ### System Package Managers
-- **brew** (Homebrew) - macOS/Linux package manager
-- **port** (MacPorts) - macOS package manager  
-- **apt** (APT) - Debian/Ubuntu package manager
-- **yum** (YUM) - RHEL/CentOS package manager
-- **dnf** (DNF) - Fedora package manager
-- **pacman** (Pacman) - Arch Linux package manager
+
+- **brew** (Homebrew) - macOS/Linux
+- **port** (MacPorts) - macOS
+- **apt** (APT) - Debian/Ubuntu
+- **yum** (YUM) - RHEL/CentOS
+- **dnf** (DNF) - Fedora
+- **pacman** (Pacman) - Arch Linux
 
 ### Version Managers
+
 - **asdf** - Multi-language version manager
 - **sdkman** - JVM ecosystem version manager
 - **rbenv** - Ruby version manager
@@ -25,103 +61,98 @@ The unified package manager feature provides centralized management for multiple
 - **nvm** - Node.js version manager
 
 ### Language Package Managers
-- **pip/uv** - Python package manager
-- **gem** - Ruby package manager
-- **npm/pnpm/yarn** - Node.js package managers
-- **cargo** - Rust package manager
+
+- **pip/uv** - Python
+- **gem** - Ruby
+- **npm/pnpm/yarn** - Node.js
+- **cargo** - Rust
 - **go** - Go modules
-- **composer** - PHP package manager
+- **composer** - PHP
 
 ## Commands
 
-### Core Commands
-
-- `gz pm` - Main package manager command
-- `gz pm status` - Show status of all configured package managers
-- `gz pm install` - Install packages from configuration files
-- `gz pm update` - Update packages based on version strategy
-- `gz pm sync` - Synchronize installed packages with configuration
-- `gz pm export` - Export current installations to configuration files
-- `gz pm validate` - Validate configuration files
-- `gz pm clean` - Clean unused packages based on strategy
-- `gz pm bootstrap` - Install and configure package managers
-- `gz pm upgrade-managers` - Upgrade package managers themselves
-- `gz pm sync-versions` - Synchronize version manager and package manager versions
-
-### Package Manager Specific Commands
-
-- `gz pm brew` - Manage Homebrew packages
-- `gz pm asdf` - Manage asdf plugins and versions
-- `gz pm pip` - Manage Python packages
-- `gz pm npm` - Manage Node.js packages
-- `gz pm [manager]` - Manage specific package manager
-
-### Command Options
+### Core Unified Commands
 
 ```bash
-# Install packages from all configured managers
-gz pm install
+gz pm                       # Show help
+gz pm status               # Show status of all configured package managers
+gz pm install              # Install packages from configuration files
+gz pm update               # Update packages based on version strategy
+gz pm sync                 # Synchronize installed packages with configuration
+gz pm export               # Export current installations to configuration files
+gz pm validate             # Validate configuration files
+gz pm clean                # Clean unused packages based on strategy
+gz pm bootstrap            # Install and configure package managers
+gz pm upgrade-managers     # Upgrade package managers themselves
+gz pm sync-versions        # Synchronize version manager and package manager versions
+```
 
-# Install from specific package manager
+### Legacy Direct Access Commands
+
+For backward compatibility and direct package manager access:
+
+```bash
+# System package managers
+gz pm brew [subcommands]    # Direct Homebrew access
+gz pm apt [subcommands]     # Direct APT access
+gz pm port [subcommands]    # Direct MacPorts access
+
+# Version managers
+gz pm asdf [subcommands]    # Direct asdf access
+gz pm sdkman [subcommands]  # Direct SDKMAN access
+gz pm rbenv [subcommands]   # Direct rbenv access
+
+# Language package managers
+gz pm pip [subcommands]     # Direct pip access
+gz pm npm [subcommands]     # Direct npm access
+```
+
+### Command Examples
+
+```bash
+# Unified commands (recommended)
 gz pm install --manager brew
-
-# Install with specific strategy
-gz pm install --strategy strict
-
-# Export current installations
-gz pm export --all
-gz pm export --manager brew
-
-# Update packages
-gz pm update --all
-gz pm update --manager asdf --strategy latest
-
-# Sync with configuration (add missing, optionally remove extra)
+gz pm update --all --strategy stable
 gz pm sync --cleanup
-gz pm sync --preserve-extra
+gz pm export --manager asdf
 
-# Clean unused packages
-gz pm clean --dry-run
-gz pm clean --force
+# Legacy direct access
+gz pm brew install wget
+gz pm asdf plugin add nodejs
+gz pm pip install requests
+gz pm npm install -g typescript
 
-# Bootstrap package managers
+# Bootstrap and maintenance
 gz pm bootstrap --check
 gz pm bootstrap --install brew,nvm,rbenv
-
-# Upgrade package managers
 gz pm upgrade-managers --all
-gz pm upgrade-managers --manager brew
-
-# Synchronize versions
-gz pm sync-versions --check
 gz pm sync-versions --fix
 ```
 
 ## Configuration
 
-### Configuration File Locations
+### File Structure
 
-All package manager configurations are stored in:
 ```
 ~/.gzh/pm/
-├── asdf.yml
-├── brew.yml
-├── sdkman.yml
-├── port.yml
-├── apt.yml
-├── pip.yml
-├── gem.yml
-├── npm.yml
-└── global.yml    # Global settings
+├── global.yml    # Global settings and manager registry
+├── brew.yml      # Homebrew packages and casks
+├── asdf.yml      # asdf plugins and versions
+├── sdkman.yml    # SDKMAN candidates
+├── pip.yml       # Python packages
+├── npm.yml       # Node.js packages
+├── apt.yml       # APT packages
+├── port.yml      # MacPorts packages
+└── ...           # Other package managers
 ```
 
-### Global Configuration (`~/.gzh/pm/global.yml`)
+### Global Configuration
+
+`~/.gzh/pm/global.yml`:
 
 ```yaml
-# Global Package Manager Configuration
 version: "1.0.0"
 
-# Default settings for all package managers
 defaults:
   strategy: "preserve"          # preserve, strict, latest
   auto_update: false
@@ -129,7 +160,6 @@ defaults:
   parallel_operations: true
   max_workers: 4
 
-# Package manager enablement
 managers:
   brew:
     enabled: true
@@ -144,164 +174,59 @@ managers:
     config_file: "pip.yml"
     priority: 3
 
-# Global version strategies
 version_strategies:
-  default: "stable"            # latest, stable, fixed
+  default: "stable"
   development: "latest"
   production: "fixed"
 
-# Cleanup policies
 cleanup:
-  remove_orphans: false        # Remove packages not in config
-  remove_unused_deps: true     # Remove unused dependencies
-  keep_cache: false           # Keep package caches
-  dry_run_default: true       # Default to dry-run for safety
-
-# Logging
-logging:
-  level: "info"
-  file: "~/.gzh/logs/pm.log"
-  format: "json"
+  remove_orphans: false
+  remove_unused_deps: true
+  keep_cache: false
+  dry_run_default: true
 ```
 
-### Homebrew Configuration (`~/.gzh/pm/brew.yml`)
+### Package Manager Configuration Examples
+
+#### Homebrew (`brew.yml`)
 
 ```yaml
-# Homebrew Package Configuration
 version: "1.0.0"
-generated_at: "2025-01-25T10:00:00Z"
-platform: "darwin"  # darwin, linux
+platform: "darwin"
 
-# Homebrew settings
 settings:
   HOMEBREW_PREFIX: "/opt/homebrew"
   HOMEBREW_CASK_OPTS: "--appdir=/Applications"
-  HOMEBREW_NO_ANALYTICS: "1"
 
-# Version management strategy
 strategy:
-  default: "latest"        # latest, stable, fixed
+  default: "latest"
   update_frequency: "weekly"
   auto_cleanup: true
-  
-# Cleanup policy
-cleanup_policy: "preserve"  # preserve, remove, quarantine
 
-# Taps (third-party repositories)
 taps:
   - homebrew/core
   - homebrew/cask
-  - homebrew/services
-  - hashicorp/tap
 
-# Formulae (command-line packages)
 formulae:
-  # Development tools
   - name: git
     version: "latest"
-    options: []
-    
-  - name: vim
-    version: "latest"
-    options: ["--with-override-system-vi"]
-    
-  - name: tmux
-    version: "stable"
-    
-  - name: docker
-    version: "latest"
-    start_service: true
-    
-  # Programming languages
-  - name: go
-    version: "1.21.5"      # Fixed version
-    
-  - name: rust
-    version: "stable"
-    
   - name: node
     version: "latest"
     link: true
-    
-  # Development tools with fixed versions
-  - name: terraform
-    tap: "hashicorp/tap"
-    version: "1.6.0"
-    
-  - name: postgresql@15
-    version: "15.5"
-    start_service: true
-    restart_service: "changed"
 
-# Casks (GUI applications)
 casks:
-  # Browsers
-  - name: google-chrome
-    version: "latest"
-    
-  - name: firefox
-    version: "latest"
-    
-  # Development tools
   - name: visual-studio-code
     version: "latest"
-    
-  - name: iterm2
-    version: "stable"
-    
   - name: docker
     version: "latest"
-    
-  # Productivity
-  - name: slack
-    version: "latest"
-    quarantine: false
-    
-  - name: notion
-    version: "latest"
-
-# Services
-services:
-  - name: postgresql@15
-    status: "started"      # started, stopped, restarted
-    run_at: "login"       # login, boot
-    
-  - name: redis
-    status: "started"
-    run_at: "login"
-
-# Post-install hooks
-hooks:
-  post_install:
-    - "brew cleanup"
-    - "brew doctor"
-  post_update:
-    - "brew cleanup --prune=7"
 ```
 
-### ASDF Configuration (`~/.gzh/pm/asdf.yml`)
+#### ASDF (`asdf.yml`)
 
 ```yaml
-# ASDF Version Manager Configuration
 version: "1.0.0"
-generated_at: "2025-01-25T10:00:00Z"
 
-# ASDF settings
-settings:
-  legacy_version_file: true
-  plugin_repository_last_check_duration: "7 days"
-  
-# Version management strategy
-strategy:
-  default: "stable"
-  update_plugins: true
-  
-# Cleanup policy
-cleanup_policy: "preserve"
-
-# Plugins and versions
 plugins:
-  # Node.js
   nodejs:
     repository: "https://github.com/asdf-vm/asdf-nodejs.git"
     versions:
@@ -309,799 +234,191 @@ plugins:
         global: true
       - version: "18.19.0"
         install: true
-    post_install:
-      - "npm install -g yarn pnpm"
-      
-  # Python
+
   python:
     repository: "https://github.com/asdf-vm/asdf-python.git"
     versions:
       - version: "3.12.1"
         global: true
-      - version: "3.11.7"
-        install: true
-      - version: "3.10.13"
-        install: true
-    build_deps:
-      darwin:
-        - "openssl"
-        - "readline"
-        - "sqlite3"
-        
-  # Ruby
-  ruby:
-    repository: "https://github.com/asdf-vm/asdf-ruby.git"
-    versions:
-      - version: "3.3.0"
-        global: true
-      - version: "3.2.2"
-        install: true
-    environment:
-      RUBY_CONFIGURE_OPTS: "--with-openssl-dir=/opt/homebrew/opt/openssl@3"
-      
-  # Go
-  golang:
-    repository: "https://github.com/asdf-vm/asdf-golang.git"
-    versions:
-      - version: "1.21.5"
-        global: true
-      - version: "1.20.12"
-        install: false
-        
-  # Java
-  java:
-    repository: "https://github.com/halcyon/asdf-java.git"
-    versions:
-      - version: "openjdk-21"
-        global: true
-      - version: "openjdk-17.0.9"
-        install: true
-      - version: "openjdk-11.0.21"
-        install: true
 
-# Global tool versions (creates ~/.tool-versions)
 global_versions:
   nodejs: "20.11.0"
   python: "3.12.1"
-  ruby: "3.3.0"
-  golang: "1.21.5"
-  java: "openjdk-21"
-
-# Hooks
-hooks:
-  post_plugin_add:
-    - "asdf plugin update --all"
-  post_install:
-    - "asdf reshim"
 ```
 
-### Python/pip Configuration (`~/.gzh/pm/pip.yml`)
+## Advanced Features
+
+### Package Manager Bootstrap
+
+Automatically install missing package managers:
 
 ```yaml
-# Python Package Configuration
-version: "1.0.0"
-generated_at: "2025-01-25T10:00:00Z"
-
-# Package manager settings
-settings:
-  package_manager: "pip"      # pip, uv
-  use_venv: false            # Use global packages
-  index_url: "https://pypi.org/simple"
-  trusted_host: []
-  
-# Version strategy
-strategy:
-  default: "compatible"      # latest, compatible, fixed
-  
-# Cleanup policy
-cleanup_policy: "preserve"
-
-# Global packages
-packages:
-  # Development tools
-  - name: poetry
-    version: "latest"
-    
-  - name: pipenv
-    version: "latest"
-    
-  - name: black
-    version: "~=23.0"
-    
-  - name: flake8
-    version: ">=6.0.0"
-    
-  - name: mypy
-    version: "~=1.7.0"
-    
-  - name: pytest
-    version: ">=7.4.0"
-    extras: ["cov"]
-    
-  # Data science tools
-  - name: jupyter
-    version: "latest"
-    
-  - name: ipython
-    version: ">=8.0.0"
-    
-  # CLI tools
-  - name: httpie
-    version: "latest"
-    
-  - name: awscli
-    version: "~=2.15.0"
-    
-  # Fixed versions for compatibility
-  - name: ansible
-    version: "==8.7.0"
-    
-  - name: docker-compose
-    version: "==2.23.0"
-
-# Development dependencies (not installed globally)
-dev_packages:
-  - name: pre-commit
-    version: ">=3.5.0"
-    
-  - name: tox
-    version: ">=4.0.0"
-
-# Requirements files to sync
-requirements_files:
-  - path: "~/.gzh/requirements/global.txt"
-    strategy: "compatible"
-  - path: "~/.gzh/requirements/tools.txt"
-    strategy: "latest"
-```
-
-### SDKMAN Configuration (`~/.gzh/pm/sdkman.yml`)
-
-```yaml
-# SDKMAN JVM Tools Configuration
-version: "1.0.0"
-generated_at: "2025-01-25T10:00:00Z"
-
-# SDKMAN settings
-settings:
-  auto_answer: true
-  auto_selfupdate: true
-  colour_enable: true
-  
-# Version strategy
-strategy:
-  default: "stable"
-  
-# Cleanup policy
-cleanup_policy: "remove"    # Remove old versions
-
-# Candidates (JVM tools)
-candidates:
-  # Java versions
-  java:
-    versions:
-      - version: "21-tem"
-        default: true
-        install: true
-      - version: "17.0.9-tem"
-        install: true
-      - version: "11.0.21-tem"
-        install: true
-        
-  # Build tools
-  gradle:
-    versions:
-      - version: "8.5"
-        default: true
-        install: true
-      - version: "7.6.3"
-        install: false
-        
-  maven:
-    versions:
-      - version: "3.9.6"
-        default: true
-        install: true
-        
-  # Kotlin
-  kotlin:
-    versions:
-      - version: "1.9.22"
-        default: true
-        install: true
-        
-  # Scala
-  scala:
-    versions:
-      - version: "3.3.1"
-        default: true
-        install: true
-      - version: "2.13.12"
-        install: true
-        
-  # Other JVM languages
-  groovy:
-    versions:
-      - version: "4.0.18"
-        default: true
-        install: true
-        
-  # Build tools
-  sbt:
-    versions:
-      - version: "1.9.8"
-        default: true
-        install: true
-        
-  # Application servers
-  springboot:
-    versions:
-      - version: "3.2.1"
-        default: true
-        install: true
-
-# Environment variables
-environment:
-  JAVA_HOME: "$SDKMAN_DIR/candidates/java/current"
-  GRADLE_HOME: "$SDKMAN_DIR/candidates/gradle/current"
-  MAVEN_HOME: "$SDKMAN_DIR/candidates/maven/current"
-```
-
-### NPM Configuration (`~/.gzh/pm/npm.yml`)
-
-```yaml
-# Node.js Package Configuration
-version: "1.0.0"
-generated_at: "2025-01-25T10:00:00Z"
-
-# Package manager settings
-settings:
-  package_manager: "npm"     # npm, pnpm, yarn
-  registry: "https://registry.npmjs.org/"
-  prefix: "~/.npm-global"
-  
-# Version strategy
-strategy:
-  default: "latest"
-  
-# Cleanup policy
-cleanup_policy: "preserve"
-
-# Global packages
-packages:
-  # Package managers
-  - name: pnpm
-    version: "latest"
-    
-  - name: yarn
-    version: "latest"
-    
-  # Build tools
-  - name: typescript
-    version: "^5.3.0"
-    
-  - name: ts-node
-    version: "latest"
-    
-  - name: nodemon
-    version: "latest"
-    
-  # Linting and formatting
-  - name: eslint
-    version: "^8.56.0"
-    
-  - name: prettier
-    version: "^3.1.0"
-    
-  # Testing
-  - name: jest
-    version: "^29.7.0"
-    
-  # CLI tools
-  - name: "@angular/cli"
-    version: "^17.0.0"
-    
-  - name: "@vue/cli"
-    version: "^5.0.8"
-    
-  - name: create-react-app
-    version: "latest"
-    
-  - name: "@nestjs/cli"
-    version: "^10.2.0"
-    
-  - name: "vercel"
-    version: "latest"
-    
-  - name: "netlify-cli"
-    version: "latest"
-    
-  # Development tools
-  - name: "serve"
-    version: "latest"
-    
-  - name: "concurrently"
-    version: "latest"
-    
-  - name: "npm-check-updates"
-    version: "latest"
-
-# NPM configuration
-npm_config:
-  init-author-name: "Your Name"
-  init-author-email: "your.email@example.com"
-  init-license: "MIT"
-  save-exact: false
-```
-
-## Package Manager Bootstrap
-
-### Overview
-
-The bootstrap feature manages the installation and upgrade of package managers themselves. This ensures that all required package managers are available and up-to-date before managing packages.
-
-### Bootstrap Commands
-
-#### `gz pm bootstrap`
-
-Installs missing package managers based on platform and configuration.
-
-```bash
-# Check which package managers need installation
-gz pm bootstrap --check
-
-# Install all missing package managers
-gz pm bootstrap --install
-
-# Install specific package managers
-gz pm bootstrap --install brew,nvm,rbenv
-
-# Force reinstall
-gz pm bootstrap --force --install brew
-```
-
-### Bootstrap Configuration
-
-Add to `~/.gzh/pm/global.yml`:
-
-```yaml
-# Package manager bootstrap configuration
+# In global.yml
 bootstrap:
-  auto_install: true              # Automatically install missing managers
-  check_on_startup: true          # Check manager availability on each run
-  
-  # Package manager installation sources
+  auto_install: true
+  check_on_startup: true
+
   managers:
-    # Homebrew
     brew:
       darwin:
         install_script: "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
         check_command: "brew --version"
-        min_version: "4.0.0"
-      linux:
-        install_script: "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
-        check_command: "brew --version"
-        
-    # NVM (Node Version Manager)
+
     nvm:
       install_script: "https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh"
       check_command: "nvm --version"
-      min_version: "0.39.0"
-      post_install:
-        - "source ~/.nvm/nvm.sh"
-        
-    # rbenv
-    rbenv:
-      darwin:
-        install_method: "brew"
-        brew_formula: "rbenv ruby-build"
-      linux:
-        install_script: "https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer"
-      check_command: "rbenv --version"
-      
-    # pyenv
-    pyenv:
-      darwin:
-        install_method: "brew"
-        brew_formula: "pyenv"
-      linux:
-        install_script: "https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer"
-      check_command: "pyenv --version"
-      
-    # SDKMAN
-    sdkman:
-      install_script: "https://get.sdkman.io"
-      check_command: "sdk version"
-      environment:
-        SDKMAN_DIR: "$HOME/.sdkman"
-        
-    # pip
-    pip:
-      check_command: "pip --version"
-      install_with: "python"
-      upgrade_command: "python -m pip install --upgrade pip"
-      
-    # npm (usually comes with Node.js)
-    npm:
-      check_command: "npm --version"
-      install_with: "node"
-      upgrade_command: "npm install -g npm@latest"
 ```
 
-### Package Manager Upgrade
+### Version Manager Coordination
 
-#### `gz pm upgrade-managers`
-
-Upgrades package managers to their latest versions.
-
-```bash
-# Upgrade all package managers
-gz pm upgrade-managers --all
-
-# Upgrade specific manager
-gz pm upgrade-managers --manager brew
-gz pm upgrade-managers --manager pip
-
-# Check available upgrades
-gz pm upgrade-managers --check
-```
-
-## Version Manager Coordination
-
-### Overview
-
-Handles the complexity of version managers and their associated package managers, ensuring compatibility and smooth transitions between versions.
-
-### Version Synchronization Issues
-
-#### Node.js / npm Coordination
-
-When using nvm to manage Node.js versions, npm versions can become mismatched:
-- Each Node.js version comes with a bundled npm version
-- Global npm packages are tied to specific Node.js versions
-- Switching Node.js versions can lead to missing packages or version conflicts
-
-#### Ruby / gem Coordination
-
-When using rbenv to manage Ruby versions:
-- Each Ruby version has its own gem installation directory
-- Gems installed for one Ruby version are not available in another
-- Switching Ruby versions requires reinstalling all gems
-
-### Configuration for Version Coordination
-
-Add to `~/.gzh/pm/global.yml`:
+Handle version manager complexity:
 
 ```yaml
-# Version manager coordination
+# In global.yml
 version_coordination:
-  # Node.js and npm coordination
   node_npm_sync:
     enabled: true
-    strategy: "bundled"         # bundled, latest, compatible, fixed
+    strategy: "bundled"
     npm_version_matrix:
-      "20.x": "10.x"           # Node 20 uses npm 10
-      "18.x": "9.x"            # Node 18 uses npm 9
-      "16.x": "8.x"            # Node 16 uses npm 8
-    global_packages_backup: true
-    
-  # Ruby and gem coordination  
+      "20.x": "10.x"
+      "18.x": "9.x"
+
   ruby_gem_migration:
     enabled: true
-    strategy: "copy"           # copy, reinstall, selective, manual
+    strategy: "copy"
     backup_before_switch: true
-    gem_sets:                  # Define gem sets
-      - name: "development"
-        gems: ["bundler", "rails", "rspec", "rubocop"]
-      - name: "deployment"
-        gems: ["capistrano", "mina"]
-        
-  # Python and pip coordination
-  python_pip_migration:
-    enabled: true
-    strategy: "venv"           # venv, reinstall, requirements
-    auto_create_venv: true
-    requirements_file: "~/.gzh/requirements/python-global.txt"
-    
-  # Java coordination (multiple JDKs)
-  java_coordination:
-    enabled: true
-    default_jdk: "21"
-    project_jdk_detection: true  # Detect from .java-version or pom.xml
 ```
 
-### Version Sync Commands
-
-#### `gz pm sync-versions`
-
-Ensures version managers and package managers are in sync.
-
-```bash
-# Check for version mismatches
-gz pm sync-versions --check
-
-# Fix version mismatches
-gz pm sync-versions --fix
-
-# Sync specific language
-gz pm sync-versions --language node
-gz pm sync-versions --language ruby --strategy reinstall
-```
-
-## Language-Specific Package Migration
-
-### Overview
-
-Provides intelligent migration of packages when switching between language versions, minimizing the need to manually reinstall packages.
-
-### Migration Strategies
-
-#### Ruby Migration
-
-When upgrading Ruby versions via rbenv:
-
-```yaml
-# Ruby-specific migration configuration
-ruby_migration:
-  default_strategy: "intelligent"    # intelligent, copy-all, reinstall, manual
-  
-  strategies:
-    intelligent:
-      # Analyze Gemfile.lock for version compatibility
-      check_compatibility: true
-      # Skip gems with native extensions for different Ruby versions
-      skip_incompatible: true
-      # Reinstall gems with native extensions
-      rebuild_native: true
-      
-    copy-all:
-      # Copy all gems from source to target Ruby version
-      include_bundled: false
-      verify_after_copy: true
-      
-    reinstall:
-      # Use Gemfile or gem list to reinstall
-      source: "gemfile"             # gemfile, gem-list, backup
-      parallel_install: true
-      
-  # Gem backup configuration
-  backup:
-    enabled: true
-    location: "~/.gzh/backups/ruby-gems"
-    format: "tarball"              # tarball, directory
-    keep_last: 3
-```
-
-#### Node.js Migration
-
-When upgrading Node.js versions via nvm:
-
-```yaml
-# Node.js-specific migration configuration
-node_migration:
-  default_strategy: "intelligent"
-  
-  strategies:
-    intelligent:
-      # Check package.json for version constraints
-      respect_constraints: true
-      # Update packages to compatible versions
-      auto_update: true
-      # Handle peer dependencies
-      resolve_peers: true
-      
-    preserve:
-      # Keep exact versions where possible
-      use_lockfile: true
-      # Fall back to compatible versions
-      fallback_strategy: "compatible"
-      
-  # Global packages to always install
-  always_install:
-    - "npm"
-    - "yarn"
-    - "pnpm"
-    - "typescript"
-    - "ts-node"
-    
-  # npm configuration preservation
-  preserve_npm_config: true
-  npm_config_items:
-    - "registry"
-    - "prefix"
-    - "init-*"
-```
-
-#### Python Migration
-
-When upgrading Python versions via pyenv:
-
-```yaml
-# Python-specific migration configuration  
-python_migration:
-  default_strategy: "venv-based"
-  
-  strategies:
-    venv-based:
-      # Create new venv for each Python version
-      auto_create: true
-      # Copy requirements from old venv
-      copy_requirements: true
-      # Update packages to compatible versions
-      update_on_create: true
-      
-    global-packages:
-      # Maintain a global package list
-      track_global: true
-      requirements_file: "~/.gzh/requirements/python-global.txt"
-      
-  # Always install these packages globally
-  essential_packages:
-    - "pip"
-    - "setuptools"
-    - "wheel"
-    - "virtualenv"
-```
-
-
-## Version Management Strategies
-
-### Version Specification
+### Version Strategies
 
 - **latest**: Always update to the latest version
-- **stable**: Update to the latest stable version (exclude pre-release)
-- **fixed**: Keep the exact specified version
-- **compatible**: Update within compatible version range (e.g., ~1.2.3, ^2.0.0)
+- **stable**: Latest stable version (exclude pre-release)
+- **fixed**: Keep exact version
+- **compatible**: Update within version range (e.g., ~1.2.3, ^2.0.0)
 
-### Examples
+### Cleanup Strategies
 
-```yaml
-# Latest version
-- name: docker
-  version: "latest"
+- **preserve**: Keep all installed packages, only add missing
+- **remove**: Remove packages not in configuration
+- **quarantine**: Move unmanaged packages to quarantine
+- **strict**: Remove anything not explicitly defined
 
-# Stable version
-- name: postgresql
-  version: "stable"
-
-# Fixed version
-- name: terraform
-  version: "1.6.0"
-
-# Compatible version (pip/npm style)
-- name: black
-  version: "~=23.0"    # >=23.0, <24.0
-
-- name: typescript
-  version: "^5.3.0"    # >=5.3.0, <6.0.0
-```
-
-## Cleanup Strategies
-
-### Strategy Options
-
-1. **preserve** (default): Keep all installed packages, only add missing ones
-2. **remove**: Remove packages not in configuration
-3. **quarantine**: Move unmanaged packages to quarantine list
-4. **strict**: Remove anything not explicitly defined
-
-### Per-Package Manager Behavior
-
-```yaml
-# In global.yml or per-manager config
-cleanup:
-  strategy: "preserve"
-  exceptions:
-    - "build-essential"    # Never remove
-    - "git"               # Never remove
-  quarantine_path: "~/.gzh/pm/quarantine/"
-```
-
-## Synchronization Process
-
-### Install Process
-1. Read configuration files
-2. Detect installed package managers
-3. Compare configured vs installed packages
-4. Install missing packages respecting version strategy
-5. Optionally cleanup based on cleanup strategy
-
-### Export Process
-1. Detect all package managers
-2. List installed packages with versions
-3. Generate/update configuration files
-4. Organize by package manager
-5. Add metadata (timestamp, platform)
-
-### Update Process
-1. Read configuration files
-2. Check for updates based on version strategy
-3. Update packages in dependency order
-4. Run post-update hooks
-5. Log all changes
-
-## Multi-Manager Coordination
-
-### Dependency Resolution
-- Detect cross-manager dependencies
-- Install in correct order (system → version managers → language packages)
-- Handle conflicts between managers
-
-### Example Workflow
+## Multi-Manager Workflow
 
 ```bash
-# First time setup: export current state
-gz pm export --all
+# First time setup
+gz pm export --all              # Export current state
 
-# Install on new machine
-gz pm install --all
+# New machine setup
+gz pm bootstrap                 # Install package managers
+gz pm install --all            # Install all packages
 
-# Regular updates
+# Regular maintenance
 gz pm update --strategy stable
-
-# Sync and cleanup
 gz pm sync --cleanup --dry-run
-gz pm sync --cleanup
-
-# Update specific manager
-gz pm update --manager brew
+gz pm clean --force
 ```
 
 ## Platform Support
 
-### Operating System Detection
-- macOS: brew, port, asdf
-- Linux: apt/yum/dnf/pacman, brew, asdf
-- Windows: chocolatey, scoop (future)
+- **macOS**: brew, port, asdf
+- **Linux**: apt/yum/dnf/pacman, brew, asdf
+- **Windows**: chocolatey, scoop (future)
 
-### Architecture Support
-- Intel (x86_64)
-- Apple Silicon (arm64)
-- Linux ARM
+## Future Considerations: Generic Package Manager Pattern
 
-## Error Handling
+### Overview
 
-### Common Scenarios
-- Package manager not installed
-- Version conflicts
-- Missing dependencies
-- Network failures
-- Permission issues
+A generic `gz pm [manager]` pattern has been designed to allow dynamic access to any package manager without explicitly defining each one. This would enable support for new package managers without code changes.
 
-### Recovery Options
-- Rollback to previous state
-- Skip failed packages
-- Retry with different strategy
-- Generate error report
+### Proposed Command Structure
 
-## Integration Points
+```bash
+gz pm [manager] [subcommand] [args...]
+```
 
-- **Development Environment**: Coordinates with dev-env for tool installation
-- **Network Management**: Respects proxy settings from net-env
-- **Version Control**: Can track configuration files in git
-- **CI/CD**: Export configurations for reproducible builds
+### Technical Design
 
-## Security Considerations
+#### 1. Dynamic Command Registration
 
-- Verify package signatures when possible
-- Use official package repositories
-- Audit dependencies for vulnerabilities
-- Store sensitive data in environment variables
-- Regular security updates based on advisories
+- Use cobra's `DisableFlagParsing` to capture all arguments
+- Parse the first argument as the package manager name
+- Pass remaining arguments to the package manager
 
-## Performance Optimization
+#### 2. Package Manager Registry
 
-- Parallel package installation where supported
-- Cache package downloads
-- Incremental updates
-- Minimal dependency resolution
-- Background update checks
+```go
+type PackageManager interface {
+    Name() string
+    IsInstalled() bool
+    Execute(args []string) error
+}
 
-## Future Enhancements
+var registry = map[string]PackageManager{
+    "brew": &BrewManager{},
+    "apt":  &AptManager{},
+    // etc.
+}
+```
 
-- Windows package manager support (chocolatey, scoop)
-- Container-based isolation
-- Package vulnerability scanning
-- Automated dependency updates with PR creation
-- Cloud sync for configurations
-- Package usage analytics
+#### 3. Implementation Example
+
+```go
+func newGenericPMCmd(ctx context.Context) *cobra.Command {
+    return &cobra.Command{
+        Use:                "pm [manager] [args...]",
+        Short:              "Execute package manager commands",
+        DisableFlagParsing: true,
+        RunE: func(cmd *cobra.Command, args []string) error {
+            if len(args) < 1 {
+                return fmt.Errorf("specify a package manager")
+            }
+
+            manager := args[0]
+            pmArgs := args[1:]
+
+            // Check registry first
+            if pm, ok := registry[manager]; ok {
+                return pm.Execute(pmArgs)
+            }
+
+            // Fallback to system command
+            return executeSystemCommand(ctx, manager, pmArgs)
+        },
+    }
+}
+```
+
+#### 4. Fallback to System Command
+
+If a manager is not in the registry, the system would attempt to execute it as a system command, providing flexibility for new or unknown package managers.
+
+### Benefits
+
+1. **Extensibility**: Support new package managers without code changes
+2. **Flexibility**: Users can access any package manager command
+3. **Consistency**: Unified interface for all package managers
+
+### Challenges
+
+1. **Command Discovery**: How to provide help/completion for dynamic commands
+2. **Error Handling**: Distinguishing between "manager not found" vs "command failed"
+3. **Security**: Preventing arbitrary command execution
+4. **Configuration Integration**: How to integrate with unified config system
+
+### Migration Path
+
+1. Keep existing explicit commands for backward compatibility
+2. Implement generic pattern alongside explicit commands
+3. Eventually deprecate explicit commands in favor of generic pattern
+
+### Current Decision
+
+For now, we continue with explicit commands as they provide:
+
+- Better documentation and help text
+- Type safety and validation
+- Clear command structure
+- Better integration with configuration system
+
+The generic pattern remains designed and ready for implementation when there's a clear need for supporting many more package managers dynamically.

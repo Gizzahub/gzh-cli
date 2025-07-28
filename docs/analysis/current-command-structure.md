@@ -1,5 +1,8 @@
 # Current Command Structure
 
+**Last Updated**: 2025-01-27  
+**Status**: Reflects actual implementation based on code analysis
+
 ## Overview
 
 The gzh-manager-go CLI tool (`gz`) provides a comprehensive set of commands for managing development environments, repositories, and system configurations.
@@ -11,7 +14,14 @@ The gzh-manager-go CLI tool (`gz`) provides a comprehensive set of commands for 
 1. **synclone** - Multi-platform repository cloning and synchronization
    - Supports GitHub, GitLab, Gitea, and Gogs
    - Bulk operations for organizations and groups
-   - Configuration management with subcommands
+   - Configuration management with subcommands:
+     - `config generate` - Generate configuration files
+     - `config validate` - Validate configuration syntax
+     - `config convert` - Convert between formats
+   - State management with subcommands:
+     - `state list` - List tracked operations
+     - `state show` - Show operation details
+     - `state clean` - Clean up state files
 
 2. **dev-env** - Development environment configuration management
    - AWS, GCP, Azure cloud configurations
@@ -36,39 +46,36 @@ The gzh-manager-go CLI tool (`gz`) provides a comprehensive set of commands for 
    - Fix sync issues
    - Backup and restore settings
 
-6. **pm** (formerly always-latest) - Package manager updates
-   - Homebrew, asdf, SDKMAN management
-   - npm, pip, gem package updates
-   - Coordinated version management
+6. **pm** - Unified package manager interface
+   - Core unified commands: `status`, `install`, `update`, `sync`, `export`, `validate`, `clean`, `bootstrap`
+   - Legacy direct access commands: `brew`, `asdf`, `sdkman`, `apt`, `port`, `rbenv`, `pip`, `npm`
+   - Configuration-based management for all package managers
+   - Coordinated version management across tools
 
 7. **doctor** - System health and configuration validation
    - Check system dependencies
    - Validate configurations
    - Diagnose common issues
 
-### Repository Management
+### Git Platform Management
 
-8. **event** - GitHub event management
-   - Monitor repository events
-   - Event filtering and processing
-   - Webhook event handling
-
-9. **webhook** - GitHub webhook management
-   - Create and manage webhooks
-   - Update webhook configurations
-   - List and delete webhooks
+8. **git** - Unified Git platform management interface
+   - `git config` - Repository configuration management (delegates to repo-config)
+   - `git webhook` - Webhook management (via repo-config webhook)
+   - `git event` - Event processing and monitoring
+   - Provides consistent interface for all Git-related operations
 
 ### Utility Commands
 
-10. **version** - Display version information
-11. **help** - Show help for commands
-12. **man** - Display manual pages
+9. **version** - Display version information
+10. **help** - Show help for commands
 
 ### Special Commands
 
-13. **shell** - Interactive shell mode (debug feature)
+11. **shell** - Interactive shell mode (debug feature)
     - Available via `--debug-shell` flag
     - For development and debugging
+    - Hidden from normal help output
 
 ## Command Structure Pattern
 
