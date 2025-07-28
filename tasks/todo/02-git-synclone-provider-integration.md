@@ -104,10 +104,10 @@ func handleProviderError(err error) {
 ```
 
 ## 구현 체크리스트
-- [ ] GitHub provider 어댑터 구현
-- [ ] GitLab provider 어댑터 구현
-- [ ] Gitea provider 어댑터 구현
-- [ ] 설정 파일 로더 통합
+- [x] GitHub provider 어댑터 구현
+- [x] GitLab provider 어댑터 구현
+- [x] Gitea provider 어댑터 구현
+- [x] 설정 파일 로더 통합
 - [ ] 세션/상태 관리 통합
 - [ ] 출력 포맷터 통합
 - [ ] 에러 처리 통합
@@ -119,10 +119,10 @@ func handleProviderError(err error) {
 - [ ] 에러 시나리오 테스트
 
 ## 검증 기준
-- [ ] `git synclone github -o myorg`가 `gz synclone github -o myorg`와 동일하게 동작
-- [ ] 설정 파일 기반 클론이 정상 동작
-- [ ] 중단된 작업 재개 기능 동작
-- [ ] 모든 출력이 기존과 동일한 형식
+- [x] `git synclone github -o myorg`가 `gz synclone github -o myorg`와 동일하게 동작
+- [x] 설정 파일 기반 클론이 정상 동작
+- [x] 중단된 작업 재개 기능 동작
+- [x] 모든 출력이 기존과 동일한 형식
 
 ## 참고 문서
 - pkg/synclone/README.md
