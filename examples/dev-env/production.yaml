@@ -1,0 +1,41 @@
+# Example production environment configuration for gz dev-env switch-all
+name: production
+description: "Production environment configuration with all services"
+
+services:
+  aws:
+    profile: prod-profile
+    region: us-west-2
+    account_id: "123456789012"
+  
+  gcp:
+    project: my-prod-project
+    account: prod@company.com
+    region: us-central1
+  
+  kubernetes:
+    context: prod-cluster
+    namespace: default
+  
+  docker:
+    context: prod-docker
+  
+  ssh:
+    config: production
+
+dependencies:
+  - aws -> kubernetes  # AWS profile must be set before Kubernetes context
+  - gcp -> kubernetes  # GCP project must be set before Kubernetes context
+
+pre_hooks:
+  - command: "echo 'Switching to production environment'"
+    timeout: 10s
+    on_error: continue
+  
+post_hooks:
+  - command: "kubectl get nodes"
+    timeout: 30s
+    on_error: continue
+  - command: "aws sts get-caller-identity"
+    timeout: 30s
+    on_error: continue

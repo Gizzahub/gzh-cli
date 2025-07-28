@@ -74,6 +74,9 @@ Examples:
 		SilenceUsage: true,
 	}
 
+	// Add switch-all command for unified environment switching
+	cmd.AddCommand(newSwitchAllCmd())
+
 	cmd.AddCommand(newKubeconfigCmd())
 	cmd.AddCommand(newDockerCmd())
 	cmd.AddCommand(newAwsCmd())

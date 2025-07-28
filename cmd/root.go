@@ -31,7 +31,13 @@ var (
 func newRootCmd(ctx context.Context, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gz",
-		Short: "Cli 종합 Manager by Gizzahub",
+		Short: "개발 환경 및 Git 플랫폼 통합 관리 도구",
+		Long: `gz는 개발자를 위한 종합 CLI 도구입니다.
+
+개발 환경 설정, Git 플랫폼 관리, IDE 모니터링, 네트워크 환경 전환 등
+다양한 개발 워크플로우를 통합적으로 관리할 수 있습니다.
+
+Utility Commands: doctor, version`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			// Set global logging configuration based on flags
 			logger.SetGlobalLoggingFlags(verbose, debug, quiet)
@@ -41,24 +47,34 @@ func newRootCmd(ctx context.Context, version string) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(newVersionCmd(version))
+	// Core feature commands
 	cmd.AddCommand(pm.NewPMCmd(ctx))
 	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx))
-	cmd.AddCommand(doctorcmd.DoctorCmd)
 	cmd.AddCommand(devenv.NewDevEnvCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(ide.NewIDECmd(ctx))
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
-	// Shell command is now hidden - only add if debug mode is enabled
+	cmd.AddCommand(NewGitCmd())                   //nolint:contextcheck // Command setup doesn't require context propagation
+
+	// Utility commands - set as hidden to reduce clutter in main help
+	versionCmd := newVersionCmd(version)
+	versionCmd.Hidden = true
+	cmd.AddCommand(versionCmd)
+
+	doctorCmd := doctorcmd.DoctorCmd
+	doctorCmd.Hidden = true
+	cmd.AddCommand(doctorCmd)
+
+	// Shell command is hidden - only add if debug mode is enabled
 	if debugShell || os.Getenv("GZH_DEBUG_SHELL") == "1" {
 		shellCmd := shell.ShellCmd
 		shellCmd.Hidden = true
 		cmd.AddCommand(shellCmd)
 	}
-	cmd.AddCommand(NewGitCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 
-	// Hide completion command
+	// Hide completion command and help command
 	cmd.CompletionOptions.DisableDefaultCmd = true
+	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
 
 	// Add global flags
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose logging")

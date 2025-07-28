@@ -1,0 +1,31 @@
+# Example development environment configuration for gz dev-env switch-all
+name: development
+description: "Development environment configuration"
+
+services:
+  aws:
+    profile: dev-profile
+    region: us-east-1
+    account_id: "987654321098"
+  
+  gcp:
+    project: my-dev-project
+    account: dev@company.com
+    region: us-east1
+  
+  kubernetes:
+    context: dev-cluster
+    namespace: development
+  
+  docker:
+    context: dev-docker
+
+dependencies:
+  - aws -> kubernetes
+
+pre_hooks:
+  - command: "echo 'Switching to development environment'"
+
+post_hooks:
+  - command: "kubectl config current-context"
+  - command: "docker context show"
