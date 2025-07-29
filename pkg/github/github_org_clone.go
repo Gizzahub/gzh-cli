@@ -18,7 +18,6 @@ import (
 	"golang.org/x/sync/semaphore"
 
 	"github.com/gizzahub/gzh-manager-go/internal/git"
-	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
 )
 
@@ -285,8 +284,8 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 	for _, repo := range targetRepos {
 		repoPath := filepath.Join(targetPath, repo)
 
-		repoType, _ := helpers.CheckGitRepoType(repoPath)
-		if !Contains(targetRepos, repo) || repoType == helpers.RepoTypeNone {
+		repoType, _ := git.CheckGitRepoType(repoPath)
+		if !Contains(targetRepos, repo) || repoType == git.RepoTypeNone {
 			if err := os.RemoveAll(repoPath); err != nil {
 				return fmt.Errorf("failed to delete repository %s: %w", repoPath, err)
 			}
@@ -335,8 +334,8 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 				}
 			} else {
 				// Execute git operation based on strategy
-				repoType, _ := helpers.CheckGitRepoType(repoPath)
-				if repoType != helpers.RepoTypeEmpty {
+				repoType, _ := git.CheckGitRepoType(repoPath)
+				if repoType != git.RepoTypeEmpty {
 					if err := executeSecureGitOperation(gCtx, repoPath, strategy); err != nil {
 						fmt.Printf("git operation failed for %s: %v\n", repo, err)
 					}

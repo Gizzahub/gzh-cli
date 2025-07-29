@@ -1,3 +1,6 @@
+// Package github provides interfaces and types for GitHub API integration.
+// It defines contracts for HTTP operations, repository management, token validation,
+// change logging, and confirmation services used throughout the application.
 package github
 
 import (

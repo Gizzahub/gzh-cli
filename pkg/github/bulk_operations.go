@@ -9,7 +9,6 @@ import (
 	"github.com/schollz/progressbar/v3"
 
 	"github.com/gizzahub/gzh-manager-go/internal/git"
-	"github.com/gizzahub/gzh-manager-go/internal/helpers"
 	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
 )
 
@@ -196,8 +195,8 @@ func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 	repoPath string, args ...string,
 ) error {
 	// Check if repository is valid
-	repoType, _ := helpers.CheckGitRepoType(repoPath)
-	if repoType == helpers.RepoTypeEmpty {
+	repoType, _ := git.CheckGitRepoType(repoPath)
+	if repoType == git.RepoTypeEmpty {
 		return fmt.Errorf("repository is empty or not a git repository")
 	}
 

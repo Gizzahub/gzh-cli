@@ -343,11 +343,11 @@ func outputRepositoryTable(repo *provider.Repository) error {
 // outputRepositoryJSON outputs repository in JSON format.
 func outputRepositoryJSON(repo *provider.Repository) error {
 	// TODO: Implement JSON output
-	return fmt.Errorf("JSON output not implemented yet")
+	return fmt.Errorf("json output not implemented yet")
 }
 
 // outputRepositoryYAML outputs repository in YAML format.
 func outputRepositoryYAML(repo *provider.Repository) error {
 	// TODO: Implement YAML output
-	return fmt.Errorf("YAML output not implemented yet")
+	return fmt.Errorf("yaml output not implemented yet")
 }

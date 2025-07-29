@@ -76,11 +76,13 @@ func GetOverlayConfigPaths() []string {
 }
 
 // FindConfigFile searches for config file in predefined locations.
+// Deprecated: Use config.ConfigFactory.FindConfigFile() for unified configuration loading.
 func FindConfigFile() (string, error) {
 	return FindConfigFileWithEnv(env.NewOSEnvironment())
 }
 
 // FindConfigFileWithEnv searches for config file using the provided environment.
+// Deprecated: Use config.ConfigFactory.FindConfigFile() for unified configuration loading.
 func FindConfigFileWithEnv(environment env.Environment) (string, error) {
 	// Check environment variable first
 	if envPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); envPath != "" {
@@ -102,6 +104,7 @@ func FindConfigFileWithEnv(environment env.Environment) (string, error) {
 }
 
 // LoadConfig loads configuration from file with overlay support.
+// Deprecated: Use config.ConfigFactory.LoadConfig() for unified configuration loading.
 func LoadConfig(configPath string) (*BulkCloneConfig, error) {
 	if configPath == "" {
 		path, err := FindConfigFile()

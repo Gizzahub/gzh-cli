@@ -235,7 +235,7 @@ func (s *SessionManagerTestSuite) TestGetLatestSession() {
 		Options:      &CloneOptions{Parallel: 5, MaxRetries: 3},
 	}
 
-	session2, err := s.sessionManager.StartSession(ctx, req2)
+	_, err = s.sessionManager.StartSession(ctx, req2)
 	s.NoError(err)
 
 	// Complete first session

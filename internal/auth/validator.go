@@ -187,7 +187,7 @@ func (av *Validator) validateGitHubToken(ctx context.Context, token string) (*To
 
 	resp, err := av.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("API request failed: %w", err)
+		return nil, fmt.Errorf("api request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -213,7 +213,7 @@ func (av *Validator) validateGitHubToken(ctx context.Context, token string) (*To
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return tokenInfo, fmt.Errorf("GitHub API returned status %d", resp.StatusCode)
+		return tokenInfo, fmt.Errorf("github API returned status %d", resp.StatusCode)
 	}
 
 	return tokenInfo, nil
@@ -233,7 +233,7 @@ func (av *Validator) validateGitLabToken(ctx context.Context, token string) (*To
 
 	resp, err := av.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("API request failed: %w", err)
+		return nil, fmt.Errorf("api request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -254,7 +254,7 @@ func (av *Validator) validateGitLabToken(ctx context.Context, token string) (*To
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return tokenInfo, fmt.Errorf("GitLab API returned status %d", resp.StatusCode)
+		return tokenInfo, fmt.Errorf("gitlab API returned status %d", resp.StatusCode)
 	}
 
 	return tokenInfo, nil
@@ -274,7 +274,7 @@ func (av *Validator) validateGiteaToken(ctx context.Context, token string) (*Tok
 
 	resp, err := av.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("API request failed: %w", err)
+		return nil, fmt.Errorf("api request failed: %w", err)
 	}
 	defer resp.Body.Close()
 

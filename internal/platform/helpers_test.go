@@ -1,5 +1,5 @@
 //nolint:testpackage // White-box testing needed for internal function access
-package helpers
+package platform
 
 import (
 	"os"

@@ -224,7 +224,7 @@ func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
 	}
 
 	if _, err := os.Stat(sdkmanDir); os.IsNotExist(err) {
-		return fmt.Errorf("SDKMAN is not installed")
+		return fmt.Errorf("sdkman is not installed")
 	}
 
 	fmt.Println("☕ Updating SDKMAN...")

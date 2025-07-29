@@ -1,15 +1,63 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package config provides configuration loading and management functionality.
+// It supports loading configuration from multiple sources with a defined precedence:
+// environment variables, configuration files in various standard locations,
+// and default values.
 package config
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 )
+
+// convertUnifiedToLegacyConfig converts a UnifiedConfig to legacy Config format for backward compatibility.
+func convertUnifiedToLegacyConfig(unified *UnifiedConfig) *Config {
+	if unified == nil {
+		return nil
+	}
+
+	config := &Config{
+		Version:         unified.Version,
+		DefaultProvider: unified.DefaultProvider,
+		Providers:       make(map[string]Provider),
+	}
+
+	// Copy providers
+	for name, provider := range unified.Providers {
+		legacyProvider := Provider{
+			Token: provider.Token,
+		}
+
+		// Convert organizations to GitTargets
+		var orgs []GitTarget
+		for _, org := range provider.Organizations {
+			target := GitTarget{
+				Name:       org.Name,
+				Visibility: org.Visibility,
+				CloneDir:   org.CloneDir,
+				Strategy:   org.Strategy,
+				Match:      org.Include,
+				Exclude:    org.Exclude,
+			}
+			orgs = append(orgs, target)
+		}
+
+		// Set orgs or groups based on provider type
+		if name == "gitlab" {
+			legacyProvider.Groups = orgs
+		} else {
+			legacyProvider.Orgs = orgs
+		}
+
+		config.Providers[name] = legacyProvider
+	}
+
+	return config
+}
 
 // ConfigSearchPaths defines the search order for configuration files.
 var ConfigSearchPaths = []string{
@@ -24,65 +72,66 @@ var ConfigSearchPaths = []string{
 }
 
 // LoadConfig loads configuration from the first available file in search paths.
+// Deprecated: Use ConfigFactory.LoadConfig() instead for better dependency injection support.
 func LoadConfig() (*Config, error) {
 	return LoadConfigWithEnv(env.NewOSEnvironment())
 }
 
 // LoadConfigWithEnv loads configuration using the provided environment.
+// Deprecated: Use ConfigFactory.LoadConfigFromPath() instead for better dependency injection support.
 func LoadConfigWithEnv(environment env.Environment) (*Config, error) {
-	// Check environment variable first
-	if configPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); configPath != "" {
-		return LoadConfigFromFileWithEnv(configPath, environment)
+	// Use unified factory for backward compatibility
+	factory := NewConfigFactoryWithOptions(&ConfigFactoryOptions{
+		Environment: environment,
+	})
+
+	unifiedConfig, err := factory.LoadConfig()
+	if err != nil {
+		return nil, err
 	}
 
-	// Search in predefined paths
-	for _, path := range ConfigSearchPaths {
-		expandedPath := expandPathWithEnv(path, environment)
-		if fileExists(expandedPath) {
-			return LoadConfigFromFileWithEnv(expandedPath, environment)
-		}
-	}
-
-	return nil, fmt.Errorf("no configuration file found in search paths: %v", ConfigSearchPaths)
+	// Convert unified config to legacy Config struct for backward compatibility
+	return convertUnifiedToLegacyConfig(unifiedConfig), nil
 }
 
 // LoadConfigFromFile loads configuration from a specific file.
+// Deprecated: Use ConfigFactory.LoadConfigFromPath() instead for better dependency injection support.
 func LoadConfigFromFile(filename string) (*Config, error) {
 	return LoadConfigFromFileWithEnv(filename, env.NewOSEnvironment())
 }
 
 // LoadConfigFromFileWithEnv loads configuration from a specific file using the provided environment.
+// Deprecated: Use ConfigFactory.LoadConfigFromPath() instead for better dependency injection support.
 func LoadConfigFromFileWithEnv(filename string, environment env.Environment) (*Config, error) {
-	expandedPath := expandPathWithEnv(filename, environment)
-	return ParseYAMLFile(expandedPath)
+	// Use unified factory for backward compatibility
+	factory := NewConfigFactoryWithOptions(&ConfigFactoryOptions{
+		Environment: environment,
+	})
+
+	unifiedConfig, err := factory.LoadConfigFromPath(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert unified config to legacy Config struct for backward compatibility
+	return convertUnifiedToLegacyConfig(unifiedConfig), nil
 }
 
 // FindConfigFile finds the first available configuration file.
+// Deprecated: Use ConfigFactory.FindConfigFile() instead for better dependency injection support.
 func FindConfigFile() (string, error) {
 	return FindConfigFileWithEnv(env.NewOSEnvironment())
 }
 
 // FindConfigFileWithEnv finds the first available configuration file using the provided environment.
+// Deprecated: Use ConfigFactory.FindConfigFile() instead for better dependency injection support.
 func FindConfigFileWithEnv(environment env.Environment) (string, error) {
-	// Check environment variable first
-	if configPath := environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); configPath != "" {
-		expandedPath := expandPathWithEnv(configPath, environment)
-		if fileExists(expandedPath) {
-			return expandedPath, nil
-		}
+	// Use unified factory for backward compatibility
+	factory := NewConfigFactoryWithOptions(&ConfigFactoryOptions{
+		Environment: environment,
+	})
 
-		return "", fmt.Errorf("config file specified in GZH_CONFIG_PATH does not exist: %s", expandedPath)
-	}
-
-	// Search in predefined paths
-	for _, path := range ConfigSearchPaths {
-		expandedPath := expandPathWithEnv(path, environment)
-		if fileExists(expandedPath) {
-			return expandedPath, nil
-		}
-	}
-
-	return "", fmt.Errorf("no configuration file found in search paths")
+	return factory.FindConfigFile()
 }
 
 // GetConfigSearchPaths returns the list of paths where configuration files are searched.
@@ -139,47 +188,17 @@ func fileExists(filename string) bool {
 }
 
 // CreateDefaultConfig creates a default configuration file at the specified path.
+// Deprecated: Use ConfigFactory.CreateDefaultConfig() instead for better dependency injection support.
 func CreateDefaultConfig(filename string) error {
-	defaultConfig := `version: "1.0.0"
-default_provider: github
-
-providers:
-  github:
-    token: "${GITHUB_TOKEN}"
-    orgs:
-      - name: "your-org-name"
-        visibility: all
-        clone_dir: "./github"
-
-  gitlab:
-    token: "${GITLAB_TOKEN}"
-    groups:
-      - name: "your-group-name"
-        visibility: public
-        recursive: true
-        clone_dir: "./gitlab"
-`
-
-	// Ensure directory exists
-	dir := filepath.Dir(filename)
-	if err := os.MkdirAll(dir, 0o750); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
-	}
-
-	// Write config file
-	if err := os.WriteFile(filename, []byte(defaultConfig), 0o600); err != nil {
-		return fmt.Errorf("failed to write config file: %w", err)
-	}
-
-	return nil
+	// Use unified factory for backward compatibility
+	factory := NewConfigFactory()
+	return factory.CreateDefaultConfig(filename)
 }
 
 // GetDefaultConfigPath returns the default path for creating new config files.
+// Deprecated: Use ConfigFactory.GetDefaultConfigPath() instead for better dependency injection support.
 func GetDefaultConfigPath() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "./gzh.yaml" // Fallback to current directory
-	}
-
-	return filepath.Join(homeDir, ".config", "gzh.yaml")
+	// Use unified factory for backward compatibility
+	factory := NewConfigFactory()
+	return factory.GetDefaultConfigPath()
 }

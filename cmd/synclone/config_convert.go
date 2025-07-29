@@ -190,5 +190,5 @@ func convertJSONToYAML(data []byte) ([]byte, error) {
 // convertYAMLToJSON converts YAML configuration to JSON.
 func convertYAMLToJSON(data []byte) ([]byte, error) {
 	// For now, just return an error - would need JSON encoding
-	return nil, fmt.Errorf("YAML to JSON conversion not yet implemented")
+	return nil, fmt.Errorf("yaml to JSON conversion not yet implemented")
 }

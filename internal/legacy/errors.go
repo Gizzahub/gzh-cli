@@ -499,7 +499,7 @@ func NetworkRecoveryStrategy(err *GzhError) error {
 		return fmt.Errorf("network timeout recovery not implemented yet")
 	case ErrorCodeNetworkDNS:
 		// Could implement alternative DNS resolution
-		return fmt.Errorf("DNS recovery not implemented yet")
+		return fmt.Errorf("dns recovery not implemented yet")
 	case ErrorCodeNetworkConnection:
 		// Could implement connection retry with backoff
 		return fmt.Errorf("network connection recovery not implemented yet")
@@ -508,7 +508,7 @@ func NetworkRecoveryStrategy(err *GzhError) error {
 		return fmt.Errorf("network unreachable recovery not implemented yet")
 	case ErrorCodeVPNConnection, ErrorCodeVPNAuthentication, ErrorCodeVPNConfiguration, ErrorCodeVPNHierarchy:
 		// Network-related VPN issues
-		return fmt.Errorf("VPN network recovery not implemented yet")
+		return fmt.Errorf("vpn network recovery not implemented yet")
 	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
 		// Network configuration issues
 		return fmt.Errorf("network configuration recovery not implemented yet")
@@ -531,31 +531,31 @@ func VPNRecoveryStrategy(err *GzhError) error {
 	switch err.Code {
 	case ErrorCodeVPNConnection:
 		// Could implement failover to alternative VPN servers
-		return fmt.Errorf("VPN connection recovery not implemented yet")
+		return fmt.Errorf("vpn connection recovery not implemented yet")
 	case ErrorCodeVPNAuthentication:
 		// Could implement credential refresh
-		return fmt.Errorf("VPN authentication recovery not implemented yet")
+		return fmt.Errorf("vpn authentication recovery not implemented yet")
 	case ErrorCodeVPNConfiguration:
 		// Could implement configuration auto-repair
-		return fmt.Errorf("VPN configuration recovery not implemented yet")
+		return fmt.Errorf("vpn configuration recovery not implemented yet")
 	case ErrorCodeVPNHierarchy:
 		// Could implement hierarchy repair
-		return fmt.Errorf("VPN hierarchy recovery not implemented yet")
+		return fmt.Errorf("vpn hierarchy recovery not implemented yet")
 	case ErrorCodeNetworkConnection, ErrorCodeNetworkTimeout, ErrorCodeNetworkDNS, ErrorCodeNetworkUnreachable:
 		// VPN-related network issues
-		return fmt.Errorf("VPN network recovery not implemented yet")
+		return fmt.Errorf("vpn network recovery not implemented yet")
 	case ErrorCodeConfigInvalid, ErrorCodeConfigNotFound, ErrorCodeConfigSyntax, ErrorCodeConfigValidation:
 		// VPN configuration issues
-		return fmt.Errorf("VPN config recovery not implemented yet")
+		return fmt.Errorf("vpn config recovery not implemented yet")
 	case ErrorCodeAuthFailed, ErrorCodeAuthExpired, ErrorCodeAuthMissing, ErrorCodeAuthInvalid:
 		// VPN authentication issues
-		return fmt.Errorf("VPN auth recovery not implemented yet")
+		return fmt.Errorf("vpn auth recovery not implemented yet")
 	case ErrorCodePermissionDenied, ErrorCodeResourceNotFound, ErrorCodeResourceExists:
 		// VPN resource issues
-		return fmt.Errorf("VPN resource recovery not implemented yet")
+		return fmt.Errorf("vpn resource recovery not implemented yet")
 	case ErrorCodeSystemInternal, ErrorCodeSystemTimeout, ErrorCodeSystemResource:
 		// System-level VPN issues
-		return fmt.Errorf("VPN system recovery not implemented yet")
+		return fmt.Errorf("vpn system recovery not implemented yet")
 	default:
 		return err
 	}

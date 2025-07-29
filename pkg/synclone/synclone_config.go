@@ -1,6 +1,9 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package bulkclone provides configuration structures and validation
+// for bulk repository cloning operations across multiple Git platforms
+// including GitHub, GitLab, Gitea, and Gogs.
 package bulkclone
 
 import (
@@ -14,12 +17,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// bulkCloneDefault defines default configuration settings for bulk clone operations.
 type bulkCloneDefault struct {
 	Protocol string                 `yaml:"protocol" validate:"required,oneof=http https ssh"`
 	Github   bulkCloneDefaultGithub `yaml:"github"`
 	Gitlab   bulkCloneDefaultGitlab `yaml:"gitlab"`
 }
 
+// bulkCloneDefaultGithub defines default GitHub-specific configuration.
 type bulkCloneDefaultGithub struct {
 	RootPath string `yaml:"rootPath"`
 	Provider string `yaml:"provider"`
@@ -27,6 +32,7 @@ type bulkCloneDefaultGithub struct {
 	OrgName  string `yaml:"orgName"`
 }
 
+// bulkCloneDefaultGitlab defines default GitLab-specific configuration.
 type bulkCloneDefaultGitlab struct {
 	RootPath  string `yaml:"rootPath"`
 	Provider  string `yaml:"provider"`
