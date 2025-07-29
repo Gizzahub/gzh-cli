@@ -46,7 +46,7 @@
   - 🧠 **How**: Create `internal/cli/` package with common command builders
   - 📁 **Files**: `cmd/synclone/synclone.go`, `cmd/repo-config/`, all command files
 
-- [ ] **Separate business logic from CLI handlers**
+- [x] **Separate business logic from CLI handlers**
   - 📌 **Why**: Command files contain too much business logic (violation of SRP)
   - 🧠 **How**: Extract logic to service layer in `internal/services/`
   - 📁 **Files**: `cmd/*/` → move logic to `internal/services/synclone.go`, etc.

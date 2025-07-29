@@ -4,9 +4,12 @@
 package repoconfig
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/internal/services"
 )
 
 // newApplyCmd creates the apply subcommand.
@@ -64,7 +67,7 @@ Examples:
 }
 
 // runApplyCommand executes the apply command.
-func runApplyCommand(flags GlobalFlags, filter, template string, interactive, force bool) error { //nolint:gocognit // Complex repository configuration application logic
+func runApplyCommand(flags GlobalFlags, filter, template string, interactive, force bool) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
@@ -72,8 +75,23 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 	// Setup and display header
 	displayApplyHeader(flags, filter, template)
 
-	// Get configuration changes to apply
-	changes, err := getConfigurationChanges(flags.Organization, filter, template)
+	// Create service and prepare options
+	service := services.NewRepoConfigService()
+	opts := services.ApplyOptions{
+		Organization: flags.Organization,
+		Filter:       filter,
+		Template:     template,
+		DryRun:       flags.DryRun,
+		Interactive:  interactive,
+		Force:        force,
+		Token:        flags.Token,
+		ConfigFile:   flags.ConfigFile,
+		Verbose:      flags.Verbose,
+	}
+
+	// Get configuration changes to apply for display
+	ctx := context.Background()
+	changes, err := service.GetConfigurationChanges(ctx, flags.Organization, filter, template)
 	if err != nil {
 		return fmt.Errorf("failed to get configuration changes: %w", err)
 	}
@@ -84,7 +102,7 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 	}
 
 	// Display planned changes
-	displayPlannedChanges(changes)
+	displayPlannedChanges(changes, service)
 
 	if flags.DryRun {
 		fmt.Println("💡 Run without --dry-run to apply these changes")
@@ -97,88 +115,15 @@ func runApplyCommand(flags GlobalFlags, filter, template string, interactive, fo
 		return nil
 	}
 
-	// Apply the changes
-	return applyChanges(changes, interactive)
-}
-
-// ConfigurationChange represents a pending configuration change.
-type ConfigurationChange struct {
-	Repository   string `json:"repository"`
-	Setting      string `json:"setting"`
-	CurrentValue string `json:"currentValue"`
-	NewValue     string `json:"newValue"`
-	Action       string `json:"action"` // create, update, delete
-}
-
-// getAffectedRepoCount returns the number of unique repositories affected.
-func getAffectedRepoCount(changes []ConfigurationChange) int {
-	repos := make(map[string]bool)
-	for _, change := range changes {
-		repos[change.Repository] = true
+	// Apply the changes using service
+	if err := service.ApplyConfiguration(ctx, opts); err != nil {
+		return fmt.Errorf("failed to apply configuration: %w", err)
 	}
 
-	return len(repos)
-}
+	fmt.Println()
+	fmt.Printf("✅ Configuration application completed successfully\n")
+	fmt.Printf("📊 %d repositories updated\n", service.GetAffectedRepoCount(changes))
 
-// getConfigurationChanges retrieves configuration changes for an organization.
-func getConfigurationChanges(organization, filter, template string) ([]ConfigurationChange, error) { //nolint:unparam // Error always nil but kept for consistency
-	_ = organization // organization unused in mock implementation
-	// This is a mock implementation - in reality, this would:
-	// 1. Fetch current repository configurations from GitHub API
-	// 2. Load target configurations from templates
-	// 3. Generate required changes
-	// 4. Apply filter and template constraints if specified
-	mockChanges := []ConfigurationChange{
-		{
-			Repository:   "api-server",
-			Setting:      "branch_protection.main.required_reviews",
-			CurrentValue: "1",
-			NewValue:     "2",
-			Action:       "update",
-		},
-		{
-			Repository:   "web-frontend",
-			Setting:      "features.wiki",
-			CurrentValue: "true",
-			NewValue:     "false",
-			Action:       "update",
-		},
-		{
-			Repository:   "legacy-service",
-			Setting:      "security.delete_head_branches",
-			CurrentValue: "false",
-			NewValue:     "true",
-			Action:       "create",
-		},
-	}
-
-	// Apply filter if specified
-	if filter != "" {
-		// TODO: In a real implementation, this would use regex to filter repositories
-		_ = filter // Suppress unused parameter warning
-	}
-
-	// Apply template filter if specified
-	if template != "" {
-		// TODO: In a real implementation, this would filter changes based on template
-		_ = template // Suppress unused parameter warning
-	}
-
-	return mockChanges, nil
-}
-
-// applyConfigurationChange applies a single configuration change.
-func applyConfigurationChange(change ConfigurationChange) error {
-	// This is a mock implementation - in reality, this would:
-	// 1. Use GitHub API to apply the configuration change
-	// 2. Handle authentication and rate limiting
-	// 3. Verify the change was applied successfully
-	// 4. Return appropriate errors if something fails
-
-	// Simulate some processing time
-	// time.Sleep(100 * time.Millisecond)
-
-	// For demonstration, we'll just return success
 	return nil
 }
 
@@ -213,8 +158,8 @@ func displayApplyHeader(flags GlobalFlags, filter, template string) {
 }
 
 // displayPlannedChanges displays the list of planned configuration changes.
-func displayPlannedChanges(changes []ConfigurationChange) {
-	fmt.Printf("📋 Planned Changes (%d repositories affected)\n", getAffectedRepoCount(changes))
+func displayPlannedChanges(changes []services.ConfigurationChange, service *services.RepoConfigService) {
+	fmt.Printf("📋 Planned Changes (%d repositories affected)\n", service.GetAffectedRepoCount(changes))
 	fmt.Println()
 
 	for _, change := range changes {
@@ -226,7 +171,7 @@ func displayPlannedChanges(changes []ConfigurationChange) {
 }
 
 // confirmApplyChanges handles user confirmation for applying changes.
-func confirmApplyChanges(changes []ConfigurationChange, force, interactive bool) bool {
+func confirmApplyChanges(changes []services.ConfigurationChange, force, interactive bool) bool {
 	// Skip confirmation for force mode or when interactive mode will handle individual confirmations
 	if force || interactive {
 		return true
@@ -241,57 +186,4 @@ func confirmApplyChanges(changes []ConfigurationChange, force, interactive bool)
 	}
 
 	return response == "y" || response == "yes"
-}
-
-// applyChanges applies the configuration changes with optional interactive confirmation.
-func applyChanges(changes []ConfigurationChange, interactive bool) error {
-	fmt.Println("🔄 Applying configuration changes...")
-	fmt.Println()
-
-	appliedCount := 0
-
-	for i, change := range changes {
-		if interactive && !confirmSingleChange(i+1, len(changes), change) {
-			fmt.Printf("  ⏭️  Skipped %s\n", change.Repository)
-			continue
-		}
-
-		if err := applySingleChange(change); err != nil {
-			fmt.Printf("  ❌ Failed: %v\n", err)
-			continue
-		}
-
-		appliedCount++
-	}
-
-	fmt.Println()
-	fmt.Printf("✅ Configuration application completed successfully\n")
-	fmt.Printf("📊 %d repositories updated\n", appliedCount)
-
-	return nil
-}
-
-// confirmSingleChange handles confirmation for a single change in interactive mode.
-func confirmSingleChange(current, total int, change ConfigurationChange) bool {
-	fmt.Printf("Apply change %d/%d to %s? (y/N): ", current, total, change.Repository)
-
-	var response string
-	if _, err := fmt.Scanln(&response); err != nil {
-		// Handle error but treat as "no" response
-		response = ""
-	}
-
-	return response == "y" || response == "yes"
-}
-
-// applySingleChange applies a single configuration change.
-func applySingleChange(change ConfigurationChange) error {
-	fmt.Printf("  🔄 Updating %s...", change.Repository)
-
-	if err := applyConfigurationChange(change); err != nil {
-		return err
-	}
-
-	fmt.Printf(" ✅\n")
-	return nil
 }
