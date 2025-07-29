@@ -241,7 +241,7 @@ func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string,
 			req.Header.Set("Content-Type", "application/json")
 		}
 
-		resp, err := c.httpClient.Do(req)
+		resp, err := c.httpClient.Do(ctx, req)
 		if err != nil {
 			// Network errors are not retryable
 			return nil, fmt.Errorf("request failed: %w", err)

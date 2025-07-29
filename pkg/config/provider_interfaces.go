@@ -20,7 +20,7 @@ type ProviderService interface {
 	CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error
 
 	// Authentication and Configuration
-	SetToken(token string)
+	SetToken(ctx context.Context, token string) error
 	ValidateToken(ctx context.Context) error
 
 	// Provider Information

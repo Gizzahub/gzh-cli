@@ -78,8 +78,9 @@ func NewAPIClient(config *APIClientConfig, httpClient HTTPClientInterface, logge
 }
 
 // SetToken implements APIClient interface.
-func (c *GitHubAPIClient) SetToken(token string) {
+func (c *GitHubAPIClient) SetToken(ctx context.Context, token string) error {
 	c.config.Token = token
+	return nil
 }
 
 // GetRepository implements APIClient interface.
@@ -208,9 +209,12 @@ func (s *GitHubCloneService) CloneOrganization(ctx context.Context, orgName, tar
 }
 
 // SetStrategy implements CloneService interface.
-func (s *GitHubCloneService) SetStrategy(strategy string) error {
+func (s *GitHubCloneService) SetStrategy(ctx context.Context, strategy string) error {
 	// Validate strategy
-	validStrategies := s.GetSupportedStrategies()
+	validStrategies, err := s.GetSupportedStrategies(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get supported strategies: %w", err)
+	}
 	for _, valid := range validStrategies {
 		if strategy == valid {
 			return nil
@@ -221,8 +225,8 @@ func (s *GitHubCloneService) SetStrategy(strategy string) error {
 }
 
 // GetSupportedStrategies implements CloneService interface.
-func (s *GitHubCloneService) GetSupportedStrategies() []string {
-	return []string{"reset", "pull", "fetch"}
+func (s *GitHubCloneService) GetSupportedStrategies(ctx context.Context) ([]string, error) {
+	return []string{"reset", "pull", "fetch"}, nil
 }
 
 // GitHubTokenValidator implements the TokenValidator interface.
@@ -268,16 +272,16 @@ func (v *GitHubTokenValidator) ValidateForRepository(ctx context.Context, token,
 }
 
 // GetRequiredScopes implements TokenValidator interface.
-func (v *GitHubTokenValidator) GetRequiredScopes(operation string) []string {
+func (v *GitHubTokenValidator) GetRequiredScopes(ctx context.Context, operation string) ([]string, error) {
 	switch operation {
 	case "read":
-		return []string{"repo"}
+		return []string{"repo"}, nil
 	case "write":
-		return []string{"repo"}
+		return []string{"repo"}, nil
 	case "admin":
-		return []string{"repo", "admin:org"}
+		return []string{"repo", "admin:org"}, nil
 	default:
-		return []string{"repo"}
+		return []string{"repo"}, nil
 	}
 }
 

@@ -12,8 +12,8 @@ import (
 
 // HTTPClient defines the interface for HTTP operations.
 type HTTPClient interface {
-	// Do performs an HTTP request
-	Do(req *http.Request) (*http.Response, error)
+	// Do performs an HTTP request with context
+	Do(ctx context.Context, req *http.Request) (*http.Response, error)
 
 	// Get performs a GET request
 	Get(ctx context.Context, url string) (*http.Response, error)
@@ -60,7 +60,7 @@ type APIClient interface {
 	GetDefaultBranch(ctx context.Context, owner, repo string) (string, error)
 
 	// Authentication and rate limiting
-	SetToken(token string)
+	SetToken(ctx context.Context, token string) error
 	GetRateLimit(ctx context.Context) (*RateLimit, error)
 
 	// Repository configuration
@@ -78,8 +78,8 @@ type CloneService interface {
 	CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error
 
 	// Strategy management
-	SetStrategy(strategy string) error
-	GetSupportedStrategies() []string
+	SetStrategy(ctx context.Context, strategy string) error
+	GetSupportedStrategies(ctx context.Context) ([]string, error)
 }
 
 // RateLimit represents GitHub API rate limit information.
@@ -95,7 +95,7 @@ type TokenValidatorInterface interface {
 	ValidateToken(ctx context.Context, token string) (*TokenInfoRecord, error)
 	ValidateForOperation(ctx context.Context, token, operation string) error
 	ValidateForRepository(ctx context.Context, token, owner, repo string) error
-	GetRequiredScopes(operation string) []string
+	GetRequiredScopes(ctx context.Context, operation string) ([]string, error)
 }
 
 // TokenInfoRecord represents information about a GitHub token.
@@ -112,7 +112,7 @@ type TokenInfoRecord struct {
 type ChangeLoggerInterface interface {
 	LogOperation(ctx context.Context, operation LogOperationRecord) error
 	GetOperationHistory(ctx context.Context, filters LogFilters) ([]LogOperationRecord, error)
-	SetLogLevel(level LogLevelType)
+	SetLogLevel(ctx context.Context, level LogLevelType) error
 }
 
 // LogOperationRecord represents a logged operation.
@@ -151,7 +151,7 @@ type LogFilters struct {
 type ConfirmationServiceInterface interface {
 	ConfirmOperation(ctx context.Context, prompt *ConfirmationPromptRecord) (bool, error)
 	ConfirmBulkOperation(ctx context.Context, operations []OperationRecord) ([]bool, error)
-	SetConfirmationMode(mode ConfirmationModeType)
+	SetConfirmationMode(ctx context.Context, mode ConfirmationModeType) error
 }
 
 // ConfirmationPromptRecord represents a confirmation request.

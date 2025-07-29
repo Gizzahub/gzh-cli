@@ -8,8 +8,8 @@ import (
 
 // HTTPClient defines the interface for HTTP operations.
 type HTTPClient interface {
-	// Do performs an HTTP request
-	Do(req *http.Request) (*http.Response, error)
+	// Do performs an HTTP request with context
+	Do(ctx context.Context, req *http.Request) (*http.Response, error)
 
 	// Get performs a GET request
 	Get(ctx context.Context, url string) (*http.Response, error)

@@ -60,7 +60,7 @@
 ## 🔌 3. Interface Design & Dependency Management
 
 ### Interface Consistency
-- [ ] **Standardize context.Context usage across all interfaces**
+- [x] **Standardize context.Context usage across all interfaces**
   - 📌 **Why**: Some interfaces don't consistently use context for cancellation
   - 🧠 **How**: Ensure all I/O operations accept `ctx context.Context` as first parameter
   - 📁 **Files**: `pkg/github/interfaces.go`, `pkg/gitlab/interfaces.go`

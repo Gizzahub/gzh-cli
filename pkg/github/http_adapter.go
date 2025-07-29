@@ -28,8 +28,12 @@ func NewHTTPClientAdapterWithClient(client *http.Client) HTTPClient {
 	}
 }
 
-// Do performs an HTTP request.
-func (a *HTTPClientAdapter) Do(req *http.Request) (*http.Response, error) {
+// Do performs an HTTP request with context.
+func (a *HTTPClientAdapter) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
+	// If the request doesn't already have a context, add it
+	if req.Context() == context.Background() || req.Context() == nil {
+		req = req.WithContext(ctx)
+	}
 	return a.client.Do(req)
 }
 

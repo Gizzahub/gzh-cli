@@ -98,7 +98,7 @@ func (c *ResilientGitLabClient) getProjectPage(ctx context.Context, groupID stri
 
 	c.prepareRequest(req)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(ctx, req)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get projects: %w", err)
 	}
@@ -168,7 +168,7 @@ func (c *ResilientGitLabClient) GetProject(ctx context.Context, projectID string
 
 	c.prepareRequest(req)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project: %w", err)
 	}
@@ -234,7 +234,7 @@ func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage 
 
 	c.prepareRequest(req)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(ctx, req)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get groups: %w", err)
 	}
