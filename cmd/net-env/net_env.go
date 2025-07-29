@@ -173,6 +173,9 @@ Examples:
 	// Get config directory
 	configDir := getConfigDirectory()
 
+	// Add TUI command for interactive dashboard
+	cmd.AddCommand(newTUICmd())
+
 	// New unified commands (5 core commands)
 	cmd.AddCommand(newStatusUnifiedCmd())
 	cmd.AddCommand(newSwitchUnifiedCmd())

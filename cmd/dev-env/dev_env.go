@@ -74,6 +74,9 @@ Examples:
 		SilenceUsage: true,
 	}
 
+	// Add TUI command for interactive dashboard
+	cmd.AddCommand(newTUICmd())
+
 	// Add switch-all command for unified environment switching
 	cmd.AddCommand(newSwitchAllCmd())
 
