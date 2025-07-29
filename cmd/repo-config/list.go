@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
+	"github.com/gizzahub/gzh-manager-go/internal/cli"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/config"
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
@@ -28,16 +29,11 @@ const (
 func newListCmd() *cobra.Command {
 	var (
 		flags      GlobalFlags
-		filter     string
-		format     string
 		showConfig bool
-		limit      int
 	)
 
-	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List repositories with current configuration",
-		Long: `List repositories in the organization with their current configuration status.
+	builder := cli.NewCommandBuilder(context.Background(), "list", "List repositories with current configuration").
+		WithLongDescription(`List repositories in the organization with their current configuration status.
 
 This command shows repository details including:
 - Basic information (name, description, visibility)
@@ -55,22 +51,26 @@ Examples:
   gz repo-config list --filter "^api-.*"            # Filter by name pattern
   gz repo-config list --format json                 # JSON output
   gz repo-config list --show-config                 # Include configuration details
-  gz repo-config list --limit 50                    # Limit results`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runListCommand(flags, filter, format, showConfig, limit)
-		},
-	}
+  gz repo-config list --limit 50                    # Limit results`).
+		WithOrganizationFlag(true).
+		WithTokenFlag().
+		WithConfigFileFlag().
+		WithVerboseFlag().
+		WithFormatFlag("table", []string{"table", "json", "yaml"}).
+		WithFilterFlag().
+		WithLimitFlag(0).
+		WithCustomBoolFlag("show-config", false, "Include detailed configuration", &showConfig).
+		WithRunFuncE(func(ctx context.Context, commonFlags *cli.CommonFlags, args []string) error {
+			// Map common flags to GlobalFlags
+			flags.Organization = commonFlags.Organization
+			flags.Token = commonFlags.Token
+			flags.ConfigFile = commonFlags.ConfigFile
+			flags.Verbose = commonFlags.Verbose
 
-	// Add global flags
-	addGlobalFlags(cmd, &flags)
+			return runListCommand(flags, commonFlags.Filter, commonFlags.Format, showConfig, commonFlags.Limit)
+		})
 
-	// Add list-specific flags
-	cmd.Flags().StringVar(&filter, "filter", "", "Filter repositories by name pattern (regex)")
-	cmd.Flags().StringVar(&format, "format", "table", "Output format (table, json, yaml)")
-	cmd.Flags().BoolVar(&showConfig, "show-config", false, "Include detailed configuration")
-	cmd.Flags().IntVar(&limit, "limit", 0, "Limit number of results (0 = no limit)")
-
-	return cmd
+	return builder.Build()
 }
 
 // runListCommand executes the list command.
@@ -353,13 +353,13 @@ func addDetailedConfiguration(client *github.RepoConfigClient, flags GlobalFlags
 
 // displayRepositoryList displays the repository list in the specified format.
 func displayRepositoryList(repositories []RepositoryInfo, format string, showConfig bool) error {
+	formatter := cli.NewOutputFormatter(format)
+
 	switch format {
 	case "table":
 		printTableFormat(repositories, showConfig)
-	case "json":
-		printJSONFormat(repositories)
-	case formatYAML:
-		printYAMLFormat(repositories)
+	case "json", "yaml":
+		return formatter.FormatOutput(repositories)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}

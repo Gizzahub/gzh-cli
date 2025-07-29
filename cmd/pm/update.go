@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-manager-go/internal/cli"
 )
 
 func newUpdateCmd(ctx context.Context) *cobra.Command {
@@ -18,13 +20,10 @@ func newUpdateCmd(ctx context.Context) *cobra.Command {
 		allManagers bool
 		manager     string
 		strategy    string
-		dryRun      bool
 	)
 
-	cmd := &cobra.Command{
-		Use:   "update",
-		Short: "Update packages based on version strategy",
-		Long: `Update packages for specified package managers based on configured version strategy.
+	builder := cli.NewCommandBuilder(ctx, "update", "Update packages based on version strategy").
+		WithLongDescription(`Update packages for specified package managers based on configured version strategy.
 
 Supports update strategies:
 - latest: Update to the absolute latest version
@@ -43,26 +42,24 @@ Examples:
   gz pm update --manager asdf --strategy latest
 
   # Dry run to see what would be updated
-  gz pm update --all --dry-run`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+  gz pm update --all --dry-run`).
+		WithDryRunFlag().
+		WithCustomBoolFlag("all", false, "Update all package managers", &allManagers).
+		WithCustomFlag("manager", "", "Package manager to update", &manager).
+		WithCustomFlag("strategy", "stable", "Update strategy: latest, stable, minor, fixed", &strategy).
+		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
 			// For now, redirect to existing commands
 			// In future, implement unified update logic
 			if manager != "" {
-				return runUpdateManager(ctx, manager, strategy, dryRun)
+				return runUpdateManager(ctx, manager, strategy, flags.DryRun)
 			}
 			if allManagers {
-				return runUpdateAll(ctx, strategy, dryRun)
+				return runUpdateAll(ctx, strategy, flags.DryRun)
 			}
 			return fmt.Errorf("specify --manager or --all")
-		},
-	}
+		})
 
-	cmd.Flags().BoolVar(&allManagers, "all", false, "Update all package managers")
-	cmd.Flags().StringVar(&manager, "manager", "", "Package manager to update")
-	cmd.Flags().StringVar(&strategy, "strategy", "stable", "Update strategy: latest, stable, minor, fixed")
-	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what would be updated without making changes")
-
-	return cmd
+	return builder.Build()
 }
 
 func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool) error {

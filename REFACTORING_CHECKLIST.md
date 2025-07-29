@@ -41,7 +41,7 @@
   - 🧠 **How**: Create single config factory with dependency injection
   - 📁 **Files**: `pkg/config/loader.go`, `internal/config/`, `cmd/synclone/config.go`
 
-- [ ] **Extract common CLI patterns from command implementations**
+- [x] **Extract common CLI patterns from command implementations**
   - 📌 **Why**: Commands have duplicated flag handling and validation logic
   - 🧠 **How**: Create `internal/cli/` package with common command builders
   - 📁 **Files**: `cmd/synclone/synclone.go`, `cmd/repo-config/`, all command files
