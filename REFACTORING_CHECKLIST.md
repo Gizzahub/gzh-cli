@@ -52,7 +52,7 @@
   - 📁 **Files**: `cmd/*/` → move logic to `internal/services/synclone.go`, etc.
 
 ### Main Function Isolation
-- [ ] **Reduce main.go responsibilities to absolute minimum**
+- [x] **Reduce main.go responsibilities to absolute minimum**
   - 📌 **Why**: Current `main.go` handles signal management, should only bootstrap
   - 🧠 **How**: Move signal handling to `internal/app/` package
   - 📁 **Files**: `main.go` → extract to `internal/app/runner.go`

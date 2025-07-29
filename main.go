@@ -4,36 +4,20 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/gizzahub/gzh-manager-go/cmd"
+	"github.com/gizzahub/gzh-manager-go/internal/app"
 )
 
 var version = "dev"
 
 func main() {
-	// Create a context that will be canceled on interrupt signals
-	ctx, cancel := context.WithCancel(context.Background())
+	// Create and run the application
+	runner := app.NewRunner(version)
 
-	// Set up signal handling for graceful shutdown
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigChan
-		fmt.Fprintf(os.Stderr, "\nReceived interrupt signal, shutting down gracefully...\n")
-		cancel()
-	}()
-
-	if err := cmd.Execute(ctx, version); err != nil {
-		cancel()
-		fmt.Fprintf(os.Stderr, "%v", err)
+	if err := runner.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
-
-	cancel()
 }
