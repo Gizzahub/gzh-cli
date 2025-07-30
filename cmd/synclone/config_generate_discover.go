@@ -162,7 +162,10 @@ func generateSyncloneConfig(groupedRepos map[string]map[string][]discovery.Disco
 		},
 	}
 
-	providers := config["providers"].(map[string]interface{})
+	providers, ok := config["providers"].(map[string]interface{})
+	if !ok {
+		return nil // Invalid providers structure
+	}
 
 	// Generate provider configurations
 	for provider, orgs := range groupedRepos {

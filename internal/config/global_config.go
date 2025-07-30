@@ -18,20 +18,20 @@ type GlobalConfig struct {
 // GlobalLoggingConfig represents global logging configuration.
 type GlobalLoggingConfig struct {
 	Enabled   bool   `yaml:"enabled" json:"enabled"`
-	FilePath  string `yaml:"filePath" json:"file_path"`
+	FilePath  string `yaml:"filePath" json:"filePath"`
 	Level     string `yaml:"level" json:"level"`
-	MaxSizeMB int    `yaml:"maxSizeMb" json:"max_size_mb"`
-	MaxFiles  int    `yaml:"maxFiles" json:"max_files"`
+	MaxSizeMB int    `yaml:"maxSizeMb" json:"maxSizeMb"`
+	MaxFiles  int    `yaml:"maxFiles" json:"maxFiles"`
 	// CLI-specific logging settings
-	CLILogging CLILoggingConfig `yaml:"cli" json:"cli_logging"`
+	CLILogging CLILoggingConfig `yaml:"cli" json:"cliLogging"`
 }
 
 // CLILoggingConfig represents CLI-specific logging configuration.
 type CLILoggingConfig struct {
-	Enabled    bool   `yaml:"enabled" json:"enabled"`        // Show logs in CLI by default
-	Level      string `yaml:"level" json:"level"`            // CLI log level (error, warn, info, debug)
-	OnlyErrors bool   `yaml:"onlyErrors" json:"only_errors"` // Show only errors and warnings
-	Quiet      bool   `yaml:"quiet" json:"quiet"`            // Suppress all logs except critical errors
+	Enabled    bool   `yaml:"enabled" json:"enabled"`       // Show logs in CLI by default
+	Level      string `yaml:"level" json:"level"`           // CLI log level (error, warn, info, debug)
+	OnlyErrors bool   `yaml:"onlyErrors" json:"onlyErrors"` // Show only errors and warnings
+	Quiet      bool   `yaml:"quiet" json:"quiet"`           // Suppress all logs except critical errors
 }
 
 // DefaultGlobalConfig returns the default global configuration.

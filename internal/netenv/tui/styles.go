@@ -7,6 +7,43 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Status constants
+const (
+	StatusActive       = "active"
+	StatusConnected    = "connected"
+	StatusEnabled      = "enabled"
+	StatusCustom       = "custom"
+	StatusDisabled     = "disabled"
+	StatusInactive     = "inactive"
+	StatusDisconnected = "disconnected"
+)
+
+// Component constants
+const (
+	ComponentWiFi   = "wifi"
+	ComponentVPN    = "vpn"
+	ComponentDNS    = "dns"
+	ComponentProxy  = "proxy"
+	ComponentDocker = "docker"
+)
+
+// Icon constants
+const (
+	IconWiFiConnected      = "📶"
+	IconWiFiDisconnected   = "📵"
+	IconVPNConnected       = "🔒"
+	IconVPNDisconnected    = "🔓"
+	IconDNSActive          = "🌐"
+	IconDNSInactive        = "⚠️"
+	IconProxyEnabled       = "🔀"
+	IconProxyDisabled      = "➡️"
+	IconDockerConnected    = "🐳"
+	IconDockerDisconnected = "⭕"
+	IconHealthy            = "✅"
+	IconUnhealthy          = "❌"
+	IconUnknown            = "❓"
+)
+
 // Color palette for network environment TUI
 var (
 	ColorPrimary    = lipgloss.Color("#00A8E8") // Network blue
@@ -279,30 +316,30 @@ var (
 // GetNetworkComponentStyle returns the appropriate style for a network component
 func GetNetworkComponentStyle(component, status string) lipgloss.Style {
 	switch component {
-	case "wifi":
-		if status == "connected" {
+	case ComponentWiFi:
+		if status == StatusConnected {
 			return WiFiConnectedStyle
 		}
 		return WiFiDisconnectedStyle
-	case "vpn":
-		if status == "connected" {
+	case ComponentVPN:
+		if status == StatusConnected {
 			return VPNConnectedStyle
 		}
 		return VPNDisconnectedStyle
-	case "dns":
-		if status == "active" || status == "custom" {
+	case ComponentDNS:
+		if status == StatusActive || status == StatusCustom {
 			return DNSActiveStyle
 		}
 		return DNSInactiveStyle
-	case "proxy":
-		if status == "enabled" {
+	case ComponentProxy:
+		if status == StatusEnabled {
 			return ProxyActiveStyle
 		}
 		return ProxyInactiveStyle
 	default:
-		if status == "connected" || status == "active" || status == "enabled" {
+		if status == StatusConnected || status == StatusActive || status == StatusEnabled {
 			return ConnectedStyle
-		} else if status == "disconnected" || status == "inactive" || status == "disabled" {
+		} else if status == StatusDisconnected || status == StatusInactive || status == StatusDisabled {
 			return DisconnectedStyle
 		}
 		return UnknownStyle
@@ -312,53 +349,55 @@ func GetNetworkComponentStyle(component, status string) lipgloss.Style {
 // GetStatusIcon returns the appropriate icon for a network component status
 func GetStatusIcon(component, status string) string {
 	switch component {
-	case "wifi":
-		if status == "connected" {
-			return "📶"
+	case ComponentWiFi:
+		if status == StatusConnected {
+			return IconWiFiConnected
 		}
-		return "📵"
-	case "vpn":
-		if status == "connected" {
-			return "🔒"
+		return IconWiFiDisconnected
+	case ComponentVPN:
+		if status == StatusConnected {
+			return IconVPNConnected
 		}
-		return "🔓"
-	case "dns":
-		if status == "active" || status == "custom" {
-			return "🌐"
+		return IconVPNDisconnected
+	case ComponentDNS:
+		if status == StatusActive || status == StatusCustom {
+			return IconDNSActive
 		}
-		return "⚠️"
-	case "proxy":
-		if status == "enabled" {
-			return "🔀"
+		return IconDNSInactive
+	case ComponentProxy:
+		if status == StatusEnabled {
+			return IconProxyEnabled
 		}
-		return "➡️"
-	case "docker":
-		if status == "connected" {
-			return "🐳"
+		return IconProxyDisabled
+	case ComponentDocker:
+		if status == StatusConnected {
+			return IconDockerConnected
 		}
-		return "⭕"
+		return IconDockerDisconnected
 	default:
-		if status == "connected" || status == "active" || status == "enabled" {
-			return "✅"
-		} else if status == "disconnected" || status == "inactive" || status == "disabled" {
-			return "❌"
+		if status == StatusConnected || status == StatusActive || status == StatusEnabled {
+			return IconHealthy
+		} else if status == StatusDisconnected || status == StatusInactive || status == StatusDisabled {
+			return IconUnhealthy
 		}
-		return "❓"
+		return IconUnknown
 	}
 }
 
 // GetSignalStrengthIcon returns an icon representing WiFi signal strength
 func GetSignalStrengthIcon(strength int) string {
-	if strength >= 80 {
-		return "📶" // Excellent
-	} else if strength >= 60 {
-		return "📶" // Good (could use different icon)
-	} else if strength >= 40 {
-		return "📶" // Fair (could use different icon)
-	} else if strength >= 20 {
-		return "📶" // Poor (could use different icon)
+	switch {
+	case strength >= 80:
+		return IconWiFiConnected // Excellent
+	case strength >= 60:
+		return IconWiFiConnected // Good (could use different icon)
+	case strength >= 40:
+		return IconWiFiConnected // Fair (could use different icon)
+	case strength >= 20:
+		return IconWiFiConnected // Poor (could use different icon)
+	default:
+		return IconWiFiDisconnected // Very poor/no signal
 	}
-	return "📵" // Very poor/no signal
 }
 
 // GetLatencyStyle returns style based on latency value

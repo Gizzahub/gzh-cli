@@ -195,7 +195,7 @@ type NetworkStatus struct {
 // WiFiStatus represents WiFi connection status
 type WiFiStatus struct {
 	SSID           string `json:"ssid"`
-	SignalStrength int    `json:"signal_strength"`
+	SignalStrength int    `json:"signalStrength"`
 	Frequency      string `json:"frequency"`
 	Security       string `json:"security"`
 	Connected      bool   `json:"connected"`
@@ -207,12 +207,12 @@ type WiFiStatus struct {
 type VPNStatus struct {
 	Name        string        `json:"name"`
 	Connected   bool          `json:"connected"`
-	ServerIP    string        `json:"server_ip"`
-	ClientIP    string        `json:"client_ip,omitempty"`
+	ServerIP    string        `json:"serverIp"`
+	ClientIP    string        `json:"clientIp,omitempty"`
 	Latency     time.Duration `json:"latency"`
-	BytesUp     int64         `json:"bytes_up"`
-	BytesDown   int64         `json:"bytes_down"`
-	ConnectedAt time.Time     `json:"connected_at,omitempty"`
+	BytesUp     int64         `json:"bytesUp"`
+	BytesDown   int64         `json:"bytesDown"`
+	ConnectedAt time.Time     `json:"connectedAt,omitempty"`
 	Protocol    string        `json:"protocol,omitempty"`
 }
 
@@ -258,7 +258,7 @@ type ConnectivityStatus struct {
 	Internet   bool          `json:"internet"`
 	Latency    time.Duration `json:"latency"`
 	Bandwidth  BandwidthInfo `json:"bandwidth"`
-	PacketLoss float64       `json:"packet_loss"`
+	PacketLoss float64       `json:"packetLoss"`
 	Quality    string        `json:"quality"` // "excellent", "good", "poor", "disconnected"
 }
 
@@ -278,9 +278,9 @@ type NetworkProfile struct {
 	Proxy       *ProxyConfig      `yaml:"proxy,omitempty" json:"proxy,omitempty"`
 	Docker      *DockerConfig     `yaml:"docker,omitempty" json:"docker,omitempty"`
 	Priority    int               `yaml:"priority" json:"priority"`
-	AutoDetect  DetectionRule     `yaml:"auto_detect" json:"auto_detect"`
-	CreatedAt   time.Time         `yaml:"created_at" json:"created_at"`
-	UpdatedAt   time.Time         `yaml:"updated_at" json:"updated_at"`
+	AutoDetect  DetectionRule     `yaml:"autoDetect" json:"autoDetect"`
+	CreatedAt   time.Time         `yaml:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time         `yaml:"updatedAt" json:"updatedAt"`
 	Tags        []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Metadata    map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
@@ -299,8 +299,8 @@ type VPNConfig struct {
 	Type       string            `yaml:"type" json:"type"` // "openvpn", "wireguard", "ipsec"
 	Server     string            `yaml:"server" json:"server"`
 	Username   string            `yaml:"username,omitempty" json:"username,omitempty"`
-	ConfigFile string            `yaml:"config_file,omitempty" json:"config_file,omitempty"`
-	AutoStart  bool              `yaml:"auto_start,omitempty" json:"auto_start,omitempty"`
+	ConfigFile string            `yaml:"config_file,omitempty" json:"configFile,omitempty"`
+	AutoStart  bool              `yaml:"auto_start,omitempty" json:"autoStart,omitempty"`
 	Options    map[string]string `yaml:"options,omitempty" json:"options,omitempty"`
 }
 

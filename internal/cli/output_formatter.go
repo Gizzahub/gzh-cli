@@ -73,7 +73,7 @@ func (f *OutputFormatter) outputYAML(data interface{}) error {
 }
 
 // outputTable outputs data in table format (placeholder - specific tables should implement their own).
-func (f *OutputFormatter) outputTable(data interface{}) error {
+func (f *OutputFormatter) outputTable(_ interface{}) error {
 	// This is a generic fallback - specific commands should implement their own table formatting
 	return fmt.Errorf("table format not implemented for this data type")
 }

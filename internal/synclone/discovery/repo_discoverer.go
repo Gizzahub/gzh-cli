@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -330,8 +331,14 @@ func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
 
 		remotes := strings.Fields(strings.TrimSpace(string(remoteOutput)))
 		if len(remotes) > 0 {
+			// Validate remote name to prevent injection
+			remoteName := remotes[0]
+			if !isValidRemoteName(remoteName) {
+				return "", fmt.Errorf("invalid remote name: %s", remoteName)
+			}
 			// Get URL for first remote
-			cmd = exec.Command("git", "-C", repoPath, "remote", "get-url", remotes[0])
+			// #nosec G204 - remoteName is validated for safety
+			cmd = exec.Command("git", "-C", repoPath, "remote", "get-url", remoteName)
 			output, err = cmd.Output()
 			if err != nil {
 				return "", fmt.Errorf("failed to get remote URL: %w", err)
@@ -364,4 +371,15 @@ func (rd *RepoDiscoverer) getLastCommit(repoPath string) (string, error) {
 	}
 
 	return strings.TrimSpace(string(output)), nil
+}
+
+// isValidRemoteName validates a git remote name to prevent command injection
+func isValidRemoteName(name string) bool {
+	if name == "" || len(name) > 100 {
+		return false
+	}
+
+	// Git remote names should only contain alphanumeric characters, hyphens, underscores, and dots
+	validPattern := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+	return validPattern.MatchString(name)
 }

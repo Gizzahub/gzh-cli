@@ -84,6 +84,8 @@ func (t *TableFormatter) formatStatus(status StatusType) string {
 		return t.colorize("❌ Inactive", "red")
 	case StatusError:
 		return t.colorize("⚠️ Error   ", "yellow")
+	case StatusUnknown:
+		return t.colorize("❓ Unknown ", "gray")
 	default:
 		return t.colorize("❓ Unknown ", "gray")
 	}

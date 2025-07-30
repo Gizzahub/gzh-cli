@@ -280,7 +280,7 @@ func (p *Profiler) writeProfile(name, filename string) error {
 }
 
 // ProfileOperation runs an operation with automatic profiling
-func (p *Profiler) ProfileOperation(ctx context.Context, operationName string, profileTypes []ProfileType, operation func() error) error {
+func (p *Profiler) ProfileOperation(_ context.Context, operationName string, profileTypes []ProfileType, operation func() error) error {
 	if !p.config.Enabled {
 		return operation()
 	}
@@ -344,7 +344,7 @@ func (p *Profiler) GetRuntimeStats() map[string]interface{} {
 }
 
 // startHTTPServer starts the HTTP server for pprof endpoints
-func (p *Profiler) startHTTPServer(ctx context.Context) {
+func (p *Profiler) startHTTPServer(_ context.Context) {
 	mux := http.NewServeMux()
 
 	// Register pprof handlers
@@ -355,7 +355,7 @@ func (p *Profiler) startHTTPServer(ctx context.Context) {
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	// Custom endpoint for runtime stats
-	mux.HandleFunc("/debug/stats", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/debug/stats", func(w http.ResponseWriter, _ *http.Request) {
 		stats := p.GetRuntimeStats()
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, "%+v\n", stats)

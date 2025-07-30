@@ -512,7 +512,7 @@ func (m *DashboardModel) selectComponent() tea.Cmd {
 		return func() tea.Msg {
 			return NavigationMsg{View: ViewVPNManager}
 		}
-	case "wifi", "dns", "proxy", "docker":
+	case ComponentWiFi, ComponentDNS, ComponentProxy, ComponentDocker:
 		return func() tea.Msg {
 			return NavigationMsg{View: ViewSettings, Data: component}
 		}

@@ -16,8 +16,8 @@ type NetworkProfile struct {
 	Conditions  []NetworkCondition     `yaml:"conditions,omitempty" json:"conditions,omitempty"`
 	Components  NetworkComponents      `yaml:"components" json:"components"`
 	Metadata    map[string]interface{} `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-	CreatedAt   time.Time              `yaml:"created_at" json:"created_at"`
-	UpdatedAt   time.Time              `yaml:"updated_at" json:"updated_at"`
+	CreatedAt   time.Time              `yaml:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time              `yaml:"updatedAt" json:"updatedAt"`
 }
 
 // NetworkCondition defines when a profile should be automatically activated
@@ -50,11 +50,11 @@ type WiFiConfig struct {
 type VPNConfig struct {
 	Name        string            `yaml:"name" json:"name"`
 	Type        string            `yaml:"type" json:"type"` // openvpn, wireguard, cisco, etc.
-	AutoConnect bool              `yaml:"auto_connect,omitempty" json:"auto_connect,omitempty"`
+	AutoConnect bool              `yaml:"autoConnect,omitempty" json:"autoConnect,omitempty"`
 	Priority    int               `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Config      map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
 	Failover    []string          `yaml:"failover,omitempty" json:"failover,omitempty"`
-	HealthCheck *HealthCheck      `yaml:"health_check,omitempty" json:"health_check,omitempty"`
+	HealthCheck *HealthCheck      `yaml:"healthCheck,omitempty" json:"healthCheck,omitempty"`
 }
 
 // DNSConfig represents DNS configuration
@@ -71,7 +71,7 @@ type ProxyConfig struct {
 	HTTP    string            `yaml:"http,omitempty" json:"http,omitempty"`
 	HTTPS   string            `yaml:"https,omitempty" json:"https,omitempty"`
 	FTP     string            `yaml:"ftp,omitempty" json:"ftp,omitempty"`
-	NoProxy []string          `yaml:"no_proxy,omitempty" json:"no_proxy,omitempty"`
+	NoProxy []string          `yaml:"noProxy,omitempty" json:"noProxy,omitempty"`
 	Auth    *ProxyAuth        `yaml:"auth,omitempty" json:"auth,omitempty"`
 	Config  map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
 }
@@ -124,7 +124,7 @@ type NetworkStatus struct {
 	Components ComponentStatuses `json:"components"`
 	Health     HealthStatus      `json:"health"`
 	Metrics    *NetworkMetrics   `json:"metrics,omitempty"`
-	LastSwitch time.Time         `json:"last_switch"`
+	LastSwitch time.Time         `json:"lastSwitch"`
 }
 
 // ComponentStatuses contains status for each network component
@@ -143,7 +143,7 @@ type ComponentStatus struct {
 	Status    string                 `json:"status"`
 	Details   map[string]interface{} `json:"details,omitempty"`
 	Error     string                 `json:"error,omitempty"`
-	LastCheck time.Time              `json:"last_check"`
+	LastCheck time.Time              `json:"lastCheck"`
 }
 
 // HealthStatus represents overall network health
@@ -158,7 +158,7 @@ type HealthStatus struct {
 type NetworkMetrics struct {
 	Latency    time.Duration `json:"latency"`
 	Bandwidth  *Bandwidth    `json:"bandwidth,omitempty"`
-	PacketLoss float64       `json:"packet_loss"`
+	PacketLoss float64       `json:"packetLoss"`
 	Jitter     time.Duration `json:"jitter,omitempty"`
 }
 

@@ -367,7 +367,8 @@ func TestAzureSubscriptionManager_InvalidFormat(t *testing.T) {
 				DisplayName: "Test Subscription",
 			},
 		},
-		ctx: context.Background(),
+		tenants: make(map[string]string),
+		ctx:     context.Background(),
 	}
 
 	t.Run("InvalidListFormat", func(t *testing.T) {

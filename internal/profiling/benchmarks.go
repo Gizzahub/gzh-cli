@@ -73,6 +73,9 @@ func DefaultBenchmarkOptions() *BenchmarkOptions {
 // BenchmarkFunc represents a function to be benchmarked
 type BenchmarkFunc func(ctx context.Context) error
 
+// SimpleBenchmarkFunc represents a simple function to be benchmarked (for compatibility)
+type SimpleBenchmarkFunc func(ctx context.Context)
+
 // RunBenchmark executes a benchmark with the given options
 func (bs *BenchmarkSuite) RunBenchmark(ctx context.Context, name string, fn BenchmarkFunc, opts *BenchmarkOptions) (*BenchmarkResult, error) {
 	if opts == nil {
@@ -379,4 +382,25 @@ func (bs *BenchmarkSuite) PrintResults() {
 			)
 		}
 	}
+}
+
+// RunSimpleBenchmark executes a simple benchmark with specified parameters
+func (bs *BenchmarkSuite) RunSimpleBenchmark(ctx context.Context, name string, fn SimpleBenchmarkFunc, iterations int, duration time.Duration) (*BenchmarkResult, error) {
+	// Convert simple function to BenchmarkFunc
+	benchmarkFn := func(ctx context.Context) error {
+		fn(ctx)
+		return nil
+	}
+
+	// Create options from parameters
+	opts := &BenchmarkOptions{
+		Iterations:      iterations,
+		Duration:        duration,
+		WarmupRuns:      10, // Small warmup for simple benchmarks
+		Concurrency:     1,
+		MemoryProfiling: true,
+		CPUProfiling:    false,
+	}
+
+	return bs.RunBenchmark(ctx, name, benchmarkFn, opts)
 }

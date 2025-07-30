@@ -16,6 +16,10 @@ import (
 	"github.com/gizzahub/gzh-manager-go/pkg/github"
 )
 
+const (
+	templateNone = "none"
+)
+
 // ConfigurationChange represents a pending configuration change.
 type ConfigurationChange struct {
 	Repository   string `json:"repository"`
@@ -322,7 +326,7 @@ func (s *RepoConfigService) addDetailedConfiguration(ctx context.Context, organi
 // detectTemplate attempts to detect which template a repository is using.
 func (s *RepoConfigService) detectTemplate(repo *github.Repository, repoConfig *config.RepoConfig) string {
 	if repoConfig == nil || repoConfig.Repositories == nil {
-		return "none"
+		return templateNone
 	}
 
 	// Check specific repositories
@@ -344,7 +348,7 @@ func (s *RepoConfigService) detectTemplate(repo *github.Repository, repoConfig *
 		return repoConfig.Repositories.Default.Template
 	}
 
-	return "none"
+	return templateNone
 }
 
 // checkCompliance checks if a repository is compliant with its template.

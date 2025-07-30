@@ -14,19 +14,25 @@ import (
 	"time"
 )
 
-// NetworkDetector handles automatic network environment detection
+const (
+	platformWindows = "windows"
+	platformDarwin  = "darwin"
+	platformLinux   = "linux"
+)
+
+// NetworkDetector handles automatic network environment detection.
 type NetworkDetector struct {
 	profiles []NetworkProfile
 }
 
-// NewNetworkDetector creates a new network detector
+// NewNetworkDetector creates a new network detector.
 func NewNetworkDetector(profiles []NetworkProfile) *NetworkDetector {
 	return &NetworkDetector{
 		profiles: profiles,
 	}
 }
 
-// DetectEnvironment automatically detects the current network environment
+// DetectEnvironment automatically detects the current network environment.
 func (nd *NetworkDetector) DetectEnvironment(ctx context.Context) (*NetworkProfile, error) {
 	// Get current network information
 	networkInfo, err := nd.getCurrentNetworkInfo(ctx)
@@ -40,7 +46,7 @@ func (nd *NetworkDetector) DetectEnvironment(ctx context.Context) (*NetworkProfi
 	return bestProfile, nil
 }
 
-// getCurrentNetworkInfo gathers current network environment information
+// getCurrentNetworkInfo gathers current network environment information.
 func (nd *NetworkDetector) getCurrentNetworkInfo(ctx context.Context) (*NetworkInfo, error) {
 	info := &NetworkInfo{
 		Timestamp: time.Now(),
@@ -74,14 +80,14 @@ func (nd *NetworkDetector) getCurrentNetworkInfo(ctx context.Context) (*NetworkI
 	return info, nil
 }
 
-// getWiFiSSID gets the current WiFi SSID
+// getWiFiSSID gets the current WiFi SSID.
 func (nd *NetworkDetector) getWiFiSSID(ctx context.Context) (string, error) {
 	switch runtime.GOOS {
-	case "darwin":
+	case platformDarwin:
 		return nd.getWiFiSSIDMacOS(ctx)
-	case "linux":
+	case platformLinux:
 		return nd.getWiFiSSIDLinux(ctx)
-	case "windows":
+	case platformWindows:
 		return nd.getWiFiSSIDWindows(ctx)
 	default:
 		return "", fmt.Errorf("unsupported platform: %s", runtime.GOOS)
@@ -182,9 +188,9 @@ func (nd *NetworkDetector) getLocalIPs() ([]string, error) {
 // getDefaultGateway gets the default gateway IP
 func (nd *NetworkDetector) getDefaultGateway(ctx context.Context) (string, error) {
 	switch runtime.GOOS {
-	case "darwin", "linux":
+	case platformDarwin, platformLinux:
 		return nd.getDefaultGatewayUnix(ctx)
-	case "windows":
+	case platformWindows:
 		return nd.getDefaultGatewayWindows(ctx)
 	default:
 		return "", fmt.Errorf("unsupported platform: %s", runtime.GOOS)
@@ -246,7 +252,7 @@ func (nd *NetworkDetector) getDefaultGatewayWindows(ctx context.Context) (string
 // getDNSServers gets current DNS servers
 func (nd *NetworkDetector) getDNSServers() ([]string, error) {
 	// Read resolv.conf on Unix systems
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != platformWindows {
 		return nd.getDNSServersUnix()
 	}
 
@@ -364,10 +370,10 @@ func (nd *NetworkDetector) matchIPRange(cidr, ip string) bool {
 
 // NetworkInfo contains current network environment information
 type NetworkInfo struct {
-	WiFiSSID       string    `json:"wifi_ssid,omitempty"`
-	LocalIPs       []string  `json:"local_ips,omitempty"`
+	WiFiSSID       string    `json:"wifiSsid,omitempty"`
+	LocalIPs       []string  `json:"localIps,omitempty"`
 	Hostname       string    `json:"hostname,omitempty"`
-	DefaultGateway string    `json:"default_gateway,omitempty"`
-	DNSServers     []string  `json:"dns_servers,omitempty"`
+	DefaultGateway string    `json:"defaultGateway,omitempty"`
+	DNSServers     []string  `json:"dnsServers,omitempty"`
 	Timestamp      time.Time `json:"timestamp"`
 }

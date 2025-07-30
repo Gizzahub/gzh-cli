@@ -41,7 +41,7 @@ type OperationMetrics struct {
 }
 
 // TrackOperation wraps an operation with performance tracking
-func (pm *PerformanceMiddleware) TrackOperation(ctx context.Context, operationName string, operation func() error) error {
+func (pm *PerformanceMiddleware) TrackOperation(_ context.Context, operationName string, operation func() error) error {
 	if !pm.enabled {
 		return operation()
 	}

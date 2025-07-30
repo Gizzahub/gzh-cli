@@ -5,6 +5,7 @@ package status
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -105,7 +106,8 @@ func (g *GCPChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	if err != nil {
 		health.Status = StatusError
 		health.Message = fmt.Sprintf("Failed to check GCP authentication: %v", err)
-		if exitErr, ok := err.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
 			health.Details["stderr"] = string(exitErr.Stderr)
 		}
 		return health, nil

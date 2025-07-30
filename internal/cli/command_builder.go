@@ -138,7 +138,7 @@ func (b *CommandBuilder) WithRunFunc(runFunc func(cmd *cobra.Command, args []str
 
 // WithRunFuncE sets the run function that uses the builder's context and flags.
 func (b *CommandBuilder) WithRunFuncE(runFunc func(ctx context.Context, flags *CommonFlags, args []string) error) *CommandBuilder {
-	b.cmd.RunE = func(cmd *cobra.Command, args []string) error {
+	b.cmd.RunE = func(_ *cobra.Command, args []string) error {
 		return runFunc(b.context, b.flags, args)
 	}
 	return b

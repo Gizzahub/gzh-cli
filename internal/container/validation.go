@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+const (
+	healthStatusHealthy   = "healthy"
+	healthStatusUnhealthy = "unhealthy"
+)
+
 // ValidationResult represents the result of a container validation.
 type ValidationResult struct {
 	IsValid    bool                 `json:"is_valid"`
@@ -178,7 +183,7 @@ func (v *ContainerValidator) hasCircularReference(depName string, visited map[st
 }
 
 // validateInterfaceCompliance validates that dependencies implement expected interfaces.
-func (v *ContainerValidator) validateInterfaceCompliance(ctx context.Context, result *ValidationResult) {
+func (v *ContainerValidator) validateInterfaceCompliance(_ context.Context, result *ValidationResult) {
 	// Define expected interface compliance
 	expectedInterfaces := map[string]reflect.Type{
 		"logger": reflect.TypeOf((*interface{ Log(string) })(nil)).Elem(),
@@ -257,9 +262,9 @@ func (h *HealthChecker) CheckHealth(ctx context.Context) *HealthStatus {
 		status.Dependencies[depName] = depHealth
 
 		switch depHealth.Status {
-		case "healthy":
+		case healthStatusHealthy:
 			status.Summary.Healthy++
-		case "unhealthy":
+		case healthStatusUnhealthy:
 			status.Summary.Unhealthy++
 		default:
 			status.Summary.Unknown++

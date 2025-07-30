@@ -4,6 +4,7 @@
 package netenv
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -115,7 +116,7 @@ func (pm *ProfileManager) SaveProfile(profile *NetworkProfile) error {
 	fileName := fmt.Sprintf("%s.yaml", profile.Name)
 	filePath := filepath.Join(profilesDir, fileName)
 
-	if err := os.WriteFile(filePath, data, 0o644); err != nil {
+	if err := os.WriteFile(filePath, data, 0o600); err != nil {
 		return fmt.Errorf("failed to write profile file: %w", err)
 	}
 
@@ -185,7 +186,7 @@ func (pm *ProfileManager) ExportProfile(name, outputPath string) error {
 		return fmt.Errorf("failed to marshal profile: %w", err)
 	}
 
-	if err := os.WriteFile(outputPath, data, 0o644); err != nil {
+	if err := os.WriteFile(outputPath, data, 0o600); err != nil {
 		return fmt.Errorf("failed to write export file: %w", err)
 	}
 
@@ -353,7 +354,7 @@ func (pm *ProfileManager) GetAutoProfile() (*NetworkProfile, error) {
 
 	// Use network detector to find best match
 	detector := NewNetworkDetector(autoProfiles)
-	return detector.DetectEnvironment(nil)
+	return detector.DetectEnvironment(context.TODO())
 }
 
 // Helper functions

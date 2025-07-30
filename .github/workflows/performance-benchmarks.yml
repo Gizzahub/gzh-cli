@@ -1,0 +1,272 @@
+name: Performance Benchmarks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/performance-benchmarks.yml'
+  
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/performance-benchmarks.yml'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      package_pattern:
+        description: 'Package pattern to benchmark'
+        required: false
+        default: './...'
+      regression_threshold:
+        description: 'Performance regression threshold (%)'
+        required: false
+        default: '15.0'
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        go-version: [1.21.x, 1.22.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for baseline comparison
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache: true
+    
+    - name: Install dependencies
+      run: |
+        go mod download
+        go mod verify
+    
+    - name: Build project
+      run: make build
+    
+    - name: Create benchmark baseline (if main/develop)
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      run: |
+        ./gz doctor benchmark \
+          --package ${{ github.event.inputs.package_pattern || './internal/...' }} \
+          --ci \
+          --artifacts \
+          --cpu-profile \
+          --mem-profile \
+          --output benchmark-baseline-${{ matrix.go-version }}.json \
+          --format json
+    
+    - name: Run performance benchmarks (PR)
+      if: github.event_name == 'pull_request'
+      run: |
+        # Download baseline from main branch
+        git show main:benchmark-baseline-${{ matrix.go-version }}.json > baseline.json 2>/dev/null || echo "No baseline found"
+        
+        # Run benchmarks with comparison
+        ./gz doctor benchmark \
+          --package ${{ github.event.inputs.package_pattern || './internal/...' }} \
+          --ci \
+          --artifacts \
+          --cpu-profile \
+          --mem-profile \
+          --output benchmark-results-${{ matrix.go-version }}.json \
+          --baseline baseline.json \
+          --regression-threshold ${{ github.event.inputs.regression_threshold || '15.0' }} \
+          --format json
+    
+    - name: Run performance benchmarks (Push)
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      run: |
+        ./gz doctor benchmark \
+          --package ${{ github.event.inputs.package_pattern || './internal/...' }} \
+          --ci \
+          --artifacts \
+          --cpu-profile \
+          --mem-profile \
+          --output benchmark-results-${{ matrix.go-version }}.json \
+          --format json
+    
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      if: always()  # Upload even if benchmarks fail
+      with:
+        name: benchmark-results-go${{ matrix.go-version }}
+        path: |
+          benchmark-*.json
+          benchmark-artifacts/
+        retention-days: 30
+    
+    - name: Upload performance profiles
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-profiles-go${{ matrix.go-version }}
+        path: |
+          benchmark-artifacts/*.prof
+        retention-days: 14
+    
+    - name: Performance regression check
+      if: github.event_name == 'pull_request'
+      run: |
+        # Parse benchmark results and check for regressions
+        if [ -f "benchmark-results-${{ matrix.go-version }}.json" ]; then
+          # Extract regression info from results
+          CRITICAL_REGRESSIONS=$(jq -r '.ci_metrics.has_critical_regression' benchmark-results-${{ matrix.go-version }}.json)
+          REGRESSION_COUNT=$(jq -r '.regressions | length' benchmark-results-${{ matrix.go-version }}.json)
+          
+          echo "::notice::Performance regression check: $REGRESSION_COUNT regressions found"
+          
+          if [ "$CRITICAL_REGRESSIONS" = "true" ]; then
+            echo "::error::Critical performance regression detected! Check benchmark results."
+            exit 1
+          fi
+          
+          if [ "$REGRESSION_COUNT" -gt "0" ]; then
+            echo "::warning::$REGRESSION_COUNT performance regressions detected. Review recommended."
+          fi
+        fi
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = `benchmark-results-${{ matrix.go-version }}.json`;
+          
+          if (!fs.existsSync(path)) {
+            console.log('No benchmark results found');
+            return;
+          }
+          
+          const results = JSON.parse(fs.readFileSync(path, 'utf8'));
+          
+          let comment = `## 🚀 Performance Benchmark Results (Go ${{ matrix.go-version }})\n\n`;
+          
+          // Summary
+          comment += `### Summary\n`;
+          comment += `- **Performance Score**: ${results.summary.performance_score.toFixed(1)}/100\n`;
+          comment += `- **Total Benchmarks**: ${results.summary.total_benchmarks}\n`;
+          comment += `- **Average Ops/Sec**: ${results.summary.average_ops_per_sec.toFixed(2)}\n`;
+          comment += `- **Total Duration**: ${results.summary.total_duration}\n\n`;
+          
+          // Regressions
+          if (results.regressions && results.regressions.length > 0) {
+            comment += `### ⚠️ Performance Regressions (${results.regressions.length})\n`;
+            results.regressions.forEach(reg => {
+              const severity = reg.severity === 'critical' ? '🔴' : reg.severity === 'high' ? '🟠' : '🟡';
+              comment += `- ${severity} **${reg.benchmark_name}**: ${reg.regression_percent.toFixed(1)}% slower (${reg.impact})\n`;
+            });
+            comment += '\n';
+          }
+          
+          // Improvements
+          if (results.improvements && results.improvements.length > 0) {
+            comment += `### ✅ Performance Improvements (${results.improvements.length})\n`;
+            results.improvements.forEach(imp => {
+              comment += `- 🚀 **${imp.benchmark_name}**: ${imp.improvement_percent.toFixed(1)}% faster (${imp.impact})\n`;
+            });
+            comment += '\n';
+          }
+          
+          // Recommendations
+          if (results.recommendations && results.recommendations.length > 0) {
+            comment += `### 💡 Recommendations\n`;
+            results.recommendations.forEach(rec => {
+              comment += `- ${rec}\n`;
+            });
+            comment += '\n';
+          }
+          
+          comment += `\n---\n*Benchmark generated on ${results.timestamp}*`;
+          
+          // Post comment
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  benchmark-summary:
+    name: Benchmark Summary
+    needs: benchmark
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Download all benchmark results
+      uses: actions/download-artifact@v3
+      with:
+        path: ./benchmark-results/
+    
+    - name: Generate benchmark summary
+      run: |
+        echo "# Performance Benchmark Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        for dir in ./benchmark-results/benchmark-results-go*/; do
+          if [ -d "$dir" ]; then
+            go_version=$(basename "$dir" | sed 's/benchmark-results-go//')
+            echo "## Go $go_version Results" >> $GITHUB_STEP_SUMMARY
+            
+            if [ -f "$dir/benchmark-results-go$go_version.json" ]; then
+              # Extract key metrics (would need jq in real implementation)
+              echo "- Benchmark results available for download" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ❌ Benchmark results not available" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+        
+        echo "📊 All benchmark artifacts are available for download for 30 days." >> $GITHUB_STEP_SUMMARY
+
+  performance-trend:
+    name: Performance Trend Analysis  
+    needs: benchmark
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download benchmark results
+      uses: actions/download-artifact@v3
+      with:
+        path: ./benchmark-results/
+    
+    - name: Store performance history
+      run: |
+        # This would integrate with a performance tracking system
+        # For now, just create a simple historical record
+        mkdir -p performance-history
+        
+        for result_file in ./benchmark-results/*/benchmark-*.json; do
+          if [ -f "$result_file" ]; then
+            timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            commit_sha="${{ github.sha }}"
+            
+            # Create historical entry
+            echo "Performance data recorded for commit $commit_sha at $timestamp"
+            
+            # In a real implementation, this would store to a database or
+            # performance monitoring system like DataDog, New Relic, etc.
+          fi
+        done

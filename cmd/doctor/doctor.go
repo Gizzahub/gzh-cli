@@ -46,9 +46,13 @@ The doctor command performs a thorough analysis of your system including:
 - Code quality metrics
 
 Available subcommands:
-  godoc    # Analyze API documentation coverage and quality
-  dev-env  # Validate development environment setup
-  setup    # Automated development environment setup
+  godoc     # Analyze API documentation coverage and quality
+  dev-env   # Validate development environment setup
+  setup     # Automated development environment setup
+  benchmark # Run comprehensive performance benchmarks
+  metrics   # Analyze code quality metrics and generate dashboard
+  health    # Monitor comprehensive system health metrics
+  container # Monitor and diagnose Docker containers
 
 Examples:
   gz doctor                    # Run full diagnostic
@@ -57,7 +61,8 @@ Examples:
   gz doctor --fix              # Attempt automatic fixes
   gz doctor godoc --package ./internal/logger  # Analyze package documentation
   gz doctor dev-env --fix          # Check and fix development environment
-  gz doctor setup dev              # Automated development environment setup`,
+  gz doctor setup dev              # Automated development environment setup
+  gz doctor benchmark --package ./internal/synclone --ci  # Run CI benchmarks`,
 	Run: runDoctor,
 }
 
@@ -78,6 +83,10 @@ func init() {
 	DoctorCmd.AddCommand(newGodocCmd())
 	DoctorCmd.AddCommand(newDevEnvCmd())
 	DoctorCmd.AddCommand(newSetupCmd())
+	DoctorCmd.AddCommand(newBenchmarkCmd())
+	DoctorCmd.AddCommand(newMetricsCmd())
+	DoctorCmd.AddCommand(newHealthCmd())
+	DoctorCmd.AddCommand(newContainerCmd())
 }
 
 // DiagnosticResult represents the result of a diagnostic check.

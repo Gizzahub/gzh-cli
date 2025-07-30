@@ -28,7 +28,7 @@ type Middleware interface {
 // CacheEntry represents a cached response.
 type CacheEntry struct {
 	Response  *http.Response `json:"response"`
-	CreatedAt time.Time      `json:"created_at"`
+	CreatedAt time.Time      `json:"createdAt"`
 	TTL       time.Duration  `json:"ttl"`
 }
 
@@ -52,7 +52,7 @@ type HTTPClientImpl struct { //nolint:revive // Type name maintained for clarity
 	timeout          time.Duration
 }
 
-// Ensure HTTPClientImpl implements HTTPClient interface
+// Ensure HTTPClientImpl implements HTTPClient interface.
 var _ HTTPClient = (*HTTPClientImpl)(nil)
 
 // HTTPClientConfig holds configuration for HTTP client.
@@ -344,7 +344,7 @@ type RetryPolicyImpl struct {
 	logger     Logger
 }
 
-// Ensure RetryPolicyImpl implements RetryPolicy interface
+// Ensure RetryPolicyImpl implements RetryPolicy interface.
 var _ RetryPolicy = (*RetryPolicyImpl)(nil)
 
 // RetryPolicyConfig holds configuration for retry policy.
@@ -410,7 +410,7 @@ type RateLimiterImpl struct {
 	logger Logger
 }
 
-// Ensure RateLimiterImpl implements RateLimiter interface
+// Ensure RateLimiterImpl implements RateLimiter interface.
 var _ RateLimiter = (*RateLimiterImpl)(nil)
 
 // RateLimiterConfig holds configuration for rate limiter.
@@ -512,7 +512,7 @@ type CacheImpl struct {
 	config *CacheConfig
 }
 
-// Ensure CacheImpl implements Cache interface
+// Ensure CacheImpl implements Cache interface.
 var _ Cache = (*CacheImpl)(nil)
 
 // CacheConfig holds configuration for cache.

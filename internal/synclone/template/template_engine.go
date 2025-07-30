@@ -195,7 +195,7 @@ func (te *TemplateEngine) SaveTemplate(name string, config *TemplateConfig) erro
 		return fmt.Errorf("failed to marshal template configuration: %w", err)
 	}
 
-	if err := os.WriteFile(templatePath, data, 0o644); err != nil {
+	if err := os.WriteFile(templatePath, data, 0o600); err != nil {
 		return fmt.Errorf("failed to write template file: %w", err)
 	}
 

@@ -18,8 +18,8 @@ type Environment struct {
 	Description  string                   `yaml:"description"`
 	Services     map[string]ServiceConfig `yaml:"services"`
 	Dependencies []string                 `yaml:"dependencies"`
-	PreHooks     []Hook                   `yaml:"pre_hooks,omitempty"`
-	PostHooks    []Hook                   `yaml:"post_hooks,omitempty"`
+	PreHooks     []Hook                   `yaml:"preHooks,omitempty"`
+	PostHooks    []Hook                   `yaml:"postHooks,omitempty"`
 }
 
 // ServiceConfig contains configuration for a specific service
@@ -36,7 +36,7 @@ type ServiceConfig struct {
 type AWSConfig struct {
 	Profile   string `yaml:"profile"`
 	Region    string `yaml:"region"`
-	AccountID string `yaml:"account_id,omitempty"`
+	AccountID string `yaml:"accountId,omitempty"`
 }
 
 // GCPConfig represents GCP service configuration
@@ -72,7 +72,7 @@ type SSHConfig struct {
 type Hook struct {
 	Command string        `yaml:"command"`
 	Timeout time.Duration `yaml:"timeout,omitempty"`
-	OnError string        `yaml:"on_error,omitempty"` // continue, fail, rollback
+	OnError string        `yaml:"onError,omitempty"` // continue, fail, rollback
 }
 
 // ServiceSwitcher interface for switching individual services
@@ -85,12 +85,12 @@ type ServiceSwitcher interface {
 
 // SwitchProgress represents the progress of environment switching
 type SwitchProgress struct {
-	TotalServices     int           `json:"total_services"`
-	CompletedServices int           `json:"completed_services"`
-	CurrentService    string        `json:"current_service"`
+	TotalServices     int           `json:"totalServices"`
+	CompletedServices int           `json:"completedServices"`
+	CurrentService    string        `json:"currentService"`
 	Status            string        `json:"status"`
-	StartTime         time.Time     `json:"start_time"`
-	EstimatedEnd      time.Time     `json:"estimated_end"`
+	StartTime         time.Time     `json:"startTime"`
+	EstimatedEnd      time.Time     `json:"estimatedEnd"`
 	Errors            []SwitchError `json:"errors,omitempty"`
 }
 
@@ -104,7 +104,7 @@ type SwitchError struct {
 // SwitchResult represents the result of environment switching
 type SwitchResult struct {
 	Success           bool          `json:"success"`
-	SwitchedServices  []string      `json:"switched_services"`
+	SwitchedServices  []string      `json:"switchedServices"`
 	FailedServices    []string      `json:"failed_services"`
 	RollbackPerformed bool          `json:"rollback_performed"`
 	Duration          time.Duration `json:"duration"`

@@ -5,11 +5,17 @@ package status
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+)
+
+const (
+	awsDefaultProfile        = "default"
+	awsCredentialsExpiredMsg = "Credentials invalid or expired"
 )
 
 // AWSChecker implements ServiceChecker for AWS
@@ -92,7 +98,8 @@ func (a *AWSChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	if err != nil {
 		health.Status = StatusError
 		health.Message = fmt.Sprintf("Failed to call AWS STS: %v", err)
-		if exitErr, ok := err.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
 			health.Details["stderr"] = string(exitErr.Stderr)
 		}
 		return health, nil
@@ -121,7 +128,7 @@ func (a *AWSChecker) getCurrentProfile() string {
 	// Check AWS config file for default profile
 	cmd := exec.Command("aws", "configure", "list", "--profile", "default")
 	if err := cmd.Run(); err == nil {
-		return "default"
+		return awsDefaultProfile
 	}
 
 	return ""
@@ -160,7 +167,7 @@ func (a *AWSChecker) checkCredentials(ctx context.Context) (*CredentialStatus, e
 	cmd := exec.CommandContext(ctx, "aws", "sts", "get-caller-identity")
 	err := cmd.Run()
 	if err != nil {
-		credStatus.Warning = "Credentials invalid or expired"
+		credStatus.Warning = awsCredentialsExpiredMsg
 		return credStatus, nil
 	}
 

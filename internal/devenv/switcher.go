@@ -5,8 +5,10 @@ package devenv
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -276,8 +278,13 @@ func (es *EnvironmentSwitcher) executeHooks(ctx context.Context, hooks []Hook, h
 	return nil
 }
 
-// executeHook executes a single hook
+// executeHook executes a single hook with input validation
 func (es *EnvironmentSwitcher) executeHook(ctx context.Context, hook Hook, hookName string) error {
+	// Validate hook command to prevent shell injection
+	if err := validateHookCommand(hook.Command); err != nil {
+		return fmt.Errorf("hook '%s' validation failed: %w", hookName, err)
+	}
+
 	timeout := hook.Timeout
 	if timeout == 0 {
 		timeout = 30 * time.Second // default timeout
@@ -286,6 +293,7 @@ func (es *EnvironmentSwitcher) executeHook(ctx context.Context, hook Hook, hookN
 	hookCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
+	// #nosec G204 - Hook commands are from user configuration files and validated
 	cmd := exec.CommandContext(hookCtx, "sh", "-c", hook.Command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -305,4 +313,37 @@ func (es *EnvironmentSwitcher) GetAvailableServices() []string {
 		services = append(services, name)
 	}
 	return services
+}
+
+// validateHookCommand validates a hook command to prevent shell injection
+func validateHookCommand(command string) error {
+	if command == "" {
+		return errors.New("hook command cannot be empty")
+	}
+
+	// Basic length check to prevent extremely large commands
+	if len(command) > 1000 {
+		return errors.New("hook command too long (max 1000 characters)")
+	}
+
+	// Check for potentially dangerous patterns
+	dangerousPatterns := []string{
+		";rm -rf", "rm -rf /", ";curl", "wget", "sudo ", "su ", "|sh", "|bash",
+		"eval ", "exec ", "`", "$(", "& ", "&&", "||", "|&",
+	}
+
+	commandLower := strings.ToLower(command)
+	for _, pattern := range dangerousPatterns {
+		if strings.Contains(commandLower, pattern) {
+			return fmt.Errorf("hook command contains potentially dangerous pattern: %s", pattern)
+		}
+	}
+
+	// Allow only safe characters - alphanumeric, common punctuation, spaces
+	safePattern := regexp.MustCompile(`^[a-zA-Z0-9\s\-_./=:@\[\]{}()\n\t"']+$`)
+	if !safePattern.MatchString(command) {
+		return errors.New("hook command contains unsafe characters")
+	}
+
+	return nil
 }

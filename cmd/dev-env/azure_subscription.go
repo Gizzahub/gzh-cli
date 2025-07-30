@@ -404,7 +404,8 @@ func (m *AzureSubscriptionManager) loadSubscriptions() error {
 	output, err := cmd.Output()
 	if err != nil {
 		// If Azure CLI is not available or not authenticated, return empty list
-		return err
+		// This allows the manager to work even without Azure CLI installed
+		return nil
 	}
 
 	var subscriptions []struct {
@@ -817,6 +818,14 @@ func (m *AzureSubscriptionManager) validateSubscription(subscriptionID string, c
 
 // listTenants lists all available tenants.
 func (m *AzureSubscriptionManager) listTenants(format string) error {
+	// Validate format first before checking data
+	switch format {
+	case outputFormatJSON, "table":
+		// Valid formats
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+
 	if len(m.tenants) == 0 {
 		fmt.Println("No Azure tenants found.")
 		return nil
@@ -853,10 +862,9 @@ func (m *AzureSubscriptionManager) listTenants(format string) error {
 		table.Render() //nolint:errcheck // Table rendering errors are non-critical for CLI display
 
 		return nil
-
-	default:
-		return fmt.Errorf("unsupported output format: %s", format)
 	}
+
+	return nil
 }
 
 // switchTenant switches to a specific tenant context.

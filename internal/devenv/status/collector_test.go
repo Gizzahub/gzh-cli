@@ -25,7 +25,14 @@ func (m *MockServiceChecker) Name() string {
 
 func (m *MockServiceChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	args := m.Called(ctx)
-	return args.Get(0).(*ServiceStatus), args.Error(1)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	status, ok := args.Get(0).(*ServiceStatus)
+	if !ok {
+		return nil, args.Error(1)
+	}
+	return status, args.Error(1)
 }
 
 func (m *MockServiceChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
@@ -33,7 +40,11 @@ func (m *MockServiceChecker) CheckHealth(ctx context.Context) (*HealthStatus, er
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*HealthStatus), args.Error(1)
+	health, ok := args.Get(0).(*HealthStatus)
+	if !ok {
+		return nil, args.Error(1)
+	}
+	return health, args.Error(1)
 }
 
 func TestStatusCollector_CollectAll(t *testing.T) {
