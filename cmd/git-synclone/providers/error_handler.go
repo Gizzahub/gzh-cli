@@ -154,7 +154,7 @@ func (eh *ErrorHandler) handleRateLimitError(err *RateLimitError, context map[st
 		message += "\nSuggestion: Wait for rate limit reset or use a different authentication token"
 	}
 
-	return eh.formatter.PrintError(fmt.Errorf(message))
+	return eh.formatter.PrintError(fmt.Errorf("%s", message))
 }
 
 // handleAuthenticationError handles authentication failures with helpful hints.
@@ -173,7 +173,7 @@ func (eh *ErrorHandler) handleAuthenticationError(err *AuthenticationError, cont
 		message += fmt.Sprintf("\n\nHint: %s", err.Hint)
 	}
 
-	return eh.formatter.PrintError(fmt.Errorf(message))
+	return eh.formatter.PrintError(fmt.Errorf("%s", message))
 }
 
 // handleNetworkError handles network connectivity issues.
@@ -194,7 +194,7 @@ func (eh *ErrorHandler) handleNetworkError(err *NetworkError, context map[string
 		message += "\n  • Check if you're behind a proxy or firewall"
 	}
 
-	return eh.formatter.PrintError(fmt.Errorf(message))
+	return eh.formatter.PrintError(fmt.Errorf("%s", message))
 }
 
 // handleValidationError handles input validation failures.
@@ -210,7 +210,7 @@ func (eh *ErrorHandler) handleValidationError(err *ValidationError, context map[
 		}
 	}
 
-	return eh.formatter.PrintError(fmt.Errorf(message))
+	return eh.formatter.PrintError(fmt.Errorf("%s", message))
 }
 
 // handleRepositoryError handles repository-specific errors.
@@ -223,7 +223,7 @@ func (eh *ErrorHandler) handleRepositoryError(err *RepositoryError, context map[
 		message += "\nThis error may be temporary. The operation will be retried."
 	}
 
-	return eh.formatter.PrintError(fmt.Errorf(message))
+	return eh.formatter.PrintError(fmt.Errorf("%s", message))
 }
 
 // handleProviderError handles generic provider errors.
@@ -254,7 +254,7 @@ func (eh *ErrorHandler) handleProviderError(err *ProviderError, context map[stri
 		}
 	}
 
-	return eh.formatter.PrintError(fmt.Errorf(message))
+	return eh.formatter.PrintError(fmt.Errorf("%s", message))
 }
 
 // handleGenericError handles unclassified errors.
@@ -275,7 +275,7 @@ func (eh *ErrorHandler) handleGenericError(err error, context map[string]string)
 		message += "\n  • Check if the organization/repository exists and is accessible"
 	}
 
-	return eh.formatter.PrintError(fmt.Errorf(message))
+	return eh.formatter.PrintError(fmt.Errorf("%s", message))
 }
 
 // Helper functions for providing contextual suggestions

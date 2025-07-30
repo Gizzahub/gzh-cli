@@ -7,11 +7,11 @@ settings:
   package_manager: "pip"
   use_venv: false
   index_url: "https://pypi.org/simple"
-  
+
 # Version strategy
 strategy:
   default: "compatible"
-  
+
 # Cleanup policy
 cleanup_policy: "preserve"
 
@@ -20,15 +20,15 @@ packages:
   # Development tool
   - name: black
     version: "~=23.0"
-    
+
   # Testing tool
   - name: pytest
     version: ">=7.4.0"
-    
+
   # CLI tool for testing
   - name: httpie
     version: "latest"
-    
+
   # Utility
   - name: requests
     version: ">=2.31.0"

@@ -1,6 +1,6 @@
 # Current Command Structure
 
-**Last Updated**: 2025-01-27  
+**Last Updated**: 2025-01-27
 **Status**: Reflects actual implementation based on code analysis
 
 ## Overview

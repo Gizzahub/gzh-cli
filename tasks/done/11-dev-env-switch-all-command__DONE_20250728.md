@@ -23,7 +23,7 @@
 ### 지원 환경 전환
 - [x] AWS 계정/프로필/리전
 - [x] GCP 프로젝트/계정
-- [x] Azure 구독/테넌트  
+- [x] Azure 구독/테넌트
 - [x] Docker 컨텍스트
 - [x] Kubernetes 클러스터/네임스페이스
 - [x] SSH 설정
@@ -49,19 +49,19 @@ services:
     profile: prod-profile
     region: us-west-2
     account_id: "123456789012"
-  
+
   gcp:
     project: my-prod-project
     account: prod@company.com
     region: us-central1
-  
+
   kubernetes:
     context: prod-cluster
     namespace: default
-  
+
   docker:
     context: prod-docker
-  
+
   ssh:
     config: production
 
@@ -71,7 +71,7 @@ dependencies:
 
 pre_hooks:
   - command: "echo 'Switching to production environment'"
-  
+
 post_hooks:
   - command: "kubectl get nodes"
   - command: "aws sts get-caller-identity"

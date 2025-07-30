@@ -15,7 +15,7 @@ net-env 명령어의 복잡한 레거시 구조를 5개 핵심 명령어로 간�
 
 ### 새로운 핵심 명령어 구조
 - [ ] `gz net-env status` - 네트워크 상태 통합 표시
-- [ ] `gz net-env switch` - 네트워크 프로필 전환  
+- [ ] `gz net-env switch` - 네트워크 프로필 전환
 - [ ] `gz net-env profile` - 네트워크 프로필 관리
 - [ ] `gz net-env quick` - 빠른 네트워크 작업
 - [ ] `gz net-env monitor` - 네트워크 모니터링
@@ -126,20 +126,20 @@ var legacyCommandMapping = map[string]string{
     "actions":               "status",
     "container-detection":   "status --verbose",
     "network-topology":      "status --topology",
-    
+
     // 전환 관련
     "switch":               "switch",
-    
+
     // VPN 관련
     "vpn-hierarchy":        "quick vpn",
     "vpn-profile":          "profile",
     "vpn-failover":         "quick vpn failover",
-    
+
     // 모니터링 관련
     "network-metrics":      "monitor --performance",
     "network-analysis":     "monitor --analysis",
     "optimal-routing":      "monitor --routing",
-    
+
     // Docker/Kubernetes
     "docker-network":       "profile docker",
     "kubernetes-network":   "profile kubernetes",

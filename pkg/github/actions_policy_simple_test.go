@@ -112,7 +112,9 @@ func (m *simpleAPIClient) GetDefaultBranch(ctx context.Context, owner, repo stri
 	return "main", nil
 }
 
-func (m *simpleAPIClient) SetToken(token string) {}
+func (m *simpleAPIClient) SetToken(ctx context.Context, token string) error {
+	return nil
+}
 
 func (m *simpleAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) {
 	return &RateLimit{}, nil

@@ -3,7 +3,7 @@
 
 # API Documentation Directory
 
-This directory contains auto-generated API documentation. 
+This directory contains auto-generated API documentation.
 
 **DO NOT MODIFY FILES IN THIS DIRECTORY MANUALLY**
 

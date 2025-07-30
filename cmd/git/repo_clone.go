@@ -24,7 +24,7 @@ func newRepoCloneCmd() *cobra.Command {
 		Long: `Clone repositories with advanced features:
 
 - Bulk operations for entire organizations/groups
-- Parallel execution with configurable workers  
+- Parallel execution with configurable workers
 - Resume capability for interrupted operations
 - Multiple clone strategies (reset, pull, fetch)
 - Advanced filtering and matching

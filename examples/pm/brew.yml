@@ -14,7 +14,7 @@ strategy:
   default: "latest"        # latest, stable, fixed
   update_frequency: "weekly"
   auto_cleanup: true
-  
+
 # Cleanup policy
 cleanup_policy: "preserve"  # preserve, remove, quarantine
 
@@ -29,31 +29,31 @@ formulae:
   # Development tools
   - name: git
     version: "latest"
-    
+
   - name: vim
     version: "latest"
-    
+
   - name: tmux
     version: "stable"
-    
+
   - name: docker
     version: "latest"
     start_service: true
-    
+
   # Programming languages
   - name: go
     version: "1.21.5"      # Fixed version
-    
+
   - name: node
     version: "latest"
-    
+
   # Utilities
   - name: jq
     version: "latest"
-    
+
   - name: ripgrep
     version: "latest"
-    
+
   - name: fzf
     version: "latest"
 
@@ -62,10 +62,10 @@ casks:
   # Development tools
   - name: visual-studio-code
     version: "latest"
-    
+
   - name: iterm2
     version: "stable"
-    
+
   - name: docker
     version: "latest"
 

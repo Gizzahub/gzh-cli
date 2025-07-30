@@ -7,11 +7,11 @@ settings:
   auto_answer: true
   auto_selfupdate: true
   colour_enable: true
-  
+
 # Version strategy
 strategy:
   default: "stable"
-  
+
 # Cleanup policy
 cleanup_policy: "remove"    # Remove old versions
 
@@ -25,20 +25,20 @@ candidates:
         install: true
       - version: "17.0.9-tem"
         install: true
-        
+
   # Build tools
   gradle:
     versions:
       - version: "8.5"
         default: true
         install: true
-        
+
   maven:
     versions:
       - version: "3.9.6"
         default: true
         install: true
-        
+
   # Kotlin
   kotlin:
     versions:

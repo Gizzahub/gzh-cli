@@ -31,7 +31,7 @@ repos:
         language: system
         types: [go]
         pass_filenames: true
-      
+
       - id: gci
         name: gci
         entry: gci write --skip-generated -s standard -s default -s "prefix(github.com/gizzahub/gzh-manager-go)"

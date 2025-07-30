@@ -88,7 +88,7 @@ template:
     concurrency:
       clone_workers: 5
       update_workers: 10
-  
+
   providers:
     github:
       organizations:
@@ -100,7 +100,7 @@ template:
             - ".*-deprecated$"
           auth:
             token: "${GITHUB_ENTERPRISE_TOKEN}"
-    
+
   sync_mode:
     cleanup_orphans: true
     conflict_resolution: "remote-overwrite"
@@ -147,18 +147,18 @@ func (r *ResumableCloner) ResumeOperation(stateID string) error {
     if err != nil {
         return fmt.Errorf("failed to load state: %w", err)
     }
-    
+
     // 환경 변화 감지 (네트워크, 크리덴셜 등)
     if err := r.ValidateEnvironment(state); err != nil {
         return fmt.Errorf("environment validation failed: %w", err)
     }
-    
+
     // 부분 완료된 저장소 상태 확인
     pendingRepos := r.IdentifyPendingRepos(state)
-    
+
     // 실패한 저장소 재시도 전략 결정
     retryRepos := r.CalculateRetryStrategy(state)
-    
+
     // Resume 실행
     return r.ExecuteResume(pendingRepos, retryRepos, state)
 }

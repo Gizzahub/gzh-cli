@@ -23,11 +23,11 @@ repositories:
   - name: "gzh-manager-go"
     path: "gzh-manager-go"
     status: "active"
-    
+
   - name: "go-utils"
     path: "go-utils"
     status: "active"
-    
+
   - name: "web-app"
     path: "web-app"
     status: "active"

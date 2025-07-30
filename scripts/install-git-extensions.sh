@@ -51,7 +51,7 @@ check_go() {
         print_info "Visit: https://golang.org/doc/install"
         exit 1
     fi
-    
+
     local go_version
     go_version=$(go version | awk '{print $3}' | sed 's/go//')
     print_info "Found Go version: $go_version"
@@ -63,7 +63,7 @@ check_git() {
         print_error "Git is not installed. Please install Git first."
         exit 1
     fi
-    
+
     local git_version
     git_version=$(git --version | awk '{print $3}')
     print_info "Found Git version: $git_version"
@@ -91,40 +91,40 @@ backup_existing() {
 # Function to build the binary
 build_binary() {
     print_step "Building git extensions..."
-    
+
     # Check if we're in the project directory
     if [ ! -f "Makefile" ] || [ ! -d "cmd/git-synclone" ]; then
         print_error "Please run this script from the project root directory"
         print_info "Expected files: Makefile, cmd/git-synclone/"
         exit 1
     fi
-    
+
     # Build using Makefile
     if ! make build-git-extensions; then
         print_error "Build failed. Please check the error messages above."
         exit 1
     fi
-    
+
     # Verify binary was created
     if [ ! -f "$BINARY_NAME" ]; then
         print_error "Binary '$BINARY_NAME' was not created"
         exit 1
     fi
-    
+
     print_success "Binary built successfully"
 }
 
 # Function to install binary
 install_binary() {
     print_step "Installing git extensions..."
-    
+
     # Create install directory
     mkdir -p "$INSTALL_DIR"
-    
+
     # Copy binary
     cp "$BINARY_NAME" "$INSTALL_DIR/"
     chmod +x "$INSTALL_DIR/$BINARY_NAME"
-    
+
     print_success "Installed $BINARY_NAME to $INSTALL_DIR"
 }
 
@@ -143,7 +143,7 @@ check_path() {
 # Function to test installation
 test_installation() {
     print_step "Testing installation..."
-    
+
     # Test if binary can be found
     if command_exists "$BINARY_NAME"; then
         print_success "$BINARY_NAME is available in PATH"
@@ -151,7 +151,7 @@ test_installation() {
         print_warning "$BINARY_NAME is not in PATH"
         return 1
     fi
-    
+
     # Test git integration
     if git synclone --help >/dev/null 2>&1; then
         print_success "Git integration working: 'git synclone' available"
@@ -160,7 +160,7 @@ test_installation() {
         print_info "Make sure $INSTALL_DIR is in your PATH"
         return 1
     fi
-    
+
     return 0
 }
 
@@ -196,30 +196,30 @@ main() {
     echo "│                   gzh-manager-go                            │"
     echo "└─────────────────────────────────────────────────────────────┘"
     echo -e "${NC}"
-    
+
     # Trap to cleanup on exit
     trap cleanup EXIT
-    
+
     # Check prerequisites
     print_step "Checking prerequisites..."
     check_go
     check_git
     check_make
     print_success "All prerequisites satisfied"
-    
+
     # Backup existing installation
     backup_existing
-    
+
     # Build and install
     build_binary
     install_binary
-    
+
     # Check PATH and test installation
     path_ok=true
     if ! check_path; then
         path_ok=false
     fi
-    
+
     if $path_ok && test_installation; then
         show_usage
         exit 0

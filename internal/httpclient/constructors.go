@@ -52,6 +52,9 @@ type HTTPClientImpl struct { //nolint:revive // Type name maintained for clarity
 	timeout          time.Duration
 }
 
+// Ensure HTTPClientImpl implements HTTPClient interface
+var _ HTTPClient = (*HTTPClientImpl)(nil)
+
 // HTTPClientConfig holds configuration for HTTP client.
 type HTTPClientConfig struct { //nolint:revive // Type name maintained for clarity and consistency
 	Timeout             time.Duration
@@ -341,6 +344,9 @@ type RetryPolicyImpl struct {
 	logger     Logger
 }
 
+// Ensure RetryPolicyImpl implements RetryPolicy interface
+var _ RetryPolicy = (*RetryPolicyImpl)(nil)
+
 // RetryPolicyConfig holds configuration for retry policy.
 type RetryPolicyConfig struct {
 	MaxRetries int
@@ -403,6 +409,9 @@ type RateLimiterImpl struct {
 	tokens chan struct{}
 	logger Logger
 }
+
+// Ensure RateLimiterImpl implements RateLimiter interface
+var _ RateLimiter = (*RateLimiterImpl)(nil)
 
 // RateLimiterConfig holds configuration for rate limiter.
 type RateLimiterConfig struct {
@@ -503,6 +512,9 @@ type CacheImpl struct {
 	config *CacheConfig
 }
 
+// Ensure CacheImpl implements Cache interface
+var _ Cache = (*CacheImpl)(nil)
+
 // CacheConfig holds configuration for cache.
 type CacheConfig struct {
 	MaxSize int
@@ -571,6 +583,9 @@ type HTTPClientService struct { //nolint:revive // Type name maintained for clar
 	RateLimiter
 	Cache
 }
+
+// Note: Interface compliance verification disabled due to method conflicts between embedded interfaces
+// var _ HTTPService = (*HTTPClientService)(nil)
 
 // HTTPClientServiceConfig holds configuration for the HTTP client service.
 type HTTPClientServiceConfig struct { //nolint:revive // Type name maintained for consistency with service pattern

@@ -93,7 +93,7 @@ type Model struct {
     currentView  ViewType
     services     []ServiceStatus
     lastUpdate   time.Time
-    
+
     // 각 화면별 모델
     dashboardModel  *DashboardModel
     serviceModel    *ServiceDetailModel
@@ -179,14 +179,14 @@ var (
         Foreground(ColorPrimary).
         Bold(true).
         Padding(0, 1)
-    
+
     StyleStatus = lipgloss.NewStyle().
         Padding(0, 1).
         Margin(0, 1)
-    
+
     StyleActive = StyleStatus.Copy().
         Foreground(ColorSuccess)
-    
+
     StyleInactive = StyleStatus.Copy().
         Foreground(ColorSubtle)
 )

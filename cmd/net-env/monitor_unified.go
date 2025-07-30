@@ -71,7 +71,7 @@ func runMonitorUnified(ctx context.Context, changes, performance bool, logFile s
 		fmt.Printf("   Logging to: %s\n", logFile)
 	}
 
-	fmt.Println("   Press Ctrl+C to stop monitoring\n")
+	fmt.Println("   Press Ctrl+C to stop monitoring")
 
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()

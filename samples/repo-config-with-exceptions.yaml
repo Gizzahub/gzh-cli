@@ -14,19 +14,19 @@ policies:
         value: 2
         enforcement: "required"
         message: "All repositories must require at least 2 reviewers"
-      
+
       branch_protection:
         type: "branch_protection"
         value: true
         enforcement: "required"
         message: "Main branch must have protection enabled"
-      
+
       private_repos:
         type: "visibility"
         value: "private"
         enforcement: "required"
         message: "All repositories must be private"
-  
+
   enterprise_standards:
     description: "Enterprise development standards"
     rules:
@@ -35,7 +35,7 @@ policies:
         value: ".github/CODEOWNERS"
         enforcement: "required"
         message: "CODEOWNERS file is required"
-      
+
       security_scanning:
         type: "workflow_exists"
         value: ".github/workflows/security.yml"
@@ -58,14 +58,14 @@ repositories:
           conditions:
             - "Must add second maintainer by Q3 2024"
             - "Weekly security reviews required"
-        
+
         - policy: "enterprise_standards"
           rule: "codeowners_required"
           reason: "Legacy codebase - CODEOWNERS will be added during modernization"
           approved_by: "engineering-director@enterprise.com"
           approval_date: "2024-01-20"
           expires_at: "2024-06-30"
-    
+
     # Public demo repository
     - name: "public-api-demo"
       template: "enterprise-standard"
@@ -79,7 +79,7 @@ repositories:
           approved_by: "security-team@enterprise.com"
           approval_date: "2024-02-01"
           # No expiration - permanent exception
-    
+
     # Experimental project with reduced requirements
     - name: "ai-experiment-2024"
       exceptions:
@@ -92,7 +92,7 @@ repositories:
           conditions:
             - "No production data allowed"
             - "Must pass security review before deployment"
-  
+
   # Pattern-based exceptions
   patterns:
     # Proof of concept repositories
@@ -108,7 +108,7 @@ repositories:
           approved_by: "innovation-team@enterprise.com"
           approval_date: "2024-01-01"
           expires_at: "2024-12-31"
-    
+
     # Archived repositories
     - match: "*-archived"
       settings:
@@ -119,7 +119,7 @@ repositories:
           reason: "Archived repositories - no active development"
           approved_by: "compliance@enterprise.com"
           approval_date: "2024-01-01"
-        
+
         - policy: "enterprise_standards"
           rule: "codeowners_required"
           reason: "Archived repositories - no maintainers"
@@ -139,7 +139,7 @@ templates:
       allow_merge_commit: false
       allow_rebase_merge: false
       delete_branch_on_merge: true
-    
+
     security:
       vulnerability_alerts: true
       automated_security_fixes: true
@@ -156,7 +156,7 @@ templates:
           enforce_admins: true
           allow_force_pushes: false
           allow_deletions: false
-    
+
     permissions:
       team_permissions:
         "engineering": "write"

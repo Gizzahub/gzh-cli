@@ -23,7 +23,7 @@ sync:
   branch: "main"                 # Default branch cloned
   depth: 0                       # Clone depth (0 = full history)
   bare: false                    # Whether bare repositories
-  
+
   # Sync mode settings
   sync_mode:
     cleanup_orphans: true        # Remove directories not in repository list
@@ -38,7 +38,7 @@ repositories:
     last_commit: "abc123def456"
     last_synced: "2025-01-25T00:00:00Z"
     status: "active"
-    
+
   - name: "project-beta"
     path: "project-beta"
     url: "git@github.com:ScriptonBasestar/project-beta.git"
@@ -46,7 +46,7 @@ repositories:
     last_commit: "def456ghi789"
     last_synced: "2025-01-25T00:00:00Z"
     status: "active"
-    
+
   - name: "legacy-service"
     path: "legacy-service"
     url: "git@github.com:ScriptonBasestar/legacy-service.git"

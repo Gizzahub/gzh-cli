@@ -12,19 +12,38 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gizzahub/gzh-manager-go/cmd"
+	"github.com/gizzahub/gzh-manager-go/internal/container"
 )
 
 // Runner handles application lifecycle and signal management.
 type Runner struct {
-	version string
+	version   string
+	container *container.Container
 }
 
 // NewRunner creates a new application runner with the specified version.
 func NewRunner(version string) *Runner {
+	// Create and configure the dependency injection container
+	appContainer := container.NewContainerBuilder().
+		WithHTTPTimeout(30 * time.Second).
+		WithMetrics(true).
+		WithHealthChecks(true).
+		Build()
+
 	return &Runner{
-		version: version,
+		version:   version,
+		container: appContainer,
+	}
+}
+
+// NewRunnerWithContainer creates a new runner with a custom container.
+func NewRunnerWithContainer(version string, appContainer *container.Container) *Runner {
+	return &Runner{
+		version:   version,
+		container: appContainer,
 	}
 }
 
@@ -34,12 +53,27 @@ func (r *Runner) Run() error {
 	ctx, cancel := r.setupGracefulShutdown()
 	defer cancel()
 
-	// Execute the root command with context
-	if err := cmd.Execute(ctx, r.version); err != nil {
+	// Ensure container cleanup on exit
+	defer func() {
+		if err := r.container.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to clean up container: %v\n", err)
+		}
+	}()
+
+	// Create contextual container for command execution
+	contextualContainer := container.NewContextualContainer(ctx, r.container)
+
+	// Execute the root command with context and container
+	if err := cmd.ExecuteWithContainer(ctx, r.version, contextualContainer); err != nil {
 		return fmt.Errorf("application execution failed: %w", err)
 	}
 
 	return nil
+}
+
+// GetContainer returns the dependency injection container.
+func (r *Runner) GetContainer() *container.Container {
+	return r.container
 }
 
 // setupGracefulShutdown configures signal handling for graceful shutdown.

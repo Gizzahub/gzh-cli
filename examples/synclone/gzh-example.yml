@@ -26,7 +26,7 @@ organization:
   url: "https://github.com/ScriptonBasestar"  # Organization URL
   api_url: ""                          # Custom API URL (for self-hosted instances)
   description: "Scripton Basestar's GitHub Organization"
-  
+
   # Organization statistics
   stats:
     total_repos: 45                    # Total repositories in organization
@@ -43,16 +43,16 @@ sync:
   default_branch: "main"               # Default branch name
   depth: 0                            # Clone depth (0 = full history)
   bare: false                         # Whether to use bare repositories
-  
+
   # Directory structure
   clone_dir: "~/work/scripton"        # Base directory for this organization
   flatten: false                      # Whether to flatten directory structure
-  
+
   # Sync mode configuration
   sync_mode:
     cleanup_orphans: true             # Remove untracked directories
     conflict_resolution: "remote-overwrite"  # How to handle conflicts
-    
+
   # Sync schedule (for reference)
   schedule:
     auto_sync: false                  # Whether auto-sync is enabled
@@ -77,7 +77,7 @@ repositories:
     topics: ["cli", "devops", "golang"]
     visibility: "public"              # public, private
     status: "active"                  # active, archived, disabled
-    
+
   # Library repository with custom branch
   - name: "go-utils"
     path: "go-utils"
@@ -92,7 +92,7 @@ repositories:
     topics: ["golang", "utilities", "library"]
     visibility: "public"
     status: "active"
-    
+
   # Archived repository (kept for reference)
   - name: "legacy-api"
     path: "legacy-api"
@@ -107,7 +107,7 @@ repositories:
     topics: ["java", "spring", "legacy"]
     visibility: "private"
     status: "archived"               # This repo is archived
-    
+
   # Failed sync repository
   - name: "experimental-ml"
     path: "experimental-ml"
@@ -131,13 +131,13 @@ repositories:
 excluded:
   - name: "test-repo-1"
     reason: "Matched exclude pattern: ^test-.*"
-    
+
   - name: "example-archive"
     reason: "Matched exclude pattern: .*-archive$"
-    
+
   - name: ".github"
     reason: "Matched exclude pattern: ^\\."
-    
+
   - name: "fork-external-lib"
     reason: "Excluded by user configuration"
 
@@ -152,7 +152,7 @@ filters:
     - ".*-archive$"
     - "^\\."
     - "^fork-.*"
-  
+
   # Additional filter criteria
   min_size: ""                        # Minimum repository size
   max_size: ""                        # Maximum repository size
@@ -167,15 +167,15 @@ stats:
   synced_repos: 41                    # Successfully synced
   excluded_repos: 3                   # Excluded by filters
   failed_repos: 1                     # Failed to sync
-  
+
   # Size information
   total_size: "1.8GB"                 # Total disk usage
   largest_repo: "legacy-api"          # Largest repository
-  
+
   # Timing information
   last_sync_duration: "2m35s"         # Duration of last sync
   average_sync_time: "3m10s"          # Average sync duration
-  
+
   # Operation counts
   total_syncs: 15                     # Total sync operations
   successful_syncs: 14                # Successful syncs
@@ -201,14 +201,14 @@ metadata:
   project: "microservices"
   environment: "development"
   owner: "ScriptonBasestar"
-  
+
   # Categorization
   tags:
     - "golang"
     - "kubernetes"
     - "microservices"
     - "devops"
-  
+
   # Custom fields
   cost_center: "engineering"
   compliance: "soc2"
@@ -224,28 +224,28 @@ history:
     duration: "2m35s"
     synced: 41
     failed: 1
-    
+
   - timestamp: "2025-01-25T08:00:00Z"
     operation: "sync"
     status: "success"
     duration: "3m12s"
     synced: 41
     failed: 0
-    
+
   - timestamp: "2025-01-24T20:00:00Z"
     operation: "clone"
     status: "partial"
     duration: "5m45s"
     synced: 40
     failed: 2
-    
+
   - timestamp: "2025-01-24T14:30:00Z"
     operation: "sync"
     status: "success"
     duration: "2m58s"
     synced: 40
     failed: 0
-    
+
   - timestamp: "2025-01-24T08:00:00Z"
     operation: "sync"
     status: "success"
@@ -263,5 +263,5 @@ health:
       repo: "experimental-ml"
       message: "Failed to sync after 3 attempts"
       since: "2025-01-25T14:30:00Z"
-      
+
   last_check: "2025-01-25T14:45:30Z"

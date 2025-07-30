@@ -13,7 +13,7 @@ settings:
 strategy:
   default: "latest"
   auto_cleanup: false  # Disable for faster tests
-  
+
 # Cleanup policy
 cleanup_policy: "preserve"
 
@@ -26,13 +26,13 @@ formulae:
   # Basic tools
   - name: jq
     version: "latest"
-    
+
   - name: tree
     version: "latest"
-    
+
   - name: htop
     version: "latest"
-    
+
   # Development tool for testing
   - name: ripgrep
     version: "latest"

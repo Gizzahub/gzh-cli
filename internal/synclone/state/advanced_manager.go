@@ -258,7 +258,7 @@ func (sm *StateManager) saveOptimizedState(filePath string, state *OperationStat
 		return fmt.Errorf("failed to marshal optimized state: %w", err)
 	}
 
-	return os.WriteFile(filePath, data, 0o644)
+	return os.WriteFile(filePath, data, 0o600)
 }
 
 // AnalyzeStates provides analysis of all state files
@@ -421,7 +421,7 @@ func (sm *StateManager) attemptRepair(filePath string) bool {
 		return false
 	}
 
-	return os.WriteFile(filePath, repairedData, 0o644) == nil
+	return os.WriteFile(filePath, repairedData, 0o600) == nil
 }
 
 // copyFile creates a copy of a file
@@ -430,7 +430,7 @@ func (sm *StateManager) copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(dst, data, 0o644)
+	return os.WriteFile(dst, data, 0o600)
 }
 
 // SetRetentionPolicy updates the retention policy

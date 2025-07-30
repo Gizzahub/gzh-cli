@@ -1,369 +1,430 @@
 {
-  "version": "2.0.0",
   "tasks": [
     {
+      "args": [
+        "build"
+      ],
+      "command": "make",
+      "detail": "Build the gz binary using make",
+      "group": {
+        "isDefault": true,
+        "kind": "build"
+      },
       "label": "go: build",
-      "type": "shell",
-      "command": "make",
-      "args": ["build"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
       "problemMatcher": "$go",
-      "detail": "Build the gz binary using make"
+      "type": "shell"
     },
     {
+      "args": [
+        "test"
+      ],
+      "command": "make",
+      "detail": "Run all tests with coverage",
+      "group": {
+        "isDefault": true,
+        "kind": "test"
+      },
       "label": "go: test",
-      "type": "shell",
-      "command": "make",
-      "args": ["test"],
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
       "problemMatcher": "$go",
-      "detail": "Run all tests with coverage"
+      "type": "shell"
     },
     {
-      "label": "go: test (current package)",
-      "type": "shell",
+      "args": [
+        "test",
+        "-v",
+        "."
+      ],
       "command": "go",
-      "args": ["test", "-v", "."],
+      "detail": "Run tests in current package",
+      "group": "test",
+      "label": "go: test (current package)",
       "options": {
         "cwd": "${fileDirname}"
       },
-      "group": "test",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
       "problemMatcher": "$go",
-      "detail": "Run tests in current package"
+      "type": "shell"
     },
     {
-      "label": "go: lint",
-      "type": "shell",
+      "args": [
+        "lint"
+      ],
       "command": "make",
-      "args": ["lint"],
+      "detail": "Run golangci-lint checks",
       "group": "build",
+      "label": "go: lint",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
       "problemMatcher": [
         "$go",
         {
+          "fileLocation": [
+            "relative",
+            "${workspaceFolder}"
+          ],
           "owner": "golangci-lint",
-          "fileLocation": ["relative", "${workspaceFolder}"],
           "pattern": {
-            "regexp": "^(.+):(\\d+):(\\d+):\\s+(warning|error):\\s+(.+)\\s+\\((.+)\\)$",
+            "code": 6,
+            "column": 3,
             "file": 1,
             "line": 2,
-            "column": 3,
-            "severity": 4,
             "message": 5,
-            "code": 6
+            "regexp": "^(.+):(\\d+):(\\d+):\\s+(warning|error):\\s+(.+)\\s+\\((.+)\\)$",
+            "severity": 4
           }
         }
       ],
-      "detail": "Run golangci-lint checks"
+      "type": "shell"
     },
     {
+      "args": [
+        "fmt"
+      ],
+      "command": "make",
+      "detail": "Format Go code with gofumpt and gci",
+      "group": "build",
       "label": "go: format",
-      "type": "shell",
-      "command": "make",
-      "args": ["fmt"],
-      "group": "build",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "silent",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "silent",
+        "showReuseMessage": true
       },
-      "detail": "Format Go code with gofumpt and gci"
+      "type": "shell"
     },
     {
-      "label": "go: security scan",
-      "type": "shell",
+      "args": [
+        "security"
+      ],
       "command": "make",
-      "args": ["security"],
+      "detail": "Run gosec security analysis",
       "group": "build",
+      "label": "go: security scan",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
       "problemMatcher": {
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
         "owner": "gosec",
-        "fileLocation": ["relative", "${workspaceFolder}"],
         "pattern": {
-          "regexp": "^(.+):(\\d+)-(\\d+):\\s+(.+):\\s+(.+)\\s+\\(Confidence:\\s+(HIGH|MEDIUM|LOW),\\s+Severity:\\s+(HIGH|MEDIUM|LOW)\\)\\s+\\((.+)\\)$",
+          "code": 8,
+          "column": 3,
           "file": 1,
           "line": 2,
-          "column": 3,
-          "severity": 4,
           "message": 5,
-          "code": 8
+          "regexp": "^(.+):(\\d+)-(\\d+):\\s+(.+):\\s+(.+)\\s+\\(Confidence:\\s+(HIGH|MEDIUM|LOW),\\s+Severity:\\s+(HIGH|MEDIUM|LOW)\\)\\s+\\((.+)\\)$",
+          "severity": 4
         }
       },
-      "detail": "Run gosec security analysis"
+      "type": "shell"
     },
     {
+      "args": [
+        "clean"
+      ],
+      "command": "make",
+      "detail": "Clean build artifacts",
+      "group": "build",
       "label": "go: clean",
-      "type": "shell",
-      "command": "make",
-      "args": ["clean"],
-      "group": "build",
       "presentation": {
+        "clear": false,
         "echo": true,
+        "focus": false,
+        "panel": "shared",
         "reveal": "silent",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "showReuseMessage": true
       },
-      "detail": "Clean build artifacts"
+      "type": "shell"
     },
     {
-      "label": "go: bootstrap",
-      "type": "shell",
+      "args": [
+        "bootstrap"
+      ],
       "command": "make",
-      "args": ["bootstrap"],
+      "detail": "Install all build dependencies",
       "group": "build",
+      "label": "go: bootstrap",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "detail": "Install all build dependencies"
+      "type": "shell"
     },
     {
-      "label": "react: start dev server",
-      "type": "shell",
+      "args": [
+        "start"
+      ],
       "command": "npm",
-      "args": ["start"],
+      "detail": "Start React development server on port 3000",
+      "group": "build",
+      "isBackground": true,
+      "label": "react: start dev server",
       "options": {
         "cwd": "${workspaceFolder}/web"
       },
-      "group": "build",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "dedicated",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "isBackground": true,
       "problemMatcher": {
-        "owner": "typescript",
-        "source": "ts",
         "applyTo": "closedDocuments",
-        "fileLocation": ["relative", "${workspaceFolder}/web"],
-        "pattern": "$tsc",
         "background": {
           "activeOnStart": true,
           "beginsPattern": "Starting the development server",
           "endsPattern": "webpack compiled|Failed to compile"
-        }
+        },
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/web"
+        ],
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "source": "ts"
       },
-      "detail": "Start React development server on port 3000"
+      "type": "shell"
     },
     {
-      "label": "react: build",
-      "type": "shell",
+      "args": [
+        "run",
+        "build"
+      ],
       "command": "npm",
-      "args": ["run", "build"],
+      "detail": "Build React app for production",
+      "group": "build",
+      "label": "react: build",
       "options": {
         "cwd": "${workspaceFolder}/web"
       },
-      "group": "build",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
       "problemMatcher": "$tsc",
-      "detail": "Build React app for production"
+      "type": "shell"
     },
     {
+      "args": [
+        "run",
+        "build"
+      ],
+      "command": "npm",
+      "detail": "Build Node.js bindings",
+      "group": "build",
       "label": "nodejs: build bindings",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "build"],
       "options": {
         "cwd": "${workspaceFolder}/bindings/nodejs"
       },
-      "group": "build",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "problemMatcher": ["$tsc", "$node-gyp"],
-      "detail": "Build Node.js bindings"
+      "problemMatcher": [
+        "$tsc",
+        "$node-gyp"
+      ],
+      "type": "shell"
     },
     {
+      "args": [
+        "test"
+      ],
+      "command": "npm",
+      "detail": "Run Node.js binding tests",
+      "group": "test",
       "label": "nodejs: test bindings",
-      "type": "shell",
-      "command": "npm",
-      "args": ["test"],
       "options": {
         "cwd": "${workspaceFolder}/bindings/nodejs"
       },
-      "group": "test",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "problemMatcher": ["$tsc", "$eslint-stylish"],
-      "detail": "Run Node.js binding tests"
+      "problemMatcher": [
+        "$tsc",
+        "$eslint-stylish"
+      ],
+      "type": "shell"
     },
     {
-      "label": "python: activate env",
-      "type": "shell",
+      "args": [
+        "venv/bin/activate"
+      ],
       "command": "source",
-      "args": ["venv/bin/activate"],
+      "detail": "Activate Python virtual environment",
+      "group": "build",
+      "label": "python: activate env",
       "options": {
         "cwd": "${workspaceFolder}/bindings/python"
       },
-      "group": "build",
       "presentation": {
+        "clear": false,
         "echo": true,
+        "focus": false,
+        "panel": "shared",
         "reveal": "silent",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "showReuseMessage": true
       },
-      "detail": "Activate Python virtual environment"
+      "type": "shell"
     },
     {
-      "label": "python: test bindings",
-      "type": "shell",
+      "args": [
+        "-m",
+        "pytest",
+        "-v"
+      ],
       "command": "python",
-      "args": ["-m", "pytest", "-v"],
+      "dependsOn": "python: activate env",
+      "detail": "Run Python binding tests",
+      "group": "test",
+      "label": "python: test bindings",
       "options": {
         "cwd": "${workspaceFolder}/bindings/python"
       },
-      "group": "test",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "dependsOn": "python: activate env",
-      "detail": "Run Python binding tests"
+      "type": "shell"
     },
     {
-      "label": "docker: build image",
-      "type": "shell",
+      "args": [
+        "build",
+        "-t",
+        "gzh-manager",
+        "."
+      ],
       "command": "docker",
-      "args": ["build", "-t", "gzh-manager", "."],
+      "detail": "Build Docker image for the project",
       "group": "build",
+      "label": "docker: build image",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "detail": "Build Docker image for the project"
+      "type": "shell"
     },
     {
-      "label": "docker: test integration",
-      "type": "shell",
+      "args": [
+        "test-docker"
+      ],
       "command": "make",
-      "args": ["test-docker"],
+      "detail": "Run Docker-based integration tests",
       "group": "test",
+      "label": "docker: test integration",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "detail": "Run Docker-based integration tests"
+      "type": "shell"
     },
     {
-      "label": "git: pre-commit",
-      "type": "shell",
+      "args": [
+        "run",
+        "--all-files"
+      ],
       "command": "pre-commit",
-      "args": ["run", "--all-files"],
+      "detail": "Run pre-commit hooks on all files",
       "group": "build",
+      "label": "git: pre-commit",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "detail": "Run pre-commit hooks on all files"
+      "type": "shell"
     },
     {
-      "label": "release: dry run",
-      "type": "shell",
+      "args": [
+        "release-dry-run"
+      ],
       "command": "make",
-      "args": ["release-dry-run"],
+      "detail": "Test release process without publishing",
       "group": "build",
+      "label": "release: dry run",
       "presentation": {
+        "clear": false,
         "echo": true,
-        "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "reveal": "always",
+        "showReuseMessage": true
       },
-      "detail": "Test release process without publishing"
+      "type": "shell"
     }
-  ]
+  ],
+  "version": "2.0.0"
 }

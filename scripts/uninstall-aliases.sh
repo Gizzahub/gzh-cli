@@ -17,17 +17,17 @@ echo -e "${YELLOW}Removing GZ backward compatibility aliases...${NC}"
 remove_line() {
     local file="$1"
     local pattern="$2"
-    
+
     if [ -f "$file" ]; then
         # Create a temporary file
         local temp_file=$(mktemp)
-        
+
         # Remove lines containing the pattern
         grep -v "$pattern" "$file" > "$temp_file" 2>/dev/null || true
-        
+
         # Replace original file
         mv "$temp_file" "$file"
-        
+
         echo -e "${GREEN}✓ Removed aliases from $file${NC}"
     fi
 }

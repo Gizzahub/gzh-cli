@@ -7,11 +7,11 @@ settings:
   package_manager: "pip"      # pip, uv
   use_venv: false            # Use global packages
   index_url: "https://pypi.org/simple"
-  
+
 # Version strategy
 strategy:
   default: "compatible"      # latest, compatible, fixed
-  
+
 # Cleanup policy
 cleanup_policy: "preserve"
 
@@ -20,21 +20,21 @@ packages:
   # Development tools
   - name: poetry
     version: "latest"
-    
+
   - name: black
     version: "~=23.0"
-    
+
   - name: flake8
     version: ">=6.0.0"
-    
+
   - name: pytest
     version: ">=7.4.0"
     extras: ["cov"]
-    
+
   # CLI tools
   - name: httpie
     version: "latest"
-    
+
   - name: awscli
     version: "~=2.15.0"
 

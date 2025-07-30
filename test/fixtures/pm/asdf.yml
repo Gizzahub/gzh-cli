@@ -5,12 +5,12 @@ generated_at: "2025-01-25T10:00:00Z"
 # ASDF settings
 settings:
   legacy_version_file: true
-  
+
 # Version management strategy
 strategy:
   default: "stable"
   update_plugins: false  # Disable for faster tests
-  
+
 # Cleanup policy
 cleanup_policy: "preserve"
 
@@ -25,7 +25,7 @@ plugins:
         install: true
     post_install:
       - "npm install -g npm@latest"
-      
+
   # Python for testing
   python:
     repository: "https://github.com/asdf-vm/asdf-python.git"

@@ -286,7 +286,7 @@ environments:
         - "echo 'Switching to development environment...'"
       post_switch:
         - "echo 'Development environment activated'"
-    
+
   staging:
     description: "Staging environment with shared resources"
     aws_profile: "staging-account"
@@ -296,7 +296,7 @@ environments:
     azure_subscription: "staging-subscription"
     dependencies:
       - "vpn:staging"  # Ensure VPN is connected
-    
+
   production:
     description: "Production environment with strict access controls"
     aws_profile: "prod-account"
@@ -321,7 +321,7 @@ quick_presets:
   prod:
     environment: "production"
     description: "Quick switch to production (requires confirmation)"
-  
+
 # Auto-detection rules
 auto_detection:
   enabled: true
@@ -615,17 +615,17 @@ environments:
           description: "Authenticate with AWS SSO"
           timeout: "5m"
           on_failure: "abort"  # abort | continue | retry
-        
+
         - command: "kubectl config use-context prod-cluster"
           description: "Switch Kubernetes context"
           on_failure: "retry"
           max_retries: 3
-      
+
       post_switch:
         - command: "notify-slack 'Switched to production environment'"
           description: "Send notification"
           on_failure: "continue"
-      
+
       on_error:
         - command: "gz dev-env switch-all --env development"
           description: "Rollback to development"
@@ -666,17 +666,17 @@ auto_detection:
     - git_remote          # Git remote URL patterns
     - path_pattern        # Directory path patterns
     - last_used           # Last used in this directory
-  
+
   rules:
     - name: "Production repos"
       git_remote_pattern: ".*production.*"
       environment: "production"
       require_confirmation: true
-    
+
     - name: "Dev workspace"
       path_pattern: "~/dev/.*"
       environment: "development"
-    
+
     - name: "Client projects"
       path_pattern: "~/clients/([^/]+)/.*"
       environment: "client-${1}"  # Dynamic environment
@@ -692,20 +692,20 @@ template:
   name: "microservice-dev"
   description: "Standard microservice development setup"
   version: "1.0.0"
-  
+
   services:
     aws:
       profile_template: "${project}-dev"
       region: "us-west-2"
-    
+
     kubernetes:
       context_template: "${project}-dev-cluster"
       namespace: "${project}"
-    
+
     docker:
       context: "default"
       registry: "docker.io/${org}/${project}"
-  
+
   variables:
     - name: "project"
       description: "Project name"

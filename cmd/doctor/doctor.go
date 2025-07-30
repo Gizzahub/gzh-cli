@@ -42,12 +42,22 @@ The doctor command performs a thorough analysis of your system including:
 - Permission and access verification
 - Performance benchmarks
 - Issue detection and recommendations
+- API documentation analysis
+- Code quality metrics
+
+Available subcommands:
+  godoc    # Analyze API documentation coverage and quality
+  dev-env  # Validate development environment setup
+  setup    # Automated development environment setup
 
 Examples:
   gz doctor                    # Run full diagnostic
   gz doctor --report report.json  # Save detailed report
   gz doctor --quick            # Run quick checks only
-  gz doctor --fix              # Attempt automatic fixes`,
+  gz doctor --fix              # Attempt automatic fixes
+  gz doctor godoc --package ./internal/logger  # Analyze package documentation
+  gz doctor dev-env --fix          # Check and fix development environment
+  gz doctor setup dev              # Automated development environment setup`,
 	Run: runDoctor,
 }
 
@@ -63,6 +73,11 @@ func init() {
 	DoctorCmd.Flags().BoolVar(&quickMode, "quick", false, "Run quick checks only")
 	DoctorCmd.Flags().BoolVar(&attemptFix, "fix", false, "Attempt to fix detected issues")
 	DoctorCmd.Flags().BoolVar(&verbose, "verbose", false, "Show verbose output")
+
+	// Add subcommands
+	DoctorCmd.AddCommand(newGodocCmd())
+	DoctorCmd.AddCommand(newDevEnvCmd())
+	DoctorCmd.AddCommand(newSetupCmd())
 }
 
 // DiagnosticResult represents the result of a diagnostic check.

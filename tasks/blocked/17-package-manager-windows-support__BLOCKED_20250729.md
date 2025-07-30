@@ -103,12 +103,12 @@ cleanup:
     quarantine_dir: "~/.gzh/pm/quarantine"
     auto_quarantine: false
     retention_days: 30
-    
+
   strategies:
     - name: "quarantine"
       description: "Move unmanaged packages to quarantine directory"
       destructive: false
-      
+
     - name: "remove"
       description: "Remove unmanaged packages permanently"
       destructive: true
@@ -181,16 +181,16 @@ platform_specific:
       install_missing: true
       use_system_python: false
       proxy_settings: "inherit"
-      
+
     scoop:
       global_installs: false
       enable_long_paths: true
-      
+
     winget:
       source_priorities:
         - "winget"
         - "msstore"
-        
+
   execution:
     require_admin: true
     uac_bypass: false

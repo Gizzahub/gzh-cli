@@ -25,28 +25,28 @@ gz() {
             shift
             command gz repo-config "$@"
             ;;
-        
+
         # event -> kept as is
         "event")
             # Still available, no deprecation needed
             shift
             command gz event "$@"
             ;;
-        
+
         # webhook -> kept as is
         "webhook")
             # Still available, no deprecation needed
             shift
             command gz webhook "$@"
             ;;
-        
+
         # doctor -> still available
         "doctor")
             # Still available, no deprecation needed
             shift
             command gz doctor "$@"
             ;;
-        
+
         # shell -> error with instruction
         "shell")
             echo -e "${RED}Error:${NC} 'gz shell' has been removed." >&2
@@ -54,7 +54,7 @@ gz() {
             echo -e "or set: ${YELLOW}export GZH_DEBUG_SHELL=1${NC}" >&2
             return 1
             ;;
-        
+
         # config -> removed
         "config")
             echo -e "${RED}Error:${NC} 'gz config' has been removed." >&2
@@ -64,21 +64,21 @@ gz() {
             echo -e "  - gz net-env config" >&2
             return 1
             ;;
-        
+
         # docker -> removed
         "docker")
             echo -e "${RED}Error:${NC} 'gz docker' has been removed." >&2
             echo -e "Please use Docker CLI directly for container management." >&2
             return 1
             ;;
-        
+
         # always-latest -> pm
         "always-latest")
             _gz_deprecation_warning "always-latest" "pm"
             shift
             command gz pm "$@"
             ;;
-        
+
         # Default: pass through to actual gz command
         *)
             command gz "$@"

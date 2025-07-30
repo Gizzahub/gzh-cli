@@ -460,7 +460,7 @@ profile_presets:
     firewall:
       enabled: true
       mode: "strict"
-  
+
   home-basic:
     name: "Home Network"
     description: "Standard home network configuration"
@@ -470,7 +470,7 @@ profile_presets:
       servers: ["router", "8.8.8.8"]
     proxy:
       enabled: false
-  
+
   office-standard:
     name: "Office Network"
     description: "Corporate network with VPN"
@@ -483,7 +483,7 @@ profile_presets:
       http: "proxy.company.com:8080"
       https: "proxy.company.com:8080"
       no_proxy: "localhost,*.company.com"
-  
+
   development:
     name: "Development Environment"
     description: "Optimized for development work"

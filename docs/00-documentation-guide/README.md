@@ -5,8 +5,8 @@ This guide explains the documentation structure and management rules for the gzh
 ## Documentation Categories
 
 ### 1. Core Project Documents (Protected)
-**Location**: Project root directory  
-**Protection**: AI modification prohibited  
+**Location**: Project root directory
+**Protection**: AI modification prohibited
 **Files**:
 - README.md - Project overview and quick start
 - TECH_STACK.md - Technology stack and architecture
@@ -24,8 +24,8 @@ This guide explains the documentation structure and management rules for the gzh
 - Changes require careful review and approval
 
 ### 2. Auto-generated API Documentation
-**Location**: `/api-docs/`  
-**Protection**: No manual edits allowed  
+**Location**: `/api-docs/`
+**Protection**: No manual edits allowed
 **Content**: API reference documentation generated from code
 
 **Management Rules**:
@@ -35,8 +35,8 @@ This guide explains the documentation structure and management rules for the gzh
 - Regenerate using appropriate build commands
 
 ### 3. Core Design Specifications (Protected)
-**Location**: `/specs/`  
-**Protection**: AI modification prohibited  
+**Location**: `/specs/`
+**Protection**: AI modification prohibited
 **Files**:
 - common.md - Common functionality specifications
 - dev-env.md - Development environment management specs
@@ -51,8 +51,8 @@ This guide explains the documentation structure and management rules for the gzh
 - Changes require architecture review
 
 ### 4. General Documentation
-**Location**: `/docs/`  
-**Protection**: AI modifications allowed  
+**Location**: `/docs/`
+**Protection**: AI modifications allowed
 **Content**: Guides, tutorials, examples, and supplementary documentation
 
 **Management Rules**:

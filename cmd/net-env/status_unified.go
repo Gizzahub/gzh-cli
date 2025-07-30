@@ -120,7 +120,7 @@ func runStatusWatch(ctx context.Context, detector *netenv.NetworkDetector, profi
 	for {
 		clearScreen()
 		fmt.Printf("Network Status (Updated: %s)\n", time.Now().Format("15:04:05"))
-		fmt.Println("Press Ctrl+C to exit watch mode\n")
+		fmt.Println("Press Ctrl+C to exit watch mode")
 
 		status, err := collectNetworkStatus(ctx, detector, profileManager, includeHealth, timeout)
 		if err != nil {

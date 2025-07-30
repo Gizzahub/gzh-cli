@@ -7,11 +7,11 @@ settings:
   package_manager: "gem"
   use_bundler: true
   rubygems_url: "https://rubygems.org"
-  
+
 # Version strategy
 strategy:
   default: "compatible"      # latest, compatible, fixed
-  
+
 # Cleanup policy
 cleanup_policy: "preserve"
 
@@ -37,27 +37,27 @@ gems:
   # Essential tools
   - name: bundler
     version: "latest"
-    
+
   - name: rake
     version: "latest"
-    
+
   # Development tools
   - name: rails
     version: "~> 7.1.0"
-    
+
   - name: rspec
     version: "~> 3.12"
-    
+
   - name: rubocop
     version: "~> 1.50"
-    
+
   # Debugging
   - name: pry
     version: "latest"
-    
+
   - name: byebug
     version: "latest"
-    
+
   # Documentation
   - name: yard
     version: "latest"

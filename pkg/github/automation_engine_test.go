@@ -39,8 +39,9 @@ func (m *mockAPIClient) GetDefaultBranch(ctx context.Context, owner, repo string
 	return args.String(0), args.Error(1)
 }
 
-func (m *mockAPIClient) SetToken(token string) {
-	m.Called(token)
+func (m *mockAPIClient) SetToken(ctx context.Context, token string) error {
+	args := m.Called(ctx, token)
+	return args.Error(0)
 }
 
 func (m *mockAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) {

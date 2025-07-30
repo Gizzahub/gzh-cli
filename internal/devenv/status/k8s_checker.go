@@ -168,7 +168,9 @@ func (k *KubernetesChecker) checkClusterAccess(ctx context.Context) (*Credential
 	credStatus.Valid = true
 
 	// Check if credentials have expiration (for OIDC/cloud providers)
-	cmd = exec.CommandContext(ctx, "kubectl", "config", "view", "--raw", "-o", "jsonpath={.users[?(@.name==\""+k.getCurrentUser(ctx)+"\")].user}")
+	currentUser := k.getCurrentUser(ctx)
+	jsonPath := fmt.Sprintf("{.users[?(@.name==\"%s\")].user}", currentUser)
+	cmd = exec.CommandContext(ctx, "kubectl", "config", "view", "--raw", "-o", "jsonpath="+jsonPath) // #nosec G204 - validated kubectl command with controlled arguments
 	output, err := cmd.Output()
 	if err == nil && strings.Contains(string(output), "expiry") {
 		credStatus.Type = "oidc-token"

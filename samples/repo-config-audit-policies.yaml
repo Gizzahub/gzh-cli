@@ -16,34 +16,34 @@ policies:
         value: "private"
         enforcement: "required"
         message: "All repositories must be private for security"
-      
+
       # Branch protection requirements
       branch_protection_enabled:
         type: "branch_protection"
         value: true
         enforcement: "required"
         message: "Main branch must have protection enabled"
-      
+
       # Minimum reviewers
       minimum_reviewers:
         type: "min_reviews"
         value: 2
         enforcement: "required"
         message: "At least 2 reviewers required for all changes"
-      
+
       # Security features
       vulnerability_scanning:
         type: "security_feature"
         value: "vulnerability_alerts"
         enforcement: "required"
         message: "Vulnerability scanning must be enabled"
-      
+
       security_advisories:
         type: "security_feature"
         value: "security_advisories"
         enforcement: "required"
         message: "Security advisories must be enabled"
-  
+
   # Development standards policy
   development_standards:
     description: "Standard development practices and tooling"
@@ -54,32 +54,32 @@ policies:
         value: "README.md"
         enforcement: "required"
         message: "README.md is required for documentation"
-      
+
       license_required:
         type: "file_exists"
         value: "LICENSE"
         enforcement: "required"
         message: "LICENSE file is required"
-      
+
       codeowners_required:
         type: "file_exists"
         value: ".github/CODEOWNERS"
         enforcement: "recommended"
         message: "CODEOWNERS file is recommended for code review"
-      
+
       # CI/CD workflows
       ci_workflow:
         type: "workflow_exists"
         value: ".github/workflows/ci.yml"
         enforcement: "required"
         message: "CI workflow is required for automated testing"
-      
+
       security_workflow:
         type: "workflow_exists"
         value: ".github/workflows/security.yml"
         enforcement: "recommended"
         message: "Security scanning workflow is recommended"
-  
+
   # Open source compliance (for public repositories)
   opensource_compliance:
     description: "Requirements for open source and public repositories"
@@ -90,19 +90,19 @@ policies:
         value: "CONTRIBUTING.md"
         enforcement: "required"
         message: "Contributing guidelines required for open source"
-      
+
       code_of_conduct:
         type: "file_exists"
         value: "CODE_OF_CONDUCT.md"
         enforcement: "required"
         message: "Code of Conduct required for community projects"
-      
+
       issue_templates:
         type: "file_exists"
         value: ".github/ISSUE_TEMPLATE"
         enforcement: "recommended"
         message: "Issue templates help maintain quality"
-  
+
   # Compliance and governance
   governance_compliance:
     description: "Corporate governance and compliance requirements"
@@ -113,7 +113,7 @@ policies:
         value: "SECURITY.md"
         enforcement: "required"
         message: "Security policy required for vulnerability reporting"
-      
+
       # Compliance documentation
       compliance_docs:
         type: "file_exists"
@@ -134,13 +134,13 @@ repositories:
           approved_by: "cto@company.com"
           approval_date: "2024-01-01"
           expires_at: "2024-12-31"
-        
+
         - policy: "development_standards"
           rule: "ci_workflow"
           reason: "Legacy build system - CI migration planned for Q2"
           approved_by: "engineering-director@company.com"
           expires_at: "2024-06-30"
-    
+
     # Public documentation repository
     - name: "public-docs"
       exceptions:
@@ -149,7 +149,7 @@ repositories:
           reason: "Public documentation site"
           approved_by: "security-team@company.com"
           # No expiration - permanent exception
-  
+
   # Pattern-based exceptions
   patterns:
     # Proof of concept repositories
@@ -160,13 +160,13 @@ repositories:
           reason: "POC repositories - CI not required during experimentation"
           approved_by: "innovation-team@company.com"
           expires_at: "2024-12-31"
-        
+
         - policy: "security_compliance"
           rule: "minimum_reviewers"
           reason: "POC repositories - single developer experiments allowed"
           approved_by: "tech-lead@company.com"
           expires_at: "2024-12-31"
-    
+
     # Archive repositories
     - match: "*-archived"
       exceptions:
@@ -174,7 +174,7 @@ repositories:
           rule: "ci_workflow"
           reason: "Archived repositories - no active development"
           approved_by: "compliance@company.com"
-        
+
         - policy: "security_compliance"
           rule: "branch_protection_enabled"
           reason: "Archived repositories - read-only"
@@ -191,7 +191,7 @@ templates:
       has_projects: false
 
 # Audit Command Usage:
-# 
+#
 # Generate basic audit report:
 # gz repo-config audit
 #

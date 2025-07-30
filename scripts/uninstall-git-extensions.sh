@@ -45,7 +45,7 @@ command_exists() {
 # Function to find all installations
 find_installations() {
     local installations=()
-    
+
     # Common installation locations
     local search_paths=(
         "${HOME}/.local/bin"
@@ -54,20 +54,20 @@ find_installations() {
         "/usr/bin"
         "$(go env GOPATH 2>/dev/null)/bin"
     )
-    
+
     for path in "${search_paths[@]}"; do
         if [ -n "$path" ] && [ -f "$path/$BINARY_NAME" ]; then
             installations+=("$path/$BINARY_NAME")
         fi
     done
-    
+
     printf '%s\n' "${installations[@]}"
 }
 
 # Function to backup before removal
 backup_binary() {
     local binary_path="$1"
-    
+
     if [ -f "$binary_path" ]; then
         print_step "Backing up $binary_path..."
         mkdir -p "$BACKUP_DIR"
@@ -85,7 +85,7 @@ backup_binary() {
 # Function to remove binary
 remove_binary() {
     local binary_path="$1"
-    
+
     if [ -f "$binary_path" ]; then
         print_step "Removing $binary_path..."
         if rm -f "$binary_path"; then
@@ -104,7 +104,7 @@ remove_binary() {
 # Function to clean up configuration (optional)
 cleanup_config() {
     local config_dir="${HOME}/.config/gzh-manager"
-    
+
     if [ -d "$config_dir" ]; then
         echo
         read -p "Remove configuration directory $config_dir? [y/N]: " -n 1 -r
@@ -125,7 +125,7 @@ cleanup_config() {
 # Function to verify uninstallation
 verify_uninstall() {
     print_step "Verifying uninstallation..."
-    
+
     if command_exists "$BINARY_NAME"; then
         print_warning "$BINARY_NAME is still available in PATH"
         local remaining_path
@@ -135,7 +135,7 @@ verify_uninstall() {
     else
         print_success "$BINARY_NAME is no longer available"
     fi
-    
+
     # Test git integration
     if git synclone --help >/dev/null 2>&1; then
         print_warning "'git synclone' command still works"
@@ -143,31 +143,31 @@ verify_uninstall() {
     else
         print_success "'git synclone' command removed"
     fi
-    
+
     return 0
 }
 
 # Function to show removal summary
 show_summary() {
     local removed_count="$1"
-    
+
     echo
     echo -e "${CYAN}"
     echo "┌─────────────────────────────────────────────────────────────┐"
     echo "│                  Uninstall Summary                          │"
     echo "└─────────────────────────────────────────────────────────────┘"
     echo -e "${NC}"
-    
+
     if [ "$removed_count" -gt 0 ]; then
         print_success "Removed $removed_count installation(s) of $BINARY_NAME"
     else
         print_info "No installations found to remove"
     fi
-    
+
     if [ -d "$BACKUP_DIR" ]; then
         print_info "Backups available in: $BACKUP_DIR"
     fi
-    
+
     echo
     print_info "To restore from backup:"
     echo "  cp $BACKUP_DIR/${BINARY_NAME}_* ~/.local/bin/${BINARY_NAME}"
@@ -187,22 +187,22 @@ main() {
     echo "│                   gzh-manager-go                            │"
     echo "└─────────────────────────────────────────────────────────────┘"
     echo -e "${NC}"
-    
+
     # Find all installations
     print_step "Searching for $BINARY_NAME installations..."
     readarray -t installations < <(find_installations)
-    
+
     if [ ${#installations[@]} -eq 0 ]; then
         print_info "No installations of $BINARY_NAME found"
         exit 0
     fi
-    
+
     echo "Found ${#installations[@]} installation(s):"
     for installation in "${installations[@]}"; do
         echo "  - $installation"
     done
     echo
-    
+
     # Confirm removal
     if [ "$1" != "--force" ]; then
         read -p "Remove all installations? [y/N]: " -n 1 -r
@@ -212,7 +212,7 @@ main() {
             exit 0
         fi
     fi
-    
+
     # Remove each installation
     removed_count=0
     for installation in "${installations[@]}"; do
@@ -220,16 +220,16 @@ main() {
             ((removed_count++))
         fi
     done
-    
+
     # Optional: cleanup configuration
     cleanup_config
-    
+
     # Verify uninstallation
     verify_uninstall
-    
+
     # Show summary
     show_summary "$removed_count"
-    
+
     if [ "$removed_count" -gt 0 ]; then
         print_success "Uninstallation completed successfully"
         exit 0

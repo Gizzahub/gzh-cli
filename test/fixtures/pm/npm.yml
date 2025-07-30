@@ -7,11 +7,11 @@ settings:
   package_manager: "npm"
   registry: "https://registry.npmjs.org/"
   prefix: "~/.npm-global"
-  
+
 # Version strategy
 strategy:
   default: "latest"
-  
+
 # Cleanup policy
 cleanup_policy: "preserve"
 
@@ -20,15 +20,15 @@ packages:
   # Essential package managers
   - name: yarn
     version: "latest"
-    
+
   # Build tool for testing
   - name: typescript
     version: "^5.3.0"
-    
+
   # CLI tool for testing
   - name: json-server
     version: "latest"
-    
+
   # Development tool
   - name: nodemon
     version: "latest"

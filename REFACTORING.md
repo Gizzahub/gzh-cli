@@ -1,6 +1,6 @@
 # 🔧 REFACTORING.md
 
-> 이 문서는 gzh-manager-go 프로젝트의 발전 과정과 아키텍처 개선 사항을 기록하고,  
+> 이 문서는 gzh-manager-go 프로젝트의 발전 과정과 아키텍처 개선 사항을 기록하고,
 > 향후 개발자들이 프로젝트 구조를 이해하고 효율적으로 기여할 수 있도록 돕기 위해 작성되었습니다.
 
 ---
@@ -93,8 +93,8 @@ type GitPlatform interface {
 # bulk-clone.yaml (GitHub 전용)
 github:
   organizations: ["myorg"]
-  
-# separate-gitlab.yaml (GitLab 전용)  
+
+# separate-gitlab.yaml (GitLab 전용)
 gitlab:
   groups: ["mygroup"]
 ```
@@ -297,8 +297,8 @@ docs/
 
 ---
 
-> 📌 **최종 업데이트**: 2025-01-29  
-> 이 문서는 프로젝트 발전과 함께 지속적으로 업데이트됩니다.  
+> 📌 **최종 업데이트**: 2025-01-29
+> 이 문서는 프로젝트 발전과 함께 지속적으로 업데이트됩니다.
 > 변경사항은 `CHANGELOG.md`에 기록되며, 주요 아키텍처 변경시 본 문서를 갱신합니다.
 
 ---
@@ -306,7 +306,7 @@ docs/
 ## 🔗 관련 문서
 
 - [README.md](README.md) - 프로젝트 개요 및 사용법
-- [TECH_STACK.md](TECH_STACK.md) - 기술 스택 상세 정보  
+- [TECH_STACK.md](TECH_STACK.md) - 기술 스택 상세 정보
 - [ARCHITECTURE.md](docs/02-architecture/overview.md) - 아키텍처 상세 문서
 - [CONTRIBUTING.md](docs/06-development/) - 개발 기여 가이드
 - [CHANGELOG.md](CHANGELOG.md) - 변경 이력

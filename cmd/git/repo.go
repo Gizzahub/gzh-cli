@@ -16,7 +16,7 @@ func NewGitRepoCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo",
 		Short: "Repository lifecycle management",
-		Long: `Manage repositories across Git platforms including cloning, 
+		Long: `Manage repositories across Git platforms including cloning,
 creating, archiving, and synchronizing repositories.
 
 This command provides comprehensive repository management capabilities:

@@ -13,17 +13,17 @@ NC='\033[0m' # No Color
 # Check prerequisites
 check_prerequisites() {
     echo "📋 Checking prerequisites..."
-    
+
     if ! command -v docker &> /dev/null; then
         echo -e "${RED}❌ Docker is not installed${NC}"
         exit 1
     fi
-    
+
     if ! command -v go &> /dev/null; then
         echo -e "${RED}❌ Go is not installed${NC}"
         exit 1
     fi
-    
+
     echo -e "${GREEN}✅ All prerequisites met${NC}"
 }
 
@@ -40,33 +40,33 @@ build_gz() {
 # Run tests with Docker Compose
 run_compose_tests() {
     echo "🐳 Running tests with Docker Compose..."
-    
+
     # Build containers
     docker-compose build
-    
+
     # Start containers
     docker-compose up -d
-    
+
     # Wait for containers to be ready
     sleep 5
-    
+
     # Run tests in each container
     for container in gz-pm-ubuntu-test gz-pm-fedora-test gz-pm-alpine-test; do
         echo "📦 Testing in $container..."
-        
+
         # Make gz executable in container
         docker exec $container chmod +x /usr/local/bin/gz
-        
+
         # Run bootstrap check
         docker exec $container sudo -u testuser bash -l -c "gz pm bootstrap --check" || true
-        
+
         # Run package installation
         docker exec $container sudo -u testuser bash -l -c "gz pm install --all" || true
-        
+
         # Run export
         docker exec $container sudo -u testuser bash -l -c "gz pm export --all" || true
     done
-    
+
     # Clean up
     docker-compose down
     echo -e "${GREEN}✅ Docker Compose tests completed${NC}"
@@ -75,7 +75,7 @@ run_compose_tests() {
 # Run Go integration tests
 run_go_tests() {
     echo "🧪 Running Go integration tests..."
-    
+
     # Run with timeout
     if go test -v -timeout 30m; then
         echo -e "${GREEN}✅ Go integration tests passed${NC}"
@@ -89,7 +89,7 @@ run_go_tests() {
 main() {
     check_prerequisites
     build_gz
-    
+
     # Parse arguments
     if [ "$1" == "compose" ]; then
         run_compose_tests
@@ -100,7 +100,7 @@ main() {
         run_compose_tests
         run_go_tests
     fi
-    
+
     echo -e "${GREEN}🎉 All package manager integration tests completed!${NC}"
 }
 

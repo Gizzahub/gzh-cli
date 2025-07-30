@@ -7,16 +7,16 @@ services:
     profile: dev-profile
     region: us-east-1
     account_id: "987654321098"
-  
+
   gcp:
     project: my-dev-project
     account: dev@company.com
     region: us-east1
-  
+
   kubernetes:
     context: dev-cluster
     namespace: development
-  
+
   docker:
     context: dev-docker
 

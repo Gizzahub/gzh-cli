@@ -359,7 +359,7 @@ func (m *Model) renderProfileSwitch() string {
 
 Available Profiles:
 > office        Corporate network with VPN and proxy
-  home          Home network configuration  
+  home          Home network configuration
   cafe          Public WiFi with VPN protection
   mobile        Mobile hotspot configuration
 
@@ -429,7 +429,7 @@ Network Traffic (Last 5 minutes):
 
 Recent Alerts:
 ⚠️  High latency detected (125ms)
-ℹ️  VPN reconnected successfully  
+ℹ️  VPN reconnected successfully
 ✅ Network quality improved
 
 [r] Reset Stats  [e] Export  [s] Settings  [Esc] Back`
@@ -483,7 +483,7 @@ Navigation:
 Network Actions:
   s            Switch profile
   v            VPN toggle
-  d            DNS settings  
+  d            DNS settings
   p            Proxy toggle
   c            Quick connect VPN
   x            Quick disconnect VPN

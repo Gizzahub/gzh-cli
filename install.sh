@@ -48,7 +48,7 @@ command_exists() {
 # Function to detect OS and architecture
 detect_platform() {
     local os arch
-    
+
     # Detect OS
     case "$(uname -s)" in
         Linux*)     os="linux" ;;
@@ -56,7 +56,7 @@ detect_platform() {
         CYGWIN*|MINGW*|MSYS*) os="windows" ;;
         *)          os="unknown" ;;
     esac
-    
+
     # Detect architecture
     case "$(uname -m)" in
         x86_64|amd64) arch="amd64" ;;
@@ -65,7 +65,7 @@ detect_platform() {
         i386|i686)    arch="386" ;;
         *)            arch="unknown" ;;
     esac
-    
+
     if [ "$os" = "unknown" ] || [ "$arch" = "unknown" ]; then
         print_error "Unsupported platform: $(uname -s) $(uname -m)"
         print_info "Supported platforms:"
@@ -74,7 +74,7 @@ detect_platform() {
         print_info "  - Windows (amd64, 386)"
         exit 1
     fi
-    
+
     echo "${os}_${arch}"
 }
 
@@ -95,9 +95,9 @@ get_latest_version() {
 download_file() {
     local url="$1"
     local output="$2"
-    
+
     print_step "Downloading from: $url"
-    
+
     if command_exists curl; then
         curl -L -o "$output" "$url"
     elif command_exists wget; then
@@ -111,7 +111,7 @@ download_file() {
 # Function to install from source (fallback)
 install_from_source() {
     print_step "Installing from source..."
-    
+
     # Check if Go is installed
     if ! command_exists go; then
         print_error "Go is not installed and no pre-built binary available"
@@ -119,12 +119,12 @@ install_from_source() {
         print_info "Then run: go install github.com/${REPO}/cmd/git-synclone@latest"
         exit 1
     fi
-    
+
     # Install using go install
     print_step "Installing using 'go install'..."
     if go install "github.com/${REPO}/cmd/git-synclone@latest"; then
         print_success "Installed using 'go install'"
-        
+
         # Check if GOPATH/bin is in PATH
         local gopath_bin
         gopath_bin="$(go env GOPATH)/bin"
@@ -133,7 +133,7 @@ install_from_source() {
             print_info "Add the following to your shell profile:"
             echo "  export PATH=\"\$PATH:$gopath_bin\""
         fi
-        
+
         return 0
     else
         print_error "Failed to install from source"
@@ -145,18 +145,18 @@ install_from_source() {
 install_binary() {
     local version="$1"
     local platform="$2"
-    
+
     print_step "Installing git-synclone version $version for $platform..."
-    
+
     # Construct download URL
     local filename="${BINARY_NAME}_${version}_${platform}"
     if [[ "$platform" == *"windows"* ]]; then
         filename="${filename}.exe"
     fi
-    
+
     local download_url="${GITHUB_RELEASES}/${REPO}/releases/download/${version}/${filename}"
     local temp_file="/tmp/${filename}"
-    
+
     # Download binary
     if ! download_file "$download_url" "$temp_file"; then
         print_warning "Failed to download pre-built binary"
@@ -164,34 +164,34 @@ install_binary() {
         install_from_source
         return
     fi
-    
+
     # Create install directory
     mkdir -p "$INSTALL_DIR"
-    
+
     # Install binary
     local binary_path="$INSTALL_DIR/$BINARY_NAME"
     cp "$temp_file" "$binary_path"
     chmod +x "$binary_path"
-    
+
     # Cleanup
     rm -f "$temp_file"
-    
+
     print_success "Installed $BINARY_NAME to $INSTALL_DIR"
 }
 
 # Function to verify installation
 verify_installation() {
     print_step "Verifying installation..."
-    
+
     # Check if binary is accessible
     if command_exists "$BINARY_NAME"; then
         print_success "$BINARY_NAME is available in PATH"
-        
+
         # Check version
         local version
         version=$("$BINARY_NAME" --version 2>/dev/null || echo "unknown")
         print_info "Installed version: $version"
-        
+
         # Test git integration
         if git synclone --help >/dev/null 2>&1; then
             print_success "Git integration working: 'git synclone' available"
@@ -201,7 +201,7 @@ verify_installation() {
     else
         print_warning "$BINARY_NAME not found in PATH"
         print_info "Binary installed at: $INSTALL_DIR/$BINARY_NAME"
-        
+
         # Check PATH
         if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
             print_warning "$INSTALL_DIR is not in PATH"
@@ -238,28 +238,28 @@ main() {
     echo "│                 gzh-manager-go                              │"
     echo "└─────────────────────────────────────────────────────────────┘"
     echo -e "${NC}"
-    
+
     # Check prerequisites
     print_step "Checking prerequisites..."
-    
+
     if ! command_exists git; then
         print_error "Git is not installed"
         print_info "Please install Git first: https://git-scm.com/downloads"
         exit 1
     fi
-    
+
     print_success "Git is installed"
-    
+
     # Detect platform
     local platform
     platform=$(detect_platform)
     print_info "Detected platform: $platform"
-    
+
     # Get latest version
     print_step "Fetching latest release..."
     local version
     version=$(get_latest_version)
-    
+
     if [ -z "$version" ]; then
         print_warning "Could not fetch latest version from GitHub"
         print_info "Falling back to source installation..."
@@ -268,7 +268,7 @@ main() {
         print_info "Latest version: $version"
         install_binary "$version" "$platform"
     fi
-    
+
     # Verify and show usage
     verify_installation
     show_usage

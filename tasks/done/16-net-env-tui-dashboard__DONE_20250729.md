@@ -144,14 +144,14 @@ type NetEnvTUIModel struct {
     networkStatus   NetworkStatus
     profiles        []NetworkProfile
     selectedProfile int
-    
+
     // 화면별 모델
     dashboardModel  *DashboardModel
-    profileModel    *ProfileModel  
+    profileModel    *ProfileModel
     vpnModel        *VPNModel
     monitorModel    *MonitorModel
     settingsModel   *SettingsModel
-    
+
     // 상태 관리
     monitor         *NetworkMonitor
     lastUpdate      time.Time

@@ -1,4 +1,4 @@
-version: "2"  # Commented out for compatibility with golangci-lint v1.x
+# version: "2"  # Commented out for compatibility with golangci-lint v1.x
 run:
   go: "1.24"
   modules-download-mode: readonly

@@ -13,6 +13,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	// FormatJSON represents JSON output format
+	FormatJSON = "json"
+	// FormatYAML represents YAML output format
+	FormatYAML = "yaml"
+	// FormatTable represents table output format
+	FormatTable = "table"
+)
+
 // OutputFormatter provides consistent output formatting across commands.
 type OutputFormatter struct {
 	writer io.Writer
@@ -38,11 +47,11 @@ func NewOutputFormatterWithWriter(format string, writer io.Writer) *OutputFormat
 // FormatOutput formats and outputs data in the specified format.
 func (f *OutputFormatter) FormatOutput(data interface{}) error {
 	switch f.format {
-	case "json":
+	case FormatJSON:
 		return f.outputJSON(data)
-	case "yaml":
+	case FormatYAML:
 		return f.outputYAML(data)
-	case "table":
+	case FormatTable:
 		return f.outputTable(data)
 	default:
 		return fmt.Errorf("unsupported output format: %s", f.format)
@@ -77,7 +86,7 @@ type TableData interface {
 
 // FormatTable formats table data with consistent styling.
 func (f *OutputFormatter) FormatTable(data TableData) error {
-	if f.format != "table" {
+	if f.format != FormatTable {
 		return f.FormatOutput(data)
 	}
 

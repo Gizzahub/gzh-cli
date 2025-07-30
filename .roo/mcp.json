@@ -1,15 +1,15 @@
 {
   "mcpServers": {
     "filesystem": {
-      "command": "npx",
+      "alwaysAllow": [
+        "move_file"
+      ],
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
       ],
-      "alwaysAllow": [
-        "move_file"
-      ]
+      "command": "npx"
     }
   }
 }

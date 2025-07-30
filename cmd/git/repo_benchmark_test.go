@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git/provider/mock"
+	"github.com/stretchr/testify/mock"
+
+	mockprovider "github.com/gizzahub/gzh-manager-go/internal/git/provider/mock"
 	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
@@ -34,7 +36,7 @@ func BenchmarkCloneParallel(b *testing.B) {
 			repos := generateTestRepos(bm.repoCount)
 
 			// Create mock provider
-			mockProvider := mock.NewProvider("github")
+			mockProvider := mockprovider.NewProvider("github")
 			mockProvider.SetupListResponse("testorg", repos)
 
 			// Setup clone operations for all repos
@@ -104,7 +106,7 @@ func BenchmarkListWithFilters(b *testing.B) {
 
 	for _, bm := range benchmarks {
 		b.Run(bm.name, func(b *testing.B) {
-			mockProvider := mock.NewProvider("github")
+			mockProvider := mockprovider.NewProvider("github")
 
 			b.ResetTimer()
 			b.ReportAllocs()
@@ -135,8 +137,8 @@ func BenchmarkSyncOperations(b *testing.B) {
 			sourceRepos := generateTestRepos(bm.repoCount)
 			destRepos := []provider.Repository{} // Empty destination
 
-			srcProvider := mock.NewProvider("github")
-			dstProvider := mock.NewProvider("gitlab")
+			srcProvider := mockprovider.NewProvider("github")
+			dstProvider := mockprovider.NewProvider("gitlab")
 
 			srcProvider.SetupListResponse("sourceorg", sourceRepos)
 			dstProvider.SetupListResponse("destorg", destRepos)
@@ -166,7 +168,7 @@ func BenchmarkSyncOperations(b *testing.B) {
 
 // BenchmarkProviderOperations benchmarks basic provider operations.
 func BenchmarkProviderOperations(b *testing.B) {
-	mockProvider := mock.NewProvider("github")
+	mockProvider := mockprovider.NewProvider("github")
 	testRepo := generateTestRepos(1)[0]
 
 	b.Run("GetRepository", func(b *testing.B) {
@@ -235,7 +237,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 		b.ReportAllocs()
 
 		for i := 0; i < b.N; i++ {
-			mockProvider := mock.NewProvider("github")
+			mockProvider := mockprovider.NewProvider("github")
 			repos := generateTestRepos(1000)
 			mockProvider.SetupListResponse("testorg", repos)
 			_ = mockProvider
@@ -244,7 +246,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 
 	b.Run("FilteringOperations", func(b *testing.B) {
 		repos := generateTestRepos(5000)
-		mockProvider := mock.NewProvider("github")
+		mockProvider := mockprovider.NewProvider("github")
 
 		opts := provider.ListOptions{
 			Language:   "Go",
@@ -265,7 +267,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 // BenchmarkConcurrentOperations benchmarks concurrent operations.
 func BenchmarkConcurrentOperations(b *testing.B) {
 	b.Run("ConcurrentListOperations", func(b *testing.B) {
-		mockProvider := mock.NewProvider("github")
+		mockProvider := mockprovider.NewProvider("github")
 		repos := generateTestRepos(100)
 		mockProvider.SetupListResponse("testorg", repos)
 
@@ -287,7 +289,7 @@ func BenchmarkConcurrentOperations(b *testing.B) {
 
 	b.Run("ConcurrentFilterOperations", func(b *testing.B) {
 		repos := generateTestRepos(1000)
-		mockProvider := mock.NewProvider("github")
+		mockProvider := mockprovider.NewProvider("github")
 
 		opts := provider.ListOptions{
 			Language: "Go",
@@ -340,12 +342,12 @@ func generateTestRepos(count int) []provider.Repository {
 }
 
 // simulateCloneExecution simulates clone execution for benchmarking.
-func simulateCloneExecution(ctx context.Context, provider *mock.Provider, repos []provider.Repository, workers int) error {
+func simulateCloneExecution(ctx context.Context, mockProvider *mockprovider.Provider, repos []provider.Repository, workers int) error {
 	// Simulate clone executor logic
 	if workers <= 1 {
 		// Sequential execution
 		for _, repo := range repos {
-			if err := provider.CloneRepository(ctx, repo, "/tmp/test", provider.CloneOptions{}); err != nil {
+			if err := mockProvider.CloneRepository(ctx, repo, "/tmp/test", provider.CloneOptions{}); err != nil {
 				return err
 			}
 		}
@@ -359,7 +361,7 @@ func simulateCloneExecution(ctx context.Context, provider *mock.Provider, repos 
 				semaphore <- struct{}{}
 				defer func() { <-semaphore }()
 
-				if err := provider.CloneRepository(ctx, r, "/tmp/test", provider.CloneOptions{}); err != nil {
+				if err := mockProvider.CloneRepository(ctx, r, "/tmp/test", provider.CloneOptions{}); err != nil {
 					errors <- err
 					return
 				}
@@ -379,7 +381,7 @@ func simulateCloneExecution(ctx context.Context, provider *mock.Provider, repos 
 }
 
 // simulateSyncExecution simulates sync execution for benchmarking.
-func simulateSyncExecution(ctx context.Context, srcProvider, dstProvider *mock.Provider, repos []provider.Repository, workers int) error {
+func simulateSyncExecution(ctx context.Context, srcProvider, dstProvider *mockprovider.Provider, repos []provider.Repository, workers int) error {
 	// Simulate sync engine logic
 	for _, repo := range repos {
 		// Create repository in destination

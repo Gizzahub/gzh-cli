@@ -37,7 +37,7 @@ install_aliases() {
         bash)
             local rc_file="$HOME/.bashrc"
             local source_line="source $CONFIG_DIR/aliases.bash"
-            
+
             if ! line_exists "$rc_file" "gzh-manager/aliases"; then
                 echo "" >> "$rc_file"
                 echo "# GZ backward compatibility aliases" >> "$rc_file"
@@ -47,11 +47,11 @@ install_aliases() {
                 echo -e "${YELLOW}⚠ Aliases already installed in $rc_file${NC}"
             fi
             ;;
-            
+
         zsh)
             local rc_file="$HOME/.zshrc"
             local source_line="source $CONFIG_DIR/aliases.bash"
-            
+
             if ! line_exists "$rc_file" "gzh-manager/aliases"; then
                 echo "" >> "$rc_file"
                 echo "# GZ backward compatibility aliases" >> "$rc_file"
@@ -61,14 +61,14 @@ install_aliases() {
                 echo -e "${YELLOW}⚠ Aliases already installed in $rc_file${NC}"
             fi
             ;;
-            
+
         fish)
             local config_file="$HOME/.config/fish/config.fish"
             local source_line="source $CONFIG_DIR/aliases.fish"
-            
+
             # Create fish config directory if it doesn't exist
             mkdir -p "$HOME/.config/fish"
-            
+
             if ! line_exists "$config_file" "gzh-manager/aliases"; then
                 echo "" >> "$config_file"
                 echo "# GZ backward compatibility aliases" >> "$config_file"
@@ -78,7 +78,7 @@ install_aliases() {
                 echo -e "${YELLOW}⚠ Aliases already installed in $config_file${NC}"
             fi
             ;;
-            
+
         *)
             echo -e "${RED}Unsupported shell: $SHELL_TYPE${NC}"
             echo "Please manually add the following to your shell configuration:"
@@ -108,11 +108,11 @@ deprecation_schedule:
       - shell
     removal_target: v3.0.0
     removal_date: "2025-01-01"
-    
+
   warnings:
     first_warning: "2024-06-01"  # 6 months before removal
     final_warning: "2024-12-01"  # 1 month before removal
-    
+
   migration_guide: "docs/migration/command-migration-guide.md"
 EOF
 

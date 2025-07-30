@@ -83,14 +83,14 @@ func (g *GitHubProviderAdapter) CloneOrganization(ctx context.Context, owner, ta
 }
 
 // SetToken configures the GitHub authentication token.
-func (g *GitHubProviderAdapter) SetToken(token string) {
+func (g *GitHubProviderAdapter) SetToken(ctx context.Context, token string) error {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		if err := g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token); err != nil {
-			// Environment variable setting failed - log but don't fail the operation
-			fmt.Printf("Warning: failed to set GitHub token environment variable: %v\n", err)
+			return fmt.Errorf("failed to set GitHub token environment variable: %w", err)
 		}
 	}
+	return nil
 }
 
 // ValidateToken verifies that the configured GitHub token is valid.
@@ -180,14 +180,14 @@ func (g *GitLabProviderAdapter) CloneOrganization(ctx context.Context, owner, ta
 }
 
 // SetToken sets the authentication token for the GitLab provider.
-func (g *GitLabProviderAdapter) SetToken(token string) {
+func (g *GitLabProviderAdapter) SetToken(ctx context.Context, token string) error {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		if err := g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token); err != nil {
-			// Environment variable setting failed - log but don't fail the operation
-			fmt.Printf("Warning: failed to set GitLab token environment variable: %v\n", err)
+			return fmt.Errorf("failed to set GitLab token environment variable: %w", err)
 		}
 	}
+	return nil
 }
 
 // ValidateToken validates the GitLab authentication token.
@@ -277,14 +277,14 @@ func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, tar
 }
 
 // SetToken sets the authentication token for the Gitea provider.
-func (g *GiteaProviderAdapter) SetToken(token string) {
+func (g *GiteaProviderAdapter) SetToken(ctx context.Context, token string) error {
 	g.token = token
 	if g.token != "" && !strings.HasPrefix(g.token, "$") {
 		if err := g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token); err != nil {
-			// Environment variable setting failed - log but don't fail the operation
-			fmt.Printf("Warning: failed to set Gitea token environment variable: %v\n", err)
+			return fmt.Errorf("failed to set Gitea token environment variable: %w", err)
 		}
 	}
+	return nil
 }
 
 // ValidateToken validates the Gitea authentication token.

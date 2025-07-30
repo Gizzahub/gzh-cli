@@ -74,6 +74,9 @@ type DefaultConfigService struct {
 	validationEnabled bool
 }
 
+// Ensure DefaultConfigService implements ConfigService interface
+var _ ConfigService = (*DefaultConfigService)(nil)
+
 // ConfigServiceOptions provides configuration options for the service.
 type ConfigServiceOptions struct { //nolint:revive // Type name maintained for clarity in service configuration
 	Environment       env.Environment

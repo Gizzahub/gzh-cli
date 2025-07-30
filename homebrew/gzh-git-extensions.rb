@@ -14,10 +14,10 @@ class GzhGitExtensions < Formula
       "-X main.Version=#{version}",
       "-X main.BuildTime=#{Time.now.utc.strftime("%Y-%m-%d_%H:%M:%S")}",
     ]
-    
+
     # Build git-synclone
     system "go", "build", "-ldflags", version_flags.join(" "), "-o", "git-synclone", "./cmd/git-synclone"
-    
+
     # Install the binary
     bin.install "git-synclone"
   end
@@ -25,7 +25,7 @@ class GzhGitExtensions < Formula
   test do
     # Test that the binary was installed and runs
     system "#{bin}/git-synclone", "--version"
-    
+
     # Test that git integration works
     system "git", "synclone", "--help"
   end
@@ -33,16 +33,16 @@ class GzhGitExtensions < Formula
   def caveats
     <<~EOS
       git-synclone has been installed as a Git extension.
-      
+
       You can now use:
         git synclone --help
         git synclone github -o myorg
         git synclone gitlab -g mygroup
         git synclone gitea -o myorg
-      
+
       Configuration file can be placed at:
         ~/.config/gzh-manager/synclone.yaml
-      
+
       For more information and examples:
         https://github.com/gizzahub/gzh-manager-go
     EOS
