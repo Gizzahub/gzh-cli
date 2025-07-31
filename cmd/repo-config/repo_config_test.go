@@ -211,20 +211,6 @@ func TestGetActionSymbol(t *testing.T) {
 	}
 }
 
-/*
-// TODO: Fix getAffectedRepoCount function definition
-func TestGetAffectedRepoCount(t *testing.T) {
-	changes := []services.ConfigurationChange{
-		{Repository: "repo1", Action: "update"},
-		{Repository: "repo2", Action: "update"},
-		{Repository: "repo1", Action: "create"}, // Same repo, should count as 1
-	}
-
-	count := getAffectedRepoCount(changes)
-	assert.Equal(t, 2, count)
-}
-*/
-
 func TestTruncateString(t *testing.T) {
 	tests := []struct {
 		input    string

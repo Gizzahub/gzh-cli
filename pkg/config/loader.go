@@ -72,7 +72,11 @@ var ConfigSearchPaths = []string{
 }
 
 // LoadConfig loads configuration from the first available file in search paths.
-// Deprecated: Use ConfigFactory.LoadConfig() instead for better dependency injection support.
+//
+// Deprecated: This function will be removed in v3.0.
+// Use ConfigFactory.LoadConfig() instead for better dependency injection support.
+//
+// For migration guidance, see: docs/migration-guides/config-loader-migration.md
 func LoadConfig() (*Config, error) {
 	return LoadConfigWithEnv(env.NewOSEnvironment())
 }

@@ -732,7 +732,7 @@ type BenchmarkFunction struct {
 	Function func(ctx context.Context)
 }
 
-func discoverBenchmarks(_ string, filter string) ([]BenchmarkFunction, error) {
+func discoverBenchmarks(_ string, _ string) ([]BenchmarkFunction, error) {
 	// This would discover benchmark functions in the specified packages
 	// For now, return a placeholder implementation
 	return []BenchmarkFunction{

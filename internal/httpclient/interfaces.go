@@ -180,7 +180,7 @@ type LogEntry struct {
 	Timestamp    time.Time     `json:"timestamp"`
 	Method       string        `json:"method"`
 	URL          string        `json:"url"`
-	StatusCode   int           `json:"status_code"`
+	StatusCode   int           `json:"statusCode"`
 	Duration     time.Duration `json:"duration"`
 	RequestSize  int64         `json:"requestSize"`
 	ResponseSize int64         `json:"responseSize"`

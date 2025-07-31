@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	// FormatJSON represents JSON output format
+	// FormatJSON represents JSON output format.
 	FormatJSON = "json"
-	// FormatYAML represents YAML output format
+	// FormatYAML represents YAML output format.
 	FormatYAML = "yaml"
-	// FormatTable represents table output format
+	// FormatTable represents table output format.
 	FormatTable = "table"
 )
 

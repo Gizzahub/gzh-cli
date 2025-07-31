@@ -27,16 +27,16 @@ type Analyzer struct {
 
 // PackageInfo contains documentation analysis information for a package
 type PackageInfo struct {
-	ImportPath       string         `json:"import_path"`
+	ImportPath       string         `json:"importPath"`
 	Name             string         `json:"name"`
 	Dir              string         `json:"dir"`
-	GoFiles          []string       `json:"go_files"`
-	PublicFunctions  []FunctionInfo `json:"public_functions"`
-	PublicTypes      []TypeInfo     `json:"public_types"`
-	PublicVariables  []VariableInfo `json:"public_variables"`
-	PublicConstants  []ConstantInfo `json:"public_constants"`
-	CoverageStats    CoverageStats  `json:"coverage_stats"`
-	QualityIssues    []QualityIssue `json:"quality_issues"`
+	GoFiles          []string       `json:"goFiles"`
+	PublicFunctions  []FunctionInfo `json:"publicFunctions"`
+	PublicTypes      []TypeInfo     `json:"publicTypes"`
+	PublicVariables  []VariableInfo `json:"publicVariables"`
+	PublicConstants  []ConstantInfo `json:"publicConstants"`
+	CoverageStats    CoverageStats  `json:"coverageStats"`
+	QualityIssues    []QualityIssue `json:"qualityIssues"`
 	ExampleFunctions []ExampleInfo  `json:"example_functions"`
 	PackageDoc       string         `json:"package_doc"`
 	HasPackageDoc    bool           `json:"has_package_doc"`

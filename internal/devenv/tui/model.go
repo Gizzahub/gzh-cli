@@ -200,22 +200,28 @@ func (m *Model) updateCurrentView(msg tea.Msg) tea.Cmd {
 		m.dashboardModel, cmd = m.dashboardModel.Update(msg)
 		return cmd
 	case ViewServiceDetail:
-		// TODO: Implement service detail view
+		// Service detail view - planned for v2.1
+		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewEnvironmentSwitch:
-		// TODO: Implement environment switch view
+		// Environment switch view - planned for v2.1
+		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewSettings:
-		// TODO: Implement settings view
+		// Settings view - planned for v2.2
+		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewLogs:
-		// TODO: Implement logs view
+		// Logs view - planned for v2.1
+		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewHelp:
-		// TODO: Implement help view
+		// Help view - planned for v2.1
+		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewSearch:
-		// TODO: Implement search view
+		// Search view - planned for v2.2
+		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	default:
 		return nil

@@ -362,8 +362,11 @@ func (p *Profiler) startHTTPServer(_ context.Context) {
 	})
 
 	p.server = &http.Server{
-		Addr:    fmt.Sprintf(":%d", p.config.HTTPPort),
-		Handler: mux,
+		Addr:         fmt.Sprintf(":%d", p.config.HTTPPort),
+		Handler:      mux,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
 	p.logger.Info("Starting profiling HTTP server", "port", p.config.HTTPPort)

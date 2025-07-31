@@ -63,7 +63,7 @@ func (sa *StateAnalyzer) AnalyzeAllOperations() (*GlobalAnalysis, error) {
 	var totalDuration time.Duration
 	var totalRepos int
 	var totalBytes int64
-	var operationAnalyses []*OperationAnalysis
+	operationAnalyses := make([]*OperationAnalysis, 0, 5) // Pre-allocate with initial capacity
 
 	for _, stateFile := range stateFiles {
 		analysis := sa.analyzeStateFile(stateFile)

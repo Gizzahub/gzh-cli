@@ -6,6 +6,7 @@ package doctor
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -378,7 +379,7 @@ func (sm *SnapshotManager) analyzeBenchmarkTrend(benchmarkName string, snapshots
 	}
 
 	if len(dataPoints) < 3 {
-		return nil, nil // Not enough data points for trend analysis
+		return nil, errors.New("insufficient data points for trend analysis")
 	}
 
 	// Sort by timestamp

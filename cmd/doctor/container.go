@@ -1070,7 +1070,7 @@ func getHealthCheckInfo(containers []ContainerInfo) []ContainerHealthCheck {
 	return healthChecks
 }
 
-func performSecurityAnalysis(ctx context.Context, containers []ContainerInfo, images []ImageInfo) (SecurityAnalysis, error) {
+func performSecurityAnalysis(_ context.Context, containers []ContainerInfo, images []ImageInfo) (SecurityAnalysis, error) {
 	analysis := SecurityAnalysis{
 		PrivilegedContainers:  make([]string, 0),
 		RootContainers:        make([]string, 0),
@@ -1388,7 +1388,7 @@ func WriteFile(filename string, data []byte, perm int) error {
 	return os.WriteFile(filename, data, os.FileMode(perm))
 }
 
-func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, opts containerOptions) error {
+func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerOptions) error {
 	// Display environment information
 	logger.SimpleInfo("🐳 Container Environment",
 		"docker_version", diagnostics.Environment.DockerVersion,

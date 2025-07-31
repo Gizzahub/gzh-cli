@@ -60,7 +60,7 @@ func (sm *StateManager) ListStateFiles() ([]*StateFile, error) {
 		return nil, fmt.Errorf("failed to read state directory: %w", err)
 	}
 
-	var stateFiles []*StateFile
+	stateFiles := make([]*StateFile, 0, 10) // Pre-allocate with initial capacity
 
 	for _, file := range files {
 		if file.IsDir() || filepath.Ext(file.Name()) != ".json" {
