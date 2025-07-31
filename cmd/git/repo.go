@@ -46,6 +46,7 @@ This command provides comprehensive repository management capabilities:
 
 	// Add subcommands for repository lifecycle management
 	cmd.AddCommand(newRepoCloneCmd())
+	cmd.AddCommand(newRepoCloneOrUpdateCmd())
 	cmd.AddCommand(newRepoListCmd())
 	cmd.AddCommand(newRepoCreateCmd())
 	cmd.AddCommand(newRepoDeleteCmd())
