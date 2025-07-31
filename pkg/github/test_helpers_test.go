@@ -11,6 +11,14 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+// Common test constants used across multiple test files.
+const (
+	// testUpdatedDescription is a common test description used in update tests.
+	testUpdatedDescription = "Updated description"
+	// testRepoPath is a common test repository path.
+	testRepoPath = "/repos/testorg/testrepo"
+)
+
 // TestFixtures provides common test data.
 type TestFixtures struct {
 	Org              string

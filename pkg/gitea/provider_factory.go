@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/auth"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
 )
@@ -26,24 +27,20 @@ func CreateGiteaProvider(config *provider.ProviderConfig) (provider.GitProvider,
 	// Create the provider
 	giteaProvider := NewGiteaProvider(baseURL)
 
-	// Set up token authentication
-	if config.Token != "" {
-		// Set token in environment
-		environment := env.NewOSEnvironment()
-		if err := environment.Set(env.CommonEnvironmentKeys.GiteaToken, config.Token); err != nil {
-			return nil, fmt.Errorf("failed to set Gitea token: %w", err)
-		}
+	// Set up token authentication using common token manager
+	environment := env.NewOSEnvironment()
+	tokenManager := auth.NewTokenManager(environment)
+	credentials, err := tokenManager.SetupTokenAuth(config.Token, "gitea")
+	if err != nil {
+		return nil, err
+	}
 
-		// Authenticate
+	// Authenticate if credentials are available
+	if credentials != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		creds := provider.Credentials{
-			Type:  provider.CredentialTypeToken,
-			Token: config.Token,
-		}
-
-		if err := giteaProvider.Authenticate(ctx, creds); err != nil {
+		if err := giteaProvider.Authenticate(ctx, *credentials); err != nil {
 			return nil, fmt.Errorf("failed to authenticate Gitea provider: %w", err)
 		}
 	}

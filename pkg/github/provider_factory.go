@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gizzahub/gzh-manager-go/internal/auth"
 	"github.com/gizzahub/gzh-manager-go/internal/env"
 	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
 )
@@ -21,12 +22,11 @@ func CreateGitHubProvider(config *provider.ProviderConfig) (provider.GitProvider
 	// Create environment for token management
 	environment := env.NewOSEnvironment()
 
-	// Set up token authentication
-	if config.Token != "" {
-		// Set token in environment
-		if err := environment.Set(env.CommonEnvironmentKeys.GitHubToken, config.Token); err != nil {
-			return nil, fmt.Errorf("failed to set GitHub token: %w", err)
-		}
+	// Set up token authentication using common token manager
+	tokenManager := auth.NewTokenManager(environment)
+	credentials, err := tokenManager.SetupTokenAuth(config.Token, "github")
+	if err != nil {
+		return nil, err
 	}
 
 	// Create resilient client
@@ -41,17 +41,12 @@ func CreateGitHubProvider(config *provider.ProviderConfig) (provider.GitProvider
 	// Create the provider
 	gitHubProvider := NewGitHubProvider(apiClientAdapter, cloneService)
 
-	// Authenticate if token is provided
-	if config.Token != "" {
+	// Authenticate if credentials are available
+	if credentials != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		creds := provider.Credentials{
-			Type:  provider.CredentialTypeToken,
-			Token: config.Token,
-		}
-
-		if err := gitHubProvider.Authenticate(ctx, creds); err != nil {
+		if err := gitHubProvider.Authenticate(ctx, *credentials); err != nil {
 			return nil, fmt.Errorf("failed to authenticate GitHub provider: %w", err)
 		}
 	}
