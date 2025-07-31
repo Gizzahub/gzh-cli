@@ -26,7 +26,7 @@ func NewProfileCmd() *cobra.Command {
 
 It includes support for:
 - CPU profiling
-- Memory profiling  
+- Memory profiling
 - Goroutine profiling
 - Block profiling
 - Mutex profiling
@@ -364,7 +364,7 @@ func newStatsCmd() *cobra.Command {
 	cmd := cli.NewCommandBuilder(ctx, "stats", "Show runtime performance statistics").
 		WithLongDescription(`Display current runtime performance statistics including:
 - Number of goroutines
-- Memory usage and allocation statistics  
+- Memory usage and allocation statistics
 - Garbage collection statistics
 - CGO call count
 

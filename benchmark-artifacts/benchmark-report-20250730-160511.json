@@ -1,34 +1,17 @@
 {
-  "timestamp": "2025-07-30T16:05:11.434417021+09:00",
-  "environment": {
-    "platform": "linux/amd64",
-    "go_version": "go1.24.5",
-    "num_cpu": 16,
-    "num_goroutines": 3,
-    "memory_limit": 13063432
-  },
-  "summary": {
-    "total_benchmarks": 0,
-    "passed_benchmarks": 1,
-    "failed_benchmarks": 0,
-    "total_duration": 0,
-    "average_ops_per_sec": 0,
-    "total_memory_usage": 0,
-    "performance_score": 0
-  },
   "benchmarks": [
     {
-      "name": "BenchmarkExample",
-      "operations": 932,
-      "duration": 1000927131,
-      "ns_per_op": 1073956,
-      "ops_per_sec": 931.1367142869464,
       "alloc_bytes_per_op": 27,
       "allocs_per_op": 0,
-      "memory_before": 2456888,
-      "memory_after": 2482592,
-      "goroutines_before": 3,
+      "duration": 1000927131,
       "goroutines_after": 3,
+      "goroutines_before": 3,
+      "memory_after": 2482592,
+      "memory_before": 2456888,
+      "name": "BenchmarkExample",
+      "ns_per_op": 1073956,
+      "operations": 932,
+      "ops_per_sec": 931.1367142869464,
       "percentiles": {
         "max": 1741127,
         "min": 1019287,
@@ -40,14 +23,31 @@
       "timestamp": "2025-07-30T16:05:12.450073149+09:00"
     }
   ],
-  "regressions": null,
-  "improvements": null,
-  "recommendations": null,
   "ci_metrics": {
+    "artifact_paths": [],
     "exit_code": 0,
-    "regression_threshold": 10,
     "has_critical_regression": false,
     "recommended_action": "",
-    "artifact_paths": []
-  }
+    "regression_threshold": 10
+  },
+  "environment": {
+    "go_version": "go1.24.5",
+    "memory_limit": 13063432,
+    "num_cpu": 16,
+    "num_goroutines": 3,
+    "platform": "linux/amd64"
+  },
+  "improvements": null,
+  "recommendations": null,
+  "regressions": null,
+  "summary": {
+    "average_ops_per_sec": 0,
+    "failed_benchmarks": 0,
+    "passed_benchmarks": 1,
+    "performance_score": 0,
+    "total_benchmarks": 0,
+    "total_duration": 0,
+    "total_memory_usage": 0
+  },
+  "timestamp": "2025-07-30T16:05:11.434417021+09:00"
 }
