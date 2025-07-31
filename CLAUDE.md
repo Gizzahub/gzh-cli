@@ -61,6 +61,20 @@ make test       # Run all tests with coverage
 make lint-all   # Run all linting steps (format + lint + pre-commit)
 ```
 
+### Single Package Testing
+
+```bash
+# Test specific packages
+go test ./cmd/git -v                    # Test git command package
+go test ./cmd/synclone -v               # Test synclone package
+go test ./pkg/github -v                 # Test GitHub integration
+go test ./internal/git -v               # Test internal git operations
+
+# Run specific test functions
+go test ./cmd/git -run "TestExtractRepoNameFromURL" -v
+go test ./cmd/git -run "TestCloneOrUpdate" -v
+```
+
 ### Pre-commit Hooks Setup
 
 ```bash
@@ -94,6 +108,10 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 - **cmd/** - CLI commands using cobra framework
   - `root.go` - Main entry point with all command registrations
+  - `git/` - **NEW**: Unified Git platform management with intelligent clone-or-update functionality
+    - `repo_clone_or_update.go` - Smart repository cloning with multiple strategies (rebase, reset, clone, skip, pull, fetch)
+    - Supports optional target-path (auto-extracts repo name from URL like `git clone`)
+    - URL parsing for HTTPS, SSH, and various Git hosting platforms
   - `synclone/` - Multi-platform repository cloning (GitHub, GitLab, Gitea, Gogs)
   - `pm/` - Package manager updates (asdf, Homebrew, SDKMAN, npm, pip, etc.)
   - `dev-env/` - Development environment management (AWS, Docker, Kubernetes, SSH configs)
@@ -107,8 +125,13 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 - **internal/** - Private packages
   - `convert/` - Data conversion utilities
-  - `git/` - Git operations and helpers
+  - `git/` - **Core Git operations layer** with dependency injection pattern
+    - `interfaces.go` - Defines Client, StrategyExecutor, BulkOperator, AuthManager interfaces
+    - `constructors.go` - Concrete implementations with dependency injection
+    - Supports multiple strategies: reset, pull, fetch, rebase operations
+    - Command execution abstraction for testability
   - `testlib/` - Testing utilities and environment checkers
+  - `logger/` - Logging abstraction with SimpleLogger implementation
 
 - **pkg/** - Public packages (importable by other projects)
   - `synclone/` - Configuration loading, schema validation, URL building
@@ -123,13 +146,27 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ### Key Patterns
 
-1. **Service-specific implementations**: Each Git platform (GitHub, GitLab, Gitea, Gogs) has dedicated packages following common interfaces
-2. **Configuration-driven design**: Extensive YAML configuration support with schema validation (see `examples/` directory)
-3. **Cobra CLI framework**: All commands use cobra with consistent flag patterns and help documentation
-4. **Cross-platform support**: Native OS detection and platform-specific implementations (Linux, macOS, Windows)
-5. **Environment variable integration**: Support for token authentication and configuration overrides
-6. **Atomic operations**: Commands designed for safe execution with backup and rollback capabilities
-7. **Comprehensive testing**: testify framework with mock services and environment-specific tests
+1. **Dependency Injection Architecture**: Internal Git operations use interface-based design with dependency injection
+   - `CommandExecutor` interface for shell command abstraction
+   - `Logger` interface for logging abstraction
+   - `Client`, `StrategyExecutor`, `BulkOperator` interfaces for Git operations
+   - Concrete implementations in `constructors.go`
+
+2. **Service-specific implementations**: Each Git platform (GitHub, GitLab, Gitea, Gogs) has dedicated packages following common interfaces
+
+3. **Configuration-driven design**: Extensive YAML configuration support with schema validation (see `examples/` directory)
+
+4. **Cobra CLI framework**: All commands use cobra with consistent flag patterns and help documentation
+
+5. **Cross-platform support**: Native OS detection and platform-specific implementations (Linux, macOS, Windows)
+
+6. **Environment variable integration**: Support for token authentication and configuration overrides
+
+7. **Atomic operations**: Commands designed for safe execution with backup and rollback capabilities
+
+8. **Comprehensive testing**: testify framework with mock services and environment-specific tests
+
+9. **URL Parsing Strategy**: Robust URL parsing for multiple Git hosting formats (HTTPS, SSH, ssh://) in `extractRepoNameFromURL`
 
 ## Configuration and Schema
 
@@ -171,6 +208,11 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ### Repository Operations
 
+- `gz git repo clone-or-update` - **NEW**: Intelligent single repository management
+  - Optional target-path (auto-extracts from URL like `git clone`)
+  - Multiple strategies: rebase (default), reset, clone, skip, pull, fetch
+  - Branch specification with `-b/--branch` flag
+  - Examples: `gz git repo clone-or-update https://github.com/user/repo.git`
 - `gz synclone` - Clone entire organizations from GitHub, GitLab, Gitea, Gogs
 - `gz repo-config` - GitHub repository configuration management
 - `gz event` - GitHub event management and webhook server
@@ -188,6 +230,17 @@ make regenerate-mocks # Clean and regenerate all mocks
 - `gz net-env` - WiFi change detection, VPN/DNS/proxy management
 
 ## Repository Clone Strategies
+
+### Single Repository (gz git repo clone-or-update)
+
+- `rebase` (default): Rebase local changes on top of remote changes
+- `reset`: Hard reset to match remote state (discards local changes)
+- `clone`: Remove existing directory and perform fresh clone
+- `skip`: Leave existing repository unchanged
+- `pull`: Standard git pull (merge remote changes)
+- `fetch`: Only fetch remote changes without updating working directory
+
+### Bulk Operations (gz synclone)
 
 - `reset` (default): Hard reset + pull (discards local changes)
 - `pull`: Merge remote changes with local changes
