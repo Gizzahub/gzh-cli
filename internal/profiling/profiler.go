@@ -168,13 +168,13 @@ func (p *Profiler) StartProfile(profileType ProfileType) (string, error) {
 		filename := filepath.Join(p.outputDir, fmt.Sprintf("cpu_%s.prof", sessionID))
 		file, err := os.Create(filename)
 		if err != nil {
-			return "", fmt.Errorf("failed to create CPU profile file: %v", err)
+			return "", fmt.Errorf("failed to create CPU profile file: %w", err)
 		}
 		session.File = file
 
 		if err := runtimepprof.StartCPUProfile(file); err != nil {
 			file.Close()
-			return "", fmt.Errorf("failed to start CPU profile: %v", err)
+			return "", fmt.Errorf("failed to start CPU profile: %w", err)
 		}
 
 	case ProfileTypeMemory, ProfileTypeGoroutine, ProfileTypeBlock, ProfileTypeMutex, ProfileTypeThreadCreate:
@@ -227,21 +227,21 @@ func (p *Profiler) stopProfileSession(sessionID string, session *ProfileSession)
 	case ProfileTypeMemory:
 		filename := filepath.Join(p.outputDir, fmt.Sprintf("memory_%s.prof", sessionID))
 		if err := p.writeProfile("heap", filename); err != nil {
-			return fmt.Errorf("failed to write memory profile: %v", err)
+			return fmt.Errorf("failed to write memory profile: %w", err)
 		}
 		p.logger.Info("Memory profile saved", "session_id", sessionID, "duration", duration, "file", filename)
 
 	case ProfileTypeGoroutine:
 		filename := filepath.Join(p.outputDir, fmt.Sprintf("goroutine_%s.prof", sessionID))
 		if err := p.writeProfile("goroutine", filename); err != nil {
-			return fmt.Errorf("failed to write goroutine profile: %v", err)
+			return fmt.Errorf("failed to write goroutine profile: %w", err)
 		}
 		p.logger.Info("Goroutine profile saved", "session_id", sessionID, "duration", duration, "file", filename)
 
 	case ProfileTypeBlock:
 		filename := filepath.Join(p.outputDir, fmt.Sprintf("block_%s.prof", sessionID))
 		if err := p.writeProfile("block", filename); err != nil {
-			return fmt.Errorf("failed to write block profile: %v", err)
+			return fmt.Errorf("failed to write block profile: %w", err)
 		}
 		p.logger.Info("Block profile saved", "session_id", sessionID, "duration", duration, "file", filename)
 

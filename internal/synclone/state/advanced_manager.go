@@ -185,9 +185,7 @@ func (sm *StateManager) RunCleanup() error {
 	}
 
 	// Optimize remaining state files
-	if err := sm.optimizeStateFiles(stateFiles); err != nil {
-		return fmt.Errorf("failed to optimize state files: %w", err)
-	}
+	sm.optimizeStateFiles(stateFiles)
 
 	fmt.Printf("Cleanup completed. Removed %d state files\n", len(cleanedFiles))
 	return nil
@@ -199,7 +197,7 @@ func (sm *StateManager) deleteStateFile(file *StateFile) error {
 }
 
 // optimizeStateFiles optimizes state files by compacting and deduplicating
-func (sm *StateManager) optimizeStateFiles(files []*StateFile) error {
+func (sm *StateManager) optimizeStateFiles(files []*StateFile) {
 	for _, file := range files {
 		// Skip active operations
 		if file.State.Status == StatusInProgress {
@@ -214,8 +212,6 @@ func (sm *StateManager) optimizeStateFiles(files []*StateFile) error {
 			continue // Log error but continue with other files
 		}
 	}
-
-	return nil
 }
 
 // compactState removes unnecessary data from completed states
