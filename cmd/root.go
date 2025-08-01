@@ -16,6 +16,7 @@ import (
 	netenv "github.com/gizzahub/gzh-manager-go/cmd/net-env"
 	"github.com/gizzahub/gzh-manager-go/cmd/pm"
 	"github.com/gizzahub/gzh-manager-go/cmd/profile"
+	"github.com/gizzahub/gzh-manager-go/cmd/quality"
 	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
 	"github.com/gizzahub/gzh-manager-go/cmd/shell"
 	synclone "github.com/gizzahub/gzh-manager-go/cmd/synclone"
@@ -58,6 +59,7 @@ Utility Commands: doctor, version`,
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(profile.NewProfileCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(NewGitCmd())                   //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(quality.NewQualityCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
 
 	// Utility commands - set as hidden to reduce clutter in main help
 	versionCmd := newVersionCmd(version)
@@ -173,6 +175,7 @@ Utility Commands: doctor, version`,
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmdWithContainer(containerInstance)) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(NewGitCmd())                                                 //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(quality.NewQualityCmd())                                     //nolint:contextcheck // Command setup doesn't require context propagation
 
 	// Utility commands - set as hidden to reduce clutter in main help
 	versionCmd := newVersionCmd(version)

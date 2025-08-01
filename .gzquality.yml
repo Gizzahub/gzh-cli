@@ -1,0 +1,75 @@
+# gz quality configuration file
+
+# Default number of parallel workers
+default_workers: 4
+
+# Timeout for tool execution
+timeout: "10m"
+
+# Tool-specific configurations
+tools:
+  gofumpt:
+    enabled: true
+    priority: 10
+
+  goimports:
+    enabled: true
+    priority: 9
+
+  golangci-lint:
+    enabled: true
+    priority: 5
+    # Use existing config file
+    config_file: ".golangci.yml"
+
+  black:
+    enabled: true
+    priority: 10
+    args: ["--line-length", "88"]
+
+  ruff:
+    enabled: true
+    priority: 7
+
+  prettier:
+    enabled: true
+    priority: 10
+
+  eslint:
+    enabled: true
+    priority: 5
+
+# Language-specific configurations
+languages:
+  Go:
+    enabled: true
+    preferred_tools: ["gofumpt", "goimports", "golangci-lint"]
+    extensions: [".go"]
+
+  Python:
+    enabled: true
+    preferred_tools: ["black", "ruff"]
+    extensions: [".py", ".pyi"]
+
+  JavaScript:
+    enabled: true
+    preferred_tools: ["prettier", "eslint"]
+    extensions: [".js", ".jsx"]
+
+  TypeScript:
+    enabled: true
+    preferred_tools: ["prettier", "eslint", "tsc"]
+    extensions: [".ts", ".tsx"]
+
+# Exclude patterns
+exclude:
+  - "node_modules/**"
+  - "vendor/**"
+  - ".git/**"
+  - "dist/**"
+  - "build/**"
+  - "tmp/**"
+  - "**/*.min.js"
+  - "**/*.min.css"
+  - "**/coverage/**"
+  - "**/.next/**"
