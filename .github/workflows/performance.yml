@@ -2,14 +2,14 @@ name: Performance Benchmarks
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [master, main, develop]
     paths:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
 
   push:
-    branches: [main, develop]
+    branches: [master, main, develop]
     paths:
       - '**/*.go'
       - 'go.mod'

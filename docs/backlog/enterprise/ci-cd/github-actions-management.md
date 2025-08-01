@@ -77,8 +77,8 @@ github_actions:
       workflows:
         - name: ci.yml
           triggers:
-            - push: [main, develop]
-            - pull_request: [main]
+            - push: [master, main, develop]
+            - pull_request: [master, main]
             - schedule: "0 2 * * *"
 
           jobs:
@@ -180,9 +180,9 @@ name: Node.js CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, main, develop]
   pull_request:
-    branches: [main]
+    branches: [master, main]
 
 jobs:
   test:
@@ -238,7 +238,7 @@ name: Docker Build and Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [master, main]
     tags: ["v*"]
 
 env:
