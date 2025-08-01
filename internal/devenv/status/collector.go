@@ -49,6 +49,7 @@ func (sc *StatusCollector) CollectAll(ctx context.Context, options StatusOptions
 }
 
 // collectParallel collects status information in parallel
+//
 //nolint:unparam // Error return is part of interface consistency
 func (sc *StatusCollector) collectParallel(ctx context.Context, checkers []ServiceChecker, options StatusOptions) ([]ServiceStatus, error) {
 	var wg sync.WaitGroup
@@ -91,6 +92,7 @@ func (sc *StatusCollector) collectParallel(ctx context.Context, checkers []Servi
 }
 
 // collectSequential collects status information sequentially
+//
 //nolint:unparam // Error return is part of interface consistency
 func (sc *StatusCollector) collectSequential(ctx context.Context, checkers []ServiceChecker, options StatusOptions) ([]ServiceStatus, error) {
 	results := make([]ServiceStatus, 0, len(checkers))

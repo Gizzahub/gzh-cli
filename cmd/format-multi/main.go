@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"proxynd/cmd/format-multi/formatters"
 	"runtime"
 	"strings"
 	"sync"
-
-	"proxynd/cmd/format-multi/formatters"
 )
 
 var (
