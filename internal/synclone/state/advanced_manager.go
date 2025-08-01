@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+const (
+	stateFileExtension = ".json"
+)
+
 // StateManager handles advanced state management and cleanup.
 type StateManager struct {
 	StateDir        string
@@ -63,7 +67,7 @@ func (sm *StateManager) ListStateFiles() ([]*StateFile, error) {
 	stateFiles := make([]*StateFile, 0, 10) // Pre-allocate with initial capacity
 
 	for _, file := range files {
-		if file.IsDir() || filepath.Ext(file.Name()) != ".json" {
+		if file.IsDir() || filepath.Ext(file.Name()) != stateFileExtension {
 			continue
 		}
 
@@ -235,7 +239,7 @@ func (sm *StateManager) compactState(state *OperationState) *OperationState {
 		if state.Status == StatusFailed {
 			filteredRepos := make(map[string]RepoState)
 			for name, repoState := range state.Repositories {
-				if repoState.Status == "failed" {
+				if repoState.Status == string(StatusFailed) {
 					filteredRepos[name] = repoState
 				}
 			}
@@ -363,7 +367,7 @@ func (sm *StateManager) RepairCorruptedStates() error {
 	var repairedCount int
 
 	for _, file := range files {
-		if file.IsDir() || filepath.Ext(file.Name()) != ".json" {
+		if file.IsDir() || filepath.Ext(file.Name()) != stateFileExtension {
 			continue
 		}
 

@@ -304,7 +304,7 @@ func (r *ResumableCloner) processPendingRepos(ctx context.Context, pendingRepos 
 		fmt.Printf("  📁 Processing %s...\n", repoName)
 
 		// Update repository state (simulate success for now)
-		repo.Status = "completed"
+		repo.Status = string(StatusCompleted)
 		repo.EndTime = time.Now()
 		repo.BytesCloned = 1024 * 1024 // Simulate 1MB
 
@@ -340,11 +340,11 @@ func (r *ResumableCloner) processRetryRepos(ctx context.Context, retryRepos []st
 		// Simulate retry processing (in real implementation, this would clone the repo)
 		// For simulation, let's say 80% of retries succeed
 		if repo.AttemptCount <= 2 { // Most retries succeed on second attempt
-			repo.Status = "completed"
+			repo.Status = string(StatusCompleted)
 			repo.EndTime = time.Now()
 			repo.BytesCloned = 1024 * 1024 // Simulate 1MB
 		} else {
-			repo.Status = "failed"
+			repo.Status = string(StatusFailed)
 			repo.EndTime = time.Now()
 			repo.LastError = "simulated persistent failure"
 		}

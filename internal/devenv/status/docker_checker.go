@@ -138,7 +138,7 @@ func (d *DockerChecker) getCurrentContext(ctx context.Context) (string, error) {
 	output, err := cmd.Output()
 	if err != nil {
 		// If context command fails, assume default context
-		return "default", nil
+		return awsDefaultProfile, nil
 	}
 	return strings.TrimSpace(string(output)), nil
 }

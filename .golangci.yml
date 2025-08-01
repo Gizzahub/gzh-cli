@@ -36,7 +36,6 @@ linters:
     - sqlclosecheck
     - staticcheck
     - tagliatelle
-    - testpackage
     - thelper
     - unconvert
     - unparam

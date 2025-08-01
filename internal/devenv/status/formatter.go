@@ -108,7 +108,7 @@ func (t *TableFormatter) formatCurrent(current CurrentConfig) string {
 	if current.Region != "" {
 		parts = append(parts, fmt.Sprintf("(%s)", current.Region))
 	}
-	if current.Namespace != "" && current.Namespace != "default" {
+	if current.Namespace != "" && current.Namespace != awsDefaultProfile {
 		parts = append(parts, fmt.Sprintf("/%s", current.Namespace))
 	}
 

@@ -120,10 +120,10 @@ func (sa *StateAnalyzer) analyzeStateFile(stateFile *StateFile) *OperationAnalys
 	// Analyze repository states
 	for _, repo := range state.Repositories {
 		switch repo.Status {
-		case "completed":
+		case string(StatusCompleted):
 			analysis.CompletedRepos++
 			analysis.TotalBytesProcessed += repo.BytesCloned
-		case "failed":
+		case string(StatusFailed):
 			analysis.FailedRepos++
 			if repo.LastError != "" {
 				analysis.ErrorPatterns[repo.LastError]++

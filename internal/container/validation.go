@@ -273,7 +273,7 @@ func (h *HealthChecker) CheckHealth(ctx context.Context) *HealthStatus {
 
 	// Determine overall status
 	if status.Summary.Unhealthy > 0 {
-		status.Status = "unhealthy"
+		status.Status = healthStatusUnhealthy
 	} else if status.Summary.Unknown > 0 {
 		status.Status = "degraded"
 	} else {
