@@ -1,105 +1,153 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "GZH Configuration Schema",
-  "description": "Schema for gzh-manager-go configuration files",
-  "type": "object",
-  "required": ["version"],
-  "properties": {
-    "version": {
-      "type": "string",
-      "description": "Configuration schema version",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-      "examples": ["1.0.0"]
-    },
-    "default_provider": {
-      "type": "string",
-      "description": "Default Git provider when not specified",
-      "enum": ["github", "gitlab", "gitea", "gogs"],
-      "default": "github"
-    },
-    "providers": {
-      "type": "object",
-      "description": "Git provider configurations",
-      "properties": {
-        "github": { "$ref": "#/definitions/provider" },
-        "gitlab": { "$ref": "#/definitions/provider" },
-        "gitea": { "$ref": "#/definitions/provider" },
-        "gogs": { "$ref": "#/definitions/provider" }
-      },
-      "additionalProperties": false
-    }
-  },
   "definitions": {
-    "provider": {
-      "type": "object",
-      "required": ["token"],
-      "properties": {
-        "token": {
-          "type": "string",
-          "description": "Authentication token (supports environment variables)",
-          "pattern": "^(\\$\\{[A-Z_]+\\}|[a-zA-Z0-9_-]+)$",
-          "examples": ["${GITHUB_TOKEN}"]
-        },
-        "orgs": {
-          "type": "array",
-          "description": "Organizations to manage (GitHub/Gitea/Gogs)",
-          "items": { "$ref": "#/definitions/gitTarget" }
-        },
-        "groups": {
-          "type": "array",
-          "description": "Groups to manage (GitLab)",
-          "items": { "$ref": "#/definitions/gitTarget" }
-        }
-      }
-    },
     "gitTarget": {
-      "type": "object",
-      "required": ["name"],
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "Organization/group name",
-          "examples": ["gizzahub"]
-        },
-        "visibility": {
-          "type": "string",
-          "description": "Repository visibility filter",
-          "enum": ["public", "private", "all"],
-          "default": "all"
-        },
-        "recursive": {
-          "type": "boolean",
-          "description": "Include subgroups (GitLab)",
-          "default": false
-        },
-        "flatten": {
-          "type": "boolean",
-          "description": "Flatten directory structure",
-          "default": false
-        },
-        "match": {
-          "type": "string",
-          "description": "Regex pattern to filter repositories",
-          "examples": ["^gzh-.*"]
-        },
         "clone_dir": {
-          "type": "string",
           "description": "Target directory for cloning",
-          "examples": ["./github"]
+          "examples": [
+            "./github"
+          ],
+          "type": "string"
         },
         "exclude": {
-          "type": "array",
           "description": "Repository names to exclude",
-          "items": { "type": "string" },
-          "examples": [["test-repo", "archived-*"]]
+          "examples": [
+            [
+              "test-repo",
+              "archived-*"
+            ]
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "flatten": {
+          "default": false,
+          "description": "Flatten directory structure",
+          "type": "boolean"
+        },
+        "match": {
+          "description": "Regex pattern to filter repositories",
+          "examples": [
+            "^gzh-.*"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "description": "Organization/group name",
+          "examples": [
+            "gizzahub"
+          ],
+          "type": "string"
+        },
+        "recursive": {
+          "default": false,
+          "description": "Include subgroups (GitLab)",
+          "type": "boolean"
         },
         "strategy": {
-          "type": "string",
+          "default": "reset",
           "description": "Clone/update strategy",
-          "enum": ["reset", "pull", "fetch"],
-          "default": "reset"
+          "enum": [
+            "reset",
+            "pull",
+            "fetch"
+          ],
+          "type": "string"
+        },
+        "visibility": {
+          "default": "all",
+          "description": "Repository visibility filter",
+          "enum": [
+            "public",
+            "private",
+            "all"
+          ],
+          "type": "string"
         }
-      }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "provider": {
+      "properties": {
+        "groups": {
+          "description": "Groups to manage (GitLab)",
+          "items": {
+            "$ref": "#/definitions/gitTarget"
+          },
+          "type": "array"
+        },
+        "orgs": {
+          "description": "Organizations to manage (GitHub/Gitea/Gogs)",
+          "items": {
+            "$ref": "#/definitions/gitTarget"
+          },
+          "type": "array"
+        },
+        "token": {
+          "description": "Authentication token (supports environment variables)",
+          "examples": [
+            "${GITHUB_TOKEN}"
+          ],
+          "pattern": "^(\\$\\{[A-Z_]+\\}|[a-zA-Z0-9_-]+)$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "token"
+      ],
+      "type": "object"
     }
-  }
+  },
+  "description": "Schema for gzh-manager-go configuration files",
+  "properties": {
+    "default_provider": {
+      "default": "github",
+      "description": "Default Git provider when not specified",
+      "enum": [
+        "github",
+        "gitlab",
+        "gitea",
+        "gogs"
+      ],
+      "type": "string"
+    },
+    "providers": {
+      "additionalProperties": false,
+      "description": "Git provider configurations",
+      "properties": {
+        "gitea": {
+          "$ref": "#/definitions/provider"
+        },
+        "github": {
+          "$ref": "#/definitions/provider"
+        },
+        "gitlab": {
+          "$ref": "#/definitions/provider"
+        },
+        "gogs": {
+          "$ref": "#/definitions/provider"
+        }
+      },
+      "type": "object"
+    },
+    "version": {
+      "description": "Configuration schema version",
+      "examples": [
+        "1.0.0"
+      ],
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "title": "GZH Configuration Schema",
+  "type": "object"
 }
