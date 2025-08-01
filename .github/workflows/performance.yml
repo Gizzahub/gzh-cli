@@ -1,0 +1,111 @@
+name: Performance Benchmarks
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+
+  push:
+    branches: [main, develop]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+
+  workflow_dispatch:
+    inputs:
+      package_pattern:
+        description: 'Package pattern to benchmark'
+        required: false
+        default: './...'
+      regression_threshold:
+        description: 'Performance regression threshold (%)'
+        required: false
+        default: '15.0'
+
+env:
+  GO_VERSION: "1.24"
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Install benchstat
+      run: go install golang.org/x/perf/cmd/benchstat@latest
+
+    - name: Run benchmarks
+      run: |
+        PACKAGE_PATTERN="${{ github.event.inputs.package_pattern || './...' }}"
+        echo "Running benchmarks for: $PACKAGE_PATTERN"
+
+        # Run benchmarks multiple times for statistical significance
+        for i in {1..5}; do
+          echo "Benchmark run $i/5"
+          go test -bench=. -benchmem -run=^$ $PACKAGE_PATTERN >> benchmark_$i.txt
+        done
+
+    - name: Generate benchmark report
+      run: |
+        echo "# Performance Benchmark Report" > benchmark_report.md
+        echo "" >> benchmark_report.md
+        echo "**Commit:** \`${{ github.sha }}\`" >> benchmark_report.md
+        echo "**Date:** $(date)" >> benchmark_report.md
+        echo "" >> benchmark_report.md
+
+        # Combine all benchmark results
+        cat benchmark_*.txt > all_benchmarks.txt
+
+        # Generate summary
+        echo "## Benchmark Results" >> benchmark_report.md
+        echo "\`\`\`" >> benchmark_report.md
+        benchstat all_benchmarks.txt >> benchmark_report.md
+        echo "\`\`\`" >> benchmark_report.md
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results
+        path: |
+          benchmark_*.txt
+          benchmark_report.md
+          all_benchmarks.txt
+
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('benchmark_report.md', 'utf8');
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          });

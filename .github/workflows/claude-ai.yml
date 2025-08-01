@@ -1,0 +1,57 @@
+name: Claude AI Assistant
+
+on:
+  # 댓글 트리거
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+  # 자동 PR 리뷰
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  # 댓글 기반 상호작용
+  claude-interactive:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude Interactive
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+  # 자동 PR 리뷰 (외부 기여자 전용)
+  claude-auto-review:
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auto Review
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          direct_prompt: |
+            This is a first-time contribution. Please provide:
+            - Welcoming feedback
+            - Code quality review
+            - Go best practices suggestions
+            - Security considerations
+            - Performance tips
+          use_sticky_comment: true
