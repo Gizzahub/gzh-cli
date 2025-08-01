@@ -4,8 +4,9 @@
 # Add your custom ignore patterns here
 
 # Project specific
-data/
+/data/
 lint-report.json
+/results/
 
 # claude code
 .claude/settings.local.json

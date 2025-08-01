@@ -92,16 +92,11 @@ Examples:
 		},
 	}
 
-	// Get the existing webhook command from repo-config and add its subcommands
-	repoWebhookCmd := repoconfig.NewRepoConfigCmd()
-	for _, subCmd := range repoWebhookCmd.Commands() {
-		if subCmd.Use == "webhook" {
-			// Add all webhook subcommands to our git webhook command
-			for _, webhookSubCmd := range subCmd.Commands() {
-				cmd.AddCommand(webhookSubCmd)
-			}
-			break
-		}
+	// Use git package webhook implementation
+	webhookCmd := git.NewWebhookCmd()
+	// Add all webhook subcommands to our git webhook command
+	for _, webhookSubCmd := range webhookCmd.Commands() {
+		cmd.AddCommand(webhookSubCmd)
 	}
 
 	return cmd
@@ -109,8 +104,8 @@ Examples:
 
 // newGitEventCmd creates the git event command.
 func newGitEventCmd() *cobra.Command {
-	// Use existing event implementation
-	eventCmd := NewEventCmd()
+	// Use existing event implementation from git package
+	eventCmd := git.NewEventCmd()
 
 	// Update command metadata for git context
 	eventCmd.Use = "event"
