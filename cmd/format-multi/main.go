@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"proxynd/cmd/format-multi/formatters"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/gizzahub/gzh-manager-go/cmd/format-multi/formatters"
 )
 
 var (

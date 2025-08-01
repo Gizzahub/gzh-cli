@@ -55,7 +55,7 @@ func defaultConfig() *Config {
 			"Go": {
 				Enabled:     true,
 				Tools:       []string{"gofumpt", "goimports"},
-				LocalImport: "proxynd",
+				LocalImport: "github.com/gizzahub/gzh-manager-go",
 			},
 			"Python": {
 				Enabled: true,
