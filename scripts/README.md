@@ -153,27 +153,6 @@ go test -tags=e2e ./test/e2e/...
 **Requirements**:
 - `yq` (optional, for better migration support)
 
----
-
-#### `migration/` Directory
-Contains legacy command migration and backward compatibility scripts. See [`migration/README.md`](migration/README.md) for detailed documentation.
-
-**Available migration scripts**:
-- `migrate-gz.sh` - Command structure migration helper
-- `deprecated-aliases.sh` / `deprecated-aliases.fish` - Backward compatibility aliases
-- `install-aliases.sh` / `uninstall-aliases.sh` - Alias installation/removal
-
-**Quick usage**:
-```bash
-# Migrate old commands
-./scripts/migration/migrate-gz.sh
-
-# Install backward compatibility
-./scripts/migration/install-aliases.sh
-
-# Remove compatibility aliases
-./scripts/migration/uninstall-aliases.sh
-```
 
 ---
 
@@ -254,15 +233,16 @@ Contains specialized debugging scripts for development. See [`debug/README.md`](
 
 ### ⚠️ Development Tools (Keep for Development)
 - `debug/` - Debugging utilities (3 files)
-- `install-git-extensions.sh` / `uninstall-git-extensions.sh` - Git extension management
-
-### 🔄 Migration Tools (Temporary)
-- `migration/` - Legacy command migration and backward compatibility (6 files)
-  - Will be removed after v3.0.0 transition (estimated: 2025-01-01)
 
 ### ✅ Cleaned Up (Removed)
 - ~~`aliases-unified.sh`~~ - Broken wrapper script
 - ~~`e2e-test.sh`~~ - Obsolete test for old `git-synclone` binary
+- ~~`migration/`~~ - Legacy command migration and backward compatibility scripts (6 files)
+- ~~`install-git-extensions.sh` / `uninstall-git-extensions.sh`~~ - Git extension management
+- ~~`cmd/git-synclone/`~~ - Legacy git-synclone binary (replaced by gz)
+- ~~`homebrew/gzh-git-extensions.rb`~~ - Homebrew formula for git-synclone
+- ~~`debian/`~~ - Debian packaging for git-synclone
+- ~~`install.sh`~~ - Online installer for git-synclone
 
 ---
 
