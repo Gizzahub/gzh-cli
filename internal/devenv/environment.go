@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Environment represents a complete development environment configuration
+// Environment represents a complete development environment configuration.
 type Environment struct {
 	Name         string                   `yaml:"name"`
 	Description  string                   `yaml:"description"`
@@ -22,7 +22,7 @@ type Environment struct {
 	PostHooks    []Hook                   `yaml:"postHooks,omitempty"`
 }
 
-// ServiceConfig contains configuration for a specific service
+// ServiceConfig contains configuration for a specific service.
 type ServiceConfig struct {
 	AWS        *AWSConfig        `yaml:"aws,omitempty"`
 	GCP        *GCPConfig        `yaml:"gcp,omitempty"`
@@ -32,50 +32,50 @@ type ServiceConfig struct {
 	SSH        *SSHConfig        `yaml:"ssh,omitempty"`
 }
 
-// AWSConfig represents AWS service configuration
+// AWSConfig represents AWS service configuration.
 type AWSConfig struct {
 	Profile   string `yaml:"profile"`
 	Region    string `yaml:"region"`
 	AccountID string `yaml:"accountId,omitempty"`
 }
 
-// GCPConfig represents GCP service configuration
+// GCPConfig represents GCP service configuration.
 type GCPConfig struct {
 	Project string `yaml:"project"`
 	Account string `yaml:"account,omitempty"`
 	Region  string `yaml:"region,omitempty"`
 }
 
-// AzureConfig represents Azure service configuration
+// AzureConfig represents Azure service configuration.
 type AzureConfig struct {
 	Subscription string `yaml:"subscription"`
 	Tenant       string `yaml:"tenant,omitempty"`
 }
 
-// DockerConfig represents Docker service configuration
+// DockerConfig represents Docker service configuration.
 type DockerConfig struct {
 	Context string `yaml:"context"`
 }
 
-// KubernetesConfig represents Kubernetes service configuration
+// KubernetesConfig represents Kubernetes service configuration.
 type KubernetesConfig struct {
 	Context   string `yaml:"context"`
 	Namespace string `yaml:"namespace,omitempty"`
 }
 
-// SSHConfig represents SSH service configuration
+// SSHConfig represents SSH service configuration.
 type SSHConfig struct {
 	Config string `yaml:"config"`
 }
 
-// Hook represents a command to execute before or after environment switching
+// Hook represents a command to execute before or after environment switching.
 type Hook struct {
 	Command string        `yaml:"command"`
 	Timeout time.Duration `yaml:"timeout,omitempty"`
 	OnError string        `yaml:"onError,omitempty"` // continue, fail, rollback
 }
 
-// ServiceSwitcher interface for switching individual services
+// ServiceSwitcher interface for switching individual services.
 type ServiceSwitcher interface {
 	Name() string
 	Switch(ctx context.Context, config interface{}) error
@@ -83,7 +83,7 @@ type ServiceSwitcher interface {
 	Rollback(ctx context.Context, previousState interface{}) error
 }
 
-// SwitchProgress represents the progress of environment switching
+// SwitchProgress represents the progress of environment switching.
 type SwitchProgress struct {
 	TotalServices     int           `json:"totalServices"`
 	CompletedServices int           `json:"completedServices"`
@@ -94,14 +94,14 @@ type SwitchProgress struct {
 	Errors            []SwitchError `json:"errors,omitempty"`
 }
 
-// SwitchError represents an error during environment switching
+// SwitchError represents an error during environment switching.
 type SwitchError struct {
 	Service string    `json:"service"`
 	Error   string    `json:"error"`
 	Time    time.Time `json:"time"`
 }
 
-// SwitchResult represents the result of environment switching
+// SwitchResult represents the result of environment switching.
 type SwitchResult struct {
 	Success           bool          `json:"success"`
 	SwitchedServices  []string      `json:"switchedServices"`
@@ -111,7 +111,7 @@ type SwitchResult struct {
 	Errors            []SwitchError `json:"errors,omitempty"`
 }
 
-// LoadEnvironment loads an environment configuration from YAML
+// LoadEnvironment loads an environment configuration from YAML.
 func LoadEnvironment(data []byte) (*Environment, error) {
 	var env Environment
 	if err := yaml.Unmarshal(data, &env); err != nil {
@@ -126,13 +126,13 @@ func LoadEnvironment(data []byte) (*Environment, error) {
 	return &env, nil
 }
 
-// LoadEnvironmentFromFile loads an environment configuration from a file
+// LoadEnvironmentFromFile loads an environment configuration from a file.
 func LoadEnvironmentFromFile(filepath string) (*Environment, error) {
 	// This will be implemented when we add file reading capabilities
 	return nil, fmt.Errorf("file loading not yet implemented")
 }
 
-// Validate validates the environment configuration
+// Validate validates the environment configuration.
 func (e *Environment) Validate() error {
 	if e.Name == "" {
 		return fmt.Errorf("environment name is required")
@@ -152,7 +152,7 @@ func (e *Environment) Validate() error {
 	return nil
 }
 
-// GetServiceNames returns a list of configured service names
+// GetServiceNames returns a list of configured service names.
 func (e *Environment) GetServiceNames() []string {
 	services := make([]string, 0, len(e.Services))
 	for name := range e.Services {
@@ -161,7 +161,7 @@ func (e *Environment) GetServiceNames() []string {
 	return services
 }
 
-// HasService checks if a service is configured in this environment
+// HasService checks if a service is configured in this environment.
 func (e *Environment) HasService(serviceName string) bool {
 	_, exists := e.Services[serviceName]
 	return exists

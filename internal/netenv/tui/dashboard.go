@@ -15,7 +15,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// DashboardModel represents the main network dashboard view
+// DashboardModel represents the main network dashboard view.
 type DashboardModel struct {
 	table          table.Model
 	help           help.Model
@@ -31,7 +31,7 @@ type DashboardModel struct {
 	alerts         []NetworkAlert
 }
 
-// NewDashboardModel creates a new dashboard model
+// NewDashboardModel creates a new dashboard model.
 func NewDashboardModel() *DashboardModel {
 	// Create table columns for network components
 	columns := []table.Column{
@@ -74,12 +74,12 @@ func NewDashboardModel() *DashboardModel {
 	}
 }
 
-// Init initializes the dashboard model
+// Init initializes the dashboard model.
 func (m *DashboardModel) Init() tea.Cmd {
 	return nil
 }
 
-// Update handles messages for the dashboard
+// Update handles messages for the dashboard.
 func (m *DashboardModel) Update(msg tea.Msg) (*DashboardModel, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -156,7 +156,7 @@ func (m *DashboardModel) Update(msg tea.Msg) (*DashboardModel, tea.Cmd) {
 	return m, cmd
 }
 
-// View renders the dashboard
+// View renders the dashboard.
 func (m *DashboardModel) View() string {
 	if m.loading {
 		return m.renderLoading()
@@ -169,7 +169,7 @@ func (m *DashboardModel) View() string {
 	return m.renderDashboard()
 }
 
-// renderDashboard renders the main dashboard view
+// renderDashboard renders the main dashboard view.
 func (m *DashboardModel) renderDashboard() string {
 	var b strings.Builder
 
@@ -202,7 +202,7 @@ func (m *DashboardModel) renderDashboard() string {
 	return b.String()
 }
 
-// renderHeader renders the dashboard header
+// renderHeader renders the dashboard header.
 func (m *DashboardModel) renderHeader() string {
 	title := "GZH Network Environment Manager"
 	profile := fmt.Sprintf("Current Profile: %s", m.currentProfile)
@@ -232,7 +232,7 @@ func (m *DashboardModel) renderHeader() string {
 	)
 }
 
-// renderQuickActions renders the quick actions bar
+// renderQuickActions renders the quick actions bar.
 func (m *DashboardModel) renderQuickActions() string {
 	actions := []string{
 		"[s]witch Profile",
@@ -264,7 +264,7 @@ func (m *DashboardModel) renderQuickActions() string {
 	))
 }
 
-// renderLoading renders the loading state
+// renderLoading renders the loading state.
 func (m *DashboardModel) renderLoading() string {
 	loadingText := "Loading network environment status..."
 	spinner := "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
@@ -279,7 +279,7 @@ func (m *DashboardModel) renderLoading() string {
 	)
 }
 
-// renderError renders the error state
+// renderError renders the error state.
 func (m *DashboardModel) renderError() string {
 	errorContent := fmt.Sprintf("Error: %s\n\nPress 'r' to retry or 'q' to quit", m.errorMsg)
 
@@ -290,7 +290,7 @@ func (m *DashboardModel) renderError() string {
 	)
 }
 
-// renderAlerts renders the alerts section
+// renderAlerts renders the alerts section.
 func (m *DashboardModel) renderAlerts() string {
 	if len(m.alerts) == 0 {
 		return ""
@@ -308,9 +308,10 @@ func (m *DashboardModel) renderAlerts() string {
 	for i := 0; i < maxAlerts; i++ {
 		alert := m.alerts[len(m.alerts)-1-i] // Show newest first
 		icon := "⚠️"
-		if alert.Type == "error" {
+		switch alert.Type {
+		case "error":
 			icon = "❌"
-		} else if alert.Type == "info" {
+		case "info":
 			icon = "ℹ️"
 		}
 		alertsText.WriteString(fmt.Sprintf("  %s %s: %s\n", icon, alert.Component, alert.Message))
@@ -325,7 +326,7 @@ func (m *DashboardModel) renderAlerts() string {
 	return style.Render(alertsText.String())
 }
 
-// updateNetworkStatus updates the network status and table rows
+// updateNetworkStatus updates the network status and table rows.
 func (m *DashboardModel) updateNetworkStatus(status NetworkStatus) {
 	m.networkStatus = status
 
@@ -341,7 +342,7 @@ func (m *DashboardModel) updateNetworkStatus(status NetworkStatus) {
 	m.table.SetRows(rows)
 }
 
-// createWiFiRow creates a table row for WiFi status
+// createWiFiRow creates a table row for WiFi status.
 func (m *DashboardModel) createWiFiRow(wifi WiFiStatus) table.Row {
 	component := "WiFi"
 
@@ -366,7 +367,7 @@ func (m *DashboardModel) createWiFiRow(wifi WiFiStatus) table.Row {
 	return table.Row{component, statusText, details, health, "→"}
 }
 
-// createVPNRow creates a table row for VPN status
+// createVPNRow creates a table row for VPN status.
 func (m *DashboardModel) createVPNRow(vpn VPNStatus) table.Row {
 	component := "VPN"
 
@@ -391,7 +392,7 @@ func (m *DashboardModel) createVPNRow(vpn VPNStatus) table.Row {
 	return table.Row{component, statusText, details, health, "→"}
 }
 
-// createDNSRow creates a table row for DNS status
+// createDNSRow creates a table row for DNS status.
 func (m *DashboardModel) createDNSRow(dns DNSStatus) table.Row {
 	component := "DNS"
 
@@ -427,7 +428,7 @@ func (m *DashboardModel) createDNSRow(dns DNSStatus) table.Row {
 	return table.Row{component, statusText, details, health, "→"}
 }
 
-// createProxyRow creates a table row for proxy status
+// createProxyRow creates a table row for proxy status.
 func (m *DashboardModel) createProxyRow(proxy ProxyStatus) table.Row {
 	component := "Proxy"
 
@@ -451,7 +452,7 @@ func (m *DashboardModel) createProxyRow(proxy ProxyStatus) table.Row {
 	return table.Row{component, statusText, details, health, "→"}
 }
 
-// createDockerRow creates a table row for Docker status
+// createDockerRow creates a table row for Docker status.
 func (m *DashboardModel) createDockerRow(docker DockerStatus) table.Row {
 	component := "Docker"
 
@@ -471,7 +472,7 @@ func (m *DashboardModel) createDockerRow(docker DockerStatus) table.Row {
 	return table.Row{component, statusText, details, health, "→"}
 }
 
-// updateTableSize updates the table size based on terminal dimensions
+// updateTableSize updates the table size based on terminal dimensions.
 func (m *DashboardModel) updateTableSize() {
 	if m.width < 80 {
 		// Adjust column widths for smaller terminals
@@ -497,7 +498,7 @@ func (m *DashboardModel) updateTableSize() {
 	m.table.SetHeight(availableHeight)
 }
 
-// selectComponent handles component selection
+// selectComponent handles component selection.
 func (m *DashboardModel) selectComponent() tea.Cmd {
 	selectedRow := m.table.SelectedRow()
 	if selectedRow == nil {
@@ -521,14 +522,14 @@ func (m *DashboardModel) selectComponent() tea.Cmd {
 	return nil
 }
 
-// refreshNetworkStatus triggers a network status refresh
+// refreshNetworkStatus triggers a network status refresh.
 func (m *DashboardModel) refreshNetworkStatus() tea.Cmd {
 	return func() tea.Msg {
 		return RefreshMsg{}
 	}
 }
 
-// handleQuickAction handles quick action buttons
+// handleQuickAction handles quick action buttons.
 func (m *DashboardModel) handleQuickAction(action int) tea.Cmd {
 	switch action {
 	case 1: // Switch Profile
@@ -546,7 +547,7 @@ func (m *DashboardModel) handleQuickAction(action int) tea.Cmd {
 	}
 }
 
-// handleQuickConnect handles quick connect action
+// handleQuickConnect handles quick connect action.
 func (m *DashboardModel) handleQuickConnect() tea.Cmd {
 	// Find the most appropriate VPN to connect
 	return func() tea.Msg {
@@ -558,7 +559,7 @@ func (m *DashboardModel) handleQuickConnect() tea.Cmd {
 	}
 }
 
-// handleQuickDisconnect handles quick disconnect action
+// handleQuickDisconnect handles quick disconnect action.
 func (m *DashboardModel) handleQuickDisconnect() tea.Cmd {
 	return func() tea.Msg {
 		// This would trigger VPN disconnection logic
@@ -569,7 +570,7 @@ func (m *DashboardModel) handleQuickDisconnect() tea.Cmd {
 	}
 }
 
-// addAlert adds a new alert to the alerts list
+// addAlert adds a new alert to the alerts list.
 func (m *DashboardModel) addAlert(alert NetworkAlert) {
 	m.alerts = append(m.alerts, alert)
 

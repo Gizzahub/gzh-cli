@@ -266,7 +266,7 @@ func TestPerformanceMiddleware_TrackOperation_ContextCancellation(t *testing.T) 
 	cancel() // Cancel immediately
 
 	executed := false
-	err := middleware.TrackOperation(ctx, "cancelled-op", func() error {
+	err := middleware.TrackOperation(ctx, "canceled-op", func() error {
 		executed = true
 		return ctx.Err()
 	})

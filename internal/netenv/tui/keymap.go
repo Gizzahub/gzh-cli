@@ -5,7 +5,7 @@ package tui
 
 import "github.com/charmbracelet/bubbles/key"
 
-// KeyMap defines keyboard shortcuts for the net-env TUI
+// KeyMap defines keyboard shortcuts for the net-env TUI.
 type KeyMap struct {
 	Up              key.Binding
 	Down            key.Binding
@@ -31,7 +31,7 @@ type KeyMap struct {
 	QuickDisconnect key.Binding
 }
 
-// DefaultKeyMap provides the default keyboard shortcuts for net-env
+// DefaultKeyMap provides the default keyboard shortcuts for net-env.
 var DefaultKeyMap = KeyMap{
 	Up: key.NewBinding(
 		key.WithKeys("up", "k"),
@@ -123,12 +123,12 @@ var DefaultKeyMap = KeyMap{
 	),
 }
 
-// ShortHelp returns key bindings to be shown in the mini help view
+// ShortHelp returns key bindings to be shown in the mini help view.
 func (k KeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{k.Help, k.Quit}
 }
 
-// FullHelp returns key bindings for the expanded help view
+// FullHelp returns key bindings for the expanded help view.
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Left, k.Right},                                   // navigation
@@ -140,7 +140,7 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-// Enabled returns whether the keymap is enabled
+// Enabled returns whether the keymap is enabled.
 func (k KeyMap) Enabled() bool {
 	return true
 }

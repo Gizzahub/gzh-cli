@@ -13,7 +13,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/netenv"
 )
 
-// newProfileUnifiedCmd creates the unified net-env profile command
+// newProfileUnifiedCmd creates the unified net-env profile command.
 func newProfileUnifiedCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "profile",
@@ -57,7 +57,7 @@ Examples:
 	return cmd
 }
 
-// newProfileListCmd creates the profile list subcommand
+// newProfileListCmd creates the profile list subcommand.
 func newProfileListCmd() *cobra.Command {
 	var verbose bool
 
@@ -75,7 +75,7 @@ func newProfileListCmd() *cobra.Command {
 	return cmd
 }
 
-// newProfileCreateCmd creates the profile create subcommand
+// newProfileCreateCmd creates the profile create subcommand.
 func newProfileCreateCmd() *cobra.Command {
 	var (
 		description string
@@ -105,7 +105,7 @@ Available templates: home, office, cafe, minimal`,
 	return cmd
 }
 
-// newProfileEditCmd creates the profile edit subcommand
+// newProfileEditCmd creates the profile edit subcommand.
 func newProfileEditCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "edit <name>",
@@ -120,7 +120,7 @@ func newProfileEditCmd() *cobra.Command {
 	return cmd
 }
 
-// newProfileDeleteCmd creates the profile delete subcommand
+// newProfileDeleteCmd creates the profile delete subcommand.
 func newProfileDeleteCmd() *cobra.Command {
 	var force bool
 
@@ -139,7 +139,7 @@ func newProfileDeleteCmd() *cobra.Command {
 	return cmd
 }
 
-// newProfileExportCmd creates the profile export subcommand
+// newProfileExportCmd creates the profile export subcommand.
 func newProfileExportCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export <name> <file>",
@@ -154,7 +154,7 @@ func newProfileExportCmd() *cobra.Command {
 	return cmd
 }
 
-// newProfileImportCmd creates the profile import subcommand
+// newProfileImportCmd creates the profile import subcommand.
 func newProfileImportCmd() *cobra.Command {
 	var force bool
 
@@ -175,7 +175,7 @@ func newProfileImportCmd() *cobra.Command {
 
 // Implementation functions
 
-// runProfileList lists all network profiles
+// runProfileList lists all network profiles.
 func runProfileList(verbose bool) error {
 	configDir := getConfigDirectory()
 	profileManager := netenv.NewProfileManager(configDir)
@@ -261,7 +261,7 @@ func runProfileList(verbose bool) error {
 	return nil
 }
 
-// runProfileCreate creates a new network profile
+// runProfileCreate creates a new network profile.
 func runProfileCreate(name, description string, priority int, auto bool, template string) error {
 	configDir := getConfigDirectory()
 	profileManager := netenv.NewProfileManager(configDir)
@@ -307,7 +307,7 @@ func runProfileCreate(name, description string, priority int, auto bool, templat
 	return nil
 }
 
-// runProfileEdit edits an existing profile
+// runProfileEdit edits an existing profile.
 func runProfileEdit(name string) error {
 	configDir := getConfigDirectory()
 	profileManager := netenv.NewProfileManager(configDir)
@@ -340,7 +340,7 @@ func runProfileEdit(name string) error {
 	return nil
 }
 
-// runProfileDelete deletes a profile
+// runProfileDelete deletes a profile.
 func runProfileDelete(name string, force bool) error {
 	configDir := getConfigDirectory()
 	profileManager := netenv.NewProfileManager(configDir)
@@ -361,7 +361,7 @@ func runProfileDelete(name string, force bool) error {
 		var response string
 		fmt.Scanln(&response)
 		if response != "y" && response != "Y" {
-			fmt.Println("Deletion cancelled.")
+			fmt.Println("Deletion canceled.")
 			return nil
 		}
 	}
@@ -375,7 +375,7 @@ func runProfileDelete(name string, force bool) error {
 	return nil
 }
 
-// runProfileExport exports a profile to file
+// runProfileExport exports a profile to file.
 func runProfileExport(name, outputFile string) error {
 	configDir := getConfigDirectory()
 	profileManager := netenv.NewProfileManager(configDir)
@@ -393,7 +393,7 @@ func runProfileExport(name, outputFile string) error {
 	return nil
 }
 
-// runProfileImport imports a profile from file
+// runProfileImport imports a profile from file.
 func runProfileImport(inputFile string, force bool) error {
 	configDir := getConfigDirectory()
 	profileManager := netenv.NewProfileManager(configDir)
@@ -411,7 +411,7 @@ func runProfileImport(inputFile string, force bool) error {
 	return nil
 }
 
-// applyTemplate applies a template to a profile
+// applyTemplate applies a template to a profile.
 func applyTemplate(profile *netenv.NetworkProfile, template string) error {
 	switch template {
 	case "home":
@@ -459,7 +459,7 @@ func applyTemplate(profile *netenv.NetworkProfile, template string) error {
 	return nil
 }
 
-// joinComponents joins component names with proper formatting
+// joinComponents joins component names with proper formatting.
 func joinComponents(components []string) string {
 	if len(components) == 0 {
 		return ""

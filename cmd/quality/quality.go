@@ -19,7 +19,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/quality/tools"
 )
 
-// QualityManager manages the quality command functionality
+// QualityManager manages the quality command functionality.
 type QualityManager struct {
 	registry tools.ToolRegistry
 	analyzer *detector.ProjectAnalyzer
@@ -27,7 +27,7 @@ type QualityManager struct {
 	planner  *executor.ExecutionPlanner
 }
 
-// NewQualityManager creates a new quality manager
+// NewQualityManager creates a new quality manager.
 func NewQualityManager() *QualityManager {
 	registry := tools.NewRegistry()
 
@@ -47,7 +47,7 @@ func NewQualityManager() *QualityManager {
 	}
 }
 
-// NewQualityCmd creates the quality command
+// NewQualityCmd creates the quality command.
 func NewQualityCmd() *cobra.Command {
 	manager := NewQualityManager()
 
@@ -103,7 +103,7 @@ func NewQualityCmd() *cobra.Command {
 	return cmd
 }
 
-// newRunCmd creates the run subcommand
+// newRunCmd creates the run subcommand.
 func (m *QualityManager) newRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
@@ -135,7 +135,7 @@ func (m *QualityManager) newRunCmd() *cobra.Command {
 	return cmd
 }
 
-// runQuality executes the main quality command logic
+// runQuality executes the main quality command logic.
 func (m *QualityManager) runQuality(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
@@ -222,7 +222,7 @@ func (m *QualityManager) runQuality(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// displayPlan shows the execution plan
+// displayPlan shows the execution plan.
 func (m *QualityManager) displayPlan(plan *tools.ExecutionPlan, verbose bool) {
 	fmt.Printf("📋 실행 계획 (%d개 작업, %d개 파일, 예상 소요시간: %s)\n",
 		len(plan.Tasks), plan.TotalFiles, plan.EstimatedDuration)
@@ -245,7 +245,7 @@ func (m *QualityManager) displayPlan(plan *tools.ExecutionPlan, verbose bool) {
 	}
 }
 
-// displayResults shows the execution results
+// displayResults shows the execution results.
 func (m *QualityManager) displayResults(results []*tools.Result, duration time.Duration, verbose bool) {
 	fmt.Printf("\n✅ 완료! 총 소요시간: %v\n", duration.Round(time.Millisecond))
 
@@ -287,7 +287,7 @@ func (m *QualityManager) displayResults(results []*tools.Result, duration time.D
 		successful, len(results), totalIssues)
 }
 
-// newAnalyzeCmd creates the analyze subcommand
+// newAnalyzeCmd creates the analyze subcommand.
 func (m *QualityManager) newAnalyzeCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "analyze",
@@ -344,7 +344,7 @@ func (m *QualityManager) newAnalyzeCmd() *cobra.Command {
 	}
 }
 
-// newInstallCmd creates the install subcommand
+// newInstallCmd creates the install subcommand.
 func (m *QualityManager) newInstallCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "install [tool-name...]",
@@ -384,7 +384,7 @@ func (m *QualityManager) newInstallCmd() *cobra.Command {
 	}
 }
 
-// newUpgradeCmd creates the upgrade subcommand
+// newUpgradeCmd creates the upgrade subcommand.
 func (m *QualityManager) newUpgradeCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "upgrade [tool-name...]",
@@ -424,7 +424,7 @@ func (m *QualityManager) newUpgradeCmd() *cobra.Command {
 	}
 }
 
-// newVersionCmd creates the version subcommand
+// newVersionCmd creates the version subcommand.
 func (m *QualityManager) newVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version [tool-name...]",
@@ -466,7 +466,7 @@ func (m *QualityManager) newVersionCmd() *cobra.Command {
 	}
 }
 
-// newListCmd creates the list subcommand
+// newListCmd creates the list subcommand.
 func (m *QualityManager) newListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
@@ -500,7 +500,7 @@ func (m *QualityManager) newListCmd() *cobra.Command {
 	}
 }
 
-// installTool installs a specific tool
+// installTool installs a specific tool.
 func (m *QualityManager) installTool(tool tools.QualityTool) error {
 	if tool.IsAvailable() {
 		return nil // Already installed
@@ -509,7 +509,7 @@ func (m *QualityManager) installTool(tool tools.QualityTool) error {
 	return tool.Install()
 }
 
-// upgradeTool upgrades a specific tool
+// upgradeTool upgrades a specific tool.
 func (m *QualityManager) upgradeTool(tool tools.QualityTool) error {
 	if !tool.IsAvailable() {
 		fmt.Printf("📦 %s is not installed, installing...\n", tool.Name())
@@ -524,7 +524,7 @@ func (m *QualityManager) upgradeTool(tool tools.QualityTool) error {
 	return tool.Upgrade()
 }
 
-// showToolVersion displays the version of a tool
+// showToolVersion displays the version of a tool.
 func (m *QualityManager) showToolVersion(tool tools.QualityTool) {
 	if !tool.IsAvailable() {
 		fmt.Printf("  ❌ %s: not installed\n", tool.Name())
@@ -541,7 +541,7 @@ func (m *QualityManager) showToolVersion(tool tools.QualityTool) {
 	fmt.Printf("  %s %s: %s\n", status, tool.Name(), version)
 }
 
-// generateReport creates and saves a quality report
+// generateReport creates and saves a quality report.
 func (m *QualityManager) generateReport(results []*tools.Result, duration time.Duration, totalFiles int, projectRoot, format, outputPath string) error {
 	generator := report.NewReportGenerator(projectRoot)
 	qualityReport := generator.GenerateReport(results, duration, totalFiles)
@@ -577,7 +577,7 @@ func (m *QualityManager) generateReport(results []*tools.Result, duration time.D
 	return nil
 }
 
-// newCheckCmd creates the check subcommand
+// newCheckCmd creates the check subcommand.
 func (m *QualityManager) newCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check",
@@ -606,7 +606,7 @@ func (m *QualityManager) newCheckCmd() *cobra.Command {
 	return cmd
 }
 
-// runCheck executes the check command (lint-only)
+// runCheck executes the check command (lint-only).
 func (m *QualityManager) runCheck(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
@@ -690,7 +690,7 @@ func (m *QualityManager) runCheck(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// newInitCmd creates the init subcommand
+// newInitCmd creates the init subcommand.
 func (m *QualityManager) newInitCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "init",
@@ -703,7 +703,7 @@ func (m *QualityManager) newInitCmd() *cobra.Command {
 	}
 }
 
-// runInit executes the init command
+// runInit executes the init command.
 func (m *QualityManager) runInit(cmd *cobra.Command, args []string) error {
 	projectRoot, err := os.Getwd()
 	if err != nil {
@@ -745,7 +745,7 @@ func (m *QualityManager) runInit(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// Helper functions for init command
+// Helper functions for init command.
 func getLanguageList(languages map[string][]string) []string {
 	var langs []string
 	for lang := range languages {
@@ -754,7 +754,7 @@ func getLanguageList(languages map[string][]string) []string {
 	return langs
 }
 
-// generateConfig creates a configuration based on project analysis
+// generateConfig creates a configuration based on project analysis.
 func (m *QualityManager) generateConfig(analysis *detector.AnalysisResult) *Config {
 	// This would be implemented with a proper Config struct
 	// For now, we'll create a simple structure
@@ -786,7 +786,7 @@ func contains(languages map[string][]string, lang string) bool {
 	return exists
 }
 
-// Config structures for YAML generation
+// Config structures for YAML generation.
 type Config struct {
 	Enabled   bool                       `yaml:"enabled"`
 	Languages map[string]*LanguageConfig `yaml:"languages"`
@@ -826,7 +826,7 @@ func (c *Config) ToYAML() (string, error) {
 	return sb.String(), nil
 }
 
-// registerAllTools registers all available quality tools
+// registerAllTools registers all available quality tools.
 func registerAllTools(registry tools.ToolRegistry) {
 	// Go tools
 	registry.Register(tools.NewGofumptTool())
@@ -849,7 +849,7 @@ func registerAllTools(registry tools.ToolRegistry) {
 	registry.Register(tools.NewCargoFmtTool())
 }
 
-// ProjectAnalyzerAdapter adapts detector.ProjectAnalyzer to executor.ProjectAnalyzer interface
+// ProjectAnalyzerAdapter adapts detector.ProjectAnalyzer to executor.ProjectAnalyzer interface.
 type ProjectAnalyzerAdapter struct {
 	analyzer *detector.ProjectAnalyzer
 }
@@ -884,7 +884,7 @@ func (a *ProjectAnalyzerAdapter) GetOptimalToolSelection(result *executor.Analys
 	return a.analyzer.GetOptimalToolSelection(detectorResult, registry)
 }
 
-// newToolCmd creates the tool subcommand for direct tool access
+// newToolCmd creates the tool subcommand for direct tool access.
 func (m *QualityManager) newToolCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "tool [tool-name]",
@@ -933,7 +933,7 @@ func (m *QualityManager) newToolCmd() *cobra.Command {
 	return cmd
 }
 
-// addDirectToolCommands adds direct tool commands under tool subcommand
+// addDirectToolCommands adds direct tool commands under tool subcommand.
 func (m *QualityManager) addDirectToolCommands(parentCmd *cobra.Command) {
 	allTools := m.registry.GetTools()
 
@@ -957,7 +957,7 @@ func (m *QualityManager) addDirectToolCommands(parentCmd *cobra.Command) {
 	}
 }
 
-// addDirectToolFlags adds flags for direct tool commands
+// addDirectToolFlags adds flags for direct tool commands.
 func (m *QualityManager) addDirectToolFlags(cmd *cobra.Command) {
 	cmd.Flags().StringSliceP("files", "f", nil, "특정 파일들만 처리")
 	cmd.Flags().BoolP("fix", "x", false, "자동 수정 적용 (지원하는 도구만)")
@@ -972,7 +972,7 @@ func (m *QualityManager) addDirectToolFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("changed", false, "변경된 파일만 처리 (staged + modified + untracked)")
 }
 
-// runDirectTool executes a specific tool directly
+// runDirectTool executes a specific tool directly.
 func (m *QualityManager) runDirectTool(cmd *cobra.Command, args []string, tool tools.QualityTool) error {
 	ctx := cmd.Context()
 
@@ -1048,7 +1048,7 @@ func (m *QualityManager) runDirectTool(cmd *cobra.Command, args []string, tool t
 	return nil
 }
 
-// validateGitFlags validates Git-based filtering flags
+// validateGitFlags validates Git-based filtering flags.
 func (m *QualityManager) validateGitFlags(since string, staged, changed bool) error {
 	// Count how many Git flags are set
 	gitFlagCount := 0

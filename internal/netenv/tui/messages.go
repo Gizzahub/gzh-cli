@@ -7,42 +7,42 @@ import (
 	"time"
 )
 
-// Message types for the net-env TUI application
+// Message types for the net-env TUI application.
 type (
-	// TickMsg represents a timer tick for periodic updates
+	// TickMsg represents a timer tick for periodic updates.
 	TickMsg struct {
 		Time time.Time
 	}
 
-	// NetworkStatusMsg represents an update to network status
+	// NetworkStatusMsg represents an update to network status.
 	NetworkStatusMsg struct {
 		Status NetworkStatus
 	}
 
-	// ErrorMsg represents an error
+	// ErrorMsg represents an error.
 	ErrorMsg struct {
 		Error error
 	}
 
-	// LoadingMsg represents loading state changes
+	// LoadingMsg represents loading state changes.
 	LoadingMsg struct {
 		Loading bool
 		Message string
 	}
 
-	// NavigationMsg represents navigation between views
+	// NavigationMsg represents navigation between views.
 	NavigationMsg struct {
 		View ViewType
 		Data interface{}
 	}
 
-	// ProfileSelectedMsg represents a network profile being selected
+	// ProfileSelectedMsg represents a network profile being selected.
 	ProfileSelectedMsg struct {
 		ProfileName string
 		Profile     *NetworkProfile
 	}
 
-	// VPNActionMsg represents VPN actions (connect/disconnect)
+	// VPNActionMsg represents VPN actions (connect/disconnect).
 	VPNActionMsg struct {
 		Action    string // "connect", "disconnect", "reconnect"
 		VPNName   string
@@ -51,7 +51,7 @@ type (
 		NewStatus *VPNStatus
 	}
 
-	// ProfileSwitchMsg represents profile switching
+	// ProfileSwitchMsg represents profile switching.
 	ProfileSwitchMsg struct {
 		ProfileName string
 		Success     bool
@@ -59,45 +59,45 @@ type (
 		NewStatus   *NetworkStatus
 	}
 
-	// RefreshMsg represents a manual refresh request
+	// RefreshMsg represents a manual refresh request.
 	RefreshMsg struct{}
 
-	// QuitMsg represents a quit request
+	// QuitMsg represents a quit request.
 	QuitMsg struct{}
 
-	// WindowSizeMsg represents terminal window size changes
+	// WindowSizeMsg represents terminal window size changes.
 	WindowSizeMsg struct {
 		Width  int
 		Height int
 	}
 
-	// HelpToggleMsg represents help display toggle
+	// HelpToggleMsg represents help display toggle.
 	HelpToggleMsg struct{}
 
-	// SearchMsg represents search functionality
+	// SearchMsg represents search functionality.
 	SearchMsg struct {
 		Query   string
 		Results []SearchResult
 	}
 
-	// FilterMsg represents filter functionality
+	// FilterMsg represents filter functionality.
 	FilterMsg struct {
 		Filter string
 		Active bool
 	}
 
-	// MonitorUpdateMsg represents monitoring data updates
+	// MonitorUpdateMsg represents monitoring data updates.
 	MonitorUpdateMsg struct {
 		Metrics NetworkMetrics
 	}
 
-	// AlertMsg represents network alerts
+	// AlertMsg represents network alerts.
 	AlertMsg struct {
 		Alert NetworkAlert
 	}
 )
 
-// SearchResult represents a search result item
+// SearchResult represents a search result item.
 type SearchResult struct {
 	Type        string // "profile", "vpn", "action", "setting"
 	Name        string
@@ -105,7 +105,7 @@ type SearchResult struct {
 	Action      func() error
 }
 
-// ViewType represents different views in the TUI
+// ViewType represents different views in the TUI.
 type ViewType int
 
 const (
@@ -118,7 +118,7 @@ const (
 	ViewSearch
 )
 
-// String returns the string representation of a ViewType
+// String returns the string representation of a ViewType.
 func (v ViewType) String() string {
 	switch v {
 	case ViewDashboard:
@@ -140,7 +140,7 @@ func (v ViewType) String() string {
 	}
 }
 
-// AppState represents the overall application state
+// AppState represents the overall application state.
 type AppState int
 
 const (
@@ -155,7 +155,7 @@ const (
 	StateSearch
 )
 
-// String returns the string representation of an AppState
+// String returns the string representation of an AppState.
 func (s AppState) String() string {
 	switch s {
 	case StateLoading:
@@ -181,7 +181,7 @@ func (s AppState) String() string {
 	}
 }
 
-// NetworkStatus represents the complete network status
+// NetworkStatus represents the complete network status.
 type NetworkStatus struct {
 	WiFi         WiFiStatus         `json:"wifi"`
 	VPN          VPNStatus          `json:"vpn"`
@@ -192,7 +192,7 @@ type NetworkStatus struct {
 	Timestamp    time.Time          `json:"timestamp"`
 }
 
-// WiFiStatus represents WiFi connection status
+// WiFiStatus represents WiFi connection status.
 type WiFiStatus struct {
 	SSID           string `json:"ssid"`
 	SignalStrength int    `json:"signalStrength"`
@@ -203,7 +203,7 @@ type WiFiStatus struct {
 	Gateway        string `json:"gateway,omitempty"`
 }
 
-// VPNStatus represents VPN connection status
+// VPNStatus represents VPN connection status.
 type VPNStatus struct {
 	Name        string        `json:"name"`
 	Connected   bool          `json:"connected"`
@@ -216,7 +216,7 @@ type VPNStatus struct {
 	Protocol    string        `json:"protocol,omitempty"`
 }
 
-// DNSStatus represents DNS configuration status
+// DNSStatus represents DNS configuration status.
 type DNSStatus struct {
 	Servers   []string      `json:"servers"`
 	Custom    bool          `json:"custom"`
@@ -226,7 +226,7 @@ type DNSStatus struct {
 	Resolving bool          `json:"resolving"` // Whether DNS is resolving properly
 }
 
-// ProxyStatus represents proxy configuration status
+// ProxyStatus represents proxy configuration status.
 type ProxyStatus struct {
 	Enabled bool   `json:"enabled"`
 	Type    string `json:"type"` // "http", "socks5", etc.
@@ -237,7 +237,7 @@ type ProxyStatus struct {
 	Working bool   `json:"working"` // Whether proxy is working
 }
 
-// DockerStatus represents Docker network status
+// DockerStatus represents Docker network status.
 type DockerStatus struct {
 	Context   string            `json:"context"`
 	Networks  []DockerNetwork   `json:"networks"`
@@ -245,7 +245,7 @@ type DockerStatus struct {
 	Details   map[string]string `json:"details,omitempty"`
 }
 
-// DockerNetwork represents a Docker network
+// DockerNetwork represents a Docker network.
 type DockerNetwork struct {
 	Name   string `json:"name"`
 	Driver string `json:"driver"`
@@ -253,7 +253,7 @@ type DockerNetwork struct {
 	Active bool   `json:"active"`
 }
 
-// ConnectivityStatus represents overall connectivity status
+// ConnectivityStatus represents overall connectivity status.
 type ConnectivityStatus struct {
 	Internet   bool          `json:"internet"`
 	Latency    time.Duration `json:"latency"`
@@ -262,13 +262,13 @@ type ConnectivityStatus struct {
 	Quality    string        `json:"quality"` // "excellent", "good", "poor", "disconnected"
 }
 
-// BandwidthInfo represents bandwidth information
+// BandwidthInfo represents bandwidth information.
 type BandwidthInfo struct {
 	Download float64 `json:"download"` // Mbps
 	Upload   float64 `json:"upload"`   // Mbps
 }
 
-// NetworkProfile represents a network configuration profile
+// NetworkProfile represents a network configuration profile.
 type NetworkProfile struct {
 	Name        string            `yaml:"name" json:"name"`
 	Description string            `yaml:"description" json:"description"`
@@ -285,7 +285,7 @@ type NetworkProfile struct {
 	Metadata    map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
 
-// WiFiConfig represents WiFi configuration
+// WiFiConfig represents WiFi configuration.
 type WiFiConfig struct {
 	SSID     string `yaml:"ssid" json:"ssid"`
 	Password string `yaml:"password,omitempty" json:"password,omitempty"`
@@ -293,7 +293,7 @@ type WiFiConfig struct {
 	Hidden   bool   `yaml:"hidden,omitempty" json:"hidden,omitempty"`
 }
 
-// VPNConfig represents VPN configuration
+// VPNConfig represents VPN configuration.
 type VPNConfig struct {
 	Name       string            `yaml:"name" json:"name"`
 	Type       string            `yaml:"type" json:"type"` // "openvpn", "wireguard", "ipsec"
@@ -304,7 +304,7 @@ type VPNConfig struct {
 	Options    map[string]string `yaml:"options,omitempty" json:"options,omitempty"`
 }
 
-// DNSConfig represents DNS configuration
+// DNSConfig represents DNS configuration.
 type DNSConfig struct {
 	Servers []string `yaml:"servers" json:"servers"`
 	DoH     bool     `yaml:"doh,omitempty" json:"doh,omitempty"`
@@ -312,7 +312,7 @@ type DNSConfig struct {
 	Secure  bool     `yaml:"secure,omitempty" json:"secure,omitempty"`
 }
 
-// ProxyConfig represents proxy configuration
+// ProxyConfig represents proxy configuration.
 type ProxyConfig struct {
 	Type     string `yaml:"type" json:"type"`
 	Host     string `yaml:"host" json:"host"`
@@ -322,27 +322,27 @@ type ProxyConfig struct {
 	Bypass   string `yaml:"bypass,omitempty" json:"bypass,omitempty"`
 }
 
-// DockerConfig represents Docker configuration
+// DockerConfig represents Docker configuration.
 type DockerConfig struct {
 	Context  string            `yaml:"context" json:"context"`
 	Networks []string          `yaml:"networks,omitempty" json:"networks,omitempty"`
 	Options  map[string]string `yaml:"options,omitempty" json:"options,omitempty"`
 }
 
-// DetectionRule represents automatic detection rules
+// DetectionRule represents automatic detection rules.
 type DetectionRule struct {
 	Conditions []Condition `yaml:"conditions" json:"conditions"`
 	Priority   int         `yaml:"priority" json:"priority"`
 }
 
-// Condition represents a detection condition
+// Condition represents a detection condition.
 type Condition struct {
 	Type     string `yaml:"type" json:"type"`         // "wifi_ssid", "ip_range", "gateway", "dns"
 	Value    string `yaml:"value" json:"value"`       // The value to match
 	Operator string `yaml:"operator" json:"operator"` // "equals", "contains", "matches", "in_range"
 }
 
-// NetworkMetrics represents network performance metrics
+// NetworkMetrics represents network performance metrics.
 type NetworkMetrics struct {
 	Timestamp   time.Time     `json:"timestamp"`
 	Latency     time.Duration `json:"latency"`
@@ -352,7 +352,7 @@ type NetworkMetrics struct {
 	Throughput  float64       `json:"throughput"` // Current throughput in Mbps
 }
 
-// NetworkAlert represents a network alert
+// NetworkAlert represents a network alert.
 type NetworkAlert struct {
 	ID           string    `json:"id"`
 	Timestamp    time.Time `json:"timestamp"`

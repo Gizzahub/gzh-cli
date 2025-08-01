@@ -14,13 +14,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// TemplateEngine handles configuration template processing
+// TemplateEngine handles configuration template processing.
 type TemplateEngine struct {
 	TemplateDir string
 	Variables   map[string]interface{}
 }
 
-// TemplateConfig represents a template configuration
+// TemplateConfig represents a template configuration.
 type TemplateConfig struct {
 	Name        string                 `yaml:"name"`
 	Description string                 `yaml:"description"`
@@ -28,7 +28,7 @@ type TemplateConfig struct {
 	Variables   []TemplateVariable     `yaml:"variables"`
 }
 
-// TemplateVariable represents a template variable definition
+// TemplateVariable represents a template variable definition.
 type TemplateVariable struct {
 	Name         string      `yaml:"name"`
 	Description  string      `yaml:"description"`
@@ -38,7 +38,7 @@ type TemplateVariable struct {
 	Options      []string    `yaml:"options,omitempty"`
 }
 
-// NewTemplateEngine creates a new template engine
+// NewTemplateEngine creates a new template engine.
 func NewTemplateEngine(templateDir string) *TemplateEngine {
 	return &TemplateEngine{
 		TemplateDir: templateDir,
@@ -46,7 +46,7 @@ func NewTemplateEngine(templateDir string) *TemplateEngine {
 	}
 }
 
-// ListTemplates returns available template names
+// ListTemplates returns available template names.
 func (te *TemplateEngine) ListTemplates() ([]string, error) {
 	var templates []string
 
@@ -69,7 +69,7 @@ func (te *TemplateEngine) ListTemplates() ([]string, error) {
 	return templates, err
 }
 
-// LoadTemplate loads a template configuration by name
+// LoadTemplate loads a template configuration by name.
 func (te *TemplateEngine) LoadTemplate(name string) (*TemplateConfig, error) {
 	templatePath := te.getTemplatePath(name)
 
@@ -86,7 +86,7 @@ func (te *TemplateEngine) LoadTemplate(name string) (*TemplateConfig, error) {
 	return &config, nil
 }
 
-// GenerateConfig generates a configuration from a template
+// GenerateConfig generates a configuration from a template.
 func (te *TemplateEngine) GenerateConfig(templateName string, variables map[string]interface{}) (map[string]interface{}, error) {
 	templateConfig, err := te.LoadTemplate(templateName)
 	if err != nil {
@@ -110,7 +110,7 @@ func (te *TemplateEngine) GenerateConfig(templateName string, variables map[stri
 	return processedConfig, nil
 }
 
-// validateVariables validates that all required variables are provided
+// validateVariables validates that all required variables are provided.
 func (te *TemplateEngine) validateVariables(config *TemplateConfig, variables map[string]interface{}) error {
 	var missingVars []string
 
@@ -129,7 +129,7 @@ func (te *TemplateEngine) validateVariables(config *TemplateConfig, variables ma
 	return nil
 }
 
-// mergeWithDefaults merges provided variables with template defaults
+// mergeWithDefaults merges provided variables with template defaults.
 func (te *TemplateEngine) mergeWithDefaults(config *TemplateConfig, variables map[string]interface{}) map[string]interface{} {
 	merged := make(map[string]interface{})
 
@@ -148,7 +148,7 @@ func (te *TemplateEngine) mergeWithDefaults(config *TemplateConfig, variables ma
 	return merged
 }
 
-// processTemplate processes a template with variables
+// processTemplate processes a template with variables.
 func (te *TemplateEngine) processTemplate(templateData map[string]interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
 	// Convert template data to YAML string for processing
 	yamlData, err := yaml.Marshal(templateData)
@@ -176,12 +176,12 @@ func (te *TemplateEngine) processTemplate(templateData map[string]interface{}, v
 	return result, nil
 }
 
-// GetTemplateInfo returns information about a template
+// GetTemplateInfo returns information about a template.
 func (te *TemplateEngine) GetTemplateInfo(name string) (*TemplateConfig, error) {
 	return te.LoadTemplate(name)
 }
 
-// SaveTemplate saves a template configuration
+// SaveTemplate saves a template configuration.
 func (te *TemplateEngine) SaveTemplate(name string, config *TemplateConfig) error {
 	templatePath := te.getTemplatePath(name)
 
@@ -202,13 +202,13 @@ func (te *TemplateEngine) SaveTemplate(name string, config *TemplateConfig) erro
 	return nil
 }
 
-// DeleteTemplate deletes a template
+// DeleteTemplate deletes a template.
 func (te *TemplateEngine) DeleteTemplate(name string) error {
 	templatePath := te.getTemplatePath(name)
 	return os.Remove(templatePath)
 }
 
-// getTemplatePath returns the full path to a template file
+// getTemplatePath returns the full path to a template file.
 func (te *TemplateEngine) getTemplatePath(name string) string {
 	if !strings.HasSuffix(name, ".yaml") && !strings.HasSuffix(name, ".yml") {
 		name += ".yaml"
@@ -216,7 +216,7 @@ func (te *TemplateEngine) getTemplatePath(name string) string {
 	return filepath.Join(te.TemplateDir, name)
 }
 
-// CreateBuiltinTemplates creates built-in template files
+// CreateBuiltinTemplates creates built-in template files.
 func (te *TemplateEngine) CreateBuiltinTemplates() error {
 	builtinTemplates := GetBuiltinTemplates()
 
@@ -236,7 +236,7 @@ func (te *TemplateEngine) CreateBuiltinTemplates() error {
 	return nil
 }
 
-// ValidateTemplate validates a template configuration
+// ValidateTemplate validates a template configuration.
 func (te *TemplateEngine) ValidateTemplate(config *TemplateConfig) error {
 	if config.Name == "" {
 		return fmt.Errorf("template name is required")
@@ -274,7 +274,7 @@ func (te *TemplateEngine) ValidateTemplate(config *TemplateConfig) error {
 	return nil
 }
 
-// InterpolateString interpolates template variables in a string
+// InterpolateString interpolates template variables in a string.
 func (te *TemplateEngine) InterpolateString(s string, variables map[string]interface{}) (string, error) {
 	tmpl, err := template.New("string").Parse(s)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newMonitorUnifiedCmd creates the unified net-env monitor command
+// newMonitorUnifiedCmd creates the unified net-env monitor command.
 func newMonitorUnifiedCmd() *cobra.Command {
 	var (
 		changes     bool
@@ -54,7 +54,7 @@ Examples:
 	return cmd
 }
 
-// runMonitorUnified executes the unified monitor command
+// runMonitorUnified executes the unified monitor command.
 func runMonitorUnified(ctx context.Context, changes, performance bool, logFile string, interval time.Duration) error {
 	fmt.Println("🔍 Starting network environment monitor...")
 	fmt.Printf("   Monitoring interval: %v\n", interval)
@@ -107,7 +107,7 @@ func runMonitorUnified(ctx context.Context, changes, performance bool, logFile s
 	}
 }
 
-// NetworkState represents captured network state
+// NetworkState represents captured network state.
 type NetworkState struct {
 	Timestamp   time.Time
 	WiFiSSID    string
@@ -120,7 +120,7 @@ type NetworkState struct {
 	PacketLoss  float64
 }
 
-// captureNetworkState captures current network state
+// captureNetworkState captures current network state.
 func captureNetworkState(ctx context.Context) *NetworkState {
 	state := &NetworkState{
 		Timestamp: time.Now(),
@@ -138,7 +138,7 @@ func captureNetworkState(ctx context.Context) *NetworkState {
 	return state
 }
 
-// hasNetworkChanged checks if network state has changed
+// hasNetworkChanged checks if network state has changed.
 func hasNetworkChanged(old, new *NetworkState) bool {
 	if old == nil {
 		return true
@@ -151,13 +151,13 @@ func hasNetworkChanged(old, new *NetworkState) bool {
 		old.ProxyStatus != new.ProxyStatus
 }
 
-// displayMonitoringHeader displays the monitoring header
+// displayMonitoringHeader displays the monitoring header.
 func displayMonitoringHeader() {
 	fmt.Println("Time     │ Event                    │ Details")
 	fmt.Println("─────────┼──────────────────────────┼─────────────────────────")
 }
 
-// displayNetworkChange displays network change information
+// displayNetworkChange displays network change information.
 func displayNetworkChange(old, new *NetworkState) {
 	timestamp := new.Timestamp.Format("15:04:05")
 
@@ -183,7 +183,7 @@ func displayNetworkChange(old, new *NetworkState) {
 	}
 }
 
-// displayPerformanceMetrics displays current performance metrics
+// displayPerformanceMetrics displays current performance metrics.
 func displayPerformanceMetrics(state *NetworkState) {
 	timestamp := state.Timestamp.Format("15:04:05")
 

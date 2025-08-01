@@ -8,19 +8,19 @@ import (
 	"time"
 )
 
-// StateAnalyzer provides comprehensive analysis of synclone operation states
+// StateAnalyzer provides comprehensive analysis of synclone operation states.
 type StateAnalyzer struct {
 	stateManager *StateManager
 }
 
-// NewStateAnalyzer creates a new state analyzer
+// NewStateAnalyzer creates a new state analyzer.
 func NewStateAnalyzer(stateManager *StateManager) *StateAnalyzer {
 	return &StateAnalyzer{
 		stateManager: stateManager,
 	}
 }
 
-// AnalyzeOperation analyzes a specific operation state
+// AnalyzeOperation analyzes a specific operation state.
 func (sa *StateAnalyzer) AnalyzeOperation(stateID string) (*OperationAnalysis, error) {
 	stateFiles, err := sa.stateManager.ListStateFiles()
 	if err != nil {
@@ -42,7 +42,7 @@ func (sa *StateAnalyzer) AnalyzeOperation(stateID string) (*OperationAnalysis, e
 	return sa.analyzeStateFile(targetFile), nil
 }
 
-// AnalyzeAllOperations analyzes all operations and provides comprehensive insights
+// AnalyzeAllOperations analyzes all operations and provides comprehensive insights.
 func (sa *StateAnalyzer) AnalyzeAllOperations() (*GlobalAnalysis, error) {
 	stateFiles, err := sa.stateManager.ListStateFiles()
 	if err != nil {
@@ -99,7 +99,7 @@ func (sa *StateAnalyzer) AnalyzeAllOperations() (*GlobalAnalysis, error) {
 	return globalAnalysis, nil
 }
 
-// analyzeStateFile performs detailed analysis of a single state file
+// analyzeStateFile performs detailed analysis of a single state file.
 func (sa *StateAnalyzer) analyzeStateFile(stateFile *StateFile) *OperationAnalysis {
 	state := stateFile.State
 	analysis := &OperationAnalysis{
@@ -159,7 +159,7 @@ func (sa *StateAnalyzer) analyzeStateFile(stateFile *StateFile) *OperationAnalys
 	return analysis
 }
 
-// generatePerformanceInsights generates performance-related insights
+// generatePerformanceInsights generates performance-related insights.
 func (sa *StateAnalyzer) generatePerformanceInsights(state *OperationState, analysis *OperationAnalysis) []string {
 	var insights []string
 
@@ -200,7 +200,7 @@ func (sa *StateAnalyzer) generatePerformanceInsights(state *OperationState, anal
 	return insights
 }
 
-// identifyIssues identifies potential issues with the operation
+// identifyIssues identifies potential issues with the operation.
 func (sa *StateAnalyzer) identifyIssues(state *OperationState, analysis *OperationAnalysis) []string {
 	var issues []string
 
@@ -234,7 +234,7 @@ func (sa *StateAnalyzer) identifyIssues(state *OperationState, analysis *Operati
 	return issues
 }
 
-// generateRecommendations generates actionable recommendations
+// generateRecommendations generates actionable recommendations.
 func (sa *StateAnalyzer) generateRecommendations(state *OperationState, analysis *OperationAnalysis) []string {
 	var recommendations []string
 
@@ -277,11 +277,11 @@ func (sa *StateAnalyzer) generateRecommendations(state *OperationState, analysis
 	return recommendations
 }
 
-// generateGlobalRecommendations generates system-wide recommendations
-func (sa *StateAnalyzer) generateGlobalRecommendations(analyses []*OperationAnalysis) []string {
+// generateGlobalRecommendations generates system-wide recommendations.
+func (sa *StateAnalyzer) generateGlobalRecommendations(analyzes []*OperationAnalysis) []string {
 	var recommendations []string
 
-	if len(analyses) == 0 {
+	if len(analyzes) == 0 {
 		return recommendations
 	}
 
@@ -290,7 +290,7 @@ func (sa *StateAnalyzer) generateGlobalRecommendations(analyses []*OperationAnal
 	totalAvgTime := time.Duration(0)
 	incompleteOps := 0
 
-	for _, analysis := range analyses {
+	for _, analysis := range analyzes {
 		totalFailureRate += analysis.FailureRate
 		totalAvgTime += analysis.AvgTimePerRepo
 		if analysis.Status == StatusInProgress || analysis.Status == StatusFailed {
@@ -298,8 +298,8 @@ func (sa *StateAnalyzer) generateGlobalRecommendations(analyses []*OperationAnal
 		}
 	}
 
-	avgFailureRate := totalFailureRate / float64(len(analyses))
-	avgTimePerRepo := totalAvgTime / time.Duration(len(analyses))
+	avgFailureRate := totalFailureRate / float64(len(analyzes))
+	avgTimePerRepo := totalAvgTime / time.Duration(len(analyzes))
 
 	// Generate recommendations based on global patterns
 	if avgFailureRate > 15 {
@@ -314,14 +314,14 @@ func (sa *StateAnalyzer) generateGlobalRecommendations(analyses []*OperationAnal
 		recommendations = append(recommendations, fmt.Sprintf("You have %d incomplete operations - consider cleaning up or resuming", incompleteOps))
 	}
 
-	if len(analyses) > 20 {
+	if len(analyzes) > 20 {
 		recommendations = append(recommendations, "Large number of operations - consider running state cleanup")
 	}
 
 	return recommendations
 }
 
-// containsAuthError checks if an error message indicates authentication issues
+// containsAuthError checks if an error message indicates authentication issues.
 func containsAuthError(errorMsg string) bool {
 	authKeywords := []string{"authentication", "unauthorized", "access denied", "permission denied", "token"}
 	for _, keyword := range authKeywords {
@@ -332,7 +332,7 @@ func containsAuthError(errorMsg string) bool {
 	return false
 }
 
-// containsNetworkError checks if an error message indicates network issues
+// containsNetworkError checks if an error message indicates network issues.
 func containsNetworkError(errorMsg string) bool {
 	networkKeywords := []string{"timeout", "connection", "network", "dns", "unreachable"}
 	for _, keyword := range networkKeywords {
@@ -343,12 +343,12 @@ func containsNetworkError(errorMsg string) bool {
 	return false
 }
 
-// containsKeyword checks if a string contains a keyword (case-insensitive)
+// containsKeyword checks if a string contains a keyword (case-insensitive).
 func containsKeyword(s, keyword string) bool {
 	return len(s) >= len(keyword) && findKeyword(s, keyword)
 }
 
-// findKeyword searches for a keyword in a string
+// findKeyword searches for a keyword in a string.
 func findKeyword(s, keyword string) bool {
 	for i := 0; i <= len(s)-len(keyword); i++ {
 		if s[i:i+len(keyword)] == keyword {
@@ -358,7 +358,7 @@ func findKeyword(s, keyword string) bool {
 	return false
 }
 
-// OperationAnalysis represents the analysis result for a single operation
+// OperationAnalysis represents the analysis result for a single operation.
 type OperationAnalysis struct {
 	OperationID         string          `json:"operation_id"`
 	Status              OperationStatus `json:"status"`
@@ -377,7 +377,7 @@ type OperationAnalysis struct {
 	Recommendations     []string        `json:"recommendations"`
 }
 
-// GlobalAnalysis represents system-wide analysis
+// GlobalAnalysis represents system-wide analysis.
 type GlobalAnalysis struct {
 	TotalOperations    int                      `json:"total_operations"`
 	StatusBreakdown    map[OperationStatus]int  `json:"status_breakdown"`
@@ -386,13 +386,13 @@ type GlobalAnalysis struct {
 	Recommendations    []string                 `json:"recommendations"`
 }
 
-// TimeRange represents a time range
+// TimeRange represents a time range.
 type TimeRange struct {
 	Earliest time.Time `json:"earliest"`
 	Latest   time.Time `json:"latest"`
 }
 
-// GlobalPerformanceMetrics represents global performance metrics
+// GlobalPerformanceMetrics represents global performance metrics.
 type GlobalPerformanceMetrics struct {
 	AvgOperationDuration time.Duration `json:"avg_operation_duration"`
 	AvgReposPerOperation float64       `json:"avg_repos_per_operation"`

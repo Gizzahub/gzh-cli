@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestTableData implements TableData interface for testing
+// TestTableData implements TableData interface for testing.
 type TestTableData struct {
 	headers []string
 	rows    [][]string

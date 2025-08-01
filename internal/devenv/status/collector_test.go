@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockServiceChecker is a mock implementation of ServiceChecker
+// MockServiceChecker is a mock implementation of ServiceChecker.
 type MockServiceChecker struct {
 	mock.Mock
 }

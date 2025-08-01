@@ -18,7 +18,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// newGodocCmd creates the godoc subcommand for API documentation analysis
+// newGodocCmd creates the godoc subcommand for API documentation analysis.
 func newGodocCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -333,9 +333,10 @@ func displayPackageResults(result *godoc.PackageInfo, opts godocOptions) {
 		for _, issue := range result.QualityIssues {
 			severity := issue.Severity
 			icon := "ℹ️"
-			if severity == "high" {
+			switch severity {
+			case "high":
 				icon = "🔴"
-			} else if severity == "medium" {
+			case "medium":
 				icon = "🟡"
 			}
 

@@ -17,7 +17,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/devenv/status"
 )
 
-// DashboardModel represents the main dashboard view
+// DashboardModel represents the main dashboard view.
 type DashboardModel struct {
 	table      table.Model
 	help       help.Model
@@ -31,7 +31,7 @@ type DashboardModel struct {
 	errorMsg   string
 }
 
-// NewDashboardModel creates a new dashboard model
+// NewDashboardModel creates a new dashboard model.
 func NewDashboardModel() *DashboardModel {
 	// Create table columns
 	columns := []table.Column{
@@ -72,12 +72,12 @@ func NewDashboardModel() *DashboardModel {
 	}
 }
 
-// Init initializes the dashboard model
+// Init initializes the dashboard model.
 func (m *DashboardModel) Init() tea.Cmd {
 	return nil
 }
 
-// Update handles messages for the dashboard
+// Update handles messages for the dashboard.
 func (m *DashboardModel) Update(msg tea.Msg) (*DashboardModel, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -143,7 +143,7 @@ func (m *DashboardModel) Update(msg tea.Msg) (*DashboardModel, tea.Cmd) {
 	return m, cmd
 }
 
-// View renders the dashboard
+// View renders the dashboard.
 func (m *DashboardModel) View() string {
 	if m.loading {
 		return m.renderLoading()
@@ -156,7 +156,7 @@ func (m *DashboardModel) View() string {
 	return m.renderDashboard()
 }
 
-// renderDashboard renders the main dashboard view
+// renderDashboard renders the main dashboard view.
 func (m *DashboardModel) renderDashboard() string {
 	var b strings.Builder
 
@@ -182,7 +182,7 @@ func (m *DashboardModel) renderDashboard() string {
 	return b.String()
 }
 
-// renderHeader renders the dashboard header
+// renderHeader renders the dashboard header.
 func (m *DashboardModel) renderHeader() string {
 	title := "GZH Development Environment Manager"
 	env := fmt.Sprintf("Current Environment: %s", m.currentEnv)
@@ -205,7 +205,7 @@ func (m *DashboardModel) renderHeader() string {
 	)
 }
 
-// renderQuickActions renders the quick actions bar
+// renderQuickActions renders the quick actions bar.
 func (m *DashboardModel) renderQuickActions() string {
 	actions := []string{
 		"[1] Switch Environment",
@@ -233,7 +233,7 @@ func (m *DashboardModel) renderQuickActions() string {
 	))
 }
 
-// renderLoading renders the loading state
+// renderLoading renders the loading state.
 func (m *DashboardModel) renderLoading() string {
 	loadingText := "Loading development environment status..."
 	spinner := "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
@@ -248,7 +248,7 @@ func (m *DashboardModel) renderLoading() string {
 	)
 }
 
-// renderError renders the error state
+// renderError renders the error state.
 func (m *DashboardModel) renderError() string {
 	errorContent := fmt.Sprintf("Error: %s\n\nPress 'r' to retry or 'q' to quit", m.errorMsg)
 
@@ -259,7 +259,7 @@ func (m *DashboardModel) renderError() string {
 	)
 }
 
-// updateServices updates the service list and table rows
+// updateServices updates the service list and table rows.
 func (m *DashboardModel) updateServices(services []status.ServiceStatus) {
 	m.services = services
 
@@ -309,7 +309,7 @@ func (m *DashboardModel) updateServices(services []status.ServiceStatus) {
 	m.table.SetRows(rows)
 }
 
-// updateTableSize updates the table size based on terminal dimensions
+// updateTableSize updates the table size based on terminal dimensions.
 func (m *DashboardModel) updateTableSize() {
 	if m.width < 80 {
 		// Adjust column widths for smaller terminals
@@ -335,7 +335,7 @@ func (m *DashboardModel) updateTableSize() {
 	m.table.SetHeight(availableHeight)
 }
 
-// selectService handles service selection
+// selectService handles service selection.
 func (m *DashboardModel) selectService() tea.Cmd {
 	selectedRow := m.table.SelectedRow()
 	if selectedRow == nil {
@@ -360,14 +360,14 @@ func (m *DashboardModel) selectService() tea.Cmd {
 	}
 }
 
-// refreshStatus triggers a status refresh
+// refreshStatus triggers a status refresh.
 func (m *DashboardModel) refreshStatus() tea.Cmd {
 	return func() tea.Msg {
 		return RefreshMsg{}
 	}
 }
 
-// handleQuickAction handles quick action buttons
+// handleQuickAction handles quick action buttons.
 func (m *DashboardModel) handleQuickAction(action int) tea.Cmd {
 	switch action {
 	case 1: // Switch Environment
@@ -385,7 +385,7 @@ func (m *DashboardModel) handleQuickAction(action int) tea.Cmd {
 	}
 }
 
-// formatDuration formats a duration into a human-readable string
+// formatDuration formats a duration into a human-readable string.
 func formatDuration(d time.Duration) string {
 	if d < time.Minute {
 		return fmt.Sprintf("%ds", int(d.Seconds()))

@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Status constants
+// Status constants.
 const (
 	StatusActive       = "active"
 	StatusConnected    = "connected"
@@ -18,7 +18,7 @@ const (
 	StatusDisconnected = "disconnected"
 )
 
-// Component constants
+// Component constants.
 const (
 	ComponentWiFi   = "wifi"
 	ComponentVPN    = "vpn"
@@ -27,7 +27,7 @@ const (
 	ComponentDocker = "docker"
 )
 
-// Icon constants
+// Icon constants.
 const (
 	IconWiFiConnected      = "📶"
 	IconWiFiDisconnected   = "📵"
@@ -44,7 +44,7 @@ const (
 	IconUnknown            = "❓"
 )
 
-// Color palette for network environment TUI
+// Color palette for network environment TUI.
 var (
 	ColorPrimary    = lipgloss.Color("#00A8E8") // Network blue
 	ColorSecondary  = lipgloss.Color("#0066CC") // Darker blue
@@ -63,7 +63,7 @@ var (
 	ColorInactive   = lipgloss.Color("#696969") // Dim gray for inactive
 )
 
-// Base styles
+// Base styles.
 var (
 	BaseStyle = lipgloss.NewStyle().
 			Foreground(ColorText).
@@ -92,7 +92,7 @@ var (
 			Padding(0, 1)
 )
 
-// Network component status styles
+// Network component status styles.
 var (
 	WiFiConnectedStyle = lipgloss.NewStyle().
 				Foreground(ColorWiFi).
@@ -134,7 +134,7 @@ var (
 			Foreground(ColorSubtle)
 )
 
-// Table styles
+// Table styles.
 var (
 	TableHeaderStyle = lipgloss.NewStyle().
 				Foreground(ColorPrimary).
@@ -159,7 +159,7 @@ var (
 				Background(ColorBackground)
 )
 
-// Button and interactive element styles
+// Button and interactive element styles.
 var (
 	ButtonStyle = lipgloss.NewStyle().
 			Foreground(ColorText).
@@ -187,7 +187,7 @@ var (
 				BorderForeground(ColorHighlight)
 )
 
-// Dialog and modal styles
+// Dialog and modal styles.
 var (
 	DialogStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -207,7 +207,7 @@ var (
 				Margin(0, 0, 1, 0)
 )
 
-// Progress and loading styles
+// Progress and loading styles.
 var (
 	ProgressBarStyle = lipgloss.NewStyle().
 				Background(ColorBorder).
@@ -221,7 +221,7 @@ var (
 			Italic(true)
 )
 
-// Message and notification styles
+// Message and notification styles.
 var (
 	InfoStyle = lipgloss.NewStyle().
 			Foreground(ColorPrimary).
@@ -240,7 +240,7 @@ var (
 			Bold(true)
 )
 
-// Help styles
+// Help styles.
 var (
 	HelpHeaderStyle = lipgloss.NewStyle().
 			Foreground(ColorPrimary).
@@ -258,7 +258,7 @@ var (
 				Margin(0, 0, 1, 2)
 )
 
-// Profile and network specific styles
+// Profile and network specific styles.
 var (
 	ProfileSelectedStyle = lipgloss.NewStyle().
 				Foreground(ColorBackground).
@@ -288,7 +288,7 @@ var (
 				Bold(true)
 )
 
-// Border styles
+// Border styles.
 var (
 	NormalBorder = lipgloss.Border{
 		Top:         "─",
@@ -313,7 +313,7 @@ var (
 	}
 )
 
-// GetNetworkComponentStyle returns the appropriate style for a network component
+// GetNetworkComponentStyle returns the appropriate style for a network component.
 func GetNetworkComponentStyle(component, status string) lipgloss.Style {
 	switch component {
 	case ComponentWiFi:
@@ -337,16 +337,17 @@ func GetNetworkComponentStyle(component, status string) lipgloss.Style {
 		}
 		return ProxyInactiveStyle
 	default:
-		if status == StatusConnected || status == StatusActive || status == StatusEnabled {
+		switch status {
+		case StatusConnected, StatusActive, StatusEnabled:
 			return ConnectedStyle
-		} else if status == StatusDisconnected || status == StatusInactive || status == StatusDisabled {
+		case StatusDisconnected, StatusInactive, StatusDisabled:
 			return DisconnectedStyle
 		}
 		return UnknownStyle
 	}
 }
 
-// GetStatusIcon returns the appropriate icon for a network component status
+// GetStatusIcon returns the appropriate icon for a network component status.
 func GetStatusIcon(component, status string) string {
 	switch component {
 	case ComponentWiFi:
@@ -375,16 +376,17 @@ func GetStatusIcon(component, status string) string {
 		}
 		return IconDockerDisconnected
 	default:
-		if status == StatusConnected || status == StatusActive || status == StatusEnabled {
+		switch status {
+		case StatusConnected, StatusActive, StatusEnabled:
 			return IconHealthy
-		} else if status == StatusDisconnected || status == StatusInactive || status == StatusDisabled {
+		case StatusDisconnected, StatusInactive, StatusDisabled:
 			return IconUnhealthy
 		}
 		return IconUnknown
 	}
 }
 
-// GetSignalStrengthIcon returns an icon representing WiFi signal strength
+// GetSignalStrengthIcon returns an icon representing WiFi signal strength.
 func GetSignalStrengthIcon(strength int) string {
 	switch {
 	case strength >= 80:
@@ -400,7 +402,7 @@ func GetSignalStrengthIcon(strength int) string {
 	}
 }
 
-// GetLatencyStyle returns style based on latency value
+// GetLatencyStyle returns style based on latency value.
 func GetLatencyStyle(latency int) lipgloss.Style {
 	if latency < 50 {
 		return LatencyGoodStyle
@@ -410,7 +412,7 @@ func GetLatencyStyle(latency int) lipgloss.Style {
 	return LatencyPoorStyle
 }
 
-// AdaptiveStyle adjusts styles based on terminal capabilities
+// AdaptiveStyle adjusts styles based on terminal capabilities.
 func AdaptiveStyle(width, height int) lipgloss.Style {
 	base := BaseStyle
 

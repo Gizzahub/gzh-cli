@@ -22,7 +22,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// CodeQualityReport represents a comprehensive code quality analysis report
+// CodeQualityReport represents a comprehensive code quality analysis report.
 type CodeQualityReport struct {
 	Timestamp       time.Time         `json:"timestamp"`
 	ProjectPath     string            `json:"project_path"`
@@ -35,7 +35,7 @@ type CodeQualityReport struct {
 	FileAnalysis    []FileQualityInfo `json:"file_analysis"`
 }
 
-// QualitySummary provides high-level quality overview
+// QualitySummary provides high-level quality overview.
 type QualitySummary struct {
 	TotalFiles     int     `json:"total_files"`
 	TotalLines     int     `json:"total_lines"`
@@ -48,7 +48,7 @@ type QualitySummary struct {
 	OverallScore   float64 `json:"overall_score"`
 }
 
-// QualityMetrics contains detailed code quality metrics
+// QualityMetrics contains detailed code quality metrics.
 type QualityMetrics struct {
 	CyclomaticComplexity  int     `json:"cyclomatic_complexity"`
 	AverageComplexity     float64 `json:"average_complexity"`
@@ -60,7 +60,7 @@ type QualityMetrics struct {
 	MaintainabilityIndex  float64 `json:"maintainability_index"`
 }
 
-// QualityIssue represents a code quality issue
+// QualityIssue represents a code quality issue.
 type QualityIssue struct {
 	Type       string `json:"type"`
 	Severity   string `json:"severity"`
@@ -72,7 +72,7 @@ type QualityIssue struct {
 	Suggestion string `json:"suggestion"`
 }
 
-// QualityTrends tracks quality changes over time
+// QualityTrends tracks quality changes over time.
 type QualityTrends struct {
 	ScoreTrend      string  `json:"score_trend"`
 	IssueCountTrend string  `json:"issue_count_trend"`
@@ -82,7 +82,7 @@ type QualityTrends struct {
 	MonthlyChange   float64 `json:"monthly_change"`
 }
 
-// QualityScores contains various quality scoring metrics
+// QualityScores contains various quality scoring metrics.
 type QualityScores struct {
 	Maintainability float64 `json:"maintainability"`
 	Reliability     float64 `json:"reliability"`
@@ -92,7 +92,7 @@ type QualityScores struct {
 	Documentation   float64 `json:"documentation"`
 }
 
-// FileQualityInfo contains per-file quality analysis
+// FileQualityInfo contains per-file quality analysis.
 type FileQualityInfo struct {
 	Path         string    `json:"path"`
 	Lines        int       `json:"lines"`
@@ -104,7 +104,7 @@ type FileQualityInfo struct {
 	LastModified time.Time `json:"last_modified"`
 }
 
-// newMetricsCmd creates the metrics subcommand for code quality analysis
+// newMetricsCmd creates the metrics subcommand for code quality analysis.
 func newMetricsCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -347,11 +347,12 @@ func collectLintingIssues(report *CodeQualityReport, opts metricsOptions) error 
 	// Convert to quality issues
 	for _, issue := range lintResult.Issues {
 		severity := "medium"
-		if issue.Severity == "error" {
+		switch issue.Severity {
+		case "error":
 			severity = "high"
-		} else if issue.Severity == "warning" {
+		case "warning":
 			severity = "medium"
-		} else {
+		default:
 			severity = "low"
 		}
 
@@ -815,9 +816,10 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 		for i := 0; i < maxIssues; i++ {
 			issue := report.Issues[i]
 			severityIcon := "🟡"
-			if issue.Severity == "high" {
+			switch issue.Severity {
+			case "high":
 				severityIcon = "🔴"
-			} else if issue.Severity == "low" {
+			case "low":
 				severityIcon = "🟢"
 			}
 
@@ -902,9 +904,10 @@ func displayIssuesOnly(report *CodeQualityReport) error {
 
 		for _, issue := range issues {
 			severityIcon := "🟡"
-			if issue.Severity == "high" {
+			switch issue.Severity {
+			case "high":
 				severityIcon = "🔴"
-			} else if issue.Severity == "low" {
+			case "low":
 				severityIcon = "🟢"
 			}
 

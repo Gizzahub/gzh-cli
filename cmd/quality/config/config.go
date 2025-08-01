@@ -11,7 +11,7 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-// Config represents the quality command configuration
+// Config represents the quality command configuration.
 type Config struct {
 	// DefaultWorkers sets the default number of parallel workers
 	DefaultWorkers int `yaml:"default_workers"`
@@ -32,7 +32,7 @@ type Config struct {
 	Include []string `yaml:"include"`
 }
 
-// ToolConfig represents configuration for a specific tool
+// ToolConfig represents configuration for a specific tool.
 type ToolConfig struct {
 	// Enabled controls whether the tool should be used
 	Enabled bool `yaml:"enabled"`
@@ -50,7 +50,7 @@ type ToolConfig struct {
 	Priority int `yaml:"priority"`
 }
 
-// LanguageConfig represents configuration for a language
+// LanguageConfig represents configuration for a language.
 type LanguageConfig struct {
 	// Enabled controls whether to process this language
 	Enabled bool `yaml:"enabled"`
@@ -62,7 +62,7 @@ type LanguageConfig struct {
 	Extensions []string `yaml:"extensions"`
 }
 
-// DefaultConfig returns a default configuration
+// DefaultConfig returns a default configuration.
 func DefaultConfig() *Config {
 	return &Config{
 		DefaultWorkers: 4,
@@ -139,7 +139,7 @@ func DefaultConfig() *Config {
 	}
 }
 
-// LoadConfig loads configuration from file
+// LoadConfig loads configuration from file.
 func LoadConfig(configPath string) (*Config, error) {
 	// Start with default config
 	config := DefaultConfig()
@@ -168,7 +168,7 @@ func LoadConfig(configPath string) (*Config, error) {
 	return config, nil
 }
 
-// SaveConfig saves configuration to file
+// SaveConfig saves configuration to file.
 func SaveConfig(config *Config, configPath string) error {
 	// Create directory if it doesn't exist
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
@@ -189,7 +189,7 @@ func SaveConfig(config *Config, configPath string) error {
 	return nil
 }
 
-// FindConfigFile searches for a quality config file in the current directory and up the directory tree
+// FindConfigFile searches for a quality config file in the current directory and up the directory tree.
 func FindConfigFile() string {
 	configNames := []string{
 		".gzquality.yml",
@@ -225,7 +225,7 @@ func FindConfigFile() string {
 	return ""
 }
 
-// GetToolConfig returns configuration for a specific tool
+// GetToolConfig returns configuration for a specific tool.
 func (c *Config) GetToolConfig(toolName string) ToolConfig {
 	if config, exists := c.Tools[toolName]; exists {
 		return config
@@ -238,7 +238,7 @@ func (c *Config) GetToolConfig(toolName string) ToolConfig {
 	}
 }
 
-// GetLanguageConfig returns configuration for a specific language
+// GetLanguageConfig returns configuration for a specific language.
 func (c *Config) GetLanguageConfig(language string) LanguageConfig {
 	if config, exists := c.Languages[language]; exists {
 		return config
@@ -250,22 +250,22 @@ func (c *Config) GetLanguageConfig(language string) LanguageConfig {
 	}
 }
 
-// IsToolEnabled checks if a tool is enabled
+// IsToolEnabled checks if a tool is enabled.
 func (c *Config) IsToolEnabled(toolName string) bool {
 	return c.GetToolConfig(toolName).Enabled
 }
 
-// IsLanguageEnabled checks if a language is enabled
+// IsLanguageEnabled checks if a language is enabled.
 func (c *Config) IsLanguageEnabled(language string) bool {
 	return c.GetLanguageConfig(language).Enabled
 }
 
-// GetPreferredTools returns preferred tools for a language
+// GetPreferredTools returns preferred tools for a language.
 func (c *Config) GetPreferredTools(language string) []string {
 	return c.GetLanguageConfig(language).PreferredTools
 }
 
-// ShouldExclude checks if a file path should be excluded
+// ShouldExclude checks if a file path should be excluded.
 func (c *Config) ShouldExclude(filePath string) bool {
 	for _, pattern := range c.Exclude {
 		if matched, _ := filepath.Match(pattern, filePath); matched {
@@ -285,7 +285,7 @@ func (c *Config) ShouldExclude(filePath string) bool {
 	return false
 }
 
-// ShouldInclude checks if a file path should be included
+// ShouldInclude checks if a file path should be included.
 func (c *Config) ShouldInclude(filePath string) bool {
 	// If no include patterns, include everything (subject to exclude)
 	if len(c.Include) == 0 {

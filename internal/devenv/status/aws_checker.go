@@ -18,20 +18,20 @@ const (
 	awsCredentialsExpiredMsg = "Credentials invalid or expired"
 )
 
-// AWSChecker implements ServiceChecker for AWS
+// AWSChecker implements ServiceChecker for AWS.
 type AWSChecker struct{}
 
-// NewAWSChecker creates a new AWS status checker
+// NewAWSChecker creates a new AWS status checker.
 func NewAWSChecker() *AWSChecker {
 	return &AWSChecker{}
 }
 
-// Name returns the service name
+// Name returns the service name.
 func (a *AWSChecker) Name() string {
 	return "aws"
 }
 
-// CheckStatus checks AWS current status
+// CheckStatus checks AWS current status.
 func (a *AWSChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	status := &ServiceStatus{
 		Name:        "aws",
@@ -81,7 +81,7 @@ func (a *AWSChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	return status, nil
 }
 
-// CheckHealth performs detailed health check for AWS
+// CheckHealth performs detailed health check for AWS.
 func (a *AWSChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	start := time.Now()
 	health := &HealthStatus{
@@ -112,13 +112,13 @@ func (a *AWSChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	return health, nil
 }
 
-// isAWSCLIAvailable checks if AWS CLI is installed
+// isAWSCLIAvailable checks if AWS CLI is installed.
 func (a *AWSChecker) isAWSCLIAvailable() bool {
 	_, err := exec.LookPath("aws")
 	return err == nil
 }
 
-// getCurrentProfile gets the current AWS profile
+// getCurrentProfile gets the current AWS profile.
 func (a *AWSChecker) getCurrentProfile() string {
 	// Check AWS_PROFILE environment variable
 	if profile := os.Getenv("AWS_PROFILE"); profile != "" {
@@ -134,7 +134,7 @@ func (a *AWSChecker) getCurrentProfile() string {
 	return ""
 }
 
-// getCurrentRegion gets the current AWS region
+// getCurrentRegion gets the current AWS region.
 func (a *AWSChecker) getCurrentRegion() string {
 	// Check AWS_REGION environment variable
 	if region := os.Getenv("AWS_REGION"); region != "" {
@@ -156,7 +156,7 @@ func (a *AWSChecker) getCurrentRegion() string {
 	return "us-east-1" // Default fallback
 }
 
-// checkCredentials checks AWS credentials validity
+// checkCredentials checks AWS credentials validity.
 func (a *AWSChecker) checkCredentials(ctx context.Context) (*CredentialStatus, error) {
 	credStatus := &CredentialStatus{
 		Valid: false,

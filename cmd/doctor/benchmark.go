@@ -74,7 +74,7 @@ type PerformanceImprovement struct {
 	Impact             string  `json:"impact"`
 }
 
-// CIBenchmarkMetrics contains CI-specific benchmark metrics
+// CIBenchmarkMetrics contains CI-specific benchmark metrics.
 type CIBenchmarkMetrics struct {
 	ExitCode              int      `json:"exit_code"`
 	RegressionThreshold   float64  `json:"regression_threshold"`
@@ -83,7 +83,7 @@ type CIBenchmarkMetrics struct {
 	ArtifactPaths         []string `json:"artifact_paths"`
 }
 
-// newBenchmarkCmd creates the benchmark subcommand for performance testing
+// newBenchmarkCmd creates the benchmark subcommand for performance testing.
 func newBenchmarkCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -652,9 +652,10 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 		logger.SimpleWarn("⚠️ Performance Regressions:")
 		for _, reg := range report.Regressions {
 			severityIcon := "🟡"
-			if reg.Severity == "high" {
+			switch reg.Severity {
+			case "high":
 				severityIcon = "🔴"
-			} else if reg.Severity == "critical" {
+			case "critical":
 				severityIcon = "💥"
 			}
 
@@ -714,7 +715,7 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 	return nil
 }
 
-// Helper functions for Git integration
+// Helper functions for Git integration.
 func getGitCommit() (string, error) {
 	// Implementation would use git commands to get current commit
 	return "", fmt.Errorf("not implemented")
@@ -725,7 +726,7 @@ func getGitBranch() (string, error) {
 	return "", fmt.Errorf("not implemented")
 }
 
-// BenchmarkFunction represents a discovered benchmark function
+// BenchmarkFunction represents a discovered benchmark function.
 type BenchmarkFunction struct {
 	Name     string
 	Package  string
@@ -747,7 +748,7 @@ func discoverBenchmarks(_ string, _ string) ([]BenchmarkFunction, error) {
 	}, nil
 }
 
-// performSnapshotAnalysis performs comprehensive snapshot analysis
+// performSnapshotAnalysis performs comprehensive snapshot analysis.
 func performSnapshotAnalysis(snapshotManager *SnapshotManager, report *BenchmarkReport, opts benchmarkOptions, logger logger.CommonLogger) (*SnapshotAnalysis, error) {
 	// Create current snapshot for analysis
 	currentSnapshot := &PerformanceSnapshot{
@@ -813,7 +814,7 @@ func performSnapshotAnalysis(snapshotManager *SnapshotManager, report *Benchmark
 	return analysis, nil
 }
 
-// displaySnapshotAnalysis displays comprehensive snapshot analysis results
+// displaySnapshotAnalysis displays comprehensive snapshot analysis results.
 func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 	logger.SimpleInfo("📊 Performance Snapshot Analysis")
 
@@ -854,9 +855,10 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 		logger.SimpleWarn("⚠️ Performance Regressions (Snapshot Analysis):")
 		for _, reg := range analysis.Regressions {
 			severityIcon := "🟡"
-			if reg.Severity == "high" {
+			switch reg.Severity {
+			case "high":
 				severityIcon = "🔴"
-			} else if reg.Severity == "critical" {
+			case "critical":
 				severityIcon = "💥"
 			}
 
@@ -888,11 +890,12 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 		logger.SimpleInfo("📈 Performance Trends:")
 		for _, trend := range analysis.Trends {
 			var trendIcon string
-			if trend.TrendDirection == "improving" {
+			switch trend.TrendDirection {
+			case "improving":
 				trendIcon = "📈"
-			} else if trend.TrendDirection == "degrading" {
+			case "degrading":
 				trendIcon = "📉"
-			} else {
+			default:
 				trendIcon = "📊"
 			}
 

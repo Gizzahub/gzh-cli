@@ -17,7 +17,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/netenv"
 )
 
-// newStatusUnifiedCmd creates the unified net-env status command
+// newStatusUnifiedCmd creates the unified net-env status command.
 func newStatusUnifiedCmd() *cobra.Command {
 	var (
 		verbose bool
@@ -72,7 +72,7 @@ Examples:
 	return cmd
 }
 
-// runStatusUnified executes the unified status command
+// runStatusUnified executes the unified status command.
 func runStatusUnified(ctx context.Context, verbose bool, format string, includeHealth, watch bool, timeout time.Duration) error {
 	configDir := getConfigDirectory()
 
@@ -97,7 +97,7 @@ func runStatusUnified(ctx context.Context, verbose bool, format string, includeH
 	return runSingleStatusCheck(ctx, detector, profileManager, verbose, format, includeHealth, timeout)
 }
 
-// runSingleStatusCheck performs a single status check
+// runSingleStatusCheck performs a single status check.
 func runSingleStatusCheck(ctx context.Context, detector *netenv.NetworkDetector, profileManager *netenv.ProfileManager, verbose bool, format string, includeHealth bool, timeout time.Duration) error {
 	status, err := collectNetworkStatus(ctx, detector, profileManager, includeHealth, timeout)
 	if err != nil {
@@ -107,7 +107,7 @@ func runSingleStatusCheck(ctx context.Context, detector *netenv.NetworkDetector,
 	return displayStatus(status, format, verbose)
 }
 
-// runStatusWatch runs status in watch mode
+// runStatusWatch runs status in watch mode.
 func runStatusWatch(ctx context.Context, detector *netenv.NetworkDetector, profileManager *netenv.ProfileManager, verbose bool, format string, includeHealth bool, timeout time.Duration) error {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -140,7 +140,7 @@ func runStatusWatch(ctx context.Context, detector *netenv.NetworkDetector, profi
 	}
 }
 
-// collectNetworkStatus collects current network status information
+// collectNetworkStatus collects current network status information.
 func collectNetworkStatus(ctx context.Context, detector *netenv.NetworkDetector, profileManager *netenv.ProfileManager, includeHealth bool, timeout time.Duration) (*netenv.NetworkStatus, error) {
 	status := &netenv.NetworkStatus{
 		LastSwitch: time.Now(),
@@ -175,7 +175,7 @@ func collectNetworkStatus(ctx context.Context, detector *netenv.NetworkDetector,
 	return status, nil
 }
 
-// displayStatus displays the network status in the requested format
+// displayStatus displays the network status in the requested format.
 func displayStatus(status *netenv.NetworkStatus, format string, verbose bool) error {
 	switch strings.ToLower(format) {
 	case "json":
@@ -187,7 +187,7 @@ func displayStatus(status *netenv.NetworkStatus, format string, verbose bool) er
 	}
 }
 
-// displayStatusTable displays status in table format
+// displayStatusTable displays status in table format.
 func displayStatusTable(status *netenv.NetworkStatus, verbose bool) error {
 	fmt.Println("Network Environment Status")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -246,7 +246,7 @@ func displayStatusTable(status *netenv.NetworkStatus, verbose bool) error {
 	return nil
 }
 
-// displayComponentStatus displays the status of a single component
+// displayComponentStatus displays the status of a single component.
 func displayComponentStatus(name string, status *netenv.ComponentStatus) {
 	if status == nil {
 		fmt.Printf("  %-12s │ ❓ Unknown\n", name)
@@ -279,14 +279,14 @@ func displayComponentStatus(name string, status *netenv.ComponentStatus) {
 	fmt.Println()
 }
 
-// displayStatusJSON displays status in JSON format
+// displayStatusJSON displays status in JSON format.
 func displayStatusJSON(status *netenv.NetworkStatus) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(status)
 }
 
-// displayStatusYAML displays status in YAML format
+// displayStatusYAML displays status in YAML format.
 func displayStatusYAML(status *netenv.NetworkStatus) error {
 	encoder := yaml.NewEncoder(os.Stdout)
 	defer encoder.Close()
@@ -369,7 +369,7 @@ func checkKubernetesStatus(ctx context.Context, timeout time.Duration) *netenv.C
 	}
 }
 
-// calculateNetworkHealth calculates overall network health
+// calculateNetworkHealth calculates overall network health.
 func calculateNetworkHealth(components netenv.ComponentStatuses) netenv.HealthStatus {
 	activeCount := 0
 	totalCount := 0
@@ -418,7 +418,7 @@ func calculateNetworkHealth(components netenv.ComponentStatuses) netenv.HealthSt
 	}
 }
 
-// collectNetworkMetrics collects network performance metrics
+// collectNetworkMetrics collects network performance metrics.
 func collectNetworkMetrics(ctx context.Context, timeout time.Duration) (*netenv.NetworkMetrics, error) {
 	// Simplified metrics collection
 	return &netenv.NetworkMetrics{

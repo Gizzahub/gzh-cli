@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newQuickUnifiedCmd creates the unified net-env quick command
+// newQuickUnifiedCmd creates the unified net-env quick command.
 func newQuickUnifiedCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "quick",
@@ -53,7 +53,7 @@ Examples:
 	return cmd
 }
 
-// newQuickVPNCmd creates the quick VPN subcommand
+// newQuickVPNCmd creates the quick VPN subcommand.
 func newQuickVPNCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vpn <action>",
@@ -68,7 +68,7 @@ func newQuickVPNCmd() *cobra.Command {
 	return cmd
 }
 
-// newQuickDNSCmd creates the quick DNS subcommand
+// newQuickDNSCmd creates the quick DNS subcommand.
 func newQuickDNSCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dns <action>",
@@ -83,7 +83,7 @@ func newQuickDNSCmd() *cobra.Command {
 	return cmd
 }
 
-// newQuickProxyCmd creates the quick proxy subcommand
+// newQuickProxyCmd creates the quick proxy subcommand.
 func newQuickProxyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "proxy <action>",
@@ -98,7 +98,7 @@ func newQuickProxyCmd() *cobra.Command {
 	return cmd
 }
 
-// newQuickWiFiCmd creates the quick WiFi subcommand
+// newQuickWiFiCmd creates the quick WiFi subcommand.
 func newQuickWiFiCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "wifi <action>",
@@ -115,7 +115,7 @@ func newQuickWiFiCmd() *cobra.Command {
 
 // Implementation functions
 
-// runQuickVPN handles quick VPN actions
+// runQuickVPN handles quick VPN actions.
 func runQuickVPN(ctx context.Context, action string) error {
 	switch strings.ToLower(action) {
 	case "on", "connect", "up":
@@ -131,7 +131,7 @@ func runQuickVPN(ctx context.Context, action string) error {
 	}
 }
 
-// runQuickDNS handles quick DNS actions
+// runQuickDNS handles quick DNS actions.
 func runQuickDNS(ctx context.Context, action string) error {
 	switch strings.ToLower(action) {
 	case "reset":
@@ -145,7 +145,7 @@ func runQuickDNS(ctx context.Context, action string) error {
 	}
 }
 
-// runQuickProxy handles quick proxy actions
+// runQuickProxy handles quick proxy actions.
 func runQuickProxy(ctx context.Context, action string) error {
 	switch strings.ToLower(action) {
 	case "on", "enable":
@@ -161,7 +161,7 @@ func runQuickProxy(ctx context.Context, action string) error {
 	}
 }
 
-// runQuickWiFi handles quick WiFi actions
+// runQuickWiFi handles quick WiFi actions.
 func runQuickWiFi(ctx context.Context, action string) error {
 	switch strings.ToLower(action) {
 	case "scan":

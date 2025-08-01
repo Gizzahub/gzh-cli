@@ -13,12 +13,12 @@ import (
 	"strings"
 )
 
-// BlackTool implements Python formatting using black
+// BlackTool implements Python formatting using black.
 type BlackTool struct {
 	*BaseTool
 }
 
-// NewBlackTool creates a new black tool
+// NewBlackTool creates a new black tool.
 func NewBlackTool() *BlackTool {
 	tool := &BlackTool{
 		BaseTool: NewBaseTool("black", "Python", "black", FORMAT),
@@ -30,7 +30,7 @@ func NewBlackTool() *BlackTool {
 	return tool
 }
 
-// BuildCommand builds the black command
+// BuildCommand builds the black command.
 func (t *BlackTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{}
 
@@ -63,12 +63,12 @@ func (t *BlackTool) BuildCommand(files []string, options ExecuteOptions) *exec.C
 	return cmd
 }
 
-// RuffTool implements Python linting and formatting using ruff
+// RuffTool implements Python linting and formatting using ruff.
 type RuffTool struct {
 	*BaseTool
 }
 
-// NewRuffTool creates a new ruff tool
+// NewRuffTool creates a new ruff tool.
 func NewRuffTool() *RuffTool {
 	tool := &RuffTool{
 		BaseTool: NewBaseTool("ruff", "Python", "ruff", BOTH),
@@ -80,7 +80,7 @@ func NewRuffTool() *RuffTool {
 	return tool
 }
 
-// BuildCommand builds the ruff command
+// BuildCommand builds the ruff command.
 func (t *RuffTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	var args []string
 
@@ -127,7 +127,7 @@ func (t *RuffTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cm
 	return cmd
 }
 
-// Execute overrides the base Execute to handle both format and lint modes
+// Execute overrides the base Execute to handle both format and lint modes.
 func (t *RuffTool) Execute(ctx context.Context, files []string, options ExecuteOptions) (*Result, error) {
 	if !t.IsAvailable() {
 		return &Result{
@@ -181,7 +181,7 @@ func (t *RuffTool) Execute(ctx context.Context, files []string, options ExecuteO
 	return t.executeMode(ctx, files, options)
 }
 
-// executeMode executes ruff in a specific mode
+// executeMode executes ruff in a specific mode.
 func (t *RuffTool) executeMode(ctx context.Context, files []string, options ExecuteOptions) (*Result, error) {
 	cmd := t.BuildCommand(files, options)
 	result, err := t.ExecuteCommand(ctx, cmd, files)
@@ -197,7 +197,7 @@ func (t *RuffTool) executeMode(ctx context.Context, files []string, options Exec
 	return result, nil
 }
 
-// ParseOutput parses ruff JSON output
+// ParseOutput parses ruff JSON output.
 func (t *RuffTool) ParseOutput(output string) []Issue {
 	if strings.TrimSpace(output) == "" {
 		return []Issue{}
@@ -246,7 +246,7 @@ func (t *RuffTool) ParseOutput(output string) []Issue {
 	return issues
 }
 
-// parseTextOutput parses plain text output as fallback
+// parseTextOutput parses plain text output as fallback.
 func (t *RuffTool) parseTextOutput(output string) []Issue {
 	var issues []Issue
 
@@ -279,12 +279,12 @@ func (t *RuffTool) parseTextOutput(output string) []Issue {
 	return issues
 }
 
-// PylintTool implements Python linting using pylint
+// PylintTool implements Python linting using pylint.
 type PylintTool struct {
 	*BaseTool
 }
 
-// NewPylintTool creates a new pylint tool
+// NewPylintTool creates a new pylint tool.
 func NewPylintTool() *PylintTool {
 	tool := &PylintTool{
 		BaseTool: NewBaseTool("pylint", "Python", "pylint", LINT),
@@ -296,7 +296,7 @@ func NewPylintTool() *PylintTool {
 	return tool
 }
 
-// BuildCommand builds the pylint command
+// BuildCommand builds the pylint command.
 func (t *PylintTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{}
 
@@ -329,7 +329,7 @@ func (t *PylintTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 	return cmd
 }
 
-// ParseOutput parses pylint JSON output
+// ParseOutput parses pylint JSON output.
 func (t *PylintTool) ParseOutput(output string) []Issue {
 	if strings.TrimSpace(output) == "" {
 		return []Issue{}
@@ -374,7 +374,7 @@ func (t *PylintTool) ParseOutput(output string) []Issue {
 	return issues
 }
 
-// Ensure Python tools implement QualityTool interface
+// Ensure Python tools implement QualityTool interface.
 var (
 	_ QualityTool = (*BlackTool)(nil)
 	_ QualityTool = (*RuffTool)(nil)

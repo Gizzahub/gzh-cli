@@ -12,13 +12,13 @@ import (
 	"time"
 )
 
-// StateManager handles advanced state management and cleanup
+// StateManager handles advanced state management and cleanup.
 type StateManager struct {
 	StateDir        string
 	RetentionPolicy RetentionPolicy
 }
 
-// RetentionPolicy defines how long state files should be kept
+// RetentionPolicy defines how long state files should be kept.
 type RetentionPolicy struct {
 	MaxAge          time.Duration `json:"max_age"`
 	MaxCompletedOps int           `json:"max_completed_ops"`
@@ -26,7 +26,7 @@ type RetentionPolicy struct {
 	AutoCleanup     bool          `json:"auto_cleanup"`
 }
 
-// StateFile represents a state file with metadata
+// StateFile represents a state file with metadata.
 type StateFile struct {
 	ID         string          `json:"id"`
 	FilePath   string          `json:"file_path"`
@@ -37,7 +37,7 @@ type StateFile struct {
 	ModifiedAt time.Time       `json:"modified_at"`
 }
 
-// NewStateManager creates a new state manager
+// NewStateManager creates a new state manager.
 func NewStateManager(stateDir string) *StateManager {
 	return &StateManager{
 		StateDir: stateDir,
@@ -50,7 +50,7 @@ func NewStateManager(stateDir string) *StateManager {
 	}
 }
 
-// ListStateFiles returns all state files with metadata
+// ListStateFiles returns all state files with metadata.
 func (sm *StateManager) ListStateFiles() ([]*StateFile, error) {
 	files, err := os.ReadDir(sm.StateDir)
 	if err != nil {
@@ -85,7 +85,7 @@ func (sm *StateManager) ListStateFiles() ([]*StateFile, error) {
 	return stateFiles, nil
 }
 
-// loadStateFile loads a single state file with metadata
+// loadStateFile loads a single state file with metadata.
 func (sm *StateManager) loadStateFile(filePath string) (*StateFile, error) {
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
@@ -115,7 +115,7 @@ func (sm *StateManager) loadStateFile(filePath string) (*StateFile, error) {
 	return stateFile, nil
 }
 
-// RunCleanup performs state file cleanup based on retention policy
+// RunCleanup performs state file cleanup based on retention policy.
 func (sm *StateManager) RunCleanup() error {
 	stateFiles, err := sm.ListStateFiles()
 	if err != nil {
@@ -135,6 +135,8 @@ func (sm *StateManager) RunCleanup() error {
 			completedFiles = append(completedFiles, file)
 		case StatusFailed:
 			failedFiles = append(failedFiles, file)
+		case StatusPending, StatusInProgress, StatusCanceled:
+			activeFiles = append(activeFiles, file)
 		default:
 			activeFiles = append(activeFiles, file)
 		}
@@ -191,12 +193,12 @@ func (sm *StateManager) RunCleanup() error {
 	return nil
 }
 
-// deleteStateFile safely deletes a state file
+// deleteStateFile safely deletes a state file.
 func (sm *StateManager) deleteStateFile(file *StateFile) error {
 	return os.Remove(file.FilePath)
 }
 
-// optimizeStateFiles optimizes state files by compacting and deduplicating
+// optimizeStateFiles optimizes state files by compacting and deduplicating.
 func (sm *StateManager) optimizeStateFiles(files []*StateFile) {
 	for _, file := range files {
 		// Skip active operations
@@ -214,7 +216,7 @@ func (sm *StateManager) optimizeStateFiles(files []*StateFile) {
 	}
 }
 
-// compactState removes unnecessary data from completed states
+// compactState removes unnecessary data from completed states.
 func (sm *StateManager) compactState(state *OperationState) *OperationState {
 	compacted := *state
 
@@ -247,7 +249,7 @@ func (sm *StateManager) compactState(state *OperationState) *OperationState {
 	return &compacted
 }
 
-// saveOptimizedState saves the optimized state to file
+// saveOptimizedState saves the optimized state to file.
 func (sm *StateManager) saveOptimizedState(filePath string, state *OperationState) error {
 	data, err := json.MarshalIndent(state, "", "  ")
 	if err != nil {
@@ -257,7 +259,7 @@ func (sm *StateManager) saveOptimizedState(filePath string, state *OperationStat
 	return os.WriteFile(filePath, data, 0o600)
 }
 
-// AnalyzeStates provides analysis of all state files
+// AnalyzeStates provides analysis of all state files.
 func (sm *StateManager) AnalyzeStates() (*StateAnalysis, error) {
 	stateFiles, err := sm.ListStateFiles()
 	if err != nil {
@@ -290,7 +292,7 @@ func (sm *StateManager) AnalyzeStates() (*StateAnalysis, error) {
 	return analysis, nil
 }
 
-// StateAnalysis provides comprehensive analysis of state files
+// StateAnalysis provides comprehensive analysis of state files.
 type StateAnalysis struct {
 	TotalFiles      int                     `json:"total_files"`
 	TotalSize       int64                   `json:"total_size_bytes"`
@@ -300,7 +302,7 @@ type StateAnalysis struct {
 	Recommendations []string                `json:"recommendations"`
 }
 
-// generateRecommendations generates cleanup and optimization recommendations
+// generateRecommendations generates cleanup and optimization recommendations.
 func (sm *StateManager) generateRecommendations(files []*StateFile) []string {
 	var recommendations []string
 
@@ -351,7 +353,7 @@ func (sm *StateManager) generateRecommendations(files []*StateFile) []string {
 	return recommendations
 }
 
-// RepairCorruptedStates attempts to repair corrupted state files
+// RepairCorruptedStates attempts to repair corrupted state files.
 func (sm *StateManager) RepairCorruptedStates() error {
 	files, err := os.ReadDir(sm.StateDir)
 	if err != nil {
@@ -380,7 +382,7 @@ func (sm *StateManager) RepairCorruptedStates() error {
 	return nil
 }
 
-// attemptRepair attempts to repair a corrupted state file
+// attemptRepair attempts to repair a corrupted state file.
 func (sm *StateManager) attemptRepair(filePath string) bool {
 	// Create backup
 	backupPath := filePath + ".backup"
@@ -420,7 +422,7 @@ func (sm *StateManager) attemptRepair(filePath string) bool {
 	return os.WriteFile(filePath, repairedData, 0o600) == nil
 }
 
-// copyFile creates a copy of a file
+// copyFile creates a copy of a file.
 func (sm *StateManager) copyFile(src, dst string) error {
 	data, err := os.ReadFile(src)
 	if err != nil {
@@ -429,7 +431,7 @@ func (sm *StateManager) copyFile(src, dst string) error {
 	return os.WriteFile(dst, data, 0o600)
 }
 
-// SetRetentionPolicy updates the retention policy
+// SetRetentionPolicy updates the retention policy.
 func (sm *StateManager) SetRetentionPolicy(policy RetentionPolicy) {
 	sm.RetentionPolicy = policy
 }

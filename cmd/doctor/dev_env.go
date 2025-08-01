@@ -19,7 +19,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// DevEnvResult represents development environment check result
+// DevEnvResult represents development environment check result.
 type DevEnvResult struct {
 	Tool       string                 `json:"tool"`
 	Status     string                 `json:"status"`
@@ -30,7 +30,7 @@ type DevEnvResult struct {
 	Suggestion string                 `json:"suggestion,omitempty"`
 }
 
-// DevEnvReport represents the complete development environment report
+// DevEnvReport represents the complete development environment report.
 type DevEnvReport struct {
 	Timestamp       time.Time      `json:"timestamp"`
 	Platform        string         `json:"platform"`
@@ -43,7 +43,7 @@ type DevEnvReport struct {
 	Recommendations []string       `json:"recommendations"`
 }
 
-// newDevEnvCmd creates the dev-env subcommand for development environment validation
+// newDevEnvCmd creates the dev-env subcommand for development environment validation.
 func newDevEnvCmd() *cobra.Command {
 	ctx := context.Background()
 

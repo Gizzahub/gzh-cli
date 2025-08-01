@@ -15,7 +15,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/devenv"
 )
 
-// switchAllOptions contains options for the switch-all command
+// switchAllOptions contains options for the switch-all command.
 type switchAllOptions struct {
 	env         string
 	fromFile    string
@@ -26,7 +26,7 @@ type switchAllOptions struct {
 	timeout     time.Duration
 }
 
-// newSwitchAllCmd creates the switch-all command
+// newSwitchAllCmd creates the switch-all command.
 func newSwitchAllCmd() *cobra.Command {
 	opts := &switchAllOptions{
 		timeout: 5 * time.Minute,
@@ -81,7 +81,7 @@ Examples:
 	return cmd
 }
 
-// run executes the switch-all command
+// run executes the switch-all command.
 func (opts *switchAllOptions) run(ctx context.Context) error {
 	// Load environment configuration
 	env, err := opts.loadEnvironment()
@@ -142,7 +142,7 @@ func (opts *switchAllOptions) run(ctx context.Context) error {
 	return nil
 }
 
-// loadEnvironment loads the environment configuration
+// loadEnvironment loads the environment configuration.
 func (opts *switchAllOptions) loadEnvironment() (*devenv.Environment, error) {
 	var data []byte
 	var err error
@@ -176,7 +176,7 @@ func (opts *switchAllOptions) loadEnvironment() (*devenv.Environment, error) {
 	return env, nil
 }
 
-// findEnvironmentFile finds the environment configuration file
+// findEnvironmentFile finds the environment configuration file.
 func (opts *switchAllOptions) findEnvironmentFile(envName string) string {
 	// Search paths for environment files
 	searchPaths := []string{
@@ -199,7 +199,7 @@ func (opts *switchAllOptions) findEnvironmentFile(envName string) string {
 	return ""
 }
 
-// selectEnvironmentInteractively allows interactive environment selection
+// selectEnvironmentInteractively allows interactive environment selection.
 func (opts *switchAllOptions) selectEnvironmentInteractively() (*devenv.Environment, error) {
 	// Find available environments
 	environments, err := opts.findAvailableEnvironments()
@@ -235,7 +235,7 @@ func (opts *switchAllOptions) selectEnvironmentInteractively() (*devenv.Environm
 	return &environments[selection-1], nil
 }
 
-// findAvailableEnvironments finds all available environment configurations
+// findAvailableEnvironments finds all available environment configurations.
 func (opts *switchAllOptions) findAvailableEnvironments() ([]devenv.Environment, error) {
 	envDir := filepath.Join(os.Getenv("HOME"), ".gzh", "dev-env", "environments")
 
@@ -272,13 +272,13 @@ func (opts *switchAllOptions) findAvailableEnvironments() ([]devenv.Environment,
 	return environments, nil
 }
 
-// isYAMLFile checks if a filename has a YAML extension
+// isYAMLFile checks if a filename has a YAML extension.
 func isYAMLFile(filename string) bool {
 	ext := filepath.Ext(filename)
 	return ext == ".yaml" || ext == ".yml"
 }
 
-// registerServiceSwitchers registers all available service switchers
+// registerServiceSwitchers registers all available service switchers.
 func (opts *switchAllOptions) registerServiceSwitchers(switcher *devenv.EnvironmentSwitcher) error {
 	// Register AWS switcher
 	awsSwitcher := &AWSSwitcher{}
@@ -307,7 +307,7 @@ func (opts *switchAllOptions) registerServiceSwitchers(switcher *devenv.Environm
 	return nil
 }
 
-// confirmSwitch asks for user confirmation
+// confirmSwitch asks for user confirmation.
 func (opts *switchAllOptions) confirmSwitch(env *devenv.Environment) error {
 	fmt.Printf("🔄 About to switch to environment: %s\n", env.Name)
 	if env.Description != "" {
@@ -322,13 +322,13 @@ func (opts *switchAllOptions) confirmSwitch(env *devenv.Environment) error {
 	fmt.Scanln(&response)
 
 	if response != "y" && response != "Y" && response != "yes" {
-		return fmt.Errorf("operation cancelled by user")
+		return fmt.Errorf("operation canceled by user")
 	}
 
 	return nil
 }
 
-// reportProgress reports switching progress
+// reportProgress reports switching progress.
 func (opts *switchAllOptions) reportProgress(progress devenv.SwitchProgress) {
 	percentage := float64(progress.CompletedServices) / float64(progress.TotalServices) * 100
 	fmt.Printf("⏳ Progress: %.1f%% (%d/%d) - %s\n",
@@ -342,7 +342,7 @@ func (opts *switchAllOptions) reportProgress(progress devenv.SwitchProgress) {
 	}
 }
 
-// displayResults displays the switching results
+// displayResults displays the switching results.
 func (opts *switchAllOptions) displayResults(result *devenv.SwitchResult) {
 	fmt.Printf("\n📊 Switch Results:\n")
 	fmt.Printf("   Duration: %v\n", result.Duration)

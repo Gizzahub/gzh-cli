@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockEnvironment implements env.Environment for testing
+// MockEnvironment implements env.Environment for testing.
 type MockEnvironment struct {
 	vars map[string]string
 }

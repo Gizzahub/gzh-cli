@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-// RustfmtTool implements Rust formatting using rustfmt
+// RustfmtTool implements Rust formatting using rustfmt.
 type RustfmtTool struct {
 	*BaseTool
 }
 
-// NewRustfmtTool creates a new rustfmt tool
+// NewRustfmtTool creates a new rustfmt tool.
 func NewRustfmtTool() *RustfmtTool {
 	tool := &RustfmtTool{
 		BaseTool: NewBaseTool("rustfmt", "Rust", "rustfmt", FORMAT),
@@ -26,7 +26,7 @@ func NewRustfmtTool() *RustfmtTool {
 	return tool
 }
 
-// BuildCommand builds the rustfmt command
+// BuildCommand builds the rustfmt command.
 func (t *RustfmtTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{}
 
@@ -51,12 +51,12 @@ func (t *RustfmtTool) BuildCommand(files []string, options ExecuteOptions) *exec
 	return cmd
 }
 
-// ClippyTool implements Rust linting using clippy
+// ClippyTool implements Rust linting using clippy.
 type ClippyTool struct {
 	*BaseTool
 }
 
-// NewClippyTool creates a new clippy tool
+// NewClippyTool creates a new clippy tool.
 func NewClippyTool() *ClippyTool {
 	tool := &ClippyTool{
 		BaseTool: NewBaseTool("clippy", "Rust", "cargo", LINT),
@@ -68,7 +68,7 @@ func NewClippyTool() *ClippyTool {
 	return tool
 }
 
-// BuildCommand builds the clippy command
+// BuildCommand builds the clippy command.
 func (t *ClippyTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"clippy"}
 
@@ -95,7 +95,7 @@ func (t *ClippyTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 	return cmd
 }
 
-// ParseOutput parses clippy JSON output
+// ParseOutput parses clippy JSON output.
 func (t *ClippyTool) ParseOutput(output string) []Issue {
 	if strings.TrimSpace(output) == "" {
 		return []Issue{}
@@ -164,12 +164,12 @@ func (t *ClippyTool) ParseOutput(output string) []Issue {
 	return issues
 }
 
-// CargoFmtTool implements Rust formatting using cargo fmt
+// CargoFmtTool implements Rust formatting using cargo fmt.
 type CargoFmtTool struct {
 	*BaseTool
 }
 
-// NewCargoFmtTool creates a new cargo fmt tool
+// NewCargoFmtTool creates a new cargo fmt tool.
 func NewCargoFmtTool() *CargoFmtTool {
 	tool := &CargoFmtTool{
 		BaseTool: NewBaseTool("cargo-fmt", "Rust", "cargo", FORMAT),
@@ -181,7 +181,7 @@ func NewCargoFmtTool() *CargoFmtTool {
 	return tool
 }
 
-// BuildCommand builds the cargo fmt command
+// BuildCommand builds the cargo fmt command.
 func (t *CargoFmtTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"fmt"}
 
@@ -198,7 +198,7 @@ func (t *CargoFmtTool) BuildCommand(files []string, options ExecuteOptions) *exe
 	return cmd
 }
 
-// Ensure Rust tools implement QualityTool interface
+// Ensure Rust tools implement QualityTool interface.
 var (
 	_ QualityTool = (*RustfmtTool)(nil)
 	_ QualityTool = (*ClippyTool)(nil)

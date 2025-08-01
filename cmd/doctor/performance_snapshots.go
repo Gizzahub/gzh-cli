@@ -17,7 +17,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/profiling"
 )
 
-// PerformanceSnapshot represents a point-in-time performance measurement
+// PerformanceSnapshot represents a point-in-time performance measurement.
 type PerformanceSnapshot struct {
 	ID          string                      `json:"id"`
 	Timestamp   time.Time                   `json:"timestamp"`
@@ -29,7 +29,7 @@ type PerformanceSnapshot struct {
 	Metadata    map[string]interface{}      `json:"metadata,omitempty"`
 }
 
-// SnapshotAnalysis represents the analysis results comparing snapshots
+// SnapshotAnalysis represents the analysis results comparing snapshots.
 type SnapshotAnalysis struct {
 	Current      *PerformanceSnapshot     `json:"current"`
 	Baseline     *PerformanceSnapshot     `json:"baseline"`
@@ -40,7 +40,7 @@ type SnapshotAnalysis struct {
 	Summary      SnapshotSummary          `json:"summary"`
 }
 
-// SnapshotComparison provides comparison metrics between two snapshots
+// SnapshotComparison provides comparison metrics between two snapshots.
 type SnapshotComparison struct {
 	TimeDifference     time.Duration `json:"time_difference"`
 	EnvironmentChanged bool          `json:"environment_changed"`
@@ -52,7 +52,7 @@ type SnapshotComparison struct {
 	PerformanceScore   float64       `json:"performance_score"`
 }
 
-// PerformanceTrend represents performance trends over time
+// PerformanceTrend represents performance trends over time.
 type PerformanceTrend struct {
 	BenchmarkName    string                 `json:"benchmark_name"`
 	DataPoints       []TrendDataPoint       `json:"data_points"`
@@ -62,7 +62,7 @@ type PerformanceTrend struct {
 	Prediction       TrendPrediction        `json:"prediction"`
 }
 
-// TrendDataPoint represents a single data point in a performance trend
+// TrendDataPoint represents a single data point in a performance trend.
 type TrendDataPoint struct {
 	Timestamp   time.Time `json:"timestamp"`
 	OpsPerSec   float64   `json:"ops_per_sec"`
@@ -70,7 +70,7 @@ type TrendDataPoint struct {
 	GitCommit   string    `json:"git_commit,omitempty"`
 }
 
-// LinearRegressionResult contains linear regression analysis results
+// LinearRegressionResult contains linear regression analysis results.
 type LinearRegressionResult struct {
 	Slope         float64 `json:"slope"`
 	Intercept     float64 `json:"intercept"`
@@ -79,14 +79,14 @@ type LinearRegressionResult struct {
 	IsSignificant bool    `json:"is_significant"`
 }
 
-// TrendPrediction provides performance trend predictions
+// TrendPrediction provides performance trend predictions.
 type TrendPrediction struct {
 	NextWeekChange    float64 `json:"next_week_change_percent"`
 	NextMonthChange   float64 `json:"next_month_change_percent"`
 	RecommendedAction string  `json:"recommended_action"`
 }
 
-// SnapshotSummary provides high-level summary of snapshot analysis
+// SnapshotSummary provides high-level summary of snapshot analysis.
 type SnapshotSummary struct {
 	OverallHealthScore float64  `json:"overall_health_score"`
 	TrendingUp         int      `json:"trending_up"`
@@ -96,13 +96,13 @@ type SnapshotSummary struct {
 	RecommendedActions []string `json:"recommended_actions"`
 }
 
-// SnapshotManager manages performance snapshots and analysis
+// SnapshotManager manages performance snapshots and analysis.
 type SnapshotManager struct {
 	snapshotDir string
 	logger      logger.CommonLogger
 }
 
-// NewSnapshotManager creates a new snapshot manager
+// NewSnapshotManager creates a new snapshot manager.
 func NewSnapshotManager(snapshotDir string) *SnapshotManager {
 	return &SnapshotManager{
 		snapshotDir: snapshotDir,
@@ -110,7 +110,7 @@ func NewSnapshotManager(snapshotDir string) *SnapshotManager {
 	}
 }
 
-// CreateSnapshot creates a new performance snapshot
+// CreateSnapshot creates a new performance snapshot.
 func (sm *SnapshotManager) CreateSnapshot(ctx context.Context, benchmarks []profiling.BenchmarkResult, metadata map[string]interface{}) (*PerformanceSnapshot, error) {
 	// Ensure snapshot directory exists
 	if err := os.MkdirAll(sm.snapshotDir, 0o755); err != nil {
@@ -142,7 +142,7 @@ func (sm *SnapshotManager) CreateSnapshot(ctx context.Context, benchmarks []prof
 	return snapshot, nil
 }
 
-// LoadSnapshot loads a snapshot by ID
+// LoadSnapshot loads a snapshot by ID.
 func (sm *SnapshotManager) LoadSnapshot(snapshotID string) (*PerformanceSnapshot, error) {
 	filename := filepath.Join(sm.snapshotDir, fmt.Sprintf("%s.json", snapshotID))
 	data, err := os.ReadFile(filename)
@@ -158,7 +158,7 @@ func (sm *SnapshotManager) LoadSnapshot(snapshotID string) (*PerformanceSnapshot
 	return &snapshot, nil
 }
 
-// ListSnapshots returns all available snapshots sorted by timestamp
+// ListSnapshots returns all available snapshots sorted by timestamp.
 func (sm *SnapshotManager) ListSnapshots() ([]*PerformanceSnapshot, error) {
 	files, err := filepath.Glob(filepath.Join(sm.snapshotDir, "*.json"))
 	if err != nil {
@@ -190,7 +190,7 @@ func (sm *SnapshotManager) ListSnapshots() ([]*PerformanceSnapshot, error) {
 	return snapshots, nil
 }
 
-// AnalyzeSnapshots performs comprehensive analysis between current and baseline snapshots
+// AnalyzeSnapshots performs comprehensive analysis between current and baseline snapshots.
 func (sm *SnapshotManager) AnalyzeSnapshots(current, baseline *PerformanceSnapshot, options AnalysisOptions) (*SnapshotAnalysis, error) {
 	analysis := &SnapshotAnalysis{
 		Current:  current,
@@ -215,7 +215,7 @@ func (sm *SnapshotManager) AnalyzeSnapshots(current, baseline *PerformanceSnapsh
 	return analysis, nil
 }
 
-// AnalysisOptions configures snapshot analysis behavior
+// AnalysisOptions configures snapshot analysis behavior.
 type AnalysisOptions struct {
 	RegressionThreshold float64
 	IncludeTrends       bool
@@ -224,7 +224,7 @@ type AnalysisOptions struct {
 	GeneratePredictions bool
 }
 
-// DefaultAnalysisOptions returns default analysis options
+// DefaultAnalysisOptions returns default analysis options.
 func DefaultAnalysisOptions() AnalysisOptions {
 	return AnalysisOptions{
 		RegressionThreshold: 10.0, // 10% threshold

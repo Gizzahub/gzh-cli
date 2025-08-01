@@ -18,7 +18,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// ProfileType represents different types of profiling
+// ProfileType represents different types of profiling.
 type ProfileType string
 
 const (
@@ -30,7 +30,7 @@ const (
 	ProfileTypeThreadCreate ProfileType = "threadcreate"
 )
 
-// ProfileConfig holds configuration for profiling
+// ProfileConfig holds configuration for profiling.
 type ProfileConfig struct {
 	Enabled       bool          `yaml:"enabled" json:"enabled"`
 	HTTPPort      int           `yaml:"http_port" json:"http_port"`
@@ -42,7 +42,7 @@ type ProfileConfig struct {
 	MutexFraction int           `yaml:"mutex_fraction" json:"mutex_fraction"`
 }
 
-// DefaultProfileConfig returns default profiling configuration
+// DefaultProfileConfig returns default profiling configuration.
 func DefaultProfileConfig() *ProfileConfig {
 	return &ProfileConfig{
 		Enabled:       false,
@@ -56,7 +56,7 @@ func DefaultProfileConfig() *ProfileConfig {
 	}
 }
 
-// Profiler provides performance profiling capabilities
+// Profiler provides performance profiling capabilities.
 type Profiler struct {
 	config    *ProfileConfig
 	logger    *logger.SimpleLogger
@@ -66,7 +66,7 @@ type Profiler struct {
 	outputDir string
 }
 
-// ProfileSession represents an active profiling session
+// ProfileSession represents an active profiling session.
 type ProfileSession struct {
 	Type      ProfileType
 	StartTime time.Time
@@ -74,7 +74,7 @@ type ProfileSession struct {
 	Active    bool
 }
 
-// NewProfiler creates a new profiler instance
+// NewProfiler creates a new profiler instance.
 func NewProfiler(config *ProfileConfig) *Profiler {
 	if config == nil {
 		config = DefaultProfileConfig()
@@ -100,7 +100,7 @@ func NewProfiler(config *ProfileConfig) *Profiler {
 	return p
 }
 
-// Start initializes profiling services
+// Start initializes profiling services.
 func (p *Profiler) Start(ctx context.Context) error {
 	if !p.config.Enabled {
 		p.logger.Debug("Profiling is disabled")
@@ -121,7 +121,7 @@ func (p *Profiler) Start(ctx context.Context) error {
 	return nil
 }
 
-// Stop shuts down profiling services
+// Stop shuts down profiling services.
 func (p *Profiler) Stop() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -129,7 +129,7 @@ func (p *Profiler) Stop() error {
 	// Stop all active profiling sessions
 	for id, session := range p.profiles {
 		if session.Active {
-			p.stopProfileSession(id, session)
+			p.stopProfileSession(id, session) // Cleanup, errors are ignored intentionally
 		}
 	}
 
@@ -146,7 +146,7 @@ func (p *Profiler) Stop() error {
 	return nil
 }
 
-// StartProfile begins a profiling session for the specified type
+// StartProfile begins a profiling session for the specified type.
 func (p *Profiler) StartProfile(profileType ProfileType) (string, error) {
 	if !p.config.Enabled {
 		return "", fmt.Errorf("profiling is disabled")
@@ -190,7 +190,7 @@ func (p *Profiler) StartProfile(profileType ProfileType) (string, error) {
 	return sessionID, nil
 }
 
-// StopProfile ends a profiling session and saves the results
+// StopProfile ends a profiling session and saves the results.
 func (p *Profiler) StopProfile(sessionID string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -207,7 +207,7 @@ func (p *Profiler) StopProfile(sessionID string) error {
 	return p.stopProfileSession(sessionID, session)
 }
 
-// stopProfileSession stops a profile session (assumes mutex is held)
+// stopProfileSession stops a profile session (assumes mutex is held).
 func (p *Profiler) stopProfileSession(sessionID string, session *ProfileSession) error {
 	defer func() {
 		session.Active = false
@@ -248,14 +248,14 @@ func (p *Profiler) stopProfileSession(sessionID string, session *ProfileSession)
 	case ProfileTypeMutex:
 		filename := filepath.Join(p.outputDir, fmt.Sprintf("mutex_%s.prof", sessionID))
 		if err := p.writeProfile("mutex", filename); err != nil {
-			return fmt.Errorf("failed to write mutex profile: %v", err)
+			return fmt.Errorf("failed to write mutex profile: %w", err)
 		}
 		p.logger.Info("Mutex profile saved", "session_id", sessionID, "duration", duration, "file", filename)
 
 	case ProfileTypeThreadCreate:
 		filename := filepath.Join(p.outputDir, fmt.Sprintf("threadcreate_%s.prof", sessionID))
 		if err := p.writeProfile("threadcreate", filename); err != nil {
-			return fmt.Errorf("failed to write threadcreate profile: %v", err)
+			return fmt.Errorf("failed to write threadcreate profile: %w", err)
 		}
 		p.logger.Info("ThreadCreate profile saved", "session_id", sessionID, "duration", duration, "file", filename)
 	}
@@ -263,7 +263,7 @@ func (p *Profiler) stopProfileSession(sessionID string, session *ProfileSession)
 	return nil
 }
 
-// writeProfile writes a named profile to a file
+// writeProfile writes a named profile to a file.
 func (p *Profiler) writeProfile(name, filename string) error {
 	profile := runtimepprof.Lookup(name)
 	if profile == nil {
@@ -279,7 +279,7 @@ func (p *Profiler) writeProfile(name, filename string) error {
 	return profile.WriteTo(file, 0)
 }
 
-// ProfileOperation runs an operation with automatic profiling
+// ProfileOperation runs an operation with automatic profiling.
 func (p *Profiler) ProfileOperation(_ context.Context, operationName string, profileTypes []ProfileType, operation func() error) error {
 	if !p.config.Enabled {
 		return operation()
@@ -320,7 +320,7 @@ func (p *Profiler) ProfileOperation(_ context.Context, operationName string, pro
 	return err
 }
 
-// GetRuntimeStats returns current runtime statistics
+// GetRuntimeStats returns current runtime statistics.
 func (p *Profiler) GetRuntimeStats() map[string]interface{} {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -343,7 +343,7 @@ func (p *Profiler) GetRuntimeStats() map[string]interface{} {
 	}
 }
 
-// startHTTPServer starts the HTTP server for pprof endpoints
+// startHTTPServer starts the HTTP server for pprof endpoints.
 func (p *Profiler) startHTTPServer(_ context.Context) {
 	mux := http.NewServeMux()
 
@@ -375,7 +375,7 @@ func (p *Profiler) startHTTPServer(_ context.Context) {
 	}
 }
 
-// startAutoProfile starts automatic periodic profiling
+// startAutoProfile starts automatic periodic profiling.
 func (p *Profiler) startAutoProfile(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Minute) // Profile every 5 minutes
 	defer ticker.Stop()
@@ -409,7 +409,7 @@ func (p *Profiler) startAutoProfile(ctx context.Context) {
 	}
 }
 
-// ListActiveSessions returns information about currently active profiling sessions
+// ListActiveSessions returns information about currently active profiling sessions.
 func (p *Profiler) ListActiveSessions() map[string]ProfileSession {
 	p.mu.RLock()
 	defer p.mu.RUnlock()

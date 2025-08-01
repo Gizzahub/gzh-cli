@@ -14,33 +14,33 @@ import (
 	"time"
 )
 
-// EnvironmentSwitcher handles switching between different development environments
+// EnvironmentSwitcher handles switching between different development environments.
 type EnvironmentSwitcher struct {
 	serviceSwitchers map[string]ServiceSwitcher
 	progressCallback func(SwitchProgress)
 	mu               sync.RWMutex
 }
 
-// NewEnvironmentSwitcher creates a new environment switcher
+// NewEnvironmentSwitcher creates a new environment switcher.
 func NewEnvironmentSwitcher() *EnvironmentSwitcher {
 	return &EnvironmentSwitcher{
 		serviceSwitchers: make(map[string]ServiceSwitcher),
 	}
 }
 
-// RegisterServiceSwitcher registers a service switcher
+// RegisterServiceSwitcher registers a service switcher.
 func (es *EnvironmentSwitcher) RegisterServiceSwitcher(name string, switcher ServiceSwitcher) {
 	es.mu.Lock()
 	defer es.mu.Unlock()
 	es.serviceSwitchers[name] = switcher
 }
 
-// SetProgressCallback sets the progress callback function
+// SetProgressCallback sets the progress callback function.
 func (es *EnvironmentSwitcher) SetProgressCallback(callback func(SwitchProgress)) {
 	es.progressCallback = callback
 }
 
-// SwitchOptions contains options for environment switching
+// SwitchOptions contains options for environment switching.
 type SwitchOptions struct {
 	DryRun          bool
 	Force           bool
@@ -49,7 +49,7 @@ type SwitchOptions struct {
 	Timeout         time.Duration
 }
 
-// SwitchEnvironment switches to the specified environment
+// SwitchEnvironment switches to the specified environment.
 func (es *EnvironmentSwitcher) SwitchEnvironment(ctx context.Context, env *Environment, options SwitchOptions) (*SwitchResult, error) {
 	startTime := time.Now()
 
@@ -143,7 +143,7 @@ func (es *EnvironmentSwitcher) SwitchEnvironment(ctx context.Context, env *Envir
 	return result, nil
 }
 
-// switchSingleService switches a single service
+// switchSingleService switches a single service.
 func (es *EnvironmentSwitcher) switchSingleService(ctx context.Context, env *Environment, serviceName string, previousStates map[string]interface{}, result *SwitchResult, options SwitchOptions) error {
 	es.mu.RLock()
 	switcher, exists := es.serviceSwitchers[serviceName]
@@ -205,7 +205,7 @@ func (es *EnvironmentSwitcher) switchSingleService(ctx context.Context, env *Env
 	return nil
 }
 
-// switchServicesParallel switches multiple services in parallel
+// switchServicesParallel switches multiple services in parallel.
 func (es *EnvironmentSwitcher) switchServicesParallel(ctx context.Context, env *Environment, serviceNames []string, previousStates map[string]interface{}, result *SwitchResult, options SwitchOptions) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error, len(serviceNames))
@@ -236,7 +236,7 @@ func (es *EnvironmentSwitcher) switchServicesParallel(ctx context.Context, env *
 	return nil
 }
 
-// rollbackServices rolls back services to their previous states
+// rollbackServices rolls back services to their previous states.
 func (es *EnvironmentSwitcher) rollbackServices(ctx context.Context, previousStates map[string]interface{}, result *SwitchResult) {
 	var rollbackErrors []string
 
@@ -265,7 +265,7 @@ func (es *EnvironmentSwitcher) rollbackServices(ctx context.Context, previousSta
 	}
 }
 
-// executeHooks executes pre or post hooks
+// executeHooks executes pre or post hooks.
 func (es *EnvironmentSwitcher) executeHooks(ctx context.Context, hooks []Hook, hookType string) error {
 	for i, hook := range hooks {
 		if err := es.executeHook(ctx, hook, fmt.Sprintf("%s-%d", hookType, i)); err != nil {
@@ -278,7 +278,7 @@ func (es *EnvironmentSwitcher) executeHooks(ctx context.Context, hooks []Hook, h
 	return nil
 }
 
-// executeHook executes a single hook with input validation
+// executeHook executes a single hook with input validation.
 func (es *EnvironmentSwitcher) executeHook(ctx context.Context, hook Hook, hookName string) error {
 	// Validate hook command to prevent shell injection
 	if err := validateHookCommand(hook.Command); err != nil {
@@ -303,7 +303,7 @@ func (es *EnvironmentSwitcher) executeHook(ctx context.Context, hook Hook, hookN
 	return nil
 }
 
-// GetAvailableServices returns a list of available service switchers
+// GetAvailableServices returns a list of available service switchers.
 func (es *EnvironmentSwitcher) GetAvailableServices() []string {
 	es.mu.RLock()
 	defer es.mu.RUnlock()
@@ -315,7 +315,7 @@ func (es *EnvironmentSwitcher) GetAvailableServices() []string {
 	return services
 }
 
-// validateHookCommand validates a hook command to prevent shell injection
+// validateHookCommand validates a hook command to prevent shell injection.
 func validateHookCommand(command string) error {
 	if command == "" {
 		return errors.New("hook command cannot be empty")

@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-// KubernetesChecker implements ServiceChecker for Kubernetes
+// KubernetesChecker implements ServiceChecker for Kubernetes.
 type KubernetesChecker struct{}
 
-// NewKubernetesChecker creates a new Kubernetes status checker
+// NewKubernetesChecker creates a new Kubernetes status checker.
 func NewKubernetesChecker() *KubernetesChecker {
 	return &KubernetesChecker{}
 }
 
-// Name returns the service name
+// Name returns the service name.
 func (k *KubernetesChecker) Name() string {
 	return "kubernetes"
 }
 
-// CheckStatus checks Kubernetes current status
+// CheckStatus checks Kubernetes current status.
 func (k *KubernetesChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	status := &ServiceStatus{
 		Name:        "kubernetes",
@@ -83,7 +83,7 @@ func (k *KubernetesChecker) CheckStatus(ctx context.Context) (*ServiceStatus, er
 	return status, nil
 }
 
-// CheckHealth performs detailed health check for Kubernetes
+// CheckHealth performs detailed health check for Kubernetes.
 func (k *KubernetesChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	start := time.Now()
 	health := &HealthStatus{
@@ -121,13 +121,13 @@ func (k *KubernetesChecker) CheckHealth(ctx context.Context) (*HealthStatus, err
 	return health, nil
 }
 
-// isKubectlAvailable checks if kubectl is installed
+// isKubectlAvailable checks if kubectl is installed.
 func (k *KubernetesChecker) isKubectlAvailable() bool {
 	_, err := exec.LookPath("kubectl")
 	return err == nil
 }
 
-// getCurrentContext gets the current Kubernetes context
+// getCurrentContext gets the current Kubernetes context.
 func (k *KubernetesChecker) getCurrentContext(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "kubectl", "config", "current-context")
 	output, err := cmd.Output()
@@ -137,7 +137,7 @@ func (k *KubernetesChecker) getCurrentContext(ctx context.Context) (string, erro
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getCurrentNamespace gets the current Kubernetes namespace
+// getCurrentNamespace gets the current Kubernetes namespace.
 func (k *KubernetesChecker) getCurrentNamespace(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "kubectl", "config", "view", "--minify", "--output", "jsonpath={..namespace}")
 	output, err := cmd.Output()
@@ -152,7 +152,7 @@ func (k *KubernetesChecker) getCurrentNamespace(ctx context.Context) (string, er
 	return namespace, nil
 }
 
-// checkClusterAccess checks if we can access the Kubernetes cluster
+// checkClusterAccess checks if we can access the Kubernetes cluster.
 func (k *KubernetesChecker) checkClusterAccess(ctx context.Context) (*CredentialStatus, error) {
 	credStatus := &CredentialStatus{
 		Valid: false,
@@ -182,7 +182,7 @@ func (k *KubernetesChecker) checkClusterAccess(ctx context.Context) (*Credential
 	return credStatus, nil
 }
 
-// getCurrentUser gets the current Kubernetes user
+// getCurrentUser gets the current Kubernetes user.
 func (k *KubernetesChecker) getCurrentUser(ctx context.Context) string {
 	cmd := exec.CommandContext(ctx, "kubectl", "config", "view", "--minify", "--output", "jsonpath={.contexts[0].context.user}")
 	output, err := cmd.Output()

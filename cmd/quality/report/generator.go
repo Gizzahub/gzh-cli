@@ -15,7 +15,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/quality/tools"
 )
 
-// Report represents a quality report
+// Report represents a quality report.
 type Report struct {
 	Timestamp    time.Time          `json:"timestamp"`
 	ProjectRoot  string             `json:"project_root"`
@@ -26,7 +26,7 @@ type Report struct {
 	IssuesByFile map[string][]Issue `json:"issues_by_file"`
 }
 
-// Summary contains report summary information
+// Summary contains report summary information.
 type Summary struct {
 	TotalTools      int `json:"total_tools"`
 	SuccessfulTools int `json:"successful_tools"`
@@ -38,7 +38,7 @@ type Summary struct {
 	FilesWithIssues int `json:"files_with_issues"`
 }
 
-// ToolResult represents the result of a single tool execution
+// ToolResult represents the result of a single tool execution.
 type ToolResult struct {
 	Tool           string        `json:"tool"`
 	Language       string        `json:"language"`
@@ -49,7 +49,7 @@ type ToolResult struct {
 	Error          string        `json:"error,omitempty"`
 }
 
-// Issue represents a quality issue
+// Issue represents a quality issue.
 type Issue struct {
 	File       string `json:"file"`
 	Line       int    `json:"line"`
@@ -61,19 +61,19 @@ type Issue struct {
 	Suggestion string `json:"suggestion,omitempty"`
 }
 
-// ReportGenerator generates quality reports
+// ReportGenerator generates quality reports.
 type ReportGenerator struct {
 	projectRoot string
 }
 
-// NewReportGenerator creates a new report generator
+// NewReportGenerator creates a new report generator.
 func NewReportGenerator(projectRoot string) *ReportGenerator {
 	return &ReportGenerator{
 		projectRoot: projectRoot,
 	}
 }
 
-// GenerateReport creates a report from quality results
+// GenerateReport creates a report from quality results.
 func (g *ReportGenerator) GenerateReport(results []*tools.Result, duration time.Duration, totalFiles int) *Report {
 	report := &Report{
 		Timestamp:    time.Now(),
@@ -127,7 +127,7 @@ func (g *ReportGenerator) GenerateReport(results []*tools.Result, duration time.
 	return report
 }
 
-// calculateSummary calculates report summary statistics
+// calculateSummary calculates report summary statistics.
 func (g *ReportGenerator) calculateSummary(report *Report) Summary {
 	summary := Summary{
 		TotalTools: len(report.ToolResults),
@@ -161,7 +161,7 @@ func (g *ReportGenerator) calculateSummary(report *Report) Summary {
 	return summary
 }
 
-// SaveJSON saves the report as JSON
+// SaveJSON saves the report as JSON.
 func (g *ReportGenerator) SaveJSON(report *Report, outputPath string) error {
 	data, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
@@ -175,7 +175,7 @@ func (g *ReportGenerator) SaveJSON(report *Report, outputPath string) error {
 	return nil
 }
 
-// SaveHTML saves the report as HTML
+// SaveHTML saves the report as HTML.
 func (g *ReportGenerator) SaveHTML(report *Report, outputPath string) error {
 	html := g.generateHTML(report)
 
@@ -186,7 +186,7 @@ func (g *ReportGenerator) SaveHTML(report *Report, outputPath string) error {
 	return nil
 }
 
-// generateHTML creates an HTML report
+// generateHTML creates an HTML report.
 func (g *ReportGenerator) generateHTML(report *Report) string {
 	var sb strings.Builder
 
@@ -347,7 +347,7 @@ func (g *ReportGenerator) generateHTML(report *Report) string {
 	return sb.String()
 }
 
-// SaveMarkdown saves the report as Markdown
+// SaveMarkdown saves the report as Markdown.
 func (g *ReportGenerator) SaveMarkdown(report *Report, outputPath string) error {
 	md := g.generateMarkdown(report)
 
@@ -358,7 +358,7 @@ func (g *ReportGenerator) SaveMarkdown(report *Report, outputPath string) error 
 	return nil
 }
 
-// generateMarkdown creates a Markdown report
+// generateMarkdown creates a Markdown report.
 func (g *ReportGenerator) generateMarkdown(report *Report) string {
 	var sb strings.Builder
 
@@ -406,7 +406,7 @@ func (g *ReportGenerator) generateMarkdown(report *Report) string {
 	return sb.String()
 }
 
-// GetReportPath generates a report file path
+// GetReportPath generates a report file path.
 func (g *ReportGenerator) GetReportPath(format string) string {
 	timestamp := time.Now().Format("20060102-150405")
 	filename := fmt.Sprintf("quality-report-%s.%s", timestamp, format)

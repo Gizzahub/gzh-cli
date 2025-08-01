@@ -14,20 +14,20 @@ import (
 	"time"
 )
 
-// SSHChecker implements ServiceChecker for SSH
+// SSHChecker implements ServiceChecker for SSH.
 type SSHChecker struct{}
 
-// NewSSHChecker creates a new SSH status checker
+// NewSSHChecker creates a new SSH status checker.
 func NewSSHChecker() *SSHChecker {
 	return &SSHChecker{}
 }
 
-// Name returns the service name
+// Name returns the service name.
 func (s *SSHChecker) Name() string {
 	return "ssh"
 }
 
-// CheckStatus checks SSH current status
+// CheckStatus checks SSH current status.
 func (s *SSHChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	status := &ServiceStatus{
 		Name:        "ssh",
@@ -77,7 +77,7 @@ func (s *SSHChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	return status, nil
 }
 
-// CheckHealth performs detailed health check for SSH
+// CheckHealth performs detailed health check for SSH.
 func (s *SSHChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	start := time.Now()
 	health := &HealthStatus{
@@ -114,13 +114,13 @@ func (s *SSHChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	return health, nil
 }
 
-// isSSHAvailable checks if SSH is installed
+// isSSHAvailable checks if SSH is installed.
 func (s *SSHChecker) isSSHAvailable() bool {
 	_, err := exec.LookPath("ssh")
 	return err == nil
 }
 
-// checkSSHAgent checks if SSH agent is running
+// checkSSHAgent checks if SSH agent is running.
 func (s *SSHChecker) checkSSHAgent() bool {
 	// Check SSH_AUTH_SOCK environment variable
 	if os.Getenv("SSH_AUTH_SOCK") == "" {
@@ -131,19 +131,21 @@ func (s *SSHChecker) checkSSHAgent() bool {
 	cmd := exec.Command("ssh-add", "-l")
 	err := cmd.Run()
 	// ssh-add -l returns 0 if keys are loaded, 1 if no keys, 2 if agent not running
-	if exitErr, ok := err.(*exec.ExitError); ok {
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
 		return exitErr.ExitCode() != 2
 	}
 	return err == nil
 }
 
-// getLoadedKeys gets the list of loaded SSH keys
+// getLoadedKeys gets the list of loaded SSH keys.
 func (s *SSHChecker) getLoadedKeys(ctx context.Context) ([]string, error) {
 	cmd := exec.CommandContext(ctx, "ssh-add", "-l")
 	output, err := cmd.Output()
 	if err != nil {
 		// Check if it's "no keys loaded" vs actual error
-		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
 			return []string{}, nil // No keys loaded, but agent is running
 		}
 		return nil, err
@@ -160,7 +162,7 @@ func (s *SSHChecker) getLoadedKeys(ctx context.Context) ([]string, error) {
 	return keys, nil
 }
 
-// checkSSHKeys checks the status of SSH keys
+// checkSSHKeys checks the status of SSH keys.
 func (s *SSHChecker) checkSSHKeys(keys []string) *CredentialStatus {
 	credStatus := &CredentialStatus{
 		Valid: len(keys) > 0,

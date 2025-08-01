@@ -94,7 +94,7 @@ func (nd *NetworkDetector) getWiFiSSID(ctx context.Context) (string, error) {
 	}
 }
 
-// getWiFiSSIDMacOS gets WiFi SSID on macOS
+// getWiFiSSIDMacOS gets WiFi SSID on macOS.
 func (nd *NetworkDetector) getWiFiSSIDMacOS(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport", "-I")
 	output, err := cmd.Output()
@@ -115,7 +115,7 @@ func (nd *NetworkDetector) getWiFiSSIDMacOS(ctx context.Context) (string, error)
 	return "", fmt.Errorf("SSID not found")
 }
 
-// getWiFiSSIDLinux gets WiFi SSID on Linux
+// getWiFiSSIDLinux gets WiFi SSID on Linux.
 func (nd *NetworkDetector) getWiFiSSIDLinux(ctx context.Context) (string, error) {
 	// Try iwgetid first
 	cmd := exec.CommandContext(ctx, "iwgetid", "-r")
@@ -143,7 +143,7 @@ func (nd *NetworkDetector) getWiFiSSIDLinux(ctx context.Context) (string, error)
 	return "", fmt.Errorf("SSID not found")
 }
 
-// getWiFiSSIDWindows gets WiFi SSID on Windows
+// getWiFiSSIDWindows gets WiFi SSID on Windows.
 func (nd *NetworkDetector) getWiFiSSIDWindows(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "netsh", "wlan", "show", "profiles")
 	output, err := cmd.Output()
@@ -165,7 +165,7 @@ func (nd *NetworkDetector) getWiFiSSIDWindows(ctx context.Context) (string, erro
 	return "", fmt.Errorf("SSID not found")
 }
 
-// getLocalIPs gets all local IP addresses
+// getLocalIPs gets all local IP addresses.
 func (nd *NetworkDetector) getLocalIPs() ([]string, error) {
 	var ips []string
 
@@ -185,7 +185,7 @@ func (nd *NetworkDetector) getLocalIPs() ([]string, error) {
 	return ips, nil
 }
 
-// getDefaultGateway gets the default gateway IP
+// getDefaultGateway gets the default gateway IP.
 func (nd *NetworkDetector) getDefaultGateway(ctx context.Context) (string, error) {
 	switch runtime.GOOS {
 	case platformDarwin, platformLinux:
@@ -197,7 +197,7 @@ func (nd *NetworkDetector) getDefaultGateway(ctx context.Context) (string, error
 	}
 }
 
-// getDefaultGatewayUnix gets default gateway on Unix systems
+// getDefaultGatewayUnix gets default gateway on Unix systems.
 func (nd *NetworkDetector) getDefaultGatewayUnix(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "route", "-n", "get", "default")
 	output, err := cmd.Output()
@@ -225,7 +225,7 @@ func (nd *NetworkDetector) getDefaultGatewayUnix(ctx context.Context) (string, e
 	return "", fmt.Errorf("gateway not found")
 }
 
-// getDefaultGatewayWindows gets default gateway on Windows
+// getDefaultGatewayWindows gets default gateway on Windows.
 func (nd *NetworkDetector) getDefaultGatewayWindows(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "ipconfig")
 	output, err := cmd.Output()
@@ -249,7 +249,7 @@ func (nd *NetworkDetector) getDefaultGatewayWindows(ctx context.Context) (string
 	return "", fmt.Errorf("gateway not found")
 }
 
-// getDNSServers gets current DNS servers
+// getDNSServers gets current DNS servers.
 func (nd *NetworkDetector) getDNSServers() ([]string, error) {
 	// Read resolv.conf on Unix systems
 	if runtime.GOOS != platformWindows {
@@ -259,7 +259,7 @@ func (nd *NetworkDetector) getDNSServers() ([]string, error) {
 	return nd.getDNSServersWindows()
 }
 
-// getDNSServersUnix gets DNS servers from resolv.conf
+// getDNSServersUnix gets DNS servers from resolv.conf.
 func (nd *NetworkDetector) getDNSServersUnix() ([]string, error) {
 	content, err := os.ReadFile("/etc/resolv.conf")
 	if err != nil {
@@ -281,14 +281,14 @@ func (nd *NetworkDetector) getDNSServersUnix() ([]string, error) {
 	return servers, nil
 }
 
-// getDNSServersWindows gets DNS servers on Windows
+// getDNSServersWindows gets DNS servers on Windows.
 func (nd *NetworkDetector) getDNSServersWindows() ([]string, error) {
 	// This would require more complex Windows API calls or registry access
 	// For now, return empty slice
 	return []string{}, nil
 }
 
-// findBestMatchingProfile finds the profile that best matches current conditions
+// findBestMatchingProfile finds the profile that best matches current conditions.
 func (nd *NetworkDetector) findBestMatchingProfile(networkInfo *NetworkInfo) *NetworkProfile {
 	var bestProfile *NetworkProfile
 	bestScore := 0
@@ -304,7 +304,7 @@ func (nd *NetworkDetector) findBestMatchingProfile(networkInfo *NetworkInfo) *Ne
 	return bestProfile
 }
 
-// scoreProfile calculates how well a profile matches current network conditions
+// scoreProfile calculates how well a profile matches current network conditions.
 func (nd *NetworkDetector) scoreProfile(profile *NetworkProfile, networkInfo *NetworkInfo) int {
 	score := 0
 
@@ -337,7 +337,7 @@ func (nd *NetworkDetector) scoreProfile(profile *NetworkProfile, networkInfo *Ne
 	return score
 }
 
-// matchCondition checks if a condition matches a value
+// matchCondition checks if a condition matches a value.
 func (nd *NetworkDetector) matchCondition(condition NetworkCondition, value string) bool {
 	switch condition.Operator {
 	case "contains":
@@ -352,7 +352,7 @@ func (nd *NetworkDetector) matchCondition(condition NetworkCondition, value stri
 	}
 }
 
-// matchIPRange checks if an IP address is within a specified range
+// matchIPRange checks if an IP address is within a specified range.
 func (nd *NetworkDetector) matchIPRange(cidr, ip string) bool {
 	_, network, err := net.ParseCIDR(cidr)
 	if err != nil {
@@ -368,7 +368,7 @@ func (nd *NetworkDetector) matchIPRange(cidr, ip string) bool {
 	return network.Contains(ipAddr)
 }
 
-// NetworkInfo contains current network environment information
+// NetworkInfo contains current network environment information.
 type NetworkInfo struct {
 	WiFiSSID       string    `json:"wifiSsid,omitempty"`
 	LocalIPs       []string  `json:"localIps,omitempty"`

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Mock dependencies for testing
+// Mock dependencies for testing.
 type MockService struct {
 	Name string
 }

@@ -5,7 +5,7 @@ package tools
 
 import "context"
 
-// ToolType defines the type of quality tool
+// ToolType defines the type of quality tool.
 type ToolType int
 
 const (
@@ -27,7 +27,7 @@ func (t ToolType) String() string {
 	}
 }
 
-// QualityTool represents a code quality tool (formatter or linter)
+// QualityTool represents a code quality tool (formatter or linter).
 type QualityTool interface {
 	// Name returns the tool name (e.g., "gofumpt", "eslint")
 	Name() string
@@ -57,7 +57,7 @@ type QualityTool interface {
 	Execute(ctx context.Context, files []string, options ExecuteOptions) (*Result, error)
 }
 
-// ExecuteOptions contains options for tool execution
+// ExecuteOptions contains options for tool execution.
 type ExecuteOptions struct {
 	// ProjectRoot is the root directory of the project
 	ProjectRoot string
@@ -81,7 +81,7 @@ type ExecuteOptions struct {
 	Env map[string]string
 }
 
-// Result contains the results of tool execution
+// Result contains the results of tool execution.
 type Result struct {
 	// Tool is the name of the tool that was executed
 	Tool string
@@ -108,7 +108,7 @@ type Result struct {
 	Output string
 }
 
-// Issue represents a code quality issue found by a tool
+// Issue represents a code quality issue found by a tool.
 type Issue struct {
 	// File is the path to the file containing the issue
 	File string
@@ -132,7 +132,7 @@ type Issue struct {
 	Suggestion string
 }
 
-// LanguageDetector detects programming languages in a project
+// LanguageDetector detects programming languages in a project.
 type LanguageDetector interface {
 	// DetectLanguages scans a directory and returns detected languages
 	DetectLanguages(projectRoot string) ([]string, error)
@@ -141,7 +141,7 @@ type LanguageDetector interface {
 	GetFilesByLanguage(projectRoot string, languages []string) (map[string][]string, error)
 }
 
-// ToolRegistry manages available quality tools
+// ToolRegistry manages available quality tools.
 type ToolRegistry interface {
 	// Register adds a tool to the registry
 	Register(tool QualityTool)
@@ -159,7 +159,7 @@ type ToolRegistry interface {
 	FindTool(name string) QualityTool
 }
 
-// ConfigDetector finds configuration files for quality tools
+// ConfigDetector finds configuration files for quality tools.
 type ConfigDetector interface {
 	// FindConfigs searches for tool configuration files
 	FindConfigs(projectRoot string, tools []QualityTool) map[string]string
@@ -168,7 +168,7 @@ type ConfigDetector interface {
 	ValidateConfig(toolName, configPath string) error
 }
 
-// ExecutionPlan represents a plan for executing quality tools
+// ExecutionPlan represents a plan for executing quality tools.
 type ExecutionPlan struct {
 	// Tasks are the individual tool execution tasks
 	Tasks []Task
@@ -180,7 +180,7 @@ type ExecutionPlan struct {
 	EstimatedDuration string
 }
 
-// Task represents a single tool execution task
+// Task represents a single tool execution task.
 type Task struct {
 	// Tool is the quality tool to execute
 	Tool QualityTool
@@ -195,7 +195,7 @@ type Task struct {
 	Priority int
 }
 
-// Executor runs quality tools according to an execution plan
+// Executor runs quality tools according to an execution plan.
 type Executor interface {
 	// Execute runs the execution plan
 	Execute(ctx context.Context, plan *ExecutionPlan) ([]*Result, error)

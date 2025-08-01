@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// RepoDiscoverer handles repository discovery and configuration generation
+// RepoDiscoverer handles repository discovery and configuration generation.
 type RepoDiscoverer struct {
 	BasePath       string
 	MaxDepth       int
@@ -20,7 +20,7 @@ type RepoDiscoverer struct {
 	FollowSymlinks bool
 }
 
-// DiscoveredRepo represents a discovered repository with metadata
+// DiscoveredRepo represents a discovered repository with metadata.
 type DiscoveredRepo struct {
 	Path       string `yaml:"path"`
 	RemoteURL  string `yaml:"remote_url"`
@@ -32,7 +32,7 @@ type DiscoveredRepo struct {
 	Size       int64  `yaml:"size_bytes"`
 }
 
-// NewRepoDiscoverer creates a new repository discoverer
+// NewRepoDiscoverer creates a new repository discoverer.
 func NewRepoDiscoverer(basePath string) *RepoDiscoverer {
 	return &RepoDiscoverer{
 		BasePath:       basePath,
@@ -42,7 +42,7 @@ func NewRepoDiscoverer(basePath string) *RepoDiscoverer {
 	}
 }
 
-// DiscoverRepos discovers all Git repositories in the base path
+// DiscoverRepos discovers all Git repositories in the base path.
 func (rd *RepoDiscoverer) DiscoverRepos() ([]DiscoveredRepo, error) {
 	var repos []DiscoveredRepo
 
@@ -54,7 +54,7 @@ func (rd *RepoDiscoverer) DiscoverRepos() ([]DiscoveredRepo, error) {
 	return repos, nil
 }
 
-// walkDirectory recursively walks directories to find Git repositories
+// walkDirectory recursively walks directories to find Git repositories.
 func (rd *RepoDiscoverer) walkDirectory(dir string, depth int, repos *[]DiscoveredRepo) error {
 	if depth > rd.MaxDepth {
 		return nil
@@ -107,7 +107,7 @@ func (rd *RepoDiscoverer) walkDirectory(dir string, depth int, repos *[]Discover
 	return nil
 }
 
-// analyzeRepository analyzes a Git repository and extracts metadata
+// analyzeRepository analyzes a Git repository and extracts metadata.
 func (rd *RepoDiscoverer) analyzeRepository(repoPath string) (*DiscoveredRepo, error) {
 	// Get remote URL using git command
 	remoteURL, err := rd.getRemoteURL(repoPath)
@@ -146,7 +146,7 @@ func (rd *RepoDiscoverer) analyzeRepository(repoPath string) (*DiscoveredRepo, e
 	}, nil
 }
 
-// parseRemoteURL parses a Git remote URL to extract provider, organization, and repository name
+// parseRemoteURL parses a Git remote URL to extract provider, organization, and repository name.
 func (rd *RepoDiscoverer) parseRemoteURL(url string) (provider, org, repo string) {
 	if url == "" {
 		return "", "", ""
@@ -185,7 +185,7 @@ func (rd *RepoDiscoverer) parseRemoteURL(url string) (provider, org, repo string
 	return provider, org, repo
 }
 
-// parseGitHubURL parses GitHub-specific URLs
+// parseGitHubURL parses GitHub-specific URLs.
 func (rd *RepoDiscoverer) parseGitHubURL(url string) (provider, org, repo string) {
 	provider = "github"
 
@@ -214,7 +214,7 @@ func (rd *RepoDiscoverer) parseGitHubURL(url string) (provider, org, repo string
 	return provider, org, repo
 }
 
-// parseGitLabURL parses GitLab-specific URLs
+// parseGitLabURL parses GitLab-specific URLs.
 func (rd *RepoDiscoverer) parseGitLabURL(url string) (provider, org, repo string) {
 	provider = "gitlab"
 
@@ -243,7 +243,7 @@ func (rd *RepoDiscoverer) parseGitLabURL(url string) (provider, org, repo string
 	return provider, org, repo
 }
 
-// parseBitbucketURL parses Bitbucket-specific URLs
+// parseBitbucketURL parses Bitbucket-specific URLs.
 func (rd *RepoDiscoverer) parseBitbucketURL(url string) (provider, org, repo string) {
 	provider = "bitbucket"
 
@@ -272,7 +272,7 @@ func (rd *RepoDiscoverer) parseBitbucketURL(url string) (provider, org, repo str
 	return provider, org, repo
 }
 
-// shouldIgnore checks if a directory should be ignored
+// shouldIgnore checks if a directory should be ignored.
 func (rd *RepoDiscoverer) shouldIgnore(name string) bool {
 	for _, pattern := range rd.IgnorePatterns {
 		if name == pattern || strings.HasPrefix(name, pattern) {
@@ -282,7 +282,7 @@ func (rd *RepoDiscoverer) shouldIgnore(name string) bool {
 	return false
 }
 
-// calculateRepoSize calculates the approximate size of a repository
+// calculateRepoSize calculates the approximate size of a repository.
 func (rd *RepoDiscoverer) calculateRepoSize(repoPath string) int64 {
 	var size int64
 
@@ -302,22 +302,22 @@ func (rd *RepoDiscoverer) calculateRepoSize(repoPath string) int64 {
 	return size
 }
 
-// SetMaxDepth sets the maximum directory depth for discovery
+// SetMaxDepth sets the maximum directory depth for discovery.
 func (rd *RepoDiscoverer) SetMaxDepth(depth int) {
 	rd.MaxDepth = depth
 }
 
-// SetIgnorePatterns sets custom ignore patterns
+// SetIgnorePatterns sets custom ignore patterns.
 func (rd *RepoDiscoverer) SetIgnorePatterns(patterns []string) {
 	rd.IgnorePatterns = patterns
 }
 
-// SetFollowSymlinks enables or disables symlink following
+// SetFollowSymlinks enables or disables symlink following.
 func (rd *RepoDiscoverer) SetFollowSymlinks(follow bool) {
 	rd.FollowSymlinks = follow
 }
 
-// getRemoteURL gets the remote URL for a Git repository
+// getRemoteURL gets the remote URL for a Git repository.
 func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
 	cmd := exec.Command("git", "-C", repoPath, "remote", "get-url", "origin")
 	output, err := cmd.Output()
@@ -351,7 +351,7 @@ func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getCurrentBranch gets the current branch of a Git repository
+// getCurrentBranch gets the current branch of a Git repository.
 func (rd *RepoDiscoverer) getCurrentBranch(repoPath string) (string, error) {
 	cmd := exec.Command("git", "-C", repoPath, "branch", "--show-current")
 	output, err := cmd.Output()
@@ -362,7 +362,7 @@ func (rd *RepoDiscoverer) getCurrentBranch(repoPath string) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getLastCommit gets the last commit hash of a Git repository
+// getLastCommit gets the last commit hash of a Git repository.
 func (rd *RepoDiscoverer) getLastCommit(repoPath string) (string, error) {
 	cmd := exec.Command("git", "-C", repoPath, "rev-parse", "HEAD")
 	output, err := cmd.Output()
@@ -373,7 +373,7 @@ func (rd *RepoDiscoverer) getLastCommit(repoPath string) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// isValidRemoteName validates a git remote name to prevent command injection
+// isValidRemoteName validates a git remote name to prevent command injection.
 func isValidRemoteName(name string) bool {
 	if name == "" || len(name) > 100 {
 		return false

@@ -10,13 +10,13 @@ import (
 	"time"
 )
 
-// StatusCollector collects status information from multiple services
+// StatusCollector collects status information from multiple services.
 type StatusCollector struct {
 	checkers []ServiceChecker
 	timeout  time.Duration
 }
 
-// NewStatusCollector creates a new status collector
+// NewStatusCollector creates a new status collector.
 func NewStatusCollector(checkers []ServiceChecker, timeout time.Duration) *StatusCollector {
 	if timeout == 0 {
 		timeout = 30 * time.Second
@@ -27,7 +27,7 @@ func NewStatusCollector(checkers []ServiceChecker, timeout time.Duration) *Statu
 	}
 }
 
-// CollectAll collects status from all registered services
+// CollectAll collects status from all registered services.
 func (sc *StatusCollector) CollectAll(ctx context.Context, options StatusOptions) ([]ServiceStatus, error) {
 	// Filter checkers based on requested services
 	checkers := sc.filterCheckers(options.Services)
@@ -116,7 +116,7 @@ func (sc *StatusCollector) collectSequential(ctx context.Context, checkers []Ser
 	return results, nil
 }
 
-// checkService checks a single service status
+// checkService checks a single service status.
 func (sc *StatusCollector) checkService(ctx context.Context, checker ServiceChecker, options StatusOptions) (*ServiceStatus, error) {
 	status, err := checker.CheckStatus(ctx)
 	if err != nil {
@@ -140,7 +140,7 @@ func (sc *StatusCollector) checkService(ctx context.Context, checker ServiceChec
 	return status, nil
 }
 
-// filterCheckers filters checkers based on requested service names
+// filterCheckers filters checkers based on requested service names.
 func (sc *StatusCollector) filterCheckers(services []string) []ServiceChecker {
 	if len(services) == 0 {
 		return sc.checkers

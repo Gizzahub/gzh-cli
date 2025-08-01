@@ -45,7 +45,7 @@ type SimpleLogger struct {
 	config    *config.CLILoggingConfig
 }
 
-// Ensure SimpleLogger implements CommonLogger interface
+// Ensure SimpleLogger implements CommonLogger interface.
 var _ CommonLogger = (*SimpleLogger)(nil)
 
 // NewSimpleLogger creates a new simple terminal logger.

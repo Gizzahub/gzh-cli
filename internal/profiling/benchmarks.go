@@ -14,7 +14,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// BenchmarkResult holds the results of a benchmark run
+// BenchmarkResult holds the results of a benchmark run.
 type BenchmarkResult struct {
 	Name             string                   `json:"name"`
 	Operations       int                      `json:"operations"`
@@ -31,7 +31,7 @@ type BenchmarkResult struct {
 	Timestamp        time.Time                `json:"timestamp"`
 }
 
-// BenchmarkSuite manages and runs performance benchmarks
+// BenchmarkSuite manages and runs performance benchmarks.
 type BenchmarkSuite struct {
 	profiler *Profiler
 	logger   *logger.SimpleLogger
@@ -39,7 +39,7 @@ type BenchmarkSuite struct {
 	mu       sync.RWMutex
 }
 
-// NewBenchmarkSuite creates a new benchmark suite
+// NewBenchmarkSuite creates a new benchmark suite.
 func NewBenchmarkSuite(profiler *Profiler) *BenchmarkSuite {
 	return &BenchmarkSuite{
 		profiler: profiler,
@@ -48,7 +48,7 @@ func NewBenchmarkSuite(profiler *Profiler) *BenchmarkSuite {
 	}
 }
 
-// BenchmarkOptions configures benchmark execution
+// BenchmarkOptions configures benchmark execution.
 type BenchmarkOptions struct {
 	Iterations      int           `json:"iterations"`
 	Duration        time.Duration `json:"duration"`
@@ -58,7 +58,7 @@ type BenchmarkOptions struct {
 	CPUProfiling    bool          `json:"cpu_profiling"`
 }
 
-// DefaultBenchmarkOptions returns default benchmark options
+// DefaultBenchmarkOptions returns default benchmark options.
 func DefaultBenchmarkOptions() *BenchmarkOptions {
 	return &BenchmarkOptions{
 		Iterations:      1000,
@@ -70,13 +70,13 @@ func DefaultBenchmarkOptions() *BenchmarkOptions {
 	}
 }
 
-// BenchmarkFunc represents a function to be benchmarked
+// BenchmarkFunc represents a function to be benchmarked.
 type BenchmarkFunc func(ctx context.Context) error
 
-// SimpleBenchmarkFunc represents a simple function to be benchmarked (for compatibility)
+// SimpleBenchmarkFunc represents a simple function to be benchmarked (for compatibility).
 type SimpleBenchmarkFunc func(ctx context.Context)
 
-// RunBenchmark executes a benchmark with the given options
+// RunBenchmark executes a benchmark with the given options.
 func (bs *BenchmarkSuite) RunBenchmark(ctx context.Context, name string, fn BenchmarkFunc, opts *BenchmarkOptions) (*BenchmarkResult, error) {
 	if opts == nil {
 		opts = DefaultBenchmarkOptions()
@@ -88,7 +88,7 @@ func (bs *BenchmarkSuite) RunBenchmark(ctx context.Context, name string, fn Benc
 	if opts.WarmupRuns > 0 {
 		bs.logger.Debug("Running warmup", "name", name, "warmup_runs", opts.WarmupRuns)
 		for i := 0; i < opts.WarmupRuns; i++ {
-			fn(ctx)
+			fn(ctx) // Warmup run, errors are ignored intentionally
 		}
 		runtime.GC() // Force garbage collection after warmup
 	}
@@ -166,7 +166,7 @@ func (bs *BenchmarkSuite) RunBenchmark(ctx context.Context, name string, fn Benc
 	return result, nil
 }
 
-// executeBenchmark performs the actual benchmark execution
+// executeBenchmark performs the actual benchmark execution.
 func (bs *BenchmarkSuite) executeBenchmark(ctx context.Context, name string, fn BenchmarkFunc, opts *BenchmarkOptions) (*BenchmarkResult, error) {
 	result := &BenchmarkResult{
 		Name:        name,
@@ -180,7 +180,7 @@ func (bs *BenchmarkSuite) executeBenchmark(ctx context.Context, name string, fn 
 	return bs.runConcurrentBenchmark(ctx, result, fn, opts)
 }
 
-// runSequentialBenchmark runs benchmark operations sequentially
+// runSequentialBenchmark runs benchmark operations sequentially.
 func (bs *BenchmarkSuite) runSequentialBenchmark(ctx context.Context, result *BenchmarkResult, fn BenchmarkFunc, opts *BenchmarkOptions) (*BenchmarkResult, error) {
 	durations := make([]time.Duration, 0, opts.Iterations)
 	startTime := time.Now()
@@ -221,7 +221,7 @@ func (bs *BenchmarkSuite) runSequentialBenchmark(ctx context.Context, result *Be
 	return result, nil
 }
 
-// runConcurrentBenchmark runs benchmark operations concurrently
+// runConcurrentBenchmark runs benchmark operations concurrently.
 func (bs *BenchmarkSuite) runConcurrentBenchmark(ctx context.Context, result *BenchmarkResult, fn BenchmarkFunc, opts *BenchmarkOptions) (*BenchmarkResult, error) {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -281,7 +281,7 @@ func (bs *BenchmarkSuite) runConcurrentBenchmark(ctx context.Context, result *Be
 	return result, nil
 }
 
-// calculatePercentiles calculates percentile durations from a slice of durations
+// calculatePercentiles calculates percentile durations from a slice of durations.
 func calculatePercentiles(durations []time.Duration) map[string]time.Duration {
 	if len(durations) == 0 {
 		return map[string]time.Duration{}
@@ -303,7 +303,7 @@ func calculatePercentiles(durations []time.Duration) map[string]time.Duration {
 	return percentiles
 }
 
-// GetResults returns all benchmark results
+// GetResults returns all benchmark results.
 func (bs *BenchmarkSuite) GetResults() []BenchmarkResult {
 	bs.mu.RLock()
 	defer bs.mu.RUnlock()
@@ -313,7 +313,7 @@ func (bs *BenchmarkSuite) GetResults() []BenchmarkResult {
 	return results
 }
 
-// CompareBenchmarks compares two benchmark results
+// CompareBenchmarks compares two benchmark results.
 func (bs *BenchmarkSuite) CompareBenchmarks(baseline, current *BenchmarkResult) map[string]interface{} {
 	if baseline == nil || current == nil {
 		return nil
@@ -349,7 +349,7 @@ func (bs *BenchmarkSuite) CompareBenchmarks(baseline, current *BenchmarkResult) 
 	return comparison
 }
 
-// PrintResults prints benchmark results in a formatted way
+// PrintResults prints benchmark results in a formatted way.
 func (bs *BenchmarkSuite) PrintResults() {
 	results := bs.GetResults()
 	if len(results) == 0 {
@@ -384,7 +384,7 @@ func (bs *BenchmarkSuite) PrintResults() {
 	}
 }
 
-// RunSimpleBenchmark executes a simple benchmark with specified parameters
+// RunSimpleBenchmark executes a simple benchmark with specified parameters.
 func (bs *BenchmarkSuite) RunSimpleBenchmark(ctx context.Context, name string, fn SimpleBenchmarkFunc, iterations int, duration time.Duration) (*BenchmarkResult, error) {
 	// Convert simple function to BenchmarkFunc
 	benchmarkFn := func(ctx context.Context) error {

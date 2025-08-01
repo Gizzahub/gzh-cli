@@ -11,7 +11,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/devenv"
 )
 
-// AWSSwitcher implements ServiceSwitcher for AWS
+// AWSSwitcher implements ServiceSwitcher for AWS.
 type AWSSwitcher struct{}
 
 func (a *AWSSwitcher) Name() string {
@@ -66,7 +66,7 @@ func (a *AWSSwitcher) Rollback(ctx context.Context, previousState interface{}) e
 	return a.Switch(ctx, previousState)
 }
 
-// GCPSwitcher implements ServiceSwitcher for GCP
+// GCPSwitcher implements ServiceSwitcher for GCP.
 type GCPSwitcher struct{}
 
 func (g *GCPSwitcher) Name() string {
@@ -130,7 +130,7 @@ func (g *GCPSwitcher) Rollback(ctx context.Context, previousState interface{}) e
 	return g.Switch(ctx, previousState)
 }
 
-// AzureSwitcher implements ServiceSwitcher for Azure
+// AzureSwitcher implements ServiceSwitcher for Azure.
 type AzureSwitcher struct{}
 
 func (a *AzureSwitcher) Name() string {
@@ -173,7 +173,7 @@ func (a *AzureSwitcher) Rollback(ctx context.Context, previousState interface{})
 	return a.Switch(ctx, previousState)
 }
 
-// DockerSwitcher implements ServiceSwitcher for Docker
+// DockerSwitcher implements ServiceSwitcher for Docker.
 type DockerSwitcher struct{}
 
 func (d *DockerSwitcher) Name() string {
@@ -211,7 +211,7 @@ func (d *DockerSwitcher) Rollback(ctx context.Context, previousState interface{}
 	return d.Switch(ctx, previousState)
 }
 
-// KubernetesSwitcher implements ServiceSwitcher for Kubernetes
+// KubernetesSwitcher implements ServiceSwitcher for Kubernetes.
 type KubernetesSwitcher struct{}
 
 func (k *KubernetesSwitcher) Name() string {
@@ -262,7 +262,7 @@ func (k *KubernetesSwitcher) Rollback(ctx context.Context, previousState interfa
 	return k.Switch(ctx, previousState)
 }
 
-// SSHSwitcher implements ServiceSwitcher for SSH
+// SSHSwitcher implements ServiceSwitcher for SSH.
 type SSHSwitcher struct{}
 
 func (s *SSHSwitcher) Name() string {

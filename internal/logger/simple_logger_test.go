@@ -117,7 +117,7 @@ func TestGlobalLogLevelFlags(t *testing.T) {
 	assert.True(t, globalQuiet)
 }
 
-// formatMessage is a private method, so we test it indirectly through print output
+// formatMessage is a private method, so we test it indirectly through print output.
 func TestSimpleLogger_printFormatting(t *testing.T) {
 	// Enable debug mode to show all log levels
 	SetGlobalLoggingFlags(false, true, false)

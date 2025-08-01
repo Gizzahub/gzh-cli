@@ -15,7 +15,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/synclone/template"
 )
 
-// newConfigGenerateTemplateCmd creates the config generate template command
+// newConfigGenerateTemplateCmd creates the config generate template command.
 func newConfigGenerateTemplateCmd() *cobra.Command {
 	var (
 		templateName   string
@@ -67,7 +67,7 @@ Examples:
 	return cmd
 }
 
-// runConfigGenerateTemplate executes the template generation command
+// runConfigGenerateTemplate executes the template generation command.
 func runConfigGenerateTemplate(templateName, outputFile string, listTemplates bool, templateDir string, variables []string, interactiveVar bool) error {
 	// Set default template directory
 	if templateDir == "" {
@@ -135,7 +135,7 @@ func runConfigGenerateTemplate(templateName, outputFile string, listTemplates bo
 	return nil
 }
 
-// listAvailableTemplates lists all available templates
+// listAvailableTemplates lists all available templates.
 func listAvailableTemplates(engine *template.TemplateEngine) error {
 	templates, err := engine.ListTemplates()
 	if err != nil {
@@ -181,7 +181,7 @@ func listAvailableTemplates(engine *template.TemplateEngine) error {
 	return nil
 }
 
-// parseVariables parses variable strings in key=value format
+// parseVariables parses variable strings in key=value format.
 func parseVariables(variables []string, varMap map[string]interface{}) error {
 	for _, variable := range variables {
 		parts := strings.SplitN(variable, "=", 2)
@@ -202,7 +202,7 @@ func parseVariables(variables []string, varMap map[string]interface{}) error {
 	return nil
 }
 
-// promptForVariables prompts the user for template variables
+// promptForVariables prompts the user for template variables.
 func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string]interface{}) error {
 	fmt.Println("\n📝 Template Variables:")
 
@@ -260,7 +260,7 @@ func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string
 	return nil
 }
 
-// saveTemplateConfig saves the generated configuration to a file
+// saveTemplateConfig saves the generated configuration to a file.
 func saveTemplateConfig(config map[string]interface{}, filename string) error {
 	data, err := yaml.Marshal(config)
 	if err != nil {
@@ -280,7 +280,7 @@ func saveTemplateConfig(config map[string]interface{}, filename string) error {
 	return nil
 }
 
-// displayTemplateSummary displays a summary of the template generation
+// displayTemplateSummary displays a summary of the template generation.
 func displayTemplateSummary(templateInfo *template.TemplateConfig, variables map[string]interface{}) {
 	fmt.Printf("\n📊 Template Summary:\n")
 	fmt.Printf("   Template: %s\n", templateInfo.Name)

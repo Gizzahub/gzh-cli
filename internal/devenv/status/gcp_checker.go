@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-// GCPChecker implements ServiceChecker for Google Cloud Platform
+// GCPChecker implements ServiceChecker for Google Cloud Platform.
 type GCPChecker struct{}
 
-// NewGCPChecker creates a new GCP status checker
+// NewGCPChecker creates a new GCP status checker.
 func NewGCPChecker() *GCPChecker {
 	return &GCPChecker{}
 }
 
-// Name returns the service name
+// Name returns the service name.
 func (g *GCPChecker) Name() string {
 	return "gcp"
 }
 
-// CheckStatus checks GCP current status
+// CheckStatus checks GCP current status.
 func (g *GCPChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	status := &ServiceStatus{
 		Name:        "gcp",
@@ -89,7 +89,7 @@ func (g *GCPChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	return status, nil
 }
 
-// CheckHealth performs detailed health check for GCP
+// CheckHealth performs detailed health check for GCP.
 func (g *GCPChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	start := time.Now()
 	health := &HealthStatus{
@@ -120,13 +120,13 @@ func (g *GCPChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	return health, nil
 }
 
-// isGcloudAvailable checks if gcloud CLI is installed
+// isGcloudAvailable checks if gcloud CLI is installed.
 func (g *GCPChecker) isGcloudAvailable() bool {
 	_, err := exec.LookPath("gcloud")
 	return err == nil
 }
 
-// getCurrentProject gets the current GCP project
+// getCurrentProject gets the current GCP project.
 func (g *GCPChecker) getCurrentProject(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "gcloud", "config", "get-value", "project")
 	output, err := cmd.Output()
@@ -136,7 +136,7 @@ func (g *GCPChecker) getCurrentProject(ctx context.Context) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getCurrentAccount gets the current GCP account
+// getCurrentAccount gets the current GCP account.
 func (g *GCPChecker) getCurrentAccount(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "gcloud", "config", "get-value", "account")
 	output, err := cmd.Output()
@@ -146,7 +146,7 @@ func (g *GCPChecker) getCurrentAccount(ctx context.Context) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getCurrentRegion gets the current GCP region
+// getCurrentRegion gets the current GCP region.
 func (g *GCPChecker) getCurrentRegion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "gcloud", "config", "get-value", "compute/region")
 	output, err := cmd.Output()
@@ -156,7 +156,7 @@ func (g *GCPChecker) getCurrentRegion(ctx context.Context) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// checkCredentials checks GCP credentials validity
+// checkCredentials checks GCP credentials validity.
 func (g *GCPChecker) checkCredentials(ctx context.Context) (*CredentialStatus, error) {
 	credStatus := &CredentialStatus{
 		Valid: false,

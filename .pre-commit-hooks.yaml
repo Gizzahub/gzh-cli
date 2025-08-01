@@ -1,0 +1,21 @@
+# Pre-push hooks configuration
+# Runs comprehensive quality checks before pushing commits
+
+repos:
+  - repo: local
+    hooks:
+      - id: pre-push-quality
+        name: Pre-push quality check
+        entry: bash -c 'make quality-push'
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: pre-push-test
+        name: Pre-push tests
+        entry: bash -c 'make test-unit'
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [pre-push]

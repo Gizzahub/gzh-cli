@@ -11,12 +11,12 @@ import (
 	"strings"
 )
 
-// PrettierTool implements JavaScript/TypeScript formatting using prettier
+// PrettierTool implements JavaScript/TypeScript formatting using prettier.
 type PrettierTool struct {
 	*BaseTool
 }
 
-// NewPrettierTool creates a new prettier tool
+// NewPrettierTool creates a new prettier tool.
 func NewPrettierTool() *PrettierTool {
 	tool := &PrettierTool{
 		BaseTool: NewBaseTool("prettier", "JavaScript", "prettier", FORMAT),
@@ -31,7 +31,7 @@ func NewPrettierTool() *PrettierTool {
 	return tool
 }
 
-// BuildCommand builds the prettier command
+// BuildCommand builds the prettier command.
 func (t *PrettierTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"--write"} // Always write changes
 
@@ -65,12 +65,12 @@ func (t *PrettierTool) BuildCommand(files []string, options ExecuteOptions) *exe
 	return cmd
 }
 
-// ESLintTool implements JavaScript/TypeScript linting using eslint
+// ESLintTool implements JavaScript/TypeScript linting using eslint.
 type ESLintTool struct {
 	*BaseTool
 }
 
-// NewESLintTool creates a new eslint tool
+// NewESLintTool creates a new eslint tool.
 func NewESLintTool() *ESLintTool {
 	tool := &ESLintTool{
 		BaseTool: NewBaseTool("eslint", "JavaScript", "eslint", LINT),
@@ -85,7 +85,7 @@ func NewESLintTool() *ESLintTool {
 	return tool
 }
 
-// BuildCommand builds the eslint command
+// BuildCommand builds the eslint command.
 func (t *ESLintTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{}
 
@@ -123,7 +123,7 @@ func (t *ESLintTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 	return cmd
 }
 
-// ParseOutput parses eslint JSON output
+// ParseOutput parses eslint JSON output.
 func (t *ESLintTool) ParseOutput(output string) []Issue {
 	if strings.TrimSpace(output) == "" {
 		return []Issue{}
@@ -189,7 +189,7 @@ func (t *ESLintTool) ParseOutput(output string) []Issue {
 	return issues
 }
 
-// parseTextOutput parses plain text output as fallback
+// parseTextOutput parses plain text output as fallback.
 func (t *ESLintTool) parseTextOutput(output string) []Issue {
 	var issues []Issue
 
@@ -227,12 +227,12 @@ func (t *ESLintTool) parseTextOutput(output string) []Issue {
 	return issues
 }
 
-// TSCTool implements TypeScript type checking using tsc
+// TSCTool implements TypeScript type checking using tsc.
 type TSCTool struct {
 	*BaseTool
 }
 
-// NewTSCTool creates a new tsc tool
+// NewTSCTool creates a new tsc tool.
 func NewTSCTool() *TSCTool {
 	tool := &TSCTool{
 		BaseTool: NewBaseTool("tsc", "TypeScript", "tsc", LINT),
@@ -244,7 +244,7 @@ func NewTSCTool() *TSCTool {
 	return tool
 }
 
-// BuildCommand builds the tsc command
+// BuildCommand builds the tsc command.
 func (t *TSCTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"--noEmit"} // Type checking only, no output
 
@@ -275,7 +275,7 @@ func (t *TSCTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd
 	return cmd
 }
 
-// ParseOutput parses tsc output
+// ParseOutput parses tsc output.
 func (t *TSCTool) ParseOutput(output string) []Issue {
 	if strings.TrimSpace(output) == "" {
 		return []Issue{}
@@ -312,7 +312,7 @@ func (t *TSCTool) ParseOutput(output string) []Issue {
 	return issues
 }
 
-// Ensure JavaScript tools implement QualityTool interface
+// Ensure JavaScript tools implement QualityTool interface.
 var (
 	_ QualityTool = (*PrettierTool)(nil)
 	_ QualityTool = (*ESLintTool)(nil)

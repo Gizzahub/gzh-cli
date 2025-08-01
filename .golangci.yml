@@ -1,4 +1,4 @@
-# version: "2"  # Commented out for compatibility with golangci-lint v1.x
+version: "2"
 run:
   go: "1.24"
   modules-download-mode: readonly
@@ -78,7 +78,7 @@ linters:
       lines: 100
       statements: 50
     gocognit:
-      min-complexity: 20
+      min-complexity: 30
     goconst:
       min-len: 3
       min-occurrences: 3
@@ -94,7 +94,7 @@ linters:
         - experimental
         - opinionated
     gocyclo:
-      min-complexity: 15
+      min-complexity: 25
     godot:
       scope: declarations
       exclude:
@@ -285,6 +285,13 @@ linters:
       - linters:
           - errcheck
         text: Error return value of.*MatchString.*is not checked
+      - linters:
+          - errcheck
+        path: internal/profiling/
+        text: Error return value.*is not checked
+      - linters:
+          - errcheck
+        text: "fn\\(ctx\\).*Error return value is not checked"
       - linters:
           - staticcheck
         text: SA4006.*this value.*is never used

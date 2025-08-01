@@ -183,7 +183,7 @@ func TestBenchmarkSuite_RunBenchmark_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	executed := 0
-	result, err := suite.RunBenchmark(ctx, "cancelled-benchmark", func(ctx context.Context) error {
+	result, err := suite.RunBenchmark(ctx, "canceled-benchmark", func(ctx context.Context) error {
 		executed++
 		if executed == 5 {
 			cancel() // Cancel after 5 iterations
@@ -197,7 +197,7 @@ func TestBenchmarkSuite_RunBenchmark_ContextCancellation(t *testing.T) {
 
 	assert.NoError(t, err) // Benchmark itself should not fail
 	assert.NotNil(t, result)
-	assert.Less(t, result.Operations, 1000)     // Should be cancelled early
+	assert.Less(t, result.Operations, 1000)     // Should be canceled early
 	assert.LessOrEqual(t, result.Operations, 5) // At most 5 successful operations
 }
 

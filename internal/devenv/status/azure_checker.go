@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-// AzureChecker implements ServiceChecker for Microsoft Azure
+// AzureChecker implements ServiceChecker for Microsoft Azure.
 type AzureChecker struct{}
 
-// NewAzureChecker creates a new Azure status checker
+// NewAzureChecker creates a new Azure status checker.
 func NewAzureChecker() *AzureChecker {
 	return &AzureChecker{}
 }
 
-// Name returns the service name
+// Name returns the service name.
 func (a *AzureChecker) Name() string {
 	return "azure"
 }
 
-// CheckStatus checks Azure current status
+// CheckStatus checks Azure current status.
 func (a *AzureChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	status := &ServiceStatus{
 		Name:        "azure",
@@ -83,7 +83,7 @@ func (a *AzureChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) 
 	return status, nil
 }
 
-// CheckHealth performs detailed health check for Azure
+// CheckHealth performs detailed health check for Azure.
 func (a *AzureChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	start := time.Now()
 	health := &HealthStatus{
@@ -114,13 +114,13 @@ func (a *AzureChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	return health, nil
 }
 
-// isAzureCLIAvailable checks if Azure CLI is installed
+// isAzureCLIAvailable checks if Azure CLI is installed.
 func (a *AzureChecker) isAzureCLIAvailable() bool {
 	_, err := exec.LookPath("az")
 	return err == nil
 }
 
-// getCurrentSubscription gets the current Azure subscription
+// getCurrentSubscription gets the current Azure subscription.
 func (a *AzureChecker) getCurrentSubscription(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "az", "account", "show", "--query", "name", "--output", "tsv")
 	output, err := cmd.Output()
@@ -130,7 +130,7 @@ func (a *AzureChecker) getCurrentSubscription(ctx context.Context) (string, erro
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getCurrentAccount gets the current Azure account
+// getCurrentAccount gets the current Azure account.
 func (a *AzureChecker) getCurrentAccount(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "az", "account", "show", "--query", "user.name", "--output", "tsv")
 	output, err := cmd.Output()
@@ -140,7 +140,7 @@ func (a *AzureChecker) getCurrentAccount(ctx context.Context) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// checkCredentials checks Azure credentials validity
+// checkCredentials checks Azure credentials validity.
 func (a *AzureChecker) checkCredentials(ctx context.Context) (*CredentialStatus, error) {
 	credStatus := &CredentialStatus{
 		Valid: false,

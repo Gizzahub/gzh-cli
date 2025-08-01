@@ -19,7 +19,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// SystemHealthReport represents comprehensive system health metrics
+// SystemHealthReport represents comprehensive system health metrics.
 type SystemHealthReport struct {
 	Timestamp       time.Time        `json:"timestamp"`
 	OverallStatus   string           `json:"overall_status"`
@@ -31,7 +31,7 @@ type SystemHealthReport struct {
 	Recommendations []string         `json:"recommendations"`
 }
 
-// HealthCategory represents a category of health checks
+// HealthCategory represents a category of health checks.
 type HealthCategory struct {
 	Name     string        `json:"name"`
 	Status   string        `json:"status"`
@@ -40,7 +40,7 @@ type HealthCategory struct {
 	Duration time.Duration `json:"duration"`
 }
 
-// HealthCheck represents an individual health check
+// HealthCheck represents an individual health check.
 type HealthCheck struct {
 	Name      string                 `json:"name"`
 	Status    string                 `json:"status"`
@@ -52,7 +52,7 @@ type HealthCheck struct {
 	Critical  bool                   `json:"critical"`
 }
 
-// HealthAlert represents a health alert
+// HealthAlert represents a health alert.
 type HealthAlert struct {
 	Level      string    `json:"level"`
 	Category   string    `json:"category"`
@@ -61,7 +61,7 @@ type HealthAlert struct {
 	Suggestion string    `json:"suggestion"`
 }
 
-// HealthTrends represents health trends over time
+// HealthTrends represents health trends over time.
 type HealthTrends struct {
 	CPUTrend     string  `json:"cpu_trend"`
 	MemoryTrend  string  `json:"memory_trend"`
@@ -71,7 +71,7 @@ type HealthTrends struct {
 	TrendScore   float64 `json:"trend_score"`
 }
 
-// SystemMetrics represents detailed system metrics
+// SystemMetrics represents detailed system metrics.
 type SystemMetrics struct {
 	CPU         CPUMetrics     `json:"cpu"`
 	Memory      MemoryMetrics  `json:"memory"`
@@ -81,7 +81,7 @@ type SystemMetrics struct {
 	Environment EnvMetrics     `json:"environment"`
 }
 
-// CPUMetrics represents CPU-related metrics
+// CPUMetrics represents CPU-related metrics.
 type CPUMetrics struct {
 	Count       int     `json:"count"`
 	Usage       float64 `json:"usage"`
@@ -91,7 +91,7 @@ type CPUMetrics struct {
 	Temperature float64 `json:"temperature"`
 }
 
-// MemoryMetrics represents memory-related metrics
+// MemoryMetrics represents memory-related metrics.
 type MemoryMetrics struct {
 	Total       uint64  `json:"total"`
 	Available   uint64  `json:"available"`
@@ -101,7 +101,7 @@ type MemoryMetrics struct {
 	SwapUsed    uint64  `json:"swap_used"`
 }
 
-// DiskMetrics represents disk-related metrics
+// DiskMetrics represents disk-related metrics.
 type DiskMetrics struct {
 	Total       uint64  `json:"total"`
 	Available   uint64  `json:"available"`
@@ -111,7 +111,7 @@ type DiskMetrics struct {
 	IOWrites    uint64  `json:"io_writes"`
 }
 
-// NetworkMetrics represents network-related metrics
+// NetworkMetrics represents network-related metrics.
 type NetworkMetrics struct {
 	BytesSent   uint64 `json:"bytes_sent"`
 	BytesRecv   uint64 `json:"bytes_recv"`
@@ -121,7 +121,7 @@ type NetworkMetrics struct {
 	Latency     int64  `json:"latency"`
 }
 
-// ProcessMetrics represents process-related metrics
+// ProcessMetrics represents process-related metrics.
 type ProcessMetrics struct {
 	Goroutines   int    `json:"goroutines"`
 	Threads      int    `json:"threads"`
@@ -131,7 +131,7 @@ type ProcessMetrics struct {
 	GCPauseTotal uint64 `json:"gc_pause_total"`
 }
 
-// EnvMetrics represents environment-related metrics
+// EnvMetrics represents environment-related metrics.
 type EnvMetrics struct {
 	GoVersion string            `json:"go_version"`
 	Platform  string            `json:"platform"`
@@ -140,7 +140,7 @@ type EnvMetrics struct {
 	EnvVars   map[string]string `json:"env_vars"`
 }
 
-// newHealthCmd creates the health subcommand for system health monitoring
+// newHealthCmd creates the health subcommand for system health monitoring.
 func newHealthCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -765,9 +765,10 @@ func generateHealthRecommendations(report *SystemHealthReport) {
 	criticalAlerts := 0
 	warningAlerts := 0
 	for _, alert := range report.Alerts {
-		if alert.Level == "critical" {
+		switch alert.Level {
+		case "critical":
 			criticalAlerts++
-		} else if alert.Level == "warning" {
+		case "warning":
 			warningAlerts++
 		}
 	}
@@ -809,9 +810,10 @@ func saveHealthReport(report *SystemHealthReport, filename string) error {
 func displayHealthResults(report *SystemHealthReport, opts healthOptions) error {
 	// Display overall health status
 	statusIcon := "✅"
-	if report.OverallStatus == "warning" {
+	switch report.OverallStatus {
+	case "warning":
 		statusIcon = "⚠️"
-	} else if report.OverallStatus == "critical" || report.OverallStatus == "unhealthy" {
+	case "critical", "unhealthy":
 		statusIcon = "❌"
 	}
 
@@ -824,9 +826,10 @@ func displayHealthResults(report *SystemHealthReport, opts healthOptions) error 
 	// Display category results
 	for _, category := range report.Categories {
 		categoryIcon := "✅"
-		if category.Status == "warning" {
+		switch category.Status {
+		case "warning":
 			categoryIcon = "⚠️"
-		} else if category.Status == "critical" {
+		case "critical":
 			categoryIcon = "❌"
 		}
 
@@ -839,9 +842,10 @@ func displayHealthResults(report *SystemHealthReport, opts healthOptions) error 
 		if opts.detailed {
 			for _, check := range category.Checks {
 				checkIcon := "✅"
-				if check.Status == "warning" {
+				switch check.Status {
+				case "warning":
 					checkIcon = "⚠️"
-				} else if check.Status == "critical" {
+				case "critical":
 					checkIcon = "❌"
 				}
 
@@ -882,9 +886,10 @@ func displayHealthResults(report *SystemHealthReport, opts healthOptions) error 
 
 func displayHealthSummary(report *SystemHealthReport, opts healthOptions) {
 	statusIcon := "✅"
-	if report.OverallStatus == "warning" {
+	switch report.OverallStatus {
+	case "warning":
 		statusIcon = "⚠️"
-	} else if report.OverallStatus == "critical" || report.OverallStatus == "unhealthy" {
+	case "critical", "unhealthy":
 		statusIcon = "❌"
 	}
 

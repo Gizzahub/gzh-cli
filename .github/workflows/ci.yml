@@ -73,30 +73,23 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      # 포맷 체크
+      # 포맷 체크 (Make 타겟 사용)
       - name: Format check
-        run: |
-          go install mvdan.cc/gofumpt@latest
-          test -z "$(gofumpt -l .)"
+        run: make format-strict
 
-      # 최신 버전 golangci-lint
+      # 린트 체크 (Make 타겟 사용)
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: latest
-          args: --config .golangci.yml --timeout=10m
+        run: make lint-check
 
-      # 보안 스캔
+      # 보안 스캔 (Make 타겟 사용)
       - name: Security scan
-        run: |
-          go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-          gosec -fmt sarif -out gosec.sarif ./...
+        run: make security-json
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: gosec.sarif
-        if: always()
+          sarif_file: gosec-report.json
+        if: always() && hashFiles('gosec-report.json') != ''
 
   # 🔨 빌드 검증
   build:

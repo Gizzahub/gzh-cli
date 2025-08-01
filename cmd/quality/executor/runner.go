@@ -17,13 +17,13 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/quality/tools"
 )
 
-// ParallelExecutor executes quality tools in parallel
+// ParallelExecutor executes quality tools in parallel.
 type ParallelExecutor struct {
 	maxWorkers int
 	timeout    time.Duration
 }
 
-// NewParallelExecutor creates a new parallel executor
+// NewParallelExecutor creates a new parallel executor.
 func NewParallelExecutor(maxWorkers int, timeout time.Duration) *ParallelExecutor {
 	if maxWorkers <= 0 {
 		maxWorkers = 4 // Default to 4 workers
@@ -38,12 +38,12 @@ func NewParallelExecutor(maxWorkers int, timeout time.Duration) *ParallelExecuto
 	}
 }
 
-// Execute runs the execution plan sequentially
+// Execute runs the execution plan sequentially.
 func (e *ParallelExecutor) Execute(ctx context.Context, plan *tools.ExecutionPlan) ([]*tools.Result, error) {
 	return e.ExecuteParallel(ctx, plan, 1)
 }
 
-// ExecuteParallel runs the execution plan with parallel execution
+// ExecuteParallel runs the execution plan with parallel execution.
 func (e *ParallelExecutor) ExecuteParallel(ctx context.Context, plan *tools.ExecutionPlan, workers int) ([]*tools.Result, error) {
 	if workers <= 0 {
 		workers = e.maxWorkers
@@ -126,7 +126,7 @@ func (e *ParallelExecutor) ExecuteParallel(ctx context.Context, plan *tools.Exec
 	return results, nil
 }
 
-// worker processes tasks from the task channel
+// worker processes tasks from the task channel.
 func (e *ParallelExecutor) worker(ctx context.Context, wg *sync.WaitGroup, taskChan <-chan tools.Task, resultChan chan<- *tools.Result, errorChan chan<- error) {
 	defer wg.Done()
 
@@ -160,19 +160,19 @@ func (e *ParallelExecutor) worker(ctx context.Context, wg *sync.WaitGroup, taskC
 	}
 }
 
-// ExecutionPlanner creates execution plans
+// ExecutionPlanner creates execution plans.
 type ExecutionPlanner struct {
 	analyzer ProjectAnalyzer
 }
 
-// NewExecutionPlanner creates a new execution planner
+// NewExecutionPlanner creates a new execution planner.
 func NewExecutionPlanner(analyzer ProjectAnalyzer) *ExecutionPlanner {
 	return &ExecutionPlanner{
 		analyzer: analyzer,
 	}
 }
 
-// CreatePlan creates an execution plan for the given options
+// CreatePlan creates an execution plan for the given options.
 func (p *ExecutionPlanner) CreatePlan(projectRoot string, registry tools.ToolRegistry, options PlanOptions) (*tools.ExecutionPlan, error) {
 	// Analyze the project
 	analysis, err := p.analyzer.AnalyzeProject(projectRoot, registry)
@@ -268,7 +268,7 @@ func (p *ExecutionPlanner) CreatePlan(projectRoot string, registry tools.ToolReg
 	}, nil
 }
 
-// PlanOptions contains options for creating execution plans
+// PlanOptions contains options for creating execution plans.
 type PlanOptions struct {
 	Files      []string          // Specific files to process
 	Fix        bool              // Auto-fix issues if supported
@@ -284,7 +284,7 @@ type PlanOptions struct {
 	Changed bool   // Process only changed files (staged + modified + untracked)
 }
 
-// matchesToolType checks if a tool matches the requested type options
+// matchesToolType checks if a tool matches the requested type options.
 func matchesToolType(tool tools.QualityTool, options PlanOptions) bool {
 	toolType := tool.Type()
 
@@ -300,7 +300,7 @@ func matchesToolType(tool tools.QualityTool, options PlanOptions) bool {
 	return true
 }
 
-// matchesLanguageFilter checks if a tool matches the language filter
+// matchesLanguageFilter checks if a tool matches the language filter.
 func matchesLanguageFilter(tool tools.QualityTool, options PlanOptions) bool {
 	if options.Language == "" {
 		return true // No language filter
@@ -308,7 +308,7 @@ func matchesLanguageFilter(tool tools.QualityTool, options PlanOptions) bool {
 	return tool.Language() == options.Language
 }
 
-// matchesToolFilter checks if a tool matches the tool name filter
+// matchesToolFilter checks if a tool matches the tool name filter.
 func matchesToolFilter(tool tools.QualityTool, options PlanOptions) bool {
 	if len(options.ToolFilter) == 0 {
 		return true // No tool filter
@@ -323,7 +323,7 @@ func matchesToolFilter(tool tools.QualityTool, options PlanOptions) bool {
 	return false
 }
 
-// applyFileFilters applies various file filtering options
+// applyFileFilters applies various file filtering options.
 func (p *ExecutionPlanner) applyFileFilters(projectRoot string, files []string, options PlanOptions) ([]string, error) {
 	var filteredFiles []string
 
@@ -348,7 +348,7 @@ func (p *ExecutionPlanner) applyFileFilters(projectRoot string, files []string, 
 	return filteredFiles, nil
 }
 
-// getGitFilteredFiles returns files based on Git filtering options
+// getGitFilteredFiles returns files based on Git filtering options.
 func (p *ExecutionPlanner) getGitFilteredFiles(projectRoot string, options PlanOptions) ([]string, error) {
 	// Lazy import to avoid dependency issues
 	gitUtils := &GitUtils{projectRoot: projectRoot}
@@ -380,7 +380,7 @@ func (p *ExecutionPlanner) getGitFilteredFiles(projectRoot string, options PlanO
 	return gitFiles, nil
 }
 
-// GitUtils provides Git-related utilities (embedded for simplicity)
+// GitUtils provides Git-related utilities (embedded for simplicity).
 type GitUtils struct {
 	projectRoot string
 }
@@ -485,7 +485,7 @@ func (g *GitUtils) deduplicateAndMakeAbsolute(files []string) []string {
 	return result
 }
 
-// intersectFiles returns the intersection of two file slices
+// intersectFiles returns the intersection of two file slices.
 func intersectFiles(files1, files2 []string) []string {
 	fileSet := make(map[string]bool)
 	for _, file := range files2 {
@@ -502,13 +502,13 @@ func intersectFiles(files1, files2 []string) []string {
 	return result
 }
 
-// ProjectAnalyzer is an alias to avoid circular import
+// ProjectAnalyzer is an alias to avoid circular import.
 type ProjectAnalyzer interface {
 	AnalyzeProject(projectRoot string, registry tools.ToolRegistry) (*AnalysisResult, error)
 	GetOptimalToolSelection(result *AnalysisResult, registry tools.ToolRegistry) map[string][]tools.QualityTool
 }
 
-// AnalysisResult contains the results of project analysis
+// AnalysisResult contains the results of project analysis.
 type AnalysisResult struct {
 	ProjectRoot      string
 	Languages        map[string][]string
@@ -518,5 +518,5 @@ type AnalysisResult struct {
 	Issues           []string
 }
 
-// Ensure ParallelExecutor implements Executor
+// Ensure ParallelExecutor implements Executor.
 var _ tools.Executor = (*ParallelExecutor)(nil)

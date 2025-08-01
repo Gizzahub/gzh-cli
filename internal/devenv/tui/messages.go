@@ -9,77 +9,77 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/devenv/status"
 )
 
-// Message types for the TUI application
+// Message types for the TUI application.
 type (
-	// TickMsg represents a timer tick
+	// TickMsg represents a timer tick.
 	TickMsg struct {
 		Time time.Time
 	}
 
-	// StatusUpdateMsg represents an update to service statuses
+	// StatusUpdateMsg represents an update to service statuses.
 	StatusUpdateMsg struct {
 		Statuses []status.ServiceStatus
 	}
 
-	// ErrorMsg represents an error
+	// ErrorMsg represents an error.
 	ErrorMsg struct {
 		Error error
 	}
 
-	// LoadingMsg represents loading state changes
+	// LoadingMsg represents loading state changes.
 	LoadingMsg struct {
 		Loading bool
 		Message string
 	}
 
-	// NavigationMsg represents navigation between views
+	// NavigationMsg represents navigation between views.
 	NavigationMsg struct {
 		View ViewType
 		Data interface{}
 	}
 
-	// ServiceSelectedMsg represents a service being selected
+	// ServiceSelectedMsg represents a service being selected.
 	ServiceSelectedMsg struct {
 		Service string
 		Status  *status.ServiceStatus
 	}
 
-	// EnvironmentSwitchMsg represents environment switching
+	// EnvironmentSwitchMsg represents environment switching.
 	EnvironmentSwitchMsg struct {
 		Environment string
 		Success     bool
 		Error       error
 	}
 
-	// RefreshMsg represents a manual refresh request
+	// RefreshMsg represents a manual refresh request.
 	RefreshMsg struct{}
 
-	// QuitMsg represents a quit request
+	// QuitMsg represents a quit request.
 	QuitMsg struct{}
 
-	// WindowSizeMsg represents terminal window size changes
+	// WindowSizeMsg represents terminal window size changes.
 	WindowSizeMsg struct {
 		Width  int
 		Height int
 	}
 
-	// HelpToggleMsg represents help display toggle
+	// HelpToggleMsg represents help display toggle.
 	HelpToggleMsg struct{}
 
-	// SearchMsg represents search functionality
+	// SearchMsg represents search functionality.
 	SearchMsg struct {
 		Query   string
 		Results []SearchResult
 	}
 
-	// FilterMsg represents filter functionality
+	// FilterMsg represents filter functionality.
 	FilterMsg struct {
 		Filter string
 		Active bool
 	}
 )
 
-// SearchResult represents a search result item
+// SearchResult represents a search result item.
 type SearchResult struct {
 	Type        string // "service", "action", "setting"
 	Name        string
@@ -87,7 +87,7 @@ type SearchResult struct {
 	Action      func() error
 }
 
-// ViewType represents different views in the TUI
+// ViewType represents different views in the TUI.
 type ViewType int
 
 const (
@@ -100,7 +100,7 @@ const (
 	ViewSearch
 )
 
-// String returns the string representation of a ViewType
+// String returns the string representation of a ViewType.
 func (v ViewType) String() string {
 	switch v {
 	case ViewDashboard:
@@ -122,7 +122,7 @@ func (v ViewType) String() string {
 	}
 }
 
-// AppState represents the overall application state
+// AppState represents the overall application state.
 type AppState int
 
 const (
@@ -137,7 +137,7 @@ const (
 	StateSearch
 )
 
-// String returns the string representation of an AppState
+// String returns the string representation of an AppState.
 func (s AppState) String() string {
 	switch s {
 	case StateLoading:

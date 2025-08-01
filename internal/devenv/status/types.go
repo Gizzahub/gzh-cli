@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// StatusType represents the current status of a service
+// StatusType represents the current status of a service.
 type StatusType string
 
 const (
@@ -18,7 +18,7 @@ const (
 	StatusUnknown  StatusType = "unknown"
 )
 
-// ServiceStatus represents the current status of a development environment service
+// ServiceStatus represents the current status of a development environment service.
 type ServiceStatus struct {
 	Name        string            `json:"name"`
 	Status      StatusType        `json:"status"`
@@ -29,7 +29,7 @@ type ServiceStatus struct {
 	Details     map[string]string `json:"details,omitempty"`
 }
 
-// CurrentConfig holds the current configuration details for a service
+// CurrentConfig holds the current configuration details for a service.
 type CurrentConfig struct {
 	Profile   string `json:"profile,omitempty"`
 	Region    string `json:"region,omitempty"`
@@ -39,7 +39,7 @@ type CurrentConfig struct {
 	Account   string `json:"account,omitempty"`
 }
 
-// CredentialStatus represents the status of service credentials
+// CredentialStatus represents the status of service credentials.
 type CredentialStatus struct {
 	Valid     bool      `json:"valid"`
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
@@ -47,7 +47,7 @@ type CredentialStatus struct {
 	Warning   string    `json:"warning,omitempty"`
 }
 
-// HealthStatus represents detailed health check information
+// HealthStatus represents detailed health check information.
 type HealthStatus struct {
 	Status    StatusType             `json:"status"`
 	Message   string                 `json:"message,omitempty"`
@@ -56,7 +56,7 @@ type HealthStatus struct {
 	Details   map[string]interface{} `json:"details,omitempty"`
 }
 
-// StatusOptions configures how status information is collected
+// StatusOptions configures how status information is collected.
 type StatusOptions struct {
 	Services     []string      `json:"services,omitempty"`
 	CheckHealth  bool          `json:"check_health"`
@@ -65,14 +65,14 @@ type StatusOptions struct {
 	IncludeCache bool          `json:"include_cache"`
 }
 
-// ServiceChecker interface for checking service status
+// ServiceChecker interface for checking service status.
 type ServiceChecker interface {
 	Name() string
 	CheckStatus(ctx context.Context) (*ServiceStatus, error)
 	CheckHealth(ctx context.Context) (*HealthStatus, error)
 }
 
-// StatusFormatter interface for formatting status output
+// StatusFormatter interface for formatting status output.
 type StatusFormatter interface {
 	Format(statuses []ServiceStatus) (string, error)
 }

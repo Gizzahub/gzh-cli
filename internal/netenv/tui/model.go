@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Model represents the main net-env TUI application model
+// Model represents the main net-env TUI application model.
 type Model struct {
 	state       AppState
 	currentView ViewType
@@ -36,7 +36,7 @@ type Model struct {
 	quitting bool
 }
 
-// NewModel creates a new net-env TUI model
+// NewModel creates a new net-env TUI model.
 func NewModel(ctx context.Context) *Model {
 	return &Model{
 		state:          StateLoading,
@@ -52,7 +52,7 @@ func NewModel(ctx context.Context) *Model {
 	}
 }
 
-// Init initializes the TUI application
+// Init initializes the TUI application.
 func (m *Model) Init() tea.Cmd {
 	return tea.Batch(
 		m.refreshNetworkStatus(),
@@ -61,7 +61,7 @@ func (m *Model) Init() tea.Cmd {
 	)
 }
 
-// Update handles all messages in the TUI
+// Update handles all messages in the TUI.
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
@@ -159,7 +159,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// View renders the current view
+// View renders the current view.
 func (m *Model) View() string {
 	if m.quitting {
 		return "Goodbye! 👋\n"
@@ -185,7 +185,7 @@ func (m *Model) View() string {
 	}
 }
 
-// handleGlobalKeys handles global keyboard shortcuts
+// handleGlobalKeys handles global keyboard shortcuts.
 func (m *Model) handleGlobalKeys(msg tea.KeyMsg) bool {
 	switch msg.String() {
 	case "ctrl+c", "q", "Q":
@@ -208,7 +208,7 @@ func (m *Model) handleGlobalKeys(msg tea.KeyMsg) bool {
 	}
 }
 
-// updateCurrentView updates the current view with a message
+// updateCurrentView updates the current view with a message.
 func (m *Model) updateCurrentView(msg tea.Msg) tea.Cmd {
 	switch m.currentView {
 	case ViewDashboard:
@@ -238,7 +238,7 @@ func (m *Model) updateCurrentView(msg tea.Msg) tea.Cmd {
 	}
 }
 
-// updateStateFromView updates the app state based on current view
+// updateStateFromView updates the app state based on current view.
 func (m *Model) updateStateFromView() {
 	switch m.currentView {
 	case ViewDashboard:
@@ -258,7 +258,7 @@ func (m *Model) updateStateFromView() {
 	}
 }
 
-// refreshNetworkStatus refreshes the network status
+// refreshNetworkStatus refreshes the network status.
 func (m *Model) refreshNetworkStatus() tea.Cmd {
 	return func() tea.Msg {
 		// Create mock network status for now
@@ -324,14 +324,14 @@ func (m *Model) refreshNetworkStatus() tea.Cmd {
 	}
 }
 
-// startUpdateTicker starts the periodic update ticker
+// startUpdateTicker starts the periodic update ticker.
 func (m *Model) startUpdateTicker() tea.Cmd {
 	return tea.Tick(m.updateInterval, func(t time.Time) tea.Msg {
 		return TickMsg{Time: t}
 	})
 }
 
-// switchProfile switches to a different network profile
+// switchProfile switches to a different network profile.
 func (m *Model) switchProfile(profileName string) tea.Cmd {
 	return func() tea.Msg {
 		// In a real implementation, this would:

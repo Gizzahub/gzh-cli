@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// OperationStatus represents the status of a synclone operation
+// OperationStatus represents the status of a synclone operation.
 type OperationStatus string
 
 const (
@@ -18,7 +18,7 @@ const (
 	StatusCanceled   OperationStatus = "canceled"
 )
 
-// OperationState represents the comprehensive state of a synclone operation
+// OperationState represents the comprehensive state of a synclone operation.
 type OperationState struct {
 	ID           string               `json:"id"`
 	StartTime    time.Time            `json:"start_time"`
@@ -31,7 +31,7 @@ type OperationState struct {
 	Metrics      OperationMetrics     `json:"metrics"`
 }
 
-// Config represents the configuration used for the operation
+// Config represents the configuration used for the operation.
 type Config struct {
 	Version   string                 `json:"version"`
 	Global    map[string]interface{} `json:"global"`
@@ -39,7 +39,7 @@ type Config struct {
 	SyncMode  map[string]interface{} `json:"sync_mode"`
 }
 
-// OperationProgress tracks the overall progress of the operation
+// OperationProgress tracks the overall progress of the operation.
 type OperationProgress struct {
 	TotalRepos      int       `json:"total_repos"`
 	CompletedRepos  int       `json:"completed_repos"`
@@ -51,7 +51,7 @@ type OperationProgress struct {
 	EstimatedETA    time.Time `json:"estimated_eta,omitempty"`
 }
 
-// RepoState represents the state of an individual repository
+// RepoState represents the state of an individual repository.
 type RepoState struct {
 	Name         string    `json:"name"`
 	Status       string    `json:"status"` // pending, cloning, completed, failed
@@ -66,7 +66,7 @@ type RepoState struct {
 	Org          string    `json:"org"`
 }
 
-// OperationError represents an error that occurred during the operation
+// OperationError represents an error that occurred during the operation.
 type OperationError struct {
 	Timestamp time.Time `json:"timestamp"`
 	Type      string    `json:"type"`
@@ -75,7 +75,7 @@ type OperationError struct {
 	Retryable bool      `json:"retryable"`
 }
 
-// OperationMetrics tracks performance metrics for the operation
+// OperationMetrics tracks performance metrics for the operation.
 type OperationMetrics struct {
 	TotalDuration      time.Duration     `json:"total_duration"`
 	AvgRepoCloneTime   time.Duration     `json:"avg_repo_clone_time"`
@@ -87,21 +87,21 @@ type OperationMetrics struct {
 	RetryStatistics    RetryStatistics   `json:"retry_statistics"`
 }
 
-// RepoMetric represents performance metrics for a single repository
+// RepoMetric represents performance metrics for a single repository.
 type RepoMetric struct {
 	Name     string        `json:"name"`
 	Duration time.Duration `json:"duration"`
 	Size     int64         `json:"size"`
 }
 
-// ConcurrencyMetric tracks concurrency-related metrics
+// ConcurrencyMetric tracks concurrency-related metrics.
 type ConcurrencyMetric struct {
 	MaxWorkers       int     `json:"max_workers"`
 	AvgActiveWorkers float64 `json:"avg_active_workers"`
 	WorkerEfficiency float64 `json:"worker_efficiency"`
 }
 
-// RetryStatistics tracks retry-related statistics
+// RetryStatistics tracks retry-related statistics.
 type RetryStatistics struct {
 	TotalRetries      int            `json:"total_retries"`
 	RetriedRepos      int            `json:"retried_repos"`
@@ -109,7 +109,7 @@ type RetryStatistics struct {
 	AvgRetriesPerRepo float64        `json:"avg_retries_per_repo"`
 }
 
-// EnvironmentState represents the environment state at the time of operation
+// EnvironmentState represents the environment state at the time of operation.
 type EnvironmentState struct {
 	NetworkStatus    string            `json:"network_status"`
 	DiskSpace        int64             `json:"disk_space_bytes"`
@@ -120,7 +120,7 @@ type EnvironmentState struct {
 	WorkingDirectory string            `json:"working_directory"`
 }
 
-// UpdateProgress updates the progress information
+// UpdateProgress updates the progress information.
 func (os *OperationState) UpdateProgress() {
 	completed := 0
 	failed := 0
@@ -149,7 +149,7 @@ func (os *OperationState) UpdateProgress() {
 	os.LastUpdate = time.Now()
 }
 
-// AddError adds an error to the operation state
+// AddError adds an error to the operation state.
 func (os *OperationState) AddError(errorType, message, repoName string, retryable bool) {
 	os.Errors = append(os.Errors, OperationError{
 		Timestamp: time.Now(),
@@ -161,12 +161,12 @@ func (os *OperationState) AddError(errorType, message, repoName string, retryabl
 	os.LastUpdate = time.Now()
 }
 
-// IsResumable returns true if the operation can be resumed
+// IsResumable returns true if the operation can be resumed.
 func (os *OperationState) IsResumable() bool {
 	return os.Status == StatusInProgress || os.Status == StatusFailed
 }
 
-// GetRetryableRepos returns repositories that can be retried
+// GetRetryableRepos returns repositories that can be retried.
 func (os *OperationState) GetRetryableRepos() []string {
 	var retryable []string
 
@@ -179,7 +179,7 @@ func (os *OperationState) GetRetryableRepos() []string {
 	return retryable
 }
 
-// GetPendingRepos returns repositories that haven't been processed
+// GetPendingRepos returns repositories that haven't been processed.
 func (os *OperationState) GetPendingRepos() []string {
 	var pending []string
 
@@ -192,7 +192,7 @@ func (os *OperationState) GetPendingRepos() []string {
 	return pending
 }
 
-// CalculateETA estimates the completion time based on current progress
+// CalculateETA estimates the completion time based on current progress.
 func (os *OperationState) CalculateETA() time.Time {
 	if os.Progress.CompletedRepos == 0 {
 		return time.Time{} // Cannot estimate without any completed repos

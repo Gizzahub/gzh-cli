@@ -8,13 +8,13 @@ import (
 	"sort"
 )
 
-// DependencyResolver handles service dependency resolution and execution ordering
+// DependencyResolver handles service dependency resolution and execution ordering.
 type DependencyResolver struct {
 	services     map[string]ServiceConfig
 	dependencies []string
 }
 
-// NewDependencyResolver creates a new dependency resolver
+// NewDependencyResolver creates a new dependency resolver.
 func NewDependencyResolver(services map[string]ServiceConfig, dependencies []string) *DependencyResolver {
 	return &DependencyResolver{
 		services:     services,
@@ -22,13 +22,13 @@ func NewDependencyResolver(services map[string]ServiceConfig, dependencies []str
 	}
 }
 
-// ServiceGroup represents a group of services that can be executed in parallel
+// ServiceGroup represents a group of services that can be executed in parallel.
 type ServiceGroup struct {
 	Services []string
 	Level    int
 }
 
-// ResolveDependencies resolves service dependencies and returns execution order
+// ResolveDependencies resolves service dependencies and returns execution order.
 func (dr *DependencyResolver) ResolveDependencies() ([]ServiceGroup, error) {
 	// Build dependency graph
 	graph := make(map[string][]string)
@@ -71,7 +71,7 @@ func (dr *DependencyResolver) ResolveDependencies() ([]ServiceGroup, error) {
 	return dr.topologicalSort(graph, inDegree)
 }
 
-// parseDependency parses a dependency string like "aws -> kubernetes"
+// parseDependency parses a dependency string like "aws -> kubernetes".
 func parseDependency(dep string) []string {
 	// Simple parsing - could be enhanced with regex for more complex cases
 	parts := []string{}
@@ -101,7 +101,7 @@ func parseDependency(dep string) []string {
 	return parts
 }
 
-// trim removes leading and trailing whitespace
+// trim removes leading and trailing whitespace.
 func trim(s string) string {
 	start := 0
 	end := len(s)
@@ -119,7 +119,7 @@ func trim(s string) string {
 	return s[start:end]
 }
 
-// detectCycles uses DFS to detect cycles in the dependency graph
+// detectCycles uses DFS to detect cycles in the dependency graph.
 func (dr *DependencyResolver) detectCycles(graph map[string][]string) error {
 	white := make(map[string]bool) // unvisited
 	gray := make(map[string]bool)  // visiting
@@ -142,7 +142,7 @@ func (dr *DependencyResolver) detectCycles(graph map[string][]string) error {
 	return nil
 }
 
-// dfsVisit performs DFS visit for cycle detection
+// dfsVisit performs DFS visit for cycle detection.
 func (dr *DependencyResolver) dfsVisit(service string, graph map[string][]string, white, gray, black map[string]bool) error {
 	// Move from white to gray
 	white[service] = false
@@ -167,7 +167,7 @@ func (dr *DependencyResolver) dfsVisit(service string, graph map[string][]string
 	return nil
 }
 
-// topologicalSort performs topological sorting with level grouping
+// topologicalSort performs topological sorting with level grouping.
 func (dr *DependencyResolver) topologicalSort(graph map[string][]string, inDegree map[string]int) ([]ServiceGroup, error) {
 	var groups []ServiceGroup
 	level := 0
@@ -218,7 +218,7 @@ func (dr *DependencyResolver) topologicalSort(graph map[string][]string, inDegre
 	return groups, nil
 }
 
-// GetExecutionOrder returns a flattened list of services in execution order
+// GetExecutionOrder returns a flattened list of services in execution order.
 func (dr *DependencyResolver) GetExecutionOrder() ([]string, error) {
 	groups, err := dr.ResolveDependencies()
 	if err != nil {
@@ -233,12 +233,12 @@ func (dr *DependencyResolver) GetExecutionOrder() ([]string, error) {
 	return order, nil
 }
 
-// GetParallelGroups returns groups of services that can be executed in parallel
+// GetParallelGroups returns groups of services that can be executed in parallel.
 func (dr *DependencyResolver) GetParallelGroups() ([]ServiceGroup, error) {
 	return dr.ResolveDependencies()
 }
 
-// ValidateDependencies validates that all dependencies are satisfiable
+// ValidateDependencies validates that all dependencies are satisfiable.
 func (dr *DependencyResolver) ValidateDependencies() error {
 	_, err := dr.ResolveDependencies()
 	return err

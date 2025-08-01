@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-// DockerChecker implements ServiceChecker for Docker
+// DockerChecker implements ServiceChecker for Docker.
 type DockerChecker struct{}
 
-// NewDockerChecker creates a new Docker status checker
+// NewDockerChecker creates a new Docker status checker.
 func NewDockerChecker() *DockerChecker {
 	return &DockerChecker{}
 }
 
-// Name returns the service name
+// Name returns the service name.
 func (d *DockerChecker) Name() string {
 	return "docker"
 }
 
-// CheckStatus checks Docker current status
+// CheckStatus checks Docker current status.
 func (d *DockerChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error) {
 	status := &ServiceStatus{
 		Name:        "docker",
@@ -70,7 +70,7 @@ func (d *DockerChecker) CheckStatus(ctx context.Context) (*ServiceStatus, error)
 	return status, nil
 }
 
-// CheckHealth performs detailed health check for Docker
+// CheckHealth performs detailed health check for Docker.
 func (d *DockerChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) {
 	start := time.Now()
 	health := &HealthStatus{
@@ -119,20 +119,20 @@ func (d *DockerChecker) CheckHealth(ctx context.Context) (*HealthStatus, error) 
 	return health, nil
 }
 
-// isDockerAvailable checks if Docker CLI is installed
+// isDockerAvailable checks if Docker CLI is installed.
 func (d *DockerChecker) isDockerAvailable() bool {
 	_, err := exec.LookPath("docker")
 	return err == nil
 }
 
-// isDockerDaemonRunning checks if Docker daemon is running
+// isDockerDaemonRunning checks if Docker daemon is running.
 func (d *DockerChecker) isDockerDaemonRunning(ctx context.Context) bool {
 	cmd := exec.CommandContext(ctx, "docker", "info")
 	err := cmd.Run()
 	return err == nil
 }
 
-// getCurrentContext gets the current Docker context
+// getCurrentContext gets the current Docker context.
 func (d *DockerChecker) getCurrentContext(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "docker", "context", "show")
 	output, err := cmd.Output()

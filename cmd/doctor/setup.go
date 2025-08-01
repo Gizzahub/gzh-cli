@@ -19,7 +19,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// SetupResult represents a setup step result
+// SetupResult represents a setup step result.
 type SetupResult struct {
 	Step     string        `json:"step"`
 	Status   string        `json:"status"` // "success", "failed", "skipped"
@@ -30,7 +30,7 @@ type SetupResult struct {
 	Error    string        `json:"error,omitempty"`
 }
 
-// SetupReport represents the complete setup report
+// SetupReport represents the complete setup report.
 type SetupReport struct {
 	Timestamp    time.Time     `json:"timestamp"`
 	SetupType    string        `json:"setup_type"`
@@ -45,7 +45,7 @@ type SetupReport struct {
 	Duration     time.Duration `json:"duration"`
 }
 
-// newSetupCmd creates the setup subcommand for automated development environment setup
+// newSetupCmd creates the setup subcommand for automated development environment setup.
 func newSetupCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -203,7 +203,7 @@ func runAutomatedSetup(ctx context.Context, flags *cli.CommonFlags, opts setupOp
 	}
 }
 
-// SetupStep represents a single setup step
+// SetupStep represents a single setup step.
 type SetupStep struct {
 	Name        string
 	Description string

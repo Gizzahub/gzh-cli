@@ -10,14 +10,14 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// PerformanceMiddleware provides performance monitoring capabilities
+// PerformanceMiddleware provides performance monitoring capabilities.
 type PerformanceMiddleware struct {
 	profiler *Profiler
 	logger   *logger.SimpleLogger
 	enabled  bool
 }
 
-// NewPerformanceMiddleware creates a new performance middleware
+// NewPerformanceMiddleware creates a new performance middleware.
 func NewPerformanceMiddleware(profiler *Profiler, enabled bool) *PerformanceMiddleware {
 	return &PerformanceMiddleware{
 		profiler: profiler,
@@ -26,7 +26,7 @@ func NewPerformanceMiddleware(profiler *Profiler, enabled bool) *PerformanceMidd
 	}
 }
 
-// OperationMetrics holds performance metrics for an operation
+// OperationMetrics holds performance metrics for an operation.
 type OperationMetrics struct {
 	Name             string
 	StartTime        time.Time
@@ -40,7 +40,7 @@ type OperationMetrics struct {
 	Error            error
 }
 
-// TrackOperation wraps an operation with performance tracking
+// TrackOperation wraps an operation with performance tracking.
 func (pm *PerformanceMiddleware) TrackOperation(_ context.Context, operationName string, operation func() error) error {
 	if !pm.enabled {
 		return operation()
@@ -91,7 +91,7 @@ func (pm *PerformanceMiddleware) TrackOperation(_ context.Context, operationName
 	return err
 }
 
-// TrackOperationWithProfiling wraps an operation with performance tracking and profiling
+// TrackOperationWithProfiling wraps an operation with performance tracking and profiling.
 func (pm *PerformanceMiddleware) TrackOperationWithProfiling(ctx context.Context, operationName string, profileTypes []ProfileType, operation func() error) error {
 	if !pm.enabled || pm.profiler == nil {
 		return pm.TrackOperation(ctx, operationName, operation)
@@ -102,7 +102,7 @@ func (pm *PerformanceMiddleware) TrackOperationWithProfiling(ctx context.Context
 	})
 }
 
-// logMetrics logs the performance metrics
+// logMetrics logs the performance metrics.
 func (pm *PerformanceMiddleware) logMetrics(metrics *OperationMetrics) {
 	goroutineDelta := metrics.GoroutinesAfter - metrics.GoroutinesBefore
 	var memoryDelta int64
@@ -140,14 +140,14 @@ func (pm *PerformanceMiddleware) logMetrics(metrics *OperationMetrics) {
 	}
 }
 
-// WrapFunction creates a performance-tracked version of a function
+// WrapFunction creates a performance-tracked version of a function.
 func (pm *PerformanceMiddleware) WrapFunction(operationName string, fn func() error) func() error {
 	return func() error {
 		return pm.TrackOperation(context.Background(), operationName, fn)
 	}
 }
 
-// WrapFunctionWithContext creates a performance-tracked version of a function with context
+// WrapFunctionWithContext creates a performance-tracked version of a function with context.
 func (pm *PerformanceMiddleware) WrapFunctionWithContext(operationName string, fn func(context.Context) error) func(context.Context) error {
 	return func(ctx context.Context) error {
 		return pm.TrackOperation(ctx, operationName, func() error {
@@ -156,7 +156,7 @@ func (pm *PerformanceMiddleware) WrapFunctionWithContext(operationName string, f
 	}
 }
 
-// BatchOperationTracker tracks performance metrics for batch operations
+// BatchOperationTracker tracks performance metrics for batch operations.
 type BatchOperationTracker struct {
 	middleware    *PerformanceMiddleware
 	operationName string
@@ -166,7 +166,7 @@ type BatchOperationTracker struct {
 	failed        int
 }
 
-// NewBatchOperationTracker creates a new batch operation tracker
+// NewBatchOperationTracker creates a new batch operation tracker.
 func (pm *PerformanceMiddleware) NewBatchOperationTracker(operationName string, batchSize int) *BatchOperationTracker {
 	return &BatchOperationTracker{
 		middleware:    pm,
@@ -176,7 +176,7 @@ func (pm *PerformanceMiddleware) NewBatchOperationTracker(operationName string, 
 	}
 }
 
-// TrackItem tracks completion of a single item in the batch
+// TrackItem tracks completion of a single item in the batch.
 func (bot *BatchOperationTracker) TrackItem(success bool) {
 	if success {
 		bot.completed++
@@ -185,7 +185,7 @@ func (bot *BatchOperationTracker) TrackItem(success bool) {
 	}
 }
 
-// Finish completes the batch operation tracking
+// Finish completes the batch operation tracking.
 func (bot *BatchOperationTracker) Finish() {
 	if !bot.middleware.enabled {
 		return

@@ -15,7 +15,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/synclone/discovery"
 )
 
-// newConfigGenerateDiscoverCmd creates the config generate discover command
+// newConfigGenerateDiscoverCmd creates the config generate discover command.
 func newConfigGenerateDiscoverCmd() *cobra.Command {
 	var (
 		basePath       string
@@ -68,7 +68,7 @@ Examples:
 	return cmd
 }
 
-// runConfigGenerateDiscover executes the discover command
+// runConfigGenerateDiscover executes the discover command.
 func runConfigGenerateDiscover(basePath, outputFile string, mergeExisting, recursive bool, maxDepth int, ignorePatterns []string, followSymlinks bool) error {
 	fmt.Printf("🔍 Discovering repositories in %s...\n", basePath)
 
@@ -118,7 +118,7 @@ func runConfigGenerateDiscover(basePath, outputFile string, mergeExisting, recur
 	return nil
 }
 
-// groupRepositoriesByProviderOrg groups repositories by provider and organization
+// groupRepositoriesByProviderOrg groups repositories by provider and organization.
 func groupRepositoriesByProviderOrg(repos []discovery.DiscoveredRepo) map[string]map[string][]discovery.DiscoveredRepo {
 	grouped := make(map[string]map[string][]discovery.DiscoveredRepo)
 
@@ -143,7 +143,7 @@ func groupRepositoriesByProviderOrg(repos []discovery.DiscoveredRepo) map[string
 	return grouped
 }
 
-// generateSyncloneConfig generates a synclone configuration from discovered repositories
+// generateSyncloneConfig generates a synclone configuration from discovered repositories.
 func generateSyncloneConfig(groupedRepos map[string]map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
 	config := map[string]interface{}{
 		"version": "1.0.0",
@@ -182,7 +182,7 @@ func generateSyncloneConfig(groupedRepos map[string]map[string][]discovery.Disco
 	return config
 }
 
-// generateProviderConfig generates configuration for a specific provider
+// generateProviderConfig generates configuration for a specific provider.
 func generateProviderConfig(provider string, orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
 	switch provider {
 	case "github":
@@ -198,7 +198,7 @@ func generateProviderConfig(provider string, orgs map[string][]discovery.Discove
 	}
 }
 
-// generateGitHubConfig generates GitHub-specific configuration
+// generateGitHubConfig generates GitHub-specific configuration.
 func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
 	var organizations []map[string]interface{}
 
@@ -230,7 +230,7 @@ func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath s
 	}
 }
 
-// generateGitLabConfig generates GitLab-specific configuration
+// generateGitLabConfig generates GitLab-specific configuration.
 func generateGitLabConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
 	var groups []map[string]interface{}
 
@@ -255,7 +255,7 @@ func generateGitLabConfig(orgs map[string][]discovery.DiscoveredRepo, basePath s
 	}
 }
 
-// generateBitbucketConfig generates Bitbucket-specific configuration
+// generateBitbucketConfig generates Bitbucket-specific configuration.
 func generateBitbucketConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
 	var workspaces []map[string]interface{}
 
@@ -279,7 +279,7 @@ func generateBitbucketConfig(orgs map[string][]discovery.DiscoveredRepo, basePat
 	}
 }
 
-// generateGiteaConfig generates Gitea-specific configuration
+// generateGiteaConfig generates Gitea-specific configuration.
 func generateGiteaConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
 	var organizations []map[string]interface{}
 
@@ -304,7 +304,7 @@ func generateGiteaConfig(orgs map[string][]discovery.DiscoveredRepo, basePath st
 	}
 }
 
-// generateGenericProviderConfig generates configuration for unknown providers
+// generateGenericProviderConfig generates configuration for unknown providers.
 func generateGenericProviderConfig(provider string, orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
 	var repositories []map[string]interface{}
 
@@ -326,7 +326,7 @@ func generateGenericProviderConfig(provider string, orgs map[string][]discovery.
 	}
 }
 
-// hasPrivateRepos checks if any repositories in the list might be private
+// hasPrivateRepos checks if any repositories in the list might be private.
 func hasPrivateRepos(repos []discovery.DiscoveredRepo) bool {
 	for _, repo := range repos {
 		// Heuristic: if URL contains authentication or is SSH, likely private
@@ -337,12 +337,12 @@ func hasPrivateRepos(repos []discovery.DiscoveredRepo) bool {
 	return false
 }
 
-// containsAuth checks if a URL contains authentication information
+// containsAuth checks if a URL contains authentication information.
 func containsAuth(url string) bool {
 	return len(url) > 0 && (url[0:4] == "git@" || containsAtSymbol(url))
 }
 
-// containsAtSymbol checks if URL contains @ symbol (indicating auth)
+// containsAtSymbol checks if URL contains @ symbol (indicating auth).
 func containsAtSymbol(url string) bool {
 	for _, char := range url {
 		if char == '@' {
@@ -352,7 +352,7 @@ func containsAtSymbol(url string) bool {
 	return false
 }
 
-// generateExcludePatterns generates exclude patterns based on repository names
+// generateExcludePatterns generates exclude patterns based on repository names.
 func generateExcludePatterns(repos []discovery.DiscoveredRepo) []string {
 	var patterns []string
 	patternMap := make(map[string]bool)
@@ -389,12 +389,12 @@ func generateExcludePatterns(repos []discovery.DiscoveredRepo) []string {
 	return patterns
 }
 
-// containsPattern checks if a string contains a pattern
+// containsPattern checks if a string contains a pattern.
 func containsPattern(s, pattern string) bool {
 	return len(s) >= len(pattern) && findPattern(s, pattern)
 }
 
-// findPattern finds a pattern in a string
+// findPattern finds a pattern in a string.
 func findPattern(s, pattern string) bool {
 	for i := 0; i <= len(s)-len(pattern); i++ {
 		if s[i:i+len(pattern)] == pattern {
@@ -404,7 +404,7 @@ func findPattern(s, pattern string) bool {
 	return false
 }
 
-// loadExistingConfig loads an existing configuration file
+// loadExistingConfig loads an existing configuration file.
 func loadExistingConfig(filename string) (map[string]interface{}, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -419,7 +419,7 @@ func loadExistingConfig(filename string) (map[string]interface{}, error) {
 	return config, nil
 }
 
-// mergeConfigurations merges two configurations
+// mergeConfigurations merges two configurations.
 func mergeConfigurations(existing, new map[string]interface{}) map[string]interface{} {
 	// Simple merge strategy - prefer new configuration but preserve existing structure
 	merged := make(map[string]interface{})
@@ -453,7 +453,7 @@ func mergeConfigurations(existing, new map[string]interface{}) map[string]interf
 	return merged
 }
 
-// saveConfiguration saves the configuration to a file
+// saveConfiguration saves the configuration to a file.
 func saveConfiguration(config map[string]interface{}, filename string) error {
 	data, err := yaml.Marshal(config)
 	if err != nil {
@@ -473,7 +473,7 @@ func saveConfiguration(config map[string]interface{}, filename string) error {
 	return nil
 }
 
-// displayDiscoverySummary displays a summary of the discovery results
+// displayDiscoverySummary displays a summary of the discovery results.
 func displayDiscoverySummary(groupedRepos map[string]map[string][]discovery.DiscoveredRepo, allRepos []discovery.DiscoveredRepo) {
 	fmt.Printf("\n📊 Discovery Summary:\n")
 	fmt.Printf("   Total repositories: %d\n", len(allRepos))

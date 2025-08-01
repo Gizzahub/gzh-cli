@@ -3,7 +3,7 @@
 
 package template
 
-// GetBuiltinTemplates returns a map of built-in template configurations
+// GetBuiltinTemplates returns a map of built-in template configurations.
 func GetBuiltinTemplates() map[string]*TemplateConfig {
 	return map[string]*TemplateConfig{
 		"enterprise": getEnterpriseTemplate(),
@@ -13,7 +13,7 @@ func GetBuiltinTemplates() map[string]*TemplateConfig {
 	}
 }
 
-// getEnterpriseTemplate returns the enterprise template configuration
+// getEnterpriseTemplate returns the enterprise template configuration.
 func getEnterpriseTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Enterprise Configuration",
@@ -97,7 +97,7 @@ func getEnterpriseTemplate() *TemplateConfig {
 	}
 }
 
-// getMinimalTemplate returns the minimal template configuration
+// getMinimalTemplate returns the minimal template configuration.
 func getMinimalTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Minimal Configuration",
@@ -130,7 +130,7 @@ func getMinimalTemplate() *TemplateConfig {
 	}
 }
 
-// getMultiOrgTemplate returns the multi-organization template configuration
+// getMultiOrgTemplate returns the multi-organization template configuration.
 func getMultiOrgTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Multi-Organization Configuration",
@@ -219,7 +219,7 @@ func getMultiOrgTemplate() *TemplateConfig {
 	}
 }
 
-// getPersonalTemplate returns the personal template configuration
+// getPersonalTemplate returns the personal template configuration.
 func getPersonalTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Personal Configuration",

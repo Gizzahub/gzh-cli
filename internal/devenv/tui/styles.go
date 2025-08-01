@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Color palette inspired by Go's branding and modern terminal themes
+// Color palette inspired by Go's branding and modern terminal themes.
 var (
 	ColorPrimary    = lipgloss.Color("#00ADD8") // Go blue
 	ColorSecondary  = lipgloss.Color("#5E81AC") // Muted blue
@@ -21,7 +21,7 @@ var (
 	ColorHighlight  = lipgloss.Color("#88C0D0") // Highlight color
 )
 
-// Base styles
+// Base styles.
 var (
 	BaseStyle = lipgloss.NewStyle().
 			Foreground(ColorText).
@@ -50,7 +50,7 @@ var (
 			Padding(0, 1)
 )
 
-// Service status styles
+// Service status styles.
 var (
 	ServiceActiveStyle = lipgloss.NewStyle().
 				Foreground(ColorSuccess).
@@ -71,7 +71,7 @@ var (
 				Foreground(ColorSubtle)
 )
 
-// Table styles
+// Table styles.
 var (
 	TableHeaderStyle = lipgloss.NewStyle().
 				Foreground(ColorPrimary).
@@ -96,7 +96,7 @@ var (
 				Background(ColorBackground)
 )
 
-// Button and interactive element styles
+// Button and interactive element styles.
 var (
 	ButtonStyle = lipgloss.NewStyle().
 			Foreground(ColorText).
@@ -124,7 +124,7 @@ var (
 				BorderForeground(ColorHighlight)
 )
 
-// Dialog and modal styles
+// Dialog and modal styles.
 var (
 	DialogStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -144,7 +144,7 @@ var (
 				Margin(0, 0, 1, 0)
 )
 
-// Progress and loading styles
+// Progress and loading styles.
 var (
 	ProgressBarStyle = lipgloss.NewStyle().
 				Background(ColorBorder).
@@ -158,7 +158,7 @@ var (
 			Italic(true)
 )
 
-// Message and notification styles
+// Message and notification styles.
 var (
 	InfoStyle = lipgloss.NewStyle().
 			Foreground(ColorPrimary).
@@ -177,7 +177,7 @@ var (
 			Bold(true)
 )
 
-// Help styles
+// Help styles.
 var (
 	HelpHeaderStyle = lipgloss.NewStyle().
 			Foreground(ColorPrimary).
@@ -195,7 +195,7 @@ var (
 				Margin(0, 0, 1, 2)
 )
 
-// Border styles
+// Border styles.
 var (
 	NormalBorder = lipgloss.Border{
 		Top:         "─",
@@ -220,7 +220,7 @@ var (
 	}
 )
 
-// GetServiceStatusStyle returns the appropriate style for a service status
+// GetServiceStatusStyle returns the appropriate style for a service status.
 func GetServiceStatusStyle(status string) lipgloss.Style {
 	switch status {
 	case "active", "connected", "running", "online":
@@ -236,7 +236,7 @@ func GetServiceStatusStyle(status string) lipgloss.Style {
 	}
 }
 
-// GetStatusIcon returns the appropriate icon for a service status
+// GetStatusIcon returns the appropriate icon for a service status.
 func GetStatusIcon(status string) string {
 	switch status {
 	case "active", "connected", "running", "online":
@@ -252,7 +252,7 @@ func GetStatusIcon(status string) string {
 	}
 }
 
-// AdaptiveStyle adjusts styles based on terminal capabilities
+// AdaptiveStyle adjusts styles based on terminal capabilities.
 func AdaptiveStyle(width, height int) lipgloss.Style {
 	base := BaseStyle
 

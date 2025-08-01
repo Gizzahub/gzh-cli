@@ -20,7 +20,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// ContainerDiagnostics represents comprehensive container diagnostics
+// ContainerDiagnostics represents comprehensive container diagnostics.
 type ContainerDiagnostics struct {
 	Timestamp          time.Time              `json:"timestamp"`
 	Environment        ContainerEnvironment   `json:"environment"`
@@ -37,7 +37,7 @@ type ContainerDiagnostics struct {
 	Issues             []DiagnosticIssue      `json:"issues"`
 }
 
-// ContainerEnvironment captures the Docker environment details
+// ContainerEnvironment captures the Docker environment details.
 type ContainerEnvironment struct {
 	DockerVersion    string `json:"dockerVersion"`
 	ComposeVersion   string `json:"composeVersion,omitempty"`
@@ -51,7 +51,7 @@ type ContainerEnvironment struct {
 	RuntimesDetected string `json:"runtimesDetected"`
 }
 
-// ContainerInfo represents detailed container information
+// ContainerInfo represents detailed container information.
 type ContainerInfo struct {
 	ID             string                 `json:"id"`
 	Name           string                 `json:"name"`
@@ -74,7 +74,7 @@ type ContainerInfo struct {
 	ComposeService string                 `json:"composeService,omitempty"`
 }
 
-// NetworkInfo represents Docker network information
+// NetworkInfo represents Docker network information.
 type NetworkInfo struct {
 	ID         string            `json:"id"`
 	Name       string            `json:"name"`
@@ -89,7 +89,7 @@ type NetworkInfo struct {
 	Created    time.Time         `json:"created"`
 }
 
-// ImageInfo represents Docker image information
+// ImageInfo represents Docker image information.
 type ImageInfo struct {
 	ID          string            `json:"id"`
 	RepoTags    []string          `json:"repoTags"`
@@ -102,7 +102,7 @@ type ImageInfo struct {
 	Layers      int               `json:"layers"`
 }
 
-// VolumeInfo represents Docker volume information
+// VolumeInfo represents Docker volume information.
 type VolumeInfo struct {
 	Name       string            `json:"name"`
 	Driver     string            `json:"driver"`
@@ -115,7 +115,7 @@ type VolumeInfo struct {
 	Created    time.Time         `json:"created"`
 }
 
-// DockerSystemInfo represents Docker system information
+// DockerSystemInfo represents Docker system information.
 type DockerSystemInfo struct {
 	ContainersRunning int    `json:"containersRunning"`
 	ContainersPaused  int    `json:"containersPaused"`
@@ -135,7 +135,7 @@ type DockerSystemInfo struct {
 	NoProxy           string `json:"noProxy,omitempty"`
 }
 
-// ResourceUsage represents system resource usage
+// ResourceUsage represents system resource usage.
 type ResourceUsage struct {
 	TotalMemory    int64            `json:"totalMemory"`
 	UsedMemory     int64            `json:"usedMemory"`
@@ -145,7 +145,7 @@ type ResourceUsage struct {
 	NetworkTraffic NetworkTraffic   `json:"networkTraffic"`
 }
 
-// ContainerStats represents container resource statistics
+// ContainerStats represents container resource statistics.
 type ContainerStats struct {
 	ContainerID   string  `json:"containerId"`
 	ContainerName string  `json:"containerName"`
@@ -160,7 +160,7 @@ type ContainerStats struct {
 	PIDs          int     `json:"pids"`
 }
 
-// ContainerHealthCheck represents container health check results
+// ContainerHealthCheck represents container health check results.
 type ContainerHealthCheck struct {
 	ContainerID    string    `json:"containerId"`
 	ContainerName  string    `json:"containerName"`
@@ -175,7 +175,7 @@ type ContainerHealthCheck struct {
 	HealthRetries  int       `json:"healthRetries,omitempty"`
 }
 
-// SecurityAnalysis represents container security analysis
+// SecurityAnalysis represents container security analysis.
 type SecurityAnalysis struct {
 	PrivilegedContainers  []string            `json:"privilegedContainers"`
 	RootContainers        []string            `json:"rootContainers"`
@@ -188,7 +188,7 @@ type SecurityAnalysis struct {
 	Recommendations       []string            `json:"recommendations"`
 }
 
-// SecurityIssue represents a security issue
+// SecurityIssue represents a security issue.
 type SecurityIssue struct {
 	ContainerID   string `json:"containerId"`
 	ContainerName string `json:"containerName"`
@@ -198,7 +198,7 @@ type SecurityIssue struct {
 	Resolution    string `json:"resolution"`
 }
 
-// VulnerabilityInfo represents image vulnerability information
+// VulnerabilityInfo represents image vulnerability information.
 type VulnerabilityInfo struct {
 	ImageID     string     `json:"imageId"`
 	ImageName   string     `json:"imageName"`
@@ -209,7 +209,7 @@ type VulnerabilityInfo struct {
 	LastScanned *time.Time `json:"lastScanned,omitempty"`
 }
 
-// PerformanceMetrics represents container performance metrics
+// PerformanceMetrics represents container performance metrics.
 type PerformanceMetrics struct {
 	AverageStartupTime time.Duration            `json:"averageStartupTime"`
 	MemoryEfficiency   float64                  `json:"memoryEfficiency"`
@@ -220,7 +220,7 @@ type PerformanceMetrics struct {
 	ResourceWastage    ResourceWastage          `json:"resourceWastage"`
 }
 
-// DiagnosticIssue represents a diagnostic issue found
+// DiagnosticIssue represents a diagnostic issue found.
 type DiagnosticIssue struct {
 	ID          string    `json:"id"`
 	Severity    string    `json:"severity"`
@@ -232,7 +232,7 @@ type DiagnosticIssue struct {
 	DetectedAt  time.Time `json:"detectedAt"`
 }
 
-// Additional supporting types
+// Additional supporting types.
 type PortMapping struct {
 	PrivatePort int    `json:"privatePort"`
 	PublicPort  int    `json:"publicPort,omitempty"`
@@ -289,7 +289,7 @@ type ResourceWastage struct {
 	DanglingImages        int     `json:"danglingImages"`
 }
 
-// newContainerCmd creates the container monitoring and diagnostics subcommand
+// newContainerCmd creates the container monitoring and diagnostics subcommand.
 func newContainerCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -1383,7 +1383,7 @@ func saveDiagnosticsResults(diagnostics *ContainerDiagnostics, filename string) 
 	return WriteFile(filename, data, 0o600)
 }
 
-// WriteFile writes data to a file with specified permissions
+// WriteFile writes data to a file with specified permissions.
 func WriteFile(filename string, data []byte, perm int) error {
 	return os.WriteFile(filename, data, os.FileMode(perm))
 }
@@ -1500,9 +1500,10 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 		logger.SimpleWarn("⚠️ Identified Issues:")
 		for _, issue := range diagnostics.Issues {
 			severityIcon := "🟡"
-			if issue.Severity == "high" {
+			switch issue.Severity {
+			case "high":
 				severityIcon = "🔴"
-			} else if issue.Severity == "critical" {
+			case "critical":
 				severityIcon = "💥"
 			}
 

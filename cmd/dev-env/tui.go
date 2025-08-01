@@ -58,7 +58,7 @@ Examples:
 	return cmd
 }
 
-// runTUI executes the TUI command
+// runTUI executes the TUI command.
 func runTUI(cmd *cobra.Command, args []string) error {
 	verbose, _ := cmd.Flags().GetBool("verbose")
 

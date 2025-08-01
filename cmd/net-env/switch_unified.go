@@ -14,7 +14,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/netenv"
 )
 
-// newSwitchUnifiedCmd creates the unified net-env switch command
+// newSwitchUnifiedCmd creates the unified net-env switch command.
 func newSwitchUnifiedCmd() *cobra.Command {
 	var (
 		interactive bool
@@ -78,7 +78,7 @@ Examples:
 	return cmd
 }
 
-// runSwitchUnified executes the unified switch command
+// runSwitchUnified executes the unified switch command.
 func runSwitchUnified(ctx context.Context, args []string, interactive, list, preview, last, init, force bool) error {
 	configDir := getConfigDirectory()
 
@@ -140,7 +140,7 @@ func runSwitchUnified(ctx context.Context, args []string, interactive, list, pre
 	return executeProfileSwitch(ctx, targetProfile, force)
 }
 
-// initializeDefaultProfiles creates default example profiles
+// initializeDefaultProfiles creates default example profiles.
 func initializeDefaultProfiles(profileManager *netenv.ProfileManager) error {
 	fmt.Println("Initializing default network profiles...")
 
@@ -158,7 +158,7 @@ func initializeDefaultProfiles(profileManager *netenv.ProfileManager) error {
 	return nil
 }
 
-// listNetworkProfiles lists all available network profiles
+// listNetworkProfiles lists all available network profiles.
 func listNetworkProfiles(profileManager *netenv.ProfileManager) error {
 	profiles := profileManager.ListProfiles()
 
@@ -224,14 +224,14 @@ func listNetworkProfiles(profileManager *netenv.ProfileManager) error {
 	return nil
 }
 
-// switchToLastProfile switches to the last used profile
+// switchToLastProfile switches to the last used profile.
 func switchToLastProfile(profileManager *netenv.ProfileManager) error {
 	// This would require storing last used profile information
 	// For now, return an error
 	return fmt.Errorf("last profile tracking not yet implemented")
 }
 
-// selectProfileInteractively presents an interactive profile selection
+// selectProfileInteractively presents an interactive profile selection.
 func selectProfileInteractively(profileManager *netenv.ProfileManager) (*netenv.NetworkProfile, error) {
 	profiles := profileManager.ListProfiles()
 
@@ -269,7 +269,7 @@ func selectProfileInteractively(profileManager *netenv.ProfileManager) (*netenv.
 	return profiles[index], nil
 }
 
-// autoDetectProfile automatically detects the best profile for current environment
+// autoDetectProfile automatically detects the best profile for current environment.
 func autoDetectProfile(ctx context.Context, profileManager *netenv.ProfileManager) (*netenv.NetworkProfile, error) {
 	profiles := profileManager.ListProfiles()
 
@@ -312,7 +312,7 @@ func autoDetectProfile(ctx context.Context, profileManager *netenv.ProfileManage
 	return detected, nil
 }
 
-// previewProfileSwitch shows what changes would be made without applying them
+// previewProfileSwitch shows what changes would be made without applying them.
 func previewProfileSwitch(profile *netenv.NetworkProfile) error {
 	fmt.Printf("Preview: Switching to profile '%s'\n\n", profile.Name)
 
@@ -372,7 +372,7 @@ func previewProfileSwitch(profile *netenv.NetworkProfile) error {
 	return nil
 }
 
-// executeProfileSwitch executes the actual profile switch
+// executeProfileSwitch executes the actual profile switch.
 func executeProfileSwitch(ctx context.Context, profile *netenv.NetworkProfile, force bool) error {
 	fmt.Printf("🔄 Switching to network profile: %s\n", profile.Name)
 

@@ -11,7 +11,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/quality/tools"
 )
 
-// LanguageInfo contains information about a detected language
+// LanguageInfo contains information about a detected language.
 type LanguageInfo struct {
 	Name       string            // Language name (e.g., "Go", "Python")
 	Extensions []string          // File extensions (e.g., [".go", ".mod"])
@@ -21,13 +21,13 @@ type LanguageInfo struct {
 	Metadata   map[string]string // Additional metadata
 }
 
-// FileTypeDetector implements language detection based on file types and project indicators
+// FileTypeDetector implements language detection based on file types and project indicators.
 type FileTypeDetector struct {
 	// Map of language name to detection rules
 	rules map[string]*LanguageRule
 }
 
-// LanguageRule defines how to detect a specific language
+// LanguageRule defines how to detect a specific language.
 type LanguageRule struct {
 	Name       string            // Language name
 	Extensions []string          // File extensions to look for
@@ -39,7 +39,7 @@ type LanguageRule struct {
 	Metadata   map[string]string // Additional metadata
 }
 
-// NewFileTypeDetector creates a new language detector with default rules
+// NewFileTypeDetector creates a new language detector with default rules.
 func NewFileTypeDetector() *FileTypeDetector {
 	detector := &FileTypeDetector{
 		rules: make(map[string]*LanguageRule),
@@ -50,7 +50,7 @@ func NewFileTypeDetector() *FileTypeDetector {
 	return detector
 }
 
-// DetectLanguages scans a directory and returns detected languages
+// DetectLanguages scans a directory and returns detected languages.
 func (d *FileTypeDetector) DetectLanguages(projectRoot string) ([]string, error) {
 	languages, err := d.detectLanguagesWithInfo(projectRoot)
 	if err != nil {
@@ -66,7 +66,7 @@ func (d *FileTypeDetector) DetectLanguages(projectRoot string) ([]string, error)
 	return result, nil
 }
 
-// DetectLanguagesWithInfo returns detailed language detection information
+// DetectLanguagesWithInfo returns detailed language detection information.
 func (d *FileTypeDetector) detectLanguagesWithInfo(projectRoot string) ([]*LanguageInfo, error) {
 	detected := make(map[string]*LanguageInfo)
 
@@ -136,7 +136,7 @@ func (d *FileTypeDetector) detectLanguagesWithInfo(projectRoot string) ([]*Langu
 	return result, nil
 }
 
-// GetFilesByLanguage returns files grouped by language
+// GetFilesByLanguage returns files grouped by language.
 func (d *FileTypeDetector) GetFilesByLanguage(projectRoot string, languages []string) (map[string][]string, error) {
 	detected, err := d.detectLanguagesWithInfo(projectRoot)
 	if err != nil {
@@ -158,12 +158,12 @@ func (d *FileTypeDetector) GetFilesByLanguage(projectRoot string, languages []st
 	return result, nil
 }
 
-// matchesRule checks if a file matches a language rule
+// matchesRule checks if a file matches a language rule.
 func (d *FileTypeDetector) matchesRule(path, filename string, rule *LanguageRule) bool {
 	// Check file extensions
 	ext := strings.ToLower(filepath.Ext(filename))
 	for _, ruleExt := range rule.Extensions {
-		if ext == strings.ToLower(ruleExt) {
+		if strings.EqualFold(ext, ruleExt) {
 			return true
 		}
 	}
@@ -179,7 +179,7 @@ func (d *FileTypeDetector) matchesRule(path, filename string, rule *LanguageRule
 	return false
 }
 
-// shouldIgnoreFile determines if a file should be ignored during detection
+// shouldIgnoreFile determines if a file should be ignored during detection.
 func (d *FileTypeDetector) shouldIgnoreFile(path, filename string) bool {
 	// Common ignore patterns
 	ignorePatterns := []string{
@@ -206,7 +206,7 @@ func (d *FileTypeDetector) shouldIgnoreFile(path, filename string) bool {
 	return false
 }
 
-// calculateConfidence calculates the confidence score for a detected language
+// calculateConfidence calculates the confidence score for a detected language.
 func (d *FileTypeDetector) calculateConfidence(lang *LanguageInfo) float64 {
 	rule := d.rules[lang.Name]
 	if rule == nil {
@@ -236,7 +236,7 @@ func (d *FileTypeDetector) calculateConfidence(lang *LanguageInfo) float64 {
 	return confidence
 }
 
-// registerDefaultRules registers the default language detection rules
+// registerDefaultRules registers the default language detection rules.
 func (d *FileTypeDetector) registerDefaultRules() {
 	rules := []*LanguageRule{
 		{
@@ -384,5 +384,5 @@ func (d *FileTypeDetector) registerDefaultRules() {
 	}
 }
 
-// Ensure FileTypeDetector implements LanguageDetector
+// Ensure FileTypeDetector implements LanguageDetector.
 var _ tools.LanguageDetector = (*FileTypeDetector)(nil)

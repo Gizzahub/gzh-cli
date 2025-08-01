@@ -14,7 +14,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/devenv/status"
 )
 
-// newStatusCmd creates the dev-env status command
+// newStatusCmd creates the dev-env status command.
 func newStatusCmd() *cobra.Command {
 	var (
 		services    []string
@@ -74,7 +74,7 @@ Examples:
 	return cmd
 }
 
-// runStatusCmd executes the status command
+// runStatusCmd executes the status command.
 func runStatusCmd(services []string, format string, checkHealth, watch bool, timeout time.Duration, useColor bool) error {
 	ctx := context.Background()
 
@@ -100,7 +100,7 @@ func runStatusCmd(services []string, format string, checkHealth, watch bool, tim
 	return runSingleCheck(ctx, collector, formatter, checkHealth)
 }
 
-// createServiceCheckers creates the appropriate service checkers
+// createServiceCheckers creates the appropriate service checkers.
 func createServiceCheckers(services []string) []status.ServiceChecker {
 	var checkers []status.ServiceChecker
 
@@ -136,7 +136,7 @@ func createServiceCheckers(services []string) []status.ServiceChecker {
 	return checkers
 }
 
-// createFormatter creates the appropriate output formatter
+// createFormatter creates the appropriate output formatter.
 func createFormatter(format string, useColor bool) (status.StatusFormatter, error) {
 	switch strings.ToLower(format) {
 	case "table":
@@ -150,7 +150,7 @@ func createFormatter(format string, useColor bool) (status.StatusFormatter, erro
 	}
 }
 
-// runSingleCheck performs a single status check
+// runSingleCheck performs a single status check.
 func runSingleCheck(ctx context.Context, collector *status.StatusCollector, formatter status.StatusFormatter, checkHealth bool) error {
 	options := status.StatusOptions{
 		CheckHealth: checkHealth,
@@ -171,7 +171,7 @@ func runSingleCheck(ctx context.Context, collector *status.StatusCollector, form
 	return nil
 }
 
-// runWatchMode runs the status command in watch mode
+// runWatchMode runs the status command in watch mode.
 func runWatchMode(ctx context.Context, collector *status.StatusCollector, formatter status.StatusFormatter, checkHealth bool, interval time.Duration) error {
 	ticker := time.NewTicker(30 * time.Second) // Update every 30 seconds
 	defer ticker.Stop()

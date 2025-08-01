@@ -30,10 +30,10 @@ install-analysis-tools: ## install code analysis tools
 	@command -v gosec >/dev/null 2>&1 || { echo "Installing gosec..." && go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
 	@echo -e "$(GREEN)✅ All analysis tools installed!$(RESET)"
 
-install-golangci-lint: ## install golangci-lint
-	@echo -e "$(CYAN)Installing golangci-lint...$(RESET)"
-	@which golangci-lint > /dev/null || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin
-	@echo -e "$(GREEN)✅ golangci-lint installed!$(RESET)"
+install-golangci-lint: ## install golangci-lint v2
+	@echo -e "$(CYAN)Installing golangci-lint v2...$(RESET)"
+	@which golangci-lint > /dev/null || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v2.0.0
+	@echo -e "$(GREEN)✅ golangci-lint v2 installed!$(RESET)"
 
 install-goreleaser: ## install goreleaser
 	@echo -e "$(CYAN)Installing goreleaser...$(RESET)"

@@ -18,14 +18,14 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/logger"
 )
 
-// Analyzer provides GoDoc coverage and quality analysis
+// Analyzer provides GoDoc coverage and quality analysis.
 type Analyzer struct {
 	logger     *logger.SimpleLogger
 	fileSet    *token.FileSet
 	workingDir string
 }
 
-// PackageInfo contains documentation analysis information for a package
+// PackageInfo contains documentation analysis information for a package.
 type PackageInfo struct {
 	ImportPath       string         `json:"importPath"`
 	Name             string         `json:"name"`
@@ -43,7 +43,7 @@ type PackageInfo struct {
 	Recommendations  []string       `json:"recommendations"`
 }
 
-// FunctionInfo contains information about a documented function
+// FunctionInfo contains information about a documented function.
 type FunctionInfo struct {
 	Name       string   `json:"name"`
 	Signature  string   `json:"signature"`
@@ -55,7 +55,7 @@ type FunctionInfo struct {
 	Complexity int      `json:"complexity"`
 }
 
-// TypeInfo contains information about a documented type
+// TypeInfo contains information about a documented type.
 type TypeInfo struct {
 	Name       string         `json:"name"`
 	Kind       string         `json:"kind"`
@@ -67,7 +67,7 @@ type TypeInfo struct {
 	Fields     []FieldInfo    `json:"fields,omitempty"`
 }
 
-// FieldInfo contains information about struct fields
+// FieldInfo contains information about struct fields.
 type FieldInfo struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
@@ -77,7 +77,7 @@ type FieldInfo struct {
 	Tag        string `json:"tag,omitempty"`
 }
 
-// VariableInfo contains information about package variables
+// VariableInfo contains information about package variables.
 type VariableInfo struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
@@ -87,7 +87,7 @@ type VariableInfo struct {
 	Line       int    `json:"line"`
 }
 
-// ConstantInfo contains information about package constants
+// ConstantInfo contains information about package constants.
 type ConstantInfo struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
@@ -98,7 +98,7 @@ type ConstantInfo struct {
 	Line       int    `json:"line"`
 }
 
-// ExampleInfo contains information about example functions
+// ExampleInfo contains information about example functions.
 type ExampleInfo struct {
 	Name        string `json:"name"`
 	ForFunction string `json:"for_function"`
@@ -107,7 +107,7 @@ type ExampleInfo struct {
 	HasOutput   bool   `json:"has_output"`
 }
 
-// CoverageStats contains documentation coverage statistics
+// CoverageStats contains documentation coverage statistics.
 type CoverageStats struct {
 	TotalPublicSymbols  int     `json:"total_public_symbols"`
 	DocumentedSymbols   int     `json:"documented_symbols"`
@@ -122,7 +122,7 @@ type CoverageStats struct {
 	ExamplesPerFunction float64 `json:"examples_per_function"`
 }
 
-// QualityIssue represents a documentation quality issue
+// QualityIssue represents a documentation quality issue.
 type QualityIssue struct {
 	Type       string `json:"type"`
 	Severity   string `json:"severity"`
@@ -133,7 +133,7 @@ type QualityIssue struct {
 	Suggestion string `json:"suggestion"`
 }
 
-// NewAnalyzer creates a new GoDoc analyzer
+// NewAnalyzer creates a new GoDoc analyzer.
 func NewAnalyzer(workingDir string) *Analyzer {
 	if workingDir == "" {
 		workingDir = "."
@@ -146,7 +146,7 @@ func NewAnalyzer(workingDir string) *Analyzer {
 	}
 }
 
-// AnalyzePackage analyzes a Go package for documentation coverage and quality
+// AnalyzePackage analyzes a Go package for documentation coverage and quality.
 func (a *Analyzer) AnalyzePackage(ctx context.Context, packagePath string) (*PackageInfo, error) {
 	a.logger.Debug("Analyzing package", "path", packagePath)
 
@@ -234,7 +234,7 @@ func (a *Analyzer) AnalyzePackage(ctx context.Context, packagePath string) (*Pac
 	return pkgInfo, nil
 }
 
-// getGoFiles returns a list of Go files in the directory
+// getGoFiles returns a list of Go files in the directory.
 func (a *Analyzer) getGoFiles(dir string) []string {
 	files := make([]string, 0)
 
@@ -258,7 +258,7 @@ func (a *Analyzer) getGoFiles(dir string) []string {
 	return files
 }
 
-// analyzeFunctions analyzes function documentation
+// analyzeFunctions analyzes function documentation.
 func (a *Analyzer) analyzeFunctions(funcs []*doc.Func) []FunctionInfo {
 	functions := make([]FunctionInfo, 0, len(funcs))
 
@@ -289,7 +289,7 @@ func (a *Analyzer) analyzeFunctions(funcs []*doc.Func) []FunctionInfo {
 	return functions
 }
 
-// analyzeTypes analyzes type documentation
+// analyzeTypes analyzes type documentation.
 func (a *Analyzer) analyzeTypes(types []*doc.Type) []TypeInfo {
 	typeInfos := make([]TypeInfo, 0, len(types))
 
@@ -347,7 +347,7 @@ func (a *Analyzer) analyzeTypes(types []*doc.Type) []TypeInfo {
 	return typeInfos
 }
 
-// analyzeVariables analyzes variable documentation
+// analyzeVariables analyzes variable documentation.
 func (a *Analyzer) analyzeVariables(vars []*doc.Value) []VariableInfo {
 	variables := make([]VariableInfo, 0)
 
@@ -374,7 +374,7 @@ func (a *Analyzer) analyzeVariables(vars []*doc.Value) []VariableInfo {
 	return variables
 }
 
-// analyzeConstants analyzes constant documentation
+// analyzeConstants analyzes constant documentation.
 func (a *Analyzer) analyzeConstants(consts []*doc.Value) []ConstantInfo {
 	constants := make([]ConstantInfo, 0)
 
@@ -401,7 +401,7 @@ func (a *Analyzer) analyzeConstants(consts []*doc.Value) []ConstantInfo {
 	return constants
 }
 
-// analyzeExamples finds and analyzes example functions
+// analyzeExamples finds and analyzes example functions.
 func (a *Analyzer) analyzeExamples(pkg *ast.Package) []ExampleInfo {
 	examples := make([]ExampleInfo, 0)
 
@@ -427,7 +427,7 @@ func (a *Analyzer) analyzeExamples(pkg *ast.Package) []ExampleInfo {
 	return examples
 }
 
-// calculateCoverageStats calculates documentation coverage statistics
+// calculateCoverageStats calculates documentation coverage statistics.
 func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 	stats := CoverageStats{
 		PackageDocumented: pkgInfo.HasPackageDoc,
@@ -538,7 +538,7 @@ func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 	return stats
 }
 
-// identifyQualityIssues identifies documentation quality issues
+// identifyQualityIssues identifies documentation quality issues.
 func (a *Analyzer) identifyQualityIssues(pkgInfo *PackageInfo) []QualityIssue {
 	issues := make([]QualityIssue, 0)
 
@@ -612,7 +612,7 @@ func (a *Analyzer) identifyQualityIssues(pkgInfo *PackageInfo) []QualityIssue {
 	return issues
 }
 
-// generateRecommendations generates improvement recommendations
+// generateRecommendations generates improvement recommendations.
 func (a *Analyzer) generateRecommendations(pkgInfo *PackageInfo) []string {
 	recommendations := make([]string, 0)
 

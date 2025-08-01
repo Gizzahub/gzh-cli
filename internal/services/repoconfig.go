@@ -338,7 +338,7 @@ func (s *RepoConfigService) detectTemplate(repo *github.Repository, repoConfig *
 
 	// Check patterns
 	for _, pattern := range repoConfig.Repositories.Patterns {
-		if matched, _ := s.matchPattern(repo.Name, pattern.Match); matched && pattern.Template != "" {
+		if matched, err := s.matchPattern(repo.Name, pattern.Match); err == nil && matched && pattern.Template != "" {
 			return pattern.Template
 		}
 	}

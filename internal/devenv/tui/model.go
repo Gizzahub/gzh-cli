@@ -14,7 +14,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/devenv/status"
 )
 
-// Model represents the main TUI application model
+// Model represents the main TUI application model.
 type Model struct {
 	state       AppState
 	currentView ViewType
@@ -36,7 +36,7 @@ type Model struct {
 	quitting bool
 }
 
-// NewModel creates a new TUI model
+// NewModel creates a new TUI model.
 func NewModel(ctx context.Context) *Model {
 	// Create all available service checkers
 	checkers := []status.ServiceChecker{
@@ -60,7 +60,7 @@ func NewModel(ctx context.Context) *Model {
 	}
 }
 
-// Init initializes the TUI application
+// Init initializes the TUI application.
 func (m *Model) Init() tea.Cmd {
 	return tea.Batch(
 		m.refreshStatus(),
@@ -69,7 +69,7 @@ func (m *Model) Init() tea.Cmd {
 	)
 }
 
-// Update handles all messages in the TUI
+// Update handles all messages in the TUI.
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
@@ -143,7 +143,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// View renders the current view
+// View renders the current view.
 func (m *Model) View() string {
 	if m.quitting {
 		return "Goodbye! 👋\n"
@@ -169,7 +169,7 @@ func (m *Model) View() string {
 	}
 }
 
-// handleGlobalKeys handles global keyboard shortcuts
+// handleGlobalKeys handles global keyboard shortcuts.
 func (m *Model) handleGlobalKeys(msg tea.KeyMsg) bool {
 	switch msg.String() {
 	case "ctrl+c", "q":
@@ -192,7 +192,7 @@ func (m *Model) handleGlobalKeys(msg tea.KeyMsg) bool {
 	}
 }
 
-// updateCurrentView updates the current view with a message
+// updateCurrentView updates the current view with a message.
 func (m *Model) updateCurrentView(msg tea.Msg) tea.Cmd {
 	switch m.currentView {
 	case ViewDashboard:
@@ -228,7 +228,7 @@ func (m *Model) updateCurrentView(msg tea.Msg) tea.Cmd {
 	}
 }
 
-// updateStateFromView updates the app state based on current view
+// updateStateFromView updates the app state based on current view.
 func (m *Model) updateStateFromView() {
 	switch m.currentView {
 	case ViewDashboard:
@@ -248,7 +248,7 @@ func (m *Model) updateStateFromView() {
 	}
 }
 
-// refreshStatus refreshes the development environment status
+// refreshStatus refreshes the development environment status.
 func (m *Model) refreshStatus() tea.Cmd {
 	return func() tea.Msg {
 		options := status.StatusOptions{
@@ -266,7 +266,7 @@ func (m *Model) refreshStatus() tea.Cmd {
 	}
 }
 
-// startUpdateTicker starts the periodic update ticker
+// startUpdateTicker starts the periodic update ticker.
 func (m *Model) startUpdateTicker() tea.Cmd {
 	return tea.Tick(m.updateInterval, func(t time.Time) tea.Msg {
 		return TickMsg{Time: t}

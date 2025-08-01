@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// NetworkProfile represents a complete network environment configuration
+// NetworkProfile represents a complete network environment configuration.
 type NetworkProfile struct {
 	Name        string                 `yaml:"name" json:"name"`
 	Description string                 `yaml:"description,omitempty" json:"description,omitempty"`
@@ -20,7 +20,7 @@ type NetworkProfile struct {
 	UpdatedAt   time.Time              `yaml:"updatedAt" json:"updatedAt"`
 }
 
-// NetworkCondition defines when a profile should be automatically activated
+// NetworkCondition defines when a profile should be automatically activated.
 type NetworkCondition struct {
 	Type     string                 `yaml:"type" json:"type"` // wifi_ssid, ip_range, hostname, etc.
 	Value    string                 `yaml:"value" json:"value"`
@@ -28,7 +28,7 @@ type NetworkCondition struct {
 	Metadata map[string]interface{} `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
 
-// NetworkComponents contains all network component configurations
+// NetworkComponents contains all network component configurations.
 type NetworkComponents struct {
 	WiFi       *WiFiConfig       `yaml:"wifi,omitempty" json:"wifi,omitempty"`
 	VPN        *VPNConfig        `yaml:"vpn,omitempty" json:"vpn,omitempty"`
@@ -39,14 +39,14 @@ type NetworkComponents struct {
 	Hosts      *HostsConfig      `yaml:"hosts,omitempty" json:"hosts,omitempty"`
 }
 
-// WiFiConfig represents WiFi network configuration
+// WiFiConfig represents WiFi network configuration.
 type WiFiConfig struct {
 	SSID     string `yaml:"ssid" json:"ssid"`
 	Security string `yaml:"security,omitempty" json:"security,omitempty"`
 	Priority int    `yaml:"priority,omitempty" json:"priority,omitempty"`
 }
 
-// VPNConfig represents VPN configuration
+// VPNConfig represents VPN configuration.
 type VPNConfig struct {
 	Name        string            `yaml:"name" json:"name"`
 	Type        string            `yaml:"type" json:"type"` // openvpn, wireguard, cisco, etc.
@@ -57,7 +57,7 @@ type VPNConfig struct {
 	HealthCheck *HealthCheck      `yaml:"healthCheck,omitempty" json:"healthCheck,omitempty"`
 }
 
-// DNSConfig represents DNS configuration
+// DNSConfig represents DNS configuration.
 type DNSConfig struct {
 	Servers  []string          `yaml:"servers" json:"servers"`
 	Domains  []string          `yaml:"domains,omitempty" json:"domains,omitempty"`
@@ -66,7 +66,7 @@ type DNSConfig struct {
 	Config   map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
-// ProxyConfig represents proxy configuration
+// ProxyConfig represents proxy configuration.
 type ProxyConfig struct {
 	HTTP    string            `yaml:"http,omitempty" json:"http,omitempty"`
 	HTTPS   string            `yaml:"https,omitempty" json:"https,omitempty"`
@@ -76,20 +76,20 @@ type ProxyConfig struct {
 	Config  map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
-// ProxyAuth represents proxy authentication
+// ProxyAuth represents proxy authentication.
 type ProxyAuth struct {
 	Username string `yaml:"username" json:"username"`
 	Password string `yaml:"password" json:"password"`
 }
 
-// DockerConfig represents Docker network configuration
+// DockerConfig represents Docker network configuration.
 type DockerConfig struct {
 	Context  string            `yaml:"context,omitempty" json:"context,omitempty"`
 	Networks []string          `yaml:"networks,omitempty" json:"networks,omitempty"`
 	Config   map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
-// KubernetesConfig represents Kubernetes network configuration
+// KubernetesConfig represents Kubernetes network configuration.
 type KubernetesConfig struct {
 	Context   string            `yaml:"context,omitempty" json:"context,omitempty"`
 	Namespace string            `yaml:"namespace,omitempty" json:"namespace,omitempty"`
@@ -97,20 +97,20 @@ type KubernetesConfig struct {
 	Config    map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
-// HostsConfig represents hosts file configuration
+// HostsConfig represents hosts file configuration.
 type HostsConfig struct {
 	Entries []HostEntry       `yaml:"entries,omitempty" json:"entries,omitempty"`
 	Config  map[string]string `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
-// HostEntry represents a single hosts file entry
+// HostEntry represents a single hosts file entry.
 type HostEntry struct {
 	IP        string   `yaml:"ip" json:"ip"`
 	Hostnames []string `yaml:"hostnames" json:"hostnames"`
 	Comment   string   `yaml:"comment,omitempty" json:"comment,omitempty"`
 }
 
-// HealthCheck represents health check configuration
+// HealthCheck represents health check configuration.
 type HealthCheck struct {
 	URL      string        `yaml:"url" json:"url"`
 	Interval time.Duration `yaml:"interval" json:"interval"`
@@ -118,7 +118,7 @@ type HealthCheck struct {
 	Retries  int           `yaml:"retries,omitempty" json:"retries,omitempty"`
 }
 
-// NetworkStatus represents the current network status
+// NetworkStatus represents the current network status.
 type NetworkStatus struct {
 	Profile    *NetworkProfile   `json:"profile,omitempty"`
 	Components ComponentStatuses `json:"components"`
@@ -127,7 +127,7 @@ type NetworkStatus struct {
 	LastSwitch time.Time         `json:"lastSwitch"`
 }
 
-// ComponentStatuses contains status for each network component
+// ComponentStatuses contains status for each network component.
 type ComponentStatuses struct {
 	WiFi       *ComponentStatus `json:"wifi,omitempty"`
 	VPN        *ComponentStatus `json:"vpn,omitempty"`
@@ -137,7 +137,7 @@ type ComponentStatuses struct {
 	Kubernetes *ComponentStatus `json:"kubernetes,omitempty"`
 }
 
-// ComponentStatus represents the status of a network component
+// ComponentStatus represents the status of a network component.
 type ComponentStatus struct {
 	Active    bool                   `json:"active"`
 	Status    string                 `json:"status"`
@@ -146,7 +146,7 @@ type ComponentStatus struct {
 	LastCheck time.Time              `json:"lastCheck"`
 }
 
-// HealthStatus represents overall network health
+// HealthStatus represents overall network health.
 type HealthStatus struct {
 	Status  string        `json:"status"` // excellent, good, poor, critical
 	Score   int           `json:"score"`  // 0-100
@@ -154,7 +154,7 @@ type HealthStatus struct {
 	Latency time.Duration `json:"latency,omitempty"`
 }
 
-// NetworkMetrics represents network performance metrics
+// NetworkMetrics represents network performance metrics.
 type NetworkMetrics struct {
 	Latency    time.Duration `json:"latency"`
 	Bandwidth  *Bandwidth    `json:"bandwidth,omitempty"`
@@ -162,13 +162,13 @@ type NetworkMetrics struct {
 	Jitter     time.Duration `json:"jitter,omitempty"`
 }
 
-// Bandwidth represents bandwidth measurements
+// Bandwidth represents bandwidth measurements.
 type Bandwidth struct {
 	Download float64 `json:"download"` // Mbps
 	Upload   float64 `json:"upload"`   // Mbps
 }
 
-// QuickAction represents a quick network action
+// QuickAction represents a quick network action.
 type QuickAction struct {
 	Name        string            `yaml:"name" json:"name"`
 	Description string            `yaml:"description,omitempty" json:"description,omitempty"`

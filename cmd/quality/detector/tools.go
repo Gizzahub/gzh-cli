@@ -12,20 +12,20 @@ import (
 	"github.com/gizzahub/gzh-manager-go/cmd/quality/tools"
 )
 
-// SystemToolDetector detects available quality tools on the system
+// SystemToolDetector detects available quality tools on the system.
 type SystemToolDetector struct {
 	// pathCache caches tool availability results
 	pathCache map[string]bool
 }
 
-// NewSystemToolDetector creates a new system tool detector
+// NewSystemToolDetector creates a new system tool detector.
 func NewSystemToolDetector() *SystemToolDetector {
 	return &SystemToolDetector{
 		pathCache: make(map[string]bool),
 	}
 }
 
-// IsToolAvailable checks if a tool is available on the system
+// IsToolAvailable checks if a tool is available on the system.
 func (d *SystemToolDetector) IsToolAvailable(toolName string) bool {
 	// Check cache first
 	if available, cached := d.pathCache[toolName]; cached {
@@ -46,7 +46,7 @@ func (d *SystemToolDetector) IsToolAvailable(toolName string) bool {
 	return available
 }
 
-// checkCommonLocations checks for tools in common installation locations
+// checkCommonLocations checks for tools in common installation locations.
 func (d *SystemToolDetector) checkCommonLocations(toolName string) bool {
 	commonPaths := []string{
 		"/usr/local/bin",
@@ -71,7 +71,7 @@ func (d *SystemToolDetector) checkCommonLocations(toolName string) bool {
 	return false
 }
 
-// GetToolVersion returns the version of a tool if available
+// GetToolVersion returns the version of a tool if available.
 func (d *SystemToolDetector) GetToolVersion(toolName string) string {
 	if !d.IsToolAvailable(toolName) {
 		return ""
@@ -94,15 +94,15 @@ func (d *SystemToolDetector) GetToolVersion(toolName string) string {
 	return "unknown"
 }
 
-// ConfigFileDetector finds configuration files for quality tools
+// ConfigFileDetector finds configuration files for quality tools.
 type ConfigFileDetector struct{}
 
-// NewConfigFileDetector creates a new configuration file detector
+// NewConfigFileDetector creates a new configuration file detector.
 func NewConfigFileDetector() *ConfigFileDetector {
 	return &ConfigFileDetector{}
 }
 
-// FindConfigs searches for tool configuration files
+// FindConfigs searches for tool configuration files.
 func (d *ConfigFileDetector) FindConfigs(projectRoot string, toolList []tools.QualityTool) map[string]string {
 	configs := make(map[string]string)
 
@@ -119,7 +119,7 @@ func (d *ConfigFileDetector) FindConfigs(projectRoot string, toolList []tools.Qu
 	return configs
 }
 
-// ValidateConfig checks if a configuration file is valid
+// ValidateConfig checks if a configuration file is valid.
 func (d *ConfigFileDetector) ValidateConfig(toolName, configPath string) error {
 	// Basic validation - check if file exists and is readable
 	if _, err := os.Stat(configPath); err != nil {
@@ -137,14 +137,14 @@ func (d *ConfigFileDetector) ValidateConfig(toolName, configPath string) error {
 	return nil
 }
 
-// ProjectAnalyzer analyzes a project to determine quality tool setup
+// ProjectAnalyzer analyzes a project to determine quality tool setup.
 type ProjectAnalyzer struct {
 	langDetector   *FileTypeDetector
 	toolDetector   *SystemToolDetector
 	configDetector *ConfigFileDetector
 }
 
-// NewProjectAnalyzer creates a new project analyzer
+// NewProjectAnalyzer creates a new project analyzer.
 func NewProjectAnalyzer() *ProjectAnalyzer {
 	return &ProjectAnalyzer{
 		langDetector:   NewFileTypeDetector(),
@@ -153,7 +153,7 @@ func NewProjectAnalyzer() *ProjectAnalyzer {
 	}
 }
 
-// AnalysisResult contains the results of project analysis
+// AnalysisResult contains the results of project analysis.
 type AnalysisResult struct {
 	// ProjectRoot is the root directory of the project
 	ProjectRoot string
@@ -174,7 +174,7 @@ type AnalysisResult struct {
 	Issues []string
 }
 
-// AnalyzeProject performs comprehensive project analysis
+// AnalyzeProject performs comprehensive project analysis.
 func (a *ProjectAnalyzer) AnalyzeProject(projectRoot string, registry tools.ToolRegistry) (*AnalysisResult, error) {
 	result := &AnalysisResult{
 		ProjectRoot:      projectRoot,
@@ -228,7 +228,7 @@ func (a *ProjectAnalyzer) AnalyzeProject(projectRoot string, registry tools.Tool
 	return result, nil
 }
 
-// GetOptimalToolSelection returns the best tools for each language
+// GetOptimalToolSelection returns the best tools for each language.
 func (a *ProjectAnalyzer) GetOptimalToolSelection(result *AnalysisResult, registry tools.ToolRegistry) map[string][]tools.QualityTool {
 	selection := make(map[string][]tools.QualityTool)
 
@@ -277,7 +277,7 @@ func (a *ProjectAnalyzer) GetOptimalToolSelection(result *AnalysisResult, regist
 	return selection
 }
 
-// removeDuplicates removes duplicate strings from a slice
+// removeDuplicates removes duplicate strings from a slice.
 func removeDuplicates(slice []string) []string {
 	seen := make(map[string]bool)
 	result := make([]string, 0)
@@ -292,7 +292,7 @@ func removeDuplicates(slice []string) []string {
 	return result
 }
 
-// Ensure detectors implement their interfaces
+// Ensure detectors implement their interfaces.
 var (
 	_ tools.LanguageDetector = (*FileTypeDetector)(nil)
 	_ tools.ConfigDetector   = (*ConfigFileDetector)(nil)

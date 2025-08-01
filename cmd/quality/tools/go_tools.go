@@ -12,12 +12,12 @@ import (
 	"strings"
 )
 
-// GofumptTool implements Go formatting using gofumpt
+// GofumptTool implements Go formatting using gofumpt.
 type GofumptTool struct {
 	*BaseTool
 }
 
-// NewGofumptTool creates a new gofumpt tool
+// NewGofumptTool creates a new gofumpt tool.
 func NewGofumptTool() *GofumptTool {
 	tool := &GofumptTool{
 		BaseTool: NewBaseTool("gofumpt", "Go", "gofumpt", FORMAT),
@@ -29,7 +29,7 @@ func NewGofumptTool() *GofumptTool {
 	return tool
 }
 
-// BuildCommand builds the gofumpt command
+// BuildCommand builds the gofumpt command.
 func (t *GofumptTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"-w"} // Always write changes
 
@@ -49,12 +49,12 @@ func (t *GofumptTool) BuildCommand(files []string, options ExecuteOptions) *exec
 	return cmd
 }
 
-// GoimportsTool implements Go import formatting using goimports
+// GoimportsTool implements Go import formatting using goimports.
 type GoimportsTool struct {
 	*BaseTool
 }
 
-// NewGoimportsTool creates a new goimports tool
+// NewGoimportsTool creates a new goimports tool.
 func NewGoimportsTool() *GoimportsTool {
 	tool := &GoimportsTool{
 		BaseTool: NewBaseTool("goimports", "Go", "goimports", FORMAT),
@@ -65,7 +65,7 @@ func NewGoimportsTool() *GoimportsTool {
 	return tool
 }
 
-// BuildCommand builds the goimports command
+// BuildCommand builds the goimports command.
 func (t *GoimportsTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"-w"} // Always write changes
 
@@ -93,12 +93,12 @@ func (t *GoimportsTool) BuildCommand(files []string, options ExecuteOptions) *ex
 	return cmd
 }
 
-// GolangciLintTool implements Go linting using golangci-lint
+// GolangciLintTool implements Go linting using golangci-lint.
 type GolangciLintTool struct {
 	*BaseTool
 }
 
-// NewGolangciLintTool creates a new golangci-lint tool
+// NewGolangciLintTool creates a new golangci-lint tool.
 func NewGolangciLintTool() *GolangciLintTool {
 	tool := &GolangciLintTool{
 		BaseTool: NewBaseTool("golangci-lint", "Go", "golangci-lint", LINT),
@@ -110,7 +110,7 @@ func NewGolangciLintTool() *GolangciLintTool {
 	return tool
 }
 
-// BuildCommand builds the golangci-lint command
+// BuildCommand builds the golangci-lint command.
 func (t *GolangciLintTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"run"}
 
@@ -158,7 +158,7 @@ func (t *GolangciLintTool) BuildCommand(files []string, options ExecuteOptions) 
 	return cmd
 }
 
-// ParseOutput parses golangci-lint JSON output
+// ParseOutput parses golangci-lint JSON output.
 func (t *GolangciLintTool) ParseOutput(output string) []Issue {
 	if strings.TrimSpace(output) == "" {
 		return []Issue{}
@@ -208,7 +208,7 @@ func (t *GolangciLintTool) ParseOutput(output string) []Issue {
 	return issues
 }
 
-// parseTextOutput parses plain text output as fallback
+// parseTextOutput parses plain text output as fallback.
 func (t *GolangciLintTool) parseTextOutput(output string) []Issue {
 	var issues []Issue
 
@@ -241,7 +241,7 @@ func (t *GolangciLintTool) parseTextOutput(output string) []Issue {
 	return issues
 }
 
-// getGoModuleName extracts module name from go.mod file
+// getGoModuleName extracts module name from go.mod file.
 func getGoModuleName(projectRoot string) string {
 	cmd := exec.Command("go", "list", "-m")
 	cmd.Dir = projectRoot
@@ -254,7 +254,7 @@ func getGoModuleName(projectRoot string) string {
 	return strings.TrimSpace(string(output))
 }
 
-// Ensure Go tools implement QualityTool interface
+// Ensure Go tools implement QualityTool interface.
 var (
 	_ QualityTool = (*GofumptTool)(nil)
 	_ QualityTool = (*GoimportsTool)(nil)

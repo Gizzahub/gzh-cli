@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// BaseTool provides common functionality for quality tools
+// BaseTool provides common functionality for quality tools.
 type BaseTool struct {
 	name           string
 	language       string
@@ -23,7 +23,7 @@ type BaseTool struct {
 	configPatterns []string
 }
 
-// NewBaseTool creates a new base tool
+// NewBaseTool creates a new base tool.
 func NewBaseTool(name, language, executable string, toolType ToolType) *BaseTool {
 	return &BaseTool{
 		name:       name,
@@ -33,33 +33,33 @@ func NewBaseTool(name, language, executable string, toolType ToolType) *BaseTool
 	}
 }
 
-// Name returns the tool name
+// Name returns the tool name.
 func (t *BaseTool) Name() string {
 	return t.name
 }
 
-// Language returns the programming language
+// Language returns the programming language.
 func (t *BaseTool) Language() string {
 	return t.language
 }
 
-// Type returns the tool type
+// Type returns the tool type.
 func (t *BaseTool) Type() ToolType {
 	return t.toolType
 }
 
-// IsAvailable checks if the tool is installed and available
+// IsAvailable checks if the tool is installed and available.
 func (t *BaseTool) IsAvailable() bool {
 	_, err := exec.LookPath(t.executable)
 	return err == nil
 }
 
-// SetInstallCommand sets the command to install this tool
+// SetInstallCommand sets the command to install this tool.
 func (t *BaseTool) SetInstallCommand(cmd []string) {
 	t.installCmd = cmd
 }
 
-// Install attempts to install the tool automatically
+// Install attempts to install the tool automatically.
 func (t *BaseTool) Install() error {
 	if len(t.installCmd) == 0 {
 		return fmt.Errorf("no install command configured for %s", t.name)
@@ -68,13 +68,13 @@ func (t *BaseTool) Install() error {
 	cmd := exec.Command(t.installCmd[0], t.installCmd[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to install %s: %v\nOutput: %s", t.name, err, string(output))
+		return fmt.Errorf("failed to install %s: %w\nOutput: %s", t.name, err, string(output))
 	}
 
 	return nil
 }
 
-// GetVersion returns the version of the installed tool
+// GetVersion returns the version of the installed tool.
 func (t *BaseTool) GetVersion() (string, error) {
 	if !t.IsAvailable() {
 		return "", fmt.Errorf("tool %s is not installed", t.name)
@@ -97,7 +97,7 @@ func (t *BaseTool) GetVersion() (string, error) {
 	return "unknown", nil
 }
 
-// Upgrade attempts to upgrade the tool to the latest version
+// Upgrade attempts to upgrade the tool to the latest version.
 func (t *BaseTool) Upgrade() error {
 	if !t.IsAvailable() {
 		return fmt.Errorf("tool %s is not installed, use Install() instead", t.name)
@@ -107,12 +107,12 @@ func (t *BaseTool) Upgrade() error {
 	return t.Install()
 }
 
-// SetConfigPatterns sets the configuration file patterns to search for
+// SetConfigPatterns sets the configuration file patterns to search for.
 func (t *BaseTool) SetConfigPatterns(patterns []string) {
 	t.configPatterns = patterns
 }
 
-// FindConfigFiles returns configuration files the tool would use
+// FindConfigFiles returns configuration files the tool would use.
 func (t *BaseTool) FindConfigFiles(projectRoot string) []string {
 	var configs []string
 
@@ -126,7 +126,7 @@ func (t *BaseTool) FindConfigFiles(projectRoot string) []string {
 	return configs
 }
 
-// ExecuteCommand runs a command and returns the result
+// ExecuteCommand runs a command and returns the result.
 func (t *BaseTool) ExecuteCommand(ctx context.Context, cmd *exec.Cmd, files []string) (*Result, error) {
 	startTime := time.Now()
 
@@ -152,14 +152,14 @@ func (t *BaseTool) ExecuteCommand(ctx context.Context, cmd *exec.Cmd, files []st
 	return result, nil
 }
 
-// ParseOutput parses tool output into issues (to be implemented by specific tools)
+// ParseOutput parses tool output into issues (to be implemented by specific tools).
 func (t *BaseTool) ParseOutput(output string) []Issue {
 	// Default implementation returns empty slice
 	// Specific tools should override this method
 	return []Issue{}
 }
 
-// BuildCommand builds the command to execute (to be implemented by specific tools)
+// BuildCommand builds the command to execute (to be implemented by specific tools).
 func (t *BaseTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	// Default implementation - specific tools should override
 	args := append([]string{}, files...)
@@ -186,7 +186,7 @@ func (t *BaseTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cm
 	return cmd
 }
 
-// Execute runs the tool on the specified files
+// Execute runs the tool on the specified files.
 func (t *BaseTool) Execute(ctx context.Context, files []string, options ExecuteOptions) (*Result, error) {
 	if !t.IsAvailable() {
 		return &Result{
@@ -211,7 +211,7 @@ func (t *BaseTool) Execute(ctx context.Context, files []string, options ExecuteO
 	return result, nil
 }
 
-// FilterFilesByExtensions filters files by supported extensions
+// FilterFilesByExtensions filters files by supported extensions.
 func FilterFilesByExtensions(files []string, extensions []string) []string {
 	var filtered []string
 	extMap := make(map[string]bool)

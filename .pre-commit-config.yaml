@@ -17,27 +17,21 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
 
-  - repo: https://github.com/golangci/golangci-lint
-    rev: v1.55.2
-    hooks:
-      - id: golangci-lint
-        args: ['--fix']
-
   - repo: local
     hooks:
-      - id: gofumpt
-        name: gofumpt
-        entry: gofumpt -w
+      - id: fast-format-check
+        name: Fast Go format check
+        entry: bash -c 'make fmt-diff'
         language: system
         types: [go]
-        pass_filenames: true
+        pass_filenames: false
 
-      - id: gci
-        name: gci
-        entry: gci write --skip-generated -s standard -s default -s "prefix(github.com/gizzahub/gzh-manager-go)"
+      - id: fast-lint-check
+        name: Fast Go lint check
+        entry: bash -c 'make lint-diff'
         language: system
         types: [go]
-        pass_filenames: true
+        pass_filenames: false
 
       - id: go-mod-tidy
         name: go mod tidy

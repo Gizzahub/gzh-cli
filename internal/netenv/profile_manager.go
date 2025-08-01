@@ -14,13 +14,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ProfileManager handles network profile management operations
+// ProfileManager handles network profile management operations.
 type ProfileManager struct {
 	configDir string
 	profiles  map[string]*NetworkProfile
 }
 
-// NewProfileManager creates a new profile manager
+// NewProfileManager creates a new profile manager.
 func NewProfileManager(configDir string) *ProfileManager {
 	return &ProfileManager{
 		configDir: configDir,
@@ -28,7 +28,7 @@ func NewProfileManager(configDir string) *ProfileManager {
 	}
 }
 
-// LoadProfiles loads all network profiles from the configuration directory
+// LoadProfiles loads all network profiles from the configuration directory.
 func (pm *ProfileManager) LoadProfiles() error {
 	profilesDir := filepath.Join(pm.configDir, "net-env", "profiles")
 
@@ -66,7 +66,7 @@ func (pm *ProfileManager) LoadProfiles() error {
 	return nil
 }
 
-// loadProfile loads a single profile from a file
+// loadProfile loads a single profile from a file.
 func (pm *ProfileManager) loadProfile(filePath string) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -87,7 +87,7 @@ func (pm *ProfileManager) loadProfile(filePath string) error {
 	return nil
 }
 
-// SaveProfile saves a network profile to disk
+// SaveProfile saves a network profile to disk.
 func (pm *ProfileManager) SaveProfile(profile *NetworkProfile) error {
 	if err := pm.validateProfile(profile); err != nil {
 		return fmt.Errorf("invalid profile: %w", err)
@@ -126,7 +126,7 @@ func (pm *ProfileManager) SaveProfile(profile *NetworkProfile) error {
 	return nil
 }
 
-// GetProfile returns a profile by name
+// GetProfile returns a profile by name.
 func (pm *ProfileManager) GetProfile(name string) (*NetworkProfile, error) {
 	profile, exists := pm.profiles[name]
 	if !exists {
@@ -135,7 +135,7 @@ func (pm *ProfileManager) GetProfile(name string) (*NetworkProfile, error) {
 	return profile, nil
 }
 
-// ListProfiles returns all available profiles
+// ListProfiles returns all available profiles.
 func (pm *ProfileManager) ListProfiles() []*NetworkProfile {
 	profiles := make([]*NetworkProfile, 0, len(pm.profiles))
 	for _, profile := range pm.profiles {
@@ -153,7 +153,7 @@ func (pm *ProfileManager) ListProfiles() []*NetworkProfile {
 	return profiles
 }
 
-// DeleteProfile removes a profile
+// DeleteProfile removes a profile.
 func (pm *ProfileManager) DeleteProfile(name string) error {
 	// Check if profile exists
 	if _, exists := pm.profiles[name]; !exists {
@@ -174,7 +174,7 @@ func (pm *ProfileManager) DeleteProfile(name string) error {
 	return nil
 }
 
-// ExportProfile exports a profile to a file
+// ExportProfile exports a profile to a file.
 func (pm *ProfileManager) ExportProfile(name, outputPath string) error {
 	profile, err := pm.GetProfile(name)
 	if err != nil {
@@ -193,7 +193,7 @@ func (pm *ProfileManager) ExportProfile(name, outputPath string) error {
 	return nil
 }
 
-// ImportProfile imports a profile from a file
+// ImportProfile imports a profile from a file.
 func (pm *ProfileManager) ImportProfile(filePath string) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -209,7 +209,7 @@ func (pm *ProfileManager) ImportProfile(filePath string) error {
 	return pm.SaveProfile(&profile)
 }
 
-// CreateDefaultProfiles creates default example profiles
+// CreateDefaultProfiles creates default example profiles.
 func (pm *ProfileManager) CreateDefaultProfiles() error {
 	profiles := []*NetworkProfile{
 		{
@@ -313,7 +313,7 @@ func (pm *ProfileManager) CreateDefaultProfiles() error {
 	return nil
 }
 
-// validateProfile validates a network profile
+// validateProfile validates a network profile.
 func (pm *ProfileManager) validateProfile(profile *NetworkProfile) error {
 	if profile.Name == "" {
 		return fmt.Errorf("profile name is required")
@@ -337,7 +337,7 @@ func (pm *ProfileManager) validateProfile(profile *NetworkProfile) error {
 	return nil
 }
 
-// GetAutoProfile returns the best auto-matching profile for current environment
+// GetAutoProfile returns the best auto-matching profile for current environment.
 func (pm *ProfileManager) GetAutoProfile() (*NetworkProfile, error) {
 	profiles := pm.ListProfiles()
 	autoProfiles := make([]NetworkProfile, 0)
@@ -359,13 +359,13 @@ func (pm *ProfileManager) GetAutoProfile() (*NetworkProfile, error) {
 
 // Helper functions
 
-// isYAMLFile checks if a file has YAML extension
+// isYAMLFile checks if a file has YAML extension.
 func isYAMLFile(fileName string) bool {
 	ext := filepath.Ext(fileName)
 	return ext == ".yaml" || ext == ".yml"
 }
 
-// isValidProfileName checks if profile name is valid
+// isValidProfileName checks if profile name is valid.
 func isValidProfileName(name string) bool {
 	if len(name) == 0 || len(name) > 64 {
 		return false

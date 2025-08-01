@@ -17,7 +17,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/profiling"
 )
 
-// NewProfileCmd creates the profile command
+// NewProfileCmd creates the profile command.
 func NewProfileCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -56,10 +56,10 @@ Examples:
 	return cmd
 }
 
-// Global profiler instance
+// Global profiler instance.
 var globalProfiler *profiling.Profiler
 
-// initProfiler initializes the global profiler if not already done
+// initProfiler initializes the global profiler if not already done.
 func initProfiler() *profiling.Profiler {
 	if globalProfiler == nil {
 		config := &profiling.ProfileConfig{
@@ -74,7 +74,7 @@ func initProfiler() *profiling.Profiler {
 	return globalProfiler
 }
 
-// newStartCmd creates the start subcommand
+// newStartCmd creates the start subcommand.
 func newStartCmd() *cobra.Command {
 	var profileType string
 	var duration time.Duration
@@ -141,7 +141,7 @@ Examples:
 	return cmd
 }
 
-// newStopCmd creates the stop subcommand
+// newStopCmd creates the stop subcommand.
 func newStopCmd() *cobra.Command {
 	var sessionID string
 
@@ -172,7 +172,7 @@ Examples:
 	return cmd
 }
 
-// newListCmd creates the list subcommand
+// newListCmd creates the list subcommand.
 func newListCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -211,7 +211,7 @@ Examples:
 	return cmd
 }
 
-// newServerCmd creates the server subcommand
+// newServerCmd creates the server subcommand.
 func newServerCmd() *cobra.Command {
 	var port int
 	var autoProfile bool
@@ -250,7 +250,7 @@ Examples:
 				return fmt.Errorf("failed to start profiling server: %w", err)
 			}
 
-			// Keep server running until context is cancelled
+			// Keep server running until context is canceled
 			<-ctx.Done()
 
 			return profiler.Stop()
@@ -263,7 +263,7 @@ Examples:
 	return cmd
 }
 
-// newBenchmarkCmd creates the benchmark subcommand
+// newBenchmarkCmd creates the benchmark subcommand.
 func newBenchmarkCmd() *cobra.Command {
 	var benchmarkName string
 	var iterations int
@@ -357,7 +357,7 @@ Examples:
 	return cmd
 }
 
-// newStatsCmd creates the stats subcommand
+// newStatsCmd creates the stats subcommand.
 func newStatsCmd() *cobra.Command {
 	ctx := context.Background()
 
@@ -386,7 +386,7 @@ Examples:
 	return cmd
 }
 
-// newCompareCmd creates the compare subcommand
+// newCompareCmd creates the compare subcommand.
 func newCompareCmd() *cobra.Command {
 	var baselineName string
 	var currentName string
@@ -426,7 +426,7 @@ Examples:
 	return cmd
 }
 
-// getBenchmarkFunction returns a benchmark function for the given name
+// getBenchmarkFunction returns a benchmark function for the given name.
 func getBenchmarkFunction(name string) (profiling.BenchmarkFunc, error) {
 	switch strings.ToLower(name) {
 	case "memory-allocation":
