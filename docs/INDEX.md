@@ -1,6 +1,6 @@
 # 📚 gzh-manager-go 문서 가이드
 
-> **gzh-manager-go**는 개발 환경과 Git 저장소를 종합적으로 관리하는 Go 기반 CLI 도구입니다.
+> **gzh-manager-go**는 개발자를 위한 종합적인 CLI 도구로, 개발 환경과 Git 저장소를 통합적으로 관리합니다.
 
 ## 🚀 빠른 시작
 
@@ -12,10 +12,13 @@
 
 ### 주요 기능
 
-- **대량 클론**: GitHub/GitLab 조직 전체 저장소 일괄 복제
+- **리포지토리 동기화**: GitHub/GitLab/Gitea 조직 전체 저장소 일괄 클론 및 동기화
+- **코드 품질 관리**: 다중 언어 포매팅/린팅 도구 통합 실행
+- **IDE 모니터링**: JetBrains IDE 설정 실시간 감지 및 동기화
+- **성능 프로파일링**: Go pprof 기반 성능 분석 도구
+- **Git 통합 관리**: 저장소 설정, 웹훅, 이벤트 통합 인터페이스
 - **네트워크 관리**: WiFi 프로필, VPN, 프록시 자동 전환
 - **개발 환경**: AWS/GCP/Azure 클라우드 프로필 관리
-- **Git 통합 관리**: 저장소 설정, 웹훅, 이벤트 통합 인터페이스
 - **패키지 관리**: 다양한 패키지 매니저 통합 관리
 
 ---
@@ -42,8 +45,17 @@
   #### 🔗 Git 통합 관리
   - [🎯 Git Unified Command 가이드](03-core-features/git-unified-command.md)
 
-  #### 🔄 대량 클론
-  - [📁 bulk-clone/](03-core-features/bulk-clone/)
+  #### 🔄 리포지토리 동기화
+  - [📁 synclone 가이드](03-core-features/synclone-guide.md)
+
+  #### 🖥️ IDE 관리
+  - [💻 IDE 모니터링 가이드](03-core-features/ide-management.md)
+
+  #### 🔧 코드 품질
+  - [✨ 코드 품질 관리](03-core-features/quality-management.md)
+
+  #### 📊 성능 분석
+  - [🚀 성능 프로파일링](03-core-features/performance-profiling.md)
 
   #### 🌐 네트워크 관리
   - [📁 network-management/](03-core-features/network-management/)
@@ -83,9 +95,11 @@
   - [🧪 우선순위 테스트](04-configuration/configuration-priority-test.md)
   - **스키마 참조**
     - [⚡ gzh 스키마](04-configuration/schemas/gzh-schema.yaml)
-    - [📦 bulk-clone 스키마](04-configuration/schemas/bulk-clone-schema.yaml)
+    - [📦 synclone 스키마](04-configuration/schemas/synclone-schema.yaml)
     - [🔧 repo-config 스키마](04-configuration/schemas/repo-config-schema.yaml)
-    - [🎭 actions-policy 스키마](04-configuration/schemas/actions-policy-schema.md)
+    - [💎 quality 스키마](04-configuration/schemas/quality-schema.yaml)
+    - [💻 ide 스키마](04-configuration/schemas/ide-schema.yaml)
+    - [🎭 actions-policy 스키마](09-enterprise/actions-policy-schema.md)
 
 ### 📖 5. API 레퍼런스
 
@@ -98,6 +112,8 @@
   - [🐛 디버깅 가이드](06-development/debugging-guide.md)
   - [🪝 Pre-commit 훅](06-development/pre-commit-hooks.md)
   - [🧪 모킹 전략](06-development/mocking-strategy.md)
+  - [✨ 코드 품질 파이프라인](06-development/code-quality.md)
+  - [🛡️ 테스트 전략](06-development/testing-strategy.md)
 
 ### 🚀 7. 배포 및 운영
 
@@ -139,7 +155,8 @@
 
 1. [설치 및 기본 설정](01-getting-started/)
 2. [YAML 설정 가이드](04-configuration/yaml-guide.md)
-3. [빠른 시작 튜토리얼](03-core-features/repository-management/repo-config-quick-start.md)
+3. [리포지토리 동기화 시작하기](03-core-features/synclone-guide.md)
+4. [코드 품질 도구 설정](03-core-features/quality-management.md)
 
 ### 👥 팀 관리자인 경우
 
@@ -165,10 +182,15 @@
 
 ### 명령어별 문서
 
-- **bulk-clone**: [대량 클론](03-core-features/bulk-clone/)
+- **synclone**: [리포지토리 동기화](03-core-features/synclone-guide.md)
+- **git**: [Git 통합 관리](03-core-features/git-unified-command.md)
+- **quality**: [코드 품질 관리](03-core-features/quality-management.md)
+- **ide**: [IDE 모니터링](03-core-features/ide-management.md)
+- **profile**: [성능 프로파일링](03-core-features/performance-profiling.md)
 - **repo-config**: [저장소 관리](03-core-features/repository-management/)
 - **net-env**: [네트워크 관리](03-core-features/network-management/)
 - **dev-env**: [개발 환경](03-core-features/development-environment/)
+- **pm**: [패키지 매니저](03-core-features/package-management.md)
 
 ### 주제별 문서
 
@@ -206,6 +228,7 @@
 
 ---
 
-_📅 최종 업데이트: 2025-07-16_
-_📊 총 문서 수: 45개_
+_📅 최종 업데이트: 2025-08-04_
+_📊 총 문서 수: 50개+_
 _🏗️ 문서 구조: 10개 주요 카테고리_
+_🔧 Go 버전: 1.24.0+_

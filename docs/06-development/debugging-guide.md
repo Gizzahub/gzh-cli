@@ -20,8 +20,8 @@ Access via the Debug panel (`Ctrl+Shift+D`) or Command Palette (`F5`):
 | Configuration                       | Purpose                       | Arguments                                                      |
 | ----------------------------------- | ----------------------------- | -------------------------------------------------------------- |
 | **Debug GZH CLI**                   | Main application help         | `--help`                                                       |
-| **Debug GZH Bulk Clone**            | Bulk clone with sample config | `bulk-clone --config examples/bulk-clone-simple.yaml --dry-run` |
-| **Debug GZH Config Validate**       | Configuration validation      | `bulk-clone validate --config examples/bulk-clone-example.yaml` |
+| **Debug GZH Synclone**              | Repository sync with sample config | `synclone --config examples/synclone/synclone-simple.yaml --dry-run` |
+| **Debug GZH Config Validate**       | Configuration validation      | `synclone validate --config examples/synclone/synclone-example.yaml` |
 | **Debug Current Go File**           | Debug the currently open file | N/A                                                            |
 | **Debug Go Test (Current Package)** | Test debugging                | Test files in current directory                                |
 | **Debug Go Test (Current File)**    | Specific test function        | Prompts for test name                                          |
@@ -129,13 +129,13 @@ Delve configuration in `.delve/config.yml` includes:
 dlv debug main.go -- --help
 
 # Debug with arguments
-dlv debug main.go -- bulk-clone --config examples/bulk-clone-simple.yaml
+dlv debug main.go -- synclone --config examples/synclone/synclone-simple.yaml
 
 # Debug tests
-dlv test ./cmd/bulk-clone
+dlv test ./cmd/synclone
 
 # Debug specific test
-dlv test ./cmd/bulk-clone -- -test.run TestBulkClone
+dlv test ./cmd/synclone -- -test.run TestSynclone
 ```
 
 #### Remote Debugging
@@ -191,7 +191,7 @@ Convenience scripts in `scripts/debug/`:
 ./scripts/debug/debug-cli.sh
 
 # Debug with specific command
-./scripts/debug/debug-cli.sh bulk-clone --config examples/bulk-clone-simple.yaml
+./scripts/debug/debug-cli.sh synclone --config examples/synclone/synclone-simple.yaml
 
 ```
 
@@ -206,10 +206,10 @@ Convenience scripts in `scripts/debug/`:
 
 ```bash
 # Debug all tests in package
-./scripts/debug/debug-test.sh ./cmd/bulk-clone
+./scripts/debug/debug-test.sh ./cmd/synclone
 
 # Debug specific test
-./scripts/debug/debug-test.sh ./cmd/bulk-clone TestBulkClone
+./scripts/debug/debug-test.sh ./cmd/synclone TestSynclone
 
 # Debug with pattern
 ./scripts/debug/debug-test.sh ./pkg/github "Test.*Config"
@@ -317,7 +317,7 @@ pp configErrors
 
 ```bash
 # Debug specific test
-./scripts/debug/debug-test.sh ./cmd/bulk-clone TestConfigValidation
+./scripts/debug/debug-test.sh ./cmd/synclone TestConfigValidation
 
 # Set breakpoints in test
 b bulk_clone_test.go:TestConfigValidation
@@ -337,7 +337,7 @@ pp result
 dlv debug main.go -- bulk-clone --help
 
 # Specific commands
-dlv debug main.go -- bulk-clone --config examples/bulk-clone-simple.yaml --dry-run
+dlv debug main.go -- synclone --config examples/synclone/synclone-simple.yaml --dry-run
 dlv debug main.go -- serve --port 8080
 ```
 

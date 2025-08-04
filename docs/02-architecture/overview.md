@@ -543,6 +543,29 @@ graph TB
 4. **LogLevelManager**: Dynamic log level control with rule-based conditions
 5. **IntegratedLoggingSetup**: Unified configuration and management for both logging systems
 
+## Architecture Evolution (2025-01 Simplification)
+
+### Removed Components
+
+The architecture was recently simplified to remove over-engineered components inappropriate for CLI tools:
+
+1. **Dependency Injection Container** (`internal/container/`):
+   - **Removed**: ~1,188 lines of complex DI container code
+   - **Replaced with**: Direct constructor calls in command initialization
+   - **Rationale**: CLI tools don't need runtime service discovery
+
+2. **Complex Profiling System** (`internal/profiling/`):
+   - **Removed**: Custom HTTP server with multiple abstractions
+   - **Replaced with**: Standard Go pprof integration via `internal/simpleprof/`
+   - **Rationale**: Standard pprof tooling is more appropriate and familiar
+
+### Current Design Philosophy
+
+- **Simplicity First**: Direct, clear implementations without unnecessary abstractions
+- **Standard Tools**: Leverage Go's built-in tooling (pprof, testing, etc.)
+- **CLI-Appropriate Patterns**: Design patterns that make sense for command-line tools
+- **Performance**: Maintain fast startup times and minimal memory usage
+
 ## Development Guidelines
 
 ### Code Organization
@@ -585,6 +608,30 @@ graph TB
 - **Web Interface**: Browser-based management console
 - **Real-time Updates**: WebSocket-based progress updates
 
+## Technology Stack
+
+### Core Technologies
+
+- **Language**: Go 1.24.0+ (toolchain: go1.24.5)
+- **CLI Framework**: Cobra with direct command initialization
+- **Configuration**: Viper with YAML/JSON schema validation
+- **Git Operations**: go-git v5 with strategy pattern
+- **API Clients**:
+  - GitHub: google/go-github/v66
+  - GitLab: xanzy/go-gitlab
+  - Gitea/Gogs: Custom implementations
+- **Testing**: testify with gomock for mocking
+- **Profiling**: Standard Go pprof (simplified from custom solution)
+- **Logging**: Structured logging with RFC 5424 compliance
+
+### Key Dependencies
+
+- **UI/TUI**: Charm libraries (bubbletea, bubbles, lipgloss)
+- **File Watching**: fsnotify for IDE monitoring
+- **Progress**: schollz/progressbar for visual feedback
+- **Validation**: go-playground/validator
+- **Schema**: xeipuuv/gojsonschema for configuration validation
+
 ---
 
-This architecture documentation provides a comprehensive overview of the GZH Manager system design. For detailed implementation information, refer to the package-specific documentation and code comments.
+This architecture documentation provides a comprehensive overview of the GZH Manager system design, reflecting the simplified architecture adopted in January 2025. For detailed implementation information, refer to the package-specific documentation and code comments.

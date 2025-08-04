@@ -101,7 +101,7 @@ type(scope): description
 
 Examples:
 
-- `feat(bulk-clone): add retry logic for failed clones`
+- `feat(synclone): add retry logic for failed clones`
 - `fix(config): resolve env var precedence issue`
 - `docs(readme): update installation instructions`
 - `refactor(internal): move packages from pkg to internal`
@@ -133,7 +133,7 @@ pre-commit run --all-files
 pre-commit run golangci-lint-mod
 
 # Run hooks for specific files
-pre-commit run --files cmd/bulk-clone/*.go
+pre-commit run --files cmd/synclone/*.go
 
 # Run push hooks
 pre-commit run --hook-stage pre-push
