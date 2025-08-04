@@ -1,0 +1,97 @@
+# IDE Monitoring Configuration
+# ============================
+# Configuration for JetBrains IDE monitoring
+
+version: "1.0"
+
+# Monitoring settings
+monitoring:
+  enabled: true
+  interval: "1s"          # Check every second
+  startup_delay: "5s"     # Wait 5 seconds before starting
+  auto_fix: false         # Don't auto-fix, just notify
+  notify: true            # Send desktop notifications
+
+# IDE-specific configurations
+ides:
+  goland:
+    enabled: true
+    sync:
+      enabled: true
+      provider: "jetbrains_account"
+    monitor:
+      config_files: true
+      plugins: true
+      projects: false
+    fix:
+      auto: false
+      strategies:
+        - "restart_sync"
+        - "clear_cache"
+
+  intellij:
+    enabled: true
+    sync:
+      enabled: true
+      provider: "jetbrains_account"
+
+  webstorm:
+    enabled: true
+    sync:
+      enabled: true
+      provider: "settings_repository"
+
+  pycharm:
+    enabled: true
+
+# Sync settings
+sync:
+  enabled: true
+  providers:
+    - "jetbrains_account"
+  check_conflicts: true
+  auto_resolve: false
+  conflict_strategy: "ask"
+
+# File monitoring
+files:
+  watch_patterns:
+    - "*.xml"
+    - "*.json"
+    - ".idea/**"
+    - "codestyles/*"
+    - "options/*"
+    - "keymaps/*"
+  ignore_patterns:
+    - "*.log"
+    - "*.tmp"
+    - "tasks/*"
+    - "workspace.xml"
+    - "usage.statistics.xml"
+  track_changes: true
+
+# Backup settings
+backup:
+  enabled: true
+  directory: "$HOME/.config/gzh-manager/ide-backups"
+  interval: "30m"        # Backup every 30 minutes
+  retention: "7d"        # Keep backups for 7 days
+  compress: true
+
+# Logging
+logging:
+  level: "info"
+  file: "$HOME/.config/gzh-manager/logs/ide-monitor.log"
+  max_size: "10M"
+  rotate: true
+
+# Notifications
+notifications:
+  desktop: true
+  sound: false
+  webhook:
+    enabled: false
+    # url: "https://hooks.slack.com/services/xxx"
+    # events:
+    #   - "sync_error"
+    #   - "conflict_detected"

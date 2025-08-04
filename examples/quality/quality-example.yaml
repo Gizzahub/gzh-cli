@@ -1,0 +1,148 @@
+# Quality Configuration Example
+# =============================
+# Comprehensive configuration for gz quality command
+
+version: "1.0"
+
+# Global settings
+enabled: true
+auto_fix: true
+parallel: true
+fail_on_error: false  # Continue on errors in CI
+ignore_patterns:
+  - "vendor/"
+  - "node_modules/"
+  - ".git/"
+  - "dist/"
+  - "build/"
+  - "*.min.js"
+  - "*.generated.go"
+
+# Language configurations
+languages:
+  # Go configuration
+  go:
+    enabled: true
+    formatters:
+      gofumpt:
+        enabled: true
+        extra: true  # Enable extra formatting rules
+      gci:
+        enabled: true
+        sections:
+          - "standard"
+          - "default"
+          - "prefix(github.com/yourusername/gzh-manager-go)"
+    linters:
+      golangci_lint:
+        enabled: true
+        fix: true
+        config: ".golangci.yml"
+        presets:
+          - "bugs"
+          - "performance"
+          - "format"
+          - "style"
+      staticcheck:
+        enabled: true
+
+  # Python configuration
+  python:
+    enabled: true
+    python_version: "3.11"
+    formatters:
+      black:
+        enabled: true
+        line_length: 88
+      isort:
+        enabled: true
+        profile: "black"
+    linters:
+      ruff:
+        enabled: true
+        fix: true
+      mypy:
+        enabled: true
+        strict: true
+
+  # JavaScript/TypeScript configuration
+  javascript:
+    enabled: true
+    package_manager: "pnpm"
+    formatters:
+      prettier:
+        enabled: true
+        config: ".prettierrc"
+    linters:
+      eslint:
+        enabled: true
+        fix: true
+        config: ".eslintrc.js"
+
+  typescript:
+    enabled: true
+    extends: "javascript"
+    compiler:
+      tsc:
+        enabled: true
+        strict: true
+
+  # Rust configuration
+  rust:
+    enabled: true
+    formatters:
+      rustfmt:
+        enabled: true
+        edition: "2021"
+    linters:
+      clippy:
+        enabled: true
+        fix: true
+        level: "warn"
+
+  # Java configuration
+  java:
+    enabled: true
+    java_version: "17"
+    build_tool: "gradle"
+    formatters:
+      google_java_format:
+        enabled: true
+    linters:
+      checkstyle:
+        enabled: true
+        config: "checkstyle.xml"
+      spotbugs:
+        enabled: true
+
+  # C/C++ configuration
+  c:
+    enabled: true
+    standard: "c11"
+    formatters:
+      clang_format:
+        enabled: true
+        style: "Google"
+    linters:
+      clang_tidy:
+        enabled: true
+      cppcheck:
+        enabled: true
+
+  cpp:
+    enabled: true
+    standard: "c++20"
+    extends: "c"
+
+# Tool configuration
+tools:
+  timeout: "5m"
+  cache: true
+  cache_dir: ".quality-cache"
+
+# CI/CD integration
+ci:
+  enabled: true
+  report_format: "sarif"  # GitHub Advanced Security format
+  report_path: "quality-report.sarif"
+  annotations: true  # Create PR annotations

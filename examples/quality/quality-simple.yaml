@@ -1,0 +1,42 @@
+# Simple Quality Configuration
+# ============================
+# Minimal configuration for common use cases
+
+version: "1.0"
+
+# Enable auto-fix for all tools
+auto_fix: true
+
+# Configure only the languages you use
+languages:
+  go:
+    enabled: true
+    formatters:
+      gofumpt:
+        enabled: true
+    linters:
+      golangci_lint:
+        enabled: true
+        fix: true
+
+  python:
+    enabled: true
+    formatters:
+      black:
+        enabled: true
+      isort:
+        enabled: true
+    linters:
+      ruff:
+        enabled: true
+        fix: true
+
+  javascript:
+    enabled: true
+    formatters:
+      prettier:
+        enabled: true
+    linters:
+      eslint:
+        enabled: true
+        fix: true
