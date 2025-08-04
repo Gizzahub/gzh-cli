@@ -94,6 +94,15 @@ go test ./cmd/ide -v               # Run IDE package tests
 go test ./pkg/github -v            # Run GitHub integration tests
 ```
 
+### Performance Monitoring
+
+```bash
+./scripts/simple-benchmark.sh                    # Quick performance check
+./scripts/benchmark-performance.sh --baseline    # Create performance baseline  
+./scripts/benchmark-performance.sh --compare baseline.json  # Compare against baseline
+./scripts/benchmark-performance.sh --format human          # Human-readable output
+```
+
 ### Mocking Strategy
 
 ```bash
@@ -146,9 +155,10 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ### Key Patterns
 
-1. **Dependency Injection Architecture**: Internal Git operations use interface-based design with dependency injection
+1. **Simplified Architecture**: Clean, direct implementation focused on CLI tool needs
+   - Direct constructor pattern instead of dependency injection containers
    - `CommandExecutor` interface for shell command abstraction
-   - `Logger` interface for logging abstraction
+   - `Logger` interface for logging abstraction  
    - `Client`, `StrategyExecutor`, `BulkOperator` interfaces for Git operations
    - Concrete implementations in `constructors.go`
 
@@ -166,7 +176,11 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 8. **Comprehensive testing**: testify framework with mock services and environment-specific tests
 
-9. **URL Parsing Strategy**: Robust URL parsing for multiple Git hosting formats (HTTPS, SSH, ssh://) in `extractRepoNameFromURL`
+9. **Standard Go tooling integration**: Uses standard `runtime/pprof` for profiling instead of custom implementations
+
+10. **URL Parsing Strategy**: Robust URL parsing for multiple Git hosting formats (HTTPS, SSH, ssh://) in `extractRepoNameFromURL`
+
+11. **Performance monitoring**: Automated benchmarking system with regression detection (see `scripts/` directory)
 
 ## Configuration and Schema
 
@@ -224,6 +238,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 - `gz pm` - Update package managers (asdf, Homebrew, SDKMAN, npm, pip, etc.)
 - `gz ide` - Monitor JetBrains IDE settings and fix sync issues
 - `gz doctor` - Diagnose system health and configuration issues
+- `gz profile` - Performance profiling using standard Go pprof (server, cpu, memory, stats)
 
 ### Network Management
 
