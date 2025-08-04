@@ -7,6 +7,7 @@
 /data/
 lint-report.json
 /results/
+benchmark-artifacts/
 
 # claude code
 .claude/settings.local.json

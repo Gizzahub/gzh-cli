@@ -1,105 +1,94 @@
-<!-- 🚫 AI_MODIFY_PROHIBITED -->
-<!-- This file should not be modified by AI agents -->
-
 # Gizzahub Manager
 
-<div style="text-align: center;">
-Comprehensive CLI Tool
-<br>
-<br>
-<img src="https://github.com/gizzahub/gzh-manager-go/actions/workflows/test.yml/badge.svg" alt="Test Status"/>
-<img src="https://github.com/gizzahub/gzh-manager-go/actions/workflows/lint.yml/badge.svg" alt="Lint Status"/>
-<img src="https://pkg.go.dev/badge/github.com/gizzahub/gzh-manager-go.svg" alt="GoDoc"/>
-<img src="https://codecov.io/gh/Gizzahub/gzh-manager-go/branch/main/graph/badge.svg" alt="Code Coverage"/>
-<img src="https://img.shields.io/github/v/release/Gizzahub/gzh-manager-go" alt="Latest Release"/>
-<img src="https://img.shields.io/docker/pulls/Gizzahub/gzh-manager-go" alt="Docker Pulls"/>
-<img src="https://img.shields.io/github/downloads/Gizzahub/gzh-manager-go/total.svg" alt="Total Downloads"/>
-</div>
+**Comprehensive CLI Tool**
 
-# Table of Contents
+![Test Status](https://github.com/gizzahub/gzh-manager-go/actions/workflows/test.yml/badge.svg)
+![Lint Status](https://github.com/gizzahub/gzh-manager-go/actions/workflows/lint.yml/badge.svg)
+![GoDoc](https://pkg.go.dev/badge/github.com/gizzahub/gzh-manager-go.svg)
+![Code Coverage](https://codecov.io/gh/Gizzahub/gzh-manager-go/branch/main/graph/badge.svg)
+![Latest Release](https://img.shields.io/github/v/release/Gizzahub/gzh-manager-go)
+![Docker Pulls](https://img.shields.io/docker/pulls/Gizzahub/gzh-manager-go)
+![Total Downloads](https://img.shields.io/github/downloads/Gizzahub/gzh-manager-go/total.svg)
+
+## Table of Contents
 
 <!--ts-->
 
 - [Usage](#usage)
 - [Features](#features)
-- [Project Layout](#project-layout)
-- [How to use this template](#how-to-use-this-template)
-- [Demo Application](#demo-application)
-- [Makefile Targets](#makefile-targets)
-- [Contribute](#contribute)
-
-<!-- Added by: morelly_t1, at: Tue 10 Aug 2021 08:54:24 AM CEST -->
+- [Installation](#installation)
+- [Command Reference](#command-reference)
+- [Configuration](#configuration)
+- [Performance Monitoring](#performance-monitoring)
+- [Development](#development)
+- [Contributing](#contributing)
 
 <!--te-->
 
-# Usage
+## Usage
 
 ## 핵심 기능 개요
 
-`gzh-manager-go`는 개발자를 위한 종합적인 CLI 도구로, 다음과 같은 주요 기능을 제공합니다:
+`gzh-manager-go` (바이너리명: `gz`)는 개발자를 위한 종합적인 CLI 도구로, 다음과 같은 주요 기능을 제공합니다:
+
+### 🏗️ 개발 환경 통합 관리
+
+
+- **Git 플랫폼 통합**: GitHub, GitLab, Gitea, Gogs를 하나의 인터페이스로 관리
+- **IDE 모니터링**: JetBrains 제품군의 설정 변경 실시간 감지 및 동기화 문제 해결
+- **코드 품질 관리**: 다중 언어 포매팅/린팅 도구의 통합 실행 및 관리
+- **성능 프로파일링**: Go pprof 기반의 간편한 성능 분석 도구
+- **개발 환경 설정**: AWS, Docker, Kubernetes, SSH 설정 관리
+- **네트워크 환경 전환**: WiFi, VPN, DNS, 프록시 설정 자동 전환
+
 
 ### 📦 리포지토리 관리
 
+
 - **대량 클론 도구**: GitHub, GitLab, Gitea, Gogs에서 전체 조직의 리포지토리를 일괄 클론
-- **고급 클론 전략**: reset, pull, fetch 모드 지원으로 기존 리포지토리 동기화 방식 제어
+- **고급 클론 전략**: reset, pull, fetch, rebase 모드 지원으로 기존 리포지토리 동기화 방식 제어
 - **재개 가능한 작업**: 중단된 클론 작업을 이어서 진행할 수 있는 상태 관리 시스템
 - **병렬 처리**: 최대 50개의 동시 클론 작업으로 대규모 조직 처리 성능 향상
+- **스마트 URL 파싱**: HTTPS, SSH, git:// 등 다양한 Git URL 형식 지원
+
 
 ### 🏢 GitHub 조직 관리
 
+
 - **리포지토리 설정 관리**: 조직 전체 리포지토리의 설정을 템플릿 기반으로 일괄 관리
-- **설정 비교 도구**: `gz repo-config diff`로 현재 설정과 목표 설정 간 차이점 시각화
-- **정책 준수 감사**: `gz repo-config audit`로 SOC2, ISO27001, NIST 등 컴플라이언스 프레임워크 준수 확인
-- **리스크 분석**: 보안, 컴플라이언스, 운영 리스크 자동 평가 및 권고사항 제공
-- **웹훅 관리**: 개별 및 대량 웹훅 CRUD, 이벤트 기반 자동화 규칙 엔진
-- **다양한 출력 형식**: 테이블, JSON, HTML, CSV, SARIF, JUnit 형식 지원으로 CI/CD 통합 가능
+- **웹훅 관리**: GitHub 웹훅의 생성, 수정, 삭제 및 모니터링
+- **이벤트 처리**: GitHub 이벤트 수신 및 자동화된 응답 처리
+- **보안 정책 적용**: 조직 차원의 보안 정책 일괄 적용 및 감사
 
-### 🔧 통합 설정 시스템
 
-- **gzh.yaml 통합 설정**: 모든 명령어의 설정을 하나의 파일로 통합 관리
-- **설정 우선순위 체계**: CLI 플래그 > 환경변수 > 설정파일 > 기본값 순서
-- **설정 마이그레이션**: 기존 bulk-clone.yaml을 gzh.yaml로 자동 변환
-- **스키마 검증**: JSON/YAML 스키마를 통한 설정 파일 유효성 검사
+### 🛠️ 개발 도구 통합
 
-### 🌐 네트워크 환경 관리
 
-- **네트워크 프로필 전환**: VPN, DNS, 프록시, 호스트 파일을 한번의 명령어로 전환
-- **수동 환경 관리**: 필요시 `gz net-env switch` 명령어로 네트워크 환경 변경
-- **상태 확인**: `gz net-env status`로 현재 네트워크 설정 상태 조회
+- **패키지 매니저 업데이트**: asdf, Homebrew, SDKMAN, npm, pip 등 다양한 패키지 매니저 통합 관리
+- **IDE 설정 동기화**: JetBrains 제품군의 설정 충돌 감지 및 자동 복구
+- **코드 품질 자동화**: Go, Python, JavaScript, Rust 등 다중 언어 품질 도구 통합
+- **성능 모니터링**: 애플리케이션 성능 프로파일링 및 벤치마킹
 
-### 🏠 개발 환경 관리
 
-- **패키지 관리자 통합**: asdf, Homebrew, SDKMAN, MacPorts 등의 패키지를 최신 버전으로 일괄 업데이트
-- **설정 백업/복원**: AWS, Docker, Kubernetes, SSH 등의 설정을 안전하게 백업 및 복원
-- **JetBrains IDE 지원**: IDE 설정 동기화 문제 자동 감지 및 수정
+## 빠른 시작
 
-### 🩺 시스템 진단
-
-- **종합 진단 도구**: `gz doctor`로 시스템 상태, 의존성, 네트워크 연결성 등을 자동 진단
-- **문제 해결 제안**: 발견된 문제에 대한 구체적인 해결 방안 제시
-- **성능 벤치마크**: CPU, 디스크 I/O 성능 측정 및 최적화 권고
-- **보고서 생성**: JSON 형태의 상세한 진단 보고서 생성
-
-## 🚀 빠른 시작
-
-### 1. 설치
+### 설치
 
 ```bash
-# 최신 릴리스 다운로드 (권장)
-wget https://github.com/gizzahub/gzh-manager-go/releases/latest/download/gz-linux-amd64
-chmod +x gz-linux-amd64
-sudo mv gz-linux-amd64 /usr/local/bin/gz
+# Go를 통한 설치
+go install github.com/gizzahub/gzh-manager-go@latest
 
-# 또는 Go로 직접 빌드
+# 또는 소스에서 빌드
 git clone https://github.com/gizzahub/gzh-manager-go.git
 cd gzh-manager-go
 make build
+make install
 ```
 
-### 2. 기본 사용법
+### 기본 사용법
 
-```sh
-# 시스템 상태 진단
+```bash
+# 시스템 상태 진단 (숨겨진 명령어)
 gz doctor
 
 # 설정 파일 검증
@@ -108,603 +97,747 @@ gz synclone validate --config examples/synclone.yaml
 # GitHub 조직의 저장소 클론
 gz synclone github --orgName myorg --targetPath ~/repos/myorg --token $GITHUB_TOKEN
 
+# JetBrains IDE 설정 모니터링
+gz ide monitor
+
+# 코드 품질 검사 및 포매팅
+gz quality run
+
+# 성능 프로파일링
+gz profile stats
+gz profile cpu --duration 30s
+
 # 리포지토리 설정 감사
 gz repo-config audit --org myorg --framework SOC2
 ```
 
-### CLI 명령어 개요
+## CLI 명령어 구조
 
-```sh
-$> gz --help
-Cli 종합 Manager by Gizzahub
+```bash
+$ gz --help
+gz는 개발자를 위한 종합 CLI 도구입니다.
+
+개발 환경 설정, Git 플랫폼 관리, IDE 모니터링, 네트워크 환경 전환 등
+다양한 개발 워크플로우를 통합적으로 관리할 수 있습니다.
+
+Utility Commands: doctor, version
 
 Usage:
   gz [flags]
   gz [command]
 
 Available Commands:
-  completion    Generate the autocompletion script for the specified shell
-  dev-env       Manage development environment configurations
-  doctor        Diagnose system health and configuration issues
-  event         GitHub event management and webhook server
-  help          Help about any command
-  ide           Monitor and manage IDE configuration changes
-  net-env       Manage network environment transitions
-  pm            Manage development tools and package managers
-  repo-config   GitHub repository configuration management
-  synclone      Synchronize and clone repositories from multiple Git hosting services
-  version       gz version information
-  webhook       🔗 GitHub 웹훅 관리 도구
+  dev-env     Manage development environment configurations
+  git         🔗 통합 Git 플랫폼 관리 도구 (config, webhook, event)
+  ide         Monitor and manage IDE configuration changes
+  net-env     Manage network environment transitions
+  pm          Manage development tools and package managers
+  profile     Performance profiling using standard Go pprof
+  quality     통합 코드 품질 도구 (포매팅 + 린팅)
+  repo-config GitHub repository configuration management
+  synclone    Synchronize and clone repositories from multiple Git hosting services
 
 Flags:
-  -h, --help   help for gz
+      --debug     Enable debug logging (shows all log levels)
+  -h, --help      help for gz
+  -q, --quiet     Suppress all logs except critical errors
+  -v, --verbose   Enable verbose logging
 
 Use "gz [command] --help" for more information about a command.
-
-Flags:
-  -h, --help   help for bulk-clone
-
-Use "gzh-manager [command] --help" for more information about a command.
 ```
 
-First, create a configuration file in the desired path. Refer to
-[synclone.yaml](pkg/synclone/synclone.yaml)
+## Features
 
-```sh
-$> gzh bulk-clone -t $HOME/mywork
+## 🔗 Git 플랫폼 통합 관리 (`gz git`)
 
-This won't work:
-$> gzh bulk-clone -t ./mywork
-$> gzh bulk-clone -t $HOME/mywork
-$> gzh bulk-clone -t ~/mywork
-```
-
-### Bulk Clone Config File Support
-
-The bulk-clone command now supports configuration files to manage multiple organizations and their settings. This allows you to define clone operations once and reuse them.
-
-#### Configuration Priority System
-
-The gzh-manager tool uses a strict priority hierarchy where higher priority sources override lower priority ones:
-
-**Priority Order (Highest to Lowest):**
-
-1. **Command-Line Flags** (Highest Priority)
-2. **Environment Variables** (Second Priority)
-3. **Configuration Files** (Third Priority)
-4. **Default Values** (Lowest Priority)
-
-**Examples:**
-
-```bash
-# CLI flag overrides all other sources
-gz bulk-clone --strategy=pull --parallel=20
-
-# Environment variable overrides config file but not CLI flags
-export GITHUB_TOKEN=ghp_env_token
-gz bulk-clone --token=ghp_flag_token  # Uses ghp_flag_token
-
-# Configuration file provides base settings
-gz bulk-clone  # Uses settings from config file
-```
-
-> **📖 For detailed priority rules and examples, see [Configuration Priority Guide](docs/configuration-priority.md)**
-
-#### Configuration File Locations
-
-The tool searches for configuration files in the following order:
-
-1. Environment variable: `GZH_CONFIG_PATH`
-2. Current directory: `./gzh.yaml`, `./gzh.yml`, `./bulk-clone.yaml`, `./bulk-clone.yml`
-3. User config directory: `~/.config/gzh-manager/gzh.yaml`, `~/.config/gzh-manager/bulk-clone.yaml`
-4. System config: `/etc/gzh-manager/gzh.yaml`, `/etc/gzh-manager/bulk-clone.yaml`
-
-#### Using Configuration Files
-
-```bash
-# Use config file from standard locations
-gzh bulk-clone github --use-config -o myorg
-
-# Use specific config file
-gzh bulk-clone github -c /path/to/config.yaml -o myorg
-
-# Override config values with CLI flags
-gzh bulk-clone github -c config.yaml -o myorg -t /different/path
-```
-
-#### Configuration File Examples
-
-Several example configuration files are provided in the `examples/` directory:
-
-1. **bulk-clone-simple.yaml** - A minimal working configuration
-2. **bulk-clone-example.yaml** - A comprehensive example with detailed comments
-3. **bulk-clone.yml** - Advanced features (planned/future implementation)
-
-##### Simple Configuration Example
-
-```yaml
-# bulk-clone-simple.yaml
-version: "0.1"
-
-default:
-  protocol: https
-  github:
-    root_path: "$HOME/github-repos"
-  gitlab:
-    root_path: "$HOME/gitlab-repos"
-
-repo_roots:
-  - root_path: "$HOME/work/mycompany"
-    provider: "github"
-    protocol: "ssh"
-    org_name: "mycompany"
-
-  - root_path: "$HOME/opensource"
-    provider: "github"
-    protocol: "https"
-    org_name: "kubernetes"
-
-ignore_names:
-  - "test-.*"
-  - ".*-archive"
-```
-
-See `examples/bulk-clone-example.yaml` for a comprehensive example with all available options and detailed comments.
-
-#### Configuration Schema
-
-The configuration file structure is formally defined in:
-
-- **JSON Schema**: `docs/bulk-clone-schema.json` - Machine-readable schema definition
-- **YAML Schema**: `docs/bulk-clone-schema.yaml` - Human-readable schema documentation
-
-##### Validating Your Configuration
-
-You can validate your configuration file using the built-in validator:
-
-```bash
-# Validate a specific config file
-gzh bulk-clone validate -c /path/to/bulk-clone.yaml
-
-# Validate config from standard locations
-gzh bulk-clone validate --use-config
-```
-
-The validator checks:
-
-- Required fields are present
-- Values match allowed enums (protocol, provider, etc.)
-- Structure follows the schema
-- Regex patterns are valid
-
-#### Advanced Configuration (Future)
-
-```yaml
-# bulk-clone.yaml (advanced example for future implementation)
-github:
-  ScriptonBasestar:
-    auth: token
-    proto: https
-    targetPath: $HOME/mywork/ScriptonBasestar
-    default:
-      strategy: include
-      branch: develop
-    include:
-      proxynd:
-        branch: develop
-      devops-minim-engine:
-        branch: dev
-    exclude:
-      - sb-wp-*
-    override:
-      include:
-  nginxinc:
-    targetPath: $HOME/mywork/nginxinc
-```
-
-```bash
-gzh bulk-clone -o nginxinc
-gzh bulk-clone -o nginxinc -t $HOME/mywork/nginxinc
-gzh bulk-clone -o nginxinc -t $HOME/mywork/nginxinc --auth token
-gzh bulk-clone -o nginxinc -t $HOME/mywork/nginxinc -s pull
-```
-
-### Strategy Options
-
-The `-s` or `--strategy` flag controls how existing repositories are synchronized:
-
-- `reset` (default): Performs `git reset --hard HEAD` followed by `git pull`. This discards all local changes and ensures a clean sync with the remote repository.
-- `pull`: Only performs `git pull` without resetting. This attempts to merge remote changes with local changes. May fail if there are conflicts.
-- `fetch`: Only performs `git fetch` without modifying the working directory. This updates remote tracking branches but doesn't change your local files.
-
-Example usage:
-
-```bash
-# Default behavior (reset strategy)
-gzh bulk-clone github -o myorg -t ~/repos
-
-# Preserve local changes and merge with remote
-gzh bulk-clone github -o myorg -t ~/repos -s pull
-
-# Only fetch updates without modifying local files
-gzh bulk-clone github -o myorg -t ~/repos -s fetch
-```
-
-### Parallel Clone Options
-
-The `-p` or `--parallel` flag controls how many repositories are cloned or updated simultaneously:
-
-- Default: 10 parallel workers
-- Range: 1-50 (higher values may hit rate limits)
-
-The `--max-retries` flag controls how many times failed operations are retried:
-
-- Default: 3 attempts
-- Range: 0-10
-
-Example usage:
-
-```bash
-# Clone with 20 parallel workers
-gzh bulk-clone github -o myorg -t ~/repos -p 20
-
-# Clone with 5 parallel workers and 5 retry attempts
-gzh bulk-clone github -o myorg -t ~/repos -p 5 --max-retries 5
-
-# Sequential cloning (no parallelism)
-gzh bulk-clone github -o myorg -t ~/repos -p 1
-```
-
-**Performance Tips:**
-
-- For large organizations (100+ repos), use `-p 20` or higher
-- For rate-limited accounts, use `-p 5` or lower
-- Network speed and CPU cores affect optimal parallel value
-- Monitor for rate limit errors and adjust accordingly
-
-### Resumable Clone Operations
-
-The `--resume` flag enables resumable clone operations that can be interrupted and continued later:
-
-```bash
-# Start a large clone operation
-gzh bulk-clone github -o large-org -t ~/repos -p 20
-
-# If interrupted (Ctrl+C), resume from where it left off
-gzh bulk-clone github -o large-org -t ~/repos -p 20 --resume
-
-# Resume with different settings
-gzh bulk-clone github -o large-org -t ~/repos -p 10 --resume
-```
-
-**State Management:**
-
-- States are automatically saved to `~/.gzh/state/`
-- Resume works across different parallel settings
-- States are cleaned up after successful completion
-- Failed repositories are tracked and can be retried
-
-**State Commands:**
-
-```bash
-# List all saved states
-gzh bulk-clone state list
-
-# Show details of a specific state
-gzh bulk-clone state show -p github -o myorg
-
-# Clean up saved states
-gzh bulk-clone state clean -p github -o myorg
-gzh bulk-clone state clean --all
-```
-
-**Benefits:**
-
-- No need to restart from beginning after interruption
-- Handles network failures gracefully
-- Tracks progress across sessions
-- Optimizes by skipping completed repositories
-
-## Repository Configuration Management
-
-The `gz repo-config` command allows you to manage GitHub repository configurations at scale, including settings, security policies, branch protection rules, webhooks, and compliance auditing.
-
-### Quick Start
-
-1. **Create a configuration file** (`repo-config.yaml`):
-
-   ```yaml
-   version: "1.0.0"
-   organization: "your-org"
-
-   templates:
-     standard:
-       description: "Standard repository settings"
-       settings:
-         has_issues: true
-         has_wiki: false
-         delete_branch_on_merge: true
-       security:
-         vulnerability_alerts: true
-         branch_protection:
-           main:
-             required_reviews: 2
-             enforce_admins: true
-
-   repositories:
-     - name: "*"
-       template: "standard"
-   ```
-
-2. **Apply configuration**:
-
-   ```bash
-   # Preview changes (dry run)
-   gz repo-config apply --config repo-config.yaml --dry-run
-
-   # Apply configuration
-   gz repo-config apply --config repo-config.yaml
-   ```
-
-3. **Audit compliance**:
-
-   ```bash
-   gz repo-config audit --config repo-config.yaml
-   ```
-
-4. **Manage webhooks**:
-
-   ```bash
-   # Individual webhook management
-   gz repo-config webhook create --org myorg --repo myrepo --url https://example.com/webhook
-
-   # Bulk webhook operations
-   gz repo-config webhook bulk create --org myorg --config webhook-bulk-config.yaml
-
-   # Event-based automation
-   gz repo-config webhook automation server --config automation-rules.yaml
-   ```
-
-### Key Features
-
-- **Templates**: Define reusable repository configurations
-- **Policies**: Enforce security and compliance rules
-- **Pattern Matching**: Apply configurations based on repository name patterns
-- **Exception Handling**: Allow documented exceptions to policies
-- **Compliance Auditing**: Generate reports on policy violations
-- **Bulk Operations**: Update multiple repositories efficiently
-- **Webhook Management**: Complete CRUD operations and bulk management
-- **Event Automation**: GitHub event-based automation rules engine
-
-### Documentation
-
-- [Quick Start Guide](docs/repo-config-quick-start.md) - Get started in 5 minutes
-- [User Guide](docs/repo-config-user-guide.md) - Complete documentation
-- [Policy Examples](docs/repo-config-policy-examples.md) - Ready-to-use policy templates
-- [Webhook Management Guide](docs/webhook-management-guide.md) - Complete webhook features guide
-- [Configuration Schema](docs/repo-config-schema.yaml) - Configuration file reference
-
-### Example: Enterprise Configuration
-
-```yaml
-version: "1.0.0"
-organization: "enterprise-org"
-
-templates:
-  backend:
-    description: "Backend service configuration"
-    settings:
-      private: true
-    security:
-      secret_scanning: true
-      branch_protection:
-        main:
-          required_reviews: 2
-          required_status_checks: ["ci/build", "ci/test"]
-
-policies:
-  security:
-    description: "Security requirements"
-    rules:
-      must_be_private:
-        type: "visibility"
-        value: "private"
-        enforcement: "required"
-        message: "Production services must be private"
-
-patterns:
-  - pattern: "*-service"
-    template: "backend"
-    policies: ["security"]
-```
-
-## 🚀 빠른 시작
-
-### 1. 설치
-
-```bash
-# 바이너리 다운로드 및 설치
-make install
-
-# 또는 직접 빌드
-make build
-```
-
-### 2. 기본 설정
-
-```bash
-# 통합 설정 파일 생성
-gz config init
-
-# 네트워크 프로필 설정
-gz net-env switch --init
-```
-
-### 3. 대량 클론 시작
-
-```bash
-# GitHub 조직 클론
-gz bulk-clone github -o myorg -t ~/repos
-
-# 설정 파일 사용
-gz bulk-clone github --use-config -o myorg
-```
-
-### 4. 네트워크 환경 관리
-
-```bash
-# 네트워크 프로필 목록 확인
-gz net-env switch --list
-
-# 현재 네트워크 상태 확인
-gz net-env status
-
-# 특정 네트워크 프로필로 전환
-gz net-env switch office
-```
-
-> 📖 **자세한 사용법은 [USAGE.md](USAGE.md)를 참고하세요.**
-
-## 🎯 프로젝트 현황
-
-### 구현 완료도
-
-- **핵심 기능**: 100% 완료 ✅
-- **테스트 커버리지**: 포괄적인 테스트 완료 ✅
-- **문서화**: 완벽한 문서 체계 구축 ✅
-- **프로덕션 준비**: 실제 운영 환경에서 사용 가능 ✅
-
-### 주요 성과
-
-- 📊 수백 개의 리포지토리를 효율적으로 관리하는 도구 완성
-- 🔧 개발자의 네트워크 환경 전환 작업을 CLI 명령어로 간소화
-- ⚙️ 모든 도구를 하나의 설정 파일로 관리하는 통합 체계 구축
-- 🔐 조직 차원의 리포지토리 보안 정책 일괄 적용 시스템
-- 📚 사용자 가이드부터 개발자 문서까지 완벽한 문서 체계
-
-### 기술적 특징
-
-- **Go 언어 기반**: 크로스 플랫폼 지원, 높은 성능
-- **모듈화 설계**: 확장 가능한 아키텍처
-- **테스트 주도 개발**: 포괄적인 테스트 커버리지
-- **직관적인 CLI**: 사용자 친화적인 인터페이스
-
-> 💡 **향후 계획은 [ROADMAP.md](ROADMAP.md)를 참고하세요.**
-
-## 📚 Documentation
-
-- [Repository Configuration Management](docs/repo-config-commands.md) - `gz repo-config diff` 및 `gz repo-config audit` 명령어 가이드
-- [Webhook Management Guide](docs/webhook-management-guide.md) - 웹훅 관리 전체 기능 가이드
-- [Configuration Priority Guide](docs/configuration-priority.md) - 설정 우선순위 시스템 설명
-- [Bulk Clone Schema](docs/bulk-clone-schema.yaml) - 설정 파일 스키마 문서
-- [Release Notes v1.0.0](docs/release-notes-v1.0.0.md) - 첫 정식 릴리즈 노트
-
-## 🔧 Go SDK (Programmatic API)
-
-GZH Manager는 Go 애플리케이션에서 직접 사용할 수 있는 공개 API를 제공합니다.
-
-### 설치
-
-```bash
-go get github.com/gizzahub/gzh-manager-go/pkg/gzhclient
-```
-
-### 기본 사용법
-
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "log"
-    "time"
-
-    "github.com/gizzahub/gzh-manager-go/pkg/gzhclient"
-)
-
-func main() {
-    // 클라이언트 생성
-    client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer client.Close()
-
-    // 대량 클론 작업 수행
-    req := gzhclient.BulkCloneRequest{
-        Platforms: []gzhclient.PlatformConfig{
-            {
-                Type:          "github",
-                Token:         "your-github-token",
-                Organizations: []string{"your-org"},
-            },
-        },
-        OutputDir:   "./repositories",
-        Concurrency: 5,
-        Strategy:    "reset",
-    }
-
-    result, err := client.BulkClone(context.Background(), req)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    fmt.Printf("Successfully cloned %d repositories\n", result.SuccessCount)
-}
-```
+통합된 Git 명령어 인터페이스로 다양한 Git 호스팅 플랫폼을 하나의 명령어로 관리합니다.
 
 ### 주요 기능
 
-- **대량 클론**: GitHub, GitLab, Gitea, Gogs에서 리포지토리 일괄 클론
-- **플러그인 관리**: 플러그인 로드, 실행, 상태 확인
-- **시스템 모니터링**: CPU, 메모리, 디스크 사용량 수집
-- **이벤트 시스템**: 실시간 이벤트 구독 및 처리
-- **플랫폼별 클라이언트**: GitHub, GitLab, Gitea 전용 클라이언트
+- **리포지토리 클론 및 업데이트**: 스마트 clone-or-update 전략
+- **웹훅 관리**: GitHub, GitLab 웹훅 통합 관리
+- **이벤트 처리**: Git 플랫폼 이벤트 수신 및 처리
+- **설정 관리**: 다중 플랫폼 설정 통합
 
-### 더 많은 예제
 
-완전한 사용 예제와 API 문서는 다음에서 확인하세요:
+```bash
+# 리포지토리 스마트 클론/업데이트
+gz git repo clone-or-update https://github.com/user/repo.git
+gz git repo clone-or-update https://github.com/user/repo.git --strategy rebase
 
-- [GoDoc](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg/gzhclient)
-- [Example Code](pkg/gzhclient/examples_test.go)
-
-# Features
-
-- [goreleaser](https://goreleaser.com/) with `deb.` and `.rpm` packer and container (`docker.hub` and `ghcr.io`) releasing including `manpages` and `shell completions` and grouped Changelog generation.
-- [golangci-lint](https://golangci-lint.run/) for linting and formatting
-- [Github Actions](.github/worflows) Stages (Lint, Test (`windows`, `linux`, `mac-os`), Build, Release)
-- [Gitlab CI](.gitlab-ci.yml) Configuration (Lint, Test, Build, Release)
-- [cobra](https://cobra.dev/) example setup including tests
-- [Makefile](Makefile) - with various useful targets and documentation (see Makefile Targets)
-- [Github Pages](_config.yml) using [jekyll-theme-minimal](https://github.com/pages-themes/minimal) (checkout [https://Gizzahub.github.io/gzh-manager-go/](https://Gizzahub.github.io/gzh-manager-go/))
-- Useful `README.md` badges
-- [pre-commit-hooks](https://pre-commit.com/) for formatting and validating code before committing
-
-## Project Layout
-
-- [assets/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/assets) => docs, images, etc
-- [cmd/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/cmd) => command-line configurations (flags, subcommands)
-- [pkg/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/pkg) => packages that are okay to import for other projects
-- [internal/](https://pkg.go.dev/github.com/gizzahub/gzh-manager-go/internal) => packages that are only for project internal purposes
-
-* [`tools/`](tools/) => for automatically shipping all required dependencies when running `go get` (or `make bootstrap`) such as `golang-ci-lint` (see: https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module)
-* [`scripts/`](scripts/) => build scripts
-
-# Makefile Targets
-
-```sh
-$> make
-bootstrap                      install build deps
-build                          build golang binary
-clean                          clean up environment
-cover                          display test coverage
-docker-build                   dockerize golang application
-fmt                            format go files
-help                           list makefile targets
-install                        install golang binary
-lint                           lint go files
-pre-commit                     run pre-commit hooks
-run                            run the app
-test                           display test coverage
+# 웹훅 관리
+gz git webhook list --org myorg
+gz git webhook create --org myorg --repo myrepo --url https://api.example.com/webhook
 ```
+
+## 🖥️ IDE 모니터링 및 관리 (`gz ide`)
+
+JetBrains 제품군의 설정 변경을 실시간으로 모니터링하고 동기화 문제를 자동으로 해결합니다.
+
+### 지원하는 IDE
+
+- IntelliJ IDEA (Community, Ultimate)
+- PyCharm (Community, Professional)
+- WebStorm, PhpStorm, RubyMine
+- CLion, GoLand, DataGrip
+- Android Studio, Rider
+
+
+### 주요 기능
+
+- **실시간 모니터링**: 설정 파일 변경 감지
+- **동기화 수정**: 설정 충돌 자동 해결
+- **크로스플랫폼 지원**: Linux, macOS, Windows
+- **백업 및 복구**: 설정 변경 전 자동 백업
+
+
+```bash
+# 모든 JetBrains IDE 모니터링
+gz ide monitor
+
+# 특정 제품 모니터링
+gz ide monitor --product IntelliJIdea2023.2
+
+# 동기화 문제 수정
+gz ide fix-sync
+
+# 설치된 IDE 목록
+gz ide list
+```
+
+## 🔧 코드 품질 관리 (`gz quality`)
+
+다중 언어를 지원하는 통합 코드 품질 관리 도구입니다.
+
+### 지원 언어 및 도구
+
+- **Go**: gofumpt, golangci-lint, goimports, gci
+- **Python**: ruff (format + lint), black, isort, flake8, mypy
+- **JavaScript/TypeScript**: prettier, eslint, dprint
+- **Rust**: rustfmt, clippy
+- **Java**: google-java-format, checkstyle, spotbugs
+- **C/C++**: clang-format, clang-tidy
+- **기타**: YAML, JSON, Markdown, Shell 스크립트 지원
+
+
+### 주요 기능
+
+- **통합 실행**: 모든 품질 도구를 하나의 명령어로 실행
+- **선택적 처리**: 변경된 파일 또는 스테이징된 파일만 처리
+- **도구 관리**: 품질 도구 설치, 업그레이드, 버전 관리
+- **프로젝트 분석**: 프로젝트에 적합한 도구 자동 추천
+- **CI/CD 통합**: JSON, JUnit XML 출력 형식 지원
+
+
+```bash
+# 모든 품질 도구 실행
+gz quality run
+
+# 변경된 파일만 처리
+gz quality run --changed
+
+# 린팅만 실행 (변경 없이 검사)
+gz quality check
+
+# 프로젝트 분석 및 도구 추천
+gz quality analyze
+
+# 품질 도구 설치
+gz quality install
+
+# 특정 도구 직접 실행
+gz quality tool prettier --staged
+```
+
+## 📊 성능 프로파일링 (`gz profile`)
+
+Go의 표준 pprof를 기반으로 한 간편한 성능 분석 도구입니다.
+
+### 주요 기능
+
+- **HTTP 서버**: pprof 웹 인터페이스 제공
+- **CPU 프로파일링**: 지정된 시간 동안 CPU 사용량 분석
+- **메모리 프로파일링**: 힙 메모리 사용량 분석
+- **런타임 통계**: 실시간 메모리 및 GC 통계
+
+
+```bash
+# 런타임 통계 확인
+gz profile stats
+
+# pprof HTTP 서버 시작
+gz profile server --port 6060
+
+# CPU 프로파일링 (30초)
+gz profile cpu --duration 30s
+
+# 메모리 프로파일링
+gz profile memory
+```
+
+## 🌐 네트워크 환경 관리 (`gz net-env`)
+
+네트워크 환경 변화를 감지하고 자동으로 설정을 전환하는 도구입니다.
+
+### 주요 기능
+
+- **WiFi 변화 감지**: 네트워크 변경 자동 감지
+- **프록시 설정**: 환경별 프록시 자동 전환
+- **DNS 관리**: 환경별 DNS 서버 설정
+- **VPN 통합**: VPN 연결 상태 관리
+
+
+## 🔄 패키지 매니저 통합 (`gz pm`)
+
+다양한 패키지 매니저를 통합 관리하는 도구입니다.
+
+### 지원하는 패키지 매니저
+
+- **언어별**: asdf, nvm, pyenv, rbenv
+- **시스템**: Homebrew (macOS), apt (Ubuntu), yum (CentOS)
+- **개발도구**: npm, pip, cargo, go modules
+- **클라우드**: SDKMAN, kubectl, helm
+
+
+### 주요 기능
+
+- **일괄 업데이트**: 모든 패키지 매니저 동시 업데이트
+- **선택적 업데이트**: 특정 도구만 업데이트
+- **상태 확인**: 설치된 도구 및 버전 확인
+- **의존성 관리**: 의존성 충돌 감지 및 해결
+
+
+## 📦 대량 리포지토리 클론 (`gz synclone`)
+
+다중 Git 플랫폼에서 대량의 리포지토리를 효율적으로 관리하는 도구입니다.
+
+### 지원하는 플랫폼
+
+- **GitHub**: 조직, 개인 리포지토리
+- **GitLab**: 그룹, 프로젝트
+- **Gitea**: 조직, 개인 리포지토리
+- **Gogs**: 조직, 개인 리포지토리 (계획 중)
+
+
+### 주요 기능
+
+- **병렬 클론**: 최대 50개 동시 작업
+- **재개 기능**: 중단된 작업 이어서 진행
+- **다양한 전략**: reset, pull, fetch, rebase
+- **상태 관리**: 클론 진행 상황 추적 및 저장
+
+
+## Installation
+
+## 시스템 요구사항
+
+
+- **Go**: 1.24.0 이상
+- **Git**: 2.0 이상
+- **OS**: Linux, macOS, Windows
+
+
+## 설치 방법
+
+### 1. Go Install (권장)
+
+```bash
+go install github.com/gizzahub/gzh-manager-go@latest
+```
+
+### 2. 소스에서 빌드
+
+```bash
+git clone https://github.com/gizzahub/gzh-manager-go.git
+cd gzh-manager-go
+make bootstrap  # 빌드 의존성 설치
+make build      # gz 실행 파일 생성
+make install    # $GOPATH/bin에 설치
+```
+
+### 3. 사전 컴파일된 바이너리
+
+[Releases](https://github.com/gizzahub/gzh-manager-go/releases) 페이지에서 플랫폼별 바이너리를 다운로드하세요.
+
+## 설치 확인
+
+```bash
+gz --version
+gz doctor  # 시스템 상태 진단 (숨겨진 명령어)
+```
+
+## Command Reference
+
+## 전역 플래그
+
+모든 명령어에서 사용할 수 있는 공통 플래그입니다:
+
+```bash
+--verbose, -v    # 상세 로그 출력
+--debug          # 디버그 로그 출력 (모든 로그 레벨)
+--quiet, -q      # 오류 외 모든 로그 숨김
+--help, -h       # 도움말 표시
+```
+
+## 주요 명령어별 세부 사용법
+
+### `gz synclone` - 리포지토리 대량 클론
+
+```bash
+# GitHub 조직 전체 클론
+gz synclone github --orgName myorg --targetPath ~/repos --token $GITHUB_TOKEN
+
+# GitLab 그룹 클론
+gz synclone gitlab --groupName mygroup --targetPath ~/repos --token $GITLAB_TOKEN
+
+# 설정 파일로 실행
+gz synclone --config examples/synclone.yaml
+
+# 작업 재개
+gz synclone --resume
+
+# 설정 검증
+gz synclone validate --config synclone.yaml
+```
+
+### `gz git` - Git 플랫폼 통합
+
+```bash
+# 리포지토리 클론 또는 업데이트
+gz git repo clone-or-update https://github.com/user/repo.git
+gz git repo clone-or-update https://github.com/user/repo.git --branch develop --strategy rebase
+
+# 웹훅 관리
+gz git webhook list --org myorg
+gz git webhook create --org myorg --repo myrepo --url https://example.com/hook
+
+# 이벤트 서버 시작
+gz git event server --port 8080
+```
+
+### `gz quality` - 코드 품질 관리
+
+```bash
+# 전체 품질 검사 및 수정
+gz quality run
+
+# 린팅만 (수정 없이 검사)
+gz quality check --severity error
+
+# 변경된 파일만 처리
+gz quality run --changed
+
+# 프로젝트 초기 설정
+gz quality init
+
+# 도구 관리
+gz quality install gofumpt
+gz quality upgrade
+gz quality version
+```
+
+### `gz ide` - IDE 관리
+
+```bash
+# 실시간 모니터링
+gz ide monitor
+gz ide monitor --product IntelliJIdea2023.2
+
+# 동기화 문제 수정
+gz ide fix-sync --dry-run  # 미리보기
+gz ide fix-sync
+
+# IDE 목록 확인
+gz ide list --format json
+```
+
+### `gz profile` - 성능 프로파일링
+
+```bash
+# 기본 통계
+gz profile stats
+
+# HTTP 서버 시작
+gz profile server --port 6060
+
+# CPU 프로파일링
+gz profile cpu --duration 60s
+
+# 메모리 프로파일링
+gz profile memory
+```
+
+### `gz dev-env` - 개발 환경 관리
+
+```bash
+# AWS 설정 관리
+gz dev-env aws configure
+gz dev-env aws status
+
+# Docker 환경 설정
+gz dev-env docker setup
+gz dev-env docker status
+
+# Kubernetes 설정
+gz dev-env k8s configure
+gz dev-env k8s status
+```
+
+### `gz pm` - 패키지 매니저 관리
+
+```bash
+# 전체 업데이트
+gz pm update
+
+# 특정 매니저 업데이트
+gz pm update --manager homebrew
+
+# 상태 확인
+gz pm status
+gz pm list
+```
+
+## Configuration
+
+## 설정 파일 계층 구조
+
+설정 파일은 다음 순서로 우선순위를 가집니다:
+
+1. 환경 변수: `GZH_CONFIG_PATH`
+2. 현재 디렉토리: `./synclone.yaml` 또는 `./synclone.yml`
+3. 사용자 설정: `~/.config/gzh-manager/synclone.yaml`
+4. 시스템 설정: `/etc/gzh-manager/synclone.yaml`
+
+## 주요 설정 파일
+
+### synclone.yaml - 리포지토리 클론 설정
+
+```yaml
+# 기본 설정
+parallel_limit: 10
+timeout: 300
+resume_enabled: true
+
+# GitHub 설정
+github:
+  token: "${GITHUB_TOKEN}"
+  organizations:
+    - name: "myorg"
+      target_path: "~/repos/myorg"
+      strategy: "reset"
+
+# GitLab 설정
+gitlab:
+  token: "${GITLAB_TOKEN}"
+  groups:
+    - name: "mygroup"
+      target_path: "~/repos/gitlab"
+      strategy: "pull"
+```
+
+### quality.yaml - 코드 품질 설정
+
+```yaml
+quality:
+  tools:
+    enabled: ["gofumpt", "golangci-lint", "prettier", "eslint"]
+    disabled: []
+
+  execution:
+    parallel: true
+    timeout: 300
+    fail_fast: false
+
+  filters:
+    exclude_patterns:
+      - "vendor/"
+      - "node_modules/"
+      - "*.generated.go"
+```
+
+### ide.yaml - IDE 설정
+
+```yaml
+ide:
+  monitoring:
+    enabled: true
+    interval: 1s
+    filter_temp_files: true
+
+  products:
+    - name: "IntelliJIdea"
+      enabled: true
+      custom_path: "/custom/path/to/config"
+
+  sync:
+    backup_enabled: true
+    backup_retention: 7  # days
+```
+
+## 환경 변수
+
+```bash
+# 인증 토큰
+export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
+export GITLAB_TOKEN="glpat-xxxxxxxxxxxx"
+export GITEA_TOKEN="xxxxxxxxxxxx"
+
+# 설정 경로
+export GZH_CONFIG_PATH="/path/to/config.yaml"
+
+# 디버그 모드
+export GZH_DEBUG_SHELL=1  # 디버그 셸 활성화
+
+# IDE 관련
+export JETBRAINS_CONFIG_PATH="/custom/jetbrains/config"
+export IDE_MONITOR_INTERVAL="1s"
+
+# 품질 도구 관련
+export QUALITY_PARALLEL=true
+export QUALITY_TIMEOUT=300
+```
+
+## Performance Monitoring
+
+## 성능 벤치마킹
+
+프로젝트에는 자동화된 성능 모니터링 시스템이 포함되어 있습니다:
+
+### 빠른 성능 체크
+
+```bash
+# 기본 성능 체크 (startup time, binary size, memory)
+./scripts/simple-benchmark.sh
+```
+
+### 상세 성능 분석
+
+```bash
+# 베이스라인 생성
+./scripts/benchmark-performance.sh --baseline > baseline.json
+
+# 베이스라인과 비교
+./scripts/benchmark-performance.sh --compare baseline.json
+
+# 사람이 읽기 쉬운 형태로 출력
+./scripts/benchmark-performance.sh --format human
+```
+
+### 성능 메트릭
+
+
+- **시작 시간**: 50ms 이하 목표
+- **바이너리 크기**: ~33MB
+- **메모리 사용량**: 최소한으로 유지
+- **명령어 응답 시간**: 대부분 100ms 이하
+
+
+### 성능 프로파일링
+
+```bash
+# 런타임 통계 확인
+gz profile stats
+
+# CPU 프로파일링 (30초간)
+gz profile cpu --duration 30s
+
+# 메모리 프로파일링
+gz profile memory
+
+# pprof 웹 인터페이스 시작
+gz profile server --port 6060
+# http://localhost:6060/debug/pprof/ 접속
+```
+
+## Development
+
+## 개발 환경 설정
+
+### 필수 도구 설치
+
+```bash
+# 빌드 의존성 설치 (한 번만 실행)
+make bootstrap
+
+# 개발 도구 확인
+make check-tools
+```
+
+### 빌드 및 테스트
+
+```bash
+# 빌드
+make build
+
+# 테스트
+make test
+make test-coverage
+
+# 코드 품질 검사 (커밋 전 필수)
+make fmt        # 코드 포매팅
+make lint       # 린팅 검사
+make lint-all   # 전체 품질 검사
+
+# 특정 패키지 테스트
+go test ./cmd/ide -v
+go test ./cmd/quality -v
+go test ./pkg/github -v
+```
+
+### Pre-commit 훅 설정
+
+```bash
+# pre-commit 훅 설치 (한 번만 실행)
+make pre-commit-install
+
+# 수동으로 pre-commit 실행
+make pre-commit
+
+# pre-push 훅 실행
+make pre-push
+```
+
+### 코드 생성
+
+```bash
+# Mock 파일 생성
+make generate-mocks
+
+# Mock 파일 정리 및 재생성
+make clean-mocks
+make regenerate-mocks
+```
+
+## 아키텍처 개요
+
+### 프로젝트 구조
+
+```
+.
+├── cmd/                    # CLI 명령어 구현
+│   ├── root.go            # 메인 CLI 진입점
+│   ├── git/               # Git 통합 명령어
+│   ├── ide/               # IDE 모니터링
+│   ├── quality/           # 코드 품질 도구
+│   ├── profile/           # 성능 프로파일링
+│   ├── synclone/          # 대량 리포지토리 클론
+│   ├── dev-env/           # 개발 환경 관리
+│   ├── net-env/           # 네트워크 환경 관리
+│   ├── pm/                # 패키지 매니저 관리
+│   └── repo-config/       # 리포지토리 설정 관리
+├── internal/              # 내부 패키지
+│   ├── git/               # Git 조작 추상화
+│   ├── logger/            # 로깅 추상화
+│   ├── simpleprof/        # 간단한 프로파일링
+│   └── testlib/           # 테스트 유틸리티
+├── pkg/                   # 공개 패키지
+│   ├── github/            # GitHub API 통합
+│   ├── gitlab/            # GitLab API 통합
+│   ├── gitea/             # Gitea API 통합
+│   └── synclone/          # 클론 설정 및 검증
+├── scripts/               # 유틸리티 스크립트
+│   ├── simple-benchmark.sh      # 빠른 성능 체크
+│   └── benchmark-performance.sh # 상세 성능 분석
+├── specs/                 # 기능 명세서
+├── examples/              # 설정 파일 예제
+└── docs/                  # 문서
+```
+
+### 핵심 설계 원칙
+
+
+1. **간단한 아키텍처**: CLI 도구에 적합한 직접적인 구현
+2. **서비스별 구현**: 각 Git 플랫폼별 전용 패키지
+3. **설정 기반 설계**: YAML 설정과 스키마 검증
+4. **크로스플랫폼 지원**: Linux, macOS, Windows 네이티브 지원
+5. **원자적 작업**: 백업 및 롤백 기능을 가진 안전한 실행
+6. **표준 도구 통합**: Go의 표준 pprof 등 표준 도구 활용
+
+
+## 기여 가이드라인
+
+### 새 기능 추가
+
+1. `specs/`에서 관련 명세 확인 또는 작성
+2. 명세에 따라 구현
+3. 테스트 작성
+4. 문서 업데이트
+5. PR 제출
+
+### 코드 스타일
+
+- `make fmt`로 포매팅 (gofumpt + gci 사용)
+- `make lint`로 린팅 통과 필수
+- 테스트 커버리지 유지
+- 의미 있는 커밋 메시지 작성
+
+### 테스트 작성
+
+```bash
+# 새 테스트 작성 시
+go test ./path/to/package -v
+
+# 특정 테스트 함수 실행
+go test ./cmd/git -run "TestExtractRepoNameFromURL" -v
+
+# 커버리지 포함 테스트
+make test-coverage
+```
+
+## Contributing
+
+## 기여 방법
+
+1. **이슈 확인**: 기존 이슈를 확인하거나 새 이슈 생성
+2. **Fork**: 리포지토리 포크
+3. **브랜치 생성**: `feature/your-feature-name` 또는 `fix/issue-number`
+4. **구현**: 명세 기반 구현 및 테스트 작성
+5. **품질 검사**: `make lint-all` 실행
+6. **PR 제출**: 상세한 설명과 함께 Pull Request 생성
+
+## 품질 기준
+
+### 필수 체크리스트
+
+
+- [ ] 모든 테스트 통과 (`make test`)
+- [ ] 린팅 통과 (`make lint`)
+- [ ] 포매팅 적용 (`make fmt`)
+- [ ] 문서 업데이트 (필요시)
+- [ ] 성능 회귀 없음 (`./scripts/simple-benchmark.sh`)
+
+
+### 커밋 메시지 형식
+
+```
+<type>(<scope>): <description>
+
+<body>
+
+<footer>
+```
+
+예시:
+```
+feat(ide): add JetBrains settings sync monitoring
+
+- Implement real-time file system monitoring
+- Add automatic backup before sync fixes
+- Support cross-platform path detection
+
+Closes #123
+```
+
+## 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+---
+
+**개발 중인 기능들**:
+
+- 🚧 **Manual Page Generation** (`gz man`): Unix 매뉴얼 페이지 자동 생성 (코드 존재, 비활성화)
+- 🚧 **Interactive Shell** (`gz shell`): 디버깅용 인터랙티브 셸 (디버그 모드에서만 활성화)
+- 🚧 **Actions Policy Management** (`gz actions-policy`): GitHub Actions 정책 관리 (코드 존재, 비활성화)
+
+이 도구는 지속적으로 발전하고 있으며, 개발자 워크플로우를 개선하기 위한 새로운 기능들이 계속 추가되고 있습니다.
