@@ -69,6 +69,22 @@ echo "Measuring startup performance..."
 startup_time=$(time -p ./gz --help 2>&1 >/dev/null | grep real | awk '{print $2}')
 echo "  Startup time: ${startup_time}s"
 
+# Performance regression check (startup should be under 50ms for this CLI)  
+if command -v bc &> /dev/null && [[ -n "$startup_time" ]]; then
+    threshold="0.05"
+    comparison=$(echo "$startup_time > $threshold" | bc -l 2>/dev/null || echo "0")
+    if [[ "$comparison" == "1" ]]; then
+        echo "⚠️  WARNING: Startup time ${startup_time}s exceeds threshold ${threshold}s"
+        echo "   Consider investigating performance regression"
+    else
+        echo "✅ Startup time within acceptable threshold (${threshold}s)"
+    fi
+elif [[ -n "$startup_time" ]]; then
+    echo "  (Install 'bc' for automatic performance regression checking)"
+else
+    echo "  ✅ Startup time measurement completed (threshold check skipped)"
+fi
+
 # Binary size check
 binary_size=$(ls -lh gz | awk '{print $5}')
 echo "  Binary size: $binary_size"
