@@ -42,7 +42,10 @@ func NewSimpleProfiler(outputDir string) *SimpleProfiler {
 	}
 
 	// Ensure output directory exists
-	os.MkdirAll(outputDir, 0o755)
+	if err := os.MkdirAll(outputDir, 0o750); err != nil {
+		// If we can't create the directory, fall back to current directory
+		outputDir = "."
+	}
 
 	return &SimpleProfiler{
 		outputDir: outputDir,
@@ -54,7 +57,8 @@ func (p *SimpleProfiler) StartHTTPServer(port int) error {
 	addr := fmt.Sprintf("localhost:%d", port)
 
 	p.server = &http.Server{
-		Addr: addr,
+		Addr:              addr,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	log.Printf("Starting pprof server at http://%s/debug/pprof/", addr)
@@ -178,7 +182,7 @@ func (p *SimpleProfiler) GetStats() map[string]interface{} {
 		"stack_inuse":    m.StackInuse,
 		"stack_sys":      m.StackSys,
 		"gc_runs":        m.NumGC,
-		"last_gc":        time.Unix(0, int64(m.LastGC)),
+		"last_gc":        time.Unix(0, int64(m.LastGC)), //nolint:gosec // LastGC is from runtime.MemStats
 		"pause_total_ns": m.PauseTotalNs,
 	}
 }
