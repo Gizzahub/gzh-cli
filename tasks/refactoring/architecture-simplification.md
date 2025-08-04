@@ -9,7 +9,7 @@ While analyzing the codebase, several components were identified that may be **o
 ### CLI Tool Context
 `gzh-manager-go` is a CLI tool (`gz` binary) designed for:
 - Git repository management
-- Development environment configuration  
+- Development environment configuration
 - Package manager updates
 - IDE settings monitoring
 - Network environment transitions
@@ -41,7 +41,7 @@ import "github.com/gizzahub/gzh-manager-go/internal/container"
 - CLI tools rarely need runtime service discovery
 - Keep for now if used extensively, but avoid expanding
 
-### 2. `internal/profiling` 🟡  
+### 2. `internal/profiling` 🟡
 **Status**: Currently Used (profile/doctor commands)
 **Location**: `/internal/profiling/`
 **Files**: `profiler.go`, `benchmarks.go`, `middleware.go`, etc.
@@ -194,7 +194,7 @@ log.Println("pprof available at http://localhost:6060/debug/pprof/")
 - Identify heavy initialization paths
 - Benchmark with/without container
 
-### Phase 2: Gradual Migration  
+### Phase 2: Gradual Migration
 - Start with new commands using simple constructors
 - Migrate existing commands one by one
 - Maintain backward compatibility during transition

@@ -30,8 +30,9 @@ go mod why github.com/gizzahub/gzh-manager-go/pkg/cloud
 
 ## Phase 1: Remove Completely Unused Packages
 
-### Step 1.1: Remove `internal/legacy` ❌
+### Step 1.1: Remove `internal/legacy` ✅ COMPLETED
 **Risk Level**: LOW - Zero dependencies found
+**Status**: Successfully removed in commit c8c81af
 
 ```bash
 # Create working branch
@@ -53,31 +54,21 @@ git commit -m "refactor(sonnet): remove unused internal/legacy package
 - Reduces codebase complexity without functional impact"
 ```
 
-### Step 1.2: Remove `internal/analysis` ❌
-**Risk Level**: LOW - Zero dependencies found
+### Step 1.2: ~~Remove `internal/analysis`~~ ⚠️ **CORRECTION: KEEP**
+**Risk Level**: NONE - Package is actually used
+**Status**: **DO NOT REMOVE** - Used by `cmd/doctor/godoc.go`
 
-```bash
-# Create working branch (or continue from previous)
-git checkout -b remove-analysis-package
-
-# Remove the package
-rm -rf internal/analysis/
-
-# Test build
-make build
-make test
-
-# Commit if successful
-git add .
-git commit -m "refactor(sonnet): remove unused internal/analysis package
-
-- Removed quality analysis package with zero dependencies  
-- No imports found across entire codebase
-- Functionality not aligned with CLI tool scope"
+**Evidence of Usage**:
+```go
+// cmd/doctor/godoc.go
+import "github.com/gizzahub/gzh-manager-go/internal/analysis/godoc"
 ```
 
-### Step 1.3: Remove `internal/api` ❌
+**Recommendation**: Keep this package as it's required for doctor functionality.
+
+### Step 1.3: Remove `internal/api` ✅ COMPLETED
 **Risk Level**: LOW - Zero dependencies found
+**Status**: Successfully removed in commit c9d884b
 
 ```bash
 # Create working branch
@@ -86,7 +77,7 @@ git checkout -b remove-api-package
 # Remove the package
 rm -rf internal/api/
 
-# Test build  
+# Test build
 make build
 make test
 
@@ -99,28 +90,17 @@ git commit -m "refactor(sonnet): remove unused internal/api package
 - Web API functionality outside CLI tool scope"
 ```
 
-### Step 1.4: Remove `pkg/cloud` ❌
-**Risk Level**: LOW - Zero dependencies found
+### Step 1.4: ~~Remove `pkg/cloud`~~ ⚠️ **CORRECTION: KEEP**
+**Risk Level**: NONE - Package is actually used
+**Status**: **DO NOT REMOVE** - Used by net-env commands
 
-```bash
-# Create working branch
-git checkout -b remove-cloud-package
-
-# Remove the package
-rm -rf pkg/cloud/
-
-# Test build
-make build
-make test
-
-# Commit if successful  
-git add .
-git commit -m "refactor(sonnet): remove unused pkg/cloud package
-
-- Removed cloud provider synchronization package
-- Zero imports found across codebase
-- Multi-cloud sync not part of current CLI tool scope"
+**Evidence of Usage**:
+```go
+// cmd/net-env/cloud.go, cmd/net-env/vpn_hierarchy_cmd.go
+import "github.com/gizzahub/gzh-manager-go/pkg/cloud"
 ```
+
+**Recommendation**: Keep this package as it's required for network environment functionality.
 
 ## Phase 2: Architecture Simplification (Optional)
 
@@ -222,7 +202,7 @@ make test
 ## Success Metrics
 
 ### Code Reduction
-- **Target**: ~2,000 lines of unused code removed
+- **Target**: ~1,000 lines of unused code removed (revised from 2,000)
 - **Measurement**: `cloc` before/after comparison
 
 ### Binary Size Impact
@@ -237,7 +217,7 @@ make test
 
 | Phase | Duration | Risk Level | Dependencies |
 |-------|----------|------------|--------------|
-| Phase 1.1-1.4 | 2-4 hours | LOW | None |
+| Phase 1.1,1.3 | 2-4 hours | LOW | None (completed) |
 | Phase 2.1 | 4-8 hours | MEDIUM | Analysis required |
 | Phase 2.2 | 2-4 hours | MEDIUM | Phase 2.1 complete |
 | Phase 3 | 1-2 hours | LOW | All previous phases |
@@ -253,7 +233,7 @@ echo "🔍 Verifying cleanup safety..."
 
 # Check for any remaining imports
 echo "Checking for imports..."
-for pkg in "internal/legacy" "internal/analysis" "internal/api" "pkg/cloud"; do
+for pkg in "internal/legacy" "internal/api"; do
     if grep -r "$pkg" --include="*.go" . > /dev/null 2>&1; then
         echo "❌ Found imports for $pkg"
         exit 1
