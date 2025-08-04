@@ -1,6 +1,10 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// TODO: LEGACY_REMOVAL - This entire migration package should be removed.
+// It was used to migrate from v0.1 to v1.0 format, but legacy format support has been dropped.
+// Consider removing this package once all users have migrated to v1.0 format.
+
 package config
 
 import (
@@ -341,7 +345,7 @@ func (m *Migrator) generateMigrationReport(result *MigrationResult) string {
 	report.WriteString("## Next Steps\n\n")
 	report.WriteString("1. Review the generated configuration file\n")
 	report.WriteString("2. Configure authentication tokens (see Required Actions above)\n")
-	report.WriteString("3. Test the configuration with `gz bulk-clone --dry-run`\n")
+	report.WriteString("3. Test the configuration with `gz synclone --dry-run`\n")
 	report.WriteString("4. Remove the legacy configuration file when satisfied\n")
 
 	return report.String()

@@ -27,7 +27,7 @@ func ExampleLoadConfig() {
 
 	configPath := filepath.Join(tempDir, "bulk-clone.yaml")
 	configContent := `
-version: "0.1"
+version: "1.0"
 default:
   protocol: https
 repo_roots:
@@ -100,7 +100,7 @@ func ExampleLoadConfig_validation() {
 	// Create an invalid configuration file
 	configPath := filepath.Join(tempDir, "invalid-config.yaml")
 	invalidConfig := `
-version: "0.1"
+version: "1.0"
 repo_roots:
   - root_path: ""  # Invalid: empty path
     provider: "github"
@@ -122,7 +122,7 @@ repo_roots:
 
 	// Create a valid configuration
 	validConfigPath := filepath.Join(tempDir, "valid-config.yaml")
-	validConfig := `version: "0.1"
+	validConfig := `version: "1.0"
 default:
   protocol: https
 repo_roots:
@@ -164,7 +164,7 @@ func ExampleLoadConfig_multiProvider() {
 
 	configPath := filepath.Join(tempDir, "multi-provider.yaml")
 	multiProviderConfig := `
-version: "0.1"
+version: "1.0"
 default:
   protocol: https
 repo_roots:
@@ -264,7 +264,7 @@ func ExampleLoadConfig_strategies() {
 
 	configPath := filepath.Join(tempDir, "strategies.yaml")
 	strategiesConfig := `
-version: "0.1"
+version: "1.0"
 default:
   protocol: https
 repo_roots:
@@ -336,7 +336,7 @@ func ExampleLoadConfig_environmentVariables() {
 
 	configPath := filepath.Join(tempDir, "env-config.yaml")
 	envConfig := `
-version: "0.1"
+version: "1.0"
 default:
   protocol: https
 repo_roots:

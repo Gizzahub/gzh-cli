@@ -12,6 +12,8 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/internal/git/clone"
 	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
 // newRepoCloneCmd creates the git repo clone command.
@@ -30,8 +32,12 @@ func newRepoCloneCmd() *cobra.Command {
 - Advanced filtering and matching
 - Multiple output formats
 
-This command integrates with the provider abstraction layer to support
-GitHub, GitLab, Gitea, and Gogs platforms through a unified interface.`,
+This command uses the modern provider abstraction layer to support
+GitHub and GitLab platforms through a unified interface.
+Gitea and Gogs providers are planned for future implementation.
+
+Note: This is an experimental command. For production use, consider
+using the stable 'gz synclone' command.`,
 		Example: `  # Clone all repos from GitHub organization
   gz git repo clone --provider github --org myorg
 
@@ -123,15 +129,9 @@ func runRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 	// Create provider factory
 	factory := provider.NewProviderFactory()
 
-	// Check if we should use legacy adapter
-	if clone.ShouldUseLegacy(opts.Provider) {
-		return runWithLegacyAdapter(ctx, opts)
-	}
-
 	// Register provider constructors
 	if err := registerProviderConstructors(factory); err != nil {
-		// Fall back to legacy adapter if providers are not available
-		return runWithLegacyAdapter(ctx, opts)
+		return fmt.Errorf("failed to register providers: %w\n\nNote: For production use, consider using the 'gz synclone' command which is fully stable:\n  gz synclone --config examples/synclone/synclone-example.yaml", err)
 	}
 
 	// Create provider configuration
@@ -208,56 +208,23 @@ func runResumeClone(ctx context.Context, opts *clone.CloneOptions) error {
 	return runRepoClone(ctx, originalOpts)
 }
 
-// runWithLegacyAdapter executes clone using the legacy synclone functionality.
-func runWithLegacyAdapter(ctx context.Context, opts *clone.CloneOptions) error {
-	// Create legacy adapter
-	adapter := clone.NewLegacyAdapter(opts)
-
-	// Validate options for legacy usage
-	if err := adapter.ValidateLegacyOptions(); err != nil {
-		return fmt.Errorf("invalid options for legacy adapter: %w", err)
-	}
-
-	// Handle dry run
-	if opts.DryRun {
-		fmt.Printf("Dry run - would clone %s organization: %s\n", opts.Provider, opts.Org)
-		fmt.Printf("Target directory: %s\n", opts.Target)
-		fmt.Printf("Strategy: %s\n", opts.Strategy)
-		fmt.Printf("Parallel workers: %d\n", opts.Parallel)
-		return nil
-	}
-
-	// Execute clone operation
-	if err := adapter.ExecuteClone(ctx); err != nil {
-		return fmt.Errorf("legacy clone failed: %w", err)
-	}
-
-	// Create GZH metadata file if requested
-	if opts.CreateGZHFile {
-		targetPath := opts.Target
-		if targetPath == "." {
-			targetPath = opts.Org
-		}
-		if err := adapter.CreateGZHFile(targetPath); err != nil {
-			fmt.Printf("Warning: failed to create .gzh file: %v\n", err)
-		}
-	}
-
-	return nil
-}
-
 // registerProviderConstructors registers provider constructors with the factory.
 func registerProviderConstructors(factory *provider.ProviderFactory) error {
-	// Note: This would normally import and register actual provider implementations
-	// For now, we'll return an error indicating the providers need to be implemented
+	// Register GitHub provider
+	if err := factory.RegisterProvider("github", github.CreateGitHubProvider); err != nil {
+		return fmt.Errorf("failed to register GitHub provider: %w", err)
+	}
 
-	// TODO: Import and register actual providers:
-	// factory.RegisterProvider("github", github.NewProvider)
-	// factory.RegisterProvider("gitlab", gitlab.NewProvider)
-	// factory.RegisterProvider("gitea", gitea.NewProvider)
-	// factory.RegisterProvider("gogs", gogs.NewProvider)
+	// Register GitLab provider
+	if err := factory.RegisterProvider("gitlab", gitlab.CreateGitLabProvider); err != nil {
+		return fmt.Errorf("failed to register GitLab provider: %w", err)
+	}
 
-	return fmt.Errorf("provider implementations not yet available - please use the existing synclone command for now")
+	// TODO: Add support for additional providers when implemented
+	// factory.RegisterProvider("gitea", gitea.CreateGiteaProvider)
+	// factory.RegisterProvider("gogs", gogs.CreateGogsProvider)
+
+	return nil
 }
 
 // formatStrategies returns a formatted string of valid strategies.

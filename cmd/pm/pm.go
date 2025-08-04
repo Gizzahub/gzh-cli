@@ -62,15 +62,5 @@ For detailed configuration, see: ~/.gzh/pm/`,
 	cmd.AddCommand(newUpgradeManagersCmd(ctx))
 	cmd.AddCommand(newSyncVersionsCmd(ctx))
 
-	// Package manager specific commands (legacy compatibility)
-	cmd.AddCommand(newAsdfCmd(ctx))
-	cmd.AddCommand(newBrewCmd(ctx))
-	cmd.AddCommand(newSdkmanCmd(ctx))
-	cmd.AddCommand(newAptCmd(ctx))
-	cmd.AddCommand(newPortCmd(ctx))
-	cmd.AddCommand(newRbenvCmd(ctx))
-	cmd.AddCommand(newPipCmd(ctx))
-	cmd.AddCommand(newNpmCmd(ctx))
-
 	return cmd
 }

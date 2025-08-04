@@ -17,7 +17,7 @@ func TestFindConfigFile(t *testing.T) {
 	// Test with environment variable
 	t.Run("environment variable", func(t *testing.T) {
 		configPath := filepath.Join(tempDir, "env-config.yaml")
-		err := os.WriteFile(configPath, []byte("version: 0.1"), 0o644)
+		err := os.WriteFile(configPath, []byte("version: 1.0"), 0o644)
 		require.NoError(t, err)
 
 		if err := os.Setenv("GZH_CONFIG_PATH", configPath); err != nil {
@@ -65,7 +65,7 @@ func TestFindConfigFile(t *testing.T) {
 		}
 
 		configPath := filepath.Join(tempDir, "bulk-clone.yaml")
-		err := os.WriteFile(configPath, []byte("version: 0.1"), 0o644)
+		err := os.WriteFile(configPath, []byte("version: 1.0"), 0o644)
 		require.NoError(t, err)
 
 		found, err := FindConfigFile()
@@ -79,7 +79,7 @@ func TestLoadConfig(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Create a valid config file
-	configContent := `version: "0.1"
+	configContent := `version: "1.0"
 default:
   protocol: https
   github:
@@ -102,7 +102,7 @@ repo_roots:
 		cfg, err := LoadConfig(configPath)
 		assert.NoError(t, err)
 		assert.NotNil(t, cfg)
-		assert.Equal(t, "0.1", cfg.Version)
+		assert.Equal(t, "1.0", cfg.Version)
 		assert.Equal(t, "https", cfg.Default.Protocol)
 		assert.Equal(t, "test-org", cfg.Default.Github.OrgName)
 		assert.Len(t, cfg.RepoRoots, 1)
@@ -116,7 +116,7 @@ repo_roots:
 
 func TestGetGithubOrgConfig(t *testing.T) {
 	cfg := &bulkCloneConfig{
-		Version: "0.1",
+		Version: "1.0",
 		Default: bulkCloneDefault{
 			Protocol: "https",
 			Github: bulkCloneDefaultGithub{
@@ -197,7 +197,7 @@ func TestLoadConfigWithOverlays(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Create base config file
-	baseConfig := `version: "0.1"
+	baseConfig := `version: "1.0"
 default:
   protocol: https
   github:
@@ -367,7 +367,7 @@ func TestGetOverlayConfigPaths(t *testing.T) {
 
 func TestMergeConfig(t *testing.T) {
 	base := &bulkCloneConfig{
-		Version: "0.1",
+		Version: "1.0",
 		Default: bulkCloneDefault{
 			Protocol: "https",
 			Github: bulkCloneDefaultGithub{

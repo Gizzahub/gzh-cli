@@ -26,7 +26,7 @@ func TestExampleConfigs(t *testing.T) {
 
 			// Basic validation
 			assert.NotEmpty(t, cfg.Version, "Version should be set")
-			assert.Equal(t, "0.1", cfg.Version, "Version should be 0.1")
+			assert.Equal(t, "1.0", cfg.Version, "Version should be 1.0")
 
 			// Default protocol should be set
 			assert.NotEmpty(t, cfg.Default.Protocol, "Default protocol should be set")
@@ -88,7 +88,7 @@ func TestComprehensiveExampleConfig(t *testing.T) {
 
 	t.Run("has_all_sections", func(t *testing.T) {
 		// Should have version
-		assert.Equal(t, "0.1", cfg.Version)
+		assert.Equal(t, "1.0", cfg.Version)
 
 		// Should have defaults for both providers
 		assert.NotEmpty(t, cfg.Default.Github.RootPath)

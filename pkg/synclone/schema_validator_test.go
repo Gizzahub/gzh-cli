@@ -47,7 +47,7 @@ repo_roots:
 		configPath := filepath.Join(tempDir, "invalid-protocol.yaml")
 
 		invalidConfig := `
-version: "0.1"
+version: "1.0"
 default:
   protocol: ftp  # Invalid protocol
 `
@@ -63,7 +63,7 @@ default:
 		configPath := filepath.Join(tempDir, "invalid-repo.yaml")
 
 		invalidConfig := `
-version: "0.1"
+version: "1.0"
 repo_roots:
   - root_path: "/tmp"
     provider: "github"
@@ -81,7 +81,7 @@ repo_roots:
 		configPath := filepath.Join(tempDir, "invalid-provider.yaml")
 
 		invalidConfig := `
-version: "0.1"
+version: "1.0"
 repo_roots:
   - root_path: "/tmp"
     provider: "bitbucket"  # Not supported
@@ -106,7 +106,7 @@ func TestLoadSchemaFromFile(t *testing.T) {
 
 func TestConfigToJSON(t *testing.T) {
 	cfg := &bulkCloneConfig{
-		Version: "0.1",
+		Version: "1.0",
 		Default: bulkCloneDefault{
 			Protocol: "https",
 		},
@@ -127,7 +127,7 @@ func TestConfigToJSON(t *testing.T) {
 
 	// Check that the JSON contains expected fields
 	jsonStr := string(jsonData)
-	assert.Contains(t, jsonStr, `"version":"0.1"`)
+	assert.Contains(t, jsonStr, `"version":"1.0"`)
 	assert.Contains(t, jsonStr, `"protocol":"https"`)
 	assert.Contains(t, jsonStr, `"org_name":"test"`)
 }

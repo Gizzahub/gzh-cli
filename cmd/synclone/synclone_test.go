@@ -188,7 +188,7 @@ func TestBulkCloneConfigSupport(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Create a test config file
-	configContent := `version: "0.1"
+	configContent := `version: "1.0"
 default:
   protocol: https
   github:
@@ -229,7 +229,7 @@ repo_roots:
 
 	t.Run("gitlab with config file", func(t *testing.T) {
 		// Create GitLab config
-		gitlabConfig := `version: "0.1"
+		gitlabConfig := `version: "1.0"
 default:
   protocol: https
   gitlab:
@@ -282,7 +282,7 @@ func TestMainSyncCloneCommand(t *testing.T) {
 		invalidStrategies := []string{"invalid", "merge", "rebase"}
 
 		// Create a minimal config for testing
-		configContent := `version: "0.1"
+		configContent := `version: "1.0"
 default:
   protocol: https
 repo_roots: []
@@ -323,7 +323,7 @@ repo_roots: []
 
 	t.Run("config loading", func(t *testing.T) {
 		// Create a comprehensive config
-		configContent := `version: "0.1"
+		configContent := `version: "1.0"
 default:
   protocol: https
   github:
@@ -379,7 +379,7 @@ repo_roots:
 
 	t.Run("empty config", func(t *testing.T) {
 		// Create an empty config
-		configContent := `version: "0.1"
+		configContent := `version: "1.0"
 default:
   protocol: https
 repo_roots: []

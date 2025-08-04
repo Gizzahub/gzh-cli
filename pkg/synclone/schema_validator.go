@@ -54,7 +54,7 @@ var bulkCloneSchemaJSON = `{
     "version": {
       "type": "string",
       "description": "Configuration schema version",
-      "enum": ["0.1"]
+      "enum": ["1.0"]
     },
     "default": {
       "type": "object",
