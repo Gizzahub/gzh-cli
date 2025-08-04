@@ -27,7 +27,7 @@ Remove over-engineered components and replace with simpler, more appropriate alt
 - **Replaced with**: Direct constructor calls in command initialization
 - **Files removed**:
   - `internal/container/builder.go`
-  - `internal/container/container.go` 
+  - `internal/container/container.go`
   - `internal/container/container_test.go`
   - `internal/container/validation.go`
 
@@ -86,7 +86,7 @@ profiler.StartHTTPServer(port)
 
 ### Performance Verification
 - All tests continue to pass
-- Binary size maintained at ~33MB  
+- Binary size maintained at ~33MB
 - Startup time remains under 10ms
 - Memory usage patterns unchanged
 

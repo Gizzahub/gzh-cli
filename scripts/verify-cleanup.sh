@@ -69,7 +69,7 @@ echo "Measuring startup performance..."
 startup_time=$(time -p ./gz --help 2>&1 >/dev/null | grep real | awk '{print $2}')
 echo "  Startup time: ${startup_time}s"
 
-# Performance regression check (startup should be under 50ms for this CLI)  
+# Performance regression check (startup should be under 50ms for this CLI)
 if command -v bc &> /dev/null && [[ -n "$startup_time" ]]; then
     threshold="0.05"
     comparison=$(echo "$startup_time > $threshold" | bc -l 2>/dev/null || echo "0")

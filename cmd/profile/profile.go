@@ -22,7 +22,7 @@ func NewProfileCmd() *cobra.Command {
 
 Available commands:
   server    Start pprof HTTP server
-  cpu       Collect CPU profile  
+  cpu       Collect CPU profile
   memory    Collect memory profile
   stats     Show runtime statistics
 
@@ -52,14 +52,14 @@ func newSimpleServerCmd() *cobra.Command {
 
 The server provides the following endpoints:
   /debug/pprof/           - Index page
-  /debug/pprof/profile    - CPU profile 
+  /debug/pprof/profile    - CPU profile
   /debug/pprof/heap       - Memory profile
   /debug/pprof/goroutine  - Goroutine profile
   /debug/pprof/block      - Block profile
   /debug/pprof/mutex      - Mutex profile`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profiler := simpleprof.NewSimpleProfiler("tmp/profiles")
-			
+
 			if err := profiler.StartHTTPServer(port); err != nil {
 				return fmt.Errorf("failed to start pprof server: %w", err)
 			}
@@ -88,11 +88,11 @@ func newSimpleCPUCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "cpu",
-		Short: "Collect CPU profile", 
+		Short: "Collect CPU profile",
 		Long:  `Collect CPU profile for the specified duration and save to file.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profiler := simpleprof.NewSimpleProfiler("tmp/profiles")
-			
+
 			fmt.Printf("🔄 Starting CPU profiling for %v...\n", duration)
 			filename, err := profiler.StartProfile(simpleprof.ProfileTypeCPU, duration)
 			if err != nil {
@@ -103,7 +103,7 @@ func newSimpleCPUCmd() *cobra.Command {
 			time.Sleep(duration)
 			fmt.Printf("✅ CPU profile saved to: %s\n", filename)
 			fmt.Printf("📊 Analyze with: go tool pprof %s\n", filename)
-			
+
 			return nil
 		},
 	}
@@ -119,7 +119,7 @@ func newSimpleMemoryCmd() *cobra.Command {
 		Long:  `Collect current memory profile and save to file.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profiler := simpleprof.NewSimpleProfiler("tmp/profiles")
-			
+
 			fmt.Println("🔄 Collecting memory profile...")
 			filename, err := profiler.StartProfile(simpleprof.ProfileTypeMemory, 0)
 			if err != nil {
@@ -128,7 +128,7 @@ func newSimpleMemoryCmd() *cobra.Command {
 
 			fmt.Printf("✅ Memory profile saved to: %s\n", filename)
 			fmt.Printf("📊 Analyze with: go tool pprof %s\n", filename)
-			
+
 			return nil
 		},
 	}
@@ -147,31 +147,31 @@ func newSimpleStatsCmd() *cobra.Command {
 
 			fmt.Println("📊 Runtime Statistics:")
 			fmt.Println("====================")
-			
+
 			if goroutines, ok := stats["goroutines"].(int); ok {
 				fmt.Printf("Goroutines:        %d\n", goroutines)
 			}
-			
+
 			if heapAlloc, ok := stats["heap_alloc"].(uint64); ok {
 				fmt.Printf("Heap Allocated:    %s\n", formatBytes(heapAlloc))
 			}
-			
+
 			if heapSys, ok := stats["heap_sys"].(uint64); ok {
 				fmt.Printf("Heap System:       %s\n", formatBytes(heapSys))
 			}
-			
+
 			if heapInuse, ok := stats["heap_inuse"].(uint64); ok {
 				fmt.Printf("Heap In Use:       %s\n", formatBytes(heapInuse))
 			}
-			
+
 			if stackInuse, ok := stats["stack_inuse"].(uint64); ok {
 				fmt.Printf("Stack In Use:      %s\n", formatBytes(stackInuse))
 			}
-			
+
 			if gcRuns, ok := stats["gc_runs"].(uint32); ok {
 				fmt.Printf("GC Runs:           %d\n", gcRuns)
 			}
-			
+
 			if lastGC, ok := stats["last_gc"].(time.Time); ok && !lastGC.IsZero() {
 				fmt.Printf("Last GC:           %v\n", lastGC.Format("2006-01-02 15:04:05"))
 			}

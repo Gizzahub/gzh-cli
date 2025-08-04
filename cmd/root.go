@@ -118,4 +118,3 @@ func Execute(ctx context.Context, version string) error {
 
 	return nil
 }
-

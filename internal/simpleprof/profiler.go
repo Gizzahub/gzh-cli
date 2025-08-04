@@ -24,7 +24,7 @@ type ProfileType string
 const (
 	ProfileTypeCPU       ProfileType = "cpu"
 	ProfileTypeMemory    ProfileType = "memory"
-	ProfileTypeGoroutine ProfileType = "goroutine" 
+	ProfileTypeGoroutine ProfileType = "goroutine"
 	ProfileTypeBlock     ProfileType = "block"
 	ProfileTypeMutex     ProfileType = "mutex"
 )
@@ -40,10 +40,10 @@ func NewSimpleProfiler(outputDir string) *SimpleProfiler {
 	if outputDir == "" {
 		outputDir = "tmp/profiles"
 	}
-	
+
 	// Ensure output directory exists
-	os.MkdirAll(outputDir, 0755)
-	
+	os.MkdirAll(outputDir, 0o755)
+
 	return &SimpleProfiler{
 		outputDir: outputDir,
 	}
@@ -52,11 +52,11 @@ func NewSimpleProfiler(outputDir string) *SimpleProfiler {
 // StartHTTPServer starts the pprof HTTP server on the specified port.
 func (p *SimpleProfiler) StartHTTPServer(port int) error {
 	addr := fmt.Sprintf("localhost:%d", port)
-	
+
 	p.server = &http.Server{
 		Addr: addr,
 	}
-	
+
 	log.Printf("Starting pprof server at http://%s/debug/pprof/", addr)
 	log.Printf("Available profiles:")
 	log.Printf("  - CPU: http://%s/debug/pprof/profile", addr)
@@ -64,13 +64,13 @@ func (p *SimpleProfiler) StartHTTPServer(port int) error {
 	log.Printf("  - Goroutines: http://%s/debug/pprof/goroutine", addr)
 	log.Printf("  - Block: http://%s/debug/pprof/block", addr)
 	log.Printf("  - Mutex: http://%s/debug/pprof/mutex", addr)
-	
+
 	go func() {
 		if err := p.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("pprof server error: %v", err)
 		}
 	}()
-	
+
 	return nil
 }
 
@@ -79,7 +79,7 @@ func (p *SimpleProfiler) StopHTTPServer(ctx context.Context) error {
 	if p.server == nil {
 		return nil
 	}
-	
+
 	return p.server.Shutdown(ctx)
 }
 
@@ -87,7 +87,7 @@ func (p *SimpleProfiler) StopHTTPServer(ctx context.Context) error {
 func (p *SimpleProfiler) StartProfile(profileType ProfileType, duration time.Duration) (string, error) {
 	timestamp := time.Now().Format("20060102_150405")
 	filename := filepath.Join(p.outputDir, fmt.Sprintf("%s_%s.prof", profileType, timestamp))
-	
+
 	switch profileType {
 	case ProfileTypeCPU:
 		return p.startCPUProfile(filename, duration)
@@ -109,12 +109,12 @@ func (p *SimpleProfiler) startCPUProfile(filename string, duration time.Duration
 	if err != nil {
 		return "", fmt.Errorf("could not create CPU profile: %w", err)
 	}
-	
+
 	if err := pprof.StartCPUProfile(f); err != nil {
 		f.Close()
 		return "", fmt.Errorf("could not start CPU profile: %w", err)
 	}
-	
+
 	// Stop CPU profiling after duration
 	go func() {
 		time.Sleep(duration)
@@ -122,7 +122,7 @@ func (p *SimpleProfiler) startCPUProfile(filename string, duration time.Duration
 		f.Close()
 		log.Printf("CPU profile saved to %s", filename)
 	}()
-	
+
 	return filename, nil
 }
 
@@ -150,16 +150,16 @@ func (p *SimpleProfiler) saveProfile(profileName, filename string) (string, erro
 		return "", fmt.Errorf("could not create %s profile: %w", profileName, err)
 	}
 	defer f.Close()
-	
+
 	profile := pprof.Lookup(profileName)
 	if profile == nil {
 		return "", fmt.Errorf("profile %s not found", profileName)
 	}
-	
+
 	if err := profile.WriteTo(f, 0); err != nil {
 		return "", fmt.Errorf("could not write %s profile: %w", profileName, err)
 	}
-	
+
 	log.Printf("%s profile saved to %s", profileName, filename)
 	return filename, nil
 }
@@ -168,7 +168,7 @@ func (p *SimpleProfiler) saveProfile(profileName, filename string) (string, erro
 func (p *SimpleProfiler) GetStats() map[string]interface{} {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	
+
 	return map[string]interface{}{
 		"goroutines":     runtime.NumGoroutine(),
 		"heap_alloc":     m.HeapAlloc,

@@ -98,7 +98,7 @@ go test ./pkg/github -v            # Run GitHub integration tests
 
 ```bash
 ./scripts/simple-benchmark.sh                    # Quick performance check
-./scripts/benchmark-performance.sh --baseline    # Create performance baseline  
+./scripts/benchmark-performance.sh --baseline    # Create performance baseline
 ./scripts/benchmark-performance.sh --compare baseline.json  # Compare against baseline
 ./scripts/benchmark-performance.sh --format human          # Human-readable output
 ```
@@ -158,7 +158,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 1. **Simplified Architecture**: Clean, direct implementation focused on CLI tool needs
    - Direct constructor pattern instead of dependency injection containers
    - `CommandExecutor` interface for shell command abstraction
-   - `Logger` interface for logging abstraction  
+   - `Logger` interface for logging abstraction
    - `Client`, `StrategyExecutor`, `BulkOperator` interfaces for Git operations
    - Concrete implementations in `constructors.go`
 
