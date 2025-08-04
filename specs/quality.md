@@ -45,7 +45,7 @@ gz quality run --language go                            # Process only Go files
 
 **Parameters**:
 - `--format-only`: Execute only formatting tools
-- `--lint-only`: Execute only linting tools  
+- `--lint-only`: Execute only linting tools
 - `--changed`: Process only changed files (git diff)
 - `--staged`: Process only staged files (git diff --cached)
 - `--language`: Filter by specific programming language
@@ -198,7 +198,7 @@ gz quality analyze --format json                        # JSON output
 
 🔍 Detected Languages:
   - Go (85 files, 15,420 lines)
-  - JavaScript (12 files, 2,341 lines)  
+  - JavaScript (12 files, 2,341 lines)
   - YAML (8 files, 456 lines)
 
 🛠️  Recommended Tools:
@@ -328,18 +328,18 @@ quality:
   tools:
     enabled: ["gofumpt", "golangci-lint", "prettier", "eslint"]
     disabled: []
-  
+
   execution:
     parallel: true
     timeout: 300
     fail_fast: false
-  
+
   filters:
     exclude_patterns:
       - "vendor/"
       - "node_modules/"
       - "*.generated.go"
-    
+
   languages:
     go:
       tools: ["gofumpt", "goimports", "golangci-lint"]
@@ -406,7 +406,7 @@ quality:
       "execution_time": "2.1s"
     },
     {
-      "tool": "eslint", 
+      "tool": "eslint",
       "status": "error",
       "errors": 2,
       "warnings": 5,
@@ -463,7 +463,7 @@ gz quality check --staged
 - name: Code Quality Check
   run: |
     gz quality check --format junit --fail-on-warning
-    
+
 - name: Upload Quality Report
   uses: mikepenz/action-junit-report@v3
   with:
@@ -533,7 +533,7 @@ gz quality install
 # Check tool versions
 gz quality version --check-updates
 
-# Upgrade outdated tools  
+# Upgrade outdated tools
 gz quality upgrade
 
 # Analyze project structure

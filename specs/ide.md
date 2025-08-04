@@ -9,7 +9,7 @@ The `ide` command provides comprehensive monitoring and management capabilities 
 ### Core Commands
 
 - `gz ide monitor` - Monitor JetBrains settings for changes
-- `gz ide fix-sync` - Fix JetBrains settings synchronization issues  
+- `gz ide fix-sync` - Fix JetBrains settings synchronization issues
 - `gz ide list` - List detected JetBrains IDE installations
 
 ### Monitor IDE Settings (`gz ide monitor`)
@@ -93,7 +93,7 @@ The IDE command supports the following platforms with automatic path detection:
 - Product detection: `/opt/jetbrains/`, `~/.local/share/JetBrains/Toolbox/`
 - Configuration: XDG Base Directory specification compliant
 
-#### macOS  
+#### macOS
 - Settings directory: `~/Library/Application Support/JetBrains/{ProductName}{Version}/`
 - Product detection: `/Applications/`, `~/Library/Application Support/JetBrains/Toolbox/`
 - Configuration: macOS application bundle structure
@@ -175,7 +175,7 @@ The IDE command respects the following environment variables:
 
 **System Configuration**:
 - Linux: `~/.config/gzh-manager/ide.yaml`
-- macOS: `~/Library/Application Support/gzh-manager/ide.yaml`  
+- macOS: `~/Library/Application Support/gzh-manager/ide.yaml`
 - Windows: `%APPDATA%\gzh-manager\ide.yaml`
 
 **Configuration Schema**:
@@ -243,10 +243,10 @@ PyCharm          2023.3     /opt/jetbrains/pycharm              ~/.config/JetBra
 ✅ IntelliJ IDEA 2023.2:
    - Fixed: Corrupted editor.xml (backed up to editor.xml.backup)
    - Fixed: Permission issues on options/ directory
-   
+
 ⚠️  PyCharm 2023.3:
    - Skipped: No issues detected
-   
+
 ✅ Overall Status: 2 issues fixed, 0 failures
 📁 Backups created in: ~/.config/gzh-manager/ide-backups/2025-01-04_103015/
 ```
@@ -288,7 +288,7 @@ gz ide list --format json
 # 2. Monitor for changes while reproducing issue
 gz ide monitor --verbose --debug
 
-# 3. Fix any detected synchronization issues  
+# 3. Fix any detected synchronization issues
 gz ide fix-sync --dry-run  # Preview fixes
 gz ide fix-sync            # Apply fixes
 
