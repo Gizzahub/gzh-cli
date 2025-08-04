@@ -4,184 +4,272 @@ This directory contains example configurations and usage patterns for the gz CLI
 
 ## 📁 Directory Structure
 
-### 🔄 synclone/
-Modern repository synchronization configurations (recommended approach):
-- **`synclone-simple.yaml`** - Minimal configuration for synclone operations
-- **`synclone-example.yaml`** - Comprehensive synclone configuration with all options
-- **`synclone.yml`** - Advanced synclone configuration features
+### Core Features
 
-### 📦 bulk-clone/
-Legacy bulk clone configurations (deprecated, use synclone instead):
-- **`bulk-clone-simple.yaml`** - Minimal configuration for cloning a single organization
-- **`bulk-clone-example.yaml`** - Comprehensive bulk clone configuration with all options
-- **`bulk-clone.yml`** - Advanced bulk clone configuration features
-- **`bulk-clone.home.yaml`** - Personal/home environment configuration
-- **`bulk-clone.work.yaml`** - Work environment configuration
+#### 🔄 synclone/
+Repository synchronization configurations:
+- **`synclone-simple.yaml`** - Minimal configuration for getting started
+- **`synclone-example.yaml`** - Comprehensive configuration with all options
+- **`synclone.yml`** - Advanced multi-platform setup
+- **`gzh.yml`** - Legacy configuration format (v0.1)
 
-### 🎯 gzh-unified/
-Unified GZH configurations combining multiple features:
-- **`gzh-simple.yaml`** - Basic unified configuration example
-- **`gzh-unified-example.yaml`** - Complete unified configuration showing all features
-- **`gzh-multi-provider.yaml`** - Multi-provider setup (GitHub, GitLab, Gitea)
-- **`gzh-development.yaml`** - Development environment setup
-- **`gzh-enterprise.yaml`** - Enterprise deployment configuration
+#### ✨ quality/
+Code quality management configurations:
+- **`quality-simple.yaml`** - Basic formatter and linter setup
+- **`quality-example.yaml`** - Full multi-language configuration
 
-### 🤖 automation/
-GitHub automation and rule configurations:
-- **`automation-rule-example.yaml`** - GitHub automation rules configuration
-- **`automation-rule-templates.yaml`** - Reusable automation templates
+#### 💻 ide/
+JetBrains IDE monitoring configurations:
+- **`ide-monitor.yaml`** - IDE sync monitoring and backup settings
 
-### 🪝 webhooks/
-Webhook and organization configuration:
-- **`webhook-policy-example.yaml`** - Webhook policy configuration
-- **`org-webhook-config-example.yaml`** - Organization-wide webhook settings
+#### 📦 pm/
+Package manager configurations:
+- **`asdf.yml`** - asdf version manager packages
+- **`brew.yml`** - Homebrew packages and casks
+- **`npm.yml`** - Node.js global packages
+- **`pip.yml`** - Python packages
+- **`gem.yml`** - Ruby gems
+- **`sdkman.yml`** - SDKMAN Java/Kotlin/Scala tools
+- **`global.yml`** - Combined package manager setup
 
-### 🌐 network/
-Network and VPN configuration:
-- **`vpn-hierarchy-example.yaml`** - VPN hierarchy and network configuration
+### Git Platform Management
 
-### 🐙 github/
+#### 🐙 github/
 GitHub-specific configurations and schemas:
 - **`org-settings.yaml`** - Organization settings template
 - **`repo-settings.yaml`** - Repository settings template
 - **`schema.org-settings.yaml`** - Schema for organization settings
 - **`schema.repo-settings.yaml`** - Schema for repository settings
 
-### 🔧 misc/
-Miscellaneous scripts and configurations:
-- **`clone-workflow.sh`** - Example cloning workflow script
-- **`Dockerfile.example`** - Example Docker configuration
+#### 🪝 webhooks/
+Webhook and event configurations:
+- **`webhook-policy-example.yaml`** - Webhook policy configuration
+- **`org-webhook-config-example.yaml`** - Organization-wide webhook settings
+
+### Environment Management
+
+#### 🌐 network/
+Network environment configurations:
+- **`vpn-hierarchy-example.yaml`** - VPN hierarchy and network rules
+
+#### 🔧 dev-env/
+Development environment configurations:
+- AWS, Docker, Kubernetes configuration examples
+
+### Other Resources
+
+#### 🤖 automation/
+Automation rules and templates:
+- **`automation-rule-example.yaml`** - GitHub automation rules
+- **`automation-rule-templates.yaml`** - Reusable automation templates
+
+#### 🔧 misc/
+Miscellaneous resources:
+- **`clone-workflow.sh`** - Example automation script
+- **`Dockerfile.example`** - Docker deployment example
 
 ## 🚀 Quick Start
 
-### Synclone (Recommended)
+### 1. Repository Synchronization (synclone)
 
-1. Copy the synclone example file:
-   ```bash
-   cp examples/synclone/synclone-simple.yaml ~/.config/gzh-manager/synclone.yaml
-   ```
+```bash
+# Simple GitHub organization clone
+gz synclone github --org kubernetes
 
-2. Edit the configuration with your settings:
-   ```bash
-   # Set your GitHub token
-   export GITHUB_TOKEN="your-token-here"
+# Using configuration file
+cp examples/synclone/synclone-simple.yaml ~/.config/gzh-manager/synclone.yaml
+gz synclone --config ~/.config/gzh-manager/synclone.yaml
+```
 
-   # Or add to the config file
-   vim ~/.config/gzh-manager/synclone.yaml
-   ```
+### 2. Code Quality Management
 
-3. Run synclone:
-   ```bash
-   gz synclone github -o your-org -t ~/repos --cleanup-orphans
-   ```
+```bash
+# Install quality tools
+gz quality install
 
-### Legacy Bulk-Clone
+# Run formatters and linters
+gz quality run
 
-1. Copy the bulk-clone example file:
-   ```bash
-   cp examples/bulk-clone/bulk-clone-simple.yaml ~/.config/gzh-manager/bulk-clone.yaml
-   ```
+# Use custom configuration
+gz quality run --config examples/quality/quality-simple.yaml
+```
 
-2. Edit the configuration with your settings:
-   ```bash
-   # Set your GitHub token
-   export GZH_GITHUB_TOKEN="your-token-here"
+### 3. IDE Monitoring
 
-   # Or add to the config file
-   vim ~/.config/gzh-manager/bulk-clone.yaml
-   ```
+```bash
+# Start monitoring JetBrains IDEs
+gz ide monitor
 
-3. Run the command:
-   ```bash
-   gz bulk-clone
-   ```
+# Use configuration for advanced features
+gz ide monitor --config examples/ide/ide-monitor.yaml
+```
+
+### 4. Git Repository Management
+
+```bash
+# Smart clone or update
+gz git repo clone-or-update https://github.com/user/repo.git
+
+# Configure repository settings
+gz git config apply --config examples/github/repo-settings.yaml
+```
+
+### 5. Package Manager Updates
+
+```bash
+# Update all package managers
+gz pm update --all
+
+# Update specific managers
+gz pm update --managers brew,npm --config examples/pm/global.yml
+```
 
 ## 📋 Configuration Precedence
 
 The gz tool loads configuration in the following order (highest to lowest priority):
 
 1. Command-line flags
-2. Environment variables (GZH\_\* prefix)
-3. Config file in current directory (./bulk-clone.yaml)
-4. User config (~/.config/gzh-manager/bulk-clone.yaml)
-5. System config (/etc/gzh-manager/bulk-clone.yaml)
+2. Environment variables
+3. Config file specified with --config flag
+4. Config file in current directory
+5. User config (~/.config/gzh-manager/)
+6. System config (/etc/gzh-manager/)
 
 ## 🔑 Environment Variables
 
-All configurations support environment variable overrides:
+### Authentication Tokens
 
 ```bash
-# Authentication
-export GZH_GITHUB_TOKEN="ghp_..."
-export GZH_GITLAB_TOKEN="glpat-..."
-export GZH_GITEA_TOKEN="..."
+# Git platforms
+export GITHUB_TOKEN="ghp_..."
+export GITLAB_TOKEN="glpat-..."
+export GITEA_TOKEN="..."
+export GOGS_TOKEN="..."
+```
 
-# Paths
-export GZH_TARGET_PATH="~/repos"
-export GZH_CONFIG_PATH="~/my-configs/gzh.yaml"
+### Configuration Paths
 
-# Behavior
-export GZH_CLONE_STRATEGY="reset"  # reset, pull, fetch
-export GZH_CONCURRENCY="10"
+```bash
+# Override default config locations
+export GZ_CONFIG_DIR="~/my-configs"
+export GZ_SYNCLONE_CONFIG="~/my-synclone.yaml"
+export GZ_QUALITY_CONFIG="~/my-quality.yaml"
 ```
 
 ## 📖 Examples by Use Case
 
-### Personal Repository Management
+### Personal Development Setup
 
-Use synclone for modern repository management:
+Complete development environment setup:
 ```bash
-gz synclone github -o your-username -t ~/repos --config examples/synclone/synclone-simple.yaml
+# 1. Clone your repositories
+gz synclone github --org your-username
+
+# 2. Set up code quality tools
+gz quality install
+gz quality run
+
+# 3. Monitor IDE settings
+gz ide monitor
+
+# 4. Keep packages updated
+gz pm update --all
 ```
 
-### Enterprise Deployment
+### Team/Enterprise Environment
 
-For enterprise environments with multiple teams and platforms:
+For teams with standards and policies:
 ```bash
-gz bulk-clone --config examples/gzh-unified/gzh-enterprise.yaml
+# 1. Clone organization repos with filters
+gz synclone --config examples/synclone/synclone-example.yaml
+
+# 2. Apply repository policies
+gz git config apply --config examples/github/org-settings.yaml
+
+# 3. Set up webhooks
+gz git webhook bulk create --config examples/webhooks/org-webhook-config-example.yaml
+
+# 4. Enable quality checks
+gz quality run --config examples/quality/quality-example.yaml
 ```
 
 ### CI/CD Integration
 
-For automated environments, use environment variables:
+Automated pipeline setup:
 ```bash
-export GZH_GITHUB_TOKEN="${GITHUB_TOKEN}"
-export GZH_DRY_RUN="true"
-gz bulk-clone --config examples/bulk-clone/bulk-clone-simple.yaml
+# Set tokens from CI secrets
+export GITHUB_TOKEN="${CI_GITHUB_TOKEN}"
+
+# Run quality checks
+gz quality run --fail-on-error
+
+# Generate reports
+gz quality analyze --output-format sarif > quality-report.sarif
 ```
 
-### Multi-Platform Setup
+### Multi-Platform Repository Management
 
-Clone from multiple providers simultaneously:
+Working with multiple Git platforms:
 ```bash
-gz bulk-clone --config examples/gzh-unified/gzh-multi-provider.yaml
+# Use comprehensive synclone config
+gz synclone --config examples/synclone/synclone-example.yaml
+
+# This handles GitHub, GitLab, Gitea, and Gogs simultaneously
 ```
 
 ## ✅ Validation
 
-Validate your configuration before use:
+Validate configurations before use:
 
 ```bash
-gz bulk-clone validate --config my-config.yaml
+# Validate synclone configuration
+gz synclone validate --config my-synclone.yaml
+
+# Check quality configuration
+gz quality check-config --config my-quality.yaml
+
+# Diagnose system setup
+gz doctor
 ```
 
 ## 📚 Schema Documentation
 
-- JSON Schema: `docs/bulk-clone-schema.json`
-- YAML Schema: `docs/bulk-clone-schema.yaml`
+Configuration schemas are available in multiple formats:
 
-## 💡 Tips
+- **Synclone**: `docs/04-configuration/schemas/synclone-schema.yaml`
+- **Quality**: `docs/04-configuration/schemas/quality-schema.yaml`
+- **IDE**: `docs/04-configuration/schemas/ide-schema.yaml`
+- **Repo Config**: `docs/04-configuration/schemas/repo-config-schema.yaml`
 
-1. **Start Simple**: Begin with simple configurations and add features as needed
-2. **Use Dry Run**: Always test with `--dry-run` flag first
-3. **Check Logs**: Enable debug logging with `--log-level debug`
-4. **Validate First**: Use `gz bulk-clone validate` to check configuration
-5. **Version Control**: Keep your configurations in version control
-6. **Use Synclone**: Prefer synclone over bulk-clone for new projects
+## 💡 Best Practices
 
-## 🆘 Need Help?
+1. **Start Simple**: Use minimal configs first (e.g., `synclone-simple.yaml`)
+2. **Test First**: Always use `--dry-run` when available
+3. **Use Version Control**: Keep your configurations in git
+4. **Environment-Specific**: Use different configs for work/personal/CI
+5. **Validate Changes**: Run validation after editing configs
+6. **Check Logs**: Use `--debug` for troubleshooting
 
-- Run `gz help bulk-clone` for command documentation
-- Check `docs/` directory for detailed guides
-- Run `gz doctor` to diagnose configuration issues
-- Visit the [GitHub repository](https://github.com/gizzahub/gzh-manager-go) for issues and discussions
+## 🆘 Getting Help
+
+```bash
+# Command help
+gz help <command>
+gz <command> --help
+
+# List all commands
+gz help
+
+# Diagnose issues
+gz doctor
+
+# Check version
+gz version
+```
+
+## 📖 Related Documentation
+
+- [Getting Started Guide](../docs/01-getting-started/)
+- [Architecture Overview](../docs/02-architecture/overview.md)
+- [Configuration Guide](../docs/04-configuration/)
+- [Command Reference](../docs/05-command-reference/)

@@ -9,7 +9,7 @@
 # 4. /etc/gzh-manager/synclone.yaml
 
 # Schema version (required)
-version: "0.1"
+version: "1.0"
 
 # Global Default Settings
 # -----------------------

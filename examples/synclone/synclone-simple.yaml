@@ -1,35 +1,40 @@
 # Simple synclone.yaml Example
 # This is a minimal working configuration
 
-version: "0.1"
+# Modern configuration format (v1.0)
+version: "1.0"
 
-# Set global defaults
-default:
-  protocol: https
-  github:
-    root_path: "$HOME/github-repos"
-  gitlab:
-    root_path: "$HOME/gitlab-repos"
+# Global settings
+target: "./repos"
+strategy: "reset"
+parallel: 5
 
-# Configure your organizations
-repo_roots:
-  # GitHub organizations
-  - root_path: "$HOME/work/mycompany"
-    provider: "github"
-    protocol: "ssh"
-    org_name: "mycompany"
+# GitHub configuration
+github:
+  enabled: true
+  organizations:
+    - name: "mycompany"
+      target: "./work/mycompany"
+      strategy: "pull"  # Keep local changes
 
-  - root_path: "$HOME/opensource"
-    provider: "github"
-    protocol: "https"
-    org_name: "kubernetes"
+    - name: "kubernetes"
+      target: "./opensource/kubernetes"
+      include_archived: false
+      filters:
+        languages: ["Go"]
+        min_stars: 100
 
-  - root_path: "$HOME/personal"
-    provider: "github"
-    protocol: "ssh"
-    org_name: "myusername"
+    - name: "myusername"
+      target: "./personal"
 
-# Ignore test and archived repos
-ignore_names:
-  - "test-.*"
-  - ".*-archive"
+# GitLab configuration (optional)
+gitlab:
+  enabled: false
+  groups:
+    - id: "mygroup"
+      target: "./gitlab/mygroup"
+
+# Note: Legacy format (v0.1) has been deprecated and removed.
+# All configurations should use the modern v1.0 format shown above.
+#     protocol: "ssh"
+#     org_name: "mycompany"
