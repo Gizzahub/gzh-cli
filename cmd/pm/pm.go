@@ -16,20 +16,13 @@ import (
 func NewPMCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pm",
-		Short: "Manage development tools and package managers",
-		Long: `Unified package manager for development environments.
+		Short: "Package manager operations",
+		Long: `Manage multiple package managers with unified commands.
 
 This command provides centralized management for multiple package managers including:
 - System package managers: brew, apt, port, yum, dnf, pacman
 - Version managers: asdf, rbenv, pyenv, nvm, sdkman
 - Language package managers: pip, gem, npm, cargo, go, composer
-
-Features:
-- Install and update packages from configuration files
-- Export current installations to configuration
-- Synchronize packages across environments
-- Bootstrap missing package managers
-- Coordinate version managers with package managers
 
 Examples:
   # Show status of all package managers
@@ -50,17 +43,15 @@ Examples:
 For detailed configuration, see: ~/.gzh/pm/`,
 	}
 
-	// Core commands
+	// Register subcommands
 	cmd.AddCommand(newStatusCmd(ctx))
 	cmd.AddCommand(newInstallCmd(ctx))
 	cmd.AddCommand(newUpdateCmd(ctx))
-	cmd.AddCommand(newSyncCmd(ctx))
 	cmd.AddCommand(newExportCmd(ctx))
-	cmd.AddCommand(newValidateCmd(ctx))
-	cmd.AddCommand(newCleanCmd(ctx))
 	cmd.AddCommand(newBootstrapCmd(ctx))
 	cmd.AddCommand(newUpgradeManagersCmd(ctx))
 	cmd.AddCommand(newSyncVersionsCmd(ctx))
+	cmd.AddCommand(newDoctorCmd(ctx))
 
 	return cmd
 }

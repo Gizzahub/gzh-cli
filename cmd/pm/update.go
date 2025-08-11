@@ -5,10 +5,12 @@ package pm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -16,13 +18,68 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/pm/compat"
 )
 
+// 결과 JSON용 구조체
+type UpdateRunMode struct {
+	Compat string `json:"compat"`
+}
+
+type PluginResult struct {
+	Name       string            `json:"name"`
+	Actions    []string          `json:"actions,omitempty"`
+	EnvApplied map[string]string `json:"envApplied,omitempty"`
+	Warnings   []string          `json:"warnings,omitempty"`
+	Conflicts  int               `json:"conflicts,omitempty"`
+	Error      string            `json:"error,omitempty"`
+}
+
+type ManagerResult struct {
+	Name    string         `json:"name"`
+	Status  string         `json:"status"`
+	Plugins []PluginResult `json:"plugins,omitempty"`
+	Error   string         `json:"error,omitempty"`
+}
+
+type Totals struct {
+	Install   int `json:"install"`
+	Skip      int `json:"skip"`
+	Warnings  int `json:"warnings"`
+	Conflicts int `json:"conflicts"`
+}
+
+type UpdateRunResult struct {
+	RunID      string          `json:"runId"`
+	Mode       UpdateRunMode   `json:"mode"`
+	StartedAt  time.Time       `json:"startedAt"`
+	FinishedAt time.Time       `json:"finishedAt"`
+	Managers   []ManagerResult `json:"managers"`
+	Totals     Totals          `json:"totals"`
+}
+
+func (r *UpdateRunResult) ensureManager(name string) *ManagerResult {
+	for i := range r.Managers {
+		if r.Managers[i].Name == name {
+			return &r.Managers[i]
+		}
+	}
+	r.Managers = append(r.Managers, ManagerResult{Name: name, Status: "success"})
+	return &r.Managers[len(r.Managers)-1]
+}
+
+func (m *ManagerResult) addPluginResult(pr PluginResult) {
+	m.Plugins = append(m.Plugins, pr)
+	if pr.Error != "" {
+		m.Status = "partial"
+	}
+}
+
 func newUpdateCmd(ctx context.Context) *cobra.Command {
 	var (
-		allManagers bool
-		manager     string
-		strategy    string
-		compatMode  string
-		managersCSV string
+		allManagers  bool
+		manager      string
+		strategy     string
+		compatMode   string
+		managersCSV  string
+		outputFormat string
 	)
 
 	builder := cli.NewCommandBuilder(ctx, "update", "Update packages based on version strategy").
@@ -52,27 +109,54 @@ Examples:
 		WithCustomFlag("managers", "", "Comma-separated package managers to update (e.g., brew,asdf,pip)", &managersCSV).
 		WithCustomFlag("strategy", "stable", "Update strategy: latest, stable, minor, fixed", &strategy).
 		WithCustomFlag("compat", "auto", "Compatibility handling: auto, strict, off", &compatMode).
+		WithCustomFlag("output", "text", "Output format: text, json", &outputFormat).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
+			res := &UpdateRunResult{
+				RunID:     time.Now().UTC().Format("20060102T150405Z"),
+				Mode:      UpdateRunMode{Compat: compatMode},
+				StartedAt: time.Now().UTC(),
+			}
+
 			// Handle selected managers CSV first
 			if managersCSV != "" {
 				selected := parseCSVList(managersCSV)
 				if len(selected) == 0 {
 					return fmt.Errorf("no valid managers provided via --managers")
 				}
-				return runUpdateSelected(ctx, selected, strategy, flags.DryRun, compatMode)
+				err := runUpdateSelected(ctx, selected, strategy, flags.DryRun, compatMode, res)
+				res.FinishedAt = time.Now().UTC()
+				if outputFormat == "json" {
+					return printUpdateResultJSON(res)
+				}
+				return err
 			}
 
-			// For now, redirect to existing commands
 			if manager != "" {
-				return runUpdateManager(ctx, manager, strategy, flags.DryRun, compatMode)
+				err := runUpdateManager(ctx, manager, strategy, flags.DryRun, compatMode, res)
+				res.FinishedAt = time.Now().UTC()
+				if outputFormat == "json" {
+					return printUpdateResultJSON(res)
+				}
+				return err
 			}
 			if allManagers {
-				return runUpdateAll(ctx, strategy, flags.DryRun, compatMode)
+				err := runUpdateAll(ctx, strategy, flags.DryRun, compatMode, res)
+				res.FinishedAt = time.Now().UTC()
+				if outputFormat == "json" {
+					return printUpdateResultJSON(res)
+				}
+				return err
 			}
 			return fmt.Errorf("specify --manager, --managers, or --all")
 		})
 
 	return builder.Build()
+}
+
+func printUpdateResultJSON(res *UpdateRunResult) error {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(res)
 }
 
 func parseCSVList(s string) []string {
@@ -86,7 +170,7 @@ func parseCSVList(s string) []string {
 	return list
 }
 
-func runUpdateSelected(ctx context.Context, managers []string, strategy string, dryRun bool, compatMode string) error {
+func runUpdateSelected(ctx context.Context, managers []string, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
 	fmt.Printf("Updating selected managers: %s\n", strings.Join(managers, ", "))
 	if dryRun {
 		fmt.Println("(dry run - no changes will be made)")
@@ -95,7 +179,7 @@ func runUpdateSelected(ctx context.Context, managers []string, strategy string, 
 
 	for _, m := range managers {
 		fmt.Printf("=== Updating %s ===\n", m)
-		if err := runUpdateManager(ctx, m, strategy, dryRun, compatMode); err != nil {
+		if err := runUpdateManager(ctx, m, strategy, dryRun, compatMode, res); err != nil {
 			fmt.Printf("Warning: Failed to update %s: %v\n", m, err)
 			continue
 		}
@@ -104,7 +188,7 @@ func runUpdateSelected(ctx context.Context, managers []string, strategy string, 
 	return nil
 }
 
-func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool, compatMode string) error {
+func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
 	fmt.Printf("Updating %s packages with strategy: %s\n", manager, strategy)
 	if dryRun {
 		fmt.Println("(dry run - no changes will be made)")
@@ -114,23 +198,23 @@ func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool
 	// For now, this is a placeholder
 	switch manager {
 	case "brew":
-		return updateBrew(ctx, strategy, dryRun)
+		return updateBrew(ctx, strategy, dryRun, res)
 	case "asdf":
-		return updateAsdf(ctx, strategy, dryRun, compatMode)
+		return updateAsdf(ctx, strategy, dryRun, compatMode, res)
 	case "sdkman":
-		return updateSdkman(ctx, strategy, dryRun)
+		return updateSdkman(ctx, strategy, dryRun, res)
 	case "apt":
-		return updateApt(ctx, strategy, dryRun)
+		return updateApt(ctx, strategy, dryRun, res)
 	case "pip":
-		return updatePip(ctx, strategy, dryRun)
+		return updatePip(ctx, strategy, dryRun, res)
 	case "npm":
-		return updateNpm(ctx, strategy, dryRun)
+		return updateNpm(ctx, strategy, dryRun, res)
 	default:
 		return fmt.Errorf("unsupported package manager: %s", manager)
 	}
 }
 
-func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string) error {
+func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
 	managers := []string{"brew", "asdf", "sdkman", "apt", "pip", "npm"}
 
 	fmt.Println("Updating all package managers...")
@@ -141,7 +225,7 @@ func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode 
 
 	for _, manager := range managers {
 		fmt.Printf("=== Updating %s ===\n", manager)
-		if err := runUpdateManager(ctx, manager, strategy, dryRun, compatMode); err != nil {
+		if err := runUpdateManager(ctx, manager, strategy, dryRun, compatMode, res); err != nil {
 			fmt.Printf("Warning: Failed to update %s: %v\n", manager, err)
 			continue
 		}
@@ -152,7 +236,7 @@ func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode 
 }
 
 // updateBrew updates Homebrew packages.
-func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
+func updateBrew(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// Check if brew is installed
 	cmd := exec.CommandContext(ctx, "brew", "--version")
 	if err := cmd.Run(); err != nil {
@@ -160,6 +244,7 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 	}
 
 	fmt.Println("🍺 Updating Homebrew...")
+	mgr := res.ensureManager("brew")
 
 	// Update brew itself
 	if !dryRun {
@@ -199,10 +284,11 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 		fmt.Println("Would run: brew cleanup")
 	}
 
+	_ = mgr // currently no per-plugin data for brew
 	return nil
 }
 
-func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode string) error {
+func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
 	// Check if asdf is installed
 	cmd := exec.CommandContext(ctx, "asdf", "--version")
 	if err := cmd.Run(); err != nil {
@@ -210,6 +296,7 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode st
 	}
 
 	fmt.Println("🔄 Updating asdf plugins...")
+	mgr := res.ensureManager("asdf")
 
 	// Update asdf plugins
 	if !dryRun {
@@ -248,22 +335,30 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode st
 			fmt.Println(w)
 		}
 
+		conflicts := 0
 		if compatMode == "strict" {
-			if c := compat.CountConflicts(filters); c > 0 {
+			conflicts = compat.CountConflicts(filters)
+			if conflicts > 0 {
+				mgr.addPluginResult(PluginResult{
+					Name:      plugin,
+					Warnings:  warnings,
+					Conflicts: conflicts,
+					Error:     fmt.Sprintf("compatibility conflicts detected for asdf plugin %s (mode=strict)", plugin),
+				})
 				return fmt.Errorf("compatibility conflicts detected for asdf plugin %s (mode=strict)", plugin)
 			}
 		}
 
 		// Dry-run details: show env and post actions
+		envPreview := compat.MergeEnvFromFilters(filters)
+		post := compat.CollectPostActions(filters)
 		if dryRun {
-			envPreview := compat.MergeEnvFromFilters(filters)
 			if len(envPreview) > 0 {
 				fmt.Println("Would apply environment variables:")
 				for k, v := range envPreview {
 					fmt.Printf("  %s=%s\n", k, v)
 				}
 			}
-			post := compat.CollectPostActions(filters)
 			if len(post) > 0 {
 				fmt.Println("Would run post actions:")
 				for _, a := range post {
@@ -272,15 +367,24 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode st
 			}
 		}
 
+		pluginResult := PluginResult{
+			Name:       plugin,
+			Warnings:   warnings,
+			Conflicts:  conflicts,
+			EnvApplied: envPreview,
+		}
+
 		// Install latest version based on strategy
 		if strategy == "latest" || strategy == "stable" {
 			// Skip if already latest
 			isLatest, checkErr := asdfIsLatestInstalled(ctx, plugin)
 			if checkErr == nil && isLatest {
 				fmt.Printf("version of %s is already latest; skipping install.\n", plugin)
+				pluginResult.Actions = append(pluginResult.Actions, "skip:latest")
+				mgr.addPluginResult(pluginResult)
 				// Even if skipping, consider running post actions (idempotent)
 				if !dryRun {
-					for _, action := range compat.CollectPostActions(filters) {
+					for _, action := range post {
 						postCmd := exec.CommandContext(ctx, action.Command[0], action.Command[1:]...)
 						postCmd.Stdout = os.Stdout
 						postCmd.Stderr = os.Stderr
@@ -299,12 +403,14 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode st
 				cmd = exec.CommandContext(ctx, "asdf", "install", plugin, "latest")
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				cmd.Env = compat.MergeEnvWithProcessEnv(compat.MergeEnvFromFilters(filters))
+				cmd.Env = compat.MergeEnvWithProcessEnv(envPreview)
 				if err := cmd.Run(); err != nil {
 					fmt.Printf("Warning: failed to install latest %s: %v\n", plugin, err)
+					pluginResult.Error = err.Error()
 				} else {
+					pluginResult.Actions = append(pluginResult.Actions, "install:latest")
 					// Run post actions if install succeeded
-					for _, action := range compat.CollectPostActions(filters) {
+					for _, action := range post {
 						postCmd := exec.CommandContext(ctx, action.Command[0], action.Command[1:]...)
 						postCmd.Stdout = os.Stdout
 						postCmd.Stderr = os.Stderr
@@ -318,8 +424,11 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode st
 				}
 			} else {
 				fmt.Printf("Would run: asdf install %s latest\n", plugin)
+				pluginResult.Actions = append(pluginResult.Actions, "would:install:latest")
 			}
 		}
+
+		mgr.addPluginResult(pluginResult)
 	}
 
 	return nil
@@ -352,7 +461,7 @@ func asdfIsLatestInstalled(ctx context.Context, plugin string) (bool, error) {
 	return currentVersion == latest, nil
 }
 
-func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
+func updateSdkman(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// Check if SDKMAN is installed
 	sdkmanDir := os.Getenv("SDKMAN_DIR")
 	if sdkmanDir == "" {
@@ -364,6 +473,7 @@ func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
 	}
 
 	fmt.Println("☕ Updating SDKMAN...")
+	_ = res.ensureManager("sdkman")
 
 	// Update SDKMAN itself
 	if !dryRun {
@@ -394,7 +504,7 @@ func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
 	return nil
 }
 
-func updateApt(ctx context.Context, strategy string, dryRun bool) error {
+func updateApt(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// Check if apt is available
 	cmd := exec.CommandContext(ctx, "apt", "--version")
 	if err := cmd.Run(); err != nil {
@@ -402,6 +512,7 @@ func updateApt(ctx context.Context, strategy string, dryRun bool) error {
 	}
 
 	fmt.Println("📦 Updating APT packages...")
+	_ = res.ensureManager("apt")
 
 	// Update package lists
 	if !dryRun {
@@ -432,23 +543,31 @@ func updateApt(ctx context.Context, strategy string, dryRun bool) error {
 	return nil
 }
 
-func updatePip(ctx context.Context, strategy string, dryRun bool) error {
+func updatePip(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// Check if pip is installed
 	pipCmd := findPipCommand(ctx)
 	if pipCmd == "" {
 		return fmt.Errorf("pip is not installed or not in PATH")
 	}
 
-	fmt.Println("🐍 Updating Python packages...")
+	fmt.Println("🐍 Updating pip packages...")
+	_ = res.ensureManager("pip")
 
-	// Update pip itself
-	if err := upgradePip(ctx, pipCmd, dryRun); err != nil {
-		return err
+	// Upgrade pip itself
+	if !dryRun {
+		cmd := exec.CommandContext(ctx, pipCmd, "install", "--upgrade", "pip")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("Warning: failed to upgrade pip: %v\n", err)
+		}
+	} else {
+		fmt.Printf("Would run: %s install --upgrade pip\n", pipCmd)
 	}
 
 	// Update packages based on strategy
 	if strategy == "latest" || strategy == "stable" {
-		return updateOutdatedPackages(ctx, pipCmd, dryRun)
+		return updateOutdatedPackages(ctx, pipCmd, dryRun, res)
 	}
 
 	return nil
@@ -489,122 +608,73 @@ func upgradePip(ctx context.Context, pipCmd string, dryRun bool) error {
 }
 
 // updateOutdatedPackages updates all outdated packages.
-func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool) error {
+func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool, res *UpdateRunResult) error {
 	fmt.Println("Checking for outdated packages...")
 
-	// Get list of outdated packages
-	args := strings.Split(pipCmd, " ")
-	args = append(args, "list", "--outdated", "--format=freeze")
-	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+	cmd := exec.CommandContext(ctx, pipCmd, "list", "--outdated", "--format=freeze")
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Printf("Warning: failed to list outdated packages: %v\n", err)
-		return nil
+		return fmt.Errorf("failed to list outdated pip packages: %w", err)
 	}
 
-	packages := strings.Split(strings.TrimSpace(string(output)), "\n")
-	if len(packages) == 0 || (len(packages) == 1 && packages[0] == "") {
-		fmt.Println("All packages are up to date")
-		return nil
-	}
-
-	fmt.Println("Found outdated packages")
-	if dryRun {
-		fmt.Println("Would update all outdated packages")
-		return nil
-	}
-
-	// Update each package
-	for _, pkg := range packages {
-		if pkg == "" {
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if line == "" {
 			continue
 		}
-		// Extract package name (before ==)
-		parts := strings.Split(pkg, "==")
-		if len(parts) > 0 {
-			pkgName := parts[0]
-			fmt.Printf("Updating %s...\n", pkgName)
-			args := strings.Split(pipCmd, " ")
-			args = append(args, "install", "--upgrade", pkgName)
-			cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+		parts := strings.Split(line, "==")
+		if len(parts) < 1 {
+			continue
+		}
+		pkg := parts[0]
+		fmt.Printf("Upgrading %s...\n", pkg)
+
+		if !dryRun {
+			cmd = exec.CommandContext(ctx, pipCmd, "install", "--upgrade", pkg)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
-				fmt.Printf("Warning: failed to update %s: %v\n", pkgName, err)
+				fmt.Printf("Warning: failed to upgrade %s: %v\n", pkg, err)
 			}
+		} else {
+			fmt.Printf("Would run: %s install --upgrade %s\n", pipCmd, pkg)
 		}
 	}
 
 	return nil
 }
 
-func updateNpm(ctx context.Context, strategy string, dryRun bool) error {
+func updateNpm(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// Check if npm is installed
 	cmd := exec.CommandContext(ctx, "npm", "--version")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("npm is not installed or not in PATH")
 	}
 
-	fmt.Println("📦 Updating Node.js packages...")
-
-	// Update npm itself
-	if !dryRun {
-		cmd = exec.CommandContext(ctx, "npm", "install", "-g", "npm@latest")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to upgrade npm: %w", err)
-		}
-	} else {
-		fmt.Println("Would run: npm install -g npm@latest")
-	}
+	fmt.Println("🧩 Updating npm global packages...")
+	_ = res.ensureManager("npm")
 
 	// Update global packages based on strategy
 	if strategy == "latest" || strategy == "stable" {
-		return updateGlobalNpmPackages(ctx, dryRun)
+		return updateGlobalNpmPackages(ctx, dryRun, res)
 	}
 
 	return nil
 }
 
 // updateGlobalNpmPackages updates globally installed npm packages.
-func updateGlobalNpmPackages(ctx context.Context, dryRun bool) error {
+func updateGlobalNpmPackages(ctx context.Context, dryRun bool, res *UpdateRunResult) error {
 	fmt.Println("Checking for outdated global packages...")
 
-	// Get list of outdated global packages
-	cmd := exec.CommandContext(ctx, "npm", "outdated", "-g", "--json")
-	output, err := cmd.Output()
-
-	// npm outdated returns exit code 1 when packages are outdated
-	if err != nil && len(output) == 0 {
-		fmt.Printf("Warning: failed to list outdated packages: %v\n", err)
-		return nil
-	}
-
-	// Check if there are outdated packages
-	if len(output) == 0 || string(output) == "{}\n" || string(output) == "{}" {
-		fmt.Println("All global packages are up to date")
-		return nil
-	}
-
-	fmt.Println("Found outdated global packages")
-	if dryRun {
-		// Show what would be updated
-		cmd = exec.CommandContext(ctx, "npm", "outdated", "-g")
+	if !dryRun {
+		cmd := exec.CommandContext(ctx, "npm", "update", "-g")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		_ = cmd.Run() // Ignore error as npm outdated returns 1 when packages are outdated
-		fmt.Println("\nWould update all outdated global packages")
-		return nil
-	}
-
-	// Update all global packages
-	fmt.Println("Updating global packages...")
-	cmd = exec.CommandContext(ctx, "npm", "update", "-g")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		fmt.Printf("Warning: some packages may have failed to update: %v\n", err)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to update global npm packages: %w", err)
+		}
+	} else {
+		fmt.Println("Would run: npm update -g")
 	}
 
 	return nil

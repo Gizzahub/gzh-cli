@@ -1,7 +1,9 @@
 package compat
 
 import (
+	"os"
 	"os/exec"
+	"strings"
 )
 
 // 필터 체인용 포스트 액션 정의
@@ -38,6 +40,8 @@ type CompatibilityFilter interface {
 var builtinFilters = []CompatibilityFilter{
 	&asdfRustRustupFilter{},
 	&asdfNodejsCorepackFilter{},
+	&asdfPythonVenvFilter{},
+	&asdfGolangPathFilter{},
 }
 
 // BuildFilterChain 은 매니저/플러그인 조합에 적용 가능한 필터를 순서대로 반환한다.
@@ -162,7 +166,71 @@ func (f *asdfNodejsCorepackFilter) PostActions() []PostAction {
 			Description: "Enable corepack",
 			IgnoreError: true,
 		},
+		{
+			Command:     []string{"bash", "-lc", "corepack prepare pnpm@latest --activate"},
+			Env:         nil,
+			Description: "Corepack prepare pnpm",
+			IgnoreError: true,
+		},
 	}
 }
 
 func (f *asdfNodejsCorepackFilter) Kind() FilterKind { return FilterKindAdvisory }
+
+// asdf + python: venv 권장 및 글로벌 pip 설치 방지
+type asdfPythonVenvFilter struct{}
+
+func (f *asdfPythonVenvFilter) Applies(manager, plugin string) bool {
+	return manager == "asdf" && plugin == "python"
+}
+
+func (f *asdfPythonVenvFilter) Env() map[string]string {
+	// 활성 venv가 없을 때만 권고하고 싶지만, 필터는 단순 Env 제공이므로 상시 설정(무해)
+	return map[string]string{
+		"PIP_REQUIRE_VIRTUALENV": "1",
+	}
+}
+
+func (f *asdfPythonVenvFilter) Warning() string {
+	// 간단한 가이드 출력
+	if os.Getenv("VIRTUAL_ENV") == "" && os.Getenv("CONDA_PREFIX") == "" {
+		return "권장: 가상환경 사용 (python -m venv .venv && source .venv/bin/activate)"
+	}
+	return ""
+}
+
+func (f *asdfPythonVenvFilter) PostActions() []PostAction { return nil }
+
+func (f *asdfPythonVenvFilter) Kind() FilterKind { return FilterKindAdvisory }
+
+// asdf + golang: GOBIN/GOPATH/bin PATH 점검
+type asdfGolangPathFilter struct{}
+
+func (f *asdfGolangPathFilter) Applies(manager, plugin string) bool {
+	return manager == "asdf" && (plugin == "golang" || plugin == "go")
+}
+
+func (f *asdfGolangPathFilter) Env() map[string]string {
+	// GOBIN 미설정 시 권장 기본값을 힌트로 제공(사용자 PATH에 추가 필요)
+	if os.Getenv("GOBIN") == "" {
+		return map[string]string{"GOBIN": os.Getenv("HOME") + "/go/bin"}
+	}
+	return nil
+}
+
+func (f *asdfGolangPathFilter) Warning() string {
+	path := os.Getenv("PATH")
+	gobin := os.Getenv("GOBIN")
+	gopath := os.Getenv("GOPATH")
+	hint := ""
+	if gobin != "" && !strings.Contains(path, gobin) {
+		hint = "권장: PATH에 $GOBIN 추가 (export PATH=\"$GOBIN:$PATH\")"
+	} else if gopath != "" && !strings.Contains(path, gopath+"/bin") {
+		hint = "권장: PATH에 $GOPATH/bin 추가 (export PATH=\"$GOPATH/bin:$PATH\")"
+	}
+	return hint
+}
+
+func (f *asdfGolangPathFilter) PostActions() []PostAction { return nil }
+
+func (f *asdfGolangPathFilter) Kind() FilterKind { return FilterKindAdvisory }

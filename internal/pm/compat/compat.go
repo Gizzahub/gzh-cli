@@ -2,7 +2,10 @@ package compat
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -107,9 +110,21 @@ type userFilterYAML struct {
 		Manager string            `yaml:"manager"`
 		Plugin  string            `yaml:"plugin"`
 		Kind    string            `yaml:"kind"` // advisory|conflict
+		Level   string            `yaml:"level"`
 		Env     map[string]string `yaml:"env"`
 		Warning string            `yaml:"warning"`
-		Post    []struct {
+		When    struct {
+			OS           []string `yaml:"os"`
+			Arch         []string `yaml:"arch"`
+			HasCommand   []string `yaml:"has_command"`
+			VersionRange struct {
+				Manager string `yaml:"manager"`
+			} `yaml:"version_range"`
+		} `yaml:"when"`
+		MatchEnv struct {
+			PathContains []string `yaml:"path_contains"`
+		} `yaml:"match_env"`
+		Post []struct {
 			Command     []string          `yaml:"command"`
 			Env         map[string]string `yaml:"env"`
 			Description string            `yaml:"description"`
@@ -143,6 +158,10 @@ func loadUserFilters() []CompatibilityFilter {
 			env:      f.Env,
 			warning:  f.Warning,
 			postlist: convertUserPostToActions(f.Post),
+			whenOS:   f.When.OS,
+			whenArch: f.When.Arch,
+			hasCmd:   f.When.HasCommand,
+			pathHas:  f.MatchEnv.PathContains,
 		})
 	}
 	return out
@@ -175,6 +194,10 @@ type userDefinedFilter struct {
 	env      map[string]string
 	warning  string
 	postlist []PostAction
+	whenOS   []string
+	whenArch []string
+	hasCmd   []string
+	pathHas  []string
 }
 
 func (f *userDefinedFilter) Applies(manager, plugin string) bool {
@@ -184,8 +207,50 @@ func (f *userDefinedFilter) Applies(manager, plugin string) bool {
 	if f.plugin != "" && f.plugin != plugin {
 		return false
 	}
+	// when OS
+	if len(f.whenOS) > 0 {
+		ok := false
+		for _, osn := range f.whenOS {
+			if strings.EqualFold(osn, runtime.GOOS) {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return false
+		}
+	}
+	// when ARCH
+	if len(f.whenArch) > 0 {
+		ok := false
+		for _, an := range f.whenArch {
+			if strings.EqualFold(an, runtime.GOARCH) {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return false
+		}
+	}
+	// has_command
+	for _, c := range f.hasCmd {
+		if _, err := execLookPath(c); err != nil {
+			return false
+		}
+	}
+	// path contains
+	path := os.Getenv("PATH")
+	for _, frag := range f.pathHas {
+		if !strings.Contains(path, frag) {
+			return false
+		}
+	}
 	return true
 }
+
+// helper separated for testability
+var execLookPath = func(file string) (string, error) { return exec.LookPath(file) }
 
 func (f *userDefinedFilter) Env() map[string]string    { return f.env }
 func (f *userDefinedFilter) Warning() string           { return f.warning }
