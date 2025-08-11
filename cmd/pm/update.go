@@ -22,6 +22,7 @@ func newUpdateCmd(ctx context.Context) *cobra.Command {
 		manager     string
 		strategy    string
 		compatMode  string
+		managersCSV string
 	)
 
 	builder := cli.NewCommandBuilder(ctx, "update", "Update packages based on version strategy").
@@ -48,21 +49,59 @@ Examples:
 		WithDryRunFlag().
 		WithCustomBoolFlag("all", false, "Update all package managers", &allManagers).
 		WithCustomFlag("manager", "", "Package manager to update", &manager).
+		WithCustomFlag("managers", "", "Comma-separated package managers to update (e.g., brew,asdf,pip)", &managersCSV).
 		WithCustomFlag("strategy", "stable", "Update strategy: latest, stable, minor, fixed", &strategy).
 		WithCustomFlag("compat", "auto", "Compatibility handling: auto, strict, off", &compatMode).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
+			// Handle selected managers CSV first
+			if managersCSV != "" {
+				selected := parseCSVList(managersCSV)
+				if len(selected) == 0 {
+					return fmt.Errorf("no valid managers provided via --managers")
+				}
+				return runUpdateSelected(ctx, selected, strategy, flags.DryRun, compatMode)
+			}
+
 			// For now, redirect to existing commands
-			// In future, implement unified update logic
 			if manager != "" {
 				return runUpdateManager(ctx, manager, strategy, flags.DryRun, compatMode)
 			}
 			if allManagers {
 				return runUpdateAll(ctx, strategy, flags.DryRun, compatMode)
 			}
-			return fmt.Errorf("specify --manager or --all")
+			return fmt.Errorf("specify --manager, --managers, or --all")
 		})
 
 	return builder.Build()
+}
+
+func parseCSVList(s string) []string {
+	var list []string
+	for _, p := range strings.Split(s, ",") {
+		item := strings.TrimSpace(p)
+		if item != "" {
+			list = append(list, item)
+		}
+	}
+	return list
+}
+
+func runUpdateSelected(ctx context.Context, managers []string, strategy string, dryRun bool, compatMode string) error {
+	fmt.Printf("Updating selected managers: %s\n", strings.Join(managers, ", "))
+	if dryRun {
+		fmt.Println("(dry run - no changes will be made)")
+	}
+	fmt.Println()
+
+	for _, m := range managers {
+		fmt.Printf("=== Updating %s ===\n", m)
+		if err := runUpdateManager(ctx, m, strategy, dryRun, compatMode); err != nil {
+			fmt.Printf("Warning: Failed to update %s: %v\n", m, err)
+			continue
+		}
+		fmt.Println()
+	}
+	return nil
 }
 
 func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool, compatMode string) error {
@@ -215,8 +254,47 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode st
 			}
 		}
 
+		// Dry-run details: show env and post actions
+		if dryRun {
+			envPreview := compat.MergeEnvFromFilters(filters)
+			if len(envPreview) > 0 {
+				fmt.Println("Would apply environment variables:")
+				for k, v := range envPreview {
+					fmt.Printf("  %s=%s\n", k, v)
+				}
+			}
+			post := compat.CollectPostActions(filters)
+			if len(post) > 0 {
+				fmt.Println("Would run post actions:")
+				for _, a := range post {
+					fmt.Printf("  - %s: %v\n", a.Description, a.Command)
+				}
+			}
+		}
+
 		// Install latest version based on strategy
 		if strategy == "latest" || strategy == "stable" {
+			// Skip if already latest
+			isLatest, checkErr := asdfIsLatestInstalled(ctx, plugin)
+			if checkErr == nil && isLatest {
+				fmt.Printf("version of %s is already latest; skipping install.\n", plugin)
+				// Even if skipping, consider running post actions (idempotent)
+				if !dryRun {
+					for _, action := range compat.CollectPostActions(filters) {
+						postCmd := exec.CommandContext(ctx, action.Command[0], action.Command[1:]...)
+						postCmd.Stdout = os.Stdout
+						postCmd.Stderr = os.Stderr
+						if action.Env != nil {
+							postCmd.Env = compat.MergeEnvWithProcessEnv(action.Env)
+						}
+						if err := postCmd.Run(); err != nil && !action.IgnoreError {
+							fmt.Printf("Warning: post action failed (%s): %v\n", action.Description, err)
+						}
+					}
+				}
+				continue
+			}
+
 			if !dryRun {
 				cmd = exec.CommandContext(ctx, "asdf", "install", plugin, "latest")
 				cmd.Stdout = os.Stdout
@@ -245,6 +323,33 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode st
 	}
 
 	return nil
+}
+
+// asdfIsLatestInstalled checks if the latest version reported by asdf is already installed/current.
+func asdfIsLatestInstalled(ctx context.Context, plugin string) (bool, error) {
+	latestCmd := exec.CommandContext(ctx, "asdf", "latest", plugin)
+	latestOut, err := latestCmd.Output()
+	if err != nil {
+		return false, err
+	}
+	latest := strings.TrimSpace(string(latestOut))
+	if latest == "" {
+		return false, fmt.Errorf("empty latest version for %s", plugin)
+	}
+
+	currentCmd := exec.CommandContext(ctx, "asdf", "current", plugin)
+	currentOut, err := currentCmd.Output()
+	if err != nil {
+		return false, err
+	}
+	currentLine := strings.TrimSpace(string(currentOut))
+	// Expected format: "plugin version (set by ...)"; extract version token(s)
+	fields := strings.Fields(currentLine)
+	if len(fields) < 2 {
+		return false, nil
+	}
+	currentVersion := fields[1]
+	return currentVersion == latest, nil
 }
 
 func updateSdkman(ctx context.Context, strategy string, dryRun bool) error {
