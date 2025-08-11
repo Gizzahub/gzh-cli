@@ -212,7 +212,7 @@ func (t *BaseTool) Execute(ctx context.Context, files []string, options ExecuteO
 }
 
 // FilterFilesByExtensions filters files by supported extensions.
-func FilterFilesByExtensions(files []string, extensions []string) []string {
+func FilterFilesByExtensions(files, extensions []string) []string {
 	var filtered []string
 	extMap := make(map[string]bool)
 

@@ -588,13 +588,14 @@ func generateBenchmarkRecommendations(report *BenchmarkReport) {
 
 func handleCIMode(report *BenchmarkReport) {
 	// Set exit code based on results
-	if report.CIMetrics.HasCriticalRegression {
+	switch {
+	case report.CIMetrics.HasCriticalRegression:
 		report.CIMetrics.ExitCode = 1
 		report.CIMetrics.RecommendedAction = "Build should fail - critical performance regression detected"
-	} else if len(report.Regressions) > 0 {
+	case len(report.Regressions) > 0:
 		report.CIMetrics.ExitCode = 0 // Warning but don't fail
 		report.CIMetrics.RecommendedAction = "Build passes with warnings - monitor performance regressions"
-	} else {
+	default:
 		report.CIMetrics.ExitCode = 0
 		report.CIMetrics.RecommendedAction = "Build passes - no performance issues detected"
 	}
@@ -733,7 +734,7 @@ type BenchmarkFunction struct {
 	Function func(ctx context.Context)
 }
 
-func discoverBenchmarks(_ string, _ string) ([]BenchmarkFunction, error) {
+func discoverBenchmarks(_, _ string) ([]BenchmarkFunction, error) {
 	// This would discover benchmark functions in the specified packages
 	// For now, return a placeholder implementation
 	return []BenchmarkFunction{

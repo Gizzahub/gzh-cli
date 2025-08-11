@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package compat
 
 import (
@@ -15,7 +18,7 @@ type PostAction struct {
 	IgnoreError bool
 }
 
-// 필터 심각도
+// 필터 심각도.
 type FilterKind string
 
 const (
@@ -36,7 +39,7 @@ type CompatibilityFilter interface {
 	Kind() FilterKind
 }
 
-// build-in 필터 목록
+// build-in 필터 목록.
 var builtinFilters = []CompatibilityFilter{
 	&asdfRustRustupFilter{},
 	&asdfNodejsCorepackFilter{},
@@ -118,7 +121,7 @@ func MergeEnvWithProcessEnv(custom map[string]string) []string {
 
 // === 개별 필터 구현 ===
 
-// asdf + rust: rustup PATH 체크 우회 및 비대화형 진행
+// asdf + rust: rustup PATH 체크 우회 및 비대화형 진행.
 type asdfRustRustupFilter struct{}
 
 func (f *asdfRustRustupFilter) Applies(manager, plugin string) bool {
@@ -140,7 +143,7 @@ func (f *asdfRustRustupFilter) PostActions() []PostAction { return nil }
 
 func (f *asdfRustRustupFilter) Kind() FilterKind { return FilterKindConflict }
 
-// asdf + nodejs: corepack 권장 활성화
+// asdf + nodejs: corepack 권장 활성화.
 type asdfNodejsCorepackFilter struct{}
 
 func (f *asdfNodejsCorepackFilter) Applies(manager, plugin string) bool {
@@ -177,7 +180,7 @@ func (f *asdfNodejsCorepackFilter) PostActions() []PostAction {
 
 func (f *asdfNodejsCorepackFilter) Kind() FilterKind { return FilterKindAdvisory }
 
-// asdf + python: venv 권장 및 글로벌 pip 설치 방지
+// asdf + python: venv 권장 및 글로벌 pip 설치 방지.
 type asdfPythonVenvFilter struct{}
 
 func (f *asdfPythonVenvFilter) Applies(manager, plugin string) bool {
@@ -203,7 +206,7 @@ func (f *asdfPythonVenvFilter) PostActions() []PostAction { return nil }
 
 func (f *asdfPythonVenvFilter) Kind() FilterKind { return FilterKindAdvisory }
 
-// asdf + golang: GOBIN/GOPATH/bin PATH 점검
+// asdf + golang: GOBIN/GOPATH/bin PATH 점검.
 type asdfGolangPathFilter struct{}
 
 func (f *asdfGolangPathFilter) Applies(manager, plugin string) bool {

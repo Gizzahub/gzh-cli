@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package compat
 
 import (
@@ -249,8 +252,8 @@ func (f *userDefinedFilter) Applies(manager, plugin string) bool {
 	return true
 }
 
-// helper separated for testability
-var execLookPath = func(file string) (string, error) { return exec.LookPath(file) }
+// helper separated for testability.
+var execLookPath = exec.LookPath
 
 func (f *userDefinedFilter) Env() map[string]string    { return f.env }
 func (f *userDefinedFilter) Warning() string           { return f.warning }

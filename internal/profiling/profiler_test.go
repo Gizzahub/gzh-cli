@@ -135,7 +135,7 @@ func TestProfiler_StartStopProfile_Memory(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify profile file was created
-	expectedFile := filepath.Join("tmp/test_profiles", "memory_"+sessionID+".prof")
+	expectedFile := filepath.Join("tmp", "test_profiles", "memory_"+sessionID+".prof")
 	_, err = os.Stat(expectedFile)
 	assert.NoError(t, err)
 }

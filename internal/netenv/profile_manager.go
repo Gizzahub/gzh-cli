@@ -367,7 +367,7 @@ func isYAMLFile(fileName string) bool {
 
 // isValidProfileName checks if profile name is valid.
 func isValidProfileName(name string) bool {
-	if len(name) == 0 || len(name) > 64 {
+	if name == "" || len(name) > 64 {
 		return false
 	}
 

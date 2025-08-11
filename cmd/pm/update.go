@@ -20,7 +20,7 @@ import (
 	"github.com/gizzahub/gzh-manager-go/internal/pm/duplicates"
 )
 
-// 결과 JSON용 구조체
+// 결과 JSON용 구조체.
 type UpdateRunMode struct {
 	Compat             string `json:"compat"`
 	PipAllowConda      bool   `json:"pipAllowConda,omitempty"`
@@ -191,8 +191,7 @@ func parseCSVList(s string) []string {
 	return list
 }
 
-// ===== 출력 하이라이트/개요 도우미 =====
-// ANSI 컬러 상수
+// ANSI 컬러 상수.
 const (
 	ansiReset  = "\x1b[0m"
 	ansiBold   = "\x1b[1m"
@@ -202,13 +201,13 @@ const (
 	ansiRed    = "\x1b[31m"
 )
 
-// 섹션 배너 출력
+// 섹션 배너 출력.
 func printSectionBanner(title string, emoji string) {
 	line := strings.Repeat("═", 10)
 	fmt.Printf("\n%s%s%s %s %s %s%s\n", ansiBold, ansiCyan, line, emoji, title, line, ansiReset)
 }
 
-// 매니저 지원/설치 개요
+// 매니저 지원/설치 개요.
 type ManagerOverview struct {
 	Name      string
 	Supported bool
@@ -746,7 +745,7 @@ func updateApt(ctx context.Context, strategy string, dryRun bool, res *UpdateRun
 	return nil
 }
 
-// conda/mamba 환경 감지: 활성화 여부와 종류 반환
+// conda/mamba 환경 감지: 활성화 여부와 종류 반환.
 func detectCondaOrMamba(ctx context.Context) (bool, string) {
 	// 우선 환경변수로 확인
 	if os.Getenv("CONDA_PREFIX") != "" || os.Getenv("CONDA_DEFAULT_ENV") != "" {
@@ -762,7 +761,7 @@ func detectCondaOrMamba(ctx context.Context) (bool, string) {
 	return false, ""
 }
 
-// 현재 conda/mamba 활성 환경 이름 추출
+// 현재 conda/mamba 활성 환경 이름 추출.
 func getCondaEnvName() string {
 	if env := os.Getenv("CONDA_DEFAULT_ENV"); env != "" {
 		return env
@@ -770,7 +769,7 @@ func getCondaEnvName() string {
 	return ""
 }
 
-// mamba/conda 업데이트 실행(드라이런 지원). kind: "mamba" 또는 "conda"
+// mamba/conda 업데이트 실행(드라이런 지원). kind: "mamba" 또는 "conda".
 func runCondaOrMambaUpdate(ctx context.Context, kind string, dryRun bool) error {
 	envName := getCondaEnvName()
 	if kind == "mamba" {
@@ -894,23 +893,6 @@ func findPipCommand(ctx context.Context) string {
 	return ""
 }
 
-// upgradePip upgrades pip itself.
-func upgradePip(ctx context.Context, pipCmd string, dryRun bool) error {
-	if !dryRun {
-		args := strings.Split(pipCmd, " ")
-		args = append(args, "install", "--upgrade", "pip")
-		cmd := exec.CommandContext(ctx, args[0], args[1:]...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to upgrade pip: %w", err)
-		}
-	} else {
-		fmt.Printf("Would run: %s install --upgrade pip\n", pipCmd)
-	}
-	return nil
-}
-
 // updateOutdatedPackages updates all outdated packages.
 func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool, res *UpdateRunResult) error {
 	fmt.Println("Checking for outdated packages...")
@@ -984,7 +966,7 @@ func updateGlobalNpmPackages(ctx context.Context, dryRun bool, res *UpdateRunRes
 	return nil
 }
 
-// Arch/Manjaro pacman 업데이트
+// Arch/Manjaro pacman 업데이트.
 func updatePacman(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// pacman 존재 확인
 	if err := exec.CommandContext(ctx, "pacman", "--version").Run(); err != nil {
@@ -1053,7 +1035,7 @@ func updatePacman(ctx context.Context, strategy string, dryRun bool, res *Update
 	return nil
 }
 
-// Arch/Manjaro yay(AUR) 업데이트
+// Arch/Manjaro yay(AUR) 업데이트.
 func updateYay(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// yay 존재 확인
 	if err := exec.CommandContext(ctx, "yay", "--version").Run(); err != nil {

@@ -240,8 +240,9 @@ func (sa *StateAnalyzer) generateRecommendations(state *OperationState, analysis
 
 	// Based on failure rate
 	if analysis.FailureRate > 10 {
-		recommendations = append(recommendations, "Consider resuming failed repositories with exponential backoff")
-		recommendations = append(recommendations, "Review authentication tokens and network connectivity")
+		recommendations = append(recommendations,
+			"Consider resuming failed repositories with exponential backoff",
+			"Review authentication tokens and network connectivity")
 	}
 
 	// Based on performance

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package duplicates
 
 import (
@@ -21,10 +24,7 @@ type BinEntry struct {
 	Source   string
 }
 
-// Conflict: 동일한 바이너리명이 서로 다른 실경로로 중복 설치된 경우에 대한 보고
-// PrimaryPath: PATH 우선순위상 실제로 먼저 잡히는 경로
-// PrimarySource: PrimaryPath의 소스
-// Paths/Sources: 모든 후보 집합(Primary 포함)
+// Paths/Sources: 모든 후보 집합(Primary 포함).
 type Conflict struct {
 	Binary        string
 	PrimaryPath   string
@@ -74,7 +74,10 @@ func listExecutablesInDir(dir, source string) ([]BinEntry, error) {
 			continue
 		}
 		p := filepath.Join(dir, de.Name())
-		real, _ := filepath.EvalSymlinks(p)
+		real, err := filepath.EvalSymlinks(p)
+		if err != nil {
+			real = p
+		}
 		if real == "" {
 			real = p
 		}
@@ -88,7 +91,7 @@ func listExecutablesInDir(dir, source string) ([]BinEntry, error) {
 	return entries, nil
 }
 
-// pathPriorityIndex는 PATH 디렉토리 내 우선순위 인덱스를 반환한다(낮을수록 먼저 탐색됨)
+// pathPriorityIndex는 PATH 디렉토리 내 우선순위 인덱스를 반환한다(낮을수록 먼저 탐색됨).
 func pathPriorityIndex(pathDirs []string, filePath string) int {
 	dir := filepath.Dir(filePath)
 	for i, d := range pathDirs {
@@ -126,9 +129,15 @@ func (s brewSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	}
 	prefix := strings.TrimSpace(string(out))
 	bins := []BinEntry{}
-	b1, _ := listExecutablesInDir(filepath.Join(prefix, "bin"), s.Name())
+	b1, err := listExecutablesInDir(filepath.Join(prefix, "bin"), s.Name())
+	if err != nil {
+		return nil, err
+	}
 	bins = append(bins, b1...)
-	b2, _ := listExecutablesInDir(filepath.Join(prefix, "sbin"), s.Name())
+	b2, err := listExecutablesInDir(filepath.Join(prefix, "sbin"), s.Name())
+	if err != nil {
+		return nil, err
+	}
 	bins = append(bins, b2...)
 	return bins, nil
 }
@@ -141,7 +150,10 @@ func (s asdfSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	if err := exec.CommandContext(ctx, "asdf", "--version").Run(); err != nil {
 		return nil, nil
 	}
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 	return listExecutablesInDir(filepath.Join(home, ".asdf", "shims"), s.Name())
 }
 
@@ -175,7 +187,10 @@ func (s pipSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 		return listExecutablesInDir(dir, s.Name())
 	}
 	// ~/.local/bin 폴백
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 	return listExecutablesInDir(filepath.Join(home, ".local", "bin"), s.Name())
 }
 
@@ -205,7 +220,7 @@ func (s gemSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	return listExecutablesInDir(bindir, s.Name())
 }
 
-// pathSource: PATH 환경 변수 기반으로 스캔(소스명은 "path")
+// pathSource: PATH 환경 변수 기반으로 스캔(소스명은 "path").
 type pathSource struct {
 	pathDirs []string
 }
@@ -215,7 +230,10 @@ func (s pathSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	bins := []BinEntry{}
 	seen := map[string]struct{}{}
 	for _, d := range s.pathDirs {
-		b, _ := listExecutablesInDir(d, s.Name())
+		b, err := listExecutablesInDir(d, s.Name())
+		if err != nil {
+			continue
+		}
 		for _, e := range b {
 			key := e.Path
 			if _, ok := seen[key]; ok {
@@ -238,7 +256,10 @@ func CollectAndDetectConflicts(ctx context.Context, sources []Source, pathDirs [
 	}
 	nameToEntries := map[string][]BinEntry{}
 	for _, s := range sources {
-		entries, _ := s.ListBins(ctx) // 설치 안 된 경우 등을 고려해 에러 무시
+		entries, err := s.ListBins(ctx) // 설치 안 된 경우 등을 고려해 에러 무시
+		if err != nil {
+			continue
+		}
 		for _, e := range entries {
 			nameToEntries[e.Name] = append(nameToEntries[e.Name], e)
 		}

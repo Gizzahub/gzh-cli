@@ -361,7 +361,7 @@ func (s *RepoConfigService) checkCompliance(repo *github.Repository, repoConfig 
 
 // matchPattern checks if a string matches a pattern (simple glob support).
 func (s *RepoConfigService) matchPattern(str, pattern string) (bool, error) {
-	if len(pattern) > 0 && pattern[0] == '*' || pattern[len(pattern)-1] == '*' {
+	if pattern != "" && pattern[0] == '*' || pattern[len(pattern)-1] == '*' {
 		// Convert simple glob to regex
 		regexPattern := regexp.QuoteMeta(pattern)
 		regexPattern = regexp.MustCompile(`\\\*`).ReplaceAllString(regexPattern, ".*")

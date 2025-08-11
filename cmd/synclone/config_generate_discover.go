@@ -339,7 +339,7 @@ func hasPrivateRepos(repos []discovery.DiscoveredRepo) bool {
 
 // containsAuth checks if a URL contains authentication information.
 func containsAuth(url string) bool {
-	return len(url) > 0 && (url[0:4] == "git@" || containsAtSymbol(url))
+	return url != "" && (url[0:4] == "git@" || containsAtSymbol(url))
 }
 
 // containsAtSymbol checks if URL contains @ symbol (indicating auth).
@@ -420,7 +420,7 @@ func loadExistingConfig(filename string) (map[string]interface{}, error) {
 }
 
 // mergeConfigurations merges two configurations.
-func mergeConfigurations(existing, new map[string]interface{}) map[string]interface{} {
+func mergeConfigurations(existing, newConfig map[string]interface{}) map[string]interface{} {
 	// Simple merge strategy - prefer new configuration but preserve existing structure
 	merged := make(map[string]interface{})
 
@@ -431,7 +431,7 @@ func mergeConfigurations(existing, new map[string]interface{}) map[string]interf
 
 	// Merge providers
 	if existingProviders, ok := existing["providers"].(map[string]interface{}); ok {
-		if newProviders, ok := new["providers"].(map[string]interface{}); ok {
+		if newProviders, ok := newConfig["providers"].(map[string]interface{}); ok {
 			mergedProviders := make(map[string]interface{})
 
 			// Copy existing providers
@@ -447,7 +447,7 @@ func mergeConfigurations(existing, new map[string]interface{}) map[string]interf
 			merged["providers"] = mergedProviders
 		}
 	} else {
-		merged["providers"] = new["providers"]
+		merged["providers"] = newConfig["providers"]
 	}
 
 	return merged

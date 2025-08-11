@@ -141,7 +141,7 @@ func (l *SimpleLogger) LogPerformance(operation string, duration time.Duration, 
 }
 
 // print outputs a formatted message to the terminal.
-func (l *SimpleLogger) print(level string, msg string, args ...interface{}) {
+func (l *SimpleLogger) print(level, msg string, args ...interface{}) {
 	timestamp := time.Now().Format("15:04:05")
 
 	// Build context string with only essential information
