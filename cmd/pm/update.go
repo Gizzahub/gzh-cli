@@ -762,6 +762,67 @@ func detectCondaOrMamba(ctx context.Context) (bool, string) {
 	return false, ""
 }
 
+// 현재 conda/mamba 활성 환경 이름 추출
+func getCondaEnvName() string {
+	if env := os.Getenv("CONDA_DEFAULT_ENV"); env != "" {
+		return env
+	}
+	return ""
+}
+
+// mamba/conda 업데이트 실행(드라이런 지원). kind: "mamba" 또는 "conda"
+func runCondaOrMambaUpdate(ctx context.Context, kind string, dryRun bool) error {
+	envName := getCondaEnvName()
+	if kind == "mamba" {
+		// mamba 우선, 없으면 micromamba
+		if exec.CommandContext(ctx, "mamba", "--version").Run() == nil {
+			if dryRun {
+				fmt.Println("Would run: mamba update --all -y")
+				return nil
+			}
+			cmd := exec.CommandContext(ctx, "mamba", "update", "--all", "-y")
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			return cmd.Run()
+		}
+		if exec.CommandContext(ctx, "micromamba", "--version").Run() == nil {
+			// micromamba는 보통 -n <env> 지정이 명시적
+			if dryRun {
+				if envName != "" {
+					fmt.Printf("Would run: micromamba update -n %s --all -y\n", envName)
+				} else {
+					fmt.Println("Would run: micromamba update --all -y")
+				}
+				return nil
+			}
+			args := []string{"update", "--all", "-y"}
+			if envName != "" {
+				args = []string{"update", "-n", envName, "--all", "-y"}
+			}
+			cmd := exec.CommandContext(ctx, "micromamba", args...)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			return cmd.Run()
+		}
+		// 폴백: conda
+		kind = "conda"
+	}
+	// conda 경로
+	if dryRun {
+		if envName != "" {
+			// conda는 현재 활성 환경을 기본 대상으로 삼으므로 -n 생략 가능
+			fmt.Println("Would run: conda update --all -y")
+		} else {
+			fmt.Println("Would run: conda update --all -y")
+		}
+		return nil
+	}
+	cmd := exec.CommandContext(ctx, "conda", "update", "--all", "-y")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 // pipCmd 문자열("python -m pip" 또는 "pip3")을 exec.Command 인자로 분해하여 Cmd를 생성한다.
 func newPipExec(ctx context.Context, pipCmd string, moreArgs ...string) *exec.Cmd {
 	parts := strings.Fields(pipCmd)
@@ -783,10 +844,16 @@ func updatePip(ctx context.Context, strategy string, dryRun bool, res *UpdateRun
 	fmt.Println("🐍 Updating pip packages...")
 	_ = res.ensureManager("pip")
 
-	// conda/mamba 환경에서는 pip 업데이트가 충돌을 유발할 수 있어 기본적으로 차단
+	// conda/mamba 환경에서는 pip 대신 해당 환경 관리자 업데이트를 자동 실행(기본)
 	if active, kind := detectCondaOrMamba(ctx); active && !res.Mode.PipAllowConda {
-		fmt.Printf("%sConda/Mamba(%s) 환경이 감지되었습니다. 호환성 문제를 피하기 위해 pip 업데이트를 건너뜁니다.%s\n", ansiYellow, kind, ansiReset)
-		fmt.Println("권장: conda/mamba 명령으로 환경을 업데이트하세요. 예) conda update --all 또는 mamba update --all")
+		if kind == "mamba" {
+			fmt.Printf("%sMamba 환경이 감지되었습니다. pip 대신 mamba/conda로 환경을 업데이트합니다.%s\n", ansiYellow, ansiReset)
+		} else {
+			fmt.Printf("%sConda 환경이 감지되었습니다. pip 대신 conda로 환경을 업데이트합니다.%s\n", ansiYellow, ansiReset)
+		}
+		if err := runCondaOrMambaUpdate(ctx, kind, dryRun); err != nil {
+			return fmt.Errorf("failed to update via %s: %w", kind, err)
+		}
 		return nil
 	}
 
