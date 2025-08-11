@@ -13,6 +13,11 @@ The unified package manager feature provides centralized management for multiple
 
 **Configuration-based unified commands** - All managers support: `install`, `update`, `sync`, `export`
 
+Compatibility handling via filter chain:
+- Modes: auto|strict|off
+- Built-ins: asdf+rust (rustup), asdf+nodejs (corepack), asdf+python (venv), asdf+golang (GOBIN)
+- User config: `~/.gzh/pm/compat.yml` (with `when`, `match_env`)
+
 - System package managers: `brew`, `apt`, `port`
 - Version managers: `asdf`, `sdkman`, `rbenv`
 

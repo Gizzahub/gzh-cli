@@ -100,6 +100,12 @@ gz pm update --all
 
 # 특정 매니저만 업데이트
 gz pm update --managers homebrew,asdf
+
+# 호환성 모드와 JSON 출력 사용 예
+gz pm update --managers asdf --compat auto --output json
+
+# 충돌 점검
+gz pm doctor --check-conflicts --managers asdf --output json
 ```
 
 ## 🚀 빠른 시작

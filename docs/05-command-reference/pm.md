@@ -20,6 +20,15 @@ The `pm` command manages and updates packages across multiple package managers, 
 - **Language-Specific**: npm, pip, gem, cargo, go modules
 - **Development**: Docker, kubectl
 
+### Compatibility Modes
+- `--compat auto` (default): 필터 자동 적용, 경고/후속 액션 수행
+- `--compat strict`: 충돌(conflict) 필터 발견 시 실패 처리
+- `--compat off`: 호환성 필터 비활성화
+
+### JSON Output
+- `--output json`으로 실행 결과를 구조화하여 출력 가능(runId/mode/managers/plugins/totals)
+- dry-run에서도 필터가 적용할 Env/후속 액션 미리보기 지원(asdf)
+
 ## Actions
 
 ### `gz pm update`
