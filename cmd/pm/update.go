@@ -22,7 +22,9 @@ import (
 
 // 결과 JSON용 구조체
 type UpdateRunMode struct {
-	Compat string `json:"compat"`
+	Compat             string `json:"compat"`
+	PipAllowConda      bool   `json:"pipAllowConda,omitempty"`
+	PacmanCleanOrphans bool   `json:"pacmanCleanOrphans,omitempty"`
 }
 
 type PluginResult struct {
@@ -76,14 +78,16 @@ func (m *ManagerResult) addPluginResult(pr PluginResult) {
 
 func newUpdateCmd(ctx context.Context) *cobra.Command {
 	var (
-		allManagers     bool
-		manager         string
-		strategy        string
-		compatMode      string
-		managersCSV     string
-		outputFormat    string
-		checkDuplicates bool
-		duplicatesMax   int
+		allManagers        bool
+		manager            string
+		strategy           string
+		compatMode         string
+		managersCSV        string
+		outputFormat       string
+		checkDuplicates    bool
+		duplicatesMax      int
+		pipAllowConda      bool
+		pacmanCleanOrphans bool
 	)
 
 	builder := cli.NewCommandBuilder(ctx, "update", "Update packages based on version strategy").
@@ -116,10 +120,12 @@ Examples:
 		WithCustomFlag("output", "text", "Output format: text, json", &outputFormat).
 		WithCustomBoolFlag("check-duplicates", true, "Check duplicate binaries across managers before update", &checkDuplicates).
 		WithCustomIntFlag("duplicates-max", 10, "Max number of duplicate warnings to show", &duplicatesMax).
+		WithCustomBoolFlag("pip-allow-conda", false, "Allow pip updates inside conda/mamba environment (use with caution)", &pipAllowConda).
+		WithCustomBoolFlag("pacman-clean-orphans", false, "Also remove pacman orphan packages after upgrade (use with caution)", &pacmanCleanOrphans).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
 			res := &UpdateRunResult{
 				RunID:     time.Now().UTC().Format("20060102T150405Z"),
-				Mode:      UpdateRunMode{Compat: compatMode},
+				Mode:      UpdateRunMode{Compat: compatMode, PipAllowConda: pipAllowConda, PacmanCleanOrphans: pacmanCleanOrphans},
 				StartedAt: time.Now().UTC(),
 			}
 
@@ -218,6 +224,8 @@ func detectManagerSupportOnOS(manager string) (bool, string) {
 		return goos == "darwin" || goos == "linux", ""
 	case "apt":
 		return goos == "linux", "apt는 Linux 전용"
+	case "pacman", "yay":
+		return goos == "linux", "Arch/Manjaro 계열 전용"
 	case "sdkman":
 		return goos == "darwin" || goos == "linux", ""
 	case "asdf", "pip", "npm":
@@ -244,6 +252,10 @@ func detectManagerInstalled(ctx context.Context, manager string) bool {
 		return false
 	case "apt":
 		return exec.CommandContext(ctx, "apt", "--version").Run() == nil
+	case "pacman":
+		return exec.CommandContext(ctx, "pacman", "--version").Run() == nil
+	case "yay":
+		return exec.CommandContext(ctx, "yay", "--version").Run() == nil
 	case "pip":
 		if exec.CommandContext(ctx, "pip", "--version").Run() == nil {
 			return true
@@ -363,6 +375,10 @@ func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool
 		return updateSdkman(ctx, strategy, dryRun, res)
 	case "apt":
 		return updateApt(ctx, strategy, dryRun, res)
+	case "pacman":
+		return updatePacman(ctx, strategy, dryRun, res)
+	case "yay":
+		return updateYay(ctx, strategy, dryRun, res)
 	case "pip":
 		return updatePip(ctx, strategy, dryRun, res)
 	case "npm":
@@ -373,7 +389,7 @@ func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool
 }
 
 func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult, checkDuplicates bool, duplicatesMax int) error {
-	managers := []string{"brew", "asdf", "sdkman", "apt", "pip", "npm"}
+	managers := []string{"brew", "asdf", "sdkman", "apt", "pacman", "yay", "pip", "npm"}
 
 	fmt.Println("Updating all package managers...")
 	if dryRun {
@@ -730,6 +746,33 @@ func updateApt(ctx context.Context, strategy string, dryRun bool, res *UpdateRun
 	return nil
 }
 
+// conda/mamba 환경 감지: 활성화 여부와 종류 반환
+func detectCondaOrMamba(ctx context.Context) (bool, string) {
+	// 우선 환경변수로 확인
+	if os.Getenv("CONDA_PREFIX") != "" || os.Getenv("CONDA_DEFAULT_ENV") != "" {
+		// mamba 설치 여부로 구분
+		if exec.CommandContext(ctx, "mamba", "--version").Run() == nil || exec.CommandContext(ctx, "micromamba", "--version").Run() == nil {
+			return true, "mamba"
+		}
+		return true, "conda"
+	}
+	if os.Getenv("MAMBA_ROOT_PREFIX") != "" {
+		return true, "mamba"
+	}
+	return false, ""
+}
+
+// pipCmd 문자열("python -m pip" 또는 "pip3")을 exec.Command 인자로 분해하여 Cmd를 생성한다.
+func newPipExec(ctx context.Context, pipCmd string, moreArgs ...string) *exec.Cmd {
+	parts := strings.Fields(pipCmd)
+	if len(parts) == 0 {
+		// 비정상 입력 방어
+		parts = []string{"pip"}
+	}
+	args := append(parts[1:], moreArgs...)
+	return exec.CommandContext(ctx, parts[0], args...)
+}
+
 func updatePip(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
 	// Check if pip is installed
 	pipCmd := findPipCommand(ctx)
@@ -740,9 +783,16 @@ func updatePip(ctx context.Context, strategy string, dryRun bool, res *UpdateRun
 	fmt.Println("🐍 Updating pip packages...")
 	_ = res.ensureManager("pip")
 
+	// conda/mamba 환경에서는 pip 업데이트가 충돌을 유발할 수 있어 기본적으로 차단
+	if active, kind := detectCondaOrMamba(ctx); active && !res.Mode.PipAllowConda {
+		fmt.Printf("%sConda/Mamba(%s) 환경이 감지되었습니다. 호환성 문제를 피하기 위해 pip 업데이트를 건너뜁니다.%s\n", ansiYellow, kind, ansiReset)
+		fmt.Println("권장: conda/mamba 명령으로 환경을 업데이트하세요. 예) conda update --all 또는 mamba update --all")
+		return nil
+	}
+
 	// Upgrade pip itself
 	if !dryRun {
-		cmd := exec.CommandContext(ctx, pipCmd, "install", "--upgrade", "pip")
+		cmd := newPipExec(ctx, pipCmd, "install", "--upgrade", "pip")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -798,7 +848,7 @@ func upgradePip(ctx context.Context, pipCmd string, dryRun bool) error {
 func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool, res *UpdateRunResult) error {
 	fmt.Println("Checking for outdated packages...")
 
-	cmd := exec.CommandContext(ctx, pipCmd, "list", "--outdated", "--format=freeze")
+	cmd := newPipExec(ctx, pipCmd, "list", "--outdated", "--format=freeze")
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to list outdated pip packages: %w", err)
@@ -817,7 +867,7 @@ func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool, res
 		fmt.Printf("Upgrading %s...\n", pkg)
 
 		if !dryRun {
-			cmd = exec.CommandContext(ctx, pipCmd, "install", "--upgrade", pkg)
+			cmd = newPipExec(ctx, pipCmd, "install", "--upgrade", pkg)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
@@ -864,5 +914,103 @@ func updateGlobalNpmPackages(ctx context.Context, dryRun bool, res *UpdateRunRes
 		fmt.Println("Would run: npm update -g")
 	}
 
+	return nil
+}
+
+// Arch/Manjaro pacman 업데이트
+func updatePacman(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
+	// pacman 존재 확인
+	if err := exec.CommandContext(ctx, "pacman", "--version").Run(); err != nil {
+		return fmt.Errorf("pacman is not installed or not in PATH")
+	}
+
+	fmt.Println("🐧 Updating pacman system packages...")
+	_ = res.ensureManager("pacman")
+
+	if !dryRun {
+		// 시스템 업데이트 (비대화형)
+		cmd := exec.CommandContext(ctx, "sudo", "-n", "pacman", "-Syu", "--noconfirm")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("Warning: pacman -Syu failed (maybe sudo permission required): %v\n", err)
+		}
+
+		// 고아 패키지 제거는 기본 비활성화. 명시적 플래그가 있을 때만 수행한다.
+		if res.Mode.PacmanCleanOrphans {
+			// 중요 패키지 화이트리스트: 오탑재 방지
+			critical := map[string]struct{}{
+				"linux": {}, "linux-lts": {}, "systemd": {}, "glibc": {}, "bash": {},
+				"zsh": {}, "coreutils": {}, "pacman": {}, "util-linux": {}, "filesystem": {},
+				"shadow": {}, "iproute2": {}, "networkmanager": {}, "sudo": {},
+			}
+			listCmd := exec.CommandContext(ctx, "pacman", "-Qtdq")
+			listOut, _ := listCmd.Output()
+			lines := strings.Split(strings.TrimSpace(string(listOut)), "\n")
+			var orphanPkgs []string
+			for _, ln := range lines {
+				ln = strings.TrimSpace(ln)
+				if ln == "" {
+					continue
+				}
+				if _, isCritical := critical[ln]; isCritical {
+					fmt.Printf("Skipping critical package from orphan removal: %s\n", ln)
+					continue
+				}
+				orphanPkgs = append(orphanPkgs, ln)
+			}
+			if len(orphanPkgs) > 0 {
+				args := append([]string{"-n", "pacman", "-Rns", "--noconfirm"}, orphanPkgs...)
+				rmCmd := exec.CommandContext(ctx, "sudo", args...)
+				rmCmd.Stdout = os.Stdout
+				rmCmd.Stderr = os.Stderr
+				if err := rmCmd.Run(); err != nil {
+					fmt.Printf("Warning: failed to remove orphan packages: %v\n", err)
+				}
+			} else {
+				fmt.Println("No orphan packages to remove or all were critical/whitelisted.")
+			}
+		} else {
+			// 안내만 출력
+			fmt.Println("(info) pacman orphan cleanup is disabled by default. Use --pacman-clean-orphans to enable.")
+		}
+	} else {
+		fmt.Println("Would run: sudo -n pacman -Syu --noconfirm")
+		if res.Mode.PacmanCleanOrphans {
+			fmt.Println("Would list/remove orphans: pacman -Qtdq | sudo -n pacman -Rns --noconfirm <orphans> (excluding critical packages)")
+		} else {
+			fmt.Println("(info) pacman orphan cleanup disabled; no removal will be attempted")
+		}
+	}
+
+	return nil
+}
+
+// Arch/Manjaro yay(AUR) 업데이트
+func updateYay(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
+	// yay 존재 확인
+	if err := exec.CommandContext(ctx, "yay", "--version").Run(); err != nil {
+		return fmt.Errorf("yay is not installed or not in PATH")
+	}
+
+	fmt.Println("🧠 Updating yay (AUR) packages...")
+	_ = res.ensureManager("yay")
+
+	if !dryRun {
+		cmd := exec.CommandContext(ctx, "yay", "-Syu", "--noconfirm", "--needed")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to update yay packages: %w", err)
+		}
+		// 캐시/불필요 패키지 정리
+		clean := exec.CommandContext(ctx, "yay", "-Yc", "--noconfirm")
+		clean.Stdout = os.Stdout
+		clean.Stderr = os.Stderr
+		_ = clean.Run()
+	} else {
+		fmt.Println("Would run: yay -Syu --noconfirm --needed")
+		fmt.Println("Would run: yay -Yc --noconfirm")
+	}
 	return nil
 }
