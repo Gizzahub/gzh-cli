@@ -12,15 +12,17 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/internal/cli"
 	"github.com/gizzahub/gzh-manager-go/internal/pm/compat"
+	"github.com/gizzahub/gzh-manager-go/internal/pm/duplicates"
 )
 
 func newDoctorCmd(ctx context.Context) *cobra.Command {
 	var (
-		managersCSV  string
-		compatMode   string
-		outputFormat string
-		checkConf    bool
-		attemptFix   bool
+		managersCSV     string
+		compatMode      string
+		outputFormat    string
+		checkConf       bool
+		attemptFix      bool
+		checkDuplicates bool
 	)
 
 	builder := cli.NewCommandBuilder(ctx, "doctor", "Diagnose package manager issues").
@@ -34,6 +36,7 @@ Examples:
 		WithCustomFlag("output", "text", "Output format: text, json", &outputFormat).
 		WithCustomBoolFlag("check-conflicts", true, "Check for known conflicts", &checkConf).
 		WithCustomBoolFlag("fix", false, "Attempt to fix detected issues", &attemptFix).
+		WithCustomBoolFlag("check-duplicates", true, "Check duplicate binaries across managers", &checkDuplicates).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
 			managers := managersCSV
 			if managers == "" {
@@ -80,6 +83,17 @@ Examples:
 					}
 				}
 			}
+
+			// 중복 설치 검사 요약
+			if checkDuplicates {
+				fmt.Println()
+				fmt.Println("Duplicate installation check (experimental)")
+				pathDirs := duplicates.SplitPATH(os.Getenv("PATH"))
+				sources := duplicates.BuildDefaultSources(pathDirs)
+				conflicts, _ := duplicates.CollectAndDetectConflicts(ctx, sources, pathDirs)
+				duplicates.PrintConflictsSummary(conflicts, 10)
+			}
+
 			return nil
 		})
 

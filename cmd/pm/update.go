@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 
 	"github.com/gizzahub/gzh-manager-go/internal/cli"
 	"github.com/gizzahub/gzh-manager-go/internal/pm/compat"
+	"github.com/gizzahub/gzh-manager-go/internal/pm/duplicates"
 )
 
 // 결과 JSON용 구조체
@@ -74,12 +76,14 @@ func (m *ManagerResult) addPluginResult(pr PluginResult) {
 
 func newUpdateCmd(ctx context.Context) *cobra.Command {
 	var (
-		allManagers  bool
-		manager      string
-		strategy     string
-		compatMode   string
-		managersCSV  string
-		outputFormat string
+		allManagers     bool
+		manager         string
+		strategy        string
+		compatMode      string
+		managersCSV     string
+		outputFormat    string
+		checkDuplicates bool
+		duplicatesMax   int
 	)
 
 	builder := cli.NewCommandBuilder(ctx, "update", "Update packages based on version strategy").
@@ -110,6 +114,8 @@ Examples:
 		WithCustomFlag("strategy", "stable", "Update strategy: latest, stable, minor, fixed", &strategy).
 		WithCustomFlag("compat", "auto", "Compatibility handling: auto, strict, off", &compatMode).
 		WithCustomFlag("output", "text", "Output format: text, json", &outputFormat).
+		WithCustomBoolFlag("check-duplicates", true, "Check duplicate binaries across managers before update", &checkDuplicates).
+		WithCustomIntFlag("duplicates-max", 10, "Max number of duplicate warnings to show", &duplicatesMax).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
 			res := &UpdateRunResult{
 				RunID:     time.Now().UTC().Format("20060102T150405Z"),
@@ -123,7 +129,7 @@ Examples:
 				if len(selected) == 0 {
 					return fmt.Errorf("no valid managers provided via --managers")
 				}
-				err := runUpdateSelected(ctx, selected, strategy, flags.DryRun, compatMode, res)
+				err := runUpdateSelected(ctx, selected, strategy, flags.DryRun, compatMode, res, checkDuplicates, duplicatesMax)
 				res.FinishedAt = time.Now().UTC()
 				if outputFormat == "json" {
 					return printUpdateResultJSON(res)
@@ -132,6 +138,15 @@ Examples:
 			}
 
 			if manager != "" {
+				// 단일 매니저 실행 전에도 중복 감지 요약을 보여준다
+				if checkDuplicates {
+					printSectionBanner("중복 설치 검사", "🧪")
+					pathDirs := duplicates.SplitPATH(os.Getenv("PATH"))
+					sources := duplicates.BuildDefaultSources(pathDirs)
+					conflicts, _ := duplicates.CollectAndDetectConflicts(ctx, sources, pathDirs)
+					duplicates.PrintConflictsSummary(conflicts, duplicatesMax)
+					fmt.Println()
+				}
 				err := runUpdateManager(ctx, manager, strategy, flags.DryRun, compatMode, res)
 				res.FinishedAt = time.Now().UTC()
 				if outputFormat == "json" {
@@ -140,7 +155,7 @@ Examples:
 				return err
 			}
 			if allManagers {
-				err := runUpdateAll(ctx, strategy, flags.DryRun, compatMode, res)
+				err := runUpdateAll(ctx, strategy, flags.DryRun, compatMode, res, checkDuplicates, duplicatesMax)
 				res.FinishedAt = time.Now().UTC()
 				if outputFormat == "json" {
 					return printUpdateResultJSON(res)
@@ -170,17 +185,160 @@ func parseCSVList(s string) []string {
 	return list
 }
 
-func runUpdateSelected(ctx context.Context, managers []string, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
+// ===== 출력 하이라이트/개요 도우미 =====
+// ANSI 컬러 상수
+const (
+	ansiReset  = "\x1b[0m"
+	ansiBold   = "\x1b[1m"
+	ansiCyan   = "\x1b[36m"
+	ansiGreen  = "\x1b[32m"
+	ansiYellow = "\x1b[33m"
+	ansiRed    = "\x1b[31m"
+)
+
+// 섹션 배너 출력
+func printSectionBanner(title string, emoji string) {
+	line := strings.Repeat("═", 10)
+	fmt.Printf("\n%s%s%s %s %s %s%s\n", ansiBold, ansiCyan, line, emoji, title, line, ansiReset)
+}
+
+// 매니저 지원/설치 개요
+type ManagerOverview struct {
+	Name      string
+	Supported bool
+	Installed bool
+	Reason    string // 미지원/미설치 사유
+}
+
+func detectManagerSupportOnOS(manager string) (bool, string) {
+	goos := runtime.GOOS
+	switch manager {
+	case "brew":
+		// macOS, Linux 모두 가능 (Linuxbrew)
+		return goos == "darwin" || goos == "linux", ""
+	case "apt":
+		return goos == "linux", "apt는 Linux 전용"
+	case "sdkman":
+		return goos == "darwin" || goos == "linux", ""
+	case "asdf", "pip", "npm":
+		return true, ""
+	default:
+		return true, ""
+	}
+}
+
+func detectManagerInstalled(ctx context.Context, manager string) bool {
+	switch manager {
+	case "brew":
+		return exec.CommandContext(ctx, "brew", "--version").Run() == nil
+	case "asdf":
+		return exec.CommandContext(ctx, "asdf", "--version").Run() == nil
+	case "sdkman":
+		sdkmanDir := os.Getenv("SDKMAN_DIR")
+		if sdkmanDir == "" {
+			sdkmanDir = os.Getenv("HOME") + "/.sdkman"
+		}
+		if _, err := os.Stat(sdkmanDir); err == nil {
+			return true
+		}
+		return false
+	case "apt":
+		return exec.CommandContext(ctx, "apt", "--version").Run() == nil
+	case "pip":
+		if exec.CommandContext(ctx, "pip", "--version").Run() == nil {
+			return true
+		}
+		return exec.CommandContext(ctx, "pip3", "--version").Run() == nil
+	case "npm":
+		return exec.CommandContext(ctx, "npm", "--version").Run() == nil
+	default:
+		_, err := exec.LookPath(manager)
+		return err == nil
+	}
+}
+
+func buildManagersOverview(ctx context.Context, managers []string) []ManagerOverview {
+	var list []ManagerOverview
+	for _, m := range managers {
+		supported, reason := detectManagerSupportOnOS(m)
+		installed := false
+		if supported {
+			installed = detectManagerInstalled(ctx, m)
+		}
+		mo := ManagerOverview{Name: m, Supported: supported, Installed: installed, Reason: reason}
+		if !installed && reason == "" && supported {
+			mo.Reason = "설치되어 있지 않음"
+		}
+		if !supported && mo.Reason == "" {
+			mo.Reason = "현재 OS에서 지원되지 않음"
+		}
+		list = append(list, mo)
+	}
+	return list
+}
+
+func printManagersOverview(title string, overviews []ManagerOverview) {
+	printSectionBanner(title, "📋")
+	fmt.Printf("%-12s %-10s %-10s %s\n", "MANAGER", "SUPPORTED", "INSTALLED", "NOTE")
+	fmt.Printf("%-12s %-10s %-10s %s\n", strings.Repeat("-", 12), strings.Repeat("-", 10), strings.Repeat("-", 10), strings.Repeat("-", 20))
+	for _, m := range overviews {
+		var sup, inst, note string
+		if m.Supported {
+			sup = "✅"
+		} else {
+			sup = "🚫"
+		}
+		if m.Installed {
+			inst = "✅"
+		} else {
+			inst = "⛔"
+		}
+		note = m.Reason
+		fmt.Printf("%-12s %-10s %-10s %s\n", m.Name, sup, inst, note)
+	}
+}
+
+func runUpdateSelected(ctx context.Context, managers []string, strategy string, dryRun bool, compatMode string, res *UpdateRunResult, checkDuplicates bool, duplicatesMax int) error {
 	fmt.Printf("Updating selected managers: %s\n", strings.Join(managers, ", "))
 	if dryRun {
 		fmt.Println("(dry run - no changes will be made)")
 	}
 	fmt.Println()
 
-	for _, m := range managers {
-		fmt.Printf("=== Updating %s ===\n", m)
+	// 개요 출력
+	overview := buildManagersOverview(ctx, managers)
+	printManagersOverview("지원 매니저 개요", overview)
+	fmt.Println()
+
+	// 중복 설치 검사 요약
+	if checkDuplicates {
+		printSectionBanner("중복 설치 검사", "🧪")
+		pathDirs := duplicates.SplitPATH(os.Getenv("PATH"))
+		sources := duplicates.BuildDefaultSources(pathDirs)
+		conflicts, _ := duplicates.CollectAndDetectConflicts(ctx, sources, pathDirs)
+		duplicates.PrintConflictsSummary(conflicts, duplicatesMax)
+		fmt.Println()
+	}
+
+	// 순차 진행
+	total := len(managers)
+	for idx, m := range managers {
+		ov := overview[idx]
+		stepTitle := fmt.Sprintf("[%d/%d] %s", idx+1, total, m)
+		if !ov.Supported {
+			printSectionBanner(stepTitle+" — SKIP", "⚠️")
+			fmt.Printf("%s%s이 매니저는 현재 OS에서 지원되지 않습니다: %s%s\n\n", ansiYellow, m, ov.Reason, ansiReset)
+			continue
+		}
+		if !ov.Installed {
+			printSectionBanner(stepTitle+" — SKIP", "⚠️")
+			fmt.Printf("%s%s이(가) 설치되어 있지 않아 건너뜁니다. hint: 설치 후 다시 시도하세요.%s\n\n", ansiYellow, m, ansiReset)
+			continue
+		}
+
+		printSectionBanner(stepTitle+" — Updating", "🚀")
 		if err := runUpdateManager(ctx, m, strategy, dryRun, compatMode, res); err != nil {
-			fmt.Printf("Warning: Failed to update %s: %v\n", m, err)
+			fmt.Printf("%sWarning: Failed to update %s: %v%s\n", ansiRed, m, err, ansiReset)
 			continue
 		}
 		fmt.Println()
@@ -214,7 +372,7 @@ func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool
 	}
 }
 
-func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
+func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult, checkDuplicates bool, duplicatesMax int) error {
 	managers := []string{"brew", "asdf", "sdkman", "apt", "pip", "npm"}
 
 	fmt.Println("Updating all package managers...")
@@ -223,10 +381,39 @@ func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode 
 	}
 	fmt.Println()
 
-	for _, manager := range managers {
-		fmt.Printf("=== Updating %s ===\n", manager)
+	// 개요 출력
+	overview := buildManagersOverview(ctx, managers)
+	printManagersOverview("지원 매니저 개요", overview)
+	fmt.Println()
+
+	// 중복 설치 검사 요약
+	if checkDuplicates {
+		printSectionBanner("중복 설치 검사", "🧪")
+		pathDirs := duplicates.SplitPATH(os.Getenv("PATH"))
+		sources := duplicates.BuildDefaultSources(pathDirs)
+		conflicts, _ := duplicates.CollectAndDetectConflicts(ctx, sources, pathDirs)
+		duplicates.PrintConflictsSummary(conflicts, duplicatesMax)
+		fmt.Println()
+	}
+
+	total := len(managers)
+	for idx, manager := range managers {
+		ov := overview[idx]
+		stepTitle := fmt.Sprintf("[%d/%d] %s", idx+1, total, manager)
+		if !ov.Supported {
+			printSectionBanner(stepTitle+" — SKIP", "⚠️")
+			fmt.Printf("%s%s이 매니저는 현재 OS에서 지원되지 않습니다: %s%s\n\n", ansiYellow, manager, ov.Reason, ansiReset)
+			continue
+		}
+		if !ov.Installed {
+			printSectionBanner(stepTitle+" — SKIP", "⚠️")
+			fmt.Printf("%s%s이(가) 설치되어 있지 않아 건너뜁니다. hint: 설치 후 다시 시도하세요.%s\n\n", ansiYellow, manager, ansiReset)
+			continue
+		}
+
+		printSectionBanner(stepTitle+" — Updating", "🚀")
 		if err := runUpdateManager(ctx, manager, strategy, dryRun, compatMode, res); err != nil {
-			fmt.Printf("Warning: Failed to update %s: %v\n", manager, err)
+			fmt.Printf("%sWarning: Failed to update %s: %v%s\n", ansiRed, manager, err, ansiReset)
 			continue
 		}
 		fmt.Println()
