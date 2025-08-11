@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-manager-go/internal/cli"
+	"github.com/gizzahub/gzh-manager-go/internal/pm/compat"
 )
 
 func newUpdateCmd(ctx context.Context) *cobra.Command {
@@ -20,6 +21,7 @@ func newUpdateCmd(ctx context.Context) *cobra.Command {
 		allManagers bool
 		manager     string
 		strategy    string
+		compatMode  string
 	)
 
 	builder := cli.NewCommandBuilder(ctx, "update", "Update packages based on version strategy").
@@ -47,14 +49,15 @@ Examples:
 		WithCustomBoolFlag("all", false, "Update all package managers", &allManagers).
 		WithCustomFlag("manager", "", "Package manager to update", &manager).
 		WithCustomFlag("strategy", "stable", "Update strategy: latest, stable, minor, fixed", &strategy).
+		WithCustomFlag("compat", "auto", "Compatibility handling: auto, strict, off", &compatMode).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
 			// For now, redirect to existing commands
 			// In future, implement unified update logic
 			if manager != "" {
-				return runUpdateManager(ctx, manager, strategy, flags.DryRun)
+				return runUpdateManager(ctx, manager, strategy, flags.DryRun, compatMode)
 			}
 			if allManagers {
-				return runUpdateAll(ctx, strategy, flags.DryRun)
+				return runUpdateAll(ctx, strategy, flags.DryRun, compatMode)
 			}
 			return fmt.Errorf("specify --manager or --all")
 		})
@@ -62,7 +65,7 @@ Examples:
 	return builder.Build()
 }
 
-func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool) error {
+func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool, compatMode string) error {
 	fmt.Printf("Updating %s packages with strategy: %s\n", manager, strategy)
 	if dryRun {
 		fmt.Println("(dry run - no changes will be made)")
@@ -74,7 +77,7 @@ func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool
 	case "brew":
 		return updateBrew(ctx, strategy, dryRun)
 	case "asdf":
-		return updateAsdf(ctx, strategy, dryRun)
+		return updateAsdf(ctx, strategy, dryRun, compatMode)
 	case "sdkman":
 		return updateSdkman(ctx, strategy, dryRun)
 	case "apt":
@@ -88,7 +91,7 @@ func runUpdateManager(ctx context.Context, manager, strategy string, dryRun bool
 	}
 }
 
-func runUpdateAll(ctx context.Context, strategy string, dryRun bool) error {
+func runUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string) error {
 	managers := []string{"brew", "asdf", "sdkman", "apt", "pip", "npm"}
 
 	fmt.Println("Updating all package managers...")
@@ -99,7 +102,7 @@ func runUpdateAll(ctx context.Context, strategy string, dryRun bool) error {
 
 	for _, manager := range managers {
 		fmt.Printf("=== Updating %s ===\n", manager)
-		if err := runUpdateManager(ctx, manager, strategy, dryRun); err != nil {
+		if err := runUpdateManager(ctx, manager, strategy, dryRun, compatMode); err != nil {
 			fmt.Printf("Warning: Failed to update %s: %v\n", manager, err)
 			continue
 		}
@@ -160,7 +163,7 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool) error {
 	return nil
 }
 
-func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
+func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode string) error {
 	// Check if asdf is installed
 	cmd := exec.CommandContext(ctx, "asdf", "--version")
 	if err := cmd.Run(); err != nil {
@@ -174,6 +177,7 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
 		cmd = exec.CommandContext(ctx, "asdf", "plugin", "update", "--all")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+		cmd.Env = compat.MergeWithProcessEnv(nil)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to update asdf plugins: %w", err)
 		}
@@ -195,14 +199,44 @@ func updateAsdf(ctx context.Context, strategy string, dryRun bool) error {
 		}
 		fmt.Printf("Checking %s for updates...\n", plugin)
 
+		// Build filter chain for this plugin based on mode
+		var filters []compat.CompatibilityFilter
+		if compatMode != "off" {
+			filters = compat.BuildFilterChain("asdf", plugin)
+		}
+		warnings := compat.CollectWarnings(filters)
+		for _, w := range warnings {
+			fmt.Println(w)
+		}
+
+		if compatMode == "strict" {
+			if c := compat.CountConflicts(filters); c > 0 {
+				return fmt.Errorf("compatibility conflicts detected for asdf plugin %s (mode=strict)", plugin)
+			}
+		}
+
 		// Install latest version based on strategy
 		if strategy == "latest" || strategy == "stable" {
 			if !dryRun {
 				cmd = exec.CommandContext(ctx, "asdf", "install", plugin, "latest")
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
+				cmd.Env = compat.MergeEnvWithProcessEnv(compat.MergeEnvFromFilters(filters))
 				if err := cmd.Run(); err != nil {
 					fmt.Printf("Warning: failed to install latest %s: %v\n", plugin, err)
+				} else {
+					// Run post actions if install succeeded
+					for _, action := range compat.CollectPostActions(filters) {
+						postCmd := exec.CommandContext(ctx, action.Command[0], action.Command[1:]...)
+						postCmd.Stdout = os.Stdout
+						postCmd.Stderr = os.Stderr
+						if action.Env != nil {
+							postCmd.Env = compat.MergeEnvWithProcessEnv(action.Env)
+						}
+						if err := postCmd.Run(); err != nil && !action.IgnoreError {
+							fmt.Printf("Warning: post action failed (%s): %v\n", action.Description, err)
+						}
+					}
 				}
 			} else {
 				fmt.Printf("Would run: asdf install %s latest\n", plugin)

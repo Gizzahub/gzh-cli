@@ -42,7 +42,6 @@ func (r *Runner) Run() error {
 	return nil
 }
 
-
 // setupGracefulShutdown configures signal handling for graceful shutdown.
 func (r *Runner) setupGracefulShutdown() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
