@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/internal/devenv/status"
+	"github.com/Gizzahub/gzh-manager-go/internal/devenv/status"
 )
 
 // newStatusCmd creates the dev-env status command.

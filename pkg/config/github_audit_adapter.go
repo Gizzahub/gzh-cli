@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
 )
 
 // GitHubAuditAdapter provides audit functionality for GitHub repositories.

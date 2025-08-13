@@ -4,8 +4,8 @@
 package fixtures
 
 import (
-	"github.com/gizzahub/gzh-manager-go/internal/testutil/builders"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/internal/testutil/builders"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
 )
 
 // GitHubFixtures provides common GitHub-related fixtures for tests.

@@ -4,7 +4,7 @@
 package builders
 
 import (
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 // EnvironmentBuilder provides a fluent interface for building test environments.

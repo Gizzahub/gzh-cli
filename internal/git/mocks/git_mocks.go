@@ -15,7 +15,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	git "github.com/gizzahub/gzh-manager-go/internal/git"
+	git "github.com/Gizzahub/gzh-manager-go/internal/git"
 )
 
 // MockGitClient is a mock of GitClient interface.

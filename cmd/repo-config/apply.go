@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/internal/services"
+	"github.com/Gizzahub/gzh-manager-go/internal/services"
 )
 
 // newApplyCmd creates the apply subcommand.

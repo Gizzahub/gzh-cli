@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git/sync"
+	"github.com/Gizzahub/gzh-manager-go/internal/git/sync"
 )
 
 // NewGitRepoCmd creates the unified repository lifecycle management command.

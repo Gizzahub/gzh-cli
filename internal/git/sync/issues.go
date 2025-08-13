@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // IssueSyncer handles synchronization of issues and pull requests.

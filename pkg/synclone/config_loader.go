@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 // BulkCloneConfig is the public interface for bulk clone configuration.

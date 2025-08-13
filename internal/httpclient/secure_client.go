@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/constants"
+	"github.com/Gizzahub/gzh-manager-go/internal/constants"
 )
 
 // SecureClientConfig defines configuration for secure HTTP clients.

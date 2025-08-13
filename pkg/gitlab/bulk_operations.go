@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git"
-	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
+	"github.com/Gizzahub/gzh-manager-go/internal/git"
+	"github.com/Gizzahub/gzh-manager-go/internal/workerpool"
 )
 
 // RefreshAllWithWorkerPool performs bulk repository refresh using worker pools.

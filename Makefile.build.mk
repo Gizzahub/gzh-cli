@@ -13,7 +13,7 @@
 
 build: ## build golang binary
 	@echo -e "$(CYAN)Building $(executablename)...$(RESET)"
-	@go build -ldflags "-X main.version=$(VERSION)" -o $(executablename)
+	@go build -ldflags "-X main.version=$(VERSION)" -o $(executablename) ./cmd/gz
 	@echo -e "$(GREEN)✅ Built $(executablename) successfully$(RESET)"
 
 
@@ -28,12 +28,12 @@ run: ## run the application (usage: make run [args...] or ARGS="args" make run)
 	@if [ "$(words $(MAKECMDGOALS))" -gt 1 ]; then \
 		ARGS="$(filter-out run,$(MAKECMDGOALS))"; \
 		echo -e "$(YELLOW)Arguments: $$ARGS$(RESET)"; \
-		go run -ldflags "-X main.version=$(VERSION)" main.go $$ARGS; \
+		go run -ldflags "-X main.version=$(VERSION)" ./cmd/gz $$ARGS; \
 	elif [ -n "$(ARGS)" ]; then \
 		echo -e "$(YELLOW)Arguments: $(ARGS)$(RESET)"; \
-		go run -ldflags "-X main.version=$(VERSION)" main.go $(ARGS); \
+		go run -ldflags "-X main.version=$(VERSION)" ./cmd/gz $(ARGS); \
 	else \
-		go run -ldflags "-X main.version=$(VERSION)" main.go; \
+		go run -ldflags "-X main.version=$(VERSION)" ./cmd/gz; \
 	fi
 
 # Prevent make from interpreting arguments as targets

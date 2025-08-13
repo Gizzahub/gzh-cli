@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	mockprovider "github.com/gizzahub/gzh-manager-go/internal/git/provider/mock"
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	mockprovider "github.com/Gizzahub/gzh-manager-go/internal/git/provider/mock"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // BenchmarkCloneParallel benchmarks parallel cloning operations.

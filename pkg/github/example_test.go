@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
 )
 
 // ExampleGetDefaultBranch demonstrates how to retrieve the default branch

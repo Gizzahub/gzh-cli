@@ -13,8 +13,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/logger"
-	"github.com/gizzahub/gzh-manager-go/internal/profiling"
+	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-manager-go/internal/profiling"
 )
 
 // PerformanceSnapshot represents a point-in-time performance measurement.

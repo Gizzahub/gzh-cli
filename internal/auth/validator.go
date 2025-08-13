@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/constants"
-	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
-	"github.com/gizzahub/gzh-manager-go/internal/validation"
+	"github.com/Gizzahub/gzh-manager-go/internal/constants"
+	"github.com/Gizzahub/gzh-manager-go/internal/httpclient"
+	"github.com/Gizzahub/gzh-manager-go/internal/validation"
 )
 
 // TokenType represents different authentication token types.

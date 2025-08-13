@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 // newNetworkAnalysisCmd creates the network analysis command.

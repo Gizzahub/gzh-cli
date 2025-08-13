@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gizzahub/gzh-manager-go/internal/app"
+	"github.com/Gizzahub/gzh-manager-go/internal/app"
 )
 
 var version = "dev"

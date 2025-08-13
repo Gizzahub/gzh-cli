@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/gizzahub/gzh-manager-go/internal/devenv"
+	"github.com/Gizzahub/gzh-manager-go/internal/devenv"
 )
 
 // AWSSwitcher implements ServiceSwitcher for AWS.

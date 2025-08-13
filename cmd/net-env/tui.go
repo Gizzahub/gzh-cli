@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/internal/netenv/tui"
+	"github.com/Gizzahub/gzh-manager-go/internal/netenv/tui"
 )
 
 // newTUICmd creates a new TUI command for interactive network environment management.

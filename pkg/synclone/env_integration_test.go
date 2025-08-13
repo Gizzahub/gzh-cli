@@ -4,7 +4,7 @@ package bulkclone
 import (
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 // TestEnvironmentAbstraction demonstrates the environment abstraction working.

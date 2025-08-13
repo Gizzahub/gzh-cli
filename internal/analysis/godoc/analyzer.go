@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-manager-go/internal/logger"
 )
 
 // Analyzer provides GoDoc coverage and quality analysis.

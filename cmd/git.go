@@ -6,8 +6,8 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/cmd/git"
-	repoconfig "github.com/gizzahub/gzh-manager-go/cmd/repo-config"
+	"github.com/Gizzahub/gzh-manager-go/cmd/git"
+	repoconfig "github.com/Gizzahub/gzh-manager-go/cmd/repo-config"
 )
 
 // NewGitCmd creates the unified git platform management command.

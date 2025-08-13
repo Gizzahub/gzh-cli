@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
 )
 
 // Server represents a GitHub webhook server.

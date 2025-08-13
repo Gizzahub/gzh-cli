@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git/clone"
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
+	"github.com/Gizzahub/gzh-manager-go/internal/git/clone"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
 // newRepoCloneCmd creates the git repo clone command.

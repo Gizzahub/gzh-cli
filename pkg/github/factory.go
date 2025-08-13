@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 // GitHubProviderFactory defines the interface for creating GitHub-specific instances.

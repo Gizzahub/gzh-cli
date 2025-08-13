@@ -10,8 +10,8 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git"
-	"github.com/gizzahub/gzh-manager-go/internal/httpclient"
+	"github.com/Gizzahub/gzh-manager-go/internal/git"
+	"github.com/Gizzahub/gzh-manager-go/internal/httpclient"
 )
 
 // RepoInfo represents Gitea repository information returned by the Gitea API.

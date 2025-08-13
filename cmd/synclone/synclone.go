@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/internal/config"
-	pkgconfig "github.com/gizzahub/gzh-manager-go/pkg/config"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
+	"github.com/Gizzahub/gzh-manager-go/internal/config"
+	pkgconfig "github.com/Gizzahub/gzh-manager-go/pkg/config"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
 type syncCloneOptions struct {

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 // MockHTTPClient for testing.

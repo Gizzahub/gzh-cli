@@ -13,8 +13,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
-	"github.com/gizzahub/gzh-manager-go/pkg/config"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/pkg/config"
 )
 
 // ConfigService provides centralized configuration management.

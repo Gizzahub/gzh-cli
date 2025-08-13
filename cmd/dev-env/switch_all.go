@@ -12,7 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-manager-go/internal/devenv"
+	"github.com/Gizzahub/gzh-manager-go/internal/devenv"
 )
 
 // switchAllOptions contains options for the switch-all command.

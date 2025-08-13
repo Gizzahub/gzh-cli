@@ -16,7 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	filesystem "github.com/gizzahub/gzh-manager-go/internal/filesystem"
+	filesystem "github.com/Gizzahub/gzh-manager-go/internal/filesystem"
 )
 
 // MockFileSystem is a mock of FileSystem interface.

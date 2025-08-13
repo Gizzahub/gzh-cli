@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // CodeSyncer handles repository code synchronization.

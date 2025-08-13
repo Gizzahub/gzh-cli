@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
 )
 
 // MockStorage implements a mock event storage for testing.

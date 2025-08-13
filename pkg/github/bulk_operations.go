@@ -8,8 +8,8 @@ import (
 
 	"github.com/schollz/progressbar/v3"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git"
-	"github.com/gizzahub/gzh-manager-go/internal/workerpool"
+	"github.com/Gizzahub/gzh-manager-go/internal/git"
+	"github.com/Gizzahub/gzh-manager-go/internal/workerpool"
 )
 
 // BulkOperationsConfig represents configuration for bulk operations.

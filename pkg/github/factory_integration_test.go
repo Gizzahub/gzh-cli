@@ -5,7 +5,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 // TestFactoryPatternIntegration demonstrates the complete factory pattern working.

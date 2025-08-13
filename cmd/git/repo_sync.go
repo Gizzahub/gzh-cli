@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git/sync"
+	"github.com/Gizzahub/gzh-manager-go/internal/git/sync"
 )
 
 // runSync executes the repository synchronization operation.

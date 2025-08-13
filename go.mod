@@ -1,4 +1,4 @@
-module github.com/gizzahub/gzh-manager-go
+module github.com/Gizzahub/gzh-manager-go
 
 go 1.24.0
 

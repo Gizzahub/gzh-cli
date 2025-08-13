@@ -11,11 +11,11 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/gizzahub/gzh-manager-go/internal/filesystem/mocks"
-	gitmocks "github.com/gizzahub/gzh-manager-go/internal/git/mocks"
-	httpmocks "github.com/gizzahub/gzh-manager-go/internal/httpclient/mocks"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	githubmocks "github.com/gizzahub/gzh-manager-go/pkg/github/mocks"
+	"github.com/Gizzahub/gzh-manager-go/internal/filesystem/mocks"
+	gitmocks "github.com/Gizzahub/gzh-manager-go/internal/git/mocks"
+	httpmocks "github.com/Gizzahub/gzh-manager-go/internal/httpclient/mocks"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
+	githubmocks "github.com/Gizzahub/gzh-manager-go/pkg/github/mocks"
 )
 
 // MockFactory provides factory methods for creating commonly used mocks.

@@ -17,7 +17,7 @@ before:
 builds:
   - id: gz
     binary: gz
-    main: ./main.go
+    main: ./cmd/gz
     ldflags:
       - -s -w -X main.version={{ .Version }}
       - -X main.commit={{ .Commit }}

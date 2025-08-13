@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/gizzahub/gzh-manager-go/internal/devenv/status"
+	"github.com/Gizzahub/gzh-manager-go/internal/devenv/status"
 )
 
 // Model represents the main TUI application model.
@@ -201,27 +201,27 @@ func (m *Model) updateCurrentView(msg tea.Msg) tea.Cmd {
 		return cmd
 	case ViewServiceDetail:
 		// Service detail view - planned for v2.1
-		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
+		// Track: https://github.com/Gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewEnvironmentSwitch:
 		// Environment switch view - planned for v2.1
-		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
+		// Track: https://github.com/Gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewSettings:
 		// Settings view - planned for v2.2
-		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
+		// Track: https://github.com/Gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewLogs:
 		// Logs view - planned for v2.1
-		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
+		// Track: https://github.com/Gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewHelp:
 		// Help view - planned for v2.1
-		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
+		// Track: https://github.com/Gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	case ViewSearch:
 		// Search view - planned for v2.2
-		// Track: https://github.com/gizzahub/gzh-manager-go/issues/XXX
+		// Track: https://github.com/Gizzahub/gzh-manager-go/issues/XXX
 		return nil
 	default:
 		return nil

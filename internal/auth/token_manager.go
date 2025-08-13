@@ -7,8 +7,8 @@ package auth
 import (
 	"fmt"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // TokenManager handles common token authentication logic across Git platforms.

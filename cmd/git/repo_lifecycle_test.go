@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // TestCreateCommand tests the repository creation functionality.

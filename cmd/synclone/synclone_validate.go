@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	synclonepkg "github.com/gizzahub/gzh-manager-go/pkg/synclone"
+	synclonepkg "github.com/Gizzahub/gzh-manager-go/pkg/synclone"
 )
 
 type syncCloneValidateOptions struct {

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/test/e2e/helpers"
+	"github.com/Gizzahub/gzh-manager-go/test/e2e/helpers"
 )
 
 const ideSettingsPath = ".config/JetBrains/IntelliJIdea2024.1"

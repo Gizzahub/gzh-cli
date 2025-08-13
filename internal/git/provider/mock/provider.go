@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // Provider is a mock implementation of the GitProvider interface for testing.

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-manager-go/internal/logger"
 )
 
 // BenchmarkResult holds the results of a benchmark run.

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // SyncEngine manages repository synchronization between Git platforms.

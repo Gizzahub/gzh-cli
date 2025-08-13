@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/gizzahub/gzh-manager-go/internal/git/provider/mock"
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/internal/git/provider/mock"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // GitRepoTestSuite provides a comprehensive test suite for git repo commands.

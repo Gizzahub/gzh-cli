@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
-	"github.com/gizzahub/gzh-manager-go/pkg/gitea"
-	"github.com/gizzahub/gzh-manager-go/pkg/github"
-	"github.com/gizzahub/gzh-manager-go/pkg/gitlab"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/pkg/gitea"
+	"github.com/Gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-manager-go/pkg/gitlab"
 )
 
 const (

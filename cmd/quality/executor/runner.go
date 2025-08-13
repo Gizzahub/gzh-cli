@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/cmd/quality/tools"
+	"github.com/Gizzahub/gzh-manager-go/cmd/quality/tools"
 )
 
 // ParallelExecutor executes quality tools in parallel.

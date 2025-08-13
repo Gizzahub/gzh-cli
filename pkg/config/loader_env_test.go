@@ -4,7 +4,7 @@ package config
 import (
 	"testing"
 
-	"github.com/gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
 )
 
 func TestLoaderWithEnvironment(t *testing.T) {

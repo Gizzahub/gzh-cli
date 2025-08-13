@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gizzahub/gzh-manager-go/internal/auth"
-	"github.com/gizzahub/gzh-manager-go/internal/env"
-	"github.com/gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-manager-go/internal/auth"
+	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
 )
 
 // CreateGiteaProvider creates a new Gitea provider instance from configuration.

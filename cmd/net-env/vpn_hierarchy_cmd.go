@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/gizzahub/gzh-manager-go/pkg/cloud"
+	"github.com/Gizzahub/gzh-manager-go/pkg/cloud"
 )
 
 // newVPNHierarchyCmd creates the VPN hierarchy management command.
