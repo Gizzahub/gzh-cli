@@ -434,13 +434,32 @@ func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 		ExampleCount:      len(pkgInfo.ExampleFunctions),
 	}
 
-	// Count documented functions
-	documentedFunctions := 0
+	// Count documented symbols by type
+	functionCounts := a.countDocumentedFunctions(pkgInfo, &stats)
+	typeCounts := a.countDocumentedTypes(pkgInfo, &stats, &functionCounts)
+	varCounts := a.countDocumentedVariables(pkgInfo, &stats)
+	constCounts := a.countDocumentedConstants(pkgInfo, &stats)
+
+	// Calculate coverage percentages
+	a.calculateCoveragePercentages(&stats, functionCounts, typeCounts, varCounts, constCounts)
+
+	return stats
+}
+
+type symbolCounts struct {
+	documented int
+	total      int
+}
+
+// countDocumentedFunctions counts documented functions and methods.
+func (a *Analyzer) countDocumentedFunctions(pkgInfo *PackageInfo, stats *CoverageStats) symbolCounts {
+	counts := symbolCounts{}
+
 	for _, fn := range pkgInfo.PublicFunctions {
 		if fn.IsExported {
 			stats.TotalPublicSymbols++
 			if fn.HasDoc {
-				documentedFunctions++
+				counts.documented++
 				stats.DocumentedSymbols++
 			} else {
 				stats.UndocumentedSymbols++
@@ -448,15 +467,19 @@ func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 		}
 	}
 
-	// Count documented types and their methods
-	documentedTypes := 0
-	totalTypes := 0
+	return counts
+}
+
+// countDocumentedTypes counts documented types and their methods.
+func (a *Analyzer) countDocumentedTypes(pkgInfo *PackageInfo, stats *CoverageStats, functionCounts *symbolCounts) symbolCounts {
+	counts := symbolCounts{}
+
 	for _, typ := range pkgInfo.PublicTypes {
 		if typ.IsExported {
-			totalTypes++
+			counts.total++
 			stats.TotalPublicSymbols++
 			if typ.HasDoc {
-				documentedTypes++
+				counts.documented++
 				stats.DocumentedSymbols++
 			} else {
 				stats.UndocumentedSymbols++
@@ -467,7 +490,7 @@ func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 				if method.IsExported {
 					stats.TotalPublicSymbols++
 					if method.HasDoc {
-						documentedFunctions++
+						functionCounts.documented++
 						stats.DocumentedSymbols++
 					} else {
 						stats.UndocumentedSymbols++
@@ -477,15 +500,19 @@ func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 		}
 	}
 
-	// Count documented variables
-	documentedVars := 0
-	totalVars := 0
+	return counts
+}
+
+// countDocumentedVariables counts documented variables.
+func (a *Analyzer) countDocumentedVariables(pkgInfo *PackageInfo, stats *CoverageStats) symbolCounts {
+	counts := symbolCounts{}
+
 	for _, v := range pkgInfo.PublicVariables {
 		if v.IsExported {
-			totalVars++
+			counts.total++
 			stats.TotalPublicSymbols++
 			if v.HasDoc {
-				documentedVars++
+				counts.documented++
 				stats.DocumentedSymbols++
 			} else {
 				stats.UndocumentedSymbols++
@@ -493,15 +520,19 @@ func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 		}
 	}
 
-	// Count documented constants
-	documentedConsts := 0
-	totalConsts := 0
+	return counts
+}
+
+// countDocumentedConstants counts documented constants.
+func (a *Analyzer) countDocumentedConstants(pkgInfo *PackageInfo, stats *CoverageStats) symbolCounts {
+	counts := symbolCounts{}
+
 	for _, c := range pkgInfo.PublicConstants {
 		if c.IsExported {
-			totalConsts++
+			counts.total++
 			stats.TotalPublicSymbols++
 			if c.HasDoc {
-				documentedConsts++
+				counts.documented++
 				stats.DocumentedSymbols++
 			} else {
 				stats.UndocumentedSymbols++
@@ -509,33 +540,41 @@ func (a *Analyzer) calculateCoverageStats(pkgInfo *PackageInfo) CoverageStats {
 		}
 	}
 
-	// Calculate percentages
+	return counts
+}
+
+// calculateCoveragePercentages calculates coverage percentages for all symbol types.
+func (a *Analyzer) calculateCoveragePercentages(stats *CoverageStats, functionCounts, typeCounts, varCounts, constCounts symbolCounts) {
+	// Overall coverage
 	if stats.TotalPublicSymbols > 0 {
 		stats.CoveragePercentage = float64(stats.DocumentedSymbols) * 100.0 / float64(stats.TotalPublicSymbols)
 	}
 
-	totalFunctions := documentedFunctions + (stats.UndocumentedSymbols - totalTypes - totalVars - totalConsts)
+	// Function coverage
+	totalFunctions := functionCounts.documented + (stats.UndocumentedSymbols - typeCounts.total - varCounts.total - constCounts.total)
 	if totalFunctions > 0 {
-		stats.FunctionCoverage = float64(documentedFunctions) * 100.0 / float64(totalFunctions)
+		stats.FunctionCoverage = float64(functionCounts.documented) * 100.0 / float64(totalFunctions)
 	}
 
-	if totalTypes > 0 {
-		stats.TypeCoverage = float64(documentedTypes) * 100.0 / float64(totalTypes)
+	// Type coverage
+	if typeCounts.total > 0 {
+		stats.TypeCoverage = float64(typeCounts.documented) * 100.0 / float64(typeCounts.total)
 	}
 
-	if totalVars > 0 {
-		stats.VariableCoverage = float64(documentedVars) * 100.0 / float64(totalVars)
+	// Variable coverage
+	if varCounts.total > 0 {
+		stats.VariableCoverage = float64(varCounts.documented) * 100.0 / float64(varCounts.total)
 	}
 
-	if totalConsts > 0 {
-		stats.ConstantCoverage = float64(documentedConsts) * 100.0 / float64(totalConsts)
+	// Constant coverage
+	if constCounts.total > 0 {
+		stats.ConstantCoverage = float64(constCounts.documented) * 100.0 / float64(constCounts.total)
 	}
 
+	// Examples per function
 	if totalFunctions > 0 {
 		stats.ExamplesPerFunction = float64(stats.ExampleCount) / float64(totalFunctions)
 	}
-
-	return stats
 }
 
 // identifyQualityIssues identifies documentation quality issues.

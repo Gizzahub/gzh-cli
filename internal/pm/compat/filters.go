@@ -121,11 +121,16 @@ func MergeEnvWithProcessEnv(custom map[string]string) []string {
 
 // === 개별 필터 구현 ===
 
+const (
+	// Package manager constants
+	ManagerAsdf = "asdf"
+)
+
 // asdf + rust: rustup PATH 체크 우회 및 비대화형 진행.
 type asdfRustRustupFilter struct{}
 
 func (f *asdfRustRustupFilter) Applies(manager, plugin string) bool {
-	return manager == "asdf" && plugin == "rust"
+	return manager == ManagerAsdf && plugin == "rust"
 }
 
 func (f *asdfRustRustupFilter) Env() map[string]string {
@@ -147,7 +152,7 @@ func (f *asdfRustRustupFilter) Kind() FilterKind { return FilterKindConflict }
 type asdfNodejsCorepackFilter struct{}
 
 func (f *asdfNodejsCorepackFilter) Applies(manager, plugin string) bool {
-	return manager == "asdf" && plugin == "nodejs"
+	return manager == ManagerAsdf && plugin == "nodejs"
 }
 
 func (f *asdfNodejsCorepackFilter) Env() map[string]string {
@@ -184,7 +189,7 @@ func (f *asdfNodejsCorepackFilter) Kind() FilterKind { return FilterKindAdvisory
 type asdfPythonVenvFilter struct{}
 
 func (f *asdfPythonVenvFilter) Applies(manager, plugin string) bool {
-	return manager == "asdf" && plugin == "python"
+	return manager == ManagerAsdf && plugin == "python"
 }
 
 func (f *asdfPythonVenvFilter) Env() map[string]string {
@@ -210,7 +215,7 @@ func (f *asdfPythonVenvFilter) Kind() FilterKind { return FilterKindAdvisory }
 type asdfGolangPathFilter struct{}
 
 func (f *asdfGolangPathFilter) Applies(manager, plugin string) bool {
-	return manager == "asdf" && (plugin == "golang" || plugin == "go")
+	return manager == ManagerAsdf && (plugin == "golang" || plugin == "go")
 }
 
 func (f *asdfGolangPathFilter) Env() map[string]string {

@@ -100,16 +100,17 @@ func runGodocAnalysis(ctx context.Context, flags *cli.CommonFlags, opts godocOpt
 
 	var packagesToAnalyze []string
 
-	if opts.allPackages {
+	switch {
+	case opts.allPackages:
 		// Find all Go packages in the project
 		packagesToAnalyze, err = findGoPackages(workingDir)
 		if err != nil {
 			return fmt.Errorf("failed to find Go packages: %w", err)
 		}
 		logger.Info("Found packages", "count", len(packagesToAnalyze))
-	} else if opts.packagePath != "" {
+	case opts.packagePath != "":
 		packagesToAnalyze = []string{opts.packagePath}
-	} else {
+	default:
 		// Default to current directory
 		packagesToAnalyze = []string{"."}
 	}

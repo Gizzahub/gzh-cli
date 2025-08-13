@@ -506,14 +506,15 @@ func checkGoModules(ctx context.Context, report *DevEnvReport) {
 	// Check if modules are tidy
 	cmd := exec.CommandContext(ctx, "go", "mod", "tidy", "-diff")
 	output, err := cmd.Output()
-	if err != nil {
+	switch {
+	case err != nil:
 		result.Status = "needs_tidy"
 		result.Suggestion = "Run 'go mod tidy' to clean up dependencies"
 		result.Details = map[string]interface{}{"error": err.Error()}
-	} else if len(output) > 0 {
+	case len(output) > 0:
 		result.Status = "needs_tidy"
 		result.Suggestion = "Run 'go mod tidy' to clean up dependencies"
-	} else {
+	default:
 		result.Status = "ok"
 	}
 
