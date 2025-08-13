@@ -37,35 +37,35 @@ type CacheStatus struct {
 
 // CleanResult holds the result of cache cleaning operation
 type CleanResult struct {
-	Manager       string `json:"manager"`
-	Success       bool   `json:"success"`
-	SizeBefore    int64  `json:"sizeBefore"`
-	SizeAfter     int64  `json:"sizeAfter"`
-	SizeFreed     int64  `json:"sizeFreed"`
+	Manager        string `json:"manager"`
+	Success        bool   `json:"success"`
+	SizeBefore     int64  `json:"sizeBefore"`
+	SizeAfter      int64  `json:"sizeAfter"`
+	SizeFreed      int64  `json:"sizeFreed"`
 	SizeFreedHuman string `json:"sizeFreedHuman"`
-	Command       string `json:"command,omitempty"`
-	Error         string `json:"error,omitempty"`
+	Command        string `json:"command,omitempty"`
+	Error          string `json:"error,omitempty"`
 }
 
 // PackageManagerCache defines cache operations for a package manager
 type PackageManagerCache struct {
-	Name        string
-	CheckCmd    []string
-	CleanCmd    []string
-	CachePaths  []string
+	Name         string
+	CheckCmd     []string
+	CleanCmd     []string
+	CachePaths   []string
 	RequiresSudo bool
-	OSSupport   []string // linux, darwin, windows
+	OSSupport    []string // linux, darwin, windows
 }
 
 // getSupportedCacheManagers returns list of supported package managers for cache operations
 func getSupportedCacheManagers() []PackageManagerCache {
 	homeDir, _ := os.UserHomeDir()
-	
+
 	return []PackageManagerCache{
 		{
-			Name:      "go",
-			CheckCmd:  []string{"go", "version"},
-			CleanCmd:  []string{"go", "clean", "-modcache", "-cache", "-testcache"},
+			Name:     "go",
+			CheckCmd: []string{"go", "version"},
+			CleanCmd: []string{"go", "clean", "-modcache", "-cache", "-testcache"},
 			CachePaths: []string{
 				filepath.Join(homeDir, "go", "pkg", "mod"),
 				filepath.Join(homeDir, ".cache", "go-build"),
@@ -73,18 +73,18 @@ func getSupportedCacheManagers() []PackageManagerCache {
 			OSSupport: []string{"linux", "darwin", "windows"},
 		},
 		{
-			Name:      "npm",
-			CheckCmd:  []string{"npm", "--version"},
-			CleanCmd:  []string{"npm", "cache", "clean", "--force"},
+			Name:     "npm",
+			CheckCmd: []string{"npm", "--version"},
+			CleanCmd: []string{"npm", "cache", "clean", "--force"},
 			CachePaths: []string{
 				filepath.Join(homeDir, ".npm"),
 			},
 			OSSupport: []string{"linux", "darwin", "windows"},
 		},
 		{
-			Name:      "yarn",
-			CheckCmd:  []string{"yarn", "--version"},
-			CleanCmd:  []string{"yarn", "cache", "clean"},
+			Name:     "yarn",
+			CheckCmd: []string{"yarn", "--version"},
+			CleanCmd: []string{"yarn", "cache", "clean"},
 			CachePaths: []string{
 				filepath.Join(homeDir, ".yarn", "cache"),
 				filepath.Join(homeDir, ".cache", "yarn"),
@@ -92,36 +92,36 @@ func getSupportedCacheManagers() []PackageManagerCache {
 			OSSupport: []string{"linux", "darwin", "windows"},
 		},
 		{
-			Name:      "pnpm",
-			CheckCmd:  []string{"pnpm", "--version"},
-			CleanCmd:  []string{"pnpm", "store", "prune"},
+			Name:     "pnpm",
+			CheckCmd: []string{"pnpm", "--version"},
+			CleanCmd: []string{"pnpm", "store", "prune"},
 			CachePaths: []string{
 				filepath.Join(homeDir, ".pnpm-store"),
 			},
 			OSSupport: []string{"linux", "darwin", "windows"},
 		},
 		{
-			Name:      "pip",
-			CheckCmd:  []string{"pip", "--version"},
-			CleanCmd:  []string{"pip", "cache", "purge"},
+			Name:     "pip",
+			CheckCmd: []string{"pip", "--version"},
+			CleanCmd: []string{"pip", "cache", "purge"},
 			CachePaths: []string{
 				filepath.Join(homeDir, ".cache", "pip"),
 			},
 			OSSupport: []string{"linux", "darwin", "windows"},
 		},
 		{
-			Name:      "poetry",
-			CheckCmd:  []string{"poetry", "--version"},
-			CleanCmd:  []string{"poetry", "cache", "clear", "--all", "."},
+			Name:     "poetry",
+			CheckCmd: []string{"poetry", "--version"},
+			CleanCmd: []string{"poetry", "cache", "clear", "--all", "."},
 			CachePaths: []string{
 				filepath.Join(homeDir, ".cache", "pypoetry"),
 			},
 			OSSupport: []string{"linux", "darwin", "windows"},
 		},
 		{
-			Name:      "cargo",
-			CheckCmd:  []string{"cargo", "--version"},
-			CleanCmd:  []string{"cargo", "cache", "-a"},
+			Name:     "cargo",
+			CheckCmd: []string{"cargo", "--version"},
+			CleanCmd: []string{"cargo", "cache", "-a"},
 			CachePaths: []string{
 				filepath.Join(homeDir, ".cargo", "registry"),
 				filepath.Join(homeDir, ".cargo", "git"),
@@ -129,9 +129,9 @@ func getSupportedCacheManagers() []PackageManagerCache {
 			OSSupport: []string{"linux", "darwin", "windows"},
 		},
 		{
-			Name:      "brew",
-			CheckCmd:  []string{"brew", "--version"},
-			CleanCmd:  []string{"brew", "cleanup", "-s"},
+			Name:     "brew",
+			CheckCmd: []string{"brew", "--version"},
+			CleanCmd: []string{"brew", "cleanup", "-s"},
 			CachePaths: []string{
 				"/usr/local/var/homebrew/cache",
 				"/opt/homebrew/var/homebrew/cache",
@@ -139,36 +139,36 @@ func getSupportedCacheManagers() []PackageManagerCache {
 			OSSupport: []string{"darwin"},
 		},
 		{
-			Name:        "apt",
-			CheckCmd:    []string{"apt-get", "--version"},
-			CleanCmd:    []string{"sh", "-c", "apt-get clean && apt-get autoclean"},
-			CachePaths:  []string{"/var/cache/apt"},
+			Name:         "apt",
+			CheckCmd:     []string{"apt-get", "--version"},
+			CleanCmd:     []string{"sh", "-c", "apt-get clean && apt-get autoclean"},
+			CachePaths:   []string{"/var/cache/apt"},
 			RequiresSudo: true,
-			OSSupport:   []string{"linux"},
+			OSSupport:    []string{"linux"},
 		},
 		{
-			Name:        "dnf",
-			CheckCmd:    []string{"dnf", "--version"},
-			CleanCmd:    []string{"dnf", "clean", "all"},
-			CachePaths:  []string{"/var/cache/dnf"},
+			Name:         "dnf",
+			CheckCmd:     []string{"dnf", "--version"},
+			CleanCmd:     []string{"dnf", "clean", "all"},
+			CachePaths:   []string{"/var/cache/dnf"},
 			RequiresSudo: true,
-			OSSupport:   []string{"linux"},
+			OSSupport:    []string{"linux"},
 		},
 		{
-			Name:        "yum",
-			CheckCmd:    []string{"yum", "--version"},
-			CleanCmd:    []string{"yum", "clean", "all"},
-			CachePaths:  []string{"/var/cache/yum"},
+			Name:         "yum",
+			CheckCmd:     []string{"yum", "--version"},
+			CleanCmd:     []string{"yum", "clean", "all"},
+			CachePaths:   []string{"/var/cache/yum"},
 			RequiresSudo: true,
-			OSSupport:   []string{"linux"},
+			OSSupport:    []string{"linux"},
 		},
 		{
-			Name:        "pacman",
-			CheckCmd:    []string{"pacman", "--version"},
-			CleanCmd:    []string{"pacman", "-Sc", "--noconfirm"},
-			CachePaths:  []string{"/var/cache/pacman/pkg"},
+			Name:         "pacman",
+			CheckCmd:     []string{"pacman", "--version"},
+			CleanCmd:     []string{"pacman", "-Sc", "--noconfirm"},
+			CachePaths:   []string{"/var/cache/pacman/pkg"},
 			RequiresSudo: true,
-			OSSupport:   []string{"linux"},
+			OSSupport:    []string{"linux"},
 		},
 	}
 }
@@ -201,12 +201,12 @@ func isManagerAvailable(manager PackageManagerCache) bool {
 // getCacheSize calculates the total size of cache directories
 func getCacheSize(paths []string) int64 {
 	var totalSize int64
-	
+
 	for _, path := range paths {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			continue
 		}
-		
+
 		err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 			if err != nil {
 				return nil // Skip errors
@@ -220,7 +220,7 @@ func getCacheSize(paths []string) int64 {
 			continue // Skip on error
 		}
 	}
-	
+
 	return totalSize
 }
 
@@ -244,18 +244,18 @@ func newCacheCleanCmd(ctx context.Context) *cobra.Command {
 		force      bool
 		jsonOutput bool
 		managers   struct {
-			go_     bool
-			npm     bool
-			yarn    bool
-			pnpm    bool
-			pip     bool
-			poetry  bool
-			cargo   bool
-			brew    bool
-			apt     bool
-			dnf     bool
-			yum     bool
-			pacman  bool
+			go_    bool
+			npm    bool
+			yarn   bool
+			pnpm   bool
+			pip    bool
+			poetry bool
+			cargo  bool
+			brew   bool
+			apt    bool
+			dnf    bool
+			yum    bool
+			pacman bool
 		}
 	)
 
@@ -350,7 +350,7 @@ Examples:
 			}
 
 			var results []CleanResult
-			
+
 			for _, mgr := range selectedManagers {
 				result := CleanResult{
 					Manager: mgr.Name,
@@ -365,7 +365,7 @@ Examples:
 					result.SizeAfter = result.SizeBefore
 					result.SizeFreed = 0
 					if !jsonOutput {
-						fmt.Printf("🔍 [DRY-RUN] Would clean %s cache (%s)\n", 
+						fmt.Printf("🔍 [DRY-RUN] Would clean %s cache (%s)\n",
 							mgr.Name, formatSize(result.SizeBefore))
 					}
 				} else {
@@ -395,7 +395,7 @@ Examples:
 						result.SizeAfter = getCacheSize(mgr.CachePaths)
 						result.SizeFreed = result.SizeBefore - result.SizeAfter
 						result.SizeFreedHuman = formatSize(result.SizeFreed)
-						
+
 						if !jsonOutput {
 							if result.SizeFreed > 0 {
 								fmt.Printf(" ✅ Freed %s\n", result.SizeFreedHuman)
@@ -415,7 +415,7 @@ Examples:
 					"dryRun":    dryRun,
 					"results":   results,
 				}
-				
+
 				jsonData, err := json.MarshalIndent(output, "", "  ")
 				if err != nil {
 					return fmt.Errorf("failed to generate JSON output: %w", err)
@@ -467,9 +467,7 @@ Examples:
 }
 
 func newCacheStatusCmd(ctx context.Context) *cobra.Command {
-	var (
-		jsonOutput bool
-	)
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -540,7 +538,7 @@ Examples:
 					if cache.Exists {
 						status = "✅ Found"
 					}
-					fmt.Printf("%-12s %-10s %-8s %s\n", 
+					fmt.Printf("%-12s %-10s %-8s %s\n",
 						cache.Name, cache.SizeHuman, status, cache.Path)
 				}
 
@@ -557,9 +555,7 @@ Examples:
 }
 
 func newCacheSizeCmd(ctx context.Context) *cobra.Command {
-	var (
-		jsonOutput bool
-	)
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "size",
@@ -603,7 +599,7 @@ Examples:
 					"caches":         caches,
 					"timestamp":      time.Now(),
 				}
-				
+
 				jsonData, err := json.MarshalIndent(output, "", "  ")
 				if err != nil {
 					return fmt.Errorf("failed to generate JSON output: %w", err)
@@ -611,7 +607,7 @@ Examples:
 				fmt.Println(string(jsonData))
 			} else {
 				fmt.Printf("💾 Package Manager Cache Sizes\n\n")
-				
+
 				if len(caches) == 0 {
 					fmt.Println("No caches found or all caches are empty.")
 					return nil
