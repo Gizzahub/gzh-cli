@@ -40,6 +40,10 @@ Examples:
   # Bootstrap missing package managers
   gz pm bootstrap
 
+  # Manage package manager caches
+  gz pm cache status
+  gz pm cache clean --go --npm
+
 For detailed configuration, see: ~/.gzh/pm/`,
 	}
 
@@ -52,6 +56,7 @@ For detailed configuration, see: ~/.gzh/pm/`,
 	cmd.AddCommand(newUpgradeManagersCmd(ctx))
 	cmd.AddCommand(newSyncVersionsCmd(ctx))
 	cmd.AddCommand(newDoctorCmd(ctx))
+	cmd.AddCommand(newCacheCmd(ctx))
 
 	return cmd
 }
