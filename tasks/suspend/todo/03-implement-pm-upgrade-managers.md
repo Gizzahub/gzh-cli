@@ -1,6 +1,16 @@
-# TODO: 패키지 매니저 업그레이드 기능 구현
+---
+status: suspended
+reason: 과밀 파일 (22개 체크박스 항목) - 논리적 단위로 분할됨
+split_into:
+  - 03a-implement-upgrade-interfaces.md
+  - 03b-implement-upgrade-managers.md  
+  - 03c-implement-upgrade-commands.md
+  - 03d-implement-upgrade-tests.md
+---
 
-- status: [ ]
+# TODO: 패키지 매니저 업그레이드 기능 구현 (원본)
+
+- status: [ ]  
 - priority: medium (P2)
 - category: package-manager
 - estimated_effort: 1시간
