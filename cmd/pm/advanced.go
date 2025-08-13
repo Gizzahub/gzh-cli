@@ -19,14 +19,14 @@ import (
 
 func newBootstrapCmd(ctx context.Context) *cobra.Command {
 	var (
-		check         bool
-		install       string
-		force         bool
-		jsonOutput    bool
-		verbose       bool
-		dryRun        bool
-		skipConfig    bool
-		timeout       time.Duration
+		check      bool
+		install    string
+		force      bool
+		jsonOutput bool
+		verbose    bool
+		dryRun     bool
+		skipConfig bool
+		timeout    time.Duration
 	)
 
 	cmd := &cobra.Command{
@@ -95,7 +95,7 @@ type bootstrapOptions struct {
 func runBootstrapCommand(ctx context.Context, opts bootstrapOptions) error {
 	// Create logger
 	logger := logger.NewSimpleLogger("bootstrap")
-	
+
 	// Create bootstrap manager
 	manager := bootstrap.NewBootstrapManager(logger)
 
@@ -126,7 +126,7 @@ func runBootstrapCheck(ctx context.Context, manager *bootstrap.BootstrapManager,
 
 func runBootstrapInstall(ctx context.Context, manager *bootstrap.BootstrapManager, opts bootstrapOptions) error {
 	var managerNames []string
-	
+
 	if opts.install != "" {
 		// Parse specified managers
 		managerNames = strings.Split(opts.install, ",")
@@ -147,7 +147,7 @@ func runBootstrapInstall(ctx context.Context, manager *bootstrap.BootstrapManage
 				}
 			}
 			if !found {
-				return fmt.Errorf("unknown package manager: %s. Available: %s", 
+				return fmt.Errorf("unknown package manager: %s. Available: %s",
 					name, strings.Join(availableManagers, ", "))
 			}
 		}
@@ -169,7 +169,7 @@ func runBootstrapInstall(ctx context.Context, manager *bootstrap.BootstrapManage
 	if err != nil {
 		return fmt.Errorf("failed to resolve dependencies: %w", err)
 	}
-	
+
 	if len(installOrder) > 0 {
 		fmt.Printf("📋 Installation order: %s\n", strings.Join(installOrder, " → "))
 	}
@@ -199,7 +199,7 @@ func runBootstrapInstall(ctx context.Context, manager *bootstrap.BootstrapManage
 	}
 
 	fmt.Println("\n" + manager.FormatReport(report, opts.verbose))
-	
+
 	// Summary
 	if report.Summary.Failed > 0 {
 		fmt.Printf("\n⚠️  %d package managers had issues during installation\n", report.Summary.Failed)

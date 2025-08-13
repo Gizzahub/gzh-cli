@@ -111,13 +111,13 @@ func (h *HomebrewBootstrapper) Install(ctx context.Context, force bool) error {
 	}
 
 	h.logger.Info("Running Homebrew installation script")
-	
+
 	// Execute installation script
 	cmd := exec.CommandContext(ctx, "bash", "-c", script)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin // Allow interactive prompts
-	
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("installation script failed: %w", err)
 	}
@@ -172,7 +172,7 @@ func (h *HomebrewBootstrapper) Validate(ctx context.Context) error {
 func (h *HomebrewBootstrapper) checkConfiguration(ctx context.Context, status *BootstrapStatus) error {
 	// Check if Homebrew directories are in PATH
 	path := os.Getenv("PATH")
-	
+
 	var expectedPaths []string
 	switch runtime.GOOS {
 	case "darwin":

@@ -66,7 +66,7 @@ func (n *NvmBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapStat
 
 func (n *NvmBootstrapper) Install(ctx context.Context, force bool) error {
 	n.logger.Info("Installing nvm")
-	
+
 	script, _ := n.GetInstallScript()
 	cmd := exec.CommandContext(ctx, "bash", "-c", script)
 	cmd.Stdout = os.Stdout
@@ -87,7 +87,7 @@ func (n *NvmBootstrapper) Validate(ctx context.Context) error {
 	if nvmDir == "" {
 		nvmDir = filepath.Join(os.Getenv("HOME"), ".nvm")
 	}
-	
+
 	nvmScript := filepath.Join(nvmDir, "nvm.sh")
 	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("source %s && nvm --version", nvmScript))
 	return cmd.Run()
@@ -168,13 +168,13 @@ func (r *RbenvBootstrapper) Install(ctx context.Context, force bool) error {
 		if err := cmd.Run(); err != nil {
 			return err
 		}
-		
+
 		// Install ruby-build plugin
 		rubyBuildDir := filepath.Join(rbenvDir, "plugins", "ruby-build")
 		cmd = exec.CommandContext(ctx, "git", "clone", "https://github.com/rbenv/ruby-build.git", rubyBuildDir)
 		return cmd.Run()
 	}
-	
+
 	return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 }
 
@@ -268,7 +268,7 @@ func (p *PyenvBootstrapper) Install(ctx context.Context, force bool) error {
 		cmd.Stderr = os.Stderr
 		return cmd.Run()
 	}
-	
+
 	return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 }
 
@@ -320,7 +320,7 @@ func (s *SdkmanBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapS
 
 	sdkmanDir := filepath.Join(os.Getenv("HOME"), ".sdkman")
 	sdkmanInit := filepath.Join(sdkmanDir, "bin", "sdkman-init.sh")
-	
+
 	if _, err := os.Stat(sdkmanInit); os.IsNotExist(err) {
 		status.Issues = append(status.Issues, "SDKMAN not found")
 		return status, nil
@@ -349,7 +349,7 @@ func (s *SdkmanBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapS
 
 func (s *SdkmanBootstrapper) Install(ctx context.Context, force bool) error {
 	s.logger.Info("Installing SDKMAN")
-	
+
 	script, _ := s.GetInstallScript()
 	cmd := exec.CommandContext(ctx, "bash", "-c", script)
 	cmd.Stdout = os.Stdout

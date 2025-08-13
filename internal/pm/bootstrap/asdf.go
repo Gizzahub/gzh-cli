@@ -62,14 +62,14 @@ func (a *AsdfBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapSta
 		commonPaths := []string{
 			filepath.Join(os.Getenv("HOME"), ".asdf", "bin", "asdf"),
 		}
-		
+
 		for _, path := range commonPaths {
 			if _, err := os.Stat(path); err == nil {
 				asdfPath = path
 				break
 			}
 		}
-		
+
 		if asdfPath == "" {
 			status.Issues = append(status.Issues, "asdf not found in PATH or common locations")
 			return status, nil
@@ -132,7 +132,7 @@ func (a *AsdfBootstrapper) Install(ctx context.Context, force bool) error {
 // Configure configures asdf after installation.
 func (a *AsdfBootstrapper) Configure(ctx context.Context) error {
 	a.logger.Info("Configuring asdf")
-	
+
 	return a.updateShellProfile()
 }
 
@@ -171,11 +171,11 @@ func (a *AsdfBootstrapper) Validate(ctx context.Context) error {
 // installViaBrew installs asdf using Homebrew on macOS.
 func (a *AsdfBootstrapper) installViaBrew(ctx context.Context) error {
 	a.logger.Info("Installing asdf via Homebrew")
-	
+
 	cmd := exec.CommandContext(ctx, "brew", "install", "asdf")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to install asdf via brew: %w", err)
 	}
@@ -186,9 +186,9 @@ func (a *AsdfBootstrapper) installViaBrew(ctx context.Context) error {
 // installViaGit installs asdf by cloning from Git.
 func (a *AsdfBootstrapper) installViaGit(ctx context.Context) error {
 	a.logger.Info("Installing asdf via Git clone")
-	
+
 	asdfDir := filepath.Join(os.Getenv("HOME"), ".asdf")
-	
+
 	// Remove existing directory if forcing
 	if _, err := os.Stat(asdfDir); err == nil {
 		a.logger.Info("Removing existing asdf directory", "dir", asdfDir)
@@ -197,11 +197,11 @@ func (a *AsdfBootstrapper) installViaGit(ctx context.Context) error {
 		}
 	}
 
-	cmd := exec.CommandContext(ctx, "git", "clone", 
+	cmd := exec.CommandContext(ctx, "git", "clone",
 		"https://github.com/asdf-vm/asdf.git", asdfDir, "--branch", "v0.10.2")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to clone asdf repository: %w", err)
 	}
@@ -214,7 +214,7 @@ func (a *AsdfBootstrapper) checkConfiguration(ctx context.Context, status *Boots
 	// Check if asdf is in PATH
 	path := os.Getenv("PATH")
 	asdfBinPath := filepath.Join(os.Getenv("HOME"), ".asdf", "bin")
-	
+
 	if !strings.Contains(path, asdfBinPath) {
 		status.Details["missing_path"] = asdfBinPath
 	}
@@ -255,9 +255,9 @@ func (a *AsdfBootstrapper) updateShellProfile() error {
 
 	var profilePath string
 	var asdfInit string
-	
+
 	asdfDir := filepath.Join(os.Getenv("HOME"), ".asdf")
-	
+
 	switch {
 	case strings.Contains(shell, "bash"):
 		profilePath = os.ExpandEnv("$HOME/.bash_profile")
@@ -270,7 +270,7 @@ if [[ -d "%s" ]]; then
     export PATH="%s/bin:$PATH"
     source "%s/asdf.sh"
 fi`, asdfDir, asdfDir, asdfDir)
-		
+
 	case strings.Contains(shell, "zsh"):
 		profilePath = os.ExpandEnv("$HOME/.zshrc")
 		asdfInit = fmt.Sprintf(`
@@ -279,7 +279,7 @@ if [[ -d "%s" ]]; then
     export PATH="%s/bin:$PATH"
     source "%s/asdf.sh"
 fi`, asdfDir, asdfDir, asdfDir)
-		
+
 	case strings.Contains(shell, "fish"):
 		profilePath = os.ExpandEnv("$HOME/.config/fish/config.fish")
 		asdfInit = fmt.Sprintf(`
@@ -288,7 +288,7 @@ if test -d "%s"
     set -gx PATH "%s/bin" $PATH
     source "%s/asdf.fish"
 end`, asdfDir, asdfDir, asdfDir)
-		
+
 	default:
 		a.logger.Warn("Unknown shell, skipping profile update", "shell", shell)
 		return nil

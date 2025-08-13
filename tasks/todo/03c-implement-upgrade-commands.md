@@ -3,7 +3,7 @@
 ---
 status: [ ]
 priority: medium
-severity: medium  
+severity: medium
 file_type: service_layer
 estimated_effort: 30분
 source: 03-implement-pm-upgrade-managers.md (분할됨)

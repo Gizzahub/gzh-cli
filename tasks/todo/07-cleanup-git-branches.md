@@ -2,7 +2,7 @@
 
 - status: [ ]
 - priority: low (P3)
-- category: project-maintenance  
+- category: project-maintenance
 - estimated_effort: 15분
 - depends_on: []
 - spec_reference: `git branch -av` 명령어 결과
@@ -14,13 +14,13 @@
 ## 🎯 정리 대상 브랜치들
 
 ### 1. **로컬 브랜치들**
-- [ ] **remove-unused-packages-legacy** (c9d884b) 
+- [ ] **remove-unused-packages-legacy** (c9d884b)
   - 커밋: "refactor(sonnet): remove unused internal/api package"
   - 상태: 이미 완료된 리팩토링 작업으로 보임
   - 조치: 메인 브랜치에 머지되었는지 확인 후 삭제
 
 - [ ] **simplify-container-usage** (f484583)
-  - 커밋: "docs(sonnet): complete architecture simplification documentation"  
+  - 커밋: "docs(sonnet): complete architecture simplification documentation"
   - 상태: 문서화 작업 완료된 것으로 보임
   - 조치: 메인 브랜치에 머지되었는지 확인 후 삭제
 
@@ -73,7 +73,7 @@ git branch -D branch-name
 
 # 원격 브랜치 삭제
 git push origin --delete add-claude-github-actions-1753076381793
-git push origin --delete add-claude-github-actions-1753076718544  
+git push origin --delete add-claude-github-actions-1753076718544
 git push origin --delete add-claude-github-actions-1753079180841
 ```
 
@@ -87,7 +87,7 @@ git push origin --delete add-claude-github-actions-1753079180841
 처리 방법: develop 브랜치와 비교 후 내용이 이미 포함되었으면 삭제
 ```
 
-### simplify-container-usage  
+### simplify-container-usage
 ```
 현재 상태: 로컬에만 존재
 마지막 커밋: f484583 "docs(sonnet): complete architecture simplification documentation"
@@ -116,7 +116,7 @@ git diff develop simplify-container-usage --name-only
 ```
 
 ### 2. 현재 워킹 디렉터리 확인
-```bash  
+```bash
 # 현재 브랜치 확인
 git branch --show-current
 
@@ -172,7 +172,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## 💡 구현 힌트
 
 1. **안전 우선**: 삭제 전 반드시 내용 확인 및 백업
-2. **단계별 처리**: 로컬 브랜치부터 정리 후 원격 브랜치 처리  
+2. **단계별 처리**: 로컬 브랜치부터 정리 후 원격 브랜치 처리
 3. **팀 협의**: 다른 개발자가 사용 중일 수 있는 브랜치는 확인 후 삭제
 4. **문서화**: 삭제한 브랜치의 내용이 어디에 반영되었는지 기록
 
@@ -190,7 +190,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - **CI/CD 영향**: 파이프라인에서 참조하는 브랜치인지 확인
 - **백업**: 중요한 변경사항이 있을 수 있으므로 삭제 전 내용 확인
 
-### 삭제 시 주의점  
+### 삭제 시 주의점
 - **강제 삭제 금지**: 가능한 한 `-d` 옵션으로 안전하게 삭제
 - **원격 우선**: 로컬 삭제 전에 원격 브랜치 상태 확인
 - **현재 브랜치**: 삭제하려는 브랜치에 checkout 상태가 아닌지 확인

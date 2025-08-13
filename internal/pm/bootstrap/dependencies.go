@@ -34,7 +34,7 @@ func (dr *DependencyResolver) ResolveDependencies(managers []string) ([]string, 
 	// Build a graph of all managers and their dependencies
 	graph := make(map[string][]string)
 	inDegree := make(map[string]int)
-	
+
 	// Initialize all requested managers
 	for _, manager := range managers {
 		if _, exists := graph[manager]; !exists {
@@ -52,23 +52,23 @@ func (dr *DependencyResolver) ResolveDependencies(managers []string) ([]string, 
 	// Perform topological sort using Kahn's algorithm
 	result := make([]string, 0)
 	queue := make([]string, 0)
-	
+
 	// Find all nodes with no incoming edges
 	for node, degree := range inDegree {
 		if degree == 0 {
 			queue = append(queue, node)
 		}
 	}
-	
+
 	// Sort the initial queue for consistent ordering
 	sort.Strings(queue)
-	
+
 	for len(queue) > 0 {
 		// Remove node with no dependencies
 		current := queue[0]
 		queue = queue[1:]
 		result = append(result, current)
-		
+
 		// Remove this node from the graph
 		for _, neighbor := range graph[current] {
 			inDegree[neighbor]--
@@ -79,25 +79,25 @@ func (dr *DependencyResolver) ResolveDependencies(managers []string) ([]string, 
 			}
 		}
 	}
-	
+
 	// Check for circular dependencies
 	if len(result) != len(inDegree) {
 		return nil, fmt.Errorf("circular dependency detected in package managers")
 	}
-	
+
 	// Filter result to only include originally requested managers
 	requestedSet := make(map[string]bool)
 	for _, manager := range managers {
 		requestedSet[manager] = true
 	}
-	
+
 	filteredResult := make([]string, 0)
 	for _, manager := range result {
 		if requestedSet[manager] {
 			filteredResult = append(filteredResult, manager)
 		}
 	}
-	
+
 	return filteredResult, nil
 }
 
@@ -108,7 +108,7 @@ func (dr *DependencyResolver) addDependenciesToGraph(managers []string, graph ma
 			continue
 		}
 		visited[manager] = true
-		
+
 		deps := dr.dependencies[manager]
 		for _, dep := range deps {
 			// Initialize dependency node if not exists
@@ -116,11 +116,11 @@ func (dr *DependencyResolver) addDependenciesToGraph(managers []string, graph ma
 				graph[dep] = []string{}
 				inDegree[dep] = 0
 			}
-			
+
 			// Add edge from dependency to manager
 			graph[dep] = append(graph[dep], manager)
 			inDegree[manager]++
-			
+
 			// Recursively add dependencies of dependencies
 			if err := dr.addDependenciesToGraph([]string{dep}, graph, inDegree, visited); err != nil {
 				return err
@@ -157,11 +157,11 @@ func (dr *DependencyResolver) HasDependency(manager, dependency string) bool {
 func (dr *DependencyResolver) GetAllDependencies(manager string) ([]string, error) {
 	visited := make(map[string]bool)
 	result := make([]string, 0)
-	
+
 	if err := dr.collectDependencies(manager, visited, &result); err != nil {
 		return nil, err
 	}
-	
+
 	// Remove the manager itself from the result if present
 	filtered := make([]string, 0)
 	for _, dep := range result {
@@ -169,7 +169,7 @@ func (dr *DependencyResolver) GetAllDependencies(manager string) ([]string, erro
 			filtered = append(filtered, dep)
 		}
 	}
-	
+
 	return filtered, nil
 }
 
@@ -178,17 +178,17 @@ func (dr *DependencyResolver) collectDependencies(manager string, visited map[st
 	if visited[manager] {
 		return fmt.Errorf("circular dependency detected involving %s", manager)
 	}
-	
+
 	visited[manager] = true
 	*result = append(*result, manager)
-	
+
 	deps := dr.dependencies[manager]
 	for _, dep := range deps {
 		if err := dr.collectDependencies(dep, visited, result); err != nil {
 			return err
 		}
 	}
-	
+
 	visited[manager] = false
 	return nil
 }
@@ -200,7 +200,7 @@ func (dr *DependencyResolver) ValidateNoCycles() error {
 	for manager := range dr.dependencies {
 		allManagers = append(allManagers, manager)
 	}
-	
+
 	// Try to resolve all managers - this will detect cycles
 	_, err := dr.ResolveDependencies(allManagers)
 	return err

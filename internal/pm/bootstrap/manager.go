@@ -33,7 +33,7 @@ func NewBootstrapManager(logger logger.CommonLogger) *BootstrapManager {
 
 	// Register all available bootstrappers
 	manager.registerBootstrappers()
-	
+
 	return manager
 }
 
@@ -51,7 +51,7 @@ func (bm *BootstrapManager) registerBootstrappers() {
 	for _, bootstrapper := range bootstrappers {
 		if bootstrapper.IsSupported() {
 			bm.bootstrappers[bootstrapper.GetName()] = bootstrapper
-			
+
 			// Register dependencies for resolver
 			deps := bootstrapper.GetDependencies()
 			if len(deps) > 0 {
@@ -64,7 +64,7 @@ func (bm *BootstrapManager) registerBootstrappers() {
 // CheckAll checks the installation status of all supported package managers.
 func (bm *BootstrapManager) CheckAll(ctx context.Context) (*BootstrapReport, error) {
 	startTime := time.Now()
-	
+
 	report := &BootstrapReport{
 		Platform:  bm.platform,
 		Timestamp: startTime,
@@ -74,7 +74,7 @@ func (bm *BootstrapManager) CheckAll(ctx context.Context) (*BootstrapReport, err
 	// Check each registered manager
 	for name, bootstrapper := range bm.bootstrappers {
 		bm.logger.Debug("Checking manager", "name", name)
-		
+
 		status, err := bootstrapper.CheckInstallation(ctx)
 		if err != nil {
 			bm.logger.Warn("Failed to check manager", "name", name, "error", err)
@@ -84,7 +84,7 @@ func (bm *BootstrapManager) CheckAll(ctx context.Context) (*BootstrapReport, err
 				Issues:    []string{fmt.Sprintf("Check failed: %v", err)},
 			}
 		}
-		
+
 		report.Managers = append(report.Managers, *status)
 	}
 
@@ -95,23 +95,23 @@ func (bm *BootstrapManager) CheckAll(ctx context.Context) (*BootstrapReport, err
 
 	// Calculate summary
 	bm.calculateSummary(report)
-	
+
 	report.Duration = time.Since(startTime)
-	
+
 	return report, nil
 }
 
 // InstallManagers installs the specified package managers.
 func (bm *BootstrapManager) InstallManagers(ctx context.Context, managerNames []string, opts BootstrapOptions) (*BootstrapReport, error) {
 	startTime := time.Now()
-	
+
 	// If no specific managers specified, install all missing ones
 	if len(managerNames) == 0 {
 		checkReport, err := bm.CheckAll(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to check current status: %w", err)
 		}
-		
+
 		for _, status := range checkReport.Managers {
 			if !status.Installed {
 				managerNames = append(managerNames, status.Manager)
@@ -142,28 +142,28 @@ func (bm *BootstrapManager) InstallManagers(ctx context.Context, managerNames []
 		}
 
 		bm.logger.Info("Installing manager", "name", managerName)
-		
+
 		status, err := bm.installSingleManager(ctx, bootstrapper, opts)
 		if err != nil {
 			bm.logger.Error("Failed to install manager", "name", managerName, "error", err)
 			status.Issues = append(status.Issues, fmt.Sprintf("Installation failed: %v", err))
 		}
-		
+
 		report.Managers = append(report.Managers, *status)
 	}
 
 	// Calculate final summary
 	bm.calculateSummary(report)
-	
+
 	report.Duration = time.Since(startTime)
-	
+
 	return report, nil
 }
 
 // installSingleManager installs and configures a single package manager.
 func (bm *BootstrapManager) installSingleManager(ctx context.Context, bootstrapper PackageManagerBootstrapper, opts BootstrapOptions) (*BootstrapStatus, error) {
 	managerName := bootstrapper.GetName()
-	
+
 	// Check current status first
 	status, err := bootstrapper.CheckInstallation(ctx)
 	if err != nil {
@@ -244,7 +244,7 @@ func (bm *BootstrapManager) calculateSummary(report *BootstrapReport) {
 		} else {
 			summary.Missing++
 		}
-		
+
 		if len(status.Issues) > 0 {
 			summary.Failed++
 		}
@@ -256,49 +256,49 @@ func (bm *BootstrapManager) calculateSummary(report *BootstrapReport) {
 // FormatReport formats a bootstrap report for human-readable output.
 func (bm *BootstrapManager) FormatReport(report *BootstrapReport, verbose bool) string {
 	var builder strings.Builder
-	
+
 	builder.WriteString("📦 Package Manager Bootstrap Status\n\n")
 	builder.WriteString(fmt.Sprintf("Platform: %s\n", report.Platform))
 	builder.WriteString(fmt.Sprintf("Checked: %s\n\n", report.Timestamp.Format("2006-01-02 15:04:05")))
-	
+
 	builder.WriteString("Manager Status:\n")
 	for _, status := range report.Managers {
 		icon := "❌"
 		if status.Installed {
 			icon = "✅"
 		}
-		
+
 		line := fmt.Sprintf("  %s %-12s", icon, status.Manager)
 		if status.Version != "" {
 			line += fmt.Sprintf(" %-12s", status.Version)
 		} else {
 			line += " missing     "
 		}
-		
+
 		if status.ConfigPath != "" {
 			line += fmt.Sprintf(" %s", status.ConfigPath)
 		} else if len(status.Dependencies) > 0 {
 			line += fmt.Sprintf(" Will install via %s", strings.Join(status.Dependencies, ", "))
 		}
-		
+
 		builder.WriteString(line + "\n")
-		
+
 		if verbose && len(status.Issues) > 0 {
 			for _, issue := range status.Issues {
 				builder.WriteString(fmt.Sprintf("    ⚠️  %s\n", issue))
 			}
 		}
 	}
-	
+
 	builder.WriteString(fmt.Sprintf("\nSummary: %d/%d installed, %d missing",
 		report.Summary.Installed, report.Summary.Total, report.Summary.Missing))
-	
+
 	if report.Summary.Failed > 0 {
 		builder.WriteString(fmt.Sprintf(", %d with issues", report.Summary.Failed))
 	}
-	
+
 	builder.WriteString("\n")
-	
+
 	// Show recommended installation order for missing managers
 	missing := make([]string, 0)
 	for _, status := range report.Managers {
@@ -306,7 +306,7 @@ func (bm *BootstrapManager) FormatReport(report *BootstrapReport, verbose bool) 
 			missing = append(missing, status.Manager)
 		}
 	}
-	
+
 	if len(missing) > 0 {
 		if order, err := bm.resolver.ResolveDependencies(missing); err == nil {
 			builder.WriteString("\nRecommended installation order:\n")
@@ -320,6 +320,6 @@ func (bm *BootstrapManager) FormatReport(report *BootstrapReport, verbose bool) 
 			}
 		}
 	}
-	
+
 	return builder.String()
 }

@@ -84,11 +84,11 @@ func (h *HomebrewBootstrapper) Install(ctx context.Context, force bool) error {
     if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
         return fmt.Errorf("Homebrew not supported on %s", runtime.GOOS)
     }
-    
+
     // macOS/Linux 설치 스크립트 실행
     script := `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
     cmd := exec.CommandContext(ctx, "bash", "-c", script)
-    
+
     return cmd.Run()
 }
 
@@ -163,7 +163,7 @@ Summary: 2/6 installed, 4 missing
 
 Recommended installation order:
   1. asdf (depends on: brew)
-  2. rbenv (depends on: brew)  
+  2. rbenv (depends on: brew)
   3. pyenv (depends on: brew)
   4. sdkman (independent)
 ```

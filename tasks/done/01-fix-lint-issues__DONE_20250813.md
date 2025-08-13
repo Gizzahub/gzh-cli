@@ -28,7 +28,7 @@
 - [ ] **이슈**: 긴 if-else 체인
 - [ ] **해결책**: switch문으로 리팩토링하여 가독성 향상
 
-- [ ] **파일**: `cmd/doctor/godoc.go:103` 
+- [ ] **파일**: `cmd/doctor/godoc.go:103`
 - [ ] **이슈**: 긴 if-else 체인
 - [ ] **해결책**: switch문으로 리팩토링하여 가독성 향상
 
@@ -81,7 +81,7 @@ if err != nil {
     // default case
 }
 
-// After  
+// After
 switch {
 case err != nil:
     // handle error

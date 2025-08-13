@@ -12,12 +12,12 @@ import (
 
 func TestDependencyResolver_ResolveDependencies(t *testing.T) {
 	resolver := NewDependencyResolver()
-	
+
 	// Setup dependencies: brew -> asdf -> nvm, rbenv, pyenv
 	resolver.AddDependency("asdf", []string{"brew"})
 	resolver.AddDependency("rbenv", []string{"brew"})
 	resolver.AddDependency("pyenv", []string{"brew"})
-	resolver.AddDependency("nvm", []string{}) // No dependencies
+	resolver.AddDependency("nvm", []string{})    // No dependencies
 	resolver.AddDependency("sdkman", []string{}) // No dependencies
 
 	tests := []struct {
@@ -56,7 +56,7 @@ func TestDependencyResolver_ResolveDependencies(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := resolver.ResolveDependencies(tt.managers)
-			
+
 			if tt.expectError {
 				require.Error(t, err)
 			} else {
@@ -69,7 +69,7 @@ func TestDependencyResolver_ResolveDependencies(t *testing.T) {
 
 func TestDependencyResolver_CircularDependency(t *testing.T) {
 	resolver := NewDependencyResolver()
-	
+
 	// Create circular dependency: A -> B -> C -> A
 	resolver.AddDependency("a", []string{"b"})
 	resolver.AddDependency("b", []string{"c"})
@@ -104,7 +104,7 @@ func TestDependencyResolver_HasDependency(t *testing.T) {
 
 func TestDependencyResolver_GetAllDependencies(t *testing.T) {
 	resolver := NewDependencyResolver()
-	
+
 	// Setup chain: a -> b -> c -> d
 	resolver.AddDependency("a", []string{"b"})
 	resolver.AddDependency("b", []string{"c"})
@@ -123,17 +123,17 @@ func TestDependencyResolver_GetAllDependencies(t *testing.T) {
 
 func TestDependencyResolver_ValidateNoCycles(t *testing.T) {
 	resolver := NewDependencyResolver()
-	
+
 	// Valid graph
 	resolver.AddDependency("a", []string{"b"})
 	resolver.AddDependency("b", []string{"c"})
-	
+
 	err := resolver.ValidateNoCycles()
 	assert.NoError(t, err)
-	
+
 	// Add cycle
 	resolver.AddDependency("c", []string{"a"})
-	
+
 	err = resolver.ValidateNoCycles()
 	assert.Error(t, err)
 }

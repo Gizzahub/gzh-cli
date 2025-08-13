@@ -21,7 +21,7 @@
 
 ### 지원할 버전 매니저 쌍
 - [ ] **nvm ↔ npm** - Node.js 버전과 npm 버전 동기화
-- [ ] **rbenv ↔ gem** - Ruby 버전과 gem 버전 동기화  
+- [ ] **rbenv ↔ gem** - Ruby 버전과 gem 버전 동기화
 - [ ] **pyenv ↔ pip** - Python 버전과 pip 버전 동기화
 - [ ] **asdf ↔ multiple** - asdf가 관리하는 모든 도구들과 패키지 매니저들
 
@@ -86,24 +86,24 @@ func (nns *NvmNpmSynchronizer) CheckSync(ctx context.Context) (*VersionSyncStatu
     if err != nil {
         return nil, err
     }
-    
-    // npm --version으로 현재 npm 버전 확인  
+
+    // npm --version으로 현재 npm 버전 확인
     npmVersion, err := nns.getCurrentNpmVersion(ctx)
     if err != nil {
         return nil, err
     }
-    
+
     // Node.js 버전에 기본 포함된 npm 버전 확인
     expectedNpmVersion, err := nns.getExpectedNpmVersion(ctx, nodeVersion)
     if err != nil {
         return nil, err
     }
-    
+
     inSync := nns.compareVersions(npmVersion, expectedNpmVersion)
-    
+
     return &VersionSyncStatus{
         VersionManager:    "nvm",
-        PackageManager:    "npm", 
+        PackageManager:    "npm",
         VMVersion:         nodeVersion,
         PMVersion:         npmVersion,
         ExpectedPMVersion: expectedNpmVersion,
@@ -117,11 +117,11 @@ func (nns *NvmNpmSynchronizer) Synchronize(ctx context.Context, policy SyncPolic
     if err != nil {
         return err
     }
-    
+
     if status.InSync {
         return nil // 이미 동기화됨
     }
-    
+
     switch policy.Strategy {
     case "vm_priority":
         // Node.js 버전에 맞는 npm 설치
@@ -133,7 +133,7 @@ func (nns *NvmNpmSynchronizer) Synchronize(ctx context.Context, policy SyncPolic
         // 둘 다 최신 버전으로 업데이트
         return nns.upgradeToLatest(ctx)
     }
-    
+
     return nil
 }
 
@@ -148,24 +148,24 @@ func (rgs *RbenvGemSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
     if err != nil {
         return nil, err
     }
-    
+
     // gem --version으로 현재 gem 버전 확인
     gemVersion, err := rgs.getCurrentGemVersion(ctx)
     if err != nil {
         return nil, err
     }
-    
+
     // Ruby 버전에 기본 포함된 gem 버전 확인
     expectedGemVersion, err := rgs.getExpectedGemVersion(ctx, rubyVersion)
     if err != nil {
         return nil, err
     }
-    
+
     return &VersionSyncStatus{
         VersionManager:    "rbenv",
         PackageManager:    "gem",
         VMVersion:         rubyVersion,
-        PMVersion:         gemVersion, 
+        PMVersion:         gemVersion,
         ExpectedPMVersion: expectedGemVersion,
         InSync:            rgs.compareVersions(gemVersion, expectedGemVersion),
     }, nil
@@ -182,25 +182,25 @@ func (pps *PyenvPipSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
     if err != nil {
         return nil, err
     }
-    
+
     // pip --version으로 현재 pip 버전 확인
-    pipVersion, err := pps.getCurrentPipVersion(ctx) 
+    pipVersion, err := pps.getCurrentPipVersion(ctx)
     if err != nil {
         return nil, err
     }
-    
+
     // Python 버전에 기본 포함된 pip 버전 확인
     expectedPipVersion, err := pps.getExpectedPipVersion(ctx, pythonVersion)
     if err != nil {
         return nil, err
     }
-    
+
     return &VersionSyncStatus{
         VersionManager:    "pyenv",
         PackageManager:    "pip",
         VMVersion:         pythonVersion,
         PMVersion:         pipVersion,
-        ExpectedPMVersion: expectedPipVersion,  
+        ExpectedPMVersion: expectedPipVersion,
         InSync:            pps.compareVersions(pipVersion, expectedPipVersion),
     }, nil
 }
@@ -224,11 +224,11 @@ func (pe *PolicyEngine) ApplyPolicy(ctx context.Context, status *VersionSyncStat
     if policy.PromptUser {
         return pe.promptUserForAction(status)
     }
-    
+
     if policy.AutoFix {
         return pe.autoFixSync(ctx, status, policy)
     }
-    
+
     return nil
 }
 ```
@@ -238,7 +238,7 @@ func (pe *PolicyEngine) ApplyPolicy(ctx context.Context, status *VersionSyncStat
 ### 새로 생성할 파일
 - `internal/pm/sync/manager.go` - 동기화 매니저 구현
 - `internal/pm/sync/nvm_npm.go` - nvm-npm 동기화 로직
-- `internal/pm/sync/rbenv_gem.go` - rbenv-gem 동기화 로직  
+- `internal/pm/sync/rbenv_gem.go` - rbenv-gem 동기화 로직
 - `internal/pm/sync/pyenv_pip.go` - pyenv-pip 동기화 로직
 - `internal/pm/sync/asdf_multi.go` - asdf 다중 도구 동기화
 - `internal/pm/sync/policy.go` - 동기화 정책 엔진
@@ -282,17 +282,17 @@ Version Manager Pairs:
   ❌ rbenv (v1.2.0) ↔ gem      Ruby v3.1.0 ↔ gem v3.4.1       (out of sync)
      Expected gem version: v3.3.7 (bundled with Ruby 3.1.0)
      Action needed: downgrade gem or upgrade Ruby
-  
+
   ✅ pyenv (v2.3.9) ↔ pip      Python v3.11.0 ↔ pip v22.3     (in sync)
-  
-  ❌ asdf (v0.13.1) ↔ nodejs   Node v16.20.0 ↔ npm v8.19.4    (out of sync)  
+
+  ❌ asdf (v0.13.1) ↔ nodejs   Node v16.20.0 ↔ npm v8.19.4    (out of sync)
      Action needed: upgrade Node to v18+ or downgrade npm
 
 Summary: 2/4 pairs synchronized, 2 need attention
 
 Synchronization strategies:
   --strategy vm_priority    Update package managers to match version managers
-  --strategy pm_priority    Update version managers to match package managers  
+  --strategy pm_priority    Update version managers to match package managers
   --strategy latest         Update both to latest compatible versions
 
 Fix synchronization issues? [y/N]:

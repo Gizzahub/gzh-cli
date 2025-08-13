@@ -16,16 +16,16 @@ import (
 
 // mockBootstrapper is a mock implementation of PackageManagerBootstrapper for testing
 type mockBootstrapper struct {
-	name         string
-	isSupported  bool
-	isInstalled  bool
-	dependencies []string
-	installError error
+	name          string
+	isSupported   bool
+	isInstalled   bool
+	dependencies  []string
+	installError  error
 	validateError error
 }
 
-func (m *mockBootstrapper) GetName() string { return m.name }
-func (m *mockBootstrapper) IsSupported() bool { return m.isSupported }
+func (m *mockBootstrapper) GetName() string           { return m.name }
+func (m *mockBootstrapper) IsSupported() bool         { return m.isSupported }
 func (m *mockBootstrapper) GetDependencies() []string { return m.dependencies }
 
 func (m *mockBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapStatus, error) {
@@ -92,7 +92,7 @@ func TestBootstrapManager_CheckAll(t *testing.T) {
 
 	ctx := context.Background()
 	report, err := manager.CheckAll(ctx)
-	
+
 	require.NoError(t, err)
 	assert.Equal(t, 2, report.Summary.Total)
 	assert.Equal(t, 1, report.Summary.Installed)
@@ -129,12 +129,12 @@ func TestBootstrapManager_InstallManagers(t *testing.T) {
 
 	managerNames := []string{"asdf"} // This should also install brew due to dependency
 	report, err := manager.InstallManagers(ctx, managerNames, opts)
-	
+
 	require.NoError(t, err)
 	// Only asdf should be in the report (as it was requested)
 	assert.True(t, asdfMock.isInstalled) // Should be installed as requested
 	assert.True(t, report.Summary.Total >= 1)
-	
+
 	// Find asdf in the report
 	var asdfStatus *BootstrapStatus
 	for _, status := range report.Managers {
@@ -185,7 +185,7 @@ func TestBootstrapManager_GetInstallationOrder(t *testing.T) {
 	if brewIndex != -1 && rbenvIndex != -1 {
 		assert.Less(t, brewIndex, rbenvIndex, "brew should come before rbenv")
 	}
-	
+
 	// nvm has no dependencies, so it should be included
 	assert.Contains(t, order, "nvm")
 }
@@ -197,7 +197,7 @@ func TestBootstrapManager_FormatReport(t *testing.T) {
 		logger:        logger,
 		resolver:      NewDependencyResolver(),
 	}
-	
+
 	// Add some mock bootstrappers to prevent nil pointer
 	manager.bootstrappers["brew"] = &mockBootstrapper{name: "brew", isSupported: true}
 	manager.bootstrappers["asdf"] = &mockBootstrapper{name: "asdf", isSupported: true}
@@ -207,9 +207,9 @@ func TestBootstrapManager_FormatReport(t *testing.T) {
 		Timestamp: time.Now(),
 		Managers: []BootstrapStatus{
 			{
-				Manager:   "brew",
-				Installed: true,
-				Version:   "4.1.0",
+				Manager:    "brew",
+				Installed:  true,
+				Version:    "4.1.0",
 				ConfigPath: "/opt/homebrew/bin/brew",
 			},
 			{
@@ -226,7 +226,7 @@ func TestBootstrapManager_FormatReport(t *testing.T) {
 	}
 
 	output := manager.FormatReport(report, false)
-	
+
 	assert.Contains(t, output, "Package Manager Bootstrap Status")
 	assert.Contains(t, output, "darwin/arm64")
 	assert.Contains(t, output, "✅ brew")
@@ -237,11 +237,11 @@ func TestBootstrapManager_FormatReport(t *testing.T) {
 func TestBootstrapOptions_JSONMarshal(t *testing.T) {
 	// Test Duration JSON marshaling
 	d := Duration{Duration: 5 * time.Minute}
-	
+
 	data, err := d.MarshalJSON()
 	require.NoError(t, err)
 	assert.Equal(t, `"5m0s"`, string(data))
-	
+
 	// Test unmarshaling
 	var d2 Duration
 	err = d2.UnmarshalJSON([]byte(`"10m30s"`))

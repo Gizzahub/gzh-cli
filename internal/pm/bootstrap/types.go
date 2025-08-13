@@ -43,37 +43,37 @@ type BootstrapReport struct {
 type PackageManagerBootstrapper interface {
 	// CheckInstallation verifies if the package manager is installed and configured
 	CheckInstallation(ctx context.Context) (*BootstrapStatus, error)
-	
+
 	// Install installs the package manager
 	Install(ctx context.Context, force bool) error
-	
+
 	// Configure sets up the package manager with appropriate configuration
 	Configure(ctx context.Context) error
-	
+
 	// GetDependencies returns list of other managers this one depends on
 	GetDependencies() []string
-	
+
 	// GetInstallScript returns the installation script or command
 	GetInstallScript() (string, error)
-	
+
 	// Validate ensures the installation is working correctly
 	Validate(ctx context.Context) error
-	
+
 	// GetName returns the name of this package manager
 	GetName() string
-	
+
 	// IsSupported checks if this manager is supported on current platform
 	IsSupported() bool
 }
 
 // BootstrapOptions configures bootstrap behavior.
 type BootstrapOptions struct {
-	Managers         []string `json:"managers,omitempty"`         // Specific managers to process (empty = all)
-	Force            bool     `json:"force"`                      // Force reinstall even if already installed
-	SkipConfiguration bool     `json:"skip_configuration"`        // Skip post-install configuration
-	DryRun           bool     `json:"dry_run"`                    // Only simulate, don't actually install
-	Timeout          Duration `json:"timeout"`                    // Timeout for installation operations
-	Verbose          bool     `json:"verbose"`                    // Enable verbose output
+	Managers          []string `json:"managers,omitempty"` // Specific managers to process (empty = all)
+	Force             bool     `json:"force"`              // Force reinstall even if already installed
+	SkipConfiguration bool     `json:"skip_configuration"` // Skip post-install configuration
+	DryRun            bool     `json:"dry_run"`            // Only simulate, don't actually install
+	Timeout           Duration `json:"timeout"`            // Timeout for installation operations
+	Verbose           bool     `json:"verbose"`            // Enable verbose output
 }
 
 // Duration is a wrapper for time.Duration to support JSON marshaling

@@ -13,13 +13,13 @@
 
 ## 🎯 구현해야 할 TODO 항목들
 
-### 1. **포괄적인 리포트 생성** 
+### 1. **포괄적인 리포트 생성**
 - [ ] **위치**: `cmd/net-env/network_metrics_cmd.go:532`
 - [ ] **TODO**: `TODO: Implement comprehensive report generation`
 - [ ] **내용**: 전체 네트워크 상태에 대한 종합적인 분석 리포트 생성
 
 ### 2. **대역폭 속도 계산**
-- [ ] **위치**: `cmd/net-env/network_metrics_cmd.go:712` 
+- [ ] **위치**: `cmd/net-env/network_metrics_cmd.go:712`
 - [ ] **TODO**: `TODO: Calculate actual bandwidth rates by comparing with previous measurements`
 - [ ] **내용**: 이전 측정값과 비교하여 실제 대역폭 사용률 계산
 
@@ -35,7 +35,7 @@
 
 ### 5. **텍스트 리포트 생성**
 - [ ] **위치**: `cmd/net-env/network_metrics_cmd.go:1023`
-- [ ] **TODO**: `TODO: Implement text report generation`  
+- [ ] **TODO**: `TODO: Implement text report generation`
 - [ ] **내용**: 콘솔이나 파일로 출력 가능한 텍스트 형식 리포트
 
 ## 🔧 기술적 구현
@@ -67,24 +67,24 @@ func (cmd *networkMetricsCmd) generateComprehensiveReport() (*ComprehensiveNetwo
     if err != nil {
         return nil, err
     }
-    
+
     bandwidth, err := cmd.calculateBandwidthUsage(interfaces)
     if err != nil {
         return nil, err
     }
-    
+
     latency, err := cmd.measureLatencyMetrics()
     if err != nil {
         return nil, err
     }
-    
+
     summary := cmd.generateSummary(interfaces, bandwidth, latency)
     recommendations := cmd.generateRecommendations(summary, interfaces)
-    
+
     return &ComprehensiveNetworkReport{
         Summary:         summary,
         Interfaces:      interfaces,
-        BandwidthUsage:  bandwidth, 
+        BandwidthUsage:  bandwidth,
         LatencyMetrics:  latency,
         Recommendations: recommendations,
         Timestamp:       time.Now(),
@@ -111,19 +111,19 @@ type BandwidthRate struct {
 
 func (bc *BandwidthCalculator) CalculateRates(current map[string]*InterfaceMetrics) []BandwidthRate {
     var rates []BandwidthRate
-    
+
     for interfaceName, currentMetrics := range current {
         if prev, exists := bc.previousMeasurements[interfaceName]; exists {
             timeDiff := currentMetrics.Timestamp.Sub(prev.Timestamp).Seconds()
-            
+
             if timeDiff > 0 {
                 rxRate := uint64(float64(currentMetrics.RxBytes-prev.RxBytes) / timeDiff)
                 txRate := uint64(float64(currentMetrics.TxBytes-prev.TxBytes) / timeDiff)
-                
+
                 // 인터페이스 최대 속도 대비 사용률 계산
                 maxSpeed := bc.getInterfaceMaxSpeed(interfaceName)
                 utilization := float64(rxRate+txRate) / float64(maxSpeed) * 100
-                
+
                 rates = append(rates, BandwidthRate{
                     Interface:       interfaceName,
                     RxBytesPerSec:   rxRate,
@@ -135,10 +135,10 @@ func (bc *BandwidthCalculator) CalculateRates(current map[string]*InterfaceMetri
             }
         }
     }
-    
+
     // 현재 측정값을 다음 계산을 위해 저장
     bc.previousMeasurements = current
-    
+
     return rates
 }
 ```
@@ -154,7 +154,7 @@ func (isd *InterfaceSpeedDetector) GetInterfaceMaxSpeed(interfaceName string) (u
     if speed, exists := isd.cache[interfaceName]; exists {
         return speed, nil
     }
-    
+
     // Linux: /sys/class/net/{interface}/speed 파일에서 읽기
     speedFile := fmt.Sprintf("/sys/class/net/%s/speed", interfaceName)
     if data, err := os.ReadFile(speedFile); err == nil {
@@ -165,14 +165,14 @@ func (isd *InterfaceSpeedDetector) GetInterfaceMaxSpeed(interfaceName string) (u
             return speedBps, nil
         }
     }
-    
+
     // ethtool을 사용한 속도 감지
     cmd := exec.Command("ethtool", interfaceName)
     output, err := cmd.Output()
     if err == nil {
         return isd.parseEthtoolOutput(string(output))
     }
-    
+
     // 기본값으로 인터페이스 타입에 따른 추정
     return isd.estimateSpeedByType(interfaceName), nil
 }
@@ -182,15 +182,15 @@ func (isd *InterfaceSpeedDetector) CalculateUtilization(interfaceName string, rx
     if err != nil {
         return 0, err
     }
-    
+
     totalRate := rxRate + txRate
     utilization := float64(totalRate) / float64(maxSpeed) * 100
-    
+
     // 100% 초과 방지 (측정 오차 고려)
     if utilization > 100 {
         utilization = 100
     }
-    
+
     return utilization, nil
 }
 ```
@@ -226,7 +226,7 @@ const htmlReportTemplate = `
         <p>Generated: {{.Timestamp.Format "2006-01-02 15:04:05"}}</p>
         <p>Duration: {{.Duration}}</p>
     </div>
-    
+
     <div class="summary">
         <div class="metric-card">
             <h3>📊 Interface Summary</h3>
@@ -245,11 +245,11 @@ const htmlReportTemplate = `
             <p>Packet Loss: {{.Summary.PacketLossPercent | printf "%.2f"}}%</p>
         </div>
     </div>
-    
+
     <div class="chart">
         <canvas id="bandwidthChart"></canvas>
     </div>
-    
+
     <table class="interface-table">
         <thead>
             <tr>
@@ -274,7 +274,7 @@ const htmlReportTemplate = `
             {{end}}
         </tbody>
     </table>
-    
+
     {{if .Recommendations}}
     <div class="recommendations">
         <h3>💡 Recommendations</h3>
@@ -285,7 +285,7 @@ const htmlReportTemplate = `
         </ul>
     </div>
     {{end}}
-    
+
     <script>
         // 대역폭 차트 생성
         const ctx = document.getElementById('bandwidthChart').getContext('2d');
@@ -299,7 +299,7 @@ const htmlReportTemplate = `
                     borderColor: 'rgb(75, 192, 192)',
                     tension: 0.1
                 }, {
-                    label: 'TX Rate', 
+                    label: 'TX Rate',
                     data: [{{range .BandwidthHistory}}{{.TxRate}},{{end}}],
                     borderColor: 'rgb(255, 99, 132)',
                     tension: 0.1
@@ -328,18 +328,18 @@ func (hrg *HTMLReportGenerator) GenerateReport(report *ComprehensiveNetworkRepor
         "formatBytes": hrg.formatBytes,
         "printf":      fmt.Sprintf,
     }).Parse(htmlReportTemplate)
-    
+
     if err != nil {
         return fmt.Errorf("failed to parse template: %w", err)
     }
-    
+
     outputPath := filepath.Join(hrg.outputDir, filename)
     file, err := os.Create(outputPath)
     if err != nil {
         return fmt.Errorf("failed to create report file: %w", err)
     }
     defer file.Close()
-    
+
     return tmpl.Execute(file, report)
 }
 ```
@@ -352,17 +352,17 @@ type TextReportGenerator struct {
 
 func (trg *TextReportGenerator) GenerateReport(report *ComprehensiveNetworkReport, filename string) error {
     var buf strings.Builder
-    
+
     // 헤더
     buf.WriteString("📊 NETWORK METRICS REPORT\n")
     buf.WriteString(strings.Repeat("=", 50) + "\n\n")
     buf.WriteString(fmt.Sprintf("Generated: %s\n", report.Timestamp.Format("2006-01-02 15:04:05")))
     buf.WriteString(fmt.Sprintf("Duration: %v\n\n", report.Duration))
-    
+
     // 요약
     buf.WriteString("📈 SUMMARY\n")
     buf.WriteString(strings.Repeat("-", 20) + "\n")
-    buf.WriteString(fmt.Sprintf("Interfaces: %d total, %d active\n", 
+    buf.WriteString(fmt.Sprintf("Interfaces: %d total, %d active\n",
         report.Summary.TotalInterfaces, report.Summary.ActiveInterfaces))
     buf.WriteString(fmt.Sprintf("Bandwidth: %s total, %s used (%.1f%% utilization)\n",
         trg.formatBytes(report.Summary.TotalBandwidth),
@@ -370,25 +370,25 @@ func (trg *TextReportGenerator) GenerateReport(report *ComprehensiveNetworkRepor
         report.Summary.UtilizationPercent))
     buf.WriteString(fmt.Sprintf("Latency: %.2f ms average, %.2f%% packet loss\n\n",
         report.Summary.AverageLatency, report.Summary.PacketLossPercent))
-    
+
     // 인터페이스 상세 정보
     buf.WriteString("🔌 INTERFACE DETAILS\n")
     buf.WriteString(strings.Repeat("-", 20) + "\n")
     buf.WriteString(fmt.Sprintf("%-12s %-8s %-12s %-12s %-12s %-8s\n",
         "Interface", "Status", "Speed", "RX Rate", "TX Rate", "Usage%"))
     buf.WriteString(strings.Repeat("-", 70) + "\n")
-    
+
     for _, iface := range report.Interfaces {
         buf.WriteString(fmt.Sprintf("%-12s %-8s %-12s %-12s %-12s %-8.1f\n",
             iface.Name,
             iface.Status,
             trg.formatBytes(iface.MaxSpeed)+"/s",
-            trg.formatBytes(iface.RxRate)+"/s", 
+            trg.formatBytes(iface.RxRate)+"/s",
             trg.formatBytes(iface.TxRate)+"/s",
             iface.Utilization))
     }
     buf.WriteString("\n")
-    
+
     // 권장사항
     if len(report.Recommendations) > 0 {
         buf.WriteString("💡 RECOMMENDATIONS\n")
@@ -398,7 +398,7 @@ func (trg *TextReportGenerator) GenerateReport(report *ComprehensiveNetworkRepor
         }
         buf.WriteString("\n")
     }
-    
+
     // 파일 저장
     outputPath := filepath.Join(trg.outputDir, filename)
     return os.WriteFile(outputPath, []byte(buf.String()), 0644)
@@ -445,7 +445,7 @@ func TestBandwidthCalculator_CalculateRates(t *testing.T) {
 }
 
 func TestInterfaceSpeedDetector_GetMaxSpeed(t *testing.T) {
-    // 인터페이스 속도 감지 테스트  
+    // 인터페이스 속도 감지 테스트
 }
 
 func TestHTMLReportGenerator_GenerateReport(t *testing.T) {
@@ -486,7 +486,7 @@ feat(claude-opus): Network Metrics 리포트 기능 완성
 
 Resolves: cmd/net-env/network_metrics_cmd.go TODO items
 - L532: comprehensive report generation
-- L712: bandwidth rate calculations  
+- L712: bandwidth rate calculations
 - L801: interface speed detection
 - L1019: HTML report generation
 - L1023: text report generation

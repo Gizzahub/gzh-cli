@@ -3,14 +3,14 @@ status: suspended
 reason: 과밀 파일 (22개 체크박스 항목) - 논리적 단위로 분할됨
 split_into:
   - 03a-implement-upgrade-interfaces.md
-  - 03b-implement-upgrade-managers.md  
+  - 03b-implement-upgrade-managers.md
   - 03c-implement-upgrade-commands.md
   - 03d-implement-upgrade-tests.md
 ---
 
 # TODO: 패키지 매니저 업그레이드 기능 구현 (원본)
 
-- status: [ ]  
+- status: [ ]
 - priority: medium (P2)
 - category: package-manager
 - estimated_effort: 1시간
@@ -97,13 +97,13 @@ func (h *HomebrewUpgrader) CheckUpdate(ctx context.Context) (*UpgradeStatus, err
     if err != nil {
         return nil, err
     }
-    
+
     // GitHub API로 최신 릴리즈 정보 확인
     latestVersion, err := h.getLatestVersion(ctx)
     if err != nil {
         return nil, err
     }
-    
+
     return &UpgradeStatus{
         Manager:          "brew",
         CurrentVersion:   currentVersion,
@@ -122,13 +122,13 @@ func (h *HomebrewUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) 
         }
         h.logger.Info("Backup created: %s", backupPath)
     }
-    
+
     // brew update && brew upgrade
     cmd := exec.CommandContext(ctx, "brew", "update")
     if err := cmd.Run(); err != nil {
         return fmt.Errorf("brew update failed: %w", err)
     }
-    
+
     // brew 자체 업그레이드는 update에 포함됨
     return nil
 }
@@ -144,7 +144,7 @@ func (a *AsdfUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) erro
     return cmd.Run()
 }
 
-// nvm 업그레이드 
+// nvm 업그레이드
 type NvmUpgrader struct {
     logger logger.Logger
 }
@@ -217,7 +217,7 @@ Checking for updates...
 
 Available Updates:
   📦 brew      v4.1.14 → v4.2.0    (released 2 days ago)
-  📦 asdf      v0.12.0 → v0.13.1   (released 1 week ago)  
+  📦 asdf      v0.12.0 → v0.13.1   (released 1 week ago)
   📦 nvm       v0.39.0 → v0.39.2   (released 3 days ago)
   ✅ rbenv     v1.2.0 (up to date)
   ✅ pyenv     v2.3.9 (up to date)
