@@ -76,7 +76,7 @@ type BootstrapOptions struct {
 	Verbose           bool     `json:"verbose"`            // Enable verbose output
 }
 
-// Duration is a wrapper for time.Duration to support JSON marshaling
+// Duration is a wrapper for time.Duration to support JSON marshaling.
 type Duration struct {
 	time.Duration
 }

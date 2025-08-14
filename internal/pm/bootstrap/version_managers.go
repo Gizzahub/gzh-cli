@@ -67,7 +67,10 @@ func (n *NvmBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapStat
 func (n *NvmBootstrapper) Install(ctx context.Context, force bool) error {
 	n.logger.Info("Installing nvm")
 
-	script, _ := n.GetInstallScript()
+	script, err := n.GetInstallScript()
+	if err != nil {
+		return fmt.Errorf("failed to get install script: %w", err)
+	}
 	cmd := exec.CommandContext(ctx, "bash", "-c", script)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -350,7 +353,10 @@ func (s *SdkmanBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapS
 func (s *SdkmanBootstrapper) Install(ctx context.Context, force bool) error {
 	s.logger.Info("Installing SDKMAN")
 
-	script, _ := s.GetInstallScript()
+	script, err := s.GetInstallScript()
+	if err != nil {
+		return fmt.Errorf("failed to get install script: %w", err)
+	}
 	cmd := exec.CommandContext(ctx, "bash", "-c", script)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

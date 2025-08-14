@@ -15,6 +15,12 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
+const (
+	asdfName       = "asdf"
+	linuxPlatform  = "linux"
+	darwinPlatform = "darwin"
+)
+
 // AsdfBootstrapper handles asdf installation and configuration.
 type AsdfBootstrapper struct {
 	logger logger.CommonLogger
@@ -29,18 +35,18 @@ func NewAsdfBootstrapper(logger logger.CommonLogger) *AsdfBootstrapper {
 
 // GetName returns the name of this package manager.
 func (a *AsdfBootstrapper) GetName() string {
-	return "asdf"
+	return asdfName
 }
 
 // IsSupported checks if asdf is supported on the current platform.
 func (a *AsdfBootstrapper) IsSupported() bool {
-	return runtime.GOOS == "darwin" || runtime.GOOS == "linux"
+	return runtime.GOOS == darwinPlatform || runtime.GOOS == linuxPlatform
 }
 
 // GetDependencies returns the dependencies for asdf.
 func (a *AsdfBootstrapper) GetDependencies() []string {
 	// asdf can be installed via Homebrew on macOS, or directly via Git
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == darwinPlatform {
 		return []string{"brew"}
 	}
 	return []string{} // Git is assumed to be available
@@ -120,9 +126,9 @@ func (a *AsdfBootstrapper) Install(ctx context.Context, force bool) error {
 	}
 
 	switch runtime.GOOS {
-	case "darwin":
+	case darwinPlatform:
 		return a.installViaBrew(ctx)
-	case "linux":
+	case linuxPlatform:
 		return a.installViaGit(ctx)
 	default:
 		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
@@ -139,9 +145,9 @@ func (a *AsdfBootstrapper) Configure(ctx context.Context) error {
 // GetInstallScript returns the asdf installation script.
 func (a *AsdfBootstrapper) GetInstallScript() (string, error) {
 	switch runtime.GOOS {
-	case "darwin":
+	case darwinPlatform:
 		return "brew install asdf", nil
-	case "linux":
+	case linuxPlatform:
 		return `git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2`, nil
 	default:
 		return "", fmt.Errorf("no install script for platform %s", runtime.GOOS)
@@ -307,13 +313,13 @@ end`, asdfDir, asdfDir, asdfDir)
 
 	// Create directory if it doesn't exist (for fish config)
 	if strings.Contains(profilePath, "config/fish") {
-		if err := os.MkdirAll(filepath.Dir(profilePath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(profilePath), 0o750); err != nil {
 			return fmt.Errorf("failed to create fish config directory: %w", err)
 		}
 	}
 
 	// Append asdf configuration
-	file, err := os.OpenFile(profilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	file, err := os.OpenFile(profilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to open shell profile for writing: %w", err)
 	}

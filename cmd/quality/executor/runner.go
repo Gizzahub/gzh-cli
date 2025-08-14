@@ -236,12 +236,13 @@ func (p *ExecutionPlanner) CreatePlan(projectRoot string, registry tools.ToolReg
 			}
 
 			// Determine priority
-			priority := 0
-			if tool.Type() == tools.FORMAT {
+			var priority int
+			switch tool.Type() {
+			case tools.FORMAT:
 				priority = 10 // Formatters run first
-			} else if tool.Type() == tools.LINT {
+			case tools.LINT:
 				priority = 5 // Linters run second
-			} else {
+			default:
 				priority = 7 // BOTH tools run in between
 			}
 

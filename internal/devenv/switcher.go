@@ -340,7 +340,7 @@ func validateHookCommand(command string) error {
 	}
 
 	// Allow only safe characters - alphanumeric, common punctuation, spaces
-	safePattern := regexp.MustCompile(`^[a-zA-Z0-9\s\-_./=:@\[\]{}()\n\t"']+$`)
+	safePattern := regexp.MustCompile(`^[a-zA-Z0-9\s\-_./=:@\[\]{}()\n"']+$`)
 	if !safePattern.MatchString(command) {
 		return errors.New("hook command contains unsafe characters")
 	}

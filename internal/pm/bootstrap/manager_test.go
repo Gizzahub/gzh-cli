@@ -14,7 +14,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// mockBootstrapper is a mock implementation of PackageManagerBootstrapper for testing
+// mockBootstrapper is a mock implementation of PackageManagerBootstrapper for testing.
 type mockBootstrapper struct {
 	name          string
 	isSupported   bool

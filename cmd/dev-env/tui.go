@@ -71,13 +71,8 @@ func runTUI(cmd *cobra.Command, args []string) error {
 
 	// Configure tea options
 	var opts []tea.ProgramOption
-	if verbose {
-		// Enable debug logging if verbose is set
-		opts = append(opts, tea.WithAltScreen())
-	} else {
-		// Normal operation with alt screen
-		opts = append(opts, tea.WithAltScreen())
-	}
+	// Enable alt screen for both verbose and normal operation
+	opts = append(opts, tea.WithAltScreen())
 
 	// Create and run the TUI program
 	p := tea.NewProgram(model, opts...)

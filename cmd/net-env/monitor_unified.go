@@ -139,16 +139,16 @@ func captureNetworkState(ctx context.Context) *NetworkState {
 }
 
 // hasNetworkChanged checks if network state has changed.
-func hasNetworkChanged(old, new *NetworkState) bool {
+func hasNetworkChanged(old, current *NetworkState) bool {
 	if old == nil {
 		return true
 	}
 
-	return old.WiFiSSID != new.WiFiSSID ||
-		old.IPAddress != new.IPAddress ||
-		old.Gateway != new.Gateway ||
-		old.VPNStatus != new.VPNStatus ||
-		old.ProxyStatus != new.ProxyStatus
+	return old.WiFiSSID != current.WiFiSSID ||
+		old.IPAddress != current.IPAddress ||
+		old.Gateway != current.Gateway ||
+		old.VPNStatus != current.VPNStatus ||
+		old.ProxyStatus != current.ProxyStatus
 }
 
 // displayMonitoringHeader displays the monitoring header.

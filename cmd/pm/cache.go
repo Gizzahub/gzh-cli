@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CacheInfo holds information about cache for a specific package manager
+// CacheInfo holds information about cache for a specific package manager.
 type CacheInfo struct {
 	Name      string `json:"name"`
 	Path      string `json:"path,omitempty"`
@@ -27,7 +27,7 @@ type CacheInfo struct {
 	Error     string `json:"error,omitempty"`
 }
 
-// CacheStatus holds the overall cache status
+// CacheStatus holds the overall cache status.
 type CacheStatus struct {
 	TotalSize      int64       `json:"totalSize"`
 	TotalSizeHuman string      `json:"totalSizeHuman"`
@@ -35,7 +35,7 @@ type CacheStatus struct {
 	Timestamp      time.Time   `json:"timestamp"`
 }
 
-// CleanResult holds the result of cache cleaning operation
+// CleanResult holds the result of cache cleaning operation.
 type CleanResult struct {
 	Manager        string `json:"manager"`
 	Success        bool   `json:"success"`

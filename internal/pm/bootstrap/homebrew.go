@@ -263,7 +263,7 @@ fi`
 	}
 
 	// Append Homebrew configuration
-	file, err := os.OpenFile(profilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	file, err := os.OpenFile(profilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to open shell profile for writing: %w", err)
 	}
