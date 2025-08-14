@@ -34,7 +34,7 @@ This project has a structured documentation system with protection rules:
 
 ## Project Overview
 
-gzh-cli is a comprehensive CLI tool (binary: `gz`) for managing development environments and Git repositories across multiple platforms. It provides bulk operations for cloning organizations, package management, network environment transitions, IDE settings monitoring, and development environment configuration management.
+gzh-cli (formerly gzh-manager-go) is a comprehensive CLI tool (binary: `gz`) for managing development environments and Git repositories across multiple platforms. It provides bulk operations for cloning organizations, package management, network environment transitions, IDE settings monitoring, and development environment configuration management.
 
 ## Essential Commands
 
@@ -127,8 +127,11 @@ make regenerate-mocks # Clean and regenerate all mocks
   - `net-env/` - Network environment transitions (WiFi monitoring, VPN, DNS, proxy)
   - `ide/` - JetBrains IDE settings monitoring and sync fixes
   - `repo-config/` - GitHub repository configuration management
-  - `event.go` - GitHub event management and webhook server
-  - `webhook.go` - GitHub webhook management
+  - `actions-policy/` - GitHub Actions policy management
+  - `quality/` - Code quality checks and improvements
+  - `shell/` - Shell integration and automation
+  - `doctor/` - System health diagnostics
+  - `profile/` - Performance profiling using Go pprof
 
 ### Core Packages
 
@@ -229,8 +232,9 @@ make regenerate-mocks # Clean and regenerate all mocks
   - Examples: `gz git repo clone-or-update https://github.com/user/repo.git`
 - `gz synclone` - Clone entire organizations from GitHub, GitLab, Gitea, Gogs
 - `gz repo-config` - GitHub repository configuration management
-- `gz event` - GitHub event management and webhook server
-- `gz webhook` - GitHub webhook management
+- `gz actions-policy` - GitHub Actions policy management
+- `gz quality` - Code quality checks and improvements
+- `gz shell` - Shell integration and automation
 
 ### Development Environment
 
