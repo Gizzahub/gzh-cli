@@ -1,6 +1,6 @@
 # 데몬 모드에서 CLI 모드로 마이그레이션 가이드
 
-이 가이드는 gzh-manager-go의 네트워크 환경 관리가 데몬 기반 자동 모니터링에서 CLI 기반 수동 전환으로 변경됨에 따라, 기존 사용자가 새로운 방식으로 원활하게 전환할 수 있도록 도움을 제공합니다.
+이 가이드는 gzh-cli의 네트워크 환경 관리가 데몬 기반 자동 모니터링에서 CLI 기반 수동 전환으로 변경됨에 따라, 기존 사용자가 새로운 방식으로 원활하게 전환할 수 있도록 도움을 제공합니다.
 
 ## 📋 변경 사항 개요
 
@@ -279,7 +279,7 @@ cat /etc/resolv.conf
 
 문제가 계속 발생하면 다음을 확인하세요:
 
-1. [GitHub Issues](https://github.com/gizzahub/gzh-manager-go/issues)
+1. [GitHub Issues](https://github.com/gizzahub/gzh-cli/issues)
 2. [사용자 가이드](../USAGE.md#네트워크-환경-관리)
 3. [프로젝트 문서](../README.md)
 

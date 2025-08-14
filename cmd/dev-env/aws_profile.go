@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/env"
 )
 
 const (

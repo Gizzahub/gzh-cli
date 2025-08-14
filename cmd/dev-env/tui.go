@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/devenv/tui"
+	"github.com/Gizzahub/gzh-cli/internal/devenv/tui"
 )
 
 // newTUICmd creates a new TUI command for interactive development environment management.

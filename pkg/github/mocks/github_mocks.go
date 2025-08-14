@@ -17,7 +17,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	github "github.com/Gizzahub/gzh-manager-go/pkg/github"
+	github "github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
 // MockHTTPClient is a mock of HTTPClient interface.

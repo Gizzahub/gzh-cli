@@ -1,6 +1,6 @@
 # Code Quality Standards
 
-This document describes the code quality standards and linting configuration for the gzh-manager-go project.
+This document describes the code quality standards and linting configuration for the gzh-cli project.
 
 ## Overview
 

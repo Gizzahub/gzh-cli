@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	synclone "github.com/Gizzahub/gzh-manager-go/pkg/synclone"
+	synclone "github.com/Gizzahub/gzh-cli/pkg/synclone"
 )
 
 // Provider constants.

@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
 // MockComplexGitHubService demonstrates testify mock for complex stateful scenarios.

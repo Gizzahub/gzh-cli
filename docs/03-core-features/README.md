@@ -1,6 +1,6 @@
 # ⭐ 핵심 기능
 
-gzh-manager-go의 주요 기능들을 카테고리별로 정리한 문서입니다.
+gzh-cli의 주요 기능들을 카테고리별로 정리한 문서입니다.
 
 ## 📋 기능 카테고리
 
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install gzh-manager-go
+      - name: Install gzh-cli
         run: curl -sSL https://install.gzh.dev | sh
       - name: Run audit
         run: |

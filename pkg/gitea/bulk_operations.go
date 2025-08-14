@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/git"
-	"github.com/Gizzahub/gzh-manager-go/internal/workerpool"
+	"github.com/Gizzahub/gzh-cli/internal/git"
+	"github.com/Gizzahub/gzh-cli/internal/workerpool"
 )
 
 // RefreshAllWithWorkerPool performs bulk repository refresh using worker pools.

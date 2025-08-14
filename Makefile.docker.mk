@@ -1,4 +1,4 @@
-# Makefile.docker - Docker targets for gzh-manager-go
+# Makefile.docker - Docker targets for gzh-cli
 # Container build, optimization, and deployment
 
 # ==============================================================================

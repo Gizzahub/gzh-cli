@@ -15,8 +15,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/cli"
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/cli"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 // SetupResult represents a setup step result.

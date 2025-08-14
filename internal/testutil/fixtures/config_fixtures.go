@@ -4,7 +4,7 @@
 package fixtures
 
 import (
-	"github.com/Gizzahub/gzh-manager-go/pkg/config"
+	"github.com/Gizzahub/gzh-cli/pkg/config"
 )
 
 const (

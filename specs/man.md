@@ -5,7 +5,7 @@
 
 ## Overview
 
-The `man` command provides manual page generation capabilities for the gzh-manager-go CLI tool. It automatically generates Unix-style manual pages in roff format from Cobra command definitions, enabling seamless integration with system documentation standards and man page infrastructure.
+The `man` command provides manual page generation capabilities for the gzh-cli CLI tool. It automatically generates Unix-style manual pages in roff format from Cobra command definitions, enabling seamless integration with system documentation standards and man page infrastructure.
 
 ## Commands
 
@@ -142,7 +142,7 @@ Manual pages can be included in:
 ### Standard Roff Structure
 
 ```roff
-.TH GZ 1 "2025-01-14" "gzh-manager-go" "User Commands"
+.TH GZ 1 "2025-01-14" "gzh-cli" "User Commands"
 .SH NAME
 gz \- GZH Manager command line tool
 .SH SYNOPSIS

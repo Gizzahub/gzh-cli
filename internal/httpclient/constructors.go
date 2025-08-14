@@ -74,7 +74,7 @@ func DefaultHTTPClientConfig() *HTTPClientConfig {
 		MaxConnsPerHost:     10,
 		IdleConnTimeout:     90 * time.Second,
 		TLSHandshakeTimeout: 10 * time.Second,
-		UserAgent:           "gzh-manager-go/1.0",
+		UserAgent:           "gzh-cli/1.0",
 		EnableMetrics:       true,
 	}
 }

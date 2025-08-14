@@ -2,7 +2,7 @@
 
 ## Overview
 
-The gzh-manager-go project takes security seriously and implements comprehensive security measures across development, deployment, and runtime operations. This document outlines our security practices, vulnerability reporting procedures, and integrated security tooling.
+The gzh-cli project takes security seriously and implements comprehensive security measures across development, deployment, and runtime operations. This document outlines our security practices, vulnerability reporting procedures, and integrated security tooling.
 
 ## Supported Versions
 
@@ -562,7 +562,7 @@ security:
 
 - **Security Email**: <security@gizzahub.com>
 - **GPG Key ID**: Available at <https://gizzahub.com/security.asc>
-- **Security Advisories**: <https://github.com/gizzahub/gzh-manager-go/security/advisories>
+- **Security Advisories**: <https://github.com/gizzahub/gzh-cli/security/advisories>
 
 ### Response Times
 
@@ -575,7 +575,7 @@ security:
 
 We operate a responsible disclosure program:
 
-- **Scope**: Latest stable release of gzh-manager-go
+- **Scope**: Latest stable release of gzh-cli
 - **Rewards**: Recognition and potential monetary rewards
 - **Process**: Report via <security@gizzahub.com>
 - **Timeline**: 90-day coordinated disclosure

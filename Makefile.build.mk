@@ -1,4 +1,4 @@
-# Makefile.build - Build and Installation targets for gzh-manager-go
+# Makefile.build - Build and Installation targets for gzh-cli
 # Build, compilation, and installation management
 
 # ==============================================================================

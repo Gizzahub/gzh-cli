@@ -1,6 +1,6 @@
 # Configuration System
 
-The gzh-manager-go project uses a unified configuration system that supports all commands through a single `gzh.yaml` configuration file.
+The gzh-cli project uses a unified configuration system that supports all commands through a single `gzh.yaml` configuration file.
 
 ## Configuration Priority
 

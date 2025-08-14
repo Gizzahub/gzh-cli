@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/netenv"
+	"github.com/Gizzahub/gzh-cli/internal/netenv"
 )
 
 // newProfileUnifiedCmd creates the unified net-env profile command.

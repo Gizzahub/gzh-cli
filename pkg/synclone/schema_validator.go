@@ -12,7 +12,7 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/env"
 )
 
 // LoadSchemaFromFile loads the JSON schema from the docs directory.
@@ -30,7 +30,7 @@ func LoadSchemaFromFileWithEnv(environment env.Environment) (string, error) {
 	}
 
 	if goPath != "" {
-		paths = append(paths, filepath.Join(goPath, "src", "github.com", "gizzahub", "gzh-manager-go", "docs", "bulk-clone-schema.json"))
+		paths = append(paths, filepath.Join(goPath, "src", "github.com", "gizzahub", "gzh-cli", "docs", "bulk-clone-schema.json"))
 	}
 
 	for _, path := range paths {

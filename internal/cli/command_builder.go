@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 // Package cli provides common CLI patterns and utilities for building consistent
-// command-line interfaces across the gzh-manager-go application.
+// command-line interfaces across the gzh-cli application.
 package cli
 
 import (
@@ -12,7 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/env"
 )
 
 // CommonFlags represents flags that are commonly used across commands.

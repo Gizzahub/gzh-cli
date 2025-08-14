@@ -12,7 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // ListOptions contains options for repository listing.

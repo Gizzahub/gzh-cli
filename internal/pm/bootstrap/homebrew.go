@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 // HomebrewBootstrapper handles Homebrew installation and configuration.

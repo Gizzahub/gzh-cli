@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/git"
-	"github.com/Gizzahub/gzh-manager-go/pkg/github"
+	"github.com/Gizzahub/gzh-cli/internal/git"
+	"github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
 // TestMockFactoryUsage demonstrates how to use the mock factory.

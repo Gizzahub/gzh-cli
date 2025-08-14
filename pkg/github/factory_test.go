@@ -5,7 +5,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/env"
 )
 
 func TestGitHubProviderFactory(t *testing.T) {

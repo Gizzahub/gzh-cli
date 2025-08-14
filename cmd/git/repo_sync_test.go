@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // TestSyncCommand tests the repository synchronization functionality.

@@ -178,7 +178,7 @@ runtime:
 
 dependencies:
   - git@2.30.0
-  - gzh-manager-go@1.0.0
+  - gzh-cli@1.0.0
 
 permissions:
   - filesystem.read

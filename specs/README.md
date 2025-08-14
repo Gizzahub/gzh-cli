@@ -2,7 +2,7 @@
 
 ## 📋 목적과 성격
 
-이 디렉토리는 gzh-manager-go 프로젝트의 **공식 기능 명세서(Specifications)**를 포함합니다.
+이 디렉토리는 gzh-cli 프로젝트의 **공식 기능 명세서(Specifications)**를 포함합니다.
 
 각 상위 커맨드(예: synclone, repo-config) 또는 git extension마다 최소 하나의 명세 파일 또는 디렉토리가 specs/ 내에 존재해야 합니다. 만약 명세 문서가 너무 길어질 경우, 해당 파일을 디렉토리로 전환하여 세부 내용을 여러 파일로 분리해 작성해야 합니다.
 

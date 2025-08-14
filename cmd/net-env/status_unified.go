@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/netenv"
+	"github.com/Gizzahub/gzh-cli/internal/netenv"
 )
 
 // newStatusUnifiedCmd creates the unified net-env status command.

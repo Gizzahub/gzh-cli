@@ -267,7 +267,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/gizzahub/gzh-manager-go/pkg/github"
+    "github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 func main() {

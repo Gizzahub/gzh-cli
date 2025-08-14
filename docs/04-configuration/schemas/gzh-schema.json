@@ -104,7 +104,7 @@
       "type": "object"
     }
   },
-  "description": "Schema for gzh-manager-go configuration files",
+  "description": "Schema for gzh-cli configuration files",
   "properties": {
     "default_provider": {
       "default": "github",

@@ -231,7 +231,7 @@ func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string,
 
 		// Set headers
 		req.Header.Set("Accept", "application/vnd.github.v3+json")
-		req.Header.Set("User-Agent", "gzh-manager-go/1.0")
+		req.Header.Set("User-Agent", "gzh-cli/1.0")
 
 		if c.token != "" {
 			req.Header.Set("Authorization", "token "+c.token)

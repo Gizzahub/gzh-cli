@@ -1,12 +1,12 @@
 # 🚀 시작하기
 
-gzh-manager-go (`gz`) CLI 도구 사용을 위한 기본 가이드입니다.
+gzh-cli (`gz`) CLI 도구 사용을 위한 기본 가이드입니다.
 
 ## 📋 이 섹션의 내용
 
 ### 🔄 마이그레이션 가이드
 
-기존 도구에서 gzh-manager-go로 전환하는 방법을 안내합니다.
+기존 도구에서 gzh-cli로 전환하는 방법을 안내합니다.
 
 - [📦 bulk-clone → synclone 마이그레이션](migration-guides/bulk-clone-to-gzh.md)
   - 기존 bulk-clone 설정을 synclone.yaml로 변환
@@ -114,8 +114,8 @@ gz pm doctor --check-conflicts --managers asdf --output json
 
 ```bash
 # 소스에서 빌드 (Go 1.24.0+ 필요)
-git clone https://github.com/yourusername/gzh-manager-go.git
-cd gzh-manager-go
+git clone https://github.com/yourusername/gzh-cli.git
+cd gzh-cli
 make bootstrap  # 빌드 도구 설치
 make build     # gz 바이너리 생성
 make install   # $GOPATH/bin에 설치

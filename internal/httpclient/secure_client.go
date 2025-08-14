@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/constants"
+	"github.com/Gizzahub/gzh-cli/internal/constants"
 )
 
 // SecureClientConfig defines configuration for secure HTTP clients.
@@ -62,7 +62,7 @@ func DefaultSecureClientConfig() *SecureClientConfig {
 		RetryDelay: constants.RetryDelay,
 
 		// User agent identification
-		UserAgent: "gzh-manager-go/1.0.0",
+		UserAgent: "gzh-cli/1.0.0",
 		DefaultHeaders: map[string]string{
 			"Accept":       "application/json",
 			"Content-Type": "application/json",
@@ -73,7 +73,7 @@ func DefaultSecureClientConfig() *SecureClientConfig {
 // GitHubClientConfig returns optimized configuration for GitHub API.
 func GitHubClientConfig() *SecureClientConfig {
 	config := DefaultSecureClientConfig()
-	config.UserAgent = "gzh-manager-go/1.0.0 (GitHub API Client)"
+	config.UserAgent = "gzh-cli/1.0.0 (GitHub API Client)"
 	config.MaxIdleConnsPerHost = constants.GitHubMaxIdleConnectionsPerHost
 	config.Timeout = constants.LongHTTPTimeout // GitHub operations can be slow
 	return config
@@ -82,7 +82,7 @@ func GitHubClientConfig() *SecureClientConfig {
 // GitLabClientConfig returns optimized configuration for GitLab API.
 func GitLabClientConfig() *SecureClientConfig {
 	config := DefaultSecureClientConfig()
-	config.UserAgent = "gzh-manager-go/1.0.0 (GitLab API Client)"
+	config.UserAgent = "gzh-cli/1.0.0 (GitLab API Client)"
 	config.MaxIdleConnsPerHost = constants.GitLabMaxIdleConnectionsPerHost
 	config.Timeout = constants.MediumHTTPTimeout
 	return config
@@ -91,7 +91,7 @@ func GitLabClientConfig() *SecureClientConfig {
 // GiteaClientConfig returns optimized configuration for Gitea API.
 func GiteaClientConfig() *SecureClientConfig {
 	config := DefaultSecureClientConfig()
-	config.UserAgent = "gzh-manager-go/1.0.0 (Gitea API Client)"
+	config.UserAgent = "gzh-cli/1.0.0 (Gitea API Client)"
 	config.MaxIdleConnsPerHost = constants.GiteaMaxIdleConnectionsPerHost
 	config.Timeout = constants.DefaultHTTPTimeout
 	return config

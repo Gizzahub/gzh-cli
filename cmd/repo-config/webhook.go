@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/types/repoconfig"
+	"github.com/Gizzahub/gzh-cli/pkg/types/repoconfig"
 )
 
 // WebhookFlags represents webhook command flags.

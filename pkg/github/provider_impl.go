@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // GitHubProvider implements the unified GitProvider interface for GitHub.

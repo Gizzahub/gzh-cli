@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	gitlabpkg "github.com/Gizzahub/gzh-manager-go/pkg/gitlab"
-	synclonepkg "github.com/Gizzahub/gzh-manager-go/pkg/synclone"
+	gitlabpkg "github.com/Gizzahub/gzh-cli/pkg/gitlab"
+	synclonepkg "github.com/Gizzahub/gzh-cli/pkg/synclone"
 )
 
 type syncCloneGitlabOptions struct {

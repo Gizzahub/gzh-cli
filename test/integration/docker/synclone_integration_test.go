@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/config"
-	synclone "github.com/Gizzahub/gzh-manager-go/pkg/synclone"
-	"github.com/Gizzahub/gzh-manager-go/test/integration/testcontainers"
+	"github.com/Gizzahub/gzh-cli/pkg/config"
+	synclone "github.com/Gizzahub/gzh-cli/pkg/synclone"
+	"github.com/Gizzahub/gzh-cli/test/integration/testcontainers"
 )
 
 func TestSyncClone_GitLab_Integration(t *testing.T) {

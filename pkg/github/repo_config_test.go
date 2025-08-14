@@ -340,7 +340,7 @@ func TestMakeRequestWithoutToken(t *testing.T) {
 		// Verify no Authorization header is set
 		assert.Empty(t, r.Header.Get("Authorization"))
 		assert.Equal(t, "application/vnd.github.v3+json", r.Header.Get("Accept"))
-		assert.Equal(t, "gzh-manager-go/1.0", r.Header.Get("User-Agent"))
+		assert.Equal(t, "gzh-cli/1.0", r.Header.Get("User-Agent"))
 
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("{}"))

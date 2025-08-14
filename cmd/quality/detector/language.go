@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality/tools"
+	"github.com/Gizzahub/gzh-cli/cmd/quality/tools"
 )
 
 // LanguageInfo contains information about a detected language.

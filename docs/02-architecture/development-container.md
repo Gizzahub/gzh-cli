@@ -25,8 +25,8 @@ The development container provides a consistent, reproducible development enviro
 1. Clone and open the repository:
 
    ```bash
-   git clone https://github.com/gizzahub/gzh-manager-go.git
-   cd gzh-manager-go
+   git clone https://github.com/gizzahub/gzh-cli.git
+   cd gzh-cli
    code .
    ```
 

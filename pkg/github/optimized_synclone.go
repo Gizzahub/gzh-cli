@@ -11,8 +11,8 @@ import (
 
 	"github.com/schollz/progressbar/v3"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/git"
-	"github.com/Gizzahub/gzh-manager-go/internal/workerpool"
+	"github.com/Gizzahub/gzh-cli/internal/git"
+	"github.com/Gizzahub/gzh-cli/internal/workerpool"
 )
 
 // OptimizedSyncCloneManager handles large-scale repository operations with memory optimization.

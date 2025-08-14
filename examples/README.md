@@ -1,4 +1,4 @@
-# gzh-manager-go Examples
+# gzh-cli Examples
 
 This directory contains example configurations and usage patterns for the gz CLI tool, organized by functionality.
 

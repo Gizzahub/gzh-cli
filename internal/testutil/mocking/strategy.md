@@ -1,6 +1,6 @@
 # Comprehensive Mocking Strategy
 
-This document outlines the comprehensive mocking strategy for the gzh-manager-go project.
+This document outlines the comprehensive mocking strategy for the gzh-cli project.
 
 ## 🎯 Overview
 

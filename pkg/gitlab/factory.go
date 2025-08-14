@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/env"
 )
 
 // GitLabProviderFactory defines the interface for creating GitLab-specific instances.

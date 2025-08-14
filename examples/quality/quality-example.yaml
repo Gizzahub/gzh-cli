@@ -32,7 +32,7 @@ languages:
         sections:
           - "standard"
           - "default"
-          - "prefix(github.com/yourusername/gzh-manager-go)"
+          - "prefix(github.com/yourusername/gzh-cli)"
     linters:
       golangci_lint:
         enabled: true

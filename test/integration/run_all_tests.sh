@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # run_all_tests.sh - Comprehensive integration test runner
-# This script runs all modernized integration tests for gzh-manager-go
+# This script runs all modernized integration tests for gzh-cli
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -52,7 +52,7 @@ usage() {
     cat << EOF
 Usage: $0 [OPTIONS]
 
-Run comprehensive integration tests for gzh-manager-go
+Run comprehensive integration tests for gzh-cli
 
 OPTIONS:
     -h, --help              Show this help message
@@ -448,7 +448,7 @@ cleanup() {
 print_summary() {
     log "Integration Test Summary:"
     info "==============================================="
-    info "Project: gzh-manager-go"
+    info "Project: gzh-cli"
     info "Total duration: $1"
     info "Tests run:"
 

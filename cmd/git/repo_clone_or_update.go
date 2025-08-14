@@ -13,8 +13,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/git"
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/git"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 // CloneOrUpdateStrategy defines the strategy to use when a repository already exists

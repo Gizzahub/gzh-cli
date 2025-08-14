@@ -7,7 +7,7 @@ Get started with `gz repo-config` in 5 minutes!
 1. Install gzh-manager:
 
    ```bash
-   go install github.com/gizzahub/gzh-manager-go@latest
+   go install github.com/gizzahub/gzh-cli@latest
    ```
 
 2. Set your GitHub token:

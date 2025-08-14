@@ -32,7 +32,7 @@ grep -r "config/migration" . --include="*.go"
 grep -r "migration\." . --include="*.go"
 
 # import 구문 확인
-grep -r "github.com/Gizzahub/gzh-manager-go/pkg/config/migration" . --include="*.go"
+grep -r "github.com/Gizzahub/gzh-cli/pkg/config/migration" . --include="*.go"
 ```
 
 ### 2. 기능 확인

@@ -41,7 +41,7 @@ The `gz repo-config` feature allows you to:
 
 2. **Install gzh-manager**
    ```bash
-   go install github.com/gizzahub/gzh-manager-go@latest
+   go install github.com/gizzahub/gzh-cli@latest
    ```
 
 ### Quick Start
@@ -739,5 +739,5 @@ For additional help:
 
 1. Run `gz repo-config --help` for command options
 2. Check the [examples directory](../examples/) for more configurations
-3. Open an issue on [GitHub](https://github.com/gizzahub/gzh-manager-go/issues)
+3. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
 4. Review the [API documentation](./repository-configuration-api.md)

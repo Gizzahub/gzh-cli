@@ -1,6 +1,6 @@
 # AWS Profile Management Guide
 
-This guide describes how to use the AWS profile management feature in gzh-manager-go to manage multiple AWS accounts, SSO integration, and automatic credential renewal.
+This guide describes how to use the AWS profile management feature in gzh-cli to manage multiple AWS accounts, SSO integration, and automatic credential renewal.
 
 ## Overview
 

@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/gitlab"
+	"github.com/Gizzahub/gzh-cli/pkg/gitlab"
 )
 
 // ExampleGetDefaultBranch demonstrates how to retrieve the default branch

@@ -13,8 +13,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
-	"github.com/Gizzahub/gzh-manager-go/internal/pm/bootstrap"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/pm/bootstrap"
 )
 
 func newBootstrapCmd(ctx context.Context) *cobra.Command {

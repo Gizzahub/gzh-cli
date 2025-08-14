@@ -91,7 +91,7 @@ func NewProviderFactory() *ProviderFactory {
 					"internal_error",
 				},
 			},
-			UserAgent: "gzh-manager-go/1.0.0",
+			UserAgent: "gzh-cli/1.0.0",
 			HTTPHeaders: map[string]string{
 				"Accept": "application/json",
 			},

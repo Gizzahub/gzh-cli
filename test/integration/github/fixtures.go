@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/config"
+	"github.com/Gizzahub/gzh-cli/pkg/config"
 )
 
 const (

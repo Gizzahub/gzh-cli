@@ -1,4 +1,4 @@
-# Makefile.tools - Tool Installation and Management for gzh-manager-go
+# Makefile.tools - Tool Installation and Management for gzh-cli
 # Development tools, linters, formatters, and utilities
 
 # ==============================================================================

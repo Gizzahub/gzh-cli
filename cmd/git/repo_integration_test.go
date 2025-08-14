@@ -15,10 +15,10 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
-	"github.com/Gizzahub/gzh-manager-go/pkg/gitea"
-	"github.com/Gizzahub/gzh-manager-go/pkg/github"
-	"github.com/Gizzahub/gzh-manager-go/pkg/gitlab"
+	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/Gizzahub/gzh-cli/pkg/gitea"
+	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/Gizzahub/gzh-cli/pkg/gitlab"
 )
 
 // GitRepoIntegrationTestSuite provides integration tests for Git repo functionality

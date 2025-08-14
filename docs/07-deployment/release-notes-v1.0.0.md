@@ -1,10 +1,10 @@
-# gzh-manager-go v1.0.0 Release Notes
+# gzh-cli v1.0.0 Release Notes
 
 ## 🎉 첫 정식 릴리즈 - v1.0.0
 
 **릴리즈 날짜**: 2025년 1월
 
-gzh-manager-go의 첫 번째 정식 릴리즈를 발표합니다! 이번 릴리즈는 개발자와 DevOps 팀을 위한 종합적인 CLI 도구로, GitHub 조직 관리, 리포지토리 대량 클론, 네트워크 환경 자동화 등 다양한 기능을 제공합니다.
+gzh-cli의 첫 번째 정식 릴리즈를 발표합니다! 이번 릴리즈는 개발자와 DevOps 팀을 위한 종합적인 CLI 도구로, GitHub 조직 관리, 리포지토리 대량 클론, 네트워크 환경 자동화 등 다양한 기능을 제공합니다.
 
 ## 🎯 주요 하이라이트
 
@@ -240,20 +240,20 @@ gz net-env wifi monitor --daemon
 
 ```bash
 # Homebrew (macOS/Linux)
-brew install gizzahub/tap/gzh-manager-go
+brew install gizzahub/tap/gzh-cli
 
 # 직접 다운로드
-wget https://github.com/gizzahub/gzh-manager-go/releases/v1.0.0/gzh-manager-go_linux_amd64.tar.gz
+wget https://github.com/gizzahub/gzh-cli/releases/v1.0.0/gzh-cli_linux_amd64.tar.gz
 
 # Docker
-docker pull ghcr.io/gizzahub/gzh-manager-go:v1.0.0
+docker pull ghcr.io/gizzahub/gzh-cli:v1.0.0
 ```
 
 ### 기존 설치 업그레이드
 
 ```bash
 # Homebrew
-brew upgrade gzh-manager-go
+brew upgrade gzh-cli
 
 # 수동 업그레이드
 gz version --check-update
@@ -275,11 +275,11 @@ gz version --check-update
 
 ## 🙏 감사의 말
 
-이번 릴리즈는 수많은 테스트와 피드백을 통해 완성되었습니다. gzh-manager-go를 사용해주시고 기여해주신 모든 분들께 감사드립니다.
+이번 릴리즈는 수많은 테스트와 피드백을 통해 완성되었습니다. gzh-cli를 사용해주시고 기여해주신 모든 분들께 감사드립니다.
 
 ### 기여자
 
-- 핵심 개발: gzh-manager-go team
+- 핵심 개발: gzh-cli team
 - 테스터: 베타 테스터 커뮤니티
 - 문서화: 기술 문서 팀
 
@@ -287,19 +287,19 @@ gz version --check-update
 
 ### 문서 및 리소스
 
-- **공식 문서**: [https://gizzahub.github.io/gzh-manager-go/](https://gizzahub.github.io/gzh-manager-go/)
-- **GitHub Repository**: [https://github.com/gizzahub/gzh-manager-go](https://github.com/gizzahub/gzh-manager-go)
-- **이슈 트래커**: [GitHub Issues](https://github.com/gizzahub/gzh-manager-go/issues)
+- **공식 문서**: [https://gizzahub.github.io/gzh-cli/](https://gizzahub.github.io/gzh-cli/)
+- **GitHub Repository**: [https://github.com/gizzahub/gzh-cli](https://github.com/gizzahub/gzh-cli)
+- **이슈 트래커**: [GitHub Issues](https://github.com/gizzahub/gzh-cli/issues)
 
 ### 커뮤니티
 
-- **토론**: [GitHub Discussions](https://github.com/gizzahub/gzh-manager-go/discussions)
+- **토론**: [GitHub Discussions](https://github.com/gizzahub/gzh-cli/discussions)
 - **FAQ**: [자주 묻는 질문](docs/faq.md)
 
 ### 지원
 
-- **버그 리포트**: [이슈 템플릿](https://github.com/gizzahub/gzh-manager-go/issues/new/choose)
-- **기능 요청**: [기능 요청 템플릿](https://github.com/gizzahub/gzh-manager-go/issues/new/choose)
+- **버그 리포트**: [이슈 템플릿](https://github.com/gizzahub/gzh-cli/issues/new/choose)
+- **기능 요청**: [기능 요청 템플릿](https://github.com/gizzahub/gzh-cli/issues/new/choose)
 
 ## 📋 체크리스트
 
@@ -318,6 +318,6 @@ gz version --check-update
 
 ---
 
-**gzh-manager-go v1.0.0**는 개발자와 DevOps 팀의 생산성을 크게 향상시킬 수 있는 강력한 도구입니다. 여러분의 개발 워크플로우에 새로운 자동화와 효율성을 가져다 줄 것입니다!
+**gzh-cli v1.0.0**는 개발자와 DevOps 팀의 생산성을 크게 향상시킬 수 있는 강력한 도구입니다. 여러분의 개발 워크플로우에 새로운 자동화와 효율성을 가져다 줄 것입니다!
 
 🚀 **지금 시작하세요**: `gz config init`

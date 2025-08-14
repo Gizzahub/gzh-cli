@@ -4,7 +4,7 @@
 
 set -e
 
-echo "Setting up Git hooks for gzh-manager-go..."
+echo "Setting up Git hooks for gzh-cli..."
 
 # Check if pre-commit is installed
 if ! command -v pre-commit &> /dev/null; then

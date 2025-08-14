@@ -1,6 +1,6 @@
 # Configuration Hot-Reloading
 
-This document describes the configuration hot-reloading functionality implemented in gzh-manager-go.
+This document describes the configuration hot-reloading functionality implemented in gzh-cli.
 
 ## Overview
 

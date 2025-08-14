@@ -1,4 +1,4 @@
-# Makefile - gzh-manager-go CLI Tool
+# Makefile - gzh-cli CLI Tool
 # Modular Makefile structure with comprehensive functionality
 # Git Repository Management CLI Tool
 
@@ -47,7 +47,7 @@ include Makefile.docker.mk  # Docker operations
 help: ## show main help menu with categories
 	@echo -e "$(CYAN)"
 	@echo "╔══════════════════════════════════════════════════════════════════════════════╗"
-	@echo -e "║                           $(MAGENTA)gzh-manager-go Makefile Help$(CYAN)                       ║"
+	@echo -e "║                           $(MAGENTA)gzh-cli Makefile Help$(CYAN)                       ║"
 	@echo -e "║                    $(YELLOW)Git Repository Management CLI Tool$(CYAN)                      ║"
 	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
 	@echo -e "$(RESET)"
@@ -75,7 +75,7 @@ help: ## show main help menu with categories
 	@echo -e "  • Use $(YELLOW)'make setup-all'$(RESET) for first-time project setup"
 	@echo "  • All commands support tab completion if bash-completion is installed"
 	@echo ""
-	@echo -e "$(BLUE)📖 Documentation: $(RESET)https://github.com/gizzahub/gzh-manager-go"
+	@echo -e "$(BLUE)📖 Documentation: $(RESET)https://github.com/gizzahub/gzh-cli"
 
 help-build: ## show build and deployment help
 	@echo -e "$(GREEN)🔨 Build and Installation Commands:$(RESET)"
@@ -158,7 +158,7 @@ help-tools: ## show tools help
 info: ## show project information and current configuration
 	@echo -e "$(CYAN)"
 	@echo "╔══════════════════════════════════════════════════════════════════════════════╗"
-	@echo -e "║                         $(MAGENTA)gzh-manager-go Project Information$(CYAN)                   ║"
+	@echo -e "║                         $(MAGENTA)gzh-cli Project Information$(CYAN)                   ║"
 	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
 	@echo -e "$(RESET)"
 	@echo -e "$(GREEN)📋 Project Details:$(RESET)"

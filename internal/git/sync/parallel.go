@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/git/provider"
+	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // executeSyncPlan executes the synchronization plan either sequentially or in parallel.

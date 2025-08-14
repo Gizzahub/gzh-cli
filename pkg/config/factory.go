@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/env"
 )
 
 // ProviderFactory defines the interface for creating provider instances.

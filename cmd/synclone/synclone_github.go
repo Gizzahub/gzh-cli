@@ -15,13 +15,13 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	internalconfig "github.com/Gizzahub/gzh-manager-go/internal/config"
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
-	"github.com/Gizzahub/gzh-manager-go/internal/errors"
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
-	"github.com/Gizzahub/gzh-manager-go/internal/validation"
-	"github.com/Gizzahub/gzh-manager-go/pkg/config"
-	"github.com/Gizzahub/gzh-manager-go/pkg/github"
+	internalconfig "github.com/Gizzahub/gzh-cli/internal/config"
+	"github.com/Gizzahub/gzh-cli/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/errors"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/validation"
+	"github.com/Gizzahub/gzh-cli/pkg/config"
+	"github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
 // GzhYamlConfig represents the structure of gzh.yaml file generated in target directory

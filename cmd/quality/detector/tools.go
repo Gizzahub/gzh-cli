@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality/tools"
+	"github.com/Gizzahub/gzh-cli/cmd/quality/tools"
 )
 
 // SystemToolDetector detects available quality tools on the system.

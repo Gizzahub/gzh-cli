@@ -50,7 +50,7 @@
 
 ## Architecture Overview
 
-gzh-manager-go follows a **simplified CLI architecture** optimized for developer productivity and maintainability. The architecture was recently simplified (2025-01) to remove over-engineered components and focus on CLI-appropriate patterns.
+gzh-cli follows a **simplified CLI architecture** optimized for developer productivity and maintainability. The architecture was recently simplified (2025-01) to remove over-engineered components and focus on CLI-appropriate patterns.
 
 ### Command Structure
 
@@ -182,7 +182,7 @@ gz profile memory                # Memory profiling
 - **Binary Name**: `gz`
 - **Platforms**: Linux, macOS, Windows (64-bit)
 - **Installation**:
-  - Go install: `go install github.com/gizzahub/gzh-manager-go@latest`
+  - Go install: `go install github.com/gizzahub/gzh-cli@latest`
   - Manual build: `make build && make install`
   - Pre-compiled binaries: Available in GitHub Releases
 

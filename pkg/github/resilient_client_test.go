@@ -169,8 +169,8 @@ func TestResilientGitHubClient_Authentication(t *testing.T) {
 		}
 
 		userAgent := r.Header.Get("User-Agent")
-		if userAgent != "gzh-manager-go" {
-			t.Errorf("Expected 'gzh-manager-go' user agent, got '%s'", userAgent)
+		if userAgent != "gzh-cli" {
+			t.Errorf("Expected 'gzh-cli' user agent, got '%s'", userAgent)
 		}
 
 		accept := r.Header.Get("Accept")

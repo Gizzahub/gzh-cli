@@ -5,7 +5,7 @@
 
 ## Overview
 
-The gzh-manager-go CLI tool (`gz`) provides a comprehensive set of commands for managing development environments, repositories, and system configurations.
+The gzh-cli CLI tool (`gz`) provides a comprehensive set of commands for managing development environments, repositories, and system configurations.
 
 ## Command List
 

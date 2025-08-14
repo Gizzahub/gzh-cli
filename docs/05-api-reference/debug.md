@@ -477,7 +477,7 @@ import (
     "context"
     "log"
 
-    "github.com/gizzahub/gzh-manager-go/pkg/debug"
+    "github.com/gizzahub/gzh-cli/pkg/debug"
 )
 
 func main() {
@@ -505,7 +505,7 @@ import (
     "context"
     "log"
 
-    "github.com/gizzahub/gzh-manager-go/pkg/debug"
+    "github.com/gizzahub/gzh-cli/pkg/debug"
 )
 
 func main() {
@@ -540,7 +540,7 @@ import (
     "context"
     "log"
 
-    "github.com/gizzahub/gzh-manager-go/pkg/debug"
+    "github.com/gizzahub/gzh-cli/pkg/debug"
 )
 
 func main() {
@@ -590,7 +590,7 @@ import (
     "log"
     "time"
 
-    "github.com/gizzahub/gzh-manager-go/pkg/debug"
+    "github.com/gizzahub/gzh-cli/pkg/debug"
 )
 
 func main() {

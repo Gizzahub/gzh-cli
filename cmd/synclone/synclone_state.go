@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	synclonepkg "github.com/Gizzahub/gzh-manager-go/pkg/synclone"
+	synclonepkg "github.com/Gizzahub/gzh-cli/pkg/synclone"
 )
 
 func newSyncCloneStateCmd() *cobra.Command {

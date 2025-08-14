@@ -10,17 +10,17 @@ import (
 
 	"github.com/spf13/cobra"
 
-	devenv "github.com/Gizzahub/gzh-manager-go/cmd/dev-env"
-	doctorcmd "github.com/Gizzahub/gzh-manager-go/cmd/doctor"
-	"github.com/Gizzahub/gzh-manager-go/cmd/ide"
-	netenv "github.com/Gizzahub/gzh-manager-go/cmd/net-env"
-	"github.com/Gizzahub/gzh-manager-go/cmd/pm"
-	"github.com/Gizzahub/gzh-manager-go/cmd/profile"
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality"
-	repoconfig "github.com/Gizzahub/gzh-manager-go/cmd/repo-config"
-	"github.com/Gizzahub/gzh-manager-go/cmd/shell"
-	synclone "github.com/Gizzahub/gzh-manager-go/cmd/synclone"
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	devenv "github.com/Gizzahub/gzh-cli/cmd/dev-env"
+	doctorcmd "github.com/Gizzahub/gzh-cli/cmd/doctor"
+	"github.com/Gizzahub/gzh-cli/cmd/ide"
+	netenv "github.com/Gizzahub/gzh-cli/cmd/net-env"
+	"github.com/Gizzahub/gzh-cli/cmd/pm"
+	"github.com/Gizzahub/gzh-cli/cmd/profile"
+	"github.com/Gizzahub/gzh-cli/cmd/quality"
+	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
+	"github.com/Gizzahub/gzh-cli/cmd/shell"
+	synclone "github.com/Gizzahub/gzh-cli/cmd/synclone"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 var (

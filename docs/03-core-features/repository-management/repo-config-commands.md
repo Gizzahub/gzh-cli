@@ -429,7 +429,7 @@ jobs:
 
       - name: Install gzh-manager
         run: |
-          curl -L https://github.com/gizzahub/gzh-manager-go/releases/latest/download/gz-linux-amd64 -o gz
+          curl -L https://github.com/gizzahub/gzh-cli/releases/latest/download/gz-linux-amd64 -o gz
           chmod +x gz
 
       - name: Run Compliance Audit

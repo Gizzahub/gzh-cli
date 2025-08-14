@@ -1,6 +1,6 @@
 # Documentation Guide
 
-This guide explains the documentation structure and management rules for the gzh-manager-go project.
+This guide explains the documentation structure and management rules for the gzh-cli project.
 
 ## Documentation Categories
 

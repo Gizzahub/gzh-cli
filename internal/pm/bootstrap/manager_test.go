@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 // mockBootstrapper is a mock implementation of PackageManagerBootstrapper for testing

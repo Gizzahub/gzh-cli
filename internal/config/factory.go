@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
-	"github.com/Gizzahub/gzh-manager-go/internal/errors"
+	"github.com/Gizzahub/gzh-cli/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/errors"
 )
 
 // ServiceFactory creates configuration service instances.

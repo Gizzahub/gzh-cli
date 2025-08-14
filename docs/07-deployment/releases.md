@@ -30,8 +30,8 @@ The project uses a fully automated release pipeline that:
 
 | Registry                      | Image                             | Pull Command                                         |
 | ----------------------------- | --------------------------------- | ---------------------------------------------------- |
-| **Docker Hub**                | `gizzahub/gzh-manager-go`         | `docker pull gizzahub/gzh-manager-go:latest`         |
-| **GitHub Container Registry** | `ghcr.io/gizzahub/gzh-manager-go` | `docker pull ghcr.io/gizzahub/gzh-manager-go:latest` |
+| **Docker Hub**                | `gizzahub/gzh-cli`         | `docker pull gizzahub/gzh-cli:latest`         |
+| **GitHub Container Registry** | `ghcr.io/gizzahub/gzh-cli` | `docker pull ghcr.io/gizzahub/gzh-cli:latest` |
 
 ### Direct Downloads
 
@@ -144,7 +144,7 @@ All release artifacts are signed with [Cosign](https://github.com/sigstore/cosig
 
 ```bash
 # Verify container image signature
-cosign verify ghcr.io/gizzahub/gzh-manager-go:v1.0.0
+cosign verify ghcr.io/gizzahub/gzh-cli:v1.0.0
 
 # Verify checksum signature
 cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig checksums.txt

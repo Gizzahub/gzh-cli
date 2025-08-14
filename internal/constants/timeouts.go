@@ -97,7 +97,7 @@ const (
 	DefaultExpectContinueTimeout = 1 * time.Second
 
 	// DefaultUserAgent is the default user agent string.
-	DefaultUserAgent = "gzh-manager-go/1.0.0"
+	DefaultUserAgent = "gzh-cli/1.0.0"
 )
 
 // Retry Configuration.

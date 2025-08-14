@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/env"
+	"github.com/Gizzahub/gzh-cli/internal/env"
 )
 
 // DefaultSyncManager implements SyncManager interface.

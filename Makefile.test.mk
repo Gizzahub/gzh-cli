@@ -1,4 +1,4 @@
-# Makefile.test - Testing targets for gzh-manager-go
+# Makefile.test - Testing targets for gzh-cli
 # Unit tests, integration tests, benchmarks, and coverage
 
 # ==============================================================================

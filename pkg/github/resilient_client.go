@@ -53,7 +53,7 @@ func (c *ResilientGitHubClient) prepareRequest(req *http.Request) {
 	}
 
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.Header.Set("User-Agent", "gzh-manager-go")
+	req.Header.Set("User-Agent", "gzh-cli")
 }
 
 // GetDefaultBranch retrieves the default branch for a repository with network resilience.

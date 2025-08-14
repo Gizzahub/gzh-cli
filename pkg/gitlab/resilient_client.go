@@ -51,7 +51,7 @@ func (c *ResilientGitLabClient) prepareRequest(req *http.Request) {
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "gzh-manager-go")
+	req.Header.Set("User-Agent", "gzh-cli")
 }
 
 // ListGroupProjects retrieves all projects for a GitLab group with pagination and resilience.

@@ -14,7 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/devenv/status"
+	"github.com/Gizzahub/gzh-cli/internal/devenv/status"
 )
 
 // DashboardModel represents the main dashboard view.

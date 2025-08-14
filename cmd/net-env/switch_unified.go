@@ -11,7 +11,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/netenv"
+	"github.com/Gizzahub/gzh-cli/internal/netenv"
 )
 
 // newSwitchUnifiedCmd creates the unified net-env switch command.

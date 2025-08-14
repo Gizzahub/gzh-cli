@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/simpleprof"
+	"github.com/Gizzahub/gzh-cli/internal/simpleprof"
 )
 
 // NewProfileCmd creates a simplified profile command using standard Go pprof.

@@ -1,6 +1,6 @@
 // Package gitlab provides a client library for interacting with GitLab's API.
 // It implements group management, project operations, and repository synchronization
-// features required by the gzh-manager-go tool for GitLab instances.
+// features required by the gzh-cli tool for GitLab instances.
 //
 // Features:
 //   - Project and group cloning

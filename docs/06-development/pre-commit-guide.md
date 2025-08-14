@@ -1,6 +1,6 @@
 # Pre-commit Hook Guide
 
-This guide explains how to use and configure pre-commit hooks in the gzh-manager-go project.
+This guide explains how to use and configure pre-commit hooks in the gzh-cli project.
 
 ## Overview
 

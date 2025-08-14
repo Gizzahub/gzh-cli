@@ -1,4 +1,4 @@
-# Makefile.quality - Code Quality and Analysis for gzh-manager-go
+# Makefile.quality - Code Quality and Analysis for gzh-cli
 # Formatting, linting, security analysis, and code quality checks
 
 # ==============================================================================
@@ -20,7 +20,7 @@ format-simplify: ## quick basic formatting with gofumpt and goimports
 	@echo "1. Running gofumpt (includes go fmt + simplification)..."
 	@gofumpt -w .
 	@echo "2. Organizing imports..."
-	@goimports -w -local github.com/gizzahub/gzh-manager-go .
+	@goimports -w -local github.com/gizzahub/gzh-cli .
 	@echo -e "$(GREEN)✅ Quick formatting complete!$(RESET)"
 
 format-strict: format-install-tools ## comprehensive formatting with all tools
@@ -30,9 +30,9 @@ format-strict: format-install-tools ## comprehensive formatting with all tools
 	@echo "2. Running gci (import organization)..."
 	@gci write --skip-generated .
 	@echo "3. Organizing imports with goimports..."
-	@goimports -w -local github.com/gizzahub/gzh-manager-go .
+	@goimports -w -local github.com/gizzahub/gzh-cli .
 	@echo "4. Final gci (import grouping)..."
-	@gci write --skip-generated -s standard -s default -s "prefix(github.com/gizzahub/gzh-manager-go)" .
+	@gci write --skip-generated -s standard -s default -s "prefix(github.com/gizzahub/gzh-cli)" .
 	@echo -e "$(GREEN)✅ Strict formatting complete!$(RESET)"
 
 format-list: ## show files that need formatting
@@ -84,7 +84,7 @@ format-file: ## format specific files with gofumpt and goimports (usage: make fo
 			echo "  1. Running gofumpt..."; \
 			gofumpt -w "$$file" || echo -e "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
 			echo "  2. Running goimports..."; \
-			goimports -w -local github.com/gizzahub/gzh-manager-go "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
+			goimports -w -local github.com/gizzahub/gzh-cli "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
 			echo -e "$(GREEN)✅ File '$$file' formatted successfully!$(RESET)"; \
 		fi; \
 	done
@@ -98,7 +98,7 @@ fmt-diff: ## format only changed files (fast, for pre-commit)
 			if [ -f "$$file" ]; then \
 				echo -e "$(CYAN)📝 Formatting: $$file$(RESET)"; \
 				gofumpt -w "$$file" || echo -e "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
-				goimports -w -local github.com/gizzahub/gzh-manager-go "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
+				goimports -w -local github.com/gizzahub/gzh-cli "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
 			fi; \
 		done; \
 		echo -e "$(GREEN)✅ Changed files formatted!$(RESET)"; \

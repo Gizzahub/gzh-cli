@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/services"
+	"github.com/Gizzahub/gzh-cli/internal/services"
 )
 
 func TestNewRepoConfigCmd(t *testing.T) {

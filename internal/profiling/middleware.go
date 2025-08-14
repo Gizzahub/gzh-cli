@@ -7,7 +7,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 // PerformanceMiddleware provides performance monitoring capabilities.

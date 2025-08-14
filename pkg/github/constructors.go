@@ -44,7 +44,7 @@ func DefaultAPIClientConfig() *APIClientConfig {
 	return &APIClientConfig{
 		BaseURL:    "https://api.github.com",
 		Timeout:    30 * time.Second,
-		UserAgent:  "gzh-manager-go/1.0",
+		UserAgent:  "gzh-cli/1.0",
 		RetryCount: 3,
 	}
 }

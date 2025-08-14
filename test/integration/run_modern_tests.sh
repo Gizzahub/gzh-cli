@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# run_modern_tests.sh - Modern integration test runner for gzh-manager-go
+# run_modern_tests.sh - Modern integration test runner for gzh-cli
 # This script runs the updated integration tests that work with the current API
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,7 +41,7 @@ usage() {
     cat << EOF
 Usage: $0 [OPTIONS]
 
-Run modern integration tests for gzh-manager-go
+Run modern integration tests for gzh-cli
 
 OPTIONS:
     -h, --help              Show this help message

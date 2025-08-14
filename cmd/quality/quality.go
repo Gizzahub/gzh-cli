@@ -13,10 +13,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality/detector"
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality/executor"
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality/report"
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality/tools"
+	"github.com/Gizzahub/gzh-cli/cmd/quality/detector"
+	"github.com/Gizzahub/gzh-cli/cmd/quality/executor"
+	"github.com/Gizzahub/gzh-cli/cmd/quality/report"
+	"github.com/Gizzahub/gzh-cli/cmd/quality/tools"
 )
 
 // QualityManager manages the quality command functionality.

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/config"
+	"github.com/Gizzahub/gzh-cli/internal/config"
 )
 
 // Log level constants for simple logger (string format).

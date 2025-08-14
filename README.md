@@ -2,13 +2,13 @@
 
 **Comprehensive CLI Tool**
 
-![Test Status](https://github.com/gizzahub/gzh-manager-go/actions/workflows/test.yml/badge.svg)
-![Lint Status](https://github.com/gizzahub/gzh-manager-go/actions/workflows/lint.yml/badge.svg)
-![GoDoc](https://pkg.go.dev/badge/github.com/gizzahub/gzh-manager-go.svg)
-![Code Coverage](https://codecov.io/gh/Gizzahub/gzh-manager-go/branch/main/graph/badge.svg)
-![Latest Release](https://img.shields.io/github/v/release/Gizzahub/gzh-manager-go)
-![Docker Pulls](https://img.shields.io/docker/pulls/Gizzahub/gzh-manager-go)
-![Total Downloads](https://img.shields.io/github/downloads/Gizzahub/gzh-manager-go/total.svg)
+![Test Status](https://github.com/gizzahub/gzh-cli/actions/workflows/test.yml/badge.svg)
+![Lint Status](https://github.com/gizzahub/gzh-cli/actions/workflows/lint.yml/badge.svg)
+![GoDoc](https://pkg.go.dev/badge/github.com/gizzahub/gzh-cli.svg)
+![Code Coverage](https://codecov.io/gh/Gizzahub/gzh-cli/branch/main/graph/badge.svg)
+![Latest Release](https://img.shields.io/github/v/release/Gizzahub/gzh-cli)
+![Docker Pulls](https://img.shields.io/docker/pulls/Gizzahub/gzh-cli)
+![Total Downloads](https://img.shields.io/github/downloads/Gizzahub/gzh-cli/total.svg)
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@
 
 ## 핵심 기능 개요
 
-`gzh-manager-go` (바이너리명: `gz`)는 개발자를 위한 종합적인 CLI 도구로, 다음과 같은 주요 기능을 제공합니다:
+`gzh-cli` (바이너리명: `gz`)는 개발자를 위한 종합적인 CLI 도구로, 다음과 같은 주요 기능을 제공합니다:
 
 ### 🏗️ 개발 환경 통합 관리
 
@@ -76,11 +76,11 @@
 
 ```bash
 # Go를 통한 설치 (권장)
-go install github.com/Gizzahub/gzh-manager-go/cmd/gz@latest
+go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 # 또는 소스에서 빌드
-git clone https://github.com/Gizzahub/gzh-manager-go.git
-cd gzh-manager-go
+git clone https://github.com/Gizzahub/gzh-cli.git
+cd gzh-cli
 make build
 make install
 ```
@@ -342,14 +342,14 @@ gz profile memory
 ### 1. Go Install (권장)
 
 ```bash
-go install github.com/Gizzahub/gzh-manager-go/cmd/gz@latest
+go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 ```
 
 ### 2. 소스에서 빌드
 
 ```bash
-git clone https://github.com/Gizzahub/gzh-manager-go.git
-cd gzh-manager-go
+git clone https://github.com/Gizzahub/gzh-cli.git
+cd gzh-cli
 make bootstrap  # 빌드 의존성 설치
 make build      # gz 실행 파일 생성
 make install    # $GOPATH/bin에 설치
@@ -357,7 +357,7 @@ make install    # $GOPATH/bin에 설치
 
 ### 3. 사전 컴파일된 바이너리
 
-[Releases](https://github.com/Gizzahub/gzh-manager-go/releases) 페이지에서 플랫폼별 바이너리를 다운로드하세요.
+[Releases](https://github.com/Gizzahub/gzh-cli/releases) 페이지에서 플랫폼별 바이너리를 다운로드하세요.
 
 ## 설치 확인
 

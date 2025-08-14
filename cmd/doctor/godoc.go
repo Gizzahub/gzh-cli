@@ -13,9 +13,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/analysis/godoc"
-	"github.com/Gizzahub/gzh-manager-go/internal/cli"
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/analysis/godoc"
+	"github.com/Gizzahub/gzh-cli/internal/cli"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 // newGodocCmd creates the godoc subcommand for API documentation analysis.

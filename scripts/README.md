@@ -1,6 +1,6 @@
 # Scripts Directory
 
-This directory contains utility scripts for the gzh-manager-go project. These scripts automate various development, build, and maintenance tasks.
+This directory contains utility scripts for the gzh-cli project. These scripts automate various development, build, and maintenance tasks.
 
 ## 📋 Available Scripts
 
@@ -307,4 +307,4 @@ which bc || sudo apt-get install bc  # Ubuntu/Debian
 
 ---
 
-**Note**: These scripts are designed specifically for the gzh-manager-go project. Modify paths and configurations as needed for your environment.
+**Note**: These scripts are designed specifically for the gzh-cli project. Modify paths and configurations as needed for your environment.

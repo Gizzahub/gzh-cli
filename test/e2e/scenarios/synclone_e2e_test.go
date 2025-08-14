@@ -4,7 +4,7 @@ package scenarios
 import (
 	"testing"
 
-	"github.com/Gizzahub/gzh-manager-go/test/e2e/helpers"
+	"github.com/Gizzahub/gzh-cli/test/e2e/helpers"
 )
 
 const (

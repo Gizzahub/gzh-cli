@@ -28,7 +28,7 @@ debugger:
 # Substitute path mappings for remote debugging
 substitute-path:
   # Example for container debugging
-  # - {from: "/go/src/github.com/gizzahub/gzh-manager-go", to: "/workspace"}
+  # - {from: "/go/src/github.com/gizzahub/gzh-cli", to: "/workspace"}
 
 # Aliases for common commands
 aliases:

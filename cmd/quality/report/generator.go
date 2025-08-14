@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/cmd/quality/tools"
+	"github.com/Gizzahub/gzh-cli/cmd/quality/tools"
 )
 
 // Report represents a quality report.

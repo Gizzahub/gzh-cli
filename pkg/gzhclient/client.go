@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/pkg/github"
-	synclone "github.com/Gizzahub/gzh-manager-go/pkg/synclone"
+	"github.com/Gizzahub/gzh-cli/pkg/github"
+	synclone "github.com/Gizzahub/gzh-cli/pkg/synclone"
 )
 
 // Client provides programmatic access to GZH Manager functionality.

@@ -1,6 +1,6 @@
 // Package github provides a comprehensive client library for interacting with GitHub's API.
 // It implements repository management, organization operations, Actions policy enforcement,
-// and various automation features required by the gzh-manager-go tool.
+// and various automation features required by the gzh-cli tool.
 //
 // Key features:
 //   - Repository cloning and synchronization

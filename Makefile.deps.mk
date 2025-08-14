@@ -1,4 +1,4 @@
-# Makefile.deps.mk - Enhanced Dependency Management for gzh-manager-go
+# Makefile.deps.mk - Enhanced Dependency Management for gzh-cli
 # Alternative to Dependabot for controlled local updates
 
 # ==============================================================================
@@ -190,7 +190,7 @@ deps-why: ## show why a specific module is needed (usage: make deps-why MOD=gith
 deps-report: ## generate comprehensive dependency report
 	@echo -e "$(CYAN)Generating dependency report...$(RESET)"
 	@report_file="dependency-report-$$(date +%Y%m%d-%H%M%S).md"; \
-	echo "# Dependency Report - gzh-manager-go" > $$report_file; \
+	echo "# Dependency Report - gzh-cli" > $$report_file; \
 	echo "Generated: $$(date)" >> $$report_file; \
 	echo "" >> $$report_file; \
 	echo "## Go Module Information" >> $$report_file; \

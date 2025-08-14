@@ -33,7 +33,7 @@ provider:
     default_tags:
       environment: development
       project: gzh-manager
-      managed_by: gzh-manager-go
+      managed_by: gzh-cli
 
 # Network profiles for different environments
 profiles:

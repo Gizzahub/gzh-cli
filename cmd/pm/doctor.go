@@ -13,9 +13,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/cli"
-	"github.com/Gizzahub/gzh-manager-go/internal/pm/compat"
-	"github.com/Gizzahub/gzh-manager-go/internal/pm/duplicates"
+	"github.com/Gizzahub/gzh-cli/internal/cli"
+	"github.com/Gizzahub/gzh-cli/internal/pm/compat"
+	"github.com/Gizzahub/gzh-cli/internal/pm/duplicates"
 )
 
 func newDoctorCmd(ctx context.Context) *cobra.Command {

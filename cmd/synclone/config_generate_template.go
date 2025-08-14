@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/synclone/template"
+	"github.com/Gizzahub/gzh-cli/internal/synclone/template"
 )
 
 // newConfigGenerateTemplateCmd creates the config generate template command.

@@ -5,7 +5,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/testutil/builders"
+	"github.com/Gizzahub/gzh-cli/internal/testutil/builders"
 )
 
 func TestProviderFactory(t *testing.T) {

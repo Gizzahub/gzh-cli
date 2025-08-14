@@ -1,4 +1,4 @@
-module github.com/Gizzahub/gzh-manager-go
+module github.com/Gizzahub/gzh-cli
 
 go 1.24.0
 

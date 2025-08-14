@@ -35,7 +35,7 @@ check_prerequisites() {
 
     # Check if gz is installed
     if ! command -v gz &> /dev/null; then
-        error "gz command not found. Please install gzh-manager-go first."
+        error "gz command not found. Please install gzh-cli first."
         exit 1
     fi
 

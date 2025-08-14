@@ -1,4 +1,4 @@
-# Makefile.dev - Development Workflow for gzh-manager-go
+# Makefile.dev - Development Workflow for gzh-cli
 # Development environment, workflow automation, and quick iteration
 
 # ==============================================================================

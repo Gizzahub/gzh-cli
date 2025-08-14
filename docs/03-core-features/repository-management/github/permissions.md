@@ -1,10 +1,10 @@
 # GitHub Token Permissions Documentation
 
-This document outlines the required GitHub token permissions for various gzh-manager-go operations.
+This document outlines the required GitHub token permissions for various gzh-cli operations.
 
 ## Overview
 
-The gzh-manager-go tool requires different levels of GitHub API access depending on the operations being performed. The tool supports both GitHub.com and GitHub Enterprise Server (GHES) instances.
+The gzh-cli tool requires different levels of GitHub API access depending on the operations being performed. The tool supports both GitHub.com and GitHub Enterprise Server (GHES) instances.
 
 ## Required Permissions by Feature
 

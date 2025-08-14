@@ -104,7 +104,7 @@ Pre-configured run configurations in `.idea/runConfigurations/`:
 3. Configure:
    - **Name**: Your configuration name
    - **Run kind**: Package
-   - **Package**: `github.com/gizzahub/gzh-manager-go`
+   - **Package**: `github.com/gizzahub/gzh-cli`
    - **Working directory**: Project root
    - **Program arguments**: Your command arguments
    - **Environment variables**: `GZH_DEV_MODE=true;GO111MODULE=on`

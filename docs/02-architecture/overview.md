@@ -123,7 +123,7 @@ The infrastructure layer provides core utilities and abstractions:
 ### Core Packages
 
 ```
-gzh-manager-go/
+gzh-cli/
 ├── cmd/                    # CLI commands and user interface
 │   ├── root.go            # Main CLI entry point
 │   ├── bulk-clone/        # Repository bulk cloning

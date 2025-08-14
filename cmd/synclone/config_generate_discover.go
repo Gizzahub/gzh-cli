@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/synclone/discovery"
+	"github.com/Gizzahub/gzh-cli/internal/synclone/discovery"
 )
 
 // newConfigGenerateDiscoverCmd creates the config generate discover command.

@@ -34,7 +34,7 @@ This project has a structured documentation system with protection rules:
 
 ## Project Overview
 
-gzh-manager-go is a comprehensive CLI tool (binary: `gz`) for managing development environments and Git repositories across multiple platforms. It provides bulk operations for cloning organizations, package management, network environment transitions, IDE settings monitoring, and development environment configuration management.
+gzh-cli is a comprehensive CLI tool (binary: `gz`) for managing development environments and Git repositories across multiple platforms. It provides bulk operations for cloning organizations, package management, network environment transitions, IDE settings monitoring, and development environment configuration management.
 
 ## Essential Commands
 
@@ -213,7 +213,7 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ## Important Notes
 
-- The binary is named 'gz' not 'gzh-manager-go'
+- The binary is named 'gz' not 'gzh-cli'
 - Always run `make fmt` before committing code
 - Configuration files support both CLI flags and YAML config
 - Supports multiple authentication methods per service

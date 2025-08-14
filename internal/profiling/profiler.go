@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gizzahub/gzh-manager-go/internal/logger"
+	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
 // ProfileType represents different types of profiling.
