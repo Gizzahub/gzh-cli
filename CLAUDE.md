@@ -151,7 +151,6 @@ make regenerate-mocks # Clean and regenerate all mocks
   - `gitlab/` - GitLab API integration and group cloning
   - `gitea/` - Gitea API integration and organization cloning
   - `gogs/` - Gogs API integration (planned)
-  - `example/` - Example package structure
 
 - **helpers/** - Utility functions
   - `git_helper.go` - Git repository operations and testing utilities

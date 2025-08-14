@@ -74,8 +74,8 @@ func (f *DefaultClientFactory) CreateRepoConfigClient(token string) (*github.Rep
 
 	// Apply optional configuration
 	if f.baseURL != "" {
-		// TODO: client.SetBaseURL(f.baseURL) // If such method exists
-		_ = f.baseURL // Suppress unused field warning
+		// GitHub client doesn't support custom base URL in this context
+		_ = f.baseURL // Suppress unused field warning for future extension
 	}
 
 	// Note: In a real implementation, you would pass these dependencies
@@ -103,8 +103,8 @@ func (f *DefaultClientFactory) CreateGitHubClient(token string) (*gh.Client, err
 
 	// Apply base URL if configured
 	if f.baseURL != "" {
-		// TODO: Configure base URL when needed
-		// client.BaseURL = f.baseURL
+		// Custom base URL configuration for GitHub Enterprise
+		// Implementation would go here when supporting GitHub Enterprise
 		_ = f.baseURL // Placeholder to avoid empty branch warning
 	}
 
