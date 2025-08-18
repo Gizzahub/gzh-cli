@@ -15,6 +15,7 @@ import (
 
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 	"github.com/Gizzahub/gzh-cli/internal/pm/bootstrap"
+	"github.com/Gizzahub/gzh-cli/internal/pm/upgrade"
 )
 
 func newBootstrapCmd(ctx context.Context) *cobra.Command {
@@ -218,31 +219,61 @@ func runBootstrapInstall(ctx context.Context, manager *bootstrap.BootstrapManage
 
 func newUpgradeManagersCmd(ctx context.Context) *cobra.Command {
 	var (
-		all     bool
-		manager string
-		check   bool
+		all        bool
+		manager    string
+		check      bool
+		backup     bool
+		force      bool
+		jsonOutput bool
+		timeout    time.Duration
 	)
 
 	cmd := &cobra.Command{
 		Use:   "upgrade-managers",
 		Short: "Upgrade package managers themselves",
-		Long:  `Upgrade the package manager tools to their latest versions.`,
+		Long: `Upgrade the package manager tools to their latest versions.
+
+This command can check for updates and upgrade package managers like
+brew, asdf, nvm, rbenv, pyenv, and sdkman to their latest versions.
+
+Examples:
+  # Check which package managers have updates available
+  gz pm upgrade-managers --check
+
+  # Check with JSON output
+  gz pm upgrade-managers --check --json
+
+  # Upgrade all package managers
+  gz pm upgrade-managers --all
+
+  # Upgrade specific package managers
+  gz pm upgrade-managers --manager brew,nvm
+
+  # Upgrade with backup enabled
+  gz pm upgrade-managers --all --backup
+
+  # Force upgrade even if no updates detected
+  gz pm upgrade-managers --all --force`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			switch {
-			case check:
-				fmt.Println("Checking for package manager updates...")
-			case all:
-				fmt.Println("Upgrading all package managers...")
-			case manager != "":
-				fmt.Printf("Upgrading %s...\n", manager)
-			}
-			return fmt.Errorf("upgrade-managers command not yet implemented")
+			return runUpgradeManagersCommand(ctx, upgradeManagersOptions{
+				all:        all,
+				manager:    manager,
+				check:      check,
+				backup:     backup,
+				force:      force,
+				jsonOutput: jsonOutput,
+				timeout:    timeout,
+			})
 		},
 	}
 
 	cmd.Flags().BoolVar(&all, "all", false, "Upgrade all package managers")
-	cmd.Flags().StringVar(&manager, "manager", "", "Specific manager to upgrade")
-	cmd.Flags().BoolVar(&check, "check", false, "Check available upgrades")
+	cmd.Flags().StringVar(&manager, "manager", "", "Specific managers to upgrade (comma-separated)")
+	cmd.Flags().BoolVar(&check, "check", false, "Check available upgrades without installing")
+	cmd.Flags().BoolVar(&backup, "backup", false, "Create backup before upgrading")
+	cmd.Flags().BoolVar(&force, "force", false, "Force upgrade even if no updates detected")
+	cmd.Flags().BoolVar(&jsonOutput, "json", false, "Output results in JSON format")
+	cmd.Flags().DurationVar(&timeout, "timeout", 5*time.Minute, "Timeout for upgrade operations")
 
 	return cmd
 }
@@ -279,4 +310,157 @@ Examples:
 	cmd.Flags().BoolVar(&fix, "fix", false, "Fix version mismatches")
 
 	return cmd
+}
+
+type upgradeManagersOptions struct {
+	all        bool
+	manager    string
+	check      bool
+	backup     bool
+	force      bool
+	jsonOutput bool
+	timeout    time.Duration
+}
+
+func runUpgradeManagersCommand(ctx context.Context, opts upgradeManagersOptions) error {
+	// Create logger
+	logger := logger.NewSimpleLogger("upgrade-managers")
+
+	// Create upgrade coordinator
+	coordinator := upgrade.NewUpgradeCoordinator(logger, "/tmp/gzh-upgrades")
+
+	if opts.check {
+		return runUpgradeCheck(ctx, coordinator, opts)
+	}
+
+	return runUpgradeInstall(ctx, coordinator, opts)
+}
+
+func runUpgradeCheck(ctx context.Context, coordinator *upgrade.UpgradeCoordinator, opts upgradeManagersOptions) error {
+	fmt.Println("🔍 Checking package manager upgrades...")
+
+	var report *upgrade.UpgradeReport
+	var err error
+
+	if opts.all || opts.manager == "" {
+		report, err = coordinator.CheckAll(ctx)
+	} else {
+		// Parse specified managers
+		managerNames := strings.Split(opts.manager, ",")
+		for i, name := range managerNames {
+			managerNames[i] = strings.TrimSpace(name)
+		}
+		report, err = coordinator.CheckManagers(ctx, managerNames)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to check package manager upgrades: %w", err)
+	}
+
+	if opts.jsonOutput {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(report)
+	}
+
+	fmt.Print(coordinator.FormatReport(report, true))
+
+	// Summary message
+	if report.UpdatesNeeded > 0 {
+		fmt.Printf("\n💡 %d package managers have updates available\n", report.UpdatesNeeded)
+		fmt.Println("Run with --all or --manager <names> to upgrade them")
+	} else {
+		fmt.Println("\n✅ All package managers are up to date")
+	}
+
+	return nil
+}
+
+func runUpgradeInstall(ctx context.Context, coordinator *upgrade.UpgradeCoordinator, opts upgradeManagersOptions) error {
+	var managerNames []string
+
+	if opts.all {
+		fmt.Println("📦 Upgrading all package managers...")
+	} else if opts.manager != "" {
+		// Parse specified managers
+		managerNames = strings.Split(opts.manager, ",")
+		for i, name := range managerNames {
+			managerNames[i] = strings.TrimSpace(name)
+		}
+		fmt.Printf("📦 Upgrading package managers: %s\n", strings.Join(managerNames, ", "))
+	} else {
+		return fmt.Errorf("must specify --all or --manager <names> to upgrade")
+	}
+
+	// Validate manager names
+	if len(managerNames) > 0 {
+		availableManagers := coordinator.GetAvailableManagers()
+		for _, name := range managerNames {
+			found := false
+			for _, available := range availableManagers {
+				if name == available {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("unknown package manager: %s. Available: %s",
+					name, strings.Join(availableManagers, ", "))
+			}
+		}
+	}
+
+	// Create upgrade options
+	upgradeOpts := upgrade.UpgradeOptions{
+		Force:          opts.force,
+		BackupEnabled:  opts.backup,
+		SkipValidation: false,
+		Timeout:        opts.timeout,
+	}
+
+	// Perform upgrades
+	fmt.Println("\n🚀 Starting upgrades...")
+	var report *upgrade.UpgradeReport
+	var err error
+
+	if opts.all {
+		report, err = coordinator.UpgradeAll(ctx, upgradeOpts)
+	} else {
+		report, err = coordinator.UpgradeManagers(ctx, managerNames, upgradeOpts)
+	}
+
+	if err != nil {
+		return fmt.Errorf("upgrade failed: %w", err)
+	}
+
+	// Show results
+	if opts.jsonOutput {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(report)
+	}
+
+	fmt.Println("\n" + coordinator.FormatReport(report, true))
+
+	// Summary
+	failureCount := 0
+	successCount := 0
+	for _, status := range report.Managers {
+		if status.UpdateAvailable {
+			failureCount++
+		} else {
+			successCount++
+		}
+	}
+
+	if failureCount > 0 {
+		fmt.Printf("\n⚠️  %d package managers had issues during upgrade\n", failureCount)
+	}
+
+	if successCount > 0 {
+		fmt.Printf("\n✅ Successfully upgraded %d package managers\n", successCount)
+		fmt.Println("\n💡 You may need to restart your shell or source your profile to use the updated tools")
+	}
+
+	return nil
 }
