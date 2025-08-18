@@ -48,21 +48,21 @@ const (
 // NetEnvStyles holds the styles for network environment TUI.
 type NetEnvStyles struct {
 	common.StyleSet
-	ComponentActive   lipgloss.Style
-	ComponentInactive lipgloss.Style
-	StatusConnected   lipgloss.Style
+	ComponentActive    lipgloss.Style
+	ComponentInactive  lipgloss.Style
+	StatusConnected    lipgloss.Style
 	StatusDisconnected lipgloss.Style
-	StatusWarning     lipgloss.Style
-	MetricGood        lipgloss.Style
-	MetricBad         lipgloss.Style
-	TabActive         lipgloss.Style
-	TabInactive       lipgloss.Style
+	StatusWarning      lipgloss.Style
+	MetricGood         lipgloss.Style
+	MetricBad          lipgloss.Style
+	TabActive          lipgloss.Style
+	TabInactive        lipgloss.Style
 }
 
 // NewNetEnvStyles creates a new set of styles for network environment TUI.
 func NewNetEnvStyles() NetEnvStyles {
 	baseStyles := common.NetworkStyles()
-	
+
 	return NetEnvStyles{
 		StyleSet: baseStyles,
 		ComponentActive: lipgloss.NewStyle().
@@ -97,7 +97,7 @@ func NewNetEnvStyles() NetEnvStyles {
 // Legacy style variables for backward compatibility.
 var (
 	styles = NewNetEnvStyles()
-	
+
 	// Backward compatibility exports
 	ColorPrimary    = styles.Theme.Primary
 	ColorSecondary  = styles.Theme.Secondary
@@ -109,25 +109,25 @@ var (
 	ColorBackground = styles.Theme.Background
 	ColorBorder     = styles.Theme.Border
 	ColorHighlight  = styles.Theme.Highlight
-	
+
 	// Base styles
 	BaseStyle      = styles.Base
 	TitleStyle     = styles.Title
 	HeaderStyle    = styles.Header
 	StatusBarStyle = styles.StatusBar
 	FooterStyle    = styles.Footer
-	
+
 	// Component styles
-	ComponentActiveStyle   = styles.ComponentActive
-	ComponentInactiveStyle = styles.ComponentInactive
-	StatusConnectedStyle   = styles.StatusConnected
+	ComponentActiveStyle    = styles.ComponentActive
+	ComponentInactiveStyle  = styles.ComponentInactive
+	StatusConnectedStyle    = styles.StatusConnected
 	StatusDisconnectedStyle = styles.StatusDisconnected
-	StatusWarningStyle     = styles.StatusWarning
-	MetricGoodStyle        = styles.MetricGood
-	MetricBadStyle         = styles.MetricBad
-	TabActiveStyle         = styles.TabActive
-	TabInactiveStyle       = styles.TabInactive
-	
+	StatusWarningStyle      = styles.StatusWarning
+	MetricGoodStyle         = styles.MetricGood
+	MetricBadStyle          = styles.MetricBad
+	TabActiveStyle          = styles.TabActive
+	TabInactiveStyle        = styles.TabInactive
+
 	// Additional styles for compatibility
 	SpinnerStyle    = styles.Base.Foreground(styles.Theme.Primary)
 	ErrorStyle      = styles.Base.Foreground(styles.Theme.Error).Bold(true)

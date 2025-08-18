@@ -25,7 +25,7 @@ func NewGitHubProviderAdapter(token string, environment env.Environment) *GitHub
 		APIURL:      "https://api.github.com",
 		TokenEnvKey: env.CommonEnvironmentKeys.GitHubToken,
 	}
-	
+
 	base := NewBaseProviderAdapter(token, environment, NewGitHubAPI(), config)
 	return &GitHubProviderAdapter{BaseProviderAdapter: base}
 }
@@ -43,7 +43,7 @@ func NewGitLabProviderAdapter(token string, environment env.Environment) *GitLab
 		APIURL:      "https://gitlab.com/api/v4",
 		TokenEnvKey: env.CommonEnvironmentKeys.GitLabToken,
 	}
-	
+
 	base := NewBaseProviderAdapter(token, environment, NewGitLabAPI(), config)
 	return &GitLabProviderAdapter{BaseProviderAdapter: base}
 }
@@ -61,7 +61,7 @@ func NewGiteaProviderAdapter(token string, environment env.Environment) *GiteaPr
 		APIURL:      "https://gitea.com/api/v1",
 		TokenEnvKey: env.CommonEnvironmentKeys.GiteaToken,
 	}
-	
+
 	base := NewBaseProviderAdapter(token, environment, NewGiteaAPI(), config)
 	return &GiteaProviderAdapter{BaseProviderAdapter: base}
 }

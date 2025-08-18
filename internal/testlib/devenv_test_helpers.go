@@ -66,11 +66,11 @@ func AssertCommandWithFlags(t *testing.T, cmd *cobra.Command, expectedFlags ...s
 
 // AssertFileOperations provides common file operation test patterns.
 type FileOperationTest struct {
-	Name        string
-	Setup       func(t *testing.T) string // Returns temp dir path
-	Execute     func(t *testing.T, tempDir string) error
-	Verify      func(t *testing.T, tempDir string, err error)
-	Cleanup     func(t *testing.T, tempDir string)
+	Name    string
+	Setup   func(t *testing.T) string // Returns temp dir path
+	Execute func(t *testing.T, tempDir string) error
+	Verify  func(t *testing.T, tempDir string, err error)
+	Cleanup func(t *testing.T, tempDir string)
 }
 
 // RunFileOperationTest executes a file operation test with common setup/cleanup.
@@ -106,7 +106,7 @@ func AssertConfigContent(t *testing.T, content []byte, expectedFields ...string)
 	t.Helper()
 	contentStr := string(content)
 	assert.NotEmpty(t, contentStr, "Config content should not be empty")
-	
+
 	for _, field := range expectedFields {
 		assert.Contains(t, contentStr, field, "Config should contain field: %s", field)
 	}

@@ -29,7 +29,7 @@ func AssertConstantArrayNotEmpty(t *testing.T, constants []interface{}, constant
 func AssertConstantValues(t *testing.T, tests []ConstantTest) {
 	t.Helper()
 	for _, test := range tests {
-		assert.Equal(t, test.Expected, test.Actual, 
+		assert.Equal(t, test.Expected, test.Actual,
 			"Constant %s should have value %v", test.Name, test.Expected)
 	}
 }
@@ -44,10 +44,10 @@ type ConstantTest struct {
 // AssertStatusConstantsPattern tests common status constant patterns.
 func AssertStatusConstantsPattern(t *testing.T, statuses []interface{}, expectedValues []ConstantTest) {
 	t.Helper()
-	
+
 	// Test that all constants are not empty
 	AssertConstantArrayNotEmpty(t, statuses, "Status")
-	
+
 	// Test specific values
 	AssertConstantValues(t, expectedValues)
 }
@@ -55,10 +55,10 @@ func AssertStatusConstantsPattern(t *testing.T, statuses []interface{}, expected
 // AssertErrorTypeConstantsPattern tests common error type constant patterns.
 func AssertErrorTypeConstantsPattern(t *testing.T, errorTypes []interface{}, expectedValues []ConstantTest) {
 	t.Helper()
-	
+
 	// Test that all constants are not empty
 	AssertConstantArrayNotEmpty(t, errorTypes, "ErrorType")
-	
+
 	// Test specific values
 	AssertConstantValues(t, expectedValues)
 }
@@ -66,10 +66,10 @@ func AssertErrorTypeConstantsPattern(t *testing.T, errorTypes []interface{}, exp
 // AssertActionTypeConstantsPattern tests common action type constant patterns.
 func AssertActionTypeConstantsPattern(t *testing.T, actionTypes []interface{}, expectedValues []ConstantTest) {
 	t.Helper()
-	
+
 	// Test that all constants are not empty
 	AssertConstantArrayNotEmpty(t, actionTypes, "ActionType")
-	
+
 	// Test specific values
 	AssertConstantValues(t, expectedValues)
 }

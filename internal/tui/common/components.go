@@ -14,25 +14,25 @@ import (
 type Component interface {
 	// Init initializes the component
 	Init() tea.Cmd
-	
+
 	// Update handles messages and updates component state
 	Update(tea.Msg) (Component, tea.Cmd)
-	
+
 	// View renders the component
 	View() string
-	
+
 	// GetID returns the component's unique identifier
 	GetID() string
-	
+
 	// SetSize sets the component's dimensions
 	SetSize(width, height int)
-	
+
 	// GetSize returns the component's dimensions
 	GetSize() (width, height int)
-	
+
 	// SetFocus sets whether the component has focus
 	SetFocus(focused bool)
-	
+
 	// HasFocus returns whether the component has focus
 	HasFocus() bool
 }
@@ -118,22 +118,22 @@ func (bc *BaseComponent) GetKeyMap() KeyMap {
 // Container represents a component that can contain other components.
 type Container interface {
 	Component
-	
+
 	// AddChild adds a child component
 	AddChild(Component)
-	
+
 	// RemoveChild removes a child component
 	RemoveChild(string) // by ID
-	
+
 	// GetChild gets a child component by ID
 	GetChild(string) Component
-	
+
 	// GetChildren returns all child components
 	GetChildren() []Component
-	
+
 	// SetActiveChild sets the active child component
 	SetActiveChild(string) // by ID
-	
+
 	// GetActiveChild returns the active child component
 	GetActiveChild() Component
 }
@@ -217,22 +217,22 @@ func TruncateText(text string, width int, suffix string) string {
 	if width <= 0 {
 		return ""
 	}
-	
+
 	if len(text) <= width {
 		return text
 	}
-	
+
 	if len(suffix) >= width {
 		return suffix[:width]
 	}
-	
+
 	return text[:width-len(suffix)] + suffix
 }
 
 // PadContent pads content to fit within the given dimensions.
 func PadContent(content string, width, height int) string {
 	lines := strings.Split(content, "\n")
-	
+
 	// Pad or truncate to height
 	for len(lines) < height {
 		lines = append(lines, "")
@@ -240,7 +240,7 @@ func PadContent(content string, width, height int) string {
 	if len(lines) > height {
 		lines = lines[:height]
 	}
-	
+
 	// Pad or truncate each line to width
 	for i, line := range lines {
 		if len(line) < width {
@@ -249,7 +249,7 @@ func PadContent(content string, width, height int) string {
 			lines[i] = line[:width]
 		}
 	}
-	
+
 	return strings.Join(lines, "\n")
 }
 
@@ -258,11 +258,11 @@ func CenterText(text string, width int) string {
 	if len(text) >= width {
 		return text[:width]
 	}
-	
+
 	padding := (width - len(text)) / 2
 	leftPad := strings.Repeat(" ", padding)
 	rightPad := strings.Repeat(" ", width-len(text)-padding)
-	
+
 	return leftPad + text + rightPad
 }
 

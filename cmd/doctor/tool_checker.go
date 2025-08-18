@@ -11,9 +11,9 @@ import (
 
 // ToolConfig defines configuration for a development tool check.
 type ToolConfig struct {
-	Name            string
-	Command         string
-	VersionArgs     []string
+	Name              string
+	Command           string
+	VersionArgs       []string
 	InstallSuggestion string
 }
 
@@ -69,33 +69,33 @@ func (tc *ToolChecker) getVersion(ctx context.Context) (string, error) {
 // CommonToolConfigs provides configurations for common development tools.
 var CommonToolConfigs = map[string]ToolConfig{
 	"golangci-lint": {
-		Name:            "golangci-lint",
-		Command:         "golangci-lint",
-		VersionArgs:     []string{"version"},
+		Name:              "golangci-lint",
+		Command:           "golangci-lint",
+		VersionArgs:       []string{"version"},
 		InstallSuggestion: "Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
 	},
 	"gofumpt": {
-		Name:            "gofumpt",
-		Command:         "gofumpt",
-		VersionArgs:     []string{"-version"},
+		Name:              "gofumpt",
+		Command:           "gofumpt",
+		VersionArgs:       []string{"-version"},
 		InstallSuggestion: "Install with: go install mvdan.cc/gofumpt@latest",
 	},
 	"gci": {
-		Name:            "gci",
-		Command:         "gci",
-		VersionArgs:     []string{"--version"},
+		Name:              "gci",
+		Command:           "gci",
+		VersionArgs:       []string{"--version"},
 		InstallSuggestion: "Install with: go install github.com/daixiang0/gci@latest",
 	},
 	"deadcode": {
-		Name:            "deadcode",
-		Command:         "deadcode",
-		VersionArgs:     []string{"-version"},
+		Name:              "deadcode",
+		Command:           "deadcode",
+		VersionArgs:       []string{"-version"},
 		InstallSuggestion: "Install with: go install golang.org/x/tools/cmd/deadcode@latest",
 	},
 	"dupl": {
-		Name:            "dupl",
-		Command:         "dupl",
-		VersionArgs:     []string{"-version"},
+		Name:              "dupl",
+		Command:           "dupl",
+		VersionArgs:       []string{"-version"},
 		InstallSuggestion: "Install with: go install github.com/mibk/dupl@latest",
 	},
 }
@@ -106,9 +106,9 @@ func CreateToolChecker(toolName string) *ToolChecker {
 	if !exists {
 		// Return a default checker for unknown tools
 		config = ToolConfig{
-			Name:            toolName,
-			Command:         toolName,
-			VersionArgs:     []string{"--version"},
+			Name:              toolName,
+			Command:           toolName,
+			VersionArgs:       []string{"--version"},
 			InstallSuggestion: "Please install " + toolName,
 		}
 	}

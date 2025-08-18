@@ -10,13 +10,13 @@ import (
 // KeyMap represents the key bindings for TUI components.
 type KeyMap struct {
 	// Navigation
-	Up     key.Binding
-	Down   key.Binding
-	Left   key.Binding
-	Right  key.Binding
-	Enter  key.Binding
-	Back   key.Binding
-	
+	Up    key.Binding
+	Down  key.Binding
+	Left  key.Binding
+	Right key.Binding
+	Enter key.Binding
+	Back  key.Binding
+
 	// Actions
 	Refresh key.Binding
 	Save    key.Binding
@@ -24,13 +24,13 @@ type KeyMap struct {
 	Delete  key.Binding
 	Edit    key.Binding
 	Copy    key.Binding
-	
+
 	// Tabs and sections
 	NextTab     key.Binding
 	PrevTab     key.Binding
 	NextSection key.Binding
 	PrevSection key.Binding
-	
+
 	// Global
 	Help key.Binding
 	Quit key.Binding
@@ -64,7 +64,7 @@ func DefaultKeyMap() KeyMap {
 			key.WithKeys("esc", "backspace"),
 			key.WithHelp("esc", "back"),
 		),
-		
+
 		// Actions
 		Refresh: key.NewBinding(
 			key.WithKeys("r", "F5"),
@@ -90,7 +90,7 @@ func DefaultKeyMap() KeyMap {
 			key.WithKeys("c", "ctrl+c"),
 			key.WithHelp("c", "copy"),
 		),
-		
+
 		// Tabs and sections
 		NextTab: key.NewBinding(
 			key.WithKeys("tab", "ctrl+right"),
@@ -108,7 +108,7 @@ func DefaultKeyMap() KeyMap {
 			key.WithKeys("ctrl+up", "page_up"),
 			key.WithHelp("ctrl+↑", "prev section"),
 		),
-		
+
 		// Global
 		Help: key.NewBinding(
 			key.WithKeys("?", "F1"),
@@ -131,11 +131,11 @@ func (k KeyMap) ShortHelp() []key.Binding {
 // FullHelp returns the full help for the key bindings.
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right},      // Navigation
-		{k.Enter, k.Back, k.Refresh},         // Basic actions
-		{k.Save, k.Load, k.Edit, k.Delete},   // File operations
-		{k.NextTab, k.PrevTab},               // Tab navigation
-		{k.Copy, k.Help, k.Quit},             // Global actions
+		{k.Up, k.Down, k.Left, k.Right},    // Navigation
+		{k.Enter, k.Back, k.Refresh},       // Basic actions
+		{k.Save, k.Load, k.Edit, k.Delete}, // File operations
+		{k.NextTab, k.PrevTab},             // Tab navigation
+		{k.Copy, k.Help, k.Quit},           // Global actions
 	}
 }
 
@@ -168,14 +168,14 @@ func (ckm *CustomKeyMap) GetCustomBinding(name string) (key.Binding, bool) {
 func (ckm *CustomKeyMap) AllBindings() []key.Binding {
 	bindings := ckm.FullHelp()
 	var all []key.Binding
-	
+
 	for _, row := range bindings {
 		all = append(all, row...)
 	}
-	
+
 	for _, binding := range ckm.Custom {
 		all = append(all, binding)
 	}
-	
+
 	return all
 }
