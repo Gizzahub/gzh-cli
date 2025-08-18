@@ -15,6 +15,7 @@ import (
 
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 	"github.com/Gizzahub/gzh-cli/internal/pm/bootstrap"
+	"github.com/Gizzahub/gzh-cli/internal/pm/sync"
 	"github.com/Gizzahub/gzh-cli/internal/pm/upgrade"
 )
 
@@ -280,8 +281,13 @@ Examples:
 
 func newSyncVersionsCmd(ctx context.Context) *cobra.Command {
 	var (
-		check bool
-		fix   bool
+		check    bool
+		fix      bool
+		pair     string
+		strategy string
+		backup   bool
+		jsonOut  bool
+		verbose  bool
 	)
 
 	cmd := &cobra.Command{
@@ -290,24 +296,46 @@ func newSyncVersionsCmd(ctx context.Context) *cobra.Command {
 		Long: `Ensure version managers (like nvm, rbenv) are synchronized with their
 package managers (npm, gem).
 
+This command checks for version mismatches between version managers and their
+corresponding package managers, and can automatically fix synchronization issues.
+
 Examples:
   # Check for version mismatches
   gz pm sync-versions --check
 
-  # Fix version mismatches
-  gz pm sync-versions --fix`,
+  # Check with JSON output
+  gz pm sync-versions --check --json
+
+  # Fix version mismatches with backup
+  gz pm sync-versions --fix --backup
+
+  # Check specific manager pair
+  gz pm sync-versions --check --pair nvm-npm
+
+  # Fix with specific strategy
+  gz pm sync-versions --fix --strategy vm_priority
+  gz pm sync-versions --fix --strategy pm_priority
+  gz pm sync-versions --fix --strategy latest`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if check {
-				fmt.Println("Checking version synchronization...")
-			} else if fix {
-				fmt.Println("Fixing version mismatches...")
-			}
-			return fmt.Errorf("sync-versions command not yet implemented")
+			return runSyncVersionsCommand(ctx, syncVersionsOptions{
+				check:    check,
+				fix:      fix,
+				pair:     pair,
+				strategy: strategy,
+				backup:   backup,
+				jsonOut:  jsonOut,
+				verbose:  verbose,
+			})
 		},
 	}
 
 	cmd.Flags().BoolVar(&check, "check", false, "Check for version mismatches")
 	cmd.Flags().BoolVar(&fix, "fix", false, "Fix version mismatches")
+	cmd.Flags().StringVar(&pair, "pair", "", "Specific manager pair to check/fix (e.g., nvm-npm, rbenv-gem)")
+	cmd.Flags().StringVar(&strategy, "strategy", "vm_priority", "Synchronization strategy (vm_priority, pm_priority, latest)")
+	cmd.Flags().BoolVar(&backup, "backup", false, "Create backup before fixing")
+	cmd.Flags().BoolVar(&jsonOut, "json", false, "Output results in JSON format")
+	cmd.Flags().BoolVar(&verbose, "verbose", false, "Enable verbose output")
 
 	return cmd
 }
@@ -460,6 +488,151 @@ func runUpgradeInstall(ctx context.Context, coordinator *upgrade.UpgradeCoordina
 	if successCount > 0 {
 		fmt.Printf("\n✅ Successfully upgraded %d package managers\n", successCount)
 		fmt.Println("\n💡 You may need to restart your shell or source your profile to use the updated tools")
+	}
+
+	return nil
+}
+
+type syncVersionsOptions struct {
+	check    bool
+	fix      bool
+	pair     string
+	strategy string
+	backup   bool
+	jsonOut  bool
+	verbose  bool
+}
+
+func runSyncVersionsCommand(ctx context.Context, opts syncVersionsOptions) error {
+	// Create logger
+	logger := logger.NewSimpleLogger("sync-versions")
+
+	// Create sync manager
+	syncManager := sync.NewSyncManager(logger)
+
+	if opts.check {
+		return runSyncVersionsCheck(ctx, syncManager, opts)
+	}
+
+	if opts.fix {
+		return runSyncVersionsFix(ctx, syncManager, opts)
+	}
+
+	return fmt.Errorf("must specify --check or --fix")
+}
+
+func runSyncVersionsCheck(ctx context.Context, syncManager *sync.SyncManager, opts syncVersionsOptions) error {
+	fmt.Println("🔍 Checking version synchronization...")
+
+	var report *sync.SyncReport
+	var err error
+
+	if opts.pair != "" {
+		// Check specific pair
+		pairs := strings.Split(opts.pair, ",")
+		for i, pair := range pairs {
+			pairs[i] = strings.TrimSpace(pair)
+		}
+		report, err = syncManager.CheckPairs(ctx, pairs)
+	} else {
+		// Check all pairs
+		report, err = syncManager.CheckAll(ctx)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to check version synchronization: %w", err)
+	}
+
+	if opts.jsonOut {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(report)
+	}
+
+	fmt.Print(syncManager.FormatReport(report, opts.verbose))
+
+	// Summary message
+	if report.OutOfSyncCount > 0 {
+		fmt.Printf("💡 %d manager pairs are out of sync\n", report.OutOfSyncCount)
+		fmt.Println("Run with --fix to synchronize them")
+
+		if !opts.verbose {
+			fmt.Println("\nSynchronization strategies:")
+			fmt.Println("  --strategy vm_priority    Update package managers to match version managers")
+			fmt.Println("  --strategy pm_priority    Update version managers to match package managers")
+			fmt.Println("  --strategy latest         Update both to latest compatible versions")
+		}
+	} else {
+		fmt.Println("✅ All version manager pairs are synchronized")
+	}
+
+	return nil
+}
+
+func runSyncVersionsFix(ctx context.Context, syncManager *sync.SyncManager, opts syncVersionsOptions) error {
+	var pairs []string
+
+	if opts.pair != "" {
+		// Parse specified pairs
+		pairs = strings.Split(opts.pair, ",")
+		for i, pair := range pairs {
+			pairs[i] = strings.TrimSpace(pair)
+		}
+		fmt.Printf("🔧 Fixing synchronization for pairs: %s\n", strings.Join(pairs, ", "))
+	} else {
+		// Get all available pairs
+		pairs = syncManager.GetAvailablePairs()
+		fmt.Println("🔧 Fixing synchronization for all manager pairs...")
+	}
+
+	// Validate strategy
+	validStrategies := map[string]bool{
+		"vm_priority": true,
+		"pm_priority": true,
+		"latest":      true,
+	}
+
+	if !validStrategies[opts.strategy] {
+		return fmt.Errorf("invalid strategy: %s. Valid strategies: vm_priority, pm_priority, latest", opts.strategy)
+	}
+
+	// Create sync policy
+	policy := sync.SyncPolicy{
+		Strategy:      opts.strategy,
+		AutoFix:       true,
+		BackupEnabled: opts.backup,
+		PromptUser:    false, // CLI mode, no prompting
+	}
+
+	fmt.Printf("Using strategy: %s\n", opts.strategy)
+	if opts.backup {
+		fmt.Println("Backup enabled")
+	}
+
+	// Perform synchronization
+	fmt.Println("\n🚀 Starting synchronization...")
+	report, err := syncManager.FixSynchronization(ctx, pairs, policy)
+	if err != nil {
+		return fmt.Errorf("synchronization failed: %w", err)
+	}
+
+	// Show results
+	if opts.jsonOut {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(report)
+	}
+
+	fmt.Println("\n" + syncManager.FormatReport(report, opts.verbose))
+
+	// Summary
+	if report.OutOfSyncCount > 0 {
+		fmt.Printf("⚠️  %d manager pairs had issues during synchronization\n", report.OutOfSyncCount)
+	}
+
+	if report.InSyncCount > 0 {
+		fmt.Printf("✅ Successfully synchronized %d manager pairs\n", report.InSyncCount)
+		fmt.Println("\n💡 You may need to restart your shell or source your profile to use the synchronized tools")
 	}
 
 	return nil
