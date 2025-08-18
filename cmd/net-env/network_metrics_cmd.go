@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
 
+	"github.com/Gizzahub/gzh-cli/internal/netenv/reports"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -308,11 +310,13 @@ func newNetworkMetricsOptimizeCmd(logger *zap.Logger, configDir string) *cobra.C
 // Helper types and structures
 
 type NetworkMetricsCollector struct {
-	logger       *zap.Logger
-	configDir    string
-	commandPool  *CommandPool
-	metrics      *NetworkMetrics
-	isMonitoring bool
+	logger        *zap.Logger
+	configDir     string
+	commandPool   *CommandPool
+	metrics       *NetworkMetrics
+	isMonitoring  bool
+	bandwidthCalc *reports.BandwidthCalculator
+	speedDetector *reports.InterfaceSpeedDetector
 }
 
 type MonitoringConfig struct {
@@ -529,35 +533,85 @@ func (nmc *NetworkMetricsCollector) MonitorBandwidth(ctx context.Context, iface 
 }
 
 func (nmc *NetworkMetricsCollector) GenerateReport(ctx context.Context, duration time.Duration) (*PerformanceReport, error) {
-	// TODO: Implement comprehensive report generation
-	// This would collect historical data and generate analysis
+	// Create comprehensive report generator
+	reportGen := reports.NewReportGenerator()
+
+	// Generate comprehensive network report
+	compReport, err := reportGen.GenerateReport(duration)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate comprehensive report: %w", err)
+	}
+
+	// Convert to legacy PerformanceReport format
+	var issues []PerformanceIssue
+	var recommendations []OptimizationRecommendation
+
+	// Convert recommendations from comprehensive report
+	for _, rec := range compReport.Recommendations {
+		recommendations = append(recommendations, OptimizationRecommendation{
+			Category:    "Network",
+			Title:       rec,
+			Description: rec,
+			Impact:      "Improve network performance",
+		})
+	}
+
+	// Generate issues based on summary data
+	if compReport.Summary.PacketLossPercent > 1 {
+		issues = append(issues, PerformanceIssue{
+			Type:        "PacketLoss",
+			Severity:    "Major",
+			Description: fmt.Sprintf("High packet loss detected: %.1f%%", compReport.Summary.PacketLossPercent),
+			Timestamp:   compReport.Timestamp,
+			Impact:      "May cause connection instability",
+		})
+	}
+
+	if compReport.Summary.AverageLatency > 100 {
+		severity := "Minor"
+		if compReport.Summary.AverageLatency > 200 {
+			severity = "Major"
+		}
+		issues = append(issues, PerformanceIssue{
+			Type:        "Latency",
+			Severity:    severity,
+			Description: fmt.Sprintf("High latency detected: %.1fms", compReport.Summary.AverageLatency),
+			Timestamp:   compReport.Timestamp,
+			Impact:      "May affect real-time applications",
+		})
+	}
+
+	// Determine overall quality based on metrics
+	quality := "Excellent"
+	if compReport.Summary.UtilizationPercent > 90 || compReport.Summary.PacketLossPercent > 5 {
+		quality = "Poor"
+	} else if compReport.Summary.UtilizationPercent > 70 || compReport.Summary.PacketLossPercent > 1 {
+		quality = "Fair"
+	} else if compReport.Summary.UtilizationPercent > 50 || compReport.Summary.AverageLatency > 50 {
+		quality = "Good"
+	}
+
+	majorIssues := 0
+	minorIssues := 0
+	for _, issue := range issues {
+		if issue.Severity == "Major" {
+			majorIssues++
+		} else {
+			minorIssues++
+		}
+	}
+
 	report := &PerformanceReport{
-		GeneratedAt: time.Now(),
-		Duration:    duration,
+		GeneratedAt: compReport.Timestamp,
+		Duration:    compReport.Duration,
 		Summary: PerformanceSummary{
-			OverallQuality: "Good",
-			UptimePercent:  99.5,
-			MajorIssues:    0,
-			MinorIssues:    2,
+			OverallQuality: quality,
+			UptimePercent:  100.0 - compReport.Summary.PacketLossPercent,
+			MajorIssues:    majorIssues,
+			MinorIssues:    minorIssues,
 		},
-		Issues: []PerformanceIssue{
-			{
-				Type:        "Latency",
-				Severity:    "Minor",
-				Description: "Occasional high latency spikes detected",
-				Timestamp:   time.Now(),
-				Impact:      "May affect real-time applications",
-			},
-		},
-		Recommendations: []OptimizationRecommendation{
-			{
-				Category:    "DNS",
-				Title:       "Optimize DNS Configuration",
-				Description: "Switch to faster DNS servers for improved resolution speed",
-				Command:     "resolvectl dns eth0 1.1.1.1 8.8.8.8",
-				Impact:      "Reduce DNS lookup time by 20-30%",
-			},
-		},
+		Issues:          issues,
+		Recommendations: recommendations,
 	}
 
 	return report, nil
@@ -709,11 +763,44 @@ func (nmc *NetworkMetricsCollector) measureBandwidth(iface string) BandwidthMetr
 		}
 	}
 
-	// TODO: Calculate actual bandwidth rates by comparing with previous measurements
-	// For now, return simple metrics
+	// Create bandwidth calculator if not exists
+	if nmc.bandwidthCalc == nil {
+		nmc.bandwidthCalc = reports.NewBandwidthCalculator(5 * time.Second)
+	}
+
+	// Create snapshot for bandwidth calculation
+	snapshot := &reports.InterfaceSnapshot{
+		InterfaceName: iface,
+		Timestamp:     time.Now(),
+		RxBytes:       uint64(rxBytes),
+		TxBytes:       uint64(txBytes),
+		RxPackets:     0, // Could be populated from additional sys files
+		TxPackets:     0,
+		RxDropped:     0,
+		TxDropped:     0,
+		RxErrors:      0,
+		TxErrors:      0,
+	}
+
+	// Calculate rates using bandwidth calculator
+	measurement := nmc.bandwidthCalc.AddSnapshot(snapshot)
+
+	if measurement != nil {
+		// Convert bytes per second to Mbps
+		uploadMbps := float64(measurement.TxBytesPerSec) * 8 / (1024 * 1024)
+		downloadMbps := float64(measurement.RxBytesPerSec) * 8 / (1024 * 1024)
+
+		return BandwidthMetrics{
+			UploadMbps:   uploadMbps,
+			DownloadMbps: downloadMbps,
+			TotalBytes:   int64(measurement.RxBytesPerSec + measurement.TxBytesPerSec),
+		}
+	}
+
+	// Fallback to simple calculation for first measurement
 	return BandwidthMetrics{
-		UploadMbps:   float64(txBytes) / (1024 * 1024), // Simplified calculation
-		DownloadMbps: float64(rxBytes) / (1024 * 1024), // Simplified calculation
+		UploadMbps:   0, // First measurement, no rate available
+		DownloadMbps: 0, // First measurement, no rate available
 		TotalBytes:   rxBytes + txBytes,
 	}
 }
@@ -797,11 +884,33 @@ func (nmc *NetworkMetricsCollector) getDefaultInterface() string {
 	return "eth0" // Fallback
 }
 
-func (nmc *NetworkMetricsCollector) calculateUtilization(bandwidth BandwidthMetrics, _ string) float64 {
-	// TODO: Get interface speed and calculate actual utilization
-	// For now, return a simplified calculation
-	totalMbps := bandwidth.UploadMbps + bandwidth.DownloadMbps
-	return (totalMbps / 1000) * 100 // Assume 1 Gbps interface
+func (nmc *NetworkMetricsCollector) calculateUtilization(bandwidth BandwidthMetrics, iface string) float64 {
+	// Create interface speed detector if not exists
+	if nmc.speedDetector == nil {
+		nmc.speedDetector = reports.NewInterfaceSpeedDetector()
+	}
+
+	// Get interface maximum speed
+	maxSpeedBps, err := nmc.speedDetector.GetInterfaceMaxSpeed(iface)
+	if err != nil {
+		// Fallback to estimation if detection fails
+		totalMbps := bandwidth.UploadMbps + bandwidth.DownloadMbps
+		return (totalMbps / 1000) * 100 // Assume 1 Gbps interface
+	}
+
+	// Convert bandwidth from Mbps to bps for utilization calculation
+	uploadBps := uint64(bandwidth.UploadMbps * 1024 * 1024 / 8)
+	downloadBps := uint64(bandwidth.DownloadMbps * 1024 * 1024 / 8)
+
+	// Calculate actual utilization percentage
+	utilization, err := nmc.speedDetector.CalculateUtilization(iface, downloadBps, uploadBps)
+	if err != nil {
+		// Fallback calculation
+		totalBps := uploadBps + downloadBps
+		utilization = (float64(totalBps) / float64(maxSpeedBps)) * 100
+	}
+
+	return utilization
 }
 
 func (nmc *NetworkMetricsCollector) calculateQualityScore(metrics *NetworkMetrics) float64 {
@@ -1016,12 +1125,33 @@ func saveReport(report *PerformanceReport, filename, format string) error {
 	case "json":
 		data, err = json.MarshalIndent(report, "", "  ")
 	case "html":
-		// TODO: Implement HTML report generation
-		return fmt.Errorf("HTML format not yet implemented")
+		// Generate comprehensive report for HTML
+		reportGen := reports.NewReportGenerator()
+		compReport, compErr := reportGen.GenerateReport(report.Duration)
+		if compErr != nil {
+			return fmt.Errorf("failed to generate comprehensive report: %w", compErr)
+		}
+
+		// Create HTML generator and generate report
+		htmlGen := reports.NewHTMLReportGenerator(filepath.Dir(filename))
+		err = htmlGen.GenerateReport(compReport, filepath.Base(filename))
+		if err == nil {
+			return nil // File already written by HTML generator
+		}
 	default:
-		// Text format
-		// TODO: Implement text report generation
-		return fmt.Errorf("text format not yet implemented")
+		// Text format - generate comprehensive report for text
+		reportGen := reports.NewReportGenerator()
+		compReport, compErr := reportGen.GenerateReport(report.Duration)
+		if compErr != nil {
+			return fmt.Errorf("failed to generate comprehensive report: %w", compErr)
+		}
+
+		// Create text generator and generate report
+		textGen := reports.NewTextReportGenerator(filepath.Dir(filename))
+		err = textGen.GenerateReport(compReport, filepath.Base(filename))
+		if err == nil {
+			return nil // File already written by text generator
+		}
 	}
 
 	if err != nil {
