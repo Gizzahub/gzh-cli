@@ -7,8 +7,8 @@
 
 .PHONY: deps-check deps-update deps-upgrade deps-update-go deps-update-actions deps-update-docker
 .PHONY: deps-outdated deps-security deps-audit deps-report deps-clean deps-help
-.PHONY: deps-update-minor deps-update-patch deps-update-major deps-interactive
-.PHONY: deps-verify deps-why deps-weekly deps-monthly deps-tidy
+.PHONY: deps-update-minor deps-update-patch deps-update-major
+.PHONY: deps-verify deps-why deps-tidy
 
 # ==============================================================================
 # Go Dependencies
@@ -18,25 +18,26 @@ deps-check: ## check for outdated Go dependencies
 	@echo -e "$(CYAN)Checking for outdated Go dependencies...$(RESET)"
 	@go list -u -m all | grep '\[' || echo -e "$(GREEN)✅ All Go dependencies are up to date$(RESET)"
 
-deps-outdated: ## detailed report of outdated dependencies
-	@echo -e "$(CYAN)Generating detailed outdated dependencies report...$(RESET)"
-	@echo -e "$(YELLOW)Go Modules:$(RESET)"
-	@go list -u -m all | grep '\[' | while read line; do \
-		echo "  $(RED)→$(RESET) $$line"; \
-	done || echo "  $(GREEN)✅ All Go modules are up to date$(RESET)"
-	@echo ""
+deps-outdated: ## detailed report of outdated dependencies (direct dependencies only)
+	@echo -e "$(CYAN)Generating detailed outdated dependencies report (direct dependencies only)...$(RESET)"
 	@echo -e "$(YELLOW)Direct Dependencies:$(RESET)"
-	@go list -u -m all | grep '\[' | grep -v 'indirect' | while read line; do \
-		echo "  $(RED)→$(RESET) $$line"; \
-	done || echo "  $(GREEN)✅ All direct dependencies are up to date$(RESET)"
+	@direct_deps=$$(go list -m -f '{{if not .Indirect}}{{.Path}}{{end}}' all | grep -v "^$$"); \
+	direct_outdated=$$(go list -u -m $$direct_deps | grep '\['); \
+	if [ -n "$$direct_outdated" ]; then \
+		echo "$$direct_outdated" | while IFS= read -r line; do \
+			echo -e "  $(RED)→$(RESET) $$line"; \
+		done; \
+	else \
+		echo -e "  $(GREEN)✅ All direct dependencies are up to date$(RESET)"; \
+	fi
 
 deps-tidy: ## run go mod tidy to clean up dependencies
 	@echo -e "$(CYAN)Tidying Go modules...$(RESET)"
 	@go mod tidy
 	@echo -e "$(GREEN)✅ Go modules tidied$(RESET)"
 
-deps-update: ## update all dependencies (safe: patch + minor only)
-	@echo -e "$(CYAN)Updating dependencies safely (patch + minor versions)...$(RESET)"
+deps-update: ## update all dependencies (safe: patch versions only)
+	@echo -e "$(CYAN)Updating dependencies safely (patch versions only)...$(RESET)"
 	@echo -e "$(YELLOW)Before update:$(RESET)"
 	@go mod tidy
 	@cp go.mod go.mod.backup
@@ -83,26 +84,6 @@ deps-update-major: ## update to latest major versions (use with caution!)
 	@echo -e "$(YELLOW)Changes:$(RESET)"
 	@diff go.mod.backup go.mod || echo "  No changes in go.mod"
 	@rm go.mod.backup go.sum.backup
-
-deps-interactive: ## interactive dependency update (choose which ones to update)
-	@echo -e "$(CYAN)Interactive dependency update...$(RESET)"
-	@outdated=$$(go list -u -m all | grep '\['); \
-	if [ -z "$$outdated" ]; then \
-		echo -e "$(GREEN)✅ All dependencies are up to date$(RESET)"; \
-		exit 0; \
-	fi; \
-	echo "$$outdated" | while read line; do \
-		pkg=$$(echo $$line | cut -d' ' -f1); \
-		current=$$(echo $$line | cut -d' ' -f2); \
-		latest=$$(echo $$line | sed 's/.*\[\(.*\)\].*/\1/'); \
-		echo -e "$(YELLOW)Update $$pkg from $$current to $$latest? [y/N]$(RESET)"; \
-		read -r confirm; \
-		if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
-			echo -e "$(CYAN)Updating $$pkg...$(RESET)"; \
-			go get $$pkg@$$latest; \
-		fi; \
-	done; \
-	go mod tidy
 
 # ==============================================================================
 # GitHub Actions Dependencies
@@ -189,7 +170,8 @@ deps-why: ## show why a specific module is needed (usage: make deps-why MOD=gith
 
 deps-report: ## generate comprehensive dependency report
 	@echo -e "$(CYAN)Generating dependency report...$(RESET)"
-	@report_file="dependency-report-$$(date +%Y%m%d-%H%M%S).md"; \
+	@mkdir -p results/deps
+	@report_file="results/deps/dependency-report-$$(date +%Y%m%d-%H%M%S).md"; \
 	echo "# Dependency Report - gzh-cli" > $$report_file; \
 	echo "Generated: $$(date)" >> $$report_file; \
 	echo "" >> $$report_file; \
@@ -206,8 +188,33 @@ deps-report: ## generate comprehensive dependency report
 	echo "\`\`\`" >> $$report_file; \
 	echo "" >> $$report_file; \
 	echo "## Outdated Dependencies" >> $$report_file; \
+	echo "" >> $$report_file; \
+	echo "### Direct Dependencies (Updatable)" >> $$report_file; \
 	echo "\`\`\`" >> $$report_file; \
-	go list -u -m all | grep '\[' >> $$report_file || echo "All dependencies are up to date" >> $$report_file; \
+	direct_deps=$$(go list -m -f '{{if not .Indirect}}{{.Path}}{{end}}' all | grep -v "^$$"); \
+	direct_outdated=$$(go list -u -m $$direct_deps | grep '\['); \
+	if [ -n "$$direct_outdated" ]; then \
+		echo "$$direct_outdated" >> $$report_file; \
+	else \
+		echo "All direct dependencies are up to date" >> $$report_file; \
+	fi; \
+	echo "\`\`\`" >> $$report_file; \
+	echo "" >> $$report_file; \
+	echo "### Indirect Dependencies (Informational)" >> $$report_file; \
+	echo "\`\`\`" >> $$report_file; \
+	all_outdated=$$(go list -u -m all | grep '\['); \
+	if [ -n "$$direct_outdated" ] && [ -n "$$all_outdated" ]; then \
+		indirect_outdated=$$(echo "$$all_outdated" | grep -v -F "$$direct_outdated" 2>/dev/null || echo "$$all_outdated"); \
+	elif [ -z "$$direct_outdated" ] && [ -n "$$all_outdated" ]; then \
+		indirect_outdated="$$all_outdated"; \
+	else \
+		indirect_outdated=""; \
+	fi; \
+	if [ -n "$$indirect_outdated" ]; then \
+		echo "$$indirect_outdated" >> $$report_file; \
+	else \
+		echo "All indirect dependencies are up to date" >> $$report_file; \
+	fi; \
 	echo "\`\`\`" >> $$report_file; \
 	echo -e "$(GREEN)✅ Report generated: $$report_file$(RESET)"
 
@@ -224,46 +231,8 @@ deps-clean: ## clean up dependency cache and temporary files
 	@echo -e "$(GREEN)✅ Dependency cache cleaned$(RESET)"
 
 # ==============================================================================
-# Dependabot Alternative Workflow
+# Dependabot Alternative - Use individual commands as needed
 # ==============================================================================
-
-deps-weekly: ## run weekly dependency maintenance (safe updates)
-	@echo -e "$(BLUE)🗓️  Running weekly dependency maintenance...$(RESET)"
-	@echo -e "$(YELLOW)1. Checking current status...$(RESET)"
-	@make --no-print-directory deps-check
-	@echo ""
-	@echo -e "$(YELLOW)2. Running security audit...$(RESET)"
-	@make --no-print-directory deps-security
-	@echo ""
-	@echo -e "$(YELLOW)3. Updating patch versions (safest)...$(RESET)"
-	@make --no-print-directory deps-update-patch
-	@echo ""
-	@echo -e "$(YELLOW)4. Running tests after update...$(RESET)"
-	@go test ./... -short
-	@echo ""
-	@echo -e "$(GREEN)✅ Weekly maintenance completed$(RESET)"
-
-deps-monthly: ## run monthly dependency maintenance (minor updates)
-	@echo -e "$(BLUE)📅 Running monthly dependency maintenance...$(RESET)"
-	@echo -e "$(YELLOW)1. Creating backup...$(RESET)"
-	@cp go.mod go.mod.monthly-backup
-	@cp go.sum go.sum.monthly-backup
-	@echo ""
-	@echo -e "$(YELLOW)2. Updating minor versions...$(RESET)"
-	@make --no-print-directory deps-update-minor
-	@echo ""
-	@echo -e "$(YELLOW)3. Running full test suite...$(RESET)"
-	@go test ./...
-	@echo ""
-	@echo -e "$(YELLOW)4. Running security audit...$(RESET)"
-	@make --no-print-directory deps-security
-	@echo ""
-	@if [ -f "go.mod.monthly-backup" ]; then \
-		echo -e "$(YELLOW)Backup files created:$(RESET)"; \
-		echo "  → go.mod.monthly-backup"; \
-		echo "  → go.sum.monthly-backup"; \
-	fi
-	@echo -e "$(GREEN)✅ Monthly maintenance completed$(RESET)"
 
 # ==============================================================================
 # Help System
@@ -277,7 +246,6 @@ deps-help: ## show comprehensive help for dependency management commands
 	@echo -e "  $(CYAN)deps-outdated$(RESET)         Detailed outdated dependencies report"
 	@echo -e "  $(CYAN)deps-tidy$(RESET)             Run go mod tidy to clean up dependencies"
 	@echo -e "  $(CYAN)deps-update$(RESET)           Safe update (patch + minor only)"
-	@echo -e "  $(CYAN)deps-interactive$(RESET)      Interactive dependency updates"
 	@echo ""
 	@echo -e "$(YELLOW)🔄 Update Levels:$(RESET)"
 	@echo -e "  $(CYAN)deps-update-patch$(RESET)     Update patch versions only (safest)"
@@ -297,19 +265,19 @@ deps-help: ## show comprehensive help for dependency management commands
 	@echo -e "  $(CYAN)deps-update-actions$(RESET)   Check GitHub Actions updates"
 	@echo -e "  $(CYAN)deps-update-docker$(RESET)    Check Docker base image updates"
 	@echo ""
-	@echo -e "$(YELLOW)📅 Maintenance Workflows:$(RESET)"
-	@echo -e "  $(CYAN)deps-weekly$(RESET)           Weekly maintenance (patch updates + security)"
-	@echo -e "  $(CYAN)deps-monthly$(RESET)          Monthly maintenance (minor updates + full tests)"
+	@echo -e "$(YELLOW)💡 Maintenance Workflows:$(RESET)"
+	@echo -e "  $(CYAN)Weekly:$(RESET)   deps-check → deps-security → deps-update-patch → test"
+	@echo -e "  $(CYAN)Monthly:$(RESET)  deps-check → deps-update-minor → test → deps-security"
 	@echo ""
 	@echo -e "$(YELLOW)🧹 Cleanup:$(RESET)"
 	@echo -e "  $(CYAN)deps-clean$(RESET)            Clean dependency cache and temporary files"
 	@echo ""
 	@echo -e "$(YELLOW)💡 Usage Examples:$(RESET)"
-	@echo -e "  $(GREEN)make deps-check$(RESET)                    # Check what's outdated"
-	@echo -e "  $(GREEN)make deps-weekly$(RESET)                   # Safe weekly maintenance"
-	@echo -e "  $(GREEN)make deps-interactive$(RESET)              # Choose what to update"
+	@echo -e "  $(GREEN)make deps-outdated$(RESET)                 # Check direct dependencies"
+	@echo -e "  $(GREEN)make deps-update-patch$(RESET)             # Safe patch updates"
+	@echo -e "  $(GREEN)make deps-update-minor$(RESET)             # Minor version updates"
 	@echo -e "  $(GREEN)make deps-why MOD=github.com/spf13/cobra$(RESET)  # Why is cobra needed?"
 	@echo ""
 	@echo -e "$(BLUE)📝 Configuration:$(RESET)"
 	@echo "  This replaces Dependabot for more controlled dependency management"
-	@echo -e "  Recommended: Run $(YELLOW)deps-weekly$(RESET) every week for maintenance"
+	@echo -e "  Recommended: Run weekly $(YELLOW)deps-update-patch$(RESET) and monthly $(YELLOW)deps-update-minor$(RESET)"
