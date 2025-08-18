@@ -109,7 +109,7 @@ const htmlReportTemplate = `
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -117,13 +117,13 @@ const htmlReportTemplate = `
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -133,25 +133,25 @@ const htmlReportTemplate = `
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
             text-align: center;
         }
-        
+
         .header h1 {
             color: #2c3e50;
             margin-bottom: 10px;
             font-size: 2.5em;
         }
-        
+
         .header .meta {
             color: #7f8c8d;
             font-size: 1.1em;
         }
-        
+
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .summary-card {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 12px;
@@ -159,11 +159,11 @@ const htmlReportTemplate = `
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
-        
+
         .summary-card:hover {
             transform: translateY(-5px);
         }
-        
+
         .summary-card h3 {
             color: #2c3e50;
             margin-bottom: 15px;
@@ -172,22 +172,22 @@ const htmlReportTemplate = `
             align-items: center;
             gap: 10px;
         }
-        
+
         .summary-card .value {
             font-size: 2em;
             font-weight: bold;
             margin: 10px 0;
         }
-        
+
         .summary-card .label {
             color: #7f8c8d;
             font-size: 0.9em;
         }
-        
+
         .good { color: #27ae60; }
         .warning { color: #f39c12; }
         .danger { color: #e74c3c; }
-        
+
         .section {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
@@ -195,7 +195,7 @@ const htmlReportTemplate = `
             margin-bottom: 25px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .section h2 {
             color: #2c3e50;
             margin-bottom: 20px;
@@ -203,33 +203,33 @@ const htmlReportTemplate = `
             border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
         }
-        
+
         .interface-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 20px;
         }
-        
+
         .interface-card {
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             background: #f8f9fa;
         }
-        
+
         .interface-header {
             display: flex;
             justify-content: between;
             align-items: center;
             margin-bottom: 15px;
         }
-        
+
         .interface-name {
             font-size: 1.2em;
             font-weight: bold;
             color: #2c3e50;
         }
-        
+
         .interface-status {
             padding: 4px 12px;
             border-radius: 20px;
@@ -237,85 +237,85 @@ const htmlReportTemplate = `
             font-weight: bold;
             text-transform: uppercase;
         }
-        
+
         .status-up {
             background: #d4edda;
             color: #155724;
         }
-        
+
         .status-down {
             background: #f8d7da;
             color: #721c24;
         }
-        
+
         .interface-metrics {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-        
+
         .metric {
             text-align: center;
         }
-        
+
         .metric-value {
             font-size: 1.4em;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .metric-label {
             color: #6c757d;
             font-size: 0.9em;
         }
-        
+
         .recommendations {
             background: linear-gradient(135deg, #e8f4f8 0%, #f0f8e8 100%);
             border-left: 4px solid #17a2b8;
             padding: 20px;
             border-radius: 8px;
         }
-        
+
         .recommendation-item {
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(0,0,0,0.1);
         }
-        
+
         .recommendation-item:last-child {
             margin-bottom: 0;
             padding-bottom: 0;
             border-bottom: none;
         }
-        
+
         .system-info {
             background: #f8f9fa;
             border-radius: 8px;
             padding: 20px;
             margin-top: 20px;
         }
-        
+
         .system-info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
-        
+
         .system-info-item {
             display: flex;
             flex-direction: column;
         }
-        
+
         .system-info-label {
             font-weight: bold;
             color: #495057;
             margin-bottom: 5px;
         }
-        
+
         .system-info-value {
             color: #6c757d;
         }
-        
+
         .chart-container {
             background: white;
             border-radius: 8px;
@@ -323,7 +323,7 @@ const htmlReportTemplate = `
             margin: 20px 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
         .progress-bar {
             width: 100%;
             height: 20px;
@@ -332,29 +332,29 @@ const htmlReportTemplate = `
             overflow: hidden;
             margin: 10px 0;
         }
-        
+
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #28a745 0%, #ffc107 70%, #dc3545 100%);
             transition: width 0.3s ease;
         }
-        
+
         .footer {
             text-align: center;
             color: rgba(255, 255, 255, 0.8);
             margin-top: 30px;
             padding: 20px;
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
             }
-            
+
             .summary-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .interface-grid {
                 grid-template-columns: 1fr;
             }
@@ -384,7 +384,7 @@ const htmlReportTemplate = `
                 </div>
                 <div class="label">Active Interfaces</div>
             </div>
-            
+
             <div class="summary-card">
                 <h3>📈 Bandwidth Usage</h3>
                 <div class="value">{{.Summary.TotalBandwidth | formatBytes}}/s</div>
@@ -394,7 +394,7 @@ const htmlReportTemplate = `
                 </div>
                 <div class="label">Utilization</div>
             </div>
-            
+
             <div class="summary-card">
                 <h3>⚡ Network Quality</h3>
                 <div class="value {{if gt .Summary.AverageLatency 100}}danger{{else if gt .Summary.AverageLatency 50}}warning{{else}}good{{end}}">
