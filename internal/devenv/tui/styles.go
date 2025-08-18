@@ -4,237 +4,107 @@
 package tui
 
 import (
+	"github.com/Gizzahub/gzh-cli/internal/tui/common"
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Color palette inspired by Go's branding and modern terminal themes.
-var (
-	ColorPrimary    = lipgloss.Color("#00ADD8") // Go blue
-	ColorSecondary  = lipgloss.Color("#5E81AC") // Muted blue
-	ColorSuccess    = lipgloss.Color("#A3BE8C") // Green
-	ColorWarning    = lipgloss.Color("#EBCB8B") // Yellow
-	ColorError      = lipgloss.Color("#BF616A") // Red
-	ColorText       = lipgloss.Color("#D8DEE9") // Light gray
-	ColorSubtle     = lipgloss.Color("#4C566A") // Dark gray
-	ColorBackground = lipgloss.Color("#2E3440") // Dark background
-	ColorBorder     = lipgloss.Color("#434C5E") // Border color
-	ColorHighlight  = lipgloss.Color("#88C0D0") // Highlight color
-)
+// DevEnvStyles holds the styles for development environment TUI.
+type DevEnvStyles struct {
+	common.StyleSet
+	ServiceActive   lipgloss.Style
+	ServiceInactive lipgloss.Style
+	ServiceWarning  lipgloss.Style
+	ServiceError    lipgloss.Style
+	ServiceUnknown  lipgloss.Style
+	TableHeader     lipgloss.Style
+	TableCell       lipgloss.Style
+	TableSelected   lipgloss.Style
+	TableEvenRow    lipgloss.Style
+	TableOddRow     lipgloss.Style
+}
 
-// Base styles.
-var (
-	BaseStyle = lipgloss.NewStyle().
-			Foreground(ColorText).
-			Background(ColorBackground)
-
-	TitleStyle = lipgloss.NewStyle().
-			Foreground(ColorPrimary).
+// NewDevEnvStyles creates a new set of styles for development environment TUI.
+func NewDevEnvStyles() DevEnvStyles {
+	baseStyles := common.DefaultStyles()
+	
+	return DevEnvStyles{
+		StyleSet: baseStyles,
+		ServiceActive: lipgloss.NewStyle().
+			Foreground(baseStyles.Theme.Success).
+			Bold(true),
+		ServiceInactive: lipgloss.NewStyle().
+			Foreground(baseStyles.Theme.Subtle),
+		ServiceWarning: lipgloss.NewStyle().
+			Foreground(baseStyles.Theme.Warning).
+			Bold(true),
+		ServiceError: lipgloss.NewStyle().
+			Foreground(baseStyles.Theme.Error).
+			Bold(true),
+		ServiceUnknown: lipgloss.NewStyle().
+			Foreground(baseStyles.Theme.Subtle),
+		TableHeader: lipgloss.NewStyle().
+			Foreground(baseStyles.Theme.Primary).
 			Bold(true).
 			Padding(0, 1).
-			Margin(0, 0, 1, 0)
-
-	HeaderStyle = lipgloss.NewStyle().
-			Foreground(ColorPrimary).
+			Border(lipgloss.NormalBorder(), false, false, true, false).
+			BorderForeground(baseStyles.Theme.Border),
+		TableCell: lipgloss.NewStyle().
+			Padding(0, 1),
+		TableSelected: lipgloss.NewStyle().
+			Foreground(baseStyles.Theme.Background).
+			Background(baseStyles.Theme.Highlight).
 			Bold(true).
-			Padding(0, 1).
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(ColorBorder)
-
-	StatusBarStyle = lipgloss.NewStyle().
-			Foreground(ColorText).
-			Background(ColorBorder).
-			Padding(0, 1)
-
-	FooterStyle = lipgloss.NewStyle().
-			Foreground(ColorSubtle).
-			Padding(0, 1)
-)
-
-// Service status styles.
-var (
-	ServiceActiveStyle = lipgloss.NewStyle().
-				Foreground(ColorSuccess).
-				Bold(true)
-
-	ServiceInactiveStyle = lipgloss.NewStyle().
-				Foreground(ColorSubtle)
-
-	ServiceWarningStyle = lipgloss.NewStyle().
-				Foreground(ColorWarning).
-				Bold(true)
-
-	ServiceErrorStyle = lipgloss.NewStyle().
-				Foreground(ColorError).
-				Bold(true)
-
-	ServiceUnknownStyle = lipgloss.NewStyle().
-				Foreground(ColorSubtle)
-)
-
-// Table styles.
-var (
-	TableHeaderStyle = lipgloss.NewStyle().
-				Foreground(ColorPrimary).
-				Bold(true).
-				Padding(0, 1).
-				Border(lipgloss.NormalBorder(), false, false, true, false).
-				BorderForeground(ColorBorder)
-
-	TableCellStyle = lipgloss.NewStyle().
-			Padding(0, 1)
-
-	TableSelectedStyle = lipgloss.NewStyle().
-				Foreground(ColorBackground).
-				Background(ColorHighlight).
-				Bold(true).
-				Padding(0, 1)
-
-	TableEvenRowStyle = lipgloss.NewStyle().
-				Background(lipgloss.Color("#3B4252"))
-
-	TableOddRowStyle = lipgloss.NewStyle().
-				Background(ColorBackground)
-)
-
-// Button and interactive element styles.
-var (
-	ButtonStyle = lipgloss.NewStyle().
-			Foreground(ColorText).
-			Background(ColorBorder).
-			Padding(0, 2).
-			Margin(0, 1).
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(ColorBorder)
-
-	ButtonActiveStyle = lipgloss.NewStyle().
-				Foreground(ColorBackground).
-				Background(ColorPrimary).
-				Padding(0, 2).
-				Margin(0, 1).
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(ColorPrimary).
-				Bold(true)
-
-	ButtonHoverStyle = lipgloss.NewStyle().
-				Foreground(ColorText).
-				Background(ColorHighlight).
-				Padding(0, 2).
-				Margin(0, 1).
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(ColorHighlight)
-)
-
-// Dialog and modal styles.
-var (
-	DialogStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(ColorPrimary).
-			Padding(1, 2).
-			Background(ColorBackground).
-			Foreground(ColorText)
-
-	DialogTitleStyle = lipgloss.NewStyle().
-				Foreground(ColorPrimary).
-				Bold(true).
-				Align(lipgloss.Center).
-				Margin(0, 0, 1, 0)
-
-	DialogContentStyle = lipgloss.NewStyle().
-				Foreground(ColorText).
-				Margin(0, 0, 1, 0)
-)
-
-// Progress and loading styles.
-var (
-	ProgressBarStyle = lipgloss.NewStyle().
-				Background(ColorBorder).
-				Foreground(ColorPrimary)
-
-	SpinnerStyle = lipgloss.NewStyle().
-			Foreground(ColorPrimary)
-
-	LoadingStyle = lipgloss.NewStyle().
-			Foreground(ColorSubtle).
-			Italic(true)
-)
-
-// Message and notification styles.
-var (
-	InfoStyle = lipgloss.NewStyle().
-			Foreground(ColorPrimary).
-			Bold(true)
-
-	SuccessStyle = lipgloss.NewStyle().
-			Foreground(ColorSuccess).
-			Bold(true)
-
-	WarningStyle = lipgloss.NewStyle().
-			Foreground(ColorWarning).
-			Bold(true)
-
-	ErrorStyle = lipgloss.NewStyle().
-			Foreground(ColorError).
-			Bold(true)
-)
-
-// Help styles.
-var (
-	HelpHeaderStyle = lipgloss.NewStyle().
-			Foreground(ColorPrimary).
-			Bold(true).
-			Margin(1, 0)
-
-	HelpKeyStyle = lipgloss.NewStyle().
-			Foreground(ColorHighlight).
-			Bold(true)
-
-	HelpDescStyle = lipgloss.NewStyle().
-			Foreground(ColorText)
-
-	HelpSectionStyle = lipgloss.NewStyle().
-				Margin(0, 0, 1, 2)
-)
-
-// Border styles.
-var (
-	NormalBorder = lipgloss.Border{
-		Top:         "─",
-		Bottom:      "─",
-		Left:        "│",
-		Right:       "│",
-		TopLeft:     "┌",
-		TopRight:    "┐",
-		BottomLeft:  "└",
-		BottomRight: "┘",
-	}
-
-	ThickBorder = lipgloss.Border{
-		Top:         "━",
-		Bottom:      "━",
-		Left:        "┃",
-		Right:       "┃",
-		TopLeft:     "┏",
-		TopRight:    "┓",
-		BottomLeft:  "┗",
-		BottomRight: "┛",
-	}
-)
-
-// GetServiceStatusStyle returns the appropriate style for a service status.
-func GetServiceStatusStyle(status string) lipgloss.Style {
-	switch status {
-	case "active", "connected", "running", "online":
-		return ServiceActiveStyle
-	case "inactive", "disconnected", "stopped", "offline":
-		return ServiceInactiveStyle
-	case "warning", "degraded", "partial":
-		return ServiceWarningStyle
-	case "error", "failed", "critical":
-		return ServiceErrorStyle
-	default:
-		return ServiceUnknownStyle
+			Padding(0, 1),
+		TableEvenRow: lipgloss.NewStyle().
+			Background(lipgloss.Color("#3B4252")),
+		TableOddRow: lipgloss.NewStyle().
+			Background(baseStyles.Theme.Background),
 	}
 }
+
+// Legacy style variables for backward compatibility.
+var (
+	styles = NewDevEnvStyles()
+	
+	// Backward compatibility exports
+	ColorPrimary    = styles.Theme.Primary
+	ColorSecondary  = styles.Theme.Secondary
+	ColorSuccess    = styles.Theme.Success
+	ColorWarning    = styles.Theme.Warning
+	ColorError      = styles.Theme.Error
+	ColorText       = styles.Theme.Text
+	ColorSubtle     = styles.Theme.Subtle
+	ColorBackground = styles.Theme.Background
+	ColorBorder     = styles.Theme.Border
+	ColorHighlight  = styles.Theme.Highlight
+	
+	// Base styles
+	BaseStyle      = styles.Base
+	TitleStyle     = styles.Title
+	HeaderStyle    = styles.Header
+	StatusBarStyle = styles.StatusBar
+	FooterStyle    = styles.Footer
+	
+	// Service status styles
+	ServiceActiveStyle   = styles.ServiceActive
+	ServiceInactiveStyle = styles.ServiceInactive
+	ServiceWarningStyle  = styles.ServiceWarning
+	ServiceErrorStyle    = styles.ServiceError
+	ServiceUnknownStyle  = styles.ServiceUnknown
+	
+	// Table styles
+	TableHeaderStyle   = styles.TableHeader
+	TableCellStyle     = styles.TableCell
+	TableSelectedStyle = styles.TableSelected
+	TableEvenRowStyle  = styles.TableEvenRow
+	TableOddRowStyle   = styles.TableOddRow
+	
+	// Additional styles for compatibility
+	SpinnerStyle     = styles.Base.Foreground(styles.Theme.Primary)
+	ErrorStyle       = styles.Base.Foreground(styles.Theme.Error).Bold(true)
+	InfoStyle        = styles.Base.Foreground(styles.Theme.Primary).Bold(true)
+	HelpHeaderStyle  = styles.Base.Foreground(styles.Theme.Primary).Bold(true).Margin(1, 0)
+)
 
 // GetStatusIcon returns the appropriate icon for a service status.
 func GetStatusIcon(status string) string {
@@ -250,20 +120,4 @@ func GetStatusIcon(status string) string {
 	default:
 		return "❓"
 	}
-}
-
-// AdaptiveStyle adjusts styles based on terminal capabilities.
-func AdaptiveStyle(width, height int) lipgloss.Style {
-	base := BaseStyle
-
-	// Adjust for smaller terminals
-	if width < 80 {
-		base = base.Padding(0)
-	}
-
-	if height < 24 {
-		base = base.Margin(0)
-	}
-
-	return base
 }
