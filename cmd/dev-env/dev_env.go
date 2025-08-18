@@ -92,7 +92,7 @@ Examples:
 	cmd.AddCommand(newGcloudCredentialsCmd())
 	cmd.AddCommand(newGCPProjectCmd())
 	cmd.AddCommand(newAzureSubscriptionCmd())
-	cmd.AddCommand(newSSHCmd())
+	cmd.AddCommand(newSshCmd())
 
 	return cmd
 }

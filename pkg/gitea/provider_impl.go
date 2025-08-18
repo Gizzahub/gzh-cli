@@ -13,9 +13,8 @@ import (
 
 // GiteaProvider implements the unified GitProvider interface for Gitea.
 type GiteaProvider struct {
-	baseURL string
-	name    string
-	token   string
+	*provider.BaseProvider
+	helpers *provider.CommonHelpers
 }
 
 // Ensure GiteaProvider implements GitProvider interface
@@ -27,47 +26,24 @@ func NewGiteaProvider(baseURL string) *GiteaProvider {
 		baseURL = "https://gitea.com/api/v1"
 	}
 	return &GiteaProvider{
-		baseURL: baseURL,
-		name:    "gitea",
+		BaseProvider: provider.NewBaseProvider("gitea", baseURL, ""),
+		helpers:      provider.NewCommonHelpers(),
 	}
-}
-
-// GetName returns the provider name.
-func (g *GiteaProvider) GetName() string {
-	return g.name
 }
 
 // GetCapabilities returns the list of supported capabilities.
 func (g *GiteaProvider) GetCapabilities() []provider.Capability {
-	return []provider.Capability{
-		provider.CapabilityRepositories,
-		provider.CapabilityWebhooks,
-		provider.CapabilityEvents,
-		provider.CapabilityIssues,
-		provider.CapabilityPullRequests,
-		provider.CapabilityWiki,
-		provider.CapabilityProjects,
-		provider.CapabilityReleases,
-		provider.CapabilityOrganizations,
-		provider.CapabilityUsers,
-		provider.CapabilityTeams,
-		provider.CapabilityPermissions,
-	}
-}
-
-// GetBaseURL returns the base URL for the Gitea API.
-func (g *GiteaProvider) GetBaseURL() string {
-	return g.baseURL
+	return g.helpers.StandardizeCapabilities("gitea")
 }
 
 // Authenticate sets up authentication credentials.
 func (g *GiteaProvider) Authenticate(ctx context.Context, creds provider.Credentials) error {
 	switch creds.Type {
 	case provider.CredentialTypeToken:
-		g.token = creds.Token
+		g.SetToken(creds.Token)
 		return nil
 	default:
-		return fmt.Errorf("unsupported credential type: %s", creds.Type)
+		return g.FormatError("authenticate", fmt.Errorf("unsupported credential type: %s", creds.Type))
 	}
 }
 
@@ -97,12 +73,12 @@ func (g *GiteaProvider) ListRepositories(ctx context.Context, opts provider.List
 		owner = opts.User
 	}
 	if owner == "" {
-		return nil, fmt.Errorf("either Organization or User must be specified in ListOptions")
+		return nil, g.FormatError("list repositories", fmt.Errorf("either Organization or User must be specified in ListOptions"))
 	}
 
 	repoNames, err := List(ctx, owner)
 	if err != nil {
-		return nil, err
+		return nil, g.FormatError("list repositories", err)
 	}
 
 	repositories := make([]provider.Repository, 0, len(repoNames))
@@ -113,15 +89,16 @@ func (g *GiteaProvider) ListRepositories(ctx context.Context, opts provider.List
 			defaultBranch = "main" // fallback
 		}
 
+		fullName := fmt.Sprintf("%s/%s", owner, name)
 		repo := provider.Repository{
-			ID:            fmt.Sprintf("%s/%s", owner, name),
+			ID:            fullName,
 			Name:          name,
-			FullName:      fmt.Sprintf("%s/%s", owner, name),
+			FullName:      fullName,
 			DefaultBranch: defaultBranch,
-			CloneURL:      fmt.Sprintf("https://gitea.com/%s/%s.git", owner, name),
-			SSHURL:        fmt.Sprintf("git@gitea.com:%s/%s.git", owner, name),
-			HTMLURL:       fmt.Sprintf("https://gitea.com/%s/%s", owner, name),
-			ProviderType:  "gitea",
+			CloneURL:      fmt.Sprintf("https://gitea.com/%s.git", fullName),
+			SSHURL:        fmt.Sprintf("git@gitea.com:%s.git", fullName),
+			HTMLURL:       fmt.Sprintf("https://gitea.com/%s", fullName),
+			ProviderType:  g.GetName(),
 		}
 		repositories = append(repositories, repo)
 	}
@@ -134,9 +111,9 @@ func (g *GiteaProvider) ListRepositories(ctx context.Context, opts provider.List
 
 // GetRepository retrieves information about a specific repository.
 func (g *GiteaProvider) GetRepository(ctx context.Context, id string) (*provider.Repository, error) {
-	owner, repo, err := parseFullName(id)
+	owner, repo, err := g.helpers.ParseRepositoryURL(id)
 	if err != nil {
-		return nil, err
+		return nil, g.FormatError("get repository", err)
 	}
 
 	defaultBranch, err := GetDefaultBranch(ctx, owner, repo)
@@ -158,97 +135,116 @@ func (g *GiteaProvider) GetRepository(ctx context.Context, id string) (*provider
 
 // CloneRepository clones a repository to the target path.
 func (g *GiteaProvider) CloneRepository(ctx context.Context, repo provider.Repository, target string, opts provider.CloneOptions) error {
-	owner, repoName, err := parseFullName(repo.FullName)
+	owner, repoName, err := g.helpers.ParseRepositoryURL(repo.FullName)
 	if err != nil {
-		return err
+		return g.FormatError("clone repository", err)
 	}
 
-	return Clone(ctx, target, owner, repoName, opts.Strategy)
+	err = Clone(ctx, target, owner, repoName, opts.Strategy)
+	if err != nil {
+		return g.FormatError("clone repository", err)
+	}
+	return nil
 }
 
 // Placeholder implementations for other required methods
 func (g *GiteaProvider) CreateRepository(ctx context.Context, req provider.CreateRepoRequest) (*provider.Repository, error) {
-	return nil, fmt.Errorf("create repository not implemented")
+	return nil, g.FormatError("create repository", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) UpdateRepository(ctx context.Context, id string, updates provider.UpdateRepoRequest) (*provider.Repository, error) {
-	return nil, fmt.Errorf("update repository not implemented")
+	return nil, g.FormatError("update repository", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) DeleteRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("delete repository not implemented")
+	return g.FormatError("delete repository", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) ArchiveRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("archive repository not implemented")
+	return g.FormatError("archive repository", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) UnarchiveRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("unarchive repository not implemented")
+	return g.FormatError("unarchive repository", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) ForkRepository(ctx context.Context, id string, opts provider.ForkOptions) (*provider.Repository, error) {
-	return nil, fmt.Errorf("fork repository not implemented")
+	return nil, g.FormatError("fork repository", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) SearchRepositories(ctx context.Context, query provider.SearchQuery) (*provider.SearchResult, error) {
-	return nil, fmt.Errorf("search repositories not implemented")
+	return nil, g.FormatError("search repositories", fmt.Errorf("not implemented"))
 }
 
 // Webhook management methods (placeholder implementations)
 func (g *GiteaProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, g.FormatError("list webhooks", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, g.FormatError("get webhook", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) CreateWebhook(ctx context.Context, repoID string, webhook provider.CreateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	if err := g.helpers.ValidateWebhookRequest(repoID, "", webhook.Config.URL); err != nil {
+		return nil, g.FormatError("create webhook", err)
+	}
+	return nil, g.FormatError("create webhook", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) UpdateWebhook(ctx context.Context, repoID, webhookID string, updates provider.UpdateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, g.FormatError("update webhook", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) DeleteWebhook(ctx context.Context, repoID, webhookID string) error {
-	return fmt.Errorf("webhook management not implemented")
+	return g.FormatError("delete webhook", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) TestWebhook(ctx context.Context, repoID, webhookID string) (*provider.WebhookTestResult, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, g.FormatError("test webhook", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) ValidateWebhookURL(ctx context.Context, url string) error {
-	return fmt.Errorf("webhook management not implemented")
+	if err := g.helpers.ValidateWebhookRequest("", "", url); err != nil {
+		return g.FormatError("validate webhook URL", err)
+	}
+	return g.FormatError("validate webhook URL", fmt.Errorf("not implemented"))
 }
 
 // Event management methods (placeholder implementations)
 func (g *GiteaProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, fmt.Errorf("event management not implemented")
+	return nil, g.FormatError("list events", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, fmt.Errorf("event management not implemented")
+	return nil, g.FormatError("get event", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return fmt.Errorf("event management not implemented")
+	return g.FormatError("process event", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return fmt.Errorf("event management not implemented")
+	return g.FormatError("register event handler", fmt.Errorf("not implemented"))
 }
 
 func (g *GiteaProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, fmt.Errorf("event streaming not implemented")
+	return nil, g.FormatError("stream events", fmt.Errorf("not implemented"))
 }
 
 // Health and monitoring methods
 func (g *GiteaProvider) HealthCheck(ctx context.Context) (*provider.HealthStatus, error) {
-	startTime := time.Now()
+	// Use base provider health check first
+	if err := g.BaseProvider.HealthCheck(ctx); err != nil {
+		return &provider.HealthStatus{
+			Status:      provider.HealthStatusUnhealthy,
+			Message:     err.Error(),
+			LastChecked: time.Now(),
+			Details:     make(map[string]interface{}),
+		}, nil
+	}
 
+	startTime := time.Now()
 	// Use token validation as health check
 	_, err := g.ValidateToken(ctx)
 	latency := time.Since(startTime)
@@ -289,36 +285,4 @@ func (g *GiteaProvider) GetMetrics(ctx context.Context) (*provider.ProviderMetri
 		SuccessRate:    0.0,
 		CollectedAt:    time.Now(),
 	}, nil
-}
-
-// parseFullName parses owner/repo from full name
-func parseFullName(fullName string) (owner, repo string, err error) {
-	parts := splitFullName(fullName)
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid repository full name: %s", fullName)
-	}
-	return parts[0], parts[1], nil
-}
-
-// splitFullName splits "owner/repo" into ["owner", "repo"]
-func splitFullName(fullName string) []string {
-	result := make([]string, 0, 2)
-	current := ""
-
-	for _, char := range fullName {
-		if char == '/' {
-			if current != "" {
-				result = append(result, current)
-				current = ""
-			}
-		} else {
-			current += string(char)
-		}
-	}
-
-	if current != "" {
-		result = append(result, current)
-	}
-
-	return result
 }

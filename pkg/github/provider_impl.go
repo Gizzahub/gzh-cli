@@ -13,10 +13,10 @@ import (
 
 // GitHubProvider implements the unified GitProvider interface for GitHub.
 type GitHubProvider struct {
+	*provider.BaseProvider
 	client  APIClient
 	cloner  CloneService
-	baseURL string
-	name    string
+	helpers *provider.CommonHelpers
 }
 
 // Ensure GitHubProvider implements GitProvider interface
@@ -25,54 +25,33 @@ var _ provider.GitProvider = (*GitHubProvider)(nil)
 // NewGitHubProvider creates a new GitHub provider instance.
 func NewGitHubProvider(client APIClient, cloner CloneService) *GitHubProvider {
 	return &GitHubProvider{
-		client:  client,
-		cloner:  cloner,
-		baseURL: "https://api.github.com",
-		name:    "github",
+		BaseProvider: provider.NewBaseProvider("github", "https://api.github.com", ""),
+		client:       client,
+		cloner:       cloner,
+		helpers:      provider.NewCommonHelpers(),
 	}
-}
-
-// GetName returns the provider name.
-func (g *GitHubProvider) GetName() string {
-	return g.name
 }
 
 // GetCapabilities returns the list of supported capabilities.
 func (g *GitHubProvider) GetCapabilities() []provider.Capability {
-	return []provider.Capability{
-		provider.CapabilityRepositories,
-		provider.CapabilityWebhooks,
-		provider.CapabilityEvents,
-		provider.CapabilityIssues,
-		provider.CapabilityPullRequests,
-		provider.CapabilityWiki,
-		provider.CapabilityProjects,
-		provider.CapabilityActions,
+	capabilities := g.helpers.StandardizeCapabilities("github")
+	// Add GitHub-specific capabilities
+	return append(capabilities, []provider.Capability{
 		provider.CapabilityCICD,
-		provider.CapabilityPackages,
-		provider.CapabilityReleases,
-		provider.CapabilityOrganizations,
-		provider.CapabilityUsers,
-		provider.CapabilityTeams,
-		provider.CapabilityPermissions,
 		provider.CapabilityBranchProtection,
 		provider.CapabilitySecurityAlerts,
 		provider.CapabilityDependabot,
-	}
-}
-
-// GetBaseURL returns the base URL for the GitHub API.
-func (g *GitHubProvider) GetBaseURL() string {
-	return g.baseURL
+	}...)
 }
 
 // Authenticate sets up authentication credentials.
 func (g *GitHubProvider) Authenticate(ctx context.Context, creds provider.Credentials) error {
 	switch creds.Type {
 	case provider.CredentialTypeToken:
+		g.SetToken(creds.Token)
 		return g.client.SetToken(ctx, creds.Token)
 	default:
-		return fmt.Errorf("unsupported credential type: %s", creds.Type)
+		return g.FormatError("authenticate", fmt.Errorf("unsupported credential type: %s", creds.Type))
 	}
 }
 

@@ -13,9 +13,8 @@ import (
 
 // GitLabProvider implements the unified GitProvider interface for GitLab.
 type GitLabProvider struct {
-	baseURL string
-	name    string
-	token   string
+	*provider.BaseProvider
+	helpers *provider.CommonHelpers
 }
 
 // Ensure GitLabProvider implements GitProvider interface
@@ -27,50 +26,26 @@ func NewGitLabProvider(baseURL string) *GitLabProvider {
 		baseURL = "https://gitlab.com/api/v4"
 	}
 	return &GitLabProvider{
-		baseURL: baseURL,
-		name:    "gitlab",
+		BaseProvider: provider.NewBaseProvider("gitlab", baseURL, ""),
+		helpers:      provider.NewCommonHelpers(),
 	}
-}
-
-// GetName returns the provider name.
-func (g *GitLabProvider) GetName() string {
-	return g.name
 }
 
 // GetCapabilities returns the list of supported capabilities.
 func (g *GitLabProvider) GetCapabilities() []provider.Capability {
-	return []provider.Capability{
-		provider.CapabilityRepositories,
-		provider.CapabilityWebhooks,
-		provider.CapabilityEvents,
-		provider.CapabilityIssues,
-		provider.CapabilityMergeRequests,
-		provider.CapabilityWiki,
-		provider.CapabilityProjects,
-		provider.CapabilityCICD,
-		provider.CapabilityPackages,
-		provider.CapabilityReleases,
-		provider.CapabilityOrganizations,
-		provider.CapabilityUsers,
-		provider.CapabilityTeams,
-		provider.CapabilityPermissions,
-		provider.CapabilityBranchProtection,
-	}
-}
-
-// GetBaseURL returns the base URL for the GitLab API.
-func (g *GitLabProvider) GetBaseURL() string {
-	return g.baseURL
+	capabilities := g.helpers.StandardizeCapabilities("gitlab")
+	// Add GitLab-specific capabilities
+	return append(capabilities, provider.CapabilityBranchProtection)
 }
 
 // Authenticate sets up authentication credentials.
 func (g *GitLabProvider) Authenticate(ctx context.Context, creds provider.Credentials) error {
 	switch creds.Type {
 	case provider.CredentialTypeToken:
-		g.token = creds.Token
+		g.SetToken(creds.Token)
 		return nil
 	default:
-		return fmt.Errorf("unsupported credential type: %s", creds.Type)
+		return g.FormatError("authenticate", fmt.Errorf("unsupported credential type: %s", creds.Type))
 	}
 }
 
