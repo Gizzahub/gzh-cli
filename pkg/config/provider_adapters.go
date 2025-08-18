@@ -10,303 +10,60 @@ import (
 	"time"
 
 	"github.com/Gizzahub/gzh-cli/internal/env"
-	"github.com/Gizzahub/gzh-cli/pkg/gitea"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
-	"github.com/Gizzahub/gzh-cli/pkg/gitlab"
-)
-
-const (
-	defaultMainBranch = "main"
 )
 
 // GitHubProviderAdapter adapts the github package to implement ProviderService.
 type GitHubProviderAdapter struct {
-	token       string
-	environment env.Environment
+	*BaseProviderAdapter
 }
 
 // NewGitHubProviderAdapter creates a new GitHub provider adapter.
 func NewGitHubProviderAdapter(token string, environment env.Environment) *GitHubProviderAdapter {
-	return &GitHubProviderAdapter{
-		token:       token,
-		environment: environment,
+	config := ProviderAdapterConfig{
+		Name:        ProviderGitHub,
+		BaseURL:     "github.com",
+		APIURL:      "https://api.github.com",
+		TokenEnvKey: env.CommonEnvironmentKeys.GitHubToken,
 	}
-}
-
-// ListRepositories lists all repositories for a GitHub owner.
-func (g *GitHubProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
-	repoNames, err := github.List(ctx, owner)
-	if err != nil {
-		return nil, err
-	}
-
-	repositories := make([]Repository, 0, len(repoNames))
-	for _, name := range repoNames {
-		// Get additional repository information
-		defaultBranch, err := github.GetDefaultBranch(ctx, owner, name)
-		if err != nil {
-			defaultBranch = defaultMainBranch // fallback to main if error
-		}
-
-		repo := Repository{
-			Name:          name,
-			FullName:      fmt.Sprintf("%s/%s", owner, name),
-			DefaultBranch: defaultBranch,
-			CloneURL:      fmt.Sprintf("https://github.com/%s/%s.git", owner, name),
-			SSHURL:        fmt.Sprintf("git@github.com:%s/%s.git", owner, name),
-			HTMLURL:       fmt.Sprintf("https://github.com/%s/%s", owner, name),
-		}
-		repositories = append(repositories, repo)
-	}
-
-	return repositories, nil
-}
-
-// CloneRepository clones a single repository from GitHub to the target path.
-func (g *GitHubProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
-	return github.Clone(ctx, targetPath, owner, repository)
-}
-
-// GetDefaultBranch retrieves the default branch name for a GitHub repository.
-func (g *GitHubProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
-	return github.GetDefaultBranch(ctx, owner, repository)
-}
-
-// RefreshAll updates all repositories in the target path using the specified strategy.
-func (g *GitHubProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
-	return github.RefreshAll(ctx, targetPath, owner, strategy)
-}
-
-// CloneOrganization clones all repositories from a GitHub organization.
-func (g *GitHubProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
-	return github.RefreshAll(ctx, targetPath, owner, strategy)
-}
-
-// SetToken configures the GitHub authentication token.
-func (g *GitHubProviderAdapter) SetToken(ctx context.Context, token string) error {
-	g.token = token
-	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		if err := g.environment.Set(env.CommonEnvironmentKeys.GitHubToken, g.token); err != nil {
-			return fmt.Errorf("failed to set GitHub token environment variable: %w", err)
-		}
-	}
-	return nil
-}
-
-// ValidateToken verifies that the configured GitHub token is valid.
-func (g *GitHubProviderAdapter) ValidateToken(ctx context.Context) error {
-	// Simple validation - try to make an API call
-	_, err := github.List(ctx, "github") // Try to list github's own repositories
-	return err
-}
-
-// GetProviderName returns the name identifier for this provider.
-func (g *GitHubProviderAdapter) GetProviderName() string {
-	return ProviderGitHub
-}
-
-// GetAPIEndpoint returns the base URL for the GitHub API.
-func (g *GitHubProviderAdapter) GetAPIEndpoint() string {
-	return "https://api.github.com"
-}
-
-// IsHealthy checks if the GitHub provider is healthy and accessible.
-func (g *GitHubProviderAdapter) IsHealthy(ctx context.Context) error {
-	// Check if we can reach the GitHub API
-	return g.ValidateToken(ctx)
+	
+	base := NewBaseProviderAdapter(token, environment, NewGitHubAPI(), config)
+	return &GitHubProviderAdapter{BaseProviderAdapter: base}
 }
 
 // GitLabProviderAdapter adapts the gitlab package to implement ProviderService.
 type GitLabProviderAdapter struct {
-	token       string
-	environment env.Environment
+	*BaseProviderAdapter
 }
 
 // NewGitLabProviderAdapter creates a new GitLab provider adapter.
 func NewGitLabProviderAdapter(token string, environment env.Environment) *GitLabProviderAdapter {
-	return &GitLabProviderAdapter{
-		token:       token,
-		environment: environment,
+	config := ProviderAdapterConfig{
+		Name:        ProviderGitLab,
+		BaseURL:     "gitlab.com",
+		APIURL:      "https://gitlab.com/api/v4",
+		TokenEnvKey: env.CommonEnvironmentKeys.GitLabToken,
 	}
-}
-
-// ListRepositories retrieves all repositories for the given GitLab owner.
-func (g *GitLabProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
-	repoNames, err := gitlab.List(ctx, owner)
-	if err != nil {
-		return nil, err
-	}
-
-	repositories := make([]Repository, 0, len(repoNames))
-	for _, name := range repoNames {
-		// Get additional repository information
-		defaultBranch, err := gitlab.GetDefaultBranch(ctx, owner, name)
-		if err != nil {
-			defaultBranch = defaultMainBranch // fallback to main if error
-		}
-
-		repo := Repository{
-			Name:          name,
-			FullName:      fmt.Sprintf("%s/%s", owner, name),
-			DefaultBranch: defaultBranch,
-			CloneURL:      fmt.Sprintf("https://gitlab.com/%s/%s.git", owner, name),
-			SSHURL:        fmt.Sprintf("git@gitlab.com:%s/%s.git", owner, name),
-			HTMLURL:       fmt.Sprintf("https://gitlab.com/%s/%s", owner, name),
-		}
-		repositories = append(repositories, repo)
-	}
-
-	return repositories, nil
-}
-
-// CloneRepository clones a specific GitLab repository to the target path.
-func (g *GitLabProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
-	return gitlab.Clone(ctx, targetPath, owner, repository, "")
-}
-
-// GetDefaultBranch retrieves the default branch name for a GitLab repository.
-func (g *GitLabProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
-	return gitlab.GetDefaultBranch(ctx, owner, repository)
-}
-
-// RefreshAll refreshes all repositories in the target path for the given GitLab owner.
-func (g *GitLabProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, strategy string) error {
-	return gitlab.RefreshAll(ctx, targetPath, owner, strategy)
-}
-
-// CloneOrganization clones all repositories from a GitLab organization.
-func (g *GitLabProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, strategy string) error {
-	return gitlab.RefreshAll(ctx, targetPath, owner, strategy)
-}
-
-// SetToken sets the authentication token for the GitLab provider.
-func (g *GitLabProviderAdapter) SetToken(ctx context.Context, token string) error {
-	g.token = token
-	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		if err := g.environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.token); err != nil {
-			return fmt.Errorf("failed to set GitLab token environment variable: %w", err)
-		}
-	}
-	return nil
-}
-
-// ValidateToken validates the GitLab authentication token.
-func (g *GitLabProviderAdapter) ValidateToken(ctx context.Context) error {
-	// Simple validation - try to make an API call
-	_, err := gitlab.List(ctx, "gitlab-org") // Try to list gitlab-org repositories
-	return err
-}
-
-// GetProviderName returns the provider name for GitLab.
-func (g *GitLabProviderAdapter) GetProviderName() string {
-	return ProviderGitLab
-}
-
-// GetAPIEndpoint returns the API endpoint for GitLab.
-func (g *GitLabProviderAdapter) GetAPIEndpoint() string {
-	return "https://gitlab.com/api/v4"
-}
-
-// IsHealthy checks if the GitLab provider is healthy and accessible.
-func (g *GitLabProviderAdapter) IsHealthy(ctx context.Context) error {
-	return g.ValidateToken(ctx)
+	
+	base := NewBaseProviderAdapter(token, environment, NewGitLabAPI(), config)
+	return &GitLabProviderAdapter{BaseProviderAdapter: base}
 }
 
 // GiteaProviderAdapter adapts the gitea package to implement ProviderService.
 type GiteaProviderAdapter struct {
-	token       string
-	environment env.Environment
+	*BaseProviderAdapter
 }
 
 // NewGiteaProviderAdapter creates a new Gitea provider adapter.
 func NewGiteaProviderAdapter(token string, environment env.Environment) *GiteaProviderAdapter {
-	return &GiteaProviderAdapter{
-		token:       token,
-		environment: environment,
+	config := ProviderAdapterConfig{
+		Name:        ProviderGitea,
+		BaseURL:     "gitea.com",
+		APIURL:      "https://gitea.com/api/v1",
+		TokenEnvKey: env.CommonEnvironmentKeys.GiteaToken,
 	}
-}
-
-// ListRepositories retrieves all repositories for the given Gitea owner.
-func (g *GiteaProviderAdapter) ListRepositories(ctx context.Context, owner string) ([]Repository, error) {
-	repoNames, err := gitea.List(ctx, owner)
-	if err != nil {
-		return nil, err
-	}
-
-	repositories := make([]Repository, 0, len(repoNames))
-	for _, name := range repoNames {
-		// Get additional repository information
-		defaultBranch, err := gitea.GetDefaultBranch(ctx, owner, name)
-		if err != nil {
-			defaultBranch = defaultMainBranch // fallback to main if error
-		}
-
-		repo := Repository{
-			Name:          name,
-			FullName:      fmt.Sprintf("%s/%s", owner, name),
-			DefaultBranch: defaultBranch,
-			CloneURL:      fmt.Sprintf("https://gitea.com/%s/%s.git", owner, name),
-			SSHURL:        fmt.Sprintf("git@gitea.com:%s/%s.git", owner, name),
-			HTMLURL:       fmt.Sprintf("https://gitea.com/%s/%s", owner, name),
-		}
-		repositories = append(repositories, repo)
-	}
-
-	return repositories, nil
-}
-
-// CloneRepository clones a specific Gitea repository to the target path.
-func (g *GiteaProviderAdapter) CloneRepository(ctx context.Context, owner, repository, targetPath string) error {
-	return gitea.Clone(ctx, targetPath, owner, repository, "")
-}
-
-// GetDefaultBranch retrieves the default branch name for a Gitea repository.
-func (g *GiteaProviderAdapter) GetDefaultBranch(ctx context.Context, owner, repository string) (string, error) {
-	return gitea.GetDefaultBranch(ctx, owner, repository)
-}
-
-// RefreshAll refreshes all repositories in the target path for the given Gitea owner.
-func (g *GiteaProviderAdapter) RefreshAll(ctx context.Context, targetPath, owner, _ string) error {
-	// Note: gitea.RefreshAll doesn't support strategy parameter
-	return gitea.RefreshAll(ctx, targetPath, owner)
-}
-
-// CloneOrganization clones all repositories from a Gitea organization.
-func (g *GiteaProviderAdapter) CloneOrganization(ctx context.Context, owner, targetPath, _ string) error {
-	return gitea.RefreshAll(ctx, targetPath, owner)
-}
-
-// SetToken sets the authentication token for the Gitea provider.
-func (g *GiteaProviderAdapter) SetToken(ctx context.Context, token string) error {
-	g.token = token
-	if g.token != "" && !strings.HasPrefix(g.token, "$") {
-		if err := g.environment.Set(env.CommonEnvironmentKeys.GiteaToken, g.token); err != nil {
-			return fmt.Errorf("failed to set Gitea token environment variable: %w", err)
-		}
-	}
-	return nil
-}
-
-// ValidateToken validates the Gitea authentication token.
-func (g *GiteaProviderAdapter) ValidateToken(ctx context.Context) error {
-	// Simple validation - try to make an API call
-	_, err := gitea.List(ctx, "gitea") // Try to list gitea's own repositories
-	return err
-}
-
-// GetProviderName returns the provider name for Gitea.
-func (g *GiteaProviderAdapter) GetProviderName() string {
-	return ProviderGitea
-}
-
-// GetAPIEndpoint returns the API endpoint for Gitea.
-func (g *GiteaProviderAdapter) GetAPIEndpoint() string {
-	return "https://gitea.com/api/v1"
-}
-
-// IsHealthy checks if the Gitea provider is healthy and accessible.
-func (g *GiteaProviderAdapter) IsHealthy(ctx context.Context) error {
-	return g.ValidateToken(ctx)
+	
+	base := NewBaseProviderAdapter(token, environment, NewGiteaAPI(), config)
+	return &GiteaProviderAdapter{BaseProviderAdapter: base}
 }
 
 // DefaultProviderFactory implements ProviderFactory using adapter pattern.
