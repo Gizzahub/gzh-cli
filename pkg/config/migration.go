@@ -1,9 +1,13 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-// TODO: LEGACY_REMOVAL - This entire migration package should be removed.
-// It was used to migrate from v0.1 to v1.0 format, but legacy format support has been dropped.
-// Consider removing this package once all users have migrated to v1.0 format.
+// Package migration provides legacy configuration migration functionality.
+//
+// DEPRECATED: This package is deprecated and will be removed in a future version.
+// New installations should not rely on migration functionality.
+// The migration logic remains available for existing users transitioning from v0.1 to v1.0 format.
+//
+// TODO: Schedule for removal in v2.0.0 - when legacy format support ends.
 
 package config
 

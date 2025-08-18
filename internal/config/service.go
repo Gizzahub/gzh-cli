@@ -92,7 +92,7 @@ type ConfigServiceOptions struct { //nolint:revive // Type name maintained for c
 func DefaultConfigServiceOptions() *ConfigServiceOptions {
 	return &ConfigServiceOptions{
 		Environment:       env.NewOSEnvironment(),
-		AutoMigrate:       true,
+		AutoMigrate:       false, // DEPRECATED: Auto-migration disabled by default
 		WatchEnabled:      true,
 		ValidationEnabled: true,
 		SearchPaths: []string{

@@ -36,7 +36,7 @@ func NewUnifiedLoader() *UnifiedLoader {
 			"./bulk-clone.yaml",
 			"./bulk-clone.yml",
 		},
-		AutoMigrate:   true,
+		AutoMigrate:   false, // DEPRECATED: Auto-migration disabled by default
 		PreferUnified: true,
 		CreateBackup:  true,
 	}
