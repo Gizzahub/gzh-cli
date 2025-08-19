@@ -34,7 +34,7 @@ This project has a structured documentation system with protection rules:
 
 ## Project Overview
 
-gzh-cli (formerly gzh-manager-go) is a comprehensive CLI tool (binary: `gz`) for managing development environments and Git repositories across multiple platforms. It provides bulk operations for cloning organizations, package management, network environment transitions, IDE settings monitoring, and development environment configuration management.
+gzh-cli is a comprehensive CLI tool (binary name: `gz`) for managing development environments and Git repositories across multiple platforms. It provides unified commands for repository operations, development environment management, code quality control, and network environment transitions. The project follows a simplified CLI architecture optimized for developer productivity.
 
 ## Essential Commands
 
@@ -113,76 +113,140 @@ make regenerate-mocks # Clean and regenerate all mocks
 
 ## Architecture
 
-### Command Structure
+gzh-cli follows a **simplified CLI architecture** (refactored 2025-01) that prioritizes developer productivity over abstract patterns. The architecture centers around direct constructors, interface-based abstractions, and modular command organization.
 
-- **cmd/** - CLI commands using cobra framework
-  - `root.go` - Main entry point with all command registrations
-  - `git/` - **NEW**: Unified Git platform management with intelligent clone-or-update functionality
-    - `repo_clone_or_update.go` - Smart repository cloning with multiple strategies (rebase, reset, clone, skip, pull, fetch)
-    - Supports optional target-path (auto-extracts repo name from URL like `git clone`)
-    - URL parsing for HTTPS, SSH, and various Git hosting platforms
-  - `synclone/` - Multi-platform repository cloning (GitHub, GitLab, Gitea, Gogs)
-  - `pm/` - Package manager updates (asdf, Homebrew, SDKMAN, npm, pip, etc.)
-  - `dev-env/` - Development environment management (AWS, Docker, Kubernetes, SSH configs)
-  - `net-env/` - Network environment transitions (WiFi monitoring, VPN, DNS, proxy)
-  - `ide/` - JetBrains IDE settings monitoring and sync fixes
-  - `repo-config/` - GitHub repository configuration management
-  - `actions-policy/` - GitHub Actions policy management
-  - `quality/` - Code quality checks and improvements
-  - `shell/` - Shell integration and automation
-  - `doctor/` - System health diagnostics
-  - `profile/` - Performance profiling using Go pprof
+### High-Level Architecture Principles
 
-### Core Packages
+1. **Interface-Driven Design**: Core abstractions through interfaces with concrete implementations
+2. **Direct Constructor Pattern**: Avoid over-engineering with DI containers, use simple constructors
+3. **Command-Centric Organization**: Each major feature is a top-level command with subcommands
+4. **Configuration-First**: Unified YAML configuration system with schema validation
+5. **Multi-Platform Support**: Abstracted platform providers for GitHub, GitLab, Gitea, Gogs
 
-- **internal/** - Private packages
-  - `convert/` - Data conversion utilities
-  - `git/` - **Core Git operations layer** with dependency injection pattern
-    - `interfaces.go` - Defines Client, StrategyExecutor, BulkOperator, AuthManager interfaces
-    - `constructors.go` - Concrete implementations with dependency injection
-    - Supports multiple strategies: reset, pull, fetch, rebase operations
-    - Command execution abstraction for testability
-  - `testlib/` - Testing utilities and environment checkers
-  - `logger/` - Logging abstraction with SimpleLogger implementation
+### Command Structure (cmd/)
 
-- **pkg/** - Public packages (importable by other projects)
-  - `synclone/` - Configuration loading, schema validation, URL building
-  - `github/` - GitHub API integration and organization cloning
-  - `gitlab/` - GitLab API integration and group cloning
-  - `gitea/` - Gitea API integration and organization cloning
-  - `gogs/` - Gogs API integration (planned)
+```
+cmd/
+├── root.go              # Main CLI entry with all command registrations
+├── git/                 # Unified Git platform management
+│   ├── repo_clone_or_update.go  # Smart cloning with strategies
+│   ├── repo_list.go     # Repository listing with output formats
+│   ├── webhook.go       # Webhook management
+│   └── event.go         # GitHub event processing
+├── synclone/            # Multi-platform repository synchronization
+├── quality/             # Multi-language code quality management
+├── repo-config/         # Repository configuration management
+├── dev-env/             # Development environment management
+├── net-env/             # Network environment transitions
+├── ide/                 # JetBrains IDE monitoring
+├── pm/                  # Package manager updates
+├── profile/             # Performance profiling (Go pprof)
+└── doctor/              # System health diagnostics
+```
 
-- **helpers/** - Utility functions
-  - `git_helper.go` - Git repository operations and testing utilities
+### Core Architecture Layers
 
-### Key Patterns
+#### 1. Internal Layer (internal/)
+**Purpose**: Private abstractions and implementations
 
-1. **Simplified Architecture**: Clean, direct implementation focused on CLI tool needs
-   - Direct constructor pattern instead of dependency injection containers
-   - `CommandExecutor` interface for shell command abstraction
-   - `Logger` interface for logging abstraction
-   - `Client`, `StrategyExecutor`, `BulkOperator` interfaces for Git operations
-   - Concrete implementations in `constructors.go`
+- **`git/`** - Core Git operations with strategy pattern
+  - `interfaces.go` - Client, StrategyExecutor, BulkOperator interfaces
+  - `constructors.go` - Concrete implementations with dependency injection
+  - `operations.go` - Git operations (clone, pull, push, reset)
+- **`config/`** - Configuration management with validation
+- **`logger/`** - Structured logging abstractions
+- **`cli/`** - Command builder and output formatting
 
-2. **Service-specific implementations**: Each Git platform (GitHub, GitLab, Gitea, Gogs) has dedicated packages following common interfaces
+#### 2. Package Layer (pkg/)
+**Purpose**: Public APIs and platform implementations
 
-3. **Configuration-driven design**: Extensive YAML configuration support with schema validation (see `examples/` directory)
+- **`config/`** - Unified configuration system with schema validation
+- **`github/`, `gitlab/`, `gitea/`** - Platform-specific API implementations
+- **`synclone/`** - Multi-platform synchronization logic
+- **`git/provider/`** - Git provider abstraction layer
 
-4. **Cobra CLI framework**: All commands use cobra with consistent flag patterns and help documentation
+#### 3. Command Layer (cmd/)
+**Purpose**: CLI command implementations using Cobra framework
 
-5. **Cross-platform support**: Native OS detection and platform-specific implementations (Linux, macOS, Windows)
+### Key Architectural Patterns
 
-6. **Environment variable integration**: Support for token authentication and configuration overrides
+#### Interface-Based Abstractions
+```go
+// Git operations abstraction
+type Client interface {
+    Clone(ctx context.Context, options CloneOptions) error
+    Pull(ctx context.Context, options PullOptions) error
+    // ...
+}
 
-7. **Atomic operations**: Commands designed for safe execution with backup and rollback capabilities
+// Configuration loading abstraction  
+type Loader interface {
+    LoadConfig(ctx context.Context) (*Config, error)
+    LoadConfigFromFile(ctx context.Context, filename string) (*Config, error)
+}
+```
 
-8. **Comprehensive testing**: testify framework with mock services and environment-specific tests
+#### Provider Registry Pattern
+```go
+// Platform providers registered at startup
+providerRegistry := provider.NewRegistry()
+providerRegistry.Register("github", github.NewProvider())
+providerRegistry.Register("gitlab", gitlab.NewProvider())
+```
 
-9. **Standard Go tooling integration**: Uses standard `runtime/pprof` for profiling instead of custom implementations
+#### Strategy Pattern for Git Operations
+- **rebase**: Rebase local changes on remote
+- **reset**: Hard reset to match remote state  
+- **clone**: Fresh clone (remove existing)
+- **pull**: Standard git pull (merge)
+- **fetch**: Update refs only
 
-10. **URL Parsing Strategy**: Robust URL parsing for multiple Git hosting formats (HTTPS, SSH, ssh://) in `extractRepoNameFromURL`
+### Configuration Architecture
 
-11. **Performance monitoring**: Automated benchmarking system with regression detection (see `scripts/` directory)
+#### Unified Configuration System
+- **Single file**: `gzh.yaml` for all commands
+- **Priority system**: CLI flags > env vars > config files > defaults
+- **Schema validation**: JSON Schema with detailed error messages
+- **Environment variable expansion**: `${GITHUB_TOKEN}` support
+
+#### Configuration Structure
+```yaml
+global:
+  clone_base_dir: "$HOME/repos"
+  default_strategy: reset
+  
+providers:
+  github:
+    token: "${GITHUB_TOKEN}"
+    organizations:
+      - name: "myorg"
+        clone_dir: "$HOME/repos/github/myorg"
+```
+
+### Testing Architecture
+
+#### Test Organization
+- **Unit tests**: `*_test.go` files alongside source
+- **Integration tests**: `test/integration/` with Docker containers
+- **E2E tests**: `test/e2e/` with real CLI execution
+- **Mocking**: Generated mocks with `gomock` for interfaces
+
+#### Test Categories
+```bash
+make test-unit          # Fast unit tests
+make test-integration   # Docker-based integration tests  
+make test-e2e           # End-to-end CLI tests
+make test-all           # Complete test suite
+```
+
+### Data Flow Architecture
+
+#### Typical Command Execution Flow
+1. **Command parsing** (Cobra) → **Flag validation**
+2. **Configuration loading** (unified config system)
+3. **Provider factory** → **Interface implementation**
+4. **Business logic execution** → **Result formatting**
+5. **Output generation** (table/JSON/YAML/CSV)
 
 ## Configuration and Schema
 
@@ -213,12 +277,150 @@ make regenerate-mocks # Clean and regenerate all mocks
 - Integration tests mock external services when possible
 - Cross-platform testing for path handling and OS-specific features
 
+## Development Patterns and Guidelines
+
+### Code Organization Principles
+
+#### Interface-First Development
+- Define interfaces in `internal/` packages before implementations
+- Use `//go:generate mockgen` directives for testable interfaces
+- Keep interfaces minimal and focused (Interface Segregation Principle)
+
+#### Command Implementation Pattern
+```go
+// Standard command structure
+func NewCommandCmd() *cobra.Command {
+    var flags CommandFlags
+    
+    cmd := &cobra.Command{
+        Use:   "command",
+        Short: "Brief description",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            // 1. Load configuration
+            // 2. Create service with constructor
+            // 3. Execute business logic
+            // 4. Format and output results
+        },
+    }
+    
+    // Add flags consistently
+    return cmd
+}
+```
+
+#### Error Handling Strategy
+- Use structured errors with context: `fmt.Errorf("operation failed: %w", err)`
+- Define custom error types in `internal/errors/` for domain-specific errors
+- Always wrap errors with meaningful context when bubbling up
+
+#### Configuration Loading Pattern
+```go
+// Unified configuration approach
+func loadConfig(ctx context.Context) (*config.Config, error) {
+    loader := config.NewLoader()
+    cfg, err := loader.LoadConfig(ctx)
+    if err != nil {
+        return nil, fmt.Errorf("failed to load configuration: %w", err)
+    }
+    return cfg, nil
+}
+```
+
+### Testing Patterns
+
+#### Mock Generation and Usage
+```bash
+# Generate mocks for interfaces
+make generate-mocks
+
+# Use mocks in tests
+mockClient := mocks.NewMockClient(ctrl)
+mockClient.EXPECT().Clone(gomock.Any(), gomock.Any()).Return(nil)
+```
+
+#### Test Categories and Naming
+- **Unit tests**: `TestFunctionName` for individual functions
+- **Integration tests**: `TestComponentNameIntegration` for component integration
+- **E2E tests**: `TestWorkflowNameE2E` for complete workflows
+
+#### Environment-Specific Testing
+```go
+// Check for required environment variables
+func TestGitHubIntegration(t *testing.T) {
+    if os.Getenv("GITHUB_TOKEN") == "" {
+        t.Skip("GITHUB_TOKEN not set, skipping integration test")
+    }
+    // Test implementation
+}
+```
+
+### Platform Provider Implementation
+
+#### Adding New Git Platforms
+1. Implement `provider.Interface` in `pkg/{platform}/`
+2. Register provider in `provider.Registry`
+3. Add platform-specific configuration to unified config schema
+4. Implement API client with authentication
+5. Add comprehensive tests with mocks
+
+#### Provider Interface Requirements
+```go
+type Interface interface {
+    GetRepositories(ctx context.Context, opts GetRepositoriesOptions) ([]Repository, error)
+    CloneRepository(ctx context.Context, repo Repository, opts CloneOptions) error
+    // Additional platform-specific methods
+}
+```
+
+### Output Format Implementation
+
+#### Adding New Output Formats
+All commands should support multiple output formats through the `OutputFormatter`:
+
+```go
+// In command implementation
+formatter := cli.NewOutputFormatter(outputFormat)
+return formatter.FormatOutput(results)
+```
+
+Supported formats: `table`, `json`, `yaml`, `csv`, `html` (select commands)
+
+### Performance Considerations
+
+#### Concurrency Patterns
+- Use worker pools for bulk operations (see `internal/workerpool/`)
+- Respect API rate limits with adaptive rate limiting
+- Implement graceful shutdown with context cancellation
+
+#### Memory Management
+- Stream large datasets instead of loading into memory
+- Use buffered I/O for file operations
+- Clean up resources with defer statements
+
+### Security Patterns
+
+#### Token Management
+- Never log authentication tokens
+- Use environment variables for sensitive data: `${GITHUB_TOKEN}`
+- Validate tokens before API calls
+- Implement token rotation support
+
+#### Input Validation
+- Validate all user inputs, especially URLs and file paths
+- Sanitize shell command arguments
+- Use parameterized queries/API calls
+
 ## Important Notes
 
-- The binary is named 'gz' not 'gzh-cli'
-- Always run `make fmt` before committing code
-- Configuration files support both CLI flags and YAML config
-- Supports multiple authentication methods per service
+- **Binary name**: `gz` (not `gzh-cli`)
+- **Always run**: `make fmt` before committing code
+- **Configuration**: Unified `gzh.yaml` supports all commands
+- **Authentication**: Token-based auth for all Git platforms
+- **Cross-platform**: Supports Linux, macOS, Windows
+- **Modular Makefiles**: Use appropriate `make help-*` commands
+- **Mock generation**: Interfaces marked with `//go:generate mockgen`
+- **Schema validation**: All configs validated against JSON Schema
+- **Performance monitoring**: Built-in benchmarking with `scripts/`
 
 ## Command Categories
 
