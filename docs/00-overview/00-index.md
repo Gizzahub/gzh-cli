@@ -8,288 +8,199 @@ Complete documentation map for the gzh-cli project, organized for easy navigatio
 2. [Documentation Structure](#documentation-structure)
 3. [Navigation Guide](#navigation-guide)
 4. [Learning Paths](#learning-paths)
-5. [Reference Materials](#reference-materials)
+5. [Documentation Management](#documentation-management)
+6. [Reference Materials](#reference-materials)
 
 ## Quick Start
 
 ### New Users
-1. **Installation**: See [Getting Started](../01-getting-started/)
+1. **Installation**: See [Getting Started](../10-getting-started/)
 2. **First Commands**: Try `gz synclone`, `gz quality run`, `gz ide monitor`
-3. **Configuration**: Set up [Configuration](../30-configuration/30-configuration-guide.md)
-4. **Commands**: Browse [Complete Command Reference](../40-api-reference/40-command-reference.md)
+3. **Configuration**: Set up [Configuration](../40-configuration/40-configuration-guide.md)
+4. **Commands**: Browse [Complete Command Reference](../50-api-reference/50-command-reference.md)
 
 ### Returning Users
-- **📋 Command Reference**: [Complete Command Reference](../40-api-reference/40-command-reference.md)
-- **⚙️ Configuration**: [Configuration Guide](../30-configuration/30-configuration-guide.md)
+- **📋 Command Reference**: [Complete Command Reference](../50-api-reference/50-command-reference.md)
+- **⚙️ Configuration**: [Configuration Guide](../40-configuration/40-configuration-guide.md)
 - **🔧 Troubleshooting**: See command-specific troubleshooting sections
 
 ## Documentation Structure
 
-### 📂 Core Documentation Organization
+### 📂 Unified Documentation Organization
 
 ```
 docs/
 ├── 00-overview/           # Project overview and navigation
-├── 01-getting-started/    # Installation and initial setup
-├── 02-architecture/       # System design and architecture
-├── 03-core-features/      # Legacy feature documentation
-├── 04-configuration/      # Legacy configuration files
-├── 05-command-reference/  # Command navigation hub
-├── 20-features/          # ✨ Consolidated feature documentation
-├── 30-configuration/     # ✨ Unified configuration system
-├── 40-api-reference/     # ✨ Complete command documentation
-├── 50-development/       # Development guidelines
-├── 60-deployment/        # Deployment and release management
-└── 90-appendix/          # Additional resources
+├── 10-getting-started/    # Installation and initial setup
+├── 20-architecture/       # System design and architecture
+├── 30-features/          # Core feature documentation
+├── 40-configuration/     # Configuration management
+├── 50-api-reference/     # Complete command documentation
+├── 60-development/       # Development guidelines
+├── 70-deployment/        # Deployment and release management
+├── 80-integrations/      # External integrations
+├── 90-maintenance/       # Maintenance and troubleshooting
+└── 99-appendix/          # Additional resources
 ```
-
-**✨ = New consolidated documentation structure**
 
 ## Navigation Guide
 
 ### 🎯 By Use Case
 
 #### Repository Management
-- **Quick Start**: [Repository Management](../20-features/21-repository-management.md)
-- **Multi-Platform Sync**: [Synclone Guide](../20-features/20-synclone.md)
-- **Command Details**: [git commands](../40-api-reference/40-command-reference.md#git) | [synclone commands](../40-api-reference/40-command-reference.md#synclone)
+- **Quick Start**: [Repository Management](../30-features/31-repository-management.md)
+- **Multi-Platform Sync**: [Synclone Guide](../30-features/30-synclone.md)
+- **Command Details**: [git commands](../50-api-reference/50-command-reference.md#git) | [synclone commands](../50-api-reference/50-command-reference.md#synclone)
 
 #### Development Environment
-- **IDE Management**: [IDE Features](../03-core-features/ide-management.md)
-- **Environment Setup**: [Development Environment](../03-core-features/development-environment/)
-- **Network Management**: [Network Features](../03-core-features/network-management/)
-- **Command Details**: [dev-env commands](../40-api-reference/40-command-reference.md#dev-env) | [net-env commands](../40-api-reference/40-command-reference.md#net-env)
+- **IDE Management**: [IDE Features](../30-features/35-ide-management.md)
+- **Environment Setup**: [Development Environment](../30-features/33-development-environment.md)
+- **Network Management**: [Network Features](../30-features/34-network-management.md)
+- **Command Details**: [dev-env commands](../50-api-reference/50-command-reference.md#dev-env) | [net-env commands](../50-api-reference/50-command-reference.md#net-env)
 
 #### Code Quality
-- **Quality Management**: [Quality Features](../03-core-features/quality-management.md)
-- **Command Details**: [quality commands](../40-api-reference/40-command-reference.md#quality)
+- **Quality Management**: [Quality Features](../30-features/36-quality-management.md)
+- **Command Details**: [quality commands](../50-api-reference/50-command-reference.md#quality)
 
 #### Performance and Monitoring
-- **Performance Profiling**: [Profiling Features](../03-core-features/performance-profiling.md)
-- **Command Details**: [profile commands](../40-api-reference/40-command-reference.md#profile)
+- **Performance Profiling**: [Profiling Features](../30-features/37-performance-profiling.md)
+- **Command Details**: [profile commands](../50-api-reference/50-command-reference.md#profile)
 
 #### Output Formats and Backup
-- **New Features**: [Output Formats & Backup](../20-features/22-output-formats-backup.md)
+- **New Features**: [Output Formats & Backup](../30-features/32-output-formats-backup.md)
 - **Format Examples**: JSON, YAML, CSV, HTML, SARIF output formats
 - **Backup Features**: Development environment configuration backup/restore
 
 ### 🎯 By User Type
 
 #### End Users
-- **Getting Started**: [Installation](../01-getting-started/) → [Configuration](../30-configuration/30-configuration-guide.md) → [Commands](../40-api-reference/40-command-reference.md)
-- **Daily Usage**: [Command Reference](../40-api-reference/40-command-reference.md) | [Troubleshooting](../40-api-reference/40-command-reference.md#troubleshooting)
+- **Getting Started**: [Installation](../10-getting-started/) → [Configuration](../40-configuration/40-configuration-guide.md) → [Commands](../50-api-reference/50-command-reference.md)
+- **Daily Usage**: [Command Reference](../50-api-reference/50-command-reference.md) | [Troubleshooting](../90-maintenance/90-troubleshooting.md)
 
 #### System Administrators
-- **Enterprise Setup**: [Enterprise Features](../09-enterprise/)
-- **Configuration Management**: [Configuration Guide](../30-configuration/30-configuration-guide.md)
-- **Repository Policies**: [Repository Management](../20-features/21-repository-management.md)
+- **Enterprise Setup**: [Enterprise Features](../80-integrations/enterprise/)
+- **Configuration Management**: [Configuration Guide](../40-configuration/40-configuration-guide.md)
+- **Repository Policies**: [Repository Management](../30-features/31-repository-management.md)
 
 #### Developers
-- **Architecture**: [System Overview](../02-architecture/overview.md)
-- **Development**: [Development Guidelines](../06-development/)
-- **Testing**: [Testing Strategy](../06-development/testing-strategy.md)
-- **API Integration**: [Command Reference](../40-api-reference/40-command-reference.md)
+- **Architecture**: [System Overview](../20-architecture/20-system-overview.md)
+- **Development**: [Development Guidelines](../60-development/)
+- **Testing**: [Testing Strategy](../60-development/testing-strategy.md)
+- **API Integration**: [Command Reference](../50-api-reference/50-command-reference.md)
 
 #### DevOps Engineers
-- **CI/CD Integration**: [Output Formats](../20-features/22-output-formats-backup.md#cicd-pipeline-integration)
-- **Automation**: [Configuration Management](../30-configuration/30-configuration-guide.md)
-- **Monitoring**: [Performance Features](../03-core-features/performance-profiling.md)
+- **CI/CD Integration**: [Output Formats](../30-features/32-output-formats-backup.md#cicd-pipeline-integration)
+- **Automation**: [Configuration Management](../40-configuration/40-configuration-guide.md)
+- **Monitoring**: [Performance Features](../30-features/37-performance-profiling.md)
 
 ## Learning Paths
 
 ### 🚀 Path 1: Basic Usage (30 minutes)
+1. [Install gzh-cli](../10-getting-started/10-installation.md) (5 min)
+2. [Try first commands](../10-getting-started/11-quick-start.md) (10 min)
+3. [Set up configuration](../40-configuration/40-configuration-guide.md) (15 min)
 
-1. **Install and Setup** (10 min)
-   - [Getting Started](../01-getting-started/)
-   - [Basic Configuration](../30-configuration/30-configuration-guide.md#basic-structure)
+### 🔧 Path 2: Repository Management (45 minutes)
+1. [Understanding synclone](../30-features/30-synclone.md) (15 min)
+2. [Configuration setup](../40-configuration/40-configuration-guide.md#synclone) (15 min)
+3. [Advanced repository management](../30-features/31-repository-management.md) (15 min)
 
-2. **First Commands** (15 min)
-   - [synclone basics](../40-api-reference/40-command-reference.md#synclone)
-   - [quality checks](../40-api-reference/40-command-reference.md#quality)
+### 💻 Path 3: Development Environment (60 minutes)
+1. [Development environment basics](../30-features/33-development-environment.md) (20 min)
+2. [IDE management](../30-features/35-ide-management.md) (20 min)
+3. [Network environment management](../30-features/34-network-management.md) (20 min)
 
-3. **Explore** (5 min)
-   - [Command overview](../40-api-reference/40-command-reference.md#overview)
-   - [Global options](../40-api-reference/40-command-reference.md#global-options)
+### 🏗️ Path 4: Architecture and Development (90 minutes)
+1. [System architecture](../20-architecture/20-system-overview.md) (30 min)
+2. [Development setup](../60-development/60-development-setup.md) (30 min)
+3. [Contributing guidelines](../60-development/61-contributing.md) (30 min)
 
-### 🔧 Path 2: Advanced Configuration (1 hour)
+## Documentation Management
 
-1. **Configuration System** (20 min)
-   - [Configuration Guide](../30-configuration/30-configuration-guide.md)
-   - [Priority System](../30-configuration/30-configuration-guide.md#configuration-priority)
+### Documentation Categories
 
-2. **Platform Setup** (20 min)
-   - [GitHub/GitLab Configuration](../30-configuration/30-configuration-guide.md#platform-configuration)
-   - [Environment Variables](../30-configuration/30-configuration-guide.md#environment-variables)
+#### 1. Core Project Documents (Protected)
+**Location**: Project root directory
+**Protection**: AI modification prohibited
+**Files**:
+- README.md - Project overview and quick start
+- TECH_STACK.md - Technology stack and architecture
+- FEATURES.md - Feature list and capabilities
+- USAGE.md - Detailed usage instructions
+- CHANGELOG.md - Version history and changes
+- SECURITY.md - Security policy and practices
+- LICENSE - Project license
+- CLAUDE.md - AI agent instructions
 
-3. **Advanced Features** (20 min)
-   - [Output Formats](../20-features/22-output-formats-backup.md#output-format-features)
-   - [Backup Systems](../20-features/22-output-formats-backup.md#backup-and-restore-system)
+**Management Rules**:
+- These files contain `<!-- 🚫 AI_MODIFY_PROHIBITED -->` header
+- AI agents should NOT modify these files
+- Only human maintainers should update these documents
+- Changes require careful review and approval
 
-### 🏢 Path 3: Enterprise Deployment (2 hours)
+#### 2. Auto-generated API Documentation
+**Location**: `/api-docs/`
+**Protection**: No manual edits allowed
+**Content**: API reference documentation generated from code
 
-1. **Architecture Understanding** (30 min)
-   - [System Architecture](../02-architecture/overview.md)
-   - [Repository Management](../20-features/21-repository-management.md)
+**Management Rules**:
+- Generated automatically by documentation tools
+- Manual edits will be overwritten
+- Source code comments should be updated instead
+- Regenerate using appropriate build commands
 
-2. **Policy Configuration** (45 min)
-   - [Repository Policies](../20-features/21-repository-management.md#policy-management)
-   - [Compliance Frameworks](../20-features/21-repository-management.md#compliance-audit)
+#### 3. Core Design Specifications (Protected)
+**Location**: `/specs/`
+**Protection**: AI modification prohibited
+**Files**:
+- common.md - Common functionality specifications
+- dev-env.md - Development environment management specs
+- net-env.md - Network environment management specs
+- package-manager.md - Package manager integration specs
+- synclone.md - Repository synchronization specs
 
-3. **Monitoring and Automation** (45 min)
-   - [CI/CD Integration](../20-features/22-output-formats-backup.md#cicd-pipeline-integration)
-   - [Webhook Management](../20-features/21-repository-management.md#webhook-management)
+**Management Rules**:
+- These files contain `<!-- 🚫 AI_MODIFY_PROHIBITED -->` header
+- Human-written design documents
+- AI agents should NOT modify these files
 
-### 💻 Path 4: Development and Contribution (3 hours)
+#### 4. General Documentation (Editable)
+**Location**: `/docs/`
+**Protection**: Standard editing allowed
+**Content**: Feature guides, tutorials, API documentation, development guides
 
-1. **Development Setup** (45 min)
-   - [Development Environment](../06-development/)
-   - [Testing Strategy](../06-development/testing-strategy.md)
+**Management Rules**:
+- AI agents CAN modify these files for improvements
+- Follow project documentation standards
+- Maintain consistency with existing style
+- Test examples and verify accuracy
 
-2. **Architecture Deep Dive** (90 min)
-   - [System Overview](../02-architecture/overview.md)
-   - [Code Quality Standards](../06-development/code-quality.md)
-
-3. **Contributing** (45 min)
-   - [Pre-commit Setup](../06-development/pre-commit-guide.md)
-   - [Debugging Guide](../06-development/debugging-guide.md)
+### Protection Mechanisms
+1. **.claudeignore file**: Lists protected files and directories
+2. **File headers**: Protected files contain `<!-- 🚫 AI_MODIFY_PROHIBITED -->` header
+3. **Directory structure**: Clear separation between protected and editable documentation
 
 ## Reference Materials
 
-### 📋 Command References
+### Essential Documentation
+- **[Complete Command Reference](../50-api-reference/50-command-reference.md)** - All commands and options
+- **[Configuration Guide](../40-configuration/40-configuration-guide.md)** - Complete configuration reference
+- **[Architecture Overview](../20-architecture/20-system-overview.md)** - System design and patterns
 
-#### Complete Documentation
-- **[Complete Command Reference](../40-api-reference/40-command-reference.md)** - Comprehensive command documentation with all options, examples, and troubleshooting
+### Development Resources
+- **[Development Guidelines](../60-development/)** - Coding standards and practices
+- **[Testing Strategy](../60-development/testing-strategy.md)** - Testing approach and tools
+- **[Deployment Guide](../70-deployment/)** - Release and deployment processes
 
-#### Quick Navigation
-- [synclone](../40-api-reference/40-command-reference.md#synclone) - Multi-platform repository synchronization
-- [git](../40-api-reference/40-command-reference.md#git) - Unified Git operations and platform management
-- [quality](../40-api-reference/40-command-reference.md#quality) - Multi-language code quality management
-- [ide](../40-api-reference/40-command-reference.md#ide) - JetBrains IDE monitoring and management
-- [profile](../40-api-reference/40-command-reference.md#profile) - Performance profiling and analysis
-- [dev-env](../40-api-reference/40-command-reference.md#dev-env) - Development environment configuration
-- [net-env](../40-api-reference/40-command-reference.md#net-env) - Network environment transitions
-- [pm](../40-api-reference/40-command-reference.md#pm) - Package manager updates and management
-- [repo-config](../40-api-reference/40-command-reference.md#repo-config) - GitHub repository configuration management
-
-### ⚙️ Configuration References
-
-#### Primary Documentation
-- **[Configuration Guide](../30-configuration/30-configuration-guide.md)** - Complete configuration system documentation
-
-#### Quick Links
-- [Configuration Priority](../30-configuration/30-configuration-guide.md#configuration-priority)
-- [Platform Configuration](../30-configuration/30-configuration-guide.md#platform-configuration)
-- [Environment Variables](../30-configuration/30-configuration-guide.md#environment-variables)
-- [Migration Guide](../30-configuration/30-configuration-guide.md#migration-guide)
-- [Best Practices](../30-configuration/30-configuration-guide.md#best-practices)
-
-#### Configuration Schemas
-- [gzh-schema.json](../30-configuration/schemas/gzh-schema.json) - Main configuration schema
-- [synclone-schema.yaml](../04-configuration/schemas/synclone-schema.yaml) - Synclone configuration schema
-- [ide-schema.yaml](../04-configuration/schemas/ide-schema.yaml) - IDE configuration schema
-- [quality-schema.yaml](../04-configuration/schemas/quality-schema.yaml) - Quality tools schema
-
-### 🚀 Feature Guides
-
-#### Core Features (New Consolidated Documentation)
-- **[Repository Management](../20-features/21-repository-management.md)** - Complete repository management guide
-- **[Synclone](../20-features/20-synclone.md)** - Multi-platform synchronization guide
-- **[Output Formats & Backup](../20-features/22-output-formats-backup.md)** - New features documentation
-
-#### Legacy Feature Documentation
-- [Git Unified Command](../03-core-features/git-unified-command.md)
-- [IDE Management](../03-core-features/ide-management.md)
-- [Quality Management](../03-core-features/quality-management.md)
-- [Performance Profiling](../03-core-features/performance-profiling.md)
-- [Development Environment](../03-core-features/development-environment/)
-- [Network Management](../03-core-features/network-management/)
-
-### 🏗️ Architecture and Development
-
-#### Architecture
-- [System Overview](../02-architecture/overview.md) - High-level architecture
-- [Development Container](../02-architecture/development-container.md) - Container setup
-
-#### Development
-- [Code Quality](../06-development/code-quality.md) - Code standards and practices
-- [Testing Strategy](../06-development/testing-strategy.md) - Testing guidelines
-- [Debugging Guide](../06-development/debugging-guide.md) - Debugging techniques
-- [Pre-commit Guide](../06-development/pre-commit-guide.md) - Pre-commit hooks
-- [Mocking Strategy](../06-development/mocking-strategy.md) - Testing mocks
-
-### 🚀 Deployment and Operations
-
-#### Deployment
-- [Release Notes](../07-deployment/release-notes-v1.0.0.md) - Version 1.0.0 release notes
-- [Release Preparation](../07-deployment/release-preparation-checklist.md) - Release checklist
-- [Security Scanning](../07-deployment/security-scanning.md) - Security practices
-
-#### Enterprise
-- [Actions Policy Enforcement](../09-enterprise/actions-policy-enforcement.md)
-- [Actions Policy Schema](../09-enterprise/actions-policy-schema.md)
-
-### 🔗 Integration Guides
-
-#### Third-party Integrations
-- [Webhook Management](../08-integrations/webhook-management-guide.md)
-- [Terraform Comparison](../08-integrations/terraform-vs-gz-examples.md)
-- [Terraform Alternatives](../08-integrations/terraform-alternative-comparison.md)
-
-### 📚 Additional Resources
-
-#### Examples
-- [Configuration Examples](../../examples/) - Sample configuration files
-- [Usage Examples](../40-api-reference/40-command-reference.md#examples) - Command usage examples
-
-#### Legacy Documentation
-- [Getting Started](../01-getting-started/) - Installation and setup
-- [Maintenance](../10-maintenance/) - Project maintenance information
-
-## Documentation Status
-
-### ✅ Completed (New Structure)
-- **20-features/** - Consolidated feature documentation
-- **30-configuration/** - Unified configuration guide
-- **40-api-reference/** - Complete command reference
-- **00-overview/** - This overview and navigation guide
-
-### 📝 Legacy (Maintained for Reference)
-- **03-core-features/** - Original feature documentation
-- **04-configuration/** - Original configuration files
-- **05-command-reference/** - Command navigation hub
-
-### 🔄 Ongoing Maintenance
-- **06-development/** - Development guidelines
-- **07-deployment/** - Release management
-- **08-integrations/** - Integration guides
-- **09-enterprise/** - Enterprise features
-
-## Getting Help
-
-### Quick Help Commands
-```bash
-# Show all commands
-gz help
-
-# Command-specific help
-gz <command> --help
-
-# Subcommand help
-gz <command> <subcommand> --help
-```
-
-### Documentation Feedback
-- 📁 **Examples**: Check [examples directory](../../examples/)
-- 🐛 **Issues**: Report documentation issues on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
-- 💡 **Suggestions**: Contribute improvements via pull requests
-
-### Community Resources
-- **GitHub Repository**: [gizzahub/gzh-cli](https://github.com/gizzahub/gzh-cli)
-- **Issue Tracker**: [GitHub Issues](https://github.com/gizzahub/gzh-cli/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/gizzahub/gzh-cli/discussions)
+### Support and Community
+- **[Troubleshooting](../90-maintenance/90-troubleshooting.md)** - Common issues and solutions
+- **[FAQ](../90-maintenance/91-faq.md)** - Frequently asked questions
+- **[Contributing](../60-development/61-contributing.md)** - How to contribute to the project
 
 ---
 
 **Last Updated**: 2025-08-19
-**Documentation Version**: 1.0.0
+**Documentation Version**: 2.0.0
 **CLI Version**: Latest
+
+For questions or feedback about this documentation, please see the [Contributing Guide](../60-development/61-contributing.md).
