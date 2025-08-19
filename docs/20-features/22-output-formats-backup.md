@@ -382,20 +382,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install gz
         run: |
           # Install gz binary
-          
+
       - name: Quality Analysis
         run: |
           gz quality run --output sarif --output-file quality.sarif
-          
+
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: quality.sarif
-          
+
       - name: Repository Compliance Check
         run: |
           gz git config audit --org ${{ github.repository_owner }} \
@@ -455,7 +455,7 @@ global:
       delimiter: ","
     yaml:
       indent: 2
-      
+
 # Command-specific defaults
 commands:
   git:
@@ -480,12 +480,12 @@ dev_env:
     backup_location: "$HOME/.gz/backups"
     retention_days: 30
     compress: true
-    
+
   aws:
     default_profile: default
     backup_profiles: true
     backup_credentials: true
-    
+
   docker:
     backup_contexts: true
     backup_registries: true

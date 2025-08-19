@@ -855,7 +855,7 @@ gz synclone migrate --old-config bulk-clone.yaml --output synclone.yaml
    ```bash
    # Old
    gz bulk-clone --org myorg --target ./repos
-   
+
    # New
    gz synclone github --org myorg --target ./repos
    ```
@@ -866,7 +866,7 @@ gz synclone migrate --old-config bulk-clone.yaml --output synclone.yaml
    organizations:
      - name: myorg
        target: ./repos
-   
+
    # New synclone.yaml format
    github:
      enabled: true

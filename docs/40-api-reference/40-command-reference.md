@@ -26,7 +26,7 @@ gz <command> [subcommand] [flags]
 
 #### Core Features
 - **[synclone](#synclone)** - Multi-platform repository synchronization
-- **[git](#git)** - Unified Git operations and platform management  
+- **[git](#git)** - Unified Git operations and platform management
 - **[quality](#quality)** - Multi-language code quality management
 - **[ide](#ide)** - JetBrains IDE monitoring and management
 - **[profile](#profile)** - Performance profiling and analysis

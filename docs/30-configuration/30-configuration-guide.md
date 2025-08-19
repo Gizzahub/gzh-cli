@@ -332,7 +332,7 @@ providers:
         clone_dir: "$HOME/repos/github/myorg"
         visibility: all  # all, public, private
         strategy: reset  # reset, pull, fetch, rebase
-        
+
         # Filtering
         include_archived: false
         include_forks: false
@@ -341,7 +341,7 @@ providers:
           topics: ["microservice", "api"]
           min_stars: 10
           updated_after: "2024-01-01"
-        
+
         # Repository-specific settings
         repositories:
           - name: "critical-service"
@@ -356,7 +356,7 @@ providers:
   gitlab:
     token: "${GITLAB_TOKEN}"
     api_url: "https://gitlab.com/api/v4"  # For self-hosted GitLab
-    
+
     groups:
       - name: "mygroup"
         clone_dir: "$HOME/repos/gitlab/mygroup"
@@ -372,7 +372,7 @@ providers:
   gitea:
     token: "${GITEA_TOKEN}"
     api_url: "https://gitea.company.com/api/v1"
-    
+
     organizations:
       - name: "infrastructure"
         clone_dir: "$HOME/repos/gitea/infrastructure"
@@ -386,7 +386,7 @@ providers:
   gogs:
     token: "${GOGS_TOKEN}"
     api_url: "https://gogs.company.com/api/v1"
-    
+
     organizations:
       - name: "legacy"
         clone_dir: "$HOME/repos/gogs/legacy"

@@ -179,7 +179,7 @@ type Client interface {
     // ...
 }
 
-// Configuration loading abstraction  
+// Configuration loading abstraction
 type Loader interface {
     LoadConfig(ctx context.Context) (*Config, error)
     LoadConfigFromFile(ctx context.Context, filename string) (*Config, error)
@@ -196,7 +196,7 @@ providerRegistry.Register("gitlab", gitlab.NewProvider())
 
 #### Strategy Pattern for Git Operations
 - **rebase**: Rebase local changes on remote
-- **reset**: Hard reset to match remote state  
+- **reset**: Hard reset to match remote state
 - **clone**: Fresh clone (remove existing)
 - **pull**: Standard git pull (merge)
 - **fetch**: Update refs only
@@ -214,7 +214,7 @@ providerRegistry.Register("gitlab", gitlab.NewProvider())
 global:
   clone_base_dir: "$HOME/repos"
   default_strategy: reset
-  
+
 providers:
   github:
     token: "${GITHUB_TOKEN}"
@@ -234,7 +234,7 @@ providers:
 #### Test Categories
 ```bash
 make test-unit          # Fast unit tests
-make test-integration   # Docker-based integration tests  
+make test-integration   # Docker-based integration tests
 make test-e2e           # End-to-end CLI tests
 make test-all           # Complete test suite
 ```
@@ -291,7 +291,7 @@ make test-all           # Complete test suite
 // Standard command structure
 func NewCommandCmd() *cobra.Command {
     var flags CommandFlags
-    
+
     cmd := &cobra.Command{
         Use:   "command",
         Short: "Brief description",
@@ -302,7 +302,7 @@ func NewCommandCmd() *cobra.Command {
             // 4. Format and output results
         },
     }
-    
+
     // Add flags consistently
     return cmd
 }

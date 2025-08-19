@@ -12,7 +12,7 @@ The `gz` CLI provides comprehensive commands for managing development environmen
 
 ### Core Features
 - **synclone** - Multi-platform repository synchronization
-- **git** - Unified Git operations and platform management  
+- **git** - Unified Git operations and platform management
 - **quality** - Multi-language code quality management
 - **ide** - JetBrains IDE monitoring and management
 - **profile** - Performance profiling and analysis
