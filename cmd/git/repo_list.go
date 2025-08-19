@@ -5,12 +5,17 @@ package git
 
 import (
 	"context"
+	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
@@ -427,20 +432,71 @@ func (opts *ListOptions) outputTable(repos []provider.Repository) error {
 
 // outputJSON outputs repositories in JSON format.
 func (opts *ListOptions) outputJSON(repos []provider.Repository) error {
-	// TODO: Implement JSON output
-	return fmt.Errorf("JSON output not implemented yet")
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+
+	if err := encoder.Encode(repos); err != nil {
+		return fmt.Errorf("failed to encode repositories as JSON: %w", err)
+	}
+
+	return nil
 }
 
 // outputYAML outputs repositories in YAML format.
 func (opts *ListOptions) outputYAML(repos []provider.Repository) error {
-	// TODO: Implement YAML output
-	return fmt.Errorf("YAML output not implemented yet")
+	yamlData, err := yaml.Marshal(repos)
+	if err != nil {
+		return fmt.Errorf("failed to marshal repositories as YAML: %w", err)
+	}
+
+	fmt.Print(string(yamlData))
+	return nil
 }
 
 // outputCSV outputs repositories in CSV format.
 func (opts *ListOptions) outputCSV(repos []provider.Repository) error {
-	// TODO: Implement CSV output
-	return fmt.Errorf("CSV output not implemented yet")
+	writer := csv.NewWriter(os.Stdout)
+	defer writer.Flush()
+
+	// Write CSV header
+	header := []string{"Name", "Full Name", "Default Branch", "Private", "Fork", "Language", "Description", "Stars", "Forks", "Clone URL", "SSH URL", "HTML URL", "Created At", "Updated At"}
+	if err := writer.Write(header); err != nil {
+		return fmt.Errorf("failed to write CSV header: %w", err)
+	}
+
+	// Write repository data
+	for _, repo := range repos {
+		record := []string{
+			repo.Name,
+			repo.FullName,
+			repo.DefaultBranch,
+			fmt.Sprintf("%t", repo.Private),
+			fmt.Sprintf("%t", repo.Fork),
+			repo.Language,
+			repo.Description,
+			fmt.Sprintf("%d", repo.Stars),
+			fmt.Sprintf("%d", repo.Forks),
+			repo.CloneURL,
+			repo.SSHURL,
+			repo.HTMLURL,
+			formatTime(repo.CreatedAt),
+			formatTime(repo.UpdatedAt),
+		}
+
+		if err := writer.Write(record); err != nil {
+			return fmt.Errorf("failed to write CSV record: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// formatTime formats a time.Time for CSV output
+func formatTime(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(time.RFC3339)
 }
 
 // Helper functions

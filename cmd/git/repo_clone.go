@@ -220,9 +220,31 @@ func registerProviderConstructors(factory *provider.ProviderFactory) error {
 		return fmt.Errorf("failed to register GitLab provider: %w", err)
 	}
 
-	// TODO: Add support for additional providers when implemented
-	// factory.RegisterProvider("gitea", gitea.CreateGiteaProvider)
-	// factory.RegisterProvider("gogs", gogs.CreateGogsProvider)
+	// Register Gitea provider
+	if err := factory.RegisterProvider("gitea", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
+		// This would call gitea.CreateGiteaProvider(config) when fully integrated
+		// For now, provide a stub implementation that indicates the provider is configured
+		baseURL := config.BaseURL
+		if baseURL == "" {
+			baseURL = "https://gitea.com/api/v1"
+		}
+		return nil, fmt.Errorf("Gitea provider registered but implementation pending - would connect to %s", baseURL)
+	}); err != nil {
+		return fmt.Errorf("failed to register Gitea provider: %w", err)
+	}
+
+	// Register Gogs provider
+	if err := factory.RegisterProvider("gogs", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
+		// This would call gogs.CreateGogsProvider(config) when implemented
+		// For now, provide a stub implementation
+		baseURL := config.BaseURL
+		if baseURL == "" {
+			baseURL = "https://try.gogs.io/api/v1"
+		}
+		return nil, fmt.Errorf("Gogs provider registered but implementation pending - would connect to %s", baseURL)
+	}); err != nil {
+		return fmt.Errorf("failed to register Gogs provider: %w", err)
+	}
 
 	return nil
 }

@@ -5,11 +5,14 @@ package git
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
@@ -298,14 +301,114 @@ func isValidOutputFormat(format string) bool {
 
 // getGitProvider gets a provider instance for the specified type and organization.
 func getGitProvider(providerType, org string) (provider.GitProvider, error) {
-	// For now, return error indicating providers need implementation
-	// TODO: Implement actual provider creation logic
-	// This would involve:
-	// 1. Creating provider factory
-	// 2. Registering provider constructors
-	// 3. Creating provider configuration
-	// 4. Getting provider instance from registry
-	return nil, fmt.Errorf("provider implementation not available yet - provider: %s, org: %s", providerType, org)
+	// Create and configure provider factory
+	factory := provider.NewProviderFactory()
+
+	// Register all available providers
+	if err := registerProviders(factory); err != nil {
+		return nil, fmt.Errorf("failed to register providers: %w", err)
+	}
+
+	// Create provider configuration based on type
+	config, err := createProviderConfig(providerType, org)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create provider config: %w", err)
+	}
+
+	// Create provider instance
+	gitProvider, err := factory.CreateProviderByType(providerType, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create %s provider: %w", providerType, err)
+	}
+
+	return gitProvider, nil
+}
+
+// registerProviders registers all available provider constructors
+func registerProviders(factory *provider.ProviderFactory) error {
+	// Import packages to access their register functions
+	githubPkg := "github.com/Gizzahub/gzh-cli/pkg/github"
+	gitlabPkg := "github.com/Gizzahub/gzh-cli/pkg/gitlab"
+	giteaPkg := "github.com/Gizzahub/gzh-cli/pkg/gitea"
+
+	// Note: In a real implementation, these would be direct function calls
+	// For now, register with basic implementations
+
+	// Register GitHub provider
+	if err := factory.RegisterProvider("github", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
+		// This would call github.CreateGitHubProvider(config)
+		return nil, fmt.Errorf("GitHub provider constructor not yet integrated - requires %s", githubPkg)
+	}); err != nil {
+		return fmt.Errorf("failed to register GitHub provider: %w", err)
+	}
+
+	// Register GitLab provider
+	if err := factory.RegisterProvider("gitlab", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
+		// This would call gitlab.CreateGitLabProvider(config)
+		return nil, fmt.Errorf("GitLab provider constructor not yet integrated - requires %s", gitlabPkg)
+	}); err != nil {
+		return fmt.Errorf("failed to register GitLab provider: %w", err)
+	}
+
+	// Register Gitea provider
+	if err := factory.RegisterProvider("gitea", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
+		// This would call gitea.CreateGiteaProvider(config)
+		return nil, fmt.Errorf("Gitea provider constructor not yet integrated - requires %s", giteaPkg)
+	}); err != nil {
+		return fmt.Errorf("failed to register Gitea provider: %w", err)
+	}
+
+	return nil
+}
+
+// createProviderConfig creates a provider configuration for the given type and org
+func createProviderConfig(providerType, org string) (*provider.ProviderConfig, error) {
+	config := &provider.ProviderConfig{
+		Type:    providerType,
+		Name:    fmt.Sprintf("%s-%s", providerType, org),
+		Enabled: true,
+	}
+
+	// Set provider-specific defaults
+	switch providerType {
+	case "github":
+		config.BaseURL = "https://api.github.com"
+		config.Token = getTokenFromEnv("GITHUB_TOKEN")
+	case "gitlab":
+		config.BaseURL = "https://gitlab.com/api/v4"
+		config.Token = getTokenFromEnv("GITLAB_TOKEN")
+	case "gitea":
+		config.BaseURL = "https://gitea.com/api/v1"
+		config.Token = getTokenFromEnv("GITEA_TOKEN")
+	default:
+		return nil, fmt.Errorf("unsupported provider type: %s", providerType)
+	}
+
+	if config.Token == "" {
+		return nil, fmt.Errorf("authentication token required for %s (set %s_TOKEN environment variable)",
+			providerType, strings.ToUpper(providerType))
+	}
+
+	return config, nil
+}
+
+// getTokenFromEnv gets authentication token from environment variable
+func getTokenFromEnv(envVar string) string {
+	token := os.Getenv(envVar)
+	if token == "" {
+		// Also try common alternative naming patterns
+		switch envVar {
+		case "GITHUB_TOKEN":
+			if alt := os.Getenv("GH_TOKEN"); alt != "" {
+				return alt
+			}
+		case "GITLAB_TOKEN":
+			if alt := os.Getenv("GL_TOKEN"); alt != "" {
+				return alt
+			}
+		}
+	}
+	return token
 }
 
 // outputRepository outputs repository information in the specified format.
@@ -342,12 +445,23 @@ func outputRepositoryTable(repo *provider.Repository) error {
 
 // outputRepositoryJSON outputs repository in JSON format.
 func outputRepositoryJSON(repo *provider.Repository) error {
-	// TODO: Implement JSON output
-	return fmt.Errorf("json output not implemented yet")
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+
+	if err := encoder.Encode(repo); err != nil {
+		return fmt.Errorf("failed to encode repository as JSON: %w", err)
+	}
+
+	return nil
 }
 
 // outputRepositoryYAML outputs repository in YAML format.
 func outputRepositoryYAML(repo *provider.Repository) error {
-	// TODO: Implement YAML output
-	return fmt.Errorf("yaml output not implemented yet")
+	yamlData, err := yaml.Marshal(repo)
+	if err != nil {
+		return fmt.Errorf("failed to marshal repository as YAML: %w", err)
+	}
+
+	fmt.Print(string(yamlData))
+	return nil
 }

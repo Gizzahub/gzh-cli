@@ -6,10 +6,14 @@ package git
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -30,6 +34,10 @@ type DeleteOptions struct {
 	Force  bool
 	DryRun bool
 	Backup bool
+
+	// Backup options
+	BackupPath   string
+	BackupFormat string
 
 	// Output options
 	Format string
@@ -81,6 +89,10 @@ This command provides safe repository deletion with:
 	cmd.Flags().BoolVar(&opts.Force, "force", false, "Skip confirmation prompts")
 	cmd.Flags().BoolVar(&opts.DryRun, "dry-run", false, "Preview without deleting")
 	cmd.Flags().BoolVar(&opts.Backup, "backup", false, "Create backup before deletion")
+
+	// Backup options
+	cmd.Flags().StringVar(&opts.BackupPath, "backup-path", "", "Directory to store backups (required when backup is enabled)")
+	cmd.Flags().StringVar(&opts.BackupFormat, "backup-format", "clone", "Backup format (clone, archive, bundle)")
 
 	// Output options
 	cmd.Flags().StringVar(&opts.Format, "format", "table", "Output format (table, json, yaml)")
@@ -313,12 +325,170 @@ func (opts *DeleteOptions) deleteRepositories(ctx context.Context, gitProvider p
 
 // createBackup creates a backup of the repository before deletion.
 func (opts *DeleteOptions) createBackup(ctx context.Context, gitProvider provider.GitProvider, repo *provider.Repository) error {
-	// TODO: Implement backup functionality
-	// This could involve:
-	// 1. Cloning the repository locally
-	// 2. Creating an archive/export
-	// 3. Saving to a backup location
-	return fmt.Errorf("backup functionality not implemented yet")
+	if opts.BackupPath == "" {
+		return fmt.Errorf("backup path is required when backup is enabled")
+	}
+
+	// Create backup directory if it doesn't exist
+	if err := os.MkdirAll(opts.BackupPath, 0o755); err != nil {
+		return fmt.Errorf("failed to create backup directory %s: %w", opts.BackupPath, err)
+	}
+
+	// Generate backup filename with timestamp
+	timestamp := time.Now().Format("20060102-150405")
+	backupName := fmt.Sprintf("%s-%s", repo.Name, timestamp)
+
+	// Choose backup method based on options
+	switch opts.BackupFormat {
+	case "clone":
+		return opts.createCloneBackup(ctx, repo, backupName)
+	case "archive":
+		return opts.createArchiveBackup(ctx, gitProvider, repo, backupName)
+	case "bundle":
+		return opts.createBundleBackup(ctx, repo, backupName)
+	default:
+		return opts.createCloneBackup(ctx, repo, backupName) // Default to clone
+	}
+}
+
+// createCloneBackup creates a backup by cloning the repository
+func (opts *DeleteOptions) createCloneBackup(ctx context.Context, repo *provider.Repository, backupName string) error {
+	backupPath := filepath.Join(opts.BackupPath, backupName)
+
+	fmt.Printf("📦 Creating clone backup: %s\n", backupPath)
+
+	// Use git clone command to create backup
+	cmd := exec.CommandContext(ctx, "git", "clone", "--mirror", repo.CloneURL, backupPath)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to clone repository for backup: %w\nOutput: %s", err, string(output))
+	}
+
+	// Create metadata file
+	metadataPath := filepath.Join(opts.BackupPath, backupName+".metadata.json")
+	metadata := BackupMetadata{
+		Repository:  *repo,
+		BackupTime:  time.Now(),
+		BackupType:  "clone",
+		BackupPath:  backupPath,
+		OriginalURL: repo.CloneURL,
+	}
+
+	if err := opts.saveBackupMetadata(metadataPath, metadata); err != nil {
+		fmt.Printf("⚠️  Warning: Failed to save backup metadata: %v\n", err)
+	}
+
+	fmt.Printf("✅ Clone backup completed: %s\n", backupPath)
+	return nil
+}
+
+// createArchiveBackup creates a backup using git archive
+func (opts *DeleteOptions) createArchiveBackup(ctx context.Context, gitProvider provider.GitProvider, repo *provider.Repository, backupName string) error {
+	// First clone to a temporary location
+	tempDir, err := os.MkdirTemp("", "git-archive-backup-")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Clone repository
+	cloneCmd := exec.CommandContext(ctx, "git", "clone", repo.CloneURL, tempDir)
+	if output, err := cloneCmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to clone repository for archive: %w\nOutput: %s", err, string(output))
+	}
+
+	// Create archive
+	archivePath := filepath.Join(opts.BackupPath, backupName+".tar.gz")
+	fmt.Printf("📦 Creating archive backup: %s\n", archivePath)
+
+	archiveCmd := exec.CommandContext(ctx, "git", "-C", tempDir, "archive", "--format=tar.gz", "--output", archivePath, "HEAD")
+	if output, err := archiveCmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to create git archive: %w\nOutput: %s", err, string(output))
+	}
+
+	// Create metadata file
+	metadataPath := filepath.Join(opts.BackupPath, backupName+".metadata.json")
+	metadata := BackupMetadata{
+		Repository:  *repo,
+		BackupTime:  time.Now(),
+		BackupType:  "archive",
+		BackupPath:  archivePath,
+		OriginalURL: repo.CloneURL,
+	}
+
+	if err := opts.saveBackupMetadata(metadataPath, metadata); err != nil {
+		fmt.Printf("⚠️  Warning: Failed to save backup metadata: %v\n", err)
+	}
+
+	fmt.Printf("✅ Archive backup completed: %s\n", archivePath)
+	return nil
+}
+
+// createBundleBackup creates a backup using git bundle
+func (opts *DeleteOptions) createBundleBackup(ctx context.Context, repo *provider.Repository, backupName string) error {
+	// First clone to a temporary location
+	tempDir, err := os.MkdirTemp("", "git-bundle-backup-")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Clone repository
+	cloneCmd := exec.CommandContext(ctx, "git", "clone", repo.CloneURL, tempDir)
+	if output, err := cloneCmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to clone repository for bundle: %w\nOutput: %s", err, string(output))
+	}
+
+	// Create bundle
+	bundlePath := filepath.Join(opts.BackupPath, backupName+".bundle")
+	fmt.Printf("📦 Creating bundle backup: %s\n", bundlePath)
+
+	bundleCmd := exec.CommandContext(ctx, "git", "-C", tempDir, "bundle", "create", bundlePath, "--all")
+	if output, err := bundleCmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to create git bundle: %w\nOutput: %s", err, string(output))
+	}
+
+	// Create metadata file
+	metadataPath := filepath.Join(opts.BackupPath, backupName+".metadata.json")
+	metadata := BackupMetadata{
+		Repository:  *repo,
+		BackupTime:  time.Now(),
+		BackupType:  "bundle",
+		BackupPath:  bundlePath,
+		OriginalURL: repo.CloneURL,
+	}
+
+	if err := opts.saveBackupMetadata(metadataPath, metadata); err != nil {
+		fmt.Printf("⚠️  Warning: Failed to save backup metadata: %v\n", err)
+	}
+
+	fmt.Printf("✅ Bundle backup completed: %s\n", bundlePath)
+	return nil
+}
+
+// BackupMetadata contains metadata about a repository backup
+type BackupMetadata struct {
+	Repository  provider.Repository `json:"repository"`
+	BackupTime  time.Time           `json:"backup_time"`
+	BackupType  string              `json:"backup_type"`
+	BackupPath  string              `json:"backup_path"`
+	OriginalURL string              `json:"original_url"`
+}
+
+// saveBackupMetadata saves backup metadata to a JSON file
+func (opts *DeleteOptions) saveBackupMetadata(metadataPath string, metadata BackupMetadata) error {
+	file, err := os.Create(metadataPath)
+	if err != nil {
+		return fmt.Errorf("failed to create metadata file: %w", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(metadata); err != nil {
+		return fmt.Errorf("failed to encode metadata: %w", err)
+	}
+
+	return nil
 }
 
 // confirmDeletion prompts the user for confirmation before deletion.
