@@ -1,5 +1,5 @@
 //nolint:testpackage // White-box testing needed for internal function access
-package cmd
+package version
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 
 func TestVersionCommand(t *testing.T) {
 	version := "v1.0.0"
-	cmd := newVersionCmd(version)
+	cmd := NewVersionCmd(version) // 공개 함수 사용
 	b := bytes.NewBufferString("")
 	cmd.SetOut(b)
 

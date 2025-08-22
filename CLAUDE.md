@@ -422,6 +422,99 @@ Supported formats: `table`, `json`, `yaml`, `csv`, `html` (select commands)
 - **Schema validation**: All configs validated against JSON Schema
 - **Performance monitoring**: Built-in benchmarking with `scripts/`
 
+## Library Documentation Access with Context7
+
+When working with this project's dependencies, use Context7 to access up-to-date documentation for better implementation guidance.
+
+### Core Libraries Reference
+
+#### CLI Development
+- **Cobra** (`github.com/spf13/cobra`) - Command-line interface framework
+  - Use for: command structure, flags, subcommands, completions
+  - Context7 topics: "commands", "flags", "completions", "cobra.Command"
+- **Viper** (`github.com/spf13/viper`) - Configuration management
+  - Use for: environment variables, config files, settings hierarchy
+  - Context7 topics: "configuration", "environment", "viper.Viper"
+
+#### GitHub API Integration
+- **go-github** (`github.com/google/go-github/v66`) - GitHub API v3/v4 client
+  - Use for: repository management, webhooks, events, issues, PRs
+  - Context7 topics: "repositories", "webhooks", "authentication", "client"
+- **oauth2** (`golang.org/x/oauth2`) - OAuth2 authentication flows
+  - Use for: token-based authentication, refresh tokens
+  - Context7 topics: "token", "authentication", "config"
+
+#### Terminal UI Framework
+- **Bubble Tea** (`github.com/charmbracelet/bubbletea`) - TUI application framework
+  - Use for: interactive CLI interfaces, real-time updates
+  - Context7 topics: "model", "update", "view", "commands", "tea.Program"
+- **Bubbles** (`github.com/charmbracelet/bubbles`) - Pre-built TUI components
+  - Use for: text inputs, lists, spinners, progress bars
+  - Context7 topics: "textinput", "list", "spinner", "progress"
+- **Lipgloss** (`github.com/charmbracelet/lipgloss`) - Terminal styling
+  - Use for: colors, borders, alignment, layouts
+  - Context7 topics: "styling", "colors", "borders", "layout"
+
+#### Testing Framework
+- **Testify** (`github.com/stretchr/testify`) - Testing assertions and utilities
+  - Use for: assertions, test suites, mocking helpers
+  - Context7 topics: "assert", "require", "suite", "mock"
+- **Testcontainers-go** (`github.com/testcontainers/testcontainers-go`) - Container-based testing
+  - Use for: integration tests with real services
+  - Context7 topics: "containers", "integration", "docker"
+- **GoMock** (`go.uber.org/mock`) - Interface mocking framework
+  - Use for: generating and using mocks in unit tests
+  - Context7 topics: "mockgen", "EXPECT", "gomock.Controller"
+
+#### AWS SDK Integration
+- **AWS SDK Go v2** (`github.com/aws/aws-sdk-go-v2`) - AWS services client
+  - Use for: AWS service interactions, credentials, configuration
+  - Context7 topics: "config", "credentials", "services", "context"
+
+#### Data Processing
+- **YAML v3** (`gopkg.in/yaml.v3`) - YAML parsing and generation
+  - Use for: configuration files, data serialization
+  - Context7 topics: "marshal", "unmarshal", "yaml.Node"
+- **JSON Schema** (`github.com/xeipuuv/gojsonschema`) - Schema validation
+  - Use for: validating configuration and API data
+  - Context7 topics: "validation", "schema", "gojsonschema.Result"
+- **GJSON** (`github.com/tidwall/gjson`) - Fast JSON parsing
+  - Use for: extracting values from JSON without unmarshaling
+  - Context7 topics: "get", "path", "gjson.Result"
+
+### Context7 Usage Pattern
+
+When implementing features with these libraries:
+
+1. **Resolve library ID first**:
+   ```
+   mcp__context7__resolve-library-id libraryName:"cobra"
+   ```
+
+2. **Get targeted documentation**:
+   ```
+   mcp__context7__get-library-docs context7CompatibleLibraryID:"/spf13/cobra" topic:"commands"
+   ```
+
+### Integration Guidelines
+
+#### Before implementing new features:
+- Look up library documentation with Context7 for current best practices
+- Check for breaking changes or new features in recent versions
+- Review examples and patterns specific to your use case
+
+#### When debugging library issues:
+- Use Context7 to find troubleshooting guides and common pitfalls
+- Look up specific method documentation and expected behaviors
+- Find community solutions and alternative approaches
+
+#### Common Context7 queries for this project:
+- Cobra: `topic:"subcommands"` for complex command hierarchies
+- go-github: `topic:"pagination"` for handling large API responses
+- Bubble Tea: `topic:"keyboard"` for handling user input
+- Testify: `topic:"table-tests"` for parameterized testing
+- AWS SDK: `topic:"retry"` for handling transient failures
+
 ## Command Categories
 
 ### Repository Operations
