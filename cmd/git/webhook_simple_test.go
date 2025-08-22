@@ -9,12 +9,12 @@ import (
 )
 
 func TestNewWebhookCmd(t *testing.T) {
-	cmd := NewWebhookCmd()
+	cmd := newGitWebhookCmd() // 내부 함수 사용
 
 	assert.NotNil(t, cmd)
 	assert.Equal(t, "webhook", cmd.Use)
-	assert.Contains(t, cmd.Short, "웹훅")
-	assert.Contains(t, cmd.Long, "GitHub 웹훅 CRUD API")
+	assert.Contains(t, cmd.Short, "Webhook management")
+	assert.Contains(t, cmd.Long, "Manage repository and organization webhooks")
 
 	// Check that subcommands are added
 	subcommands := cmd.Commands()
@@ -43,7 +43,7 @@ func TestNewWebhookCmd(t *testing.T) {
 }
 
 func TestRepositoryWebhookCommands(t *testing.T) {
-	cmd := NewWebhookCmd()
+	cmd := newGitWebhookCmd() // 내부 함수 사용
 	repoCmd := findSubcommand(cmd, "repo")
 
 	assert.NotNil(t, repoCmd)
@@ -70,7 +70,7 @@ func TestRepositoryWebhookCommands(t *testing.T) {
 }
 
 func TestOrganizationWebhookCommands(t *testing.T) {
-	cmd := NewWebhookCmd()
+	cmd := newGitWebhookCmd() // 내부 함수 사용
 	orgCmd := findSubcommand(cmd, "org")
 
 	assert.NotNil(t, orgCmd)
@@ -83,7 +83,7 @@ func TestOrganizationWebhookCommands(t *testing.T) {
 }
 
 func TestBulkWebhookCommands(t *testing.T) {
-	cmd := NewWebhookCmd()
+	cmd := newGitWebhookCmd() // 내부 함수 사용
 	bulkCmd := findSubcommand(cmd, "bulk")
 
 	assert.NotNil(t, bulkCmd)
@@ -96,7 +96,7 @@ func TestBulkWebhookCommands(t *testing.T) {
 }
 
 func TestMonitorWebhookCommands(t *testing.T) {
-	cmd := NewWebhookCmd()
+	cmd := newGitWebhookCmd() // 내부 함수 사용
 	monitorCmd := findSubcommand(cmd, "monitor")
 
 	assert.NotNil(t, monitorCmd)
@@ -109,7 +109,7 @@ func TestMonitorWebhookCommands(t *testing.T) {
 }
 
 func TestCreateRepositoryWebhookFlags(t *testing.T) {
-	cmd := NewWebhookCmd()
+	cmd := newGitWebhookCmd() // 내부 함수 사용
 	repoCmd := findSubcommand(cmd, "repo")
 	createCmd := findSubcommand(repoCmd, "create <owner> <repo>")
 
