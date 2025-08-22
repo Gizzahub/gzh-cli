@@ -1,14 +1,14 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package cmd
+package git
 
 import (
 	"github.com/spf13/cobra"
 
+	eventpkg "github.com/Gizzahub/gzh-cli/cmd/git/event"
 	repopkg "github.com/Gizzahub/gzh-cli/cmd/git/repo"
 	webhookpkg "github.com/Gizzahub/gzh-cli/cmd/git/webhook"
-	eventpkg "github.com/Gizzahub/gzh-cli/cmd/git/event"
 	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
 )
 

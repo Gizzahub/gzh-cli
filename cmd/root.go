@@ -20,6 +20,7 @@ import (
 	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
 	"github.com/Gizzahub/gzh-cli/cmd/shell"
 	synclone "github.com/Gizzahub/gzh-cli/cmd/synclone"
+	"github.com/Gizzahub/gzh-cli/cmd/git"
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
@@ -57,7 +58,7 @@ Utility Commands: doctor, version`,
 	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
 	cmd.AddCommand(repoconfig.NewRepoConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(profile.NewProfileCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(NewGitCmd())                   //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(git.NewGitCmd())                //nolint:contextcheck // Command setup doesn't require context propagation
 	cmd.AddCommand(quality.NewQualityCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
 
 	// Utility commands - set as hidden to reduce clutter in main help
