@@ -321,3 +321,153 @@ func TestIDECmdHelpContent(t *testing.T) {
 	assert.Contains(t, longDesc, "WebStorm")
 	assert.Contains(t, longDesc, "GoLand")
 }
+
+func TestGetWatchDirectories(t *testing.T) {
+	opts := defaultIDEOptions()
+
+	// Test with specific watch directory
+	opts.watchDir = "/test/directory"
+	dirs := opts.getWatchDirectories()
+	assert.Len(t, dirs, 1)
+	assert.Equal(t, "/test/directory", dirs[0])
+
+	// Test with auto-detection (empty watchDir)
+	opts.watchDir = ""
+	dirs = opts.getWatchDirectories()
+	// Should auto-detect, length varies by system
+	assert.NotNil(t, dirs)
+}
+
+func TestGetDirSize(t *testing.T) {
+	opts := defaultIDEOptions()
+	tmpDir := t.TempDir()
+
+	// Create test files
+	testFile1 := filepath.Join(tmpDir, "file1.txt")
+	testFile2 := filepath.Join(tmpDir, "file2.txt")
+
+	err := os.WriteFile(testFile1, []byte("hello"), 0o600)
+	assert.NoError(t, err)
+
+	err = os.WriteFile(testFile2, []byte("world"), 0o600)
+	assert.NoError(t, err)
+
+	size := opts.getDirSize(tmpDir)
+	assert.Equal(t, int64(10), size) // "hello" + "world" = 10 bytes
+}
+
+func TestCountConfigFiles(t *testing.T) {
+	opts := defaultIDEOptions()
+	tmpDir := t.TempDir()
+
+	// Create test files
+	xmlFile := filepath.Join(tmpDir, "config.xml")
+	jsonFile := filepath.Join(tmpDir, "settings.json")
+	txtFile := filepath.Join(tmpDir, "readme.txt")
+
+	err := os.WriteFile(xmlFile, []byte("<config></config>"), 0o600)
+	assert.NoError(t, err)
+
+	err = os.WriteFile(jsonFile, []byte("{}"), 0o600)
+	assert.NoError(t, err)
+
+	err = os.WriteFile(txtFile, []byte("text"), 0o600)
+	assert.NoError(t, err)
+
+	count := opts.countConfigFiles(tmpDir)
+	assert.Equal(t, 2, count) // Only XML and JSON files should be counted
+}
+
+func TestDetectJetBrainsProducts(t *testing.T) {
+	opts := defaultIDEOptions()
+
+	// This will test the detection logic, though results vary by system
+	products := opts.detectJetBrainsProducts()
+	assert.NotNil(t, products)
+	// Don't assert length since it depends on what's installed
+}
+
+func TestFixProductSyncIssues(t *testing.T) {
+	opts := defaultIDEOptions()
+	tmpDir := t.TempDir()
+
+	product := jetbrainsProduct{
+		Name:     "Test IDE",
+		DirName:  "TestIDE2024.1",
+		BasePath: tmpDir,
+	}
+
+	// Test with non-existent filetypes.xml (should not error)
+	err := opts.fixProductSyncIssues(product)
+	assert.NoError(t, err)
+
+	// Test with existing filetypes.xml
+	settingsSyncDir := filepath.Join(tmpDir, "settingsSync", "options")
+	err = os.MkdirAll(settingsSyncDir, 0o755)
+	assert.NoError(t, err)
+
+	filetypesPath := filepath.Join(settingsSyncDir, "filetypes.xml")
+	testContent := `<component name="FileTypeManager">
+  <mapping ext="txt" type="PLAIN_TEXT" />
+  <mapping ext="txt" type="PLAIN_TEXT" />
+</component>`
+
+	err = os.WriteFile(filetypesPath, []byte(testContent), 0o600)
+	assert.NoError(t, err)
+
+	err = opts.fixProductSyncIssues(product)
+	assert.NoError(t, err)
+
+	// Verify backup was created
+	files, err := filepath.Glob(filetypesPath + ".backup.*")
+	assert.NoError(t, err)
+	assert.Len(t, files, 1)
+}
+
+func TestGetRelativePathEdgeCases(t *testing.T) {
+	opts := defaultIDEOptions()
+
+	// Test absolute path outside home
+	result := opts.getRelativePath("/etc/hosts")
+	assert.Equal(t, "/etc/hosts", result)
+
+	// Test empty path
+	result = opts.getRelativePath("")
+	assert.Equal(t, "", result)
+}
+
+func TestHandleFileEventWithVerbose(t *testing.T) {
+	opts := defaultIDEOptions()
+	opts.verbose = true
+	tmpDir := t.TempDir()
+
+	testFile := filepath.Join(tmpDir, "test.xml")
+	err := os.WriteFile(testFile, []byte("test"), 0o600)
+	assert.NoError(t, err)
+
+	event := fsnotify.Event{
+		Name: testFile,
+		Op:   fsnotify.Write,
+	}
+
+	// This should not panic or error
+	opts.handleFileEvent(event)
+}
+
+func TestShouldIgnoreEventChmod(t *testing.T) {
+	opts := defaultIDEOptions()
+	tmpDir := t.TempDir()
+
+	// Create a directory for chmod test
+	testDir := filepath.Join(tmpDir, "testdir")
+	err := os.Mkdir(testDir, 0o755)
+	assert.NoError(t, err)
+
+	event := fsnotify.Event{
+		Name: testDir,
+		Op:   fsnotify.Chmod,
+	}
+
+	result := opts.shouldIgnoreEvent(event)
+	assert.True(t, result) // Should ignore chmod on directories
+}
