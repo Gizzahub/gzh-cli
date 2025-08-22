@@ -1,413 +1,399 @@
-# IDE Monitoring and Management Specification
+# IDE Management Specification (Updated)
 
 ## Overview
 
-The `ide` command provides comprehensive monitoring and management capabilities for IDE configuration changes, particularly focusing on JetBrains products. It offers real-time monitoring, cross-platform support, automatic detection of IDE installations, settings synchronization issue detection and fixes, and file change tracking with filtering capabilities.
+The `gz ide` command provides comprehensive IDE detection, monitoring, and management capabilities across multiple IDE families including JetBrains products, VS Code variants, and popular text editors.
 
-## Commands
+## Purpose
 
-### Core Commands
+Enhanced IDE management for:
+- **Automatic IDE Detection**: Scan and detect all installed IDEs on the system
+- **Status Monitoring**: Real-time monitoring of IDE processes and resource usage
+- **Project Opening**: Open projects directly in detected IDEs
+- **Settings Synchronization**: Monitor and fix JetBrains IDE settings sync issues
+- **Cross-Platform Support**: Works on Linux, macOS, and Windows
 
-- `gz ide monitor` - Monitor JetBrains settings for changes
-- `gz ide fix-sync` - Fix JetBrains settings synchronization issues
-- `gz ide list` - List detected JetBrains IDE installations
+## Command Structure
 
-### Monitor IDE Settings (`gz ide monitor`)
-
-**Purpose**: Monitor JetBrains IDE settings directories for real-time changes
-
-**Features**:
-- Real-time monitoring of JetBrains settings directories
-- Cross-platform support for Linux, macOS, and Windows
-- Automatic detection of JetBrains products and versions
-- File change tracking with filtering capabilities
-- Configurable monitoring for specific products
-
-**Usage**:
-```bash
-gz ide monitor                                          # Monitor all JetBrains settings
-gz ide monitor --product IntelliJIdea2023.2             # Monitor specific product
-gz ide monitor --verbose --debug                        # Detailed monitoring output
+```
+gz ide <subcommand> [options]
 ```
 
-**Parameters**:
-- `--product`: Monitor specific JetBrains product (optional)
-- Standard global flags: `--verbose`, `--debug`, `--quiet`
+## Current Implementation (2025-08)
 
-**Supported IDE Products**:
-- IntelliJ IDEA (Community, Ultimate)
-- PyCharm (Community, Professional)
-- WebStorm, PhpStorm, RubyMine
-- CLion, GoLand, DataGrip
-- Android Studio, Rider
+### Available Subcommands
 
-### Fix Settings Synchronization (`gz ide fix-sync`)
+| Subcommand | Purpose | Implementation Status |
+|------------|---------|---------------------|
+| `scan` | Scan system for installed IDEs | ✅ Implemented (NEW) |
+| `status` | Show IDE status and resource usage | ✅ Implemented (NEW) |
+| `open` | Open project in detected IDE | ✅ Implemented (NEW) |
+| `monitor` | Monitor JetBrains IDE settings | ✅ Implemented |
+| `fix-sync` | Fix JetBrains sync issues | ✅ Implemented |
+| `list` | List detected IDEs (legacy) | ✅ Implemented |
 
-**Purpose**: Detect and fix JetBrains settings synchronization issues
+## Subcommand Specifications
 
-**Features**:
-- Automatic detection of synchronization problems
-- Cross-platform synchronization issue resolution
-- Settings validation and repair
-- Backup creation before fixes
+### 1. IDE Scan (`gz ide scan`)
 
-**Usage**:
+**Purpose**: Automatically detect all installed IDEs on the system.
+
+**Description**: Scans common installation locations and package managers to find all installed IDEs. Results are cached for 24 hours to improve performance.
+
 ```bash
-gz ide fix-sync                                        # Fix sync issues for all detected IDEs
-gz ide fix-sync --product PyCharm2023.3                # Fix sync for specific product
-gz ide fix-sync --dry-run                              # Preview fixes without applying
+gz ide scan [--refresh] [--verbose]
 ```
 
-**Parameters**:
-- `--product`: Fix sync for specific JetBrains product (optional)
-- `--dry-run`: Preview fixes without applying changes (optional)
-
-### List IDE Installations (`gz ide list`)
-
-**Purpose**: Display all detected JetBrains IDE installations with version information
-
-**Features**:
-- Automatic detection of installed JetBrains products
-- Version information display
-- Installation path reporting
-- Cross-platform detection
-
-**Usage**:
-```bash
-gz ide list                                             # List all detected installations
-gz ide list --format json                              # Output as JSON
-gz ide list --format table                             # Output as formatted table (default)
-```
-
-**Parameters**:
-- `--format`: Output format (table, json) - default: table
-
-## Platform Support
-
-### Cross-Platform Compatibility
-
-The IDE command supports the following platforms with automatic path detection:
-
-#### Linux
-- Settings directory: `~/.config/JetBrains/{ProductName}{Version}/`
-- Product detection: `/opt/jetbrains/`, `~/.local/share/JetBrains/Toolbox/`
-- Configuration: XDG Base Directory specification compliant
-
-#### macOS
-- Settings directory: `~/Library/Application Support/JetBrains/{ProductName}{Version}/`
-- Product detection: `/Applications/`, `~/Library/Application Support/JetBrains/Toolbox/`
-- Configuration: macOS application bundle structure
-
-#### Windows
-- Settings directory: `%APPDATA%\JetBrains\{ProductName}{Version}\`
-- Product detection: `%LOCALAPPDATA%\JetBrains\Toolbox\`, `%PROGRAMFILES%\JetBrains\`
-- Configuration: Windows Registry and filesystem detection
-
-## Detection and Monitoring
-
-### Automatic Product Detection
+**Options**:
+- `--refresh` - Force refresh scan (ignore cache)
+- `--verbose` - Show detailed scan information
 
 **Detection Methods**:
-1. **Filesystem scanning**: Standard installation directories
-2. **Toolbox integration**: JetBrains Toolbox managed installations
-3. **Registry detection** (Windows): Windows Registry entries
-4. **Version identification**: Automatic version parsing from paths
+1. **JetBrains Toolbox**: Parse Toolbox installations
+2. **System Paths**: Check standard installation directories
+3. **Package Managers**: Query brew, snap, flatpak
+4. **AppImage**: Detect AppImage IDEs
+5. **Custom Paths**: User-defined search paths
 
-**Supported Version Patterns**:
-- `IntelliJIdea2023.2`, `IntelliJIdea2023.3`
-- `PyCharm2023.2`, `PyCharmCE2023.2`
-- `WebStorm2023.2`, `PhpStorm2023.2`
-- `CLion2023.2`, `GoLand2023.2`
-- And all other JetBrains product naming conventions
+**Supported IDEs**:
 
-### Settings Monitoring
+**JetBrains Products**:
+- IntelliJ IDEA (Community, Ultimate)
+- PyCharm (Community, Professional)
+- WebStorm
+- PhpStorm
+- RubyMine
+- CLion
+- GoLand
+- DataGrip
+- Rider
+- Android Studio
+- Fleet
 
-**Monitored Directories**:
-- Configuration files (`options/`, `colors/`, `keymaps/`)
-- Plugin settings (`plugins/`)
-- Code style configurations (`codestyles/`)
-- Live templates (`templates/`)
-- File watchers (`watcherTasks/`)
+**VS Code Family**:
+- Visual Studio Code
+- VS Code Insiders
+- Cursor
+- VSCodium
 
-**File Change Events**:
-- File creation, modification, deletion
-- Directory structure changes
-- Filtered monitoring (ignores temporary files)
-- Real-time change notification
+**Text Editors**:
+- Sublime Text
+- Vim
+- Neovim
+- Emacs
 
-## Synchronization Issues
+**Output Example**:
+```
+Found 8 IDEs:
 
-### Common Issues Detected
+JetBrains IDEs:
+  ✓ IntelliJ IDEA Ultimate 2024.1 (/Applications/IntelliJ IDEA.app)
+  ✓ GoLand 2024.1 (/Applications/GoLand.app)
+  ✓ WebStorm 2024.1 (Toolbox: ~/.local/share/JetBrains/Toolbox/apps/WebStorm)
 
-**Settings Sync Problems**:
-- Conflicting configuration files
-- Corrupted preference files
-- Permission issues on settings directories
-- Version compatibility conflicts
-- Incomplete synchronization
+VS Code Family:
+  ✓ Visual Studio Code 1.85.0 (/Applications/Visual Studio Code.app)
+  ✓ Cursor 0.20.0 (/Applications/Cursor.app)
 
-**Fix Strategies**:
-- Configuration validation and repair
-- Permission correction
-- Conflict resolution with backup
-- Cache clearing and regeneration
-- Settings file format validation
-
-### Fix Process
-
-**Safety Measures**:
-1. **Backup creation**: Automatic backup before any fixes
-2. **Validation**: Settings validation before and after fixes
-3. **Rollback capability**: Restore from backup if fixes fail
-4. **Dry-run mode**: Preview changes without applying
-
-## Configuration
-
-### Environment Variables
-
-The IDE command respects the following environment variables:
-
-- `JETBRAINS_CONFIG_PATH`: Override default configuration path
-- `IDE_MONITOR_INTERVAL`: Set monitoring poll interval (default: 1s)
-- `IDE_DEBUG`: Enable debug logging for IDE operations
-
-### Configuration Files
-
-**System Configuration**:
-- Linux: `~/.config/gzh-manager/ide.yaml`
-- macOS: `~/Library/Application Support/gzh-manager/ide.yaml`
-- Windows: `%APPDATA%\gzh-manager\ide.yaml`
-
-**Configuration Schema**:
-```yaml
-ide:
-  monitoring:
-    enabled: true
-    interval: 1s
-    filter_temp_files: true
-  products:
-    - name: "IntelliJIdea"
-      enabled: true
-      custom_path: "/custom/path/to/config"
-  sync:
-    backup_enabled: true
-    backup_retention: 7  # days
+Text Editors:
+  ✓ Sublime Text 4 (/Applications/Sublime Text.app)
+  ✓ Neovim 0.9.5 (/opt/homebrew/bin/nvim)
+  ✓ Vim 9.0 (/usr/bin/vim)
 ```
 
-## Output Formats
+### 2. IDE Status (`gz ide status`)
 
-### List Command Output
+**Purpose**: Display real-time status of IDEs including running processes and resource usage.
 
-**Table Format (Default)**:
+**Description**: Shows which IDEs are currently running, their resource consumption, and open projects.
+
+```bash
+gz ide status [--running] [--format <format>]
 ```
-Product Name      Version    Installation Path                    Config Path
-IntelliJ IDEA     2023.2     /opt/jetbrains/idea                 ~/.config/JetBrains/IntelliJIdea2023.2
-PyCharm          2023.3     /opt/jetbrains/pycharm              ~/.config/JetBrains/PyCharm2023.3
+
+**Options**:
+- `--running` - Show only running IDEs
+- `--format` - Output format (table, json, yaml)
+- `--watch` - Continuous monitoring mode
+
+**Status Information**:
+- IDE name and version
+- Process status (running/stopped)
+- Memory usage
+- CPU usage
+- Open projects
+- Uptime
+
+**Output Example**:
+```
+IDE Status Report:
+
+┌─────────────────────┬─────────┬──────────┬──────────┬────────────────────┬──────────┐
+│ IDE                 │ Status  │ Memory   │ CPU      │ Project            │ Uptime   │
+├─────────────────────┼─────────┼──────────┼──────────┼────────────────────┼──────────┤
+│ IntelliJ IDEA 2024.1│ Running │ 2.3 GB   │ 5.2%     │ ~/projects/myapp   │ 2h 15m   │
+│ GoLand 2024.1       │ Running │ 1.8 GB   │ 3.1%     │ ~/go/src/mycli     │ 45m      │
+│ VS Code             │ Running │ 512 MB   │ 2.0%     │ ~/docs             │ 3h 30m   │
+│ WebStorm 2024.1     │ Stopped │ -        │ -        │ -                  │ -        │
+│ Cursor              │ Stopped │ -        │ -        │ -                  │ -        │
+└─────────────────────┴─────────┴──────────┴──────────┴────────────────────┴──────────┘
+
+Total Running: 3 | Total Memory: 4.6 GB | Total CPU: 10.3%
 ```
 
-**JSON Format**:
-```json
-{
-  "installations": [
-    {
-      "product_name": "IntelliJ IDEA",
-      "version": "2023.2",
-      "installation_path": "/opt/jetbrains/idea",
-      "config_path": "~/.config/JetBrains/IntelliJIdea2023.2",
-      "detected_at": "2025-01-04T10:30:00Z"
-    }
-  ]
+### 3. Open Project (`gz ide open`)
+
+**Purpose**: Open a project directory in a detected IDE.
+
+**Description**: Intelligently opens projects in the appropriate IDE based on project type and user preferences.
+
+```bash
+gz ide open <project-path> [--ide <ide-name>]
+```
+
+**Options**:
+- `--ide` - Specific IDE to use (optional)
+- `--new-window` - Open in new window
+- `--wait` - Wait for IDE to close
+
+**Smart Detection**:
+1. **Project Type Detection**:
+   - Go projects → GoLand (if available) or VS Code
+   - Python projects → PyCharm or VS Code
+   - Java/Kotlin → IntelliJ IDEA
+   - JavaScript/TypeScript → WebStorm or VS Code
+   - Generic → User's default IDE
+
+2. **Configuration Files**:
+   - `.idea/` → JetBrains IDE
+   - `.vscode/` → VS Code
+   - `go.mod` → GoLand
+   - `requirements.txt` → PyCharm
+   - `package.json` → WebStorm
+
+**Examples**:
+```bash
+# Open current directory with auto-detection
+gz ide open .
+
+# Open specific project with auto-detection
+gz ide open ~/projects/myapp
+
+# Open with specific IDE
+gz ide open ~/projects/myapp --ide goland
+
+# Open in new window
+gz ide open ~/projects/another --new-window
+```
+
+### 4. Monitor Settings (`gz ide monitor`)
+
+**Purpose**: Monitor JetBrains IDE configuration changes in real-time.
+
+**Description**: Watches for configuration file changes and detects potential sync issues.
+
+```bash
+gz ide monitor [--product <product>] [--interval <duration>]
+```
+
+**Options**:
+- `--product` - Specific JetBrains product to monitor
+- `--interval` - Check interval (default: 1s)
+- `--filter-temp` - Filter temporary file changes
+
+**Monitored Items**:
+- Configuration files (.xml)
+- Plugin changes
+- Color schemes
+- Keymaps
+- Code styles
+- Live templates
+
+### 5. Fix Sync Issues (`gz ide fix-sync`)
+
+**Purpose**: Automatically resolve JetBrains settings synchronization conflicts.
+
+```bash
+gz ide fix-sync [--dry-run] [--backup]
+```
+
+**Options**:
+- `--dry-run` - Preview changes without applying
+- `--backup` - Create backup before fixing
+- `--force` - Force resolution of conflicts
+
+## Architecture Changes (2025-08)
+
+### Enhanced Detection System
+
+```go
+type IDEDetector struct {
+    cache        *IDECache      // 24-hour cache
+    toolbox      *ToolboxParser // JetBrains Toolbox
+    system       *SystemScanner // System paths
+    packageMgr   *PackageQuery  // brew, snap, etc.
+    appImage     *AppImageScan  // AppImage detection
+}
+
+type IDEInfo struct {
+    Name            string
+    Version         string
+    Path            string
+    InstallMethod   string // toolbox, system, brew, snap, appimage
+    Family          string // jetbrains, vscode, editor
+    Executable      string
+    ConfigPath      string
+    LastDetected    time.Time
 }
 ```
 
-### Monitor Command Output
+### Caching Strategy
 
-**Real-time Monitoring**:
-```
-🔍 Monitoring JetBrains IDE Settings...
-📁 Watching: ~/.config/JetBrains/IntelliJIdea2023.2/
-📁 Watching: ~/.config/JetBrains/PyCharm2023.3/
+```yaml
+ide:
+  cache:
+    enabled: true
+    duration: 24h
+    path: ~/.cache/gz/ide-scan.json
 
-[10:30:15] MODIFIED: ~/.config/JetBrains/IntelliJIdea2023.2/options/editor.xml
-[10:30:16] CREATED:  ~/.config/JetBrains/IntelliJIdea2023.2/keymaps/custom.xml
-[10:30:17] DELETED:  ~/.config/JetBrains/PyCharm2023.3/options/window.xml
-```
+  scan:
+    custom_paths:
+      - ~/Applications
+      - /opt/IDEs
 
-### Fix-Sync Command Output
-
-**Fix Summary**:
-```
-🔧 JetBrains Settings Sync Fix Summary
-=====================================
-
-✅ IntelliJ IDEA 2023.2:
-   - Fixed: Corrupted editor.xml (backed up to editor.xml.backup)
-   - Fixed: Permission issues on options/ directory
-
-⚠️  PyCharm 2023.3:
-   - Skipped: No issues detected
-
-✅ Overall Status: 2 issues fixed, 0 failures
-📁 Backups created in: ~/.config/gzh-manager/ide-backups/2025-01-04_103015/
+    exclude_patterns:
+      - "*.backup"
+      - "*.old"
 ```
 
-## Examples
+## Testing Coverage
 
-### Basic IDE Monitoring
+- IDE package: 40.4% coverage (up from 33.5%)
+- New test files:
+  - `detector_test.go` - IDE detection tests
+  - `status_test.go` - Status monitoring tests
+  - `open_test.go` - Project opening tests
 
-```bash
-# Monitor all JetBrains IDEs
-gz ide monitor
+## Performance Improvements
 
-# Monitor specific product with verbose output
-gz ide monitor --product IntelliJIdea2023.2 --verbose
+### Scan Performance
 
-# List all detected installations
-gz ide list
-```
-
-### Settings Synchronization
-
-```bash
-# Check for sync issues (dry-run)
-gz ide fix-sync --dry-run
-
-# Fix sync issues for all IDEs
-gz ide fix-sync
-
-# Fix sync issues for specific product
-gz ide fix-sync --product PyCharm2023.3
-```
-
-### Troubleshooting Workflow
-
-```bash
-# 1. List all detected IDEs
-gz ide list --format json
-
-# 2. Monitor for changes while reproducing issue
-gz ide monitor --verbose --debug
-
-# 3. Fix any detected synchronization issues
-gz ide fix-sync --dry-run  # Preview fixes
-gz ide fix-sync            # Apply fixes
-
-# 4. Verify monitoring works after fixes
-gz ide monitor --product IntelliJIdea2023.2
-```
-
-## Error Handling
-
-### Common Issues
-
-- **No IDEs detected**: JetBrains products not installed or in non-standard locations
-- **Permission errors**: Insufficient access to settings directories
-- **Configuration corruption**: Invalid or corrupted IDE settings files
-- **Version detection failures**: Unsupported or beta IDE versions
-- **Monitoring failures**: File system permission or resource issues
-
-### Error Recovery
-
-- **Detection issues**: Manual path specification via configuration
-- **Permission problems**: Automatic permission correction with user consent
-- **Corruption issues**: Backup restoration and configuration regeneration
-- **Resource errors**: Graceful degradation and retry mechanisms
-
-## Security Considerations
-
-### File System Access
-
-- Read-only monitoring by default
-- Write access only for fix-sync operations
-- Automatic backup creation before any modifications
-- Permission validation before directory access
-
-### Privacy
-
-- No collection of actual settings content
-- Only file change metadata is processed
-- Local operation - no network communication
-- Configurable monitoring scope
-
-## Performance Considerations
+- **Initial Scan**: ~2-5 seconds (depends on system)
+- **Cached Results**: <100ms
+- **Parallel Detection**: Uses goroutines for concurrent scanning
+- **Smart Caching**: Only rescan if system changes detected
 
 ### Resource Usage
 
-- Minimal CPU usage during monitoring
-- Efficient file system watching (inotify/FSEvents/ReadDirectoryChangesW)
-- Configurable monitoring intervals
-- Automatic cleanup of monitoring resources
+- **Memory**: <50MB during scan
+- **CPU**: Minimal impact (background scanning)
+- **Disk I/O**: Optimized with caching
 
-### Scalability
+## Platform-Specific Features
 
-- Supports monitoring multiple IDE installations simultaneously
-- Efficient filtering of temporary and cache files
-- Bounded memory usage for file change history
-- Graceful handling of large settings directories
+### macOS
+- Scans `/Applications` and `~/Applications`
+- Detects .app bundles
+- JetBrains Toolbox in `~/Library/Application Support/JetBrains/Toolbox`
 
-## Integration
+### Linux
+- Scans `/usr/local/bin`, `/opt`, `~/.local/share`
+- Snap and Flatpak integration
+- AppImage detection in common directories
+- JetBrains Toolbox in `~/.local/share/JetBrains/Toolbox`
 
-### IDE Integration
+### Windows
+- Scans `Program Files`, `Program Files (x86)`
+- Registry integration for installed programs
+- JetBrains Toolbox in `%LOCALAPPDATA%\JetBrains\Toolbox`
 
-- **Settings Import/Export**: Compatible with JetBrains settings sync
-- **Plugin Development**: Extensible for custom plugin monitoring
-- **Version Control**: Git integration for settings versioning
-- **Backup Systems**: Integration with system backup solutions
+## Configuration
 
-### Development Workflow
+### IDE Preferences
 
-- **CI/CD Integration**: Automated settings validation in pipelines
-- **Team Settings**: Shared settings management across development teams
-- **Environment Sync**: Consistent settings across development environments
-- **Change Tracking**: Audit trail for settings modifications
+```yaml
+ide:
+  defaults:
+    preferred_ide: goland        # Default IDE for 'open' command
+    open_in_new_window: true    # Always open in new window
+
+  project_associations:
+    - pattern: "*.go"
+      ide: goland
+    - pattern: "*.py"
+      ide: pycharm
+    - pattern: "*.js,*.ts"
+      ide: webstorm
+
+  scan:
+    cache_duration: 24h
+    custom_paths:
+      - /custom/ide/location
+
+  monitoring:
+    interval: 1s
+    products:
+      - IntelliJIdea
+      - GoLand
+      - WebStorm
+```
 
 ## Future Enhancements
 
-### Planned Features
+1. **Plugin Management**: Install/update IDE plugins
+2. **Settings Sync**: Cross-IDE settings synchronization
+3. **Project Templates**: Create projects with IDE-specific templates
+4. **Remote Development**: Integration with remote development features
+5. **AI Integration**: IDE-specific AI assistant configuration
+6. **Performance Profiling**: IDE performance monitoring and optimization
+7. **Extension Marketplace**: Custom extension management
 
-- **Settings Backup Cloud Sync**: Automatic cloud backup of IDE settings
-- **Team Settings Management**: Shared team settings synchronization
-- **Change Diff Visualization**: Visual diff of settings changes
-- **Plugin Settings Monitoring**: Detailed plugin configuration tracking
-- **IDE Performance Monitoring**: Resource usage tracking for IDEs
+## Migration Guide
 
-### Advanced Capabilities
+### From Old Commands to New
 
-- **Automated Fix Recommendations**: AI-powered sync issue resolution suggestions
-- **Settings Analytics**: Usage patterns and optimization recommendations
-- **Multi-IDE Synchronization**: Sync settings between different JetBrains products
-- **Remote IDE Management**: Manage IDE settings across remote development environments
+**Old**:
+```bash
+gz ide list
+gz ide monitor
+```
 
-## Best Practices
+**New**:
+```bash
+gz ide scan              # Replaces and enhances 'list'
+gz ide status            # New: Shows running IDEs
+gz ide open .            # New: Opens projects
+gz ide monitor           # Still available, unchanged
+```
 
-### Monitoring Guidelines
+## Troubleshooting
 
-- Use specific product monitoring for focused debugging
-- Enable verbose output only when troubleshooting
-- Regular sync issue checks (weekly recommended)
-- Maintain configuration backups
+### Common Issues
 
-### Settings Management
+1. **IDE Not Detected**:
+   - Run `gz ide scan --refresh --verbose`
+   - Check custom paths in configuration
+   - Verify IDE installation path
 
-- Use version control for critical IDE settings
-- Regular backup of complete IDE configuration
-- Test settings changes in development environment first
-- Document team-specific IDE configuration standards
+2. **Cache Issues**:
+   - Clear cache: `rm ~/.cache/gz/ide-scan.json`
+   - Force refresh: `gz ide scan --refresh`
 
-### Performance Optimization
+3. **Open Command Fails**:
+   - Verify IDE is detected: `gz ide scan`
+   - Check IDE executable permissions
+   - Try specifying IDE explicitly: `--ide <name>`
 
-- Monitor only actively used IDEs to reduce resource usage
-- Configure appropriate monitoring intervals based on usage patterns
-- Clean up old backup files regularly
-- Use dry-run mode for validation before applying fixes
+## Documentation
 
-## Implementation Status
+- User Guide: `docs/30-features/35-ide-management.md`
+- API Reference: `docs/50-api-reference/ide-commands.md`
+- Configuration: `docs/40-configuration/ide-config.md`
 
-- ✅ **Core monitoring functionality**: Real-time file system monitoring
-- ✅ **Cross-platform support**: Linux, macOS, Windows compatibility
-- ✅ **Product detection**: Automatic JetBrains IDE detection
-- ✅ **Settings sync fixes**: Basic synchronization issue resolution
-- ✅ **List installations**: Complete IDE installation enumeration
-- 🚧 **Advanced sync algorithms**: Enhanced conflict resolution (planned)
-- 📋 **Cloud backup integration**: Remote settings backup (planned)
-- 📋 **Team settings management**: Shared configuration sync (planned)
+## Security Considerations
+
+1. **Path Validation**: Validate all file paths before execution
+2. **Command Injection**: Sanitize all shell command arguments
+3. **Configuration Access**: Respect file system permissions
+4. **Cache Security**: Store cache in user-specific directory
+5. **Process Monitoring**: Only show user's own processes
