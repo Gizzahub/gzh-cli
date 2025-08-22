@@ -38,7 +38,7 @@ Supported IDE names and aliases:
 
 Path resolution:
 - "." or empty: current directory
-- Relative path: resolved from current directory  
+- Relative path: resolved from current directory
 - Absolute path: used as-is
 - Project name: searches in common project directories
 

@@ -12,10 +12,10 @@ import (
 
 func TestShouldRunInBackground(t *testing.T) {
 	tests := []struct {
-		name       string
-		options    openOptions
-		ide        IDE
-		expected   bool
+		name     string
+		options  openOptions
+		ide      IDE
+		expected bool
 	}{
 		{
 			name: "Explicit background flag",
@@ -38,7 +38,7 @@ func TestShouldRunInBackground(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "JetBrains IDE default",
+			name:    "JetBrains IDE default",
 			options: openOptions{},
 			ide: IDE{
 				Type: "jetbrains",
@@ -47,7 +47,7 @@ func TestShouldRunInBackground(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "VS Code default",
+			name:    "VS Code default",
 			options: openOptions{},
 			ide: IDE{
 				Type: "vscode",
@@ -56,7 +56,7 @@ func TestShouldRunInBackground(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "Vim should wait",
+			name:    "Vim should wait",
 			options: openOptions{},
 			ide: IDE{
 				Type: "other",
@@ -65,7 +65,7 @@ func TestShouldRunInBackground(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "Neovim should wait",
+			name:    "Neovim should wait",
 			options: openOptions{},
 			ide: IDE{
 				Type: "other",
@@ -74,7 +74,7 @@ func TestShouldRunInBackground(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "Emacs should wait",
+			name:    "Emacs should wait",
 			options: openOptions{},
 			ide: IDE{
 				Type: "other",
@@ -83,7 +83,7 @@ func TestShouldRunInBackground(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "Sublime Text should run in background",
+			name:    "Sublime Text should run in background",
 			options: openOptions{},
 			ide: IDE{
 				Type: "other",
@@ -92,7 +92,7 @@ func TestShouldRunInBackground(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "Unknown other IDE default to background",
+			name:    "Unknown other IDE default to background",
 			options: openOptions{},
 			ide: IDE{
 				Type: "other",
