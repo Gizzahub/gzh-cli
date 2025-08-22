@@ -23,10 +23,10 @@ func TestNewIDECmd(t *testing.T) {
 
 	// Check subcommands
 	subcommands := cmd.Commands()
-	assert.Len(t, subcommands, 3)
+	assert.Len(t, subcommands, 6)
 
 	// Verify subcommands exist
-	var monitorCmd, listCmd, fixSyncCmd *cobra.Command
+	var monitorCmd, listCmd, fixSyncCmd, scanCmd, statusCmd, openCmd *cobra.Command
 
 	for _, subcmd := range subcommands {
 		switch subcmd.Use {
@@ -36,6 +36,12 @@ func TestNewIDECmd(t *testing.T) {
 			listCmd = subcmd
 		case "fix-sync":
 			fixSyncCmd = subcmd
+		case "scan":
+			scanCmd = subcmd
+		case "status":
+			statusCmd = subcmd
+		case "open <ide-name> [path]":
+			openCmd = subcmd
 		}
 	}
 
@@ -50,6 +56,18 @@ func TestNewIDECmd(t *testing.T) {
 	assert.NotNil(t, fixSyncCmd)
 	assert.Equal(t, "fix-sync", fixSyncCmd.Use)
 	assert.Equal(t, "Fix JetBrains settings synchronization issues", fixSyncCmd.Short)
+
+	assert.NotNil(t, scanCmd)
+	assert.Equal(t, "scan", scanCmd.Use)
+	assert.Equal(t, "Scan for installed IDEs", scanCmd.Short)
+
+	assert.NotNil(t, statusCmd)
+	assert.Equal(t, "status", statusCmd.Use)
+	assert.Equal(t, "Show status of installed IDEs", statusCmd.Short)
+
+	assert.NotNil(t, openCmd)
+	assert.Equal(t, "open <ide-name> [path]", openCmd.Use)
+	assert.Equal(t, "Open an IDE with specified project path", openCmd.Short)
 }
 
 func TestDefaultIDEOptions(t *testing.T) {
