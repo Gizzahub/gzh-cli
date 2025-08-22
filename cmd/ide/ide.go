@@ -55,21 +55,32 @@ func NewIDECmd(ctx context.Context) *cobra.Command {
 		Short: "Monitor and manage IDE configuration changes",
 		Long: `Monitor and manage IDE configuration changes, particularly JetBrains products.
 
-This command provides monitoring and management capabilities for IDE settings:
+This command provides comprehensive IDE management capabilities:
+- IDE detection and scanning across multiple platforms
+- Status monitoring with detailed information
+- Easy IDE launching from command line
 - Real-time monitoring of JetBrains settings directories
 - Cross-platform support for Linux, macOS, and Windows
-- Automatic detection of JetBrains products and versions
 - Settings synchronization issue detection and fixes
-- File change tracking with filtering capabilities
 
 Supported IDEs:
-- IntelliJ IDEA (Community, Ultimate)
-- PyCharm (Community, Professional)
-- WebStorm, PhpStorm, RubyMine
-- CLion, GoLand, DataGrip
-- Android Studio, Rider
+- JetBrains family: IntelliJ IDEA, PyCharm, WebStorm, GoLand, CLion, etc.
+- VS Code family: VS Code, VS Code Insiders, Cursor, VSCodium
+- Other editors: Sublime Text, Vim, Neovim, Emacs
 
 Examples:
+  # Scan for installed IDEs
+  gz ide scan
+
+  # Show IDE status information
+  gz ide status
+
+  # Open an IDE in current directory
+  gz ide open pycharm
+
+  # Open IDE in specific directory
+  gz ide open code ~/projects/myapp
+
   # Monitor all JetBrains settings
   gz ide monitor
 
@@ -87,6 +98,9 @@ Examples:
 	cmd.AddCommand(newIDEMonitorCmd(ctx))
 	cmd.AddCommand(newIDEListCmd())
 	cmd.AddCommand(newIDEFixSyncCmd())
+	cmd.AddCommand(newIDEScanCmd())
+	cmd.AddCommand(newIDEStatusCmd())
+	cmd.AddCommand(newIDEOpenCmd())
 
 	return cmd
 }
