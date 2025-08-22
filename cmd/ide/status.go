@@ -156,6 +156,7 @@ func (o *statusOptions) outputTable(ides []IDE) error {
 			fmt.Printf("🔹 %s\n", ide.Name)
 			fmt.Printf("   Version: %s\n", ide.Version)
 			fmt.Printf("   Type: %s\n", ide.Type)
+			fmt.Printf("   Install Method: %s\n", o.formatInstallMethod(ide.InstallMethod, ide.InstallPath))
 			fmt.Printf("   Executable: %s\n", ide.Executable)
 			fmt.Printf("   Last Updated: %s\n", o.formatDetailedTime(ide.LastUpdated))
 			if len(ide.Aliases) > 0 {
@@ -185,6 +186,8 @@ func (o *statusOptions) outputJSON(ides []IDE) error {
 		fmt.Printf("      \"executable\": \"%s\",\n", o.escapeJSON(ide.Executable))
 		fmt.Printf("      \"version\": \"%s\",\n", o.escapeJSON(ide.Version))
 		fmt.Printf("      \"type\": \"%s\",\n", o.escapeJSON(ide.Type))
+		fmt.Printf("      \"install_method\": \"%s\",\n", o.escapeJSON(ide.InstallMethod))
+		fmt.Printf("      \"install_path\": \"%s\",\n", o.escapeJSON(ide.InstallPath))
 		fmt.Printf("      \"last_updated\": \"%s\",\n", ide.LastUpdated.Format(time.RFC3339))
 		fmt.Printf("      \"aliases\": [")
 
@@ -219,6 +222,8 @@ func (o *statusOptions) outputYAML(ides []IDE) error {
 		fmt.Printf("    executable: \"%s\"\n", o.escapeYAML(ide.Executable))
 		fmt.Printf("    version: \"%s\"\n", o.escapeYAML(ide.Version))
 		fmt.Printf("    type: \"%s\"\n", o.escapeYAML(ide.Type))
+		fmt.Printf("    install_method: \"%s\"\n", o.escapeYAML(ide.InstallMethod))
+		fmt.Printf("    install_path: \"%s\"\n", o.escapeYAML(ide.InstallPath))
 		fmt.Printf("    last_updated: \"%s\"\n", ide.LastUpdated.Format(time.RFC3339))
 		fmt.Printf("    aliases:\n")
 
@@ -297,4 +302,26 @@ func (o *statusOptions) escapeYAML(s string) string {
 	s = strings.ReplaceAll(s, "\n", "\\n")
 	s = strings.ReplaceAll(s, "\r", "\\r")
 	return s
+}
+
+func (o *statusOptions) formatInstallMethod(method, path string) string {
+	switch method {
+	case "appimage":
+		return "AppImage"
+	case "pacman":
+		return "Pacman (Arch Linux)"
+	case "snap":
+		return "Snap"
+	case "flatpak":
+		return "Flatpak"
+	case "toolbox":
+		return "JetBrains Toolbox"
+	case "direct":
+		return "Direct Installation"
+	default:
+		if method != "" {
+			return method
+		}
+		return "Unknown"
+	}
 }
