@@ -35,9 +35,9 @@
 
 
 - **Git 플랫폼 통합**: GitHub, GitLab, Gitea, Gogs를 하나의 인터페이스로 관리
-- **IDE 모니터링**: JetBrains 제품군의 설정 변경 실시간 감지 및 동기화 문제 해결
-- **코드 품질 관리**: 다중 언어 포매팅/린팅 도구의 통합 실행 및 관리
-- **성능 프로파일링**: Go pprof 기반의 간편한 성능 분석 도구
+- **향상된 IDE 관리**: JetBrains/VS Code 통합 스캔, 상태 모니터링, 프로젝트 열기 지원
+- **코드 품질 관리**: 다중 언어 포매팅/린팅 도구의 통합 실행 및 관리 (테스트 커버리지 34.4%↑)
+- **성능 프로파일링**: Go pprof 기반의 간편한 성능 분석 도구 (테스트 커버리지 36.6%↑)
 - **개발 환경 설정**: AWS, Docker, Kubernetes, SSH 설정 관리
 - **네트워크 환경 전환**: WiFi, VPN, DNS, 프록시 설정 자동 전환
 
@@ -46,6 +46,7 @@
 
 
 - **대량 클론 도구**: GitHub, GitLab, Gitea, Gogs에서 전체 조직의 리포지토리를 일괄 클론
+- **크로스 플랫폼 동기화**: 서로 다른 Git 플랫폼 간 리포지토리 동기화 (코드, 이슈, 위키, 릴리스)
 - **고급 클론 전략**: reset, pull, fetch, rebase 모드 지원으로 기존 리포지토리 동기화 방식 제어
 - **재개 가능한 작업**: 중단된 클론 작업을 이어서 진행할 수 있는 상태 관리 시스템
 - **병렬 처리**: 최대 50개의 동시 클론 작업으로 대규모 조직 처리 성능 향상
@@ -97,6 +98,11 @@ gz synclone validate --config examples/synclone.yaml
 # GitHub 조직의 저장소 클론
 gz synclone github --orgName myorg --targetPath ~/repos/myorg --token $GITHUB_TOKEN
 
+# IDE 시스템 스캔 및 상태 확인
+gz ide scan          # 설치된 IDE 스캔
+gz ide status        # IDE 상태 확인
+gz ide open project-path  # IDE로 프로젝트 열기
+
 # JetBrains IDE 설정 모니터링
 gz ide monitor
 
@@ -128,7 +134,7 @@ Usage:
 
 Available Commands:
   dev-env     Manage development environment configurations
-  git         🔗 통합 Git 플랫폼 관리 도구 (config, webhook, event)
+  git         🔗 통합 Git 플랫폼 관리 도구 (repo, webhook, event)
   ide         Monitor and manage IDE configuration changes
   net-env     Manage network environment transitions
   pm          Manage development tools and package managers
@@ -154,7 +160,8 @@ Use "gz [command] --help" for more information about a command.
 
 ### 주요 기능
 
-- **리포지토리 클론 및 업데이트**: 스마트 clone-or-update 전략
+- **리포지토리 라이프사이클**: 생성, 삭제, 아카이브, 클론 및 업데이트
+- **크로스 플랫폼 동기화**: GitHub ↔ GitLab ↔ Gitea 간 리포지토리 동기화
 - **웹훅 관리**: GitHub, GitLab 웹훅 통합 관리
 - **이벤트 처리**: Git 플랫폼 이벤트 수신 및 처리
 - **설정 관리**: 다중 플랫폼 설정 통합
@@ -165,26 +172,49 @@ Use "gz [command] --help" for more information about a command.
 gz git repo clone-or-update https://github.com/user/repo.git
 gz git repo clone-or-update https://github.com/user/repo.git --strategy rebase
 
+# 리포지토리 생성/삭제
+gz git repo create --name myrepo --org myorg --private
+gz git repo delete --name myrepo --org myorg --confirm
+
+# 크로스 플랫폼 동기화
+gz git repo sync --from github:org/repo --to gitlab:group/repo
+gz git repo sync --from github:org --to gitea:org --create-missing
+
 # 웹훅 관리
 gz git webhook list --org myorg
 gz git webhook create --org myorg --repo myrepo --url https://api.example.com/webhook
+
+# 이벤트 서버
+gz git event server --port 8080
 ```
 
 ## 🖥️ IDE 모니터링 및 관리 (`gz ide`)
 
-JetBrains 제품군의 설정 변경을 실시간으로 모니터링하고 동기화 문제를 자동으로 해결합니다.
+다양한 IDE의 설정을 관리하고 프로젝트를 열 수 있는 통합 IDE 관리 도구입니다.
 
 ### 지원하는 IDE
 
+**JetBrains 제품군:**
 - IntelliJ IDEA (Community, Ultimate)
 - PyCharm (Community, Professional)
 - WebStorm, PhpStorm, RubyMine
 - CLion, GoLand, DataGrip
 - Android Studio, Rider
 
+**VS Code 계열:**
+- Visual Studio Code
+- VS Code Insiders
+- Cursor
+- VSCodium
+
+**기타 에디터:**
+- Sublime Text, Vim, Neovim, Emacs
 
 ### 주요 기능
 
+- **IDE 스캔**: 시스템에 설치된 모든 IDE 자동 감지 (캐시 지원)
+- **상태 모니터링**: IDE 프로세스, 메모리, 프로젝트 상태 실시간 확인
+- **프로젝트 열기**: 감지된 IDE로 프로젝트 직접 열기
 - **실시간 모니터링**: 설정 파일 변경 감지
 - **동기화 수정**: 설정 충돌 자동 해결
 - **크로스플랫폼 지원**: Linux, macOS, Windows
@@ -192,16 +222,28 @@ JetBrains 제품군의 설정 변경을 실시간으로 모니터링하고 동�
 
 
 ```bash
-# 모든 JetBrains IDE 모니터링
-gz ide monitor
+# IDE 스캔 (24시간 캐시)
+gz ide scan
+gz ide scan --refresh  # 캐시 무시하고 새로 스캔
+gz ide scan --verbose  # 상세 정보 표시
 
-# 특정 제품 모니터링
+# IDE 상태 확인
+gz ide status          # 모든 IDE 상태
+gz ide status --running  # 실행 중인 IDE만
+gz ide status --format json  # JSON 출력
+
+# IDE로 프로젝트 열기
+gz ide open /path/to/project
+gz ide open . --ide goland  # 특정 IDE로 열기
+
+# JetBrains IDE 모니터링
+gz ide monitor
 gz ide monitor --product IntelliJIdea2023.2
 
 # 동기화 문제 수정
 gz ide fix-sync
 
-# 설치된 IDE 목록
+# 설치된 IDE 목록 (레거시)
 gz ide list
 ```
 
@@ -407,6 +449,14 @@ gz synclone validate --config synclone.yaml
 gz git repo clone-or-update https://github.com/user/repo.git
 gz git repo clone-or-update https://github.com/user/repo.git --branch develop --strategy rebase
 
+# 리포지토리 생성/삭제
+gz git repo create --name myrepo --org myorg --private
+gz git repo delete --name myrepo --org myorg --confirm
+
+# 크로스 플랫폼 동기화
+gz git repo sync --from github:org/repo --to gitlab:group/repo
+gz git repo sync --from github:org --to gitea:org --create-missing
+
 # 웹훅 관리
 gz git webhook list --org myorg
 gz git webhook create --org myorg --repo myrepo --url https://example.com/hook
@@ -439,12 +489,24 @@ gz quality version
 ### `gz ide` - IDE 관리
 
 ```bash
-# 실시간 모니터링
+# IDE 스캔 및 감지
+gz ide scan                  # 설치된 IDE 스캔 (24시간 캐시)
+gz ide scan --refresh        # 캐시 무시하고 새로 스캔
+
+# IDE 상태 확인
+gz ide status                # 모든 IDE 상태
+gz ide status --running      # 실행 중인 IDE만
+
+# IDE로 프로젝트 열기
+gz ide open /path/to/project
+gz ide open . --ide goland   # 특정 IDE로 열기
+
+# 실시간 모니터링 (JetBrains)
 gz ide monitor
 gz ide monitor --product IntelliJIdea2023.2
 
 # 동기화 문제 수정
-gz ide fix-sync --dry-run  # 미리보기
+gz ide fix-sync --dry-run    # 미리보기
 gz ide fix-sync
 
 # IDE 목록 확인

@@ -6,19 +6,23 @@
 
 ### 리포지토리 관리
 - **다중 플랫폼 동기화**: GitHub/GitLab/Gitea/Gogs 조직 전체 저장소 일괄 클론 및 동기화
+- **크로스 플랫폼 동기화**: `gz git repo sync`로 GitHub ↔ GitLab ↔ Gitea 간 저장소 동기화
 - **스마트 전략**: 다양한 동기화 전략 (reset, pull, fetch, rebase, clone)
-- **Git 통합 관리**: 저장소 설정, 웹훅, 이벤트 통합 인터페이스
+- **Git 통합 관리**: 저장소 생성/삭제/아카이브, 웹훅, 이벤트 통합 인터페이스
 
 ### 개발 환경 관리
 - **클라우드 프로필**: AWS/GCP/Azure 클라우드 설정 관리
-- **IDE 모니터링**: JetBrains IDE 설정 실시간 감지 및 동기화
+- **향상된 IDE 관리**: 
+  - **IDE 스캔**: 시스템에 설치된 모든 IDE 자동 감지 (JetBrains, VS Code, 기타 에디터)
+  - **상태 모니터링**: IDE 프로세스, 메모리, 프로젝트 상태 실시간 확인
+  - **프로젝트 열기**: 감지된 IDE로 프로젝트 직접 열기
 - **패키지 관리**: asdf, Homebrew, SDKMAN, npm, pip 등 통합 관리
 - **네트워크 관리**: WiFi 프로필, VPN, 프록시 자동 전환
 
 ### 코드 품질 및 성능
-- **코드 품질 관리**: 다중 언어 포매팅/린팅 도구 통합 실행
-- **성능 프로파일링**: Go pprof 기반 성능 분석 도구
-- **진단 도구**: 시스템 상태 및 설정 문제 진단
+- **코드 품질 관리**: 다중 언어 포매팅/린팅 도구 통합 실행 (테스트 커버리지 34.4%)
+- **성능 프로파일링**: Go pprof 기반 성능 분석 도구 (테스트 커버리지 36.6%)
+- **진단 도구**: 시스템 상태 및 설정 문제 진단 (테스트 커버리지 10.3%)
 
 ## 🎯 주요 명령어
 
@@ -29,11 +33,17 @@ gz synclone github --org myorg
 # 단일 저장소 관리
 gz git repo clone-or-update https://github.com/user/repo.git
 
+# 크로스 플랫폼 동기화
+gz git repo sync --from github:org/repo --to gitlab:group/repo
+
+# IDE 관리
+gz ide scan          # 설치된 IDE 스캔
+gz ide status        # IDE 상태 확인
+gz ide open .        # 현재 디렉토리를 IDE로 열기
+gz ide monitor       # JetBrains IDE 모니터링
+
 # 코드 품질 검사
 gz quality run
-
-# IDE 모니터링
-gz ide monitor
 
 # 개발 환경 관리
 gz dev-env aws setup
@@ -74,9 +84,10 @@ gz profile server
 - Windows (WSL 권장)
 
 ### 개발 도구
-- JetBrains IDEs (IntelliJ, GoLand, WebStorm, 등)
-- VS Code
-- 다양한 패키지 매니저 및 도구체인
+- **JetBrains IDEs**: IntelliJ IDEA, GoLand, WebStorm, PyCharm, 등
+- **VS Code 계열**: Visual Studio Code, VS Code Insiders, Cursor, VSCodium
+- **기타 에디터**: Sublime Text, Vim, Neovim, Emacs
+- **패키지 매니저**: asdf, Homebrew, SDKMAN, npm, pip, cargo
 
 ## 🚀 시작하기
 
@@ -102,5 +113,6 @@ gz profile server
 
 **프로젝트**: gzh-cli
 **바이너리 이름**: `gz`
-**최근 업데이트**: 2025-08-19
-**문서 버전**: 2.0.0
+**최근 업데이트**: 2025-08-22
+**문서 버전**: 2.1.0
+**테스트 커버리지**: Git (91.7%), Shell (69.2%), IDE (40.4%), Profile (36.6%), Quality (34.4%), Doctor (10.3%)

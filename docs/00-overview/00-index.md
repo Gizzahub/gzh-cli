@@ -15,7 +15,7 @@ Complete documentation map for the gzh-cli project, organized for easy navigatio
 
 ### New Users
 1. **Installation**: See [Getting Started](../10-getting-started/)
-2. **First Commands**: Try `gz synclone`, `gz quality run`, `gz ide monitor`
+2. **First Commands**: Try `gz ide scan`, `gz git repo sync`, `gz quality run`
 3. **Configuration**: Set up [Configuration](../40-configuration/40-configuration-guide.md)
 4. **Commands**: Browse [Complete Command Reference](../50-api-reference/50-command-reference.md)
 
@@ -50,21 +50,24 @@ docs/
 #### Repository Management
 - **Quick Start**: [Repository Management](../30-features/31-repository-management.md)
 - **Multi-Platform Sync**: [Synclone Guide](../30-features/30-synclone.md)
-- **Command Details**: [git commands](../50-api-reference/50-command-reference.md#git) | [synclone commands](../50-api-reference/50-command-reference.md#synclone)
+- **Cross-Platform Sync**: `gz git repo sync` for GitHub ↔ GitLab ↔ Gitea synchronization
+- **Command Details**: [git repo commands](../50-api-reference/50-command-reference.md#git-repo) | [git webhook](../50-api-reference/50-command-reference.md#git-webhook) | [synclone commands](../50-api-reference/50-command-reference.md#synclone)
 
 #### Development Environment
-- **IDE Management**: [IDE Features](../30-features/35-ide-management.md)
+- **Enhanced IDE Management**: [IDE Features](../30-features/35-ide-management.md) - Now with `scan`, `status`, `open` commands
+- **IDE Detection**: Support for JetBrains, VS Code family, and popular editors
 - **Environment Setup**: [Development Environment](../30-features/33-development-environment.md)
 - **Network Management**: [Network Features](../30-features/34-network-management.md)
-- **Command Details**: [dev-env commands](../50-api-reference/50-command-reference.md#dev-env) | [net-env commands](../50-api-reference/50-command-reference.md#net-env)
+- **Command Details**: [ide commands](../50-api-reference/50-command-reference.md#ide) | [dev-env commands](../50-api-reference/50-command-reference.md#dev-env) | [net-env commands](../50-api-reference/50-command-reference.md#net-env)
 
 #### Code Quality
-- **Quality Management**: [Quality Features](../30-features/36-quality-management.md)
+- **Quality Management**: [Quality Features](../30-features/36-quality-management.md) - Test coverage improved to 34.4%
 - **Command Details**: [quality commands](../50-api-reference/50-command-reference.md#quality)
 
 #### Performance and Monitoring
-- **Performance Profiling**: [Profiling Features](../30-features/37-performance-profiling.md)
-- **Command Details**: [profile commands](../50-api-reference/50-command-reference.md#profile)
+- **Performance Profiling**: [Profiling Features](../30-features/37-performance-profiling.md) - Test coverage improved to 36.6%
+- **System Health**: Enhanced doctor package with 10.3% test coverage
+- **Command Details**: [profile commands](../50-api-reference/50-command-reference.md#profile) | [doctor commands](../50-api-reference/50-command-reference.md#doctor)
 
 #### Output Formats and Backup
 - **New Features**: [Output Formats & Backup](../30-features/32-output-formats-backup.md)
@@ -199,8 +202,8 @@ docs/
 
 ---
 
-**Last Updated**: 2025-08-19
-**Documentation Version**: 2.0.0
-**CLI Version**: Latest
+**Last Updated**: 2025-08-22
+**Documentation Version**: 2.1.0
+**CLI Version**: Latest (Git package test coverage: 91.7%)
 
 For questions or feedback about this documentation, please see the [Contributing Guide](../60-development/61-contributing.md).
