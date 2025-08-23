@@ -17,11 +17,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
-const (
-	changeTypeCreate = "create"
-	changeTypeUpdate = "update"
-	changeTypeDelete = "delete"
-)
+// Constants moved to shared_types.go
 
 // newDiffCmd creates the diff subcommand.
 func newDiffCmd() *cobra.Command {

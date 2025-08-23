@@ -53,27 +53,7 @@ Examples:
 	return cmd
 }
 
-// GlobalFlags represents global flags for all repo-config commands.
-type GlobalFlags struct {
-	Organization string
-	ConfigFile   string
-	Token        string
-	DryRun       bool
-	Verbose      bool
-	Parallel     int
-	Timeout      string
-}
-
-// addGlobalFlags adds common flags to a command.
-func addGlobalFlags(cmd *cobra.Command, flags *GlobalFlags) {
-	cmd.Flags().StringVarP(&flags.Organization, "org", "o", "", "GitHub organization name")
-	cmd.Flags().StringVarP(&flags.ConfigFile, "config", "c", "", "Configuration file path")
-	cmd.Flags().StringVarP(&flags.Token, "token", "t", "", "GitHub personal access token")
-	cmd.Flags().BoolVar(&flags.DryRun, "dry-run", false, "Preview changes without applying")
-	cmd.Flags().BoolVarP(&flags.Verbose, "verbose", "v", false, "Verbose output")
-	cmd.Flags().IntVar(&flags.Parallel, "parallel", 5, "Number of parallel operations")
-	cmd.Flags().StringVar(&flags.Timeout, "timeout", "30s", "API timeout duration")
-}
+// Global types and functions are now defined in shared_types.go
 
 // newDashboardCmd creates the dashboard subcommand.
 func newDashboardCmd() *cobra.Command {
