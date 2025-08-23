@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package repoconfig
+package diff
 
 import (
 	"context"
@@ -17,10 +17,86 @@ import (
 	"github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
-// Constants moved to shared_types.go
+// Constants for change types
+const (
+	changeTypeCreate = "create"
+	changeTypeUpdate = "update"
+	changeTypeDelete = "delete"
+)
 
-// newDiffCmd creates the diff subcommand.
-func newDiffCmd() *cobra.Command {
+// Visibility constants
+const (
+	visibilityPublic  = "public"
+	visibilityPrivate = "private" 
+)
+
+// GlobalFlags represents global flags for repo-config commands.
+type GlobalFlags struct {
+	Organization string
+	ConfigFile   string
+	Token        string
+	DryRun       bool
+	Verbose      bool
+	Parallel     int
+	Timeout      string
+}
+
+// addGlobalFlags adds common flags to a command.
+func addGlobalFlags(cmd *cobra.Command, flags *GlobalFlags) {
+	cmd.Flags().StringVarP(&flags.Organization, "org", "o", "", "GitHub organization name")
+	cmd.Flags().StringVarP(&flags.ConfigFile, "config", "c", "", "Configuration file path")
+	cmd.Flags().StringVarP(&flags.Token, "token", "t", "", "GitHub personal access token")
+	cmd.Flags().BoolVar(&flags.DryRun, "dry-run", false, "Preview changes without applying")
+	cmd.Flags().BoolVarP(&flags.Verbose, "verbose", "v", false, "Verbose output")
+	cmd.Flags().IntVar(&flags.Parallel, "parallel", 5, "Number of parallel operations")
+	cmd.Flags().StringVar(&flags.Timeout, "timeout", "30s", "API timeout duration")
+}
+
+// getActionSymbolWithText returns the symbol with text for action type.
+func getActionSymbolWithText(changeType string) string {
+	switch changeType {
+	case changeTypeCreate:
+		return "➕ Create"
+	case changeTypeUpdate:
+		return "🔄 Update"
+	case changeTypeDelete:
+		return "➖ Delete"
+	default:
+		return "❓ Unknown"
+	}
+}
+
+// truncateString truncates a string to the specified length.
+func truncateString(s string, maxLength int) string {
+	if len(s) <= maxLength {
+		return s
+	}
+
+	if maxLength <= 3 {
+		return s[:maxLength]
+	}
+
+	return s[:maxLength-3] + "..."
+}
+
+// formatTable formats output as table - simplified implementation
+func formatTable(data interface{}) error {
+	fmt.Printf("Table format: %+v\n", data)
+	return nil
+}
+
+// formatJSON formats output as JSON - simplified implementation  
+func formatJSON(data interface{}) error {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(jsonData))
+	return nil
+}
+
+// NewCmd creates the diff subcommand.
+func NewCmd() *cobra.Command {
 	var (
 		flags            GlobalFlags
 		filter           string
@@ -126,13 +202,13 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, i
 	}
 
 	switch format {
-	case formatTable:
+	case "table":
 		if groupByImpact {
 			displayDiffTableByImpact(differences, showValues, detailed)
 		} else {
 			displayDiffTable(differences, showValues)
 		}
-	case formatJSON:
+	case "json":
 		displayDiffJSON(differences)
 	case "unified":
 		displayDiffUnified(differences)
