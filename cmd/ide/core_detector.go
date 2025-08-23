@@ -17,8 +17,10 @@ import (
 )
 
 // Use types from idecore package
-type IDE = idecore.IDE
-type IDECache = idecore.IDECache
+type (
+	IDE      = idecore.IDE
+	IDECache = idecore.IDECache
+)
 
 // IDEDetector handles IDE detection logic
 type IDEDetector struct {
