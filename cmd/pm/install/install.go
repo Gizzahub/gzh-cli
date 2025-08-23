@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package pm
+package install
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newInstallCmd(ctx context.Context) *cobra.Command {
+func NewInstallCmd(ctx context.Context) *cobra.Command {
 	var (
 		manager  string
 		strategy string

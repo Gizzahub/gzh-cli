@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package pm
+package cache
 
 import (
 	"context"
@@ -632,7 +632,7 @@ Examples:
 	return cmd
 }
 
-func newCacheCmd(ctx context.Context) *cobra.Command {
+func NewCacheCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cache",
 		Short: "Manage package manager caches",

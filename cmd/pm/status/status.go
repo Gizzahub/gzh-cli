@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package pm
+package status
 
 import (
 	"context"
@@ -23,7 +23,7 @@ type PackageManagerInfo struct {
 	PackageCount int
 }
 
-func newStatusCmd(ctx context.Context) *cobra.Command {
+func NewStatusCmd(ctx context.Context) *cobra.Command {
 	var (
 		jsonOutput bool
 		manager    string

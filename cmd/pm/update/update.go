@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package pm
+package update
 
 import (
 	"context"
@@ -15,6 +15,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Gizzahub/gzh-cli/cmd/pm/utils"
 	"github.com/Gizzahub/gzh-cli/internal/cli"
 	"github.com/Gizzahub/gzh-cli/internal/pm/compat"
 	"github.com/Gizzahub/gzh-cli/internal/pm/duplicates"
@@ -76,7 +77,7 @@ func (m *ManagerResult) addPluginResult(pr PluginResult) {
 	}
 }
 
-func newUpdateCmd(ctx context.Context) *cobra.Command {
+func NewUpdateCmd(ctx context.Context) *cobra.Command {
 	var (
 		allManagers        bool
 		manager            string
@@ -131,7 +132,7 @@ Examples:
 
 			// Handle selected managers CSV first
 			if managersCSV != "" {
-				selected := parseCSVList(managersCSV)
+				selected := utils.ParseCSVList(managersCSV)
 				if len(selected) == 0 {
 					return fmt.Errorf("no valid managers provided via --managers")
 				}
@@ -178,17 +179,6 @@ func printUpdateResultJSON(res *UpdateRunResult) error {
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	return enc.Encode(res)
-}
-
-func parseCSVList(s string) []string {
-	var list []string
-	for _, p := range strings.Split(s, ",") {
-		item := strings.TrimSpace(p)
-		if item != "" {
-			list = append(list, item)
-		}
-	}
-	return list
 }
 
 // ANSI 컬러 상수.

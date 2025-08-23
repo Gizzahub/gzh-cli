@@ -10,6 +10,14 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
+
+	"github.com/Gizzahub/gzh-cli/cmd/pm/advanced"
+	"github.com/Gizzahub/gzh-cli/cmd/pm/cache"
+	"github.com/Gizzahub/gzh-cli/cmd/pm/doctor"
+	"github.com/Gizzahub/gzh-cli/cmd/pm/export"
+	"github.com/Gizzahub/gzh-cli/cmd/pm/install"
+	"github.com/Gizzahub/gzh-cli/cmd/pm/status"
+	"github.com/Gizzahub/gzh-cli/cmd/pm/update"
 )
 
 // NewPMCmd creates the package manager command for unified package management.
@@ -48,15 +56,15 @@ For detailed configuration, see: ~/.gzh/pm/`,
 	}
 
 	// Register subcommands
-	cmd.AddCommand(newStatusCmd(ctx))
-	cmd.AddCommand(newInstallCmd(ctx))
-	cmd.AddCommand(newUpdateCmd(ctx))
-	cmd.AddCommand(newExportCmd(ctx))
-	cmd.AddCommand(newBootstrapCmd(ctx))
-	cmd.AddCommand(newUpgradeManagersCmd(ctx))
-	cmd.AddCommand(newSyncVersionsCmd(ctx))
-	cmd.AddCommand(newDoctorCmd(ctx))
-	cmd.AddCommand(newCacheCmd(ctx))
+	cmd.AddCommand(status.NewStatusCmd(ctx))
+	cmd.AddCommand(install.NewInstallCmd(ctx))
+	cmd.AddCommand(update.NewUpdateCmd(ctx))
+	cmd.AddCommand(export.NewExportCmd(ctx))
+	cmd.AddCommand(advanced.NewBootstrapCmd(ctx))
+	cmd.AddCommand(advanced.NewUpgradeManagersCmd(ctx))
+	cmd.AddCommand(advanced.NewSyncVersionsCmd(ctx))
+	cmd.AddCommand(doctor.NewDoctorCmd(ctx))
+	cmd.AddCommand(cache.NewCacheCmd(ctx))
 
 	return cmd
 }

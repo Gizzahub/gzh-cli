@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package pm
+package doctor
 
 import (
 	"context"
@@ -13,12 +13,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Gizzahub/gzh-cli/cmd/pm/utils"
 	"github.com/Gizzahub/gzh-cli/internal/cli"
 	"github.com/Gizzahub/gzh-cli/internal/pm/compat"
 	"github.com/Gizzahub/gzh-cli/internal/pm/duplicates"
 )
 
-func newDoctorCmd(ctx context.Context) *cobra.Command {
+func NewDoctorCmd(ctx context.Context) *cobra.Command {
 	var (
 		managersCSV     string
 		compatMode      string
@@ -45,7 +46,7 @@ Examples:
 			if managers == "" {
 				managers = "asdf"
 			}
-			selected := parseCSVList(managers)
+			selected := utils.ParseCSVList(managers)
 			report := DoctorReport{Managers: []DoctorManagerReport{}}
 
 			for _, m := range selected {

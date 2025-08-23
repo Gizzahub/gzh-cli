@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package pm
+package export
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newExportCmd(ctx context.Context) *cobra.Command {
+func NewExportCmd(ctx context.Context) *cobra.Command {
 	var (
 		allManagers bool
 		manager     string

@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package pm
+package advanced
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/pm/upgrade"
 )
 
-func newBootstrapCmd(ctx context.Context) *cobra.Command {
+func NewBootstrapCmd(ctx context.Context) *cobra.Command {
 	var (
 		check      bool
 		install    string
@@ -218,7 +218,7 @@ func runBootstrapInstall(ctx context.Context, manager *bootstrap.BootstrapManage
 	return nil
 }
 
-func newUpgradeManagersCmd(ctx context.Context) *cobra.Command {
+func NewUpgradeManagersCmd(ctx context.Context) *cobra.Command {
 	var (
 		all        bool
 		manager    string
@@ -279,7 +279,7 @@ Examples:
 	return cmd
 }
 
-func newSyncVersionsCmd(ctx context.Context) *cobra.Command {
+func NewSyncVersionsCmd(ctx context.Context) *cobra.Command {
 	var (
 		check    bool
 		fix      bool
