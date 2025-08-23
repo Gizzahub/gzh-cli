@@ -1,21 +1,86 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package ide
+package scan
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
+
+// IDE represents an integrated development environment.
+type IDE struct {
+	Name        string   `json:"name"`
+	Type        string   `json:"type"` // jetbrains, vscode, other
+	Executable  string   `json:"executable"`
+	Version     string   `json:"version"`
+	Aliases     []string `json:"aliases"`
+	ProductCode string   `json:"product_code,omitempty"`
+}
+
+// IDEDetector interface for detecting IDEs
+type IDEDetector interface {
+	DetectIDEs(useCache bool) ([]IDE, error)
+}
+
+// NewIDEDetector creates a new IDE detector - placeholder implementation
+func NewIDEDetector() IDEDetector {
+	return &mockDetector{}
+}
+
+// mockDetector is a simple mock implementation for now
+type mockDetector struct{}
+
+func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
+	// Mock implementation - in reality this would detect actual IDEs
+	return []IDE{
+		{
+			Name:       "VS Code",
+			Type:       "vscode",
+			Executable: "/usr/local/bin/code",
+			Version:    "1.85.0",
+			Aliases:    []string{"code", "vscode"},
+		},
+		{
+			Name:       "PyCharm Professional",
+			Type:       "jetbrains",
+			Executable: "/usr/local/bin/pycharm",
+			Version:    "2023.3.2",
+			Aliases:    []string{"pycharm"},
+		},
+		{
+			Name:       "IntelliJ IDEA Ultimate",
+			Type:       "jetbrains",
+			Executable: "/usr/local/bin/idea",
+			Version:    "2023.3",
+			Aliases:    []string{"idea", "intellij"},
+		},
+		{
+			Name:       "Cursor",
+			Type:       "vscode",
+			Executable: "/usr/local/bin/cursor",
+			Version:    "0.17.3",
+			Aliases:    []string{"cursor"},
+		},
+		{
+			Name:       "Vim",
+			Type:       "other",
+			Executable: "/usr/bin/vim",
+			Version:    "9.0",
+			Aliases:    []string{"vim"},
+		},
+	}, nil
+}
 
 type scanOptions struct {
 	refresh bool
 	verbose bool
 }
 
-// newIDEScanCmd creates the IDE scan subcommand
-func newIDEScanCmd() *cobra.Command {
+// NewCmd creates the IDE scan subcommand
+func NewCmd() *cobra.Command {
 	o := &scanOptions{}
 
 	cmd := &cobra.Command{
@@ -125,7 +190,7 @@ func (o *scanOptions) displayIDEGroup(groupName string, ides []IDE) {
 		if o.verbose {
 			fmt.Printf("\n     Path: %s", ide.Executable)
 			if len(ide.Aliases) > 0 {
-				fmt.Printf("\n     Aliases: %s", fmt.Sprintf("[%s]", joinStrings(ide.Aliases, ", ")))
+				fmt.Printf("\n     Aliases: %s", fmt.Sprintf("[%s]", strings.Join(ide.Aliases, ", ")))
 			}
 		}
 
@@ -152,18 +217,5 @@ func (o *scanOptions) getAvailableAliases(ides []IDE) string {
 		return "none"
 	}
 
-	return joinStrings(aliases, ", ")
-}
-
-func joinStrings(slice []string, separator string) string {
-	if len(slice) == 0 {
-		return ""
-	}
-
-	result := slice[0]
-	for i := 1; i < len(slice); i++ {
-		result += separator + slice[i]
-	}
-
-	return result
+	return strings.Join(aliases, ", ")
 }

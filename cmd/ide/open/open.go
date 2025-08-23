@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package ide
+package open
 
 import (
 	"fmt"
@@ -13,14 +13,72 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// IDE represents an integrated development environment.
+type IDE struct {
+	Name        string   `json:"name"`
+	Type        string   `json:"type"` // jetbrains, vscode, other
+	Executable  string   `json:"executable"`
+	Version     string   `json:"version"`
+	Aliases     []string `json:"aliases"`
+	ProductCode string   `json:"product_code,omitempty"`
+}
+
+// IDEDetector interface for detecting IDEs
+type IDEDetector interface {
+	DetectIDEs(useCache bool) ([]IDE, error)
+	FindIDEByAlias(ides []IDE, alias string) *IDE
+}
+
+// NewIDEDetector creates a new IDE detector - placeholder implementation
+func NewIDEDetector() IDEDetector {
+	return &mockDetector{}
+}
+
+// mockDetector is a simple mock implementation for now
+type mockDetector struct{}
+
+func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
+	// Mock implementation - in reality this would detect actual IDEs
+	return []IDE{
+		{
+			Name:       "VS Code",
+			Type:       "vscode",
+			Executable: "/usr/local/bin/code",
+			Version:    "1.85.0",
+			Aliases:    []string{"code", "vscode"},
+		},
+		{
+			Name:       "PyCharm",
+			Type:       "jetbrains",
+			Executable: "/usr/local/bin/pycharm",
+			Version:    "2023.3.2",
+			Aliases:    []string{"pycharm"},
+		},
+	}, nil
+}
+
+func (d *mockDetector) FindIDEByAlias(ides []IDE, alias string) *IDE {
+	for _, ide := range ides {
+		if strings.EqualFold(ide.Name, alias) {
+			return &ide
+		}
+		for _, ideAlias := range ide.Aliases {
+			if strings.EqualFold(ideAlias, alias) {
+				return &ide
+			}
+		}
+	}
+	return nil
+}
+
 type openOptions struct {
 	verbose    bool
 	background bool
 	wait       bool
 }
 
-// newIDEOpenCmd creates the IDE open subcommand
-func newIDEOpenCmd() *cobra.Command {
+// NewCmd creates the IDE open subcommand
+func NewCmd() *cobra.Command {
 	o := &openOptions{}
 
 	cmd := &cobra.Command{

@@ -5,10 +5,16 @@ package repoconfig
 
 import (
 	"github.com/spf13/cobra"
-	
+
 	"github.com/Gizzahub/gzh-cli/cmd/repo-config/apply"
 	"github.com/Gizzahub/gzh-cli/cmd/repo-config/audit"
+	"github.com/Gizzahub/gzh-cli/cmd/repo-config/dashboard"
 	"github.com/Gizzahub/gzh-cli/cmd/repo-config/diff"
+	"github.com/Gizzahub/gzh-cli/cmd/repo-config/list"
+	"github.com/Gizzahub/gzh-cli/cmd/repo-config/risk"
+	"github.com/Gizzahub/gzh-cli/cmd/repo-config/template"
+	"github.com/Gizzahub/gzh-cli/cmd/repo-config/validate"
+	"github.com/Gizzahub/gzh-cli/cmd/repo-config/webhook"
 )
 
 // NewRepoConfigCmd creates the repo-config command with subcommands.
@@ -44,127 +50,17 @@ Examples:
 	}
 
 	// Add subcommands
-	cmd.AddCommand(newListCmd())
+	cmd.AddCommand(list.NewCmd())
 	cmd.AddCommand(apply.NewCmd())
-	cmd.AddCommand(newValidateCmd())
+	cmd.AddCommand(validate.NewCmd())
 	cmd.AddCommand(diff.NewCmd())
 	cmd.AddCommand(audit.NewCmd())
-	cmd.AddCommand(newTemplateCmd())
-	cmd.AddCommand(newWebhookCmd())
-	cmd.AddCommand(newDashboardCmd())
-	cmd.AddCommand(newRiskAssessmentCmd())
+	cmd.AddCommand(template.NewCmd())
+	cmd.AddCommand(webhook.NewCmd())
+	cmd.AddCommand(dashboard.NewCmd())
+	cmd.AddCommand(risk.NewCmd())
 
 	return cmd
 }
 
 // Global types and functions are now defined in shared_types.go
-
-// newDashboardCmd creates the dashboard subcommand.
-func newDashboardCmd() *cobra.Command {
-	var (
-		flags       GlobalFlags
-		port        int
-		autoRefresh bool
-		refreshRate int
-	)
-
-	cmd := &cobra.Command{
-		Use:   "dashboard",
-		Short: "Start real-time compliance dashboard",
-		Long: `Start a web-based dashboard for real-time repository compliance monitoring.
-
-The dashboard provides:
-- Real-time compliance status across repositories
-- Configuration drift detection
-- Security policy violations
-- Interactive configuration management
-- Historical compliance trends
-
-Features:
-- Live repository status updates
-- Configurable auto-refresh intervals
-- Filter and search capabilities
-- Export compliance reports
-- Visual configuration comparison
-
-Examples:
-  gz repo-config dashboard --org myorg                    # Start dashboard
-  gz repo-config dashboard --port 8080                    # Custom port
-  gz repo-config dashboard --auto-refresh                 # Auto refresh enabled
-  gz repo-config dashboard --refresh-rate 30              # Custom refresh rate`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDashboardCommand(flags, port, autoRefresh, refreshRate)
-		},
-	}
-
-	// Add global flags
-	addGlobalFlags(cmd, &flags)
-
-	// Add dashboard-specific flags
-	cmd.Flags().IntVar(&port, "port", 8080, "Dashboard server port")
-	cmd.Flags().BoolVar(&autoRefresh, "auto-refresh", false, "Enable automatic refresh")
-	cmd.Flags().IntVar(&refreshRate, "refresh-rate", 60, "Auto refresh rate in seconds")
-
-	return cmd
-}
-
-// newRiskAssessmentCmd creates the risk-assessment subcommand.
-func newRiskAssessmentCmd() *cobra.Command {
-	var (
-		flags           GlobalFlags
-		format          string
-		includeArchived bool
-		severityFilter  string
-		outputFile      string
-		riskThreshold   float64
-	)
-
-	cmd := &cobra.Command{
-		Use:   "risk-assessment",
-		Short: "Perform CVSS-based risk assessment",
-		Long: `Perform comprehensive risk assessment using CVSS scoring methodology.
-
-This command analyzes repository configurations and security settings to
-provide risk scores and recommendations based on industry standards.
-
-Risk Assessment Features:
-- CVSS-based vulnerability scoring
-- Configuration weakness detection
-- Security policy compliance analysis
-- Risk trend analysis over time
-- Actionable remediation recommendations
-
-Assessment Categories:
-- Access Control (IAM, permissions, branch protection)
-- Data Protection (encryption, secrets, visibility)
-- Infrastructure Security (webhooks, integrations)
-- Operational Security (monitoring, logging, auditing)
-
-Output Formats:
-- table: Human-readable risk assessment table
-- json: Structured data for integration
-- csv: Spreadsheet-compatible format
-- html: Detailed HTML report
-
-Examples:
-  gz repo-config risk-assessment --org myorg              # Full assessment
-  gz repo-config risk-assessment --severity high          # High severity only
-  gz repo-config risk-assessment --format html            # HTML report
-  gz repo-config risk-assessment --output report.html     # Save to file`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runRiskAssessmentCommand(flags, format, includeArchived, severityFilter, outputFile, riskThreshold)
-		},
-	}
-
-	// Add global flags
-	addGlobalFlags(cmd, &flags)
-
-	// Add risk assessment-specific flags
-	cmd.Flags().StringVar(&format, "format", "table", "Output format (table, json, csv, html)")
-	cmd.Flags().BoolVar(&includeArchived, "include-archived", false, "Include archived repositories")
-	cmd.Flags().StringVar(&severityFilter, "severity", "", "Filter by severity (low, medium, high, critical)")
-	cmd.Flags().StringVar(&outputFile, "output", "", "Output file path")
-	cmd.Flags().Float64Var(&riskThreshold, "risk-threshold", 7.0, "Risk score threshold for critical issues")
-
-	return cmd
-}

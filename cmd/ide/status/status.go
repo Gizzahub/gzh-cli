@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package ide
+package status
 
 import (
 	"fmt"
@@ -11,13 +11,96 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// IDE represents an integrated development environment.
+type IDE struct {
+	Name          string    `json:"name"`
+	Type          string    `json:"type"` // jetbrains, vscode, other
+	Executable    string    `json:"executable"`
+	Version       string    `json:"version"`
+	Aliases       []string  `json:"aliases"`
+	ProductCode   string    `json:"product_code,omitempty"`
+	InstallMethod string    `json:"install_method"`
+	InstallPath   string    `json:"install_path"`
+	LastUpdated   time.Time `json:"last_updated"`
+}
+
+// IDEDetector interface for detecting IDEs
+type IDEDetector interface {
+	DetectIDEs(useCache bool) ([]IDE, error)
+}
+
+// NewIDEDetector creates a new IDE detector - placeholder implementation
+func NewIDEDetector() IDEDetector {
+	return &mockDetector{}
+}
+
+// mockDetector is a simple mock implementation for now
+type mockDetector struct{}
+
+func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
+	// Mock implementation with LastUpdated times for demonstration
+	now := time.Now()
+	return []IDE{
+		{
+			Name:          "VS Code",
+			Type:          "vscode",
+			Executable:    "/usr/local/bin/code",
+			Version:       "1.85.0",
+			Aliases:       []string{"code", "vscode"},
+			InstallMethod: "direct",
+			InstallPath:   "/usr/local/bin",
+			LastUpdated:   now.Add(-2 * time.Hour),
+		},
+		{
+			Name:          "PyCharm Professional",
+			Type:          "jetbrains",
+			Executable:    "/home/user/.local/share/JetBrains/Toolbox/apps/PyCharm-P/ch-0/233.11799.297/bin/pycharm.sh",
+			Version:       "2023.3.2",
+			Aliases:       []string{"pycharm"},
+			InstallMethod: "toolbox",
+			InstallPath:   "/home/user/.local/share/JetBrains/Toolbox/apps/PyCharm-P",
+			LastUpdated:   now.Add(-24 * time.Hour),
+		},
+		{
+			Name:          "IntelliJ IDEA Ultimate",
+			Type:          "jetbrains",
+			Executable:    "/home/user/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/233.11799.241/bin/idea.sh",
+			Version:       "2023.3",
+			Aliases:       []string{"idea", "intellij"},
+			InstallMethod: "toolbox",
+			InstallPath:   "/home/user/.local/share/JetBrains/Toolbox/apps/IDEA-U",
+			LastUpdated:   now.Add(-3 * 24 * time.Hour),
+		},
+		{
+			Name:          "Cursor",
+			Type:          "vscode",
+			Executable:    "/home/user/Apps/cursor.AppImage",
+			Version:       "0.17.3",
+			Aliases:       []string{"cursor"},
+			InstallMethod: "appimage",
+			InstallPath:   "/home/user/Apps",
+			LastUpdated:   now.Add(-7 * 24 * time.Hour),
+		},
+		{
+			Name:          "Vim",
+			Type:          "other",
+			Executable:    "/usr/bin/vim",
+			Version:       "9.0",
+			Aliases:       []string{"vim"},
+			InstallMethod: "pacman",
+			InstallPath:   "vim 9.1.1-1",
+			LastUpdated:   now.Add(-30 * 24 * time.Hour),
+		},
+	}, nil
+}
+
 type statusOptions struct {
 	output  string
 	verbose bool
 }
 
-// newIDEStatusCmd creates the IDE status subcommand
-func newIDEStatusCmd() *cobra.Command {
+// NewCmd creates the IDE status subcommand
+func NewCmd() *cobra.Command {
 	o := &statusOptions{}
 
 	cmd := &cobra.Command{

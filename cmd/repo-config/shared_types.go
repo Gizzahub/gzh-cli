@@ -10,7 +10,7 @@ import (
 // Shared constants for change types
 const (
 	changeTypeCreate = "create"
-	changeTypeUpdate = "update" 
+	changeTypeUpdate = "update"
 	changeTypeDelete = "delete"
 )
 

@@ -27,7 +27,7 @@ const (
 // Visibility constants
 const (
 	visibilityPublic  = "public"
-	visibilityPrivate = "private" 
+	visibilityPrivate = "private"
 )
 
 // GlobalFlags represents global flags for repo-config commands.
@@ -85,7 +85,7 @@ func formatTable(data interface{}) error {
 	return nil
 }
 
-// formatJSON formats output as JSON - simplified implementation  
+// formatJSON formats output as JSON - simplified implementation
 func formatJSON(data interface{}) error {
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
