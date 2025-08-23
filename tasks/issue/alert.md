@@ -1,4 +1,4 @@
-/Users/archmagece/.asdf/installs/haskell/9.14.0.20250819/stack/global-project/stack.yaml. Note: You
+~/.asdf/installs/haskell/9.14.0.20250819/stack/global-project/stack.yaml. Note: You
 can change the snapshot via the snapshot field there.
 Using the latest snapshot lts-24.6.
 
