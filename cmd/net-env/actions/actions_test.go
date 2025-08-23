@@ -23,7 +23,7 @@ func TestDefaultActionsOptions(t *testing.T) {
 }
 
 func TestNewActionsCmd(t *testing.T) {
-	cmd := newActionsCmd()
+	cmd := NewCmd()
 
 	assert.Equal(t, "actions", cmd.Use)
 	assert.Equal(t, "Execute network configuration actions", cmd.Short)
@@ -492,7 +492,7 @@ func TestNewActionsHostsCmd(t *testing.T) {
 }
 
 func TestActionsCmdStructure(t *testing.T) {
-	cmd := newActionsCmd()
+	cmd := NewCmd()
 
 	// Test that the command has proper structure
 	assert.NotNil(t, cmd.Use)

@@ -9,10 +9,10 @@ import (
 )
 
 func TestNewStatusCmd(t *testing.T) {
-	cmd := newStatusCmd()
+	cmd := NewCmd()
 
 	assert.Equal(t, "status", cmd.Use)
-	assert.Equal(t, "Show current network environment status", cmd.Short)
+	assert.Equal(t, "Show network environment status", cmd.Short)
 	assert.NotEmpty(t, cmd.Long)
 	assert.NotNil(t, cmd.RunE)
 
@@ -23,9 +23,9 @@ func TestNewStatusCmd(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, verbose)
 
-	json, err := flags.GetBool("json")
+	format, err := flags.GetString("format")
 	assert.NoError(t, err)
-	assert.False(t, json)
+	assert.Equal(t, "table", format)
 }
 
 func TestStatusOptionsDefaults(t *testing.T) {
@@ -207,13 +207,13 @@ func TestGetWiFiDetails(t *testing.T) {
 
 func TestStatusCommand_ExecutionFlow(t *testing.T) {
 	// Test that the status command can be created and configured
-	cmd := newStatusCmd()
+	cmd := NewCmd()
 
 	// Set flags
 	err := cmd.Flags().Set("verbose", "true")
 	assert.NoError(t, err)
 
-	err = cmd.Flags().Set("json", "false")
+	err = cmd.Flags().Set("format", "json")
 	assert.NoError(t, err)
 
 	// Verify flags are set correctly
@@ -221,9 +221,9 @@ func TestStatusCommand_ExecutionFlow(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, verbose)
 
-	json, err := cmd.Flags().GetBool("json")
+	format, err := cmd.Flags().GetString("format")
 	assert.NoError(t, err)
-	assert.False(t, json)
+	assert.Equal(t, "json", format)
 }
 
 func TestNetworkStatus_EmptyState(t *testing.T) {

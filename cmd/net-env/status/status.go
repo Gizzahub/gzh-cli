@@ -56,6 +56,7 @@ type proxyInfo struct {
 	SOCKS string `json:"socks,omitempty"`
 }
 
+
 func NewLegacyCmd() *cobra.Command {
 	o := &statusOptions{}
 
