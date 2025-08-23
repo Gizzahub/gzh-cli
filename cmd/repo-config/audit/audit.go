@@ -1,13 +1,36 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package repoconfig
+package audit
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 )
+
+// GlobalFlags represents global flags for repo-config commands.
+// This is imported from the parent package structure.
+type GlobalFlags struct {
+	Organization string
+	ConfigFile   string
+	Token        string
+	DryRun       bool
+	Verbose      bool
+	Parallel     int
+	Timeout      string
+}
+
+// addGlobalFlags adds common flags to a command.
+func addGlobalFlags(cmd *cobra.Command, flags *GlobalFlags) {
+	cmd.Flags().StringVarP(&flags.Organization, "org", "o", "", "GitHub organization name")
+	cmd.Flags().StringVarP(&flags.ConfigFile, "config", "c", "", "Configuration file path")
+	cmd.Flags().StringVarP(&flags.Token, "token", "t", "", "GitHub personal access token")
+	cmd.Flags().BoolVar(&flags.DryRun, "dry-run", false, "Preview changes without applying")
+	cmd.Flags().BoolVarP(&flags.Verbose, "verbose", "v", false, "Verbose output")
+	cmd.Flags().IntVar(&flags.Parallel, "parallel", 5, "Number of parallel operations")
+	cmd.Flags().StringVar(&flags.Timeout, "timeout", "30s", "API timeout duration")
+}
 
 // AuditOptions contains basic options for the audit command.
 type AuditOptions struct {
@@ -37,8 +60,8 @@ type AuditOptions struct {
 	DryRun           bool
 }
 
-// newAuditCmd creates the audit subcommand.
-func newAuditCmd() *cobra.Command {
+// NewCmd creates the audit subcommand.
+func NewCmd() *cobra.Command {
 	var (
 		flags      GlobalFlags
 		format     string
@@ -81,5 +104,3 @@ Examples:
 
 	return cmd
 }
-
-// Unused functions removed to fix linter issues

@@ -5,6 +5,8 @@ package repoconfig
 
 import (
 	"github.com/spf13/cobra"
+	
+	"github.com/Gizzahub/gzh-cli/cmd/repo-config/audit"
 )
 
 // NewRepoConfigCmd creates the repo-config command with subcommands.
@@ -44,7 +46,7 @@ Examples:
 	cmd.AddCommand(newApplyCmd())
 	cmd.AddCommand(newValidateCmd())
 	cmd.AddCommand(newDiffCmd())
-	cmd.AddCommand(newAuditCmd())
+	cmd.AddCommand(audit.NewCmd())
 	cmd.AddCommand(newTemplateCmd())
 	cmd.AddCommand(newWebhookCmd())
 	cmd.AddCommand(newDashboardCmd())
