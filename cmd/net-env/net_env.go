@@ -9,7 +9,18 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
+	// "go.uber.org/zap"
+
+	"github.com/Gizzahub/gzh-cli/cmd/net-env/actions"
+	// "github.com/Gizzahub/gzh-cli/cmd/net-env/analysis"
+	"github.com/Gizzahub/gzh-cli/cmd/net-env/cloud"
+	// "github.com/Gizzahub/gzh-cli/cmd/net-env/container"
+	// "github.com/Gizzahub/gzh-cli/cmd/net-env/metrics"
+	"github.com/Gizzahub/gzh-cli/cmd/net-env/profile"
+	"github.com/Gizzahub/gzh-cli/cmd/net-env/status"
+	// "github.com/Gizzahub/gzh-cli/cmd/net-env/switchcmd"
+	"github.com/Gizzahub/gzh-cli/cmd/net-env/tui"
+	// "github.com/Gizzahub/gzh-cli/cmd/net-env/vpn"
 )
 
 func NewNetEnvCmd(ctx context.Context) *cobra.Command {
@@ -167,37 +178,21 @@ Examples:
 		SilenceUsage: true,
 	}
 
-	// Create logger for Docker network management
-	logger, _ := zap.NewProduction()
+	// Create logger and config directory for subcommands that need it (currently commented out)
+	// logger, _ := zap.NewProduction()
+	// configDir := getConfigDirectory()
 
-	// Get config directory
-	configDir := getConfigDirectory()
-
-	// Add TUI command for interactive dashboard
-	cmd.AddCommand(newTUICmd())
-
-	// New unified commands (5 core commands)
-	cmd.AddCommand(newStatusUnifiedCmd())
-	cmd.AddCommand(newSwitchUnifiedCmd())
-	cmd.AddCommand(newProfileUnifiedCmd())
-	cmd.AddCommand(newQuickUnifiedCmd())
-	cmd.AddCommand(newMonitorUnifiedCmd())
-
-	// Legacy commands (deprecated but maintained for compatibility)
-	cmd.AddCommand(newStatusCmd())
-	cmd.AddCommand(newSwitchCmd())
-	cmd.AddCommand(newActionsCmd())
-	cmd.AddCommand(newCloudCmd(ctx))
-	cmd.AddCommand(newDockerNetworkCmd(logger, configDir))      //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newKubernetesNetworkCmd(logger, configDir))  //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newContainerDetectionCmd(logger, configDir)) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newNetworkTopologyCmd(logger, configDir))    //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newVPNHierarchyCmd(logger, configDir))       //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newVPNProfileCmd(logger, configDir))         //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newVPNFailoverCmd(logger, configDir))        //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newNetworkMetricsCmd(logger, configDir))     //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newNetworkAnalysisCmd(logger, configDir))    //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(newOptimalRoutingCmd(logger, configDir))     //nolint:contextcheck // Command setup doesn't require context propagation
+	// Add organized subcommand packages (working packages first)
+	cmd.AddCommand(tui.NewCmd())    // Interactive TUI dashboard
+	cmd.AddCommand(status.NewCmd()) // Network status (unified command)
+	// cmd.AddCommand(switchcmd.NewCmd())                      // Network profile switching (unified command)
+	cmd.AddCommand(profile.NewCmd())  // Profile management + quick actions
+	cmd.AddCommand(actions.NewCmd())  // Network configuration actions
+	cmd.AddCommand(cloud.NewCmd(ctx)) // Cloud provider management
+	// cmd.AddCommand(container.NewCmd(logger, configDir))     // Docker + Kubernetes + container detection
+	// cmd.AddCommand(vpn.NewCmd(logger, configDir))          // VPN hierarchy + profile + failover
+	// cmd.AddCommand(analysis.NewCmd(logger, configDir))     // Network analysis + topology + routing
+	// cmd.AddCommand(metrics.NewCmd(logger, configDir))      // Network metrics + monitoring
 
 	return cmd
 }

@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+// CommonOptions represents shared command options across net-env subcommands
+type CommonOptions struct {
+	ConfigFile string
+	Verbose    bool
+	DryRun     bool
+	ConfigDir  string
+}
+
 // NetworkProfile represents a complete network environment configuration.
 type NetworkProfile struct {
 	Name        string                 `yaml:"name" json:"name"`
