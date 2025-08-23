@@ -12,25 +12,13 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/Gizzahub/gzh-cli/internal/idecore"
 )
 
-// IDE represents an IDE installation
-type IDE struct {
-	Name          string    `json:"name"`
-	Executable    string    `json:"executable"`
-	Version       string    `json:"version"`
-	Type          string    `json:"type"`
-	InstallMethod string    `json:"install_method"`
-	InstallPath   string    `json:"install_path"`
-	LastUpdated   time.Time `json:"last_updated"`
-	Aliases       []string  `json:"aliases"`
-}
-
-// IDECache represents cached IDE scan results
-type IDECache struct {
-	Timestamp time.Time `json:"timestamp"`
-	IDEs      []IDE     `json:"ides"`
-}
+// Use types from idecore package
+type IDE = idecore.IDE
+type IDECache = idecore.IDECache
 
 // IDEDetector handles IDE detection logic
 type IDEDetector struct {
