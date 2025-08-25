@@ -393,10 +393,10 @@ providers:
 To convert your configuration:
 
 1. Create a new `gzh.yaml` file
-2. Copy the structure from the examples above
-3. Transfer your settings from `bulk-clone.yaml`
-4. Update any field names as shown in the comparison
-5. Validate your new configuration:
+1. Copy the structure from the examples above
+1. Transfer your settings from `bulk-clone.yaml`
+1. Update any field names as shown in the comparison
+1. Validate your new configuration:
 
 ```bash
 gz synclone config validate --file gzh.yaml
@@ -537,9 +537,9 @@ The new gzh.yaml format provides better performance through:
 If you encounter issues during migration:
 
 1. **Check the logs**: Run with `--verbose` for detailed output
-2. **Validate configuration**: Use `gzh config validate`
-3. **Use dry run**: Test with `--dry-run` before actual execution
-4. **Compare outputs**: Ensure both old and new configs produce similar results
-5. **Ask for help**: Open an issue with your configuration and error details
+1. **Validate configuration**: Use `gzh config validate`
+1. **Use dry run**: Test with `--dry-run` before actual execution
+1. **Compare outputs**: Ensure both old and new configs produce similar results
+1. **Ask for help**: Open an issue with your configuration and error details
 
 The migration tool and this guide should handle most common scenarios, but complex configurations may require manual adjustment.

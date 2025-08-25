@@ -33,7 +33,6 @@
 
 ### 🏗️ 개발 환경 통합 관리
 
-
 - **Git 플랫폼 통합**: GitHub, GitLab, Gitea, Gogs를 하나의 인터페이스로 관리
 - **향상된 IDE 관리**: JetBrains/VS Code 통합 스캔, 상태 모니터링, 프로젝트 열기 지원
 - **코드 품질 관리**: 다중 언어 포매팅/린팅 도구의 통합 실행 및 관리 (테스트 커버리지 34.4%↑)
@@ -41,9 +40,7 @@
 - **개발 환경 설정**: AWS, Docker, Kubernetes, SSH 설정 관리
 - **네트워크 환경 전환**: WiFi, VPN, DNS, 프록시 설정 자동 전환
 
-
 ### 📦 리포지토리 관리
-
 
 - **대량 클론 도구**: GitHub, GitLab, Gitea, Gogs에서 전체 조직의 리포지토리를 일괄 클론
 - **크로스 플랫폼 동기화**: 서로 다른 Git 플랫폼 간 리포지토리 동기화 (코드, 이슈, 위키, 릴리스)
@@ -52,24 +49,19 @@
 - **병렬 처리**: 최대 50개의 동시 클론 작업으로 대규모 조직 처리 성능 향상
 - **스마트 URL 파싱**: HTTPS, SSH, git:// 등 다양한 Git URL 형식 지원
 
-
 ### 🏢 GitHub 조직 관리
-
 
 - **리포지토리 설정 관리**: 조직 전체 리포지토리의 설정을 템플릿 기반으로 일괄 관리
 - **웹훅 관리**: GitHub 웹훅의 생성, 수정, 삭제 및 모니터링
 - **이벤트 처리**: GitHub 이벤트 수신 및 자동화된 응답 처리
 - **보안 정책 적용**: 조직 차원의 보안 정책 일괄 적용 및 감사
 
-
 ### 🛠️ 개발 도구 통합
-
 
 - **패키지 매니저 업데이트**: asdf, Homebrew, SDKMAN, npm, pip 등 다양한 패키지 매니저 통합 관리
 - **IDE 설정 동기화**: JetBrains 제품군의 설정 충돌 감지 및 자동 복구
 - **코드 품질 자동화**: Go, Python, JavaScript, Rust 등 다중 언어 품질 도구 통합
 - **성능 모니터링**: 애플리케이션 성능 프로파일링 및 벤치마킹
-
 
 ## 빠른 시작
 
@@ -166,7 +158,6 @@ Use "gz [command] --help" for more information about a command.
 - **이벤트 처리**: Git 플랫폼 이벤트 수신 및 처리
 - **설정 관리**: 다중 플랫폼 설정 통합
 
-
 ```bash
 # 리포지토리 스마트 클론/업데이트
 gz git repo clone-or-update https://github.com/user/repo.git
@@ -195,6 +186,7 @@ gz git event server --port 8080
 ### 지원하는 IDE
 
 **JetBrains 제품군:**
+
 - IntelliJ IDEA (Community, Ultimate)
 - PyCharm (Community, Professional)
 - WebStorm, PhpStorm, RubyMine
@@ -202,12 +194,14 @@ gz git event server --port 8080
 - Android Studio, Rider
 
 **VS Code 계열:**
+
 - Visual Studio Code
 - VS Code Insiders
 - Cursor
 - VSCodium
 
 **기타 에디터:**
+
 - Sublime Text, Vim, Neovim, Emacs
 
 ### 주요 기능
@@ -219,7 +213,6 @@ gz git event server --port 8080
 - **동기화 수정**: 설정 충돌 자동 해결
 - **크로스플랫폼 지원**: Linux, macOS, Windows
 - **백업 및 복구**: 설정 변경 전 자동 백업
-
 
 ```bash
 # IDE 스캔 (24시간 캐시)
@@ -261,7 +254,6 @@ gz ide list
 - **C/C++**: clang-format, clang-tidy
 - **기타**: YAML, JSON, Markdown, Shell 스크립트 지원
 
-
 ### 주요 기능
 
 - **통합 실행**: 모든 품질 도구를 하나의 명령어로 실행
@@ -269,7 +261,6 @@ gz ide list
 - **도구 관리**: 품질 도구 설치, 업그레이드, 버전 관리
 - **프로젝트 분석**: 프로젝트에 적합한 도구 자동 추천
 - **CI/CD 통합**: JSON, JUnit XML 출력 형식 지원
-
 
 ```bash
 # 모든 품질 도구 실행
@@ -302,7 +293,6 @@ Go의 표준 pprof를 기반으로 한 간편한 성능 분석 도구입니다.
 - **메모리 프로파일링**: 힙 메모리 사용량 분석
 - **런타임 통계**: 실시간 메모리 및 GC 통계
 
-
 ```bash
 # 런타임 통계 확인
 gz profile stats
@@ -328,7 +318,6 @@ gz profile memory
 - **DNS 관리**: 환경별 DNS 서버 설정
 - **VPN 통합**: VPN 연결 상태 관리
 
-
 ## 🔄 패키지 매니저 통합 (`gz pm`)
 
 다양한 패키지 매니저를 통합 관리하는 도구입니다.
@@ -340,14 +329,12 @@ gz profile memory
 - **개발도구**: npm, pip, cargo, go modules
 - **클라우드**: SDKMAN, kubectl, helm
 
-
 ### 주요 기능
 
 - **일괄 업데이트**: 모든 패키지 매니저 동시 업데이트
 - **선택적 업데이트**: 특정 도구만 업데이트
 - **상태 확인**: 설치된 도구 및 버전 확인
 - **의존성 관리**: 의존성 충돌 감지 및 해결
-
 
 ## 📦 대량 리포지토리 클론 (`gz synclone`)
 
@@ -360,7 +347,6 @@ gz profile memory
 - **Gitea**: 조직, 개인 리포지토리
 - **Gogs**: 조직, 개인 리포지토리 (계획 중)
 
-
 ### 주요 기능
 
 - **병렬 클론**: 최대 50개 동시 작업
@@ -368,16 +354,13 @@ gz profile memory
 - **다양한 전략**: reset, pull, fetch, rebase
 - **상태 관리**: 클론 진행 상황 추적 및 저장
 
-
 ## Installation
 
 ## 시스템 요구사항
 
-
 - **Go**: 1.24.0 이상
 - **Git**: 2.0 이상
 - **OS**: Linux, macOS, Windows
-
 
 ## 설치 방법
 
@@ -566,9 +549,9 @@ gz pm list
 설정 파일은 다음 순서로 우선순위를 가집니다:
 
 1. 환경 변수: `GZH_CONFIG_PATH`
-2. 현재 디렉토리: `./synclone.yaml` 또는 `./synclone.yml`
-3. 사용자 설정: `~/.config/gzh-manager/synclone.yaml`
-4. 시스템 설정: `/etc/gzh-manager/synclone.yaml`
+1. 현재 디렉토리: `./synclone.yaml` 또는 `./synclone.yml`
+1. 사용자 설정: `~/.config/gzh-manager/synclone.yaml`
+1. 시스템 설정: `/etc/gzh-manager/synclone.yaml`
 
 ## 주요 설정 파일
 
@@ -687,12 +670,10 @@ export QUALITY_TIMEOUT=300
 
 ### 성능 메트릭
 
-
 - **시작 시간**: 50ms 이하 목표
 - **바이너리 크기**: ~33MB
 - **메모리 사용량**: 최소한으로 유지
 - **명령어 응답 시간**: 대부분 100ms 이하
-
 
 ### 성능 프로파일링
 
@@ -807,24 +788,22 @@ make regenerate-mocks
 
 ### 핵심 설계 원칙
 
-
 1. **간단한 아키텍처**: CLI 도구에 적합한 직접적인 구현
-2. **서비스별 구현**: 각 Git 플랫폼별 전용 패키지
-3. **설정 기반 설계**: YAML 설정과 스키마 검증
-4. **크로스플랫폼 지원**: Linux, macOS, Windows 네이티브 지원
-5. **원자적 작업**: 백업 및 롤백 기능을 가진 안전한 실행
-6. **표준 도구 통합**: Go의 표준 pprof 등 표준 도구 활용
-
+1. **서비스별 구현**: 각 Git 플랫폼별 전용 패키지
+1. **설정 기반 설계**: YAML 설정과 스키마 검증
+1. **크로스플랫폼 지원**: Linux, macOS, Windows 네이티브 지원
+1. **원자적 작업**: 백업 및 롤백 기능을 가진 안전한 실행
+1. **표준 도구 통합**: Go의 표준 pprof 등 표준 도구 활용
 
 ## 기여 가이드라인
 
 ### 새 기능 추가
 
 1. `specs/`에서 관련 명세 확인 또는 작성
-2. 명세에 따라 구현
-3. 테스트 작성
-4. 문서 업데이트
-5. PR 제출
+1. 명세에 따라 구현
+1. 테스트 작성
+1. 문서 업데이트
+1. PR 제출
 
 ### 코드 스타일
 
@@ -851,23 +830,21 @@ make test-coverage
 ## 기여 방법
 
 1. **이슈 확인**: 기존 이슈를 확인하거나 새 이슈 생성
-2. **Fork**: 리포지토리 포크
-3. **브랜치 생성**: `feature/your-feature-name` 또는 `fix/issue-number`
-4. **구현**: 명세 기반 구현 및 테스트 작성
-5. **품질 검사**: `make lint-all` 실행
-6. **PR 제출**: 상세한 설명과 함께 Pull Request 생성
+1. **Fork**: 리포지토리 포크
+1. **브랜치 생성**: `feature/your-feature-name` 또는 `fix/issue-number`
+1. **구현**: 명세 기반 구현 및 테스트 작성
+1. **품질 검사**: `make lint-all` 실행
+1. **PR 제출**: 상세한 설명과 함께 Pull Request 생성
 
 ## 품질 기준
 
 ### 필수 체크리스트
-
 
 - [ ] 모든 테스트 통과 (`make test`)
 - [ ] 린팅 통과 (`make lint`)
 - [ ] 포매팅 적용 (`make fmt`)
 - [ ] 문서 업데이트 (필요시)
 - [ ] 성능 회귀 없음 (`./scripts/simple-benchmark.sh`)
-
 
 ### 커밋 메시지 형식
 
@@ -880,6 +857,7 @@ make test-coverage
 ```
 
 예시:
+
 ```
 feat(ide): add JetBrains settings sync monitoring
 
@@ -894,7 +872,7 @@ Closes #123
 
 이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
----
+______________________________________________________________________
 
 **개발 중인 기능들**:
 

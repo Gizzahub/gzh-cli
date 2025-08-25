@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Development Environment Management Specification
@@ -36,6 +37,7 @@ The `dev-env` command provides comprehensive development environment management 
 **Purpose**: Provides an interactive terminal UI for managing all development environments
 
 **Features**:
+
 - Visual dashboard showing current environment status
 - Hierarchical menu navigation (Service → Action → Target)
 - Real-time status updates
@@ -43,6 +45,7 @@ The `dev-env` command provides comprehensive development environment management 
 - Search and filter capabilities
 
 **Usage**:
+
 ```bash
 gz dev-env                    # Launch interactive TUI
 gz dev-env --mode compact     # Compact view for smaller terminals
@@ -53,6 +56,7 @@ gz dev-env --mode compact     # Compact view for smaller terminals
 **Purpose**: Switch multiple services to a predefined environment configuration with a single command
 
 **Features**:
+
 - Atomic environment switching (all or nothing)
 - Dependency resolution and ordering
 - Pre/post switch hooks
@@ -60,6 +64,7 @@ gz dev-env --mode compact     # Compact view for smaller terminals
 - Progress tracking with detailed output
 
 **Usage**:
+
 ```bash
 gz dev-env switch-all --env production     # Switch all services to production
 gz dev-env switch-all --env dev --dry-run  # Preview changes without applying
@@ -71,6 +76,7 @@ gz dev-env switch-all --from-file env.yaml # Switch using environment file
 **Purpose**: Display comprehensive status of all configured services
 
 **Features**:
+
 - Unified status table
 - Color-coded status indicators
 - Credential expiration warnings
@@ -78,6 +84,7 @@ gz dev-env switch-all --from-file env.yaml # Switch using environment file
 - Export to various formats (json, yaml, table)
 
 **Usage**:
+
 ```bash
 gz dev-env status                    # Show all services status
 gz dev-env status --service aws      # Show specific service status
@@ -90,6 +97,7 @@ gz dev-env status --check-health     # Include health checks
 **Purpose**: Validate all environment configurations and credentials
 
 **Features**:
+
 - Configuration syntax validation
 - Credential validity checks
 - Permission verification
@@ -97,6 +105,7 @@ gz dev-env status --check-health     # Include health checks
 - Detailed error reporting
 
 **Usage**:
+
 ```bash
 gz dev-env validate                  # Validate all configurations
 gz dev-env validate --service gcp    # Validate specific service
@@ -108,6 +117,7 @@ gz dev-env validate --fix            # Attempt to fix issues
 **Purpose**: Synchronize local configurations with actual service states
 
 **Features**:
+
 - Detect configuration drift
 - Update local configs from services
 - Backup before sync
@@ -115,6 +125,7 @@ gz dev-env validate --fix            # Attempt to fix issues
 - Conflict resolution
 
 **Usage**:
+
 ```bash
 gz dev-env sync                      # Sync all configurations
 gz dev-env sync --service kubernetes # Sync specific service
@@ -127,6 +138,7 @@ gz dev-env sync --direction push     # Push configs to services
 **Purpose**: Quickly switch between frequently used environment presets
 
 **Features**:
+
 - Save current state as preset
 - Instant environment switching
 - Recent environments history
@@ -134,6 +146,7 @@ gz dev-env sync --direction push     # Push configs to services
 - Auto-complete for preset names
 
 **Usage**:
+
 ```bash
 gz dev-env quick save dev            # Save current state as 'dev'
 gz dev-env quick dev                 # Switch to 'dev' preset
@@ -147,6 +160,7 @@ gz dev-env quick last                # Switch to last used environment
 **Purpose**: Manage AWS profiles, credentials, and environment configurations
 
 **Features**:
+
 - Switch between AWS profiles
 - Manage multiple AWS account configurations
 - Handle credential rotation and validation
@@ -154,6 +168,7 @@ gz dev-env quick last                # Switch to last used environment
 - Environment-specific AWS settings
 
 **Usage**:
+
 ```bash
 gz dev-env aws list                    # List available AWS profiles
 gz dev-env aws switch --profile prod   # Switch to production profile
@@ -167,6 +182,7 @@ gz dev-env aws load --name production # Load saved AWS config
 **Purpose**: Manage Google Cloud Platform projects and service account configurations
 
 **Features**:
+
 - Switch between GCP projects
 - Manage service account credentials
 - Handle gcloud configuration contexts
@@ -174,6 +190,7 @@ gz dev-env aws load --name production # Load saved AWS config
 - Environment-specific GCP settings
 
 **Usage**:
+
 ```bash
 gz dev-env gcp list                    # List available GCP projects
 gz dev-env gcp switch --project my-app # Switch to specific project
@@ -187,6 +204,7 @@ gz dev-env gcp load --name production # Load saved GCP config
 **Purpose**: Manage Docker environments, registries, and container configurations
 
 **Features**:
+
 - Switch between Docker contexts
 - Manage container registry configurations
 - Handle Docker daemon settings
@@ -194,6 +212,7 @@ gz dev-env gcp load --name production # Load saved GCP config
 - Container image management
 
 **Usage**:
+
 ```bash
 gz dev-env docker list                 # List Docker contexts
 gz dev-env docker switch --context prod # Switch Docker context
@@ -206,6 +225,7 @@ gz dev-env docker load --name production # Load saved Docker config
 **Purpose**: Manage Kubernetes clusters, contexts, and namespace configurations
 
 **Features**:
+
 - Switch between Kubernetes contexts
 - Manage namespace configurations
 - Handle kubeconfig files
@@ -213,6 +233,7 @@ gz dev-env docker load --name production # Load saved Docker config
 - RBAC and policy management
 
 **Usage**:
+
 ```bash
 gz dev-env kubernetes list             # List available contexts
 gz dev-env kubernetes switch --context staging # Switch context
@@ -225,6 +246,7 @@ gz dev-env kubernetes load --name production # Load saved kubeconfig
 **Purpose**: Manage Azure subscriptions and tenant configurations
 
 **Features**:
+
 - Switch between Azure subscriptions
 - Manage multi-tenant configurations
 - Handle Azure CLI settings
@@ -232,6 +254,7 @@ gz dev-env kubernetes load --name production # Load saved kubeconfig
 - Environment-specific Azure settings
 
 **Usage**:
+
 ```bash
 gz dev-env azure list                  # List available Azure subscriptions
 gz dev-env azure switch --subscription my-sub # Switch to specific subscription
@@ -245,12 +268,14 @@ gz dev-env azure load --name production # Load saved Azure config
 **Purpose**: Manage SSH configurations for Git operations
 
 **Features**:
+
 - Save and load SSH configurations
 - Manage SSH keys for different services
 - Handle SSH config file generation
 - Support for multiple SSH profiles
 
 **Usage**:
+
 ```bash
 gz dev-env ssh save --name production  # Save current SSH config
 gz dev-env ssh load --name production  # Load saved SSH config
@@ -262,6 +287,7 @@ gz dev-env ssh list                   # List saved SSH configurations
 ### Global Configuration
 
 Development environment configurations are stored in:
+
 - `~/.config/gzh-manager/dev-env.yaml` - User-specific settings
 - `/etc/gzh-manager/dev-env.yaml` - System-wide settings
 - Environment variable: `GZH_DEV_ENV_CONFIG`
@@ -747,18 +773,21 @@ gz dev-env template import --url https://templates.example.com/webapp.yaml
 The enhanced `dev-env` command provides a comprehensive solution for managing development environments with focus on:
 
 ### User Experience
+
 - **Interactive TUI**: Visual dashboard for easy environment management
 - **Unified Switching**: Single command to switch entire development stack
 - **Quick Presets**: Fast switching between frequently used environments
 - **Smart Defaults**: Automatic environment detection based on context
 
 ### Automation
+
 - **Hook System**: Automated tasks during environment transitions
 - **Template System**: Reusable environment configurations
 - **Validation**: Automatic configuration and credential validation
 - **Synchronization**: Keep local configs in sync with actual state
 
 ### Safety and Security
+
 - **Atomic Operations**: All-or-nothing environment switches
 - **Rollback Support**: Automatic rollback on failures
 - **Production Safeguards**: Confirmation prompts and access controls

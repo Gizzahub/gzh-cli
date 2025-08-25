@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # 변경 이력
@@ -122,7 +123,7 @@
 - GitHub, GitLab 지원
 - 설정 파일 지원
 
----
+______________________________________________________________________
 
 ### 범례
 

@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Interactive Debugging Shell Specification
@@ -18,6 +19,7 @@ The `shell` command provides an interactive debugging shell (REPL) for real-time
 **Purpose**: Start an interactive debugging shell for real-time system inspection
 
 **Features**:
+
 - Real-time system state inspection
 - Dynamic configuration changes
 - Live debugging and troubleshooting
@@ -28,6 +30,7 @@ The `shell` command provides an interactive debugging shell (REPL) for real-time
 - Signal handling for graceful shutdown
 
 **Usage**:
+
 ```bash
 gz shell                                    # Start interactive shell
 gz shell --timeout 30m                     # Auto-exit after 30 minutes
@@ -36,6 +39,7 @@ gz shell --no-history                      # Disable command history
 ```
 
 **Parameters**:
+
 - `--timeout` (default: 0): Auto-exit timeout (0 = no timeout)
 - `--quiet` (default: false): Quiet mode - minimal output
 - `--no-history` (default: false): Disable command history
@@ -45,18 +49,22 @@ gz shell --no-history                      # Disable command history
 ### System Information Commands
 
 #### help
+
 **Purpose**: Show available commands or detailed help for specific commands
 
 **Usage**:
+
 ```
 gz> help                    # Show all available commands
 gz> help status             # Show help for specific command
 ```
 
 #### status
+
 **Purpose**: Show comprehensive system status
 
 **Features**:
+
 - Health status reporting
 - System uptime tracking
 - Memory usage monitoring
@@ -64,15 +72,18 @@ gz> help status             # Show help for specific command
 - Version information
 
 **Usage**:
+
 ```
 gz> status                  # Show system status in table format
 gz> status --json           # Show system status as JSON
 ```
 
 #### memory
+
 **Purpose**: Display detailed memory usage information
 
 **Features**:
+
 - Current memory allocation
 - Total allocation tracking
 - System memory usage
@@ -81,6 +92,7 @@ gz> status --json           # Show system status as JSON
 - Optional garbage collection trigger
 
 **Usage**:
+
 ```
 gz> memory                  # Show memory usage
 gz> memory --json           # Show memory usage as JSON
@@ -88,9 +100,11 @@ gz> memory --gc             # Run garbage collection first
 ```
 
 #### metrics
+
 **Purpose**: Display system performance metrics
 
 **Features**:
+
 - CPU usage monitoring
 - Memory usage tracking
 - Disk usage statistics
@@ -99,6 +113,7 @@ gz> memory --gc             # Run garbage collection first
 - Watch mode for continuous monitoring
 
 **Usage**:
+
 ```
 gz> metrics                 # Show current metrics
 gz> metrics --json          # Show metrics as JSON
@@ -108,14 +123,17 @@ gz> metrics --watch         # Continuous monitoring mode
 ### Configuration Commands
 
 #### config
+
 **Purpose**: Show and modify system configuration
 
 **Features**:
+
 - Configuration viewing
 - Dynamic configuration updates
 - Configuration validation
 
 **Usage**:
+
 ```
 gz> config list             # List all configuration
 gz> config get <key>        # Get specific configuration value
@@ -127,14 +145,17 @@ gz> config set <key> <value> # Set configuration value
 ### Debugging Commands
 
 #### trace
+
 **Purpose**: Control execution tracing
 
 **Features**:
+
 - Start/stop execution tracing
 - Trace status monitoring
 - Integration with Go's trace package
 
 **Usage**:
+
 ```
 gz> trace start             # Start execution tracing
 gz> trace stop              # Stop execution tracing
@@ -142,14 +163,17 @@ gz> trace status            # Show trace status
 ```
 
 #### profile
+
 **Purpose**: Control performance profiling within shell
 
 **Features**:
+
 - Start/stop profiling sessions
 - Profiling status monitoring
 - Integration with main profile command
 
 **Usage**:
+
 ```
 gz> profile start           # Start performance profiling
 gz> profile stop            # Stop performance profiling
@@ -159,14 +183,17 @@ gz> profile status          # Show profiling status
 ### Plugin Management Commands
 
 #### plugins
+
 **Purpose**: List and manage plugins
 
 **Features**:
+
 - Plugin enumeration
 - Plugin execution
 - Plugin status monitoring
 
 **Usage**:
+
 ```
 gz> plugins list            # List available plugins
 gz> plugins exec <n> <method> # Execute plugin method
@@ -177,14 +204,17 @@ gz> plugins exec <n> <method> # Execute plugin method
 ### Utility Commands
 
 #### history
+
 **Purpose**: Manage command history
 
 **Features**:
+
 - Display command history
 - Clear command history
 - Limit history display count
 
 **Usage**:
+
 ```
 gz> history                 # Show all command history
 gz> history --count 10      # Show last 10 commands
@@ -192,37 +222,45 @@ gz> history --clear         # Clear command history
 ```
 
 #### clear
+
 **Purpose**: Clear the terminal screen
 
 **Usage**:
+
 ```
 gz> clear                   # Clear screen
 ```
 
 #### context
+
 **Purpose**: Show shell execution context
 
 **Features**:
+
 - Shell startup information
 - Session uptime
 - Command execution statistics
 - Shell variables (future feature)
 
 **Usage**:
+
 ```
 gz> context                 # Show context in table format
 gz> context --json          # Show context as JSON
 ```
 
 #### logs
+
 **Purpose**: Display recent system logs
 
 **Features**:
+
 - Recent log viewing
 - Log level filtering
 - Configurable log count
 
 **Usage**:
+
 ```
 gz> logs                    # Show recent logs
 gz> logs --count 20         # Show last 20 log entries
@@ -234,9 +272,11 @@ gz> logs --level error      # Filter by log level
 ### Session Control Commands
 
 #### exit / quit
+
 **Purpose**: Exit the shell gracefully
 
 **Usage**:
+
 ```
 gz> exit                    # Exit shell
 gz> quit                    # Alternative exit command
@@ -247,6 +287,7 @@ gz> quit                    # Alternative exit command
 ### Command History
 
 **Features**:
+
 - Automatic command history tracking
 - Duplicate command filtering
 - History size limitation (100 commands)
@@ -254,6 +295,7 @@ gz> quit                    # Alternative exit command
 - Optional history disabling
 
 **History Management**:
+
 - Commands are automatically added to history
 - Consecutive duplicate commands are filtered out
 - History is limited to the last 100 commands
@@ -262,17 +304,20 @@ gz> quit                    # Alternative exit command
 ### Auto-completion
 
 **Features**:
+
 - Command name completion
 - Parameter completion for specific commands
 - Context-aware suggestions
 
 **Supported Completions**:
+
 - help: Complete with available command names
 - plugins: Complete with plugin actions (list, exec)
 
 ### Signal Handling
 
 **Features**:
+
 - Graceful shutdown on SIGINT (Ctrl+C)
 - SIGTERM handling for clean termination
 - Context cancellation propagation
@@ -280,6 +325,7 @@ gz> quit                    # Alternative exit command
 ### Timeout Protection
 
 **Features**:
+
 - Configurable auto-exit timeout
 - Background timeout monitoring
 - Graceful shutdown on timeout
@@ -287,6 +333,7 @@ gz> quit                    # Alternative exit command
 ### Error Handling
 
 **Features**:
+
 - Command error capture and display
 - Non-fatal error recovery
 - Detailed error messages
@@ -296,6 +343,7 @@ gz> quit                    # Alternative exit command
 ### GZH Client Integration
 
 The shell integrates with the main GZH client for:
+
 - System health monitoring
 - Metrics collection
 - Configuration access
@@ -304,6 +352,7 @@ The shell integrates with the main GZH client for:
 ### Runtime Integration
 
 Direct integration with Go runtime for:
+
 - Memory statistics collection
 - Goroutine monitoring
 - Garbage collection control
@@ -314,6 +363,7 @@ Direct integration with Go runtime for:
 ### Session Information
 
 The shell maintains context information including:
+
 - Session start time
 - Total session uptime
 - Number of commands executed

@@ -7,7 +7,7 @@ This project uses [pre-commit](https://pre-commit.com/) hooks to ensure code qua
 ### Prerequisites
 
 1. **Python and pip**: Pre-commit requires Python 3.6+
-2. **Go tooling**: Various Go tools are used by the hooks
+1. **Go tooling**: Various Go tools are used by the hooks
 
 ### Install Pre-commit
 
@@ -183,14 +183,14 @@ Edit `.pre-commit-config.yaml` to exclude files or disable hooks:
    export PATH=$PATH:$(go env GOPATH)/bin
    ```
 
-2. **Slow hook execution**
+1. **Slow hook execution**
 
    ```bash
    # Skip slow hooks during development
    SKIP=go-test-mod,gosec git commit -m "wip: development"
    ```
 
-3. **Pre-commit not found**
+1. **Pre-commit not found**
 
    ```bash
    # Install pre-commit
@@ -199,7 +199,8 @@ Edit `.pre-commit-config.yaml` to exclude files or disable hooks:
    brew install pre-commit
    ```
 
-4. **Permission denied errors**
+1. **Permission denied errors**
+
    ```bash
    # Ensure hooks are executable
    chmod +x .git/hooks/*
@@ -222,10 +223,10 @@ The configuration includes CI-specific settings for pre-commit.ci:
 ## Best Practices
 
 1. **Install hooks early**: Set up pre-commit hooks when starting development
-2. **Regular updates**: Keep hooks updated with `make pre-commit-update`
-3. **Gradual adoption**: Enable hooks incrementally for existing projects
-4. **Team consistency**: Ensure all team members use the same hook configuration
-5. **CI validation**: Use the same hooks in CI for consistency
+1. **Regular updates**: Keep hooks updated with `make pre-commit-update`
+1. **Gradual adoption**: Enable hooks incrementally for existing projects
+1. **Team consistency**: Ensure all team members use the same hook configuration
+1. **CI validation**: Use the same hooks in CI for consistency
 
 ## Integration with Development Workflow
 

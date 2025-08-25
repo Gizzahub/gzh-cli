@@ -21,10 +21,10 @@ gzh-cli follows a **simplified CLI architecture** that prioritizes developer pro
 ### Architecture Principles
 
 1. **Interface-Driven Design** - Core abstractions through interfaces with concrete implementations
-2. **Direct Constructor Pattern** - Avoid over-engineering with DI containers, use simple constructors
-3. **Command-Centric Organization** - Each major feature is a top-level command with subcommands
-4. **Configuration-First** - Unified YAML configuration system with schema validation
-5. **Multi-Platform Support** - Abstracted platform providers for GitHub, GitLab, Gitea, Gogs
+1. **Direct Constructor Pattern** - Avoid over-engineering with DI containers, use simple constructors
+1. **Command-Centric Organization** - Each major feature is a top-level command with subcommands
+1. **Configuration-First** - Unified YAML configuration system with schema validation
+1. **Multi-Platform Support** - Abstracted platform providers for GitHub, GitLab, Gitea, Gogs
 
 ### System Layers
 
@@ -101,6 +101,7 @@ graph TB
 The CLI layer provides the user interface and command-line functionality:
 
 #### Core Commands
+
 - **`root.go`** - Main CLI entry with all command registrations
 - **`git/`** - Unified Git platform management
   - `repo_clone_or_update.go` - Smart cloning with strategies
@@ -122,21 +123,25 @@ The CLI layer provides the user interface and command-line functionality:
 Private abstractions and implementations:
 
 #### Git Operations (`internal/git/`)
+
 - **`interfaces.go`** - Client, StrategyExecutor, BulkOperator interfaces
 - **`constructors.go`** - Concrete implementations with dependency injection
 - **`operations.go`** - Git operations (clone, pull, push, reset)
 
 #### Configuration (`internal/config/`)
+
 - **`loader.go`** - Configuration loading with priority system
 - **`validator.go`** - Schema validation and error reporting
 - **`merger.go`** - Configuration merging logic
 
 #### CLI Utilities (`internal/cli/`)
+
 - **`output.go`** - Output formatting (table, JSON, YAML, CSV)
 - **`builder.go`** - Command builder utilities
 - **`flags.go`** - Common flag definitions
 
 #### Logging (`internal/logger/`)
+
 - **`structured.go`** - Structured logging abstractions
 - **`context.go`** - Context-aware logging
 
@@ -145,16 +150,19 @@ Private abstractions and implementations:
 Public APIs and platform implementations:
 
 #### Configuration (`pkg/config/`)
+
 - **`schema.go`** - Configuration schema definitions
 - **`types.go`** - Configuration data structures
 - **`validation.go`** - Validation logic
 
 #### Platform Providers (`pkg/github/`, `pkg/gitlab/`, `pkg/gitea/`)
+
 - **Base Provider Pattern** - Common functionality consolidated
 - **Platform-specific APIs** - Authentication, repository listing, cloning
 - **Provider Registry** - Dynamic provider registration
 
 #### Synclone (`pkg/synclone/`)
+
 - **`engine.go`** - Multi-platform synchronization logic
 - **`strategies.go`** - Clone/update strategies
 - **`concurrency.go`** - Concurrent operation management
@@ -219,10 +227,10 @@ func (bc *BaseCommand) Execute(ctx context.Context, options Options) error {
 ### Typical Command Execution Flow
 
 1. **Command parsing** (Cobra) → **Flag validation**
-2. **Configuration loading** (unified config system with priority)
-3. **Provider factory** → **Interface implementation**
-4. **Business logic execution** → **Result formatting**
-5. **Output generation** (table/JSON/YAML/CSV)
+1. **Configuration loading** (unified config system with priority)
+1. **Provider factory** → **Interface implementation**
+1. **Business logic execution** → **Result formatting**
+1. **Output generation** (table/JSON/YAML/CSV)
 
 ### Configuration Flow
 
@@ -258,31 +266,35 @@ Result Aggregation & Formatting
 
 Major refactoring effort that achieved significant improvements:
 
-| Component | Before | After | Improvement |
-|-----------|--------|-------|-------------|
-| **Provider Implementation** | ~800 lines | ~200 lines | **75% Reduction** |
-| **Dev-env Commands** | ~2000 lines | ~400 lines | **80% Reduction** |
-| **TUI Components** | ~600 lines | ~150 lines + library | **75% Reduction** |
-| **Config Adapters** | ~570 lines | ~150 lines | **74% Reduction** |
+| Component                   | Before      | After                | Improvement       |
+| --------------------------- | ----------- | -------------------- | ----------------- |
+| **Provider Implementation** | ~800 lines  | ~200 lines           | **75% Reduction** |
+| **Dev-env Commands**        | ~2000 lines | ~400 lines           | **80% Reduction** |
+| **TUI Components**          | ~600 lines  | ~150 lines + library | **75% Reduction** |
+| **Config Adapters**         | ~570 lines  | ~150 lines           | **74% Reduction** |
 
 ### Key Improvements
 
 #### 1. Provider Implementation Refactoring
+
 - **Base Provider Pattern** - Common functionality consolidated
 - **Dependency Injection** - Enhanced testability
 - **90%+ duplication eliminated** across GitHub, GitLab, Gitea providers
 
 #### 2. Command Structure Unification
+
 - **BaseCommand Pattern** - Generic command operations
 - **Template Method Pattern** - Consistent command behavior
 - **Massive line reduction** in dev-env commands
 
 #### 3. TUI Component Library
+
 - **Theme System** - NetworkTheme and DefaultTheme
 - **Component Interfaces** - Standardized component behavior
 - **Backward Compatibility** - Legacy exports maintained
 
 #### 4. Configuration System Enhancement
+
 - **Unified Schema** - Single configuration format
 - **Provider Adapters** - Platform-specific configuration handling
 - **Validation Framework** - Comprehensive error reporting
@@ -292,18 +304,18 @@ Major refactoring effort that achieved significant improvements:
 ### Adding New Git Platforms
 
 1. Implement `provider.Interface` in `pkg/{platform}/`
-2. Register provider in `provider.Registry`
-3. Add platform-specific configuration to unified config schema
-4. Implement API client with authentication
-5. Add comprehensive tests with mocks
+1. Register provider in `provider.Registry`
+1. Add platform-specific configuration to unified config schema
+1. Implement API client with authentication
+1. Add comprehensive tests with mocks
 
 ### Adding New Commands
 
 1. Create command directory in `cmd/`
-2. Implement using BaseCommand pattern if applicable
-3. Register in `cmd/root.go`
-4. Add configuration section to unified schema
-5. Implement output formatting support
+1. Implement using BaseCommand pattern if applicable
+1. Register in `cmd/root.go`
+1. Add configuration section to unified schema
+1. Implement output formatting support
 
 ### Adding New Output Formats
 
@@ -320,17 +332,20 @@ Supported formats: `table`, `json`, `yaml`, `csv`, `html` (select commands)
 ## 🔒 Security Architecture
 
 ### Authentication Management
+
 - **Token-based authentication** for all Git platforms
 - **Environment variable expansion** with `${TOKEN}` syntax
 - **No token logging** - Sensitive data protection
 - **Token validation** before API calls
 
 ### Configuration Security
+
 - **File permissions** - Restricted access to config files
 - **Schema validation** - Prevent injection attacks
 - **Input sanitization** - All user inputs validated
 
 ### Network Security
+
 - **HTTPS-only** API communication
 - **Proxy support** - Corporate network compatibility
 - **Rate limiting** - Respect API rate limits
@@ -339,17 +354,20 @@ Supported formats: `table`, `json`, `yaml`, `csv`, `html` (select commands)
 ## ⚡ Performance Considerations
 
 ### Concurrency Patterns
+
 - **Worker pools** for bulk operations
 - **Configurable concurrency** - Adjust for system resources
 - **Graceful shutdown** - Context cancellation support
 - **API rate limiting** - Adaptive rate limiting
 
 ### Memory Management
+
 - **Streaming operations** - Large datasets handled efficiently
 - **Buffered I/O** - File operations optimized
 - **Resource cleanup** - Proper resource management with defer
 
 ### Caching Strategy
+
 - **Configuration caching** - Avoid repeated parsing
 - **API response caching** - Reduce network calls
 - **Git operation optimization** - Smart update strategies
@@ -357,12 +375,14 @@ Supported formats: `table`, `json`, `yaml`, `csv`, `html` (select commands)
 ## 📊 Testing Architecture
 
 ### Test Organization
+
 - **Unit tests** - `*_test.go` files alongside source
 - **Integration tests** - `test/integration/` with Docker containers
 - **E2E tests** - `test/e2e/` with real CLI execution
 - **Mocking** - Generated mocks with `gomock` for interfaces
 
 ### Test Categories
+
 ```bash
 make test-unit          # Fast unit tests
 make test-integration   # Docker-based integration tests
@@ -371,6 +391,7 @@ make test-all           # Complete test suite
 ```
 
 ### Mock Generation
+
 Interfaces are marked with `//go:generate mockgen` directives:
 
 ```go
@@ -383,18 +404,20 @@ type Client interface {
 ## 📈 Metrics and Monitoring
 
 ### Performance Monitoring
+
 - **Built-in profiling** - Go pprof integration
 - **Command timing** - Execution time tracking
 - **Memory usage** - Memory allocation monitoring
 - **Concurrency metrics** - Worker pool utilization
 
 ### Operational Metrics
+
 - **Success/failure rates** - Operation outcome tracking
 - **API call metrics** - Platform API usage
 - **Error categorization** - Error type classification
 - **User behavior** - Command usage patterns
 
----
+______________________________________________________________________
 
 **Architecture Version**: 2.0 (Post-Refactoring)
 **Last Updated**: 2025-08-19

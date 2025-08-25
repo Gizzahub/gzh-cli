@@ -13,11 +13,13 @@ Comprehensive development documentation for contributors and maintainers of gzh-
 ## 🎯 Quick Start for Contributors
 
 ### Prerequisites
+
 - **Go 1.24.0+** (with toolchain go1.24.5)
 - **Git** (any recent version)
 - **Make** (for build automation)
 
 ### Development Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/gizzahub/gzh-cli.git
@@ -37,16 +39,19 @@ make pre-commit-install
 ## 📚 Development Documentation
 
 ### Code Quality & Standards
+
 - **[Code Quality Guide](60-code-quality.md)** - Coding standards and quality practices
 - **[Lint Standards](66-lint-standards.md)** - Linting rules and configuration
 
 ### Development Process
+
 - **[Debugging Guide](61-debugging-guide.md)** - Debugging techniques and tools
 - **[Mocking Strategy](62-mocking-strategy.md)** - Testing with mocks and interfaces
 - **[Pre-commit Guide](63-pre-commit-guide.md)** - Pre-commit hook configuration
 - **[Pre-commit Hooks](64-pre-commit-hooks.md)** - Hook implementation details
 
 ### Dependency & Build Management
+
 - **[Dependency Management](65-dependency-management.md)** - Go modules and dependency handling
 - **[Testing Strategy](67-testing-strategy.md)** - Comprehensive testing approach
 
@@ -133,6 +138,7 @@ gzh-cli/
 ### Key Design Patterns
 
 #### Interface-Driven Development
+
 ```go
 // Define interfaces first
 type Provider interface {
@@ -148,6 +154,7 @@ type GitHubProvider struct {
 ```
 
 #### Command Pattern
+
 ```go
 // Standard command structure
 func NewCommandCmd() *cobra.Command {
@@ -166,6 +173,7 @@ func NewCommandCmd() *cobra.Command {
 ```
 
 #### Provider Registry Pattern
+
 ```go
 // Register providers at startup
 providerRegistry := provider.NewRegistry()
@@ -178,13 +186,14 @@ providerRegistry.Register("gitlab", gitlab.NewProvider())
 ### Test Categories
 
 1. **Unit Tests** - Test individual functions and methods
-2. **Integration Tests** - Test component interactions
-3. **End-to-End Tests** - Test complete user workflows
-4. **Performance Tests** - Test performance characteristics
+1. **Integration Tests** - Test component interactions
+1. **End-to-End Tests** - Test complete user workflows
+1. **Performance Tests** - Test performance characteristics
 
 ### Testing Patterns
 
 #### Table-Driven Tests
+
 ```go
 func TestFunction(t *testing.T) {
     tests := []struct {
@@ -217,6 +226,7 @@ func TestFunction(t *testing.T) {
 ```
 
 #### Mock Usage
+
 ```go
 func TestServiceWithMock(t *testing.T) {
     ctrl := gomock.NewController(t)
@@ -296,22 +306,26 @@ make release
 ### Release Checklist
 
 1. **Code Quality**
+
    - [ ] All tests pass
    - [ ] Lint checks pass
    - [ ] Code coverage ≥ 80%
    - [ ] Documentation updated
 
-2. **Version Management**
+1. **Version Management**
+
    - [ ] Version bumped appropriately
    - [ ] CHANGELOG.md updated
    - [ ] Git tag created
 
-3. **Testing**
+1. **Testing**
+
    - [ ] Integration tests pass
    - [ ] E2E tests pass
    - [ ] Manual testing completed
 
-4. **Documentation**
+1. **Documentation**
+
    - [ ] README.md updated
    - [ ] API documentation current
    - [ ] Migration guides (if needed)
@@ -334,6 +348,7 @@ GODEBUG=gctrace=1 gz synclone github --org myorg
 ### Common Development Issues
 
 #### Build Issues
+
 ```bash
 # Clean and rebuild
 make clean
@@ -349,6 +364,7 @@ go mod download
 ```
 
 #### Test Issues
+
 ```bash
 # Run specific tests
 go test -v ./cmd/synclone
@@ -362,6 +378,7 @@ go tool cover -html=coverage.out
 ```
 
 #### Lint Issues
+
 ```bash
 # Fix formatting
 make fmt
@@ -378,16 +395,19 @@ golangci-lint run --fix
 ### Code Review Process
 
 1. **Pre-submission**
+
    - Run all quality checks locally
    - Ensure tests pass
    - Update documentation
 
-2. **Pull Request**
+1. **Pull Request**
+
    - Descriptive title and description
    - Link to related issues
    - Small, focused changes
 
-3. **Review Criteria**
+1. **Review Criteria**
+
    - Code quality and style
    - Test coverage
    - Performance impact
@@ -406,6 +426,7 @@ golangci-lint run --fix
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
 Examples:
+
 ```
 feat(synclone): add GitLab support
 fix(config): resolve YAML parsing issue
@@ -416,6 +437,7 @@ test(github): add integration tests
 ## 🔗 Development Resources
 
 ### External Tools
+
 - **golangci-lint** - Comprehensive linter
 - **gomock** - Mock generation
 - **testify** - Testing toolkit
@@ -423,16 +445,18 @@ test(github): add integration tests
 - **viper** - Configuration management
 
 ### IDE Setup
+
 - **VS Code** - `.vscode/settings.json` for project settings
 - **GoLand** - IntelliJ IDEA configuration
 - **Vim/Neovim** - Go plugin configuration
 
 ### Documentation
+
 - **[Architecture Overview](../20-architecture/20-system-overview.md)** - System design
 - **[Configuration Guide](../40-configuration/40-configuration-guide.md)** - Configuration system
 - **[API Reference](../50-api-reference/50-index.md)** - Complete API documentation
 
----
+______________________________________________________________________
 
 **Go Version**: 1.24.0+ (toolchain: go1.24.5)
 **Testing Framework**: Go standard library + testify

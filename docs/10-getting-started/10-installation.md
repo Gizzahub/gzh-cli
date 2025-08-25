@@ -5,6 +5,7 @@ This guide covers the installation and initial setup of gzh-cli (`gz`).
 ## 🚀 Quick Installation
 
 ### Prerequisites
+
 - **Go 1.24.0+** (with toolchain go1.24.5)
 - **Git** (any recent version)
 - **Network access** to Git platforms (GitHub, GitLab, etc.)
@@ -130,15 +131,18 @@ gz ide monitor &
 ## 🌍 Platform-Specific Notes
 
 ### Linux
+
 - Ensure `$GOPATH/bin` is in your `PATH`
 - Some distributions may require additional packages for Git
 
 ### macOS
+
 - Works on both Intel and Apple Silicon
 - Consider using Homebrew for Go installation
 - Ensure Xcode Command Line Tools are installed
 
 ### Windows
+
 - **WSL recommended** for the best experience
 - PowerShell support available but limited
 - Ensure Git for Windows is properly configured
@@ -146,6 +150,7 @@ gz ide monitor &
 ## 🔗 Network Configuration
 
 ### Proxy Support
+
 If you're behind a corporate proxy:
 
 ```bash
@@ -156,6 +161,7 @@ export NO_PROXY="localhost,127.0.0.1,.company.com"
 ```
 
 ### SSH Key Setup
+
 For Git operations over SSH:
 
 ```bash
@@ -171,6 +177,7 @@ ssh -T git@github.com
 ### Common Issues
 
 #### "gz: command not found"
+
 ```bash
 # Check if $GOPATH/bin is in PATH
 echo $PATH | grep -o $GOPATH/bin
@@ -181,6 +188,7 @@ source ~/.bashrc
 ```
 
 #### Token Authentication Issues
+
 ```bash
 # Test token validity
 curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
@@ -190,6 +198,7 @@ curl -H "PRIVATE-TOKEN: $GITLAB_TOKEN" https://gitlab.com/api/v4/user
 ```
 
 #### Build Issues
+
 ```bash
 # Clean and rebuild
 make clean
@@ -209,10 +218,10 @@ make build
 After installation, proceed to:
 
 1. **[Quick Start Guide](11-quick-start.md)** - Try your first commands
-2. **[Configuration Guide](../40-configuration/40-configuration-guide.md)** - Detailed configuration
-3. **[Command Reference](../50-api-reference/50-command-reference.md)** - Complete command documentation
+1. **[Configuration Guide](../40-configuration/40-configuration-guide.md)** - Detailed configuration
+1. **[Command Reference](../50-api-reference/50-command-reference.md)** - Complete command documentation
 
----
+______________________________________________________________________
 
 **Installation Requirements**: Go 1.24.0+, Git
 **Supported Platforms**: Linux, macOS, Windows (WSL)

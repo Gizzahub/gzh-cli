@@ -11,9 +11,9 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. List all repositories in the test organization
-2. Get configuration for a specific repository
-3. Update repository settings (description, topics, visibility)
-4. Verify changes were applied correctly
+1. Get configuration for a specific repository
+1. Update repository settings (description, topics, visibility)
+1. Verify changes were applied correctly
 
 **Expected Results**:
 
@@ -28,10 +28,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Create a configuration with templates
-2. Apply template to matching repositories (dry-run)
-3. Review proposed changes
-4. Apply template (actual execution)
-5. Verify all repositories have correct settings
+1. Apply template to matching repositories (dry-run)
+1. Review proposed changes
+1. Apply template (actual execution)
+1. Verify all repositories have correct settings
 
 **Expected Results**:
 
@@ -46,10 +46,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Define security and compliance policies
-2. Run compliance audit across organization
-3. Identify non-compliant repositories
-4. Generate compliance report
-5. Test policy exceptions
+1. Run compliance audit across organization
+1. Identify non-compliant repositories
+1. Generate compliance report
+1. Test policy exceptions
 
 **Expected Results**:
 
@@ -64,10 +64,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Get current branch protection settings
-2. Update protection rules (reviews, status checks)
-3. Test enforcement settings
-4. Verify protection is active
-5. Remove protection rules
+1. Update protection rules (reviews, status checks)
+1. Test enforcement settings
+1. Verify protection is active
+1. Remove protection rules
 
 **Expected Results**:
 
@@ -82,10 +82,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Select multiple repositories using patterns
-2. Apply configuration to all selected repos
-3. Monitor progress and handle errors
-4. Verify all repositories updated
-5. Generate operation summary
+1. Apply configuration to all selected repos
+1. Monitor progress and handle errors
+1. Verify all repositories updated
+1. Generate operation summary
 
 **Expected Results**:
 
@@ -100,10 +100,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Check current rate limit status
-2. Make concurrent API requests
-3. Observe rate limit handling
-4. Test retry logic
-5. Verify backoff behavior
+1. Make concurrent API requests
+1. Observe rate limit handling
+1. Test retry logic
+1. Verify backoff behavior
 
 **Expected Results**:
 
@@ -118,10 +118,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Test with invalid repository names
-2. Test with insufficient permissions
-3. Test network timeout scenarios
-4. Test partial failure recovery
-5. Verify error reporting
+1. Test with insufficient permissions
+1. Test network timeout scenarios
+1. Test partial failure recovery
+1. Verify error reporting
 
 **Expected Results**:
 
@@ -136,10 +136,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Create base template
-2. Create derived templates
-3. Apply inherited template
-4. Verify merged settings
-5. Test override behavior
+1. Create derived templates
+1. Apply inherited template
+1. Verify merged settings
+1. Test override behavior
 
 **Expected Results**:
 
@@ -154,10 +154,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. List existing webhooks
-2. Create new webhook configuration
-3. Update webhook settings
-4. Test webhook activation
-5. Remove test webhooks
+1. Create new webhook configuration
+1. Update webhook settings
+1. Test webhook activation
+1. Remove test webhooks
 
 **Expected Results**:
 
@@ -172,10 +172,10 @@ This document describes the integration test scenarios for GitHub repository con
 **Test Steps**:
 
 1. Enable vulnerability alerts
-2. Configure secret scanning
-3. Set up security policies
-4. Test security advisories
-5. Verify all settings active
+1. Configure secret scanning
+1. Set up security policies
+1. Test security advisories
+1. Verify all settings active
 
 **Expected Results**:
 
@@ -272,9 +272,9 @@ integration-tests:
 All integration tests pass when:
 
 1. ✅ All API operations complete successfully
-2. ✅ Configuration changes are applied correctly
-3. ✅ Policy compliance is accurately reported
-4. ✅ Error handling works as designed
-5. ✅ Performance meets benchmarks
-6. ✅ No data corruption or loss
-7. ✅ Clean test execution without side effects
+1. ✅ Configuration changes are applied correctly
+1. ✅ Policy compliance is accurately reported
+1. ✅ Error handling works as designed
+1. ✅ Performance meets benchmarks
+1. ✅ No data corruption or loss
+1. ✅ Clean test execution without side effects

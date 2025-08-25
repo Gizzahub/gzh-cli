@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Unified Package Manager Specification
@@ -14,11 +15,15 @@ The unified package manager feature provides centralized management for multiple
 **Configuration-based unified commands** - All managers support: `install`, `update`, `sync`, `export`
 
 Compatibility handling via filter chain:
+
 - Modes: auto|strict|off
+
 - Built-ins: asdf+rust (rustup), asdf+nodejs (corepack), asdf+python (venv), asdf+golang (GOBIN)
+
 - User config: `~/.gzh/pm/compat.yml` (with `when`, `match_env`)
 
 - System package managers: `brew`, `apt`, `port`
+
 - Version managers: `asdf`, `sdkman`, `rbenv`
 
 **Legacy direct access commands** - For backward compatibility:
@@ -401,21 +406,21 @@ If a manager is not in the registry, the system would attempt to execute it as a
 ### Benefits
 
 1. **Extensibility**: Support new package managers without code changes
-2. **Flexibility**: Users can access any package manager command
-3. **Consistency**: Unified interface for all package managers
+1. **Flexibility**: Users can access any package manager command
+1. **Consistency**: Unified interface for all package managers
 
 ### Challenges
 
 1. **Command Discovery**: How to provide help/completion for dynamic commands
-2. **Error Handling**: Distinguishing between "manager not found" vs "command failed"
-3. **Security**: Preventing arbitrary command execution
-4. **Configuration Integration**: How to integrate with unified config system
+1. **Error Handling**: Distinguishing between "manager not found" vs "command failed"
+1. **Security**: Preventing arbitrary command execution
+1. **Configuration Integration**: How to integrate with unified config system
 
 ### Migration Path
 
 1. Keep existing explicit commands for backward compatibility
-2. Implement generic pattern alongside explicit commands
-3. Eventually deprecate explicit commands in favor of generic pattern
+1. Implement generic pattern alongside explicit commands
+1. Eventually deprecate explicit commands in favor of generic pattern
 
 ### Current Decision
 

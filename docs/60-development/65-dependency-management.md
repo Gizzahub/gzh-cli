@@ -106,9 +106,9 @@ updates:
 ### 방법 3: Repository 설정에서 비활성화
 
 1. GitHub 저장소 → Settings
-2. Security & analysis
-3. Dependabot alerts → Disable
-4. Dependabot security updates → Disable
+1. Security & analysis
+1. Dependabot alerts → Disable
+1. Dependabot security updates → Disable
 
 ## 📅 권장 워크플로우
 
@@ -156,9 +156,9 @@ jobs:
 ### 1. 업데이트 우선순위
 
 1. **보안 패치**: 즉시 적용
-2. **Patch 버전**: 주간 업데이트
-3. **Minor 버전**: 월간 검토
-4. **Major 버전**: 분기별 계획적 업데이트
+1. **Patch 버전**: 주간 업데이트
+1. **Minor 버전**: 월간 검토
+1. **Major 버전**: 분기별 계획적 업데이트
 
 ### 2. 테스트 전략
 
@@ -212,9 +212,9 @@ go-licenses report ./...
 ## 🚨 주의사항
 
 1. **Major 버전 업데이트**: 반드시 CHANGELOG 확인
-2. **보안 업데이트**: 우선순위 높게 처리
-3. **테스트 커버리지**: 업데이트 후 테스트 필수
-4. **성능 영향**: 벤치마크 테스트 권장
+1. **보안 업데이트**: 우선순위 높게 처리
+1. **테스트 커버리지**: 업데이트 후 테스트 필수
+1. **성능 영향**: 벤치마크 테스트 권장
 
 ## 🔗 관련 파일
 

@@ -14,6 +14,7 @@ The `gz profile` command provides comprehensive performance profiling capabiliti
 ## Purpose
 
 Performance profiling for:
+
 - **CPU Profiling**: Identify CPU bottlenecks and hot paths
 - **Memory Profiling**: Detect memory leaks and allocation patterns
 - **Goroutine Analysis**: Monitor goroutine behavior and leaks
@@ -31,16 +32,16 @@ gz profile <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose | Test Coverage |
-|------------|---------|--------------|
-| `stats` | Display runtime statistics | ✅ 42.3% |
-| `server` | Start pprof HTTP server | ✅ 38.7% |
-| `cpu` | CPU profiling | ✅ 35.4% |
-| `memory` | Memory profiling | ✅ 33.9% |
-| `goroutine` | Goroutine analysis | ✅ 31.2% |
-| `block` | Block profiling | ✅ 29.8% |
-| `mutex` | Mutex contention profiling | ✅ 28.5% |
-| `trace` | Execution tracing | ✅ 36.1% |
+| Subcommand  | Purpose                    | Test Coverage |
+| ----------- | -------------------------- | ------------- |
+| `stats`     | Display runtime statistics | ✅ 42.3%      |
+| `server`    | Start pprof HTTP server    | ✅ 38.7%      |
+| `cpu`       | CPU profiling              | ✅ 35.4%      |
+| `memory`    | Memory profiling           | ✅ 33.9%      |
+| `goroutine` | Goroutine analysis         | ✅ 31.2%      |
+| `block`     | Block profiling            | ✅ 29.8%      |
+| `mutex`     | Mutex contention profiling | ✅ 28.5%      |
+| `trace`     | Execution tracing          | ✅ 36.1%      |
 
 ## Subcommand Specifications
 
@@ -53,6 +54,7 @@ gz profile stats [--interval <duration>] [--format <format>]
 ```
 
 **Metrics Displayed**:
+
 - Memory allocation and usage
 - Goroutine count
 - GC statistics
@@ -60,6 +62,7 @@ gz profile stats [--interval <duration>] [--format <format>]
 - System memory
 
 **Output Example**:
+
 ```
 Runtime Statistics:
 ==================
@@ -91,11 +94,13 @@ gz profile server --port <port> [--host <host>]
 ```
 
 **Options**:
+
 - `--port` - Server port (default: 6060)
 - `--host` - Host to bind (default: localhost)
 - `--open` - Open browser automatically
 
 **Available Endpoints**:
+
 - `/debug/pprof/` - Profile index
 - `/debug/pprof/profile` - CPU profile
 - `/debug/pprof/heap` - Heap profile
@@ -112,11 +117,13 @@ gz profile cpu --duration <duration> [--output <file>]
 ```
 
 **Options**:
+
 - `--duration` - Profiling duration (default: 30s)
 - `--output` - Output file (default: cpu.prof)
 - `--analyze` - Auto-analyze after profiling
 
 **Analysis Example**:
+
 ```bash
 # Profile for 60 seconds
 gz profile cpu --duration 60s
@@ -137,11 +144,13 @@ gz profile memory [--type <type>] [--output <file>]
 ```
 
 **Profile Types**:
+
 - `heap` - Heap allocations (default)
 - `allocs` - All allocations
 - `inuse` - In-use memory
 
 **Output Example**:
+
 ```
 Memory Profile Summary:
 ======================
@@ -257,22 +266,22 @@ profile:
 
 ### Profiling Overhead
 
-| Profile Type | Overhead | Impact |
-|--------------|----------|---------|
-| CPU | <5% | Minimal |
-| Memory | <2% | Negligible |
-| Goroutine | <1% | Negligible |
-| Block | 10-15% | Moderate |
-| Mutex | 5-10% | Low |
+| Profile Type | Overhead | Impact     |
+| ------------ | -------- | ---------- |
+| CPU          | \<5%     | Minimal    |
+| Memory       | \<2%     | Negligible |
+| Goroutine    | \<1%     | Negligible |
+| Block        | 10-15%   | Moderate   |
+| Mutex        | 5-10%    | Low        |
 
 ### Profile Generation Speed
 
-| Operation | Time | Size |
-|-----------|------|------|
-| 30s CPU profile | 30.2s | ~2MB |
-| Heap snapshot | <100ms | ~5MB |
-| Goroutine dump | <50ms | ~500KB |
-| Full trace (1min) | 60.5s | ~20MB |
+| Operation         | Time    | Size   |
+| ----------------- | ------- | ------ |
+| 30s CPU profile   | 30.2s   | ~2MB   |
+| Heap snapshot     | \<100ms | ~5MB   |
+| Goroutine dump    | \<50ms  | ~500KB |
+| Full trace (1min) | 60.5s   | ~20MB  |
 
 ## Integration with Other Tools
 
@@ -380,21 +389,25 @@ gz profile goroutine --watch --alert-threshold 1000
 ### Common Issues
 
 1. **High CPU Usage**
+
    ```bash
    gz profile cpu --duration 60s --analyze
    ```
 
-2. **Memory Leaks**
+1. **Memory Leaks**
+
    ```bash
    gz profile memory --type inuse --gc-before
    ```
 
-3. **Goroutine Leaks**
+1. **Goroutine Leaks**
+
    ```bash
    gz profile goroutine --filter "runtime.gopark"
    ```
 
-4. **Deadlocks**
+1. **Deadlocks**
+
    ```bash
    gz profile block --duration 30s
    ```
@@ -402,11 +415,11 @@ gz profile goroutine --watch --alert-threshold 1000
 ## Future Enhancements
 
 1. **AI-Powered Analysis**: ML-based performance issue detection
-2. **Distributed Profiling**: Profile across multiple instances
-3. **Historical Comparison**: Track performance over releases
-4. **Custom Metrics**: User-defined performance metrics
-5. **Integration with APM**: Connect with Application Performance Monitoring tools
-6. **Automated Optimization**: Suggest and apply performance fixes
+1. **Distributed Profiling**: Profile across multiple instances
+1. **Historical Comparison**: Track performance over releases
+1. **Custom Metrics**: User-defined performance metrics
+1. **Integration with APM**: Connect with Application Performance Monitoring tools
+1. **Automated Optimization**: Suggest and apply performance fixes
 
 ## Documentation
 

@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Git Extension Commands Design
@@ -32,6 +33,7 @@ git-synclone
 **Purpose**: Intelligent repository cloning with provider awareness and advanced features.
 
 **Features**:
+
 - Bulk cloning from multiple providers (GitHub, GitLab, Gitea, Gogs)
 - Parallel execution with configurable concurrency
 - Resume capability for interrupted clones
@@ -43,6 +45,7 @@ git-synclone
 - Advanced filtering and pattern matching
 
 **Usage**:
+
 ```bash
 # Basic cloning operations
 git synclone github --org myorg --target ~/repos
@@ -70,6 +73,7 @@ git synclone gitlab --group mygroup --exclude ".*-deprecated$"
 ```
 
 **Implementation Structure**:
+
 ```
 git-synclone
 ├── main.go              # Entry point
@@ -146,6 +150,7 @@ The following features are more suitable as standalone platform management tools
 ### 1. Command Structure
 
 Each extension should follow this structure:
+
 ```go
 package main
 
@@ -176,6 +181,7 @@ func main() {
 ### 2. Provider Integration
 
 Extensions should use the common provider interface:
+
 ```go
 type ProviderRegistry struct {
     providers map[string]providers.GitProvider
@@ -256,6 +262,7 @@ providers:
 ### 4. Error Handling
 
 Consistent error messages and exit codes:
+
 ```go
 const (
     ExitSuccess = 0
@@ -269,18 +276,21 @@ const (
 ## Installation and Distribution
 
 ### 1. Individual Commands
+
 ```bash
 # Install specific extension
 go install github.com/gizzahub/gzh-git/cmd/git-synclone@latest
 ```
 
 ### 2. All Extensions
+
 ```bash
 # Install all extensions
 curl -sSL https://gizzahub.com/install.sh | bash
 ```
 
 ### 3. Package Managers
+
 ```bash
 # Homebrew
 brew install gizzahub/tap/git-extensions
@@ -309,6 +319,7 @@ gz synclone state list
 ```
 
 Both commands share:
+
 - Same configuration files and format
 - Same state management system
 - Same provider integrations
@@ -339,25 +350,28 @@ Both commands share:
 ## Security Considerations
 
 1. **Credential Security**: Never store credentials in plain text
-2. **Token Scopes**: Request minimum required permissions
-3. **Audit Logging**: Log all operations for compliance
-4. **Network Security**: Support proxy and TLS configurations
-5. **Input Validation**: Sanitize all user inputs
+1. **Token Scopes**: Request minimum required permissions
+1. **Audit Logging**: Log all operations for compliance
+1. **Network Security**: Support proxy and TLS configurations
+1. **Input Validation**: Sanitize all user inputs
 
 ## Platform-Specific Features
 
 ### GitHub
+
 - Organization and user repository cloning
 - Visibility filtering (public/private/all)
 - Branch selection and shallow cloning
 - GitHub Enterprise support
 
 ### GitLab
+
 - Group and subgroup cloning
 - Self-hosted GitLab instance support
 - Recursive group traversal
 
 ### Gitea
+
 - Organization cloning
 - Custom Gitea instance support
 - Full API compatibility
@@ -365,6 +379,7 @@ Both commands share:
 ## Future Git Extensions
 
 Potential future Git extensions that enhance core Git functionality:
+
 - `git remote-sync`: Synchronize remote configurations across multiple providers
 - `git multi-clone`: Enhanced cloning with Git-specific features (submodules, LFS, etc.)
 - `git provider-auth`: Git credential helper for multiple providers

@@ -7,9 +7,9 @@ This project implements comprehensive security scanning using [gosec](https://gi
 Security scanning is performed at multiple levels:
 
 1. **Integrated with golangci-lint**: Runs as part of normal linting process
-2. **Standalone gosec**: Dedicated security analysis with detailed reporting
-3. **Pre-commit hooks**: Catches security issues before commits
-4. **CI/CD integration**: Automated security checks in pipeline
+1. **Standalone gosec**: Dedicated security analysis with detailed reporting
+1. **Pre-commit hooks**: Catches security issues before commits
+1. **CI/CD integration**: Automated security checks in pipeline
 
 ## Configuration
 
@@ -39,7 +39,7 @@ Security scanning is performed at multiple levels:
 | G307      | Deferred error not checked        | LOW      |
 | G401      | Weak crypto (DES, RC4, MD5, SHA1) | HIGH     |
 | G402      | Bad TLS settings                  | HIGH     |
-| G403      | Weak RSA keys (<2048 bits)        | HIGH     |
+| G403      | Weak RSA keys (\<2048 bits)       | HIGH     |
 | G404      | Insecure random source            | MEDIUM   |
 | G501-G505 | Crypto import blocklist           | HIGH     |
 | G601      | Implicit memory aliasing          | MEDIUM   |
@@ -261,12 +261,14 @@ Security scanning is automatically integrated into pre-commit hooks:
    go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
    ```
 
-2. **Too many false positives**
+1. **Too many false positives**
+
    - Use `#nosec` comments for legitimate cases
    - Update exclude rules in `.gosec.yaml`
    - Adjust confidence/severity thresholds
 
-3. **Performance issues**
+1. **Performance issues**
+
    - Use `--exclude-dir` to skip large directories
    - Run on specific packages: `gosec ./pkg/...`
    - Use parallel execution with `--parallel`
@@ -276,9 +278,9 @@ Security scanning is automatically integrated into pre-commit hooks:
 If you discover a security vulnerability:
 
 1. **Do not** create a public issue
-2. Email security concerns to the maintainers
-3. Include details about the vulnerability
-4. Provide steps to reproduce if possible
+1. Email security concerns to the maintainers
+1. Include details about the vulnerability
+1. Provide steps to reproduce if possible
 
 ## Metrics and Reporting
 
@@ -302,15 +304,15 @@ gosec -fmt=json ./... | jq '.Issues | group_by(.severity) | map({severity: .[0].
 ## Best Practices
 
 1. **Run security scans regularly** - Include in CI/CD pipeline
-2. **Address HIGH severity issues first** - Prioritize by impact
-3. **Review gosec output manually** - Don't rely solely on automation
-4. **Keep security tools updated** - Regular updates catch new vulnerabilities
-5. **Train team on secure coding** - Prevention is better than detection
-6. **Document exceptions** - Use clear `#nosec` comments with explanations
-7. **Validate user input** - Never trust external data
-8. **Use principle of least privilege** - Minimal file permissions and access
-9. **Regular security reviews** - Periodic manual code reviews for security
-10. **Monitor for new vulnerabilities** - Subscribe to security advisories
+1. **Address HIGH severity issues first** - Prioritize by impact
+1. **Review gosec output manually** - Don't rely solely on automation
+1. **Keep security tools updated** - Regular updates catch new vulnerabilities
+1. **Train team on secure coding** - Prevention is better than detection
+1. **Document exceptions** - Use clear `#nosec` comments with explanations
+1. **Validate user input** - Never trust external data
+1. **Use principle of least privilege** - Minimal file permissions and access
+1. **Regular security reviews** - Periodic manual code reviews for security
+1. **Monitor for new vulnerabilities** - Subscribe to security advisories
 
 ## References
 

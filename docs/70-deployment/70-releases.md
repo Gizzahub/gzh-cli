@@ -7,10 +7,10 @@ This document describes the automated release process for the gz CLI tool using 
 The project uses a fully automated release pipeline that:
 
 1. **Builds** cross-platform binaries for Linux, macOS, and Windows
-2. **Packages** releases as archives, Linux packages (deb/rpm/apk), and container images
-3. **Publishes** to multiple distribution channels (GitHub Releases, Docker Hub, Homebrew, etc.)
-4. **Signs** artifacts with Cosign for supply chain security
-5. **Announces** releases via Slack/Discord webhooks
+1. **Packages** releases as archives, Linux packages (deb/rpm/apk), and container images
+1. **Publishes** to multiple distribution channels (GitHub Releases, Docker Hub, Homebrew, etc.)
+1. **Signs** artifacts with Cosign for supply chain security
+1. **Announces** releases via Slack/Discord webhooks
 
 ## Release Channels
 
@@ -28,8 +28,8 @@ The project uses a fully automated release pipeline that:
 
 ### Container Images
 
-| Registry                      | Image                             | Pull Command                                         |
-| ----------------------------- | --------------------------------- | ---------------------------------------------------- |
+| Registry                      | Image                      | Pull Command                                  |
+| ----------------------------- | -------------------------- | --------------------------------------------- |
 | **Docker Hub**                | `gizzahub/gzh-cli`         | `docker pull gizzahub/gzh-cli:latest`         |
 | **GitHub Container Registry** | `ghcr.io/gizzahub/gzh-cli` | `docker pull ghcr.io/gizzahub/gzh-cli:latest` |
 
@@ -49,7 +49,8 @@ The project uses a fully automated release pipeline that:
    git push origin v1.0.0
    ```
 
-2. **GitHub Actions automatically**:
+1. **GitHub Actions automatically**:
+
    - Runs CI tests and security scans
    - Builds cross-platform binaries
    - Creates packages for all supported platforms
@@ -218,14 +219,15 @@ Before tagging a release:
    make test-all
    ```
 
-2. **Test release configuration**:
+1. **Test release configuration**:
 
    ```bash
    make release-check
    make release-dry-run
    ```
 
-3. **Build and test binary**:
+1. **Build and test binary**:
+
    ```bash
    make build
    ./gz version
@@ -237,9 +239,9 @@ Before tagging a release:
 After release:
 
 1. **Verify GitHub Release** was created
-2. **Test installation** from package managers
-3. **Pull container images** and test
-4. **Check artifact signatures**
+1. **Test installation** from package managers
+1. **Pull container images** and test
+1. **Check artifact signatures**
 
 ## Troubleshooting
 
@@ -255,12 +257,14 @@ After release:
    chmod +x scripts/*.sh
    ```
 
-2. **Package manager publishing fails**:
+1. **Package manager publishing fails**:
+
    - Check repository tokens and permissions
    - Verify tap/bucket repositories exist
    - Ensure proper branch protection rules
 
-3. **Container image push fails**:
+1. **Container image push fails**:
+
    - Verify Docker Hub credentials
    - Check repository permissions
    - Ensure registry authentication
@@ -281,12 +285,12 @@ goreleaser release --skip=docker,homebrew
 ## Best Practices
 
 1. **Test thoroughly** before tagging releases
-2. **Use semantic versioning** consistently
-3. **Write clear commit messages** for better changelogs
-4. **Review generated artifacts** before publishing
-5. **Monitor release metrics** and user feedback
-6. **Keep documentation updated** with each release
-7. **Coordinate major releases** with team announcements
+1. **Use semantic versioning** consistently
+1. **Write clear commit messages** for better changelogs
+1. **Review generated artifacts** before publishing
+1. **Monitor release metrics** and user feedback
+1. **Keep documentation updated** with each release
+1. **Coordinate major releases** with team announcements
 
 ## Release Metrics
 

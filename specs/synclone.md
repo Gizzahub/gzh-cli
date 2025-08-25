@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Repository Synchronization and Cloning Specification
@@ -125,8 +126,8 @@ gz synclone gitea -o myorg --api-url https://...  # Custom instance
 For all platforms:
 
 1. Without `-t` flag: Clones to organization/group name in current directory
-2. With relative `-t` flag: Clones relative to current directory
-3. With absolute `-t` flag: Clones to absolute path
+1. With relative `-t` flag: Clones relative to current directory
+1. With absolute `-t` flag: Clones to absolute path
 
 Examples:
 
@@ -231,9 +232,9 @@ gz synclone state clean --id <state-id>
 ### Configuration Hierarchy
 
 1. Environment variable: `GZH_SYNCLONE_CONFIG`
-2. Current directory: `./synclone.yaml` or `./synclone.yml`
-3. User config: `~/.config/gzh-manager/synclone.yaml`
-4. System config: `/etc/gzh-manager/synclone.yaml`
+1. Current directory: `./synclone.yaml` or `./synclone.yml`
+1. User config: `~/.config/gzh-manager/synclone.yaml`
+1. System config: `/etc/gzh-manager/synclone.yaml`
 
 ### Configuration Structure
 
@@ -314,8 +315,8 @@ providers:
 When executing in an existing directory:
 
 1. **With gzh.yml**: Uses existing configuration
-2. **Without gzh.yml**: Fails to prevent accidental overwrites
-3. **New/Empty directory**: Creates new gzh.yml
+1. **Without gzh.yml**: Fails to prevent accidental overwrites
+1. **New/Empty directory**: Creates new gzh.yml
 
 ### Sync Modes
 
@@ -353,9 +354,9 @@ Synclone tracks all operations for:
 When using `--resume`:
 
 1. Checks for incomplete operations
-2. Identifies repositories needing retry
-3. Continues from last successful repository
-4. Maintains same configuration and options
+1. Identifies repositories needing retry
+1. Continues from last successful repository
+1. Maintains same configuration and options
 
 ### State File Contents
 

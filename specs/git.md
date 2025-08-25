@@ -7,6 +7,7 @@ The `gz git` command provides a unified interface for managing Git platforms (Gi
 ## Purpose
 
 The git unified command addresses the need for:
+
 - **Consistent Interface**: Single entry point for all Git platform operations
 - **Cross-Platform Support**: Abstract differences between GitHub, GitLab, Gitea, and Gogs
 - **Repository Lifecycle**: Complete repository management from creation to archival
@@ -24,11 +25,11 @@ gz git <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose | Implementation Status |
-|------------|---------|---------------------|
-| `repo` | Repository lifecycle and sync management | ✅ Implemented (Enhanced) |
-| `webhook` | Webhook management and automation | ✅ Implemented |
-| `event` | Event processing and monitoring | ✅ Implemented |
+| Subcommand | Purpose                                  | Implementation Status     |
+| ---------- | ---------------------------------------- | ------------------------- |
+| `repo`     | Repository lifecycle and sync management | ✅ Implemented (Enhanced) |
+| `webhook`  | Webhook management and automation        | ✅ Implemented            |
+| `event`    | Event processing and monitoring          | ✅ Implemented            |
 
 ### Command Hierarchy
 
@@ -66,6 +67,7 @@ gz git
 #### Subcommands
 
 ##### `gz git repo clone-or-update`
+
 Smart repository clone with update strategies.
 
 ```bash
@@ -73,6 +75,7 @@ gz git repo clone-or-update <url> [target-path] [--strategy <strategy>] [--branc
 ```
 
 **Strategies**:
+
 - `rebase` (default): Rebase local changes on remote
 - `reset`: Hard reset to match remote state
 - `clone`: Remove existing and fresh clone
@@ -81,6 +84,7 @@ gz git repo clone-or-update <url> [target-path] [--strategy <strategy>] [--branc
 - `fetch`: Only fetch remote changes
 
 **Examples**:
+
 ```bash
 # Basic clone/update
 gz git repo clone-or-update https://github.com/user/repo.git
@@ -93,6 +97,7 @@ gz git repo clone-or-update https://github.com/user/repo.git ~/projects/myrepo
 ```
 
 ##### `gz git repo create`
+
 Create a new repository on a Git platform.
 
 ```bash
@@ -100,6 +105,7 @@ gz git repo create --name <name> --org <org> [--private] [--description <desc>]
 ```
 
 **Options**:
+
 - `--name` - Repository name (required)
 - `--org` - Organization/owner (required)
 - `--private` - Create as private repository
@@ -110,6 +116,7 @@ gz git repo create --name <name> --org <org> [--private] [--description <desc>]
 - `--license` - License type (MIT, Apache-2.0, GPL-3.0, etc.)
 
 **Examples**:
+
 ```bash
 # Create public repository
 gz git repo create --name myapp --org myorg --description "My application"
@@ -119,6 +126,7 @@ gz git repo create --name internal-tool --org myorg --private --init --license M
 ```
 
 ##### `gz git repo delete`
+
 Delete a repository from a Git platform.
 
 ```bash
@@ -126,12 +134,14 @@ gz git repo delete --name <name> --org <org> --confirm
 ```
 
 **Options**:
+
 - `--name` - Repository name (required)
 - `--org` - Organization/owner (required)
 - `--confirm` - Confirm deletion (required for safety)
 - `--backup` - Create backup before deletion
 
 **Examples**:
+
 ```bash
 # Delete repository with confirmation
 gz git repo delete --name old-project --org myorg --confirm
@@ -141,6 +151,7 @@ gz git repo delete --name deprecated-app --org myorg --backup --confirm
 ```
 
 ##### `gz git repo archive`
+
 Archive a repository (make read-only).
 
 ```bash
@@ -148,11 +159,13 @@ gz git repo archive --name <name> --org <org>
 ```
 
 **Options**:
+
 - `--name` - Repository name (required)
 - `--org` - Organization/owner (required)
 - `--message` - Archive reason/message
 
 ##### `gz git repo list`
+
 List repositories with filtering options.
 
 ```bash
@@ -160,12 +173,14 @@ gz git repo list --org <org> [--filter <filter>] [--format <format>]
 ```
 
 **Options**:
+
 - `--org` - Organization to list (required)
 - `--filter` - Filter repositories (archived, private, public, fork)
 - `--format` - Output format (table, json, yaml, csv)
 - `--sort` - Sort by (name, created, updated, size)
 
 ##### `gz git repo sync` (NEW)
+
 Synchronize repositories between different Git platforms.
 
 ```bash
@@ -173,6 +188,7 @@ gz git repo sync --from <source> --to <destination> [options]
 ```
 
 **Options**:
+
 - `--from` - Source (e.g., `github:org/repo` or `github:org`)
 - `--to` - Destination (e.g., `gitlab:group/repo` or `gitlab:group`)
 - `--create-missing` - Create repos that don't exist in destination
@@ -182,6 +198,7 @@ gz git repo sync --from <source> --to <destination> [options]
 - `--dry-run` - Preview changes without applying
 
 **Examples**:
+
 ```bash
 # Sync single repository
 gz git repo sync --from github:myorg/repo --to gitlab:mygroup/repo
@@ -206,6 +223,7 @@ gz git repo sync --from github:org/repo --to gitlab:group/repo --dry-run
 #### Subcommands
 
 ##### `gz git webhook create`
+
 Create a new webhook.
 
 ```bash
@@ -213,6 +231,7 @@ gz git webhook create --org <org> --repo <repo> --url <webhook-url> [options]
 ```
 
 **Options**:
+
 - `--org` - Organization (required)
 - `--repo` - Repository name (optional, for repo-specific webhook)
 - `--url` - Webhook URL (required)
@@ -221,6 +240,7 @@ gz git webhook create --org <org> --repo <repo> --url <webhook-url> [options]
 - `--active` - Whether webhook is active (default: true)
 
 ##### `gz git webhook list`
+
 List webhooks for an organization or repository.
 
 ```bash
@@ -228,6 +248,7 @@ gz git webhook list --org <org> [--repo <repo>] [--format <format>]
 ```
 
 ##### `gz git webhook delete`
+
 Delete a webhook.
 
 ```bash
@@ -243,6 +264,7 @@ gz git webhook delete --org <org> --repo <repo> --id <webhook-id>
 #### Subcommands
 
 ##### `gz git event server`
+
 Run a webhook event server.
 
 ```bash
@@ -250,6 +272,7 @@ gz git event server --port <port> [--handler <handler>]
 ```
 
 **Options**:
+
 - `--port` - Server port (default: 8080)
 - `--handler` - Event handler script or command
 - `--secret` - Webhook secret for validation
@@ -321,12 +344,14 @@ git:
 Users migrating from older versions should update their scripts:
 
 **Old**:
+
 ```bash
 gz repo-config apply --config config.yaml
 gz synclone github --org myorg
 ```
 
 **New**:
+
 ```bash
 gz git config apply --config config.yaml  # Delegated to repo-config
 gz git repo sync --from github:myorg --to local:~/repos
@@ -335,25 +360,28 @@ gz git repo sync --from github:myorg --to local:~/repos
 ## Future Enhancements
 
 1. **Git Flow Integration**: Support for git flow workflows
-2. **PR/MR Management**: Create and manage pull/merge requests
-3. **Code Review**: Integration with code review workflows
-4. **CI/CD Triggers**: Direct CI/CD pipeline management
-5. **Repository Templates**: Advanced template management
-6. **Access Control**: Team and permission management
-7. **Repository Insights**: Statistics and analytics
+1. **PR/MR Management**: Create and manage pull/merge requests
+1. **Code Review**: Integration with code review workflows
+1. **CI/CD Triggers**: Direct CI/CD pipeline management
+1. **Repository Templates**: Advanced template management
+1. **Access Control**: Team and permission management
+1. **Repository Insights**: Statistics and analytics
 
 ## Testing
 
 ### Unit Tests
+
 - Repository operations: `cmd/git/repo/*_test.go`
 - Webhook management: `cmd/git/webhook/*_test.go`
 - Event processing: `cmd/git/event/*_test.go`
 
 ### Integration Tests
+
 - Cross-platform sync: `test/integration/git/sync_test.go`
 - Webhook delivery: `test/integration/git/webhook_test.go`
 
 ### Coverage Goals
+
 - Unit test coverage: >90%
 - Integration test coverage: >70%
 - Current achievement: 91.7%
@@ -374,7 +402,7 @@ gz git repo sync --from github:myorg --to local:~/repos
 ## Security Considerations
 
 1. **Token Management**: Never log or expose authentication tokens
-2. **Webhook Secrets**: Use strong secrets for webhook validation
-3. **Repository Access**: Respect platform permissions and ACLs
-4. **Data Sync**: Validate data integrity during cross-platform sync
-5. **Rate Limiting**: Implement adaptive rate limiting for API calls
+1. **Webhook Secrets**: Use strong secrets for webhook validation
+1. **Repository Access**: Respect platform permissions and ACLs
+1. **Data Sync**: Validate data integrity during cross-platform sync
+1. **Rate Limiting**: Implement adaptive rate limiting for API calls

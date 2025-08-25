@@ -279,13 +279,14 @@ file gz  # Should show "not stripped"
    (dlv) config max-array-values 10
    ```
 
-2. **Use conditional breakpoints**:
+1. **Use conditional breakpoints**:
 
    ```bash
    (dlv) b main.go:42 if myVar > 100
    ```
 
-3. **Disable logging**:
+1. **Disable logging**:
+
    ```bash
    dlv debug --log=false main.go
    ```
@@ -344,7 +345,7 @@ Use debug scripts with VS Code tasks:
 Create external tools for debug scripts:
 
 1. **Settings** → **Tools** → **External Tools**
-2. **Add new tool**:
+1. **Add new tool**:
    - **Name**: Debug CLI
    - **Program**: `$ProjectFileDir$/scripts/debug/debug-cli.sh`
    - **Arguments**: `$Prompt$`
@@ -364,11 +365,11 @@ alias gzh-debug-attach='./scripts/debug/debug-attach.sh'
 ## Best Practices
 
 1. **Start with logs**: Check application logs before debugging
-2. **Use meaningful breakpoints**: Set breakpoints at decision points
-3. **Prepare test data**: Have sample configs ready
-4. **Document findings**: Keep notes of debugging sessions
-5. **Clean up**: Stop debug servers when done
-6. **Use version control**: Commit working debug configurations
+1. **Use meaningful breakpoints**: Set breakpoints at decision points
+1. **Prepare test data**: Have sample configs ready
+1. **Document findings**: Keep notes of debugging sessions
+1. **Clean up**: Stop debug servers when done
+1. **Use version control**: Commit working debug configurations
 
 ## Resources
 
@@ -377,6 +378,6 @@ alias gzh-debug-attach='./scripts/debug/debug-attach.sh'
 - [Go Debugging Tutorial](https://golang.org/doc/gdb)
 - [Delve Command Reference](https://github.com/go-delve/delve/blob/master/Documentation/cli/README.md)
 
----
+______________________________________________________________________
 
 **Note**: These scripts are specifically designed for the GZH Manager Go project. Modify paths and configurations as needed for your specific debugging requirements.

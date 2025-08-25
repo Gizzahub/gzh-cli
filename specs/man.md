@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Manual Page Generation Specification
@@ -18,6 +19,7 @@ The `man` command provides manual page generation capabilities for the gzh-cli C
 **Purpose**: Generate Unix-style manual pages from command definitions
 
 **Features**:
+
 - Automatic roff format generation
 - Cobra command integration
 - Hierarchical command documentation
@@ -26,6 +28,7 @@ The `man` command provides manual page generation capabilities for the gzh-cli C
 - Hidden command (not shown in help)
 
 **Usage**:
+
 ```bash
 gz man > gzh-manager.1                     # Generate manual page
 gz man | man -l -                          # View generated manual immediately
@@ -41,35 +44,42 @@ gz man > /usr/local/share/man/man1/gz.1    # Install system-wide manual
 The manual pages include the following standard sections:
 
 #### NAME
+
 - Command name and brief description
 - Standard format: "gz - GZH Manager command line tool"
 
 #### SYNOPSIS
+
 - Command syntax and usage patterns
 - All available command forms and options
 - Hierarchical subcommand structure
 
 #### DESCRIPTION
+
 - Detailed command description
 - Feature overview
 - Use case explanations
 
 #### OPTIONS
+
 - Complete flag and option documentation
 - Default values and constraints
 - Required vs optional parameters
 
 #### COMMANDS
+
 - Subcommand documentation
 - Command hierarchy representation
 - Cross-references between related commands
 
 #### EXAMPLES
+
 - Practical usage examples
 - Common workflow demonstrations
 - Real-world scenarios
 
 #### SEE ALSO
+
 - Related commands and utilities
 - External documentation references
 - Additional resources
@@ -77,6 +87,7 @@ The manual pages include the following standard sections:
 ### Roff Format
 
 The generated manual pages use standard roff markup:
+
 - `.TH` - Manual page header
 - `.SH` - Section headers
 - `.TP` - Paragraph with hanging tag
@@ -89,6 +100,7 @@ The generated manual pages use standard roff markup:
 ### Cobra Command Integration
 
 The man command uses the `muesli/mango-cobra` library to:
+
 - Extract command documentation from Cobra structures
 - Generate comprehensive command descriptions
 - Include all flags and subcommands
@@ -97,6 +109,7 @@ The man command uses the `muesli/mango-cobra` library to:
 ### System Integration
 
 Generated manual pages integrate with:
+
 - Unix man page system
 - System manual page directories
 - Man page indexing (makewhatis, mandb)
@@ -119,6 +132,7 @@ man gz
 ### Package Distribution
 
 Manual pages can be included in:
+
 - Debian packages (debian/manpages)
 - RPM packages (SOURCES)
 - Homebrew formulas
@@ -170,21 +184,23 @@ Git unified command interface
 ### Section Organization
 
 Manual pages are organized into logical sections:
+
 1. **Header information** - Command name, section, date
-2. **Name and synopsis** - Basic command identification
-3. **Description** - Comprehensive command overview
-4. **Global options** - Common flags and parameters
-5. **Subcommands** - Detailed subcommand documentation
-6. **Examples** - Practical usage demonstrations
-7. **Files** - Configuration files and locations
-8. **Environment** - Environment variables
-9. **See also** - Related commands and resources
+1. **Name and synopsis** - Basic command identification
+1. **Description** - Comprehensive command overview
+1. **Global options** - Common flags and parameters
+1. **Subcommands** - Detailed subcommand documentation
+1. **Examples** - Practical usage demonstrations
+1. **Files** - Configuration files and locations
+1. **Environment** - Environment variables
+1. **See also** - Related commands and resources
 
 ## Command Documentation
 
 ### Automatic Documentation
 
 The man command automatically extracts:
+
 - Command descriptions from Cobra `Short` and `Long` fields
 - Flag documentation from flag definitions
 - Subcommand hierarchy and descriptions
@@ -193,6 +209,7 @@ The man command automatically extracts:
 ### Documentation Quality
 
 Generated documentation includes:
+
 - Consistent formatting and structure
 - Complete parameter documentation
 - Hierarchical command organization
@@ -263,6 +280,7 @@ man -l docs/gz.1
 ### Validation
 
 Manual pages can be validated using:
+
 - `groff` for syntax checking
 - `man -l` for rendering verification
 - `mandoc -T lint` for standards compliance
@@ -271,6 +289,7 @@ Manual pages can be validated using:
 ### Standards Compliance
 
 Generated manual pages comply with:
+
 - POSIX manual page standards
 - GNU manual page conventions
 - Linux manual page guidelines
@@ -393,6 +412,7 @@ override_dh_auto_install:
 ### File System Access
 
 Manual page generation and installation require:
+
 - Read access to command definitions
 - Write access to manual page directories
 - Appropriate file system permissions

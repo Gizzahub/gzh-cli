@@ -5,14 +5,14 @@ Comprehensive reference documentation for all `gz` commands and their options.
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Global Options](#global-options)
-3. [Core Commands](#core-commands)
-4. [Environment Management](#environment-management)
-5. [Repository Management](#repository-management)
-6. [Platform Integration](#platform-integration)
-7. [Configuration](#configuration)
-8. [Examples](#examples)
-9. [Troubleshooting](#troubleshooting)
+1. [Global Options](#global-options)
+1. [Core Commands](#core-commands)
+1. [Environment Management](#environment-management)
+1. [Repository Management](#repository-management)
+1. [Platform Integration](#platform-integration)
+1. [Configuration](#configuration)
+1. [Examples](#examples)
+1. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -25,6 +25,7 @@ gz <command> [subcommand] [flags]
 ### Command Categories
 
 #### Core Features
+
 - **[synclone](#synclone)** - Multi-platform repository synchronization
 - **[git](#git)** - Unified Git operations and platform management
 - **[quality](#quality)** - Multi-language code quality management
@@ -32,26 +33,28 @@ gz <command> [subcommand] [flags]
 - **[profile](#profile)** - Performance profiling and analysis
 
 #### Environment Management
+
 - **[dev-env](#dev-env)** - Development environment configuration
 - **[net-env](#net-env)** - Network environment transitions
 - **[pm](#pm)** - Package manager updates and management
 
 #### Repository Management
+
 - **[repo-config](#repo-config)** - GitHub repository configuration management
 
 ## Global Options
 
 All commands support these global flags:
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--config` | Configuration file path | Auto-detected |
-| `--debug` | Enable debug logging | `false` |
-| `--help` | Show help information | - |
-| `--log-level` | Set log level (debug, info, warn, error) | `info` |
-| `--quiet` | Suppress non-error output | `false` |
-| `--verbose` | Enable verbose output | `false` |
-| `--version` | Show version information | - |
+| Flag          | Description                              | Default       |
+| ------------- | ---------------------------------------- | ------------- |
+| `--config`    | Configuration file path                  | Auto-detected |
+| `--debug`     | Enable debug logging                     | `false`       |
+| `--help`      | Show help information                    | -             |
+| `--log-level` | Set log level (debug, info, warn, error) | `info`        |
+| `--quiet`     | Suppress non-error output                | `false`       |
+| `--verbose`   | Enable verbose output                    | `false`       |
+| `--version`   | Show version information                 | -             |
 
 ### Environment Variables
 
@@ -69,15 +72,15 @@ export GZ_CONFIG_DIR="~/.config/gzh-manager"
 
 ### Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | General error |
-| `2` | Misuse of command (invalid arguments) |
-| `3` | Authentication error |
-| `4` | Network error |
-| `5` | Configuration error |
-| `6` | File system error |
+| Code | Meaning                               |
+| ---- | ------------------------------------- |
+| `0`  | Success                               |
+| `1`  | General error                         |
+| `2`  | Misuse of command (invalid arguments) |
+| `3`  | Authentication error                  |
+| `4`  | Network error                         |
+| `5`  | Configuration error                   |
+| `6`  | File system error                     |
 
 ## Core Commands
 
@@ -103,6 +106,7 @@ gz synclone github --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org`, `-o` - Organization name (required)
 - `--target`, `-t` - Target directory (default: current directory)
 - `--strategy` - Clone/update strategy: reset, pull, fetch, rebase, clone, skip
@@ -116,6 +120,7 @@ gz synclone github --org <organization> [flags]
 - `--depth` - Depth for shallow clones (default: 1)
 
 **Examples:**
+
 ```bash
 # Basic organization clone
 gz synclone github --org kubernetes
@@ -136,12 +141,14 @@ gz synclone gitlab --group <group> [flags]
 ```
 
 **Key Flags:**
+
 - `--group`, `-g` - Group ID or path (required)
 - `--include-subgroups` - Include subgroups recursively
 - `--visibility` - Filter by visibility: public, internal, private
 - `--base-url` - GitLab instance URL (default: https://gitlab.com)
 
 **Examples:**
+
 ```bash
 # Clone GitLab group with subgroups
 gz synclone gitlab --group mygroup --include-subgroups
@@ -159,20 +166,21 @@ gz synclone gitea --org <organization> --base-url <url> [flags]
 ```
 
 **Key Flags:**
+
 - `--org`, `-o` - Organization name (required)
 - `--base-url` - Gitea instance URL (required)
 - `--token` - Authentication token
 
 #### Clone Strategies
 
-| Strategy | Behavior | Use Case |
-|----------|----------|----------|
-| `reset` | Hard reset to match remote (default) | CI/CD, mirrors |
-| `pull` | Merge remote changes | Active development |
-| `fetch` | Update refs only | Inspection |
-| `rebase` | Rebase local changes on remote | Clean history |
-| `clone` | Fresh clone (removes existing) | Clean start |
-| `skip` | Skip existing repositories | Initial clone only |
+| Strategy | Behavior                             | Use Case           |
+| -------- | ------------------------------------ | ------------------ |
+| `reset`  | Hard reset to match remote (default) | CI/CD, mirrors     |
+| `pull`   | Merge remote changes                 | Active development |
+| `fetch`  | Update refs only                     | Inspection         |
+| `rebase` | Rebase local changes on remote       | Clean history      |
+| `clone`  | Fresh clone (removes existing)       | Clean start        |
+| `skip`   | Skip existing repositories           | Initial clone only |
 
 ### git
 
@@ -195,16 +203,19 @@ gz git repo clone-or-update <repository-url> [target-path] [flags]
 ```
 
 **Arguments:**
+
 - `repository-url` - Git repository URL (HTTPS, SSH, or ssh:// format)
 - `target-path` - Optional target directory (auto-extracts repo name if omitted)
 
 **Key Flags:**
+
 - `--strategy`, `-s` - Update strategy: rebase, reset, clone, skip, pull, fetch
 - `--branch`, `-b` - Branch to check out
 - `--shallow` - Use shallow clone
 - `--depth` - Depth for shallow clone (default: 1)
 
 **Examples:**
+
 ```bash
 # Clone new repository (auto-extracts name)
 gz git repo clone-or-update https://github.com/user/awesome-project.git
@@ -232,32 +243,38 @@ gz git config <action> [flags]
 **Actions:**
 
 ###### `gz git config audit`
+
 ```bash
 gz git config audit --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org` - Organization name (required)
 - `--framework` - Compliance framework: SOC2, GDPR, HIPAA, PCI-DSS
 - `--output` - Output format: table, json, yaml, csv, html
 - `--severity` - Minimum severity: low, medium, high, critical
 
 ###### `gz git config apply`
+
 ```bash
 gz git config apply --config <config-file> [flags]
 ```
 
 **Key Flags:**
+
 - `--config` - Configuration file path (required)
 - `--dry-run` - Preview changes without applying
 - `--force` - Apply changes without confirmation
 
 ###### `gz git config diff`
+
 ```bash
 gz git config diff --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org` - Organization name (required)
 - `--baseline` - Baseline configuration file
 - `--output` - Output format: unified, side-by-side, json
@@ -275,11 +292,13 @@ gz git webhook <action> [flags]
 **Actions:**
 
 ###### `gz git webhook create`
+
 ```bash
 gz git webhook create --org <org> --repo <repo> --url <webhook-url> [flags]
 ```
 
 **Key Flags:**
+
 - `--org` - Organization name (required)
 - `--repo` - Repository name (required)
 - `--url` - Webhook URL (required)
@@ -287,6 +306,7 @@ gz git webhook create --org <org> --repo <repo> --url <webhook-url> [flags]
 - `--secret` - Webhook secret
 
 ###### `gz git webhook list`
+
 ```bash
 gz git webhook list --org <organization> [flags]
 ```
@@ -321,6 +341,7 @@ gz quality run [path] [flags]
 ```
 
 **Key Flags:**
+
 - `--languages` - Comma-separated list of languages to process
 - `--tools` - Specific tools to run (comma-separated)
 - `--exclude-tools` - Tools to exclude (comma-separated)
@@ -329,6 +350,7 @@ gz quality run [path] [flags]
 - `--output` - Output format: text, json, sarif, checkstyle
 
 **Examples:**
+
 ```bash
 # Run all quality checks
 gz quality run
@@ -349,11 +371,13 @@ gz quality install [tools] [flags]
 ```
 
 **Key Flags:**
+
 - `--languages` - Install tools for specific languages
 - `--force` - Force reinstall even if already present
 - `--version` - Install specific versions (format: tool@version)
 
 **Examples:**
+
 ```bash
 # Install all tools
 gz quality install
@@ -410,11 +434,13 @@ gz ide monitor [flags]
 ```
 
 **Key Flags:**
+
 - `--product` - Specific IDE product to monitor
 - `--interval` - Monitoring interval (default: 1s)
 - `--auto-fix` - Automatically fix sync issues
 
 **Examples:**
+
 ```bash
 # Monitor all IDEs
 gz ide monitor
@@ -432,6 +458,7 @@ gz ide fix-sync [flags]
 ```
 
 **Key Flags:**
+
 - `--dry-run` - Preview fixes without applying
 - `--backup` - Create backup before fixing
 
@@ -472,6 +499,7 @@ gz profile server [flags]
 ```
 
 **Key Flags:**
+
 - `--port` - Server port (default: 6060)
 - `--host` - Server host (default: localhost)
 
@@ -484,6 +512,7 @@ gz profile cpu [flags]
 ```
 
 **Key Flags:**
+
 - `--duration` - Profiling duration (default: 30s)
 - `--output` - Output file name
 
@@ -525,6 +554,7 @@ gz dev-env aws <action> [flags]
 ```
 
 **Actions:**
+
 - `configure` - Set up AWS configuration
 - `backup` - Backup AWS configuration
 - `restore` - Restore AWS configuration
@@ -610,11 +640,13 @@ gz pm update [flags]
 ```
 
 **Key Flags:**
+
 - `--all` - Update all package managers
 - `--managers` - Specific managers to update (comma-separated)
 - `--dry-run` - Show what would be updated
 
 **Examples:**
+
 ```bash
 # Update all package managers
 gz pm update --all
@@ -667,6 +699,7 @@ gz repo-config audit --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org` - Organization name (required)
 - `--framework` - Compliance framework: SOC2, GDPR, HIPAA, PCI-DSS
 - `--output` - Output format: table, json, yaml, csv, html
@@ -681,6 +714,7 @@ gz repo-config apply --config <config-file> [flags]
 ```
 
 **Key Flags:**
+
 - `--config` - Configuration file path (required)
 - `--dry-run` - Preview changes without applying
 - `--force` - Apply changes without confirmation
@@ -694,6 +728,7 @@ gz repo-config generate --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--template` - Template type: minimal, standard, enterprise
 - `--output` - Output file name
 
@@ -702,18 +737,18 @@ gz repo-config generate --org <organization> [flags]
 ### Configuration Priority
 
 1. **Command-Line Flags** (Highest Priority)
-2. **Environment Variables** (Second Priority)
-3. **Configuration Files** (Third Priority)
-4. **Default Values** (Lowest Priority)
+1. **Environment Variables** (Second Priority)
+1. **Configuration Files** (Third Priority)
+1. **Default Values** (Lowest Priority)
 
 ### Configuration File Locations
 
 Commands look for configuration in this order:
 
 1. `--config` flag value
-2. Current directory: `./gzh.yaml`
-3. User config: `~/.config/gzh-manager/gzh.yaml`
-4. System config: `/etc/gzh-manager/gzh.yaml`
+1. Current directory: `./gzh.yaml`
+1. User config: `~/.config/gzh-manager/gzh.yaml`
+1. System config: `/etc/gzh-manager/gzh.yaml`
 
 ### Common Configuration
 
@@ -894,6 +929,6 @@ gz <command> <subcommand> --help
 For additional help:
 
 1. Run `gz <command> --help` for command-specific options
-2. Check the [Configuration Guide](../30-configuration/30-configuration-guide.md)
-3. Review the [Examples](../../examples/) directory
-4. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
+1. Check the [Configuration Guide](../30-configuration/30-configuration-guide.md)
+1. Review the [Examples](../../examples/) directory
+1. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)

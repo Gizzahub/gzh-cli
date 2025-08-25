@@ -5,15 +5,15 @@ Comprehensive guide for managing GitHub repository configurations at scale using
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Quick Start](#quick-start)
-3. [Configuration System](#configuration-system)
-4. [Command Reference](#command-reference)
-5. [Policy Templates](#policy-templates)
-6. [Audit Reports](#audit-reports)
-7. [Diff Analysis](#diff-analysis)
-8. [Best Practices](#best-practices)
-9. [Examples](#examples)
-10. [Troubleshooting](#troubleshooting)
+1. [Quick Start](#quick-start)
+1. [Configuration System](#configuration-system)
+1. [Command Reference](#command-reference)
+1. [Policy Templates](#policy-templates)
+1. [Audit Reports](#audit-reports)
+1. [Diff Analysis](#diff-analysis)
+1. [Best Practices](#best-practices)
+1. [Examples](#examples)
+1. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -38,12 +38,15 @@ The `gz repo-config` command (also available as `gz git config`) provides powerf
 ### Prerequisites
 
 1. **GitHub Personal Access Token**
+
    ```bash
    export GITHUB_TOKEN="your-github-token"
    ```
+
    Required scopes: `repo`, `admin:org`, `admin:repo_hook`
 
-2. **Install gzh-cli**
+1. **Install gzh-cli**
+
    ```bash
    go install github.com/gizzahub/gzh-cli@latest
    ```
@@ -75,6 +78,7 @@ repositories:
 ```
 
 Apply it:
+
 ```bash
 gz repo-config apply --config repo-config.yaml --dry-run
 ```
@@ -294,6 +298,7 @@ gz repo-config audit --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org` - Organization name (required)
 - `--framework` - Compliance framework: SOC2, GDPR, HIPAA, PCI-DSS
 - `--output` - Output format: table, json, yaml, csv, html
@@ -301,6 +306,7 @@ gz repo-config audit --org <organization> [flags]
 - `--severity` - Minimum severity: low, medium, high, critical
 
 **Examples:**
+
 ```bash
 # Basic audit
 gz repo-config audit --org myorg
@@ -321,12 +327,14 @@ gz repo-config apply --config <config-file> [flags]
 ```
 
 **Key Flags:**
+
 - `--config` - Configuration file path (required)
 - `--dry-run` - Preview changes without applying
 - `--force` - Apply changes without confirmation
 - `--parallel` - Number of concurrent operations (default: 5)
 
 **Examples:**
+
 ```bash
 # Preview changes
 gz repo-config apply --config repo-standards.yaml --dry-run
@@ -347,6 +355,7 @@ gz repo-config diff --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org` - Organization name (required)
 - `--repo` - Specific repository
 - `--baseline` - Baseline configuration file
@@ -354,6 +363,7 @@ gz repo-config diff --org <organization> [flags]
 - `--show-values` - Include current values in output
 
 **Examples:**
+
 ```bash
 # Show differences for organization
 gz repo-config diff --org myorg
@@ -374,6 +384,7 @@ gz repo-config generate --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org` - Organization name (required)
 - `--template` - Template type: minimal, standard, enterprise
 - `--output` - Output file name
@@ -388,6 +399,7 @@ gz repo-config validate --config <config-file> [flags]
 ```
 
 **Key Flags:**
+
 - `--config` - Configuration file to validate (required)
 - `--schema` - Schema file for validation
 - `--strict` - Enable strict validation mode
@@ -395,22 +407,29 @@ gz repo-config validate --config <config-file> [flags]
 ### Output Formats
 
 #### Table Format (Default)
+
 Human-readable compliance summary with risk analysis.
 
 #### HTML Format
+
 Interactive HTML report with charts and visualizations:
+
 ```bash
 gz repo-config audit --org myorg --format html --output audit-report.html
 ```
 
 #### JSON Format
+
 Structured output for programmatic use:
+
 ```bash
 gz repo-config audit --org myorg --format json --output results.json
 ```
 
 #### SARIF Format
+
 Static Analysis Results Interchange Format for GitHub Advanced Security:
+
 ```bash
 gz repo-config audit --org myorg --format sarif --output results.sarif
 ```
@@ -556,35 +575,41 @@ policies:
 The enhanced HTML audit reports provide:
 
 1. **Interactive Dashboard**
+
    - Real-time filtering by repository name, status, and policies
    - Searchable repository list
    - Print-friendly layout
 
-2. **Visual Compliance Score**
+1. **Visual Compliance Score**
+
    - Circular progress indicator showing overall compliance percentage
    - Color-coded based on compliance level:
      - Green (≥80%): Excellent compliance
      - Yellow (60-79%): Good compliance
-     - Red (<60%): Needs improvement
+     - Red (\<60%): Needs improvement
 
-3. **Key Metrics Cards**
+1. **Key Metrics Cards**
+
    - Total repositories
    - Compliant repositories
    - Non-compliant repositories
    - Total violations
 
-4. **Policy Overview**
+1. **Policy Overview**
+
    - List of active policies with enforcement levels
    - Violation counts per policy
    - Visual badges for policy types
 
-5. **Detailed Repository Table**
+1. **Detailed Repository Table**
+
    - Status indicators
    - Violation details with policy and rule information
    - Applied policies per repository
    - Last checked timestamp
 
-6. **Compliance Trend Chart**
+1. **Compliance Trend Chart**
+
    - 30-day trend visualization
    - Track compliance improvements over time
    - Interactive chart with Chart.js
@@ -592,6 +617,7 @@ The enhanced HTML audit reports provide:
 ### Report Customization
 
 The HTML template uses:
+
 - Bootstrap 5.3 for responsive layout
 - Font Awesome 6.4 for icons
 - Chart.js 4.3 for visualizations
@@ -610,6 +636,7 @@ The `diff` command shows configuration differences using impact levels:
 ### Output Formats
 
 #### Table Format (Default)
+
 ```
 REPOSITORY           SETTING                        IMPACT     ACTION     TEMPLATE
 ────────────────────────────────────────────────────────────────────────────────
@@ -619,6 +646,7 @@ legacy-service       security.delete_head_branches  🔴 High    ➕         non
 ```
 
 #### JSON Format
+
 ```json
 {
   "differences": [
@@ -641,6 +669,7 @@ legacy-service       security.delete_head_branches  🔴 High    ➕         non
 ```
 
 #### Unified Diff Format
+
 ```diff
 --- api-service (current)
 +++ api-service (target)
@@ -894,6 +923,7 @@ policies:
 **Problem**: "Bad credentials" or "401 Unauthorized"
 
 **Solution**:
+
 - Check your GitHub token has required scopes: `repo`, `admin:org`, `admin:repo_hook`
 - Ensure token hasn't expired
 - Verify `GITHUB_TOKEN` environment variable is set
@@ -903,6 +933,7 @@ policies:
 **Problem**: "403 Forbidden" when updating repositories
 
 **Solution**:
+
 - Ensure you have admin access to the repository
 - Check organization settings allow token access
 - Verify token has `admin:org` scope
@@ -912,6 +943,7 @@ policies:
 **Problem**: "API rate limit exceeded"
 
 **Solution**:
+
 - Use `--parallel` flag to limit concurrent requests
 - Add delays between operations with `--delay`
 - Consider using GitHub App for higher limits
@@ -921,6 +953,7 @@ policies:
 **Problem**: "Template 'x' not found"
 
 **Solution**:
+
 - Check template name spelling
 - Ensure template is defined before use
 - Verify no circular dependencies
@@ -930,6 +963,7 @@ policies:
 **Problem**: Repositories failing compliance checks
 
 **Solution**:
+
 - Review audit report for specific violations
 - Add exceptions for legitimate cases
 - Update repository settings to comply
@@ -947,18 +981,21 @@ gz repo-config apply --config repo-config.yaml --debug
 Common validation errors and fixes:
 
 1. **Missing required field**
+
    ```
    Error: organization is required
    Fix: Add 'organization: "your-org"' to config
    ```
 
-2. **Invalid template reference**
+1. **Invalid template reference**
+
    ```
    Error: Unknown template 'invalid'
    Fix: Check template name exists in templates section
    ```
 
-3. **Circular dependency**
+1. **Circular dependency**
+
    ```
    Error: Circular dependency detected: a -> b -> a
    Fix: Remove circular references in template inheritance
@@ -986,6 +1023,6 @@ gz git config audit --org myorg
 For additional help:
 
 1. Run `gz repo-config --help` for command options
-2. Check the [examples directory](../../examples/) for more configurations
-3. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
-4. Review the [API documentation](../40-api-reference/repository-configuration-api.md)
+1. Check the [examples directory](../../examples/) for more configurations
+1. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
+1. Review the [API documentation](../40-api-reference/repository-configuration-api.md)

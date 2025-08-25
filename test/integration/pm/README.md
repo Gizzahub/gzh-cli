@@ -82,27 +82,32 @@ docker-compose down
 ## Test Scenarios
 
 ### 1. Bootstrap Tests
+
 - Checks which package managers need installation
 - Verifies package manager detection
 - Tests installation of missing managers
 
 ### 2. Package Installation Tests
+
 - **Homebrew**: Install formulae on Linux
 - **ASDF**: Install plugins and language versions
 - **NPM**: Install global Node.js packages
 - **pip**: Install Python packages
 
 ### 3. Version Coordination Tests
+
 - Node.js/npm version synchronization
 - Ruby/gem migration when switching versions
 - Python/pip virtual environment handling
 
 ### 4. Migration Tests
+
 - Migrate packages between language versions
 - Test intelligent migration strategies
 - Verify package compatibility
 
 ### 5. Export/Import Tests
+
 - Export current package configurations
 - Import configurations on new systems
 - Validate configuration integrity
@@ -110,16 +115,19 @@ docker-compose down
 ## Container Environments
 
 ### Ubuntu 22.04
+
 - Full support for all package managers
 - Includes: Homebrew, nvm, rbenv, pyenv, asdf, SDKMAN
 - Used for comprehensive testing
 
 ### Alpine Linux
+
 - Lightweight environment
 - Limited package manager support
 - Tests: asdf, native package management
 
 ### Fedora 39
+
 - RPM-based system testing
 - Full package manager support
 - Tests DNF integration
@@ -127,19 +135,22 @@ docker-compose down
 ## Package Managers Tested
 
 1. **System Package Managers**
+
    - Homebrew (Linux)
    - APT (Ubuntu)
    - DNF (Fedora)
    - APK (Alpine)
 
-2. **Version Managers**
+1. **Version Managers**
+
    - asdf (all languages)
    - nvm (Node.js)
    - rbenv (Ruby)
    - pyenv (Python)
    - SDKMAN (JVM)
 
-3. **Language Package Managers**
+1. **Language Package Managers**
+
    - npm/yarn/pnpm (Node.js)
    - pip (Python)
    - gem (Ruby)

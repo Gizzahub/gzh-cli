@@ -5,12 +5,12 @@ Comprehensive guide to gzh-cli YAML configuration with examples, best practices,
 ## 📋 Table of Contents
 
 1. [Quick Start](#quick-start)
-2. [Configuration Structure](#configuration-structure)
-3. [Provider Configuration](#provider-configuration)
-4. [Advanced Settings](#advanced-settings)
-5. [Example Configurations](#example-configurations)
-6. [Schema Validation](#schema-validation)
-7. [Troubleshooting](#troubleshooting)
+1. [Configuration Structure](#configuration-structure)
+1. [Provider Configuration](#provider-configuration)
+1. [Advanced Settings](#advanced-settings)
+1. [Example Configurations](#example-configurations)
+1. [Schema Validation](#schema-validation)
+1. [Troubleshooting](#troubleshooting)
 
 ## 🚀 Quick Start
 
@@ -623,24 +623,27 @@ providers:
 ## 📖 Best Practices
 
 ### Security
+
 - Use environment variables for tokens
 - Set restrictive file permissions (600)
 - Never commit tokens to version control
 - Rotate tokens regularly
 
 ### Performance
+
 - Adjust concurrent_jobs based on system resources
 - Use appropriate timeouts for your network
 - Filter repositories to avoid unnecessary clones
 - Use reset strategy for automated environments
 
 ### Maintainability
+
 - Use descriptive names for configurations
 - Comment complex settings
 - Separate personal and work configurations
 - Use configuration inheritance for common settings
 
----
+______________________________________________________________________
 
 **Configuration File**: `~/.config/gzh-manager/gzh.yaml`
 **Schema Validation**: `gz config validate`

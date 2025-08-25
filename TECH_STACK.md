@@ -110,11 +110,13 @@ helpers/
 The architecture was recently simplified to remove over-engineered components inappropriate for CLI tools:
 
 1. **Dependency Injection Container** (`internal/container/`):
+
    - **Removed**: ~1,188 lines of complex DI container code
    - **Replaced with**: Direct constructor calls in command initialization
    - **Rationale**: CLI tools don't need runtime service discovery
 
-2. **Complex Profiling System** (`internal/profiling/`):
+1. **Complex Profiling System** (`internal/profiling/`):
+
    - **Removed**: Custom HTTP server with multiple abstractions
    - **Replaced with**: Standard Go pprof integration via `internal/simpleprof/`
    - **Rationale**: Standard pprof tooling is more appropriate and familiar
@@ -122,29 +124,30 @@ The architecture was recently simplified to remove over-engineered components in
 ### Current Design Patterns
 
 1. **Simplified Architecture**: Clean, direct implementation focused on CLI tool needs
+
    - Direct constructor pattern instead of dependency injection containers
    - Standard Go pprof integration instead of custom profiling systems
    - Minimal abstractions with clear benefits
 
-2. **Service-specific implementations**: Each Git platform (GitHub, GitLab, Gitea, Gogs) has dedicated packages following common interfaces
+1. **Service-specific implementations**: Each Git platform (GitHub, GitLab, Gitea, Gogs) has dedicated packages following common interfaces
 
-3. **Configuration-driven design**: Extensive YAML configuration support with schema validation (see `examples/` directory)
+1. **Configuration-driven design**: Extensive YAML configuration support with schema validation (see `examples/` directory)
 
-4. **Cobra CLI framework**: All commands use cobra with consistent flag patterns and help documentation
+1. **Cobra CLI framework**: All commands use cobra with consistent flag patterns and help documentation
 
-5. **Cross-platform support**: Native OS detection and platform-specific implementations (Linux, macOS, Windows)
+1. **Cross-platform support**: Native OS detection and platform-specific implementations (Linux, macOS, Windows)
 
-6. **Environment variable integration**: Support for token authentication and configuration overrides
+1. **Environment variable integration**: Support for token authentication and configuration overrides
 
-7. **Atomic operations**: Commands designed for safe execution with backup and rollback capabilities
+1. **Atomic operations**: Commands designed for safe execution with backup and rollback capabilities
 
-8. **Comprehensive testing**: testify framework with mock services and environment-specific tests
+1. **Comprehensive testing**: testify framework with mock services and environment-specific tests
 
-9. **Standard Go tooling integration**: Uses standard `runtime/pprof` for profiling instead of custom implementations
+1. **Standard Go tooling integration**: Uses standard `runtime/pprof` for profiling instead of custom implementations
 
-10. **URL Parsing Strategy**: Robust URL parsing for multiple Git hosting formats (HTTPS, SSH, ssh://) in `extractRepoNameFromURL`
+1. **URL Parsing Strategy**: Robust URL parsing for multiple Git hosting formats (HTTPS, SSH, ssh://) in `extractRepoNameFromURL`
 
-11. **Performance monitoring**: Automated benchmarking system with regression detection (see `scripts/` directory)
+1. **Performance monitoring**: Automated benchmarking system with regression detection (see `scripts/` directory)
 
 ## Performance Monitoring System
 
@@ -204,12 +207,14 @@ make lint-all          # Complete quality check pipeline
 ### Configuration
 
 - **Config Hierarchy**:
+
   1. Environment variable: `GZH_CONFIG_PATH`
-  2. Current directory: `./synclone.yaml` or `./synclone.yml`
-  3. User config: `~/.config/gzh-manager/synclone.yaml`
-  4. System config: `/etc/gzh-manager/synclone.yaml`
+  1. Current directory: `./synclone.yaml` or `./synclone.yml`
+  1. User config: `~/.config/gzh-manager/synclone.yaml`
+  1. System config: `/etc/gzh-manager/synclone.yaml`
 
 - **Schema Validation**:
+
   - JSON Schema: `docs/synclone-schema.json`
   - YAML Schema: `docs/synclone-schema.yaml`
   - Built-in validator: `gz synclone validate`

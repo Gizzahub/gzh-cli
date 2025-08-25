@@ -5,7 +5,7 @@
 # Quality Configuration
 # ==============================================================================
 
-.PHONY: fmt format format-all format-check format-diff format-imports format-simplify format-ci format-strict format-list format-file format-install-tools
+.PHONY: fmt format format-all format-check format-diff format-imports format-simplify format-ci format-strict format-list format-file format-install-tools format-md format-md-check format-md-diff
 .PHONY: pre-commit-install dev dev-fast verify ci-local pr-check lint-help fmt-diff lint-diff quality-fast quality-push
 
 # ==============================================================================
@@ -15,13 +15,34 @@
 format: format-simplify ## quick and simple formatting (default)
 fmt: format-simplify
 
-format-simplify: ## quick basic formatting with gofumpt and goimports
+format-simplify: ## quick basic formatting with gofumpt, goimports, and mdformat
 	@echo -e "$(CYAN)🚀 Quick formatting...$(RESET)"
 	@echo "1. Running gofumpt (includes go fmt + simplification)..."
 	@gofumpt -w .
 	@echo "2. Organizing imports..."
 	@goimports -w -local github.com/gizzahub/gzh-cli .
+	@echo "3. Formatting markdown files..."
+	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat || true
 	@echo -e "$(GREEN)✅ Quick formatting complete!$(RESET)"
+
+format-md: ## format all markdown files with mdformat
+	@echo -e "$(CYAN)📝 Formatting markdown files...$(RESET)"
+	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat
+	@echo -e "$(GREEN)✅ Markdown formatting complete!$(RESET)"
+
+format-md-check: ## check markdown files that need formatting
+	@echo -e "$(CYAN)📋 Checking markdown formatting...$(RESET)"
+	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat --check || echo -e "$(YELLOW)Some markdown files need formatting$(RESET)"
+
+format-md-diff: ## format only changed markdown files
+	@echo -e "$(CYAN)🚀 Formatting changed markdown files...$(RESET)"
+	@CHANGED_FILES=$$(git diff --name-only --diff-filter=d HEAD | grep '\.md$$' || true); \
+	if [ -n "$$CHANGED_FILES" ]; then \
+		echo "$$CHANGED_FILES" | xargs -r mdformat; \
+		echo -e "$(GREEN)✅ Changed markdown files formatted!$(RESET)"; \
+	else \
+		echo -e "$(YELLOW)No markdown files changed$(RESET)"; \
+	fi
 
 format-strict: format-install-tools ## comprehensive formatting with all tools
 	@echo -e "$(CYAN)🔧 Strict formatting (all tools)...$(RESET)"
@@ -61,6 +82,7 @@ format-install-tools: ## install advanced formatting tools
 	@which goimports > /dev/null || (echo "Installing goimports..." && go install golang.org/x/tools/cmd/goimports@latest)
 	@which gofumpt > /dev/null || (echo "Installing gofumpt..." && go install mvdan.cc/gofumpt@latest)
 	@which gci > /dev/null || (echo "Installing gci..." && go install github.com/daixiang0/gci@latest)
+	@which mdformat > /dev/null || (echo "Installing mdformat..." && pip install --user mdformat mdformat-gfm mdformat-tables)
 	@echo -e "$(GREEN)✅ All formatting tools installed!$(RESET)"
 
 format-file: ## format specific files with gofumpt and goimports (usage: make format-file file1.go file2.go ...)
@@ -301,7 +323,7 @@ quality-fix: fmt lint-fix ## apply automatic quality fixes
 lint-all: fmt lint-check pre-commit ## run all linting steps (format, lint, pre-commit)
 	@echo -e "$(GREEN)✅ All linting steps completed!$(RESET)"
 
-quality-fast: fmt-diff lint-diff ## fast quality check for pre-commit (changed files only, <3s)
+quality-fast: fmt-diff lint-diff format-md-diff ## fast quality check for pre-commit (changed files only, <3s)
 	@echo -e "$(GREEN)⚡ Fast quality check completed!$(RESET)"
 
 quality-push: format-strict lint-fix ## comprehensive quality check for pre-push
@@ -320,9 +342,12 @@ quality-info: ## show code quality information and targets
 	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
 	@echo -e "$(RESET)"
 	@echo -e "$(GREEN)🎨 Formatting Tools:$(RESET)"
-	@echo -e "  • $(CYAN)format$(RESET)                기본 포맷팅 (format-simplify 실행)"
-	@echo -e "  • $(CYAN)format-simplify$(RESET)       신속한 기본 포맷팅"
-	@echo -e "  • $(CYAN)format-strict$(RESET)         엄격한 포맷팅 (모든 도구 사용)"
+	@echo -e "  • $(CYAN)format$(RESET)                기본 포맷팅 (Go + Markdown)"
+	@echo -e "  • $(CYAN)format-simplify$(RESET)       신속한 기본 포맷팅 (Go + Markdown)"
+	@echo -e "  • $(CYAN)format-strict$(RESET)         엄격한 포맷팅 (모든 Go 도구 사용)"
+	@echo -e "  • $(CYAN)format-md$(RESET)             Markdown 파일 포맷팅"
+	@echo -e "  • $(CYAN)format-md-check$(RESET)       Markdown 포맷팅 필요 파일 확인"
+	@echo -e "  • $(CYAN)format-md-diff$(RESET)        변경된 Markdown 파일만 포맷팅"
 	@echo -e "  • $(CYAN)format-list$(RESET)           포맷팅 필요한 파일 목록"
 	@echo -e "  • $(CYAN)format-diff$(RESET)           포맷팅 차이점 표시"
 	@echo -e "  • $(CYAN)format-file$(RESET)           특정 파일 포맷팅"
@@ -353,9 +378,12 @@ lint-help: ## show comprehensive help for linting targets
 	@echo -e "$(BLUE)Code Quality and Linting Commands:$(RESET)"
 	@echo ""
 	@echo -e "$(YELLOW)🎨 Formatting:$(RESET)"
-	@echo -e "  $(CYAN)format$(RESET)                기본 포맷팅 (format-simplify 실행)"
-	@echo -e "  $(CYAN)format-simplify$(RESET)       신속한 기본 포맷팅"
-	@echo -e "  $(CYAN)format-strict$(RESET)         엄격한 포맷팅 (모든 도구 사용)"
+	@echo -e "  $(CYAN)format$(RESET)                기본 포맷팅 (Go + Markdown)"
+	@echo -e "  $(CYAN)format-simplify$(RESET)       신속한 기본 포맷팅 (Go + Markdown)"
+	@echo -e "  $(CYAN)format-strict$(RESET)         엄격한 포맷팅 (모든 Go 도구 사용)"
+	@echo -e "  $(CYAN)format-md$(RESET)             Markdown 파일 포맷팅"
+	@echo -e "  $(CYAN)format-md-check$(RESET)       Markdown 포맷팅 필요 파일 확인"
+	@echo -e "  $(CYAN)format-md-diff$(RESET)        변경된 Markdown 파일만 포맷팅"
 	@echo -e "  $(CYAN)format-list$(RESET)           포맷팅 필요한 파일 목록"
 	@echo -e "  $(CYAN)format-diff$(RESET)           포맷팅 차이점 표시"
 	@echo -e "  $(CYAN)format-file$(RESET)           특정 파일 포맷팅 (FILE= 옵션 사용)"

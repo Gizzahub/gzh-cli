@@ -91,10 +91,10 @@ graph TB
 ### Hot-Reload Process
 
 1. **File Detection** - Monitor configuration file for changes
-2. **Validation** - Validate new configuration before applying
-3. **Backup** - Create backup of previous working configuration
-4. **Reload** - Apply new configuration to running services
-5. **Notification** - Notify components of configuration changes
+1. **Validation** - Validate new configuration before applying
+1. **Backup** - Create backup of previous working configuration
+1. **Reload** - Apply new configuration to running services
+1. **Notification** - Notify components of configuration changes
 
 ### Configuration Watching
 
@@ -515,7 +515,7 @@ gz config migration rollback --name "add-new-provider"
 gz config migration history
 ```
 
----
+______________________________________________________________________
 
 **Hot-Reload**: Real-time configuration updates without restart
 **Schema Validation**: Comprehensive configuration validation

@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Repository Configuration Management Specification
@@ -25,6 +26,7 @@ The `repo-config` command provides comprehensive repository configuration manage
 **Purpose**: Apply repository configuration to organizations and repositories
 
 **Features**:
+
 - Template-based configuration deployment
 - Organization-wide and selective application
 - Dry-run mode for preview
@@ -33,6 +35,7 @@ The `repo-config` command provides comprehensive repository configuration manage
 - Progress tracking and reporting
 
 **Usage**:
+
 ```bash
 gz repo-config apply --org myorg                               # Apply to all repositories
 gz repo-config apply --filter "^api-.*"                        # Apply to matching repositories
@@ -43,6 +46,7 @@ gz repo-config apply --config custom-config.yaml --org myorg  # Apply custom con
 ```
 
 **Parameters**:
+
 - `--org`: Target organization
 - `--repo`: Specific repository (alternative to org)
 - `--filter`: Repository name filter (regex pattern)
@@ -58,6 +62,7 @@ gz repo-config apply --config custom-config.yaml --org myorg  # Apply custom con
 **Purpose**: Audit repository configurations for compliance and consistency
 
 **Features**:
+
 - Comprehensive configuration analysis
 - Compliance rule validation
 - Security setting verification
@@ -65,6 +70,7 @@ gz repo-config apply --config custom-config.yaml --org myorg  # Apply custom con
 - Detailed audit reports
 
 **Usage**:
+
 ```bash
 gz repo-config audit --org myorg                               # Audit all repositories
 gz repo-config audit --org myorg --template security          # Audit against template
@@ -73,6 +79,7 @@ gz repo-config audit --severity high --org myorg              # Filter by severi
 ```
 
 **Parameters**:
+
 - `--org` (required): Target organization
 - `--template`: Audit against specific template
 - `--severity`: Filter by issue severity (low, medium, high, critical)
@@ -86,6 +93,7 @@ gz repo-config audit --severity high --org myorg              # Filter by severi
 **Purpose**: Manage configuration templates for consistent repository setup
 
 **Features**:
+
 - Template creation and modification
 - Template validation and testing
 - Template versioning
@@ -93,6 +101,7 @@ gz repo-config audit --severity high --org myorg              # Filter by severi
 - Custom template support
 
 **Usage**:
+
 ```bash
 gz repo-config template list                                   # List available templates
 gz repo-config template show security                          # Show template details
@@ -103,6 +112,7 @@ gz repo-config template import --file custom.yaml              # Import custom t
 ```
 
 **Subcommands**:
+
 - `list`: List available templates
 - `show`: Display template details
 - `create`: Create new template
@@ -116,6 +126,7 @@ gz repo-config template import --file custom.yaml              # Import custom t
 **Purpose**: Manage repository webhooks across multiple repositories
 
 **Features**:
+
 - Bulk webhook creation and modification
 - Webhook template support
 - Event configuration management
@@ -123,6 +134,7 @@ gz repo-config template import --file custom.yaml              # Import custom t
 - Centralized webhook policies
 
 **Usage**:
+
 ```bash
 gz repo-config webhook list --org myorg                        # List all webhooks
 gz repo-config webhook create --org myorg --url https://api.example.com/webhook  # Create webhook
@@ -132,6 +144,7 @@ gz repo-config webhook test --org myorg --id 123              # Test webhook
 ```
 
 **Subcommands**:
+
 - `list`: List repository webhooks
 - `create`: Create new webhook
 - `update`: Update existing webhook
@@ -143,6 +156,7 @@ gz repo-config webhook test --org myorg --id 123              # Test webhook
 **Purpose**: Validate repository configurations against policies and best practices
 
 **Features**:
+
 - Policy compliance validation
 - Security configuration checks
 - Best practice verification
@@ -150,6 +164,7 @@ gz repo-config webhook test --org myorg --id 123              # Test webhook
 - Custom rule support
 
 **Usage**:
+
 ```bash
 gz repo-config validate --org myorg                            # Validate all repositories
 gz repo-config validate --org myorg --policy security         # Validate against policy
@@ -157,6 +172,7 @@ gz repo-config validate --config custom.yaml --rules strict   # Validate custom 
 ```
 
 **Parameters**:
+
 - `--org`: Target organization
 - `--policy`: Validation policy name
 - `--rules`: Validation rule set (basic, standard, strict)
@@ -168,6 +184,7 @@ gz repo-config validate --config custom.yaml --rules strict   # Validate custom 
 **Purpose**: Export repository configurations for backup or migration
 
 **Features**:
+
 - Complete configuration backup
 - Selective configuration export
 - Multiple output formats
@@ -175,6 +192,7 @@ gz repo-config validate --config custom.yaml --rules strict   # Validate custom 
 - Configuration versioning
 
 **Usage**:
+
 ```bash
 gz repo-config export --org myorg --output backup.yaml        # Export all repositories
 gz repo-config export --repo myorg/myrepo --format json       # Export single repository
@@ -182,6 +200,7 @@ gz repo-config export --org myorg --filter "^prod-.*" --output prod-configs/  # 
 ```
 
 **Parameters**:
+
 - `--org`: Source organization
 - `--repo`: Specific repository
 - `--filter`: Repository name filter
@@ -194,6 +213,7 @@ gz repo-config export --org myorg --filter "^prod-.*" --output prod-configs/  # 
 **Purpose**: Import repository configurations from external sources
 
 **Features**:
+
 - Configuration file import
 - Migration from other platforms
 - Bulk configuration application
@@ -201,6 +221,7 @@ gz repo-config export --org myorg --filter "^prod-.*" --output prod-configs/  # 
 - Conflict resolution
 
 **Usage**:
+
 ```bash
 gz repo-config import --file backup.yaml --org myorg          # Import from file
 gz repo-config import --directory configs/ --org myorg        # Import from directory
@@ -208,6 +229,7 @@ gz repo-config import --file config.json --dry-run            # Preview import
 ```
 
 **Parameters**:
+
 - `--file`: Configuration file to import
 - `--directory`: Directory containing configuration files
 - `--org` (required): Target organization
@@ -220,6 +242,7 @@ gz repo-config import --file config.json --dry-run            # Preview import
 **Purpose**: Compare repository configurations between repositories or templates
 
 **Features**:
+
 - Repository-to-repository comparison
 - Template-to-repository comparison
 - Configuration drift analysis
@@ -227,6 +250,7 @@ gz repo-config import --file config.json --dry-run            # Preview import
 - Side-by-side comparison views
 
 **Usage**:
+
 ```bash
 gz repo-config diff --repo1 myorg/repo1 --repo2 myorg/repo2   # Compare repositories
 gz repo-config diff --repo myorg/repo1 --template security    # Compare with template
@@ -234,6 +258,7 @@ gz repo-config diff --org myorg --baseline-template standard  # Compare org agai
 ```
 
 **Parameters**:
+
 - `--repo1`: First repository for comparison
 - `--repo2`: Second repository for comparison
 - `--repo`: Repository to compare
@@ -247,6 +272,7 @@ gz repo-config diff --org myorg --baseline-template standard  # Compare org agai
 ### Built-in Templates
 
 #### Security Template
+
 - Branch protection rules
 - Required status checks
 - Merge restrictions
@@ -254,12 +280,14 @@ gz repo-config diff --org myorg --baseline-template standard  # Compare org agai
 - Dependency vulnerability alerts
 
 #### Compliance Template
+
 - Audit logging configuration
 - Access control policies
 - Documentation requirements
 - License compliance settings
 
 #### Development Template
+
 - CI/CD pipeline configuration
 - Code quality checks
 - Automated testing setup
@@ -316,26 +344,30 @@ webhooks:
 ### Custom Templates
 
 Users can create custom templates by:
+
 1. Defining configuration in YAML format
-2. Validating template syntax
-3. Testing template application
-4. Importing into template library
+1. Validating template syntax
+1. Testing template application
+1. Importing into template library
 
 ## Validation Rules
 
 ### Security Validation
+
 - Branch protection enforcement
 - Secret scanning enablement
 - Dependency vulnerability alerts
 - Access control verification
 
 ### Compliance Validation
+
 - Required file presence (LICENSE, CONTRIBUTING.md)
 - Documentation standards
 - Audit trail requirements
 - Policy adherence
 
 ### Best Practice Validation
+
 - CI/CD pipeline presence
 - Code quality checks
 - Testing requirements
@@ -346,6 +378,7 @@ Users can create custom templates by:
 ### Git Platform Integration
 
 Supports multiple Git platforms:
+
 - GitHub (primary)
 - GitLab (via adapters)
 - Gitea (via adapters)
@@ -475,6 +508,7 @@ gz repo-config webhook test --org myorg
 ### Access Control
 
 Repository configuration operations require appropriate permissions:
+
 - Repository administration rights
 - Organization membership (for org-wide operations)
 - Secret management permissions (for webhook secrets)
@@ -482,6 +516,7 @@ Repository configuration operations require appropriate permissions:
 ### Audit Trail
 
 All configuration changes are logged including:
+
 - User identification
 - Timestamp of changes
 - Configuration differences
@@ -496,18 +531,21 @@ All configuration changes are logged including:
 ## Best Practices
 
 ### Template Design
+
 - Use version control for templates
 - Test templates on non-production repositories
 - Implement gradual rollout strategies
 - Document template purpose and usage
 
 ### Configuration Management
+
 - Regular audit and compliance checks
 - Backup configurations before major changes
 - Use dry-run mode for validation
 - Monitor configuration drift
 
 ### Security
+
 - Regular review of access permissions
 - Automated security configuration enforcement
 - Incident response procedures for configuration breaches

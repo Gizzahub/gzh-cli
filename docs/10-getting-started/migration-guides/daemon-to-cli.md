@@ -213,16 +213,16 @@ gz net-env switch office --dry-run --verbose
 ### ✅ 새로운 방식의 장점
 
 1. **예측 가능성**: 사용자가 명시적으로 명령어를 실행하므로 예상치 못한 네트워크 변경 없음
-2. **디버깅 용이성**: 문제 발생시 즉시 상태 확인 및 문제 진단 가능
-3. **리소스 효율성**: 백그라운드 데몬이 없어 시스템 리소스 절약
-4. **설정 단순화**: 복잡한 이벤트 설정 대신 간단한 프로필 구성
+1. **디버깅 용이성**: 문제 발생시 즉시 상태 확인 및 문제 진단 가능
+1. **리소스 효율성**: 백그라운드 데몬이 없어 시스템 리소스 절약
+1. **설정 단순화**: 복잡한 이벤트 설정 대신 간단한 프로필 구성
 
 ### 📋 권장 워크플로우
 
 1. **일과 시작시**: `gz net-env switch office`
-2. **점심시간 외부**: `gz net-env switch public`
-3. **재택근무 전환**: `gz net-env switch home`
-4. **문제 발생시**: `gz net-env status --verbose`
+1. **점심시간 외부**: `gz net-env switch public`
+1. **재택근무 전환**: `gz net-env switch home`
+1. **문제 발생시**: `gz net-env status --verbose`
 
 ### 🔧 자동화 대안
 
@@ -280,8 +280,8 @@ cat /etc/resolv.conf
 문제가 계속 발생하면 다음을 확인하세요:
 
 1. [GitHub Issues](https://github.com/gizzahub/gzh-cli/issues)
-2. [사용자 가이드](../USAGE.md#네트워크-환경-관리)
-3. [프로젝트 문서](../README.md)
+1. [사용자 가이드](../USAGE.md#%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC-%ED%99%98%EA%B2%BD-%EA%B4%80%EB%A6%AC)
+1. [프로젝트 문서](../README.md)
 
 ## 📝 요약
 

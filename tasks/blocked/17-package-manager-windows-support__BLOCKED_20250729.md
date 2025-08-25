@@ -14,18 +14,21 @@
 ## 🎯 구현 목표
 
 ### Windows 패키지 매니저 지원
-- [>] **Chocolatey** 패키지 매니저 지원  # 대규모 작업으로 인한 연기 - 핵심 TUI 기능 완료 후 별도 계획 필요
+
+- [>] **Chocolatey** 패키지 매니저 지원 # 대규모 작업으로 인한 연기 - 핵심 TUI 기능 완료 후 별도 계획 필요
 - [ ] **Scoop** 패키지 매니저 지원
 - [ ] **winget** (Windows Package Manager) 지원
 - [ ] Windows 전용 설정 및 경로 처리
 
 ### 고급 클린업 전략
+
 - [ ] **Quarantine 모드** - 관리되지 않는 패키지를 격리
 - [ ] **의존성 분석** - 사용하지 않는 의존성 정리
 - [ ] **버전 정리** - 오래된 버전 정리
 - [ ] **캐시 관리** - 패키지 캐시 최적화
 
 ### 추가 기능
+
 - [ ] 패키지 보안 스캔
 - [ ] 라이선스 호환성 체크
 - [ ] 업데이트 일정 관리
@@ -36,6 +39,7 @@
 ### 1. Windows 패키지 매니저 구현
 
 #### Chocolatey 지원
+
 ```bash
 gz pm chocolatey install git
 gz pm chocolatey list --local-only
@@ -64,6 +68,7 @@ func (c *ChocolateyManager) ListInstalled() ([]Package, error) {
 ```
 
 #### Scoop 지원
+
 ```bash
 gz pm scoop install git
 gz pm scoop bucket add extras
@@ -86,6 +91,7 @@ func (s *ScoopManager) AddBucket(bucket, repo string) error {
 ```
 
 #### winget 지원
+
 ```bash
 gz pm winget install Microsoft.PowerToys
 gz pm winget search --name "Visual Studio Code"
@@ -95,6 +101,7 @@ gz pm winget upgrade --all
 ### 2. 고급 클린업 전략
 
 #### Quarantine 모드 구현
+
 ```yaml
 # ~/.gzh/pm/global.yml
 cleanup:
@@ -140,6 +147,7 @@ func (qm *QuarantineManager) QuarantinePackage(pkg Package, reason string) error
 ```
 
 #### 의존성 분석 시스템
+
 ```go
 type DependencyAnalyzer struct {
     managers    []PackageManager
@@ -173,6 +181,7 @@ func (da *DependencyAnalyzer) FindOrphans() ([]Package, error) {
 ### 3. 플랫폼별 설정 관리
 
 #### Windows 전용 설정
+
 ```yaml
 # ~/.gzh/pm/global.yml
 platform_specific:
@@ -198,6 +207,7 @@ platform_specific:
 ```
 
 #### 경로 및 권한 처리
+
 ```go
 type WindowsPackageManager struct {
     requiresAdmin   bool
@@ -226,6 +236,7 @@ func (wpm *WindowsPackageManager) ElevateIfNeeded() error {
 ### 4. 보안 및 라이선스 기능
 
 #### 패키지 보안 스캔
+
 ```go
 type SecurityScanner struct {
     vulnerabilityDB VulnerabilityDB
@@ -247,6 +258,7 @@ func (ss *SecurityScanner) ScanPackage(pkg Package) (*VulnerabilityScan, error) 
 ```
 
 #### 라이선스 호환성 체크
+
 ```go
 type LicenseChecker struct {
     compatibilityMatrix map[string][]string
@@ -263,6 +275,7 @@ func (lc *LicenseChecker) CheckCompatibility(packages []Package) (*LicenseReport
 ## 📁 파일 구조
 
 ### 새로 생성할 파일
+
 - `cmd/pm/chocolatey.go` - Chocolatey 패키지 매니저 명령어
 - `cmd/pm/scoop.go` - Scoop 패키지 매니저 명령어
 - `cmd/pm/winget.go` - winget 패키지 매니저 명령어
@@ -274,6 +287,7 @@ func (lc *LicenseChecker) CheckCompatibility(packages []Package) (*LicenseReport
 - `pkg/pm/windows/` - Windows 패키지 매니저 공용 라이브러리
 
 ### 수정할 파일
+
 - `cmd/pm/pm.go` - Windows 패키지 매니저 명령어 추가
 - `cmd/pm/clean.go` - 고급 클린업 전략 추가
 - `internal/pm/config/global.go` - Windows 설정 지원
@@ -281,32 +295,38 @@ func (lc *LicenseChecker) CheckCompatibility(packages []Package) (*LicenseReport
 ## 🧪 테스트 요구사항
 
 ### Windows 환경 테스트
+
 - [ ] Windows 10/11 환경에서 패키지 매니저 테스트
 - [ ] 관리자 권한 필요한 작업 테스트
 - [ ] UAC 상호작용 테스트
 
 ### 클린업 전략 테스트
+
 - [ ] Quarantine 모드 동작 테스트
 - [ ] 의존성 분석 정확성 테스트
 - [ ] 복구 기능 테스트
 
 ### 크로스 플랫폼 테스트
+
 - [ ] Linux, macOS, Windows 동일 설정 파일 호환성
 - [ ] 플랫폼별 설정 오버라이드 테스트
 
 ## 📊 완료 기준
 
 ### 기능 완성도
+
 - [ ] 3개 Windows 패키지 매니저 완전 지원
 - [ ] 모든 고급 클린업 전략 구현
 - [ ] 보안 및 라이선스 체크 기능
 
 ### Windows 지원
+
 - [ ] Windows 10/11 완전 호환
 - [ ] PowerShell/CMD 양쪽 지원
 - [ ] UAC 및 관리자 권한 적절한 처리
 
 ### 사용자 경험
+
 - [ ] 플랫폼 간 일관된 명령어 구조
 - [ ] Windows 사용자를 위한 명확한 가이드
 - [ ] 에러 상황에서 도움말 제공
@@ -318,9 +338,9 @@ func (lc *LicenseChecker) CheckCompatibility(packages []Package) (*LicenseReport
 ## 💡 구현 힌트
 
 1. **점진적 구현**: 먼저 Chocolatey만 구현하고 순차적으로 확장
-2. **관리자 권한 처리**: 필요할 때만 권한 상승 요청
-3. **에러 처리**: Windows 특유의 에러 상황 고려
-4. **성능 최적화**: Windows에서 느릴 수 있는 명령어 실행 최적화
+1. **관리자 권한 처리**: 필요할 때만 권한 상승 요청
+1. **에러 처리**: Windows 특유의 에러 상황 고려
+1. **성능 최적화**: Windows에서 느릴 수 있는 명령어 실행 최적화
 
 ## ⚠️ 주의사항
 
@@ -332,12 +352,12 @@ func (lc *LicenseChecker) CheckCompatibility(packages []Package) (*LicenseReport
 
 ## 📋 Windows 패키지 매니저 비교
 
-| 기능 | Chocolatey | Scoop | winget |
-|------|------------|-------|--------|
-| 관리자 권한 | 필요 | 불필요 | 선택적 |
-| GUI 앱 | 지원 | 제한적 | 지원 |
-| 시스템 도구 | 지원 | 지원 | 지원 |
-| 포터블 앱 | 제한적 | 특화 | 제한적 |
-| 개발 도구 | 완전지원 | 완전지원 | 지원 |
+| 기능        | Chocolatey | Scoop    | winget |
+| ----------- | ---------- | -------- | ------ |
+| 관리자 권한 | 필요       | 불필요   | 선택적 |
+| GUI 앱      | 지원       | 제한적   | 지원   |
+| 시스템 도구 | 지원       | 지원     | 지원   |
+| 포터블 앱   | 제한적     | 특화     | 제한적 |
+| 개발 도구   | 완전지원   | 완전지원 | 지원   |
 
 이 정보를 바탕으로 각 패키지 매니저의 특성에 맞는 구현을 진행해야 합니다.

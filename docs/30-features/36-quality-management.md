@@ -30,14 +30,14 @@ Code quality is essential for maintainable, secure, and performant software. The
 
 ### Full Support
 
-| Language | Formatters | Linters | Security Scanners |
-|----------|------------|---------|-------------------|
-| **Go** | gofmt, gofumpt, gci | golangci-lint, staticcheck | gosec, govulncheck |
-| **Python** | black, autopep8, yapf | pylint, flake8, mypy | bandit, safety |
-| **JavaScript/TypeScript** | prettier, eslint | eslint, tslint | eslint-security |
-| **Rust** | rustfmt | clippy | cargo-audit |
-| **Java** | google-java-format | checkstyle, spotbugs | spotbugs-security |
-| **C/C++** | clang-format | clang-tidy, cppcheck | cppcheck |
+| Language                  | Formatters            | Linters                    | Security Scanners  |
+| ------------------------- | --------------------- | -------------------------- | ------------------ |
+| **Go**                    | gofmt, gofumpt, gci   | golangci-lint, staticcheck | gosec, govulncheck |
+| **Python**                | black, autopep8, yapf | pylint, flake8, mypy       | bandit, safety     |
+| **JavaScript/TypeScript** | prettier, eslint      | eslint, tslint             | eslint-security    |
+| **Rust**                  | rustfmt               | clippy                     | cargo-audit        |
+| **Java**                  | google-java-format    | checkstyle, spotbugs       | spotbugs-security  |
+| **C/C++**                 | clang-format          | clang-tidy, cppcheck       | cppcheck           |
 
 ### Basic Support
 
@@ -634,7 +634,7 @@ gz quality run --fast
 gz quality profile --output performance.json
 ```
 
----
+______________________________________________________________________
 
 **Supported Languages**: 15+ languages with full tool integration
 **Output Formats**: SARIF, JUnit, JSON, CSV, HTML

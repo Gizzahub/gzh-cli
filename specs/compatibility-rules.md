@@ -1,10 +1,12 @@
 # Compatibility Rules (Filter Chain)
 
 ## Overview
+
 - Integrates a filter chain to apply environment variables, warnings, and post actions per manager/plugin.
 - Purpose: Avoid common conflicts (e.g., rustup vs asdf rust) and recommend best practices by default.
 
 ## Built-in Filters
+
 - asdf + rust
   - Env: `RUSTUP_INIT_SKIP_PATH_CHECK=yes`, `RUSTUP_INIT_YES=1`
   - Kind: conflict
@@ -22,16 +24,19 @@
   - Kind: advisory
 
 ## Modes
+
 - `--compat auto` (default): apply filters, print warnings, run post actions
 - `--compat strict`: if any conflict filter matches, abort with error
 - `--compat off`: disable all filters
 
 ## User Configuration
+
 - File: `~/.gzh/pm/compat.yml`
 - Merge order: user filters override built-ins for Env and behavior
 - Schema extensions supported: `when`, `match_env`, `level`
 
 ### Example `compat.yml`
+
 ```yaml
 filters:
   - manager: "asdf"
@@ -58,5 +63,6 @@ filters:
 ```
 
 ## Future Work
+
 - Add `when.version_range` evaluation (manager version constraints)
 - Extend to more managers (apt/brew/sdkman/npm/pip)

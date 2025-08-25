@@ -142,20 +142,20 @@ go tool cover -html=coverage.out
 ## Best Practices
 
 1. **Use build tags** for integration/e2e tests
-2. **Mock external dependencies** in unit tests
-3. **Use testify** for assertions
-4. **Table-driven tests** for multiple scenarios
-5. **Parallel tests** where possible (`t.Parallel()`)
-6. **Skip tests** when prerequisites missing
-7. **Clean up** resources in tests
+1. **Mock external dependencies** in unit tests
+1. **Use testify** for assertions
+1. **Table-driven tests** for multiple scenarios
+1. **Parallel tests** where possible (`t.Parallel()`)
+1. **Skip tests** when prerequisites missing
+1. **Clean up** resources in tests
 
 ## CI/CD Integration
 
 Tests run in different stages:
 
 1. **PR Checks**: Unit tests only (fast feedback)
-2. **Merge Queue**: Unit + Integration tests
-3. **Nightly**: Full test suite including E2E
+1. **Merge Queue**: Unit + Integration tests
+1. **Nightly**: Full test suite including E2E
 
 ## Debugging Tests
 

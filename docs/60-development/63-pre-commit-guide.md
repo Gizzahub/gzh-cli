@@ -31,7 +31,8 @@ Pre-commit hooks help maintain code quality by automatically checking and fixing
    apt install pre-commit
    ```
 
-2. Install Go tools:
+1. Install Go tools:
+
    ```bash
    make bootstrap
    ```
@@ -60,6 +61,7 @@ This will:
 Run before each commit:
 
 1. **File Checks**
+
    - Trailing whitespace removal
    - End-of-file fixing
    - YAML/JSON/TOML/XML validation
@@ -68,21 +70,25 @@ Run before each commit:
    - Merge conflict markers
    - Private key detection
 
-2. **Go Formatting**
+1. **Go Formatting**
+
    - `gofumpt`: Stricter gofmt
    - `gci`: Import grouping and sorting
 
-3. **Go Quality**
+1. **Go Quality**
+
    - `go vet`: Static analysis
    - `golangci-lint`: Comprehensive linting
    - `go build`: Compilation check
    - `go test -short`: Quick tests
 
-4. **Security**
+1. **Security**
+
    - `gosec`: Security vulnerability scanning
    - `detect-secrets`: Secret detection
 
-5. **Custom Checks**
+1. **Custom Checks**
+
    - TODO format validation
    - File size warnings
    - Package documentation checks
@@ -212,7 +218,7 @@ Most hooks respect tool-specific config files:
    pre-commit --version
    ```
 
-2. **Go Tools Not Found**
+1. **Go Tools Not Found**
 
    ```bash
    # Install required tools
@@ -222,7 +228,7 @@ Most hooks respect tool-specific config files:
    export PATH=$PATH:$(go env GOPATH)/bin
    ```
 
-3. **Secrets Detected**
+1. **Secrets Detected**
 
    ```bash
    # Update baseline if false positive
@@ -232,7 +238,7 @@ Most hooks respect tool-specific config files:
    secret = "not-a-real-secret"  # pragma: allowlist secret
    ```
 
-4. **Large File Blocked**
+1. **Large File Blocked**
 
    ```bash
    # Add to .gitattributes if needed
@@ -252,14 +258,15 @@ Most hooks respect tool-specific config files:
    git commit
    ```
 
-2. **Skip Expensive Hooks**
+1. **Skip Expensive Hooks**
 
    ```bash
    # Skip specific hooks
    SKIP=go-test-mod,gosec git commit
    ```
 
-3. **Use Quick Mode**
+1. **Use Quick Mode**
+
    ```bash
    # For development iterations
    make dev-fast  # Format and quick tests only
@@ -276,22 +283,27 @@ Pre-commit hooks are also run in CI:
 ## Best Practices
 
 1. **Fix Issues Immediately**
+
    - Don't accumulate linting debt
    - Address issues before committing
 
-2. **Keep Hooks Fast**
+1. **Keep Hooks Fast**
+
    - Use `-short` flag for tests in pre-commit
    - Move expensive checks to pre-push
 
-3. **Document Suppressions**
+1. **Document Suppressions**
+
    - Always explain why when using `--no-verify`
    - Add comments when disabling linters
 
-4. **Regular Updates**
+1. **Regular Updates**
+
    - Run `pre-commit autoupdate` monthly
    - Update tool versions in sync
 
-5. **Team Alignment**
+1. **Team Alignment**
+
    - Ensure all team members use hooks
    - Document project-specific conventions
    - Share hook configuration updates

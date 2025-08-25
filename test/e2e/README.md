@@ -145,13 +145,14 @@ test/e2e/
    make build
    ```
 
-2. **Install Dependencies**
+1. **Install Dependencies**
 
    ```bash
    make bootstrap
    ```
 
-3. **Set Environment Variables** (optional for external services)
+1. **Set Environment Variables** (optional for external services)
+
    ```bash
    export GITHUB_TOKEN="your-token"
    export GITLAB_TOKEN="your-token"
@@ -250,11 +251,11 @@ func TestNewFeature_E2E(t *testing.T) {
 ### Best Practices
 
 1. **Descriptive Test Names**: Use format `TestFeature_Scenario_E2E`
-2. **Isolation**: Each test should be independent and idempotent
-3. **Cleanup**: Always clean up resources (use defer statements)
-4. **Assertions**: Use clear, specific assertions with helpful error messages
-5. **Documentation**: Document complex test scenarios and their purpose
-6. **Performance**: Consider test execution time and optimize where possible
+1. **Isolation**: Each test should be independent and idempotent
+1. **Cleanup**: Always clean up resources (use defer statements)
+1. **Assertions**: Use clear, specific assertions with helpful error messages
+1. **Documentation**: Document complex test scenarios and their purpose
+1. **Performance**: Consider test execution time and optimize where possible
 
 ### Common Patterns
 
@@ -403,9 +404,9 @@ jobs:
 ### Regular Tasks
 
 1. **Update Test Data**: Keep test fixtures current with schema changes
-2. **Review Scenarios**: Ensure scenarios cover new features
-3. **Performance Monitoring**: Track test execution times
-4. **Dependency Updates**: Update test dependencies regularly
+1. **Review Scenarios**: Ensure scenarios cover new features
+1. **Performance Monitoring**: Track test execution times
+1. **Dependency Updates**: Update test dependencies regularly
 
 ### Version Compatibility
 

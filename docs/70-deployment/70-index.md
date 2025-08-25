@@ -12,17 +12,20 @@ Comprehensive guide for building, releasing, and deploying gzh-cli.
 ## 📚 Deployment Documentation
 
 ### Release Management
+
 - **[Release Process](70-releases.md)** - Complete release workflow and procedures
 - **[Release Preparation](71-release-preparation.md)** - Pre-release checklist and validation
 - **[Release Notes v1.0.0](72-release-notes-v1.0.0.md)** - Version 1.0.0 release documentation
 
 ### Security & Scanning
+
 - **[Security Scanning](73-security-scanning.md)** - Security analysis and vulnerability scanning
 - **[Security Guidelines](75-security-guidelines.md)** - Security policies and best practices
 
 ## 🎯 Quick Release Guide
 
 ### Prerequisites
+
 - **Go 1.24.0+** with toolchain go1.24.5
 - **Git** with proper commit access
 - **GPG Key** for signing releases
@@ -117,6 +120,7 @@ gh release edit v1.2.0 --draft=false
 ### Package Managers
 
 #### Homebrew
+
 ```ruby
 # Formula update
 class GzhCli < Formula
@@ -135,6 +139,7 @@ end
 ```
 
 #### Go Install
+
 ```bash
 # Direct installation
 go install github.com/gizzahub/gzh-cli@latest
@@ -142,6 +147,7 @@ go install github.com/gizzahub/gzh-cli@v1.2.0
 ```
 
 #### Docker
+
 ```dockerfile
 # Multi-stage build
 FROM golang:1.24-alpine AS builder
@@ -429,7 +435,7 @@ go mod tidy
 make vulnerability-assessment
 ```
 
----
+______________________________________________________________________
 
 **Release Process**: Automated with GitHub Actions
 **Security**: Code signing, vulnerability scanning, SAST

@@ -229,22 +229,26 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 ## Command Reference Quick Lookup
 
 **Core Commands**
+
 - `gz doctor` - System diagnostics
 - `gz version` - Version information
 - `gz config` - Configuration management
 
 **Repository Operations**
+
 - `gz git` - Git operations and repository management
 - `gz synclone` - Bulk repository synchronization
 - `gz repo-config` - Repository configuration management
 
 **Development Tools**
+
 - `gz quality` - Code quality management
 - `gz dev-env` - Development environment management
 - `gz ide` - IDE integration and monitoring
 - `gz pm` - Package manager updates
 
 **Network and System**
+
 - `gz net-env` - Network environment management
 - `gz profile` - Performance profiling
 - `gz shell` - Shell integration
@@ -252,23 +256,26 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 ## Configuration Keywords
 
 **Global Settings**
+
 - `clone_base_dir` - Base directory for repository clones
 - `concurrent_jobs` - Number of parallel operations
 - `default_strategy` - Default Git operation strategy
 - `timeout` - Operation timeout duration
 
 **Provider Configuration**
+
 - `token` - Authentication token
 - `base_url` - Custom API endpoint
 - `organizations` - Organization-specific settings
 - `repositories` - Repository-specific settings
 
 **Quality Settings**
+
 - `enabled_checks` - Active quality checks
 - `ignore_patterns` - Files/directories to skip
 - `severity_threshold` - Minimum severity level
 
----
+______________________________________________________________________
 
 **Related Documentation**: [Configuration Guide](../40-configuration/40-configuration-guide.md) | [Command Reference](../50-api-reference/50-command-reference.md) | [Troubleshooting](../90-maintenance/90-troubleshooting.md)
 **For Developers**: [Architecture](../20-architecture/20-system-overview.md) | [Development Guide](../60-development/60-index.md)

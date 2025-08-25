@@ -18,7 +18,7 @@ The development container provides a consistent, reproducible development enviro
 ### Prerequisites
 
 1. **Docker Desktop** or **Docker Engine** installed and running
-2. **Visual Studio Code** with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+1. **Visual Studio Code** with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
 ### Opening the Project
 
@@ -30,13 +30,15 @@ The development container provides a consistent, reproducible development enviro
    code .
    ```
 
-2. When VS Code opens, you'll see a notification to "Reopen in Container":
+1. When VS Code opens, you'll see a notification to "Reopen in Container":
+
    - Click **"Reopen in Container"**
    - Or use Command Palette (`Ctrl+Shift+P`): **"Remote-Containers: Reopen in Container"**
 
-3. Wait for the container to build and configure (5-10 minutes on first run)
+1. Wait for the container to build and configure (5-10 minutes on first run)
 
-4. Once ready, run the initial setup:
+1. Once ready, run the initial setup:
+
    ```bash
    make bootstrap
    make build
@@ -141,11 +143,11 @@ golangci-lint run ./cmd/...
 #### Debugging
 
 1. Open VS Code Debug panel (`Ctrl+Shift+D`)
-2. Select a debug configuration:
+1. Select a debug configuration:
    - **Debug GZH CLI** - Debug main application
    - **Debug GZH Bulk Clone** - Debug bulk clone command
    - **Debug Go Test** - Debug specific tests
-3. Set breakpoints and press `F5`
+1. Set breakpoints and press `F5`
 
 #### Package Development
 
@@ -289,7 +291,7 @@ export GZH_TRACE_ENABLED="true"
    export GITHUB_TOKEN="your-token"
    ```
 
-2. **In devcontainer.json**:
+1. **In devcontainer.json**:
 
    ```json
    {
@@ -299,7 +301,8 @@ export GZH_TRACE_ENABLED="true"
    }
    ```
 
-3. **In .env file** (add to .gitignore):
+1. **In .env file** (add to .gitignore):
+
    ```bash
    GITHUB_TOKEN=your-token
    GITLAB_TOKEN=your-token
@@ -362,12 +365,12 @@ Key VS Code settings configured:
 Pre-configured debug scenarios:
 
 1. **Debug GZH CLI** - Debug main application with `--help`
-2. **Debug GZH Bulk Clone** - Debug bulk clone with sample config
-3. **Debug GZH Config Validate** - Debug configuration validation
-4. **Debug GZH Web Dashboard** - Debug web server
-5. **Debug Current Go File** - Debug the currently open file
-6. **Debug Go Test** - Debug tests in current package
-7. **Attach to Process** - Attach to running process
+1. **Debug GZH Bulk Clone** - Debug bulk clone with sample config
+1. **Debug GZH Config Validate** - Debug configuration validation
+1. **Debug GZH Web Dashboard** - Debug web server
+1. **Debug Current Go File** - Debug the currently open file
+1. **Debug Go Test** - Debug tests in current package
+1. **Attach to Process** - Attach to running process
 
 ## File Mounting
 
@@ -578,11 +581,12 @@ go mod tidy
 ### Docker Performance
 
 1. **Allocate sufficient resources**:
+
    - CPU: 4+ cores
    - Memory: 8GB+
    - Disk: SSD recommended
 
-2. **Optimize file syncing**:
+1. **Optimize file syncing**:
 
    ```dockerfile
    # Add to .dockerignore
@@ -594,7 +598,8 @@ go mod tidy
    coverage
    ```
 
-3. **Use multi-stage builds**:
+1. **Use multi-stage builds**:
+
    ```dockerfile
    # Cache dependencies separately
    COPY go.mod go.sum ./
@@ -615,7 +620,7 @@ go mod tidy
    export GOMAXPROCS=$(nproc)
    ```
 
-2. **Incremental builds**:
+1. **Incremental builds**:
 
    ```bash
    # Only rebuild changed packages
@@ -625,7 +630,7 @@ go mod tidy
    export GOCACHE=/workspace/.gocache
    ```
 
-3. **Dependency caching**:
+1. **Dependency caching**:
 
    ```dockerfile
    # Cache Go modules
@@ -648,7 +653,7 @@ go mod tidy
    # Command Palette: "Remote-Containers: Rebuild Container"
    ```
 
-2. **Code quality checks**:
+1. **Code quality checks**:
 
    ```bash
    # Before committing
@@ -658,7 +663,7 @@ go mod tidy
    pre-commit run --all-files
    ```
 
-3. **Dependency management**:
+1. **Dependency management**:
 
    ```bash
    # Weekly dependency updates
@@ -681,7 +686,7 @@ go mod tidy
    export GITHUB_TOKEN="$(cat ~/.github_token)"
    ```
 
-2. **Container security**:
+1. **Container security**:
 
    ```bash
    # Run as non-root user
@@ -692,7 +697,8 @@ go mod tidy
    RUN rm -rf /var/lib/apt/lists/*
    ```
 
-3. **Network security**:
+1. **Network security**:
+
    ```bash
    # Use HTTPS for all external calls
    # Validate certificates
@@ -713,7 +719,7 @@ go mod tidy
    export GOMEMLIMIT=6GiB
    ```
 
-2. **Disk management**:
+1. **Disk management**:
 
    ```bash
    # Clean build artifacts
@@ -734,6 +740,6 @@ go mod tidy
 - [Python Development Guide](https://docs.python.org/3/tutorial/)
 - [GZH Manager Documentation](../../README.md)
 
----
+______________________________________________________________________
 
 **Note**: This development container configuration is specifically optimized for the GZH Manager project structure and workflows. Adjustments may be needed for different project requirements.

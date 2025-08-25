@@ -88,10 +88,10 @@ gzh-cli follows a **simplified CLI architecture** (refactored 2025-01) that prio
 ### High-Level Architecture Principles
 
 1. **Interface-Driven Design**: Core abstractions through interfaces with concrete implementations
-2. **Direct Constructor Pattern**: Avoid over-engineering with DI containers, use simple constructors
-3. **Command-Centric Organization**: Each major feature is a top-level command with subcommands
-4. **Configuration-First**: Unified YAML configuration system with schema validation
-5. **Multi-Platform Support**: Abstracted platform providers for GitHub, GitLab, Gitea, Gogs
+1. **Direct Constructor Pattern**: Avoid over-engineering with DI containers, use simple constructors
+1. **Command-Centric Organization**: Each major feature is a top-level command with subcommands
+1. **Configuration-First**: Unified YAML configuration system with schema validation
+1. **Multi-Platform Support**: Abstracted platform providers for GitHub, GitLab, Gitea, Gogs
 
 ### Command Structure (cmd/)
 
@@ -117,6 +117,7 @@ cmd/
 ### Core Architecture Layers
 
 #### 1. Internal Layer (internal/)
+
 **Purpose**: Private abstractions and implementations
 
 - **`git/`** - Core Git operations with strategy pattern
@@ -128,6 +129,7 @@ cmd/
 - **`cli/`** - Command builder and output formatting
 
 #### 2. Package Layer (pkg/)
+
 **Purpose**: Public APIs and platform implementations
 
 - **`config/`** - Unified configuration system with schema validation
@@ -136,11 +138,13 @@ cmd/
 - **`git/provider/`** - Git provider abstraction layer
 
 #### 3. Command Layer (cmd/)
+
 **Purpose**: CLI command implementations using Cobra framework
 
 ### Key Architectural Patterns
 
 #### Interface-Based Abstractions
+
 ```go
 // Git operations abstraction
 type Client interface {
@@ -157,6 +161,7 @@ type Loader interface {
 ```
 
 #### Provider Registry Pattern
+
 ```go
 // Platform providers registered at startup
 providerRegistry := provider.NewRegistry()
@@ -165,6 +170,7 @@ providerRegistry.Register("gitlab", gitlab.NewProvider())
 ```
 
 #### Strategy Pattern for Git Operations
+
 - **rebase**: Rebase local changes on remote
 - **reset**: Hard reset to match remote state
 - **clone**: Fresh clone (remove existing)
@@ -174,12 +180,14 @@ providerRegistry.Register("gitlab", gitlab.NewProvider())
 ### Configuration Architecture
 
 #### Unified Configuration System
+
 - **Single file**: `gzh.yaml` for all commands
 - **Priority system**: CLI flags > env vars > config files > defaults
 - **Schema validation**: JSON Schema with detailed error messages
 - **Environment variable expansion**: `${GITHUB_TOKEN}` support
 
 #### Configuration Structure
+
 ```yaml
 global:
   clone_base_dir: "$HOME/repos"
@@ -196,12 +204,14 @@ providers:
 ### Testing Architecture
 
 #### Test Organization
+
 - **Unit tests**: `*_test.go` files alongside source
 - **Integration tests**: `test/integration/` with Docker containers
 - **E2E tests**: `test/e2e/` with real CLI execution
 - **Mocking**: Generated mocks with `gomock` for interfaces
 
 #### Test Categories
+
 ```bash
 make test-unit          # Fast unit tests
 make test-integration   # Docker-based integration tests
@@ -212,20 +222,21 @@ make test-all           # Complete test suite
 ### Data Flow Architecture
 
 #### Typical Command Execution Flow
+
 1. **Command parsing** (Cobra) → **Flag validation**
-2. **Configuration loading** (unified config system)
-3. **Provider factory** → **Interface implementation**
-4. **Business logic execution** → **Result formatting**
-5. **Output generation** (table/JSON/YAML/CSV)
+1. **Configuration loading** (unified config system)
+1. **Provider factory** → **Interface implementation**
+1. **Business logic execution** → **Result formatting**
+1. **Output generation** (table/JSON/YAML/CSV)
 
 ## Configuration and Schema
 
 ### Configuration File Hierarchy
 
 1. Environment variable: `GZH_CONFIG_PATH`
-2. Current directory: `./synclone.yaml` or `./synclone.yml`
-3. User config: `~/.config/gzh-manager/synclone.yaml`
-4. System config: `/etc/gzh-manager/synclone.yaml`
+1. Current directory: `./synclone.yaml` or `./synclone.yml`
+1. User config: `~/.config/gzh-manager/synclone.yaml`
+1. System config: `/etc/gzh-manager/synclone.yaml`
 
 ### Schema Validation
 

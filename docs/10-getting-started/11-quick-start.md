@@ -199,23 +199,27 @@ gz git config audit --org myorg --output json
 ## 🎯 Learning Paths
 
 ### 🚶 Beginner (15 minutes)
+
 1. Try single repository clone: `gz git repo clone-or-update`
-2. Run quality check: `gz quality run`
-3. Check system status: `gz doctor`
+1. Run quality check: `gz quality run`
+1. Check system status: `gz doctor`
 
 ### 🏃 Intermediate (30 minutes)
+
 1. Set up configuration file with your organization
-2. Sync entire organization: `gz synclone`
-3. Explore output formats: `--output json`
+1. Sync entire organization: `gz synclone`
+1. Explore output formats: `--output json`
 
 ### 🏊 Advanced (60 minutes)
+
 1. Configure multiple Git platforms
-2. Set up IDE monitoring and dev environment
-3. Integrate with CI/CD pipelines
+1. Set up IDE monitoring and dev environment
+1. Integrate with CI/CD pipelines
 
 ## 🆘 Quick Troubleshooting
 
 ### Command Not Found
+
 ```bash
 # Check installation
 which gz
@@ -226,6 +230,7 @@ cd gzh-cli && make install
 ```
 
 ### Authentication Issues
+
 ```bash
 # Test GitHub token
 curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
@@ -235,6 +240,7 @@ curl -H "PRIVATE-TOKEN: $GITLAB_TOKEN" https://gitlab.com/api/v4/user
 ```
 
 ### Configuration Problems
+
 ```bash
 # Validate configuration
 gz config validate
@@ -250,20 +256,23 @@ rm ~/.config/gzh-manager/gzh.yaml
 ## 📖 Next Steps
 
 ### Essential Reading
+
 - **[Configuration Guide](../40-configuration/40-configuration-guide.md)** - Complete configuration reference
 - **[Command Reference](../50-api-reference/50-command-reference.md)** - All available commands
 - **[Features Overview](../30-features/)** - Detailed feature documentation
 
 ### Migration from Other Tools
+
 - **[bulk-clone Migration](migration-guides/bulk-clone-to-gzh.md)** - If migrating from bulk-clone
 - **[daemon Migration](migration-guides/daemon-to-cli.md)** - If migrating from daemon-based tools
 
 ### Advanced Topics
+
 - **[Architecture](../20-architecture/20-system-overview.md)** - Understanding system design
 - **[Development](../60-development/)** - Contributing to gzh-cli
 - **[Enterprise Features](../80-integrations/enterprise/)** - Enterprise deployment
 
----
+______________________________________________________________________
 
 **Quick Command**: `gz --help` for command overview
 **Validation**: `gz doctor` for system diagnostics

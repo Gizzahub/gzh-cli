@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # Network Environment Management Specification
@@ -41,6 +42,7 @@ The enhanced net-env command provides a streamlined interface with five main com
 **Purpose**: Provides a visual interface for managing all network configurations
 
 **Features**:
+
 - Real-time network status display
 - Quick profile switching
 - VPN connection management
@@ -49,6 +51,7 @@ The enhanced net-env command provides a streamlined interface with five main com
 - Keyboard shortcuts for common actions
 
 **TUI Layout**:
+
 ```
 ┌─ GZH Network Environment Manager ─────────────────────────────────────────┐
 │ Current Profile: office                     Network: Corporate WiFi        │
@@ -66,6 +69,7 @@ The enhanced net-env command provides a streamlined interface with five main com
 ```
 
 **Usage**:
+
 ```bash
 gz net-env                    # Launch TUI dashboard
 gz net-env --compact          # Compact mode for small terminals
@@ -77,6 +81,7 @@ gz net-env --monitor          # Start with monitoring view
 **Purpose**: Display comprehensive network configuration and status
 
 **Features**:
+
 - Unified status view of all network components
 - Network interface and WiFi details
 - VPN connection status with latency
@@ -86,6 +91,7 @@ gz net-env --monitor          # Start with monitoring view
 - Network health summary
 
 **Usage**:
+
 ```bash
 gz net-env status                  # Show current network status
 gz net-env status --verbose       # Show detailed network information
@@ -95,6 +101,7 @@ gz net-env status --watch         # Real-time status updates
 ```
 
 **Output Example**:
+
 ```
 Network Environment Status
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -118,6 +125,7 @@ Last Profile Switch: 2 hours ago
 **Purpose**: Intelligently switch between network profiles with auto-detection
 
 **Features**:
+
 - Smart profile detection based on network environment
 - Interactive profile selection with preview
 - Atomic profile switching (all or nothing)
@@ -126,6 +134,7 @@ Last Profile Switch: 2 hours ago
 - History of recent profiles
 
 **Usage**:
+
 ```bash
 gz net-env switch                 # Auto-detect and suggest profile
 gz net-env switch office          # Switch to office network profile
@@ -140,6 +149,7 @@ gz net-env switch --last         # Switch to last used profile
 **Purpose**: Comprehensive network profile management
 
 **Features**:
+
 - Create, edit, delete profiles
 - Import/export profiles
 - Profile templates and inheritance
@@ -147,6 +157,7 @@ gz net-env switch --last         # Switch to last used profile
 - Profile sharing via URL/file
 
 **Usage**:
+
 ```bash
 gz net-env profile list           # List all profiles
 gz net-env profile create         # Create new profile interactively
@@ -162,6 +173,7 @@ gz net-env profile validate office # Validate profile configuration
 **Purpose**: Fast access to common network operations
 
 **Features**:
+
 - Single command for frequent tasks
 - Minimal typing required
 - Smart defaults
@@ -169,6 +181,7 @@ gz net-env profile validate office # Validate profile configuration
 - Undo last action
 
 **Usage**:
+
 ```bash
 gz net-env quick vpn              # Toggle VPN (on/off)
 gz net-env quick vpn on           # Connect VPN
@@ -187,6 +200,7 @@ gz net-env quick undo             # Undo last quick action
 **Purpose**: Unified network monitoring and analysis
 
 **Features**:
+
 - Real-time network metrics dashboard
 - Component health monitoring
 - Performance analysis
@@ -194,6 +208,7 @@ gz net-env quick undo             # Undo last quick action
 - Historical data and trends
 
 **Usage**:
+
 ```bash
 gz net-env monitor                # Start monitoring dashboard
 gz net-env monitor --metrics      # Focus on performance metrics
@@ -207,6 +222,7 @@ gz net-env monitor --export       # Export monitoring data
 **Purpose**: Execute predefined network configuration actions
 
 **Features**:
+
 - VPN connection management
 - DNS server configuration
 - Proxy settings management
@@ -214,6 +230,7 @@ gz net-env monitor --export       # Export monitoring data
 - Custom script execution
 
 **Usage**:
+
 ```bash
 gz net-env actions run            # Execute network actions
 gz net-env actions vpn connect --name office # Connect to VPN
@@ -226,12 +243,14 @@ gz net-env actions proxy set --http proxy.company.com:8080 # Set proxy
 **Purpose**: Manage Docker network profiles and configurations
 
 **Features**:
+
 - Create and manage Docker network profiles
 - Apply network configurations to Docker environments
 - Detect Docker Compose projects
 - Generate profiles from Docker Compose files
 
 **Usage**:
+
 ```bash
 gz net-env docker-network list    # List Docker network profiles
 gz net-env docker-network create myapp --network mynet # Create profile
@@ -244,12 +263,14 @@ gz net-env docker-network detect  # Detect Docker Compose projects
 **Purpose**: Manage Kubernetes network policies and configurations
 
 **Features**:
+
 - Create and manage Kubernetes network profiles
 - Apply network policies to namespaces
 - Manage service mesh configurations
 - Handle network policy validation
 
 **Usage**:
+
 ```bash
 gz net-env kubernetes-network list # List Kubernetes network profiles
 gz net-env kubernetes-network create prod-policies --namespace production # Create profile
@@ -263,12 +284,14 @@ gz net-env kubernetes-network apply prod-policies # Apply profile
 **Purpose**: Detect and analyze container environments
 
 **Features**:
+
 - Detect running containers and networks
 - Analyze container resource usage
 - Identify container orchestration platforms
 - Monitor container environment changes
 
 **Usage**:
+
 ```bash
 gz net-env container-detection detect # Detect container environments
 gz net-env container-detection list   # List running containers
@@ -281,12 +304,14 @@ gz net-env container-detection stats  # Show container statistics
 **Purpose**: Analyze and visualize network topology
 
 **Features**:
+
 - Discover network services and connections
 - Map container network relationships
 - Export topology visualizations
 - Identify network bottlenecks
 
 **Usage**:
+
 ```bash
 gz net-env network-topology analyze # Analyze network topology
 gz net-env network-topology summary # Show topology summary
@@ -299,12 +324,14 @@ gz net-env network-topology services # Discover network services
 **Purpose**: Manage layered VPN connections
 
 **Features**:
+
 - Configure hierarchical VPN connections
 - Manage parent-child VPN relationships
 - Handle VPN failover scenarios
 - Auto-connect based on network environment
 
 **Usage**:
+
 ```bash
 gz net-env vpn-hierarchy show     # Show VPN hierarchy
 gz net-env vpn-hierarchy connect --root corp-vpn # Connect hierarchical VPN
@@ -317,12 +344,14 @@ gz net-env vpn-hierarchy status   # Show hierarchy status
 **Purpose**: Manage VPN profiles and network mappings
 
 **Features**:
+
 - Create and manage VPN profiles
 - Map networks to VPN connections
 - Set connection priorities
 - Handle network-specific VPN configurations
 
 **Usage**:
+
 ```bash
 gz net-env vpn-profile list       # List VPN profiles
 gz net-env vpn-profile create office --network "Office WiFi" --vpn corp-vpn --priority 100 # Create profile
@@ -335,12 +364,14 @@ gz net-env vpn-profile show office # Show VPN profile details
 **Purpose**: Manage VPN failover and backup connections
 
 **Features**:
+
 - Configure backup VPN connections
 - Handle connection loss scenarios
 - Test failover configurations
 - Monitor VPN connection health
 
 **Usage**:
+
 ```bash
 gz net-env vpn-failover start     # Start failover monitoring
 gz net-env vpn-failover backup add --primary corp-vpn --backup home-vpn --priority 50 # Add backup
@@ -353,12 +384,14 @@ gz net-env vpn-failover status    # Show failover status
 **Purpose**: Monitor network performance metrics
 
 **Features**:
+
 - Monitor latency and bandwidth
 - Track network interface usage
 - Generate performance reports
 - Set performance thresholds
 
 **Usage**:
+
 ```bash
 gz net-env network-metrics monitor # Start monitoring
 gz net-env network-metrics show    # Show current metrics
@@ -372,6 +405,7 @@ gz net-env network-metrics report --duration 1h # Generate report
 **Purpose**: Analyze network performance and identify issues
 
 **Features**:
+
 - Latency analysis and monitoring
 - Bandwidth utilization analysis
 - Comprehensive network analysis
@@ -379,6 +413,7 @@ gz net-env network-metrics report --duration 1h # Generate report
 - Bottleneck detection
 
 **Usage**:
+
 ```bash
 gz net-env network-analysis latency --duration 10m --targets 8.8.8.8,1.1.1.1 # Latency analysis
 gz net-env network-analysis bandwidth --interface eth0 --duration 5m # Bandwidth analysis
@@ -392,12 +427,14 @@ gz net-env network-analysis bottleneck # Detect bottlenecks
 **Purpose**: Manage and optimize network routing
 
 **Features**:
+
 - Analyze optimal routes to destinations
 - Discover best network interfaces
 - Apply routing policies
 - Enable auto-optimization
 
 **Usage**:
+
 ```bash
 gz net-env optimal-routing analyze --destination 8.8.8.8 # Analyze routes
 gz net-env optimal-routing discover --targets google.com,cloudflare.com # Discover routes
@@ -411,6 +448,7 @@ gz net-env optimal-routing load-balance --interfaces eth0,wlan0 # Configure load
 ### Global Configuration
 
 Network environment configurations are stored in:
+
 - `~/.config/gzh-manager/net-env.yaml` - User-specific settings
 - `/etc/gzh-manager/net-env.yaml` - System-wide settings
 - Environment variable: `GZH_NET_ENV_CONFIG`
@@ -931,18 +969,21 @@ gz net-env optimal-routing apply --policy latency-optimized
 The enhanced `net-env` command provides a comprehensive solution for network environment management with focus on:
 
 ### User Experience
+
 - **Interactive TUI**: Visual dashboard for easy network management
 - **Smart Detection**: Automatic profile selection based on network environment
 - **Quick Actions**: Single commands for common tasks
 - **Simplified Commands**: Reduced from 23 to 5 main commands
 
 ### Automation
+
 - **Auto-Detection**: WiFi SSID, gateway, and location-based profile switching
 - **Auto-Recovery**: Automatic reconnection and fallback mechanisms
 - **Profile Presets**: Ready-to-use configurations for common scenarios
 - **Health Monitoring**: Continuous network component monitoring
 
 ### Safety and Reliability
+
 - **Atomic Operations**: All-or-nothing profile switching
 - **Validation**: Profile validation before applying
 - **Rollback Support**: Automatic rollback on failures
@@ -951,9 +992,9 @@ The enhanced `net-env` command provides a comprehensive solution for network env
 ### Common Use Cases
 
 1. **Coffee Shop WiFi**: Auto-detect public network and apply secure profile
-2. **Office Arrival**: Automatically connect to corporate VPN
-3. **Home Network**: Switch to relaxed security settings
-4. **Travel**: Quick profile switching between locations
-5. **Development**: Optimized settings for local development
+1. **Office Arrival**: Automatically connect to corporate VPN
+1. **Home Network**: Switch to relaxed security settings
+1. **Travel**: Quick profile switching between locations
+1. **Development**: Optimized settings for local development
 
 These enhancements make `gz net-env` a powerful yet simple tool for managing complex network environments, reducing manual configuration while maintaining security and reliability.

@@ -17,22 +17,22 @@ The project includes debugging configurations for:
 
 Access via the Debug panel (`Ctrl+Shift+D`) or Command Palette (`F5`):
 
-| Configuration                       | Purpose                       | Arguments                                                      |
-| ----------------------------------- | ----------------------------- | -------------------------------------------------------------- |
-| **Debug GZH CLI**                   | Main application help         | `--help`                                                       |
+| Configuration                       | Purpose                            | Arguments                                                            |
+| ----------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
+| **Debug GZH CLI**                   | Main application help              | `--help`                                                             |
 | **Debug GZH Synclone**              | Repository sync with sample config | `synclone --config examples/synclone/synclone-simple.yaml --dry-run` |
-| **Debug GZH Config Validate**       | Configuration validation      | `synclone validate --config examples/synclone/synclone-example.yaml` |
-| **Debug Current Go File**           | Debug the currently open file | N/A                                                            |
-| **Debug Go Test (Current Package)** | Test debugging                | Test files in current directory                                |
-| **Debug Go Test (Current File)**    | Specific test function        | Prompts for test name                                          |
-| **Attach to Running Process**       | Attach to running process     | Prompts for process selection                                  |
+| **Debug GZH Config Validate**       | Configuration validation           | `synclone validate --config examples/synclone/synclone-example.yaml` |
+| **Debug Current Go File**           | Debug the currently open file      | N/A                                                                  |
+| **Debug Go Test (Current Package)** | Test debugging                     | Test files in current directory                                      |
+| **Debug Go Test (Current File)**    | Specific test function             | Prompts for test name                                                |
+| **Attach to Running Process**       | Attach to running process          | Prompts for process selection                                        |
 
 ### Quick Start
 
 1. **Set breakpoints** by clicking in the gutter (left of line numbers)
-2. **Select debug configuration** from the dropdown
-3. **Press F5** or click the green play button
-4. **Use debug controls**:
+1. **Select debug configuration** from the dropdown
+1. **Press F5** or click the green play button
+1. **Use debug controls**:
    - `F5` - Continue
    - `F10` - Step Over
    - `F11` - Step Into
@@ -92,16 +92,16 @@ Pre-configured run configurations in `.idea/runConfigurations/`:
 ### Usage
 
 1. **Open project** in GoLand/IntelliJ IDEA
-2. **Select configuration** from the run configuration dropdown
-3. **Set breakpoints** by clicking in the gutter
-4. **Click the debug button** (bug icon) or press `Shift+F9`
-5. **Use debug controls** in the debug panel
+1. **Select configuration** from the run configuration dropdown
+1. **Set breakpoints** by clicking in the gutter
+1. **Click the debug button** (bug icon) or press `Shift+F9`
+1. **Use debug controls** in the debug panel
 
 ### Creating Custom Configurations
 
 1. Go to **Run** → **Edit Configurations**
-2. Click **+** → **Go Application**
-3. Configure:
+1. Click **+** → **Go Application**
+1. Configure:
    - **Name**: Your configuration name
    - **Run kind**: Package
    - **Package**: `github.com/gizzahub/gzh-cli`
@@ -376,7 +376,7 @@ go build -gcflags="-N -l" -o gz-debug main.go
 dlv exec gz-debug -- --help
 ```
 
-#### 2. "API server listening at: [::]:2345, but not accessible"
+#### 2. "API server listening at: \[::\]:2345, but not accessible"
 
 **Solution**: Check firewall and use specific interface
 
@@ -418,11 +418,11 @@ codesign -s - -f --entitlements=debug.entitlements dlv
 #### Slow Debugging
 
 1. **Disable unnecessary breakpoints**
-2. **Use conditional breakpoints**:
+1. **Use conditional breakpoints**:
    ```
    b main.go:42 if myVar > 100
    ```
-3. **Limit variable inspection**:
+1. **Limit variable inspection**:
    ```
    config max-string-len 50
    config max-array-values 10
@@ -435,7 +435,7 @@ codesign -s - -f --entitlements=debug.entitlements dlv
    p runtime.MemStats
    call runtime.GC()
    ```
-2. **Use heap profiling**:
+1. **Use heap profiling**:
    ```
    import _ "net/http/pprof"
    go tool pprof http://localhost:6060/debug/pprof/heap
@@ -446,10 +446,12 @@ codesign -s - -f --entitlements=debug.entitlements dlv
 #### VS Code
 
 1. **Go extension not working**:
+
    - Restart Go language server: `Ctrl+Shift+P` → "Go: Restart Language Server"
    - Check Go tools: `Ctrl+Shift+P` → "Go: Install/Update Tools"
 
-2. **Debugger not stopping at breakpoints**:
+1. **Debugger not stopping at breakpoints**:
+
    - Check `launch.json` configuration
    - Verify file paths are correct
    - Ensure build is not optimized
@@ -457,11 +459,13 @@ codesign -s - -f --entitlements=debug.entitlements dlv
 #### GoLand/IntelliJ
 
 1. **Run configuration not found**:
+
    - Reimport project
    - Check `.idea/runConfigurations/` directory
    - Create new configuration manually
 
-2. **Source code not showing**:
+1. **Source code not showing**:
+
    - Check source path mappings
    - Verify module settings
    - Rebuild project
@@ -553,6 +557,6 @@ defer trace.Stop()
 - [Go Debugging Best Practices](https://golang.org/doc/gdb)
 - [pprof Documentation](https://golang.org/pkg/net/http/pprof/)
 
----
+______________________________________________________________________
 
 **Note**: This debugging setup is specifically configured for the GZH Manager Go project. Adjust configurations as needed for your specific debugging requirements.

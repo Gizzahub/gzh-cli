@@ -5,10 +5,10 @@ This document covers new features implemented in gzh-cli including advanced outp
 ## Table of Contents
 
 1. [Output Format Features](#output-format-features)
-2. [Backup and Restore System](#backup-and-restore-system)
-3. [Network Metrics and Analysis](#network-metrics-and-analysis)
-4. [Advanced Repository Operations](#advanced-repository-operations)
-5. [Quality Tool Enhancements](#quality-tool-enhancements)
+1. [Backup and Restore System](#backup-and-restore-system)
+1. [Network Metrics and Analysis](#network-metrics-and-analysis)
+1. [Advanced Repository Operations](#advanced-repository-operations)
+1. [Quality Tool Enhancements](#quality-tool-enhancements)
 
 ## Output Format Features
 
@@ -71,9 +71,11 @@ gz net-env topology --output yaml
 #### Output Formatting Examples
 
 ##### JSON Output
+
 ```bash
 gz git repo list --org myorg --output json
 ```
+
 ```json
 {
   "repositories": [
@@ -97,9 +99,11 @@ gz git repo list --org myorg --output json
 ```
 
 ##### CSV Output
+
 ```bash
 gz git repo list --org myorg --output csv
 ```
+
 ```csv
 name,full_name,description,private,language,stars,forks,created_at,updated_at
 api-service,myorg/api-service,Core API service,false,Go,42,8,2024-01-15T10:30:00Z,2024-08-19T15:45:30Z
@@ -107,9 +111,11 @@ web-frontend,myorg/web-frontend,Frontend application,false,TypeScript,28,5,2024-
 ```
 
 ##### YAML Output
+
 ```bash
 gz git config audit --org myorg --output yaml
 ```
+
 ```yaml
 audit_results:
   organization: myorg
@@ -215,6 +221,7 @@ gz dev-env aws list --output json
 ```
 
 Example output:
+
 ```
 NAME              DESCRIPTION                    SAVED AT              SIZE
 production-aws    Production AWS setup          2025-08-19 12:00:00   2.1KB
@@ -496,26 +503,26 @@ dev_env:
 ### Output Format Selection
 
 1. **table** - Interactive use, human readability
-2. **json** - API integration, programmatic processing
-3. **yaml** - Configuration export, GitOps workflows
-4. **csv** - Data analysis, spreadsheet import
-5. **html** - Dashboards, reporting, sharing
-6. **sarif** - Security scanning, CI/CD integration
+1. **json** - API integration, programmatic processing
+1. **yaml** - Configuration export, GitOps workflows
+1. **csv** - Data analysis, spreadsheet import
+1. **html** - Dashboards, reporting, sharing
+1. **sarif** - Security scanning, CI/CD integration
 
 ### Backup Strategy
 
 1. **Regular Backups**: Use auto-backup features for critical configurations
-2. **Descriptive Names**: Use meaningful names and descriptions for backups
-3. **Version Control**: Consider version controlling backup configurations
-4. **Testing**: Regularly test restore procedures
-5. **Retention**: Set appropriate retention policies for backup storage
+1. **Descriptive Names**: Use meaningful names and descriptions for backups
+1. **Version Control**: Consider version controlling backup configurations
+1. **Testing**: Regularly test restore procedures
+1. **Retention**: Set appropriate retention policies for backup storage
 
 ### Integration Patterns
 
 1. **CI/CD Integration**: Use appropriate output formats for automation
-2. **Monitoring**: Leverage JSON/CSV outputs for metrics collection
-3. **Reporting**: Use HTML outputs for stakeholder communication
-4. **Compliance**: Use structured formats for audit trails
+1. **Monitoring**: Leverage JSON/CSV outputs for metrics collection
+1. **Reporting**: Use HTML outputs for stakeholder communication
+1. **Compliance**: Use structured formats for audit trails
 
 ## Troubleshooting
 

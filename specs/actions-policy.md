@@ -1,4 +1,5 @@
 <!-- 🚫 AI_MODIFY_PROHIBITED -->
+
 <!-- This file should not be modified by AI agents -->
 
 # GitHub Actions Policy Management Specification
@@ -24,6 +25,7 @@ The `actions-policy` command provides comprehensive GitHub Actions policy manage
 **Purpose**: Create a new GitHub Actions policy with specified configuration
 
 **Features**:
+
 - Multiple policy templates (default, strict, permissive)
 - Organization and repository-level policies
 - Configurable security settings
@@ -31,6 +33,7 @@ The `actions-policy` command provides comprehensive GitHub Actions policy manage
 - Automated policy ID generation
 
 **Usage**:
+
 ```bash
 gz actions-policy create my-security-policy --org myorg --template strict      # Create strict security policy
 gz actions-policy create dev-policy --org myorg --repo myrepo --template permissive  # Repository-specific policy
@@ -39,6 +42,7 @@ gz actions-policy create audit-policy --org myorg --template default --tags secu
 ```
 
 **Parameters**:
+
 - `policy-name` (required): Name of the policy to create
 - `--org` (required): Target organization
 - `--repo`: Target repository (optional, for repo-level policies)
@@ -48,6 +52,7 @@ gz actions-policy create audit-policy --org myorg --template default --tags secu
 - `--enabled` (default: true): Enable policy immediately
 
 **Templates**:
+
 - `default`: Balanced security policy with moderate restrictions
 - `strict`: High security policy with restrictive settings
 - `permissive`: Permissive policy for development environments
@@ -57,6 +62,7 @@ gz actions-policy create audit-policy --org myorg --template default --tags secu
 **Purpose**: Apply and enforce a specific Actions policy on a repository
 
 **Features**:
+
 - Dry-run mode for validation preview
 - Force enforcement option
 - Timeout configuration
@@ -64,6 +70,7 @@ gz actions-policy create audit-policy --org myorg --template default --tags secu
 - Rollback capability on failure
 
 **Usage**:
+
 ```bash
 gz actions-policy enforce policy-123 myorg myrepo                    # Enforce policy on repository
 gz actions-policy enforce policy-123 myorg myrepo --dry-run          # Preview changes without applying
@@ -71,6 +78,7 @@ gz actions-policy enforce policy-123 myorg myrepo --force --timeout 600  # Force
 ```
 
 **Parameters**:
+
 - `policy-id` (required): Policy ID to enforce
 - `org` (required): Target organization
 - `repo` (required): Target repository
@@ -83,6 +91,7 @@ gz actions-policy enforce policy-123 myorg myrepo --force --timeout 600  # Force
 **Purpose**: Validate a repository's current configuration against an Actions policy
 
 **Features**:
+
 - Comprehensive compliance checking
 - Severity-based filtering
 - Detailed validation reports
@@ -90,6 +99,7 @@ gz actions-policy enforce policy-123 myorg myrepo --force --timeout 600  # Force
 - Configuration gap analysis
 
 **Usage**:
+
 ```bash
 gz actions-policy validate policy-123 myorg myrepo                   # Basic validation
 gz actions-policy validate policy-123 myorg myrepo --detailed        # Detailed validation results
@@ -97,6 +107,7 @@ gz actions-policy validate policy-123 myorg myrepo --severity high   # Filter by
 ```
 
 **Parameters**:
+
 - `policy-id` (required): Policy ID to validate against
 - `org` (required): Target organization
 - `repo` (required): Target repository
@@ -108,6 +119,7 @@ gz actions-policy validate policy-123 myorg myrepo --severity high   # Filter by
 **Purpose**: Display all available Actions policies with filtering options
 
 **Features**:
+
 - Organization-based filtering
 - Tag-based filtering
 - Status filtering (enabled/disabled)
@@ -115,6 +127,7 @@ gz actions-policy validate policy-123 myorg myrepo --severity high   # Filter by
 - Policy metadata display
 
 **Usage**:
+
 ```bash
 gz actions-policy list                                              # List all policies
 gz actions-policy list --org myorg                                  # Filter by organization
@@ -123,6 +136,7 @@ gz actions-policy list --format json                               # Output as J
 ```
 
 **Parameters**:
+
 - `--org`: Filter by organization
 - `--tags`: Filter by tags
 - `--enabled-only` (default: false): Show only enabled policies
@@ -133,6 +147,7 @@ gz actions-policy list --format json                               # Output as J
 **Purpose**: Display detailed information about a specific Actions policy
 
 **Features**:
+
 - Complete policy configuration display
 - Security settings breakdown
 - Permission analysis
@@ -140,12 +155,14 @@ gz actions-policy list --format json                               # Output as J
 - Configuration summary
 
 **Usage**:
+
 ```bash
 gz actions-policy show policy-123                                  # Show policy details
 gz actions-policy show policy-123 --format json                    # Output as JSON
 ```
 
 **Parameters**:
+
 - `policy-id` (required): Policy ID to display
 - `--format` (default: table): Output format (table, json, yaml)
 
@@ -154,16 +171,19 @@ gz actions-policy show policy-123 --format json                    # Output as J
 **Purpose**: Remove an Actions policy from the system
 
 **Features**:
+
 - Safe deletion with confirmation
 - Policy dependency checking
 - Audit trail maintenance
 
 **Usage**:
+
 ```bash
 gz actions-policy delete policy-123                                # Delete specific policy
 ```
 
 **Parameters**:
+
 - `policy-id` (required): Policy ID to delete
 
 ### Monitor Compliance (`gz actions-policy monitor`)
@@ -171,6 +191,7 @@ gz actions-policy delete policy-123                                # Delete spec
 **Purpose**: Continuously monitor policy compliance across all repositories in an organization
 
 **Features**:
+
 - Real-time compliance monitoring
 - Configurable monitoring intervals
 - Webhook integration for alerts
@@ -178,6 +199,7 @@ gz actions-policy delete policy-123                                # Delete spec
 - Compliance reporting
 
 **Usage**:
+
 ```bash
 gz actions-policy monitor myorg                                    # One-time compliance check
 gz actions-policy monitor myorg --continuous --interval 10m        # Continuous monitoring every 10 minutes
@@ -185,6 +207,7 @@ gz actions-policy monitor myorg --webhook-url https://alerts.example.com/webhook
 ```
 
 **Parameters**:
+
 - `org` (required): Organization to monitor
 - `--interval` (default: 5m): Monitoring interval
 - `--continuous` (default: false): Run continuously until interrupted
@@ -197,22 +220,26 @@ gz actions-policy monitor myorg --webhook-url https://alerts.example.com/webhook
 Actions policies contain the following configuration categories:
 
 #### Permission Settings
+
 - Default workflow permissions (read/write/restricted)
 - Token permissions scope
 - Repository access levels
 
 #### Security Settings
+
 - Fork pull request handling
 - GitHub-owned actions allowance
 - Marketplace actions policy
 - Self-hosted runner policies
 
 #### Secrets Management
+
 - Maximum secret count limits
 - Secret naming conventions
 - Environment-specific restrictions
 
 #### Runner Configuration
+
 - Allowed runner types
 - Self-hosted runner policies
 - Resource limitations
@@ -220,6 +247,7 @@ Actions policies contain the following configuration categories:
 ### Policy Templates
 
 #### Default Template
+
 ```yaml
 permission_level: selected_actions
 workflow_permissions:
@@ -235,6 +263,7 @@ runners:
 ```
 
 #### Strict Template
+
 ```yaml
 permission_level: selected_actions
 workflow_permissions:
@@ -250,6 +279,7 @@ runners:
 ```
 
 #### Permissive Template
+
 ```yaml
 permission_level: all
 workflow_permissions:
@@ -267,18 +297,21 @@ runners:
 ## Validation Rules
 
 ### Security Validation
+
 - Permission level compliance
 - Secret count limits
 - Runner type restrictions
 - Fork pull request policies
 
 ### Compliance Checks
+
 - Workflow permission auditing
 - Action marketplace compliance
 - Self-hosted runner governance
 - Environment protection rules
 
 ### Severity Levels
+
 - **Critical**: Security vulnerabilities, unauthorized permissions
 - **High**: Policy violations, non-compliant configurations
 - **Medium**: Best practice deviations, optimization opportunities
@@ -289,6 +322,7 @@ runners:
 ### GitHub API Integration
 
 The actions-policy command integrates with GitHub APIs for:
+
 - Repository configuration management
 - Organization settings access
 - Actions permissions control
@@ -297,6 +331,7 @@ The actions-policy command integrates with GitHub APIs for:
 ### Authentication
 
 Supports multiple authentication methods:
+
 - GitHub personal access tokens
 - GitHub Apps authentication
 - Environment variable configuration
@@ -309,6 +344,7 @@ gz actions-policy list --org myorg
 ### Webhook Integration
 
 Monitor command supports webhook notifications for:
+
 - Policy violations
 - Compliance changes
 - Enforcement results
@@ -402,6 +438,7 @@ gz actions-policy list --org myorg --format json > compliance-report.json
 ### Permissions Required
 
 GitHub token requires the following scopes:
+
 - `repo`: Repository access
 - `admin:org`: Organization administration
 - `workflow`: Actions workflow management
@@ -409,6 +446,7 @@ GitHub token requires the following scopes:
 ### Audit Trail
 
 All policy operations generate audit logs including:
+
 - Policy creation and modifications
 - Enforcement actions
 - Validation results

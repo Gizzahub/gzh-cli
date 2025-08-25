@@ -13,11 +13,13 @@ Comprehensive guide for integrating gzh-cli with external tools, services, and e
 ## 📚 Integration Documentation
 
 ### Infrastructure Integration
+
 - **[Terraform Comparison](81-terraform-comparison.md)** - Comparing gzh-cli with Terraform for infrastructure management
 - **[Terraform vs gzh-cli Examples](82-terraform-vs-gz.md)** - Side-by-side examples and migration patterns
 - **[Webhook Management](83-webhook-management.md)** - Git platform webhook configuration and management
 
 ### Enterprise Features
+
 - **[Enterprise Directory](enterprise/)** - Enterprise-specific integrations and policies
   - **Actions Policy Enforcement** - GitHub Actions policy management
   - **Actions Policy Schema** - Policy configuration schema
@@ -27,6 +29,7 @@ Comprehensive guide for integrating gzh-cli with external tools, services, and e
 ### CI/CD Platform Integration
 
 #### GitHub Actions
+
 ```yaml
 name: gzh-cli Integration
 on: [push, pull_request]
@@ -62,6 +65,7 @@ jobs:
 ```
 
 #### GitLab CI
+
 ```yaml
 stages:
   - validate
@@ -102,6 +106,7 @@ compliance-check:
 ```
 
 #### Jenkins Pipeline
+
 ```groovy
 pipeline {
     agent any
@@ -141,6 +146,7 @@ pipeline {
 ### Container Integration
 
 #### Docker Compose
+
 ```yaml
 version: '3.8'
 
@@ -165,6 +171,7 @@ services:
 ```
 
 #### Kubernetes
+
 ```yaml
 apiVersion: batch/v1
 kind: CronJob
@@ -311,6 +318,7 @@ gz profile server --prometheus-endpoint /metrics --port 9090
 ### Logging Integration
 
 #### ELK Stack
+
 ```yaml
 # filebeat.yml
 filebeat.inputs:
@@ -327,6 +335,7 @@ output.elasticsearch:
 ```
 
 #### Fluentd
+
 ```conf
 <source>
   @type tail
@@ -380,6 +389,7 @@ gz quality security --output sarif --output-file security.sarif
 ## 🏢 Enterprise Integrations
 
 ### LDAP/Active Directory
+
 ```yaml
 # Enterprise authentication
 auth:
@@ -392,6 +402,7 @@ auth:
 ```
 
 ### SAML/SSO Integration
+
 ```yaml
 # SAML configuration
 auth:
@@ -403,6 +414,7 @@ auth:
 ```
 
 ### Enterprise Policy Management
+
 ```yaml
 # Enterprise policies
 policies:
@@ -515,7 +527,7 @@ extensions:
       config: "custom-linter.yaml"
 ```
 
----
+______________________________________________________________________
 
 **Integration Types**: CI/CD, Infrastructure, Monitoring, Security, Enterprise
 **Supported Platforms**: GitHub Actions, GitLab CI, Jenkins, Kubernetes

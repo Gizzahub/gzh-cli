@@ -7,6 +7,7 @@ The `gz ide` command provides comprehensive IDE detection, monitoring, and manag
 ## Purpose
 
 Enhanced IDE management for:
+
 - **Automatic IDE Detection**: Scan and detect all installed IDEs on the system
 - **Status Monitoring**: Real-time monitoring of IDE processes and resource usage
 - **Project Opening**: Open projects directly in detected IDEs
@@ -23,14 +24,14 @@ gz ide <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose | Implementation Status |
-|------------|---------|---------------------|
-| `scan` | Scan system for installed IDEs | ✅ Implemented (NEW) |
-| `status` | Show IDE status and resource usage | ✅ Implemented (NEW) |
-| `open` | Open project in detected IDE | ✅ Implemented (NEW) |
-| `monitor` | Monitor JetBrains IDE settings | ✅ Implemented |
-| `fix-sync` | Fix JetBrains sync issues | ✅ Implemented |
-| `list` | List detected IDEs (legacy) | ✅ Implemented |
+| Subcommand | Purpose                            | Implementation Status |
+| ---------- | ---------------------------------- | --------------------- |
+| `scan`     | Scan system for installed IDEs     | ✅ Implemented (NEW)  |
+| `status`   | Show IDE status and resource usage | ✅ Implemented (NEW)  |
+| `open`     | Open project in detected IDE       | ✅ Implemented (NEW)  |
+| `monitor`  | Monitor JetBrains IDE settings     | ✅ Implemented        |
+| `fix-sync` | Fix JetBrains sync issues          | ✅ Implemented        |
+| `list`     | List detected IDEs (legacy)        | ✅ Implemented        |
 
 ## Subcommand Specifications
 
@@ -45,19 +46,22 @@ gz ide scan [--refresh] [--verbose]
 ```
 
 **Options**:
+
 - `--refresh` - Force refresh scan (ignore cache)
 - `--verbose` - Show detailed scan information
 
 **Detection Methods**:
+
 1. **JetBrains Toolbox**: Parse Toolbox installations
-2. **System Paths**: Check standard installation directories
-3. **Package Managers**: Query brew, snap, flatpak
-4. **AppImage**: Detect AppImage IDEs
-5. **Custom Paths**: User-defined search paths
+1. **System Paths**: Check standard installation directories
+1. **Package Managers**: Query brew, snap, flatpak
+1. **AppImage**: Detect AppImage IDEs
+1. **Custom Paths**: User-defined search paths
 
 **Supported IDEs**:
 
 **JetBrains Products**:
+
 - IntelliJ IDEA (Community, Ultimate)
 - PyCharm (Community, Professional)
 - WebStorm
@@ -71,18 +75,21 @@ gz ide scan [--refresh] [--verbose]
 - Fleet
 
 **VS Code Family**:
+
 - Visual Studio Code
 - VS Code Insiders
 - Cursor
 - VSCodium
 
 **Text Editors**:
+
 - Sublime Text
 - Vim
 - Neovim
 - Emacs
 
 **Output Example**:
+
 ```
 Found 8 IDEs:
 
@@ -112,11 +119,13 @@ gz ide status [--running] [--format <format>]
 ```
 
 **Options**:
+
 - `--running` - Show only running IDEs
 - `--format` - Output format (table, json, yaml)
 - `--watch` - Continuous monitoring mode
 
 **Status Information**:
+
 - IDE name and version
 - Process status (running/stopped)
 - Memory usage
@@ -125,6 +134,7 @@ gz ide status [--running] [--format <format>]
 - Uptime
 
 **Output Example**:
+
 ```
 IDE Status Report:
 
@@ -152,19 +162,23 @@ gz ide open <project-path> [--ide <ide-name>]
 ```
 
 **Options**:
+
 - `--ide` - Specific IDE to use (optional)
 - `--new-window` - Open in new window
 - `--wait` - Wait for IDE to close
 
 **Smart Detection**:
+
 1. **Project Type Detection**:
+
    - Go projects → GoLand (if available) or VS Code
    - Python projects → PyCharm or VS Code
    - Java/Kotlin → IntelliJ IDEA
    - JavaScript/TypeScript → WebStorm or VS Code
    - Generic → User's default IDE
 
-2. **Configuration Files**:
+1. **Configuration Files**:
+
    - `.idea/` → JetBrains IDE
    - `.vscode/` → VS Code
    - `go.mod` → GoLand
@@ -172,6 +186,7 @@ gz ide open <project-path> [--ide <ide-name>]
    - `package.json` → WebStorm
 
 **Examples**:
+
 ```bash
 # Open current directory with auto-detection
 gz ide open .
@@ -197,11 +212,13 @@ gz ide monitor [--product <product>] [--interval <duration>]
 ```
 
 **Options**:
+
 - `--product` - Specific JetBrains product to monitor
 - `--interval` - Check interval (default: 1s)
 - `--filter-temp` - Filter temporary file changes
 
 **Monitored Items**:
+
 - Configuration files (.xml)
 - Plugin changes
 - Color schemes
@@ -218,6 +235,7 @@ gz ide fix-sync [--dry-run] [--backup]
 ```
 
 **Options**:
+
 - `--dry-run` - Preview changes without applying
 - `--backup` - Create backup before fixing
 - `--force` - Force resolution of conflicts
@@ -279,30 +297,33 @@ ide:
 ### Scan Performance
 
 - **Initial Scan**: ~2-5 seconds (depends on system)
-- **Cached Results**: <100ms
+- **Cached Results**: \<100ms
 - **Parallel Detection**: Uses goroutines for concurrent scanning
 - **Smart Caching**: Only rescan if system changes detected
 
 ### Resource Usage
 
-- **Memory**: <50MB during scan
+- **Memory**: \<50MB during scan
 - **CPU**: Minimal impact (background scanning)
 - **Disk I/O**: Optimized with caching
 
 ## Platform-Specific Features
 
 ### macOS
+
 - Scans `/Applications` and `~/Applications`
 - Detects .app bundles
 - JetBrains Toolbox in `~/Library/Application Support/JetBrains/Toolbox`
 
 ### Linux
+
 - Scans `/usr/local/bin`, `/opt`, `~/.local/share`
 - Snap and Flatpak integration
 - AppImage detection in common directories
 - JetBrains Toolbox in `~/.local/share/JetBrains/Toolbox`
 
 ### Windows
+
 - Scans `Program Files`, `Program Files (x86)`
 - Registry integration for installed programs
 - JetBrains Toolbox in `%LOCALAPPDATA%\JetBrains\Toolbox`
@@ -341,24 +362,26 @@ ide:
 ## Future Enhancements
 
 1. **Plugin Management**: Install/update IDE plugins
-2. **Settings Sync**: Cross-IDE settings synchronization
-3. **Project Templates**: Create projects with IDE-specific templates
-4. **Remote Development**: Integration with remote development features
-5. **AI Integration**: IDE-specific AI assistant configuration
-6. **Performance Profiling**: IDE performance monitoring and optimization
-7. **Extension Marketplace**: Custom extension management
+1. **Settings Sync**: Cross-IDE settings synchronization
+1. **Project Templates**: Create projects with IDE-specific templates
+1. **Remote Development**: Integration with remote development features
+1. **AI Integration**: IDE-specific AI assistant configuration
+1. **Performance Profiling**: IDE performance monitoring and optimization
+1. **Extension Marketplace**: Custom extension management
 
 ## Migration Guide
 
 ### From Old Commands to New
 
 **Old**:
+
 ```bash
 gz ide list
 gz ide monitor
 ```
 
 **New**:
+
 ```bash
 gz ide scan              # Replaces and enhances 'list'
 gz ide status            # New: Shows running IDEs
@@ -371,15 +394,18 @@ gz ide monitor           # Still available, unchanged
 ### Common Issues
 
 1. **IDE Not Detected**:
+
    - Run `gz ide scan --refresh --verbose`
    - Check custom paths in configuration
    - Verify IDE installation path
 
-2. **Cache Issues**:
+1. **Cache Issues**:
+
    - Clear cache: `rm ~/.cache/gz/ide-scan.json`
    - Force refresh: `gz ide scan --refresh`
 
-3. **Open Command Fails**:
+1. **Open Command Fails**:
+
    - Verify IDE is detected: `gz ide scan`
    - Check IDE executable permissions
    - Try specifying IDE explicitly: `--ide <name>`
@@ -393,7 +419,7 @@ gz ide monitor           # Still available, unchanged
 ## Security Considerations
 
 1. **Path Validation**: Validate all file paths before execution
-2. **Command Injection**: Sanitize all shell command arguments
-3. **Configuration Access**: Respect file system permissions
-4. **Cache Security**: Store cache in user-specific directory
-5. **Process Monitoring**: Only show user's own processes
+1. **Command Injection**: Sanitize all shell command arguments
+1. **Configuration Access**: Respect file system permissions
+1. **Cache Security**: Store cache in user-specific directory
+1. **Process Monitoring**: Only show user's own processes

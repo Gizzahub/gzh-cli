@@ -152,9 +152,9 @@ Startup Time: ~30 seconds
 ### Optimization Strategies
 
 1. **Parallel Execution**: Tests run containers independently
-2. **Resource Limits**: Containers configured with memory limits
-3. **Fast Cleanup**: Containers terminated immediately after tests
-4. **Image Caching**: Docker images cached between runs
+1. **Resource Limits**: Containers configured with memory limits
+1. **Fast Cleanup**: Containers terminated immediately after tests
+1. **Image Caching**: Docker images cached between runs
 
 ## Troubleshooting
 
@@ -296,9 +296,9 @@ jobs:
 ### Regular Tasks
 
 1. **Update Container Images**: Monthly security updates
-2. **Performance Monitoring**: Track test execution times
-3. **Resource Optimization**: Monitor memory/CPU usage
-4. **Documentation Updates**: Keep README current
+1. **Performance Monitoring**: Track test execution times
+1. **Resource Optimization**: Monitor memory/CPU usage
+1. **Documentation Updates**: Keep README current
 
 ### Version Management
 

@@ -123,18 +123,18 @@ func TestComplexScenario(t *testing.T) {
 ### Setup
 
 1. **Controller Creation**: `ctrl := gomock.NewController(t)`
-2. **Mock Creation**: `mock := mocks.NewMockInterface(ctrl)`
-3. **Expectation Setting**: `mock.EXPECT().Method().Return()`
+1. **Mock Creation**: `mock := mocks.NewMockInterface(ctrl)`
+1. **Expectation Setting**: `mock.EXPECT().Method().Return()`
 
 ### Execution
 
 1. **Test Execution**: Run test with mocked dependencies
-2. **Assertion**: Verify behavior and interactions
+1. **Assertion**: Verify behavior and interactions
 
 ### Cleanup
 
 1. **Controller Finish**: `defer ctrl.Finish()`
-2. **Expectation Verification**: Automatic with gomock
+1. **Expectation Verification**: Automatic with gomock
 
 ## 📊 Mock Coverage Goals
 
@@ -249,6 +249,6 @@ Each test using mocks should include:
 - Verification strategy
 - Error scenarios covered
 
----
+______________________________________________________________________
 
 This strategy ensures comprehensive test coverage while maintaining clean, maintainable test code.

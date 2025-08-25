@@ -523,7 +523,7 @@ gz net-env proxy debug --auth
 gz net-env proxy reset
 ```
 
----
+______________________________________________________________________
 
 **Network Detection**: Automatic WiFi profile detection
 **VPN Support**: OpenVPN, WireGuard, system VPN

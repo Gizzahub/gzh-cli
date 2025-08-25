@@ -5,14 +5,14 @@ Comprehensive guide for the gzh-cli unified configuration system supporting all 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Configuration Priority](#configuration-priority)
-3. [Configuration Structure](#configuration-structure)
-4. [Platform Configuration](#platform-configuration)
-5. [Environment Variables](#environment-variables)
-6. [Configuration Management](#configuration-management)
-7. [Migration Guide](#migration-guide)
-8. [Best Practices](#best-practices)
-9. [Troubleshooting](#troubleshooting)
+1. [Configuration Priority](#configuration-priority)
+1. [Configuration Structure](#configuration-structure)
+1. [Platform Configuration](#platform-configuration)
+1. [Environment Variables](#environment-variables)
+1. [Configuration Management](#configuration-management)
+1. [Migration Guide](#migration-guide)
+1. [Best Practices](#best-practices)
+1. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -39,9 +39,9 @@ The configuration system follows a strict priority order where higher priority s
 ### Priority Order (Highest to Lowest)
 
 1. **Command-Line Flags** (Highest Priority)
-2. **Environment Variables** (Second Priority)
-3. **Configuration Files** (Third Priority)
-4. **Default Values** (Lowest Priority)
+1. **Environment Variables** (Second Priority)
+1. **Configuration Files** (Third Priority)
+1. **Default Values** (Lowest Priority)
 
 ### Detailed Priority Explanation
 
@@ -112,10 +112,10 @@ Default values are used when no higher priority source provides a value.
 When no explicit config path is provided, the system searches in this order:
 
 1. **Environment Variable**: `GZH_CONFIG_PATH`
-2. **Current Directory**: `./gzh.yaml`, `./gzh.yml`
-3. **User Config**: `~/.config/gzh-manager/gzh.yaml`
-4. **System Config**: `/etc/gzh-manager/gzh.yaml`
-5. **Legacy Files**: `./synclone.yaml`, `./synclone.yml` (auto-migrated)
+1. **Current Directory**: `./gzh.yaml`, `./gzh.yml`
+1. **User Config**: `~/.config/gzh-manager/gzh.yaml`
+1. **System Config**: `/etc/gzh-manager/gzh.yaml`
+1. **Legacy Files**: `./synclone.yaml`, `./synclone.yml` (auto-migrated)
 
 ### Priority Resolution Examples
 
@@ -167,9 +167,9 @@ providers:
 **Priority for expanded variables:**
 
 1. Command-line flags (if applicable)
-2. Environment variables (used in expansion)
-3. Default values in expansion syntax
-4. Configuration file literal values
+1. Environment variables (used in expansion)
+1. Default values in expansion syntax
+1. Configuration file literal values
 
 ## Configuration Structure
 
@@ -555,22 +555,26 @@ providers:
 ### Migration Steps
 
 1. **Backup existing configuration**:
+
    ```bash
    cp synclone.yaml synclone.yaml.backup
    ```
 
-2. **Run migration tool** (if available):
+1. **Run migration tool** (if available):
+
    ```bash
    gz config migrate --from synclone.yaml --to gzh.yaml
    ```
 
-3. **Manual migration**:
+1. **Manual migration**:
+
    - Convert structure to new format
    - Update authentication to use tokens
    - Migrate filtering options
    - Test new configuration
 
-4. **Validate new configuration**:
+1. **Validate new configuration**:
+
    ```bash
    gz config validate --config gzh.yaml
    ```
@@ -655,6 +659,7 @@ gz config update-schema  # Future feature
 **Problem**: "configuration file not found"
 
 **Solutions**:
+
 - Check file paths and permissions
 - Use `gz config paths` to see search locations
 - Set `GZH_CONFIG_PATH` environment variable
@@ -664,6 +669,7 @@ gz config update-schema  # Future feature
 **Problem**: `${GITHUB_TOKEN}` appears literally in logs
 
 **Solutions**:
+
 - Ensure environment variable is set: `echo $GITHUB_TOKEN`
 - Check variable name spelling
 - Use `gz config show --expand-env` to debug
@@ -673,6 +679,7 @@ gz config update-schema  # Future feature
 **Problem**: "configuration validation failed"
 
 **Solutions**:
+
 - Use `gz config validate --verbose` for details
 - Check schema documentation
 - Verify required fields are present
@@ -682,6 +689,7 @@ gz config update-schema  # Future feature
 **Problem**: "permission denied" when reading config
 
 **Solutions**:
+
 - Check file permissions: `ls -la ~/.config/gzh-manager/`
 - Fix permissions: `chmod 644 ~/.config/gzh-manager/gzh.yaml`
 - Check directory permissions
@@ -691,6 +699,7 @@ gz config update-schema  # Future feature
 **Problem**: Legacy configuration not migrated
 
 **Solutions**:
+
 - Check legacy configuration format
 - Run manual migration
 - Review migration logs
@@ -713,9 +722,9 @@ gz --verbose config validate
 ### Common Pitfalls
 
 1. **Environment variable expansion**: Remember that `${VAR}` in config files is expanded at runtime
-2. **Configuration file precedence**: Files in current directory take precedence over user config
-3. **Default value confusion**: Not all settings have the same default values across commands
-4. **Token inheritance**: Different commands may use different token environment variables
+1. **Configuration file precedence**: Files in current directory take precedence over user config
+1. **Default value confusion**: Not all settings have the same default values across commands
+1. **Token inheritance**: Different commands may use different token environment variables
 
 ## Command-Specific Configuration
 
@@ -786,6 +795,6 @@ For detailed schema documentation, see the [JSON Schema files](schemas/).
 For additional help:
 
 1. Run `gz config --help` for command options
-2. Use `gz config validate` to check your configuration
-3. Check the [examples directory](../../examples/) for sample configurations
-4. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
+1. Use `gz config validate` to check your configuration
+1. Check the [examples directory](../../examples/) for sample configurations
+1. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)

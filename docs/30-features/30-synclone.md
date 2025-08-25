@@ -5,16 +5,16 @@ Comprehensive guide for multi-platform repository synchronization using `gz sync
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Quick Start](#quick-start)
-3. [Command Reference](#command-reference)
-4. [Configuration System](#configuration-system)
-5. [Clone Strategies](#clone-strategies)
-6. [Platform Support](#platform-support)
-7. [Filtering and Selection](#filtering-and-selection)
-8. [Performance and Monitoring](#performance-and-monitoring)
-9. [Best Practices](#best-practices)
-10. [Migration Guide](#migration-guide)
-11. [Troubleshooting](#troubleshooting)
+1. [Quick Start](#quick-start)
+1. [Command Reference](#command-reference)
+1. [Configuration System](#configuration-system)
+1. [Clone Strategies](#clone-strategies)
+1. [Platform Support](#platform-support)
+1. [Filtering and Selection](#filtering-and-selection)
+1. [Performance and Monitoring](#performance-and-monitoring)
+1. [Best Practices](#best-practices)
+1. [Migration Guide](#migration-guide)
+1. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -104,6 +104,7 @@ gz synclone github --org <organization> [flags]
 ```
 
 **Key Flags:**
+
 - `--org`, `-o` - Organization name (required)
 - `--target`, `-t` - Target directory (default: current directory)
 - `--strategy` - Clone/update strategy: reset, pull, fetch, rebase, clone, skip
@@ -118,6 +119,7 @@ gz synclone github --org <organization> [flags]
 - `--depth` - Depth for shallow clones (default: 1)
 
 **Examples:**
+
 ```bash
 # Basic organization clone
 gz synclone github --org kubernetes
@@ -144,6 +146,7 @@ gz synclone gitlab --group <group> [flags]
 ```
 
 **Key Flags:**
+
 - `--group`, `-g` - Group ID or path (required)
 - `--target`, `-t` - Target directory
 - `--strategy` - Clone/update strategy
@@ -153,6 +156,7 @@ gz synclone gitlab --group <group> [flags]
 - `--parallel` - Number of concurrent operations
 
 **Examples:**
+
 ```bash
 # Clone GitLab group
 gz synclone gitlab --group gitlab-org
@@ -176,6 +180,7 @@ gz synclone gitea --org <organization> --base-url <url> [flags]
 ```
 
 **Key Flags:**
+
 - `--org`, `-o` - Organization name (required)
 - `--base-url` - Gitea instance URL (required)
 - `--target`, `-t` - Target directory
@@ -183,6 +188,7 @@ gz synclone gitea --org <organization> --base-url <url> [flags]
 - `--token` - Authentication token
 
 **Examples:**
+
 ```bash
 # Clone Gitea organization
 gz synclone gitea --org myorg --base-url https://gitea.company.com
@@ -200,6 +206,7 @@ gz synclone gogs --org <organization> --base-url <url> [flags]
 ```
 
 **Key Flags:**
+
 - `--org`, `-o` - Organization name (required)
 - `--base-url` - Gogs instance URL (required)
 - `--target`, `-t` - Target directory
@@ -343,9 +350,9 @@ github:
 Configuration values are resolved in this priority order:
 
 1. **Environment variables** (highest priority)
-2. **Command-line flags**
-3. **Configuration file**
-4. **Default values** (lowest priority)
+1. **Command-line flags**
+1. **Configuration file**
+1. **Default values** (lowest priority)
 
 ### Authentication Configuration
 
@@ -375,62 +382,80 @@ Synclone supports multiple strategies for handling existing repositories:
 
 ### Strategy Comparison
 
-| Strategy | Behavior | Use Case | Risk Level |
-|----------|----------|----------|------------|
-| `reset` | Hard reset to match remote (default) | CI/CD, mirrors | ⚠️ **High** - Discards local changes |
-| `pull` | Merge remote changes | Active development | 🟢 **Low** - Preserves local work |
-| `fetch` | Update refs only | Inspection | 🟢 **Low** - No working tree changes |
-| `rebase` | Rebase local changes on remote | Clean history | 🟡 **Medium** - May create conflicts |
-| `clone` | Fresh clone (removes existing) | Clean start | 🔴 **Very High** - Deletes everything |
-| `skip` | Skip existing repositories | Initial clone only | 🟢 **Low** - No changes to existing |
+| Strategy | Behavior                             | Use Case           | Risk Level                            |
+| -------- | ------------------------------------ | ------------------ | ------------------------------------- |
+| `reset`  | Hard reset to match remote (default) | CI/CD, mirrors     | ⚠️ **High** - Discards local changes  |
+| `pull`   | Merge remote changes                 | Active development | 🟢 **Low** - Preserves local work     |
+| `fetch`  | Update refs only                     | Inspection         | 🟢 **Low** - No working tree changes  |
+| `rebase` | Rebase local changes on remote       | Clean history      | 🟡 **Medium** - May create conflicts  |
+| `clone`  | Fresh clone (removes existing)       | Clean start        | 🔴 **Very High** - Deletes everything |
+| `skip`   | Skip existing repositories           | Initial clone only | 🟢 **Low** - No changes to existing   |
 
 ### Strategy Details
 
 #### reset (default)
+
 Hard reset to match remote state, discarding all local changes:
+
 ```bash
 gz synclone github --org myorg --strategy reset
 ```
+
 - **Best for**: Read-only mirrors, CI/CD environments, backup systems
 - **Warning**: All local changes will be lost
 
 #### pull
+
 Merge remote changes with local changes:
+
 ```bash
 gz synclone github --org myorg --strategy pull
 ```
+
 - **Best for**: Active development with local modifications
 - **Note**: May create merge commits
 
 #### fetch
+
 Only update remote references without changing working tree:
+
 ```bash
 gz synclone github --org myorg --strategy fetch
 ```
+
 - **Best for**: Inspecting changes before merging, backup systems
 - **Note**: Safest option, never modifies working tree
 
 #### rebase
+
 Rebase local changes on top of remote changes:
+
 ```bash
 gz synclone github --org myorg --strategy rebase
 ```
+
 - **Best for**: Maintaining linear history with local commits
 - **Warning**: May fail if conflicts arise
 
 #### clone
+
 Always perform fresh clone (removes existing directory):
+
 ```bash
 gz synclone github --org myorg --strategy clone
 ```
+
 - **Best for**: Clean environments, resolving corruption
 - **Warning**: Completely removes existing repositories
 
 #### skip
+
 Skip existing repositories:
+
 ```bash
 gz synclone github --org myorg --strategy skip
 ```
+
 - **Best for**: Initial bulk clone without updates
 - **Note**: Only clones missing repositories
 
@@ -439,6 +464,7 @@ gz synclone github --org myorg --strategy skip
 ### GitHub
 
 **Features:**
+
 - Public and GitHub Enterprise Server support
 - Organization and user repository cloning
 - Advanced filtering by language, topics, stars, size
@@ -446,10 +472,12 @@ gz synclone github --org myorg --strategy skip
 - Private repository support with authentication
 
 **Authentication:**
+
 - Personal Access Token (PAT)
 - GitHub App token (future)
 
 **Enterprise Support:**
+
 ```bash
 gz synclone github --org myorg --base-url https://github.enterprise.com
 ```
@@ -457,17 +485,20 @@ gz synclone github --org myorg --base-url https://github.enterprise.com
 ### GitLab
 
 **Features:**
+
 - GitLab.com and self-hosted GitLab support
 - Group and subgroup cloning
 - Visibility filtering (public, internal, private)
 - Project filtering by various criteria
 
 **Authentication:**
+
 - Personal Access Token
 - Project Access Token
 - OAuth token
 
 **Self-hosted GitLab:**
+
 ```bash
 gz synclone gitlab --group mygroup --base-url https://gitlab.company.com
 ```
@@ -475,12 +506,14 @@ gz synclone gitlab --group mygroup --base-url https://gitlab.company.com
 ### Gitea
 
 **Features:**
+
 - Self-hosted Gitea instances
 - Organization repository cloning
 - Basic filtering capabilities
 - Authentication support
 
 **Example:**
+
 ```bash
 gz synclone gitea --org myorg --base-url https://gitea.company.com
 ```
@@ -488,11 +521,13 @@ gz synclone gitea --org myorg --base-url https://gitea.company.com
 ### Gogs
 
 **Features:**
+
 - Lightweight Git service support
 - Organization repository cloning
 - Basic functionality similar to Gitea
 
 **Example:**
+
 ```bash
 gz synclone gogs --org myorg --base-url https://gogs.company.com
 ```
@@ -512,6 +547,7 @@ gz synclone github --org myorg --language Go,Python,JavaScript
 ```
 
 **Configuration:**
+
 ```yaml
 filters:
   languages: ["Go", "Python", "JavaScript"]
@@ -530,6 +566,7 @@ gz synclone github --org myorg --topic kubernetes,production
 ```
 
 **Configuration:**
+
 ```yaml
 filters:
   topics: ["microservice", "api", "cloud-native"]
@@ -548,6 +585,7 @@ gz synclone github --org myorg --exclude-pattern ".*-deprecated$"
 ```
 
 **Configuration:**
+
 ```yaml
 filters:
   name_pattern: "^service-.*"
@@ -570,6 +608,7 @@ gz synclone github --org myorg --updated-after 2024-01-01
 ```
 
 **Configuration:**
+
 ```yaml
 filters:
   min_stars: 10
@@ -594,6 +633,7 @@ gz synclone github --org myorg --include-private=false
 ```
 
 **Configuration:**
+
 ```yaml
 include_archived: false
 include_forks: false
@@ -654,6 +694,7 @@ gz synclone github --org myorg --shallow --depth 10
 ```
 
 **Configuration:**
+
 ```yaml
 shallow: true
 depth: 1
@@ -843,15 +884,16 @@ gz synclone migrate --old-config bulk-clone.yaml --output synclone.yaml
 ### Key Differences from bulk-clone
 
 1. **Platform-specific subcommands**: Use `github`, `gitlab`, etc.
-2. **More granular filtering**: Language, topic, size, activity filters
-3. **Better progress reporting**: Real-time progress with detailed metrics
-4. **Improved error handling**: Retry logic and continue-on-error options
-5. **Multiple strategies**: Different approaches for existing repositories
-6. **Configuration file format**: New YAML structure with more options
+1. **More granular filtering**: Language, topic, size, activity filters
+1. **Better progress reporting**: Real-time progress with detailed metrics
+1. **Improved error handling**: Retry logic and continue-on-error options
+1. **Multiple strategies**: Different approaches for existing repositories
+1. **Configuration file format**: New YAML structure with more options
 
 ### Migration Steps
 
 1. **Update commands**:
+
    ```bash
    # Old
    gz bulk-clone --org myorg --target ./repos
@@ -860,7 +902,8 @@ gz synclone migrate --old-config bulk-clone.yaml --output synclone.yaml
    gz synclone github --org myorg --target ./repos
    ```
 
-2. **Convert configuration**:
+1. **Convert configuration**:
+
    ```yaml
    # Old bulk-clone.yaml format
    organizations:
@@ -875,7 +918,8 @@ gz synclone migrate --old-config bulk-clone.yaml --output synclone.yaml
          target: ./repos
    ```
 
-3. **Update scripts and automation**:
+1. **Update scripts and automation**:
+
    - Replace `bulk-clone` with `synclone github/gitlab/gitea`
    - Update configuration file references
    - Test new filtering and strategy options
@@ -889,6 +933,7 @@ gz synclone migrate --old-config bulk-clone.yaml --output synclone.yaml
 **Problem**: "Authentication failed" or "401 Unauthorized"
 
 **Solutions:**
+
 ```bash
 # Verify token validity
 gz synclone github --org myorg --verify-auth
@@ -905,6 +950,7 @@ gz synclone github --org myorg --token $BACKUP_TOKEN
 **Problem**: "Rate limit exceeded" or "429 Too Many Requests"
 
 **Solutions:**
+
 ```bash
 # Reduce parallelism
 gz synclone github --org myorg --parallel 1
@@ -922,6 +968,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 **Problem**: "Connection timeout" or "Network unreachable"
 
 **Solutions:**
+
 ```bash
 # Increase timeout
 gz synclone github --org myorg --timeout 300s
@@ -938,6 +985,7 @@ gz synclone github --org myorg --retry 5 --retry-delay 30s
 **Problem**: "No space left on device"
 
 **Solutions:**
+
 ```bash
 # Use shallow clones
 gz synclone github --org myorg --shallow --depth 1
@@ -954,6 +1002,7 @@ find ./repos -type d -name .git -exec du -sh {} \; | sort -h
 **Problem**: "Configuration validation failed"
 
 **Solutions:**
+
 ```bash
 # Validate configuration
 gz synclone validate --config synclone.yaml
@@ -1096,6 +1145,6 @@ echo "Mirror update completed at $(date)" >> /backup/logs/mirror.log
 For additional help:
 
 1. Run `gz synclone --help` for command options
-2. Check the [examples directory](../../examples/synclone/) for more configurations
-3. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
-4. Review the [configuration schema](../30-configuration/schemas/synclone-schema.yaml)
+1. Check the [examples directory](../../examples/synclone/) for more configurations
+1. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
+1. Review the [configuration schema](../30-configuration/schemas/synclone-schema.yaml)

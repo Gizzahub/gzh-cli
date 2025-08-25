@@ -9,6 +9,7 @@ This directory contains integration tests that interact with real external servi
 To run GitHub integration tests, you need:
 
 1. **GitHub Personal Access Token (PAT)**
+
    - Create a token at: https://github.com/settings/tokens
    - Required scopes:
      - `repo` (Full control of private repositories)
@@ -16,12 +17,14 @@ To run GitHub integration tests, you need:
      - `admin:repo_hook` (Full control of repository hooks)
      - `delete_repo` (Delete repositories) - Optional, for cleanup tests
 
-2. **Test Organization**
+1. **Test Organization**
+
    - Create a test organization on GitHub
    - Or use an existing organization where you have admin rights
    - ⚠️ **WARNING**: Do not use production organizations!
 
-3. **Environment Variables**
+1. **Environment Variables**
+
    ```bash
    export GITHUB_TOKEN="your-github-token"
    export GITHUB_TEST_ORG="your-test-org-name"
@@ -56,7 +59,7 @@ Integration tests are automatically skipped if required environment variables ar
 ### Recommended Test Organization Structure
 
 1. Create a dedicated test organization (e.g., `mycompany-test`)
-2. Create test repositories:
+1. Create test repositories:
    ```
    test-repo-1 (public, for basic tests)
    test-repo-2 (private, for permission tests)
@@ -68,9 +71,9 @@ Integration tests are automatically skipped if required environment variables ar
 ### Safety Guidelines
 
 1. **Never use production organizations or repositories**
-2. **Use repositories that can be safely modified**
-3. **Clean up test data after tests complete**
-4. **Use distinctive names for test resources** (e.g., prefix with `test-` or `integration-`)
+1. **Use repositories that can be safely modified**
+1. **Clean up test data after tests complete**
+1. **Use distinctive names for test resources** (e.g., prefix with `test-` or `integration-`)
 
 ## Test Scenarios
 
@@ -135,11 +138,11 @@ func TestIntegration_Feature_Scenario(t *testing.T) {
 ### Best Practices
 
 1. **Idempotency**: Tests should be runnable multiple times
-2. **Isolation**: Tests should not depend on other tests
-3. **Cleanup**: Always clean up created resources
-4. **Timeouts**: Use appropriate timeouts for API calls
-5. **Logging**: Log important information for debugging
-6. **Skip Logic**: Skip tests when prerequisites aren't met
+1. **Isolation**: Tests should not depend on other tests
+1. **Cleanup**: Always clean up created resources
+1. **Timeouts**: Use appropriate timeouts for API calls
+1. **Logging**: Log important information for debugging
+1. **Skip Logic**: Skip tests when prerequisites aren't met
 
 ## Continuous Integration
 
@@ -166,21 +169,25 @@ func TestIntegration_Feature_Scenario(t *testing.T) {
 ### Common Issues
 
 1. **Authentication Errors**
+
    - Verify token has required scopes
    - Check token hasn't expired
    - Ensure environment variables are set
 
-2. **Rate Limiting**
+1. **Rate Limiting**
+
    - Tests may hit rate limits with small quotas
    - Consider using GitHub Apps for higher limits
    - Add delays between tests if needed
 
-3. **Permission Errors**
+1. **Permission Errors**
+
    - Ensure token has admin access to test org
    - Some tests require specific permissions
    - Check organization settings
 
-4. **Network Issues**
+1. **Network Issues**
+
    - Tests require internet connectivity
    - Corporate proxies may interfere
    - Check firewall settings

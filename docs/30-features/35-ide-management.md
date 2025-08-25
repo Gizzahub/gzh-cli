@@ -437,7 +437,7 @@ gz ide examples
 - **Verbose logging**: Use `--verbose` for detailed output
 - **Log files**: Check `~/.config/gzh-manager/logs/ide.log`
 
----
+______________________________________________________________________
 
 **Supported Platforms**: Linux, macOS, Windows
 **JetBrains Products**: All major IDEs supported

@@ -8,20 +8,20 @@ The gzh-cli project takes security seriously and implements comprehensive securi
 
 We actively maintain security updates for the following versions:
 
-| Version | Supported          | Go Version | Security Features |
-| ------- | ------------------ | ---------- | ----------------- |
+| Version | Supported          | Go Version | Security Features   |
+| ------- | ------------------ | ---------- | ------------------- |
 | 1.x.x   | :white_check_mark: | Go 1.24.0+ | Full security suite |
-| 0.x.x   | :x:                | Go 1.21+   | Legacy (archived) |
+| 0.x.x   | :x:                | Go 1.21+   | Legacy (archived)   |
 
 ## Security Architecture
 
 ### Core Security Principles
 
 1. **Secure by Default**: All features implement security best practices by default
-2. **Least Privilege**: Commands operate with minimal required permissions
-3. **Defense in Depth**: Multiple layers of security controls
-4. **Zero Trust**: Validate all inputs and authenticate all operations
-5. **Privacy First**: No unnecessary data collection or transmission
+1. **Least Privilege**: Commands operate with minimal required permissions
+1. **Defense in Depth**: Multiple layers of security controls
+1. **Zero Trust**: Validate all inputs and authenticate all operations
+1. **Privacy First**: No unnecessary data collection or transmission
 
 ### Authentication & Authorization
 
@@ -288,11 +288,11 @@ gz quality run --security-only --format sarif > security-results.sarif
 ### Vulnerability Response Process
 
 1. **Detection**: Automated scanning identifies vulnerabilities
-2. **Assessment**: Security team evaluates impact and severity
-3. **Prioritization**: Vulnerabilities classified using CVSS v3.1
-4. **Remediation**: Patches developed and tested
-5. **Deployment**: Security updates released with advisory
-6. **Verification**: Post-deployment verification of fixes
+1. **Assessment**: Security team evaluates impact and severity
+1. **Prioritization**: Vulnerabilities classified using CVSS v3.1
+1. **Remediation**: Patches developed and tested
+1. **Deployment**: Security updates released with advisory
+1. **Verification**: Post-deployment verification of fixes
 
 ### Security Advisory Process
 
@@ -419,16 +419,19 @@ gz security report --type [vulnerability|breach|policy-violation]
 ### Incident Response Process
 
 1. **Detection & Analysis**
+
    - Automated monitoring alerts
    - Manual vulnerability reports
    - Threat intelligence integration
 
-2. **Containment & Eradication**
+1. **Containment & Eradication**
+
    - Immediate threat isolation
    - Root cause analysis
    - Vulnerability patching
 
-3. **Recovery & Post-Incident**
+1. **Recovery & Post-Incident**
+
    - System restoration
    - Monitoring enhancement
    - Lessons learned documentation
@@ -580,7 +583,7 @@ We operate a responsible disclosure program:
 - **Process**: Report via <security@gizzahub.com>
 - **Timeline**: 90-day coordinated disclosure
 
----
+______________________________________________________________________
 
 **Last Updated**: January 2025
 **Version**: 1.0.0

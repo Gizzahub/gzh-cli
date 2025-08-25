@@ -58,6 +58,7 @@ gz version --build-info
 ### Installation Issues
 
 #### Binary Not Found
+
 ```bash
 # Issue: "gz: command not found"
 # Check if binary is in PATH
@@ -71,6 +72,7 @@ make install
 ```
 
 #### Permission Denied
+
 ```bash
 # Issue: Permission denied when running gz
 # Check file permissions
@@ -83,6 +85,7 @@ sudo make install
 ```
 
 #### Incompatible Architecture
+
 ```bash
 # Issue: "cannot execute binary file: Exec format error"
 # Check system architecture
@@ -96,6 +99,7 @@ uname -m
 ### Authentication Issues
 
 #### Invalid Token
+
 ```bash
 # Issue: "authentication failed" or "401 Unauthorized"
 # Check token validity
@@ -107,6 +111,7 @@ export GITHUB_TOKEN="new_token_here"
 ```
 
 #### Token Scope Issues
+
 ```bash
 # Issue: "insufficient permissions" or "403 Forbidden"
 # Check token scopes (GitHub)
@@ -117,6 +122,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" -I https://api.github.com/user \
 ```
 
 #### API Rate Limiting
+
 ```bash
 # Issue: "rate limit exceeded"
 # Check rate limit status
@@ -133,6 +139,7 @@ providers:
 ### Repository Issues
 
 #### Clone Failures
+
 ```bash
 # Issue: Repository clone fails
 # Check repository access
@@ -147,6 +154,7 @@ sudo chown -R $USER:$USER ~/repos
 ```
 
 #### Permission Denied on Repository
+
 ```bash
 # Issue: "Permission denied (publickey)" or "Repository not found"
 # Test SSH connectivity
@@ -159,6 +167,7 @@ git config --global credential.helper store
 ```
 
 #### Repository Already Exists
+
 ```bash
 # Issue: "directory already exists" errors
 # Check existing repositories
@@ -172,6 +181,7 @@ gz synclone github --org myorg --strategy reset
 ### Quality Check Issues
 
 #### Tools Not Found
+
 ```bash
 # Issue: "golangci-lint not found" or similar
 # Check if tools are installed
@@ -186,6 +196,7 @@ gz quality tools install --tools golangci-lint,black
 ```
 
 #### Quality Check Failures
+
 ```bash
 # Issue: Quality checks fail with errors
 # Run individual checks
@@ -201,6 +212,7 @@ gz quality format --fix
 ### Network Issues
 
 #### Connection Timeouts
+
 ```bash
 # Issue: "connection timed out" or "network unreachable"
 # Test connectivity
@@ -213,6 +225,7 @@ export HTTPS_PROXY="http://proxy.company.com:8080"
 ```
 
 #### SSL Certificate Issues
+
 ```bash
 # Issue: "x509: certificate signed by unknown authority"
 # Test SSL connection
@@ -225,6 +238,7 @@ git config --global http.sslVerify false
 ```
 
 #### DNS Resolution Issues
+
 ```bash
 # Issue: "no such host" or DNS resolution failures
 # Test DNS resolution
@@ -239,20 +253,21 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 ### Exit Codes
 
-| Exit Code | Category | Description |
-|-----------|----------|-------------|
-| 0 | Success | Command completed successfully |
-| 1 | General Error | General command failure |
-| 2 | Configuration Error | Invalid configuration |
-| 3 | Authentication Error | Authentication failure |
-| 4 | Network Error | Network connectivity issues |
-| 5 | File System Error | File/directory access issues |
-| 10 | Validation Error | Input validation failure |
-| 20 | Quality Check Failure | Code quality issues found |
+| Exit Code | Category              | Description                    |
+| --------- | --------------------- | ------------------------------ |
+| 0         | Success               | Command completed successfully |
+| 1         | General Error         | General command failure        |
+| 2         | Configuration Error   | Invalid configuration          |
+| 3         | Authentication Error  | Authentication failure         |
+| 4         | Network Error         | Network connectivity issues    |
+| 5         | File System Error     | File/directory access issues   |
+| 10        | Validation Error      | Input validation failure       |
+| 20        | Quality Check Failure | Code quality issues found      |
 
 ### Error Messages
 
 #### Configuration Errors
+
 ```
 Error: configuration file not found
 Error: invalid YAML syntax
@@ -261,6 +276,7 @@ Error: invalid provider configuration
 ```
 
 #### Authentication Errors
+
 ```
 Error: authentication failed for provider 'github'
 Error: token has insufficient permissions
@@ -268,6 +284,7 @@ Error: rate limit exceeded
 ```
 
 #### Repository Errors
+
 ```
 Error: repository not found or access denied
 Error: failed to clone repository
@@ -276,6 +293,7 @@ Error: insufficient disk space
 ```
 
 #### Quality Errors
+
 ```
 Error: linter not found
 Error: quality check failed
@@ -341,6 +359,7 @@ GODEBUG=gctrace=1 gz synclone github --org myorg
 ### Slow Repository Operations
 
 #### Diagnosis
+
 ```bash
 # Check concurrent job settings
 gz config show | grep concurrent_jobs
@@ -351,6 +370,7 @@ iotop -p $(pgrep gz)
 ```
 
 #### Solutions
+
 ```bash
 # Reduce concurrent jobs
 global:
@@ -371,6 +391,7 @@ providers:
 ### High Memory Usage
 
 #### Diagnosis
+
 ```bash
 # Monitor memory usage
 gz profile start --type memory &
@@ -382,6 +403,7 @@ free -h
 ```
 
 #### Solutions
+
 ```bash
 # Process repositories in smaller batches
 gz synclone github --org myorg --limit 50
@@ -398,6 +420,7 @@ global:
 ### Network Performance
 
 #### Diagnosis
+
 ```bash
 # Test network speed
 gz net-env test speed
@@ -408,6 +431,7 @@ nethogs
 ```
 
 #### Solutions
+
 ```bash
 # Enable compression
 providers:
@@ -517,16 +541,19 @@ logrotate /etc/logrotate.d/gzh-cli
 ### Support Channels
 
 #### GitHub Issues
+
 - **Bug Reports**: Include diagnostic report and reproduction steps
 - **Feature Requests**: Describe use case and expected behavior
 - **Questions**: Use discussion board for general questions
 
 #### Community Support
+
 - **Documentation**: Check official documentation first
 - **Examples**: Review example configurations
 - **Known Issues**: Check GitHub issues for known problems
 
 #### Enterprise Support
+
 - **Priority Support**: Available for enterprise customers
 - **Custom Integrations**: Professional services available
 - **Training**: Team training and onboarding
@@ -534,28 +561,34 @@ logrotate /etc/logrotate.d/gzh-cli
 ### Creating Effective Bug Reports
 
 #### Required Information
+
 1. **Environment Details**
+
    ```bash
    gz version --detailed
    uname -a
    ```
 
-2. **Configuration** (masked)
+1. **Configuration** (masked)
+
    ```bash
    gz config show --masked
    ```
 
-3. **Reproduction Steps**
+1. **Reproduction Steps**
+
    - Exact commands run
    - Expected vs actual behavior
    - Error messages
 
-4. **Diagnostic Output**
+1. **Diagnostic Output**
+
    ```bash
    gz doctor --output json
    ```
 
 #### Example Bug Report Template
+
 ```markdown
 ## Bug Description
 Brief description of the issue
@@ -572,8 +605,10 @@ Brief description of the issue
 
 ## Error Output
 ```
+
 Error: authentication failed
-```
+
+````
 
 ## Configuration
 ```yaml
@@ -581,12 +616,14 @@ Error: authentication failed
 providers:
   github:
     token: "***masked***"
-```
+````
 
 ## Diagnostic Information
+
 ```json
 {diagnostic output}
 ```
+
 ```
 
 ---
@@ -595,3 +632,4 @@ providers:
 **Common Issues**: Authentication, configuration, network connectivity
 **Debug Mode**: Use `--debug --verbose` for detailed information
 **Support**: GitHub issues, documentation, community discussions
+```

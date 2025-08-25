@@ -9,18 +9,18 @@ Set up your initial gzh-cli configuration for optimal workflow.
 gzh-cli uses a priority system for configuration:
 
 1. **Command-line flags** (highest priority)
-2. **Environment variables**
-3. **Configuration files**
-4. **Default values** (lowest priority)
+1. **Environment variables**
+1. **Configuration files**
+1. **Default values** (lowest priority)
 
 ### Configuration Locations
 
 gzh-cli searches for configuration files in this order:
 
 1. `$GZH_CONFIG_PATH` (if set)
-2. `./gzh.yaml` (current directory)
-3. `~/.config/gzh-manager/gzh.yaml` (user config)
-4. `/etc/gzh-manager/gzh.yaml` (system config)
+1. `./gzh.yaml` (current directory)
+1. `~/.config/gzh-manager/gzh.yaml` (user config)
+1. `/etc/gzh-manager/gzh.yaml` (system config)
 
 ## 📝 Basic Configuration
 
@@ -330,16 +330,19 @@ commands:
 ## 📋 Configuration Best Practices
 
 ### Security
+
 - ✅ Use environment variables for tokens
 - ✅ Set proper file permissions: `chmod 600 ~/.config/gzh-manager/gzh.yaml`
 - ❌ Never commit tokens to configuration files
 
 ### Performance
+
 - ✅ Adjust `concurrent_jobs` based on your system
 - ✅ Use appropriate strategies for different repositories
 - ✅ Filter repositories to avoid cloning unnecessary ones
 
 ### Organization
+
 - ✅ Use separate clone directories for different organizations
 - ✅ Group similar repositories together
 - ✅ Use descriptive names for configurations
@@ -349,6 +352,7 @@ commands:
 ### Common Issues
 
 #### Token Authentication Fails
+
 ```bash
 # Test token manually
 curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
@@ -358,6 +362,7 @@ gz config test-auth --provider github --verbose
 ```
 
 #### Configuration Not Found
+
 ```bash
 # Check search paths
 gz config show-paths
@@ -367,6 +372,7 @@ ls -la ~/.config/gzh-manager/gzh.yaml
 ```
 
 #### Permission Denied
+
 ```bash
 # Fix file permissions
 chmod 600 ~/.config/gzh-manager/gzh.yaml
@@ -374,6 +380,7 @@ chmod 700 ~/.config/gzh-manager/
 ```
 
 #### Invalid YAML Syntax
+
 ```bash
 # Validate YAML syntax
 gz config validate
@@ -387,10 +394,10 @@ python3 -c "import yaml; yaml.safe_load(open('~/.config/gzh-manager/gzh.yaml'))"
 After setting up your configuration:
 
 1. **[Try Quick Start Commands](11-quick-start.md)** - Test your setup
-2. **[Complete Configuration Guide](../40-configuration/40-configuration-guide.md)** - Advanced options
-3. **[Feature Guides](../30-features/)** - Detailed feature documentation
+1. **[Complete Configuration Guide](../40-configuration/40-configuration-guide.md)** - Advanced options
+1. **[Feature Guides](../30-features/)** - Detailed feature documentation
 
----
+______________________________________________________________________
 
 **Configuration File**: `~/.config/gzh-manager/gzh.yaml`
 **Validation**: `gz config validate`

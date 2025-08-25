@@ -181,9 +181,9 @@ make pre-commit
 All pull requests are automatically checked for:
 
 1. Formatting issues
-2. Linting violations
-3. Test coverage
-4. Security vulnerabilities
+1. Linting violations
+1. Test coverage
+1. Security vulnerabilities
 
 ## Suppressing False Positives
 
@@ -207,10 +207,10 @@ Always provide a reason when suppressing linters.
 When adding a new linter:
 
 1. Add it to `.golangci.yml`
-2. Configure appropriate settings
-3. Add exclusions for false positives
-4. Update this documentation
-5. Run on the entire codebase and fix issues
+1. Configure appropriate settings
+1. Add exclusions for false positives
+1. Update this documentation
+1. Run on the entire codebase and fix issues
 
 ## Resources
 

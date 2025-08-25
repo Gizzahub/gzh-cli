@@ -7,23 +7,31 @@ This directory contains example configurations and usage patterns for the gz CLI
 ### Core Features
 
 #### 🔄 synclone/
+
 Repository synchronization configurations:
+
 - **`synclone-simple.yaml`** - Minimal configuration for getting started
 - **`synclone-example.yaml`** - Comprehensive configuration with all options
 - **`synclone.yml`** - Advanced multi-platform setup
 - **`gzh.yml`** - Legacy configuration format (v0.1)
 
 #### ✨ quality/
+
 Code quality management configurations:
+
 - **`quality-simple.yaml`** - Basic formatter and linter setup
 - **`quality-example.yaml`** - Full multi-language configuration
 
 #### 💻 ide/
+
 JetBrains IDE monitoring configurations:
+
 - **`ide-monitor.yaml`** - IDE sync monitoring and backup settings
 
 #### 📦 pm/
+
 Package manager configurations:
+
 - **`asdf.yml`** - asdf version manager packages
 - **`brew.yml`** - Homebrew packages and casks
 - **`npm.yml`** - Node.js global packages
@@ -35,36 +43,48 @@ Package manager configurations:
 ### Git Platform Management
 
 #### 🐙 github/
+
 GitHub-specific configurations and schemas:
+
 - **`org-settings.yaml`** - Organization settings template
 - **`repo-settings.yaml`** - Repository settings template
 - **`schema.org-settings.yaml`** - Schema for organization settings
 - **`schema.repo-settings.yaml`** - Schema for repository settings
 
 #### 🪝 webhooks/
+
 Webhook and event configurations:
+
 - **`webhook-policy-example.yaml`** - Webhook policy configuration
 - **`org-webhook-config-example.yaml`** - Organization-wide webhook settings
 
 ### Environment Management
 
 #### 🌐 network/
+
 Network environment configurations:
+
 - **`vpn-hierarchy-example.yaml`** - VPN hierarchy and network rules
 
 #### 🔧 dev-env/
+
 Development environment configurations:
+
 - AWS, Docker, Kubernetes configuration examples
 
 ### Other Resources
 
 #### 🤖 automation/
+
 Automation rules and templates:
+
 - **`automation-rule-example.yaml`** - GitHub automation rules
 - **`automation-rule-templates.yaml`** - Reusable automation templates
 
 #### 🔧 misc/
+
 Miscellaneous resources:
+
 - **`clone-workflow.sh`** - Example automation script
 - **`Dockerfile.example`** - Docker deployment example
 
@@ -129,11 +149,11 @@ gz pm update --managers brew,npm --config examples/pm/global.yml
 The gz tool loads configuration in the following order (highest to lowest priority):
 
 1. Command-line flags
-2. Environment variables
-3. Config file specified with --config flag
-4. Config file in current directory
-5. User config (~/.config/gzh-manager/)
-6. System config (/etc/gzh-manager/)
+1. Environment variables
+1. Config file specified with --config flag
+1. Config file in current directory
+1. User config (~/.config/gzh-manager/)
+1. System config (/etc/gzh-manager/)
 
 ## 🔑 Environment Variables
 
@@ -161,6 +181,7 @@ export GZ_QUALITY_CONFIG="~/my-quality.yaml"
 ### Personal Development Setup
 
 Complete development environment setup:
+
 ```bash
 # 1. Clone your repositories
 gz synclone github --org your-username
@@ -179,6 +200,7 @@ gz pm update --all
 ### Team/Enterprise Environment
 
 For teams with standards and policies:
+
 ```bash
 # 1. Clone organization repos with filters
 gz synclone --config examples/synclone/synclone-example.yaml
@@ -196,6 +218,7 @@ gz quality run --config examples/quality/quality-example.yaml
 ### CI/CD Integration
 
 Automated pipeline setup:
+
 ```bash
 # Set tokens from CI secrets
 export GITHUB_TOKEN="${CI_GITHUB_TOKEN}"
@@ -210,6 +233,7 @@ gz quality analyze --output-format sarif > quality-report.sarif
 ### Multi-Platform Repository Management
 
 Working with multiple Git platforms:
+
 ```bash
 # Use comprehensive synclone config
 gz synclone --config examples/synclone/synclone-example.yaml
@@ -244,11 +268,11 @@ Configuration schemas are available in multiple formats:
 ## 💡 Best Practices
 
 1. **Start Simple**: Use minimal configs first (e.g., `synclone-simple.yaml`)
-2. **Test First**: Always use `--dry-run` when available
-3. **Use Version Control**: Keep your configurations in git
-4. **Environment-Specific**: Use different configs for work/personal/CI
-5. **Validate Changes**: Run validation after editing configs
-6. **Check Logs**: Use `--debug` for troubleshooting
+1. **Test First**: Always use `--dry-run` when available
+1. **Use Version Control**: Keep your configurations in git
+1. **Environment-Specific**: Use different configs for work/personal/CI
+1. **Validate Changes**: Run validation after editing configs
+1. **Check Logs**: Use `--debug` for troubleshooting
 
 ## 🆘 Getting Help
 

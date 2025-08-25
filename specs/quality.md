@@ -14,6 +14,7 @@ The `gz quality` command provides a unified interface for code quality managemen
 ## Purpose
 
 Unified code quality management for:
+
 - **Multi-Language Support**: Go, Python, JavaScript/TypeScript, Rust, Java, C/C++
 - **Integrated Tooling**: Single command for all quality tools
 - **CI/CD Integration**: Machine-readable output formats
@@ -30,44 +31,48 @@ gz quality <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose | Test Coverage |
-|------------|---------|--------------|
-| `run` | Execute all quality tools | ✅ 41.2% |
-| `check` | Lint without modifications | ✅ 38.5% |
-| `analyze` | Project analysis and recommendations | ✅ 35.7% |
-| `install` | Install quality tools | ✅ 32.1% |
-| `upgrade` | Upgrade quality tools | ✅ 30.8% |
-| `version` | Show tool versions | ✅ 28.4% |
-| `init` | Initialize quality configuration | ✅ 33.9% |
-| `tool` | Run specific tool directly | ✅ 36.2% |
+| Subcommand | Purpose                              | Test Coverage |
+| ---------- | ------------------------------------ | ------------- |
+| `run`      | Execute all quality tools            | ✅ 41.2%      |
+| `check`    | Lint without modifications           | ✅ 38.5%      |
+| `analyze`  | Project analysis and recommendations | ✅ 35.7%      |
+| `install`  | Install quality tools                | ✅ 32.1%      |
+| `upgrade`  | Upgrade quality tools                | ✅ 30.8%      |
+| `version`  | Show tool versions                   | ✅ 28.4%      |
+| `init`     | Initialize quality configuration     | ✅ 33.9%      |
+| `tool`     | Run specific tool directly           | ✅ 36.2%      |
 
 ## Language Support Matrix
 
 ### Go
-| Tool | Purpose | Version | Coverage |
-|------|---------|---------|----------|
-| gofumpt | Advanced formatting | latest | ✅ 45.3% |
-| golangci-lint | Comprehensive linting | 1.54+ | ✅ 42.7% |
-| goimports | Import organization | latest | ✅ 38.9% |
-| gci | Import grouping | latest | ✅ 35.2% |
+
+| Tool          | Purpose               | Version | Coverage |
+| ------------- | --------------------- | ------- | -------- |
+| gofumpt       | Advanced formatting   | latest  | ✅ 45.3% |
+| golangci-lint | Comprehensive linting | 1.54+   | ✅ 42.7% |
+| goimports     | Import organization   | latest  | ✅ 38.9% |
+| gci           | Import grouping       | latest  | ✅ 35.2% |
 
 ### Python
-| Tool | Purpose | Version | Coverage |
-|------|---------|---------|----------|
-| ruff | Fast Python linter/formatter | 0.1.0+ | ✅ 40.1% |
-| black | Code formatting | 23.0+ | ✅ 37.8% |
-| isort | Import sorting | 5.12+ | ✅ 34.5% |
-| mypy | Type checking | 1.5+ | ✅ 31.2% |
-| flake8 | Style guide enforcement | 6.0+ | ✅ 29.7% |
+
+| Tool   | Purpose                      | Version | Coverage |
+| ------ | ---------------------------- | ------- | -------- |
+| ruff   | Fast Python linter/formatter | 0.1.0+  | ✅ 40.1% |
+| black  | Code formatting              | 23.0+   | ✅ 37.8% |
+| isort  | Import sorting               | 5.12+   | ✅ 34.5% |
+| mypy   | Type checking                | 1.5+    | ✅ 31.2% |
+| flake8 | Style guide enforcement      | 6.0+    | ✅ 29.7% |
 
 ### JavaScript/TypeScript
-| Tool | Purpose | Version | Coverage |
-|------|---------|---------|----------|
-| prettier | Code formatting | 3.0+ | ✅ 36.4% |
-| eslint | Linting and fixing | 8.0+ | ✅ 33.8% |
-| dprint | Fast formatter | 0.40+ | ✅ 30.5% |
+
+| Tool     | Purpose            | Version | Coverage |
+| -------- | ------------------ | ------- | -------- |
+| prettier | Code formatting    | 3.0+    | ✅ 36.4% |
+| eslint   | Linting and fixing | 8.0+    | ✅ 33.8% |
+| dprint   | Fast formatter     | 0.40+   | ✅ 30.5% |
 
 ### Additional Languages
+
 - **Rust**: rustfmt, clippy (32.1% coverage)
 - **Java**: google-java-format, checkstyle, spotbugs (28.7% coverage)
 - **C/C++**: clang-format, clang-tidy (26.3% coverage)
@@ -101,6 +106,7 @@ func TestCICDIntegration(t *testing.T)       // ✅ Implemented
 ### 1. Smart Tool Detection
 
 Automatically detects which tools are needed based on:
+
 - File extensions in the project
 - Configuration files (`.golangci.yml`, `.prettierrc`, etc.)
 - Language-specific manifests (`go.mod`, `package.json`, `Cargo.toml`)
@@ -203,12 +209,12 @@ quality:
 
 ### Benchmark Results (2025-08)
 
-| Operation | Before | After | Improvement |
-|-----------|--------|-------|-------------|
-| Single file | 250ms | 120ms | 52% faster |
-| 100 files | 8.5s | 3.2s | 62% faster |
-| 1000 files | 45s | 12s | 73% faster |
-| Tool detection | 500ms | 150ms | 70% faster |
+| Operation      | Before | After | Improvement |
+| -------------- | ------ | ----- | ----------- |
+| Single file    | 250ms  | 120ms | 52% faster  |
+| 100 files      | 8.5s   | 3.2s  | 62% faster  |
+| 1000 files     | 45s    | 12s   | 73% faster  |
+| Tool detection | 500ms  | 150ms | 70% faster  |
 
 ### Memory Usage
 
@@ -235,9 +241,9 @@ Suggestion: Run 'gz quality fix' to auto-fix some issues
 ### Recovery Mechanisms
 
 1. **Tool Failure Recovery**: Continue with other tools if one fails
-2. **Partial Success**: Report which files were processed successfully
-3. **Rollback Support**: Undo changes if quality check fails
-4. **Retry Logic**: Automatic retry for transient failures
+1. **Partial Success**: Report which files were processed successfully
+1. **Rollback Support**: Undo changes if quality check fails
+1. **Retry Logic**: Automatic retry for transient failures
 
 ## CI/CD Integration
 
@@ -292,8 +298,8 @@ go test ./cmd/quality -run TestQualityRun -v
 ### Breaking Changes
 
 1. **Config format**: Migrated from TOML to YAML
-2. **Tool names**: Standardized naming (e.g., `golint` → `golangci-lint`)
-3. **Output format**: Default changed from JSON to table
+1. **Tool names**: Standardized naming (e.g., `golint` → `golangci-lint`)
+1. **Output format**: Default changed from JSON to table
 
 ### Migration Script
 
@@ -308,27 +314,30 @@ gz quality validate-config
 ## Future Enhancements
 
 1. **AI-Powered Suggestions**: Use LLMs for code improvement suggestions
-2. **Custom Rules**: User-defined quality rules
-3. **Historical Tracking**: Track quality metrics over time
-4. **Team Dashboards**: Web-based quality dashboards
-5. **Auto-Fix Strategies**: Intelligent auto-fixing with ML
-6. **Performance Profiling**: Integrated with `gz profile`
+1. **Custom Rules**: User-defined quality rules
+1. **Historical Tracking**: Track quality metrics over time
+1. **Team Dashboards**: Web-based quality dashboards
+1. **Auto-Fix Strategies**: Intelligent auto-fixing with ML
+1. **Performance Profiling**: Integrated with `gz profile`
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Tool Not Found**
+
    ```bash
    gz quality install <tool-name>
    ```
 
-2. **Configuration Conflicts**
+1. **Configuration Conflicts**
+
    ```bash
    gz quality validate-config
    ```
 
-3. **Performance Issues**
+1. **Performance Issues**
+
    ```bash
    gz quality run --profile
    ```

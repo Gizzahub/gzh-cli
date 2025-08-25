@@ -5,11 +5,11 @@ This document compares Terraform's GitHub provider with gzh-manager's `gz repo-c
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)
-2. [Feature Comparison](#feature-comparison)
-3. [Architecture Comparison](#architecture-comparison)
-4. [Use Case Analysis](#use-case-analysis)
-5. [Migration Guide](#migration-guide)
-6. [Recommendations](#recommendations)
+1. [Feature Comparison](#feature-comparison)
+1. [Architecture Comparison](#architecture-comparison)
+1. [Use Case Analysis](#use-case-analysis)
+1. [Migration Guide](#migration-guide)
+1. [Recommendations](#recommendations)
 
 ## Executive Summary
 
@@ -109,25 +109,25 @@ repositories:
 
 | Feature                            | Terraform     | gz repo-config          |
 | ---------------------------------- | ------------- | ----------------------- |
-| **Basic Settings**                 |
+| **Basic Settings**                 |               |                         |
 | Repository creation                | ✅            | ❌ (configuration only) |
 | Visibility control                 | ✅            | ✅                      |
 | Feature flags (issues, wiki, etc.) | ✅            | ✅                      |
 | Default branch                     | ✅            | ✅                      |
 | Topics                             | ✅            | ✅                      |
-| **Security**                       |
+| **Security**                       |               |                         |
 | Branch protection                  | ✅            | ✅                      |
 | Required status checks             | ✅            | ✅                      |
 | Review requirements                | ✅            | ✅                      |
 | Push restrictions                  | ✅            | ✅                      |
 | Vulnerability alerts               | ✅            | ✅                      |
 | Secret scanning                    | ✅            | ✅                      |
-| **Advanced Features**              |
+| **Advanced Features**              |               |                         |
 | Webhooks                           | ✅            | ✅                      |
 | Deploy keys                        | ✅            | ❌ (planned)            |
 | Environments                       | ✅            | ❌ (planned)            |
 | GitHub Actions permissions         | ✅            | ✅                      |
-| **Management Features**            |
+| **Management Features**            |               |                         |
 | Templates/Modules                  | ✅ (modules)  | ✅ (templates)          |
 | Bulk operations                    | ❌ (foreach)  | ✅ (native)             |
 | Policy enforcement                 | ❌ (external) | ✅ (built-in)           |
@@ -205,7 +205,7 @@ repositories:
    }
    ```
 
-2. **Complex Dependencies**
+1. **Complex Dependencies**
 
    ```hcl
    # Repository depends on team creation
@@ -224,7 +224,8 @@ repositories:
    }
    ```
 
-3. **Infrastructure Provisioning**
+1. **Infrastructure Provisioning**
+
    - Creating new repositories
    - Setting up complete GitHub organization structure
    - Managing teams and memberships
@@ -244,7 +245,7 @@ repositories:
        template: "frontend"
    ```
 
-2. **Policy Enforcement**
+1. **Policy Enforcement**
 
    ```yaml
    policies:
@@ -260,14 +261,15 @@ repositories:
            enforcement: "required"
    ```
 
-3. **Compliance Auditing**
+1. **Compliance Auditing**
 
    ```bash
    # Generate compliance reports
    gz repo-config audit --format html --output compliance-report.html
    ```
 
-4. **Template-Based Standardization**
+1. **Template-Based Standardization**
+
    ```yaml
    templates:
      production:
@@ -293,7 +295,7 @@ repositories:
    gz repo-config generate --from-github --org my-org
    ```
 
-2. **Convert HCL to YAML**
+1. **Convert HCL to YAML**
 
    Terraform:
 
@@ -315,7 +317,7 @@ repositories:
          has_issues: true
    ```
 
-3. **Apply Configuration**
+1. **Apply Configuration**
 
    ```bash
    # Dry run first
@@ -341,7 +343,8 @@ repositories:
    done
    ```
 
-2. **Import Existing Resources**
+1. **Import Existing Resources**
+
    ```bash
    terraform import github_repository.example my-org/example
    ```
@@ -351,16 +354,19 @@ repositories:
 ### Choose Terraform When:
 
 1. **You need full infrastructure lifecycle management**
+
    - Creating and destroying repositories
    - Managing organization structure
    - Cross-provider dependencies
 
-2. **You have existing Terraform infrastructure**
+1. **You have existing Terraform infrastructure**
+
    - Consistent tooling across infrastructure
    - Shared modules and workflows
    - Team expertise in Terraform
 
-3. **You need advanced state management**
+1. **You need advanced state management**
+
    - Tracking infrastructure changes
    - Managing resource dependencies
    - Supporting multiple environments
@@ -368,16 +374,19 @@ repositories:
 ### Choose gz repo-config When:
 
 1. **You manage many existing repositories**
+
    - Bulk configuration updates
    - Template-based standardization
    - Pattern-based configuration
 
-2. **Compliance and security are priorities**
+1. **Compliance and security are priorities**
+
    - Built-in policy engine
    - Automated compliance auditing
    - Exception management
 
-3. **You want simplicity**
+1. **You want simplicity**
+
    - No state management
    - Simple YAML configuration
    - Focused on GitHub only

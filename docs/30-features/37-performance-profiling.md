@@ -27,6 +27,7 @@ Performance profiling is essential for understanding how your application uses C
 ## 📈 Profile Types
 
 ### CPU Profiling
+
 Analyze CPU usage and identify performance bottlenecks:
 
 ```bash
@@ -41,6 +42,7 @@ gz profile start --type cpu --rate 1000
 ```
 
 ### Memory Profiling
+
 Track memory allocation and usage patterns:
 
 ```bash
@@ -55,6 +57,7 @@ gz profile start --type memory --gc-info
 ```
 
 ### Concurrency Profiling
+
 Analyze goroutines and synchronization:
 
 ```bash
@@ -69,6 +72,7 @@ gz profile start --type block
 ```
 
 ### Trace Profiling
+
 Detailed execution tracing:
 
 ```bash
@@ -495,7 +499,7 @@ gz ide monitor &
 gz profile server --daemon
 ```
 
----
+______________________________________________________________________
 
 **Profile Types**: CPU, Memory, Goroutine, Mutex, Block, Trace
 **Output Formats**: pprof, SVG, JSON, CSV, HTML
