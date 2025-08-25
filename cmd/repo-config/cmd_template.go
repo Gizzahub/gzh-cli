@@ -430,3 +430,17 @@ settings:
 
 	return ""
 }
+
+// getStatusSymbol returns the symbol for a validation status.
+func getStatusSymbol(status string) string {
+	switch status {
+	case "pass":
+		return "✅"
+	case "warn":
+		return "⚠️"
+	case "fail":
+		return "❌"
+	default:
+		return "❓"
+	}
+}

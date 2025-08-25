@@ -45,10 +45,9 @@ func truncateString(s string, maxLen int) string {
 // NewCmd creates the validate subcommand.
 func NewCmd() *cobra.Command {
 	var (
-		flags      GlobalFlags
-		configFile string
-		strict     bool
-		format     string
+		flags  GlobalFlags
+		strict bool
+		format string
 	)
 
 	cmd := &cobra.Command{
@@ -78,7 +77,7 @@ Examples:
   gz repo-config validate --strict              # Strict validation mode
   gz repo-config validate --format json         # JSON output`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runValidateCommand(flags, configFile, strict, format)
+			return runValidateCommand(flags, strict, format)
 		},
 	}
 
@@ -86,7 +85,6 @@ Examples:
 	addGlobalFlags(cmd, &flags)
 
 	// Add validate-specific flags
-	cmd.Flags().StringVar(&configFile, "config-file", "", "Configuration file to validate")
 	cmd.Flags().BoolVar(&strict, "strict", false, "Enable strict validation mode")
 	cmd.Flags().StringVar(&format, "format", "table", "Output format (table, json, yaml)")
 
@@ -94,12 +92,12 @@ Examples:
 }
 
 // runValidateCommand executes the validate command.
-func runValidateCommand(flags GlobalFlags, configFile string, strict bool, format string) error {
+func runValidateCommand(flags GlobalFlags, strict bool, format string) error {
 	if flags.Verbose {
 		fmt.Println("🔍 Validating repository configuration...")
 
-		if configFile != "" {
-			fmt.Printf("Configuration file: %s\n", configFile)
+		if flags.ConfigFile != "" {
+			fmt.Printf("Configuration file: %s\n", flags.ConfigFile)
 		}
 
 		if strict {
@@ -110,7 +108,7 @@ func runValidateCommand(flags GlobalFlags, configFile string, strict bool, forma
 	}
 
 	// Determine config file to validate
-	targetFile := configFile
+	targetFile := flags.ConfigFile
 	if targetFile == "" {
 		// Use default config discovery
 		targetFile = discoverConfigFile()
