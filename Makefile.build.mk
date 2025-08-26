@@ -8,6 +8,7 @@
 # Detect OS-specific executable extension (e.g., .exe on Windows)
 BINEXT := $(shell go env GOEXE)
 BINARY := $(executablename)$(BINEXT)
+GOPATH := $(shell go env GOPATH)
 
 # ==============================================================================
 # Build Targets
@@ -16,15 +17,15 @@ BINARY := $(executablename)$(BINEXT)
 .PHONY: build install run bootstrap clean release-dry-run release-snapshot release-check deploy
 
 build: ## build golang binary
-	@echo -e "$(CYAN)Building $(BINARY)...$(RESET)"
+	@printf "$(CYAN)Building %s...$(RESET)\n" "$(BINARY)"
 	@go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY) ./cmd/gz
-	@echo -e "$(GREEN)✅ Built $(BINARY) successfully$(RESET)"
+	@printf "$(GREEN)Built %s successfully$(RESET)\n" "$(BINARY)"
 
 
 install: build ## install golang binary
-	@echo -e "$(CYAN)Installing $(BINARY)...$(RESET)"
-	@mv $(BINARY) $(shell go env GOPATH)/bin/
-	@echo -e "$(GREEN)✅ Installed $(BINARY) to $(shell go env GOPATH)/bin/$(RESET)"
+	@printf "$(CYAN)Installing to %s$(RESET)\n" "$(GOPATH)/bin/$(BINARY)"
+	@mv $(BINARY) $(GOPATH)/bin/
+	@printf "$(GREEN)Installed %s to %s$(RESET)\n" "$(BINARY)" "$(GOPATH)/bin/"
 
 
 run: ## run the application (usage: make run [args...] or ARGS="args" make run)

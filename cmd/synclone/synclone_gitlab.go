@@ -107,6 +107,11 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 		gitlabpkg.SetToken(token)
 	}
 
+	// 프리플라이트: 그룹 접근 가능 여부 확인 (비공개면 토큰 안내)
+	if err := gitlabpkg.PreflightCheckGroupAccess(cmd.Context(), o.groupName); err != nil {
+		return fmt.Errorf("preflight failed: %w", err)
+	}
+
 	// 그룹명 정규화: 공백 및 트레일링 슬래시 제거
 	o.groupName = strings.TrimSpace(o.groupName)
 	o.groupName = strings.Trim(o.groupName, "/")
