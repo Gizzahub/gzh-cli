@@ -17,3 +17,12 @@ func addAuthHeader(req *http.Request) {
 	}
 	req.Header.Set("PRIVATE-TOKEN", configuredToken)
 }
+
+// tokenGuidanceMessage 는 필요한 토큰 권한과 토큰 생성 페이지 URL을 안내한다.
+// 한국어 안내 메시지로 출력되도록 구성.
+func tokenGuidanceMessage() string {
+	base := getWebBaseURL()
+	// GitLab 개인 액세스 토큰 생성 페이지
+	patURL := base + "/-/profile/personal_access_tokens"
+	return "필요 토큰 권한: read_api, read_repository. 토큰 생성: " + patURL
+}

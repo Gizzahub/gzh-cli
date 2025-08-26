@@ -51,8 +51,16 @@ func newSyncCloneGitlabCmd() *cobra.Command {
 		RunE:         o.run,
 	}
 
-	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
-	cmd.Flags().StringVarP(&o.groupName, "groupName", "g", o.groupName, "groupName")
+	cmd.Flags().StringVarP(&o.targetPath, "target", "t", o.targetPath, "Target directory")
+	cmd.Flags().StringVarP(&o.groupName, "group", "g", o.groupName, "Group ID or path")
+
+	// Backward-compatible deprecated flags (hidden)
+	cmd.Flags().StringVar(&o.targetPath, "targetPath", o.targetPath, "(deprecated) use --target instead")
+	cmd.Flags().StringVar(&o.groupName, "groupName", o.groupName, "(deprecated) use --group instead")
+	cmd.Flags().MarkDeprecated("targetPath", "use --target instead")
+	cmd.Flags().MarkDeprecated("groupName", "use --group instead")
+	cmd.Flags().MarkHidden("targetPath")
+	cmd.Flags().MarkHidden("groupName")
 	cmd.Flags().BoolVarP(&o.recursively, "recursively", "r", o.recursively, "recursively")
 	cmd.Flags().StringVarP(&o.strategy, "strategy", "s", o.strategy, "Sync strategy: reset, pull, or fetch")
 	cmd.Flags().StringVarP(&o.configFile, "config", "c", o.configFile, "Path to config file")
@@ -125,7 +133,7 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.targetPath == "" || o.groupName == "" {
-		return fmt.Errorf("both targetPath and groupName must be specified")
+		return fmt.Errorf("both --target and --group must be specified")
 	}
 
 	// Validate strategy

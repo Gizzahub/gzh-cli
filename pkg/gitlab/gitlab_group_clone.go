@@ -104,10 +104,10 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	if resp.StatusCode != http.StatusOK {
 		// 프라이빗 인스턴스/그룹에서 토큰이 없으면 401/403이 나올 수 있음
 		if (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden) && configuredToken == "" {
-			return fmt.Errorf("%w: authentication required (private instance or private group). Provide token via --token or GITLAB_TOKEN", ErrFailedToGetRepositories)
+			return fmt.Errorf("%w: 인증 필요. --token 또는 GITLAB_TOKEN을 설정하세요. %s", ErrFailedToGetRepositories, tokenGuidanceMessage())
 		}
 		if resp.StatusCode == http.StatusNotFound {
-			return fmt.Errorf("%w: %s (check group path or use numeric group ID)", ErrFailedToGetRepositories, resp.Status)
+			return fmt.Errorf("%w: %s (그룹 경로 확인 또는 숫자 group ID 사용 권장)", ErrFailedToGetRepositories, resp.Status)
 		}
 		return fmt.Errorf("%w: %s", ErrFailedToGetRepositories, resp.Status)
 	}

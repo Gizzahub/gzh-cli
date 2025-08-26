@@ -8,7 +8,25 @@
 # Detect OS-specific executable extension (e.g., .exe on Windows)
 BINEXT := $(shell go env GOEXE)
 BINARY := $(executablename)$(BINEXT)
+GOBIN := $(shell go env GOBIN)
 GOPATH := $(shell go env GOPATH)
+
+# OS-specific path separator and binary install dir
+ifeq ($(OS),Windows_NT)
+SEP := \\\\
+else
+SEP := /
+endif
+
+ifeq ($(strip $(GOBIN)),)
+  ifeq ($(OS),Windows_NT)
+    BINDIR := $(GOPATH)$(SEP)bin
+  else
+    BINDIR := $(GOPATH)$(SEP)bin
+  endif
+else
+  BINDIR := $(GOBIN)
+endif
 
 # ==============================================================================
 # Build Targets
@@ -23,9 +41,9 @@ build: ## build golang binary
 
 
 install: build ## install golang binary
-	@printf "$(CYAN)Installing to %s$(RESET)\n" "$(GOPATH)/bin/$(BINARY)"
-	@mv $(BINARY) $(GOPATH)/bin/
-	@printf "$(GREEN)Installed %s to %s$(RESET)\n" "$(BINARY)" "$(GOPATH)/bin/"
+	@printf "$(CYAN)Installing to %s$(RESET)\n" "$(BINDIR)$(SEP)$(BINARY)"
+	@mv $(BINARY) "$(BINDIR)"/
+	@printf "$(GREEN)Installed %s to %s$(RESET)\n" "$(BINARY)" "$(BINDIR)$(SEP)"
 
 
 run: ## run the application (usage: make run [args...] or ARGS="args" make run)
