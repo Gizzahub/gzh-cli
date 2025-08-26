@@ -1,6 +1,9 @@
 package gitlab
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 // configuredToken 은 런타임에 주입된 GitLab 토큰이다.
 var configuredToken string
@@ -25,4 +28,26 @@ func tokenGuidanceMessage() string {
 	// GitLab 개인 액세스 토큰 생성 페이지
 	patURL := base + "/-/profile/personal_access_tokens"
 	return "필요 토큰 권한: read_api, read_repository. 토큰 생성: " + patURL
+}
+
+// formatGuidanceBox 는 가독성 좋은 박스 형태로 가이드를 포매팅한다.
+func formatGuidanceBox(title, content string) string {
+	return fmt.Sprintf(`
+┌─ %s ─────────────────────────────────────────────────────────────────────────┐
+│ %s
+└─────────────────────────────────────────────────────────────────────────────────┘`, title, content)
+}
+
+// accessGuidanceMessage 는 접근 실패 시 종합 가이드를 제공한다.
+// - 필요한 토큰 권한, 발급 URL
+// - 최소 프로젝트/그룹 역할 요구사항
+func accessGuidanceMessage() string {
+	base := getWebBaseURL()
+	patURL := base + "/-/profile/personal_access_tokens"
+
+	content := fmt.Sprintf(`토큰 발급: %s
+│ 필요 권한: read_api, read_repository
+│ 최소 역할: Reporter 이상 (그룹 내 모든 프로젝트)`, patURL)
+
+	return formatGuidanceBox("GitLab 인증 가이드", content)
 }

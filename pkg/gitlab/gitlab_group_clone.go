@@ -104,10 +104,10 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	if resp.StatusCode != http.StatusOK {
 		// 프라이빗 인스턴스/그룹에서 토큰이 없으면 401/403이 나올 수 있음
 		if (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden) && configuredToken == "" {
-			return fmt.Errorf("%w: 인증 필요. --token 또는 GITLAB_TOKEN을 설정하세요. %s", ErrFailedToGetRepositories, tokenGuidanceMessage())
+			return fmt.Errorf("%w: 인증 필요\n%s", ErrFailedToGetRepositories, accessGuidanceMessage())
 		}
 		if resp.StatusCode == http.StatusNotFound {
-			return fmt.Errorf("%w: %s (그룹 경로 확인 또는 숫자 group ID 사용 권장)", ErrFailedToGetRepositories, resp.Status)
+			return fmt.Errorf("%w: %s (그룹 경로 확인 또는 숫자 group ID 사용 권장)\n%s", ErrFailedToGetRepositories, resp.Status, accessGuidanceMessage())
 		}
 		return fmt.Errorf("%w: %s", ErrFailedToGetRepositories, resp.Status)
 	}
@@ -222,7 +222,15 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 		branch = defaultBranch
 	}
 
-	cloneURL := fmt.Sprintf("%s/%s/%s.git", getWebBaseURL(), group, repo)
+	// Build HTTPS clone URL, inject token if available (for private repos)
+	repoPath := fmt.Sprintf("%s/%s", group, repo)
+	cloneURL := fmt.Sprintf("%s/%s.git", getWebBaseURL(), repoPath)
+	if configuredToken != "" {
+		if parsed, err := url.Parse(cloneURL); err == nil && parsed != nil {
+			parsed.User = url.UserPassword("oauth2", configuredToken)
+			cloneURL = parsed.String()
+		}
+	}
 
 	// Use secure git executor to prevent command injection
 	executor, err := git.NewSecureGitExecutor()

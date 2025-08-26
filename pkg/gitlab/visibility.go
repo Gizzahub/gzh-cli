@@ -37,15 +37,15 @@ func PreflightCheckGroupAccess(ctx context.Context, group string) error {
 		return nil
 	case http.StatusUnauthorized, http.StatusForbidden:
 		if configuredToken == "" {
-			return fmt.Errorf("private instance or group detected; provide token via --token or GITLAB_TOKEN")
+			return fmt.Errorf("private instance or group detected\n%s", accessGuidanceMessage())
 		}
-		return fmt.Errorf("access denied (status %d)", resp.StatusCode)
+		return fmt.Errorf("access denied (status %d)\n%s", resp.StatusCode, accessGuidanceMessage())
 	case http.StatusNotFound:
 		// Could be wrong path or hidden private group
 		if configuredToken == "" {
-			return fmt.Errorf("group not found (404). Check group path or use numeric group ID; if private, provide token via --token or GITLAB_TOKEN")
+			return fmt.Errorf("group not found (404). Check group path or use numeric group ID\n%s", accessGuidanceMessage())
 		}
-		return fmt.Errorf("group not found (404). Check group path or use numeric group ID")
+		return fmt.Errorf("group not found (404). Check group path or use numeric group ID\n%s", accessGuidanceMessage())
 	default:
 		return fmt.Errorf("unexpected response: %s", resp.Status)
 	}
