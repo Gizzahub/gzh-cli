@@ -5,6 +5,7 @@ package synclone
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -23,6 +24,7 @@ type syncCloneGitlabOptions struct {
 	maxRetries   int
 	resume       bool
 	progressMode string
+	heartbeatSec int
 }
 
 func defaultSyncCloneGitlabOptions() *syncCloneGitlabOptions {
@@ -31,6 +33,7 @@ func defaultSyncCloneGitlabOptions() *syncCloneGitlabOptions {
 		parallel:     10,
 		maxRetries:   3,
 		progressMode: "bar",
+		heartbeatSec: 10,
 	}
 }
 
@@ -56,6 +59,13 @@ func newSyncCloneGitlabCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&o.resume, "resume", false, "Resume interrupted clone operation from saved state")
 	cmd.Flags().StringVar(&o.progressMode, "progress-mode", o.progressMode, "Progress display mode: bar, dots, spinner, quiet")
 
+	// 커스텀 GitLab 인스턴스 URL 지정(예: https://gitlab.company.com)
+	var baseURL string
+	cmd.Flags().StringVar(&baseURL, "base-url", "", "GitLab instance base URL (e.g., https://gitlab.company.com)")
+
+	// 무출력 방지를 위한 하트비트 간격(초). 0이면 비활성화
+	cmd.Flags().IntVar(&o.heartbeatSec, "heartbeat-interval", o.heartbeatSec, "Heartbeat interval in seconds (0 to disable)")
+
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
 	// cmd.MarkFlagsOneRequired("targetPath", "config", "use-config")
@@ -69,6 +79,14 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().NFlag() == 0 {
 		_ = cmd.Help()
 		return nil
+	}
+
+	// base-url이 지정되면 GitLab API 베이스 설정 주입
+	if f := cmd.Flags().Lookup("base-url"); f != nil {
+		v := f.Value.String()
+		if v != "" {
+			gitlabpkg.SetBaseURL(v)
+		}
 	}
 
 	// Load config if specified
@@ -88,6 +106,23 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
+	// 하트비트 출력: 긴 작업 중 무출력 방지 (한국어 주석)
+	stopHeartbeat := make(chan struct{})
+	if o.heartbeatSec > 0 {
+		go func(intervalSec int) {
+			ticker := time.NewTicker(time.Duration(intervalSec) * time.Second)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-stopHeartbeat:
+					return
+				case <-ticker.C:
+					fmt.Println("진행 중... (heartbeat)")
+				}
+			}
+		}(o.heartbeatSec)
+	}
+
 	// Use resumable clone if requested or if parallel/worker pool is enabled
 	ctx := cmd.Context()
 
@@ -97,6 +132,8 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	} else {
 		err = gitlabpkg.RefreshAll(ctx, o.targetPath, o.groupName, o.strategy)
 	}
+
+	close(stopHeartbeat)
 
 	if err != nil {
 		return err

@@ -129,7 +129,7 @@ func DefaultStreamingConfig() StreamingConfig {
 // NewStreamingClient creates a new streaming GitLab API client.
 func NewStreamingClient(token, baseURL string, config StreamingConfig) *StreamingClient {
 	if baseURL == "" {
-		baseURL = "https://gitlab.com"
+		baseURL = getWebBaseURL()
 	}
 
 	// Use secure HTTP client instead of creating one directly
@@ -248,54 +248,37 @@ func (sc *StreamingClient) StreamGroupProjects(ctx context.Context, groupID stri
 	return resultChan, nil
 }
 
-// fetchProjectPage fetches a single page of projects with optimized memory usage.
+// fetchProjectPage fetches a single page of projects for a group.
 func (sc *StreamingClient) fetchProjectPage(ctx context.Context, groupID string, pagination CursorPagination) ([]*Project, CursorPagination, error) {
-	url := sc.buildProjectURL(groupID, pagination)
+	endpoint := fmt.Sprintf("groups/%s/projects?per_page=%d&page=%d", url.PathEscape(groupID), pagination.PerPage, pagination.Page)
+	reqURL := buildAPIURL(endpoint)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
-		return nil, CursorPagination{}, fmt.Errorf("failed to create request: %w", err)
+		return nil, pagination, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Set headers
 	if sc.token != "" {
-		req.Header.Set("Authorization", "Bearer "+sc.token)
+		req.Header.Set("PRIVATE-TOKEN", sc.token)
 	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	// Execute request
-	startTime := time.Now()
 
 	resp, err := sc.httpClient.Do(req)
 	if err != nil {
-		return nil, CursorPagination{}, fmt.Errorf("request failed: %w", err)
+		return nil, pagination, fmt.Errorf("request failed: %w", err)
 	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			// Log error but don't override main error
-		}
-	}()
-
-	// Update metrics
-	sc.updateRequestMetrics(time.Since(startTime))
-
-	// Update rate limit info
-	sc.updateRateLimit(resp.Header)
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, CursorPagination{}, fmt.Errorf("API request failed: %s", resp.Status)
+		return nil, pagination, fmt.Errorf("unexpected status: %s", resp.Status)
 	}
 
-	// Parse pagination info from headers
+	var projects []*Project
+	dec := json.NewDecoder(bufio.NewReader(resp.Body))
+	if err := dec.Decode(&projects); err != nil {
+		return nil, pagination, fmt.Errorf("decode failed: %w", err)
+	}
+
 	newPagination := sc.parsePaginationHeaders(resp.Header, pagination)
-
-	// Stream parse response to minimize memory usage
-	projects, err := sc.parseProjectResponse(resp.Body)
-	if err != nil {
-		return nil, CursorPagination{}, fmt.Errorf("failed to parse response: %w", err)
-	}
-
 	return projects, newPagination, nil
 }
 

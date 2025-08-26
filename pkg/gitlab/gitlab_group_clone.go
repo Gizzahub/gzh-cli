@@ -42,7 +42,7 @@ type GitLabRepoInfo struct {
 // Returns the default branch name (e.g., "main", "master") or an error if the
 // project doesn't exist, access is denied, or the API request fails.
 func GetDefaultBranch(ctx context.Context, group string, repo string) (string, error) {
-	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s%%2F%s", group, repo)
+	url := buildAPIURL(fmt.Sprintf("projects/%s%%2F%s", group, repo))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -79,7 +79,7 @@ func GetDefaultBranch(ctx context.Context, group string, repo string) (string, e
 }
 
 func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error {
-	url := fmt.Sprintf("https://gitlab.com/api/v4/groups/%s/projects", group)
+	url := buildAPIURL(fmt.Sprintf("groups/%s/projects", group))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -119,7 +119,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	}
 
 	// Get subgroups
-	subgroupsURL := fmt.Sprintf("https://gitlab.com/api/v4/groups/%s/subgroups", group)
+	subgroupsURL := buildAPIURL(fmt.Sprintf("groups/%s/subgroups", group))
 
 	subgroupsReq, err := http.NewRequestWithContext(ctx, "GET", subgroupsURL, nil)
 	if err != nil {
@@ -146,7 +146,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	}
 
 	var subgroups []struct {
-		ID string `json:"id"`
+		ID int `json:"id"`
 	}
 
 	err = json.Unmarshal(subgroupsBody, &subgroups)
@@ -155,7 +155,7 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	}
 
 	for _, subgroup := range subgroups {
-		err := listGroupRepos(ctx, subgroup.ID, allRepos)
+		err := listGroupRepos(ctx, fmt.Sprintf("%d", subgroup.ID), allRepos)
 		if err != nil {
 			return err
 		}
@@ -209,7 +209,7 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 		branch = defaultBranch
 	}
 
-	cloneURL := fmt.Sprintf("https://gitlab.com/%s/%s.git", group, repo)
+	cloneURL := fmt.Sprintf("%s/%s/%s.git", getWebBaseURL(), group, repo)
 
 	// Use secure git executor to prevent command injection
 	executor, err := git.NewSecureGitExecutor()
