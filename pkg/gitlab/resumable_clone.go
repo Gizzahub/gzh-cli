@@ -393,7 +393,12 @@ func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Con
 		case result := <-resultsChan:
 			rcm.handleJobResult(result, state, progressTracker, &successCount, &failureCount)
 		case <-progressUpdateTicker.C:
-			fmt.Printf("\r\033[K%s", progressTracker.RenderProgress())
+			// Windows PowerShell에서 더 안정적인 진행률 업데이트
+			fmt.Print("\r")
+			for i := 0; i < 120; i++ { // 충분한 공간 확보
+				fmt.Print(" ")
+			}
+			fmt.Printf("\r%s", progressTracker.RenderProgress())
 		case <-stateSaveTicker.C:
 			if err := rcm.stateManager.SaveState(state); err != nil {
 				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
@@ -425,8 +430,12 @@ func (rcm *ResumableCloneManager) handleJobResult(result workerpool.RepositoryRe
 
 // finalizeOperation finalizes the clone operation with final state updates and cleanup.
 func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker, group string, failureCount int) error {
-	// Final progress update
-	fmt.Printf("\r\033[K%s\n", progressTracker.RenderProgress())
+	// Final progress update - 마지막 줄 정리
+	fmt.Print("\r")
+	for i := 0; i < 120; i++ {
+		fmt.Print(" ")
+	}
+	fmt.Printf("\r%s\n", progressTracker.RenderProgress())
 
 	// Final state update
 	if len(state.GetRemainingRepositories()) == 0 {

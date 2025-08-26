@@ -376,6 +376,25 @@ func (pt *ProgressTracker) GetSummary() string {
 	completed, failed, pending, progressPercent := pt.GetOverallProgress()
 	duration := pt.GetDuration().Round(time.Second)
 
-	return fmt.Sprintf("Summary: %.1f%% complete • %d successful • %d failed • %d pending • Duration: %s",
+	summary := fmt.Sprintf("Summary: %.1f%% complete • %d successful • %d failed • %d pending • Duration: %s",
 		progressPercent, completed, failed, pending, duration)
+
+	// 실패한 저장소가 있으면 상세 정보 추가
+	if failed > 0 {
+		pt.mu.RLock()
+		failedRepos := make([]RepositoryProgress, 0)
+		for _, repo := range pt.repositories {
+			if repo.Status == StatusFailed {
+				failedRepos = append(failedRepos, *repo)
+			}
+		}
+		pt.mu.RUnlock()
+
+		summary += "\n\n❌ Failed repositories:"
+		for _, repo := range failedRepos {
+			summary += fmt.Sprintf("\n  • %s: %s", repo.Name, repo.Error)
+		}
+	}
+
+	return summary
 }
