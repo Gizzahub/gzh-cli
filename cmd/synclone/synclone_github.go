@@ -221,10 +221,13 @@ func newSyncCloneGithubCmd() *cobra.Command {
 	cmd.Flags().Int64Var(&o.sizeLimit, "size-limit", 0, "Maximum repository size in KB (0 = no limit)")
 	cmd.Flags().BoolVar(&o.cleanupOrphans, "cleanup-orphans", false, "Remove directories not present in the organization's repositories")
 
+	// Aliases for simpler flags
+	cmd.Flags().StringVar(&o.targetPath, "target", o.targetPath, "Target directory; defaults to current directory if not set")
+	cmd.Flags().StringVar(&o.orgName, "org", o.orgName, "GitHub organization name")
+
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
-	cmd.MarkFlagsOneRequired("targetPath", "config", "use-config")
-	cmd.MarkFlagsOneRequired("orgName", "config", "use-config")
+	cmd.MarkFlagsOneRequired("orgName", "org", "config", "use-config")
 
 	return cmd
 }
@@ -257,6 +260,15 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 
 	// Execute with error recovery
 	return errorRecovery.Execute(cmd.Context(), "github-synclone", func() error {
+		// 기본 targetPath가 비어있으면 현재 작업 디렉터리로 설정
+		if o.targetPath == "" {
+			if wd, err := os.Getwd(); err == nil && wd != "" {
+				o.targetPath = wd
+			} else {
+				o.targetPath = "."
+			}
+		}
+
 		// Load config if specified
 		if o.configFile != "" || o.useConfig {
 			err := o.loadFromConfig()

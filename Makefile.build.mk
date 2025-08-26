@@ -5,6 +5,10 @@
 # Build Configuration
 # ==============================================================================
 
+# Detect OS-specific executable extension (e.g., .exe on Windows)
+BINEXT := $(shell go env GOEXE)
+BINARY := $(executablename)$(BINEXT)
+
 # ==============================================================================
 # Build Targets
 # ==============================================================================
@@ -12,15 +16,15 @@
 .PHONY: build install run bootstrap clean release-dry-run release-snapshot release-check deploy
 
 build: ## build golang binary
-	@echo -e "$(CYAN)Building $(executablename)...$(RESET)"
-	@go build -ldflags "-X main.version=$(VERSION)" -o $(executablename) ./cmd/gz
-	@echo -e "$(GREEN)✅ Built $(executablename) successfully$(RESET)"
+	@echo -e "$(CYAN)Building $(BINARY)...$(RESET)"
+	@go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY) ./cmd/gz
+	@echo -e "$(GREEN)✅ Built $(BINARY) successfully$(RESET)"
 
 
 install: build ## install golang binary
-	@echo -e "$(CYAN)Installing $(executablename)...$(RESET)"
-	@mv $(executablename) $(shell go env GOPATH)/bin/
-	@echo -e "$(GREEN)✅ Installed $(executablename) to $(shell go env GOPATH)/bin/$(RESET)"
+	@echo -e "$(CYAN)Installing $(BINARY)...$(RESET)"
+	@mv $(BINARY) $(shell go env GOPATH)/bin/
+	@echo -e "$(GREEN)✅ Installed $(BINARY) to $(shell go env GOPATH)/bin/$(RESET)"
 
 
 run: ## run the application (usage: make run [args...] or ARGS="args" make run)
@@ -47,9 +51,9 @@ bootstrap: ## install build dependencies
 
 clean: ## clean up environment
 	@echo -e "$(CYAN)Cleaning up build artifacts...$(RESET)"
-	@rm -rf coverage.out coverage.html dist/ $(executablename)
+	@rm -rf coverage.out coverage.html dist/ $(executablename) $(BINARY)
 	@rm -f $(shell go env GOPATH)/bin/$(executablename)
-	@rm -f $(shell go env GOPATH)/bin/$(projectname)
+	@rm -f $(shell go env GOPATH)/bin/$(BINARY)
 	@rm -f lint-report.json gosec-report.json
 	@echo -e "$(GREEN)✅ Cleanup completed$(RESET)"
 
@@ -88,7 +92,7 @@ build-info: ## show build information and current configuration
 	@echo -e "$(RESET)"
 	@echo -e "$(GREEN)📋 Project Details:$(RESET)"
 	@echo -e "  Name:           $(YELLOW)$(projectname)$(RESET)"
-	@echo -e "  Executable:     $(YELLOW)$(executablename)$(RESET)"
+	@echo -e "  Executable:     $(YELLOW)$(BINARY)$(RESET)"
 	@echo -e "  Version:        $(YELLOW)$(VERSION)$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🏗️  Build Environment:$(RESET)"
