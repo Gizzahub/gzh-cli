@@ -5,6 +5,8 @@ package synclone
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -25,6 +27,7 @@ type syncCloneGitlabOptions struct {
 	resume       bool
 	progressMode string
 	heartbeatSec int
+	token        string
 }
 
 func defaultSyncCloneGitlabOptions() *syncCloneGitlabOptions {
@@ -65,6 +68,8 @@ func newSyncCloneGitlabCmd() *cobra.Command {
 
 	// 무출력 방지를 위한 하트비트 간격(초). 0이면 비활성화
 	cmd.Flags().IntVar(&o.heartbeatSec, "heartbeat-interval", o.heartbeatSec, "Heartbeat interval in seconds (0 to disable)")
+	// 토큰 플래그
+	cmd.Flags().StringVar(&o.token, "token", "", "GitLab token for API access (or set GITLAB_TOKEN)")
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
@@ -88,6 +93,23 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 			gitlabpkg.SetBaseURL(v)
 		}
 	}
+
+	// 토큰 설정: 플래그 우선, 없으면 ENV(GITLAB_TOKEN/GZH_GITLAB_TOKEN)
+	token := o.token
+	if token == "" {
+		if v := os.Getenv("GITLAB_TOKEN"); v != "" {
+			token = v
+		} else if v := os.Getenv("GZH_GITLAB_TOKEN"); v != "" {
+			token = v
+		}
+	}
+	if token != "" {
+		gitlabpkg.SetToken(token)
+	}
+
+	// 그룹명 정규화: 공백 및 트레일링 슬래시 제거
+	o.groupName = strings.TrimSpace(o.groupName)
+	o.groupName = strings.Trim(o.groupName, "/")
 
 	// Load config if specified
 	if o.configFile != "" || o.useConfig {

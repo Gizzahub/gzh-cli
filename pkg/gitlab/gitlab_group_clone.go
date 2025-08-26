@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sync"
@@ -42,12 +43,14 @@ type GitLabRepoInfo struct {
 // Returns the default branch name (e.g., "main", "master") or an error if the
 // project doesn't exist, access is denied, or the API request fails.
 func GetDefaultBranch(ctx context.Context, group string, repo string) (string, error) {
-	url := buildAPIURL(fmt.Sprintf("projects/%s%%2F%s", group, repo))
+	encoded := url.PathEscape(fmt.Sprintf("%s/%s", group, repo))
+	url := buildAPIURL(fmt.Sprintf("projects/%s", encoded))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
+	addAuthHeader(req)
 
 	client := httpclient.GetGlobalClient("gitlab")
 
@@ -79,12 +82,14 @@ func GetDefaultBranch(ctx context.Context, group string, repo string) (string, e
 }
 
 func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error {
-	url := buildAPIURL(fmt.Sprintf("groups/%s/projects", group))
+	encodedGroup := url.PathEscape(group)
+	url := buildAPIURL(fmt.Sprintf("groups/%s/projects", encodedGroup))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
+	addAuthHeader(req)
 
 	client := httpclient.GetGlobalClient("gitlab")
 
@@ -97,6 +102,13 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	}()
 
 	if resp.StatusCode != http.StatusOK {
+		// 프라이빗 인스턴스/그룹에서 토큰이 없으면 401/403이 나올 수 있음
+		if (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden) && configuredToken == "" {
+			return fmt.Errorf("%w: authentication required (private instance or private group). Provide token via --token or GITLAB_TOKEN", ErrFailedToGetRepositories)
+		}
+		if resp.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("%w: %s (check group path or use numeric group ID)", ErrFailedToGetRepositories, resp.Status)
+		}
 		return fmt.Errorf("%w: %s", ErrFailedToGetRepositories, resp.Status)
 	}
 
@@ -119,12 +131,13 @@ func listGroupRepos(ctx context.Context, group string, allRepos *[]string) error
 	}
 
 	// Get subgroups
-	subgroupsURL := buildAPIURL(fmt.Sprintf("groups/%s/subgroups", group))
+	subgroupsURL := buildAPIURL(fmt.Sprintf("groups/%s/subgroups", encodedGroup))
 
 	subgroupsReq, err := http.NewRequestWithContext(ctx, "GET", subgroupsURL, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create subgroups request: %w", err)
 	}
+	addAuthHeader(subgroupsReq)
 
 	subgroupsResp, err := client.Do(subgroupsReq)
 	if err != nil {
