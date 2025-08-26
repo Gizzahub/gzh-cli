@@ -116,6 +116,12 @@ func TestVisibilityFilter_ShouldIncludeRepository(t *testing.T) {
 			isPrivate: true,
 			expected:  true,
 		},
+		{
+			name:      "invalid filter defaults to include",
+			filter:    "invalid",
+			isPrivate: true,
+			expected:  true,
+		},
 	}
 
 	for _, tt := range tests {
