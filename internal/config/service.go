@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Gizzahub/gzh-cli/internal/env"
+	errors "github.com/Gizzahub/gzh-cli/internal/errors"
 	"github.com/Gizzahub/gzh-cli/pkg/config"
 )
 
@@ -168,7 +169,7 @@ func (s *DefaultConfigService) LoadConfiguration(_ context.Context, configPath s
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to load configuration: %w", err)
+		return nil, errors.Wrap(err, errors.ErrConfigNotFound)
 	}
 
 	s.config = s.unifiedFacade.GetConfiguration()
@@ -427,7 +428,7 @@ func (s *DefaultConfigService) findConfigFile() (string, error) {
 	// Try reading configuration to trigger file discovery
 	err := s.viper.ReadInConfig()
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, errors.ErrConfigNotFound)
 	}
 
 	return s.viper.ConfigFileUsed(), nil

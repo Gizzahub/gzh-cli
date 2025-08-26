@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	errors "github.com/Gizzahub/gzh-cli/internal/errors"
 	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -72,7 +73,7 @@ func NewGCPProjectManager(ctx context.Context) (*GCPProjectManager, error) {
 	}
 
 	if err := manager.loadConfigurations(); err != nil {
-		return nil, fmt.Errorf("failed to load configurations: %w", err)
+		return nil, errors.Wrap(err, errors.ErrConfigNotFound)
 	}
 
 	if err := manager.loadProjects(); err != nil {

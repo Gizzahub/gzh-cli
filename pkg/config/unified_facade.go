@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	errors "github.com/Gizzahub/gzh-cli/internal/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -35,7 +36,7 @@ func (f *UnifiedConfigFacade) LoadConfiguration() error {
 func (f *UnifiedConfigFacade) LoadConfigurationFromPath(configPath string) error {
 	result, err := f.loader.LoadConfigFromPath(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to load configuration: %w", err)
+		return errors.Wrap(err, errors.ErrConfigNotFound)
 	}
 
 	f.loadResult = result
@@ -66,7 +67,7 @@ func (f *UnifiedConfigFacade) GetBulkCloneIntegration() *BulkCloneIntegration {
 // SaveConfiguration saves the current configuration to a file.
 func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 	if f.config == nil {
-		return fmt.Errorf("no configuration loaded")
+		return errors.ErrConfigNotLoaded
 	}
 
 	// Ensure directory exists
@@ -155,7 +156,7 @@ func (f *UnifiedConfigFacade) GetProviderConfig(provider string) *ProviderConfig
 // UpdateIDEConfig updates the IDE configuration.
 func (f *UnifiedConfigFacade) UpdateIDEConfig(ideConfig *IDEConfig) error {
 	if f.config == nil {
-		return fmt.Errorf("no configuration loaded")
+		return errors.ErrConfigNotLoaded
 	}
 
 	f.config.IDE = ideConfig
@@ -166,7 +167,7 @@ func (f *UnifiedConfigFacade) UpdateIDEConfig(ideConfig *IDEConfig) error {
 // UpdateDevEnvConfig updates the development environment configuration.
 func (f *UnifiedConfigFacade) UpdateDevEnvConfig(devEnvConfig *DevEnvConfig) error {
 	if f.config == nil {
-		return fmt.Errorf("no configuration loaded")
+		return errors.ErrConfigNotLoaded
 	}
 
 	f.config.DevEnv = devEnvConfig
@@ -177,7 +178,7 @@ func (f *UnifiedConfigFacade) UpdateDevEnvConfig(devEnvConfig *DevEnvConfig) err
 // UpdateNetEnvConfig updates the network environment configuration.
 func (f *UnifiedConfigFacade) UpdateNetEnvConfig(netEnvConfig *NetEnvConfig) error {
 	if f.config == nil {
-		return fmt.Errorf("no configuration loaded")
+		return errors.ErrConfigNotLoaded
 	}
 
 	f.config.NetEnv = netEnvConfig
@@ -188,7 +189,7 @@ func (f *UnifiedConfigFacade) UpdateNetEnvConfig(netEnvConfig *NetEnvConfig) err
 // UpdateSSHConfig updates the SSH configuration.
 func (f *UnifiedConfigFacade) UpdateSSHConfig(sshConfig *SSHConfigSettings) error {
 	if f.config == nil {
-		return fmt.Errorf("no configuration loaded")
+		return errors.ErrConfigNotLoaded
 	}
 
 	f.config.SSHConfig = sshConfig
@@ -199,7 +200,7 @@ func (f *UnifiedConfigFacade) UpdateSSHConfig(sshConfig *SSHConfigSettings) erro
 // ValidateUnifiedConfiguration validates the current configuration.
 func (f *UnifiedConfigFacade) ValidateUnifiedConfiguration() error {
 	if f.config == nil {
-		return fmt.Errorf("no configuration loaded")
+		return errors.ErrConfigNotLoaded
 	}
 
 	return f.loader.validateUnifiedConfig(f.config)
@@ -285,7 +286,7 @@ func (f *UnifiedConfigFacade) CreateDefaultConfiguration(configPath string) erro
 // ValidateConfiguration validates the current configuration.
 func (f *UnifiedConfigFacade) ValidateConfiguration() error {
 	if f.config == nil {
-		return fmt.Errorf("no configuration loaded")
+		return errors.ErrConfigNotLoaded
 	}
 
 	return f.loader.validateUnifiedConfig(f.config)
@@ -294,7 +295,7 @@ func (f *UnifiedConfigFacade) ValidateConfiguration() error {
 // GetProviderTargets returns all targets for a specific provider.
 func (f *UnifiedConfigFacade) GetProviderTargets(providerName string) ([]BulkCloneTarget, error) {
 	if f.integration == nil {
-		return nil, fmt.Errorf("no configuration loaded")
+		return nil, errors.ErrConfigNotLoaded
 	}
 
 	return f.integration.GetTargetsByProvider(providerName)
@@ -303,7 +304,7 @@ func (f *UnifiedConfigFacade) GetProviderTargets(providerName string) ([]BulkClo
 // GetAllTargets returns all configured targets.
 func (f *UnifiedConfigFacade) GetAllTargets() ([]BulkCloneTarget, error) {
 	if f.integration == nil {
-		return nil, fmt.Errorf("no configuration loaded")
+		return nil, errors.ErrConfigNotLoaded
 	}
 
 	return f.integration.GetAllTargets()
@@ -326,7 +327,7 @@ func (f *UnifiedConfigFacade) MigrateConfiguration(sourcePath, targetPath string
 // GenerateConfigurationReport generates a configuration report.
 func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 	if f.config == nil {
-		return "", fmt.Errorf("no configuration loaded")
+		return "", errors.ErrConfigNotLoaded
 	}
 
 	targets, err := f.GetAllTargets()

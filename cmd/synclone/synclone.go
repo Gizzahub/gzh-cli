@@ -5,12 +5,13 @@ package synclone
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/Gizzahub/gzh-cli/internal/config"
+	gerrors "github.com/Gizzahub/gzh-cli/internal/errors"
 	pkgconfig "github.com/Gizzahub/gzh-cli/pkg/config"
 	"github.com/Gizzahub/gzh-cli/pkg/github"
 	"github.com/Gizzahub/gzh-cli/pkg/gitlab"
@@ -129,7 +130,7 @@ func (o *syncCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 			fmt.Println("Use --help or -h for more detailed usage information.")
 			return nil
 		}
-		return fmt.Errorf("failed to load configuration: %w", err)
+		return gerrors.Wrap(err, gerrors.ErrConfigNotFound)
 	}
 
 	// Show migration warnings if any
@@ -212,12 +213,5 @@ func (o *syncCloneOptions) executeProviderCloning(ctx context.Context, target pk
 
 // isConfigNotFoundError checks if the error indicates a configuration file was not found.
 func isConfigNotFoundError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	errMsg := strings.ToLower(err.Error())
-	return strings.Contains(errMsg, "no configuration file found") ||
-		strings.Contains(errMsg, "config file not found") ||
-		strings.Contains(errMsg, "configuration not found")
+	return errors.Is(err, gerrors.ErrConfigNotFound)
 }
