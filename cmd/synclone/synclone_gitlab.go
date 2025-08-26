@@ -38,10 +38,11 @@ func newSyncCloneGitlabCmd() *cobra.Command {
 	o := defaultSyncCloneGitlabOptions()
 
 	cmd := &cobra.Command{
-		Use:   "gitlab",
-		Short: "Clone repositories from a GitLab group",
-		Args:  cobra.NoArgs,
-		RunE:  o.run,
+		Use:          "gitlab",
+		Short:        "Clone repositories from a GitLab group",
+		Args:         cobra.NoArgs,
+		SilenceUsage: true,
+		RunE:         o.run,
 	}
 
 	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
@@ -57,13 +58,19 @@ func newSyncCloneGitlabCmd() *cobra.Command {
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
-	cmd.MarkFlagsOneRequired("targetPath", "config", "use-config")
-	cmd.MarkFlagsOneRequired("groupName", "config", "use-config")
+	// cmd.MarkFlagsOneRequired("targetPath", "config", "use-config")
+	// cmd.MarkFlagsOneRequired("groupName", "config", "use-config")
 
 	return cmd
 }
 
 func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
+	// 플래그가 전혀 없는 경우: 에러 대신 도움말 출력 후 정상 종료
+	if cmd.Flags().NFlag() == 0 {
+		_ = cmd.Help()
+		return nil
+	}
+
 	// Load config if specified
 	if o.configFile != "" || o.useConfig {
 		err := o.loadFromConfig()
