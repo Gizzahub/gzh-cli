@@ -1,12 +1,20 @@
 package gitlab
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+
+	"github.com/Gizzahub/gzh-cli/internal/httpclient"
 )
 
 // configuredToken 은 런타임에 주입된 GitLab 토큰이다.
 var configuredToken string
+
+// cachedUsername 은 토큰으로 조회한 사용자명을 캐시한다.
+var cachedUsername string
 
 // SetToken 은 API 요청에 사용할 토큰을 설정한다.
 func SetToken(token string) {
@@ -50,4 +58,51 @@ func accessGuidanceMessage() string {
 │ 최소 역할: Reporter 이상 (그룹 내 모든 프로젝트)`, patURL)
 
 	return formatGuidanceBox("GitLab 인증 가이드", content)
+}
+
+// getCurrentUser 는 현재 토큰의 사용자 정보를 가져온다.
+func getCurrentUser(ctx context.Context) (string, error) {
+	if configuredToken == "" {
+		return "", fmt.Errorf("no token configured")
+	}
+
+	// 캐시된 사용자명이 있으면 반환
+	if cachedUsername != "" {
+		return cachedUsername, nil
+	}
+
+	url := buildAPIURL("user")
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+	addAuthHeader(req)
+
+	client := httpclient.GetGlobalClient("gitlab")
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to get user info: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to get user info: %s", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
+	var user struct {
+		Username string `json:"username"`
+	}
+
+	if err := json.Unmarshal(body, &user); err != nil {
+		return "", fmt.Errorf("failed to parse user info: %w", err)
+	}
+
+	// 사용자명 캐시
+	cachedUsername = user.Username
+	return cachedUsername, nil
 }

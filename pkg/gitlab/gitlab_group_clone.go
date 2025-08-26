@@ -226,8 +226,15 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 	repoPath := fmt.Sprintf("%s/%s", group, repo)
 	cloneURL := fmt.Sprintf("%s/%s.git", getWebBaseURL(), repoPath)
 	if configuredToken != "" {
+		// GitLab에서는 실제 사용자명이 필요함 (oauth2 대신)
+		username, err := getCurrentUser(ctx)
+		if err != nil {
+			// 사용자명을 가져올 수 없으면 fallback으로 git-token 사용
+			username = "git-token"
+		}
+
 		if parsed, err := url.Parse(cloneURL); err == nil && parsed != nil {
-			parsed.User = url.UserPassword("oauth2", configuredToken)
+			parsed.User = url.UserPassword(username, configuredToken)
 			cloneURL = parsed.String()
 		}
 	}
