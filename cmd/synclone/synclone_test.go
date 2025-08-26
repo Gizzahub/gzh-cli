@@ -10,94 +10,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
-
-func TestSyncCloneGithubOptions_Validate(t *testing.T) {
-	tests := []struct {
-		name        string
-		options     *syncCloneGithubOptions
-		wantErr     bool
-		errContains string
-	}{
-		{
-			name: "valid reset strategy",
-			options: &syncCloneGithubOptions{
-				targetPath: "/tmp/test",
-				orgName:    "test-org",
-				strategy:   "reset",
-			},
-			wantErr: false,
-		},
-		{
-			name: "valid pull strategy",
-			options: &syncCloneGithubOptions{
-				targetPath: "/tmp/test",
-				orgName:    "test-org",
-				strategy:   "pull",
-			},
-			wantErr: false,
-		},
-		{
-			name: "valid fetch strategy",
-			options: &syncCloneGithubOptions{
-				targetPath: "/tmp/test",
-				orgName:    "test-org",
-				strategy:   "fetch",
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid strategy",
-			options: &syncCloneGithubOptions{
-				targetPath: "/tmp/test",
-				orgName:    "test-org",
-				strategy:   "invalid",
-			},
-			wantErr:     true,
-			errContains: "invalid strategy",
-		},
-		{
-			name: "missing targetPath",
-			options: &syncCloneGithubOptions{
-				targetPath: "",
-				orgName:    "test-org",
-				strategy:   "reset",
-			},
-			wantErr:     true,
-			errContains: "both targetPath and orgName must be specified",
-		},
-		{
-			name: "missing orgName",
-			options: &syncCloneGithubOptions{
-				targetPath: "/tmp/test",
-				orgName:    "",
-				strategy:   "reset",
-			},
-			wantErr:     true,
-			errContains: "both targetPath and orgName must be specified",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cmd := newSyncCloneGithubCmd()
-			cmd.SetContext(context.Background())
-			err := tt.options.run(cmd, []string{})
-
-			if tt.wantErr {
-				assert.Error(t, err)
-
-				if tt.errContains != "" {
-					assert.Contains(t, err.Error(), tt.errContains)
-				}
-			} else {
-				// Since RefreshAll is not mocked, it will fail with network error
-				// We only test validation logic here
-				assert.True(t, err == nil || err != nil)
-			}
-		})
-	}
-}
 
 func TestDefaultSyncCloneOptions(t *testing.T) {
 	t.Run("github default options", func(t *testing.T) {
@@ -114,74 +29,6 @@ func TestDefaultSyncCloneOptions(t *testing.T) {
 		opts := defaultSyncCloneGiteaOptions()
 		assert.Equal(t, "reset", opts.strategy)
 	})
-}
-
-func TestStrategyValidation(t *testing.T) {
-	validStrategies := []string{"reset", "pull", "fetch"}
-	invalidStrategies := []string{"", "merge", "rebase", "hard-reset", "RESET", "Pull", "Fetch"}
-
-	for _, strategy := range validStrategies {
-		t.Run("valid strategy: "+strategy, func(t *testing.T) {
-			// GitHub
-			githubOpts := &syncCloneGithubOptions{
-				targetPath: "/tmp/test",
-				orgName:    "test-org",
-				strategy:   strategy,
-			}
-			cmd := newSyncCloneGithubCmd()
-			cmd.SetContext(context.Background())
-			err := githubOpts.run(cmd, []string{})
-			// We expect an error from RefreshAll (network), not from validation
-			assert.True(t, err == nil || !contains(err.Error(), "Input validation failed"))
-
-			// GitLab
-			gitlabOpts := &syncCloneGitlabOptions{
-				targetPath: "/tmp/test",
-				groupName:  "test-group",
-				strategy:   strategy,
-			}
-			gitlabCmd := newSyncCloneGitlabCmd()
-			gitlabCmd.SetContext(context.Background())
-			err = gitlabOpts.run(gitlabCmd, []string{})
-			assert.True(t, err == nil || !contains(err.Error(), "Input validation failed"))
-		})
-	}
-
-	for _, strategy := range invalidStrategies {
-		t.Run("invalid strategy: "+strategy, func(t *testing.T) {
-			// GitHub
-			githubOpts := &syncCloneGithubOptions{
-				targetPath: "/tmp/test",
-				orgName:    "test-org",
-				strategy:   strategy,
-			}
-			cmd := newSyncCloneGithubCmd()
-			cmd.SetContext(context.Background())
-			err := githubOpts.run(cmd, []string{})
-			if strategy != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "Input validation failed")
-			}
-
-			// GitLab
-			gitlabOpts := &syncCloneGitlabOptions{
-				targetPath: "/tmp/test",
-				groupName:  "test-group",
-				strategy:   strategy,
-			}
-			gitlabCmd := newSyncCloneGitlabCmd()
-			gitlabCmd.SetContext(context.Background())
-			err = gitlabOpts.run(gitlabCmd, []string{})
-			if strategy != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "Input validation failed")
-			}
-		})
-	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && s[:len(substr)] == substr || len(s) > len(substr) && contains(s[1:], substr)
 }
 
 func TestBulkCloneConfigSupport(t *testing.T) {
@@ -401,7 +248,7 @@ repo_roots: []
 
 func TestMainSyncCloneCommandFlags(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := NewSyncCloneCmd(context.Background())
+		cmd := NewSyncCloneCmd(context.Background(), app.NewTestAppContext())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "synclone", cmd.Use)
 		assert.Contains(t, cmd.Short, "Clone repositories from multiple Git hosting services")

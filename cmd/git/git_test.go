@@ -5,10 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 func TestNewGitCmd(t *testing.T) {
-	cmd := NewGitCmd()
+	cmd := NewGitCmd(app.NewTestAppContext())
 
 	assert.Equal(t, "git", cmd.Use)
 	assert.Contains(t, cmd.Short, "Git 플랫폼 관리")
@@ -31,7 +33,7 @@ func TestNewGitCmd(t *testing.T) {
 }
 
 func TestNewGitConfigCmd(t *testing.T) {
-	cmd := newGitConfigCmd()
+	cmd := newGitConfigCmd(app.NewTestAppContext())
 
 	assert.Equal(t, "config", cmd.Use)
 	assert.Contains(t, cmd.Short, "Repository configuration")
