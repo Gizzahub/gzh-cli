@@ -14,7 +14,7 @@ Comprehensive development documentation for contributors and maintainers of gzh-
 
 ### Prerequisites
 
-- **Go 1.24.0+** (with toolchain go1.24.5)
+- **Go 1.22.0+**
 - **Git** (any recent version)
 - **Make** (for build automation)
 
@@ -458,7 +458,7 @@ test(github): add integration tests
 
 ______________________________________________________________________
 
-**Go Version**: 1.24.0+ (toolchain: go1.24.5)
+**Go Version**: 1.22.0+
 **Testing Framework**: Go standard library + testify
 **Mocking**: gomock
 **CLI Framework**: cobra + viper

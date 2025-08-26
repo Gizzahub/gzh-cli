@@ -358,7 +358,7 @@ gz profile memory
 
 ## 시스템 요구사항
 
-- **Go**: 1.24.0 이상
+- **Go**: 1.22 이상
 - **Git**: 2.0 이상
 - **OS**: Linux, macOS, Windows
 
