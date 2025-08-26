@@ -154,17 +154,18 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	defer stateSaveTicker.Stop()
 	defer progressUpdateTicker.Stop()
 
-	for i := 0; i < len(jobs); i++ {
+	// 결과 수신 시에만 카운트를 증가시켜 타이머 이벤트로 인한 조기 종료를 방지
+	processed := 0
+	for processed < len(jobs) {
 		select {
 		case result := <-resultsChan:
+			processed++
 			if result.Error != nil {
 				failureCount++
-
 				state.AddFailedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Error.Error(), 1)
 				progressTracker.SetRepositoryError(result.Job.Repository, result.Error.Error())
 			} else {
 				successCount++
-
 				state.AddCompletedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Message)
 				progressTracker.CompleteRepository(result.Job.Repository, result.Message)
 			}
