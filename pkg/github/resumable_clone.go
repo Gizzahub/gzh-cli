@@ -91,7 +91,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	}
 
 	// Print initial progress
-	fmt.Printf("\n%s\n", progressTracker.RenderProgress())
+	fmt.Printf("\r\033[K%s", progressTracker.RenderProgress())
 
 	// Create jobs for repositories to process
 	jobs := make([]workerpool.RepositoryJob, 0, len(reposToProcess))
