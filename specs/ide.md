@@ -24,14 +24,14 @@ gz ide <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose                            | Implementation Status |
+| Subcommand | Purpose | Implementation Status |
 | ---------- | ---------------------------------- | --------------------- |
-| `scan`     | Scan system for installed IDEs     | ✅ Implemented (NEW)  |
-| `status`   | Show IDE status and resource usage | ✅ Implemented (NEW)  |
-| `open`     | Open project in detected IDE       | ✅ Implemented (NEW)  |
-| `monitor`  | Monitor JetBrains IDE settings     | ✅ Implemented        |
-| `fix-sync` | Fix JetBrains sync issues          | ✅ Implemented        |
-| `list`     | List detected IDEs (legacy)        | ✅ Implemented        |
+| `scan` | Scan system for installed IDEs | ✅ Implemented (NEW) |
+| `status` | Show IDE status and resource usage | ✅ Implemented (NEW) |
+| `open` | Open project in detected IDE | ✅ Implemented (NEW) |
+| `monitor` | Monitor JetBrains IDE settings | ✅ Implemented |
+| `fix-sync` | Fix JetBrains sync issues | ✅ Implemented |
+| `list` | List detected IDEs (legacy) | ✅ Implemented |
 
 ## Subcommand Specifications
 

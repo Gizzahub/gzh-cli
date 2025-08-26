@@ -46,15 +46,15 @@ gz <command> [subcommand] [flags]
 
 All commands support these global flags:
 
-| Flag          | Description                              | Default       |
+| Flag | Description | Default |
 | ------------- | ---------------------------------------- | ------------- |
-| `--config`    | Configuration file path                  | Auto-detected |
-| `--debug`     | Enable debug logging                     | `false`       |
-| `--help`      | Show help information                    | -             |
-| `--log-level` | Set log level (debug, info, warn, error) | `info`        |
-| `--quiet`     | Suppress non-error output                | `false`       |
-| `--verbose`   | Enable verbose output                    | `false`       |
-| `--version`   | Show version information                 | -             |
+| `--config` | Configuration file path | Auto-detected |
+| `--debug` | Enable debug logging | `false` |
+| `--help` | Show help information | - |
+| `--log-level` | Set log level (debug, info, warn, error) | `info` |
+| `--quiet` | Suppress non-error output | `false` |
+| `--verbose` | Enable verbose output | `false` |
+| `--version` | Show version information | - |
 
 ### Environment Variables
 
@@ -72,15 +72,15 @@ export GZ_CONFIG_DIR="~/.config/gzh-manager"
 
 ### Exit Codes
 
-| Code | Meaning                               |
+| Code | Meaning |
 | ---- | ------------------------------------- |
-| `0`  | Success                               |
-| `1`  | General error                         |
-| `2`  | Misuse of command (invalid arguments) |
-| `3`  | Authentication error                  |
-| `4`  | Network error                         |
-| `5`  | Configuration error                   |
-| `6`  | File system error                     |
+| `0` | Success |
+| `1` | General error |
+| `2` | Misuse of command (invalid arguments) |
+| `3` | Authentication error |
+| `4` | Network error |
+| `5` | Configuration error |
+| `6` | File system error |
 
 ## Core Commands
 
@@ -173,14 +173,14 @@ gz synclone gitea --org <organization> --base-url <url> [flags]
 
 #### Clone Strategies
 
-| Strategy | Behavior                             | Use Case           |
+| Strategy | Behavior | Use Case |
 | -------- | ------------------------------------ | ------------------ |
-| `reset`  | Hard reset to match remote (default) | CI/CD, mirrors     |
-| `pull`   | Merge remote changes                 | Active development |
-| `fetch`  | Update refs only                     | Inspection         |
-| `rebase` | Rebase local changes on remote       | Clean history      |
-| `clone`  | Fresh clone (removes existing)       | Clean start        |
-| `skip`   | Skip existing repositories           | Initial clone only |
+| `reset` | Hard reset to match remote (default) | CI/CD, mirrors |
+| `pull` | Merge remote changes | Active development |
+| `fetch` | Update refs only | Inspection |
+| `rebase` | Rebase local changes on remote | Clean history |
+| `clone` | Fresh clone (removes existing) | Clean start |
+| `skip` | Skip existing repositories | Initial clone only |
 
 ### git
 

@@ -227,13 +227,13 @@ make test-redis
 
 The container automatically forwards these ports:
 
-| Port | Service      | Auto-Open | Description              |
+| Port | Service | Auto-Open | Description |
 | ---- | ------------ | --------- | ------------------------ |
-| 8080 | GZH API      | Notify    | Main API server          |
-| 3000 | React Dev    | Preview   | React development server |
-| 9090 | Prometheus   | No        | Metrics collection       |
-| 9093 | Alertmanager | No        | Alert management         |
-| 6060 | Go pprof     | No        | Performance profiling    |
+| 8080 | GZH API | Notify | Main API server |
+| 3000 | React Dev | Preview | React development server |
+| 9090 | Prometheus | No | Metrics collection |
+| 9093 | Alertmanager | No | Alert management |
+| 6060 | Go pprof | No | Performance profiling |
 
 ### Accessing Services
 

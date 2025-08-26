@@ -17,15 +17,15 @@ The project includes debugging configurations for:
 
 Access via the Debug panel (`Ctrl+Shift+D`) or Command Palette (`F5`):
 
-| Configuration                       | Purpose                            | Arguments                                                            |
+| Configuration | Purpose | Arguments |
 | ----------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| **Debug GZH CLI**                   | Main application help              | `--help`                                                             |
-| **Debug GZH Synclone**              | Repository sync with sample config | `synclone --config examples/synclone/synclone-simple.yaml --dry-run` |
-| **Debug GZH Config Validate**       | Configuration validation           | `synclone validate --config examples/synclone/synclone-example.yaml` |
-| **Debug Current Go File**           | Debug the currently open file      | N/A                                                                  |
-| **Debug Go Test (Current Package)** | Test debugging                     | Test files in current directory                                      |
-| **Debug Go Test (Current File)**    | Specific test function             | Prompts for test name                                                |
-| **Attach to Running Process**       | Attach to running process          | Prompts for process selection                                        |
+| **Debug GZH CLI** | Main application help | `--help` |
+| **Debug GZH Synclone** | Repository sync with sample config | `synclone --config examples/synclone/synclone-simple.yaml --dry-run` |
+| **Debug GZH Config Validate** | Configuration validation | `synclone validate --config examples/synclone/synclone-example.yaml` |
+| **Debug Current Go File** | Debug the currently open file | N/A |
+| **Debug Go Test (Current Package)** | Test debugging | Test files in current directory |
+| **Debug Go Test (Current File)** | Specific test function | Prompts for test name |
+| **Attach to Running Process** | Attach to running process | Prompts for process selection |
 
 ### Quick Start
 
@@ -160,25 +160,25 @@ dlv attach <pid>
 
 ### Delve Commands
 
-| Command          | Description             | Example                       |
+| Command | Description | Example |
 | ---------------- | ----------------------- | ----------------------------- |
-| `b <location>`   | Set breakpoint          | `b main.main`, `b main.go:42` |
-| `c`              | Continue                | `c`                           |
-| `n`              | Next line               | `n`                           |
-| `s`              | Step into               | `s`                           |
-| `so`             | Step out                | `so`                          |
-| `p <var>`        | Print variable          | `p myVar`                     |
-| `pp <var>`       | Pretty print            | `pp complexStruct`            |
-| `locals`         | Show local variables    | `locals`                      |
-| `args`           | Show function arguments | `args`                        |
-| `vars`           | Show package variables  | `vars`                        |
-| `bt`             | Stack trace             | `bt`                          |
-| `goroutines`     | List goroutines         | `goroutines`                  |
-| `goroutine <id>` | Switch to goroutine     | `goroutine 5`                 |
-| `list`           | Show source code        | `list`, `list main.main`      |
-| `edit <file>`    | Open file in editor     | `edit main.go`                |
-| `restart`        | Restart program         | `restart`                     |
-| `quit`           | Exit debugger           | `quit`                        |
+| `b <location>` | Set breakpoint | `b main.main`, `b main.go:42` |
+| `c` | Continue | `c` |
+| `n` | Next line | `n` |
+| `s` | Step into | `s` |
+| `so` | Step out | `so` |
+| `p <var>` | Print variable | `p myVar` |
+| `pp <var>` | Pretty print | `pp complexStruct` |
+| `locals` | Show local variables | `locals` |
+| `args` | Show function arguments | `args` |
+| `vars` | Show package variables | `vars` |
+| `bt` | Stack trace | `bt` |
+| `goroutines` | List goroutines | `goroutines` |
+| `goroutine <id>` | Switch to goroutine | `goroutine 5` |
+| `list` | Show source code | `list`, `list main.main` |
+| `edit <file>` | Open file in editor | `edit main.go` |
+| `restart` | Restart program | `restart` |
+| `quit` | Exit debugger | `quit` |
 
 ## Debug Scripts
 
