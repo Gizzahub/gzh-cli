@@ -379,7 +379,7 @@ func (pt *ProgressTracker) GetSummary() string {
 	summary := fmt.Sprintf("Summary: %.1f%% complete • %d successful • %d failed • %d pending • Duration: %s",
 		progressPercent, completed, failed, pending, duration)
 
-	// 실패한 저장소가 있으면 상세 정보 추가
+	// 실패한 저장소가 있으면 상세 정보 추가 (간결하게)
 	if failed > 0 {
 		pt.mu.RLock()
 		failedRepos := make([]RepositoryProgress, 0)
@@ -392,7 +392,18 @@ func (pt *ProgressTracker) GetSummary() string {
 
 		summary += "\n\n❌ Failed repositories:"
 		for _, repo := range failedRepos {
-			summary += fmt.Sprintf("\n  • %s: %s", repo.Name, repo.Error)
+			// 에러 메시지에서 핵심 부분만 추출
+			errorMsg := repo.Error
+			if len(errorMsg) > 80 {
+				// "clone failed" 이후 부분만 표시하거나 마지막 에러만 표시
+				if idx := strings.LastIndex(errorMsg, "err: "); idx != -1 {
+					errorMsg = errorMsg[idx+5:]
+				}
+				if len(errorMsg) > 80 {
+					errorMsg = errorMsg[:77] + "..."
+				}
+			}
+			summary += fmt.Sprintf("\n  • %s: %s", repo.Name, errorMsg)
 		}
 	}
 

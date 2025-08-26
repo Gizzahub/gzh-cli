@@ -394,11 +394,9 @@ func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Con
 			rcm.handleJobResult(result, state, progressTracker, &successCount, &failureCount)
 		case <-progressUpdateTicker.C:
 			// Windows PowerShell에서 더 안정적인 진행률 업데이트
-			fmt.Print("\r")
-			for i := 0; i < 120; i++ { // 충분한 공간 확보
-				fmt.Print(" ")
-			}
-			fmt.Printf("\r%s", progressTracker.RenderProgress())
+			// 현재 줄을 완전히 지우고 새로 출력
+			fmt.Print("\r\033[2K") // 전체 줄 지우기
+			fmt.Print(progressTracker.RenderProgress())
 		case <-stateSaveTicker.C:
 			if err := rcm.stateManager.SaveState(state); err != nil {
 				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
@@ -431,11 +429,8 @@ func (rcm *ResumableCloneManager) handleJobResult(result workerpool.RepositoryRe
 // finalizeOperation finalizes the clone operation with final state updates and cleanup.
 func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker, group string, failureCount int) error {
 	// Final progress update - 마지막 줄 정리
-	fmt.Print("\r")
-	for i := 0; i < 120; i++ {
-		fmt.Print(" ")
-	}
-	fmt.Printf("\r%s\n", progressTracker.RenderProgress())
+	fmt.Print("\r\033[2K") // 전체 줄 지우기
+	fmt.Printf("%s\n", progressTracker.RenderProgress())
 
 	// Final state update
 	if len(state.GetRemainingRepositories()) == 0 {
@@ -453,11 +448,13 @@ func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneStat
 	fmt.Printf("\n%s\n", progressTracker.GetSummary())
 
 	// Clean up state file if completed successfully
-	if state.Status == "completed" {
+	if state.Status == "completed" && failureCount == 0 {
 		if err := rcm.stateManager.DeleteState("gitlab", group); err != nil {
 			fmt.Printf("Warning: failed to delete state: %v\n", err)
 		}
 		fmt.Printf("✅ Clone operation completed successfully\n")
+	} else if failureCount > 0 {
+		fmt.Printf("❌ Clone operation completed with %d failures\n", failureCount)
 	} else {
 		fmt.Printf("⚠️  Clone operation incomplete. Use --resume to continue\n")
 	}
