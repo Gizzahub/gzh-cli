@@ -70,6 +70,9 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Verify AGENTS guidelines
+        run: scripts/check-agents.sh
+
       # 포맷 체크 (Make 타겟 사용)
       - name: Format check
         run: make format-strict

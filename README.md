@@ -144,6 +144,10 @@ Flags:
 Use "gz [command] --help" for more information about a command.
 ```
 
+Each command module under `cmd/<module>` includes an `AGENTS.md` file with
+module-specific coding conventions, required tests, and review steps. Always
+consult these guidelines before modifying command implementations.
+
 ## Features
 
 ## 🔗 Git 플랫폼 통합 관리 (`gz git`)
