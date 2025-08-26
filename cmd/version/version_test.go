@@ -12,16 +12,28 @@ import (
 )
 
 func TestVersionCommand(t *testing.T) {
-	version := "v1.0.0"
-	cmd := NewVersionCmd(version) // 공개 함수 사용
-	b := bytes.NewBufferString("")
-	cmd.SetOut(b)
+	tests := []struct {
+		name     string
+		version  string
+		expected string
+	}{
+		{"release version", "v1.0.0", fmt.Sprintf("gz version %s\n", "v1.0.0")},
+		{"dev version", "dev", "gz version dev\n"},
+	}
 
-	err := cmd.Execute()
-	require.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := NewVersionCmd(tt.version)
+			b := bytes.NewBufferString("")
+			cmd.SetOut(b)
 
-	out, err := io.ReadAll(b)
-	require.NoError(t, err)
+			err := cmd.Execute()
+			require.NoError(t, err)
 
-	assert.Equal(t, fmt.Sprintf("gz version %s\n", version), string(out))
+			out, err := io.ReadAll(b)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.expected, string(out))
+		})
+	}
 }

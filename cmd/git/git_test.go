@@ -4,52 +4,49 @@ package git
 import (
 	"testing"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewGitCmd(t *testing.T) {
-	cmd := NewGitCmd()
-
-	assert.Equal(t, "git", cmd.Use)
-	assert.Contains(t, cmd.Short, "Git 플랫폼 관리")
-	assert.NotEmpty(t, cmd.Long)
-
-	// 서브커맨드 확인
-	subcommands := cmd.Commands()
-	assert.True(t, len(subcommands) >= 4) // repo, config, webhook, event
-
-	// 서브커맨드 존재 확인
-	subcommandNames := make(map[string]bool)
-	for _, subcmd := range subcommands {
-		subcommandNames[subcmd.Use] = true
+func TestGitCommands(t *testing.T) {
+	tests := []struct {
+		name          string
+		newCmd        func() *cobra.Command
+		use           string
+		shortContains string
+	}{
+		{"root", NewGitCmd, "git", "Git 플랫폼 관리"},
+		{"config", newGitConfigCmd, "config", "Repository configuration"},
+		{"event", newGitEventCmd, "event", "Event processing"},
+		{"repo", NewGitRepoCmd, "repo", ""},
 	}
 
-	assert.True(t, subcommandNames["repo"], "repo subcommand should exist")
-	assert.True(t, subcommandNames["config"], "config subcommand should exist")
-	assert.True(t, subcommandNames["webhook"], "webhook subcommand should exist")
-	assert.True(t, subcommandNames["event"], "event subcommand should exist")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := tt.newCmd()
+			assert.Equal(t, tt.use, cmd.Use)
+			if tt.shortContains != "" {
+				assert.Contains(t, cmd.Short, tt.shortContains)
+			}
+		})
+	}
 }
 
-func TestNewGitConfigCmd(t *testing.T) {
-	cmd := newGitConfigCmd()
+func TestNewGitCmd_Subcommands(t *testing.T) {
+	cmd := NewGitCmd()
+	subcommands := cmd.Commands()
+	got := make(map[string]bool)
+	for _, sub := range subcommands {
+		got[sub.Use] = true
+	}
 
-	assert.Equal(t, "config", cmd.Use)
-	assert.Contains(t, cmd.Short, "Repository configuration")
-	assert.NotEmpty(t, cmd.Long)
-}
+	tests := []struct{ name string }{
+		{"repo"}, {"config"}, {"webhook"}, {"event"},
+	}
 
-func TestNewGitEventCmd(t *testing.T) {
-	cmd := newGitEventCmd()
-
-	assert.Equal(t, "event", cmd.Use)
-	assert.Contains(t, cmd.Short, "Event processing")
-	assert.NotEmpty(t, cmd.Long)
-}
-
-func TestNewGitRepoCmd(t *testing.T) {
-	cmd := NewGitRepoCmd()
-
-	assert.NotNil(t, cmd)
-	assert.Equal(t, "repo", cmd.Use)
-	assert.NotEmpty(t, cmd.Short)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.True(t, got[tt.name], "%s subcommand should exist", tt.name)
+		})
+	}
 }
