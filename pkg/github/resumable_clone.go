@@ -29,6 +29,8 @@ func NewResumableCloneManager(config BulkOperationsConfig) *ResumableCloneManage
 // RefreshAllResumable performs bulk repository refresh with resumable support.
 func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targetPath, org, strategy string, parallel, maxRetries int, resume bool, progressMode string) error {
 	// Initialize or load state
+	// 상태파일을 타겟 디렉토리 하위에 저장하도록 상태 매니저 경로를 설정
+	rcm.stateManager = synclonepkg.NewStateManager(filepath.Join(targetPath, ".gzh", "state"))
 	state, err := rcm.initializeOrLoadState(org, targetPath, strategy, parallel, maxRetries, resume)
 	if err != nil {
 		return err
