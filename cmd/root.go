@@ -10,17 +10,19 @@ import (
 
 	"github.com/spf13/cobra"
 
-	devenv "github.com/Gizzahub/gzh-cli/cmd/dev-env"
-	doctorcmd "github.com/Gizzahub/gzh-cli/cmd/doctor"
-	"github.com/Gizzahub/gzh-cli/cmd/git"
-	"github.com/Gizzahub/gzh-cli/cmd/ide"
-	netenv "github.com/Gizzahub/gzh-cli/cmd/net-env"
-	"github.com/Gizzahub/gzh-cli/cmd/pm"
-	"github.com/Gizzahub/gzh-cli/cmd/profile"
-	"github.com/Gizzahub/gzh-cli/cmd/quality"
-	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
+	_ "github.com/Gizzahub/gzh-cli/cmd/dev-env"
+	_ "github.com/Gizzahub/gzh-cli/cmd/doctor"
+	_ "github.com/Gizzahub/gzh-cli/cmd/git"
+	_ "github.com/Gizzahub/gzh-cli/cmd/ide"
+	_ "github.com/Gizzahub/gzh-cli/cmd/net-env"
+	_ "github.com/Gizzahub/gzh-cli/cmd/pm"
+	_ "github.com/Gizzahub/gzh-cli/cmd/profile"
+	_ "github.com/Gizzahub/gzh-cli/cmd/quality"
+	_ "github.com/Gizzahub/gzh-cli/cmd/repo-config"
+	_ "github.com/Gizzahub/gzh-cli/cmd/synclone"
+
+	"github.com/Gizzahub/gzh-cli/cmd/registry"
 	"github.com/Gizzahub/gzh-cli/cmd/shell"
-	synclone "github.com/Gizzahub/gzh-cli/cmd/synclone"
 	versioncmd "github.com/Gizzahub/gzh-cli/cmd/version"
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
@@ -51,25 +53,14 @@ Utility Commands: doctor, version`,
 		},
 	}
 
-	// Core feature commands
-	cmd.AddCommand(pm.NewPMCmd(ctx))
-	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx))
-	cmd.AddCommand(devenv.NewDevEnvCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(ide.NewIDECmd(ctx))
-	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
-	cmd.AddCommand(repoconfig.NewRepoConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(profile.NewProfileCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(git.NewGitCmd())               //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(quality.NewQualityCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
+	for _, provider := range registry.List() {
+		cmd.AddCommand(provider.Command())
+	}
 
 	// Utility commands - set as hidden to reduce clutter in main help
 	versionCmd := versioncmd.NewVersionCmd(version)
 	versionCmd.Hidden = true
 	cmd.AddCommand(versionCmd)
-
-	doctorCmd := doctorcmd.DoctorCmd
-	doctorCmd.Hidden = true
-	cmd.AddCommand(doctorCmd)
 
 	// Shell command is hidden - only add if debug mode is enabled
 	if debugShell || os.Getenv("GZH_DEBUG_SHELL") == "1" {

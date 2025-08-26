@@ -313,7 +313,7 @@ Major refactoring effort that achieved significant improvements:
 
 1. Create command directory in `cmd/`
 1. Implement using BaseCommand pattern if applicable
-1. Register in `cmd/root.go`
+1. In `init()`, register the command with `registry.Register(newFeatureCmd{})`
 1. Add configuration section to unified schema
 1. Implement output formatting support
 
