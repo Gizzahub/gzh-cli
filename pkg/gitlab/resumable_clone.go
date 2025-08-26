@@ -287,7 +287,7 @@ func (rcm *ResumableCloneManager) setupWorkerPoolAndProgress(allRepos, reposToPr
 	rcm.updateProgressTrackerWithState(progressTracker, state)
 
 	// Print initial progress
-	fmt.Printf("\n%s\n", progressTracker.RenderProgress())
+	fmt.Printf("\r%-120s", progressTracker.RenderProgress())
 
 	return pool, progressTracker, nil
 }
@@ -393,10 +393,8 @@ func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Con
 		case result := <-resultsChan:
 			rcm.handleJobResult(result, state, progressTracker, &successCount, &failureCount)
 		case <-progressUpdateTicker.C:
-			// Windows PowerShell에서 더 안정적인 진행률 업데이트
-			// 현재 줄을 완전히 지우고 새로 출력
-			fmt.Print("\r\033[2K") // 전체 줄 지우기
-			fmt.Print(progressTracker.RenderProgress())
+			// Windows PowerShell에서 진행률 표시 - 줄바꿈 없이 덮어쓰기
+			fmt.Printf("\r%-120s", progressTracker.RenderProgress())
 		case <-stateSaveTicker.C:
 			if err := rcm.stateManager.SaveState(state); err != nil {
 				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
