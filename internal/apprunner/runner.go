@@ -1,10 +1,10 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-// Package app provides application bootstrapping and lifecycle management.
+// Package apprunner provides application bootstrapping and lifecycle management.
 // It handles signal management, graceful shutdown, and application initialization
 // to keep the main function minimal and focused on bootstrapping.
-package app
+package apprunner
 
 import (
 	"context"

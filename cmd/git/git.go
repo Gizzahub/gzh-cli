@@ -10,10 +10,12 @@ import (
 	repopkg "github.com/Gizzahub/gzh-cli/cmd/git/repo"
 	webhookpkg "github.com/Gizzahub/gzh-cli/cmd/git/webhook"
 	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 // NewGitCmd creates the unified git platform management command.
-func NewGitCmd() *cobra.Command {
+func NewGitCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "git",
 		Short: "🔗 통합 Git 플랫폼 관리 도구 (config, webhook, event)",
@@ -43,7 +45,7 @@ Examples:
 
 	// Add subcommands for each resource
 	cmd.AddCommand(repopkg.NewGitRepoCmd())
-	cmd.AddCommand(newGitConfigCmd())
+	cmd.AddCommand(newGitConfigCmd(appCtx))
 	cmd.AddCommand(newGitWebhookCmd())
 	cmd.AddCommand(newGitEventCmd())
 
@@ -51,9 +53,9 @@ Examples:
 }
 
 // newGitConfigCmd creates the git config command (maps to repo-config).
-func newGitConfigCmd() *cobra.Command {
+func newGitConfigCmd(appCtx *app.AppContext) *cobra.Command {
 	// Use existing repo-config implementation
-	repoConfigCmd := repoconfig.NewRepoConfigCmd()
+	repoConfigCmd := repoconfig.NewRepoConfigCmd(appCtx)
 
 	// Update command metadata for git context
 	repoConfigCmd.Use = "config"

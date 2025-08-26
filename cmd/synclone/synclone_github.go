@@ -15,10 +15,10 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
+	"github.com/Gizzahub/gzh-cli/internal/app"
 	internalconfig "github.com/Gizzahub/gzh-cli/internal/config"
 	"github.com/Gizzahub/gzh-cli/internal/env"
 	"github.com/Gizzahub/gzh-cli/internal/errors"
-	"github.com/Gizzahub/gzh-cli/internal/logger"
 	"github.com/Gizzahub/gzh-cli/internal/validation"
 	"github.com/Gizzahub/gzh-cli/pkg/config"
 	"github.com/Gizzahub/gzh-cli/pkg/github"
@@ -174,14 +174,16 @@ func defaultSyncCloneGithubOptions() *syncCloneGithubOptions {
 	}
 }
 
-func newSyncCloneGithubCmd() *cobra.Command {
+func newSyncCloneGithubCmd(appCtx *app.AppContext) *cobra.Command {
 	o := defaultSyncCloneGithubOptions()
 
 	cmd := &cobra.Command{
 		Use:   "github",
 		Short: "Clone repositories from a GitHub organization",
 		Args:  cobra.NoArgs,
-		RunE:  o.run,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return o.run(cmd, args, appCtx)
+		},
 	}
 
 	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
@@ -232,29 +234,25 @@ func newSyncCloneGithubCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { //nolint:gocognit // Complex business logic for sync clone operations
-	// Initialize simple logger for this operation
-	simpleLogger := logger.NewSimpleLogger("synclone-github")
-	sessionID := fmt.Sprintf("github-%s-%d", o.orgName, time.Now().Unix())
-	simpleLogger = simpleLogger.WithSession(sessionID).
+func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *app.AppContext) error { //nolint:gocognit // Complex business logic for sync clone operations
+	log := appCtx.Logger.WithSession(fmt.Sprintf("github-%s-%d", o.orgName, time.Now().Unix())).
 		WithContext("org_name", o.orgName).
 		WithContext("target_path", o.targetPath).
 		WithContext("strategy", o.strategy).
 		WithContext("parallel", o.parallel)
 
-	// Initialize error recovery system
+		// Initialize error recovery system
 	recoveryConfig := errors.RecoveryConfig{
 		MaxRetries: o.maxRetries,
 		RetryDelay: time.Second * 2,
-		Logger:     simpleLogger,
+		Logger:     log,
 		RecoveryFunc: func(err error) error {
-			simpleLogger.Warn("Attempting automatic recovery", "error_type", fmt.Sprintf("%T", err))
+			log.Warn("Attempting automatic recovery", "error_type", fmt.Sprintf("%T", err))
 			return nil
 		},
 	}
 	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
-
-	simpleLogger.Info("Starting GitHub synclone operation")
+	log.Info("Starting GitHub synclone operation")
 
 	start := time.Now()
 
@@ -318,7 +316,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			token = env.GetToken("github")
 		}
 
-		simpleLogger.Debug("Configuration validated",
+		log.Debug("Configuration validated",
 			"has_token", token != "",
 			"optimized", o.optimized,
 			"streaming", o.streamingMode,
@@ -330,7 +328,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 		var err error
 
 		// New synclone workflow: 1. Get repo list -> 2. Generate gzh.yaml -> 3. Cleanup orphans -> 4. Clone repos
-		simpleLogger.Info("Starting synclone workflow: fetching repository list from GitHub")
+		log.Info("Starting synclone workflow: fetching repository list from GitHub")
 
 		// Check if gzh.yaml already exists
 		gzhYamlPath := filepath.Join(o.targetPath, "gzh.yaml")
@@ -339,7 +337,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 
 		if _, err := os.Stat(gzhYamlPath); err == nil {
 			// gzh.yaml exists, try to load it
-			simpleLogger.Info("Found existing gzh.yaml, loading repository list from file")
+			log.Info("Found existing gzh.yaml, loading repository list from file")
 			fmt.Printf("📄 Found existing gzh.yaml, loading repository list...\n")
 
 			data, err := os.ReadFile(gzhYamlPath)
@@ -407,18 +405,18 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 		// Step 4: Clone/sync repositories using appropriate method
 		if o.enableCache { //nolint:gocritic // Complex boolean conditions not suitable for switch
 			// Use cached approach (Redis cache disabled, using local cache only)
-			simpleLogger.Info("Using cached API calls for improved performance")
+			log.Info("Using cached API calls for improved performance")
 			fmt.Printf("🔄 Using cached API calls for improved performance\n")
 
 			err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
 		} else if o.optimized || o.streamingMode || token != "" {
 			if token == "" {
-				simpleLogger.Warn("No GitHub token provided - API rate limits may apply")
+				log.Warn("No GitHub token provided - API rate limits may apply")
 				fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
 				fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
 			}
 
-			simpleLogger.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
+			log.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
 			fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
 
 			if o.memoryLimit != "" {
@@ -427,10 +425,10 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 
 			err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
 		} else if o.resume || o.parallel > 1 {
-			simpleLogger.Info("Using resumable parallel cloning", "resume", o.resume, "progress_mode", o.progressMode)
+			log.Info("Using resumable parallel cloning", "resume", o.resume, "progress_mode", o.progressMode)
 			err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
 		} else {
-			simpleLogger.Info("Using standard cloning approach")
+			log.Info("Using standard cloning approach")
 			fmt.Printf("⚙️ Starting repository synchronization with strategy: %s\n", o.strategy)
 
 			err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
@@ -452,14 +450,14 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
 			recErr = recErr.WithContext("operation_duration", time.Since(start).String())
 
-			simpleLogger.ErrorWithStack(err, "GitHub synclone operation failed")
+			log.ErrorWithStack(err, "GitHub synclone operation failed")
 
 			// Return the error properly for error handling
 			return recErr
 		}
 
 		duration := time.Since(start)
-		simpleLogger.LogPerformance("github-synclone-completed", duration, map[string]interface{}{
+		log.LogPerformance("github-synclone-completed", duration, map[string]interface{}{
 			"org_name":     o.orgName,
 			"target_path":  o.targetPath,
 			"strategy":     o.strategy,
@@ -467,7 +465,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string) error { 
 			"memory_stats": errors.GetMemoryStats(),
 		})
 
-		simpleLogger.Info("GitHub synclone operation completed successfully", "duration", duration.String())
+		log.Info("GitHub synclone operation completed successfully", "duration", duration.String())
 
 		return nil
 	})

@@ -15,10 +15,12 @@ import (
 	"github.com/Gizzahub/gzh-cli/cmd/repo-config/template"
 	"github.com/Gizzahub/gzh-cli/cmd/repo-config/validate"
 	"github.com/Gizzahub/gzh-cli/cmd/repo-config/webhook"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 // NewRepoConfigCmd creates the repo-config command with subcommands.
-func NewRepoConfigCmd() *cobra.Command {
+func NewRepoConfigCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "repo-config",
 		Short: "GitHub repository configuration management",

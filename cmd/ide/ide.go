@@ -14,10 +14,12 @@ import (
 	"github.com/Gizzahub/gzh-cli/cmd/ide/open"
 	"github.com/Gizzahub/gzh-cli/cmd/ide/scan"
 	"github.com/Gizzahub/gzh-cli/cmd/ide/status"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 // NewIDECmd creates the IDE subcommand for monitoring and managing IDE configuration changes.
-func NewIDECmd(ctx context.Context) *cobra.Command {
+func NewIDECmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "ide",
 		Short: "Monitor and manage IDE configuration changes",

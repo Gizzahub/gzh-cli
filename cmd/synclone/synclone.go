@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Gizzahub/gzh-cli/internal/app"
 	"github.com/Gizzahub/gzh-cli/internal/config"
 	pkgconfig "github.com/Gizzahub/gzh-cli/pkg/config"
 	"github.com/Gizzahub/gzh-cli/pkg/github"
@@ -48,7 +49,7 @@ func defaultSyncCloneOptions() *syncCloneOptions {
 //   - ctx: Context for operation cancellation and timeout control
 //
 // Returns a configured cobra.Command ready for execution.
-func NewSyncCloneCmd(ctx context.Context) *cobra.Command {
+func NewSyncCloneCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
 	o := defaultSyncCloneOptions()
 
 	cmd := &cobra.Command{
@@ -84,12 +85,12 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 	// Mark flags as mutually exclusive
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config", "use-gzh-config")
 
-	cmd.AddCommand(newSyncCloneConfigCmd())
-	cmd.AddCommand(newSyncCloneGiteaCmd())
-	cmd.AddCommand(newSyncCloneGithubCmd())
-	cmd.AddCommand(newSyncCloneGitlabCmd())
-	cmd.AddCommand(newSyncCloneValidateCmd())
-	cmd.AddCommand(newSyncCloneStateCmd())
+	cmd.AddCommand(newSyncCloneConfigCmd(appCtx))
+	cmd.AddCommand(newSyncCloneGiteaCmd(appCtx))
+	cmd.AddCommand(newSyncCloneGithubCmd(appCtx))
+	cmd.AddCommand(newSyncCloneGitlabCmd(appCtx))
+	cmd.AddCommand(newSyncCloneValidateCmd(appCtx))
+	cmd.AddCommand(newSyncCloneStateCmd(appCtx))
 
 	return cmd
 }

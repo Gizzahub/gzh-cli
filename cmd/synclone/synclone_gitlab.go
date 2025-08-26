@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Gizzahub/gzh-cli/internal/app"
 	gitlabpkg "github.com/Gizzahub/gzh-cli/pkg/gitlab"
 	synclonepkg "github.com/Gizzahub/gzh-cli/pkg/synclone"
 )
@@ -40,7 +41,8 @@ func defaultSyncCloneGitlabOptions() *syncCloneGitlabOptions {
 	}
 }
 
-func newSyncCloneGitlabCmd() *cobra.Command {
+func newSyncCloneGitlabCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	o := defaultSyncCloneGitlabOptions()
 
 	cmd := &cobra.Command{

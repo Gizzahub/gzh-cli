@@ -3,10 +3,15 @@
 
 package devenv
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
+)
 
 // NewDevEnvCmd creates the development environment command.
-func NewDevEnvCmd() *cobra.Command {
+func NewDevEnvCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "dev-env",
 		Short: "Manage development environment configurations",

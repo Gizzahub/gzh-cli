@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Gizzahub/gzh-cli/internal/app"
 	synclonepkg "github.com/Gizzahub/gzh-cli/pkg/synclone"
 )
 
@@ -19,7 +20,8 @@ func defaultSyncCloneValidateOptions() *syncCloneValidateOptions {
 	return &syncCloneValidateOptions{}
 }
 
-func newSyncCloneValidateCmd() *cobra.Command {
+func newSyncCloneValidateCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	o := defaultSyncCloneValidateOptions()
 
 	cmd := &cobra.Command{

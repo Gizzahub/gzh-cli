@@ -5,10 +5,13 @@ package synclone
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 // newSyncCloneConfigCmd creates the config subcommand for synclone.
-func newSyncCloneConfigCmd() *cobra.Command {
+func newSyncCloneConfigCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "config",
 		Short: "Manage synclone configuration files",

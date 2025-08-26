@@ -11,10 +11,12 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Gizzahub/gzh-cli/internal/app"
 	synclonepkg "github.com/Gizzahub/gzh-cli/pkg/synclone"
 )
 
-func newSyncCloneStateCmd() *cobra.Command {
+func newSyncCloneStateCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "state",
 		Short: "Manage bulk clone operation states",

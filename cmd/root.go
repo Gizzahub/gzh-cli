@@ -22,6 +22,8 @@ import (
 	"github.com/Gizzahub/gzh-cli/cmd/shell"
 	synclone "github.com/Gizzahub/gzh-cli/cmd/synclone"
 	versioncmd "github.com/Gizzahub/gzh-cli/cmd/version"
+	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/Gizzahub/gzh-cli/internal/config"
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
@@ -32,7 +34,7 @@ var (
 	debugShell bool
 )
 
-func newRootCmd(ctx context.Context, version string) *cobra.Command {
+func newRootCmd(ctx context.Context, version string, appCtx *app.AppContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gz",
 		Short: "개발 환경 및 Git 플랫폼 통합 관리 도구",
@@ -52,15 +54,15 @@ Utility Commands: doctor, version`,
 	}
 
 	// Core feature commands
-	cmd.AddCommand(pm.NewPMCmd(ctx))
-	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx))
-	cmd.AddCommand(devenv.NewDevEnvCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(ide.NewIDECmd(ctx))
-	cmd.AddCommand(netenv.NewNetEnvCmd(ctx))
-	cmd.AddCommand(repoconfig.NewRepoConfigCmd()) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(profile.NewProfileCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(git.NewGitCmd())               //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(quality.NewQualityCmd())       //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(pm.NewPMCmd(ctx, appCtx))
+	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx, appCtx))
+	cmd.AddCommand(devenv.NewDevEnvCmd(appCtx)) //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(ide.NewIDECmd(ctx, appCtx))
+	cmd.AddCommand(netenv.NewNetEnvCmd(ctx, appCtx))
+	cmd.AddCommand(repoconfig.NewRepoConfigCmd(appCtx)) //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(profile.NewProfileCmd(appCtx))       //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(git.NewGitCmd(appCtx))               //nolint:contextcheck // Command setup doesn't require context propagation
+	cmd.AddCommand(quality.NewQualityCmd(appCtx))       //nolint:contextcheck // Command setup doesn't require context propagation
 
 	// Utility commands - set as hidden to reduce clutter in main help
 	versionCmd := versioncmd.NewVersionCmd(version)
@@ -103,7 +105,18 @@ func Execute(ctx context.Context, version string) error {
 		return nil
 	}
 
-	rootCmd := newRootCmd(ctx, version)
+	cfg, err := config.LoadGlobalConfig()
+	if err != nil {
+		cfg = config.DefaultGlobalConfig()
+	}
+
+	log := logger.NewStructuredLogger("gzh-cli", logger.LevelInfo)
+	appCtx := &app.AppContext{
+		Logger: log,
+		Config: cfg,
+	}
+
+	rootCmd := newRootCmd(ctx, version, appCtx)
 
 	// Check if --debug-shell flag is present
 	for _, arg := range os.Args[1:] {
