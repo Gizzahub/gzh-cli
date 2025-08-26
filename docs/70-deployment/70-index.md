@@ -26,7 +26,7 @@ Comprehensive guide for building, releasing, and deploying gzh-cli.
 
 ### Prerequisites
 
-- **Go 1.24.0+** with toolchain go1.24.5
+- **Go 1.22.0+**
 - **Git** with proper commit access
 - **GPG Key** for signing releases
 - **GitHub CLI** for release automation
@@ -150,7 +150,7 @@ go install github.com/gizzahub/gzh-cli@v1.2.0
 
 ```dockerfile
 # Multi-stage build
-FROM golang:1.24-alpine AS builder
+FROM golang:1.22-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN make build
@@ -216,7 +216,7 @@ jobs:
 
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: '1.22'
 
       - name: Run security checks
         run: |
@@ -256,7 +256,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: '1.22'
       - run: make test-all
 
   security:
@@ -272,7 +272,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: '1.22'
       - run: make release
       - uses: softprops/action-gh-release@v1
         with:

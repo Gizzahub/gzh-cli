@@ -11,9 +11,6 @@ permissions:
   security-events: write
   pull-requests: write
 
-env:
-  GO_VERSION: "1.24"
-
 jobs:
   # 🧪 통합 테스트 & 커버리지
   test:
@@ -29,7 +26,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -71,7 +68,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
 
       # 포맷 체크 (Make 타겟 사용)
       - name: Format check
@@ -103,7 +100,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
 
       - name: Build all commands
         run: |

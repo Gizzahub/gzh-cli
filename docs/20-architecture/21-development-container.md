@@ -6,7 +6,7 @@ This document provides comprehensive guidance for using the development containe
 
 The development container provides a consistent, reproducible development environment that includes:
 
-- **Go 1.24.0** with all development tools
+- **Go 1.22.0** with all development tools
 - **Node.js 20** for React dashboard
 - **Python 3.12** for scripting
 - **Docker-in-Docker** for container development
@@ -55,7 +55,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 
 #### Go Development
 
-- **Go 1.24.0** - Primary language
+- **Go 1.22.0** - Primary language
 - **golangci-lint 1.63.4** - Comprehensive linting
 - **gosec** - Security analysis
 - **gofumpt** - Enhanced formatting

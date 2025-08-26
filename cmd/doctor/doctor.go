@@ -835,13 +835,11 @@ func getSystemInfo() SystemInfo {
 }
 
 func isGoVersionSupported(version string) bool {
-	// Simple check for Go 1.19+
+	// Simple check for Go 1.19 through 1.22
 	return strings.Contains(version, "go1.19") ||
 		strings.Contains(version, "go1.20") ||
 		strings.Contains(version, "go1.21") ||
-		strings.Contains(version, "go1.22") ||
-		strings.Contains(version, "go1.23") ||
-		strings.Contains(version, "go1.24")
+		strings.Contains(version, "go1.22")
 }
 
 func getDiskSpace(path string) float64 {

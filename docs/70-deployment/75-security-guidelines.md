@@ -10,7 +10,7 @@ We actively maintain security updates for the following versions:
 
 | Version | Supported | Go Version | Security Features |
 | ------- | ------------------ | ---------- | ------------------- |
-| 1.x.x | :white_check_mark: | Go 1.24.0+ | Full security suite |
+| 1.x.x | :white_check_mark: | Go 1.22.0+ | Full security suite |
 | 0.x.x | :x: | Go 1.21+ | Legacy (archived) |
 
 ## Security Architecture
@@ -217,7 +217,7 @@ When deployed in containerized environments:
 
 ```dockerfile
 # Multi-stage build for minimal attack surface
-FROM golang:1.24-alpine AS builder
+FROM golang:1.22-alpine AS builder
 RUN apk add --no-cache ca-certificates git
 WORKDIR /build
 COPY . .

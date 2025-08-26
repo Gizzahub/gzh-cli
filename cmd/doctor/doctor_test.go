@@ -79,8 +79,6 @@ func TestIsGoVersionSupported(t *testing.T) {
 		{"Go 1.20", "go1.20.1", true},
 		{"Go 1.21", "go1.21.0", true},
 		{"Go 1.22", "go1.22.1", true},
-		{"Go 1.23", "go1.23.0", true},
-		{"Go 1.24", "go1.24.0", true},
 		{"Go 1.18", "go1.18.1", false},
 		{"Go 1.17", "go1.17.1", false},
 		{"unknown", "unknown", false},
@@ -359,8 +357,6 @@ func TestIsGoVersionSupportedEdgeCases(t *testing.T) {
 		{"go1.20", true},
 		{"go1.21", true},
 		{"go1.22", true},
-		{"go1.23", true},
-		{"go1.24", true},
 		{"go1.18", false},
 		{"go2.0", false},
 	}
@@ -1535,8 +1531,6 @@ func TestDevEnvUtilityFunctions(t *testing.T) {
 			{"go1.20.0", false},
 			{"go1.21.5", false},
 			{"go1.22.0", false},
-			{"go1.23.0", false},
-			{"go1.24.0", false},
 			{"unknown", false},
 			{"", false},
 		}
