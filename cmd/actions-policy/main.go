@@ -1,13 +1,12 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
-package main
+package actionspolicy
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -19,115 +18,127 @@ import (
 	"github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "actions-policy",
-	Short: "GitHub Actions policy management tool",
-	Long: `A comprehensive tool for managing GitHub Actions policies.
-Provides functionality to create, validate, and enforce Actions policies
-across repositories and organizations.`,
-}
+// NewActionsPolicyCmd creates the actions-policy command with all subcommands.
+func NewActionsPolicyCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "actions-policy",
+		Short: "GitHub Actions 정책 관리 도구",
+		Long: `GitHub Actions 정책을 생성, 검증, 적용하는 종합 도구입니다.
 
-var createCmd = &cobra.Command{
-	Use:   "create [policy-name]",
-	Short: "Create a new Actions policy",
-	Long:  "Create a new Actions policy with specified configuration",
-	Args:  cobra.ExactArgs(1),
-	RunE:  createPolicy,
-}
+조직과 저장소 전반에 걸쳐 Actions 정책을 관리할 수 있는 기능을 제공합니다.
 
-var enforceCmd = &cobra.Command{
-	Use:   "enforce [policy-id] [org] [repo]",
-	Short: "Enforce Actions policy on a repository",
-	Long:  "Apply and enforce a specific Actions policy on a repository",
-	Args:  cobra.ExactArgs(3),
-	RunE:  enforcePolicy,
-}
+주요 기능:
+- 정책 생성 및 템플릿 관리
+- 저장소별 정책 검증 및 적용
+- 조직 단위 규정 준수 모니터링
+- 세밀한 권한 및 보안 설정 관리
 
-var validateCmd = &cobra.Command{
-	Use:   "validate [policy-id] [org] [repo]",
-	Short: "Validate repository against Actions policy",
-	Long:  "Validate a repository's current configuration against an Actions policy",
-	Args:  cobra.ExactArgs(3),
-	RunE:  validatePolicy,
-}
-
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all Actions policies",
-	Long:  "Display all available Actions policies",
-	RunE:  listPolicies,
-}
-
-var showCmd = &cobra.Command{
-	Use:   "show [policy-id]",
-	Short: "Show Actions policy details",
-	Long:  "Display detailed information about a specific Actions policy",
-	Args:  cobra.ExactArgs(1),
-	RunE:  showPolicy,
-}
-
-var deleteCmd = &cobra.Command{
-	Use:   "delete [policy-id]",
-	Short: "Delete an Actions policy",
-	Long:  "Remove an Actions policy from the system",
-	Args:  cobra.ExactArgs(1),
-	RunE:  deletePolicy,
-}
-
-var monitorCmd = &cobra.Command{
-	Use:   "monitor [org]",
-	Short: "Monitor policy compliance across organization",
-	Long:  "Continuously monitor policy compliance across all repositories in an organization",
-	Args:  cobra.ExactArgs(1),
-	RunE:  monitorCompliance,
-}
-
-func init() {
-	rootCmd.AddCommand(createCmd)
-	rootCmd.AddCommand(enforceCmd)
-	rootCmd.AddCommand(validateCmd)
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(showCmd)
-	rootCmd.AddCommand(deleteCmd)
-	rootCmd.AddCommand(monitorCmd)
-
-	// Global flags
-	rootCmd.PersistentFlags().String("token", "", "GitHub token (can also use GITHUB_TOKEN env var)")
-	rootCmd.PersistentFlags().String("format", "table", "Output format (table, json, yaml)")
-	rootCmd.PersistentFlags().Bool("verbose", false, "Enable verbose logging")
-
-	// Create command flags
-	createCmd.Flags().String("org", "", "Target organization")
-	createCmd.Flags().String("repo", "", "Target repository (optional, for repo-level policies)")
-	createCmd.Flags().String("template", "default", "Policy template (default, strict, permissive)")
-	createCmd.Flags().String("description", "", "Policy description")
-	createCmd.Flags().StringSlice("tags", []string{}, "Policy tags")
-	createCmd.Flags().Bool("enabled", true, "Enable policy immediately")
-
-	// Enforce command flags
-	enforceCmd.Flags().Bool("dry-run", false, "Perform validation only, don't apply changes")
-	enforceCmd.Flags().Bool("force", false, "Force enforcement even if validation fails")
-	enforceCmd.Flags().Int("timeout", 300, "Enforcement timeout in seconds")
-
-	// Validate command flags
-	validateCmd.Flags().Bool("detailed", false, "Show detailed validation results")
-	validateCmd.Flags().String("severity", "all", "Filter by severity (all, low, medium, high, critical)")
-
-	// List command flags
-	listCmd.Flags().String("org", "", "Filter by organization")
-	listCmd.Flags().StringSlice("tags", []string{}, "Filter by tags")
-	listCmd.Flags().Bool("enabled-only", false, "Show only enabled policies")
-
-	// Monitor command flags
-	monitorCmd.Flags().Duration("interval", 5*time.Minute, "Monitoring interval")
-	monitorCmd.Flags().Bool("continuous", false, "Run continuously until interrupted")
-	monitorCmd.Flags().String("webhook-url", "", "Webhook URL for compliance alerts")
-}
-
-func main() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+예시:
+  gz actions-policy list                           # 모든 정책 목록 표시
+  gz actions-policy create my-policy --org myorg   # 새 정책 생성
+  gz actions-policy validate policy-id org repo   # 저장소 정책 검증
+  gz actions-policy enforce policy-id org repo    # 정책 적용`,
+		SilenceUsage: true,
 	}
+
+	// 서브커맨드 정의
+	createCmd := &cobra.Command{
+		Use:   "create [policy-name]",
+		Short: "새 Actions 정책 생성",
+		Long:  "지정된 설정으로 새 Actions 정책을 생성합니다",
+		Args:  cobra.ExactArgs(1),
+		RunE:  createPolicy,
+	}
+
+	enforceCmd := &cobra.Command{
+		Use:   "enforce [policy-id] [org] [repo]",
+		Short: "저장소에 Actions 정책 적용",
+		Long:  "특정 Actions 정책을 저장소에 적용하고 강제합니다",
+		Args:  cobra.ExactArgs(3),
+		RunE:  enforcePolicy,
+	}
+
+	validateCmd := &cobra.Command{
+		Use:   "validate [policy-id] [org] [repo]",
+		Short: "저장소의 Actions 정책 검증",
+		Long:  "저장소의 현재 설정을 Actions 정책에 대해 검증합니다",
+		Args:  cobra.ExactArgs(3),
+		RunE:  validatePolicy,
+	}
+
+	listCmd := &cobra.Command{
+		Use:   "list",
+		Short: "모든 Actions 정책 목록",
+		Long:  "사용 가능한 모든 Actions 정책을 표시합니다",
+		RunE:  listPolicies,
+	}
+
+	showCmd := &cobra.Command{
+		Use:   "show [policy-id]",
+		Short: "Actions 정책 세부 정보",
+		Long:  "특정 Actions 정책의 자세한 정보를 표시합니다",
+		Args:  cobra.ExactArgs(1),
+		RunE:  showPolicy,
+	}
+
+	deleteCmd := &cobra.Command{
+		Use:   "delete [policy-id]",
+		Short: "Actions 정책 삭제",
+		Long:  "시스템에서 Actions 정책을 제거합니다",
+		Args:  cobra.ExactArgs(1),
+		RunE:  deletePolicy,
+	}
+
+	monitorCmd := &cobra.Command{
+		Use:   "monitor [org]",
+		Short: "조직의 정책 준수 모니터링",
+		Long:  "조직의 모든 저장소에서 정책 준수를 지속적으로 모니터링합니다",
+		Args:  cobra.ExactArgs(1),
+		RunE:  monitorCompliance,
+	}
+
+	// 서브커맨드 추가
+	cmd.AddCommand(createCmd)
+	cmd.AddCommand(enforceCmd)
+	cmd.AddCommand(validateCmd)
+	cmd.AddCommand(listCmd)
+	cmd.AddCommand(showCmd)
+	cmd.AddCommand(deleteCmd)
+	cmd.AddCommand(monitorCmd)
+
+	// 전역 플래그
+	cmd.PersistentFlags().String("token", "", "GitHub 토큰 (GITHUB_TOKEN 환경변수 사용 가능)")
+	cmd.PersistentFlags().String("format", "table", "출력 형식 (table, json, yaml)")
+	cmd.PersistentFlags().Bool("verbose", false, "자세한 로깅 활성화")
+
+	// create 커맨드 플래그
+	createCmd.Flags().String("org", "", "대상 조직")
+	createCmd.Flags().String("repo", "", "대상 저장소 (선택사항, 저장소 수준 정책)")
+	createCmd.Flags().String("template", "default", "정책 템플릿 (default, strict, permissive)")
+	createCmd.Flags().String("description", "", "정책 설명")
+	createCmd.Flags().StringSlice("tags", []string{}, "정책 태그")
+	createCmd.Flags().Bool("enabled", true, "정책 즉시 활성화")
+
+	// enforce 커맨드 플래그
+	enforceCmd.Flags().Bool("dry-run", false, "검증만 수행, 변경사항 적용 안함")
+	enforceCmd.Flags().Bool("force", false, "검증 실패 시에도 강제 적용")
+	enforceCmd.Flags().Int("timeout", 300, "적용 제한 시간 (초)")
+
+	// validate 커맨드 플래그
+	validateCmd.Flags().Bool("detailed", false, "자세한 검증 결과 표시")
+	validateCmd.Flags().String("severity", "all", "심각도 필터 (all, low, medium, high, critical)")
+
+	// list 커맨드 플래그
+	listCmd.Flags().String("org", "", "조직으로 필터링")
+	listCmd.Flags().StringSlice("tags", []string{}, "태그로 필터링")
+	listCmd.Flags().Bool("enabled-only", false, "활성화된 정책만 표시")
+
+	// monitor 커맨드 플래그
+	monitorCmd.Flags().Duration("interval", 5*time.Minute, "모니터링 간격")
+	monitorCmd.Flags().Bool("continuous", false, "중단될 때까지 지속 실행")
+	monitorCmd.Flags().String("webhook-url", "", "준수성 알림용 웹훅 URL")
+
+	return cmd
 }
 
 func createPolicy(cmd *cobra.Command, args []string) error {
