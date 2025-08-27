@@ -4,49 +4,55 @@ package git
 import (
 	"testing"
 
-	"github.com/spf13/cobra"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
-func TestGitCommands(t *testing.T) {
-	tests := []struct {
-		name          string
-		newCmd        func() *cobra.Command
-		use           string
-		shortContains string
-	}{
-		{"root", NewGitCmd, "git", "Git 플랫폼 관리"},
-		{"config", newGitConfigCmd, "config", "Repository configuration"},
-		{"event", newGitEventCmd, "event", "Event processing"},
-		{"repo", NewGitRepoCmd, "repo", ""},
+func TestNewGitCmd(t *testing.T) {
+	cmd := NewGitCmd(app.NewTestAppContext())
+
+	require.Equal(t, "git", cmd.Use)
+	require.Contains(t, cmd.Short, "Git 플랫폼 관리")
+	require.NotEmpty(t, cmd.Long)
+
+	// 서브커맨드 확인
+	subcommands := cmd.Commands()
+	require.GreaterOrEqual(t, len(subcommands), 4) // repo, config, webhook, event
+
+	// 서브커맨드 존재 확인
+	subcommandNames := make(map[string]bool)
+	for _, subcmd := range subcommands {
+		subcommandNames[subcmd.Use] = true
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cmd := tt.newCmd()
-			assert.Equal(t, tt.use, cmd.Use)
-			if tt.shortContains != "" {
-				assert.Contains(t, cmd.Short, tt.shortContains)
-			}
-		})
-	}
+	require.True(t, subcommandNames["repo"], "repo subcommand should exist")
+	require.True(t, subcommandNames["config"], "config subcommand should exist")
+	require.True(t, subcommandNames["webhook"], "webhook subcommand should exist")
+	require.True(t, subcommandNames["event"], "event subcommand should exist")
 }
 
-func TestNewGitCmd_Subcommands(t *testing.T) {
-	cmd := NewGitCmd()
-	subcommands := cmd.Commands()
-	got := make(map[string]bool)
-	for _, sub := range subcommands {
-		got[sub.Use] = true
-	}
+func TestNewGitConfigCmd(t *testing.T) {
+	cmd := newGitConfigCmd(app.NewTestAppContext())
+
+	require.Equal(t, "config", cmd.Use)
+	require.Contains(t, cmd.Short, "Repository configuration")
+	require.NotEmpty(t, cmd.Long)
+}
+
+func TestNewGitEventCmd(t *testing.T) {
+	cmd := newGitEventCmd()
+
+	require.Equal(t, "event", cmd.Use)
+	require.Contains(t, cmd.Short, "Event processing")
+	require.NotEmpty(t, cmd.Long)
+}
 
 	tests := []struct{ name string }{
 		{"repo"}, {"config"}, {"webhook"}, {"event"},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.True(t, got[tt.name], "%s subcommand should exist", tt.name)
-		})
-	}
+	require.NotNil(t, cmd)
+	require.Equal(t, "repo", cmd.Use)
+	require.NotEmpty(t, cmd.Short)
 }

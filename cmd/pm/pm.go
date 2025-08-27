@@ -18,10 +18,12 @@ import (
 	"github.com/Gizzahub/gzh-cli/cmd/pm/install"
 	"github.com/Gizzahub/gzh-cli/cmd/pm/status"
 	"github.com/Gizzahub/gzh-cli/cmd/pm/update"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 // NewPMCmd creates the package manager command for unified package management.
-func NewPMCmd(ctx context.Context) *cobra.Command {
+func NewPMCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "pm",
 		Short: "Package manager operations",

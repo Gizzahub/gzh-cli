@@ -11,6 +11,8 @@ import (
 
 	"github.com/Gizzahub/gzh-cli/cmd/quality/detector"
 	"github.com/Gizzahub/gzh-cli/cmd/quality/tools"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 func TestNewQualityManager(t *testing.T) {
@@ -24,7 +26,7 @@ func TestNewQualityManager(t *testing.T) {
 }
 
 func TestNewQualityCmd(t *testing.T) {
-	cmd := NewQualityCmd()
+	cmd := NewQualityCmd(app.NewTestAppContext())
 
 	assert.Equal(t, "quality", cmd.Use)
 	assert.Contains(t, cmd.Short, "통합 코드 품질 도구")

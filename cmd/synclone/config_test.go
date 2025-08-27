@@ -11,10 +11,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 func TestConfigCommand(t *testing.T) {
-	cmd := newSyncCloneConfigCmd()
+	cmd := newSyncCloneConfigCmd(app.NewTestAppContext())
 
 	// Test that config command exists
 	assert.NotNil(t, cmd)

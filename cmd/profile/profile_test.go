@@ -6,10 +6,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 func TestNewProfileCmd(t *testing.T) {
-	cmd := NewProfileCmd()
+	cmd := NewProfileCmd(app.NewTestAppContext())
 
 	assert.Equal(t, "profile", cmd.Use)
 	assert.Equal(t, "Performance profiling using standard Go pprof", cmd.Short)
@@ -132,7 +134,7 @@ func TestFormatBytes(t *testing.T) {
 }
 
 func TestProfileCmdStructure(t *testing.T) {
-	cmd := NewProfileCmd()
+	cmd := NewProfileCmd(app.NewTestAppContext())
 
 	// Test that the command has proper structure
 	assert.NotEmpty(t, cmd.Use)
@@ -148,7 +150,7 @@ func TestProfileCmdStructure(t *testing.T) {
 }
 
 func TestProfileSubcommandDetails(t *testing.T) {
-	cmd := NewProfileCmd()
+	cmd := NewProfileCmd(app.NewTestAppContext())
 	subcommands := cmd.Commands()
 
 	for _, subcmd := range subcommands {
@@ -203,7 +205,7 @@ func TestCommandCreationConsistency(t *testing.T) {
 }
 
 func TestProfileCommandHelpText(t *testing.T) {
-	cmd := NewProfileCmd()
+	cmd := NewProfileCmd(app.NewTestAppContext())
 
 	// Verify help text mentions key profiling concepts
 	longDesc := cmd.Long
@@ -249,7 +251,7 @@ func TestFormatBytesLargeNumbers(t *testing.T) {
 }
 
 func TestProfileCommandUsagePatterns(t *testing.T) {
-	cmd := NewProfileCmd()
+	cmd := NewProfileCmd(app.NewTestAppContext())
 
 	// Test that command descriptions follow consistent patterns
 	for _, subcmd := range cmd.Commands() {

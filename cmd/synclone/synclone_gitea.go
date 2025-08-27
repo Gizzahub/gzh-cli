@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 type syncCloneGiteaOptions struct {
@@ -21,7 +23,8 @@ func defaultSyncCloneGiteaOptions() *syncCloneGiteaOptions {
 	}
 }
 
-func newSyncCloneGiteaCmd() *cobra.Command {
+func newSyncCloneGiteaCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	o := defaultSyncCloneGiteaOptions()
 
 	cmd := &cobra.Command{

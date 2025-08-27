@@ -22,9 +22,11 @@ import (
 	// "github.com/Gizzahub/gzh-cli/cmd/net-env/switchcmd"
 	"github.com/Gizzahub/gzh-cli/cmd/net-env/tui"
 	// "github.com/Gizzahub/gzh-cli/cmd/net-env/vpn"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
-func NewNetEnvCmd(ctx context.Context) *cobra.Command {
+func NewNetEnvCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "net-env",
 		Short: "Manage network environment transitions",

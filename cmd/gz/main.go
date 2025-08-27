@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	apprunner "github.com/Gizzahub/gzh-cli/internal/apprunner"
 )
 
 var version = "dev"
 
 func main() {
 	// Create and run the application
-	runner := app.NewRunner(version)
+	runner := apprunner.NewRunner(version)
 
 	if err := runner.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)

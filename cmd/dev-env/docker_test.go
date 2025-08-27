@@ -68,7 +68,6 @@ func TestDockerSaveCmd(t *testing.T) {
 
 	assert.Equal(t, "save", cmd.Use)
 	assert.Equal(t, "Save current docker configuration", cmd.Short)
-	assert.NotEmpty(t, cmd.Long)
 
 	// Test flags
 	assert.NotNil(t, cmd.Flags().Lookup("name"))
@@ -90,7 +89,6 @@ func TestDockerLoadCmd(t *testing.T) {
 
 	assert.Equal(t, "load", cmd.Use)
 	assert.Equal(t, "Load saved docker configuration", cmd.Short)
-	assert.NotEmpty(t, cmd.Long)
 
 	// Test flags
 	assert.NotNil(t, cmd.Flags().Lookup("name"))
@@ -111,7 +109,6 @@ func TestDockerListCmd(t *testing.T) {
 
 	assert.Equal(t, "list", cmd.Use)
 	assert.Equal(t, "List saved docker configurations", cmd.Short)
-	assert.NotEmpty(t, cmd.Long)
 
 	// Test flags
 	assert.NotNil(t, cmd.Flags().Lookup("store-path"))

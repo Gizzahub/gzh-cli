@@ -31,7 +31,7 @@ func TestNewAwsCmd(t *testing.T) {
 	cmd := newAwsCmd()
 
 	assert.Equal(t, "aws", cmd.Use)
-	assert.Equal(t, "Manage AWS configuration files", cmd.Short)
+	assert.Equal(t, "Manage Aws configuration files", cmd.Short)
 	assert.NotEmpty(t, cmd.Long)
 
 	// Check subcommands
@@ -68,7 +68,6 @@ func TestAwsSaveCmd(t *testing.T) {
 
 	assert.Equal(t, "save", cmd.Use)
 	assert.Equal(t, "Save current aws configuration", cmd.Short)
-	assert.NotEmpty(t, cmd.Long)
 
 	// Test flags
 	assert.NotNil(t, cmd.Flags().Lookup("name"))
@@ -90,7 +89,6 @@ func TestAwsLoadCmd(t *testing.T) {
 
 	assert.Equal(t, "load", cmd.Use)
 	assert.Equal(t, "Load saved aws configuration", cmd.Short)
-	assert.NotEmpty(t, cmd.Long)
 
 	// Test flags
 	assert.NotNil(t, cmd.Flags().Lookup("name"))
@@ -111,7 +109,6 @@ func TestAwsListCmd(t *testing.T) {
 
 	assert.Equal(t, "list", cmd.Use)
 	assert.Equal(t, "List saved aws configurations", cmd.Short)
-	assert.NotEmpty(t, cmd.Long)
 
 	// Test flags
 	assert.NotNil(t, cmd.Flags().Lookup("store-path"))

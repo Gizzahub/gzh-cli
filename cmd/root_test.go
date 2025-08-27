@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 func TestRootCommandOutput(t *testing.T) {
-	cmd := newRootCmd(context.Background(), "")
+	cmd := NewRootCmd(context.Background(), "", app.NewTestAppContext())
 	b := bytes.NewBufferString("")
 
 	cmd.SetArgs([]string{"-h"})

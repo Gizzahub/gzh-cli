@@ -17,6 +17,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/cmd/quality/executor"
 	"github.com/Gizzahub/gzh-cli/cmd/quality/report"
 	"github.com/Gizzahub/gzh-cli/cmd/quality/tools"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 // QualityManager manages the quality command functionality.
@@ -48,7 +49,8 @@ func NewQualityManager() *QualityManager {
 }
 
 // NewQualityCmd creates the quality command.
-func NewQualityCmd() *cobra.Command {
+func NewQualityCmd(appCtx *app.AppContext) *cobra.Command {
+	_ = appCtx
 	manager := NewQualityManager()
 
 	cmd := &cobra.Command{
