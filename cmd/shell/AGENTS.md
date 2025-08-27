@@ -1,16 +1,20 @@
-# AGENTS.md - shell
+# AGENTS.md - shell (셸 통합)
 
-## Coding conventions
+> 📋 **공통 규칙**: [cmd/AGENTS_COMMON.md](../AGENTS_COMMON.md) 참조
 
-- Use Go standard style and run `make fmt` before committing.
-- Keep Cobra command implementations simple and avoid unnecessary abstractions.
+## 🎯 모듈 특성
 
-## Testing and logging
+**shell**은 다양한 셸 환경과의 통합을 제공하는 모듈입니다.
 
-- Run `go test ./cmd/shell -v` before submitting changes.
-- Prefer the repository logger for output; use `t.Logf` for test logging.
+### 핵심 기능
+- 셸 자동완성 스크립트 생성
+- 셸별 환경 변수 설정
+- 셸 통합 기능 (alias, prompt 등)
 
-## Setup and review
+## ⚠️ 개발 시 주의사항
 
-- Review existing CLI flags and documentation for shell before modifying.
-- Update usage examples when command behavior changes.
+- **셸별 차이점**: bash, zsh, fish, PowerShell 등 각각의 특성 고려
+- **스크립트 안전성**: 생성된 셸 스크립트가 기존 환경을 손상시키지 않도록 주의
+- **권한 처리**: 셸 설정 파일 수정 권한 확인
+
+**핵심**: 사용자의 셸 환경과 직접 상호작용하므로 호환성과 안전성이 중요합니다.

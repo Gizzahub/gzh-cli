@@ -1,16 +1,20 @@
-# AGENTS.md - version
+# AGENTS.md - version (버전 정보)
 
-## Coding conventions
+> 📋 **공통 규칙**: [cmd/AGENTS_COMMON.md](../AGENTS_COMMON.md) 참조
 
-- Use Go standard style and run `make fmt` before committing.
-- Keep Cobra command implementations simple and avoid unnecessary abstractions.
+## 🎯 모듈 특성
 
-## Testing and logging
+**version**은 애플리케이션 버전 정보를 표시하는 단순한 모듈입니다.
 
-- Run `go test ./cmd/version -v` before submitting changes.
-- Prefer the repository logger for output; use `t.Logf` for test logging.
+### 핵심 기능
+- 현재 버전 표시
+- 빌드 정보 출력
+- Git 커밋 해시 표시
 
-## Setup and review
+## ⚠️ 개발 시 주의사항
 
-- Review existing CLI flags and documentation for version before modifying.
-- Update usage examples when command behavior changes.
+- **빌드 정보 임베딩**: 컴파일 시점에 버전 정보 주입
+- **포맷 일관성**: JSON, 텍스트 등 출력 형식 통일
+- **의존성 최소화**: 다른 모듈에 대한 의존성 없이 독립 실행
+
+**핵심**: 가장 단순한 모듈이지만 빌드 시스템과의 연동이 중요합니다.

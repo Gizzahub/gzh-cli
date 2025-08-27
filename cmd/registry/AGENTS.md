@@ -1,16 +1,20 @@
-# AGENTS.md - registry
+# AGENTS.md - registry (명령어 등록)
 
-## Coding conventions
+> 📋 **공통 규칙**: [cmd/AGENTS_COMMON.md](../AGENTS_COMMON.md) 참조
 
-- Use Go standard style and run `make fmt` before committing.
-- Keep Cobra command implementations simple and avoid unnecessary abstractions.
+## 🎯 모듈 특성
 
-## Testing and logging
+**registry**는 다른 모듈들의 명령어를 중앙에서 등록하고 관리하는 시스템 모듈입니다.
 
-- Run `go test ./cmd/registry -v` before submitting changes.
-- Prefer the repository logger for output; use `t.Logf` for test logging.
+### 핵심 기능
+- 명령어 제공자(CommandProvider) 등록
+- 동적 명령어 로딩
+- 명령어 생성 팩토리 패턴
 
-## Setup and review
+## ⚠️ 개발 시 주의사항
 
-- Review existing CLI flags and documentation for registry before modifying.
-- Update usage examples when command behavior changes.
+- **순환 의존성 방지**: registry가 다른 모듈을 직접 import하지 않도록 주의
+- **인터페이스 안정성**: CommandProvider 인터페이스 변경 시 전체 영향 고려
+- **등록 순서**: 명령어 등록 순서가 도움말 출력에 영향
+
+**핵심**: 전체 애플리케이션의 명령어 구조를 담당하는 중요한 시스템 컴포넌트입니다.

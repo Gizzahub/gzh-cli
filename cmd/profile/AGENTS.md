@@ -1,16 +1,20 @@
-# AGENTS.md - profile
+# AGENTS.md - profile (프로필 관리)
 
-## Coding conventions
+> 📋 **공통 규칙**: [cmd/AGENTS_COMMON.md](../AGENTS_COMMON.md) 참조
 
-- Use Go standard style and run `make fmt` before committing.
-- Keep Cobra command implementations simple and avoid unnecessary abstractions.
+## 🎯 모듈 특성
 
-## Testing and logging
+**profile**은 사용자 프로필과 설정을 관리하는 단순한 모듈입니다.
 
-- Run `go test ./cmd/profile -v` before submitting changes.
-- Prefer the repository logger for output; use `t.Logf` for test logging.
+### 핵심 기능
+- 사용자 프로필 생성/수정/삭제
+- 프로필별 설정 관리
+- 활성 프로필 전환
 
-## Setup and review
+## ⚠️ 개발 시 주의사항
 
-- Review existing CLI flags and documentation for profile before modifying.
-- Update usage examples when command behavior changes.
+- **설정 파일 백업**: 프로필 변경 시 기존 설정 백업
+- **입력 검증**: 프로필명과 설정 값의 유효성 검사
+- **동시성**: 여러 프로세스에서 동시 프로필 변경 방지
+
+**핵심**: 간단한 CRUD 기능이지만 설정 손실 방지가 중요합니다.
