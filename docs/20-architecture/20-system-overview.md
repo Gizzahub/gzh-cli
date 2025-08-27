@@ -266,12 +266,12 @@ Result Aggregation & Formatting
 
 Major refactoring effort that achieved significant improvements:
 
-| Component                   | Before      | After                | Improvement       |
+| Component | Before | After | Improvement |
 | --------------------------- | ----------- | -------------------- | ----------------- |
-| **Provider Implementation** | ~800 lines  | ~200 lines           | **75% Reduction** |
-| **Dev-env Commands**        | ~2000 lines | ~400 lines           | **80% Reduction** |
-| **TUI Components**          | ~600 lines  | ~150 lines + library | **75% Reduction** |
-| **Config Adapters**         | ~570 lines  | ~150 lines           | **74% Reduction** |
+| **Provider Implementation** | ~800 lines | ~200 lines | **75% Reduction** |
+| **Dev-env Commands** | ~2000 lines | ~400 lines | **80% Reduction** |
+| **TUI Components** | ~600 lines | ~150 lines + library | **75% Reduction** |
+| **Config Adapters** | ~570 lines | ~150 lines | **74% Reduction** |
 
 ### Key Improvements
 
@@ -313,7 +313,7 @@ Major refactoring effort that achieved significant improvements:
 
 1. Create command directory in `cmd/`
 1. Implement using BaseCommand pattern if applicable
-1. Register in `cmd/root.go`
+1. In `init()`, register the command with `registry.Register(newFeatureCmd{})`
 1. Add configuration section to unified schema
 1. Implement output formatting support
 

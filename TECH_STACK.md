@@ -2,7 +2,7 @@
 
 ## Core Technologies
 
-- **Language**: Go 1.24.0+ (toolchain: go1.24.5)
+- **Language**: Go 1.22.0+
 - **Framework**: Cobra CLI framework
 - **Database**: File-based configuration (YAML/JSON)
 - **Cloud Platform**: Multi-cloud support (AWS, GCP, Azure)
@@ -296,7 +296,7 @@ Unified Git platform management through `gz git` command:
 
 ### Required Tools
 
-- **Go**: 1.24.0+ (as specified in go.mod)
+- **Go**: 1.22.0+ (as specified in go.mod)
 - **Make**: For build automation
 - **Git**: 2.0+ for repository operations
 - **golangci-lint**: v2+ for code linting (auto-installed via `make bootstrap`)

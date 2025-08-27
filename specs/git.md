@@ -25,11 +25,11 @@ gz git <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose                                  | Implementation Status     |
+| Subcommand | Purpose | Implementation Status |
 | ---------- | ---------------------------------------- | ------------------------- |
-| `repo`     | Repository lifecycle and sync management | ✅ Implemented (Enhanced) |
-| `webhook`  | Webhook management and automation        | ✅ Implemented            |
-| `event`    | Event processing and monitoring          | ✅ Implemented            |
+| `repo` | Repository lifecycle and sync management | ✅ Implemented (Enhanced) |
+| `webhook` | Webhook management and automation | ✅ Implemented |
+| `event` | Event processing and monitoring | ✅ Implemented |
 
 ### Command Hierarchy
 

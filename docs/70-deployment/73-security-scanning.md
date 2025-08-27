@@ -15,35 +15,35 @@ Security scanning is performed at multiple levels:
 
 ### gosec Rules Enabled
 
-| Rule      | Description                       | Severity |
+| Rule | Description | Severity |
 | --------- | --------------------------------- | -------- |
-| G101      | Hardcoded credentials             | HIGH     |
-| G102      | Bind to all interfaces            | MEDIUM   |
-| G103      | Unsafe blocks                     | HIGH     |
-| G104      | Unchecked errors                  | MEDIUM   |
-| G106      | SSH InsecureIgnoreHostKey         | HIGH     |
-| G107      | URL injection                     | MEDIUM   |
-| G108      | Profiling endpoint exposed        | MEDIUM   |
-| G109      | Integer overflow                  | MEDIUM   |
-| G110      | DoS via decompression             | HIGH     |
-| G201      | SQL injection (format)            | HIGH     |
-| G202      | SQL injection (concat)            | HIGH     |
-| G203      | Unescaped HTML templates          | MEDIUM   |
-| G204      | Command injection                 | HIGH     |
-| G301      | Poor directory permissions        | MEDIUM   |
-| G302      | Poor file permissions (chmod)     | MEDIUM   |
-| G303      | Predictable tempfile              | MEDIUM   |
-| G304      | File path injection               | MEDIUM   |
-| G305      | ZIP/TAR traversal                 | HIGH     |
-| G306      | Poor file permissions (write)     | MEDIUM   |
-| G307      | Deferred error not checked        | LOW      |
-| G401      | Weak crypto (DES, RC4, MD5, SHA1) | HIGH     |
-| G402      | Bad TLS settings                  | HIGH     |
-| G403      | Weak RSA keys (\<2048 bits)       | HIGH     |
-| G404      | Insecure random source            | MEDIUM   |
-| G501-G505 | Crypto import blocklist           | HIGH     |
-| G601      | Implicit memory aliasing          | MEDIUM   |
-| G602      | Slice bounds checking             | MEDIUM   |
+| G101 | Hardcoded credentials | HIGH |
+| G102 | Bind to all interfaces | MEDIUM |
+| G103 | Unsafe blocks | HIGH |
+| G104 | Unchecked errors | MEDIUM |
+| G106 | SSH InsecureIgnoreHostKey | HIGH |
+| G107 | URL injection | MEDIUM |
+| G108 | Profiling endpoint exposed | MEDIUM |
+| G109 | Integer overflow | MEDIUM |
+| G110 | DoS via decompression | HIGH |
+| G201 | SQL injection (format) | HIGH |
+| G202 | SQL injection (concat) | HIGH |
+| G203 | Unescaped HTML templates | MEDIUM |
+| G204 | Command injection | HIGH |
+| G301 | Poor directory permissions | MEDIUM |
+| G302 | Poor file permissions (chmod) | MEDIUM |
+| G303 | Predictable tempfile | MEDIUM |
+| G304 | File path injection | MEDIUM |
+| G305 | ZIP/TAR traversal | HIGH |
+| G306 | Poor file permissions (write) | MEDIUM |
+| G307 | Deferred error not checked | LOW |
+| G401 | Weak crypto (DES, RC4, MD5, SHA1) | HIGH |
+| G402 | Bad TLS settings | HIGH |
+| G403 | Weak RSA keys (\<2048 bits) | HIGH |
+| G404 | Insecure random source | MEDIUM |
+| G501-G505 | Crypto import blocklist | HIGH |
+| G601 | Implicit memory aliasing | MEDIUM |
+| G602 | Slice bounds checking | MEDIUM |
 
 ### Configuration Files
 

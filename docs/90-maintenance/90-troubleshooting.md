@@ -253,16 +253,16 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 ### Exit Codes
 
-| Exit Code | Category              | Description                    |
+| Exit Code | Category | Description |
 | --------- | --------------------- | ------------------------------ |
-| 0         | Success               | Command completed successfully |
-| 1         | General Error         | General command failure        |
-| 2         | Configuration Error   | Invalid configuration          |
-| 3         | Authentication Error  | Authentication failure         |
-| 4         | Network Error         | Network connectivity issues    |
-| 5         | File System Error     | File/directory access issues   |
-| 10        | Validation Error      | Input validation failure       |
-| 20        | Quality Check Failure | Code quality issues found      |
+| 0 | Success | Command completed successfully |
+| 1 | General Error | General command failure |
+| 2 | Configuration Error | Invalid configuration |
+| 3 | Authentication Error | Authentication failure |
+| 4 | Network Error | Network connectivity issues |
+| 5 | File System Error | File/directory access issues |
+| 10 | Validation Error | Input validation failure |
+| 20 | Quality Check Failure | Code quality issues found |
 
 ### Error Messages
 

@@ -61,16 +61,16 @@ gz profile start --type cpu
 
 ## 📊 Feature Matrix
 
-| Feature                     | Platforms                   | Output Formats         | CI/CD Integration |
+| Feature | Platforms | Output Formats | CI/CD Integration |
 | --------------------------- | --------------------------- | ---------------------- | ----------------- |
-| **Synclone**                | GitHub, GitLab, Gitea, Gogs | JSON, YAML, CSV, Table | ✅                |
-| **Repository Management**   | GitHub, GitLab              | JSON, YAML, Table      | ✅                |
-| **Quality Management**      | 15+ Languages               | SARIF, JUnit, JSON     | ✅                |
-| **IDE Management**          | JetBrains IDEs              | JSON, YAML, Table      | ❌                |
-| **Development Environment** | AWS, GCP, Azure, Docker     | JSON, YAML, Table      | ✅                |
-| **Network Management**      | All Platforms               | JSON, YAML, Table      | ❌                |
-| **Performance Profiling**   | Go Applications             | pprof, SVG, JSON       | ✅                |
-| **Output & Backup**         | Cross-platform              | Multiple formats       | ✅                |
+| **Synclone** | GitHub, GitLab, Gitea, Gogs | JSON, YAML, CSV, Table | ✅ |
+| **Repository Management** | GitHub, GitLab | JSON, YAML, Table | ✅ |
+| **Quality Management** | 15+ Languages | SARIF, JUnit, JSON | ✅ |
+| **IDE Management** | JetBrains IDEs | JSON, YAML, Table | ❌ |
+| **Development Environment** | AWS, GCP, Azure, Docker | JSON, YAML, Table | ✅ |
+| **Network Management** | All Platforms | JSON, YAML, Table | ❌ |
+| **Performance Profiling** | Go Applications | pprof, SVG, JSON | ✅ |
+| **Output & Backup** | Cross-platform | Multiple formats | ✅ |
 
 ## 🎯 Use Case Guides
 

@@ -31,45 +31,45 @@ gz quality <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose                              | Test Coverage |
+| Subcommand | Purpose | Test Coverage |
 | ---------- | ------------------------------------ | ------------- |
-| `run`      | Execute all quality tools            | ✅ 41.2%      |
-| `check`    | Lint without modifications           | ✅ 38.5%      |
-| `analyze`  | Project analysis and recommendations | ✅ 35.7%      |
-| `install`  | Install quality tools                | ✅ 32.1%      |
-| `upgrade`  | Upgrade quality tools                | ✅ 30.8%      |
-| `version`  | Show tool versions                   | ✅ 28.4%      |
-| `init`     | Initialize quality configuration     | ✅ 33.9%      |
-| `tool`     | Run specific tool directly           | ✅ 36.2%      |
+| `run` | Execute all quality tools | ✅ 41.2% |
+| `check` | Lint without modifications | ✅ 38.5% |
+| `analyze` | Project analysis and recommendations | ✅ 35.7% |
+| `install` | Install quality tools | ✅ 32.1% |
+| `upgrade` | Upgrade quality tools | ✅ 30.8% |
+| `version` | Show tool versions | ✅ 28.4% |
+| `init` | Initialize quality configuration | ✅ 33.9% |
+| `tool` | Run specific tool directly | ✅ 36.2% |
 
 ## Language Support Matrix
 
 ### Go
 
-| Tool          | Purpose               | Version | Coverage |
+| Tool | Purpose | Version | Coverage |
 | ------------- | --------------------- | ------- | -------- |
-| gofumpt       | Advanced formatting   | latest  | ✅ 45.3% |
-| golangci-lint | Comprehensive linting | 1.54+   | ✅ 42.7% |
-| goimports     | Import organization   | latest  | ✅ 38.9% |
-| gci           | Import grouping       | latest  | ✅ 35.2% |
+| gofumpt | Advanced formatting | latest | ✅ 45.3% |
+| golangci-lint | Comprehensive linting | 1.54+ | ✅ 42.7% |
+| goimports | Import organization | latest | ✅ 38.9% |
+| gci | Import grouping | latest | ✅ 35.2% |
 
 ### Python
 
-| Tool   | Purpose                      | Version | Coverage |
+| Tool | Purpose | Version | Coverage |
 | ------ | ---------------------------- | ------- | -------- |
-| ruff   | Fast Python linter/formatter | 0.1.0+  | ✅ 40.1% |
-| black  | Code formatting              | 23.0+   | ✅ 37.8% |
-| isort  | Import sorting               | 5.12+   | ✅ 34.5% |
-| mypy   | Type checking                | 1.5+    | ✅ 31.2% |
-| flake8 | Style guide enforcement      | 6.0+    | ✅ 29.7% |
+| ruff | Fast Python linter/formatter | 0.1.0+ | ✅ 40.1% |
+| black | Code formatting | 23.0+ | ✅ 37.8% |
+| isort | Import sorting | 5.12+ | ✅ 34.5% |
+| mypy | Type checking | 1.5+ | ✅ 31.2% |
+| flake8 | Style guide enforcement | 6.0+ | ✅ 29.7% |
 
 ### JavaScript/TypeScript
 
-| Tool     | Purpose            | Version | Coverage |
+| Tool | Purpose | Version | Coverage |
 | -------- | ------------------ | ------- | -------- |
-| prettier | Code formatting    | 3.0+    | ✅ 36.4% |
-| eslint   | Linting and fixing | 8.0+    | ✅ 33.8% |
-| dprint   | Fast formatter     | 0.40+   | ✅ 30.5% |
+| prettier | Code formatting | 3.0+ | ✅ 36.4% |
+| eslint | Linting and fixing | 8.0+ | ✅ 33.8% |
+| dprint | Fast formatter | 0.40+ | ✅ 30.5% |
 
 ### Additional Languages
 
@@ -209,12 +209,12 @@ quality:
 
 ### Benchmark Results (2025-08)
 
-| Operation      | Before | After | Improvement |
+| Operation | Before | After | Improvement |
 | -------------- | ------ | ----- | ----------- |
-| Single file    | 250ms  | 120ms | 52% faster  |
-| 100 files      | 8.5s   | 3.2s  | 62% faster  |
-| 1000 files     | 45s    | 12s   | 73% faster  |
-| Tool detection | 500ms  | 150ms | 70% faster  |
+| Single file | 250ms | 120ms | 52% faster |
+| 100 files | 8.5s | 3.2s | 62% faster |
+| 1000 files | 45s | 12s | 73% faster |
+| Tool detection | 500ms | 150ms | 70% faster |
 
 ### Memory Usage
 

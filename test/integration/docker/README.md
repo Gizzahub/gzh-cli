@@ -20,11 +20,11 @@ The following dependencies are automatically managed:
 
 ## Container Images Used
 
-| Service   | Image              | Version      | Purpose                    |
+| Service | Image | Version | Purpose |
 | --------- | ------------------ | ------------ | -------------------------- |
 | GitLab CE | `gitlab/gitlab-ce` | 16.11.0-ce.0 | GitLab integration testing |
-| Gitea     | `gitea/gitea`      | 1.21.10      | Gitea integration testing  |
-| Redis     | `redis`            | 7.2-alpine   | Cache integration testing  |
+| Gitea | `gitea/gitea` | 1.21.10 | Gitea integration testing |
+| Redis | `redis` | 7.2-alpine | Cache integration testing |
 
 ## Running Tests
 
@@ -247,7 +247,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.24
+          go-version: 1.22
 
       - name: Run Docker Integration Tests
         run: |

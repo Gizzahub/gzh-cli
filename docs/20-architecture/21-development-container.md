@@ -6,7 +6,7 @@ This document provides comprehensive guidance for using the development containe
 
 The development container provides a consistent, reproducible development environment that includes:
 
-- **Go 1.24.0** with all development tools
+- **Go 1.22.0** with all development tools
 - **Node.js 20** for React dashboard
 - **Python 3.12** for scripting
 - **Docker-in-Docker** for container development
@@ -55,7 +55,7 @@ The container is built on `mcr.microsoft.com/devcontainers/base:ubuntu-22.04` wi
 
 #### Go Development
 
-- **Go 1.24.0** - Primary language
+- **Go 1.22.0** - Primary language
 - **golangci-lint 1.63.4** - Comprehensive linting
 - **gosec** - Security analysis
 - **gofumpt** - Enhanced formatting
@@ -227,13 +227,13 @@ make test-redis
 
 The container automatically forwards these ports:
 
-| Port | Service      | Auto-Open | Description              |
+| Port | Service | Auto-Open | Description |
 | ---- | ------------ | --------- | ------------------------ |
-| 8080 | GZH API      | Notify    | Main API server          |
-| 3000 | React Dev    | Preview   | React development server |
-| 9090 | Prometheus   | No        | Metrics collection       |
-| 9093 | Alertmanager | No        | Alert management         |
-| 6060 | Go pprof     | No        | Performance profiling    |
+| 8080 | GZH API | Notify | Main API server |
+| 3000 | React Dev | Preview | React development server |
+| 9090 | Prometheus | No | Metrics collection |
+| 9093 | Alertmanager | No | Alert management |
+| 6060 | Go pprof | No | Performance profiling |
 
 ### Accessing Services
 

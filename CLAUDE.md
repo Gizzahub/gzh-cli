@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 gzh-cli is a comprehensive CLI tool (binary name: `gz`) for managing development environments and Git repositories across multiple platforms. It provides unified commands for repository operations, development environment management, code quality control, and network environment transitions. The project follows a simplified CLI architecture optimized for developer productivity.
 
+Each command directory under `cmd/` contains its own `AGENTS.md` with coding
+and testing conventions. Review the relevant module's file before making
+changes.
+
 ## Essential Commands
 
 ### Development Setup
