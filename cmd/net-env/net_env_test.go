@@ -7,11 +7,13 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
 func TestNewNetEnvCmd(t *testing.T) {
 	ctx := context.Background()
-	cmd := NewNetEnvCmd(ctx)
+	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
 
 	assert.Equal(t, "net-env", cmd.Use)
 	assert.Equal(t, "Manage network environment transitions", cmd.Short)
@@ -45,7 +47,7 @@ func TestNewNetEnvCmd(t *testing.T) {
 
 func TestNetEnvCmdStructure(t *testing.T) {
 	ctx := context.Background()
-	cmd := NewNetEnvCmd(ctx)
+	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
 
 	// Test that the command has proper structure
 	assert.NotNil(t, cmd.Use)
@@ -62,7 +64,7 @@ func TestNetEnvCmdStructure(t *testing.T) {
 
 func TestNetEnvCmdHelpContent(t *testing.T) {
 	ctx := context.Background()
-	cmd := NewNetEnvCmd(ctx)
+	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
 
 	// Verify help content mentions key features
 	longDesc := cmd.Long
