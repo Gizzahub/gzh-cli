@@ -12,7 +12,7 @@ import (
 )
 
 func TestRootCommandOutput(t *testing.T) {
-	cmd := newRootCmd(context.Background(), "", app.NewTestAppContext())
+	cmd := NewRootCmd(context.Background(), "", app.NewTestAppContext())
 	b := bytes.NewBufferString("")
 
 	cmd.SetArgs([]string{"-h"})

@@ -34,7 +34,8 @@ var (
 	debugShell bool
 )
 
-func newRootCmd(ctx context.Context, version string, appCtx *app.AppContext) *cobra.Command {
+// NewRootCmd creates the root command and wires up subcommands with shared context.
+func NewRootCmd(ctx context.Context, version string, appCtx *app.AppContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gz",
 		Short: "개발 환경 및 Git 플랫폼 통합 관리 도구",
@@ -116,7 +117,7 @@ func Execute(ctx context.Context, version string) error {
 		Config: cfg,
 	}
 
-	rootCmd := newRootCmd(ctx, version, appCtx)
+	rootCmd := NewRootCmd(ctx, version, appCtx)
 
 	// Check if --debug-shell flag is present
 	for _, arg := range os.Args[1:] {
