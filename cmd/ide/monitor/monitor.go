@@ -46,7 +46,7 @@ func defaultMonitorOptions() *monitorOptions {
 	}
 }
 
-// NewCmd creates the IDE monitor subcommand
+// NewCmd creates the IDE monitor subcommand.
 func NewCmd(ctx context.Context) *cobra.Command {
 	o := defaultMonitorOptions()
 

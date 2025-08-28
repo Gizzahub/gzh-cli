@@ -198,10 +198,3 @@ func (m *OptimizedDNSManager) detectPrimaryInterface() (string, error) {
 
 	return "", fmt.Errorf("could not detect primary interface")
 }
-
-// executeShellCommand executes a shell command.
-func executeShellCommand(command string) error {
-	ctx := context.Background()
-	cmd := exec.CommandContext(ctx, "sh", "-c", command)
-	return cmd.Run()
-}

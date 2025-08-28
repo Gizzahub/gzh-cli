@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewVersionCmd 버전 커맨드 생성
+// NewVersionCmd 버전 커맨드 생성.
 func NewVersionCmd(version string) *cobra.Command {
 	return &cobra.Command{
 		Use:          "version",

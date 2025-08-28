@@ -287,7 +287,7 @@ output = json`
 	assert.Equal(t, content, string(copiedContent))
 }
 
-// TestAwsConfigFileExistence tests basic config file operations
+// TestAwsConfigFileExistence tests basic config file operations.
 func TestAwsConfigFileExistence(t *testing.T) {
 	tempDir := t.TempDir()
 

@@ -45,8 +45,8 @@ type BranchProtectionState struct {
 // AuditReport represents a comprehensive compliance audit report.
 type AuditReport struct {
 	Organization string              `yaml:"organization" json:"organization"`
-	GeneratedAt  time.Time           `yaml:"generatedAt" json:"generated_at"`
-	PolicyFile   string              `yaml:"policyFile" json:"policy_file"`
+	GeneratedAt  time.Time           `yaml:"generatedAt" json:"generatedAt"`
+	PolicyFile   string              `yaml:"policyFile" json:"policyFile"`
 	Summary      AuditSummary        `yaml:"summary" json:"summary"`
 	Policies     []PolicyAuditResult `yaml:"policies" json:"policies"`
 	Repositories []RepoAuditResult   `yaml:"repositories" json:"repositories"`

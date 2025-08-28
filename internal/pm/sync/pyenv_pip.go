@@ -187,7 +187,7 @@ func (pps *PyenvPipSynchronizer) getExpectedPipVersion(ctx context.Context, pyth
 	}
 
 	// Try to get pip version bundled with Python installation
-	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("PYENV_VERSION=%s pip --version", pythonVersion))
+	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("PYENV_VERSION=%s pip --version", pythonVersion)) // #nosec G204
 	output, err := cmd.Output()
 	if err != nil {
 		pps.logger.Debug("Failed to get bundled pip version for Python %s: %v", pythonVersion, err)

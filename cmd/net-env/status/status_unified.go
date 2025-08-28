@@ -141,7 +141,7 @@ func runStatusWatch(ctx context.Context, detector *netenv.NetworkDetector, profi
 }
 
 // collectNetworkStatus collects current network status information.
-func collectNetworkStatus(ctx context.Context, detector *netenv.NetworkDetector, profileManager *netenv.ProfileManager, includeHealth bool, timeout time.Duration) (*netenv.NetworkStatus, error) {
+func collectNetworkStatus(ctx context.Context, detector *netenv.NetworkDetector, _ *netenv.ProfileManager, includeHealth bool, timeout time.Duration) (*netenv.NetworkStatus, error) {
 	status := &netenv.NetworkStatus{
 		LastSwitch: time.Now(),
 		Components: netenv.ComponentStatuses{},
@@ -295,7 +295,7 @@ func displayStatusYAML(status *netenv.NetworkStatus) error {
 
 // Component status check functions (simplified implementations)
 
-func checkWiFiStatus(ctx context.Context, timeout time.Duration) *netenv.ComponentStatus {
+func checkWiFiStatus(_ context.Context, timeout time.Duration) *netenv.ComponentStatus {
 	// Simplified WiFi status check
 	return &netenv.ComponentStatus{
 		Active:    true,
@@ -305,7 +305,7 @@ func checkWiFiStatus(ctx context.Context, timeout time.Duration) *netenv.Compone
 	}
 }
 
-func checkVPNStatus(ctx context.Context, timeout time.Duration) *netenv.ComponentStatus {
+func checkVPNStatus(_ context.Context, timeout time.Duration) *netenv.ComponentStatus {
 	// Simplified VPN status check
 	return &netenv.ComponentStatus{
 		Active:    false,
@@ -314,7 +314,7 @@ func checkVPNStatus(ctx context.Context, timeout time.Duration) *netenv.Componen
 	}
 }
 
-func checkDNSStatus(ctx context.Context, timeout time.Duration) *netenv.ComponentStatus {
+func checkDNSStatus(_ context.Context, timeout time.Duration) *netenv.ComponentStatus {
 	// Simplified DNS status check
 	return &netenv.ComponentStatus{
 		Active:    true,
@@ -324,7 +324,7 @@ func checkDNSStatus(ctx context.Context, timeout time.Duration) *netenv.Componen
 	}
 }
 
-func checkProxyStatus(ctx context.Context, timeout time.Duration) *netenv.ComponentStatus {
+func checkProxyStatus(_ context.Context, timeout time.Duration) *netenv.ComponentStatus {
 	// Check environment variables for proxy settings
 	httpProxy := os.Getenv("HTTP_PROXY")
 	httpsProxy := os.Getenv("HTTPS_PROXY")
@@ -351,7 +351,7 @@ func checkProxyStatus(ctx context.Context, timeout time.Duration) *netenv.Compon
 	}
 }
 
-func checkDockerStatus(ctx context.Context, timeout time.Duration) *netenv.ComponentStatus {
+func checkDockerStatus(_ context.Context, timeout time.Duration) *netenv.ComponentStatus {
 	// Simplified Docker status check
 	return &netenv.ComponentStatus{
 		Active:    false,
@@ -360,7 +360,7 @@ func checkDockerStatus(ctx context.Context, timeout time.Duration) *netenv.Compo
 	}
 }
 
-func checkKubernetesStatus(ctx context.Context, timeout time.Duration) *netenv.ComponentStatus {
+func checkKubernetesStatus(_ context.Context, timeout time.Duration) *netenv.ComponentStatus {
 	// Simplified Kubernetes status check
 	return &netenv.ComponentStatus{
 		Active:    false,
@@ -419,7 +419,7 @@ func calculateNetworkHealth(components netenv.ComponentStatuses) netenv.HealthSt
 }
 
 // collectNetworkMetrics collects network performance metrics.
-func collectNetworkMetrics(ctx context.Context, timeout time.Duration) (*netenv.NetworkMetrics, error) {
+func collectNetworkMetrics(_ context.Context, timeout time.Duration) (*netenv.NetworkMetrics, error) {
 	// Simplified metrics collection
 	return &netenv.NetworkMetrics{
 		Latency:    20 * time.Millisecond,

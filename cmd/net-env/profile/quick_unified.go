@@ -206,7 +206,7 @@ func quickVPNToggle(ctx context.Context) error {
 
 // DNS quick actions
 
-func quickDNSReset(ctx context.Context) error {
+func quickDNSReset(_ context.Context) error {
 	fmt.Println("🌐 Resetting DNS configuration...")
 
 	// Reset to system default DNS
@@ -243,7 +243,7 @@ func quickDNSFlush(ctx context.Context) error {
 	return nil
 }
 
-func quickDNSStatus(ctx context.Context) error {
+func quickDNSStatus(_ context.Context) error {
 	fmt.Println("DNS Status:")
 
 	// Show current DNS servers
@@ -277,7 +277,7 @@ func quickProxyEnable(ctx context.Context) error {
 	return nil
 }
 
-func quickProxyDisable(ctx context.Context) error {
+func quickProxyDisable(_ context.Context) error {
 	fmt.Println("🌐 Disabling proxy...")
 
 	// Remove proxy environment variables
@@ -298,7 +298,7 @@ func quickProxyToggle(ctx context.Context) error {
 	return quickProxyEnable(ctx)
 }
 
-func quickProxyStatus(ctx context.Context) error {
+func quickProxyStatus(_ context.Context) error {
 	fmt.Println("Proxy Status:")
 
 	httpProxy := os.Getenv("HTTP_PROXY")

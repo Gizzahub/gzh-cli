@@ -13,12 +13,6 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/services"
 )
 
-const (
-	visibilityPublic  = "public"
-	visibilityPrivate = "private"
-	templateNone      = "none"
-)
-
 // GlobalFlags represents global flags for all repo-config commands.
 type GlobalFlags struct {
 	Organization string

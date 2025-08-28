@@ -4,6 +4,7 @@
 package open
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,18 +24,18 @@ type IDE struct {
 	ProductCode string   `json:"product_code,omitempty"`
 }
 
-// IDEDetector interface for detecting IDEs
+// IDEDetector interface for detecting IDEs.
 type IDEDetector interface {
 	DetectIDEs(useCache bool) ([]IDE, error)
 	FindIDEByAlias(ides []IDE, alias string) *IDE
 }
 
-// NewIDEDetector creates a new IDE detector - placeholder implementation
+// NewIDEDetector creates a new IDE detector - placeholder implementation.
 func NewIDEDetector() IDEDetector {
 	return &mockDetector{}
 }
 
-// mockDetector is a simple mock implementation for now
+// mockDetector is a simple mock implementation for now.
 type mockDetector struct{}
 
 func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
@@ -77,7 +78,7 @@ type openOptions struct {
 	wait       bool
 }
 
-// NewCmd creates the IDE open subcommand
+// NewCmd creates the IDE open subcommand.
 func NewCmd() *cobra.Command {
 	o := &openOptions{}
 
@@ -352,7 +353,8 @@ func (o *openOptions) executeAndWait(cmd *exec.Cmd, ide *IDE) error {
 
 	if err := cmd.Run(); err != nil {
 		// Provide more specific error messages
-		if exitError, ok := err.(*exec.ExitError); ok {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
 			return fmt.Errorf("%s exited with status %d", ide.Name, exitError.ExitCode())
 		}
 		return fmt.Errorf("failed to execute %s: %w", ide.Name, err)

@@ -394,7 +394,7 @@ func runProfileExport(name, outputFile string) error {
 }
 
 // runProfileImport imports a profile from file.
-func runProfileImport(inputFile string, force bool) error {
+func runProfileImport(inputFile string, _ bool) error {
 	configDir := netenv.GetConfigDirectory()
 	profileManager := netenv.NewProfileManager(configDir)
 

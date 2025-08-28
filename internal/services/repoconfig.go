@@ -174,7 +174,7 @@ func (s *RepoConfigService) setupClient(token string) error {
 }
 
 // getConfigurationChanges retrieves configuration changes for an organization.
-func (s *RepoConfigService) getConfigurationChanges(ctx context.Context, organization, filter, template string) ([]ConfigurationChange, error) {
+func (s *RepoConfigService) getConfigurationChanges(_ context.Context, _, filter, template string) ([]ConfigurationChange, error) {
 	// This is a mock implementation - in reality, this would:
 	// 1. Fetch current repository configurations from GitHub API
 	// 2. Load target configurations from templates
@@ -230,7 +230,7 @@ func (s *RepoConfigService) getConfigurationChanges(ctx context.Context, organiz
 }
 
 // applyConfigurationChange applies a single configuration change.
-func (s *RepoConfigService) applyConfigurationChange(ctx context.Context, change ConfigurationChange) error {
+func (s *RepoConfigService) applyConfigurationChange(_ context.Context, change ConfigurationChange) error {
 	// This is a mock implementation - in reality, this would:
 	// 1. Use GitHub API to apply the configuration change
 	// 2. Handle authentication and rate limiting

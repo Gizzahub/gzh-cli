@@ -466,7 +466,7 @@ Examples:
 	return cmd
 }
 
-func newCacheStatusCmd(ctx context.Context) *cobra.Command {
+func newCacheStatusCmd(_ context.Context) *cobra.Command {
 	var jsonOutput bool
 
 	cmd := &cobra.Command{

@@ -122,7 +122,7 @@ func MergeEnvWithProcessEnv(custom map[string]string) []string {
 // === 개별 필터 구현 ===
 
 const (
-	// Package manager constants
+	// Package manager constants.
 	ManagerAsdf = "asdf"
 )
 

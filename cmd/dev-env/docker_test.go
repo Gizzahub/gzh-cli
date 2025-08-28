@@ -285,7 +285,7 @@ func TestDockerCopyFile(t *testing.T) {
 	assert.Equal(t, content, string(copiedContent))
 }
 
-// TestDockerConfigFileExistence tests basic config file operations
+// TestDockerConfigFileExistence tests basic config file operations.
 func TestDockerConfigFileExistence(t *testing.T) {
 	tempDir := t.TempDir()
 

@@ -173,7 +173,7 @@ func runSingleCheck(ctx context.Context, collector *status.StatusCollector, form
 
 // runWatchMode runs the status command in watch mode.
 func runWatchMode(ctx context.Context, collector *status.StatusCollector, formatter status.StatusFormatter, checkHealth bool, interval time.Duration) error {
-	ticker := time.NewTicker(30 * time.Second) // Update every 30 seconds
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	// Clear screen function

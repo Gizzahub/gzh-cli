@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewCmd creates the main profile command that aggregates profile and quick commands
+// NewCmd creates the main profile command that aggregates profile and quick commands.
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "profile",

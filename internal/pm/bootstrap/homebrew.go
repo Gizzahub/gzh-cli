@@ -33,7 +33,7 @@ func (h *HomebrewBootstrapper) GetName() string {
 
 // IsSupported checks if Homebrew is supported on the current platform.
 func (h *HomebrewBootstrapper) IsSupported() bool {
-	return runtime.GOOS == "darwin" || runtime.GOOS == "linux"
+	return runtime.GOOS == darwinPlatform || runtime.GOOS == linuxPlatform
 }
 
 // GetDependencies returns the dependencies for Homebrew (none).

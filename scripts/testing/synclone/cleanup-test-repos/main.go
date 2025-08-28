@@ -42,7 +42,7 @@ func newCleanCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clean",
 		Short: "Remove test repositories",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return cleanupRepos(context.Background(), baseDir, force, dryRun)
 		},
 	}
@@ -60,7 +60,7 @@ func newVerifyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "verify",
 		Short: "Verify test repository structure",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return verifyRepos(context.Background(), baseDir)
 		},
 	}
@@ -70,8 +70,8 @@ func newVerifyCmd() *cobra.Command {
 	return cmd
 }
 
-// cleanupRepos safely removes test repositories
-func cleanupRepos(ctx context.Context, baseDir string, force, dryRun bool) error {
+// cleanupRepos safely removes test repositories.
+func cleanupRepos(_ context.Context, baseDir string, force, dryRun bool) error {
 	// Check if base directory exists
 	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
 		log.Printf("Base directory %s does not exist", baseDir)
@@ -121,8 +121,8 @@ func cleanupRepos(ctx context.Context, baseDir string, force, dryRun bool) error
 	return nil
 }
 
-// verifyRepos checks the structure of test repositories
-func verifyRepos(ctx context.Context, baseDir string) error {
+// verifyRepos checks the structure of test repositories.
+func verifyRepos(_ context.Context, baseDir string) error {
 	repos, err := findTestRepos(baseDir)
 	if err != nil {
 		return fmt.Errorf("failed to find test repositories: %w", err)
@@ -141,7 +141,7 @@ func verifyRepos(ctx context.Context, baseDir string) error {
 	return nil
 }
 
-// findTestRepos locates test repositories based on naming patterns
+// findTestRepos locates test repositories based on naming patterns.
 func findTestRepos(baseDir string) ([]string, error) {
 	var repos []string
 
@@ -168,7 +168,7 @@ func findTestRepos(baseDir string) ([]string, error) {
 	return repos, nil
 }
 
-// verifyGitRepo checks if a directory is a valid Git repository
+// verifyGitRepo checks if a directory is a valid Git repository.
 func verifyGitRepo(repoPath string) error {
 	gitDir := filepath.Join(repoPath, ".git")
 	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
@@ -177,7 +177,7 @@ func verifyGitRepo(repoPath string) error {
 	return nil
 }
 
-// confirmDeletion prompts user for confirmation
+// confirmDeletion prompts user for confirmation.
 func confirmDeletion(count int) bool {
 	fmt.Printf("\n⚠️  This will permanently delete %d test repositories.\n", count)
 	fmt.Print("Are you sure you want to continue? (yes/no): ")

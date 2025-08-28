@@ -17,14 +17,14 @@ import (
 	"github.com/Gizzahub/gzh-cli/pkg/github"
 )
 
-// Constants for change types
+// Constants for change types.
 const (
 	changeTypeCreate = "create"
 	changeTypeUpdate = "update"
 	changeTypeDelete = "delete"
 )
 
-// Visibility constants
+// Visibility constants.
 const (
 	visibilityPublic  = "public"
 	visibilityPrivate = "private"
@@ -77,22 +77,6 @@ func truncateString(s string, maxLength int) string {
 	}
 
 	return s[:maxLength-3] + "..."
-}
-
-// formatTable formats output as table - simplified implementation
-func formatTable(data interface{}) error {
-	fmt.Printf("Table format: %+v\n", data)
-	return nil
-}
-
-// formatJSON formats output as JSON - simplified implementation
-func formatJSON(data interface{}) error {
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(jsonData))
-	return nil
 }
 
 // NewCmd creates the diff subcommand.

@@ -119,19 +119,19 @@ type userFilterYAML struct {
 		When    struct {
 			OS           []string `yaml:"os"`
 			Arch         []string `yaml:"arch"`
-			HasCommand   []string `yaml:"has_command"`
+			HasCommand   []string `yaml:"hasCommand"`
 			VersionRange struct {
 				Manager string `yaml:"manager"`
-			} `yaml:"version_range"`
+			} `yaml:"versionRange"`
 		} `yaml:"when"`
 		MatchEnv struct {
-			PathContains []string `yaml:"path_contains"`
-		} `yaml:"match_env"`
+			PathContains []string `yaml:"pathContains"`
+		} `yaml:"matchEnv"`
 		Post []struct {
 			Command     []string          `yaml:"command"`
 			Env         map[string]string `yaml:"env"`
 			Description string            `yaml:"description"`
-			IgnoreError bool              `yaml:"ignore_error"`
+			IgnoreError bool              `yaml:"ignoreError"`
 		} `yaml:"post"`
 	} `yaml:"filters"`
 }
@@ -174,7 +174,7 @@ func convertUserPostToActions(in []struct {
 	Command     []string          `yaml:"command"`
 	Env         map[string]string `yaml:"env"`
 	Description string            `yaml:"description"`
-	IgnoreError bool              `yaml:"ignore_error"`
+	IgnoreError bool              `yaml:"ignoreError"`
 },
 ) []PostAction {
 	out := make([]PostAction, 0, len(in))

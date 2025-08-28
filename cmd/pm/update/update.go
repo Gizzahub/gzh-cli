@@ -793,8 +793,7 @@ func runCondaOrMambaUpdate(ctx context.Context, kind string, dryRun bool) error 
 			cmd.Stderr = os.Stderr
 			return cmd.Run()
 		}
-		// 폴백: conda
-		kind = "conda"
+		// 폴백: conda 사용
 	}
 	// conda 경로
 	if dryRun {
@@ -884,7 +883,7 @@ func findPipCommand(ctx context.Context) string {
 }
 
 // updateOutdatedPackages updates all outdated packages.
-func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool, res *UpdateRunResult) error {
+func updateOutdatedPackages(ctx context.Context, pipCmd string, dryRun bool, _ *UpdateRunResult) error {
 	fmt.Println("Checking for outdated packages...")
 
 	cmd := newPipExec(ctx, pipCmd, "list", "--outdated", "--format=freeze")
@@ -939,7 +938,7 @@ func updateNpm(ctx context.Context, strategy string, dryRun bool, res *UpdateRun
 }
 
 // updateGlobalNpmPackages updates globally installed npm packages.
-func updateGlobalNpmPackages(ctx context.Context, dryRun bool, res *UpdateRunResult) error {
+func updateGlobalNpmPackages(ctx context.Context, dryRun bool, _ *UpdateRunResult) error {
 	fmt.Println("Checking for outdated global packages...")
 
 	if !dryRun {
@@ -957,7 +956,7 @@ func updateGlobalNpmPackages(ctx context.Context, dryRun bool, res *UpdateRunRes
 }
 
 // Arch/Manjaro pacman 업데이트.
-func updatePacman(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
+func updatePacman(ctx context.Context, _ string, dryRun bool, res *UpdateRunResult) error {
 	// pacman 존재 확인
 	if err := exec.CommandContext(ctx, "pacman", "--version").Run(); err != nil {
 		return fmt.Errorf("pacman is not installed or not in PATH")
@@ -1026,7 +1025,7 @@ func updatePacman(ctx context.Context, strategy string, dryRun bool, res *Update
 }
 
 // Arch/Manjaro yay(AUR) 업데이트.
-func updateYay(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) error {
+func updateYay(ctx context.Context, _ string, dryRun bool, res *UpdateRunResult) error {
 	// yay 존재 확인
 	if err := exec.CommandContext(ctx, "yay", "--version").Run(); err != nil {
 		return fmt.Errorf("yay is not installed or not in PATH")

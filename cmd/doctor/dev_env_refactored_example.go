@@ -31,7 +31,7 @@ import (
 //     return result
 // }
 
-// After: 3 lines using ToolChecker
+// After: 3 lines using ToolChecker.
 func checkGolangciLintRefactored(ctx context.Context) DevEnvResult {
 	checker := CreateToolChecker("golangci-lint")
 	return checker.Check(ctx)
@@ -57,7 +57,7 @@ func checkDuplRefactored(ctx context.Context) DevEnvResult {
 	return checker.Check(ctx)
 }
 
-// Even better: Check multiple tools at once
+// Even better: Check multiple tools at once.
 func checkAllGoToolsRefactored(ctx context.Context) []DevEnvResult {
 	return CheckMultipleTools(ctx, []string{
 		"golangci-lint", "gofumpt", "gci", "deadcode", "dupl",
