@@ -4,14 +4,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
-type qualityCmdProvider struct{}
-
-func (qualityCmdProvider) Command() *cobra.Command {
-	return NewQualityCmd()
+type qualityCmdProvider struct {
+	appCtx *app.AppContext
 }
 
-func init() {
-	registry.Register(qualityCmdProvider{})
+func (p qualityCmdProvider) Command() *cobra.Command {
+	return NewQualityCmd(p.appCtx)
+}
+
+func RegisterQualityCmd(appCtx *app.AppContext) {
+	registry.Register(qualityCmdProvider{appCtx: appCtx})
 }

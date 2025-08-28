@@ -4,14 +4,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
-type repoConfigCmdProvider struct{}
-
-func (repoConfigCmdProvider) Command() *cobra.Command {
-	return NewRepoConfigCmd()
+type repoConfigCmdProvider struct {
+	appCtx *app.AppContext
 }
 
-func init() {
-	registry.Register(repoConfigCmdProvider{})
+func (p repoConfigCmdProvider) Command() *cobra.Command {
+	return NewRepoConfigCmd(p.appCtx)
+}
+
+func RegisterRepoConfigCmd(appCtx *app.AppContext) {
+	registry.Register(repoConfigCmdProvider{appCtx: appCtx})
 }

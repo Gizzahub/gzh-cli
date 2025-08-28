@@ -4,14 +4,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
-type profileCmdProvider struct{}
-
-func (profileCmdProvider) Command() *cobra.Command {
-	return NewProfileCmd()
+type profileCmdProvider struct {
+	appCtx *app.AppContext
 }
 
-func init() {
-	registry.Register(profileCmdProvider{})
+func (p profileCmdProvider) Command() *cobra.Command {
+	return NewProfileCmd(p.appCtx)
+}
+
+func RegisterProfileCmd(appCtx *app.AppContext) {
+	registry.Register(profileCmdProvider{appCtx: appCtx})
 }

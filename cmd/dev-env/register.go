@@ -4,14 +4,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
-type devEnvCmdProvider struct{}
-
-func (devEnvCmdProvider) Command() *cobra.Command {
-	return NewDevEnvCmd()
+type devEnvCmdProvider struct {
+	appCtx *app.AppContext
 }
 
-func init() {
-	registry.Register(devEnvCmdProvider{})
+func (p devEnvCmdProvider) Command() *cobra.Command {
+	return NewDevEnvCmd(p.appCtx)
+}
+
+func RegisterDevEnvCmd(appCtx *app.AppContext) {
+	registry.Register(devEnvCmdProvider{appCtx: appCtx})
 }

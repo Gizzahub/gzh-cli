@@ -10,16 +10,16 @@ import (
 
 	"github.com/spf13/cobra"
 
-	_ "github.com/Gizzahub/gzh-cli/cmd/dev-env"
+	devenv "github.com/Gizzahub/gzh-cli/cmd/dev-env"
 	_ "github.com/Gizzahub/gzh-cli/cmd/doctor"
-	_ "github.com/Gizzahub/gzh-cli/cmd/git"
-	_ "github.com/Gizzahub/gzh-cli/cmd/ide"
-	_ "github.com/Gizzahub/gzh-cli/cmd/net-env"
-	_ "github.com/Gizzahub/gzh-cli/cmd/pm"
-	_ "github.com/Gizzahub/gzh-cli/cmd/profile"
-	_ "github.com/Gizzahub/gzh-cli/cmd/quality"
-	_ "github.com/Gizzahub/gzh-cli/cmd/repo-config"
-	_ "github.com/Gizzahub/gzh-cli/cmd/synclone"
+	"github.com/Gizzahub/gzh-cli/cmd/git"
+	"github.com/Gizzahub/gzh-cli/cmd/ide"
+	netenv "github.com/Gizzahub/gzh-cli/cmd/net-env"
+	"github.com/Gizzahub/gzh-cli/cmd/pm"
+	"github.com/Gizzahub/gzh-cli/cmd/profile"
+	"github.com/Gizzahub/gzh-cli/cmd/quality"
+	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
+	"github.com/Gizzahub/gzh-cli/cmd/synclone"
 
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
 	"github.com/Gizzahub/gzh-cli/cmd/shell"
@@ -56,16 +56,21 @@ Utility Commands: doctor, version`,
 		},
 	}
 
-	// Core feature commands
-	cmd.AddCommand(pm.NewPMCmd(ctx, appCtx))
-	cmd.AddCommand(synclone.NewSyncCloneCmd(ctx, appCtx))
-	cmd.AddCommand(devenv.NewDevEnvCmd(appCtx)) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(ide.NewIDECmd(ctx, appCtx))
-	cmd.AddCommand(netenv.NewNetEnvCmd(ctx, appCtx))
-	cmd.AddCommand(repoconfig.NewRepoConfigCmd(appCtx)) //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(profile.NewProfileCmd(appCtx))       //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(git.NewGitCmd(appCtx))               //nolint:contextcheck // Command setup doesn't require context propagation
-	cmd.AddCommand(quality.NewQualityCmd(appCtx))       //nolint:contextcheck // Command setup doesn't require context propagation
+	// Register all core feature commands with AppContext
+	pm.RegisterPMCmd(appCtx)
+	synclone.RegisterSyncCloneCmd(appCtx)
+	devenv.RegisterDevEnvCmd(appCtx)
+	ide.RegisterIDECmd(appCtx)
+	netenv.RegisterNetEnvCmd(appCtx)
+	repoconfig.RegisterRepoConfigCmd(appCtx)
+	profile.RegisterProfileCmd(appCtx)
+	git.RegisterGitCmd(appCtx)
+	quality.RegisterQualityCmd(appCtx)
+
+	// Add all registered commands to root
+	for _, provider := range registry.List() {
+		cmd.AddCommand(provider.Command())
+	}
 
 	// Utility commands - set as hidden to reduce clutter in main help
 	versionCmd := versioncmd.NewVersionCmd(version)

@@ -6,14 +6,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
+	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
-type pmCmdProvider struct{}
-
-func (pmCmdProvider) Command() *cobra.Command {
-	return NewPMCmd(context.Background())
+type pmCmdProvider struct {
+	appCtx *app.AppContext
 }
 
-func init() {
-	registry.Register(pmCmdProvider{})
+func (p pmCmdProvider) Command() *cobra.Command {
+	return NewPMCmd(context.Background(), p.appCtx)
+}
+
+func RegisterPMCmd(appCtx *app.AppContext) {
+	registry.Register(pmCmdProvider{appCtx: appCtx})
 }
