@@ -5,23 +5,14 @@ package netenv
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
-	// "go.uber.org/zap"
 
 	"github.com/Gizzahub/gzh-cli/cmd/net-env/actions"
-	// "github.com/Gizzahub/gzh-cli/cmd/net-env/analysis"
 	"github.com/Gizzahub/gzh-cli/cmd/net-env/cloud"
-	// "github.com/Gizzahub/gzh-cli/cmd/net-env/container"
-	// "github.com/Gizzahub/gzh-cli/cmd/net-env/metrics"
 	"github.com/Gizzahub/gzh-cli/cmd/net-env/profile"
 	"github.com/Gizzahub/gzh-cli/cmd/net-env/status"
-
-	// "github.com/Gizzahub/gzh-cli/cmd/net-env/switchcmd"
 	"github.com/Gizzahub/gzh-cli/cmd/net-env/tui"
-	// "github.com/Gizzahub/gzh-cli/cmd/net-env/vpn"
 	"github.com/Gizzahub/gzh-cli/internal/app"
 )
 
@@ -198,15 +189,4 @@ Examples:
 	// cmd.AddCommand(metrics.NewCmd(logger, configDir))      // Network metrics + monitoring
 
 	return cmd
-}
-
-// getConfigDirectory returns the configuration directory for net-env.
-func getConfigDirectory() string {
-	if configDir := os.Getenv("GZH_CONFIG_DIR"); configDir != "" {
-		return configDir
-	}
-
-	homeDir, _ := os.UserHomeDir()
-
-	return filepath.Join(homeDir, ".config", "gzh-manager")
 }

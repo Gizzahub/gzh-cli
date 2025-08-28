@@ -209,7 +209,7 @@ func (nns *NvmNpmSynchronizer) compareVersions(current, expected string) bool {
 }
 
 // determineSyncAction determines what sync action is needed
-func (nns *NvmNpmSynchronizer) determineSyncAction(current, expected string, inSync bool) string {
+func (nns *NvmNpmSynchronizer) determineSyncAction(_, expected string, inSync bool) string {
 	if inSync {
 		return "none"
 	}
@@ -223,7 +223,7 @@ func (nns *NvmNpmSynchronizer) determineSyncAction(current, expected string, inS
 }
 
 // syncToNodeVersion synchronizes npm to match the current Node.js version
-func (nns *NvmNpmSynchronizer) syncToNodeVersion(ctx context.Context, nodeVersion string, policy SyncPolicy) error {
+func (nns *NvmNpmSynchronizer) syncToNodeVersion(ctx context.Context, nodeVersion string, _ SyncPolicy) error {
 	nns.logger.Info("Synchronizing npm to match Node.js version %s", nodeVersion)
 
 	expectedNpmVersion, err := nns.getExpectedNpmVersion(ctx, nodeVersion)

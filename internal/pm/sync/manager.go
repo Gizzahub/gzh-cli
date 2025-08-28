@@ -11,6 +11,10 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
+const (
+	statusUnknown = "unknown"
+)
+
 // NewSyncManager creates a new synchronization manager
 func NewSyncManager(logger logger.CommonLogger) *SyncManager {
 	manager := &SyncManager{
@@ -85,9 +89,9 @@ func (sm *SyncManager) CheckAll(ctx context.Context) (*SyncReport, error) {
 				status = &VersionSyncStatus{
 					VersionManager:    vmName,
 					PackageManager:    pmName,
-					VMVersion:         "unknown",
-					PMVersion:         "unknown",
-					ExpectedPMVersion: "unknown",
+					VMVersion:         statusUnknown,
+					PMVersion:         statusUnknown,
+					ExpectedPMVersion: statusUnknown,
 					InSync:            false,
 					SyncAction:        "check_failed",
 					Issues:            []string{err.Error()},
@@ -140,9 +144,9 @@ func (sm *SyncManager) CheckPairs(ctx context.Context, pairs []string) (*SyncRep
 			status := VersionSyncStatus{
 				VersionManager:    vmName,
 				PackageManager:    pmName,
-				VMVersion:         "unknown",
-				PMVersion:         "unknown",
-				ExpectedPMVersion: "unknown",
+				VMVersion:         statusUnknown,
+				PMVersion:         statusUnknown,
+				ExpectedPMVersion: statusUnknown,
 				InSync:            false,
 				SyncAction:        "unknown_pair",
 				Issues:            []string{fmt.Sprintf("Unknown synchronizer pair: %s", pair)},
@@ -159,9 +163,9 @@ func (sm *SyncManager) CheckPairs(ctx context.Context, pairs []string) (*SyncRep
 			status = &VersionSyncStatus{
 				VersionManager:    vmName,
 				PackageManager:    pmName,
-				VMVersion:         "unknown",
-				PMVersion:         "unknown",
-				ExpectedPMVersion: "unknown",
+				VMVersion:         statusUnknown,
+				PMVersion:         statusUnknown,
+				ExpectedPMVersion: statusUnknown,
 				InSync:            false,
 				SyncAction:        "check_failed",
 				Issues:            []string{err.Error()},
@@ -201,9 +205,9 @@ func (sm *SyncManager) FixSynchronization(ctx context.Context, pairs []string, p
 			status := VersionSyncStatus{
 				VersionManager:    vmName,
 				PackageManager:    pmName,
-				VMVersion:         "unknown",
-				PMVersion:         "unknown",
-				ExpectedPMVersion: "unknown",
+				VMVersion:         statusUnknown,
+				PMVersion:         statusUnknown,
+				ExpectedPMVersion: statusUnknown,
 				InSync:            false,
 				SyncAction:        "failed",
 				Issues:            []string{fmt.Sprintf("Unknown synchronizer pair: %s", pair)},
@@ -223,9 +227,9 @@ func (sm *SyncManager) FixSynchronization(ctx context.Context, pairs []string, p
 			preStatus = &VersionSyncStatus{
 				VersionManager:    vmName,
 				PackageManager:    pmName,
-				VMVersion:         "unknown",
-				PMVersion:         "unknown",
-				ExpectedPMVersion: "unknown",
+				VMVersion:         statusUnknown,
+				PMVersion:         statusUnknown,
+				ExpectedPMVersion: statusUnknown,
 				InSync:            false,
 				SyncAction:        "pre_check_failed",
 			}
@@ -308,7 +312,7 @@ func (sm *SyncManager) FormatReport(report *SyncReport, verbose bool) string {
 
 		result += fmt.Sprintf("  %s %s ↔ %s", icon, status.VersionManager, status.PackageManager)
 
-		if status.VMVersion != "unknown" {
+		if status.VMVersion != statusUnknown {
 			result += fmt.Sprintf("      %s v%s ↔ %s v%s", status.VersionManager, status.VMVersion, status.PackageManager, status.PMVersion)
 		}
 
@@ -316,10 +320,10 @@ func (sm *SyncManager) FormatReport(report *SyncReport, verbose bool) string {
 			result += "     (in sync)\n"
 		} else {
 			result += "       (out of sync)\n"
-			if status.ExpectedPMVersion != "unknown" && status.ExpectedPMVersion != "" {
+			if status.ExpectedPMVersion != statusUnknown && status.ExpectedPMVersion != "" {
 				result += fmt.Sprintf("     Expected %s version: v%s\n", status.PackageManager, status.ExpectedPMVersion)
 			}
-			if status.SyncAction != "" && status.SyncAction != "unknown" {
+			if status.SyncAction != "" && status.SyncAction != statusUnknown {
 				result += fmt.Sprintf("     Action needed: %s\n", status.SyncAction)
 			}
 		}
@@ -352,5 +356,5 @@ func parsePairName(pair string) (string, string) {
 	if len(parts) >= 2 {
 		return parts[0], parts[1]
 	}
-	return pair, "unknown"
+	return pair, statusUnknown
 }

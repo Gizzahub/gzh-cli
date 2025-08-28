@@ -9,6 +9,11 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
+const (
+	syncActionNone   = "none"
+	syncActionLatest = "latest"
+)
+
 // AsdfMultiSynchronizer handles synchronization for asdf with multiple tools.
 type AsdfMultiSynchronizer struct {
 	logger logger.CommonLogger
@@ -83,7 +88,7 @@ func (ams *AsdfMultiSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSt
 	vmVersion := fmt.Sprintf("managing %d tools", len(installedTools))
 	pmVersion := fmt.Sprintf("%d synchronized", len(installedTools)-outOfSyncCount)
 
-	syncAction := "none"
+	syncAction := syncActionNone
 	if !inSync {
 		syncAction = fmt.Sprintf("synchronize %d tools", outOfSyncCount)
 	}
@@ -298,14 +303,14 @@ func (ams *AsdfMultiSynchronizer) synchronizeNodejs(ctx context.Context, policy 
 	ams.logger.Info("Synchronizing Node.js and npm via asdf")
 
 	switch policy.Strategy {
-	case "latest":
+	case syncActionLatest:
 		// Install latest Node.js version
-		cmd := exec.CommandContext(ctx, "asdf", "install", "nodejs", "latest")
+		cmd := exec.CommandContext(ctx, "asdf", "install", "nodejs", syncActionLatest)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to install latest Node.js: %w", err)
 		}
 
-		cmd = exec.CommandContext(ctx, "asdf", "global", "nodejs", "latest")
+		cmd = exec.CommandContext(ctx, "asdf", "global", "nodejs", syncActionLatest)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to set global Node.js version: %w", err)
 		}

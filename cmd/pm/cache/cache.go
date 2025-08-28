@@ -47,7 +47,7 @@ type CleanResult struct {
 	Error          string `json:"error,omitempty"`
 }
 
-// PackageManagerCache defines cache operations for a package manager
+// PackageManagerCache defines cache operations for a package manager.
 type PackageManagerCache struct {
 	Name         string
 	CheckCmd     []string

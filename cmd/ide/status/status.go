@@ -24,17 +24,17 @@ type IDE struct {
 	LastUpdated   time.Time `json:"last_updated"`
 }
 
-// IDEDetector interface for detecting IDEs
+// IDEDetector interface for detecting IDEs.
 type IDEDetector interface {
 	DetectIDEs(useCache bool) ([]IDE, error)
 }
 
-// NewIDEDetector creates a new IDE detector - placeholder implementation
+// NewIDEDetector creates a new IDE detector - placeholder implementation.
 func NewIDEDetector() IDEDetector {
 	return &mockDetector{}
 }
 
-// mockDetector is a simple mock implementation for now
+// mockDetector is a simple mock implementation for now.
 type mockDetector struct{}
 
 func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
@@ -99,7 +99,7 @@ type statusOptions struct {
 	verbose bool
 }
 
-// NewCmd creates the IDE status subcommand
+// NewCmd creates the IDE status subcommand.
 func NewCmd() *cobra.Command {
 	o := &statusOptions{}
 
