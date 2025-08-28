@@ -61,7 +61,7 @@ nfpms:
       - gz
     vendor: Gizzahub
     homepage: https://github.com/Gizzahub/gzh-cli
-    maintainer: "Gizzahub <support@gizzahub.com>"
+    maintainer: "Gizzahub <${GORELEASER_MAINTAINER_EMAIL}>"  # 환경변수 사용으로 보안 강화
     description: "Comprehensive CLI tool for managing development environments and Git repositories"
     license: GPL-3.0
     formats:
@@ -211,7 +211,7 @@ aurs:
     homepage: https://github.com/Gizzahub/gzh-cli
     description: "Comprehensive CLI tool for managing development environments and Git repositories"
     maintainers:
-      - "Gizzahub <support@gizzahub.com>"
+      - "Gizzahub <${GORELEASER_MAINTAINER_EMAIL}>"  # 환경변수 사용으로 보안 강화
     license: GPL-3.0
     private_key: "{{ .Env.AUR_KEY }}"
     git_url: "ssh://aur@aur.archlinux.org/gz-bin.git"

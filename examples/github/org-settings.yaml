@@ -6,8 +6,8 @@ display_name: Gizzahub Community
 description: 개발자들을 위한 커뮤니티 허브
 company: Gizzahub Inc.
 location: Korea
-email: admin@gizzahub.dev
-billing_email: finance@gizzahub.dev
+email: "${GITHUB_ORG_ADMIN_EMAIL}"  # 환경변수 사용으로 보안 강화
+billing_email: "${GITHUB_ORG_BILLING_EMAIL}"  # 환경변수 사용으로 보안 강화
 twitter_username: gizzahub
 website_url: https://gizzahub.dev
 
