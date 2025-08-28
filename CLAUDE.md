@@ -287,7 +287,7 @@ make test-all           # Complete test suite
 - `gz repo-config` - GitHub repository configuration management
 - `gz actions-policy` - GitHub Actions policy management
 - `gz quality` - Code quality checks and improvements
-- `gz shell` - Shell integration and automation
+- `gz shell` - Interactive debugging shell (debug mode only)
 
 ### Development Environment
 
