@@ -330,12 +330,12 @@ func (bm *BranchManager) createCommit(ctx context.Context, repoPath string, comm
 
 		// Create directory if needed
 		if dir := filepath.Dir(filePath); dir != "." && dir != repoPath {
-			if err := os.MkdirAll(filepath.Join(repoPath, filepath.Dir(filename)), 0755); err != nil {
+			if err := os.MkdirAll(filepath.Join(repoPath, filepath.Dir(filename)), 0o755); err != nil {
 				return fmt.Errorf("failed to create directory for %s: %w", filename, err)
 			}
 		}
 
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", filename, err)
 		}
 
@@ -402,7 +402,7 @@ func (bm *BranchManager) isGitRepo(repoPath string) bool {
 
 // initializeRepo initializes a Git repository
 func (bm *BranchManager) initializeRepo(ctx context.Context, repoPath string) error {
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -421,7 +421,7 @@ func (bm *BranchManager) initializeRepo(ctx context.Context, repoPath string) er
 	// Create initial commit
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nTest repository for branch management testing.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 

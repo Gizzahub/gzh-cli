@@ -137,7 +137,7 @@ type LFSStatus struct {
 
 // initializeRepo creates a basic Git repository
 func (lfs *GitLFSSimulator) initializeRepo(ctx context.Context, repoPath string) error {
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -156,7 +156,7 @@ func (lfs *GitLFSSimulator) initializeRepo(ctx context.Context, repoPath string)
 	// Create initial commit
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nTest repository with Git LFS support.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 
@@ -201,7 +201,7 @@ func (lfs *GitLFSSimulator) createGitAttributes(ctx context.Context, repoPath st
 		content.WriteString(fmt.Sprintf("%s %s\n", pattern, attr))
 	}
 
-	if err := os.WriteFile(attributesPath, []byte(content.String()), 0644); err != nil {
+	if err := os.WriteFile(attributesPath, []byte(content.String()), 0o644); err != nil {
 		return fmt.Errorf("failed to create .gitattributes: %w", err)
 	}
 
@@ -233,7 +233,7 @@ func (lfs *GitLFSSimulator) createLFSFile(ctx context.Context, repoPath string, 
 
 	// Create directory if needed
 	if dir := filepath.Dir(filePath); dir != repoPath {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 	}
@@ -249,7 +249,7 @@ func (lfs *GitLFSSimulator) createLFSFile(ctx context.Context, repoPath string, 
 		content = lfs.generateTextContent(file.SizeMB)
 	}
 
-	if err := os.WriteFile(filePath, content, 0644); err != nil {
+	if err := os.WriteFile(filePath, content, 0o644); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 

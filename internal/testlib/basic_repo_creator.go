@@ -30,7 +30,7 @@ func (c *BasicRepoCreator) CreateEmptyRepo(ctx context.Context, repoPath string)
 	}
 
 	// Create directory
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create repository directory: %w", err)
 	}
 
@@ -57,7 +57,7 @@ func (c *BasicRepoCreator) CreateMinimalRepo(ctx context.Context, repoPath strin
 	// Add a README file
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nMinimal test repository for synclone testing.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 
@@ -86,12 +86,12 @@ func (c *BasicRepoCreator) CreateRepoWithFiles(ctx context.Context, repoPath str
 
 		// Create directory if needed
 		if dir := filepath.Dir(filePath); dir != "." {
-			if err := os.MkdirAll(filepath.Join(repoPath, dir), 0755); err != nil {
+			if err := os.MkdirAll(filepath.Join(repoPath, dir), 0o755); err != nil {
 				return fmt.Errorf("failed to create directory %s: %w", dir, err)
 			}
 		}
 
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", filename, err)
 		}
 

@@ -65,7 +65,7 @@ func (f *DefaultMockRepoFactory) CreateBasicRepos(ctx context.Context, opts Basi
 	repoPath := filepath.Join(opts.BaseDir, opts.RepoName)
 
 	// Create directory
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create repository directory: %w", err)
 	}
 
@@ -86,7 +86,7 @@ func (f *DefaultMockRepoFactory) CreateBasicRepos(ctx context.Context, opts Basi
 	if opts.InitialData {
 		readmePath := filepath.Join(repoPath, "README.md")
 		content := fmt.Sprintf("# %s\n\nTest repository for synclone testing.\n", opts.RepoName)
-		if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create README.md: %w", err)
 		}
 
@@ -172,7 +172,7 @@ func (f *DefaultMockRepoFactory) createMergeConflict(ctx context.Context, repoPa
 
 	// Modify file in feature branch
 	conflictFile := filepath.Join(repoPath, "conflict.txt")
-	if err := os.WriteFile(conflictFile, []byte("feature content\n"), 0644); err != nil {
+	if err := os.WriteFile(conflictFile, []byte("feature content\n"), 0o644); err != nil {
 		return fmt.Errorf("failed to write conflict file: %w", err)
 	}
 
@@ -189,7 +189,7 @@ func (f *DefaultMockRepoFactory) createMergeConflict(ctx context.Context, repoPa
 		f.runGitCommand(ctx, repoPath, "checkout", "master")
 	}
 
-	if err := os.WriteFile(conflictFile, []byte("main content\n"), 0644); err != nil {
+	if err := os.WriteFile(conflictFile, []byte("main content\n"), 0o644); err != nil {
 		return fmt.Errorf("failed to write main content: %w", err)
 	}
 
@@ -223,7 +223,7 @@ func (f *DefaultMockRepoFactory) createDivergedState(ctx context.Context, repoPa
 		filePath := filepath.Join(repoPath, fileName)
 		content := fmt.Sprintf("Diverged commit %d\n", i)
 
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to write diverged file %d: %w", i, err)
 		}
 

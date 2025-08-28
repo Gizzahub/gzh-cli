@@ -367,7 +367,7 @@ func (bst *BranchStrategyTester) generateTestCases(strategy string) []StrategyTe
 // setupTestRepository creates a test repository with the specified initial state
 func (bst *BranchStrategyTester) setupTestRepository(ctx context.Context, repoPath string, state BranchState) error {
 	// Create directory
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -386,7 +386,7 @@ func (bst *BranchStrategyTester) setupTestRepository(ctx context.Context, repoPa
 
 	// Create initial commit
 	readmePath := filepath.Join(repoPath, "README.md")
-	if err := os.WriteFile(readmePath, []byte("# Test Repository\n"), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte("# Test Repository\n"), 0o644); err != nil {
 		return err
 	}
 	if err := bst.runGitCommand(ctx, repoPath, "add", "README.md"); err != nil {
@@ -406,7 +406,7 @@ func (bst *BranchStrategyTester) applyLocalChanges(ctx context.Context, repoPath
 
 		switch change.Action {
 		case "add", "modify":
-			if err := os.WriteFile(filePath, []byte(change.Content), 0644); err != nil {
+			if err := os.WriteFile(filePath, []byte(change.Content), 0o644); err != nil {
 				return fmt.Errorf("failed to write file %s: %w", change.File, err)
 			}
 		case "delete":
@@ -438,7 +438,7 @@ func (bst *BranchStrategyTester) setupRemoteRepository(ctx context.Context, remo
 		// Apply file changes
 		for filename, content := range change.Files {
 			filePath := filepath.Join(remoteRepo, filename)
-			if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+			if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 				return fmt.Errorf("failed to write file %s: %w", filename, err)
 			}
 			if err := bst.runGitCommand(ctx, remoteRepo, "add", filename); err != nil {

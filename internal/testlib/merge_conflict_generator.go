@@ -325,12 +325,12 @@ func (mcg *MergeConflictGenerator) createBaseFile(ctx context.Context, repoPath 
 
 	// Create directory if needed
 	if dir := filepath.Dir(filePath); dir != repoPath {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 	}
 
-	if err := os.WriteFile(filePath, []byte(file.BaseContent), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(file.BaseContent), 0o644); err != nil {
 		return fmt.Errorf("failed to write base file: %w", err)
 	}
 
@@ -457,12 +457,12 @@ func (mcg *MergeConflictGenerator) createAndCommitFile(ctx context.Context, repo
 
 	// Create directory if needed
 	if dir := filepath.Dir(fullPath); dir != repoPath {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 	}
 
-	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(fullPath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
@@ -488,7 +488,7 @@ func (mcg *MergeConflictGenerator) isGitRepo(repoPath string) bool {
 
 // initializeRepo initializes a Git repository
 func (mcg *MergeConflictGenerator) initializeRepo(ctx context.Context, repoPath string) error {
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -507,7 +507,7 @@ func (mcg *MergeConflictGenerator) initializeRepo(ctx context.Context, repoPath 
 	// Create initial commit
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nTest repository for merge conflict testing.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 

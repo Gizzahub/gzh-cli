@@ -330,14 +330,14 @@ func (lcs *LocalChangesSimulator) applyFileChange(ctx context.Context, repoPath 
 
 	// Create directory if needed
 	if dir := filepath.Dir(filePath); dir != repoPath {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 	}
 
 	switch change.ChangeType {
 	case ChangeTypeAdd, ChangeTypeModify:
-		if err := os.WriteFile(filePath, []byte(change.Content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(change.Content), 0o644); err != nil {
 			return fmt.Errorf("failed to write file: %w", err)
 		}
 
@@ -369,7 +369,7 @@ func (lcs *LocalChangesSimulator) applyFileRename(ctx context.Context, repoPath 
 
 	// Create the old file first if it doesn't exist
 	if _, err := os.Stat(oldPath); os.IsNotExist(err) {
-		if err := os.WriteFile(oldPath, []byte("original content\n"), 0644); err != nil {
+		if err := os.WriteFile(oldPath, []byte("original content\n"), 0o644); err != nil {
 			return fmt.Errorf("failed to create original file: %w", err)
 		}
 		if err := lcs.runGitCommand(ctx, repoPath, "add", rename.OldPath); err != nil {
@@ -381,7 +381,7 @@ func (lcs *LocalChangesSimulator) applyFileRename(ctx context.Context, repoPath 
 	}
 
 	// Create the new file with updated content
-	if err := os.WriteFile(newPath, []byte(rename.Content), 0644); err != nil {
+	if err := os.WriteFile(newPath, []byte(rename.Content), 0o644); err != nil {
 		return fmt.Errorf("failed to create new file: %w", err)
 	}
 
@@ -405,7 +405,7 @@ func (lcs *LocalChangesSimulator) applyFileRename(ctx context.Context, repoPath 
 func (lcs *LocalChangesSimulator) createAndCommitFile(ctx context.Context, repoPath, filePath, content, commitMessage string) error {
 	fullPath := filepath.Join(repoPath, filePath)
 
-	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(fullPath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
@@ -431,7 +431,7 @@ func (lcs *LocalChangesSimulator) isGitRepo(repoPath string) bool {
 
 // initializeRepo initializes a Git repository with an initial commit
 func (lcs *LocalChangesSimulator) initializeRepo(ctx context.Context, repoPath string) error {
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -450,7 +450,7 @@ func (lcs *LocalChangesSimulator) initializeRepo(ctx context.Context, repoPath s
 	// Create initial commit
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nTest repository for local changes simulation.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 

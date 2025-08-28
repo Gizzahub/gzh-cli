@@ -156,7 +156,7 @@ func (sm *SubmoduleManager) createSubmoduleRepo(ctx context.Context, repoPath, n
 
 	for filename, content := range files {
 		filePath := filepath.Join(repoPath, filename)
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", filename, err)
 		}
 
@@ -198,7 +198,7 @@ func Version() string {
 
 	for filename, content := range files {
 		filePath := filepath.Join(repoPath, filename)
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", filename, err)
 		}
 
@@ -247,7 +247,7 @@ func Helper() string {
 
 	for filename, content := range files {
 		filePath := filepath.Join(utilsPath, filename)
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", filename, err)
 		}
 
@@ -289,7 +289,7 @@ func NestedFunction() string {
 `
 
 	filePath := filepath.Join(repoPath, "nestedlib.go")
-	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create nested lib file: %w", err)
 	}
 
@@ -341,7 +341,7 @@ func (sm *SubmoduleManager) parseSubmoduleStatus(output string) []SubmoduleStatu
 
 // initializeRepo initializes a Git repository
 func (sm *SubmoduleManager) initializeRepo(ctx context.Context, repoPath string) error {
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -360,7 +360,7 @@ func (sm *SubmoduleManager) initializeRepo(ctx context.Context, repoPath string)
 	// Create initial commit
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nRepository with submodule support.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 

@@ -106,12 +106,12 @@ func (c *StandardRepoCreator) CreateProjectRepo(ctx context.Context, repoPath st
 
 		// Create directory if needed
 		if dir := filepath.Dir(filePath); dir != "." {
-			if err := os.MkdirAll(filepath.Join(repoPath, dir), 0755); err != nil {
+			if err := os.MkdirAll(filepath.Join(repoPath, dir), 0o755); err != nil {
 				return fmt.Errorf("failed to create directory %s: %w", dir, err)
 			}
 		}
 
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", filename, err)
 		}
 
@@ -131,7 +131,7 @@ func (c *StandardRepoCreator) CreateProjectRepo(ctx context.Context, repoPath st
 // createBaseRepo creates a basic repository with initial commit
 func (c *StandardRepoCreator) createBaseRepo(ctx context.Context, repoPath string) error {
 	// Create directory
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create repository directory: %w", err)
 	}
 
@@ -148,7 +148,7 @@ func (c *StandardRepoCreator) createBaseRepo(ctx context.Context, repoPath strin
 	// Add initial README
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nStandard test repository for synclone testing.\n\nCreated with multiple commits and branches.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 
@@ -176,7 +176,7 @@ func (c *StandardRepoCreator) createMultipleCommits(ctx context.Context, repoPat
 			i, i, time.Now().Format(time.RFC3339))
 
 		filePath := filepath.Join(repoPath, filename)
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create file %s: %w", filename, err)
 		}
 
@@ -205,7 +205,7 @@ func (c *StandardRepoCreator) createBranches(ctx context.Context, repoPath strin
 		content := fmt.Sprintf("Content for branch: %s\nCreated at: %s\n", branch, time.Now().Format(time.RFC3339))
 
 		filePath := filepath.Join(repoPath, filename)
-		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("failed to create branch file %s: %w", filename, err)
 		}
 
@@ -253,7 +253,7 @@ func (c *StandardRepoCreator) createMergeCommits(ctx context.Context, repoPath s
 	content := "Feature implementation\n"
 	filePath := filepath.Join(repoPath, filename)
 
-	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create feature file: %w", err)
 	}
 

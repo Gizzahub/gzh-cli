@@ -152,7 +152,6 @@ func (c *LargeRepoCreator) GetRepoSize(repoPath string) (int64, error) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return 0, fmt.Errorf("failed to calculate repository size: %w", err)
 	}
@@ -163,7 +162,7 @@ func (c *LargeRepoCreator) GetRepoSize(repoPath string) (int64, error) {
 // createBaseRepo creates a basic repository structure
 func (c *LargeRepoCreator) createBaseRepo(ctx context.Context, repoPath string) error {
 	// Create directory
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create repository directory: %w", err)
 	}
 
@@ -180,7 +179,7 @@ func (c *LargeRepoCreator) createBaseRepo(ctx context.Context, repoPath string) 
 	// Add initial README
 	readmePath := filepath.Join(repoPath, "README.md")
 	content := fmt.Sprintf("# %s\n\nLarge test repository for synclone performance testing.\n\n⚠️ This repository contains large files.\n", filepath.Base(repoPath))
-	if err := os.WriteFile(readmePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(readmePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to create README.md: %w", err)
 	}
 
