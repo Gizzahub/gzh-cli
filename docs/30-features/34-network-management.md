@@ -1,6 +1,6 @@
 # 🌐 Network Environment Management
 
-The `gz net-env` command provides intelligent network environment management, including WiFi profile detection, VPN automation, proxy configuration, and DNS management.
+The `gz net-env` command provides network environment management through an interactive TUI dashboard, network status monitoring, profile management, network configuration actions, and cloud provider integration.
 
 ## 📋 Table of Contents
 
@@ -16,36 +16,40 @@ The `gz net-env` command provides intelligent network environment management, in
 
 Modern development often involves working across different network environments - home, office, coworking spaces, or remote locations. The `gz net-env` command automatically detects network changes and applies appropriate configurations for optimal development experience.
 
-### Key Features
+### Key Features (Currently Implemented)
 
-- **Automatic Network Detection** - Detects WiFi network changes
-- **Profile-Based Configuration** - Different settings per network
-- **VPN Automation** - Automatic VPN connection management
-- **Proxy Management** - Dynamic proxy configuration
-- **DNS Optimization** - Custom DNS settings per environment
-- **Security Policies** - Network-based security rules
+- **Interactive TUI Dashboard** - Visual network management interface
+- **Network Status Monitoring** - Comprehensive network status display
+- **Profile Management** - Basic network profile operations
+- **Network Actions** - VPN, DNS, and proxy configuration actions
+- **Cloud Integration** - Cloud provider network management
+
+### Planned Features
+
+- **Automatic Network Detection** - WiFi network change detection
+- **Advanced VPN Management** - Hierarchical VPN connections and failover
+- **Container Integration** - Docker and Kubernetes network management
+- **Network Analysis** - Performance monitoring and topology analysis
 
 ## 📡 WiFi Profile Management
 
 ### Network Detection and Profiles
 
 ```bash
-# Show current network information
+# Launch interactive TUI dashboard
+gz net-env
+
+# Show current network status
 gz net-env status
 
-# List available WiFi networks
-gz net-env wifi scan
-
-# Create network profile
-gz net-env profile create --name office \
-  --ssid "Company-WiFi" \
-  --type corporate
+# Show detailed network information
+gz net-env status --verbose
 
 # List network profiles
 gz net-env profile list
 
-# Apply specific profile
-gz net-env profile apply --name office
+# Show specific profile details
+gz net-env profile show office
 ```
 
 ### Automatic Network Switching

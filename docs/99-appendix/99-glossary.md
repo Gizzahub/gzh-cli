@@ -95,7 +95,7 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 ## N
 
 **Network Environment (net-env)**
-: Management of network-related configurations including WiFi detection, VPN settings, DNS configuration, and proxy management.
+: Network environment management through interactive TUI dashboard, status monitoring, profile management, network actions, and cloud integration. Advanced features like automatic WiFi detection and complex VPN management are planned for future releases.
 
 ## O
 
@@ -249,9 +249,9 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 
 **Network and System**
 
-- `gz net-env` - Network environment management
+- `gz net-env` - Network environment management (TUI, status, profiles, actions, cloud)
 - `gz profile` - Performance profiling
-- `gz shell` - Shell integration
+- `gz shell` - Interactive debugging shell (debug mode only)
 
 ## Configuration Keywords
 

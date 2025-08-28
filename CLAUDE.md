@@ -299,7 +299,7 @@ make test-all           # Complete test suite
 
 ### Network Management
 
-- `gz net-env` - WiFi change detection, VPN/DNS/proxy management
+- `gz net-env` - Network environment management (TUI dashboard, status, profiles, actions, cloud)
 
 ## Repository Clone Strategies
 
