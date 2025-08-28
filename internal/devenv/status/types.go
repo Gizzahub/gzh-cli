@@ -24,8 +24,8 @@ type ServiceStatus struct {
 	Status      StatusType        `json:"status"`
 	Current     CurrentConfig     `json:"current"`
 	Credentials CredentialStatus  `json:"credentials"`
-	LastUsed    time.Time         `json:"last_used"`
-	HealthCheck *HealthStatus     `json:"health_check,omitempty"`
+	LastUsed    time.Time         `json:"lastUsed"`
+	HealthCheck *HealthStatus     `json:"healthCheck,omitempty"`
 	Details     map[string]string `json:"details,omitempty"`
 }
 
@@ -42,7 +42,7 @@ type CurrentConfig struct {
 // CredentialStatus represents the status of service credentials.
 type CredentialStatus struct {
 	Valid     bool      `json:"valid"`
-	ExpiresAt time.Time `json:"expires_at,omitempty"`
+	ExpiresAt time.Time `json:"expiresAt,omitempty"`
 	Type      string    `json:"type"`
 	Warning   string    `json:"warning,omitempty"`
 }
@@ -51,7 +51,7 @@ type CredentialStatus struct {
 type HealthStatus struct {
 	Status    StatusType             `json:"status"`
 	Message   string                 `json:"message,omitempty"`
-	CheckedAt time.Time              `json:"checked_at"`
+	CheckedAt time.Time              `json:"checkedAt"`
 	Duration  time.Duration          `json:"duration"`
 	Details   map[string]interface{} `json:"details,omitempty"`
 }
@@ -59,10 +59,10 @@ type HealthStatus struct {
 // StatusOptions configures how status information is collected.
 type StatusOptions struct {
 	Services     []string      `json:"services,omitempty"`
-	CheckHealth  bool          `json:"check_health"`
+	CheckHealth  bool          `json:"checkHealth"`
 	Timeout      time.Duration `json:"timeout"`
 	Parallel     bool          `json:"parallel"`
-	IncludeCache bool          `json:"include_cache"`
+	IncludeCache bool          `json:"includeCache"`
 }
 
 // ServiceChecker interface for checking service status.

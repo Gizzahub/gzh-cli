@@ -54,14 +54,14 @@ type AuditReport struct {
 
 // AuditSummary provides high-level compliance metrics.
 type AuditSummary struct {
-	TotalRepositories     int     `yaml:"totalRepositories" json:"total_repositories"`
-	AuditedRepositories   int     `yaml:"auditedRepositories" json:"audited_repositories"`
-	CompliantRepositories int     `yaml:"compliantRepositories" json:"compliant_repositories"`
-	CompliancePercentage  float64 `yaml:"compliancePercentage" json:"compliance_percentage"`
-	TotalPolicies         int     `yaml:"totalPolicies" json:"total_policies"`
-	TotalViolations       int     `yaml:"totalViolations" json:"total_violations"`
-	TotalExceptions       int     `yaml:"totalExceptions" json:"total_exceptions"`
-	ActiveExceptions      int     `yaml:"activeExceptions" json:"active_exceptions"`
+	TotalRepositories     int     `yaml:"totalRepositories" json:"totalRepositories"`
+	AuditedRepositories   int     `yaml:"auditedRepositories" json:"auditedRepositories"`
+	CompliantRepositories int     `yaml:"compliantRepositories" json:"compliantRepositories"`
+	CompliancePercentage  float64 `yaml:"compliancePercentage" json:"compliancePercentage"`
+	TotalPolicies         int     `yaml:"totalPolicies" json:"totalPolicies"`
+	TotalViolations       int     `yaml:"totalViolations" json:"totalViolations"`
+	TotalExceptions       int     `yaml:"totalExceptions" json:"totalExceptions"`
+	ActiveExceptions      int     `yaml:"activeExceptions" json:"activeExceptions"`
 }
 
 // PolicyAuditResult represents audit results for a specific policy.

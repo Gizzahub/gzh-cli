@@ -9,12 +9,12 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// AsdfMultiSynchronizer handles synchronization for asdf with multiple tools
+// AsdfMultiSynchronizer handles synchronization for asdf with multiple tools.
 type AsdfMultiSynchronizer struct {
 	logger logger.CommonLogger
 }
 
-// NewAsdfMultiSynchronizer creates a new asdf multi-tool synchronizer
+// NewAsdfMultiSynchronizer creates a new asdf multi-tool synchronizer.
 func NewAsdfMultiSynchronizer(logger logger.CommonLogger) *AsdfMultiSynchronizer {
 	return &AsdfMultiSynchronizer{
 		logger: logger,
@@ -100,7 +100,7 @@ func (ams *AsdfMultiSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSt
 	}, nil
 }
 
-// Synchronize performs synchronization for asdf-managed tools
+// Synchronize performs synchronization for asdf-managed tools.
 func (ams *AsdfMultiSynchronizer) Synchronize(ctx context.Context, policy SyncPolicy) error {
 	ams.logger.Info("Starting asdf multi-tool synchronization")
 

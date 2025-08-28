@@ -58,12 +58,15 @@ func listExecutablesInDir(dir, source string) ([]BinEntry, error) {
 		return entries, nil
 	}
 	fi, err := os.Stat(dir)
-	if err != nil || !fi.IsDir() {
+	if err != nil {
+		return entries, err
+	}
+	if !fi.IsDir() {
 		return entries, nil
 	}
 	dents, err := os.ReadDir(dir)
 	if err != nil {
-		return entries, nil
+		return entries, err
 	}
 	for _, de := range dents {
 		if de.IsDir() {
@@ -74,17 +77,17 @@ func listExecutablesInDir(dir, source string) ([]BinEntry, error) {
 			continue
 		}
 		p := filepath.Join(dir, de.Name())
-		real, err := filepath.EvalSymlinks(p)
+		realPath, err := filepath.EvalSymlinks(p)
 		if err != nil {
-			real = p
+			realPath = p
 		}
-		if real == "" {
-			real = p
+		if realPath == "" {
+			realPath = p
 		}
 		entries = append(entries, BinEntry{
 			Name:     de.Name(),
 			Path:     p,
-			RealPath: real,
+			RealPath: realPath,
 			Source:   source,
 		})
 	}
@@ -121,7 +124,7 @@ func (s brewSource) Name() string { return "brew" }
 func (s brewSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	// brew 미설치 시 빈 결과
 	if err := exec.CommandContext(ctx, "brew", "--prefix").Run(); err != nil {
-		return nil, nil
+		return nil, err
 	}
 	out, err := exec.CommandContext(ctx, "brew", "--prefix").Output()
 	if err != nil {
@@ -162,11 +165,11 @@ type npmSource struct{}
 func (s npmSource) Name() string { return "npm" }
 func (s npmSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	if err := exec.CommandContext(ctx, "npm", "--version").Run(); err != nil {
-		return nil, nil
+		return nil, err
 	}
 	out, err := exec.CommandContext(ctx, "npm", "bin", "-g").Output()
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	dir := strings.TrimSpace(string(out))
 	return listExecutablesInDir(dir, s.Name())
@@ -199,11 +202,11 @@ type gemSource struct{}
 func (s gemSource) Name() string { return "gem" }
 func (s gemSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	if err := exec.CommandContext(ctx, "gem", "--version").Run(); err != nil {
-		return nil, nil
+		return nil, err
 	}
 	out, err := exec.CommandContext(ctx, "gem", "env").Output()
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	lines := strings.Split(string(out), "\n")
 	var bindir string
@@ -226,7 +229,7 @@ type pathSource struct {
 }
 
 func (s pathSource) Name() string { return "path" }
-func (s pathSource) ListBins(ctx context.Context) ([]BinEntry, error) {
+func (s pathSource) ListBins(_ context.Context) ([]BinEntry, error) {
 	bins := []BinEntry{}
 	seen := map[string]struct{}{}
 	for _, d := range s.pathDirs {
@@ -331,13 +334,13 @@ func SplitPATH(envPath string) []string {
 }
 
 // PrintConflictsSummary는 간단한 요약/상위 N개를 텍스트로 출력한다.
-func PrintConflictsSummary(conflicts []Conflict, max int) {
+func PrintConflictsSummary(conflicts []Conflict, maxCount int) {
 	if len(conflicts) == 0 {
 		fmt.Println("중복 설치 의심 항목 없음")
 		return
 	}
 	fmt.Printf("중복 설치 의심 %d개 발견\n", len(conflicts))
-	limit := max
+	limit := maxCount
 	if limit <= 0 || limit > len(conflicts) {
 		limit = len(conflicts)
 	}
