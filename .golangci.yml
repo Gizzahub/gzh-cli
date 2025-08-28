@@ -1,4 +1,4 @@
-version: "2"
+# version: "2" # 임시로 주석 처리하여 v1 호환성 확보
 run:
   go: "1.22"
   modules-download-mode: readonly

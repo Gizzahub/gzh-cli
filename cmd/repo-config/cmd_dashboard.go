@@ -10,6 +10,8 @@ import (
 )
 
 // runDashboardCommand executes the dashboard command.
+//
+//nolint:unused // 대시보드 기능은 향후 구현 예정
 func runDashboardCommand(flags GlobalFlags, port int, autoRefresh bool, refreshRate int) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -124,6 +126,8 @@ func handleRepositoriesAPI(w http.ResponseWriter, _ *http.Request, organization,
 }
 
 // handleComplianceAPI serves compliance data as JSON.
+//
+//nolint:unused // 대시보드 API 기능 향후 구현 예정
 func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, _ string) { //nolint:unparam // Token unused in current implementation
 	_ = r            // r unused in mock implementation
 	_ = organization // organization unused in mock implementation
@@ -156,6 +160,8 @@ func handleComplianceAPI(w http.ResponseWriter, r *http.Request, organization, _
 }
 
 // handleStaticAssets serves static CSS/JS files.
+//
+//nolint:unused // 정적 자산 서빙 기능 향후 구현 예정
 func handleStaticAssets(w http.ResponseWriter, r *http.Request) {
 	_ = r // r unused in mock implementation
 	// For a real implementation, this would serve actual static files
@@ -163,6 +169,8 @@ func handleStaticAssets(w http.ResponseWriter, r *http.Request) {
 }
 
 // generateDashboardHTML generates the HTML for the dashboard.
+//
+//nolint:unused // 대시보드 HTML 생성 기능 향후 구현 예정
 func generateDashboardHTML(organization string, autoRefresh bool, refreshRate int) string {
 	refreshScript := ""
 	if autoRefresh {

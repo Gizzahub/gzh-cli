@@ -12,6 +12,13 @@ import (
 	"sync"
 )
 
+// OS 플랫폼 상수들
+const (
+	osLinux   = "linux"
+	osWindows = "windows"
+	osDarwin  = "darwin"
+)
+
 // InterfaceSpeedDetector detects and caches network interface maximum speeds
 type InterfaceSpeedDetector struct {
 	cache map[string]uint64 // Interface name -> speed in bits per second
@@ -61,11 +68,11 @@ func (isd *InterfaceSpeedDetector) GetInterfaceMaxSpeed(interfaceName string) (u
 // detectInterfaceSpeed detects interface speed using platform-specific methods
 func (isd *InterfaceSpeedDetector) detectInterfaceSpeed(interfaceName string) (uint64, error) {
 	switch runtime.GOOS {
-	case "linux":
+	case osLinux:
 		return isd.detectSpeedLinux(interfaceName)
-	case "darwin":
+	case osDarwin:
 		return isd.detectSpeedDarwin(interfaceName)
-	case "windows":
+	case osWindows:
 		return isd.detectSpeedWindows(interfaceName)
 	default:
 		return isd.estimateSpeedByType(interfaceName), nil
@@ -264,7 +271,7 @@ func (isd *InterfaceSpeedDetector) GetInterfaceInfo(interfaceName string) (*Inte
 	}
 
 	// Try to get additional information based on OS
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == osLinux {
 		isd.enrichLinuxInterfaceInfo(info)
 	}
 

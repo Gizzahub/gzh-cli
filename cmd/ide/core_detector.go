@@ -183,6 +183,8 @@ func (d *IDEDetector) queryPackageManager(manager string, args ...string) string
 }
 
 // queryFlatpak specifically handles flatpak queries
+//
+//nolint:unused // 향후 flatpak 지원을 위해 보존
 func (d *IDEDetector) queryFlatpak(appName string) string {
 	cmd := exec.Command("flatpak", "list", "--columns=name,application")
 	output, err := cmd.Output()
@@ -771,6 +773,8 @@ func (d *IDEDetector) compareVersions(v1, v2 string) int {
 }
 
 // getPackageManagerVersion gets version from package managers
+//
+//nolint:unused // 패키지 매니저 버전 조회용으로 보존
 func (d *IDEDetector) getPackageManagerVersion(manager, command, packageName string) string {
 	var cmd *exec.Cmd
 
@@ -804,6 +808,8 @@ func (d *IDEDetector) getPackageManagerVersion(manager, command, packageName str
 }
 
 // getFlatpakVersion gets version from flatpak
+//
+//nolint:unused // flatpak 버전 조회용으로 보존
 func (d *IDEDetector) getFlatpakVersion(appName string) string {
 	cmd := exec.Command("flatpak", "list", "--columns=name,version")
 	output, err := cmd.Output()

@@ -9,6 +9,13 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
+// 동기화 전략 상수들
+const (
+	syncStrategyVMPriority = "vm_priority"
+	syncStrategyPMPriority = "pm_priority"
+	syncActionCheckCompat  = "check_compatibility"
+)
+
 // NvmNpmSynchronizer handles synchronization between nvm (Node Version Manager) and npm
 type NvmNpmSynchronizer struct {
 	logger logger.CommonLogger
@@ -93,9 +100,9 @@ func (nns *NvmNpmSynchronizer) Synchronize(ctx context.Context, policy SyncPolic
 	}
 
 	switch policy.Strategy {
-	case "vm_priority":
+	case syncStrategyVMPriority:
 		return nns.syncToNodeVersion(ctx, status.VMVersion, policy)
-	case "pm_priority":
+	case syncStrategyPMPriority:
 		return nns.syncToNpmVersion(ctx, status.PMVersion, policy)
 	case "latest":
 		return nns.upgradeToLatest(ctx, policy)
@@ -208,7 +215,7 @@ func (nns *NvmNpmSynchronizer) determineSyncAction(current, expected string, inS
 	}
 
 	if expected == "unknown" {
-		return "check_compatibility"
+		return syncActionCheckCompat
 	}
 
 	// Simple comparison - in practice, you'd use proper semver comparison

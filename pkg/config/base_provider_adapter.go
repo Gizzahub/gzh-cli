@@ -135,12 +135,12 @@ func (b *BaseProviderAdapter) IsHealthy(ctx context.Context) error {
 // getTestOwner returns a test owner for validation.
 func (b *BaseProviderAdapter) getTestOwner() string {
 	switch strings.ToLower(b.config.Name) {
-	case "github":
-		return "github"
-	case "gitlab":
+	case ProviderGitHub:
+		return ProviderGitHub
+	case ProviderGitLab:
 		return "gitlab-org"
-	case "gitea":
-		return "gitea"
+	case ProviderGitea:
+		return ProviderGitea
 	default:
 		return "test"
 	}
