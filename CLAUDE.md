@@ -291,7 +291,7 @@ make test-all           # Complete test suite
 
 ### Development Environment
 
-- `gz dev-env` - Manage AWS, Docker, Kubernetes, SSH configurations
+- `gz dev-env` - Development environment management (individual service control + unified switching)
 - `gz pm` - Update package managers (asdf, Homebrew, SDKMAN, npm, pip, etc.)
 - `gz ide` - Monitor JetBrains IDE settings and fix sync issues
 - `gz doctor` - Diagnose system health and configuration issues

@@ -1,6 +1,6 @@
 # 🛠️ Development Environment Management
 
-The `gz dev-env` command provides comprehensive management of development environments, including cloud profiles, containerization, SSH configurations, and development tools.
+The `gz dev-env` command provides development environment management through both individual service control and unified environment operations, including cloud profiles, containerization, SSH configurations, and development tools.
 
 ## 📋 Table of Contents
 
@@ -18,12 +18,17 @@ Modern development often requires managing multiple environments, cloud profiles
 
 ### Key Features
 
-- **Multi-Cloud Support** - AWS, GCP, Azure profile management
-- **Container Integration** - Docker and Kubernetes configuration
+**Individual Service Management**:
+- **Multi-Cloud Support** - AWS, GCP, Azure profile management per service
+- **Container Integration** - Docker and Kubernetes configuration management
 - **SSH Management** - SSH keys, configs, and tunnels
-- **Tool Management** - Development tool installation and updates
+- **Backup & Restore** - Individual service configuration backup and restore
+
+**Unified Environment Operations**:
+- **TUI Dashboard** - Interactive visual management interface
+- **Atomic Switching** - Switch all services to target environment simultaneously
+- **Status Monitoring** - Comprehensive status view across all services
 - **Environment Sync** - Consistent environments across machines
-- **Backup & Restore** - Environment configuration backup
 
 ## ☁️ Cloud Platform Management
 
@@ -32,20 +37,21 @@ Modern development often requires managing multiple environments, cloud profiles
 Manage AWS profiles and credentials:
 
 ```bash
-# List AWS profiles
-gz dev-env aws list
+# Individual service management
+gz dev-env aws-profile list
+gz dev-env aws-profile switch production
+gz dev-env aws-credentials save --name production
+gz dev-env aws-profile login production
 
-# Set active profile
-gz dev-env aws --profile production
+# GCP project management
+gz dev-env gcp-project list
+gz dev-env gcp-project switch my-project-id
+gz dev-env gcp-project show
 
-# Create new profile
-gz dev-env aws create --profile staging --region us-west-2
-
-# Validate profile configuration
-gz dev-env aws validate --profile production
-
-# Export profile configuration
-gz dev-env aws export --profile production --output aws-config.json
+# Unified environment management
+gz dev-env tui                        # Interactive dashboard
+gz dev-env switch-all --env production # Switch all services
+gz dev-env status                      # Show all services status
 ```
 
 ### AWS Advanced Operations

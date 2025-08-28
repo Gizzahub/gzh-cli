@@ -38,7 +38,7 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 : A mode where commands simulate their actions without making actual changes, allowing users to preview results before execution.
 
 **Development Environment (dev-env)**
-: The collection of tools, configurations, and settings managed by gzh-cli for development workflows, including AWS, Docker, Kubernetes, and SSH configurations.
+: Development environment management through both individual service control (fine-grained management of AWS, GCP, Azure, Docker, Kubernetes, SSH configurations) and unified environment operations (TUI dashboard, atomic switching, status monitoring).
 
 ## E
 
@@ -243,7 +243,7 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 **Development Tools**
 
 - `gz quality` - Code quality management
-- `gz dev-env` - Development environment management
+- `gz dev-env` - Development environment management (individual services + unified operations)
 - `gz ide` - IDE integration and monitoring
 - `gz pm` - Package manager updates
 
