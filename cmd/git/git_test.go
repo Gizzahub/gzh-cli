@@ -48,11 +48,11 @@ func TestNewGitEventCmd(t *testing.T) {
 	require.NotEmpty(t, cmd.Long)
 }
 
-	tests := []struct{ name string }{
-		{"repo"}, {"config"}, {"webhook"}, {"event"},
-	}
+func TestNewGitWebhookCmd(t *testing.T) {
+	cmd := newGitWebhookCmd()
 
 	require.NotNil(t, cmd)
-	require.Equal(t, "repo", cmd.Use)
+	require.Equal(t, "webhook", cmd.Use)
+	require.Contains(t, cmd.Short, "Webhook management")
 	require.NotEmpty(t, cmd.Short)
 }
