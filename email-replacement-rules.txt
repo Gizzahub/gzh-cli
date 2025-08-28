@@ -1,0 +1,10 @@
+# Git Filter-Repo Email Replacement Rules
+# 실제 이메일 주소를 안전한 템플릿으로 교체
+
+admin@gizzahub.dev==>${GITHUB_ORG_ADMIN_EMAIL}
+finance@gizzahub.dev==>${GITHUB_ORG_BILLING_EMAIL}
+support@gizzahub.com==>${GORELEASER_MAINTAINER_EMAIL}
+
+# 추가적인 안전장치
+@gizzahub.dev==>${DOMAIN_VAR}.dev
+@gizzahub.com==>${DOMAIN_VAR}.com
