@@ -147,7 +147,7 @@ func NewAnalyzer(workingDir string) *Analyzer {
 }
 
 // AnalyzePackage analyzes a Go package for documentation coverage and quality.
-func (a *Analyzer) AnalyzePackage(ctx context.Context, packagePath string) (*PackageInfo, error) {
+func (a *Analyzer) AnalyzePackage(_ context.Context, packagePath string) (*PackageInfo, error) {
 	a.logger.Debug("Analyzing package", "path", packagePath)
 
 	// Parse package directory

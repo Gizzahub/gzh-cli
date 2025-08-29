@@ -15,7 +15,7 @@ import (
 // ConfigFactory provides a unified interface for loading all configuration types
 // with dependency injection support. It consolidates duplicate configuration
 // loading logic across the codebase.
-type ConfigFactory struct {
+type Factory struct {
 	environment   env.Environment
 	logger        Logger
 	searchPaths   []string
@@ -37,7 +37,7 @@ func NewConfigFactory() *ConfigFactory {
 }
 
 // ConfigFactoryOptions provides options for customizing the config factory.
-type ConfigFactoryOptions struct {
+type FactoryOptions struct {
 	Environment   env.Environment
 	Logger        Logger
 	SearchPaths   []string

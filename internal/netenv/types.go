@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// CommonOptions represents shared command options across net-env subcommands
+// CommonOptions represents shared command options across net-env subcommands.
 type CommonOptions struct {
 	ConfigFile string
 	Verbose    bool

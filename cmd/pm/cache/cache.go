@@ -238,6 +238,7 @@ func formatSize(bytes int64) string {
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
 
+//nolint:gocyclo // 다양한 캐시 매니저별 처리로 인해 높은 복잡도 허용
 func newCacheCleanCmd(ctx context.Context) *cobra.Command {
 	var (
 		dryRun     bool

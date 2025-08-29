@@ -570,11 +570,12 @@ func (d *IDEDetector) isVersionNumber(s string) bool {
 	hasDot := false
 
 	for _, char := range s {
-		if char >= '0' && char <= '9' {
+		switch {
+		case char >= '0' && char <= '9':
 			hasDigit = true
-		} else if char == '.' {
+		case char == '.':
 			hasDot = true
-		} else if char != '-' && char != '_' {
+		case char != '-' && char != '_':
 			return false // Invalid character for version
 		}
 	}
@@ -647,8 +648,7 @@ func (d *IDEDetector) getEnhancedVersion(execPath string, versionArgs []string, 
 	}
 
 	// If standard detection failed, try method-specific approaches
-	switch installMethod {
-	case "appimage":
+	if installMethod == "appimage" { // singleCaseSwitch 수정: if 문으로 변경
 		if appImageVersion := d.getAppImageVersion(installPath, appName); appImageVersion != "unknown" {
 			return appImageVersion
 		}
@@ -681,7 +681,8 @@ func (d *IDEDetector) getAppImageVersion(installPath, appName string) string {
 	}
 
 	// Find AppImage files matching the app name
-	pattern := filepath.Join(appDir, strings.Title(appName)+"-*.AppImage")
+	titleAppName := strings.ToUpper(appName[:1]) + strings.ToLower(appName[1:]) // SA1019 수정: strings.Title 대신 수동 변환
+	pattern := filepath.Join(appDir, titleAppName+"-*.AppImage")
 	matches, err := filepath.Glob(pattern)
 	if err != nil || len(matches) == 0 {
 		// Try lowercase
@@ -710,7 +711,7 @@ func (d *IDEDetector) getAppImageVersion(installPath, appName string) string {
 }
 
 // resolveAppImageDirectory resolves the actual directory from launcher scripts
-func (d *IDEDetector) resolveAppImageDirectory(installPath, appName string) string {
+func (d *IDEDetector) resolveAppImageDirectory(installPath, _ string) string {
 	// If we have a direct path from the script, use it
 	if strings.Contains(installPath, "/") && installPath != "VAR_REFERENCE" {
 		// Validate the directory exists
@@ -738,7 +739,7 @@ func (d *IDEDetector) resolveAppImageDirectory(installPath, appName string) stri
 }
 
 // extractVersionFromAppImageName extracts version from AppImage filename
-func (d *IDEDetector) extractVersionFromAppImageName(filename, appName string) string {
+func (d *IDEDetector) extractVersionFromAppImageName(filename, _ string) string {
 	base := filepath.Base(filename)
 
 	// Remove .AppImage extension
@@ -775,7 +776,7 @@ func (d *IDEDetector) compareVersions(v1, v2 string) int {
 // getPackageManagerVersion gets version from package managers
 //
 //nolint:unused // 패키지 매니저 버전 조회용으로 보존
-func (d *IDEDetector) getPackageManagerVersion(manager, command, packageName string) string {
+func (d *IDEDetector) getPackageManagerVersion(manager, _, packageName string) string {
 	var cmd *exec.Cmd
 
 	switch manager {

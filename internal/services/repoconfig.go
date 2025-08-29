@@ -230,7 +230,7 @@ func (s *RepoConfigService) getConfigurationChanges(_ context.Context, _, filter
 }
 
 // applyConfigurationChange applies a single configuration change.
-func (s *RepoConfigService) applyConfigurationChange(_ context.Context, change ConfigurationChange) error {
+func (s *RepoConfigService) applyConfigurationChange(_ context.Context, _ ConfigurationChange) error {
 	// This is a mock implementation - in reality, this would:
 	// 1. Use GitHub API to apply the configuration change
 	// 2. Handle authentication and rate limiting
@@ -242,7 +242,7 @@ func (s *RepoConfigService) applyConfigurationChange(_ context.Context, change C
 }
 
 // applyChanges applies the configuration changes.
-func (s *RepoConfigService) applyChanges(ctx context.Context, changes []ConfigurationChange, interactive bool) error {
+func (s *RepoConfigService) applyChanges(ctx context.Context, changes []ConfigurationChange, _ bool) error {
 	appliedCount := 0
 
 	for _, change := range changes {

@@ -1070,7 +1070,7 @@ func getHealthCheckInfo(containers []ContainerInfo) []ContainerHealthCheck {
 	return healthChecks
 }
 
-func performSecurityAnalysis(_ context.Context, containers []ContainerInfo, images []ImageInfo) (SecurityAnalysis, error) {
+func performSecurityAnalysis(_ context.Context, containers []ContainerInfo, _ []ImageInfo) (SecurityAnalysis, error) {
 	analysis := SecurityAnalysis{
 		PrivilegedContainers:  make([]string, 0),
 		RootContainers:        make([]string, 0),

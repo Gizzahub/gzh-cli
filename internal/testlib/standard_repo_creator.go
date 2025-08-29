@@ -280,7 +280,7 @@ func (c *StandardRepoCreator) createMergeCommits(ctx context.Context, repoPath s
 	}
 
 	// Clean up temporary branch
-	c.runGitCommand(ctx, repoPath, "branch", "-d", "temp-feature")
+	_ = c.runGitCommand(ctx, repoPath, "branch", "-d", "temp-feature") // errcheck 수정: 에러를 의도적으로 무시 (테스트 환경)
 
 	return nil
 }

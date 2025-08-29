@@ -15,7 +15,7 @@ import (
 )
 
 // BootstrapManager manages the installation and configuration of package managers.
-type BootstrapManager struct {
+type Manager struct {
 	platform      string
 	bootstrappers map[string]PackageManagerBootstrapper
 	logger        logger.CommonLogger

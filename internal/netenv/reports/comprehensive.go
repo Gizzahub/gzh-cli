@@ -111,7 +111,7 @@ func NewReportGenerator() *ReportGenerator {
 }
 
 // GenerateReport creates a comprehensive network report
-func (rg *ReportGenerator) GenerateReport(duration time.Duration) (*ComprehensiveNetworkReport, error) {
+func (rg *ReportGenerator) GenerateReport(_ time.Duration) (*ComprehensiveNetworkReport, error) {
 	startTime := time.Now()
 
 	// Collect system information

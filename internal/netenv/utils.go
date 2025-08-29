@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-// GetConfigDirectory returns the configuration directory for net-env components
+// GetConfigDirectory returns the configuration directory for net-env components.
 func GetConfigDirectory() string {
 	if configDir := os.Getenv("GZH_CONFIG_DIR"); configDir != "" {
 		return configDir
@@ -18,7 +18,7 @@ func GetConfigDirectory() string {
 	return filepath.Join(homeDir, ".config", "gzh-manager")
 }
 
-// EnsureConfigDirectory creates the configuration directory if it doesn't exist
+// EnsureConfigDirectory creates the configuration directory if it doesn't exist.
 func EnsureConfigDirectory() error {
 	configDir := GetConfigDirectory()
 	return os.MkdirAll(configDir, 0o755)

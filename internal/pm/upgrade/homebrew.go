@@ -225,6 +225,6 @@ func (h *HomebrewUpgrader) executeUpdate(ctx context.Context, options UpgradeOpt
 // writeFile is a helper function to write content to a file
 func writeFile(path, content string) error {
 	// This would normally use os.WriteFile, but keeping it simple for this implementation
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo '%s' > '%s'", content, path))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo '%s' > '%s'", content, path)) //nolint:gosec // G204: 내부 파일 작성용 명령어
 	return cmd.Run()
 }

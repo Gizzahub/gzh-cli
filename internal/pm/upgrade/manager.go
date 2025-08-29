@@ -267,7 +267,7 @@ func (uc *UpgradeCoordinator) FormatReport(report *UpgradeReport, verbose bool) 
 		return "No upgrade report available\n"
 	}
 
-	result := fmt.Sprintf("📊 Package Manager Upgrade Report\n")
+	result := "📊 Package Manager Upgrade Report\n" // S1039 수정: 불필요한 fmt.Sprintf 제거
 	result += fmt.Sprintf("Platform: %s\n", report.Platform)
 	result += fmt.Sprintf("Timestamp: %s\n", report.Timestamp.Format("2006-01-02 15:04:05"))
 	result += fmt.Sprintf("Total Managers: %d\n", report.TotalManagers)

@@ -217,7 +217,7 @@ func displayStatusTable(status *netenv.NetworkStatus, verbose bool) error {
 	displayComponentStatus("Kubernetes", status.Components.Kubernetes)
 
 	// Health summary
-	fmt.Printf("\nNetwork Health: %s", strings.Title(status.Health.Status))
+	fmt.Printf("\nNetwork Health: %s", strings.ToUpper(status.Health.Status[:1])+strings.ToLower(status.Health.Status[1:])) // SA1019 수정: strings.Title 대신 수동 변환
 	if status.Health.Score > 0 {
 		fmt.Printf(" (%d/100)", status.Health.Score)
 	}

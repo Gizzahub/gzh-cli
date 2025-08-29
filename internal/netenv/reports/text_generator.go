@@ -61,7 +61,7 @@ func (trg *TextReportGenerator) GenerateReport(report *ComprehensiveNetworkRepor
 
 	// Write to file
 	outputPath := filepath.Join(trg.outputDir, filename)
-	return os.WriteFile(outputPath, []byte(buf.String()), 0o644)
+	return os.WriteFile(outputPath, []byte(buf.String()), 0o600) // G306: 보안 강화된 파일 권한
 }
 
 // writeHeader writes the report header

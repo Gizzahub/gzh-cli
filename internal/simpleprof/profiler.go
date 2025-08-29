@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof" // Import pprof HTTP handlers #nosec G108
+	_ "net/http/pprof" // Import pprof HTTP handlers
+
+	//nolint:gosec // G108: 개발 프로파일링을 위한 의도적 노출
 	"os"
 	"path/filepath"
 	"runtime"

@@ -11,7 +11,7 @@ import (
 )
 
 // StatusCollector collects status information from multiple services.
-type StatusCollector struct {
+type Collector struct {
 	checkers []ServiceChecker
 	timeout  time.Duration
 }

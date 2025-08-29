@@ -407,16 +407,17 @@ func runUpgradeCheck(ctx context.Context, coordinator *upgrade.UpgradeCoordinato
 func runUpgradeInstall(ctx context.Context, coordinator *upgrade.UpgradeCoordinator, opts upgradeManagersOptions) error {
 	var managerNames []string
 
-	if opts.all {
+	switch { // ifElseChain 수정: switch 문으로 변경
+	case opts.all:
 		fmt.Println("📦 Upgrading all package managers...")
-	} else if opts.manager != "" {
+	case opts.manager != "":
 		// Parse specified managers
 		managerNames = strings.Split(opts.manager, ",")
 		for i, name := range managerNames {
 			managerNames[i] = strings.TrimSpace(name)
 		}
 		fmt.Printf("📦 Upgrading package managers: %s\n", strings.Join(managerNames, ", "))
-	} else {
+	default:
 		return fmt.Errorf("must specify --all or --manager <names> to upgrade")
 	}
 

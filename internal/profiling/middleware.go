@@ -107,9 +107,9 @@ func (pm *PerformanceMiddleware) logMetrics(metrics *OperationMetrics) {
 	goroutineDelta := metrics.GoroutinesAfter - metrics.GoroutinesBefore
 	var memoryDelta int64
 	if metrics.MemoryAfter >= metrics.MemoryBefore {
-		memoryDelta = int64(metrics.MemoryAfter - metrics.MemoryBefore)
+		memoryDelta = int64(metrics.MemoryAfter - metrics.MemoryBefore) //nolint:gosec // G115: 메모리 통계는 안전한 범위
 	} else {
-		memoryDelta = -int64(metrics.MemoryBefore - metrics.MemoryAfter)
+		memoryDelta = -int64(metrics.MemoryBefore - metrics.MemoryAfter) //nolint:gosec // G115: 메모리 통계는 안전한 범위
 	}
 
 	logLevel := "Info"

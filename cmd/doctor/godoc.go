@@ -357,7 +357,7 @@ func displayPackageResults(result *godoc.PackageInfo, opts godocOptions) {
 	}
 }
 
-func displayOverallRecommendations(results []*godoc.PackageInfo, overallCoverage float64, opts godocOptions) {
+func displayOverallRecommendations(results []*godoc.PackageInfo, overallCoverage float64, _ godocOptions) {
 	logger.SimpleInfo("🎯 Overall Recommendations")
 
 	if overallCoverage < 80 {

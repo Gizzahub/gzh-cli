@@ -224,7 +224,7 @@ func (es *EnvironmentSwitcher) switchServicesParallel(ctx context.Context, env *
 	close(errChan)
 
 	// Check for errors
-	errors := make([]string, 0, len(profiles)) // 프로파일 수만큼 사전 할당
+	errors := make([]string, 0, len(serviceNames)) // 서비스 수만큼 사전 할당
 	for err := range errChan {
 		errors = append(errors, err.Error())
 	}

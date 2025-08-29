@@ -387,7 +387,7 @@ func (o *statusOptions) escapeYAML(s string) string {
 	return s
 }
 
-func (o *statusOptions) formatInstallMethod(method, path string) string {
+func (o *statusOptions) formatInstallMethod(method, _ string) string {
 	switch method {
 	case "appimage":
 		return "AppImage"

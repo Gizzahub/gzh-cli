@@ -141,8 +141,8 @@ func (bs *BenchmarkSuite) RunBenchmark(ctx context.Context, name string, fn Benc
 		allocDelta := finalStats.TotalAlloc - initialStats.TotalAlloc
 		mallocsDelta := finalStats.Mallocs - initialStats.Mallocs
 
-		result.AllocBytesPerOp = int64(allocDelta) / int64(result.Operations)
-		result.AllocsPerOp = int64(mallocsDelta) / int64(result.Operations)
+		result.AllocBytesPerOp = int64(allocDelta) / int64(result.Operations) //nolint:gosec // G115: 벤치마크 통계는 안전한 범위
+		result.AllocsPerOp = int64(mallocsDelta) / int64(result.Operations)   //nolint:gosec // G115: 벤치마크 통계는 안전한 범위
 	}
 
 	result.Timestamp = time.Now()

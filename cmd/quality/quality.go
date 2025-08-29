@@ -706,7 +706,7 @@ func (m *QualityManager) newInitCmd() *cobra.Command {
 }
 
 // runInit executes the init command.
-func (m *QualityManager) runInit(_ *cobra.Command, args []string) error {
+func (m *QualityManager) runInit(_ *cobra.Command, _ []string) error {
 	projectRoot, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get current directory: %w", err)

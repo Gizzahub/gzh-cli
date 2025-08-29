@@ -95,9 +95,7 @@ func (a *AsdfBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapSta
 
 	// Parse version from output like "v0.10.2"
 	version := strings.TrimSpace(string(output))
-	if strings.HasPrefix(version, "v") {
-		version = version[1:]
-	}
+	version = strings.TrimPrefix(version, "v") // S1017 수정: 조건 없이 TrimPrefix 사용
 	status.Version = version
 	status.Installed = true
 

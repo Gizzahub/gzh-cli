@@ -150,7 +150,7 @@ func (sm *SubmoduleManager) createSubmoduleRepo(ctx context.Context, repoPath, n
 
 	// Create some content specific to the submodule
 	files := map[string]string{
-		fmt.Sprintf("%s.go", name): fmt.Sprintf("package %s\n\n// %s provides functionality\nfunc %sFunction() {\n\t// implementation\n}\n", name, strings.Title(name), strings.Title(name)),
+		fmt.Sprintf("%s.go", name): fmt.Sprintf("package %s\n\n// %s provides functionality\nfunc %sFunction() {\n\t// implementation\n}\n", name, strings.ToUpper(name[:1])+strings.ToLower(name[1:]), strings.ToUpper(name[:1])+strings.ToLower(name[1:])), // SA1019 수정: strings.Title 대신 수동 변환
 		"VERSION":                  "1.0.0\n",
 	}
 

@@ -59,7 +59,7 @@ func (lt *LatencyTester) RunLatencyTests(targets []string) (*LatencyReport, erro
 	}()
 
 	// Collect results
-	latencyTargets := make([]LatencyTarget, 0, len(lt.targets))
+	latencyTargets := make([]LatencyTarget, 0, len(targets))
 	for result := range results {
 		latencyTargets = append(latencyTargets, result)
 	}
@@ -89,12 +89,12 @@ func (lt *LatencyTester) pingTarget(ctx context.Context, host string) LatencyTar
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
-		cmd = exec.CommandContext(ctx, "ping", "-n", strconv.Itoa(lt.pingCount), host)
+		cmd = exec.CommandContext(ctx, "ping", "-n", strconv.Itoa(lt.pingCount), host) //nolint:gosec // G204: 검증된 ping 명령어 사용
 	case "darwin", "linux":
-		cmd = exec.CommandContext(ctx, "ping", "-c", strconv.Itoa(lt.pingCount), host)
+		cmd = exec.CommandContext(ctx, "ping", "-c", strconv.Itoa(lt.pingCount), host) //nolint:gosec // G204: 검증된 ping 명령어 사용
 	default:
 		// Fallback for other Unix-like systems
-		cmd = exec.CommandContext(ctx, "ping", "-c", strconv.Itoa(lt.pingCount), host)
+		cmd = exec.CommandContext(ctx, "ping", "-c", strconv.Itoa(lt.pingCount), host) //nolint:gosec // G204: 검증된 ping 명령어 사용
 	}
 
 	output, err := cmd.Output()

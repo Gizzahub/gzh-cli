@@ -237,7 +237,7 @@ func (pps *PyenvPipSynchronizer) syncToPythonVersion(ctx context.Context, python
 	}
 
 	// Install the specific pip version
-	cmd := exec.CommandContext(ctx, "pip", "install", fmt.Sprintf("pip==%s", expectedPipVersion))
+	cmd := exec.CommandContext(ctx, "pip", "install", fmt.Sprintf("pip==%s", expectedPipVersion)) //nolint:gosec // G204: 내부 관리되는 버전 문자열 사용
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to install pip==%s: %w", expectedPipVersion, err)
 	}

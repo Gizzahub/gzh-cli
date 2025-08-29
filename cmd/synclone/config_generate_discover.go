@@ -69,7 +69,7 @@ Examples:
 }
 
 // runConfigGenerateDiscover executes the discover command.
-func runConfigGenerateDiscover(basePath, outputFile string, mergeExisting, recursive bool, maxDepth int, ignorePatterns []string, followSymlinks bool) error {
+func runConfigGenerateDiscover(basePath, outputFile string, mergeExisting, _ bool, maxDepth int, ignorePatterns []string, followSymlinks bool) error {
 	fmt.Printf("🔍 Discovering repositories in %s...\n", basePath)
 
 	// Create repository discoverer

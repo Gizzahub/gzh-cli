@@ -255,7 +255,7 @@ func (p *PyenvBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapSt
 	return status, nil
 }
 
-func (p *PyenvBootstrapper) Install(ctx context.Context, force bool) error {
+func (p *PyenvBootstrapper) Install(ctx context.Context, _ bool) error {
 	p.logger.Info("Installing pyenv")
 
 	switch runtime.GOOS {
@@ -275,7 +275,7 @@ func (p *PyenvBootstrapper) Install(ctx context.Context, force bool) error {
 	return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 }
 
-func (p *PyenvBootstrapper) Configure(ctx context.Context) error {
+func (p *PyenvBootstrapper) Configure(_ context.Context) error {
 	return p.updateShellProfile()
 }
 

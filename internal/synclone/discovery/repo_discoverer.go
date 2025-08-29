@@ -286,7 +286,7 @@ func (rd *RepoDiscoverer) shouldIgnore(name string) bool {
 func (rd *RepoDiscoverer) calculateRepoSize(repoPath string) int64 {
 	var size int64
 
-	err := filepath.Walk(repoPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(repoPath, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
 			return nil //nolint:nilerr // 접근 불가능한 파일은 건너뜀
 		}

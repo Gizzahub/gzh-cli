@@ -297,7 +297,7 @@ func (sm *SyncManager) FormatReport(report *SyncReport, verbose bool) string {
 		return "No synchronization report available\n"
 	}
 
-	result := fmt.Sprintf("🔄 Package Manager Version Synchronization Status\n")
+	result := "🔄 Package Manager Version Synchronization Status\n" // S1039 수정: 불필요한 fmt.Sprintf 제거
 	result += fmt.Sprintf("Platform: %s\n", report.Platform)
 	result += fmt.Sprintf("Timestamp: %s\n", report.Timestamp.Format("2006-01-02 15:04:05"))
 	result += fmt.Sprintf("Total Pairs: %d\n", report.TotalPairs)

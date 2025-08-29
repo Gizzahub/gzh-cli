@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// SetupLogger configures the logger for net-env components with consistent settings
+// SetupLogger configures the logger for net-env components with consistent settings.
 func SetupLogger(verbose bool) (*zap.Logger, error) {
 	config := zap.NewProductionConfig()
 
@@ -29,7 +29,7 @@ func SetupLogger(verbose bool) (*zap.Logger, error) {
 	return config.Build()
 }
 
-// GetDefaultLogger returns a pre-configured logger for net-env
+// GetDefaultLogger returns a pre-configured logger for net-env.
 func GetDefaultLogger() *zap.Logger {
 	verbose := os.Getenv("GZH_NET_ENV_VERBOSE") == "true"
 	logger, err := SetupLogger(verbose)

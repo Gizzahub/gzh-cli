@@ -148,10 +148,8 @@ func (nns *NvmNpmSynchronizer) getCurrentNodeVersion(ctx context.Context) (strin
 	}
 
 	version := strings.TrimSpace(string(output))
-	// Remove 'v' prefix if present
-	if strings.HasPrefix(version, "v") {
-		version = version[1:]
-	}
+	// Remove 'v' prefix if present (S1017 수정: 조건 없이 TrimPrefix 사용)
+	version = strings.TrimPrefix(version, "v")
 
 	return version, nil
 }

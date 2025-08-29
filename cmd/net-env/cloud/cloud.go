@@ -563,6 +563,8 @@ func saveCurrentProfile(profileName string) error {
 }
 
 // getCurrentProfile reads the current profile name.
+//
+//nolint:unused // 보조 기능으로 현재 미사용됨
 func getCurrentProfile() (string, error) {
 	configDir, err := os.UserConfigDir()
 	if err != nil {

@@ -271,7 +271,7 @@ func runSingleHealthCheck(ctx context.Context, flags *cli.CommonFlags, opts heal
 	}
 }
 
-func runContinuousHealthMonitoring(ctx context.Context, flags *cli.CommonFlags, opts healthOptions, logger logger.CommonLogger) error {
+func runContinuousHealthMonitoring(ctx context.Context, _ *cli.CommonFlags, opts healthOptions, logger logger.CommonLogger) error {
 	logger.Info("Starting continuous health monitoring", "interval", opts.interval)
 
 	ticker := time.NewTicker(opts.interval)
@@ -307,7 +307,7 @@ func runContinuousHealthMonitoring(ctx context.Context, flags *cli.CommonFlags, 
 	}
 }
 
-func startHealthServer(ctx context.Context, opts healthOptions, logger logger.CommonLogger) error {
+func startHealthServer(_ context.Context, opts healthOptions, logger logger.CommonLogger) error {
 	mux := http.NewServeMux()
 
 	// Health check endpoint

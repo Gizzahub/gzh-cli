@@ -480,6 +480,7 @@ func updateBrew(ctx context.Context, strategy string, dryRun bool, res *UpdateRu
 	return nil
 }
 
+//nolint:gocyclo // 복잡한 asdf 업데이트 로직으로 인해 높은 복잡도 허용
 func updateAsdf(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
 	// Check if asdf is installed
 	cmd := exec.CommandContext(ctx, "asdf", "--version")
@@ -797,12 +798,8 @@ func runCondaOrMambaUpdate(ctx context.Context, kind string, dryRun bool) error 
 	}
 	// conda 경로
 	if dryRun {
-		if envName != "" {
-			// conda는 현재 활성 환경을 기본 대상으로 삼으므로 -n 생략 가능
-			fmt.Println("Would run: conda update --all -y")
-		} else {
-			fmt.Println("Would run: conda update --all -y")
-		}
+		// conda는 현재 활성 환경을 기본 대상으로 삼으므로 -n 생략 가능 (dupBranchBody 수정)
+		fmt.Println("Would run: conda update --all -y")
 		return nil
 	}
 	cmd := exec.CommandContext(ctx, "conda", "update", "--all", "-y")
@@ -818,7 +815,8 @@ func newPipExec(ctx context.Context, pipCmd string, moreArgs ...string) *exec.Cm
 		// 비정상 입력 방어
 		parts = []string{"pip"}
 	}
-	args := append(parts[1:], moreArgs...)
+	args := parts[1:]
+	args = append(args, moreArgs...) // appendAssign 수정: 같은 변수에 재할당
 	return exec.CommandContext(ctx, parts[0], args...)
 }
 
