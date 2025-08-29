@@ -182,7 +182,10 @@ func (lcs *LocalChangesSimulator) CreateConflictedWorkingDirectory(ctx context.C
 
 	// Switch back to main and make conflicting changes
 	if err := lcs.runGitCommand(ctx, repoPath, "checkout", "main"); err != nil {
-		lcs.runGitCommand(ctx, repoPath, "checkout", "master")
+		// Fallback to master branch
+		if err := lcs.runGitCommand(ctx, repoPath, "checkout", "master"); err != nil {
+			return fmt.Errorf("failed to checkout main or master branch: %w", err)
+		}
 	}
 
 	mainContent := "Line 1: Modified in main\nLine 2: Modified in main\nLine 3: Original content\n"

@@ -250,7 +250,10 @@ func (bm *BranchManager) CreateDivergentBranchesScenario(ctx context.Context, re
 
 	// Switch to main and add commits
 	if err := bm.runGitCommand(ctx, repoPath, "checkout", "main"); err != nil {
-		bm.runGitCommand(ctx, repoPath, "checkout", "master")
+		// Fallback to master branch
+		if err := bm.runGitCommand(ctx, repoPath, "checkout", "master"); err != nil {
+			return fmt.Errorf("failed to checkout main or master branch: %w", err)
+		}
 	}
 
 	for _, commit := range mainCommits {

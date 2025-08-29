@@ -51,7 +51,7 @@ Examples:
 	return cmd
 }
 
-func runExport(ctx context.Context, all bool, manager, outputDir, format string) error {
+func runExport(_ context.Context, all bool, manager, outputDir, format string) error {
 	if outputDir == "" {
 		outputDir = "~/.gzh/pm"
 	}

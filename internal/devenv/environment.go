@@ -105,8 +105,8 @@ type SwitchError struct {
 type SwitchResult struct {
 	Success           bool          `json:"success"`
 	SwitchedServices  []string      `json:"switchedServices"`
-	FailedServices    []string      `json:"failed_services"`
-	RollbackPerformed bool          `json:"rollback_performed"`
+	FailedServices    []string      `json:"failedServices"`
+	RollbackPerformed bool          `json:"rollbackPerformed"`
 	Duration          time.Duration `json:"duration"`
 	Errors            []SwitchError `json:"errors,omitempty"`
 }

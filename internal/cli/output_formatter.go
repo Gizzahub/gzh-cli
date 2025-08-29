@@ -132,7 +132,7 @@ func (f *OutputFormatter) printRow(cells []string, colWidths []int) {
 
 // printSeparator prints a separator line.
 func (f *OutputFormatter) printSeparator(colWidths []int) {
-	var parts []string
+	parts := make([]string, 0, len(colWidths))
 	for _, width := range colWidths {
 		parts = append(parts, strings.Repeat("-", width))
 	}

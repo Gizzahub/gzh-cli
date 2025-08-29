@@ -6,7 +6,7 @@ package idecore
 
 import "time"
 
-// IDE represents an IDE installation
+// IDE represents an IDE installation.
 type IDE struct {
 	Name          string    `json:"name"`
 	Executable    string    `json:"executable"`

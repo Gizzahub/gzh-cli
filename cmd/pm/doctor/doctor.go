@@ -122,10 +122,16 @@ type DoctorPluginReport struct {
 	Suggestions []string `json:"suggestions,omitempty"`
 }
 
-func runAsdfDoctor(ctx context.Context, compatMode string, checkConf, attemptFix bool) (DoctorManagerReport, error) {
+func runAsdfDoctor(ctx context.Context, _ string, checkConf, attemptFix bool) (DoctorManagerReport, error) {
 	// Ensure asdf exists
 	if err := exec.CommandContext(ctx, "asdf", "--version").Run(); err != nil {
-		return DoctorManagerReport{Name: "asdf", Status: "not-installed"}, nil
+		// asdf not installed is a valid state for the doctor report
+		report := DoctorManagerReport{
+			Name:   "asdf",
+			Status: "not-installed",
+			Error:  "asdf is not installed or not in PATH",
+		}
+		return report, nil
 	}
 
 	// List plugins

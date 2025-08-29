@@ -405,6 +405,7 @@ func (m *AzureSubscriptionManager) loadSubscriptions() error {
 	if err != nil {
 		// If Azure CLI is not available or not authenticated, return empty list
 		// This allows the manager to work even without Azure CLI installed
+		m.subscriptions = make(map[string]*AzureSubscription)
 		return nil
 	}
 

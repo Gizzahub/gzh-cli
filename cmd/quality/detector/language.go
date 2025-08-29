@@ -72,7 +72,8 @@ func (d *FileTypeDetector) detectLanguagesWithInfo(projectRoot string) ([]*Langu
 
 	err := filepath.Walk(projectRoot, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil // Skip files we can't access
+			// Skip files/directories we can't access (permissions, etc.)
+			return filepath.SkipDir
 		}
 
 		// Skip directories and hidden files/directories
@@ -159,7 +160,7 @@ func (d *FileTypeDetector) GetFilesByLanguage(projectRoot string, languages []st
 }
 
 // matchesRule checks if a file matches a language rule.
-func (d *FileTypeDetector) matchesRule(path, filename string, rule *LanguageRule) bool {
+func (d *FileTypeDetector) matchesRule(_, filename string, rule *LanguageRule) bool {
 	// Check file extensions
 	ext := strings.ToLower(filepath.Ext(filename))
 	for _, ruleExt := range rule.Extensions {

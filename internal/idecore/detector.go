@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 )
 
-// DetectorConfig holds configuration for IDE detector
+// DetectorConfig holds configuration for IDE detector.
 type DetectorConfig struct {
 	CacheDir string
 }
 
-// NewDetectorConfig creates default detector configuration
+// NewDetectorConfig creates default detector configuration.
 func NewDetectorConfig() *DetectorConfig {
 	homeDir, _ := os.UserHomeDir()
 	cacheDir := filepath.Join(homeDir, ".gz", "cache")
@@ -23,7 +23,7 @@ func NewDetectorConfig() *DetectorConfig {
 	}
 }
 
-// GetDefaultCacheDir returns the default cache directory for IDE detection
+// GetDefaultCacheDir returns the default cache directory for IDE detection.
 func GetDefaultCacheDir() string {
 	homeDir, _ := os.UserHomeDir()
 	return filepath.Join(homeDir, ".gz", "cache")

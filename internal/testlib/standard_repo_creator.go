@@ -221,7 +221,9 @@ func (c *StandardRepoCreator) createBranches(ctx context.Context, repoPath strin
 		// Return to main branch
 		if err := c.runGitCommand(ctx, repoPath, "checkout", "main"); err != nil {
 			// Try master if main doesn't exist
-			c.runGitCommand(ctx, repoPath, "checkout", "master")
+			if err := c.runGitCommand(ctx, repoPath, "checkout", "master"); err != nil {
+				return fmt.Errorf("failed to checkout main or master branch: %w", err)
+			}
 		}
 	}
 
@@ -267,7 +269,10 @@ func (c *StandardRepoCreator) createMergeCommits(ctx context.Context, repoPath s
 
 	// Switch back to main and merge
 	if err := c.runGitCommand(ctx, repoPath, "checkout", "main"); err != nil {
-		c.runGitCommand(ctx, repoPath, "checkout", "master")
+		// Fallback to master branch
+		if err := c.runGitCommand(ctx, repoPath, "checkout", "master"); err != nil {
+			return fmt.Errorf("failed to checkout main or master branch: %w", err)
+		}
 	}
 
 	if err := c.runGitCommand(ctx, repoPath, "merge", "--no-ff", "temp-feature", "-m", "Merge feature branch"); err != nil {

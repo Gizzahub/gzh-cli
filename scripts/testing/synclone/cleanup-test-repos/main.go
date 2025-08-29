@@ -42,7 +42,7 @@ func newCleanCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clean",
 		Short: "Remove test repositories",
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return cleanupRepos(context.Background(), baseDir, force, dryRun)
 		},
 	}
@@ -60,7 +60,7 @@ func newVerifyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "verify",
 		Short: "Verify test repository structure",
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return verifyRepos(context.Background(), baseDir)
 		},
 	}

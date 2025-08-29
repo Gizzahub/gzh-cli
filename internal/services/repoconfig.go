@@ -124,7 +124,7 @@ func (s *RepoConfigService) ListRepositories(ctx context.Context, opts ListOptio
 		var err error
 		repoConfig, err = config.LoadRepoConfig(opts.ConfigFile)
 		if err != nil && opts.Verbose {
-			// Log warning but continue without config
+			fmt.Printf("Warning: failed to load config file %s: %v\n", opts.ConfigFile, err)
 		}
 	}
 
@@ -223,7 +223,7 @@ func (s *RepoConfigService) getConfigurationChanges(_ context.Context, _, filter
 	// Apply template filter if specified
 	if template != "" {
 		// TODO: In a real implementation, this would filter changes based on template
-		// For now, just document the intended behavior
+		fmt.Printf("Note: Template filtering for '%s' not yet implemented\n", template)
 	}
 
 	return mockChanges, nil
@@ -261,7 +261,7 @@ func (s *RepoConfigService) applyFiltersAndLimits(repos []*github.Repository, fi
 	if filter != "" {
 		filterRegex, err := regexp.Compile(filter)
 		if err != nil && verbose {
-			// Log warning but continue without filtering
+			fmt.Printf("Warning: invalid filter regex '%s': %v\n", filter, err)
 		} else {
 			var filtered []*github.Repository
 			for _, repo := range repos {

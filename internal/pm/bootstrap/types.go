@@ -15,7 +15,7 @@ type BootstrapStatus struct {
 	Manager      string            `json:"manager"`
 	Installed    bool              `json:"installed"`
 	Version      string            `json:"version,omitempty"`
-	ConfigPath   string            `json:"config_path,omitempty"`
+	ConfigPath   string            `json:"configPath,omitempty"`
 	Issues       []string          `json:"issues,omitempty"`
 	Dependencies []string          `json:"dependencies,omitempty"`
 	Details      map[string]string `json:"details,omitempty"`
@@ -70,8 +70,8 @@ type PackageManagerBootstrapper interface {
 type BootstrapOptions struct {
 	Managers          []string `json:"managers,omitempty"` // Specific managers to process (empty = all)
 	Force             bool     `json:"force"`              // Force reinstall even if already installed
-	SkipConfiguration bool     `json:"skip_configuration"` // Skip post-install configuration
-	DryRun            bool     `json:"dry_run"`            // Only simulate, don't actually install
+	SkipConfiguration bool     `json:"skipConfiguration"`  // Skip post-install configuration
+	DryRun            bool     `json:"dryRun"`             // Only simulate, don't actually install
 	Timeout           Duration `json:"timeout"`            // Timeout for installation operations
 	Verbose           bool     `json:"verbose"`            // Enable verbose output
 }

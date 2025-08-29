@@ -64,7 +64,7 @@ func (n *NvmBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapStat
 	return status, nil
 }
 
-func (n *NvmBootstrapper) Install(ctx context.Context, force bool) error {
+func (n *NvmBootstrapper) Install(ctx context.Context, _ bool) error {
 	n.logger.Info("Installing nvm")
 
 	script, err := n.GetInstallScript()
@@ -77,7 +77,7 @@ func (n *NvmBootstrapper) Install(ctx context.Context, force bool) error {
 	return cmd.Run()
 }
 
-func (n *NvmBootstrapper) Configure(ctx context.Context) error {
+func (n *NvmBootstrapper) Configure(_ context.Context) error {
 	return n.updateShellProfile()
 }
 
@@ -155,7 +155,7 @@ func (r *RbenvBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapSt
 	return status, nil
 }
 
-func (r *RbenvBootstrapper) Install(ctx context.Context, force bool) error {
+func (r *RbenvBootstrapper) Install(ctx context.Context, _ bool) error {
 	r.logger.Info("Installing rbenv")
 
 	switch runtime.GOOS {
@@ -181,7 +181,7 @@ func (r *RbenvBootstrapper) Install(ctx context.Context, force bool) error {
 	return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 }
 
-func (r *RbenvBootstrapper) Configure(ctx context.Context) error {
+func (r *RbenvBootstrapper) Configure(_ context.Context) error {
 	return r.updateShellProfile()
 }
 

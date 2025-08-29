@@ -244,7 +244,7 @@ func (opts *switchAllOptions) findAvailableEnvironments() ([]devenv.Environment,
 		return nil, fmt.Errorf("failed to read environments directory: %w", err)
 	}
 
-	var environments []devenv.Environment
+	environments := make([]devenv.Environment, 0, len(entries))
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue

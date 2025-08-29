@@ -175,10 +175,10 @@ func (h *HomebrewBootstrapper) checkConfiguration(ctx context.Context, status *B
 
 	var expectedPaths []string
 	switch runtime.GOOS {
-	case "darwin":
+	case darwinPlatform:
 		// Check for both Intel and Apple Silicon paths
 		expectedPaths = []string{"/opt/homebrew/bin", "/usr/local/bin"}
-	case "linux":
+	case linuxPlatform:
 		expectedPaths = []string{"/home/linuxbrew/.linuxbrew/bin"}
 	}
 
@@ -240,7 +240,7 @@ func (h *HomebrewBootstrapper) updateShellProfile() error {
 
 	homebrewInit := ""
 	switch runtime.GOOS {
-	case "darwin":
+	case darwinPlatform:
 		// Add both Intel and Apple Silicon Homebrew paths
 		homebrewInit = `
 # Add Homebrew to PATH
@@ -249,7 +249,7 @@ if [[ -d "/opt/homebrew/bin" ]]; then
 elif [[ -d "/usr/local/bin" ]]; then
     export PATH="/usr/local/bin:$PATH"
 fi`
-	case "linux":
+	case linuxPlatform:
 		homebrewInit = `
 # Add Homebrew to PATH
 if [[ -d "/home/linuxbrew/.linuxbrew/bin" ]]; then

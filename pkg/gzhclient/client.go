@@ -25,18 +25,18 @@ type Client struct {
 // ClientConfig holds configuration for the GZH client.
 type ClientConfig struct {
 	// Connection settings
-	ServerURL  string        `yaml:"serverUrl,omitempty" json:"server_url,omitempty"`
-	APIKey     string        `yaml:"apiKey,omitempty" json:"api_key,omitempty"`
+	ServerURL  string        `yaml:"serverUrl,omitempty" json:"serverUrl,omitempty"`
+	APIKey     string        `yaml:"apiKey,omitempty" json:"apiKey,omitempty"`
 	Timeout    time.Duration `yaml:"timeout" json:"timeout"`
-	RetryCount int           `yaml:"retryCount" json:"retry_count"`
+	RetryCount int           `yaml:"retryCount" json:"retryCount"`
 
 	// Plugin settings (disabled - plugins package removed)
 	// PluginDir     string `yaml:"plugin_dir,omitempty" json:"plugin_dir,omitempty"`
 	// EnablePlugins bool   `yaml:"enable_plugins" json:"enable_plugins"`
 
 	// Logging settings
-	LogLevel string `yaml:"logLevel" json:"log_level"`
-	LogFile  string `yaml:"logFile,omitempty" json:"log_file,omitempty"`
+	LogLevel string `yaml:"logLevel" json:"logLevel"`
+	LogFile  string `yaml:"logFile,omitempty" json:"logFile,omitempty"`
 
 	// Feature flags
 	Features FeatureFlags `yaml:"features" json:"features"`

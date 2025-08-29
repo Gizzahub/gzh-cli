@@ -106,7 +106,8 @@ func (isd *InterfaceSpeedDetector) detectSpeedDarwin(interfaceName string) (uint
 	cmd := exec.Command("ifconfig", interfaceName)
 	output, err := cmd.Output()
 	if err != nil {
-		return isd.estimateSpeedByType(interfaceName), nil
+		// If ifconfig fails, fall back to speed estimation
+		return isd.estimateSpeedByType(interfaceName), err
 	}
 
 	// Parse ifconfig output for speed information
@@ -123,7 +124,8 @@ func (isd *InterfaceSpeedDetector) detectSpeedWindows(interfaceName string) (uin
 	cmd := exec.Command("netsh", "interface", "show", "interface", interfaceName)
 	output, err := cmd.Output()
 	if err != nil {
-		return isd.estimateSpeedByType(interfaceName), nil
+		// If netsh fails, fall back to speed estimation
+		return isd.estimateSpeedByType(interfaceName), err
 	}
 
 	// Parse netsh output for speed information

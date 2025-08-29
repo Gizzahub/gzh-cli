@@ -393,7 +393,7 @@ func (sic *SystemInfoCollector) getNetworkNamespaces() ([]string, error) {
 	output, err := cmd.Output()
 	if err != nil {
 		// ip command might not be available or no namespaces
-		return []string{}, nil
+		return []string{}, err
 	}
 
 	var namespaces []string

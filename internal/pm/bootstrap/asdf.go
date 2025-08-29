@@ -136,7 +136,7 @@ func (a *AsdfBootstrapper) Install(ctx context.Context, force bool) error {
 }
 
 // Configure configures asdf after installation.
-func (a *AsdfBootstrapper) Configure(ctx context.Context) error {
+func (a *AsdfBootstrapper) Configure(_ context.Context) error {
 	a.logger.Info("Configuring asdf")
 
 	return a.updateShellProfile()

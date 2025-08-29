@@ -264,7 +264,8 @@ func (o *openOptions) prepareGenericArgs(ide *IDE, targetPath string) []string {
 }
 
 func (o *openOptions) getAvailableIDENames(ides []IDE) string {
-	var names []string
+	// Pre-allocate slice for better performance (IDE name + aliases)
+	names := make([]string, 0, len(ides)*3)
 
 	for _, ide := range ides {
 		// Add main name
@@ -299,7 +300,7 @@ func (o *openOptions) getAvailableIDENames(ides []IDE) string {
 	return strings.Join(names, ", ")
 }
 
-// shouldRunInBackground determines if IDE should run in background
+// shouldRunInBackground determines if IDE should run in background.
 func (o *openOptions) shouldRunInBackground(ide *IDE) bool {
 	// Explicit flags take priority
 	if o.background {
@@ -330,7 +331,7 @@ func (o *openOptions) shouldRunInBackground(ide *IDE) bool {
 	}
 }
 
-// executeInBackground starts IDE in background
+// executeInBackground starts IDE in background.
 func (o *openOptions) executeInBackground(cmd *exec.Cmd, ide *IDE) error {
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start %s: %w", ide.Name, err)
@@ -345,7 +346,7 @@ func (o *openOptions) executeInBackground(cmd *exec.Cmd, ide *IDE) error {
 	return nil
 }
 
-// executeAndWait runs IDE and waits for completion
+// executeAndWait runs IDE and waits for completion.
 func (o *openOptions) executeAndWait(cmd *exec.Cmd, ide *IDE) error {
 	if o.verbose {
 		fmt.Printf("⏳ Starting %s and waiting for exit...\n", ide.Name)

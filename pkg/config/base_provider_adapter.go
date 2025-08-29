@@ -99,7 +99,7 @@ func (b *BaseProviderAdapter) CloneOrganization(ctx context.Context, owner, targ
 }
 
 // SetToken configures the authentication token.
-func (b *BaseProviderAdapter) SetToken(ctx context.Context, token string) error {
+func (b *BaseProviderAdapter) SetToken(_ context.Context, token string) error {
 	b.token = token
 	if b.token != "" && !strings.HasPrefix(b.token, "$") {
 		if err := b.environment.Set(b.config.TokenEnvKey, b.token); err != nil {

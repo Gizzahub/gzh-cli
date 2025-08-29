@@ -105,9 +105,12 @@ func (f *DefaultMockRepoFactory) CreateBasicRepos(ctx context.Context, opts Basi
 			if err := f.runGitCommand(ctx, repoPath, "checkout", "-b", branch); err != nil {
 				return fmt.Errorf("failed to create branch %s: %w", branch, err)
 			}
+			// Switch back to main branch
 			if err := f.runGitCommand(ctx, repoPath, "checkout", "main"); err != nil {
 				// Try master if main doesn't exist
-				f.runGitCommand(ctx, repoPath, "checkout", "master")
+				if err := f.runGitCommand(ctx, repoPath, "checkout", "master"); err != nil {
+					return fmt.Errorf("failed to checkout main or master branch in %s: %w", repoPath, err)
+				}
 			}
 		}
 	}
@@ -186,7 +189,10 @@ func (f *DefaultMockRepoFactory) createMergeConflict(ctx context.Context, repoPa
 
 	// Switch to main and modify same file
 	if err := f.runGitCommand(ctx, repoPath, "checkout", "main"); err != nil {
-		f.runGitCommand(ctx, repoPath, "checkout", "master")
+		// Fallback to master branch
+		if err := f.runGitCommand(ctx, repoPath, "checkout", "master"); err != nil {
+			return fmt.Errorf("failed to checkout main or master branch: %w", err)
+		}
 	}
 
 	if err := os.WriteFile(conflictFile, []byte("main content\n"), 0o644); err != nil {

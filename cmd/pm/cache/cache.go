@@ -224,7 +224,7 @@ func getCacheSize(paths []string) int64 {
 	return totalSize
 }
 
-// formatSize converts bytes to human readable format
+// formatSize converts bytes to human readable format.
 func formatSize(bytes int64) string {
 	const unit = 1024
 	if bytes < unit {
@@ -554,7 +554,7 @@ Examples:
 	return cmd
 }
 
-func newCacheSizeCmd(ctx context.Context) *cobra.Command {
+func newCacheSizeCmd(_ context.Context) *cobra.Command {
 	var jsonOutput bool
 
 	cmd := &cobra.Command{

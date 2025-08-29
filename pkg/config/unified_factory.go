@@ -268,13 +268,13 @@ func getDefaultSearchPaths() []string {
 type NoOpLogger struct{}
 
 // Debug implements Logger.Debug.
-func (l *NoOpLogger) Debug(message string, fields ...interface{}) {}
+func (l *NoOpLogger) Debug(_ string, _ ...interface{}) {}
 
 // Info implements Logger.Info.
-func (l *NoOpLogger) Info(message string, fields ...interface{}) {}
+func (l *NoOpLogger) Info(_ string, _ ...interface{}) {}
 
 // Warn implements Logger.Warn.
-func (l *NoOpLogger) Warn(message string, fields ...interface{}) {}
+func (l *NoOpLogger) Warn(_ string, _ ...interface{}) {}
 
 // Error implements Logger.Error.
-func (l *NoOpLogger) Error(message string, fields ...interface{}) {}
+func (l *NoOpLogger) Error(_ string, _ ...interface{}) {}

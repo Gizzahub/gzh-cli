@@ -169,7 +169,7 @@ func (rg *ReportGenerator) collectInterfaceReports() ([]InterfaceReport, error) 
 		return nil, fmt.Errorf("failed to get interface names: %w", err)
 	}
 
-	var reports []InterfaceReport
+	reports := make([]InterfaceReport, 0, len(interfaceNames))
 	recentMeasurements := rg.bandwidthCalc.GetRecentMeasurements()
 
 	for _, name := range interfaceNames {

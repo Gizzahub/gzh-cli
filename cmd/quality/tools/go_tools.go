@@ -187,7 +187,7 @@ func (t *GolangciLintTool) ParseOutput(output string) []Issue {
 		return t.parseTextOutput(output)
 	}
 
-	var issues []Issue
+	issues := make([]Issue, 0, len(lintResults.Issues))
 	for _, item := range lintResults.Issues {
 		issue := Issue{
 			File:     item.Pos.Filename,

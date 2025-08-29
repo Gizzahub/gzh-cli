@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -72,7 +74,7 @@ func (bc *BaseCommand) DefaultOptions() *BaseOptions {
 func (bc *BaseCommand) CreateMainCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          bc.serviceName,
-		Short:        fmt.Sprintf("Manage %s configuration files", strings.Title(bc.serviceName)),
+		Short:        fmt.Sprintf("Manage %s configuration files", cases.Title(language.English).String(bc.serviceName)),
 		Long:         bc.buildLongDescription(),
 		SilenceUsage: true,
 	}
@@ -88,7 +90,7 @@ func (bc *BaseCommand) CreateMainCommand() *cobra.Command {
 func (bc *BaseCommand) buildLongDescription() string {
 	var builder strings.Builder
 
-	builder.WriteString(fmt.Sprintf("Save and load %s configuration files.\n\n", strings.Title(bc.serviceName)))
+	builder.WriteString(fmt.Sprintf("Save and load %s configuration files.\n\n", cases.Title(language.English).String(bc.serviceName)))
 	builder.WriteString(bc.description)
 	builder.WriteString("\n\n")
 	builder.WriteString(fmt.Sprintf("The configurations are saved to ~/.gz/%s-configs/ by default.\n\n", bc.serviceName))
@@ -207,7 +209,7 @@ func (bc *BaseCommand) SaveConfig(opts *BaseOptions) error {
 		fmt.Printf("Warning: failed to save metadata: %v\n", err)
 	}
 
-	fmt.Printf("✅ %s configuration '%s' saved successfully\n", strings.Title(bc.serviceName), opts.Name)
+	fmt.Printf("✅ %s configuration '%s' saved successfully\n", cases.Title(language.English).String(bc.serviceName), opts.Name)
 	if opts.Description != "" {
 		fmt.Printf("   Description: %s\n", opts.Description)
 	}
@@ -247,14 +249,14 @@ func (bc *BaseCommand) LoadConfig(opts *BaseOptions) error {
 	// Load and display metadata if available
 	metadataFile := filepath.Join(opts.StorePath, opts.Name+".metadata.json")
 	if metadata, err := bc.loadMetadata(metadataFile); err == nil {
-		fmt.Printf("✅ %s configuration '%s' loaded successfully\n", strings.Title(bc.serviceName), opts.Name)
+		fmt.Printf("✅ %s configuration '%s' loaded successfully\n", cases.Title(language.English).String(bc.serviceName), opts.Name)
 		if metadata.Description != "" {
 			fmt.Printf("   Description: %s\n", metadata.Description)
 		}
 		fmt.Printf("   Originally saved: %s\n", metadata.SavedAt.Format("2006-01-02 15:04:05"))
 		fmt.Printf("   Loaded to: %s\n", opts.ConfigPath)
 	} else {
-		fmt.Printf("✅ %s configuration '%s' loaded successfully to %s\n", strings.Title(bc.serviceName), opts.Name, opts.ConfigPath)
+		fmt.Printf("✅ %s configuration '%s' loaded successfully to %s\n", cases.Title(language.English).String(bc.serviceName), opts.Name, opts.ConfigPath)
 	}
 
 	return nil

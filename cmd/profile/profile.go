@@ -74,10 +74,8 @@ The server provides the following endpoints:
 			defer cancel()
 
 			// This would normally wait for a signal, but for CLI we'll just show the message
-			select {
-			case <-ctx.Done():
-				return profiler.StopHTTPServer(context.Background())
-			}
+			<-ctx.Done()
+			return profiler.StopHTTPServer(context.Background())
 		},
 	}
 

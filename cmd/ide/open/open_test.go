@@ -281,7 +281,7 @@ func TestMockDetector(t *testing.T) {
 	assert.Nil(t, foundIDE, "Should not find non-existent IDE")
 }
 
-// Example of IDE names truncation test
+// Example of IDE names truncation test.
 func TestGetAvailableIDENamesTruncation(t *testing.T) {
 	options := openOptions{}
 

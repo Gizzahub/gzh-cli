@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof" // Import pprof HTTP handlers
+	_ "net/http/pprof" // Import pprof HTTP handlers #nosec G108
 	"os"
 	"path/filepath"
 	"runtime"

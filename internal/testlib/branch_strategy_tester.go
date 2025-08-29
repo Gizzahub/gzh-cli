@@ -462,7 +462,9 @@ func (bst *BranchStrategyTester) setupRemoteRepository(ctx context.Context, remo
 	// Set up the original repository to use this as remote
 	if err := bst.runGitCommand(ctx, baseRepo, "remote", "add", "origin", remoteRepo); err != nil {
 		// Remote might already exist, try to set URL
-		bst.runGitCommand(ctx, baseRepo, "remote", "set-url", "origin", remoteRepo)
+		if err := bst.runGitCommand(ctx, baseRepo, "remote", "set-url", "origin", remoteRepo); err != nil {
+			return fmt.Errorf("failed to set remote origin URL: %w", err)
+		}
 	}
 
 	return nil

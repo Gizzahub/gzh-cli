@@ -25,7 +25,7 @@ type jetbrainsProduct struct {
 	BasePath string
 }
 
-// NewCmd creates the IDE list subcommand
+// NewCmd creates the IDE list subcommand.
 func NewCmd() *cobra.Command {
 	o := &listOptions{}
 
