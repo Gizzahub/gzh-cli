@@ -187,7 +187,7 @@ func findGoPackages(rootDir string) ([]string, error) {
 		if info.IsDir() {
 			entries, err := os.ReadDir(path)
 			if err != nil {
-				return nil // Skip directories we can't read
+				return nil //nolint:nilerr // 읽을 수 없는 디렉토리는 건너뜀
 			}
 
 			hasGoFiles := false

@@ -66,7 +66,7 @@ func NewDevEnvStyles() DevEnvStyles {
 var (
 	styles = NewDevEnvStyles()
 
-	// Backward compatibility exports
+	// Backward compatibility exports.
 	ColorPrimary    = styles.Theme.Primary
 	ColorSecondary  = styles.Theme.Secondary
 	ColorSuccess    = styles.Theme.Success
@@ -78,28 +78,28 @@ var (
 	ColorBorder     = styles.Theme.Border
 	ColorHighlight  = styles.Theme.Highlight
 
-	// Base styles
+	// Base styles.
 	BaseStyle      = styles.Base
 	TitleStyle     = styles.Title
 	HeaderStyle    = styles.Header
 	StatusBarStyle = styles.StatusBar
 	FooterStyle    = styles.Footer
 
-	// Service status styles
+	// Service status styles.
 	ServiceActiveStyle   = styles.ServiceActive
 	ServiceInactiveStyle = styles.ServiceInactive
 	ServiceWarningStyle  = styles.ServiceWarning
 	ServiceErrorStyle    = styles.ServiceError
 	ServiceUnknownStyle  = styles.ServiceUnknown
 
-	// Table styles
+	// Table styles.
 	TableHeaderStyle   = styles.TableHeader
 	TableCellStyle     = styles.TableCell
 	TableSelectedStyle = styles.TableSelected
 	TableEvenRowStyle  = styles.TableEvenRow
 	TableOddRowStyle   = styles.TableOddRow
 
-	// Additional styles for compatibility
+	// Additional styles for compatibility.
 	SpinnerStyle    = styles.Base.Foreground(styles.Theme.Primary)
 	ErrorStyle      = styles.Base.Foreground(styles.Theme.Error).Bold(true)
 	InfoStyle       = styles.Base.Foreground(styles.Theme.Primary).Bold(true)

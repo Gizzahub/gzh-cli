@@ -59,7 +59,7 @@ func (lt *LatencyTester) RunLatencyTests(targets []string) (*LatencyReport, erro
 	}()
 
 	// Collect results
-	var latencyTargets []LatencyTarget
+	latencyTargets := make([]LatencyTarget, 0, len(lt.targets))
 	for result := range results {
 		latencyTargets = append(latencyTargets, result)
 	}

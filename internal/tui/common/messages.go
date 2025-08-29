@@ -192,7 +192,7 @@ func DelayCmd(delay time.Duration, msg tea.Msg) tea.Cmd {
 
 // BatchCmd returns a command that sends multiple messages.
 func BatchCmd(msgs ...tea.Msg) tea.Cmd {
-	var cmds []tea.Cmd
+	cmds := make([]tea.Cmd, 0, len(msgs))
 	for _, msg := range msgs {
 		cmds = append(cmds, func(m tea.Msg) tea.Cmd {
 			return func() tea.Msg { return m }

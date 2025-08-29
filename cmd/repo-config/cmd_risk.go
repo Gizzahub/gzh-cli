@@ -43,6 +43,8 @@ type RiskVulnerability struct {
 }
 
 // runRiskAssessmentCommand executes the risk assessment command.
+//
+//nolint:unused // 중복 구현으로 현재 사용되지 않음
 func runRiskAssessmentCommand(flags GlobalFlags, format string, includeArchived bool, severityFilter, outputFile string, riskThreshold float64) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -111,6 +113,8 @@ func runRiskAssessmentCommand(flags GlobalFlags, format string, includeArchived 
 }
 
 // performRiskAssessments performs risk assessments for repositories.
+//
+//nolint:unused // 중복 구현으로 현재 사용되지 않음
 func performRiskAssessments(organization, _ string, includeArchived bool) ([]RiskAssessment, error) { //nolint:unparam // Token unused in current implementation
 	_ = organization // organization unused in mock implementation
 	// This is a mock implementation. In reality, this would:
@@ -210,6 +214,8 @@ func performRiskAssessments(organization, _ string, includeArchived bool) ([]Ris
 }
 
 // displayRiskAssessmentTable displays risk assessments in table format.
+//
+//nolint:unused // 중복 구현으로 현재 사용되지 않음
 func displayRiskAssessmentTable(assessments []RiskAssessment) {
 	fmt.Printf("%-20s %-10s %-8s %-12s %-15s %s\n",
 		"REPOSITORY", "SEVERITY", "SCORE", "VULNS", "TOP CATEGORY", "LAST ASSESSED")
@@ -326,6 +332,7 @@ func displayRiskAssessmentHTML(assessments []RiskAssessment, outputFile, organiz
 
 // Helper functions
 
+//nolint:unused // 중복 구현으로 현재 사용되지 않음
 func filterBySeverity(assessments []RiskAssessment, severity string) []RiskAssessment {
 	var filtered []RiskAssessment
 
@@ -338,6 +345,7 @@ func filterBySeverity(assessments []RiskAssessment, severity string) []RiskAsses
 	return filtered
 }
 
+//nolint:unused // 중복 구현으로 현재 사용되지 않음
 func filterByRiskThreshold(assessments []RiskAssessment, threshold float64) []RiskAssessment {
 	var filtered []RiskAssessment
 

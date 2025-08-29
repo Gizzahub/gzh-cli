@@ -145,7 +145,7 @@ func (t *BaseTool) ExecuteCommand(ctx context.Context, cmd *exec.Cmd, files []st
 
 	if err != nil {
 		result.Error = err
-		return result, nil // Don't return error - capture it in result
+		return result, nil //nolint:nilerr // 오류를 결과에 캡처하여 반환하므로 에러는 무시
 	}
 
 	result.Success = true

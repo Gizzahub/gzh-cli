@@ -225,7 +225,7 @@ func (t *RuffTool) ParseOutput(output string) []Issue {
 		return t.parseTextOutput(output)
 	}
 
-	var issues []Issue
+	issues := make([]Issue, 0, len(ruffIssues))
 	for _, item := range ruffIssues {
 		issue := Issue{
 			File:     item.Filename,
@@ -351,7 +351,7 @@ func (t *PylintTool) ParseOutput(output string) []Issue {
 		return []Issue{} // pylint text output is complex, skip fallback
 	}
 
-	var issues []Issue
+	issues := make([]Issue, 0, len(pylintIssues))
 	for _, item := range pylintIssues {
 		severity := "info"
 		switch item.Type {

@@ -267,7 +267,7 @@ func CollectAndDetectConflicts(ctx context.Context, sources []Source, pathDirs [
 			nameToEntries[e.Name] = append(nameToEntries[e.Name], e)
 		}
 	}
-	var conflicts []Conflict
+	conflicts := make([]Conflict, 0, len(nameToEntries))
 	for name, entries := range nameToEntries {
 		if len(entries) < 2 {
 			continue

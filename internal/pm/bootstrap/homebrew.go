@@ -54,7 +54,7 @@ func (h *HomebrewBootstrapper) CheckInstallation(ctx context.Context) (*Bootstra
 	brewPath, err := exec.LookPath("brew")
 	if err != nil {
 		status.Issues = append(status.Issues, "Homebrew not found in PATH")
-		return status, nil
+		return status, nil //nolint:nilerr // Homebrew 미설치는 정상적인 상태이므로 오류가 아님
 	}
 
 	status.ConfigPath = brewPath

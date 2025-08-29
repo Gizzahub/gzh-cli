@@ -167,7 +167,11 @@ func (ckm *CustomKeyMap) GetCustomBinding(name string) (key.Binding, bool) {
 // AllBindings returns all bindings including custom ones.
 func (ckm *CustomKeyMap) AllBindings() []key.Binding {
 	bindings := ckm.FullHelp()
-	var all []key.Binding
+	totalBindings := 0
+	for _, row := range bindings {
+		totalBindings += len(row)
+	}
+	all := make([]key.Binding, 0, totalBindings)
 
 	for _, row := range bindings {
 		all = append(all, row...)

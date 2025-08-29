@@ -8,7 +8,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/testlib"
 )
 
-// setupBasicRepos creates basic test repositories
+// setupBasicRepos creates basic test repositories.
 func setupBasicRepos(ctx context.Context, baseDir string, count int, withData bool, branches []string) error {
 	factory := testlib.NewMockRepoFactory()
 
@@ -33,7 +33,7 @@ func setupBasicRepos(ctx context.Context, baseDir string, count int, withData bo
 	return nil
 }
 
-// setupConflictRepos creates conflict scenario repositories
+// setupConflictRepos creates conflict scenario repositories.
 func setupConflictRepos(ctx context.Context, baseDir string, conflictTypes []string) error {
 	factory := testlib.NewMockRepoFactory()
 
@@ -58,8 +58,8 @@ func setupConflictRepos(ctx context.Context, baseDir string, conflictTypes []str
 	return nil
 }
 
-// setupSpecialRepos creates special scenario repositories (placeholder for Phase 1C)
-func setupSpecialRepos(ctx context.Context, baseDir string, specialTypes []string) error {
+// setupSpecialRepos creates special scenario repositories (placeholder for Phase 1C).
+func setupSpecialRepos(_ context.Context, baseDir string, specialTypes []string) error {
 	log.Println("Special repositories will be implemented in Phase 1C")
 	return nil
 }

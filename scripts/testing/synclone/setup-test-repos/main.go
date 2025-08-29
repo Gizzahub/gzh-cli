@@ -40,7 +40,7 @@ func newBasicCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "basic",
 		Short: "Create basic test repositories",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return setupBasicRepos(context.Background(), baseDir, count, withData, branches)
 		},
 	}
@@ -62,7 +62,7 @@ func newConflictCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "conflict",
 		Short: "Create conflict scenario repositories",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return setupConflictRepos(context.Background(), baseDir, types)
 		},
 	}
@@ -82,7 +82,7 @@ func newSpecialCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "special",
 		Short: "Create special scenario repositories",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return setupSpecialRepos(context.Background(), baseDir, types)
 		},
 	}
@@ -99,7 +99,7 @@ func newAllCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "all",
 		Short: "Create all test repository scenarios",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			ctx := context.Background()
 
 			// Create basic repos

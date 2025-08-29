@@ -299,8 +299,8 @@ type VPNConfig struct {
 	Type       string            `yaml:"type" json:"type"` // "openvpn", "wireguard", "ipsec"
 	Server     string            `yaml:"server" json:"server"`
 	Username   string            `yaml:"username,omitempty" json:"username,omitempty"`
-	ConfigFile string            `yaml:"config_file,omitempty" json:"configFile,omitempty"`
-	AutoStart  bool              `yaml:"auto_start,omitempty" json:"autoStart,omitempty"`
+	ConfigFile string            `yaml:"configFile,omitempty" json:"configFile,omitempty"`
+	AutoStart  bool              `yaml:"autoStart,omitempty" json:"autoStart,omitempty"`
 	Options    map[string]string `yaml:"options,omitempty" json:"options,omitempty"`
 }
 
@@ -346,7 +346,7 @@ type Condition struct {
 type NetworkMetrics struct {
 	Timestamp   time.Time     `json:"timestamp"`
 	Latency     time.Duration `json:"latency"`
-	PacketLoss  float64       `json:"packet_loss"`
+	PacketLoss  float64       `json:"packetLoss"`
 	Bandwidth   BandwidthInfo `json:"bandwidth"`
 	Connections int           `json:"connections"`
 	Throughput  float64       `json:"throughput"` // Current throughput in Mbps

@@ -79,7 +79,7 @@ type scanOptions struct {
 	verbose bool
 }
 
-// NewCmd creates the IDE scan subcommand
+// NewCmd creates the IDE scan subcommand.
 func NewCmd() *cobra.Command {
 	o := &scanOptions{}
 

@@ -30,7 +30,7 @@ func (g *GitHubAPI) GetDefaultBranch(ctx context.Context, owner, repository stri
 }
 
 // Clone clones a GitHub repository.
-func (g *GitHubAPI) Clone(ctx context.Context, targetPath, owner, repository string, extraParams ...string) error {
+func (g *GitHubAPI) Clone(ctx context.Context, targetPath, owner, repository string, _ ...string) error {
 	return github.Clone(ctx, targetPath, owner, repository)
 }
 
@@ -107,7 +107,7 @@ func (g *GiteaAPI) Clone(ctx context.Context, targetPath, owner, repository stri
 }
 
 // RefreshAll refreshes all Gitea repositories.
-func (g *GiteaAPI) RefreshAll(ctx context.Context, targetPath, owner string, extraParams ...string) error {
+func (g *GiteaAPI) RefreshAll(ctx context.Context, targetPath, owner string, _ ...string) error {
 	// Note: gitea.RefreshAll doesn't support strategy parameter
 	return gitea.RefreshAll(ctx, targetPath, owner)
 }

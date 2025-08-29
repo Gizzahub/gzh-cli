@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Shared constants for change types
+// Shared constants for change types.
 const (
 	changeTypeCreate = "create"
 	changeTypeUpdate = "update"

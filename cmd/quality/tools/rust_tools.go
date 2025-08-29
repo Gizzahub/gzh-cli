@@ -101,8 +101,8 @@ func (t *ClippyTool) ParseOutput(output string) []Issue {
 		return []Issue{}
 	}
 
-	var issues []Issue
 	lines := strings.Split(output, "\n")
+	issues := make([]Issue, 0, len(lines))
 
 	for _, line := range lines {
 		line = strings.TrimSpace(line)

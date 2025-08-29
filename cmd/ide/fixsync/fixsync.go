@@ -27,7 +27,7 @@ type jetbrainsProduct struct {
 	BasePath string
 }
 
-// NewCmd creates the IDE fix-sync subcommand
+// NewCmd creates the IDE fix-sync subcommand.
 func NewCmd() *cobra.Command {
 	o := &fixSyncOptions{}
 

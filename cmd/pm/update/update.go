@@ -259,7 +259,7 @@ func detectManagerInstalled(ctx context.Context, manager string) bool {
 }
 
 func buildManagersOverview(ctx context.Context, managers []string) []ManagerOverview {
-	var list []ManagerOverview
+	list := make([]ManagerOverview, 0, len(managers))
 	for _, m := range managers {
 		supported, reason := detectManagerSupportOnOS(m)
 		installed := false

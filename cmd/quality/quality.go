@@ -138,7 +138,7 @@ func (m *QualityManager) newRunCmd() *cobra.Command {
 }
 
 // runQuality executes the main quality command logic.
-func (m *QualityManager) runQuality(cmd *cobra.Command, args []string) error {
+func (m *QualityManager) runQuality(cmd *cobra.Command, _ []string) error {
 	ctx := cmd.Context()
 
 	// Get flags
@@ -609,7 +609,7 @@ func (m *QualityManager) newCheckCmd() *cobra.Command {
 }
 
 // runCheck executes the check command (lint-only).
-func (m *QualityManager) runCheck(cmd *cobra.Command, args []string) error {
+func (m *QualityManager) runCheck(cmd *cobra.Command, _ []string) error {
 	ctx := cmd.Context()
 
 	// Get flags
@@ -706,7 +706,7 @@ func (m *QualityManager) newInitCmd() *cobra.Command {
 }
 
 // runInit executes the init command.
-func (m *QualityManager) runInit(cmd *cobra.Command, args []string) error {
+func (m *QualityManager) runInit(_ *cobra.Command, args []string) error {
 	projectRoot, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get current directory: %w", err)
@@ -749,7 +749,7 @@ func (m *QualityManager) runInit(cmd *cobra.Command, args []string) error {
 
 // Helper functions for init command.
 func getLanguageList(languages map[string][]string) []string {
-	var langs []string
+	langs := make([]string, 0, len(languages))
 	for lang := range languages {
 		langs = append(langs, lang)
 	}
@@ -975,7 +975,7 @@ func (m *QualityManager) addDirectToolFlags(cmd *cobra.Command) {
 }
 
 // runDirectTool executes a specific tool directly.
-func (m *QualityManager) runDirectTool(cmd *cobra.Command, args []string, tool tools.QualityTool) error {
+func (m *QualityManager) runDirectTool(cmd *cobra.Command, _ []string, tool tools.QualityTool) error {
 	ctx := cmd.Context()
 
 	// Get flags

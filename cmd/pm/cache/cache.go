@@ -57,7 +57,7 @@ type PackageManagerCache struct {
 	OSSupport    []string // linux, darwin, windows
 }
 
-// getSupportedCacheManagers returns list of supported package managers for cache operations
+// getSupportedCacheManagers returns list of supported package managers for cache operations.
 func getSupportedCacheManagers() []PackageManagerCache {
 	homeDir, _ := os.UserHomeDir()
 
@@ -173,7 +173,7 @@ func getSupportedCacheManagers() []PackageManagerCache {
 	}
 }
 
-// isManagerAvailable checks if a package manager is available on the system
+// isManagerAvailable checks if a package manager is available on the system.
 func isManagerAvailable(manager PackageManagerCache) bool {
 	// Check OS support
 	currentOS := runtime.GOOS
@@ -198,7 +198,7 @@ func isManagerAvailable(manager PackageManagerCache) bool {
 	return err == nil
 }
 
-// getCacheSize calculates the total size of cache directories
+// getCacheSize calculates the total size of cache directories.
 func getCacheSize(paths []string) int64 {
 	var totalSize int64
 
@@ -209,7 +209,7 @@ func getCacheSize(paths []string) int64 {
 
 		err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 			if err != nil {
-				return nil // Skip errors
+				return nil //nolint:nilerr // 접근 불가능한 파일/디렉토리는 건너뜀
 			}
 			if !info.IsDir() {
 				totalSize += info.Size()

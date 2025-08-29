@@ -23,13 +23,13 @@ type RepoDiscoverer struct {
 // DiscoveredRepo represents a discovered repository with metadata.
 type DiscoveredRepo struct {
 	Path       string `yaml:"path"`
-	RemoteURL  string `yaml:"remote_url"`
+	RemoteURL  string `yaml:"remoteUrl"`
 	Provider   string `yaml:"provider"`
 	Org        string `yaml:"org"`
-	RepoName   string `yaml:"repo_name"`
+	RepoName   string `yaml:"repoName"`
 	Branch     string `yaml:"branch"`
-	LastCommit string `yaml:"last_commit"`
-	Size       int64  `yaml:"size_bytes"`
+	LastCommit string `yaml:"lastCommit"`
+	Size       int64  `yaml:"sizeBytes"`
 }
 
 // NewRepoDiscoverer creates a new repository discoverer.
@@ -288,7 +288,7 @@ func (rd *RepoDiscoverer) calculateRepoSize(repoPath string) int64 {
 
 	err := filepath.Walk(repoPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil // Skip errors
+			return nil //nolint:nilerr // 접근 불가능한 파일은 건너뜀
 		}
 		if !info.IsDir() {
 			size += info.Size()

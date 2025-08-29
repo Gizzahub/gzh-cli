@@ -76,6 +76,8 @@ func runDashboardCommand(flags GlobalFlags, port int, autoRefresh bool, refreshR
 }
 
 // handleDashboardHome serves the main dashboard page.
+//
+//nolint:unused // 중복 구현으로 현재 사용되지 않음
 func handleDashboardHome(w http.ResponseWriter, _ *http.Request, organization string, autoRefresh bool, refreshRate int) {
 	html := generateDashboardHTML(organization, autoRefresh, refreshRate)
 
@@ -87,6 +89,8 @@ func handleDashboardHome(w http.ResponseWriter, _ *http.Request, organization st
 }
 
 // handleRepositoriesAPI serves repository data as JSON.
+//
+//nolint:unused // 중복 구현으로 현재 사용되지 않음
 func handleRepositoriesAPI(w http.ResponseWriter, _ *http.Request, organization, token string) {
 	_ = organization // organization unused in mock implementation
 	_ = token        // token unused in mock implementation

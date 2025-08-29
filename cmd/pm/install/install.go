@@ -49,7 +49,7 @@ Examples:
 	return cmd
 }
 
-func runInstall(ctx context.Context, manager, strategy string, force bool) error {
+func runInstall(_ context.Context, manager, strategy string, force bool) error {
 	fmt.Printf("Installing packages with strategy: %s\n", strategy)
 	if force {
 		fmt.Println("Force reinstall enabled")

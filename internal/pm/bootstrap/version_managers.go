@@ -136,7 +136,7 @@ func (r *RbenvBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapSt
 	rbenvPath, err := exec.LookPath("rbenv")
 	if err != nil {
 		status.Issues = append(status.Issues, "rbenv not found in PATH")
-		return status, nil
+		return status, nil //nolint:nilerr // rbenv 미설치는 정상적인 상태이므로 오류가 아님
 	}
 
 	status.ConfigPath = rbenvPath
@@ -236,7 +236,7 @@ func (p *PyenvBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapSt
 	pyenvPath, err := exec.LookPath("pyenv")
 	if err != nil {
 		status.Issues = append(status.Issues, "pyenv not found in PATH")
-		return status, nil
+		return status, nil //nolint:nilerr // pyenv 미설치는 정상적인 상태이므로 오류가 아님
 	}
 
 	status.ConfigPath = pyenvPath

@@ -13,12 +13,6 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/services"
 )
 
-const (
-	visibilityPublic  = "public"
-	visibilityPrivate = "private"
-	templateNone      = "none"
-)
-
 // newListCmd creates the list subcommand.
 func newListCmd() *cobra.Command {
 	var (
