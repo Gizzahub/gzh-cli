@@ -229,7 +229,18 @@ func newSyncCloneGithubCmd(appCtx *app.AppContext) *cobra.Command {
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
-	cmd.MarkFlagsOneRequired("orgName", "org", "config", "use-config")
+	
+	// Custom validation to handle both --org and --orgName aliases
+	cmd.PreRunE = func(cmd *cobra.Command, args []string) error {
+		// Check if any of the required flags are provided
+		hasOrg := cmd.Flags().Changed("orgName") || cmd.Flags().Changed("org")
+		hasConfig := cmd.Flags().Changed("config") || cmd.Flags().Changed("use-config")
+		
+		if !hasOrg && !hasConfig {
+			return fmt.Errorf("at least one of the flags in the group [orgName org config use-config] is required")
+		}
+		return nil
+	}
 
 	return cmd
 }
