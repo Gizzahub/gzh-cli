@@ -35,7 +35,7 @@ test/fixtures/pm/
 ## Prerequisites
 
 - Docker Engine 20.10+
-- Go 1.21+
+- Go 1.23.0+
 - At least 4GB RAM for containers
 - Internet connection for package downloads
 

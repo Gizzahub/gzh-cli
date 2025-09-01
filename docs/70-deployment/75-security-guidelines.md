@@ -10,8 +10,8 @@ We actively maintain security updates for the following versions:
 
 | Version | Supported | Go Version | Security Features |
 | ------- | ------------------ | ---------- | ------------------- |
-| 1.x.x | :white_check_mark: | Go 1.22.0+ | Full security suite |
-| 0.x.x | :x: | Go 1.21+ | Legacy (archived) |
+| 1.x.x | :white_check_mark: | Go 1.23.0+ | Full security suite |
+| 0.x.x | :x: | Go 1.22 and below | Legacy (archived) |
 
 ## Security Architecture
 

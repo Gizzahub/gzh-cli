@@ -2,7 +2,7 @@
 
 ## Core Technologies
 
-- **Language**: Go 1.22.0+
+- **Language**: Go 1.23.0+
 - **Framework**: Cobra CLI framework
 - **Database**: File-based configuration (YAML/JSON)
 - **Cloud Platform**: Multi-cloud support (AWS, GCP, Azure)

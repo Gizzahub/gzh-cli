@@ -14,7 +14,7 @@ Comprehensive development documentation for contributors and maintainers of gzh-
 
 ### Prerequisites
 
-- **Go 1.22.0+**
+- **Go 1.23.0+**
 - **Git** (any recent version)
 - **Make** (for build automation)
 

@@ -201,10 +201,10 @@ func checkGoTool(ctx context.Context) DevEnvResult {
 
 	result.Version = strings.TrimSpace(string(output))
 
-	// Check if version is supported (1.19+)
+	// Check if version is supported (1.23+)
 	if isGoVersionOutdated(result.Version) {
 		result.Status = "outdated"
-		result.Suggestion = "Update to Go 1.21+ for best compatibility"
+		result.Suggestion = "Update to Go 1.23+ for best compatibility"
 	} else {
 		result.Status = "ok"
 	}
@@ -837,8 +837,8 @@ func getStatusIcon(status string) string {
 }
 
 func isGoVersionOutdated(version string) bool {
-	// Simple check - consider Go 1.19 and below as outdated
-	outdatedVersions := []string{"go1.16", "go1.17", "go1.18", "go1.19"}
+	// Simple check - consider Go 1.22 and below as outdated (only 1.23+ supported)
+	outdatedVersions := []string{"go1.16", "go1.17", "go1.18", "go1.19", "go1.20", "go1.21", "go1.22"}
 	for _, old := range outdatedVersions {
 		if strings.Contains(version, old) {
 			return true

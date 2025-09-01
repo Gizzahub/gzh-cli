@@ -6,7 +6,7 @@ This guide covers the installation and initial setup of gzh-cli (`gz`).
 
 ### Prerequisites
 
-- **Go 1.22.0+**
+- **Go 1.23.0+**
 - **Git** (any recent version)
 - **Network access** to Git platforms (GitHub, GitLab, etc.)
 
@@ -223,6 +223,6 @@ After installation, proceed to:
 
 ______________________________________________________________________
 
-**Installation Requirements**: Go 1.22.0+, Git
+**Installation Requirements**: Go 1.23.0+, Git
 **Supported Platforms**: Linux, macOS, Windows (WSL)
 **Last Updated**: 2025-08-19

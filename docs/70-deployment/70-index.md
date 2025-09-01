@@ -26,7 +26,7 @@ Comprehensive guide for building, releasing, and deploying gzh-cli.
 
 ### Prerequisites
 
-- **Go 1.22.0+**
+- **Go 1.23.0+**
 - **Git** with proper commit access
 - **GPG Key** for signing releases
 - **GitHub CLI** for release automation
