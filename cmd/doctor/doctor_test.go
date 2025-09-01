@@ -75,10 +75,14 @@ func TestIsGoVersionSupported(t *testing.T) {
 		version   string
 		supported bool
 	}{
-		{"Go 1.19", "go1.19.1", true},
-		{"Go 1.20", "go1.20.1", true},
-		{"Go 1.21", "go1.21.0", true},
-		{"Go 1.22", "go1.22.1", true},
+		{"Go 1.23", "go1.23.0", true},
+		{"Go 1.23.1", "go1.23.1", true},
+		{"Go 1.24", "go1.24.0", true},
+		{"Go 1.25", "go1.25.0", true},
+		{"Go 1.22", "go1.22.1", false},
+		{"Go 1.21", "go1.21.0", false},
+		{"Go 1.20", "go1.20.1", false},
+		{"Go 1.19", "go1.19.1", false},
 		{"Go 1.18", "go1.18.1", false},
 		{"Go 1.17", "go1.17.1", false},
 		{"unknown", "unknown", false},
