@@ -335,10 +335,10 @@ func runSystemChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 	status := statusPass
 	message := fmt.Sprintf("Go version: %s", goVersion)
 
-	// Check if Go version is supported (1.19+)
+	// Check if Go version is supported (1.23+)
 	if !isGoVersionSupported(goVersion) {
 		status = statusWarn
-		message += " (consider upgrading to Go 1.21+)"
+		message += " (consider upgrading to Go 1.23+)"
 	}
 
 	report.Results = append(report.Results, DiagnosticResult{
@@ -835,11 +835,14 @@ func getSystemInfo() SystemInfo {
 }
 
 func isGoVersionSupported(version string) bool {
-	// Simple check for Go 1.19 through 1.22
-	return strings.Contains(version, "go1.19") ||
-		strings.Contains(version, "go1.20") ||
-		strings.Contains(version, "go1.21") ||
-		strings.Contains(version, "go1.22")
+	// Only support Go 1.23+
+	return strings.Contains(version, "go1.23") ||
+		strings.Contains(version, "go1.24") ||
+		strings.Contains(version, "go1.25") ||
+		strings.Contains(version, "go1.26") ||
+		strings.Contains(version, "go1.27") ||
+		strings.Contains(version, "go1.28") ||
+		strings.Contains(version, "go1.29")
 }
 
 func getDiskSpace(path string) float64 {
