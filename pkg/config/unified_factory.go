@@ -25,8 +25,8 @@ type Factory struct {
 }
 
 // NewConfigFactory creates a new configuration factory with default settings.
-func NewConfigFactory() *ConfigFactory {
-	return &ConfigFactory{
+func NewConfigFactory() *Factory {
+	return &Factory{
 		environment:   env.NewOSEnvironment(),
 		logger:        &NoOpLogger{},
 		searchPaths:   getDefaultSearchPaths(),
@@ -47,7 +47,7 @@ type FactoryOptions struct {
 }
 
 // NewConfigFactoryWithOptions creates a new configuration factory with custom options.
-func NewConfigFactoryWithOptions(opts *ConfigFactoryOptions) *ConfigFactory {
+func NewConfigFactoryWithOptions(opts *FactoryOptions) *Factory {
 	factory := NewConfigFactory()
 
 	if opts != nil {
@@ -69,12 +69,12 @@ func NewConfigFactoryWithOptions(opts *ConfigFactoryOptions) *ConfigFactory {
 }
 
 // LoadConfig loads configuration from the first available file using search paths.
-func (f *ConfigFactory) LoadConfig() (*UnifiedConfig, error) {
+func (f *Factory) LoadConfig() (*UnifiedConfig, error) {
 	return f.LoadConfigFromPath("")
 }
 
 // LoadConfigFromPath loads configuration from a specific path or searches if empty.
-func (f *ConfigFactory) LoadConfigFromPath(configPath string) (*UnifiedConfig, error) {
+func (f *Factory) LoadConfigFromPath(configPath string) (*UnifiedConfig, error) {
 	f.logger.Debug("Loading configuration", "path", configPath)
 
 	// Use unified loader for configuration loading
@@ -107,18 +107,18 @@ func (f *ConfigFactory) LoadConfigFromPath(configPath string) (*UnifiedConfig, e
 }
 
 // CreateProviderFactory creates a provider factory using this config factory's dependencies.
-func (f *ConfigFactory) CreateProviderFactory() ProviderFactory {
+func (f *Factory) CreateProviderFactory() ProviderFactory {
 	return NewProviderFactory(f.environment, f.logger)
 }
 
 // CreateProviderCloner creates a provider cloner for the specified provider.
-func (f *ConfigFactory) CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
+func (f *Factory) CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
 	factory := f.CreateProviderFactory()
 	return factory.CreateCloner(ctx, providerName, token)
 }
 
 // FindConfigFile finds the first available configuration file in search paths.
-func (f *ConfigFactory) FindConfigFile() (string, error) {
+func (f *Factory) FindConfigFile() (string, error) {
 	// Check environment variable first
 	if configPath := f.environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); configPath != "" {
 		expandedPath := f.expandPath(configPath)
@@ -140,7 +140,7 @@ func (f *ConfigFactory) FindConfigFile() (string, error) {
 }
 
 // CreateDefaultConfig creates a default configuration file at the specified path.
-func (f *ConfigFactory) CreateDefaultConfig(filename string) error {
+func (f *Factory) CreateDefaultConfig(filename string) error {
 	defaultConfig := `version: "1.0.0"
 default_provider: github
 
@@ -176,7 +176,7 @@ providers:
 }
 
 // GetDefaultConfigPath returns the default path for creating new config files.
-func (f *ConfigFactory) GetDefaultConfigPath() string {
+func (f *Factory) GetDefaultConfigPath() string {
 	homeDir := f.environment.Get(env.CommonEnvironmentKeys.HomeDir)
 	if homeDir == "" {
 		if h, err := os.UserHomeDir(); err == nil {
@@ -189,12 +189,12 @@ func (f *ConfigFactory) GetDefaultConfigPath() string {
 }
 
 // SetSearchPaths updates the search paths for configuration files.
-func (f *ConfigFactory) SetSearchPaths(paths []string) {
+func (f *Factory) SetSearchPaths(paths []string) {
 	f.searchPaths = paths
 }
 
 // GetSearchPaths returns the current search paths with variables expanded.
-func (f *ConfigFactory) GetSearchPaths() []string {
+func (f *Factory) GetSearchPaths() []string {
 	paths := make([]string, len(f.searchPaths))
 	for i, path := range f.searchPaths {
 		paths[i] = f.expandPath(path)
@@ -203,7 +203,7 @@ func (f *ConfigFactory) GetSearchPaths() []string {
 }
 
 // expandPath expands ~ to home directory and resolves relative paths.
-func (f *ConfigFactory) expandPath(path string) string {
+func (f *Factory) expandPath(path string) string {
 	if path != "" && path[0] == '~' {
 		homeDir := f.environment.Get(env.CommonEnvironmentKeys.HomeDir)
 		if homeDir == "" {
@@ -230,7 +230,7 @@ func (f *ConfigFactory) expandPath(path string) string {
 }
 
 // fileExists checks if a file exists and is readable.
-func (f *ConfigFactory) fileExists(filename string) bool {
+func (f *Factory) fileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
 		return false

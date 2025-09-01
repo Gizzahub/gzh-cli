@@ -76,7 +76,7 @@ func (t *TableFormatter) Format(statuses []ServiceStatus) (string, error) {
 }
 
 // formatStatus formats the service status with colors.
-func (t *TableFormatter) formatStatus(status StatusType) string {
+func (t *TableFormatter) formatStatus(status Type) string {
 	switch status {
 	case StatusActive:
 		return t.colorize("✅ Active  ", "green")

@@ -49,7 +49,7 @@ type CredentialStatus struct {
 
 // HealthStatus represents detailed health check information.
 type HealthStatus struct {
-	Status    StatusType             `json:"status"`
+	Status    Type                   `json:"status"`
 	Message   string                 `json:"message,omitempty"`
 	CheckedAt time.Time              `json:"checkedAt"`
 	Duration  time.Duration          `json:"duration"`

@@ -17,18 +17,18 @@ type Collector struct {
 }
 
 // NewStatusCollector creates a new status collector.
-func NewStatusCollector(checkers []ServiceChecker, timeout time.Duration) *StatusCollector {
+func NewStatusCollector(checkers []ServiceChecker, timeout time.Duration) *Collector {
 	if timeout == 0 {
 		timeout = 30 * time.Second
 	}
-	return &StatusCollector{
+	return &Collector{
 		checkers: checkers,
 		timeout:  timeout,
 	}
 }
 
 // CollectAll collects status from all registered services.
-func (sc *StatusCollector) CollectAll(ctx context.Context, options StatusOptions) ([]ServiceStatus, error) {
+func (sc *Collector) CollectAll(ctx context.Context, options Options) ([]ServiceStatus, error) {
 	// Filter checkers based on requested services
 	checkers := sc.filterCheckers(options.Services)
 	if len(checkers) == 0 {
@@ -51,7 +51,7 @@ func (sc *StatusCollector) CollectAll(ctx context.Context, options StatusOptions
 // collectParallel collects status information in parallel
 //
 //nolint:unparam // Error return is part of interface consistency
-func (sc *StatusCollector) collectParallel(ctx context.Context, checkers []ServiceChecker, options StatusOptions) ([]ServiceStatus, error) {
+func (sc *Collector) collectParallel(ctx context.Context, checkers []ServiceChecker, options Options) ([]ServiceStatus, error) {
 	var wg sync.WaitGroup
 	results := make([]ServiceStatus, len(checkers))
 	errors := make([]error, len(checkers))
@@ -94,7 +94,7 @@ func (sc *StatusCollector) collectParallel(ctx context.Context, checkers []Servi
 // collectSequential collects status information sequentially
 //
 //nolint:unparam // Error return is part of interface consistency
-func (sc *StatusCollector) collectSequential(ctx context.Context, checkers []ServiceChecker, options StatusOptions) ([]ServiceStatus, error) {
+func (sc *Collector) collectSequential(ctx context.Context, checkers []ServiceChecker, options Options) ([]ServiceStatus, error) {
 	results := make([]ServiceStatus, 0, len(checkers))
 
 	for _, checker := range checkers {
@@ -117,7 +117,7 @@ func (sc *StatusCollector) collectSequential(ctx context.Context, checkers []Ser
 }
 
 // checkService checks a single service status.
-func (sc *StatusCollector) checkService(ctx context.Context, checker ServiceChecker, options StatusOptions) (*ServiceStatus, error) {
+func (sc *Collector) checkService(ctx context.Context, checker ServiceChecker, options Options) (*ServiceStatus, error) {
 	status, err := checker.CheckStatus(ctx)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func (sc *StatusCollector) checkService(ctx context.Context, checker ServiceChec
 }
 
 // filterCheckers filters checkers based on requested service names.
-func (sc *StatusCollector) filterCheckers(services []string) []ServiceChecker {
+func (sc *Collector) filterCheckers(services []string) []ServiceChecker {
 	if len(services) == 0 {
 		return sc.checkers
 	}
