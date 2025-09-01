@@ -19,6 +19,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/cmd/profile"
 	"github.com/Gizzahub/gzh-cli/cmd/quality"
 	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
+	"github.com/Gizzahub/gzh-cli/cmd/selfupdate"
 	"github.com/Gizzahub/gzh-cli/cmd/synclone"
 
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
@@ -66,6 +67,7 @@ Utility Commands: doctor, version`,
 	profile.RegisterProfileCmd(appCtx)
 	git.RegisterGitCmd(appCtx)
 	quality.RegisterQualityCmd(appCtx)
+	selfupdate.RegisterSelfUpdateCmd(appCtx)
 
 	// Add all registered commands to root
 	for _, provider := range registry.List() {
