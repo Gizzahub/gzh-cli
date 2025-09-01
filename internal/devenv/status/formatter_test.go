@@ -60,7 +60,7 @@ func TestTableFormatter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			formatter := NewTableFormatter(tt.useColor)
+			formatter := NewStatusTableFormatter(tt.useColor)
 			output, err := formatter.Format(statuses)
 
 			require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestTableFormatter(t *testing.T) {
 }
 
 func TestTableFormatter_EmptyStatuses(t *testing.T) {
-	formatter := NewTableFormatter(false)
+	formatter := NewStatusTableFormatter(false)
 	output, err := formatter.Format([]ServiceStatus{})
 
 	require.NoError(t, err)
@@ -120,7 +120,7 @@ func TestJSONFormatter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			formatter := NewJSONFormatter(tt.pretty)
+			formatter := NewStatusJSONFormatter(tt.pretty)
 			output, err := formatter.Format(statuses)
 
 			require.NoError(t, err)
@@ -162,7 +162,7 @@ func TestYAMLFormatter(t *testing.T) {
 		},
 	}
 
-	formatter := NewYAMLFormatter()
+	formatter := NewStatusYAMLFormatter()
 	output, err := formatter.Format(statuses)
 
 	require.NoError(t, err)
@@ -183,7 +183,7 @@ func TestYAMLFormatter(t *testing.T) {
 }
 
 func TestFormatDuration(t *testing.T) {
-	formatter := NewTableFormatter(false)
+	formatter := NewStatusTableFormatter(false)
 
 	tests := []struct {
 		name     string

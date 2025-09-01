@@ -28,7 +28,7 @@ type RepositoryJob struct {
 	Path       string
 	Branch     string
 	Strategy   string
-	Config     map[string]interface{} // For configuration operations
+	WorkerPoolConfig     map[string]interface{} // For configuration operations
 }
 
 // RepositoryResult represents the result of a repository operation.
@@ -84,19 +84,19 @@ func NewRepositoryWorkerPool(config RepositoryPoolConfig) *RepositoryWorkerPool 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create specialized pools for different operation types
-	clonePool := New[RepositoryJob](Config{
+	clonePool := New[RepositoryJob](WorkerPoolConfig{
 		WorkerCount: config.CloneWorkers,
 		BufferSize:  config.CloneWorkers * 2,
 		Timeout:     config.OperationTimeout,
 	})
 
-	updatePool := New[RepositoryJob](Config{
+	updatePool := New[RepositoryJob](WorkerPoolConfig{
 		WorkerCount: config.UpdateWorkers,
 		BufferSize:  config.UpdateWorkers * 2,
 		Timeout:     config.OperationTimeout,
 	})
 
-	configPool := New[RepositoryJob](Config{
+	configPool := New[RepositoryJob](WorkerPoolConfig{
 		WorkerCount: config.ConfigWorkers,
 		BufferSize:  config.ConfigWorkers * 2,
 		Timeout:     config.OperationTimeout,

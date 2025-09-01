@@ -22,7 +22,7 @@ type SyncTracker struct {
 	Status      SyncStatus              `json:"status"`
 	Progress    map[string]SyncProgress `json:"progress"`
 	Statistics  SyncStatistics          `json:"statistics"`
-	Options     Options                 `json:"options"`
+	SyncOptions     SyncOptions                 `json:"options"`
 	Errors      []SyncError             `json:"errors,omitempty"`
 }
 
@@ -57,7 +57,7 @@ type SyncError struct {
 }
 
 // NewSyncTracker creates a new sync tracker.
-func NewSyncTracker(id, source, destination string, opts Options) *SyncTracker {
+func NewSyncTracker(id, source, destination string, opts SyncOptions) *SyncTracker {
 	return &SyncTracker{
 		ID:          id,
 		StartedAt:   time.Now(),
@@ -65,7 +65,7 @@ func NewSyncTracker(id, source, destination string, opts Options) *SyncTracker {
 		Destination: destination,
 		Status:      StatusPending,
 		Progress:    make(map[string]SyncProgress),
-		Options:     opts,
+		SyncOptions:     opts,
 		Statistics:  SyncStatistics{},
 	}
 }

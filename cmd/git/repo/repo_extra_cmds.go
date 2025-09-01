@@ -13,7 +13,7 @@ import (
 
 // newRepoSyncCmd defines the sync command under repo.
 func newRepoSyncCmd() *cobra.Command {
-	var opts sync.Options
+	var opts sync.SyncOptions
 
 	cmd := &cobra.Command{
 		Use:   "sync",

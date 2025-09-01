@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-// Options contains options for repository synchronization.
-type Options struct {
+// SyncOptions contains options for repository synchronization.
+type SyncOptions struct {
 	// Source and destination
 	From string
 	To   string
@@ -118,7 +118,7 @@ func (t *SyncTarget) FullName() string {
 }
 
 // Validate validates the sync options.
-func (opts *Options) Validate() error {
+func (opts *SyncOptions) Validate() error {
 	if opts.From == "" {
 		return fmt.Errorf("source (--from) is required")
 	}
@@ -162,11 +162,11 @@ func (opts *Options) Validate() error {
 }
 
 // GetSourceTarget parses and returns the source target.
-func (opts *Options) GetSourceTarget() (*SyncTarget, error) {
+func (opts *SyncOptions) GetSourceTarget() (*SyncTarget, error) {
 	return ParseTarget(opts.From)
 }
 
 // GetDestinationTarget parses and returns the destination target.
-func (opts *Options) GetDestinationTarget() (*SyncTarget, error) {
+func (opts *SyncOptions) GetDestinationTarget() (*SyncTarget, error) {
 	return ParseTarget(opts.To)
 }

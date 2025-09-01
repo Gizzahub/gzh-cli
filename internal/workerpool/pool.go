@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// Config represents worker pool configuration.
-type Config struct {
+// WorkerPoolConfig represents worker pool configuration.
+type WorkerPoolConfig struct {
 	// WorkerCount specifies the number of workers. If 0, defaults to runtime.NumCPU()
 	WorkerCount int
 	// BufferSize specifies the job queue buffer size. If 0, defaults to WorkerCount * 2
@@ -22,8 +22,8 @@ type Config struct {
 }
 
 // DefaultConfig returns a sensible default configuration.
-func DefaultConfig() Config {
-	return Config{
+func DefaultWorkerPoolConfig() WorkerPoolConfig {
+	return WorkerPoolConfig{
 		WorkerCount: runtime.NumCPU(),
 		BufferSize:  runtime.NumCPU() * 2,
 		Timeout:     30 * time.Second,
@@ -44,7 +44,7 @@ type Result[T any] struct {
 
 // Pool represents a generic worker pool.
 type Pool[T any] struct {
-	config  Config
+	config  WorkerPoolConfig
 	jobs    chan Job[T]
 	results chan Result[T]
 	wg      sync.WaitGroup
@@ -55,7 +55,7 @@ type Pool[T any] struct {
 }
 
 // New creates a new worker pool with the given configuration.
-func New[T any](config Config) *Pool[T] {
+func New[T any](config WorkerPoolConfig) *Pool[T] {
 	if config.WorkerCount <= 0 {
 		config.WorkerCount = runtime.NumCPU()
 	}
@@ -202,7 +202,7 @@ func (p *Pool[T]) worker(_ int) {
 }
 
 // ProcessBatch processes a batch of items using the worker pool.
-func ProcessBatch[T any](ctx context.Context, items []T, config Config,
+func ProcessBatch[T any](ctx context.Context, items []T, config WorkerPoolConfig,
 	processFn func(context.Context, T) error,
 ) ([]Result[T], error) {
 	if len(items) == 0 {

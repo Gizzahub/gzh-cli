@@ -140,11 +140,11 @@ func createServiceCheckers(services []string) []status.ServiceChecker {
 func createFormatter(format string, useColor bool) (status.StatusFormatter, error) {
 	switch strings.ToLower(format) {
 	case "table":
-		return status.NewTableFormatter(useColor), nil
+		return status.NewStatusTableFormatter(useColor), nil
 	case "json":
-		return status.NewJSONFormatter(true), nil
+		return status.NewStatusJSONFormatter(true), nil
 	case "yaml", "yml":
-		return status.NewYAMLFormatter(), nil
+		return status.NewStatusYAMLFormatter(), nil
 	default:
 		return nil, fmt.Errorf("unsupported format: %s (supported: table, json, yaml)", format)
 	}

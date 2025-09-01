@@ -15,9 +15,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "go.uber.org/mock/gomock"
-
 	httpclient "github.com/Gizzahub/gzh-cli/internal/httpclient"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockHTTPClient is a mock of HTTPClient interface.
@@ -81,10 +80,10 @@ func (mr *MockHTTPClientMockRecorder) AddResponseMiddleware(middleware any) *gom
 }
 
 // Delete mocks base method.
-func (m *MockHTTPClient) Delete(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Delete(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -96,10 +95,10 @@ func (mr *MockHTTPClientMockRecorder) Delete(ctx, url any) *gomock.Call {
 }
 
 // Do mocks base method.
-func (m *MockHTTPClient) Do(ctx context.Context, req *httpclient.Request) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Do(ctx context.Context, req *httpclient.HTTPRequest) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Do", ctx, req)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -111,10 +110,10 @@ func (mr *MockHTTPClientMockRecorder) Do(ctx, req any) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockHTTPClient) Get(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Get(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -126,10 +125,10 @@ func (mr *MockHTTPClientMockRecorder) Get(ctx, url any) *gomock.Call {
 }
 
 // Head mocks base method.
-func (m *MockHTTPClient) Head(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Head(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Head", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -141,10 +140,10 @@ func (mr *MockHTTPClientMockRecorder) Head(ctx, url any) *gomock.Call {
 }
 
 // Options mocks base method.
-func (m *MockHTTPClient) Options(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Options(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Options", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -156,10 +155,10 @@ func (mr *MockHTTPClientMockRecorder) Options(ctx, url any) *gomock.Call {
 }
 
 // Patch mocks base method.
-func (m *MockHTTPClient) Patch(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Patch(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Patch", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -171,10 +170,10 @@ func (mr *MockHTTPClientMockRecorder) Patch(ctx, url, body any) *gomock.Call {
 }
 
 // Post mocks base method.
-func (m *MockHTTPClient) Post(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Post(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Post", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -186,10 +185,10 @@ func (mr *MockHTTPClientMockRecorder) Post(ctx, url, body any) *gomock.Call {
 }
 
 // Put mocks base method.
-func (m *MockHTTPClient) Put(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockHTTPClient) Put(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Put", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -309,10 +308,10 @@ func (m *MockRequestMiddleware) EXPECT() *MockRequestMiddlewareMockRecorder {
 }
 
 // ProcessRequest mocks base method.
-func (m *MockRequestMiddleware) ProcessRequest(ctx context.Context, req *httpclient.Request) (*httpclient.Request, error) {
+func (m *MockRequestMiddleware) ProcessRequest(ctx context.Context, req *httpclient.HTTPRequest) (*httpclient.HTTPRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessRequest", ctx, req)
-	ret0, _ := ret[0].(*httpclient.Request)
+	ret0, _ := ret[0].(*httpclient.HTTPRequest)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -348,10 +347,10 @@ func (m *MockResponseMiddleware) EXPECT() *MockResponseMiddlewareMockRecorder {
 }
 
 // ProcessResponse mocks base method.
-func (m *MockResponseMiddleware) ProcessResponse(ctx context.Context, req *httpclient.Request, resp *httpclient.Response) (*httpclient.Response, error) {
+func (m *MockResponseMiddleware) ProcessResponse(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessResponse", ctx, req, resp)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -415,7 +414,7 @@ func (mr *MockRetryPolicyMockRecorder) MaxRetries() *gomock.Call {
 }
 
 // ShouldRetry mocks base method.
-func (m *MockRetryPolicy) ShouldRetry(ctx context.Context, req *httpclient.Request, resp *httpclient.Response, err error, attempt int) bool {
+func (m *MockRetryPolicy) ShouldRetry(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse, err error, attempt int) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ShouldRetry", ctx, req, resp, err, attempt)
 	ret0, _ := ret[0].(bool)
@@ -531,10 +530,10 @@ func (m *MockCachePolicy) EXPECT() *MockCachePolicyMockRecorder {
 }
 
 // GetCached mocks base method.
-func (m *MockCachePolicy) GetCached(ctx context.Context, req *httpclient.Request) (*httpclient.Response, bool) {
+func (m *MockCachePolicy) GetCached(ctx context.Context, req *httpclient.HTTPRequest) (*httpclient.HTTPResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCached", ctx, req)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -574,7 +573,7 @@ func (mr *MockCachePolicyMockRecorder) Invalidate(ctx, pattern any) *gomock.Call
 }
 
 // ShouldCache mocks base method.
-func (m *MockCachePolicy) ShouldCache(ctx context.Context, req *httpclient.Request, resp *httpclient.Response) bool {
+func (m *MockCachePolicy) ShouldCache(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ShouldCache", ctx, req, resp)
 	ret0, _ := ret[0].(bool)
@@ -588,7 +587,7 @@ func (mr *MockCachePolicyMockRecorder) ShouldCache(ctx, req, resp any) *gomock.C
 }
 
 // Store mocks base method.
-func (m *MockCachePolicy) Store(ctx context.Context, req *httpclient.Request, resp *httpclient.Response) error {
+func (m *MockCachePolicy) Store(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Store", ctx, req, resp)
 	ret0, _ := ret[0].(error)
@@ -641,7 +640,7 @@ func (mr *MockRequestLoggerMockRecorder) GetLogs(ctx, filters any) *gomock.Call 
 }
 
 // LogRequest mocks base method.
-func (m *MockRequestLogger) LogRequest(ctx context.Context, req *httpclient.Request) error {
+func (m *MockRequestLogger) LogRequest(ctx context.Context, req *httpclient.HTTPRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LogRequest", ctx, req)
 	ret0, _ := ret[0].(error)
@@ -655,7 +654,7 @@ func (mr *MockRequestLoggerMockRecorder) LogRequest(ctx, req any) *gomock.Call {
 }
 
 // LogResponse mocks base method.
-func (m *MockRequestLogger) LogResponse(ctx context.Context, req *httpclient.Request, resp *httpclient.Response, err error) error {
+func (m *MockRequestLogger) LogResponse(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse, err error) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LogResponse", ctx, req, resp, err)
 	ret0, _ := ret[0].(error)
@@ -769,10 +768,10 @@ func (mr *MockMockClientMockRecorder) ClearMocks() *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockMockClient) Delete(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockMockClient) Delete(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -784,10 +783,10 @@ func (mr *MockMockClientMockRecorder) Delete(ctx, url any) *gomock.Call {
 }
 
 // Do mocks base method.
-func (m *MockMockClient) Do(ctx context.Context, req *httpclient.Request) (*httpclient.Response, error) {
+func (m *MockMockClient) Do(ctx context.Context, req *httpclient.HTTPRequest) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Do", ctx, req)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -799,10 +798,10 @@ func (mr *MockMockClientMockRecorder) Do(ctx, req any) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockMockClient) Get(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockMockClient) Get(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -828,10 +827,10 @@ func (mr *MockMockClientMockRecorder) GetRecordings() *gomock.Call {
 }
 
 // Head mocks base method.
-func (m *MockMockClient) Head(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockMockClient) Head(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Head", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -871,10 +870,10 @@ func (mr *MockMockClientMockRecorder) LoadRecordings(path any) *gomock.Call {
 }
 
 // Options mocks base method.
-func (m *MockMockClient) Options(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockMockClient) Options(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Options", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -886,10 +885,10 @@ func (mr *MockMockClientMockRecorder) Options(ctx, url any) *gomock.Call {
 }
 
 // Patch mocks base method.
-func (m *MockMockClient) Patch(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockMockClient) Patch(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Patch", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -901,10 +900,10 @@ func (mr *MockMockClientMockRecorder) Patch(ctx, url, body any) *gomock.Call {
 }
 
 // Post mocks base method.
-func (m *MockMockClient) Post(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockMockClient) Post(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Post", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -916,10 +915,10 @@ func (mr *MockMockClientMockRecorder) Post(ctx, url, body any) *gomock.Call {
 }
 
 // Put mocks base method.
-func (m *MockMockClient) Put(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockMockClient) Put(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Put", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1095,7 +1094,7 @@ func (m *MockMockCondition) EXPECT() *MockMockConditionMockRecorder {
 }
 
 // Matches mocks base method.
-func (m *MockMockCondition) Matches(ctx context.Context, req *httpclient.Request) bool {
+func (m *MockMockCondition) Matches(ctx context.Context, req *httpclient.HTTPRequest) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Matches", ctx, req)
 	ret0, _ := ret[0].(bool)
@@ -1177,7 +1176,7 @@ func (mr *MockMetricsCollectorMockRecorder) GetMetrics() *gomock.Call {
 }
 
 // RecordRequest mocks base method.
-func (m *MockMetricsCollector) RecordRequest(ctx context.Context, req *httpclient.Request, resp *httpclient.Response, duration time.Duration, err error) {
+func (m *MockMetricsCollector) RecordRequest(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse, duration time.Duration, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "RecordRequest", ctx, req, resp, duration, err)
 }
@@ -1275,10 +1274,10 @@ func (mr *MockHTTPServiceMockRecorder) Allow(ctx any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockHTTPService) Delete(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPService) Delete(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1290,10 +1289,10 @@ func (mr *MockHTTPServiceMockRecorder) Delete(ctx, url any) *gomock.Call {
 }
 
 // Do mocks base method.
-func (m *MockHTTPService) Do(ctx context.Context, req *httpclient.Request) (*httpclient.Response, error) {
+func (m *MockHTTPService) Do(ctx context.Context, req *httpclient.HTTPRequest) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Do", ctx, req)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1335,10 +1334,10 @@ func (mr *MockHTTPServiceMockRecorder) ExportPrometheus() *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockHTTPService) Get(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPService) Get(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1350,10 +1349,10 @@ func (mr *MockHTTPServiceMockRecorder) Get(ctx, url any) *gomock.Call {
 }
 
 // GetCached mocks base method.
-func (m *MockHTTPService) GetCached(ctx context.Context, req *httpclient.Request) (*httpclient.Response, bool) {
+func (m *MockHTTPService) GetCached(ctx context.Context, req *httpclient.HTTPRequest) (*httpclient.HTTPResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCached", ctx, req)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -1436,10 +1435,10 @@ func (mr *MockHTTPServiceMockRecorder) GetStats() *gomock.Call {
 }
 
 // Head mocks base method.
-func (m *MockHTTPService) Head(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPService) Head(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Head", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1465,7 +1464,7 @@ func (mr *MockHTTPServiceMockRecorder) Invalidate(ctx, pattern any) *gomock.Call
 }
 
 // LogRequest mocks base method.
-func (m *MockHTTPService) LogRequest(ctx context.Context, req *httpclient.Request) error {
+func (m *MockHTTPService) LogRequest(ctx context.Context, req *httpclient.HTTPRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LogRequest", ctx, req)
 	ret0, _ := ret[0].(error)
@@ -1479,7 +1478,7 @@ func (mr *MockHTTPServiceMockRecorder) LogRequest(ctx, req any) *gomock.Call {
 }
 
 // LogResponse mocks base method.
-func (m *MockHTTPService) LogResponse(ctx context.Context, req *httpclient.Request, resp *httpclient.Response, err error) error {
+func (m *MockHTTPService) LogResponse(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse, err error) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LogResponse", ctx, req, resp, err)
 	ret0, _ := ret[0].(error)
@@ -1507,10 +1506,10 @@ func (mr *MockHTTPServiceMockRecorder) MaxRetries() *gomock.Call {
 }
 
 // Options mocks base method.
-func (m *MockHTTPService) Options(ctx context.Context, url string) (*httpclient.Response, error) {
+func (m *MockHTTPService) Options(ctx context.Context, url string) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Options", ctx, url)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1522,10 +1521,10 @@ func (mr *MockHTTPServiceMockRecorder) Options(ctx, url any) *gomock.Call {
 }
 
 // Patch mocks base method.
-func (m *MockHTTPService) Patch(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockHTTPService) Patch(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Patch", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1537,10 +1536,10 @@ func (mr *MockHTTPServiceMockRecorder) Patch(ctx, url, body any) *gomock.Call {
 }
 
 // Post mocks base method.
-func (m *MockHTTPService) Post(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockHTTPService) Post(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Post", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1552,10 +1551,10 @@ func (mr *MockHTTPServiceMockRecorder) Post(ctx, url, body any) *gomock.Call {
 }
 
 // Put mocks base method.
-func (m *MockHTTPService) Put(ctx context.Context, url string, body io.Reader) (*httpclient.Response, error) {
+func (m *MockHTTPService) Put(ctx context.Context, url string, body io.Reader) (*httpclient.HTTPResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Put", ctx, url, body)
-	ret0, _ := ret[0].(*httpclient.Response)
+	ret0, _ := ret[0].(*httpclient.HTTPResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1567,7 +1566,7 @@ func (mr *MockHTTPServiceMockRecorder) Put(ctx, url, body any) *gomock.Call {
 }
 
 // RecordRequest mocks base method.
-func (m *MockHTTPService) RecordRequest(ctx context.Context, req *httpclient.Request, resp *httpclient.Response, duration time.Duration, err error) {
+func (m *MockHTTPService) RecordRequest(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse, duration time.Duration, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "RecordRequest", ctx, req, resp, duration, err)
 }
@@ -1687,7 +1686,7 @@ func (mr *MockHTTPServiceMockRecorder) SetUserAgent(userAgent any) *gomock.Call 
 }
 
 // ShouldCache mocks base method.
-func (m *MockHTTPService) ShouldCache(ctx context.Context, req *httpclient.Request, resp *httpclient.Response) bool {
+func (m *MockHTTPService) ShouldCache(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ShouldCache", ctx, req, resp)
 	ret0, _ := ret[0].(bool)
@@ -1701,7 +1700,7 @@ func (mr *MockHTTPServiceMockRecorder) ShouldCache(ctx, req, resp any) *gomock.C
 }
 
 // ShouldRetry mocks base method.
-func (m *MockHTTPService) ShouldRetry(ctx context.Context, req *httpclient.Request, resp *httpclient.Response, err error, attempt int) bool {
+func (m *MockHTTPService) ShouldRetry(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse, err error, attempt int) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ShouldRetry", ctx, req, resp, err, attempt)
 	ret0, _ := ret[0].(bool)
@@ -1715,7 +1714,7 @@ func (mr *MockHTTPServiceMockRecorder) ShouldRetry(ctx, req, resp, err, attempt 
 }
 
 // Store mocks base method.
-func (m *MockHTTPService) Store(ctx context.Context, req *httpclient.Request, resp *httpclient.Response) error {
+func (m *MockHTTPService) Store(ctx context.Context, req *httpclient.HTTPRequest, resp *httpclient.HTTPResponse) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Store", ctx, req, resp)
 	ret0, _ := ret[0].(error)

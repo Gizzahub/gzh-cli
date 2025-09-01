@@ -47,7 +47,6 @@ func TestUpdater_GetAssetName(t *testing.T) {
 
 	// Save original values
 	originalGOOS := runtime.GOOS
-	originalGOARCH := runtime.GOARCH
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

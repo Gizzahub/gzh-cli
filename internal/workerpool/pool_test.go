@@ -13,7 +13,7 @@ import (
 )
 
 func TestPool_BasicFunctionality(t *testing.T) {
-	config := Config{
+	config := WorkerPoolConfig{
 		WorkerCount: 2,
 		BufferSize:  4,
 		Timeout:     time.Second,
@@ -46,7 +46,7 @@ func TestPool_BasicFunctionality(t *testing.T) {
 }
 
 func TestPool_ConcurrentProcessing(t *testing.T) {
-	config := Config{
+	config := WorkerPoolConfig{
 		WorkerCount: 3,
 		BufferSize:  10,
 		Timeout:     time.Second,
@@ -97,7 +97,7 @@ func TestPool_ConcurrentProcessing(t *testing.T) {
 }
 
 func TestPool_ErrorHandling(t *testing.T) {
-	config := Config{
+	config := WorkerPoolConfig{
 		WorkerCount: 2,
 		BufferSize:  4,
 		Timeout:     time.Second,
@@ -148,7 +148,7 @@ func TestPool_ErrorHandling(t *testing.T) {
 }
 
 func TestPool_DoubleStart(t *testing.T) {
-	config := DefaultConfig()
+	config := DefaultWorkerPoolConfig()
 	pool := New[int](config)
 
 	err := pool.Start()
@@ -162,7 +162,7 @@ func TestPool_DoubleStart(t *testing.T) {
 }
 
 func TestPool_SubmitWithoutStart(t *testing.T) {
-	config := DefaultConfig()
+	config := DefaultWorkerPoolConfig()
 	pool := New[int](config)
 
 	processFn := func(_ context.Context, data int) error {
@@ -175,7 +175,7 @@ func TestPool_SubmitWithoutStart(t *testing.T) {
 
 func TestProcessBatch(t *testing.T) {
 	items := []int{1, 2, 3, 4, 5}
-	config := Config{
+	config := WorkerPoolConfig{
 		WorkerCount: 2,
 		BufferSize:  4,
 		Timeout:     time.Second,
@@ -200,7 +200,7 @@ func TestProcessBatch(t *testing.T) {
 
 func TestProcessBatch_WithContext(t *testing.T) {
 	items := []int{1, 2, 3, 4, 5}
-	config := Config{
+	config := WorkerPoolConfig{
 		WorkerCount: 2,
 		BufferSize:  4,
 		Timeout:     time.Second,
@@ -225,8 +225,8 @@ func TestProcessBatch_WithContext(t *testing.T) {
 	assert.True(t, len(results) <= len(items))
 }
 
-func TestDefaultConfig(t *testing.T) {
-	config := DefaultConfig()
+func TestDefaultWorkerPoolConfig(t *testing.T) {
+	config := DefaultWorkerPoolConfig()
 
 	assert.True(t, config.WorkerCount > 0)
 	assert.True(t, config.BufferSize > 0)
@@ -234,7 +234,7 @@ func TestDefaultConfig(t *testing.T) {
 }
 
 func BenchmarkPool_Processing(b *testing.B) {
-	config := Config{
+	config := WorkerPoolConfig{
 		WorkerCount: 4,
 		BufferSize:  10,
 		Timeout:     time.Second,

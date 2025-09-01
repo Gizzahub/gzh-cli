@@ -88,7 +88,7 @@ func SetGlobalFactory(factory ServiceFactory) {
 // Unified Configuration Management Functions
 
 // GlobalConfigManager is a singleton configuration manager instance.
-var GlobalConfigManager *Manager
+var GlobalConfigManager *ConfigManager
 
 // InitializeGlobalManager initializes the global configuration manager.
 func InitializeGlobalManager() error {
@@ -96,20 +96,20 @@ func InitializeGlobalManager() error {
 		return nil // Already initialized
 	}
 
-	options := Options{
+	options := ConfigOptions{
 		Sources:         []Source{SourceDefaults, SourceFile, SourceEnvironment},
 		WatchForChanges: true,
 		ValidateOnLoad:  true,
 	}
 
-	GlobalConfigManager = NewManager(options)
+	GlobalConfigManager = NewConfigManager(options)
 	RegisterDefaultValidators(GlobalConfigManager)
 
 	return nil
 }
 
 // GetGlobalManager returns the global configuration manager, initializing it if needed.
-func GetGlobalManager() (*Manager, error) {
+func GetGlobalManager() (*ConfigManager, error) {
 	if GlobalConfigManager == nil {
 		if err := InitializeGlobalManager(); err != nil {
 			return nil, err
@@ -125,7 +125,7 @@ func LoadConfig[T any](ctx context.Context, component string, target *T) error {
 		return err
 	}
 
-	options := Options{
+	options := ConfigOptions{
 		Sources:         []Source{SourceDefaults, SourceFile, SourceEnvironment},
 		ConfigPaths:     discoverConfigPaths(component),
 		EnvPrefix:       "GZH_",
@@ -137,7 +137,7 @@ func LoadConfig[T any](ctx context.Context, component string, target *T) error {
 }
 
 // LoadConfigWithOptions loads configuration with custom options.
-func LoadConfigWithOptions[T any](ctx context.Context, component string, target *T, options Options) error {
+func LoadConfigWithOptions[T any](ctx context.Context, component string, target *T, options ConfigOptions) error {
 	manager, err := GetGlobalManager()
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func ReloadConfig(ctx context.Context, component string) error {
 		return err
 	}
 
-	options := Options{
+	options := ConfigOptions{
 		Sources:         []Source{SourceDefaults, SourceFile, SourceEnvironment},
 		ConfigPaths:     discoverConfigPaths(component),
 		EnvPrefix:       "GZH_",

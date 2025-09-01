@@ -15,11 +15,11 @@ import (
 type SyncEngine struct {
 	source      provider.GitProvider
 	destination provider.GitProvider
-	options     Options
+	options     SyncOptions
 }
 
 // NewSyncEngine creates a new sync engine.
-func NewSyncEngine(src, dst provider.GitProvider, opts Options) *SyncEngine {
+func NewSyncEngine(src, dst provider.GitProvider, opts SyncOptions) *SyncEngine {
 	return &SyncEngine{
 		source:      src,
 		destination: dst,

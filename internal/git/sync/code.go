@@ -18,7 +18,7 @@ import (
 type CodeSyncer struct {
 	source      provider.Repository
 	destination *provider.Repository
-	options     Options
+	options     SyncOptions
 }
 
 // Sync synchronizes repository code between source and destination.

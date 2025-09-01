@@ -15,9 +15,8 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	github "github.com/Gizzahub/gzh-cli/pkg/github"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockHTTPClient is a mock of HTTPClient interface.
@@ -60,18 +59,18 @@ func (mr *MockHTTPClientMockRecorder) Delete(ctx, url any) *gomock.Call {
 }
 
 // Do mocks base method.
-func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+func (m *MockHTTPClient) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", req)
+	ret := m.ctrl.Call(m, "Do", ctx, req)
 	ret0, _ := ret[0].(*http.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockHTTPClientMockRecorder) Do(req any) *gomock.Call {
+func (mr *MockHTTPClientMockRecorder) Do(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockHTTPClient)(nil).Do), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockHTTPClient)(nil).Do), ctx, req)
 }
 
 // Get mocks base method.
@@ -234,15 +233,17 @@ func (mr *MockAPIClientMockRecorder) ListOrganizationRepositories(ctx, org any) 
 }
 
 // SetToken mocks base method.
-func (m *MockAPIClient) SetToken(token string) {
+func (m *MockAPIClient) SetToken(ctx context.Context, token string) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetToken", token)
+	ret := m.ctrl.Call(m, "SetToken", ctx, token)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetToken indicates an expected call of SetToken.
-func (mr *MockAPIClientMockRecorder) SetToken(token any) *gomock.Call {
+func (mr *MockAPIClientMockRecorder) SetToken(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockAPIClient)(nil).SetToken), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockAPIClient)(nil).SetToken), ctx, token)
 }
 
 // UpdateRepositoryConfiguration mocks base method.
@@ -312,17 +313,18 @@ func (mr *MockCloneServiceMockRecorder) CloneRepository(ctx, repo, targetPath, s
 }
 
 // GetSupportedStrategies mocks base method.
-func (m *MockCloneService) GetSupportedStrategies() []string {
+func (m *MockCloneService) GetSupportedStrategies(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupportedStrategies")
+	ret := m.ctrl.Call(m, "GetSupportedStrategies", ctx)
 	ret0, _ := ret[0].([]string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetSupportedStrategies indicates an expected call of GetSupportedStrategies.
-func (mr *MockCloneServiceMockRecorder) GetSupportedStrategies() *gomock.Call {
+func (mr *MockCloneServiceMockRecorder) GetSupportedStrategies(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportedStrategies", reflect.TypeOf((*MockCloneService)(nil).GetSupportedStrategies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportedStrategies", reflect.TypeOf((*MockCloneService)(nil).GetSupportedStrategies), ctx)
 }
 
 // RefreshAll mocks base method.
@@ -340,17 +342,17 @@ func (mr *MockCloneServiceMockRecorder) RefreshAll(ctx, targetPath, orgName, str
 }
 
 // SetStrategy mocks base method.
-func (m *MockCloneService) SetStrategy(strategy string) error {
+func (m *MockCloneService) SetStrategy(ctx context.Context, strategy string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetStrategy", strategy)
+	ret := m.ctrl.Call(m, "SetStrategy", ctx, strategy)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetStrategy indicates an expected call of SetStrategy.
-func (mr *MockCloneServiceMockRecorder) SetStrategy(strategy any) *gomock.Call {
+func (mr *MockCloneServiceMockRecorder) SetStrategy(ctx, strategy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStrategy", reflect.TypeOf((*MockCloneService)(nil).SetStrategy), strategy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStrategy", reflect.TypeOf((*MockCloneService)(nil).SetStrategy), ctx, strategy)
 }
 
 // MockTokenValidatorInterface is a mock of TokenValidatorInterface interface.
@@ -378,17 +380,18 @@ func (m *MockTokenValidatorInterface) EXPECT() *MockTokenValidatorInterfaceMockR
 }
 
 // GetRequiredScopes mocks base method.
-func (m *MockTokenValidatorInterface) GetRequiredScopes(operation string) []string {
+func (m *MockTokenValidatorInterface) GetRequiredScopes(ctx context.Context, operation string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRequiredScopes", operation)
+	ret := m.ctrl.Call(m, "GetRequiredScopes", ctx, operation)
 	ret0, _ := ret[0].([]string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetRequiredScopes indicates an expected call of GetRequiredScopes.
-func (mr *MockTokenValidatorInterfaceMockRecorder) GetRequiredScopes(operation any) *gomock.Call {
+func (mr *MockTokenValidatorInterfaceMockRecorder) GetRequiredScopes(ctx, operation any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRequiredScopes", reflect.TypeOf((*MockTokenValidatorInterface)(nil).GetRequiredScopes), operation)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRequiredScopes", reflect.TypeOf((*MockTokenValidatorInterface)(nil).GetRequiredScopes), ctx, operation)
 }
 
 // ValidateForOperation mocks base method.
@@ -488,15 +491,17 @@ func (mr *MockChangeLoggerInterfaceMockRecorder) LogOperation(ctx, operation any
 }
 
 // SetLogLevel mocks base method.
-func (m *MockChangeLoggerInterface) SetLogLevel(level github.LogLevelType) {
+func (m *MockChangeLoggerInterface) SetLogLevel(ctx context.Context, level github.LogLevelType) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetLogLevel", level)
+	ret := m.ctrl.Call(m, "SetLogLevel", ctx, level)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetLogLevel indicates an expected call of SetLogLevel.
-func (mr *MockChangeLoggerInterfaceMockRecorder) SetLogLevel(level any) *gomock.Call {
+func (mr *MockChangeLoggerInterfaceMockRecorder) SetLogLevel(ctx, level any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogLevel", reflect.TypeOf((*MockChangeLoggerInterface)(nil).SetLogLevel), level)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogLevel", reflect.TypeOf((*MockChangeLoggerInterface)(nil).SetLogLevel), ctx, level)
 }
 
 // MockConfirmationServiceInterface is a mock of ConfirmationServiceInterface interface.
@@ -554,15 +559,17 @@ func (mr *MockConfirmationServiceInterfaceMockRecorder) ConfirmOperation(ctx, pr
 }
 
 // SetConfirmationMode mocks base method.
-func (m *MockConfirmationServiceInterface) SetConfirmationMode(mode github.ConfirmationModeType) {
+func (m *MockConfirmationServiceInterface) SetConfirmationMode(ctx context.Context, mode github.ConfirmationModeType) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetConfirmationMode", mode)
+	ret := m.ctrl.Call(m, "SetConfirmationMode", ctx, mode)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetConfirmationMode indicates an expected call of SetConfirmationMode.
-func (mr *MockConfirmationServiceInterfaceMockRecorder) SetConfirmationMode(mode any) *gomock.Call {
+func (mr *MockConfirmationServiceInterfaceMockRecorder) SetConfirmationMode(ctx, mode any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfirmationMode", reflect.TypeOf((*MockConfirmationServiceInterface)(nil).SetConfirmationMode), mode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfirmationMode", reflect.TypeOf((*MockConfirmationServiceInterface)(nil).SetConfirmationMode), ctx, mode)
 }
 
 // MockGitHubService is a mock of GitHubService interface.
@@ -723,31 +730,33 @@ func (mr *MockGitHubServiceMockRecorder) GetRepositoryConfiguration(ctx, owner, 
 }
 
 // GetRequiredScopes mocks base method.
-func (m *MockGitHubService) GetRequiredScopes(operation string) []string {
+func (m *MockGitHubService) GetRequiredScopes(ctx context.Context, operation string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRequiredScopes", operation)
+	ret := m.ctrl.Call(m, "GetRequiredScopes", ctx, operation)
 	ret0, _ := ret[0].([]string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetRequiredScopes indicates an expected call of GetRequiredScopes.
-func (mr *MockGitHubServiceMockRecorder) GetRequiredScopes(operation any) *gomock.Call {
+func (mr *MockGitHubServiceMockRecorder) GetRequiredScopes(ctx, operation any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRequiredScopes", reflect.TypeOf((*MockGitHubService)(nil).GetRequiredScopes), operation)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRequiredScopes", reflect.TypeOf((*MockGitHubService)(nil).GetRequiredScopes), ctx, operation)
 }
 
 // GetSupportedStrategies mocks base method.
-func (m *MockGitHubService) GetSupportedStrategies() []string {
+func (m *MockGitHubService) GetSupportedStrategies(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupportedStrategies")
+	ret := m.ctrl.Call(m, "GetSupportedStrategies", ctx)
 	ret0, _ := ret[0].([]string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetSupportedStrategies indicates an expected call of GetSupportedStrategies.
-func (mr *MockGitHubServiceMockRecorder) GetSupportedStrategies() *gomock.Call {
+func (mr *MockGitHubServiceMockRecorder) GetSupportedStrategies(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportedStrategies", reflect.TypeOf((*MockGitHubService)(nil).GetSupportedStrategies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportedStrategies", reflect.TypeOf((*MockGitHubService)(nil).GetSupportedStrategies), ctx)
 }
 
 // ListOrganizationRepositories mocks base method.
@@ -794,53 +803,59 @@ func (mr *MockGitHubServiceMockRecorder) RefreshAll(ctx, targetPath, orgName, st
 }
 
 // SetConfirmationMode mocks base method.
-func (m *MockGitHubService) SetConfirmationMode(mode github.ConfirmationModeType) {
+func (m *MockGitHubService) SetConfirmationMode(ctx context.Context, mode github.ConfirmationModeType) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetConfirmationMode", mode)
+	ret := m.ctrl.Call(m, "SetConfirmationMode", ctx, mode)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetConfirmationMode indicates an expected call of SetConfirmationMode.
-func (mr *MockGitHubServiceMockRecorder) SetConfirmationMode(mode any) *gomock.Call {
+func (mr *MockGitHubServiceMockRecorder) SetConfirmationMode(ctx, mode any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfirmationMode", reflect.TypeOf((*MockGitHubService)(nil).SetConfirmationMode), mode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfirmationMode", reflect.TypeOf((*MockGitHubService)(nil).SetConfirmationMode), ctx, mode)
 }
 
 // SetLogLevel mocks base method.
-func (m *MockGitHubService) SetLogLevel(level github.LogLevelType) {
+func (m *MockGitHubService) SetLogLevel(ctx context.Context, level github.LogLevelType) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetLogLevel", level)
+	ret := m.ctrl.Call(m, "SetLogLevel", ctx, level)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetLogLevel indicates an expected call of SetLogLevel.
-func (mr *MockGitHubServiceMockRecorder) SetLogLevel(level any) *gomock.Call {
+func (mr *MockGitHubServiceMockRecorder) SetLogLevel(ctx, level any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogLevel", reflect.TypeOf((*MockGitHubService)(nil).SetLogLevel), level)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogLevel", reflect.TypeOf((*MockGitHubService)(nil).SetLogLevel), ctx, level)
 }
 
 // SetStrategy mocks base method.
-func (m *MockGitHubService) SetStrategy(strategy string) error {
+func (m *MockGitHubService) SetStrategy(ctx context.Context, strategy string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetStrategy", strategy)
+	ret := m.ctrl.Call(m, "SetStrategy", ctx, strategy)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetStrategy indicates an expected call of SetStrategy.
-func (mr *MockGitHubServiceMockRecorder) SetStrategy(strategy any) *gomock.Call {
+func (mr *MockGitHubServiceMockRecorder) SetStrategy(ctx, strategy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStrategy", reflect.TypeOf((*MockGitHubService)(nil).SetStrategy), strategy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStrategy", reflect.TypeOf((*MockGitHubService)(nil).SetStrategy), ctx, strategy)
 }
 
 // SetToken mocks base method.
-func (m *MockGitHubService) SetToken(token string) {
+func (m *MockGitHubService) SetToken(ctx context.Context, token string) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetToken", token)
+	ret := m.ctrl.Call(m, "SetToken", ctx, token)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetToken indicates an expected call of SetToken.
-func (mr *MockGitHubServiceMockRecorder) SetToken(token any) *gomock.Call {
+func (mr *MockGitHubServiceMockRecorder) SetToken(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockGitHubService)(nil).SetToken), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockGitHubService)(nil).SetToken), ctx, token)
 }
 
 // UpdateRepositoryConfiguration mocks base method.

@@ -314,7 +314,7 @@ func (cv *CompositeValidator) Validate(config interface{}) error {
 }
 
 // RegisterDefaultValidators registers default validators for all config types.
-func RegisterDefaultValidators(manager *Manager) {
+func RegisterDefaultValidators(manager *ConfigManager) {
 	manager.RegisterValidator("bulk-clone", &BulkCloneConfigValidator{})
 	manager.RegisterValidator("http-client", &HTTPClientConfigValidator{})
 	manager.RegisterValidator("auth", &AuthConfigValidator{})

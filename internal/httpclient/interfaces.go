@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// Request represents an HTTP request.
-type Request struct {
+// HTTPRequest represents an HTTP request.
+type HTTPRequest struct {
 	Method  string            `json:"method"`
 	URL     string            `json:"url"`
 	Headers map[string]string `json:"headers"`
@@ -18,8 +18,8 @@ type Request struct {
 	Timeout time.Duration     `json:"timeout"`
 }
 
-// Response represents an HTTP response.
-type Response struct {
+// HTTPResponse represents an HTTP response.
+type HTTPResponse struct {
 	StatusCode int               `json:"statusCode"`
 	Status     string            `json:"status"`
 	Headers    map[string]string `json:"headers"`
@@ -31,16 +31,16 @@ type Response struct {
 // HTTPClient defines the interface for HTTP operations.
 type HTTPClient interface {
 	// Basic HTTP methods
-	Get(ctx context.Context, url string) (*Response, error)
-	Post(ctx context.Context, url string, body io.Reader) (*Response, error)
-	Put(ctx context.Context, url string, body io.Reader) (*Response, error)
-	Patch(ctx context.Context, url string, body io.Reader) (*Response, error)
-	Delete(ctx context.Context, url string) (*Response, error)
-	Head(ctx context.Context, url string) (*Response, error)
-	Options(ctx context.Context, url string) (*Response, error)
+	Get(ctx context.Context, url string) (*HTTPResponse, error)
+	Post(ctx context.Context, url string, body io.Reader) (*HTTPResponse, error)
+	Put(ctx context.Context, url string, body io.Reader) (*HTTPResponse, error)
+	Patch(ctx context.Context, url string, body io.Reader) (*HTTPResponse, error)
+	Delete(ctx context.Context, url string) (*HTTPResponse, error)
+	Head(ctx context.Context, url string) (*HTTPResponse, error)
+	Options(ctx context.Context, url string) (*HTTPResponse, error)
 
 	// Advanced request method
-	Do(ctx context.Context, req *Request) (*Response, error)
+	Do(ctx context.Context, req *HTTPRequest) (*HTTPResponse, error)
 
 	// Configuration
 	SetTimeout(timeout time.Duration)
@@ -61,18 +61,18 @@ type HTTPClient interface {
 
 // RequestMiddleware defines the interface for request middleware.
 type RequestMiddleware interface {
-	ProcessRequest(ctx context.Context, req *Request) (*Request, error)
+	ProcessRequest(ctx context.Context, req *HTTPRequest) (*HTTPRequest, error)
 }
 
 // ResponseMiddleware defines the interface for response middleware.
 type ResponseMiddleware interface {
-	ProcessResponse(ctx context.Context, req *Request, resp *Response) (*Response, error)
+	ProcessResponse(ctx context.Context, req *HTTPRequest, resp *HTTPResponse) (*HTTPResponse, error)
 }
 
 // RetryPolicy defines the interface for retry logic.
 type RetryPolicy interface {
 	// Check if request should be retried
-	ShouldRetry(ctx context.Context, req *Request, resp *Response, err error, attempt int) bool
+	ShouldRetry(ctx context.Context, req *HTTPRequest, resp *HTTPResponse, err error, attempt int) bool
 
 	// Get delay before next retry
 	GetRetryDelay(ctx context.Context, attempt int) time.Duration
@@ -107,13 +107,13 @@ type RateLimitInfo struct {
 // CachePolicy defines the interface for HTTP caching.
 type CachePolicy interface {
 	// Check if response can be cached
-	ShouldCache(ctx context.Context, req *Request, resp *Response) bool
+	ShouldCache(ctx context.Context, req *HTTPRequest, resp *HTTPResponse) bool
 
 	// Get cached response
-	GetCached(ctx context.Context, req *Request) (*Response, bool)
+	GetCached(ctx context.Context, req *HTTPRequest) (*HTTPResponse, bool)
 
 	// Store response in cache
-	Store(ctx context.Context, req *Request, resp *Response) error
+	Store(ctx context.Context, req *HTTPRequest, resp *HTTPResponse) error
 
 	// Invalidate cache entries
 	Invalidate(ctx context.Context, pattern string) error
@@ -135,10 +135,10 @@ type CacheStats struct {
 // RequestLogger defines the interface for request logging.
 type RequestLogger interface {
 	// Log request
-	LogRequest(ctx context.Context, req *Request) error
+	LogRequest(ctx context.Context, req *HTTPRequest) error
 
 	// Log response
-	LogResponse(ctx context.Context, req *Request, resp *Response, err error) error
+	LogResponse(ctx context.Context, req *HTTPRequest, resp *HTTPResponse, err error) error
 
 	// Set log level
 	SetLogLevel(level LogLevel)
@@ -223,15 +223,15 @@ type Mock struct {
 
 // MockCondition defines conditions for mock matching.
 type MockCondition interface {
-	Matches(ctx context.Context, req *Request) bool
+	Matches(ctx context.Context, req *HTTPRequest) bool
 }
 
 // Recording represents a recorded HTTP request/response.
 type Recording struct {
 	ID        string        `json:"id"`
 	Timestamp time.Time     `json:"timestamp"`
-	Request   *Request      `json:"request"`
-	Response  *Response     `json:"response"`
+	Request   *HTTPRequest      `json:"request"`
+	Response  *HTTPResponse     `json:"response"`
 	Duration  time.Duration `json:"duration"`
 	Error     string        `json:"error,omitempty"`
 }
@@ -239,7 +239,7 @@ type Recording struct {
 // MetricsCollector defines the interface for collecting HTTP metrics.
 type MetricsCollector interface {
 	// Record request metrics
-	RecordRequest(ctx context.Context, req *Request, resp *Response, duration time.Duration, err error)
+	RecordRequest(ctx context.Context, req *HTTPRequest, resp *HTTPResponse, duration time.Duration, err error)
 
 	// Get metrics
 	GetMetrics() *HTTPMetrics

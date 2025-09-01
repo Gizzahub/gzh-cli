@@ -13,37 +13,36 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	git "github.com/Gizzahub/gzh-cli/internal/git"
+	gomock "go.uber.org/mock/gomock"
 )
 
-// MockGitClient is a mock of GitClient interface.
-type MockGitClient struct {
+// MockClient is a mock of Client interface.
+type MockClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockGitClientMockRecorder
+	recorder *MockClientMockRecorder
 	isgomock struct{}
 }
 
-// MockGitClientMockRecorder is the mock recorder for MockGitClient.
-type MockGitClientMockRecorder struct {
-	mock *MockGitClient
+// MockClientMockRecorder is the mock recorder for MockClient.
+type MockClientMockRecorder struct {
+	mock *MockClient
 }
 
-// NewMockGitClient creates a new mock instance.
-func NewMockGitClient(ctrl *gomock.Controller) *MockGitClient {
-	mock := &MockGitClient{ctrl: ctrl}
-	mock.recorder = &MockGitClientMockRecorder{mock}
+// NewMockClient creates a new mock instance.
+func NewMockClient(ctrl *gomock.Controller) *MockClient {
+	mock := &MockClient{ctrl: ctrl}
+	mock.recorder = &MockClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockGitClient) EXPECT() *MockGitClientMockRecorder {
+func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
 // AddRemote mocks base method.
-func (m *MockGitClient) AddRemote(ctx context.Context, repoPath, name, url string) (*git.OperationResult, error) {
+func (m *MockClient) AddRemote(ctx context.Context, repoPath, name, url string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddRemote", ctx, repoPath, name, url)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -52,13 +51,13 @@ func (m *MockGitClient) AddRemote(ctx context.Context, repoPath, name, url strin
 }
 
 // AddRemote indicates an expected call of AddRemote.
-func (mr *MockGitClientMockRecorder) AddRemote(ctx, repoPath, name, url any) *gomock.Call {
+func (mr *MockClientMockRecorder) AddRemote(ctx, repoPath, name, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRemote", reflect.TypeOf((*MockGitClient)(nil).AddRemote), ctx, repoPath, name, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRemote", reflect.TypeOf((*MockClient)(nil).AddRemote), ctx, repoPath, name, url)
 }
 
 // CheckoutBranch mocks base method.
-func (m *MockGitClient) CheckoutBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
+func (m *MockClient) CheckoutBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckoutBranch", ctx, repoPath, branchName)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -67,13 +66,13 @@ func (m *MockGitClient) CheckoutBranch(ctx context.Context, repoPath, branchName
 }
 
 // CheckoutBranch indicates an expected call of CheckoutBranch.
-func (mr *MockGitClientMockRecorder) CheckoutBranch(ctx, repoPath, branchName any) *gomock.Call {
+func (mr *MockClientMockRecorder) CheckoutBranch(ctx, repoPath, branchName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockGitClient)(nil).CheckoutBranch), ctx, repoPath, branchName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockClient)(nil).CheckoutBranch), ctx, repoPath, branchName)
 }
 
 // Clone mocks base method.
-func (m *MockGitClient) Clone(ctx context.Context, options git.CloneOptions) (*git.OperationResult, error) {
+func (m *MockClient) Clone(ctx context.Context, options git.CloneOptions) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Clone", ctx, options)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -82,13 +81,13 @@ func (m *MockGitClient) Clone(ctx context.Context, options git.CloneOptions) (*g
 }
 
 // Clone indicates an expected call of Clone.
-func (mr *MockGitClientMockRecorder) Clone(ctx, options any) *gomock.Call {
+func (mr *MockClientMockRecorder) Clone(ctx, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockGitClient)(nil).Clone), ctx, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockClient)(nil).Clone), ctx, options)
 }
 
 // CreateBranch mocks base method.
-func (m *MockGitClient) CreateBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
+func (m *MockClient) CreateBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateBranch", ctx, repoPath, branchName)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -97,13 +96,13 @@ func (m *MockGitClient) CreateBranch(ctx context.Context, repoPath, branchName s
 }
 
 // CreateBranch indicates an expected call of CreateBranch.
-func (mr *MockGitClientMockRecorder) CreateBranch(ctx, repoPath, branchName any) *gomock.Call {
+func (mr *MockClientMockRecorder) CreateBranch(ctx, repoPath, branchName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBranch", reflect.TypeOf((*MockGitClient)(nil).CreateBranch), ctx, repoPath, branchName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBranch", reflect.TypeOf((*MockClient)(nil).CreateBranch), ctx, repoPath, branchName)
 }
 
 // DeleteBranch mocks base method.
-func (m *MockGitClient) DeleteBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
+func (m *MockClient) DeleteBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBranch", ctx, repoPath, branchName)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -112,13 +111,13 @@ func (m *MockGitClient) DeleteBranch(ctx context.Context, repoPath, branchName s
 }
 
 // DeleteBranch indicates an expected call of DeleteBranch.
-func (mr *MockGitClientMockRecorder) DeleteBranch(ctx, repoPath, branchName any) *gomock.Call {
+func (mr *MockClientMockRecorder) DeleteBranch(ctx, repoPath, branchName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranch", reflect.TypeOf((*MockGitClient)(nil).DeleteBranch), ctx, repoPath, branchName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranch", reflect.TypeOf((*MockClient)(nil).DeleteBranch), ctx, repoPath, branchName)
 }
 
 // Fetch mocks base method.
-func (m *MockGitClient) Fetch(ctx context.Context, repoPath, remote string) (*git.OperationResult, error) {
+func (m *MockClient) Fetch(ctx context.Context, repoPath, remote string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Fetch", ctx, repoPath, remote)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -127,13 +126,13 @@ func (m *MockGitClient) Fetch(ctx context.Context, repoPath, remote string) (*gi
 }
 
 // Fetch indicates an expected call of Fetch.
-func (mr *MockGitClientMockRecorder) Fetch(ctx, repoPath, remote any) *gomock.Call {
+func (mr *MockClientMockRecorder) Fetch(ctx, repoPath, remote any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockGitClient)(nil).Fetch), ctx, repoPath, remote)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockClient)(nil).Fetch), ctx, repoPath, remote)
 }
 
 // GetCommitHistory mocks base method.
-func (m *MockGitClient) GetCommitHistory(ctx context.Context, repoPath string, limit int) ([]git.Commit, error) {
+func (m *MockClient) GetCommitHistory(ctx context.Context, repoPath string, limit int) ([]git.Commit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCommitHistory", ctx, repoPath, limit)
 	ret0, _ := ret[0].([]git.Commit)
@@ -142,13 +141,13 @@ func (m *MockGitClient) GetCommitHistory(ctx context.Context, repoPath string, l
 }
 
 // GetCommitHistory indicates an expected call of GetCommitHistory.
-func (mr *MockGitClientMockRecorder) GetCommitHistory(ctx, repoPath, limit any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetCommitHistory(ctx, repoPath, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitHistory", reflect.TypeOf((*MockGitClient)(nil).GetCommitHistory), ctx, repoPath, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitHistory", reflect.TypeOf((*MockClient)(nil).GetCommitHistory), ctx, repoPath, limit)
 }
 
 // GetCurrentBranch mocks base method.
-func (m *MockGitClient) GetCurrentBranch(ctx context.Context, repoPath string) (string, error) {
+func (m *MockClient) GetCurrentBranch(ctx context.Context, repoPath string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCurrentBranch", ctx, repoPath)
 	ret0, _ := ret[0].(string)
@@ -157,13 +156,13 @@ func (m *MockGitClient) GetCurrentBranch(ctx context.Context, repoPath string) (
 }
 
 // GetCurrentBranch indicates an expected call of GetCurrentBranch.
-func (mr *MockGitClientMockRecorder) GetCurrentBranch(ctx, repoPath any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetCurrentBranch(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentBranch", reflect.TypeOf((*MockGitClient)(nil).GetCurrentBranch), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentBranch", reflect.TypeOf((*MockClient)(nil).GetCurrentBranch), ctx, repoPath)
 }
 
 // GetDefaultBranch mocks base method.
-func (m *MockGitClient) GetDefaultBranch(ctx context.Context, repoPath string) (string, error) {
+func (m *MockClient) GetDefaultBranch(ctx context.Context, repoPath string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefaultBranch", ctx, repoPath)
 	ret0, _ := ret[0].(string)
@@ -172,13 +171,13 @@ func (m *MockGitClient) GetDefaultBranch(ctx context.Context, repoPath string) (
 }
 
 // GetDefaultBranch indicates an expected call of GetDefaultBranch.
-func (mr *MockGitClientMockRecorder) GetDefaultBranch(ctx, repoPath any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetDefaultBranch(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefaultBranch", reflect.TypeOf((*MockGitClient)(nil).GetDefaultBranch), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefaultBranch", reflect.TypeOf((*MockClient)(nil).GetDefaultBranch), ctx, repoPath)
 }
 
 // GetLastCommit mocks base method.
-func (m *MockGitClient) GetLastCommit(ctx context.Context, repoPath string) (*git.Commit, error) {
+func (m *MockClient) GetLastCommit(ctx context.Context, repoPath string) (*git.Commit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLastCommit", ctx, repoPath)
 	ret0, _ := ret[0].(*git.Commit)
@@ -187,13 +186,13 @@ func (m *MockGitClient) GetLastCommit(ctx context.Context, repoPath string) (*gi
 }
 
 // GetLastCommit indicates an expected call of GetLastCommit.
-func (mr *MockGitClientMockRecorder) GetLastCommit(ctx, repoPath any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetLastCommit(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastCommit", reflect.TypeOf((*MockGitClient)(nil).GetLastCommit), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastCommit", reflect.TypeOf((*MockClient)(nil).GetLastCommit), ctx, repoPath)
 }
 
 // GetRepository mocks base method.
-func (m *MockGitClient) GetRepository(ctx context.Context, path string) (*git.Repository, error) {
+func (m *MockClient) GetRepository(ctx context.Context, path string) (*git.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRepository", ctx, path)
 	ret0, _ := ret[0].(*git.Repository)
@@ -202,13 +201,13 @@ func (m *MockGitClient) GetRepository(ctx context.Context, path string) (*git.Re
 }
 
 // GetRepository indicates an expected call of GetRepository.
-func (mr *MockGitClientMockRecorder) GetRepository(ctx, path any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetRepository(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitClient)(nil).GetRepository), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockClient)(nil).GetRepository), ctx, path)
 }
 
 // GetStatus mocks base method.
-func (m *MockGitClient) GetStatus(ctx context.Context, repoPath string) (*git.StatusResult, error) {
+func (m *MockClient) GetStatus(ctx context.Context, repoPath string) (*git.StatusResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetStatus", ctx, repoPath)
 	ret0, _ := ret[0].(*git.StatusResult)
@@ -217,13 +216,13 @@ func (m *MockGitClient) GetStatus(ctx context.Context, repoPath string) (*git.St
 }
 
 // GetStatus indicates an expected call of GetStatus.
-func (mr *MockGitClientMockRecorder) GetStatus(ctx, repoPath any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetStatus(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatus", reflect.TypeOf((*MockGitClient)(nil).GetStatus), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatus", reflect.TypeOf((*MockClient)(nil).GetStatus), ctx, repoPath)
 }
 
 // IsDirty mocks base method.
-func (m *MockGitClient) IsDirty(ctx context.Context, repoPath string) (bool, error) {
+func (m *MockClient) IsDirty(ctx context.Context, repoPath string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsDirty", ctx, repoPath)
 	ret0, _ := ret[0].(bool)
@@ -232,13 +231,13 @@ func (m *MockGitClient) IsDirty(ctx context.Context, repoPath string) (bool, err
 }
 
 // IsDirty indicates an expected call of IsDirty.
-func (mr *MockGitClientMockRecorder) IsDirty(ctx, repoPath any) *gomock.Call {
+func (mr *MockClientMockRecorder) IsDirty(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDirty", reflect.TypeOf((*MockGitClient)(nil).IsDirty), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDirty", reflect.TypeOf((*MockClient)(nil).IsDirty), ctx, repoPath)
 }
 
 // IsRepository mocks base method.
-func (m *MockGitClient) IsRepository(ctx context.Context, path string) bool {
+func (m *MockClient) IsRepository(ctx context.Context, path string) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsRepository", ctx, path)
 	ret0, _ := ret[0].(bool)
@@ -246,13 +245,13 @@ func (m *MockGitClient) IsRepository(ctx context.Context, path string) bool {
 }
 
 // IsRepository indicates an expected call of IsRepository.
-func (mr *MockGitClientMockRecorder) IsRepository(ctx, path any) *gomock.Call {
+func (mr *MockClientMockRecorder) IsRepository(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRepository", reflect.TypeOf((*MockGitClient)(nil).IsRepository), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRepository", reflect.TypeOf((*MockClient)(nil).IsRepository), ctx, path)
 }
 
 // ListBranches mocks base method.
-func (m *MockGitClient) ListBranches(ctx context.Context, repoPath string) ([]string, error) {
+func (m *MockClient) ListBranches(ctx context.Context, repoPath string) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListBranches", ctx, repoPath)
 	ret0, _ := ret[0].([]string)
@@ -261,13 +260,13 @@ func (m *MockGitClient) ListBranches(ctx context.Context, repoPath string) ([]st
 }
 
 // ListBranches indicates an expected call of ListBranches.
-func (mr *MockGitClientMockRecorder) ListBranches(ctx, repoPath any) *gomock.Call {
+func (mr *MockClientMockRecorder) ListBranches(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBranches", reflect.TypeOf((*MockGitClient)(nil).ListBranches), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBranches", reflect.TypeOf((*MockClient)(nil).ListBranches), ctx, repoPath)
 }
 
 // ListRemotes mocks base method.
-func (m *MockGitClient) ListRemotes(ctx context.Context, repoPath string) (map[string]string, error) {
+func (m *MockClient) ListRemotes(ctx context.Context, repoPath string) (map[string]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListRemotes", ctx, repoPath)
 	ret0, _ := ret[0].(map[string]string)
@@ -276,13 +275,13 @@ func (m *MockGitClient) ListRemotes(ctx context.Context, repoPath string) (map[s
 }
 
 // ListRemotes indicates an expected call of ListRemotes.
-func (mr *MockGitClientMockRecorder) ListRemotes(ctx, repoPath any) *gomock.Call {
+func (mr *MockClientMockRecorder) ListRemotes(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRemotes", reflect.TypeOf((*MockGitClient)(nil).ListRemotes), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRemotes", reflect.TypeOf((*MockClient)(nil).ListRemotes), ctx, repoPath)
 }
 
 // Pull mocks base method.
-func (m *MockGitClient) Pull(ctx context.Context, repoPath string, options git.PullOptions) (*git.OperationResult, error) {
+func (m *MockClient) Pull(ctx context.Context, repoPath string, options git.PullOptions) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Pull", ctx, repoPath, options)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -291,13 +290,13 @@ func (m *MockGitClient) Pull(ctx context.Context, repoPath string, options git.P
 }
 
 // Pull indicates an expected call of Pull.
-func (mr *MockGitClientMockRecorder) Pull(ctx, repoPath, options any) *gomock.Call {
+func (mr *MockClientMockRecorder) Pull(ctx, repoPath, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pull", reflect.TypeOf((*MockGitClient)(nil).Pull), ctx, repoPath, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pull", reflect.TypeOf((*MockClient)(nil).Pull), ctx, repoPath, options)
 }
 
 // RemoveRemote mocks base method.
-func (m *MockGitClient) RemoveRemote(ctx context.Context, repoPath, name string) (*git.OperationResult, error) {
+func (m *MockClient) RemoveRemote(ctx context.Context, repoPath, name string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveRemote", ctx, repoPath, name)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -306,13 +305,13 @@ func (m *MockGitClient) RemoveRemote(ctx context.Context, repoPath, name string)
 }
 
 // RemoveRemote indicates an expected call of RemoveRemote.
-func (mr *MockGitClientMockRecorder) RemoveRemote(ctx, repoPath, name any) *gomock.Call {
+func (mr *MockClientMockRecorder) RemoveRemote(ctx, repoPath, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveRemote", reflect.TypeOf((*MockGitClient)(nil).RemoveRemote), ctx, repoPath, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveRemote", reflect.TypeOf((*MockClient)(nil).RemoveRemote), ctx, repoPath, name)
 }
 
 // Reset mocks base method.
-func (m *MockGitClient) Reset(ctx context.Context, repoPath string, options git.ResetOptions) (*git.OperationResult, error) {
+func (m *MockClient) Reset(ctx context.Context, repoPath string, options git.ResetOptions) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Reset", ctx, repoPath, options)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -321,13 +320,13 @@ func (m *MockGitClient) Reset(ctx context.Context, repoPath string, options git.
 }
 
 // Reset indicates an expected call of Reset.
-func (mr *MockGitClientMockRecorder) Reset(ctx, repoPath, options any) *gomock.Call {
+func (mr *MockClientMockRecorder) Reset(ctx, repoPath, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reset", reflect.TypeOf((*MockGitClient)(nil).Reset), ctx, repoPath, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reset", reflect.TypeOf((*MockClient)(nil).Reset), ctx, repoPath, options)
 }
 
 // SetRemoteURL mocks base method.
-func (m *MockGitClient) SetRemoteURL(ctx context.Context, repoPath, remote, url string) (*git.OperationResult, error) {
+func (m *MockClient) SetRemoteURL(ctx context.Context, repoPath, remote, url string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetRemoteURL", ctx, repoPath, remote, url)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -336,13 +335,13 @@ func (m *MockGitClient) SetRemoteURL(ctx context.Context, repoPath, remote, url 
 }
 
 // SetRemoteURL indicates an expected call of SetRemoteURL.
-func (mr *MockGitClientMockRecorder) SetRemoteURL(ctx, repoPath, remote, url any) *gomock.Call {
+func (mr *MockClientMockRecorder) SetRemoteURL(ctx, repoPath, remote, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRemoteURL", reflect.TypeOf((*MockGitClient)(nil).SetRemoteURL), ctx, repoPath, remote, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRemoteURL", reflect.TypeOf((*MockClient)(nil).SetRemoteURL), ctx, repoPath, remote, url)
 }
 
 // ValidateRepository mocks base method.
-func (m *MockGitClient) ValidateRepository(ctx context.Context, path string) error {
+func (m *MockClient) ValidateRepository(ctx context.Context, path string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateRepository", ctx, path)
 	ret0, _ := ret[0].(error)
@@ -350,9 +349,9 @@ func (m *MockGitClient) ValidateRepository(ctx context.Context, path string) err
 }
 
 // ValidateRepository indicates an expected call of ValidateRepository.
-func (mr *MockGitClientMockRecorder) ValidateRepository(ctx, path any) *gomock.Call {
+func (mr *MockClientMockRecorder) ValidateRepository(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRepository", reflect.TypeOf((*MockGitClient)(nil).ValidateRepository), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRepository", reflect.TypeOf((*MockClient)(nil).ValidateRepository), ctx, path)
 }
 
 // MockStrategyExecutor is a mock of StrategyExecutor interface.
@@ -598,32 +597,32 @@ func (mr *MockAuthManagerMockRecorder) ValidateAuth(ctx, remoteURL any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateAuth", reflect.TypeOf((*MockAuthManager)(nil).ValidateAuth), ctx, remoteURL)
 }
 
-// MockGitService is a mock of GitService interface.
-type MockGitService struct {
+// MockService is a mock of Service interface.
+type MockService struct {
 	ctrl     *gomock.Controller
-	recorder *MockGitServiceMockRecorder
+	recorder *MockServiceMockRecorder
 	isgomock struct{}
 }
 
-// MockGitServiceMockRecorder is the mock recorder for MockGitService.
-type MockGitServiceMockRecorder struct {
-	mock *MockGitService
+// MockServiceMockRecorder is the mock recorder for MockService.
+type MockServiceMockRecorder struct {
+	mock *MockService
 }
 
-// NewMockGitService creates a new mock instance.
-func NewMockGitService(ctrl *gomock.Controller) *MockGitService {
-	mock := &MockGitService{ctrl: ctrl}
-	mock.recorder = &MockGitServiceMockRecorder{mock}
+// NewMockService creates a new mock instance.
+func NewMockService(ctrl *gomock.Controller) *MockService {
+	mock := &MockService{ctrl: ctrl}
+	mock.recorder = &MockServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockGitService) EXPECT() *MockGitServiceMockRecorder {
+func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
 // AddRemote mocks base method.
-func (m *MockGitService) AddRemote(ctx context.Context, repoPath, name, url string) (*git.OperationResult, error) {
+func (m *MockService) AddRemote(ctx context.Context, repoPath, name, url string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddRemote", ctx, repoPath, name, url)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -632,13 +631,13 @@ func (m *MockGitService) AddRemote(ctx context.Context, repoPath, name, url stri
 }
 
 // AddRemote indicates an expected call of AddRemote.
-func (mr *MockGitServiceMockRecorder) AddRemote(ctx, repoPath, name, url any) *gomock.Call {
+func (mr *MockServiceMockRecorder) AddRemote(ctx, repoPath, name, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRemote", reflect.TypeOf((*MockGitService)(nil).AddRemote), ctx, repoPath, name, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRemote", reflect.TypeOf((*MockService)(nil).AddRemote), ctx, repoPath, name, url)
 }
 
 // CheckoutBranch mocks base method.
-func (m *MockGitService) CheckoutBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
+func (m *MockService) CheckoutBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckoutBranch", ctx, repoPath, branchName)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -647,13 +646,13 @@ func (m *MockGitService) CheckoutBranch(ctx context.Context, repoPath, branchNam
 }
 
 // CheckoutBranch indicates an expected call of CheckoutBranch.
-func (mr *MockGitServiceMockRecorder) CheckoutBranch(ctx, repoPath, branchName any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CheckoutBranch(ctx, repoPath, branchName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockGitService)(nil).CheckoutBranch), ctx, repoPath, branchName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutBranch", reflect.TypeOf((*MockService)(nil).CheckoutBranch), ctx, repoPath, branchName)
 }
 
 // Clone mocks base method.
-func (m *MockGitService) Clone(ctx context.Context, options git.CloneOptions) (*git.OperationResult, error) {
+func (m *MockService) Clone(ctx context.Context, options git.CloneOptions) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Clone", ctx, options)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -662,13 +661,13 @@ func (m *MockGitService) Clone(ctx context.Context, options git.CloneOptions) (*
 }
 
 // Clone indicates an expected call of Clone.
-func (mr *MockGitServiceMockRecorder) Clone(ctx, options any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Clone(ctx, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockGitService)(nil).Clone), ctx, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockService)(nil).Clone), ctx, options)
 }
 
 // ConfigurePasswordAuth mocks base method.
-func (m *MockGitService) ConfigurePasswordAuth(ctx context.Context, username, password string) error {
+func (m *MockService) ConfigurePasswordAuth(ctx context.Context, username, password string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigurePasswordAuth", ctx, username, password)
 	ret0, _ := ret[0].(error)
@@ -676,13 +675,13 @@ func (m *MockGitService) ConfigurePasswordAuth(ctx context.Context, username, pa
 }
 
 // ConfigurePasswordAuth indicates an expected call of ConfigurePasswordAuth.
-func (mr *MockGitServiceMockRecorder) ConfigurePasswordAuth(ctx, username, password any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ConfigurePasswordAuth(ctx, username, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigurePasswordAuth", reflect.TypeOf((*MockGitService)(nil).ConfigurePasswordAuth), ctx, username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigurePasswordAuth", reflect.TypeOf((*MockService)(nil).ConfigurePasswordAuth), ctx, username, password)
 }
 
 // ConfigureSSHAuth mocks base method.
-func (m *MockGitService) ConfigureSSHAuth(ctx context.Context, keyPath, passphrase string) error {
+func (m *MockService) ConfigureSSHAuth(ctx context.Context, keyPath, passphrase string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureSSHAuth", ctx, keyPath, passphrase)
 	ret0, _ := ret[0].(error)
@@ -690,13 +689,13 @@ func (m *MockGitService) ConfigureSSHAuth(ctx context.Context, keyPath, passphra
 }
 
 // ConfigureSSHAuth indicates an expected call of ConfigureSSHAuth.
-func (mr *MockGitServiceMockRecorder) ConfigureSSHAuth(ctx, keyPath, passphrase any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ConfigureSSHAuth(ctx, keyPath, passphrase any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureSSHAuth", reflect.TypeOf((*MockGitService)(nil).ConfigureSSHAuth), ctx, keyPath, passphrase)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureSSHAuth", reflect.TypeOf((*MockService)(nil).ConfigureSSHAuth), ctx, keyPath, passphrase)
 }
 
 // ConfigureTokenAuth mocks base method.
-func (m *MockGitService) ConfigureTokenAuth(ctx context.Context, token string) error {
+func (m *MockService) ConfigureTokenAuth(ctx context.Context, token string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureTokenAuth", ctx, token)
 	ret0, _ := ret[0].(error)
@@ -704,13 +703,13 @@ func (m *MockGitService) ConfigureTokenAuth(ctx context.Context, token string) e
 }
 
 // ConfigureTokenAuth indicates an expected call of ConfigureTokenAuth.
-func (mr *MockGitServiceMockRecorder) ConfigureTokenAuth(ctx, token any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ConfigureTokenAuth(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureTokenAuth", reflect.TypeOf((*MockGitService)(nil).ConfigureTokenAuth), ctx, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureTokenAuth", reflect.TypeOf((*MockService)(nil).ConfigureTokenAuth), ctx, token)
 }
 
 // CreateBranch mocks base method.
-func (m *MockGitService) CreateBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
+func (m *MockService) CreateBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateBranch", ctx, repoPath, branchName)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -719,13 +718,13 @@ func (m *MockGitService) CreateBranch(ctx context.Context, repoPath, branchName 
 }
 
 // CreateBranch indicates an expected call of CreateBranch.
-func (mr *MockGitServiceMockRecorder) CreateBranch(ctx, repoPath, branchName any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CreateBranch(ctx, repoPath, branchName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBranch", reflect.TypeOf((*MockGitService)(nil).CreateBranch), ctx, repoPath, branchName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBranch", reflect.TypeOf((*MockService)(nil).CreateBranch), ctx, repoPath, branchName)
 }
 
 // DeleteBranch mocks base method.
-func (m *MockGitService) DeleteBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
+func (m *MockService) DeleteBranch(ctx context.Context, repoPath, branchName string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBranch", ctx, repoPath, branchName)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -734,13 +733,13 @@ func (m *MockGitService) DeleteBranch(ctx context.Context, repoPath, branchName 
 }
 
 // DeleteBranch indicates an expected call of DeleteBranch.
-func (mr *MockGitServiceMockRecorder) DeleteBranch(ctx, repoPath, branchName any) *gomock.Call {
+func (mr *MockServiceMockRecorder) DeleteBranch(ctx, repoPath, branchName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranch", reflect.TypeOf((*MockGitService)(nil).DeleteBranch), ctx, repoPath, branchName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBranch", reflect.TypeOf((*MockService)(nil).DeleteBranch), ctx, repoPath, branchName)
 }
 
 // ExecuteBulkOperation mocks base method.
-func (m *MockGitService) ExecuteBulkOperation(ctx context.Context, repoPaths []string, operation git.BulkOperation) ([]git.BulkResult, error) {
+func (m *MockService) ExecuteBulkOperation(ctx context.Context, repoPaths []string, operation git.BulkOperation) ([]git.BulkResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExecuteBulkOperation", ctx, repoPaths, operation)
 	ret0, _ := ret[0].([]git.BulkResult)
@@ -749,13 +748,13 @@ func (m *MockGitService) ExecuteBulkOperation(ctx context.Context, repoPaths []s
 }
 
 // ExecuteBulkOperation indicates an expected call of ExecuteBulkOperation.
-func (mr *MockGitServiceMockRecorder) ExecuteBulkOperation(ctx, repoPaths, operation any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ExecuteBulkOperation(ctx, repoPaths, operation any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteBulkOperation", reflect.TypeOf((*MockGitService)(nil).ExecuteBulkOperation), ctx, repoPaths, operation)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteBulkOperation", reflect.TypeOf((*MockService)(nil).ExecuteBulkOperation), ctx, repoPaths, operation)
 }
 
 // ExecuteBulkOperationWithOptions mocks base method.
-func (m *MockGitService) ExecuteBulkOperationWithOptions(ctx context.Context, repoPaths []string, operation git.BulkOperation, options git.BulkOptions) ([]git.BulkResult, error) {
+func (m *MockService) ExecuteBulkOperationWithOptions(ctx context.Context, repoPaths []string, operation git.BulkOperation, options git.BulkOptions) ([]git.BulkResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExecuteBulkOperationWithOptions", ctx, repoPaths, operation, options)
 	ret0, _ := ret[0].([]git.BulkResult)
@@ -764,13 +763,13 @@ func (m *MockGitService) ExecuteBulkOperationWithOptions(ctx context.Context, re
 }
 
 // ExecuteBulkOperationWithOptions indicates an expected call of ExecuteBulkOperationWithOptions.
-func (mr *MockGitServiceMockRecorder) ExecuteBulkOperationWithOptions(ctx, repoPaths, operation, options any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ExecuteBulkOperationWithOptions(ctx, repoPaths, operation, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteBulkOperationWithOptions", reflect.TypeOf((*MockGitService)(nil).ExecuteBulkOperationWithOptions), ctx, repoPaths, operation, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteBulkOperationWithOptions", reflect.TypeOf((*MockService)(nil).ExecuteBulkOperationWithOptions), ctx, repoPaths, operation, options)
 }
 
 // ExecuteStrategy mocks base method.
-func (m *MockGitService) ExecuteStrategy(ctx context.Context, repoPath, strategy string) (*git.OperationResult, error) {
+func (m *MockService) ExecuteStrategy(ctx context.Context, repoPath, strategy string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExecuteStrategy", ctx, repoPath, strategy)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -779,13 +778,13 @@ func (m *MockGitService) ExecuteStrategy(ctx context.Context, repoPath, strategy
 }
 
 // ExecuteStrategy indicates an expected call of ExecuteStrategy.
-func (mr *MockGitServiceMockRecorder) ExecuteStrategy(ctx, repoPath, strategy any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ExecuteStrategy(ctx, repoPath, strategy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteStrategy", reflect.TypeOf((*MockGitService)(nil).ExecuteStrategy), ctx, repoPath, strategy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteStrategy", reflect.TypeOf((*MockService)(nil).ExecuteStrategy), ctx, repoPath, strategy)
 }
 
 // Fetch mocks base method.
-func (m *MockGitService) Fetch(ctx context.Context, repoPath, remote string) (*git.OperationResult, error) {
+func (m *MockService) Fetch(ctx context.Context, repoPath, remote string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Fetch", ctx, repoPath, remote)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -794,13 +793,13 @@ func (m *MockGitService) Fetch(ctx context.Context, repoPath, remote string) (*g
 }
 
 // Fetch indicates an expected call of Fetch.
-func (mr *MockGitServiceMockRecorder) Fetch(ctx, repoPath, remote any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Fetch(ctx, repoPath, remote any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockGitService)(nil).Fetch), ctx, repoPath, remote)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockService)(nil).Fetch), ctx, repoPath, remote)
 }
 
 // GetAuthMethod mocks base method.
-func (m *MockGitService) GetAuthMethod() string {
+func (m *MockService) GetAuthMethod() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthMethod")
 	ret0, _ := ret[0].(string)
@@ -808,13 +807,13 @@ func (m *MockGitService) GetAuthMethod() string {
 }
 
 // GetAuthMethod indicates an expected call of GetAuthMethod.
-func (mr *MockGitServiceMockRecorder) GetAuthMethod() *gomock.Call {
+func (mr *MockServiceMockRecorder) GetAuthMethod() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthMethod", reflect.TypeOf((*MockGitService)(nil).GetAuthMethod))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthMethod", reflect.TypeOf((*MockService)(nil).GetAuthMethod))
 }
 
 // GetCommitHistory mocks base method.
-func (m *MockGitService) GetCommitHistory(ctx context.Context, repoPath string, limit int) ([]git.Commit, error) {
+func (m *MockService) GetCommitHistory(ctx context.Context, repoPath string, limit int) ([]git.Commit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCommitHistory", ctx, repoPath, limit)
 	ret0, _ := ret[0].([]git.Commit)
@@ -823,13 +822,13 @@ func (m *MockGitService) GetCommitHistory(ctx context.Context, repoPath string, 
 }
 
 // GetCommitHistory indicates an expected call of GetCommitHistory.
-func (mr *MockGitServiceMockRecorder) GetCommitHistory(ctx, repoPath, limit any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetCommitHistory(ctx, repoPath, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitHistory", reflect.TypeOf((*MockGitService)(nil).GetCommitHistory), ctx, repoPath, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitHistory", reflect.TypeOf((*MockService)(nil).GetCommitHistory), ctx, repoPath, limit)
 }
 
 // GetCurrentBranch mocks base method.
-func (m *MockGitService) GetCurrentBranch(ctx context.Context, repoPath string) (string, error) {
+func (m *MockService) GetCurrentBranch(ctx context.Context, repoPath string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCurrentBranch", ctx, repoPath)
 	ret0, _ := ret[0].(string)
@@ -838,13 +837,13 @@ func (m *MockGitService) GetCurrentBranch(ctx context.Context, repoPath string) 
 }
 
 // GetCurrentBranch indicates an expected call of GetCurrentBranch.
-func (mr *MockGitServiceMockRecorder) GetCurrentBranch(ctx, repoPath any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetCurrentBranch(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentBranch", reflect.TypeOf((*MockGitService)(nil).GetCurrentBranch), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentBranch", reflect.TypeOf((*MockService)(nil).GetCurrentBranch), ctx, repoPath)
 }
 
 // GetDefaultBranch mocks base method.
-func (m *MockGitService) GetDefaultBranch(ctx context.Context, repoPath string) (string, error) {
+func (m *MockService) GetDefaultBranch(ctx context.Context, repoPath string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefaultBranch", ctx, repoPath)
 	ret0, _ := ret[0].(string)
@@ -853,13 +852,13 @@ func (m *MockGitService) GetDefaultBranch(ctx context.Context, repoPath string) 
 }
 
 // GetDefaultBranch indicates an expected call of GetDefaultBranch.
-func (mr *MockGitServiceMockRecorder) GetDefaultBranch(ctx, repoPath any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetDefaultBranch(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefaultBranch", reflect.TypeOf((*MockGitService)(nil).GetDefaultBranch), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefaultBranch", reflect.TypeOf((*MockService)(nil).GetDefaultBranch), ctx, repoPath)
 }
 
 // GetLastCommit mocks base method.
-func (m *MockGitService) GetLastCommit(ctx context.Context, repoPath string) (*git.Commit, error) {
+func (m *MockService) GetLastCommit(ctx context.Context, repoPath string) (*git.Commit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLastCommit", ctx, repoPath)
 	ret0, _ := ret[0].(*git.Commit)
@@ -868,13 +867,13 @@ func (m *MockGitService) GetLastCommit(ctx context.Context, repoPath string) (*g
 }
 
 // GetLastCommit indicates an expected call of GetLastCommit.
-func (mr *MockGitServiceMockRecorder) GetLastCommit(ctx, repoPath any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetLastCommit(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastCommit", reflect.TypeOf((*MockGitService)(nil).GetLastCommit), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastCommit", reflect.TypeOf((*MockService)(nil).GetLastCommit), ctx, repoPath)
 }
 
 // GetProgress mocks base method.
-func (m *MockGitService) GetProgress() <-chan git.BulkProgress {
+func (m *MockService) GetProgress() <-chan git.BulkProgress {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProgress")
 	ret0, _ := ret[0].(<-chan git.BulkProgress)
@@ -882,13 +881,13 @@ func (m *MockGitService) GetProgress() <-chan git.BulkProgress {
 }
 
 // GetProgress indicates an expected call of GetProgress.
-func (mr *MockGitServiceMockRecorder) GetProgress() *gomock.Call {
+func (mr *MockServiceMockRecorder) GetProgress() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProgress", reflect.TypeOf((*MockGitService)(nil).GetProgress))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProgress", reflect.TypeOf((*MockService)(nil).GetProgress))
 }
 
 // GetRepository mocks base method.
-func (m *MockGitService) GetRepository(ctx context.Context, path string) (*git.Repository, error) {
+func (m *MockService) GetRepository(ctx context.Context, path string) (*git.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRepository", ctx, path)
 	ret0, _ := ret[0].(*git.Repository)
@@ -897,13 +896,13 @@ func (m *MockGitService) GetRepository(ctx context.Context, path string) (*git.R
 }
 
 // GetRepository indicates an expected call of GetRepository.
-func (mr *MockGitServiceMockRecorder) GetRepository(ctx, path any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetRepository(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitService)(nil).GetRepository), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockService)(nil).GetRepository), ctx, path)
 }
 
 // GetStatus mocks base method.
-func (m *MockGitService) GetStatus(ctx context.Context, repoPath string) (*git.StatusResult, error) {
+func (m *MockService) GetStatus(ctx context.Context, repoPath string) (*git.StatusResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetStatus", ctx, repoPath)
 	ret0, _ := ret[0].(*git.StatusResult)
@@ -912,13 +911,13 @@ func (m *MockGitService) GetStatus(ctx context.Context, repoPath string) (*git.S
 }
 
 // GetStatus indicates an expected call of GetStatus.
-func (mr *MockGitServiceMockRecorder) GetStatus(ctx, repoPath any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetStatus(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatus", reflect.TypeOf((*MockGitService)(nil).GetStatus), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatus", reflect.TypeOf((*MockService)(nil).GetStatus), ctx, repoPath)
 }
 
 // GetStrategyDescription mocks base method.
-func (m *MockGitService) GetStrategyDescription(strategy string) string {
+func (m *MockService) GetStrategyDescription(strategy string) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetStrategyDescription", strategy)
 	ret0, _ := ret[0].(string)
@@ -926,13 +925,13 @@ func (m *MockGitService) GetStrategyDescription(strategy string) string {
 }
 
 // GetStrategyDescription indicates an expected call of GetStrategyDescription.
-func (mr *MockGitServiceMockRecorder) GetStrategyDescription(strategy any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetStrategyDescription(strategy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStrategyDescription", reflect.TypeOf((*MockGitService)(nil).GetStrategyDescription), strategy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStrategyDescription", reflect.TypeOf((*MockService)(nil).GetStrategyDescription), strategy)
 }
 
 // GetSupportedStrategies mocks base method.
-func (m *MockGitService) GetSupportedStrategies() []string {
+func (m *MockService) GetSupportedStrategies() []string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSupportedStrategies")
 	ret0, _ := ret[0].([]string)
@@ -940,13 +939,13 @@ func (m *MockGitService) GetSupportedStrategies() []string {
 }
 
 // GetSupportedStrategies indicates an expected call of GetSupportedStrategies.
-func (mr *MockGitServiceMockRecorder) GetSupportedStrategies() *gomock.Call {
+func (mr *MockServiceMockRecorder) GetSupportedStrategies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportedStrategies", reflect.TypeOf((*MockGitService)(nil).GetSupportedStrategies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportedStrategies", reflect.TypeOf((*MockService)(nil).GetSupportedStrategies))
 }
 
 // IsDirty mocks base method.
-func (m *MockGitService) IsDirty(ctx context.Context, repoPath string) (bool, error) {
+func (m *MockService) IsDirty(ctx context.Context, repoPath string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsDirty", ctx, repoPath)
 	ret0, _ := ret[0].(bool)
@@ -955,13 +954,13 @@ func (m *MockGitService) IsDirty(ctx context.Context, repoPath string) (bool, er
 }
 
 // IsDirty indicates an expected call of IsDirty.
-func (mr *MockGitServiceMockRecorder) IsDirty(ctx, repoPath any) *gomock.Call {
+func (mr *MockServiceMockRecorder) IsDirty(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDirty", reflect.TypeOf((*MockGitService)(nil).IsDirty), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDirty", reflect.TypeOf((*MockService)(nil).IsDirty), ctx, repoPath)
 }
 
 // IsRepository mocks base method.
-func (m *MockGitService) IsRepository(ctx context.Context, path string) bool {
+func (m *MockService) IsRepository(ctx context.Context, path string) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsRepository", ctx, path)
 	ret0, _ := ret[0].(bool)
@@ -969,13 +968,13 @@ func (m *MockGitService) IsRepository(ctx context.Context, path string) bool {
 }
 
 // IsRepository indicates an expected call of IsRepository.
-func (mr *MockGitServiceMockRecorder) IsRepository(ctx, path any) *gomock.Call {
+func (mr *MockServiceMockRecorder) IsRepository(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRepository", reflect.TypeOf((*MockGitService)(nil).IsRepository), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRepository", reflect.TypeOf((*MockService)(nil).IsRepository), ctx, path)
 }
 
 // IsValidStrategy mocks base method.
-func (m *MockGitService) IsValidStrategy(strategy string) bool {
+func (m *MockService) IsValidStrategy(strategy string) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsValidStrategy", strategy)
 	ret0, _ := ret[0].(bool)
@@ -983,13 +982,13 @@ func (m *MockGitService) IsValidStrategy(strategy string) bool {
 }
 
 // IsValidStrategy indicates an expected call of IsValidStrategy.
-func (mr *MockGitServiceMockRecorder) IsValidStrategy(strategy any) *gomock.Call {
+func (mr *MockServiceMockRecorder) IsValidStrategy(strategy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidStrategy", reflect.TypeOf((*MockGitService)(nil).IsValidStrategy), strategy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidStrategy", reflect.TypeOf((*MockService)(nil).IsValidStrategy), strategy)
 }
 
 // ListBranches mocks base method.
-func (m *MockGitService) ListBranches(ctx context.Context, repoPath string) ([]string, error) {
+func (m *MockService) ListBranches(ctx context.Context, repoPath string) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListBranches", ctx, repoPath)
 	ret0, _ := ret[0].([]string)
@@ -998,13 +997,13 @@ func (m *MockGitService) ListBranches(ctx context.Context, repoPath string) ([]s
 }
 
 // ListBranches indicates an expected call of ListBranches.
-func (mr *MockGitServiceMockRecorder) ListBranches(ctx, repoPath any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ListBranches(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBranches", reflect.TypeOf((*MockGitService)(nil).ListBranches), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBranches", reflect.TypeOf((*MockService)(nil).ListBranches), ctx, repoPath)
 }
 
 // ListRemotes mocks base method.
-func (m *MockGitService) ListRemotes(ctx context.Context, repoPath string) (map[string]string, error) {
+func (m *MockService) ListRemotes(ctx context.Context, repoPath string) (map[string]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListRemotes", ctx, repoPath)
 	ret0, _ := ret[0].(map[string]string)
@@ -1013,13 +1012,13 @@ func (m *MockGitService) ListRemotes(ctx context.Context, repoPath string) (map[
 }
 
 // ListRemotes indicates an expected call of ListRemotes.
-func (mr *MockGitServiceMockRecorder) ListRemotes(ctx, repoPath any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ListRemotes(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRemotes", reflect.TypeOf((*MockGitService)(nil).ListRemotes), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRemotes", reflect.TypeOf((*MockService)(nil).ListRemotes), ctx, repoPath)
 }
 
 // Pull mocks base method.
-func (m *MockGitService) Pull(ctx context.Context, repoPath string, options git.PullOptions) (*git.OperationResult, error) {
+func (m *MockService) Pull(ctx context.Context, repoPath string, options git.PullOptions) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Pull", ctx, repoPath, options)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -1028,13 +1027,13 @@ func (m *MockGitService) Pull(ctx context.Context, repoPath string, options git.
 }
 
 // Pull indicates an expected call of Pull.
-func (mr *MockGitServiceMockRecorder) Pull(ctx, repoPath, options any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Pull(ctx, repoPath, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pull", reflect.TypeOf((*MockGitService)(nil).Pull), ctx, repoPath, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pull", reflect.TypeOf((*MockService)(nil).Pull), ctx, repoPath, options)
 }
 
 // RemoveRemote mocks base method.
-func (m *MockGitService) RemoveRemote(ctx context.Context, repoPath, name string) (*git.OperationResult, error) {
+func (m *MockService) RemoveRemote(ctx context.Context, repoPath, name string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveRemote", ctx, repoPath, name)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -1043,13 +1042,13 @@ func (m *MockGitService) RemoveRemote(ctx context.Context, repoPath, name string
 }
 
 // RemoveRemote indicates an expected call of RemoveRemote.
-func (mr *MockGitServiceMockRecorder) RemoveRemote(ctx, repoPath, name any) *gomock.Call {
+func (mr *MockServiceMockRecorder) RemoveRemote(ctx, repoPath, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveRemote", reflect.TypeOf((*MockGitService)(nil).RemoveRemote), ctx, repoPath, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveRemote", reflect.TypeOf((*MockService)(nil).RemoveRemote), ctx, repoPath, name)
 }
 
 // Reset mocks base method.
-func (m *MockGitService) Reset(ctx context.Context, repoPath string, options git.ResetOptions) (*git.OperationResult, error) {
+func (m *MockService) Reset(ctx context.Context, repoPath string, options git.ResetOptions) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Reset", ctx, repoPath, options)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -1058,13 +1057,13 @@ func (m *MockGitService) Reset(ctx context.Context, repoPath string, options git
 }
 
 // Reset indicates an expected call of Reset.
-func (mr *MockGitServiceMockRecorder) Reset(ctx, repoPath, options any) *gomock.Call {
+func (mr *MockServiceMockRecorder) Reset(ctx, repoPath, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reset", reflect.TypeOf((*MockGitService)(nil).Reset), ctx, repoPath, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reset", reflect.TypeOf((*MockService)(nil).Reset), ctx, repoPath, options)
 }
 
 // SetRemoteURL mocks base method.
-func (m *MockGitService) SetRemoteURL(ctx context.Context, repoPath, remote, url string) (*git.OperationResult, error) {
+func (m *MockService) SetRemoteURL(ctx context.Context, repoPath, remote, url string) (*git.OperationResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetRemoteURL", ctx, repoPath, remote, url)
 	ret0, _ := ret[0].(*git.OperationResult)
@@ -1073,13 +1072,13 @@ func (m *MockGitService) SetRemoteURL(ctx context.Context, repoPath, remote, url
 }
 
 // SetRemoteURL indicates an expected call of SetRemoteURL.
-func (mr *MockGitServiceMockRecorder) SetRemoteURL(ctx, repoPath, remote, url any) *gomock.Call {
+func (mr *MockServiceMockRecorder) SetRemoteURL(ctx, repoPath, remote, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRemoteURL", reflect.TypeOf((*MockGitService)(nil).SetRemoteURL), ctx, repoPath, remote, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRemoteURL", reflect.TypeOf((*MockService)(nil).SetRemoteURL), ctx, repoPath, remote, url)
 }
 
 // ValidateAuth mocks base method.
-func (m *MockGitService) ValidateAuth(ctx context.Context, remoteURL string) error {
+func (m *MockService) ValidateAuth(ctx context.Context, remoteURL string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateAuth", ctx, remoteURL)
 	ret0, _ := ret[0].(error)
@@ -1087,13 +1086,13 @@ func (m *MockGitService) ValidateAuth(ctx context.Context, remoteURL string) err
 }
 
 // ValidateAuth indicates an expected call of ValidateAuth.
-func (mr *MockGitServiceMockRecorder) ValidateAuth(ctx, remoteURL any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ValidateAuth(ctx, remoteURL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateAuth", reflect.TypeOf((*MockGitService)(nil).ValidateAuth), ctx, remoteURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateAuth", reflect.TypeOf((*MockService)(nil).ValidateAuth), ctx, remoteURL)
 }
 
 // ValidateRepository mocks base method.
-func (m *MockGitService) ValidateRepository(ctx context.Context, path string) error {
+func (m *MockService) ValidateRepository(ctx context.Context, path string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateRepository", ctx, path)
 	ret0, _ := ret[0].(error)
@@ -1101,7 +1100,7 @@ func (m *MockGitService) ValidateRepository(ctx context.Context, path string) er
 }
 
 // ValidateRepository indicates an expected call of ValidateRepository.
-func (mr *MockGitServiceMockRecorder) ValidateRepository(ctx, path any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ValidateRepository(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRepository", reflect.TypeOf((*MockGitService)(nil).ValidateRepository), ctx, path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRepository", reflect.TypeOf((*MockService)(nil).ValidateRepository), ctx, path)
 }

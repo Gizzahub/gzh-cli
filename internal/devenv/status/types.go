@@ -9,19 +9,19 @@ import (
 )
 
 // StatusType represents the current status of a service.
-type Type string
+type StatusType string
 
 const (
-	StatusActive   Type = "active"
-	StatusInactive Type = "inactive"
-	StatusError    Type = "error"
-	StatusUnknown  Type = "unknown"
+	StatusActive   StatusType = "active"
+	StatusInactive StatusType = "inactive"
+	StatusError    StatusType = "error"
+	StatusUnknown  StatusType = "unknown"
 )
 
 // ServiceStatus represents the current status of a development environment service.
 type ServiceStatus struct {
 	Name        string            `json:"name"`
-	Status      Type              `json:"status"`
+	Status      StatusType        `json:"status"`
 	Current     CurrentConfig     `json:"current"`
 	Credentials CredentialStatus  `json:"credentials"`
 	LastUsed    time.Time         `json:"lastUsed"`
@@ -49,7 +49,7 @@ type CredentialStatus struct {
 
 // HealthStatus represents detailed health check information.
 type HealthStatus struct {
-	Status    Type                   `json:"status"`
+	Status    StatusType             `json:"status"`
 	Message   string                 `json:"message,omitempty"`
 	CheckedAt time.Time              `json:"checkedAt"`
 	Duration  time.Duration          `json:"duration"`
@@ -57,7 +57,7 @@ type HealthStatus struct {
 }
 
 // StatusOptions configures how status information is collected.
-type Options struct {
+type StatusOptions struct {
 	Services     []string      `json:"services,omitempty"`
 	CheckHealth  bool          `json:"checkHealth"`
 	Timeout      time.Duration `json:"timeout"`
@@ -73,6 +73,6 @@ type ServiceChecker interface {
 }
 
 // StatusFormatter interface for formatting status output.
-type Formatter interface {
+type StatusFormatter interface {
 	Format(statuses []ServiceStatus) (string, error)
 }

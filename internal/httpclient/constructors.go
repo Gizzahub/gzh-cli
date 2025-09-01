@@ -21,21 +21,21 @@ type Logger interface {
 
 // Middleware defines the interface for request/response middleware.
 type Middleware interface {
-	ModifyRequest(ctx context.Context, req *http.Request) *http.Request
-	ModifyResponse(ctx context.Context, resp *http.Response) *http.Response
+	ModifyRequest(ctx context.Context, req *HTTPRequest) *HTTPRequest
+	ModifyResponse(ctx context.Context, resp *HTTPResponse) *HTTPResponse
 }
 
 // CacheEntry represents a cached response.
 type CacheEntry struct {
-	Response  *http.Response `json:"response"`
+	HTTPResponse  *HTTPResponse `json:"response"`
 	CreatedAt time.Time      `json:"createdAt"`
 	TTL       time.Duration  `json:"ttl"`
 }
 
 // Cache defines the interface for caching.
 type Cache interface {
-	Get(ctx context.Context, key string) (*http.Response, bool)
-	Set(ctx context.Context, key string, response *http.Response, ttl time.Duration)
+	Get(ctx context.Context, key string) (*HTTPResponse, bool)
+	Set(ctx context.Context, key string, response *HTTPResponse, ttl time.Duration)
 	Delete(ctx context.Context, key string)
 	Clear(ctx context.Context)
 }
@@ -113,7 +113,7 @@ func NewHTTPClient(
 }
 
 // Do implements HTTPClient interface.
-func (c *HTTPClientImpl) Do(ctx context.Context, req *Request) (*Response, error) {
+func (c *HTTPClientImpl) Do(ctx context.Context, req *HTTPRequest) (*HTTPResponse, error) {
 	httpReq, err := http.NewRequestWithContext(ctx, req.Method, req.URL, req.Body)
 	if err != nil {
 		return nil, err
@@ -135,34 +135,30 @@ func (c *HTTPClientImpl) Do(ctx context.Context, req *Request) (*Response, error
 }
 
 // doHTTPRequest handles the actual HTTP request.
-func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (*Response, error) {
-	c.logger.Debug("Making HTTP request", "method", req.Method, "url", req.URL.String())
+func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, httpReq *http.Request) (*HTTPResponse, error) {
+	c.logger.Debug("Making HTTP request", "method", httpReq.Method, "url", httpReq.URL.String())
 
-	// Apply middleware
+	// Apply middleware to our HTTPRequest type
+	ourReq := &HTTPRequest{Method: httpReq.Method, URL: httpReq.URL.String()}
 	for _, middleware := range c.middleware {
-		req = middleware.ModifyRequest(ctx, req)
+		ourReq = middleware.ModifyRequest(ctx, ourReq)
 	}
 
 	start := time.Now()
-	resp, err := c.client.Do(req.WithContext(ctx))
+	resp, err := c.client.Do(httpReq.WithContext(ctx))
 	duration := time.Since(start)
 
 	// Record metrics
 	if c.metricsCollector != nil {
-		c.metricsCollector.RecordRequest(ctx, &Request{Method: req.Method, URL: req.URL.String()}, nil, duration, err)
+		c.metricsCollector.RecordRequest(ctx, ourReq, nil, duration, err)
 	}
 
 	if err != nil {
-		c.logger.Error("HTTP request failed", "method", req.Method, "url", req.URL.String(), "error", err)
+		c.logger.Error("HTTP request failed", "method", httpReq.Method, "url", httpReq.URL.String(), "error", err)
 		return nil, err
 	}
 
-	// Apply response middleware
-	for _, middleware := range c.middleware {
-		resp = middleware.ModifyResponse(ctx, resp)
-	}
-
-	// Convert to our Response type
+	// Apply response middleware - convert to our HTTPResponse first
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -174,26 +170,32 @@ func (c *HTTPClientImpl) doHTTPRequest(ctx context.Context, req *http.Request) (
 	}
 
 	headers := make(map[string]string)
-
 	for k, v := range resp.Header {
 		if len(v) > 0 {
 			headers[k] = v[0]
 		}
 	}
 
-	return &Response{
+	ourResp := &HTTPResponse{
 		StatusCode: resp.StatusCode,
 		Status:     resp.Status,
 		Headers:    headers,
 		Body:       body,
 		Size:       int64(len(body)),
 		Duration:   duration,
-	}, nil
+	}
+
+	// Apply response middleware
+	for _, middleware := range c.middleware {
+		ourResp = middleware.ModifyResponse(ctx, ourResp)
+	}
+
+	return ourResp, nil
 }
 
 // Get implements HTTPClient interface.
-func (c *HTTPClientImpl) Get(ctx context.Context, url string) (*Response, error) {
-	req := &Request{
+func (c *HTTPClientImpl) Get(ctx context.Context, url string) (*HTTPResponse, error) {
+	req := &HTTPRequest{
 		Method:  "GET",
 		URL:     url,
 		Headers: make(map[string]string),
@@ -204,8 +206,8 @@ func (c *HTTPClientImpl) Get(ctx context.Context, url string) (*Response, error)
 }
 
 // Post implements HTTPClient interface.
-func (c *HTTPClientImpl) Post(ctx context.Context, url string, body io.Reader) (*Response, error) {
-	req := &Request{
+func (c *HTTPClientImpl) Post(ctx context.Context, url string, body io.Reader) (*HTTPResponse, error) {
+	req := &HTTPRequest{
 		Method:  "POST",
 		URL:     url,
 		Headers: make(map[string]string),
@@ -217,8 +219,8 @@ func (c *HTTPClientImpl) Post(ctx context.Context, url string, body io.Reader) (
 }
 
 // Put implements HTTPClient interface.
-func (c *HTTPClientImpl) Put(ctx context.Context, url string, body io.Reader) (*Response, error) {
-	req := &Request{
+func (c *HTTPClientImpl) Put(ctx context.Context, url string, body io.Reader) (*HTTPResponse, error) {
+	req := &HTTPRequest{
 		Method:  "PUT",
 		URL:     url,
 		Headers: make(map[string]string),
@@ -230,8 +232,8 @@ func (c *HTTPClientImpl) Put(ctx context.Context, url string, body io.Reader) (*
 }
 
 // Delete implements HTTPClient interface.
-func (c *HTTPClientImpl) Delete(ctx context.Context, url string) (*Response, error) {
-	req := &Request{
+func (c *HTTPClientImpl) Delete(ctx context.Context, url string) (*HTTPResponse, error) {
+	req := &HTTPRequest{
 		Method:  "DELETE",
 		URL:     url,
 		Headers: make(map[string]string),
@@ -242,8 +244,8 @@ func (c *HTTPClientImpl) Delete(ctx context.Context, url string) (*Response, err
 }
 
 // Patch implements HTTPClient interface.
-func (c *HTTPClientImpl) Patch(ctx context.Context, url string, body io.Reader) (*Response, error) {
-	req := &Request{
+func (c *HTTPClientImpl) Patch(ctx context.Context, url string, body io.Reader) (*HTTPResponse, error) {
+	req := &HTTPRequest{
 		Method:  "PATCH",
 		URL:     url,
 		Headers: make(map[string]string),
@@ -255,8 +257,8 @@ func (c *HTTPClientImpl) Patch(ctx context.Context, url string, body io.Reader) 
 }
 
 // Head implements HTTPClient interface.
-func (c *HTTPClientImpl) Head(ctx context.Context, url string) (*Response, error) {
-	req := &Request{
+func (c *HTTPClientImpl) Head(ctx context.Context, url string) (*HTTPResponse, error) {
+	req := &HTTPRequest{
 		Method:  "HEAD",
 		URL:     url,
 		Headers: make(map[string]string),
@@ -267,8 +269,8 @@ func (c *HTTPClientImpl) Head(ctx context.Context, url string) (*Response, error
 }
 
 // Options implements HTTPClient interface.
-func (c *HTTPClientImpl) Options(ctx context.Context, url string) (*Response, error) {
-	req := &Request{
+func (c *HTTPClientImpl) Options(ctx context.Context, url string) (*HTTPResponse, error) {
+	req := &HTTPRequest{
 		Method:  "OPTIONS",
 		URL:     url,
 		Headers: make(map[string]string),
@@ -380,7 +382,7 @@ func NewRetryPolicy(config *RetryPolicyConfig, logger Logger) RetryPolicy {
 }
 
 // ShouldRetry implements RetryPolicy interface.
-func (rp *RetryPolicyImpl) ShouldRetry(_ context.Context, _ *Request, _ *Response, _ error, attempt int) bool {
+func (rp *RetryPolicyImpl) ShouldRetry(_ context.Context, _ *HTTPRequest, _ *HTTPResponse, _ error, attempt int) bool {
 	if attempt >= rp.maxRetries {
 		return false
 	}
@@ -543,7 +545,7 @@ func NewCache(config *CacheConfig, logger Logger) Cache {
 }
 
 // Get implements Cache interface.
-func (c *CacheImpl) Get(_ context.Context, key string) (*http.Response, bool) {
+func (c *CacheImpl) Get(_ context.Context, key string) (*HTTPResponse, bool) {
 	entry, exists := c.cache[key]
 	if !exists {
 		return nil, false
@@ -554,13 +556,13 @@ func (c *CacheImpl) Get(_ context.Context, key string) (*http.Response, bool) {
 		return nil, false
 	}
 
-	return entry.Response, true
+	return entry.HTTPResponse, true
 }
 
 // Set implements Cache interface.
-func (c *CacheImpl) Set(_ context.Context, key string, response *http.Response, ttl time.Duration) {
+func (c *CacheImpl) Set(_ context.Context, key string, response *HTTPResponse, ttl time.Duration) {
 	c.cache[key] = &CacheEntry{
-		Response:  response,
+		HTTPResponse:  response,
 		CreatedAt: time.Now(),
 		TTL:       ttl,
 	}

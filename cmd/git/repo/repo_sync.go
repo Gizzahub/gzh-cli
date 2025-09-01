@@ -11,7 +11,7 @@ import (
 )
 
 // runSync executes the repository synchronization operation.
-func runSync(ctx context.Context, opts sync.Options) error {
+func runSync(ctx context.Context, opts sync.SyncOptions) error {
 	// Validate options
 	if err := opts.Validate(); err != nil {
 		return fmt.Errorf("invalid options: %w", err)

@@ -12,18 +12,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// TableFormatter formats status as a table.
-type TableFormatter struct {
+// StatusTableFormatter formats status as a table.
+type StatusTableFormatter struct {
 	UseColor bool
 }
 
-// NewTableFormatter creates a new table formatter.
-func NewTableFormatter(useColor bool) *TableFormatter {
-	return &TableFormatter{UseColor: useColor}
+// NewStatusTableFormatter creates a new table formatter.
+func NewStatusTableFormatter(useColor bool) *StatusTableFormatter {
+	return &StatusTableFormatter{UseColor: useColor}
 }
 
 // Format formats the status as a table.
-func (t *TableFormatter) Format(statuses []ServiceStatus) (string, error) {
+func (t *StatusTableFormatter) Format(statuses []ServiceStatus) (string, error) {
 	if len(statuses) == 0 {
 		return "No services to display", nil
 	}
@@ -76,7 +76,7 @@ func (t *TableFormatter) Format(statuses []ServiceStatus) (string, error) {
 }
 
 // formatStatus formats the service status with colors.
-func (t *TableFormatter) formatStatus(status Type) string {
+func (t *StatusTableFormatter) formatStatus(status StatusType) string {
 	switch status {
 	case StatusActive:
 		return t.colorize("✅ Active  ", "green")
@@ -92,7 +92,7 @@ func (t *TableFormatter) formatStatus(status Type) string {
 }
 
 // formatCurrent formats the current configuration.
-func (t *TableFormatter) formatCurrent(current CurrentConfig) string {
+func (t *StatusTableFormatter) formatCurrent(current CurrentConfig) string {
 	parts := []string{}
 
 	if current.Profile != "" {
@@ -124,7 +124,7 @@ func (t *TableFormatter) formatCurrent(current CurrentConfig) string {
 }
 
 // formatCredentials formats the credential status.
-func (t *TableFormatter) formatCredentials(creds CredentialStatus) string {
+func (t *StatusTableFormatter) formatCredentials(creds CredentialStatus) string {
 	if !creds.Valid {
 		return t.colorize("❌ Invalid", "red")
 	}
@@ -148,7 +148,7 @@ func (t *TableFormatter) formatCredentials(creds CredentialStatus) string {
 }
 
 // formatLastUsed formats the last used time.
-func (t *TableFormatter) formatLastUsed(lastUsed time.Time) string {
+func (t *StatusTableFormatter) formatLastUsed(lastUsed time.Time) string {
 	if lastUsed.IsZero() {
 		return "Unknown"
 	}
@@ -158,7 +158,7 @@ func (t *TableFormatter) formatLastUsed(lastUsed time.Time) string {
 }
 
 // formatDuration formats duration in a human-readable way.
-func (t *TableFormatter) formatDuration(d time.Duration) string {
+func (t *StatusTableFormatter) formatDuration(d time.Duration) string {
 	if d < time.Minute {
 		return "< 1 min"
 	}
@@ -172,7 +172,7 @@ func (t *TableFormatter) formatDuration(d time.Duration) string {
 }
 
 // colorize adds color to text if colors are enabled.
-func (t *TableFormatter) colorize(text, color string) string {
+func (t *StatusTableFormatter) colorize(text, color string) string {
 	if !t.UseColor {
 		return text
 	}
@@ -192,17 +192,17 @@ func (t *TableFormatter) colorize(text, color string) string {
 }
 
 // JSONFormatter formats status as JSON.
-type JSONFormatter struct {
+type StatusJSONFormatter struct {
 	Pretty bool
 }
 
-// NewJSONFormatter creates a new JSON formatter.
-func NewJSONFormatter(pretty bool) *JSONFormatter {
-	return &JSONFormatter{Pretty: pretty}
+// NewStatusJSONFormatter creates a new JSON formatter.
+func NewStatusJSONFormatter(pretty bool) *StatusJSONFormatter {
+	return &StatusJSONFormatter{Pretty: pretty}
 }
 
 // Format formats the status as JSON.
-func (j *JSONFormatter) Format(statuses []ServiceStatus) (string, error) {
+func (j *StatusJSONFormatter) Format(statuses []ServiceStatus) (string, error) {
 	if j.Pretty {
 		bytes, err := json.MarshalIndent(statuses, "", "  ")
 		return string(bytes), err
@@ -212,15 +212,15 @@ func (j *JSONFormatter) Format(statuses []ServiceStatus) (string, error) {
 }
 
 // YAMLFormatter formats status as YAML.
-type YAMLFormatter struct{}
+type StatusYAMLFormatter struct{}
 
-// NewYAMLFormatter creates a new YAML formatter.
-func NewYAMLFormatter() *YAMLFormatter {
-	return &YAMLFormatter{}
+// NewStatusYAMLFormatter creates a new YAML formatter.
+func NewStatusYAMLFormatter() *StatusYAMLFormatter {
+	return &StatusYAMLFormatter{}
 }
 
 // Format formats the status as YAML.
-func (y *YAMLFormatter) Format(statuses []ServiceStatus) (string, error) {
+func (y *StatusYAMLFormatter) Format(statuses []ServiceStatus) (string, error) {
 	bytes, err := yaml.Marshal(statuses)
 	return string(bytes), err
 }

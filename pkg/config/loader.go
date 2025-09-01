@@ -80,7 +80,7 @@ func LoadConfig() (*Config, error) {
 // Deprecated: Use ConfigFactory.LoadConfigFromPath() instead for better dependency injection support.
 func LoadConfigWithEnv(environment env.Environment) (*Config, error) {
 	// Use unified factory for backward compatibility
-	factory := NewConfigFactoryWithOptions(&FactoryOptions{
+	factory := NewConfigFactoryWithOptions(&ConfigFactoryOptions{
 		Environment: environment,
 	})
 
@@ -103,7 +103,7 @@ func LoadConfigFromFile(filename string) (*Config, error) {
 // Deprecated: Use ConfigFactory.LoadConfigFromPath() instead for better dependency injection support.
 func LoadConfigFromFileWithEnv(filename string, environment env.Environment) (*Config, error) {
 	// Use unified factory for backward compatibility
-	factory := NewConfigFactoryWithOptions(&FactoryOptions{
+	factory := NewConfigFactoryWithOptions(&ConfigFactoryOptions{
 		Environment: environment,
 	})
 
@@ -126,7 +126,7 @@ func FindConfigFile() (string, error) {
 // Deprecated: Use ConfigFactory.FindConfigFile() instead for better dependency injection support.
 func FindConfigFileWithEnv(environment env.Environment) (string, error) {
 	// Use unified factory for backward compatibility
-	factory := NewConfigFactoryWithOptions(&FactoryOptions{
+	factory := NewConfigFactoryWithOptions(&ConfigFactoryOptions{
 		Environment: environment,
 	})
 
