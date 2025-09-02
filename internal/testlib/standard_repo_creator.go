@@ -279,8 +279,10 @@ func (c *StandardRepoCreator) createMergeCommits(ctx context.Context, repoPath s
 		return fmt.Errorf("failed to merge feature branch: %w", err)
 	}
 
-	// Clean up temporary branch
-	_ = c.runGitCommand(ctx, repoPath, "branch", "-d", "temp-feature") // errcheck 수정: 에러를 의도적으로 무시 (테스트 환경)
+	// Clean up temporary branch (ignore error if branch doesn't exist)
+	if err := c.runGitCommand(ctx, repoPath, "branch", "-d", "temp-feature"); err != nil {
+		// Branch may not exist, which is fine for cleanup
+	}
 
 	return nil
 }

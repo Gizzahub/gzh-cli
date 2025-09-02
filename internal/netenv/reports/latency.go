@@ -141,8 +141,12 @@ func (lt *LatencyTester) parseUnixPing(target LatencyTarget, lines []string) Lat
 
 		// Extract packet statistics
 		if matches := statsRegex.FindStringSubmatch(line); len(matches) > 2 {
-			transmitted, _ = strconv.Atoi(matches[1])
-			received, _ = strconv.Atoi(matches[2])
+			if t, err := strconv.Atoi(matches[1]); err == nil {
+				transmitted = t
+			}
+			if r, err := strconv.Atoi(matches[2]); err == nil {
+				received = r
+			}
 		}
 	}
 
@@ -183,8 +187,12 @@ func (lt *LatencyTester) parseWindowsPing(target LatencyTarget, lines []string) 
 
 		// Extract packet statistics
 		if matches := statsRegex.FindStringSubmatch(line); len(matches) > 3 {
-			transmitted, _ = strconv.Atoi(matches[1])
-			received, _ = strconv.Atoi(matches[2])
+			if t, err := strconv.Atoi(matches[1]); err == nil {
+				transmitted = t
+			}
+			if r, err := strconv.Atoi(matches[2]); err == nil {
+				received = r
+			}
 		}
 	}
 

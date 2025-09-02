@@ -14,7 +14,11 @@ func GetConfigDirectory() string {
 		return configDir
 	}
 
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		// Fallback to current directory if home dir is unavailable
+		homeDir = "."
+	}
 	return filepath.Join(homeDir, ".config", "gzh-manager")
 }
 

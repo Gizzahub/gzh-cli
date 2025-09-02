@@ -294,8 +294,9 @@ func (nes *NetworkErrorSimulator) applyErrorRule(w http.ResponseWriter, r *http.
 	case ErrorTypeRefused:
 		// Close connection immediately
 		if hj, ok := w.(http.Hijacker); ok {
-			conn, _, _ := hj.Hijack()
-			conn.Close()
+			if conn, _, err := hj.Hijack(); err == nil {
+				conn.Close()
+			}
 		}
 
 	case ErrorType404, ErrorType500, ErrorType503:
@@ -312,8 +313,9 @@ func (nes *NetworkErrorSimulator) applyErrorRule(w http.ResponseWriter, r *http.
 		w.WriteHeader(200)
 		fmt.Fprint(w, `{"data": "partial`)
 		if hj, ok := w.(http.Hijacker); ok {
-			conn, _, _ := hj.Hijack()
-			conn.Close()
+			if conn, _, err := hj.Hijack(); err == nil {
+				conn.Close()
+			}
 		}
 
 	case ErrorTypeDNSFailure:

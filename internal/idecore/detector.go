@@ -15,7 +15,11 @@ type DetectorConfig struct {
 
 // NewDetectorConfig creates default detector configuration.
 func NewDetectorConfig() *DetectorConfig {
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		// Fallback to current directory if home dir is unavailable
+		homeDir = "."
+	}
 	cacheDir := filepath.Join(homeDir, ".gz", "cache")
 
 	return &DetectorConfig{
@@ -25,6 +29,10 @@ func NewDetectorConfig() *DetectorConfig {
 
 // GetDefaultCacheDir returns the default cache directory for IDE detection.
 func GetDefaultCacheDir() string {
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		// Fallback to current directory if home dir is unavailable
+		homeDir = "."
+	}
 	return filepath.Join(homeDir, ".gz", "cache")
 }
