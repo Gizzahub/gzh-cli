@@ -142,8 +142,14 @@ Private abstractions and implementations:
 
 #### Logging (`internal/logger/`)
 
-- **`structured.go`** - Structured logging abstractions
+- **`structured.go`** - Structured logging with smart output control
+- **`simple_logger.go`** - Simple terminal-friendly logging
 - **`context.go`** - Context-aware logging
+
+**Recent Improvement (2025-09)**: Enhanced logging system with intelligent output control:
+- **Debug Mode Only**: Logs only appear with `--debug` flag for clean user experience
+- **Performance Logs**: Simplified from JSON to readable text format
+- **Console Messages**: Progress indicators and status messages remain visible
 
 ### 3. Package Layer (`pkg/`)
 
@@ -166,6 +172,12 @@ Public APIs and platform implementations:
 - **`engine.go`** - Multi-platform synchronization logic
 - **`strategies.go`** - Clone/update strategies
 - **`concurrency.go`** - Concurrent operation management
+- **`progress.go`** - Advanced progress tracking with real-time updates
+
+**Recent Improvement (2025-09)**: Enhanced progress tracking system:
+- **Initial Progress Display**: Shows 0/total from start instead of jumping to middle values
+- **Real-time Updates**: Progress bar updates every 500ms with accurate completion status
+- **Visual Indicators**: Comprehensive status display with ✓ ✗ ⏳ symbols
 
 ## 🔄 Design Patterns
 
@@ -261,6 +273,20 @@ Result Aggregation & Formatting
 ```
 
 ## 🚀 Recent Architectural Improvements
+
+### User Experience Enhancements (2025-09)
+
+Latest improvements focused on user experience and interface polish:
+
+#### Logging System Overhaul
+- **Smart Output Control**: Logs only appear with `--debug` flag for clean CLI experience
+- **Performance Log Format**: Converted from JSON to human-readable text format
+- **Console Message Preservation**: Progress indicators (🔍, 📋, ✅) always visible
+
+#### Progress Tracking Enhancement
+- **Fixed Initial Display**: Progress bars now start from 0/total instead of jumping to middle values
+- **Improved Visual Feedback**: Real-time progress updates with accurate status indicators
+- **Better State Management**: Proper initialization and state loading for resumable operations
 
 ### Code Duplication Elimination (2025-08)
 
@@ -419,7 +445,8 @@ type Client interface {
 
 ______________________________________________________________________
 
-**Architecture Version**: 2.0 (Post-Refactoring)
-**Last Updated**: 2025-08-19
+**Architecture Version**: 2.1 (UX Enhancements)
+**Last Updated**: 2025-09-02
 **Major Refactoring**: 2025-08 (75%+ code reduction)
-**Design Philosophy**: Simple, Interface-Driven, Performance-Focused
+**Latest Improvements**: 2025-09 (Logging & Progress UX)
+**Design Philosophy**: Simple, Interface-Driven, Performance-Focused, User-Centric

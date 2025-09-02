@@ -645,26 +645,44 @@ include_templates: false
 
 ### Progress Display
 
-Synclone provides real-time progress monitoring:
+Synclone provides real-time progress monitoring with enhanced UX:
 
+**Normal Mode (Clean Output)**:
 ```bash
-$ gz synclone github --org kubernetes
-🔍 Fetching repositories from kubernetes...
-📊 Found 147 repositories matching criteria
-
-Cloning repositories:
-[##########··········] 50% | 73/147 | kubernetes/dashboard ⠋
-✓ kubernetes/kubernetes (25.3 MB)
-✓ kubernetes/minikube (18.7 MB)
-⠼ kubernetes/dashboard (5.2 MB)
-⠿ kubernetes/client-go (queued)
-
-Summary:
-✅ Successful: 145
-⚠️  Warnings: 1
-❌ Failed: 1
-⏱️  Duration: 4m 23s
+$ gz synclone github --org Gizzahub
+🔍 Fetching repository list from GitHub organization: Gizzahub
+📋 Found 5 repositories in organization Gizzahub
+📝 Generated gzh.yaml with 5 repositories
+📦 Processing 5 repositories (5 remaining)
+[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0.0% (0/5) • ✓ 0 • ✗ 0 • ⏳ 5 • 0s
+[████████████░░░░░░░░░░░░░░░░░░] 40.0% (2/5) • ✓ 2 • ✗ 0 • ⏳ 0 • 2s
+[██████████████████████████████] 100.0% (5/5) • ✓ 5 • ✗ 0 • ⏳ 0 • 3s
+✅ Clone operation completed successfully
 ```
+
+**Debug Mode (With Detailed Logs)**:
+```bash
+$ gz synclone github --org Gizzahub --debug
+22:13:47 INFO  [component=gzh-cli org=Gizzahub] Starting GitHub synclone operation
+22:13:47 INFO  [component=gzh-cli org=Gizzahub] Starting synclone workflow: fetching repository list from GitHub
+🔍 Fetching repository list from GitHub organization: Gizzahub
+📋 Found 5 repositories in organization Gizzahub
+📝 Generated gzh.yaml with 5 repositories
+22:13:47 INFO  [component=gzh-cli org=Gizzahub] Using resumable parallel cloning
+📦 Processing 5 repositories (5 remaining)
+[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0.0% (0/5) • ✓ 0 • ✗ 0 • ⏳ 5 • 0s
+[████████████░░░░░░░░░░░░░░░░░░] 40.0% (2/5) • ✓ 2 • ✗ 0 • ⏳ 0 • 2s
+[██████████████████████████████] 100.0% (5/5) • ✓ 5 • ✗ 0 • ⏳ 0 • 3s
+✅ Clone operation completed successfully
+22:13:50 INFO  [component=gzh-cli org=Gizzahub] Operation 'github-synclone-completed' completed in 2.920s (Memory: 2.68 MB) [org_name=Gizzahub strategy=reset parallel=2]
+22:13:50 INFO  [component=gzh-cli org=Gizzahub] GitHub synclone operation completed successfully
+```
+
+**Key UX Improvements (2025-09)**:
+- **Clean Output**: Logs only appear with `--debug` flag for better user experience
+- **Accurate Progress**: Progress bar starts from 0/total instead of jumping to middle values
+- **Real-time Updates**: Progress updates every 500ms with precise status indicators
+- **Human-readable Performance**: Performance metrics in text format, not JSON
 
 ### Concurrency Control
 
@@ -714,18 +732,46 @@ gz synclone github --org myorg --force-refresh
 
 ### Logging and Monitoring
 
+**Enhanced Logging System (2025-09)**:
+
 ```bash
-# Show detailed progress
+# Clean output (default) - only console messages
+gz synclone github --org myorg
+
+# Show detailed progress with logs
 gz synclone github --org myorg --verbose
 
-# Show debug information
+# Show debug information with detailed logs
 gz synclone github --org myorg --debug
 
 # Log to file
 gz synclone github --org myorg --log-file synclone.log
 
-# JSON format logging
-gz synclone github --org myorg --log-format json
+# Quiet mode - suppress all logs except errors
+gz synclone github --org myorg --quiet
+```
+
+**Logging Modes**:
+
+- **Default Mode**: Clean console output with progress indicators only
+  - Shows: 🔍, 📋, ✅ progress messages
+  - Hides: Timestamp logs, debug information, performance metrics
+  
+- **Verbose Mode**: Adds informational logs
+  - Shows: All default output + INFO level logs
+  - Use: When you need more context about operations
+  
+- **Debug Mode**: Complete logging with technical details
+  - Shows: All output + DEBUG logs + performance metrics
+  - Use: For troubleshooting and development
+  
+- **Quiet Mode**: Error-only output
+  - Shows: Only errors and critical failures
+  - Use: In automated scripts or CI/CD environments
+
+**Performance Metrics**: Now displayed in human-readable format instead of JSON:
+```
+Operation 'github-synclone-completed' completed in 2.920s (Memory: 2.68 MB)
 ```
 
 ## Best Practices
