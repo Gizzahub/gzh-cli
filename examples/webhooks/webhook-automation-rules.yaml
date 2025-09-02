@@ -364,3 +364,4 @@ rules:
           type: "slack"
           message: "📦 Repository {{repo.name}} has been archived by @{{sender.login}}"
         async: true
+

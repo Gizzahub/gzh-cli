@@ -62,3 +62,4 @@ options:
 
   # Continue even if some operations fail
   continue_on_error: true
+

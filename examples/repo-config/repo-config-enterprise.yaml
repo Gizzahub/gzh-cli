@@ -125,191 +125,45 @@ templates:
 
           [Brief description of the project and its business purpose]
 
-          ## Documentation
+          ## Architecture
 
-          - [Technical Documentation](docs/technical.md)
-          - [API Documentation](docs/api.md)
-          - [Deployment Guide](docs/deployment.md)
+          [High-level architecture diagram and components]
 
-          ## Team
+          ## Compliance Requirements
 
-          - **Product Owner**: [Name] (@username)
-          - **Tech Lead**: [Name] (@username)
-          - **Security Champion**: [Name] (@username)
-
-          ## Compliance
-
-          - **Data Classification**: [Public/Internal/Confidential/Restricted]
-          - **Compliance Requirements**: [PCI/HIPAA/SOX/GDPR]
-          - **Last Security Review**: [Date]
-
-          ## Support
-
-          - **Slack Channel**: #team-[name]
-          - **Support Queue**: [JIRA/ServiceNow link]
-          - **On-Call Rotation**: [PagerDuty link]
-
-      - path: ".github/CODEOWNERS"
-        content: |
-          # Default owners for everything
-          * @enterprise-org/architects
-
-          # Frontend code
-          /frontend/ @enterprise-org/frontend-team
-          /src/components/ @enterprise-org/frontend-team
-
-          # Backend code
-          /backend/ @enterprise-org/backend-team
-          /src/api/ @enterprise-org/backend-team
-
-          # Database changes
-          /migrations/ @enterprise-org/database-team
-          *.sql @enterprise-org/database-team
-
-          # Infrastructure
-          /infrastructure/ @enterprise-org/platform-team
-          /terraform/ @enterprise-org/platform-team
-          /.github/workflows/ @enterprise-org/devops-team
-
-          # Security-sensitive files
-          /security/ @enterprise-org/security-team
-          *.key @enterprise-org/security-team
-          *.pem @enterprise-org/security-team
-
-          # Compliance documents
-          /compliance/ @enterprise-org/compliance-team
-          /docs/audit/ @enterprise-org/compliance-team
-
-      - path: "SECURITY.md"
-        content: |
-          # Security Policy
-
-          ## Supported Versions
-
-          | Version | Supported          |
-          | ------- | ------------------ |
-          | 2.x.x   | :white_check_mark: |
-          | 1.x.x   | :x:                |
-
-          ## Reporting a Vulnerability
-
-          **DO NOT** create a public issue for security vulnerabilities.
-
-          Please report security vulnerabilities through our internal security portal:
-          https://security.enterprise.internal/report
-
-          Or email: security@enterprise.internal
-
-          ## Security Review Process
-
-          All code must pass security review before deployment to production.
-          See [Security Review Guidelines](docs/security-review.md).
+          - [ ] Security scanning enabled
+          - [ ] Code reviews required
+          - [ ] Protected branches configured
 
       - path: "COMPLIANCE.md"
         content: |
-          # Compliance Information
+          # Compliance Documentation
+
+          This document outlines the compliance requirements for this repository.
 
           ## Data Classification
-          This repository is classified as: [CLASSIFICATION_LEVEL]
+          - Confidentiality: [Public | Internal | Confidential | Restricted]
+          - Regulations: [SOX, GDPR, HIPAA, PCI-DSS]
 
-          ## Regulatory Requirements
-          This project must comply with:
-          - [ ] PCI-DSS
-          - [ ] HIPAA
-          - [ ] SOX
-          - [ ] GDPR
-          - [ ] CCPA
+          ## Security Controls
+          - Branch protection
+          - Code reviews
+          - Vulnerability scanning
+          - Access management
 
-          ## Audit Trail
-          All changes to this repository are logged and retained per company policy.
-
-          ## Required Reviews
-          - Security Review: Required for all changes
-          - Compliance Review: Required for data handling changes
-          - Architecture Review: Required for significant changes
-
-      - path: ".github/workflows/compliance.yml"
+      - path: ".github/CODEOWNERS"
         content: |
-          name: Compliance Checks
+          # Code ownership
+          * @enterprise/architects
+          /docs/ @enterprise/analysts
+          /src/ @enterprise/developers
 
-          on:
-            pull_request:
-              branches: [ main, develop ]
-
-          jobs:
-            compliance:
-              runs-on: ubuntu-latest
-              steps:
-                - uses: actions/checkout@v3
-
-                - name: Run Security Scanner
-                  uses: enterprise/security-scanner@v1
-                  with:
-                    fail-on-high: true
-
-                - name: Check License Compliance
-                  uses: enterprise/license-checker@v1
-                  with:
-                    allowed-licenses: "MIT,Apache-2.0,BSD"
-
-                - name: Run Compliance Validator
-                  uses: enterprise/compliance-validator@v1
-                  with:
-                    standards: "PCI,SOX"
-
-    # Enterprise webhooks
-    webhooks:
-      - url: "${ENTERPRISE_AUDIT_WEBHOOK}"
-        events:
-          - "repository"
-          - "member"
-          - "team_add"
-          - "public"  # Alert if made public
-          - "security_advisory"
-        content_type: "json"
-        secret: "${WEBHOOK_SECRET}"
-        active: true
-
-      - url: "${SLACK_WEBHOOK}"
-        events:
-          - "release"
-          - "deployment"
-        content_type: "json"
-        secret: "${WEBHOOK_SECRET}"
-        active: true
-
-    # Environments configuration
-    environments:
-      - name: "development"
-        protection_rules:
-          required_reviewers: []
-          wait_timer: 0
-
-      - name: "staging"
-        protection_rules:
-          required_reviewers:
-            - "qa-engineers"
-          wait_timer: 0
-
-      - name: "production"
-        protection_rules:
-          required_reviewers:
-            - "release-managers"
-            - "security-team"
-          wait_timer: 60  # 1 hour wait
-          prevent_self_review: true
-          deployment_branch_policy:
-            protected_branches: true
-            custom_branch_policies:
-              - "main"
-              - "release/*"
-
-# Enterprise policies
+# Governance Policies (Example)
 policies:
-  enterprise_governance:
-    description: "Enterprise governance and compliance policy"
+  enterprise_compliance:
+    description: "Enterprise-wide compliance and governance policies"
     rules:
-      # Private repositories only
+      # Repository privacy
       privacy_requirement:
         type: "repository_privacy"
         value: "private"
@@ -438,3 +292,4 @@ repositories:
         branch_protection:
           main:
             required_reviews: 3  # Extra caution for legacy code
+

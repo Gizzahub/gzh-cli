@@ -227,3 +227,4 @@ repositories:
 
     - match: "*-security"
       template: "security-enhanced"
+

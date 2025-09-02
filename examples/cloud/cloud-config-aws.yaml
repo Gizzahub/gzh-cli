@@ -118,7 +118,7 @@ profiles:
         - 10.2.0.3
       proxy:
         http: http://proxy.staging.company.com:8080
-        https: https://proxy.staging.company.com:8080
+        https: https://staging-proxy.company.com:8080
     tags:
       environment: staging
       team: platform
@@ -137,3 +137,4 @@ sync:
     # Sync all prod profiles to DR region
     - source: aws-prod
       target: aws-dr
+

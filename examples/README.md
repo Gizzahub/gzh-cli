@@ -57,6 +57,8 @@ Webhook and event configurations:
 
 - **`webhook-policy-example.yaml`** - Webhook policy configuration
 - **`org-webhook-config-example.yaml`** - Organization-wide webhook settings
+- **`webhook-bulk-config.yaml`** - Bulk create/sync webhooks across repositories
+- **`webhook-automation-rules.yaml`** - Event-driven automation examples for GitHub webhooks
 
 ### Environment Management
 
@@ -72,6 +74,13 @@ Development environment configurations:
 
 - AWS, Docker, Kubernetes configuration examples
 
+#### ☁️ cloud/
+
+Cloud provider configuration samples:
+
+- **`cloud-config-aws.yaml`** - AWS multi-account/profiles networking + sync
+- **`cloud-config-azure.yaml`** - Azure auth, profiles, network policies, sync
+
 ### Other Resources
 
 #### 🤖 automation/
@@ -80,6 +89,16 @@ Automation rules and templates:
 
 - **`automation-rule-example.yaml`** - GitHub automation rules
 - **`automation-rule-templates.yaml`** - Reusable automation templates
+
+#### 🗂️ repo-config/
+
+Repository configuration templates and policy examples:
+
+- **`repo-config-opensource.yaml`** - Public/open-source friendly repository template
+- **`repo-config-security.yaml`** - Security-hardened settings and policies
+- **`repo-config-enterprise.yaml`** - Enterprise governance and compliance template
+- **`repo-config-templates-overview.yaml`** - How to choose/apply templates
+- **`repo-config-with-exceptions.yaml`** - Exceptions model examples per repo/pattern
 
 #### 🔧 misc/
 

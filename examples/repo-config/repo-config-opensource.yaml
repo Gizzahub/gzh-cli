@@ -1,0 +1,161 @@
+# Open Source Repository Configuration Template
+# This template is designed for public repositories with community collaboration
+# Use this for open source projects, documentation, and community resources
+
+version: "1.0.0"
+organization: "your-organization"
+
+# Open source template definition
+templates:
+  opensource-community:
+    description: "Open source repository configuration optimized for community collaboration"
+
+    # Basic repository settings
+    settings:
+      private: false  # Public by default
+      has_issues: true  # Enable issue tracking
+      has_wiki: true  # Enable wiki for documentation
+      has_projects: true  # Enable project boards
+      has_downloads: true  # Allow releases/downloads
+      has_discussions: true  # Enable GitHub Discussions
+      is_template: false
+      allow_squash_merge: true
+      allow_merge_commit: true  # Allow all merge types for flexibility
+      allow_rebase_merge: true
+      allow_auto_merge: true  # Enable for approved PRs
+      delete_branch_on_merge: true
+      allow_update_branch: true
+      use_squash_pr_title_as_default: false
+      merge_commit_title: "MERGE_MESSAGE"
+      merge_commit_message: "PR_BODY"
+      squash_merge_commit_title: "PR_TITLE"
+      squash_merge_commit_message: "PR_BODY"
+
+    # Security configurations (balanced for open source)
+    security:
+      vulnerability_alerts: true
+      automated_security_fixes: true  # Dependabot updates
+      private_vulnerability_reporting: true
+
+      # Branch protection for main branch
+      branch_protection:
+        main:
+          # Review requirements (relaxed for community)
+          required_reviews: 1
+          dismiss_stale_reviews: false  # Keep approvals
+          require_code_owner_reviews: false  # Optional CODEOWNERS
+          required_approving_review_count: 1
+          require_last_push_approval: false  # Allow maintainer edits
+
+          # Status checks
+          required_status_checks:
+            - "ci/build"
+            - "ci/test"
+            - "ci/lint"
+            - "license/cla"  # Contributor License Agreement
+            - "dco"  # Developer Certificate of Origin
+          strict_status_checks: false  # Allow admins to merge urgent fixes
+
+          # No push restrictions for open source
+          restrict_pushes: false
+
+          # Admin permissions
+          enforce_admins: false  # Allow admin overrides
+          allow_force_pushes: false
+          allow_deletions: false
+
+          # Encourage discussion
+          required_conversation_resolution: false
+
+    # Community-friendly permissions
+    permissions:
+      # Default permissions for all users
+      default_permission: "read"  # Everyone can read
+
+      # Team permissions
+      team_permissions:
+        "maintainers": "admin"
+        "core-contributors": "write"
+        "documentation": "write"
+        "community-moderators": "triage"
+
+      # Allow forking
+      allow_forking: true
+
+    # Topics for discoverability
+    topics:
+      - "open-source"
+      - "community"
+      - "hacktoberfest"  # Participate in Hacktoberfest
+      - "good-first-issue"
+      - "help-wanted"
+
+    # Community health files
+    required_files:
+      - path: "README.md"
+        content: |
+          # Project Name
+
+          [![License](https://img.shields.io/github/license/org/repo)](LICENSE)
+          [![Contributors](https://img.shields.io/github/contributors/org/repo)](https://github.com/org/repo/graphs/contributors)
+          [![Issues](https://img.shields.io/github/issues/org/repo)](https://github.com/org/repo/issues)
+          [![Pull Requests](https://img.shields.io/github/issues-pr/org/repo)](https://github.com/org/repo/pulls)
+
+          ## Description
+
+          Brief description of your project.
+
+          ## Installation
+
+          ```bash
+          # Installation instructions
+          ```
+
+          ## Usage
+
+          ```bash
+          # Usage examples
+          ```
+
+          ## Contributing
+
+          Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+          ## License
+
+          This project is licensed under the [LICENSE_NAME] - see the [LICENSE](LICENSE) file for details.
+
+      - path: "CONTRIBUTING.md"
+        content: |
+          # Contributing to [Project Name]
+
+          First off, thank you for considering contributing to this project!
+
+          ## Code of Conduct
+
+          This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+          ## How Can I Contribute?
+
+          ### Reporting Bugs
+
+          Before creating bug reports, please check existing issues. When creating a bug report, include:
+          - A clear and descriptive title
+          - Steps to reproduce the issue
+          - Expected behavior
+          - Actual behavior
+          - Environment details
+
+          ### Suggesting Enhancements
+
+          Enhancement suggestions are tracked as GitHub issues. Include:
+          - A clear and descriptive title
+          - Step-by-step description of the enhancement
+          - Explain why this enhancement would be useful
+
+          ### Pull Requests
+
+          1. Fork the repo and create your branch from `main`
+          2. If you've added code, add tests
+          3. Ensure the test suite passes
+

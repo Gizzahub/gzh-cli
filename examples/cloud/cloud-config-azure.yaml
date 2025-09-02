@@ -179,7 +179,7 @@ profiles:
       routes:
         - destination: "192.168.100.0/24"
           gateway: "10.100.1.1"
-          metric: 50
+        metric: 50
 
     services:
       api:
@@ -289,3 +289,4 @@ sync:
     backoff: exponential
     initial_delay: 1s
     max_delay: 30s
+
