@@ -19,7 +19,7 @@ api-docs/**
 
 # Category 3: Core design specifications
 # 핵심 설계 문서
-specs/**
+; specs/**
 
 # 기타 보호 파일
 Makefile

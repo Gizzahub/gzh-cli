@@ -1,7 +1,3 @@
-<!-- 🚫 AI_MODIFY_PROHIBITED -->
-
-<!-- This file should not be modified by AI agents -->
-
 # Development Environment Management Specification
 
 ## Overview

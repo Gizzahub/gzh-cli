@@ -1,7 +1,3 @@
-<!-- 🚫 AI_MODIFY_PROHIBITED -->
-
-<!-- This file should not be modified by AI agents -->
-
 # 변경 이력
 
 모든 주요 변경사항은 이 파일에 문서화됩니다.

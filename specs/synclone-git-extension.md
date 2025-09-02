@@ -1,7 +1,3 @@
-<!-- 🚫 AI_MODIFY_PROHIBITED -->
-
-<!-- This file should not be modified by AI agents -->
-
 # Git Extension Commands Design
 
 This document outlines the design and implementation of Git extension commands that enhance Git's native functionality with cross-platform capabilities.

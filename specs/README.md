@@ -2,167 +2,189 @@
 
 ## 📋 목적과 성격
 
-이 디렉토리는 gzh-cli 프로젝트의 \*\*공식 기능 명세서(Specifications)\*\*를 포함합니다.
+이 디렉토리는 gzh-cli 프로젝트의 **공식 기능 명세서(Specifications)**를 포함합니다.
 
-각 상위 커맨드(예: synclone, repo-config) 또는 git extension마다 최소 하나의 명세 파일 또는 디렉토리가 specs/ 내에 존재해야 합니다. 만약 명세 문서가 너무 길어질 경우, 해당 파일을 디렉토리로 전환하여 세부 내용을 여러 파일로 분리해 작성해야 합니다.
+**SDD (Specification-Driven Development)** 방법론을 따라 모든 CLI 명령어의 입출력 계약이 구현 전에 정의됩니다.
 
 ### 🎯 specs/의 핵심 원칙
 
 1. **구현 기준점**: 모든 코드는 이 명세를 기반으로 개발되어야 합니다
-1. **우선순위**: specs → 소스코드 → docs 순서로 권위를 가집니다
-1. **미래 지향적**: 현재 구현되지 않았더라도 계획된 기능을 포함합니다
-1. **진실의 원천(Source of Truth)**: 기능에 대한 논쟁이 있을 때 최종 기준이 됩니다
+2. **우선순위**: specs → 소스코드 → docs 순서로 권위를 가집니다
+3. **테스트 가능**: 각 명세는 자동화된 검증이 가능해야 합니다
+4. **진실의 원천(Source of Truth)**: 기능에 대한 논쟁이 있을 때 최종 기준이 됩니다
 
 ## 📁 디렉토리 구조
 
 ```bash
 specs/
 ├── README.md                    # 이 문서
-├── git.md                       # Git 통합 명령어 명세
-├── synclone.md                  # 저장소 동기화 및 클론 명세
-├── synclone-git-extension.md   # Git extension 패턴 명세
-├── package-manager.md           # 패키지 매니저 통합 명세
-├── net-env.md                   # 네트워크 환경 관리 명세
-├── dev-env.md                   # 개발 환경 관리 명세
-├── repo-config.md               # 저장소 설정 관리 명세
-├── ide.md                       # IDE 모니터링 및 관리 명세 ✨
-├── quality.md                   # 코드 품질 도구 통합 명세 ✨
-├── profile.md                   # 성능 프로파일링 명세
-├── common.md                    # 공통 패턴 및 구조
-├── man.md                       # 매뉴얼 페이지 생성 명세 🚧
-├── shell.md                     # 인터랙티브 디버깅 셸 명세 🚧
-├── actions-policy.md            # GitHub Actions 정책 관리 명세 🚧
-└── gz-unified-cli-design.md     # 통합 CLI 설계 (미래 비전)
+├── cli/                         # CLI 명령어 스펙 (SDD)
+│   ├── README.md               # CLI 스펙 개요
+│   ├── template.md             # 스펙 템플릿
+│   ├── synclone/               # synclone 명령어
+│   │   ├── UC-001-help.md
+│   │   ├── UC-002-github-clone.md
+│   │   ├── UC-003-rate-limit.md
+│   │   ├── UC-004-auth-error.md
+│   │   └── UC-005-pagination.md
+│   ├── git/                    # git 명령어 그룹
+│   │   ├── repo/
+│   │   │   ├── UC-001-create.md
+│   │   │   ├── UC-002-list.md
+│   │   │   └── UC-003-clone-or-update.md
+│   │   ├── webhook/
+│   │   │   ├── UC-001-create.md
+│   │   │   ├── UC-002-list.md
+│   │   │   └── UC-003-delete.md
+│   │   └── event/
+│   │       └── UC-001-process.md
+│   ├── quality/                # 코드 품질 명령어
+│   │   └── UC-001-run.md
+│   ├── doctor/                 # 시스템 진단
+│   │   └── UC-001-diagnose.md
+│   ├── pm/                     # 패키지 매니저
+│   │   └── UC-001-update.md
+│   ├── ide/                    # IDE 관리
+│   │   └── UC-001-scan.md
+│   ├── dev-env/                # 개발 환경
+│   │   ├── UC-001-switch.md
+│   │   ├── UC-002-status.md
+│   │   └── UC-003-tui.md
+│   ├── net-env/                # 네트워크 환경
+│   │   ├── UC-001-switch.md
+│   │   ├── UC-002-status.md
+│   │   └── UC-003-profiles.md
+│   ├── repo-config/            # 저장소 설정
+│   │   ├── UC-001-apply.md
+│   │   └── UC-002-validate.md
+│   ├── profile/                # 프로파일링
+│   │   └── UC-001-run.md
+│   └── version/                # 버전 정보
+│       └── UC-001-show.md
+├── core/                        # 핵심 기능 명세
+│   ├── git.md                  # Git 통합 아키텍처
+│   ├── synclone.md             # Synclone 핵심 로직
+│   └── synclone-git-extension.md
+├── patterns/                    # 설계 패턴
+│   ├── common.md               # 공통 패턴
+│   └── compatibility-rules.md  # 호환성 규칙
+└── testing/                     # 테스트 시나리오
+    └── synclone/               # Synclone 테스트 케이스
+        ├── README.md
+        ├── test-scenarios.md
+        ├── test-commands.md
+        ├── test-data.md
+        └── test-runner.sh
 ```
 
 ## 🔍 명세서 종류
 
-### 1. 핵심 기능 명세 (✅ 구현 완료)
+### 1. CLI 명령어 스펙 (specs/cli/)
 
-- **synclone.md**: 다중 플랫폼 저장소 클론 기능
-- **package-manager.md**: 통합 패키지 매니저 인터페이스 (`gz pm`)
-- **net-env.md**: 네트워크 환경 전환 기능
-- **dev-env.md**: 개발 환경 설정 관리
-- **ide.md**: JetBrains IDE 모니터링 및 설정 관리 ✨
-- **quality.md**: 다중 언어 코드 품질 도구 통합 ✨
-- **profile.md**: 성능 프로파일링 (Go pprof 통합)
+**SDD (Specification-Driven Development)** 방법론에 따른 CLI 명령어 입출력 계약 정의:
 
-### 2. 통합 인터페이스 명세 (✅ 구현 완료)
+#### 완성된 명령어 스펙:
+- **synclone/**: GitHub/GitLab 조직 대량 클론 (5개 UC)
+- **git/repo/**: 저장소 생성, 목록, 클론/업데이트 (3개 UC)  
+- **quality/**: 코드 품질 검사 (1개 UC)
+- **doctor/**: 시스템 진단 (1개 UC)
+- **pm/**: 패키지 매니저 업데이트 (1개 UC)
+- **ide/**: IDE 스캔 (1개 UC)
+- **version/**: 버전 정보 (1개 UC)
+- **dev-env/**: 개발 환경 전환, 상태 확인, TUI (3개 UC) ✅
+- **net-env/**: 네트워크 환경 전환, 상태 확인, 프로필 관리 (3개 UC) ✅
+- **repo-config/**: 저장소 설정 적용, 검증 (2개 UC) ✅
+- **git/webhook/**: 웹훅 생성, 목록, 삭제 (3개 UC) ✅
+- **git/event/**: Git 이벤트 처리 (1개 UC) ✅
+- **profile/**: 성능 프로파일링 (1개 UC) ✅
 
-- **git.md**: `gz git` 통합 명령어 체계
-- **repo-config.md**: GitHub 저장소 설정 관리
+#### 작성 예정 명령어 스펙:
+현재 모든 주요 명령어 스펙이 완료되었습니다.
 
-### 3. 아키텍처 및 패턴 명세
+### 2. 핵심 기능 명세 (specs/core/)
 
-- **synclone-git-extension.md**: Git extension 구현 패턴
-- **common.md**: 공통 패턴 및 아키텍처 구조
+시스템의 핵심 기능과 아키텍처 설계:
 
-### 4. 계획된 기능 명세 (🚧 개발 예정)
+- **git.md**: Git 통합 명령어 아키텍처
+- **synclone.md**: 저장소 동기화 및 클론 핵심 로직
+- **synclone-git-extension.md**: Git extension 패턴
 
-- **man.md**: Unix 매뉴얼 페이지 생성 (코드 존재, 비활성화)
-- **shell.md**: 인터랙티브 디버깅 셸 (디버그 모드에서만 활성화)
-- **actions-policy.md**: GitHub Actions 정책 관리 (코드 존재, 비활성화)
+### 3. 설계 패턴 (specs/patterns/)
 
-### 5. 미래 비전 문서
+공통 설계 패턴과 호환성 규칙:
 
-- **gz-unified-cli-design.md**: 장기적인 통합 CLI 설계 방향
+- **common.md**: 공통 패턴 및 구조
+- **compatibility-rules.md**: 플랫폼 간 호환성 규칙
 
-## ⚠️ 중요 사항
+### 4. 테스트 시나리오 (specs/testing/)
 
-### AI 수정 금지
+실제 테스트 케이스와 시나리오:
 
-일부 명세서는 `<!-- 🚫 AI_MODIFY_PROHIBITED -->` 헤더를 포함하고 있습니다. 이는 인간만이 수정할 수 있는 핵심 설계 문서임을 의미합니다.
+- **synclone/test-scenarios.md**: 다양한 테스트 시나리오
+- **synclone/test-commands.md**: 테스트 명령어 모음
+- **synclone/test-data.md**: 테스트 데이터 정의
+- **synclone/test-runner.sh**: 테스트 실행 스크립트
 
-### 구현 상태
+## 📊 CLI 명세 현황
 
-명세서는 다음 세 가지 상태의 기능을 포함합니다:
+### ✅ 완료된 명령어 (24개 UC)
 
-- ✅ **구현 완료**: 현재 코드베이스에 구현됨
-- 🚧 **구현 진행중**: 개발 중인 기능
-- 📋 **계획됨**: 미래에 구현될 기능
+| 명령어 | UC 수 | 상태 | 비고 |
+|--------|-------|------|------|
+| synclone | 5 | ✅ | Rate limit, 페이지네이션 포함 |
+| git repo | 3 | ✅ | 생성, 목록, 클론/업데이트 |
+| quality | 1 | ✅ | 다중 언어 품질 검사 |
+| doctor | 1 | ✅ | 시스템 종합 진단 |
+| pm | 1 | ✅ | 패키지 매니저 업데이트 |
+| ide | 1 | ✅ | IDE 스캔 및 감지 |
+| version | 1 | ✅ | 버전 정보 표시 |
+| dev-env | 3 | ✅ | 환경 전환, 상태, TUI |
+| net-env | 3 | ✅ | 네트워크 전환, 상태, 프로필 |
+| repo-config | 2 | ✅ | 설정 적용, 검증 |
+| git webhook | 3 | ✅ | 웹훅 생성, 목록, 삭제 |
+| git event | 1 | ✅ | Git 이벤트 처리 |
+| profile | 1 | ✅ | Go 애플리케이션 프로파일링 |
 
-### 명세 우선 개발
+### 🚧 작성 예정 명령어
 
-1. 새 기능 개발 시 먼저 specs/에 명세를 작성합니다
-1. 명세를 기반으로 코드를 구현합니다
-1. 구현 후 docs/에 사용자 문서를 작성합니다
+모든 주요 CLI 명령어 스펙이 완료되었습니다.
 
-## 🔄 명세 업데이트 프로세스
+## 🚀 이전된 기능 명세서
 
-1. **제안**: 이슈나 PR을 통해 명세 변경 제안
-1. **검토**: 핵심 메인테이너의 검토
-1. **승인**: 명세 변경 승인
-1. **구현**: 승인된 명세에 따라 코드 구현
-1. **검증**: 구현이 명세와 일치하는지 확인
+아래 기능 명세서들은 **docs/30-features/** 로 이동되었습니다:
 
-## 📌 개발자를 위한 가이드
+- ✅ dev-env-specification.md - 개발 환경 관리
+- ✅ net-env-specification.md - 네트워크 환경 관리
+- ✅ ide-specification.md - IDE 모니터링 및 관리
+- ✅ quality-specification.md - 코드 품질 도구 통합
+- ✅ profile-specification.md - 성능 프로파일링
+- ✅ actions-policy-specification.md - GitHub Actions 정책 관리
+- ✅ repo-config-specification.md - 저장소 설정 관리
+- ✅ shell-specification.md - 인터랙티브 디버깅 셸
+- ✅ package-manager-specification.md - 패키지 매니저 통합
+- ✅ man-specification.md - 매뉴얼 페이지 생성
 
-### 새 기능 추가 시
+## 📖 관련 문서
 
-```bash
-1. specs/에서 관련 명세 확인
-2. 명세가 없다면 새 명세 작성
-3. 명세에 따라 구현
-4. 테스트 작성
-5. docs/에 사용 문서 추가
-```
+- [CLI Specification Strategy](../docs/60-development/68-cli-specification-strategy.md) - SDD 방법론
+- [Testing Strategy](../docs/60-development/67-testing-strategy.md) - 테스트 전략
+- [Feature Specifications](../docs/30-features/) - 기능별 상세 명세서
 
-### 기존 기능 수정 시
+## 🎯 향후 계획
 
-```bash
-1. specs/에서 현재 명세 확인
-2. 명세 변경이 필요한지 판단
-3. 필요시 명세 업데이트 PR 제출
-4. 승인 후 구현 진행
-```
+### ✅ 전체 CLI 스펙 완료
+- ✅ Phase 1: dev-env, net-env 명령어 (6개 UC)
+- ✅ Phase 2: repo-config, git webhook, git event, profile 명령어 (7개 UC)
+- ✅ 기존 명령어: synclone, git repo, quality, doctor, pm, ide, version (13개 UC)
 
-### 명세와 코드 불일치 발견 시
+**총 24개 UC 스펙 완료** - 모든 주요 CLI 명령어 커버
 
-```bash
-1. 명세가 올바른지 확인 (specs가 우선)
-2. 코드를 명세에 맞게 수정
-3. 또는 명세 변경이 필요하다면 제안
-```
+### Phase 3 (다음 단계)
+- 자동화된 CLI 계약 테스트 구현
+- 성능 테스트 시나리오 추가
+- 엣지 케이스 및 에러 시나리오 보완
+- 크로스 플랫폼 호환성 테스트 강화
 
-## 🎯 명세서 작성 원칙
+---
 
-1. **명확성**: 모호함 없이 정확하게 기술
-1. **완전성**: 모든 옵션, 플래그, 동작을 포함
-1. **예제 포함**: 실제 사용 예제 제공
-1. **버전 관리**: 변경 이력 추적
-1. **구현 가능성**: 기술적으로 구현 가능한 수준
-
-## 📝 템플릿
-
-새 명세서 작성 시 다음 구조를 따르세요:
-
-```markdown
-# [기능명] Specification
-
-## Overview
-기능의 목적과 범위
-
-## Command Structure
-명령어 구조와 서브커맨드
-
-## Options and Flags
-모든 옵션과 플래그 설명
-
-## Configuration
-설정 파일 구조
-
-## Examples
-실제 사용 예제
-
-## Implementation Status
-- ✅ 구현 완료 항목
-- 🚧 구현 중 항목
-- 📋 계획된 항목
-
-## Future Enhancements
-향후 개선 사항
-```
-
-______________________________________________________________________
-
-**Remember**: specs/는 코드가 따라야 할 약속입니다. 코드가 명세를 따르지, 명세가 코드를 따르지 않습니다.
+**주의**: specs/ 디렉토리의 내용이 구현의 기준이 됩니다. 변경 시 관련 코드와 문서도 함께 업데이트해야 합니다.

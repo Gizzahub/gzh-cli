@@ -1,3 +1,6 @@
+<!-- 🚫 AI_MODIFY_PROHIBITED -->
+<!-- This file should not be modified by AI agents -->
+
 # AGENTS.md - 공통 개발 가이드
 
 ## 🔧 공통 코딩 컨벤션
