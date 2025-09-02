@@ -51,6 +51,12 @@ Utility Commands: doctor, version`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			// Set global logging configuration based on flags
 			logger.SetGlobalLoggingFlags(verbose, debug, quiet)
+			// Propagate verbose to env for deep packages that can't import logger
+			if verbose {
+				_ = os.Setenv("GZH_VERBOSE", "1")
+			} else {
+				_ = os.Unsetenv("GZH_VERBOSE")
+			}
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return cmd.Help()

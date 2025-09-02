@@ -122,6 +122,13 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("preflight failed: %w", err)
 	}
 
+	// HTTP Git 접근 가능 여부 사전 체크
+	if warnings := gitlabpkg.PreflightCheckGitAccess(cmd.Context(), o.groupName); len(warnings) > 0 {
+		for _, warning := range warnings {
+			fmt.Println(warning)
+		}
+	}
+
 	// 그룹명 정규화: 공백 및 트레일링 슬래시 제거
 	o.groupName = strings.TrimSpace(o.groupName)
 	o.groupName = strings.Trim(o.groupName, "/")
@@ -141,6 +148,13 @@ func (o *syncCloneGitlabOptions) run(cmd *cobra.Command, args []string) error {
 	// Validate strategy
 	if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
+	}
+
+	// 최상위 타깃 디렉터리 보장 생성 (리포별 디렉터리는 작업 단계에서 생성)
+	if o.targetPath != "" {
+		if err := os.MkdirAll(o.targetPath, 0o755); err != nil {
+			return fmt.Errorf("failed to create target directory: %w", err)
+		}
 	}
 
 	// 하트비트 출력: 긴 작업 중 무출력 방지 (한국어 주석)

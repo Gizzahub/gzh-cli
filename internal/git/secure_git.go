@@ -109,11 +109,17 @@ func (e *SecureGitExecutor) Execute(ctx context.Context, cmd *ValidatedGitComman
 	gitArgs = append(gitArgs, cmd.Options...)
 	gitArgs = append(gitArgs, cmd.Args...)
 
-	// Execute command
+	// Execute command (stderr/stdout 수집)
 	execCmd := exec.CommandContext(ctx, e.gitPath, gitArgs...)
-
-	if err := execCmd.Run(); err != nil {
-		return fmt.Errorf("git %s failed in %s: %w", cmd.Command, cmd.RepoPath, err)
+	output, err := execCmd.CombinedOutput()
+	if err != nil {
+		// 민감정보 마스킹: URL 내 자격증명 제거
+		maskRegex := regexp.MustCompile(`(https?://)[^/@:\s]+(?::[^@\s]*)?@`)
+		joined := strings.Join(cmd.Args, " ")
+		maskedArgs := maskRegex.ReplaceAllString(joined, `$1<masked>@`)
+		maskedOut := maskRegex.ReplaceAllString(string(output), `$1<masked>@`)
+		wrapped := fmt.Sprintf("%s: %s", maskedArgs, strings.TrimSpace(maskedOut))
+		return fmt.Errorf("git %s failed in %s: %s", cmd.Command, cmd.RepoPath, wrapped)
 	}
 
 	return nil
@@ -153,7 +159,7 @@ func (e *SecureGitExecutor) validateRepoPath(repoPath string) (string, error) {
 
 // validateArgs validates git command arguments and separates options from args
 func (e *SecureGitExecutor) validateArgs(args []string) (validArgs, validOptions []string, err error) {
-	urlRegex := regexp.MustCompile(`^https?://[a-zA-Z0-9.-]+/[a-zA-Z0-9._/-]+\.git$|^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9._/-]+\.git$`)
+	urlRegex := regexp.MustCompile(`^https?://(?:[a-zA-Z0-9._-]+(?::[^@/]+)?@)?[a-zA-Z0-9.-]+/[a-zA-Z0-9._/-]+\.git$|^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9._/-]+\.git$`)
 	branchRegex := regexp.MustCompile(`^[a-zA-Z0-9._/-]+$`)
 
 	for _, arg := range args {

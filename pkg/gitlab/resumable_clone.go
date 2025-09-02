@@ -59,6 +59,10 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 func (rcm *ResumableCloneManager) processRepositoryJob(ctx context.Context, job workerpool.RepositoryJob, group string) error {
 	switch job.Operation {
 	case workerpool.OperationClone:
+		// 리포지토리 클론 전 디렉터리 생성 (한국어 주석)
+		if err := os.MkdirAll(job.Path, 0o755); err != nil {
+			return fmt.Errorf("failed to create repo directory %s: %w", job.Path, err)
+		}
 		return Clone(ctx, job.Path, group, job.Repository, "")
 
 	case workerpool.OperationPull:
@@ -145,6 +149,12 @@ func (rcm *ResumableCloneManager) initializeState(group, targetPath, strategy st
 
 // loadAndValidateState loads existing state and validates compatibility.
 func (rcm *ResumableCloneManager) loadAndValidateState(group, targetPath, strategy string, parallel, maxRetries int) (*synclonepkg.CloneState, error) {
+	// 상태파일이 없으면 새 상태로 시작하도록 완화 처리
+	if !rcm.stateManager.HasState("gitlab", group) {
+		fmt.Printf("⚠️  No existing resume state for %s. Starting a new operation. (omit --resume next time)\n", group)
+		return synclonepkg.NewCloneState("gitlab", group, targetPath, strategy, parallel, maxRetries), nil
+	}
+
 	state, err := rcm.stateManager.LoadState("gitlab", group)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load state for resume: %w", err)
@@ -207,22 +217,29 @@ func (rcm *ResumableCloneManager) determineRepositoriesToProcess(ctx context.Con
 
 // getResumableRepositories gets repositories that need to be processed during resume.
 func (rcm *ResumableCloneManager) getResumableRepositories(state *synclonepkg.CloneState, allRepos []string) []string {
-	// Use remaining repositories from state
+	// Use remaining repositories from state (pending first)
 	reposToProcess := state.GetRemainingRepositories()
 
-	// Also check if any new repositories were added since last run
+	has := func(list []string, name string) bool {
+		for _, v := range list {
+			if v == name {
+				return true
+			}
+		}
+		return false
+	}
+
+	// Include newly added repos since last run (exclude completed/failed)
 	for _, repo := range allRepos {
-		if !state.IsCompleted(repo) && !state.IsFailed(repo) {
-			found := false
-			for _, pending := range reposToProcess {
-				if pending == repo {
-					found = true
-					break
-				}
-			}
-			if !found {
-				reposToProcess = append(reposToProcess, repo)
-			}
+		if !state.IsCompleted(repo) && !state.IsFailed(repo) && !has(reposToProcess, repo) {
+			reposToProcess = append(reposToProcess, repo)
+		}
+	}
+
+	// Re-try previously failed repos as well
+	for _, repo := range allRepos {
+		if state.IsFailed(repo) && !has(reposToProcess, repo) {
+			reposToProcess = append(reposToProcess, repo)
 		}
 	}
 
@@ -352,6 +369,11 @@ func (rcm *ResumableCloneManager) determineOperation(repoPath, strategy string) 
 		return workerpool.OperationClone
 	}
 
+	// 디렉터리가 존재하지만 .git이 없으면 유효한 리포가 아니므로 clone으로 폴백
+	if !isGitRepository(repoPath) {
+		return workerpool.OperationClone
+	}
+
 	switch strategy {
 	case "reset":
 		return workerpool.OperationReset
@@ -362,6 +384,16 @@ func (rcm *ResumableCloneManager) determineOperation(repoPath, strategy string) 
 	default:
 		return workerpool.OperationPull
 	}
+}
+
+// isGitRepository checks whether the path is a valid git repository (.git exists)
+func isGitRepository(path string) bool {
+	gitDir := filepath.Join(path, ".git")
+	info, err := os.Stat(gitDir)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
 }
 
 // submitJobs submits all jobs to the worker pool.

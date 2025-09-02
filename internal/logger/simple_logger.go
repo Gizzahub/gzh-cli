@@ -362,3 +362,13 @@ func SetGlobalLoggingFlags(verbose, debug, quiet bool) {
 	globalDebug = debug
 	globalQuiet = quiet
 }
+
+// IsVerboseEnabled returns whether global verbose logging is enabled.
+func IsVerboseEnabled() bool {
+	return globalVerbose
+}
+
+// IsDebugEnabled returns whether global debug logging is enabled.
+func IsDebugEnabled() bool {
+	return globalDebug
+}

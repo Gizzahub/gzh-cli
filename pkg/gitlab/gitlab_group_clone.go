@@ -246,6 +246,10 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 	}
 
 	// Execute secure git clone operation
+	// --verbose 모드에서는 전체 git 명령을 출력
+	if os.Getenv("GZH_VERBOSE") == "1" {
+		fmt.Printf("git -C %s clone %s .\n", targetPath, cloneURL)
+	}
 	if err := executor.ExecuteSecure(ctx, targetPath, "clone", cloneURL, "."); err != nil {
 		return fmt.Errorf("clone failed (url: %s, branch: %s, targetPath: %s, err: %w)", cloneURL, branch, targetPath, err)
 	}
@@ -301,11 +305,18 @@ func RefreshAll(ctx context.Context, targetPath string, group string, strategy s
 
 			repoPath := filepath.Join(targetPath, repo)
 			if _, err := os.Stat(repoPath); os.IsNotExist(err) {
-				// Clone the repository if it does not exist
-				if err := Clone(gCtx, repoPath, group, repo, ""); err != nil {
+				// 디렉터리가 없으면 먼저 생성한 뒤 clone 실행
+				if mkErr := os.MkdirAll(repoPath, 0o755); mkErr != nil {
+					fmt.Printf("failed to prepare directory %s: %v\n", repoPath, mkErr)
+				} else if err := Clone(gCtx, repoPath, group, repo, ""); err != nil {
 					fmt.Printf("failed to clone repository %s: %v\n", repoPath, err)
 					// Don't return error to prevent stopping other operations
 					// Log error but continue with other repositories
+				}
+			} else if !isGitRepository(repoPath) {
+				// 디렉터리는 있지만 .git이 없으면 clone으로 처리
+				if err := Clone(gCtx, repoPath, group, repo, ""); err != nil {
+					fmt.Printf("failed to clone repository %s: %v\n", repoPath, err)
 				}
 			} else {
 				// Execute git operation based on strategy
