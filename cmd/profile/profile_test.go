@@ -2,6 +2,7 @@
 package profile
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -24,22 +25,28 @@ func TestNewProfileCmd(t *testing.T) {
 	assert.Contains(t, cmd.Long, "memory")
 	assert.Contains(t, cmd.Long, "stats")
 
-	// Verify subcommands are added
+	// Verify subcommands are added (basic + enhanced commands)
 	subcommands := cmd.Commands()
-	assert.Len(t, subcommands, 4)
+	assert.Len(t, subcommands, 7) // 4 basic + 3 enhanced commands
 
 	// Verify subcommands exist
-	var serverCmd, cpuCmd, memoryCmd, statsCmd bool
+	var serverCmd, cpuCmd, memoryCmd, statsCmd, compareCmd, continuousCmd, analyzeCmd bool
 	for _, subcmd := range subcommands {
-		switch subcmd.Use {
-		case "server":
+		switch {
+		case subcmd.Use == "server":
 			serverCmd = true
-		case "cpu":
+		case subcmd.Use == "cpu":
 			cpuCmd = true
-		case "memory":
+		case subcmd.Use == "memory":
 			memoryCmd = true
-		case "stats":
+		case subcmd.Use == "stats":
 			statsCmd = true
+		case strings.Contains(subcmd.Use, "compare"):
+			compareCmd = true
+		case subcmd.Use == "continuous":
+			continuousCmd = true
+		case strings.Contains(subcmd.Use, "analyze"):
+			analyzeCmd = true
 		}
 	}
 
@@ -47,6 +54,9 @@ func TestNewProfileCmd(t *testing.T) {
 	assert.True(t, cpuCmd, "cpu subcommand should exist")
 	assert.True(t, memoryCmd, "memory subcommand should exist")
 	assert.True(t, statsCmd, "stats subcommand should exist")
+	assert.True(t, compareCmd, "compare subcommand should exist")
+	assert.True(t, continuousCmd, "continuous subcommand should exist")
+	assert.True(t, analyzeCmd, "analyze subcommand should exist")
 }
 
 func TestNewSimpleServerCmd(t *testing.T) {
