@@ -648,6 +648,7 @@ include_templates: false
 Synclone provides real-time progress monitoring with enhanced UX:
 
 **Normal Mode (Clean Output)**:
+
 ```bash
 $ gz synclone github --org Gizzahub
 🔍 Fetching repository list from GitHub organization: Gizzahub
@@ -661,6 +662,7 @@ $ gz synclone github --org Gizzahub
 ```
 
 **Debug Mode (With Detailed Logs)**:
+
 ```bash
 $ gz synclone github --org Gizzahub --debug
 22:13:47 INFO  [component=gzh-cli org=Gizzahub] Starting GitHub synclone operation
@@ -679,6 +681,7 @@ $ gz synclone github --org Gizzahub --debug
 ```
 
 **Key UX Improvements (2025-09)**:
+
 - **Clean Output**: Logs only appear with `--debug` flag for better user experience
 - **Accurate Progress**: Progress bar starts from 0/total instead of jumping to middle values
 - **Real-time Updates**: Progress updates every 500ms with precise status indicators
@@ -754,22 +757,27 @@ gz synclone github --org myorg --quiet
 **Logging Modes**:
 
 - **Default Mode**: Clean console output with progress indicators only
+
   - Shows: 🔍, 📋, ✅ progress messages
   - Hides: Timestamp logs, debug information, performance metrics
-  
+
 - **Verbose Mode**: Adds informational logs
+
   - Shows: All default output + INFO level logs
   - Use: When you need more context about operations
-  
+
 - **Debug Mode**: Complete logging with technical details
+
   - Shows: All output + DEBUG logs + performance metrics
   - Use: For troubleshooting and development
-  
+
 - **Quiet Mode**: Error-only output
+
   - Shows: Only errors and critical failures
   - Use: In automated scripts or CI/CD environments
 
 **Performance Metrics**: Now displayed in human-readable format instead of JSON:
+
 ```
 Operation 'github-synclone-completed' completed in 2.920s (Memory: 2.68 MB)
 ```

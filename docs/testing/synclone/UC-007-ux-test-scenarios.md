@@ -273,7 +273,7 @@ check_test() {
   local test_name="$1"
   local condition="$2"
   local expected="$3"
-  
+
   if [ "$condition" = "$expected" ]; then
     echo "✅ PASS: $test_name"
     ((PASS_COUNT++))

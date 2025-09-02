@@ -5,11 +5,13 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz synclone github -o Gizzahub
 ```
 
 **Prerequisites**:
+
 - [ ] gzh-cli binary installed with UX improvements (`gz --version` works)
 - [ ] Network connectivity to api.github.com
 - [ ] GITHUB_TOKEN environment variable set
@@ -18,6 +20,7 @@ gz synclone github -o Gizzahub
 ### Expected Output (Normal Mode)
 
 **Success Case - Clean UI**:
+
 ```
 🔍 Fetching repository list from GitHub organization: Gizzahub
 📋 Found 5 repositories in organization Gizzahub
@@ -35,11 +38,13 @@ Exit Code: 0
 ### Expected Output (Debug Mode)
 
 **Command with Debug Flag**:
+
 ```bash
 gz synclone github -o Gizzahub --debug
 ```
 
 **Success Case - With Debug Logs**:
+
 ```
 22:13:47 INFO  [component=gzh-cli org=Gizzahub] Starting GitHub synclone operation
 22:13:47 INFO  [component=gzh-cli org=Gizzahub] Starting synclone workflow: fetching repository list from GitHub
@@ -62,23 +67,29 @@ Exit Code: 0
 ### Key UX Improvements to Validate
 
 #### 1. Clean Output (Normal Mode)
+
 **Behavior**: Only console messages are shown, no debug logs
 **What to Check**:
+
 - ❌ No timestamp prefixed log messages (e.g., `22:13:47 INFO`)
 - ✅ Console progress indicators visible (🔍, 📋, ✅)
 - ❌ No JSON format performance logs
 - ❌ No detailed internal operation logs
 
 #### 2. Progress Bar Initial Display
+
 **Behavior**: Progress bar starts from 0/total instead of jumping to middle values
 **What to Check**:
-- ✅ First progress display shows `0.0% (0/5)` 
+
+- ✅ First progress display shows `0.0% (0/5)`
 - ✅ Progress increments sequentially (e.g., 0/5 → 2/5 → 5/5)
 - ❌ No jumping from empty to middle values (e.g., direct to 40.0%)
 
 #### 3. Human-Readable Performance Logs (Debug Mode Only)
+
 **Behavior**: Performance information in readable text format
 **What to Check**:
+
 - ✅ Text format: `Operation 'github-synclone-completed' completed in 2.920s (Memory: 2.68 MB)`
 - ❌ No JSON format: `{"timestamp":"...","performance":{"duration":...}}`
 
@@ -135,6 +146,7 @@ echo "All UX improvement tests passed!"
 #### Manual Verification Checklist
 
 **Normal Mode Testing**:
+
 - [ ] Run `gz synclone github -o Gizzahub`
 - [ ] Verify no timestamp-prefixed logs appear
 - [ ] Confirm console messages (🔍, 📋, ✅) are visible
@@ -142,6 +154,7 @@ echo "All UX improvement tests passed!"
 - [ ] Ensure no JSON performance logs in output
 
 **Debug Mode Testing**:
+
 - [ ] Run `gz synclone github -o Gizzahub --debug`
 - [ ] Verify INFO logs appear with timestamps
 - [ ] Confirm console messages are still visible
@@ -149,6 +162,7 @@ echo "All UX improvement tests passed!"
 - [ ] Ensure progress bar still starts from 0
 
 **Progress Bar Accuracy**:
+
 - [ ] Observe progress bar throughout execution
 - [ ] Verify it starts at `[░░░...] 0.0% (0/X)`
 - [ ] Confirm incremental updates (no jumping)
@@ -157,10 +171,12 @@ echo "All UX improvement tests passed!"
 ### Performance Expectations
 
 **Response Time** (unchanged from base functionality):
-- Small orgs (<10 repos): < 30 seconds
+
+- Small orgs (\<10 repos): < 30 seconds
 - Medium orgs (10-50 repos): < 2 minutes
 
 **UX Performance**:
+
 - Progress updates every 500ms
 - No UI blocking during clone operations
 - Clean output reduces visual noise by ~80%
@@ -168,7 +184,9 @@ echo "All UX improvement tests passed!"
 ### Edge Cases
 
 #### Resumed Operations
-**Test Scenario**: 
+
+**Test Scenario**:
+
 ```bash
 # Start operation
 gz synclone github -o large-org &
@@ -184,9 +202,11 @@ gz synclone github -o large-org --resume
 **Expected**: Progress bar should show current state, not restart from 0/total
 
 #### Empty Organizations
+
 **Command**: `gz synclone github -o empty-test-org`
 
 **Expected Normal Mode**:
+
 ```
 🔍 Fetching repository list from GitHub organization: empty-test-org
 📋 Found 0 repositories in organization empty-test-org
@@ -198,6 +218,7 @@ gz synclone github -o large-org --resume
 ### Regression Tests
 
 **Ensure no functionality regression**:
+
 - [ ] All repositories are cloned correctly
 - [ ] Authentication still works
 - [ ] Error handling unchanged
@@ -207,12 +228,14 @@ gz synclone github -o large-org --resume
 ### Notes
 
 **Key Changes from Previous Behavior**:
+
 1. **Logging Control**: Logs only appear in debug mode (`--debug` flag)
-2. **Progress Accuracy**: Progress bar starts from actual initial state (0/total)
-3. **Performance Logs**: Human-readable format instead of JSON
-4. **Clean UI**: Default mode shows only essential progress indicators
+1. **Progress Accuracy**: Progress bar starts from actual initial state (0/total)
+1. **Performance Logs**: Human-readable format instead of JSON
+1. **Clean UI**: Default mode shows only essential progress indicators
 
 **Backward Compatibility**:
+
 - All existing functionality preserved
 - Existing scripts work unchanged
 - Debug mode provides all previous information

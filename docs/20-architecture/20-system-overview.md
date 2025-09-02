@@ -147,6 +147,7 @@ Private abstractions and implementations:
 - **`context.go`** - Context-aware logging
 
 **Recent Improvement (2025-09)**: Enhanced logging system with intelligent output control:
+
 - **Debug Mode Only**: Logs only appear with `--debug` flag for clean user experience
 - **Performance Logs**: Simplified from JSON to readable text format
 - **Console Messages**: Progress indicators and status messages remain visible
@@ -175,6 +176,7 @@ Public APIs and platform implementations:
 - **`progress.go`** - Advanced progress tracking with real-time updates
 
 **Recent Improvement (2025-09)**: Enhanced progress tracking system:
+
 - **Initial Progress Display**: Shows 0/total from start instead of jumping to middle values
 - **Real-time Updates**: Progress bar updates every 500ms with accurate completion status
 - **Visual Indicators**: Comprehensive status display with ✓ ✗ ⏳ symbols
@@ -279,11 +281,13 @@ Result Aggregation & Formatting
 Latest improvements focused on user experience and interface polish:
 
 #### Logging System Overhaul
+
 - **Smart Output Control**: Logs only appear with `--debug` flag for clean CLI experience
 - **Performance Log Format**: Converted from JSON to human-readable text format
 - **Console Message Preservation**: Progress indicators (🔍, 📋, ✅) always visible
 
 #### Progress Tracking Enhancement
+
 - **Fixed Initial Display**: Progress bars now start from 0/total instead of jumping to middle values
 - **Improved Visual Feedback**: Real-time progress updates with accurate status indicators
 - **Better State Management**: Proper initialization and state loading for resumable operations
