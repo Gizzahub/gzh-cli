@@ -186,7 +186,7 @@ func newSyncCloneGithubCmd(appCtx *app.AppContext) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")
+	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "Target directory (defaults to ./org_name if not specified)")
 	cmd.Flags().StringVarP(&o.orgName, "orgName", "o", o.orgName, "orgName")
 	cmd.Flags().StringVarP(&o.strategy, "strategy", "s", o.strategy, "Sync strategy: reset, pull, or fetch")
 	cmd.Flags().StringVarP(&o.configFile, "config", "c", o.configFile, "Path to config file")
@@ -224,7 +224,7 @@ func newSyncCloneGithubCmd(appCtx *app.AppContext) *cobra.Command {
 	cmd.Flags().BoolVar(&o.cleanupOrphans, "cleanup-orphans", false, "Remove directories not present in the organization's repositories")
 
 	// Aliases for simpler flags
-	cmd.Flags().StringVar(&o.targetPath, "target", o.targetPath, "Target directory; defaults to current directory if not set")
+	cmd.Flags().StringVar(&o.targetPath, "target", o.targetPath, "Target directory; defaults to current directory + org name (e.g., ./ScriptonBasestar) if not set")
 	cmd.Flags().StringVar(&o.orgName, "org", o.orgName, "GitHub organization name")
 
 	// Mark flags as required only if not using config
@@ -269,12 +269,12 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 
 	// Execute with error recovery
 	return errorRecovery.Execute(cmd.Context(), "github-synclone", func() error {
-		// 기본 targetPath가 비어있으면 현재 작업 디렉터리로 설정
+		// 기본 targetPath가 비어있으면 현재 작업 디렉터리의 org_name 하위 디렉터리로 설정
 		if o.targetPath == "" {
 			if wd, err := os.Getwd(); err == nil && wd != "" {
-				o.targetPath = wd
+				o.targetPath = filepath.Join(wd, o.orgName)
 			} else {
-				o.targetPath = "."
+				o.targetPath = filepath.Join(".", o.orgName)
 			}
 		}
 
