@@ -45,7 +45,6 @@ install: build ## install golang binary
 	@mv $(BINARY) "$(BINDIR)"/
 	@printf "$(GREEN)Installed %s to %s$(RESET)\n" "$(BINARY)" "$(BINDIR)$(SEP)$(BINARY)"
 
-치
 run: ## run the application (usage: make run [args...] or ARGS="args" make run)
 	@echo -e "$(CYAN)Running application with version $(VERSION)...$(RESET)"
 	@if [ "$(words $(MAKECMDGOALS))" -gt 1 ]; then \
