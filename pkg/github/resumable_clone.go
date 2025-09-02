@@ -83,6 +83,9 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	displayMode := getDisplayMode(progressMode)
 	progressTracker := synclonepkg.NewProgressTracker(allRepos, displayMode)
 
+	// Show initial progress (0/total or existing progress if resuming)
+	fmt.Printf("\r\033[K%s", progressTracker.RenderProgress())
+
 	// Update progress tracker with existing state
 	for _, completed := range state.CompletedRepos {
 		progressTracker.CompleteRepository(completed.Name, completed.Message)
@@ -92,7 +95,8 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		progressTracker.SetRepositoryError(failed.Name, failed.Error)
 	}
 
-	// Initial progress will be shown by the first update tick
+	// Show updated progress after loading existing state
+	fmt.Printf("\r\033[K%s", progressTracker.RenderProgress())
 
 	// Create jobs for repositories to process
 	jobs := make([]workerpool.RepositoryJob, 0, len(reposToProcess))

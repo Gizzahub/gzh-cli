@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -136,35 +137,29 @@ func (l *StructuredLogger) LogPerformance(operation string, duration time.Durati
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	perfInfo := &PerformanceInfo{
-		Duration: duration,
-		MemoryUsage: func() int64 {
-			const maxInt64 = uint64(1<<63 - 1) // Max value for int64
-			if m.Alloc > maxInt64 {            // Check for overflow
-				return 1<<63 - 1 // Return max int64 if overflow would occur
-			}
-			return int64(m.Alloc)
-		}(),
-		Operation: operation,
-		Metrics:   metrics,
+	memoryMB := float64(m.Alloc) / 1024 / 1024
+	msg := fmt.Sprintf("Operation '%s' completed in %v (Memory: %.2f MB)", operation, duration, memoryMB)
+
+	if len(metrics) > 0 {
+		var metricParts []string
+		for k, v := range metrics {
+			metricParts = append(metricParts, fmt.Sprintf("%s=%v", k, v))
+		}
+		msg += fmt.Sprintf(" [%s]", strings.Join(metricParts, " "))
 	}
 
-	entry := &LogEntry{
-		Timestamp:   time.Now(),
-		Level:       "info",
-		Message:     fmt.Sprintf("Performance: %s completed in %v", operation, duration),
-		Component:   l.component,
-		SessionID:   l.sessionID,
-		Context:     l.context,
-		Performance: perfInfo,
-	}
-
-	l.writeStructuredLog(entry)
+	// Use simple log format instead of JSON structured format for performance logs
+	l.Info(msg)
 }
 
 // log writes a log message with context.
 func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}) {
 	if !l.logger.Enabled(context.Background(), level) {
+		return
+	}
+
+	// Check global logging flags - only show logs in debug/verbose mode or for errors
+	if !l.shouldShowLog(level) {
 		return
 	}
 
@@ -241,6 +236,27 @@ func (l *StructuredLogger) writeStructuredLog(entry *LogEntry) {
 		ctx := context.Background()
 		l.logger.ErrorContext(ctx, "Failed to write log entry", "error", writeErr)
 	}
+}
+
+// shouldShowLog determines if a log message should be shown based on global flags.
+func (l *StructuredLogger) shouldShowLog(level slog.Level) bool {
+	// Always show errors
+	if level == slog.LevelError {
+		return true
+	}
+
+	// Show all logs in debug mode
+	if IsDebugEnabled() {
+		return true
+	}
+
+	// Show info and warn logs in verbose mode
+	if IsVerboseEnabled() {
+		return level >= slog.LevelInfo
+	}
+
+	// Default: don't show logs (only console messages should appear)
+	return false
 }
 
 // getCaller gets caller information.
