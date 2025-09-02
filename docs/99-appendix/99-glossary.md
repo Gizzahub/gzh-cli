@@ -13,6 +13,12 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 **Audit**
 : The process of examining repository configurations, quality metrics, and compliance with established policies to identify violations or improvements.
 
+**Automation Engine**
+: The core component for GitHub repository automation that processes events, evaluates rules, and executes actions based on defined policies and conditions.
+
+**Automation Rule**
+: A configuration that defines conditions and actions to be automatically executed when specific GitHub events occur in repositories.
+
 ## B
 
 **BaseCommand Pattern**
@@ -48,6 +54,9 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 **Environment Variable Expansion**
 : The feature that allows configuration files to reference environment variables using `${VARIABLE_NAME}` syntax.
 
+**errcheck**
+: A Go linter that identifies unchecked error return values, ensuring comprehensive error handling in the codebase.
+
 ## F
 
 **Formatter**
@@ -57,6 +66,9 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 
 **Git Provider**
 : Any Git hosting platform supported by gzh-cli, including GitHub, GitLab, Gitea, and Gogs.
+
+**Gitea**
+: A lightweight, self-hosted Git platform that provides repository hosting, issue tracking, and collaboration features.
 
 **gzh.yaml**
 : The unified configuration file format that centralizes settings for all gzh-cli commands and providers.
@@ -70,6 +82,9 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 
 **IDE Integration**
 : Features for monitoring and managing JetBrains IDE settings, detecting configuration drift, and maintaining consistent development environments.
+
+**idecore**
+: The internal package responsible for IDE detection and configuration management, particularly for JetBrains IDEs.
 
 **Interface-Driven Design**
 : The architectural principle where gzh-cli defines clear interfaces before implementations, enabling testability and extensibility.
@@ -89,10 +104,16 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 **Mock Generation**
 : The automated creation of test doubles using `gomock` for interface testing and development.
 
+**mockRuleManager**
+: A test mock implementation of the RuleManager interface used for automation engine testing and development.
+
 **Multi-Platform Support**
 : The capability to operate across different Git hosting platforms and operating systems with consistent behavior.
 
 ## N
+
+**netenv**
+: The internal package that handles network environment utilities, configuration management, and network-related operations.
 
 **Network Environment (net-env)**
 : Network environment management through interactive TUI dashboard, status monitoring, profile management, network actions, and cloud integration. Advanced features like automatic WiFi detection and complex VPN management are planned for future releases.
@@ -129,10 +150,22 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 **Repository Configuration (repo-config)**
 : Settings and policies applied to individual repositories, including webhooks, branch protection, and Actions policies.
 
+**Resumable Clone**
+: A feature that allows interrupted cloning operations to be resumed from the last successful state, preventing data loss and reducing restart time.
+
+**RuleManager**
+: The component responsible for managing automation rules, evaluating conditions, and executing actions in the GitHub automation system.
+
 ## S
 
 **Schema Validation**
 : The process of verifying that configuration files match expected structure and contain valid data types and values.
+
+**Secure Git Executor**
+: A security-hardened component that safely executes git commands while preventing command injection and validating inputs.
+
+**strconv**
+: Go standard library package for string conversions (e.g., string to integer), heavily used in parsing configuration values and API responses.
 
 **Synclone**
 : The primary bulk operation for synchronizing repositories from Git platform organizations to local filesystem with various strategies.
@@ -141,6 +174,12 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 : The design approach used for Git operations where different update strategies (rebase, reset, pull, etc.) can be selected based on requirements.
 
 ## T
+
+**testlib**
+: The internal testing library that provides utilities for network error simulation, standard repository creation, and testing infrastructure.
+
+**TODO Resolution**
+: The process of converting commented-out code and placeholder comments into functional implementations, particularly important in test files.
 
 **Token Management**
 : The secure handling of authentication credentials for Git platform APIs, supporting environment variable storage and rotation.
@@ -226,6 +265,20 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 **YAML**
 : Yet Another Markup Language / YAML Ain't Markup Language
 
+## Technical Terms
+
+**Atoi**
+: ASCII to Integer - a function for converting string representations of numbers to integer values
+
+**errcheck**
+: Go static analysis tool for checking unhandled error return values
+
+**gomock**
+: Go testing framework for generating and using mock objects
+
+**strconv**
+: Go standard library package for string conversions
+
 ## Command Reference Quick Lookup
 
 **Core Commands**
@@ -274,6 +327,20 @@ Complete glossary of terms, concepts, and acronyms used throughout gzh-cli docum
 - `enabled_checks` - Active quality checks
 - `ignore_patterns` - Files/directories to skip
 - `severity_threshold` - Minimum severity level
+
+**Automation Settings**
+
+- `rule_engine_enabled` - Enable/disable automation engine
+- `max_retries` - Maximum retry attempts for failed operations
+- `execution_timeout` - Timeout duration for automation actions
+- `parallel_workers` - Number of concurrent automation workers
+
+**Advanced Configuration**
+
+- `cleanup_orphans` - Remove directories not in organization repositories
+- `resume_state` - Enable resumable clone operations
+- `streaming_mode` - Use memory-efficient streaming for large operations
+- `cache_enabled` - Enable caching for improved performance
 
 ______________________________________________________________________
 
