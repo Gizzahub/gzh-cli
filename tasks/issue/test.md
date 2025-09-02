@@ -15,6 +15,7 @@
 ### ✅ **수정 완료된 문제점들**
 
 #### 1. **errcheck 린트 오류 수정 완료 (10개 → 0개)**
+
 - ✅ `internal/idecore/detector.go`: os.UserHomeDir() 에러 처리 추가 (2곳)
 - ✅ `internal/netenv/reports/latency.go`: strconv.Atoi() 에러 처리 추가 (4곳)
 - ✅ `internal/testlib/network_error_simulator.go`: Hijack() 에러 처리 추가 (2곳)
@@ -22,6 +23,7 @@
 - ✅ `internal/netenv/utils.go`: os.UserHomeDir() 에러 처리 추가 (1곳)
 
 #### 2. **RuleManager 모킹 구현 완료**
+
 ```go
 // pkg/github/automation_engine_test.go - 이제 실제 동작하는 테스트
 type mockRuleManager struct {
@@ -35,11 +37,13 @@ type mockRuleManager struct {
 ```
 
 #### 3. **조건부 스킵으로 인한 테스트 누락**
+
 - 환경변수 미설정 시 96개 테스트가 스킵됨
 - Docker 미설치 시 통합 테스트 전체 스킵
 - API 토큰 없으면 핵심 기능 테스트 스킵
 
 #### 4. **테스트 품질 문제**
+
 - 실제 비즈니스 로직 검증 없이 단순 실행만 확인
 - 모킹이 제대로 설정되지 않아 가짜 성공 발생
 - 커버리지는 85%지만 실질적 검증은 부족
@@ -52,7 +56,8 @@ type mockRuleManager struct {
 
 ### 🎯 즉시 실행 가능한 해결방안
 
-**1단계: 컴파일 오류 진단 및 수정**
+### 1단계: 컴파일 오류 진단 및 수정
+
 ```bash
 # 현재 컴파일 상태 확인
 make lint 2>&1 | tee lint-errors.txt
@@ -62,7 +67,8 @@ make test 2>&1 | tee test-errors.txt
 go build ./... 2>&1 | grep -E "(error|failed)"
 ```
 
-**2단계: 테스트 품질 개선**
+### 2단계: 테스트 품질 개선
+
 ```bash
 # TODO가 남아있는 테스트들 식별
 grep -r "TODO.*test\|FIXME.*test" test/ pkg/ --include="*.go"
@@ -74,7 +80,8 @@ grep -r "TODO.*mock\|FIXME.*mock" . --include="*_test.go"
 make test-unit 2>&1 | grep -c "SKIP"
 ```
 
-**3단계: 테스트 환경 표준화**
+### 3단계: 테스트 환경 표준화
+
 ```yaml
 # .env.test.example 파일 생성
 GITHUB_TOKEN=your_test_token_here
@@ -83,7 +90,8 @@ GITLAB_TOKEN=your_gitlab_token_here
 GITEA_TOKEN=your_gitea_token_here
 ```
 
-**4단계: 필수 테스트만 우선 수정**
+### 4단계: 필수 테스트만 우선 수정
+
 ```go
 // 우선순위가 높은 핵심 기능 테스트들을 먼저 수정
 // 1. authentication 관련 테스트
