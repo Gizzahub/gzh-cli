@@ -371,11 +371,15 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 			if err != nil {
 				// Check if it's a rate limit error
 				if strings.Contains(err.Error(), "rate limit") || strings.Contains(err.Error(), "403") {
+					// For rate limit errors, suppress usage display
+					cmd.SilenceUsage = true
 					recErr := errors.NewRecoverableError(errors.ErrorTypeRateLimit, "GitHub API rate limit exceeded", err, false)
 					return recErr.WithContext("organization", o.orgName).WithContext("action", "list_repositories")
 				}
 				// Check for authentication errors
 				if strings.Contains(err.Error(), "401") || strings.Contains(err.Error(), "Unauthorized") {
+					// For auth errors, suppress usage display
+					cmd.SilenceUsage = true
 					recErr := errors.NewRecoverableError(errors.ErrorTypeAuth, "GitHub authentication failed", err, false)
 					return recErr.WithContext("organization", o.orgName).WithContext("hint", "Check your GitHub token")
 				}

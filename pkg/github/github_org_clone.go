@@ -89,81 +89,98 @@ func GetDefaultBranch(ctx context.Context, org string, repo string) (string, err
 // Returns a slice of RepoInfo with complete repository metadata or an error if the organization
 // doesn't exist, access is denied, or the API request fails.
 func ListRepos(ctx context.Context, org string) ([]RepoInfo, error) {
-	url := fmt.Sprintf("https://api.github.com/orgs/%s/repos", org)
-
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	// Add GitHub token if available
-	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
-		req.Header.Set("Authorization", "token "+token)
-	}
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	var allRepos []RepoInfo
+	page := 1
+	perPage := 100 // GitHub API supports up to 100 per page
 
 	client := httpclient.GetGlobalClient("github")
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get repositories: %w", err)
-	}
-	defer func() { _ = resp.Body.Close() }() //nolint:errcheck // HTTP response body cleanup
+	for {
+		url := fmt.Sprintf("https://api.github.com/orgs/%s/repos?page=%d&per_page=%d", org, page, perPage)
 
-	if resp.StatusCode != http.StatusOK {
-		// Read response body for error details
-		body, _ := io.ReadAll(resp.Body)
+		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request: %w", err)
+		}
 
-		// Check for rate limit error
-		if resp.StatusCode == http.StatusForbidden {
-			rateLimit := resp.Header.Get("X-RateLimit-Limit")
-			rateRemaining := resp.Header.Get("X-RateLimit-Remaining")
-			rateReset := resp.Header.Get("X-RateLimit-Reset")
+		// Add GitHub token if available
+		if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+			req.Header.Set("Authorization", "token "+token)
+		}
+		req.Header.Set("Accept", "application/vnd.github.v3+json")
 
-			if rateRemaining == "0" {
-				resetTime, err := strconv.ParseInt(rateReset, 10, 64)
-				if err == nil {
-					c := color.New(color.FgRed, color.Bold)
-					_, _ = c.Println("\n🚫 GitHub API Rate Limit Exceeded!")
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get repositories: %w", err)
+		}
+		defer func() { _ = resp.Body.Close() }() //nolint:errcheck // HTTP response body cleanup
 
-					c = color.New(color.FgYellow)
-					_, _ = c.Printf("   Rate Limit: %s requests/hour\n", rateLimit)
-					_, _ = c.Printf("   Remaining: %s\n", rateRemaining)
-					_, _ = c.Printf("   Reset Time: %s\n", time.Unix(resetTime, 0).Format(time.RFC1123))
+		if resp.StatusCode != http.StatusOK {
+			// Read response body for error details
+			body, _ := io.ReadAll(resp.Body)
 
-					duration := time.Until(time.Unix(resetTime, 0))
-					_, _ = c.Printf("   Wait Time: %d minutes %d seconds\n\n", int(duration.Minutes()), int(duration.Seconds())%60)
+			// Check for rate limit error
+			if resp.StatusCode == http.StatusForbidden {
+				rateLimit := resp.Header.Get("X-RateLimit-Limit")
+				rateRemaining := resp.Header.Get("X-RateLimit-Remaining")
+				rateReset := resp.Header.Get("X-RateLimit-Reset")
 
-					// Check if token is set
-					token := os.Getenv("GITHUB_TOKEN")
-					if token == "" {
-						c = color.New(color.FgGreen)
-						_, _ = c.Println("💡 Solution: Set GITHUB_TOKEN environment variable to bypass rate limits")
-						_, _ = c.Println("   export GITHUB_TOKEN=\"your_github_personal_access_token\"")
-					} else {
-						c = color.New(color.FgMagenta)
-						_, _ = c.Println("⚠️  Token is set but rate limit still exceeded. Token may be invalid or have insufficient permissions.")
+				if rateRemaining == "0" {
+					resetTime, err := strconv.ParseInt(rateReset, 10, 64)
+					if err == nil {
+						c := color.New(color.FgRed, color.Bold)
+						_, _ = c.Println("\n🚫 GitHub API Rate Limit Exceeded!")
+
+						c = color.New(color.FgYellow)
+						_, _ = c.Printf("   Rate Limit: %s requests/hour\n", rateLimit)
+						_, _ = c.Printf("   Remaining: %s\n", rateRemaining)
+						_, _ = c.Printf("   Reset Time: %s\n", time.Unix(resetTime, 0).Format(time.RFC1123))
+
+						duration := time.Until(time.Unix(resetTime, 0))
+						_, _ = c.Printf("   Wait Time: %d minutes %d seconds\n\n", int(duration.Minutes()), int(duration.Seconds())%60)
+
+						// Check if token is set
+						token := os.Getenv("GITHUB_TOKEN")
+						if token == "" {
+							c = color.New(color.FgGreen)
+							_, _ = c.Println("💡 Solution: Set GITHUB_TOKEN environment variable to bypass rate limits")
+							_, _ = c.Println("   export GITHUB_TOKEN=\"your_github_personal_access_token\"")
+						} else {
+							c = color.New(color.FgMagenta)
+							_, _ = c.Println("⚠️  Token is set but rate limit still exceeded. Token may be invalid or have insufficient permissions.")
+						}
 					}
+					return nil, fmt.Errorf("GitHub API rate limit exceeded")
 				}
-				return nil, fmt.Errorf("GitHub API rate limit exceeded")
 			}
+
+			// For other errors, show the status and body
+			errorMsg := fmt.Sprintf("failed to get repositories: %s", resp.Status)
+			if len(body) > 0 {
+				errorMsg = fmt.Sprintf("%s - %s", errorMsg, string(body))
+			}
+			return nil, fmt.Errorf("%s", errorMsg)
 		}
 
-		// For other errors, show the status and body
-		errorMsg := fmt.Sprintf("failed to get repositories: %s", resp.Status)
-		if len(body) > 0 {
-			errorMsg = fmt.Sprintf("%s - %s", errorMsg, string(body))
+		// Decode the response directly into RepoInfo structs
+		var repos []RepoInfo
+		if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
+			return nil, fmt.Errorf("failed to decode response: %w", err)
 		}
-		return nil, fmt.Errorf("%s", errorMsg)
+
+		// Append repos to the result
+		allRepos = append(allRepos, repos...)
+
+		// If we got fewer repos than requested, we've reached the end
+		if len(repos) < perPage {
+			break
+		}
+
+		// Move to next page
+		page++
 	}
 
-	// Decode the response directly into RepoInfo structs
-	var repos []RepoInfo
-	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return repos, nil
+	return allRepos, nil
 }
 
 // List retrieves all repository names for a GitHub organization.
