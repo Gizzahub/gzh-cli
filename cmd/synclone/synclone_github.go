@@ -252,23 +252,9 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 		WithContext("strategy", o.strategy).
 		WithContext("parallel", o.parallel)
 
-		// Initialize error recovery system
-	recoveryConfig := errors.RecoveryConfig{
-		MaxRetries: o.maxRetries,
-		RetryDelay: time.Second * 2,
-		Logger:     log,
-		RecoveryFunc: func(err error) error {
-			log.Warn("Attempting automatic recovery", "error_type", fmt.Sprintf("%T", err))
-			return nil
-		},
-	}
-	errorRecovery := errors.NewErrorRecovery(recoveryConfig)
-	log.Info("Starting GitHub synclone operation")
+		log.Info("Starting GitHub synclone operation")
 
 	start := time.Now()
-
-	// Execute with error recovery
-	return errorRecovery.Execute(cmd.Context(), "github-synclone", func() error {
 		// 기본 targetPath가 비어있으면 현재 작업 디렉터리의 org_name 하위 디렉터리로 설정
 		if o.targetPath == "" {
 			if wd, err := os.Getwd(); err == nil && wd != "" {
@@ -483,7 +469,6 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 		log.Info("GitHub synclone operation completed successfully", "duration", duration.String())
 
 		return nil
-	})
 }
 
 func (o *syncCloneGithubOptions) loadFromConfig() error {

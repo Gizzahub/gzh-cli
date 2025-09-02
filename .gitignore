@@ -34,6 +34,7 @@ web/build/
 /gzh
 /setup-test-repos
 /cleanup-test-repos
+/test-gz
 
 # test
 tmp/

@@ -92,8 +92,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		progressTracker.SetRepositoryError(failed.Name, failed.Error)
 	}
 
-	// Print initial progress
-	fmt.Printf("\r\033[K%s", progressTracker.RenderProgress())
+	// Initial progress will be shown by the first update tick
 
 	// Create jobs for repositories to process
 	jobs := make([]workerpool.RepositoryJob, 0, len(reposToProcess))
@@ -125,7 +124,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		})
 	}
 
-	// Start progress tracking for pending jobs
+	// Start progress tracking for pending jobs (don't trigger initial display)
 	for _, job := range jobs {
 		progressTracker.UpdateRepository(job.Repository, getProgressStatusFromOperation(job.Operation), "Starting...", 0.0)
 	}
@@ -151,7 +150,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 
 	// Set up periodic state saving and progress updates
 	stateSaveTicker := time.NewTicker(30 * time.Second)
-	progressUpdateTicker := time.NewTicker(1 * time.Second)
+	progressUpdateTicker := time.NewTicker(2 * time.Second) // Slightly delay to avoid initial 0.0% display
 
 	defer stateSaveTicker.Stop()
 	defer progressUpdateTicker.Stop()
@@ -207,8 +206,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		fmt.Printf("⚠️  Warning: failed to save final state: %v\n", err)
 	}
 
-	// Show final summary
-	fmt.Printf("\n%s\n", progressTracker.GetSummary())
+	// Skip detailed summary to avoid duplication
 
 	// Clean up state file if completed successfully
 	if state.Status == "completed" {

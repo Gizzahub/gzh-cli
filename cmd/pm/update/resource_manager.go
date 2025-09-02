@@ -11,7 +11,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -102,13 +101,12 @@ func (rm *ResourceManager) checkDiskSpace(result *ResourceCheckResult, estimated
 		checkPath = home
 	}
 	
-	var stat syscall.Statfs_t
-	if err := syscall.Statfs(checkPath, &stat); err != nil {
+	availableBytes, err := getDiskSpace(checkPath)
+	if err != nil {
 		return fmt.Errorf("failed to get disk space: %w", err)
 	}
 	
 	// Calculate available space in GB
-	availableBytes := stat.Bavail * uint64(stat.Bsize)
 	result.AvailableDiskGB = float64(availableBytes) / 1024 / 1024 / 1024
 	
 	// Estimate required space (download + temporary files + safety margin)
