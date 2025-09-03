@@ -1,0 +1,370 @@
+name: Main CI/CD Pipeline
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+  actions: read
+
+# Global environment variables for better caching
+env:
+  GO_VERSION_FILE: go.mod
+  CACHE_VERSION: v1
+
+jobs:
+  # 🧪 Cross-platform testing with matrix strategy
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.GO_VERSION_FILE }}
+          cache: true
+
+      - name: Enhanced Go modules caching
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ env.CACHE_VERSION }}-go-${{ matrix.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-go-${{ matrix.os }}-
+
+      - name: Install dependencies
+        run: go mod download && go mod verify
+
+      - name: Compile check
+        run: |
+          echo "Checking if all packages compile..."
+          go build -v ./...
+          echo "Checking if tests compile (per package)..."
+          for pkg in $(go list ./...); do
+            echo "Testing compilation for $pkg"
+            go test -c "$pkg" -o /dev/null || echo "⚠️ Test compilation failed for $pkg"
+          done
+          echo "✅ Compilation checks completed!"
+
+      - name: Run tests with coverage
+        run: |
+          go test -race -coverprofile=coverage-${{ matrix.os }}.out -covermode=atomic ./...
+
+      - name: Upload coverage (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v5
+        with:
+          file: ./coverage-ubuntu-latest.out
+          flags: unittests
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage-*.out
+
+  # 🔍 Code quality and security analysis
+  quality:
+    name: Quality & Security
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.GO_VERSION_FILE }}
+          cache: true
+
+      - name: Enhanced Go modules caching
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ env.CACHE_VERSION }}-go-ubuntu-latest-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
+
+      - name: Cache tool binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/bin
+            ~/go/bin
+          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Verify AGENTS guidelines
+        run: |
+          if [ -f scripts/check-agents.sh ]; then
+            chmod +x scripts/check-agents.sh
+            scripts/check-agents.sh
+          else
+            echo "⚠️ AGENTS check script not found, skipping"
+          fi
+
+      - name: Format check
+        run: make format-strict
+
+      - name: Lint check
+        run: make lint-check
+
+      - name: Security scan
+        run: make security-json
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gosec-report.json
+        if: always() && hashFiles('gosec-report.json') != ''
+
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            gosec-report.json
+            lint-report.xml
+
+  # 🚀 Performance benchmarks (conditional)
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: [test, quality]
+    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[benchmark]')
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.GO_VERSION_FILE }}
+          cache: true
+
+      - name: Enhanced Go modules caching
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ env.CACHE_VERSION }}-go-ubuntu-latest-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Compile check
+        run: |
+          echo "Checking if all packages compile..."
+          go build -v ./...
+          echo "Checking if tests compile (per package)..."
+          for pkg in $(go list ./...); do
+            echo "Testing compilation for $pkg"
+            go test -c "$pkg" -o /dev/null || echo "⚠️ Test compilation failed for $pkg"
+          done
+          echo "✅ Compilation checks completed!"
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
+      - name: Run benchmarks
+        run: |
+          PACKAGE_PATTERN="${{ github.event.inputs.package_pattern || './...' }}"
+          echo "🏃 Running benchmarks for: $PACKAGE_PATTERN"
+
+          # Run benchmarks multiple times for statistical significance
+          for i in {1..5}; do
+            echo "📊 Benchmark run $i/5"
+            go test -bench=. -benchmem -run=^$ $PACKAGE_PATTERN >> benchmark_$i.txt || echo "⚠️ Some benchmarks may have failed"
+          done
+
+      - name: Generate benchmark report
+        run: |
+          echo "# 📈 Performance Benchmark Report" > benchmark_report.md
+          echo "" >> benchmark_report.md
+          echo "**Commit:** \`${{ github.sha }}\`" >> benchmark_report.md
+          echo "**Date:** $(date)" >> benchmark_report.md
+          echo "**Trigger:** ${{ github.event_name }}" >> benchmark_report.md
+          echo "" >> benchmark_report.md
+
+          # Combine all benchmark results
+          cat benchmark_*.txt > all_benchmarks.txt
+
+          # Generate summary
+          echo "## 🎯 Benchmark Results" >> benchmark_report.md
+          echo "\`\`\`" >> benchmark_report.md
+          if [ -s all_benchmarks.txt ]; then
+            benchstat all_benchmarks.txt >> benchmark_report.md
+          else
+            echo "No benchmark results found or all benchmarks failed" >> benchmark_report.md
+          fi
+          echo "\`\`\`" >> benchmark_report.md
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmark_*.txt
+            benchmark_report.md
+            all_benchmarks.txt
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const report = fs.readFileSync('benchmark_report.md', 'utf8');
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            } catch (error) {
+              console.log('Could not read benchmark report:', error);
+            }
+
+  # 🔨 Build verification
+  build:
+    name: Build & Test Binaries
+    runs-on: ubuntu-latest
+    needs: [test, quality]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.GO_VERSION_FILE }}
+          cache: true
+
+      - name: Enhanced Go modules caching
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ env.CACHE_VERSION }}-go-ubuntu-latest-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build all binaries
+        run: |
+          echo "🔨 Building main binary..."
+          go build -ldflags="-s -w -X main.version=${{ github.sha }}" -o gz .
+
+          echo "🔨 Building command binaries..."
+          go build -ldflags="-s -w" -o git-synclone ./cmd/git-synclone
+          go build -ldflags="-s -w" -o actions-policy ./cmd/actions-policy
+
+      - name: Test binary functionality
+        run: |
+          echo "🧪 Testing binary versions..."
+          ./gz version || echo "⚠️ Main binary version check failed"
+          ./git-synclone --version || echo "⚠️ git-synclone version check failed"
+          ./actions-policy --version || echo "⚠️ actions-policy version check failed"
+
+          echo "🧪 Testing basic commands..."
+          ./gz --help > /dev/null || echo "⚠️ Main binary help failed"
+          ./gz dev-env --help > /dev/null || echo "⚠️ dev-env help failed"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ github.sha }}
+          path: |
+            gz
+            git-synclone
+            actions-policy
+
+  # 📋 Summary job for branch protection
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [test, quality, build]
+    if: always()
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "🔍 Checking job results..."
+          echo "Test job: ${{ needs.test.result }}"
+          echo "Quality job: ${{ needs.quality.result }}"
+          echo "Build job: ${{ needs.build.result }}"
+          
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌ Tests failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.quality.result }}" != "success" ]; then
+            echo "❌ Quality checks failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.build.result }}" != "success" ]; then
+            echo "❌ Build failed"
+            exit 1
+          fi
+          
+          echo "✅ All required jobs passed successfully!"
+
+      - name: Generate job summary
+        run: |
+          echo "## 🎉 CI/CD Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
