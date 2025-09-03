@@ -576,6 +576,104 @@ Kubernetes environment management.
 gz dev-env k8s <action> [flags]
 ```
 
+##### `gz dev-env ssh`
+
+Comprehensive SSH configuration management with intelligent parsing and modern key deployment.
+
+```bash
+gz dev-env ssh <command> [flags]
+```
+
+**Commands:**
+
+| Command | Description | Key Features |
+|---------|-------------|--------------|
+| `save` | Save SSH configuration | Auto-parses Include directives, backs up IdentityFile keys |
+| `load` | Load saved SSH configuration | Restores config, includes, and keys with proper permissions |
+| `list` | List saved configurations | Shows metadata, file counts, and timestamps |
+| `install-key` | Install SSH key to remote server | SFTP-based, robust error handling, verbose mode |
+| `install-key-simple` | Install using system SSH | Fallback method using system SSH command |
+| `list-keys` | List keys in saved configurations | Shows key types, fingerprints, and availability |
+
+**Configuration Management Examples:**
+
+```bash
+# Save complete SSH setup with includes and keys
+gz dev-env ssh save --name production --description "Prod SSH setup"
+
+# Load saved configuration
+gz dev-env ssh load --name production --backup
+
+# List all saved configurations with details
+gz dev-env ssh list --all
+```
+
+**Key Installation Examples:**
+
+```bash
+# Install specific key to remote server
+gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
+
+# Install all keys from saved configuration
+gz dev-env ssh install-key --config production --host server.com --user deploy
+
+# Install with verbose output for debugging
+gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub --verbose
+
+# Preview changes without installing
+gz dev-env ssh install-key --config production --host server.com --user admin --dry-run
+
+# Use system SSH for compatibility
+gz dev-env ssh install-key-simple --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
+```
+
+**Key Management Examples:**
+
+```bash
+# List keys from specific configuration
+gz dev-env ssh list-keys --config production
+
+# List keys from all configurations
+gz dev-env ssh list-keys
+```
+
+**Flags:**
+
+| Flag | Description | Applies To |
+|------|-------------|------------|
+| `--name` | Configuration name | save, load, list |
+| `--description` | Configuration description | save |
+| `--include-keys` | Include private keys in backup | save |
+| `--backup` | Backup current config before loading | load |
+| `--force` | Overwrite without confirmation | load, install-key |
+| `--host` | Remote hostname/IP | install-key, install-key-simple |
+| `--user` | SSH username | install-key, install-key-simple |
+| `--public-key` | Path to public key file | install-key, install-key-simple |
+| `--private-key` | Path to private key for auth | install-key |
+| `--config` | Use keys from saved configuration | install-key, list-keys |
+| `--password` | SSH password | install-key |
+| `--port` | SSH port (default: 22) | install-key |
+| `--dry-run` | Preview changes without applying | install-key |
+| `--all` | Show detailed information | list |
+| `--verbose` | Enable verbose logging | install-key |
+
+**Features:**
+- **Intelligent Parsing**: Automatically processes Include directives with glob pattern support
+- **Key Detection**: Auto-detects and backs up IdentityFile private keys and corresponding public keys
+- **SFTP Installation**: Uses Go SSH/SFTP libraries for reliable remote key installation
+- **Permission Management**: Maintains proper SSH file permissions (600/644/700)
+- **Directory Structure**: Preserves relative paths and file relationships
+- **Verbose Logging**: Detailed debugging output with `--verbose` flag
+
+**Storage Structure:**
+```
+~/.gz/ssh-configs/<name>/
+├── config              # Main SSH config
+├── includes/           # Include directive files
+├── keys/               # Private and public keys
+└── metadata.json       # Configuration metadata
+```
+
 ### net-env
 
 Network environment transitions and management.

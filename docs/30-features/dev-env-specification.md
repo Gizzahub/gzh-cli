@@ -197,21 +197,51 @@ gz dev-env azure-subscription validate          # Validate subscription
 
 #### SSH Configuration (`gz dev-env ssh`)
 
-**Purpose**: Manage SSH configurations and keys
+**Purpose**: Comprehensive SSH configuration management with intelligent parsing and modern key deployment
 
-**Features**:
-- SSH config file management
-- SSH key backup and restore
-- Multiple environment SSH setups
+**Enhanced Features**:
+- **Intelligent Config Parsing**: Automatically parses and backs up Include directive files with glob pattern support
+- **IdentityFile Detection**: Automatically detects and backs up private keys referenced in SSH config
+- **Public Key Pairing**: Automatically includes corresponding .pub files for each private key
+- **SFTP-Based Key Installation**: Modern Go implementation for reliable remote key deployment
+- **Directory Structure Preservation**: Maintains relative paths and file relationships
+- **Permission Management**: Automatically sets proper file permissions (600/644/700)
+- **Verbose Logging**: Detailed debugging output with `--verbose` flag
 
-**Usage**:
+**Core Commands**:
 
 ```bash
-gz dev-env ssh save --name production           # Save SSH configuration
-gz dev-env ssh load --name production           # Load SSH configuration
-gz dev-env ssh list                             # List saved SSH configs
-gz dev-env ssh key generate --name new-key      # Generate SSH key pair
+# Configuration Management
+gz dev-env ssh save --name production           # Save complete SSH setup with includes/keys
+gz dev-env ssh load --name production           # Load saved SSH configuration
+gz dev-env ssh list --all                       # List saved configurations with details
+
+# Key Installation (SFTP-based)
+gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
+gz dev-env ssh install-key --config production --host server.com --user admin --verbose
+
+# Key Management
+gz dev-env ssh list-keys --config production    # List available keys in configuration
+gz dev-env ssh install-key-simple --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
 ```
+
+**Storage Structure**:
+```
+~/.gz/ssh-configs/<name>/
+├── config              # Main SSH config file
+├── includes/           # Files from Include directives
+├── keys/               # Private and public keys
+└── metadata.json       # Configuration metadata
+```
+
+**What Gets Automatically Processed**:
+- Main SSH config file (`~/.ssh/config`)
+- All files referenced by `Include` directives (supports glob patterns)
+- All private keys referenced by `IdentityFile` directives
+- Corresponding public keys (`.pub` files)
+- Directory structure and relative paths
+
+See [SSH Management Guide](./33-ssh-management.md) for comprehensive documentation.
 
 ### Unified Environment Commands
 

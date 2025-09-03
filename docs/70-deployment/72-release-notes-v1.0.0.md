@@ -65,6 +65,47 @@ gz net-env cloud switch --provider aws --profile production
 gz net-env vpn connect --profile company --fallback personal
 ```
 
+#### 4. **SSH 설정 관리 시스템** (신규)
+
+- **지능형 설정 파싱**: Include 디렉티브와 IdentityFile 자동 감지 및 백업
+- **SFTP 기반 키 설치**: 순수 Go 구현으로 안정적인 원격 키 배포
+- **디렉토리 구조 보존**: 상대 경로와 파일 관계 유지
+- **권한 관리 자동화**: SSH 디렉토리, 키 파일, 설정 파일 권한 자동 설정
+- **Verbose 로깅**: `--verbose` 플래그로 상세한 디버깅 정보 제공
+
+**핵심 기능:**
+- SSH 설정과 Include 파일 자동 백업
+- IdentityFile에서 참조된 모든 키 자동 감지
+- Glob 패턴 지원 (`config.d/*`, `~/.ssh/configs/*.conf`)
+- 공개/개인키 쌍 자동 매칭 (`.pub` 파일)
+- SFTP 프로토콜 기반 안전한 원격 설치
+
+```bash
+# SSH 설정 완전 백업 (Include 파일과 키 포함)
+gz dev-env ssh save --name production --description "Production SSH setup"
+
+# 저장된 SSH 설정 복원
+gz dev-env ssh load --name production --backup
+
+# 원격 서버에 키 설치 (SFTP 기반)
+gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
+
+# 저장된 설정의 모든 키를 원격 서버에 설치
+gz dev-env ssh install-key --config production --host server.com --user deploy --verbose
+
+# 키 설치 미리보기 (실제 설치 없이)
+gz dev-env ssh install-key --config production --host server.com --user admin --dry-run
+```
+
+**저장 구조:**
+```
+~/.gz/ssh-configs/<name>/
+├── config              # 메인 SSH 설정 파일
+├── includes/           # Include 디렉티브 파일들
+├── keys/               # 개인키와 공개키
+└── metadata.json       # 설정 메타데이터
+```
+
 ### 🚀 기존 기능 개선
 
 #### 1. **리포지토리 대량 클론** (성능 향상)
