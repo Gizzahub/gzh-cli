@@ -211,6 +211,9 @@ gz dev-env ssh save --name production           # Save SSH configuration
 gz dev-env ssh load --name production           # Load SSH configuration
 gz dev-env ssh list                             # List saved SSH configs
 gz dev-env ssh key generate --name new-key      # Generate SSH key pair
+
+gz dev-env ssh install-key-simple --host 192.168.1.22 --user user01 --public-key ssh-key-path/ssh-key.pub
+
 ```
 
 ### Unified Environment Commands
