@@ -1,5 +1,10 @@
 name: Performance Benchmarks
 
+# 동시 실행 제어: 성능 테스트는 순차적으로 실행
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false  # 성능 테스트는 취소하지 않고 완료
+
 # Global environment variables for caching
 env:
   GO_VERSION_FILE: go.mod

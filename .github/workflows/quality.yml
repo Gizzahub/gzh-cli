@@ -1,10 +1,21 @@
-name: Code Quality
+name: Specialized Quality Checks
 
+# main.yml과 중복을 피해 특수한 품질 검사만 수행
 on:
-  push:
-    branches: [master, main, develop]
   pull_request:
     branches: [master, main, develop]
+  # Dependabot PR에 대해서만 push 이벤트 처리
+  push:
+    branches: [master, main, develop]
+    paths:
+      - '.github/dependabot.yml'
+      - 'go.mod'
+      - 'go.sum'
+
+# 동시 실행 제어: main.yml과 다른 그룹으로 분리
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   commitlint:

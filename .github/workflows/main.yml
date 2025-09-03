@@ -2,9 +2,21 @@ name: Main CI/CD Pipeline
 
 on:
   push:
-    branches: [master, main, develop]
+    branches: [master, main]  # develop 브랜치 제외로 실행 빈도 감소
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/main.yml'
+      - 'Makefile'
   pull_request:
     branches: [master, main, develop]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/main.yml'
+      - 'Makefile'
 
 permissions:
   contents: read
@@ -12,19 +24,26 @@ permissions:
   pull-requests: write
   actions: read
 
+# 동시 실행 제어: 같은 브랜치/PR에 대한 중복 실행 방지
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # Global environment variables for better caching
 env:
   GO_VERSION_FILE: go.mod
   CACHE_VERSION: v1
 
 jobs:
-  # 🧪 Cross-platform testing with matrix strategy
+  # 🧪 조건부 크로스 플랫폼 테스트: PR은 Ubuntu만, push는 전체 OS
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20  # 각 OS별 테스트 제한 시간
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # PR: Ubuntu만 실행 (빠른 피드백), push: 전체 OS 검증
+        os: ${{ github.event_name == 'pull_request' && fromJSON('["ubuntu-latest"]') || fromJSON('["ubuntu-latest", "macos-latest", "windows-latest"]') }}
       fail-fast: false
 
     steps:
@@ -85,11 +104,14 @@ jobs:
           path: |
             coverage-*.out
 
-  # 🔍 Code quality and security analysis
+  # 🔍 코드 품질 및 보안 분석 (Ubuntu 테스트 완료 후 실행)
   quality:
     name: Quality & Security
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # 품질 검사 제한 시간
     needs: test
+    # 테스트가 실패하면 품질 검사도 skip
+    if: success()
 
     steps:
       - name: Checkout
@@ -159,12 +181,12 @@ jobs:
             gosec-report.json
             lint-report.xml
 
-  # 🚀 Performance benchmarks (conditional)
+  # 🚀 성능 벤치마크 (PR 또는 [benchmark] 커밋 메시지)
   benchmark:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
     needs: [test, quality]
-    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[benchmark]')
+    if: (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'perf')) || contains(github.event.head_commit.message, '[benchmark]') || contains(github.event.head_commit.message, 'perf:')
     timeout-minutes: 30
 
     steps:
@@ -266,11 +288,14 @@ jobs:
               console.log('Could not read benchmark report:', error);
             }
 
-  # 🔨 Build verification
+  # 🔨 빌드 검증 (테스트와 품질 검사 완료 후)
   build:
     name: Build & Test Binaries
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # 빌드 제한 시간
     needs: [test, quality]
+    # 이전 job들이 성공했을 때만 실행
+    if: success()
 
     steps:
       - name: Checkout
