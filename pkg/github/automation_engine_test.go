@@ -364,7 +364,7 @@ func createTestAutomationEngine() (*AutomationEngine, *mockEventProcessor, *mock
 	apiClient := &mockAPIClient{}
 
 	// Create a mock RuleManager for testing
-	ruleManager := &mockRuleManager{}
+	mockRM := &mockRuleManager{}
 
 	conditionEvaluator := &mockConditionEvaluator{}
 	actionExecutor := &mockActionExecutor{}
@@ -381,17 +381,20 @@ func createTestAutomationEngine() (*AutomationEngine, *mockEventProcessor, *mock
 		RetryBackoffFactor:   1.5,
 	}
 
+	// Create a real RuleManager with nil dependencies for testing
+	realRuleManager := &RuleManager{}
+
 	engine := NewAutomationEngine(
 		logger,
 		apiClient,
-		ruleManager,
+		realRuleManager,
 		conditionEvaluator,
 		actionExecutor,
 		eventProcessor,
 		config,
 	)
 
-	return engine, eventProcessor, ruleManager
+	return engine, eventProcessor, mockRM
 }
 
 func createTestEngineEvent() *GitHubEvent {
@@ -415,26 +418,23 @@ func createTestEngineEvent() *GitHubEvent {
 
 func createTestEngineRule() *AutomationRule {
 	return &AutomationRule{
-		ID:   "test-rule-001",
-		Name: "Test Automation Rule",
-		Org:  "testorg",
-		Conditions: []*AutomationCondition{
-			{
-				Type:     ConditionTypeEvent,
-				Field:    "type",
-				Operator: ConditionOperatorEquals,
-				Value:    "push",
-			},
+		ID:           "test-rule-001",
+		Name:         "Test Automation Rule",
+		Organization: "testorg",
+		Enabled:      true,
+		Conditions: AutomationConditions{
+			EventTypes: []EventType{"push"},
 		},
-		Actions: []*AutomationAction{
+		Actions: []AutomationAction{
 			{
-				Type: ActionTypeComment,
+				ID:      "action-001",
+				Type:    ActionTypeWebhook,
+				Enabled: true,
 				Parameters: map[string]interface{}{
-					"message": "Automated comment from test rule",
+					"url": "https://example.com/webhook",
 				},
 			},
 		},
-		Enabled:  true,
 		Priority: 1,
 	}
 }
@@ -530,7 +530,7 @@ func TestAutomationEngine_ProcessEvent_NotRunning(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_ValidationFailed(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	ctx := context.Background()
 
@@ -553,7 +553,7 @@ func TestAutomationEngine_ProcessEvent_ValidationFailed(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	ctx := context.Background()
 
@@ -582,7 +582,7 @@ func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_ExcludedEventType(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 	engine.config.ExcludedEventTypes = []EventType{EventTypePullRequest}
 	event := createTestEngineEvent()
 	ctx := context.Background()
@@ -652,7 +652,7 @@ func TestAutomationEngine_ProcessEvent_Success(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	// 	rule := createTestEngineRule()
 	ctx := context.Background()
@@ -687,7 +687,7 @@ func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_ExecutionFailure(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 	event := createTestEngineEvent()
 	// 	rule := createTestEngineRule()
 	ctx := context.Background()
@@ -739,7 +739,7 @@ func TestAutomationEngine_GetActiveExecutions(t *testing.T) {
 }
 
 func TestAutomationEngine_SyncExecution(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 	engine.config.EnableAsyncExecution = false // Disable async execution
 
 	event := createTestEngineEvent()
@@ -781,7 +781,7 @@ func TestAutomationEngine_SyncExecution(t *testing.T) {
 }
 
 func TestAutomationEngine_EventChannelFull(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 	engine.config.EventBufferSize = 1 // Very small buffer
 
 	event := createTestEngineEvent()
@@ -957,7 +957,7 @@ func BenchmarkAutomationEngine_UpdateMetrics(b *testing.B) {
 // Integration test
 
 func TestAutomationEngine_Integration(t *testing.T) {
-	engine, eventProcessor, ruleManager := createTestAutomationEngine()
+	engine, eventProcessor, _ := createTestAutomationEngine()
 
 	// Test complete flow: start -> process event -> execute rule -> stop
 	event := createTestEngineEvent()
