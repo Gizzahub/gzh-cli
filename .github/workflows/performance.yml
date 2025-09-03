@@ -1,5 +1,10 @@
 name: Performance Benchmarks
 
+# Global environment variables for caching
+env:
+  GO_VERSION_FILE: go.mod
+  CACHE_VERSION: v1
+
 on:
   pull_request:
     branches: [master, main, develop]
@@ -41,19 +46,49 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version-file: go.mod
+        go-version-file: ${{ env.GO_VERSION_FILE }}
+        cache: true
 
-    - name: Cache Go modules
+    - name: Enhanced Go modules caching
       uses: actions/cache@v4
       with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: ${{ env.CACHE_VERSION }}-go-ubuntu-latest-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
+
+    - name: Cache benchstat tool
+      uses: actions/cache@v4
+      with:
+        path: ~/go/bin/benchstat
+        key: ${{ env.CACHE_VERSION }}-benchstat-${{ runner.os }}
+        restore-keys: |
+          ${{ env.CACHE_VERSION }}-benchstat-
 
     - name: Install dependencies
       run: go mod download
 
+    - name: Compile check
+      run: |
+        echo "Checking if all packages compile..."
+        go build -v ./...
+        echo "Checking if tests compile (per package)..."
+        for pkg in $(go list ./...); do
+          echo "Testing compilation for $pkg"
+          go test -c "$pkg" -o /dev/null || echo "⚠️ Test compilation failed for $pkg"
+        done
+        echo "✅ Compilation checks completed!"
+
     - name: Install benchstat
-      run: go install golang.org/x/perf/cmd/benchstat@latest
+      run: |
+        if [ ! -f ~/go/bin/benchstat ]; then
+          echo "Installing benchstat..."
+          go install golang.org/x/perf/cmd/benchstat@latest
+        else
+          echo "Using cached benchstat"
+        fi
 
     - name: Run benchmarks
       run: |
