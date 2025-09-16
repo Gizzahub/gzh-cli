@@ -272,7 +272,7 @@ jobs:
 
       - name: Comment PR with results
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -363,22 +363,22 @@ jobs:
           echo "Test job: ${{ needs.test.result }}"
           echo "Quality job: ${{ needs.quality.result }}"
           echo "Build job: ${{ needs.build.result }}"
-          
+
           if [ "${{ needs.test.result }}" != "success" ]; then
             echo "❌ Tests failed"
             exit 1
           fi
-          
+
           if [ "${{ needs.quality.result }}" != "success" ]; then
             echo "❌ Quality checks failed"
             exit 1
           fi
-          
+
           if [ "${{ needs.build.result }}" != "success" ]; then
             echo "❌ Build failed"
             exit 1
           fi
-          
+
           echo "✅ All required jobs passed successfully!"
 
       - name: Generate job summary
