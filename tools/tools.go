@@ -18,8 +18,8 @@ import (
 	_ "github.com/daixiang0/gci"
 	// gocritic
 	_ "github.com/go-critic/go-critic/cmd/gocritic"
-	// golangci-lint
-	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
+	// golangci-lint (temporarily disabled due to dependency issue)
+	// _ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	// gotestfmt
 	_ "github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt"
 	// goimports
