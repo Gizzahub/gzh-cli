@@ -7,6 +7,7 @@
 **pm**은 다양한 패키지 매니저(Homebrew, asdf, npm, pip 등)를 통합 관리하는 모듈입니다.
 
 ### 핵심 기능
+
 - 다중 패키지 매니저 지원 (brew, apt, pip, npm, cargo 등)
 - 설정 파일 기반 패키지 관리 (`~/.gzh/pm/`)
 - 패키지 상태 모니터링 (status)
@@ -16,6 +17,7 @@
 ## ⚠️ 개발 시 주의사항
 
 ### 1. 패키지 매니저별 차이점 처리
+
 ```go
 // ✅ 패키지 매니저별 추상화
 type PackageManager interface {
@@ -39,6 +41,7 @@ func (n *NPMManager) Install(packages []string) error {
 ```
 
 ### 2. 설정 파일 검증
+
 ```go
 // ✅ 설정 파일 유효성 검사
 func (c *ConfigManager) ValidateConfig(configPath string) error {
@@ -59,6 +62,7 @@ func (c *ConfigManager) ValidateConfig(configPath string) error {
 ```
 
 ### 3. 충돌 방지
+
 ```go
 // ✅ 패키지 충돌 감지
 func (p *PackageManager) DetectConflicts(packages []string) ([]Conflict, error) {

@@ -74,6 +74,7 @@ gz net-env vpn connect --profile company --fallback personal
 - **Verbose 로깅**: `--verbose` 플래그로 상세한 디버깅 정보 제공
 
 **핵심 기능:**
+
 - SSH 설정과 Include 파일 자동 백업
 - IdentityFile에서 참조된 모든 키 자동 감지
 - Glob 패턴 지원 (`config.d/*`, `~/.ssh/configs/*.conf`)
@@ -98,6 +99,7 @@ gz dev-env ssh install-key --config production --host server.com --user admin --
 ```
 
 **저장 구조:**
+
 ```
 ~/.gz/ssh-configs/<name>/
 ├── config              # 메인 SSH 설정 파일

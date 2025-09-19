@@ -7,6 +7,7 @@
 **ide**는 다양한 IDE(JetBrains, VS Code 계열 등)를 감지하고 관리하는 모듈입니다.
 
 ### 핵심 기능
+
 - IDE 자동 감지 (JetBrains, VS Code, Cursor 등)
 - IDE 실행 및 프로젝트 열기
 - JetBrains 설정 모니터링
@@ -15,6 +16,7 @@
 ## ⚠️ 개발 시 주의사항
 
 ### 1. 크로스 플랫폼 IDE 경로
+
 ```go
 // ✅ 플랫폼별 IDE 경로 처리
 func (d *IDEDetector) getIDEPaths() map[string][]string {
@@ -38,6 +40,7 @@ func (d *IDEDetector) getIDEPaths() map[string][]string {
 ```
 
 ### 2. JetBrains 설정 디렉토리 처리
+
 ```go
 // ✅ JetBrains 설정 경로 관리
 func (j *JetBrainsManager) getConfigPaths() ([]string, error) {
@@ -63,6 +66,7 @@ func (j *JetBrainsManager) getConfigPaths() ([]string, error) {
 ```
 
 ### 3. 안전한 IDE 실행
+
 ```go
 // ✅ IDE 실행 안전성
 func (i *IDELauncher) LaunchIDE(ideName, projectPath string) error {

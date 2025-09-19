@@ -7,6 +7,7 @@
 **repo-config**는 GitHub 조직의 저장소 설정을 대규모로 관리하고 컴플라이언스를 보장하는 인프라 관리 모듈입니다.
 
 ### 핵심 기능
+
 - 대규모 GitHub 저장소 설정 관리
 - 보안 정책 및 브랜치 보호 규칙 적용
 - 템플릿 기반 설정 관리
@@ -17,6 +18,7 @@
 ## 🔐 개발 시 핵심 주의사항
 
 ### 1. GitHub API 속도 제한 관리
+
 ```go
 // ✅ API 속도 제한 대응
 type GitHubAPIClient struct {
@@ -46,6 +48,7 @@ func (c *GitHubAPIClient) MakeAPICall(ctx context.Context, fn func() error) erro
 ```
 
 ### 2. 대량 작업 안전성
+
 ```go
 // ✅ 안전한 대량 저장소 처리
 func (r *RepoManager) ApplyConfigBatch(repos []Repository, config Config) error {
@@ -74,6 +77,7 @@ func (r *RepoManager) ApplyConfigBatch(repos []Repository, config Config) error 
 ```
 
 ### 3. 설정 백업 및 롤백
+
 ```go
 // ✅ 안전한 설정 변경
 func (r *RepoManager) ApplyConfigWithBackup(repo string, config Config) error {
@@ -100,6 +104,7 @@ func (r *RepoManager) ApplyConfigWithBackup(repo string, config Config) error {
 ## 🏗️ 템플릿 시스템
 
 ### 설정 템플릿 관리
+
 ```yaml
 # ✅ 계층적 템플릿 구조
 templates:
@@ -123,6 +128,7 @@ templates:
 ```
 
 ### 템플릿 검증
+
 ```go
 // ✅ 템플릿 유효성 검사
 func (t *TemplateManager) ValidateTemplate(template Template) error {
@@ -148,6 +154,7 @@ func (t *TemplateManager) ValidateTemplate(template Template) error {
 ## 📊 컴플라이언스 감사
 
 ### 감사 규칙 엔진
+
 ```go
 // ✅ 유연한 감사 시스템
 type ComplianceRule struct {
@@ -182,6 +189,7 @@ func (c *ComplianceEngine) RunAudit(repos []Repository) AuditReport {
 ## 🧪 테스트 요구사항
 
 ### 대규모 시나리오 테스트
+
 ```bash
 # 대량 저장소 처리 테스트
 go test ./cmd/repo-config -v -run TestMassRepositoryProcessing
@@ -197,6 +205,7 @@ go test ./cmd/repo-config -v -run TestTemplateSystem
 ```
 
 ### GitHub 통합 테스트
+
 - **다양한 저장소 크기**: 소규모부터 수천개 저장소까지
 - **권한 수준별**: 관리자, 쓰기, 읽기 권한으로 테스트
 - **네트워크 장애**: GitHub API 연결 실패 시나리오
@@ -205,6 +214,7 @@ go test ./cmd/repo-config -v -run TestTemplateSystem
 ## 📈 성능 최적화
 
 ### API 호출 최적화
+
 ```go
 // ✅ GraphQL 배치 쿼리 활용
 func (c *GitHubClient) FetchRepositoriesBatch(org string, limit int) ([]Repository, error) {
@@ -231,6 +241,7 @@ func (c *GitHubClient) FetchRepositoriesBatch(org string, limit int) ([]Reposito
 ```
 
 ### 병렬 처리 최적화
+
 - **워커 풀 크기**: GitHub API 속도 제한 고려하여 조절
 - **배치 처리**: 관련 저장소를 그룹핑하여 효율성 증대
 - **캐싱**: 반복 조회하는 메타데이터 캐싱
@@ -238,6 +249,7 @@ func (c *GitHubClient) FetchRepositoriesBatch(org string, limit int) ([]Reposito
 ## 🔧 디버깅 가이드
 
 ### 일반적인 문제 해결
+
 ```bash
 # 설정 차이 확인
 gz repo-config diff --org myorg --show-details
@@ -253,14 +265,16 @@ gz repo-config audit --org myorg --format json
 ```
 
 ### 주요 문제 패턴
+
 1. **API 속도 제한**: `--parallel` 값 조정 및 대기 시간 증가
-2. **권한 부족**: 조직 관리자 권한 및 토큰 스코프 확인
-3. **설정 충돌**: 기존 설정과 템플릿 간 우선순위 정리
-4. **대량 작업 실패**: 배치 크기 줄이고 재시도 정책 조정
+1. **권한 부족**: 조직 관리자 권한 및 토큰 스코프 확인
+1. **설정 충돌**: 기존 설정과 템플릿 간 우선순위 정리
+1. **대량 작업 실패**: 배치 크기 줄이고 재시도 정책 조정
 
 ## 🚨 위험 관리
 
 ### 프로덕션 저장소 보호
+
 ```go
 // ✅ 프로덕션 저장소 보호 장치
 func (r *RepoManager) isProductionRepo(repo Repository) bool {

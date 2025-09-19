@@ -48,7 +48,7 @@ Examples:
 	cmd.AddCommand(newSimpleCPUCmd())
 	cmd.AddCommand(newSimpleMemoryCmd())
 	cmd.AddCommand(newSimpleStatsCmd())
-	
+
 	// Add enhanced subcommands
 	cmd.AddCommand(newCompareCmd())
 	cmd.AddCommand(newContinuousCmd())

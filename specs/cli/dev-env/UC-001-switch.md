@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz dev-env switch --profile aws-prod
 ```
@@ -18,6 +19,7 @@ gz dev-env switch --profile aws-prod
 ### Expected Output
 
 **Success Case**:
+
 ```text
 🔄 Switching to development environment: aws-prod
 
@@ -50,6 +52,7 @@ Exit Code: 0
 ```
 
 **Profile Not Found**:
+
 ```text
 🔍 Searching for development environment: aws-prod
 
@@ -72,6 +75,7 @@ Exit Code: 1
 ```
 
 **Credentials Missing**:
+
 ```text
 🔄 Switching to development environment: aws-prod
 
@@ -93,16 +97,19 @@ Exit Code: 1
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/dev-env/current.yaml` - Active environment state
 - `~/.gzh/dev-env/switch.log` - Environment switch log
 
 **Files Modified**:
+
 - `~/.aws/config` - AWS profile selection
-- `~/.docker/config.json` - Docker context selection  
+- `~/.docker/config.json` - Docker context selection
 - `~/.kube/config` - Kubernetes context selection
 - `~/.ssh/config` - SSH configuration updates
 
 **State Changes**:
+
 - Environment variables exported to shell
 - Active cloud provider context switched
 - Container orchestration context switched
@@ -111,6 +118,7 @@ Exit Code: 1
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test environment switch
 result=$(gz dev-env switch --profile test-env 2>&1)
@@ -126,30 +134,35 @@ assert_equals "$current_env" "test-env"
 ```
 
 **Manual Verification**:
+
 1. Switch between different environment profiles
-2. Verify AWS CLI uses correct account/region
-3. Check Docker context points to correct endpoint
-4. Confirm kubectl uses correct cluster/namespace
-5. Test SSH connections use correct bastion hosts
+1. Verify AWS CLI uses correct account/region
+1. Check Docker context points to correct endpoint
+1. Confirm kubectl uses correct cluster/namespace
+1. Test SSH connections use correct bastion hosts
 
 ### Edge Cases
 
 **Concurrent Switches**:
+
 - Multiple terminal sessions attempting switches
 - Lock file prevents concurrent operations
 - Clear error message for locked environments
 
 **Partial Failures**:
+
 - Some services switch successfully, others fail
 - Rollback mechanism for failed switches
 - Clear indication of what succeeded/failed
 
 **Network Issues**:
+
 - Cloud provider API unavailable
 - VPN connection failures
 - Timeout handling for remote services
 
 **Configuration Conflicts**:
+
 - Conflicting environment variables
 - Overlapping port bindings
 - Resource allocation conflicts
@@ -157,11 +170,13 @@ assert_equals "$current_env" "test-env"
 ### Performance Expectations
 
 **Response Time**:
+
 - Local environments: < 3 seconds
 - Cloud environments: < 15 seconds
 - Complex multi-service: < 30 seconds
 
 **Resource Usage**:
+
 - Memory: < 50MB
 - Network: Minimal for validation calls
 - Disk: Configuration file updates only

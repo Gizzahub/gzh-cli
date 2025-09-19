@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz git repo create --name my-new-repo --org myorg --platform github
 ```
@@ -18,6 +19,7 @@ gz git repo create --name my-new-repo --org myorg --platform github
 ### Expected Output
 
 **Success Case**:
+
 ```text
 🔧 Creating repository: my-new-repo in organization: myorg
 📋 Platform: github
@@ -32,6 +34,7 @@ Exit Code: 0
 **Error Cases**:
 
 **Repository Already Exists**:
+
 ```text
 ❌ Repository 'my-new-repo' already exists in organization 'myorg'
 🔍 Existing URL: https://github.com/myorg/my-new-repo
@@ -41,6 +44,7 @@ Exit Code: 1
 ```
 
 **Authentication Error**:
+
 ```text
 🔑 Authentication failed for platform: github
 💡 Please check your GITHUB_TOKEN environment variable
@@ -55,12 +59,14 @@ Exit Code: 1
 **Files Created**: None (remote operation only)
 **Files Modified**: None
 **State Changes**:
+
 - New repository created on target platform
 - Repository metadata configured
 
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test successful creation
 result=$(gz git repo create --name test-repo-12345 --org test-org --platform github 2>&1)
@@ -79,34 +85,40 @@ gz git repo delete --name test-repo-12345 --org test-org --platform github --con
 ```
 
 **Manual Verification**:
+
 1. Run command with valid organization and authentication
-2. Check that repository appears in organization on web interface
-3. Verify repository is accessible with correct permissions
-4. Confirm repository URL is correct and accessible
+1. Check that repository appears in organization on web interface
+1. Verify repository is accessible with correct permissions
+1. Confirm repository URL is correct and accessible
 
 ### Edge Cases
 
 **Special Characters in Name**:
+
 - Hyphens: `my-awesome-repo` (valid)
-- Underscores: `my_awesome_repo` (valid)  
+- Underscores: `my_awesome_repo` (valid)
 - Dots: `my.awesome.repo` (valid for some platforms)
 - Spaces: `my awesome repo` (should be rejected with clear error)
 
 **Long Repository Names**:
+
 - Very long names (>100 characters) should be handled gracefully
 - Platform-specific limits should be enforced
 
 **Network Issues**:
+
 - Timeout handling with clear error messages
 - Retry logic for temporary failures
 
 ### Performance Expectations
 
 **Response Time**:
+
 - Normal case: < 5 seconds
 - Network delays: < 30 seconds with progress indication
 
 **Resource Usage**:
+
 - Memory: < 50MB
 - Network: Single API call to create repository
 

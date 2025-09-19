@@ -289,29 +289,34 @@ gz net-env cloud configure aws
 The following features are planned for future releases but are not currently implemented:
 
 ### Advanced Network Management
+
 - **Smart Network Detection**: Automatic profile selection based on network environment
 - **Network Profile Switching**: Advanced profile switching with auto-detection
 - **Quick Actions**: Single commands for common network tasks
 - **Network Monitoring**: Real-time network metrics and health monitoring
 
 ### VPN Management
+
 - **Hierarchical VPN Management**: Manage layered VPN connections
 - **VPN Profile Management**: Advanced VPN profiles and network mappings
 - **VPN Failover Management**: VPN failover and backup connections
 
 ### Container and Cloud Integration
+
 - **Docker Network Management**: Docker network profiles and configurations
 - **Kubernetes Network Management**: Kubernetes network policies and configurations
 - **Container Environment Detection**: Detect and analyze container environments
 - **Advanced Cloud Integration**: Multi-cloud network management
 
 ### Network Analysis and Optimization
+
 - **Network Topology Analysis**: Analyze and visualize network topology
 - **Network Performance Monitoring**: Monitor network performance metrics
 - **Network Analysis**: Analyze network performance and identify issues
 - **Optimal Routing Management**: Manage and optimize network routing
 
 ### Advanced Features
+
 - **Auto-Recovery**: Automatic reconnection and failback mechanisms
 - **Profile Presets**: Ready-to-use configurations for common scenarios
 - **Health Monitoring**: Continuous network component monitoring
@@ -322,6 +327,7 @@ The following features are planned for future releases but are not currently imp
 The current `net-env` command provides essential network management capabilities with a focus on simplicity and reliability. It offers:
 
 ### Current Capabilities
+
 - **Interactive TUI**: Visual dashboard for network status viewing
 - **Status Monitoring**: Comprehensive network status reporting
 - **Basic Profile Management**: Simple network profile operations
@@ -329,6 +335,7 @@ The current `net-env` command provides essential network management capabilities
 - **Cloud Integration**: Basic cloud provider network management
 
 ### Design Philosophy
+
 - **Simplicity**: Easy-to-use interface with clear command structure
 - **Reliability**: Stable core functionality without complex dependencies
 - **Extensibility**: Foundation for future advanced features

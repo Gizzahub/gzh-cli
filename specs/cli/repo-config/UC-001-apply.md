@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz repo-config apply --template enterprise --repo https://github.com/myorg/myrepo.git
 ```
@@ -18,6 +19,7 @@ gz repo-config apply --template enterprise --repo https://github.com/myorg/myrep
 ### Expected Output
 
 **Success Case**:
+
 ```text
 🔧 Applying repository configuration: enterprise
 
@@ -88,6 +90,7 @@ Exit Code: 0
 ```
 
 **Template Not Found**:
+
 ```text
 🔧 Applying repository configuration: enterprise
 
@@ -109,6 +112,7 @@ Exit Code: 1
 ```
 
 **Permission Denied**:
+
 ```text
 🔧 Applying repository configuration: enterprise
 
@@ -132,6 +136,7 @@ Exit Code: 2
 ```
 
 **Partial Application**:
+
 ```text
 🔧 Applying repository configuration: enterprise
 
@@ -170,16 +175,19 @@ Exit Code: 1
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/repo-config/applied-<repo>-<timestamp>.json` - Application log
 - `~/.gzh/repo-config/rollback-<repo>-<timestamp>.json` - Rollback data
 
 **Files Modified**:
+
 - Repository configuration via API calls
 - Branch protection rules
 - Team and collaborator permissions
 - Repository secrets and environment variables
 
 **State Changes**:
+
 - Repository settings updated
 - Security features enabled/configured
 - Access control rules applied
@@ -188,6 +196,7 @@ Exit Code: 1
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test configuration application (requires test repository)
 result=$(gz repo-config apply --template test-config --repo "test-org/test-repo" 2>&1)
@@ -204,34 +213,39 @@ assert_contains "$log_content" '"repository":'
 ```
 
 **Manual Verification**:
+
 1. Apply configuration to test repository
-2. Verify repository settings match template
-3. Check branch protection rules are active
-4. Confirm security features are enabled
-5. Test access permissions work correctly
-6. Validate CI/CD integrations function properly
+1. Verify repository settings match template
+1. Check branch protection rules are active
+1. Confirm security features are enabled
+1. Test access permissions work correctly
+1. Validate CI/CD integrations function properly
 
 ### Edge Cases
 
 **Template Conflicts**:
+
 - Existing repository settings conflict with template
 - Custom branch protection rules vs template rules
 - Organization-level policies override template settings
 - Legacy webhook configurations interfering
 
 **API Rate Limiting**:
+
 - GitHub/GitLab API rate limits during bulk operations
 - Retry mechanisms with exponential backoff
 - Progress indication for long-running operations
 - Graceful degradation when rate limited
 
 **Repository States**:
+
 - Archived repositories (read-only)
 - Private repositories with restricted access
 - Forked repositories with limited permissions
 - Template repositories with special settings
 
 **Network and Service Issues**:
+
 - GitHub/GitLab service outages
 - Third-party service integrations (SonarCloud, etc.)
 - Webhook endpoint validation failures
@@ -240,17 +254,20 @@ assert_contains "$log_content" '"repository":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Simple templates: < 30 seconds
 - Complex templates: < 2 minutes
 - Organization-wide: < 5 minutes with progress
 - Retry operations: < 1 minute
 
 **Resource Usage**:
+
 - Memory: < 100MB
 - Network: API calls (varies by template complexity)
 - CPU: Low impact except during JSON processing
 
 **API Efficiency**:
+
 - Batch operations where possible
 - Minimize redundant API calls
 - Cache repository state for comparisons

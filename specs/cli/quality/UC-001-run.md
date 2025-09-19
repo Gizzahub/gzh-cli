@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz quality --fix
 ```
@@ -18,6 +19,7 @@ gz quality --fix
 ### Expected Output
 
 **Success Case (Issues Fixed)**:
+
 ```text
 🔍 Scanning project for quality issues...
 
@@ -49,6 +51,7 @@ Exit Code: 1
 ```
 
 **Success Case (Clean Code)**:
+
 ```text
 🔍 Scanning project for quality issues...
 
@@ -72,6 +75,7 @@ Exit Code: 0
 ```
 
 **Tool Missing Error**:
+
 ```text
 🔍 Scanning project for quality issues...
 
@@ -91,14 +95,17 @@ Exit Code: 2
 ### Side Effects
 
 **Files Created**:
+
 - `.gzh/quality-report.json` - Detailed quality report
 - `.gzh/quality-cache/` - Tool cache directory
 
 **Files Modified**:
+
 - Source files (when using --fix flag)
 - Configuration files (auto-generated if missing)
 
 **State Changes**:
+
 - Code formatted according to project standards
 - Import statements organized
 - Linting issues resolved where possible
@@ -106,6 +113,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test quality check on clean code
 cd test-project-clean
@@ -124,29 +132,34 @@ assert_contains "$result" "Auto-fixed:"
 ```
 
 **Manual Verification**:
+
 1. Run on project with known quality issues
-2. Verify auto-fixes are applied correctly
-3. Check that manual issues are clearly reported
-4. Confirm quality report is generated
+1. Verify auto-fixes are applied correctly
+1. Check that manual issues are clearly reported
+1. Confirm quality report is generated
 
 ### Edge Cases
 
 **Large Codebases**:
+
 - Progress indication for large file counts
 - Parallel processing of files
 - Memory management for large projects
 
 **Mixed Languages**:
+
 - Go, TypeScript, Python, Rust, Java support
 - Language-specific tool configuration
 - Cross-language consistency rules
 
 **Configuration Files**:
+
 - Auto-detection of existing configs (.golangci.yml, .eslintrc, etc.)
 - Generation of missing configuration files
 - Respect for project-specific settings
 
 **Git Integration**:
+
 - Check only modified files with --git-diff
 - Pre-commit hook integration
 - Ignore patterns from .gitignore
@@ -154,11 +167,13 @@ assert_contains "$result" "Auto-fixed:"
 ### Performance Expectations
 
 **Response Time**:
-- Small projects (<50 files): < 10 seconds
+
+- Small projects (\<50 files): < 10 seconds
 - Medium projects (50-500 files): < 60 seconds
 - Large projects (>500 files): Progress indication
 
 **Resource Usage**:
+
 - Memory: < 500MB for large projects
 - CPU: Parallel processing when possible
 - Disk: Temporary cache for incremental checks

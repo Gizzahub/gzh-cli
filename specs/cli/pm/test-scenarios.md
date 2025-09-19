@@ -5,6 +5,7 @@
 ### 1. Basic Functionality Tests
 
 #### Test 1.1: Simple Update Success
+
 ```bash
 # Setup: System with brew and npm installed
 gz pm update --all --dry-run
@@ -13,6 +14,7 @@ gz pm update --all --dry-run
 ```
 
 #### Test 1.2: Single Manager Update
+
 ```bash
 # Setup: System with multiple managers
 gz pm update --manager brew --dry-run
@@ -21,6 +23,7 @@ gz pm update --manager brew --dry-run
 ```
 
 #### Test 1.3: Multiple Specific Managers
+
 ```bash
 # Setup: System with brew, asdf, npm
 gz pm update --managers brew,npm --dry-run
@@ -31,6 +34,7 @@ gz pm update --managers brew,npm --dry-run
 ### 2. Output Format Tests
 
 #### Test 2.1: Text Output (Default)
+
 ```bash
 gz pm update --all --dry-run
 # Expected: Human-readable text with emojis and formatting
@@ -38,6 +42,7 @@ gz pm update --all --dry-run
 ```
 
 #### Test 2.2: JSON Output Format
+
 ```bash
 gz pm update --all --dry-run --output json
 # Expected: Valid JSON structure with update details
@@ -45,6 +50,7 @@ gz pm update --all --dry-run --output json
 ```
 
 #### Test 2.3: Output Consistency
+
 ```bash
 # Compare text vs JSON output for same operation
 text_result=$(gz pm update --manager brew --dry-run)
@@ -55,6 +61,7 @@ json_result=$(gz pm update --manager brew --dry-run --output json)
 ### 3. Platform-Specific Tests
 
 #### Test 3.1: macOS Package Managers
+
 ```bash
 # Setup: macOS system
 gz pm update --all --dry-run
@@ -63,6 +70,7 @@ gz pm update --all --dry-run
 ```
 
 #### Test 3.2: Linux (Ubuntu) Package Managers
+
 ```bash
 # Setup: Ubuntu system
 gz pm update --all --dry-run
@@ -71,6 +79,7 @@ gz pm update --all --dry-run
 ```
 
 #### Test 3.3: Linux (Arch) Package Managers
+
 ```bash
 # Setup: Arch Linux system
 gz pm update --all --dry-run
@@ -81,6 +90,7 @@ gz pm update --all --dry-run
 ### 4. Error Handling Tests
 
 #### Test 4.1: Network Connectivity Issues
+
 ```bash
 # Setup: Block network access to package repositories
 # Simulate: DNS failure, firewall blocking, proxy issues
@@ -90,6 +100,7 @@ gz pm update --manager brew
 ```
 
 #### Test 4.2: Permission Denied
+
 ```bash
 # Setup: Run as non-privileged user
 gz pm update --manager apt
@@ -98,6 +109,7 @@ gz pm update --manager apt
 ```
 
 #### Test 4.3: Insufficient Disk Space
+
 ```bash
 # Setup: System with very low disk space
 gz pm update --manager brew
@@ -108,6 +120,7 @@ gz pm update --manager brew
 ### 5. Environment Detection Tests
 
 #### Test 5.1: Conda Environment Active
+
 ```bash
 # Setup: Activate conda environment
 conda activate myproject
@@ -117,6 +130,7 @@ gz pm update --manager pip
 ```
 
 #### Test 5.2: Virtual Environment Active
+
 ```bash
 # Setup: Python virtual environment active
 source venv/bin/activate
@@ -126,6 +140,7 @@ gz pm update --manager pip --dry-run
 ```
 
 #### Test 5.3: Multiple Node Version Managers
+
 ```bash
 # Setup: Both nvm and asdf with node installed
 gz pm update --all --check-duplicates
@@ -136,6 +151,7 @@ gz pm update --all --check-duplicates
 ### 6. Package Manager Specific Tests
 
 #### Test 6.1: Homebrew Edge Cases
+
 ```bash
 # Test outdated brew version
 # Test formula conflicts
@@ -144,6 +160,7 @@ gz pm update --all --check-duplicates
 ```
 
 #### Test 6.2: ASDF Plugin Management
+
 ```bash
 # Test plugin updates
 # Test version installation
@@ -152,6 +169,7 @@ gz pm update --all --check-duplicates
 ```
 
 #### Test 6.3: NPM Global Packages
+
 ```bash
 # Test global package updates
 # Test npm cache issues
@@ -159,6 +177,7 @@ gz pm update --all --check-duplicates
 ```
 
 #### Test 6.4: Python Package Management
+
 ```bash
 # Test pip self-update
 # Test package dependency conflicts
@@ -168,6 +187,7 @@ gz pm update --all --check-duplicates
 ### 7. Dry Run vs Real Execution
 
 #### Test 7.1: Dry Run Accuracy
+
 ```bash
 # Run dry-run, capture planned actions
 dry_result=$(gz pm update --all --dry-run)
@@ -177,6 +197,7 @@ real_result=$(gz pm update --all)
 ```
 
 #### Test 7.2: No Changes When Up-to-Date
+
 ```bash
 # Setup: All packages already latest
 gz pm update --all
@@ -187,6 +208,7 @@ gz pm update --all
 ### 8. Configuration and Strategy Tests
 
 #### Test 8.1: Update Strategy - Latest
+
 ```bash
 gz pm update --all --strategy latest
 # Expected: Updates to absolute latest versions
@@ -194,6 +216,7 @@ gz pm update --all --strategy latest
 ```
 
 #### Test 8.2: Update Strategy - Stable
+
 ```bash
 gz pm update --all --strategy stable
 # Expected: Updates to latest stable versions only
@@ -201,6 +224,7 @@ gz pm update --all --strategy stable
 ```
 
 #### Test 8.3: Update Strategy - Minor
+
 ```bash
 gz pm update --all --strategy minor
 # Expected: Updates to latest patch/minor versions
@@ -210,6 +234,7 @@ gz pm update --all --strategy minor
 ### 9. Performance and Resource Tests
 
 #### Test 9.1: Large Package Set
+
 ```bash
 # Setup: System with 100+ packages to update
 time gz pm update --all --dry-run
@@ -218,6 +243,7 @@ time gz pm update --all --dry-run
 ```
 
 #### Test 9.2: Parallel Processing
+
 ```bash
 # Test concurrent manager updates
 # Verify no conflicts between managers
@@ -225,6 +251,7 @@ time gz pm update --all --dry-run
 ```
 
 #### Test 9.3: Progress Indication
+
 ```bash
 # Test long-running updates show progress
 # Verify user can see current operation
@@ -234,6 +261,7 @@ time gz pm update --all --dry-run
 ### 10. Recovery and Rollback Tests
 
 #### Test 10.1: Interrupted Update
+
 ```bash
 # Start update, kill process mid-way
 gz pm update --all &
@@ -245,6 +273,7 @@ gz pm update --all
 ```
 
 #### Test 10.2: Failed Package Installation
+
 ```bash
 # Setup: Package with installation failure
 # Expected: Other packages continue updating
@@ -254,6 +283,7 @@ gz pm update --all
 ### 11. Integration Tests
 
 #### Test 11.1: Full System Update Workflow
+
 ```bash
 # Test complete workflow:
 # 1. Status check
@@ -267,6 +297,7 @@ gz pm status
 ```
 
 #### Test 11.2: Multi-User Environment
+
 ```bash
 # Test updates in shared system
 # Verify user-specific vs system packages
@@ -276,6 +307,7 @@ gz pm status
 ### 12. Regression Tests
 
 #### Test 12.1: Version Detection Accuracy
+
 ```bash
 # Verify version parsing for all supported managers
 # Test edge cases: pre-release, custom builds
@@ -283,6 +315,7 @@ gz pm status
 ```
 
 #### Test 12.2: Configuration File Handling
+
 ```bash
 # Test various config file formats
 # Verify backup and restore mechanisms
@@ -292,6 +325,7 @@ gz pm status
 ## Test Execution Framework
 
 ### Automated Test Runner
+
 ```bash
 #!/bin/bash
 # test-pm-update.sh - Automated test runner for PM update
@@ -323,6 +357,7 @@ run_environment_tests
 ```
 
 ### Test Data Setup
+
 ```yaml
 # test-fixtures.yml - Test environment configurations
 environments:
@@ -347,6 +382,7 @@ environments:
 ```
 
 ### Expected Results Validation
+
 ```bash
 # validate-results.sh - Validate test results against expected outcomes
 
@@ -385,6 +421,7 @@ validate_manager_detection() {
 ## Test Environment Setup
 
 ### Docker Test Containers
+
 ```dockerfile
 # Dockerfile.test-ubuntu - Ubuntu test environment
 FROM ubuntu:22.04
@@ -407,6 +444,7 @@ CMD ["bash"]
 ```
 
 ### CI/CD Integration
+
 ```yaml
 # .github/workflows/pm-tests.yml
 name: PM Update Tests

@@ -70,12 +70,12 @@ Examples:
 
 	// Create enhanced SSH command instance
 	enhancedCmd := NewEnhancedSSHCommand()
-	
+
 	// Add enhanced subcommands
 	cmd.AddCommand(enhancedCmd.CreateEnhancedSaveCommand())
 	cmd.AddCommand(enhancedCmd.CreateEnhancedLoadCommand())
 	cmd.AddCommand(enhancedCmd.CreateEnhancedListCommand())
-	
+
 	// Add key management subcommands
 	cmd.AddCommand(enhancedCmd.CreateInstallKeyCommand())
 	cmd.AddCommand(enhancedCmd.CreateInstallKeySimpleCommand())

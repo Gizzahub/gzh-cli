@@ -211,17 +211,20 @@ test_synclone_rate_limit() {
 ### Specification-Based Test Categories
 
 **Success Scenarios**:
+
 - Happy path with valid inputs
 - Expected output patterns
 - Correct side effects
 
 **Error Scenarios**:
+
 - Rate limiting (no Usage block)
 - Authentication failures (no Usage block)
 - Network errors
 - Invalid inputs
 
 **Edge Cases**:
+
 - Large datasets (pagination)
 - Empty results
 - Special characters
@@ -230,6 +233,7 @@ test_synclone_rate_limit() {
 ### Example Specifications
 
 See detailed command specifications:
+
 - [`specs/cli/synclone/UC-002-github-clone.md`](../../specs/cli/synclone/UC-002-github-clone.md) - Successful clone
 - [`specs/cli/synclone/UC-003-rate-limit.md`](../../specs/cli/synclone/UC-003-rate-limit.md) - Rate limit handling
 - [`specs/cli/synclone/UC-004-auth-error.md`](../../specs/cli/synclone/UC-004-auth-error.md) - Authentication errors

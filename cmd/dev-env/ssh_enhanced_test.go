@@ -17,9 +17,9 @@ func TestEnhancedSSHCommand_SaveAndLoadConfig(t *testing.T) {
 	tempDir := t.TempDir()
 	sshDir := filepath.Join(tempDir, ".ssh")
 	storeDir := filepath.Join(tempDir, "store")
-	
-	require.NoError(t, os.MkdirAll(sshDir, 0755))
-	require.NoError(t, os.MkdirAll(filepath.Join(sshDir, "config.d"), 0755))
+
+	require.NoError(t, os.MkdirAll(sshDir, 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(sshDir, "config.d"), 0o755))
 
 	// Create test SSH config
 	mainConfig := `Include config.d/*
@@ -35,18 +35,18 @@ Host test.com
     IdentityFile test_key`
 
 	configPath := filepath.Join(sshDir, "config")
-	require.NoError(t, os.WriteFile(configPath, []byte(mainConfig), 0644))
+	require.NoError(t, os.WriteFile(configPath, []byte(mainConfig), 0o644))
 
 	// Create include files
 	includeContent := `Host work.internal
     HostName work.internal.com
     User worker
     IdentityFile work_key`
-	
+
 	require.NoError(t, os.WriteFile(
-		filepath.Join(sshDir, "config.d", "work.conf"), 
-		[]byte(includeContent), 
-		0644,
+		filepath.Join(sshDir, "config.d", "work.conf"),
+		[]byte(includeContent),
+		0o644,
 	))
 
 	// Create key files
@@ -54,12 +54,12 @@ Host test.com
 		content     string
 		permissions os.FileMode
 	}{
-		"id_rsa":        {"private key content", 0600},
-		"id_rsa.pub":    {"public key content", 0644},
-		"test_key":      {"test private key", 0600},
-		"test_key.pub":  {"test public key", 0644},
-		"work_key":      {"work private key", 0600},
-		"work_key.pub":  {"work public key", 0644},
+		"id_rsa":       {"private key content", 0o600},
+		"id_rsa.pub":   {"public key content", 0o644},
+		"test_key":     {"test private key", 0o600},
+		"test_key.pub": {"test public key", 0o644},
+		"work_key":     {"work private key", 0o600},
+		"work_key.pub": {"work public key", 0o644},
 	}
 
 	for keyName, info := range keyFiles {
@@ -90,7 +90,7 @@ Host test.com
 		assert.FileExists(t, filepath.Join(configDir, "metadata.json"))
 		assert.DirExists(t, filepath.Join(configDir, "includes"))
 		assert.DirExists(t, filepath.Join(configDir, "keys"))
-		
+
 		// Check include files
 		includesDir := filepath.Join(configDir, "includes")
 		entries, err := os.ReadDir(includesDir)
@@ -133,7 +133,7 @@ Host test.com
 		// Verify loaded files
 		assert.FileExists(t, targetConfigPath)
 		assert.DirExists(t, filepath.Join(targetSSHDir, "config.d"))
-		
+
 		// Verify main config content
 		content, err := os.ReadFile(targetConfigPath)
 		require.NoError(t, err)
@@ -158,10 +158,10 @@ Host test.com
 
 		// Verify file permissions
 		if info, err := os.Stat(filepath.Join(targetSSHDir, "id_rsa")); err == nil {
-			assert.Equal(t, os.FileMode(0600), info.Mode().Perm())
+			assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
 		}
 		if info, err := os.Stat(filepath.Join(targetSSHDir, "id_rsa.pub")); err == nil {
-			assert.Equal(t, os.FileMode(0644), info.Mode().Perm())
+			assert.Equal(t, os.FileMode(0o644), info.Mode().Perm())
 		}
 	})
 
@@ -181,8 +181,8 @@ func TestEnhancedSSHCommand_SaveWithoutKeys(t *testing.T) {
 	tempDir := t.TempDir()
 	sshDir := filepath.Join(tempDir, ".ssh")
 	storeDir := filepath.Join(tempDir, "store")
-	
-	require.NoError(t, os.MkdirAll(sshDir, 0755))
+
+	require.NoError(t, os.MkdirAll(sshDir, 0o755))
 
 	// Create simple SSH config without key references
 	simpleConfig := `Host simple.com
@@ -190,7 +190,7 @@ func TestEnhancedSSHCommand_SaveWithoutKeys(t *testing.T) {
     User simpleuser`
 
 	configPath := filepath.Join(sshDir, "config")
-	require.NoError(t, os.WriteFile(configPath, []byte(simpleConfig), 0644))
+	require.NoError(t, os.WriteFile(configPath, []byte(simpleConfig), 0o644))
 
 	// Create enhanced SSH command
 	cmd := NewEnhancedSSHCommand()
@@ -212,7 +212,7 @@ func TestEnhancedSSHCommand_SaveWithoutKeys(t *testing.T) {
 	assert.DirExists(t, configDir)
 	assert.FileExists(t, filepath.Join(configDir, "config"))
 	assert.FileExists(t, filepath.Join(configDir, "metadata.json"))
-	
+
 	// Should not have keys directory since no keys were found
 	assert.NoDirExists(t, filepath.Join(configDir, "keys"))
 
@@ -282,8 +282,8 @@ func TestEnhancedSSHCommand_OverwriteProtection(t *testing.T) {
 	tempDir := t.TempDir()
 	sshDir := filepath.Join(tempDir, ".ssh")
 	storeDir := filepath.Join(tempDir, "store")
-	
-	require.NoError(t, os.MkdirAll(sshDir, 0755))
+
+	require.NoError(t, os.MkdirAll(sshDir, 0o755))
 
 	// Create test SSH config
 	configContent := `Host example.com
@@ -291,7 +291,7 @@ func TestEnhancedSSHCommand_OverwriteProtection(t *testing.T) {
     User myuser`
 
 	configPath := filepath.Join(sshDir, "config")
-	require.NoError(t, os.WriteFile(configPath, []byte(configContent), 0644))
+	require.NoError(t, os.WriteFile(configPath, []byte(configContent), 0o644))
 
 	cmd := NewEnhancedSSHCommand()
 

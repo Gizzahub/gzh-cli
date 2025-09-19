@@ -28,7 +28,7 @@ func NewEnhancedUpdateManager(managers []string) *EnhancedUpdateManager {
 	versionTracker := NewVersionTracker(formatter)
 	progressTracker := NewProgressTracker(managers, formatter)
 	resourceManager := NewResourceManager(formatter)
-	
+
 	return &EnhancedUpdateManager{
 		formatter:       formatter,
 		versionTracker:  versionTracker,
@@ -40,37 +40,37 @@ func NewEnhancedUpdateManager(managers []string) *EnhancedUpdateManager {
 // RunEnhancedUpdateAll executes enhanced update process for all managers
 func (eum *EnhancedUpdateManager) RunEnhancedUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult, checkDuplicates bool, duplicatesMax int) error {
 	managers := []string{"brew", "asdf", "sdkman", "apt", "pacman", "yay", "pip", "npm"}
-	
+
 	// Print initial status
 	if eum.formatter.showEmojis {
 		fmt.Println("🔄 Updating all package managers...")
 	} else {
 		fmt.Println("Updating all package managers...")
 	}
-	
+
 	if dryRun {
 		fmt.Println("(dry run - no changes will be made)")
 	}
 	fmt.Println()
-	
+
 	// Pre-flight resource checks
 	if err := eum.performPreflightChecks(ctx, managers, checkDuplicates, duplicatesMax); err != nil {
 		return fmt.Errorf("pre-flight checks failed: %w", err)
 	}
-	
+
 	// Build manager overview
 	overview := buildManagersOverview(ctx, managers)
 	printManagersOverview("Manager Overview", overview)
 	fmt.Println()
-	
+
 	// Process each manager with enhanced tracking
 	successful := 0
 	failed := 0
 	totalPackages := 0
-	
+
 	for idx, manager := range managers {
 		ov := overview[idx]
-		
+
 		if !ov.Supported || !ov.Installed {
 			reason := ov.Reason
 			if !ov.Installed {
@@ -79,10 +79,10 @@ func (eum *EnhancedUpdateManager) RunEnhancedUpdateAll(ctx context.Context, stra
 			eum.progressTracker.SkipManager(manager, reason)
 			continue
 		}
-		
+
 		// Start manager processing
 		eum.progressTracker.StartManager(manager)
-		
+
 		// Execute manager-specific update
 		managerPackages, err := eum.runEnhancedManagerUpdate(ctx, manager, strategy, dryRun, compatMode, res)
 		if err != nil {
@@ -90,16 +90,16 @@ func (eum *EnhancedUpdateManager) RunEnhancedUpdateAll(ctx context.Context, stra
 			fmt.Printf("%sWarning: Failed to update %s: %v%s\n", ansiRed, manager, err, ansiReset)
 			continue
 		}
-		
+
 		successful++
 		totalPackages += managerPackages
 		eum.progressTracker.CompleteManager(manager)
 		fmt.Println()
 	}
-	
+
 	// Print comprehensive summary
 	eum.printEnhancedSummary(successful, len(managers), totalPackages, 0)
-	
+
 	return nil
 }
 
@@ -108,11 +108,11 @@ func (eum *EnhancedUpdateManager) performPreflightChecks(ctx context.Context, ma
 	// Resource availability check
 	packageCounts := make(map[string]int)
 	estimatedDownload := eum.resourceManager.EstimateDownloadSize(managers, packageCounts)
-	
+
 	if _, err := eum.resourceManager.CheckResources(ctx, managers, estimatedDownload); err != nil {
 		return err
 	}
-	
+
 	// Duplicate binary detection
 	if checkDuplicates {
 		if eum.formatter.showEmojis {
@@ -120,14 +120,14 @@ func (eum *EnhancedUpdateManager) performPreflightChecks(ctx context.Context, ma
 		} else {
 			eum.formatter.PrintSectionBanner("Duplicate Installation Check", "", 0, 0)
 		}
-		
+
 		pathDirs := duplicates.SplitPATH(os.Getenv("PATH"))
 		sources := duplicates.BuildDefaultSources(pathDirs)
 		conflicts, _ := duplicates.CollectAndDetectConflicts(ctx, sources, pathDirs)
 		duplicates.PrintConflictsSummary(conflicts, duplicatesMax)
 		fmt.Println()
 	}
-	
+
 	return nil
 }
 
@@ -157,12 +157,12 @@ func (eum *EnhancedUpdateManager) runEnhancedBrewUpdate(ctx context.Context, str
 	if exec.CommandContext(ctx, "brew", "--version").Run() != nil {
 		return 0, fmt.Errorf("brew is not installed or not in PATH")
 	}
-	
+
 	emoji := eum.formatter.getManagerEmoji("brew")
 	fmt.Printf("%s Updating Homebrew...\n", emoji)
 	_ = res.ensureManager("brew")
 	packageCount := 0
-	
+
 	// Step 1: Update Homebrew itself
 	eum.progressTracker.StartManagerStep("brew", "update")
 	if !dryRun {
@@ -179,7 +179,7 @@ func (eum *EnhancedUpdateManager) runEnhancedBrewUpdate(ctx context.Context, str
 		eum.formatter.PrintCommandResult("brew update", true, "Would update Homebrew formulae")
 	}
 	eum.progressTracker.CompleteManagerStep("brew", "update", 0)
-	
+
 	// Step 2: Upgrade packages with version tracking
 	eum.progressTracker.StartManagerStep("brew", "upgrade")
 	if strategy == "latest" || strategy == "stable" {
@@ -187,7 +187,7 @@ func (eum *EnhancedUpdateManager) runEnhancedBrewUpdate(ctx context.Context, str
 		if err := eum.versionTracker.TrackBrewUpdates(ctx, dryRun); err != nil {
 			fmt.Printf("Warning: Could not track version changes: %v\n", err)
 		}
-		
+
 		if !dryRun {
 			cmd := exec.CommandContext(ctx, "brew", "upgrade")
 			if output, err := cmd.CombinedOutput(); err != nil {
@@ -203,7 +203,7 @@ func (eum *EnhancedUpdateManager) runEnhancedBrewUpdate(ctx context.Context, str
 		}
 	}
 	eum.progressTracker.CompleteManagerStep("brew", "upgrade", packageCount)
-	
+
 	// Step 3: Cleanup old versions
 	eum.progressTracker.StartManagerStep("brew", "cleanup")
 	var freedSpace int64
@@ -220,7 +220,7 @@ func (eum *EnhancedUpdateManager) runEnhancedBrewUpdate(ctx context.Context, str
 		eum.formatter.PrintCommandResult("brew cleanup", true, "Would clean up old versions")
 	}
 	eum.progressTracker.CompleteManagerStep("brew", "cleanup", 0)
-	
+
 	return packageCount, nil
 }
 
@@ -230,11 +230,11 @@ func (eum *EnhancedUpdateManager) runEnhancedAsdfUpdate(ctx context.Context, str
 	if exec.CommandContext(ctx, "asdf", "--version").Run() != nil {
 		return 0, fmt.Errorf("asdf is not installed or not in PATH")
 	}
-	
+
 	emoji := eum.formatter.getManagerEmoji("asdf")
 	fmt.Printf("%s Updating asdf plugins...\n", emoji)
 	packageCount := 0
-	
+
 	// Step 1: Update asdf plugins
 	eum.progressTracker.StartManagerStep("asdf", "plugin_update")
 	if !dryRun {
@@ -250,14 +250,14 @@ func (eum *EnhancedUpdateManager) runEnhancedAsdfUpdate(ctx context.Context, str
 		eum.formatter.PrintCommandResult("asdf plugin update --all", true, "Would update all plugins")
 	}
 	eum.progressTracker.CompleteManagerStep("asdf", "plugin_update", 0)
-	
+
 	// Step 2: Check and install version updates
 	eum.progressTracker.StartManagerStep("asdf", "version_check")
 	plugins, err := eum.getAsdfPlugins(ctx)
 	if err != nil {
 		return packageCount, err
 	}
-	
+
 	for _, plugin := range plugins {
 		fmt.Printf("Checking %s for updates...\n", plugin)
 		if err := eum.versionTracker.TrackAsdfUpdates(ctx, plugin, dryRun); err != nil {
@@ -267,7 +267,7 @@ func (eum *EnhancedUpdateManager) runEnhancedAsdfUpdate(ctx context.Context, str
 		packageCount++
 	}
 	eum.progressTracker.CompleteManagerStep("asdf", "version_check", packageCount)
-	
+
 	return packageCount, nil
 }
 
@@ -276,15 +276,15 @@ func (eum *EnhancedUpdateManager) runEnhancedNpmUpdate(ctx context.Context, stra
 	if exec.CommandContext(ctx, "npm", "--version").Run() != nil {
 		return 0, fmt.Errorf("npm is not installed or not in PATH")
 	}
-	
+
 	emoji := eum.formatter.getManagerEmoji("npm")
 	fmt.Printf("%s Updating npm global packages...\n", emoji)
-	
+
 	// Track npm updates
 	if err := eum.versionTracker.TrackNpmUpdates(ctx, dryRun); err != nil {
 		fmt.Printf("Warning: Could not track npm updates: %v\n", err)
 	}
-	
+
 	packageCount := 0
 	if strategy == "latest" || strategy == "stable" {
 		if !dryRun {
@@ -300,7 +300,7 @@ func (eum *EnhancedUpdateManager) runEnhancedNpmUpdate(ctx context.Context, stra
 			packageCount = 8 // Estimated for dry run
 		}
 	}
-	
+
 	return packageCount, nil
 }
 
@@ -310,10 +310,10 @@ func (eum *EnhancedUpdateManager) runEnhancedPipUpdate(ctx context.Context, stra
 	if pipCmd == "" {
 		return 0, fmt.Errorf("pip is not installed or not in PATH")
 	}
-	
+
 	emoji := eum.formatter.getManagerEmoji("pip")
 	fmt.Printf("%s Updating pip packages...\n", emoji)
-	
+
 	// Check for conda/mamba environment
 	if active, kind := detectCondaOrMamba(ctx); active && !res.Mode.PipAllowConda {
 		fmt.Printf("Mamba/Conda environment detected. Using %s for updates...\n", kind)
@@ -322,14 +322,14 @@ func (eum *EnhancedUpdateManager) runEnhancedPipUpdate(ctx context.Context, stra
 		}
 		return 3, nil // Estimated conda packages
 	}
-	
+
 	// Track pip updates
 	if err := eum.versionTracker.TrackPipUpdates(ctx, pipCmd, dryRun); err != nil {
 		fmt.Printf("Warning: Could not track pip updates: %v\n", err)
 	}
-	
+
 	packageCount := 0
-	
+
 	// Upgrade pip itself
 	parts := strings.Fields(pipCmd)
 	if len(parts) > 0 {
@@ -345,7 +345,7 @@ func (eum *EnhancedUpdateManager) runEnhancedPipUpdate(ctx context.Context, stra
 			eum.formatter.PrintCommandResult("pip install --upgrade pip", true, "Would upgrade pip")
 		}
 	}
-	
+
 	// Update packages if strategy requires it
 	if strategy == "latest" || strategy == "stable" {
 		packageCount = 6 // Estimated for demonstration
@@ -355,7 +355,7 @@ func (eum *EnhancedUpdateManager) runEnhancedPipUpdate(ctx context.Context, stra
 			eum.formatter.PrintCommandResult("pip upgrade packages", true, "Would upgrade outdated packages")
 		}
 	}
-	
+
 	return packageCount, nil
 }
 
@@ -363,7 +363,7 @@ func (eum *EnhancedUpdateManager) runEnhancedPipUpdate(ctx context.Context, stra
 func (eum *EnhancedUpdateManager) printEnhancedSummary(successful, total, packageCount, conflicts int) {
 	// Print main summary
 	eum.formatter.PrintUpdateSummary(total, successful, packageCount, conflicts)
-	
+
 	// Print recommended actions
 	recommendations := []string{
 		"Update language versions manually: asdf install golang latest",
@@ -371,7 +371,7 @@ func (eum *EnhancedUpdateManager) printEnhancedSummary(successful, total, packag
 		"Run periodic cleanup: brew cleanup, npm cache clean",
 	}
 	eum.formatter.PrintRecommendedActions(recommendations)
-	
+
 	// Print manual fixes if any
 	manualFixes := []ManualFix{
 		{Issue: "PostgreSQL version conflict", Command: "brew unlink postgresql@14 && brew install postgresql@16"},
@@ -420,7 +420,7 @@ func (eum *EnhancedUpdateManager) getAsdfPlugins(ctx context.Context) ([]string,
 	if err != nil {
 		return nil, fmt.Errorf("failed to list asdf plugins: %w", err)
 	}
-	
+
 	plugins := strings.Split(strings.TrimSpace(string(output)), "\n")
 	var result []string
 	for _, plugin := range plugins {

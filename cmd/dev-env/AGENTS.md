@@ -7,6 +7,7 @@
 **dev-env**는 다중 클라우드 환경(GCP, AWS, Azure)과 개발 도구 환경을 관리하는 복잡한 모듈입니다.
 
 ### 핵심 기능
+
 - 클라우드 환경 관리 (GCP 프로젝트, AWS 프로필, Azure 구독)
 - 서비스 계정과 인증 키 관리
 - 개발 환경 전환 및 상태 동기화
@@ -16,6 +17,7 @@
 ## 🔒 보안 고려사항 (Critical)
 
 ### 1. 인증 정보 보호
+
 ```go
 // ✅ 안전한 인증 정보 처리
 func (m *GCPProjectManager) switchProject(projectID string) error {
@@ -32,6 +34,7 @@ func (m *GCPProjectManager) switchProject(projectID string) error {
 ```
 
 ### 2. 서비스 계정 키 관리
+
 ```go
 // ✅ 안전한 키 저장소 사용
 keyPath := filepath.Join(homeDir, ".config", "gzh", "keys")
@@ -39,6 +42,7 @@ if err := os.Chmod(keyPath, 0700); err != nil { // 소유자만 접근
     return fmt.Errorf("failed to set key directory permissions: %w", err)
 }
 ```
+
 - **권한 최소화**: 필요한 최소 권한으로 서비스 계정 생성
 - **키 순환**: 주기적인 서비스 계정 키 갱신 알림
 - **암호화 저장**: 민감한 설정은 암호화하여 저장
@@ -46,6 +50,7 @@ if err := os.Chmod(keyPath, 0700); err != nil { // 소유자만 접근
 ## ⚠️ 개발 시 핵심 주의사항
 
 ### 1. 환경 전환 안전성
+
 ```go
 // ✅ 안전한 환경 전환
 func (s *ServiceSwitcher) SwitchEnvironment(target string) error {
@@ -63,6 +68,7 @@ func (s *ServiceSwitcher) SwitchEnvironment(target string) error {
 ```
 
 ### 2. 클라우드 API 오류 처리
+
 ```go
 // ✅ 클라우드별 오류 처리
 switch cloudProvider {
@@ -78,6 +84,7 @@ case "aws":
 ```
 
 ### 3. TUI 상태 관리
+
 ```go
 // ✅ TUI 안정성
 type TUIState struct {
@@ -107,6 +114,7 @@ func (t *TUIState) SafeUpdate(fn func() error) error {
 ## 🧪 테스트 요구사항
 
 ### 클라우드 환경별 테스트
+
 ```bash
 # GCP 환경 테스트
 GCP_PROJECT_ID=test-project go test ./cmd/dev-env -run TestGCP
@@ -119,6 +127,7 @@ AZURE_SUBSCRIPTION_ID=test-sub go test ./cmd/dev-env -run TestAzure
 ```
 
 ### 필수 테스트 시나리오
+
 - **인증 실패**: 잘못된 자격증명 처리
 - **네트워크 장애**: 클라우드 API 연결 실패
 - **권한 부족**: 부적절한 권한으로 접근 시도
@@ -128,12 +137,14 @@ AZURE_SUBSCRIPTION_ID=test-sub go test ./cmd/dev-env -run TestAzure
 ## 📊 모니터링 요구사항
 
 ### 환경 상태 추적
+
 - **활성 클라우드 환경**: 현재 사용 중인 프로젝트/계정
 - **인증 상태**: 토큰 만료 시간 추적
 - **리소스 사용량**: 클라우드 리소스 비용 모니터링 알림
 - **보안 이벤트**: 비정상적인 접근 패턴 감지
 
 ### 성능 메트릭
+
 - **환경 전환 시간**: 프로젝트/계정 전환 소요 시간
 - **API 응답 시간**: 클라우드 서비스별 지연 시간
 - **TUI 반응성**: 사용자 입력에 대한 응답 시간
@@ -141,6 +152,7 @@ AZURE_SUBSCRIPTION_ID=test-sub go test ./cmd/dev-env -run TestAzure
 ## 🔧 디버깅 가이드
 
 ### 환경 전환 문제 진단
+
 ```bash
 # 현재 환경 상태 확인
 gz dev-env status --verbose
@@ -153,14 +165,16 @@ gz dev-env validate --all-providers
 ```
 
 ### 일반적인 문제와 해결방안
+
 1. **GCP 프로젝트 접근 불가**: `gcloud auth list`로 인증 상태 확인
-2. **AWS 프로필 오류**: `aws configure list-profiles` 확인
-3. **Kubeconfig 충돌**: 백업된 설정 파일 복구
-4. **TUI 깨짐**: 터미널 크기 및 인코딩 확인
+1. **AWS 프로필 오류**: `aws configure list-profiles` 확인
+1. **Kubeconfig 충돌**: 백업된 설정 파일 복구
+1. **TUI 깨짐**: 터미널 크기 및 인코딩 확인
 
 ## 🚨 위험 상황 대응
 
 ### 환경 오염 방지
+
 - **프로덕션 환경 보호**: 프로덕션 리소스 접근 시 추가 확인
 - **자동 백업**: 중요한 설정 변경 전 자동 백업
 - **변경 추적**: 환경 변경 이력 로그 유지

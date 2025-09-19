@@ -145,7 +145,7 @@ func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath strin
 
 	// Make executable on Unix systems
 	if runtime.GOOS != "windows" {
-		if err := os.Chmod(tempPath, 0755); err != nil {
+		if err := os.Chmod(tempPath, 0o755); err != nil {
 			return fmt.Errorf("setting executable permissions: %w", err)
 		}
 	}

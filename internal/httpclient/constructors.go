@@ -27,9 +27,9 @@ type Middleware interface {
 
 // CacheEntry represents a cached response.
 type CacheEntry struct {
-	HTTPResponse  *HTTPResponse `json:"response"`
-	CreatedAt time.Time      `json:"createdAt"`
-	TTL       time.Duration  `json:"ttl"`
+	HTTPResponse *HTTPResponse `json:"response"`
+	CreatedAt    time.Time     `json:"createdAt"`
+	TTL          time.Duration `json:"ttl"`
 }
 
 // Cache defines the interface for caching.
@@ -562,9 +562,9 @@ func (c *CacheImpl) Get(_ context.Context, key string) (*HTTPResponse, bool) {
 // Set implements Cache interface.
 func (c *CacheImpl) Set(_ context.Context, key string, response *HTTPResponse, ttl time.Duration) {
 	c.cache[key] = &CacheEntry{
-		HTTPResponse:  response,
-		CreatedAt: time.Now(),
-		TTL:       ttl,
+		HTTPResponse: response,
+		CreatedAt:    time.Now(),
+		TTL:          ttl,
 	}
 }
 

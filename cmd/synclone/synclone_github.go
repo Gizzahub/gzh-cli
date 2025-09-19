@@ -229,13 +229,13 @@ func newSyncCloneGithubCmd(appCtx *app.AppContext) *cobra.Command {
 
 	// Mark flags as required only if not using config
 	cmd.MarkFlagsMutuallyExclusive("config", "use-config")
-	
+
 	// Custom validation to handle both --org and --orgName aliases
 	cmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		// Check if any of the required flags are provided
 		hasOrg := cmd.Flags().Changed("orgName") || cmd.Flags().Changed("org")
 		hasConfig := cmd.Flags().Changed("config") || cmd.Flags().Changed("use-config")
-		
+
 		if !hasOrg && !hasConfig {
 			return fmt.Errorf("at least one of the flags in the group [orgName org config use-config] is required")
 		}
@@ -252,223 +252,223 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 		WithContext("strategy", o.strategy).
 		WithContext("parallel", o.parallel)
 
-		log.Info("Starting GitHub synclone operation")
+	log.Info("Starting GitHub synclone operation")
 
 	start := time.Now()
-		// 기본 targetPath가 비어있으면 현재 작업 디렉터리의 org_name 하위 디렉터리로 설정
-		if o.targetPath == "" {
-			if wd, err := os.Getwd(); err == nil && wd != "" {
-				o.targetPath = filepath.Join(wd, o.orgName)
-			} else {
-				o.targetPath = filepath.Join(".", o.orgName)
-			}
-		}
-
-		// Load config if specified
-		if o.configFile != "" || o.useConfig {
-			err := o.loadFromConfig()
-			if err != nil {
-				recErr := errors.NewRecoverableError(errors.ErrorTypeValidation, "Configuration loading failed", err, false)
-				return recErr.WithContext("config_file", o.configFile)
-			}
-		}
-
-		// Comprehensive input validation
-		validator := validation.NewSyncCloneValidator()
-		opts := &validation.SyncCloneOptions{
-			TargetPath:     o.targetPath,
-			OrgName:        o.orgName,
-			Strategy:       o.strategy,
-			ConfigFile:     o.configFile,
-			Parallel:       o.parallel,
-			MaxRetries:     o.maxRetries,
-			Token:          o.token,
-			MemoryLimit:    o.memoryLimit,
-			ProgressMode:   o.progressMode,
-			RedisAddr:      o.redisAddr,
-			IncludePattern: o.includePattern,
-			ExcludePattern: o.excludePattern,
-			IncludeTopics:  o.includeTopics,
-			ExcludeTopics:  o.excludeTopics,
-			LanguageFilter: o.languageFilter,
-			MinStars:       o.minStars,
-			MaxStars:       o.maxStars,
-			UpdatedAfter:   o.updatedAfter,
-			UpdatedBefore:  o.updatedBefore,
-		}
-
-		if err := validator.ValidateOptions(opts); err != nil {
-			return errors.NewRecoverableError(errors.ErrorTypeValidation, "Input validation failed", err, false)
-		}
-
-		// Sanitize inputs for additional security
-		sanitized := validator.SanitizeOptions(opts)
-		o.targetPath = sanitized.TargetPath
-		o.orgName = sanitized.OrgName
-		o.strategy = sanitized.Strategy
-
-		// Get GitHub token
-		token := o.token
-		if token == "" {
-			token = env.GetToken("github")
-		}
-
-		log.Debug("Configuration validated",
-			"has_token", token != "",
-			"optimized", o.optimized,
-			"streaming", o.streamingMode,
-			"enable_cache", o.enableCache)
-
-		// Use optimized streaming approach for large-scale operations
-		ctx := cmd.Context()
-
-		var err error
-
-		// New synclone workflow: 1. Get repo list -> 2. Generate gzh.yaml -> 3. Cleanup orphans -> 4. Clone repos
-		log.Info("Starting synclone workflow: fetching repository list from GitHub")
-
-		// Check if gzh.yaml already exists
-		gzhYamlPath := filepath.Join(o.targetPath, "gzh.yaml")
-		var repos []github.RepoInfo
-		existingYaml := false
-
-		if _, err := os.Stat(gzhYamlPath); err == nil {
-			// gzh.yaml exists, try to load it
-			log.Info("Found existing gzh.yaml, loading repository list from file")
-			fmt.Printf("📄 Found existing gzh.yaml, loading repository list...\n")
-
-			data, err := os.ReadFile(gzhYamlPath)
-			if err == nil {
-				var gzhConfig GzhYamlConfig
-				if err := yaml.Unmarshal(data, &gzhConfig); err == nil && gzhConfig.Organization == o.orgName {
-					repos = gzhConfig.Repositories
-					existingYaml = true
-					fmt.Printf("✅ Loaded %d repositories from existing gzh.yaml\n", len(repos))
-				}
-			}
-		}
-
-		// If no existing yaml or failed to load, fetch from API
-		if !existingYaml {
-			fmt.Printf("🔍 Fetching repository list from GitHub organization: %s\n", o.orgName)
-
-			// Step 1: Get repository list from GitHub API
-			repos, err = github.ListRepos(ctx, o.orgName)
-			if err != nil {
-				// Check if it's a rate limit error
-				if strings.Contains(err.Error(), "rate limit") || strings.Contains(err.Error(), "403") {
-					// For rate limit errors, suppress usage display
-					cmd.SilenceUsage = true
-					recErr := errors.NewRecoverableError(errors.ErrorTypeRateLimit, "GitHub API rate limit exceeded", err, false)
-					return recErr.WithContext("organization", o.orgName).WithContext("action", "list_repositories")
-				}
-				// Check for authentication errors
-				if strings.Contains(err.Error(), "401") || strings.Contains(err.Error(), "Unauthorized") {
-					// For auth errors, suppress usage display
-					cmd.SilenceUsage = true
-					recErr := errors.NewRecoverableError(errors.ErrorTypeAuth, "GitHub authentication failed", err, false)
-					return recErr.WithContext("organization", o.orgName).WithContext("hint", "Check your GitHub token")
-				}
-				return fmt.Errorf("failed to fetch repository list: %w", err)
-			}
-
-			fmt.Printf("📋 Found %d repositories in organization %s\n", len(repos), o.orgName)
-		}
-
-		// Create target directory if it doesn't exist
-		if err := os.MkdirAll(o.targetPath, 0o755); err != nil {
-			return fmt.Errorf("failed to create target directory: %w", err)
-		}
-
-		// Step 2: Generate/Update gzh.yaml file with repository information
-		if !existingYaml {
-			if err := o.generateGzhYaml(o.targetPath, repos); err != nil {
-				return fmt.Errorf("failed to generate gzh.yaml: %w", err)
-			}
-		}
-
-		// Step 3: Verify existing clones if gzh.yaml existed
-		if existingYaml {
-			validClones, invalidClones := o.verifyExistingClones(repos)
-			if len(validClones) > 0 {
-				fmt.Printf("✅ Found %d valid existing clones\n", len(validClones))
-			}
-			if len(invalidClones) > 0 {
-				fmt.Printf("⚠️  Found %d invalid/incomplete clones that will be re-cloned\n", len(invalidClones))
-			}
-		}
-
-		// Step 4: Cleanup orphan directories if requested
-		if err := o.cleanupOrphanDirectories(o.targetPath, repos); err != nil {
-			return fmt.Errorf("failed to cleanup orphan directories: %w", err)
-		}
-
-		// Step 4: Clone/sync repositories using appropriate method
-		if o.enableCache { //nolint:gocritic // Complex boolean conditions not suitable for switch
-			// Use cached approach (Redis cache disabled, using local cache only)
-			log.Info("Using cached API calls for improved performance")
-			fmt.Printf("🔄 Using cached API calls for improved performance\n")
-
-			err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
-		} else if o.optimized || o.streamingMode || token != "" {
-			if token == "" {
-				log.Warn("No GitHub token provided - API rate limits may apply")
-				fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
-				fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
-			}
-
-			log.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
-			fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
-
-			if o.memoryLimit != "" {
-				fmt.Printf("🧠 Memory limit: %s\n", o.memoryLimit)
-			}
-
-			err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
-		} else if o.resume || o.parallel > 1 {
-			log.Info("Using resumable parallel cloning", "resume", o.resume, "progress_mode", o.progressMode)
-			err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
+	// 기본 targetPath가 비어있으면 현재 작업 디렉터리의 org_name 하위 디렉터리로 설정
+	if o.targetPath == "" {
+		if wd, err := os.Getwd(); err == nil && wd != "" {
+			o.targetPath = filepath.Join(wd, o.orgName)
 		} else {
-			log.Info("Using standard cloning approach")
-			fmt.Printf("⚙️ Starting repository synchronization with strategy: %s\n", o.strategy)
-
-			err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
+			o.targetPath = filepath.Join(".", o.orgName)
 		}
+	}
 
+	// Load config if specified
+	if o.configFile != "" || o.useConfig {
+		err := o.loadFromConfig()
 		if err != nil {
-			// Create recoverable error for retry handling
-			var errorType errors.ErrorType
+			recErr := errors.NewRecoverableError(errors.ErrorTypeValidation, "Configuration loading failed", err, false)
+			return recErr.WithContext("config_file", o.configFile)
+		}
+	}
 
-			switch {
-			case err.Error() == "context canceled":
-				errorType = errors.ErrorTypeTimeout
-			case err.Error() == "rate limit":
-				errorType = errors.ErrorTypeRateLimit
-			default:
-				errorType = errors.ErrorTypeNetwork
+	// Comprehensive input validation
+	validator := validation.NewSyncCloneValidator()
+	opts := &validation.SyncCloneOptions{
+		TargetPath:     o.targetPath,
+		OrgName:        o.orgName,
+		Strategy:       o.strategy,
+		ConfigFile:     o.configFile,
+		Parallel:       o.parallel,
+		MaxRetries:     o.maxRetries,
+		Token:          o.token,
+		MemoryLimit:    o.memoryLimit,
+		ProgressMode:   o.progressMode,
+		RedisAddr:      o.redisAddr,
+		IncludePattern: o.includePattern,
+		ExcludePattern: o.excludePattern,
+		IncludeTopics:  o.includeTopics,
+		ExcludeTopics:  o.excludeTopics,
+		LanguageFilter: o.languageFilter,
+		MinStars:       o.minStars,
+		MaxStars:       o.maxStars,
+		UpdatedAfter:   o.updatedAfter,
+		UpdatedBefore:  o.updatedBefore,
+	}
+
+	if err := validator.ValidateOptions(opts); err != nil {
+		return errors.NewRecoverableError(errors.ErrorTypeValidation, "Input validation failed", err, false)
+	}
+
+	// Sanitize inputs for additional security
+	sanitized := validator.SanitizeOptions(opts)
+	o.targetPath = sanitized.TargetPath
+	o.orgName = sanitized.OrgName
+	o.strategy = sanitized.Strategy
+
+	// Get GitHub token
+	token := o.token
+	if token == "" {
+		token = env.GetToken("github")
+	}
+
+	log.Debug("Configuration validated",
+		"has_token", token != "",
+		"optimized", o.optimized,
+		"streaming", o.streamingMode,
+		"enable_cache", o.enableCache)
+
+	// Use optimized streaming approach for large-scale operations
+	ctx := cmd.Context()
+
+	var err error
+
+	// New synclone workflow: 1. Get repo list -> 2. Generate gzh.yaml -> 3. Cleanup orphans -> 4. Clone repos
+	log.Info("Starting synclone workflow: fetching repository list from GitHub")
+
+	// Check if gzh.yaml already exists
+	gzhYamlPath := filepath.Join(o.targetPath, "gzh.yaml")
+	var repos []github.RepoInfo
+	existingYaml := false
+
+	if _, err := os.Stat(gzhYamlPath); err == nil {
+		// gzh.yaml exists, try to load it
+		log.Info("Found existing gzh.yaml, loading repository list from file")
+		fmt.Printf("📄 Found existing gzh.yaml, loading repository list...\n")
+
+		data, err := os.ReadFile(gzhYamlPath)
+		if err == nil {
+			var gzhConfig GzhYamlConfig
+			if err := yaml.Unmarshal(data, &gzhConfig); err == nil && gzhConfig.Organization == o.orgName {
+				repos = gzhConfig.Repositories
+				existingYaml = true
+				fmt.Printf("✅ Loaded %d repositories from existing gzh.yaml\n", len(repos))
 			}
+		}
+	}
 
-			recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
-			recErr = recErr.WithContext("operation_duration", time.Since(start).String())
+	// If no existing yaml or failed to load, fetch from API
+	if !existingYaml {
+		fmt.Printf("🔍 Fetching repository list from GitHub organization: %s\n", o.orgName)
 
-			log.ErrorWithStack(err, "GitHub synclone operation failed")
-
-			// Return the error properly for error handling
-			return recErr
+		// Step 1: Get repository list from GitHub API
+		repos, err = github.ListRepos(ctx, o.orgName)
+		if err != nil {
+			// Check if it's a rate limit error
+			if strings.Contains(err.Error(), "rate limit") || strings.Contains(err.Error(), "403") {
+				// For rate limit errors, suppress usage display
+				cmd.SilenceUsage = true
+				recErr := errors.NewRecoverableError(errors.ErrorTypeRateLimit, "GitHub API rate limit exceeded", err, false)
+				return recErr.WithContext("organization", o.orgName).WithContext("action", "list_repositories")
+			}
+			// Check for authentication errors
+			if strings.Contains(err.Error(), "401") || strings.Contains(err.Error(), "Unauthorized") {
+				// For auth errors, suppress usage display
+				cmd.SilenceUsage = true
+				recErr := errors.NewRecoverableError(errors.ErrorTypeAuth, "GitHub authentication failed", err, false)
+				return recErr.WithContext("organization", o.orgName).WithContext("hint", "Check your GitHub token")
+			}
+			return fmt.Errorf("failed to fetch repository list: %w", err)
 		}
 
-		duration := time.Since(start)
-		log.LogPerformance("github-synclone-completed", duration, map[string]interface{}{
-			"org_name":     o.orgName,
-			"target_path":  o.targetPath,
-			"strategy":     o.strategy,
-			"parallel":     o.parallel,
-			"memory_stats": errors.GetMemoryStats(),
-		})
+		fmt.Printf("📋 Found %d repositories in organization %s\n", len(repos), o.orgName)
+	}
 
-		log.Info("GitHub synclone operation completed successfully", "duration", duration.String())
+	// Create target directory if it doesn't exist
+	if err := os.MkdirAll(o.targetPath, 0o755); err != nil {
+		return fmt.Errorf("failed to create target directory: %w", err)
+	}
 
-		return nil
+	// Step 2: Generate/Update gzh.yaml file with repository information
+	if !existingYaml {
+		if err := o.generateGzhYaml(o.targetPath, repos); err != nil {
+			return fmt.Errorf("failed to generate gzh.yaml: %w", err)
+		}
+	}
+
+	// Step 3: Verify existing clones if gzh.yaml existed
+	if existingYaml {
+		validClones, invalidClones := o.verifyExistingClones(repos)
+		if len(validClones) > 0 {
+			fmt.Printf("✅ Found %d valid existing clones\n", len(validClones))
+		}
+		if len(invalidClones) > 0 {
+			fmt.Printf("⚠️  Found %d invalid/incomplete clones that will be re-cloned\n", len(invalidClones))
+		}
+	}
+
+	// Step 4: Cleanup orphan directories if requested
+	if err := o.cleanupOrphanDirectories(o.targetPath, repos); err != nil {
+		return fmt.Errorf("failed to cleanup orphan directories: %w", err)
+	}
+
+	// Step 4: Clone/sync repositories using appropriate method
+	if o.enableCache { //nolint:gocritic // Complex boolean conditions not suitable for switch
+		// Use cached approach (Redis cache disabled, using local cache only)
+		log.Info("Using cached API calls for improved performance")
+		fmt.Printf("🔄 Using cached API calls for improved performance\n")
+
+		err = github.RefreshAllOptimizedStreamingWithCache(ctx, o.targetPath, o.orgName, o.strategy, token)
+	} else if o.optimized || o.streamingMode || token != "" {
+		if token == "" {
+			log.Warn("No GitHub token provided - API rate limits may apply")
+			fmt.Printf("⚠️ Warning: No GitHub token provided. API rate limits may apply.\n")
+			fmt.Printf("   Set GITHUB_TOKEN environment variable or use --token flag for better performance.\n")
+		}
+
+		log.Info("Using optimized streaming API for large-scale operations", "memory_limit", o.memoryLimit)
+		fmt.Printf("🚀 Using optimized streaming API for large-scale operations\n")
+
+		if o.memoryLimit != "" {
+			fmt.Printf("🧠 Memory limit: %s\n", o.memoryLimit)
+		}
+
+		err = github.RefreshAllOptimizedStreaming(ctx, o.targetPath, o.orgName, o.strategy, token)
+	} else if o.resume || o.parallel > 1 {
+		log.Info("Using resumable parallel cloning", "resume", o.resume, "progress_mode", o.progressMode)
+		err = github.RefreshAllResumable(ctx, o.targetPath, o.orgName, o.strategy, o.parallel, o.maxRetries, o.resume, o.progressMode)
+	} else {
+		log.Info("Using standard cloning approach")
+		fmt.Printf("⚙️ Starting repository synchronization with strategy: %s\n", o.strategy)
+
+		err = github.RefreshAll(ctx, o.targetPath, o.orgName, o.strategy)
+	}
+
+	if err != nil {
+		// Create recoverable error for retry handling
+		var errorType errors.ErrorType
+
+		switch {
+		case err.Error() == "context canceled":
+			errorType = errors.ErrorTypeTimeout
+		case err.Error() == "rate limit":
+			errorType = errors.ErrorTypeRateLimit
+		default:
+			errorType = errors.ErrorTypeNetwork
+		}
+
+		recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
+		recErr = recErr.WithContext("operation_duration", time.Since(start).String())
+
+		log.ErrorWithStack(err, "GitHub synclone operation failed")
+
+		// Return the error properly for error handling
+		return recErr
+	}
+
+	duration := time.Since(start)
+	log.LogPerformance("github-synclone-completed", duration, map[string]interface{}{
+		"org_name":     o.orgName,
+		"target_path":  o.targetPath,
+		"strategy":     o.strategy,
+		"parallel":     o.parallel,
+		"memory_stats": errors.GetMemoryStats(),
+	})
+
+	log.Info("GitHub synclone operation completed successfully", "duration", duration.String())
+
+	return nil
 }
 
 func (o *syncCloneGithubOptions) loadFromConfig() error {

@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz profile --type cpu --duration 30s --output profile.pb.gz
 ```
@@ -18,6 +19,7 @@ gz profile --type cpu --duration 30s --output profile.pb.gz
 ### Expected Output
 
 **CPU Profile Success**:
+
 ```text
 🔬 Starting Go application profiling
 
@@ -62,6 +64,7 @@ Exit Code: 0
 ```
 
 **Memory Profile Success**:
+
 ```text
 🔬 Starting Go application profiling
 
@@ -96,6 +99,7 @@ Exit Code: 0
 ```
 
 **Goroutine Profile**:
+
 ```text
 🔬 Starting Go application profiling
 
@@ -136,6 +140,7 @@ Exit Code: 0
 ```
 
 **Application Not Found**:
+
 ```text
 🔬 Starting Go application profiling
 
@@ -172,6 +177,7 @@ Exit Code: 1
 ```
 
 **Profile Collection Timeout**:
+
 ```text
 🔬 Starting Go application profiling
 
@@ -208,6 +214,7 @@ Exit Code: 1
 ### Side Effects
 
 **Files Created**:
+
 - Profile output file (e.g., `profile.pb.gz`, `memory-profile.pb.gz`)
 - `~/.gzh/profile/session-<timestamp>.log` - Profiling session log
 - `/tmp/gz-profile-*.tmp` - Temporary profiling data
@@ -218,6 +225,7 @@ Exit Code: 1
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test profiling with mock HTTP server
 (echo -e "HTTP/1.1 200 OK\r\nContent-Length: 100\r\n\r\n$(head -c 100 /dev/zero)" | nc -l 6060) &
@@ -239,34 +247,39 @@ fi
 ```
 
 **Manual Verification**:
+
 1. Profile running Go application with pprof enabled
-2. Test different profile types (cpu, memory, goroutine)
-3. Verify profile files are valid and analyzable
-4. Check error handling for unreachable applications
-5. Test timeout scenarios with long-running collections
-6. Validate profile analysis suggestions
+1. Test different profile types (cpu, memory, goroutine)
+1. Verify profile files are valid and analyzable
+1. Check error handling for unreachable applications
+1. Test timeout scenarios with long-running collections
+1. Validate profile analysis suggestions
 
 ### Edge Cases
 
 **Application States**:
+
 - Application under heavy load during profiling
 - Application with disabled pprof endpoints
 - Applications with custom pprof paths
 - Multiple applications on different ports
 
 **Profile Sizes**:
+
 - Very large profiles (>100MB) from long-running apps
 - Empty or minimal profiles from idle applications
 - Corrupted profiles due to network issues
 - Profile collection interrupted by application restart
 
 **Network and Security**:
+
 - Remote application profiling over network
 - Applications behind authentication/proxy
 - SSL/TLS enabled pprof endpoints
 - Rate-limited or protected profiling endpoints
 
 **Platform Differences**:
+
 - Different Go runtime versions
 - Custom pprof implementations
 - Non-standard endpoint configurations
@@ -275,17 +288,20 @@ fi
 ### Performance Expectations
 
 **Response Time**:
+
 - Profile detection: < 2 seconds
 - CPU profile (30s): 30-35 seconds total
 - Memory profile: < 5 seconds
 - Goroutine profile: < 3 seconds
 
 **Resource Usage**:
+
 - Memory: < 50MB during collection
 - CPU: Minimal impact on profiled application
 - Network: Varies by profile size (1-50MB typical)
 
 **Profile Quality**:
+
 - CPU sampling rate: 100Hz (configurable)
 - Memory accuracy: All allocations >512 bytes
 - Goroutine completeness: All active goroutines

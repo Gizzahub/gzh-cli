@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz git event process --source webhook --file /tmp/github-payload.json
 ```
@@ -18,6 +19,7 @@ gz git event process --source webhook --file /tmp/github-payload.json
 ### Expected Output
 
 **Push Event Processing**:
+
 ```text
 ⚡ Processing Git event from webhook
 
@@ -80,6 +82,7 @@ Exit Code: 0
 ```
 
 **Pull Request Event Processing**:
+
 ```text
 ⚡ Processing Git event from webhook
 
@@ -151,7 +154,8 @@ Exit Code: 0
 ```
 
 **Event Processing Failed**:
-```text
+
+````text
 ⚡ Processing Git event from webhook
 
 📄 Event Source: /tmp/malformed-payload.json
@@ -179,13 +183,14 @@ Exit Code: 0
   "repository": { ... },
   "sender": { ... }
 }
-```
+````
 
 🚫 Git event processing failed due to invalid payload.
 
 stderr: invalid JSON payload
 Exit Code: 1
-```
+
+````
 
 **Unknown Event Type**:
 ```text
@@ -224,21 +229,24 @@ Exit Code: 1
 
 stderr: unknown event type
 Exit Code: 1
-```
+````
 
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/git/events/processed-<timestamp>.json` - Processing log
 - `~/.gzh/git/events/actions-<event-id>.log` - Action execution log
 - `/tmp/gz-event-<id>.json` - Temporary event processing data
 
 **Files Modified**:
+
 - Integration configuration files (if actions modify settings)
 - Notification queue files
 - CI/CD pipeline trigger logs
 
 **State Changes**:
+
 - External integrations triggered (CI/CD, notifications)
 - Repository state updated (labels, assignments, etc.)
 - Event processing metrics updated
@@ -246,6 +254,7 @@ Exit Code: 1
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test event processing with sample payload
 echo '{"action": "opened", "pull_request": {"number": 1}, "repository": {"full_name": "test/repo"}}' > /tmp/test-event.json
@@ -263,34 +272,39 @@ assert_contains "$log_content" '"actions_triggered":'
 ```
 
 **Manual Verification**:
+
 1. Process push event and verify CI/CD triggers
-2. Test pull request event processing
-3. Check unknown event type handling
-4. Verify malformed payload error handling
-5. Test integration action execution
-6. Confirm notification delivery
+1. Test pull request event processing
+1. Check unknown event type handling
+1. Verify malformed payload error handling
+1. Test integration action execution
+1. Confirm notification delivery
 
 ### Edge Cases
 
 **Payload Variations**:
+
 - Large payloads (>1MB) with many commits
 - Minimal payloads missing optional fields
 - Legacy webhook format compatibility
 - Platform-specific payload differences
 
 **Integration Failures**:
+
 - CI/CD system unavailable
 - Notification service rate limits
 - Authentication token expiration
 - Network connectivity issues
 
 **Event Timing**:
+
 - Out-of-order event delivery
 - Duplicate event processing
 - Very old events (timestamp validation)
 - High-frequency event bursts
 
 **Configuration Issues**:
+
 - Missing integration configurations
 - Invalid webhook signatures
 - Misconfigured action handlers
@@ -299,17 +313,20 @@ assert_contains "$log_content" '"actions_triggered":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Simple events: < 2 seconds
 - Complex events with many integrations: < 10 seconds
 - Bulk event processing: < 30 seconds per batch
 - Error handling: < 1 second
 
 **Resource Usage**:
+
 - Memory: < 100MB for large payloads
 - CPU: Low to moderate during JSON processing
 - Network: Varies by integration count
 
 **Throughput**:
+
 - Single event: immediate processing
 - Batch processing: 10-20 events per minute
 - Concurrent processing: 3-5 events simultaneously

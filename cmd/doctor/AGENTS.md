@@ -7,6 +7,7 @@
 **doctor**는 시스템 전반의 건강 상태를 진단하고 성능을 측정하는 종합 진단 모듈입니다.
 
 ### 핵심 기능
+
 - 시스템 건강 상태 종합 진단
 - 성능 벤치마크 및 메트릭 수집
 - API 문서화 품질 분석 (godoc)
@@ -17,6 +18,7 @@
 ## ⚡ 개발 시 핵심 주의사항
 
 ### 1. 시스템 리소스 모니터링
+
 ```go
 // ✅ 안전한 리소스 체크
 func checkSystemResources() DiagnosticResult {
@@ -35,6 +37,7 @@ func checkSystemResources() DiagnosticResult {
 ```
 
 ### 2. 에러 복구 시스템 활용
+
 ```go
 // ✅ 견고한 진단 실행
 func runDiagnosticCheck(name string, checkFunc func() error) DiagnosticResult {
@@ -55,6 +58,7 @@ func runDiagnosticCheck(name string, checkFunc func() error) DiagnosticResult {
 ```
 
 ### 3. 다중 서브커맨드 관리
+
 ```go
 // ✅ 서브커맨드 격리 및 의존성 관리
 type SubcommandManager struct {
@@ -76,6 +80,7 @@ func (sm *SubcommandManager) ExecuteWithDependencies(cmd string) error {
 ## 🧪 테스트 전략
 
 ### 진단 기능별 테스트
+
 ```bash
 # 시스템 진단 테스트
 go test ./cmd/doctor -v -run TestSystemChecks
@@ -91,6 +96,7 @@ go test ./cmd/doctor -v -run TestDevEnvValidation
 ```
 
 ### 시뮬레이션 테스트
+
 - **리소스 부족 상황**: 메모리/디스크 부족 시나리오
 - **네트워크 장애**: API 연결 실패 상황
 - **권한 부족**: 파일 접근 제한 상황
@@ -99,6 +105,7 @@ go test ./cmd/doctor -v -run TestDevEnvValidation
 ## 📊 진단 결과 품질 관리
 
 ### 진단 결과 표준화
+
 ```go
 // ✅ 일관된 진단 결과 형식
 type DiagnosticResult struct {
@@ -114,6 +121,7 @@ type DiagnosticResult struct {
 ```
 
 ### 메트릭 수집 기준
+
 ```go
 // ✅ 성능 메트릭 표준화
 type PerformanceMetrics struct {
@@ -128,21 +136,25 @@ type PerformanceMetrics struct {
 ## 🔧 서브커맨드별 특성
 
 ### 1. godoc (API 문서 분석)
+
 - **커버리지 측정**: 공개 API의 문서화 비율
 - **품질 평가**: 문서 내용의 충실도 검사
 - **예제 코드 검증**: 문서 내 예제의 실행 가능성 확인
 
 ### 2. dev-env (개발 환경 검증)
+
 - **도구 존재 확인**: Git, Docker, 언어 런타임 등
 - **설정 검증**: 올바른 설정 파일 존재 여부
 - **자동 수정**: 누락된 설정 자동 생성
 
 ### 3. benchmark (성능 벤치마크)
+
 - **CI 모드**: 지속적 통합 환경에서 자동 실행
 - **회귀 탐지**: 성능 저하 자동 감지
 - **리소스 프로파일링**: 메모리, CPU 사용 패턴 분석
 
 ### 4. health (시스템 건강 모니터링)
+
 - **실시간 모니터링**: 지속적인 시스템 상태 추적
 - **임계치 알림**: 설정 가능한 경고 기준
 - **이력 관리**: 건강 상태 변화 추세 분석
@@ -150,6 +162,7 @@ type PerformanceMetrics struct {
 ## 🚨 Critical 주의사항
 
 ### 시스템 리소스 보호
+
 ```go
 // ✅ 리소스 제한 설정
 func runPerformanceBenchmark(ctx context.Context) error {
@@ -177,6 +190,7 @@ func runPerformanceBenchmark(ctx context.Context) error {
 ```
 
 ### 안전한 자동 수정
+
 ```go
 // ✅ 백업 후 수정
 func (d *Doctor) attemptAutoFix(issue DiagnosticResult) error {

@@ -13,31 +13,31 @@ import (
 // ProgressTracker provides detailed progress tracking with time estimates
 // and step-by-step progress reporting for PM update operations.
 type ProgressTracker struct {
-	mu               sync.Mutex
-	totalSteps       int
-	currentStep      int
-	currentAction    string
-	startTime        time.Time
-	stepStartTime    time.Time
-	stepDurations    []time.Duration
-	estimatedEnd     time.Time
-	managers         []ManagerProgress
-	currentManager   int
-	showProgress     bool
-	formatter        *OutputFormatter
+	mu             sync.Mutex
+	totalSteps     int
+	currentStep    int
+	currentAction  string
+	startTime      time.Time
+	stepStartTime  time.Time
+	stepDurations  []time.Duration
+	estimatedEnd   time.Time
+	managers       []ManagerProgress
+	currentManager int
+	showProgress   bool
+	formatter      *OutputFormatter
 }
 
 // ManagerProgress tracks progress for individual package managers
 type ManagerProgress struct {
-	Name            string        `json:"name"`
-	Status          string        `json:"status"` // "pending", "active", "completed", "failed", "skipped"
-	StartTime       time.Time     `json:"startTime"`
-	EndTime         time.Time     `json:"endTime"`
-	Duration        time.Duration `json:"duration"`
+	Name            string         `json:"name"`
+	Status          string         `json:"status"` // "pending", "active", "completed", "failed", "skipped"
+	StartTime       time.Time      `json:"startTime"`
+	EndTime         time.Time      `json:"endTime"`
+	Duration        time.Duration  `json:"duration"`
 	Steps           []StepProgress `json:"steps"`
-	CurrentStep     int           `json:"currentStep"`
-	PackagesUpdated int           `json:"packagesUpdated"`
-	Error           string        `json:"error,omitempty"`
+	CurrentStep     int            `json:"currentStep"`
+	PackagesUpdated int            `json:"packagesUpdated"`
+	Error           string         `json:"error,omitempty"`
 }
 
 // StepProgress tracks individual step progress within a manager
@@ -60,7 +60,7 @@ func NewProgressTracker(managerNames []string, formatter *OutputFormatter) *Prog
 			Steps:  getDefaultStepsForManager(name),
 		}
 	}
-	
+
 	return &ProgressTracker{
 		totalSteps:   len(managerNames),
 		startTime:    time.Now(),
@@ -137,7 +137,7 @@ func getDefaultStepsForManager(manager string) []StepProgress {
 func (pt *ProgressTracker) StartManager(managerName string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for i := range pt.managers {
 		if pt.managers[i].Name == managerName {
 			pt.managers[i].Status = "active"
@@ -145,7 +145,7 @@ func (pt *ProgressTracker) StartManager(managerName string) {
 			pt.currentManager = i
 			pt.currentStep = i + 1
 			pt.stepStartTime = time.Now()
-			
+
 			if pt.showProgress {
 				pt.formatter.PrintManagerUpdate(managerName, pt.currentStep, pt.totalSteps, "updating")
 				pt.printProgressOverview()
@@ -159,7 +159,7 @@ func (pt *ProgressTracker) StartManager(managerName string) {
 func (pt *ProgressTracker) StartManagerStep(managerName, stepName string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for i := range pt.managers {
 		if pt.managers[i].Name == managerName {
 			for j := range pt.managers[i].Steps {
@@ -167,7 +167,7 @@ func (pt *ProgressTracker) StartManagerStep(managerName, stepName string) {
 					pt.managers[i].Steps[j].Status = "active"
 					pt.managers[i].Steps[j].StartTime = time.Now()
 					pt.managers[i].CurrentStep = j
-					
+
 					if pt.showProgress {
 						pt.printStepProgress(managerName, pt.managers[i].Steps[j])
 					}
@@ -183,7 +183,7 @@ func (pt *ProgressTracker) StartManagerStep(managerName, stepName string) {
 func (pt *ProgressTracker) CompleteManagerStep(managerName, stepName string, packagesAffected int) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for i := range pt.managers {
 		if pt.managers[i].Name == managerName {
 			for j := range pt.managers[i].Steps {
@@ -192,9 +192,9 @@ func (pt *ProgressTracker) CompleteManagerStep(managerName, stepName string, pac
 					step.Status = "completed"
 					step.EndTime = time.Now()
 					step.Duration = step.EndTime.Sub(step.StartTime)
-					
+
 					pt.managers[i].PackagesUpdated += packagesAffected
-					
+
 					if pt.showProgress {
 						pt.printStepCompletion(managerName, *step, packagesAffected)
 					}
@@ -210,7 +210,7 @@ func (pt *ProgressTracker) CompleteManagerStep(managerName, stepName string, pac
 func (pt *ProgressTracker) FailManagerStep(managerName, stepName, errorMsg string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for i := range pt.managers {
 		if pt.managers[i].Name == managerName {
 			for j := range pt.managers[i].Steps {
@@ -219,9 +219,9 @@ func (pt *ProgressTracker) FailManagerStep(managerName, stepName, errorMsg strin
 					step.Status = "failed"
 					step.EndTime = time.Now()
 					step.Duration = step.EndTime.Sub(step.StartTime)
-					
+
 					pt.managers[i].Error = errorMsg
-					
+
 					if pt.showProgress {
 						pt.printStepFailure(managerName, *step, errorMsg)
 					}
@@ -237,18 +237,18 @@ func (pt *ProgressTracker) FailManagerStep(managerName, stepName, errorMsg strin
 func (pt *ProgressTracker) CompleteManager(managerName string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for i := range pt.managers {
 		if pt.managers[i].Name == managerName {
 			pt.managers[i].Status = "completed"
 			pt.managers[i].EndTime = time.Now()
 			pt.managers[i].Duration = pt.managers[i].EndTime.Sub(pt.managers[i].StartTime)
-			
+
 			// Record step duration for ETA calculation
 			stepDuration := time.Since(pt.stepStartTime)
 			pt.stepDurations = append(pt.stepDurations, stepDuration)
 			pt.updateETA()
-			
+
 			if pt.showProgress {
 				pt.printManagerCompletion(pt.managers[i])
 			}
@@ -261,14 +261,14 @@ func (pt *ProgressTracker) CompleteManager(managerName string) {
 func (pt *ProgressTracker) SkipManager(managerName, reason string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for i := range pt.managers {
 		if pt.managers[i].Name == managerName {
 			pt.managers[i].Status = "skipped"
 			pt.managers[i].EndTime = time.Now()
 			pt.managers[i].Error = reason
 			pt.currentStep = i + 1
-			
+
 			if pt.showProgress {
 				pt.formatter.PrintManagerUpdate(managerName, pt.currentStep, pt.totalSteps, "skip")
 				fmt.Printf("Reason: %s\n", reason)
@@ -283,14 +283,14 @@ func (pt *ProgressTracker) updateETA() {
 	if len(pt.stepDurations) == 0 {
 		return
 	}
-	
+
 	// Calculate average step duration
 	var total time.Duration
 	for _, duration := range pt.stepDurations {
 		total += duration
 	}
 	avgDuration := total / time.Duration(len(pt.stepDurations))
-	
+
 	// Estimate remaining time
 	remainingSteps := pt.totalSteps - pt.currentStep
 	if remainingSteps > 0 {
@@ -304,11 +304,11 @@ func (pt *ProgressTracker) printProgressOverview() {
 	if !pt.showProgress {
 		return
 	}
-	
+
 	completed := 0
 	skipped := 0
 	failed := 0
-	
+
 	for _, manager := range pt.managers {
 		switch manager.Status {
 		case "completed":
@@ -319,7 +319,7 @@ func (pt *ProgressTracker) printProgressOverview() {
 			failed++
 		}
 	}
-	
+
 	fmt.Printf("Progress: %d/%d managers completed", completed, pt.totalSteps)
 	if skipped > 0 {
 		fmt.Printf(", %d skipped", skipped)
@@ -327,7 +327,7 @@ func (pt *ProgressTracker) printProgressOverview() {
 	if failed > 0 {
 		fmt.Printf(", %d failed", failed)
 	}
-	
+
 	if !pt.estimatedEnd.IsZero() && pt.estimatedEnd.After(time.Now()) {
 		remaining := pt.estimatedEnd.Sub(time.Now())
 		fmt.Printf(" (ETA: %s)", formatDuration(remaining))
@@ -347,7 +347,7 @@ func (pt *ProgressTracker) printStepProgress(managerName string, step StepProgre
 // printStepCompletion prints completion of a specific step
 func (pt *ProgressTracker) printStepCompletion(managerName string, step StepProgress, packagesAffected int) {
 	duration := step.Duration.Truncate(time.Millisecond)
-	
+
 	var details string
 	if packagesAffected > 0 {
 		if packagesAffected == 1 {
@@ -358,7 +358,7 @@ func (pt *ProgressTracker) printStepCompletion(managerName string, step StepProg
 	} else {
 		details = fmt.Sprintf("completed in %s", formatDuration(duration))
 	}
-	
+
 	pt.formatter.PrintCommandResult(step.Description, true, details)
 }
 
@@ -370,7 +370,7 @@ func (pt *ProgressTracker) printStepFailure(managerName string, step StepProgres
 // printManagerCompletion prints completion summary for a manager
 func (pt *ProgressTracker) printManagerCompletion(manager ManagerProgress) {
 	duration := manager.Duration.Truncate(time.Millisecond)
-	
+
 	var summary string
 	if manager.PackagesUpdated > 0 {
 		if manager.PackagesUpdated == 1 {
@@ -381,7 +381,7 @@ func (pt *ProgressTracker) printManagerCompletion(manager ManagerProgress) {
 	} else {
 		summary = fmt.Sprintf("completed in %s (no updates needed)", formatDuration(duration))
 	}
-	
+
 	var emoji string
 	if pt.formatter.showEmojis {
 		emoji = "✅"
@@ -393,14 +393,14 @@ func (pt *ProgressTracker) printManagerCompletion(manager ManagerProgress) {
 func (pt *ProgressTracker) GetOverallProgress() (completed, total int, eta time.Time) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	completed = 0
 	for _, manager := range pt.managers {
 		if manager.Status == "completed" || manager.Status == "skipped" {
 			completed++
 		}
 	}
-	
+
 	return completed, pt.totalSteps, pt.estimatedEnd
 }
 
@@ -408,7 +408,7 @@ func (pt *ProgressTracker) GetOverallProgress() (completed, total int, eta time.
 func (pt *ProgressTracker) GetManagerProgress(managerName string) *ManagerProgress {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for i := range pt.managers {
 		if pt.managers[i].Name == managerName {
 			return &pt.managers[i]
@@ -421,7 +421,7 @@ func (pt *ProgressTracker) GetManagerProgress(managerName string) *ManagerProgre
 func (pt *ProgressTracker) GetAllManagerProgress() []ManagerProgress {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	// Return a copy to avoid race conditions
 	result := make([]ManagerProgress, len(pt.managers))
 	copy(result, pt.managers)
@@ -437,7 +437,7 @@ func (pt *ProgressTracker) GetTotalDuration() time.Duration {
 func (pt *ProgressTracker) GetSummaryStats() (successful, failed, skipped, totalPackages int) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
-	
+
 	for _, manager := range pt.managers {
 		switch manager.Status {
 		case "completed":
@@ -449,6 +449,6 @@ func (pt *ProgressTracker) GetSummaryStats() (successful, failed, skipped, total
 		}
 		totalPackages += manager.PackagesUpdated
 	}
-	
+
 	return successful, failed, skipped, totalPackages
 }

@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz dev-env tui
 ```
@@ -18,6 +19,7 @@ gz dev-env tui
 ### Expected Output
 
 **TUI Interface**:
+
 ```text
 ┌─ Development Environment Manager ─────────────────────────────────────────────┐
 │                                                                               │
@@ -54,6 +56,7 @@ gz dev-env tui
 ```
 
 **Profile Creation Dialog**:
+
 ```text
 ┌─ Create New Profile ──────────────────────────────────────────────────────────┐
 │                                                                               │
@@ -85,6 +88,7 @@ gz dev-env tui
 ```
 
 **Connection Test Results**:
+
 ```text
 ┌─ Connection Test Results ─────────────────────────────────────────────────────┐
 │                                                                               │
@@ -122,14 +126,17 @@ gz dev-env tui
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/dev-env/tui-session.log` - TUI session log
 - `~/.gzh/dev-env/tui-settings.json` - TUI preferences
 
 **Files Modified**:
+
 - Profile configurations (when edited through TUI)
 - Active environment state (when switched)
 
 **State Changes**:
+
 - Real-time environment monitoring
 - Background connection health checks
 - Profile management operations
@@ -137,6 +144,7 @@ gz dev-env tui
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test TUI launch (requires pseudo-TTY)
 script -c "echo 'q' | gz dev-env tui" /tmp/tui-test.log
@@ -150,31 +158,36 @@ assert_file_exists "$HOME/.gzh/dev-env/tui-session.log"
 ```
 
 **Manual Verification**:
+
 1. Launch TUI and verify interface layout
-2. Navigate between profiles using arrow keys
-3. Test profile switching through TUI
-4. Create new profile using dialog
-5. Run connection tests and verify results
-6. Test keyboard shortcuts and help system
+1. Navigate between profiles using arrow keys
+1. Test profile switching through TUI
+1. Create new profile using dialog
+1. Run connection tests and verify results
+1. Test keyboard shortcuts and help system
 
 ### Edge Cases
 
 **Terminal Compatibility**:
+
 - Small terminal sizes (graceful degradation)
 - Non-color terminals (fallback to basic UI)
 - Terminal encoding issues (UTF-8 handling)
 
 **Concurrent Operations**:
+
 - Multiple TUI instances (prevent conflicts)
 - Background environment switches
 - External profile modifications
 
 **Long-Running Operations**:
+
 - Connection tests with timeouts
 - Progress indicators for slow operations
 - Cancellation support for long tasks
 
 **Error Handling**:
+
 - Network failures during operations
 - Invalid profile configurations
 - Permission denied errors
@@ -182,17 +195,20 @@ assert_file_exists "$HOME/.gzh/dev-env/tui-session.log"
 ### Performance Expectations
 
 **Response Time**:
+
 - TUI startup: < 2 seconds
 - Profile switching: < 5 seconds
 - Screen refresh: < 100ms
 - Connection tests: < 10 seconds per service
 
 **Resource Usage**:
+
 - Memory: < 100MB
 - CPU: Low impact (event-driven)
 - Terminal: Works on 80x24 minimum
 
 **Responsiveness**:
+
 - Real-time status updates
 - Smooth keyboard navigation
 - Non-blocking background tasks

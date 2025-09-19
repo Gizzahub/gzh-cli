@@ -17,26 +17,26 @@ import (
 
 // EnhancedSSHOptions represents options for enhanced SSH commands
 type EnhancedSSHOptions struct {
-	Name           string
-	Description    string
-	ConfigPath     string
-	StorePath      string
-	Force          bool
-	ListAll        bool
-	IncludeKeys    bool
-	IncludePublic  bool
+	Name          string
+	Description   string
+	ConfigPath    string
+	StorePath     string
+	Force         bool
+	ListAll       bool
+	IncludeKeys   bool
+	IncludePublic bool
 }
 
 // EnhancedSSHMetadata represents metadata for saved SSH configurations
 type EnhancedSSHMetadata struct {
-	Description    string    `json:"description"`
-	SavedAt        time.Time `json:"saved_at"`
-	SourcePath     string    `json:"source_path"`
-	IncludeFiles   []string  `json:"include_files"`
-	PrivateKeys    []string  `json:"private_keys"`
-	PublicKeys     []string  `json:"public_keys"`
-	HasIncludes    bool      `json:"has_includes"`
-	HasKeys        bool      `json:"has_keys"`
+	Description  string    `json:"description"`
+	SavedAt      time.Time `json:"saved_at"`
+	SourcePath   string    `json:"source_path"`
+	IncludeFiles []string  `json:"include_files"`
+	PrivateKeys  []string  `json:"private_keys"`
+	PublicKeys   []string  `json:"public_keys"`
+	HasIncludes  bool      `json:"has_includes"`
+	HasKeys      bool      `json:"has_keys"`
 }
 
 // EnhancedSSHCommand provides enhanced SSH configuration management
@@ -52,10 +52,10 @@ func (c *EnhancedSSHCommand) DefaultEnhancedOptions() *EnhancedSSHOptions {
 	homeDir, _ := os.UserHomeDir()
 
 	return &EnhancedSSHOptions{
-		ConfigPath:     filepath.Join(homeDir, ".ssh", "config"),
-		StorePath:      filepath.Join(homeDir, ".gz", "ssh-configs"),
-		IncludeKeys:    true,
-		IncludePublic:  true,
+		ConfigPath:    filepath.Join(homeDir, ".ssh", "config"),
+		StorePath:     filepath.Join(homeDir, ".gz", "ssh-configs"),
+		IncludeKeys:   true,
+		IncludePublic: true,
 	}
 }
 
@@ -164,7 +164,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error 
 	}
 
 	// Create store directory structure
-	if err := os.MkdirAll(configDir, 0755); err != nil {
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
@@ -177,7 +177,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error 
 	// Save include files
 	if len(parsed.IncludeFiles) > 0 {
 		includeDir := filepath.Join(configDir, "includes")
-		if err := os.MkdirAll(includeDir, 0755); err != nil {
+		if err := os.MkdirAll(includeDir, 0o755); err != nil {
 			return fmt.Errorf("failed to create includes directory: %w", err)
 		}
 
@@ -193,7 +193,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error 
 	// Save private keys
 	if opts.IncludeKeys && len(parsed.PrivateKeys) > 0 {
 		keysDir := filepath.Join(configDir, "keys")
-		if err := os.MkdirAll(keysDir, 0700); err != nil {
+		if err := os.MkdirAll(keysDir, 0o700); err != nil {
 			return fmt.Errorf("failed to create keys directory: %w", err)
 		}
 
@@ -204,7 +204,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error 
 				fmt.Printf("Warning: failed to copy private key %s: %v\n", keyFile, err)
 			} else {
 				// Set proper permissions for private keys
-				os.Chmod(destPath, 0600)
+				os.Chmod(destPath, 0o600)
 			}
 		}
 	}
@@ -212,7 +212,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error 
 	// Save public keys
 	if opts.IncludePublic && len(parsed.PublicKeys) > 0 {
 		keysDir := filepath.Join(configDir, "keys")
-		if err := os.MkdirAll(keysDir, 0755); err != nil {
+		if err := os.MkdirAll(keysDir, 0o755); err != nil {
 			return fmt.Errorf("failed to create keys directory: %w", err)
 		}
 
@@ -286,7 +286,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	}
 
 	// Create target directory
-	if err := os.MkdirAll(filepath.Dir(opts.ConfigPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(opts.ConfigPath), 0o755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
@@ -308,7 +308,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 					srcPath := filepath.Join(includeDir, entry.Name())
 					// For now, restore to config.d/ directory
 					configD := filepath.Join(filepath.Dir(opts.ConfigPath), "config.d")
-					if err := os.MkdirAll(configD, 0755); err == nil {
+					if err := os.MkdirAll(configD, 0o755); err == nil {
 						// Remove the prefix we added during save
 						originalName := strings.TrimPrefix(entry.Name(), "include_")
 						if idx := strings.Index(originalName, "_"); idx > 0 {
@@ -337,9 +337,9 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 					if err := c.copyFile(srcPath, destPath); err == nil {
 						// Set proper permissions
 						if strings.HasSuffix(entry.Name(), ".pub") {
-							os.Chmod(destPath, 0644)
+							os.Chmod(destPath, 0o644)
 						} else {
-							os.Chmod(destPath, 0600)
+							os.Chmod(destPath, 0o600)
 						}
 						loadedFiles++
 					}

@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz git webhook delete --id 12345678 --repo myorg/myrepo
 ```
@@ -18,6 +19,7 @@ gz git webhook delete --id 12345678 --repo myorg/myrepo
 ### Expected Output
 
 **Success Case**:
+
 ```text
 🗑️  Deleting webhook from repository: myorg/myrepo
 
@@ -66,6 +68,7 @@ Exit Code: 0
 ```
 
 **Webhook Not Found**:
+
 ```text
 🗑️  Deleting webhook from repository: myorg/myrepo
 
@@ -92,6 +95,7 @@ Exit Code: 1
 ```
 
 **Permission Denied**:
+
 ```text
 🗑️  Deleting webhook from repository: myorg/myrepo
 
@@ -118,6 +122,7 @@ Exit Code: 2
 ```
 
 **Interactive Deletion Cancelled**:
+
 ```text
 🗑️  Deleting webhook from repository: myorg/myrepo
 
@@ -149,6 +154,7 @@ Exit Code: 1
 ```
 
 **Bulk Deletion**:
+
 ```text
 # Command: gz git webhook delete --inactive --repo myorg/myrepo --confirm
 
@@ -197,14 +203,17 @@ Exit Code: 0
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/git/webhooks/deletion-audit-<timestamp>.json` - Deletion audit log
 - `~/.gzh/git/webhook-backups/<webhook-id>.json` - Webhook configuration backup
 
 **Files Modified**:
+
 - Repository webhook configuration via API
 - Webhook registry updated (webhook removed)
 
 **State Changes**:
+
 - Webhook removed from repository
 - Event delivery stopped to deleted webhook endpoint
 - Webhook delivery history archived
@@ -212,6 +221,7 @@ Exit Code: 0
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test webhook deletion (requires test repository with admin access)
 # First create a test webhook
@@ -233,34 +243,39 @@ assert_contains "$audit_content" '"deleted_at":'
 ```
 
 **Manual Verification**:
+
 1. Delete webhook and confirm removal from repository
-2. Test webhook not found error handling
-3. Verify permission error with read-only access
-4. Check interactive confirmation workflow
-5. Test bulk deletion of inactive webhooks
-6. Validate audit log creation and backup
+1. Test webhook not found error handling
+1. Verify permission error with read-only access
+1. Check interactive confirmation workflow
+1. Test bulk deletion of inactive webhooks
+1. Validate audit log creation and backup
 
 ### Edge Cases
 
 **Webhook Dependencies**:
+
 - Webhooks with active CI/CD integrations
 - Webhooks shared across multiple systems
 - Critical production webhook endpoints
 - Webhooks with complex event filtering
 
 **Timing and Concurrency**:
+
 - Webhook deletion during active delivery
 - Multiple users managing webhooks simultaneously
 - API rate limiting during bulk operations
 - Webhook recreation immediately after deletion
 
 **Data Integrity**:
+
 - Delivery history preservation
 - Configuration backup before deletion
 - Audit trail maintenance
 - Recovery information storage
 
 **Organization Policies**:
+
 - Organization-level webhook policies
 - Required webhooks that cannot be deleted
 - Approval workflows for webhook changes
@@ -269,17 +284,20 @@ assert_contains "$audit_content" '"deleted_at":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Single webhook deletion: < 5 seconds
 - Bulk deletion: < 30 seconds for 10 webhooks
 - Interactive confirmation: immediate UI response
 - Audit log creation: < 2 seconds
 
 **Resource Usage**:
+
 - Memory: < 30MB
 - Network: Single API call per webhook
 - CPU: Low impact deletion operations
 
 **Safety Measures**:
+
 - Configuration backup before deletion
 - Interactive confirmation for active webhooks
 - Audit logging for all deletions

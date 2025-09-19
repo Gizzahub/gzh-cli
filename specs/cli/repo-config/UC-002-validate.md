@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz repo-config validate --template enterprise --repo https://github.com/myorg/myrepo.git
 ```
@@ -18,6 +19,7 @@ gz repo-config validate --template enterprise --repo https://github.com/myorg/my
 ### Expected Output
 
 **Fully Compliant Repository**:
+
 ```text
 🔍 Validating repository configuration: enterprise
 
@@ -70,6 +72,7 @@ Exit Code: 0
 ```
 
 **Non-Compliant Repository**:
+
 ```text
 🔍 Validating repository configuration: enterprise
 
@@ -134,6 +137,7 @@ Exit Code: 1
 ```
 
 **Template Not Found**:
+
 ```text
 🔍 Validating repository configuration: nonexistent
 
@@ -155,6 +159,7 @@ Exit Code: 1
 ```
 
 **Repository Access Error**:
+
 ```text
 🔍 Validating repository configuration: enterprise
 
@@ -179,6 +184,7 @@ Exit Code: 2
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/repo-config/validation-<repo>-<timestamp>.json` - Validation report
 - `~/.gzh/repo-config/compliance-summary.json` - Compliance summary cache
 
@@ -188,6 +194,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test validation with compliant repository
 result=$(gz repo-config validate --template test-config --repo "test-org/compliant-repo" 2>&1)
@@ -205,34 +212,39 @@ assert_contains "$report_content" '"checks":'
 ```
 
 **Manual Verification**:
+
 1. Validate against known compliant repository
-2. Test with non-compliant repository
-3. Verify compliance score calculations
-4. Check detailed violation reports
-5. Test with different template types
-6. Confirm access error handling
+1. Test with non-compliant repository
+1. Verify compliance score calculations
+1. Check detailed violation reports
+1. Test with different template types
+1. Confirm access error handling
 
 ### Edge Cases
 
 **Repository States**:
+
 - Archived repositories (limited configuration access)
 - Empty repositories (missing default branch)
 - Forked repositories (restricted permissions)
 - Template repositories (special configurations)
 
 **Template Variations**:
+
 - Custom organization templates
 - Template inheritance and overrides
 - Conditional rules based on repository type
 - Language-specific requirements
 
 **API Limitations**:
+
 - Rate limiting during bulk validations
 - Incomplete API responses
 - Deprecated API endpoints
 - Platform-specific feature availability
 
 **Complex Configurations**:
+
 - Multiple branch protection rules
 - Nested team permissions
 - Environment-specific secrets
@@ -241,17 +253,20 @@ assert_contains "$report_content" '"checks":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Single repository: < 15 seconds
 - Batch validation: < 2 minutes per 10 repositories
 - Complex templates: < 30 seconds
 - Cached results: < 2 seconds
 
 **Resource Usage**:
+
 - Memory: < 50MB
 - Network: Read-only API calls
 - CPU: Low impact except JSON processing
 
 **Validation Coverage**:
+
 - Repository settings: 15-25 checks
 - Branch protection: 5-10 rules
 - Security features: 3-8 settings

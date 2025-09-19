@@ -53,9 +53,9 @@ type ParsedSSHConfig struct {
 The key installation system uses Go's SSH and SFTP libraries for reliable remote operations:
 
 1. **SSH Connection**: Establishes secure connection with multiple authentication methods
-2. **SFTP Session**: Creates SFTP client for file operations
-3. **File Processing**: Reads/writes `authorized_keys` using native Go file operations
-4. **Permission Setting**: Uses SFTP chmod for proper file permissions
+1. **SFTP Session**: Creates SFTP client for file operations
+1. **File Processing**: Reads/writes `authorized_keys` using native Go file operations
+1. **Permission Setting**: Uses SFTP chmod for proper file permissions
 
 ## Commands Reference
 
@@ -66,6 +66,7 @@ gz dev-env ssh save --name <config-name> [options]
 ```
 
 **Options:**
+
 - `--name`: Configuration name (required)
 - `--description`: Optional description for the configuration
 - `--include-keys`: Include private keys in backup (default: true)
@@ -109,6 +110,7 @@ gz dev-env ssh load --name <config-name> [options]
 ```
 
 **Options:**
+
 - `--name`: Configuration name to load (required)
 - `--backup`: Create backup of current SSH config before loading
 - `--force`: Overwrite existing files without confirmation
@@ -130,6 +132,7 @@ gz dev-env ssh list [options]
 ```
 
 **Options:**
+
 - `--all`: Show detailed information for all configurations
 - `--name`: Show details for specific configuration
 
@@ -155,8 +158,9 @@ gz dev-env ssh install-key --host <hostname> --user <username> [options]
 ```
 
 **Options:**
+
 - `--host`: Remote server hostname or IP (required)
-- `--user`: SSH username (required)  
+- `--user`: SSH username (required)
 - `--public-key`: Path to public key file
 - `--private-key`: Path to private key for authentication
 - `--config`: Install all keys from saved configuration
@@ -196,6 +200,7 @@ gz dev-env ssh list-keys [options]
 ```
 
 **Options:**
+
 - `--config`: Show keys from specific configuration
 
 **Examples:**
@@ -375,6 +380,7 @@ gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id
 ```
 
 **Solutions**:
+
 - Verify hostname and port are correct
 - Check if SSH service is running on remote server
 - Ensure firewall allows SSH connections
@@ -385,6 +391,7 @@ gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id
 **Problem**: Include files not being parsed correctly
 
 **Solutions**:
+
 - Check include directive syntax in SSH config
 - Verify include file paths exist and are readable
 - Use absolute paths in Include directives
@@ -395,6 +402,7 @@ gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id
 **Problem**: Permission denied errors during installation
 
 **Solutions**:
+
 - Verify SSH user has permission to modify `~/.ssh/authorized_keys`
 - Check if `~/.ssh` directory exists and has proper permissions
 - Try installing as a different user with appropriate permissions

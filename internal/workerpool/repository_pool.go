@@ -23,12 +23,12 @@ const (
 
 // RepositoryJob represents a repository operation job.
 type RepositoryJob struct {
-	Repository string
-	Operation  RepositoryOperation
-	Path       string
-	Branch     string
-	Strategy   string
-	WorkerPoolConfig     map[string]interface{} // For configuration operations
+	Repository       string
+	Operation        RepositoryOperation
+	Path             string
+	Branch           string
+	Strategy         string
+	WorkerPoolConfig map[string]interface{} // For configuration operations
 }
 
 // RepositoryResult represents the result of a repository operation.

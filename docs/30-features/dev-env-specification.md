@@ -11,6 +11,7 @@ The `dev-env` command provides development environment management capabilities, 
 The dev-env command provides both individual service management (for fine-grained control) and unified environment switching (for streamlined workflows):
 
 #### Individual Service Management (Primary)
+
 - `gz dev-env kubeconfig` - Kubernetes configuration management
 - `gz dev-env docker` - Docker environment and context management
 - `gz dev-env aws` - AWS configuration management
@@ -23,6 +24,7 @@ The dev-env command provides both individual service management (for fine-graine
 - `gz dev-env ssh` - SSH configuration management
 
 #### Unified Environment Management (Secondary)
+
 - `gz dev-env tui` - Interactive TUI dashboard for environment management
 - `gz dev-env switch-all` - Atomic environment switching across all services
 - `gz dev-env status` - Display current status of all development services
@@ -34,6 +36,7 @@ The dev-env command provides both individual service management (for fine-graine
 **Purpose**: Manage Kubernetes configuration files and contexts
 
 **Features**:
+
 - Save and restore kubeconfig files
 - Switch between different cluster contexts
 - Manage multiple environment configurations
@@ -52,6 +55,7 @@ gz dev-env kubeconfig delete --name old-cluster # Delete saved configuration
 **Purpose**: Manage Docker contexts and configurations
 
 **Features**:
+
 - Save and restore Docker contexts
 - Switch between different Docker environments
 - Manage Docker registry configurations
@@ -70,6 +74,7 @@ gz dev-env docker context switch remote-prod    # Switch Docker context
 **Purpose**: Manage AWS configurations and settings
 
 **Features**:
+
 - Save and restore AWS configurations
 - Manage multiple AWS environment setups
 - Region and account switching
@@ -88,6 +93,7 @@ gz dev-env aws region set us-west-2             # Set AWS region
 **Purpose**: Secure management of AWS credentials
 
 **Features**:
+
 - Encrypted storage of AWS credentials
 - Multiple credential profile management
 - Credential rotation and validation
@@ -106,6 +112,7 @@ gz dev-env aws-credentials validate --name prod # Validate credentials
 **Purpose**: Advanced AWS profile management with SSO support
 
 **Features**:
+
 - AWS SSO integration
 - Profile switching and management
 - Session management and renewal
@@ -124,6 +131,7 @@ gz dev-env aws-profile logout                   # Logout from current profile
 **Purpose**: Manage Google Cloud SDK configurations
 
 **Features**:
+
 - Save and restore gcloud configurations
 - Multiple gcloud configuration management
 - Account and authentication handling
@@ -142,6 +150,7 @@ gz dev-env gcloud auth login                    # Authenticate with Google Cloud
 **Purpose**: Secure Google Cloud credentials management
 
 **Features**:
+
 - Service account key management
 - Application default credentials handling
 - Credential validation and rotation
@@ -160,6 +169,7 @@ gz dev-env gcloud-credentials validate          # Validate current credentials
 **Purpose**: Manage GCP projects and configurations
 
 **Features**:
+
 - Project switching and management
 - gcloud configuration per project
 - Service account management
@@ -180,6 +190,7 @@ gz dev-env gcp-project validate                 # Validate project setup
 **Purpose**: Manage Azure subscriptions and configurations
 
 **Features**:
+
 - Azure subscription switching
 - Multi-tenant support
 - Azure CLI integration
@@ -200,6 +211,7 @@ gz dev-env azure-subscription validate          # Validate subscription
 **Purpose**: Comprehensive SSH configuration management with intelligent parsing and modern key deployment
 
 **Enhanced Features**:
+
 - **Intelligent Config Parsing**: Automatically parses and backs up Include directive files with glob pattern support
 - **IdentityFile Detection**: Automatically detects and backs up private keys referenced in SSH config
 - **Public Key Pairing**: Automatically includes corresponding .pub files for each private key
@@ -226,6 +238,7 @@ gz dev-env ssh install-key-simple --host server.com --user admin --public-key ~/
 ```
 
 **Storage Structure**:
+
 ```
 ~/.gz/ssh-configs/<name>/
 ├── config              # Main SSH config file
@@ -235,6 +248,7 @@ gz dev-env ssh install-key-simple --host server.com --user admin --public-key ~/
 ```
 
 **What Gets Automatically Processed**:
+
 - Main SSH config file (`~/.ssh/config`)
 - All files referenced by `Include` directives (supports glob patterns)
 - All private keys referenced by `IdentityFile` directives
@@ -250,6 +264,7 @@ See [SSH Management Guide](./33-ssh-management.md) for comprehensive documentati
 **Purpose**: Provides an interactive terminal interface for managing all development environments
 
 **Features**:
+
 - Real-time service status monitoring
 - Interactive service management
 - Environment switching capabilities
@@ -263,6 +278,7 @@ gz dev-env tui                                  # Launch interactive TUI dashboa
 ```
 
 **TUI Navigation**:
+
 - `↑/k, ↓/j` - Navigate up/down
 - `←/h, →/l` - Navigate left/right
 - `Enter` - Select/confirm action
@@ -274,6 +290,7 @@ gz dev-env tui                                  # Launch interactive TUI dashboa
 **Purpose**: Switch multiple cloud services and development environments atomically
 
 **Features**:
+
 - Atomic switching across all configured services
 - Rollback on failure
 - Dependency resolution and ordering
@@ -294,6 +311,7 @@ gz dev-env switch-all --rollback                # Rollback last switch
 **Purpose**: Display comprehensive status of all development environment services
 
 **Features**:
+
 - Unified status view of all services
 - Color-coded status indicators
 - Credential expiration warnings
@@ -462,6 +480,7 @@ gz dev-env azure-subscription validate
 The following advanced features may be considered for future releases:
 
 ### Advanced Integration Features
+
 - **Environment Validation**: Comprehensive configuration and permission validation
 - **Configuration Sync**: Bidirectional sync between local and cloud configurations
 - **Advanced TUI Features**: Enhanced visual dashboard with metrics and logs
@@ -469,12 +488,14 @@ The following advanced features may be considered for future releases:
 - **Quick Switch Presets**: Saved environment states for instant switching
 
 ### Automation and Orchestration
+
 - **Pre/Post Hooks**: Custom scripts executed during environment switches
 - **Dependency Resolution**: Automatic ordering and dependency handling during switches
 - **Rollback Mechanisms**: Comprehensive rollback for failed environment transitions
 - **Health Monitoring**: Continuous monitoring and alerting for environment health
 
 ### Enhanced Security
+
 - **Multi-Factor Authentication**: Enhanced MFA support for cloud services
 - **Credential Vaults**: Integration with external credential management systems
 - **Policy Enforcement**: Configuration compliance and security policy enforcement

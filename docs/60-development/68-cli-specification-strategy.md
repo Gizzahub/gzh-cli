@@ -9,9 +9,9 @@ gzh-cli follows **SDD (Specification-Driven Development)** for CLI command devel
 SDD is a development methodology where:
 
 1. **Command specifications are written first**
-2. **Expected inputs, outputs, and behaviors are clearly defined**  
-3. **Implementation follows the specification**
-4. **Tests validate against the specification**
+1. **Expected inputs, outputs, and behaviors are clearly defined**
+1. **Implementation follows the specification**
+1. **Tests validate against the specification**
 
 This approach is particularly effective for CLI tools where the user interface is the command-line interface itself.
 
@@ -22,13 +22,13 @@ This approach is particularly effective for CLI tools where the user interface i
 Every CLI command specification includes:
 
 1. **Input Specification**: Command syntax, flags, arguments
-2. **Output Specification**: stdout, stderr, exit codes
-3. **Side Effects**: Files created, state changes
-4. **Validation Rules**: Success/failure conditions
+1. **Output Specification**: stdout, stderr, exit codes
+1. **Side Effects**: Files created, state changes
+1. **Validation Rules**: Success/failure conditions
 
 ### Specification Template
 
-```markdown
+````markdown
 ## Command: gz [subcommand] [options]
 
 ### Scenario: [Brief description]
@@ -36,26 +36,30 @@ Every CLI command specification includes:
 **Input**:
 ```bash
 gz command --flag value argument
-```
+````
 
 **Expected Output**:
+
 - **stdout**: Expected patterns, messages, progress indicators
 - **stderr**: Error messages (if any)
 - **Exit Code**: 0 (success) or non-zero (failure)
 
 **Side Effects**:
+
 - Files/directories created
 - Configuration changes
 - Network operations
 
 **Validation**:
+
 ```bash
 # Test commands to verify behavior
 assert_contains "$output" "expected string"
 assert_directory_exists "./target"
 assert_exit_code 0
 ```
-```
+
+````
 
 ### Success Criteria
 
@@ -79,7 +83,7 @@ gz synclone github -o myorg
 # Expected: "📋 Found X repositories in organization myorg"
 # Exit Code: 0
 # Side Effect: ./myorg/ directory created with repositories
-```
+````
 
 ### 2. Error Scenarios
 
@@ -335,6 +339,6 @@ See detailed examples in:
 - [Development Guide](60-index.md) - Development workflow
 - [Command Reference](../50-api-reference/50-command-reference.md) - Complete CLI documentation
 
----
+______________________________________________________________________
 
 **Next Steps**: Apply this strategy to all CLI commands, starting with critical user workflows like `synclone`, `git`, and `quality`.

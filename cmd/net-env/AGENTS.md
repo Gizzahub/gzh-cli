@@ -7,6 +7,7 @@
 **net-env**는 네트워크 환경 전환, VPN 관리, DNS 설정을 통합하는 복잡한 네트워크 관리 모듈입니다.
 
 ### 핵심 기능
+
 - 네트워크 프로필 기반 환경 전환
 - VPN 연결 관리 및 자동화
 - DNS 서버 동적 변경
@@ -17,6 +18,7 @@
 ## 🌐 개발 시 핵심 주의사항
 
 ### 1. 네트워크 상태 안전성
+
 ```go
 // ✅ 안전한 네트워크 전환
 func (p *ProfileManager) SwitchProfile(name string) error {
@@ -35,6 +37,7 @@ func (p *ProfileManager) SwitchProfile(name string) error {
 ```
 
 ### 2. VPN 연결 안정성
+
 ```go
 // ✅ VPN 연결 상태 모니터링
 func (v *VPNManager) ConnectWithMonitoring(profile string) error {
@@ -64,6 +67,7 @@ func (v *VPNManager) ConnectWithMonitoring(profile string) error {
 ```
 
 ### 3. 플랫폼별 네트워크 처리
+
 ```go
 // ✅ 크로스 플랫폼 네트워크 관리
 type NetworkManager interface {
@@ -92,6 +96,7 @@ func (w *WindowsNetworkManager) SetDNS(servers []string) error {
 ```
 
 ### 4. TUI 실시간 업데이트
+
 ```go
 // ✅ 안전한 TUI 상태 관리
 type NetworkTUI struct {
@@ -120,6 +125,7 @@ func (n *NetworkTUI) StartMonitoring() {
 ## 🧪 테스트 요구사항
 
 ### 네트워크 시나리오 테스트
+
 ```bash
 # VPN 연결 테스트
 go test ./cmd/net-env -v -run TestVPNConnection
@@ -135,6 +141,7 @@ go test ./cmd/net-env -v -run TestTUIFunctionality
 ```
 
 ### 필수 시뮬레이션 테스트
+
 - **네트워크 연결 끊김**: VPN 연결 실패 시나리오
 - **DNS 응답 지연**: 느린 DNS 서버 응답 처리
 - **프록시 인증 실패**: 프록시 서버 인증 문제
@@ -143,16 +150,19 @@ go test ./cmd/net-env -v -run TestTUIFunctionality
 ## 🔧 플랫폼별 고려사항
 
 ### Linux
+
 - **NetworkManager 연동**: `nmcli` 명령어 활용
 - **systemd-resolved**: DNS 설정 관리
 - **iptables 규칙**: 방화벽 설정 충돌 방지
 
 ### macOS
+
 - **scutil 활용**: DNS 서버 동적 변경
 - **keychain 접근**: VPN 자격증명 안전 저장
 - **네트워크 서비스 우선순위**: 여러 인터페이스 관리
 
 ### Windows
+
 - **netsh 명령어**: 네트워크 어댑터 설정
 - **WMI 쿼리**: 네트워크 상태 조회
 - **UAC 권한**: 관리자 권한 필요 작업 처리
@@ -160,6 +170,7 @@ go test ./cmd/net-env -v -run TestTUIFunctionality
 ## 📊 모니터링 메트릭
 
 ### 네트워크 성능
+
 ```go
 type NetworkMetrics struct {
     Latency     time.Duration `json:"latency"`
@@ -172,6 +183,7 @@ type NetworkMetrics struct {
 ```
 
 ### 연결 안정성
+
 - **VPN 연결 지속 시간**: 연결 끊김 빈도 추적
 - **DNS 응답 시간**: 도메인 해석 성능 모니터링
 - **프로필 전환 성공률**: 환경 전환 실패 비율
@@ -179,6 +191,7 @@ type NetworkMetrics struct {
 ## 🚨 보안 고려사항
 
 ### VPN 자격증명 보호
+
 ```go
 // ✅ 안전한 자격증명 처리
 func (v *VPNCredentials) Store(profile string, creds *Credentials) error {
@@ -201,6 +214,7 @@ func (v *VPNCredentials) Store(profile string, creds *Credentials) error {
 ```
 
 ### DNS 보안
+
 - **DNS over HTTPS**: 안전한 DNS 쿼리 지원
 - **DNS 필터링**: 악성 도메인 차단 기능
 - **로그 최소화**: DNS 쿼리 로그 보안 고려
@@ -208,6 +222,7 @@ func (v *VPNCredentials) Store(profile string, creds *Credentials) error {
 ## 🔧 디버깅 가이드
 
 ### 네트워크 문제 진단
+
 ```bash
 # 현재 네트워크 상태 확인
 gz net-env status --verbose
@@ -223,9 +238,10 @@ gz net-env actions vpn connect office --debug
 ```
 
 ### 일반적인 문제와 해결
+
 1. **VPN 연결 실패**: 자격증명 및 네트워크 연결 확인
-2. **DNS 변경 안됨**: 시스템 권한 및 NetworkManager 상태 확인
-3. **TUI 응답 없음**: 터미널 호환성 및 권한 확인
-4. **프로필 전환 실패**: 설정 파일 구문 오류 검사
+1. **DNS 변경 안됨**: 시스템 권한 및 NetworkManager 상태 확인
+1. **TUI 응답 없음**: 터미널 호환성 및 권한 확인
+1. **프로필 전환 실패**: 설정 파일 구문 오류 검사
 
 **핵심**: net-env는 시스템 네트워크 설정을 직접 변경하므로, 모든 변경사항은 롤백 가능하도록 설계하고 권한 및 보안을 철저히 고려해야 합니다.

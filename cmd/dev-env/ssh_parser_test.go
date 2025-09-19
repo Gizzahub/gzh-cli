@@ -115,23 +115,23 @@ Host example
 			// Create temporary directory structure
 			tempDir := t.TempDir()
 			sshDir := filepath.Join(tempDir, ".ssh")
-			require.NoError(t, os.MkdirAll(sshDir, 0755))
+			require.NoError(t, os.MkdirAll(sshDir, 0o755))
 
 			// Create main config file
 			configPath := filepath.Join(sshDir, "config")
-			require.NoError(t, os.WriteFile(configPath, []byte(tt.config), 0644))
+			require.NoError(t, os.WriteFile(configPath, []byte(tt.config), 0o644))
 
 			// Create include files
 			for relPath, content := range tt.includeFiles {
 				fullPath := filepath.Join(sshDir, relPath)
-				require.NoError(t, os.MkdirAll(filepath.Dir(fullPath), 0755))
-				require.NoError(t, os.WriteFile(fullPath, []byte(content), 0644))
+				require.NoError(t, os.MkdirAll(filepath.Dir(fullPath), 0o755))
+				require.NoError(t, os.WriteFile(fullPath, []byte(content), 0o644))
 			}
 
 			// Create key files
 			for keyName, content := range tt.keyFiles {
 				keyPath := filepath.Join(sshDir, keyName)
-				require.NoError(t, os.WriteFile(keyPath, []byte(content), 0600))
+				require.NoError(t, os.WriteFile(keyPath, []byte(content), 0o600))
 			}
 
 			// Parse SSH config
@@ -162,21 +162,21 @@ Host example
 func TestSSHConfigParser_ParseIncludeLine(t *testing.T) {
 	tempDir := t.TempDir()
 	sshDir := filepath.Join(tempDir, ".ssh")
-	require.NoError(t, os.MkdirAll(sshDir, 0755))
+	require.NoError(t, os.MkdirAll(sshDir, 0o755))
 
 	// Create test files
 	configDir := filepath.Join(sshDir, "config.d")
-	require.NoError(t, os.MkdirAll(configDir, 0755))
-	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file1.conf"), []byte("test"), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file2.conf"), []byte("test"), 0644))
+	require.NoError(t, os.MkdirAll(configDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file1.conf"), []byte("test"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file2.conf"), []byte("test"), 0o644))
 
 	parser := NewSSHConfigParser(filepath.Join(sshDir, "config"))
 	result := &ParsedSSHConfig{}
 
 	tests := []struct {
-		name           string
-		line           string
-		expectedCount  int
+		name          string
+		line          string
+		expectedCount int
 	}{
 		{
 			name:          "glob pattern",
@@ -218,54 +218,54 @@ func TestSSHConfigParser_ParseIncludeLine(t *testing.T) {
 func TestSSHConfigParser_ParseIdentityFileLine(t *testing.T) {
 	tempDir := t.TempDir()
 	sshDir := filepath.Join(tempDir, ".ssh")
-	require.NoError(t, os.MkdirAll(sshDir, 0755))
+	require.NoError(t, os.MkdirAll(sshDir, 0o755))
 
 	// Create test key files
-	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "test_key"), []byte("private"), 0600))
-	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "test_key.pub"), []byte("public"), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "no_pub_key"), []byte("private"), 0600))
+	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "test_key"), []byte("private"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "test_key.pub"), []byte("public"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "no_pub_key"), []byte("private"), 0o600))
 
 	parser := NewSSHConfigParser(filepath.Join(sshDir, "config"))
-	
+
 	tests := []struct {
-		name               string
-		line               string
+		name                string
+		line                string
 		expectedPrivateKeys int
 		expectedPublicKeys  int
 	}{
 		{
-			name:               "identity file with pub key relative path",
-			line:               "IdentityFile test_key",
+			name:                "identity file with pub key relative path",
+			line:                "IdentityFile test_key",
 			expectedPrivateKeys: 1,
 			expectedPublicKeys:  1,
 		},
 		{
-			name:               "identity file without pub key relative path",
-			line:               "IdentityFile no_pub_key",
+			name:                "identity file without pub key relative path",
+			line:                "IdentityFile no_pub_key",
 			expectedPrivateKeys: 1,
 			expectedPublicKeys:  0,
 		},
 		{
-			name:               "case insensitive",
-			line:               "IDENTITYFILE test_key",
+			name:                "case insensitive",
+			line:                "IDENTITYFILE test_key",
 			expectedPrivateKeys: 1,
 			expectedPublicKeys:  1,
 		},
 		{
-			name:               "with extra spaces",
-			line:               "  IdentityFile   test_key  ",
+			name:                "with extra spaces",
+			line:                "  IdentityFile   test_key  ",
 			expectedPrivateKeys: 1,
 			expectedPublicKeys:  1,
 		},
 		{
-			name:               "not an identity file line",
-			line:               "HostName example.com",
+			name:                "not an identity file line",
+			line:                "HostName example.com",
 			expectedPrivateKeys: 0,
 			expectedPublicKeys:  0,
 		},
 		{
-			name:               "non-existent key",
-			line:               "IdentityFile nonexistent",
+			name:                "non-existent key",
+			line:                "IdentityFile nonexistent",
 			expectedPrivateKeys: 0,
 			expectedPublicKeys:  0,
 		},

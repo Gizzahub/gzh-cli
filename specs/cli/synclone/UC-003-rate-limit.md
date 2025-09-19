@@ -5,11 +5,13 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz synclone github -o microsoft
 ```
 
 **Prerequisites**:
+
 - [ ] gzh-cli binary installed
 - [ ] Network connectivity to api.github.com
 - [ ] NO GITHUB_TOKEN environment variable set (to trigger rate limiting)
@@ -18,6 +20,7 @@ gz synclone github -o microsoft
 ### Expected Output
 
 **Rate Limit Error Case**:
+
 ```
 12:31:20 INFO  [component=gzh-cli org=microsoft] Starting GitHub synclone operation
 12:31:20 INFO  [component=gzh-cli org=microsoft] Starting synclone workflow: fetching repository list from GitHub
@@ -39,19 +42,21 @@ stderr: (empty)
 Exit Code: 1
 ```
 
-**Critical Requirement**: 
+**Critical Requirement**:
+
 - ❌ **NO Usage block should be displayed**
 - ❌ **NO command help should be shown**
 
 ### Side Effects
 
 **Files Created**: None (operation fails before file creation)
-**Files Modified**: None  
+**Files Modified**: None\
 **State Changes**: None (clean failure with no partial state)
 
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test rate limit error (requires exhausted API quota)
 unset GITHUB_TOKEN  # Ensure no token
@@ -77,15 +82,17 @@ assert_not_file_exists "./microsoft/gzh.yaml"
 ```
 
 **Manual Verification**:
+
 1. Ensure no GITHUB_TOKEN is set in environment
-2. Run command on large organization (microsoft, google, etc.)
-3. **Verify NO Usage block is displayed after error**
-4. Confirm error message provides helpful guidance
-5. Check that no partial files/directories are created
+1. Run command on large organization (microsoft, google, etc.)
+1. **Verify NO Usage block is displayed after error**
+1. Confirm error message provides helpful guidance
+1. Check that no partial files/directories are created
 
 ### Error Message Requirements
 
 **Must Include**:
+
 - 🚫 Clear rate limit exceeded indicator
 - Specific rate limit details (60 requests/hour for unauthenticated)
 - Remaining requests count (should be 0)
@@ -94,6 +101,7 @@ assert_not_file_exists "./microsoft/gzh.yaml"
 - 💡 Solution with exact command to set token
 
 **Must NOT Include**:
+
 - Usage block with command help
 - List of available flags
 - Global flags documentation
@@ -101,11 +109,13 @@ assert_not_file_exists "./microsoft/gzh.yaml"
 ### Performance Expectations
 
 **Response Time**:
+
 - Error detection: < 5 seconds
 - Error message display: Immediate
 - Process termination: Clean and fast
 
 **Resource Usage**:
+
 - Memory: Minimal (error path)
 - No file I/O operations
 - Network: Only failed API call

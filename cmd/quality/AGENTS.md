@@ -7,6 +7,7 @@
 **quality**는 코드 품질 검증, 린팅, 포맷팅을 관리하는 모듈입니다.
 
 ### 핵심 기능
+
 - 코드 린팅 (golint, eslint, pylint 등)
 - 코드 포맷팅 (gofmt, prettier, black 등)
 - 품질 메트릭 수집
@@ -15,6 +16,7 @@
 ## ⚠️ 개발 시 주의사항
 
 ### 1. 다양한 언어 지원
+
 ```go
 // ✅ 언어별 품질 도구 관리
 type QualityTool interface {
@@ -37,6 +39,7 @@ func (e *ESLinter) Check(files []string) ([]Issue, error) {
 ```
 
 ### 2. 설정 파일 관리
+
 ```go
 // ✅ 품질 도구 설정 통합
 func (q *QualityManager) LoadConfigurations() error {
@@ -56,6 +59,7 @@ func (q *QualityManager) LoadConfigurations() error {
 ```
 
 ### 3. 성능 최적화
+
 ```go
 // ✅ 병렬 품질 검사
 func (q *QualityManager) RunChecksParallel(files []string) error {

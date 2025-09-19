@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz git webhook create --repo myorg/myrepo --url https://api.example.com/webhook --events push,pull_request --secret mysecret
 ```
@@ -18,6 +19,7 @@ gz git webhook create --repo myorg/myrepo --url https://api.example.com/webhook 
 ### Expected Output
 
 **Success Case**:
+
 ```text
 🔗 Creating webhook for repository: myorg/myrepo
 
@@ -58,6 +60,7 @@ Exit Code: 0
 ```
 
 **Webhook Endpoint Validation Failed**:
+
 ```text
 🔗 Creating webhook for repository: myorg/myrepo
 
@@ -89,6 +92,7 @@ Exit Code: 1
 ```
 
 **Repository Permission Error**:
+
 ```text
 🔗 Creating webhook for repository: myorg/myrepo
 
@@ -115,6 +119,7 @@ Exit Code: 2
 ```
 
 **Duplicate Webhook Detection**:
+
 ```text
 🔗 Creating webhook for repository: myorg/myrepo
 
@@ -161,14 +166,17 @@ Exit Code: 0
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/git/webhooks/<repo>-webhooks.json` - Repository webhook registry
 - `~/.gzh/git/webhook-creation.log` - Webhook creation audit log
 
 **Files Modified**:
+
 - Repository webhook configuration via API
 - Webhook registry updated with new webhook details
 
 **State Changes**:
+
 - New webhook registered with repository
 - Webhook endpoint configured for event delivery
 - Secret key stored securely in repository settings
@@ -176,6 +184,7 @@ Exit Code: 0
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test webhook creation (requires test repository with admin access)
 result=$(gz git webhook create --repo "test-org/test-repo" --url "https://webhook.site/test" --events "push" 2>&1)
@@ -192,34 +201,39 @@ assert_contains "$registry_content" '"endpoint_url":'
 ```
 
 **Manual Verification**:
+
 1. Create webhook with valid endpoint
-2. Verify webhook appears in repository settings
-3. Test webhook receives events correctly
-4. Check duplicate webhook detection
-5. Validate permission error handling
-6. Confirm SSL validation works
+1. Verify webhook appears in repository settings
+1. Test webhook receives events correctly
+1. Check duplicate webhook detection
+1. Validate permission error handling
+1. Confirm SSL validation works
 
 ### Edge Cases
 
 **Event Configuration**:
+
 - Invalid event names for platform
 - Platform-specific event differences (GitHub vs GitLab)
 - Wildcard event subscriptions
 - Event filtering based on branch/path patterns
 
 **URL and Security**:
+
 - Non-HTTPS URLs (insecure webhooks)
 - URLs with authentication parameters
 - Internal/localhost URLs
 - URL redirections and proxy handling
 
 **Repository States**:
+
 - Archived repositories (webhook creation restricted)
 - Private repositories with limited access
 - Organization-owned repositories
 - Fork relationships and webhook inheritance
 
 **API and Network Issues**:
+
 - GitHub/GitLab API rate limiting
 - Network connectivity issues during creation
 - Webhook endpoint temporary unavailability
@@ -228,17 +242,20 @@ assert_contains "$registry_content" '"endpoint_url":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Simple webhook creation: < 5 seconds
 - With endpoint validation: < 15 seconds
 - Batch webhook creation: < 30 seconds per webhook
 - SSL certificate validation: < 3 seconds
 
 **Resource Usage**:
+
 - Memory: < 30MB
 - Network: API calls + endpoint validation
 - CPU: Low impact JSON processing
 
 **Validation Coverage**:
+
 - URL accessibility and response time
 - SSL certificate validity and hostname matching
 - Webhook endpoint capability testing

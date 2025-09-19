@@ -75,7 +75,7 @@ func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHCo
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		
+
 		// Skip comments and empty lines
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
@@ -100,13 +100,13 @@ func (p *SSHConfigParser) parseIncludeLine(line string, result *ParsedSSHConfig)
 	// Case-insensitive match for Include
 	includeRegex := regexp.MustCompile(`(?i)^\s*include\s+(.+)$`)
 	matches := includeRegex.FindStringSubmatch(line)
-	
+
 	if len(matches) != 2 {
 		return nil // Not an include line
 	}
 
 	includePath := strings.TrimSpace(matches[1])
-	
+
 	// Expand ~ to home directory
 	if strings.HasPrefix(includePath, "~/") {
 		homeDir, err := os.UserHomeDir()
@@ -115,7 +115,7 @@ func (p *SSHConfigParser) parseIncludeLine(line string, result *ParsedSSHConfig)
 		}
 		includePath = filepath.Join(homeDir, includePath[2:])
 	}
-	
+
 	// Handle relative paths
 	if !filepath.IsAbs(includePath) {
 		includePath = filepath.Join(p.sshDir, includePath)
@@ -142,13 +142,13 @@ func (p *SSHConfigParser) parseIdentityFileLine(line string, result *ParsedSSHCo
 	// Case-insensitive match for IdentityFile
 	identityRegex := regexp.MustCompile(`(?i)^\s*identityfile\s+(.+)$`)
 	matches := identityRegex.FindStringSubmatch(line)
-	
+
 	if len(matches) != 2 {
 		return nil // Not an identity file line
 	}
 
 	keyPath := strings.TrimSpace(matches[1])
-	
+
 	// Expand ~ to home directory
 	if strings.HasPrefix(keyPath, "~/") {
 		homeDir, err := os.UserHomeDir()
@@ -157,7 +157,7 @@ func (p *SSHConfigParser) parseIdentityFileLine(line string, result *ParsedSSHCo
 		}
 		keyPath = filepath.Join(homeDir, keyPath[2:])
 	}
-	
+
 	// Handle relative paths
 	if !filepath.IsAbs(keyPath) {
 		keyPath = filepath.Join(p.sshDir, keyPath)
@@ -166,7 +166,7 @@ func (p *SSHConfigParser) parseIdentityFileLine(line string, result *ParsedSSHCo
 	// Check if private key file exists
 	if stat, err := os.Stat(keyPath); err == nil && stat.Mode().IsRegular() {
 		result.PrivateKeys = append(result.PrivateKeys, keyPath)
-		
+
 		// Also check for corresponding public key
 		pubKeyPath := keyPath + ".pub"
 		if stat, err := os.Stat(pubKeyPath); err == nil && stat.Mode().IsRegular() {
@@ -181,13 +181,13 @@ func (p *SSHConfigParser) parseIdentityFileLine(line string, result *ParsedSSHCo
 func removeDuplicates(slice []string) []string {
 	keys := make(map[string]bool)
 	result := []string{}
-	
+
 	for _, item := range slice {
 		if !keys[item] {
 			keys[item] = true
 			result = append(result, item)
 		}
 	}
-	
+
 	return result
 }

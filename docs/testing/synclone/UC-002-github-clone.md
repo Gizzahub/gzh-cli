@@ -5,11 +5,13 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz synclone github -o ScriptonBasestar
 ```
 
 **Prerequisites**:
+
 - [ ] gzh-cli binary installed (`gz --version` works)
 - [ ] Network connectivity to api.github.com
 - [ ] GITHUB_TOKEN environment variable set (recommended for rate limits)
@@ -18,6 +20,7 @@ gz synclone github -o ScriptonBasestar
 ### Expected Output
 
 **Success Case**:
+
 ```
 12:30:01 INFO  [component=gzh-cli org=ScriptonBasestar] Starting GitHub synclone operation
 12:30:01 INFO  [component=gzh-cli org=ScriptonBasestar] Starting synclone workflow: fetching repository list from GitHub
@@ -41,6 +44,7 @@ Exit Code: 0
 ### Side Effects
 
 **Files Created**:
+
 - `./ScriptonBasestar/`: Target directory for organization
 - `./ScriptonBasestar/gzh.yaml`: Metadata file with repository information
 - `./ScriptonBasestar/{repo-name}/`: Directory for each repository with full git clone
@@ -48,6 +52,7 @@ Exit Code: 0
 **Files Modified**: None (first run)
 
 **State Changes**:
+
 - Creates organization-specific directory structure
 - Initializes git repositories with remote tracking
 - Saves organizational metadata for future syncs
@@ -55,6 +60,7 @@ Exit Code: 0
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test successful clone
 export GITHUB_TOKEN="your_token_here"
@@ -88,15 +94,17 @@ done
 ```
 
 **Manual Verification**:
+
 1. Run command and observe progress indicators
-2. Check that target directory `./ScriptonBasestar` is created
-3. Verify `gzh.yaml` contains correct organization metadata
-4. Confirm each repository directory contains a valid git clone
-5. Validate that remote URLs point to ScriptonBasestar organization
+1. Check that target directory `./ScriptonBasestar` is created
+1. Verify `gzh.yaml` contains correct organization metadata
+1. Confirm each repository directory contains a valid git clone
+1. Validate that remote URLs point to ScriptonBasestar organization
 
 ### Edge Cases
 
 **Large Organization (>100 repos)**:
+
 ```bash
 gz synclone github -o kubernetes
 # Should handle pagination automatically
@@ -104,6 +112,7 @@ gz synclone github -o kubernetes
 ```
 
 **Empty Organization**:
+
 ```bash
 gz synclone github -o empty-test-org-12345
 # Expected: "📋 Found 0 repositories in organization empty-test-org-12345"
@@ -111,6 +120,7 @@ gz synclone github -o empty-test-org-12345
 ```
 
 **Special Characters in Repository Names**:
+
 - Repository names with hyphens: `my-awesome-repo`
 - Repository names with underscores: `my_awesome_repo`
 - Repository names with dots: `my.awesome.repo`
@@ -118,11 +128,13 @@ gz synclone github -o empty-test-org-12345
 ### Performance Expectations
 
 **Response Time**:
-- Small orgs (<10 repos): < 30 seconds
+
+- Small orgs (\<10 repos): < 30 seconds
 - Medium orgs (10-50 repos): < 2 minutes
 - Large orgs (50-100 repos): < 5 minutes
 
 **Resource Usage**:
+
 - Memory: < 500MB (configurable with --memory-limit)
 - Concurrent operations: 10 parallel clones (configurable with --parallel)
 - Network: Respects GitHub API rate limits

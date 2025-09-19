@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz net-env status
 ```
@@ -17,6 +18,7 @@ gz net-env status
 ### Expected Output
 
 **Active Network Environment**:
+
 ```text
 🌐 Network Environment Status
 
@@ -75,6 +77,7 @@ Exit Code: 0
 ```
 
 **No Network Environment**:
+
 ```text
 🌐 Network Environment Status
 
@@ -104,6 +107,7 @@ Exit Code: 1
 ```
 
 **Network Issues Detected**:
+
 ```text
 🌐 Network Environment Status
 
@@ -158,6 +162,7 @@ Exit Code: 2
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/net-env/status-cache.json` - Network status cache
 - `~/.gzh/net-env/connectivity-log.json` - Connection test results
 
@@ -167,6 +172,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test network status display
 result=$(gz net-env status 2>&1)
@@ -183,34 +189,39 @@ assert_contains "$cache_content" '"timestamp":'
 ```
 
 **Manual Verification**:
+
 1. Check status with healthy network environment
-2. Verify all connectivity tests are accurate
-3. Test status with network issues
-4. Confirm DNS resolution times are realistic
-5. Validate VPN status information
-6. Check auto-switch rule detection
+1. Verify all connectivity tests are accurate
+1. Test status with network issues
+1. Confirm DNS resolution times are realistic
+1. Validate VPN status information
+1. Check auto-switch rule detection
 
 ### Edge Cases
 
 **Multiple Network Interfaces**:
+
 - Ethernet + WiFi simultaneously active
 - VPN over multiple physical connections
 - Cellular backup connection
 - USB tethering scenarios
 
 **Network Transitions**:
+
 - WiFi network switching mid-test
 - VPN disconnection during status check
 - DNS server failover scenarios
 - Proxy server rotation
 
 **System Configuration Changes**:
+
 - External network manager changes
 - Manual DNS/proxy modifications
 - VPN client updates or restarts
 - Firewall rule changes
 
 **Performance Monitoring**:
+
 - Slow network connections (timeouts)
 - High latency environments
 - Bandwidth-limited connections
@@ -219,17 +230,20 @@ assert_contains "$cache_content" '"timestamp":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Cached status: < 500ms
 - DNS tests: < 2 seconds per server
 - Connectivity tests: < 5 seconds total
 - Full status check: < 10 seconds
 
 **Resource Usage**:
+
 - Memory: < 30MB
 - Network: Minimal test traffic (< 1KB per test)
 - CPU: Low impact status collection
 
 **Test Coverage**:
+
 - DNS resolution: 2-4 servers
 - Connectivity: 4-6 endpoints
 - Proxy: authentication and performance

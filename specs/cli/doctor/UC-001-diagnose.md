@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz doctor
 ```
@@ -17,6 +18,7 @@ gz doctor
 ### Expected Output
 
 **Success Case (Healthy System)**:
+
 ```text
 🔍 Running system diagnostics...
 
@@ -54,6 +56,7 @@ Exit Code: 0
 ```
 
 **Warning Case (Issues Found)**:
+
 ```text
 🔍 Running system diagnostics...
 
@@ -88,6 +91,7 @@ Exit Code: 1
 ```
 
 **Critical Error Case**:
+
 ```text
 🔍 Running system diagnostics...
 
@@ -112,7 +116,8 @@ Exit Code: 2
 
 ### Side Effects
 
-**Files Created**: 
+**Files Created**:
+
 - `~/.gzh/doctor-report.json` - Detailed diagnostic report
 
 **Files Modified**: None
@@ -121,6 +126,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test basic doctor run
 result=$(gz doctor 2>&1)
@@ -138,30 +144,35 @@ assert_contains "$report_content" '"system":'
 ```
 
 **Manual Verification**:
+
 1. Run on healthy system - should show all green checks
-2. Run without required tools - should show warnings
-3. Run without network - should show connectivity errors
-4. Verify recommendations are actionable
+1. Run without required tools - should show warnings
+1. Run without network - should show connectivity errors
+1. Verify recommendations are actionable
 
 ### Edge Cases
 
 **Missing Dependencies**:
+
 - Git not installed or not in PATH
 - Required development tools missing
 - Docker not running or not accessible
 
 **Network Issues**:
+
 - Offline environment (no internet)
 - Corporate firewall blocking APIs
 - DNS resolution problems
 - Proxy configuration issues
 
 **Permission Problems**:
+
 - Cannot access configuration files
 - Cannot write diagnostic report
 - Restricted system information access
 
 **Platform Differences**:
+
 - Windows PowerShell vs Command Prompt vs WSL
 - macOS with Homebrew vs system tools
 - Linux distributions with different package managers
@@ -170,11 +181,13 @@ assert_contains "$report_content" '"system":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Complete diagnostic: < 10 seconds
 - Network checks: < 5 seconds per endpoint
 - Tool detection: < 2 seconds
 
 **Resource Usage**:
+
 - Memory: < 100MB
 - Network: Minimal (API health checks only)
 - Disk: < 1MB for diagnostic report

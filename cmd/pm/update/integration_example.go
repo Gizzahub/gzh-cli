@@ -20,40 +20,40 @@ func DemoEnhancedUpdate(ctx context.Context, strategy string, dryRun bool, compa
 	fmt.Println("=== Enhanced PM Update Demo ===")
 	fmt.Println("This demonstrates the Phase 1 implementation improvements:")
 	fmt.Println("• Rich Unicode formatting with section banners")
-	fmt.Println("• Detailed version change tracking") 
+	fmt.Println("• Detailed version change tracking")
 	fmt.Println("• Step-by-step progress indication")
 	fmt.Println("• Resource availability checking")
 	fmt.Println("• Comprehensive summary with statistics")
 	fmt.Println()
-	
+
 	managers := []string{"brew", "asdf", "npm", "pip"}
-	
+
 	// Create enhanced update manager
 	eum := NewEnhancedUpdateManager(managers)
-	
+
 	// Create result structure for compatibility
 	res := &UpdateRunResult{
 		RunID:     "demo-enhanced-update",
 		StartedAt: time.Now(),
 		Mode:      UpdateRunMode{Compat: compatMode},
 	}
-	
+
 	// Execute enhanced update process
 	err := eum.RunEnhancedUpdateAll(ctx, strategy, dryRun, compatMode, res, true, 10)
 	if err != nil {
 		return fmt.Errorf("enhanced update failed: %w", err)
 	}
-	
+
 	fmt.Println()
 	fmt.Println("=== Demo Complete ===")
 	fmt.Println("The enhanced implementation provides:")
 	fmt.Printf("• 95%% specification compliance (vs 85%% current)\n")
 	fmt.Println("• Rich emoji and Unicode output formatting")
-	fmt.Println("• Detailed resource management and checking")  
+	fmt.Println("• Detailed resource management and checking")
 	fmt.Println("• Step-by-step progress with time estimates")
 	fmt.Println("• Comprehensive version change tracking")
 	fmt.Println("• Actionable error messages with fix suggestions")
-	
+
 	return nil
 }
 

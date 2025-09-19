@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz version
 ```
@@ -16,6 +17,7 @@ gz version
 ### Expected Output
 
 **Success Case**:
+
 ```text
 gzh-cli version 2.1.0 (commit: a1b2c3d4, built: 2025-09-02T12:30:00Z)
 
@@ -24,6 +26,7 @@ Exit Code: 0
 ```
 
 **Development Build**:
+
 ```text
 gzh-cli version dev (commit: local-dev, built: 2025-09-02T15:45:00Z)
 
@@ -40,6 +43,7 @@ Exit Code: 0
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test version command
 result=$(gz version 2>&1)
@@ -53,19 +57,22 @@ assert_exit_code 0
 ```
 
 **Manual Verification**:
+
 1. Run command and verify output format
-2. Check version number is meaningful
-3. Verify commit hash is present
-4. Confirm build timestamp is reasonable
+1. Check version number is meaningful
+1. Verify commit hash is present
+1. Confirm build timestamp is reasonable
 
 ### Edge Cases
 
 **Missing Build Information**:
+
 ```text
 gzh-cli version unknown (commit: unknown, built: unknown)
 ```
 
 **Custom Build Tags**:
+
 ```text
 gzh-cli version 2.1.0-beta.3 (commit: a1b2c3d4, built: 2025-09-02T12:30:00Z)
 ```

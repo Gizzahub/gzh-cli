@@ -658,6 +658,7 @@ gz dev-env ssh list-keys
 | `--verbose` | Enable verbose logging | install-key |
 
 **Features:**
+
 - **Intelligent Parsing**: Automatically processes Include directives with glob pattern support
 - **Key Detection**: Auto-detects and backs up IdentityFile private keys and corresponding public keys
 - **SFTP Installation**: Uses Go SSH/SFTP libraries for reliable remote key installation
@@ -666,6 +667,7 @@ gz dev-env ssh list-keys
 - **Verbose Logging**: Detailed debugging output with `--verbose` flag
 
 **Storage Structure:**
+
 ```
 ~/.gz/ssh-configs/<name>/
 ├── config              # Main SSH config

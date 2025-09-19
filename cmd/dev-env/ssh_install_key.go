@@ -96,18 +96,18 @@ Examples:
   gz dev-env ssh install-key --config production --host server.com --user admin --dry-run`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			installer := NewSSHKeyInstaller()
-			
+
 			// Set verbose mode based on global flag
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			installer.SetVerbose(verbose)
-			
+
 			var err error
 			if configName != "" {
 				err = c.installKeysFromConfig(installer, configName, host, user, port, password, force, dryRun)
 			} else {
 				err = c.installSingleKey(installer, host, port, user, publicKeyPath, privateKeyPath, password, force, dryRun)
 			}
-			
+
 			if err != nil {
 				// Don't show usage on execution errors
 				cmd.SilenceUsage = true
@@ -128,7 +128,7 @@ Examples:
 
 	cmd.MarkFlagRequired("host")
 	cmd.MarkFlagRequired("user")
-	
+
 	// Either public-key or config must be specified
 	cmd.MarkFlagsOneRequired("public-key", "config")
 
@@ -182,7 +182,7 @@ func (c *EnhancedSSHCommand) installKeysFromConfig(installer *SSHKeyInstaller, c
 	}
 
 	fmt.Printf("Installing keys from configuration '%s' to %s@%s:\n\n", configName, user, host)
-	
+
 	successCount := 0
 	for _, result := range results {
 		c.printInstallResult(result)
@@ -290,9 +290,9 @@ func (c *EnhancedSSHCommand) listKeysFromConfig(storeDir, configName string) err
 	}
 
 	keysDir := filepath.Join(storeDir, configName, "keys")
-	
+
 	fmt.Printf("   Public keys (%d found):\n", len(metadata.PublicKeys))
-	
+
 	for _, originalKeyPath := range metadata.PublicKeys {
 		keyName := filepath.Base(originalKeyPath)
 		publicKeyPath := filepath.Join(keysDir, keyName)

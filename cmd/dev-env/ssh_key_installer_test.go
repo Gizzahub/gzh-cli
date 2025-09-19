@@ -15,11 +15,11 @@ import (
 func TestSSHKeyInstaller_ValidateOptions(t *testing.T) {
 	installer := NewSSHKeyInstaller()
 	tempDir := t.TempDir()
-	
+
 	// Create test public key
 	testKeyPath := filepath.Join(tempDir, "test_key.pub")
 	testKeyContent := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7... test@example.com"
-	require.NoError(t, os.WriteFile(testKeyPath, []byte(testKeyContent), 0644))
+	require.NoError(t, os.WriteFile(testKeyPath, []byte(testKeyContent), 0o644))
 
 	tests := []struct {
 		name    string
@@ -144,7 +144,7 @@ func TestSSHKeyInstaller_ReadPublicKey(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			keyPath := filepath.Join(tempDir, tt.name+".pub")
-			require.NoError(t, os.WriteFile(keyPath, []byte(tt.keyContent), 0644))
+			require.NoError(t, os.WriteFile(keyPath, []byte(tt.keyContent), 0o644))
 
 			key, err := installer.readPublicKey(keyPath)
 
@@ -166,11 +166,11 @@ func TestSSHKeyInstaller_ReadPublicKey(t *testing.T) {
 func TestSSHKeyInstaller_DryRun(t *testing.T) {
 	installer := NewSSHKeyInstaller()
 	tempDir := t.TempDir()
-	
+
 	// Create test public key
 	testKeyPath := filepath.Join(tempDir, "test_key.pub")
 	testKeyContent := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7... test@example.com"
-	require.NoError(t, os.WriteFile(testKeyPath, []byte(testKeyContent), 0644))
+	require.NoError(t, os.WriteFile(testKeyPath, []byte(testKeyContent), 0o644))
 
 	opts := &InstallOptions{
 		Host:          "example.com",
@@ -180,7 +180,7 @@ func TestSSHKeyInstaller_DryRun(t *testing.T) {
 	}
 
 	result, err := installer.InstallPublicKey(opts)
-	
+
 	assert.NoError(t, err)
 	assert.True(t, result.Success)
 	assert.Contains(t, result.Message, "DRY RUN")
@@ -194,11 +194,11 @@ func TestSSHKeyInstaller_InstallKeysFromConfig(t *testing.T) {
 	tempDir := t.TempDir()
 	storeDir := filepath.Join(tempDir, "store")
 	configName := "test-config"
-	
+
 	// Create configuration directory structure
 	configDir := filepath.Join(storeDir, configName)
 	keysDir := filepath.Join(configDir, "keys")
-	require.NoError(t, os.MkdirAll(keysDir, 0755))
+	require.NoError(t, os.MkdirAll(keysDir, 0o755))
 
 	// Create test keys
 	testKeys := map[string]string{
@@ -209,12 +209,12 @@ func TestSSHKeyInstaller_InstallKeysFromConfig(t *testing.T) {
 	var publicKeyPaths []string
 	for keyName, keyContent := range testKeys {
 		keyPath := filepath.Join(keysDir, keyName)
-		require.NoError(t, os.WriteFile(keyPath, []byte(keyContent), 0644))
+		require.NoError(t, os.WriteFile(keyPath, []byte(keyContent), 0o644))
 		publicKeyPaths = append(publicKeyPaths, keyPath)
-		
+
 		// Create corresponding private key
 		privateKeyPath := filepath.Join(keysDir, keyName[:len(keyName)-4]) // Remove .pub
-		require.NoError(t, os.WriteFile(privateKeyPath, []byte("private key content"), 0600))
+		require.NoError(t, os.WriteFile(privateKeyPath, []byte("private key content"), 0o600))
 	}
 
 	// Create metadata
@@ -233,12 +233,12 @@ func TestSSHKeyInstaller_InstallKeysFromConfig(t *testing.T) {
 		Port:   "22",
 		DryRun: true,
 	}
-	
+
 	results, err := installer.InstallKeysFromConfig(configName, "example.com", "testuser", opts)
-	
+
 	assert.NoError(t, err)
 	assert.Len(t, results, 2)
-	
+
 	for _, result := range results {
 		assert.True(t, result.Success)
 		assert.Contains(t, result.Message, "DRY RUN")
@@ -250,11 +250,11 @@ func TestEnhancedSSHCommand_ListKeys(t *testing.T) {
 	tempDir := t.TempDir()
 	storeDir := filepath.Join(tempDir, "store")
 	configName := "test-config"
-	
+
 	// Create configuration directory structure
 	configDir := filepath.Join(storeDir, configName)
 	keysDir := filepath.Join(configDir, "keys")
-	require.NoError(t, os.MkdirAll(keysDir, 0755))
+	require.NoError(t, os.MkdirAll(keysDir, 0o755))
 
 	// Create test keys
 	testKeys := map[string]string{
@@ -265,13 +265,13 @@ func TestEnhancedSSHCommand_ListKeys(t *testing.T) {
 	var publicKeyPaths []string
 	for keyName, keyContent := range testKeys {
 		keyPath := filepath.Join(keysDir, keyName)
-		require.NoError(t, os.WriteFile(keyPath, []byte(keyContent), 0644))
+		require.NoError(t, os.WriteFile(keyPath, []byte(keyContent), 0o644))
 		publicKeyPaths = append(publicKeyPaths, filepath.Join("/original/path", keyName))
-		
+
 		// Create corresponding private key for one of them
 		if keyName == "id_rsa.pub" {
 			privateKeyPath := filepath.Join(keysDir, "id_rsa")
-			require.NoError(t, os.WriteFile(privateKeyPath, []byte("private key"), 0600))
+			require.NoError(t, os.WriteFile(privateKeyPath, []byte("private key"), 0o600))
 		}
 	}
 
@@ -292,18 +292,18 @@ func TestEnhancedSSHCommand_ListKeys(t *testing.T) {
 func TestSSHKeyInstaller_CreateKeyAuth(t *testing.T) {
 	installer := NewSSHKeyInstaller()
 	tempDir := t.TempDir()
-	
+
 	// Create a dummy private key file (not a real key)
 	privateKeyPath := filepath.Join(tempDir, "test_key")
 	// This is not a real private key, just for testing file reading
 	keyContent := `-----BEGIN OPENSSH PRIVATE KEY-----
 not_a_real_key_content_for_testing
 -----END OPENSSH PRIVATE KEY-----`
-	require.NoError(t, os.WriteFile(privateKeyPath, []byte(keyContent), 0600))
+	require.NoError(t, os.WriteFile(privateKeyPath, []byte(keyContent), 0o600))
 
 	// This will fail to parse, but we're testing the file reading part
 	_, err := installer.createKeyAuth(privateKeyPath)
-	
+
 	// Should return an error since it's not a real key, but no file read error
 	assert.Error(t, err)
 	assert.NotContains(t, err.Error(), "no such file or directory")

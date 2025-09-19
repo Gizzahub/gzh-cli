@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz git webhook list --repo myorg/myrepo
 ```
@@ -18,6 +19,7 @@ gz git webhook list --repo myorg/myrepo
 ### Expected Output
 
 **Multiple Webhooks Found**:
+
 ```text
 🔗 Repository Webhooks: myorg/myrepo
 
@@ -86,6 +88,7 @@ Exit Code: 0
 ```
 
 **No Webhooks Found**:
+
 ```text
 🔗 Repository Webhooks: myorg/empty-repo
 
@@ -111,6 +114,7 @@ Exit Code: 1
 ```
 
 **Organization-wide Listing**:
+
 ```text
 # Command: gz git webhook list --org myorg
 
@@ -163,6 +167,7 @@ Exit Code: 0
 ```
 
 **Permission Denied**:
+
 ```text
 🔗 Repository Webhooks: private-org/secret-repo
 
@@ -187,6 +192,7 @@ Exit Code: 2
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/git/webhooks/webhook-list-cache.json` - Webhook listing cache
 - `~/.gzh/git/webhook-summary-<timestamp>.json` - Summary report
 
@@ -196,6 +202,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test webhook listing (requires repository with webhooks)
 result=$(gz git webhook list --repo "test-org/test-repo" 2>&1)
@@ -212,34 +219,39 @@ assert_contains "$cache_content" '"repository":'
 ```
 
 **Manual Verification**:
+
 1. List webhooks for repository with multiple webhooks
-2. Test with repository having no webhooks
-3. Verify organization-wide listing works
-4. Check permission error handling
-5. Validate webhook status indicators
-6. Confirm delivery statistics accuracy
+1. Test with repository having no webhooks
+1. Verify organization-wide listing works
+1. Check permission error handling
+1. Validate webhook status indicators
+1. Confirm delivery statistics accuracy
 
 ### Edge Cases
 
 **Webhook States and Issues**:
+
 - Webhooks with delivery failures
 - SSL certificate issues
 - Endpoint URL changes/redirects
 - Webhooks with expired secrets
 
 **Large-scale Operations**:
+
 - Organizations with hundreds of repositories
 - Repositories with many webhooks
 - Pagination handling for large result sets
 - Performance with slow API responses
 
 **Platform Differences**:
+
 - GitHub vs GitLab webhook structure
 - Organization vs group level webhooks
 - Platform-specific event types
 - Different authentication mechanisms
 
 **Data Consistency**:
+
 - Recently created/deleted webhooks
 - Webhook configuration caching
 - API response variations
@@ -248,17 +260,20 @@ assert_contains "$cache_content" '"repository":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Single repository: < 3 seconds
 - Organization overview: < 15 seconds
 - Large organizations: < 45 seconds with progress
 - Cached results: < 1 second
 
 **Resource Usage**:
+
 - Memory: < 50MB for large result sets
 - Network: Read-only API calls
 - CPU: Low impact except JSON processing
 
 **Display Limits**:
+
 - Repository webhooks: unlimited
 - Organization summary: paginated for >100 repos
 - Delivery statistics: last 30 days by default

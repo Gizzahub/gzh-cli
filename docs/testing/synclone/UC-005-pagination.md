@@ -5,11 +5,13 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz synclone github -o kubernetes
 ```
 
 **Prerequisites**:
+
 - [ ] gzh-cli binary installed
 - [ ] Network connectivity to api.github.com
 - [ ] GITHUB_TOKEN environment variable set (recommended for large operations)
@@ -18,6 +20,7 @@ gz synclone github -o kubernetes
 ### Expected Output
 
 **Success Case with Pagination**:
+
 ```
 12:40:01 INFO  [component=gzh-cli org=kubernetes] Starting GitHub synclone operation
 12:40:01 INFO  [component=gzh-cli org=kubernetes] Starting synclone workflow: fetching repository list from GitHub
@@ -42,11 +45,13 @@ Exit Code: 0
 ### Side Effects
 
 **Files Created**:
+
 - `./kubernetes/`: Target directory for organization
 - `./kubernetes/gzh.yaml`: Metadata file with all 79 repositories
 - `./kubernetes/{repo-name}/`: Directory for each of the 79 repositories
 
 **API Behavior**:
+
 - Makes multiple API calls with pagination (100 repos per page)
 - First call: `GET /orgs/kubernetes/repos?page=1&per_page=100`
 - Continues until fewer than 100 repos returned
@@ -55,6 +60,7 @@ Exit Code: 0
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test pagination with kubernetes organization (79 repos)
 export GITHUB_TOKEN="your_token_here"
@@ -85,6 +91,7 @@ assert_directory_exists "./kubernetes/externaljwt"       # Last repo
 ```
 
 **Test with Different Organization Sizes**:
+
 ```bash
 # Test with small organization (ScriptonBasestar - 37 repos)
 result=$(gz synclone github -o ScriptonBasestar 2>&1)
@@ -96,21 +103,24 @@ assert_contains "$result" "📋 Found"
 ```
 
 **Manual Verification**:
+
 1. Choose organization with known repository count >30
-2. Run synclone command with valid token
-3. Verify reported count matches actual organization size
-4. Check that repositories from "later pages" are present
-5. Confirm gzh.yaml metadata includes all repositories
+1. Run synclone command with valid token
+1. Verify reported count matches actual organization size
+1. Check that repositories from "later pages" are present
+1. Confirm gzh.yaml metadata includes all repositories
 
 ### Technical Implementation Details
 
 **Pagination Logic**:
+
 - Uses `perPage = 100` (GitHub's maximum per page)
 - Loops through pages until `len(repos) < perPage`
 - Accumulates all repositories in `allRepos` slice
 - Returns complete list regardless of organization size
 
 **API Calls Made**:
+
 ```
 Page 1: GET /orgs/kubernetes/repos?page=1&per_page=100  (returns 79 repos)
        → len(repos) < 100, so pagination stops
@@ -118,6 +128,7 @@ Page 1: GET /orgs/kubernetes/repos?page=1&per_page=100  (returns 79 repos)
 ```
 
 **For larger organizations**:
+
 ```
 Page 1: GET /orgs/microsoft/repos?page=1&per_page=100   (returns 100 repos)
 Page 2: GET /orgs/microsoft/repos?page=2&per_page=100   (returns 100 repos)  
@@ -128,25 +139,30 @@ Page N: GET /orgs/microsoft/repos?page=N&per_page=100   (returns <100 repos)
 ### Edge Cases
 
 **Exactly 100 Repositories**:
+
 - Should make 2 API calls (100 + 0)
 - Second call returns empty array, pagination stops
 
 **Organizations with 30 Repositories**:
+
 - Should still work correctly (single page)
 - Must not be limited to 30 due to old default behavior
 
 **Very Large Organizations** (>1000 repos):
+
 - Consider using `--optimized` flag for better performance
 - May hit rate limits without authentication token
 
 ### Performance Expectations
 
 **Response Time**:
+
 - 1-100 repos: < 10 seconds for API fetching
-- 100-500 repos: < 30 seconds for API fetching  
+- 100-500 repos: < 30 seconds for API fetching
 - 500+ repos: Consider --optimized mode
 
 **API Usage**:
+
 - Calls: ⌈total_repos / 100⌉ API calls
 - Rate limits: Authenticated = 5000/hour, Unauthenticated = 60/hour
 - Efficient: Uses maximum page size (100)

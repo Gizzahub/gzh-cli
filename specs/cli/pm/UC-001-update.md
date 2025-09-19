@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz pm update
 ```
@@ -18,6 +19,7 @@ gz pm update
 ### Expected Output
 
 **Success Case**:
+
 ```text
 🔄 Updating package managers...
 
@@ -56,6 +58,7 @@ Exit Code: 0
 ```
 
 **Partial Success (Some Failures)**:
+
 ```text
 🔄 Updating package managers...
 
@@ -80,6 +83,7 @@ Exit Code: 1
 ```
 
 **No Package Managers Found**:
+
 ```text
 🔍 Scanning for package managers...
 
@@ -102,14 +106,17 @@ Exit Code: 2
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/pm-update.log` - Detailed update log
 - Package manager cache files
 
 **Files Modified**:
+
 - Package manager databases updated
 - Installed packages upgraded
 
 **State Changes**:
+
 - Package manager databases refreshed
 - Available package versions updated
 - Some packages upgraded automatically
@@ -117,6 +124,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test update command (requires actual package managers)
 result=$(gz pm update 2>&1)
@@ -131,30 +139,35 @@ assert_file_exists "$HOME/.gzh/pm-update.log"
 ```
 
 **Manual Verification**:
+
 1. Run on system with multiple package managers
-2. Verify each package manager is properly updated
-3. Check that upgrade recommendations are actionable
-4. Confirm failed updates are clearly reported
+1. Verify each package manager is properly updated
+1. Check that upgrade recommendations are actionable
+1. Confirm failed updates are clearly reported
 
 ### Edge Cases
 
 **Network Issues**:
+
 - Offline environment handling
 - Partial network connectivity
 - Timeout handling for slow connections
 - Proxy configuration support
 
 **Permission Issues**:
+
 - System package managers requiring sudo
 - User-space vs system-wide installations
 - Directory permission problems
 
 **Disk Space Issues**:
+
 - Insufficient space for package downloads
 - Cache cleanup before updates
 - Warning when approaching disk limits
 
 **Version Conflicts**:
+
 - Package dependency conflicts
 - Breaking changes in major updates
 - Rollback instructions when needed
@@ -162,11 +175,13 @@ assert_file_exists "$HOME/.gzh/pm-update.log"
 ### Performance Expectations
 
 **Response Time**:
+
 - Database updates: < 30 seconds per package manager
 - Package discovery: < 10 seconds
 - Full update cycle: 2-10 minutes depending on updates available
 
 **Resource Usage**:
+
 - Memory: < 200MB
 - Network: Varies by number of package updates
 - Disk: Temporary cache space for downloads

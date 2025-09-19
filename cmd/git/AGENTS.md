@@ -7,6 +7,7 @@
 **git**은 Git 저장소 관리, 설정, 이벤트 처리, 웹훅을 통합하는 Git 플랫폼 관리 모듈입니다.
 
 ### 핵심 기능
+
 - Git 저장소 설정 및 관리 (repo 서브커맨드)
 - 저장소 이벤트 처리 (event 서브커맨드)
 - 웹훅 관리 (webhook 서브커맨드)
@@ -15,6 +16,7 @@
 ## ⚠️ 개발 시 주의사항
 
 ### 1. Git 저장소 상태 안전성
+
 ```go
 // ✅ 안전한 Git 작업
 func (r *RepoManager) SafeOperation(repoPath string, operation func() error) error {
@@ -33,6 +35,7 @@ func (r *RepoManager) SafeOperation(repoPath string, operation func() error) err
 ```
 
 ### 2. 다중 리모트 처리
+
 ```go
 // ✅ 리모트 저장소 관리
 func (r *RepoManager) HandleMultipleRemotes(repoPath string) error {
@@ -51,6 +54,7 @@ func (r *RepoManager) HandleMultipleRemotes(repoPath string) error {
 ```
 
 ### 3. 웹훅 보안
+
 ```go
 // ✅ 웹훅 서명 검증
 func (w *WebhookHandler) ValidateSignature(payload []byte, signature string) error {

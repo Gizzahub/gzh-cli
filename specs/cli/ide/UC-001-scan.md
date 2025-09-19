@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz ide scan
 ```
@@ -17,6 +18,7 @@ gz ide scan
 ### Expected Output
 
 **Success Case (IDEs Found)**:
+
 ```text
 🔍 Scanning system for installed IDEs...
 
@@ -53,6 +55,7 @@ Exit Code: 0
 ```
 
 **No IDEs Found**:
+
 ```text
 🔍 Scanning system for installed IDEs...
 
@@ -70,6 +73,7 @@ Exit Code: 1
 ```
 
 **Permission Error**:
+
 ```text
 🔍 Scanning system for installed IDEs...
 
@@ -91,6 +95,7 @@ Exit Code: 1
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/ide-registry.json` - IDE detection cache
 - `~/.gzh/ide-scan.log` - Detailed scan log
 
@@ -100,6 +105,7 @@ Exit Code: 1
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test IDE scan
 result=$(gz ide scan 2>&1)
@@ -115,29 +121,34 @@ assert_contains "$registry_content" '"scan_timestamp":'
 ```
 
 **Manual Verification**:
+
 1. Run on system with known IDEs installed
-2. Verify detected IDEs match actual installations
-3. Check configuration paths are correct
-4. Confirm cache file contains accurate information
+1. Verify detected IDEs match actual installations
+1. Check configuration paths are correct
+1. Confirm cache file contains accurate information
 
 ### Edge Cases
 
 **Multiple Versions**:
+
 - Multiple versions of same IDE (e.g., IntelliJ 2023.2 and 2023.3)
 - Beta/EAP versions alongside stable
 - Different installation methods (App Store, direct download, package manager)
 
 **Custom Installation Paths**:
+
 - Non-standard installation directories
 - Portable installations
 - Network/shared installations
 
 **Platform Differences**:
+
 - macOS: Applications folder and Library configs
-- Windows: Program Files and AppData configs  
+- Windows: Program Files and AppData configs
 - Linux: Various package manager locations and ~/.config
 
 **Corrupted Installations**:
+
 - IDE binary present but config missing
 - Incomplete installations
 - Broken symlinks or aliases
@@ -145,11 +156,13 @@ assert_contains "$registry_content" '"scan_timestamp":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Fast scan (common paths): < 3 seconds
 - Deep scan (all paths): < 10 seconds
 - Large systems: < 30 seconds with progress indication
 
 **Resource Usage**:
+
 - Memory: < 100MB
 - Disk I/O: Read-only filesystem scanning
 - CPU: Low impact scanning

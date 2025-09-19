@@ -18,6 +18,7 @@ gz --version
 ### 2. GitHub 조직 클로닝
 
 #### 기본 GitHub 클로닝
+
 ```bash
 # 기본 클로닝 (현재 디렉토리)
 gz synclone github -o kubernetes
@@ -36,6 +37,7 @@ gz synclone github -o kubernetes --target ~/test-repos/k8s
 ```
 
 #### 전략 옵션
+
 ```bash
 # Reset 전략 (기본값)
 gz synclone github -o kubernetes --strategy reset
@@ -48,6 +50,7 @@ gz synclone github -o kubernetes --strategy fetch
 ```
 
 #### 병렬 처리 옵션
+
 ```bash
 # 병렬 처리 워커 수 지정
 gz synclone github -o kubernetes --parallel 5
@@ -61,6 +64,7 @@ gz synclone github -o kubernetes --resume
 ```
 
 #### 최적화 옵션
+
 ```bash
 # 최적화된 스트리밍 모드
 gz synclone github -o kubernetes --optimized
@@ -76,6 +80,7 @@ gz synclone github -o kubernetes --token $GITHUB_TOKEN
 ```
 
 #### 캐싱 옵션
+
 ```bash
 # 로컬 캐시 활성화
 gz synclone github -o kubernetes --cache
@@ -85,6 +90,7 @@ gz synclone github -o kubernetes --redis --redis-addr localhost:6379
 ```
 
 #### 필터링 옵션
+
 ```bash
 # 패턴 매칭
 gz synclone github -o kubernetes --include "^kubectl.*"
@@ -107,6 +113,7 @@ gz synclone github -o kubernetes --updated-before 2024-12-31
 ```
 
 #### 리포지터리 타입 필터링
+
 ```bash
 # 아카이브된 리포지터리 포함
 gz synclone github -o kubernetes --include-archived
@@ -125,6 +132,7 @@ gz synclone github -o kubernetes --size-limit 10000
 ```
 
 #### 정리 옵션
+
 ```bash
 # 고아 디렉토리 정리
 gz synclone github -o kubernetes --cleanup-orphans
@@ -180,7 +188,6 @@ gz synclone --config synclone.yaml --strategy pull
 # 병렬 처리 오버라이드
 gz synclone --config synclone.yaml --parallel 15
 ```
-
 
 ## 설정 관리 명령어
 

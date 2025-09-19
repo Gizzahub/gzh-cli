@@ -9,9 +9,9 @@ This directory contains **CLI command specifications** following **SDD (Specific
 **SDD (Specification-Driven Development)** is a methodology where:
 
 1. **Command specifications are written first**
-2. **Expected inputs, outputs, and behaviors are clearly defined**  
-3. **Implementation follows the specification**
-4. **Tests validate against the specification**
+1. **Expected inputs, outputs, and behaviors are clearly defined**
+1. **Implementation follows the specification**
+1. **Tests validate against the specification**
 
 This approach ensures consistent, predictable, and testable CLI behavior.
 
@@ -62,10 +62,10 @@ Each CLI specification follows this standard format:
 ## Writing New Specifications
 
 1. **Copy template**: Use `template.md` as starting point
-2. **Define scenarios**: Cover success, error, and edge cases
-3. **Specify contracts**: Clear input-output expectations
-4. **Add validation**: Automated test commands
-5. **Review completeness**: Use specification checklist
+1. **Define scenarios**: Cover success, error, and edge cases
+1. **Specify contracts**: Clear input-output expectations
+1. **Add validation**: Automated test commands
+1. **Review completeness**: Use specification checklist
 
 ## Specification Categories
 
@@ -122,10 +122,10 @@ make generate-spec-docs
 ## Best Practices
 
 1. **Specification First**: Write specs before implementation
-2. **Clear Language**: Use concrete, testable terms
-3. **Comprehensive Coverage**: Include happy paths and error cases
-4. **Testable**: Provide validation commands
-5. **Living Documentation**: Keep specs up-to-date with implementation
+1. **Clear Language**: Use concrete, testable terms
+1. **Comprehensive Coverage**: Include happy paths and error cases
+1. **Testable**: Provide validation commands
+1. **Living Documentation**: Keep specs up-to-date with implementation
 
 ## Related Documentation
 

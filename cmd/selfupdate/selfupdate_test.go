@@ -55,7 +55,7 @@ func TestUpdater_GetAssetName(t *testing.T) {
 			_ = tt.goos
 			_ = tt.goarch
 			_ = tt.expectedName
-			
+
 			// For now, just test that GetAssetName returns something reasonable
 			assetName := updater.GetAssetName()
 			assert.NotEmpty(t, assetName)
@@ -122,7 +122,7 @@ func TestUpdater_IsNewerVersion(t *testing.T) {
 func TestNewUpdater(t *testing.T) {
 	version := "1.0.0"
 	updater := NewUpdater(version)
-	
+
 	assert.NotNil(t, updater)
 	assert.Equal(t, version, updater.currentVersion)
 	assert.NotNil(t, updater.logger)

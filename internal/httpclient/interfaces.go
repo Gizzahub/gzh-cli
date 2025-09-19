@@ -230,8 +230,8 @@ type MockCondition interface {
 type Recording struct {
 	ID        string        `json:"id"`
 	Timestamp time.Time     `json:"timestamp"`
-	Request   *HTTPRequest      `json:"request"`
-	Response  *HTTPResponse     `json:"response"`
+	Request   *HTTPRequest  `json:"request"`
+	Response  *HTTPResponse `json:"response"`
 	Duration  time.Duration `json:"duration"`
 	Error     string        `json:"error,omitempty"`
 }

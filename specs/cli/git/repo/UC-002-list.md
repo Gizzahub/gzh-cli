@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz git repo list --org myorg --platform github
 ```
@@ -18,6 +19,7 @@ gz git repo list --org myorg --platform github
 ### Expected Output
 
 **Success Case**:
+
 ```text
 📋 Repositories in organization: myorg (platform: github)
 
@@ -34,6 +36,7 @@ Exit Code: 0
 ```
 
 **Empty Organization**:
+
 ```text
 📋 Repositories in organization: empty-org (platform: github)
 
@@ -44,6 +47,7 @@ Exit Code: 0
 ```
 
 **Rate Limit Error**:
+
 ```text
 🚫 GitHub API Rate Limit Exceeded!
    Rate Limit: 60 requests/hour
@@ -69,6 +73,7 @@ Exit Code: 1
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test successful listing
 export GITHUB_TOKEN="your_token"
@@ -86,24 +91,28 @@ assert_contains "$result" '"visibility":'
 ```
 
 **Manual Verification**:
+
 1. Run command with known organization
-2. Verify repository count matches web interface
-3. Check that private repositories are shown only with valid token
-4. Confirm repository details are accurate
+1. Verify repository count matches web interface
+1. Check that private repositories are shown only with valid token
+1. Confirm repository details are accurate
 
 ### Edge Cases
 
 **Large Organizations**:
+
 - Organizations with >100 repositories (pagination)
 - Should handle API pagination automatically
 - Progress indication for large lists
 
 **Mixed Visibility**:
+
 - Public repositories visible without token
 - Private repositories require valid authentication
 - Clear indication of visibility status
 
 **Different Output Formats**:
+
 - Default table format for human reading
 - JSON format for programmatic use
 - CSV format for data export
@@ -111,18 +120,20 @@ assert_contains "$result" '"visibility":'
 ### Performance Expectations
 
 **Response Time**:
-- Small orgs (<10 repos): < 3 seconds
+
+- Small orgs (\<10 repos): < 3 seconds
 - Large orgs (100+ repos): < 10 seconds with pagination
 - Very large orgs (1000+ repos): Progress indication
 
 **Resource Usage**:
+
 - Memory: < 100MB for large organizations
 - Network: Efficient API pagination
 
 ## Notes
 
 - Supports multiple output formats: table (default), json, csv
-- Automatically handles API pagination for large organizations  
+- Automatically handles API pagination for large organizations
 - Shows repository metadata: language, stars, last update
 - Private repository access requires authentication
 - Cross-platform support for GitHub, GitLab, Gitea, Gogs

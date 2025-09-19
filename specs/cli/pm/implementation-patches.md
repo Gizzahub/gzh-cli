@@ -725,16 +725,17 @@ func isManagerInstalled(ctx context.Context, manager string) bool {
 This implementation patch demonstrates:
 
 1. **Rich output formatting** with Unicode box drawing and emojis
-2. **Detailed progress tracking** with time estimates
-3. **Package change tracking** with version information and sizes
-4. **Enhanced result structures** for better data capture
-5. **Specification-compliant output format** matching the enhanced spec
+1. **Detailed progress tracking** with time estimates
+1. **Package change tracking** with version information and sizes
+1. **Enhanced result structures** for better data capture
+1. **Specification-compliant output format** matching the enhanced spec
 
 The patches maintain backward compatibility while adding the specification-required features identified in the compliance analysis.
 
-<function_calls>
+\<function_calls>
 <invoke name="TodoWrite">
 <parameter name="todos">[{"content": "Implement Phase 1 output formatting enhancements", "status": "completed", "activeForm": "Implementing Phase 1 output formatting enhancements"}, {"content": "Add detailed version change tracking", "status": "completed", "activeForm": "Adding detailed version change tracking"}, {"content": "Enhance progress indication with step tracking", "status": "completed", "activeForm": "Enhancing progress indication with step tracking"}, {"content": "Implement resource management and disk space checking", "status": "in_progress", "activeForm": "Implementing resource management and disk space checking"}, {"content": "Create example implementation patches", "status": "completed", "activeForm": "Creating example implementation patches"}]
+
 ## Phase 2: Resource Management Implementation
 
 ### 2.1 Resource Manager
@@ -1327,14 +1328,14 @@ func runUpdateManagerWithResources(ctx context.Context, manager string, strategy
 This Phase 2 implementation adds:
 
 1. **Comprehensive resource checking** before updates begin
-2. **Disk space estimation** for each package manager
-3. **Network connectivity verification** to repositories
-4. **Memory availability assessment**
-5. **Resource monitoring** during update execution
-6. **Detailed resource usage reporting** after completion
+1. **Disk space estimation** for each package manager
+1. **Network connectivity verification** to repositories
+1. **Memory availability assessment**
+1. **Resource monitoring** during update execution
+1. **Detailed resource usage reporting** after completion
 
 The implementation ensures that updates don't fail due to resource constraints and provides clear guidance when issues are detected.
 
-<function_calls>
+\<function_calls>
 <invoke name="TodoWrite">
 <parameter name="todos">[{"content": "Implement Phase 1 output formatting enhancements", "status": "completed", "activeForm": "Implementing Phase 1 output formatting enhancements"}, {"content": "Add detailed version change tracking", "status": "completed", "activeForm": "Adding detailed version change tracking"}, {"content": "Enhance progress indication with step tracking", "status": "completed", "activeForm": "Enhancing progress indication with step tracking"}, {"content": "Implement resource management and disk space checking", "status": "completed", "activeForm": "Implementing resource management and disk space checking"}, {"content": "Create example implementation patches", "status": "completed", "activeForm": "Creating example implementation patches"}]

@@ -5,11 +5,13 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz pm update --all
 ```
 
 **Additional Command Variants**:
+
 ```bash
 gz pm update --manager brew                    # Single manager
 gz pm update --managers brew,asdf,npm         # Multiple specific managers
@@ -30,6 +32,7 @@ gz pm update --manager pip --pip-allow-conda # Allow pip in conda environment
 ### Expected Output
 
 **Success Case - All Managers Updated**:
+
 ```text
 🔄 Updating all package managers...
 
@@ -124,6 +127,7 @@ Exit Code: 0
 ```
 
 **Partial Success with Detailed Failures**:
+
 ```text
 🔄 Updating all package managers...
 
@@ -181,18 +185,21 @@ Exit Code: 1
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/pm-update.log` - Detailed update log with timestamps
 - `~/.gzh/pm/state/update-<timestamp>.json` - Update session results
 - `~/.gzh/pm/cache/` - Package manager cache files
 - `/tmp/gz-pm-*.tmp` - Temporary download and processing files
 
 **Files Modified**:
+
 - Package manager databases updated (brew, apt, pacman, etc.)
 - Installed packages upgraded to new versions
 - Package manager configuration files updated
 - System PATH potentially modified (for newly installed tools)
 
 **State Changes**:
+
 - Package databases refreshed with latest available versions
 - Outdated packages upgraded to newer versions
 - Package caches cleaned and optimized
@@ -201,6 +208,7 @@ Exit Code: 1
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test basic update functionality
 result=$(gz pm update --all --dry-run 2>&1)
@@ -228,24 +236,28 @@ assert_contains "$log_content" "update session"
 ### Edge Cases
 
 **System Resource Issues**:
+
 - Insufficient disk space during package downloads
 - Network connectivity issues (DNS, firewall, proxy)
 - Slow network connections with timeout handling
 - Package download corruption and retry mechanisms
 
 **Version Management Conflicts**:
+
 - Multiple versions of same tool across different managers
 - Version pinning conflicts (e.g., .node-version vs global asdf)
 - Breaking changes in major version updates
 - Dependency conflicts between package managers
 
 **Environment Conflicts**:
+
 - Conda/Mamba vs pip package management
 - System Python vs asdf/pyenv Python
 - Global npm vs local node_modules conflicts
 - Docker container vs host package management
 
 **Permission and Security**:
+
 - System package managers requiring sudo (apt, pacman, yum)
 - Package signature verification failures
 - Firewall blocking package repositories
@@ -254,12 +266,14 @@ assert_contains "$log_content" "update session"
 ### Performance Expectations
 
 **Response Time**:
+
 - Manager detection: < 5 seconds
 - Single manager update: 30 seconds - 5 minutes
 - All managers update: 2-15 minutes (varies by packages)
 - Dry-run analysis: < 30 seconds
 
 **Resource Usage**:
+
 - Memory: 100-500MB (varies by package count)
 - CPU: Moderate during downloads, high during compilation
 - Network: 10MB - 2GB+ (varies by update size)

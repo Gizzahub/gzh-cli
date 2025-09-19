@@ -37,7 +37,7 @@ func (installer *SimpleSSHInstaller) InstallPublicKeySimple(host, user, publicKe
 	}
 
 	fmt.Printf("Installing public key to %s@%s...\n", user, host)
-	
+
 	// Use ssh to install the key
 	commands := []string{
 		"mkdir -p ~/.ssh",
@@ -51,7 +51,7 @@ func (installer *SimpleSSHInstaller) InstallPublicKeySimple(host, user, publicKe
 
 	cmdStr := strings.Join(commands, " && ")
 	cmd := exec.Command("ssh", "-o", "StrictHostKeyChecking=no", fmt.Sprintf("%s@%s", user, host), cmdStr)
-	
+
 	// Connect stdin/stdout/stderr to allow password input
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

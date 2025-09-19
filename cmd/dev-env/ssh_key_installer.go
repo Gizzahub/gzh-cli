@@ -80,7 +80,7 @@ func (installer *SSHKeyInstaller) InstallPublicKey(opts *InstallOptions) (*Insta
 
 	if opts.DryRun {
 		result.Success = true
-		result.Message = fmt.Sprintf("DRY RUN: Would install key from %s to %s@%s", 
+		result.Message = fmt.Sprintf("DRY RUN: Would install key from %s to %s@%s",
 			opts.PublicKeyPath, opts.User, opts.Host)
 		return result, nil
 	}
@@ -143,7 +143,7 @@ func (installer *SSHKeyInstaller) InstallPublicKey(opts *InstallOptions) (*Insta
 func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user string, opts *InstallOptions) ([]*InstallResult, error) {
 	// Load SSH configuration
 	enhancedCmd := NewEnhancedSSHCommand()
-	
+
 	// Allow override of store directory for testing
 	storeDir := ""
 	if opts.Host != host { // Hack: if Host differs from host param, use it as store dir
@@ -153,7 +153,7 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 		homeDir, _ := os.UserHomeDir()
 		storeDir = filepath.Join(homeDir, ".gz", "ssh-configs")
 	}
-	
+
 	metadataFile := filepath.Join(storeDir, configName, "metadata.json")
 	metadata, err := enhancedCmd.loadEnhancedMetadata(metadataFile)
 	if err != nil {
@@ -191,7 +191,7 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 				Message: err.Error(),
 			}
 		}
-		
+
 		// Add key information to result
 		result.Message = fmt.Sprintf("[%s] %s", keyName, result.Message)
 		results = append(results, result)
@@ -366,7 +366,7 @@ func (installer *SSHKeyInstaller) readPassword() (string, error) {
 		fmt.Println() // Print newline after hidden password input
 		return string(password), nil
 	}
-	
+
 	// Fallback for non-terminal input (e.g., pipes, tests)
 	reader := bufio.NewReader(os.Stdin)
 	password, err := reader.ReadString('\n')
@@ -381,7 +381,7 @@ func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string
 	if installer.verbose {
 		fmt.Printf("Creating SFTP client for key existence check...\n")
 	}
-	
+
 	// Create SFTP client
 	sftpClient, err := sftp.NewClient(client)
 	if err != nil {
@@ -407,7 +407,7 @@ func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string
 	if installer.verbose {
 		fmt.Printf("Reading %s file via SFTP...\n", authorizedKeysPath)
 	}
-	
+
 	file, err := sftpClient.Open(authorizedKeysPath)
 	if err != nil {
 		// File doesn't exist, which is normal
@@ -438,7 +438,7 @@ func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string
 	if installer.verbose {
 		fmt.Printf("Read %d bytes from authorized_keys\n", len(content))
 	}
-	
+
 	// Check each line for the key
 	lines := strings.Split(fileContent, "\n")
 	for _, line := range lines {
@@ -446,7 +446,7 @@ func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		
+
 		// Extract type+key from each line (ignore comments)
 		lineParts := strings.Fields(line)
 		if len(lineParts) >= 2 {
@@ -459,7 +459,7 @@ func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string
 			}
 		}
 	}
-	
+
 	if installer.verbose {
 		fmt.Printf("Key not found in authorized_keys\n")
 	}
@@ -471,7 +471,7 @@ func (installer *SSHKeyInstaller) installKey(client *ssh.Client, publicKey strin
 	if installer.verbose {
 		fmt.Printf("Creating SFTP client for key installation...\n")
 	}
-	
+
 	// Create SFTP client
 	sftpClient, err := sftp.NewClient(client)
 	if err != nil {
@@ -498,7 +498,7 @@ func (installer *SSHKeyInstaller) installKey(client *ssh.Client, publicKey strin
 	if installer.verbose {
 		fmt.Printf("Setting .ssh directory permissions to 0700...\n")
 	}
-	if err := sftpClient.Chmod(sshDir, 0700); err != nil {
+	if err := sftpClient.Chmod(sshDir, 0o700); err != nil {
 		if installer.verbose {
 			fmt.Printf("Failed to set .ssh permissions: %v\n", err)
 		}
@@ -543,7 +543,7 @@ func (installer *SSHKeyInstaller) installKey(client *ssh.Client, publicKey strin
 		fmt.Printf("Processing keys...\n")
 	}
 	keyLines := make(map[string]bool)
-	
+
 	// Add existing keys to map (for deduplication)
 	if existingContent != "" {
 		lines := strings.Split(existingContent, "\n")
@@ -598,7 +598,7 @@ func (installer *SSHKeyInstaller) installKey(client *ssh.Client, publicKey strin
 	if installer.verbose {
 		fmt.Printf("Setting authorized_keys permissions to 0600...\n")
 	}
-	if err := sftpClient.Chmod(authorizedKeysPath, 0600); err != nil {
+	if err := sftpClient.Chmod(authorizedKeysPath, 0o600); err != nil {
 		if installer.verbose {
 			fmt.Printf("Failed to set authorized_keys permissions: %v\n", err)
 		}

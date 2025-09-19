@@ -19,12 +19,14 @@ Modern development often requires managing multiple environments, cloud profiles
 ### Key Features
 
 **Individual Service Management**:
+
 - **Multi-Cloud Support** - AWS, GCP, Azure profile management per service
 - **Container Integration** - Docker and Kubernetes configuration management
 - **SSH Management** - SSH keys, configs, and tunnels
 - **Backup & Restore** - Individual service configuration backup and restore
 
 **Unified Environment Operations**:
+
 - **TUI Dashboard** - Interactive visual management interface
 - **Atomic Switching** - Switch all services to target environment simultaneously
 - **Status Monitoring** - Comprehensive status view across all services

@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz git repo clone-or-update https://github.com/user/repo.git --strategy rebase
 ```
@@ -19,6 +20,7 @@ gz git repo clone-or-update https://github.com/user/repo.git --strategy rebase
 ### Expected Output
 
 **Success Case (Clone)**:
+
 ```text
 📍 Repository: https://github.com/user/repo.git
 📂 Target: ./repo
@@ -39,6 +41,7 @@ Exit Code: 0
 ```
 
 **Success Case (Update)**:
+
 ```text
 📍 Repository: https://github.com/user/repo.git
 📂 Target: ./repo
@@ -56,6 +59,7 @@ Exit Code: 0
 ```
 
 **Rebase Conflict Error**:
+
 ```text
 📍 Repository: https://github.com/user/repo.git
 📂 Target: ./repo
@@ -78,6 +82,7 @@ Exit Code: 1
 ```
 
 **Authentication Error**:
+
 ```text
 📍 Repository: https://github.com/private-org/private-repo.git
 📂 Target: ./private-repo
@@ -97,19 +102,23 @@ Exit Code: 1
 ### Side Effects
 
 **Files Created**:
+
 - `./repo/` - Git repository directory (clone case)
 - `.git/` - Git metadata directory
 
 **Files Modified**:
+
 - Repository files updated according to strategy
 
 **State Changes**:
+
 - Local repository synchronized with remote
 - Git history updated based on strategy
 
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test clone
 result=$(gz git repo clone-or-update https://github.com/octocat/Hello-World.git 2>&1)
@@ -130,14 +139,16 @@ rm -rf ./Hello-World
 ```
 
 **Manual Verification**:
+
 1. Clone public repository - verify files are present
-2. Make local changes and run update with different strategies
-3. Test with private repository requiring authentication
-4. Verify conflict resolution workflow
+1. Make local changes and run update with different strategies
+1. Test with private repository requiring authentication
+1. Verify conflict resolution workflow
 
 ### Edge Cases
 
 **Different Strategies**:
+
 - `rebase` (default): Rebase local changes on remote
 - `reset`: Hard reset to match remote (discards local changes)
 - `pull`: Standard merge
@@ -145,6 +156,7 @@ rm -rf ./Hello-World
 - `skip`: Leave unchanged
 
 **Repository States**:
+
 - Clean working directory
 - Uncommitted changes
 - Untracked files
@@ -152,6 +164,7 @@ rm -rf ./Hello-World
 - Detached HEAD
 
 **URL Formats**:
+
 - HTTPS: `https://github.com/user/repo.git`
 - SSH: `git@github.com:user/repo.git`
 - Short format: `github.com/user/repo`
@@ -159,11 +172,13 @@ rm -rf ./Hello-World
 ### Performance Expectations
 
 **Response Time**:
-- Small repos (<10MB): < 30 seconds
+
+- Small repos (\<10MB): < 30 seconds
 - Large repos (>100MB): Progress indication
 - Update operations: < 10 seconds typically
 
 **Resource Usage**:
+
 - Disk space: Repository size + Git metadata
 - Network: Transfer based on changes
 - Memory: < 200MB for large repositories

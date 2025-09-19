@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz dev-env status
 ```
@@ -17,6 +18,7 @@ gz dev-env status
 ### Expected Output
 
 **Active Environment**:
+
 ```text
 🌍 Development Environment Status
 
@@ -65,6 +67,7 @@ Exit Code: 0
 ```
 
 **No Active Environment**:
+
 ```text
 🌍 Development Environment Status
 
@@ -91,6 +94,7 @@ Exit Code: 1
 ```
 
 **Degraded Environment**:
+
 ```text
 🌍 Development Environment Status
 
@@ -136,6 +140,7 @@ Exit Code: 2
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/dev-env/status-cache.json` - Status information cache
 - `~/.gzh/dev-env/health-check.log` - Health check results
 
@@ -145,6 +150,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test status display
 result=$(gz dev-env status 2>&1)
@@ -160,30 +166,35 @@ assert_contains "$cache_content" '"timestamp":'
 ```
 
 **Manual Verification**:
+
 1. Check status with active environment
-2. Verify all service connections are accurate
-3. Test status with no active environment
-4. Confirm degraded state detection works
-5. Validate credential expiration warnings
+1. Verify all service connections are accurate
+1. Test status with no active environment
+1. Confirm degraded state detection works
+1. Validate credential expiration warnings
 
 ### Edge Cases
 
 **Stale State Detection**:
+
 - Environment switched in different session
-- Configuration files modified externally  
+- Configuration files modified externally
 - Services restarted outside of tool
 
 **Network Connectivity Issues**:
+
 - Cloud provider API unreachable
 - SSH tunnels dropped unexpectedly
 - VPN disconnection detection
 
 **Credential Rotation**:
+
 - AWS SSO token refresh needed
 - Kubernetes token expiration
 - SSH key rotation required
 
 **Resource Exhaustion**:
+
 - Too many open connections
 - Memory usage monitoring
 - Process cleanup for orphaned connections
@@ -191,11 +202,13 @@ assert_contains "$cache_content" '"timestamp":'
 ### Performance Expectations
 
 **Response Time**:
+
 - Cached status: < 1 second
 - Full health check: < 5 seconds
 - Network checks: < 10 seconds
 
 **Resource Usage**:
+
 - Memory: < 30MB
 - Network: Minimal health check calls
 - CPU: Low impact status collection

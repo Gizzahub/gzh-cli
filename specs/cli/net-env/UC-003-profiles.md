@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz net-env profiles list
 ```
@@ -17,6 +18,7 @@ gz net-env profiles list
 ### Expected Output
 
 **List Profiles**:
+
 ```text
 🌐 Network Environment Profiles
 
@@ -65,6 +67,7 @@ Exit Code: 0
 ```
 
 **Create Profile**:
+
 ```text
 # Command: gz net-env profiles create cafe --interactive
 
@@ -109,6 +112,7 @@ Exit Code: 0
 ```
 
 **Edit Profile**:
+
 ```text
 # Command: gz net-env profiles edit office
 
@@ -150,6 +154,7 @@ Exit Code: 0
 ```
 
 **Delete Profile**:
+
 ```text
 # Command: gz net-env profiles delete old-office
 
@@ -179,6 +184,7 @@ Exit Code: 0
 ```
 
 **Export Profile**:
+
 ```text
 # Command: gz net-env profiles export office --format yaml
 
@@ -235,15 +241,18 @@ Exit Code: 0
 ### Side Effects
 
 **Files Created**:
+
 - Profile creation: `~/.gzh/net-env/profiles/<name>.yaml`
 - VPN configs: `~/.gzh/net-env/vpn/<name>-vpn.conf`
 - Export files: `~/.gzh/exports/net-env-<name>-<timestamp>.yaml`
 
 **Files Modified**:
+
 - Profile edits: existing profile YAML files
 - Profile registry: `~/.gzh/net-env/profiles.json`
 
 **State Changes**:
+
 - Profile database updated
 - VPN client configurations modified
 - Auto-switch rules registry updated
@@ -251,6 +260,7 @@ Exit Code: 0
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test profile listing
 result=$(gz net-env profiles list 2>&1)
@@ -271,34 +281,39 @@ assert_file_not_exists "$HOME/.gzh/net-env/profiles/test-profile.yaml"
 ```
 
 **Manual Verification**:
+
 1. List profiles and verify information accuracy
-2. Create new profile with interactive prompts
-3. Edit existing profile and confirm changes
-4. Export profile and verify YAML format
-5. Delete profile and confirm cleanup
-6. Test auto-switch network pattern matching
+1. Create new profile with interactive prompts
+1. Edit existing profile and confirm changes
+1. Export profile and verify YAML format
+1. Delete profile and confirm cleanup
+1. Test auto-switch network pattern matching
 
 ### Edge Cases
 
 **Profile Name Validation**:
+
 - Invalid characters in profile names
 - Reserved names (system, default, current)
 - Duplicate profile name handling
 - Case sensitivity considerations
 
 **Configuration Validation**:
+
 - Invalid IP addresses for DNS/proxy
 - Unreachable VPN servers
 - Invalid WiFi network patterns
 - Malformed configuration files
 
 **File System Issues**:
+
 - Permission denied for profile directory
 - Disk space exhaustion
 - Corrupted profile configuration files
 - Missing VPN configuration files
 
 **Concurrent Operations**:
+
 - Multiple profile edits simultaneously
 - Profile deletion while in use
 - Export during active network switching
@@ -307,6 +322,7 @@ assert_file_not_exists "$HOME/.gzh/net-env/profiles/test-profile.yaml"
 ### Performance Expectations
 
 **Response Time**:
+
 - List profiles: < 1 second
 - Create profile: < 3 seconds
 - Edit profile: < 2 seconds
@@ -314,11 +330,13 @@ assert_file_not_exists "$HOME/.gzh/net-env/profiles/test-profile.yaml"
 - Delete profile: < 2 seconds
 
 **Resource Usage**:
+
 - Memory: < 30MB
 - Disk: Profile files typically < 5KB each
 - Network: No network calls for profile management
 
 **Storage**:
+
 - Profile configs: < 5KB per profile
 - VPN configs: Variable size (typically < 10KB)
 - Export files: < 10KB per export

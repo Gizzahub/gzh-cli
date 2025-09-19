@@ -5,6 +5,7 @@
 ### Input
 
 **Command**:
+
 ```bash
 gz net-env switch --profile office
 ```
@@ -18,6 +19,7 @@ gz net-env switch --profile office
 ### Expected Output
 
 **Success Case**:
+
 ```text
 🌐 Switching to network environment: office
 
@@ -57,6 +59,7 @@ Exit Code: 0
 ```
 
 **VPN Connection Failed**:
+
 ```text
 🌐 Switching to network environment: office
 
@@ -82,6 +85,7 @@ Exit Code: 1
 ```
 
 **Profile Not Found**:
+
 ```text
 🔍 Searching for network environment: office
 
@@ -103,6 +107,7 @@ Exit Code: 1
 ```
 
 **Permission Denied**:
+
 ```text
 🌐 Switching to network environment: office
 
@@ -126,17 +131,20 @@ Exit Code: 2
 ### Side Effects
 
 **Files Created**:
+
 - `~/.gzh/net-env/current.yaml` - Active network state
 - `~/.gzh/net-env/switch.log` - Network change log
 - `/tmp/gz-net-backup-*.conf` - Original settings backup
 
 **Files Modified**:
+
 - System DNS configuration (`/etc/resolv.conf`, Registry, etc.)
 - HTTP proxy settings (system-wide or user-specific)
 - VPN client configuration files
 - Network routing tables
 
 **State Changes**:
+
 - DNS resolution servers changed
 - HTTP/HTTPS proxy configuration applied
 - VPN connection established/terminated
@@ -146,6 +154,7 @@ Exit Code: 2
 ### Validation
 
 **Automated Tests**:
+
 ```bash
 # Test network switch (requires test environment)
 result=$(gz net-env switch --profile test-net 2>&1)
@@ -165,34 +174,39 @@ assert_exit_code 0
 ```
 
 **Manual Verification**:
+
 1. Switch between different network profiles
-2. Verify DNS resolution uses correct servers
-3. Test HTTP traffic goes through proxy (if configured)
-4. Confirm VPN connection establishes properly
-5. Check network routes are applied correctly
-6. Test auto-switch behavior with WiFi changes
+1. Verify DNS resolution uses correct servers
+1. Test HTTP traffic goes through proxy (if configured)
+1. Confirm VPN connection establishes properly
+1. Check network routes are applied correctly
+1. Test auto-switch behavior with WiFi changes
 
 ### Edge Cases
 
 **WiFi Network Detection**:
+
 - Automatic profile switching based on WiFi SSID
 - Multiple SSIDs mapped to same profile
 - Hidden network handling
 - Network priority when multiple available
 
 **Connectivity Issues**:
+
 - DNS server unreachable
 - Proxy server down or unreachable
 - VPN server connection timeout
 - Internet connectivity loss during switch
 
 **Configuration Conflicts**:
+
 - Overlapping network routes
 - DNS server conflicts
 - Proxy authentication failures
 - VPN certificate expiration
 
 **System Integration**:
+
 - Network manager conflicts (NetworkManager, systemd-networkd)
 - VPN client compatibility (OpenVPN, WireGuard, IKEv2)
 - Platform-specific proxy settings
@@ -201,17 +215,20 @@ assert_exit_code 0
 ### Performance Expectations
 
 **Response Time**:
+
 - DNS changes: < 2 seconds
 - Proxy configuration: < 3 seconds
 - VPN connection: < 15 seconds
 - Full network switch: < 20 seconds
 
 **Resource Usage**:
+
 - Memory: < 50MB
 - Network: Initial connection tests
 - CPU: Low during normal operation, higher during VPN handshake
 
 **Network Impact**:
+
 - Brief connectivity interruption during DNS switch
 - Temporary proxy authentication delays
 - VPN tunnel establishment time
