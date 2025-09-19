@@ -41,12 +41,13 @@ make lint-all   # Run all linting steps (format + lint + pre-commit)
 
 ```bash
 # Test specific packages
-go test ./cmd/git -v                    # Test git command package
+go test ./cmd/git/repo -v               # Test git repo command package
 go test ./cmd/synclone -v               # Test synclone package
 go test ./pkg/github -v                 # Test GitHub integration
 go test ./internal/git -v               # Test internal git operations
 
 # Run specific test functions
+go test ./cmd/git/repo -run "TestBulkUpdateExecutor" -v
 go test ./cmd/git -run "TestExtractRepoNameFromURL" -v
 go test ./cmd/git -run "TestCloneOrUpdate" -v
 ```
@@ -114,8 +115,10 @@ gzh-cli follows a **simplified CLI architecture** (refactored 2025-01) that prio
 cmd/
 ├── root.go              # Main CLI entry with all command registrations
 ├── git/                 # Unified Git platform management
-│   ├── repo_clone_or_update.go  # Smart cloning with strategies
-│   ├── repo_list.go     # Repository listing with output formats
+│   └── repo/            # Repository management subcommands
+│       ├── repo_clone_or_update.go  # Smart cloning with strategies
+│       ├── repo_bulk_update.go      # Bulk repository updates (pull-all)
+│       └── repo_list.go             # Repository listing with output formats
 │   ├── webhook.go       # Webhook management
 │   └── event.go         # GitHub event processing
 ├── synclone/            # Multi-platform repository synchronization
@@ -311,6 +314,12 @@ Each command module has its own `AGENTS.md` with specific testing requirements:
   - Multiple strategies: rebase (default), reset, clone, skip, pull, fetch
   - Branch specification with `-b/--branch` flag
   - Examples: `gz git repo clone-or-update https://github.com/user/repo.git`
+- `gz git repo pull-all` - **NEW**: Bulk update all Git repositories recursively
+  - Scans nested repositories (max-depth: 5 by default)
+  - Safe automatic pull --rebase when no conflicts expected
+  - Enhanced table output with color-coded status indicators
+  - Parallel processing with configurable worker count
+  - Examples: `gz git repo pull-all`, `gz git repo pull-all --parallel 10 --verbose`
 - `gz synclone` - Clone entire organizations from GitHub, GitLab, Gitea, Gogs
 - `gz repo-config` - GitHub repository configuration management
 - `gz actions-policy` - GitHub Actions policy management
