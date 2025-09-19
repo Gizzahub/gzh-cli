@@ -55,9 +55,9 @@ func NewOutputFormatter() *OutputFormatter {
 
 // PrintUpdateHeader prints the main update header
 func (f *OutputFormatter) PrintUpdateHeader(mode string, managers []string) {
-	fmt.Printf("🔄 %sUpdating %s%s\n", 
+	fmt.Printf("🔄 %sUpdating %s%s\n",
 		f.color(colorBold), mode, f.color(colorReset))
-	
+
 	if len(managers) > 0 {
 		fmt.Printf("📋 Managers: %s\n", strings.Join(managers, ", "))
 	}
@@ -67,22 +67,22 @@ func (f *OutputFormatter) PrintUpdateHeader(mode string, managers []string) {
 // PrintManagerOverview prints the manager support overview table
 func (f *OutputFormatter) PrintManagerOverview(overviews []ManagerOverview) {
 	f.printSectionBanner("Manager Overview", "📋")
-	
+
 	// Table header
-	fmt.Printf("%-12s %-10s %-10s %s\n", 
+	fmt.Printf("%-12s %-10s %-10s %s\n",
 		"MANAGER", "SUPPORTED", "INSTALLED", "NOTE")
-	fmt.Printf("%-12s %-10s %-10s %s\n", 
-		strings.Repeat("-", 12), 
-		strings.Repeat("-", 10), 
-		strings.Repeat("-", 10), 
+	fmt.Printf("%-12s %-10s %-10s %s\n",
+		strings.Repeat("-", 12),
+		strings.Repeat("-", 10),
+		strings.Repeat("-", 10),
 		strings.Repeat("-", 20))
-	
+
 	// Table rows
 	for _, m := range overviews {
 		supported := f.statusEmoji(m.Supported)
 		installed := f.statusEmoji(m.Installed)
-		
-		fmt.Printf("%-12s %-10s %-10s %s\n", 
+
+		fmt.Printf("%-12s %-10s %-10s %s\n",
 			m.Name, supported, installed, m.Reason)
 	}
 	fmt.Println()
@@ -91,18 +91,18 @@ func (f *OutputFormatter) PrintManagerOverview(overviews []ManagerOverview) {
 // PrintDuplicateCheck prints duplicate binary detection results
 func (f *OutputFormatter) PrintDuplicateCheck(conflicts []BinaryConflict) {
 	f.printSectionBanner("Duplicate Installation Check", "🧪")
-	
+
 	if len(conflicts) == 0 {
 		fmt.Println("✅ No duplicate binaries detected")
 	} else {
 		fmt.Printf("Found %d potential conflicts:\n", len(conflicts))
 		for _, conflict := range conflicts {
-			fmt.Printf("  • %s%s%s: ", 
+			fmt.Printf("  • %s%s%s: ",
 				f.color(colorYellow), conflict.Binary, f.color(colorReset))
-			
+
 			sources := make([]string, 0, len(conflict.Sources))
 			for _, source := range conflict.Sources {
-				sources = append(sources, 
+				sources = append(sources,
 					fmt.Sprintf("%s (%s)", source.Path, source.Manager))
 			}
 			fmt.Printf("%s\n", strings.Join(sources, ", "))
@@ -115,10 +115,10 @@ func (f *OutputFormatter) PrintDuplicateCheck(conflicts []BinaryConflict) {
 func (f *OutputFormatter) PrintManagerStep(step, total int, manager, status string) {
 	emoji := f.getStatusEmoji(status)
 	line := strings.Repeat(boxHorizontal, 11)
-	
+
 	fmt.Printf("\n%s%s%s %s [%d/%d] %s — %s %s%s%s\n",
 		f.color(colorBold), f.color(colorCyan),
-		line, emoji, step, total, manager, 
+		line, emoji, step, total, manager,
 		strings.ToUpper(status), line,
 		f.color(colorReset))
 }
@@ -127,16 +127,16 @@ func (f *OutputFormatter) PrintManagerStep(step, total int, manager, status stri
 func (f *OutputFormatter) PrintPackageChange(change PackageChange) {
 	arrow := "→"
 	sizeStr := ""
-	
+
 	if change.DownloadMB > 0 {
 		sizeStr = fmt.Sprintf(" (%.1fMB)", change.DownloadMB)
 	}
-	
+
 	changeColor := f.getChangeColor(change.UpdateType)
-	
+
 	fmt.Printf("   • %s%s%s: %s %s %s%s%s\n",
 		f.color(colorBold), change.Name, f.color(colorReset),
-		change.OldVersion, arrow, 
+		change.OldVersion, arrow,
 		f.color(changeColor), change.NewVersion, f.color(colorReset),
 		sizeStr)
 }
@@ -145,33 +145,33 @@ func (f *OutputFormatter) PrintPackageChange(change PackageChange) {
 func (f *OutputFormatter) PrintUpdateSummary(summary UpdateSummary) {
 	fmt.Printf("🎉 %sPackage manager updates completed%s!\n\n",
 		f.color(colorBold+colorGreen), f.color(colorReset))
-	
+
 	fmt.Println("📊 Summary:")
 	fmt.Printf("   • Total managers processed: %d\n", summary.TotalManagers)
 	fmt.Printf("   • Successfully updated: %d\n", summary.SuccessfulManagers)
-	
+
 	if summary.FailedManagers > 0 {
-		fmt.Printf("   • %sFailed: %d%s\n", 
+		fmt.Printf("   • %sFailed: %d%s\n",
 			f.color(colorRed), summary.FailedManagers, f.color(colorReset))
 	}
-	
+
 	fmt.Printf("   • Packages upgraded: %d\n", summary.PackagesUpgraded)
-	
+
 	if summary.TotalDownloadMB > 0 {
 		fmt.Printf("   • Total download size: %.1fMB\n", summary.TotalDownloadMB)
 	}
-	
+
 	if summary.DiskSpaceFreedMB > 0 {
 		fmt.Printf("   • Disk space freed: %.1fMB\n", summary.DiskSpaceFreedMB)
 	}
-	
+
 	if summary.ConflictsDetected > 0 {
-		fmt.Printf("   • Conflicts detected: %d (non-blocking)\n", 
+		fmt.Printf("   • Conflicts detected: %d (non-blocking)\n",
 			summary.ConflictsDetected)
 	}
-	
+
 	fmt.Println()
-	
+
 	if len(summary.ManualActions) > 0 {
 		fmt.Println("💡 Recommended actions:")
 		for _, action := range summary.ManualActions {
@@ -179,9 +179,9 @@ func (f *OutputFormatter) PrintUpdateSummary(summary UpdateSummary) {
 		}
 		fmt.Println()
 	}
-	
+
 	if summary.Duration > 0 {
-		fmt.Printf("⏰ Update completed in %s\n", 
+		fmt.Printf("⏰ Update completed in %s\n",
 			formatDuration(summary.Duration))
 	}
 }
@@ -190,7 +190,7 @@ func (f *OutputFormatter) PrintUpdateSummary(summary UpdateSummary) {
 
 func (f *OutputFormatter) printSectionBanner(title, emoji string) {
 	line := strings.Repeat(boxHorizontal, 10)
-	fmt.Printf("\n%s%s%s %s %s %s %s%s\n", 
+	fmt.Printf("\n%s%s%s %s %s %s %s%s\n",
 		f.color(colorBold), f.color(colorCyan),
 		line, emoji, title, emoji, line, f.color(colorReset))
 }
@@ -213,14 +213,14 @@ func (f *OutputFormatter) getStatusEmoji(status string) string {
 	if !f.showEmojis {
 		return strings.ToUpper(status)
 	}
-	
+
 	emojis := map[string]string{
 		"updating": "🚀",
 		"skip":     "⚠️",
 		"error":    "❌",
 		"success":  "✅",
 	}
-	
+
 	if emoji, ok := emojis[strings.ToLower(status)]; ok {
 		return emoji
 	}
@@ -233,7 +233,7 @@ func (f *OutputFormatter) getChangeColor(updateType string) string {
 		"minor": colorYellow,
 		"patch": colorGreen,
 	}
-	
+
 	if color, ok := colors[updateType]; ok {
 		return color
 	}
@@ -367,14 +367,14 @@ func (pt *ProgressTracker) StartStep(step int, manager, action string) {
 	pt.CurrentStep = step
 	pt.CurrentAction = action
 	pt.StepStartTime = time.Now()
-	
+
 	// Calculate ETA based on previous steps
 	if step > 1 {
 		avgStepDuration := time.Since(pt.StartTime) / time.Duration(step-1)
 		remainingSteps := pt.TotalSteps - step + 1
 		pt.EstimatedEnd = time.Now().Add(avgStepDuration * time.Duration(remainingSteps))
 	}
-	
+
 	pt.formatter.PrintManagerStep(step, pt.TotalSteps, manager, "updating")
 }
 
@@ -384,7 +384,7 @@ func (pt *ProgressTracker) CompleteStep(success bool) {
 	if !success {
 		status = "error"
 	}
-	
+
 	fmt.Printf("⏱️  Step completed in %s\n", formatDuration(stepDuration))
 }
 
@@ -410,32 +410,32 @@ func (pt *ProgressTracker) PrintProgress() {
 func runUpdateAllEnhanced(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult, checkDuplicates bool, duplicatesMax int) error {
 	formatter := NewOutputFormatter()
 	tracker := NewProgressTracker(8, formatter) // Assuming 8 max managers
-	
+
 	managers := []string{"brew", "asdf", "sdkman", "apt", "pacman", "yay", "pip", "npm"}
-	
+
 	formatter.PrintUpdateHeader("all package managers", nil)
 	if dryRun {
 		fmt.Println("(dry run - no changes will be made)")
 		fmt.Println()
 	}
-	
+
 	// Build and display overview
 	overview := buildManagersOverview(ctx, managers)
 	formatter.PrintManagerOverview(overview)
-	
+
 	// Duplicate check with enhanced output
 	if checkDuplicates {
 		conflicts := detectBinaryConflicts(ctx)
 		formatter.PrintDuplicateCheck(conflicts)
 	}
-	
+
 	// Track summary statistics
 	summary := UpdateSummary{
 		TotalManagers: len(managers),
 		ManualActions: []string{},
 	}
 	startTime := time.Now()
-	
+
 	// Process each manager with enhanced tracking
 	activeManagers := 0
 	for _, manager := range managers {
@@ -444,27 +444,27 @@ func runUpdateAllEnhanced(ctx context.Context, strategy string, dryRun bool, com
 		}
 		activeManagers++
 	}
-	
+
 	step := 1
 	for _, manager := range managers {
 		ov := findManagerOverview(overview, manager)
 		if !ov.Supported || !ov.Installed {
 			continue
 		}
-		
+
 		tracker.StartStep(step, manager, "updating packages")
-		
+
 		// Enhanced manager execution with result tracking
 		managerResult := &EnhancedManagerResult{
 			Name:      manager,
 			StartTime: time.Now(),
 		}
-		
+
 		err := runUpdateManagerEnhanced(ctx, manager, strategy, dryRun, compatMode, managerResult)
-		
+
 		managerResult.EndTime = time.Now()
 		managerResult.Duration = managerResult.EndTime.Sub(managerResult.StartTime)
-		
+
 		if err != nil {
 			managerResult.Status = "failed"
 			managerResult.Error = err.Error()
@@ -478,20 +478,20 @@ func runUpdateAllEnhanced(ctx context.Context, strategy string, dryRun bool, com
 			summary.DiskSpaceFreedMB += managerResult.DiskFreedMB
 			tracker.CompleteStep(true)
 		}
-		
+
 		// Print package changes if any
 		for _, change := range managerResult.PackageChanges {
 			formatter.PrintPackageChange(change)
 		}
-		
+
 		step++
 		fmt.Println()
 	}
-	
+
 	// Print final summary
 	summary.Duration = time.Since(startTime)
 	formatter.PrintUpdateSummary(summary)
-	
+
 	return nil
 }
 
@@ -510,13 +510,13 @@ func runUpdateManagerEnhanced(ctx context.Context, manager, strategy string, dry
 // Enhanced brew update with detailed tracking
 func updateBrewEnhanced(ctx context.Context, strategy string, dryRun bool, result *EnhancedManagerResult) error {
 	fmt.Println("🍺 Updating Homebrew...")
-	
+
 	// Track brew update action
 	action := ActionResult{
 		Command:     "brew update",
 		Description: "Update Homebrew formulae database",
 	}
-	
+
 	actionStart := time.Now()
 	if !dryRun {
 		cmd := exec.CommandContext(ctx, "brew", "update")
@@ -529,7 +529,7 @@ func updateBrewEnhanced(ctx context.Context, strategy string, dryRun bool, resul
 			return fmt.Errorf("failed to update brew: %w", err)
 		}
 		action.Success = true
-		
+
 		// Parse output for formulae count
 		if strings.Contains(action.Output, "Updated") {
 			fmt.Printf("✅ brew update: %s", extractUpdateInfo(action.Output))
@@ -538,17 +538,17 @@ func updateBrewEnhanced(ctx context.Context, strategy string, dryRun bool, resul
 		fmt.Println("Would run: brew update")
 		action.Success = true
 	}
-	
+
 	action.Duration = time.Since(actionStart)
 	result.Actions = append(result.Actions, action)
-	
+
 	// Track upgrade action with package changes
 	if strategy == "latest" || strategy == "stable" {
 		upgradeAction := ActionResult{
 			Command:     "brew upgrade",
 			Description: "Upgrade outdated packages",
 		}
-		
+
 		upgradeStart := time.Now()
 		if !dryRun {
 			// Get outdated packages first
@@ -557,32 +557,32 @@ func updateBrewEnhanced(ctx context.Context, strategy string, dryRun bool, resul
 			if err == nil {
 				changes := parseBrewOutdated(outdatedOutput)
 				result.PackageChanges = changes
-				
+
 				// Calculate total download size (estimated)
 				for _, change := range changes {
 					result.TotalSizeMB += change.DownloadMB
 				}
 			}
-			
+
 			// Run upgrade
 			cmd := exec.CommandContext(ctx, "brew", "upgrade")
 			output, err := cmd.CombinedOutput()
 			upgradeAction.Output = string(output)
-			
+
 			if err != nil {
 				upgradeAction.Success = false
 				upgradeAction.Error = err.Error()
 			} else {
 				upgradeAction.Success = true
 				fmt.Printf("✅ brew upgrade: Upgraded %d packages\n", len(result.PackageChanges))
-				
+
 				// Print individual package changes
 				// (This is now handled by the formatter in the main loop)
 			}
 		} else {
 			fmt.Println("Would run: brew upgrade")
 			upgradeAction.Success = true
-			
+
 			// For dry run, still get outdated info
 			outdatedCmd := exec.CommandContext(ctx, "brew", "outdated", "--json")
 			outdatedOutput, err := outdatedCmd.Output()
@@ -592,17 +592,17 @@ func updateBrewEnhanced(ctx context.Context, strategy string, dryRun bool, resul
 				fmt.Printf("Would upgrade %d packages\n", len(changes))
 			}
 		}
-		
+
 		upgradeAction.Duration = time.Since(upgradeStart)
 		result.Actions = append(result.Actions, upgradeAction)
 	}
-	
+
 	// Cleanup action
 	cleanupAction := ActionResult{
 		Command:     "brew cleanup",
 		Description: "Clean up old package versions",
 	}
-	
+
 	cleanupStart := time.Now()
 	if !dryRun {
 		cmd := exec.CommandContext(ctx, "brew", "cleanup", "--dry-run")
@@ -610,7 +610,7 @@ func updateBrewEnhanced(ctx context.Context, strategy string, dryRun bool, resul
 		if err == nil {
 			freedSpace := parseBrewCleanupSize(string(output))
 			result.DiskFreedMB = freedSpace
-			
+
 			// Actually run cleanup
 			realCleanup := exec.CommandContext(ctx, "brew", "cleanup")
 			err = realCleanup.Run()
@@ -626,10 +626,10 @@ func updateBrewEnhanced(ctx context.Context, strategy string, dryRun bool, resul
 		fmt.Println("Would run: brew cleanup")
 		cleanupAction.Success = true
 	}
-	
+
 	cleanupAction.Duration = time.Since(cleanupStart)
 	result.Actions = append(result.Actions, cleanupAction)
-	
+
 	return nil
 }
 
@@ -639,7 +639,7 @@ func parseBrewOutdated(jsonOutput []byte) []PackageChange {
 	// Parse JSON output from 'brew outdated --json'
 	// This is a simplified version - actual implementation would be more robust
 	var changes []PackageChange
-	
+
 	// Example parsing logic (simplified)
 	lines := strings.Split(string(jsonOutput), "\n")
 	for _, line := range lines {
@@ -656,14 +656,14 @@ func parseBrewOutdated(jsonOutput []byte) []PackageChange {
 			changes = append(changes, change)
 		}
 	}
-	
+
 	return changes
 }
 
 func parseBrewCleanupSize(output string) float64 {
 	// Parse brew cleanup dry-run output to estimate freed space
 	// Example: "==> This operation would free approximately 245.3MB of disk space"
-	
+
 	lines := strings.Split(output, "\n")
 	for _, line := range lines {
 		if strings.Contains(line, "would free approximately") {
@@ -787,22 +787,22 @@ func NewResourceManager(formatter *OutputFormatter) *ResourceManager {
 // CheckResources performs comprehensive resource availability checks
 func (rm *ResourceManager) CheckResources(ctx context.Context, managers []string) ([]ResourceCheck, error) {
 	var checks []ResourceCheck
-	
+
 	// Disk space check
 	diskCheck, err := rm.checkDiskSpace(ctx, managers)
 	if err != nil {
 		return nil, fmt.Errorf("disk space check failed: %w", err)
 	}
 	checks = append(checks, diskCheck)
-	
+
 	// Network connectivity check
 	networkCheck := rm.checkNetworkConnectivity(ctx, managers)
 	checks = append(checks, networkCheck)
-	
+
 	// Memory availability check
 	memoryCheck := rm.checkMemoryAvailability()
 	checks = append(checks, memoryCheck)
-	
+
 	return checks, nil
 }
 
@@ -812,7 +812,7 @@ func (rm *ResourceManager) checkDiskSpace(ctx context.Context, managers []string
 		Type: "disk",
 		Unit: "GB",
 	}
-	
+
 	// Get available disk space
 	available, err := rm.getAvailableDiskSpace(rm.TempDirPath)
 	if err != nil {
@@ -822,41 +822,41 @@ func (rm *ResourceManager) checkDiskSpace(ctx context.Context, managers []string
 	}
 	check.Available = available
 	rm.AvailableDiskGB = available
-	
+
 	// Calculate required space
 	required := rm.calculateRequiredDiskSpace(ctx, managers)
 	check.Required = required
 	rm.RequiredDiskGB = required
-	
+
 	// Determine status
 	if required > available {
 		check.Status = "error"
-		check.Message = fmt.Sprintf("Insufficient disk space: need %.1fGB, available %.1fGB", 
+		check.Message = fmt.Sprintf("Insufficient disk space: need %.1fGB, available %.1fGB",
 			required, available)
 		check.Suggestion = rm.generateDiskSpaceSuggestion(required - available)
 	} else if required > available*0.9 { // Warning at 90% usage
 		check.Status = "warning"
-		check.Message = fmt.Sprintf("Low disk space: need %.1fGB, available %.1fGB", 
+		check.Message = fmt.Sprintf("Low disk space: need %.1fGB, available %.1fGB",
 			required, available)
 		check.Suggestion = "Consider freeing up disk space before proceeding"
 	} else {
 		check.Status = "ok"
-		check.Message = fmt.Sprintf("Sufficient disk space: %.1fGB available, %.1fGB needed", 
+		check.Message = fmt.Sprintf("Sufficient disk space: %.1fGB available, %.1fGB needed",
 			available, required)
 	}
-	
+
 	return check, nil
 }
 
 // CalculateRequiredDiskSpace estimates disk space needed for updates
 func (rm *ResourceManager) calculateRequiredDiskSpace(ctx context.Context, managers []string) float64 {
 	var totalGB float64
-	
+
 	for _, manager := range managers {
 		if !isManagerSupported(manager) || !isManagerInstalled(ctx, manager) {
 			continue
 		}
-		
+
 		switch manager {
 		case "brew":
 			totalGB += rm.estimateBrewDiskSpace(ctx)
@@ -875,10 +875,10 @@ func (rm *ResourceManager) calculateRequiredDiskSpace(ctx context.Context, manag
 			totalGB += 0.5
 		}
 	}
-	
+
 	// Add buffer for temporary files and caches
 	totalGB *= 1.2
-	
+
 	return totalGB
 }
 
@@ -891,14 +891,14 @@ func (rm *ResourceManager) estimateBrewDiskSpace(ctx context.Context) float64 {
 	if err != nil {
 		return 1.0 // Conservative fallback
 	}
-	
+
 	// Parse outdated packages and estimate sizes
 	// This would involve querying brew info for each package
 	outdatedCount := strings.Count(string(output), "name")
-	
+
 	// Average Homebrew package is ~50MB
 	estimatedGB := float64(outdatedCount) * 0.05
-	
+
 	// Add space for formulae updates and cleanup
 	return estimatedGB + 0.2
 }
@@ -910,15 +910,15 @@ func (rm *ResourceManager) estimateAsdfDiskSpace(ctx context.Context) float64 {
 	if err != nil {
 		return 0.5 // Conservative fallback
 	}
-	
+
 	plugins := strings.Split(strings.TrimSpace(string(output)), "\n")
 	var estimatedGB float64
-	
+
 	for _, plugin := range plugins {
 		if plugin == "" {
 			continue
 		}
-		
+
 		// Language-specific size estimates
 		switch plugin {
 		case "nodejs":
@@ -933,7 +933,7 @@ func (rm *ResourceManager) estimateAsdfDiskSpace(ctx context.Context) float64 {
 			estimatedGB += 0.05 // Conservative estimate
 		}
 	}
-	
+
 	return estimatedGB
 }
 
@@ -944,10 +944,10 @@ func (rm *ResourceManager) estimateNpmDiskSpace(ctx context.Context) float64 {
 	if err != nil {
 		return 0.2 // Conservative fallback
 	}
-	
+
 	// Count packages (simplified parsing)
 	packageCount := strings.Count(string(output), "current")
-	
+
 	// Average npm global package is ~10MB
 	return float64(packageCount) * 0.01
 }
@@ -964,10 +964,10 @@ func (rm *ResourceManager) estimatePipDiskSpace(ctx context.Context) float64 {
 			return 0.1 // Conservative fallback
 		}
 	}
-	
+
 	// Count packages (simplified parsing)
 	packageCount := strings.Count(string(output), "name")
-	
+
 	// Average Python package is ~5MB
 	return float64(packageCount) * 0.005
 }
@@ -979,10 +979,10 @@ func (rm *ResourceManager) estimateAptDiskSpace(ctx context.Context) float64 {
 	if err != nil {
 		return 0.5 // Conservative fallback
 	}
-	
+
 	lines := strings.Split(string(output), "\n")
 	packageCount := len(lines) - 1 // Subtract header
-	
+
 	// Average apt package is ~20MB
 	return float64(packageCount) * 0.02
 }
@@ -994,10 +994,10 @@ func (rm *ResourceManager) estimatePacmanDiskSpace(ctx context.Context) float64 
 	if err != nil {
 		return 0.5 // Conservative fallback
 	}
-	
+
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 	packageCount := len(lines)
-	
+
 	// Average Arch package is ~15MB
 	return float64(packageCount) * 0.015
 }
@@ -1008,36 +1008,36 @@ func (rm *ResourceManager) checkNetworkConnectivity(ctx context.Context, manager
 		Type: "network",
 		Unit: "Mbps",
 	}
-	
+
 	// Test connectivity to package repositories
 	repositories := rm.getRepositoryURLs(managers)
 	successCount := 0
-	
+
 	for _, repo := range repositories {
 		if rm.testConnectivity(ctx, repo) {
 			successCount++
 		}
 	}
-	
+
 	successRate := float64(successCount) / float64(len(repositories))
 	check.Available = successRate * 100 // Convert to percentage
-	
+
 	if successRate >= 0.8 {
 		check.Status = "ok"
-		check.Message = fmt.Sprintf("Network connectivity good: %d/%d repositories accessible", 
+		check.Message = fmt.Sprintf("Network connectivity good: %d/%d repositories accessible",
 			successCount, len(repositories))
 	} else if successRate >= 0.5 {
 		check.Status = "warning"
-		check.Message = fmt.Sprintf("Limited network connectivity: %d/%d repositories accessible", 
+		check.Message = fmt.Sprintf("Limited network connectivity: %d/%d repositories accessible",
 			successCount, len(repositories))
 		check.Suggestion = "Check network connection and firewall settings"
 	} else {
 		check.Status = "error"
-		check.Message = fmt.Sprintf("Poor network connectivity: %d/%d repositories accessible", 
+		check.Message = fmt.Sprintf("Poor network connectivity: %d/%d repositories accessible",
 			successCount, len(repositories))
 		check.Suggestion = "Check internet connection, DNS settings, and proxy configuration"
 	}
-	
+
 	return check
 }
 
@@ -1047,7 +1047,7 @@ func (rm *ResourceManager) checkMemoryAvailability() ResourceCheck {
 		Type: "memory",
 		Unit: "MB",
 	}
-	
+
 	// Get available memory
 	available, err := rm.getAvailableMemoryMB()
 	if err != nil {
@@ -1055,21 +1055,21 @@ func (rm *ResourceManager) checkMemoryAvailability() ResourceCheck {
 		check.Message = "Cannot determine available memory"
 		return check
 	}
-	
+
 	check.Available = available
 	requiredMB := 512.0 // Conservative estimate for package operations
 	check.Required = requiredMB
-	
+
 	if available >= requiredMB {
 		check.Status = "ok"
 		check.Message = fmt.Sprintf("Sufficient memory: %.0fMB available", available)
 	} else {
 		check.Status = "warning"
-		check.Message = fmt.Sprintf("Low memory: %.0fMB available, %.0fMB recommended", 
+		check.Message = fmt.Sprintf("Low memory: %.0fMB available, %.0fMB recommended",
 			available, requiredMB)
 		check.Suggestion = "Close unnecessary applications to free up memory"
 	}
-	
+
 	return check
 }
 
@@ -1080,11 +1080,11 @@ func (rm *ResourceManager) getAvailableDiskSpace(path string) (float64, error) {
 	if err := syscall.Statfs(path, &stat); err != nil {
 		return 0, err
 	}
-	
+
 	// Calculate available space in GB
 	availableBytes := stat.Bavail * uint64(stat.Bsize)
 	availableGB := float64(availableBytes) / (1024 * 1024 * 1024)
-	
+
 	return availableGB, nil
 }
 
@@ -1095,7 +1095,7 @@ func (rm *ResourceManager) getAvailableMemoryMB() (float64, error) {
 		// Fallback for non-Linux systems
 		return 1024, nil // Assume 1GB available
 	}
-	
+
 	lines := strings.Split(string(content), "\n")
 	for _, line := range lines {
 		if strings.HasPrefix(line, "MemAvailable:") {
@@ -1108,13 +1108,13 @@ func (rm *ResourceManager) getAvailableMemoryMB() (float64, error) {
 			}
 		}
 	}
-	
+
 	return 1024, nil // Default fallback
 }
 
 func (rm *ResourceManager) getRepositoryURLs(managers []string) []string {
 	urls := []string{}
-	
+
 	for _, manager := range managers {
 		switch manager {
 		case "brew":
@@ -1127,7 +1127,7 @@ func (rm *ResourceManager) getRepositoryURLs(managers []string) []string {
 			urls = append(urls, "https://get.sdkman.io")
 		}
 	}
-	
+
 	return urls
 }
 
@@ -1145,34 +1145,34 @@ func (rm *ResourceManager) generateDiskSpaceSuggestion(neededGB float64) string 
 		"  • pip cache purge (for pip)",
 		"  • sudo apt autoremove (for apt)",
 	}
-	
+
 	return strings.Join(suggestions, "\n   ")
 }
 
 // PrintResourceCheck displays resource check results
 func (rm *ResourceManager) PrintResourceCheck(checks []ResourceCheck) {
 	rm.formatter.printSectionBanner("Resource Availability Check", "📊")
-	
+
 	for _, check := range checks {
 		status := rm.getCheckStatusEmoji(check.Status)
-		
+
 		fmt.Printf("%s %s: %s\n", status, strings.Title(check.Type), check.Message)
-		
+
 		if check.Status != "ok" && check.Suggestion != "" {
 			fmt.Printf("   💡 %s\n", check.Suggestion)
 		}
-		
+
 		if check.Type == "disk" && check.Status == "ok" {
 			fmt.Printf("   📦 Estimated download: %.1fMB\n", rm.EstimatedDownloadMB)
 		}
 	}
-	
+
 	fmt.Println()
-	
+
 	// Print overall status
 	hasErrors := false
 	hasWarnings := false
-	
+
 	for _, check := range checks {
 		if check.Status == "error" {
 			hasErrors = true
@@ -1180,7 +1180,7 @@ func (rm *ResourceManager) PrintResourceCheck(checks []ResourceCheck) {
 			hasWarnings = true
 		}
 	}
-	
+
 	if hasErrors {
 		fmt.Printf("❌ %sResource check failed%s - resolve issues before proceeding\n\n",
 			rm.formatter.color(colorRed+colorBold), rm.formatter.color(colorReset))
@@ -1199,7 +1199,7 @@ func (rm *ResourceManager) getCheckStatusEmoji(status string) string {
 		"warning": "⚠️",
 		"error":   "❌",
 	}
-	
+
 	if emoji, exists := emojis[status]; exists {
 		return emoji
 	}
@@ -1234,21 +1234,21 @@ func (monitor *ResourceMonitor) GetCurrentMemoryUsage() float64 {
 
 func (monitor *ResourceMonitor) PrintFinalReport() {
 	elapsed := time.Since(monitor.startTime)
-	
+
 	fmt.Printf("📈 Resource Usage Summary:\n")
 	fmt.Printf("   • Total time: %s\n", formatDuration(elapsed))
 	fmt.Printf("   • Disk space used: %.1fGB\n", monitor.diskUsedGB)
-	
+
 	if monitor.peakMemoryMB > 0 {
 		fmt.Printf("   • Peak memory usage: %.1fMB\n", monitor.peakMemoryMB)
 	}
-	
+
 	// Show final disk space
 	finalDisk, err := monitor.rm.getAvailableDiskSpace(monitor.rm.TempDirPath)
 	if err == nil {
 		fmt.Printf("   • Remaining disk space: %.1fGB\n", finalDisk)
 	}
-	
+
 	fmt.Println()
 }
 ```
@@ -1263,20 +1263,20 @@ func (monitor *ResourceMonitor) PrintFinalReport() {
 func runUpdateAllWithResourceManagement(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult, checkDuplicates bool, duplicatesMax int) error {
 	formatter := NewOutputFormatter()
 	resourceManager := NewResourceManager(formatter)
-	
+
 	managers := []string{"brew", "asdf", "sdkman", "apt", "pacman", "yay", "pip", "npm"}
-	
+
 	// Pre-flight resource checks
-	fmt.Printf("🔍 %sPerforming pre-flight checks...%s\n", 
+	fmt.Printf("🔍 %sPerforming pre-flight checks...%s\n",
 		formatter.color(colorBold), formatter.color(colorReset))
-	
+
 	resourceChecks, err := resourceManager.CheckResources(ctx, managers)
 	if err != nil {
 		return fmt.Errorf("resource check failed: %w", err)
 	}
-	
+
 	resourceManager.PrintResourceCheck(resourceChecks)
-	
+
 	// Check if we can proceed
 	canProceed := true
 	for _, check := range resourceChecks {
@@ -1285,32 +1285,32 @@ func runUpdateAllWithResourceManagement(ctx context.Context, strategy string, dr
 			break
 		}
 	}
-	
+
 	if !canProceed && !dryRun {
 		return fmt.Errorf("resource constraints prevent update execution")
 	}
-	
+
 	// Start resource monitoring
 	monitor := resourceManager.MonitorResources(ctx)
-	
+
 	// Continue with regular update flow...
 	formatter.PrintUpdateHeader("all package managers", managers)
-	
+
 	// ... rest of update logic with resource tracking ...
-	
+
 	// Print final resource report
 	monitor.PrintFinalReport()
-	
+
 	return nil
 }
 
 // Enhanced manager execution with resource tracking
 func runUpdateManagerWithResources(ctx context.Context, manager string, strategy string, dryRun bool, compatMode string, result *EnhancedManagerResult, monitor *ResourceMonitor) error {
 	startDisk, _ := monitor.rm.getAvailableDiskSpace(monitor.rm.TempDirPath)
-	
+
 	// Run the actual update
 	err := runUpdateManagerEnhanced(ctx, manager, strategy, dryRun, compatMode, result)
-	
+
 	// Track resource usage
 	if !dryRun {
 		endDisk, _ := monitor.rm.getAvailableDiskSpace(monitor.rm.TempDirPath)
@@ -1320,7 +1320,7 @@ func runUpdateManagerWithResources(ctx context.Context, manager string, strategy
 			result.DiskUsedGB = diskUsed
 		}
 	}
-	
+
 	return err
 }
 ```

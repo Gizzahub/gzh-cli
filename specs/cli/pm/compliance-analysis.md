@@ -126,7 +126,7 @@ type ResourceManager struct {
 
 func (rm *ResourceManager) CheckResources() error {
     if rm.RequiredDiskGB > rm.AvailableDiskGB {
-        return fmt.Errorf("insufficient disk space: need %.1fGB, available %.1fGB", 
+        return fmt.Errorf("insufficient disk space: need %.1fGB, available %.1fGB",
             rm.RequiredDiskGB, rm.AvailableDiskGB)
     }
     return nil
@@ -191,14 +191,14 @@ func printPackageChange(name, oldVer, newVer string, sizeMB float64) {
 ```go
 func TestOutputFormatCompliance(t *testing.T) {
     result := updateManager(ctx, "brew", "stable", true, "auto", mockResult)
-    
+
     // Verify section banner format
     assert.Contains(t, result.Output, "═══════════ 🚀")
     assert.Regexp(t, `\[1/\d+\]`, result.Output)
-    
-    // Verify package change format  
+
+    // Verify package change format
     assert.Regexp(t, `• \w+: [\d\.]+ → [\d\.]+ \([\d\.]+MB\)`, result.Output)
-    
+
     // Verify summary format
     assert.Contains(t, result.Output, "📊 Summary:")
     assert.Contains(t, result.Output, "Total managers processed:")
@@ -211,14 +211,14 @@ func TestOutputFormatCompliance(t *testing.T) {
 func TestFullUpdateWorkflow(t *testing.T) {
     // Setup test environment with multiple managers
     setupTestEnvironment(t)
-    
+
     // Test dry-run
     dryResult := runUpdate(t, "--all", "--dry-run")
     assert.Equal(t, 0, dryResult.ExitCode)
-    
+
     // Test actual update
     updateResult := runUpdate(t, "--all")
-    
+
     // Verify output compliance
     verifyOutputFormat(t, updateResult.Output)
     verifyResourceReporting(t, updateResult.Output)

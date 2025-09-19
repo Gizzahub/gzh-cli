@@ -39,11 +39,11 @@ gz pm update --manager pip --pip-allow-conda # Allow pip in conda environment
 📋 Manager Overview:
 MANAGER      SUPPORTED  INSTALLED  NOTE
 ------------ ---------- ---------- --------------------
-brew         ✅         ✅         
-asdf         ✅         ✅         
-sdkman       ✅         ✅         
-npm          ✅         ✅         
-pip          ✅         ✅         
+brew         ✅         ✅
+asdf         ✅         ✅
+sdkman       ✅         ✅
+npm          ✅         ✅
+pip          ✅         ✅
 apt          🚫         ⛔         Linux 전용
 pacman       🚫         ⛔         Arch/Manjaro 계열 전용
 
@@ -51,13 +51,13 @@ pacman       🚫         ⛔         Arch/Manjaro 계열 전용
 Found 2 potential conflicts:
   • node: /usr/local/bin/node (brew), ~/.asdf/shims/node (asdf)
   • python3: /usr/bin/python3 (system), ~/.asdf/shims/python3 (asdf)
-  
+
 ═══════════ 🚀 [1/5] brew — Updating ═══════════
 🍺 Updating Homebrew...
 ✅ brew update: Updated 23 formulae
 ✅ brew upgrade: Upgraded 5 packages
    • node: 20.11.0 → 20.11.1 (24.8MB)
-   • git: 2.43.0 → 2.43.1 (8.4MB) 
+   • git: 2.43.0 → 2.43.1 (8.4MB)
    • python@3.11: 3.11.7 → 3.11.8 (15.2MB)
    • jq: 1.6 → 1.7 (1.1MB)
    • tree: 2.1.0 → 2.1.1 (156KB)
@@ -75,7 +75,7 @@ Checking nodejs for updates...
 Checking golang for updates...
 💡 golang: 1.21.5 already latest, skipping
 
-Checking python for updates...  
+Checking python for updates...
 ✅ python: 3.11.7 → 3.11.8 installed
 ✅ Post-action: pip install --upgrade pip
 
@@ -164,7 +164,7 @@ Exit Code: 0
 ⚠️  Package manager updates partially completed.
 
 📊 Summary:
-   • Total managers processed: 4  
+   • Total managers processed: 4
    • Successfully updated: 2
    • Failed: 1 (network issues)
    • Skipped: 1 (environment conflict)

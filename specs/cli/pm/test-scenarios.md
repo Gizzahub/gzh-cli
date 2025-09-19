@@ -334,11 +334,11 @@ run_test() {
     local test_name="$1"
     local test_cmd="$2"
     local expected_exit_code="${3:-0}"
-    
+
     echo "Running: $test_name"
     eval "$test_cmd"
     local actual_exit_code=$?
-    
+
     if [ $actual_exit_code -eq $expected_exit_code ]; then
         echo "✅ PASS: $test_name"
         return 0
@@ -367,13 +367,13 @@ environments:
     packages:
       brew: [git, node, python]
       asdf: [nodejs, python, golang]
-      
+
   ubuntu_apt:
     platform: linux
     managers: [apt, asdf, npm, pip]
     packages:
       apt: [git, build-essential]
-      
+
   arch_pacman:
     platform: linux
     managers: [pacman, yay, asdf]
@@ -389,7 +389,7 @@ environments:
 validate_output_format() {
     local output="$1"
     local format="$2"
-    
+
     case $format in
         "text")
             grep -q "🔄 Updating" <<< "$output"
@@ -405,7 +405,7 @@ validate_output_format() {
 validate_manager_detection() {
     local platform="$1"
     local output="$2"
-    
+
     case $platform in
         "darwin")
             grep -q "brew.*✅" <<< "$output"
@@ -456,21 +456,21 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        
+
     runs-on: ${{ matrix.os }}
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup test environment
       run: |
         # Install package managers for testing
         # Setup test fixtures
-        
+
     - name: Run PM update tests
       run: |
         make test-pm-update
-        
+
     - name: Upload test results
       uses: actions/upload-artifact@v3
       with:

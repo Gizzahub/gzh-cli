@@ -131,7 +131,7 @@ Page 1: GET /orgs/kubernetes/repos?page=1&per_page=100  (returns 79 repos)
 
 ```
 Page 1: GET /orgs/microsoft/repos?page=1&per_page=100   (returns 100 repos)
-Page 2: GET /orgs/microsoft/repos?page=2&per_page=100   (returns 100 repos)  
+Page 2: GET /orgs/microsoft/repos?page=2&per_page=100   (returns 100 repos)
 Page N: GET /orgs/microsoft/repos?page=N&per_page=100   (returns <100 repos)
        → Pagination stops, returns all repositories
 ```

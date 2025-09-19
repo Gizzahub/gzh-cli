@@ -98,7 +98,7 @@ Each CLI specification follows this standard format:
 test_synclone_success() {
     result=$(gz synclone github -o test-org 2>&1)
     exit_code=$?
-    
+
     # Contract assertions
     assert_contains "$result" "📋 Found"
     assert_exit_code 0

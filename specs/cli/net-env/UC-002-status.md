@@ -125,7 +125,7 @@ Exit Code: 1
    • Status: healthy (fallback active)
 ⚠️  Fallback to public DNS: 8.8.8.8 (temporary)
 
-🌐 HTTP Proxy Configuration  
+🌐 HTTP Proxy Configuration
 ❌ HTTP Proxy: proxy.corp.example.com:8080
    • Error: connection refused
    • Last successful: 15m ago
@@ -150,7 +150,7 @@ Exit Code: 1
    - DNS issues: check network connectivity
    - Proxy failures: contact IT support
    - VPN reconnection: wait for auto-retry or manual restart
-   
+
 💡 Quick fixes:
    gz net-env switch --profile office --force-reconnect
    gz net-env diagnose --verbose

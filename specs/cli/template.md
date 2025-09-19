@@ -290,7 +290,7 @@ Use this checklist to ensure your specification is complete:
 ```markdown
 **Prerequisites**:
 - [ ] GITHUB_TOKEN environment variable set, OR
-- [ ] --token flag provided, OR  
+- [ ] --token flag provided, OR
 - [ ] Interactive authentication completed
 
 **Error Cases**:

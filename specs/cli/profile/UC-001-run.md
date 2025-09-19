@@ -69,7 +69,7 @@ Exit Code: 0
 🔬 Starting Go application profiling
 
 🎯 Profile Configuration:
-   📊 Type: Memory (heap) profiling  
+   📊 Type: Memory (heap) profiling
    🎯 Target: localhost:6060/debug/pprof/heap
    📁 Output: memory-profile.pb.gz
 

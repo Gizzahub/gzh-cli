@@ -72,7 +72,7 @@ func (c *EnhancedSSHCommand) CreateEnhancedSaveCommand() *cobra.Command {
 - All private keys referenced by IdentityFile directives
 - Corresponding public keys (optional)
 
-The configuration is saved as a directory structure to preserve 
+The configuration is saved as a directory structure to preserve
 relative paths and file relationships.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return c.SaveEnhancedConfig(opts)

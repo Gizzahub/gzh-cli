@@ -106,7 +106,7 @@ gz profile analyze --auto-suggest profile.prof
 cmd/profile/
 ├── profile.go                     # Main command with all subcommands
 ├── enhanced_profiling.go           # Advanced profiling features
-├── profile_test.go                 # Basic command tests  
+├── profile_test.go                 # Basic command tests
 └── enhanced_profiling_test.go      # Enhanced features tests
 ```
 
@@ -123,7 +123,7 @@ cmd/profile/
 ```go
 type PerformanceIssue struct {
     Type        string  // "high_cpu_usage", "memory_leak", "goroutine_leak"
-    Severity    string  // "critical", "warning", "info"  
+    Severity    string  // "critical", "warning", "info"
     Description string  // Human-readable description
     Location    string  // Code location (file:line)
     Suggestion  string  // Actionable fix recommendation
@@ -184,7 +184,7 @@ Found 3 issue(s):
    💡 Suggestion: Consider using json.Encoder for streaming large datasets
 
 2. 🟡 Memory leak detected: 2.3 MB/minute growth rate
-   Location: websocket.handler  
+   Location: websocket.handler
    💡 Suggestion: Ensure proper cleanup of websocket connections
 
 3. 🔵 Potential O(n²) algorithm detected in sorting routine

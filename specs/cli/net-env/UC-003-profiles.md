@@ -83,7 +83,7 @@ Exit Code: 0
    Primary DNS server [8.8.8.8]: 1.1.1.1
    Secondary DNS server [8.8.4.4]: 1.0.0.1
    DNS-over-HTTPS [y/N]: y
-   Search domains (optional): 
+   Search domains (optional):
 
 🌐 HTTP Proxy Configuration:
    Enable HTTP proxy [y/N]: n
@@ -92,7 +92,7 @@ Exit Code: 0
    Enable VPN [y/N]: y
    VPN type (openvpn/wireguard/ikev2) [openvpn]: wireguard
    VPN server: public.vpn.example.com
-   VPN port [51820]: 
+   VPN port [51820]:
    Configuration file: ~/.gzh/net-env/vpn/cafe-vpn.conf
 
 📊 Profile Summary:
@@ -125,19 +125,19 @@ Exit Code: 0
    Update [CorpNet-5G, CorpNet-Guest]: CorpNet-5G, CorpNet-Guest, CorpNet-Legacy
 
 🔍 DNS Configuration:
-   Primary DNS [10.0.1.53]: 
-   Secondary DNS [10.0.1.54]: 
-   Search domains [corp.example.com, internal.local]: 
+   Primary DNS [10.0.1.53]:
+   Secondary DNS [10.0.1.54]:
+   Search domains [corp.example.com, internal.local]:
 
 🌐 HTTP Proxy Configuration:
-   HTTP proxy [proxy.corp.example.com:8080]: 
-   Authentication type [NTLM]: 
+   HTTP proxy [proxy.corp.example.com:8080]:
+   Authentication type [NTLM]:
    Username [corp\username]: corp\newusername
 
 🔒 VPN Configuration:
-   VPN type [openvpn]: 
-   VPN server [office.vpn.corp.com]: 
-   Configuration file [~/.gzh/net-env/vpn/office-vpn.conf]: 
+   VPN type [openvpn]:
+   VPN server [office.vpn.corp.com]:
+   Configuration file [~/.gzh/net-env/vpn/office-vpn.conf]:
 
 📊 Updated Configuration:
    WiFi networks: CorpNet-5G, CorpNet-Guest, CorpNet-Legacy
@@ -199,13 +199,13 @@ profile:
   version: 2.1.0
   created: 2024-12-15T10:30:00Z
   modified: 2025-08-20T14:25:00Z
-  
+
 wifi:
   auto_switch_networks:
     - CorpNet-5G
     - CorpNet-Guest
     - CorpNet-Legacy
-    
+
 dns:
   primary: 10.0.1.53
   secondary: 10.0.1.54
@@ -213,7 +213,7 @@ dns:
     - corp.example.com
     - internal.local
   doh_enabled: true
-  
+
 proxy:
   http_proxy: proxy.corp.example.com:8080
   https_proxy: proxy.corp.example.com:8080
@@ -224,7 +224,7 @@ proxy:
     - 127.0.0.1
     - "*.local"
     - "*.corp.example.com"
-    
+
 vpn:
   enabled: true
   type: openvpn

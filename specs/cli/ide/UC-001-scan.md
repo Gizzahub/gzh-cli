@@ -47,7 +47,7 @@ gz ide scan
 📋 Summary
    Total IDEs found: 5
    JetBrains: 2
-   VS Code family: 2  
+   VS Code family: 2
    Text editors: 1
 
 stderr: (empty)
@@ -68,7 +68,7 @@ Exit Code: 0
 
 🚫 Consider installing an IDE for better development experience.
 
-stderr: (empty)  
+stderr: (empty)
 Exit Code: 1
 ```
 

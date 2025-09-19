@@ -110,7 +110,7 @@ Exit Code: 1
 
 ❌ Critical issues detected! Please resolve before using gzh-cli.
 
-stderr: (empty)  
+stderr: (empty)
 Exit Code: 2
 ```
 

@@ -69,7 +69,7 @@ gz pm update --all
 🔍 Performing pre-flight checks...
 📊 Resource Availability Check
 ✅ Disk: Sufficient disk space: 45.2GB available, 2.1GB needed
-✅ Network: Network connectivity good: 4/4 repositories accessible  
+✅ Network: Network connectivity good: 4/4 repositories accessible
 ✅ Memory: Sufficient memory: 8192MB available
 
 ═══════════ 🚀 [1/5] brew — Updating ═══════════
@@ -84,7 +84,7 @@ gz pm update --all
 🎉 Package manager updates completed successfully!
 📊 Summary:
    • Total managers processed: 5
-   • Successfully updated: 5  
+   • Successfully updated: 5
    • Packages upgraded: 27
    • Total download size: 52.1MB
    • Disk space freed: 245MB

@@ -74,7 +74,7 @@ Exit Code: 0
    1. Resolve conflicts in affected files
    2. Run: git add <resolved-files>
    3. Run: git rebase --continue
-   
+
 📂 Working directory: ./repo
 
 stderr: rebase conflicts detected

@@ -33,7 +33,7 @@ gz dev-env status
    • Account: 987654321098
    • Credentials: valid (expires in 11h 45m)
 
-🐳 Docker Configuration  
+🐳 Docker Configuration
 ✅ Context: aws-prod-ecs (active)
    • Endpoint: tcp://prod-ecs.amazonaws.com:2376
    • TLS: verified
@@ -76,7 +76,7 @@ Exit Code: 0
 📋 Available profiles:
    • local - Local development setup
    • aws-dev - AWS development environment
-   • aws-staging - AWS staging environment  
+   • aws-staging - AWS staging environment
    • aws-prod - AWS production environment
    • docker-local - Local Docker setup
    • k8s-dev - Kubernetes development cluster

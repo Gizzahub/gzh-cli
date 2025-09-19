@@ -25,7 +25,7 @@ gz git repo list --org myorg --platform github
 
 NAME                    VISIBILITY  LANGUAGE    STARS  UPDATED
 awesome-project         public      Go          45     2 days ago
-secret-sauce           private     TypeScript   0      1 week ago  
+secret-sauce           private     TypeScript   0      1 week ago
 documentation          public      Markdown     12     3 days ago
 legacy-app             public      Java         8      2 months ago
 

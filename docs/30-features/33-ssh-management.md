@@ -91,7 +91,7 @@ gz dev-env ssh save --name custom --base-dir /custom/ssh/path
 ~/.gz/ssh-configs/production/
 ├── config              # Main ~/.ssh/config file
 ├── includes/           # All Include directive files
-│   ├── config.d/       
+│   ├── config.d/
 │   │   ├── work.conf
 │   │   └── personal.conf
 │   └── special.config
@@ -178,7 +178,7 @@ gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id
 # Install with verbose output
 gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub --verbose
 
-# Install all keys from saved configuration  
+# Install all keys from saved configuration
 gz dev-env ssh install-key --config production --host server.com --user admin
 
 # Dry run to preview changes
@@ -220,7 +220,7 @@ gz dev-env ssh list-keys --config production
 Provides clean, minimal output focusing on essential information:
 
 ```bash
-Password for user@host: 
+Password for user@host:
 ✅ SSH key installed successfully
 ```
 
@@ -261,7 +261,7 @@ SSH configurations are stored in `~/.gz/ssh-configs/` with the following structu
 │   ├── includes/           # Include directive files
 │   │   └── config.d/
 │   │       ├── work.conf
-│   │       └── personal.conf  
+│   │       └── personal.conf
 │   ├── keys/               # SSH keys
 │   │   ├── id_rsa
 │   │   ├── id_rsa.pub
@@ -292,7 +292,7 @@ SSH configurations are stored in `~/.gz/ssh-configs/` with the following structu
     "/home/user/.ssh/work_key"
   ],
   "public_keys": [
-    "/home/user/.ssh/id_rsa.pub", 
+    "/home/user/.ssh/id_rsa.pub",
     "/home/user/.ssh/work_key.pub"
   ]
 }

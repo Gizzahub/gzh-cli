@@ -372,22 +372,22 @@ verify_test_result() {
     local test_dir=$1
     local expected_min=$2
     local test_name=$3
-    
+
     if [ -d "$test_dir" ]; then
         local repo_count=$(find "$test_dir" -name ".git" -type d | wc -l)
         local gzh_files=$(find "$test_dir" -name "gzh.yaml" | wc -l)
-        
+
         echo "=== $test_name ==="
         echo "디렉토리: $test_dir"
         echo "리포지터리 수: $repo_count"
         echo "gzh.yaml 파일 수: $gzh_files"
-        
+
         if [ "$repo_count" -ge "$expected_min" ]; then
             echo "✅ 성공: 예상 최소 개수($expected_min) 이상"
         else
             echo "❌ 실패: 예상보다 적음 ($repo_count < $expected_min)"
         fi
-        
+
         if [ "$gzh_files" -eq 1 ]; then
             echo "✅ gzh.yaml 파일 정상 생성"
         else
@@ -402,7 +402,7 @@ verify_test_result() {
 
 # 테스트 결과 검증 실행
 verify_test_result "./test-stage-1" 5 "1단계: 기본 기능 테스트"
-verify_test_result "./test-stage-2" 3 "2단계: 필터링 기능 테스트" 
+verify_test_result "./test-stage-2" 3 "2단계: 필터링 기능 테스트"
 verify_test_result "./test-stage-3" 30 "3단계: 병렬 처리 테스트"
 verify_test_result "./test-stage-4" 100 "4단계: 대규모 테스트"
 ```

@@ -151,7 +151,7 @@ outputs:
     stdout: "📋 Found {count} repositories in organization {org}"
     stderr: ""
     exit_code: 0
-    
+
   rate_limit_error:
     stdout: "🚫 GitHub API Rate Limit Exceeded!"
     stderr: ""
@@ -164,9 +164,9 @@ outputs:
 side_effects:
   success:
     - creates: "./{org}/" directory
-    - creates: "./{org}/gzh.yaml" metadata file  
+    - creates: "./{org}/gzh.yaml" metadata file
     - creates: "./{org}/{repo}/" for each repository
-    
+
   failure:
     - no_changes: true
     - cleanup: removes partial directories
@@ -224,7 +224,7 @@ func TestSyncloneE2E_Success(t *testing.T) {
     // Test complete command against specification
     cmd := exec.Command("gz", "synclone", "github", "-o", "test-org")
     output, err := cmd.CombinedOutput()
-    
+
     assert.NoError(t, err)
     assert.Contains(t, string(output), "📋 Found")
     assert.DirExists(t, "./test-org")
@@ -244,10 +244,10 @@ tests:
       stdout_contains: ["📋 Found", "repositories"]
       exit_code: 0
       creates_directory: "./ScriptonBasestar"
-      
+
   - name: "synclone-github-rate-limit"
     command: "gz synclone github -o microsoft"
-    environment: 
+    environment:
       GITHUB_TOKEN: ""
     expect:
       stdout_contains: ["🚫 GitHub API Rate Limit Exceeded!"]
@@ -321,7 +321,7 @@ jobs:
 # Generate user documentation from specifications
 make generate-cli-docs
 
-# Update help text from specifications  
+# Update help text from specifications
 make sync-help-text
 ```
 

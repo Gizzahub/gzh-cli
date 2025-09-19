@@ -24,7 +24,7 @@ gz net-env switch --profile office
 🌐 Switching to network environment: office
 
 📋 Network Configuration Changes:
-✅ DNS Servers: 
+✅ DNS Servers:
    • Primary: 8.8.8.8 → 10.0.1.53
    • Secondary: 8.8.4.4 → 10.0.1.54
    • Search domains: → corp.example.com, internal.local

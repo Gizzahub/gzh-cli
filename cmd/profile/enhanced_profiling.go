@@ -161,7 +161,7 @@ func newAnalyzeCmd() *cobra.Command {
 
 This command uses heuristics to identify potential problems such as:
 - High CPU usage in specific functions
-- Memory allocation hotspots  
+- Memory allocation hotspots
 - Goroutine leaks
 - Lock contention issues
 
@@ -620,7 +620,7 @@ func printAnalysisJSON(issues []PerformanceIssue) error {
 		fmt.Printf(`
     {
       "type": "%s",
-      "severity": "%s", 
+      "severity": "%s",
       "description": "%s",
       "impact": %.1f`,
 			issue.Type, issue.Severity, issue.Description, issue.Impact)
@@ -652,7 +652,7 @@ func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) erro
   "goroutines": %d,
   "memory": {
     "heapAlloc": "%s",
-    "heapSys": "%s" 
+    "heapSys": "%s"
   }
 }`, stats["timestamp"],
 			runtime.NumGoroutine(),

@@ -139,7 +139,7 @@ Warning: Failed to update X: error message
 cmd/pm/update/
 ├── update.go              # Original implementation (preserved)
 ├── formatter.go           # Enhanced output formatting
-├── version_tracker.go     # Package version change tracking  
+├── version_tracker.go     # Package version change tracking
 ├── progress_tracker.go    # Step-by-step progress indication
 ├── resource_manager.go    # Resource availability checking
 ├── enhanced_update.go     # Enhanced update orchestration

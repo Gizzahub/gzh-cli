@@ -27,7 +27,7 @@ Available commands:
   cpu         Collect CPU profile
   memory      Collect memory profile
   stats       Show runtime statistics
-  
+
 Enhanced commands:
   compare     Compare two profiles for performance differences
   continuous  Run continuous profiling over time

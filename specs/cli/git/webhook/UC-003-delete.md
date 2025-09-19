@@ -172,7 +172,7 @@ Exit Code: 1
    📅 Last successful delivery: 2025-07-15 (48 days ago)
    📊 Recent failures: 23 consecutive failures
 
-🔴 Webhook #2  
+🔴 Webhook #2
    🆔 ID: 45678901
    🌐 URL: https://temp-service.example.com/hook
    📅 Last successful delivery: never

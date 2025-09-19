@@ -186,7 +186,7 @@ Validate CLI contracts using structured assertions:
 test_synclone_github_success() {
     result=$(gz synclone github -o test-org 2>&1)
     exit_code=$?
-    
+
     # Contract assertions
     assert_contains "$result" "📋 Found"
     assert_contains "$result" "repositories in organization test-org"
@@ -200,7 +200,7 @@ test_synclone_rate_limit() {
     unset GITHUB_TOKEN
     result=$(gz synclone github -o microsoft 2>&1)
     exit_code=$?
-    
+
     # Critical: NO Usage block for rate limit errors
     assert_not_contains "$result" "Usage:"
     assert_contains "$result" "🚫 GitHub API Rate Limit Exceeded!"

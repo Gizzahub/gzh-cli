@@ -73,11 +73,11 @@ Exit Code: 0
    ❌ URL inaccessible: https://invalid.example.com/webhook
    • Error: connection timeout after 10s
    • Status: DNS resolution failed
-   
+
 ⚠️  SSL Certificate Issues:
    ❌ Certificate expired: 2025-08-15 (17 days ago)
    ❌ Hostname mismatch: cert for *.old-example.com
-   
+
 💡 Endpoint validation failed. Continue anyway? [y/N]: n
 
 🚫 Webhook creation cancelled due to endpoint validation failure.

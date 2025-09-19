@@ -25,7 +25,7 @@ gz quality --fix
 
 📂 Go Files (12 files)
 ✅ gofmt: 2 files formatted
-✅ goimports: 1 import organized  
+✅ goimports: 1 import organized
 ⚠️  golangci-lint: 3 issues found, 2 auto-fixed
    ❌ unused variable 'result' in main.go:45
 
@@ -82,7 +82,7 @@ Exit Code: 0
 ❌ Required tools missing:
    - golangci-lint: not found in PATH
    💡 Install: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-   
+
    - prettier: not found
    💡 Install: npm install -g prettier
 
@@ -124,7 +124,7 @@ assert_contains "$result" "Code quality excellent"
 assert_exit_code 0
 
 # Test quality check with issues
-cd test-project-issues  
+cd test-project-issues
 result=$(gz quality --fix 2>&1)
 assert_contains "$result" "Issues found:"
 assert_contains "$result" "Auto-fixed:"
