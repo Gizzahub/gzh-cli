@@ -56,6 +56,15 @@
 - **이벤트 처리**: GitHub 이벤트 수신 및 자동화된 응답 처리
 - **보안 정책 적용**: 조직 차원의 보안 정책 일괄 적용 및 감사
 
+### 🔗 통합 Git 플랫폼 관리 (`gz git repo`)
+
+- **리포지터리 클로닝**: 단일/대량 클로닝과 스마트 업데이트 전략 (rebase, reset, clone, skip, pull, fetch)
+- **재귀적 일괄 업데이트**: 하위 디렉토리의 모든 Git 리포지터리를 안전하게 일괄 업데이트
+- **크로스 플랫폼 지원**: GitHub, GitLab, Gitea, Gogs 플랫폼 통합 관리
+- **고급 필터링**: 정규식 패턴, 언어, 스타 수, 가시성 등 다양한 필터 옵션
+- **병렬 처리**: 설정 가능한 워커를 통한 고성능 병렬 실행
+- **안전 기능**: Dry-run, 충돌 감지, 자동 백업, 상태 검증
+
 ### 🛠️ 개발 도구 통합
 
 - **패키지 매니저 업데이트**: asdf, Homebrew, SDKMAN, npm, pip 등 다양한 패키지 매니저 통합 관리
@@ -89,6 +98,12 @@ gz synclone validate --config examples/synclone.yaml
 
 # GitHub 조직의 저장소 클론
 gz synclone github --orgName myorg --targetPath ~/repos/myorg --token $GITHUB_TOKEN
+
+# Git 리포지터리 통합 관리
+gz git repo clone-or-update https://github.com/user/repo.git  # 스마트 클론/업데이트
+gz git repo pull-all ~/workspace --parallel 5                # 재귀적 일괄 업데이트
+gz git repo list --provider github --org myorg               # 리포지터리 목록 조회
+gz git repo create --provider github --org myorg --name repo # 새 리포지터리 생성
 
 # IDE 시스템 스캔 및 상태 확인
 gz ide scan          # 설치된 IDE 스캔
@@ -143,6 +158,39 @@ Flags:
 
 Use "gz [command] --help" for more information about a command.
 ```
+
+### `gz git repo` 하위 명령어
+
+```bash
+$ gz git repo --help
+Repository lifecycle management
+
+Usage:
+  gz git repo [command]
+
+Available Commands:
+  clone           Clone repositories from Git hosting platforms
+  clone-or-update Clone repository or update existing one with configurable strategies
+  pull-all        재귀적으로 하위 디렉토리의 모든 Git 리포지터리를 안전하게 업데이트
+  list            List repositories with advanced filtering
+  create          Create new repositories with templates
+  delete          Delete repositories safely
+  archive         Archive repositories
+  sync            Synchronize repositories across Git platforms
+  migrate         Migrate repositories between platforms
+  search          Search repositories with advanced filtering
+
+Use "gz git repo [command] --help" for more information about a command.
+```
+
+**주요 명령어 설명:**
+
+- **`clone-or-update`**: 단일 리포지터리의 스마트 클론/업데이트 (6가지 전략 지원)
+- **`pull-all`**: 하위 디렉토리 일괄 업데이트 (안전 검증, 병렬 처리)
+- **`list`**: 고급 필터링으로 리포지터리 조회 (언어, 스타, 패턴 등)
+- **`sync`**: 플랫폼 간 리포지터리 동기화 (GitHub ↔ GitLab ↔ Gitea)
+
+자세한 사용법: [Git Repository Management Guide](docs/30-features/32-git-repo-commands.md)
 
 Each command module under `cmd/<module>` includes an `AGENTS.md` file with
 module-specific coding conventions, required tests, and review steps. Always

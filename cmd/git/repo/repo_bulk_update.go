@@ -116,7 +116,7 @@ func newRepoBulkUpdateCmd() *cobra.Command {
 
 	// 플래그 설정
 	cmd.Flags().IntVarP(&opts.Parallel, "parallel", "p", 5, "병렬 처리 워커 수")
-	cmd.Flags().IntVar(&opts.MaxDepth, "max-depth", 10, "최대 스캔 깊이")
+	cmd.Flags().IntVar(&opts.MaxDepth, "max-depth", 5, "최대 스캔 깊이")
 	cmd.Flags().BoolVar(&opts.DryRun, "dry-run", false, "실제 실행하지 않고 시뮬레이션만 수행")
 	cmd.Flags().BoolVar(&opts.JSON, "json", false, "JSON 형식으로 결과 출력")
 	cmd.Flags().BoolVarP(&opts.Verbose, "verbose", "v", false, "상세 로그 출력")
@@ -286,11 +286,9 @@ func (e *BulkUpdateExecutor) walkDirectory(dir string, depth int, repos *[]strin
 	gitDir := filepath.Join(dir, ".git")
 	if info, err := os.Stat(gitDir); err == nil && info.IsDir() {
 		*repos = append(*repos, dir)
-		// Git 리포지터리 내부는 더 이상 스캔하지 않음
-		return nil
 	}
 
-	// 하위 디렉토리 탐색
+	// Git 리포지터리라도 nested repositories를 위해 하위 디렉토리 계속 탐색
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			continue
@@ -744,24 +742,34 @@ func (e *BulkUpdateExecutor) renderTableResults() {
 	statusCounts := make(map[string]int)
 
 	for _, result := range e.results {
-		statusText := fmt.Sprintf("%s %s", result.StatusIcon, result.Status)
-
-		// 컬러 적용
+		// 아이콘과 상태를 분리하여 더 나은 가독성 제공
+		var statusText string
 		switch result.Status {
 		case "updated":
-			statusText = color.GreenString(statusText)
-		case "uptodate", "would-update":
-			statusText = color.BlueString(statusText)
-		case "dirty", "conflicts", "merge-in-progress":
-			statusText = color.YellowString(statusText)
+			statusText = color.New(color.FgGreen, color.Bold).Sprintf("%s %s", result.StatusIcon, "updated")
+		case "uptodate":
+			statusText = color.New(color.FgBlue, color.Bold).Sprintf("%s %s", result.StatusIcon, "uptodate")
+		case "would-update":
+			statusText = color.New(color.FgCyan, color.Bold).Sprintf("%s %s", result.StatusIcon, "would-update")
+		case "dirty":
+			statusText = color.New(color.FgYellow, color.Bold).Sprintf("%s %s", result.StatusIcon, "dirty")
+		case "conflicts":
+			statusText = color.New(color.FgYellow, color.Bold).Sprintf("%s %s", result.StatusIcon, "conflicts")
+		case "merge-in-progress":
+			statusText = color.New(color.FgMagenta, color.Bold).Sprintf("%s %s", result.StatusIcon, "merge")
 		case "failed", "error":
-			statusText = color.RedString(statusText)
+			statusText = color.New(color.FgRed, color.Bold).Sprintf("%s %s", result.StatusIcon, "error")
 		case "no-upstream":
-			statusText = color.MagentaString(statusText)
+			statusText = color.New(color.FgMagenta, color.Bold).Sprintf("%s %s", result.StatusIcon, "no-upstream")
+		default:
+			statusText = color.New(color.FgWhite).Sprintf("%s %s", result.StatusIcon, result.Status)
 		}
 
+		// 리포지터리 경로에 색상 적용
+		repoPath := color.CyanString(result.Path)
+
 		err := table.Append(
-			result.Path,
+			repoPath,
 			statusText,
 			result.Details,
 		)
@@ -778,28 +786,37 @@ func (e *BulkUpdateExecutor) renderTableResults() {
 	}
 
 	// 요약 출력
-	fmt.Printf("\n📊 %s:\n", color.CyanString("요약"))
+	fmt.Printf("\n📊 %s:\n", color.New(color.FgCyan, color.Bold).Sprint("요약"))
 	for status, count := range statusCounts {
 		var emoji string
+		var statusColor *color.Color
 		switch status {
 		case "updated":
 			emoji = "✅"
+			statusColor = color.New(color.FgGreen, color.Bold)
 		case "uptodate", "would-update":
 			emoji = "⏭️"
+			statusColor = color.New(color.FgBlue, color.Bold)
 		case "dirty":
 			emoji = "⚠️"
+			statusColor = color.New(color.FgYellow, color.Bold)
 		case "conflicts":
 			emoji = "🔧"
+			statusColor = color.New(color.FgYellow, color.Bold)
 		case "failed", "error":
 			emoji = "❌"
+			statusColor = color.New(color.FgRed, color.Bold)
 		case "no-upstream":
 			emoji = "🚫"
+			statusColor = color.New(color.FgMagenta, color.Bold)
 		case "merge-in-progress":
 			emoji = "🔀"
+			statusColor = color.New(color.FgMagenta, color.Bold)
 		default:
 			emoji = "❓"
+			statusColor = color.New(color.FgWhite)
 		}
-		fmt.Printf("- %s %s: %d\n", emoji, status, count)
+		fmt.Printf("- %s %s: %s\n", emoji, statusColor.Sprint(status), color.New(color.FgWhite, color.Bold).Sprint(count))
 	}
 	fmt.Println()
 }

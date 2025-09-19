@@ -1,0 +1,335 @@
+# Git Repository Management Examples
+# gz git repo 명령어 사용 예제 및 설정 파일
+
+# 기본 설정 예제
+default_config:
+  parallel_workers: 5
+  default_strategy: "rebase"
+  max_depth: 10
+  output_format: "table"
+
+# 프로필별 설정
+profiles:
+  # 개발 환경 프로필
+  development:
+    parallel_workers: 8
+    strategy: "rebase"
+    include_pattern: ".*dev.*|.*test.*"
+    exclude_pattern: ".*prod.*|.*release.*"
+    dry_run: false
+    verbose: true
+
+  # 프로덕션 환경 프로필
+  production:
+    parallel_workers: 2
+    strategy: "reset"
+    include_pattern: ".*prod.*|.*release.*"
+    exclude_pattern: ".*dev.*|.*test.*"
+    dry_run: true
+    verbose: true
+
+  # 대용량 프로젝트 프로필
+  large_projects:
+    parallel_workers: 3
+    strategy: "fetch"
+    depth: 1
+    no_fetch: false
+    timeout: "10m"
+
+# 실제 사용 예제들
+examples:
+  # 1. 기본 리포지터리 클론
+  basic_clone:
+    command: "gz git repo clone-or-update"
+    args:
+      - "https://github.com/user/repo.git"
+    description: "기본 클론 (리포지터리 이름으로 디렉토리 생성)"
+
+  # 2. 특정 경로로 클론
+  clone_to_path:
+    command: "gz git repo clone-or-update"
+    args:
+      - "https://github.com/user/repo.git"
+      - "./my-projects/repo"
+    description: "지정된 경로로 클론"
+
+  # 3. 전략을 사용한 업데이트
+  strategic_update:
+    command: "gz git repo clone-or-update"
+    flags:
+      strategy: "reset"
+    args:
+      - "https://github.com/user/repo.git"
+    description: "하드 리셋 전략으로 업데이트"
+
+  # 4. 특정 브랜치 클론
+  branch_clone:
+    command: "gz git repo clone-or-update"
+    flags:
+      branch: "develop"
+      depth: 1
+    args:
+      - "https://github.com/user/repo.git"
+    description: "특정 브랜치의 얕은 클론"
+
+  # 5. 하위 디렉토리 일괄 업데이트
+  bulk_update:
+    command: "gz git repo pull-all"
+    flags:
+      parallel: 8
+      verbose: true
+      dry_run: false
+    args:
+      - "~/workspace"
+    description: "작업공간의 모든 리포지터리 업데이트"
+
+  # 6. 패턴 필터링 업데이트
+  filtered_update:
+    command: "gz git repo pull-all"
+    flags:
+      include_pattern: ".*api.*|.*service.*"
+      exclude_pattern: ".*test.*|.*demo.*"
+      parallel: 5
+    description: "API/서비스 리포지터리만 선택적 업데이트"
+
+  # 7. JSON 출력으로 결과 저장
+  json_output:
+    command: "gz git repo pull-all"
+    flags:
+      json: true
+    args:
+      - "~/projects"
+    output_redirect: "> update-results.json"
+    description: "업데이트 결과를 JSON 파일로 저장"
+
+  # 8. 리포지터리 목록 조회
+  list_repos:
+    command: "gz git repo list"
+    flags:
+      provider: "github"
+      org: "myorg"
+      language: "go"
+      format: "table"
+    description: "GitHub 조직의 Go 언어 리포지터리 목록"
+
+  # 9. 고급 필터링 목록
+  advanced_listing:
+    command: "gz git repo list"
+    flags:
+      provider: "github"
+      org: "myorg"
+      min_stars: 10
+      visibility: "public"
+      sort: "stars"
+      order: "desc"
+      format: "json"
+    description: "스타 10개 이상의 공개 리포지터리를 스타 순으로 정렬"
+
+  # 10. 새 리포지터리 생성
+  create_repo:
+    command: "gz git repo create"
+    flags:
+      provider: "github"
+      org: "myorg"
+      name: "my-new-project"
+      description: "My awesome project"
+      private: true
+      auto_init: true
+      license: "MIT"
+      gitignore_template: "Go"
+    description: "MIT 라이선스를 가진 새 Go 프로젝트 생성"
+
+  # 11. 플랫폼 간 동기화
+  sync_platforms:
+    command: "gz git repo sync"
+    flags:
+      from: "github:oldorg/repo"
+      to: "gitlab:neworg/repo"
+      create_missing: true
+      include_issues: true
+      include_wiki: true
+    description: "GitHub에서 GitLab으로 리포지터리 동기화"
+
+  # 12. 조직 전체 클론
+  org_clone:
+    command: "gz git repo clone"
+    flags:
+      provider: "github"
+      org: "myorg"
+      target: "./myorg-repos"
+      parallel: 8
+      match: "^(?!.*test).*$"  # test가 포함되지 않은 리포지터리만
+    description: "조직의 프로덕션 리포지터리만 클론"
+
+# 자동화 스크립트 예제
+automation_scripts:
+  # 일일 업데이트 스크립트
+  daily_update:
+    script: |
+      #!/bin/bash
+      # daily-update.sh
+
+      echo "Starting daily repository update..."
+
+      # 중요 프로젝트 먼저 업데이트 (안전하게)
+      gz git repo pull-all ~/critical-projects --parallel 2 --verbose
+
+      # 개발 프로젝트 업데이트
+      gz git repo pull-all ~/dev-projects --parallel 8 --include-pattern ".*dev.*"
+
+      # 결과를 JSON으로 저장
+      gz git repo pull-all ~/all-projects --json > /tmp/update-$(date +%Y%m%d).json
+
+      # 실패한 리포지터리 확인
+      failed_repos=$(jq -r '.[] | select(.status == "error") | .path' /tmp/update-$(date +%Y%m%d).json)
+
+      if [ -n "$failed_repos" ]; then
+          echo "Failed repositories:"
+          echo "$failed_repos"
+          # 알림 전송 로직 추가 가능
+      fi
+
+  # 새 환경 설정 스크립트
+  setup_workspace:
+    script: |
+      #!/bin/bash
+      # setup-workspace.sh
+
+      WORKSPACE="$HOME/workspace"
+      mkdir -p "$WORKSPACE"
+      cd "$WORKSPACE"
+
+      echo "Setting up development workspace..."
+
+      # 핵심 프로젝트 클론
+      gz git repo clone-or-update https://github.com/myorg/main-api.git
+      gz git repo clone-or-update https://github.com/myorg/frontend.git
+      gz git repo clone-or-update https://github.com/myorg/config.git
+
+      # 전체 조직 리포지터리 클론 (선택적)
+      read -p "Clone all organization repositories? (y/n): " -n 1 -r
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+          gz git repo clone --provider github --org myorg --target ./myorg --parallel 5
+      fi
+
+      echo "Workspace setup complete!"
+
+  # 백업 스크립트
+  backup_repos:
+    script: |
+      #!/bin/bash
+      # backup-repos.sh
+
+      BACKUP_DIR="/backup/git-repos/$(date +%Y%m%d)"
+      mkdir -p "$BACKUP_DIR"
+
+      echo "Creating repository backup..."
+
+      # 리포지터리 목록 백업
+      gz git repo list --provider github --org myorg --format json > "$BACKUP_DIR/repo-list.json"
+
+      # 로컬 리포지터리 상태 백업
+      gz git repo pull-all ~/workspace --json > "$BACKUP_DIR/local-status.json"
+
+      # 압축 백업
+      tar -czf "$BACKUP_DIR.tar.gz" -C "$(dirname "$BACKUP_DIR")" "$(basename "$BACKUP_DIR")"
+
+      echo "Backup created: $BACKUP_DIR.tar.gz"
+
+# 설정 파일 템플릿
+config_templates:
+  # 개인 개발자용
+  personal_dev:
+    parallel: 5
+    strategy: "rebase"
+    max_depth: 5
+    verbose: true
+    include_pattern: ""
+    exclude_pattern: ".*archive.*|.*deprecated.*"
+
+  # 팀 환경용
+  team_environment:
+    parallel: 3
+    strategy: "reset"
+    max_depth: 10
+    verbose: false
+    dry_run: true
+    include_pattern: ".*team.*|.*shared.*"
+    exclude_pattern: ".*personal.*|.*private.*"
+
+  # CI/CD 환경용
+  ci_cd:
+    parallel: 10
+    strategy: "clone"
+    max_depth: 1
+    verbose: false
+    dry_run: false
+    timeout: "5m"
+
+# 문제 해결 가이드
+troubleshooting:
+  common_issues:
+    - issue: "인증 실패"
+      solution: |
+        export GITHUB_TOKEN="your-token"
+        curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+
+    - issue: "네트워크 타임아웃"
+      solution: |
+        git config --global http.timeout 300
+        gz git repo pull-all --parallel 2
+
+    - issue: "디스크 공간 부족"
+      solution: |
+        gz git repo clone-or-update --depth 1 <repo-url>
+        find . -name ".git" -type d -exec git -C {} gc --aggressive \;
+
+    - issue: "충돌 해결"
+      solution: |
+        gz git repo pull-all --json | jq -r '.[] | select(.status == "conflicts") | .path'
+        # 각 충돌 리포지터리에서 수동 해결 후 재시도
+
+# 성능 최적화 팁
+performance_tips:
+  - tip: "CPU 코어 수에 맞춘 병렬 워커 설정"
+    command: "gz git repo pull-all --parallel $(nproc)"
+
+  - tip: "네트워크 제한 환경에서 fetch 전용 사용"
+    command: "gz git repo pull-all --no-fetch --strategy fetch"
+
+  - tip: "대용량 리포지터리는 얕은 클론 사용"
+    command: "gz git repo clone-or-update --depth 1 <large-repo-url>"
+
+  - tip: "점진적 병렬 처리 성능 테스트"
+    command: |
+      for workers in 2 4 8; do
+        echo "Testing with $workers workers"
+        time gz git repo pull-all --parallel $workers --dry-run
+      done
+
+# 통합 워크플로우 예제
+workflows:
+  # 모놀리식에서 마이크로서비스로 전환
+  monolith_to_microservices:
+    steps:
+      1. "기존 모놀리식 리포지터리 백업"
+      2. "마이크로서비스별 새 리포지터리 생성"
+      3. "코드 분할 및 마이그레이션"
+      4. "새 리포지터리 구조로 개발 환경 재설정"
+    commands:
+      - "gz git repo clone-or-update https://github.com/org/monolith.git ./backup"
+      - "gz git repo create --provider github --org myorg --name user-service"
+      - "gz git repo create --provider github --org myorg --name order-service"
+      - "gz git repo pull-all ./microservices --parallel 5"
+
+  # 멀티 플랫폼 개발
+  multi_platform_dev:
+    steps:
+      1. "GitHub 소스 리포지터리 클론"
+      2. "GitLab CI/CD용 미러 설정"
+      3. "Gitea 내부 백업 동기화"
+    commands:
+      - "gz git repo clone --provider github --org myorg --target ./github-repos"
+      - "gz git repo sync --from github:myorg --to gitlab:myorg --create-missing"
+      - "gz git repo sync --from github:myorg --to gitea:myorg --include-code"
