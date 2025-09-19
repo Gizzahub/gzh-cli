@@ -28,6 +28,7 @@ func NewCmd() *cobra.Command {
 	cmd.AddCommand(newRepoSyncCmd())
 	cmd.AddCommand(newRepoMigrateCmd())
 	cmd.AddCommand(newRepoSearchCmd())
+	cmd.AddCommand(newRepoBulkUpdateCmd())
 
 	return cmd
 }
