@@ -35,6 +35,8 @@ make test       # Run all tests with coverage
 make lint-all   # Run all linting steps (format + lint + pre-commit)
 ```
 
+**Critical**: Run `make fmt` and `make lint` before every commit. The project uses strict linting with golangci-lint.
+
 ### Single Package Testing
 
 ```bash
@@ -83,6 +85,15 @@ go test ./pkg/github -v            # Run GitHub integration tests
 make generate-mocks    # Generate all interface mocks using gomock
 make clean-mocks      # Remove all generated mock files
 make regenerate-mocks # Clean and regenerate all mocks
+```
+
+### Quick Development Workflow
+
+```bash
+make bootstrap        # One-time setup
+make fmt && make lint && make test  # Before every commit
+make build           # Build binary for testing
+make install         # Install to GOPATH for system use
 ```
 
 ## Architecture
@@ -262,6 +273,14 @@ make test-all           # Complete test suite
 - Integration tests mock external services when possible
 - Cross-platform testing for path handling and OS-specific features
 
+### Module-Specific Testing
+
+Each command module has its own `AGENTS.md` with specific testing requirements:
+
+- `cmd/AGENTS_COMMON.md` - Common testing patterns for all modules
+- Review relevant module's `AGENTS.md` before making changes
+- Korean comments required for new code
+
 ## Important Notes
 
 - **Binary name**: `gz` (not `gzh-cli`)
@@ -273,6 +292,15 @@ make test-all           # Complete test suite
 - **Mock generation**: Interfaces marked with `//go:generate mockgen`
 - **Schema validation**: All configs validated against JSON Schema
 - **Performance monitoring**: Built-in benchmarking with `scripts/`
+
+### Key Development Practices
+
+- **Go Version**: Requires Go 1.23+ (see go.mod)
+- **Code Style**: Uses gofumpt + gci for formatting, golangci-lint for linting
+- **Dependencies**: Comprehensive tooling (Cobra, Viper, AWS SDK, GitHub API, etc.)
+- **Modular Design**: Each command is self-contained with its own package
+- **Interface-Driven**: Heavy use of interfaces for testability and abstraction
+- **Error Handling**: Structured error handling with context
 
 ## Command Categories
 
@@ -323,3 +351,30 @@ make test-all           # Complete test suite
 - Token-based authentication for private repositories
 - Environment variable support (GITHUB_TOKEN, GITLAB_TOKEN, etc.)
 - SSH key management and configuration
+
+## Common Issues and Solutions
+
+### Build Issues
+
+- Run `make bootstrap` if missing dependencies
+- Ensure Go 1.23+ is installed
+- Check `make help-build` for build-specific commands
+
+### Testing Issues
+
+- Use `make test-unit` for fast feedback during development
+- Check environment variables (GITHUB_TOKEN, etc.) for integration tests
+- Use `make test-integration` for Docker-based tests
+
+### Code Quality Issues
+
+- Always run `make fmt` and `make lint` before committing
+- Use `make lint-all` for comprehensive quality checks
+- Check `cmd/AGENTS_COMMON.md` for module-specific guidelines
+
+# important-instruction-reminders
+
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.
