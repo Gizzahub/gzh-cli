@@ -5,6 +5,10 @@
 # Build Configuration
 # ==============================================================================
 
+# Go environment configuration for crypto/mlkem and iter package support
+export GOROOT := $(shell asdf where golang)/go
+export GOEXPERIMENT := rangefunc
+
 # Detect OS-specific executable extension (e.g., .exe on Windows)
 BINEXT := $(shell go env GOEXE)
 BINARY := $(executablename)$(BINEXT)
