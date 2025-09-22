@@ -6,7 +6,14 @@
 # ==============================================================================
 
 # Go environment configuration for crypto/mlkem and iter package support
-export GOROOT := $(shell asdf where golang)/go
+# Use system Go if asdf golang is not available
+ASDF_GOLANG_PATH := $(shell asdf where golang 2>/dev/null || echo "")
+ifneq ($(ASDF_GOLANG_PATH),)
+export GOROOT := $(ASDF_GOLANG_PATH)/go
+else
+# Use system Go installation
+export GOROOT := $(shell go env GOROOT)
+endif
 export GOEXPERIMENT := rangefunc
 
 # Detect OS-specific executable extension (e.g., .exe on Windows)
