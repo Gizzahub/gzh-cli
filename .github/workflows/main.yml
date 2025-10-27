@@ -98,7 +98,7 @@ jobs:
 
       - name: Upload coverage artifacts
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-reports
           path: |
@@ -174,7 +174,7 @@ jobs:
 
       - name: Upload security artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: security-reports
           path: |
@@ -262,7 +262,7 @@ jobs:
           echo "\`\`\`" >> benchmark_report.md
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark-results
           path: |
@@ -341,7 +341,7 @@ jobs:
           ./gz dev-env --help > /dev/null || echo "⚠️ dev-env help failed"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: binaries-${{ github.sha }}
           path: |
