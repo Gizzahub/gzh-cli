@@ -30,7 +30,7 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/mock v0.6.0
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 	golang.org/x/crypto v0.43.0
 	golang.org/x/oauth2 v0.31.0
 	golang.org/x/sync v0.17.0
