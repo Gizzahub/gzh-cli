@@ -20,7 +20,7 @@ require (
 	github.com/gotesttools/gotestfmt/v2 v2.5.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/olekukonko/tablewriter v1.0.9
-	github.com/pkg/sftp v1.13.9
+	github.com/pkg/sftp v1.13.10
 	github.com/schollz/progressbar/v3 v3.18.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.10
