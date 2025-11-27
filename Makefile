@@ -28,13 +28,13 @@ export RESET := \033[0m
 # Include Modular Makefiles
 # ==============================================================================
 
-include Makefile.deps.mk    # Dependency management
-include Makefile.build.mk   # Build and installation
-include Makefile.test.mk    # Testing and coverage
-include Makefile.quality.mk # Code quality and linting
-include Makefile.tools.mk   # Tool installation and management
-include Makefile.dev.mk     # Development workflow
-include Makefile.docker.mk  # Docker operations
+include .make/deps.mk    # Dependency management
+include .make/build.mk   # Build and installation
+include .make/test.mk    # Testing and coverage
+include .make/quality.mk # Code quality and linting
+include .make/tools.mk   # Tool installation and management
+include .make/dev.mk     # Development workflow
+include .make/docker.mk  # Docker operations
 
 # ==============================================================================
 # Enhanced Help System
