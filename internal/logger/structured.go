@@ -222,6 +222,12 @@ func (l *StructuredLogger) logWithError(level slog.Level, err error, msg string,
 
 // writeStructuredLog writes a structured log entry.
 func (l *StructuredLogger) writeStructuredLog(entry *LogEntry) {
+	// Only output JSON logs in debug mode
+	// For normal users, errors should be handled with user-friendly messages
+	if !IsDebugEnabled() {
+		return
+	}
+
 	data, err := json.Marshal(entry)
 	if err != nil {
 		// Fallback to simple logging

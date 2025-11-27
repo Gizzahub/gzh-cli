@@ -451,7 +451,9 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 		recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
 		recErr = recErr.WithContext("operation_duration", time.Since(start).String())
 
-		log.ErrorWithStack(err, "GitHub synclone operation failed")
+		// Only log detailed error in debug mode
+		// User-friendly error messages are handled in RefreshAllResumable
+		log.Debug("GitHub synclone operation failed", "error", err.Error())
 
 		// Return the error properly for error handling
 		return recErr

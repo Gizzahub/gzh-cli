@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/Gizzahub/gzh-cli/internal/workerpool"
@@ -221,6 +222,8 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	}
 
 	if failureCount > 0 {
+		// Print detailed failure information
+		rcm.printFailureDetails(state)
 		return fmt.Errorf("%d operations failed", failureCount)
 	}
 
@@ -437,5 +440,80 @@ func getDisplayMode(mode string) synclonepkg.DisplayMode {
 		return synclonepkg.DisplayModeQuiet
 	default:
 		return synclonepkg.DisplayModeCompact
+	}
+}
+
+// printFailureDetails prints detailed information about failed repositories.
+func (rcm *ResumableCloneManager) printFailureDetails(state *synclonepkg.CloneState) {
+	failedRepos := state.FailedRepos
+	if len(failedRepos) == 0 {
+		return
+	}
+
+	fmt.Printf("\n❌ Failed repositories (%d):\n", len(failedRepos))
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+	for i, failed := range failedRepos {
+		fmt.Printf("\n%d. Repository: %s\n", i+1, failed.Name)
+		fmt.Printf("   Path: %s\n", failed.Path)
+		fmt.Printf("   Operation: %s\n", failed.Operation)
+		fmt.Printf("   Error: %s\n", failed.Error)
+
+		// Provide specific solutions based on error type
+		rcm.printSolutionSuggestion(failed.Name, failed.Path, failed.Error)
+	}
+
+	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println("\n💡 General Solutions:")
+	fmt.Println("   • Retry with --resume flag to continue from where it stopped")
+	fmt.Println("   • Check network connection and GitHub access")
+	fmt.Println("   • Verify GitHub token is set: export GITHUB_TOKEN=\"your_token\"")
+	fmt.Println("   • For directory issues, manually remove problematic directories and retry")
+	fmt.Printf("   • View state details: gz synclone state show --org %s\n", state.Organization)
+	fmt.Printf("   • Clear state and start fresh: gz synclone state clean --provider github --org %s\n", state.Organization)
+}
+
+// printSolutionSuggestion provides specific solution suggestions based on error patterns.
+func (rcm *ResumableCloneManager) printSolutionSuggestion(repoName, repoPath, errorMsg string) {
+	fmt.Println("   💡 Suggested Solution:")
+
+	// Check for common error patterns
+	errorLower := strings.ToLower(errorMsg)
+
+	switch {
+	case strings.Contains(errorLower, "already exists") || strings.Contains(errorLower, "destination path"):
+		fmt.Printf("      → Directory exists but is not a valid git repository\n")
+		fmt.Printf("      → Remove it: rm -rf \"%s\"\n", repoPath)
+		fmt.Printf("      → Then retry the operation\n")
+
+	case strings.Contains(errorLower, "authentication") || strings.Contains(errorLower, "403") || strings.Contains(errorLower, "401"):
+		fmt.Printf("      → Authentication failed - check your GitHub token\n")
+		fmt.Printf("      → Set token: export GITHUB_TOKEN=\"your_personal_access_token\"\n")
+		fmt.Printf("      → Create token at: https://github.com/settings/tokens\n")
+
+	case strings.Contains(errorLower, "not found") || strings.Contains(errorLower, "404"):
+		fmt.Printf("      → Repository not found or access denied\n")
+		fmt.Printf("      → Verify repository exists: https://github.com/%s\n", repoName)
+		fmt.Printf("      → Check if you have access permissions\n")
+
+	case strings.Contains(errorLower, "timeout") || strings.Contains(errorLower, "connection"):
+		fmt.Printf("      → Network connection issue\n")
+		fmt.Printf("      → Check your internet connection\n")
+		fmt.Printf("      → Retry with: gz synclone github --org <org> --resume\n")
+
+	case strings.Contains(errorLower, "remote") || strings.Contains(errorLower, "origin"):
+		fmt.Printf("      → Git remote configuration issue\n")
+		fmt.Printf("      → Check remote URL: git -C \"%s\" remote -v\n", repoPath)
+		fmt.Printf("      → Or remove and re-clone: rm -rf \"%s\"\n", repoPath)
+
+	case strings.Contains(errorLower, "permission") || strings.Contains(errorLower, "denied"):
+		fmt.Printf("      → Permission denied\n")
+		fmt.Printf("      → Check directory permissions: ls -la \"%s\"\n", filepath.Dir(repoPath))
+		fmt.Printf("      → Ensure you have write access to the target directory\n")
+
+	default:
+		fmt.Printf("      → Check the error message above for specific details\n")
+		fmt.Printf("      → Try manual clone: git clone https://github.com/org/%s.git \"%s\"\n", repoName, repoPath)
+		fmt.Printf("      → For persistent issues, use --debug flag for detailed logs\n")
 	}
 }
