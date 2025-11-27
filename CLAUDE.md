@@ -97,6 +97,89 @@ make build           # Build binary for testing
 make install         # Install to GOPATH for system use
 ```
 
+## Makefile Structure
+
+The project uses a **modular Makefile architecture** with all module files organized in the `.make/` directory for better maintainability and clarity.
+
+### Directory Layout
+
+```
+.
+├── Makefile           # Main entry point with help system and includes
+└── .make/
+    ├── build.mk       # Build, installation, and release management
+    ├── deps.mk        # Dependency management and updates
+    ├── dev.mk         # Development workflow and utilities
+    ├── docker.mk      # Docker operations and container management
+    ├── quality.mk     # Code quality, formatting, linting, and security
+    ├── test.mk        # Testing, benchmarks, and coverage
+    └── tools.mk       # Tool installation and mock generation
+```
+
+### Module Overview
+
+| Module | Purpose | Key Targets |
+|--------|---------|-------------|
+| **build.mk** | Build & Release | `build`, `install`, `release-*`, `clean` |
+| **deps.mk** | Dependencies | `deps-update`, `deps-audit`, `deps-tidy` |
+| **dev.mk** | Development | `dev`, `quick`, `full`, `verify`, `pr-check` |
+| **docker.mk** | Containers | `docker-build`, `docker-run`, `docker-scan` |
+| **quality.mk** | Quality | `fmt`, `lint`, `security`, `analyze` |
+| **test.mk** | Testing | `test`, `test-unit`, `bench`, `cover` |
+| **tools.mk** | Tooling | `install-tools`, `generate-mocks` |
+
+### Total Targets Available
+
+The modular structure provides **166+ targets** organized into logical categories:
+- **45 quality targets** (27% - formatting, linting, security)
+- **25 development targets** (workflow automation)
+- **25 docker targets** (container operations)
+- **21 test targets** (unit, integration, e2e)
+- **16 dependency targets** (version management)
+- **15 tool targets** (installation, mocks)
+- **10 build targets** (compile, release)
+
+### Help System
+
+Use category-specific help commands to explore available targets:
+
+```bash
+make help              # Main help menu with all categories
+make help-build        # Build and deployment targets
+make help-test         # Testing and validation targets
+make help-quality      # Code quality and linting targets
+make help-deps         # Dependency management targets
+make help-dev          # Development workflow targets
+make help-docker       # Docker operations targets
+make help-tools        # Tool installation targets
+```
+
+### Benefits of Modular Structure
+
+1. **Cleaner Root Directory** - 7 module files organized in `.make/`
+2. **Standard Convention** - Follows common Make patterns (like `.github/`, `.vscode/`)
+3. **Better Discoverability** - All Make modules in one dedicated directory
+4. **Improved Maintainability** - Easy to add new modules or modify existing ones
+5. **Logical Organization** - Clear separation of concerns by functionality
+
+### Adding New Targets
+
+When adding new targets, place them in the appropriate module:
+
+- Build-related → `.make/build.mk`
+- Test-related → `.make/test.mk`
+- Quality/lint-related → `.make/quality.mk`
+- Development workflow → `.make/dev.mk`
+- Tool installation → `.make/tools.mk`
+- Dependency management → `.make/deps.mk`
+- Docker operations → `.make/docker.mk`
+
+Ensure all new targets:
+- Have proper `.PHONY` declarations
+- Include descriptive comments
+- Follow existing naming conventions (prefix-based: `test-*`, `lint-*`, etc.)
+- Are tested with `make -n <target>` before committing
+
 ## Architecture
 
 gzh-cli follows a **simplified CLI architecture** (refactored 2025-01) that prioritizes developer productivity over abstract patterns. The architecture centers around direct constructors, interface-based abstractions, and modular command organization.
