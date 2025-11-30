@@ -131,6 +131,7 @@ The project uses a **modular Makefile architecture** with all module files organ
 ### Total Targets Available
 
 The modular structure provides **166+ targets** organized into logical categories:
+
 - **45 quality targets** (27% - formatting, linting, security)
 - **25 development targets** (workflow automation)
 - **25 docker targets** (container operations)
@@ -157,10 +158,10 @@ make help-tools        # Tool installation targets
 ### Benefits of Modular Structure
 
 1. **Cleaner Root Directory** - 7 module files organized in `.make/`
-2. **Standard Convention** - Follows common Make patterns (like `.github/`, `.vscode/`)
-3. **Better Discoverability** - All Make modules in one dedicated directory
-4. **Improved Maintainability** - Easy to add new modules or modify existing ones
-5. **Logical Organization** - Clear separation of concerns by functionality
+1. **Standard Convention** - Follows common Make patterns (like `.github/`, `.vscode/`)
+1. **Better Discoverability** - All Make modules in one dedicated directory
+1. **Improved Maintainability** - Easy to add new modules or modify existing ones
+1. **Logical Organization** - Clear separation of concerns by functionality
 
 ### Adding New Targets
 
@@ -175,6 +176,7 @@ When adding new targets, place them in the appropriate module:
 - Docker operations → `.make/docker.mk`
 
 Ensure all new targets:
+
 - Have proper `.PHONY` declarations
 - Include descriptive comments
 - Follow existing naming conventions (prefix-based: `test-*`, `lint-*`, etc.)
