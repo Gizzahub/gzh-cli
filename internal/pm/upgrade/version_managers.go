@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package upgrade
 
 import (
@@ -14,12 +17,12 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// NvmUpgrader implements PackageManagerUpgrader for Node Version Manager
+// NvmUpgrader implements PackageManagerUpgrader for Node Version Manager.
 type NvmUpgrader struct {
 	logger logger.CommonLogger
 }
 
-// NewNvmUpgrader creates a new nvm upgrader
+// NewNvmUpgrader creates a new nvm upgrader.
 func NewNvmUpgrader(logger logger.CommonLogger) *NvmUpgrader {
 	return &NvmUpgrader{logger: logger}
 }
@@ -96,7 +99,7 @@ func (n *NvmUpgrader) getCurrentVersion(ctx context.Context) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// RbenvUpgrader implements PackageManagerUpgrader for rbenv
+// RbenvUpgrader implements PackageManagerUpgrader for rbenv.
 type RbenvUpgrader struct {
 	logger logger.CommonLogger
 }
@@ -124,7 +127,7 @@ func (r *RbenvUpgrader) CheckUpdate(ctx context.Context) (*UpgradeStatus, error)
 func (r *RbenvUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) error {
 	r.logger.Info("Starting rbenv upgrade")
 
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == "darwin" { //nolint:goconst // OS constant used locally
 		// macOS: Use Homebrew
 		cmd := exec.CommandContext(ctx, "brew", "upgrade", "rbenv")
 		if err := cmd.Run(); err != nil {
@@ -218,7 +221,7 @@ func (r *RbenvUpgrader) getRbenvDir() string {
 	return ""
 }
 
-// PyenvUpgrader implements PackageManagerUpgrader for pyenv
+// PyenvUpgrader implements PackageManagerUpgrader for pyenv.
 type PyenvUpgrader struct {
 	logger logger.CommonLogger
 }

@@ -108,7 +108,7 @@ func (pm *ProfileManager) SaveProfile(profile *NetworkProfile) error {
 
 	// Create profiles directory
 	profilesDir := filepath.Join(pm.configDir, "net-env", "profiles")
-	if err := os.MkdirAll(profilesDir, 0o755); err != nil {
+	if err := os.MkdirAll(profilesDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create profiles directory: %w", err)
 	}
 

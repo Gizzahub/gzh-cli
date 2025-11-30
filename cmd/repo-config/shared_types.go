@@ -65,6 +65,8 @@ func getActionSymbolWithText(changeType string) string {
 }
 
 // truncateString truncates a string to the specified length.
+//
+//nolint:unused // Utility function for future use
 func truncateString(s string, maxLength int) string {
 	if len(s) <= maxLength {
 		return s

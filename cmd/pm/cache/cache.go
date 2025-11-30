@@ -174,7 +174,7 @@ func getSupportedCacheManagers() []PackageManagerCache {
 }
 
 // isManagerAvailable checks if a package manager is available on the system.
-func isManagerAvailable(manager PackageManagerCache) bool {
+func isManagerAvailable(ctx context.Context, manager PackageManagerCache) bool {
 	// Check OS support
 	currentOS := runtime.GOOS
 	supported := false
@@ -193,7 +193,7 @@ func isManagerAvailable(manager PackageManagerCache) bool {
 		return false
 	}
 
-	cmd := exec.Command(manager.CheckCmd[0], manager.CheckCmd[1:]...)
+	cmd := exec.CommandContext(ctx, manager.CheckCmd[0], manager.CheckCmd[1:]...)
 	err := cmd.Run()
 	return err == nil
 }
@@ -308,14 +308,14 @@ Examples:
 				}
 
 				for _, mgr := range availableManagers {
-					if managerFlags[mgr.Name] && isManagerAvailable(mgr) {
+					if managerFlags[mgr.Name] && isManagerAvailable(ctx, mgr) {
 						selectedManagers = append(selectedManagers, mgr)
 					}
 				}
 			} else {
 				// Clean all available managers
 				for _, mgr := range availableManagers {
-					if isManagerAvailable(mgr) {
+					if isManagerAvailable(ctx, mgr) {
 						selectedManagers = append(selectedManagers, mgr)
 					}
 				}
@@ -344,8 +344,8 @@ Examples:
 				fmt.Print("Do you want to proceed with cache cleaning? [y/N]: ")
 				var response string
 				fmt.Scanln(&response)
-				if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
-					fmt.Println("Cache cleaning cancelled.")
+				if !strings.EqualFold(response, "y") && !strings.EqualFold(response, "yes") {
+					fmt.Println("Cache cleaning canceled.")
 					return nil
 				}
 			}
@@ -485,12 +485,13 @@ Examples:
   # Show status in JSON format
   gz pm cache status --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
 			availableManagers := getSupportedCacheManagers()
 			var caches []CacheInfo
 			var totalSize int64
 
 			for _, mgr := range availableManagers {
-				if !isManagerAvailable(mgr) {
+				if !isManagerAvailable(ctx, mgr) {
 					continue
 				}
 
@@ -571,12 +572,13 @@ Examples:
   # Show sizes in JSON format
   gz pm cache size --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
 			availableManagers := getSupportedCacheManagers()
 			var caches []CacheInfo
 			var totalSize int64
 
 			for _, mgr := range availableManagers {
-				if !isManagerAvailable(mgr) {
+				if !isManagerAvailable(ctx, mgr) {
 					continue
 				}
 

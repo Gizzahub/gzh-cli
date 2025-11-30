@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -10,14 +13,14 @@ import (
 )
 
 // MockRepoFactory provides interface for creating test repositories
-// with various Git states for synclone testing
+// with various Git states for synclone testing.
 type MockRepoFactory interface {
 	CreateBasicRepos(ctx context.Context, opts BasicRepoOptions) error
 	CreateConflictRepos(ctx context.Context, opts ConflictRepoOptions) error
 	CreateSpecialRepos(ctx context.Context, opts SpecialRepoOptions) error
 }
 
-// BasicRepoOptions defines options for creating basic test repositories
+// BasicRepoOptions defines options for creating basic test repositories.
 type BasicRepoOptions struct {
 	BaseDir     string
 	RepoName    string
@@ -25,7 +28,7 @@ type BasicRepoOptions struct {
 	Branches    []string
 }
 
-// ConflictRepoOptions defines options for creating conflict scenario repositories
+// ConflictRepoOptions defines options for creating conflict scenario repositories.
 type ConflictRepoOptions struct {
 	BaseDir      string
 	RepoName     string
@@ -33,7 +36,7 @@ type ConflictRepoOptions struct {
 	LocalChanges bool
 }
 
-// SpecialRepoOptions defines options for creating special scenario repositories
+// SpecialRepoOptions defines options for creating special scenario repositories.
 type SpecialRepoOptions struct {
 	BaseDir     string
 	RepoName    string
@@ -41,19 +44,19 @@ type SpecialRepoOptions struct {
 	Size        int64  // for large repos
 }
 
-// DefaultMockRepoFactory implements MockRepoFactory interface
+// DefaultMockRepoFactory implements MockRepoFactory interface.
 type DefaultMockRepoFactory struct {
 	timeout time.Duration
 }
 
-// NewMockRepoFactory creates a new MockRepoFactory instance
+// NewMockRepoFactory creates a new MockRepoFactory instance.
 func NewMockRepoFactory() MockRepoFactory {
 	return &DefaultMockRepoFactory{
 		timeout: 30 * time.Second,
 	}
 }
 
-// CreateBasicRepos creates basic test repositories with standard Git structures
+// CreateBasicRepos creates basic test repositories with standard Git structures.
 func (f *DefaultMockRepoFactory) CreateBasicRepos(ctx context.Context, opts BasicRepoOptions) error {
 	if opts.BaseDir == "" {
 		return fmt.Errorf("base directory is required")
@@ -118,7 +121,7 @@ func (f *DefaultMockRepoFactory) CreateBasicRepos(ctx context.Context, opts Basi
 	return nil
 }
 
-// CreateConflictRepos creates repositories with conflict scenarios
+// CreateConflictRepos creates repositories with conflict scenarios.
 func (f *DefaultMockRepoFactory) CreateConflictRepos(ctx context.Context, opts ConflictRepoOptions) error {
 	// First create a basic repo
 	basicOpts := BasicRepoOptions{
@@ -145,13 +148,13 @@ func (f *DefaultMockRepoFactory) CreateConflictRepos(ctx context.Context, opts C
 	}
 }
 
-// CreateSpecialRepos creates repositories with special scenarios
+// CreateSpecialRepos creates repositories with special scenarios.
 func (f *DefaultMockRepoFactory) CreateSpecialRepos(ctx context.Context, opts SpecialRepoOptions) error {
 	// Implementation will be added in Phase 1C
 	return fmt.Errorf("special repositories not implemented yet")
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (f *DefaultMockRepoFactory) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, f.timeout)
 	defer cancel()
@@ -166,7 +169,7 @@ func (f *DefaultMockRepoFactory) runGitCommand(ctx context.Context, dir string, 
 	return nil
 }
 
-// createMergeConflict creates a merge conflict scenario
+// createMergeConflict creates a merge conflict scenario.
 func (f *DefaultMockRepoFactory) createMergeConflict(ctx context.Context, repoPath string) error {
 	// Create feature branch
 	if err := f.runGitCommand(ctx, repoPath, "checkout", "-b", "feature"); err != nil {
@@ -210,13 +213,13 @@ func (f *DefaultMockRepoFactory) createMergeConflict(ctx context.Context, repoPa
 	return nil
 }
 
-// createRebaseConflict creates a rebase conflict scenario
+// createRebaseConflict creates a rebase conflict scenario.
 func (f *DefaultMockRepoFactory) createRebaseConflict(ctx context.Context, repoPath string) error {
 	// Similar to merge conflict but with rebase scenario setup
 	return f.createMergeConflict(ctx, repoPath)
 }
 
-// createDivergedState creates a diverged branch scenario
+// createDivergedState creates a diverged branch scenario.
 func (f *DefaultMockRepoFactory) createDivergedState(ctx context.Context, repoPath string) error {
 	// Create multiple commits on different branches
 	if err := f.runGitCommand(ctx, repoPath, "checkout", "-b", "diverged"); err != nil {

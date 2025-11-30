@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package upgrade
 
 import (
@@ -12,19 +15,19 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// HomebrewUpgrader implements PackageManagerUpgrader for Homebrew
+// HomebrewUpgrader implements PackageManagerUpgrader for Homebrew.
 type HomebrewUpgrader struct {
 	logger logger.CommonLogger
 }
 
-// NewHomebrewUpgrader creates a new Homebrew upgrader
+// NewHomebrewUpgrader creates a new Homebrew upgrader.
 func NewHomebrewUpgrader(logger logger.CommonLogger) *HomebrewUpgrader {
 	return &HomebrewUpgrader{
 		logger: logger,
 	}
 }
 
-// CheckUpdate checks if Homebrew has updates available
+// CheckUpdate checks if Homebrew has updates available.
 func (h *HomebrewUpgrader) CheckUpdate(ctx context.Context) (*UpgradeStatus, error) {
 	h.logger.Debug("Checking Homebrew update status")
 
@@ -55,7 +58,7 @@ func (h *HomebrewUpgrader) CheckUpdate(ctx context.Context) (*UpgradeStatus, err
 	}, nil
 }
 
-// Upgrade performs the actual upgrade of Homebrew
+// Upgrade performs the actual upgrade of Homebrew.
 func (h *HomebrewUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) error {
 	h.logger.Info("Starting Homebrew upgrade")
 
@@ -94,7 +97,7 @@ func (h *HomebrewUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) 
 	return nil
 }
 
-// Backup creates a backup of current Homebrew state
+// Backup creates a backup of current Homebrew state.
 func (h *HomebrewUpgrader) Backup(ctx context.Context) (string, error) {
 	h.logger.Debug("Creating Homebrew backup")
 
@@ -114,7 +117,7 @@ func (h *HomebrewUpgrader) Backup(ctx context.Context) (string, error) {
 	return backupPath, nil
 }
 
-// Rollback restores from a backup (limited functionality for Homebrew)
+// Rollback restores from a backup (limited functionality for Homebrew).
 func (h *HomebrewUpgrader) Rollback(ctx context.Context, backupPath string) error {
 	h.logger.Info("Homebrew rollback is limited - backup file available at: %s", backupPath)
 	// Note: Full rollback of Homebrew itself is complex and not implemented
@@ -122,12 +125,12 @@ func (h *HomebrewUpgrader) Rollback(ctx context.Context, backupPath string) erro
 	return nil
 }
 
-// GetUpdateMethod returns the update method used
+// GetUpdateMethod returns the update method used.
 func (h *HomebrewUpgrader) GetUpdateMethod() string {
 	return "brew update && brew upgrade"
 }
 
-// ValidateUpgrade validates that the upgrade was successful
+// ValidateUpgrade validates that the upgrade was successful.
 func (h *HomebrewUpgrader) ValidateUpgrade(ctx context.Context) error {
 	// Check if brew command still works
 	cmd := exec.CommandContext(ctx, "brew", "--version")
@@ -144,7 +147,7 @@ func (h *HomebrewUpgrader) ValidateUpgrade(ctx context.Context) error {
 	return nil
 }
 
-// getCurrentVersion gets the current Homebrew version
+// getCurrentVersion gets the current Homebrew version.
 func (h *HomebrewUpgrader) getCurrentVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "brew", "--version")
 	output, err := cmd.Output()
@@ -162,7 +165,7 @@ func (h *HomebrewUpgrader) getCurrentVersion(ctx context.Context) (string, error
 	return matches[1], nil
 }
 
-// getLatestVersion gets the latest Homebrew version from GitHub API
+// getLatestVersion gets the latest Homebrew version from GitHub API.
 func (h *HomebrewUpgrader) getLatestVersion(ctx context.Context) (string, time.Time, string, error) {
 	// GitHub API call to get latest release
 	cmd := exec.CommandContext(ctx, "curl", "-s", "https://api.github.com/repos/Homebrew/brew/releases/latest")
@@ -194,7 +197,7 @@ func (h *HomebrewUpgrader) getLatestVersion(ctx context.Context) (string, time.T
 	return version, publishedAt, release.HTMLURL, nil
 }
 
-// executeUpdate performs the actual update commands
+// executeUpdate performs the actual update commands.
 func (h *HomebrewUpgrader) executeUpdate(ctx context.Context, options UpgradeOptions) error {
 	// Set timeout if specified
 	if options.Timeout > 0 {
@@ -222,9 +225,9 @@ func (h *HomebrewUpgrader) executeUpdate(ctx context.Context, options UpgradeOpt
 	return nil
 }
 
-// writeFile is a helper function to write content to a file
+// writeFile is a helper function to write content to a file.
 func writeFile(path, content string) error {
 	// This would normally use os.WriteFile, but keeping it simple for this implementation
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo '%s' > '%s'", content, path)) //nolint:gosec // G204: 내부 파일 작성용 명령어
+	cmd := exec.CommandContext(context.Background(), "sh", "-c", fmt.Sprintf("echo '%s' > '%s'", content, path)) //nolint:gosec // G204: 내부 파일 작성용 명령어
 	return cmd.Run()
 }

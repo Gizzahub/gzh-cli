@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -16,7 +19,7 @@ type LargeRepoCreator struct {
 	timeout time.Duration
 }
 
-// LargeRepoOptions defines options for creating large repositories
+// LargeRepoOptions defines options for creating large repositories.
 type LargeRepoOptions struct {
 	RepoPath      string
 	LargeFileSize int64 // Size in MB
@@ -25,14 +28,14 @@ type LargeRepoOptions struct {
 	ChunkSize     int   // Write chunk size in KB (for memory efficiency)
 }
 
-// NewLargeRepoCreator creates a new LargeRepoCreator instance
+// NewLargeRepoCreator creates a new LargeRepoCreator instance.
 func NewLargeRepoCreator() *LargeRepoCreator {
 	return &LargeRepoCreator{
 		timeout: 300 * time.Second, // 5 minutes for large operations
 	}
 }
 
-// CreateLargeRepo creates a repository with large files
+// CreateLargeRepo creates a repository with large files.
 func (c *LargeRepoCreator) CreateLargeRepo(ctx context.Context, opts LargeRepoOptions) error {
 	if opts.RepoPath == "" {
 		return fmt.Errorf("repository path is required")
@@ -80,7 +83,7 @@ func (c *LargeRepoCreator) CreateLargeRepo(ctx context.Context, opts LargeRepoOp
 	return nil
 }
 
-// CreateLargeRepoSimple creates a simple large repository with default options
+// CreateLargeRepoSimple creates a simple large repository with default options.
 func (c *LargeRepoCreator) CreateLargeRepoSimple(ctx context.Context, repoPath string, sizeMB int64) error {
 	opts := LargeRepoOptions{
 		RepoPath:      repoPath,
@@ -93,7 +96,7 @@ func (c *LargeRepoCreator) CreateLargeRepoSimple(ctx context.Context, repoPath s
 	return c.CreateLargeRepo(ctx, opts)
 }
 
-// CreateLargeRepoWithHistory creates a repository with large files and commit history
+// CreateLargeRepoWithHistory creates a repository with large files and commit history.
 func (c *LargeRepoCreator) CreateLargeRepoWithHistory(ctx context.Context, repoPath string) error {
 	opts := LargeRepoOptions{
 		RepoPath:      repoPath,
@@ -106,7 +109,7 @@ func (c *LargeRepoCreator) CreateLargeRepoWithHistory(ctx context.Context, repoP
 	return c.CreateLargeRepo(ctx, opts)
 }
 
-// CreateRepoWithBinaryFiles creates a repository with various binary file types
+// CreateRepoWithBinaryFiles creates a repository with various binary file types.
 func (c *LargeRepoCreator) CreateRepoWithBinaryFiles(ctx context.Context, repoPath string) error {
 	if err := c.createBaseRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to create base repository: %w", err)
@@ -139,7 +142,7 @@ func (c *LargeRepoCreator) CreateRepoWithBinaryFiles(ctx context.Context, repoPa
 	return nil
 }
 
-// GetRepoSize calculates the approximate repository size
+// GetRepoSize calculates the approximate repository size.
 func (c *LargeRepoCreator) GetRepoSize(repoPath string) (int64, error) {
 	var totalSize int64
 
@@ -159,7 +162,7 @@ func (c *LargeRepoCreator) GetRepoSize(repoPath string) (int64, error) {
 	return totalSize, nil
 }
 
-// createBaseRepo creates a basic repository structure
+// createBaseRepo creates a basic repository structure.
 func (c *LargeRepoCreator) createBaseRepo(ctx context.Context, repoPath string) error {
 	// Create directory
 	if err := os.MkdirAll(repoPath, 0o755); err != nil {
@@ -194,7 +197,7 @@ func (c *LargeRepoCreator) createBaseRepo(ctx context.Context, repoPath string) 
 	return nil
 }
 
-// createLargeFile creates a large file with specified size using memory-efficient chunked writing
+// createLargeFile creates a large file with specified size using memory-efficient chunked writing.
 func (c *LargeRepoCreator) createLargeFile(ctx context.Context, repoPath, filename string, sizeMB int64, chunkSizeKB int) error {
 	filePath := filepath.Join(repoPath, filename)
 
@@ -246,7 +249,7 @@ func (c *LargeRepoCreator) createLargeFile(ctx context.Context, repoPath, filena
 	return nil
 }
 
-// createLargeFileHistory creates a history with modifications to large files
+// createLargeFileHistory creates a history with modifications to large files.
 func (c *LargeRepoCreator) createLargeFileHistory(ctx context.Context, repoPath string, chunkSizeKB int) error {
 	// Create a file that will be modified over time
 	filename := "evolving-large-file.bin"
@@ -284,7 +287,7 @@ func (c *LargeRepoCreator) createLargeFileHistory(ctx context.Context, repoPath 
 	return nil
 }
 
-// configureGitUser sets up git user configuration for testing
+// configureGitUser sets up git user configuration for testing.
 func (c *LargeRepoCreator) configureGitUser(ctx context.Context, repoPath string) error {
 	if err := c.runGitCommand(ctx, repoPath, "config", "user.name", "Test User"); err != nil {
 		return fmt.Errorf("failed to set git user name: %w", err)
@@ -295,7 +298,7 @@ func (c *LargeRepoCreator) configureGitUser(ctx context.Context, repoPath string
 	return nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (c *LargeRepoCreator) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()

@@ -19,13 +19,13 @@ import (
 	"golang.org/x/term"
 )
 
-// SSHKeyInstaller handles installing public keys to remote servers
+// SSHKeyInstaller handles installing public keys to remote servers.
 type SSHKeyInstaller struct {
 	timeout time.Duration
 	verbose bool
 }
 
-// NewSSHKeyInstaller creates a new SSH key installer
+// NewSSHKeyInstaller creates a new SSH key installer.
 func NewSSHKeyInstaller() *SSHKeyInstaller {
 	return &SSHKeyInstaller{
 		timeout: 30 * time.Second,
@@ -33,12 +33,12 @@ func NewSSHKeyInstaller() *SSHKeyInstaller {
 	}
 }
 
-// SetVerbose sets the verbose mode for the installer
+// SetVerbose sets the verbose mode for the installer.
 func (installer *SSHKeyInstaller) SetVerbose(verbose bool) {
 	installer.verbose = verbose
 }
 
-// InstallOptions represents options for installing SSH keys
+// InstallOptions represents options for installing SSH keys.
 type InstallOptions struct {
 	Host           string
 	Port           string
@@ -50,7 +50,7 @@ type InstallOptions struct {
 	DryRun         bool
 }
 
-// InstallResult represents the result of a key installation
+// InstallResult represents the result of a key installation.
 type InstallResult struct {
 	Host      string
 	Success   bool
@@ -59,7 +59,7 @@ type InstallResult struct {
 	KeyExists bool
 }
 
-// InstallPublicKey installs a public key to a remote server
+// InstallPublicKey installs a public key to a remote server.
 func (installer *SSHKeyInstaller) InstallPublicKey(opts *InstallOptions) (*InstallResult, error) {
 	result := &InstallResult{
 		Host: opts.Host,
@@ -139,7 +139,7 @@ func (installer *SSHKeyInstaller) InstallPublicKey(opts *InstallOptions) (*Insta
 	return result, nil
 }
 
-// InstallKeysFromConfig installs all keys from a saved SSH configuration
+// InstallKeysFromConfig installs all keys from a saved SSH configuration.
 func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user string, opts *InstallOptions) ([]*InstallResult, error) {
 	// Load SSH configuration
 	enhancedCmd := NewEnhancedSSHCommand()
@@ -200,7 +200,7 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 	return results, nil
 }
 
-// validateOptions validates installation options
+// validateOptions validates installation options.
 func (installer *SSHKeyInstaller) validateOptions(opts *InstallOptions) error {
 	if opts.Host == "" {
 		return fmt.Errorf("host is required")
@@ -220,7 +220,7 @@ func (installer *SSHKeyInstaller) validateOptions(opts *InstallOptions) error {
 	return nil
 }
 
-// readPublicKey reads and validates a public key file
+// readPublicKey reads and validates a public key file.
 func (installer *SSHKeyInstaller) readPublicKey(keyPath string) (string, error) {
 	content, err := os.ReadFile(keyPath)
 	if err != nil {
@@ -240,7 +240,7 @@ func (installer *SSHKeyInstaller) readPublicKey(keyPath string) (string, error) 
 	return key, nil
 }
 
-// createSSHClient creates an SSH client connection
+// createSSHClient creates an SSH client connection.
 func (installer *SSHKeyInstaller) createSSHClient(opts *InstallOptions) (*ssh.Client, error) {
 	var authMethods []ssh.AuthMethod
 	var password string
@@ -329,7 +329,7 @@ func (installer *SSHKeyInstaller) createSSHClient(opts *InstallOptions) (*ssh.Cl
 	return client, nil
 }
 
-// createKeyAuth creates SSH key authentication method
+// createKeyAuth creates SSH key authentication method.
 func (installer *SSHKeyInstaller) createKeyAuth(privateKeyPath string) (ssh.AuthMethod, error) {
 	key, err := os.ReadFile(privateKeyPath)
 	if err != nil {
@@ -353,10 +353,10 @@ func (installer *SSHKeyInstaller) createKeyAuth(privateKeyPath string) (ssh.Auth
 	return ssh.PublicKeys(signer), nil
 }
 
-// readPassword reads password from stdin without echoing
+// readPassword reads password from stdin without echoing.
 func (installer *SSHKeyInstaller) readPassword() (string, error) {
 	// Check if stdin is a terminal
-	fd := int(syscall.Stdin)
+	fd := syscall.Stdin
 	if term.IsTerminal(fd) {
 		// Read password without echoing
 		password, err := term.ReadPassword(fd)
@@ -376,7 +376,7 @@ func (installer *SSHKeyInstaller) readPassword() (string, error) {
 	return strings.TrimSpace(password), nil
 }
 
-// keyExists checks if the public key already exists in authorized_keys using SFTP
+// keyExists checks if the public key already exists in authorized_keys using SFTP.
 func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string) (bool, error) {
 	if installer.verbose {
 		fmt.Printf("Creating SFTP client for key existence check...\n")
@@ -466,7 +466,7 @@ func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string
 	return false, nil
 }
 
-// installKey installs the public key to authorized_keys using SFTP
+// installKey installs the public key to authorized_keys using SFTP.
 func (installer *SSHKeyInstaller) installKey(client *ssh.Client, publicKey string) error {
 	if installer.verbose {
 		fmt.Printf("Creating SFTP client for key installation...\n")

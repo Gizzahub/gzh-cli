@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CreateInstallKeySimpleCommand creates a simple install-key command using system SSH
+// CreateInstallKeySimpleCommand creates a simple install-key command using system SSH.
 func (c *EnhancedSSHCommand) CreateInstallKeySimpleCommand() *cobra.Command {
 	var (
 		host          string
@@ -48,7 +48,7 @@ Examples:
 	return cmd
 }
 
-// CreateInstallKeyCommand creates the install-key command for SSH
+// CreateInstallKeyCommand creates the install-key command for SSH.
 func (c *EnhancedSSHCommand) CreateInstallKeyCommand() *cobra.Command {
 	var (
 		host           string
@@ -135,7 +135,7 @@ Examples:
 	return cmd
 }
 
-// installSingleKey installs a single public key to a remote server
+// installSingleKey installs a single public key to a remote server.
 func (c *EnhancedSSHCommand) installSingleKey(installer *SSHKeyInstaller, host, port, user, publicKeyPath, privateKeyPath, password string, force, dryRun bool) error {
 	// If no private key specified, try to find corresponding private key
 	if privateKeyPath == "" && publicKeyPath != "" {
@@ -167,7 +167,7 @@ func (c *EnhancedSSHCommand) installSingleKey(installer *SSHKeyInstaller, host, 
 	return nil
 }
 
-// installKeysFromConfig installs all keys from a saved SSH configuration
+// installKeysFromConfig installs all keys from a saved SSH configuration.
 func (c *EnhancedSSHCommand) installKeysFromConfig(installer *SSHKeyInstaller, configName, host, user, port, password string, force, dryRun bool) error {
 	opts := &InstallOptions{
 		Port:     port,
@@ -195,7 +195,7 @@ func (c *EnhancedSSHCommand) installKeysFromConfig(installer *SSHKeyInstaller, c
 	return nil
 }
 
-// printInstallResult prints the result of a key installation
+// printInstallResult prints the result of a key installation.
 func (c *EnhancedSSHCommand) printInstallResult(result *InstallResult) {
 	if result.Success {
 		if result.KeyAdded {
@@ -210,7 +210,7 @@ func (c *EnhancedSSHCommand) printInstallResult(result *InstallResult) {
 	}
 }
 
-// CreateListKeysCommand creates the list-keys command to show available keys
+// CreateListKeysCommand creates the list-keys command to show available keys.
 func (c *EnhancedSSHCommand) CreateListKeysCommand() *cobra.Command {
 	var configName string
 
@@ -241,7 +241,7 @@ Examples:
 	return cmd
 }
 
-// listKeys lists available SSH keys from configurations
+// listKeys lists available SSH keys from configurations.
 func (c *EnhancedSSHCommand) listKeys(configName string) error {
 	homeDir, _ := os.UserHomeDir()
 	storeDir := filepath.Join(homeDir, ".gz", "ssh-configs")
@@ -276,7 +276,7 @@ func (c *EnhancedSSHCommand) listKeys(configName string) error {
 	return nil
 }
 
-// listKeysFromConfig lists keys from a specific configuration
+// listKeysFromConfig lists keys from a specific configuration.
 func (c *EnhancedSSHCommand) listKeysFromConfig(storeDir, configName string) error {
 	metadataFile := filepath.Join(storeDir, configName, "metadata.json")
 	metadata, err := c.loadEnhancedMetadata(metadataFile)

@@ -98,7 +98,7 @@ func NewNetEnvStyles() NetEnvStyles {
 var (
 	styles = NewNetEnvStyles()
 
-	// Backward compatibility exports
+	// Backward compatibility exports.
 	ColorPrimary    = styles.Theme.Primary
 	ColorSecondary  = styles.Theme.Secondary
 	ColorSuccess    = styles.Theme.Success
@@ -110,14 +110,14 @@ var (
 	ColorBorder     = styles.Theme.Border
 	ColorHighlight  = styles.Theme.Highlight
 
-	// Base styles
+	// Base styles.
 	BaseStyle      = styles.Base
 	TitleStyle     = styles.Title
 	HeaderStyle    = styles.Header
 	StatusBarStyle = styles.StatusBar
 	FooterStyle    = styles.Footer
 
-	// Component styles
+	// Component styles.
 	ComponentActiveStyle    = styles.ComponentActive
 	ComponentInactiveStyle  = styles.ComponentInactive
 	StatusConnectedStyle    = styles.StatusConnected
@@ -128,7 +128,7 @@ var (
 	TabActiveStyle          = styles.TabActive
 	TabInactiveStyle        = styles.TabInactive
 
-	// Additional styles for compatibility
+	// Additional styles for compatibility.
 	SpinnerStyle    = styles.Base.Foreground(styles.Theme.Primary)
 	ErrorStyle      = styles.Base.Foreground(styles.Theme.Error).Bold(true)
 	WarningStyle    = styles.Base.Foreground(styles.Theme.Warning).Bold(true)

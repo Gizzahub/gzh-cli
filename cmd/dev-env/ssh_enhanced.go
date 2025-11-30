@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// EnhancedSSHOptions represents options for enhanced SSH commands
+// EnhancedSSHOptions represents options for enhanced SSH commands.
 type EnhancedSSHOptions struct {
 	Name          string
 	Description   string
@@ -27,7 +27,7 @@ type EnhancedSSHOptions struct {
 	IncludePublic bool
 }
 
-// EnhancedSSHMetadata represents metadata for saved SSH configurations
+// EnhancedSSHMetadata represents metadata for saved SSH configurations.
 type EnhancedSSHMetadata struct {
 	Description  string    `json:"description"`
 	SavedAt      time.Time `json:"saved_at"`
@@ -39,15 +39,15 @@ type EnhancedSSHMetadata struct {
 	HasKeys      bool      `json:"has_keys"`
 }
 
-// EnhancedSSHCommand provides enhanced SSH configuration management
+// EnhancedSSHCommand provides enhanced SSH configuration management.
 type EnhancedSSHCommand struct{}
 
-// NewEnhancedSSHCommand creates a new enhanced SSH command instance
+// NewEnhancedSSHCommand creates a new enhanced SSH command instance.
 func NewEnhancedSSHCommand() *EnhancedSSHCommand {
 	return &EnhancedSSHCommand{}
 }
 
-// DefaultEnhancedOptions returns default options for enhanced SSH commands
+// DefaultEnhancedOptions returns default options for enhanced SSH commands.
 func (c *EnhancedSSHCommand) DefaultEnhancedOptions() *EnhancedSSHOptions {
 	homeDir, _ := os.UserHomeDir()
 
@@ -59,7 +59,7 @@ func (c *EnhancedSSHCommand) DefaultEnhancedOptions() *EnhancedSSHOptions {
 	}
 }
 
-// CreateEnhancedSaveCommand creates the enhanced save command
+// CreateEnhancedSaveCommand creates the enhanced save command.
 func (c *EnhancedSSHCommand) CreateEnhancedSaveCommand() *cobra.Command {
 	opts := c.DefaultEnhancedOptions()
 
@@ -92,7 +92,7 @@ relative paths and file relationships.`,
 	return cmd
 }
 
-// CreateEnhancedLoadCommand creates the enhanced load command
+// CreateEnhancedLoadCommand creates the enhanced load command.
 func (c *EnhancedSSHCommand) CreateEnhancedLoadCommand() *cobra.Command {
 	opts := c.DefaultEnhancedOptions()
 
@@ -120,7 +120,7 @@ The configuration is restored maintaining the original directory structure.`,
 	return cmd
 }
 
-// CreateEnhancedListCommand creates the enhanced list command
+// CreateEnhancedListCommand creates the enhanced list command.
 func (c *EnhancedSSHCommand) CreateEnhancedListCommand() *cobra.Command {
 	opts := c.DefaultEnhancedOptions()
 
@@ -138,7 +138,7 @@ func (c *EnhancedSSHCommand) CreateEnhancedListCommand() *cobra.Command {
 	return cmd
 }
 
-// SaveEnhancedConfig saves the SSH configuration with includes and keys
+// SaveEnhancedConfig saves the SSH configuration with includes and keys.
 func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error {
 	// Validate inputs
 	if opts.Name == "" {
@@ -260,7 +260,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error 
 	return nil
 }
 
-// LoadEnhancedConfig loads a saved SSH configuration
+// LoadEnhancedConfig loads a saved SSH configuration.
 func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error {
 	// Validate inputs
 	if opts.Name == "" {
@@ -360,7 +360,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	return nil
 }
 
-// ListEnhancedConfigs lists saved SSH configurations
+// ListEnhancedConfigs lists saved SSH configurations.
 func (c *EnhancedSSHCommand) ListEnhancedConfigs(opts *EnhancedSSHOptions) error {
 	// Check if store directory exists
 	if _, err := os.Stat(opts.StorePath); os.IsNotExist(err) {
@@ -408,7 +408,7 @@ func (c *EnhancedSSHCommand) ListEnhancedConfigs(opts *EnhancedSSHOptions) error
 	return nil
 }
 
-// printDetailedEnhancedConfig prints detailed information about a configuration
+// printDetailedEnhancedConfig prints detailed information about a configuration.
 func (c *EnhancedSSHCommand) printDetailedEnhancedConfig(storePath, configName string) {
 	fmt.Printf("  📁 %s\n", configName)
 
@@ -446,7 +446,7 @@ func (c *EnhancedSSHCommand) printDetailedEnhancedConfig(storePath, configName s
 	fmt.Println()
 }
 
-// copyFile copies a file from src to dst
+// copyFile copies a file from src to dst.
 func (c *EnhancedSSHCommand) copyFile(src, dst string) error {
 	sourceFile, err := os.Open(src)
 	if err != nil {
@@ -464,7 +464,7 @@ func (c *EnhancedSSHCommand) copyFile(src, dst string) error {
 	return err
 }
 
-// saveEnhancedMetadata saves enhanced metadata to a JSON file
+// saveEnhancedMetadata saves enhanced metadata to a JSON file.
 func (c *EnhancedSSHCommand) saveEnhancedMetadata(filename string, metadata EnhancedSSHMetadata) error {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -477,7 +477,7 @@ func (c *EnhancedSSHCommand) saveEnhancedMetadata(filename string, metadata Enha
 	return encoder.Encode(metadata)
 }
 
-// loadEnhancedMetadata loads enhanced metadata from a JSON file
+// loadEnhancedMetadata loads enhanced metadata from a JSON file.
 func (c *EnhancedSSHCommand) loadEnhancedMetadata(filename string) (*EnhancedSSHMetadata, error) {
 	file, err := os.Open(filename)
 	if err != nil {

@@ -28,7 +28,7 @@ func NewNvmBootstrapper(logger logger.CommonLogger) *NvmBootstrapper {
 func (n *NvmBootstrapper) GetName() string { return "nvm" }
 
 func (n *NvmBootstrapper) IsSupported() bool {
-	return runtime.GOOS == "darwin" || runtime.GOOS == "linux"
+	return runtime.GOOS == darwinPlatform || runtime.GOOS == linuxPlatform
 }
 
 func (n *NvmBootstrapper) GetDependencies() []string { return []string{} }
@@ -115,11 +115,11 @@ func NewRbenvBootstrapper(logger logger.CommonLogger) *RbenvBootstrapper {
 func (r *RbenvBootstrapper) GetName() string { return "rbenv" }
 
 func (r *RbenvBootstrapper) IsSupported() bool {
-	return runtime.GOOS == "darwin" || runtime.GOOS == "linux"
+	return runtime.GOOS == darwinPlatform || runtime.GOOS == linuxPlatform
 }
 
 func (r *RbenvBootstrapper) GetDependencies() []string {
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == darwinPlatform {
 		return []string{"brew"}
 	}
 	return []string{}
@@ -159,12 +159,12 @@ func (r *RbenvBootstrapper) Install(ctx context.Context, _ bool) error {
 	r.logger.Info("Installing rbenv")
 
 	switch runtime.GOOS {
-	case "darwin":
+	case darwinPlatform:
 		cmd := exec.CommandContext(ctx, "brew", "install", "rbenv")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		return cmd.Run()
-	case "linux":
+	case linuxPlatform:
 		// Install via Git
 		rbenvDir := filepath.Join(os.Getenv("HOME"), ".rbenv")
 		cmd := exec.CommandContext(ctx, "git", "clone", "https://github.com/rbenv/rbenv.git", rbenvDir)
@@ -186,7 +186,7 @@ func (r *RbenvBootstrapper) Configure(_ context.Context) error {
 }
 
 func (r *RbenvBootstrapper) GetInstallScript() (string, error) {
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == darwinPlatform {
 		return "brew install rbenv", nil
 	}
 	return "git clone https://github.com/rbenv/rbenv.git ~/.rbenv", nil
@@ -215,11 +215,11 @@ func NewPyenvBootstrapper(logger logger.CommonLogger) *PyenvBootstrapper {
 func (p *PyenvBootstrapper) GetName() string { return "pyenv" }
 
 func (p *PyenvBootstrapper) IsSupported() bool {
-	return runtime.GOOS == "darwin" || runtime.GOOS == "linux"
+	return runtime.GOOS == darwinPlatform || runtime.GOOS == linuxPlatform
 }
 
 func (p *PyenvBootstrapper) GetDependencies() []string {
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == darwinPlatform {
 		return []string{"brew"}
 	}
 	return []string{}
@@ -259,12 +259,12 @@ func (p *PyenvBootstrapper) Install(ctx context.Context, _ bool) error {
 	p.logger.Info("Installing pyenv")
 
 	switch runtime.GOOS {
-	case "darwin":
+	case darwinPlatform:
 		cmd := exec.CommandContext(ctx, "brew", "install", "pyenv")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		return cmd.Run()
-	case "linux":
+	case linuxPlatform:
 		script := `curl https://pyenv.run | bash`
 		cmd := exec.CommandContext(ctx, "bash", "-c", script)
 		cmd.Stdout = os.Stdout

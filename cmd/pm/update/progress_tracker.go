@@ -16,7 +16,6 @@ type ProgressTracker struct {
 	mu             sync.Mutex
 	totalSteps     int
 	currentStep    int
-	currentAction  string
 	startTime      time.Time
 	stepStartTime  time.Time
 	stepDurations  []time.Duration
@@ -27,7 +26,7 @@ type ProgressTracker struct {
 	formatter      *OutputFormatter
 }
 
-// ManagerProgress tracks progress for individual package managers
+// ManagerProgress tracks progress for individual package managers.
 type ManagerProgress struct {
 	Name            string         `json:"name"`
 	Status          string         `json:"status"` // "pending", "active", "completed", "failed", "skipped"
@@ -40,7 +39,7 @@ type ManagerProgress struct {
 	Error           string         `json:"error,omitempty"`
 }
 
-// StepProgress tracks individual step progress within a manager
+// StepProgress tracks individual step progress within a manager.
 type StepProgress struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
@@ -50,7 +49,7 @@ type StepProgress struct {
 	Duration    time.Duration `json:"duration"`
 }
 
-// NewProgressTracker creates a new progress tracker
+// NewProgressTracker creates a new progress tracker.
 func NewProgressTracker(managerNames []string, formatter *OutputFormatter) *ProgressTracker {
 	managers := make([]ManagerProgress, len(managerNames))
 	for i, name := range managerNames {
@@ -70,7 +69,7 @@ func NewProgressTracker(managerNames []string, formatter *OutputFormatter) *Prog
 	}
 }
 
-// shouldShowProgress determines if progress indication should be shown
+// shouldShowProgress determines if progress indication should be shown.
 func shouldShowProgress() bool {
 	// Don't show progress in CI environments or when output is redirected
 	if os.Getenv("CI") != "" || os.Getenv("GITHUB_ACTIONS") != "" {
@@ -79,7 +78,7 @@ func shouldShowProgress() bool {
 	return true
 }
 
-// getDefaultStepsForManager returns default steps for each package manager
+// getDefaultStepsForManager returns default steps for each package manager.
 func getDefaultStepsForManager(manager string) []StepProgress {
 	switch manager {
 	case "brew":
@@ -133,7 +132,7 @@ func getDefaultStepsForManager(manager string) []StepProgress {
 	}
 }
 
-// StartManager marks a manager as actively being processed
+// StartManager marks a manager as actively being processed.
 func (pt *ProgressTracker) StartManager(managerName string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -155,7 +154,7 @@ func (pt *ProgressTracker) StartManager(managerName string) {
 	}
 }
 
-// StartManagerStep starts a specific step within a manager
+// StartManagerStep starts a specific step within a manager.
 func (pt *ProgressTracker) StartManagerStep(managerName, stepName string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -179,7 +178,7 @@ func (pt *ProgressTracker) StartManagerStep(managerName, stepName string) {
 	}
 }
 
-// CompleteManagerStep marks a step as completed
+// CompleteManagerStep marks a step as completed.
 func (pt *ProgressTracker) CompleteManagerStep(managerName, stepName string, packagesAffected int) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -206,7 +205,7 @@ func (pt *ProgressTracker) CompleteManagerStep(managerName, stepName string, pac
 	}
 }
 
-// FailManagerStep marks a step as failed
+// FailManagerStep marks a step as failed.
 func (pt *ProgressTracker) FailManagerStep(managerName, stepName, errorMsg string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -233,7 +232,7 @@ func (pt *ProgressTracker) FailManagerStep(managerName, stepName, errorMsg strin
 	}
 }
 
-// CompleteManager marks a manager as completed
+// CompleteManager marks a manager as completed.
 func (pt *ProgressTracker) CompleteManager(managerName string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -257,7 +256,7 @@ func (pt *ProgressTracker) CompleteManager(managerName string) {
 	}
 }
 
-// SkipManager marks a manager as skipped
+// SkipManager marks a manager as skipped.
 func (pt *ProgressTracker) SkipManager(managerName, reason string) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -278,7 +277,7 @@ func (pt *ProgressTracker) SkipManager(managerName, reason string) {
 	}
 }
 
-// updateETA calculates estimated time to completion
+// updateETA calculates estimated time to completion.
 func (pt *ProgressTracker) updateETA() {
 	if len(pt.stepDurations) == 0 {
 		return
@@ -299,7 +298,7 @@ func (pt *ProgressTracker) updateETA() {
 	}
 }
 
-// printProgressOverview prints a general progress overview
+// printProgressOverview prints a general progress overview.
 func (pt *ProgressTracker) printProgressOverview() {
 	if !pt.showProgress {
 		return
@@ -329,13 +328,13 @@ func (pt *ProgressTracker) printProgressOverview() {
 	}
 
 	if !pt.estimatedEnd.IsZero() && pt.estimatedEnd.After(time.Now()) {
-		remaining := pt.estimatedEnd.Sub(time.Now())
+		remaining := time.Until(pt.estimatedEnd)
 		fmt.Printf(" (ETA: %s)", formatDuration(remaining))
 	}
 	fmt.Println()
 }
 
-// printStepProgress prints progress for a specific step
+// printStepProgress prints progress for a specific step.
 func (pt *ProgressTracker) printStepProgress(managerName string, step StepProgress) {
 	var emoji string
 	if pt.formatter.showEmojis {
@@ -344,14 +343,14 @@ func (pt *ProgressTracker) printStepProgress(managerName string, step StepProgre
 	fmt.Printf("%s %s: %s...\n", emoji, managerName, step.Description)
 }
 
-// printStepCompletion prints completion of a specific step
+// printStepCompletion prints completion of a specific step.
 func (pt *ProgressTracker) printStepCompletion(managerName string, step StepProgress, packagesAffected int) {
 	duration := step.Duration.Truncate(time.Millisecond)
 
 	var details string
 	if packagesAffected > 0 {
 		if packagesAffected == 1 {
-			details = fmt.Sprintf("1 package affected")
+			details = "1 package affected"
 		} else {
 			details = fmt.Sprintf("%d packages affected", packagesAffected)
 		}
@@ -362,12 +361,12 @@ func (pt *ProgressTracker) printStepCompletion(managerName string, step StepProg
 	pt.formatter.PrintCommandResult(step.Description, true, details)
 }
 
-// printStepFailure prints failure of a specific step
+// printStepFailure prints failure of a specific step.
 func (pt *ProgressTracker) printStepFailure(managerName string, step StepProgress, errorMsg string) {
 	pt.formatter.PrintCommandResult(step.Description, false, errorMsg)
 }
 
-// printManagerCompletion prints completion summary for a manager
+// printManagerCompletion prints completion summary for a manager.
 func (pt *ProgressTracker) printManagerCompletion(manager ManagerProgress) {
 	duration := manager.Duration.Truncate(time.Millisecond)
 
@@ -389,7 +388,7 @@ func (pt *ProgressTracker) printManagerCompletion(manager ManagerProgress) {
 	fmt.Printf("%s %s: %s\n", emoji, manager.Name, summary)
 }
 
-// GetOverallProgress returns overall progress information
+// GetOverallProgress returns overall progress information.
 func (pt *ProgressTracker) GetOverallProgress() (completed, total int, eta time.Time) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -404,7 +403,7 @@ func (pt *ProgressTracker) GetOverallProgress() (completed, total int, eta time.
 	return completed, pt.totalSteps, pt.estimatedEnd
 }
 
-// GetManagerProgress returns progress for a specific manager
+// GetManagerProgress returns progress for a specific manager.
 func (pt *ProgressTracker) GetManagerProgress(managerName string) *ManagerProgress {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -417,7 +416,7 @@ func (pt *ProgressTracker) GetManagerProgress(managerName string) *ManagerProgre
 	return nil
 }
 
-// GetAllManagerProgress returns progress for all managers
+// GetAllManagerProgress returns progress for all managers.
 func (pt *ProgressTracker) GetAllManagerProgress() []ManagerProgress {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()
@@ -428,12 +427,12 @@ func (pt *ProgressTracker) GetAllManagerProgress() []ManagerProgress {
 	return result
 }
 
-// GetTotalDuration returns total elapsed time
+// GetTotalDuration returns total elapsed time.
 func (pt *ProgressTracker) GetTotalDuration() time.Duration {
 	return time.Since(pt.startTime)
 }
 
-// GetSummaryStats returns summary statistics for the update process
+// GetSummaryStats returns summary statistics for the update process.
 func (pt *ProgressTracker) GetSummaryStats() (successful, failed, skipped, totalPackages int) {
 	pt.mu.Lock()
 	defer pt.mu.Unlock()

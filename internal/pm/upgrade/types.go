@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package upgrade
 
 import (
@@ -7,7 +10,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// UpgradeStatus represents the current status of a package manager upgrade
+// UpgradeStatus represents the current status of a package manager upgrade.
 type UpgradeStatus struct {
 	Manager         string    `json:"manager"`
 	CurrentVersion  string    `json:"current_version"`
@@ -19,7 +22,7 @@ type UpgradeStatus struct {
 	Size            int64     `json:"size,omitempty"`
 }
 
-// UpgradeReport represents a comprehensive report of all package manager upgrade statuses
+// UpgradeReport represents a comprehensive report of all package manager upgrade statuses.
 type UpgradeReport struct {
 	Platform      string          `json:"platform"`
 	TotalManagers int             `json:"total_managers"`
@@ -28,7 +31,7 @@ type UpgradeReport struct {
 	Timestamp     time.Time       `json:"timestamp"`
 }
 
-// UpgradeOptions configures how an upgrade should be performed
+// UpgradeOptions configures how an upgrade should be performed.
 type UpgradeOptions struct {
 	Force          bool          `json:"force"`
 	PreRelease     bool          `json:"pre_release"`
@@ -37,7 +40,7 @@ type UpgradeOptions struct {
 	Timeout        time.Duration `json:"timeout"`
 }
 
-// PackageManagerUpgrader defines the interface that all package manager upgraders must implement
+// PackageManagerUpgrader defines the interface that all package manager upgraders must implement.
 type PackageManagerUpgrader interface {
 	// CheckUpdate checks if an update is available for the package manager
 	CheckUpdate(ctx context.Context) (*UpgradeStatus, error)
@@ -58,14 +61,14 @@ type PackageManagerUpgrader interface {
 	ValidateUpgrade(ctx context.Context) error
 }
 
-// UpgradeManager coordinates upgrades across multiple package managers
+// UpgradeManager coordinates upgrades across multiple package managers.
 type UpgradeManager struct {
 	upgraders map[string]PackageManagerUpgrader
 	logger    logger.CommonLogger
 	backupDir string
 }
 
-// NewUpgradeManager creates a new UpgradeManager instance
+// NewUpgradeManager creates a new UpgradeManager instance.
 func NewUpgradeManager(logger logger.CommonLogger, backupDir string) *UpgradeManager {
 	return &UpgradeManager{
 		upgraders: make(map[string]PackageManagerUpgrader),
@@ -74,18 +77,18 @@ func NewUpgradeManager(logger logger.CommonLogger, backupDir string) *UpgradeMan
 	}
 }
 
-// RegisterUpgrader registers a package manager upgrader
+// RegisterUpgrader registers a package manager upgrader.
 func (um *UpgradeManager) RegisterUpgrader(name string, upgrader PackageManagerUpgrader) {
 	um.upgraders[name] = upgrader
 }
 
-// GetUpgrader returns an upgrader by name
+// GetUpgrader returns an upgrader by name.
 func (um *UpgradeManager) GetUpgrader(name string) (PackageManagerUpgrader, bool) {
 	upgrader, exists := um.upgraders[name]
 	return upgrader, exists
 }
 
-// ListUpgraders returns all registered upgrader names
+// ListUpgraders returns all registered upgrader names.
 func (um *UpgradeManager) ListUpgraders() []string {
 	names := make([]string, 0, len(um.upgraders))
 	for name := range um.upgraders {
@@ -94,7 +97,7 @@ func (um *UpgradeManager) ListUpgraders() []string {
 	return names
 }
 
-// GenerateReport generates a comprehensive upgrade report for all registered package managers
+// GenerateReport generates a comprehensive upgrade report for all registered package managers.
 func (um *UpgradeManager) GenerateReport(ctx context.Context) (*UpgradeReport, error) {
 	statuses := make([]UpgradeStatus, 0, len(um.upgraders))
 	updatesNeeded := 0

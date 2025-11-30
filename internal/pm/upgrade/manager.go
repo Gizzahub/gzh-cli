@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package upgrade
 
 import (
@@ -9,7 +12,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// UpgradeCoordinator coordinates upgrades across multiple package managers
+// UpgradeCoordinator coordinates upgrades across multiple package managers.
 type UpgradeCoordinator struct {
 	upgraders map[string]PackageManagerUpgrader
 	logger    logger.CommonLogger
@@ -17,7 +20,7 @@ type UpgradeCoordinator struct {
 	mu        sync.RWMutex
 }
 
-// NewUpgradeCoordinator creates a new upgrade coordinator
+// NewUpgradeCoordinator creates a new upgrade coordinator.
 func NewUpgradeCoordinator(logger logger.CommonLogger, backupDir string) *UpgradeCoordinator {
 	coordinator := &UpgradeCoordinator{
 		upgraders: make(map[string]PackageManagerUpgrader),
@@ -31,7 +34,7 @@ func NewUpgradeCoordinator(logger logger.CommonLogger, backupDir string) *Upgrad
 	return coordinator
 }
 
-// registerDefaultUpgraders registers all available upgraders
+// registerDefaultUpgraders registers all available upgraders.
 func (uc *UpgradeCoordinator) registerDefaultUpgraders() {
 	uc.RegisterUpgrader("homebrew", NewHomebrewUpgrader(uc.logger))
 	uc.RegisterUpgrader("brew", NewHomebrewUpgrader(uc.logger)) // Alias
@@ -42,14 +45,14 @@ func (uc *UpgradeCoordinator) registerDefaultUpgraders() {
 	uc.RegisterUpgrader("sdkman", NewSdkmanUpgrader(uc.logger))
 }
 
-// RegisterUpgrader registers a package manager upgrader
+// RegisterUpgrader registers a package manager upgrader.
 func (uc *UpgradeCoordinator) RegisterUpgrader(name string, upgrader PackageManagerUpgrader) {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 	uc.upgraders[name] = upgrader
 }
 
-// GetUpgrader returns an upgrader by name
+// GetUpgrader returns an upgrader by name.
 func (uc *UpgradeCoordinator) GetUpgrader(name string) (PackageManagerUpgrader, bool) {
 	uc.mu.RLock()
 	defer uc.mu.RUnlock()
@@ -57,7 +60,7 @@ func (uc *UpgradeCoordinator) GetUpgrader(name string) (PackageManagerUpgrader, 
 	return upgrader, exists
 }
 
-// ListUpgraders returns all registered upgrader names
+// ListUpgraders returns all registered upgrader names.
 func (uc *UpgradeCoordinator) ListUpgraders() []string {
 	uc.mu.RLock()
 	defer uc.mu.RUnlock()
@@ -69,7 +72,7 @@ func (uc *UpgradeCoordinator) ListUpgraders() []string {
 	return names
 }
 
-// CheckAll generates a comprehensive upgrade report for all registered package managers
+// CheckAll generates a comprehensive upgrade report for all registered package managers.
 func (uc *UpgradeCoordinator) CheckAll(ctx context.Context) (*UpgradeReport, error) {
 	uc.logger.Info("Checking upgrade status for all package managers")
 
@@ -110,7 +113,7 @@ func (uc *UpgradeCoordinator) CheckAll(ctx context.Context) (*UpgradeReport, err
 	}, nil
 }
 
-// CheckManagers checks upgrade status for specific package managers
+// CheckManagers checks upgrade status for specific package managers.
 func (uc *UpgradeCoordinator) CheckManagers(ctx context.Context, names []string) (*UpgradeReport, error) {
 	uc.logger.Info("Checking upgrade status for managers: %v", names)
 
@@ -160,7 +163,7 @@ func (uc *UpgradeCoordinator) CheckManagers(ctx context.Context, names []string)
 	}, nil
 }
 
-// UpgradeAll upgrades all package managers
+// UpgradeAll upgrades all package managers.
 func (uc *UpgradeCoordinator) UpgradeAll(ctx context.Context, options UpgradeOptions) (*UpgradeReport, error) {
 	uc.logger.Info("Starting upgrade for all package managers")
 
@@ -174,7 +177,7 @@ func (uc *UpgradeCoordinator) UpgradeAll(ctx context.Context, options UpgradeOpt
 	return uc.UpgradeManagers(ctx, names, options)
 }
 
-// UpgradeManagers upgrades specific package managers
+// UpgradeManagers upgrades specific package managers.
 func (uc *UpgradeCoordinator) UpgradeManagers(ctx context.Context, names []string, options UpgradeOptions) (*UpgradeReport, error) {
 	uc.logger.Info("Starting upgrade for managers: %v", names)
 
@@ -250,18 +253,18 @@ func (uc *UpgradeCoordinator) UpgradeManagers(ctx context.Context, names []strin
 	}, nil
 }
 
-// GetAvailableManagers returns a list of all available package managers
+// GetAvailableManagers returns a list of all available package managers.
 func (uc *UpgradeCoordinator) GetAvailableManagers() []string {
 	return uc.ListUpgraders()
 }
 
-// detectPlatform detects the current platform
+// detectPlatform detects the current platform.
 func detectPlatform() string {
 	// This is a simple implementation - could be enhanced
 	return "linux" // Default for now
 }
 
-// FormatReport formats an upgrade report for display
+// FormatReport formats an upgrade report for display.
 func (uc *UpgradeCoordinator) FormatReport(report *UpgradeReport, verbose bool) string {
 	if report == nil {
 		return "No upgrade report available\n"

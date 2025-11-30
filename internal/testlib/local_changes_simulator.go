@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -16,7 +19,7 @@ type LocalChangesSimulator struct {
 	timeout time.Duration
 }
 
-// WorkingDirectoryState represents different states of a working directory
+// WorkingDirectoryState represents different states of a working directory.
 type WorkingDirectoryState struct {
 	UncommittedChanges []LocalFileChange
 	StagedChanges      []LocalFileChange
@@ -25,7 +28,7 @@ type WorkingDirectoryState struct {
 	RenamedFiles       []FileRename
 }
 
-// LocalFileChange represents a change to a local file
+// LocalFileChange represents a change to a local file.
 type LocalFileChange struct {
 	FilePath     string
 	Content      string
@@ -33,14 +36,14 @@ type LocalFileChange struct {
 	IsConflicted bool
 }
 
-// FileRename represents a file rename operation
+// FileRename represents a file rename operation.
 type FileRename struct {
 	OldPath string
 	NewPath string
 	Content string
 }
 
-// ChangeType represents the type of file change
+// ChangeType represents the type of file change.
 type ChangeType int
 
 const (
@@ -50,7 +53,7 @@ const (
 	ChangeTypeRename
 )
 
-// String returns the string representation of ChangeType
+// String returns the string representation of ChangeType.
 func (ct ChangeType) String() string {
 	switch ct {
 	case ChangeTypeModify:
@@ -60,20 +63,20 @@ func (ct ChangeType) String() string {
 	case ChangeTypeDelete:
 		return "delete"
 	case ChangeTypeRename:
-		return "rename"
+		return "rename" //nolint:goconst // string representation of enum
 	default:
-		return "unknown"
+		return "unknown" //nolint:goconst // string representation of enum
 	}
 }
 
-// NewLocalChangesSimulator creates a new LocalChangesSimulator instance
+// NewLocalChangesSimulator creates a new LocalChangesSimulator instance.
 func NewLocalChangesSimulator() *LocalChangesSimulator {
 	return &LocalChangesSimulator{
 		timeout: 30 * time.Second,
 	}
 }
 
-// CreateWorkingDirectoryState creates a repository with the specified working directory state
+// CreateWorkingDirectoryState creates a repository with the specified working directory state.
 func (lcs *LocalChangesSimulator) CreateWorkingDirectoryState(ctx context.Context, repoPath string, state WorkingDirectoryState) error {
 	// Ensure we have a Git repository
 	if !lcs.isGitRepo(repoPath) {
@@ -121,7 +124,7 @@ func (lcs *LocalChangesSimulator) CreateWorkingDirectoryState(ctx context.Contex
 	return nil
 }
 
-// CreateDirtyWorkingDirectory creates a repository with various uncommitted changes
+// CreateDirtyWorkingDirectory creates a repository with various uncommitted changes.
 func (lcs *LocalChangesSimulator) CreateDirtyWorkingDirectory(ctx context.Context, repoPath string) error {
 	state := WorkingDirectoryState{
 		UncommittedChanges: []LocalFileChange{
@@ -155,7 +158,7 @@ func (lcs *LocalChangesSimulator) CreateDirtyWorkingDirectory(ctx context.Contex
 	return lcs.CreateWorkingDirectoryState(ctx, repoPath, state)
 }
 
-// CreateConflictedWorkingDirectory creates a repository with conflicted files
+// CreateConflictedWorkingDirectory creates a repository with conflicted files.
 func (lcs *LocalChangesSimulator) CreateConflictedWorkingDirectory(ctx context.Context, repoPath string) error {
 	// First create a basic repository with some content
 	if err := lcs.initializeRepo(ctx, repoPath); err != nil {
@@ -206,7 +209,7 @@ func (lcs *LocalChangesSimulator) CreateConflictedWorkingDirectory(ctx context.C
 	return nil
 }
 
-// CreateMixedStateRepository creates a repository with a combination of different states
+// CreateMixedStateRepository creates a repository with a combination of different states.
 func (lcs *LocalChangesSimulator) CreateMixedStateRepository(ctx context.Context, repoPath string) error {
 	state := WorkingDirectoryState{
 		UncommittedChanges: []LocalFileChange{
@@ -248,7 +251,7 @@ func (lcs *LocalChangesSimulator) CreateMixedStateRepository(ctx context.Context
 	return lcs.CreateWorkingDirectoryState(ctx, repoPath, state)
 }
 
-// GetWorkingDirectoryStatus returns the current status of the working directory
+// GetWorkingDirectoryStatus returns the current status of the working directory.
 func (lcs *LocalChangesSimulator) GetWorkingDirectoryStatus(ctx context.Context, repoPath string) (WorkingDirectoryStatus, error) {
 	cmd := exec.CommandContext(ctx, "git", "status", "--porcelain")
 	cmd.Dir = repoPath
@@ -261,7 +264,7 @@ func (lcs *LocalChangesSimulator) GetWorkingDirectoryStatus(ctx context.Context,
 	return lcs.parseGitStatus(string(output)), nil
 }
 
-// WorkingDirectoryStatus represents the parsed status of a working directory
+// WorkingDirectoryStatus represents the parsed status of a working directory.
 type WorkingDirectoryStatus struct {
 	ModifiedFiles   []string
 	AddedFiles      []string
@@ -271,7 +274,7 @@ type WorkingDirectoryStatus struct {
 	ConflictedFiles []string
 }
 
-// IsClean returns true if the working directory has no changes
+// IsClean returns true if the working directory has no changes.
 func (wds WorkingDirectoryStatus) IsClean() bool {
 	return len(wds.ModifiedFiles) == 0 &&
 		len(wds.AddedFiles) == 0 &&
@@ -281,7 +284,7 @@ func (wds WorkingDirectoryStatus) IsClean() bool {
 		len(wds.ConflictedFiles) == 0
 }
 
-// HasUncommittedChanges returns true if there are uncommitted changes
+// HasUncommittedChanges returns true if there are uncommitted changes.
 func (wds WorkingDirectoryStatus) HasUncommittedChanges() bool {
 	return len(wds.ModifiedFiles) > 0 ||
 		len(wds.AddedFiles) > 0 ||
@@ -289,12 +292,12 @@ func (wds WorkingDirectoryStatus) HasUncommittedChanges() bool {
 		len(wds.RenamedFiles) > 0
 }
 
-// HasConflicts returns true if there are conflicted files
+// HasConflicts returns true if there are conflicted files.
 func (wds WorkingDirectoryStatus) HasConflicts() bool {
 	return len(wds.ConflictedFiles) > 0
 }
 
-// parseGitStatus parses the output of `git status --porcelain`
+// parseGitStatus parses the output of `git status --porcelain`.
 func (lcs *LocalChangesSimulator) parseGitStatus(output string) WorkingDirectoryStatus {
 	status := WorkingDirectoryStatus{}
 	lines := strings.Split(strings.TrimSpace(output), "\n")
@@ -327,7 +330,7 @@ func (lcs *LocalChangesSimulator) parseGitStatus(output string) WorkingDirectory
 	return status
 }
 
-// applyFileChange applies a single file change to the repository
+// applyFileChange applies a single file change to the repository.
 func (lcs *LocalChangesSimulator) applyFileChange(ctx context.Context, repoPath string, change LocalFileChange, staged bool) error {
 	filePath := filepath.Join(repoPath, change.FilePath)
 
@@ -360,12 +363,17 @@ func (lcs *LocalChangesSimulator) applyFileChange(ctx context.Context, repoPath 
 				return fmt.Errorf("failed to stage deletion: %w", err)
 			}
 		}
+
+	case ChangeTypeRename:
+		// Rename is typically handled separately through FileRename struct
+		// This case exists for exhaustive switch checking
+		return fmt.Errorf("rename operations should use FileRename struct")
 	}
 
 	return nil
 }
 
-// applyFileRename applies a file rename operation
+// applyFileRename applies a file rename operation.
 func (lcs *LocalChangesSimulator) applyFileRename(ctx context.Context, repoPath string, rename FileRename) error {
 	oldPath := filepath.Join(repoPath, rename.OldPath)
 	newPath := filepath.Join(repoPath, rename.NewPath)
@@ -404,7 +412,7 @@ func (lcs *LocalChangesSimulator) applyFileRename(ctx context.Context, repoPath 
 	return nil
 }
 
-// createAndCommitFile creates a file and commits it
+// createAndCommitFile creates a file and commits it.
 func (lcs *LocalChangesSimulator) createAndCommitFile(ctx context.Context, repoPath, filePath, content, commitMessage string) error {
 	fullPath := filepath.Join(repoPath, filePath)
 
@@ -423,7 +431,7 @@ func (lcs *LocalChangesSimulator) createAndCommitFile(ctx context.Context, repoP
 	return nil
 }
 
-// isGitRepo checks if a directory is a Git repository
+// isGitRepo checks if a directory is a Git repository.
 func (lcs *LocalChangesSimulator) isGitRepo(repoPath string) bool {
 	gitDir := filepath.Join(repoPath, ".git")
 	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
@@ -432,7 +440,7 @@ func (lcs *LocalChangesSimulator) isGitRepo(repoPath string) bool {
 	return true
 }
 
-// initializeRepo initializes a Git repository with an initial commit
+// initializeRepo initializes a Git repository with an initial commit.
 func (lcs *LocalChangesSimulator) initializeRepo(ctx context.Context, repoPath string) error {
 	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
@@ -482,7 +490,7 @@ func (lcs *LocalChangesSimulator) initializeRepo(ctx context.Context, repoPath s
 	return nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (lcs *LocalChangesSimulator) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, lcs.timeout)
 	defer cancel()

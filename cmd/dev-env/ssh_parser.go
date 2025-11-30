@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-// SSHConfigParser handles parsing SSH config files and extracting includes and keys
+// SSHConfigParser handles parsing SSH config files and extracting includes and keys.
 type SSHConfigParser struct {
 	configPath string
 	sshDir     string
 }
 
-// NewSSHConfigParser creates a new SSH config parser
+// NewSSHConfigParser creates a new SSH config parser.
 func NewSSHConfigParser(configPath string) *SSHConfigParser {
 	return &SSHConfigParser{
 		configPath: configPath,
@@ -26,7 +26,7 @@ func NewSSHConfigParser(configPath string) *SSHConfigParser {
 	}
 }
 
-// ParsedSSHConfig represents a parsed SSH configuration
+// ParsedSSHConfig represents a parsed SSH configuration.
 type ParsedSSHConfig struct {
 	MainConfigPath string
 	IncludeFiles   []string
@@ -34,7 +34,7 @@ type ParsedSSHConfig struct {
 	PublicKeys     []string
 }
 
-// Parse parses the SSH config and returns all related files
+// Parse parses the SSH config and returns all related files.
 func (p *SSHConfigParser) Parse() (*ParsedSSHConfig, error) {
 	result := &ParsedSSHConfig{
 		MainConfigPath: p.configPath,
@@ -64,7 +64,7 @@ func (p *SSHConfigParser) Parse() (*ParsedSSHConfig, error) {
 	return result, nil
 }
 
-// parseConfigFile parses a single SSH config file
+// parseConfigFile parses a single SSH config file.
 func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHConfig) error {
 	file, err := os.Open(configPath)
 	if err != nil {
@@ -95,7 +95,7 @@ func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHCo
 	return scanner.Err()
 }
 
-// parseIncludeLine parses Include directives
+// parseIncludeLine parses Include directives.
 func (p *SSHConfigParser) parseIncludeLine(line string, result *ParsedSSHConfig) error {
 	// Case-insensitive match for Include
 	includeRegex := regexp.MustCompile(`(?i)^\s*include\s+(.+)$`)
@@ -137,7 +137,7 @@ func (p *SSHConfigParser) parseIncludeLine(line string, result *ParsedSSHConfig)
 	return nil
 }
 
-// parseIdentityFileLine parses IdentityFile directives
+// parseIdentityFileLine parses IdentityFile directives.
 func (p *SSHConfigParser) parseIdentityFileLine(line string, result *ParsedSSHConfig) error {
 	// Case-insensitive match for IdentityFile
 	identityRegex := regexp.MustCompile(`(?i)^\s*identityfile\s+(.+)$`)
@@ -177,7 +177,7 @@ func (p *SSHConfigParser) parseIdentityFileLine(line string, result *ParsedSSHCo
 	return nil
 }
 
-// removeDuplicates removes duplicate strings from a slice
+// removeDuplicates removes duplicate strings from a slice.
 func removeDuplicates(slice []string) []string {
 	keys := make(map[string]bool)
 	result := []string{}

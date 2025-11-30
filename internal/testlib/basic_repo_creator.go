@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -15,7 +18,7 @@ type BasicRepoCreator struct {
 	timeout time.Duration
 }
 
-// NewBasicRepoCreator creates a new BasicRepoCreator instance
+// NewBasicRepoCreator creates a new BasicRepoCreator instance.
 func NewBasicRepoCreator() *BasicRepoCreator {
 	return &BasicRepoCreator{
 		timeout: 30 * time.Second,
@@ -23,7 +26,7 @@ func NewBasicRepoCreator() *BasicRepoCreator {
 }
 
 // CreateEmptyRepo creates a Git repository with just git init
-// This simulates the most basic repository state
+// This simulates the most basic repository state.
 func (c *BasicRepoCreator) CreateEmptyRepo(ctx context.Context, repoPath string) error {
 	if repoPath == "" {
 		return fmt.Errorf("repository path is required")
@@ -48,7 +51,7 @@ func (c *BasicRepoCreator) CreateEmptyRepo(ctx context.Context, repoPath string)
 }
 
 // CreateMinimalRepo creates a repository with a single initial commit
-// This simulates the most common starting state for repositories
+// This simulates the most common starting state for repositories.
 func (c *BasicRepoCreator) CreateMinimalRepo(ctx context.Context, repoPath string) error {
 	if err := c.CreateEmptyRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to create empty repository: %w", err)
@@ -74,7 +77,7 @@ func (c *BasicRepoCreator) CreateMinimalRepo(ctx context.Context, repoPath strin
 }
 
 // CreateRepoWithFiles creates a repository with multiple files
-// This simulates repositories with actual content
+// This simulates repositories with actual content.
 func (c *BasicRepoCreator) CreateRepoWithFiles(ctx context.Context, repoPath string, files map[string]string) error {
 	if err := c.CreateEmptyRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to create empty repository: %w", err)
@@ -108,7 +111,7 @@ func (c *BasicRepoCreator) CreateRepoWithFiles(ctx context.Context, repoPath str
 	return nil
 }
 
-// configureGitUser sets up git user configuration for testing
+// configureGitUser sets up git user configuration for testing.
 func (c *BasicRepoCreator) configureGitUser(ctx context.Context, repoPath string) error {
 	if err := c.runGitCommand(ctx, repoPath, "config", "user.name", "Test User"); err != nil {
 		return fmt.Errorf("failed to set git user name: %w", err)
@@ -119,7 +122,7 @@ func (c *BasicRepoCreator) configureGitUser(ctx context.Context, repoPath string
 	return nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (c *BasicRepoCreator) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()

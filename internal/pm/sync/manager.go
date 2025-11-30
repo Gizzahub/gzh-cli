@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sync
 
 import (
@@ -15,7 +18,7 @@ const (
 	statusUnknown = "unknown"
 )
 
-// NewSyncManager creates a new synchronization manager
+// NewSyncManager creates a new synchronization manager.
 func NewSyncManager(logger logger.CommonLogger) *SyncManager {
 	manager := &SyncManager{
 		synchronizers: make(map[string]VersionSynchronizer),
@@ -34,7 +37,7 @@ func NewSyncManager(logger logger.CommonLogger) *SyncManager {
 	return manager
 }
 
-// registerDefaultSynchronizers registers all available synchronizers
+// registerDefaultSynchronizers registers all available synchronizers.
 func (sm *SyncManager) registerDefaultSynchronizers() {
 	sm.RegisterSynchronizer("nvm-npm", NewNvmNpmSynchronizer(sm.logger))
 	sm.RegisterSynchronizer("rbenv-gem", NewRbenvGemSynchronizer(sm.logger))
@@ -42,18 +45,18 @@ func (sm *SyncManager) registerDefaultSynchronizers() {
 	sm.RegisterSynchronizer("asdf-multi", NewAsdfMultiSynchronizer(sm.logger))
 }
 
-// RegisterSynchronizer registers a version synchronizer
+// RegisterSynchronizer registers a version synchronizer.
 func (sm *SyncManager) RegisterSynchronizer(name string, synchronizer VersionSynchronizer) {
 	sm.synchronizers[name] = synchronizer
 }
 
-// GetSynchronizer returns a synchronizer by name
+// GetSynchronizer returns a synchronizer by name.
 func (sm *SyncManager) GetSynchronizer(name string) (VersionSynchronizer, bool) {
 	synchronizer, exists := sm.synchronizers[name]
 	return synchronizer, exists
 }
 
-// ListSynchronizers returns all registered synchronizer names
+// ListSynchronizers returns all registered synchronizer names.
 func (sm *SyncManager) ListSynchronizers() []string {
 	names := make([]string, 0, len(sm.synchronizers))
 	for name := range sm.synchronizers {
@@ -62,7 +65,7 @@ func (sm *SyncManager) ListSynchronizers() []string {
 	return names
 }
 
-// CheckAll generates a comprehensive sync report for all registered synchronizers
+// CheckAll generates a comprehensive sync report for all registered synchronizers.
 func (sm *SyncManager) CheckAll(ctx context.Context) (*SyncReport, error) {
 	sm.logger.Info("Checking version synchronization for all manager pairs")
 
@@ -129,7 +132,7 @@ func (sm *SyncManager) CheckAll(ctx context.Context) (*SyncReport, error) {
 	}, nil
 }
 
-// CheckPairs checks synchronization status for specific manager pairs
+// CheckPairs checks synchronization status for specific manager pairs.
 func (sm *SyncManager) CheckPairs(ctx context.Context, pairs []string) (*SyncReport, error) {
 	sm.logger.Info("Checking sync status for pairs: %v", pairs)
 
@@ -188,7 +191,7 @@ func (sm *SyncManager) CheckPairs(ctx context.Context, pairs []string) (*SyncRep
 	}, nil
 }
 
-// FixSynchronization fixes synchronization issues for specified pairs
+// FixSynchronization fixes synchronization issues for specified pairs.
 func (sm *SyncManager) FixSynchronization(ctx context.Context, pairs []string, policy SyncPolicy) (*SyncReport, error) {
 	sm.logger.Info("Starting synchronization fix for pairs: %v", pairs)
 
@@ -276,22 +279,22 @@ func (sm *SyncManager) FixSynchronization(ctx context.Context, pairs []string, p
 	}, nil
 }
 
-// GetAvailablePairs returns a list of all available synchronizer pairs
+// GetAvailablePairs returns a list of all available synchronizer pairs.
 func (sm *SyncManager) GetAvailablePairs() []string {
 	return sm.ListSynchronizers()
 }
 
-// SetPolicy sets the default synchronization policy
+// SetPolicy sets the default synchronization policy.
 func (sm *SyncManager) SetPolicy(policy SyncPolicy) {
 	sm.policy = policy
 }
 
-// GetPolicy returns the current default policy
+// GetPolicy returns the current default policy.
 func (sm *SyncManager) GetPolicy() SyncPolicy {
 	return sm.policy
 }
 
-// FormatReport formats a sync report for display
+// FormatReport formats a sync report for display.
 func (sm *SyncManager) FormatReport(report *SyncReport, verbose bool) string {
 	if report == nil {
 		return "No synchronization report available\n"
@@ -345,12 +348,12 @@ func (sm *SyncManager) FormatReport(report *SyncReport, verbose bool) string {
 	return result
 }
 
-// detectPlatform detects the current platform
+// detectPlatform detects the current platform.
 func detectPlatform() string {
 	return runtime.GOOS
 }
 
-// parsePairName parses a pair name like "nvm-npm" into ("nvm", "npm")
+// parsePairName parses a pair name like "nvm-npm" into ("nvm", "npm").
 func parsePairName(pair string) (string, string) {
 	parts := strings.Split(pair, "-")
 	if len(parts) >= 2 {

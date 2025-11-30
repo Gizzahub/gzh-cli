@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sync
 
 import (
@@ -9,31 +12,31 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// 동기화 전략 상수들
+// 동기화 전략 상수들.
 const (
 	syncStrategyVMPriority = "vm_priority"
 	syncStrategyPMPriority = "pm_priority"
 	syncActionCheckCompat  = "check_compatibility"
 )
 
-// NvmNpmSynchronizer handles synchronization between nvm (Node Version Manager) and npm
+// NvmNpmSynchronizer handles synchronization between nvm (Node Version Manager) and npm.
 type NvmNpmSynchronizer struct {
 	logger logger.CommonLogger
 }
 
-// NewNvmNpmSynchronizer creates a new nvm-npm synchronizer
+// NewNvmNpmSynchronizer creates a new nvm-npm synchronizer.
 func NewNvmNpmSynchronizer(logger logger.CommonLogger) *NvmNpmSynchronizer {
 	return &NvmNpmSynchronizer{
 		logger: logger,
 	}
 }
 
-// GetManagerPair returns the manager pair names
+// GetManagerPair returns the manager pair names.
 func (nns *NvmNpmSynchronizer) GetManagerPair() (string, string) {
 	return "nvm", "npm"
 }
 
-// CheckSync checks the synchronization status between nvm and npm
+// CheckSync checks the synchronization status between nvm and npm.
 func (nns *NvmNpmSynchronizer) CheckSync(ctx context.Context) (*VersionSyncStatus, error) {
 	nns.logger.Debug("Checking nvm-npm synchronization status")
 
@@ -67,7 +70,7 @@ func (nns *NvmNpmSynchronizer) CheckSync(ctx context.Context) (*VersionSyncStatu
 	expectedNpmVersion, err := nns.getExpectedNpmVersion(ctx, nodeVersion)
 	if err != nil {
 		nns.logger.Warn("Failed to get expected npm version for Node.js %s: %v", nodeVersion, err)
-		expectedNpmVersion = "unknown"
+		expectedNpmVersion = statusUnknown
 	}
 
 	// Compare versions
@@ -85,7 +88,7 @@ func (nns *NvmNpmSynchronizer) CheckSync(ctx context.Context) (*VersionSyncStatu
 	}, nil
 }
 
-// Synchronize performs synchronization between nvm and npm
+// Synchronize performs synchronization between nvm and npm.
 func (nns *NvmNpmSynchronizer) Synchronize(ctx context.Context, policy SyncPolicy) error {
 	nns.logger.Info("Starting nvm-npm synchronization")
 
@@ -104,19 +107,19 @@ func (nns *NvmNpmSynchronizer) Synchronize(ctx context.Context, policy SyncPolic
 		return nns.syncToNodeVersion(ctx, status.VMVersion, policy)
 	case syncStrategyPMPriority:
 		return nns.syncToNpmVersion(ctx, status.PMVersion, policy)
-	case "latest":
+	case syncActionLatest:
 		return nns.upgradeToLatest(ctx, policy)
 	default:
 		return fmt.Errorf("unknown synchronization strategy: %s", policy.Strategy)
 	}
 }
 
-// GetExpectedVersion returns the expected npm version for a given Node.js version
+// GetExpectedVersion returns the expected npm version for a given Node.js version.
 func (nns *NvmNpmSynchronizer) GetExpectedVersion(ctx context.Context, vmVersion string) (string, error) {
 	return nns.getExpectedNpmVersion(ctx, vmVersion)
 }
 
-// ValidateSync validates the synchronization status
+// ValidateSync validates the synchronization status.
 func (nns *NvmNpmSynchronizer) ValidateSync(ctx context.Context) error {
 	status, err := nns.CheckSync(ctx)
 	if err != nil {
@@ -131,7 +134,7 @@ func (nns *NvmNpmSynchronizer) ValidateSync(ctx context.Context) error {
 	return nil
 }
 
-// isNvmAvailable checks if nvm is available in the current environment
+// isNvmAvailable checks if nvm is available in the current environment.
 func (nns *NvmNpmSynchronizer) isNvmAvailable(ctx context.Context) bool {
 	// Check if nvm command is available (nvm is usually a shell function)
 	cmd := exec.CommandContext(ctx, "bash", "-c", "command -v nvm")
@@ -139,7 +142,7 @@ func (nns *NvmNpmSynchronizer) isNvmAvailable(ctx context.Context) bool {
 	return err == nil
 }
 
-// getCurrentNodeVersion gets the current Node.js version from nvm
+// getCurrentNodeVersion gets the current Node.js version from nvm.
 func (nns *NvmNpmSynchronizer) getCurrentNodeVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "bash", "-c", "nvm current")
 	output, err := cmd.Output()
@@ -154,7 +157,7 @@ func (nns *NvmNpmSynchronizer) getCurrentNodeVersion(ctx context.Context) (strin
 	return version, nil
 }
 
-// getCurrentNpmVersion gets the current npm version
+// getCurrentNpmVersion gets the current npm version.
 func (nns *NvmNpmSynchronizer) getCurrentNpmVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "npm", "--version")
 	output, err := cmd.Output()
@@ -166,7 +169,7 @@ func (nns *NvmNpmSynchronizer) getCurrentNpmVersion(ctx context.Context) (string
 	return version, nil
 }
 
-// getExpectedNpmVersion gets the expected npm version for a given Node.js version
+// getExpectedNpmVersion gets the expected npm version for a given Node.js version.
 func (nns *NvmNpmSynchronizer) getExpectedNpmVersion(ctx context.Context, nodeVersion string) (string, error) {
 	// This is a simplified implementation. In practice, you'd want to maintain
 	// a compatibility matrix or query from a reliable source
@@ -189,16 +192,16 @@ func (nns *NvmNpmSynchronizer) getExpectedNpmVersion(ctx context.Context, nodeVe
 	output, err := cmd.Output()
 	if err != nil {
 		nns.logger.Debug("Failed to get bundled npm version for Node.js %s: %v", nodeVersion, err)
-		return "unknown", nil
+		return statusUnknown, nil
 	}
 
 	version := strings.TrimSpace(string(output))
 	return version, nil
 }
 
-// compareVersions compares two version strings
+// compareVersions compares two version strings.
 func (nns *NvmNpmSynchronizer) compareVersions(current, expected string) bool {
-	if expected == "unknown" || current == "unknown" {
+	if expected == statusUnknown || current == statusUnknown {
 		return false
 	}
 
@@ -206,13 +209,13 @@ func (nns *NvmNpmSynchronizer) compareVersions(current, expected string) bool {
 	return current == expected
 }
 
-// determineSyncAction determines what sync action is needed
+// determineSyncAction determines what sync action is needed.
 func (nns *NvmNpmSynchronizer) determineSyncAction(_, expected string, inSync bool) string {
 	if inSync {
-		return "none"
+		return syncActionNone
 	}
 
-	if expected == "unknown" {
+	if expected == statusUnknown {
 		return syncActionCheckCompat
 	}
 
@@ -220,12 +223,12 @@ func (nns *NvmNpmSynchronizer) determineSyncAction(_, expected string, inSync bo
 	return fmt.Sprintf("update npm to %s", expected)
 }
 
-// syncToNodeVersion synchronizes npm to match the current Node.js version
+// syncToNodeVersion synchronizes npm to match the current Node.js version.
 func (nns *NvmNpmSynchronizer) syncToNodeVersion(ctx context.Context, nodeVersion string, _ SyncPolicy) error {
 	nns.logger.Info("Synchronizing npm to match Node.js version %s", nodeVersion)
 
 	expectedNpmVersion, err := nns.getExpectedNpmVersion(ctx, nodeVersion)
-	if err != nil || expectedNpmVersion == "unknown" {
+	if err != nil || expectedNpmVersion == statusUnknown {
 		return fmt.Errorf("cannot determine expected npm version for Node.js %s", nodeVersion)
 	}
 
@@ -239,7 +242,7 @@ func (nns *NvmNpmSynchronizer) syncToNodeVersion(ctx context.Context, nodeVersio
 	return nil
 }
 
-// syncToNpmVersion synchronizes Node.js to match the current npm version
+// syncToNpmVersion synchronizes Node.js to match the current npm version.
 func (nns *NvmNpmSynchronizer) syncToNpmVersion(ctx context.Context, npmVersion string, policy SyncPolicy) error {
 	nns.logger.Info("Synchronizing Node.js to match npm version %s", npmVersion)
 
@@ -254,7 +257,7 @@ func (nns *NvmNpmSynchronizer) syncToNpmVersion(ctx context.Context, npmVersion 
 	return nil
 }
 
-// upgradeToLatest upgrades both Node.js and npm to their latest versions
+// upgradeToLatest upgrades both Node.js and npm to their latest versions.
 func (nns *NvmNpmSynchronizer) upgradeToLatest(ctx context.Context, policy SyncPolicy) error {
 	nns.logger.Info("Upgrading both Node.js and npm to latest versions")
 

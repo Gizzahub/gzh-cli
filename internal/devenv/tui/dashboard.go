@@ -275,7 +275,7 @@ func (m *DashboardModel) updateServices(services []status.ServiceStatus) {
 		}
 
 		// Format credentials status
-		credStatus := "N/A"
+		var credStatus string
 		if service.Credentials.Valid {
 			credStatus = "✅ Valid"
 			// Check if credentials are expiring soon

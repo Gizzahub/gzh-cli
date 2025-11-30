@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package upgrade
 
 import (
@@ -13,19 +16,19 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// AsdfUpgrader implements PackageManagerUpgrader for asdf
+// AsdfUpgrader implements PackageManagerUpgrader for asdf.
 type AsdfUpgrader struct {
 	logger logger.CommonLogger
 }
 
-// NewAsdfUpgrader creates a new asdf upgrader
+// NewAsdfUpgrader creates a new asdf upgrader.
 func NewAsdfUpgrader(logger logger.CommonLogger) *AsdfUpgrader {
 	return &AsdfUpgrader{
 		logger: logger,
 	}
 }
 
-// CheckUpdate checks if asdf has updates available
+// CheckUpdate checks if asdf has updates available.
 func (a *AsdfUpgrader) CheckUpdate(ctx context.Context) (*UpgradeStatus, error) {
 	a.logger.Debug("Checking asdf update status")
 
@@ -52,7 +55,7 @@ func (a *AsdfUpgrader) CheckUpdate(ctx context.Context) (*UpgradeStatus, error) 
 	}, nil
 }
 
-// Upgrade performs the actual upgrade of asdf
+// Upgrade performs the actual upgrade of asdf.
 func (a *AsdfUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) error {
 	a.logger.Info("Starting asdf upgrade")
 
@@ -91,7 +94,7 @@ func (a *AsdfUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) erro
 	return nil
 }
 
-// Backup creates a backup of current asdf state
+// Backup creates a backup of current asdf state.
 func (a *AsdfUpgrader) Backup(ctx context.Context) (string, error) {
 	a.logger.Debug("Creating asdf backup")
 
@@ -119,7 +122,7 @@ func (a *AsdfUpgrader) Backup(ctx context.Context) (string, error) {
 	return backupPath, nil
 }
 
-// Rollback restores from a backup
+// Rollback restores from a backup.
 func (a *AsdfUpgrader) Rollback(ctx context.Context, backupPath string) error {
 	a.logger.Info("Rolling back asdf to previous state")
 
@@ -147,12 +150,12 @@ func (a *AsdfUpgrader) Rollback(ctx context.Context, backupPath string) error {
 	return nil
 }
 
-// GetUpdateMethod returns the update method used
+// GetUpdateMethod returns the update method used.
 func (a *AsdfUpgrader) GetUpdateMethod() string {
 	return "asdf update"
 }
 
-// ValidateUpgrade validates that the upgrade was successful
+// ValidateUpgrade validates that the upgrade was successful.
 func (a *AsdfUpgrader) ValidateUpgrade(ctx context.Context) error {
 	// Check if asdf command still works
 	cmd := exec.CommandContext(ctx, "asdf", "version")
@@ -169,7 +172,7 @@ func (a *AsdfUpgrader) ValidateUpgrade(ctx context.Context) error {
 	return nil
 }
 
-// getCurrentVersion gets the current asdf version
+// getCurrentVersion gets the current asdf version.
 func (a *AsdfUpgrader) getCurrentVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "asdf", "version")
 	output, err := cmd.Output()
@@ -188,7 +191,7 @@ func (a *AsdfUpgrader) getCurrentVersion(ctx context.Context) (string, error) {
 	return matches[1], nil
 }
 
-// checkGitUpdates checks if there are updates available in the git repository
+// checkGitUpdates checks if there are updates available in the git repository.
 func (a *AsdfUpgrader) checkGitUpdates(ctx context.Context) (bool, error) {
 	asdfDir := a.getAsdfDir()
 	if asdfDir == "" {
@@ -220,7 +223,7 @@ func (a *AsdfUpgrader) checkGitUpdates(ctx context.Context) (bool, error) {
 	return commitsBehind != "0", nil
 }
 
-// executeUpdate performs the actual update commands
+// executeUpdate performs the actual update commands.
 func (a *AsdfUpgrader) executeUpdate(ctx context.Context, options UpgradeOptions) error {
 	// Set timeout if specified
 	if options.Timeout > 0 {
@@ -239,7 +242,7 @@ func (a *AsdfUpgrader) executeUpdate(ctx context.Context, options UpgradeOptions
 	return nil
 }
 
-// getAsdfDir returns the asdf installation directory
+// getAsdfDir returns the asdf installation directory.
 func (a *AsdfUpgrader) getAsdfDir() string {
 	// Check common asdf installation locations
 	possiblePaths := []string{

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sync
 
 import (
@@ -7,7 +10,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// VersionSyncStatus represents the synchronization status between a version manager and package manager
+// VersionSyncStatus represents the synchronization status between a version manager and package manager.
 type VersionSyncStatus struct {
 	VersionManager    string   `json:"version_manager"`
 	PackageManager    string   `json:"package_manager"`
@@ -19,7 +22,7 @@ type VersionSyncStatus struct {
 	Issues            []string `json:"issues,omitempty"`
 }
 
-// SyncReport provides a comprehensive view of all version manager synchronization
+// SyncReport provides a comprehensive view of all version manager synchronization.
 type SyncReport struct {
 	Platform       string              `json:"platform"`
 	TotalPairs     int                 `json:"total_pairs"`
@@ -29,7 +32,7 @@ type SyncReport struct {
 	Timestamp      time.Time           `json:"timestamp"`
 }
 
-// SyncPolicy defines how synchronization should be performed
+// SyncPolicy defines how synchronization should be performed.
 type SyncPolicy struct {
 	Strategy      string `json:"strategy"` // "vm_priority", "pm_priority", "latest"
 	AutoFix       bool   `json:"auto_fix"`
@@ -37,7 +40,7 @@ type SyncPolicy struct {
 	PromptUser    bool   `json:"prompt_user"`
 }
 
-// VersionSynchronizer interface defines operations for version synchronization
+// VersionSynchronizer interface defines operations for version synchronization.
 type VersionSynchronizer interface {
 	CheckSync(ctx context.Context) (*VersionSyncStatus, error)
 	Synchronize(ctx context.Context, policy SyncPolicy) error
@@ -46,15 +49,14 @@ type VersionSynchronizer interface {
 	GetManagerPair() (string, string) // Returns (version_manager, package_manager)
 }
 
-// SyncManager coordinates synchronization across multiple manager pairs
+// SyncManager coordinates synchronization across multiple manager pairs.
 type SyncManager struct {
 	synchronizers map[string]VersionSynchronizer
 	policy        SyncPolicy
 	logger        logger.CommonLogger
 }
 
-// PolicyEngine manages synchronization policies
+// PolicyEngine manages synchronization policies.
 type PolicyEngine struct {
-	defaultPolicy  SyncPolicy
-	customPolicies map[string]SyncPolicy
+	// Reserved for future policy management implementation
 }

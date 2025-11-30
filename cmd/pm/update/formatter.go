@@ -20,14 +20,12 @@ type OutputFormatter struct {
 	width           int
 	enableUnicode   bool
 	startTime       time.Time
-	totalManagers   int
-	currentManager  int
 	packageChanges  []PackageChange
 	diskSpaceFreed  int64
 	totalDownloadMB float64
 }
 
-// PackageChange represents a package version change with download information
+// PackageChange represents a package version change with download information.
 type PackageChange struct {
 	Name       string  `json:"name"`
 	OldVersion string  `json:"oldVersion"`
@@ -37,7 +35,7 @@ type PackageChange struct {
 	Manager    string  `json:"manager"`
 }
 
-// NewOutputFormatter creates a new formatter with default settings
+// NewOutputFormatter creates a new formatter with default settings.
 func NewOutputFormatter() *OutputFormatter {
 	width := 80
 	if w := os.Getenv("COLUMNS"); w != "" {
@@ -56,7 +54,7 @@ func NewOutputFormatter() *OutputFormatter {
 	}
 }
 
-// shouldShowColors detects if colors should be shown based on terminal capabilities
+// shouldShowColors detects if colors should be shown based on terminal capabilities.
 func shouldShowColors() bool {
 	// Check for common environment variables that indicate color support
 	if os.Getenv("NO_COLOR") != "" {
@@ -70,7 +68,7 @@ func shouldShowColors() bool {
 	return term != "" && term != "dumb" && term != "unknown"
 }
 
-// shouldShowEmojis detects if emojis should be shown
+// shouldShowEmojis detects if emojis should be shown.
 func shouldShowEmojis() bool {
 	if os.Getenv("NO_EMOJI") != "" {
 		return false
@@ -78,7 +76,7 @@ func shouldShowEmojis() bool {
 	return true
 }
 
-// shouldEnableUnicode detects if Unicode box drawing should be used
+// shouldEnableUnicode detects if Unicode box drawing should be used.
 func shouldEnableUnicode() bool {
 	if os.Getenv("NO_UNICODE") != "" {
 		return false
@@ -92,7 +90,7 @@ func shouldEnableUnicode() bool {
 	return strings.Contains(strings.ToUpper(locale), "UTF")
 }
 
-// PrintSectionBanner prints an enhanced section banner with Unicode box drawing
+// PrintSectionBanner prints an enhanced section banner with Unicode box drawing.
 func (f *OutputFormatter) PrintSectionBanner(title string, emoji string, step, total int) {
 	var line string
 	if f.enableUnicode {
@@ -126,7 +124,7 @@ func (f *OutputFormatter) PrintSectionBanner(title string, emoji string, step, t
 	fmt.Print(output)
 }
 
-// PrintResourceCheck prints pre-flight resource availability check
+// PrintResourceCheck prints pre-flight resource availability check.
 func (f *OutputFormatter) PrintResourceCheck(availableDiskGB, requiredDiskGB float64, networkOK bool, repositoriesAccessible int) {
 	if f.showEmojis {
 		fmt.Println("🔍 Performing pre-flight checks...")
@@ -177,19 +175,20 @@ func (f *OutputFormatter) PrintResourceCheck(availableDiskGB, requiredDiskGB flo
 	fmt.Println()
 }
 
-// PrintManagerUpdate prints manager-specific update section with enhanced formatting
+// PrintManagerUpdate prints manager-specific update section with enhanced formatting.
 func (f *OutputFormatter) PrintManagerUpdate(manager string, step, total int, status string) {
 	emoji := f.getManagerEmoji(manager)
-	if status == "updating" {
+	switch status {
+	case "updating":
 		f.PrintSectionBanner(manager+" — Updating", emoji, step, total)
-	} else if status == "skip" {
+	case "skip":
 		f.PrintSectionBanner(manager+" — SKIP", "⚠️", step, total)
-	} else {
+	default:
 		f.PrintSectionBanner(manager, emoji, step, total)
 	}
 }
 
-// getManagerEmoji returns the appropriate emoji for each package manager
+// getManagerEmoji returns the appropriate emoji for each package manager.
 func (f *OutputFormatter) getManagerEmoji(manager string) string {
 	if !f.showEmojis {
 		return ""
@@ -212,7 +211,7 @@ func (f *OutputFormatter) getManagerEmoji(manager string) string {
 	return "📦"
 }
 
-// PrintPackageChange prints a detailed package version change
+// PrintPackageChange prints a detailed package version change.
 func (f *OutputFormatter) PrintPackageChange(change PackageChange) {
 	var prefix string
 	if f.showEmojis {
@@ -233,7 +232,7 @@ func (f *OutputFormatter) PrintPackageChange(change PackageChange) {
 	f.totalDownloadMB += change.DownloadMB
 }
 
-// PrintCommandResult prints the result of a command execution
+// PrintCommandResult prints the result of a command execution.
 func (f *OutputFormatter) PrintCommandResult(command string, success bool, details string) {
 	var statusEmoji, colorStart, colorEnd string
 
@@ -266,7 +265,7 @@ func (f *OutputFormatter) PrintCommandResult(command string, success bool, detai
 	fmt.Println()
 }
 
-// PrintUpdateSummary prints comprehensive summary of the update operation
+// PrintUpdateSummary prints comprehensive summary of the update operation.
 func (f *OutputFormatter) PrintUpdateSummary(managersProcessed, managersSuccessful, packageCount int, conflictsDetected int) {
 	duration := time.Since(f.startTime)
 
@@ -312,7 +311,7 @@ func (f *OutputFormatter) PrintUpdateSummary(managersProcessed, managersSuccessf
 	fmt.Printf("%s Update completed in %s\n", timeEmoji, formatDuration(duration))
 }
 
-// PrintRecommendedActions prints actionable recommendations
+// PrintRecommendedActions prints actionable recommendations.
 func (f *OutputFormatter) PrintRecommendedActions(actions []string) {
 	if len(actions) == 0 {
 		return
@@ -330,7 +329,7 @@ func (f *OutputFormatter) PrintRecommendedActions(actions []string) {
 	fmt.Println()
 }
 
-// PrintManualFixes prints required manual fixes with specific commands
+// PrintManualFixes prints required manual fixes with specific commands.
 func (f *OutputFormatter) PrintManualFixes(fixes []ManualFix) {
 	if len(fixes) == 0 {
 		return
@@ -348,18 +347,18 @@ func (f *OutputFormatter) PrintManualFixes(fixes []ManualFix) {
 	fmt.Println()
 }
 
-// ManualFix represents a required manual fix with command
+// ManualFix represents a required manual fix with command.
 type ManualFix struct {
 	Issue   string `json:"issue"`
 	Command string `json:"command"`
 }
 
-// SetDiskSpaceFreed sets the amount of disk space freed during cleanup
+// SetDiskSpaceFreed sets the amount of disk space freed during cleanup.
 func (f *OutputFormatter) SetDiskSpaceFreed(bytes int64) {
 	f.diskSpaceFreed = bytes
 }
 
-// formatDuration formats a duration in a human-readable way
+// formatDuration formats a duration in a human-readable way.
 func formatDuration(d time.Duration) string {
 	if d < time.Minute {
 		return fmt.Sprintf("%.0fs", d.Seconds())

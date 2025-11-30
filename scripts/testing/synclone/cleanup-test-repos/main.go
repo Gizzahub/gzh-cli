@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package main
 
 import (
@@ -103,7 +106,7 @@ func cleanupRepos(_ context.Context, baseDir string, force, dryRun bool) error {
 	// Confirmation prompt
 	if !force {
 		if !confirmDeletion(len(repos)) {
-			log.Println("Cleanup cancelled by user")
+			log.Println("Cleanup canceled by user")
 			return nil
 		}
 	}

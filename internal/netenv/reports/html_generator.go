@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package reports
 
 import (
@@ -8,22 +11,22 @@ import (
 	"strings"
 )
 
-// HTMLReportGenerator generates HTML network reports
+// HTMLReportGenerator generates HTML network reports.
 type HTMLReportGenerator struct {
 	outputDir string
 }
 
-// NewHTMLReportGenerator creates a new HTML report generator
+// NewHTMLReportGenerator creates a new HTML report generator.
 func NewHTMLReportGenerator(outputDir string) *HTMLReportGenerator {
 	return &HTMLReportGenerator{
 		outputDir: outputDir,
 	}
 }
 
-// GenerateReport generates an HTML report from comprehensive network data
+// GenerateReport generates an HTML report from comprehensive network data.
 func (hrg *HTMLReportGenerator) GenerateReport(report *ComprehensiveNetworkReport, filename string) error {
 	// Ensure output directory exists
-	if err := os.MkdirAll(hrg.outputDir, 0o755); err != nil {
+	if err := os.MkdirAll(hrg.outputDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
@@ -55,7 +58,7 @@ func (hrg *HTMLReportGenerator) GenerateReport(report *ComprehensiveNetworkRepor
 	return nil
 }
 
-// formatBytes formats bytes in human-readable format
+// formatBytes formats bytes in human-readable format.
 func (hrg *HTMLReportGenerator) formatBytes(bytes uint64) string {
 	const (
 		KB = 1024
@@ -75,7 +78,7 @@ func (hrg *HTMLReportGenerator) formatBytes(bytes uint64) string {
 	}
 }
 
-// formatDuration formats duration in human-readable format
+// formatDuration formats duration in human-readable format.
 func (hrg *HTMLReportGenerator) formatDuration(d interface{}) string {
 	switch dur := d.(type) {
 	case int64:
@@ -87,7 +90,7 @@ func (hrg *HTMLReportGenerator) formatDuration(d interface{}) string {
 	}
 }
 
-// truncateString truncates string to specified length
+// truncateString truncates string to specified length.
 func (hrg *HTMLReportGenerator) truncateString(s string, length int) string {
 	if len(s) <= length {
 		return s
@@ -95,7 +98,7 @@ func (hrg *HTMLReportGenerator) truncateString(s string, length int) string {
 	return s[:length] + "..."
 }
 
-// htmlReportTemplate is the HTML template for network reports
+// htmlReportTemplate is the HTML template for network reports.
 const htmlReportTemplate = `
 <!DOCTYPE html>
 <html lang="en">

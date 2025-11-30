@@ -57,7 +57,7 @@ func DemoEnhancedUpdate(ctx context.Context, strategy string, dryRun bool, compa
 	return nil
 }
 
-// GetEnhancedUpdateExample returns example usage of enhanced update
+// GetEnhancedUpdateExample returns example usage of enhanced update.
 func GetEnhancedUpdateExample() string {
 	return `
 Enhanced PM Update Usage Examples:
@@ -96,7 +96,7 @@ gz pm update --all
 }
 
 // IntegrateWithExistingCommand shows how to integrate enhanced functionality
-// with the existing command structure for gradual rollout
+// with the existing command structure for gradual rollout.
 func IntegrateWithExistingCommand(ctx context.Context, useEnhanced bool, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) error {
 	if useEnhanced {
 		// Use enhanced implementation

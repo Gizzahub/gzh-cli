@@ -4,21 +4,22 @@
 package devenv
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 )
 
-// SimpleSSHInstaller uses system SSH command for installation
+// SimpleSSHInstaller uses system SSH command for installation.
 type SimpleSSHInstaller struct{}
 
-// NewSimpleSSHInstaller creates a new simple SSH installer
+// NewSimpleSSHInstaller creates a new simple SSH installer.
 func NewSimpleSSHInstaller() *SimpleSSHInstaller {
 	return &SimpleSSHInstaller{}
 }
 
-// InstallPublicKeySimple installs a public key using system SSH
+// InstallPublicKeySimple installs a public key using system SSH.
 func (installer *SimpleSSHInstaller) InstallPublicKeySimple(host, user, publicKeyPath string) error {
 	// Read public key
 	keyContent, err := os.ReadFile(publicKeyPath)
@@ -50,7 +51,7 @@ func (installer *SimpleSSHInstaller) InstallPublicKeySimple(host, user, publicKe
 	}
 
 	cmdStr := strings.Join(commands, " && ")
-	cmd := exec.Command("ssh", "-o", "StrictHostKeyChecking=no", fmt.Sprintf("%s@%s", user, host), cmdStr)
+	cmd := exec.CommandContext(context.Background(), "ssh", "-o", "StrictHostKeyChecking=no", fmt.Sprintf("%s@%s", user, host), cmdStr)
 
 	// Connect stdin/stdout/stderr to allow password input
 	cmd.Stdin = os.Stdin

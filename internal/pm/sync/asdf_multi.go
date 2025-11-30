@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sync
 
 import (
@@ -26,12 +29,12 @@ func NewAsdfMultiSynchronizer(logger logger.CommonLogger) *AsdfMultiSynchronizer
 	}
 }
 
-// GetManagerPair returns the manager pair names
+// GetManagerPair returns the manager pair names.
 func (ams *AsdfMultiSynchronizer) GetManagerPair() (string, string) {
 	return "asdf", "multi"
 }
 
-// CheckSync checks the synchronization status for all asdf-managed tools
+// CheckSync checks the synchronization status for all asdf-managed tools.
 func (ams *AsdfMultiSynchronizer) CheckSync(ctx context.Context) (*VersionSyncStatus, error) {
 	ams.logger.Debug("Checking asdf multi-tool synchronization status")
 
@@ -139,12 +142,12 @@ func (ams *AsdfMultiSynchronizer) Synchronize(ctx context.Context, policy SyncPo
 	return nil
 }
 
-// GetExpectedVersion returns the expected version for asdf (not applicable for multi-tool)
+// GetExpectedVersion returns the expected version for asdf (not applicable for multi-tool).
 func (ams *AsdfMultiSynchronizer) GetExpectedVersion(ctx context.Context, vmVersion string) (string, error) {
 	return "multi-tool", nil
 }
 
-// ValidateSync validates the synchronization status for all asdf tools
+// ValidateSync validates the synchronization status for all asdf tools.
 func (ams *AsdfMultiSynchronizer) ValidateSync(ctx context.Context) error {
 	status, err := ams.CheckSync(ctx)
 	if err != nil {
@@ -158,14 +161,14 @@ func (ams *AsdfMultiSynchronizer) ValidateSync(ctx context.Context) error {
 	return nil
 }
 
-// isAsdfAvailable checks if asdf is available in the current environment
+// isAsdfAvailable checks if asdf is available in the current environment.
 func (ams *AsdfMultiSynchronizer) isAsdfAvailable(ctx context.Context) bool {
 	cmd := exec.CommandContext(ctx, "which", "asdf")
 	err := cmd.Run()
 	return err == nil
 }
 
-// getInstalledTools gets the list of tools managed by asdf
+// getInstalledTools gets the list of tools managed by asdf.
 func (ams *AsdfMultiSynchronizer) getInstalledTools(ctx context.Context) ([]string, error) {
 	cmd := exec.CommandContext(ctx, "asdf", "plugin", "list")
 	output, err := cmd.Output()
@@ -185,7 +188,7 @@ func (ams *AsdfMultiSynchronizer) getInstalledTools(ctx context.Context) ([]stri
 	return tools, nil
 }
 
-// isSupportedTool checks if the tool is supported for synchronization
+// isSupportedTool checks if the tool is supported for synchronization.
 func (ams *AsdfMultiSynchronizer) isSupportedTool(tool string) bool {
 	supportedTools := map[string]bool{
 		"nodejs": true,
@@ -198,7 +201,7 @@ func (ams *AsdfMultiSynchronizer) isSupportedTool(tool string) bool {
 	return supportedTools[tool]
 }
 
-// checkToolSync checks if a specific tool is synchronized
+// checkToolSync checks if a specific tool is synchronized.
 func (ams *AsdfMultiSynchronizer) checkToolSync(ctx context.Context, tool string) (bool, error) {
 	switch tool {
 	case "nodejs":
@@ -216,7 +219,7 @@ func (ams *AsdfMultiSynchronizer) checkToolSync(ctx context.Context, tool string
 	}
 }
 
-// synchronizeTool synchronizes a specific tool
+// synchronizeTool synchronizes a specific tool.
 func (ams *AsdfMultiSynchronizer) synchronizeTool(ctx context.Context, tool string, policy SyncPolicy) error {
 	switch tool {
 	case "nodejs":
@@ -234,7 +237,7 @@ func (ams *AsdfMultiSynchronizer) synchronizeTool(ctx context.Context, tool stri
 	}
 }
 
-// checkNodejsSync checks Node.js and npm synchronization
+// checkNodejsSync checks Node.js and npm synchronization.
 func (ams *AsdfMultiSynchronizer) checkNodejsSync(ctx context.Context) (bool, error) {
 	// Get current Node.js version from asdf
 	nodeVersion, err := ams.getCurrentToolVersion(ctx, "nodejs")
@@ -256,31 +259,31 @@ func (ams *AsdfMultiSynchronizer) checkNodejsSync(ctx context.Context) (bool, er
 	return true, nil // For now, assume compatible
 }
 
-// checkRubySync checks Ruby and gem synchronization
+// checkRubySync checks Ruby and gem synchronization.
 func (ams *AsdfMultiSynchronizer) checkRubySync(ctx context.Context) (bool, error) {
 	// Similar implementation for Ruby and gem
 	return true, nil
 }
 
-// checkPythonSync checks Python and pip synchronization
+// checkPythonSync checks Python and pip synchronization.
 func (ams *AsdfMultiSynchronizer) checkPythonSync(ctx context.Context) (bool, error) {
 	// Similar implementation for Python and pip
 	return true, nil
 }
 
-// checkGolangSync checks Go installation
+// checkGolangSync checks Go installation.
 func (ams *AsdfMultiSynchronizer) checkGolangSync(ctx context.Context) (bool, error) {
 	// Go doesn't have a separate package manager like npm/gem/pip
 	return true, nil
 }
 
-// checkJavaSync checks Java installation
+// checkJavaSync checks Java installation.
 func (ams *AsdfMultiSynchronizer) checkJavaSync(ctx context.Context) (bool, error) {
 	// Java doesn't have a unified package manager
 	return true, nil
 }
 
-// getCurrentToolVersion gets the current version of a tool managed by asdf
+// getCurrentToolVersion gets the current version of a tool managed by asdf.
 func (ams *AsdfMultiSynchronizer) getCurrentToolVersion(ctx context.Context, tool string) (string, error) {
 	cmd := exec.CommandContext(ctx, "asdf", "current", tool)
 	output, err := cmd.Output()
@@ -298,7 +301,7 @@ func (ams *AsdfMultiSynchronizer) getCurrentToolVersion(ctx context.Context, too
 	return parts[1], nil
 }
 
-// synchronizeNodejs synchronizes Node.js and npm
+// synchronizeNodejs synchronizes Node.js and npm.
 func (ams *AsdfMultiSynchronizer) synchronizeNodejs(ctx context.Context, policy SyncPolicy) error {
 	ams.logger.Info("Synchronizing Node.js and npm via asdf")
 
@@ -319,28 +322,28 @@ func (ams *AsdfMultiSynchronizer) synchronizeNodejs(ctx context.Context, policy 
 	return nil
 }
 
-// synchronizeRuby synchronizes Ruby and gem
+// synchronizeRuby synchronizes Ruby and gem.
 func (ams *AsdfMultiSynchronizer) synchronizeRuby(ctx context.Context, policy SyncPolicy) error {
 	ams.logger.Info("Synchronizing Ruby and gem via asdf")
 	// Implementation similar to synchronizeNodejs
 	return nil
 }
 
-// synchronizePython synchronizes Python and pip
+// synchronizePython synchronizes Python and pip.
 func (ams *AsdfMultiSynchronizer) synchronizePython(ctx context.Context, policy SyncPolicy) error {
 	ams.logger.Info("Synchronizing Python and pip via asdf")
 	// Implementation similar to synchronizeNodejs
 	return nil
 }
 
-// synchronizeGolang synchronizes Go
+// synchronizeGolang synchronizes Go.
 func (ams *AsdfMultiSynchronizer) synchronizeGolang(ctx context.Context, policy SyncPolicy) error {
 	ams.logger.Info("Synchronizing Go via asdf")
 	// Go doesn't need package manager synchronization
 	return nil
 }
 
-// synchronizeJava synchronizes Java
+// synchronizeJava synchronizes Java.
 func (ams *AsdfMultiSynchronizer) synchronizeJava(ctx context.Context, policy SyncPolicy) error {
 	ams.logger.Info("Synchronizing Java via asdf")
 	// Java doesn't need package manager synchronization

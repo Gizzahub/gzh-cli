@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -16,7 +19,7 @@ type BranchManager struct {
 	timeout time.Duration
 }
 
-// BranchScenario defines a branching scenario for testing
+// BranchScenario defines a branching scenario for testing.
 type BranchScenario struct {
 	Name        string
 	Branches    []BranchConfig
@@ -24,14 +27,14 @@ type BranchScenario struct {
 	Description string
 }
 
-// BranchConfig defines configuration for a single branch
+// BranchConfig defines configuration for a single branch.
 type BranchConfig struct {
 	Name         string
 	StartingFrom string // Branch to branch from (empty for main/master)
 	Commits      []CommitConfig
 }
 
-// CommitConfig defines a commit to be made on a branch
+// CommitConfig defines a commit to be made on a branch.
 type CommitConfig struct {
 	Message string
 	Files   map[string]string // filename -> content
@@ -39,7 +42,7 @@ type CommitConfig struct {
 	TagName string
 }
 
-// MergeConfig defines a merge operation
+// MergeConfig defines a merge operation.
 type MergeConfig struct {
 	FromBranch string
 	ToBranch   string
@@ -47,14 +50,14 @@ type MergeConfig struct {
 	Strategy   string // "merge", "rebase", "squash"
 }
 
-// NewBranchManager creates a new BranchManager instance
+// NewBranchManager creates a new BranchManager instance.
 func NewBranchManager() *BranchManager {
 	return &BranchManager{
 		timeout: 60 * time.Second,
 	}
 }
 
-// CreateBranchScenario creates a specific branching scenario
+// CreateBranchScenario creates a specific branching scenario.
 func (bm *BranchManager) CreateBranchScenario(ctx context.Context, repoPath string, scenario BranchScenario) error {
 	if repoPath == "" {
 		return fmt.Errorf("repository path is required")
@@ -85,7 +88,7 @@ func (bm *BranchManager) CreateBranchScenario(ctx context.Context, repoPath stri
 	return nil
 }
 
-// CreateGitFlowScenario creates a Git Flow branching model scenario
+// CreateGitFlowScenario creates a Git Flow branching model scenario.
 func (bm *BranchManager) CreateGitFlowScenario(ctx context.Context, repoPath string) error {
 	scenario := BranchScenario{
 		Name:        "Git Flow",
@@ -186,7 +189,7 @@ func (bm *BranchManager) CreateGitFlowScenario(ctx context.Context, repoPath str
 	return bm.CreateBranchScenario(ctx, repoPath, scenario)
 }
 
-// CreateDivergentBranchesScenario creates branches that have diverged significantly
+// CreateDivergentBranchesScenario creates branches that have diverged significantly.
 func (bm *BranchManager) CreateDivergentBranchesScenario(ctx context.Context, repoPath string) error {
 	scenario := BranchScenario{
 		Name:        "Divergent Branches",
@@ -265,7 +268,7 @@ func (bm *BranchManager) CreateDivergentBranchesScenario(ctx context.Context, re
 	return nil
 }
 
-// GetBranchInfo returns information about all branches in the repository
+// GetBranchInfo returns information about all branches in the repository.
 func (bm *BranchManager) GetBranchInfo(ctx context.Context, repoPath string) ([]string, error) {
 	cmd := exec.CommandContext(ctx, "git", "branch", "-a")
 	cmd.Dir = repoPath
@@ -289,12 +292,12 @@ func (bm *BranchManager) GetBranchInfo(ctx context.Context, repoPath string) ([]
 	return branches, nil
 }
 
-// SwitchToBranch switches to a specified branch
+// SwitchToBranch switches to a specified branch.
 func (bm *BranchManager) SwitchToBranch(ctx context.Context, repoPath, branchName string) error {
 	return bm.runGitCommand(ctx, repoPath, "checkout", branchName)
 }
 
-// createBranchWithCommits creates a branch and adds the specified commits
+// createBranchWithCommits creates a branch and adds the specified commits.
 func (bm *BranchManager) createBranchWithCommits(ctx context.Context, repoPath string, branchConfig BranchConfig) error {
 	// Determine starting branch
 	startBranch := "main"
@@ -325,7 +328,7 @@ func (bm *BranchManager) createBranchWithCommits(ctx context.Context, repoPath s
 	return nil
 }
 
-// createCommit creates a single commit with the specified files and message
+// createCommit creates a single commit with the specified files and message.
 func (bm *BranchManager) createCommit(ctx context.Context, repoPath string, commit CommitConfig) error {
 	// Create files
 	for filename, content := range commit.Files {
@@ -362,7 +365,7 @@ func (bm *BranchManager) createCommit(ctx context.Context, repoPath string, comm
 	return nil
 }
 
-// performMerge performs a merge operation
+// performMerge performs a merge operation.
 func (bm *BranchManager) performMerge(ctx context.Context, repoPath string, mergeConfig MergeConfig) error {
 	// Switch to target branch
 	if err := bm.runGitCommand(ctx, repoPath, "checkout", mergeConfig.ToBranch); err != nil {
@@ -372,7 +375,7 @@ func (bm *BranchManager) performMerge(ctx context.Context, repoPath string, merg
 	// Perform merge based on strategy
 	var args []string
 	switch mergeConfig.Strategy {
-	case "rebase":
+	case "rebase": //nolint:goconst // test utility string
 		args = []string{"rebase", mergeConfig.FromBranch}
 	case "squash":
 		args = []string{"merge", "--squash", mergeConfig.FromBranch}
@@ -394,7 +397,7 @@ func (bm *BranchManager) performMerge(ctx context.Context, repoPath string, merg
 	return nil
 }
 
-// isGitRepo checks if a directory is a Git repository
+// isGitRepo checks if a directory is a Git repository.
 func (bm *BranchManager) isGitRepo(repoPath string) bool {
 	gitDir := filepath.Join(repoPath, ".git")
 	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
@@ -403,7 +406,7 @@ func (bm *BranchManager) isGitRepo(repoPath string) bool {
 	return true
 }
 
-// initializeRepo initializes a Git repository
+// initializeRepo initializes a Git repository.
 func (bm *BranchManager) initializeRepo(ctx context.Context, repoPath string) error {
 	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
@@ -439,7 +442,7 @@ func (bm *BranchManager) initializeRepo(ctx context.Context, repoPath string) er
 	return nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (bm *BranchManager) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, bm.timeout)
 	defer cancel()

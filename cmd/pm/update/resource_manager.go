@@ -26,7 +26,7 @@ type ResourceManager struct {
 	formatter              *OutputFormatter
 }
 
-// ResourceCheckResult contains the results of resource availability checks
+// ResourceCheckResult contains the results of resource availability checks.
 type ResourceCheckResult struct {
 	DiskSpaceOK       bool     `json:"diskSpaceOK"`
 	AvailableDiskGB   float64  `json:"availableDiskGB"`
@@ -40,21 +40,21 @@ type ResourceCheckResult struct {
 	Errors            []string `json:"errors"`
 }
 
-// Repository represents a package repository for network connectivity testing
+// Repository represents a package repository for network connectivity testing.
 type Repository struct {
 	Name    string `json:"name"`
 	URL     string `json:"url"`
 	Manager string `json:"manager"`
 }
 
-// NewResourceManager creates a new resource manager
+// NewResourceManager creates a new resource manager.
 func NewResourceManager(formatter *OutputFormatter) *ResourceManager {
 	return &ResourceManager{
 		formatter: formatter,
 	}
 }
 
-// CheckResources performs comprehensive resource availability checks
+// CheckResources performs comprehensive resource availability checks.
 func (rm *ResourceManager) CheckResources(ctx context.Context, managers []string, estimatedDownload float64) (*ResourceCheckResult, error) {
 	result := &ResourceCheckResult{
 		TotalRepositories: 4, // Default assumption
@@ -93,7 +93,7 @@ func (rm *ResourceManager) CheckResources(ctx context.Context, managers []string
 	return result, nil
 }
 
-// checkDiskSpace checks available disk space and estimates requirements
+// checkDiskSpace checks available disk space and estimates requirements.
 func (rm *ResourceManager) checkDiskSpace(result *ResourceCheckResult, estimatedDownload float64) error {
 	// Get current working directory or home directory for disk space check
 	checkPath := "."
@@ -124,7 +124,7 @@ func (rm *ResourceManager) checkDiskSpace(result *ResourceCheckResult, estimated
 	return nil
 }
 
-// checkNetworkConnectivity tests connectivity to package repositories
+// checkNetworkConnectivity tests connectivity to package repositories.
 func (rm *ResourceManager) checkNetworkConnectivity(ctx context.Context, result *ResourceCheckResult, managers []string) error {
 	repositories := rm.getRepositoriesForManagers(managers)
 	result.TotalRepositories = len(repositories)
@@ -154,7 +154,7 @@ func (rm *ResourceManager) checkNetworkConnectivity(ctx context.Context, result 
 	return nil
 }
 
-// getRepositoriesForManagers returns test repositories for given managers
+// getRepositoriesForManagers returns test repositories for given managers.
 func (rm *ResourceManager) getRepositoriesForManagers(managers []string) []Repository {
 	allRepos := []Repository{
 		{Name: "GitHub", URL: "https://api.github.com", Manager: "general"},
@@ -185,9 +185,9 @@ func (rm *ResourceManager) getRepositoriesForManagers(managers []string) []Repos
 	return selectedRepos
 }
 
-// testRepository tests connectivity to a single repository
+// testRepository tests connectivity to a single repository.
 func (rm *ResourceManager) testRepository(ctx context.Context, client *http.Client, repo Repository) bool {
-	req, err := http.NewRequestWithContext(ctx, "HEAD", repo.URL, nil)
+	req, err := http.NewRequestWithContext(ctx, "HEAD", repo.URL, http.NoBody)
 	if err != nil {
 		return false
 	}
@@ -195,15 +195,15 @@ func (rm *ResourceManager) testRepository(ctx context.Context, client *http.Clie
 	resp, err := client.Do(req)
 	if err != nil {
 		// Try DNS resolution as fallback
-		return rm.testDNSResolution(repo.URL)
+		return rm.testDNSResolution(ctx, repo.URL)
 	}
 	defer resp.Body.Close()
 
 	return resp.StatusCode < 400
 }
 
-// testDNSResolution tests if we can resolve DNS for the repository
-func (rm *ResourceManager) testDNSResolution(url string) bool {
+// testDNSResolution tests if we can resolve DNS for the repository.
+func (rm *ResourceManager) testDNSResolution(ctx context.Context, url string) bool {
 	// Extract hostname from URL
 	if len(url) < 8 { // Minimum for "https://"
 		return false
@@ -221,11 +221,12 @@ func (rm *ResourceManager) testDNSResolution(url string) bool {
 		hostname = hostname[:slashIndex]
 	}
 
-	_, err := net.LookupHost(hostname)
+	resolver := &net.Resolver{}
+	_, err := resolver.LookupHost(ctx, hostname)
 	return err == nil
 }
 
-// checkMemoryAvailability checks system memory availability
+// checkMemoryAvailability checks system memory availability.
 func (rm *ResourceManager) checkMemoryAvailability(result *ResourceCheckResult) error {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
@@ -249,7 +250,7 @@ func (rm *ResourceManager) checkMemoryAvailability(result *ResourceCheckResult) 
 	return nil
 }
 
-// generateRecommendations generates actionable recommendations based on resource checks
+// generateRecommendations generates actionable recommendations based on resource checks.
 func (rm *ResourceManager) generateRecommendations(result *ResourceCheckResult) {
 	// Disk space recommendations
 	if !result.DiskSpaceOK {
@@ -282,7 +283,7 @@ func (rm *ResourceManager) generateRecommendations(result *ResourceCheckResult) 
 	}
 }
 
-// EstimateDownloadSize estimates total download size for given managers and packages
+// EstimateDownloadSize estimates total download size for given managers and packages.
 func (rm *ResourceManager) EstimateDownloadSize(managers []string, packageCounts map[string]int) float64 {
 	// Package size estimates in MB per package by manager
 	averageSizes := map[string]float64{
@@ -311,7 +312,7 @@ func (rm *ResourceManager) EstimateDownloadSize(managers []string, packageCounts
 	return totalMB
 }
 
-// getEstimatedPackageCount returns estimated package count for a manager
+// getEstimatedPackageCount returns estimated package count for a manager.
 func (rm *ResourceManager) getEstimatedPackageCount(manager string) int {
 	// Conservative estimates for typical package counts
 	estimates := map[string]int{
@@ -331,7 +332,7 @@ func (rm *ResourceManager) getEstimatedPackageCount(manager string) int {
 	return 3 // Default estimate
 }
 
-// CheckPrerequisites ensures all prerequisites are met before starting updates
+// CheckPrerequisites ensures all prerequisites are met before starting updates.
 func (rm *ResourceManager) CheckPrerequisites(ctx context.Context, managers []string) error {
 	// Estimate download size
 	packageCounts := make(map[string]int)
@@ -356,7 +357,7 @@ func (rm *ResourceManager) CheckPrerequisites(ctx context.Context, managers []st
 	return nil
 }
 
-// GetResourceSummary returns a summary of current resource status
+// GetResourceSummary returns a summary of current resource status.
 func (rm *ResourceManager) GetResourceSummary() map[string]interface{} {
 	return map[string]interface{}{
 		"diskSpaceGB":         rm.AvailableDiskGB,
@@ -367,7 +368,7 @@ func (rm *ResourceManager) GetResourceSummary() map[string]interface{} {
 	}
 }
 
-// MonitorResourceUsage monitors resource usage during update process
+// MonitorResourceUsage monitors resource usage during update process.
 func (rm *ResourceManager) MonitorResourceUsage(ctx context.Context, interval time.Duration) <-chan map[string]interface{} {
 	updates := make(chan map[string]interface{}, 10)
 

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sync
 
 import (
@@ -9,24 +12,24 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// RbenvGemSynchronizer handles synchronization between rbenv and gem
+// RbenvGemSynchronizer handles synchronization between rbenv and gem.
 type RbenvGemSynchronizer struct {
 	logger logger.CommonLogger
 }
 
-// NewRbenvGemSynchronizer creates a new rbenv-gem synchronizer
+// NewRbenvGemSynchronizer creates a new rbenv-gem synchronizer.
 func NewRbenvGemSynchronizer(logger logger.CommonLogger) *RbenvGemSynchronizer {
 	return &RbenvGemSynchronizer{
 		logger: logger,
 	}
 }
 
-// GetManagerPair returns the manager pair names
+// GetManagerPair returns the manager pair names.
 func (rgs *RbenvGemSynchronizer) GetManagerPair() (string, string) {
 	return "rbenv", "gem"
 }
 
-// CheckSync checks the synchronization status between rbenv and gem
+// CheckSync checks the synchronization status between rbenv and gem.
 func (rgs *RbenvGemSynchronizer) CheckSync(ctx context.Context) (*VersionSyncStatus, error) {
 	rgs.logger.Debug("Checking rbenv-gem synchronization status")
 
@@ -36,8 +39,8 @@ func (rgs *RbenvGemSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
 			VersionManager:    "rbenv",
 			PackageManager:    "gem",
 			VMVersion:         "not_installed",
-			PMVersion:         "unknown",
-			ExpectedPMVersion: "unknown",
+			PMVersion:         statusUnknown,
+			ExpectedPMVersion: statusUnknown,
 			InSync:            false,
 			SyncAction:        "install_rbenv",
 			Issues:            []string{"rbenv is not installed or not in PATH"},
@@ -60,7 +63,7 @@ func (rgs *RbenvGemSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
 	expectedGemVersion, err := rgs.getExpectedGemVersion(ctx, rubyVersion)
 	if err != nil {
 		rgs.logger.Warn("Failed to get expected gem version for Ruby %s: %v", rubyVersion, err)
-		expectedGemVersion = "unknown"
+		expectedGemVersion = statusUnknown
 	}
 
 	// Compare versions
@@ -78,7 +81,7 @@ func (rgs *RbenvGemSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
 	}, nil
 }
 
-// Synchronize performs synchronization between rbenv and gem
+// Synchronize performs synchronization between rbenv and gem.
 func (rgs *RbenvGemSynchronizer) Synchronize(ctx context.Context, policy SyncPolicy) error {
 	rgs.logger.Info("Starting rbenv-gem synchronization")
 
@@ -104,12 +107,12 @@ func (rgs *RbenvGemSynchronizer) Synchronize(ctx context.Context, policy SyncPol
 	}
 }
 
-// GetExpectedVersion returns the expected gem version for a given Ruby version
+// GetExpectedVersion returns the expected gem version for a given Ruby version.
 func (rgs *RbenvGemSynchronizer) GetExpectedVersion(ctx context.Context, vmVersion string) (string, error) {
 	return rgs.getExpectedGemVersion(ctx, vmVersion)
 }
 
-// ValidateSync validates the synchronization status
+// ValidateSync validates the synchronization status.
 func (rgs *RbenvGemSynchronizer) ValidateSync(ctx context.Context) error {
 	status, err := rgs.CheckSync(ctx)
 	if err != nil {
@@ -124,14 +127,14 @@ func (rgs *RbenvGemSynchronizer) ValidateSync(ctx context.Context) error {
 	return nil
 }
 
-// isRbenvAvailable checks if rbenv is available in the current environment
+// isRbenvAvailable checks if rbenv is available in the current environment.
 func (rgs *RbenvGemSynchronizer) isRbenvAvailable(ctx context.Context) bool {
 	cmd := exec.CommandContext(ctx, "which", "rbenv")
 	err := cmd.Run()
 	return err == nil
 }
 
-// getCurrentRubyVersion gets the current Ruby version from rbenv
+// getCurrentRubyVersion gets the current Ruby version from rbenv.
 func (rgs *RbenvGemSynchronizer) getCurrentRubyVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "rbenv", "version")
 	output, err := cmd.Output()
@@ -149,7 +152,7 @@ func (rgs *RbenvGemSynchronizer) getCurrentRubyVersion(ctx context.Context) (str
 	return parts[0], nil
 }
 
-// getCurrentGemVersion gets the current gem version
+// getCurrentGemVersion gets the current gem version.
 func (rgs *RbenvGemSynchronizer) getCurrentGemVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "gem", "--version")
 	output, err := cmd.Output()
@@ -161,7 +164,7 @@ func (rgs *RbenvGemSynchronizer) getCurrentGemVersion(ctx context.Context) (stri
 	return version, nil
 }
 
-// getExpectedGemVersion gets the expected gem version for a given Ruby version
+// getExpectedGemVersion gets the expected gem version for a given Ruby version.
 func (rgs *RbenvGemSynchronizer) getExpectedGemVersion(ctx context.Context, rubyVersion string) (string, error) {
 	// Ruby version to bundled gem version mapping
 	rubyGemMap := map[string]string{
@@ -182,16 +185,16 @@ func (rgs *RbenvGemSynchronizer) getExpectedGemVersion(ctx context.Context, ruby
 	output, err := cmd.Output()
 	if err != nil {
 		rgs.logger.Debug("Failed to get bundled gem version for Ruby %s: %v", rubyVersion, err)
-		return "unknown", nil
+		return statusUnknown, nil
 	}
 
 	version := strings.TrimSpace(string(output))
 	return version, nil
 }
 
-// compareVersions compares two version strings
+// compareVersions compares two version strings.
 func (rgs *RbenvGemSynchronizer) compareVersions(current, expected string) bool {
-	if expected == "unknown" || current == "unknown" {
+	if expected == statusUnknown || current == statusUnknown {
 		return false
 	}
 
@@ -199,25 +202,25 @@ func (rgs *RbenvGemSynchronizer) compareVersions(current, expected string) bool 
 	return current == expected
 }
 
-// determineSyncAction determines what sync action is needed
+// determineSyncAction determines what sync action is needed.
 func (rgs *RbenvGemSynchronizer) determineSyncAction(current, expected string, inSync bool) string {
 	if inSync {
 		return "none"
 	}
 
-	if expected == "unknown" {
+	if expected == statusUnknown {
 		return "check_compatibility"
 	}
 
 	return fmt.Sprintf("update gem to %s", expected)
 }
 
-// syncToRubyVersion synchronizes gem to match the current Ruby version
+// syncToRubyVersion synchronizes gem to match the current Ruby version.
 func (rgs *RbenvGemSynchronizer) syncToRubyVersion(ctx context.Context, rubyVersion string, policy SyncPolicy) error {
 	rgs.logger.Info("Synchronizing gem to match Ruby version %s", rubyVersion)
 
 	expectedGemVersion, err := rgs.getExpectedGemVersion(ctx, rubyVersion)
-	if err != nil || expectedGemVersion == "unknown" {
+	if err != nil || expectedGemVersion == statusUnknown {
 		return fmt.Errorf("cannot determine expected gem version for Ruby %s", rubyVersion)
 	}
 
@@ -231,7 +234,7 @@ func (rgs *RbenvGemSynchronizer) syncToRubyVersion(ctx context.Context, rubyVers
 	return nil
 }
 
-// syncToGemVersion synchronizes Ruby to match the current gem version
+// syncToGemVersion synchronizes Ruby to match the current gem version.
 func (rgs *RbenvGemSynchronizer) syncToGemVersion(ctx context.Context, gemVersion string, policy SyncPolicy) error {
 	rgs.logger.Info("Synchronizing Ruby to match gem version %s", gemVersion)
 
@@ -246,7 +249,7 @@ func (rgs *RbenvGemSynchronizer) syncToGemVersion(ctx context.Context, gemVersio
 	return nil
 }
 
-// upgradeToLatest upgrades both Ruby and gem to their latest versions
+// upgradeToLatest upgrades both Ruby and gem to their latest versions.
 func (rgs *RbenvGemSynchronizer) upgradeToLatest(ctx context.Context, policy SyncPolicy) error {
 	rgs.logger.Info("Upgrading both Ruby and gem to latest versions")
 

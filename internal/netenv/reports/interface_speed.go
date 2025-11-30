@@ -1,7 +1,11 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package reports
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,20 +16,20 @@ import (
 	"sync"
 )
 
-// OS 플랫폼 상수들
+// OS 플랫폼 상수들.
 const (
 	osLinux   = "linux"
 	osWindows = "windows"
 	osDarwin  = "darwin"
 )
 
-// InterfaceSpeedDetector detects and caches network interface maximum speeds
+// InterfaceSpeedDetector detects and caches network interface maximum speeds.
 type InterfaceSpeedDetector struct {
 	cache map[string]uint64 // Interface name -> speed in bits per second
 	mutex sync.RWMutex
 }
 
-// InterfaceInfo contains comprehensive information about a network interface
+// InterfaceInfo contains comprehensive information about a network interface.
 type InterfaceInfo struct {
 	Name        string `json:"name"`
 	MaxSpeed    uint64 `json:"max_speed_bps"`
@@ -36,14 +40,14 @@ type InterfaceInfo struct {
 	Driver      string `json:"driver,omitempty"`
 }
 
-// NewInterfaceSpeedDetector creates a new interface speed detector
+// NewInterfaceSpeedDetector creates a new interface speed detector.
 func NewInterfaceSpeedDetector() *InterfaceSpeedDetector {
 	return &InterfaceSpeedDetector{
 		cache: make(map[string]uint64),
 	}
 }
 
-// GetInterfaceMaxSpeed returns the maximum speed of an interface in bits per second
+// GetInterfaceMaxSpeed returns the maximum speed of an interface in bits per second.
 func (isd *InterfaceSpeedDetector) GetInterfaceMaxSpeed(interfaceName string) (uint64, error) {
 	isd.mutex.RLock()
 	if speed, exists := isd.cache[interfaceName]; exists {
@@ -65,7 +69,7 @@ func (isd *InterfaceSpeedDetector) GetInterfaceMaxSpeed(interfaceName string) (u
 	return speed, nil
 }
 
-// detectInterfaceSpeed detects interface speed using platform-specific methods
+// detectInterfaceSpeed detects interface speed using platform-specific methods.
 func (isd *InterfaceSpeedDetector) detectInterfaceSpeed(interfaceName string) (uint64, error) {
 	switch runtime.GOOS {
 	case osLinux:
@@ -79,7 +83,7 @@ func (isd *InterfaceSpeedDetector) detectInterfaceSpeed(interfaceName string) (u
 	}
 }
 
-// detectSpeedLinux detects interface speed on Linux systems
+// detectSpeedLinux detects interface speed on Linux systems.
 func (isd *InterfaceSpeedDetector) detectSpeedLinux(interfaceName string) (uint64, error) {
 	// Method 1: Read from /sys/class/net/{interface}/speed
 	speedFile := fmt.Sprintf("/sys/class/net/%s/speed", interfaceName)
@@ -100,10 +104,10 @@ func (isd *InterfaceSpeedDetector) detectSpeedLinux(interfaceName string) (uint6
 	return isd.estimateSpeedByType(interfaceName), nil
 }
 
-// detectSpeedDarwin detects interface speed on macOS systems
+// detectSpeedDarwin detects interface speed on macOS systems.
 func (isd *InterfaceSpeedDetector) detectSpeedDarwin(interfaceName string) (uint64, error) {
 	// Use ifconfig to get interface information
-	cmd := exec.Command("ifconfig", interfaceName)
+	cmd := exec.CommandContext(context.Background(), "ifconfig", interfaceName)
 	output, err := cmd.Output()
 	if err != nil {
 		// If ifconfig fails, fall back to speed estimation
@@ -118,10 +122,10 @@ func (isd *InterfaceSpeedDetector) detectSpeedDarwin(interfaceName string) (uint
 	return isd.estimateSpeedByType(interfaceName), nil
 }
 
-// detectSpeedWindows detects interface speed on Windows systems
+// detectSpeedWindows detects interface speed on Windows systems.
 func (isd *InterfaceSpeedDetector) detectSpeedWindows(interfaceName string) (uint64, error) {
 	// Use WMI query or netsh command
-	cmd := exec.Command("netsh", "interface", "show", "interface", interfaceName)
+	cmd := exec.CommandContext(context.Background(), "netsh", "interface", "show", "interface", interfaceName)
 	output, err := cmd.Output()
 	if err != nil {
 		// If netsh fails, fall back to speed estimation
@@ -136,9 +140,9 @@ func (isd *InterfaceSpeedDetector) detectSpeedWindows(interfaceName string) (uin
 	return isd.estimateSpeedByType(interfaceName), nil
 }
 
-// getSpeedFromEthtool uses ethtool command to get interface speed
+// getSpeedFromEthtool uses ethtool command to get interface speed.
 func (isd *InterfaceSpeedDetector) getSpeedFromEthtool(interfaceName string) (uint64, error) {
-	cmd := exec.Command("ethtool", interfaceName)
+	cmd := exec.CommandContext(context.Background(), "ethtool", interfaceName)
 	output, err := cmd.Output()
 	if err != nil {
 		return 0, err
@@ -147,7 +151,7 @@ func (isd *InterfaceSpeedDetector) getSpeedFromEthtool(interfaceName string) (ui
 	return isd.parseEthtoolOutput(string(output))
 }
 
-// parseEthtoolOutput parses ethtool output to extract speed information
+// parseEthtoolOutput parses ethtool output to extract speed information.
 func (isd *InterfaceSpeedDetector) parseEthtoolOutput(output string) (uint64, error) {
 	// Look for "Speed: XXXXX Mb/s" pattern
 	re := regexp.MustCompile(`Speed:\s+(\d+)Mb/s`)
@@ -161,7 +165,7 @@ func (isd *InterfaceSpeedDetector) parseEthtoolOutput(output string) (uint64, er
 	return 0, fmt.Errorf("could not parse ethtool output")
 }
 
-// parseIfconfigSpeed parses ifconfig output for macOS
+// parseIfconfigSpeed parses ifconfig output for macOS.
 func (isd *InterfaceSpeedDetector) parseIfconfigSpeed(output string) uint64 {
 	// Look for speed indicators in ifconfig output
 	lines := strings.Split(output, "\n")
@@ -183,7 +187,7 @@ func (isd *InterfaceSpeedDetector) parseIfconfigSpeed(output string) uint64 {
 	return 0
 }
 
-// parseNetshSpeed parses netsh output for Windows
+// parseNetshSpeed parses netsh output for Windows.
 func (isd *InterfaceSpeedDetector) parseNetshSpeed(output string) uint64 {
 	// Parse Windows netsh output for speed information
 	// This is a simplified implementation
@@ -205,7 +209,7 @@ func (isd *InterfaceSpeedDetector) parseNetshSpeed(output string) uint64 {
 	return 0
 }
 
-// estimateSpeedByType estimates speed based on interface name patterns
+// estimateSpeedByType estimates speed based on interface name patterns.
 func (isd *InterfaceSpeedDetector) estimateSpeedByType(interfaceName string) uint64 {
 	name := strings.ToLower(interfaceName)
 
@@ -235,7 +239,7 @@ func (isd *InterfaceSpeedDetector) estimateSpeedByType(interfaceName string) uin
 	return 1000000000 // 1 Gbps default
 }
 
-// CalculateUtilization calculates interface utilization percentage
+// CalculateUtilization calculates interface utilization percentage.
 func (isd *InterfaceSpeedDetector) CalculateUtilization(interfaceName string, rxRate, txRate uint64) (float64, error) {
 	maxSpeed, err := isd.GetInterfaceMaxSpeed(interfaceName)
 	if err != nil {
@@ -257,7 +261,7 @@ func (isd *InterfaceSpeedDetector) CalculateUtilization(interfaceName string, rx
 	return utilization, nil
 }
 
-// GetInterfaceInfo returns comprehensive information about an interface
+// GetInterfaceInfo returns comprehensive information about an interface.
 func (isd *InterfaceSpeedDetector) GetInterfaceInfo(interfaceName string) (*InterfaceInfo, error) {
 	maxSpeed, err := isd.GetInterfaceMaxSpeed(interfaceName)
 	if err != nil {
@@ -280,7 +284,7 @@ func (isd *InterfaceSpeedDetector) GetInterfaceInfo(interfaceName string) (*Inte
 	return info, nil
 }
 
-// formatSpeed formats speed in human-readable format
+// formatSpeed formats speed in human-readable format.
 func (isd *InterfaceSpeedDetector) formatSpeed(speedBps uint64) string {
 	const (
 		Kbps = 1000
@@ -300,7 +304,7 @@ func (isd *InterfaceSpeedDetector) formatSpeed(speedBps uint64) string {
 	}
 }
 
-// getInterfaceType determines interface type based on name
+// getInterfaceType determines interface type based on name.
 func (isd *InterfaceSpeedDetector) getInterfaceType(interfaceName string) string {
 	name := strings.ToLower(interfaceName)
 
@@ -322,7 +326,7 @@ func (isd *InterfaceSpeedDetector) getInterfaceType(interfaceName string) string
 	return "unknown"
 }
 
-// enrichLinuxInterfaceInfo adds Linux-specific interface information
+// enrichLinuxInterfaceInfo adds Linux-specific interface information.
 func (isd *InterfaceSpeedDetector) enrichLinuxInterfaceInfo(info *InterfaceInfo) {
 	basePath := fmt.Sprintf("/sys/class/net/%s", info.Name)
 
@@ -339,7 +343,7 @@ func (isd *InterfaceSpeedDetector) enrichLinuxInterfaceInfo(info *InterfaceInfo)
 	}
 }
 
-// ClearCache clears the speed cache
+// ClearCache clears the speed cache.
 func (isd *InterfaceSpeedDetector) ClearCache() {
 	isd.mutex.Lock()
 	defer isd.mutex.Unlock()

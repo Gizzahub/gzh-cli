@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package sync
 
 import (
@@ -9,24 +12,24 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
-// PyenvPipSynchronizer handles synchronization between pyenv and pip
+// PyenvPipSynchronizer handles synchronization between pyenv and pip.
 type PyenvPipSynchronizer struct {
 	logger logger.CommonLogger
 }
 
-// NewPyenvPipSynchronizer creates a new pyenv-pip synchronizer
+// NewPyenvPipSynchronizer creates a new pyenv-pip synchronizer.
 func NewPyenvPipSynchronizer(logger logger.CommonLogger) *PyenvPipSynchronizer {
 	return &PyenvPipSynchronizer{
 		logger: logger,
 	}
 }
 
-// GetManagerPair returns the manager pair names
+// GetManagerPair returns the manager pair names.
 func (pps *PyenvPipSynchronizer) GetManagerPair() (string, string) {
 	return "pyenv", "pip"
 }
 
-// CheckSync checks the synchronization status between pyenv and pip
+// CheckSync checks the synchronization status between pyenv and pip.
 func (pps *PyenvPipSynchronizer) CheckSync(ctx context.Context) (*VersionSyncStatus, error) {
 	pps.logger.Debug("Checking pyenv-pip synchronization status")
 
@@ -36,8 +39,8 @@ func (pps *PyenvPipSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
 			VersionManager:    "pyenv",
 			PackageManager:    "pip",
 			VMVersion:         "not_installed",
-			PMVersion:         "unknown",
-			ExpectedPMVersion: "unknown",
+			PMVersion:         statusUnknown,
+			ExpectedPMVersion: statusUnknown,
 			InSync:            false,
 			SyncAction:        "install_pyenv",
 			Issues:            []string{"pyenv is not installed or not in PATH"},
@@ -60,7 +63,7 @@ func (pps *PyenvPipSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
 	expectedPipVersion, err := pps.getExpectedPipVersion(ctx, pythonVersion)
 	if err != nil {
 		pps.logger.Warn("Failed to get expected pip version for Python %s: %v", pythonVersion, err)
-		expectedPipVersion = "unknown"
+		expectedPipVersion = statusUnknown
 	}
 
 	// Compare versions
@@ -78,7 +81,7 @@ func (pps *PyenvPipSynchronizer) CheckSync(ctx context.Context) (*VersionSyncSta
 	}, nil
 }
 
-// Synchronize performs synchronization between pyenv and pip
+// Synchronize performs synchronization between pyenv and pip.
 func (pps *PyenvPipSynchronizer) Synchronize(ctx context.Context, policy SyncPolicy) error {
 	pps.logger.Info("Starting pyenv-pip synchronization")
 
@@ -104,12 +107,12 @@ func (pps *PyenvPipSynchronizer) Synchronize(ctx context.Context, policy SyncPol
 	}
 }
 
-// GetExpectedVersion returns the expected pip version for a given Python version
+// GetExpectedVersion returns the expected pip version for a given Python version.
 func (pps *PyenvPipSynchronizer) GetExpectedVersion(ctx context.Context, vmVersion string) (string, error) {
 	return pps.getExpectedPipVersion(ctx, vmVersion)
 }
 
-// ValidateSync validates the synchronization status
+// ValidateSync validates the synchronization status.
 func (pps *PyenvPipSynchronizer) ValidateSync(ctx context.Context) error {
 	status, err := pps.CheckSync(ctx)
 	if err != nil {
@@ -124,14 +127,14 @@ func (pps *PyenvPipSynchronizer) ValidateSync(ctx context.Context) error {
 	return nil
 }
 
-// isPyenvAvailable checks if pyenv is available in the current environment
+// isPyenvAvailable checks if pyenv is available in the current environment.
 func (pps *PyenvPipSynchronizer) isPyenvAvailable(ctx context.Context) bool {
 	cmd := exec.CommandContext(ctx, "which", "pyenv")
 	err := cmd.Run()
 	return err == nil
 }
 
-// getCurrentPythonVersion gets the current Python version from pyenv
+// getCurrentPythonVersion gets the current Python version from pyenv.
 func (pps *PyenvPipSynchronizer) getCurrentPythonVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "pyenv", "version")
 	output, err := cmd.Output()
@@ -149,7 +152,7 @@ func (pps *PyenvPipSynchronizer) getCurrentPythonVersion(ctx context.Context) (s
 	return parts[0], nil
 }
 
-// getCurrentPipVersion gets the current pip version
+// getCurrentPipVersion gets the current pip version.
 func (pps *PyenvPipSynchronizer) getCurrentPipVersion(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "pip", "--version")
 	output, err := cmd.Output()
@@ -167,7 +170,7 @@ func (pps *PyenvPipSynchronizer) getCurrentPipVersion(ctx context.Context) (stri
 	return parts[1], nil
 }
 
-// getExpectedPipVersion gets the expected pip version for a given Python version
+// getExpectedPipVersion gets the expected pip version for a given Python version.
 func (pps *PyenvPipSynchronizer) getExpectedPipVersion(ctx context.Context, pythonVersion string) (string, error) {
 	// Python version to bundled pip version mapping
 	pythonPipMap := map[string]string{
@@ -191,22 +194,22 @@ func (pps *PyenvPipSynchronizer) getExpectedPipVersion(ctx context.Context, pyth
 	output, err := cmd.Output()
 	if err != nil {
 		pps.logger.Debug("Failed to get bundled pip version for Python %s: %v", pythonVersion, err)
-		return "unknown", nil
+		return statusUnknown, nil
 	}
 
 	// Parse output like "pip 22.3 from ..."
 	versionLine := strings.TrimSpace(string(output))
 	parts := strings.Fields(versionLine)
 	if len(parts) < 2 {
-		return "unknown", nil
+		return statusUnknown, nil
 	}
 
 	return parts[1], nil
 }
 
-// compareVersions compares two version strings
+// compareVersions compares two version strings.
 func (pps *PyenvPipSynchronizer) compareVersions(current, expected string) bool {
-	if expected == "unknown" || current == "unknown" {
+	if expected == statusUnknown || current == statusUnknown {
 		return false
 	}
 
@@ -214,25 +217,25 @@ func (pps *PyenvPipSynchronizer) compareVersions(current, expected string) bool 
 	return current == expected
 }
 
-// determineSyncAction determines what sync action is needed
+// determineSyncAction determines what sync action is needed.
 func (pps *PyenvPipSynchronizer) determineSyncAction(current, expected string, inSync bool) string {
 	if inSync {
 		return "none"
 	}
 
-	if expected == "unknown" {
+	if expected == statusUnknown {
 		return "check_compatibility"
 	}
 
 	return fmt.Sprintf("update pip to %s", expected)
 }
 
-// syncToPythonVersion synchronizes pip to match the current Python version
+// syncToPythonVersion synchronizes pip to match the current Python version.
 func (pps *PyenvPipSynchronizer) syncToPythonVersion(ctx context.Context, pythonVersion string, policy SyncPolicy) error {
 	pps.logger.Info("Synchronizing pip to match Python version %s", pythonVersion)
 
 	expectedPipVersion, err := pps.getExpectedPipVersion(ctx, pythonVersion)
-	if err != nil || expectedPipVersion == "unknown" {
+	if err != nil || expectedPipVersion == statusUnknown {
 		return fmt.Errorf("cannot determine expected pip version for Python %s", pythonVersion)
 	}
 
@@ -246,7 +249,7 @@ func (pps *PyenvPipSynchronizer) syncToPythonVersion(ctx context.Context, python
 	return nil
 }
 
-// syncToPipVersion synchronizes Python to match the current pip version
+// syncToPipVersion synchronizes Python to match the current pip version.
 func (pps *PyenvPipSynchronizer) syncToPipVersion(ctx context.Context, pipVersion string, policy SyncPolicy) error {
 	pps.logger.Info("Synchronizing Python to match pip version %s", pipVersion)
 
@@ -261,7 +264,7 @@ func (pps *PyenvPipSynchronizer) syncToPipVersion(ctx context.Context, pipVersio
 	return nil
 }
 
-// upgradeToLatest upgrades both Python and pip to their latest versions
+// upgradeToLatest upgrades both Python and pip to their latest versions.
 func (pps *PyenvPipSynchronizer) upgradeToLatest(ctx context.Context, policy SyncPolicy) error {
 	pps.logger.Info("Upgrading both Python and pip to latest versions")
 

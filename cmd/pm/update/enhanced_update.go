@@ -22,7 +22,7 @@ type EnhancedUpdateManager struct {
 	resourceManager *ResourceManager
 }
 
-// NewEnhancedUpdateManager creates a new enhanced update manager
+// NewEnhancedUpdateManager creates a new enhanced update manager.
 func NewEnhancedUpdateManager(managers []string) *EnhancedUpdateManager {
 	formatter := NewOutputFormatter()
 	versionTracker := NewVersionTracker(formatter)
@@ -37,7 +37,7 @@ func NewEnhancedUpdateManager(managers []string) *EnhancedUpdateManager {
 	}
 }
 
-// RunEnhancedUpdateAll executes enhanced update process for all managers
+// RunEnhancedUpdateAll executes enhanced update process for all managers.
 func (eum *EnhancedUpdateManager) RunEnhancedUpdateAll(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult, checkDuplicates bool, duplicatesMax int) error {
 	managers := []string{"brew", "asdf", "sdkman", "apt", "pacman", "yay", "pip", "npm"}
 
@@ -103,7 +103,7 @@ func (eum *EnhancedUpdateManager) RunEnhancedUpdateAll(ctx context.Context, stra
 	return nil
 }
 
-// performPreflightChecks executes comprehensive pre-flight checks
+// performPreflightChecks executes comprehensive pre-flight checks.
 func (eum *EnhancedUpdateManager) performPreflightChecks(ctx context.Context, managers []string, checkDuplicates bool, duplicatesMax int) error {
 	// Resource availability check
 	packageCounts := make(map[string]int)
@@ -131,7 +131,7 @@ func (eum *EnhancedUpdateManager) performPreflightChecks(ctx context.Context, ma
 	return nil
 }
 
-// runEnhancedManagerUpdate executes enhanced update for a specific manager
+// runEnhancedManagerUpdate executes enhanced update for a specific manager.
 func (eum *EnhancedUpdateManager) runEnhancedManagerUpdate(ctx context.Context, manager, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) (int, error) {
 	switch manager {
 	case "brew":
@@ -151,7 +151,7 @@ func (eum *EnhancedUpdateManager) runEnhancedManagerUpdate(ctx context.Context, 
 	}
 }
 
-// runEnhancedBrewUpdate executes enhanced Homebrew update with detailed tracking
+// runEnhancedBrewUpdate executes enhanced Homebrew update with detailed tracking.
 func (eum *EnhancedUpdateManager) runEnhancedBrewUpdate(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) (int, error) {
 	// Check if brew is installed
 	if exec.CommandContext(ctx, "brew", "--version").Run() != nil {
@@ -224,7 +224,7 @@ func (eum *EnhancedUpdateManager) runEnhancedBrewUpdate(ctx context.Context, str
 	return packageCount, nil
 }
 
-// runEnhancedAsdfUpdate executes enhanced asdf update with detailed tracking
+// runEnhancedAsdfUpdate executes enhanced asdf update with detailed tracking.
 func (eum *EnhancedUpdateManager) runEnhancedAsdfUpdate(ctx context.Context, strategy string, dryRun bool, compatMode string, res *UpdateRunResult) (int, error) {
 	// Check if asdf is installed
 	if exec.CommandContext(ctx, "asdf", "--version").Run() != nil {
@@ -271,7 +271,7 @@ func (eum *EnhancedUpdateManager) runEnhancedAsdfUpdate(ctx context.Context, str
 	return packageCount, nil
 }
 
-// runEnhancedNpmUpdate executes enhanced npm update with detailed tracking
+// runEnhancedNpmUpdate executes enhanced npm update with detailed tracking.
 func (eum *EnhancedUpdateManager) runEnhancedNpmUpdate(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) (int, error) {
 	if exec.CommandContext(ctx, "npm", "--version").Run() != nil {
 		return 0, fmt.Errorf("npm is not installed or not in PATH")
@@ -304,7 +304,7 @@ func (eum *EnhancedUpdateManager) runEnhancedNpmUpdate(ctx context.Context, stra
 	return packageCount, nil
 }
 
-// runEnhancedPipUpdate executes enhanced pip update with detailed tracking
+// runEnhancedPipUpdate executes enhanced pip update with detailed tracking.
 func (eum *EnhancedUpdateManager) runEnhancedPipUpdate(ctx context.Context, strategy string, dryRun bool, res *UpdateRunResult) (int, error) {
 	pipCmd := findPipCommand(ctx)
 	if pipCmd == "" {
@@ -359,7 +359,7 @@ func (eum *EnhancedUpdateManager) runEnhancedPipUpdate(ctx context.Context, stra
 	return packageCount, nil
 }
 
-// printEnhancedSummary prints comprehensive update summary
+// printEnhancedSummary prints comprehensive update summary.
 func (eum *EnhancedUpdateManager) printEnhancedSummary(successful, total, packageCount, conflicts int) {
 	// Print main summary
 	eum.formatter.PrintUpdateSummary(total, successful, packageCount, conflicts)

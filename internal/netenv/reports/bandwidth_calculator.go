@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package reports
 
 import (
@@ -5,7 +8,7 @@ import (
 	"time"
 )
 
-// BandwidthCalculator tracks and calculates network bandwidth rates
+// BandwidthCalculator tracks and calculates network bandwidth rates.
 type BandwidthCalculator struct {
 	previousMeasurements map[string]*InterfaceSnapshot
 	measurementInterval  time.Duration
@@ -14,7 +17,7 @@ type BandwidthCalculator struct {
 	maxHistorySize       int
 }
 
-// InterfaceSnapshot represents a point-in-time measurement of interface metrics
+// InterfaceSnapshot represents a point-in-time measurement of interface metrics.
 type InterfaceSnapshot struct {
 	InterfaceName string
 	Timestamp     time.Time
@@ -28,7 +31,7 @@ type InterfaceSnapshot struct {
 	TxErrors      uint64
 }
 
-// BandwidthMeasurement represents calculated bandwidth rates
+// BandwidthMeasurement represents calculated bandwidth rates.
 type BandwidthMeasurement struct {
 	InterfaceName   string        `json:"interface"`
 	Timestamp       time.Time     `json:"timestamp"`
@@ -40,7 +43,7 @@ type BandwidthMeasurement struct {
 	Duration        time.Duration `json:"duration"`
 }
 
-// BandwidthTrend represents historical bandwidth usage over time
+// BandwidthTrend represents historical bandwidth usage over time.
 type BandwidthTrend struct {
 	InterfaceName string                 `json:"interface"`
 	Measurements  []BandwidthMeasurement `json:"measurements"`
@@ -52,7 +55,7 @@ type BandwidthTrend struct {
 	PeakUtil      float64                `json:"peak_utilization_percent"`
 }
 
-// NewBandwidthCalculator creates a new bandwidth calculator
+// NewBandwidthCalculator creates a new bandwidth calculator.
 func NewBandwidthCalculator(measurementInterval time.Duration) *BandwidthCalculator {
 	return &BandwidthCalculator{
 		previousMeasurements: make(map[string]*InterfaceSnapshot),
@@ -62,7 +65,7 @@ func NewBandwidthCalculator(measurementInterval time.Duration) *BandwidthCalcula
 	}
 }
 
-// AddSnapshot adds a new interface measurement and calculates rates
+// AddSnapshot adds a new interface measurement and calculates rates.
 func (bc *BandwidthCalculator) AddSnapshot(snapshot *InterfaceSnapshot) *BandwidthMeasurement {
 	bc.mutex.Lock()
 	defer bc.mutex.Unlock()
@@ -106,7 +109,7 @@ func (bc *BandwidthCalculator) AddSnapshot(snapshot *InterfaceSnapshot) *Bandwid
 	return measurement
 }
 
-// calculateRate calculates rate per second, handling counter wraps
+// calculateRate calculates rate per second, handling counter wraps.
 func (bc *BandwidthCalculator) calculateRate(current, previous uint64, seconds float64) uint64 {
 	if current < previous {
 		// Counter wrapped around, skip this calculation
@@ -117,7 +120,7 @@ func (bc *BandwidthCalculator) calculateRate(current, previous uint64, seconds f
 	return uint64(float64(diff) / seconds)
 }
 
-// addToHistory adds a measurement to the interface history
+// addToHistory adds a measurement to the interface history.
 func (bc *BandwidthCalculator) addToHistory(interfaceName string, measurement BandwidthMeasurement) {
 	history := bc.history[interfaceName]
 	history = append(history, measurement)
@@ -130,7 +133,7 @@ func (bc *BandwidthCalculator) addToHistory(interfaceName string, measurement Ba
 	bc.history[interfaceName] = history
 }
 
-// GetBandwidthTrends returns bandwidth trends for all interfaces
+// GetBandwidthTrends returns bandwidth trends for all interfaces.
 func (bc *BandwidthCalculator) GetBandwidthTrends() map[string]BandwidthTrend {
 	bc.mutex.RLock()
 	defer bc.mutex.RUnlock()
@@ -185,7 +188,7 @@ func (bc *BandwidthCalculator) GetBandwidthTrends() map[string]BandwidthTrend {
 	return trends
 }
 
-// GetRecentMeasurements returns the most recent measurements for all interfaces
+// GetRecentMeasurements returns the most recent measurements for all interfaces.
 func (bc *BandwidthCalculator) GetRecentMeasurements() map[string]BandwidthMeasurement {
 	bc.mutex.RLock()
 	defer bc.mutex.RUnlock()
@@ -201,7 +204,7 @@ func (bc *BandwidthCalculator) GetRecentMeasurements() map[string]BandwidthMeasu
 	return recent
 }
 
-// Reset clears all historical data
+// Reset clears all historical data.
 func (bc *BandwidthCalculator) Reset() {
 	bc.mutex.Lock()
 	defer bc.mutex.Unlock()
@@ -210,7 +213,7 @@ func (bc *BandwidthCalculator) Reset() {
 	bc.history = make(map[string][]BandwidthMeasurement)
 }
 
-// SetUtilization updates the utilization for a specific measurement
+// SetUtilization updates the utilization for a specific measurement.
 func (bc *BandwidthCalculator) SetUtilization(interfaceName string, utilization float64) {
 	bc.mutex.Lock()
 	defer bc.mutex.Unlock()

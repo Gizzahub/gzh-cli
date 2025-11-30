@@ -52,7 +52,7 @@ func NewUpdater(version string) *Updater {
 func (u *Updater) GetLatestRelease(ctx context.Context) (*GitHubRelease, error) {
 	url := fmt.Sprintf("%s/repos/%s/releases/latest", githubAPIURL, githubRepo)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
@@ -114,7 +114,7 @@ func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath strin
 	ctx, cancel := context.WithTimeout(ctx, downloadTimeout)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, http.NoBody)
 	if err != nil {
 		return fmt.Errorf("creating download request: %w", err)
 	}

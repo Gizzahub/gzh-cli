@@ -1,7 +1,11 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package reports
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,19 +14,19 @@ import (
 	"strings"
 )
 
-// SystemInfoCollector gathers system-level network information
+// SystemInfoCollector gathers system-level network information.
 type SystemInfoCollector struct {
 	platform string
 }
 
-// NewSystemInfoCollector creates a new system info collector
+// NewSystemInfoCollector creates a new system info collector.
 func NewSystemInfoCollector() *SystemInfoCollector {
 	return &SystemInfoCollector{
 		platform: runtime.GOOS,
 	}
 }
 
-// CollectSystemInfo gathers comprehensive system network information
+// CollectSystemInfo gathers comprehensive system network information.
 func (sic *SystemInfoCollector) CollectSystemInfo() (*SystemInfo, error) {
 	info := &SystemInfo{
 		Platform: sic.platform,
@@ -34,7 +38,7 @@ func (sic *SystemInfoCollector) CollectSystemInfo() (*SystemInfo, error) {
 	}
 
 	// Get kernel version (Linux/Unix)
-	if sic.platform != "windows" {
+	if sic.platform != osWindows {
 		if version, err := sic.getKernelVersion(); err == nil {
 			info.KernelVersion = version
 		}
@@ -56,7 +60,7 @@ func (sic *SystemInfoCollector) CollectSystemInfo() (*SystemInfo, error) {
 	}
 
 	// Get network namespaces (Linux only)
-	if sic.platform == "linux" {
+	if sic.platform == osLinux {
 		if namespaces, err := sic.getNetworkNamespaces(); err == nil {
 			info.NetworkNamespaces = namespaces
 		}
@@ -70,9 +74,9 @@ func (sic *SystemInfoCollector) CollectSystemInfo() (*SystemInfo, error) {
 	return info, nil
 }
 
-// getKernelVersion retrieves the kernel version
+// getKernelVersion retrieves the kernel version.
 func (sic *SystemInfoCollector) getKernelVersion() (string, error) {
-	cmd := exec.Command("uname", "-r")
+	cmd := exec.CommandContext(context.Background(), "uname", "-r")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -80,21 +84,21 @@ func (sic *SystemInfoCollector) getKernelVersion() (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getDefaultGateway finds the default gateway
+// getDefaultGateway finds the default gateway.
 func (sic *SystemInfoCollector) getDefaultGateway() (string, error) {
 	switch sic.platform {
-	case "linux":
+	case osLinux:
 		return sic.getDefaultGatewayLinux()
-	case "darwin":
+	case osDarwin:
 		return sic.getDefaultGatewayDarwin()
-	case "windows":
+	case osWindows:
 		return sic.getDefaultGatewayWindows()
 	default:
 		return "", fmt.Errorf("unsupported platform: %s", sic.platform)
 	}
 }
 
-// getDefaultGatewayLinux gets default gateway on Linux
+// getDefaultGatewayLinux gets default gateway on Linux.
 func (sic *SystemInfoCollector) getDefaultGatewayLinux() (string, error) {
 	// Try reading from /proc/net/route
 	file, err := os.Open("/proc/net/route")
@@ -120,7 +124,7 @@ func (sic *SystemInfoCollector) getDefaultGatewayLinux() (string, error) {
 	return sic.getDefaultGatewayFromRoute()
 }
 
-// parseHexIP converts hex IP address to dotted decimal
+// parseHexIP converts hex IP address to dotted decimal.
 func (sic *SystemInfoCollector) parseHexIP(hexIP string) (string, error) {
 	if len(hexIP) != 8 {
 		return "", fmt.Errorf("invalid hex IP length")
@@ -138,9 +142,9 @@ func (sic *SystemInfoCollector) parseHexIP(hexIP string) (string, error) {
 	return strings.Join(octets, "."), nil
 }
 
-// getDefaultGatewayFromRoute uses route command as fallback
+// getDefaultGatewayFromRoute uses route command as fallback.
 func (sic *SystemInfoCollector) getDefaultGatewayFromRoute() (string, error) {
-	cmd := exec.Command("route", "-n")
+	cmd := exec.CommandContext(context.Background(), "route", "-n")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -159,7 +163,7 @@ func (sic *SystemInfoCollector) getDefaultGatewayFromRoute() (string, error) {
 	return "", fmt.Errorf("default gateway not found")
 }
 
-// getDefaultGatewayDarwin gets default gateway on macOS
+// getDefaultGatewayDarwin gets default gateway on macOS.
 func (sic *SystemInfoCollector) getDefaultGatewayDarwin() (string, error) {
 	cmd := exec.Command("route", "-n", "get", "default")
 	output, err := cmd.Output()
@@ -180,7 +184,7 @@ func (sic *SystemInfoCollector) getDefaultGatewayDarwin() (string, error) {
 	return "", fmt.Errorf("default gateway not found")
 }
 
-// getDefaultGatewayWindows gets default gateway on Windows
+// getDefaultGatewayWindows gets default gateway on Windows.
 func (sic *SystemInfoCollector) getDefaultGatewayWindows() (string, error) {
 	cmd := exec.Command("route", "print", "0.0.0.0")
 	output, err := cmd.Output()
@@ -201,7 +205,7 @@ func (sic *SystemInfoCollector) getDefaultGatewayWindows() (string, error) {
 	return "", fmt.Errorf("default gateway not found")
 }
 
-// getDNSServers retrieves configured DNS servers
+// getDNSServers retrieves configured DNS servers.
 func (sic *SystemInfoCollector) getDNSServers() ([]string, error) {
 	switch sic.platform {
 	case "linux", "darwin":
@@ -213,7 +217,7 @@ func (sic *SystemInfoCollector) getDNSServers() ([]string, error) {
 	}
 }
 
-// getDNSServersUnix gets DNS servers on Unix systems
+// getDNSServersUnix gets DNS servers on Unix systems.
 func (sic *SystemInfoCollector) getDNSServersUnix() ([]string, error) {
 	file, err := os.Open("/etc/resolv.conf")
 	if err != nil {
@@ -237,7 +241,7 @@ func (sic *SystemInfoCollector) getDNSServersUnix() ([]string, error) {
 	return dnsServers, scanner.Err()
 }
 
-// getDNSServersWindows gets DNS servers on Windows
+// getDNSServersWindows gets DNS servers on Windows.
 func (sic *SystemInfoCollector) getDNSServersWindows() ([]string, error) {
 	cmd := exec.Command("nslookup", "localhost")
 	output, err := cmd.Output()
@@ -261,7 +265,7 @@ func (sic *SystemInfoCollector) getDNSServersWindows() ([]string, error) {
 	return dnsServers, nil
 }
 
-// getRoutingTable retrieves the routing table
+// getRoutingTable retrieves the routing table.
 func (sic *SystemInfoCollector) getRoutingTable() ([]RouteEntry, error) {
 	switch sic.platform {
 	case "linux":
@@ -275,7 +279,7 @@ func (sic *SystemInfoCollector) getRoutingTable() ([]RouteEntry, error) {
 	}
 }
 
-// getRoutingTableLinux gets routing table on Linux
+// getRoutingTableLinux gets routing table on Linux.
 func (sic *SystemInfoCollector) getRoutingTableLinux() ([]RouteEntry, error) {
 	cmd := exec.Command("route", "-n")
 	output, err := cmd.Output()
@@ -311,7 +315,7 @@ func (sic *SystemInfoCollector) getRoutingTableLinux() ([]RouteEntry, error) {
 	return routes, nil
 }
 
-// getRoutingTableDarwin gets routing table on macOS
+// getRoutingTableDarwin gets routing table on macOS.
 func (sic *SystemInfoCollector) getRoutingTableDarwin() ([]RouteEntry, error) {
 	cmd := exec.Command("netstat", "-rn", "-f", "inet")
 	output, err := cmd.Output()
@@ -341,7 +345,7 @@ func (sic *SystemInfoCollector) getRoutingTableDarwin() ([]RouteEntry, error) {
 	return routes, nil
 }
 
-// getRoutingTableWindows gets routing table on Windows
+// getRoutingTableWindows gets routing table on Windows.
 func (sic *SystemInfoCollector) getRoutingTableWindows() ([]RouteEntry, error) {
 	cmd := exec.Command("route", "print")
 	output, err := cmd.Output()
@@ -387,7 +391,7 @@ func (sic *SystemInfoCollector) getRoutingTableWindows() ([]RouteEntry, error) {
 	return routes, nil
 }
 
-// getNetworkNamespaces gets network namespaces (Linux only)
+// getNetworkNamespaces gets network namespaces (Linux only).
 func (sic *SystemInfoCollector) getNetworkNamespaces() ([]string, error) {
 	cmd := exec.Command("ip", "netns", "list")
 	output, err := cmd.Output()
@@ -413,7 +417,7 @@ func (sic *SystemInfoCollector) getNetworkNamespaces() ([]string, error) {
 	return namespaces, nil
 }
 
-// getFirewallStatus gets firewall status (Linux only)
+// getFirewallStatus gets firewall status (Linux only).
 func (sic *SystemInfoCollector) getFirewallStatus() (string, error) {
 	// Try iptables first
 	if status, err := sic.getIptablesStatus(); err == nil {
@@ -433,7 +437,7 @@ func (sic *SystemInfoCollector) getFirewallStatus() (string, error) {
 	return "unknown", nil
 }
 
-// getIptablesStatus checks iptables status
+// getIptablesStatus checks iptables status.
 func (sic *SystemInfoCollector) getIptablesStatus() (string, error) {
 	cmd := exec.Command("iptables", "-L", "-n")
 	_, err := cmd.Output()
@@ -443,7 +447,7 @@ func (sic *SystemInfoCollector) getIptablesStatus() (string, error) {
 	return "iptables active", nil
 }
 
-// getUfwStatus checks ufw status
+// getUfwStatus checks ufw status.
 func (sic *SystemInfoCollector) getUfwStatus() (string, error) {
 	cmd := exec.Command("ufw", "status")
 	output, err := cmd.Output()
@@ -460,7 +464,7 @@ func (sic *SystemInfoCollector) getUfwStatus() (string, error) {
 	return "ufw unknown", nil
 }
 
-// getFirewalldStatus checks firewalld status
+// getFirewalldStatus checks firewalld status.
 func (sic *SystemInfoCollector) getFirewalldStatus() (string, error) {
 	cmd := exec.Command("firewall-cmd", "--state")
 	output, err := cmd.Output()

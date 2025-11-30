@@ -25,20 +25,20 @@ func GetConfigDirectory() string {
 // EnsureConfigDirectory creates the configuration directory if it doesn't exist.
 func EnsureConfigDirectory() error {
 	configDir := GetConfigDirectory()
-	return os.MkdirAll(configDir, 0o755)
+	return os.MkdirAll(configDir, 0o750)
 }
 
-// GetProfilesPath returns the path to the network profiles configuration file
+// GetProfilesPath returns the path to the network profiles configuration file.
 func GetProfilesPath() string {
 	return filepath.Join(GetConfigDirectory(), "network-profiles.yaml")
 }
 
-// GetMetricsPath returns the path to the metrics storage directory
+// GetMetricsPath returns the path to the metrics storage directory.
 func GetMetricsPath() string {
 	return filepath.Join(GetConfigDirectory(), "metrics")
 }
 
-// GetCachePath returns the path to the cache directory
+// GetCachePath returns the path to the cache directory.
 func GetCachePath() string {
 	return filepath.Join(GetConfigDirectory(), "cache")
 }

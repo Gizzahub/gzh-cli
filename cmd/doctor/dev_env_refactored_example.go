@@ -64,7 +64,7 @@ func checkAllGoToolsRefactored(ctx context.Context) []DevEnvResult {
 	})
 }
 
-// Or check all common tools
+// Or check all common tools.
 func checkAllCommonToolsRefactored(ctx context.Context) []DevEnvResult {
 	return CheckAllCommonTools(ctx)
 }

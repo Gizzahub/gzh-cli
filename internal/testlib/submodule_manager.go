@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -10,12 +13,12 @@ import (
 	"time"
 )
 
-// SubmoduleManager manages Git submodules for testing complex repository structures
+// SubmoduleManager manages Git submodules for testing complex repository structures.
 type SubmoduleManager struct {
 	timeout time.Duration
 }
 
-// SubmoduleConfig represents submodule configuration
+// SubmoduleConfig represents submodule configuration.
 type SubmoduleConfig struct {
 	Name   string // Submodule name
 	Path   string // Path within parent repo
@@ -23,14 +26,14 @@ type SubmoduleConfig struct {
 	Branch string // Branch to track (optional)
 }
 
-// NewSubmoduleManager creates a new SubmoduleManager instance
+// NewSubmoduleManager creates a new SubmoduleManager instance.
 func NewSubmoduleManager() *SubmoduleManager {
 	return &SubmoduleManager{
 		timeout: 60 * time.Second,
 	}
 }
 
-// CreateRepositoryWithSubmodules creates a repository with submodules
+// CreateRepositoryWithSubmodules creates a repository with submodules.
 func (sm *SubmoduleManager) CreateRepositoryWithSubmodules(ctx context.Context, parentPath string, submodules []SubmoduleConfig) error {
 	// Initialize parent repository
 	if err := sm.initializeRepo(ctx, parentPath); err != nil {
@@ -47,7 +50,7 @@ func (sm *SubmoduleManager) CreateRepositoryWithSubmodules(ctx context.Context, 
 	return nil
 }
 
-// CreateNestedSubmodules creates a repository with nested submodules
+// CreateNestedSubmodules creates a repository with nested submodules.
 func (sm *SubmoduleManager) CreateNestedSubmodules(ctx context.Context, basePath string) error {
 	// Create main repository
 	mainPath := filepath.Join(basePath, "main-repo")
@@ -84,7 +87,7 @@ func (sm *SubmoduleManager) CreateNestedSubmodules(ctx context.Context, basePath
 	return sm.CreateRepositoryWithSubmodules(ctx, mainPath, submodules)
 }
 
-// UpdateSubmodules updates all submodules to latest commits
+// UpdateSubmodules updates all submodules to latest commits.
 func (sm *SubmoduleManager) UpdateSubmodules(ctx context.Context, repoPath string) error {
 	if err := sm.runGitCommand(ctx, repoPath, "submodule", "update", "--remote"); err != nil {
 		return fmt.Errorf("failed to update submodules: %w", err)
@@ -92,7 +95,7 @@ func (sm *SubmoduleManager) UpdateSubmodules(ctx context.Context, repoPath strin
 	return nil
 }
 
-// GetSubmoduleStatus returns the status of all submodules
+// GetSubmoduleStatus returns the status of all submodules.
 func (sm *SubmoduleManager) GetSubmoduleStatus(ctx context.Context, repoPath string) ([]SubmoduleStatus, error) {
 	cmd := exec.CommandContext(ctx, "git", "submodule", "status")
 	cmd.Dir = repoPath
@@ -105,7 +108,7 @@ func (sm *SubmoduleManager) GetSubmoduleStatus(ctx context.Context, repoPath str
 	return sm.parseSubmoduleStatus(string(output)), nil
 }
 
-// SubmoduleStatus represents the status of a submodule
+// SubmoduleStatus represents the status of a submodule.
 type SubmoduleStatus struct {
 	Name   string
 	Path   string
@@ -113,7 +116,7 @@ type SubmoduleStatus struct {
 	Status string // "", "+", "-", "U" for clean, ahead, behind, conflict
 }
 
-// addSubmodule adds a submodule to the repository
+// addSubmodule adds a submodule to the repository.
 func (sm *SubmoduleManager) addSubmodule(ctx context.Context, parentPath string, config SubmoduleConfig) error {
 	// Create the submodule repository if it doesn't exist
 	if _, err := os.Stat(config.URL); os.IsNotExist(err) {
@@ -142,7 +145,7 @@ func (sm *SubmoduleManager) addSubmodule(ctx context.Context, parentPath string,
 	return nil
 }
 
-// createSubmoduleRepo creates a simple repository for use as a submodule
+// createSubmoduleRepo creates a simple repository for use as a submodule.
 func (sm *SubmoduleManager) createSubmoduleRepo(ctx context.Context, repoPath, name string) error {
 	if err := sm.initializeRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to initialize submodule repo: %w", err)
@@ -172,7 +175,7 @@ func (sm *SubmoduleManager) createSubmoduleRepo(ctx context.Context, repoPath, n
 	return nil
 }
 
-// createLibRepository creates a library repository
+// createLibRepository creates a library repository.
 func (sm *SubmoduleManager) createLibRepository(ctx context.Context, repoPath string) error {
 	if err := sm.initializeRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to initialize lib repository: %w", err)
@@ -214,7 +217,7 @@ func Version() string {
 	return nil
 }
 
-// createUtilsRepository creates a utils repository with its own submodule
+// createUtilsRepository creates a utils repository with its own submodule.
 func (sm *SubmoduleManager) createUtilsRepository(ctx context.Context, utilsPath, nestedLibPath string) error {
 	// Create the nested lib first
 	if err := sm.createNestedLibRepository(ctx, nestedLibPath); err != nil {
@@ -274,7 +277,7 @@ func Helper() string {
 	return nil
 }
 
-// createNestedLibRepository creates a nested library repository
+// createNestedLibRepository creates a nested library repository.
 func (sm *SubmoduleManager) createNestedLibRepository(ctx context.Context, repoPath string) error {
 	if err := sm.initializeRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to initialize nested lib repository: %w", err)
@@ -304,7 +307,7 @@ func NestedFunction() string {
 	return nil
 }
 
-// parseSubmoduleStatus parses git submodule status output
+// parseSubmoduleStatus parses git submodule status output.
 func (sm *SubmoduleManager) parseSubmoduleStatus(output string) []SubmoduleStatus {
 	var statuses []SubmoduleStatus
 	lines := strings.Split(strings.TrimSpace(output), "\n")
@@ -339,7 +342,7 @@ func (sm *SubmoduleManager) parseSubmoduleStatus(output string) []SubmoduleStatu
 
 // Helper methods
 
-// initializeRepo initializes a Git repository
+// initializeRepo initializes a Git repository.
 func (sm *SubmoduleManager) initializeRepo(ctx context.Context, repoPath string) error {
 	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
@@ -375,7 +378,7 @@ func (sm *SubmoduleManager) initializeRepo(ctx context.Context, repoPath string)
 	return nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (sm *SubmoduleManager) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, sm.timeout)
 	defer cancel()

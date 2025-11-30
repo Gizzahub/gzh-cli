@@ -239,6 +239,8 @@ func displayRiskAssessmentTable(assessments []RiskAssessment) {
 }
 
 // displayRiskAssessmentJSON displays risk assessments in JSON format.
+//
+//nolint:unused // Reserved for JSON output format
 func displayRiskAssessmentJSON(assessments []RiskAssessment, outputFile string) error {
 	data := map[string]interface{}{
 		"assessments":  assessments,
@@ -261,6 +263,8 @@ func displayRiskAssessmentJSON(assessments []RiskAssessment, outputFile string) 
 }
 
 // displayRiskAssessmentCSV displays risk assessments in CSV format.
+//
+//nolint:unused // Reserved for future CSV output feature
 func displayRiskAssessmentCSV(assessments []RiskAssessment, outputFile string) error {
 	var (
 		writer *csv.Writer
@@ -318,6 +322,8 @@ func displayRiskAssessmentCSV(assessments []RiskAssessment, outputFile string) e
 }
 
 // displayRiskAssessmentHTML displays risk assessments in HTML format.
+//
+//nolint:unused // Reserved for future HTML output feature
 func displayRiskAssessmentHTML(assessments []RiskAssessment, outputFile, organization string) error {
 	html := generateRiskAssessmentHTML(assessments, organization)
 
@@ -358,6 +364,7 @@ func filterByRiskThreshold(assessments []RiskAssessment, threshold float64) []Ri
 	return filtered
 }
 
+//nolint:unused // Reserved for future risk severity display feature
 func getSeveritySymbol(severity string) string {
 	switch severity {
 	case "critical":
@@ -373,6 +380,7 @@ func getSeveritySymbol(severity string) string {
 	}
 }
 
+//nolint:unused // Reserved for future risk category analysis feature
 func getTopRiskCategory(categories RiskCategories) string {
 	maxValue := categories.AccessControl
 	category := "Access Control"
@@ -394,6 +402,7 @@ func getTopRiskCategory(categories RiskCategories) string {
 	return category
 }
 
+//nolint:unused // Reserved for future assessment summary feature
 func generateAssessmentSummary(assessments []RiskAssessment) map[string]interface{} {
 	total := len(assessments)
 	severityCounts := make(map[string]int)
@@ -417,6 +426,7 @@ func generateAssessmentSummary(assessments []RiskAssessment) map[string]interfac
 	}
 }
 
+//nolint:unused // Reserved for future risk summary display feature
 func displayRiskSummary(assessments []RiskAssessment, threshold float64) {
 	fmt.Println()
 	fmt.Printf("📊 Risk Assessment Summary\n")
@@ -453,6 +463,7 @@ func displayRiskSummary(assessments []RiskAssessment, threshold float64) {
 	fmt.Printf("  🟢 Low: %d\n", severityCounts["low"])
 }
 
+//nolint:unused // Reserved for future HTML report generation feature
 func generateRiskAssessmentHTML(assessments []RiskAssessment, organization string) string {
 	summary := generateAssessmentSummary(assessments)
 
@@ -536,6 +547,7 @@ func generateRiskAssessmentHTML(assessments []RiskAssessment, organization strin
 		generateTableRows(assessments))
 }
 
+//nolint:unused // Reserved for future HTML table generation feature
 func generateTableRows(assessments []RiskAssessment) string {
 	rows := make([]string, 0, len(assessments))
 

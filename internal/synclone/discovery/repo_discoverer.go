@@ -4,6 +4,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -157,13 +158,10 @@ func (rd *RepoDiscoverer) parseRemoteURL(url string) (provider, org, repo string
 
 	// Handle different URL formats
 	if strings.Contains(url, "github.com") {
-		provider = "github"
 		return rd.parseGitHubURL(url)
 	} else if strings.Contains(url, "gitlab.com") {
-		provider = "gitlab"
 		return rd.parseGitLabURL(url)
 	} else if strings.Contains(url, "bitbucket.org") {
-		provider = "bitbucket"
 		return rd.parseBitbucketURL(url)
 	}
 
@@ -319,11 +317,12 @@ func (rd *RepoDiscoverer) SetFollowSymlinks(follow bool) {
 
 // getRemoteURL gets the remote URL for a Git repository.
 func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
-	cmd := exec.Command("git", "-C", repoPath, "remote", "get-url", "origin")
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "remote", "get-url", "origin")
 	output, err := cmd.Output()
 	if err != nil {
 		// Try to get any remote if origin doesn't exist
-		cmd = exec.Command("git", "-C", repoPath, "remote")
+		cmd = exec.CommandContext(ctx, "git", "-C", repoPath, "remote")
 		remoteOutput, err2 := cmd.Output()
 		if err2 != nil {
 			return "", fmt.Errorf("failed to get remotes: %w", err2)
@@ -338,7 +337,7 @@ func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
 			}
 			// Get URL for first remote
 			// #nosec G204 - remoteName is validated for safety
-			cmd = exec.Command("git", "-C", repoPath, "remote", "get-url", remoteName)
+			cmd = exec.CommandContext(ctx, "git", "-C", repoPath, "remote", "get-url", remoteName)
 			output, err = cmd.Output()
 			if err != nil {
 				return "", fmt.Errorf("failed to get remote URL: %w", err)
@@ -353,7 +352,7 @@ func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
 
 // getCurrentBranch gets the current branch of a Git repository.
 func (rd *RepoDiscoverer) getCurrentBranch(repoPath string) (string, error) {
-	cmd := exec.Command("git", "-C", repoPath, "branch", "--show-current")
+	cmd := exec.CommandContext(context.Background(), "git", "-C", repoPath, "branch", "--show-current")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current branch: %w", err)

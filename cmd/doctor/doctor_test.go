@@ -918,7 +918,7 @@ func TestMainRunDoctorComponents(t *testing.T) {
 		Version:   "1.0.0",
 		Platform:  "test/test",
 		Results:   []DiagnosticResult{result},
-		Duration:  time.Second,
+		Duration:  time.Second, //nolint:govet // Test data - field value not checked in this test
 	}
 
 	assert.False(t, report.Timestamp.IsZero())
@@ -931,13 +931,13 @@ func TestMainRunDoctorComponents(t *testing.T) {
 		OS:         "linux",
 		Arch:       "amd64",
 		GoVersion:  "go1.21.0",
-		Hostname:   "test",
-		Username:   "test",
-		WorkingDir: "/tmp",
-		HomeDir:    "/home/test",
-		PathEnv:    "/usr/bin",
-		Shell:      "/bin/bash",
-		TempDir:    "/tmp",
+		Hostname:   "test",       //nolint:govet // Test data - field value not checked in this test
+		Username:   "test",       //nolint:govet // Test data - field value not checked in this test
+		WorkingDir: "/tmp",       //nolint:govet // Test data - field value not checked in this test
+		HomeDir:    "/home/test", //nolint:govet // Test data - field value not checked in this test
+		PathEnv:    "/usr/bin",   //nolint:govet // Test data - field value not checked in this test
+		Shell:      "/bin/bash",  //nolint:govet // Test data - field value not checked in this test
+		TempDir:    "/tmp",       //nolint:govet // Test data - field value not checked in this test
 	}
 
 	assert.NotEmpty(t, sysInfo.OS)
@@ -1311,8 +1311,8 @@ func TestBenchmarkStructures(t *testing.T) {
 			NumCPU:        8,
 			NumGoroutines: 10,
 			MemoryLimit:   1024 * 1024,
-			GitCommit:     "abc123",
-			GitBranch:     "main",
+			GitCommit:     "abc123", //nolint:govet // Test data - field value not checked in this test
+			GitBranch:     "main",   //nolint:govet // Test data - field value not checked in this test
 			BuildInfo:     "test build",
 		}
 
@@ -1665,7 +1665,7 @@ func TestAdditionalDataStructures(t *testing.T) {
 	})
 }
 
-// Test refactored example functions
+// Test refactored example functions.
 func TestRefactoredExampleFunctions(t *testing.T) {
 	ctx := context.Background()
 
@@ -1748,7 +1748,7 @@ func TestRefactoredExampleFunctions(t *testing.T) {
 	})
 }
 
-// Test performance snapshot utility functions
+// Test performance snapshot utility functions.
 func TestPerformanceSnapshotUtilities(t *testing.T) {
 	t.Run("generateSnapshotID", func(t *testing.T) {
 		id1 := generateSnapshotID()
@@ -1870,7 +1870,7 @@ func TestPerformanceSnapshotUtilities(t *testing.T) {
 	})
 }
 
-// Test setup utility functions
+// Test setup utility functions.
 func TestSetupUtilityFunctions(t *testing.T) {
 	t.Run("getSetupStatusIcon", func(t *testing.T) {
 		testCases := []struct {
@@ -1917,7 +1917,7 @@ func TestSetupUtilityFunctions(t *testing.T) {
 	})
 }
 
-// Test health utility functions
+// Test health utility functions.
 func TestHealthUtilityFunctions(t *testing.T) {
 	t.Run("getAlertLevelPriority", func(t *testing.T) {
 		testCases := []struct {
@@ -1958,7 +1958,7 @@ func TestHealthUtilityFunctions(t *testing.T) {
 	})
 }
 
-// Test container security utility functions
+// Test container security utility functions.
 func TestContainerSecurityUtilities(t *testing.T) {
 	t.Run("isPrivilegedContainer", func(t *testing.T) {
 		container := ContainerInfo{
@@ -2012,7 +2012,7 @@ func TestContainerSecurityUtilities(t *testing.T) {
 	})
 }
 
-// Test more performance snapshot functions
+// Test more performance snapshot functions.
 func TestMorePerformanceSnapshots(t *testing.T) {
 	t.Run("DefaultAnalysisOptions", func(t *testing.T) {
 		options := DefaultAnalysisOptions()
@@ -2090,7 +2090,7 @@ func TestMorePerformanceSnapshots(t *testing.T) {
 	})
 }
 
-// Test additional container functions
+// Test additional container functions.
 func TestAdditionalContainerFunctions(t *testing.T) {
 	t.Run("WriteFile", func(t *testing.T) {
 		// Create a temp file for testing

@@ -26,7 +26,7 @@ func NewTokenManager(environment env.Environment) *TokenManager {
 // SetupTokenAuth sets up token authentication for a Git platform.
 func (tm *TokenManager) SetupTokenAuth(token, platform string) (*provider.Credentials, error) {
 	if token == "" {
-		return nil, nil
+		return nil, nil //nolint:nilnil // nil credentials with no error means no auth required
 	}
 
 	// Get the appropriate environment key for the platform

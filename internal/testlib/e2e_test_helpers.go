@@ -30,6 +30,7 @@ type E2ETestSuite struct {
 
 // NewE2ETestSuite creates a new E2E test suite.
 func NewE2ETestSuite(t *testing.T, config E2ETestConfig) *E2ETestSuite {
+	t.Helper()
 	return &E2ETestSuite{
 		t:      t,
 		config: config,

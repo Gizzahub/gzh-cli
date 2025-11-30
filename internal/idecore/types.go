@@ -18,17 +18,17 @@ type IDE struct {
 	Aliases       []string  `json:"aliases"`
 }
 
-// IDECache represents cached IDE scan results
+// IDECache represents cached IDE scan results.
 type IDECache struct {
 	Timestamp time.Time `json:"timestamp"`
 	IDEs      []IDE     `json:"ides"`
 }
 
-// IDEDetectorInterface defines the interface for IDE detection
+// IDEDetectorInterface defines the interface for IDE detection.
 type IDEDetectorInterface interface {
 	DetectIDEs(useCache bool) ([]IDE, error)
 	FindIDEByAlias(ides []IDE, nameOrAlias string) *IDE
 }
 
-// DetectorFunc is a function type for creating IDE detectors
+// DetectorFunc is a function type for creating IDE detectors.
 type DetectorFunc func() IDEDetectorInterface

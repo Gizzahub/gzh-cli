@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -10,12 +13,12 @@ import (
 	"time"
 )
 
-// BranchStrategyTester tests different synclone strategies against various branch scenarios
+// BranchStrategyTester tests different synclone strategies against various branch scenarios.
 type BranchStrategyTester struct {
 	timeout time.Duration
 }
 
-// StrategyTestCase represents a test case for a specific synclone strategy
+// StrategyTestCase represents a test case for a specific synclone strategy.
 type StrategyTestCase struct {
 	Strategy         string            // "reset", "pull", "fetch", "rebase", "clone"
 	InitialState     BranchState       // Initial repository state
@@ -25,7 +28,7 @@ type StrategyTestCase struct {
 	ValidationChecks []ValidationCheck // Checks to verify the outcome
 }
 
-// BranchState represents the state of a repository's branches
+// BranchState represents the state of a repository's branches.
 type BranchState struct {
 	CurrentBranch      string
 	Branches           map[string]BranchInfo // branch name -> info
@@ -33,7 +36,7 @@ type BranchState struct {
 	ConflictingChanges bool
 }
 
-// BranchInfo contains information about a specific branch
+// BranchInfo contains information about a specific branch.
 type BranchInfo struct {
 	LastCommit      string
 	AheadCount      int // commits ahead of remote
@@ -41,7 +44,7 @@ type BranchInfo struct {
 	HasLocalCommits bool
 }
 
-// RemoteChange represents a change made to the remote repository
+// RemoteChange represents a change made to the remote repository.
 type RemoteChange struct {
 	Branch        string
 	CommitMessage string
@@ -49,14 +52,14 @@ type RemoteChange struct {
 	DeleteFiles   []string
 }
 
-// LocalChange represents a local uncommitted change
+// LocalChange represents a local uncommitted change.
 type LocalChange struct {
 	File    string
 	Content string
 	Action  string // "modify", "add", "delete"
 }
 
-// ExpectedOutcome defines what should happen after applying a strategy
+// ExpectedOutcome defines what should happen after applying a strategy.
 type ExpectedOutcome struct {
 	ShouldSucceed       bool
 	CurrentBranch       string
@@ -66,7 +69,7 @@ type ExpectedOutcome struct {
 	BranchReset         bool
 }
 
-// ValidationCheck defines a check to validate the outcome
+// ValidationCheck defines a check to validate the outcome.
 type ValidationCheck struct {
 	Name        string
 	CheckType   string // "file_exists", "file_content", "branch_state", "git_status"
@@ -75,14 +78,14 @@ type ValidationCheck struct {
 	Description string
 }
 
-// NewBranchStrategyTester creates a new BranchStrategyTester instance
+// NewBranchStrategyTester creates a new BranchStrategyTester instance.
 func NewBranchStrategyTester() *BranchStrategyTester {
 	return &BranchStrategyTester{
 		timeout: 60 * time.Second,
 	}
 }
 
-// TestAllStrategies tests all synclone strategies against common scenarios
+// TestAllStrategies tests all synclone strategies against common scenarios.
 func (bst *BranchStrategyTester) TestAllStrategies(ctx context.Context, baseRepoPath string) error {
 	strategies := []string{"reset", "pull", "fetch", "rebase", "clone"}
 
@@ -95,7 +98,7 @@ func (bst *BranchStrategyTester) TestAllStrategies(ctx context.Context, baseRepo
 	return nil
 }
 
-// TestStrategy tests a specific synclone strategy
+// TestStrategy tests a specific synclone strategy.
 func (bst *BranchStrategyTester) TestStrategy(ctx context.Context, baseRepoPath, strategy string) error {
 	testCases := bst.generateTestCases(strategy)
 
@@ -113,7 +116,7 @@ func (bst *BranchStrategyTester) TestStrategy(ctx context.Context, baseRepoPath,
 	return nil
 }
 
-// TestResetStrategy specifically tests the reset strategy
+// TestResetStrategy specifically tests the reset strategy.
 func (bst *BranchStrategyTester) TestResetStrategy(ctx context.Context, repoPath string) error {
 	testCase := StrategyTestCase{
 		Strategy: "reset",
@@ -180,7 +183,7 @@ func (bst *BranchStrategyTester) TestResetStrategy(ctx context.Context, repoPath
 	return bst.runTestCase(ctx, repoPath, testCase)
 }
 
-// TestPullStrategy specifically tests the pull strategy
+// TestPullStrategy specifically tests the pull strategy.
 func (bst *BranchStrategyTester) TestPullStrategy(ctx context.Context, repoPath string) error {
 	testCase := StrategyTestCase{
 		Strategy: "pull",
@@ -230,7 +233,7 @@ func (bst *BranchStrategyTester) TestPullStrategy(ctx context.Context, repoPath 
 	return bst.runTestCase(ctx, repoPath, testCase)
 }
 
-// TestRebaseStrategy specifically tests the rebase strategy
+// TestRebaseStrategy specifically tests the rebase strategy.
 func (bst *BranchStrategyTester) TestRebaseStrategy(ctx context.Context, repoPath string) error {
 	testCase := StrategyTestCase{
 		Strategy: "rebase",
@@ -281,7 +284,7 @@ func (bst *BranchStrategyTester) TestRebaseStrategy(ctx context.Context, repoPat
 	return bst.runTestCase(ctx, repoPath, testCase)
 }
 
-// runTestCase executes a single test case
+// runTestCase executes a single test case.
 func (bst *BranchStrategyTester) runTestCase(ctx context.Context, repoPath string, testCase StrategyTestCase) error {
 	// Create test repository
 	if err := bst.setupTestRepository(ctx, repoPath, testCase.InitialState); err != nil {
@@ -318,7 +321,7 @@ func (bst *BranchStrategyTester) runTestCase(ctx context.Context, repoPath strin
 	return nil
 }
 
-// generateTestCases generates test cases for a specific strategy
+// generateTestCases generates test cases for a specific strategy.
 func (bst *BranchStrategyTester) generateTestCases(strategy string) []StrategyTestCase {
 	switch strategy {
 	case "reset":
@@ -364,7 +367,7 @@ func (bst *BranchStrategyTester) generateTestCases(strategy string) []StrategyTe
 
 // Helper methods for setting up and running tests
 
-// setupTestRepository creates a test repository with the specified initial state
+// setupTestRepository creates a test repository with the specified initial state.
 func (bst *BranchStrategyTester) setupTestRepository(ctx context.Context, repoPath string, state BranchState) error {
 	// Create directory
 	if err := os.MkdirAll(repoPath, 0o755); err != nil {
@@ -399,17 +402,17 @@ func (bst *BranchStrategyTester) setupTestRepository(ctx context.Context, repoPa
 	return nil
 }
 
-// applyLocalChanges applies local changes to the repository
+// applyLocalChanges applies local changes to the repository.
 func (bst *BranchStrategyTester) applyLocalChanges(ctx context.Context, repoPath string, changes []LocalChange) error {
 	for _, change := range changes {
 		filePath := filepath.Join(repoPath, change.File)
 
 		switch change.Action {
-		case "add", "modify":
+		case "add", "modify": //nolint:goconst // test utility string
 			if err := os.WriteFile(filePath, []byte(change.Content), 0o644); err != nil {
 				return fmt.Errorf("failed to write file %s: %w", change.File, err)
 			}
-		case "delete":
+		case "delete": //nolint:goconst // test utility string
 			if err := os.Remove(filePath); err != nil && !os.IsNotExist(err) {
 				return fmt.Errorf("failed to delete file %s: %w", change.File, err)
 			}
@@ -419,7 +422,7 @@ func (bst *BranchStrategyTester) applyLocalChanges(ctx context.Context, repoPath
 	return nil
 }
 
-// setupRemoteRepository creates a remote repository with changes
+// setupRemoteRepository creates a remote repository with changes.
 func (bst *BranchStrategyTester) setupRemoteRepository(ctx context.Context, remoteRepo, baseRepo string, changes []RemoteChange) error {
 	// Clone the base repository to create remote
 	if err := bst.runGitCommand(ctx, filepath.Dir(remoteRepo), "clone", baseRepo, filepath.Base(remoteRepo)); err != nil {
@@ -470,7 +473,7 @@ func (bst *BranchStrategyTester) setupRemoteRepository(ctx context.Context, remo
 	return nil
 }
 
-// applyStrategy simulates applying a synclone strategy
+// applyStrategy simulates applying a synclone strategy.
 func (bst *BranchStrategyTester) applyStrategy(ctx context.Context, repoPath, remoteRepo, strategy string) error {
 	// Fetch remote changes first
 	if err := bst.runGitCommand(ctx, repoPath, "fetch", "origin"); err != nil {
@@ -495,7 +498,7 @@ func (bst *BranchStrategyTester) applyStrategy(ctx context.Context, repoPath, re
 	}
 }
 
-// validateOutcome validates that the outcome matches expectations
+// validateOutcome validates that the outcome matches expectations.
 func (bst *BranchStrategyTester) validateOutcome(ctx context.Context, repoPath string, testCase StrategyTestCase) error {
 	for _, check := range testCase.ValidationChecks {
 		switch check.CheckType {
@@ -533,7 +536,7 @@ func (bst *BranchStrategyTester) validateOutcome(ctx context.Context, repoPath s
 	return nil
 }
 
-// getGitStatus gets the git status output
+// getGitStatus gets the git status output.
 func (bst *BranchStrategyTester) getGitStatus(ctx context.Context, repoPath string) (string, error) {
 	cmd := exec.CommandContext(ctx, "git", "status")
 	cmd.Dir = repoPath
@@ -546,7 +549,7 @@ func (bst *BranchStrategyTester) getGitStatus(ctx context.Context, repoPath stri
 	return string(output), nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (bst *BranchStrategyTester) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, bst.timeout)
 	defer cancel()

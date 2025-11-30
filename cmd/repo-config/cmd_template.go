@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	formatTable = "table"
-	formatJSON  = "json"
-	formatYAML  = "yaml"
+	formatTable = "table" //nolint:unused // Used in switch cases
+	formatJSON  = "json"  //nolint:unused // Reserved for future JSON output feature
+	formatYAML  = "yaml"  //nolint:unused // Reserved for future YAML output feature
 )
 
 // newTemplateCmd creates the template subcommand.

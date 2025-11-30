@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -15,7 +18,7 @@ type StandardRepoCreator struct {
 	timeout time.Duration
 }
 
-// StandardRepoOptions defines options for creating standard repositories
+// StandardRepoOptions defines options for creating standard repositories.
 type StandardRepoOptions struct {
 	RepoPath     string
 	Branches     []string
@@ -24,14 +27,14 @@ type StandardRepoOptions struct {
 	WithMerges   bool
 }
 
-// NewStandardRepoCreator creates a new StandardRepoCreator instance
+// NewStandardRepoCreator creates a new StandardRepoCreator instance.
 func NewStandardRepoCreator() *StandardRepoCreator {
 	return &StandardRepoCreator{
 		timeout: 30 * time.Second,
 	}
 }
 
-// CreateStandardRepo creates a repository with typical development patterns
+// CreateStandardRepo creates a repository with typical development patterns.
 func (c *StandardRepoCreator) CreateStandardRepo(ctx context.Context, opts StandardRepoOptions) error {
 	if opts.RepoPath == "" {
 		return fmt.Errorf("repository path is required")
@@ -69,7 +72,7 @@ func (c *StandardRepoCreator) CreateStandardRepo(ctx context.Context, opts Stand
 	return nil
 }
 
-// CreateDevelopmentRepo creates a repository simulating typical development workflow
+// CreateDevelopmentRepo creates a repository simulating typical development workflow.
 func (c *StandardRepoCreator) CreateDevelopmentRepo(ctx context.Context, repoPath string) error {
 	opts := StandardRepoOptions{
 		RepoPath:     repoPath,
@@ -82,7 +85,7 @@ func (c *StandardRepoCreator) CreateDevelopmentRepo(ctx context.Context, repoPat
 	return c.CreateStandardRepo(ctx, opts)
 }
 
-// CreateProjectRepo creates a repository with project-like structure
+// CreateProjectRepo creates a repository with project-like structure.
 func (c *StandardRepoCreator) CreateProjectRepo(ctx context.Context, repoPath string, projectType string) error {
 	if err := c.createBaseRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to create base repository: %w", err)
@@ -128,7 +131,7 @@ func (c *StandardRepoCreator) CreateProjectRepo(ctx context.Context, repoPath st
 	return nil
 }
 
-// createBaseRepo creates a basic repository with initial commit
+// createBaseRepo creates a basic repository with initial commit.
 func (c *StandardRepoCreator) createBaseRepo(ctx context.Context, repoPath string) error {
 	// Create directory
 	if err := os.MkdirAll(repoPath, 0o755); err != nil {
@@ -163,7 +166,7 @@ func (c *StandardRepoCreator) createBaseRepo(ctx context.Context, repoPath strin
 	return nil
 }
 
-// createMultipleCommits adds multiple commits to simulate development history
+// createMultipleCommits adds multiple commits to simulate development history.
 func (c *StandardRepoCreator) createMultipleCommits(ctx context.Context, repoPath string, count int) error {
 	if count <= 0 {
 		count = 5 // Default to 5 commits
@@ -193,7 +196,7 @@ func (c *StandardRepoCreator) createMultipleCommits(ctx context.Context, repoPat
 	return nil
 }
 
-// createBranches creates additional branches
+// createBranches creates additional branches.
 func (c *StandardRepoCreator) createBranches(ctx context.Context, repoPath string, branches []string) error {
 	for _, branch := range branches {
 		if err := c.runGitCommand(ctx, repoPath, "checkout", "-b", branch); err != nil {
@@ -230,7 +233,7 @@ func (c *StandardRepoCreator) createBranches(ctx context.Context, repoPath strin
 	return nil
 }
 
-// createTags adds version tags to the repository
+// createTags adds version tags to the repository.
 func (c *StandardRepoCreator) createTags(ctx context.Context, repoPath string) error {
 	tags := []string{"v1.0.0", "v1.1.0", "v1.2.0"}
 
@@ -243,7 +246,7 @@ func (c *StandardRepoCreator) createTags(ctx context.Context, repoPath string) e
 	return nil
 }
 
-// createMergeCommits creates merge commits to simulate feature merging
+// createMergeCommits creates merge commits to simulate feature merging.
 func (c *StandardRepoCreator) createMergeCommits(ctx context.Context, repoPath string) error {
 	// Create and merge a simple feature branch
 	if err := c.runGitCommand(ctx, repoPath, "checkout", "-b", "temp-feature"); err != nil {
@@ -287,7 +290,7 @@ func (c *StandardRepoCreator) createMergeCommits(ctx context.Context, repoPath s
 	return nil
 }
 
-// getGoProjectFiles returns files for a Go project structure
+// getGoProjectFiles returns files for a Go project structure.
 func (c *StandardRepoCreator) getGoProjectFiles() map[string]string {
 	return map[string]string{
 		"go.mod":       "module example.com/test\n\ngo 1.23\n",
@@ -298,7 +301,7 @@ func (c *StandardRepoCreator) getGoProjectFiles() map[string]string {
 	}
 }
 
-// getJavaScriptProjectFiles returns files for a JavaScript/Node.js project
+// getJavaScriptProjectFiles returns files for a JavaScript/Node.js project.
 func (c *StandardRepoCreator) getJavaScriptProjectFiles() map[string]string {
 	return map[string]string{
 		"package.json": "{\n  \"name\": \"test-project\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\"\n}\n",
@@ -309,7 +312,7 @@ func (c *StandardRepoCreator) getJavaScriptProjectFiles() map[string]string {
 	}
 }
 
-// getPythonProjectFiles returns files for a Python project
+// getPythonProjectFiles returns files for a Python project.
 func (c *StandardRepoCreator) getPythonProjectFiles() map[string]string {
 	return map[string]string{
 		"setup.py":           "from setuptools import setup\n\nsetup(name='test-project', version='1.0.0')\n",
@@ -321,7 +324,7 @@ func (c *StandardRepoCreator) getPythonProjectFiles() map[string]string {
 	}
 }
 
-// getGenericProjectFiles returns generic project files
+// getGenericProjectFiles returns generic project files.
 func (c *StandardRepoCreator) getGenericProjectFiles() map[string]string {
 	return map[string]string{
 		"README.md":     "# Generic Project\n\nA generic test project.\n",
@@ -332,7 +335,7 @@ func (c *StandardRepoCreator) getGenericProjectFiles() map[string]string {
 	}
 }
 
-// configureGitUser sets up git user configuration for testing
+// configureGitUser sets up git user configuration for testing.
 func (c *StandardRepoCreator) configureGitUser(ctx context.Context, repoPath string) error {
 	if err := c.runGitCommand(ctx, repoPath, "config", "user.name", "Test User"); err != nil {
 		return fmt.Errorf("failed to set git user name: %w", err)
@@ -343,7 +346,7 @@ func (c *StandardRepoCreator) configureGitUser(ctx context.Context, repoPath str
 	return nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (c *StandardRepoCreator) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()

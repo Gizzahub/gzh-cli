@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package reports
 
 import (
@@ -6,7 +9,7 @@ import (
 	"time"
 )
 
-// ComprehensiveNetworkReport represents a complete network analysis
+// ComprehensiveNetworkReport represents a complete network analysis.
 type ComprehensiveNetworkReport struct {
 	Summary         NetworkSummary            `json:"summary"`
 	Interfaces      []InterfaceReport         `json:"interfaces"`
@@ -18,7 +21,7 @@ type ComprehensiveNetworkReport struct {
 	SystemInfo      SystemInfo                `json:"system_info"`
 }
 
-// NetworkSummary provides high-level network statistics
+// NetworkSummary provides high-level network statistics.
 type NetworkSummary struct {
 	TotalInterfaces    int       `json:"total_interfaces"`
 	ActiveInterfaces   int       `json:"active_interfaces"`
@@ -31,7 +34,7 @@ type NetworkSummary struct {
 	PeakUsageTimestamp time.Time `json:"peak_usage_timestamp"`
 }
 
-// InterfaceReport contains detailed interface information
+// InterfaceReport contains detailed interface information.
 type InterfaceReport struct {
 	Name          string  `json:"name"`
 	Status        string  `json:"status"`
@@ -51,7 +54,7 @@ type InterfaceReport struct {
 	Driver        string  `json:"driver,omitempty"`
 }
 
-// LatencyReport contains network latency measurements
+// LatencyReport contains network latency measurements.
 type LatencyReport struct {
 	Targets          []LatencyTarget `json:"targets"`
 	AverageLatency   float64         `json:"average_latency_ms"`
@@ -62,7 +65,7 @@ type LatencyReport struct {
 	ReachabilityRate float64         `json:"reachability_rate_percent"`
 }
 
-// LatencyTarget represents a ping target with results
+// LatencyTarget represents a ping target with results.
 type LatencyTarget struct {
 	Host        string    `json:"host"`
 	IP          string    `json:"ip"`
@@ -72,7 +75,7 @@ type LatencyTarget struct {
 	LastChecked time.Time `json:"last_checked"`
 }
 
-// SystemInfo contains system-level network information
+// SystemInfo contains system-level network information.
 type SystemInfo struct {
 	Hostname          string       `json:"hostname"`
 	Platform          string       `json:"platform"`
@@ -84,7 +87,7 @@ type SystemInfo struct {
 	FirewallStatus    string       `json:"firewall_status,omitempty"`
 }
 
-// RouteEntry represents a routing table entry
+// RouteEntry represents a routing table entry.
 type RouteEntry struct {
 	Destination string `json:"destination"`
 	Gateway     string `json:"gateway"`
@@ -92,7 +95,7 @@ type RouteEntry struct {
 	Metric      int    `json:"metric"`
 }
 
-// ReportGenerator generates comprehensive network reports
+// ReportGenerator generates comprehensive network reports.
 type ReportGenerator struct {
 	bandwidthCalc   *BandwidthCalculator
 	speedDetector   *InterfaceSpeedDetector
@@ -100,7 +103,7 @@ type ReportGenerator struct {
 	systemCollector *SystemInfoCollector
 }
 
-// NewReportGenerator creates a new report generator
+// NewReportGenerator creates a new report generator.
 func NewReportGenerator() *ReportGenerator {
 	return &ReportGenerator{
 		bandwidthCalc:   NewBandwidthCalculator(5 * time.Second),
@@ -110,7 +113,7 @@ func NewReportGenerator() *ReportGenerator {
 	}
 }
 
-// GenerateReport creates a comprehensive network report
+// GenerateReport creates a comprehensive network report.
 func (rg *ReportGenerator) GenerateReport(_ time.Duration) (*ComprehensiveNetworkReport, error) {
 	startTime := time.Now()
 
@@ -161,7 +164,7 @@ func (rg *ReportGenerator) GenerateReport(_ time.Duration) (*ComprehensiveNetwor
 	return report, nil
 }
 
-// collectInterfaceReports gathers detailed information about all network interfaces
+// collectInterfaceReports gathers detailed information about all network interfaces.
 func (rg *ReportGenerator) collectInterfaceReports() ([]InterfaceReport, error) {
 	// Get list of network interfaces (implementation would depend on OS)
 	interfaceNames, err := rg.getNetworkInterfaceNames()
@@ -208,7 +211,7 @@ func (rg *ReportGenerator) collectInterfaceReports() ([]InterfaceReport, error) 
 	return reports, nil
 }
 
-// generateSummary creates a network summary from collected data
+// generateSummary creates a network summary from collected data.
 func (rg *ReportGenerator) generateSummary(interfaces []InterfaceReport, trends map[string]BandwidthTrend, latency *LatencyReport) NetworkSummary {
 	var totalBandwidth, usedBandwidth uint64
 	activeInterfaces := 0
@@ -257,7 +260,7 @@ func (rg *ReportGenerator) generateSummary(interfaces []InterfaceReport, trends 
 	}
 }
 
-// generateRecommendations creates actionable recommendations based on network analysis
+// generateRecommendations creates actionable recommendations based on network analysis.
 func (rg *ReportGenerator) generateRecommendations(summary NetworkSummary, interfaces []InterfaceReport, trends map[string]BandwidthTrend, latency *LatencyReport) []string {
 	var recommendations []string
 
@@ -319,7 +322,7 @@ func (rg *ReportGenerator) generateRecommendations(summary NetworkSummary, inter
 }
 
 // getNetworkInterfaceNames returns a list of network interface names
-// This is a placeholder - actual implementation would be OS-specific
+// This is a placeholder - actual implementation would be OS-specific.
 func (rg *ReportGenerator) getNetworkInterfaceNames() ([]string, error) {
 	// This would typically use net.Interfaces() or system-specific calls
 	// For now, return common interface names

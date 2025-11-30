@@ -34,6 +34,8 @@ func addGlobalFlags(cmd *cobra.Command, flags *GlobalFlags) {
 }
 
 // getActionSymbol returns the symbol for action type.
+//
+//nolint:unused // Utility function for future use
 func getActionSymbol(changeType string) string {
 	switch changeType {
 	case "create":

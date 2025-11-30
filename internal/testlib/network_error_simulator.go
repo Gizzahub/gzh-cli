@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -17,7 +20,7 @@ type NetworkErrorSimulator struct {
 	mu         sync.RWMutex
 }
 
-// ErrorRule defines when and how to simulate network errors
+// ErrorRule defines when and how to simulate network errors.
 type ErrorRule struct {
 	Pattern      string        // URL pattern to match
 	ErrorType    ErrorType     // Type of error to simulate
@@ -29,7 +32,7 @@ type ErrorRule struct {
 	applied      int           // Internal counter
 }
 
-// ErrorType represents different types of network errors
+// ErrorType represents different types of network errors.
 type ErrorType int
 
 const (
@@ -43,7 +46,7 @@ const (
 	ErrorTypeDNSFailure                          // DNS resolution failure
 )
 
-// String returns the string representation of ErrorType
+// String returns the string representation of ErrorType.
 func (et ErrorType) String() string {
 	switch et {
 	case ErrorTypeTimeout:
@@ -67,14 +70,14 @@ func (et ErrorType) String() string {
 	}
 }
 
-// NewNetworkErrorSimulator creates a new NetworkErrorSimulator instance
+// NewNetworkErrorSimulator creates a new NetworkErrorSimulator instance.
 func NewNetworkErrorSimulator() *NetworkErrorSimulator {
 	return &NetworkErrorSimulator{
 		errorRules: make([]ErrorRule, 0),
 	}
 }
 
-// StartServer starts the mock server for simulating network conditions
+// StartServer starts the mock server for simulating network conditions.
 func (nes *NetworkErrorSimulator) StartServer() string {
 	nes.mu.Lock()
 	defer nes.mu.Unlock()
@@ -87,7 +90,7 @@ func (nes *NetworkErrorSimulator) StartServer() string {
 	return nes.server.URL
 }
 
-// StopServer stops the mock server
+// StopServer stops the mock server.
 func (nes *NetworkErrorSimulator) StopServer() {
 	nes.mu.Lock()
 	defer nes.mu.Unlock()
@@ -98,21 +101,21 @@ func (nes *NetworkErrorSimulator) StopServer() {
 	}
 }
 
-// AddErrorRule adds a rule for simulating network errors
+// AddErrorRule adds a rule for simulating network errors.
 func (nes *NetworkErrorSimulator) AddErrorRule(rule ErrorRule) {
 	nes.mu.Lock()
 	defer nes.mu.Unlock()
 	nes.errorRules = append(nes.errorRules, rule)
 }
 
-// ClearErrorRules removes all error rules
+// ClearErrorRules removes all error rules.
 func (nes *NetworkErrorSimulator) ClearErrorRules() {
 	nes.mu.Lock()
 	defer nes.mu.Unlock()
 	nes.errorRules = make([]ErrorRule, 0)
 }
 
-// SimulateGitCloneTimeout simulates timeout during git clone operations
+// SimulateGitCloneTimeout simulates timeout during git clone operations.
 func (nes *NetworkErrorSimulator) SimulateGitCloneTimeout(ctx context.Context) *NetworkErrorSimulator {
 	rule := ErrorRule{
 		Pattern:     "/.*\\.git",
@@ -125,7 +128,7 @@ func (nes *NetworkErrorSimulator) SimulateGitCloneTimeout(ctx context.Context) *
 	return nes
 }
 
-// SimulateIntermittentConnection simulates intermittent connection issues
+// SimulateIntermittentConnection simulates intermittent connection issues.
 func (nes *NetworkErrorSimulator) SimulateIntermittentConnection(ctx context.Context, failureRate float64) *NetworkErrorSimulator {
 	rules := []ErrorRule{
 		{
@@ -156,7 +159,7 @@ func (nes *NetworkErrorSimulator) SimulateIntermittentConnection(ctx context.Con
 	return nes
 }
 
-// SimulateHTTPErrors simulates various HTTP error responses
+// SimulateHTTPErrors simulates various HTTP error responses.
 func (nes *NetworkErrorSimulator) SimulateHTTPErrors(ctx context.Context) *NetworkErrorSimulator {
 	rules := []ErrorRule{
 		{
@@ -188,7 +191,7 @@ func (nes *NetworkErrorSimulator) SimulateHTTPErrors(ctx context.Context) *Netwo
 	return nes
 }
 
-// CreateRecoveryScenario creates a scenario where network recovers after initial failures
+// CreateRecoveryScenario creates a scenario where network recovers after initial failures.
 func (nes *NetworkErrorSimulator) CreateRecoveryScenario(ctx context.Context, initialFailures int) *NetworkErrorSimulator {
 	// Fail for the first N requests, then work normally
 	rule := ErrorRule{
@@ -202,7 +205,7 @@ func (nes *NetworkErrorSimulator) CreateRecoveryScenario(ctx context.Context, in
 	return nes
 }
 
-// GetRequestStats returns statistics about handled requests
+// GetRequestStats returns statistics about handled requests.
 func (nes *NetworkErrorSimulator) GetRequestStats() RequestStats {
 	nes.mu.RLock()
 	defer nes.mu.RUnlock()
@@ -216,13 +219,13 @@ func (nes *NetworkErrorSimulator) GetRequestStats() RequestStats {
 	return stats
 }
 
-// RequestStats contains statistics about simulated requests
+// RequestStats contains statistics about simulated requests.
 type RequestStats struct {
 	TotalRules        int
 	TotalApplications int
 }
 
-// handleRequest handles incoming HTTP requests and applies error rules
+// handleRequest handles incoming HTTP requests and applies error rules.
 func (nes *NetworkErrorSimulator) handleRequest(w http.ResponseWriter, r *http.Request) {
 	nes.mu.Lock()
 	defer nes.mu.Unlock()
@@ -256,7 +259,7 @@ func (nes *NetworkErrorSimulator) handleRequest(w http.ResponseWriter, r *http.R
 	nes.handleSuccessResponse(w, r)
 }
 
-// matchesPattern checks if a URL path matches a pattern (simple implementation)
+// matchesPattern checks if a URL path matches a pattern (simple implementation).
 func (nes *NetworkErrorSimulator) matchesPattern(path, pattern string) bool {
 	// Simple pattern matching - in a real implementation, would use regex
 	if pattern == ".*" {
@@ -273,13 +276,13 @@ func (nes *NetworkErrorSimulator) matchesPattern(path, pattern string) bool {
 	return false
 }
 
-// shouldApplyRule determines if a rule should be applied based on probability
+// shouldApplyRule determines if a rule should be applied based on probability.
 func (nes *NetworkErrorSimulator) shouldApplyRule(probability float64) bool {
 	// Simple probability check - in real implementation would use proper random
 	return time.Now().UnixNano()%100 < int64(probability*100)
 }
 
-// applyErrorRule applies the specified error rule to the request
+// applyErrorRule applies the specified error rule to the request.
 func (nes *NetworkErrorSimulator) applyErrorRule(w http.ResponseWriter, r *http.Request, rule *ErrorRule) {
 	// Apply delay if specified
 	if rule.Delay > 0 {
@@ -325,7 +328,7 @@ func (nes *NetworkErrorSimulator) applyErrorRule(w http.ResponseWriter, r *http.
 	}
 }
 
-// handleSuccessResponse handles a successful response
+// handleSuccessResponse handles a successful response.
 func (nes *NetworkErrorSimulator) handleSuccessResponse(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 
@@ -343,19 +346,19 @@ func (nes *NetworkErrorSimulator) handleSuccessResponse(w http.ResponseWriter, r
 	}
 }
 
-// GitOperationSimulator simulates network issues during Git operations
+// GitOperationSimulator simulates network issues during Git operations.
 type GitOperationSimulator struct {
 	nes *NetworkErrorSimulator
 }
 
-// NewGitOperationSimulator creates a Git operation simulator
+// NewGitOperationSimulator creates a Git operation simulator.
 func NewGitOperationSimulator() *GitOperationSimulator {
 	return &GitOperationSimulator{
 		nes: NewNetworkErrorSimulator(),
 	}
 }
 
-// SimulateCloneFailure simulates failures during git clone
+// SimulateCloneFailure simulates failures during git clone.
 func (gos *GitOperationSimulator) SimulateCloneFailure(ctx context.Context, failureType string) error {
 	switch failureType {
 	case "timeout":
@@ -373,12 +376,12 @@ func (gos *GitOperationSimulator) SimulateCloneFailure(ctx context.Context, fail
 	return nil
 }
 
-// GetServerURL returns the URL of the test server
+// GetServerURL returns the URL of the test server.
 func (gos *GitOperationSimulator) GetServerURL() string {
 	return gos.nes.StartServer()
 }
 
-// Cleanup stops the test server
+// Cleanup stops the test server.
 func (gos *GitOperationSimulator) Cleanup() {
 	gos.nes.StopServer()
 }

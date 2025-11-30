@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package testlib
 
 import (
@@ -16,7 +19,7 @@ type MergeConflictGenerator struct {
 	timeout time.Duration
 }
 
-// ConflictScenario defines a merge conflict scenario
+// ConflictScenario defines a merge conflict scenario.
 type ConflictScenario struct {
 	Name              string
 	Description       string
@@ -26,7 +29,7 @@ type ConflictScenario struct {
 	PreMergeSetup     []PreMergeAction
 }
 
-// ConflictingFile represents a file that will have conflicts
+// ConflictingFile represents a file that will have conflicts.
 type ConflictingFile struct {
 	FilePath       string
 	BaseContent    string
@@ -35,7 +38,7 @@ type ConflictingFile struct {
 	ConflictType   ConflictType
 }
 
-// PreMergeAction represents actions to take before creating conflicts
+// PreMergeAction represents actions to take before creating conflicts.
 type PreMergeAction struct {
 	Branch    string
 	Action    string // "commit", "modify", "delete", "rename"
@@ -44,7 +47,7 @@ type PreMergeAction struct {
 	CommitMsg string
 }
 
-// ConflictType represents the type of merge conflict
+// ConflictType represents the type of merge conflict.
 type ConflictType int
 
 const (
@@ -54,7 +57,7 @@ const (
 	ConflictTypeRename                           // Rename conflicts
 )
 
-// String returns the string representation of ConflictType
+// String returns the string representation of ConflictType.
 func (ct ConflictType) String() string {
 	switch ct {
 	case ConflictTypeContent:
@@ -70,14 +73,14 @@ func (ct ConflictType) String() string {
 	}
 }
 
-// NewMergeConflictGenerator creates a new MergeConflictGenerator instance
+// NewMergeConflictGenerator creates a new MergeConflictGenerator instance.
 func NewMergeConflictGenerator() *MergeConflictGenerator {
 	return &MergeConflictGenerator{
 		timeout: 60 * time.Second,
 	}
 }
 
-// CreateConflictScenario creates a repository with the specified conflict scenario
+// CreateConflictScenario creates a repository with the specified conflict scenario.
 func (mcg *MergeConflictGenerator) CreateConflictScenario(ctx context.Context, repoPath string, scenario ConflictScenario) error {
 	// Initialize repository if needed
 	if !mcg.isGitRepo(repoPath) {
@@ -113,7 +116,7 @@ func (mcg *MergeConflictGenerator) CreateConflictScenario(ctx context.Context, r
 	return nil
 }
 
-// CreateSimpleContentConflict creates a basic content conflict scenario
+// CreateSimpleContentConflict creates a basic content conflict scenario.
 func (mcg *MergeConflictGenerator) CreateSimpleContentConflict(ctx context.Context, repoPath string) error {
 	scenario := ConflictScenario{
 		Name:              "Simple Content Conflict",
@@ -134,7 +137,7 @@ func (mcg *MergeConflictGenerator) CreateSimpleContentConflict(ctx context.Conte
 	return mcg.CreateConflictScenario(ctx, repoPath, scenario)
 }
 
-// CreateComplexConflict creates a complex conflict scenario with multiple types
+// CreateComplexConflict creates a complex conflict scenario with multiple types.
 func (mcg *MergeConflictGenerator) CreateComplexConflict(ctx context.Context, repoPath string) error {
 	scenario := ConflictScenario{
 		Name:              "Complex Multi-type Conflict",
@@ -177,7 +180,7 @@ func (mcg *MergeConflictGenerator) CreateComplexConflict(ctx context.Context, re
 	return mcg.CreateConflictScenario(ctx, repoPath, scenario)
 }
 
-// CreateDivergedBranchesConflict creates a scenario where branches have diverged significantly
+// CreateDivergedBranchesConflict creates a scenario where branches have diverged significantly.
 func (mcg *MergeConflictGenerator) CreateDivergedBranchesConflict(ctx context.Context, repoPath string) error {
 	if err := mcg.initializeRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to initialize repository: %w", err)
@@ -245,7 +248,7 @@ func (mcg *MergeConflictGenerator) CreateDivergedBranchesConflict(ctx context.Co
 	return mcg.CreateSimpleContentConflict(ctx, repoPath+"-fallback")
 }
 
-// GetConflictStatus returns information about current merge conflicts
+// GetConflictStatus returns information about current merge conflicts.
 func (mcg *MergeConflictGenerator) GetConflictStatus(ctx context.Context, repoPath string) (ConflictStatus, error) {
 	cmd := exec.CommandContext(ctx, "git", "status", "--porcelain")
 	cmd.Dir = repoPath
@@ -258,7 +261,7 @@ func (mcg *MergeConflictGenerator) GetConflictStatus(ctx context.Context, repoPa
 	return mcg.parseConflictStatus(string(output)), nil
 }
 
-// ConflictStatus represents the current conflict state
+// ConflictStatus represents the current conflict state.
 type ConflictStatus struct {
 	HasConflicts    bool
 	ConflictedFiles []string
@@ -269,12 +272,12 @@ type ConflictStatus struct {
 	DeletedByUs     []string
 }
 
-// IsInMergeState returns true if the repository is in a merge state
+// IsInMergeState returns true if the repository is in a merge state.
 func (cs ConflictStatus) IsInMergeState() bool {
 	return cs.HasConflicts || len(cs.UnmergedPaths) > 0
 }
 
-// parseConflictStatus parses git status output to identify conflicts
+// parseConflictStatus parses git status output to identify conflicts.
 func (mcg *MergeConflictGenerator) parseConflictStatus(output string) ConflictStatus {
 	status := ConflictStatus{}
 	lines := strings.Split(strings.TrimSpace(output), "\n")
@@ -315,7 +318,7 @@ func (mcg *MergeConflictGenerator) parseConflictStatus(output string) ConflictSt
 	return status
 }
 
-// createBaseFile creates the initial version of a file that will have conflicts
+// createBaseFile creates the initial version of a file that will have conflicts.
 func (mcg *MergeConflictGenerator) createBaseFile(ctx context.Context, repoPath string, file ConflictingFile) error {
 	if file.BaseContent == "" {
 		return nil // File doesn't exist in base, skip
@@ -345,7 +348,7 @@ func (mcg *MergeConflictGenerator) createBaseFile(ctx context.Context, repoPath 
 	return nil
 }
 
-// executePreMergeAction executes a pre-merge setup action
+// executePreMergeAction executes a pre-merge setup action.
 func (mcg *MergeConflictGenerator) executePreMergeAction(ctx context.Context, repoPath string, action PreMergeAction) error {
 	// Switch to the specified branch
 	if err := mcg.runGitCommand(ctx, repoPath, "checkout", action.Branch); err != nil {
@@ -384,7 +387,7 @@ func (mcg *MergeConflictGenerator) executePreMergeAction(ctx context.Context, re
 	return nil
 }
 
-// createConflictingBranches creates branches with conflicting content
+// createConflictingBranches creates branches with conflicting content.
 func (mcg *MergeConflictGenerator) createConflictingBranches(ctx context.Context, repoPath string, scenario ConflictScenario) error {
 	// Ensure we're on the base branch
 	if err := mcg.runGitCommand(ctx, repoPath, "checkout", scenario.BaseBranch); err != nil {
@@ -424,7 +427,7 @@ func (mcg *MergeConflictGenerator) createConflictingBranches(ctx context.Context
 	return nil
 }
 
-// createMergeConflicts attempts to merge branches to create conflicts
+// createMergeConflicts attempts to merge branches to create conflicts.
 func (mcg *MergeConflictGenerator) createMergeConflicts(ctx context.Context, repoPath string, scenario ConflictScenario) error {
 	// Switch to base branch
 	if err := mcg.runGitCommand(ctx, repoPath, "checkout", scenario.BaseBranch); err != nil {
@@ -451,7 +454,7 @@ func (mcg *MergeConflictGenerator) createMergeConflicts(ctx context.Context, rep
 
 // Helper methods
 
-// createAndCommitFile creates a file and commits it
+// createAndCommitFile creates a file and commits it.
 func (mcg *MergeConflictGenerator) createAndCommitFile(ctx context.Context, repoPath, filePath, content, commitMessage string) error {
 	fullPath := filepath.Join(repoPath, filePath)
 
@@ -477,7 +480,7 @@ func (mcg *MergeConflictGenerator) createAndCommitFile(ctx context.Context, repo
 	return nil
 }
 
-// isGitRepo checks if a directory is a Git repository
+// isGitRepo checks if a directory is a Git repository.
 func (mcg *MergeConflictGenerator) isGitRepo(repoPath string) bool {
 	gitDir := filepath.Join(repoPath, ".git")
 	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
@@ -486,7 +489,7 @@ func (mcg *MergeConflictGenerator) isGitRepo(repoPath string) bool {
 	return true
 }
 
-// initializeRepo initializes a Git repository
+// initializeRepo initializes a Git repository.
 func (mcg *MergeConflictGenerator) initializeRepo(ctx context.Context, repoPath string) error {
 	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
@@ -522,7 +525,7 @@ func (mcg *MergeConflictGenerator) initializeRepo(ctx context.Context, repoPath 
 	return nil
 }
 
-// runGitCommand executes a git command with timeout
+// runGitCommand executes a git command with timeout.
 func (mcg *MergeConflictGenerator) runGitCommand(ctx context.Context, dir string, args ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, mcg.timeout)
 	defer cancel()

@@ -13,13 +13,13 @@ import (
 	"strings"
 )
 
-// VersionTracker tracks package version changes across different package managers
+// VersionTracker tracks package version changes across different package managers.
 type VersionTracker struct {
 	formatter *OutputFormatter
 	changes   map[string][]PackageChange
 }
 
-// NewVersionTracker creates a new version tracker
+// NewVersionTracker creates a new version tracker.
 func NewVersionTracker(formatter *OutputFormatter) *VersionTracker {
 	return &VersionTracker{
 		formatter: formatter,
@@ -27,7 +27,7 @@ func NewVersionTracker(formatter *OutputFormatter) *VersionTracker {
 	}
 }
 
-// TrackBrewUpdates extracts version changes from brew upgrade output
+// TrackBrewUpdates extracts version changes from brew upgrade output.
 func (vt *VersionTracker) TrackBrewUpdates(ctx context.Context, dryRun bool) error {
 	var cmd *exec.Cmd
 
@@ -54,7 +54,7 @@ func (vt *VersionTracker) TrackBrewUpdates(ctx context.Context, dryRun bool) err
 	return nil
 }
 
-// trackBrewRealtime tracks changes during actual brew upgrade
+// trackBrewRealtime tracks changes during actual brew upgrade.
 func (vt *VersionTracker) trackBrewRealtime(ctx context.Context) error {
 	// First, get current versions
 	beforeCmd := exec.CommandContext(ctx, "brew", "list", "--versions")
@@ -93,7 +93,7 @@ func (vt *VersionTracker) trackBrewRealtime(ctx context.Context) error {
 	return nil
 }
 
-// parseBrewOutdated parses 'brew outdated --verbose' output
+// parseBrewOutdated parses 'brew outdated --verbose' output.
 func (vt *VersionTracker) parseBrewOutdated(output string) []PackageChange {
 	var changes []PackageChange
 
@@ -128,7 +128,7 @@ func (vt *VersionTracker) parseBrewOutdated(output string) []PackageChange {
 	return changes
 }
 
-// parseBrewVersions parses 'brew list --versions' output
+// parseBrewVersions parses 'brew list --versions' output.
 func (vt *VersionTracker) parseBrewVersions(output string) map[string]string {
 	versions := make(map[string]string)
 
@@ -150,7 +150,7 @@ func (vt *VersionTracker) parseBrewVersions(output string) map[string]string {
 	return versions
 }
 
-// compareVersions compares before and after version maps to find changes
+// compareVersions compares before and after version maps to find changes.
 func (vt *VersionTracker) compareVersions(manager string, before, after map[string]string) []PackageChange {
 	var changes []PackageChange
 
@@ -173,7 +173,7 @@ func (vt *VersionTracker) compareVersions(manager string, before, after map[stri
 	return changes
 }
 
-// TrackAsdfUpdates extracts version changes from asdf plugin updates
+// TrackAsdfUpdates extracts version changes from asdf plugin updates.
 func (vt *VersionTracker) TrackAsdfUpdates(ctx context.Context, plugin string, dryRun bool) error {
 	// Get current version
 	currentCmd := exec.CommandContext(ctx, "asdf", "current", plugin)
@@ -226,7 +226,7 @@ func (vt *VersionTracker) TrackAsdfUpdates(ctx context.Context, plugin string, d
 	return nil
 }
 
-// parseAsdfCurrentVersion parses 'asdf current <plugin>' output
+// parseAsdfCurrentVersion parses 'asdf current <plugin>' output.
 func (vt *VersionTracker) parseAsdfCurrentVersion(output string) string {
 	// Example: "nodejs 20.11.0 (set by /Users/user/.tool-versions)"
 	fields := strings.Fields(strings.TrimSpace(output))
@@ -236,7 +236,7 @@ func (vt *VersionTracker) parseAsdfCurrentVersion(output string) string {
 	return ""
 }
 
-// TrackNpmUpdates tracks npm global package updates
+// TrackNpmUpdates tracks npm global package updates.
 func (vt *VersionTracker) TrackNpmUpdates(ctx context.Context, dryRun bool) error {
 	// Get outdated packages
 	cmd := exec.CommandContext(ctx, "npm", "outdated", "-g", "--depth=0", "--json")
@@ -261,14 +261,14 @@ func (vt *VersionTracker) TrackNpmUpdates(ctx context.Context, dryRun bool) erro
 	return nil
 }
 
-// parseNpmOutdated parses npm outdated JSON output
+// parseNpmOutdated parses npm outdated JSON output.
 func (vt *VersionTracker) parseNpmOutdated(output string) []PackageChange {
 	// This would parse JSON output from npm outdated
 	// For now, return empty slice as placeholder
 	return []PackageChange{}
 }
 
-// TrackPipUpdates tracks pip package updates
+// TrackPipUpdates tracks pip package updates.
 func (vt *VersionTracker) TrackPipUpdates(ctx context.Context, pipCmd string, dryRun bool) error {
 	// Get outdated packages
 	cmd := exec.CommandContext(ctx, pipCmd, "list", "--outdated", "--format=json")
@@ -294,7 +294,7 @@ func (vt *VersionTracker) TrackPipUpdates(ctx context.Context, pipCmd string, dr
 	return nil
 }
 
-// trackPipFreezeFormat tracks pip updates using freeze format (fallback)
+// trackPipFreezeFormat tracks pip updates using freeze format (fallback).
 func (vt *VersionTracker) trackPipFreezeFormat(ctx context.Context, pipCmd string, dryRun bool) error {
 	parts := strings.Fields(pipCmd)
 	if len(parts) == 0 {
@@ -326,13 +326,13 @@ func (vt *VersionTracker) trackPipFreezeFormat(ctx context.Context, pipCmd strin
 	return nil
 }
 
-// parsePipOutdatedJSON parses pip list --outdated --format=json output
+// parsePipOutdatedJSON parses pip list --outdated --format=json output.
 func (vt *VersionTracker) parsePipOutdatedJSON(output string) []PackageChange {
 	// This would parse JSON output - placeholder for now
 	return []PackageChange{}
 }
 
-// parsePipFreezeFormat parses pip list --outdated --format=freeze output
+// parsePipFreezeFormat parses pip list --outdated --format=freeze output.
 func (vt *VersionTracker) parsePipFreezeFormat(output string) []PackageChange {
 	var changes []PackageChange
 
@@ -366,7 +366,7 @@ func (vt *VersionTracker) parsePipFreezeFormat(output string) []PackageChange {
 	return changes
 }
 
-// printBrewChanges prints brew package changes with enhanced formatting
+// printBrewChanges prints brew package changes with enhanced formatting.
 func (vt *VersionTracker) printBrewChanges(changes []PackageChange, dryRun bool) {
 	for _, change := range changes {
 		if dryRun {
@@ -378,7 +378,7 @@ func (vt *VersionTracker) printBrewChanges(changes []PackageChange, dryRun bool)
 	}
 }
 
-// estimatePackageSize estimates download size for a package
+// estimatePackageSize estimates download size for a package.
 func (vt *VersionTracker) estimatePackageSize(name, manager string) float64 {
 	// Package size estimates in MB based on common packages
 	estimates := map[string]map[string]float64{
@@ -443,7 +443,7 @@ func (vt *VersionTracker) estimatePackageSize(name, manager string) float64 {
 	return 2.0 // Generic fallback
 }
 
-// determineUpdateType determines if this is a major, minor, or patch update
+// determineUpdateType determines if this is a major, minor, or patch update.
 func (vt *VersionTracker) determineUpdateType(oldVer, newVer string) string {
 	oldParts := vt.parseSemanticVersion(oldVer)
 	newParts := vt.parseSemanticVersion(newVer)
@@ -465,7 +465,7 @@ func (vt *VersionTracker) determineUpdateType(oldVer, newVer string) string {
 	return "unknown"
 }
 
-// parseSemanticVersion parses semantic version string into major.minor.patch
+// parseSemanticVersion parses semantic version string into major.minor.patch.
 func (vt *VersionTracker) parseSemanticVersion(version string) []int {
 	// Remove common prefixes
 	version = strings.TrimPrefix(version, "v")
@@ -491,12 +491,12 @@ func (vt *VersionTracker) parseSemanticVersion(version string) []int {
 	return result
 }
 
-// GetAllChanges returns all tracked changes
+// GetAllChanges returns all tracked changes.
 func (vt *VersionTracker) GetAllChanges() map[string][]PackageChange {
 	return vt.changes
 }
 
-// GetTotalPackageCount returns total number of packages changed
+// GetTotalPackageCount returns total number of packages changed.
 func (vt *VersionTracker) GetTotalPackageCount() int {
 	total := 0
 	for _, changes := range vt.changes {

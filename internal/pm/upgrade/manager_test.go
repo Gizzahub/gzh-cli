@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// MockLogger implements logger.CommonLogger for testing
+// MockLogger implements logger.CommonLogger for testing.
 type MockLogger struct {
 	mock.Mock
 }
@@ -34,14 +34,14 @@ func (m *MockLogger) ErrorWithStack(err error, msg string, args ...interface{}) 
 	m.Called(err, msg, args)
 }
 
-// MockUpgrader implements PackageManagerUpgrader for testing
+// MockUpgrader implements PackageManagerUpgrader for testing.
 type MockUpgrader struct {
 	mock.Mock
 }
 
 func (m *MockUpgrader) CheckUpdate(ctx context.Context) (*UpgradeStatus, error) {
 	args := m.Called(ctx)
-	return args.Get(0).(*UpgradeStatus), args.Error(1)
+	return args.Get(0).(*UpgradeStatus), args.Error(1) //nolint:forcetypeassert // testify mock guarantees type
 }
 
 func (m *MockUpgrader) Upgrade(ctx context.Context, options UpgradeOptions) error {

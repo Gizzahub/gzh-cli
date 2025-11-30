@@ -71,12 +71,12 @@ func TestShellStop(t *testing.T) {
 	shell.Stop()
 	assert.False(t, shell.running)
 
-	// Context should be cancelled
+	// Context should be canceled
 	select {
 	case <-shell.ctx.Done():
 		// Expected
 	case <-time.After(100 * time.Millisecond):
-		t.Error("Context should be cancelled after Stop()")
+		t.Error("Context should be canceled after Stop()")
 	}
 }
 

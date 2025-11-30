@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
 package reports
 
 import (
@@ -12,7 +15,7 @@ import (
 	"time"
 )
 
-// LatencyTester performs network latency measurements
+// LatencyTester performs network latency measurements.
 type LatencyTester struct {
 	timeout    time.Duration
 	pingCount  int
@@ -20,7 +23,7 @@ type LatencyTester struct {
 	mutex      sync.RWMutex
 }
 
-// NewLatencyTester creates a new latency tester
+// NewLatencyTester creates a new latency tester.
 func NewLatencyTester() *LatencyTester {
 	return &LatencyTester{
 		timeout:    5 * time.Second,
@@ -29,7 +32,7 @@ func NewLatencyTester() *LatencyTester {
 	}
 }
 
-// RunLatencyTests performs latency tests against multiple targets
+// RunLatencyTests performs latency tests against multiple targets.
 func (lt *LatencyTester) RunLatencyTests(targets []string) (*LatencyReport, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), lt.timeout*time.Duration(len(targets)))
 	defer cancel()
@@ -70,7 +73,7 @@ func (lt *LatencyTester) RunLatencyTests(targets []string) (*LatencyReport, erro
 	return report, nil
 }
 
-// pingTarget performs ping test against a single target
+// pingTarget performs ping test against a single target.
 func (lt *LatencyTester) pingTarget(ctx context.Context, host string) LatencyTarget {
 	target := LatencyTarget{
 		Host:        host,
@@ -88,9 +91,9 @@ func (lt *LatencyTester) pingTarget(ctx context.Context, host string) LatencyTar
 	// Perform ping based on OS
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
-	case "windows":
+	case osWindows:
 		cmd = exec.CommandContext(ctx, "ping", "-n", strconv.Itoa(lt.pingCount), host) //nolint:gosec // G204: 검증된 ping 명령어 사용
-	case "darwin", "linux":
+	case osDarwin, osLinux:
 		cmd = exec.CommandContext(ctx, "ping", "-c", strconv.Itoa(lt.pingCount), host) //nolint:gosec // G204: 검증된 ping 명령어 사용
 	default:
 		// Fallback for other Unix-like systems
@@ -106,13 +109,13 @@ func (lt *LatencyTester) pingTarget(ctx context.Context, host string) LatencyTar
 	return lt.parsePingOutput(target, string(output))
 }
 
-// parsePingOutput extracts latency and packet loss from ping command output
+// parsePingOutput extracts latency and packet loss from ping command output.
 func (lt *LatencyTester) parsePingOutput(target LatencyTarget, output string) LatencyTarget {
 	lines := strings.Split(output, "\n")
 
 	// Platform-specific parsing
 	switch runtime.GOOS {
-	case "windows":
+	case osWindows:
 		target = lt.parseWindowsPing(target, lines)
 	default:
 		target = lt.parseUnixPing(target, lines)
@@ -121,7 +124,7 @@ func (lt *LatencyTester) parsePingOutput(target LatencyTarget, output string) La
 	return target
 }
 
-// parseUnixPing parses Unix/Linux/macOS ping output
+// parseUnixPing parses Unix/Linux/macOS ping output.
 func (lt *LatencyTester) parseUnixPing(target LatencyTarget, lines []string) LatencyTarget {
 	var latencies []float64
 	transmitted := 0
@@ -167,7 +170,7 @@ func (lt *LatencyTester) parseUnixPing(target LatencyTarget, lines []string) Lat
 	return target
 }
 
-// parseWindowsPing parses Windows ping output
+// parseWindowsPing parses Windows ping output.
 func (lt *LatencyTester) parseWindowsPing(target LatencyTarget, lines []string) LatencyTarget {
 	var latencies []float64
 	transmitted := 0
@@ -213,7 +216,7 @@ func (lt *LatencyTester) parseWindowsPing(target LatencyTarget, lines []string) 
 	return target
 }
 
-// calculateLatencyStatistics computes aggregate statistics from individual target results
+// calculateLatencyStatistics computes aggregate statistics from individual target results.
 func (lt *LatencyTester) calculateLatencyStatistics(targets []LatencyTarget) *LatencyReport {
 	report := &LatencyReport{
 		Targets: targets,
@@ -269,21 +272,21 @@ func (lt *LatencyTester) calculateLatencyStatistics(targets []LatencyTarget) *La
 	return report
 }
 
-// SetTimeout configures the timeout for ping operations
+// SetTimeout configures the timeout for ping operations.
 func (lt *LatencyTester) SetTimeout(timeout time.Duration) {
 	lt.mutex.Lock()
 	defer lt.mutex.Unlock()
 	lt.timeout = timeout
 }
 
-// SetPingCount configures the number of pings per target
+// SetPingCount configures the number of pings per target.
 func (lt *LatencyTester) SetPingCount(count int) {
 	lt.mutex.Lock()
 	defer lt.mutex.Unlock()
 	lt.pingCount = count
 }
 
-// SetConcurrency configures the number of concurrent ping operations
+// SetConcurrency configures the number of concurrent ping operations.
 func (lt *LatencyTester) SetConcurrency(concurrent int) {
 	lt.mutex.Lock()
 	defer lt.mutex.Unlock()

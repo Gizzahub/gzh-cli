@@ -4,6 +4,7 @@
 package ide
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -16,18 +17,18 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/idecore"
 )
 
-// Use types from idecore package
+// Use types from idecore package.
 type (
 	IDE      = idecore.IDE
 	IDECache = idecore.IDECache
 )
 
-// IDEDetector handles IDE detection logic
+// IDEDetector handles IDE detection logic.
 type IDEDetector struct {
 	cacheDir string
 }
 
-// NewIDEDetector creates a new IDE detector
+// NewIDEDetector creates a new IDE detector.
 func NewIDEDetector() *IDEDetector {
 	homeDir, _ := os.UserHomeDir()
 	cacheDir := filepath.Join(homeDir, ".gz", "cache")
@@ -37,7 +38,7 @@ func NewIDEDetector() *IDEDetector {
 	}
 }
 
-// detectInstallMethod determines how an IDE was installed
+// detectInstallMethod determines how an IDE was installed.
 func (d *IDEDetector) detectInstallMethod(execPath string) (method, installPath string) {
 	// Check if it's an AppImage launcher script
 	if method, path := d.detectAppImageLauncher(execPath); method != "" {
@@ -58,7 +59,7 @@ func (d *IDEDetector) detectInstallMethod(execPath string) (method, installPath 
 	return "direct", execPath
 }
 
-// detectAppImageLauncher checks if executable is a script launching an AppImage
+// detectAppImageLauncher checks if executable is a script launching an AppImage.
 func (d *IDEDetector) detectAppImageLauncher(execPath string) (string, string) {
 	// Read the file to see if it's a script
 	content, err := os.ReadFile(execPath)
@@ -115,7 +116,7 @@ func (d *IDEDetector) detectAppImageLauncher(execPath string) (string, string) {
 	return "", ""
 }
 
-// extractAppImageDir extracts the AppImage directory from a launcher script line
+// extractAppImageDir extracts the AppImage directory from a launcher script line.
 func (d *IDEDetector) extractAppImageDir(line string) string {
 	// Pattern: ls -1 "$APP_DIR"/Cursor-*.AppImage
 	if strings.Contains(line, "\"$") && strings.Contains(line, "*.AppImage") {
@@ -148,7 +149,7 @@ func (d *IDEDetector) extractAppImageDir(line string) string {
 	return ""
 }
 
-// detectPackageManager checks which package manager installed the executable
+// detectPackageManager checks which package manager installed the executable.
 func (d *IDEDetector) detectPackageManager(execPath string) (string, string) {
 	// Try pacman first (Arch Linux) - check if file is owned by a package
 	if d.isCommandAvailable("pacman") {
@@ -163,15 +164,15 @@ func (d *IDEDetector) detectPackageManager(execPath string) (string, string) {
 	return "", ""
 }
 
-// isCommandAvailable checks if a command is available in PATH
+// isCommandAvailable checks if a command is available in PATH.
 func (d *IDEDetector) isCommandAvailable(command string) bool {
 	_, err := exec.LookPath(command)
 	return err == nil
 }
 
-// queryPackageManager queries a package manager for package info
+// queryPackageManager queries a package manager for package info.
 func (d *IDEDetector) queryPackageManager(manager string, args ...string) string {
-	cmd := exec.Command(manager, args...)
+	cmd := exec.CommandContext(context.Background(), manager, args...)
 	cmd.Stderr = nil // Suppress error output
 
 	// Set a timeout to prevent hanging
@@ -186,7 +187,7 @@ func (d *IDEDetector) queryPackageManager(manager string, args ...string) string
 //
 //nolint:unused // 향후 flatpak 지원을 위해 보존
 func (d *IDEDetector) queryFlatpak(appName string) string {
-	cmd := exec.Command("flatpak", "list", "--columns=name,application")
+	cmd := exec.CommandContext(context.Background(), "flatpak", "list", "--columns=name,application")
 	output, err := cmd.Output()
 	if err != nil {
 		return ""
@@ -201,7 +202,7 @@ func (d *IDEDetector) queryFlatpak(appName string) string {
 	return ""
 }
 
-// DetectIDEs scans the system for installed IDEs
+// DetectIDEs scans the system for installed IDEs.
 func (d *IDEDetector) DetectIDEs(useCache bool) ([]IDE, error) {
 	if useCache {
 		if ides, err := d.loadFromCache(); err == nil {
@@ -238,7 +239,7 @@ func (d *IDEDetector) DetectIDEs(useCache bool) ([]IDE, error) {
 	return allIDEs, nil
 }
 
-// detectJetBrainsIDEs detects JetBrains IDE installations
+// detectJetBrainsIDEs detects JetBrains IDE installations.
 func (d *IDEDetector) detectJetBrainsIDEs() ([]IDE, error) {
 	var ides []IDE
 
@@ -275,7 +276,7 @@ func (d *IDEDetector) detectJetBrainsIDEs() ([]IDE, error) {
 	return ides, nil
 }
 
-// detectVSCodeFamily detects VS Code family IDEs
+// detectVSCodeFamily detects VS Code family IDEs.
 func (d *IDEDetector) detectVSCodeFamily() ([]IDE, error) {
 	var ides []IDE
 
@@ -317,7 +318,7 @@ func (d *IDEDetector) detectVSCodeFamily() ([]IDE, error) {
 	return ides, nil
 }
 
-// detectOtherIDEs detects other IDE installations
+// detectOtherIDEs detects other IDE installations.
 func (d *IDEDetector) detectOtherIDEs() ([]IDE, error) {
 	var ides []IDE
 
@@ -358,7 +359,7 @@ func (d *IDEDetector) detectOtherIDEs() ([]IDE, error) {
 	return ides, nil
 }
 
-// createJetBrainsIDE creates an IDE instance for JetBrains products
+// createJetBrainsIDE creates an IDE instance for JetBrains products.
 func (d *IDEDetector) createJetBrainsIDE(ideName, idePath string) *IDE {
 	// Map JetBrains product names
 	jetbrainsProducts := map[string]struct {
@@ -415,7 +416,7 @@ func (d *IDEDetector) createJetBrainsIDE(ideName, idePath string) *IDE {
 	return nil
 }
 
-// findJetBrainsExecutable finds the executable for a JetBrains product
+// findJetBrainsExecutable finds the executable for a JetBrains product.
 func (d *IDEDetector) findJetBrainsExecutable(productPath, executableName string) string {
 	// For Toolbox installations, look in bin/ subdirectory
 	binPath := filepath.Join(productPath, "bin", executableName)
@@ -439,7 +440,7 @@ func (d *IDEDetector) findJetBrainsExecutable(productPath, executableName string
 	return ""
 }
 
-// getJetBrainsVersion gets version from multiple sources with priority
+// getJetBrainsVersion gets version from multiple sources with priority.
 func (d *IDEDetector) getJetBrainsVersion(productPath, execPath, productDir string) string {
 	// 1. Try to read from build.txt file (most accurate)
 	if version := d.getJetBrainsVersionFromBuildFile(productPath); version != "unknown" {
@@ -455,7 +456,7 @@ func (d *IDEDetector) getJetBrainsVersion(productPath, execPath, productDir stri
 	return d.extractJetBrainsVersionFromDir(productDir)
 }
 
-// getJetBrainsVersionFromBuildFile reads version from build.txt file
+// getJetBrainsVersionFromBuildFile reads version from build.txt file.
 func (d *IDEDetector) getJetBrainsVersionFromBuildFile(productPath string) string {
 	buildFilePath := filepath.Join(productPath, "build.txt")
 
@@ -473,9 +474,9 @@ func (d *IDEDetector) getJetBrainsVersionFromBuildFile(productPath string) strin
 	return d.parseJetBrainsBuildNumber(buildNumber)
 }
 
-// getJetBrainsVersionFromCommand gets version from executable --version command
+// getJetBrainsVersionFromCommand gets version from executable --version command.
 func (d *IDEDetector) getJetBrainsVersionFromCommand(execPath string) string {
-	cmd := exec.Command(execPath, "--version")
+	cmd := exec.CommandContext(context.Background(), execPath, "--version")
 	cmd.Stderr = nil // Suppress warnings
 
 	output, err := cmd.Output()
@@ -494,7 +495,6 @@ func (d *IDEDetector) getJetBrainsVersionFromCommand(execPath string) string {
 			strings.Contains(line, "PhpStorm") || strings.Contains(line, "RubyMine") ||
 			strings.Contains(line, "Rider") || strings.Contains(line, "RustRover") ||
 			strings.Contains(line, "DataSpell") {
-
 			// Extract version number from line
 			parts := strings.Fields(line)
 			for _, part := range parts {
@@ -508,7 +508,7 @@ func (d *IDEDetector) getJetBrainsVersionFromCommand(execPath string) string {
 	return "unknown"
 }
 
-// parseJetBrainsBuildNumber converts build number to user-friendly version
+// parseJetBrainsBuildNumber converts build number to user-friendly version.
 func (d *IDEDetector) parseJetBrainsBuildNumber(buildNumber string) string {
 	// Build number format: PY-252.23892.515, IU-252.23892.409, etc.
 	// Convert to version like: 2025.2, 2025.2.0.1
@@ -548,7 +548,7 @@ func (d *IDEDetector) parseJetBrainsBuildNumber(buildNumber string) string {
 	return buildNumber
 }
 
-// extractJetBrainsVersionFromDir extracts version from JetBrains product directory name
+// extractJetBrainsVersionFromDir extracts version from JetBrains product directory name.
 func (d *IDEDetector) extractJetBrainsVersionFromDir(productDir string) string {
 	// Extract version from directory name like "pycharm-2024.3" or similar
 	parts := strings.Split(productDir, "-")
@@ -558,7 +558,7 @@ func (d *IDEDetector) extractJetBrainsVersionFromDir(productDir string) string {
 	return "unknown"
 }
 
-// isVersionNumber checks if a string looks like a version number
+// isVersionNumber checks if a string looks like a version number.
 func (d *IDEDetector) isVersionNumber(s string) bool {
 	// Version pattern: X.Y.Z.W or X.Y.Z or X.Y
 	if len(s) < 3 {
@@ -583,7 +583,7 @@ func (d *IDEDetector) isVersionNumber(s string) bool {
 	return hasDigit && hasDot
 }
 
-// getJetBrainsToolboxPath returns the JetBrains Toolbox installation path
+// getJetBrainsToolboxPath returns the JetBrains Toolbox installation path.
 func (d *IDEDetector) getJetBrainsToolboxPath() string {
 	homeDir, _ := os.UserHomeDir()
 
@@ -599,7 +599,7 @@ func (d *IDEDetector) getJetBrainsToolboxPath() string {
 	}
 }
 
-// getJetBrainsSystemPaths returns system-wide JetBrains installation paths
+// getJetBrainsSystemPaths returns system-wide JetBrains installation paths.
 func (d *IDEDetector) getJetBrainsSystemPaths() []string {
 	switch runtime.GOOS {
 	case "linux":
@@ -631,7 +631,7 @@ func (d *IDEDetector) getJetBrainsSystemPaths() []string {
 	}
 }
 
-// findExecutable searches for an executable in PATH
+// findExecutable searches for an executable in PATH.
 func (d *IDEDetector) findExecutable(name string) string {
 	if path, err := exec.LookPath(name); err == nil {
 		return path
@@ -639,7 +639,7 @@ func (d *IDEDetector) findExecutable(name string) string {
 	return ""
 }
 
-// getEnhancedVersion gets version using installation method-specific strategies
+// getEnhancedVersion gets version using installation method-specific strategies.
 func (d *IDEDetector) getEnhancedVersion(execPath string, versionArgs []string, installMethod, installPath, appName string) string {
 	// Try standard version detection first
 	version := d.getVSCodeFamilyVersion(execPath, versionArgs)
@@ -672,7 +672,7 @@ func (d *IDEDetector) getEnhancedVersion(execPath string, versionArgs []string, 
 	return "unknown"
 }
 
-// getAppImageVersion extracts version from AppImage installations
+// getAppImageVersion extracts version from AppImage installations.
 func (d *IDEDetector) getAppImageVersion(installPath, appName string) string {
 	// For AppImage launchers, we need to find the actual AppImage files
 	appDir := d.resolveAppImageDirectory(installPath, appName)
@@ -710,7 +710,7 @@ func (d *IDEDetector) getAppImageVersion(installPath, appName string) string {
 	return "unknown"
 }
 
-// resolveAppImageDirectory resolves the actual directory from launcher scripts
+// resolveAppImageDirectory resolves the actual directory from launcher scripts.
 func (d *IDEDetector) resolveAppImageDirectory(installPath, _ string) string {
 	// If we have a direct path from the script, use it
 	if strings.Contains(installPath, "/") && installPath != "VAR_REFERENCE" {
@@ -738,7 +738,7 @@ func (d *IDEDetector) resolveAppImageDirectory(installPath, _ string) string {
 	return ""
 }
 
-// extractVersionFromAppImageName extracts version from AppImage filename
+// extractVersionFromAppImageName extracts version from AppImage filename.
 func (d *IDEDetector) extractVersionFromAppImageName(filename, _ string) string {
 	base := filepath.Base(filename)
 
@@ -760,7 +760,7 @@ func (d *IDEDetector) extractVersionFromAppImageName(filename, _ string) string 
 	return ""
 }
 
-// compareVersions compares two version strings (simple comparison)
+// compareVersions compares two version strings (simple comparison).
 func (d *IDEDetector) compareVersions(v1, v2 string) int {
 	// Simple lexicographic comparison for now
 	// In a more sophisticated implementation, we'd parse semantic versions
@@ -830,7 +830,7 @@ func (d *IDEDetector) getFlatpakVersion(appName string) string {
 	return "unknown"
 }
 
-// getVSCodeFamilyVersion gets version for VS Code family with multiple version arguments
+// getVSCodeFamilyVersion gets version for VS Code family with multiple version arguments.
 func (d *IDEDetector) getVSCodeFamilyVersion(execPath string, versionArgs []string) string {
 	for _, arg := range versionArgs {
 		if version := d.getExecutableVersion(execPath, arg); version != "unknown" && version != "" {
@@ -841,7 +841,7 @@ func (d *IDEDetector) getVSCodeFamilyVersion(execPath string, versionArgs []stri
 	return "unknown"
 }
 
-// parseVSCodeVersion extracts clean version from VS Code output
+// parseVSCodeVersion extracts clean version from VS Code output.
 func (d *IDEDetector) parseVSCodeVersion(output string) string {
 	lines := strings.Split(output, "\n")
 	if len(lines) > 0 {
@@ -864,7 +864,7 @@ func (d *IDEDetector) parseVSCodeVersion(output string) string {
 	return "unknown"
 }
 
-// getExecutableVersion gets version information from an executable
+// getExecutableVersion gets version information from an executable.
 func (d *IDEDetector) getExecutableVersion(execPath, versionArg string) string {
 	cmd := exec.Command(execPath, versionArg)
 	cmd.Stderr = nil // Suppress error output
@@ -883,7 +883,7 @@ func (d *IDEDetector) getExecutableVersion(execPath, versionArg string) string {
 	return "unknown"
 }
 
-// getExecutableLastModified gets the last modified time of an executable
+// getExecutableLastModified gets the last modified time of an executable.
 func (d *IDEDetector) getExecutableLastModified(execPath string) time.Time {
 	if info, err := os.Stat(execPath); err == nil {
 		return info.ModTime()
@@ -891,12 +891,12 @@ func (d *IDEDetector) getExecutableLastModified(execPath string) time.Time {
 	return time.Time{}
 }
 
-// getCacheFilePath returns the path to the IDE cache file
+// getCacheFilePath returns the path to the IDE cache file.
 func (d *IDEDetector) getCacheFilePath() string {
 	return filepath.Join(d.cacheDir, "ide.json")
 }
 
-// loadFromCache loads IDE information from cache
+// loadFromCache loads IDE information from cache.
 func (d *IDEDetector) loadFromCache() ([]IDE, error) {
 	cacheFile := d.getCacheFilePath()
 
@@ -918,7 +918,7 @@ func (d *IDEDetector) loadFromCache() ([]IDE, error) {
 	return cache.IDEs, nil
 }
 
-// saveToCache saves IDE information to cache
+// saveToCache saves IDE information to cache.
 func (d *IDEDetector) saveToCache(ides []IDE) error {
 	// Ensure cache directory exists
 	if err := os.MkdirAll(d.cacheDir, 0o755); err != nil {
@@ -939,19 +939,19 @@ func (d *IDEDetector) saveToCache(ides []IDE) error {
 	return os.WriteFile(cacheFile, data, 0o644)
 }
 
-// FindIDEByAlias finds an IDE by its name or alias
+// FindIDEByAlias finds an IDE by its name or alias.
 func (d *IDEDetector) FindIDEByAlias(ides []IDE, nameOrAlias string) *IDE {
 	nameOrAlias = strings.ToLower(nameOrAlias)
 
 	for _, ide := range ides {
 		// Check exact name match
-		if strings.ToLower(ide.Name) == nameOrAlias {
+		if strings.EqualFold(ide.Name, nameOrAlias) {
 			return &ide
 		}
 
 		// Check aliases
 		for _, alias := range ide.Aliases {
-			if strings.ToLower(alias) == nameOrAlias {
+			if strings.EqualFold(alias, nameOrAlias) {
 				return &ide
 			}
 		}

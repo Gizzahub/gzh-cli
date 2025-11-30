@@ -1,5 +1,4 @@
 //go:build !windows
-// +build !windows
 
 package update
 
@@ -7,7 +6,7 @@ import (
 	"syscall"
 )
 
-// getDiskSpace returns available disk space in bytes for Unix-like systems
+// getDiskSpace returns available disk space in bytes for Unix-like systems.
 func getDiskSpace(path string) (uint64, error) {
 	var stat syscall.Statfs_t
 	if err := syscall.Statfs(path, &stat); err != nil {

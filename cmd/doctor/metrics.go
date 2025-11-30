@@ -346,7 +346,7 @@ func collectLintingIssues(report *CodeQualityReport, opts metricsOptions) error 
 
 	// Convert to quality issues
 	for _, issue := range lintResult.Issues {
-		severity := "medium"
+		var severity string
 		switch issue.Severity {
 		case "error":
 			severity = "high"

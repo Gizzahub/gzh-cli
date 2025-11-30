@@ -19,13 +19,13 @@ import (
 	"github.com/Gizzahub/gzh-cli/internal/simpleprof"
 )
 
-// ProfileAnalyzer provides advanced profiling analysis capabilities
+// ProfileAnalyzer provides advanced profiling analysis capabilities.
 type ProfileAnalyzer struct {
 	profiler  *simpleprof.SimpleProfiler
 	outputDir string
 }
 
-// NewProfileAnalyzer creates a new profile analyzer
+// NewProfileAnalyzer creates a new profile analyzer.
 func NewProfileAnalyzer(outputDir string) *ProfileAnalyzer {
 	return &ProfileAnalyzer{
 		profiler:  simpleprof.NewSimpleProfiler(outputDir),
@@ -33,7 +33,7 @@ func NewProfileAnalyzer(outputDir string) *ProfileAnalyzer {
 	}
 }
 
-// PerformanceIssue represents a detected performance issue
+// PerformanceIssue represents a detected performance issue.
 type PerformanceIssue struct {
 	Type        string  `json:"type"`
 	Severity    string  `json:"severity"` // "critical", "warning", "info"
@@ -43,7 +43,7 @@ type PerformanceIssue struct {
 	Impact      float64 `json:"impact"` // Percentage impact
 }
 
-// ProfileComparison represents a comparison between two profiles
+// ProfileComparison represents a comparison between two profiles.
 type ProfileComparison struct {
 	BaselineFile string                   `json:"baselineFile"`
 	CurrentFile  string                   `json:"currentFile"`
@@ -53,7 +53,7 @@ type ProfileComparison struct {
 	Summary      ProfileComparisonSummary `json:"summary"`
 }
 
-// ProfileDifference represents a difference between two profiles
+// ProfileDifference represents a difference between two profiles.
 type ProfileDifference struct {
 	Function      string  `json:"function"`
 	Metric        string  `json:"metric"`
@@ -62,7 +62,7 @@ type ProfileDifference struct {
 	PercentChange float64 `json:"percentChange"`
 }
 
-// ProfileComparisonSummary provides overall comparison statistics
+// ProfileComparisonSummary provides overall comparison statistics.
 type ProfileComparisonSummary struct {
 	TotalFunctions int     `json:"totalFunctions"`
 	ImprovedCount  int     `json:"improvedCount"`
@@ -71,7 +71,7 @@ type ProfileComparisonSummary struct {
 	Recommendation string  `json:"recommendation"`
 }
 
-// newCompareCmd creates a command for comparing profiles
+// newCompareCmd creates a command for comparing profiles.
 func newCompareCmd() *cobra.Command {
 	var outputFormat string
 	var threshold float64
@@ -113,7 +113,7 @@ Examples:
 	return cmd
 }
 
-// newContinuousCmd creates a command for continuous profiling
+// newContinuousCmd creates a command for continuous profiling.
 func newContinuousCmd() *cobra.Command {
 	var interval time.Duration
 	var duration time.Duration
@@ -148,7 +148,7 @@ Examples:
 	return cmd
 }
 
-// newAnalyzeCmd creates a command for automated profile analysis
+// newAnalyzeCmd creates a command for automated profile analysis.
 func newAnalyzeCmd() *cobra.Command {
 	var threshold float64
 	var outputFormat string
@@ -193,7 +193,7 @@ Examples:
 	return cmd
 }
 
-// CompareProfiles compares two profile files and returns the differences
+// CompareProfiles compares two profile files and returns the differences.
 func (pa *ProfileAnalyzer) CompareProfiles(baselineFile, currentFile string, threshold float64) (*ProfileComparison, error) {
 	// This is a simplified implementation - in reality you'd parse the pprof files
 	// and compare the actual profiling data
@@ -249,7 +249,7 @@ func (pa *ProfileAnalyzer) CompareProfiles(baselineFile, currentFile string, thr
 	return comparison, nil
 }
 
-// RunContinuousProfiling runs continuous profiling for the specified duration
+// RunContinuousProfiling runs continuous profiling for the specified duration.
 func (pa *ProfileAnalyzer) RunContinuousProfiling(ctx context.Context, profileType string, interval, duration time.Duration, autoAnalyze bool) error {
 	fmt.Printf("🔄 Starting continuous %s profiling...\n", profileType)
 	fmt.Printf("📊 Interval: %v, Duration: %v\n", interval, duration)
@@ -308,7 +308,7 @@ func (pa *ProfileAnalyzer) RunContinuousProfiling(ctx context.Context, profileTy
 	}
 }
 
-// AnalyzeProfile analyzes a profile file for performance issues
+// AnalyzeProfile analyzes a profile file for performance issues.
 func (pa *ProfileAnalyzer) AnalyzeProfile(profileFile string, threshold float64) ([]PerformanceIssue, error) {
 	if _, err := os.Stat(profileFile); os.IsNotExist(err) {
 		return nil, fmt.Errorf("profile file not found: %s", profileFile)
@@ -384,7 +384,7 @@ func (pa *ProfileAnalyzer) AnalyzeProfile(profileFile string, threshold float64)
 	return filteredIssues, nil
 }
 
-// analyzeProfileAsync analyzes a profile asynchronously and prints results
+// analyzeProfileAsync analyzes a profile asynchronously and prints results.
 func (pa *ProfileAnalyzer) analyzeProfileAsync(filename string) {
 	issues, err := pa.AnalyzeProfile(filename, 5.0)
 	if err != nil {
@@ -403,7 +403,9 @@ func (pa *ProfileAnalyzer) analyzeProfileAsync(filename string) {
 	}
 }
 
-// Enhanced stats command with more detailed information
+// Enhanced stats command with more detailed information.
+//
+//nolint:unused // Reserved for future enhancement
 func newEnhancedStatsCmd() *cobra.Command {
 	var interval time.Duration
 	var count int
@@ -439,7 +441,7 @@ Examples:
 	return cmd
 }
 
-// GetEnhancedStats returns detailed runtime statistics
+// GetEnhancedStats returns detailed runtime statistics.
 func GetEnhancedStats() map[string]interface{} {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -642,11 +644,24 @@ func printAnalysisJSON(issues []PerformanceIssue) error {
 	return nil
 }
 
+//nolint:unused // Reserved for future enhancement
 func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) error {
 	stats := GetEnhancedStats()
 
 	if format == "json" {
 		// In real implementation, use json.Marshal
+		memory, ok := stats["memory"].(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("invalid memory stats format")
+		}
+		heapAlloc, ok := memory["heap_alloc"].(uint64)
+		if !ok {
+			return fmt.Errorf("invalid heap_alloc format")
+		}
+		heapSys, ok := memory["heap_sys"].(uint64)
+		if !ok {
+			return fmt.Errorf("invalid heap_sys format")
+		}
 		fmt.Printf(`{
   "timestamp": "%s",
   "goroutines": %d,
@@ -656,8 +671,8 @@ func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) erro
   }
 }`, stats["timestamp"],
 			runtime.NumGoroutine(),
-			formatBytes(stats["memory"].(map[string]interface{})["heap_alloc"].(uint64)),
-			formatBytes(stats["memory"].(map[string]interface{})["heap_sys"].(uint64)))
+			formatBytes(heapAlloc),
+			formatBytes(heapSys))
 		return nil
 	}
 
@@ -668,31 +683,92 @@ func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) erro
 
 	// Memory section
 	fmt.Printf("💾 Memory:\n")
-	memory := stats["memory"].(map[string]interface{})
-	fmt.Printf("  Heap Allocated:   %s\n", formatBytes(memory["heap_alloc"].(uint64)))
-	fmt.Printf("  Heap System:      %s\n", formatBytes(memory["heap_sys"].(uint64)))
-	fmt.Printf("  Heap In Use:      %s\n", formatBytes(memory["heap_inuse"].(uint64)))
-	fmt.Printf("  Total Allocated:  %s\n", formatBytes(memory["total_alloc"].(uint64)))
-	fmt.Printf("  Stack In Use:     %s\n\n", formatBytes(memory["stack_inuse"].(uint64)))
+	memory, ok := stats["memory"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid memory stats format")
+	}
+	heapAlloc, ok := memory["heap_alloc"].(uint64)
+	if !ok {
+		return fmt.Errorf("invalid heap_alloc format")
+	}
+	heapSys, ok := memory["heap_sys"].(uint64)
+	if !ok {
+		return fmt.Errorf("invalid heap_sys format")
+	}
+	fmt.Printf("  Heap Allocated:   %s\n", formatBytes(heapAlloc))
+	fmt.Printf("  Heap System:      %s\n", formatBytes(heapSys))
+
+	heapInuse, ok := memory["heap_inuse"].(uint64)
+	if !ok {
+		return fmt.Errorf("invalid heap_inuse format")
+	}
+	totalAlloc, ok := memory["total_alloc"].(uint64)
+	if !ok {
+		return fmt.Errorf("invalid total_alloc format")
+	}
+	stackInuse, ok := memory["stack_inuse"].(uint64)
+	if !ok {
+		return fmt.Errorf("invalid stack_inuse format")
+	}
+
+	fmt.Printf("  Heap In Use:      %s\n", formatBytes(heapInuse))
+	fmt.Printf("  Total Allocated:  %s\n", formatBytes(totalAlloc))
+	fmt.Printf("  Stack In Use:     %s\n\n", formatBytes(stackInuse))
 
 	// GC section
 	fmt.Printf("🗑️  Garbage Collection:\n")
-	gc := stats["gc"].(map[string]interface{})
-	fmt.Printf("  GC Runs:          %d\n", gc["num_gc"].(uint32))
-	fmt.Printf("  Last GC:          %s\n", gc["last_gc"].(time.Time).Format("15:04:05"))
-	fmt.Printf("  GC CPU Fraction:  %.3f\n\n", gc["gc_cpu_fraction"].(float64))
+	gc, ok := stats["gc"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid gc stats format")
+	}
+	numGC, ok := gc["num_gc"].(uint32)
+	if !ok {
+		return fmt.Errorf("invalid num_gc format")
+	}
+	fmt.Printf("  GC Runs:          %d\n", numGC)
+
+	lastGC, ok := gc["last_gc"].(time.Time)
+	if !ok {
+		return fmt.Errorf("invalid last_gc format")
+	}
+	gcCPUFraction, ok := gc["gc_cpu_fraction"].(float64)
+	if !ok {
+		return fmt.Errorf("invalid gc_cpu_fraction format")
+	}
+	fmt.Printf("  Last GC:          %s\n", lastGC.Format("15:04:05"))
+	fmt.Printf("  GC CPU Fraction:  %.3f\n\n", gcCPUFraction)
 
 	// Runtime section
 	fmt.Printf("⚙️  Runtime:\n")
-	runtimeStats := stats["runtime"].(map[string]interface{})
-	fmt.Printf("  Goroutines:       %d\n", runtimeStats["goroutines"].(int))
-	fmt.Printf("  CPU Cores:        %d\n", runtimeStats["num_cpu"].(int))
-	fmt.Printf("  GOMAXPROCS:       %d\n", runtimeStats["gomaxprocs"].(int))
-	fmt.Printf("  Go Version:       %s\n", runtimeStats["version"].(string))
+	runtimeStats, ok := stats["runtime"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid runtime stats format")
+	}
+	goroutines, ok := runtimeStats["goroutines"].(int)
+	if !ok {
+		return fmt.Errorf("invalid goroutines format")
+	}
+	numCPU, ok := runtimeStats["num_cpu"].(int)
+	if !ok {
+		return fmt.Errorf("invalid num_cpu format")
+	}
+	gomaxprocs, ok := runtimeStats["gomaxprocs"].(int)
+	if !ok {
+		return fmt.Errorf("invalid gomaxprocs format")
+	}
+	version, ok := runtimeStats["version"].(string)
+	if !ok {
+		return fmt.Errorf("invalid version format")
+	}
+	fmt.Printf("  Goroutines:       %d\n", goroutines)
+	fmt.Printf("  CPU Cores:        %d\n", numCPU)
+	fmt.Printf("  GOMAXPROCS:       %d\n", gomaxprocs)
+	fmt.Printf("  Go Version:       %s\n", version)
 
 	return nil
 }
 
+//nolint:unused // Reserved for future enhancement
 func printContinuousStats(profiler *simpleprof.SimpleProfiler, interval time.Duration, count int, format string) error {
 	fmt.Printf("📊 Continuous Statistics Monitoring\n")
 	fmt.Printf("Interval: %v, Count: %s\n", interval, func() string {
@@ -716,21 +792,55 @@ func printContinuousStats(profiler *simpleprof.SimpleProfiler, interval time.Dur
 		}
 
 		stats := GetEnhancedStats()
-		memory := stats["memory"].(map[string]interface{})
+		memory, ok := stats["memory"].(map[string]interface{})
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Error: invalid memory stats format\n")
+			break
+		}
+
+		timestamp, ok := stats["timestamp"].(time.Time)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Error: invalid timestamp format\n")
+			break
+		}
+
+		heapAlloc, ok := memory["heap_alloc"].(uint64)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Error: invalid heap_alloc format\n")
+			break
+		}
+
+		heapSys, ok := memory["heap_sys"].(uint64)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Error: invalid heap_sys format\n")
+			break
+		}
+
+		gc, ok := stats["gc"].(map[string]interface{})
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Error: invalid gc stats format\n")
+			break
+		}
+
+		numGC, ok := gc["num_gc"].(uint32)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Error: invalid num_gc format\n")
+			break
+		}
 
 		if format == "csv" {
 			fmt.Printf("%s,%d,%.1f,%.1f,%d\n",
-				stats["timestamp"].(time.Time).Format("15:04:05"),
+				timestamp.Format("15:04:05"),
 				runtime.NumGoroutine(),
-				float64(memory["heap_alloc"].(uint64))/1024/1024,
-				float64(memory["heap_sys"].(uint64))/1024/1024,
-				stats["gc"].(map[string]interface{})["num_gc"].(uint32))
+				float64(heapAlloc)/1024/1024,
+				float64(heapSys)/1024/1024,
+				numGC)
 		} else {
 			fmt.Printf("[%s] Goroutines: %3d | Heap: %8s | GC: %3d runs\n",
-				stats["timestamp"].(time.Time).Format("15:04:05"),
+				timestamp.Format("15:04:05"),
 				runtime.NumGoroutine(),
-				formatBytes(memory["heap_alloc"].(uint64)),
-				stats["gc"].(map[string]interface{})["num_gc"].(uint32))
+				formatBytes(heapAlloc),
+				numGC)
 		}
 
 		if count > 0 && sampleCount >= count {
