@@ -19,12 +19,31 @@ aliases:
     command: "dev-env bootstrap"
     description: "Bootstrap development environment"
 
-  # Combine multiple commands (future feature)
-  # full-sync:
-  #   description: "Full synchronization workflow"
-  #   steps:
-  #     - "synclone run"
-  #     - "pm update --all"
+  # Multi-step workflow: Execute commands in sequence
+  full-sync:
+    description: "Full synchronization workflow"
+    steps:
+      - "synclone run"
+      - "pm update --all"
+      - "git repo pull-all"
+
+  # Parameterized alias: Use variables in commands
+  clone-and-setup:
+    command: "git repo clone-or-update ${url} && dev-env bootstrap"
+    description: "Clone repository and setup development environment"
+    params:
+      - name: url
+        description: "Repository URL to clone"
+        required: true
+
+  # Mixed parameters: Required and optional
+  quality-check:
+    command: "quality check ${path}"
+    description: "Run quality checks on specific path"
+    params:
+      - name: path
+        description: "Path to check (default: current directory)"
+        required: false
 
 # External: Integrate external command-line tools
 external:
