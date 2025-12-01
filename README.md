@@ -71,6 +71,7 @@
 - **IDE 설정 동기화**: JetBrains 제품군의 설정 충돌 감지 및 자동 복구
 - **코드 품질 자동화**: Go, Python, JavaScript, Rust 등 다중 언어 품질 도구 통합
 - **성능 모니터링**: 애플리케이션 성능 프로파일링 및 벤치마킹
+- **쉘 설정 모듈화**: .zshrc/.bashrc를 모듈화하여 의존성 기반 빌드 및 OS별 관리
 
 ## 빠른 시작
 
@@ -148,6 +149,7 @@ Available Commands:
   profile     Performance profiling using standard Go pprof
   quality     통합 코드 품질 도구 (포매팅 + 린팅)
   repo-config GitHub repository configuration management
+  shellforge  Build tool for modular shell configurations
   synclone    Synchronize and clone repositories from multiple Git hosting services
 
 Flags:
@@ -405,6 +407,49 @@ gz profile memory
 - **재개 기능**: 중단된 작업 이어서 진행
 - **다양한 전략**: reset, pull, fetch, rebase
 - **상태 관리**: 클론 진행 상황 추적 및 저장
+
+## 🛠️ 모듈형 쉘 설정 관리 (`gz shellforge`)
+
+모놀리식 `.zshrc`/`.bashrc` 파일을 모듈화하여 관리하는 빌드 도구입니다.
+
+### 주요 기능
+
+- **자동 의존성 해결**: 모듈 간 의존성을 위상 정렬로 자동 해결
+- **OS별 필터링**: macOS/Linux 플랫폼별 모듈 선택적 포함
+- **백업/복원 시스템**: Git 기반 버전 관리 및 스냅샷
+- **템플릿 생성**: 6가지 내장 템플릿으로 빠른 모듈 생성
+- **검증 기능**: 순환 의존성 및 파일 누락 사전 감지
+
+### 사용 예제
+
+```bash
+# 설정 검증
+gz shellforge validate --manifest manifest.yaml --config-dir modules
+
+# 설정 빌드 (미리보기)
+gz shellforge build --manifest manifest.yaml --config-dir modules --os Mac --dry-run
+
+# 설정 파일 생성
+gz shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output ~/.zshrc
+
+# 백업 생성
+gz shellforge backup --file ~/.zshrc --backup-dir ~/.shellforge/backups
+
+# 템플릿에서 모듈 생성
+gz shellforge template generate --type path --name homebrew-path
+```
+
+### 지원 명령어
+
+- `build` - 모듈에서 설정 파일 빌드
+- `validate` - manifest 파일 검증
+- `list` - 모듈 목록 보기
+- `backup` - 백업 생성
+- `restore` - 백업에서 복원
+- `cleanup` - 오래된 백업 정리
+- `template` - 템플릿 생성
+- `migrate` - 모놀리식 RC 파일 마이그레이션
+- `diff` - 설정 파일 비교
 
 ## Installation
 
