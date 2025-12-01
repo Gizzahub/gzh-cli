@@ -25,6 +25,7 @@ import (
 	versioncmd "github.com/Gizzahub/gzh-cli/cmd/version"
 	"github.com/Gizzahub/gzh-cli/internal/app"
 	"github.com/Gizzahub/gzh-cli/internal/config"
+	"github.com/Gizzahub/gzh-cli/internal/extensions"
 	"github.com/Gizzahub/gzh-cli/internal/logger"
 )
 
@@ -62,9 +63,9 @@ Utility Commands: doctor, version`,
 	}
 
 	// Register all core feature commands with AppContext
-	RegisterPMCmd(appCtx)              // Package manager (from pm_wrapper.go)
-	RegisterQualityCmd(appCtx)         // Code quality (from quality_wrapper.go)
-	RegisterShellforgeCmd(appCtx)      // Shell config builder (from shellforge_wrapper.go)
+	RegisterPMCmd(appCtx)         // Package manager (from pm_wrapper.go)
+	RegisterQualityCmd(appCtx)    // Code quality (from quality_wrapper.go)
+	RegisterShellforgeCmd(appCtx) // Shell config builder (from shellforge_wrapper.go)
 	synclone.RegisterSyncCloneCmd(appCtx)
 	devenv.RegisterDevEnvCmd(appCtx)
 	ide.RegisterIDECmd(appCtx)
@@ -77,6 +78,13 @@ Utility Commands: doctor, version`,
 	// Add all registered commands to root
 	for _, provider := range registry.List() {
 		cmd.AddCommand(provider.Command())
+	}
+
+	// Load user extensions (aliases and external commands)
+	// 실패해도 계속 진행 (사용자 확장은 선택적)
+	extensionLoader := extensions.NewLoader()
+	if err := extensionLoader.RegisterAll(cmd); err != nil {
+		fmt.Fprintf(os.Stderr, "⚠️  Failed to load extensions: %v\n", err)
 	}
 
 	// Utility commands - set as hidden to reduce clutter in main help

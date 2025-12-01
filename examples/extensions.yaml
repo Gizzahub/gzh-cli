@@ -1,0 +1,49 @@
+# gz User Extensions Configuration
+# Location: ~/.config/gzh-manager/extensions.yaml
+#
+# This file allows you to extend gz with custom aliases and external commands
+# without modifying the source code.
+
+# Aliases: Simple command shortcuts
+aliases:
+  # Simple alias: map one command to another
+  update-all:
+    command: "pm update --all"
+    description: "Update all package managers"
+
+  pull-all:
+    command: "git repo pull-all"
+    description: "Pull all repositories recursively"
+
+  setup:
+    command: "dev-env bootstrap"
+    description: "Bootstrap development environment"
+
+  # Combine multiple commands (future feature)
+  # full-sync:
+  #   description: "Full synchronization workflow"
+  #   steps:
+  #     - "synclone run"
+  #     - "pm update --all"
+
+# External: Integrate external command-line tools
+external:
+  # Example: Terraform integration
+  - name: terraform
+    command: /usr/local/bin/terraform
+    description: "Terraform infrastructure management"
+    passthrough: true  # Pass all arguments directly
+
+  # Example: Custom linting tool
+  - name: custom-lint
+    command: /opt/tools/custom-lint
+    description: "Custom linting tool"
+    args:
+      - "--config"
+      - "$HOME/.config/lint.yaml"
+
+  # Example: Docker shortcut
+  # - name: d
+  #   command: docker
+  #   description: "Docker shortcut"
+  #   passthrough: true
