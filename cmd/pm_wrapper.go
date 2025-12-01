@@ -7,6 +7,7 @@ import (
 	"context"
 
 	pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/pm/command"
+	"github.com/Gizzahub/gzh-cli/cmd/registry"
 	"github.com/Gizzahub/gzh-cli/internal/app"
 	"github.com/spf13/cobra"
 )
@@ -47,4 +48,18 @@ Examples:
 For detailed configuration, see: ~/.gzh/pm/`
 
 	return cmd
+}
+
+// pmCmdProvider implements the command provider interface for package manager.
+type pmCmdProvider struct {
+	appCtx *app.AppContext
+}
+
+func (p pmCmdProvider) Command() *cobra.Command {
+	return NewPMCmd(context.Background(), p.appCtx)
+}
+
+// RegisterPMCmd registers the package manager command with the command registry.
+func RegisterPMCmd(appCtx *app.AppContext) {
+	registry.Register(pmCmdProvider{appCtx: appCtx})
 }

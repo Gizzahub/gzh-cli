@@ -15,9 +15,7 @@ import (
 	"github.com/Gizzahub/gzh-cli/cmd/git"
 	"github.com/Gizzahub/gzh-cli/cmd/ide"
 	netenv "github.com/Gizzahub/gzh-cli/cmd/net-env"
-	"github.com/Gizzahub/gzh-cli/cmd/pm"
 	"github.com/Gizzahub/gzh-cli/cmd/profile"
-	"github.com/Gizzahub/gzh-cli/cmd/quality"
 	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
 	"github.com/Gizzahub/gzh-cli/cmd/selfupdate"
 	"github.com/Gizzahub/gzh-cli/cmd/synclone"
@@ -64,7 +62,8 @@ Utility Commands: doctor, version`,
 	}
 
 	// Register all core feature commands with AppContext
-	pm.RegisterPMCmd(appCtx)
+	RegisterPMCmd(appCtx)              // Package manager (from pm_wrapper.go)
+	RegisterQualityCmd(appCtx)         // Code quality (from quality_wrapper.go)
 	synclone.RegisterSyncCloneCmd(appCtx)
 	devenv.RegisterDevEnvCmd(appCtx)
 	ide.RegisterIDECmd(appCtx)
@@ -72,7 +71,6 @@ Utility Commands: doctor, version`,
 	repoconfig.RegisterRepoConfigCmd(appCtx)
 	profile.RegisterProfileCmd(appCtx)
 	git.RegisterGitCmd(appCtx)
-	quality.RegisterQualityCmd(appCtx)
 	selfupdate.RegisterSelfUpdateCmd(appCtx)
 
 	// Add all registered commands to root

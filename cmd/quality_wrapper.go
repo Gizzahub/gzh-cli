@@ -5,6 +5,7 @@ package cmd
 
 import (
 	qualitypkg "github.com/Gizzahub/gzh-cli-quality"
+	"github.com/Gizzahub/gzh-cli/cmd/registry"
 	"github.com/Gizzahub/gzh-cli/internal/app"
 	"github.com/spf13/cobra"
 )
@@ -27,4 +28,18 @@ func NewQualityCmd(appCtx *app.AppContext) *cobra.Command {
 	cmd.Aliases = []string{"q", "qual"}
 
 	return cmd
+}
+
+// qualityCmdProvider implements the command provider interface for quality tools.
+type qualityCmdProvider struct {
+	appCtx *app.AppContext
+}
+
+func (p qualityCmdProvider) Command() *cobra.Command {
+	return NewQualityCmd(p.appCtx)
+}
+
+// RegisterQualityCmd registers the quality command with the command registry.
+func RegisterQualityCmd(appCtx *app.AppContext) {
+	registry.Register(qualityCmdProvider{appCtx: appCtx})
 }
