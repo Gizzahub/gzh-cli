@@ -1,5 +1,11 @@
 # Unified Package Manager Specification
 
+> **🔗 Powered by**: [gzh-cli-package-manager](https://github.com/gizzahub/gzh-cli-package-manager)
+>
+> - **독립 설치**: `go install github.com/gizzahub/gzh-cli-package-manager/cmd/gzh-pm@latest`
+> - **상세 문서**: [gzh-cli-package-manager README](https://github.com/gizzahub/gzh-cli-package-manager#readme)
+> - **통합 가이드**: [Subprojects Integration Guide](../integration/00-SUBPROJECTS_GUIDE.md#3-gzh-cli-package-manager)
+
 ## Overview
 
 The unified package manager feature provides centralized management for multiple package managers through configuration files. It enables developers to maintain consistent development environments across machines by managing packages from various package managers including system-level (apt, brew, port), language-specific (pip, gem, npm), and version managers (asdf, rbenv, sdkman).

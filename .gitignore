@@ -524,6 +524,7 @@ docker-compose.override.yaml
 *.ori
 *.orig
 *.tmp
+*.backup-*
 
 # =============================================================================
 # Configuration & Environment
