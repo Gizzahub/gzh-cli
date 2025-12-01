@@ -34,7 +34,6 @@ require (
 	golang.org/x/crypto v0.43.0
 	golang.org/x/oauth2 v0.31.0
 	golang.org/x/sync v0.17.0
-	golang.org/x/sys v0.37.0
 	golang.org/x/term v0.36.0
 	golang.org/x/text v0.30.0
 	golang.org/x/tools v0.38.0
@@ -44,10 +43,12 @@ require (
 	mvdan.cc/gofumpt v0.9.1
 )
 
+require golang.org/x/sys v0.37.0 // indirect
+
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/Gizzahub/gzh-cli-quality v0.1.2 // indirect
+	github.com/Gizzahub/gzh-cli-quality v0.1.2
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.12 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.7 // indirect
@@ -81,7 +82,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gizzahub/gzh-cli-git v0.0.0-00010101000000-000000000000
-	github.com/gizzahub/gzh-cli-package-manager v0.0.0-00010101000000-000000000000 // indirect
+	github.com/gizzahub/gzh-cli-package-manager v0.0.0-00010101000000-000000000000
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
