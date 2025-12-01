@@ -1,6 +1,9 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+//go:build pm_external
+// +build pm_external
+
 package cmd
 
 import (
