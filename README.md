@@ -8,18 +8,21 @@
 ![Code Coverage](https://codecov.io/gh/Gizzahub/gzh-cli/branch/main/graph/badge.svg)
 ![Latest Release](https://img.shields.io/github/v/release/Gizzahub/gzh-cli)
 
----
+______________________________________________________________________
 
 ## 개요
 
 `gzh-cli` (바이너리: `gz`)는 개발자를 위한 종합 CLI 도구로, Git 플랫폼 통합 관리, IDE 모니터링, 코드 품질 관리, 개발 환경 설정을 하나의 명령어로 통합합니다.
 
 **핵심 가치**:
+
 - 🔗 **다중 플랫폼 통합**: GitHub, GitLab, Gitea, Gogs를 하나의 인터페이스로
 - 🛠️ **개발 워크플로우 자동화**: IDE, 코드 품질, 패키지 매니저 통합 관리
 - 📦 **확장 가능한 아키텍처**: Integration Libraries Pattern으로 모듈화
+- 🔌 **사용자 확장 시스템**: 별칭, 워크플로우, 외부 명령어 통합 지원
+- 🚦 **라이프사이클 관리**: 안정/베타/실험적 기능 단계별 제어
 
----
+______________________________________________________________________
 
 ## 빠른 시작
 
@@ -56,11 +59,12 @@ gz quality run
 ```
 
 ### 다음 단계
+
 - 📚 [전체 문서](docs/00-overview/00-index.md)
 - 🚀 [설치 가이드](docs/10-getting-started/10-installation.md)
 - ⚙️ [설정 가이드](docs/40-configuration/40-configuration-guide.md)
 
----
+______________________________________________________________________
 
 ## 주요 기능
 
@@ -96,7 +100,7 @@ doctor      # 시스템 진단
 
 **전체 명령어**: [`gz --help`](docs/50-api-reference/50-command-reference.md)
 
----
+______________________________________________________________________
 
 ## 🧩 하위 프로젝트 (Subprojects)
 
@@ -113,16 +117,7 @@ gzh-cli는 핵심 기능을 독립 라이브러리로 분리하여 개발합니�
 
 **코드 감소 효과**: 6,702줄 (92.0% 감소율)
 
-[git-repo]: https://github.com/gizzahub/gzh-cli-git
-[git-doc]: https://github.com/gizzahub/gzh-cli-git#readme
-[quality-repo]: https://github.com/Gizzahub/gzh-cli-quality
-[quality-doc]: https://github.com/Gizzahub/gzh-cli-quality#readme
-[pm-repo]: https://github.com/gizzahub/gzh-cli-package-manager
-[pm-doc]: https://github.com/gizzahub/gzh-cli-package-manager#readme
-[shell-repo]: https://github.com/gizzahub/gzh-cli-shellforge
-[shell-doc]: https://github.com/gizzahub/gzh-cli-shellforge#readme
-
----
+______________________________________________________________________
 
 ## 사용 예제
 
@@ -182,11 +177,12 @@ gz synclone gitlab --groupName mygroup --targetPath ~/repos --token $GITLAB_TOKE
 gz synclone --config synclone.yaml
 ```
 
----
+______________________________________________________________________
 
 ## 문서
 
 ### 사용자 가이드
+
 - 📚 [문서 전체 인덱스](docs/00-overview/00-index.md)
 - 🚀 [설치 가이드](docs/10-getting-started/10-installation.md)
 - 📖 [빠른 시작](docs/10-getting-started/11-quick-start.md)
@@ -194,27 +190,30 @@ gz synclone --config synclone.yaml
 - 📋 [명령어 레퍼런스](docs/50-api-reference/50-command-reference.md)
 
 ### 개발자 가이드
+
 - 🏗️ [아키텍처](docs/20-architecture/)
 - 💻 [개발 환경 설정](docs/60-development/60-index.md)
 - 🧪 [테스트 가이드](docs/60-development/)
 - 🔧 [기여 가이드](docs/CONTRIBUTING.md)
 
 ### 추가 리소스
+
 - 🔍 [문제 해결](docs/90-maintenance/90-troubleshooting.md)
 - 📈 [성능 모니터링](docs/30-features/37-performance-profiling.md)
 - 🔐 [보안 가이드](docs/70-deployment/75-security-guidelines.md)
 
----
+______________________________________________________________________
 
 ## 설정
 
 ### 기본 설정 파일
 
 설정 파일 위치 (우선순위 순):
+
 1. `$GZH_CONFIG_PATH` (환경 변수)
-2. `./gzh.yaml` (현재 디렉토리)
-3. `~/.config/gzh-manager/gzh.yaml` (사용자 설정)
-4. `/etc/gzh-manager/gzh.yaml` (시스템 설정)
+1. `./gzh.yaml` (현재 디렉토리)
+1. `~/.config/gzh-manager/gzh.yaml` (사용자 설정)
+1. `/etc/gzh-manager/gzh.yaml` (시스템 설정)
 
 ### 설정 예제
 
@@ -239,13 +238,110 @@ providers:
 
 **상세 설정**: [Configuration Guide](docs/40-configuration/40-configuration-guide.md)
 
----
+______________________________________________________________________
+
+## 🔌 확장 시스템 (Extensions)
+
+gz는 소스 코드 수정 없이 사용자 정의 별칭, 워크플로우, 외부 명령어를 추가할 수 있는 강력한 확장 시스템을 제공합니다.
+
+### 확장 설정 파일
+
+위치: `~/.config/gzh-manager/extensions.yaml`
+
+### 간단한 별칭 (Simple Aliases)
+
+자주 사용하는 명령어에 짧은 이름을 부여:
+
+```yaml
+aliases:
+  update-all:
+    command: "pm update --all"
+    description: "Update all package managers"
+```
+
+사용: `gz update-all`
+
+### 다단계 워크플로우 (Multi-Step Workflows)
+
+여러 명령어를 순차적으로 실행:
+
+```yaml
+aliases:
+  full-sync:
+    description: "Full synchronization workflow"
+    steps:
+      - "synclone run"
+      - "pm update --all"
+      - "git repo pull-all"
+```
+
+실행 시 각 단계의 진행 상황이 표시됩니다:
+```
+🔄 Step 1/3: synclone run
+✅ Step 1/3 completed
+
+🔄 Step 2/3: pm update --all
+✅ Step 2/3 completed
+
+🔄 Step 3/3: git repo pull-all
+✅ Step 3/3 completed
+
+🎉 All steps completed successfully!
+```
+
+### 파라미터화된 별칭 (Parameterized Aliases)
+
+변수를 사용하는 재사용 가능한 명령어:
+
+```yaml
+aliases:
+  clone-and-setup:
+    command: "git repo clone-or-update ${url} && dev-env bootstrap"
+    description: "Clone repository and setup environment"
+    params:
+      - name: url
+        description: "Repository URL to clone"
+        required: true
+```
+
+사용: `gz clone-and-setup https://github.com/user/repo.git`
+
+### 외부 명령어 통합 (External Commands)
+
+외부 도구를 gz 서브커맨드로 통합:
+
+```yaml
+external:
+  - name: terraform
+    command: /usr/local/bin/terraform
+    description: "Terraform infrastructure management"
+    passthrough: true
+```
+
+사용: `gz terraform plan`
+
+### 실험적 기능 활성화
+
+일부 명령어는 실험적 기능으로 표시되며 기본적으로 비활성화됩니다:
+
+```bash
+# 환경 변수로 활성화
+export GZ_EXPERIMENTAL=1
+gz experimental-command
+
+# 또는 플래그로 활성화
+gz --experimental experimental-command
+```
+
+**상세 예제**: [examples/extensions.yaml](examples/extensions.yaml)
+
+______________________________________________________________________
 
 ## 아키텍처
 
 ### Integration Libraries Pattern
 
-gzh-cli는 공통 기능을 외부 라이브러리로 분리하여 **단일 정보 소스(Single Source of Truth)**를 확립합니다.
+gzh-cli는 공통 기능을 외부 라이브러리로 분리하여 \*\*단일 정보 소스(Single Source of Truth)\*\*를 확립합니다.
 
 ```
 gzh-cli (통합 CLI)
@@ -258,6 +354,7 @@ gzh-cli (통합 CLI)
 ```
 
 **이점**:
+
 - ✅ 코드 중복 제거 (92% 감소)
 - ✅ 독립 사용 가능
 - ✅ 단일 정보 소스
@@ -265,7 +362,7 @@ gzh-cli (통합 CLI)
 
 **상세 아키텍처**: [Integration Documentation](docs/integration/README.md)
 
----
+______________________________________________________________________
 
 ## 개발
 
@@ -310,17 +407,17 @@ go test ./pkg/github -v
 go test ./cmd/git -run "TestCloneOrUpdate" -v
 ```
 
----
+______________________________________________________________________
 
 ## 기여하기
 
 ### 기여 프로세스
 
 1. **이슈 확인**: [Issues](https://github.com/Gizzahub/gzh-cli/issues)
-2. **Fork & 브랜치**: `feature/your-feature` or `fix/issue-number`
-3. **구현**: 코드 작성 + 테스트
-4. **품질 검사**: `make lint-all` 통과
-5. **PR 제출**: 상세 설명 포함
+1. **Fork & 브랜치**: `feature/your-feature` or `fix/issue-number`
+1. **구현**: 코드 작성 + 테스트
+1. **품질 검사**: `make lint-all` 통과
+1. **PR 제출**: 상세 설명 포함
 
 ### 품질 기준
 
@@ -332,7 +429,7 @@ go test ./cmd/git -run "TestCloneOrUpdate" -v
 
 **자세한 내용**: [Contributing Guide](docs/CONTRIBUTING.md)
 
----
+______________________________________________________________________
 
 ## 시스템 요구사항
 
@@ -340,13 +437,13 @@ go test ./cmd/git -run "TestCloneOrUpdate" -v
 - **Git**: 2.0+
 - **OS**: Linux, macOS, Windows (WSL 권장)
 
----
+______________________________________________________________________
 
 ## 라이선스
 
 MIT License - [LICENSE](LICENSE) 파일 참조
 
----
+______________________________________________________________________
 
 ## 링크
 
@@ -356,6 +453,15 @@ MIT License - [LICENSE](LICENSE) 파일 참조
 - **기술 스택**: [TECH_STACK.md](TECH_STACK.md)
 - **변경 이력**: [CHANGELOG.md](CHANGELOG.md)
 
----
+______________________________________________________________________
 
 **Made with ❤️ by the Gizzahub Team**
+
+[git-doc]: https://github.com/gizzahub/gzh-cli-git#readme
+[git-repo]: https://github.com/gizzahub/gzh-cli-git
+[pm-doc]: https://github.com/gizzahub/gzh-cli-package-manager#readme
+[pm-repo]: https://github.com/gizzahub/gzh-cli-package-manager
+[quality-doc]: https://github.com/Gizzahub/gzh-cli-quality#readme
+[quality-repo]: https://github.com/Gizzahub/gzh-cli-quality
+[shell-doc]: https://github.com/gizzahub/gzh-cli-shellforge#readme
+[shell-repo]: https://github.com/gizzahub/gzh-cli-shellforge
