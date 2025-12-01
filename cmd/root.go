@@ -30,10 +30,11 @@ import (
 )
 
 var (
-	verbose    bool
-	debug      bool
-	quiet      bool
-	debugShell bool
+	verbose      bool
+	debug        bool
+	quiet        bool
+	debugShell   bool
+	experimental bool
 )
 
 // NewRootCmd creates the root command and wires up subcommands with shared context.
@@ -75,9 +76,44 @@ Utility Commands: doctor, version`,
 	git.RegisterGitCmd(appCtx)
 	selfupdate.RegisterSelfUpdateCmd(appCtx)
 
-	// Add all registered commands to root
-	for _, provider := range registry.List() {
-		cmd.AddCommand(provider.Command())
+	// Initialize lifecycle manager and filter commands
+	lifecycleManager := registry.NewLifecycleManager()
+	if experimental {
+		lifecycleManager.EnableExperimental()
+	}
+	filteredProviders := lifecycleManager.FilterCommands(registry.List())
+
+	// Add all registered commands to root with lifecycle checks
+	for _, provider := range filteredProviders {
+		providerCmd := provider.Command()
+
+		// Wrap the command execution with lifecycle validation
+		if registry.HasMetadata(provider) {
+			meta := registry.GetMetadata(provider)
+			originalRunE := providerCmd.RunE
+			originalRun := providerCmd.Run
+
+			// Wrap RunE if exists
+			if originalRunE != nil {
+				providerCmd.RunE = func(cmd *cobra.Command, args []string) error {
+					if err := lifecycleManager.CheckCommand(meta); err != nil {
+						return err
+					}
+					return originalRunE(cmd, args)
+				}
+			} else if originalRun != nil {
+				// Wrap Run if exists
+				providerCmd.Run = func(cmd *cobra.Command, args []string) {
+					if err := lifecycleManager.CheckCommand(meta); err != nil {
+						fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+						os.Exit(1)
+					}
+					originalRun(cmd, args)
+				}
+			}
+		}
+
+		cmd.AddCommand(providerCmd)
 	}
 
 	// Load user extensions (aliases and external commands)
@@ -107,6 +143,7 @@ Utility Commands: doctor, version`,
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose logging")
 	cmd.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug logging (shows all log levels)")
 	cmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Suppress all logs except critical errors")
+	cmd.PersistentFlags().BoolVar(&experimental, "experimental", false, "Enable experimental features")
 
 	// Hidden debug shell flag
 	cmd.PersistentFlags().BoolVar(&debugShell, "debug-shell", false, "")

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CommandCategory represents a command grouping category
+// CommandCategory represents a command grouping category.
 type CommandCategory string
 
 const (
@@ -22,7 +22,7 @@ const (
 	CategoryConfig      CommandCategory = "config"      // 설정 관리 (repo-config, synclone)
 )
 
-// LifecycleStage represents the development stage of a command
+// LifecycleStage represents the development stage of a command.
 type LifecycleStage string
 
 const (
@@ -32,7 +32,7 @@ const (
 	LifecycleDeprecated   LifecycleStage = "deprecated"   // 제거 예정
 )
 
-// CommandMetadata contains metadata about a command
+// CommandMetadata contains metadata about a command.
 type CommandMetadata struct {
 	Name         string          // 명령어 이름 (예: "git")
 	Category     CommandCategory // 명령어 카테고리
@@ -45,12 +45,12 @@ type CommandMetadata struct {
 }
 
 // CommandProvider defines an interface that exposes a Cobra command.
-// 향후 호환성을 위해 Metadata() 메서드는 선택적으로 구현 가능
+// 향후 호환성을 위해 Metadata() 메서드는 선택적으로 구현 가능.
 type CommandProvider interface {
 	Command() *cobra.Command
 }
 
-// CommandProviderWithMetadata extends CommandProvider with metadata support
+// CommandProviderWithMetadata extends CommandProvider with metadata support.
 type CommandProviderWithMetadata interface {
 	CommandProvider
 	Metadata() CommandMetadata
@@ -75,7 +75,7 @@ func List() []CommandProvider {
 	return append([]CommandProvider(nil), providers...)
 }
 
-// ByCategory returns command providers filtered by category
+// ByCategory returns command providers filtered by category.
 func ByCategory(cat CommandCategory) []CommandProvider {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -91,7 +91,7 @@ func ByCategory(cat CommandCategory) []CommandProvider {
 	return result
 }
 
-// StableCommands returns only stable command providers
+// StableCommands returns only stable command providers.
 func StableCommands() []CommandProvider {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -110,7 +110,7 @@ func StableCommands() []CommandProvider {
 	return result
 }
 
-// ExperimentalCommands returns experimental command providers
+// ExperimentalCommands returns experimental command providers.
 func ExperimentalCommands() []CommandProvider {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -126,7 +126,7 @@ func ExperimentalCommands() []CommandProvider {
 	return result
 }
 
-// AllByPriority returns all providers sorted by priority (lower number = higher priority)
+// AllByPriority returns all providers sorted by priority (lower number = higher priority).
 func AllByPriority() []CommandProvider {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -148,14 +148,14 @@ func AllByPriority() []CommandProvider {
 	return result
 }
 
-// HasMetadata checks if a provider supports metadata
+// HasMetadata checks if a provider supports metadata.
 func HasMetadata(p CommandProvider) bool {
 	_, ok := p.(CommandProviderWithMetadata)
 	return ok
 }
 
 // GetMetadata safely retrieves metadata from a provider
-// Returns zero-value metadata if provider doesn't support it
+// Returns zero-value metadata if provider doesn't support it.
 func GetMetadata(p CommandProvider) CommandMetadata {
 	if mp, ok := p.(CommandProviderWithMetadata); ok {
 		return mp.Metadata()

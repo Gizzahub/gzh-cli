@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// mockProvider는 메타데이터가 없는 기본 provider
+// mockProvider는 메타데이터가 없는 기본 provider.
 type mockProvider struct {
 	name string
 }
@@ -22,7 +22,7 @@ func (m mockProvider) Command() *cobra.Command {
 	}
 }
 
-// mockProviderWithMetadata는 메타데이터를 지원하는 provider
+// mockProviderWithMetadata는 메타데이터를 지원하는 provider.
 type mockProviderWithMetadata struct {
 	mockProvider
 	metadata CommandMetadata
