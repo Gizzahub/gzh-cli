@@ -9,12 +9,13 @@ gzh-cli uses an "Integration Libraries Pattern" where functionality is developed
 ## Key Documents
 
 ### [integration-summary.md](./integration-summary.md)
-Complete summary of all integration work across three phases:
+Complete summary of all integration work across four phases:
 - Phase 1: Package Manager integration (97.3% code reduction)
 - Phase 2: Quality integration (98.7% code reduction)
 - Phase 3: Git integration (64.2% code reduction for local operations)
+- Phase 4: Shellforge integration (new modular shell config builder)
 
-**Total Impact**: 6,702 lines reduced (92.0% reduction rate)
+**Total Impact**: 6,702 lines reduced (92.0% reduction rate) + shellforge integration
 
 ### [git-migration-final-status.md](./git-migration-final-status.md)
 Detailed status of Git functionality migration to gzh-cli-git library:
@@ -59,6 +60,7 @@ replace github.com/xxx/yyy => ../yyy
 | gzh-cli-quality | Code quality tools | cmd/quality_wrapper.go (45 lines) | 3,469 lines (98.7%) |
 | gzh-cli-package-manager | Package manager updates | cmd/pm_wrapper.go (65 lines) | 2,388 lines (97.3%) |
 | gzh-cli-git | Local Git operations | cmd/git/repo/*_wrapper.go (473 lines) | 845 lines (64.2%) |
+| gzh-cli-shellforge | Shell config builder | cmd/shellforge_wrapper.go (71 lines) | New integration |
 
 ## Architecture Principles
 

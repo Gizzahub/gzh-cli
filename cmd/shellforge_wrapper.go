@@ -56,16 +56,16 @@ For detailed configuration, see: https://github.com/gizzahub/gzh-cli-shellforge`
 	return cmd
 }
 
-// shellorgeCmdProvider implements the command provider interface for shellforge.
-type shellorgeCmdProvider struct {
+// shellforgeCmdProvider implements the command provider interface for shellforge.
+type shellforgeCmdProvider struct {
 	appCtx *app.AppContext
 }
 
-func (p shellorgeCmdProvider) Command() *cobra.Command {
+func (p shellforgeCmdProvider) Command() *cobra.Command {
 	return NewShellforgeCmd(context.Background(), p.appCtx)
 }
 
 // RegisterShellforgeCmd registers the shellforge command with the command registry.
 func RegisterShellforgeCmd(appCtx *app.AppContext) {
-	registry.Register(shellorgeCmdProvider{appCtx: appCtx})
+	registry.Register(shellforgeCmdProvider{appCtx: appCtx})
 }
