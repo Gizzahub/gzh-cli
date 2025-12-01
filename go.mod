@@ -1,6 +1,6 @@
 module github.com/Gizzahub/gzh-cli
 
-go 1.24.0
+go 1.25.1
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.39.4
@@ -33,7 +33,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.43.0
 	golang.org/x/oauth2 v0.31.0
-	golang.org/x/sync v0.17.0
+	golang.org/x/sync v0.18.0
 	golang.org/x/term v0.36.0
 	golang.org/x/text v0.30.0
 	golang.org/x/tools v0.38.0
@@ -43,7 +43,10 @@ require (
 	mvdan.cc/gofumpt v0.9.1
 )
 
-require golang.org/x/sys v0.37.0 // indirect
+require (
+	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd // indirect
+	golang.org/x/sys v0.37.0 // indirect
+)
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
@@ -141,7 +144,7 @@ require (
 	github.com/shirou/gopsutil/v4 v4.25.5 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
-	github.com/spf13/afero v1.14.0 // indirect
+	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
@@ -179,3 +182,5 @@ replace github.com/Gizzahub/gzh-cli-quality => ../gzh-cli-quality
 replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
 
 replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
+
+replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge

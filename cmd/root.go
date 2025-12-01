@@ -64,6 +64,7 @@ Utility Commands: doctor, version`,
 	// Register all core feature commands with AppContext
 	RegisterPMCmd(appCtx)              // Package manager (from pm_wrapper.go)
 	RegisterQualityCmd(appCtx)         // Code quality (from quality_wrapper.go)
+	RegisterShellforgeCmd(appCtx)      // Shell config builder (from shellforge_wrapper.go)
 	synclone.RegisterSyncCloneCmd(appCtx)
 	devenv.RegisterDevEnvCmd(appCtx)
 	ide.RegisterIDECmd(appCtx)
