@@ -1,5 +1,10 @@
 # ✨ Code Quality Management
 
+> **🔗 Powered by**: [gzh-cli-quality](https://github.com/Gizzahub/gzh-cli-quality)
+> - **독립 설치**: `go install github.com/Gizzahub/gzh-cli-quality/cmd/gzh-quality@latest`
+> - **상세 문서**: [gzh-cli-quality README](https://github.com/Gizzahub/gzh-cli-quality#readme)
+> - **통합 가이드**: [Subprojects Integration Guide](../integration/00-SUBPROJECTS_GUIDE.md#2-gzh-cli-quality)
+
 The `gz quality` command provides comprehensive code quality management with multi-language support, automated formatting, linting, security scanning, and CI/CD integration.
 
 ## 📋 Table of Contents

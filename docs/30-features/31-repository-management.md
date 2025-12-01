@@ -1,5 +1,10 @@
 # Repository Management Guide
 
+> **🔗 Powered by**: [gzh-cli-git](https://github.com/gizzahub/gzh-cli-git) (for local Git operations)
+> - **독립 설치**: `go install github.com/gizzahub/gzh-cli-git/cmd/gzh-git@latest`
+> - **상세 문서**: [gzh-cli-git README](https://github.com/gizzahub/gzh-cli-git#readme)
+> - **통합 가이드**: [Subprojects Integration Guide](../integration/00-SUBPROJECTS_GUIDE.md#1-gzh-cli-git)
+
 Comprehensive guide for managing GitHub repository configurations at scale using `gz repo-config` and `gz git config` commands.
 
 ## Table of Contents
