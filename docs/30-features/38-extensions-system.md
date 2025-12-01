@@ -7,9 +7,9 @@ gz provides a powerful extension system that allows users to customize and exten
 The extension system supports three main features:
 
 1. **Simple Aliases** - Short names for frequently used commands
-2. **Multi-Step Workflows** - Sequential execution of multiple commands
-3. **Parameterized Aliases** - Reusable commands with variable substitution
-4. **External Commands** - Integration of external tools as subcommands
+1. **Multi-Step Workflows** - Sequential execution of multiple commands
+1. **Parameterized Aliases** - Reusable commands with variable substitution
+1. **External Commands** - Integration of external tools as subcommands
 
 ## Configuration File
 
@@ -117,12 +117,14 @@ aliases:
 ### Variable Syntax
 
 Both syntaxes are supported:
+
 - `${variable}` - Recommended
 - `$variable` - Also works
 
 ### Parameter Types
 
 **Required Parameters**:
+
 ```yaml
 params:
   - name: url
@@ -133,6 +135,7 @@ params:
 Shown as `<url>` in help text. Command fails if not provided.
 
 **Optional Parameters**:
+
 ```yaml
 params:
   - name: path
@@ -208,12 +211,14 @@ Commands can be marked as experimental and are disabled by default.
 ### Enabling Experimental Features
 
 **Via Environment Variable**:
+
 ```bash
 export GZ_EXPERIMENTAL=1
 gz experimental-command
 ```
 
 **Via Flag**:
+
 ```bash
 gz --experimental experimental-command
 ```
@@ -260,6 +265,7 @@ aliases:
 ```
 
 Usage:
+
 ```bash
 export BACKUP_DIR=/mnt/backup
 gz backup
@@ -315,6 +321,7 @@ aliases:
 ### Alias Not Found
 
 Check if extensions.yaml is in correct location:
+
 ```bash
 ls ~/.config/gzh-manager/extensions.yaml
 ```
@@ -322,6 +329,7 @@ ls ~/.config/gzh-manager/extensions.yaml
 ### Workflow Step Fails
 
 Run steps individually to identify issue:
+
 ```bash
 gz step-that-failed --help
 ```
@@ -329,6 +337,7 @@ gz step-that-failed --help
 ### Parameter Not Substituted
 
 Verify parameter name matches exactly:
+
 ```yaml
 params:
   - name: url  # Must match ${url} in command
@@ -337,6 +346,7 @@ params:
 ### External Command Not Found
 
 Verify command path:
+
 ```bash
 which terraform
 # Update command path in extensions.yaml

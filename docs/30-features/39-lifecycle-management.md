@@ -7,27 +7,30 @@ gz implements a comprehensive lifecycle management system for commands, allowing
 Commands progress through well-defined lifecycle stages:
 
 1. **Experimental** - Early development, requires opt-in
-2. **Beta** - Feature-complete, testing phase
-3. **Stable** - Production-ready
-4. **Deprecated** - Will be removed in future versions
+1. **Beta** - Feature-complete, testing phase
+1. **Stable** - Production-ready
+1. **Deprecated** - Will be removed in future versions
 
 ## Lifecycle Stages
 
 ### Experimental
 
 **Characteristics**:
+
 - Early development stage
 - API may change significantly
 - Disabled by default
 - Requires explicit enablement
 
 **Behavior**:
+
 - Hidden from help unless enabled
 - Shows warning when executed
 - May have incomplete features
 - Breaking changes possible
 
 **Enablement**:
+
 ```bash
 # Via environment variable
 export GZ_EXPERIMENTAL=1
@@ -38,6 +41,7 @@ gz --experimental experimental-command
 ```
 
 **Warning Message**:
+
 ```
 ⚠️  Warning: Command 'experimental-command' is experimental and may change or be removed
    Version: 0.1.0 | Status: experimental
@@ -46,18 +50,21 @@ gz --experimental experimental-command
 ### Beta
 
 **Characteristics**:
+
 - Feature-complete
 - API relatively stable
 - Testing phase
 - Available by default
 
 **Behavior**:
+
 - Shown in help
 - Shows info message when executed
 - Minor changes possible
 - User feedback welcome
 
 **Info Message**:
+
 ```
 ℹ️  Info: Command 'beta-command' is in beta testing
    Version: 0.9.0 | Please report any issues
@@ -66,12 +73,14 @@ gz --experimental experimental-command
 ### Stable
 
 **Characteristics**:
+
 - Production-ready
 - API locked (breaking changes require deprecation)
 - Fully tested
 - Default stage
 
 **Behavior**:
+
 - No special warnings
 - Full support
 - Backward compatibility guaranteed
@@ -80,18 +89,21 @@ gz --experimental experimental-command
 ### Deprecated
 
 **Characteristics**:
+
 - Scheduled for removal
 - Replacement available
 - Still functional
 - Discouraged use
 
 **Behavior**:
+
 - Shown in help with deprecation notice
 - Shows warning when executed
 - Still works normally
 - Migration guide provided
 
 **Warning Message**:
+
 ```
 ⚠️  DEPRECATED: Command 'old-command' is deprecated and will be removed in a future version
    Current Version: 1.0.0 | Please migrate to alternatives
@@ -119,20 +131,23 @@ func (p *cmdProvider) Metadata() registry.CommandMetadata {
 ### Experimental → Beta
 
 **Requirements**:
+
 - Core functionality complete
 - API surface defined
 - Basic tests passing
 - Documentation written
 
 **Process**:
+
 1. Update Lifecycle field to `LifecycleBeta`
-2. Update version (e.g., 0.1.0 → 0.9.0)
-3. Document any API changes
-4. Announce in changelog
+1. Update version (e.g., 0.1.0 → 0.9.0)
+1. Document any API changes
+1. Announce in changelog
 
 ### Beta → Stable
 
 **Requirements**:
+
 - All features implemented
 - Comprehensive test coverage
 - API frozen
@@ -140,38 +155,43 @@ func (p *cmdProvider) Metadata() registry.CommandMetadata {
 - Documentation complete
 
 **Process**:
+
 1. Update Lifecycle field to `LifecycleStable`
-2. Update version to 1.0.0
-3. Announce stability in release notes
-4. Add migration guide if needed
+1. Update version to 1.0.0
+1. Announce stability in release notes
+1. Add migration guide if needed
 
 ### Stable → Deprecated
 
 **Requirements**:
+
 - Replacement available
 - Migration path documented
 - Deprecation timeline announced
 - Major version bump
 
 **Process**:
+
 1. Update Lifecycle field to `LifecycleDeprecated`
-2. Add deprecation notice to documentation
-3. Update help text with migration info
-4. Set removal timeline (usually 2-3 versions)
+1. Add deprecation notice to documentation
+1. Update help text with migration info
+1. Set removal timeline (usually 2-3 versions)
 
 ### Deprecated → Removed
 
 **Requirements**:
+
 - Deprecation period complete (2-3 versions)
 - Users notified multiple times
 - Alternative well-established
 - Breaking change announced
 
 **Process**:
+
 1. Remove command registration
-2. Update documentation
-3. Add removal note to changelog
-4. Major version bump
+1. Update documentation
+1. Add removal note to changelog
+1. Major version bump
 
 ## Dependency Validation
 
@@ -186,9 +206,10 @@ Metadata: CommandMetadata{
 ### Validation Behavior
 
 At command execution:
+
 1. Check all dependencies available
-2. Show warning for missing dependencies
-3. Allow execution (command may handle gracefully)
+1. Show warning for missing dependencies
+1. Allow execution (command may handle gracefully)
 
 ### Warning Message
 
@@ -202,18 +223,21 @@ At command execution:
 ### For Developers
 
 **Introducing New Features**:
+
 1. Start as Experimental
-2. Gather user feedback
-3. Stabilize API in Beta
-4. Release as Stable
+1. Gather user feedback
+1. Stabilize API in Beta
+1. Release as Stable
 
 **Deprecating Features**:
+
 1. Announce deprecation in advance
-2. Provide migration guide
-3. Keep working during deprecation period
-4. Remove only after sufficient notice
+1. Provide migration guide
+1. Keep working during deprecation period
+1. Remove only after sufficient notice
 
 **Version Numbering**:
+
 - Experimental: 0.1.x - 0.8.x
 - Beta: 0.9.x
 - Stable: 1.x.x+
@@ -222,24 +246,28 @@ At command execution:
 ### For Users
 
 **Using Experimental Features**:
+
 - Expect breaking changes
 - Report bugs and feedback
 - Don't use in production
 - Stay updated with changes
 
 **Using Beta Features**:
+
 - Safe for testing environments
 - Report issues promptly
 - Expect minor changes
 - Migration may be required
 
 **Using Stable Features**:
+
 - Production-ready
 - Backward compatibility guaranteed
 - Full support provided
 - Safe to depend on
 
 **Handling Deprecated Features**:
+
 - Plan migration soon
 - Follow migration guide
 - Test replacement thoroughly

@@ -163,6 +163,7 @@ User-extensible aliases, workflows, and external command integration without mod
 **Three Alias Types**:
 
 1. **Simple Alias**: Command shortcut
+
 ```yaml
 update-all:
   command: "pm update --all"
@@ -170,6 +171,7 @@ update-all:
 ```
 
 2. **Multi-Step Workflow**: Sequential execution
+
 ```yaml
 full-sync:
   description: "Complete sync workflow"
@@ -180,6 +182,7 @@ full-sync:
 ```
 
 3. **Parameterized Alias**: Variable substitution
+
 ```yaml
 clone-and-setup:
   command: "git repo clone-or-update ${url}"
@@ -190,6 +193,7 @@ clone-and-setup:
 ```
 
 **Key Files**:
+
 - `internal/extensions/types.go` - Configuration types
 - `internal/extensions/loader.go` - Registration logic
 - `examples/extensions.yaml` - User configuration example
@@ -240,14 +244,17 @@ gitCommands := registry.ByCategory(registry.CategoryGit)
 ```
 
 **Key Files**:
+
 - `cmd/registry/lifecycle.go` - Lifecycle manager
 - `cmd/registry/registry.go` - Enhanced registry with metadata
 - `cmd/root.go` - Integration with root command
 
 **Environment Variables**:
+
 - `GZ_EXPERIMENTAL=1` - Enable experimental features
 
 **Documentation**:
+
 - [Extensions System](docs/30-features/38-extensions-system.md)
 - [Lifecycle Management](docs/30-features/39-lifecycle-management.md)
 
