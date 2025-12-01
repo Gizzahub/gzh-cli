@@ -6,10 +6,11 @@ package cmd
 import (
 	"context"
 
-	shellcmd "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
 	"github.com/Gizzahub/gzh-cli/internal/app"
 	"github.com/spf13/cobra"
+
+	shellcmd "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
 )
 
 // NewShellforgeCmd creates the shellforge command by wrapping gzh-cli-shellforge.
@@ -63,6 +64,19 @@ type shellforgeCmdProvider struct {
 
 func (p shellforgeCmdProvider) Command() *cobra.Command {
 	return NewShellforgeCmd(context.Background(), p.appCtx)
+}
+
+func (p shellforgeCmdProvider) Metadata() registry.CommandMetadata {
+	return registry.CommandMetadata{
+		Name:         "shellforge",
+		Category:     registry.CategoryUtility,
+		Version:      "1.0.0",
+		Priority:     80,
+		Experimental: false,
+		Dependencies: []string{},
+		Tags:         []string{"shell", "config", "bash", "zsh", "modules", "build"},
+		Lifecycle:    registry.LifecycleStable,
+	}
 }
 
 // RegisterShellforgeCmd registers the shellforge command with the command registry.

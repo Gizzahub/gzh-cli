@@ -18,6 +18,19 @@ func (p profileCmdProvider) Command() *cobra.Command {
 	return NewProfileCmd(p.appCtx)
 }
 
+func (p profileCmdProvider) Metadata() registry.CommandMetadata {
+	return registry.CommandMetadata{
+		Name:         "profile",
+		Category:     registry.CategoryUtility,
+		Version:      "1.0.0",
+		Priority:     60,
+		Experimental: false,
+		Dependencies: []string{},
+		Tags:         []string{"profile", "performance", "pprof", "cpu", "memory", "benchmark"},
+		Lifecycle:    registry.LifecycleStable,
+	}
+}
+
 func RegisterProfileCmd(appCtx *app.AppContext) {
 	registry.Register(profileCmdProvider{appCtx: appCtx})
 }

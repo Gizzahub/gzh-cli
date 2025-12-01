@@ -39,6 +39,19 @@ func (p qualityCmdProvider) Command() *cobra.Command {
 	return NewQualityCmd(p.appCtx)
 }
 
+func (p qualityCmdProvider) Metadata() registry.CommandMetadata {
+	return registry.CommandMetadata{
+		Name:         "quality",
+		Category:     registry.CategoryQuality,
+		Version:      "1.0.0",
+		Priority:     40,
+		Experimental: false,
+		Dependencies: []string{}, // 언어별 도구들은 동적으로 확인
+		Tags:         []string{"quality", "lint", "format", "code", "check"},
+		Lifecycle:    registry.LifecycleStable,
+	}
+}
+
 // RegisterQualityCmd registers the quality command with the command registry.
 func RegisterQualityCmd(appCtx *app.AppContext) {
 	registry.Register(qualityCmdProvider{appCtx: appCtx})

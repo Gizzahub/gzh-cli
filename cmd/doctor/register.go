@@ -16,6 +16,19 @@ func (doctorCmdProvider) Command() *cobra.Command {
 	return DoctorCmd
 }
 
+func (doctorCmdProvider) Metadata() registry.CommandMetadata {
+	return registry.CommandMetadata{
+		Name:         "doctor",
+		Category:     registry.CategoryQuality,
+		Version:      "1.0.0",
+		Priority:     70,
+		Experimental: false,
+		Dependencies: []string{},
+		Tags:         []string{"doctor", "health", "check", "diagnostics", "system"},
+		Lifecycle:    registry.LifecycleStable,
+	}
+}
+
 func init() {
 	registry.Register(doctorCmdProvider{})
 }

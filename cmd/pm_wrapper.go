@@ -6,10 +6,11 @@ package cmd
 import (
 	"context"
 
-	pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/pm/command"
 	"github.com/Gizzahub/gzh-cli/cmd/registry"
 	"github.com/Gizzahub/gzh-cli/internal/app"
 	"github.com/spf13/cobra"
+
+	pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/pm/command"
 )
 
 // NewPMCmd creates the package manager command by wrapping gzh-cli-package-manager.
@@ -57,6 +58,19 @@ type pmCmdProvider struct {
 
 func (p pmCmdProvider) Command() *cobra.Command {
 	return NewPMCmd(context.Background(), p.appCtx)
+}
+
+func (p pmCmdProvider) Metadata() registry.CommandMetadata {
+	return registry.CommandMetadata{
+		Name:         "pm",
+		Category:     registry.CategoryDevelopment,
+		Version:      "1.0.0",
+		Priority:     30,
+		Experimental: false,
+		Dependencies: []string{}, // 패키지 관리자들은 동적으로 확인
+		Tags:         []string{"package", "manager", "brew", "apt", "npm", "pip", "update"},
+		Lifecycle:    registry.LifecycleStable,
+	}
 }
 
 // RegisterPMCmd registers the package manager command with the command registry.
