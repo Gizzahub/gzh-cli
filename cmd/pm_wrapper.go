@@ -1,0 +1,50 @@
+// Copyright (c) 2025 Archmagece
+// SPDX-License-Identifier: MIT
+
+package cmd
+
+import (
+	"context"
+
+	pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/pm/command"
+	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/spf13/cobra"
+)
+
+// NewPMCmd creates the package manager command by wrapping gzh-cli-package-manager.
+// This delegates all package manager functionality to the external gzh-cli-package-manager package,
+// avoiding code duplication and ensuring consistency with the standalone pm CLI.
+//
+// The wrapper allows customization of the command metadata while preserving all
+// subcommands and functionality from the gzh-cli-package-manager implementation.
+func NewPMCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
+	_ = ctx    // Reserved for future context integration
+	_ = appCtx // Reserved for future app context integration
+
+	// Use the external package manager implementation
+	cmd := pmcmd.NewRootCmd()
+
+	// Customize command metadata for gzh-cli context
+	cmd.Use = "pm"
+	cmd.Short = "Package manager operations"
+	cmd.Long = `Manage multiple package managers with unified commands.
+
+This command provides centralized management for multiple package managers including:
+- System package managers: brew, apt, port, yum, dnf, pacman
+- Version managers: asdf, rbenv, pyenv, nvm, sdkman
+- Language package managers: pip, gem, npm, cargo, go, composer
+
+Examples:
+  # Show status of all package managers
+  gz pm status
+
+  # Update all packages
+  gz pm update --all
+
+  # Bootstrap missing package managers
+  gz pm bootstrap
+
+For detailed configuration, see: ~/.gzh/pm/`
+
+	return cmd
+}
