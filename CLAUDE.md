@@ -2,7 +2,7 @@
 
 This file provides LLM-optimized guidance for Claude Code when working with this repository.
 
----
+______________________________________________________________________
 
 ## Project Context (Quick Overview)
 
@@ -12,21 +12,24 @@ This file provides LLM-optimized guidance for Claude Code when working with this
 **Main Branch**: `master` (for PRs)
 
 ### Core Principles
+
 - **Interface-driven design**: Heavy use of Go interfaces for abstraction
 - **Direct constructors**: No DI containers, simple factory pattern
 - **Modular commands**: Each command is self-contained under `cmd/`
 - **Integration pattern**: External libraries via thin wrappers
 
----
+______________________________________________________________________
 
 ## Development Workflow (LLM Task Guide)
 
 ### Before Code Modification
+
 1. **Read module's AGENTS.md**: `cmd/{module}/AGENTS.md` for module-specific rules
-2. **Check common rules**: `cmd/AGENTS_COMMON.md` for project-wide conventions
-3. **Review existing patterns**: Understand current implementation before changes
+1. **Check common rules**: `cmd/AGENTS_COMMON.md` for project-wide conventions
+1. **Review existing patterns**: Understand current implementation before changes
 
 ### Code Modification Process
+
 ```bash
 # 1. Read relevant AGENTS.md
 # 2. Write code + tests
@@ -36,17 +39,19 @@ make fmt && make lint && make test
 ```
 
 ### Module-Specific Guides
+
 - [Common Guidelines](cmd/AGENTS_COMMON.md) - **Read first**
 - [git module](cmd/git/AGENTS.md)
 - [ide module](cmd/ide/AGENTS.md)
 - [quality module](cmd/quality/AGENTS.md)
 - See `cmd/*/AGENTS.md` for other modules (15 files total)
 
----
+______________________________________________________________________
 
 ## Essential Commands Reference
 
 ### Development Workflow
+
 ```bash
 # One-time setup
 make bootstrap
@@ -60,6 +65,7 @@ make install
 ```
 
 ### Testing
+
 ```bash
 # All tests
 make test
@@ -75,6 +81,7 @@ make cover
 ```
 
 ### Code Quality (Pre-commit REQUIRED)
+
 ```bash
 make fmt        # gofumpt + gci
 make lint       # golangci-lint with auto-fix
@@ -82,18 +89,20 @@ make lint-all   # format + lint + pre-commit
 ```
 
 ### Mocking
+
 ```bash
 make generate-mocks    # Generate mocks using gomock
 make regenerate-mocks  # Clean + regenerate
 ```
 
----
+______________________________________________________________________
 
 ## Architecture Patterns (LLM Decision Guide)
 
 ### Key Patterns to Use
 
 #### 1. Interface Abstraction
+
 ```go
 // internal/git/interfaces.go
 type Client interface {
@@ -103,6 +112,7 @@ type Client interface {
 ```
 
 #### 2. Provider Registry
+
 ```go
 // pkg/git/provider/
 providerRegistry := provider.NewRegistry()
@@ -110,6 +120,7 @@ providerRegistry.Register("github", github.NewProvider())
 ```
 
 #### 3. Strategy Pattern (Git Operations)
+
 - `rebase`: Rebase local changes on remote
 - `reset`: Hard reset to match remote
 - `clone`: Fresh clone (remove existing)
@@ -127,22 +138,120 @@ providerRegistry.Register("github", github.NewProvider())
 | [gzh-cli-package-manager][pm] | `cmd/pm_wrapper.go` | 65 | Package manager integration |
 | [gzh-cli-shellforge][shell] | `cmd/shellforge_wrapper.go` | 71 | Shell config builder |
 
-[git]: https://github.com/gizzahub/gzh-cli-git
-[quality]: https://github.com/Gizzahub/gzh-cli-quality
-[pm]: https://github.com/gizzahub/gzh-cli-package-manager
-[shell]: https://github.com/gizzahub/gzh-cli-shellforge
-
 **When to Modify**:
+
 - **Core logic change** → Modify external library repository
 - **CLI integration change** → Modify wrapper file in gzh-cli
 
 **Local Development**:
+
 ```go
 // go.mod uses replace directives for local dev
 replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
 ```
 
----
+______________________________________________________________________
+
+## Extensions & Lifecycle System (Phase 3 Features)
+
+### Extension System
+
+**Location**: `internal/extensions/`
+
+User-extensible aliases, workflows, and external command integration without modifying source code.
+
+**Three Alias Types**:
+
+1. **Simple Alias**: Command shortcut
+```yaml
+update-all:
+  command: "pm update --all"
+  description: "Update all package managers"
+```
+
+2. **Multi-Step Workflow**: Sequential execution
+```yaml
+full-sync:
+  description: "Complete sync workflow"
+  steps:
+    - "synclone run"
+    - "pm update --all"
+    - "git repo pull-all"
+```
+
+3. **Parameterized Alias**: Variable substitution
+```yaml
+clone-and-setup:
+  command: "git repo clone-or-update ${url}"
+  params:
+    - name: url
+      description: "Repository URL"
+      required: true
+```
+
+**Key Files**:
+- `internal/extensions/types.go` - Configuration types
+- `internal/extensions/loader.go` - Registration logic
+- `examples/extensions.yaml` - User configuration example
+
+### Lifecycle Management
+
+**Location**: `cmd/registry/lifecycle.go`
+
+Commands progress through well-defined stages with automatic filtering and warnings.
+
+**Four Stages**:
+
+| Stage | Behavior | Enablement | Warning |
+|-------|----------|------------|---------|
+| **Experimental** | Disabled by default | `GZ_EXPERIMENTAL=1` or `--experimental` | ⚠️ May change or be removed |
+| **Beta** | Enabled, shows info | Always enabled | ℹ️ In testing, report issues |
+| **Stable** | Default, no warnings | Always enabled | None |
+| **Deprecated** | Shows warning | Always enabled | ⚠️ Will be removed |
+
+**Adding Metadata to Commands**:
+
+```go
+// cmd/{command}/register.go
+func (p *cmdProvider) Metadata() registry.CommandMetadata {
+    return registry.CommandMetadata{
+        Name:         "my-command",
+        Category:     registry.CategoryUtility,
+        Version:      "1.0.0",
+        Lifecycle:    registry.LifecycleStable,  // Set stage here
+        Dependencies: []string{"git", "docker"}, // External tools needed
+        Tags:         []string{"utility", "tool"},
+        Priority:     50,
+    }
+}
+```
+
+**Registry Filtering**:
+
+```go
+// Get only stable commands
+stableCommands := registry.StableCommands()
+
+// Get experimental commands
+expCommands := registry.ExperimentalCommands()
+
+// Filter by category
+gitCommands := registry.ByCategory(registry.CategoryGit)
+```
+
+**Key Files**:
+- `cmd/registry/lifecycle.go` - Lifecycle manager
+- `cmd/registry/registry.go` - Enhanced registry with metadata
+- `cmd/root.go` - Integration with root command
+
+**Environment Variables**:
+- `GZ_EXPERIMENTAL=1` - Enable experimental features
+
+**Documentation**:
+- [Extensions System](docs/30-features/38-extensions-system.md)
+- [Lifecycle Management](docs/30-features/39-lifecycle-management.md)
+
+______________________________________________________________________
 
 ## Project Structure (Quick Reference)
 
@@ -167,17 +276,19 @@ replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
 └── .make/                 # Modular Makefile (7 modules)
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Architecture
 
 ### Configuration Hierarchy
+
 1. `$GZH_CONFIG_PATH` (env var)
-2. `./gzh.yaml` (current dir)
-3. `~/.config/gzh-manager/gzh.yaml` (user config)
-4. `/etc/gzh-manager/gzh.yaml` (system config)
+1. `./gzh.yaml` (current dir)
+1. `~/.config/gzh-manager/gzh.yaml` (user config)
+1. `/etc/gzh-manager/gzh.yaml` (system config)
 
 ### Configuration Structure
+
 ```yaml
 global:
   clone_base_dir: "$HOME/repos"
@@ -192,15 +303,17 @@ providers:
 ```
 
 **Features**:
+
 - Environment variable expansion: `${GITHUB_TOKEN}`
 - JSON Schema validation
 - Priority system: CLI flags > env vars > config files > defaults
 
----
+______________________________________________________________________
 
 ## Important Rules (LLM Must Follow)
 
 ### Critical Requirements
+
 - ✅ **Always run** `make fmt && make lint` before commit
 - ✅ **Korean comments** for new code
 - ✅ **Read AGENTS.md** before modifying any module
@@ -208,18 +321,21 @@ providers:
 - ✅ **Commit scope**: Mandatory in commit messages
 
 ### Code Style
+
 - **Binary name**: `gz` (never `gzh-cli`)
 - **No over-engineering**: See `cmd/AGENTS_COMMON.md`
 - **Interface-driven**: Use interfaces for testability
 - **Error handling**: Structured errors with context
 
 ### Testing
+
 - **Unit tests**: `*_test.go` alongside source
 - **Mocking**: Use `gomock` for external dependencies
 - **Integration tests**: `test/integration/` with Docker
 - **Environment-specific**: Check for tokens (GITHUB_TOKEN, etc.)
 
 ### Commit Format
+
 ```
 {type}({scope}): {description}
 
@@ -232,50 +348,57 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 **Types**: feat, fix, docs, refactor, test, chore
 **Scope**: REQUIRED (e.g., git, ide, quality, docs)
 
----
+______________________________________________________________________
 
 ## Command Categories (Quick Lookup)
 
 ### Repository Operations
+
 - `gz git repo clone-or-update` - Smart single repo management
 - `gz git repo pull-all` - Bulk recursive update
 - `gz synclone` - Mass organization cloning
 - `gz repo-config` - GitHub repo configuration
 
 ### Development Environment
+
 - `gz dev-env` - Environment management
 - `gz pm` - Package manager updates
 - `gz ide` - IDE monitoring (JetBrains, VS Code)
 - `gz doctor` - System diagnostics
 
 ### Code Quality & Performance
+
 - `gz quality` - Multi-language quality tools
 - `gz profile` - Go pprof performance profiling
 
 ### Network & Shell
+
 - `gz net-env` - Network environment transitions
 - `gz shellforge` - Modular shell config builder
 
----
+______________________________________________________________________
 
 ## Common Tasks (LLM Quick Guide)
 
 ### Adding a New Command
+
 1. Check if feature belongs in external library or gzh-cli
-2. Create `cmd/{command}/` directory
-3. Add `cmd/{command}/AGENTS.md` with module rules
-4. Implement using Cobra framework
-5. Register in `cmd/root.go`
-6. Add tests: `cmd/{command}/*_test.go`
-7. Update docs: `docs/30-features/`
+1. Create `cmd/{command}/` directory
+1. Add `cmd/{command}/AGENTS.md` with module rules
+1. Implement using Cobra framework
+1. Register in `cmd/root.go`
+1. Add tests: `cmd/{command}/*_test.go`
+1. Update docs: `docs/30-features/`
 
 ### Modifying Integration Library Command
+
 1. **Check wrapper**: `cmd/*_wrapper.go` or `cmd/{module}/*_wrapper.go`
-2. **Core logic**: Modify in external library repository
-3. **Integration**: Modify wrapper if needed
-4. **Local test**: Use `replace` directive in go.mod
+1. **Core logic**: Modify in external library repository
+1. **Integration**: Modify wrapper if needed
+1. **Local test**: Use `replace` directive in go.mod
 
 ### Adding Tests
+
 ```bash
 # Create test file
 touch cmd/{module}/{feature}_test.go
@@ -287,11 +410,12 @@ go test ./cmd/{module} -v
 go test ./cmd/{module} -cover
 ```
 
----
+______________________________________________________________________
 
 ## Troubleshooting (LLM Quick Fix)
 
 ### Build Issues
+
 ```bash
 make clean
 make bootstrap
@@ -299,12 +423,14 @@ make build
 ```
 
 ### Lint Failures
+
 ```bash
 make fmt        # Fix formatting
 make lint       # Auto-fix linting issues
 ```
 
 ### Test Failures
+
 ```bash
 # Run specific test with verbose
 go test ./cmd/{module} -run "TestName" -v
@@ -314,10 +440,11 @@ go test ./cmd/{module} -race
 ```
 
 ### Import Cycle
+
 - **Cause**: Circular dependencies between packages
 - **Fix**: Move shared types to `internal/` or `pkg/`
 
----
+______________________________________________________________________
 
 ## FAQ for LLMs
 
@@ -336,17 +463,19 @@ A: Yes, but prefer standard library. Run `go mod tidy` after.
 **Q: Where are integration tests?**
 A: `test/integration/` with Docker containers.
 
----
+______________________________________________________________________
 
 ## Performance Benchmarks
 
 ### Target Metrics
-- **Startup time**: <50ms
+
+- **Startup time**: \<50ms
 - **Binary size**: ~33MB
 - **Memory**: Minimal footprint
-- **Command response**: <100ms for most commands
+- **Command response**: \<100ms for most commands
 
 ### Profiling
+
 ```bash
 # Runtime stats
 gz profile stats
@@ -361,8 +490,13 @@ gz profile memory
 gz profile server --port 6060
 ```
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01
 **Line Count**: ~290 lines (38% reduction from 474 lines)
 **Optimization**: LLM-focused, removed user-facing content
+
+[git]: https://github.com/gizzahub/gzh-cli-git
+[pm]: https://github.com/gizzahub/gzh-cli-package-manager
+[quality]: https://github.com/Gizzahub/gzh-cli-quality
+[shell]: https://github.com/gizzahub/gzh-cli-shellforge
