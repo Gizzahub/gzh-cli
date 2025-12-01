@@ -805,21 +805,54 @@ make regenerate-mocks
 
 ## 아키텍처 개요
 
+### 통합 라이브러리 패턴 (Integration Libraries Pattern)
+
+gzh-cli는 기능을 외부 전문 라이브러리로 분리하고 의존성으로 통합하는 "Integration Libraries Pattern"을 사용합니다. 이를 통해 코드 중복을 제거하고 단일 정보 소스(Single Source of Truth)를 확립합니다.
+
+#### 통합된 외부 라이브러리
+
+| 라이브러리 | 기능 | 래퍼 파일 | 코드 감소 |
+|-----------|------|---------|----------|
+| [gzh-cli-quality](https://github.com/Gizzahub/gzh-cli-quality) | 다중 언어 코드 품질 도구 | `cmd/quality_wrapper.go` (45줄) | 3,469줄 (98.7%) |
+| [gzh-cli-package-manager](https://github.com/gizzahub/gzh-cli-package-manager) | 패키지 매니저 통합 관리 | `cmd/pm_wrapper.go` (65줄) | 2,388줄 (97.3%) |
+| [gzh-cli-git](https://github.com/gizzahub/gzh-cli-git) | 로컬 Git 작업 관리 | `cmd/git/repo/*_wrapper.go` (473줄) | 845줄 (64.2%) |
+
+**전체 영향**: 6,702줄 감소 (92.0% 감소율)
+
+#### 래퍼 패턴 예시
+
+```go
+// 얇은 래퍼가 외부 라이브러리에 위임
+func NewQualityCmd(appCtx *app.AppContext) *cobra.Command {
+    cmd := quality.NewRootCmd()
+    // 최소한의 커스터마이징
+    return cmd
+}
+
+// 레지스트리 패턴 지원
+func RegisterQualityCmd(appCtx *app.AppContext) {
+    registry.Register(qualityCmdProvider{appCtx: appCtx})
+}
+```
+
 ### 프로젝트 구조
 
 ```
 .
 ├── cmd/                    # CLI 명령어 구현
 │   ├── root.go            # 메인 CLI 진입점
+│   ├── quality_wrapper.go # 품질 도구 래퍼 (45줄) → gzh-cli-quality
+│   ├── pm_wrapper.go      # 패키지 매니저 래퍼 (65줄) → gzh-cli-package-manager
 │   ├── git/               # Git 통합 명령어
-│   ├── ide/               # IDE 모니터링
-│   ├── quality/           # 코드 품질 도구
-│   ├── profile/           # 성능 프로파일링
-│   ├── synclone/          # 대량 리포지토리 클론
-│   ├── dev-env/           # 개발 환경 관리
-│   ├── net-env/           # 네트워크 환경 관리
-│   ├── pm/                # 패키지 매니저 관리
-│   └── repo-config/       # 리포지토리 설정 관리
+│   │   └── repo/          # 리포지토리 관리
+│   │       ├── repo_clone_or_update_wrapper.go  # → gzh-cli-git
+│   │       └── repo_bulk_update_wrapper.go      # → gzh-cli-git
+│   ├── ide/               # IDE 모니터링 (gzh-cli 전용)
+│   ├── profile/           # 성능 프로파일링 (gzh-cli 전용)
+│   ├── synclone/          # 대량 리포지토리 클론 (gzh-cli 전용)
+│   ├── dev-env/           # 개발 환경 관리 (gzh-cli 전용)
+│   ├── net-env/           # 네트워크 환경 관리 (gzh-cli 전용)
+│   └── repo-config/       # 리포지토리 설정 관리 (gzh-cli 전용)
 ├── internal/              # 내부 패키지
 │   ├── git/               # Git 조작 추상화
 │   ├── logger/            # 로깅 추상화
@@ -836,16 +869,34 @@ make regenerate-mocks
 ├── specs/                 # 기능 명세서
 ├── examples/              # 설정 파일 예제
 └── docs/                  # 문서
+    └── integration/       # 통합 라이브러리 문서
 ```
 
 ### 핵심 설계 원칙
 
+1. **통합 라이브러리 패턴**: 공통 기능을 외부 라이브러리로 분리하여 단일 정보 소스 확립
 1. **간단한 아키텍처**: CLI 도구에 적합한 직접적인 구현
 1. **서비스별 구현**: 각 Git 플랫폼별 전용 패키지
 1. **설정 기반 설계**: YAML 설정과 스키마 검증
 1. **크로스플랫폼 지원**: Linux, macOS, Windows 네이티브 지원
 1. **원자적 작업**: 백업 및 롤백 기능을 가진 안전한 실행
 1. **표준 도구 통합**: Go의 표준 pprof 등 표준 도구 활용
+
+### 아키텍처 분리 원칙
+
+#### 통합된 기능 (외부 라이브러리)
+✅ 높은 코드 중복 (>50%)
+✅ 명확한 단일 책임
+✅ 독립 실행 가능
+✅ 안정적인 인터페이스
+
+#### gzh-cli 전용 기능
+❌ 낮은 중복 (<50%)
+❌ gzh-cli 내부와 높은 결합도
+❌ 플랫폼별 통합 (GitHub/GitLab API)
+❌ gzh-cli 특화 워크플로우
+
+자세한 아키텍처 정보: [Integration Documentation](docs/integration/README.md)
 
 ## 기여 가이드라인
 
