@@ -161,7 +161,7 @@ func (opts *bulkUpdateCmdOptions) run(ctx context.Context, args []string) error 
 // Note: tablewriter v1.0.9+ API uses:
 //   - table.Header(elements ...any) - no return value
 //   - table.Append(rows ...interface{}) - for each row
-//   Do NOT use SetHeader() or Row() methods (they don't exist)
+//     Do NOT use SetHeader() or Row() methods (they don't exist)
 func renderTableResults(result *gitrepo.BulkUpdateResult) {
 	fmt.Println()
 

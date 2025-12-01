@@ -21,12 +21,14 @@ Location: `cmd/git/repo/repo_integration_test.go`
 ### Test Coverage Needed
 
 1. **clone-or-update wrapper** (`repo_clone_or_update_wrapper.go`)
+
    - Test all 6 update strategies (rebase, reset, clone, skip, pull, fetch)
    - Test branch specification
    - Test depth configuration
    - Test error handling
 
-2. **bulk-update wrapper** (`repo_bulk_update_wrapper.go`)
+1. **bulk-update wrapper** (`repo_bulk_update_wrapper.go`)
+
    - Test recursive repository scanning
    - Test parallel processing
    - Test pattern filtering (include/exclude)
@@ -38,11 +40,13 @@ Location: `cmd/git/repo/repo_integration_test.go`
 ### Prerequisite Work
 
 1. **Provider Interface Refactoring**
+
    - Current: `pkg/git/provider` interface
    - Issue: Tightly coupled with old implementation
    - Needed: Clean interface compatible with wrapper pattern
 
-2. **Test Infrastructure**
+1. **Test Infrastructure**
+
    - Mock gzh-cli-git library responses
    - Test repositories setup/teardown
    - Parallel test execution support
@@ -50,6 +54,7 @@ Location: `cmd/git/repo/repo_integration_test.go`
 ## Proposed Approach
 
 ### Option A: Mock Library Calls
+
 ```go
 // Use gomock to mock gzh-cli-git client
 mockClient := repository_mocks.NewMockClient(ctrl)
@@ -59,15 +64,18 @@ mockClient.EXPECT().
 ```
 
 **Pros**:
+
 - Fast execution
 - No external dependencies
 - Full control over test scenarios
 
 **Cons**:
+
 - Doesn't test actual library integration
 - Requires mock maintenance
 
 ### Option B: Integration with Real Library
+
 ```go
 // Use actual gzh-cli-git library with test repositories
 client := repository.NewClient()
@@ -75,55 +83,64 @@ result, err := client.CloneOrUpdate(ctx, opts)
 ```
 
 **Pros**:
+
 - Tests real integration
 - Catches library API changes
 - Validates end-to-end functionality
 
 **Cons**:
+
 - Slower execution
 - Requires test repository setup
 - More complex teardown
 
 ### Option C: Hybrid Approach (Recommended)
+
 ```go
 // Unit tests: Mock library
 // Integration tests: Real library with testcontainers
 ```
 
 **Pros**:
+
 - Best of both worlds
 - Fast feedback + comprehensive coverage
 - Clear test separation
 
 **Cons**:
+
 - More initial setup work
 
 ## Implementation Plan
 
 ### Phase 1: Provider Interface Cleanup (1-2 hours)
+
 1. Review current `pkg/git/provider` interface
-2. Identify wrapper-specific requirements
-3. Create adapter layer if needed
-4. Document interface contracts
+1. Identify wrapper-specific requirements
+1. Create adapter layer if needed
+1. Document interface contracts
 
 ### Phase 2: Mock Setup (2-3 hours)
+
 1. Generate mocks for gzh-cli-git interfaces
    ```bash
    make generate-mocks
    ```
-2. Create test helpers for common scenarios
-3. Write unit tests for wrappers
+1. Create test helpers for common scenarios
+1. Write unit tests for wrappers
 
 ### Phase 3: Integration Tests (3-4 hours)
+
 1. Set up test repository infrastructure
-2. Implement testcontainers for Git server
-3. Write integration tests for each wrapper
-4. Verify all 6 update strategies work
+1. Implement testcontainers for Git server
+1. Write integration tests for each wrapper
+1. Verify all 6 update strategies work
 
 ### Phase 4: CI Integration (1 hour)
+
 1. Add integration tests to CI pipeline
-2. Configure parallel test execution
-3. Set up test reporting
+1. Configure parallel test execution
+1. Set up test reporting
 
 **Total Estimated Time**: 7-10 hours
 
@@ -166,12 +183,15 @@ test/
 ## Risks
 
 1. **API Changes**: gzh-cli-git may change APIs, breaking tests
+
    - Mitigation: Version pin library in go.mod
 
-2. **Test Complexity**: Integration tests may be flaky
+1. **Test Complexity**: Integration tests may be flaky
+
    - Mitigation: Use testcontainers for isolation
 
-3. **Resource Requirements**: Parallel tests need more resources
+1. **Resource Requirements**: Parallel tests need more resources
+
    - Mitigation: Configure test parallelism based on CI resources
 
 ## Related Work
@@ -189,7 +209,7 @@ test/
   - `cmd/git/repo/repo_bulk_update_wrapper.go`
 - Library documentation: gzh-cli-git/README.md
 
----
+______________________________________________________________________
 
 **Created**: 2025-12-01
 **Priority**: P2 (Medium)

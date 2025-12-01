@@ -78,10 +78,10 @@ gzh-cli uses an "Integration Libraries Pattern" where common functionality is ex
 ### Benefits
 
 1. **Single Source of Truth**: Fixes and features implemented once
-2. **Independent Development**: Each library evolves independently
-3. **Dual Usage**: Works standalone AND integrated
-4. **Reduced Maintenance**: Less code to maintain in gzh-cli
-5. **Clear Separation**: Explicit functionality boundaries
+1. **Independent Development**: Each library evolves independently
+1. **Dual Usage**: Works standalone AND integrated
+1. **Reduced Maintenance**: Less code to maintain in gzh-cli
+1. **Clear Separation**: Explicit functionality boundaries
 
 ## Full System Architecture
 
@@ -267,38 +267,46 @@ Native:
 ### What to Integrate (External Libraries)
 
 ✅ **High code duplication** (>50%)
+
 - Code quality tools: 98.7% overlap
 - Package manager updates: 97.3% overlap
 - Git local operations: 64.2% overlap
 
 ✅ **Clear single responsibility**
+
 - Each library has one clear purpose
 - Well-defined scope and boundaries
 
 ✅ **Standalone functionality**
+
 - Can be used independently as CLI tool
 - Dual usage: standalone + library
 
 ✅ **Stable interfaces**
+
 - Minimal breaking changes
 - Versioned releases
 
 ### What to Keep Native (gzh-cli Specific)
 
-❌ **Low duplication** (<50%)
+❌ **Low duplication** (\<50%)
+
 - Unique workflows and orchestration
 - gzh-cli specific integrations
 
 ❌ **Different purposes/goals**
+
 - Platform-specific features (GitHub/GitLab/Gitea APIs)
 - Cross-platform synchronization
 
 ❌ **High coupling with gzh-cli internals**
+
 - IDE monitoring (JetBrains/VS Code integration)
 - Development environment management
 - Network environment transitions
 
 ❌ **Platform-specific integrations**
+
 - GitHub API operations (list, create, sync)
 - GitLab API operations
 - Gitea API operations
@@ -383,22 +391,26 @@ User Command
 ## Migration History
 
 ### Phase 1: Package Manager Integration (2025-11-28)
+
 - Integrated: `gzh-cli-package-manager`
 - Code reduced: 2,388 lines (97.3%)
 - Wrapper: `cmd/pm_wrapper.go` (65 lines)
 
 ### Phase 2: Quality Integration (2025-11-29)
+
 - Integrated: `gzh-cli-quality`
 - Code reduced: 3,469 lines (98.7%)
 - Wrapper: `cmd/quality_wrapper.go` (45 lines)
 
 ### Phase 3: Git Integration (2025-11-30)
+
 - Integrated: `gzh-cli-git`
 - Code reduced: 845 lines (64.2%)
 - Wrappers: `cmd/git/repo/*_wrapper.go` (473 lines)
 - Retained: Git platform API operations (list, sync, create, webhook, event)
 
 ### Total Impact
+
 - **Lines reduced**: 6,702
 - **Reduction rate**: 92.0%
 - **Wrappers total**: 583 lines
@@ -409,21 +421,25 @@ User Command
 ### Planned Improvements
 
 1. **Publish Stable Versions**
+
    - Remove `replace` directives from go.mod
    - Use versioned releases (v0.1.0, v0.2.0, etc.)
    - Semantic versioning for breaking changes
 
-2. **Wrapper Tests**
+1. **Wrapper Tests**
+
    - Add unit tests for wrapper functions
    - Test integration with external libraries
    - Verify command registration
 
-3. **Architecture Documentation**
+1. **Architecture Documentation**
+
    - Create visual diagrams (Mermaid, PlantUML)
    - Document decision records (ADRs)
    - Update architecture as it evolves
 
-4. **CI/CD Integration**
+1. **CI/CD Integration**
+
    - Automated testing of integrated libraries
    - Version compatibility checks
    - Integration test suite
@@ -435,7 +451,7 @@ User Command
 - [Git Migration Status](git-migration-final-status.md)
 - [Integration Tests](INTEGRATION_TESTS.md)
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01
 **Status**: Phase 1-3 Complete, Architecture Documented

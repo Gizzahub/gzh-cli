@@ -11,11 +11,13 @@ compile: version "go1.25.4" does not match go tool version "go1.25.1 X:nodwarf5"
 ## Root Cause
 
 This error occurs when:
+
 1. Go standard library was pre-compiled with a different Go version (e.g., go1.25.4)
-2. Current `go` tool version is different (e.g., go1.25.1)
-3. Build cache contains incompatible compiled objects
+1. Current `go` tool version is different (e.g., go1.25.1)
+1. Build cache contains incompatible compiled objects
 
 This is typically caused by:
+
 - Upgrading/downgrading Go toolchain
 - System-wide Go installation changes
 - Multiple Go versions installed
@@ -110,12 +112,13 @@ make build && ./gz version
 ### For Development
 
 1. **Use single Go version**: Avoid having multiple Go versions installed
-2. **Clean after upgrade**: Always run `go clean -cache -modcache` after Go upgrade/downgrade
-3. **Use go modules**: Ensure `GO111MODULE=on` (default in Go 1.16+)
+1. **Clean after upgrade**: Always run `go clean -cache -modcache` after Go upgrade/downgrade
+1. **Use go modules**: Ensure `GO111MODULE=on` (default in Go 1.16+)
 
 ### For CI/CD
 
 1. **Pin Go version** in CI configuration:
+
    ```yaml
    # .github/workflows/build.yml
    - uses: actions/setup-go@v5
@@ -123,7 +126,8 @@ make build && ./gz version
        go-version: '1.24.0'  # Pin specific version
    ```
 
-2. **Clean cache in CI**:
+1. **Clean cache in CI**:
+
    ```yaml
    - name: Clean Go cache
      run: go clean -cache -modcache
@@ -145,7 +149,7 @@ make build && ./gz version
 | `go install std` | Rebuild standard library |
 | `go build -o gz ./cmd/gz` | Direct build (bypasses Make) |
 
----
+______________________________________________________________________
 
 **Status**: Known Environment Issue
 **Impact**: Blocks `make build` but not `go build`

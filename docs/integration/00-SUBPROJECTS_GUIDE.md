@@ -3,7 +3,7 @@
 **작성일**: 2025-12-01
 **목적**: gzh-cli 하위 라이브러리 사용 가이드
 
----
+______________________________________________________________________
 
 ## 개요
 
@@ -14,7 +14,7 @@ gzh-cli는 **Integration Libraries Pattern**을 사용하여 핵심 기능을 �
 - ✅ **코드 중복 제거**: 92% 코드 감소 (6,702줄)
 - ✅ **유지보수 간소화**: 버그 수정과 기능 추가를 한 곳에서 관리
 
----
+______________________________________________________________________
 
 ## 통합된 하위 프로젝트
 
@@ -52,6 +52,7 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 #### 사용 예제
 
 **독립 사용**:
+
 ```bash
 # 환경 변수 설정
 export GIT_TOKEN="your_token"
@@ -64,6 +65,7 @@ gzh-git pull-all ~/workspace --parallel 10
 ```
 
 **gzh-cli 통합**:
+
 ```bash
 # gzh.yaml 설정 사용
 gz git repo clone-or-update https://github.com/user/repo.git --strategy rebase
@@ -78,7 +80,7 @@ gz git repo pull-all ~/workspace --parallel 10
 - **README**: [gzh-cli-git README](https://github.com/gizzahub/gzh-cli-git#readme)
 - **gzh-cli 통합 문서**: [Git Repository Management](../30-features/31-repository-management.md)
 
----
+______________________________________________________________________
 
 ### 2. gzh-cli-quality
 
@@ -126,6 +128,7 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 #### 사용 예제
 
 **독립 사용**:
+
 ```bash
 # 전체 품질 검사
 gzh-quality run
@@ -138,6 +141,7 @@ gzh-quality analyze
 ```
 
 **gzh-cli 통합**:
+
 ```bash
 # 통합 설정으로 실행
 gz quality run
@@ -152,7 +156,7 @@ gz quality run --changed
 - **README**: [gzh-cli-quality README](https://github.com/Gizzahub/gzh-cli-quality#readme)
 - **gzh-cli 통합 문서**: [Code Quality Management](../30-features/36-quality-management.md)
 
----
+______________________________________________________________________
 
 ### 3. gzh-cli-package-manager
 
@@ -198,6 +202,7 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 #### 사용 예제
 
 **독립 사용**:
+
 ```bash
 # 전체 업데이트
 gzh-pm update
@@ -210,6 +215,7 @@ gzh-pm status
 ```
 
 **gzh-cli 통합**:
+
 ```bash
 # 통합 설정으로 업데이트
 gz pm update
@@ -223,7 +229,7 @@ gz pm update --manager homebrew
 - **프로젝트**: [gzh-cli-package-manager](https://github.com/gizzahub/gzh-cli-package-manager)
 - **README**: [gzh-cli-package-manager README](https://github.com/gizzahub/gzh-cli-package-manager#readme)
 
----
+______________________________________________________________________
 
 ### 4. gzh-cli-shellforge
 
@@ -261,6 +267,7 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 #### 사용 예제
 
 **독립 사용**:
+
 ```bash
 # 설정 빌드
 shellforge build --manifest manifest.yaml --output ~/.zshrc
@@ -273,6 +280,7 @@ shellforge backup --file ~/.zshrc --backup-dir ~/.shellforge/backups
 ```
 
 **gzh-cli 통합**:
+
 ```bash
 # 통합 명령어
 gz shellforge build --manifest manifest.yaml --output ~/.zshrc
@@ -285,13 +293,13 @@ gz shellforge backup --file ~/.zshrc
 - **프로젝트**: [gzh-cli-shellforge](https://github.com/gizzahub/gzh-cli-shellforge)
 - **README**: [gzh-cli-shellforge README](https://github.com/gizzahub/gzh-cli-shellforge#readme)
 
----
+______________________________________________________________________
 
 ## 통합 아키텍처
 
 ### Wrapper Pattern
 
-gzh-cli는 **얇은 래퍼(Thin Wrapper)**를 통해 하위 라이브러리를 통합합니다.
+gzh-cli는 \*\*얇은 래퍼(Thin Wrapper)\*\*를 통해 하위 라이브러리를 통합합니다.
 
 #### 래퍼 구조
 
@@ -359,7 +367,7 @@ gzh-cli
         └── repo_bulk_update_wrapper.go → gzh-cli-git
 ```
 
----
+______________________________________________________________________
 
 ## FAQ
 
@@ -378,6 +386,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
 **A**: 가능합니다. 예를 들어 Git 기능만 필요하면 `gzh-cli-git`만 설치하면 됩니다.
 
 **차이점**:
+
 - **독립 사용**: 단일 기능, 개별 설정 파일
 - **gzh-cli 통합**: 통합 설정, 다중 플랫폼 API, 추가 기능
 
@@ -414,6 +423,7 @@ go mod tidy
 **A**: 코드 중복을 제거하고 단일 정보 소스를 확립하기 위해서입니다.
 
 **이점**:
+
 - ✅ 버그 수정 한 번에 모든 곳 적용
 - ✅ 기능 추가 중복 작업 제거
 - ✅ 테스트 및 검증 한 곳에서 관리
@@ -424,32 +434,34 @@ go mod tidy
 **A**: 하위 프로젝트로 마이그레이션되었으며, gzh-cli에는 얇은 래퍼만 남아있습니다.
 
 **Before (통합 전)**:
+
 ```
 gzh-cli/cmd/quality/*.go (3,514줄)
 ```
 
 **After (통합 후)**:
+
 ```
 gzh-cli/cmd/quality_wrapper.go (45줄) → gzh-cli-quality 라이브러리
 ```
 
----
+______________________________________________________________________
 
 ## 다음 단계
 
 ### 사용자
 
 1. **gzh-cli 설치**: [Installation Guide](../10-getting-started/10-installation.md)
-2. **기능 탐색**: [Features Overview](../30-features/)
-3. **설정**: [Configuration Guide](../40-configuration/40-configuration-guide.md)
+1. **기능 탐색**: [Features Overview](../30-features/)
+1. **설정**: [Configuration Guide](../40-configuration/40-configuration-guide.md)
 
 ### 개발자
 
 1. **아키텍처 이해**: [Integration Architecture](./ARCHITECTURE.md)
-2. **로컬 개발 설정**: [Development Guide](../60-development/60-index.md)
-3. **기여 가이드**: [Contributing](../CONTRIBUTING.md)
+1. **로컬 개발 설정**: [Development Guide](../60-development/60-index.md)
+1. **기여 가이드**: [Contributing](../CONTRIBUTING.md)
 
----
+______________________________________________________________________
 
 **마지막 업데이트**: 2025-12-01
 **통합 완료**: Phase 1-3 (git, quality, package-manager, shellforge)

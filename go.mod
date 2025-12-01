@@ -13,6 +13,7 @@ require (
 	github.com/daixiang0/gci v0.13.7
 	github.com/fatih/color v1.18.0
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
 	github.com/go-critic/go-critic v0.13.0
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/google/go-github/v66 v66.0.0
@@ -43,10 +44,7 @@ require (
 	mvdan.cc/gofumpt v0.9.1
 )
 
-require (
-	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd // indirect
-	golang.org/x/sys v0.37.0 // indirect
-)
+require golang.org/x/sys v0.37.0 // indirect
 
 require (
 	dario.cat/mergo v1.0.1 // indirect

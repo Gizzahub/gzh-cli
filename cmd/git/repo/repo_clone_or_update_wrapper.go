@@ -9,8 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	gitrepo "github.com/gizzahub/gzh-cli-git/pkg/repository"
 	"github.com/Gizzahub/gzh-cli/internal/app"
+
+	gitrepo "github.com/gizzahub/gzh-cli-git/pkg/repository"
 )
 
 // newRepoCloneOrUpdateCmd creates the clone-or-update command using gzh-cli-git library
