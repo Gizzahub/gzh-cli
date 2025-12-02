@@ -1,8 +1,12 @@
 package github
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"time"
 )
 
@@ -159,16 +163,63 @@ type WebhookDelivery struct {
 
 // webhookServiceImpl implements the WebhookService interface.
 type webhookServiceImpl struct {
-	apiClient APIClient
-	logger    Logger
+	apiClient  APIClient
+	httpClient *http.Client
+	baseURL    string
+	token      string
+	logger     Logger
 }
 
 // NewWebhookService creates a new webhook service instance.
 func NewWebhookService(apiClient APIClient, logger Logger) WebhookService {
 	return &webhookServiceImpl{
-		apiClient: apiClient,
-		logger:    logger,
+		apiClient:  apiClient,
+		httpClient: &http.Client{Timeout: 30 * time.Second},
+		baseURL:    "https://api.github.com",
+		logger:     logger,
 	}
+}
+
+// NewWebhookServiceWithToken creates a webhook service with a token for API calls.
+func NewWebhookServiceWithToken(apiClient APIClient, token string, logger Logger) WebhookService {
+	return &webhookServiceImpl{
+		apiClient:  apiClient,
+		httpClient: &http.Client{Timeout: 30 * time.Second},
+		baseURL:    "https://api.github.com",
+		token:      token,
+		logger:     logger,
+	}
+}
+
+// SetToken sets the authentication token for API calls.
+func (w *webhookServiceImpl) SetToken(token string) {
+	w.token = token
+}
+
+// doRequest performs an HTTP request with authentication.
+func (w *webhookServiceImpl) doRequest(ctx context.Context, method, url string, body interface{}) (*http.Response, error) {
+	var bodyReader io.Reader
+	if body != nil {
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal request body: %w", err)
+		}
+		bodyReader = bytes.NewReader(jsonBody)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, url, bodyReader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	if w.token != "" {
+		req.Header.Set("Authorization", "token "+w.token)
+	}
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "gzh-cli")
+
+	return w.httpClient.Do(req)
 }
 
 // Repository webhook operations
@@ -182,75 +233,111 @@ func (w *webhookServiceImpl) CreateRepositoryWebhook(ctx context.Context, owner,
 		return nil, fmt.Errorf("invalid webhook request: %w", err)
 	}
 
-	// TODO: Implement actual GitHub API call
-	// For now, return a mock webhook
-	webhook := &WebhookInfo{
-		ID:         123456,
-		Name:       request.Name,
-		URL:        request.URL,
-		Events:     request.Events,
-		Active:     request.Active,
-		Config:     request.Config,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-		Repository: fmt.Sprintf("%s/%s", owner, repo),
+	// GitHub API request body
+	apiRequest := map[string]interface{}{
+		"name":   "web",
+		"active": request.Active,
+		"events": request.Events,
+		"config": map[string]interface{}{
+			"url":          request.Config.URL,
+			"content_type": request.Config.ContentType,
+			"insecure_ssl": "0",
+		},
+	}
+	if request.Config.Secret != "" {
+		apiRequest["config"].(map[string]interface{})["secret"] = request.Config.Secret
+	}
+	if request.Config.InsecureSSL {
+		apiRequest["config"].(map[string]interface{})["insecure_ssl"] = "1"
 	}
 
+	url := fmt.Sprintf("%s/repos/%s/%s/hooks", w.baseURL, owner, repo)
+	resp, err := w.doRequest(ctx, http.MethodPost, url, apiRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to create webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
+
+	var webhook WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+		return nil, fmt.Errorf("failed to decode webhook response: %w", err)
+	}
+
+	webhook.Repository = fmt.Sprintf("%s/%s", owner, repo)
 	w.logger.Info("Successfully created repository webhook", "webhook_id", webhook.ID)
 
-	return webhook, nil
+	return &webhook, nil
 }
 
 // GetRepositoryWebhook retrieves a specific webhook for a repository.
 func (w *webhookServiceImpl) GetRepositoryWebhook(ctx context.Context, owner, repo string, webhookID int64) (*WebhookInfo, error) {
 	w.logger.Debug("Getting repository webhook", "owner", owner, "repo", repo, "webhook_id", webhookID)
 
-	// TODO: Implement actual GitHub API call
-	// For now, return a mock webhook
-	webhook := &WebhookInfo{
-		ID:         webhookID,
-		Name:       "example-webhook",
-		URL:        "https://example.com/webhook",
-		Events:     []string{"push", "pull_request"},
-		Active:     true,
-		Config:     WebhookConfig{URL: "https://example.com/webhook", ContentType: "json"},
-		CreatedAt:  time.Now().Add(-24 * time.Hour),
-		UpdatedAt:  time.Now(),
-		Repository: fmt.Sprintf("%s/%s", owner, repo),
+	url := fmt.Sprintf("%s/repos/%s/%s/hooks/%d", w.baseURL, owner, repo, webhookID)
+	resp, err := w.doRequest(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("webhook not found: %d", webhookID)
 	}
 
-	return webhook, nil
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to get webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
+
+	var webhook WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+		return nil, fmt.Errorf("failed to decode webhook response: %w", err)
+	}
+
+	webhook.Repository = fmt.Sprintf("%s/%s", owner, repo)
+	return &webhook, nil
 }
 
 // ListRepositoryWebhooks lists all webhooks for a repository.
 func (w *webhookServiceImpl) ListRepositoryWebhooks(ctx context.Context, owner, repo string, options *WebhookListOptions) ([]*WebhookInfo, error) {
 	w.logger.Debug("Listing repository webhooks", "owner", owner, "repo", repo)
 
-	// TODO: Implement actual GitHub API call
-	// For now, return mock webhooks
-	webhooks := []*WebhookInfo{
-		{
-			ID:         123456,
-			Name:       "ci-webhook",
-			URL:        "https://ci.example.com/webhook",
-			Events:     []string{"push", "pull_request"},
-			Active:     true,
-			Config:     WebhookConfig{URL: "https://ci.example.com/webhook", ContentType: "json"},
-			CreatedAt:  time.Now().Add(-48 * time.Hour),
-			UpdatedAt:  time.Now().Add(-24 * time.Hour),
-			Repository: fmt.Sprintf("%s/%s", owner, repo),
-		},
-		{
-			ID:         789012,
-			Name:       "deploy-webhook",
-			URL:        "https://deploy.example.com/webhook",
-			Events:     []string{"release"},
-			Active:     true,
-			Config:     WebhookConfig{URL: "https://deploy.example.com/webhook", ContentType: "json"},
-			CreatedAt:  time.Now().Add(-72 * time.Hour),
-			UpdatedAt:  time.Now().Add(-12 * time.Hour),
-			Repository: fmt.Sprintf("%s/%s", owner, repo),
-		},
+	page := 1
+	perPage := 100
+	if options != nil {
+		if options.Page > 0 {
+			page = options.Page
+		}
+		if options.PerPage > 0 {
+			perPage = options.PerPage
+		}
+	}
+
+	url := fmt.Sprintf("%s/repos/%s/%s/hooks?page=%d&per_page=%d", w.baseURL, owner, repo, page, perPage)
+	resp, err := w.doRequest(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list webhooks: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to list webhooks: HTTP %d - %s", resp.StatusCode, string(body))
+	}
+
+	var webhooks []*WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhooks); err != nil {
+		return nil, fmt.Errorf("failed to decode webhooks response: %w", err)
+	}
+
+	// Set repository info for each webhook
+	for _, wh := range webhooks {
+		wh.Repository = fmt.Sprintf("%s/%s", owner, repo)
 	}
 
 	return webhooks, nil
@@ -260,44 +347,71 @@ func (w *webhookServiceImpl) ListRepositoryWebhooks(ctx context.Context, owner, 
 func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner, repo string, request *WebhookUpdateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Updating repository webhook", "owner", owner, "repo", repo, "webhook_id", request.ID)
 
-	// Get existing webhook first
-	existing, err := w.GetRepositoryWebhook(ctx, owner, repo, request.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get existing webhook: %w", err)
-	}
-
-	// Apply updates
-	if request.Name != "" {
-		existing.Name = request.Name
-	}
-
-	if request.URL != "" {
-		existing.URL = request.URL
-		existing.Config.URL = request.URL
-	}
-
+	// Build update request body
+	apiRequest := make(map[string]interface{})
 	if request.Events != nil {
-		existing.Events = request.Events
+		apiRequest["events"] = request.Events
 	}
-
 	if request.Active != nil {
-		existing.Active = *request.Active
+		apiRequest["active"] = *request.Active
+	}
+	if request.Config.URL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
+		config := make(map[string]interface{})
+		if request.Config.URL != "" {
+			config["url"] = request.Config.URL
+		}
+		if request.Config.ContentType != "" {
+			config["content_type"] = request.Config.ContentType
+		}
+		if request.Config.Secret != "" {
+			config["secret"] = request.Config.Secret
+		}
+		if request.Config.InsecureSSL {
+			config["insecure_ssl"] = "1"
+		} else {
+			config["insecure_ssl"] = "0"
+		}
+		apiRequest["config"] = config
 	}
 
-	existing.UpdatedAt = time.Now()
+	url := fmt.Sprintf("%s/repos/%s/%s/hooks/%d", w.baseURL, owner, repo, request.ID)
+	resp, err := w.doRequest(ctx, http.MethodPatch, url, apiRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update webhook: %w", err)
+	}
+	defer resp.Body.Close()
 
-	// TODO: Implement actual GitHub API call
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to update webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
 
-	w.logger.Info("Successfully updated repository webhook", "webhook_id", existing.ID)
+	var webhook WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+		return nil, fmt.Errorf("failed to decode webhook response: %w", err)
+	}
 
-	return existing, nil
+	webhook.Repository = fmt.Sprintf("%s/%s", owner, repo)
+	w.logger.Info("Successfully updated repository webhook", "webhook_id", webhook.ID)
+
+	return &webhook, nil
 }
 
 // DeleteRepositoryWebhook deletes a webhook from a repository.
 func (w *webhookServiceImpl) DeleteRepositoryWebhook(ctx context.Context, owner, repo string, webhookID int64) error {
 	w.logger.Info("Deleting repository webhook", "owner", owner, "repo", repo, "webhook_id", webhookID)
 
-	// TODO: Implement actual GitHub API call
+	url := fmt.Sprintf("%s/repos/%s/%s/hooks/%d", w.baseURL, owner, repo, webhookID)
+	resp, err := w.doRequest(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to delete webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
 
 	w.logger.Info("Successfully deleted repository webhook", "webhook_id", webhookID)
 
@@ -314,58 +428,111 @@ func (w *webhookServiceImpl) CreateOrganizationWebhook(ctx context.Context, org 
 		return nil, fmt.Errorf("invalid webhook request: %w", err)
 	}
 
-	webhook := &WebhookInfo{
-		ID:           234567,
-		Name:         request.Name,
-		URL:          request.URL,
-		Events:       request.Events,
-		Active:       request.Active,
-		Config:       request.Config,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-		Organization: org,
+	// GitHub API request body
+	apiRequest := map[string]interface{}{
+		"name":   "web",
+		"active": request.Active,
+		"events": request.Events,
+		"config": map[string]interface{}{
+			"url":          request.Config.URL,
+			"content_type": request.Config.ContentType,
+			"insecure_ssl": "0",
+		},
+	}
+	if request.Config.Secret != "" {
+		apiRequest["config"].(map[string]interface{})["secret"] = request.Config.Secret
+	}
+	if request.Config.InsecureSSL {
+		apiRequest["config"].(map[string]interface{})["insecure_ssl"] = "1"
 	}
 
+	url := fmt.Sprintf("%s/orgs/%s/hooks", w.baseURL, org)
+	resp, err := w.doRequest(ctx, http.MethodPost, url, apiRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create organization webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to create organization webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
+
+	var webhook WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+		return nil, fmt.Errorf("failed to decode webhook response: %w", err)
+	}
+
+	webhook.Organization = org
 	w.logger.Info("Successfully created organization webhook", "webhook_id", webhook.ID)
 
-	return webhook, nil
+	return &webhook, nil
 }
 
 // GetOrganizationWebhook retrieves a specific webhook for an organization.
 func (w *webhookServiceImpl) GetOrganizationWebhook(ctx context.Context, org string, webhookID int64) (*WebhookInfo, error) {
 	w.logger.Debug("Getting organization webhook", "org", org, "webhook_id", webhookID)
 
-	webhook := &WebhookInfo{
-		ID:           webhookID,
-		Name:         "org-webhook",
-		URL:          "https://org.example.com/webhook",
-		Events:       []string{"repository", "member"},
-		Active:       true,
-		Config:       WebhookConfig{URL: "https://org.example.com/webhook", ContentType: "json"},
-		CreatedAt:    time.Now().Add(-24 * time.Hour),
-		UpdatedAt:    time.Now(),
-		Organization: org,
+	url := fmt.Sprintf("%s/orgs/%s/hooks/%d", w.baseURL, org, webhookID)
+	resp, err := w.doRequest(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get organization webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("organization webhook not found: %d", webhookID)
 	}
 
-	return webhook, nil
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to get organization webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
+
+	var webhook WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+		return nil, fmt.Errorf("failed to decode webhook response: %w", err)
+	}
+
+	webhook.Organization = org
+	return &webhook, nil
 }
 
 // ListOrganizationWebhooks lists all webhooks for an organization.
 func (w *webhookServiceImpl) ListOrganizationWebhooks(ctx context.Context, org string, options *WebhookListOptions) ([]*WebhookInfo, error) {
 	w.logger.Debug("Listing organization webhooks", "org", org)
 
-	webhooks := []*WebhookInfo{
-		{
-			ID:           234567,
-			Name:         "org-security-webhook",
-			URL:          "https://security.example.com/webhook",
-			Events:       []string{"repository", "member", "team"},
-			Active:       true,
-			Config:       WebhookConfig{URL: "https://security.example.com/webhook", ContentType: "json"},
-			CreatedAt:    time.Now().Add(-48 * time.Hour),
-			UpdatedAt:    time.Now().Add(-24 * time.Hour),
-			Organization: org,
-		},
+	page := 1
+	perPage := 100
+	if options != nil {
+		if options.Page > 0 {
+			page = options.Page
+		}
+		if options.PerPage > 0 {
+			perPage = options.PerPage
+		}
+	}
+
+	url := fmt.Sprintf("%s/orgs/%s/hooks?page=%d&per_page=%d", w.baseURL, org, page, perPage)
+	resp, err := w.doRequest(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list organization webhooks: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to list organization webhooks: HTTP %d - %s", resp.StatusCode, string(body))
+	}
+
+	var webhooks []*WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhooks); err != nil {
+		return nil, fmt.Errorf("failed to decode webhooks response: %w", err)
+	}
+
+	// Set organization info for each webhook
+	for _, wh := range webhooks {
+		wh.Organization = org
 	}
 
 	return webhooks, nil
@@ -375,41 +542,71 @@ func (w *webhookServiceImpl) ListOrganizationWebhooks(ctx context.Context, org s
 func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org string, request *WebhookUpdateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Updating organization webhook", "org", org, "webhook_id", request.ID)
 
-	existing, err := w.GetOrganizationWebhook(ctx, org, request.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get existing webhook: %w", err)
-	}
-
-	// Apply updates (similar to repository webhook update)
-	if request.Name != "" {
-		existing.Name = request.Name
-	}
-
-	if request.URL != "" {
-		existing.URL = request.URL
-		existing.Config.URL = request.URL
-	}
-
+	// Build update request body
+	apiRequest := make(map[string]interface{})
 	if request.Events != nil {
-		existing.Events = request.Events
+		apiRequest["events"] = request.Events
 	}
-
 	if request.Active != nil {
-		existing.Active = *request.Active
+		apiRequest["active"] = *request.Active
+	}
+	if request.Config.URL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
+		config := make(map[string]interface{})
+		if request.Config.URL != "" {
+			config["url"] = request.Config.URL
+		}
+		if request.Config.ContentType != "" {
+			config["content_type"] = request.Config.ContentType
+		}
+		if request.Config.Secret != "" {
+			config["secret"] = request.Config.Secret
+		}
+		if request.Config.InsecureSSL {
+			config["insecure_ssl"] = "1"
+		} else {
+			config["insecure_ssl"] = "0"
+		}
+		apiRequest["config"] = config
 	}
 
-	existing.UpdatedAt = time.Now()
+	url := fmt.Sprintf("%s/orgs/%s/hooks/%d", w.baseURL, org, request.ID)
+	resp, err := w.doRequest(ctx, http.MethodPatch, url, apiRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update organization webhook: %w", err)
+	}
+	defer resp.Body.Close()
 
-	w.logger.Info("Successfully updated organization webhook", "webhook_id", existing.ID)
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to update organization webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
 
-	return existing, nil
+	var webhook WebhookInfo
+	if err := json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+		return nil, fmt.Errorf("failed to decode webhook response: %w", err)
+	}
+
+	webhook.Organization = org
+	w.logger.Info("Successfully updated organization webhook", "webhook_id", webhook.ID)
+
+	return &webhook, nil
 }
 
 // DeleteOrganizationWebhook deletes a webhook from an organization.
 func (w *webhookServiceImpl) DeleteOrganizationWebhook(ctx context.Context, org string, webhookID int64) error {
 	w.logger.Info("Deleting organization webhook", "org", org, "webhook_id", webhookID)
 
-	// TODO: Implement actual GitHub API call
+	url := fmt.Sprintf("%s/orgs/%s/hooks/%d", w.baseURL, org, webhookID)
+	resp, err := w.doRequest(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete organization webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to delete organization webhook: HTTP %d - %s", resp.StatusCode, string(body))
+	}
 
 	w.logger.Info("Successfully deleted organization webhook", "webhook_id", webhookID)
 
