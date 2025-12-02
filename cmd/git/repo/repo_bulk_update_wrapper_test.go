@@ -34,8 +34,12 @@ func TestBulkUpdateCmdFlags(t *testing.T) {
 	// Verify expected flags exist
 	assert.NotNil(t, cmd.Flags().Lookup("parallel"), "Command should have --parallel flag")
 	assert.NotNil(t, cmd.Flags().Lookup("max-depth"), "Command should have --max-depth flag")
-	assert.NotNil(t, cmd.Flags().Lookup("exclude"), "Command should have --exclude flag")
-	assert.NotNil(t, cmd.Flags().Lookup("format"), "Command should have --format flag")
+	assert.NotNil(t, cmd.Flags().Lookup("exclude-pattern"), "Command should have --exclude-pattern flag")
+	assert.NotNil(t, cmd.Flags().Lookup("include-pattern"), "Command should have --include-pattern flag")
+	assert.NotNil(t, cmd.Flags().Lookup("json"), "Command should have --json flag")
+	assert.NotNil(t, cmd.Flags().Lookup("dry-run"), "Command should have --dry-run flag")
+	assert.NotNil(t, cmd.Flags().Lookup("verbose"), "Command should have --verbose flag")
+	assert.NotNil(t, cmd.Flags().Lookup("no-fetch"), "Command should have --no-fetch flag")
 }
 
 // TestBulkUpdateCmdIntegration tests integration with external library

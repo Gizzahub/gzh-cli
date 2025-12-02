@@ -278,6 +278,72 @@ func parseFullName(fullName string) (owner, repo string, err error) {
 	return parts[0], parts[1], nil
 }
 
+// Release management
+
+// ListReleases lists releases for a repository.
+func (g *GitLabProvider) ListReleases(ctx context.Context, repoID string, opts provider.ListReleasesOptions) (*provider.ReleaseList, error) {
+	return ListReleases(ctx, repoID, opts)
+}
+
+// GetRelease gets a specific release by ID.
+// Note: GitLab uses tag name as release ID.
+func (g *GitLabProvider) GetRelease(ctx context.Context, repoID, releaseID string) (*provider.Release, error) {
+	return GetRelease(ctx, repoID, releaseID)
+}
+
+// GetReleaseByTag gets a release by tag name.
+func (g *GitLabProvider) GetReleaseByTag(ctx context.Context, repoID, tagName string) (*provider.Release, error) {
+	return GetRelease(ctx, repoID, tagName)
+}
+
+// CreateRelease creates a new release.
+func (g *GitLabProvider) CreateRelease(ctx context.Context, repoID string, req provider.CreateReleaseRequest) (*provider.Release, error) {
+	return CreateRelease(ctx, repoID, req)
+}
+
+// UpdateRelease updates an existing release.
+// Note: GitLab uses tag name as release ID.
+func (g *GitLabProvider) UpdateRelease(ctx context.Context, repoID, releaseID string, updates provider.UpdateReleaseRequest) (*provider.Release, error) {
+	return UpdateRelease(ctx, repoID, releaseID, updates)
+}
+
+// DeleteRelease deletes a release.
+// Note: GitLab uses tag name as release ID.
+func (g *GitLabProvider) DeleteRelease(ctx context.Context, repoID, releaseID string) error {
+	return DeleteRelease(ctx, repoID, releaseID)
+}
+
+// ListReleaseAssets lists assets for a release.
+func (g *GitLabProvider) ListReleaseAssets(ctx context.Context, repoID, releaseID string) ([]provider.Asset, error) {
+	// GitLab release에서 직접 assets를 가져옴
+	release, err := GetRelease(ctx, repoID, releaseID)
+	if err != nil {
+		return nil, err
+	}
+	return release.Assets, nil
+}
+
+// UploadReleaseAsset uploads an asset to a release.
+func (g *GitLabProvider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
+	// GitLab uses release links for assets - not direct file upload
+	// TODO: Implement GitLab release link creation
+	return nil, fmt.Errorf("GitLab release asset upload not implemented - use release links API")
+}
+
+// DeleteReleaseAsset deletes a release asset.
+func (g *GitLabProvider) DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error {
+	// GitLab uses release links - need to implement link deletion
+	// TODO: Implement GitLab release link deletion
+	return fmt.Errorf("GitLab release asset deletion not implemented - use release links API")
+}
+
+// DownloadReleaseAsset downloads a release asset.
+func (g *GitLabProvider) DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error) {
+	// GitLab release assets are accessible via URL, not direct download API
+	// TODO: Implement direct download if needed
+	return nil, fmt.Errorf("GitLab release asset download not implemented - use asset URL directly")
+}
+
 // splitFullName splits "owner/repo" into ["owner", "repo"]
 func splitFullName(fullName string) []string {
 	result := make([]string, 0, 2)

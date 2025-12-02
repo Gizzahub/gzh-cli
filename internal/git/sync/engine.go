@@ -256,7 +256,8 @@ func (e *SyncEngine) createSyncActions(source provider.Repository, destination *
 					source:      e.source,
 					destination: e.destination,
 				}
-				return syncer.Sync(ctx, source, *destination)
+				// 사전 접근성 검증이 포함된 동기화 사용
+				return syncer.SyncWithValidation(ctx, source, *destination, e.options.Verbose)
 			},
 		})
 	}
@@ -270,7 +271,8 @@ func (e *SyncEngine) createSyncActions(source provider.Repository, destination *
 				if destination == nil {
 					return fmt.Errorf("cannot sync releases: destination repository not created yet")
 				}
-				return e.syncReleases(ctx, source, *destination)
+				syncer := NewReleaseSyncer(e.source, e.destination, e.options)
+				return syncer.Sync(ctx, source, *destination)
 			},
 		})
 	}
@@ -284,7 +286,8 @@ func (e *SyncEngine) createSyncActions(source provider.Repository, destination *
 				if destination == nil {
 					return fmt.Errorf("cannot sync settings: destination repository not created yet")
 				}
-				return e.syncSettings(ctx, source, *destination)
+				syncer := NewSettingsSyncer(e.source, e.destination, e.options)
+				return syncer.Sync(ctx, source, *destination)
 			},
 		})
 	}
@@ -336,28 +339,6 @@ func (e *SyncEngine) printSyncPlan(plan SyncPlan) error {
 	fmt.Printf("\nRun without --dry-run to execute the synchronization.\n")
 
 	return nil
-}
-
-// syncReleases synchronizes releases between repositories.
-func (e *SyncEngine) syncReleases(ctx context.Context, source, destination provider.Repository) error {
-	// TODO: Implement releases synchronization
-	// This would involve:
-	// 1. Listing releases from source
-	// 2. Checking existing releases in destination
-	// 3. Creating missing releases
-	// 4. Updating existing releases if needed
-	return fmt.Errorf("releases synchronization not yet implemented")
-}
-
-// syncSettings synchronizes repository settings.
-func (e *SyncEngine) syncSettings(ctx context.Context, source, destination provider.Repository) error {
-	// TODO: Implement settings synchronization
-	// This would involve:
-	// 1. Comparing repository settings
-	// 2. Updating description, topics, features
-	// 3. Syncing branch protection rules
-	// 4. Syncing webhooks and integrations
-	return fmt.Errorf("settings synchronization not yet implemented")
 }
 
 // SyncPlan represents a synchronization plan.

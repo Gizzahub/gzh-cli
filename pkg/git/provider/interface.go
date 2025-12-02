@@ -24,6 +24,9 @@ type GitProvider interface {
 	// Repository management
 	RepositoryManager
 
+	// Release management (if supported)
+	ReleaseManager
+
 	// Webhook management (if supported)
 	WebhookManager
 
@@ -53,6 +56,23 @@ type RepositoryManager interface {
 
 	// Search and discovery
 	SearchRepositories(ctx context.Context, query SearchQuery) (*SearchResult, error)
+}
+
+// ReleaseManager defines release-related operations.
+type ReleaseManager interface {
+	// Release CRUD operations
+	ListReleases(ctx context.Context, repoID string, opts ListReleasesOptions) (*ReleaseList, error)
+	GetRelease(ctx context.Context, repoID, releaseID string) (*Release, error)
+	GetReleaseByTag(ctx context.Context, repoID, tagName string) (*Release, error)
+	CreateRelease(ctx context.Context, repoID string, req CreateReleaseRequest) (*Release, error)
+	UpdateRelease(ctx context.Context, repoID, releaseID string, updates UpdateReleaseRequest) (*Release, error)
+	DeleteRelease(ctx context.Context, repoID, releaseID string) error
+
+	// Release asset operations
+	ListReleaseAssets(ctx context.Context, repoID, releaseID string) ([]Asset, error)
+	UploadReleaseAsset(ctx context.Context, repoID string, req UploadAssetRequest) (*Asset, error)
+	DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error
+	DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error)
 }
 
 // WebhookManager defines webhook-related operations.

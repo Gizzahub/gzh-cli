@@ -269,6 +269,92 @@ func (m *Provider) StreamEvents(ctx context.Context, opts provider.StreamOptions
 	return args.Get(0).(<-chan provider.Event), args.Error(1)
 }
 
+// Release management
+
+// ListReleases lists releases for a repository.
+func (m *Provider) ListReleases(ctx context.Context, repoID string, opts provider.ListReleasesOptions) (*provider.ReleaseList, error) {
+	args := m.Called(ctx, repoID, opts)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*provider.ReleaseList), args.Error(1)
+}
+
+// GetRelease gets a specific release by ID.
+func (m *Provider) GetRelease(ctx context.Context, repoID, releaseID string) (*provider.Release, error) {
+	args := m.Called(ctx, repoID, releaseID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*provider.Release), args.Error(1)
+}
+
+// GetReleaseByTag gets a release by tag name.
+func (m *Provider) GetReleaseByTag(ctx context.Context, repoID, tagName string) (*provider.Release, error) {
+	args := m.Called(ctx, repoID, tagName)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*provider.Release), args.Error(1)
+}
+
+// CreateRelease creates a new release.
+func (m *Provider) CreateRelease(ctx context.Context, repoID string, req provider.CreateReleaseRequest) (*provider.Release, error) {
+	args := m.Called(ctx, repoID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*provider.Release), args.Error(1)
+}
+
+// UpdateRelease updates an existing release.
+func (m *Provider) UpdateRelease(ctx context.Context, repoID, releaseID string, updates provider.UpdateReleaseRequest) (*provider.Release, error) {
+	args := m.Called(ctx, repoID, releaseID, updates)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*provider.Release), args.Error(1)
+}
+
+// DeleteRelease deletes a release.
+func (m *Provider) DeleteRelease(ctx context.Context, repoID, releaseID string) error {
+	args := m.Called(ctx, repoID, releaseID)
+	return args.Error(0)
+}
+
+// ListReleaseAssets lists assets for a release.
+func (m *Provider) ListReleaseAssets(ctx context.Context, repoID, releaseID string) ([]provider.Asset, error) {
+	args := m.Called(ctx, repoID, releaseID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]provider.Asset), args.Error(1)
+}
+
+// UploadReleaseAsset uploads an asset to a release.
+func (m *Provider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
+	args := m.Called(ctx, repoID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*provider.Asset), args.Error(1)
+}
+
+// DeleteReleaseAsset deletes a release asset.
+func (m *Provider) DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error {
+	args := m.Called(ctx, repoID, assetID)
+	return args.Error(0)
+}
+
+// DownloadReleaseAsset downloads a release asset.
+func (m *Provider) DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error) {
+	args := m.Called(ctx, repoID, assetID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]byte), args.Error(1)
+}
+
 // Health and monitoring
 
 // HealthCheck performs a health check.

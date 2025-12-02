@@ -11,13 +11,16 @@ import (
 )
 
 // TestSyncCommand tests the repository synchronization functionality.
+// NOTE: Tests that execute commands with provider operations require tokens
+// because the current implementation doesn't support mock provider injection.
 func (s *GitRepoTestSuite) TestSyncCommand() {
 	tests := []struct {
-		name      string
-		args      []string
-		setup     func()
-		validate  func()
-		expectErr bool
+		name              string
+		args              []string
+		setup             func()
+		validate          func()
+		expectErr         bool
+		requiresProviders []string // 토큰이 필요한 프로바이더 목록
 	}{
 		{
 			name: "Sync single repository",
@@ -27,6 +30,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--to", "gitlab:testgroup/webapp",
 				"--create-missing",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -62,6 +66,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--create-missing",
 				"--include-issues",
 			},
+			requiresProviders: []string{"github", "gitea"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -99,6 +104,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--match", "api-*",
 				"--create-missing",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -140,6 +146,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--to", "gitlab:targetorg",
 				"--update-existing",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -172,6 +179,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--create-missing",
 				"--dry-run",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -196,6 +204,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--create-missing",
 				"--parallel", "3",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -298,6 +307,11 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
+			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
+			if len(tt.requiresProviders) > 0 {
+				s.skipIfNoProviderToken(tt.requiresProviders...)
+			}
+
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -321,10 +335,11 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 // TestSyncCommandOptions tests sync command option parsing and validation.
 func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 	tests := []struct {
-		name      string
-		args      []string
-		setup     func()
-		expectErr bool
+		name              string
+		args              []string
+		setup             func()
+		expectErr         bool
+		requiresProviders []string
 	}{
 		{
 			name: "Valid sync options",
@@ -339,6 +354,7 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 				"--include-wiki",
 				"--parallel", "2",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -385,6 +401,11 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
+			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
+			if len(tt.requiresProviders) > 0 {
+				s.skipIfNoProviderToken(tt.requiresProviders...)
+			}
+
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -405,11 +426,12 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 // TestSyncCommandFeatures tests different sync features.
 func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 	tests := []struct {
-		name      string
-		args      []string
-		setup     func()
-		validate  func()
-		expectErr bool
+		name              string
+		args              []string
+		setup             func()
+		validate          func()
+		expectErr         bool
+		requiresProviders []string
 	}{
 		{
 			name: "Sync with code only",
@@ -420,6 +442,7 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 				"--create-missing",
 				"--include-code",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				s.setupBasicSyncMocks("sourceorg/webapp", "targetorg/webapp")
@@ -441,6 +464,7 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 				"--include-wiki",
 				"--include-releases",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				s.setupBasicSyncMocks("sourceorg/webapp", "targetorg/webapp")
@@ -459,6 +483,7 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 				"--update-existing",
 				"--force",
 			},
+			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				s.setupUpdateSyncMocks("sourceorg/webapp", "targetorg/webapp")
@@ -472,6 +497,11 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
+			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
+			if len(tt.requiresProviders) > 0 {
+				s.skipIfNoProviderToken(tt.requiresProviders...)
+			}
+
 			if tt.setup != nil {
 				tt.setup()
 			}

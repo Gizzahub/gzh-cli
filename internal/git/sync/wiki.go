@@ -270,10 +270,117 @@ func (w *WikiSyncer) ValidateWikiAccess(ctx context.Context, srcRepo, dstRepo pr
 		return fmt.Errorf("destination wiki URL is empty")
 	}
 
-	// TODO: Add actual connectivity checks if needed
-	// This could involve testing git ls-remote on the wiki URLs
-
 	return nil
+}
+
+// WikiAccessResult represents the result of a wiki accessibility check.
+type WikiAccessResult struct {
+	Accessible bool   `json:"accessible"`
+	HasContent bool   `json:"has_content"`
+	Error      string `json:"error,omitempty"`
+	RefCount   int    `json:"ref_count,omitempty"`
+}
+
+// CheckWikiAccessibility verifies if a wiki repository is accessible using git ls-remote.
+// This is a more reliable way to check wiki existence before attempting to clone.
+func (w *WikiSyncer) CheckWikiAccessibility(ctx context.Context, repo provider.Repository) WikiAccessResult {
+	wikiURL := w.getWikiURL(repo)
+	if wikiURL == "" {
+		return WikiAccessResult{
+			Accessible: false,
+			HasContent: false,
+			Error:      "wiki URL is empty",
+		}
+	}
+
+	// git ls-remote를 사용하여 원격 저장소 접근 가능 여부 확인
+	cmd := exec.CommandContext(ctx, "git", "ls-remote", "--heads", wikiURL)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		// 에러 메시지 분석
+		outputStr := strings.ToLower(string(output))
+		if strings.Contains(outputStr, "repository not found") ||
+			strings.Contains(outputStr, "not found") ||
+			strings.Contains(outputStr, "does not exist") {
+			return WikiAccessResult{
+				Accessible: false,
+				HasContent: false,
+				Error:      "wiki repository not found",
+			}
+		}
+		if strings.Contains(outputStr, "authentication") ||
+			strings.Contains(outputStr, "permission denied") ||
+			strings.Contains(outputStr, "403") ||
+			strings.Contains(outputStr, "401") {
+			return WikiAccessResult{
+				Accessible: false,
+				HasContent: false,
+				Error:      "authentication failed",
+			}
+		}
+		return WikiAccessResult{
+			Accessible: false,
+			HasContent: false,
+			Error:      fmt.Sprintf("failed to check wiki: %v", err),
+		}
+	}
+
+	// 출력에서 ref 개수 확인
+	outputStr := strings.TrimSpace(string(output))
+	refCount := 0
+	if outputStr != "" {
+		lines := strings.Split(outputStr, "\n")
+		refCount = len(lines)
+	}
+
+	return WikiAccessResult{
+		Accessible: true,
+		HasContent: refCount > 0,
+		RefCount:   refCount,
+	}
+}
+
+// CheckBothWikisAccessibility checks accessibility of both source and destination wikis.
+func (w *WikiSyncer) CheckBothWikisAccessibility(ctx context.Context, srcRepo, dstRepo provider.Repository) (src, dst WikiAccessResult) {
+	src = w.CheckWikiAccessibility(ctx, srcRepo)
+	dst = w.CheckWikiAccessibility(ctx, dstRepo)
+	return src, dst
+}
+
+// SyncWithValidation performs wiki sync with pre-validation of accessibility.
+func (w *WikiSyncer) SyncWithValidation(ctx context.Context, srcRepo, dstRepo provider.Repository, verbose bool) error {
+	// 1. 소스 위키 접근 가능 여부 확인
+	srcAccess := w.CheckWikiAccessibility(ctx, srcRepo)
+	if !srcAccess.Accessible {
+		if verbose {
+			fmt.Printf("    ⚠️ Source wiki not accessible: %s\n", srcAccess.Error)
+		}
+		return nil // 소스 위키가 없으면 동기화할 내용이 없음
+	}
+
+	if !srcAccess.HasContent {
+		if verbose {
+			fmt.Printf("    📖 Source wiki exists but has no content\n")
+		}
+		return nil
+	}
+
+	// 2. 대상 위키 접근 가능 여부 확인 (optional - 접근 불가해도 생성 시도)
+	dstAccess := w.CheckWikiAccessibility(ctx, dstRepo)
+	if verbose {
+		if dstAccess.Accessible {
+			if dstAccess.HasContent {
+				fmt.Printf("    📖 Destination wiki exists with %d refs\n", dstAccess.RefCount)
+			} else {
+				fmt.Printf("    📖 Destination wiki exists but is empty\n")
+			}
+		} else {
+			fmt.Printf("    📖 Destination wiki will be created\n")
+		}
+	}
+
+	// 3. 실제 동기화 수행
+	return w.Sync(ctx, srcRepo, dstRepo)
 }
 
 // WikiSyncStats represents statistics for wiki synchronization.

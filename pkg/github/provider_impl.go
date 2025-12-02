@@ -313,6 +313,59 @@ func (g *GitHubProvider) GetMetrics(ctx context.Context) (*provider.ProviderMetr
 	}, nil
 }
 
+// Release management
+
+// ListReleases lists releases for a repository.
+func (g *GitHubProvider) ListReleases(ctx context.Context, repoID string, opts provider.ListReleasesOptions) (*provider.ReleaseList, error) {
+	// TODO: Implement GitHub releases API
+	return nil, fmt.Errorf("not implemented")
+}
+
+// GetRelease gets a specific release by ID.
+func (g *GitHubProvider) GetRelease(ctx context.Context, repoID, releaseID string) (*provider.Release, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// GetReleaseByTag gets a release by tag name.
+func (g *GitHubProvider) GetReleaseByTag(ctx context.Context, repoID, tagName string) (*provider.Release, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// CreateRelease creates a new release.
+func (g *GitHubProvider) CreateRelease(ctx context.Context, repoID string, req provider.CreateReleaseRequest) (*provider.Release, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// UpdateRelease updates an existing release.
+func (g *GitHubProvider) UpdateRelease(ctx context.Context, repoID, releaseID string, updates provider.UpdateReleaseRequest) (*provider.Release, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// DeleteRelease deletes a release.
+func (g *GitHubProvider) DeleteRelease(ctx context.Context, repoID, releaseID string) error {
+	return fmt.Errorf("not implemented")
+}
+
+// ListReleaseAssets lists assets for a release.
+func (g *GitHubProvider) ListReleaseAssets(ctx context.Context, repoID, releaseID string) ([]provider.Asset, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// UploadReleaseAsset uploads an asset to a release.
+func (g *GitHubProvider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// DeleteReleaseAsset deletes a release asset.
+func (g *GitHubProvider) DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error {
+	return fmt.Errorf("not implemented")
+}
+
+// DownloadReleaseAsset downloads a release asset.
+func (g *GitHubProvider) DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 // parseFullName parses owner/repo from full name
 func parseFullName(fullName string) (owner, repo string, err error) {
 	parts := splitFullName(fullName)

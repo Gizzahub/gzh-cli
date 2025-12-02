@@ -6,6 +6,7 @@ package gitea
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
@@ -285,4 +286,118 @@ func (g *GiteaProvider) GetMetrics(ctx context.Context) (*provider.ProviderMetri
 		SuccessRate:    0.0,
 		CollectedAt:    time.Now(),
 	}, nil
+}
+
+// Release management
+
+// ListReleases lists releases for a repository.
+func (g *GiteaProvider) ListReleases(ctx context.Context, repoID string, opts provider.ListReleasesOptions) (*provider.ReleaseList, error) {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return nil, g.FormatError("list releases", err)
+	}
+	return ListReleases(ctx, owner, repo, opts)
+}
+
+// GetRelease gets a specific release by ID.
+func (g *GiteaProvider) GetRelease(ctx context.Context, repoID, releaseID string) (*provider.Release, error) {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return nil, g.FormatError("get release", err)
+	}
+	id, err := strconv.ParseInt(releaseID, 10, 64)
+	if err != nil {
+		return nil, g.FormatError("get release", fmt.Errorf("invalid release ID: %s", releaseID))
+	}
+	return GetRelease(ctx, owner, repo, id)
+}
+
+// GetReleaseByTag gets a release by tag name.
+func (g *GiteaProvider) GetReleaseByTag(ctx context.Context, repoID, tagName string) (*provider.Release, error) {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return nil, g.FormatError("get release by tag", err)
+	}
+	return GetReleaseByTag(ctx, owner, repo, tagName)
+}
+
+// CreateRelease creates a new release.
+func (g *GiteaProvider) CreateRelease(ctx context.Context, repoID string, req provider.CreateReleaseRequest) (*provider.Release, error) {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return nil, g.FormatError("create release", err)
+	}
+	return CreateRelease(ctx, owner, repo, req)
+}
+
+// UpdateRelease updates an existing release.
+func (g *GiteaProvider) UpdateRelease(ctx context.Context, repoID, releaseID string, updates provider.UpdateReleaseRequest) (*provider.Release, error) {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return nil, g.FormatError("update release", err)
+	}
+	id, err := strconv.ParseInt(releaseID, 10, 64)
+	if err != nil {
+		return nil, g.FormatError("update release", fmt.Errorf("invalid release ID: %s", releaseID))
+	}
+	return UpdateRelease(ctx, owner, repo, id, updates)
+}
+
+// DeleteRelease deletes a release.
+func (g *GiteaProvider) DeleteRelease(ctx context.Context, repoID, releaseID string) error {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return g.FormatError("delete release", err)
+	}
+	id, err := strconv.ParseInt(releaseID, 10, 64)
+	if err != nil {
+		return g.FormatError("delete release", fmt.Errorf("invalid release ID: %s", releaseID))
+	}
+	return DeleteRelease(ctx, owner, repo, id)
+}
+
+// ListReleaseAssets lists assets for a release.
+func (g *GiteaProvider) ListReleaseAssets(ctx context.Context, repoID, releaseID string) ([]provider.Asset, error) {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return nil, g.FormatError("list release assets", err)
+	}
+	id, err := strconv.ParseInt(releaseID, 10, 64)
+	if err != nil {
+		return nil, g.FormatError("list release assets", fmt.Errorf("invalid release ID: %s", releaseID))
+	}
+	return ListReleaseAssets(ctx, owner, repo, id)
+}
+
+// UploadReleaseAsset uploads an asset to a release.
+func (g *GiteaProvider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
+	// Gitea asset upload requires multipart form - not yet implemented
+	// TODO: Implement Gitea release asset upload
+	return nil, g.FormatError("upload release asset", fmt.Errorf("not implemented"))
+}
+
+// DeleteReleaseAsset deletes a release asset.
+func (g *GiteaProvider) DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return g.FormatError("delete release asset", err)
+	}
+	id, err := strconv.ParseInt(assetID, 10, 64)
+	if err != nil {
+		return g.FormatError("delete release asset", fmt.Errorf("invalid asset ID: %s", assetID))
+	}
+	return DeleteReleaseAsset(ctx, owner, repo, id)
+}
+
+// DownloadReleaseAsset downloads a release asset.
+func (g *GiteaProvider) DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error) {
+	owner, repo, err := g.helpers.ParseRepositoryURL(repoID)
+	if err != nil {
+		return nil, g.FormatError("download release asset", err)
+	}
+	id, err := strconv.ParseInt(assetID, 10, 64)
+	if err != nil {
+		return nil, g.FormatError("download release asset", fmt.Errorf("invalid asset ID: %s", assetID))
+	}
+	return DownloadReleaseAsset(ctx, owner, repo, id)
 }
