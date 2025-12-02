@@ -12,11 +12,13 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
+	"github.com/Gizzahub/gzh-cli/pkg/config"
 	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
 
@@ -212,17 +214,89 @@ func (opts *ListOptions) Validate() error {
 		return fmt.Errorf("max-stars must be greater than min-stars")
 	}
 
+	// Validate updated-since date format if provided
+	if opts.UpdatedSince != "" {
+		formats := []string{
+			"2006-01-02",          // YYYY-MM-DD
+			"2006-01-02T15:04:05", // ISO 8601 without timezone
+			time.RFC3339,          // ISO 8601 with timezone
+		}
+
+		valid := false
+		for _, format := range formats {
+			if _, err := time.Parse(format, opts.UpdatedSince); err == nil {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return fmt.Errorf("invalid updated-since date format: %s (expected: YYYY-MM-DD)", opts.UpdatedSince)
+		}
+	}
+
 	return nil
 }
 
 // listFromAllProviders gets repositories from all configured providers.
 func (opts *ListOptions) listFromAllProviders(ctx context.Context) ([]provider.Repository, error) {
-	// TODO: Implement listing from all providers
-	// This would require:
-	// 1. Getting all configured providers from config
-	// 2. Listing repositories from each provider
-	// 3. Aggregating results
-	return nil, fmt.Errorf("listing from all providers not implemented yet")
+	// Load configuration
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load configuration: %w", err)
+	}
+
+	if len(cfg.Providers) == 0 {
+		return nil, fmt.Errorf("no providers configured in configuration file")
+	}
+
+	var (
+		allRepos []provider.Repository
+		mu       sync.Mutex
+		wg       sync.WaitGroup
+		errs     []string
+		errMu    sync.Mutex
+	)
+
+	// 각 프로바이더에서 저장소 목록 조회
+	for providerType, providerConfig := range cfg.Providers {
+		// GitHub/Gitea는 Orgs 사용, GitLab은 Groups 사용
+		targets := providerConfig.Orgs
+		if providerType == config.ProviderGitLab {
+			targets = providerConfig.Groups
+		}
+
+		for _, target := range targets {
+			wg.Add(1)
+			go func(pType string, t config.GitTarget) {
+				defer wg.Done()
+
+				repos, err := opts.listFromProvider(ctx, pType, t.Name)
+				if err != nil {
+					errMu.Lock()
+					errs = append(errs, fmt.Sprintf("%s/%s: %v", pType, t.Name, err))
+					errMu.Unlock()
+					return
+				}
+
+				mu.Lock()
+				allRepos = append(allRepos, repos...)
+				mu.Unlock()
+			}(providerType, target)
+		}
+	}
+
+	wg.Wait()
+
+	// 에러가 있지만 일부 결과가 있으면 경고만 표시
+	if len(errs) > 0 {
+		if len(allRepos) == 0 {
+			return nil, fmt.Errorf("failed to list repositories from all providers: %s", strings.Join(errs, "; "))
+		}
+		// 일부 성공한 경우 stderr에 경고 출력
+		fmt.Fprintf(os.Stderr, "Warning: some providers failed: %s\n", strings.Join(errs, "; "))
+	}
+
+	return allRepos, nil
 }
 
 // listFromProvider gets repositories from a single provider.
@@ -281,6 +355,26 @@ func (opts *ListOptions) listFromProvider(ctx context.Context, providerType, org
 func (opts *ListOptions) applyFilters(repos []provider.Repository) []provider.Repository {
 	var filtered []provider.Repository
 
+	// Parse updated-since date if provided
+	var updatedSinceTime time.Time
+	if opts.UpdatedSince != "" {
+		// Support multiple date formats
+		formats := []string{
+			"2006-01-02",          // YYYY-MM-DD
+			"2006-01-02T15:04:05", // ISO 8601 without timezone
+			time.RFC3339,          // ISO 8601 with timezone
+		}
+
+		var parseErr error
+		for _, format := range formats {
+			updatedSinceTime, parseErr = time.Parse(format, opts.UpdatedSince)
+			if parseErr == nil {
+				break
+			}
+		}
+		// parseErr를 무시하고 zero time으로 처리 (필터 적용 안됨)
+	}
+
 	for _, repo := range repos {
 		// Name pattern filter
 		if opts.Match != "" {
@@ -298,8 +392,10 @@ func (opts *ListOptions) applyFilters(repos []provider.Repository) []provider.Re
 			continue
 		}
 
-		// TODO: Add updated-since filter
-		// This would require parsing the date and comparing with repo.UpdatedAt
+		// Updated-since filter
+		if !updatedSinceTime.IsZero() && repo.UpdatedAt.Before(updatedSinceTime) {
+			continue
+		}
 
 		filtered = append(filtered, repo)
 	}
