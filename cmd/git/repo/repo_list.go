@@ -22,6 +22,23 @@ import (
 	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
 )
 
+// supportedDateFormats defines accepted date formats for parsing.
+var supportedDateFormats = []string{
+	"2006-01-02",          // YYYY-MM-DD
+	"2006-01-02T15:04:05", // ISO 8601 without timezone
+	time.RFC3339,          // ISO 8601 with timezone
+}
+
+// parseDate parses a date string using supported formats.
+func parseDate(dateStr string) (time.Time, error) {
+	for _, format := range supportedDateFormats {
+		if t, err := time.Parse(format, dateStr); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("invalid date format: %s (expected: YYYY-MM-DD)", dateStr)
+}
+
 // ListOptions contains options for repository listing.
 type ListOptions struct {
 	// Provider options
@@ -216,26 +233,28 @@ func (opts *ListOptions) Validate() error {
 
 	// Validate updated-since date format if provided
 	if opts.UpdatedSince != "" {
-		formats := []string{
-			"2006-01-02",          // YYYY-MM-DD
-			"2006-01-02T15:04:05", // ISO 8601 without timezone
-			time.RFC3339,          // ISO 8601 with timezone
-		}
-
-		valid := false
-		for _, format := range formats {
-			if _, err := time.Parse(format, opts.UpdatedSince); err == nil {
-				valid = true
-				break
-			}
-		}
-		if !valid {
-			return fmt.Errorf("invalid updated-since date format: %s (expected: YYYY-MM-DD)", opts.UpdatedSince)
+		if _, err := parseDate(opts.UpdatedSince); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
+
+// maxConcurrentRequests limits concurrent API requests to avoid rate limiting.
+const maxConcurrentRequests = 5
+
+// Table column widths for consistent formatting.
+const (
+	colWidthName     = 40
+	colWidthPrivate  = 10
+	colWidthLanguage = 15
+	colWidthStars    = 8
+	colWidthForks    = 8
+	colWidthIssues   = 8
+	colWidthUpdated  = 12
+	colWidthStarsV   = 10 // Verbose mode uses wider column
+)
 
 // listFromAllProviders gets repositories from all configured providers.
 func (opts *ListOptions) listFromAllProviders(ctx context.Context) ([]provider.Repository, error) {
@@ -257,6 +276,9 @@ func (opts *ListOptions) listFromAllProviders(ctx context.Context) ([]provider.R
 		errMu    sync.Mutex
 	)
 
+	// Semaphore for concurrency control
+	sem := make(chan struct{}, maxConcurrentRequests)
+
 	// 각 프로바이더에서 저장소 목록 조회
 	for providerType, providerConfig := range cfg.Providers {
 		// GitHub/Gitea는 Orgs 사용, GitLab은 Groups 사용
@@ -269,6 +291,25 @@ func (opts *ListOptions) listFromAllProviders(ctx context.Context) ([]provider.R
 			wg.Add(1)
 			go func(pType string, t config.GitTarget) {
 				defer wg.Done()
+
+				// Check context cancellation before acquiring semaphore
+				select {
+				case <-ctx.Done():
+					errMu.Lock()
+					errs = append(errs, fmt.Sprintf("%s/%s: %v", pType, t.Name, ctx.Err()))
+					errMu.Unlock()
+					return
+				case sem <- struct{}{}: // acquire semaphore
+					defer func() { <-sem }() // release semaphore
+				}
+
+				// Check context cancellation after acquiring semaphore
+				if ctx.Err() != nil {
+					errMu.Lock()
+					errs = append(errs, fmt.Sprintf("%s/%s: %v", pType, t.Name, ctx.Err()))
+					errMu.Unlock()
+					return
+				}
 
 				repos, err := opts.listFromProvider(ctx, pType, t.Name)
 				if err != nil {
@@ -355,33 +396,22 @@ func (opts *ListOptions) listFromProvider(ctx context.Context, providerType, org
 func (opts *ListOptions) applyFilters(repos []provider.Repository) []provider.Repository {
 	var filtered []provider.Repository
 
-	// Parse updated-since date if provided
+	// Parse updated-since date (already validated in Validate())
 	var updatedSinceTime time.Time
 	if opts.UpdatedSince != "" {
-		// Support multiple date formats
-		formats := []string{
-			"2006-01-02",          // YYYY-MM-DD
-			"2006-01-02T15:04:05", // ISO 8601 without timezone
-			time.RFC3339,          // ISO 8601 with timezone
-		}
+		updatedSinceTime, _ = parseDate(opts.UpdatedSince)
+	}
 
-		var parseErr error
-		for _, format := range formats {
-			updatedSinceTime, parseErr = time.Parse(format, opts.UpdatedSince)
-			if parseErr == nil {
-				break
-			}
-		}
-		// parseErr를 무시하고 zero time으로 처리 (필터 적용 안됨)
+	// Compile regex pattern once (already validated in Validate())
+	var matchPattern *regexp.Regexp
+	if opts.Match != "" {
+		matchPattern, _ = regexp.Compile(opts.Match)
 	}
 
 	for _, repo := range repos {
 		// Name pattern filter
-		if opts.Match != "" {
-			pattern, err := regexp.Compile(opts.Match)
-			if err == nil && !pattern.MatchString(repo.Name) {
-				continue
-			}
+		if matchPattern != nil && !matchPattern.MatchString(repo.Name) {
+			continue
 		}
 
 		// Stars filter
@@ -463,25 +493,35 @@ func (opts *ListOptions) outputTable(repos []provider.Repository) error {
 	// Header
 	if !opts.Quiet {
 		if opts.Verbose {
-			fmt.Printf("%-40s %-10s %-15s %-10s %-8s %-8s %-12s\n",
-				"NAME", "PRIVATE", "LANGUAGE", "STARS", "FORKS", "ISSUES", "UPDATED")
-			fmt.Printf("%-40s %-10s %-15s %-10s %-8s %-8s %-12s\n",
-				strings.Repeat("-", 40),
-				strings.Repeat("-", 10),
-				strings.Repeat("-", 15),
-				strings.Repeat("-", 10),
-				strings.Repeat("-", 8),
-				strings.Repeat("-", 8),
-				strings.Repeat("-", 12))
+			fmt.Printf("%-*s %-*s %-*s %-*s %-*s %-*s %-*s\n",
+				colWidthName, "NAME",
+				colWidthPrivate, "PRIVATE",
+				colWidthLanguage, "LANGUAGE",
+				colWidthStarsV, "STARS",
+				colWidthForks, "FORKS",
+				colWidthIssues, "ISSUES",
+				colWidthUpdated, "UPDATED")
+			fmt.Printf("%-*s %-*s %-*s %-*s %-*s %-*s %-*s\n",
+				colWidthName, strings.Repeat("-", colWidthName),
+				colWidthPrivate, strings.Repeat("-", colWidthPrivate),
+				colWidthLanguage, strings.Repeat("-", colWidthLanguage),
+				colWidthStarsV, strings.Repeat("-", colWidthStarsV),
+				colWidthForks, strings.Repeat("-", colWidthForks),
+				colWidthIssues, strings.Repeat("-", colWidthIssues),
+				colWidthUpdated, strings.Repeat("-", colWidthUpdated))
 		} else {
-			fmt.Printf("%-40s %-10s %-15s %-8s %-12s\n",
-				"NAME", "PRIVATE", "LANGUAGE", "STARS", "UPDATED")
-			fmt.Printf("%-40s %-10s %-15s %-8s %-12s\n",
-				strings.Repeat("-", 40),
-				strings.Repeat("-", 10),
-				strings.Repeat("-", 15),
-				strings.Repeat("-", 8),
-				strings.Repeat("-", 12))
+			fmt.Printf("%-*s %-*s %-*s %-*s %-*s\n",
+				colWidthName, "NAME",
+				colWidthPrivate, "PRIVATE",
+				colWidthLanguage, "LANGUAGE",
+				colWidthStars, "STARS",
+				colWidthUpdated, "UPDATED")
+			fmt.Printf("%-*s %-*s %-*s %-*s %-*s\n",
+				colWidthName, strings.Repeat("-", colWidthName),
+				colWidthPrivate, strings.Repeat("-", colWidthPrivate),
+				colWidthLanguage, strings.Repeat("-", colWidthLanguage),
+				colWidthStars, strings.Repeat("-", colWidthStars),
+				colWidthUpdated, strings.Repeat("-", colWidthUpdated))
 		}
 	}
 
@@ -500,21 +540,21 @@ func (opts *ListOptions) outputTable(repos []provider.Repository) error {
 		updated := repo.UpdatedAt.Format("2006-01-02")
 
 		if opts.Verbose {
-			fmt.Printf("%-40s %-10s %-15s %-10d %-8d %-8d %-12s\n",
-				truncateString(repo.FullName, 40),
-				private,
-				truncateString(language, 15),
-				repo.Stars,
-				repo.Forks,
-				repo.Issues,
-				updated)
+			fmt.Printf("%-*s %-*s %-*s %-*d %-*d %-*d %-*s\n",
+				colWidthName, truncateString(repo.FullName, colWidthName),
+				colWidthPrivate, private,
+				colWidthLanguage, truncateString(language, colWidthLanguage),
+				colWidthStarsV, repo.Stars,
+				colWidthForks, repo.Forks,
+				colWidthIssues, repo.Issues,
+				colWidthUpdated, updated)
 		} else {
-			fmt.Printf("%-40s %-10s %-15s %-8d %-12s\n",
-				truncateString(repo.FullName, 40),
-				private,
-				truncateString(language, 15),
-				repo.Stars,
-				updated)
+			fmt.Printf("%-*s %-*s %-*s %-*d %-*s\n",
+				colWidthName, truncateString(repo.FullName, colWidthName),
+				colWidthPrivate, private,
+				colWidthLanguage, truncateString(language, colWidthLanguage),
+				colWidthStars, repo.Stars,
+				colWidthUpdated, updated)
 		}
 	}
 

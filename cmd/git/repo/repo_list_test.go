@@ -120,7 +120,7 @@ func TestListOptions_Validate(t *testing.T) {
 				UpdatedSince: "invalid-date",
 			},
 			expectError: true,
-			errorMsg:    "invalid updated-since date format",
+			errorMsg:    "invalid date format",
 		},
 		{
 			name: "valid ISO 8601 date with time",
@@ -330,5 +330,41 @@ func TestHelperFunctions(t *testing.T) {
 		now := time.Now()
 		assert.NotEmpty(t, formatTime(now))
 		assert.Empty(t, formatTime(time.Time{}))
+	})
+}
+
+func TestParseDate(t *testing.T) {
+	t.Run("valid YYYY-MM-DD", func(t *testing.T) {
+		result, err := parseDate("2024-01-15")
+		require.NoError(t, err)
+		assert.Equal(t, 2024, result.Year())
+		assert.Equal(t, time.January, result.Month())
+		assert.Equal(t, 15, result.Day())
+	})
+
+	t.Run("valid ISO 8601 without timezone", func(t *testing.T) {
+		result, err := parseDate("2024-06-20T14:30:00")
+		require.NoError(t, err)
+		assert.Equal(t, 2024, result.Year())
+		assert.Equal(t, 14, result.Hour())
+		assert.Equal(t, 30, result.Minute())
+	})
+
+	t.Run("valid RFC3339", func(t *testing.T) {
+		result, err := parseDate("2024-12-25T08:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, 2024, result.Year())
+		assert.Equal(t, time.December, result.Month())
+	})
+
+	t.Run("invalid date format", func(t *testing.T) {
+		_, err := parseDate("invalid-date")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid date format")
+	})
+
+	t.Run("wrong format order", func(t *testing.T) {
+		_, err := parseDate("15-01-2024") // DD-MM-YYYY is not supported
+		require.Error(t, err)
 	})
 }
