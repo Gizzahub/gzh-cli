@@ -195,15 +195,59 @@ func TestLifecycleManager_CheckDependencies(t *testing.T) {
 		assert.Empty(t, missing)
 	})
 
-	t.Run("with dependencies", func(t *testing.T) {
+	t.Run("with existing dependency git", func(t *testing.T) {
+		// git은 대부분의 개발 환경에서 사용 가능
 		meta := CommandMetadata{
 			Name:         "test",
-			Dependencies: []string{"git", "nonexistent-tool-xyz"},
+			Dependencies: []string{"git"},
 		}
 		missing := lm.CheckDependencies(meta)
-		// Since isCommandAvailable always returns false in test env,
-		// all dependencies will be "missing"
+		// git이 설치되어 있으면 missing이 비어 있어야 함
+		assert.Empty(t, missing, "git should be available in PATH")
+	})
+
+	t.Run("with nonexistent dependency", func(t *testing.T) {
+		meta := CommandMetadata{
+			Name:         "test",
+			Dependencies: []string{"nonexistent-tool-xyz-12345"},
+		}
+		missing := lm.CheckDependencies(meta)
 		assert.NotEmpty(t, missing)
+		assert.Contains(t, missing, "nonexistent-tool-xyz-12345")
+	})
+
+	t.Run("with mixed dependencies", func(t *testing.T) {
+		meta := CommandMetadata{
+			Name:         "test",
+			Dependencies: []string{"git", "nonexistent-tool-xyz-12345"},
+		}
+		missing := lm.CheckDependencies(meta)
+		// git은 있고, nonexistent는 없어야 함
+		assert.Len(t, missing, 1)
+		assert.Contains(t, missing, "nonexistent-tool-xyz-12345")
+		assert.NotContains(t, missing, "git")
+	})
+}
+
+func TestIsCommandAvailable(t *testing.T) {
+	t.Run("existing command in PATH", func(t *testing.T) {
+		// git은 대부분의 개발 환경에서 사용 가능
+		assert.True(t, isCommandAvailable("git"), "git should be available")
+	})
+
+	t.Run("nonexistent command", func(t *testing.T) {
+		assert.False(t, isCommandAvailable("nonexistent-command-xyz-12345"))
+	})
+
+	t.Run("absolute path to existing file", func(t *testing.T) {
+		// /bin/sh 또는 다른 시스템 명령어 확인
+		if _, err := os.Stat("/bin/sh"); err == nil {
+			assert.True(t, isCommandAvailable("/bin/sh"))
+		}
+	})
+
+	t.Run("absolute path to nonexistent file", func(t *testing.T) {
+		assert.False(t, isCommandAvailable("/nonexistent/path/to/command"))
 	})
 }
 

@@ -7,6 +7,7 @@ package registry
 import (
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 // LifecycleManager handles command lifecycle checks and warnings.
@@ -92,19 +93,15 @@ func (lm *LifecycleManager) ShowDependencyWarning(cmdName string, missing []stri
 
 // isCommandAvailable checks if a command is available in PATH.
 func isCommandAvailable(cmd string) bool {
+	// 절대 경로 또는 상대 경로인 경우 직접 확인
 	_, err := os.Stat(cmd)
 	if err == nil {
 		return true
 	}
 
-	// Check in PATH
-	path := os.Getenv("PATH")
-	if path == "" {
-		return false
-	}
-
-	// Simple PATH check (platform-specific logic can be added later)
-	return false
+	// PATH에서 명령어 검색
+	_, err = exec.LookPath(cmd)
+	return err == nil
 }
 
 // FilterCommands filters command providers based on lifecycle settings.
