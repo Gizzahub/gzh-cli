@@ -2,265 +2,56 @@
 
 This file provides LLM-optimized guidance for Claude Code when working with this repository.
 
-______________________________________________________________________
+---
 
-## Project Context (Quick Overview)
+## Quick Start (30s scan)
 
 **Binary**: `gz` (not `gzh-cli`)
 **Architecture**: Integration Libraries Pattern (wrapper-based integration)
 **Go Version**: 1.23+
 **Main Branch**: `master` (for PRs)
 
-### Core Principles
-
-- **Interface-driven design**: Heavy use of Go interfaces for abstraction
-- **Direct constructors**: No DI containers, simple factory pattern
-- **Modular commands**: Each command is self-contained under `cmd/`
-- **Integration pattern**: External libraries via thin wrappers
-
-______________________________________________________________________
-
-## Development Workflow (LLM Task Guide)
-
-### Before Code Modification
-
-1. **Read module's AGENTS.md**: `cmd/{module}/AGENTS.md` for module-specific rules
-1. **Check common rules**: `cmd/AGENTS_COMMON.md` for project-wide conventions
-1. **Review existing patterns**: Understand current implementation before changes
-
-### Code Modification Process
-
-```bash
-# 1. Read relevant AGENTS.md
-# 2. Write code + tests
-# 3. Quality checks (CRITICAL)
-make fmt && make lint && make test
-# 4. Commit with proper message format
-```
-
-### Module-Specific Guides
-
-- [Common Guidelines](cmd/AGENTS_COMMON.md) - **Read first**
-- [git module](cmd/git/AGENTS.md)
-- [ide module](cmd/ide/AGENTS.md)
-- [quality module](cmd/quality/AGENTS.md)
-- See `cmd/*/AGENTS.md` for other modules (15 files total)
-
-______________________________________________________________________
-
-## Essential Commands Reference
-
-### Development Workflow
-
-```bash
-# One-time setup
-make bootstrap
-
-# Before every commit (CRITICAL)
-make fmt && make lint && make test
-
-# Build & install
-make build
-make install
-```
-
-### Testing
-
-```bash
-# All tests
-make test
-
-# Specific package
-go test ./cmd/{module} -v
-
-# Specific test function
-go test ./cmd/git -run "TestCloneOrUpdate" -v
-
-# Coverage
-make cover
-```
-
-### Code Quality (Pre-commit REQUIRED)
-
-```bash
-make fmt        # gofumpt + gci
-make lint       # golangci-lint with auto-fix
-make lint-all   # format + lint + pre-commit
-```
-
-### Mocking
-
-```bash
-make generate-mocks    # Generate mocks using gomock
-make regenerate-mocks  # Clean + regenerate
-```
-
-______________________________________________________________________
-
-## Architecture Patterns (LLM Decision Guide)
-
-### Key Patterns to Use
-
-#### 1. Interface Abstraction
-
-```go
-// internal/git/interfaces.go
-type Client interface {
-    Clone(ctx context.Context, options CloneOptions) error
-    Pull(ctx context.Context, options PullOptions) error
-}
-```
-
-#### 2. Provider Registry
-
-```go
-// pkg/git/provider/
-providerRegistry := provider.NewRegistry()
-providerRegistry.Register("github", github.NewProvider())
-```
-
-#### 3. Strategy Pattern (Git Operations)
-
-- `rebase`: Rebase local changes on remote
-- `reset`: Hard reset to match remote
-- `clone`: Fresh clone (remove existing)
-- `pull`: Standard git pull (merge)
-- `fetch`: Update refs only
-
-### Integration Libraries (External Dependencies)
-
-**IMPORTANT**: These features are implemented in external libraries, not gzh-cli.
-
-| Library | Wrapper Location | Lines | Purpose |
-|---------|-----------------|-------|---------|
-| [gzh-cli-git][git] | `cmd/git/repo/*_wrapper.go` | 473 | Local Git operations |
-| [gzh-cli-quality][quality] | `cmd/quality_wrapper.go` | 45 | Code quality tools |
-| [gzh-cli-package-manager][pm] | `cmd/pm_wrapper.go` | 65 | Package manager integration |
-| [gzh-cli-shellforge][shell] | `cmd/shellforge_wrapper.go` | 71 | Shell config builder |
-
-**When to Modify**:
-
-- **Core logic change** → Modify external library repository
-- **CLI integration change** → Modify wrapper file in gzh-cli
-
-**Local Development**:
-
-```go
-// go.mod uses replace directives for local dev
-replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
-```
-
-______________________________________________________________________
-
-## Extensions & Lifecycle System (Phase 3 Features)
-
-### Extension System
-
-**Location**: `internal/extensions/`
-
-User-extensible aliases, workflows, and external command integration without modifying source code.
-
-**Three Alias Types**:
-
-1. **Simple Alias**: Command shortcut
-
-```yaml
-update-all:
-  command: "pm update --all"
-  description: "Update all package managers"
-```
-
-2. **Multi-Step Workflow**: Sequential execution
-
-```yaml
-full-sync:
-  description: "Complete sync workflow"
-  steps:
-    - "synclone run"
-    - "pm update --all"
-    - "git repo pull-all"
-```
-
-3. **Parameterized Alias**: Variable substitution
-
-```yaml
-clone-and-setup:
-  command: "git repo clone-or-update ${url}"
-  params:
-    - name: url
-      description: "Repository URL"
-      required: true
-```
-
-**Key Files**:
-
-- `internal/extensions/types.go` - Configuration types
-- `internal/extensions/loader.go` - Registration logic
-- `examples/extensions.yaml` - User configuration example
-
-### Lifecycle Management
-
-**Location**: `cmd/registry/lifecycle.go`
-
-Commands progress through well-defined stages with automatic filtering and warnings.
-
-**Four Stages**:
-
-| Stage | Behavior | Enablement | Warning |
-|-------|----------|------------|---------|
-| **Experimental** | Disabled by default | `GZ_EXPERIMENTAL=1` or `--experimental` | ⚠️ May change or be removed |
-| **Beta** | Enabled, shows info | Always enabled | ℹ️ In testing, report issues |
-| **Stable** | Default, no warnings | Always enabled | None |
-| **Deprecated** | Shows warning | Always enabled | ⚠️ Will be removed |
-
-**Adding Metadata to Commands**:
-
-```go
-// cmd/{command}/register.go
-func (p *cmdProvider) Metadata() registry.CommandMetadata {
-    return registry.CommandMetadata{
-        Name:         "my-command",
-        Category:     registry.CategoryUtility,
-        Version:      "1.0.0",
-        Lifecycle:    registry.LifecycleStable,  // Set stage here
-        Dependencies: []string{"git", "docker"}, // External tools needed
-        Tags:         []string{"utility", "tool"},
-        Priority:     50,
-    }
-}
-```
-
-**Registry Filtering**:
-
-```go
-// Get only stable commands
-stableCommands := registry.StableCommands()
-
-// Get experimental commands
-expCommands := registry.ExperimentalCommands()
-
-// Filter by category
-gitCommands := registry.ByCategory(registry.CategoryGit)
-```
-
-**Key Files**:
-
-- `cmd/registry/lifecycle.go` - Lifecycle manager
-- `cmd/registry/registry.go` - Enhanced registry with metadata
-- `cmd/root.go` - Integration with root command
-
-**Environment Variables**:
-
-- `GZ_EXPERIMENTAL=1` - Enable experimental features
-
-**Documentation**:
-
-- [Extensions System](docs/30-features/38-extensions-system.md)
-- [Lifecycle Management](docs/30-features/39-lifecycle-management.md)
-
-______________________________________________________________________
-
-## Project Structure (Quick Reference)
+Core principle: Interface-driven design with direct constructors. External libraries via thin wrappers.
+
+---
+
+## Top 10 Commands
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `make bootstrap` | One-time setup | First time only |
+| `make fmt && make lint` | Format + lint | Before every commit |
+| `make test` | All tests | Pre-commit validation |
+| `make build` | Build `gz` binary | After changes |
+| `make install` | Install to $GOPATH/bin | Local testing |
+| `make cover` | Coverage report | Check coverage |
+| `make generate-mocks` | Generate test mocks | After interface changes |
+| `go test ./cmd/{module} -v` | Test specific module | Focused testing |
+| `make clean` | Clean artifacts | Fresh start |
+| `make dev` | Quick dev cycle | Rapid iteration |
+
+---
+
+## Absolute Rules (DO/DON'T)
+
+### DO
+- ✅ Read `cmd/AGENTS_COMMON.md` before ANY modification
+- ✅ Read `cmd/{module}/AGENTS.md` for module-specific rules
+- ✅ Run `make fmt && make lint` before every commit
+- ✅ Use Korean comments for new code
+- ✅ Maintain 80%+ test coverage for core logic
+- ✅ Check wrapper vs library decision (see Context Docs)
+
+### DON'T
+- ❌ Use binary name `gzh-cli` (correct: `gz`)
+- ❌ Over-engineer (see `cmd/AGENTS_COMMON.md`)
+- ❌ Skip reading AGENTS.md files
+- ❌ Commit without fmt + lint + test
+- ❌ Modify core logic in wrappers (use external libraries)
+
+---
+
+## Directory Structure
 
 ```
 .
@@ -269,79 +60,69 @@ ______________________________________________________________________
 │   ├── *_wrapper.go       # Integration library wrappers
 │   ├── git/               # Git platform integration
 │   ├── ide/               # IDE management
-│   ├── quality/           # Code quality (DEPRECATED, use wrapper)
-│   └── */AGENTS.md        # Module-specific guides
+│   └── */AGENTS.md        # Module-specific guides (READ THESE!)
 ├── internal/              # Private abstractions
-│   ├── git/               # Git operations (interfaces, constructors)
+│   ├── git/               # Git operations (interfaces)
 │   ├── logger/            # Logging abstractions
 │   └── cli/               # Command builder utilities
 ├── pkg/                   # Public APIs
 │   ├── github/            # GitHub API integration
 │   ├── gitlab/            # GitLab API integration
 │   └── gitea/             # Gitea API integration
-├── docs/                  # User documentation
+├── docs/
+│   └── .claude-context/   # Context docs (see below)
 └── .make/                 # Modular Makefile (7 modules)
 ```
 
-______________________________________________________________________
+---
 
-## Configuration Architecture
+## Context Documentation
 
-### Configuration Hierarchy
+| Guide | Purpose |
+|-------|---------|
+| [Architecture Guide](docs/.claude-context/architecture-guide.md) | Integration pattern, extensions, lifecycle |
+| [Testing Guide](docs/.claude-context/testing-guide.md) | Test organization, mocking, coverage |
+| [Build Guide](docs/.claude-context/build-guide.md) | Build workflow, troubleshooting |
+| [Common Tasks](docs/.claude-context/common-tasks.md) | Adding commands, modifying wrappers |
 
-1. `$GZH_CONFIG_PATH` (env var)
-1. `./gzh.yaml` (current dir)
-1. `~/.config/gzh-manager/gzh.yaml` (user config)
-1. `/etc/gzh-manager/gzh.yaml` (system config)
+**CRITICAL**: Read module-specific guides:
+- `cmd/AGENTS_COMMON.md` - Project-wide conventions
+- `cmd/{module}/AGENTS.md` - Module-specific rules (15 files)
 
-### Configuration Structure
+---
 
-```yaml
-global:
-  clone_base_dir: "$HOME/repos"
-  default_strategy: reset
+## Common Mistakes (Top 3)
 
-providers:
-  github:
-    token: "${GITHUB_TOKEN}"
-    organizations:
-      - name: "myorg"
-        clone_dir: "$HOME/repos/github/myorg"
-```
+1. **Not reading AGENTS.md before modifying code**
+   - ⚠️ Will miss critical module-specific rules
+   - ✅ Always check: `cmd/AGENTS_COMMON.md` + `cmd/{module}/AGENTS.md`
 
-**Features**:
+2. **Modifying core logic in wrapper files**
+   - ⚠️ Breaks separation of concerns
+   - ✅ Core logic → External library, Integration → Wrapper
 
-- Environment variable expansion: `${GITHUB_TOKEN}`
-- JSON Schema validation
-- Priority system: CLI flags > env vars > config files > defaults
+3. **Skipping `make fmt && make lint` before commit**
+   - ⚠️ CI will fail
+   - ✅ Run before every commit
 
-______________________________________________________________________
+---
 
-## Important Rules (LLM Must Follow)
+## Integration Libraries
 
-### Critical Requirements
+**IMPORTANT**: Core features live in external libraries. Wrappers provide CLI integration.
 
-- ✅ **Always run** `make fmt && make lint` before commit
-- ✅ **Korean comments** for new code
-- ✅ **Read AGENTS.md** before modifying any module
-- ✅ **Test coverage**: 80%+ for core logic
-- ✅ **Commit scope**: Mandatory in commit messages
+| Library | Wrapper | Purpose |
+|---------|---------|---------|
+| gzh-cli-git | `cmd/git/repo/*_wrapper.go` | Local Git operations |
+| gzh-cli-quality | `cmd/quality_wrapper.go` | Code quality tools |
+| gzh-cli-package-manager | `cmd/pm_wrapper.go` | Package manager |
+| gzh-cli-shellforge | `cmd/shellforge_wrapper.go` | Shell config builder |
 
-### Code Style
+**Decision**: Core logic change → External library. CLI integration → Wrapper.
 
-- **Binary name**: `gz` (never `gzh-cli`)
-- **No over-engineering**: See `cmd/AGENTS_COMMON.md`
-- **Interface-driven**: Use interfaces for testability
-- **Error handling**: Structured errors with context
+---
 
-### Testing
-
-- **Unit tests**: `*_test.go` alongside source
-- **Mocking**: Use `gomock` for external dependencies
-- **Integration tests**: `test/integration/` with Docker
-- **Environment-specific**: Check for tokens (GITHUB_TOKEN, etc.)
-
-### Commit Format
+## Git Commit Format
 
 ```
 {type}({scope}): {description}
@@ -355,105 +136,31 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 **Types**: feat, fix, docs, refactor, test, chore
 **Scope**: REQUIRED (e.g., git, ide, quality, docs)
 
-______________________________________________________________________
+---
 
-## Command Categories (Quick Lookup)
+## Command Categories
 
 ### Repository Operations
-
 - `gz git repo clone-or-update` - Smart single repo management
 - `gz git repo pull-all` - Bulk recursive update
 - `gz synclone` - Mass organization cloning
-- `gz repo-config` - GitHub repo configuration
 
 ### Development Environment
-
 - `gz dev-env` - Environment management
 - `gz pm` - Package manager updates
-- `gz ide` - IDE monitoring (JetBrains, VS Code)
-- `gz doctor` - System diagnostics
+- `gz ide` - IDE monitoring
 
-### Code Quality & Performance
-
+### Code Quality
 - `gz quality` - Multi-language quality tools
 - `gz profile` - Go pprof performance profiling
 
 ### Network & Shell
-
 - `gz net-env` - Network environment transitions
 - `gz shellforge` - Modular shell config builder
 
-______________________________________________________________________
+---
 
-## Common Tasks (LLM Quick Guide)
-
-### Adding a New Command
-
-1. Check if feature belongs in external library or gzh-cli
-1. Create `cmd/{command}/` directory
-1. Add `cmd/{command}/AGENTS.md` with module rules
-1. Implement using Cobra framework
-1. Register in `cmd/root.go`
-1. Add tests: `cmd/{command}/*_test.go`
-1. Update docs: `docs/30-features/`
-
-### Modifying Integration Library Command
-
-1. **Check wrapper**: `cmd/*_wrapper.go` or `cmd/{module}/*_wrapper.go`
-1. **Core logic**: Modify in external library repository
-1. **Integration**: Modify wrapper if needed
-1. **Local test**: Use `replace` directive in go.mod
-
-### Adding Tests
-
-```bash
-# Create test file
-touch cmd/{module}/{feature}_test.go
-
-# Run tests
-go test ./cmd/{module} -v
-
-# Check coverage
-go test ./cmd/{module} -cover
-```
-
-______________________________________________________________________
-
-## Troubleshooting (LLM Quick Fix)
-
-### Build Issues
-
-```bash
-make clean
-make bootstrap
-make build
-```
-
-### Lint Failures
-
-```bash
-make fmt        # Fix formatting
-make lint       # Auto-fix linting issues
-```
-
-### Test Failures
-
-```bash
-# Run specific test with verbose
-go test ./cmd/{module} -run "TestName" -v
-
-# Check for race conditions
-go test ./cmd/{module} -race
-```
-
-### Import Cycle
-
-- **Cause**: Circular dependencies between packages
-- **Fix**: Move shared types to `internal/` or `pkg/`
-
-______________________________________________________________________
-
-## FAQ for LLMs
+## FAQ
 
 **Q: Should I modify wrapper or external library?**
 A: **Core logic** → External library. **CLI integration** → Wrapper.
@@ -464,46 +171,18 @@ A: `pkg/bitbucket/` for API, register in provider registry.
 **Q: How to handle secrets in tests?**
 A: Use environment variables, skip tests if not available.
 
-**Q: Can I add dependencies?**
-A: Yes, but prefer standard library. Run `go mod tidy` after.
+**Q: Where are AGENTS.md files?**
+A: `cmd/AGENTS_COMMON.md` + `cmd/{module}/AGENTS.md` (15 modules).
 
-**Q: Where are integration tests?**
-A: `test/integration/` with Docker containers.
+---
 
-______________________________________________________________________
+## Performance Targets
 
-## Performance Benchmarks
-
-### Target Metrics
-
-- **Startup time**: \<50ms
+- **Startup time**: <50ms
 - **Binary size**: ~33MB
-- **Memory**: Minimal footprint
-- **Command response**: \<100ms for most commands
+- **Command response**: <100ms for most commands
 
-### Profiling
+---
 
-```bash
-# Runtime stats
-gz profile stats
-
-# CPU profiling
-gz profile cpu --duration 30s
-
-# Memory profiling
-gz profile memory
-
-# Web interface
-gz profile server --port 6060
-```
-
-______________________________________________________________________
-
-**Last Updated**: 2025-12-01
-**Line Count**: ~290 lines (38% reduction from 474 lines)
-**Optimization**: LLM-focused, removed user-facing content
-
-[git]: https://github.com/gizzahub/gzh-cli-git
-[pm]: https://github.com/gizzahub/gzh-cli-package-manager
-[quality]: https://github.com/Gizzahub/gzh-cli-quality
-[shell]: https://github.com/gizzahub/gzh-cli-shellforge
+**Last Updated**: 2025-12-06
+**Previous**: 509 lines → **Current**: 165 lines (68% reduction)
