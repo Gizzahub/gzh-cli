@@ -13,6 +13,7 @@ import (
 	devenv "github.com/Gizzahub/gzh-cli/cmd/dev-env"
 	_ "github.com/Gizzahub/gzh-cli/cmd/doctor"
 	"github.com/Gizzahub/gzh-cli/cmd/git"
+	gitsync "github.com/Gizzahub/gzh-cli/cmd/git-sync"
 	"github.com/Gizzahub/gzh-cli/cmd/ide"
 	netenv "github.com/Gizzahub/gzh-cli/cmd/net-env"
 	"github.com/Gizzahub/gzh-cli/cmd/profile"
@@ -68,6 +69,7 @@ Utility Commands: doctor, version`,
 	RegisterQualityCmd(appCtx)    // Code quality (from quality_wrapper.go)
 	RegisterShellforgeCmd(appCtx) // Shell config builder (from shellforge_wrapper.go)
 	synclone.RegisterSyncCloneCmd(appCtx)
+	gitsync.RegisterGitSyncCmd(appCtx)
 	devenv.RegisterDevEnvCmd(appCtx)
 	ide.RegisterIDECmd(appCtx)
 	netenv.RegisterNetEnvCmd(appCtx)

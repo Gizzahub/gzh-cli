@@ -23,7 +23,7 @@ require (
 	github.com/olekukonko/tablewriter v1.1.2
 	github.com/pkg/sftp v1.13.9
 	github.com/schollz/progressbar/v3 v3.18.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.1
@@ -56,6 +56,7 @@ require (
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
+	github.com/Gizzahub/gzh-cli-git-sync v0.0.0-00010101000000-000000000000
 	github.com/Gizzahub/gzh-cli-quality v0.1.2
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.2 // indirect
@@ -186,5 +187,7 @@ replace github.com/Gizzahub/gzh-cli-quality => ../gzh-cli-quality
 replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
 
 replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
+
+replace github.com/Gizzahub/gzh-cli-git-sync => ../gzh-cli-git-sync
 
 replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
