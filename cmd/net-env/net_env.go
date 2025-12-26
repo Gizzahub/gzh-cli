@@ -18,6 +18,26 @@ import (
 
 func NewNetEnvCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
 	_ = appCtx
+	_ = ctx
+
+	// Use library-based implementation instead of legacy local implementation
+	// The gzh-cli-net-env library provides:
+	// - status: Display network status dashboard
+	// - watch: Continuously monitor network changes
+	// - profile: List and show profile configurations
+	//
+	// To switch back to the legacy implementation, comment out the return below
+	// and uncomment the _legacyNetEnvCmd() call instead.
+	return LibraryNetEnvCmd()
+
+	// Legacy implementation (commented out for now)
+	// return _legacyNetEnvCmd(ctx)
+}
+
+// _legacyNetEnvCmd returns the legacy net-env command implementation.
+// This is kept for reference and can be re-enabled if needed.
+// Prefer the library-based implementation (LibraryNetEnvCmd) for new features.
+func _legacyNetEnvCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "net-env",
 		Short: "Manage network environment transitions",
@@ -28,165 +48,16 @@ switching between different network environments. It provides:
 - Network configuration switching (VPN, DNS, proxy, hosts)
 - Network status verification
 - Container environment management
-- Network performance monitoring
-
-This is useful when:
-- Moving between different network environments (home, office, cafe)
-- Switching VPN connections manually
-- Managing network configurations in container environments
-- Verifying network state after changes
-
-Examples:
-  # Show current network status
-  gz net-env status
-
-  # Switch to a network profile
-  gz net-env switch office
-
-  # List available network profiles
-  gz net-env switch --list
-
-  # Create example network profiles configuration
-  gz net-env switch --init
-
-  # Execute network configuration actions
-  gz net-env actions run
-
-  # Connect to VPN
-  gz net-env actions vpn connect --name office
-
-  # Set DNS servers
-  gz net-env actions dns set --servers 1.1.1.1,1.0.0.1
-
-  # Docker network profile management
-  gz net-env docker-network list
-
-  # Create Docker network profile
-  gz net-env docker-network create myapp --network mynet --driver bridge
-
-  # Apply Docker network profile
-  gz net-env docker-network apply myapp
-
-  # Kubernetes network policy management
-  gz net-env kubernetes-network list
-
-  # Create Kubernetes network profile
-  gz net-env kubernetes-network create prod-policies --namespace production
-
-  # Add network policy to profile
-  gz net-env kubernetes-network policy add prod-policies web-policy \
-    --pod-selector app=web --allow-from pod:app=api --ports TCP:8080
-
-  # Apply Kubernetes network profile
-  gz net-env kubernetes-network apply prod-policies
-
-  # Container environment detection
-  gz net-env container-detection detect
-
-  # Show running containers
-  gz net-env container-detection list
-
-  # Monitor container changes
-  gz net-env container-detection monitor
-
-  # Network topology analysis
-  gz net-env network-topology analyze
-
-  # Show topology summary
-  gz net-env network-topology summary
-
-  # Export topology visualization
-  gz net-env network-topology export --format dot --output topology.dot
-
-  # Hierarchical VPN management
-  gz net-env vpn-hierarchy show
-
-  # Connect hierarchical VPN
-  gz net-env vpn-hierarchy connect --root corp-vpn
-
-  # Auto-connect for current environment
-  gz net-env vpn-hierarchy auto-connect
-
-  # VPN profile management
-  gz net-env vpn-profile list
-
-  # Create VPN profile with network mapping
-  gz net-env vpn-profile create office --network "Office WiFi" --vpn corp-vpn --priority 100
-
-  # Map network to VPN with priority
-  gz net-env vpn-profile map --network "Home WiFi" --vpn home-vpn --priority 50
-
-  # VPN failover management
-  gz net-env vpn-failover start
-
-  # Configure backup VPN
-  gz net-env vpn-failover backup add --primary corp-vpn --backup home-vpn --priority 50
-
-  # Test failover scenario
-  gz net-env vpn-failover test --scenario connection-loss
-
-  # Network performance monitoring
-  gz net-env network-metrics monitor
-
-  # Show current network metrics
-  gz net-env network-metrics show
-
-  # Test latency to specific targets
-  gz net-env network-metrics latency --targets 8.8.8.8,1.1.1.1,google.com
-
-  # Monitor bandwidth usage
-  gz net-env network-metrics bandwidth --interface eth0
-
-  # Generate performance report
-  gz net-env network-metrics report --duration 1h
-
-  # Advanced network analysis
-  gz net-env network-analysis latency --duration 10m --targets 8.8.8.8,1.1.1.1
-
-  # Bandwidth utilization analysis
-  gz net-env network-analysis bandwidth --interface eth0 --duration 5m
-
-  # Comprehensive network analysis
-  gz net-env network-analysis comprehensive --duration 15m
-
-  # Performance trends analysis
-  gz net-env network-analysis trends --period 24h
-
-  # Bottleneck detection
-  gz net-env network-analysis bottleneck
-
-  # Optimal routing management
-  gz net-env optimal-routing analyze --destination 8.8.8.8
-
-  # Discover optimal routes
-  gz net-env optimal-routing discover --targets google.com,cloudflare.com
-
-  # Apply optimal routing
-  gz net-env optimal-routing apply --policy latency-optimized
-
-  # Enable auto-optimization
-  gz net-env optimal-routing auto-optimize --enable
-
-  # Configure load balancing
-  gz net-env optimal-routing load-balance --interfaces eth0,wlan0`,
+- Network performance monitoring`,
 		SilenceUsage: true,
 	}
-
-	// Create logger and config directory for subcommands that need it (currently commented out)
-	// logger, _ := zap.NewProduction()
-	// configDir := getConfigDirectory()
 
 	// Add organized subcommand packages (working packages first)
 	cmd.AddCommand(tui.NewCmd())    // Interactive TUI dashboard
 	cmd.AddCommand(status.NewCmd()) // Network status (unified command)
-	// cmd.AddCommand(switchcmd.NewCmd())                      // Network profile switching (unified command)
 	cmd.AddCommand(profile.NewCmd())  // Profile management + quick actions
 	cmd.AddCommand(actions.NewCmd())  // Network configuration actions
 	cmd.AddCommand(cloud.NewCmd(ctx)) // Cloud provider management
-	// cmd.AddCommand(container.NewCmd(logger, configDir))     // Docker + Kubernetes + container detection
-	// cmd.AddCommand(vpn.NewCmd(logger, configDir))          // VPN hierarchy + profile + failover
-	// cmd.AddCommand(analysis.NewCmd(logger, configDir))     // Network analysis + topology + routing
-	// cmd.AddCommand(metrics.NewCmd(logger, configDir))      // Network metrics + monitoring
 
 	return cmd
 }
