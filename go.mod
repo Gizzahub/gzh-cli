@@ -14,6 +14,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gizzahub/gzh-cli-dev-env v0.0.0
+	github.com/gizzahub/gzh-cli-gitforge v0.0.0-00010101000000-000000000000
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
 	github.com/go-critic/go-critic v0.13.0
 	github.com/go-playground/validator/v10 v10.30.0
@@ -50,7 +51,10 @@ require (
 	github.com/clipperhouse/displaywidth v0.6.0 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
+	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 )
 
@@ -194,3 +198,5 @@ replace github.com/Gizzahub/gzh-cli-git-sync => ../gzh-cli-git-sync
 replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
 
 replace github.com/gizzahub/gzh-cli-dev-env => ../gzh-cli-dev-env
+
+replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
