@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/Gizzahub/gzh-cli/internal/devenv"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/environment"
 )
 
 // AWSSwitcher implements ServiceSwitcher for AWS.
@@ -19,7 +19,7 @@ func (a *AWSSwitcher) Name() string {
 }
 
 func (a *AWSSwitcher) Switch(ctx context.Context, config interface{}) error {
-	awsConfig, ok := config.(*devenv.AWSConfig)
+	awsConfig, ok := config.(*environment.AWSConfig)
 	if !ok {
 		return fmt.Errorf("invalid AWS configuration type")
 	}
@@ -56,7 +56,7 @@ func (a *AWSSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) 
 	cmd = exec.CommandContext(ctx, "aws", "configure", "get", "region")
 	regionOutput, _ := cmd.Output()
 
-	return &devenv.AWSConfig{
+	return &environment.AWSConfig{
 		Profile: string(profileOutput),
 		Region:  string(regionOutput),
 	}, nil
@@ -74,7 +74,7 @@ func (g *GCPSwitcher) Name() string {
 }
 
 func (g *GCPSwitcher) Switch(ctx context.Context, config interface{}) error {
-	gcpConfig, ok := config.(*devenv.GCPConfig)
+	gcpConfig, ok := config.(*environment.GCPConfig)
 	if !ok {
 		return fmt.Errorf("invalid GCP configuration type")
 	}
@@ -119,7 +119,7 @@ func (g *GCPSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) 
 	cmd = exec.CommandContext(ctx, "gcloud", "config", "get-value", "compute/region")
 	regionOutput, _ := cmd.Output()
 
-	return &devenv.GCPConfig{
+	return &environment.GCPConfig{
 		Project: string(projectOutput),
 		Account: string(accountOutput),
 		Region:  string(regionOutput),
@@ -138,7 +138,7 @@ func (a *AzureSwitcher) Name() string {
 }
 
 func (a *AzureSwitcher) Switch(ctx context.Context, config interface{}) error {
-	azureConfig, ok := config.(*devenv.AzureConfig)
+	azureConfig, ok := config.(*environment.AzureConfig)
 	if !ok {
 		return fmt.Errorf("invalid Azure configuration type")
 	}
@@ -163,7 +163,7 @@ func (a *AzureSwitcher) GetCurrentState(ctx context.Context) (interface{}, error
 	cmd = exec.CommandContext(ctx, "az", "account", "show", "--query", "tenantId", "-o", "tsv")
 	tenantOutput, _ := cmd.Output()
 
-	return &devenv.AzureConfig{
+	return &environment.AzureConfig{
 		Subscription: string(subscriptionOutput),
 		Tenant:       string(tenantOutput),
 	}, nil
@@ -181,7 +181,7 @@ func (d *DockerSwitcher) Name() string {
 }
 
 func (d *DockerSwitcher) Switch(ctx context.Context, config interface{}) error {
-	dockerConfig, ok := config.(*devenv.DockerConfig)
+	dockerConfig, ok := config.(*environment.DockerConfig)
 	if !ok {
 		return fmt.Errorf("invalid Docker configuration type")
 	}
@@ -202,7 +202,7 @@ func (d *DockerSwitcher) GetCurrentState(ctx context.Context) (interface{}, erro
 	cmd := exec.CommandContext(ctx, "docker", "context", "show")
 	contextOutput, _ := cmd.Output()
 
-	return &devenv.DockerConfig{
+	return &environment.DockerConfig{
 		Context: string(contextOutput),
 	}, nil
 }
@@ -219,7 +219,7 @@ func (k *KubernetesSwitcher) Name() string {
 }
 
 func (k *KubernetesSwitcher) Switch(ctx context.Context, config interface{}) error {
-	kubernetesConfig, ok := config.(*devenv.KubernetesConfig)
+	kubernetesConfig, ok := config.(*environment.KubernetesConfig)
 	if !ok {
 		return fmt.Errorf("invalid Kubernetes configuration type")
 	}
@@ -252,7 +252,7 @@ func (k *KubernetesSwitcher) GetCurrentState(ctx context.Context) (interface{}, 
 	cmd = exec.CommandContext(ctx, "kubectl", "config", "view", "--minify", "--output", "jsonpath={..namespace}")
 	namespaceOutput, _ := cmd.Output()
 
-	return &devenv.KubernetesConfig{
+	return &environment.KubernetesConfig{
 		Context:   string(contextOutput),
 		Namespace: string(namespaceOutput),
 	}, nil
@@ -270,7 +270,7 @@ func (s *SSHSwitcher) Name() string {
 }
 
 func (s *SSHSwitcher) Switch(ctx context.Context, config interface{}) error {
-	sshConfig, ok := config.(*devenv.SSHConfig)
+	sshConfig, ok := config.(*environment.SSHConfig)
 	if !ok {
 		return fmt.Errorf("invalid SSH configuration type")
 	}
@@ -288,7 +288,7 @@ func (s *SSHSwitcher) Switch(ctx context.Context, config interface{}) error {
 
 func (s *SSHSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) {
 	// Get current SSH configuration (simplified)
-	return &devenv.SSHConfig{
+	return &environment.SSHConfig{
 		Config: "default",
 	}, nil
 }

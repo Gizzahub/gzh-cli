@@ -12,7 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/devenv"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/environment"
 )
 
 // switchAllOptions contains options for the switch-all command.
@@ -90,7 +90,7 @@ func (opts *switchAllOptions) run(ctx context.Context) error {
 	}
 
 	// Initialize environment switcher
-	switcher := devenv.NewEnvironmentSwitcher()
+	switcher := environment.NewEnvironmentSwitcher()
 
 	// Register service switchers
 	if err := opts.registerServiceSwitchers(switcher); err != nil {
@@ -101,7 +101,7 @@ func (opts *switchAllOptions) run(ctx context.Context) error {
 	switcher.SetProgressCallback(opts.reportProgress)
 
 	// Prepare switch options
-	switchOptions := devenv.SwitchOptions{
+	switchOptions := environment.SwitchOptions{
 		DryRun:          opts.dryRun,
 		Force:           opts.force,
 		Parallel:        opts.parallel,
@@ -143,7 +143,7 @@ func (opts *switchAllOptions) run(ctx context.Context) error {
 }
 
 // loadEnvironment loads the environment configuration.
-func (opts *switchAllOptions) loadEnvironment() (*devenv.Environment, error) {
+func (opts *switchAllOptions) loadEnvironment() (*environment.Environment, error) {
 	var data []byte
 	var err error
 
@@ -168,7 +168,7 @@ func (opts *switchAllOptions) loadEnvironment() (*devenv.Environment, error) {
 		return nil, fmt.Errorf("must specify --env, --from-file, or --interactive")
 	}
 
-	env, err := devenv.LoadEnvironment(data)
+	env, err := environment.LoadEnvironment(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse environment configuration: %w", err)
 	}
@@ -200,7 +200,7 @@ func (opts *switchAllOptions) findEnvironmentFile(envName string) string {
 }
 
 // selectEnvironmentInteractively allows interactive environment selection.
-func (opts *switchAllOptions) selectEnvironmentInteractively() (*devenv.Environment, error) {
+func (opts *switchAllOptions) selectEnvironmentInteractively() (*environment.Environment, error) {
 	// Find available environments
 	environments, err := opts.findAvailableEnvironments()
 	if err != nil {
@@ -236,7 +236,7 @@ func (opts *switchAllOptions) selectEnvironmentInteractively() (*devenv.Environm
 }
 
 // findAvailableEnvironments finds all available environment configurations.
-func (opts *switchAllOptions) findAvailableEnvironments() ([]devenv.Environment, error) {
+func (opts *switchAllOptions) findAvailableEnvironments() ([]environment.Environment, error) {
 	envDir := filepath.Join(os.Getenv("HOME"), ".gzh", "dev-env", "environments")
 
 	entries, err := os.ReadDir(envDir)
@@ -244,7 +244,7 @@ func (opts *switchAllOptions) findAvailableEnvironments() ([]devenv.Environment,
 		return nil, fmt.Errorf("failed to read environments directory: %w", err)
 	}
 
-	environments := make([]devenv.Environment, 0, len(entries))
+	environments := make([]environment.Environment, 0, len(entries))
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -261,7 +261,7 @@ func (opts *switchAllOptions) findAvailableEnvironments() ([]devenv.Environment,
 			continue // Skip files that can't be read
 		}
 
-		env, err := devenv.LoadEnvironment(data)
+		env, err := environment.LoadEnvironment(data)
 		if err != nil {
 			continue // Skip invalid environment files
 		}
@@ -279,7 +279,7 @@ func isYAMLFile(filename string) bool {
 }
 
 // registerServiceSwitchers registers all available service switchers.
-func (opts *switchAllOptions) registerServiceSwitchers(switcher *devenv.EnvironmentSwitcher) error {
+func (opts *switchAllOptions) registerServiceSwitchers(switcher *environment.EnvironmentSwitcher) error {
 	// Register AWS switcher
 	awsSwitcher := &AWSSwitcher{}
 	switcher.RegisterServiceSwitcher("aws", awsSwitcher)
@@ -308,7 +308,7 @@ func (opts *switchAllOptions) registerServiceSwitchers(switcher *devenv.Environm
 }
 
 // confirmSwitch asks for user confirmation.
-func (opts *switchAllOptions) confirmSwitch(env *devenv.Environment) error {
+func (opts *switchAllOptions) confirmSwitch(env *environment.Environment) error {
 	fmt.Printf("🔄 About to switch to environment: %s\n", env.Name)
 	if env.Description != "" {
 		fmt.Printf("   Description: %s\n", env.Description)
@@ -329,7 +329,7 @@ func (opts *switchAllOptions) confirmSwitch(env *devenv.Environment) error {
 }
 
 // reportProgress reports switching progress.
-func (opts *switchAllOptions) reportProgress(progress devenv.SwitchProgress) {
+func (opts *switchAllOptions) reportProgress(progress environment.SwitchProgress) {
 	percentage := float64(progress.CompletedServices) / float64(progress.TotalServices) * 100
 	fmt.Printf("⏳ Progress: %.1f%% (%d/%d) - %s\n",
 		percentage,
@@ -343,7 +343,7 @@ func (opts *switchAllOptions) reportProgress(progress devenv.SwitchProgress) {
 }
 
 // displayResults displays the switching results.
-func (opts *switchAllOptions) displayResults(result *devenv.SwitchResult) {
+func (opts *switchAllOptions) displayResults(result *environment.SwitchResult) {
 	fmt.Printf("\n📊 Switch Results:\n")
 	fmt.Printf("   Duration: %v\n", result.Duration)
 	fmt.Printf("   Success: %v\n", result.Success)

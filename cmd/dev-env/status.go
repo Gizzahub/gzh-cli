@@ -11,7 +11,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/devenv/status"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/aws"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/azure"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/docker"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/gcp"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/kubernetes"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/ssh"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/status"
 )
 
 // newStatusCmd creates the dev-env status command.
@@ -115,22 +121,22 @@ func createServiceCheckers(services []string) []status.ServiceChecker {
 	}
 
 	if serviceSet["aws"] {
-		checkers = append(checkers, status.NewAWSChecker())
+		checkers = append(checkers, aws.NewChecker())
 	}
 	if serviceSet["gcp"] {
-		checkers = append(checkers, status.NewGCPChecker())
+		checkers = append(checkers, gcp.NewChecker())
 	}
 	if serviceSet["azure"] {
-		checkers = append(checkers, status.NewAzureChecker())
+		checkers = append(checkers, azure.NewChecker())
 	}
 	if serviceSet["docker"] {
-		checkers = append(checkers, status.NewDockerChecker())
+		checkers = append(checkers, docker.NewChecker())
 	}
 	if serviceSet["kubernetes"] || serviceSet["k8s"] {
-		checkers = append(checkers, status.NewKubernetesChecker())
+		checkers = append(checkers, kubernetes.NewChecker())
 	}
 	if serviceSet["ssh"] {
-		checkers = append(checkers, status.NewSSHChecker())
+		checkers = append(checkers, ssh.NewChecker())
 	}
 
 	return checkers

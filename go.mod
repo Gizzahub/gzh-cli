@@ -8,11 +8,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5
 	github.com/charmbracelet/bubbles v0.21.0
-	github.com/charmbracelet/bubbletea v1.3.9
+	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/daixiang0/gci v0.13.7
 	github.com/fatih/color v1.18.0
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gizzahub/gzh-cli-dev-env v0.0.0
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
 	github.com/go-critic/go-critic v0.13.0
 	github.com/go-playground/validator/v10 v10.30.0
@@ -191,3 +192,5 @@ replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
 replace github.com/Gizzahub/gzh-cli-git-sync => ../gzh-cli-git-sync
 
 replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
+
+replace github.com/gizzahub/gzh-cli-dev-env => ../gzh-cli-dev-env
