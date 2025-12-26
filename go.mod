@@ -15,6 +15,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gizzahub/gzh-cli-dev-env v0.0.0
 	github.com/gizzahub/gzh-cli-gitforge v0.0.0-00010101000000-000000000000
+	github.com/gizzahub/gzh-cli-net-env v0.0.0-00010101000000-000000000000
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
 	github.com/go-critic/go-critic v0.13.0
 	github.com/go-playground/validator/v10 v10.30.0
@@ -200,3 +201,5 @@ replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
 replace github.com/gizzahub/gzh-cli-dev-env => ../gzh-cli-dev-env
 
 replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
+
+replace github.com/gizzahub/gzh-cli-net-env => ../gzh-cli-net-env
