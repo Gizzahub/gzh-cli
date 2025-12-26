@@ -59,7 +59,7 @@ jobs:
           cache: true
 
       - name: Enhanced Go modules caching
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/go/pkg/mod
@@ -126,7 +126,7 @@ jobs:
           cache: true
 
       - name: Enhanced Go modules caching
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/go/pkg/mod
@@ -136,7 +136,7 @@ jobs:
             ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
 
       - name: Cache tool binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.local/bin
@@ -202,7 +202,7 @@ jobs:
           cache: true
 
       - name: Enhanced Go modules caching
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/go/pkg/mod
@@ -308,7 +308,7 @@ jobs:
           cache: true
 
       - name: Enhanced Go modules caching
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/go/pkg/mod

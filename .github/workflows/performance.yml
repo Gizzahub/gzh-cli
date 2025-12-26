@@ -55,7 +55,7 @@ jobs:
         cache: true
 
     - name: Enhanced Go modules caching
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/go/pkg/mod
@@ -65,7 +65,7 @@ jobs:
           ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
 
     - name: Cache benchstat tool
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/go/bin/benchstat
         key: ${{ env.CACHE_VERSION }}-benchstat-${{ runner.os }}
