@@ -117,6 +117,25 @@ Core principle: Interface-driven design with direct constructors. External libra
 | gzh-cli-quality | `cmd/quality_wrapper.go` | Code quality tools |
 | gzh-cli-package-manager | `cmd/pm_wrapper.go` | Package manager |
 | gzh-cli-shellforge | `cmd/shellforge_wrapper.go` | Shell config builder |
+| gzh-cli-dev-env | `cmd/dev_env_wrapper.go` | Dev environment management |
+
+### gzh-cli-dev-env Integration
+
+The dev-env command uses a **hybrid integration** approach:
+- **Current mode**: Old `cmd/dev-env/` provides most subcommands, library provides `status`, `tui`, `switch-all`
+- **Future mode**: Build with `-tags devenv_external` for full wrapper mode
+
+```bash
+# Current (default) - hybrid mode
+make build
+
+# Future migration - full wrapper mode
+go build -tags devenv_external
+```
+
+**Wrapper files**:
+- `cmd/dev_env_wrapper.go` - Full wrapper (enabled with build tag)
+- `cmd/dev_env_wrapper_stub.go` - Documentation for migration
 
 **Decision**: Core logic change → External library. CLI integration → Wrapper.
 
@@ -184,5 +203,5 @@ A: `cmd/AGENTS_COMMON.md` + `cmd/{module}/AGENTS.md` (15 modules).
 
 ---
 
-**Last Updated**: 2025-12-06
-**Previous**: 509 lines → **Current**: 165 lines (68% reduction)
+**Last Updated**: 2025-12-26
+**Previous**: 165 lines → **Current**: ~185 lines (added dev-env wrapper docs)

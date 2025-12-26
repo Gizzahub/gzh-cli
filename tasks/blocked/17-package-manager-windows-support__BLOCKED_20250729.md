@@ -1,11 +1,27 @@
 # TODO: 패키지 매니저 Windows 지원 및 고급 기능 구현
 
-- status: [>]
+- status: [>] BLOCKED → Split into sub-tasks
 - priority: low
 - category: package-manager
-- estimated_effort: 4-5 days
+- estimated_effort: 4-5 days (original) → 10-12 days (detailed)
 - depends_on: []
 - spec_reference: `/specs/package-manager.md` lines 70-71, 325-327
+
+## Sub-Tasks (2025-12-26 분할)
+
+이 태스크는 아래 하위 태스크로 분할되었습니다:
+
+| Task | Priority | Effort | Status |
+|------|----------|--------|--------|
+| [18-winget-support](../18-package-manager-winget-support.md) | medium | 2-3d | [ ] |
+| [19-scoop-support](../19-package-manager-scoop-support.md) | medium | 2d | [ ] |
+| [20-chocolatey-support](../20-package-manager-chocolatey-support.md) | low | 3d | [ ] |
+| [21-cleanup-strategies](../21-package-manager-cleanup-strategies.md) | low | 3-4d | [ ] |
+
+**권장 순서**: winget → Scoop → Chocolatey (의존성 순서)
+**독립 태스크**: cleanup-strategies (언제든 진행 가능)
+
+---
 
 ## 📋 작업 개요
 
