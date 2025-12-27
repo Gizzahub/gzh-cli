@@ -100,16 +100,20 @@ func TestGitHubAPI(t *testing.T) {
 ## Integration Tests
 
 ### Location
+
 `test/integration/`
 
 ### Running
+
 ```bash
 cd test/integration
 go test -v
 ```
 
 ### Docker containers
+
 Integration tests may use Docker for:
+
 - Git servers (GitHub Enterprise, GitLab)
 - Package managers
 - Database systems

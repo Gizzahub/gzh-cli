@@ -2,7 +2,7 @@
 
 This file provides LLM-optimized guidance for Claude Code when working with this repository.
 
----
+______________________________________________________________________
 
 ## Quick Start (30s scan)
 
@@ -13,7 +13,7 @@ This file provides LLM-optimized guidance for Claude Code when working with this
 
 Core principle: Interface-driven design with direct constructors. External libraries via thin wrappers.
 
----
+______________________________________________________________________
 
 ## Top 10 Commands
 
@@ -30,11 +30,12 @@ Core principle: Interface-driven design with direct constructors. External libra
 | `make clean` | Clean artifacts | Fresh start |
 | `make dev` | Quick dev cycle | Rapid iteration |
 
----
+______________________________________________________________________
 
 ## Absolute Rules (DO/DON'T)
 
 ### DO
+
 - ✅ Read `cmd/AGENTS_COMMON.md` before ANY modification
 - ✅ Read `cmd/{module}/AGENTS.md` for module-specific rules
 - ✅ Run `make fmt && make lint` before every commit
@@ -43,13 +44,14 @@ Core principle: Interface-driven design with direct constructors. External libra
 - ✅ Check wrapper vs library decision (see Context Docs)
 
 ### DON'T
+
 - ❌ Use binary name `gzh-cli` (correct: `gz`)
 - ❌ Over-engineer (see `cmd/AGENTS_COMMON.md`)
 - ❌ Skip reading AGENTS.md files
 - ❌ Commit without fmt + lint + test
 - ❌ Modify core logic in wrappers (use external libraries)
 
----
+______________________________________________________________________
 
 ## Directory Structure
 
@@ -74,7 +76,7 @@ Core principle: Interface-driven design with direct constructors. External libra
 └── .make/                 # Modular Makefile (7 modules)
 ```
 
----
+______________________________________________________________________
 
 ## Context Documentation
 
@@ -86,26 +88,30 @@ Core principle: Interface-driven design with direct constructors. External libra
 | [Common Tasks](docs/.claude-context/common-tasks.md) | Adding commands, modifying wrappers |
 
 **CRITICAL**: Read module-specific guides:
+
 - `cmd/AGENTS_COMMON.md` - Project-wide conventions
 - `cmd/{module}/AGENTS.md` - Module-specific rules (15 files)
 
----
+______________________________________________________________________
 
 ## Common Mistakes (Top 3)
 
 1. **Not reading AGENTS.md before modifying code**
+
    - ⚠️ Will miss critical module-specific rules
    - ✅ Always check: `cmd/AGENTS_COMMON.md` + `cmd/{module}/AGENTS.md`
 
-2. **Modifying core logic in wrapper files**
+1. **Modifying core logic in wrapper files**
+
    - ⚠️ Breaks separation of concerns
    - ✅ Core logic → External library, Integration → Wrapper
 
-3. **Skipping `make fmt && make lint` before commit**
+1. **Skipping `make fmt && make lint` before commit**
+
    - ⚠️ CI will fail
    - ✅ Run before every commit
 
----
+______________________________________________________________________
 
 ## Integration Libraries
 
@@ -122,6 +128,7 @@ Core principle: Interface-driven design with direct constructors. External libra
 ### gzh-cli-dev-env Integration
 
 The dev-env command uses a **hybrid integration** approach:
+
 - **Current mode**: Old `cmd/dev-env/` provides most subcommands, library provides `status`, `tui`, `switch-all`
 - **Future mode**: Build with `-tags devenv_external` for full wrapper mode
 
@@ -134,12 +141,13 @@ go build -tags devenv_external
 ```
 
 **Wrapper files**:
+
 - `cmd/dev_env_wrapper.go` - Full wrapper (enabled with build tag)
 - `cmd/dev_env_wrapper_stub.go` - Documentation for migration
 
 **Decision**: Core logic change → External library. CLI integration → Wrapper.
 
----
+______________________________________________________________________
 
 ## Git Commit Format
 
@@ -155,29 +163,33 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 **Types**: feat, fix, docs, refactor, test, chore
 **Scope**: REQUIRED (e.g., git, ide, quality, docs)
 
----
+______________________________________________________________________
 
 ## Command Categories
 
 ### Repository Operations
+
 - `gz git repo clone-or-update` - Smart single repo management
 - `gz git repo pull-all` - Bulk recursive update
 - `gz synclone` - Mass organization cloning
 
 ### Development Environment
+
 - `gz dev-env` - Environment management
 - `gz pm` - Package manager updates
 - `gz ide` - IDE monitoring
 
 ### Code Quality
+
 - `gz quality` - Multi-language quality tools
 - `gz profile` - Go pprof performance profiling
 
 ### Network & Shell
+
 - `gz net-env` - Network environment transitions
 - `gz shellforge` - Modular shell config builder
 
----
+______________________________________________________________________
 
 ## FAQ
 
@@ -193,15 +205,15 @@ A: Use environment variables, skip tests if not available.
 **Q: Where are AGENTS.md files?**
 A: `cmd/AGENTS_COMMON.md` + `cmd/{module}/AGENTS.md` (15 modules).
 
----
+______________________________________________________________________
 
 ## Performance Targets
 
-- **Startup time**: <50ms
+- **Startup time**: \<50ms
 - **Binary size**: ~33MB
-- **Command response**: <100ms for most commands
+- **Command response**: \<100ms for most commands
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-26
 **Previous**: 165 lines → **Current**: ~185 lines (added dev-env wrapper docs)

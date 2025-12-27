@@ -14,8 +14,8 @@ Chocolatey 패키지 매니저 지원. Windows의 가장 오래된 패키지 매
 ## Considerations
 
 1. **관리자 권한 필요**: UAC 처리 복잡
-2. **가장 큰 패키지 저장소**: GUI 앱, 시스템 도구 풍부
-3. **성숙한 에코시스템**: 기업용 Pro/Business 버전 존재
+1. **가장 큰 패키지 저장소**: GUI 앱, 시스템 도구 풍부
+1. **성숙한 에코시스템**: 기업용 Pro/Business 버전 존재
 
 ## Implementation Scope
 
@@ -74,6 +74,6 @@ type AdminChecker interface {
 - winget과 Scoop 경험 후 구현 권장
 - UAC 처리가 가장 복잡한 부분
 
----
+______________________________________________________________________
 
-**Extracted from**: 17-package-manager-windows-support__BLOCKED_20250729.md
+**Extracted from**: 17-package-manager-windows-support\_\_BLOCKED_20250729.md

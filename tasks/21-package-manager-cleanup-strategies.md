@@ -106,6 +106,6 @@ cleanup:
 - Windows PM(winget, scoop, chocolatey)과 독립적으로 구현 가능
 - 기존 Linux/macOS PM에도 적용 가능
 
----
+______________________________________________________________________
 
-**Extracted from**: 17-package-manager-windows-support__BLOCKED_20250729.md
+**Extracted from**: 17-package-manager-windows-support\_\_BLOCKED_20250729.md

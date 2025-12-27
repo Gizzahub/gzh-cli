@@ -121,6 +121,7 @@ go mod tidy
 ```
 
 **Prefer**:
+
 - Standard library when possible
 - Well-maintained third-party libraries
 - Avoid heavy dependencies
@@ -140,9 +141,9 @@ replace github.com/gizzahub/gzh-cli-quality => ../gzh-cli-quality
 ### Testing changes across repositories
 
 1. Make changes in external library
-2. Add replace directive in gzh-cli
-3. Test integration
-4. Commit library changes first
-5. Update gzh-cli dependency version
-6. Remove replace directive
-7. Commit gzh-cli changes
+1. Add replace directive in gzh-cli
+1. Test integration
+1. Commit library changes first
+1. Update gzh-cli dependency version
+1. Remove replace directive
+1. Commit gzh-cli changes

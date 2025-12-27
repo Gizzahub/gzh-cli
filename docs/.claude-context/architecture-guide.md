@@ -28,6 +28,7 @@ gzh-cli (Main CLI - gz binary)
 | gzh-cli-shellforge | `cmd/shellforge_wrapper.go` | 71 | Shell config builder |
 
 **When to Modify**:
+
 - **Core logic change** → Modify external library repository
 - **CLI integration change** → Modify wrapper file in gzh-cli
 
@@ -70,6 +71,7 @@ User-extensible aliases, workflows, and external command integration.
 **Three Alias Types**:
 
 1. **Simple Alias**: Command shortcut
+
 ```yaml
 update-all:
   command: "pm update --all"
@@ -77,6 +79,7 @@ update-all:
 ```
 
 2. **Multi-Step Workflow**: Sequential execution
+
 ```yaml
 full-sync:
   description: "Complete sync workflow"
@@ -87,6 +90,7 @@ full-sync:
 ```
 
 3. **Parameterized Alias**: Variable substitution
+
 ```yaml
 clone-and-setup:
   command: "git repo clone-or-update ${url}"
@@ -112,6 +116,7 @@ Commands progress through stages with automatic filtering and warnings.
 | **Deprecated** | Shows warning | Always enabled | ⚠️ Will be removed |
 
 **Adding Metadata**:
+
 ```go
 func (p *cmdProvider) Metadata() registry.CommandMetadata {
     return registry.CommandMetadata{
@@ -131,9 +136,9 @@ func (p *cmdProvider) Metadata() registry.CommandMetadata {
 ### Configuration Hierarchy
 
 1. `$GZH_CONFIG_PATH` (env var)
-2. `./gzh.yaml` (current dir)
-3. `~/.config/gzh-manager/gzh.yaml` (user config)
-4. `/etc/gzh-manager/gzh.yaml` (system config)
+1. `./gzh.yaml` (current dir)
+1. `~/.config/gzh-manager/gzh.yaml` (user config)
+1. `/etc/gzh-manager/gzh.yaml` (system config)
 
 ### Configuration Structure
 
@@ -151,6 +156,7 @@ providers:
 ```
 
 **Features**:
+
 - Environment variable expansion: `${GITHUB_TOKEN}`
 - JSON Schema validation
 - Priority system: CLI flags > env vars > config files > defaults
@@ -159,10 +165,10 @@ providers:
 
 ### Target Metrics
 
-- **Startup time**: <50ms
+- **Startup time**: \<50ms
 - **Binary size**: ~33MB
 - **Memory**: Minimal footprint
-- **Command response**: <100ms for most commands
+- **Command response**: \<100ms for most commands
 
 ### Profiling
 
