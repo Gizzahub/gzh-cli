@@ -4,6 +4,7 @@
 # Add your custom ignore patterns here
 
 # Project specific
+.serena/
 /data/
 lint-report.json
 /results/
