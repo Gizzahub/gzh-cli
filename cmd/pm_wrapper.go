@@ -35,7 +35,7 @@ func NewPMCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
 	cmd.Long = `Manage multiple package managers with unified commands.
 
 This command provides centralized management for multiple package managers including:
-- System package managers: brew, apt, port, yum, dnf, pacman
+- System package managers: brew, apt, port, yum, dnf, pacman, winget (Windows)
 - Version managers: asdf, rbenv, pyenv, nvm, sdkman
 - Language package managers: pip, gem, npm, cargo, go, composer
 
