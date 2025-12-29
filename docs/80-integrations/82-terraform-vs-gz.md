@@ -498,13 +498,13 @@ gz repo-config apply
 
 ## Summary
 
-| Use Case | Better Tool | Why |
+| Use Case                      | Better Tool    | Why                           |
 | ----------------------------- | -------------- | ----------------------------- |
-| Create new repos | Terraform | Manages full lifecycle |
-| Configure 100+ existing repos | gz repo-config | Bulk operations, no state |
-| Enforce security policies | gz repo-config | Built-in policy engine |
-| Mixed infrastructure | Terraform | Single tool for all resources |
-| Compliance auditing | gz repo-config | Native audit features |
-| Team collaboration | Both work | Different trade-offs |
-| Simple standardization | gz repo-config | Easier to learn and use |
-| Complex dependencies | Terraform | Better dependency management |
+| Create new repos              | Terraform      | Manages full lifecycle        |
+| Configure 100+ existing repos | gz repo-config | Bulk operations, no state     |
+| Enforce security policies     | gz repo-config | Built-in policy engine        |
+| Mixed infrastructure          | Terraform      | Single tool for all resources |
+| Compliance auditing           | gz repo-config | Native audit features         |
+| Team collaboration            | Both work      | Different trade-offs          |
+| Simple standardization        | gz repo-config | Easier to learn and use       |
+| Complex dependencies          | Terraform      | Better dependency management  |

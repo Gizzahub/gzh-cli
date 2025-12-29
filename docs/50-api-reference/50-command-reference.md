@@ -46,15 +46,15 @@ gz <command> [subcommand] [flags]
 
 All commands support these global flags:
 
-| Flag | Description | Default |
+| Flag          | Description                              | Default       |
 | ------------- | ---------------------------------------- | ------------- |
-| `--config` | Configuration file path | Auto-detected |
-| `--debug` | Enable debug logging | `false` |
-| `--help` | Show help information | - |
-| `--log-level` | Set log level (debug, info, warn, error) | `info` |
-| `--quiet` | Suppress non-error output | `false` |
-| `--verbose` | Enable verbose output | `false` |
-| `--version` | Show version information | - |
+| `--config`    | Configuration file path                  | Auto-detected |
+| `--debug`     | Enable debug logging                     | `false`       |
+| `--help`      | Show help information                    | -             |
+| `--log-level` | Set log level (debug, info, warn, error) | `info`        |
+| `--quiet`     | Suppress non-error output                | `false`       |
+| `--verbose`   | Enable verbose output                    | `false`       |
+| `--version`   | Show version information                 | -             |
 
 ### Environment Variables
 
@@ -72,15 +72,15 @@ export GZ_CONFIG_DIR="~/.config/gzh-manager"
 
 ### Exit Codes
 
-| Code | Meaning |
+| Code | Meaning                               |
 | ---- | ------------------------------------- |
-| `0` | Success |
-| `1` | General error |
-| `2` | Misuse of command (invalid arguments) |
-| `3` | Authentication error |
-| `4` | Network error |
-| `5` | Configuration error |
-| `6` | File system error |
+| `0`  | Success                               |
+| `1`  | General error                         |
+| `2`  | Misuse of command (invalid arguments) |
+| `3`  | Authentication error                  |
+| `4`  | Network error                         |
+| `5`  | Configuration error                   |
+| `6`  | File system error                     |
 
 ## Core Commands
 
@@ -173,14 +173,14 @@ gz synclone gitea --org <organization> --base-url <url> [flags]
 
 #### Clone Strategies
 
-| Strategy | Behavior | Use Case |
+| Strategy | Behavior                             | Use Case           |
 | -------- | ------------------------------------ | ------------------ |
-| `reset` | Hard reset to match remote (default) | CI/CD, mirrors |
-| `pull` | Merge remote changes | Active development |
-| `fetch` | Update refs only | Inspection |
-| `rebase` | Rebase local changes on remote | Clean history |
-| `clone` | Fresh clone (removes existing) | Clean start |
-| `skip` | Skip existing repositories | Initial clone only |
+| `reset`  | Hard reset to match remote (default) | CI/CD, mirrors     |
+| `pull`   | Merge remote changes                 | Active development |
+| `fetch`  | Update refs only                     | Inspection         |
+| `rebase` | Rebase local changes on remote       | Clean history      |
+| `clone`  | Fresh clone (removes existing)       | Clean start        |
+| `skip`   | Skip existing repositories           | Initial clone only |
 
 ### git
 
@@ -586,14 +586,14 @@ gz dev-env ssh <command> [flags]
 
 **Commands:**
 
-| Command | Description | Key Features |
-|---------|-------------|--------------|
-| `save` | Save SSH configuration | Auto-parses Include directives, backs up IdentityFile keys |
-| `load` | Load saved SSH configuration | Restores config, includes, and keys with proper permissions |
-| `list` | List saved configurations | Shows metadata, file counts, and timestamps |
-| `install-key` | Install SSH key to remote server | SFTP-based, robust error handling, verbose mode |
-| `install-key-simple` | Install using system SSH | Fallback method using system SSH command |
-| `list-keys` | List keys in saved configurations | Shows key types, fingerprints, and availability |
+| Command              | Description                       | Key Features                                                |
+| -------------------- | --------------------------------- | ----------------------------------------------------------- |
+| `save`               | Save SSH configuration            | Auto-parses Include directives, backs up IdentityFile keys  |
+| `load`               | Load saved SSH configuration      | Restores config, includes, and keys with proper permissions |
+| `list`               | List saved configurations         | Shows metadata, file counts, and timestamps                 |
+| `install-key`        | Install SSH key to remote server  | SFTP-based, robust error handling, verbose mode             |
+| `install-key-simple` | Install using system SSH          | Fallback method using system SSH command                    |
+| `list-keys`          | List keys in saved configurations | Shows key types, fingerprints, and availability             |
 
 **Configuration Management Examples:**
 
@@ -639,23 +639,23 @@ gz dev-env ssh list-keys
 
 **Flags:**
 
-| Flag | Description | Applies To |
-|------|-------------|------------|
-| `--name` | Configuration name | save, load, list |
-| `--description` | Configuration description | save |
-| `--include-keys` | Include private keys in backup | save |
-| `--backup` | Backup current config before loading | load |
-| `--force` | Overwrite without confirmation | load, install-key |
-| `--host` | Remote hostname/IP | install-key, install-key-simple |
-| `--user` | SSH username | install-key, install-key-simple |
-| `--public-key` | Path to public key file | install-key, install-key-simple |
-| `--private-key` | Path to private key for auth | install-key |
-| `--config` | Use keys from saved configuration | install-key, list-keys |
-| `--password` | SSH password | install-key |
-| `--port` | SSH port (default: 22) | install-key |
-| `--dry-run` | Preview changes without applying | install-key |
-| `--all` | Show detailed information | list |
-| `--verbose` | Enable verbose logging | install-key |
+| Flag             | Description                          | Applies To                      |
+| ---------------- | ------------------------------------ | ------------------------------- |
+| `--name`         | Configuration name                   | save, load, list                |
+| `--description`  | Configuration description            | save                            |
+| `--include-keys` | Include private keys in backup       | save                            |
+| `--backup`       | Backup current config before loading | load                            |
+| `--force`        | Overwrite without confirmation       | load, install-key               |
+| `--host`         | Remote hostname/IP                   | install-key, install-key-simple |
+| `--user`         | SSH username                         | install-key, install-key-simple |
+| `--public-key`   | Path to public key file              | install-key, install-key-simple |
+| `--private-key`  | Path to private key for auth         | install-key                     |
+| `--config`       | Use keys from saved configuration    | install-key, list-keys          |
+| `--password`     | SSH password                         | install-key                     |
+| `--port`         | SSH port (default: 22)               | install-key                     |
+| `--dry-run`      | Preview changes without applying     | install-key                     |
+| `--all`          | Show detailed information            | list                            |
+| `--verbose`      | Enable verbose logging               | install-key                     |
 
 **Features:**
 

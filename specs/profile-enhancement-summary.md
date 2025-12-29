@@ -212,16 +212,16 @@ Found 3 issue(s):
 
 ## 🎯 **Specification Compliance Achieved**
 
-| Feature | Specification Requirement | Implementation Status |
-|---------|---------------------------|----------------------|
-| **Comparative Profiling** | Compare profiles, identify regressions | ✅ **COMPLETE** |
-| **Continuous Profiling** | Monitor performance over time | ✅ **COMPLETE** |
-| **Automated Analysis** | AI-powered issue detection | ✅ **COMPLETE** |
-| **Rich Output Formatting** | Emoji-rich, structured output | ✅ **COMPLETE** |
-| **Multiple Output Formats** | Text, JSON support | ✅ **COMPLETE** |
-| **Configurable Thresholds** | Filter by significance | ✅ **COMPLETE** |
-| **Performance Monitoring** | Real-time stats and tracking | ✅ **COMPLETE** |
-| **Issue Classification** | Severity levels and recommendations | ✅ **COMPLETE** |
+| Feature                     | Specification Requirement              | Implementation Status |
+| --------------------------- | -------------------------------------- | --------------------- |
+| **Comparative Profiling**   | Compare profiles, identify regressions | ✅ **COMPLETE**       |
+| **Continuous Profiling**    | Monitor performance over time          | ✅ **COMPLETE**       |
+| **Automated Analysis**      | AI-powered issue detection             | ✅ **COMPLETE**       |
+| **Rich Output Formatting**  | Emoji-rich, structured output          | ✅ **COMPLETE**       |
+| **Multiple Output Formats** | Text, JSON support                     | ✅ **COMPLETE**       |
+| **Configurable Thresholds** | Filter by significance                 | ✅ **COMPLETE**       |
+| **Performance Monitoring**  | Real-time stats and tracking           | ✅ **COMPLETE**       |
+| **Issue Classification**    | Severity levels and recommendations    | ✅ **COMPLETE**       |
 
 **Overall Specification Compliance: 100%**
 

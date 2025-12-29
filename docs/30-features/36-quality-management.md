@@ -36,14 +36,14 @@ Code quality is essential for maintainable, secure, and performant software. The
 
 ### Full Support
 
-| Language | Formatters | Linters | Security Scanners |
+| Language                  | Formatters            | Linters                    | Security Scanners  |
 | ------------------------- | --------------------- | -------------------------- | ------------------ |
-| **Go** | gofmt, gofumpt, gci | golangci-lint, staticcheck | gosec, govulncheck |
-| **Python** | black, autopep8, yapf | pylint, flake8, mypy | bandit, safety |
-| **JavaScript/TypeScript** | prettier, eslint | eslint, tslint | eslint-security |
-| **Rust** | rustfmt | clippy | cargo-audit |
-| **Java** | google-java-format | checkstyle, spotbugs | spotbugs-security |
-| **C/C++** | clang-format | clang-tidy, cppcheck | cppcheck |
+| **Go**                    | gofmt, gofumpt, gci   | golangci-lint, staticcheck | gosec, govulncheck |
+| **Python**                | black, autopep8, yapf | pylint, flake8, mypy       | bandit, safety     |
+| **JavaScript/TypeScript** | prettier, eslint      | eslint, tslint             | eslint-security    |
+| **Rust**                  | rustfmt               | clippy                     | cargo-audit        |
+| **Java**                  | google-java-format    | checkstyle, spotbugs       | spotbugs-security  |
+| **C/C++**                 | clang-format          | clang-tidy, cppcheck       | cppcheck           |
 
 ### Basic Support
 

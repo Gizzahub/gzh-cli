@@ -17,13 +17,13 @@
 
 ### Metrics
 
-| Metric | Current Value | Status |
-|--------|---------------|--------|
-| **Total Commands** | 11 core commands | ✅ Manageable |
-| **Go Files** | 173 files in `cmd/` | ✅ Well-organized |
-| **Binary Size** | ~33MB (estimated) | ✅ Acceptable |
+| Metric                 | Current Value                    | Status             |
+| ---------------------- | -------------------------------- | ------------------ |
+| **Total Commands**     | 11 core commands                 | ✅ Manageable      |
+| **Go Files**           | 173 files in `cmd/`              | ✅ Well-organized  |
+| **Binary Size**        | ~33MB (estimated)                | ✅ Acceptable      |
 | **External Libraries** | 4 (git, quality, pm, shellforge) | ✅ Good separation |
-| **Registry Pattern** | Simple interface | ⚠️ Can be enhanced |
+| **Registry Pattern**   | Simple interface                 | ⚠️ Can be enhanced |
 
 ### Strengths
 
@@ -432,12 +432,12 @@ build: build-full ## Build full binary (default)
 
 ### Build Variant Comparison
 
-| Variant | Commands Included | Size | Use Case |
-|---------|------------------|------|----------|
-| **gz-full** | All (11 commands) | ~33MB | Default, all features |
-| **gz-core** | git, dev-env, version | ~8MB | Minimal, essential only |
-| **gz-git** | core + quality, synclone | ~15MB | Git-focused workflows |
-| **gz-dev** | core + quality, pm, ide | ~20MB | Development environment |
+| Variant     | Commands Included        | Size  | Use Case                |
+| ----------- | ------------------------ | ----- | ----------------------- |
+| **gz-full** | All (11 commands)        | ~33MB | Default, all features   |
+| **gz-core** | git, dev-env, version    | ~8MB  | Minimal, essential only |
+| **gz-git**  | core + quality, synclone | ~15MB | Git-focused workflows   |
+| **gz-dev**  | core + quality, pm, ide  | ~20MB | Development environment |
 
 ### Benefits
 
@@ -1310,14 +1310,14 @@ gz tf plan
 
 ## 📈 Expected Improvements
 
-| Metric | Before | After Phase 1 | After Phase 3 |
-|--------|--------|---------------|---------------|
-| **Binary Sizes** | 33MB | 33MB | 8MB (core) - 33MB (full) |
-| **User Extensibility** | None | Basic aliases | Full workflow automation |
-| **Command Organization** | Flat list | Categories | Categories + lifecycle |
-| **External Libraries** | 4 wrappers | 4 wrappers | Standardized pattern |
-| **Help Quality** | Basic | Enhanced with categories | Full metadata display |
-| **Build Variants** | 1 (full) | 1 (full) | 4 (core, git, dev, full) |
+| Metric                   | Before     | After Phase 1            | After Phase 3            |
+| ------------------------ | ---------- | ------------------------ | ------------------------ |
+| **Binary Sizes**         | 33MB       | 33MB                     | 8MB (core) - 33MB (full) |
+| **User Extensibility**   | None       | Basic aliases            | Full workflow automation |
+| **Command Organization** | Flat list  | Categories               | Categories + lifecycle   |
+| **External Libraries**   | 4 wrappers | 4 wrappers               | Standardized pattern     |
+| **Help Quality**         | Basic      | Enhanced with categories | Full metadata display    |
+| **Build Variants**       | 1 (full)   | 1 (full)                 | 4 (core, git, dev, full) |
 
 ## ✅ Success Criteria
 

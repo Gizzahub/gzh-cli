@@ -74,14 +74,14 @@ This directory contains a comprehensive specification suite for the `gz pm updat
 
 ## 📊 Compliance Metrics
 
-| Aspect | Current | Target | Gap |
-|--------|---------|--------|-----|
-| **Output Format** | 60% | 95% | Section banners, version tracking |
-| **Progress Indication** | 70% | 95% | Step tracking, time estimates |
-| **Resource Management** | 40% | 90% | Disk/network/memory checks |
-| **Error Handling** | 85% | 95% | Specific fix guidance |
-| **Platform Support** | 90% | 95% | Windows compatibility |
-| **Test Coverage** | 75% | 90% | Edge case scenarios |
+| Aspect                  | Current | Target | Gap                               |
+| ----------------------- | ------- | ------ | --------------------------------- |
+| **Output Format**       | 60%     | 95%    | Section banners, version tracking |
+| **Progress Indication** | 70%     | 95%    | Step tracking, time estimates     |
+| **Resource Management** | 40%     | 90%    | Disk/network/memory checks        |
+| **Error Handling**      | 85%     | 95%    | Specific fix guidance             |
+| **Platform Support**    | 90%     | 95%    | Windows compatibility             |
+| **Test Coverage**       | 75%     | 90%    | Edge case scenarios               |
 
 **Overall Compliance: 85% → 95% (Target)**
 

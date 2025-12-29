@@ -140,13 +140,13 @@ make build && ./gz version
 
 ## Quick Reference
 
-| Command | Purpose |
-|---------|---------|
-| `go version` | Check current Go version |
-| `go env GOVERSION` | Check Go version from env |
-| `go clean -cache` | Clean build cache |
-| `go clean -modcache` | Clean module cache |
-| `go install std` | Rebuild standard library |
+| Command                   | Purpose                      |
+| ------------------------- | ---------------------------- |
+| `go version`              | Check current Go version     |
+| `go env GOVERSION`        | Check Go version from env    |
+| `go clean -cache`         | Clean build cache            |
+| `go clean -modcache`      | Clean module cache           |
+| `go install std`          | Rebuild standard library     |
 | `go build -o gz ./cmd/gz` | Direct build (bypasses Make) |
 
 ______________________________________________________________________

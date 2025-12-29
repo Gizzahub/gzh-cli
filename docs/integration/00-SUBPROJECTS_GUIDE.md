@@ -42,12 +42,12 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능 | 독립 실행 | gzh-cli 통합 |
-|-----|---------|-------------|
-| 스마트 클론 | `gzh-git clone https://github.com/user/repo.git` | `gz git repo clone-or-update https://github.com/user/repo.git` |
-| 일괄 업데이트 | `gzh-git pull-all ~/workspace` | `gz git repo pull-all ~/workspace` |
-| 설정 파일 | `git-config.yaml` | `gzh.yaml` (통합 설정) |
-| 인증 | `GIT_TOKEN` 환경 변수 | gzh-cli 토큰 공유 |
+| 기능          | 독립 실행                                        | gzh-cli 통합                                                   |
+| ------------- | ------------------------------------------------ | -------------------------------------------------------------- |
+| 스마트 클론   | `gzh-git clone https://github.com/user/repo.git` | `gz git repo clone-or-update https://github.com/user/repo.git` |
+| 일괄 업데이트 | `gzh-git pull-all ~/workspace`                   | `gz git repo pull-all ~/workspace`                             |
+| 설정 파일     | `git-config.yaml`                                | `gzh.yaml` (통합 설정)                                         |
+| 인증          | `GIT_TOKEN` 환경 변수                            | gzh-cli 토큰 공유                                              |
 
 #### 사용 예제
 
@@ -107,23 +107,23 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능 | 독립 실행 | gzh-cli 통합 |
-|-----|---------|-------------|
-| 전체 품질 검사 | `gzh-quality run` | `gz quality run` |
-| 린팅만 | `gzh-quality check` | `gz quality check` |
-| 변경 파일만 | `gzh-quality run --changed` | `gz quality run --changed` |
-| 설정 파일 | `quality.yaml` | `gzh.yaml` (통합 설정) |
+| 기능           | 독립 실행                   | gzh-cli 통합               |
+| -------------- | --------------------------- | -------------------------- |
+| 전체 품질 검사 | `gzh-quality run`           | `gz quality run`           |
+| 린팅만         | `gzh-quality check`         | `gz quality check`         |
+| 변경 파일만    | `gzh-quality run --changed` | `gz quality run --changed` |
+| 설정 파일      | `quality.yaml`              | `gzh.yaml` (통합 설정)     |
 
 #### 지원 도구
 
-| 언어 | 포매터 | 린터 |
-|-----|--------|------|
-| Go | gofumpt, gci | golangci-lint |
-| Python | black, ruff | ruff, mypy, flake8 |
-| JavaScript/TypeScript | prettier, dprint | eslint |
-| Rust | rustfmt | clippy |
-| Java | google-java-format | checkstyle, spotbugs |
-| C/C++ | clang-format | clang-tidy |
+| 언어                  | 포매터             | 린터                 |
+| --------------------- | ------------------ | -------------------- |
+| Go                    | gofumpt, gci       | golangci-lint        |
+| Python                | black, ruff        | ruff, mypy, flake8   |
+| JavaScript/TypeScript | prettier, dprint   | eslint               |
+| Rust                  | rustfmt            | clippy               |
+| Java                  | google-java-format | checkstyle, spotbugs |
+| C/C++                 | clang-format       | clang-tidy           |
 
 #### 사용 예제
 
@@ -183,21 +183,21 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능 | 독립 실행 | gzh-cli 통합 |
-|-----|---------|-------------|
-| 전체 업데이트 | `gzh-pm update` | `gz pm update` |
-| 특정 매니저 | `gzh-pm update --manager homebrew` | `gz pm update --manager homebrew` |
-| 상태 확인 | `gzh-pm status` | `gz pm status` |
-| 설정 파일 | `pm-config.yaml` | `gzh.yaml` (통합 설정) |
+| 기능          | 독립 실행                          | gzh-cli 통합                      |
+| ------------- | ---------------------------------- | --------------------------------- |
+| 전체 업데이트 | `gzh-pm update`                    | `gz pm update`                    |
+| 특정 매니저   | `gzh-pm update --manager homebrew` | `gz pm update --manager homebrew` |
+| 상태 확인     | `gzh-pm status`                    | `gz pm status`                    |
+| 설정 파일     | `pm-config.yaml`                   | `gzh.yaml` (통합 설정)            |
 
 #### 지원 패키지 매니저
 
-| 카테고리 | 매니저 |
-|---------|--------|
-| 언어 버전 관리 | asdf, nvm, pyenv, rbenv, rustup |
-| 시스템 패키지 | Homebrew (macOS), apt (Ubuntu), yum (CentOS) |
-| 언어별 | npm, pip, cargo, go modules |
-| 개발 도구 | SDKMAN, kubectl, helm |
+| 카테고리       | 매니저                                       |
+| -------------- | -------------------------------------------- |
+| 언어 버전 관리 | asdf, nvm, pyenv, rbenv, rustup              |
+| 시스템 패키지  | Homebrew (macOS), apt (Ubuntu), yum (CentOS) |
+| 언어별         | npm, pip, cargo, go modules                  |
+| 개발 도구      | SDKMAN, kubectl, helm                        |
 
 #### 사용 예제
 
@@ -257,12 +257,12 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능 | 독립 실행 | gzh-cli 통합 |
-|-----|---------|-------------|
-| 빌드 | `shellforge build --manifest manifest.yaml` | `gz shellforge build --manifest manifest.yaml` |
-| 검증 | `shellforge validate --manifest manifest.yaml` | `gz shellforge validate --manifest manifest.yaml` |
-| 백업 | `shellforge backup --file ~/.zshrc` | `gz shellforge backup --file ~/.zshrc` |
-| 템플릿 생성 | `shellforge template generate --type path` | `gz shellforge template generate --type path` |
+| 기능        | 독립 실행                                      | gzh-cli 통합                                      |
+| ----------- | ---------------------------------------------- | ------------------------------------------------- |
+| 빌드        | `shellforge build --manifest manifest.yaml`    | `gz shellforge build --manifest manifest.yaml`    |
+| 검증        | `shellforge validate --manifest manifest.yaml` | `gz shellforge validate --manifest manifest.yaml` |
+| 백업        | `shellforge backup --file ~/.zshrc`            | `gz shellforge backup --file ~/.zshrc`            |
+| 템플릿 생성 | `shellforge template generate --type path`     | `gz shellforge template generate --type path`     |
 
 #### 사용 예제
 
@@ -325,13 +325,13 @@ func RegisterQualityCmd(appCtx *app.AppContext) {
 
 #### 코드 감소 효과
 
-| 라이브러리 | 래퍼 크기 | 원래 코드 | 감소량 | 감소율 |
-|-----------|---------|---------|--------|--------|
-| gzh-cli-quality | 45줄 | 3,514줄 | 3,469줄 | 98.7% |
-| gzh-cli-package-manager | 65줄 | 2,453줄 | 2,388줄 | 97.3% |
-| gzh-cli-git | 473줄 | 1,318줄 | 845줄 | 64.2% |
-| gzh-cli-shellforge | 71줄 | - | - | (신규) |
-| **전체** | **654줄** | **7,285줄** | **6,702줄** | **92.0%** |
+| 라이브러리              | 래퍼 크기 | 원래 코드   | 감소량      | 감소율    |
+| ----------------------- | --------- | ----------- | ----------- | --------- |
+| gzh-cli-quality         | 45줄      | 3,514줄     | 3,469줄     | 98.7%     |
+| gzh-cli-package-manager | 65줄      | 2,453줄     | 2,388줄     | 97.3%     |
+| gzh-cli-git             | 473줄     | 1,318줄     | 845줄       | 64.2%     |
+| gzh-cli-shellforge      | 71줄      | -           | -           | (신규)    |
+| **전체**                | **654줄** | **7,285줄** | **6,702줄** | **92.0%** |
 
 ### 개발 환경
 

@@ -20,14 +20,14 @@ Both Terraform and `gz repo-config` can manage GitHub repository configurations 
 
 ### Key Differences
 
-| Aspect | Terraform | gz repo-config |
+| Aspect                  | Terraform                                | gz repo-config                      |
 | ----------------------- | ---------------------------------------- | ----------------------------------- |
-| **Primary Purpose** | General infrastructure management | GitHub repository management |
-| **Learning Curve** | Steeper (HCL syntax, Terraform concepts) | Gentler (YAML, focused feature set) |
-| **State Management** | Required (backend configuration) | Stateless (queries GitHub directly) |
-| **Bulk Operations** | Resource-by-resource | Optimized for bulk operations |
-| **Policy Enforcement** | External tools needed | Built-in policy engine |
-| **Compliance Auditing** | Third-party tools | Built-in audit reports |
+| **Primary Purpose**     | General infrastructure management        | GitHub repository management        |
+| **Learning Curve**      | Steeper (HCL syntax, Terraform concepts) | Gentler (YAML, focused feature set) |
+| **State Management**    | Required (backend configuration)         | Stateless (queries GitHub directly) |
+| **Bulk Operations**     | Resource-by-resource                     | Optimized for bulk operations       |
+| **Policy Enforcement**  | External tools needed                    | Built-in policy engine              |
+| **Compliance Auditing** | Third-party tools                        | Built-in audit reports              |
 
 ## Feature Comparison
 
@@ -107,34 +107,34 @@ repositories:
 
 ### Feature Support Matrix
 
-| Feature | Terraform | gz repo-config |
+| Feature                            | Terraform     | gz repo-config          |
 | ---------------------------------- | ------------- | ----------------------- |
-| **Basic Settings** | | |
-| Repository creation | ✅ | ❌ (configuration only) |
-| Visibility control | ✅ | ✅ |
-| Feature flags (issues, wiki, etc.) | ✅ | ✅ |
-| Default branch | ✅ | ✅ |
-| Topics | ✅ | ✅ |
-| **Security** | | |
-| Branch protection | ✅ | ✅ |
-| Required status checks | ✅ | ✅ |
-| Review requirements | ✅ | ✅ |
-| Push restrictions | ✅ | ✅ |
-| Vulnerability alerts | ✅ | ✅ |
-| Secret scanning | ✅ | ✅ |
-| **Advanced Features** | | |
-| Webhooks | ✅ | ✅ |
-| Deploy keys | ✅ | ❌ (planned) |
-| Environments | ✅ | ❌ (planned) |
-| GitHub Actions permissions | ✅ | ✅ |
-| **Management Features** | | |
-| Templates/Modules | ✅ (modules) | ✅ (templates) |
-| Bulk operations | ❌ (foreach) | ✅ (native) |
-| Policy enforcement | ❌ (external) | ✅ (built-in) |
-| Compliance auditing | ❌ | ✅ |
-| Dry run | ✅ (plan) | ✅ |
-| State management | ✅ (required) | ❌ (stateless) |
-| Import existing | ✅ | ✅ (automatic) |
+| **Basic Settings**                 |               |                         |
+| Repository creation                | ✅            | ❌ (configuration only) |
+| Visibility control                 | ✅            | ✅                      |
+| Feature flags (issues, wiki, etc.) | ✅            | ✅                      |
+| Default branch                     | ✅            | ✅                      |
+| Topics                             | ✅            | ✅                      |
+| **Security**                       |               |                         |
+| Branch protection                  | ✅            | ✅                      |
+| Required status checks             | ✅            | ✅                      |
+| Review requirements                | ✅            | ✅                      |
+| Push restrictions                  | ✅            | ✅                      |
+| Vulnerability alerts               | ✅            | ✅                      |
+| Secret scanning                    | ✅            | ✅                      |
+| **Advanced Features**              |               |                         |
+| Webhooks                           | ✅            | ✅                      |
+| Deploy keys                        | ✅            | ❌ (planned)            |
+| Environments                       | ✅            | ❌ (planned)            |
+| GitHub Actions permissions         | ✅            | ✅                      |
+| **Management Features**            |               |                         |
+| Templates/Modules                  | ✅ (modules)  | ✅ (templates)          |
+| Bulk operations                    | ❌ (foreach)  | ✅ (native)             |
+| Policy enforcement                 | ❌ (external) | ✅ (built-in)           |
+| Compliance auditing                | ❌            | ✅                      |
+| Dry run                            | ✅ (plan)     | ✅                      |
+| State management                   | ✅ (required) | ❌ (stateless)          |
+| Import existing                    | ✅            | ✅ (automatic)          |
 
 ## Architecture Comparison
 
@@ -411,12 +411,12 @@ repositories:
 
 ## Cost Comparison
 
-| Aspect | Terraform | gz repo-config |
+| Aspect                  | Terraform                 | gz repo-config |
 | ----------------------- | ------------------------- | -------------- |
-| **Tool Cost** | Free (OSS) / Paid (Cloud) | Free (OSS) |
-| **State Storage** | Required (S3, etc.) | None |
-| **Learning Investment** | High | Low |
-| **Maintenance** | State management overhead | Minimal |
+| **Tool Cost**           | Free (OSS) / Paid (Cloud) | Free (OSS)     |
+| **State Storage**       | Required (S3, etc.)       | None           |
+| **Learning Investment** | High                      | Low            |
+| **Maintenance**         | State management overhead | Minimal        |
 
 ## Conclusion
 

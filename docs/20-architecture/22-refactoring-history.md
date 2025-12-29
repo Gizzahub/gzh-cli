@@ -6,14 +6,14 @@ This document chronicles the major architectural improvements and refactoring ef
 
 ### Overall Statistics
 
-| Metric | Before | After | Improvement |
+| Metric                               | Before        | After                | Improvement         |
 | ------------------------------------ | ------------- | -------------------- | ------------------- |
-| **Major Architectural Duplications** | ~50+ patterns | 0 | **100% Eliminated** |
-| **Provider Implementation Lines** | ~800 lines | ~200 lines | **75% Reduction** |
-| **Dev-env Command Lines** | ~2000 lines | ~400 lines | **80% Reduction** |
-| **TUI Style Lines** | ~600 lines | ~150 lines + library | **75% Reduction** |
-| **Config Adapter Lines** | ~570 lines | ~150 lines | **74% Reduction** |
-| **Doctor Tool Check Lines** | ~125 lines | ~15 lines | **88% Reduction** |
+| **Major Architectural Duplications** | ~50+ patterns | 0                    | **100% Eliminated** |
+| **Provider Implementation Lines**    | ~800 lines    | ~200 lines           | **75% Reduction**   |
+| **Dev-env Command Lines**            | ~2000 lines   | ~400 lines           | **80% Reduction**   |
+| **TUI Style Lines**                  | ~600 lines    | ~150 lines + library | **75% Reduction**   |
+| **Config Adapter Lines**             | ~570 lines    | ~150 lines           | **74% Reduction**   |
+| **Doctor Tool Check Lines**          | ~125 lines    | ~15 lines            | **88% Reduction**   |
 
 ## 🎯 6-Phase Refactoring Project
 

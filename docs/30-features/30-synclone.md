@@ -382,14 +382,14 @@ Synclone supports multiple strategies for handling existing repositories:
 
 ### Strategy Comparison
 
-| Strategy | Behavior | Use Case | Risk Level |
+| Strategy | Behavior                             | Use Case           | Risk Level                            |
 | -------- | ------------------------------------ | ------------------ | ------------------------------------- |
-| `reset` | Hard reset to match remote (default) | CI/CD, mirrors | ⚠️ **High** - Discards local changes |
-| `pull` | Merge remote changes | Active development | 🟢 **Low** - Preserves local work |
-| `fetch` | Update refs only | Inspection | 🟢 **Low** - No working tree changes |
-| `rebase` | Rebase local changes on remote | Clean history | 🟡 **Medium** - May create conflicts |
-| `clone` | Fresh clone (removes existing) | Clean start | 🔴 **Very High** - Deletes everything |
-| `skip` | Skip existing repositories | Initial clone only | 🟢 **Low** - No changes to existing |
+| `reset`  | Hard reset to match remote (default) | CI/CD, mirrors     | ⚠️ **High** - Discards local changes  |
+| `pull`   | Merge remote changes                 | Active development | 🟢 **Low** - Preserves local work     |
+| `fetch`  | Update refs only                     | Inspection         | 🟢 **Low** - No working tree changes  |
+| `rebase` | Rebase local changes on remote       | Clean history      | 🟡 **Medium** - May create conflicts  |
+| `clone`  | Fresh clone (removes existing)       | Clean start        | 🔴 **Very High** - Deletes everything |
+| `skip`   | Skip existing repositories           | Initial clone only | 🟢 **Low** - No changes to existing   |
 
 ### Strategy Details
 

@@ -68,16 +68,16 @@ ______________________________________________________________________
 
 ## 주요 기능
 
-| 기능 | 설명 | 상세 문서 |
-|-----|------|---------|
-| **Git 플랫폼 통합** | GitHub/GitLab/Gitea/Gogs 리포지토리 관리, 크로스 플랫폼 동기화 | [📖 Docs](docs/30-features/31-repository-management.md) |
-| **IDE 관리** | JetBrains/VS Code 스캔, 상태 모니터링, 프로젝트 열기 | [📖 Docs](docs/30-features/35-ide-management.md) |
-| **코드 품질** | 다중 언어 린팅/포매팅 (Go, Python, JS, Rust 등) | [📖 Docs](docs/30-features/36-quality-management.md) |
-| **성능 프로파일링** | Go pprof 기반 CPU/메모리 프로파일링 | [📖 Docs](docs/30-features/37-performance-profiling.md) |
-| **패키지 매니저** | asdf, Homebrew, SDKMAN, npm, pip 통합 업데이트 | [📖 Docs](docs/30-features/) |
-| **쉘 설정 빌더** | .zshrc/.bashrc 모듈화 및 의존성 관리 | [📖 Docs](docs/30-features/) |
-| **개발 환경 관리** | AWS, Docker, Kubernetes, SSH 설정 통합 | [📖 Docs](docs/30-features/33-development-environment.md) |
-| **네트워크 환경** | WiFi, VPN, DNS, 프록시 자동 전환 | [📖 Docs](docs/30-features/34-network-management.md) |
+| 기능                | 설명                                                           | 상세 문서                                                 |
+| ------------------- | -------------------------------------------------------------- | --------------------------------------------------------- |
+| **Git 플랫폼 통합** | GitHub/GitLab/Gitea/Gogs 리포지토리 관리, 크로스 플랫폼 동기화 | [📖 Docs](docs/30-features/31-repository-management.md)   |
+| **IDE 관리**        | JetBrains/VS Code 스캔, 상태 모니터링, 프로젝트 열기           | [📖 Docs](docs/30-features/35-ide-management.md)          |
+| **코드 품질**       | 다중 언어 린팅/포매팅 (Go, Python, JS, Rust 등)                | [📖 Docs](docs/30-features/36-quality-management.md)      |
+| **성능 프로파일링** | Go pprof 기반 CPU/메모리 프로파일링                            | [📖 Docs](docs/30-features/37-performance-profiling.md)   |
+| **패키지 매니저**   | asdf, Homebrew, SDKMAN, npm, pip 통합 업데이트                 | [📖 Docs](docs/30-features/)                              |
+| **쉘 설정 빌더**    | .zshrc/.bashrc 모듈화 및 의존성 관리                           | [📖 Docs](docs/30-features/)                              |
+| **개발 환경 관리**  | AWS, Docker, Kubernetes, SSH 설정 통합                         | [📖 Docs](docs/30-features/33-development-environment.md) |
+| **네트워크 환경**   | WiFi, VPN, DNS, 프록시 자동 전환                               | [📖 Docs](docs/30-features/34-network-management.md)      |
 
 ### 명령어 구조
 
@@ -106,12 +106,12 @@ ______________________________________________________________________
 
 gzh-cli는 핵심 기능을 독립 라이브러리로 분리하여 개발합니다. 각 라이브러리는 독립적으로 사용 가능합니다.
 
-| 프로젝트 | 목적 | 독립 사용 | 문서 |
-|---------|------|---------|------|
-| [gzh-cli-git][git-repo] | 로컬 Git 작업 관리 (clone, pull, push) | ✅ | [📖][git-doc] |
-| [gzh-cli-quality][quality-repo] | 다중 언어 코드 품질 도구 | ✅ | [📖][quality-doc] |
-| [gzh-cli-package-manager][pm-repo] | 패키지 매니저 통합 관리 | ✅ | [📖][pm-doc] |
-| [gzh-cli-shellforge][shell-repo] | 모듈형 쉘 설정 빌더 | ✅ | [📖][shell-doc] |
+| 프로젝트                           | 목적                                   | 독립 사용 | 문서              |
+| ---------------------------------- | -------------------------------------- | --------- | ----------------- |
+| [gzh-cli-git][git-repo]            | 로컬 Git 작업 관리 (clone, pull, push) | ✅        | [📖][git-doc]     |
+| [gzh-cli-quality][quality-repo]    | 다중 언어 코드 품질 도구               | ✅        | [📖][quality-doc] |
+| [gzh-cli-package-manager][pm-repo] | 패키지 매니저 통합 관리                | ✅        | [📖][pm-doc]      |
+| [gzh-cli-shellforge][shell-repo]   | 모듈형 쉘 설정 빌더                    | ✅        | [📖][shell-doc]   |
 
 **통합 아키텍처**: [Integration Libraries Pattern](docs/integration/00-SUBPROJECTS_GUIDE.md)
 

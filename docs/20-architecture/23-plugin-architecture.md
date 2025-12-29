@@ -58,14 +58,14 @@ for _, provider := range registry.List() {
 
 ### Characteristics
 
-| Aspect | Current State |
-|--------|---------------|
-| **Loading** | Compile-time only |
-| **Registration** | Registry pattern with explicit calls |
-| **Dependencies** | Hardcoded imports in root.go |
-| **Binary Size** | All commands included |
-| **Extensibility** | Requires recompilation |
-| **Distribution** | Single monolithic binary |
+| Aspect            | Current State                        |
+| ----------------- | ------------------------------------ |
+| **Loading**       | Compile-time only                    |
+| **Registration**  | Registry pattern with explicit calls |
+| **Dependencies**  | Hardcoded imports in root.go         |
+| **Binary Size**   | All commands included                |
+| **Extensibility** | Requires recompilation               |
+| **Distribution**  | Single monolithic binary             |
 
 ### External Library Integration Example
 
@@ -301,16 +301,16 @@ go build -tags "core,quality" -o gz-custom cmd/main.go
 
 ### Comparison Matrix
 
-| Feature | Current | Go Plugin | Subprocess | Config-Based | Library Comp |
-|---------|---------|-----------|------------|--------------|--------------|
-| **Dynamic Loading** | ❌ | ✅ | ✅ | ✅ | ❌ |
-| **Type Safety** | ✅✅ | ⚠️ | ❌ | ❌ | ✅✅ |
-| **Performance** | ✅✅ | ✅ | ⚠️ | ⚠️ | ✅✅ |
-| **Binary Size** | ⚠️ | ✅ | ✅✅ | ✅ | ⚠️ |
-| **Cross-Platform** | ✅✅ | ❌ | ✅✅ | ✅✅ | ✅✅ |
-| **Maintenance** | ✅ | ⚠️ | ✅ | ✅ | ✅ |
-| **Distribution** | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
-| **User Install** | ✅✅ | ⚠️ | ⚠️ | ⚠️ | ✅✅ |
+| Feature             | Current | Go Plugin | Subprocess | Config-Based | Library Comp |
+| ------------------- | ------- | --------- | ---------- | ------------ | ------------ |
+| **Dynamic Loading** | ❌      | ✅        | ✅         | ✅           | ❌           |
+| **Type Safety**     | ✅✅    | ⚠️        | ❌         | ❌           | ✅✅         |
+| **Performance**     | ✅✅    | ✅        | ⚠️         | ⚠️           | ✅✅         |
+| **Binary Size**     | ⚠️      | ✅        | ✅✅       | ✅           | ⚠️           |
+| **Cross-Platform**  | ✅✅    | ❌        | ✅✅       | ✅✅         | ✅✅         |
+| **Maintenance**     | ✅      | ⚠️        | ✅         | ✅           | ✅           |
+| **Distribution**    | ✅      | ⚠️        | ⚠️         | ⚠️           | ✅           |
+| **User Install**    | ✅✅    | ⚠️        | ⚠️         | ⚠️           | ✅✅         |
 
 ### Detailed Analysis
 
@@ -587,13 +587,13 @@ func NewTerraformCmd(appCtx *app.AppContext) *cobra.Command {
 
 ## 📊 Decision Matrix
 
-| Use Case | Solution |
-|----------|----------|
-| **Add new internal command** | Current registry pattern |
-| **Integrate external tool** | Library wrapper (pm_wrapper.go style) |
-| **Reduce binary size** | Build tags + conditional compilation |
-| **User customization** | Configuration-based aliases |
-| **Community plugins** | **NOT RECOMMENDED** - complexity > value |
+| Use Case                     | Solution                                 |
+| ---------------------------- | ---------------------------------------- |
+| **Add new internal command** | Current registry pattern                 |
+| **Integrate external tool**  | Library wrapper (pm_wrapper.go style)    |
+| **Reduce binary size**       | Build tags + conditional compilation     |
+| **User customization**       | Configuration-based aliases              |
+| **Community plugins**        | **NOT RECOMMENDED** - complexity > value |
 
 ## 📝 Implementation Guide
 

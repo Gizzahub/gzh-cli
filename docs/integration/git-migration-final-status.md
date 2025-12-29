@@ -118,22 +118,22 @@ ______________________________________________________________________
 
 ### 코드 감소 현황
 
-| 단계 | 기능 | Before | After | 감소 | 비율 |
-|------|------|--------|-------|------|------|
-| Phase 1 | Package Manager | 2,453 lines | 65 lines | 2,388 lines | 97.3% |
-| Phase 2 | Quality | 3,514 lines | 45 lines | 3,469 lines | 98.7% |
-| Phase 3-1 | clone-or-update | 459 lines | 204 lines | 255 lines | 55.6% |
-| Phase 3-2 | bulk-update | 859 lines | 269 lines | 590 lines | 68.7% |
-| **총계** | | **7,285 lines** | **583 lines** | **6,702 lines** | **92.0%** |
+| 단계      | 기능            | Before          | After         | 감소            | 비율      |
+| --------- | --------------- | --------------- | ------------- | --------------- | --------- |
+| Phase 1   | Package Manager | 2,453 lines     | 65 lines      | 2,388 lines     | 97.3%     |
+| Phase 2   | Quality         | 3,514 lines     | 45 lines      | 3,469 lines     | 98.7%     |
+| Phase 3-1 | clone-or-update | 459 lines       | 204 lines     | 255 lines       | 55.6%     |
+| Phase 3-2 | bulk-update     | 859 lines       | 269 lines     | 590 lines       | 68.7%     |
+| **총계**  |                 | **7,285 lines** | **583 lines** | **6,702 lines** | **92.0%** |
 
 ### gzh-cli-git 추가된 코드
 
-| 파일 | 라인 수 | 기능 |
-|------|--------|------|
-| `pkg/repository/update.go` | 653 lines | CloneOrUpdate 전략 구현 |
-| `pkg/repository/bulk.go` | 484 lines | BulkUpdate 스캔/병렬처리 |
-| `cmd/gzh-git/cmd/update.go` | ~100 lines | update CLI 명령어 |
-| **총계** | **~1,237 lines** | |
+| 파일                        | 라인 수          | 기능                     |
+| --------------------------- | ---------------- | ------------------------ |
+| `pkg/repository/update.go`  | 653 lines        | CloneOrUpdate 전략 구현  |
+| `pkg/repository/bulk.go`    | 484 lines        | BulkUpdate 스캔/병렬처리 |
+| `cmd/gzh-git/cmd/update.go` | ~100 lines       | update CLI 명령어        |
+| **총계**                    | **~1,237 lines** |                          |
 
 ______________________________________________________________________
 

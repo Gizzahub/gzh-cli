@@ -61,12 +61,12 @@ replace github.com/xxx/yyy => ../yyy
 
 ## Integrated Libraries
 
-| Library | Purpose | Wrapper | Code Reduction |
-|---------|---------|---------|----------------|
-| gzh-cli-quality | Code quality tools | cmd/quality_wrapper.go (45 lines) | 3,469 lines (98.7%) |
-| gzh-cli-package-manager | Package manager updates | cmd/pm_wrapper.go (65 lines) | 2,388 lines (97.3%) |
-| gzh-cli-git | Local Git operations | cmd/git/repo/\*\_wrapper.go (473 lines) | 845 lines (64.2%) |
-| gzh-cli-shellforge | Shell config builder | cmd/shellforge_wrapper.go (71 lines) | New integration |
+| Library                 | Purpose                 | Wrapper                                 | Code Reduction      |
+| ----------------------- | ----------------------- | --------------------------------------- | ------------------- |
+| gzh-cli-quality         | Code quality tools      | cmd/quality_wrapper.go (45 lines)       | 3,469 lines (98.7%) |
+| gzh-cli-package-manager | Package manager updates | cmd/pm_wrapper.go (65 lines)            | 2,388 lines (97.3%) |
+| gzh-cli-git             | Local Git operations    | cmd/git/repo/\*\_wrapper.go (473 lines) | 845 lines (64.2%)   |
+| gzh-cli-shellforge      | Shell config builder    | cmd/shellforge_wrapper.go (71 lines)    | New integration     |
 
 ## Architecture Principles
 

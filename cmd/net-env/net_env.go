@@ -53,8 +53,8 @@ switching between different network environments. It provides:
 	}
 
 	// Add organized subcommand packages (working packages first)
-	cmd.AddCommand(tui.NewCmd())    // Interactive TUI dashboard
-	cmd.AddCommand(status.NewCmd()) // Network status (unified command)
+	cmd.AddCommand(tui.NewCmd())      // Interactive TUI dashboard
+	cmd.AddCommand(status.NewCmd())   // Network status (unified command)
 	cmd.AddCommand(profile.NewCmd())  // Profile management + quick actions
 	cmd.AddCommand(actions.NewCmd())  // Network configuration actions
 	cmd.AddCommand(cloud.NewCmd(ctx)) // Cloud provider management

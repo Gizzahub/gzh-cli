@@ -296,12 +296,12 @@ Latest improvements focused on user experience and interface polish:
 
 Major refactoring effort that achieved significant improvements:
 
-| Component | Before | After | Improvement |
+| Component                   | Before      | After                | Improvement       |
 | --------------------------- | ----------- | -------------------- | ----------------- |
-| **Provider Implementation** | ~800 lines | ~200 lines | **75% Reduction** |
-| **Dev-env Commands** | ~2000 lines | ~400 lines | **80% Reduction** |
-| **TUI Components** | ~600 lines | ~150 lines + library | **75% Reduction** |
-| **Config Adapters** | ~570 lines | ~150 lines | **74% Reduction** |
+| **Provider Implementation** | ~800 lines  | ~200 lines           | **75% Reduction** |
+| **Dev-env Commands**        | ~2000 lines | ~400 lines           | **80% Reduction** |
+| **TUI Components**          | ~600 lines  | ~150 lines + library | **75% Reduction** |
+| **Config Adapters**         | ~570 lines  | ~150 lines           | **74% Reduction** |
 
 ### Key Improvements
 

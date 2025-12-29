@@ -8,12 +8,12 @@ Keep CLAUDE.md under 300 lines while maintaining comprehensive guidance through 
 
 ## Files
 
-| File | Purpose | When to Read |
-|------|---------|--------------|
+| File                                           | Purpose                                    | When to Read         |
+| ---------------------------------------------- | ------------------------------------------ | -------------------- |
 | [architecture-guide.md](architecture-guide.md) | Integration pattern, extensions, lifecycle | Before major changes |
-| [testing-guide.md](testing-guide.md) | Test organization, mocking, coverage | Writing tests |
-| [build-guide.md](build-guide.md) | Build workflow, troubleshooting | Build issues |
-| [common-tasks.md](common-tasks.md) | Adding commands, modifying wrappers | Daily development |
+| [testing-guide.md](testing-guide.md)           | Test organization, mocking, coverage       | Writing tests        |
+| [build-guide.md](build-guide.md)               | Build workflow, troubleshooting            | Build issues         |
+| [common-tasks.md](common-tasks.md)             | Adding commands, modifying wrappers        | Daily development    |
 
 ## Quick Access
 

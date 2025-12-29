@@ -319,16 +319,16 @@ providers:
 
 ### Exit Codes
 
-| Exit Code | Meaning |
+| Exit Code | Meaning               |
 | --------- | --------------------- |
-| 0 | Success |
-| 1 | General error |
-| 2 | Configuration error |
-| 3 | Authentication error |
-| 4 | Network error |
-| 5 | File system error |
-| 10 | Validation error |
-| 20 | Quality check failure |
+| 0         | Success               |
+| 1         | General error         |
+| 2         | Configuration error   |
+| 3         | Authentication error  |
+| 4         | Network error         |
+| 5         | File system error     |
+| 10        | Validation error      |
+| 20        | Quality check failure |
 
 ### File Locations
 

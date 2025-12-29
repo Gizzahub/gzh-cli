@@ -32,16 +32,16 @@ gz profile <subcommand> [options]
 
 ### Available Subcommands
 
-| Subcommand | Purpose | Test Coverage |
+| Subcommand  | Purpose                    | Test Coverage |
 | ----------- | -------------------------- | ------------- |
-| `stats` | Display runtime statistics | ✅ 42.3% |
-| `server` | Start pprof HTTP server | ✅ 38.7% |
-| `cpu` | CPU profiling | ✅ 35.4% |
-| `memory` | Memory profiling | ✅ 33.9% |
-| `goroutine` | Goroutine analysis | ✅ 31.2% |
-| `block` | Block profiling | ✅ 29.8% |
-| `mutex` | Mutex contention profiling | ✅ 28.5% |
-| `trace` | Execution tracing | ✅ 36.1% |
+| `stats`     | Display runtime statistics | ✅ 42.3%      |
+| `server`    | Start pprof HTTP server    | ✅ 38.7%      |
+| `cpu`       | CPU profiling              | ✅ 35.4%      |
+| `memory`    | Memory profiling           | ✅ 33.9%      |
+| `goroutine` | Goroutine analysis         | ✅ 31.2%      |
+| `block`     | Block profiling            | ✅ 29.8%      |
+| `mutex`     | Mutex contention profiling | ✅ 28.5%      |
+| `trace`     | Execution tracing          | ✅ 36.1%      |
 
 ## Subcommand Specifications
 
@@ -266,22 +266,22 @@ profile:
 
 ### Profiling Overhead
 
-| Profile Type | Overhead | Impact |
+| Profile Type | Overhead | Impact     |
 | ------------ | -------- | ---------- |
-| CPU | \<5% | Minimal |
-| Memory | \<2% | Negligible |
-| Goroutine | \<1% | Negligible |
-| Block | 10-15% | Moderate |
-| Mutex | 5-10% | Low |
+| CPU          | \<5%     | Minimal    |
+| Memory       | \<2%     | Negligible |
+| Goroutine    | \<1%     | Negligible |
+| Block        | 10-15%   | Moderate   |
+| Mutex        | 5-10%    | Low        |
 
 ### Profile Generation Speed
 
-| Operation | Time | Size |
+| Operation         | Time    | Size   |
 | ----------------- | ------- | ------ |
-| 30s CPU profile | 30.2s | ~2MB |
-| Heap snapshot | \<100ms | ~5MB |
-| Goroutine dump | \<50ms | ~500KB |
-| Full trace (1min) | 60.5s | ~20MB |
+| 30s CPU profile   | 30.2s   | ~2MB   |
+| Heap snapshot     | \<100ms | ~5MB   |
+| Goroutine dump    | \<50ms  | ~500KB |
+| Full trace (1min) | 60.5s   | ~20MB  |
 
 ## Integration with Other Tools
 

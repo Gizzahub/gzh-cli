@@ -11,12 +11,12 @@
 
 이 태스크는 아래 하위 태스크로 분할되었습니다:
 
-| Task | Priority | Effort | Status |
-|------|----------|--------|--------|
-| [18-winget-support](../18-package-manager-winget-support.md) | medium | 2-3d | [ ] |
-| [19-scoop-support](../19-package-manager-scoop-support.md) | medium | 2d | [ ] |
-| [20-chocolatey-support](../20-package-manager-chocolatey-support.md) | low | 3d | [ ] |
-| [21-cleanup-strategies](../21-package-manager-cleanup-strategies.md) | low | 3-4d | [ ] |
+| Task                                                                 | Priority | Effort | Status |
+| -------------------------------------------------------------------- | -------- | ------ | ------ |
+| [18-winget-support](../18-package-manager-winget-support.md)         | medium   | 2-3d   | [ ]    |
+| [19-scoop-support](../19-package-manager-scoop-support.md)           | medium   | 2d     | [ ]    |
+| [20-chocolatey-support](../20-package-manager-chocolatey-support.md) | low      | 3d     | [ ]    |
+| [21-cleanup-strategies](../21-package-manager-cleanup-strategies.md) | low      | 3-4d   | [ ]    |
 
 **권장 순서**: winget → Scoop → Chocolatey (의존성 순서)
 **독립 태스크**: cleanup-strategies (언제든 진행 가능)
@@ -368,12 +368,12 @@ func (lc *LicenseChecker) CheckCompatibility(packages []Package) (*LicenseReport
 
 ## 📋 Windows 패키지 매니저 비교
 
-| 기능 | Chocolatey | Scoop | winget |
+| 기능        | Chocolatey | Scoop    | winget |
 | ----------- | ---------- | -------- | ------ |
-| 관리자 권한 | 필요 | 불필요 | 선택적 |
-| GUI 앱 | 지원 | 제한적 | 지원 |
-| 시스템 도구 | 지원 | 지원 | 지원 |
-| 포터블 앱 | 제한적 | 특화 | 제한적 |
-| 개발 도구 | 완전지원 | 완전지원 | 지원 |
+| 관리자 권한 | 필요       | 불필요   | 선택적 |
+| GUI 앱      | 지원       | 제한적   | 지원   |
+| 시스템 도구 | 지원       | 지원     | 지원   |
+| 포터블 앱   | 제한적     | 특화     | 제한적 |
+| 개발 도구   | 완전지원   | 완전지원 | 지원   |
 
 이 정보를 바탕으로 각 패키지 매니저의 특성에 맞는 구현을 진행해야 합니다.

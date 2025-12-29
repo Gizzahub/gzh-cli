@@ -158,53 +158,53 @@ export GORACE="halt_on_error=1"
 
 ### Basic Commands
 
-| Command | Description | Example |
+| Command | Description           | Example |
 | ------- | --------------------- | ------- |
-| `c` | Continue execution | `c` |
-| `n` | Next line (step over) | `n` |
-| `s` | Step into function | `s` |
-| `so` | Step out of function | `so` |
-| `r` | Restart program | `r` |
-| `q` | Quit debugger | `q` |
+| `c`     | Continue execution    | `c`     |
+| `n`     | Next line (step over) | `n`     |
+| `s`     | Step into function    | `s`     |
+| `so`    | Step out of function  | `so`    |
+| `r`     | Restart program       | `r`     |
+| `q`     | Quit debugger         | `q`     |
 
 ### Breakpoints
 
-| Command | Description | Example |
+| Command         | Description                   | Example                       |
 | --------------- | ----------------------------- | ----------------------------- |
-| `b <location>` | Set breakpoint | `b main.main`, `b main.go:42` |
-| `bp` | List breakpoints | `bp` |
-| `clear <id>` | Clear breakpoint | `clear 1` |
-| `clearall` | Clear all breakpoints | `clearall` |
-| `on <id> <cmd>` | Execute command on breakpoint | `on 1 p myVar` |
+| `b <location>`  | Set breakpoint                | `b main.main`, `b main.go:42` |
+| `bp`            | List breakpoints              | `bp`                          |
+| `clear <id>`    | Clear breakpoint              | `clear 1`                     |
+| `clearall`      | Clear all breakpoints         | `clearall`                    |
+| `on <id> <cmd>` | Execute command on breakpoint | `on 1 p myVar`                |
 
 ### Variable Inspection
 
-| Command | Description | Example |
+| Command        | Description             | Example            |
 | -------------- | ----------------------- | ------------------ |
-| `p <var>` | Print variable | `p myVar` |
-| `pp <var>` | Pretty print | `pp complexStruct` |
-| `locals` | Show local variables | `locals` |
-| `args` | Show function arguments | `args` |
-| `vars` | Show package variables | `vars` |
-| `whatis <var>` | Show variable type | `whatis myVar` |
+| `p <var>`      | Print variable          | `p myVar`          |
+| `pp <var>`     | Pretty print            | `pp complexStruct` |
+| `locals`       | Show local variables    | `locals`           |
+| `args`         | Show function arguments | `args`             |
+| `vars`         | Show package variables  | `vars`             |
+| `whatis <var>` | Show variable type      | `whatis myVar`     |
 
 ### Navigation
 
-| Command | Description | Example |
+| Command       | Description           | Example                  |
 | ------------- | --------------------- | ------------------------ |
-| `bt` | Stack trace | `bt` |
-| `up` | Move up stack frame | `up` |
-| `down` | Move down stack frame | `down` |
-| `frame <n>` | Jump to frame | `frame 2` |
-| `list` | Show source code | `list`, `list main.main` |
-| `disassemble` | Show assembly | `disassemble main.main` |
+| `bt`          | Stack trace           | `bt`                     |
+| `up`          | Move up stack frame   | `up`                     |
+| `down`        | Move down stack frame | `down`                   |
+| `frame <n>`   | Jump to frame         | `frame 2`                |
+| `list`        | Show source code      | `list`, `list main.main` |
+| `disassemble` | Show assembly         | `disassemble main.main`  |
 
 ### Goroutines
 
-| Command | Description | Example |
+| Command             | Description           | Example          |
 | ------------------- | --------------------- | ---------------- |
-| `goroutines` | List all goroutines | `goroutines` |
-| `goroutine <id>` | Switch to goroutine | `goroutine 5` |
+| `goroutines`        | List all goroutines   | `goroutines`     |
+| `goroutine <id>`    | Switch to goroutine   | `goroutine 5`    |
 | `goroutine <id> bt` | Goroutine stack trace | `goroutine 5 bt` |
 
 ## Troubleshooting

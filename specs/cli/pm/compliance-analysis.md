@@ -8,36 +8,36 @@ This document analyzes the compliance between the current `gz pm update` impleme
 
 ### ✅ **Fully Compliant Areas (85%)**
 
-| Feature | Status | Implementation Quality |
-|---------|--------|----------------------|
-| Multi-manager support | ✅ Complete | Excellent - supports 8+ managers |
+| Feature                | Status      | Implementation Quality           |
+| ---------------------- | ----------- | -------------------------------- |
+| Multi-manager support  | ✅ Complete | Excellent - supports 8+ managers |
 | Strategy-based updates | ✅ Complete | Good - latest/stable/minor/fixed |
-| Dry-run functionality | ✅ Complete | Excellent - accurate preview |
-| Platform detection | ✅ Complete | Excellent - OS-specific support |
-| Error handling | ✅ Complete | Good - meaningful error messages |
-| JSON output format | ✅ Complete | Good - structured data |
-| Permission handling | ✅ Complete | Good - sudo detection/guidance |
-| Environment detection | ✅ Complete | Excellent - conda/mamba aware |
+| Dry-run functionality  | ✅ Complete | Excellent - accurate preview     |
+| Platform detection     | ✅ Complete | Excellent - OS-specific support  |
+| Error handling         | ✅ Complete | Good - meaningful error messages |
+| JSON output format     | ✅ Complete | Good - structured data           |
+| Permission handling    | ✅ Complete | Good - sudo detection/guidance   |
+| Environment detection  | ✅ Complete | Excellent - conda/mamba aware    |
 
 ### ⚠️ **Partially Compliant Areas (60%)**
 
-| Feature | Status | Gap Description |
-|---------|--------|----------------|
-| Output formatting | ⚠️ Partial | Missing emoji-rich spec format |
-| Progress indication | ⚠️ Partial | Basic progress, lacks detailed steps |
-| Version reporting | ⚠️ Partial | Shows changes but not spec format |
-| Summary statistics | ⚠️ Partial | Basic stats, missing detailed metrics |
+| Feature             | Status     | Gap Description                         |
+| ------------------- | ---------- | --------------------------------------- |
+| Output formatting   | ⚠️ Partial | Missing emoji-rich spec format          |
+| Progress indication | ⚠️ Partial | Basic progress, lacks detailed steps    |
+| Version reporting   | ⚠️ Partial | Shows changes but not spec format       |
+| Summary statistics  | ⚠️ Partial | Basic stats, missing detailed metrics   |
 | Manual fix guidance | ⚠️ Partial | Generic advice, needs specific commands |
 
 ### ❌ **Non-Compliant Areas (40%)**
 
-| Feature | Status | Missing Implementation |
-|---------|--------|----------------------|
+| Feature                    | Status     | Missing Implementation            |
+| -------------------------- | ---------- | --------------------------------- |
 | Duplicate binary detection | ❌ Missing | Conflict detection UI integration |
-| Download size reporting | ❌ Missing | Package size estimation |
-| Time estimation | ❌ Missing | Update duration prediction |
-| Disk space management | ❌ Missing | Space requirement calculation |
-| Recovery mechanisms | ❌ Missing | Rollback capabilities |
+| Download size reporting    | ❌ Missing | Package size estimation           |
+| Time estimation            | ❌ Missing | Update duration prediction        |
+| Disk space management      | ❌ Missing | Space requirement calculation     |
+| Recovery mechanisms        | ❌ Missing | Rollback capabilities             |
 
 ## Detailed Gap Analysis
 
@@ -228,15 +228,15 @@ func TestFullUpdateWorkflow(t *testing.T) {
 
 ## Implementation Priority Matrix
 
-| Feature | Impact | Effort | Priority |
-|---------|--------|--------|----------|
-| Section banners | High | Low | 🟢 Phase 1 |
-| Version tracking | High | Medium | 🟢 Phase 1 |
-| Progress indication | Medium | Low | 🟢 Phase 1 |
-| Disk space checking | High | Medium | 🟡 Phase 2 |
-| Download sizes | Medium | High | 🟡 Phase 2 |
-| Duplicate detection | Low | High | 🔴 Phase 3 |
-| Rollback mechanisms | Medium | High | 🔴 Phase 3 |
+| Feature             | Impact | Effort | Priority   |
+| ------------------- | ------ | ------ | ---------- |
+| Section banners     | High   | Low    | 🟢 Phase 1 |
+| Version tracking    | High   | Medium | 🟢 Phase 1 |
+| Progress indication | Medium | Low    | 🟢 Phase 1 |
+| Disk space checking | High   | Medium | 🟡 Phase 2 |
+| Download sizes      | Medium | High   | 🟡 Phase 2 |
+| Duplicate detection | Low    | High   | 🔴 Phase 3 |
+| Rollback mechanisms | Medium | High   | 🔴 Phase 3 |
 
 ## Risk Assessment
 

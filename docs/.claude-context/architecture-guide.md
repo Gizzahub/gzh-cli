@@ -20,12 +20,12 @@ gzh-cli (Main CLI - gz binary)
 
 ## Integration Library Wrappers
 
-| Library | Wrapper Location | Lines | Purpose |
-|---------|-----------------|-------|---------|
-| gzh-cli-git | `cmd/git/repo/*_wrapper.go` | 473 | Local Git operations |
-| gzh-cli-quality | `cmd/quality_wrapper.go` | 45 | Code quality tools |
-| gzh-cli-package-manager | `cmd/pm_wrapper.go` | 65 | Package manager integration |
-| gzh-cli-shellforge | `cmd/shellforge_wrapper.go` | 71 | Shell config builder |
+| Library                 | Wrapper Location            | Lines | Purpose                     |
+| ----------------------- | --------------------------- | ----- | --------------------------- |
+| gzh-cli-git             | `cmd/git/repo/*_wrapper.go` | 473   | Local Git operations        |
+| gzh-cli-quality         | `cmd/quality_wrapper.go`    | 45    | Code quality tools          |
+| gzh-cli-package-manager | `cmd/pm_wrapper.go`         | 65    | Package manager integration |
+| gzh-cli-shellforge      | `cmd/shellforge_wrapper.go` | 71    | Shell config builder        |
 
 **When to Modify**:
 
@@ -108,12 +108,12 @@ Commands progress through stages with automatic filtering and warnings.
 
 **Four Stages**:
 
-| Stage | Behavior | Enablement | Warning |
-|-------|----------|------------|---------|
-| **Experimental** | Disabled by default | `GZ_EXPERIMENTAL=1` or `--experimental` | ⚠️ May change or be removed |
-| **Beta** | Enabled, shows info | Always enabled | ℹ️ In testing, report issues |
-| **Stable** | Default, no warnings | Always enabled | None |
-| **Deprecated** | Shows warning | Always enabled | ⚠️ Will be removed |
+| Stage            | Behavior             | Enablement                              | Warning                      |
+| ---------------- | -------------------- | --------------------------------------- | ---------------------------- |
+| **Experimental** | Disabled by default  | `GZ_EXPERIMENTAL=1` or `--experimental` | ⚠️ May change or be removed  |
+| **Beta**         | Enabled, shows info  | Always enabled                          | ℹ️ In testing, report issues |
+| **Stable**       | Default, no warnings | Always enabled                          | None                         |
+| **Deprecated**   | Shows warning        | Always enabled                          | ⚠️ Will be removed           |
 
 **Adding Metadata**:
 
