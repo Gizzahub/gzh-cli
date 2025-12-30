@@ -11,8 +11,8 @@ import (
 
 	devenvcmd "github.com/gizzahub/gzh-cli-dev-env/cmd/devenv"
 
-	"github.com/Gizzahub/gzh-cli/cmd/registry"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/cmd/registry"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // NewDevEnvCmd creates the development environment command by wrapping gzh-cli-dev-env.

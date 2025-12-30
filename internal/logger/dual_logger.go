@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Gizzahub/gzh-cli/internal/config"
+	"github.com/gizzahub/gzh-cli/internal/config"
 )
 
 // NewDualLogger creates a logger that outputs to both console (human-readable) and file (JSON).

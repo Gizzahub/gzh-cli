@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 func TestConfigCommand(t *testing.T) {

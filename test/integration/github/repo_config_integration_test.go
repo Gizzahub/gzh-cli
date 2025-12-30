@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-cli/pkg/config"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/config"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // Integration tests for GitHub repository configuration management

@@ -18,8 +18,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/errors"
-	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/errors"
+	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 const (

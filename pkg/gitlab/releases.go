@@ -13,8 +13,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/httpclient"
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/internal/httpclient"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // gitlabRelease represents a GitLab release from the API.

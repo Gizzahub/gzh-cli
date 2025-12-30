@@ -13,7 +13,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/internal/env"
 )
 
 type fixSyncOptions struct {

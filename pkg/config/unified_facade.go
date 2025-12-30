@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	errors "github.com/Gizzahub/gzh-cli/internal/errors"
+	errors "github.com/gizzahub/gzh-cli/internal/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -85,7 +85,7 @@ func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 	header := fmt.Sprintf(`# gzh-manager unified configuration
 # Generated: %s
 # Version: %s
-# Documentation: https://github.com/Gizzahub/gzh-cli/docs/configuration.md
+# Documentation: https://github.com/gizzahub/gzh-cli/docs/configuration.md
 
 `, time.Now().Format("2006-01-02 15:04:05"), f.config.Version)
 

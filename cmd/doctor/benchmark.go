@@ -15,9 +15,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/cli"
-	"github.com/Gizzahub/gzh-cli/internal/logger"
-	"github.com/Gizzahub/gzh-cli/internal/profiling"
+	"github.com/gizzahub/gzh-cli/internal/cli"
+	"github.com/gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/profiling"
 )
 
 // BenchmarkReport represents a comprehensive benchmark analysis report.

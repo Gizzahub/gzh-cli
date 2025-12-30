@@ -14,9 +14,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
-	"github.com/Gizzahub/gzh-cli/pkg/gitlab"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/gitlab"
 )
 
 // GitRepoIntegrationTestSuite provides integration tests for Git repo functionality

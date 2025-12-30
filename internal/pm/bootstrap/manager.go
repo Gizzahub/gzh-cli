@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 // BootstrapManager manages the installation and configuration of package managers.

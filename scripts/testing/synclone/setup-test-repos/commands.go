@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Gizzahub/gzh-cli/internal/testlib"
+	"github.com/gizzahub/gzh-cli/internal/testlib"
 )
 
 // setupBasicRepos creates basic test repositories.

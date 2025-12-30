@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // ExternalLibrary is an interface for wrapping external libraries.

@@ -9,8 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/cli"
-	"github.com/Gizzahub/gzh-cli/internal/services"
+	"github.com/gizzahub/gzh-cli/internal/cli"
+	"github.com/gizzahub/gzh-cli/internal/services"
 )
 
 // GlobalFlags represents global flags for all repo-config commands.

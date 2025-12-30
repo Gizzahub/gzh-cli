@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/pkg/gzhclient"
+	"github.com/gizzahub/gzh-cli/pkg/gzhclient"
 )
 
 // Example_basicUsage demonstrates basic client usage.

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // GitLabProvider implements the unified GitProvider interface for GitLab.

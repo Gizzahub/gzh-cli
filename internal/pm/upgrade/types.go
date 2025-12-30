@@ -7,7 +7,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 // UpgradeStatus represents the current status of a package manager upgrade.

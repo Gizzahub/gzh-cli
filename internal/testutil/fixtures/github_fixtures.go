@@ -4,8 +4,8 @@
 package fixtures
 
 import (
-	"github.com/Gizzahub/gzh-cli/internal/testutil/builders"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/internal/testutil/builders"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // GitHubFixtures provides common GitHub-related fixtures for tests.

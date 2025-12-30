@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/constants"
-	"github.com/Gizzahub/gzh-cli/internal/httpclient"
+	"github.com/gizzahub/gzh-cli/internal/constants"
+	"github.com/gizzahub/gzh-cli/internal/httpclient"
 )
 
 // StreamingClient provides streaming API access for GitLab large-scale operations.

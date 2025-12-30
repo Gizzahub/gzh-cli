@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Gizzahub/gzh-cli/internal/constants"
-	"github.com/Gizzahub/gzh-cli/internal/errors"
+	"github.com/gizzahub/gzh-cli/internal/constants"
+	"github.com/gizzahub/gzh-cli/internal/errors"
 )
 
 // BulkCloneConfigValidator validates bulk clone configuration.

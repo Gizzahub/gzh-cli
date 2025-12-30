@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Gizzahub/gzh-cli-git-sync/pkg/reposync"
+	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
 )
 
 func TestCreateForgeProvider(t *testing.T) {

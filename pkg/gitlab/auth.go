@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Gizzahub/gzh-cli/internal/httpclient"
+	"github.com/gizzahub/gzh-cli/internal/httpclient"
 )
 
 // configuredToken 은 런타임에 주입된 GitLab 토큰이다.

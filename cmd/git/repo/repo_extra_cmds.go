@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/git/sync"
+	"github.com/gizzahub/gzh-cli/internal/git/sync"
 )
 
 // newRepoSyncCmd defines the sync command under repo.

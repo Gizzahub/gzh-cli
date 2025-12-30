@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/internal/env"
 )
 
 // convertUnifiedToLegacyConfig converts a UnifiedConfig to legacy Config format for backward compatibility.

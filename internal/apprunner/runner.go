@@ -13,7 +13,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Gizzahub/gzh-cli/cmd"
+	"github.com/gizzahub/gzh-cli/cmd"
 )
 
 // Runner handles application lifecycle and signal management.

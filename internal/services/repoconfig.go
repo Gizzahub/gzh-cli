@@ -11,9 +11,9 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
-	"github.com/Gizzahub/gzh-cli/pkg/config"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/pkg/config"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 const (

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 // NvmUpgrader implements PackageManagerUpgrader for Node Version Manager.

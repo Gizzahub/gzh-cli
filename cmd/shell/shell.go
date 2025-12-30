@@ -19,7 +19,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/pkg/gzhclient"
+	"github.com/gizzahub/gzh-cli/pkg/gzhclient"
 )
 
 // ShellCmd represents the shell command.

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Gizzahub/gzh-cli/test/e2e/helpers"
+	"github.com/gizzahub/gzh-cli/test/e2e/helpers"
 )
 
 func TestConfig_Init_E2E(t *testing.T) {

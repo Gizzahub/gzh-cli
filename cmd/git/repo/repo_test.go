@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/Gizzahub/gzh-cli/internal/git/provider/mock"
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/internal/git/provider/mock"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // GitRepoTestSuite provides a comprehensive test suite for git repo commands.

@@ -6,16 +6,16 @@ package repoconfig
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/apply"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/audit"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/dashboard"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/diff"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/list"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/risk"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/template"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/validate"
-	"github.com/Gizzahub/gzh-cli/cmd/repo-config/webhook"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/apply"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/audit"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/dashboard"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/diff"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/list"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/risk"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/template"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/validate"
+	"github.com/gizzahub/gzh-cli/cmd/repo-config/webhook"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // NewRepoConfigCmd creates the repo-config command with subcommands.

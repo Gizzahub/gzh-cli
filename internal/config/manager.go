@@ -17,8 +17,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-cli/internal/constants"
-	"github.com/Gizzahub/gzh-cli/internal/errors"
+	"github.com/gizzahub/gzh-cli/internal/constants"
+	"github.com/gizzahub/gzh-cli/internal/errors"
 )
 
 // Source represents different configuration sources.

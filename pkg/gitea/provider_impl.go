@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // GiteaProvider implements the unified GitProvider interface for Gitea.

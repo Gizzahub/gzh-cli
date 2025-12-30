@@ -14,11 +14,11 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
-	gitrepo "github.com/gizzahub/gzh-cli-git/pkg/repository"
+	gitrepo "github.com/gizzahub/gzh-cli-gitforge/pkg/repository"
 )
 
-// newRepoBulkUpdateCmd creates the bulk update command using gzh-cli-git library
-// This delegates repository scanning and updating to the external gzh-cli-git package.
+// newRepoBulkUpdateCmd creates the bulk update command using gzh-cli-gitforge library
+// This delegates repository scanning and updating to the external gzh-cli-gitforge package.
 //
 // NOTE: This function replaces the old implementation in repo_bulk_update.go
 func newRepoBulkUpdateCmd() *cobra.Command {

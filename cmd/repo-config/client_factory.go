@@ -11,7 +11,7 @@ import (
 	gh "github.com/google/go-github/v66/github"
 	"golang.org/x/oauth2"
 
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // ClientFactory creates GitHub clients with proper dependency injection.

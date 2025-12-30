@@ -15,7 +15,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	github "github.com/Gizzahub/gzh-cli/pkg/github"
+	github "github.com/gizzahub/gzh-cli/pkg/github"
 	gomock "go.uber.org/mock/gomock"
 )
 

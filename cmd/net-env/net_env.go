@@ -8,12 +8,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/cmd/net-env/actions"
-	"github.com/Gizzahub/gzh-cli/cmd/net-env/cloud"
-	"github.com/Gizzahub/gzh-cli/cmd/net-env/profile"
-	"github.com/Gizzahub/gzh-cli/cmd/net-env/status"
-	"github.com/Gizzahub/gzh-cli/cmd/net-env/tui"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/cmd/net-env/actions"
+	"github.com/gizzahub/gzh-cli/cmd/net-env/cloud"
+	"github.com/gizzahub/gzh-cli/cmd/net-env/profile"
+	"github.com/gizzahub/gzh-cli/cmd/net-env/status"
+	"github.com/gizzahub/gzh-cli/cmd/net-env/tui"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 func NewNetEnvCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {

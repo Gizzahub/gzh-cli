@@ -13,9 +13,9 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
-	errors "github.com/Gizzahub/gzh-cli/internal/errors"
-	"github.com/Gizzahub/gzh-cli/pkg/config"
+	"github.com/gizzahub/gzh-cli/internal/env"
+	errors "github.com/gizzahub/gzh-cli/internal/errors"
+	"github.com/gizzahub/gzh-cli/pkg/config"
 )
 
 // ConfigService provides centralized configuration management.

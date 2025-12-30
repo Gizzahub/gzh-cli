@@ -10,12 +10,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/app"
-	"github.com/Gizzahub/gzh-cli/internal/config"
-	gerrors "github.com/Gizzahub/gzh-cli/internal/errors"
-	pkgconfig "github.com/Gizzahub/gzh-cli/pkg/config"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
-	"github.com/Gizzahub/gzh-cli/pkg/gitlab"
+	"github.com/gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/internal/config"
+	gerrors "github.com/gizzahub/gzh-cli/internal/errors"
+	pkgconfig "github.com/gizzahub/gzh-cli/pkg/config"
+	"github.com/gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/gitlab"
 )
 
 type syncCloneOptions struct {

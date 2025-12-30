@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Gizzahub/gzh-cli/pkg/config"
+	"github.com/gizzahub/gzh-cli/pkg/config"
 )
 
 // LoadCommandConfig provides a unified way to load configuration for commands

@@ -6,7 +6,7 @@ package actionspolicy
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/cmd/registry"
+	"github.com/gizzahub/gzh-cli/cmd/registry"
 )
 
 type actionsPolicyCmdProvider struct{}

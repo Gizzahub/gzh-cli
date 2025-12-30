@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/idecore"
+	"github.com/gizzahub/gzh-cli/internal/idecore"
 )
 
 // Use types from idecore package.

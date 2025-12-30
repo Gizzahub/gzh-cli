@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/internal/env"
 )
 
 // ChangeLogger provides comprehensive logging for repository configuration changes.

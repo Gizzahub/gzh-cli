@@ -7,7 +7,7 @@
 package cmd
 
 import (
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // RegisterPMCmd is a stub when pm_external is not enabled.

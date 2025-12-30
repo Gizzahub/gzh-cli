@@ -9,13 +9,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/internal/app"
 
-	gitrepo "github.com/gizzahub/gzh-cli-git/pkg/repository"
+	gitrepo "github.com/gizzahub/gzh-cli-gitforge/pkg/repository"
 )
 
-// newRepoCloneOrUpdateCmd creates the clone-or-update command using gzh-cli-git library
-// This delegates repository synchronization functionality to the external gzh-cli-git package,
+// newRepoCloneOrUpdateCmd creates the clone-or-update command using gzh-cli-gitforge library
+// This delegates repository synchronization functionality to the external gzh-cli-gitforge package,
 // avoiding code duplication and ensuring consistency with the standalone git CLI.
 //
 // NOTE: This function replaces the old implementation in repo_clone_or_update.go
@@ -101,7 +101,7 @@ type cloneOrUpdateCmdOptions struct {
 	verbose  bool
 }
 
-// run executes the clone-or-update operation using gzh-cli-git library
+// run executes the clone-or-update operation using gzh-cli-gitforge library
 func (opts *cloneOrUpdateCmdOptions) run(ctx context.Context, args []string, appCtx *app.AppContext) error {
 	repoURL := args[0]
 	var targetPath string

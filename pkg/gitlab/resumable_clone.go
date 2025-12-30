@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/git"
-	"github.com/Gizzahub/gzh-cli/internal/workerpool"
-	synclonepkg "github.com/Gizzahub/gzh-cli/pkg/synclone"
+	"github.com/gizzahub/gzh-cli/internal/git"
+	"github.com/gizzahub/gzh-cli/internal/workerpool"
+	synclonepkg "github.com/gizzahub/gzh-cli/pkg/synclone"
 )
 
 // ResumableCloneManager handles resumable clone operations for GitLab.

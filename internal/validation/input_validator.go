@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/constants"
+	"github.com/gizzahub/gzh-cli/internal/constants"
 )
 
 // Validator provides comprehensive input validation for security.

@@ -10,7 +10,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	synclone "github.com/Gizzahub/gzh-cli/pkg/synclone"
+	synclone "github.com/gizzahub/gzh-cli/pkg/synclone"
 )
 
 const defaultConfigVersion = "1.0.0"

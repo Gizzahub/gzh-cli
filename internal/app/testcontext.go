@@ -4,8 +4,8 @@
 package app
 
 import (
-	"github.com/Gizzahub/gzh-cli/internal/config"
-	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/config"
+	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 // NewTestAppContext returns an AppContext with default config and logger for testing.

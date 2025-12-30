@@ -11,8 +11,8 @@ import (
 
 	netenvcmd "github.com/gizzahub/gzh-cli-net-env/cmd/netenv"
 
-	"github.com/Gizzahub/gzh-cli/cmd/registry"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/cmd/registry"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // NewNetEnvCmd creates the network environment command by wrapping gzh-cli-net-env.

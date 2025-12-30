@@ -7,7 +7,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 // VersionSyncStatus represents the synchronization status between a version manager and package manager.

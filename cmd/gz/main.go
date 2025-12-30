@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	apprunner "github.com/Gizzahub/gzh-cli/internal/apprunner"
+	apprunner "github.com/gizzahub/gzh-cli/internal/apprunner"
 )
 
 var version = "dev"

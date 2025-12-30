@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	synclone "github.com/Gizzahub/gzh-cli/pkg/synclone"
+	synclone "github.com/gizzahub/gzh-cli/pkg/synclone"
 )
 
 // TestSyncClone_ConfigurationLoading tests the configuration loading functionality.

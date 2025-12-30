@@ -4,7 +4,7 @@
 package fixtures
 
 import (
-	"github.com/Gizzahub/gzh-cli/pkg/config"
+	"github.com/gizzahub/gzh-cli/pkg/config"
 )
 
 const (

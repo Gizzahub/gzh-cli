@@ -13,8 +13,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/httpclient"
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/internal/httpclient"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // giteaRelease represents a Gitea release from the API.

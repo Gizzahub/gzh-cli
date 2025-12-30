@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Gizzahub/gzh-cli/internal/gitplatform"
+	"github.com/gizzahub/gzh-cli/internal/gitplatform"
 )
 
 // Operations provides common git operations.

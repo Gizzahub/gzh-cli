@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/constants"
+	"github.com/gizzahub/gzh-cli/internal/constants"
 )
 
 // SecureClientConfig defines configuration for secure HTTP clients.

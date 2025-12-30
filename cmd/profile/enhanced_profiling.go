@@ -16,7 +16,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/simpleprof"
+	"github.com/gizzahub/gzh-cli/internal/simpleprof"
 )
 
 // ProfileAnalyzer provides advanced profiling analysis capabilities.

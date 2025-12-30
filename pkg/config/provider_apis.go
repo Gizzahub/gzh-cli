@@ -6,9 +6,9 @@ package config
 import (
 	"context"
 
-	"github.com/Gizzahub/gzh-cli/pkg/gitea"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
-	"github.com/Gizzahub/gzh-cli/pkg/gitlab"
+	"github.com/gizzahub/gzh-cli/pkg/gitea"
+	"github.com/gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/gitlab"
 )
 
 // GitHubAPI implements ProviderAPI for GitHub.

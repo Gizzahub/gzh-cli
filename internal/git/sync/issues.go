@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // IssueSyncer handles synchronization of issues and pull requests.

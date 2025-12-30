@@ -15,7 +15,7 @@ import (
 	reflect "reflect"
 	time "time"
 
-	httpclient "github.com/Gizzahub/gzh-cli/internal/httpclient"
+	httpclient "github.com/gizzahub/gzh-cli/internal/httpclient"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -4,7 +4,7 @@
 package tui
 
 import (
-	"github.com/Gizzahub/gzh-cli/internal/tui/common"
+	"github.com/gizzahub/gzh-cli/internal/tui/common"
 	"github.com/charmbracelet/lipgloss"
 )
 

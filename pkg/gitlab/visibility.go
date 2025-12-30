@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/Gizzahub/gzh-cli/internal/httpclient"
+	"github.com/gizzahub/gzh-cli/internal/httpclient"
 )
 
 // PreflightCheckGroupAccess checks if the group exists and is accessible.

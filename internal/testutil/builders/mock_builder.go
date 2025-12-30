@@ -9,8 +9,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // Sentinel errors for mock implementations.

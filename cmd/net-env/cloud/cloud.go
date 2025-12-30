@@ -14,7 +14,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/pkg/cloud"
+	"github.com/gizzahub/gzh-cli/pkg/cloud"
 )
 
 const (

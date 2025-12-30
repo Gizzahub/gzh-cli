@@ -11,9 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/app"
-	gitlabpkg "github.com/Gizzahub/gzh-cli/pkg/gitlab"
-	synclonepkg "github.com/Gizzahub/gzh-cli/pkg/synclone"
+	"github.com/gizzahub/gzh-cli/internal/app"
+	gitlabpkg "github.com/gizzahub/gzh-cli/pkg/gitlab"
+	synclonepkg "github.com/gizzahub/gzh-cli/pkg/synclone"
 )
 
 type syncCloneGitlabOptions struct {

@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // ReleaseSyncer handles synchronization of releases between repositories.

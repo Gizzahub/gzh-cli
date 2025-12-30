@@ -4,9 +4,9 @@
 package cmd
 
 import (
-	qualitypkg "github.com/Gizzahub/gzh-cli-quality"
-	"github.com/Gizzahub/gzh-cli/cmd/registry"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	qualitypkg "github.com/gizzahub/gzh-cli-quality"
+	"github.com/gizzahub/gzh-cli/cmd/registry"
+	"github.com/gizzahub/gzh-cli/internal/app"
 	"github.com/spf13/cobra"
 )
 

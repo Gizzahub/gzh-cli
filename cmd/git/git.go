@@ -6,11 +6,11 @@ package git
 import (
 	"github.com/spf13/cobra"
 
-	eventpkg "github.com/Gizzahub/gzh-cli/cmd/git/event"
-	repopkg "github.com/Gizzahub/gzh-cli/cmd/git/repo"
-	webhookpkg "github.com/Gizzahub/gzh-cli/cmd/git/webhook"
-	repoconfig "github.com/Gizzahub/gzh-cli/cmd/repo-config"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	eventpkg "github.com/gizzahub/gzh-cli/cmd/git/event"
+	repopkg "github.com/gizzahub/gzh-cli/cmd/git/repo"
+	webhookpkg "github.com/gizzahub/gzh-cli/cmd/git/webhook"
+	repoconfig "github.com/gizzahub/gzh-cli/cmd/repo-config"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // NewGitCmd creates the unified git platform management command.

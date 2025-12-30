@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	git "github.com/Gizzahub/gzh-cli/internal/git"
+	git "github.com/gizzahub/gzh-cli/internal/git"
 	gomock "go.uber.org/mock/gomock"
 )
 

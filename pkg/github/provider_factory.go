@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/auth"
-	"github.com/Gizzahub/gzh-cli/internal/env"
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/internal/auth"
+	"github.com/gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // CreateGitHubProvider creates a new GitHub provider instance from configuration.

@@ -4,7 +4,7 @@ package bulkclone
 import (
 	"testing"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/internal/env"
 )
 
 // TestEnvironmentAbstraction demonstrates the environment abstraction working.

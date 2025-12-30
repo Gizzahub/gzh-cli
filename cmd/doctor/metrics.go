@@ -18,8 +18,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/internal/cli"
-	"github.com/Gizzahub/gzh-cli/internal/logger"
+	"github.com/gizzahub/gzh-cli/internal/cli"
+	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 // CodeQualityReport represents a comprehensive code quality analysis report.

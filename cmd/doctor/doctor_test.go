@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Gizzahub/gzh-cli/internal/profiling"
+	"github.com/gizzahub/gzh-cli/internal/profiling"
 )
 
 func TestDoctorCmdCreation(t *testing.T) {

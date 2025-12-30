@@ -8,13 +8,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Gizzahub/gzh-cli/cmd/ide/fixsync"
-	"github.com/Gizzahub/gzh-cli/cmd/ide/list"
-	"github.com/Gizzahub/gzh-cli/cmd/ide/monitor"
-	"github.com/Gizzahub/gzh-cli/cmd/ide/open"
-	"github.com/Gizzahub/gzh-cli/cmd/ide/scan"
-	"github.com/Gizzahub/gzh-cli/cmd/ide/status"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/cmd/ide/fixsync"
+	"github.com/gizzahub/gzh-cli/cmd/ide/list"
+	"github.com/gizzahub/gzh-cli/cmd/ide/monitor"
+	"github.com/gizzahub/gzh-cli/cmd/ide/open"
+	"github.com/gizzahub/gzh-cli/cmd/ide/scan"
+	"github.com/gizzahub/gzh-cli/cmd/ide/status"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // NewIDECmd creates the IDE subcommand for monitoring and managing IDE configuration changes.

@@ -4,7 +4,7 @@
 // Package synclone provides CLI commands for bulk repository synchronization
 // across multiple Git forge providers (GitHub, GitLab, Gitea).
 //
-// The forge subcommand uses the gzh-cli-git-sync orchestration engine with
+// The forge subcommand uses the gzh-cli-gitforge orchestration engine with
 // gzh-cli-gitforge providers to enable unified, resumable sync operations
 // with parallel execution and progress tracking.
 package synclone
@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Gizzahub/gzh-cli-git-sync/pkg/reposync"
+	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/gitea"
@@ -21,7 +21,7 @@ import (
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/gitlab"
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/provider"
 
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // forgeOptions holds options for forge-based sync

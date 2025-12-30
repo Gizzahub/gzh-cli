@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/Gizzahub/gzh-cli/pkg/github"
-	"github.com/Gizzahub/gzh-cli/pkg/github/mocks"
+	"github.com/gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/github/mocks"
 )
 
 func TestAPIClient_GetRepository(t *testing.T) {

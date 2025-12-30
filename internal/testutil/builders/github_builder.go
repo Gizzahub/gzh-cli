@@ -4,7 +4,7 @@
 package builders
 
 import (
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // BulkCloneRequestBuilder provides a fluent interface for building GitHub bulk clone requests.

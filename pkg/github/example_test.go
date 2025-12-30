@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // ExampleGetDefaultBranch demonstrates how to retrieve the default branch

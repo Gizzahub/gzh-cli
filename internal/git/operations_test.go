@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Gizzahub/gzh-cli/internal/gitplatform"
+	"github.com/gizzahub/gzh-cli/internal/gitplatform"
 )
 
 func TestOperations_Clone(t *testing.T) {

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	errors "github.com/Gizzahub/gzh-cli/internal/errors"
+	errors "github.com/gizzahub/gzh-cli/internal/errors"
 	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"

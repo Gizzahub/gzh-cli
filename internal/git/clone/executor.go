@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // CloneExecutor handles the execution of repository cloning operations.

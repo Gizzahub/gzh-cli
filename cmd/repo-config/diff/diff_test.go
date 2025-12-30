@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Gizzahub/gzh-cli/pkg/config"
-	"github.com/Gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/config"
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 func TestCompareRepositoryConfigurations(t *testing.T) {

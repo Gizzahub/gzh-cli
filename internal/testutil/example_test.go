@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Gizzahub/gzh-cli/internal/testutil/fixtures"
-	"github.com/Gizzahub/gzh-cli/internal/testutil/helpers"
-	"github.com/Gizzahub/gzh-cli/internal/testutil/mocks"
+	"github.com/gizzahub/gzh-cli/internal/testutil/fixtures"
+	"github.com/gizzahub/gzh-cli/internal/testutil/helpers"
+	"github.com/gizzahub/gzh-cli/internal/testutil/mocks"
 )
 
 const (

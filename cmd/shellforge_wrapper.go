@@ -6,8 +6,8 @@ package cmd
 import (
 	"context"
 
-	"github.com/Gizzahub/gzh-cli/cmd/registry"
-	"github.com/Gizzahub/gzh-cli/internal/app"
+	"github.com/gizzahub/gzh-cli/cmd/registry"
+	"github.com/gizzahub/gzh-cli/internal/app"
 	"github.com/spf13/cobra"
 
 	shellcmd "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"

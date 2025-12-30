@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/Gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
 // CreateOptions contains options for repository creation.
@@ -327,9 +327,9 @@ func getGitProvider(providerType, org string) (provider.GitProvider, error) {
 // registerProviders registers all available provider constructors
 func registerProviders(factory *provider.ProviderFactory) error {
 	// Import packages to access their register functions
-	githubPkg := "github.com/Gizzahub/gzh-cli/pkg/github"
-	gitlabPkg := "github.com/Gizzahub/gzh-cli/pkg/gitlab"
-	giteaPkg := "github.com/Gizzahub/gzh-cli/pkg/gitea"
+	githubPkg := "github.com/gizzahub/gzh-cli/pkg/github"
+	gitlabPkg := "github.com/gizzahub/gzh-cli/pkg/gitlab"
+	giteaPkg := "github.com/gizzahub/gzh-cli/pkg/gitea"
 
 	// Note: In a real implementation, these would be direct function calls
 	// For now, register with basic implementations

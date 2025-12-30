@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gizzahub/gzh-cli/internal/env"
+	"github.com/gizzahub/gzh-cli/internal/env"
 )
 
 // GitHubProviderAdapter adapts the github package to implement ProviderService.

@@ -1,4 +1,4 @@
-module github.com/Gizzahub/gzh-cli
+module github.com/gizzahub/gzh-cli
 
 go 1.25.1
 
@@ -62,8 +62,7 @@ require (
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/Gizzahub/gzh-cli-git-sync v0.0.0-00010101000000-000000000000
-	github.com/Gizzahub/gzh-cli-quality v0.1.2
+	github.com/gizzahub/gzh-cli-quality v0.1.2
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.6 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.16 // indirect
@@ -96,7 +95,6 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
-	github.com/gizzahub/gzh-cli-git v0.0.0-00010101000000-000000000000
 	github.com/gizzahub/gzh-cli-package-manager v0.0.0-00010101000000-000000000000
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -188,18 +186,14 @@ require (
 )
 
 // Local development dependencies - replace with published versions for release
-replace github.com/Gizzahub/gzh-cli-quality => ../gzh-cli-quality
+replace github.com/gizzahub/gzh-cli-quality => ../gzh-cli-quality
 
 replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
 
-replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
-
-replace github.com/Gizzahub/gzh-cli-git-sync => ../gzh-cli-git-sync
+replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
 
 replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
 
 replace github.com/gizzahub/gzh-cli-dev-env => ../gzh-cli-dev-env
-
-replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
 
 replace github.com/gizzahub/gzh-cli-net-env => ../gzh-cli-net-env
