@@ -10,7 +10,7 @@ import (
     "errors"
     "fmt"
 
-    gerrors "github.com/Gizzahub/gzh-cli/internal/errors"
+    gerrors "github.com/gizzahub/gzh-cli/internal/errors"
 )
 
 func load() error {

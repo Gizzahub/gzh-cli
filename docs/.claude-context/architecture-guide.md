@@ -8,7 +8,7 @@
 gzh-cli (Main CLI - gz binary)
 ├── gzh-cli-core        → Core utilities
 ├── gzh-cli-git         → Git operations
-├── gzh-cli-gitforge    → GitHub/GitLab integration
+├── gzh-cli-git-forge    → GitHub/GitLab integration
 ├── gzh-cli-quality     → Code quality tools
 ├── gzh-cli-shellforge  → Shell config builder
 ├── gzh-cli-package-manager → Package manager

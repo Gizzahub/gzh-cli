@@ -81,7 +81,7 @@ make build
 Specify toolchain version in go.mod:
 
 ```go
-module github.com/Gizzahub/gzh-cli
+module github.com/gizzahub/gzh-cli
 
 go 1.24.0
 

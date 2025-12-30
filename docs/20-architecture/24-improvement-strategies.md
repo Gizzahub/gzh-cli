@@ -870,7 +870,7 @@ Improve external library integration pattern for better maintainability.
 
 4 external libraries already integrated:
 
-- `gzh-cli-git` (repo operations wrapper)
+- `gzh-cli-gitforge` (repo operations wrapper)
 - `gzh-cli-quality` (quality_wrapper.go)
 - `gzh-cli-package-manager` (pm_wrapper.go)
 - `gzh-cli-shellforge` (shellforge_wrapper.go)
@@ -885,7 +885,7 @@ package wrapper
 
 import (
     "github.com/spf13/cobra"
-    "github.com/Gizzahub/gzh-cli/internal/app"
+    "github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // ExternalLibrary defines the interface for wrapping external libraries
@@ -938,9 +938,9 @@ import (
     "context"
 
     pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/pm/command"
-    "github.com/Gizzahub/gzh-cli/cmd/registry"
-    "github.com/Gizzahub/gzh-cli/internal/app"
-    "github.com/Gizzahub/gzh-cli/internal/wrapper"
+    "github.com/gizzahub/gzh-cli/cmd/registry"
+    "github.com/gizzahub/gzh-cli/internal/app"
+    "github.com/gizzahub/gzh-cli/internal/wrapper"
     "github.com/spf13/cobra"
 )
 

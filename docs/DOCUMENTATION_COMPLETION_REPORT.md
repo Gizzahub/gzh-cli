@@ -98,7 +98,7 @@ ______________________________________________________________________
 
 ```
 1. 개요 (Integration Libraries Pattern 설명)
-2. gzh-cli-git (로컬 Git 작업)
+2. gzh-cli-gitforge (로컬 Git 작업)
    - 설치 방법
    - 주요 기능
    - 명령어 비교표
@@ -160,7 +160,7 @@ ______________________________________________________________________
 
 **달성**:
 
-- ✅ `docs/30-features/31-repository-management.md` (gzh-cli-git 링크)
+- ✅ `docs/30-features/31-repository-management.md` (gzh-cli-gitforge 링크)
 - ✅ `docs/30-features/36-quality-management.md` (gzh-cli-quality 링크)
 
 #### 추가된 배너 형식
@@ -507,8 +507,8 @@ git log --oneline develop ^master
 
 ### Integration Libraries
 
-- [gzh-cli-git](https://github.com/gizzahub/gzh-cli-git) - 로컬 Git 작업
-- [gzh-cli-quality](https://github.com/Gizzahub/gzh-cli-quality) - 코드 품질
+- [gzh-cli-gitforge](https://github.com/gizzahub/gzh-cli-gitforge) - 로컬 Git 작업
+- [gzh-cli-quality](https://github.com/gizzahub/gzh-cli-quality) - 코드 품질
 - [gzh-cli-package-manager](https://github.com/gizzahub/gzh-cli-package-manager) - 패키지 관리
 - [gzh-cli-shellforge](https://github.com/gizzahub/gzh-cli-shellforge) - 쉘 설정
 

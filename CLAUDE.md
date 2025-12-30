@@ -17,18 +17,18 @@ ______________________________________________________________________
 
 ## Top 10 Commands
 
-| Command                     | Purpose                | When to Use             |
-| --------------------------- | ---------------------- | ----------------------- |
-| `make bootstrap`            | One-time setup         | First time only         |
-| `make fmt && make lint`     | Format + lint          | Before every commit     |
-| `make test`                 | All tests              | Pre-commit validation   |
-| `make build`                | Build `gz` binary      | After changes           |
-| `make install`              | Install to $GOPATH/bin | Local testing           |
-| `make cover`                | Coverage report        | Check coverage          |
-| `make generate-mocks`       | Generate test mocks    | After interface changes |
-| `go test ./cmd/{module} -v` | Test specific module   | Focused testing         |
-| `make clean`                | Clean artifacts        | Fresh start             |
-| `make dev`                  | Quick dev cycle        | Rapid iteration         |
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `make bootstrap` | One-time setup | First time only |
+| `make fmt && make lint` | Format + lint | Before every commit |
+| `make test` | All tests | Pre-commit validation |
+| `make build` | Build `gz` binary | After changes |
+| `make install` | Install to $GOPATH/bin | Local testing |
+| `make cover` | Coverage report | Check coverage |
+| `make generate-mocks` | Generate test mocks | After interface changes |
+| `go test ./cmd/{module} -v` | Test specific module | Focused testing |
+| `make clean` | Clean artifacts | Fresh start |
+| `make dev` | Quick dev cycle | Rapid iteration |
 
 ______________________________________________________________________
 
@@ -80,12 +80,12 @@ ______________________________________________________________________
 
 ## Context Documentation
 
-| Guide                                                            | Purpose                                    |
-| ---------------------------------------------------------------- | ------------------------------------------ |
+| Guide | Purpose |
+|-------|---------|
 | [Architecture Guide](docs/.claude-context/architecture-guide.md) | Integration pattern, extensions, lifecycle |
-| [Testing Guide](docs/.claude-context/testing-guide.md)           | Test organization, mocking, coverage       |
-| [Build Guide](docs/.claude-context/build-guide.md)               | Build workflow, troubleshooting            |
-| [Common Tasks](docs/.claude-context/common-tasks.md)             | Adding commands, modifying wrappers        |
+| [Testing Guide](docs/.claude-context/testing-guide.md) | Test organization, mocking, coverage |
+| [Build Guide](docs/.claude-context/build-guide.md) | Build workflow, troubleshooting |
+| [Common Tasks](docs/.claude-context/common-tasks.md) | Adding commands, modifying wrappers |
 
 **CRITICAL**: Read module-specific guides:
 
@@ -117,13 +117,13 @@ ______________________________________________________________________
 
 **IMPORTANT**: Core features live in external libraries. Wrappers provide CLI integration.
 
-| Library                 | Wrapper                     | Purpose                    |
-| ----------------------- | --------------------------- | -------------------------- |
-| gzh-cli-git             | `cmd/git/repo/*_wrapper.go` | Local Git operations       |
-| gzh-cli-quality         | `cmd/quality_wrapper.go`    | Code quality tools         |
-| gzh-cli-package-manager | `cmd/pm_wrapper.go`         | Package manager            |
-| gzh-cli-shellforge      | `cmd/shellforge_wrapper.go` | Shell config builder       |
-| gzh-cli-dev-env         | `cmd/dev_env_wrapper.go`    | Dev environment management |
+| Library | Wrapper | Purpose |
+|---------|---------|---------|
+| gzh-cli-gitforge | `cmd/git/repo/*_wrapper.go` | Local Git operations |
+| gzh-cli-quality | `cmd/quality_wrapper.go` | Code quality tools |
+| gzh-cli-package-manager | `cmd/pm_wrapper.go` | Package manager |
+| gzh-cli-shellforge | `cmd/shellforge_wrapper.go` | Shell config builder |
+| gzh-cli-dev-env | `cmd/dev_env_wrapper.go` | Dev environment management |
 
 ### gzh-cli-dev-env Integration
 

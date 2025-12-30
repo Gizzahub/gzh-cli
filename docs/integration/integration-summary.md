@@ -2,7 +2,7 @@
 
 ## 🎯 목표
 
-분리된 프로젝트들(gzh-cli-package-manager, gzh-cli-quality, gzh-cli-git)을 gzh-cli에 라이브러리로 통합하여 코드 중복 제거
+분리된 프로젝트들(gzh-cli-package-manager, gzh-cli-quality, gzh-cli-gitforge)을 gzh-cli에 라이브러리로 통합하여 코드 중복 제거
 
 ______________________________________________________________________
 
@@ -81,10 +81,10 @@ ______________________________________________________________________
 
 **문제**: 프로젝트 관계를 잘못 이해
 
-- ❌ gzh-cli-git은 독립 프로젝트
+- ❌ gzh-cli-gitforge은 독립 프로젝트
 - ✅ gzh-cli에서 git 기능을 분리하여 만든 프로젝트
 
-**올바른 방향**: gzh-cli의 로컬 git 작업을 gzh-cli-git으로 이전
+**올바른 방향**: gzh-cli의 로컬 git 작업을 gzh-cli-gitforge으로 이전
 
 #### 3.2 마이그레이션 범위 결정
 
@@ -98,11 +98,11 @@ ______________________________________________________________________
 - ❌ list, sync, create, delete, archive (GitHub/GitLab/Gitea API)
 - ❌ webhook, event (GitHub 특화 API)
 
-**근거**: gzh-cli-git은 **로컬 git 작업**에 집중, 원격 플랫폼 API는 gzh-cli에 유지
+**근거**: gzh-cli-gitforge은 **로컬 git 작업**에 집중, 원격 플랫폼 API는 gzh-cli에 유지
 
 #### 3.3 clone-or-update 마이그레이션 (✅ 완료)
 
-**gzh-cli-git (854b491)**:
+**gzh-cli-gitforge (854b491)**:
 
 - `pkg/repository/update.go` (653 lines) 추가
 - `pkg/repository/interfaces.go`에 CloneOrUpdate 메서드 추가
@@ -123,7 +123,7 @@ ______________________________________________________________________
 
 #### 3.4 bulk-update 마이그레이션 (✅ 완료)
 
-**gzh-cli-git (a313650)**:
+**gzh-cli-gitforge (a313650)**:
 
 - `pkg/repository/bulk.go` (484 lines) 추가
 - 재귀적 리포지터리 스캔
@@ -172,7 +172,7 @@ ______________________________________________________________________
 | Phase 3-2 | bulk-update     | 859 lines       | 269 lines       | 590 lines       | 68.7%     |
 | **총계**  |                 | **7,285 lines** | **583 lines**   | **6,702 lines** | **92.0%** |
 
-### gzh-cli-git에 추가된 코드
+### gzh-cli-gitforge에 추가된 코드
 
 | 파일                        | 라인 수          | 기능                     |
 | --------------------------- | ---------------- | ------------------------ |
@@ -253,8 +253,8 @@ ______________________________________________________________________
 ### gzh-cli 저장소
 
 ```
-1b536fc refactor(git): migrate bulk-update to gzh-cli-git library
-cb477a0 refactor(git): migrate clone-or-update to gzh-cli-git library
+1b536fc refactor(git): migrate bulk-update to gzh-cli-gitforge library
+cb477a0 refactor(git): migrate clone-or-update to gzh-cli-gitforge library
 bfccdaa refactor(cmd): remove duplicated pm and quality directories (-10,836줄)
 9f1d4ee feat(integration): integrate gzh-cli-package-manager as library
 f32d33a feat(integration): integrate gzh-cli-quality as library
@@ -266,7 +266,7 @@ f32d33a feat(integration): integrate gzh-cli-quality as library
 ac903f1 feat(api): add NewRootCmd() export function for library usage
 ```
 
-### gzh-cli-git 저장소
+### gzh-cli-gitforge 저장소
 
 ```
 a313650 feat(bulk): add BulkUpdate functionality with parallel processing

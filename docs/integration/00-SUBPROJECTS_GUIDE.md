@@ -18,7 +18,7 @@ ______________________________________________________________________
 
 ## 통합된 하위 프로젝트
 
-### 1. gzh-cli-git
+### 1. gzh-cli-gitforge
 
 **목적**: 로컬 Git 리포지토리 작업 관리
 
@@ -28,10 +28,10 @@ ______________________________________________________________________
 
 ```bash
 # 독립 설치
-go install github.com/gizzahub/gzh-cli-git/cmd/gzh-git@latest
+go install github.com/gizzahub/gzh-cli-gitforge/cmd/gzh-git@latest
 
 # gzh-cli 통합 (이미 포함됨)
-go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
+go install github.com/gizzahub/gzh-cli/cmd/gz@latest
 ```
 
 #### 주요 기능
@@ -42,12 +42,12 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능          | 독립 실행                                        | gzh-cli 통합                                                   |
-| ------------- | ------------------------------------------------ | -------------------------------------------------------------- |
-| 스마트 클론   | `gzh-git clone https://github.com/user/repo.git` | `gz git repo clone-or-update https://github.com/user/repo.git` |
-| 일괄 업데이트 | `gzh-git pull-all ~/workspace`                   | `gz git repo pull-all ~/workspace`                             |
-| 설정 파일     | `git-config.yaml`                                | `gzh.yaml` (통합 설정)                                         |
-| 인증          | `GIT_TOKEN` 환경 변수                            | gzh-cli 토큰 공유                                              |
+| 기능 | 독립 실행 | gzh-cli 통합 |
+|-----|---------|-------------|
+| 스마트 클론 | `gzh-git clone https://github.com/user/repo.git` | `gz git repo clone-or-update https://github.com/user/repo.git` |
+| 일괄 업데이트 | `gzh-git pull-all ~/workspace` | `gz git repo pull-all ~/workspace` |
+| 설정 파일 | `git-config.yaml` | `gzh.yaml` (통합 설정) |
+| 인증 | `GIT_TOKEN` 환경 변수 | gzh-cli 토큰 공유 |
 
 #### 사용 예제
 
@@ -76,8 +76,8 @@ gz git repo pull-all ~/workspace --parallel 10
 
 #### 문서
 
-- **프로젝트**: [gzh-cli-git](https://github.com/gizzahub/gzh-cli-git)
-- **README**: [gzh-cli-git README](https://github.com/gizzahub/gzh-cli-git#readme)
+- **프로젝트**: [gzh-cli-gitforge](https://github.com/gizzahub/gzh-cli-gitforge)
+- **README**: [gzh-cli-gitforge README](https://github.com/gizzahub/gzh-cli-gitforge#readme)
 - **gzh-cli 통합 문서**: [Git Repository Management](../30-features/31-repository-management.md)
 
 ______________________________________________________________________
@@ -92,10 +92,10 @@ ______________________________________________________________________
 
 ```bash
 # 독립 설치
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
+go install github.com/gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
 
 # gzh-cli 통합 (이미 포함됨)
-go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
+go install github.com/gizzahub/gzh-cli/cmd/gz@latest
 ```
 
 #### 주요 기능
@@ -107,23 +107,23 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능           | 독립 실행                   | gzh-cli 통합               |
-| -------------- | --------------------------- | -------------------------- |
-| 전체 품질 검사 | `gzh-quality run`           | `gz quality run`           |
-| 린팅만         | `gzh-quality check`         | `gz quality check`         |
-| 변경 파일만    | `gzh-quality run --changed` | `gz quality run --changed` |
-| 설정 파일      | `quality.yaml`              | `gzh.yaml` (통합 설정)     |
+| 기능 | 독립 실행 | gzh-cli 통합 |
+|-----|---------|-------------|
+| 전체 품질 검사 | `gzh-quality run` | `gz quality run` |
+| 린팅만 | `gzh-quality check` | `gz quality check` |
+| 변경 파일만 | `gzh-quality run --changed` | `gz quality run --changed` |
+| 설정 파일 | `quality.yaml` | `gzh.yaml` (통합 설정) |
 
 #### 지원 도구
 
-| 언어                  | 포매터             | 린터                 |
-| --------------------- | ------------------ | -------------------- |
-| Go                    | gofumpt, gci       | golangci-lint        |
-| Python                | black, ruff        | ruff, mypy, flake8   |
-| JavaScript/TypeScript | prettier, dprint   | eslint               |
-| Rust                  | rustfmt            | clippy               |
-| Java                  | google-java-format | checkstyle, spotbugs |
-| C/C++                 | clang-format       | clang-tidy           |
+| 언어 | 포매터 | 린터 |
+|-----|--------|------|
+| Go | gofumpt, gci | golangci-lint |
+| Python | black, ruff | ruff, mypy, flake8 |
+| JavaScript/TypeScript | prettier, dprint | eslint |
+| Rust | rustfmt | clippy |
+| Java | google-java-format | checkstyle, spotbugs |
+| C/C++ | clang-format | clang-tidy |
 
 #### 사용 예제
 
@@ -152,8 +152,8 @@ gz quality run --changed
 
 #### 문서
 
-- **프로젝트**: [gzh-cli-quality](https://github.com/Gizzahub/gzh-cli-quality)
-- **README**: [gzh-cli-quality README](https://github.com/Gizzahub/gzh-cli-quality#readme)
+- **프로젝트**: [gzh-cli-quality](https://github.com/gizzahub/gzh-cli-quality)
+- **README**: [gzh-cli-quality README](https://github.com/gizzahub/gzh-cli-quality#readme)
 - **gzh-cli 통합 문서**: [Code Quality Management](../30-features/36-quality-management.md)
 
 ______________________________________________________________________
@@ -171,7 +171,7 @@ ______________________________________________________________________
 go install github.com/gizzahub/gzh-cli-package-manager/cmd/gzh-pm@latest
 
 # gzh-cli 통합 (이미 포함됨)
-go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
+go install github.com/gizzahub/gzh-cli/cmd/gz@latest
 ```
 
 #### 주요 기능
@@ -183,21 +183,21 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능          | 독립 실행                          | gzh-cli 통합                      |
-| ------------- | ---------------------------------- | --------------------------------- |
-| 전체 업데이트 | `gzh-pm update`                    | `gz pm update`                    |
-| 특정 매니저   | `gzh-pm update --manager homebrew` | `gz pm update --manager homebrew` |
-| 상태 확인     | `gzh-pm status`                    | `gz pm status`                    |
-| 설정 파일     | `pm-config.yaml`                   | `gzh.yaml` (통합 설정)            |
+| 기능 | 독립 실행 | gzh-cli 통합 |
+|-----|---------|-------------|
+| 전체 업데이트 | `gzh-pm update` | `gz pm update` |
+| 특정 매니저 | `gzh-pm update --manager homebrew` | `gz pm update --manager homebrew` |
+| 상태 확인 | `gzh-pm status` | `gz pm status` |
+| 설정 파일 | `pm-config.yaml` | `gzh.yaml` (통합 설정) |
 
 #### 지원 패키지 매니저
 
-| 카테고리       | 매니저                                       |
-| -------------- | -------------------------------------------- |
-| 언어 버전 관리 | asdf, nvm, pyenv, rbenv, rustup              |
-| 시스템 패키지  | Homebrew (macOS), apt (Ubuntu), yum (CentOS) |
-| 언어별         | npm, pip, cargo, go modules                  |
-| 개발 도구      | SDKMAN, kubectl, helm                        |
+| 카테고리 | 매니저 |
+|---------|--------|
+| 언어 버전 관리 | asdf, nvm, pyenv, rbenv, rustup |
+| 시스템 패키지 | Homebrew (macOS), apt (Ubuntu), yum (CentOS) |
+| 언어별 | npm, pip, cargo, go modules |
+| 개발 도구 | SDKMAN, kubectl, helm |
 
 #### 사용 예제
 
@@ -244,7 +244,7 @@ ______________________________________________________________________
 go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
 
 # gzh-cli 통합 (이미 포함됨)
-go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
+go install github.com/gizzahub/gzh-cli/cmd/gz@latest
 ```
 
 #### 주요 기능
@@ -257,12 +257,12 @@ go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
 
 #### 명령어 비교
 
-| 기능        | 독립 실행                                      | gzh-cli 통합                                      |
-| ----------- | ---------------------------------------------- | ------------------------------------------------- |
-| 빌드        | `shellforge build --manifest manifest.yaml`    | `gz shellforge build --manifest manifest.yaml`    |
-| 검증        | `shellforge validate --manifest manifest.yaml` | `gz shellforge validate --manifest manifest.yaml` |
-| 백업        | `shellforge backup --file ~/.zshrc`            | `gz shellforge backup --file ~/.zshrc`            |
-| 템플릿 생성 | `shellforge template generate --type path`     | `gz shellforge template generate --type path`     |
+| 기능 | 독립 실행 | gzh-cli 통합 |
+|-----|---------|-------------|
+| 빌드 | `shellforge build --manifest manifest.yaml` | `gz shellforge build --manifest manifest.yaml` |
+| 검증 | `shellforge validate --manifest manifest.yaml` | `gz shellforge validate --manifest manifest.yaml` |
+| 백업 | `shellforge backup --file ~/.zshrc` | `gz shellforge backup --file ~/.zshrc` |
+| 템플릿 생성 | `shellforge template generate --type path` | `gz shellforge template generate --type path` |
 
 #### 사용 예제
 
@@ -308,7 +308,7 @@ gzh-cli는 \*\*얇은 래퍼(Thin Wrapper)\*\*를 통해 하위 라이브러리�
 package cmd
 
 import (
-    "github.com/Gizzahub/gzh-cli-quality/cmd"
+    "github.com/gizzahub/gzh-cli-quality/cmd"
     "github.com/spf13/cobra"
 )
 
@@ -325,13 +325,13 @@ func RegisterQualityCmd(appCtx *app.AppContext) {
 
 #### 코드 감소 효과
 
-| 라이브러리              | 래퍼 크기 | 원래 코드   | 감소량      | 감소율    |
-| ----------------------- | --------- | ----------- | ----------- | --------- |
-| gzh-cli-quality         | 45줄      | 3,514줄     | 3,469줄     | 98.7%     |
-| gzh-cli-package-manager | 65줄      | 2,453줄     | 2,388줄     | 97.3%     |
-| gzh-cli-git             | 473줄     | 1,318줄     | 845줄       | 64.2%     |
-| gzh-cli-shellforge      | 71줄      | -           | -           | (신규)    |
-| **전체**                | **654줄** | **7,285줄** | **6,702줄** | **92.0%** |
+| 라이브러리 | 래퍼 크기 | 원래 코드 | 감소량 | 감소율 |
+|-----------|---------|---------|--------|--------|
+| gzh-cli-quality | 45줄 | 3,514줄 | 3,469줄 | 98.7% |
+| gzh-cli-package-manager | 65줄 | 2,453줄 | 2,388줄 | 97.3% |
+| gzh-cli-gitforge | 473줄 | 1,318줄 | 845줄 | 64.2% |
+| gzh-cli-shellforge | 71줄 | - | - | (신규) |
+| **전체** | **654줄** | **7,285줄** | **6,702줄** | **92.0%** |
 
 ### 개발 환경
 
@@ -340,7 +340,7 @@ func RegisterQualityCmd(appCtx *app.AppContext) {
 ```bash
 # go.mod에 replace 지시문 사용
 # go.mod:
-replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
+replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
 replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
 replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
 
@@ -354,8 +354,8 @@ make build
 ```
 gzh-cli
 ├── go.mod (의존성 선언)
-│   ├── github.com/gizzahub/gzh-cli-git
-│   ├── github.com/Gizzahub/gzh-cli-quality
+│   ├── github.com/gizzahub/gzh-cli-gitforge
+│   ├── github.com/gizzahub/gzh-cli-quality
 │   ├── github.com/gizzahub/gzh-cli-package-manager
 │   └── github.com/gizzahub/gzh-cli-shellforge
 └── cmd/
@@ -363,8 +363,8 @@ gzh-cli
     ├── pm_wrapper.go (65줄) → gzh-cli-package-manager
     ├── shellforge_wrapper.go (71줄) → gzh-cli-shellforge
     └── git/repo/
-        ├── repo_clone_or_update_wrapper.go → gzh-cli-git
-        └── repo_bulk_update_wrapper.go → gzh-cli-git
+        ├── repo_clone_or_update_wrapper.go → gzh-cli-gitforge
+        └── repo_bulk_update_wrapper.go → gzh-cli-gitforge
 ```
 
 ______________________________________________________________________
@@ -377,13 +377,13 @@ ______________________________________________________________________
 
 ```bash
 # 독립 설치 예시
-go install github.com/gizzahub/gzh-cli-git/cmd/gzh-git@latest
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
+go install github.com/gizzahub/gzh-cli-gitforge/cmd/gzh-git@latest
+go install github.com/gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
 ```
 
 ### Q: gzh-cli 없이 특정 기능만 사용하면 되나요?
 
-**A**: 가능합니다. 예를 들어 Git 기능만 필요하면 `gzh-cli-git`만 설치하면 됩니다.
+**A**: 가능합니다. 예를 들어 Git 기능만 필요하면 `gzh-cli-gitforge`만 설치하면 됩니다.
 
 **차이점**:
 
@@ -397,8 +397,8 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
 ```go
 // go.mod
 require (
-    github.com/Gizzahub/gzh-cli-quality v0.1.2
-    github.com/gizzahub/gzh-cli-git v0.0.0-...
+    github.com/gizzahub/gzh-cli-quality v0.1.2
+    github.com/gizzahub/gzh-cli-gitforge v0.0.0-...
 )
 ```
 
@@ -408,13 +408,13 @@ require (
 
 ```bash
 # 1. 하위 프로젝트에서 작업
-cd gzh-cli-git
+cd gzh-cli-gitforge
 git commit -m "feat: add new feature"
 git push
 
 # 2. gzh-cli에서 의존성 업데이트
 cd gzh-cli
-go get github.com/gizzahub/gzh-cli-git@latest
+go get github.com/gizzahub/gzh-cli-gitforge@latest
 go mod tidy
 ```
 

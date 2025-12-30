@@ -85,12 +85,12 @@ docs/
 // 외부 라이브러리로 분리된 기능들
 github.com/gizzahub/gzh-cli-quality          // 코드 품질 도구
 github.com/gizzahub/gzh-cli-package-manager  // 패키지 매니저
-github.com/gizzahub/gzh-cli-git              // 로컬 Git 작업
+github.com/gizzahub/gzh-cli-gitforge              // 로컬 Git 작업
 github.com/gizzahub/gzh-cli-shellforge       // 쉘 설정 빌더
 
 // 로컬 개발 replace 지시문 (../상위 디렉토리)
 replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
-replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
+replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
 replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
 ```
 
@@ -225,7 +225,7 @@ ______________________________________________________________________
 | ...     | ...                    | ...                                                |
 
 ## 하위 프로젝트 (Subprojects)
-- gzh-cli-git → [링크]
+- gzh-cli-gitforge → [링크]
 - gzh-cli-quality → [링크]
 - gzh-cli-package-manager → [링크]
 - gzh-cli-shellforge → [링크]
@@ -313,12 +313,12 @@ go test ./cmd/git -run "TestSpecific" -v
 
 ### Integration Libraries (External Dependencies)
 
-| Library                 | Wrapper Location            | Purpose       |
-| ----------------------- | --------------------------- | ------------- |
-| gzh-cli-git             | cmd/git/repo/\*\_wrapper.go | Local Git ops |
-| gzh-cli-quality         | cmd/quality_wrapper.go      | Code quality  |
-| gzh-cli-package-manager | cmd/pm_wrapper.go           | Package mgmt  |
-| gzh-cli-shellforge      | cmd/shellforge_wrapper.go   | Shell configs |
+| Library | Wrapper Location | Purpose |
+|---------|-----------------|---------|
+| gzh-cli-gitforge | cmd/git/repo/\*\_wrapper.go | Local Git ops |
+| gzh-cli-quality | cmd/quality_wrapper.go | Code quality |
+| gzh-cli-package-manager | cmd/pm_wrapper.go | Package mgmt |
+| gzh-cli-shellforge | cmd/shellforge_wrapper.go | Shell configs |
 
 ## Module-Specific Guides (Links)
 
@@ -353,28 +353,27 @@ gzh-cli는 Integration Libraries Pattern을 사용하여 핵심 기능을 독립
 
 ## 통합된 하위 프로젝트
 
-### 1. gzh-cli-git
+### 1. gzh-cli-gitforge
 **목적**: 로컬 Git 리포지토리 작업
 **독립 사용**: ✅ 가능
 **설치**:
 ```bash
-go install github.com/gizzahub/gzh-cli-git/cmd/gzh-git@latest
+go install github.com/gizzahub/gzh-cli-gitforge/cmd/gzh-git@latest
 ````
 
-**문서**: [gzh-cli-git README](https://github.com/gizzahub/gzh-cli-git)
+**문서**: [gzh-cli-gitforge README](https://github.com/gizzahub/gzh-cli-gitforge)
 
 **gzh-cli 통합 명령어**:
 
-- `gz git repo clone-or-update` → gzh-cli-git 사용
-- `gz git repo pull-all` → gzh-cli-git 사용
+- `gz git repo clone-or-update` → gzh-cli-gitforge 사용
+- `gz git repo pull-all` → gzh-cli-gitforge 사용
 
 **차이점**:
-
-| 기능      | 독립 실행         | gzh-cli 통합                  |
-| --------- | ----------------- | ----------------------------- |
-| 명령어    | `gzh-git clone`   | `gz git repo clone-or-update` |
-| 설정 파일 | `git-config.yaml` | `gzh.yaml` (통합 설정)        |
-| 인증      | 별도 토큰         | gzh-cli 토큰 공유             |
+| 기능 | 독립 실행 | gzh-cli 통합 |
+|-----|---------|-------------|
+| 명령어 | `gzh-git clone` | `gz git repo clone-or-update` |
+| 설정 파일 | `git-config.yaml` | `gzh.yaml` (통합 설정) |
+| 인증 | 별도 토큰 | gzh-cli 토큰 공유 |
 
 ______________________________________________________________________
 
@@ -385,10 +384,10 @@ ______________________________________________________________________
 **설치**:
 
 ```bash
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
+go install github.com/gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
 ```
 
-**문서**: [gzh-cli-quality README](https://github.com/Gizzahub/gzh-cli-quality)
+**문서**: [gzh-cli-quality README](https://github.com/gizzahub/gzh-cli-quality)
 
 **gzh-cli 통합 명령어**:
 
@@ -452,7 +451,7 @@ func NewQualityCmd(appCtx *app.AppContext) *cobra.Command {
 ```bash
 # 로컬 개발 시 replace 지시문 사용
 # go.mod:
-replace github.com/gizzahub/gzh-cli-git => ../gzh-cli-git
+replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
 
 # 빌드
 cd gzh-cli
@@ -464,7 +463,7 @@ make build  # 자동으로 로컬 하위 프로젝트 참조
 **Q: 하위 프로젝트를 독립적으로 사용할 수 있나요?**
 A: 네, 모든 하위 프로젝트는 독립 실행 가능합니다.
 
-**Q: gzh-cli 없이 gzh-cli-git만 설치하면 되나요?**
+**Q: gzh-cli 없이 gzh-cli-gitforge만 설치하면 되나요?**
 A: Git 기능만 필요하면 가능합니다. 하지만 gzh-cli는 통합 설정, 다중 플랫폼 API 등 추가 기능을 제공합니다.
 
 **Q: 하위 프로젝트 버전은 어떻게 관리되나요?**
@@ -496,10 +495,10 @@ docs/30-features/
 ```markdown
 # 코드 품질 관리 (Code Quality Management)
 
-> **Note**: 이 기능은 [gzh-cli-quality](https://github.com/Gizzahub/gzh-cli-quality) 라이브러리를 통합하여 제공됩니다.
+> **Note**: 이 기능은 [gzh-cli-quality](https://github.com/gizzahub/gzh-cli-quality) 라이브러리를 통합하여 제공됩니다.
 > - **독립 사용**: `gzh-quality` 명령어로 독립 실행 가능
 > - **통합 사용**: `gz quality` 명령어로 gzh-cli에서 실행
-> - **상세 문서**: [gzh-cli-quality README](https://github.com/Gizzahub/gzh-cli-quality)
+> - **상세 문서**: [gzh-cli-quality README](https://github.com/gizzahub/gzh-cli-quality)
 
 ## 개요
 다중 언어를 지원하는 통합 코드 품질 관리 도구입니다.
@@ -512,7 +511,7 @@ docs/30-features/
 하위 프로젝트를 직접 사용하려면:
 ```bash
 # 설치
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
+go install github.com/gizzahub/gzh-cli-quality/cmd/gzh-quality@latest
 
 # 실행
 gzh-quality run
@@ -530,7 +529,7 @@ gz quality run
 
 ### 더 알아보기
 
-- [gzh-cli-quality 전체 문서](https://github.com/Gizzahub/gzh-cli-quality)
+- [gzh-cli-quality 전체 문서](https://github.com/gizzahub/gzh-cli-quality)
 - [통합 아키텍처 설명](../integration/00-SUBPROJECTS_GUIDE.md)
 
 ````
@@ -550,17 +549,17 @@ gzh-cli는 핵심 기능을 독립 라이브러리로 분리하여 개발합니�
 
 | 프로젝트 | 목적 | 독립 사용 | 문서 |
 |---------|------|---------|------|
-| [gzh-cli-git][git-repo] | 로컬 Git 작업 관리 | ✅ | [📖][git-doc] |
+| [gzh-cli-gitforge][git-repo] | 로컬 Git 작업 관리 | ✅ | [📖][git-doc] |
 | [gzh-cli-quality][quality-repo] | 코드 품질 도구 | ✅ | [📖][quality-doc] |
 | [gzh-cli-package-manager][pm-repo] | 패키지 매니저 통합 | ✅ | [📖][pm-doc] |
 | [gzh-cli-shellforge][shell-repo] | 쉘 설정 빌더 | ✅ | [📖][shell-doc] |
 
 **통합 아키텍처**: [Integration Libraries Pattern](docs/integration/00-SUBPROJECTS_GUIDE.md)
 
-[git-repo]: https://github.com/gizzahub/gzh-cli-git
-[git-doc]: https://github.com/gizzahub/gzh-cli-git#readme
-[quality-repo]: https://github.com/Gizzahub/gzh-cli-quality
-[quality-doc]: https://github.com/Gizzahub/gzh-cli-quality#readme
+[git-repo]: https://github.com/gizzahub/gzh-cli-gitforge
+[git-doc]: https://github.com/gizzahub/gzh-cli-gitforge#readme
+[quality-repo]: https://github.com/gizzahub/gzh-cli-quality
+[quality-doc]: https://github.com/gizzahub/gzh-cli-quality#readme
 [pm-repo]: https://github.com/gizzahub/gzh-cli-package-manager
 [pm-doc]: https://github.com/gizzahub/gzh-cli-package-manager#readme
 [shell-repo]: https://github.com/gizzahub/gzh-cli-shellforge
@@ -590,8 +589,8 @@ When modifying commands that use integration libraries:
 
 | Library | Repository | Local Path (dev) |
 |---------|-----------|------------------|
-| gzh-cli-git | [GitHub](https://github.com/gizzahub/gzh-cli-git) | ../gzh-cli-git |
-| gzh-cli-quality | [GitHub](https://github.com/Gizzahub/gzh-cli-quality) | (published) |
+| gzh-cli-gitforge | [GitHub](https://github.com/gizzahub/gzh-cli-gitforge) | ../gzh-cli-gitforge |
+| gzh-cli-quality | [GitHub](https://github.com/gizzahub/gzh-cli-quality) | (published) |
 | gzh-cli-package-manager | [GitHub](https://github.com/gizzahub/gzh-cli-package-manager) | ../gzh-cli-package-manager |
 | gzh-cli-shellforge | [GitHub](https://github.com/gizzahub/gzh-cli-shellforge) | ../gzh-cli-shellforge |
 
@@ -655,13 +654,13 @@ ______________________________________________________________________
 
 ### 📈 정량적 개선
 
-| 메트릭             | 현재    | 목표       | 개선율 |
-| ------------------ | ------- | ---------- | ------ |
-| README.md 길이     | 1,032줄 | 300줄      | -70%   |
-| CLAUDE.md 길이     | 475줄   | 300줄      | -37%   |
-| 하위 프로젝트 문서 | 없음    | 1개 가이드 | +100%  |
-| 기능 설명 중복     | 높음    | 낮음       | -80%   |
-| 문서 발견 시간     | ~5분    | ~1분       | -80%   |
+| 메트릭 | 현재 | 목표 | 개선율 |
+|-------|------|------|--------|
+| README.md 길이 | 1,032줄 | 300줄 | -70% |
+| CLAUDE.md 길이 | 475줄 | 300줄 | -37% |
+| 하위 프로젝트 문서 | 없음 | 1개 가이드 | +100% |
+| 기능 설명 중복 | 높음 | 낮음 | -80% |
+| 문서 발견 시간 | ~5분 | ~1분 | -80% |
 
 ### 🎯 정성적 개선
 
@@ -693,7 +692,7 @@ ______________________________________________________________________
 
 **확인 필요**:
 
-- [ ] gzh-cli-git의 README가 충분히 상세한가?
+- [ ] gzh-cli-gitforge의 README가 충분히 상세한가?
 - [ ] gzh-cli-quality의 독립 사용 가이드가 있는가?
 - [ ] 각 프로젝트의 문서가 gzh-cli와 일관성이 있는가?
 

@@ -6,7 +6,7 @@ Integration tests for Git repo commands are currently disabled pending provider 
 
 ## Background
 
-During Phase 3 (Git integration), wrapper files were created to delegate functionality to gzh-cli-git library. However, existing integration tests depend on the old implementation and provider interfaces.
+During Phase 3 (Git integration), wrapper files were created to delegate functionality to gzh-cli-gitforge library. However, existing integration tests depend on the old implementation and provider interfaces.
 
 ## Disabled Tests
 
@@ -47,7 +47,7 @@ Location: `cmd/git/repo/repo_integration_test.go`
 
 1. **Test Infrastructure**
 
-   - Mock gzh-cli-git library responses
+   - Mock gzh-cli-gitforge library responses
    - Test repositories setup/teardown
    - Parallel test execution support
 
@@ -56,7 +56,7 @@ Location: `cmd/git/repo/repo_integration_test.go`
 ### Option A: Mock Library Calls
 
 ```go
-// Use gomock to mock gzh-cli-git client
+// Use gomock to mock gzh-cli-gitforge client
 mockClient := repository_mocks.NewMockClient(ctrl)
 mockClient.EXPECT().
     CloneOrUpdate(gomock.Any(), gomock.Any()).
@@ -77,7 +77,7 @@ mockClient.EXPECT().
 ### Option B: Integration with Real Library
 
 ```go
-// Use actual gzh-cli-git library with test repositories
+// Use actual gzh-cli-gitforge library with test repositories
 client := repository.NewClient()
 result, err := client.CloneOrUpdate(ctx, opts)
 ```
@@ -122,7 +122,7 @@ result, err := client.CloneOrUpdate(ctx, opts)
 
 ### Phase 2: Mock Setup (2-3 hours)
 
-1. Generate mocks for gzh-cli-git interfaces
+1. Generate mocks for gzh-cli-gitforge interfaces
    ```bash
    make generate-mocks
    ```
@@ -182,7 +182,7 @@ test/
 
 ## Risks
 
-1. **API Changes**: gzh-cli-git may change APIs, breaking tests
+1. **API Changes**: gzh-cli-gitforge may change APIs, breaking tests
 
    - Mitigation: Version pin library in go.mod
 
@@ -197,7 +197,7 @@ test/
 ## Related Work
 
 - [ ] Provider interface refactoring
-- [ ] gzh-cli-git API stabilization
+- [ ] gzh-cli-gitforge API stabilization
 - [ ] Wrapper unit test coverage
 - [ ] CI/CD pipeline improvements
 
@@ -207,7 +207,7 @@ test/
 - Wrapper implementations:
   - `cmd/git/repo/repo_clone_or_update_wrapper.go`
   - `cmd/git/repo/repo_bulk_update_wrapper.go`
-- Library documentation: gzh-cli-git/README.md
+- Library documentation: gzh-cli-gitforge/README.md
 
 ______________________________________________________________________
 

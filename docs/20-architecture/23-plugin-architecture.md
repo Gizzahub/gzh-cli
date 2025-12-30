@@ -609,8 +609,8 @@ package newfeature
 
 import (
     "github.com/spf13/cobra"
-    "github.com/Gizzahub/gzh-cli/cmd/registry"
-    "github.com/Gizzahub/gzh-cli/internal/app"
+    "github.com/gizzahub/gzh-cli/cmd/registry"
+    "github.com/gizzahub/gzh-cli/internal/app"
 )
 
 type newFeatureCmdProvider struct {
@@ -628,7 +628,7 @@ EOF
 
 # 3. Add to root.go
 # In cmd/root.go imports:
-#   "github.com/Gizzahub/gzh-cli/cmd/newfeature"
+#   "github.com/gizzahub/gzh-cli/cmd/newfeature"
 # In NewRootCmd():
 #   newfeature.RegisterNewFeatureCmd(appCtx)
 

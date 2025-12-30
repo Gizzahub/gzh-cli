@@ -30,10 +30,10 @@ ______________________________________________________________________
 
 ```bash
 # Go로 설치 (권장)
-go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
+go install github.com/gizzahub/gzh-cli/cmd/gz@latest
 
 # 소스에서 빌드
-git clone https://github.com/Gizzahub/gzh-cli.git
+git clone https://github.com/gizzahub/gzh-cli.git
 cd gzh-cli
 make bootstrap  # 빌드 의존성 설치
 make build      # gz 바이너리 생성
@@ -68,16 +68,16 @@ ______________________________________________________________________
 
 ## 주요 기능
 
-| 기능                | 설명                                                           | 상세 문서                                                 |
-| ------------------- | -------------------------------------------------------------- | --------------------------------------------------------- |
-| **Git 플랫폼 통합** | GitHub/GitLab/Gitea/Gogs 리포지토리 관리, 크로스 플랫폼 동기화 | [📖 Docs](docs/30-features/31-repository-management.md)   |
-| **IDE 관리**        | JetBrains/VS Code 스캔, 상태 모니터링, 프로젝트 열기           | [📖 Docs](docs/30-features/35-ide-management.md)          |
-| **코드 품질**       | 다중 언어 린팅/포매팅 (Go, Python, JS, Rust 등)                | [📖 Docs](docs/30-features/36-quality-management.md)      |
-| **성능 프로파일링** | Go pprof 기반 CPU/메모리 프로파일링                            | [📖 Docs](docs/30-features/37-performance-profiling.md)   |
-| **패키지 매니저**   | asdf, Homebrew, SDKMAN, npm, pip 통합 업데이트                 | [📖 Docs](docs/30-features/)                              |
-| **쉘 설정 빌더**    | .zshrc/.bashrc 모듈화 및 의존성 관리                           | [📖 Docs](docs/30-features/)                              |
-| **개발 환경 관리**  | AWS, Docker, Kubernetes, SSH 설정 통합                         | [📖 Docs](docs/30-features/33-development-environment.md) |
-| **네트워크 환경**   | WiFi, VPN, DNS, 프록시 자동 전환                               | [📖 Docs](docs/30-features/34-network-management.md)      |
+| 기능 | 설명 | 상세 문서 |
+|-----|------|---------|
+| **Git 플랫폼 통합** | GitHub/GitLab/Gitea/Gogs 리포지토리 관리, 크로스 플랫폼 동기화 | [📖 Docs](docs/30-features/31-repository-management.md) |
+| **IDE 관리** | JetBrains/VS Code 스캔, 상태 모니터링, 프로젝트 열기 | [📖 Docs](docs/30-features/35-ide-management.md) |
+| **코드 품질** | 다중 언어 린팅/포매팅 (Go, Python, JS, Rust 등) | [📖 Docs](docs/30-features/36-quality-management.md) |
+| **성능 프로파일링** | Go pprof 기반 CPU/메모리 프로파일링 | [📖 Docs](docs/30-features/37-performance-profiling.md) |
+| **패키지 매니저** | asdf, Homebrew, SDKMAN, npm, pip 통합 업데이트 | [📖 Docs](docs/30-features/) |
+| **쉘 설정 빌더** | .zshrc/.bashrc 모듈화 및 의존성 관리 | [📖 Docs](docs/30-features/) |
+| **개발 환경 관리** | AWS, Docker, Kubernetes, SSH 설정 통합 | [📖 Docs](docs/30-features/33-development-environment.md) |
+| **네트워크 환경** | WiFi, VPN, DNS, 프록시 자동 전환 | [📖 Docs](docs/30-features/34-network-management.md) |
 
 ### 명령어 구조
 
@@ -106,12 +106,12 @@ ______________________________________________________________________
 
 gzh-cli는 핵심 기능을 독립 라이브러리로 분리하여 개발합니다. 각 라이브러리는 독립적으로 사용 가능합니다.
 
-| 프로젝트                           | 목적                                   | 독립 사용 | 문서              |
-| ---------------------------------- | -------------------------------------- | --------- | ----------------- |
-| [gzh-cli-git][git-repo]            | 로컬 Git 작업 관리 (clone, pull, push) | ✅        | [📖][git-doc]     |
-| [gzh-cli-quality][quality-repo]    | 다중 언어 코드 품질 도구               | ✅        | [📖][quality-doc] |
-| [gzh-cli-package-manager][pm-repo] | 패키지 매니저 통합 관리                | ✅        | [📖][pm-doc]      |
-| [gzh-cli-shellforge][shell-repo]   | 모듈형 쉘 설정 빌더                    | ✅        | [📖][shell-doc]   |
+| 프로젝트 | 목적 | 독립 사용 | 문서 |
+|---------|------|---------|------|
+| [gzh-cli-gitforge][git-repo] | 로컬 Git 작업 관리 (clone, pull, push) | ✅ | [📖][git-doc] |
+| [gzh-cli-quality][quality-repo] | 다중 언어 코드 품질 도구 | ✅ | [📖][quality-doc] |
+| [gzh-cli-package-manager][pm-repo] | 패키지 매니저 통합 관리 | ✅ | [📖][pm-doc] |
+| [gzh-cli-shellforge][shell-repo] | 모듈형 쉘 설정 빌더 | ✅ | [📖][shell-doc] |
 
 **통합 아키텍처**: [Integration Libraries Pattern](docs/integration/00-SUBPROJECTS_GUIDE.md)
 
@@ -348,7 +348,7 @@ gzh-cli는 공통 기능을 외부 라이브러리로 분리하여 \*\*단일 �
 gzh-cli (통합 CLI)
 ├── cmd/*_wrapper.go (45-473줄) - 얇은 래퍼
 └── 외부 라이브러리 통합
-    ├── gzh-cli-git (로컬 Git 작업)
+    ├── gzh-cli-gitforge (로컬 Git 작업)
     ├── gzh-cli-quality (코드 품질)
     ├── gzh-cli-package-manager (패키지 관리)
     └── gzh-cli-shellforge (쉘 설정)
@@ -414,7 +414,7 @@ ______________________________________________________________________
 
 ### 기여 프로세스
 
-1. **이슈 확인**: [Issues](https://github.com/Gizzahub/gzh-cli/issues)
+1. **이슈 확인**: [Issues](https://github.com/gizzahub/gzh-cli/issues)
 1. **Fork & 브랜치**: `feature/your-feature` or `fix/issue-number`
 1. **구현**: 코드 작성 + 테스트
 1. **품질 검사**: `make lint-all` 통과
@@ -448,9 +448,9 @@ ______________________________________________________________________
 
 ## 링크
 
-- **GitHub**: [Gizzahub/gzh-cli](https://github.com/Gizzahub/gzh-cli)
+- **GitHub**: [Gizzahub/gzh-cli](https://github.com/gizzahub/gzh-cli)
 - **문서**: [docs/](docs/)
-- **이슈**: [Issues](https://github.com/Gizzahub/gzh-cli/issues)
+- **이슈**: [Issues](https://github.com/gizzahub/gzh-cli/issues)
 - **기술 스택**: [TECH_STACK.md](TECH_STACK.md)
 - **변경 이력**: [CHANGELOG.md](CHANGELOG.md)
 
@@ -458,11 +458,11 @@ ______________________________________________________________________
 
 **Made with ❤️ by the Gizzahub Team**
 
-[git-doc]: https://github.com/gizzahub/gzh-cli-git#readme
-[git-repo]: https://github.com/gizzahub/gzh-cli-git
+[git-doc]: https://github.com/gizzahub/gzh-cli-gitforge#readme
+[git-repo]: https://github.com/gizzahub/gzh-cli-gitforge
 [pm-doc]: https://github.com/gizzahub/gzh-cli-package-manager#readme
 [pm-repo]: https://github.com/gizzahub/gzh-cli-package-manager
-[quality-doc]: https://github.com/Gizzahub/gzh-cli-quality#readme
-[quality-repo]: https://github.com/Gizzahub/gzh-cli-quality
+[quality-doc]: https://github.com/gizzahub/gzh-cli-quality#readme
+[quality-repo]: https://github.com/gizzahub/gzh-cli-quality
 [shell-doc]: https://github.com/gizzahub/gzh-cli-shellforge#readme
 [shell-repo]: https://github.com/gizzahub/gzh-cli-shellforge

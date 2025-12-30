@@ -70,7 +70,7 @@ gz git repo sync --from github:org/repo --to gitlab:org/repo # 플랫폼 간 동
 1. **gzh-cli 설치**
 
    ```bash
-   go install github.com/Gizzahub/gzh-cli/cmd/gz@latest
+   go install github.com/gizzahub/gzh-cli/cmd/gz@latest
    ```
 
 ### 기본 사용법 (5분 가이드)
@@ -623,9 +623,9 @@ iotop -o
 
 ## 지원 및 피드백
 
-- **Issues**: [GitHub Issues](https://github.com/Gizzahub/gzh-cli/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Gizzahub/gzh-cli/discussions)
-- **Documentation**: [프로젝트 위키](https://github.com/Gizzahub/gzh-cli/wiki)
+- **Issues**: [GitHub Issues](https://github.com/gizzahub/gzh-cli/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/gizzahub/gzh-cli/discussions)
+- **Documentation**: [프로젝트 위키](https://github.com/gizzahub/gzh-cli/wiki)
 
 ______________________________________________________________________
 

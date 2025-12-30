@@ -21,7 +21,7 @@ Complete summary of all integration work across four phases:
 
 ### [git-migration-final-status.md](./git-migration-final-status.md)
 
-Detailed status of Git functionality migration to gzh-cli-git library:
+Detailed status of Git functionality migration to gzh-cli-gitforge library:
 
 - Completed migrations: clone-or-update, bulk-update
 - Retained functionality: Git platform API features (list, sync, create, etc.)
@@ -50,9 +50,9 @@ func RegisterXXXCmd(appCtx *app.AppContext) {
 ```go
 // go.mod
 require (
-    github.com/Gizzahub/gzh-cli-quality v0.1.2
+    github.com/gizzahub/gzh-cli-quality v0.1.2
     github.com/gizzahub/gzh-cli-package-manager v0.0.0-...
-    github.com/gizzahub/gzh-cli-git v0.0.0-...
+    github.com/gizzahub/gzh-cli-gitforge v0.0.0-...
 )
 
 // Local development
@@ -61,12 +61,12 @@ replace github.com/xxx/yyy => ../yyy
 
 ## Integrated Libraries
 
-| Library                 | Purpose                 | Wrapper                                 | Code Reduction      |
-| ----------------------- | ----------------------- | --------------------------------------- | ------------------- |
-| gzh-cli-quality         | Code quality tools      | cmd/quality_wrapper.go (45 lines)       | 3,469 lines (98.7%) |
-| gzh-cli-package-manager | Package manager updates | cmd/pm_wrapper.go (65 lines)            | 2,388 lines (97.3%) |
-| gzh-cli-git             | Local Git operations    | cmd/git/repo/\*\_wrapper.go (473 lines) | 845 lines (64.2%)   |
-| gzh-cli-shellforge      | Shell config builder    | cmd/shellforge_wrapper.go (71 lines)    | New integration     |
+| Library | Purpose | Wrapper | Code Reduction |
+|---------|---------|---------|----------------|
+| gzh-cli-quality | Code quality tools | cmd/quality_wrapper.go (45 lines) | 3,469 lines (98.7%) |
+| gzh-cli-package-manager | Package manager updates | cmd/pm_wrapper.go (65 lines) | 2,388 lines (97.3%) |
+| gzh-cli-gitforge | Local Git operations | cmd/git/repo/\*\_wrapper.go (473 lines) | 845 lines (64.2%) |
+| gzh-cli-shellforge | Shell config builder | cmd/shellforge_wrapper.go (71 lines) | New integration |
 
 ## Architecture Principles
 

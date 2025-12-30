@@ -59,7 +59,7 @@ gzh-cli uses an "Integration Libraries Pattern" where common functionality is ex
                            │ go.mod dependency
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              github.com/Gizzahub/gzh-cli-quality                │
+│              github.com/gizzahub/gzh-cli-quality                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  • Full implementation (3,514 lines)                            │
@@ -117,7 +117,7 @@ gzh-cli uses an "Integration Libraries Pattern" where common functionality is ex
 │ • gzh-cli-    │      │ • Gitea       │      │ • Docker      │
 │   package-    │      │ • Gogs        │      │ • Kubernetes  │
 │   manager     │      │               │      │               │
-│ • gzh-cli-git │      │               │      │               │
+│ • gzh-cli-gitforge │      │               │      │               │
 └───────────────┘      └───────────────┘      └───────────────┘
 ```
 
@@ -137,7 +137,7 @@ gz pm              → gzh-cli-package-manager (65-line wrapper)
   ├─ status        → Check package manager status
   └─ list          → List installed tools
 
-gz git repo        → gzh-cli-git (473-line wrapper)
+gz git repo        → gzh-cli-gitforge (473-line wrapper)
   ├─ clone-or-update  → Smart clone/update (rebase, reset, clone, skip, pull, fetch)
   └─ pull-all         → Bulk recursive update
 ```
@@ -183,8 +183,8 @@ gzh-cli/
 │   │   ├── webhook.go             # Webhook management (native)
 │   │   ├── event.go               # Event processing (native)
 │   │   └── repo/                  # Repository operations
-│   │       ├── repo_clone_or_update_wrapper.go  # → gzh-cli-git
-│   │       ├── repo_bulk_update_wrapper.go      # → gzh-cli-git
+│   │       ├── repo_clone_or_update_wrapper.go  # → gzh-cli-gitforge
+│   │       ├── repo_bulk_update_wrapper.go      # → gzh-cli-gitforge
 │   │       ├── repo_list.go       # List repos (native - uses platform APIs)
 │   │       ├── repo_create.go     # Create repos (native - uses platform APIs)
 │   │       └── repo_sync.go       # Sync repos (native - cross-platform)
@@ -404,7 +404,7 @@ User Command
 
 ### Phase 3: Git Integration (2025-11-30)
 
-- Integrated: `gzh-cli-git`
+- Integrated: `gzh-cli-gitforge`
 - Code reduced: 845 lines (64.2%)
 - Wrappers: `cmd/git/repo/*_wrapper.go` (473 lines)
 - Retained: Git platform API operations (list, sync, create, webhook, event)
