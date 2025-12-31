@@ -18,7 +18,7 @@ require (
 	github.com/gizzahub/gzh-cli-net-env v0.0.0-00010101000000-000000000000
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
 	github.com/go-critic/go-critic v0.13.0
-	github.com/go-playground/validator/v10 v10.30.0
+	github.com/go-playground/validator/v10 v10.30.1
 	github.com/google/go-github/v66 v66.0.0
 	github.com/google/uuid v1.6.0
 	github.com/gotesttools/gotestfmt/v2 v2.5.0
@@ -62,7 +62,6 @@ require (
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/gizzahub/gzh-cli-quality v0.1.2
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.6 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.16 // indirect
@@ -96,6 +95,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/gizzahub/gzh-cli-package-manager v0.0.0-00010101000000-000000000000
+	github.com/gizzahub/gzh-cli-quality v0.1.2
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
