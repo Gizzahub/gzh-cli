@@ -10,9 +10,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gizzahub/gzh-cli/internal/app"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // TestNewPMCmd tests the NewPMCmd wrapper function

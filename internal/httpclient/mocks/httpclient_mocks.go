@@ -15,8 +15,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	httpclient "github.com/gizzahub/gzh-cli/internal/httpclient"
 	gomock "go.uber.org/mock/gomock"
+
+	httpclient "github.com/gizzahub/gzh-cli/internal/httpclient"
 )
 
 // MockHTTPClient is a mock of HTTPClient interface.

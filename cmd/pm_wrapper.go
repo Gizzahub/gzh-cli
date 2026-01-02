@@ -9,9 +9,10 @@ package cmd
 import (
 	"context"
 
+	"github.com/spf13/cobra"
+
 	"github.com/gizzahub/gzh-cli/cmd/registry"
 	"github.com/gizzahub/gzh-cli/internal/app"
-	"github.com/spf13/cobra"
 
 	pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/pm/command"
 )

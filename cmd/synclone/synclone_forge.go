@@ -13,8 +13,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
 
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/gitea"
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/github"

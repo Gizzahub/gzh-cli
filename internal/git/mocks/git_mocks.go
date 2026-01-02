@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	git "github.com/gizzahub/gzh-cli/internal/git"
 	gomock "go.uber.org/mock/gomock"
+
+	git "github.com/gizzahub/gzh-cli/internal/git"
 )
 
 // MockClient is a mock of Client interface.

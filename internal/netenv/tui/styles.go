@@ -4,8 +4,9 @@
 package tui
 
 import (
-	"github.com/gizzahub/gzh-cli/internal/tui/common"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/gizzahub/gzh-cli/internal/tui/common"
 )
 
 // Status constants.

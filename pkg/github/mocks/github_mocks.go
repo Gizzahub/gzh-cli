@@ -15,8 +15,9 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	github "github.com/gizzahub/gzh-cli/pkg/github"
 	gomock "go.uber.org/mock/gomock"
+
+	github "github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // MockHTTPClient is a mock of HTTPClient interface.

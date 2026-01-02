@@ -8,8 +8,9 @@ import (
 	"path/filepath"
 	"time"
 
-	errors "github.com/gizzahub/gzh-cli/internal/errors"
 	"gopkg.in/yaml.v3"
+
+	errors "github.com/gizzahub/gzh-cli/internal/errors"
 )
 
 // UnifiedConfigFacade provides a unified interface for configuration management.

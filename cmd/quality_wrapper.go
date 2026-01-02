@@ -4,10 +4,11 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	qualitypkg "github.com/gizzahub/gzh-cli-quality"
 	"github.com/gizzahub/gzh-cli/cmd/registry"
 	"github.com/gizzahub/gzh-cli/internal/app"
-	"github.com/spf13/cobra"
 )
 
 // NewQualityCmd creates the quality command by wrapping gzh-cli-quality.
