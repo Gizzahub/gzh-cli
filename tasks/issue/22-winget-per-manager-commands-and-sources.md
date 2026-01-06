@@ -1,4 +1,5 @@
-# ISSUE: winget per-manager commands & sources
+skill with Clean Architecture patterns
+- FastAPI/Django/Flask integra# ISSUE: winget per-manager commands & sources
 
 - status: open
 - priority: medium
