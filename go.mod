@@ -184,16 +184,3 @@ require (
 	google.golang.org/grpc v1.73.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
-
-// Local development dependencies - replace with published versions for release
-replace github.com/gizzahub/gzh-cli-quality => ../gzh-cli-quality
-
-replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
-
-replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
-
-replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
-
-replace github.com/gizzahub/gzh-cli-dev-env => ../gzh-cli-dev-env
-
-replace github.com/gizzahub/gzh-cli-net-env => ../gzh-cli-net-env
