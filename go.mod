@@ -17,7 +17,7 @@ require (
 	github.com/gizzahub/gzh-cli-gitforge v0.0.0-00010101000000-000000000000
 	github.com/gizzahub/gzh-cli-net-env v0.0.0-00010101000000-000000000000
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
-	github.com/go-critic/go-critic v0.13.0
+	github.com/go-critic/go-critic v0.14.3
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/google/go-github/v66 v66.0.0
 	github.com/google/uuid v1.6.0
@@ -55,6 +55,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
+	github.com/quasilyte/go-ruleguard/dsl v0.3.23 // indirect
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 )
@@ -145,7 +146,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
-	github.com/quasilyte/go-ruleguard v0.4.4 // indirect
+	github.com/quasilyte/go-ruleguard v0.4.5 // indirect
 	github.com/quasilyte/gogrep v0.5.0 // indirect
 	github.com/quasilyte/regex/syntax v0.0.0-20210819130434-b3f0c404a727 // indirect
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
@@ -175,7 +176,7 @@ require (
 	go.opentelemetry.io/proto/otlp v1.7.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
-	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
+	golang.org/x/exp/typeparams v0.0.0-20251023183803-a4bb9ffd2546 // indirect
 	golang.org/x/mod v0.31.0 // indirect
 	golang.org/x/telemetry v0.0.0-20251203150158-8fff8a5912fc // indirect
 	golang.org/x/time v0.12.0 // indirect
