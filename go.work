@@ -1,0 +1,12 @@
+go 1.25.1
+
+use (
+	.
+	../gzh-cli-core
+	../gzh-cli-quality
+	../gzh-cli-gitforge
+	../gzh-cli-shellforge
+	../gzh-cli-package-manager
+	../gzh-cli-dev-env
+	../gzh-cli-template
+)
