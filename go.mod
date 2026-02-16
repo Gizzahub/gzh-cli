@@ -38,7 +38,7 @@ require (
 	golang.org/x/crypto v0.46.0
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/sync v0.19.0
-	golang.org/x/term v0.38.0
+	golang.org/x/term v0.39.0
 	golang.org/x/text v0.32.0
 	golang.org/x/tools v0.40.0
 	gopkg.in/ini.v1 v1.67.0
@@ -56,7 +56,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
 )
 
 require (
