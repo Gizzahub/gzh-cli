@@ -13,9 +13,9 @@ require (
 	github.com/daixiang0/gci v0.13.7
 	github.com/fatih/color v1.18.0
 	github.com/fsnotify/fsnotify v1.9.0
-	github.com/gizzahub/gzh-cli-dev-env v0.0.0
-	github.com/gizzahub/gzh-cli-gitforge v0.0.0-00010101000000-000000000000
-	github.com/gizzahub/gzh-cli-net-env v0.0.0-00010101000000-000000000000
+	github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260212011144-10431ad4640a
+	github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260316103536-d8c4ac04eda4
+	github.com/gizzahub/gzh-cli-net-env v0.0.0-20260320035045-4748187aa80d
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
 	github.com/go-critic/go-critic v0.13.0
 	github.com/go-playground/validator/v10 v10.30.1
@@ -94,7 +94,7 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
-	github.com/gizzahub/gzh-cli-package-manager v0.0.0-00010101000000-000000000000
+	github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260212011144-87819e9f1f98
 	github.com/gizzahub/gzh-cli-quality v0.1.2
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -184,3 +184,15 @@ require (
 	google.golang.org/grpc v1.73.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
+
+replace github.com/gizzahub/gzh-cli-net-env => ../gzh-cli-net-env
+
+replace github.com/gizzahub/gzh-cli-dev-env => ../gzh-cli-dev-env
+
+replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
+
+replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
+
+replace github.com/gizzahub/gzh-cli-quality => ../gzh-cli-quality
+
+replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
