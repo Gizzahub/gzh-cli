@@ -8,13 +8,12 @@ import (
 	"os"
 
 	apprunner "github.com/gizzahub/gzh-cli/internal/apprunner"
+	"github.com/gizzahub/gzh-cli/internal/version"
 )
-
-var version = "dev"
 
 func main() {
 	// Create and run the application
-	runner := apprunner.NewRunner(version)
+	runner := apprunner.NewRunner(version.Version)
 
 	if err := runner.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)

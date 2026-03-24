@@ -9,7 +9,7 @@
 # Project metadata
 projectname := gzh-manager
 executablename := gz
-VERSION ?= $(shell git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+VERSION ?= $(shell grep 'Version =' internal/version/version.go | cut -d'"' -f2)
 
 # Go configuration
 export GOPROXY=https://proxy.golang.org,direct

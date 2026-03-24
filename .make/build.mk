@@ -43,30 +43,53 @@ endif
 # Build Targets
 # ==============================================================================
 
-.PHONY: build install run bootstrap clean release-dry-run release-snapshot release-check deploy
+# Version file (single source of truth)
+VERSION_FILE := internal/version/version.go
+
+.PHONY: build install run bootstrap clean release-dry-run release-snapshot release-check deploy bump-version
+
+## bump-version: Bump patch version if there are changes or new commit
+bump-version:
+	@LAST_COMMIT=$$(cat .last_built_commit 2>/dev/null || echo ""); \
+	CURRENT_COMMIT=$$(git rev-parse HEAD 2>/dev/null || echo "none"); \
+	DIRTY=$$(git status --porcelain | grep -v '$(VERSION_FILE)'); \
+	if [ "$$CURRENT_COMMIT" != "$$LAST_COMMIT" ] || [ -n "$$DIRTY" ]; then \
+		CURRENT_VERSION=$$(grep 'Version =' $(VERSION_FILE) | cut -d'"' -f2); \
+		MAJOR=$$(echo $$CURRENT_VERSION | cut -d. -f1); \
+		MINOR=$$(echo $$CURRENT_VERSION | cut -d. -f2); \
+		PATCH=$$(echo $$CURRENT_VERSION | cut -d. -f3); \
+		NEW_PATCH=$$(($$PATCH + 1)); \
+		NEW_VERSION="$$MAJOR.$$MINOR.$$NEW_PATCH"; \
+		sed -i.bak "s/Version = \"$$CURRENT_VERSION\"/Version = \"$$NEW_VERSION\"/" $(VERSION_FILE) && rm -f $(VERSION_FILE).bak; \
+		echo "$$CURRENT_COMMIT" > .last_built_commit; \
+		printf "$(YELLOW)Version bumped: %s → %s$(RESET)\n" "$$CURRENT_VERSION" "$$NEW_VERSION"; \
+	else \
+		printf "$(GREEN)Version unchanged: %s$(RESET)\n" "$$(grep 'Version =' $(VERSION_FILE) | cut -d'\"' -f2)"; \
+	fi
 
 build: ## build golang binary
-	@printf "$(CYAN)Building %s...$(RESET)\n" "$(BINARY)"
-	@go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY) ./cmd/gz
-	@printf "$(GREEN)Built %s successfully$(RESET)\n" "$(BINARY)"
+	$(eval VERSION := $(shell grep 'Version =' $(VERSION_FILE) | cut -d'"' -f2))
+	@printf "$(CYAN)Building %s v%s...$(RESET)\n" "$(BINARY)" "$(VERSION)"
+	@go build -trimpath -o $(BINARY) ./cmd/gz
+	@printf "$(GREEN)Built %s v%s successfully$(RESET)\n" "$(BINARY)" "$(VERSION)"
 
-
-install: build ## install golang binary
+install: bump-version build ## install golang binary (auto bumps patch version)
 	@printf "$(CYAN)Installing to %s$(RESET)\n" "$(BINDIR)$(SEP)$(BINARY)"
 	@mv $(BINARY) "$(BINDIR)"/
 	@printf "$(GREEN)Installed %s to %s$(RESET)\n" "$(BINARY)" "$(BINDIR)$(SEP)$(BINARY)"
 
 run: ## run the application (usage: make run [args...] or ARGS="args" make run)
+	$(eval VERSION := $(shell grep 'Version =' $(VERSION_FILE) | cut -d'"' -f2))
 	@echo -e "$(CYAN)Running application with version $(VERSION)...$(RESET)"
 	@if [ "$(words $(MAKECMDGOALS))" -gt 1 ]; then \
 		ARGS="$(filter-out run,$(MAKECMDGOALS))"; \
 		echo -e "$(YELLOW)Arguments: $$ARGS$(RESET)"; \
-		go run -ldflags "-X main.version=$(VERSION)" ./cmd/gz $$ARGS; \
+		go run ./cmd/gz $$ARGS; \
 	elif [ -n "$(ARGS)" ]; then \
 		echo -e "$(YELLOW)Arguments: $(ARGS)$(RESET)"; \
-		go run -ldflags "-X main.version=$(VERSION)" ./cmd/gz $(ARGS); \
+		go run ./cmd/gz $(ARGS); \
 	else \
-		go run -ldflags "-X main.version=$(VERSION)" ./cmd/gz; \
+		go run ./cmd/gz; \
 	fi
 
 # Prevent make from interpreting arguments as targets

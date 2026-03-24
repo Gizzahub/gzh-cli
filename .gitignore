@@ -9,6 +9,7 @@
 lint-report.json
 /results/
 benchmark-artifacts/
+.last_built_commit
 
 # claude code
 .claude/settings.local.json
