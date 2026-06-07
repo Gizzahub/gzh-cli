@@ -123,9 +123,9 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 			}
 
 		case rateLimitEndpoint:
-			rateLimit := map[string]interface{}{
-				"resources": map[string]interface{}{
-					"core": map[string]interface{}{
+			rateLimit := map[string]any{
+				"resources": map[string]any{
+					"core": map[string]any{
 						"limit":     5000,
 						"remaining": 4999,
 						"reset":     time.Now().Add(1 * time.Hour).Unix(),

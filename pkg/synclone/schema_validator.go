@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/xeipuuv/gojsonschema"
 	"gopkg.in/yaml.v3"
@@ -223,7 +224,7 @@ func configToJSON(cfg *bulkCloneConfig) ([]byte, error) {
 		return nil, err
 	}
 
-	var genericData map[string]interface{}
+	var genericData map[string]any
 	if err := yaml.Unmarshal(yamlData, &genericData); err != nil {
 		return nil, err
 	}
@@ -238,10 +239,11 @@ func joinStrings(strs []string, sep string) string {
 		return ""
 	}
 
-	result := strs[0]
+	var result strings.Builder
+	result.WriteString(strs[0])
 	for i := 1; i < len(strs); i++ {
-		result += sep + strs[i]
+		result.WriteString(sep + strs[i])
 	}
 
-	return result
+	return result.String()
 }

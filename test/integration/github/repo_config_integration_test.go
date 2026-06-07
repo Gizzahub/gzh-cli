@@ -299,7 +299,7 @@ func TestIntegration_RepoConfig_RateLimiting(t *testing.T) {
 		// Make 5 concurrent requests
 		results := make(chan error, 5)
 
-		for i := 0; i < 5; i++ {
+		for i := range 5 {
 			go func(_ int) {
 				_, err := client.ListRepositories(ctx, testOrg, nil)
 				results <- err
@@ -309,7 +309,7 @@ func TestIntegration_RepoConfig_RateLimiting(t *testing.T) {
 		// Collect results
 		errors := 0
 
-		for i := 0; i < 5; i++ {
+		for i := range 5 {
 			if err := <-results; err != nil {
 				errors++
 

@@ -6,6 +6,7 @@ package logger
 
 import (
 	"fmt"
+	"maps"
 	"runtime"
 	"strings"
 	"time"
@@ -30,17 +31,17 @@ var (
 
 // CommonLogger defines the common interface for both structured and simple loggers.
 type CommonLogger interface {
-	Debug(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
-	ErrorWithStack(err error, msg string, args ...interface{})
+	Debug(msg string, args ...any)
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
+	ErrorWithStack(err error, msg string, args ...any)
 }
 
 // SimpleLogger provides straightforward terminal output for better readability.
 type SimpleLogger struct {
 	component string
-	context   map[string]interface{}
+	context   map[string]any
 	sessionID string
 	config    *config.CLILoggingConfig
 }
@@ -59,19 +60,17 @@ func NewSimpleLogger(component string) *SimpleLogger {
 
 	return &SimpleLogger{
 		component: component,
-		context:   make(map[string]interface{}),
+		context:   make(map[string]any),
 		sessionID: generateSimpleSessionID(component),
 		config:    cliConfig,
 	}
 }
 
 // WithContext adds context to the logger.
-func (l *SimpleLogger) WithContext(key string, value interface{}) *SimpleLogger {
+func (l *SimpleLogger) WithContext(key string, value any) *SimpleLogger {
 	newLogger := *l
-	newLogger.context = make(map[string]interface{}, len(l.context)+1)
-	for k, v := range l.context {
-		newLogger.context[k] = v
-	}
+	newLogger.context = make(map[string]any, len(l.context)+1)
+	maps.Copy(newLogger.context, l.context)
 	newLogger.context[key] = value
 	return &newLogger
 }
@@ -84,35 +83,35 @@ func (l *SimpleLogger) WithSession(sessionID string) *SimpleLogger {
 }
 
 // Debug prints a debug message.
-func (l *SimpleLogger) Debug(msg string, args ...interface{}) {
+func (l *SimpleLogger) Debug(msg string, args ...any) {
 	if l.shouldLog(SimpleLevelDebug) {
 		l.print(SimpleLevelDebug, msg, args...)
 	}
 }
 
 // Info prints an info message.
-func (l *SimpleLogger) Info(msg string, args ...interface{}) {
+func (l *SimpleLogger) Info(msg string, args ...any) {
 	if l.shouldLog(SimpleLevelInfo) {
 		l.print(SimpleLevelInfo, msg, args...)
 	}
 }
 
 // Warn prints a warning message.
-func (l *SimpleLogger) Warn(msg string, args ...interface{}) {
+func (l *SimpleLogger) Warn(msg string, args ...any) {
 	if l.shouldLog(SimpleLevelWarn) {
 		l.print(SimpleLevelWarn, msg, args...)
 	}
 }
 
 // Error prints an error message.
-func (l *SimpleLogger) Error(msg string, args ...interface{}) {
+func (l *SimpleLogger) Error(msg string, args ...any) {
 	if l.shouldLog(SimpleLevelError) {
 		l.print(SimpleLevelError, msg, args...)
 	}
 }
 
 // ErrorWithStack prints an error message with error details.
-func (l *SimpleLogger) ErrorWithStack(err error, msg string, args ...interface{}) {
+func (l *SimpleLogger) ErrorWithStack(err error, msg string, args ...any) {
 	if l.shouldLog(SimpleLevelError) {
 		fullMsg := fmt.Sprintf("%s: %v", msg, err)
 		l.print(SimpleLevelError, fullMsg, args...)
@@ -120,7 +119,7 @@ func (l *SimpleLogger) ErrorWithStack(err error, msg string, args ...interface{}
 }
 
 // LogPerformance prints performance information.
-func (l *SimpleLogger) LogPerformance(operation string, duration time.Duration, metrics map[string]interface{}) {
+func (l *SimpleLogger) LogPerformance(operation string, duration time.Duration, metrics map[string]any) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
@@ -141,7 +140,7 @@ func (l *SimpleLogger) LogPerformance(operation string, duration time.Duration, 
 }
 
 // print outputs a formatted message to the terminal.
-func (l *SimpleLogger) print(level, msg string, args ...interface{}) {
+func (l *SimpleLogger) print(level, msg string, args ...any) {
 	timestamp := time.Now().Format("15:04:05")
 
 	// Build context string with only essential information
@@ -295,14 +294,14 @@ func (l *SimpleLogger) LoggerMiddleware(next func() error) error {
 
 	duration := time.Since(start)
 	if err != nil {
-		l.LogPerformance("operation_failed", duration, map[string]interface{}{
+		l.LogPerformance("operation_failed", duration, map[string]any{
 			"success": false,
 		})
 		l.ErrorWithStack(err, "Operation failed")
 		return err
 	}
 
-	l.LogPerformance("operation_completed", duration, map[string]interface{}{
+	l.LogPerformance("operation_completed", duration, map[string]any{
 		"success": true,
 	})
 	l.Info("Operation completed successfully")
@@ -332,27 +331,27 @@ func GetGlobalSimpleLogger() *SimpleLogger {
 }
 
 // SimpleDebug logs a debug message using the global logger.
-func SimpleDebug(msg string, args ...interface{}) {
+func SimpleDebug(msg string, args ...any) {
 	GetGlobalSimpleLogger().Debug(msg, args...)
 }
 
 // SimpleInfo logs an info message using the global logger.
-func SimpleInfo(msg string, args ...interface{}) {
+func SimpleInfo(msg string, args ...any) {
 	GetGlobalSimpleLogger().Info(msg, args...)
 }
 
 // SimpleWarn logs a warning message using the global logger.
-func SimpleWarn(msg string, args ...interface{}) {
+func SimpleWarn(msg string, args ...any) {
 	GetGlobalSimpleLogger().Warn(msg, args...)
 }
 
 // SimpleError logs an error message using the global logger.
-func SimpleError(msg string, args ...interface{}) {
+func SimpleError(msg string, args ...any) {
 	GetGlobalSimpleLogger().Error(msg, args...)
 }
 
 // SimpleErrorWithStack logs an error with stack trace using the global logger.
-func SimpleErrorWithStack(err error, msg string, args ...interface{}) {
+func SimpleErrorWithStack(err error, msg string, args ...any) {
 	GetGlobalSimpleLogger().ErrorWithStack(err, msg, args...)
 }
 

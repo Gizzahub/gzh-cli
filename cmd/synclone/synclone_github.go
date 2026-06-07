@@ -460,7 +460,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 	}
 
 	duration := time.Since(start)
-	log.LogPerformance("github-synclone-completed", duration, map[string]interface{}{
+	log.LogPerformance("github-synclone-completed", duration, map[string]any{
 		"org_name":     o.orgName,
 		"target_path":  o.targetPath,
 		"strategy":     o.strategy,

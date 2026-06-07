@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 //go:build netenv_external
-// +build netenv_external
 
 package cmd
 

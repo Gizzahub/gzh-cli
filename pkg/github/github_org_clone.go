@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -395,13 +396,7 @@ func getDirectories(path string) ([]string, error) {
 }
 
 func Contains(list []string, element string) bool {
-	for _, item := range list {
-		if item == element {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(list, element)
 }
 
 // executeSecureGitOperation executes git operations securely based on strategy

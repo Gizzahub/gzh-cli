@@ -190,12 +190,9 @@ func runStateShow(provider, organization string) error {
 		fmt.Printf("\nPending Repositories\n")
 		fmt.Printf("--------------------\n")
 
-		limit := len(state.PendingRepos)
-		if limit > 10 {
-			limit = 10
-		}
+		limit := min(len(state.PendingRepos), 10)
 
-		for i := 0; i < limit; i++ {
+		for i := range limit {
 			fmt.Printf("• %s\n", state.PendingRepos[i])
 		}
 

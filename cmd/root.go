@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/spf13/cobra"
 
@@ -177,12 +178,10 @@ func Execute(ctx context.Context, version string) error {
 	rootCmd := NewRootCmd(ctx, version, appCtx)
 
 	// Check if --debug-shell flag is present
-	for _, arg := range os.Args[1:] {
-		if arg == "--debug-shell" {
-			// Run shell directly
-			shell.ShellCmd.Run(shell.ShellCmd, []string{})
-			return nil
-		}
+	if slices.Contains(os.Args[1:], "--debug-shell") {
+		// Run shell directly
+		shell.ShellCmd.Run(shell.ShellCmd, []string{})
+		return nil
 	}
 
 	if err := rootCmd.Execute(); err != nil {

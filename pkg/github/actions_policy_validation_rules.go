@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -97,7 +98,7 @@ func (r *WorkflowPermissionsValidationRule) Validate(ctx context.Context, policy
 			"Update workflow permissions to match policy requirements",
 			"Review existing workflows that may depend on current permissions",
 		}
-		result.Details = map[string]interface{}{
+		result.Details = map[string]any{
 			"violations": violations,
 		}
 	}
@@ -177,7 +178,7 @@ func (r *SecuritySettingsValidationRule) Validate(ctx context.Context, policy *A
 			}
 		}
 
-		result.Details = map[string]interface{}{
+		result.Details = map[string]any{
 			"violations":          violations,
 			"critical_violations": criticalViolations,
 		}
@@ -232,7 +233,7 @@ func (r *AllowedActionsValidationRule) Validate(ctx context.Context, policy *Act
 			"Update allowed actions list if these actions are legitimate",
 			"Consider using action patterns for more flexible policies",
 		}
-		result.Details = map[string]interface{}{
+		result.Details = map[string]any{
 			"unauthorized_actions": unauthorizedActions,
 		}
 	} else {
@@ -246,10 +247,8 @@ func (r *AllowedActionsValidationRule) Validate(ctx context.Context, policy *Act
 
 func (r *AllowedActionsValidationRule) isActionAllowed(action string, allowedActions, allowedPatterns []string) bool {
 	// Check exact matches
-	for _, allowed := range allowedActions {
-		if action == allowed {
-			return true
-		}
+	if slices.Contains(allowedActions, action) {
+		return true
 	}
 
 	// Check pattern matches
@@ -317,7 +316,7 @@ func (r *SecretPolicyValidationRule) Validate(ctx context.Context, policy *Actio
 			"Update secret names to match naming patterns",
 			"Remove restricted secrets",
 		}
-		result.Details = map[string]interface{}{
+		result.Details = map[string]any{
 			"violations":   violations,
 			"secret_count": len(currentState.Secrets),
 			"secret_limit": policy.SecretsPolicy.MaxSecretCount,
@@ -403,7 +402,7 @@ func (r *RunnerPolicyValidationRule) Validate(ctx context.Context, policy *Actio
 			"Add required labels to self-hosted runners",
 			"Ensure runner types match policy requirements",
 		}
-		result.Details = map[string]interface{}{
+		result.Details = map[string]any{
 			"violations":   violations,
 			"runner_count": len(currentState.Runners),
 		}
@@ -426,25 +425,12 @@ func (r *RunnerPolicyValidationRule) getRunnerType(runner RunnerInfo) RunnerType
 }
 
 func (r *RunnerPolicyValidationRule) isRunnerTypeAllowed(runnerType RunnerType, allowedTypes []RunnerType) bool {
-	for _, allowed := range allowedTypes {
-		if runnerType == allowed {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(allowedTypes, runnerType)
 }
 
 func (r *RunnerPolicyValidationRule) hasRequiredLabels(runner RunnerInfo, requiredLabels []string) bool {
 	for _, required := range requiredLabels {
-		found := false
-
-		for _, label := range runner.Labels {
-			if label == required {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(runner.Labels, required)
 
 		if !found {
 			return false

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"maps"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -19,7 +20,7 @@ import (
 type StructuredLogger struct {
 	logger    *slog.Logger
 	level     slog.Level
-	context   map[string]interface{}
+	context   map[string]any
 	sessionID string
 	component string
 }
@@ -40,15 +41,15 @@ const (
 
 // LogEntry represents a structured log entry.
 type LogEntry struct {
-	Timestamp   time.Time              `json:"timestamp"`
-	Level       string                 `json:"level"`
-	Message     string                 `json:"message"`
-	Component   string                 `json:"component"`
-	SessionID   string                 `json:"sessionId"`
-	Context     map[string]interface{} `json:"context,omitempty"`
-	Caller      *CallerInfo            `json:"caller,omitempty"`
-	Error       *ErrorInfo             `json:"error,omitempty"`
-	Performance *PerformanceInfo       `json:"performance,omitempty"`
+	Timestamp   time.Time        `json:"timestamp"`
+	Level       string           `json:"level"`
+	Message     string           `json:"message"`
+	Component   string           `json:"component"`
+	SessionID   string           `json:"sessionId"`
+	Context     map[string]any   `json:"context,omitempty"`
+	Caller      *CallerInfo      `json:"caller,omitempty"`
+	Error       *ErrorInfo       `json:"error,omitempty"`
+	Performance *PerformanceInfo `json:"performance,omitempty"`
 }
 
 // CallerInfo represents caller information.
@@ -68,10 +69,10 @@ type ErrorInfo struct {
 
 // PerformanceInfo represents performance metrics.
 type PerformanceInfo struct {
-	Duration    time.Duration          `json:"duration"`
-	MemoryUsage int64                  `json:"memoryUsage"`
-	Operation   string                 `json:"operation"`
-	Metrics     map[string]interface{} `json:"metrics,omitempty"`
+	Duration    time.Duration  `json:"duration"`
+	MemoryUsage int64          `json:"memoryUsage"`
+	Operation   string         `json:"operation"`
+	Metrics     map[string]any `json:"metrics,omitempty"`
 }
 
 // NewStructuredLogger creates a new structured logger with dual output.
@@ -86,13 +87,11 @@ func NewStructuredLogger(component string, level LogLevel) *StructuredLogger {
 }
 
 // WithContext adds context to the logger.
-func (l *StructuredLogger) WithContext(key string, value interface{}) *StructuredLogger {
+func (l *StructuredLogger) WithContext(key string, value any) *StructuredLogger {
 	newLogger := *l
 	// Preallocate with appropriate capacity
-	newLogger.context = make(map[string]interface{}, len(l.context)+1)
-	for k, v := range l.context {
-		newLogger.context[k] = v
-	}
+	newLogger.context = make(map[string]any, len(l.context)+1)
+	maps.Copy(newLogger.context, l.context)
 
 	newLogger.context[key] = value
 
@@ -108,32 +107,32 @@ func (l *StructuredLogger) WithSession(sessionID string) *StructuredLogger {
 }
 
 // Debug logs a debug message.
-func (l *StructuredLogger) Debug(msg string, args ...interface{}) {
+func (l *StructuredLogger) Debug(msg string, args ...any) {
 	l.log(slog.LevelDebug, msg, args...)
 }
 
 // Info logs an info message.
-func (l *StructuredLogger) Info(msg string, args ...interface{}) {
+func (l *StructuredLogger) Info(msg string, args ...any) {
 	l.log(slog.LevelInfo, msg, args...)
 }
 
 // Warn logs a warning message.
-func (l *StructuredLogger) Warn(msg string, args ...interface{}) {
+func (l *StructuredLogger) Warn(msg string, args ...any) {
 	l.log(slog.LevelWarn, msg, args...)
 }
 
 // Error logs an error message.
-func (l *StructuredLogger) Error(msg string, args ...interface{}) {
+func (l *StructuredLogger) Error(msg string, args ...any) {
 	l.log(slog.LevelError, msg, args...)
 }
 
 // ErrorWithStack logs an error with stack trace.
-func (l *StructuredLogger) ErrorWithStack(err error, msg string, args ...interface{}) {
+func (l *StructuredLogger) ErrorWithStack(err error, msg string, args ...any) {
 	l.logWithError(slog.LevelError, err, msg, args...)
 }
 
 // LogPerformance logs performance metrics.
-func (l *StructuredLogger) LogPerformance(operation string, duration time.Duration, metrics map[string]interface{}) {
+func (l *StructuredLogger) LogPerformance(operation string, duration time.Duration, metrics map[string]any) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
@@ -153,7 +152,7 @@ func (l *StructuredLogger) LogPerformance(operation string, duration time.Durati
 }
 
 // log writes a log message with context.
-func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}) {
+func (l *StructuredLogger) log(level slog.Level, msg string, args ...any) {
 	if !l.logger.Enabled(context.Background(), level) {
 		return
 	}
@@ -195,7 +194,7 @@ func (l *StructuredLogger) log(level slog.Level, msg string, args ...interface{}
 }
 
 // logWithError logs a message with error information.
-func (l *StructuredLogger) logWithError(level slog.Level, err error, msg string, _ ...interface{}) {
+func (l *StructuredLogger) logWithError(level slog.Level, err error, msg string, _ ...any) {
 	if !l.logger.Enabled(context.Background(), level) {
 		return
 	}
@@ -305,7 +304,7 @@ func (l *StructuredLogger) LoggerMiddleware(next func() error) error {
 
 	duration := time.Since(start)
 	if err != nil {
-		l.LogPerformance("operation_failed", duration, map[string]interface{}{
+		l.LogPerformance("operation_failed", duration, map[string]any{
 			"success": false,
 		})
 		l.ErrorWithStack(err, "Operation failed")
@@ -313,7 +312,7 @@ func (l *StructuredLogger) LoggerMiddleware(next func() error) error {
 		return err
 	}
 
-	l.LogPerformance("operation_completed", duration, map[string]interface{}{
+	l.LogPerformance("operation_completed", duration, map[string]any{
 		"success": true,
 	})
 	l.Info("Operation completed successfully")
@@ -339,26 +338,26 @@ func GetGlobalLogger() *StructuredLogger {
 }
 
 // Debug logs a debug message using the global logger.
-func Debug(msg string, args ...interface{}) {
+func Debug(msg string, args ...any) {
 	GetGlobalLogger().Debug(msg, args...)
 }
 
 // Info logs an info message using the global logger.
-func Info(msg string, args ...interface{}) {
+func Info(msg string, args ...any) {
 	GetGlobalLogger().Info(msg, args...)
 }
 
 // Warn logs a warning message using the global logger.
-func Warn(msg string, args ...interface{}) {
+func Warn(msg string, args ...any) {
 	GetGlobalLogger().Warn(msg, args...)
 }
 
 // Error logs an error message using the global logger.
-func Error(msg string, args ...interface{}) {
+func Error(msg string, args ...any) {
 	GetGlobalLogger().Error(msg, args...)
 }
 
 // ErrorWithStack logs an error message with stack trace using the global logger.
-func ErrorWithStack(err error, msg string, args ...interface{}) {
+func ErrorWithStack(err error, msg string, args ...any) {
 	GetGlobalLogger().ErrorWithStack(err, msg, args...)
 }

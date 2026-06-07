@@ -159,7 +159,7 @@ func NewConfigAssertions(t *testing.T, env *TestEnvironment, configPath string) 
 func (a *ConfigAssertions) ValidYAML() *ConfigAssertions {
 	a.t.Helper()
 
-	var data interface{}
+	var data any
 
 	err := yaml.Unmarshal([]byte(a.content), &data)
 	assert.NoError(a.t, err, "Config should be valid YAML")
@@ -171,7 +171,7 @@ func (a *ConfigAssertions) ValidYAML() *ConfigAssertions {
 func (a *ConfigAssertions) ValidJSON() *ConfigAssertions {
 	a.t.Helper()
 
-	var data interface{}
+	var data any
 
 	err := json.Unmarshal([]byte(a.content), &data)
 	assert.NoError(a.t, err, "Config should be valid JSON")
@@ -183,7 +183,7 @@ func (a *ConfigAssertions) ValidJSON() *ConfigAssertions {
 func (a *ConfigAssertions) HasField(fieldPath string) *ConfigAssertions {
 	a.t.Helper()
 
-	var data map[string]interface{}
+	var data map[string]any
 
 	err := yaml.Unmarshal([]byte(a.content), &data)
 	require.NoError(a.t, err, "Config should be valid YAML")
@@ -201,7 +201,7 @@ func (a *ConfigAssertions) HasField(fieldPath string) *ConfigAssertions {
 
 		if i < len(fields)-1 {
 			// Not the last field, should be a map
-			nextMap, ok := value.(map[string]interface{})
+			nextMap, ok := value.(map[string]any)
 			if !ok {
 				a.t.Errorf("Field %s is not a map (required for nested access)", field)
 				return a
@@ -214,10 +214,10 @@ func (a *ConfigAssertions) HasField(fieldPath string) *ConfigAssertions {
 }
 
 // FieldEquals asserts that a YAML field has a specific value.
-func (a *ConfigAssertions) FieldEquals(fieldPath string, expected interface{}) *ConfigAssertions {
+func (a *ConfigAssertions) FieldEquals(fieldPath string, expected any) *ConfigAssertions {
 	a.t.Helper()
 
-	var data map[string]interface{}
+	var data map[string]any
 
 	err := yaml.Unmarshal([]byte(a.content), &data)
 	require.NoError(a.t, err, "Config should be valid YAML")
@@ -234,7 +234,7 @@ func (a *ConfigAssertions) FieldEquals(fieldPath string, expected interface{}) *
 			assert.Equal(a.t, expected, value, "Field %s should have expected value", fieldPath)
 		} else {
 			// Not the last field, should be a map
-			nextMap, ok := value.(map[string]interface{})
+			nextMap, ok := value.(map[string]any)
 			require.True(a.t, ok, "Field %s is not a map", field)
 
 			current = nextMap

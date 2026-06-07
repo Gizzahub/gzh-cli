@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -279,24 +280,13 @@ func isReservedName(name string) bool {
 	}
 
 	lower := strings.ToLower(name)
-	for _, r := range reserved {
-		if lower == r {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(reserved, lower)
 }
 
 // isValidOutputFormat checks if the output format is valid.
 func isValidOutputFormat(format string) bool {
 	validFormats := []string{"table", "json", "yaml"}
-	for _, valid := range validFormats {
-		if format == valid {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(validFormats, format)
 }
 
 // getGitProvider gets a provider instance for the specified type and organization.

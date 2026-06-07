@@ -4,6 +4,7 @@
 package compat
 
 import (
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -55,9 +56,7 @@ func GetEnvFor(manager, plugin string) (env map[string]string, note string) {
 		if r.Plugin != "" && r.Plugin != plugin {
 			continue
 		}
-		for k, v := range r.Env {
-			merged[k] = v
-		}
+		maps.Copy(merged, r.Env)
 		if collectedNote == "" && r.Note != "" {
 			collectedNote = r.Note
 		}
@@ -93,9 +92,7 @@ func MergeWithProcessEnv(custom map[string]string) []string {
 	}
 
 	// Apply custom overrides
-	for k, v := range custom {
-		resultMap[k] = v
-	}
+	maps.Copy(resultMap, custom)
 
 	// Rebuild slice
 	merged := make([]string, 0, len(resultMap))

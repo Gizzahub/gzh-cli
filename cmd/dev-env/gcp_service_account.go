@@ -337,7 +337,7 @@ func (m *GCPServiceAccountManager) enrichServiceAccountDetails(account *GCPServi
 	cmd := exec.CommandContext(m.ctx, "gcloud", "iam", "service-accounts", "keys", "list",
 		"--iam-account", account.Email, "--project", m.projectID, "--format=json")
 	if output, err := cmd.Output(); err == nil {
-		var keys []interface{}
+		var keys []any
 		if err := json.Unmarshal(output, &keys); err == nil {
 			account.KeyCount = len(keys)
 		}

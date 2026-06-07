@@ -109,7 +109,7 @@ func (u *Updater) GetAssetName() string {
 }
 
 func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath string) error {
-	u.logger.Info("Downloading update", map[string]interface{}{"url": downloadURL})
+	u.logger.Info("Downloading update", map[string]any{"url": downloadURL})
 
 	ctx, cancel := context.WithTimeout(ctx, downloadTimeout)
 	defer cancel()
@@ -150,7 +150,7 @@ func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath strin
 		}
 	}
 
-	u.logger.Info("Download completed", map[string]interface{}{"path": tempPath})
+	u.logger.Info("Download completed", map[string]any{"path": tempPath})
 	return nil
 }
 
@@ -167,7 +167,7 @@ func (u *Updater) ReplaceCurrentBinary(tempPath string) error {
 		return fmt.Errorf("resolving symlinks: %w", err)
 	}
 
-	u.logger.Info("Replacing binary", map[string]interface{}{
+	u.logger.Info("Replacing binary", map[string]any{
 		"current": currentPath,
 		"temp":    tempPath,
 	})
@@ -199,7 +199,7 @@ func (u *Updater) ReplaceCurrentBinary(tempPath string) error {
 }
 
 func (u *Updater) Update(ctx context.Context, force bool) error {
-	u.logger.Info("Checking for updates", map[string]interface{}{"current_version": u.currentVersion})
+	u.logger.Info("Checking for updates", map[string]any{"current_version": u.currentVersion})
 
 	release, err := u.GetLatestRelease(ctx)
 	if err != nil {
@@ -207,7 +207,7 @@ func (u *Updater) Update(ctx context.Context, force bool) error {
 	}
 
 	if !force && !u.IsNewerVersion(release.TagName) {
-		u.logger.Info("Already using the latest version", map[string]interface{}{"version": u.currentVersion})
+		u.logger.Info("Already using the latest version", map[string]any{"version": u.currentVersion})
 		fmt.Printf("gz is already up to date (version %s)\n", u.currentVersion)
 		return nil
 	}

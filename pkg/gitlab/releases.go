@@ -20,18 +20,18 @@ import (
 // gitlabRelease represents a GitLab release from the API.
 // nolint:tagliatelle // External API format - must match GitLab JSON output
 type gitlabRelease struct {
-	Name        string        `json:"name"`
-	TagName     string        `json:"tag_name"`
-	Description string        `json:"description"`
-	CreatedAt   time.Time     `json:"created_at"`
-	ReleasedAt  time.Time     `json:"released_at"`
-	Author      gitlabAuthor  `json:"author"`
-	Assets      gitlabAssets  `json:"assets"`
-	Links       gitlabLinks   `json:"_links"`
-	Evidences   []interface{} `json:"evidences"`
-	Milestones  []interface{} `json:"milestones"`
-	CommitPath  string        `json:"commit_path"`
-	TagPath     string        `json:"tag_path"`
+	Name        string       `json:"name"`
+	TagName     string       `json:"tag_name"`
+	Description string       `json:"description"`
+	CreatedAt   time.Time    `json:"created_at"`
+	ReleasedAt  time.Time    `json:"released_at"`
+	Author      gitlabAuthor `json:"author"`
+	Assets      gitlabAssets `json:"assets"`
+	Links       gitlabLinks  `json:"_links"`
+	Evidences   []any        `json:"evidences"`
+	Milestones  []any        `json:"milestones"`
+	CommitPath  string       `json:"commit_path"`
+	TagPath     string       `json:"tag_path"`
 }
 
 // gitlabAuthor represents a GitLab user.

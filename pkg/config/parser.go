@@ -128,9 +128,9 @@ func processDefaultValues(line string) string {
 	}
 
 	envExpr := line[start+2 : start+end]
-	if colonIndex := strings.Index(envExpr, ":"); colonIndex != -1 {
-		varName := envExpr[:colonIndex]
-		defaultValue := envExpr[colonIndex+1:]
+	if before, after, ok := strings.Cut(envExpr, ":"); ok {
+		varName := before
+		defaultValue := after
 
 		if value := os.Getenv(varName); value != "" {
 			return strings.Replace(line, "${"+envExpr+"}", value, 1)

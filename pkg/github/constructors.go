@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 )
 
@@ -11,7 +12,7 @@ import (
 type HTTPClientInterface interface {
 	Do(req *http.Request) (*http.Response, error)
 	Get(url string) (*http.Response, error)
-	Post(url, contentType string, body interface{}) (*http.Response, error)
+	Post(url, contentType string, body any) (*http.Response, error)
 }
 
 // FileSystem interface for dependency injection.
@@ -58,10 +59,10 @@ type GitHubAPIClient struct {
 
 // Logger interface for dependency injection.
 type Logger interface {
-	Debug(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
+	Debug(msg string, args ...any)
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
 }
 
 // NewAPIClient creates a new GitHub API client with dependencies.
@@ -215,10 +216,8 @@ func (s *GitHubCloneService) SetStrategy(ctx context.Context, strategy string) e
 	if err != nil {
 		return fmt.Errorf("failed to get supported strategies: %w", err)
 	}
-	for _, valid := range validStrategies {
-		if strategy == valid {
-			return nil
-		}
+	if slices.Contains(validStrategies, strategy) {
+		return nil
 	}
 
 	return fmt.Errorf("unsupported strategy: %s", strategy)

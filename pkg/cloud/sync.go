@@ -7,9 +7,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"time"
 
 	"github.com/gizzahub/gzh-cli/internal/env"
@@ -268,9 +270,7 @@ func (sm *DefaultSyncManager) mergeProfiles(source, target *Profile, targetProvi
 	}
 
 	// Merge services
-	for k, v := range source.Services {
-		merged.Services[k] = v
-	}
+	maps.Copy(merged.Services, source.Services)
 
 	for k, v := range target.Services {
 		if _, exists := merged.Services[k]; !exists {
@@ -279,9 +279,7 @@ func (sm *DefaultSyncManager) mergeProfiles(source, target *Profile, targetProvi
 	}
 
 	// Merge tags
-	for k, v := range source.Tags {
-		merged.Tags[k] = v
-	}
+	maps.Copy(merged.Tags, source.Tags)
 
 	for k, v := range target.Tags {
 		if _, exists := merged.Tags[k]; !exists {
@@ -297,7 +295,7 @@ func (sm *DefaultSyncManager) mergeProfiles(source, target *Profile, targetProvi
 }
 
 // mergeValues attempts to merge two values intelligently.
-func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface{}, error) {
+func (sm *DefaultSyncManager) mergeValues(source, target any) (any, error) {
 	sourceType := reflect.TypeOf(source)
 	targetType := reflect.TypeOf(target)
 
@@ -338,13 +336,9 @@ func (sm *DefaultSyncManager) mergeValues(source, target interface{}) (interface
 		}
 		// Merge maps, source takes precedence
 		merged := make(map[string]string)
-		for k, v := range t {
-			merged[k] = v
-		}
+		maps.Copy(merged, t)
 
-		for k, v := range s {
-			merged[k] = v
-		}
+		maps.Copy(merged, s)
 
 		return merged, nil
 
@@ -490,14 +484,7 @@ func ValidateSyncConfig(config *Config) error {
 		ConflictStrategyAsk,
 	}
 
-	valid := false
-
-	for _, strategy := range validStrategies {
-		if config.Sync.ConflictMode == strategy {
-			valid = true
-			break
-		}
-	}
+	valid := slices.Contains(validStrategies, config.Sync.ConflictMode)
 
 	if !valid && config.Sync.ConflictMode != "" {
 		return fmt.Errorf("invalid conflict strategy: %s", config.Sync.ConflictMode)

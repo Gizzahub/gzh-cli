@@ -46,7 +46,7 @@ func (tc *ToolChecker) Check(ctx context.Context) DevEnvResult {
 		version, err := tc.getVersion(ctx)
 		if err != nil {
 			result.Status = "error"
-			result.Details = map[string]interface{}{"error": err.Error()}
+			result.Details = map[string]any{"error": err.Error()}
 			return result
 		}
 		result.Version = version

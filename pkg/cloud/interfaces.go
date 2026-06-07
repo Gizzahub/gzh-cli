@@ -50,7 +50,7 @@ type ProviderConfig struct {
 	Auth AuthConfig `yaml:"auth" json:"auth"`
 
 	// Provider-specific settings
-	Settings map[string]interface{} `yaml:"settings,omitempty" json:"settings,omitempty"`
+	Settings map[string]any `yaml:"settings,omitempty" json:"settings,omitempty"`
 
 	// Timeout for operations
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty"`
@@ -469,10 +469,10 @@ type SyncStatus struct {
 
 // SyncConflict represents a synchronization conflict.
 type SyncConflict struct {
-	ProfileName string      `json:"profileName"`
-	Field       string      `json:"field"`
-	SourceValue interface{} `json:"sourceValue"`
-	TargetValue interface{} `json:"targetValue"`
+	ProfileName string `json:"profileName"`
+	Field       string `json:"field"`
+	SourceValue any    `json:"sourceValue"`
+	TargetValue any    `json:"targetValue"`
 }
 
 // ConflictStrategy represents how to resolve sync conflicts.

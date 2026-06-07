@@ -22,16 +22,16 @@ type ProviderRegistry struct {
 
 // CachedProvider wraps a provider instance with metadata.
 type CachedProvider struct {
-	Provider   GitProvider            `json:"-"`
-	Name       string                 `json:"name"`
-	Type       string                 `json:"type"`
-	CreatedAt  time.Time              `json:"created_at"`
-	LastUsed   time.Time              `json:"last_used"`
-	UsageCount int64                  `json:"usage_count"`
-	IsHealthy  bool                   `json:"is_healthy"`
-	LastCheck  time.Time              `json:"last_check"`
-	LastError  string                 `json:"last_error,omitempty"`
-	Metadata   map[string]interface{} `json:"metadata,omitempty"`
+	Provider   GitProvider    `json:"-"`
+	Name       string         `json:"name"`
+	Type       string         `json:"type"`
+	CreatedAt  time.Time      `json:"created_at"`
+	LastUsed   time.Time      `json:"last_used"`
+	UsageCount int64          `json:"usage_count"`
+	IsHealthy  bool           `json:"is_healthy"`
+	LastCheck  time.Time      `json:"last_check"`
+	LastError  string         `json:"last_error,omitempty"`
+	Metadata   map[string]any `json:"metadata,omitempty"`
 }
 
 // RegistryConfig represents configuration for the provider registry.
@@ -108,7 +108,7 @@ func (r *ProviderRegistry) GetProvider(name string) (GitProvider, error) {
 			UsageCount: 1,
 			IsHealthy:  true,
 			LastCheck:  time.Now(),
-			Metadata:   make(map[string]interface{}),
+			Metadata:   make(map[string]any),
 		}
 
 		r.cacheProvider(name, cached)
@@ -196,7 +196,7 @@ func (r *ProviderRegistry) ExecuteAcrossProvidersParallel(ctx context.Context, f
 
 	// Collect results
 	var errors []error
-	for i := 0; i < len(providers); i++ {
+	for range providers {
 		select {
 		case res := <-results:
 			if res.err != nil {
@@ -417,14 +417,14 @@ type CacheStats struct {
 
 // ProviderMetadata represents metadata about a provider.
 type ProviderMetadata struct {
-	Name         string                 `json:"name"`
-	Type         string                 `json:"type"`
-	Capabilities []Capability           `json:"capabilities"`
-	BaseURL      string                 `json:"base_url"`
-	IsHealthy    bool                   `json:"is_healthy"`
-	LastCheck    time.Time              `json:"last_check"`
-	Metrics      *ProviderMetrics       `json:"metrics,omitempty"`
-	Extra        map[string]interface{} `json:"extra,omitempty"`
+	Name         string           `json:"name"`
+	Type         string           `json:"type"`
+	Capabilities []Capability     `json:"capabilities"`
+	BaseURL      string           `json:"base_url"`
+	IsHealthy    bool             `json:"is_healthy"`
+	LastCheck    time.Time        `json:"last_check"`
+	Metrics      *ProviderMetrics `json:"metrics,omitempty"`
+	Extra        map[string]any   `json:"extra,omitempty"`
 }
 
 // GetProviderMetadata returns metadata about a provider.
@@ -439,7 +439,7 @@ func (r *ProviderRegistry) GetProviderMetadata(name string) (*ProviderMetadata, 
 		Type:         provider.GetName(),
 		Capabilities: provider.GetCapabilities(),
 		BaseURL:      provider.GetBaseURL(),
-		Extra:        make(map[string]interface{}),
+		Extra:        make(map[string]any),
 	}
 
 	// Get cached information if available

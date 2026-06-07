@@ -42,14 +42,14 @@ const (
 
 // TokenInfo contains information about a validated token.
 type TokenInfo struct {
-	Type        TokenType              `json:"type"`
-	Valid       bool                   `json:"valid"`
-	Username    string                 `json:"username,omitempty"`
-	Scopes      []string               `json:"scopes,omitempty"`
-	ExpiresAt   *time.Time             `json:"expiresAt,omitempty"`
-	RateLimit   *RateLimitInfo         `json:"rateLimit,omitempty"`
-	Permissions map[string]bool        `json:"permissions,omitempty"`
-	Metadata    map[string]interface{} `json:"metadata,omitempty"`
+	Type        TokenType       `json:"type"`
+	Valid       bool            `json:"valid"`
+	Username    string          `json:"username,omitempty"`
+	Scopes      []string        `json:"scopes,omitempty"`
+	ExpiresAt   *time.Time      `json:"expiresAt,omitempty"`
+	RateLimit   *RateLimitInfo  `json:"rateLimit,omitempty"`
+	Permissions map[string]bool `json:"permissions,omitempty"`
+	Metadata    map[string]any  `json:"metadata,omitempty"`
 }
 
 // RateLimitInfo contains rate limiting information.
@@ -195,7 +195,7 @@ func (av *Validator) validateGitHubToken(ctx context.Context, token string) (*To
 		Type:        TokenTypeGitHub,
 		Valid:       resp.StatusCode == http.StatusOK,
 		Permissions: make(map[string]bool),
-		Metadata:    make(map[string]interface{}),
+		Metadata:    make(map[string]any),
 	}
 
 	// Extract rate limit information
@@ -241,7 +241,7 @@ func (av *Validator) validateGitLabToken(ctx context.Context, token string) (*To
 		Type:        TokenTypeGitLab,
 		Valid:       resp.StatusCode == http.StatusOK,
 		Permissions: make(map[string]bool),
-		Metadata:    make(map[string]interface{}),
+		Metadata:    make(map[string]any),
 	}
 
 	// GitLab rate limiting headers
@@ -282,7 +282,7 @@ func (av *Validator) validateGiteaToken(ctx context.Context, token string) (*Tok
 		Type:        TokenTypeGitea,
 		Valid:       resp.StatusCode == http.StatusOK,
 		Permissions: make(map[string]bool),
-		Metadata:    make(map[string]interface{}),
+		Metadata:    make(map[string]any),
 	}, nil
 }
 
@@ -292,7 +292,7 @@ func (av *Validator) validateGenericToken(_ context.Context, token string, token
 		Type:        tokenType,
 		Valid:       len(token) >= constants.MinTokenLength,
 		Permissions: make(map[string]bool),
-		Metadata:    make(map[string]interface{}),
+		Metadata:    make(map[string]any),
 	}, nil
 }
 

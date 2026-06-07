@@ -13,7 +13,7 @@ import (
 )
 
 // AssertFileExists checks if a file exists at the given path.
-func AssertFileExists(t *testing.T, path string, msgAndArgs ...interface{}) {
+func AssertFileExists(t *testing.T, path string, msgAndArgs ...any) {
 	t.Helper()
 
 	_, err := os.Stat(path)
@@ -21,7 +21,7 @@ func AssertFileExists(t *testing.T, path string, msgAndArgs ...interface{}) {
 }
 
 // AssertFileNotExists checks if a file does not exist at the given path.
-func AssertFileNotExists(t *testing.T, path string, msgAndArgs ...interface{}) {
+func AssertFileNotExists(t *testing.T, path string, msgAndArgs ...any) {
 	t.Helper()
 
 	_, err := os.Stat(path)
@@ -29,7 +29,7 @@ func AssertFileNotExists(t *testing.T, path string, msgAndArgs ...interface{}) {
 }
 
 // AssertDirExists checks if a directory exists at the given path.
-func AssertDirExists(t *testing.T, path string, msgAndArgs ...interface{}) {
+func AssertDirExists(t *testing.T, path string, msgAndArgs ...any) {
 	t.Helper()
 
 	info, err := os.Stat(path)
@@ -38,7 +38,7 @@ func AssertDirExists(t *testing.T, path string, msgAndArgs ...interface{}) {
 }
 
 // AssertFileContains checks if a file contains the expected content.
-func AssertFileContains(t *testing.T, path, expected string, msgAndArgs ...interface{}) {
+func AssertFileContains(t *testing.T, path, expected string, msgAndArgs ...any) {
 	t.Helper()
 
 	content, err := os.ReadFile(path)
@@ -47,7 +47,7 @@ func AssertFileContains(t *testing.T, path, expected string, msgAndArgs ...inter
 }
 
 // AssertFileEquals checks if a file's content exactly matches expected.
-func AssertFileEquals(t *testing.T, path, expected string, msgAndArgs ...interface{}) {
+func AssertFileEquals(t *testing.T, path, expected string, msgAndArgs ...any) {
 	t.Helper()
 
 	content, err := os.ReadFile(path)
@@ -56,7 +56,7 @@ func AssertFileEquals(t *testing.T, path, expected string, msgAndArgs ...interfa
 }
 
 // AssertGitRepository checks if a directory is a valid git repository.
-func AssertGitRepository(t *testing.T, path string, msgAndArgs ...interface{}) {
+func AssertGitRepository(t *testing.T, path string, msgAndArgs ...any) {
 	t.Helper()
 
 	gitDir := filepath.Join(path, ".git")
@@ -64,14 +64,14 @@ func AssertGitRepository(t *testing.T, path string, msgAndArgs ...interface{}) {
 }
 
 // AssertErrorContains checks if an error contains expected substring.
-func AssertErrorContains(t *testing.T, err error, contains string, msgAndArgs ...interface{}) {
+func AssertErrorContains(t *testing.T, err error, contains string, msgAndArgs ...any) {
 	t.Helper()
 	require.Error(t, err, msgAndArgs...)
 	assert.Contains(t, err.Error(), contains, msgAndArgs...)
 }
 
 // AssertNoError is a helper that calls t.Fatal on error.
-func AssertNoError(t *testing.T, err error, msgAndArgs ...interface{}) {
+func AssertNoError(t *testing.T, err error, msgAndArgs ...any) {
 	t.Helper()
 
 	if err != nil {

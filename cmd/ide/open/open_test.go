@@ -287,7 +287,7 @@ func TestGetAvailableIDENamesTruncation(t *testing.T) {
 
 	// Create more than 10 IDEs to test truncation
 	var ides []IDE
-	for i := 0; i < 15; i++ {
+	for i := range 15 {
 		ides = append(ides, IDE{
 			Name: fmt.Sprintf("IDE%d", i),
 		})

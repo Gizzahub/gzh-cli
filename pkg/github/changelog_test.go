@@ -36,8 +36,8 @@ func TestFileStore(t *testing.T) {
 		Repository:   "testorg/testrepo",
 		Operation:    "update",
 		Category:     "settings",
-		Before:       map[string]interface{}{"private": false},
-		After:        map[string]interface{}{"private": true},
+		Before:       map[string]any{"private": false},
+		After:        map[string]any{"private": true},
 		Description:  "Changed repository visibility",
 		Source:       "cli",
 	}
@@ -96,8 +96,8 @@ func TestChangeLog(t *testing.T) {
 		Repository:   "testorg/testrepo",
 		Operation:    "update",
 		Category:     "settings",
-		Before:       map[string]interface{}{"private": false},
-		After:        map[string]interface{}{"private": true},
+		Before:       map[string]any{"private": false},
+		After:        map[string]any{"private": true},
 		Description:  "Changed repository visibility",
 		Source:       "cli",
 	}
@@ -296,8 +296,8 @@ func TestRollbackRequest(t *testing.T) {
 		Repository:   "testorg/testrepo",
 		Operation:    "update",
 		Category:     "settings",
-		Before:       map[string]interface{}{"private": false, "description": "Old description"},
-		After:        map[string]interface{}{"private": true, "description": "New description"},
+		Before:       map[string]any{"private": false, "description": "Old description"},
+		After:        map[string]any{"private": true, "description": "New description"},
 		Description:  "Test change for rollback",
 		Source:       "cli",
 	}

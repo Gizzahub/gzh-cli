@@ -256,11 +256,11 @@ func (c *ResilientGitHubClient) GetRateLimit(ctx context.Context) (*RateLimitInf
 
 // GetStats returns statistics about the underlying HTTP client - DISABLED (recovery package removed)
 // Simple implementation without external recovery dependency.
-func (c *ResilientGitHubClient) GetStats() map[string]interface{} {
-	return map[string]interface{}{
+func (c *ResilientGitHubClient) GetStats() map[string]any {
+	return map[string]any{
 		"type": "standard_http_client",
 		"note": "recovery package removed, using standard http.Client",
-		"config": map[string]interface{}{
+		"config": map[string]any{
 			"timeout": c.httpClient.Timeout,
 			"baseURL": c.baseURL,
 		},

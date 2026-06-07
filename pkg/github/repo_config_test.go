@@ -313,7 +313,7 @@ func TestAPIErrorHandling(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "application/json")
 
-		errorResp := map[string]interface{}{
+		errorResp := map[string]any{
 			"message":           "Not Found",
 			"documentation_url": "https://docs.github.com/rest",
 		}

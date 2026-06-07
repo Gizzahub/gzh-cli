@@ -300,9 +300,9 @@ func (wds WorkingDirectoryStatus) HasConflicts() bool {
 // parseGitStatus parses the output of `git status --porcelain`.
 func (lcs *LocalChangesSimulator) parseGitStatus(output string) WorkingDirectoryStatus {
 	status := WorkingDirectoryStatus{}
-	lines := strings.Split(strings.TrimSpace(output), "\n")
+	lines := strings.SplitSeq(strings.TrimSpace(output), "\n")
 
-	for _, line := range lines {
+	for line := range lines {
 		if len(line) < 3 {
 			continue
 		}

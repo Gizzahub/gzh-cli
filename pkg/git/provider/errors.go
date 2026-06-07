@@ -6,6 +6,7 @@ package provider
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 )
 
@@ -31,16 +32,16 @@ var (
 
 // ProviderError wraps provider-specific errors with additional context.
 type ProviderError struct {
-	Provider   string                 `json:"provider"`
-	Operation  string                 `json:"operation"`
-	Resource   string                 `json:"resource,omitempty"`
-	StatusCode int                    `json:"status_code,omitempty"`
-	ErrorCode  string                 `json:"error_code,omitempty"`
-	Message    string                 `json:"message"`
-	Details    map[string]interface{} `json:"details,omitempty"`
-	Cause      error                  `json:"-"`
-	Retryable  bool                   `json:"retryable"`
-	RetryAfter int                    `json:"retry_after,omitempty"` // seconds
+	Provider   string         `json:"provider"`
+	Operation  string         `json:"operation"`
+	Resource   string         `json:"resource,omitempty"`
+	StatusCode int            `json:"status_code,omitempty"`
+	ErrorCode  string         `json:"error_code,omitempty"`
+	Message    string         `json:"message"`
+	Details    map[string]any `json:"details,omitempty"`
+	Cause      error          `json:"-"`
+	Retryable  bool           `json:"retryable"`
+	RetryAfter int            `json:"retry_after,omitempty"` // seconds
 }
 
 // Error implements the error interface.
@@ -101,7 +102,7 @@ func NewProviderError(provider, operation string, err error) *ProviderError {
 }
 
 // NewProviderErrorWithDetails creates a new provider error with additional details.
-func NewProviderErrorWithDetails(provider, operation, resource string, statusCode int, message string, details map[string]interface{}) *ProviderError {
+func NewProviderErrorWithDetails(provider, operation, resource string, statusCode int, message string, details map[string]any) *ProviderError {
 	pe := &ProviderError{
 		Provider:   provider,
 		Operation:  operation,
@@ -136,22 +137,20 @@ func (e *ProviderError) WithResource(resource string) *ProviderError {
 }
 
 // WithDetails adds additional details to the error.
-func (e *ProviderError) WithDetails(details map[string]interface{}) *ProviderError {
+func (e *ProviderError) WithDetails(details map[string]any) *ProviderError {
 	if e.Details == nil {
-		e.Details = make(map[string]interface{})
+		e.Details = make(map[string]any)
 	}
-	for k, v := range details {
-		e.Details[k] = v
-	}
+	maps.Copy(e.Details, details)
 	return e
 }
 
 // ValidationError represents validation errors with field-specific details.
 type ValidationError struct {
-	Provider string                 `json:"provider"`
-	Fields   map[string][]string    `json:"fields"`
-	General  []string               `json:"general,omitempty"`
-	Details  map[string]interface{} `json:"details,omitempty"`
+	Provider string              `json:"provider"`
+	Fields   map[string][]string `json:"fields"`
+	General  []string            `json:"general,omitempty"`
+	Details  map[string]any      `json:"details,omitempty"`
 }
 
 // Error implements the error interface.

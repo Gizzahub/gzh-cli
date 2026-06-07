@@ -42,14 +42,14 @@ type HealthCategory struct {
 
 // HealthCheck represents an individual health check.
 type HealthCheck struct {
-	Name      string                 `json:"name"`
-	Status    string                 `json:"status"`
-	Value     interface{}            `json:"value"`
-	Threshold interface{}            `json:"threshold"`
-	Message   string                 `json:"message"`
-	Details   map[string]interface{} `json:"details"`
-	Duration  time.Duration          `json:"duration"`
-	Critical  bool                   `json:"critical"`
+	Name      string         `json:"name"`
+	Status    string         `json:"status"`
+	Value     any            `json:"value"`
+	Threshold any            `json:"threshold"`
+	Message   string         `json:"message"`
+	Details   map[string]any `json:"details"`
+	Duration  time.Duration  `json:"duration"`
+	Critical  bool           `json:"critical"`
 }
 
 // HealthAlert represents a health alert.
@@ -500,7 +500,7 @@ func runHealthCategory(ctx context.Context, category string, metrics SystemMetri
 func checkCPUHealth(metrics CPUMetrics) HealthCheck {
 	check := HealthCheck{
 		Name: "CPU Usage",
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"cpu_count": metrics.Count,
 			"usage":     metrics.Usage,
 		},
@@ -526,7 +526,7 @@ func checkMemoryHealth(metrics MemoryMetrics) HealthCheck {
 		Name:      "Memory Usage",
 		Value:     metrics.UsedPercent,
 		Threshold: 80.0,
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"used_mb":      metrics.Used / 1024 / 1024,
 			"total_mb":     metrics.Total / 1024 / 1024,
 			"used_percent": metrics.UsedPercent,
@@ -553,7 +553,7 @@ func checkDiskHealth(metrics DiskMetrics) HealthCheck {
 		Name:      "Disk Space",
 		Value:     metrics.UsedPercent,
 		Threshold: 85.0,
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"used_gb":      metrics.Used / 1024 / 1024 / 1024,
 			"available_gb": metrics.Available / 1024 / 1024 / 1024,
 			"used_percent": metrics.UsedPercent,
@@ -578,7 +578,7 @@ func checkDiskHealth(metrics DiskMetrics) HealthCheck {
 func checkNetworkHealth(metrics NetworkMetrics) HealthCheck {
 	check := HealthCheck{
 		Name: "Network Connectivity",
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"bytes_sent":  metrics.BytesSent,
 			"bytes_recv":  metrics.BytesRecv,
 			"connections": metrics.Connections,
@@ -597,7 +597,7 @@ func checkNetworkHealth(metrics NetworkMetrics) HealthCheck {
 func checkProcessHealth(metrics ProcessMetrics) HealthCheck {
 	check := HealthCheck{
 		Name: "Process Health",
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"goroutines":   metrics.Goroutines,
 			"heap_objects": metrics.HeapObjects,
 			"gc_runs":      metrics.GCRuns,
@@ -625,7 +625,7 @@ func checkProcessHealth(metrics ProcessMetrics) HealthCheck {
 func checkEnvironmentHealth(metrics EnvMetrics) HealthCheck {
 	check := HealthCheck{
 		Name: "Environment",
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"go_version": metrics.GoVersion,
 			"platform":   metrics.Platform,
 			"hostname":   metrics.Hostname,

@@ -79,7 +79,7 @@ func (hrg *HTMLReportGenerator) formatBytes(bytes uint64) string {
 }
 
 // formatDuration formats duration in human-readable format.
-func (hrg *HTMLReportGenerator) formatDuration(d interface{}) string {
+func (hrg *HTMLReportGenerator) formatDuration(d any) string {
 	switch dur := d.(type) {
 	case int64:
 		return fmt.Sprintf("%d ms", dur)

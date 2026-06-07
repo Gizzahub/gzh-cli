@@ -153,7 +153,7 @@ type IntegrationService interface {
 	GetTargetsByProvider(ctx context.Context, provider string) ([]BulkCloneTarget, error)
 
 	// Check if target should be processed
-	ShouldProcessTarget(ctx context.Context, target BulkCloneTarget, filters map[string]interface{}) bool
+	ShouldProcessTarget(ctx context.Context, target BulkCloneTarget, filters map[string]any) bool
 
 	// Execute bulk clone operation
 	ExecuteBulkClone(ctx context.Context, targets []BulkCloneTarget) (*BulkCloneResult, error)

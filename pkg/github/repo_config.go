@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"sync"
 	"time"
@@ -201,7 +202,7 @@ func (c *RepoConfigClient) SetTimeout(timeout time.Duration) {
 }
 
 // makeRequest performs an HTTP request with authentication, rate limiting, and retry logic.
-func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
+func (c *RepoConfigClient) makeRequest(ctx context.Context, method, path string, body any) (*http.Response, error) {
 	retries := 0
 	maxRetries := 3
 
@@ -664,27 +665,19 @@ func (c *RepoConfigClient) filterConfigBySkippedRisks(currentConfig, targetConfi
 		filteredUsers := make(map[string]string)
 
 		// Copy current permissions for skipped changes
-		for team, perm := range currentConfig.Permissions.Teams {
-			filteredTeams[team] = perm
-		}
+		maps.Copy(filteredTeams, currentConfig.Permissions.Teams)
 
-		for user, perm := range currentConfig.Permissions.Users {
-			filteredUsers[user] = perm
-		}
+		maps.Copy(filteredUsers, currentConfig.Permissions.Users)
 
 		// Apply only non-skipped permission changes
 		for _, change := range changes {
 			if change.Category == "permissions" && !skipMap[change.Risk] {
 				if change.Field == "team_permission" {
-					for team, perm := range targetConfig.Permissions.Teams {
-						filteredTeams[team] = perm
-					}
+					maps.Copy(filteredTeams, targetConfig.Permissions.Teams)
 				}
 
 				if change.Field == "user_permission" {
-					for user, perm := range targetConfig.Permissions.Users {
-						filteredUsers[user] = perm
-					}
+					maps.Copy(filteredUsers, targetConfig.Permissions.Users)
 				}
 			}
 		}
@@ -991,12 +984,9 @@ func (c *RepoConfigClient) ApplyConfigurationToOrganization(ctx context.Context,
 		allChanges := []SensitiveChange{}
 
 		// Analyze changes for a sample of repositories to get an overview
-		sampleSize := 3
-		if len(filteredRepos) < sampleSize {
-			sampleSize = len(filteredRepos)
-		}
+		sampleSize := min(len(filteredRepos), 3)
 
-		for i := 0; i < sampleSize; i++ {
+		for i := range sampleSize {
 			repo := filteredRepos[i]
 
 			currentConfig, err := c.GetRepositoryConfiguration(ctx, org, repo.Name)

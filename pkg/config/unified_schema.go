@@ -4,6 +4,7 @@
 package config
 
 import (
+	"slices"
 	"time"
 )
 
@@ -412,13 +413,7 @@ func SupportedProviders() []string {
 
 // ValidateProvider checks if a provider name is supported.
 func ValidateProvider(provider string) bool {
-	for _, supported := range SupportedProviders() {
-		if provider == supported {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(SupportedProviders(), provider)
 }
 
 // IDEConfig contains configuration for IDE monitoring and management.
@@ -691,7 +686,7 @@ type K8sClusterConfig struct {
 	AuthMethod string `yaml:"auth_method,omitempty" json:"auth_method,omitempty" validate:"oneof=token certificate exec"`
 
 	// Authentication configuration
-	AuthConfig map[string]interface{} `yaml:"auth_config,omitempty" json:"auth_config,omitempty"`
+	AuthConfig map[string]any `yaml:"auth_config,omitempty" json:"auth_config,omitempty"`
 }
 
 // BackupConfig contains backup configuration settings.

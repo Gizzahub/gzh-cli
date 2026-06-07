@@ -195,7 +195,7 @@ func GetConfig[T any](component string) (*T, error) {
 }
 
 // UpdateConfig updates configuration and notifies watchers.
-func UpdateConfig(component string, config interface{}) error {
+func UpdateConfig(component string, config any) error {
 	manager, err := GetGlobalManager()
 	if err != nil {
 		return err

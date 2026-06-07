@@ -141,11 +141,11 @@ type DependabotRepositoryOperationResult struct {
 
 // ConfigurationChange represents a change made to Dependabot configuration.
 type ConfigurationChange struct {
-	Type        ChangeType  `json:"type"`
-	Field       string      `json:"field"`
-	OldValue    interface{} `json:"old_value,omitempty"`
-	NewValue    interface{} `json:"new_value"`
-	Description string      `json:"description"`
+	Type        ChangeType `json:"type"`
+	Field       string     `json:"field"`
+	OldValue    any        `json:"old_value,omitempty"`
+	NewValue    any        `json:"new_value"`
+	Description string     `json:"description"`
 }
 
 // OrganizationPolicyReport provides comprehensive reporting for organization policies.

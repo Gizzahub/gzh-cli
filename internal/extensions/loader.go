@@ -138,17 +138,18 @@ func (l *Loader) registerParameterizedAlias(parent *cobra.Command, name string, 
 	}
 
 	// Use 문자열에 파라미터 추가
-	use := name
+	var use strings.Builder
+	use.WriteString(name)
 	for _, param := range alias.Params {
 		if param.Required {
-			use += fmt.Sprintf(" <%s>", param.Name)
+			use.WriteString(fmt.Sprintf(" <%s>", param.Name))
 		} else {
-			use += fmt.Sprintf(" [%s]", param.Name)
+			use.WriteString(fmt.Sprintf(" [%s]", param.Name))
 		}
 	}
 
 	cmd := &cobra.Command{
-		Use:   use,
+		Use:   use.String(),
 		Short: alias.Description,
 		Long:  fmt.Sprintf("%s\n\n[PARAMETERIZED] Parameters:\n%s", alias.Description, formatParams(alias.Params)),
 		RunE: func(cmd *cobra.Command, args []string) error {

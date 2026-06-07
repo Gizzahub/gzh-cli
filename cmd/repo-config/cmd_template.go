@@ -346,7 +346,7 @@ func displayTemplateTable(templates []ConfigTemplate) {
 
 // displayTemplateJSON displays templates in JSON format.
 func displayTemplateJSON(templates []ConfigTemplate) {
-	jsonData := map[string]interface{}{
+	jsonData := map[string]any{
 		"templates": templates,
 		"count":     len(templates),
 	}

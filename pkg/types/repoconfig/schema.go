@@ -145,10 +145,10 @@ type PolicyTemplate struct {
 
 // PolicyRule represents a single policy rule.
 type PolicyRule struct {
-	Type        string      `yaml:"type"`
-	Value       interface{} `yaml:"value"`
-	Enforcement string      `yaml:"enforcement"`
-	Message     string      `yaml:"message,omitempty"`
+	Type        string `yaml:"type"`
+	Value       any    `yaml:"value"`
+	Enforcement string `yaml:"enforcement"`
+	Message     string `yaml:"message,omitempty"`
 }
 
 // LoadRepoConfig loads a repository configuration from a YAML file.

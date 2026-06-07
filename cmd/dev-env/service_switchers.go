@@ -18,7 +18,7 @@ func (a *AWSSwitcher) Name() string {
 	return "aws"
 }
 
-func (a *AWSSwitcher) Switch(ctx context.Context, config interface{}) error {
+func (a *AWSSwitcher) Switch(ctx context.Context, config any) error {
 	awsConfig, ok := config.(*environment.AWSConfig)
 	if !ok {
 		return fmt.Errorf("invalid AWS configuration type")
@@ -47,7 +47,7 @@ func (a *AWSSwitcher) Switch(ctx context.Context, config interface{}) error {
 	return nil
 }
 
-func (a *AWSSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) {
+func (a *AWSSwitcher) GetCurrentState(ctx context.Context) (any, error) {
 	// Get current AWS profile
 	cmd := exec.CommandContext(ctx, "aws", "configure", "get", "profile")
 	profileOutput, _ := cmd.Output()
@@ -62,7 +62,7 @@ func (a *AWSSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) 
 	}, nil
 }
 
-func (a *AWSSwitcher) Rollback(ctx context.Context, previousState interface{}) error {
+func (a *AWSSwitcher) Rollback(ctx context.Context, previousState any) error {
 	return a.Switch(ctx, previousState)
 }
 
@@ -73,7 +73,7 @@ func (g *GCPSwitcher) Name() string {
 	return "gcp"
 }
 
-func (g *GCPSwitcher) Switch(ctx context.Context, config interface{}) error {
+func (g *GCPSwitcher) Switch(ctx context.Context, config any) error {
 	gcpConfig, ok := config.(*environment.GCPConfig)
 	if !ok {
 		return fmt.Errorf("invalid GCP configuration type")
@@ -106,7 +106,7 @@ func (g *GCPSwitcher) Switch(ctx context.Context, config interface{}) error {
 	return nil
 }
 
-func (g *GCPSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) {
+func (g *GCPSwitcher) GetCurrentState(ctx context.Context) (any, error) {
 	// Get current GCP project
 	cmd := exec.CommandContext(ctx, "gcloud", "config", "get-value", "project")
 	projectOutput, _ := cmd.Output()
@@ -126,7 +126,7 @@ func (g *GCPSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) 
 	}, nil
 }
 
-func (g *GCPSwitcher) Rollback(ctx context.Context, previousState interface{}) error {
+func (g *GCPSwitcher) Rollback(ctx context.Context, previousState any) error {
 	return g.Switch(ctx, previousState)
 }
 
@@ -137,7 +137,7 @@ func (a *AzureSwitcher) Name() string {
 	return "azure"
 }
 
-func (a *AzureSwitcher) Switch(ctx context.Context, config interface{}) error {
+func (a *AzureSwitcher) Switch(ctx context.Context, config any) error {
 	azureConfig, ok := config.(*environment.AzureConfig)
 	if !ok {
 		return fmt.Errorf("invalid Azure configuration type")
@@ -154,7 +154,7 @@ func (a *AzureSwitcher) Switch(ctx context.Context, config interface{}) error {
 	return nil
 }
 
-func (a *AzureSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) {
+func (a *AzureSwitcher) GetCurrentState(ctx context.Context) (any, error) {
 	// Get current Azure subscription
 	cmd := exec.CommandContext(ctx, "az", "account", "show", "--query", "id", "-o", "tsv")
 	subscriptionOutput, _ := cmd.Output()
@@ -169,7 +169,7 @@ func (a *AzureSwitcher) GetCurrentState(ctx context.Context) (interface{}, error
 	}, nil
 }
 
-func (a *AzureSwitcher) Rollback(ctx context.Context, previousState interface{}) error {
+func (a *AzureSwitcher) Rollback(ctx context.Context, previousState any) error {
 	return a.Switch(ctx, previousState)
 }
 
@@ -180,7 +180,7 @@ func (d *DockerSwitcher) Name() string {
 	return "docker"
 }
 
-func (d *DockerSwitcher) Switch(ctx context.Context, config interface{}) error {
+func (d *DockerSwitcher) Switch(ctx context.Context, config any) error {
 	dockerConfig, ok := config.(*environment.DockerConfig)
 	if !ok {
 		return fmt.Errorf("invalid Docker configuration type")
@@ -197,7 +197,7 @@ func (d *DockerSwitcher) Switch(ctx context.Context, config interface{}) error {
 	return nil
 }
 
-func (d *DockerSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) {
+func (d *DockerSwitcher) GetCurrentState(ctx context.Context) (any, error) {
 	// Get current Docker context
 	cmd := exec.CommandContext(ctx, "docker", "context", "show")
 	contextOutput, _ := cmd.Output()
@@ -207,7 +207,7 @@ func (d *DockerSwitcher) GetCurrentState(ctx context.Context) (interface{}, erro
 	}, nil
 }
 
-func (d *DockerSwitcher) Rollback(ctx context.Context, previousState interface{}) error {
+func (d *DockerSwitcher) Rollback(ctx context.Context, previousState any) error {
 	return d.Switch(ctx, previousState)
 }
 
@@ -218,7 +218,7 @@ func (k *KubernetesSwitcher) Name() string {
 	return "kubernetes"
 }
 
-func (k *KubernetesSwitcher) Switch(ctx context.Context, config interface{}) error {
+func (k *KubernetesSwitcher) Switch(ctx context.Context, config any) error {
 	kubernetesConfig, ok := config.(*environment.KubernetesConfig)
 	if !ok {
 		return fmt.Errorf("invalid Kubernetes configuration type")
@@ -243,7 +243,7 @@ func (k *KubernetesSwitcher) Switch(ctx context.Context, config interface{}) err
 	return nil
 }
 
-func (k *KubernetesSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) {
+func (k *KubernetesSwitcher) GetCurrentState(ctx context.Context) (any, error) {
 	// Get current Kubernetes context
 	cmd := exec.CommandContext(ctx, "kubectl", "config", "current-context")
 	contextOutput, _ := cmd.Output()
@@ -258,7 +258,7 @@ func (k *KubernetesSwitcher) GetCurrentState(ctx context.Context) (interface{}, 
 	}, nil
 }
 
-func (k *KubernetesSwitcher) Rollback(ctx context.Context, previousState interface{}) error {
+func (k *KubernetesSwitcher) Rollback(ctx context.Context, previousState any) error {
 	return k.Switch(ctx, previousState)
 }
 
@@ -269,7 +269,7 @@ func (s *SSHSwitcher) Name() string {
 	return "ssh"
 }
 
-func (s *SSHSwitcher) Switch(ctx context.Context, config interface{}) error {
+func (s *SSHSwitcher) Switch(ctx context.Context, config any) error {
 	sshConfig, ok := config.(*environment.SSHConfig)
 	if !ok {
 		return fmt.Errorf("invalid SSH configuration type")
@@ -286,13 +286,13 @@ func (s *SSHSwitcher) Switch(ctx context.Context, config interface{}) error {
 	return nil
 }
 
-func (s *SSHSwitcher) GetCurrentState(ctx context.Context) (interface{}, error) {
+func (s *SSHSwitcher) GetCurrentState(ctx context.Context) (any, error) {
 	// Get current SSH configuration (simplified)
 	return &environment.SSHConfig{
 		Config: "default",
 	}, nil
 }
 
-func (s *SSHSwitcher) Rollback(ctx context.Context, previousState interface{}) error {
+func (s *SSHSwitcher) Rollback(ctx context.Context, previousState any) error {
 	return s.Switch(ctx, previousState)
 }

@@ -6,6 +6,7 @@ package config
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 // BulkCloneIntegration provides integration between gzh.yaml config and bulk-clone operations.
@@ -170,7 +171,7 @@ func (b *BulkCloneIntegration) GetDefaultProvider() string {
 }
 
 // ShouldProcessTarget determines if a target should be processed based on filters.
-func (b *BulkCloneIntegration) ShouldProcessTarget(target BulkCloneTarget, filters map[string]interface{}) bool { //nolint:gocognit // Complex filtering logic with multiple criteria and regex pattern matching
+func (b *BulkCloneIntegration) ShouldProcessTarget(target BulkCloneTarget, filters map[string]any) bool { //nolint:gocognit // Complex filtering logic with multiple criteria and regex pattern matching
 	// Check provider filter
 	if providerFilter, ok := filters["provider"]; ok {
 		if providerStr, ok := providerFilter.(string); ok && providerStr != target.Provider {
@@ -244,42 +245,43 @@ func CreateDefaultGZHConfig(filename string) error {
 func SaveConfigToFile(config *Config, filename string) error {
 	// This is a placeholder - would need YAML marshaling
 	// For now, we'll create the file with a string template
-	content := fmt.Sprintf(`version: "%s"
+	var content strings.Builder
+	content.WriteString(fmt.Sprintf(`version: "%s"
 default_provider: %s
 
 providers:
-`, config.Version, config.DefaultProvider)
+`, config.Version, config.DefaultProvider))
 
 	for providerName, provider := range config.Providers {
-		content += fmt.Sprintf(`  %s:
+		content.WriteString(fmt.Sprintf(`  %s:
     token: "%s"
-`, providerName, provider.Token)
+`, providerName, provider.Token))
 
 		if len(provider.Orgs) > 0 {
-			content += "    orgs:\n"
+			content.WriteString("    orgs:\n")
 			for _, org := range provider.Orgs {
-				content += fmt.Sprintf(`      - name: "%s"
+				content.WriteString(fmt.Sprintf(`      - name: "%s"
         visibility: %s
         strategy: %s
         clone_dir: "%s"
-`, org.Name, org.Visibility, org.Strategy, org.CloneDir)
+`, org.Name, org.Visibility, org.Strategy, org.CloneDir))
 			}
 		}
 
 		if len(provider.Groups) > 0 {
-			content += "    groups:\n"
+			content.WriteString("    groups:\n")
 			for _, group := range provider.Groups {
-				content += fmt.Sprintf(`      - name: "%s"
+				content.WriteString(fmt.Sprintf(`      - name: "%s"
         visibility: %s
         strategy: %s
         clone_dir: "%s"
         recursive: %t
-`, group.Name, group.Visibility, group.Strategy, group.CloneDir, group.Recursive)
+`, group.Name, group.Visibility, group.Strategy, group.CloneDir, group.Recursive))
 			}
 		}
 	}
 
-	return WriteFileContent(filename, content)
+	return WriteFileContent(filename, content.String())
 }
 
 // WriteFileContent writes content to a file (helper function).

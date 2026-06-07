@@ -202,8 +202,8 @@ func (o *statusOptions) getWiFiInfo(ctx context.Context) ([]interfaceInfo, error
 
 	output, err := cmd.Output()
 	if err == nil {
-		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
+		for line := range lines {
 			fields := strings.Split(line, ":")
 			if len(fields) >= 4 && fields[1] == "wifi" {
 				info := interfaceInfo{
@@ -235,8 +235,8 @@ func (o *statusOptions) getWiFiDetails(ctx context.Context, device string) *inte
 		return nil
 	}
 
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
+	for line := range lines {
 		fields := strings.Split(line, ":")
 		if len(fields) >= 3 && fields[0] != "" {
 			return &interfaceInfo{
@@ -279,8 +279,8 @@ func (o *statusOptions) getVPNStatus(ctx context.Context) ([]vpnInfo, error) { /
 
 	output, err := cmd.Output()
 	if err == nil {
-		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
+		for line := range lines {
 			fields := strings.Split(line, ":")
 			if len(fields) >= 3 && strings.Contains(fields[1], "vpn") {
 				vpns = append(vpns, vpnInfo{
@@ -295,8 +295,8 @@ func (o *statusOptions) getVPNStatus(ctx context.Context) ([]vpnInfo, error) { /
 	// Check OpenVPN services
 	cmd = exec.CommandContext(ctx, "systemctl", "list-units", "--type=service", "openvpn@*", "--no-legend")
 	if output, err := cmd.Output(); err == nil {
-		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
+		for line := range lines {
 			if strings.Contains(line, "openvpn@") {
 				fields := strings.Fields(line)
 				if len(fields) >= 4 {
@@ -322,10 +322,10 @@ func (o *statusOptions) getVPNStatus(ctx context.Context) ([]vpnInfo, error) { /
 	cmd = exec.CommandContext(ctx, "wg", "show")
 	if output, err := cmd.Output(); err == nil && strings.TrimSpace(string(output)) != "" {
 		// Parse WireGuard output for interface names
-		lines := strings.Split(string(output), "\n")
-		for _, line := range lines {
-			if strings.HasPrefix(line, "interface:") {
-				interfaceName := strings.TrimSpace(strings.TrimPrefix(line, "interface:"))
+		lines := strings.SplitSeq(string(output), "\n")
+		for line := range lines {
+			if after, ok := strings.CutPrefix(line, "interface:"); ok {
+				interfaceName := strings.TrimSpace(after)
 				vpns = append(vpns, vpnInfo{
 					Name:  interfaceName,
 					Type:  "WireGuard",
@@ -347,11 +347,11 @@ func (o *statusOptions) getDNSInfo(ctx context.Context) (dnsInfo, error) { //nol
 	output, err := cmd.Output()
 	if err == nil {
 		// Parse resolvectl output
-		lines := strings.Split(string(output), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(string(output), "\n")
+		for line := range lines {
 			line = strings.TrimSpace(line)
-			if strings.HasPrefix(line, "DNS Servers:") {
-				servers := strings.TrimPrefix(line, "DNS Servers:")
+			if after, ok := strings.CutPrefix(line, "DNS Servers:"); ok {
+				servers := after
 				info.Servers = strings.Fields(servers)
 				info.Method = "resolvectl"
 
@@ -364,8 +364,8 @@ func (o *statusOptions) getDNSInfo(ctx context.Context) (dnsInfo, error) { //nol
 	if len(info.Servers) == 0 {
 		cmd = exec.CommandContext(ctx, "grep", "nameserver", "/etc/resolv.conf")
 		if output, err := cmd.Output(); err == nil {
-			lines := strings.Split(string(output), "\n")
-			for _, line := range lines {
+			lines := strings.SplitSeq(string(output), "\n")
+			for line := range lines {
 				fields := strings.Fields(line)
 				if len(fields) >= 2 && fields[0] == "nameserver" {
 					info.Servers = append(info.Servers, fields[1])

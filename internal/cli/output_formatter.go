@@ -45,7 +45,7 @@ func NewOutputFormatterWithWriter(format string, writer io.Writer) *OutputFormat
 }
 
 // FormatOutput formats and outputs data in the specified format.
-func (f *OutputFormatter) FormatOutput(data interface{}) error {
+func (f *OutputFormatter) FormatOutput(data any) error {
 	switch f.format {
 	case FormatJSON:
 		return f.outputJSON(data)
@@ -59,21 +59,21 @@ func (f *OutputFormatter) FormatOutput(data interface{}) error {
 }
 
 // outputJSON outputs data in JSON format.
-func (f *OutputFormatter) outputJSON(data interface{}) error {
+func (f *OutputFormatter) outputJSON(data any) error {
 	encoder := json.NewEncoder(f.writer)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(data)
 }
 
 // outputYAML outputs data in YAML format.
-func (f *OutputFormatter) outputYAML(data interface{}) error {
+func (f *OutputFormatter) outputYAML(data any) error {
 	encoder := yaml.NewEncoder(f.writer)
 	defer encoder.Close()
 	return encoder.Encode(data)
 }
 
 // outputTable outputs data in table format (placeholder - specific tables should implement their own).
-func (f *OutputFormatter) outputTable(_ interface{}) error {
+func (f *OutputFormatter) outputTable(_ any) error {
 	// This is a generic fallback - specific commands should implement their own table formatting
 	return fmt.Errorf("table format not implemented for this data type")
 }

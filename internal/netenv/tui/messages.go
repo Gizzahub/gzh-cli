@@ -33,7 +33,7 @@ type (
 	// NavigationMsg represents navigation between views.
 	NavigationMsg struct {
 		View ViewType
-		Data interface{}
+		Data any
 	}
 
 	// ProfileSelectedMsg represents a network profile being selected.

@@ -168,8 +168,8 @@ func (isd *InterfaceSpeedDetector) parseEthtoolOutput(output string) (uint64, er
 // parseIfconfigSpeed parses ifconfig output for macOS.
 func (isd *InterfaceSpeedDetector) parseIfconfigSpeed(output string) uint64 {
 	// Look for speed indicators in ifconfig output
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(output, "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 
 		// Look for various speed indicators

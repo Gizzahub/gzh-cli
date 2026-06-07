@@ -48,7 +48,7 @@ func TestSimpleLogger_LogLevels(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		logFunc  func(string, ...interface{})
+		logFunc  func(string, ...any)
 		message  string
 		expected string
 	}{
@@ -232,7 +232,7 @@ func TestSimpleLogger_LogPerformance(t *testing.T) {
 	os.Stdout = w
 
 	logger := NewSimpleLogger("test")
-	metrics := map[string]interface{}{
+	metrics := map[string]any{
 		"items_processed": 100,
 		"success_rate":    95.5,
 	}
@@ -503,7 +503,7 @@ func TestSimpleLogger_EdgeCases(t *testing.T) {
 	// Test with nil config (should fall back to defaults)
 	logger := &SimpleLogger{
 		component: "test",
-		context:   make(map[string]interface{}),
+		context:   make(map[string]any),
 		sessionID: "test-session",
 		config:    nil, // nil config
 	}

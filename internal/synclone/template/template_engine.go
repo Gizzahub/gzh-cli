@@ -6,8 +6,10 @@ package template
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -17,32 +19,32 @@ import (
 // TemplateEngine handles configuration template processing.
 type TemplateEngine struct {
 	TemplateDir string
-	Variables   map[string]interface{}
+	Variables   map[string]any
 }
 
 // TemplateConfig represents a template configuration.
 type TemplateConfig struct {
-	Name        string                 `yaml:"name"`
-	Description string                 `yaml:"description"`
-	Template    map[string]interface{} `yaml:"template"`
-	Variables   []TemplateVariable     `yaml:"variables"`
+	Name        string             `yaml:"name"`
+	Description string             `yaml:"description"`
+	Template    map[string]any     `yaml:"template"`
+	Variables   []TemplateVariable `yaml:"variables"`
 }
 
 // TemplateVariable represents a template variable definition.
 type TemplateVariable struct {
-	Name         string      `yaml:"name"`
-	Description  string      `yaml:"description"`
-	Required     bool        `yaml:"required"`
-	Type         string      `yaml:"type"`
-	DefaultValue interface{} `yaml:"default,omitempty"`
-	Options      []string    `yaml:"options,omitempty"`
+	Name         string   `yaml:"name"`
+	Description  string   `yaml:"description"`
+	Required     bool     `yaml:"required"`
+	Type         string   `yaml:"type"`
+	DefaultValue any      `yaml:"default,omitempty"`
+	Options      []string `yaml:"options,omitempty"`
 }
 
 // NewTemplateEngine creates a new template engine.
 func NewTemplateEngine(templateDir string) *TemplateEngine {
 	return &TemplateEngine{
 		TemplateDir: templateDir,
-		Variables:   make(map[string]interface{}),
+		Variables:   make(map[string]any),
 	}
 }
 
@@ -87,7 +89,7 @@ func (te *TemplateEngine) LoadTemplate(name string) (*TemplateConfig, error) {
 }
 
 // GenerateConfig generates a configuration from a template.
-func (te *TemplateEngine) GenerateConfig(templateName string, variables map[string]interface{}) (map[string]interface{}, error) {
+func (te *TemplateEngine) GenerateConfig(templateName string, variables map[string]any) (map[string]any, error) {
 	templateConfig, err := te.LoadTemplate(templateName)
 	if err != nil {
 		return nil, err
@@ -111,7 +113,7 @@ func (te *TemplateEngine) GenerateConfig(templateName string, variables map[stri
 }
 
 // validateVariables validates that all required variables are provided.
-func (te *TemplateEngine) validateVariables(config *TemplateConfig, variables map[string]interface{}) error {
+func (te *TemplateEngine) validateVariables(config *TemplateConfig, variables map[string]any) error {
 	var missingVars []string
 
 	for _, variable := range config.Variables {
@@ -130,8 +132,8 @@ func (te *TemplateEngine) validateVariables(config *TemplateConfig, variables ma
 }
 
 // mergeWithDefaults merges provided variables with template defaults.
-func (te *TemplateEngine) mergeWithDefaults(config *TemplateConfig, variables map[string]interface{}) map[string]interface{} {
-	merged := make(map[string]interface{})
+func (te *TemplateEngine) mergeWithDefaults(config *TemplateConfig, variables map[string]any) map[string]any {
+	merged := make(map[string]any)
 
 	// Start with defaults
 	for _, variable := range config.Variables {
@@ -141,15 +143,13 @@ func (te *TemplateEngine) mergeWithDefaults(config *TemplateConfig, variables ma
 	}
 
 	// Override with provided variables
-	for key, value := range variables {
-		merged[key] = value
-	}
+	maps.Copy(merged, variables)
 
 	return merged
 }
 
 // processTemplate processes a template with variables.
-func (te *TemplateEngine) processTemplate(templateData map[string]interface{}, variables map[string]interface{}) (map[string]interface{}, error) {
+func (te *TemplateEngine) processTemplate(templateData map[string]any, variables map[string]any) (map[string]any, error) {
 	// Convert template data to YAML string for processing
 	yamlData, err := yaml.Marshal(templateData)
 	if err != nil {
@@ -168,7 +168,7 @@ func (te *TemplateEngine) processTemplate(templateData map[string]interface{}, v
 	}
 
 	// Parse processed YAML back to map
-	var result map[string]interface{}
+	var result map[string]any
 	if err := yaml.Unmarshal(buf.Bytes(), &result); err != nil {
 		return nil, fmt.Errorf("failed to parse processed template: %w", err)
 	}
@@ -258,13 +258,7 @@ func (te *TemplateEngine) ValidateTemplate(config *TemplateConfig) error {
 
 		// Validate type
 		validTypes := []string{"string", "int", "bool", "array"}
-		isValidType := false
-		for _, validType := range validTypes {
-			if variable.Type == validType {
-				isValidType = true
-				break
-			}
-		}
+		isValidType := slices.Contains(validTypes, variable.Type)
 
 		if !isValidType {
 			return fmt.Errorf("invalid variable type %s for variable %s", variable.Type, variable.Name)
@@ -275,7 +269,7 @@ func (te *TemplateEngine) ValidateTemplate(config *TemplateConfig) error {
 }
 
 // InterpolateString interpolates template variables in a string.
-func (te *TemplateEngine) InterpolateString(s string, variables map[string]interface{}) (string, error) {
+func (te *TemplateEngine) InterpolateString(s string, variables map[string]any) (string, error) {
 	tmpl, err := template.New("string").Parse(s)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse string template: %w", err)

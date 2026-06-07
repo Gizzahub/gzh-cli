@@ -150,8 +150,8 @@ func (sic *SystemInfoCollector) getDefaultGatewayFromRoute() (string, error) {
 		return "", err
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "0.0.0.0") && strings.Contains(line, "UG") {
 			fields := strings.Fields(line)
 			if len(fields) >= 2 {
@@ -171,8 +171,8 @@ func (sic *SystemInfoCollector) getDefaultGatewayDarwin() (string, error) {
 		return "", err
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "gateway:") {
 			parts := strings.Split(line, ":")
 			if len(parts) >= 2 {
@@ -192,8 +192,8 @@ func (sic *SystemInfoCollector) getDefaultGatewayWindows() (string, error) {
 		return "", err
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "0.0.0.0") {
 			fields := strings.Fields(line)
 			if len(fields) >= 3 {
@@ -250,9 +250,9 @@ func (sic *SystemInfoCollector) getDNSServersWindows() ([]string, error) {
 	}
 
 	var dnsServers []string
-	lines := strings.Split(string(output), "\n")
+	lines := strings.SplitSeq(string(output), "\n")
 
-	for _, line := range lines {
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if strings.Contains(line, "Server:") {
 			parts := strings.Fields(line)
@@ -401,9 +401,9 @@ func (sic *SystemInfoCollector) getNetworkNamespaces() ([]string, error) {
 	}
 
 	var namespaces []string
-	lines := strings.Split(string(output), "\n")
+	lines := strings.SplitSeq(string(output), "\n")
 
-	for _, line := range lines {
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line != "" {
 			// Extract namespace name (first word)

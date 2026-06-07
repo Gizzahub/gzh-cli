@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"time"
 )
 
@@ -197,7 +198,7 @@ func (w *webhookServiceImpl) SetToken(token string) {
 }
 
 // doRequest performs an HTTP request with authentication.
-func (w *webhookServiceImpl) doRequest(ctx context.Context, method, url string, body interface{}) (*http.Response, error) {
+func (w *webhookServiceImpl) doRequest(ctx context.Context, method, url string, body any) (*http.Response, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		jsonBody, err := json.Marshal(body)
@@ -234,21 +235,21 @@ func (w *webhookServiceImpl) CreateRepositoryWebhook(ctx context.Context, owner,
 	}
 
 	// GitHub API request body
-	apiRequest := map[string]interface{}{
+	apiRequest := map[string]any{
 		"name":   "web",
 		"active": request.Active,
 		"events": request.Events,
-		"config": map[string]interface{}{
+		"config": map[string]any{
 			"url":          request.Config.URL,
 			"content_type": request.Config.ContentType,
 			"insecure_ssl": "0",
 		},
 	}
 	if request.Config.Secret != "" {
-		apiRequest["config"].(map[string]interface{})["secret"] = request.Config.Secret
+		apiRequest["config"].(map[string]any)["secret"] = request.Config.Secret
 	}
 	if request.Config.InsecureSSL {
-		apiRequest["config"].(map[string]interface{})["insecure_ssl"] = "1"
+		apiRequest["config"].(map[string]any)["insecure_ssl"] = "1"
 	}
 
 	url := fmt.Sprintf("%s/repos/%s/%s/hooks", w.baseURL, owner, repo)
@@ -348,7 +349,7 @@ func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner,
 	w.logger.Info("Updating repository webhook", "owner", owner, "repo", repo, "webhook_id", request.ID)
 
 	// Build update request body
-	apiRequest := make(map[string]interface{})
+	apiRequest := make(map[string]any)
 	if request.Events != nil {
 		apiRequest["events"] = request.Events
 	}
@@ -356,7 +357,7 @@ func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner,
 		apiRequest["active"] = *request.Active
 	}
 	if request.Config.URL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
-		config := make(map[string]interface{})
+		config := make(map[string]any)
 		if request.Config.URL != "" {
 			config["url"] = request.Config.URL
 		}
@@ -429,21 +430,21 @@ func (w *webhookServiceImpl) CreateOrganizationWebhook(ctx context.Context, org 
 	}
 
 	// GitHub API request body
-	apiRequest := map[string]interface{}{
+	apiRequest := map[string]any{
 		"name":   "web",
 		"active": request.Active,
 		"events": request.Events,
-		"config": map[string]interface{}{
+		"config": map[string]any{
 			"url":          request.Config.URL,
 			"content_type": request.Config.ContentType,
 			"insecure_ssl": "0",
 		},
 	}
 	if request.Config.Secret != "" {
-		apiRequest["config"].(map[string]interface{})["secret"] = request.Config.Secret
+		apiRequest["config"].(map[string]any)["secret"] = request.Config.Secret
 	}
 	if request.Config.InsecureSSL {
-		apiRequest["config"].(map[string]interface{})["insecure_ssl"] = "1"
+		apiRequest["config"].(map[string]any)["insecure_ssl"] = "1"
 	}
 
 	url := fmt.Sprintf("%s/orgs/%s/hooks", w.baseURL, org)
@@ -543,7 +544,7 @@ func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org 
 	w.logger.Info("Updating organization webhook", "org", org, "webhook_id", request.ID)
 
 	// Build update request body
-	apiRequest := make(map[string]interface{})
+	apiRequest := make(map[string]any)
 	if request.Events != nil {
 		apiRequest["events"] = request.Events
 	}
@@ -551,7 +552,7 @@ func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org 
 		apiRequest["active"] = *request.Active
 	}
 	if request.Config.URL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
-		config := make(map[string]interface{})
+		config := make(map[string]any)
 		if request.Config.URL != "" {
 			config["url"] = request.Config.URL
 		}
@@ -867,14 +868,7 @@ func (w *webhookServiceImpl) webhookMatchesSelector(webhook *WebhookInfo, select
 	if len(selector.ByEvents) > 0 {
 		// Check if webhook has all specified events
 		for _, event := range selector.ByEvents {
-			found := false
-
-			for _, webhookEvent := range webhook.Events {
-				if webhookEvent == event {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(webhook.Events, event)
 
 			if !found {
 				return false

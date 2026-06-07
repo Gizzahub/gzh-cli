@@ -290,19 +290,19 @@ func TestConcurrentAccess(t *testing.T) {
 
 	// Test concurrent access to avoid race conditions
 	go func() {
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			tracker.UpdateRepository("repo1", StatusCloning, "Cloning", 0.5)
 		}
 	}()
 
 	go func() {
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			tracker.GetOverallProgress()
 		}
 	}()
 
 	go func() {
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			tracker.RenderProgress()
 		}
 	}()

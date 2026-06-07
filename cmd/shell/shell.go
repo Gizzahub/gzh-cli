@@ -87,11 +87,11 @@ type ShellCommand struct { //nolint:revive // Name is appropriate for package co
 
 // ShellContext holds shell execution context.
 type ShellContext struct { //nolint:revive // Name is appropriate for package context
-	StartTime time.Time              `json:"startTime"`
-	Uptime    time.Duration          `json:"uptime"`
-	Commands  int                    `json:"commandsExecuted"`
-	LastCmd   string                 `json:"lastCommand"`
-	Vars      map[string]interface{} `json:"variables"`
+	StartTime time.Time      `json:"startTime"`
+	Uptime    time.Duration  `json:"uptime"`
+	Commands  int            `json:"commandsExecuted"`
+	LastCmd   string         `json:"lastCommand"`
+	Vars      map[string]any `json:"variables"`
 }
 
 func runShell(_ *cobra.Command, args []string) {
@@ -399,7 +399,7 @@ func handleStatus(s *Shell, args []string) error {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	status := map[string]interface{}{
+	status := map[string]any{
 		"healthy":    health.Overall == "healthy",
 		"uptime":     time.Since(health.Timestamp).String(),
 		"version":    "1.0.0", // This should come from build info
@@ -444,7 +444,7 @@ func handleMemory(_ *Shell, args []string) error {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	memStats := map[string]interface{}{
+	memStats := map[string]any{
 		"allocated_mb":   float64(m.Alloc) / 1024 / 1024,
 		"total_alloc_mb": float64(m.TotalAlloc) / 1024 / 1024,
 		"sys_mb":         float64(m.Sys) / 1024 / 1024,
@@ -637,10 +637,7 @@ func handleHistory(s *Shell, args []string) error {
 
 	fmt.Printf("Command History (last %d):\n", count)
 
-	start := len(s.history) - count
-	if start < 0 {
-		start = 0
-	}
+	start := max(len(s.history)-count, 0)
 
 	for i, cmd := range s.history[start:] {
 		fmt.Printf("  %d: %s\n", start+i+1, cmd)
@@ -662,7 +659,7 @@ func handleContext(s *Shell, args []string) error {
 		Uptime:    time.Since(time.Now()),
 		Commands:  len(s.history),
 		LastCmd:   "",
-		Vars:      map[string]interface{}{},
+		Vars:      map[string]any{},
 	}
 
 	if len(s.history) > 0 {

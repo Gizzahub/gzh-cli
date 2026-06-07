@@ -53,8 +53,8 @@ type AutomationConditions struct {
 	BusinessHours bool       `json:"businessHours,omitempty" yaml:"businessHours,omitempty"` // 9-17 weekdays
 
 	// Advanced conditions
-	CustomFilters map[string]interface{} `json:"customFilters,omitempty" yaml:"customFilters,omitempty"`
-	PayloadMatch  []PayloadMatcher       `json:"payloadMatch,omitempty" yaml:"payloadMatch,omitempty"`
+	CustomFilters map[string]any   `json:"customFilters,omitempty" yaml:"customFilters,omitempty"`
+	PayloadMatch  []PayloadMatcher `json:"payloadMatch,omitempty" yaml:"payloadMatch,omitempty"`
 
 	// Logical operators
 	LogicalOperator ConditionOperator      `json:"logicalOperator,omitempty" yaml:"logicalOperator,omitempty"`
@@ -65,7 +65,7 @@ type AutomationConditions struct {
 type PayloadMatcher struct {
 	Path          string        `json:"path" yaml:"path"`         // JSONPath expression (e.g., "$.pull_request.title")
 	Operator      MatchOperator `json:"operator" yaml:"operator"` // equals, contains, regex, etc.
-	Value         interface{}   `json:"value" yaml:"value"`       // Value to match against
+	Value         any           `json:"value" yaml:"value"`       // Value to match against
 	CaseSensitive bool          `json:"caseSensitive,omitempty" yaml:"caseSensitive,omitempty"`
 }
 
@@ -99,15 +99,15 @@ const (
 
 // AutomationAction defines an action to be executed when conditions are met.
 type AutomationAction struct {
-	ID          string                 `json:"id" yaml:"id"`
-	Type        ActionType             `json:"type" yaml:"type"`
-	Name        string                 `json:"name" yaml:"name"`
-	Description string                 `json:"description,omitempty" yaml:"description,omitempty"`
-	Enabled     bool                   `json:"enabled" yaml:"enabled"`
-	Parameters  map[string]interface{} `json:"parameters" yaml:"parameters"`
-	Timeout     time.Duration          `json:"timeout,omitempty" yaml:"timeout,omitempty"`
-	RetryPolicy *ActionRetryPolicy     `json:"retryPolicy,omitempty" yaml:"retryPolicy,omitempty"`
-	OnFailure   ActionFailurePolicy    `json:"onFailure,omitempty" yaml:"onFailure,omitempty"`
+	ID          string              `json:"id" yaml:"id"`
+	Type        ActionType          `json:"type" yaml:"type"`
+	Name        string              `json:"name" yaml:"name"`
+	Description string              `json:"description,omitempty" yaml:"description,omitempty"`
+	Enabled     bool                `json:"enabled" yaml:"enabled"`
+	Parameters  map[string]any      `json:"parameters" yaml:"parameters"`
+	Timeout     time.Duration       `json:"timeout,omitempty" yaml:"timeout,omitempty"`
+	RetryPolicy *ActionRetryPolicy  `json:"retryPolicy,omitempty" yaml:"retryPolicy,omitempty"`
+	OnFailure   ActionFailurePolicy `json:"onFailure,omitempty" yaml:"onFailure,omitempty"`
 }
 
 // ActionType defines the type of action to be executed.
@@ -211,7 +211,7 @@ type AutomationRuleExecution struct {
 	Actions        []ActionExecutionResult    `json:"actions"`
 	Error          string                     `json:"error,omitempty"`
 	Duration       time.Duration              `json:"duration,omitempty"`
-	Metadata       map[string]interface{}     `json:"metadata,omitempty"`
+	Metadata       map[string]any             `json:"metadata,omitempty"`
 }
 
 // ExecutionStatus defines the status of a rule execution.
@@ -238,26 +238,26 @@ const (
 
 // AutomationExecutionContext provides context for rule execution.
 type AutomationExecutionContext struct {
-	Event        *GitHubEvent           `json:"event,omitempty"`
-	Repository   *RepositoryInfo        `json:"repository,omitempty"`
-	Organization string                 `json:"organization,omitempty"`
-	User         string                 `json:"user,omitempty"`
-	Variables    map[string]interface{} `json:"variables,omitempty"`
-	Environment  string                 `json:"environment,omitempty"`
-	Metadata     map[string]interface{} `json:"metadata,omitempty"`
+	Event        *GitHubEvent    `json:"event,omitempty"`
+	Repository   *RepositoryInfo `json:"repository,omitempty"`
+	Organization string          `json:"organization,omitempty"`
+	User         string          `json:"user,omitempty"`
+	Variables    map[string]any  `json:"variables,omitempty"`
+	Environment  string          `json:"environment,omitempty"`
+	Metadata     map[string]any  `json:"metadata,omitempty"`
 }
 
 // ActionExecutionResult represents the result of executing a single action.
 type ActionExecutionResult struct {
-	ActionID    string                 `json:"actionId"`
-	ActionType  ActionType             `json:"actionType"`
-	Status      ExecutionStatus        `json:"status"`
-	StartedAt   time.Time              `json:"startedAt"`
-	CompletedAt *time.Time             `json:"completedAt,omitempty"`
-	Duration    time.Duration          `json:"duration,omitempty"`
-	Result      map[string]interface{} `json:"result,omitempty"`
-	Error       string                 `json:"error,omitempty"`
-	RetryCount  int                    `json:"retryCount,omitempty"`
+	ActionID    string          `json:"actionId"`
+	ActionType  ActionType      `json:"actionType"`
+	Status      ExecutionStatus `json:"status"`
+	StartedAt   time.Time       `json:"startedAt"`
+	CompletedAt *time.Time      `json:"completedAt,omitempty"`
+	Duration    time.Duration   `json:"duration,omitempty"`
+	Result      map[string]any  `json:"result,omitempty"`
+	Error       string          `json:"error,omitempty"`
+	RetryCount  int             `json:"retryCount,omitempty"`
 }
 
 // AutomationRuleSet represents a collection of related automation rules.
@@ -291,20 +291,20 @@ type AutomationRuleTemplate struct {
 
 // TemplateVariable defines a variable that can be customized in a template.
 type TemplateVariable struct {
-	Name         string      `json:"name" yaml:"name"`
-	Type         string      `json:"type" yaml:"type"` // string, number, boolean, array, object
-	Description  string      `json:"description" yaml:"description"`
-	Required     bool        `json:"required" yaml:"required"`
-	DefaultValue interface{} `json:"defaultValue,omitempty" yaml:"defaultValue,omitempty"`
-	Options      []string    `json:"options,omitempty" yaml:"options,omitempty"`
-	Validation   string      `json:"validation,omitempty" yaml:"validation,omitempty"` // Regex or validation rule
+	Name         string   `json:"name" yaml:"name"`
+	Type         string   `json:"type" yaml:"type"` // string, number, boolean, array, object
+	Description  string   `json:"description" yaml:"description"`
+	Required     bool     `json:"required" yaml:"required"`
+	DefaultValue any      `json:"defaultValue,omitempty" yaml:"defaultValue,omitempty"`
+	Options      []string `json:"options,omitempty" yaml:"options,omitempty"`
+	Validation   string   `json:"validation,omitempty" yaml:"validation,omitempty"` // Regex or validation rule
 }
 
 // TemplateExample provides example configurations for a template.
 type TemplateExample struct {
-	Name        string                 `json:"name" yaml:"name"`
-	Description string                 `json:"description" yaml:"description"`
-	Variables   map[string]interface{} `json:"variables" yaml:"variables"`
+	Name        string         `json:"name" yaml:"name"`
+	Description string         `json:"description" yaml:"description"`
+	Variables   map[string]any `json:"variables" yaml:"variables"`
 }
 
 // AutomationRuleService defines the interface for managing automation rules.
@@ -335,7 +335,7 @@ type AutomationRuleService interface {
 	ListTemplates(ctx context.Context, category string) ([]*AutomationRuleTemplate, error)
 	UpdateTemplate(ctx context.Context, template *AutomationRuleTemplate) error
 	DeleteTemplate(ctx context.Context, templateID string) error
-	InstantiateTemplate(ctx context.Context, templateID string, variables map[string]interface{}) (*AutomationRule, error)
+	InstantiateTemplate(ctx context.Context, templateID string, variables map[string]any) (*AutomationRule, error)
 
 	// Execution History
 	GetExecution(ctx context.Context, executionID string) (*AutomationRuleExecution, error)

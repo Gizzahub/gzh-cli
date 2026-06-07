@@ -46,7 +46,7 @@ This command checks:
 			}
 
 			// Parse YAML
-			var cfg interface{}
+			var cfg any
 			if err := yaml.Unmarshal(data, &cfg); err != nil {
 				return fmt.Errorf("invalid YAML syntax: %w", err)
 			}

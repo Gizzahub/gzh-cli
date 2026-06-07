@@ -5,6 +5,7 @@ package clone
 
 import (
 	"regexp"
+	"slices"
 	"time"
 )
 
@@ -317,11 +318,8 @@ func (r *RepositoryInfo) Matches(opts *CloneOptions) bool {
 	if len(opts.Topics) > 0 {
 		hasRequiredTopic := false
 		for _, requiredTopic := range opts.Topics {
-			for _, repoTopic := range r.Topics {
-				if repoTopic == requiredTopic {
-					hasRequiredTopic = true
-					break
-				}
+			if slices.Contains(r.Topics, requiredTopic) {
+				hasRequiredTopic = true
 			}
 			if hasRequiredTopic {
 				break

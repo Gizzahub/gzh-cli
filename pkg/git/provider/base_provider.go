@@ -91,8 +91,8 @@ func (b *BaseProvider) IsAuthenticated() bool {
 }
 
 // DefaultRepositoryMetadata returns default metadata for repositories.
-func (b *BaseProvider) DefaultRepositoryMetadata() map[string]interface{} {
-	return map[string]interface{}{
+func (b *BaseProvider) DefaultRepositoryMetadata() map[string]any {
+	return map[string]any{
 		"provider":     b.name,
 		"provider_url": b.baseURL,
 		"created_at":   time.Now().UTC(),

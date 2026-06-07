@@ -41,7 +41,7 @@ func TestWorkflowAuditor_ExtractTriggers(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		input    interface{}
+		input    any
 		expected []string
 	}{
 		{
@@ -51,12 +51,12 @@ func TestWorkflowAuditor_ExtractTriggers(t *testing.T) {
 		},
 		{
 			name:     "array triggers",
-			input:    []interface{}{"push", "pull_request"},
+			input:    []any{"push", "pull_request"},
 			expected: []string{"push", "pull_request"},
 		},
 		{
 			name:     "map triggers",
-			input:    map[string]interface{}{"push": nil, "release": map[string]interface{}{"types": []string{"published"}}},
+			input:    map[string]any{"push": nil, "release": map[string]any{"types": []string{"published"}}},
 			expected: []string{"push", "release"},
 		},
 	}
@@ -72,7 +72,7 @@ func TestWorkflowAuditor_ExtractTriggers(t *testing.T) {
 func TestWorkflowAuditor_NormalizePermissions(t *testing.T) {
 	auditor := createTestAuditor()
 
-	input := map[string]interface{}{
+	input := map[string]any{
 		"contents": "read",
 		"packages": "write",
 		"metadata": "read",

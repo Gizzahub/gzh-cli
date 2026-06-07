@@ -4,6 +4,7 @@
 package compat
 
 import (
+	"maps"
 	"os"
 	"os/exec"
 	"strings"
@@ -68,9 +69,7 @@ func BuildFilterChain(manager, plugin string) []CompatibilityFilter {
 func MergeEnvFromFilters(filters []CompatibilityFilter) map[string]string {
 	merged := make(map[string]string)
 	for _, f := range filters {
-		for k, v := range f.Env() {
-			merged[k] = v
-		}
+		maps.Copy(merged, f.Env())
 	}
 	return merged
 }

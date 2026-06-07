@@ -271,7 +271,7 @@ func TestProfiler_GetRuntimeStats(t *testing.T) {
 	assert.Contains(t, stats, "memory")
 	assert.Contains(t, stats, "timestamp")
 
-	memory, ok := stats["memory"].(map[string]interface{})
+	memory, ok := stats["memory"].(map[string]any)
 	require.True(t, ok)
 	assert.Contains(t, memory, "alloc_bytes")
 	assert.Contains(t, memory, "total_alloc_bytes")
@@ -437,7 +437,7 @@ func TestProfiler_ConcurrentProfileOperations(t *testing.T) {
 	// Run multiple concurrent profile operations with small delays to ensure different timestamps
 	done := make(chan error, 3)
 
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		go func(id int) {
 			// Add small delay to ensure different timestamps
 			time.Sleep(time.Duration(id*10) * time.Millisecond)
@@ -450,7 +450,7 @@ func TestProfiler_ConcurrentProfileOperations(t *testing.T) {
 	}
 
 	// Wait for all operations to complete
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		err := <-done
 		assert.NoError(t, err)
 	}

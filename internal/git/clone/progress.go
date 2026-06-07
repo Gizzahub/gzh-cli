@@ -45,7 +45,7 @@ func (p *ProgressReporter) Start(total int) {
 		case FormatProgress:
 			p.Info("Starting clone operation for %d repositories...", total)
 		case FormatJSON:
-			p.printJSONEvent("start", map[string]interface{}{
+			p.printJSONEvent("start", map[string]any{
 				"total":      total,
 				"started_at": p.startTime.Format(time.RFC3339),
 			})
@@ -62,7 +62,7 @@ func (p *ProgressReporter) Success(repoName string) {
 		case FormatProgress:
 			p.printProgress(repoName, "✅", "completed")
 		case FormatJSON:
-			p.printJSONEvent("success", map[string]interface{}{
+			p.printJSONEvent("success", map[string]any{
 				"repository": repoName,
 				"completed":  p.completed,
 				"total":      p.total,
@@ -86,7 +86,7 @@ func (p *ProgressReporter) Fail(repoName string, err error) {
 				p.printProgress(repoName, "❌", "failed")
 			}
 		case FormatJSON:
-			p.printJSONEvent("fail", map[string]interface{}{
+			p.printJSONEvent("fail", map[string]any{
 				"repository": repoName,
 				"error":      err.Error(),
 				"failed":     p.failed,
@@ -111,7 +111,7 @@ func (p *ProgressReporter) Skip(repoName, reason string) {
 		case FormatProgress:
 			p.printProgress(repoName, "⏭️", fmt.Sprintf("skipped: %s", reason))
 		case FormatJSON:
-			p.printJSONEvent("skip", map[string]interface{}{
+			p.printJSONEvent("skip", map[string]any{
 				"repository": repoName,
 				"reason":     reason,
 				"skipped":    p.skipped,
@@ -130,7 +130,7 @@ func (p *ProgressReporter) Retry(repoName string, attempt int, err error) {
 		case FormatProgress:
 			p.printProgress(repoName, "🔄", fmt.Sprintf("retry %d: %v", attempt, err))
 		case FormatJSON:
-			p.printJSONEvent("retry", map[string]interface{}{
+			p.printJSONEvent("retry", map[string]any{
 				"repository": repoName,
 				"attempt":    attempt,
 				"error":      err.Error(),
@@ -142,13 +142,13 @@ func (p *ProgressReporter) Retry(repoName string, attempt int, err error) {
 }
 
 // Info prints an informational message.
-func (p *ProgressReporter) Info(format string, args ...interface{}) {
+func (p *ProgressReporter) Info(format string, args ...any) {
 	if !p.quiet {
 		switch p.format {
 		case FormatProgress, FormatTable:
 			fmt.Printf(format+"\n", args...)
 		case FormatJSON:
-			p.printJSONEvent("info", map[string]interface{}{
+			p.printJSONEvent("info", map[string]any{
 				"message": fmt.Sprintf(format, args...),
 			})
 		}
@@ -156,13 +156,13 @@ func (p *ProgressReporter) Info(format string, args ...interface{}) {
 }
 
 // Warning prints a warning message.
-func (p *ProgressReporter) Warning(format string, args ...interface{}) {
+func (p *ProgressReporter) Warning(format string, args ...any) {
 	if !p.quiet {
 		switch p.format {
 		case FormatProgress, FormatTable:
 			fmt.Printf("⚠️  "+format+"\n", args...)
 		case FormatJSON:
-			p.printJSONEvent("warning", map[string]interface{}{
+			p.printJSONEvent("warning", map[string]any{
 				"message": fmt.Sprintf(format, args...),
 			})
 		}
@@ -170,12 +170,12 @@ func (p *ProgressReporter) Warning(format string, args ...interface{}) {
 }
 
 // Error prints an error message.
-func (p *ProgressReporter) Error(format string, args ...interface{}) {
+func (p *ProgressReporter) Error(format string, args ...any) {
 	switch p.format {
 	case FormatProgress, FormatTable:
 		fmt.Fprintf(os.Stderr, "❌ "+format+"\n", args...)
 	case FormatJSON:
-		p.printJSONEvent("error", map[string]interface{}{
+		p.printJSONEvent("error", map[string]any{
 			"message": fmt.Sprintf(format, args...),
 		})
 	default:
@@ -194,7 +194,7 @@ func (p *ProgressReporter) Finish() {
 			p.Info("Total: %d, Completed: %d, Failed: %d, Skipped: %d",
 				p.total, p.completed, p.failed, p.skipped)
 		case FormatJSON:
-			p.printJSONEvent("finish", map[string]interface{}{
+			p.printJSONEvent("finish", map[string]any{
 				"total":     p.total,
 				"completed": p.completed,
 				"failed":    p.failed,
@@ -217,7 +217,7 @@ func (p *ProgressReporter) ResumeSession(session *Session) {
 			progress := session.GetProgress()
 			p.Info("Resuming session %s (%.1f%% complete)", session.ID, progress)
 		case FormatJSON:
-			p.printJSONEvent("resume", map[string]interface{}{
+			p.printJSONEvent("resume", map[string]any{
 				"session_id": session.ID,
 				"progress":   session.GetProgress(),
 				"started_at": session.StartedAt.Format(time.RFC3339),
@@ -233,8 +233,8 @@ func (p *ProgressReporter) printProgress(repoName, icon, status string) {
 }
 
 // printJSONEvent prints a JSON event.
-func (p *ProgressReporter) printJSONEvent(eventType string, data map[string]interface{}) {
-	event := map[string]interface{}{
+func (p *ProgressReporter) printJSONEvent(eventType string, data map[string]any) {
+	event := map[string]any{
 		"timestamp": time.Now().Format(time.RFC3339),
 		"type":      eventType,
 		"data":      data,

@@ -26,7 +26,7 @@ type PerformanceSnapshot struct {
 	GitBranch   string                      `json:"git_branch,omitempty"`
 	Environment BenchmarkEnvironment        `json:"environment"`
 	Benchmarks  []profiling.BenchmarkResult `json:"benchmarks"`
-	Metadata    map[string]interface{}      `json:"metadata,omitempty"`
+	Metadata    map[string]any              `json:"metadata,omitempty"`
 }
 
 // SnapshotAnalysis represents the analysis results comparing snapshots.
@@ -111,7 +111,7 @@ func NewSnapshotManager(snapshotDir string) *SnapshotManager {
 }
 
 // CreateSnapshot creates a new performance snapshot.
-func (sm *SnapshotManager) CreateSnapshot(ctx context.Context, benchmarks []profiling.BenchmarkResult, metadata map[string]interface{}) (*PerformanceSnapshot, error) {
+func (sm *SnapshotManager) CreateSnapshot(ctx context.Context, benchmarks []profiling.BenchmarkResult, metadata map[string]any) (*PerformanceSnapshot, error) {
 	// Ensure snapshot directory exists
 	if err := os.MkdirAll(sm.snapshotDir, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create snapshot directory: %w", err)

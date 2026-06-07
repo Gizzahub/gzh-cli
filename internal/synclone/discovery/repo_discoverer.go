@@ -188,8 +188,8 @@ func (rd *RepoDiscoverer) parseGitHubURL(url string) (provider, org, repo string
 	provider = "github"
 
 	// Handle SSH format: git@github.com:org/repo
-	if strings.HasPrefix(url, "git@github.com:") {
-		path := strings.TrimPrefix(url, "git@github.com:")
+	if after, ok := strings.CutPrefix(url, "git@github.com:"); ok {
+		path := after
 		parts := strings.Split(path, "/")
 		if len(parts) >= 2 {
 			org = parts[0]
@@ -199,8 +199,8 @@ func (rd *RepoDiscoverer) parseGitHubURL(url string) (provider, org, repo string
 	}
 
 	// Handle HTTPS format: https://github.com/org/repo
-	if strings.HasPrefix(url, "https://github.com/") {
-		path := strings.TrimPrefix(url, "https://github.com/")
+	if after, ok := strings.CutPrefix(url, "https://github.com/"); ok {
+		path := after
 		parts := strings.Split(path, "/")
 		if len(parts) >= 2 {
 			org = parts[0]
@@ -217,8 +217,8 @@ func (rd *RepoDiscoverer) parseGitLabURL(url string) (provider, org, repo string
 	provider = "gitlab"
 
 	// Handle SSH format: git@gitlab.com:org/repo
-	if strings.HasPrefix(url, "git@gitlab.com:") {
-		path := strings.TrimPrefix(url, "git@gitlab.com:")
+	if after, ok := strings.CutPrefix(url, "git@gitlab.com:"); ok {
+		path := after
 		parts := strings.Split(path, "/")
 		if len(parts) >= 2 {
 			org = parts[0]
@@ -228,8 +228,8 @@ func (rd *RepoDiscoverer) parseGitLabURL(url string) (provider, org, repo string
 	}
 
 	// Handle HTTPS format: https://gitlab.com/org/repo
-	if strings.HasPrefix(url, "https://gitlab.com/") {
-		path := strings.TrimPrefix(url, "https://gitlab.com/")
+	if after, ok := strings.CutPrefix(url, "https://gitlab.com/"); ok {
+		path := after
 		parts := strings.Split(path, "/")
 		if len(parts) >= 2 {
 			org = parts[0]
@@ -246,8 +246,8 @@ func (rd *RepoDiscoverer) parseBitbucketURL(url string) (provider, org, repo str
 	provider = "bitbucket"
 
 	// Handle SSH format: git@bitbucket.org:org/repo
-	if strings.HasPrefix(url, "git@bitbucket.org:") {
-		path := strings.TrimPrefix(url, "git@bitbucket.org:")
+	if after, ok := strings.CutPrefix(url, "git@bitbucket.org:"); ok {
+		path := after
 		parts := strings.Split(path, "/")
 		if len(parts) >= 2 {
 			org = parts[0]
@@ -257,8 +257,8 @@ func (rd *RepoDiscoverer) parseBitbucketURL(url string) (provider, org, repo str
 	}
 
 	// Handle HTTPS format: https://bitbucket.org/org/repo
-	if strings.HasPrefix(url, "https://bitbucket.org/") {
-		path := strings.TrimPrefix(url, "https://bitbucket.org/")
+	if after, ok := strings.CutPrefix(url, "https://bitbucket.org/"); ok {
+		path := after
 		parts := strings.Split(path, "/")
 		if len(parts) >= 2 {
 			org = parts[0]

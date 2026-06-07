@@ -57,7 +57,7 @@ func (f *TestFixtures) Cleanup() {
 }
 
 // CreateConfigFile creates a test configuration file.
-func (f *TestFixtures) CreateConfigFile(filename string, config interface{}) (string, error) {
+func (f *TestFixtures) CreateConfigFile(filename string, config any) (string, error) {
 	data, err := yaml.Marshal(config)
 	if err != nil {
 		return "", err
@@ -369,7 +369,7 @@ type TestScenario struct {
 type TestStep struct {
 	Name   string
 	Action string
-	Data   interface{}
+	Data   any
 }
 
 // Helper functions for creating pointers.

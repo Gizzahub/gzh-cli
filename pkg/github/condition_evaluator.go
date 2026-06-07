@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ import (
 type ConditionEvaluator interface {
 	// Core evaluation methods
 	EvaluateConditions(ctx context.Context, conditions *AutomationConditions, event *GitHubEvent, context *EvaluationContext) (*EvaluationResult, error)
-	EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error)
+	EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]any) (bool, error)
 
 	// Specific condition type evaluators
 	EvaluateEventConditions(event *GitHubEvent, conditions *AutomationConditions) (bool, error)
@@ -34,13 +35,13 @@ type ConditionEvaluator interface {
 
 // EvaluationContext provides additional context for condition evaluation.
 type EvaluationContext struct {
-	Repository   *RepositoryInfo        `json:"repository,omitempty"`
-	Organization *OrganizationInfo      `json:"organization,omitempty"`
-	User         *UserInfo              `json:"user,omitempty"`
-	Environment  string                 `json:"environment,omitempty"`
-	Variables    map[string]interface{} `json:"variables,omitempty"`
-	Metadata     map[string]interface{} `json:"metadata,omitempty"`
-	Timezone     *time.Location         `json:"-"`
+	Repository   *RepositoryInfo   `json:"repository,omitempty"`
+	Organization *OrganizationInfo `json:"organization,omitempty"`
+	User         *UserInfo         `json:"user,omitempty"`
+	Environment  string            `json:"environment,omitempty"`
+	Variables    map[string]any    `json:"variables,omitempty"`
+	Metadata     map[string]any    `json:"metadata,omitempty"`
+	Timezone     *time.Location    `json:"-"`
 }
 
 // OrganizationInfo contains information about a GitHub organization.
@@ -78,15 +79,15 @@ type EvaluationResult struct {
 	PayloadMatchResults []PayloadMatchResult         `json:"payloadMatchResults,omitempty"`
 	Errors              []string                     `json:"errors,omitempty"`
 	Warnings            []string                     `json:"warnings,omitempty"`
-	Debug               map[string]interface{}       `json:"debug,omitempty"`
+	Debug               map[string]any               `json:"debug,omitempty"`
 }
 
 // PayloadMatchResult represents the result of a single payload matcher.
 type PayloadMatchResult struct {
 	Path          string        `json:"path"`
 	Operator      MatchOperator `json:"operator"`
-	ExpectedValue interface{}   `json:"expectedValue"`
-	ActualValue   interface{}   `json:"actualValue"`
+	ExpectedValue any           `json:"expectedValue"`
+	ActualValue   any           `json:"actualValue"`
 	Matched       bool          `json:"matched"`
 	Error         string        `json:"error,omitempty"`
 }
@@ -143,22 +144,22 @@ type EvaluationExplanation struct {
 
 // ConditionExplanation explains how a specific condition was evaluated.
 type ConditionExplanation struct {
-	Type        string      `json:"type"`
-	Description string      `json:"description"`
-	Expected    interface{} `json:"expected"`
-	Actual      interface{} `json:"actual"`
-	Result      bool        `json:"result"`
-	Reason      string      `json:"reason"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	Expected    any    `json:"expected"`
+	Actual      any    `json:"actual"`
+	Result      bool   `json:"result"`
+	Reason      string `json:"reason"`
 }
 
 // PayloadMatchExplanation explains payload matching results.
 type PayloadMatchExplanation struct {
-	Path        string      `json:"path"`
-	Operator    string      `json:"operator"`
-	Expected    interface{} `json:"expected"`
-	Actual      interface{} `json:"actual"`
-	Result      bool        `json:"result"`
-	Explanation string      `json:"explanation"`
+	Path        string `json:"path"`
+	Operator    string `json:"operator"`
+	Expected    any    `json:"expected"`
+	Actual      any    `json:"actual"`
+	Result      bool   `json:"result"`
+	Explanation string `json:"explanation"`
 }
 
 // TimeEvaluationExplanation explains time-based condition evaluation.
@@ -209,7 +210,7 @@ func (e *conditionEvaluatorImpl) EvaluateConditions(ctx context.Context, conditi
 		PayloadMatchResults: []PayloadMatchResult{},
 		Errors:              []string{},
 		Warnings:            []string{},
-		Debug:               make(map[string]interface{}),
+		Debug:               make(map[string]any),
 	}
 
 	e.logger.Debug("Starting condition evaluation", "event_id", event.ID, "event_type", event.Type)
@@ -459,14 +460,7 @@ func (e *conditionEvaluatorImpl) EvaluateTimeConditions(timestamp time.Time, con
 	// Check days of week (0 = Sunday, 1 = Monday, etc.)
 	if len(conditions.DaysOfWeek) > 0 {
 		weekday := int(timestamp.Weekday())
-		matched := false
-
-		for _, day := range conditions.DaysOfWeek {
-			if day == weekday {
-				matched = true
-				break
-			}
-		}
+		matched := slices.Contains(conditions.DaysOfWeek, weekday)
 
 		if !matched {
 			return false, nil
@@ -476,14 +470,7 @@ func (e *conditionEvaluatorImpl) EvaluateTimeConditions(timestamp time.Time, con
 	// Check hours of day (0-23)
 	if len(conditions.HoursOfDay) > 0 {
 		hour := timestamp.Hour()
-		matched := false
-
-		for _, h := range conditions.HoursOfDay {
-			if h == hour {
-				matched = true
-				break
-			}
-		}
+		matched := slices.Contains(conditions.HoursOfDay, hour)
 
 		if !matched {
 			return false, nil
@@ -588,13 +575,13 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 }
 
 // EvaluatePayloadMatcher evaluates a single payload matcher.
-func (e *conditionEvaluatorImpl) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error) {
+func (e *conditionEvaluatorImpl) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]any) (bool, error) {
 	result, err := e.evaluatePayloadMatcherWithResult(matcher, payload)
 	return result.Matched, err
 }
 
 // evaluatePayloadMatcherWithResult evaluates a payload matcher and returns detailed results.
-func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *PayloadMatcher, payload map[string]interface{}) (PayloadMatchResult, error) {
+func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *PayloadMatcher, payload map[string]any) (PayloadMatchResult, error) {
 	result := PayloadMatchResult{
 		Path:          matcher.Path,
 		Operator:      matcher.Operator,
@@ -658,7 +645,7 @@ func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *Paylo
 }
 
 // evaluateOperator evaluates a value against an expected value using the specified operator.
-func (e *conditionEvaluatorImpl) evaluateOperator(operator MatchOperator, actual, expected interface{}, caseSensitive bool) (bool, error) {
+func (e *conditionEvaluatorImpl) evaluateOperator(operator MatchOperator, actual, expected any, caseSensitive bool) (bool, error) {
 	switch operator {
 	case MatchOperatorEquals:
 		return e.compareValues(actual, expected, caseSensitive, "equals")
@@ -695,7 +682,7 @@ func (e *conditionEvaluatorImpl) evaluateOperator(operator MatchOperator, actual
 
 // Helper methods for condition evaluation
 
-func (e *conditionEvaluatorImpl) compareValues(actual, expected interface{}, caseSensitive bool, operation string) (bool, error) {
+func (e *conditionEvaluatorImpl) compareValues(actual, expected any, caseSensitive bool, operation string) (bool, error) {
 	actualStr := fmt.Sprintf("%v", actual)
 	expectedStr := fmt.Sprintf("%v", expected)
 
@@ -718,7 +705,7 @@ func (e *conditionEvaluatorImpl) compareValues(actual, expected interface{}, cas
 	}
 }
 
-func (e *conditionEvaluatorImpl) matchRegex(actual, expected interface{}, caseSensitive bool) (bool, error) {
+func (e *conditionEvaluatorImpl) matchRegex(actual, expected any, caseSensitive bool) (bool, error) {
 	actualStr := fmt.Sprintf("%v", actual)
 	patternStr := fmt.Sprintf("%v", expected)
 
@@ -734,7 +721,7 @@ func (e *conditionEvaluatorImpl) matchRegex(actual, expected interface{}, caseSe
 	return matched, nil
 }
 
-func (e *conditionEvaluatorImpl) compareNumeric(actual, expected interface{}, operation string) (bool, error) {
+func (e *conditionEvaluatorImpl) compareNumeric(actual, expected any, operation string) (bool, error) {
 	actualNum, err := e.toFloat64(actual)
 	if err != nil {
 		return false, fmt.Errorf("actual value is not numeric: %v", actual)
@@ -755,7 +742,7 @@ func (e *conditionEvaluatorImpl) compareNumeric(actual, expected interface{}, op
 	}
 }
 
-func (e *conditionEvaluatorImpl) isEmpty(value interface{}) bool {
+func (e *conditionEvaluatorImpl) isEmpty(value any) bool {
 	if value == nil {
 		return true
 	}
@@ -763,16 +750,16 @@ func (e *conditionEvaluatorImpl) isEmpty(value interface{}) bool {
 	switch v := value.(type) {
 	case string:
 		return v == ""
-	case []interface{}:
+	case []any:
 		return len(v) == 0
-	case map[string]interface{}:
+	case map[string]any:
 		return len(v) == 0
 	default:
 		return false
 	}
 }
 
-func (e *conditionEvaluatorImpl) toFloat64(value interface{}) (float64, error) {
+func (e *conditionEvaluatorImpl) toFloat64(value any) (float64, error) {
 	switch v := value.(type) {
 	case float64:
 		return v, nil
@@ -815,19 +802,19 @@ func (e *conditionEvaluatorImpl) hasContentConditions(conditions *AutomationCond
 		len(conditions.PathPatterns) > 0
 }
 
-func (e *conditionEvaluatorImpl) extractBranchFromPayload(payload map[string]interface{}) string {
+func (e *conditionEvaluatorImpl) extractBranchFromPayload(payload map[string]any) string {
 	// Try to extract branch from different event types
 	if ref, ok := payload["ref"].(string); ok {
-		if strings.HasPrefix(ref, "refs/heads/") {
-			return strings.TrimPrefix(ref, "refs/heads/")
+		if after, ok0 := strings.CutPrefix(ref, "refs/heads/"); ok0 {
+			return after
 		}
 
 		return ref
 	}
 
 	// For pull request events
-	if pr, ok := payload["pull_request"].(map[string]interface{}); ok {
-		if head, ok := pr["head"].(map[string]interface{}); ok {
+	if pr, ok := payload["pull_request"].(map[string]any); ok {
+		if head, ok := pr["head"].(map[string]any); ok {
 			if ref, ok := head["ref"].(string); ok {
 				return ref
 			}
@@ -837,14 +824,14 @@ func (e *conditionEvaluatorImpl) extractBranchFromPayload(payload map[string]int
 	return ""
 }
 
-func (e *conditionEvaluatorImpl) extractFilesFromPayload(payload map[string]interface{}) []string {
+func (e *conditionEvaluatorImpl) extractFilesFromPayload(payload map[string]any) []string {
 	var files []string
 
 	// For push events
-	if commits, ok := payload["commits"].([]interface{}); ok {
+	if commits, ok := payload["commits"].([]any); ok {
 		for _, commitIntf := range commits {
-			if commit, ok := commitIntf.(map[string]interface{}); ok {
-				if added, ok := commit["added"].([]interface{}); ok {
+			if commit, ok := commitIntf.(map[string]any); ok {
+				if added, ok := commit["added"].([]any); ok {
 					for _, file := range added {
 						if fileStr, ok := file.(string); ok {
 							files = append(files, fileStr)
@@ -852,7 +839,7 @@ func (e *conditionEvaluatorImpl) extractFilesFromPayload(payload map[string]inte
 					}
 				}
 
-				if modified, ok := commit["modified"].([]interface{}); ok {
+				if modified, ok := commit["modified"].([]any); ok {
 					for _, file := range modified {
 						if fileStr, ok := file.(string); ok {
 							files = append(files, fileStr)
@@ -864,8 +851,8 @@ func (e *conditionEvaluatorImpl) extractFilesFromPayload(payload map[string]inte
 	}
 
 	// For pull request events
-	if pr, ok := payload["pull_request"].(map[string]interface{}); ok {
-		if changedFiles, ok := pr["changed_files"].([]interface{}); ok {
+	if pr, ok := payload["pull_request"].(map[string]any); ok {
+		if changedFiles, ok := pr["changed_files"].([]any); ok {
 			for _, file := range changedFiles {
 				if fileStr, ok := file.(string); ok {
 					files = append(files, fileStr)
@@ -877,7 +864,7 @@ func (e *conditionEvaluatorImpl) extractFilesFromPayload(payload map[string]inte
 	return files
 }
 
-func (e *conditionEvaluatorImpl) extractPathsFromPayload(payload map[string]interface{}) []string {
+func (e *conditionEvaluatorImpl) extractPathsFromPayload(payload map[string]any) []string {
 	// Similar to extractFilesFromPayload but with directory paths
 	files := e.extractFilesFromPayload(payload)
 	pathMap := make(map[string]bool)

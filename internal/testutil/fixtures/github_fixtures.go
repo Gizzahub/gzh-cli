@@ -30,7 +30,7 @@ func (f *GitHubFixtures) SimpleBulkCloneRequest() *github.BulkCloneRequest {
 // LargeBulkCloneRequest returns a bulk clone request with many repositories.
 func (f *GitHubFixtures) LargeBulkCloneRequest() *github.BulkCloneRequest {
 	repos := make([]string, 100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		repos[i] = "repo" + string(rune(i))
 	}
 
@@ -168,7 +168,7 @@ func (f *GitHubFixtures) TestRepositoryList() []string {
 // LargeRepositoryList returns a large list of repository names for performance testing.
 func (f *GitHubFixtures) LargeRepositoryList() []string {
 	repos := make([]string, 1000)
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		repos[i] = "repo" + string(rune(i))
 	}
 

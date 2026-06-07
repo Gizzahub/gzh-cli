@@ -17,23 +17,23 @@ type CommonOptions struct {
 
 // NetworkProfile represents a complete network environment configuration.
 type NetworkProfile struct {
-	Name        string                 `yaml:"name" json:"name"`
-	Description string                 `yaml:"description,omitempty" json:"description,omitempty"`
-	Auto        bool                   `yaml:"auto,omitempty" json:"auto,omitempty"`
-	Priority    int                    `yaml:"priority,omitempty" json:"priority,omitempty"`
-	Conditions  []NetworkCondition     `yaml:"conditions,omitempty" json:"conditions,omitempty"`
-	Components  NetworkComponents      `yaml:"components" json:"components"`
-	Metadata    map[string]interface{} `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-	CreatedAt   time.Time              `yaml:"createdAt" json:"createdAt"`
-	UpdatedAt   time.Time              `yaml:"updatedAt" json:"updatedAt"`
+	Name        string             `yaml:"name" json:"name"`
+	Description string             `yaml:"description,omitempty" json:"description,omitempty"`
+	Auto        bool               `yaml:"auto,omitempty" json:"auto,omitempty"`
+	Priority    int                `yaml:"priority,omitempty" json:"priority,omitempty"`
+	Conditions  []NetworkCondition `yaml:"conditions,omitempty" json:"conditions,omitempty"`
+	Components  NetworkComponents  `yaml:"components" json:"components"`
+	Metadata    map[string]any     `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	CreatedAt   time.Time          `yaml:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time          `yaml:"updatedAt" json:"updatedAt"`
 }
 
 // NetworkCondition defines when a profile should be automatically activated.
 type NetworkCondition struct {
-	Type     string                 `yaml:"type" json:"type"` // wifi_ssid, ip_range, hostname, etc.
-	Value    string                 `yaml:"value" json:"value"`
-	Operator string                 `yaml:"operator,omitempty" json:"operator,omitempty"` // equals, contains, matches
-	Metadata map[string]interface{} `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	Type     string         `yaml:"type" json:"type"` // wifi_ssid, ip_range, hostname, etc.
+	Value    string         `yaml:"value" json:"value"`
+	Operator string         `yaml:"operator,omitempty" json:"operator,omitempty"` // equals, contains, matches
+	Metadata map[string]any `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 }
 
 // NetworkComponents contains all network component configurations.
@@ -147,11 +147,11 @@ type ComponentStatuses struct {
 
 // ComponentStatus represents the status of a network component.
 type ComponentStatus struct {
-	Active    bool                   `json:"active"`
-	Status    string                 `json:"status"`
-	Details   map[string]interface{} `json:"details,omitempty"`
-	Error     string                 `json:"error,omitempty"`
-	LastCheck time.Time              `json:"lastCheck"`
+	Active    bool           `json:"active"`
+	Status    string         `json:"status"`
+	Details   map[string]any `json:"details,omitempty"`
+	Error     string         `json:"error,omitempty"`
+	LastCheck time.Time      `json:"lastCheck"`
 }
 
 // HealthStatus represents overall network health.

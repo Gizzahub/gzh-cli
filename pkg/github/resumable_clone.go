@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -63,10 +64,7 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		config.PoolConfig.CloneWorkers = parallel
 		config.PoolConfig.UpdateWorkers = parallel + (parallel / 2)
 
-		config.PoolConfig.ConfigWorkers = parallel / 2
-		if config.PoolConfig.ConfigWorkers < 1 {
-			config.PoolConfig.ConfigWorkers = 1
-		}
+		config.PoolConfig.ConfigWorkers = max(parallel/2, 1)
 	}
 
 	if maxRetries > 0 {
@@ -335,12 +333,7 @@ func (rcm *ResumableCloneManager) getResumeRepositories(state *synclonepkg.Clone
 
 // containsString checks if a string slice contains a specific string.
 func (rcm *ResumableCloneManager) containsString(slice []string, str string) bool {
-	for _, item := range slice {
-		if item == str {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, str)
 }
 
 // processRepositoryJob processes a single repository job for GitHub.

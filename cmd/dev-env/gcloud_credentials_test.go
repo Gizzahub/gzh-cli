@@ -100,7 +100,7 @@ func TestGcloudCredentialsSaveLoad(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create application_default_credentials.json
-	adcContent := map[string]interface{}{
+	adcContent := map[string]any{
 		"client_id":     "123456789.apps.googleusercontent.com",
 		"client_secret": "test-secret",
 		"refresh_token": "test-refresh-token",
@@ -402,7 +402,7 @@ func TestGcloudCredentialsDisplayInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create application_default_credentials.json with service account info
-	adcContent := map[string]interface{}{
+	adcContent := map[string]any{
 		"type":         "service_account",
 		"client_email": "test-service@my-project.iam.gserviceaccount.com",
 		"private_key":  "-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n",

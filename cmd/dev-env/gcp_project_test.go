@@ -60,12 +60,12 @@ func TestGCPProjectManager_LoadConfigurations(t *testing.T) {
 	require.NoError(t, os.MkdirAll(defaultConfigDir, 0o755))
 
 	// Create properties file in JSON format
-	properties := map[string]interface{}{
-		"core": map[string]interface{}{
+	properties := map[string]any{
+		"core": map[string]any{
 			"project": "test-project-123",
 			"account": "test@example.com",
 		},
-		"compute": map[string]interface{}{
+		"compute": map[string]any{
 			"region": "us-central1",
 			"zone":   "us-central1-a",
 		},
@@ -80,12 +80,12 @@ func TestGCPProjectManager_LoadConfigurations(t *testing.T) {
 	stagingConfigDir := filepath.Join(configurationsDir, "staging")
 	require.NoError(t, os.MkdirAll(stagingConfigDir, 0o755))
 
-	stagingProperties := map[string]interface{}{
-		"core": map[string]interface{}{
+	stagingProperties := map[string]any{
+		"core": map[string]any{
 			"project": "staging-project-456",
 			"account": "staging@example.com",
 		},
-		"compute": map[string]interface{}{
+		"compute": map[string]any{
 			"region": "us-west1",
 			"zone":   "us-west1-b",
 		},
@@ -302,12 +302,12 @@ func TestGCPProjectManager_ParseConfigurationProperties(t *testing.T) {
 
 	t.Run("JSON format", func(t *testing.T) {
 		tmpFile := filepath.Join(t.TempDir(), "properties")
-		properties := map[string]interface{}{
-			"core": map[string]interface{}{
+		properties := map[string]any{
+			"core": map[string]any{
 				"project": "json-project",
 				"account": "json@example.com",
 			},
-			"compute": map[string]interface{}{
+			"compute": map[string]any{
 				"region": "asia-east1",
 				"zone":   "asia-east1-a",
 			},
@@ -452,17 +452,17 @@ func BenchmarkGCPProjectManager_LoadConfigurations(b *testing.B) {
 	require.NoError(b, os.MkdirAll(configurationsDir, 0o755))
 
 	// Create 10 test configurations
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		configName := fmt.Sprintf("config-%d", i)
 		configDir := filepath.Join(configurationsDir, configName)
 		require.NoError(b, os.MkdirAll(configDir, 0o755))
 
-		properties := map[string]interface{}{
-			"core": map[string]interface{}{
+		properties := map[string]any{
+			"core": map[string]any{
 				"project": fmt.Sprintf("project-%d", i),
 				"account": fmt.Sprintf("user%d@example.com", i),
 			},
-			"compute": map[string]interface{}{
+			"compute": map[string]any{
 				"region": "us-central1",
 				"zone":   "us-central1-a",
 			},

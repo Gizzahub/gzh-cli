@@ -28,7 +28,7 @@ type RepositoryJob struct {
 	Path             string
 	Branch           string
 	Strategy         string
-	WorkerPoolConfig map[string]interface{} // For configuration operations
+	WorkerPoolConfig map[string]any // For configuration operations
 }
 
 // RepositoryResult represents the result of a repository operation.
@@ -193,7 +193,7 @@ func (rp *RepositoryWorkerPool) ProcessRepositories(ctx context.Context,
 
 	// Collect results
 	results := make([]RepositoryResult, 0, len(jobs))
-	for i := 0; i < len(jobs); i++ {
+	for range jobs {
 		select {
 		case result := <-rp.results:
 			results = append(results, result)

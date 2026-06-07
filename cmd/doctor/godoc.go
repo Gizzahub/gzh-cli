@@ -153,7 +153,7 @@ func runGodocAnalysis(ctx context.Context, flags *cli.CommonFlags, opts godocOpt
 	switch flags.Format {
 	case "json", "yaml":
 		// For structured formats, return the raw data
-		output := map[string]interface{}{
+		output := map[string]any{
 			"packages":         results,
 			"total_packages":   len(results),
 			"failed_packages":  failedPackages,

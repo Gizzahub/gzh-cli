@@ -6,6 +6,7 @@ package profile
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -465,17 +466,17 @@ func joinComponents(components []string) string {
 		return ""
 	}
 
-	result := ""
+	var result strings.Builder
 	for i, component := range components {
 		if i > 0 {
 			if i == len(components)-1 {
-				result += " and "
+				result.WriteString(" and ")
 			} else {
-				result += ", "
+				result.WriteString(", ")
 			}
 		}
-		result += component
+		result.WriteString(component)
 	}
 
-	return result
+	return result.String()
 }

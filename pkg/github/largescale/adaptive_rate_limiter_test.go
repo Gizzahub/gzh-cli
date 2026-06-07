@@ -141,7 +141,7 @@ func TestRateLimiterAdaptiveBehavior(t *testing.T) {
 			ctx := context.Background()
 			start := time.Now()
 
-			for i := 0; i < 3; i++ {
+			for range 3 {
 				err := rl.Wait(ctx)
 				if err != nil {
 					t.Fatalf("Wait failed: %v", err)
@@ -231,7 +231,7 @@ func TestRateLimiterReset(t *testing.T) {
 
 	// Make some requests to populate history
 	ctx := context.Background()
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		if err := rl.Wait(ctx); err != nil {
 			t.Logf("Warning: rate limiter wait failed: %v", err)
 		}
@@ -257,7 +257,7 @@ func TestRateLimiterRequestHistory(t *testing.T) {
 	ctx := context.Background()
 
 	// Make several requests quickly
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		err := rl.Wait(ctx)
 		if err != nil {
 			t.Fatalf("Wait failed: %v", err)
@@ -284,7 +284,7 @@ func TestRateLimiterMemoryEfficiency(t *testing.T) {
 	ctx := context.Background()
 
 	// Make many requests to test history cleanup
-	for i := 0; i < 200; i++ {
+	for i := range 200 {
 		if err := rl.Wait(ctx); err != nil {
 			t.Logf("Warning: rate limiter wait failed: %v", err)
 		}

@@ -11,7 +11,7 @@ import (
 )
 
 // AssertConstantArrayNotEmpty verifies that all constants in an array are not empty.
-func AssertConstantArrayNotEmpty(t *testing.T, constants []interface{}, constantType string) {
+func AssertConstantArrayNotEmpty(t *testing.T, constants []any, constantType string) {
 	t.Helper()
 	for i, constant := range constants {
 		switch v := constant.(type) {
@@ -37,12 +37,12 @@ func AssertConstantValues(t *testing.T, tests []ConstantTest) {
 // ConstantTest represents a constant value test case.
 type ConstantTest struct {
 	Name     string
-	Expected interface{}
-	Actual   interface{}
+	Expected any
+	Actual   any
 }
 
 // AssertStatusConstantsPattern tests common status constant patterns.
-func AssertStatusConstantsPattern(t *testing.T, statuses []interface{}, expectedValues []ConstantTest) {
+func AssertStatusConstantsPattern(t *testing.T, statuses []any, expectedValues []ConstantTest) {
 	t.Helper()
 
 	// Test that all constants are not empty
@@ -53,7 +53,7 @@ func AssertStatusConstantsPattern(t *testing.T, statuses []interface{}, expected
 }
 
 // AssertErrorTypeConstantsPattern tests common error type constant patterns.
-func AssertErrorTypeConstantsPattern(t *testing.T, errorTypes []interface{}, expectedValues []ConstantTest) {
+func AssertErrorTypeConstantsPattern(t *testing.T, errorTypes []any, expectedValues []ConstantTest) {
 	t.Helper()
 
 	// Test that all constants are not empty
@@ -64,7 +64,7 @@ func AssertErrorTypeConstantsPattern(t *testing.T, errorTypes []interface{}, exp
 }
 
 // AssertActionTypeConstantsPattern tests common action type constant patterns.
-func AssertActionTypeConstantsPattern(t *testing.T, actionTypes []interface{}, expectedValues []ConstantTest) {
+func AssertActionTypeConstantsPattern(t *testing.T, actionTypes []any, expectedValues []ConstantTest) {
 	t.Helper()
 
 	// Test that all constants are not empty
@@ -85,7 +85,7 @@ func NewMockTestHelper(t *testing.T) *MockTestHelper {
 }
 
 // AssertMockCalled verifies that a mock was called with expected parameters.
-func (m *MockTestHelper) AssertMockCalled(mockCall interface{}, expectedArgs ...interface{}) {
+func (m *MockTestHelper) AssertMockCalled(mockCall any, expectedArgs ...any) {
 	m.t.Helper()
 	// This would be implemented based on the specific mocking framework
 	// For now, just verify that the mock call is not nil
@@ -115,7 +115,7 @@ func (i *IntegrationTestHelper) SkipIfNeeded(condition bool) {
 }
 
 // AssertAPIResponse verifies common API response patterns.
-func (i *IntegrationTestHelper) AssertAPIResponse(response interface{}, err error) {
+func (i *IntegrationTestHelper) AssertAPIResponse(response any, err error) {
 	i.t.Helper()
 	assert.NoError(i.t, err, "API call should not return error")
 	assert.NotNil(i.t, response, "API response should not be nil")
@@ -124,10 +124,10 @@ func (i *IntegrationTestHelper) AssertAPIResponse(response interface{}, err erro
 // APITestPattern represents a common API test pattern.
 type APITestPattern struct {
 	Name         string
-	Setup        func(t *testing.T) interface{}
-	Execute      func(t *testing.T, input interface{}) (interface{}, error)
-	Verify       func(t *testing.T, result interface{}, err error)
-	ExpectedType interface{}
+	Setup        func(t *testing.T) any
+	Execute      func(t *testing.T, input any) (any, error)
+	Verify       func(t *testing.T, result any, err error)
+	ExpectedType any
 }
 
 // RunAPITestPattern executes a common API test pattern.
@@ -135,7 +135,7 @@ func RunAPITestPattern(t *testing.T, pattern APITestPattern) {
 	t.Helper()
 	t.Run(pattern.Name, func(t *testing.T) {
 		// Setup
-		var input interface{}
+		var input any
 		if pattern.Setup != nil {
 			input = pattern.Setup(t)
 		}

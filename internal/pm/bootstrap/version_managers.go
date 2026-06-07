@@ -335,8 +335,8 @@ func (s *SdkmanBootstrapper) CheckInstallation(ctx context.Context) (*BootstrapS
 	// Try to get version
 	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("source %s && sdk version", sdkmanInit)) // #nosec G204
 	if output, err := cmd.Output(); err == nil {
-		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
+		for line := range lines {
 			if strings.Contains(line, "SDKMAN") && strings.Contains(line, ":") {
 				parts := strings.Split(line, ":")
 				if len(parts) > 1 {

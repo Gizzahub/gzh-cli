@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -182,10 +184,8 @@ func (v *CommandValidator) ValidateOrganization(org string) error {
 
 // ValidateFormat validates the output format against allowed formats.
 func (v *CommandValidator) ValidateFormat(format string, validFormats []string) error {
-	for _, valid := range validFormats {
-		if format == valid {
-			return nil
-		}
+	if slices.Contains(validFormats, format) {
+		return nil
 	}
 	return fmt.Errorf("invalid format '%s', valid formats: %s", format, joinStrings(validFormats, ", "))
 }
@@ -227,9 +227,10 @@ func joinStrings(strs []string, separator string) string {
 		return strs[0]
 	}
 
-	result := strs[0]
+	var result strings.Builder
+	result.WriteString(strs[0])
 	for i := 1; i < len(strs); i++ {
-		result += separator + strs[i]
+		result.WriteString(separator + strs[i])
 	}
-	return result
+	return result.String()
 }

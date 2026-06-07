@@ -310,9 +310,9 @@ func NestedFunction() string {
 // parseSubmoduleStatus parses git submodule status output.
 func (sm *SubmoduleManager) parseSubmoduleStatus(output string) []SubmoduleStatus {
 	var statuses []SubmoduleStatus
-	lines := strings.Split(strings.TrimSpace(output), "\n")
+	lines := strings.SplitSeq(strings.TrimSpace(output), "\n")
 
-	for _, line := range lines {
+	for line := range lines {
 		if line == "" {
 			continue
 		}

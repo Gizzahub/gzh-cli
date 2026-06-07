@@ -4,6 +4,8 @@
 package builders
 
 import (
+	"maps"
+
 	"github.com/gizzahub/gzh-cli/internal/env"
 )
 
@@ -63,9 +65,7 @@ func (b *EnvironmentBuilder) Build() env.Environment {
 // BuildMap returns the environment variables as a map.
 func (b *EnvironmentBuilder) BuildMap() map[string]string {
 	result := make(map[string]string)
-	for k, v := range b.vars {
-		result[k] = v
-	}
+	maps.Copy(result, b.vars)
 
 	return result
 }

@@ -18,24 +18,24 @@ func getEnterpriseTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Enterprise Configuration",
 		Description: "Multi-organization setup with security and compliance features",
-		Template: map[string]interface{}{
+		Template: map[string]any{
 			"version": "1.0.0",
-			"global": map[string]interface{}{
+			"global": map[string]any{
 				"clone_base_dir":   "${HOME}/enterprise-repos",
 				"default_strategy": "reset",
-				"concurrency": map[string]interface{}{
+				"concurrency": map[string]any{
 					"clone_workers":  5,
 					"update_workers": 10,
 				},
-				"security": map[string]interface{}{
+				"security": map[string]any{
 					"enforce_https":     true,
 					"verify_signatures": true,
 					"scan_for_secrets":  true,
 				},
 			},
-			"providers": map[string]interface{}{
-				"github": map[string]interface{}{
-					"organizations": []map[string]interface{}{
+			"providers": map[string]any{
+				"github": map[string]any{
+					"organizations": []map[string]any{
 						{
 							"name":       "{{.CompanyOrg}}",
 							"clone_dir":  "${HOME}/enterprise-repos/{{.CompanyOrg}}",
@@ -45,35 +45,35 @@ func getEnterpriseTemplate() *TemplateConfig {
 								".*-deprecated$",
 								".*-legacy$",
 							},
-							"auth": map[string]interface{}{
+							"auth": map[string]any{
 								"token": "${GITHUB_ENTERPRISE_TOKEN}",
 							},
-							"compliance": map[string]interface{}{
+							"compliance": map[string]any{
 								"require_branch_protection": true,
 								"scan_vulnerabilities":      true,
 							},
 						},
 					},
 				},
-				"gitlab": map[string]interface{}{
-					"groups": []map[string]interface{}{
+				"gitlab": map[string]any{
+					"groups": []map[string]any{
 						{
 							"name":       "{{.CompanyGroup}}",
 							"clone_dir":  "${HOME}/enterprise-repos/gitlab/{{.CompanyGroup}}",
 							"visibility": "private",
-							"auth": map[string]interface{}{
+							"auth": map[string]any{
 								"token": "${GITLAB_ENTERPRISE_TOKEN}",
 							},
 						},
 					},
 				},
 			},
-			"sync_mode": map[string]interface{}{
+			"sync_mode": map[string]any{
 				"cleanup_orphans":       true,
 				"conflict_resolution":   "remote-overwrite",
 				"backup_before_cleanup": true,
 			},
-			"monitoring": map[string]interface{}{
+			"monitoring": map[string]any{
 				"enable_metrics": true,
 				"log_level":      "info",
 				"audit_trail":    true,
@@ -102,15 +102,15 @@ func getMinimalTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Minimal Configuration",
 		Description: "Simple setup for personal or small team use",
-		Template: map[string]interface{}{
+		Template: map[string]any{
 			"version": "1.0.0",
-			"global": map[string]interface{}{
+			"global": map[string]any{
 				"clone_base_dir":   "${HOME}/repos",
 				"default_strategy": "pull",
 			},
-			"providers": map[string]interface{}{
-				"github": map[string]interface{}{
-					"organizations": []map[string]interface{}{
+			"providers": map[string]any{
+				"github": map[string]any{
+					"organizations": []map[string]any{
 						{
 							"name":      "{{.GitHubOrg}}",
 							"clone_dir": "${HOME}/repos/{{.GitHubOrg}}",
@@ -135,19 +135,19 @@ func getMultiOrgTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Multi-Organization Configuration",
 		Description: "Setup for managing multiple organizations across different platforms",
-		Template: map[string]interface{}{
+		Template: map[string]any{
 			"version": "1.0.0",
-			"global": map[string]interface{}{
+			"global": map[string]any{
 				"clone_base_dir":   "${HOME}/multi-org-repos",
 				"default_strategy": "reset",
-				"concurrency": map[string]interface{}{
+				"concurrency": map[string]any{
 					"clone_workers":  8,
 					"update_workers": 12,
 				},
 			},
-			"providers": map[string]interface{}{
-				"github": map[string]interface{}{
-					"organizations": []map[string]interface{}{
+			"providers": map[string]any{
+				"github": map[string]any{
+					"organizations": []map[string]any{
 						{
 							"name":      "{{.PrimaryGitHubOrg}}",
 							"clone_dir": "${HOME}/multi-org-repos/github/{{.PrimaryGitHubOrg}}",
@@ -160,16 +160,16 @@ func getMultiOrgTemplate() *TemplateConfig {
 						},
 					},
 				},
-				"gitlab": map[string]interface{}{
-					"groups": []map[string]interface{}{
+				"gitlab": map[string]any{
+					"groups": []map[string]any{
 						{
 							"name":      "{{.GitLabGroup}}",
 							"clone_dir": "${HOME}/multi-org-repos/gitlab/{{.GitLabGroup}}",
 						},
 					},
 				},
-				"gitea": map[string]interface{}{
-					"organizations": []map[string]interface{}{
+				"gitea": map[string]any{
+					"organizations": []map[string]any{
 						{
 							"name":      "{{.GiteaOrg}}",
 							"clone_dir": "${HOME}/multi-org-repos/gitea/{{.GiteaOrg}}",
@@ -178,7 +178,7 @@ func getMultiOrgTemplate() *TemplateConfig {
 					},
 				},
 			},
-			"sync_mode": map[string]interface{}{
+			"sync_mode": map[string]any{
 				"cleanup_orphans":     true,
 				"conflict_resolution": "interactive",
 			},
@@ -224,19 +224,19 @@ func getPersonalTemplate() *TemplateConfig {
 	return &TemplateConfig{
 		Name:        "Personal Configuration",
 		Description: "Setup for personal repositories and projects",
-		Template: map[string]interface{}{
+		Template: map[string]any{
 			"version": "1.0.0",
-			"global": map[string]interface{}{
+			"global": map[string]any{
 				"clone_base_dir":   "${HOME}/personal-repos",
 				"default_strategy": "pull",
-				"concurrency": map[string]interface{}{
+				"concurrency": map[string]any{
 					"clone_workers":  3,
 					"update_workers": 6,
 				},
 			},
-			"providers": map[string]interface{}{
-				"github": map[string]interface{}{
-					"organizations": []map[string]interface{}{
+			"providers": map[string]any{
+				"github": map[string]any{
+					"organizations": []map[string]any{
 						{
 							"name":          "{{.GitHubUsername}}",
 							"clone_dir":     "${HOME}/personal-repos/{{.GitHubUsername}}",
@@ -249,11 +249,11 @@ func getPersonalTemplate() *TemplateConfig {
 					},
 				},
 			},
-			"sync_mode": map[string]interface{}{
+			"sync_mode": map[string]any{
 				"cleanup_orphans":     false,
 				"conflict_resolution": "local-keep",
 			},
-			"filters": map[string]interface{}{
+			"filters": map[string]any{
 				"min_stars":        0,
 				"languages":        []string{"{{.PreferredLanguage}}"},
 				"exclude_archived": true,

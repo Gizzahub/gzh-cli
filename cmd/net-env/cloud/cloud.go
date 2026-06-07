@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -1738,10 +1739,8 @@ Examples:
 // validateEnvironment validates the network environment string.
 func validateEnvironment(envStr string) error {
 	validEnvs := []string{"home", "office", "public", "mobile", "hotel"}
-	for _, validEnv := range validEnvs {
-		if envStr == validEnv {
-			return nil
-		}
+	if slices.Contains(validEnvs, envStr) {
+		return nil
 	}
 	return fmt.Errorf("unsupported network environment: %s (valid: %v)", envStr, validEnvs)
 }

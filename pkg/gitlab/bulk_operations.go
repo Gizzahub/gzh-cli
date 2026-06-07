@@ -19,10 +19,9 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy s
 		config.CloneWorkers = parallel
 		config.UpdateWorkers = parallel + (parallel / 2) // 50% more for updates
 
-		config.ConfigWorkers = parallel / 2 // 50% less for config operations
-		if config.ConfigWorkers < 1 {
-			config.ConfigWorkers = 1
-		}
+		config.ConfigWorkers = max(
+			// 50% less for config operations
+			parallel/2, 1)
 	}
 
 	if maxRetries > 0 {

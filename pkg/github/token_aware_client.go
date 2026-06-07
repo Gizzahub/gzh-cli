@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -90,13 +91,13 @@ func (c *TokenAwareGitHubClient) GetCurrentToken() (string, error) {
 
 // GetTokenStatus returns detailed token status information - DISABLED (recovery package removed)
 // Simple implementation without external recovery dependency.
-func (c *TokenAwareGitHubClient) GetTokenStatus() (map[string]interface{}, error) {
+func (c *TokenAwareGitHubClient) GetTokenStatus() (map[string]any, error) {
 	token, err := c.GetCurrentToken()
 	if err != nil {
 		return nil, err
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"has_token": token != "",
 		"note":      "recovery package removed, using simple token management",
 	}, nil
@@ -384,14 +385,7 @@ func (c *TokenAwareGitHubClient) ValidateTokenPermissions(ctx context.Context, r
 
 	// Check if all required scopes are available
 	for _, requiredScope := range requiredScopes {
-		found := false
-
-		for _, availableScope := range availableScopes {
-			if availableScope == requiredScope {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(availableScopes, requiredScope)
 
 		if !found {
 			return fmt.Errorf("missing required scope: %s", requiredScope)

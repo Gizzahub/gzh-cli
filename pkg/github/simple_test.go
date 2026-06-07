@@ -95,7 +95,7 @@ func TestLogOperationRecord_Struct(t *testing.T) {
 		Repository: "test-repo",
 		User:       "testuser",
 		Success:    true,
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			"strategy": "reset",
 			"duration": 5.2,
 		},
@@ -116,7 +116,7 @@ func TestConfirmationPromptRecord_Struct(t *testing.T) {
 		Operation:   "update",
 		Risk:        RiskLevelMedium,
 		Impact:      "Repository settings will be changed",
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			"changes": 3,
 		},
 	}

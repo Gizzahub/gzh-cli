@@ -63,14 +63,14 @@ type RepoAuditResult struct {
 
 // PolicyViolation represents a specific policy violation.
 type PolicyViolation struct {
-	PolicyName  string      `yaml:"policy" json:"policy"`
-	RuleName    string      `yaml:"rule" json:"rule"`
-	Type        string      `yaml:"type" json:"type"`
-	Expected    interface{} `yaml:"expected" json:"expected"`
-	Actual      interface{} `yaml:"actual,omitempty" json:"actual,omitempty"`
-	Severity    string      `yaml:"severity" json:"severity"`
-	Message     string      `yaml:"message" json:"message"`
-	Remediation string      `yaml:"remediation,omitempty" json:"remediation,omitempty"`
+	PolicyName  string `yaml:"policy" json:"policy"`
+	RuleName    string `yaml:"rule" json:"rule"`
+	Type        string `yaml:"type" json:"type"`
+	Expected    any    `yaml:"expected" json:"expected"`
+	Actual      any    `yaml:"actual,omitempty" json:"actual,omitempty"`
+	Severity    string `yaml:"severity" json:"severity"`
+	Message     string `yaml:"message" json:"message"`
+	Remediation string `yaml:"remediation,omitempty" json:"remediation,omitempty"`
 }
 
 // RunComplianceAudit performs a compliance audit against configured policies.
@@ -308,7 +308,7 @@ func isSecurityFeatureEnabled(feature string, state RepositoryState) bool {
 }
 
 // getIntValue safely extracts an int value from an interface{}.
-func getIntValue(v interface{}) (int, bool) {
+func getIntValue(v any) (int, bool) {
 	switch val := v.(type) {
 	case int:
 		return val, true

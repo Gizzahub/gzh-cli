@@ -2,6 +2,7 @@
 package github
 
 import (
+	"slices"
 	"testing"
 	"time"
 )
@@ -80,14 +81,7 @@ func TestMemoryPressure(t *testing.T) {
 		MemoryPressureCritical,
 	}
 
-	found := false
-
-	for _, valid := range validPressures {
-		if pressure == valid {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(validPressures, pressure)
 
 	if !found {
 		t.Errorf("Invalid memory pressure level: %v", pressure)

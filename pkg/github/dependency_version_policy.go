@@ -288,19 +288,19 @@ type PerformanceRequirements struct {
 }
 
 type QualityGate struct {
-	Name       string                 `json:"name"`
-	Type       string                 `json:"type"`
-	Threshold  float64                `json:"threshold"`
-	Required   bool                   `json:"required"`
-	Parameters map[string]interface{} `json:"parameters,omitempty"`
+	Name       string         `json:"name"`
+	Type       string         `json:"type"`
+	Threshold  float64        `json:"threshold"`
+	Required   bool           `json:"required"`
+	Parameters map[string]any `json:"parameters,omitempty"`
 }
 
 type CustomValidationRule struct {
-	Name       string                 `json:"name"`
-	Script     string                 `json:"script"`
-	Language   string                 `json:"language"`
-	Parameters map[string]interface{} `json:"parameters,omitempty"`
-	Required   bool                   `json:"required"`
+	Name       string         `json:"name"`
+	Script     string         `json:"script"`
+	Language   string         `json:"language"`
+	Parameters map[string]any `json:"parameters,omitempty"`
+	Required   bool           `json:"required"`
 }
 
 // Additional supporting types.
@@ -906,12 +906,12 @@ type DetectedChange struct {
 }
 
 type RecommendedAction struct {
-	Action     string                 `json:"action"`
-	Reason     string                 `json:"reason"`
-	Priority   string                 `json:"priority,omitempty"`
-	Timeline   string                 `json:"timeline,omitempty"`
-	Conditions []string               `json:"conditions,omitempty"`
-	Metadata   map[string]interface{} `json:"metadata,omitempty"`
+	Action     string         `json:"action"`
+	Reason     string         `json:"reason"`
+	Priority   string         `json:"priority,omitempty"`
+	Timeline   string         `json:"timeline,omitempty"`
+	Conditions []string       `json:"conditions,omitempty"`
+	Metadata   map[string]any `json:"metadata,omitempty"`
 }
 
 type ApprovalWorkflow struct {
@@ -1049,10 +1049,10 @@ type CommunicationPlan struct {
 }
 
 type RollbackTrigger struct {
-	Type       string                 `json:"type"`
-	Condition  string                 `json:"condition"`
-	Threshold  float64                `json:"threshold,omitempty"`
-	Parameters map[string]interface{} `json:"parameters,omitempty"`
+	Type       string         `json:"type"`
+	Condition  string         `json:"condition"`
+	Threshold  float64        `json:"threshold,omitempty"`
+	Parameters map[string]any `json:"parameters,omitempty"`
 }
 
 type ManualRollbackProcedure struct {
@@ -1101,11 +1101,11 @@ type BulkUpdateApprovalRule struct {
 }
 
 type AutoApprovalCondition struct {
-	Type     string      `json:"type"`
-	Field    string      `json:"field"`
-	Operator string      `json:"operator"`
-	Value    interface{} `json:"value"`
-	Required bool        `json:"required"`
+	Type     string `json:"type"`
+	Field    string `json:"field"`
+	Operator string `json:"operator"`
+	Value    any    `json:"value"`
+	Required bool   `json:"required"`
 }
 
 type ApprovalEscalationRule struct {

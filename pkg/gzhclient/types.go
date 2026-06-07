@@ -17,9 +17,9 @@ type HealthStatus struct {
 
 // ComponentHealth represents the health of a specific component.
 type ComponentHealth struct {
-	Status  StatusType             `json:"status"`
-	Message string                 `json:"message"`
-	Details map[string]interface{} `json:"details,omitempty"`
+	Status  StatusType     `json:"status"`
+	Message string         `json:"message"`
+	Details map[string]any `json:"details,omitempty"`
 }
 
 // StatusType represents health status.
@@ -71,7 +71,7 @@ type BulkCloneResult struct {
 	SkippedCount int                     `json:"skippedCount"`
 	Results      []RepositoryCloneResult `json:"results"`
 	Duration     time.Duration           `json:"duration"`
-	Summary      map[string]interface{}  `json:"summary"`
+	Summary      map[string]any          `json:"summary"`
 }
 
 // RepositoryCloneResult represents the result of cloning a single repository.
@@ -257,14 +257,14 @@ type NetworkInterface struct {
 
 // TaskStatus represents the status of a running task.
 type TaskStatus struct {
-	ID        string                 `json:"id"`
-	Name      string                 `json:"name"`
-	Status    string                 `json:"status"`
-	Progress  float64                `json:"progress"`
-	StartTime time.Time              `json:"startTime"`
-	Duration  time.Duration          `json:"duration"`
-	Result    map[string]interface{} `json:"result,omitempty"`
-	Error     string                 `json:"error,omitempty"`
+	ID        string         `json:"id"`
+	Name      string         `json:"name"`
+	Status    string         `json:"status"`
+	Progress  float64        `json:"progress"`
+	StartTime time.Time      `json:"startTime"`
+	Duration  time.Duration  `json:"duration"`
+	Result    map[string]any `json:"result,omitempty"`
+	Error     string         `json:"error,omitempty"`
 }
 
 // PluginInfo represents information about a plugin - DISABLED (plugins package removed)
@@ -301,32 +301,32 @@ type TaskStatus struct {
 
 // Event represents a system event.
 type Event struct {
-	ID        string                 `json:"id"`
-	Type      string                 `json:"type"`
-	Source    string                 `json:"source"`
-	Timestamp time.Time              `json:"timestamp"`
-	Data      map[string]interface{} `json:"data"`
-	Level     string                 `json:"level"` // info, warn, error
+	ID        string         `json:"id"`
+	Type      string         `json:"type"`
+	Source    string         `json:"source"`
+	Timestamp time.Time      `json:"timestamp"`
+	Data      map[string]any `json:"data"`
+	Level     string         `json:"level"` // info, warn, error
 }
 
 // EventSubscription represents an event subscription.
 type EventSubscription struct {
-	ID      string                 `json:"id"`
-	Types   []string               `json:"types"`
-	Sources []string               `json:"sources"`
-	Filters map[string]interface{} `json:"filters"`
-	Webhook string                 `json:"webhook,omitempty"`
-	Active  bool                   `json:"active"`
-	Created time.Time              `json:"created"`
+	ID      string         `json:"id"`
+	Types   []string       `json:"types"`
+	Sources []string       `json:"sources"`
+	Filters map[string]any `json:"filters"`
+	Webhook string         `json:"webhook,omitempty"`
+	Active  bool           `json:"active"`
+	Created time.Time      `json:"created"`
 }
 
 // APIError represents an API error response.
 type APIError struct {
-	Code      string                 `json:"code"`
-	Message   string                 `json:"message"`
-	Details   map[string]interface{} `json:"details,omitempty"`
-	Timestamp time.Time              `json:"timestamp"`
-	RequestID string                 `json:"requestId,omitempty"`
+	Code      string         `json:"code"`
+	Message   string         `json:"message"`
+	Details   map[string]any `json:"details,omitempty"`
+	Timestamp time.Time      `json:"timestamp"`
+	RequestID string         `json:"requestId,omitempty"`
 }
 
 // Error implements the error interface.
@@ -353,7 +353,7 @@ type ListOptions struct {
 
 // Response represents a paginated API response.
 type Response struct {
-	Data       interface{}            `json:"data"`
-	Pagination *PaginationInfo        `json:"pagination,omitempty"`
-	Meta       map[string]interface{} `json:"meta,omitempty"`
+	Data       any             `json:"data"`
+	Pagination *PaginationInfo `json:"pagination,omitempty"`
+	Meta       map[string]any  `json:"meta,omitempty"`
 }

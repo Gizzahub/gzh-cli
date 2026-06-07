@@ -442,13 +442,13 @@ Examples:
 }
 
 // GetEnhancedStats returns detailed runtime statistics.
-func GetEnhancedStats() map[string]interface{} {
+func GetEnhancedStats() map[string]any {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	stats := map[string]interface{}{
+	stats := map[string]any{
 		"timestamp": time.Now(),
-		"memory": map[string]interface{}{
+		"memory": map[string]any{
 			"heap_alloc":    m.HeapAlloc,
 			"heap_sys":      m.HeapSys,
 			"heap_inuse":    m.HeapInuse,
@@ -458,13 +458,13 @@ func GetEnhancedStats() map[string]interface{} {
 			"stack_sys":     m.StackSys,
 			"total_alloc":   m.TotalAlloc,
 		},
-		"gc": map[string]interface{}{
+		"gc": map[string]any{
 			"num_gc":          m.NumGC,
 			"last_gc":         time.Unix(0, int64(m.LastGC)),
 			"pause_total_ns":  m.PauseTotalNs,
 			"gc_cpu_fraction": m.GCCPUFraction,
 		},
-		"runtime": map[string]interface{}{
+		"runtime": map[string]any{
 			"goroutines": runtime.NumGoroutine(),
 			"num_cpu":    runtime.NumCPU(),
 			"gomaxprocs": runtime.GOMAXPROCS(0),
@@ -650,7 +650,7 @@ func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) erro
 
 	if format == "json" {
 		// In real implementation, use json.Marshal
-		memory, ok := stats["memory"].(map[string]interface{})
+		memory, ok := stats["memory"].(map[string]any)
 		if !ok {
 			return fmt.Errorf("invalid memory stats format")
 		}
@@ -683,7 +683,7 @@ func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) erro
 
 	// Memory section
 	fmt.Printf("💾 Memory:\n")
-	memory, ok := stats["memory"].(map[string]interface{})
+	memory, ok := stats["memory"].(map[string]any)
 	if !ok {
 		return fmt.Errorf("invalid memory stats format")
 	}
@@ -717,7 +717,7 @@ func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) erro
 
 	// GC section
 	fmt.Printf("🗑️  Garbage Collection:\n")
-	gc, ok := stats["gc"].(map[string]interface{})
+	gc, ok := stats["gc"].(map[string]any)
 	if !ok {
 		return fmt.Errorf("invalid gc stats format")
 	}
@@ -740,7 +740,7 @@ func printEnhancedStats(profiler *simpleprof.SimpleProfiler, format string) erro
 
 	// Runtime section
 	fmt.Printf("⚙️  Runtime:\n")
-	runtimeStats, ok := stats["runtime"].(map[string]interface{})
+	runtimeStats, ok := stats["runtime"].(map[string]any)
 	if !ok {
 		return fmt.Errorf("invalid runtime stats format")
 	}
@@ -792,7 +792,7 @@ func printContinuousStats(profiler *simpleprof.SimpleProfiler, interval time.Dur
 		}
 
 		stats := GetEnhancedStats()
-		memory, ok := stats["memory"].(map[string]interface{})
+		memory, ok := stats["memory"].(map[string]any)
 		if !ok {
 			fmt.Fprintf(os.Stderr, "Error: invalid memory stats format\n")
 			break
@@ -816,7 +816,7 @@ func printContinuousStats(profiler *simpleprof.SimpleProfiler, interval time.Dur
 			break
 		}
 
-		gc, ok := stats["gc"].(map[string]interface{})
+		gc, ok := stats["gc"].(map[string]any)
 		if !ok {
 			fmt.Fprintf(os.Stderr, "Error: invalid gc stats format\n")
 			break

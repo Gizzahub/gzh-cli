@@ -208,7 +208,7 @@ type ActionsPolicyViolation struct {
 	Severity      PolicyViolationSeverity    `json:"severity"`
 	Resource      string                     `json:"resource"`
 	Description   string                     `json:"description"`
-	Details       map[string]interface{}     `json:"details,omitempty"`
+	Details       map[string]any             `json:"details,omitempty"`
 	DetectedAt    time.Time                  `json:"detectedAt"`
 	ResolvedAt    *time.Time                 `json:"resolvedAt,omitempty"`
 	Status        PolicyViolationStatus      `json:"status"`

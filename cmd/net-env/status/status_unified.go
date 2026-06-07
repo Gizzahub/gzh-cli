@@ -300,7 +300,7 @@ func checkWiFiStatus(_ context.Context, timeout time.Duration) *netenv.Component
 	return &netenv.ComponentStatus{
 		Active:    true,
 		Status:    "connected",
-		Details:   map[string]interface{}{"signal": "good"},
+		Details:   map[string]any{"signal": "good"},
 		LastCheck: time.Now(),
 	}
 }
@@ -319,7 +319,7 @@ func checkDNSStatus(_ context.Context, timeout time.Duration) *netenv.ComponentS
 	return &netenv.ComponentStatus{
 		Active:    true,
 		Status:    "configured",
-		Details:   map[string]interface{}{"servers": "system default"},
+		Details:   map[string]any{"servers": "system default"},
 		LastCheck: time.Now(),
 	}
 }
@@ -331,7 +331,7 @@ func checkProxyStatus(_ context.Context, timeout time.Duration) *netenv.Componen
 
 	active := httpProxy != "" || httpsProxy != ""
 	status := "disabled"
-	details := make(map[string]interface{})
+	details := make(map[string]any)
 
 	if active {
 		status = "enabled"

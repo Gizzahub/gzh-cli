@@ -191,7 +191,7 @@ func OptimizeMemoryUsage() *MemoryStats {
 	beforeStats := GetMemoryStats()
 
 	// Force multiple GC cycles to ensure complete cleanup
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		runtime.GC()
 		runtime.GC() // Double GC to ensure sweep phase completes
 	}

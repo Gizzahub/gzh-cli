@@ -235,7 +235,7 @@ func ProcessBatch[T any](ctx context.Context, items []T, config WorkerPoolConfig
 
 	// Collect results
 	results := make([]Result[T], 0, len(items))
-	for i := 0; i < len(items); i++ {
+	for range items {
 		select {
 		case result := <-pool.Results():
 			results = append(results, result)

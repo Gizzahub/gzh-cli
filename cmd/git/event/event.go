@@ -296,13 +296,13 @@ func runEventGet(_ *cobra.Command, args []string, outputFormat string) error {
 		Repository:   "testrepo",
 		Sender:       "testuser",
 		Timestamp:    time.Now(),
-		Payload: map[string]interface{}{
+		Payload: map[string]any{
 			"ref": "refs/heads/main",
-			"commits": []interface{}{
-				map[string]interface{}{
+			"commits": []any{
+				map[string]any{
 					"id":      "abc123",
 					"message": "Test commit",
-					"author": map[string]interface{}{
+					"author": map[string]any{
 						"name":  "Test User",
 						"email": "test@example.com",
 					},
@@ -372,15 +372,15 @@ func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload str
 	logger := getLogger()
 
 	// Default test payload
-	testPayload := map[string]interface{}{
+	testPayload := map[string]any{
 		"action": action,
-		"repository": map[string]interface{}{
+		"repository": map[string]any{
 			"name": "test-repo",
-			"owner": map[string]interface{}{
+			"owner": map[string]any{
 				"login": "test-org",
 			},
 		},
-		"sender": map[string]interface{}{
+		"sender": map[string]any{
 			"login": "test-user",
 		},
 	}
@@ -524,24 +524,24 @@ func getLogger() github.Logger {
 // simpleLogger implements the github.Logger interface.
 type simpleLogger struct{}
 
-func (l *simpleLogger) Debug(msg string, args ...interface{}) {
+func (l *simpleLogger) Debug(msg string, args ...any) {
 	log.Printf("[DEBUG] %s", formatMessage(msg, args...))
 }
 
-func (l *simpleLogger) Info(msg string, args ...interface{}) {
+func (l *simpleLogger) Info(msg string, args ...any) {
 	log.Printf("[INFO] %s", formatMessage(msg, args...))
 }
 
-func (l *simpleLogger) Warn(msg string, args ...interface{}) {
+func (l *simpleLogger) Warn(msg string, args ...any) {
 	log.Printf("[WARN] %s", formatMessage(msg, args...))
 }
 
-func (l *simpleLogger) Error(msg string, args ...interface{}) {
+func (l *simpleLogger) Error(msg string, args ...any) {
 	log.Printf("[ERROR] %s", formatMessage(msg, args...))
 }
 
 // formatMessage formats a message with key-value pairs.
-func formatMessage(msg string, args ...interface{}) string {
+func formatMessage(msg string, args ...any) string {
 	if len(args) == 0 {
 		return msg
 	}
@@ -550,7 +550,7 @@ func formatMessage(msg string, args ...interface{}) string {
 }
 
 // outputJSON marshals the data to JSON and prints it.
-func outputJSON(data interface{}) error {
+func outputJSON(data any) error {
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
@@ -562,7 +562,7 @@ func outputJSON(data interface{}) error {
 }
 
 // outputYAML marshals the data to YAML and prints it.
-func outputYAML(data interface{}) error {
+func outputYAML(data any) error {
 	yamlData, err := yaml.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal YAML: %w", err)

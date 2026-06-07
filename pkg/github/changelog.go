@@ -10,18 +10,18 @@ import (
 
 // ChangeRecord represents a single configuration change.
 type ChangeRecord struct {
-	ID           string                 `json:"id"`
-	Timestamp    time.Time              `json:"timestamp"`
-	User         string                 `json:"user"`
-	Organization string                 `json:"organization"`
-	Repository   string                 `json:"repository"`
-	Operation    string                 `json:"operation"` // create, update, delete
-	Category     string                 `json:"category"`  // settings, branch_protection, permissions, etc.
-	Before       map[string]interface{} `json:"before,omitempty"`
-	After        map[string]interface{} `json:"after,omitempty"`
-	Description  string                 `json:"description"`
-	Source       string                 `json:"source"` // cli, api, web
-	RequestID    string                 `json:"requestId,omitempty"`
+	ID           string         `json:"id"`
+	Timestamp    time.Time      `json:"timestamp"`
+	User         string         `json:"user"`
+	Organization string         `json:"organization"`
+	Repository   string         `json:"repository"`
+	Operation    string         `json:"operation"` // create, update, delete
+	Category     string         `json:"category"`  // settings, branch_protection, permissions, etc.
+	Before       map[string]any `json:"before,omitempty"`
+	After        map[string]any `json:"after,omitempty"`
+	Description  string         `json:"description"`
+	Source       string         `json:"source"` // cli, api, web
+	RequestID    string         `json:"requestId,omitempty"`
 }
 
 // ChangeLog manages configuration change history.
@@ -257,12 +257,12 @@ func parseRepositoryFullName(fullName string) (owner, repo string) {
 	return "owner", "repo"
 }
 
-func convertRepositoryToMap(repo *Repository) map[string]interface{} {
+func convertRepositoryToMap(repo *Repository) map[string]any {
 	if repo == nil {
 		return nil
 	}
 
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 	repoBytes, _ := json.Marshal(repo)
 	if err := json.Unmarshal(repoBytes, &data); err != nil {
 		// Log error but return partial data if marshaling worked

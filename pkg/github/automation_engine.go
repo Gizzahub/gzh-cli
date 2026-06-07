@@ -5,6 +5,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"maps"
 	"sync"
 	"time"
 
@@ -150,10 +151,7 @@ func (ae *AutomationEngine) Start(ctx context.Context) error {
 	}
 
 	// Start execution workers
-	ae.executionWorkers = ae.config.MaxWorkers / 2
-	if ae.executionWorkers < 1 {
-		ae.executionWorkers = 1
-	}
+	ae.executionWorkers = max(ae.config.MaxWorkers/2, 1)
 
 	for i := 0; i < ae.executionWorkers; i++ {
 		go ae.executionWorker(ctx, i)
@@ -275,13 +273,9 @@ func (ae *AutomationEngine) GetMetrics() *EngineMetrics {
 		StartTime:             ae.metrics.StartTime,
 	}
 
-	for k, v := range ae.metrics.EventTypeDistribution {
-		metrics.EventTypeDistribution[k] = v
-	}
+	maps.Copy(metrics.EventTypeDistribution, ae.metrics.EventTypeDistribution)
 
-	for k, v := range ae.metrics.ExecutionsByStatus {
-		metrics.ExecutionsByStatus[k] = v
-	}
+	maps.Copy(metrics.ExecutionsByStatus, ae.metrics.ExecutionsByStatus)
 
 	return metrics
 }
@@ -292,9 +286,7 @@ func (ae *AutomationEngine) GetActiveExecutions() map[string]*AutomationRuleExec
 	defer ae.mu.RUnlock()
 
 	executions := make(map[string]*AutomationRuleExecution)
-	for k, v := range ae.activeExecutions {
-		executions[k] = v
-	}
+	maps.Copy(executions, ae.activeExecutions)
 
 	return executions
 }
@@ -402,9 +394,9 @@ func (ae *AutomationEngine) evaluateRule(ctx context.Context, rule *AutomationRu
 		Event:        event,
 		Organization: event.Organization,
 		User:         event.Sender,
-		Variables:    make(map[string]interface{}),
+		Variables:    make(map[string]any),
 		Environment:  rule.Metadata.Environment,
-		Metadata:     make(map[string]interface{}),
+		Metadata:     make(map[string]any),
 	}
 
 	// Add event metadata to context

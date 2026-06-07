@@ -272,9 +272,9 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 
 // displayDiffJSON displays differences in JSON format.
 func displayDiffJSON(differences []ConfigurationDifference) {
-	jsonData := map[string]interface{}{
+	jsonData := map[string]any{
 		"differences": differences,
-		"summary": map[string]interface{}{
+		"summary": map[string]any{
 			"total_changes":  len(differences),
 			"affected_repos": len(getAffectedRepositories(differences)),
 		},

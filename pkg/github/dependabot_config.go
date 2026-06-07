@@ -4,6 +4,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -517,24 +518,12 @@ func (dm *DependabotConfigManager) isSupportedEcosystem(ecosystem string) bool {
 		EcosystemMix, EcosystemPub, EcosystemSwift,
 	}
 
-	for _, supported := range supportedEcosystems {
-		if ecosystem == supported {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supportedEcosystems, ecosystem)
 }
 
 func (dm *DependabotConfigManager) isValidInterval(interval string) bool {
 	validIntervals := []string{IntervalDaily, IntervalWeekly, IntervalMonthly}
-	for _, valid := range validIntervals {
-		if interval == valid {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(validIntervals, interval)
 }
 
 func (dm *DependabotConfigManager) isValidVersioningStrategy(strategy string) bool {
@@ -543,13 +532,7 @@ func (dm *DependabotConfigManager) isValidVersioningStrategy(strategy string) bo
 		VersioningStrategyWiden, VersioningStrategyIncrease,
 		VersioningStrategyIncreaseIfNecessary,
 	}
-	for _, valid := range validStrategies {
-		if strategy == valid {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(validStrategies, strategy)
 }
 
 // DetectEcosystems detects package ecosystems in a repository.

@@ -280,7 +280,7 @@ func runBenchmarkAnalysis(ctx context.Context, flags *cli.CommonFlags, opts benc
 	// Create performance snapshot if requested
 	if opts.createSnapshot && len(report.Benchmarks) > 0 {
 		logger.Info("Creating performance snapshot")
-		metadata := map[string]interface{}{
+		metadata := map[string]any{
 			"package_pattern": opts.packagePattern,
 			"iterations":      opts.iterations,
 			"duration":        opts.duration.String(),
@@ -757,7 +757,7 @@ func performSnapshotAnalysis(snapshotManager *SnapshotManager, report *Benchmark
 		Timestamp:   report.Timestamp,
 		Environment: report.Environment,
 		Benchmarks:  report.Benchmarks,
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			"analysis_mode": true,
 			"report_id":     fmt.Sprintf("analysis-%d", time.Now().Unix()),
 		},

@@ -238,10 +238,7 @@ func (rl *AdaptiveRateLimiter) EstimateTimeToCompletion(requestsNeeded int) time
 	}
 
 	// Need to wait for reset and possibly multiple cycles
-	timeUntilReset := rl.resetTime.Sub(now)
-	if timeUntilReset <= 0 {
-		timeUntilReset = 0
-	}
+	timeUntilReset := max(rl.resetTime.Sub(now), 0)
 
 	// Requests we can make with current remaining
 	requestsFromCurrent := min(rl.remaining, requestsNeeded)

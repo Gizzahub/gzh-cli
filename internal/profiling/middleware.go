@@ -57,7 +57,7 @@ func (pm *PerformanceMiddleware) TrackOperation(_ context.Context, operationName
 		if goroutines, ok := stats["goroutines"].(int); ok {
 			metrics.GoroutinesBefore = goroutines
 		}
-		if memory, ok := stats["memory"].(map[string]interface{}); ok {
+		if memory, ok := stats["memory"].(map[string]any); ok {
 			if alloc, ok := memory["alloc_bytes"].(uint64); ok {
 				metrics.MemoryBefore = alloc
 			}
@@ -78,7 +78,7 @@ func (pm *PerformanceMiddleware) TrackOperation(_ context.Context, operationName
 		if goroutines, ok := stats["goroutines"].(int); ok {
 			metrics.GoroutinesAfter = goroutines
 		}
-		if memory, ok := stats["memory"].(map[string]interface{}); ok {
+		if memory, ok := stats["memory"].(map[string]any); ok {
 			if alloc, ok := memory["alloc_bytes"].(uint64); ok {
 				metrics.MemoryAfter = alloc
 			}
@@ -119,7 +119,7 @@ func (pm *PerformanceMiddleware) logMetrics(metrics *OperationMetrics) {
 		logLevel = "Warn" // Long operations get warning level
 	}
 
-	performanceData := map[string]interface{}{
+	performanceData := map[string]any{
 		"duration_ms":        metrics.Duration.Milliseconds(),
 		"goroutine_delta":    goroutineDelta,
 		"memory_delta_bytes": memoryDelta,
@@ -195,7 +195,7 @@ func (bot *BatchOperationTracker) Finish() {
 	total := bot.completed + bot.failed
 	successRate := float64(bot.completed) / float64(total) * 100
 
-	bot.middleware.logger.LogPerformance(bot.operationName+"_batch", duration, map[string]interface{}{
+	bot.middleware.logger.LogPerformance(bot.operationName+"_batch", duration, map[string]any{
 		"batch_size":    bot.batchSize,
 		"completed":     bot.completed,
 		"failed":        bot.failed,

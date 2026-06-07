@@ -137,17 +137,17 @@ func NewStreamingClient(token, baseURL string, config StreamingConfig) *Streamin
 
 	memoryPool := &MemoryPool{
 		bufferPool: sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return make([]byte, 0, constants.BytesPerKB*64) // 64KB initial capacity
 			},
 		},
 		projectPool: sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return &Project{}
 			},
 		},
 		resultPool: sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return &ProjectStream{}
 			},
 		},
@@ -167,7 +167,7 @@ func NewStreamingClient(token, baseURL string, config StreamingConfig) *Streamin
 		memoryPool:     memoryPool,
 		requestMetrics: &RequestMetrics{},
 		bufferPool: sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return make([]byte, 0, constants.BytesPerKB*32) // 32KB buffers
 			},
 		},
@@ -444,7 +444,7 @@ func (sc *StreamingClient) optimizeMemory() {
 
 	// Reset pools periodically to prevent memory leaks
 	sc.memoryPool.bufferPool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return make([]byte, 0, 64*1024)
 		},
 	}

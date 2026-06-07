@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 	"time"
 )
 
@@ -28,10 +29,10 @@ type FileInfo interface {
 
 // Logger interface for dependency injection.
 type Logger interface {
-	Debug(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
+	Debug(msg string, args ...any)
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
 }
 
 // configLoaderImpl implements the Loader interface.
@@ -232,13 +233,7 @@ func (p *configParserImpl) GetSupportedFormats() []string {
 
 // IsFormatSupported implements Parser interface.
 func (p *configParserImpl) IsFormatSupported(format string) bool {
-	for _, supported := range p.GetSupportedFormats() {
-		if format == supported {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(p.GetSupportedFormats(), format)
 }
 
 // providerManagerImpl implements the ProviderManager interface.

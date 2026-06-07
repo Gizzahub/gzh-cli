@@ -6,6 +6,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/gizzahub/gzh-cli/internal/env"
 )
@@ -76,13 +77,7 @@ func (f *providerFactoryImpl) GetSupportedProviders() []string {
 // IsProviderSupported checks if a provider is supported.
 func (f *providerFactoryImpl) IsProviderSupported(providerName string) bool {
 	supportedProviders := f.GetSupportedProviders()
-	for _, provider := range supportedProviders {
-		if provider == providerName {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supportedProviders, providerName)
 }
 
 // ProviderFactoryConfig holds configuration for the provider factory.

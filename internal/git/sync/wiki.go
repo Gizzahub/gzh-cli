@@ -71,9 +71,9 @@ func (w *WikiSyncer) getWikiURL(repo provider.Repository) string {
 	// Gitea: https://gitea.com/owner/repo.wiki.git
 
 	cloneURL := repo.CloneURL
-	if strings.HasSuffix(cloneURL, ".git") {
+	if before, ok := strings.CutSuffix(cloneURL, ".git"); ok {
 		// Remove .git and add .wiki.git
-		baseURL := strings.TrimSuffix(cloneURL, ".git")
+		baseURL := before
 		return baseURL + ".wiki.git"
 	}
 

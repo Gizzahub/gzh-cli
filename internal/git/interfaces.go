@@ -144,9 +144,9 @@ type BulkOperator interface {
 
 // BulkOperation represents a bulk operation to execute.
 type BulkOperation struct {
-	Type     string                 `json:"type"` // clone, pull, fetch, reset
-	Strategy string                 `json:"strategy,omitempty"`
-	Options  map[string]interface{} `json:"options,omitempty"`
+	Type     string         `json:"type"` // clone, pull, fetch, reset
+	Strategy string         `json:"strategy,omitempty"`
+	Options  map[string]any `json:"options,omitempty"`
 }
 
 // BulkOptions represents options for bulk operations.

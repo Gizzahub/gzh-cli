@@ -6,6 +6,7 @@ package repo
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -142,7 +143,7 @@ func runRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 		Username: opts.Username,
 		Password: opts.Password,
 		Enabled:  true,
-		Extra:    make(map[string]interface{}),
+		Extra:    make(map[string]any),
 	}
 
 	// Register configuration
@@ -252,25 +253,25 @@ func registerProviderConstructors(factory *provider.ProviderFactory) error {
 // formatStrategies returns a formatted string of valid strategies.
 func formatStrategies() string {
 	strategies := clone.GetValidStrategies()
-	result := ""
+	var result strings.Builder
 	for i, strategy := range strategies {
 		if i > 0 {
-			result += ", "
+			result.WriteString(", ")
 		}
-		result += strategy
+		result.WriteString(strategy)
 	}
-	return result
+	return result.String()
 }
 
 // formatOutputFormats returns a formatted string of valid output formats.
 func formatOutputFormats() string {
 	formats := clone.GetValidFormats()
-	result := ""
+	var result strings.Builder
 	for i, format := range formats {
 		if i > 0 {
-			result += ", "
+			result.WriteString(", ")
 		}
-		result += format
+		result.WriteString(format)
 	}
-	return result
+	return result.String()
 }

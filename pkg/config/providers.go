@@ -233,7 +233,7 @@ func NewBulkCloneExecutorWithFactory(config *Config, _ ProviderFactory) (*BulkCl
 }
 
 // ExecuteAll executes bulk cloning for all configured targets.
-func (e *BulkCloneExecutor) ExecuteAll(filters map[string]interface{}) (*BulkCloneResult, error) {
+func (e *BulkCloneExecutor) ExecuteAll(filters map[string]any) (*BulkCloneResult, error) {
 	targets, err := e.integration.GetAllTargets()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get targets: %w", err)
@@ -243,7 +243,7 @@ func (e *BulkCloneExecutor) ExecuteAll(filters map[string]interface{}) (*BulkClo
 }
 
 // ExecuteByProvider executes bulk cloning for a specific provider.
-func (e *BulkCloneExecutor) ExecuteByProvider(providerName string, filters map[string]interface{}) (*BulkCloneResult, error) {
+func (e *BulkCloneExecutor) ExecuteByProvider(providerName string, filters map[string]any) (*BulkCloneResult, error) {
 	targets, err := e.integration.GetTargetsByProvider(providerName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get targets for provider %s: %w", providerName, err)
@@ -253,7 +253,7 @@ func (e *BulkCloneExecutor) ExecuteByProvider(providerName string, filters map[s
 }
 
 // executeTargets executes cloning for a list of targets.
-func (e *BulkCloneExecutor) executeTargets(targets []BulkCloneTarget, filters map[string]interface{}) (*BulkCloneResult, error) {
+func (e *BulkCloneExecutor) executeTargets(targets []BulkCloneTarget, filters map[string]any) (*BulkCloneResult, error) {
 	result := &BulkCloneResult{
 		TotalTargets: len(targets),
 		Results:      make([]TargetResult, 0, len(targets)),

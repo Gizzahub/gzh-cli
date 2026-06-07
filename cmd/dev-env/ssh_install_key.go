@@ -139,8 +139,8 @@ Examples:
 func (c *EnhancedSSHCommand) installSingleKey(installer *SSHKeyInstaller, host, port, user, publicKeyPath, privateKeyPath, password string, force, dryRun bool) error {
 	// If no private key specified, try to find corresponding private key
 	if privateKeyPath == "" && publicKeyPath != "" {
-		if strings.HasSuffix(publicKeyPath, ".pub") {
-			potentialPrivateKey := strings.TrimSuffix(publicKeyPath, ".pub")
+		if before, ok := strings.CutSuffix(publicKeyPath, ".pub"); ok {
+			potentialPrivateKey := before
 			if _, err := os.Stat(potentialPrivateKey); err == nil {
 				privateKeyPath = potentialPrivateKey
 			}

@@ -311,7 +311,7 @@ func (p *Profiler) ProfileOperation(_ context.Context, operationName string, pro
 	}
 
 	// Log performance metrics
-	p.logger.LogPerformance(operationName, duration, map[string]interface{}{
+	p.logger.LogPerformance(operationName, duration, map[string]any{
 		"profile_types":    profileTypes,
 		"sessions_started": len(sessionIDs),
 		"success":          err == nil,
@@ -321,14 +321,14 @@ func (p *Profiler) ProfileOperation(_ context.Context, operationName string, pro
 }
 
 // GetRuntimeStats returns current runtime statistics.
-func (p *Profiler) GetRuntimeStats() map[string]interface{} {
+func (p *Profiler) GetRuntimeStats() map[string]any {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	return map[string]interface{}{
+	return map[string]any{
 		"goroutines": runtime.NumGoroutine(),
 		"cgo_calls":  runtime.NumCgoCall(),
-		"memory": map[string]interface{}{
+		"memory": map[string]any{
 			"alloc_bytes":       m.Alloc,
 			"total_alloc_bytes": m.TotalAlloc,
 			"sys_bytes":         m.Sys,

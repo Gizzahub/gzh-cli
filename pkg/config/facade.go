@@ -94,7 +94,7 @@ type BulkOperationRequest struct {
 	Operation     string // clone, update, archive, etc.
 	Repositories  []Repository
 	TargetPath    string
-	Configuration map[string]interface{}
+	Configuration map[string]any
 	Concurrency   int
 	DryRun        bool
 }
@@ -117,7 +117,7 @@ type OperationResult struct {
 	Success    bool
 	Error      string
 	Duration   string
-	Metadata   map[string]interface{}
+	Metadata   map[string]any
 }
 
 // BulkOperationStatistics contains statistics about bulk operations.

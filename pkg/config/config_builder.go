@@ -3,6 +3,8 @@
 
 package config
 
+import "strings"
+
 // ConfigBuilder provides a fluent interface for building test configurations.
 type ConfigBuilder struct { //nolint:revive // Type name maintained for clarity in builder pattern
 	config *UnifiedConfig
@@ -114,20 +116,20 @@ func (b *ConfigBuilder) Build() *UnifiedConfig {
 
 // BuildYAML returns the configuration as YAML content.
 func (b *ConfigBuilder) BuildYAML() string {
-	orgs := ""
+	var orgs strings.Builder
 	for provider, cfg := range b.config.Providers {
-		orgs += provider + ":\n"
+		orgs.WriteString(provider + ":\n")
 		if cfg.Token != "" {
-			orgs += "    token: \"" + cfg.Token + "\"\n"
+			orgs.WriteString("    token: \"" + cfg.Token + "\"\n")
 		}
 
 		if len(cfg.Organizations) > 0 {
-			orgs += "    organizations:\n"
+			orgs.WriteString("    organizations:\n")
 			for _, org := range cfg.Organizations {
-				orgs += "      - name: \"" + org.Name + "\"\n"
-				orgs += "        clone_dir: \"" + org.CloneDir + "\"\n"
-				orgs += "        visibility: \"" + org.Visibility + "\"\n"
-				orgs += "        strategy: \"" + org.Strategy + "\"\n"
+				orgs.WriteString("      - name: \"" + org.Name + "\"\n")
+				orgs.WriteString("        clone_dir: \"" + org.CloneDir + "\"\n")
+				orgs.WriteString("        visibility: \"" + org.Visibility + "\"\n")
+				orgs.WriteString("        strategy: \"" + org.Strategy + "\"\n")
 			}
 		}
 	}
@@ -135,5 +137,5 @@ func (b *ConfigBuilder) BuildYAML() string {
 	return `version: "` + b.config.Version + `"
 default_provider: ` + b.config.DefaultProvider + `
 providers:
-  ` + orgs
+  ` + orgs.String()
 }

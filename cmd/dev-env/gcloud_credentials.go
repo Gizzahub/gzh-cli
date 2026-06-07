@@ -367,8 +367,8 @@ func (o *gcloudCredentialsOptions) loadMetadata(name string) gcloudCredentialsMe
 		return metadata
 	}
 
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(content), "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -562,7 +562,7 @@ func (o *gcloudCredentialsOptions) displayCredentialsInfo(credentialsPath string
 
 		// Try to read ADC for account info (without exposing sensitive data)
 		if content, err := os.ReadFile(adcPath); err == nil {
-			var adc map[string]interface{}
+			var adc map[string]any
 			if json.Unmarshal(content, &adc) == nil {
 				if clientEmail, ok := adc["client_email"].(string); ok {
 					serviceAccounts = append(serviceAccounts, clientEmail)

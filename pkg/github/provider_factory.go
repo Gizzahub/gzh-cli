@@ -6,6 +6,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/gizzahub/gzh-cli/internal/auth"
@@ -107,18 +108,16 @@ func (a *GitHubAPIClientAdapter) GetRepository(ctx context.Context, owner, repo 
 	}
 
 	// Find the specific repository
-	for _, repoName := range repos {
-		if repoName == repo {
-			defaultBranch, _ := a.client.GetDefaultBranch(ctx, owner, repo)
-			return &RepositoryInfo{
-				Name:          repo,
-				FullName:      fmt.Sprintf("%s/%s", owner, repo),
-				DefaultBranch: defaultBranch,
-				CloneURL:      fmt.Sprintf("https://github.com/%s/%s.git", owner, repo),
-				SSHURL:        fmt.Sprintf("git@github.com:%s/%s.git", owner, repo),
-				HTMLURL:       fmt.Sprintf("https://github.com/%s/%s", owner, repo),
-			}, nil
-		}
+	if slices.Contains(repos, repo) {
+		defaultBranch, _ := a.client.GetDefaultBranch(ctx, owner, repo)
+		return &RepositoryInfo{
+			Name:          repo,
+			FullName:      fmt.Sprintf("%s/%s", owner, repo),
+			DefaultBranch: defaultBranch,
+			CloneURL:      fmt.Sprintf("https://github.com/%s/%s.git", owner, repo),
+			SSHURL:        fmt.Sprintf("git@github.com:%s/%s.git", owner, repo),
+			HTMLURL:       fmt.Sprintf("https://github.com/%s/%s", owner, repo),
+		}, nil
 	}
 
 	return nil, fmt.Errorf("repository %s/%s not found", owner, repo)

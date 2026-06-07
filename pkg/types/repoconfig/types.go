@@ -96,14 +96,14 @@ type RepoAuditResult struct {
 
 // PolicyViolation represents a specific policy violation.
 type PolicyViolation struct {
-	PolicyName  string      `yaml:"policyName" json:"policyName"`
-	RuleName    string      `yaml:"ruleName" json:"ruleName"`
-	Type        string      `yaml:"type" json:"type"`
-	Expected    interface{} `yaml:"expected" json:"expected"`
-	Actual      interface{} `yaml:"actual,omitempty" json:"actual,omitempty"`
-	Severity    string      `yaml:"severity" json:"severity"`
-	Message     string      `yaml:"message" json:"message"`
-	Remediation string      `yaml:"remediation,omitempty" json:"remediation,omitempty"`
+	PolicyName  string `yaml:"policyName" json:"policyName"`
+	RuleName    string `yaml:"ruleName" json:"ruleName"`
+	Type        string `yaml:"type" json:"type"`
+	Expected    any    `yaml:"expected" json:"expected"`
+	Actual      any    `yaml:"actual,omitempty" json:"actual,omitempty"`
+	Severity    string `yaml:"severity" json:"severity"`
+	Message     string `yaml:"message" json:"message"`
+	Remediation string `yaml:"remediation,omitempty" json:"remediation,omitempty"`
 }
 
 // PolicyException represents an exception to a policy rule.

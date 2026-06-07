@@ -3,6 +3,7 @@ package git
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 )
 
@@ -16,10 +17,10 @@ const (
 
 // Logger interface for dependency injection.
 type Logger interface {
-	Debug(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
+	Debug(msg string, args ...any)
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
 }
 
 // AuthConfig represents authentication configuration.
@@ -404,13 +405,7 @@ func (s *StrategyExecutorImpl) GetStrategyDescription(strategy string) string {
 // IsValidStrategy implements StrategyExecutor interface.
 func (s *StrategyExecutorImpl) IsValidStrategy(strategy string) bool {
 	supported := s.GetSupportedStrategies()
-	for _, supportedStrategy := range supported {
-		if strategy == supportedStrategy {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supported, strategy)
 }
 
 // ValidateStrategy implements StrategyExecutor interface.

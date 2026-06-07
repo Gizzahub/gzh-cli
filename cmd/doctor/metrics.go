@@ -401,8 +401,8 @@ func collectCoverageMetrics(report *CodeQualityReport, opts metricsOptions) erro
 	}
 
 	// Extract total coverage percentage
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "total:") {
 			re := regexp.MustCompile(`(\d+\.\d+)%`)
 			matches := re.FindStringSubmatch(line)
@@ -808,12 +808,9 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 		})
 
 		// Show top 10 issues
-		maxIssues := 10
-		if len(report.Issues) < maxIssues {
-			maxIssues = len(report.Issues)
-		}
+		maxIssues := min(len(report.Issues), 10)
 
-		for i := 0; i < maxIssues; i++ {
+		for i := range maxIssues {
 			issue := report.Issues[i]
 			severityIcon := "🟡"
 			switch issue.Severity {
@@ -852,12 +849,9 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 		})
 
 		// Show top 10 files with issues
-		maxFiles := 10
-		if len(report.FileAnalysis) < maxFiles {
-			maxFiles = len(report.FileAnalysis)
-		}
+		maxFiles := min(len(report.FileAnalysis), 10)
 
-		for i := 0; i < maxFiles; i++ {
+		for i := range maxFiles {
 			file := report.FileAnalysis[i]
 			if file.QualityScore > 80 {
 				break // Stop at high quality files

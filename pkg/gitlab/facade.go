@@ -2,6 +2,7 @@ package gitlab
 
 import (
 	"context"
+	"slices"
 )
 
 // GitLabManager provides a high-level facade for GitLab operations.
@@ -219,28 +220,14 @@ func (g *gitLabManagerImpl) applyFilters(repositories []string, filters *Reposit
 	for _, repo := range repositories {
 		// Apply include/exclude name filters
 		if len(filters.IncludeNames) > 0 {
-			found := false
-
-			for _, include := range filters.IncludeNames {
-				if repo == include {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(filters.IncludeNames, repo)
 
 			if !found {
 				continue
 			}
 		}
 
-		excluded := false
-
-		for _, exclude := range filters.ExcludeNames {
-			if repo == exclude {
-				excluded = true
-				break
-			}
-		}
+		excluded := slices.Contains(filters.ExcludeNames, repo)
 
 		if excluded {
 			continue
@@ -254,8 +241,8 @@ func (g *gitLabManagerImpl) applyFilters(repositories []string, filters *Reposit
 
 // Logger interface for dependency injection.
 type Logger interface {
-	Debug(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
+	Debug(msg string, args ...any)
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
 }

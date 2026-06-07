@@ -55,7 +55,7 @@ type ApprovalCondition struct {
 	Type     ConditionType `json:"type"`
 	Field    string        `json:"field"`
 	Operator string        `json:"operator"`
-	Value    interface{}   `json:"value"`
+	Value    any           `json:"value"`
 	Negated  bool          `json:"negated,omitempty"`
 }
 
@@ -162,9 +162,9 @@ type EscalationRule struct {
 
 // EscalationCondition defines when escalation should occur.
 type EscalationCondition struct {
-	Type     string      `json:"type"`
-	Operator string      `json:"operator"`
-	Value    interface{} `json:"value"`
+	Type     string `json:"type"`
+	Operator string `json:"operator"`
+	Value    any    `json:"value"`
 }
 
 // EscalationAction defines what to do during escalation.
@@ -206,32 +206,32 @@ type VulnerabilityDatabase struct {
 
 // VulnerabilityRecord represents a vulnerability in the database.
 type VulnerabilityRecord struct {
-	ID               string                 `json:"id"`
-	CVE              string                 `json:"cve,omitempty"`
-	Title            string                 `json:"title"`
-	Description      string                 `json:"description"`
-	Severity         VulnerabilitySeverity  `json:"severity"`
-	CVSS             CVSSScore              `json:"cvss"`
-	Package          PackageInfo            `json:"package"`
-	AffectedVersions []VersionRange         `json:"affected_versions"`
-	PatchedVersions  []string               `json:"patched_versions"`
-	References       []Reference            `json:"references"`
-	PublishedAt      time.Time              `json:"published_at"`
-	UpdatedAt        time.Time              `json:"updated_at"`
-	WithdrawnAt      *time.Time             `json:"withdrawn_at,omitempty"`
-	Metadata         map[string]interface{} `json:"metadata,omitempty"`
+	ID               string                `json:"id"`
+	CVE              string                `json:"cve,omitempty"`
+	Title            string                `json:"title"`
+	Description      string                `json:"description"`
+	Severity         VulnerabilitySeverity `json:"severity"`
+	CVSS             CVSSScore             `json:"cvss"`
+	Package          PackageInfo           `json:"package"`
+	AffectedVersions []VersionRange        `json:"affected_versions"`
+	PatchedVersions  []string              `json:"patched_versions"`
+	References       []Reference           `json:"references"`
+	PublishedAt      time.Time             `json:"published_at"`
+	UpdatedAt        time.Time             `json:"updated_at"`
+	WithdrawnAt      *time.Time            `json:"withdrawn_at,omitempty"`
+	Metadata         map[string]any        `json:"metadata,omitempty"`
 }
 
 // CVERecord represents a CVE record from external sources.
 type CVERecord struct {
-	ID          string                 `json:"id"`
-	Description string                 `json:"description"`
-	CVSS        CVSSScore              `json:"cvss"`
-	References  []Reference            `json:"references"`
-	Vendors     []VendorInfo           `json:"vendors"`
-	Products    []ProductInfo          `json:"products"`
-	Timeline    CVETimeline            `json:"timeline"`
-	Metadata    map[string]interface{} `json:"metadata"`
+	ID          string         `json:"id"`
+	Description string         `json:"description"`
+	CVSS        CVSSScore      `json:"cvss"`
+	References  []Reference    `json:"references"`
+	Vendors     []VendorInfo   `json:"vendors"`
+	Products    []ProductInfo  `json:"products"`
+	Timeline    CVETimeline    `json:"timeline"`
+	Metadata    map[string]any `json:"metadata"`
 }
 
 // CVSSScore represents CVSS scoring information.
@@ -788,7 +788,7 @@ func (sm *SecurityUpdatePolicyManager) evaluateCondition(condition ApprovalCondi
 	return result
 }
 
-func (sm *SecurityUpdatePolicyManager) compareSeverity(actual VulnerabilitySeverity, operator string, expected interface{}) bool {
+func (sm *SecurityUpdatePolicyManager) compareSeverity(actual VulnerabilitySeverity, operator string, expected any) bool {
 	expectedStr, ok := expected.(string)
 	if !ok {
 		return false
@@ -806,7 +806,7 @@ func (sm *SecurityUpdatePolicyManager) compareSeverity(actual VulnerabilitySever
 	return false
 }
 
-func (sm *SecurityUpdatePolicyManager) compareString(actual, operator string, expected interface{}) bool {
+func (sm *SecurityUpdatePolicyManager) compareString(actual, operator string, expected any) bool {
 	expectedStr, ok := expected.(string)
 	if !ok {
 		return false
@@ -826,7 +826,7 @@ func (sm *SecurityUpdatePolicyManager) compareString(actual, operator string, ex
 	return false
 }
 
-func (sm *SecurityUpdatePolicyManager) compareFloat(actual float64, operator string, expected interface{}) bool {
+func (sm *SecurityUpdatePolicyManager) compareFloat(actual float64, operator string, expected any) bool {
 	var expectedFloat float64
 	switch v := expected.(type) {
 	case float64:

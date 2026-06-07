@@ -6,6 +6,7 @@ package config
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -231,17 +232,17 @@ func (f *UnifiedConfigFacade) IsFeatureEnabled(feature string) bool {
 }
 
 // GetConfigurationSummary returns a summary of the current configuration.
-func (f *UnifiedConfigFacade) GetConfigurationSummary() map[string]interface{} {
+func (f *UnifiedConfigFacade) GetConfigurationSummary() map[string]any {
 	if f.config == nil {
 		return nil
 	}
 
-	summary := make(map[string]interface{})
+	summary := make(map[string]any)
 	summary["version"] = f.config.Version
 	summary["default_provider"] = f.config.DefaultProvider
 
 	if f.config.Global != nil {
-		summary["global"] = map[string]interface{}{
+		summary["global"] = map[string]any{
 			"clone_base_dir":     f.config.Global.CloneBaseDir,
 			"default_strategy":   f.config.Global.DefaultStrategy,
 			"default_visibility": f.config.Global.DefaultVisibility,
@@ -336,7 +337,8 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 		return "", fmt.Errorf("failed to get targets: %w", err)
 	}
 
-	report := fmt.Sprintf(`# Configuration Report
+	var report strings.Builder
+	report.WriteString(fmt.Sprintf(`# Configuration Report
 
 **Generated:** %s
 **Version:** %s
@@ -357,11 +359,11 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 		len(f.config.Providers),
 		len(targets),
 		map[bool]string{true: "Migrated", false: "Native"}[f.loadResult.WasMigrated],
-	)
+	))
 
 	// Add provider details
 	for providerName, provider := range f.config.Providers {
-		report += fmt.Sprintf(`
+		report.WriteString(fmt.Sprintf(`
 ### %s
 - **Token:** %s
 - **Organizations:** %d
@@ -371,35 +373,35 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 			maskToken(provider.Token),
 			len(provider.Organizations),
 			provider.APIURL,
-		)
+		))
 
 		for _, org := range provider.Organizations {
-			report += fmt.Sprintf(`  - **%s:** %s (%s, %s)
+			report.WriteString(fmt.Sprintf(`  - **%s:** %s (%s, %s)
 `,
 				org.Name,
 				org.CloneDir,
 				org.Visibility,
 				org.Strategy,
-			)
+			))
 		}
 	}
 
 	// Add warnings and required actions
 	if len(f.loadResult.Warnings) > 0 {
-		report += "\n## Warnings\n"
+		report.WriteString("\n## Warnings\n")
 		for _, warning := range f.loadResult.Warnings {
-			report += fmt.Sprintf("- %s\n", warning)
+			report.WriteString(fmt.Sprintf("- %s\n", warning))
 		}
 	}
 
 	if len(f.loadResult.RequiredActions) > 0 {
-		report += "\n## Required Actions\n"
+		report.WriteString("\n## Required Actions\n")
 		for _, action := range f.loadResult.RequiredActions {
-			report += fmt.Sprintf("- [ ] %s\n", action)
+			report.WriteString(fmt.Sprintf("- [ ] %s\n", action))
 		}
 	}
 
-	return report, nil
+	return report.String(), nil
 }
 
 // convertToLegacyFormat converts unified configuration to legacy format for compatibility.

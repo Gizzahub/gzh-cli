@@ -530,7 +530,7 @@ func (m *Provider) GenerateTestHealthStatus() *provider.HealthStatus {
 		LastChecked: time.Now(),
 		Latency:     50 * time.Millisecond,
 		Message:     "All systems operational",
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"api_status": "healthy",
 			"db_status":  "healthy",
 		},

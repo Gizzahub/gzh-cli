@@ -71,8 +71,8 @@ func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]stri
 	ctx := context.Background()
 	cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "NAME,STATE", "connection", "show", "--active")
 	if output, err := cmd.Output(); err == nil {
-		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
+		for line := range lines {
 			fields := strings.Split(line, ":")
 			if len(fields) >= 2 {
 				name := fields[0]
@@ -184,8 +184,8 @@ func (m *OptimizedDNSManager) detectPrimaryInterface() (string, error) {
 	}
 
 	// Parse output to find default interface
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "default via") {
 			fields := strings.Fields(line)
 			for i, field := range fields {

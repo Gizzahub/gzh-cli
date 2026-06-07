@@ -19,15 +19,15 @@ type ConfirmationPrompt struct {
 
 // SensitiveChange represents a potentially sensitive configuration change.
 type SensitiveChange struct {
-	Repository  string      `json:"repository"`
-	Category    string      `json:"category"`  // settings, branch_protection, permissions
-	Operation   string      `json:"operation"` // update, create, delete
-	Field       string      `json:"field"`     // specific field being changed
-	OldValue    interface{} `json:"old_value"`
-	NewValue    interface{} `json:"new_value"`
-	Risk        RiskLevel   `json:"risk"`
-	Description string      `json:"description"`
-	Impact      string      `json:"impact"`
+	Repository  string    `json:"repository"`
+	Category    string    `json:"category"`  // settings, branch_protection, permissions
+	Operation   string    `json:"operation"` // update, create, delete
+	Field       string    `json:"field"`     // specific field being changed
+	OldValue    any       `json:"old_value"`
+	NewValue    any       `json:"new_value"`
+	Risk        RiskLevel `json:"risk"`
+	Description string    `json:"description"`
+	Impact      string    `json:"impact"`
 }
 
 // RiskLevel represents the risk level of a change.

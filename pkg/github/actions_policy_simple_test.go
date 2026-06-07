@@ -92,10 +92,10 @@ func TestPolicyViolationStatus_Constants(t *testing.T) {
 // Simple mock logger for basic testing.
 type simpleLogger struct{}
 
-func (l *simpleLogger) Debug(msg string, keysAndValues ...interface{}) {}
-func (l *simpleLogger) Info(msg string, keysAndValues ...interface{})  {}
-func (l *simpleLogger) Warn(msg string, keysAndValues ...interface{})  {}
-func (l *simpleLogger) Error(msg string, keysAndValues ...interface{}) {}
+func (l *simpleLogger) Debug(msg string, keysAndValues ...any) {}
+func (l *simpleLogger) Info(msg string, keysAndValues ...any)  {}
+func (l *simpleLogger) Warn(msg string, keysAndValues ...any)  {}
+func (l *simpleLogger) Error(msg string, keysAndValues ...any) {}
 
 // Simple mock API client for basic testing.
 type simpleAPIClient struct{}

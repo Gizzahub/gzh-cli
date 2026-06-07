@@ -382,7 +382,7 @@ func (m *AWSProfileManager) saveSSOToken(profile *AWSProfile, tokenResp *ssooidc
 	}
 
 	// Create token cache entry
-	token := map[string]interface{}{
+	token := map[string]any{
 		"accessToken":  *tokenResp.AccessToken,
 		"expiresAt":    time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second).Format(time.RFC3339),
 		"region":       profile.SSORegion,

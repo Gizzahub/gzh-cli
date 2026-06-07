@@ -241,7 +241,7 @@ func (g *GiteaProvider) HealthCheck(ctx context.Context) (*provider.HealthStatus
 			Status:      provider.HealthStatusUnhealthy,
 			Message:     err.Error(),
 			LastChecked: time.Now(),
-			Details:     make(map[string]interface{}),
+			Details:     make(map[string]any),
 		}, nil
 	}
 
@@ -253,7 +253,7 @@ func (g *GiteaProvider) HealthCheck(ctx context.Context) (*provider.HealthStatus
 	status := &provider.HealthStatus{
 		LastChecked: time.Now(),
 		Latency:     latency,
-		Details:     make(map[string]interface{}),
+		Details:     make(map[string]any),
 	}
 
 	if err != nil {

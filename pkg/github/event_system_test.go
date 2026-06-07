@@ -82,16 +82,16 @@ func createTestEventForEventSystem() *GitHubEvent {
 		Repository:   "testrepo",
 		Sender:       "testuser",
 		Timestamp:    time.Now(),
-		Payload: map[string]interface{}{
+		Payload: map[string]any{
 			"action": "created",
 			"ref":    "refs/heads/main",
-			"repository": map[string]interface{}{
+			"repository": map[string]any{
 				"name": "testrepo",
-				"owner": map[string]interface{}{
+				"owner": map[string]any{
 					"login": "testorg",
 				},
 			},
-			"sender": map[string]interface{}{
+			"sender": map[string]any{
 				"login": "testuser",
 			},
 		},
@@ -103,7 +103,7 @@ func createTestEventForEventSystem() *GitHubEvent {
 	}
 }
 
-func createTestWebhookRequest(eventType, eventID string, payload interface{}) *http.Request {
+func createTestWebhookRequest(eventType, eventID string, payload any) *http.Request {
 	jsonPayload, _ := json.Marshal(payload)
 	req := httptest.NewRequest("POST", "/webhook", bytes.NewReader(jsonPayload))
 	req.Header.Set("X-GitHub-Event", eventType)
@@ -240,15 +240,15 @@ func TestEventProcessor_ParseWebhookEvent(t *testing.T) {
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"action": "opened",
-		"repository": map[string]interface{}{
+		"repository": map[string]any{
 			"name": "testrepo",
-			"owner": map[string]interface{}{
+			"owner": map[string]any{
 				"login": "testorg",
 			},
 		},
-		"sender": map[string]interface{}{
+		"sender": map[string]any{
 			"login": "testuser",
 		},
 	}
@@ -274,7 +274,7 @@ func TestEventProcessor_ParseWebhookEvent_MissingHeaders(t *testing.T) {
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
 
-	payload := map[string]interface{}{"test": "data"}
+	payload := map[string]any{"test": "data"}
 	jsonPayload, _ := json.Marshal(payload)
 	req := httptest.NewRequest("POST", "/webhook", bytes.NewReader(jsonPayload))
 	// Missing required headers
@@ -354,11 +354,11 @@ func TestEventWebhookServer_HandleWebhook(t *testing.T) {
 	processor := NewEventProcessor(mockStorage, mockLogger)
 	server := NewEventWebhookServer(processor, "", mockLogger)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"action": "opened",
-		"repository": map[string]interface{}{
+		"repository": map[string]any{
 			"name": "testrepo",
-			"owner": map[string]interface{}{
+			"owner": map[string]any{
 				"login": "testorg",
 			},
 		},
@@ -374,7 +374,7 @@ func TestEventWebhookServer_HandleWebhook(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Header().Get("Content-Type"), "application/json")
 
-	var response map[string]interface{}
+	var response map[string]any
 
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -406,7 +406,7 @@ func TestEventWebhookServer_HandleWebhook_InvalidSignature(t *testing.T) {
 	processor := NewEventProcessor(mockStorage, mockLogger)
 	server := NewEventWebhookServer(processor, "test-secret", mockLogger)
 
-	payload := map[string]interface{}{"test": "data"}
+	payload := map[string]any{"test": "data"}
 	req := createTestWebhookRequest("push", "test-123", payload)
 
 	w := httptest.NewRecorder()
@@ -431,7 +431,7 @@ func TestEventWebhookServer_GetHealthCheck(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Header().Get("Content-Type"), "application/json")
 
-	var response map[string]interface{}
+	var response map[string]any
 
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -553,9 +553,9 @@ func BenchmarkEventProcessor_ParseWebhookEvent(b *testing.B) {
 
 	processor := NewEventProcessor(mockStorage, mockLogger)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"action": "opened",
-		"repository": map[string]interface{}{
+		"repository": map[string]any{
 			"name": "testrepo",
 		},
 	}

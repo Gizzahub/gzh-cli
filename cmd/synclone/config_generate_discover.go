@@ -5,6 +5,7 @@ package synclone
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"sort"
@@ -144,25 +145,25 @@ func groupRepositoriesByProviderOrg(repos []discovery.DiscoveredRepo) map[string
 }
 
 // generateSyncloneConfig generates a synclone configuration from discovered repositories.
-func generateSyncloneConfig(groupedRepos map[string]map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
-	config := map[string]interface{}{
+func generateSyncloneConfig(groupedRepos map[string]map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
+	config := map[string]any{
 		"version": "1.0.0",
-		"global": map[string]interface{}{
+		"global": map[string]any{
 			"clone_base_dir":   basePath,
 			"default_strategy": "pull",
-			"concurrency": map[string]interface{}{
+			"concurrency": map[string]any{
 				"clone_workers":  4,
 				"update_workers": 8,
 			},
 		},
-		"providers": make(map[string]interface{}),
-		"sync_mode": map[string]interface{}{
+		"providers": make(map[string]any),
+		"sync_mode": map[string]any{
 			"cleanup_orphans":     false,
 			"conflict_resolution": "local-keep",
 		},
 	}
 
-	providers, ok := config["providers"].(map[string]interface{})
+	providers, ok := config["providers"].(map[string]any)
 	if !ok {
 		return nil // Invalid providers structure
 	}
@@ -183,7 +184,7 @@ func generateSyncloneConfig(groupedRepos map[string]map[string][]discovery.Disco
 }
 
 // generateProviderConfig generates configuration for a specific provider.
-func generateProviderConfig(provider string, orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
+func generateProviderConfig(provider string, orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
 	switch provider {
 	case "github":
 		return generateGitHubConfig(orgs, basePath)
@@ -199,11 +200,11 @@ func generateProviderConfig(provider string, orgs map[string][]discovery.Discove
 }
 
 // generateGitHubConfig generates GitHub-specific configuration.
-func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
-	var organizations []map[string]interface{}
+func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
+	var organizations []map[string]any
 
 	for orgName, repos := range orgs {
-		orgConfig := map[string]interface{}{
+		orgConfig := map[string]any{
 			"name":      orgName,
 			"clone_dir": filepath.Join(basePath, "github", orgName),
 		}
@@ -211,7 +212,7 @@ func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath s
 		// Add repository-specific configuration if needed
 		if hasPrivateRepos(repos) {
 			orgConfig["visibility"] = "private"
-			orgConfig["auth"] = map[string]interface{}{
+			orgConfig["auth"] = map[string]any{
 				"token": "${GITHUB_TOKEN}",
 			}
 		}
@@ -225,24 +226,24 @@ func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath s
 		organizations = append(organizations, orgConfig)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"organizations": organizations,
 	}
 }
 
 // generateGitLabConfig generates GitLab-specific configuration.
-func generateGitLabConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
-	var groups []map[string]interface{}
+func generateGitLabConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
+	var groups []map[string]any
 
 	for groupName, repos := range orgs {
-		groupConfig := map[string]interface{}{
+		groupConfig := map[string]any{
 			"name":      groupName,
 			"clone_dir": filepath.Join(basePath, "gitlab", groupName),
 		}
 
 		if hasPrivateRepos(repos) {
 			groupConfig["visibility"] = "private"
-			groupConfig["auth"] = map[string]interface{}{
+			groupConfig["auth"] = map[string]any{
 				"token": "${GITLAB_TOKEN}",
 			}
 		}
@@ -250,23 +251,23 @@ func generateGitLabConfig(orgs map[string][]discovery.DiscoveredRepo, basePath s
 		groups = append(groups, groupConfig)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"groups": groups,
 	}
 }
 
 // generateBitbucketConfig generates Bitbucket-specific configuration.
-func generateBitbucketConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
-	var workspaces []map[string]interface{}
+func generateBitbucketConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
+	var workspaces []map[string]any
 
 	for workspaceName, repos := range orgs {
-		workspaceConfig := map[string]interface{}{
+		workspaceConfig := map[string]any{
 			"name":      workspaceName,
 			"clone_dir": filepath.Join(basePath, "bitbucket", workspaceName),
 		}
 
 		if hasPrivateRepos(repos) {
-			workspaceConfig["auth"] = map[string]interface{}{
+			workspaceConfig["auth"] = map[string]any{
 				"token": "${BITBUCKET_TOKEN}",
 			}
 		}
@@ -274,24 +275,24 @@ func generateBitbucketConfig(orgs map[string][]discovery.DiscoveredRepo, basePat
 		workspaces = append(workspaces, workspaceConfig)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"workspaces": workspaces,
 	}
 }
 
 // generateGiteaConfig generates Gitea-specific configuration.
-func generateGiteaConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
-	var organizations []map[string]interface{}
+func generateGiteaConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
+	var organizations []map[string]any
 
 	for orgName, repos := range orgs {
-		orgConfig := map[string]interface{}{
+		orgConfig := map[string]any{
 			"name":      orgName,
 			"clone_dir": filepath.Join(basePath, "gitea", orgName),
 			"base_url":  "https://gitea.com", // Default, should be customized
 		}
 
 		if hasPrivateRepos(repos) {
-			orgConfig["auth"] = map[string]interface{}{
+			orgConfig["auth"] = map[string]any{
 				"token": "${GITEA_TOKEN}",
 			}
 		}
@@ -299,18 +300,18 @@ func generateGiteaConfig(orgs map[string][]discovery.DiscoveredRepo, basePath st
 		organizations = append(organizations, orgConfig)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"organizations": organizations,
 	}
 }
 
 // generateGenericProviderConfig generates configuration for unknown providers.
-func generateGenericProviderConfig(provider string, orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]interface{} {
-	var repositories []map[string]interface{}
+func generateGenericProviderConfig(provider string, orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
+	var repositories []map[string]any
 
 	for orgName, repos := range orgs {
 		for _, repo := range repos {
-			repoConfig := map[string]interface{}{
+			repoConfig := map[string]any{
 				"name":       repo.RepoName,
 				"url":        repo.RemoteURL,
 				"clone_dir":  filepath.Join(basePath, provider, orgName),
@@ -321,7 +322,7 @@ func generateGenericProviderConfig(provider string, orgs map[string][]discovery.
 		}
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"repositories": repositories,
 	}
 }
@@ -405,13 +406,13 @@ func findPattern(s, pattern string) bool {
 }
 
 // loadExistingConfig loads an existing configuration file.
-func loadExistingConfig(filename string) (map[string]interface{}, error) {
+func loadExistingConfig(filename string) (map[string]any, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	var config map[string]interface{}
+	var config map[string]any
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, err
 	}
@@ -420,29 +421,23 @@ func loadExistingConfig(filename string) (map[string]interface{}, error) {
 }
 
 // mergeConfigurations merges two configurations.
-func mergeConfigurations(existing, newConfig map[string]interface{}) map[string]interface{} {
+func mergeConfigurations(existing, newConfig map[string]any) map[string]any {
 	// Simple merge strategy - prefer new configuration but preserve existing structure
-	merged := make(map[string]interface{})
+	merged := make(map[string]any)
 
 	// Copy existing configuration
-	for key, value := range existing {
-		merged[key] = value
-	}
+	maps.Copy(merged, existing)
 
 	// Merge providers
-	if existingProviders, ok := existing["providers"].(map[string]interface{}); ok {
-		if newProviders, ok := newConfig["providers"].(map[string]interface{}); ok {
-			mergedProviders := make(map[string]interface{})
+	if existingProviders, ok := existing["providers"].(map[string]any); ok {
+		if newProviders, ok := newConfig["providers"].(map[string]any); ok {
+			mergedProviders := make(map[string]any)
 
 			// Copy existing providers
-			for provider, config := range existingProviders {
-				mergedProviders[provider] = config
-			}
+			maps.Copy(mergedProviders, existingProviders)
 
 			// Add new providers
-			for provider, config := range newProviders {
-				mergedProviders[provider] = config
-			}
+			maps.Copy(mergedProviders, newProviders)
 
 			merged["providers"] = mergedProviders
 		}
@@ -454,7 +449,7 @@ func mergeConfigurations(existing, newConfig map[string]interface{}) map[string]
 }
 
 // saveConfiguration saves the configuration to a file.
-func saveConfiguration(config map[string]interface{}, filename string) error {
+func saveConfiguration(config map[string]any, filename string) error {
 	data, err := yaml.Marshal(config)
 	if err != nil {
 		return fmt.Errorf("failed to marshal configuration: %w", err)

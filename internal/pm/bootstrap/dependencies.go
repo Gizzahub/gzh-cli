@@ -5,6 +5,7 @@ package bootstrap
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 )
 
@@ -145,12 +146,7 @@ func (dr *DependencyResolver) GetDependencies(manager string) []string {
 // HasDependency checks if a manager has a specific dependency.
 func (dr *DependencyResolver) HasDependency(manager, dependency string) bool {
 	deps := dr.dependencies[manager]
-	for _, dep := range deps {
-		if dep == dependency {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(deps, dependency)
 }
 
 // GetAllDependencies returns all transitive dependencies of a manager.

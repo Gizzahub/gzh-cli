@@ -64,7 +64,7 @@ func createTestWebhookStatus() *WebhookStatus {
 			ErrorRate:            5.0,
 			Uptime:               95.0,
 		},
-		Config: map[string]interface{}{
+		Config: map[string]any{
 			"content_type": "application/json",
 			"secret":       "webhook-secret",
 		},
@@ -81,7 +81,7 @@ func createTestWebhookAlert() WebhookAlert {
 		Severity:  AlertSeverityWarning,
 		Message:   "High error rate detected",
 		CreatedAt: time.Now().Add(-30 * time.Minute),
-		Details: map[string]interface{}{
+		Details: map[string]any{
 			"error_rate": 15.5,
 			"threshold":  15.0,
 		},
@@ -433,7 +433,7 @@ func BenchmarkWebhookMonitor_UpdateMetrics(b *testing.B) {
 	monitor, _ := createTestWebhookMonitor()
 
 	// Add many test webhooks
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		webhook := createTestWebhookStatus()
 		webhook.ID = fmt.Sprintf("webhook-%d", i)
 		webhook.Organization = fmt.Sprintf("org-%d", i%10)
@@ -451,7 +451,7 @@ func BenchmarkWebhookMonitor_GetAllWebhookStatuses(b *testing.B) {
 	monitor, _ := createTestWebhookMonitor()
 
 	// Add many test webhooks
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		webhook := createTestWebhookStatus()
 		webhook.ID = fmt.Sprintf("webhook-%d", i)
 		monitor.webhooks[webhook.ID] = webhook

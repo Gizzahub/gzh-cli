@@ -316,7 +316,7 @@ func generateTestRepos(count int) []provider.Repository {
 	languages := []string{"Go", "Python", "JavaScript", "TypeScript", "Java", "C++", "Rust", "Ruby"}
 	topics := []string{"api", "web", "mobile", "cli", "microservice", "database", "frontend", "backend"}
 
-	for i := 0; i < count; i++ {
+	for i := range count {
 		repos[i] = provider.Repository{
 			ID:          fmt.Sprintf("repo-%d", i),
 			Name:        fmt.Sprintf("repo-%d", i),
@@ -370,7 +370,7 @@ func simulateCloneExecution(ctx context.Context, mockProvider *mockprovider.Prov
 		}
 
 		// Wait for all operations to complete
-		for i := 0; i < len(repos); i++ {
+		for range repos {
 			if err := <-errors; err != nil {
 				return err
 			}

@@ -102,8 +102,8 @@ func (nd *NetworkDetector) getWiFiSSIDMacOS(ctx context.Context) (string, error)
 		return "", err
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, " SSID:") {
 			parts := strings.Split(line, ":")
 			if len(parts) >= 2 {
@@ -133,10 +133,10 @@ func (nd *NetworkDetector) getWiFiSSIDLinux(ctx context.Context) (string, error)
 		return "", err
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(line, "yes:") {
-			return strings.TrimPrefix(line, "yes:"), nil
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
+		if after, ok := strings.CutPrefix(line, "yes:"); ok {
+			return after, nil
 		}
 	}
 
@@ -152,8 +152,8 @@ func (nd *NetworkDetector) getWiFiSSIDWindows(ctx context.Context) (string, erro
 	}
 
 	// This is a simplified implementation - would need more parsing for Windows
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "Profile") && strings.Contains(line, ":") {
 			parts := strings.Split(line, ":")
 			if len(parts) >= 2 {
@@ -210,8 +210,8 @@ func (nd *NetworkDetector) getDefaultGatewayUnix(ctx context.Context) (string, e
 		}
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "gateway") || strings.Contains(line, "via") {
 			fields := strings.Fields(line)
 			for i, field := range fields {
@@ -233,8 +233,8 @@ func (nd *NetworkDetector) getDefaultGatewayWindows(ctx context.Context) (string
 		return "", err
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(line, "Default Gateway") {
 			parts := strings.Split(line, ":")
 			if len(parts) >= 2 {
@@ -267,8 +267,8 @@ func (nd *NetworkDetector) getDNSServersUnix() ([]string, error) {
 	}
 
 	var servers []string
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(content), "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "nameserver") {
 			fields := strings.Fields(line)

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"slices"
 	"strings"
 	"syscall"
 	"time"
@@ -337,11 +338,8 @@ func listPolicies(cmd *cobra.Command, args []string) error {
 			hasTag := false
 
 			for _, filterTag := range tags {
-				for _, policyTag := range policy.Tags {
-					if policyTag == filterTag {
-						hasTag = true
-						break
-					}
+				if slices.Contains(policy.Tags, filterTag) {
+					hasTag = true
 				}
 
 				if hasTag {
@@ -657,7 +655,7 @@ func printEnforcementResult(result *github.PolicyEnforcementResult) {
 	}
 }
 
-func printJSON(data interface{}) error {
+func printJSON(data any) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 
@@ -675,11 +673,11 @@ func truncate(s string, length int) string {
 // Console logger implementation.
 type consoleLogger struct{}
 
-func (l *consoleLogger) Debug(msg string, args ...interface{}) {
+func (l *consoleLogger) Debug(msg string, args ...any) {
 	// Only show debug messages in verbose mode
 }
 
-func (l *consoleLogger) Info(msg string, args ...interface{}) {
+func (l *consoleLogger) Info(msg string, args ...any) {
 	fmt.Printf("[INFO] %s", msg)
 
 	for i := 0; i < len(args); i += 2 {
@@ -691,7 +689,7 @@ func (l *consoleLogger) Info(msg string, args ...interface{}) {
 	fmt.Println()
 }
 
-func (l *consoleLogger) Warn(msg string, args ...interface{}) {
+func (l *consoleLogger) Warn(msg string, args ...any) {
 	fmt.Printf("[WARN] %s", msg)
 
 	for i := 0; i < len(args); i += 2 {
@@ -703,7 +701,7 @@ func (l *consoleLogger) Warn(msg string, args ...interface{}) {
 	fmt.Println()
 }
 
-func (l *consoleLogger) Error(msg string, args ...interface{}) {
+func (l *consoleLogger) Error(msg string, args ...any) {
 	fmt.Printf("[ERROR] %s", msg)
 
 	for i := 0; i < len(args); i += 2 {

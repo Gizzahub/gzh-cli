@@ -300,52 +300,53 @@ func (sm *SyncManager) FormatReport(report *SyncReport, verbose bool) string {
 		return "No synchronization report available\n"
 	}
 
-	result := "🔄 Package Manager Version Synchronization Status\n" // S1039 수정: 불필요한 fmt.Sprintf 제거
-	result += fmt.Sprintf("Platform: %s\n", report.Platform)
-	result += fmt.Sprintf("Timestamp: %s\n", report.Timestamp.Format("2006-01-02 15:04:05"))
-	result += fmt.Sprintf("Total Pairs: %d\n", report.TotalPairs)
-	result += fmt.Sprintf("In Sync: %d, Out of Sync: %d\n\n", report.InSyncCount, report.OutOfSyncCount)
+	var result strings.Builder
+	result.WriteString("🔄 Package Manager Version Synchronization Status\n") // S1039 수정: 불필요한 fmt.Sprintf 제거
+	result.WriteString(fmt.Sprintf("Platform: %s\n", report.Platform))
+	result.WriteString(fmt.Sprintf("Timestamp: %s\n", report.Timestamp.Format("2006-01-02 15:04:05")))
+	result.WriteString(fmt.Sprintf("Total Pairs: %d\n", report.TotalPairs))
+	result.WriteString(fmt.Sprintf("In Sync: %d, Out of Sync: %d\n\n", report.InSyncCount, report.OutOfSyncCount))
 
-	result += "Version Manager Pairs:\n"
+	result.WriteString("Version Manager Pairs:\n")
 	for _, status := range report.SyncStatuses {
 		icon := "✅"
 		if !status.InSync {
 			icon = "❌"
 		}
 
-		result += fmt.Sprintf("  %s %s ↔ %s", icon, status.VersionManager, status.PackageManager)
+		result.WriteString(fmt.Sprintf("  %s %s ↔ %s", icon, status.VersionManager, status.PackageManager))
 
 		if status.VMVersion != statusUnknown {
-			result += fmt.Sprintf("      %s v%s ↔ %s v%s", status.VersionManager, status.VMVersion, status.PackageManager, status.PMVersion)
+			result.WriteString(fmt.Sprintf("      %s v%s ↔ %s v%s", status.VersionManager, status.VMVersion, status.PackageManager, status.PMVersion))
 		}
 
 		if status.InSync {
-			result += "     (in sync)\n"
+			result.WriteString("     (in sync)\n")
 		} else {
-			result += "       (out of sync)\n"
+			result.WriteString("       (out of sync)\n")
 			if status.ExpectedPMVersion != statusUnknown && status.ExpectedPMVersion != "" {
-				result += fmt.Sprintf("     Expected %s version: v%s\n", status.PackageManager, status.ExpectedPMVersion)
+				result.WriteString(fmt.Sprintf("     Expected %s version: v%s\n", status.PackageManager, status.ExpectedPMVersion))
 			}
 			if status.SyncAction != "" && status.SyncAction != statusUnknown {
-				result += fmt.Sprintf("     Action needed: %s\n", status.SyncAction)
+				result.WriteString(fmt.Sprintf("     Action needed: %s\n", status.SyncAction))
 			}
 		}
 
 		if verbose && len(status.Issues) > 0 {
-			result += fmt.Sprintf("     Issues: %s\n", strings.Join(status.Issues, ", "))
+			result.WriteString(fmt.Sprintf("     Issues: %s\n", strings.Join(status.Issues, ", ")))
 		}
 
-		result += "\n"
+		result.WriteString("\n")
 	}
 
 	if report.OutOfSyncCount > 0 {
-		result += "Synchronization strategies:\n"
-		result += "  --strategy vm_priority    Update package managers to match version managers\n"
-		result += "  --strategy pm_priority    Update version managers to match package managers\n"
-		result += "  --strategy latest         Update both to latest compatible versions\n\n"
+		result.WriteString("Synchronization strategies:\n")
+		result.WriteString("  --strategy vm_priority    Update package managers to match version managers\n")
+		result.WriteString("  --strategy pm_priority    Update version managers to match package managers\n")
+		result.WriteString("  --strategy latest         Update both to latest compatible versions\n\n")
 	}
 
-	return result
+	return result.String()
 }
 
 // detectPlatform detects the current platform.

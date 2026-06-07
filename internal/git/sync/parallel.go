@@ -256,7 +256,7 @@ func NewRateLimiter(maxConcurrent int, refillRate time.Duration) *RateLimiter {
 	}
 
 	// Fill initial tokens
-	for i := 0; i < maxConcurrent; i++ {
+	for range maxConcurrent {
 		rl.tokens <- struct{}{}
 	}
 

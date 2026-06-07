@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -154,20 +155,20 @@ const (
 
 // Workflow structure for parsing YAML.
 type WorkflowFile struct {
-	Name        string                 `yaml:"name"`
-	On          interface{}            `yaml:"on"`
-	Permissions map[string]interface{} `yaml:"permissions"`
-	Jobs        map[string]Job         `yaml:"jobs"`
-	Env         map[string]string      `yaml:"env"`
+	Name        string            `yaml:"name"`
+	On          any               `yaml:"on"`
+	Permissions map[string]any    `yaml:"permissions"`
+	Jobs        map[string]Job    `yaml:"jobs"`
+	Env         map[string]string `yaml:"env"`
 }
 
 type Job struct {
-	Name        string                 `yaml:"name"`
-	RunsOn      interface{}            `yaml:"runs-on"`
-	Permissions map[string]interface{} `yaml:"permissions"`
-	Environment interface{}            `yaml:"environment"`
-	Steps       []Step                 `yaml:"steps"`
-	Env         map[string]string      `yaml:"env"`
+	Name        string            `yaml:"name"`
+	RunsOn      any               `yaml:"runs-on"`
+	Permissions map[string]any    `yaml:"permissions"`
+	Environment any               `yaml:"environment"`
+	Steps       []Step            `yaml:"steps"`
+	Env         map[string]string `yaml:"env"`
 }
 
 type Step struct {
@@ -475,19 +476,19 @@ func (wa *WorkflowAuditor) analyzeScriptSecurity(script string) []string {
 
 // Helper methods for analysis
 
-func (wa *WorkflowAuditor) extractTriggers(on interface{}) []string {
+func (wa *WorkflowAuditor) extractTriggers(on any) []string {
 	triggers := make([]string, 0)
 
 	switch v := on.(type) {
 	case string:
 		triggers = append(triggers, v)
-	case []interface{}:
+	case []any:
 		for _, trigger := range v {
 			if str, ok := trigger.(string); ok {
 				triggers = append(triggers, str)
 			}
 		}
-	case map[string]interface{}:
+	case map[string]any:
 		for key := range v {
 			triggers = append(triggers, key)
 		}
@@ -496,7 +497,7 @@ func (wa *WorkflowAuditor) extractTriggers(on interface{}) []string {
 	return triggers
 }
 
-func (wa *WorkflowAuditor) normalizePermissions(permissions map[string]interface{}) map[string]string {
+func (wa *WorkflowAuditor) normalizePermissions(permissions map[string]any) map[string]string {
 	normalized := make(map[string]string)
 
 	for scope, perm := range permissions {
@@ -508,11 +509,11 @@ func (wa *WorkflowAuditor) normalizePermissions(permissions map[string]interface
 	return normalized
 }
 
-func (wa *WorkflowAuditor) normalizeRunsOn(runsOn interface{}) string {
+func (wa *WorkflowAuditor) normalizeRunsOn(runsOn any) string {
 	switch v := runsOn.(type) {
 	case string:
 		return v
-	case []interface{}:
+	case []any:
 		if len(v) > 0 {
 			if str, ok := v[0].(string); ok {
 				return str
@@ -523,11 +524,11 @@ func (wa *WorkflowAuditor) normalizeRunsOn(runsOn interface{}) string {
 	return "unknown"
 }
 
-func (wa *WorkflowAuditor) normalizeEnvironment(env interface{}) string {
+func (wa *WorkflowAuditor) normalizeEnvironment(env any) string {
 	switch v := env.(type) {
 	case string:
 		return v
-	case map[string]interface{}:
+	case map[string]any:
 		if name, ok := v["name"].(string); ok {
 			return name
 		}
@@ -591,13 +592,7 @@ func (wa *WorkflowAuditor) extractVariablesUsage(step Step) []string {
 
 func (wa *WorkflowAuditor) isHighRiskScope(scope string) bool {
 	highRiskScopes := []string{"contents", "packages", "deployments", "security-events"}
-	for _, risk := range highRiskScopes {
-		if scope == risk {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(highRiskScopes, scope)
 }
 
 func (wa *WorkflowAuditor) isActionPinned(uses string) bool {
@@ -1061,11 +1056,5 @@ func (wa *WorkflowAuditor) removeDuplicates(slice []string) []string {
 }
 
 func (wa *WorkflowAuditor) contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(slice, item)
 }

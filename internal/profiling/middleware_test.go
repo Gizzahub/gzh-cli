@@ -243,10 +243,10 @@ func TestBatchOperationTracker_Finish_Enabled(t *testing.T) {
 	tracker := middleware.NewBatchOperationTracker("batch-test", 10)
 
 	// Simulate batch processing
-	for i := 0; i < 8; i++ {
+	for range 8 {
 		tracker.TrackItem(true)
 	}
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		tracker.TrackItem(false)
 	}
 

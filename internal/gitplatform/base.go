@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -124,13 +125,7 @@ func Difference(a, b []string) []string {
 
 // Contains checks if a slice contains a specific element.
 func Contains(list []string, element string) bool {
-	for _, item := range list {
-		if item == element {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(list, element)
 }
 
 // FileExists checks if a file exists.

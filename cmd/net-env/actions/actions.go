@@ -696,8 +696,8 @@ func showVPNStatus(ctx context.Context) error {
 
 		cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show")
 		if output, err := cmd.Output(); err == nil {
-			lines := strings.Split(string(output), "\n")
-			for _, line := range lines {
+			lines := strings.SplitSeq(string(output), "\n")
+			for line := range lines {
 				fields := strings.Split(line, ":")
 				if len(fields) >= 3 && strings.Contains(fields[1], "vpn") {
 					fmt.Printf("  %s: %s\n", fields[0], fields[2])
@@ -871,8 +871,8 @@ func addHostEntry(ip, host string) error {
 
 	// Check if entry already exists
 	if content, err := os.ReadFile(hostsFile); err == nil {
-		lines := strings.Split(string(content), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(string(content), "\n")
+		for line := range lines {
 			if strings.Contains(line, host) && !strings.HasPrefix(strings.TrimSpace(line), "#") {
 				return fmt.Errorf("host entry '%s' already exists in %s", host, hostsFile)
 			}

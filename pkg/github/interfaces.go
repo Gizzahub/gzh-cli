@@ -117,14 +117,14 @@ type ChangeLoggerInterface interface {
 
 // LogOperationRecord represents a logged operation.
 type LogOperationRecord struct {
-	ID         string                 `json:"id"`
-	Timestamp  time.Time              `json:"timestamp"`
-	Operation  string                 `json:"operation"`
-	Repository string                 `json:"repository"`
-	User       string                 `json:"user"`
-	Success    bool                   `json:"success"`
-	Error      string                 `json:"error,omitempty"`
-	Metadata   map[string]interface{} `json:"metadata"`
+	ID         string         `json:"id"`
+	Timestamp  time.Time      `json:"timestamp"`
+	Operation  string         `json:"operation"`
+	Repository string         `json:"repository"`
+	User       string         `json:"user"`
+	Success    bool           `json:"success"`
+	Error      string         `json:"error,omitempty"`
+	Metadata   map[string]any `json:"metadata"`
 }
 
 // LogLevelType represents the logging level.
@@ -156,23 +156,23 @@ type ConfirmationServiceInterface interface {
 
 // ConfirmationPromptRecord represents a confirmation request.
 type ConfirmationPromptRecord struct {
-	Title       string                 `json:"title"`
-	Description string                 `json:"description"`
-	Repository  string                 `json:"repository"`
-	Operation   string                 `json:"operation"`
-	Risk        RiskLevelType          `json:"risk"`
-	Impact      string                 `json:"impact"`
-	Metadata    map[string]interface{} `json:"metadata"`
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Repository  string         `json:"repository"`
+	Operation   string         `json:"operation"`
+	Risk        RiskLevelType  `json:"risk"`
+	Impact      string         `json:"impact"`
+	Metadata    map[string]any `json:"metadata"`
 }
 
 // OperationRecord represents an operation that requires confirmation.
 type OperationRecord struct {
-	ID          string                 `json:"id"`
-	Type        string                 `json:"type"`
-	Repository  string                 `json:"repository"`
-	Description string                 `json:"description"`
-	Risk        RiskLevelType          `json:"risk"`
-	Metadata    map[string]interface{} `json:"metadata"`
+	ID          string         `json:"id"`
+	Type        string         `json:"type"`
+	Repository  string         `json:"repository"`
+	Description string         `json:"description"`
+	Risk        RiskLevelType  `json:"risk"`
+	Metadata    map[string]any `json:"metadata"`
 }
 
 // RiskLevelType represents the risk level of an operation.

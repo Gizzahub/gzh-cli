@@ -21,13 +21,13 @@ import (
 
 // DevEnvResult represents development environment check result.
 type DevEnvResult struct {
-	Tool       string                 `json:"tool"`
-	Status     string                 `json:"status"`
-	Version    string                 `json:"version"`
-	Path       string                 `json:"path"`
-	Required   bool                   `json:"required"`
-	Details    map[string]interface{} `json:"details,omitempty"`
-	Suggestion string                 `json:"suggestion,omitempty"`
+	Tool       string         `json:"tool"`
+	Status     string         `json:"status"`
+	Version    string         `json:"version"`
+	Path       string         `json:"path"`
+	Required   bool           `json:"required"`
+	Details    map[string]any `json:"details,omitempty"`
+	Suggestion string         `json:"suggestion,omitempty"`
 }
 
 // DevEnvReport represents the complete development environment report.
@@ -195,7 +195,7 @@ func checkGoTool(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -210,7 +210,7 @@ func checkGoTool(ctx context.Context) DevEnvResult {
 	}
 
 	// Get additional Go environment info
-	result.Details = map[string]interface{}{
+	result.Details = map[string]any{
 		"GOPATH":      os.Getenv("GOPATH"),
 		"GOROOT":      os.Getenv("GOROOT"),
 		"GOPROXY":     os.Getenv("GOPROXY"),
@@ -238,7 +238,7 @@ func checkGitTool(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -257,7 +257,7 @@ func checkGitTool(ctx context.Context) DevEnvResult {
 		}
 	}
 
-	result.Details = map[string]interface{}{"config": gitConfig}
+	result.Details = map[string]any{"config": gitConfig}
 
 	if gitConfig["user.name"] == "" || gitConfig["user.email"] == "" {
 		result.Status = "incomplete"
@@ -293,7 +293,7 @@ func checkMakeTool(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -323,7 +323,7 @@ func checkGolangciLint(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -350,7 +350,7 @@ func checkGofumpt(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -428,7 +428,7 @@ func checkPreCommit(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -455,7 +455,7 @@ func checkDocker(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -482,7 +482,7 @@ func checkGoReleaser(ctx context.Context) DevEnvResult {
 	output, err := cmd.Output()
 	if err != nil {
 		result.Status = "error"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 		return result
 	}
 
@@ -510,7 +510,7 @@ func checkGoModules(ctx context.Context, report *DevEnvReport) {
 	case err != nil:
 		result.Status = "needs_tidy"
 		result.Suggestion = "Run 'go mod tidy' to clean up dependencies"
-		result.Details = map[string]interface{}{"error": err.Error()}
+		result.Details = map[string]any{"error": err.Error()}
 	case len(output) > 0:
 		result.Status = "needs_tidy"
 		result.Suggestion = "Run 'go mod tidy' to clean up dependencies"
@@ -544,7 +544,7 @@ func checkMakefile(ctx context.Context, report *DevEnvReport) {
 				targets[target] = true
 			}
 		}
-		result.Details = map[string]interface{}{"targets": targets}
+		result.Details = map[string]any{"targets": targets}
 	}
 
 	report.Results = append(report.Results, result)
@@ -586,7 +586,7 @@ func checkGolangciConfig(ctx context.Context, report *DevEnvReport) {
 
 	result.Status = "found"
 	result.Status = "ok"
-	result.Details = map[string]interface{}{"config_file": foundConfig}
+	result.Details = map[string]any{"config_file": foundConfig}
 
 	report.Results = append(report.Results, result)
 }
@@ -617,7 +617,7 @@ func checkGitHooks(ctx context.Context, report *DevEnvReport) {
 		result.Suggestion = "Install git hooks with: make pre-commit-install"
 	} else {
 		result.Status = "ok"
-		result.Details = map[string]interface{}{"installed_hooks": installedHooks}
+		result.Details = map[string]any{"installed_hooks": installedHooks}
 	}
 
 	report.Results = append(report.Results, result)

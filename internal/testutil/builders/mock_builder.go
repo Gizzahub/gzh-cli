@@ -34,7 +34,7 @@ type MockLogger struct {
 // LogCall represents a call to a logging method.
 type LogCall struct {
 	Message string
-	Args    []interface{}
+	Args    []any
 }
 
 // NewMockLoggerBuilder creates a new MockLoggerBuilder.
@@ -55,21 +55,21 @@ func (b *MockLoggerBuilder) Build() *MockLogger {
 }
 
 // Debug logs a debug message.
-func (m *MockLogger) Debug(msg string, args ...interface{}) {
+func (m *MockLogger) Debug(msg string, args ...any) {
 	m.DebugCalls = append(m.DebugCalls, LogCall{Message: msg, Args: args})
 }
 
 // Info logs an info message.
-func (m *MockLogger) Info(msg string, args ...interface{}) {
+func (m *MockLogger) Info(msg string, args ...any) {
 	m.InfoCalls = append(m.InfoCalls, LogCall{Message: msg, Args: args})
 }
 
 // Warn logs a warning message.
-func (m *MockLogger) Warn(msg string, args ...interface{}) {
+func (m *MockLogger) Warn(msg string, args ...any) {
 	m.WarnCalls = append(m.WarnCalls, LogCall{Message: msg, Args: args})
 }
 
-func (m *MockLogger) Error(msg string, args ...interface{}) {
+func (m *MockLogger) Error(msg string, args ...any) {
 	m.ErrorCalls = append(m.ErrorCalls, LogCall{Message: msg, Args: args})
 }
 

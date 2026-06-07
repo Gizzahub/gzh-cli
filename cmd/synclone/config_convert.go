@@ -96,15 +96,15 @@ Supported conversions:
 // convertV1ToV2 converts bulk-clone v1 format to synclone v2 format.
 func convertV1ToV2(data []byte) ([]byte, error) {
 	// Parse v1 format
-	var v1Config map[string]interface{}
+	var v1Config map[string]any
 	if err := yaml.Unmarshal(data, &v1Config); err != nil {
 		return nil, fmt.Errorf("failed to parse v1 config: %w", err)
 	}
 
 	// Transform to v2 format
-	v2Config := map[string]interface{}{
+	v2Config := map[string]any{
 		"version": "2.0",
-		"synclone": map[string]interface{}{
+		"synclone": map[string]any{
 			"providers": transformProviders(v1Config),
 		},
 	}
@@ -114,14 +114,14 @@ func convertV1ToV2(data []byte) ([]byte, error) {
 }
 
 // transformProviders transforms v1 provider configuration to v2 format.
-func transformProviders(v1Config map[string]interface{}) []map[string]interface{} {
-	var providers []map[string]interface{}
+func transformProviders(v1Config map[string]any) []map[string]any {
+	var providers []map[string]any
 
 	// Handle bulk_clone section
-	if bulkClone, ok := v1Config["bulk_clone"].(map[string]interface{}); ok {
-		if roots, ok := bulkClone["repository_roots"].([]interface{}); ok {
+	if bulkClone, ok := v1Config["bulk_clone"].(map[string]any); ok {
+		if roots, ok := bulkClone["repository_roots"].([]any); ok {
 			for _, root := range roots {
-				if rootMap, ok := root.(map[string]interface{}); ok {
+				if rootMap, ok := root.(map[string]any); ok {
 					provider := transformProvider(rootMap)
 					if provider != nil {
 						providers = append(providers, provider)
@@ -135,8 +135,8 @@ func transformProviders(v1Config map[string]interface{}) []map[string]interface{
 }
 
 // transformProvider transforms a single provider configuration.
-func transformProvider(v1Provider map[string]interface{}) map[string]interface{} {
-	provider := make(map[string]interface{})
+func transformProvider(v1Provider map[string]any) map[string]any {
+	provider := make(map[string]any)
 
 	// Copy basic fields
 	if name, ok := v1Provider["name"].(string); ok {
@@ -171,7 +171,7 @@ func transformProvider(v1Provider map[string]interface{}) map[string]interface{}
 	}
 
 	// Copy filters
-	if filters, ok := v1Provider["filters"].(map[string]interface{}); ok {
+	if filters, ok := v1Provider["filters"].(map[string]any); ok {
 		provider["filters"] = filters
 	}
 
@@ -180,7 +180,7 @@ func transformProvider(v1Provider map[string]interface{}) map[string]interface{}
 
 // convertJSONToYAML converts JSON configuration to YAML.
 func convertJSONToYAML(data []byte) ([]byte, error) {
-	var config interface{}
+	var config any
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, err
 	}

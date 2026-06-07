@@ -171,11 +171,11 @@ func (p *SimpleProfiler) saveProfile(profileName, filename string) (string, erro
 }
 
 // GetStats returns basic runtime statistics.
-func (p *SimpleProfiler) GetStats() map[string]interface{} {
+func (p *SimpleProfiler) GetStats() map[string]any {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	return map[string]interface{}{
+	return map[string]any{
 		"goroutines":     runtime.NumGoroutine(),
 		"heap_alloc":     m.HeapAlloc,
 		"heap_sys":       m.HeapSys,

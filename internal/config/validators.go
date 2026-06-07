@@ -17,7 +17,7 @@ import (
 type BulkCloneConfigValidator struct{}
 
 // Validate validates bulk clone configuration.
-func (v *BulkCloneConfigValidator) Validate(config interface{}) error {
+func (v *BulkCloneConfigValidator) Validate(config any) error {
 	bulkConfig, ok := config.(*BulkCloneConfig)
 	if !ok {
 		return errors.NewStandardError(errors.ErrorCodeValidationFailed,
@@ -58,7 +58,7 @@ func (v *BulkCloneConfigValidator) Validate(config interface{}) error {
 type HTTPClientConfigValidator struct{}
 
 // Validate validates HTTP client configuration.
-func (v *HTTPClientConfigValidator) Validate(config interface{}) error {
+func (v *HTTPClientConfigValidator) Validate(config any) error {
 	httpConfig, ok := config.(*HTTPClientConfig)
 	if !ok {
 		return errors.NewStandardError(errors.ErrorCodeValidationFailed,
@@ -101,7 +101,7 @@ func (v *HTTPClientConfigValidator) Validate(config interface{}) error {
 type AuthConfigValidator struct{}
 
 // Validate validates authentication configuration.
-func (v *AuthConfigValidator) Validate(config interface{}) error {
+func (v *AuthConfigValidator) Validate(config any) error {
 	authConfig, ok := config.(*AuthConfig)
 	if !ok {
 		return errors.NewStandardError(errors.ErrorCodeValidationFailed,
@@ -137,7 +137,7 @@ func (v *AuthConfigValidator) Validate(config interface{}) error {
 type GitHubConfigValidator struct{}
 
 // Validate validates GitHub configuration.
-func (v *GitHubConfigValidator) Validate(config interface{}) error {
+func (v *GitHubConfigValidator) Validate(config any) error {
 	githubConfig, ok := config.(*GitHubConfig)
 	if !ok {
 		return errors.NewStandardError(errors.ErrorCodeValidationFailed,
@@ -202,7 +202,7 @@ func (v *GitHubConfigValidator) Validate(config interface{}) error {
 type SecurityConfigValidator struct{}
 
 // Validate validates security configuration.
-func (v *SecurityConfigValidator) Validate(config interface{}) error {
+func (v *SecurityConfigValidator) Validate(config any) error {
 	secConfig, ok := config.(*SecurityConfig)
 	if !ok {
 		return errors.NewStandardError(errors.ErrorCodeValidationFailed,
@@ -241,7 +241,7 @@ func (v *SecurityConfigValidator) Validate(config interface{}) error {
 type LoggingConfigValidator struct{}
 
 // Validate validates logging configuration.
-func (v *LoggingConfigValidator) Validate(config interface{}) error {
+func (v *LoggingConfigValidator) Validate(config any) error {
 	logConfig, ok := config.(*LoggingConfig)
 	if !ok {
 		return errors.NewStandardError(errors.ErrorCodeValidationFailed,
@@ -304,7 +304,7 @@ func NewCompositeValidator(validators ...Validator) *CompositeValidator {
 }
 
 // Validate runs all validators.
-func (cv *CompositeValidator) Validate(config interface{}) error {
+func (cv *CompositeValidator) Validate(config any) error {
 	for _, validator := range cv.validators {
 		if err := validator.Validate(config); err != nil {
 			return err

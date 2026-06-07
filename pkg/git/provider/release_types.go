@@ -25,8 +25,8 @@ type Release struct {
 	Assets       []Asset   `json:"assets"`
 
 	// 프로바이더별 메타데이터
-	ProviderType string                 `json:"provider_type"`
-	ProviderData map[string]interface{} `json:"provider_data"`
+	ProviderType string         `json:"provider_type"`
+	ProviderData map[string]any `json:"provider_data"`
 }
 
 // Asset represents a release asset (file attachment).

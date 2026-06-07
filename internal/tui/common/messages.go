@@ -68,7 +68,7 @@ type LoadingMsg struct {
 // DataUpdateMsg signals that data has been updated.
 type DataUpdateMsg struct {
 	Component string
-	Data      interface{}
+	Data      any
 	Timestamp time.Time
 }
 
@@ -90,7 +90,7 @@ type SectionChangeMsg struct {
 type KeyPressMsg struct {
 	Key       string
 	Component string
-	Context   map[string]interface{}
+	Context   map[string]any
 }
 
 // ResizeMsg signals that the terminal has been resized.
@@ -103,7 +103,7 @@ type ResizeMsg struct {
 type ConfigChangeMsg struct {
 	Component  string
 	ConfigPath string
-	Changes    map[string]interface{}
+	Changes    map[string]any
 }
 
 // Helper functions for creating common messages.
@@ -145,7 +145,7 @@ func NewLoadingMsg(component, message string, show bool) LoadingMsg {
 }
 
 // NewDataUpdateMsg creates a new data update message.
-func NewDataUpdateMsg(component string, data interface{}) DataUpdateMsg {
+func NewDataUpdateMsg(component string, data any) DataUpdateMsg {
 	return DataUpdateMsg{
 		Component: component,
 		Data:      data,

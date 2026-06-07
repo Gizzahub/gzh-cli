@@ -5,7 +5,9 @@ package config
 
 import (
 	"fmt"
+	"maps"
 	"os"
+	"slices"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -171,10 +173,10 @@ type PolicyTemplate struct {
 
 // PolicyRule represents a single policy rule.
 type PolicyRule struct {
-	Type        string      `yaml:"type"`
-	Value       interface{} `yaml:"value"`
-	Enforcement string      `yaml:"enforcement"`
-	Message     string      `yaml:"message,omitempty"`
+	Type        string `yaml:"type"`
+	Value       any    `yaml:"value"`
+	Enforcement string `yaml:"enforcement"`
+	Message     string `yaml:"message,omitempty"`
 }
 
 // PolicyException represents an exception to a policy rule.
@@ -217,9 +219,9 @@ type PolicyOverride struct {
 
 // RuleOverride allows customizing individual rules.
 type RuleOverride struct {
-	Value       interface{} `yaml:"value,omitempty"`
-	Enforcement string      `yaml:"enforcement,omitempty"`
-	Disabled    bool        `yaml:"disabled,omitempty"`
+	Value       any    `yaml:"value,omitempty"`
+	Enforcement string `yaml:"enforcement,omitempty"`
+	Disabled    bool   `yaml:"disabled,omitempty"`
 }
 
 // LoadRepoConfig loads repository configuration from a YAML file.
@@ -358,14 +360,10 @@ func MergeRepoConfigs(configs ...*RepoConfig) (*RepoConfig, error) {
 		}
 
 		// Merge templates
-		for name, template := range config.Templates {
-			result.Templates[name] = template
-		}
+		maps.Copy(result.Templates, config.Templates)
 
 		// Merge policies
-		for name, policy := range config.Policies {
-			result.Policies[name] = policy
-		}
+		maps.Copy(result.Policies, config.Policies)
 
 		// Take the last non-nil defaults
 		if config.Defaults != nil {
@@ -560,10 +558,8 @@ func (rc *RepoConfig) resolveTemplate(templateName string) (*RepoTemplate, error
 // resolveTemplateWithChain recursively resolves a template with circular dependency checking.
 func (rc *RepoConfig) resolveTemplateWithChain(templateName string, chain []string) (*RepoTemplate, error) {
 	// Check for circular dependency
-	for _, name := range chain {
-		if name == templateName {
-			return nil, fmt.Errorf("circular template dependency detected: %s", strings.Join(append(chain, templateName), " -> "))
-		}
+	if slices.Contains(chain, templateName) {
+		return nil, fmt.Errorf("circular template dependency detected: %s", strings.Join(append(chain, templateName), " -> "))
 	}
 
 	template, ok := rc.Templates[templateName]
@@ -928,24 +924,16 @@ func mergePermissionSettings(base, override *PermissionSettings) *PermissionSett
 
 	// Copy from base
 	if base != nil {
-		for team, perm := range base.TeamPermissions {
-			result.TeamPermissions[team] = perm
-		}
+		maps.Copy(result.TeamPermissions, base.TeamPermissions)
 
-		for user, perm := range base.UserPermissions {
-			result.UserPermissions[user] = perm
-		}
+		maps.Copy(result.UserPermissions, base.UserPermissions)
 	}
 
 	// Override with new values
 	if override != nil {
-		for team, perm := range override.TeamPermissions {
-			result.TeamPermissions[team] = perm
-		}
+		maps.Copy(result.TeamPermissions, override.TeamPermissions)
 
-		for user, perm := range override.UserPermissions {
-			result.UserPermissions[user] = perm
-		}
+		maps.Copy(result.UserPermissions, override.UserPermissions)
 	}
 
 	return result

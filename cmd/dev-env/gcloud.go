@@ -356,8 +356,8 @@ func (o *gcloudOptions) loadMetadata(name string) gcloudMetadata {
 		return metadata
 	}
 
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(content), "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -551,10 +551,10 @@ func (o *gcloudOptions) parseGcloudProperties(propertiesPath string, config *gcl
 	}
 
 	// Try to parse as JSON (newer gcloud format)
-	var properties map[string]interface{}
+	var properties map[string]any
 	if err := json.Unmarshal(content, &properties); err == nil {
 		// JSON format
-		if core, ok := properties["core"].(map[string]interface{}); ok {
+		if core, ok := properties["core"].(map[string]any); ok {
 			if project, ok := core["project"].(string); ok {
 				config.Project = project
 			}
@@ -564,7 +564,7 @@ func (o *gcloudOptions) parseGcloudProperties(propertiesPath string, config *gcl
 			}
 		}
 
-		if compute, ok := properties["compute"].(map[string]interface{}); ok {
+		if compute, ok := properties["compute"].(map[string]any); ok {
 			if region, ok := compute["region"].(string); ok {
 				config.Region = region
 			}

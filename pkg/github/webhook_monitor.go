@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"maps"
 	"sync"
 	"time"
 )
@@ -39,20 +40,20 @@ type AlertThresholds struct {
 
 // WebhookStatus represents the current status of a webhook.
 type WebhookStatus struct {
-	ID           string                 `json:"id"`
-	URL          string                 `json:"url"`
-	Organization string                 `json:"organization"`
-	Repository   string                 `json:"repository,omitempty"`
-	Events       []string               `json:"events"`
-	Active       bool                   `json:"active"`
-	CreatedAt    time.Time              `json:"created_at"`
-	UpdatedAt    time.Time              `json:"updated_at"`
-	LastChecked  time.Time              `json:"last_checked"`
-	Status       WebhookHealthStatus    `json:"status"`
-	Metrics      WebhookStatusMetrics   `json:"metrics"`
-	Config       map[string]interface{} `json:"config"`
-	Alerts       []WebhookAlert         `json:"alerts"`
-	History      []WebhookHealthCheck   `json:"history"`
+	ID           string               `json:"id"`
+	URL          string               `json:"url"`
+	Organization string               `json:"organization"`
+	Repository   string               `json:"repository,omitempty"`
+	Events       []string             `json:"events"`
+	Active       bool                 `json:"active"`
+	CreatedAt    time.Time            `json:"created_at"`
+	UpdatedAt    time.Time            `json:"updated_at"`
+	LastChecked  time.Time            `json:"last_checked"`
+	Status       WebhookHealthStatus  `json:"status"`
+	Metrics      WebhookStatusMetrics `json:"metrics"`
+	Config       map[string]any       `json:"config"`
+	Alerts       []WebhookAlert       `json:"alerts"`
+	History      []WebhookHealthCheck `json:"history"`
 }
 
 // WebhookHealthStatus represents the health status of a webhook.
@@ -82,15 +83,15 @@ type WebhookStatusMetrics struct {
 
 // WebhookAlert represents an alert for a webhook.
 type WebhookAlert struct {
-	ID           string                 `json:"id"`
-	WebhookID    string                 `json:"webhook_id"`
-	Type         WebhookAlertType       `json:"type"`
-	Severity     WebhookAlertSeverity   `json:"severity"`
-	Message      string                 `json:"message"`
-	CreatedAt    time.Time              `json:"created_at"`
-	ResolvedAt   *time.Time             `json:"resolved_at,omitempty"`
-	Acknowledged bool                   `json:"acknowledged"`
-	Details      map[string]interface{} `json:"details,omitempty"`
+	ID           string               `json:"id"`
+	WebhookID    string               `json:"webhook_id"`
+	Type         WebhookAlertType     `json:"type"`
+	Severity     WebhookAlertSeverity `json:"severity"`
+	Message      string               `json:"message"`
+	CreatedAt    time.Time            `json:"created_at"`
+	ResolvedAt   *time.Time           `json:"resolved_at,omitempty"`
+	Acknowledged bool                 `json:"acknowledged"`
+	Details      map[string]any       `json:"details,omitempty"`
 }
 
 // WebhookAlertType defines types of webhook alerts.
@@ -117,12 +118,12 @@ const (
 
 // WebhookHealthCheck represents a health check result.
 type WebhookHealthCheck struct {
-	Timestamp    time.Time              `json:"timestamp"`
-	Status       WebhookHealthStatus    `json:"status"`
-	ResponseTime time.Duration          `json:"response_time"`
-	StatusCode   int                    `json:"status_code,omitempty"`
-	Error        string                 `json:"error,omitempty"`
-	Details      map[string]interface{} `json:"details,omitempty"`
+	Timestamp    time.Time           `json:"timestamp"`
+	Status       WebhookHealthStatus `json:"status"`
+	ResponseTime time.Duration       `json:"response_time"`
+	StatusCode   int                 `json:"status_code,omitempty"`
+	Error        string              `json:"error,omitempty"`
+	Details      map[string]any      `json:"details,omitempty"`
 }
 
 // WebhookMetrics holds global webhook metrics.
@@ -265,9 +266,7 @@ func (wm *WebhookMonitor) GetMetrics() *WebhookMetrics {
 		LastUpdated:          wm.metrics.LastUpdated,
 	}
 
-	for k, v := range wm.metrics.StatusDistribution {
-		metricsCopy.StatusDistribution[k] = v
-	}
+	maps.Copy(metricsCopy.StatusDistribution, wm.metrics.StatusDistribution)
 
 	for k, v := range wm.metrics.OrganizationMetrics {
 		orgMetricsCopy := *v

@@ -212,8 +212,8 @@ func (s gemSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	var bindir string
 	for _, ln := range lines {
 		ln = strings.TrimSpace(ln)
-		if strings.HasPrefix(ln, "EXECUTABLE DIRECTORY:") {
-			bindir = strings.TrimSpace(strings.TrimPrefix(ln, "EXECUTABLE DIRECTORY:"))
+		if after, ok := strings.CutPrefix(ln, "EXECUTABLE DIRECTORY:"); ok {
+			bindir = strings.TrimSpace(after)
 			break
 		}
 	}

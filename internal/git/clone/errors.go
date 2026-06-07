@@ -6,6 +6,7 @@ package clone
 import (
 	"errors"
 	"fmt"
+	"slices"
 )
 
 // Common clone errors
@@ -178,13 +179,7 @@ func (s *ErrorSummary) AddError(repository string, err error) {
 
 	// Track common errors
 	errorMessage := err.Error()
-	found := false
-	for _, commonError := range s.CommonErrors {
-		if commonError == errorMessage {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(s.CommonErrors, errorMessage)
 	if !found && s.ErrorsByType[errorType] > 1 {
 		s.CommonErrors = append(s.CommonErrors, errorMessage)
 	}

@@ -16,8 +16,8 @@ type E2ETestConfig struct {
 	TestTimeout     time.Duration
 	SkipCondition   func() bool
 	SkipMessage     string
-	SetupFunc       func(t *testing.T) interface{}
-	CleanupFunc     func(t *testing.T, data interface{})
+	SetupFunc       func(t *testing.T) any
+	CleanupFunc     func(t *testing.T, data any)
 	RequiredEnvVars []string
 }
 
@@ -25,7 +25,7 @@ type E2ETestConfig struct {
 type E2ETestSuite struct {
 	t      *testing.T
 	config E2ETestConfig
-	data   interface{}
+	data   any
 }
 
 // NewE2ETestSuite creates a new E2E test suite.
@@ -73,7 +73,7 @@ func (e *E2ETestSuite) Cleanup() {
 }
 
 // GetSetupData returns the data from setup function.
-func (e *E2ETestSuite) GetSetupData() interface{} {
+func (e *E2ETestSuite) GetSetupData() any {
 	return e.data
 }
 
@@ -173,7 +173,7 @@ func RetryOperation(t *testing.T, operation func() error, maxRetries int, delay 
 	t.Helper()
 
 	var lastErr error
-	for i := 0; i < maxRetries; i++ {
+	for i := range maxRetries {
 		lastErr = operation()
 		if lastErr == nil {
 			return nil

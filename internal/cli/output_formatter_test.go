@@ -47,7 +47,7 @@ func TestOutputFormatter_FormatOutput_JSON(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	formatter := NewOutputFormatterWithWriter("json", buffer)
 
-	testData := map[string]interface{}{
+	testData := map[string]any{
 		"name":    "test",
 		"version": "1.0.0",
 		"active":  true,
@@ -69,7 +69,7 @@ func TestOutputFormatter_FormatOutput_YAML(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	formatter := NewOutputFormatterWithWriter("yaml", buffer)
 
-	testData := map[string]interface{}{
+	testData := map[string]any{
 		"name":    "test",
 		"version": "1.0.0",
 		"active":  true,
@@ -368,12 +368,12 @@ func TestOutputFormatter_ComplexJSONStructure(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	formatter := NewOutputFormatterWithWriter("json", buffer)
 
-	complexData := map[string]interface{}{
-		"metadata": map[string]interface{}{
+	complexData := map[string]any{
+		"metadata": map[string]any{
 			"name":    "test-app",
 			"version": "1.2.3",
 		},
-		"config": map[string]interface{}{
+		"config": map[string]any{
 			"enabled": true,
 			"ports":   []int{80, 443, 8080},
 		},
@@ -424,7 +424,7 @@ func TestTableData_Interface(t *testing.T) {
 
 func TestOutputFormatter_Integration(t *testing.T) {
 	// Test a complete workflow with different formats
-	testData := map[string]interface{}{
+	testData := map[string]any{
 		"name":   "integration-test",
 		"status": "success",
 		"count":  42,

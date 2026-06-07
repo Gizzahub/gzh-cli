@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -103,7 +104,7 @@ func runConfigGenerateTemplate(templateName, outputFile string, listTemplates bo
 	fmt.Printf("   Description: %s\n", templateInfo.Description)
 
 	// Parse variables
-	varMap := make(map[string]interface{})
+	varMap := make(map[string]any)
 	if err := parseVariables(variables, varMap); err != nil {
 		return fmt.Errorf("failed to parse variables: %w", err)
 	}
@@ -182,7 +183,7 @@ func listAvailableTemplates(engine *template.TemplateEngine) error {
 }
 
 // parseVariables parses variable strings in key=value format.
-func parseVariables(variables []string, varMap map[string]interface{}) error {
+func parseVariables(variables []string, varMap map[string]any) error {
 	for _, variable := range variables {
 		parts := strings.SplitN(variable, "=", 2)
 		if len(parts) != 2 {
@@ -203,7 +204,7 @@ func parseVariables(variables []string, varMap map[string]interface{}) error {
 }
 
 // promptForVariables prompts the user for template variables.
-func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string]interface{}) error {
+func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string]any) error {
 	fmt.Println("\n📝 Template Variables:")
 
 	for _, variable := range templateInfo.Variables {
@@ -238,13 +239,7 @@ func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string
 		} else if input != "" {
 			// Validate options if provided
 			if len(variable.Options) > 0 {
-				validOption := false
-				for _, option := range variable.Options {
-					if input == option {
-						validOption = true
-						break
-					}
-				}
+				validOption := slices.Contains(variable.Options, input)
 				if !validOption {
 					fmt.Printf("    Invalid option. Valid options: %s\n", strings.Join(variable.Options, ", "))
 					return fmt.Errorf("invalid option for variable %s", variable.Name)
@@ -261,7 +256,7 @@ func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string
 }
 
 // saveTemplateConfig saves the generated configuration to a file.
-func saveTemplateConfig(config map[string]interface{}, filename string) error {
+func saveTemplateConfig(config map[string]any, filename string) error {
 	data, err := yaml.Marshal(config)
 	if err != nil {
 		return fmt.Errorf("failed to marshal configuration: %w", err)
@@ -281,7 +276,7 @@ func saveTemplateConfig(config map[string]interface{}, filename string) error {
 }
 
 // displayTemplateSummary displays a summary of the template generation.
-func displayTemplateSummary(templateInfo *template.TemplateConfig, variables map[string]interface{}) {
+func displayTemplateSummary(templateInfo *template.TemplateConfig, variables map[string]any) {
 	fmt.Printf("\n📊 Template Summary:\n")
 	fmt.Printf("   Template: %s\n", templateInfo.Name)
 
@@ -293,7 +288,7 @@ func displayTemplateSummary(templateInfo *template.TemplateConfig, variables map
 	}
 
 	// Analyze generated configuration
-	if providers, ok := templateInfo.Template["providers"].(map[string]interface{}); ok {
+	if providers, ok := templateInfo.Template["providers"].(map[string]any); ok {
 		fmt.Printf("   Providers configured: %d\n", len(providers))
 		for provider := range providers {
 			fmt.Printf("     - %s\n", provider)

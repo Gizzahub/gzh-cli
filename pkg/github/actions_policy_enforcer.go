@@ -30,10 +30,10 @@ type PolicyValidationResult struct {
 	Passed        bool                    `json:"passed"`
 	Severity      PolicyViolationSeverity `json:"severity"`
 	Message       string                  `json:"message"`
-	Details       map[string]interface{}  `json:"details,omitempty"`
+	Details       map[string]any          `json:"details,omitempty"`
 	Suggestions   []string                `json:"suggestions,omitempty"`
-	ActualValue   interface{}             `json:"actualValue,omitempty"`
-	ExpectedValue interface{}             `json:"expectedValue,omitempty"`
+	ActualValue   any                     `json:"actualValue,omitempty"`
+	ExpectedValue any                     `json:"expectedValue,omitempty"`
 }
 
 // RepositoryActionsState represents the current Actions configuration state of a repository.
@@ -115,13 +115,13 @@ type PolicyEnforcementResult struct {
 
 // PolicyChange represents a change made during policy enforcement.
 type PolicyChange struct {
-	Type     string      `json:"type"`
-	Target   string      `json:"target"`
-	Action   string      `json:"action"`
-	OldValue interface{} `json:"oldValue,omitempty"`
-	NewValue interface{} `json:"newValue"`
-	Success  bool        `json:"success"`
-	Error    string      `json:"error,omitempty"`
+	Type     string `json:"type"`
+	Target   string `json:"target"`
+	Action   string `json:"action"`
+	OldValue any    `json:"oldValue,omitempty"`
+	NewValue any    `json:"newValue"`
+	Success  bool   `json:"success"`
+	Error    string `json:"error,omitempty"`
 }
 
 // NewActionsPolicyEnforcer creates a new Actions policy enforcer that validates
@@ -397,7 +397,7 @@ func (ape *ActionsPolicyEnforcer) detectViolations(policy *ActionsPolicy, curren
 				Severity:      result.Severity,
 				Resource:      fmt.Sprintf("%s/%s", currentState.Organization, currentState.Repository),
 				Description:   result.Message,
-				Details: map[string]interface{}{
+				Details: map[string]any{
 					"rule_id":        result.RuleID,
 					"actual_value":   result.ActualValue,
 					"expected_value": result.ExpectedValue,

@@ -327,7 +327,7 @@ func displayRiskAssessmentTable(assessments []RiskAssessment) {
 
 // displayRiskAssessmentJSON displays risk assessments in JSON format.
 func displayRiskAssessmentJSON(assessments []RiskAssessment, outputFile string) error {
-	data := map[string]interface{}{
+	data := map[string]any{
 		"assessments":  assessments,
 		"summary":      generateAssessmentSummary(assessments),
 		"generated_at": time.Now().Format(time.RFC3339),
@@ -479,7 +479,7 @@ func getTopRiskCategory(categories RiskCategories) string {
 	return category
 }
 
-func generateAssessmentSummary(assessments []RiskAssessment) map[string]interface{} {
+func generateAssessmentSummary(assessments []RiskAssessment) map[string]any {
 	total := len(assessments)
 	severityCounts := make(map[string]int)
 
@@ -495,7 +495,7 @@ func generateAssessmentSummary(assessments []RiskAssessment) map[string]interfac
 		avgScore = totalScore / float64(total)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"total_repositories":    total,
 		"average_score":         avgScore,
 		"severity_distribution": severityCounts,

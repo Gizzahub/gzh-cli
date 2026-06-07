@@ -122,12 +122,12 @@ func TestGcloudSaveLoad(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create properties file (JSON format)
-	properties := map[string]interface{}{
-		"core": map[string]interface{}{
+	properties := map[string]any{
+		"core": map[string]any{
 			"project": "my-test-project",
 			"account": "test@example.com",
 		},
-		"compute": map[string]interface{}{
+		"compute": map[string]any{
 			"region": "us-central1",
 			"zone":   "us-central1-a",
 		},
@@ -144,12 +144,12 @@ func TestGcloudSaveLoad(t *testing.T) {
 	err = os.MkdirAll(devConfigDir, 0o755)
 	require.NoError(t, err)
 
-	devProperties := map[string]interface{}{
-		"core": map[string]interface{}{
+	devProperties := map[string]any{
+		"core": map[string]any{
 			"project": "my-dev-project",
 			"account": "dev@example.com",
 		},
-		"compute": map[string]interface{}{
+		"compute": map[string]any{
 			"region": "us-west1",
 		},
 	}
@@ -335,12 +335,12 @@ func TestGcloudDisplayConfigInfo(t *testing.T) {
 	err = os.MkdirAll(configsDir, 0o755)
 	require.NoError(t, err)
 
-	properties := map[string]interface{}{
-		"core": map[string]interface{}{
+	properties := map[string]any{
+		"core": map[string]any{
 			"project": "test-project",
 			"account": "test@example.com",
 		},
-		"compute": map[string]interface{}{
+		"compute": map[string]any{
 			"region": "us-central1",
 		},
 	}
@@ -365,12 +365,12 @@ func TestGcloudParseConfigurations(t *testing.T) {
 	err := os.MkdirAll(defaultDir, 0o755)
 	require.NoError(t, err)
 
-	defaultProps := map[string]interface{}{
-		"core": map[string]interface{}{
+	defaultProps := map[string]any{
+		"core": map[string]any{
 			"project": "default-project",
 			"account": "default@example.com",
 		},
-		"compute": map[string]interface{}{
+		"compute": map[string]any{
 			"region": "us-central1",
 			"zone":   "us-central1-a",
 		},
@@ -385,8 +385,8 @@ func TestGcloudParseConfigurations(t *testing.T) {
 	err = os.MkdirAll(devDir, 0o755)
 	require.NoError(t, err)
 
-	devProps := map[string]interface{}{
-		"core": map[string]interface{}{
+	devProps := map[string]any{
+		"core": map[string]any{
 			"project": "dev-project",
 			"account": "dev@example.com",
 		},

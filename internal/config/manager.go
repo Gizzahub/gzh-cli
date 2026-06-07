@@ -38,7 +38,7 @@ const (
 
 // ConfigManager provides centralized configuration management.
 type ConfigManager struct {
-	configs       map[string]interface{}
+	configs       map[string]any
 	sources       []Source
 	watchers      map[string][]Watcher
 	validators    map[string]Validator
@@ -49,12 +49,12 @@ type ConfigManager struct {
 
 // Watcher defines the interface for configuration change notifications.
 type Watcher interface {
-	OnConfigChanged(key string, oldValue, newValue interface{}) error
+	OnConfigChanged(key string, oldValue, newValue any) error
 }
 
 // Validator defines the interface for configuration validation.
 type Validator interface {
-	Validate(config interface{}) error
+	Validate(config any) error
 }
 
 // ConfigOptions provides options for configuration loading.
@@ -76,7 +76,7 @@ func NewConfigManager(options ConfigOptions) *ConfigManager {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &ConfigManager{
-		configs:       make(map[string]interface{}),
+		configs:       make(map[string]any),
 		sources:       options.Sources,
 		watchers:      make(map[string][]Watcher),
 		validators:    make(map[string]Validator),
@@ -86,12 +86,12 @@ func NewConfigManager(options ConfigOptions) *ConfigManager {
 }
 
 // LoadConfiguration loads configuration for a specific component.
-func (cm *ConfigManager) LoadConfiguration(ctx context.Context, key string, target interface{}, options ConfigOptions) error {
+func (cm *ConfigManager) LoadConfiguration(ctx context.Context, key string, target any, options ConfigOptions) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
 	// Load from all sources in priority order
-	merged := make(map[string]interface{})
+	merged := make(map[string]any)
 
 	for _, source := range cm.sources {
 		config, err := cm.loadFromSource(ctx, source, key, options)
@@ -150,7 +150,7 @@ func (cm *ConfigManager) RegisterWatcher(key string, watcher Watcher) {
 }
 
 // GetConfiguration retrieves stored configuration.
-func (cm *ConfigManager) GetConfiguration(key string) (interface{}, bool) {
+func (cm *ConfigManager) GetConfiguration(key string) (any, bool) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 	config, exists := cm.configs[key]
@@ -158,7 +158,7 @@ func (cm *ConfigManager) GetConfiguration(key string) (interface{}, bool) {
 }
 
 // UpdateConfiguration updates configuration and notifies watchers.
-func (cm *ConfigManager) UpdateConfiguration(key string, newConfig interface{}) error {
+func (cm *ConfigManager) UpdateConfiguration(key string, newConfig any) error {
 	cm.mu.Lock()
 	oldConfig, exists := cm.configs[key]
 	cm.configs[key] = newConfig
@@ -196,7 +196,7 @@ func (cm *ConfigManager) Shutdown() error {
 	defer cm.mu.Unlock()
 
 	// Clear all configurations
-	cm.configs = make(map[string]interface{})
+	cm.configs = make(map[string]any)
 	cm.watchers = make(map[string][]Watcher)
 	cm.validators = make(map[string]Validator)
 
@@ -204,7 +204,7 @@ func (cm *ConfigManager) Shutdown() error {
 }
 
 // loadFromSource loads configuration from a specific source.
-func (cm *ConfigManager) loadFromSource(ctx context.Context, source Source, key string, options ConfigOptions) (map[string]interface{}, error) {
+func (cm *ConfigManager) loadFromSource(ctx context.Context, source Source, key string, options ConfigOptions) (map[string]any, error) {
 	switch source {
 	case SourceDefaults:
 		return cm.loadDefaults(key)
@@ -220,8 +220,8 @@ func (cm *ConfigManager) loadFromSource(ctx context.Context, source Source, key 
 }
 
 // loadDefaults loads default configuration values.
-func (cm *ConfigManager) loadDefaults(key string) (map[string]interface{}, error) {
-	defaults := map[string]map[string]interface{}{
+func (cm *ConfigManager) loadDefaults(key string) (map[string]any, error) {
+	defaults := map[string]map[string]any{
 		"bulk-clone": {
 			"concurrency":       constants.DefaultConcurrency,
 			"timeout":           constants.DefaultHTTPTimeout,
@@ -269,11 +269,11 @@ func (cm *ConfigManager) loadDefaults(key string) (map[string]interface{}, error
 		return config, nil
 	}
 
-	return make(map[string]interface{}), nil
+	return make(map[string]any), nil
 }
 
 // loadFromFile loads configuration from files.
-func (cm *ConfigManager) loadFromFile(key string, configPaths []string) (map[string]interface{}, error) {
+func (cm *ConfigManager) loadFromFile(key string, configPaths []string) (map[string]any, error) {
 	if len(configPaths) == 0 {
 		configPaths = cm.getDefaultConfigPaths(key)
 	}
@@ -288,7 +288,7 @@ func (cm *ConfigManager) loadFromFile(key string, configPaths []string) (map[str
 			continue
 		}
 
-		config := make(map[string]interface{})
+		config := make(map[string]any)
 		ext := strings.ToLower(filepath.Ext(path))
 
 		switch ext {
@@ -307,16 +307,16 @@ func (cm *ConfigManager) loadFromFile(key string, configPaths []string) (map[str
 		return config, nil
 	}
 
-	return make(map[string]interface{}), nil
+	return make(map[string]any), nil
 }
 
 // loadFromEnvironment loads configuration from environment variables.
-func (cm *ConfigManager) loadFromEnvironment(key, prefix string) (map[string]interface{}, error) {
+func (cm *ConfigManager) loadFromEnvironment(key, prefix string) (map[string]any, error) {
 	if prefix == "" {
 		prefix = "GZH_"
 	}
 
-	config := make(map[string]interface{})
+	config := make(map[string]any)
 	envPrefix := strings.ToUpper(prefix + key + "_")
 
 	for _, env := range os.Environ() {
@@ -346,10 +346,10 @@ func (cm *ConfigManager) loadFromEnvironment(key, prefix string) (map[string]int
 }
 
 // loadFromAPI loads configuration from API endpoints.
-func (cm *ConfigManager) loadFromAPI(_ context.Context, _ string) (map[string]interface{}, error) {
+func (cm *ConfigManager) loadFromAPI(_ context.Context, _ string) (map[string]any, error) {
 	// This would implement API-based configuration loading
 	// For now, return empty config
-	return make(map[string]interface{}), nil
+	return make(map[string]any), nil
 }
 
 // getDefaultConfigPaths returns default configuration file paths.
@@ -371,11 +371,11 @@ func (cm *ConfigManager) getDefaultConfigPaths(key string) []string {
 }
 
 // mergeConfig merges source configuration into target.
-func (cm *ConfigManager) mergeConfig(target, source map[string]interface{}) {
+func (cm *ConfigManager) mergeConfig(target, source map[string]any) {
 	for key, value := range source {
 		if existingValue, exists := target[key]; exists {
-			if existingMap, ok := existingValue.(map[string]interface{}); ok {
-				if sourceMap, ok := value.(map[string]interface{}); ok {
+			if existingMap, ok := existingValue.(map[string]any); ok {
+				if sourceMap, ok := value.(map[string]any); ok {
 					cm.mergeConfig(existingMap, sourceMap)
 					continue
 				}
@@ -386,7 +386,7 @@ func (cm *ConfigManager) mergeConfig(target, source map[string]interface{}) {
 }
 
 // convertConfig converts map to target struct using JSON marshaling.
-func (cm *ConfigManager) convertConfig(source map[string]interface{}, target interface{}) error {
+func (cm *ConfigManager) convertConfig(source map[string]any, target any) error {
 	data, err := json.Marshal(source)
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)

@@ -108,8 +108,8 @@ func (c *CachedGitHubClient) InvalidateRepoCache(ctx context.Context, org, repo 
 
 // GetCacheStats returns GitHub cache statistics - DISABLED (cache package removed)
 // Simple implementation without external cache dependency.
-func (c *CachedGitHubClient) GetCacheStats() map[string]interface{} {
-	return map[string]interface{}{
+func (c *CachedGitHubClient) GetCacheStats() map[string]any {
+	return map[string]any{
 		"type": "simple_sync_map",
 		"note": "cache package removed, using simple sync.Map",
 	}
@@ -254,8 +254,8 @@ func DefaultCacheConfiguration() CacheConfiguration {
 
 // ToCacheManagerConfig converts to cache manager configuration - DISABLED (cache package removed)
 // Simple configuration conversion without external cache dependency.
-func (cc CacheConfiguration) ToCacheManagerConfig() map[string]interface{} {
-	return map[string]interface{}{
+func (cc CacheConfiguration) ToCacheManagerConfig() map[string]any {
+	return map[string]any{
 		"enable_local_cache": cc.EnableLocalCache,
 		"local_cache_size":   cc.LocalCacheSize,
 		"default_ttl":        cc.DefaultTTL,

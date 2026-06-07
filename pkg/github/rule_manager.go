@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"sort"
 	"strings"
 	"sync"
@@ -301,7 +302,7 @@ func (rm *RuleManager) EvaluateConditions(ctx context.Context, rule *AutomationR
 	// Create evaluation context
 	evalContext := &EvaluationContext{
 		Environment: rule.Metadata.Environment,
-		Variables:   make(map[string]interface{}),
+		Variables:   make(map[string]any),
 		Timezone:    time.UTC,
 	}
 
@@ -353,7 +354,7 @@ func (rm *RuleManager) ExecuteRule(ctx context.Context, rule *AutomationRule, ex
 		TriggerType: ExecutionTriggerTypeEvent,
 		Context:     *execContext,
 		Actions:     []ActionExecutionResult{},
-		Metadata:    make(map[string]interface{}),
+		Metadata:    make(map[string]any),
 	}
 
 	if execContext.Event != nil {
@@ -625,7 +626,7 @@ func (rm *RuleManager) DeleteTemplate(ctx context.Context, templateID string) er
 }
 
 // InstantiateTemplate creates a rule from a template with variable substitution.
-func (rm *RuleManager) InstantiateTemplate(ctx context.Context, templateID string, variables map[string]interface{}) (*AutomationRule, error) {
+func (rm *RuleManager) InstantiateTemplate(ctx context.Context, templateID string, variables map[string]any) (*AutomationRule, error) {
 	template, err := rm.GetTemplate(ctx, templateID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get template: %w", err)
@@ -764,7 +765,7 @@ func (rm *RuleManager) TestRule(ctx context.Context, rule *AutomationRule, testE
 		Event:        testEvent,
 		Organization: testEvent.Organization,
 		User:         testEvent.Sender,
-		Variables:    make(map[string]interface{}),
+		Variables:    make(map[string]any),
 		Environment:  "test",
 	}
 
@@ -797,7 +798,7 @@ func (rm *RuleManager) TestRule(ctx context.Context, rule *AutomationRule, testE
 				Status:     ExecutionStatusCompleted,
 				StartedAt:  time.Now(),
 				Duration:   50 * time.Millisecond, // Simulated duration
-				Result: map[string]interface{}{
+				Result: map[string]any{
 					"simulated": true,
 					"test_mode": true,
 				},
@@ -899,9 +900,9 @@ func (rm *RuleManager) getOrganizationInfo(ctx context.Context, org string) (*Or
 	}, nil
 }
 
-func (rm *RuleManager) applyVariableSubstitution(rule *AutomationRule, variables map[string]interface{}, templateVars []TemplateVariable) error {
+func (rm *RuleManager) applyVariableSubstitution(rule *AutomationRule, variables map[string]any, templateVars []TemplateVariable) error {
 	// Create variable map with defaults
-	varMap := make(map[string]interface{})
+	varMap := make(map[string]any)
 
 	for _, tv := range templateVars {
 		if tv.DefaultValue != nil {
@@ -910,9 +911,7 @@ func (rm *RuleManager) applyVariableSubstitution(rule *AutomationRule, variables
 	}
 
 	// Override with provided variables
-	for k, v := range variables {
-		varMap[k] = v
-	}
+	maps.Copy(varMap, variables)
 
 	// Convert rule to JSON for string replacement
 	ruleJSON, err := json.Marshal(rule)
@@ -967,10 +966,7 @@ func (rm *RuleManager) retryActionWithBackoff(ctx context.Context, action *Autom
 	var lastErr error
 	for attempt := result.RetryCount; attempt < policy.MaxRetries; attempt++ {
 		// Calculate retry delay with exponential backoff
-		retryDelay := time.Duration(float64(interval) * pow(backoffFactor, float64(attempt)))
-		if retryDelay > maxInterval {
-			retryDelay = maxInterval
-		}
+		retryDelay := min(time.Duration(float64(interval)*pow(backoffFactor, float64(attempt))), maxInterval)
 
 		rm.logger.Info("Retrying action",
 			"action_id", action.ID,

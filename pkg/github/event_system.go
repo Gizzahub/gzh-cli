@@ -9,22 +9,23 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 )
 
 // GitHubEvent represents a GitHub webhook event.
 type GitHubEvent struct {
-	ID           string                 `json:"id"`
-	Type         string                 `json:"type"`
-	Action       string                 `json:"action,omitempty"`
-	Organization string                 `json:"organization"`
-	Repository   string                 `json:"repository"`
-	Sender       string                 `json:"sender"`
-	Timestamp    time.Time              `json:"timestamp"`
-	Payload      map[string]interface{} `json:"payload"`
-	Headers      map[string]string      `json:"headers"`
-	Signature    string                 `json:"signature"`
+	ID           string            `json:"id"`
+	Type         string            `json:"type"`
+	Action       string            `json:"action,omitempty"`
+	Organization string            `json:"organization"`
+	Repository   string            `json:"repository"`
+	Sender       string            `json:"sender"`
+	Timestamp    time.Time         `json:"timestamp"`
+	Payload      map[string]any    `json:"payload"`
+	Headers      map[string]string `json:"headers"`
+	Signature    string            `json:"signature"`
 }
 
 // EventType defines the type of GitHub events.
@@ -266,7 +267,7 @@ func (e *eventProcessorImpl) ParseWebhookEvent(r *http.Request) (*GitHubEvent, e
 	}
 
 	// Parse the JSON payload
-	var payload map[string]interface{}
+	var payload map[string]any
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return nil, fmt.Errorf("failed to parse JSON payload: %w", err)
 	}
@@ -324,27 +325,27 @@ func (e *eventProcessorImpl) UnregisterEventHandler(eventType EventType) error {
 
 // Helper methods
 
-func (e *eventProcessorImpl) extractStandardFields(event *GitHubEvent, payload map[string]interface{}) {
+func (e *eventProcessorImpl) extractStandardFields(event *GitHubEvent, payload map[string]any) {
 	// Extract action
 	if action, ok := payload["action"].(string); ok {
 		event.Action = action
 	}
 
 	// Extract organization
-	if org, ok := payload["organization"].(map[string]interface{}); ok {
+	if org, ok := payload["organization"].(map[string]any); ok {
 		if orgLogin, ok := org["login"].(string); ok {
 			event.Organization = orgLogin
 		}
 	}
 
 	// Extract repository
-	if repo, ok := payload["repository"].(map[string]interface{}); ok {
+	if repo, ok := payload["repository"].(map[string]any); ok {
 		if repoName, ok := repo["name"].(string); ok {
 			event.Repository = repoName
 		}
 		// If organization not found in organization field, try repository owner
 		if event.Organization == "" {
-			if owner, ok := repo["owner"].(map[string]interface{}); ok {
+			if owner, ok := repo["owner"].(map[string]any); ok {
 				if ownerLogin, ok := owner["login"].(string); ok {
 					event.Organization = ownerLogin
 				}
@@ -353,7 +354,7 @@ func (e *eventProcessorImpl) extractStandardFields(event *GitHubEvent, payload m
 	}
 
 	// Extract sender
-	if sender, ok := payload["sender"].(map[string]interface{}); ok {
+	if sender, ok := payload["sender"].(map[string]any); ok {
 		if senderLogin, ok := sender["login"].(string); ok {
 			event.Sender = senderLogin
 		}
@@ -366,13 +367,7 @@ func (e *eventProcessorImpl) handlerSupportsAction(handler EventHandler, action 
 		return true // Handler supports all actions
 	}
 
-	for _, supportedAction := range supportedActions {
-		if supportedAction == action {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supportedActions, action)
 }
 
 func (e *eventProcessorImpl) sortHandlersByPriority(eventType EventType) {
@@ -546,7 +541,7 @@ func (s *EventWebhookServer) HandleWebhook(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	response := map[string]interface{}{
+	response := map[string]any{
 		"status":   "success",
 		"event_id": event.ID,
 		"message":  "Event processed successfully",
@@ -559,7 +554,7 @@ func (s *EventWebhookServer) GetHealthCheck(w http.ResponseWriter, r *http.Reque
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	response := map[string]interface{}{
+	response := map[string]any{
 		"status":    "healthy",
 		"timestamp": time.Now().Format(time.RFC3339),
 		"service":   "github-event-processor",

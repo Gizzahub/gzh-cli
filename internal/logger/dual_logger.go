@@ -70,7 +70,7 @@ func NewDualLogger(component string, level LogLevel) (*StructuredLogger, error) 
 	return &StructuredLogger{
 		logger:    mainLogger,
 		level:     slogLevel,
-		context:   make(map[string]interface{}),
+		context:   make(map[string]any),
 		component: component,
 		sessionID: generateSessionID(component),
 	}, nil
@@ -103,7 +103,7 @@ func NewConsoleOnlyLogger(component string, level LogLevel) *StructuredLogger {
 	return &StructuredLogger{
 		logger:    logger,
 		level:     slogLevel,
-		context:   make(map[string]interface{}),
+		context:   make(map[string]any),
 		component: component,
 		sessionID: generateSessionID(component),
 	}

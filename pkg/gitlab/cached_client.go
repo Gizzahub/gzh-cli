@@ -120,8 +120,8 @@ func (c *CachedGitLabClient) InvalidateProjectCache(_ context.Context, projectID
 
 // GetCacheStats returns GitLab cache statistics - DISABLED (cache package removed)
 // Simple implementation without external cache dependency.
-func (c *CachedGitLabClient) GetCacheStats() map[string]interface{} {
-	return map[string]interface{}{
+func (c *CachedGitLabClient) GetCacheStats() map[string]any {
+	return map[string]any{
 		"type": "simple_sync_map",
 		"note": "cache package removed, using simple sync.Map",
 	}

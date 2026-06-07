@@ -24,10 +24,10 @@ type ErrorRecovery struct {
 
 // Logger interface for error recovery.
 type Logger interface {
-	Error(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Debug(msg string, args ...interface{})
+	Error(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Info(msg string, args ...any)
+	Debug(msg string, args ...any)
 }
 
 // RecoveryConfig configures error recovery behavior.
@@ -66,7 +66,7 @@ type RecoverableError struct {
 	Message    string
 	Cause      error
 	Retryable  bool
-	Context    map[string]interface{}
+	Context    map[string]any
 	StackTrace string
 	Timestamp  time.Time
 }
@@ -110,27 +110,27 @@ func NewRecoverableError(errType ErrorType, message string, cause error, retryab
 		Message:    message,
 		Cause:      cause,
 		Retryable:  retryable,
-		Context:    make(map[string]interface{}),
+		Context:    make(map[string]any),
 		StackTrace: string(debug.Stack()),
 		Timestamp:  time.Now(),
 	}
 }
 
 // WithContext adds context to the error.
-func (e *RecoverableError) WithContext(key string, value interface{}) *RecoverableError {
+func (e *RecoverableError) WithContext(key string, value any) *RecoverableError {
 	e.Context[key] = value
 	return e
 }
 
 // Execute runs a function with automatic retry and recovery.
 func (er *ErrorRecovery) Execute(ctx context.Context, operation string, fn func() error) error {
-	return er.ExecuteWithResult(ctx, operation, func() (interface{}, error) {
+	return er.ExecuteWithResult(ctx, operation, func() (any, error) {
 		return nil, fn()
 	})
 }
 
 // ExecuteWithResult runs a function with return value and automatic retry.
-func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string, fn func() (interface{}, error)) error { //nolint:gocognit // Complex error recovery with multiple retry strategies, timeout handling, and circuit breaker logic
+func (er *ErrorRecovery) ExecuteWithResult(ctx context.Context, operation string, fn func() (any, error)) error { //nolint:gocognit // Complex error recovery with multiple retry strategies, timeout handling, and circuit breaker logic
 	var lastErr error
 
 	for attempt := 0; attempt <= er.maxRetries; attempt++ {
@@ -235,14 +235,12 @@ func (er *ErrorRecovery) calculateBackoff(attempt int) time.Duration {
 		attempt = 30
 	}
 	// Safe bit shift: ensure attempt is within range [0, 30] to prevent integer overflow
-	shiftAmount := uint(attempt) //nolint:gosec // G115: bounds-checked above, safe conversion
-	if shiftAmount > 30 {
-		shiftAmount = 30
-	}
-	delay := er.retryDelay * time.Duration(1<<shiftAmount) //nolint:gosec // Bounded by max 30, safe from overflow
-	if delay > 30*time.Second {
-		delay = 30 * time.Second
-	}
+	shiftAmount := min(
+		//nolint:gosec // G115: bounds-checked above, safe conversion
+		uint(attempt), 30)
+	delay := min(
+		//nolint:gosec // Bounded by max 30, safe from overflow
+		er.retryDelay*time.Duration(1<<shiftAmount), 30*time.Second)
 
 	return delay
 }
@@ -347,11 +345,11 @@ func (cb *CircuitBreaker) GetState() CircuitState {
 }
 
 // GetMemoryStats returns current memory statistics.
-func GetMemoryStats() map[string]interface{} {
+func GetMemoryStats() map[string]any {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	return map[string]interface{}{
+	return map[string]any{
 		"alloc_mb":        bToMb(m.Alloc),
 		"total_alloc_mb":  bToMb(m.TotalAlloc),
 		"sys_mb":          bToMb(m.Sys),

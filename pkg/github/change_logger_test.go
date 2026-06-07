@@ -84,7 +84,7 @@ func TestLogRepositoryChange(t *testing.T) {
 		Source:       "cli",
 		Organization: "testorg",
 		StartTime:    time.Now().Add(-5 * time.Second),
-		Metadata:     map[string]interface{}{"test": true},
+		Metadata:     map[string]any{"test": true},
 	}
 
 	changeRecord := &ChangeRecord{
@@ -95,8 +95,8 @@ func TestLogRepositoryChange(t *testing.T) {
 		Repository:   "testorg/testrepo",
 		Operation:    "update",
 		Category:     "settings",
-		Before:       map[string]interface{}{"private": false},
-		After:        map[string]interface{}{"private": true},
+		Before:       map[string]any{"private": false},
+		After:        map[string]any{"private": true},
 		Description:  "Made repository private",
 		Source:       "cli",
 	}

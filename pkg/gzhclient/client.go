@@ -270,7 +270,7 @@ func (c *Client) convertToBulkCloneResult(result *synclone.CloneResult) *BulkClo
 		SkippedCount: result.ClonesSkipped,
 		Duration:     result.ExecutionTime,
 		Results:      make([]RepositoryCloneResult, len(result.RepositoryResults)),
-		Summary:      make(map[string]interface{}),
+		Summary:      make(map[string]any),
 	}
 
 	for i, repo := range result.RepositoryResults {
@@ -310,7 +310,7 @@ func (c *Client) consolidateResults(allResults []*BulkCloneResult) (*BulkCloneRe
 	// Merge multiple organization results
 	consolidatedResult := &BulkCloneResult{
 		Results: make([]RepositoryCloneResult, 0),
-		Summary: make(map[string]interface{}),
+		Summary: make(map[string]any),
 	}
 
 	for _, result := range allResults {
@@ -349,14 +349,14 @@ func (c *Client) GitHubClient(token string) github.APIClient {
 }
 
 // GitLabClient returns a GitLab-specific client (placeholder).
-func (c *Client) GitLabClient(_, _ string) interface{} {
+func (c *Client) GitLabClient(_, _ string) any {
 	// GitLab client would be implemented here
 	// For now, return a placeholder
 	return struct{}{}
 }
 
 // GiteaClient returns a Gitea-specific client (placeholder).
-func (c *Client) GiteaClient(_, _ string) interface{} {
+func (c *Client) GiteaClient(_, _ string) any {
 	// Gitea client would be implemented here
 	// For now, return a placeholder
 	return struct{}{}
@@ -472,10 +472,10 @@ func (c *configManagerImpl) ValidateConfiguration(_ context.Context, _ *synclone
 // silentLoggerImpl implements synclone.Logger interface but doesn't output anything.
 type silentLoggerImpl struct{}
 
-func (l *silentLoggerImpl) Debug(_ string, _ ...interface{}) {}
-func (l *silentLoggerImpl) Info(_ string, _ ...interface{})  {}
-func (l *silentLoggerImpl) Warn(_ string, _ ...interface{})  {}
-func (l *silentLoggerImpl) Error(_ string, _ ...interface{}) {}
+func (l *silentLoggerImpl) Debug(_ string, _ ...any) {}
+func (l *silentLoggerImpl) Info(_ string, _ ...any)  {}
+func (l *silentLoggerImpl) Warn(_ string, _ ...any)  {}
+func (l *silentLoggerImpl) Error(_ string, _ ...any) {}
 
 // httpClientWrapper wraps http.Client to implement github.HTTPClientInterface.
 type httpClientWrapper struct {
@@ -494,7 +494,7 @@ func (h *httpClientWrapper) Get(url string) (*http.Response, error) {
 	return h.client.Do(req)
 }
 
-func (h *httpClientWrapper) Post(url, contentType string, body interface{}) (*http.Response, error) {
+func (h *httpClientWrapper) Post(url, contentType string, body any) (*http.Response, error) {
 	var (
 		bodyBytes []byte
 		err       error

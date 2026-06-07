@@ -307,9 +307,9 @@ func (lfs *GitLFSSimulator) generateRandomContent(sizeMB int64) []byte {
 // parseLFSFiles parses the output of `git lfs ls-files`
 func (lfs *GitLFSSimulator) parseLFSFiles(output string) []string {
 	var files []string
-	lines := strings.Split(strings.TrimSpace(output), "\n")
+	lines := strings.SplitSeq(strings.TrimSpace(output), "\n")
 
-	for _, line := range lines {
+	for line := range lines {
 		if line == "" {
 			continue
 		}

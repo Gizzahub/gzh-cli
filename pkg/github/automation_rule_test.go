@@ -43,7 +43,7 @@ func createTestAutomationRule() *AutomationRule {
 				Name:        "Add Test Label",
 				Description: "Add a test label to the PR",
 				Enabled:     true,
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"labels": []string{"test", "automated"},
 				},
 				Timeout: 30 * time.Second,
@@ -93,7 +93,7 @@ func createTestRuleExecution() *AutomationRuleExecution {
 			},
 			Organization: "testorg",
 			User:         "testuser",
-			Variables: map[string]interface{}{
+			Variables: map[string]any{
 				"pr_number": 123,
 				"branch":    "feature/test",
 			},
@@ -105,7 +105,7 @@ func createTestRuleExecution() *AutomationRuleExecution {
 				Status:     ExecutionStatusCompleted,
 				StartedAt:  time.Now().Add(-5 * time.Minute),
 				Duration:   2 * time.Second,
-				Result: map[string]interface{}{
+				Result: map[string]any{
 					"labels_added": []string{"test", "automated"},
 				},
 			},
@@ -147,7 +147,7 @@ func createTestRuleTemplate() *AutomationRuleTemplate {
 			{
 				Name:        "Basic Setup",
 				Description: "Basic automation rule setup",
-				Variables: map[string]interface{}{
+				Variables: map[string]any{
 					"organization": "myorg",
 					"labels":       []string{"review-required", "automated"},
 					"priority":     150,
@@ -247,7 +247,7 @@ func TestActionExecutionResult_Structure(t *testing.T) {
 		Status:     ExecutionStatusCompleted,
 		StartedAt:  time.Now(),
 		Duration:   2 * time.Second,
-		Result: map[string]interface{}{
+		Result: map[string]any{
 			"labels_added": []string{"test", "automated"},
 		},
 		RetryCount: 0,

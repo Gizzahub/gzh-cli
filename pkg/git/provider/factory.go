@@ -11,19 +11,19 @@ import (
 
 // ProviderConfig represents configuration for a Git provider.
 type ProviderConfig struct {
-	Type      string                 `json:"type" yaml:"type"`
-	Name      string                 `json:"name" yaml:"name"`
-	BaseURL   string                 `json:"base_url" yaml:"base_url"`
-	Token     string                 `json:"token" yaml:"token"`
-	Username  string                 `json:"username" yaml:"username"`
-	Password  string                 `json:"password" yaml:"password"`
-	APIKey    string                 `json:"api_key" yaml:"api_key"`
-	Enabled   bool                   `json:"enabled" yaml:"enabled"`
-	Timeout   int                    `json:"timeout" yaml:"timeout"` // seconds
-	RateLimit RateLimitConfig        `json:"rate_limit" yaml:"rate_limit"`
-	Retry     RetryConfig            `json:"retry" yaml:"retry"`
-	Features  map[string]bool        `json:"features" yaml:"features"`
-	Extra     map[string]interface{} `json:"extra" yaml:"extra"`
+	Type      string          `json:"type" yaml:"type"`
+	Name      string          `json:"name" yaml:"name"`
+	BaseURL   string          `json:"base_url" yaml:"base_url"`
+	Token     string          `json:"token" yaml:"token"`
+	Username  string          `json:"username" yaml:"username"`
+	Password  string          `json:"password" yaml:"password"`
+	APIKey    string          `json:"api_key" yaml:"api_key"`
+	Enabled   bool            `json:"enabled" yaml:"enabled"`
+	Timeout   int             `json:"timeout" yaml:"timeout"` // seconds
+	RateLimit RateLimitConfig `json:"rate_limit" yaml:"rate_limit"`
+	Retry     RetryConfig     `json:"retry" yaml:"retry"`
+	Features  map[string]bool `json:"features" yaml:"features"`
+	Extra     map[string]any  `json:"extra" yaml:"extra"`
 }
 
 // RateLimitConfig represents rate limiting configuration.
@@ -419,6 +419,6 @@ func (f *ProviderFactory) applyDefaults(config *ProviderConfig) {
 
 	// Initialize extra map if nil
 	if config.Extra == nil {
-		config.Extra = make(map[string]interface{})
+		config.Extra = make(map[string]any)
 	}
 }

@@ -195,7 +195,7 @@ func renderTableResults(result *gitrepo.BulkUpdateResult) {
 
 // renderJSONResults renders results in JSON format
 func renderJSONResults(result *gitrepo.BulkUpdateResult) {
-	output := map[string]interface{}{
+	output := map[string]any{
 		"totalScanned":   result.TotalScanned,
 		"totalProcessed": result.TotalProcessed,
 		"duration":       result.Duration.String(),

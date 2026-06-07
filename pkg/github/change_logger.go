@@ -59,20 +59,20 @@ const (
 
 // logEntry represents a structured log entry.
 type logEntry struct {
-	Timestamp  time.Time              `json:"timestamp"`
-	Level      LogLevel               `json:"level"`
-	Message    string                 `json:"message"`
-	ChangeID   string                 `json:"changeId,omitempty"`
-	Operation  string                 `json:"operation"`
-	Category   string                 `json:"category"`
-	Repository string                 `json:"repository,omitempty"`
-	User       string                 `json:"user"`
-	Source     string                 `json:"source"`
-	RequestID  string                 `json:"requestId,omitempty"`
-	Context    map[string]interface{} `json:"context,omitempty"`
-	Error      string                 `json:"error,omitempty"`
-	Duration   *time.Duration         `json:"duration,omitempty"`
-	Metadata   map[string]interface{} `json:"metadata,omitempty"`
+	Timestamp  time.Time      `json:"timestamp"`
+	Level      LogLevel       `json:"level"`
+	Message    string         `json:"message"`
+	ChangeID   string         `json:"changeId,omitempty"`
+	Operation  string         `json:"operation"`
+	Category   string         `json:"category"`
+	Repository string         `json:"repository,omitempty"`
+	User       string         `json:"user"`
+	Source     string         `json:"source"`
+	RequestID  string         `json:"requestId,omitempty"`
+	Context    map[string]any `json:"context,omitempty"`
+	Error      string         `json:"error,omitempty"`
+	Duration   *time.Duration `json:"duration,omitempty"`
+	Metadata   map[string]any `json:"metadata,omitempty"`
 }
 
 // operationContext provides context for logging operations.
@@ -83,7 +83,7 @@ type operationContext struct {
 	Organization string
 	Repository   string
 	StartTime    time.Time
-	Metadata     map[string]interface{}
+	Metadata     map[string]any
 }
 
 // NewChangeLogger creates a new change logger with the specified options.
@@ -134,7 +134,7 @@ func (cl *ChangeLogger) LogRepositoryChange(ctx context.Context, opCtx *operatio
 		User:       opCtx.User,
 		Source:     opCtx.Source,
 		RequestID:  opCtx.RequestID,
-		Context: map[string]interface{}{
+		Context: map[string]any{
 			"organization": changeRecord.Organization,
 			"before":       changeRecord.Before,
 			"after":        changeRecord.After,
@@ -165,7 +165,7 @@ func (cl *ChangeLogger) LogOperation(ctx context.Context, opCtx *operationContex
 		User:      opCtx.User,
 		Source:    opCtx.Source,
 		RequestID: opCtx.RequestID,
-		Context: map[string]interface{}{
+		Context: map[string]any{
 			"organization": opCtx.Organization,
 			"repository":   opCtx.Repository,
 		},
@@ -198,7 +198,7 @@ func (cl *ChangeLogger) LogBulkOperation(ctx context.Context, opCtx *operationCo
 		User:      opCtx.User,
 		Source:    opCtx.Source,
 		RequestID: opCtx.RequestID,
-		Context: map[string]interface{}{
+		Context: map[string]any{
 			"organization": opCtx.Organization,
 			"statistics":   stats,
 		},
@@ -219,13 +219,13 @@ func (cl *ChangeLogger) LogBulkOperation(ctx context.Context, opCtx *operationCo
 
 // bulkOperationStats contains statistics for bulk operations.
 type bulkOperationStats struct {
-	Total    int                    `json:"total"`
-	Success  int                    `json:"success"`
-	Failed   int                    `json:"failed"`
-	Skipped  int                    `json:"skipped"`
-	Errors   map[string]string      `json:"errors,omitempty"`
-	Duration time.Duration          `json:"duration"`
-	Details  map[string]interface{} `json:"details,omitempty"`
+	Total    int               `json:"total"`
+	Success  int               `json:"success"`
+	Failed   int               `json:"failed"`
+	Skipped  int               `json:"skipped"`
+	Errors   map[string]string `json:"errors,omitempty"`
+	Duration time.Duration     `json:"duration"`
+	Details  map[string]any    `json:"details,omitempty"`
 }
 
 // CreateOperationContext creates a new operation context for logging.
@@ -237,7 +237,7 @@ func (cl *ChangeLogger) CreateOperationContext(requestID, operation string) *ope
 		User:      user,
 		Source:    "cli",
 		StartTime: time.Now(),
-		Metadata:  make(map[string]interface{}),
+		Metadata:  make(map[string]any),
 	}
 }
 

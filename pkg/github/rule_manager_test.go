@@ -172,7 +172,7 @@ func (m *mockRuleConditionEvaluator) EvaluateConditions(ctx context.Context, con
 	return nil, args.Error(1)
 }
 
-func (m *mockRuleConditionEvaluator) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error) {
+func (m *mockRuleConditionEvaluator) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]any) (bool, error) {
 	args := m.Called(ctx, matcher, payload)
 	return args.Bool(0), args.Error(1)
 }
@@ -247,7 +247,7 @@ func createTestRule() *AutomationRule {
 				Type:    ActionTypeAddLabel,
 				Name:    "Add Label",
 				Enabled: true,
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"labels": []string{"automated"},
 				},
 			},
@@ -271,9 +271,9 @@ func createTestEventForRuleManager() *GitHubEvent {
 		Repository:   "test-repo",
 		Sender:       "test-user",
 		Timestamp:    time.Now(),
-		Payload: map[string]interface{}{
+		Payload: map[string]any{
 			"action": "opened",
-			"pull_request": map[string]interface{}{
+			"pull_request": map[string]any{
 				"title":  "Test PR",
 				"number": 1,
 			},
@@ -449,11 +449,11 @@ func TestRuleManager_ExecuteRule(t *testing.T) {
 		Event:        event,
 		Organization: event.Organization,
 		User:         event.Sender,
-		Variables:    make(map[string]interface{}),
+		Variables:    make(map[string]any),
 	}
 
 	actionResult := &ActionExecutionResult{
-		Result:     map[string]interface{}{"success": true},
+		Result:     map[string]any{"success": true},
 		RetryCount: 0,
 	}
 
@@ -537,7 +537,7 @@ func TestRuleManager_InstantiateTemplate(t *testing.T) {
 
 	templateStorage.On("GetTemplate", mock.Anything, "test-template-001").Return(template, nil)
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"organization": "myorg",
 		"priority":     150,
 	}
@@ -569,7 +569,7 @@ func TestRuleManager_InstantiateTemplate_MissingRequiredVariable(t *testing.T) {
 	templateStorage.On("GetTemplate", mock.Anything, "test-template-001").Return(template, nil)
 
 	// Missing required variable
-	variables := map[string]interface{}{}
+	variables := map[string]any{}
 
 	_, err := rm.InstantiateTemplate(context.Background(), "test-template-001", variables)
 

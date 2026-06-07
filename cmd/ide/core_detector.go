@@ -137,8 +137,8 @@ func (d *IDEDetector) extractAppImageDir(line string) string {
 	}
 
 	// Pattern: /path/to/dir/App-*.AppImage (direct path)
-	parts := strings.Fields(line)
-	for _, part := range parts {
+	parts := strings.FieldsSeq(line)
+	for part := range parts {
 		if strings.Contains(part, "*.AppImage") && strings.Contains(part, "/") {
 			// Extract directory from pattern like "/home/user/Apps/Cursor-*.AppImage"
 			cleaned := strings.Trim(part, "\"")
@@ -193,8 +193,8 @@ func (d *IDEDetector) queryFlatpak(appName string) string {
 		return ""
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(strings.ToLower(line), strings.ToLower(appName)) {
 			return strings.TrimSpace(line)
 		}
@@ -484,8 +484,8 @@ func (d *IDEDetector) getJetBrainsVersionFromCommand(execPath string) string {
 		return "unknown"
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 
 		// Look for version patterns like "PyCharm 2025.2.0.1"
@@ -496,8 +496,8 @@ func (d *IDEDetector) getJetBrainsVersionFromCommand(execPath string) string {
 			strings.Contains(line, "Rider") || strings.Contains(line, "RustRover") ||
 			strings.Contains(line, "DataSpell") {
 			// Extract version number from line
-			parts := strings.Fields(line)
-			for _, part := range parts {
+			parts := strings.FieldsSeq(line)
+			for part := range parts {
 				if d.isVersionNumber(part) {
 					return part
 				}
@@ -818,8 +818,8 @@ func (d *IDEDetector) getFlatpakVersion(appName string) string {
 		return "unknown"
 	}
 
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.Contains(strings.ToLower(line), strings.ToLower(appName)) {
 			parts := strings.Fields(line)
 			if len(parts) >= 2 {
@@ -854,8 +854,8 @@ func (d *IDEDetector) parseVSCodeVersion(output string) string {
 		}
 
 		// Try to extract version from line with app name
-		parts := strings.Fields(firstLine)
-		for _, part := range parts {
+		parts := strings.FieldsSeq(firstLine)
+		for part := range parts {
 			if d.isVersionNumber(part) {
 				return part
 			}

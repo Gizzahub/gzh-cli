@@ -258,18 +258,18 @@ func TestGetEnhancedStats(t *testing.T) {
 	assert.Contains(t, stats, "runtime")
 
 	// Check memory section
-	memory := stats["memory"].(map[string]interface{}) //nolint:forcetypeassert // test knows the type
+	memory := stats["memory"].(map[string]any) //nolint:forcetypeassert // test knows the type
 	assert.Contains(t, memory, "heap_alloc")
 	assert.Contains(t, memory, "heap_sys")
 	assert.Contains(t, memory, "total_alloc")
 
 	// Check GC section
-	gc := stats["gc"].(map[string]interface{}) //nolint:forcetypeassert // test knows the type
+	gc := stats["gc"].(map[string]any) //nolint:forcetypeassert // test knows the type
 	assert.Contains(t, gc, "num_gc")
 	assert.Contains(t, gc, "last_gc")
 
 	// Check runtime section
-	runtimeStats := stats["runtime"].(map[string]interface{}) //nolint:forcetypeassert // test knows the type
+	runtimeStats := stats["runtime"].(map[string]any) //nolint:forcetypeassert // test knows the type
 	assert.Contains(t, runtimeStats, "goroutines")
 	assert.Contains(t, runtimeStats, "num_cpu")
 	assert.Contains(t, runtimeStats, "version")

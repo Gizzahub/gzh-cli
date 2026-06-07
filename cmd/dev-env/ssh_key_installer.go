@@ -440,8 +440,8 @@ func (installer *SSHKeyInstaller) keyExists(client *ssh.Client, publicKey string
 	}
 
 	// Check each line for the key
-	lines := strings.Split(fileContent, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(fileContent, "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
@@ -546,8 +546,8 @@ func (installer *SSHKeyInstaller) installKey(client *ssh.Client, publicKey strin
 
 	// Add existing keys to map (for deduplication)
 	if existingContent != "" {
-		lines := strings.Split(existingContent, "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(existingContent, "\n")
+		for line := range lines {
 			line = strings.TrimSpace(line)
 			if line != "" && !strings.HasPrefix(line, "#") {
 				keyLines[line] = true

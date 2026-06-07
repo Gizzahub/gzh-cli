@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -596,14 +597,7 @@ func (w *webhookConfigurationServiceImpl) applyPoliciesToRepository(ctx context.
 func (w *webhookConfigurationServiceImpl) ruleAppliesTo(repo string, conditions *WebhookConditions) bool {
 	// Check repository name exact match
 	if len(conditions.RepositoryName) > 0 {
-		found := false
-
-		for _, name := range conditions.RepositoryName {
-			if name == repo {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(conditions.RepositoryName, repo)
 
 		if !found {
 			return false
@@ -772,12 +766,4 @@ func (w *webhookConfigurationServiceImpl) generateInventorySummary(inventory *We
 
 func int64Ptr(i int64) *int64 {
 	return &i
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-
-	return b
 }

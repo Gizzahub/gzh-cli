@@ -143,12 +143,12 @@ const (
 
 // Credentials represents authentication credentials for a provider.
 type Credentials struct {
-	Type     CredentialType         `json:"type"`
-	Token    string                 `json:"token,omitempty"`
-	Username string                 `json:"username,omitempty"`
-	Password string                 `json:"password,omitempty"`
-	APIKey   string                 `json:"api_key,omitempty"`
-	Extra    map[string]interface{} `json:"extra,omitempty"`
+	Type     CredentialType `json:"type"`
+	Token    string         `json:"token,omitempty"`
+	Username string         `json:"username,omitempty"`
+	Password string         `json:"password,omitempty"`
+	APIKey   string         `json:"api_key,omitempty"`
+	Extra    map[string]any `json:"extra,omitempty"`
 }
 
 // CredentialType represents the type of authentication.
@@ -175,11 +175,11 @@ type TokenInfo struct {
 
 // HealthStatus represents the health status of a provider.
 type HealthStatus struct {
-	Status      HealthStatusType       `json:"status"`
-	LastChecked time.Time              `json:"last_checked"`
-	Latency     time.Duration          `json:"latency"`
-	Message     string                 `json:"message,omitempty"`
-	Details     map[string]interface{} `json:"details,omitempty"`
+	Status      HealthStatusType `json:"status"`
+	LastChecked time.Time        `json:"last_checked"`
+	Latency     time.Duration    `json:"latency"`
+	Message     string           `json:"message,omitempty"`
+	Details     map[string]any   `json:"details,omitempty"`
 }
 
 // HealthStatusType represents the health status.
@@ -214,9 +214,9 @@ type ProviderMetrics struct {
 
 // StreamOptions defines options for event streaming.
 type StreamOptions struct {
-	EventTypes []string               `json:"event_types,omitempty"`
-	Filters    map[string]interface{} `json:"filters,omitempty"`
-	BufferSize int                    `json:"buffer_size,omitempty"`
+	EventTypes []string       `json:"event_types,omitempty"`
+	Filters    map[string]any `json:"filters,omitempty"`
+	BufferSize int            `json:"buffer_size,omitempty"`
 }
 
 // WebhookTestResult represents the result of a webhook test.

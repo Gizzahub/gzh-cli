@@ -4,6 +4,7 @@
 package env
 
 import (
+	"maps"
 	"os"
 	"strings"
 )
@@ -68,9 +69,9 @@ func (e *OSEnvironment) GetAll() map[string]string {
 	envs := make(map[string]string)
 
 	for _, env := range os.Environ() {
-		if idx := strings.Index(env, "="); idx != -1 {
-			key := env[:idx]
-			value := env[idx+1:]
+		if before, after, ok := strings.Cut(env, "="); ok {
+			key := before
+			value := after
 			envs[key] = value
 		}
 	}
@@ -87,9 +88,7 @@ type MockEnvironment struct {
 func NewMockEnvironment(initialVars map[string]string) Environment {
 	vars := make(map[string]string)
 
-	for k, v := range initialVars {
-		vars[k] = v
-	}
+	maps.Copy(vars, initialVars)
 
 	return &MockEnvironment{vars: vars}
 }
@@ -127,9 +126,7 @@ func (e *MockEnvironment) Expand(s string) string {
 // GetAll returns all environment variables as a map.
 func (e *MockEnvironment) GetAll() map[string]string {
 	result := make(map[string]string)
-	for k, v := range e.vars {
-		result[k] = v
-	}
+	maps.Copy(result, e.vars)
 
 	return result
 }

@@ -16,22 +16,22 @@ type mockWebhookLogger struct {
 type mockWebhookLogEntry struct {
 	level  string
 	msg    string
-	fields []interface{}
+	fields []any
 }
 
-func (l *mockWebhookLogger) Debug(msg string, fields ...interface{}) {
+func (l *mockWebhookLogger) Debug(msg string, fields ...any) {
 	l.logs = append(l.logs, mockWebhookLogEntry{"debug", msg, fields})
 }
 
-func (l *mockWebhookLogger) Info(msg string, fields ...interface{}) {
+func (l *mockWebhookLogger) Info(msg string, fields ...any) {
 	l.logs = append(l.logs, mockWebhookLogEntry{"info", msg, fields})
 }
 
-func (l *mockWebhookLogger) Warn(msg string, fields ...interface{}) {
+func (l *mockWebhookLogger) Warn(msg string, fields ...any) {
 	l.logs = append(l.logs, mockWebhookLogEntry{"warn", msg, fields})
 }
 
-func (l *mockWebhookLogger) Error(msg string, fields ...interface{}) {
+func (l *mockWebhookLogger) Error(msg string, fields ...any) {
 	l.logs = append(l.logs, mockWebhookLogEntry{"error", msg, fields})
 }
 

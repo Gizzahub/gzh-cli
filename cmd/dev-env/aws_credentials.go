@@ -368,8 +368,8 @@ func (o *awsCredentialsOptions) loadMetadata(name string) awsCredentialsMetadata
 		return metadata
 	}
 
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(content), "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -472,8 +472,8 @@ func (o *awsCredentialsOptions) parseAwsCredentials(content string) []awsCredent
 		currentProfile *awsCredentialsProfile
 	)
 
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(content, "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue

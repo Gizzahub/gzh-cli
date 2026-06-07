@@ -181,25 +181,25 @@ func (opts *cloneOrUpdateCmdOptions) run(ctx context.Context, args []string, app
 // appContextLoggerAdapter adapts app.AppContext.Logger to gitrepo.Logger interface
 type appContextLoggerAdapter struct {
 	logger interface {
-		Debug(msg string, args ...interface{})
-		Info(msg string, args ...interface{})
-		Warn(msg string, args ...interface{})
-		Error(msg string, args ...interface{})
+		Debug(msg string, args ...any)
+		Info(msg string, args ...any)
+		Warn(msg string, args ...any)
+		Error(msg string, args ...any)
 	}
 }
 
-func (a *appContextLoggerAdapter) Debug(msg string, args ...interface{}) {
+func (a *appContextLoggerAdapter) Debug(msg string, args ...any) {
 	a.logger.Debug(msg, args...)
 }
 
-func (a *appContextLoggerAdapter) Info(msg string, args ...interface{}) {
+func (a *appContextLoggerAdapter) Info(msg string, args ...any) {
 	a.logger.Info(msg, args...)
 }
 
-func (a *appContextLoggerAdapter) Warn(msg string, args ...interface{}) {
+func (a *appContextLoggerAdapter) Warn(msg string, args ...any) {
 	a.logger.Warn(msg, args...)
 }
 
-func (a *appContextLoggerAdapter) Error(msg string, args ...interface{}) {
+func (a *appContextLoggerAdapter) Error(msg string, args ...any) {
 	a.logger.Error(msg, args...)
 }

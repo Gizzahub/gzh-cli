@@ -177,8 +177,8 @@ func (ams *AsdfMultiSynchronizer) getInstalledTools(ctx context.Context) ([]stri
 	}
 
 	tools := []string{}
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
+	for line := range lines {
 		tool := strings.TrimSpace(line)
 		if tool != "" {
 			tools = append(tools, tool)

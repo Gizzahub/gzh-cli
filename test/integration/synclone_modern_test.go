@@ -29,13 +29,13 @@ func TestSyncClone_ConfigurationLoading(t *testing.T) {
 
 		// Create test configuration
 		configPath := filepath.Join(tmpDir, "synclone.yaml")
-		testConfig := map[string]interface{}{
+		testConfig := map[string]any{
 			"version":          "1.0.0",
 			"default_provider": "github",
-			"providers": map[string]interface{}{
-				"github": map[string]interface{}{
+			"providers": map[string]any{
+				"github": map[string]any{
 					"token": "${GITHUB_TOKEN}",
-					"organizations": []map[string]interface{}{
+					"organizations": []map[string]any{
 						{
 							"name":      "test-org",
 							"clone_dir": tmpDir,

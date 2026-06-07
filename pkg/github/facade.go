@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"slices"
 )
 
 // GitHubManager provides a high-level facade for GitHub operations.
@@ -207,28 +208,14 @@ func (g *gitHubManagerImpl) applyFilters(repositories []string, filters *Reposit
 	for _, repo := range repositories {
 		// Apply include/exclude name filters
 		if len(filters.IncludeNames) > 0 {
-			found := false
-
-			for _, include := range filters.IncludeNames {
-				if repo == include {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(filters.IncludeNames, repo)
 
 			if !found {
 				continue
 			}
 		}
 
-		excluded := false
-
-		for _, exclude := range filters.ExcludeNames {
-			if repo == exclude {
-				excluded = true
-				break
-			}
-		}
+		excluded := slices.Contains(filters.ExcludeNames, repo)
 
 		if excluded {
 			continue

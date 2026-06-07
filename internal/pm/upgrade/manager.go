@@ -6,6 +6,7 @@ package upgrade
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -270,11 +271,12 @@ func (uc *UpgradeCoordinator) FormatReport(report *UpgradeReport, verbose bool) 
 		return "No upgrade report available\n"
 	}
 
-	result := "📊 Package Manager Upgrade Report\n" // S1039 수정: 불필요한 fmt.Sprintf 제거
-	result += fmt.Sprintf("Platform: %s\n", report.Platform)
-	result += fmt.Sprintf("Timestamp: %s\n", report.Timestamp.Format("2006-01-02 15:04:05"))
-	result += fmt.Sprintf("Total Managers: %d\n", report.TotalManagers)
-	result += fmt.Sprintf("Updates Available: %d\n\n", report.UpdatesNeeded)
+	var result strings.Builder
+	result.WriteString("📊 Package Manager Upgrade Report\n") // S1039 수정: 불필요한 fmt.Sprintf 제거
+	result.WriteString(fmt.Sprintf("Platform: %s\n", report.Platform))
+	result.WriteString(fmt.Sprintf("Timestamp: %s\n", report.Timestamp.Format("2006-01-02 15:04:05")))
+	result.WriteString(fmt.Sprintf("Total Managers: %d\n", report.TotalManagers))
+	result.WriteString(fmt.Sprintf("Updates Available: %d\n\n", report.UpdatesNeeded))
 
 	for _, status := range report.Managers {
 		icon := "✅"
@@ -282,18 +284,18 @@ func (uc *UpgradeCoordinator) FormatReport(report *UpgradeReport, verbose bool) 
 			icon = "🆙"
 		}
 
-		result += fmt.Sprintf("%s %s: %s", icon, status.Manager, status.CurrentVersion)
+		result.WriteString(fmt.Sprintf("%s %s: %s", icon, status.Manager, status.CurrentVersion))
 
 		if status.UpdateAvailable && status.LatestVersion != "" {
-			result += fmt.Sprintf(" → %s", status.LatestVersion)
+			result.WriteString(fmt.Sprintf(" → %s", status.LatestVersion))
 		}
 
 		if verbose {
-			result += fmt.Sprintf(" (%s)", status.UpdateMethod)
+			result.WriteString(fmt.Sprintf(" (%s)", status.UpdateMethod))
 		}
 
-		result += "\n"
+		result.WriteString("\n")
 	}
 
-	return result
+	return result.String()
 }

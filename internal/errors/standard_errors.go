@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"slices"
 	"time"
 )
 
@@ -93,15 +94,15 @@ const (
 
 // StandardError represents a standardized error with context and metadata.
 type StandardError struct {
-	Code        ErrorCode              `json:"code"`
-	Message     string                 `json:"message"`
-	Severity    ErrorSeverity          `json:"severity"`
-	Timestamp   time.Time              `json:"timestamp"`
-	Context     map[string]interface{} `json:"context,omitempty"`
-	Cause       error                  `json:"cause,omitempty"`
-	StackTrace  string                 `json:"stackTrace,omitempty"`
-	Suggestions []string               `json:"suggestions,omitempty"`
-	Retryable   bool                   `json:"retryable"`
+	Code        ErrorCode      `json:"code"`
+	Message     string         `json:"message"`
+	Severity    ErrorSeverity  `json:"severity"`
+	Timestamp   time.Time      `json:"timestamp"`
+	Context     map[string]any `json:"context,omitempty"`
+	Cause       error          `json:"cause,omitempty"`
+	StackTrace  string         `json:"stackTrace,omitempty"`
+	Suggestions []string       `json:"suggestions,omitempty"`
+	Retryable   bool           `json:"retryable"`
 }
 
 // Error implements the error interface.
@@ -133,7 +134,7 @@ func NewStandardError(code ErrorCode, message string, severity ErrorSeverity) *S
 		Message:     message,
 		Severity:    severity,
 		Timestamp:   time.Now(),
-		Context:     make(map[string]interface{}),
+		Context:     make(map[string]any),
 		Suggestions: make([]string, 0),
 		Retryable:   determineRetryability(code),
 		StackTrace:  captureStackTrace(),
@@ -147,7 +148,7 @@ func WrapError(cause error, code ErrorCode, message string, severity ErrorSeveri
 		Message:     message,
 		Severity:    severity,
 		Timestamp:   time.Now(),
-		Context:     make(map[string]interface{}),
+		Context:     make(map[string]any),
 		Cause:       cause,
 		Suggestions: make([]string, 0),
 		Retryable:   determineRetryability(code),
@@ -156,7 +157,7 @@ func WrapError(cause error, code ErrorCode, message string, severity ErrorSeveri
 }
 
 // WithContext adds context information to the error.
-func (e *StandardError) WithContext(key string, value interface{}) *StandardError {
+func (e *StandardError) WithContext(key string, value any) *StandardError {
 	e.Context[key] = value
 	return e
 }
@@ -337,26 +338,14 @@ func (ef *ErrorFilter) WithRetryable(retryable bool) *ErrorFilter {
 // Matches returns true if the error matches the filter criteria.
 func (ef *ErrorFilter) Matches(err *StandardError) bool {
 	if len(ef.codes) > 0 {
-		found := false
-		for _, code := range ef.codes {
-			if err.Code == code {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(ef.codes, err.Code)
 		if !found {
 			return false
 		}
 	}
 
 	if len(ef.severities) > 0 {
-		found := false
-		for _, severity := range ef.severities {
-			if err.Severity == severity {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(ef.severities, err.Severity)
 		if !found {
 			return false
 		}

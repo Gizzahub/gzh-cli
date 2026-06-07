@@ -36,7 +36,7 @@ func createTestEvaluationContext() *EvaluationContext {
 			Type:  "User",
 		},
 		Environment: "production",
-		Variables: map[string]interface{}{
+		Variables: map[string]any{
 			"test_var": "test_value",
 		},
 		Timezone: time.UTC,
@@ -52,29 +52,29 @@ func createTestEvent() *GitHubEvent {
 		Repository:   "test-repo",
 		Sender:       "testuser",
 		Timestamp:    time.Now(),
-		Payload: map[string]interface{}{
+		Payload: map[string]any{
 			"action": "opened",
-			"pull_request": map[string]interface{}{
+			"pull_request": map[string]any{
 				"title": "Fix bug in authentication",
-				"head": map[string]interface{}{
+				"head": map[string]any{
 					"ref": "feature/fix-auth",
 				},
-				"base": map[string]interface{}{
+				"base": map[string]any{
 					"ref": "main",
 				},
-				"changed_files": []interface{}{
+				"changed_files": []any{
 					"auth/handler.go",
 					"auth/middleware.go",
 					"tests/auth_test.go",
 				},
 			},
-			"repository": map[string]interface{}{
+			"repository": map[string]any{
 				"name": "test-repo",
-				"owner": map[string]interface{}{
+				"owner": map[string]any{
 					"login": "testorg",
 				},
 			},
-			"sender": map[string]interface{}{
+			"sender": map[string]any{
 				"login": "testuser",
 			},
 		},
@@ -459,8 +459,8 @@ func TestConditionEvaluator_EvaluatePayloadMatcher(t *testing.T) {
 	apiClient := &mockAPIClient{}
 	evaluator := NewConditionEvaluator(logger, apiClient)
 
-	payload := map[string]interface{}{
-		"pull_request": map[string]interface{}{
+	payload := map[string]any{
+		"pull_request": map[string]any{
 			"title":  "Fix bug in authentication",
 			"number": 123,
 			"state":  "open",
@@ -471,7 +471,7 @@ func TestConditionEvaluator_EvaluatePayloadMatcher(t *testing.T) {
 	tests := []struct {
 		name     string
 		matcher  *PayloadMatcher
-		payload  map[string]interface{}
+		payload  map[string]any
 		expected bool
 		wantErr  bool
 	}{
@@ -752,7 +752,7 @@ func TestConditionEvaluator_ExtractDataFromPayload(t *testing.T) {
 
 	// Test branch extraction
 	t.Run("extract branch from push event", func(t *testing.T) {
-		payload := map[string]interface{}{
+		payload := map[string]any{
 			"ref": "refs/heads/feature/test-branch",
 		}
 
@@ -761,9 +761,9 @@ func TestConditionEvaluator_ExtractDataFromPayload(t *testing.T) {
 	})
 
 	t.Run("extract branch from pull request event", func(t *testing.T) {
-		payload := map[string]interface{}{
-			"pull_request": map[string]interface{}{
-				"head": map[string]interface{}{
+		payload := map[string]any{
+			"pull_request": map[string]any{
+				"head": map[string]any{
 					"ref": "feature/pr-branch",
 				},
 			},
@@ -775,11 +775,11 @@ func TestConditionEvaluator_ExtractDataFromPayload(t *testing.T) {
 
 	// Test file extraction
 	t.Run("extract files from push event", func(t *testing.T) {
-		payload := map[string]interface{}{
-			"commits": []interface{}{
-				map[string]interface{}{
-					"added":    []interface{}{"file1.go", "file2.go"},
-					"modified": []interface{}{"file3.go"},
+		payload := map[string]any{
+			"commits": []any{
+				map[string]any{
+					"added":    []any{"file1.go", "file2.go"},
+					"modified": []any{"file3.go"},
 				},
 			},
 		}
@@ -802,11 +802,11 @@ func TestConditionEvaluator_HelperMethods(t *testing.T) {
 	t.Run("isEmpty checks", func(t *testing.T) {
 		assert.True(t, evaluator.isEmpty(nil))
 		assert.True(t, evaluator.isEmpty(""))
-		assert.True(t, evaluator.isEmpty([]interface{}{}))
-		assert.True(t, evaluator.isEmpty(map[string]interface{}{}))
+		assert.True(t, evaluator.isEmpty([]any{}))
+		assert.True(t, evaluator.isEmpty(map[string]any{}))
 		assert.False(t, evaluator.isEmpty("not empty"))
-		assert.False(t, evaluator.isEmpty([]interface{}{"item"}))
-		assert.False(t, evaluator.isEmpty(map[string]interface{}{"key": "value"}))
+		assert.False(t, evaluator.isEmpty([]any{"item"}))
+		assert.False(t, evaluator.isEmpty(map[string]any{"key": "value"}))
 	})
 
 	// Test toFloat64
@@ -901,8 +901,8 @@ func BenchmarkConditionEvaluator_EvaluatePayloadMatcher(b *testing.B) {
 		CaseSensitive: false,
 	}
 
-	payload := map[string]interface{}{
-		"pull_request": map[string]interface{}{
+	payload := map[string]any{
+		"pull_request": map[string]any{
 			"title": "Fix bug in authentication",
 		},
 	}

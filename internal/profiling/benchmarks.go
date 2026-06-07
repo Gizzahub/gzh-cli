@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-	"sort"
+	"slices"
 	"sync"
 	"time"
 
@@ -153,7 +153,7 @@ func (bs *BenchmarkSuite) RunBenchmark(ctx context.Context, name string, fn Benc
 	bs.mu.Unlock()
 
 	// Log benchmark completion
-	bs.logger.LogPerformance(name+"_benchmark", result.Duration, map[string]interface{}{
+	bs.logger.LogPerformance(name+"_benchmark", result.Duration, map[string]any{
 		"operations":         result.Operations,
 		"ns_per_op":          result.NsPerOp,
 		"ops_per_sec":        result.OpsPerSec,
@@ -244,7 +244,7 @@ func (bs *BenchmarkSuite) runConcurrentBenchmark(ctx context.Context, result *Be
 			defer wg.Done()
 			workerDurations := make([]time.Duration, 0, iterations)
 
-			for i := 0; i < iterations; i++ {
+			for range iterations {
 				if ctx.Err() != nil {
 					break
 				}
@@ -287,9 +287,7 @@ func calculatePercentiles(durations []time.Duration) map[string]time.Duration {
 		return map[string]time.Duration{}
 	}
 
-	sort.Slice(durations, func(i, j int) bool {
-		return durations[i] < durations[j]
-	})
+	slices.Sort(durations)
 
 	percentiles := map[string]time.Duration{
 		"p50": durations[int(float64(len(durations))*0.50)],
@@ -314,12 +312,12 @@ func (bs *BenchmarkSuite) GetResults() []BenchmarkResult {
 }
 
 // CompareBenchmarks compares two benchmark results.
-func (bs *BenchmarkSuite) CompareBenchmarks(baseline, current *BenchmarkResult) map[string]interface{} {
+func (bs *BenchmarkSuite) CompareBenchmarks(baseline, current *BenchmarkResult) map[string]any {
 	if baseline == nil || current == nil {
 		return nil
 	}
 
-	comparison := map[string]interface{}{
+	comparison := map[string]any{
 		"baseline_name": baseline.Name,
 		"current_name":  current.Name,
 		"timestamp":     time.Now(),

@@ -216,8 +216,8 @@ func (fs *FileStore) GetStorePath() string {
 }
 
 // GetStats returns storage statistics.
-func (fs *FileStore) GetStats(ctx context.Context) (map[string]interface{}, error) {
-	stats := make(map[string]interface{})
+func (fs *FileStore) GetStats(ctx context.Context) (map[string]any, error) {
+	stats := make(map[string]any)
 	totalFiles := 0
 	totalSize := int64(0)
 

@@ -234,7 +234,7 @@ func (g *GitLabProvider) HealthCheck(ctx context.Context) (*provider.HealthStatu
 	status := &provider.HealthStatus{
 		LastChecked: time.Now(),
 		Latency:     latency,
-		Details:     make(map[string]interface{}),
+		Details:     make(map[string]any),
 	}
 
 	if err != nil {

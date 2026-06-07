@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 //go:build !pm_external
-// +build !pm_external
 
 package cmd
 

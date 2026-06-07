@@ -29,8 +29,8 @@ func TestTokenValidator_ValidateToken(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(user)
 
 		case rateLimitEndpoint:
-			rateLimit := map[string]interface{}{
-				"resources": map[string]interface{}{
+			rateLimit := map[string]any{
+				"resources": map[string]any{
 					"core": &RateLimitInfo{
 						Limit:     5000,
 						Remaining: 4999,
@@ -80,8 +80,8 @@ func TestTokenValidator_ValidateForOperation(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(user)
 
 		case rateLimitEndpoint:
-			rateLimit := map[string]interface{}{
-				"resources": map[string]interface{}{
+			rateLimit := map[string]any{
+				"resources": map[string]any{
 					"core": &RateLimitInfo{
 						Limit:     5000,
 						Remaining: 4999,
@@ -153,8 +153,8 @@ func TestTokenValidator_ValidateForRepository(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(user)
 
 		case rateLimitEndpoint:
-			rateLimit := map[string]interface{}{
-				"resources": map[string]interface{}{
+			rateLimit := map[string]any{
+				"resources": map[string]any{
 					"core": &RateLimitInfo{
 						Limit:     5000,
 						Remaining: 4999,

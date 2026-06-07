@@ -71,14 +71,14 @@ func TestPool_ConcurrentProcessing(t *testing.T) {
 
 	// Submit multiple jobs
 	jobCount := 6
-	for i := 0; i < jobCount; i++ {
+	for i := range jobCount {
 		err = pool.Submit(i, processFn)
 		require.NoError(t, err)
 	}
 
 	// Collect results
 	results := make([]Result[int], 0, jobCount)
-	for i := 0; i < jobCount; i++ {
+	for range jobCount {
 		select {
 		case result := <-pool.Results():
 			results = append(results, result)
@@ -121,7 +121,7 @@ func TestPool_ErrorHandling(t *testing.T) {
 	}
 
 	jobCount := 4
-	for i := 0; i < jobCount; i++ {
+	for i := range jobCount {
 		err = pool.Submit(i, processFn)
 		require.NoError(t, err)
 	}
@@ -130,7 +130,7 @@ func TestPool_ErrorHandling(t *testing.T) {
 	successCount := 0
 	errorCount := 0
 
-	for i := 0; i < jobCount; i++ {
+	for range jobCount {
 		select {
 		case result := <-pool.Results():
 			if result.Error != nil {
@@ -248,7 +248,7 @@ func BenchmarkPool_Processing(b *testing.B) {
 	processFn := func(_ context.Context, data int) error {
 		// Simulate some CPU work
 		sum := 0
-		for i := 0; i < 1000; i++ {
+		for i := range 1000 {
 			sum += i
 		}
 

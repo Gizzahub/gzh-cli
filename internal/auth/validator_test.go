@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"testing"
 	"time"
 
@@ -375,13 +376,7 @@ func TestValidator_performSecurityChecks(t *testing.T) {
 			}
 
 			for _, expectedSuggestion := range test.expectedSuggestions {
-				found := false
-				for _, suggestion := range result.Suggestions {
-					if suggestion == expectedSuggestion {
-						found = true
-						break
-					}
-				}
+				found := slices.Contains(result.Suggestions, expectedSuggestion)
 				assert.True(t, found, "Expected suggestion not found: %s", expectedSuggestion)
 			}
 		})
@@ -505,7 +500,7 @@ func TestTokenInfo_Structure(t *testing.T) {
 		ExpiresAt:   nil,
 		RateLimit:   &RateLimitInfo{Limit: 5000, Remaining: 4999},
 		Permissions: map[string]bool{"read": true, "write": false},
-		Metadata:    map[string]interface{}{"key": "value"},
+		Metadata:    map[string]any{"key": "value"},
 	}
 
 	assert.Equal(t, TokenTypeGitHub, tokenInfo.Type)
@@ -580,11 +575,4 @@ func generateHexString(length int) string {
 		result[i] = hexCharset[i%len(hexCharset)]
 	}
 	return string(result)
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

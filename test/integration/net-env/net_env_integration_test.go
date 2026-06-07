@@ -434,9 +434,9 @@ func TestConcurrentOperations(t *testing.T) {
 
 		results := make(chan error, numGoroutines*numIterations)
 
-		for i := 0; i < numGoroutines; i++ {
+		for i := range numGoroutines {
 			go func(_ int) {
-				for j := 0; j < numIterations; j++ {
+				for range numIterations {
 					cmd := exec.CommandContext(ctx, "gz", "net-env", "status")
 
 					_, err := cmd.CombinedOutput()
@@ -448,7 +448,7 @@ func TestConcurrentOperations(t *testing.T) {
 		// Collect results
 		successCount := 0
 
-		for i := 0; i < numGoroutines*numIterations; i++ {
+		for range numGoroutines * numIterations {
 			err := <-results
 			if err == nil {
 				successCount++

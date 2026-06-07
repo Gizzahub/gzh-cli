@@ -715,19 +715,19 @@ func createMockWebhookService() github.WebhookService {
 // Mock logger for demo purposes.
 type mockLogger struct{}
 
-func (l *mockLogger) Debug(_ string, _ ...interface{}) {
+func (l *mockLogger) Debug(_ string, _ ...any) {
 	// No-op for demo
 }
 
-func (l *mockLogger) Info(_ string, _ ...interface{}) {
+func (l *mockLogger) Info(_ string, _ ...any) {
 	// No-op for demo
 }
 
-func (l *mockLogger) Warn(_ string, _ ...interface{}) {
+func (l *mockLogger) Warn(_ string, _ ...any) {
 	// No-op for demo
 }
 
-func (l *mockLogger) Error(_ string, _ ...interface{}) {
+func (l *mockLogger) Error(_ string, _ ...any) {
 	// No-op for demo
 }
 

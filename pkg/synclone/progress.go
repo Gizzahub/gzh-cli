@@ -274,10 +274,7 @@ func (pt *ProgressTracker) renderDetailedProgress() string {
 		output.WriteString(fmt.Sprintf("\n✅ Completed (%d):\n", len(completedRepos)))
 
 		// Show last 5 completed
-		start := len(completedRepos) - 5
-		if start < 0 {
-			start = 0
-		}
+		start := max(len(completedRepos)-5, 0)
 
 		for i := start; i < len(completedRepos); i++ {
 			repo := completedRepos[i]
@@ -376,8 +373,9 @@ func (pt *ProgressTracker) GetSummary() string {
 	completed, failed, pending, progressPercent := pt.GetOverallProgress()
 	duration := pt.GetDuration().Round(time.Second)
 
-	summary := fmt.Sprintf("Summary: %.1f%% complete • %d successful • %d failed • %d pending • Duration: %s",
-		progressPercent, completed, failed, pending, duration)
+	var summary strings.Builder
+	summary.WriteString(fmt.Sprintf("Summary: %.1f%% complete • %d successful • %d failed • %d pending • Duration: %s",
+		progressPercent, completed, failed, pending, duration))
 
 	// 실패한 저장소가 있으면 상세 정보 추가 (간결하게)
 	if failed > 0 {
@@ -390,7 +388,7 @@ func (pt *ProgressTracker) GetSummary() string {
 		}
 		pt.mu.RUnlock()
 
-		summary += "\n\n❌ Failed repositories:"
+		summary.WriteString("\n\n❌ Failed repositories:")
 		for _, repo := range failedRepos {
 			// 에러 메시지에서 핵심 부분만 추출
 			errorMsg := repo.Error
@@ -403,9 +401,9 @@ func (pt *ProgressTracker) GetSummary() string {
 					errorMsg = errorMsg[:77] + "..."
 				}
 			}
-			summary += fmt.Sprintf("\n  • %s: %s", repo.Name, errorMsg)
+			summary.WriteString(fmt.Sprintf("\n  • %s: %s", repo.Name, errorMsg))
 		}
 	}
 
-	return summary
+	return summary.String()
 }

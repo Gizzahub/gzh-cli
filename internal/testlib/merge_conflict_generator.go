@@ -280,9 +280,9 @@ func (cs ConflictStatus) IsInMergeState() bool {
 // parseConflictStatus parses git status output to identify conflicts.
 func (mcg *MergeConflictGenerator) parseConflictStatus(output string) ConflictStatus {
 	status := ConflictStatus{}
-	lines := strings.Split(strings.TrimSpace(output), "\n")
+	lines := strings.SplitSeq(strings.TrimSpace(output), "\n")
 
-	for _, line := range lines {
+	for line := range lines {
 		if len(line) < 3 {
 			continue
 		}

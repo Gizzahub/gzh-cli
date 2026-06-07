@@ -25,10 +25,10 @@ func (m *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Re
 // MockLogger for testing.
 type MockLogger struct{}
 
-func (m *MockLogger) Debug(msg string, args ...interface{}) {}
-func (m *MockLogger) Info(msg string, args ...interface{})  {}
-func (m *MockLogger) Warn(msg string, args ...interface{})  {}
-func (m *MockLogger) Error(msg string, args ...interface{}) {}
+func (m *MockLogger) Debug(msg string, args ...any) {}
+func (m *MockLogger) Info(msg string, args ...any)  {}
+func (m *MockLogger) Warn(msg string, args ...any)  {}
+func (m *MockLogger) Error(msg string, args ...any) {}
 
 // MockGitHubProviderFactory for testing.
 type MockGitHubProviderFactory struct{}

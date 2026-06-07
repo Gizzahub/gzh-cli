@@ -88,11 +88,11 @@ func DefaultOptimizedCloneConfig() OptimizedCloneConfig {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 	systemMemory := int64(memStats.Sys)
-	maxMemory := systemMemory / 4 // Use up to 25% of system memory
-
-	if maxMemory < 256*1024*1024 { // Minimum 256MB
-		maxMemory = 256 * 1024 * 1024
-	}
+	maxMemory := max(
+		// Use up to 25% of system memory
+		systemMemory/4,
+		// Minimum 256MB
+		256*1024*1024)
 
 	return OptimizedCloneConfig{
 		MaxMemoryUsage:  maxMemory,

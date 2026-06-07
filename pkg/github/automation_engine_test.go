@@ -119,23 +119,23 @@ type mockLogger struct {
 	mock.Mock
 }
 
-func (m *mockLogger) Debug(msg string, args ...interface{}) {
+func (m *mockLogger) Debug(msg string, args ...any) {
 	m.Called(msg, args)
 }
 
-func (m *mockLogger) Info(msg string, args ...interface{}) {
+func (m *mockLogger) Info(msg string, args ...any) {
 	m.Called(msg, args)
 }
 
-func (m *mockLogger) Warn(msg string, args ...interface{}) {
+func (m *mockLogger) Warn(msg string, args ...any) {
 	m.Called(msg, args)
 }
 
-func (m *mockLogger) Error(msg string, args ...interface{}) {
+func (m *mockLogger) Error(msg string, args ...any) {
 	m.Called(msg, args)
 }
 
-func (m *mockLogger) Fatal(msg string, args ...interface{}) {
+func (m *mockLogger) Fatal(msg string, args ...any) {
 	m.Called(msg, args)
 }
 
@@ -154,7 +154,7 @@ func (m *mockConditionEvaluator) EvaluateConditions(ctx context.Context, conditi
 	return nil, args.Error(1)
 }
 
-func (m *mockConditionEvaluator) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]interface{}) (bool, error) {
+func (m *mockConditionEvaluator) EvaluatePayloadMatcher(ctx context.Context, matcher *PayloadMatcher, payload map[string]any) (bool, error) {
 	args := m.Called(ctx, matcher, payload)
 	return args.Bool(0), args.Error(1)
 }
@@ -349,7 +349,7 @@ func (m *mockRuleManager) DeleteTemplate(ctx context.Context, templateID string)
 	return args.Error(0)
 }
 
-func (m *mockRuleManager) InstantiateTemplate(ctx context.Context, templateID string, variables map[string]interface{}) (*AutomationRule, error) {
+func (m *mockRuleManager) InstantiateTemplate(ctx context.Context, templateID string, variables map[string]any) (*AutomationRule, error) {
 	args := m.Called(ctx, templateID, variables)
 	if rule, ok := args.Get(0).(*AutomationRule); ok {
 		return rule, args.Error(1)
@@ -406,9 +406,9 @@ func createTestEngineEvent() *GitHubEvent {
 		Repository:   "test-repo",
 		Sender:       "test-user",
 		Timestamp:    time.Now(),
-		Payload: map[string]interface{}{
+		Payload: map[string]any{
 			"action": "opened",
-			"pull_request": map[string]interface{}{
+			"pull_request": map[string]any{
 				"title":  "Test PR",
 				"number": 1,
 			},
@@ -430,7 +430,7 @@ func createTestEngineRule() *AutomationRule {
 				ID:      "action-001",
 				Type:    ActionTypeWebhook,
 				Enabled: true,
-				Parameters: map[string]interface{}{
+				Parameters: map[string]any{
 					"url": "https://example.com/webhook",
 				},
 			},
@@ -831,7 +831,7 @@ func TestEngineMetrics_ThreadSafety(t *testing.T) {
 
 	// Writer goroutine
 	go func() {
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			engine.updateMetrics(func(m *EngineMetrics) {
 				m.EventsProcessed++
 				m.RulesEvaluated++
@@ -843,7 +843,7 @@ func TestEngineMetrics_ThreadSafety(t *testing.T) {
 
 	// Reader goroutine
 	go func() {
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			_ = engine.GetMetrics()
 		}
 

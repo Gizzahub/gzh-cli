@@ -412,7 +412,7 @@ func TestHistoryLimit(t *testing.T) {
 	shell := NewShell(client)
 
 	// Add more than 100 commands to test history limit
-	for i := 0; i < 110; i++ {
+	for i := range 110 {
 		shell.addToHistory("command" + string(rune(i)))
 	}
 	_ = shell // Use shell to avoid "declared and not used" error

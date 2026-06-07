@@ -296,8 +296,8 @@ func (c *ResilientGitLabClient) handleAPIError(resp *http.Response, operation st
 
 // GetStats returns statistics about the underlying HTTP client - DISABLED (recovery package removed)
 // Simple implementation without external recovery dependency.
-func (c *ResilientGitLabClient) GetStats() map[string]interface{} {
-	return map[string]interface{}{
+func (c *ResilientGitLabClient) GetStats() map[string]any {
+	return map[string]any{
 		"type": "standard_http_client",
 		"note": "recovery package removed, using standard http.Client",
 	}

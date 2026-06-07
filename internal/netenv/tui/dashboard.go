@@ -300,12 +300,9 @@ func (m *DashboardModel) renderAlerts() string {
 	alertsText.WriteString("🚨 Alerts:\n")
 
 	// Show only the most recent 3 alerts
-	maxAlerts := 3
-	if len(m.alerts) < maxAlerts {
-		maxAlerts = len(m.alerts)
-	}
+	maxAlerts := min(len(m.alerts), 3)
 
-	for i := 0; i < maxAlerts; i++ {
+	for i := range maxAlerts {
 		alert := m.alerts[len(m.alerts)-1-i] // Show newest first
 		icon := "⚠️"
 		switch alert.Type {
@@ -487,13 +484,11 @@ func (m *DashboardModel) updateTableSize() {
 	}
 
 	// Adjust table height
-	availableHeight := m.height - 12 // Reserve space for header, footer, help, alerts
-	if availableHeight < 5 {
-		availableHeight = 5
-	}
-	if availableHeight > 10 {
-		availableHeight = 10
-	}
+	availableHeight := min(
+		// Reserve space for header, footer, help, alerts
+		max(
+
+			m.height-12, 5), 10)
 
 	m.table.SetHeight(availableHeight)
 }

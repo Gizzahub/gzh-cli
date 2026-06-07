@@ -39,8 +39,8 @@ type Repository struct {
 	Issues   int `json:"open_issues"`
 
 	// Provider-specific data
-	ProviderType string                 `json:"provider_type"`
-	ProviderData map[string]interface{} `json:"provider_data"`
+	ProviderType string         `json:"provider_type"`
+	ProviderData map[string]any `json:"provider_data"`
 }
 
 // Owner represents the owner of a repository (user or organization).
@@ -263,17 +263,17 @@ type UpdateWebhookRequest struct {
 
 // Event represents a platform event.
 type Event struct {
-	ID         string                 `json:"id"`
-	Type       string                 `json:"type"`
-	Actor      Actor                  `json:"actor"`
-	Repository Repository             `json:"repository"`
-	Payload    map[string]interface{} `json:"payload"`
-	Public     bool                   `json:"public"`
-	CreatedAt  time.Time              `json:"created_at"`
+	ID         string         `json:"id"`
+	Type       string         `json:"type"`
+	Actor      Actor          `json:"actor"`
+	Repository Repository     `json:"repository"`
+	Payload    map[string]any `json:"payload"`
+	Public     bool           `json:"public"`
+	CreatedAt  time.Time      `json:"created_at"`
 
 	// Provider-specific data
-	ProviderType string                 `json:"provider_type"`
-	ProviderData map[string]interface{} `json:"provider_data"`
+	ProviderType string         `json:"provider_type"`
+	ProviderData map[string]any `json:"provider_data"`
 }
 
 // Actor represents the user who triggered an event.

@@ -241,7 +241,7 @@ func TestDiagnosticResultStructure(t *testing.T) {
 		Category:      "test",
 		Status:        statusPass,
 		Message:       "Test message",
-		Details:       map[string]interface{}{"key": "value"},
+		Details:       map[string]any{"key": "value"},
 		FixSuggestion: "Test fix",
 		Duration:      time.Second,
 		Timestamp:     time.Now(),
@@ -2154,7 +2154,7 @@ func TestAdditionalContainerFunctions(t *testing.T) {
 			},
 		}
 
-		metadata := map[string]interface{}{
+		metadata := map[string]any{
 			"test": "data",
 		}
 

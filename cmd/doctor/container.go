@@ -570,7 +570,7 @@ func getContainerEnvironment(ctx context.Context) (ContainerEnvironment, error) 
 	// Get system information
 	cmd = exec.CommandContext(ctx, "docker", "system", "info", "--format", "json")
 	if output, err := cmd.Output(); err == nil {
-		var info map[string]interface{}
+		var info map[string]any
 		if json.Unmarshal(output, &info) == nil {
 			if platform, ok := info["OSType"].(string); ok {
 				env.Platform = platform
@@ -608,7 +608,7 @@ func getDockerSystemInfo(ctx context.Context) (DockerSystemInfo, error) {
 		return info, err
 	}
 
-	var data map[string]interface{}
+	var data map[string]any
 	if err := json.Unmarshal(output, &data); err != nil {
 		return info, err
 	}
@@ -700,7 +700,7 @@ func getDetailedContainerInfo(ctx context.Context, containerID string) (*Contain
 		return nil, err
 	}
 
-	var inspectData []map[string]interface{}
+	var inspectData []map[string]any
 	if err := json.Unmarshal(output, &inspectData); err != nil {
 		return nil, err
 	}
@@ -720,11 +720,11 @@ func getDetailedContainerInfo(ctx context.Context, containerID string) (*Contain
 		container.Name = strings.TrimPrefix(name, "/")
 	}
 
-	if config, ok := data["Config"].(map[string]interface{}); ok {
+	if config, ok := data["Config"].(map[string]any); ok {
 		if image, ok := config["Image"].(string); ok {
 			container.Image = image
 		}
-		if labels, ok := config["Labels"].(map[string]interface{}); ok {
+		if labels, ok := config["Labels"].(map[string]any); ok {
 			for k, v := range labels {
 				if str, ok := v.(string); ok {
 					container.Labels[k] = str
@@ -733,12 +733,12 @@ func getDetailedContainerInfo(ctx context.Context, containerID string) (*Contain
 		}
 	}
 
-	if state, ok := data["State"].(map[string]interface{}); ok {
+	if state, ok := data["State"].(map[string]any); ok {
 		if status, ok := state["Status"].(string); ok {
 			container.Status = status
 			container.State = status
 		}
-		if health, ok := state["Health"].(map[string]interface{}); ok {
+		if health, ok := state["Health"].(map[string]any); ok {
 			if healthStatus, ok := health["Status"].(string); ok {
 				container.HealthStatus = healthStatus
 			}
@@ -807,7 +807,7 @@ func getDetailedNetworkInfo(ctx context.Context, networkName string) (*NetworkIn
 		return nil, err
 	}
 
-	var inspectData []map[string]interface{}
+	var inspectData []map[string]any
 	if err := json.Unmarshal(output, &inspectData); err != nil {
 		return nil, err
 	}
@@ -887,7 +887,7 @@ func getDetailedImageInfo(ctx context.Context, imageID string) (*ImageInfo, erro
 		return nil, err
 	}
 
-	var inspectData []map[string]interface{}
+	var inspectData []map[string]any
 	if err := json.Unmarshal(output, &inspectData); err != nil {
 		return nil, err
 	}
@@ -913,7 +913,7 @@ func getDetailedImageInfo(ctx context.Context, imageID string) (*ImageInfo, erro
 			image.Created = t
 		}
 	}
-	if repoTags, ok := data["RepoTags"].([]interface{}); ok {
+	if repoTags, ok := data["RepoTags"].([]any); ok {
 		tags := make([]string, 0, len(repoTags))
 		for _, tag := range repoTags {
 			if str, ok := tag.(string); ok {
@@ -964,7 +964,7 @@ func getDetailedVolumeInfo(ctx context.Context, volumeName string) (*VolumeInfo,
 		return nil, err
 	}
 
-	var inspectData []map[string]interface{}
+	var inspectData []map[string]any
 	if err := json.Unmarshal(output, &inspectData); err != nil {
 		return nil, err
 	}
@@ -1022,7 +1022,7 @@ func getContainerStats(ctx context.Context, containerID string) (*ContainerStats
 		return nil, err
 	}
 
-	var statsData map[string]interface{}
+	var statsData map[string]any
 	if err := json.Unmarshal(output, &statsData); err != nil {
 		return nil, err
 	}

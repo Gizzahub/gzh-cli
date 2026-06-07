@@ -91,14 +91,14 @@ func init() {
 
 // DiagnosticResult represents the result of a diagnostic check.
 type DiagnosticResult struct {
-	Name          string                 `json:"name"`
-	Category      string                 `json:"category"`
-	Status        string                 `json:"status"` // "pass", "warn", "fail", "skip"
-	Message       string                 `json:"message"`
-	Details       map[string]interface{} `json:"details,omitempty"`
-	FixSuggestion string                 `json:"fixSuggestion,omitempty"`
-	Duration      time.Duration          `json:"duration"`
-	Timestamp     time.Time              `json:"timestamp"`
+	Name          string         `json:"name"`
+	Category      string         `json:"category"`
+	Status        string         `json:"status"` // "pass", "warn", "fail", "skip"
+	Message       string         `json:"message"`
+	Details       map[string]any `json:"details,omitempty"`
+	FixSuggestion string         `json:"fixSuggestion,omitempty"`
+	Duration      time.Duration  `json:"duration"`
+	Timestamp     time.Time      `json:"timestamp"`
 }
 
 // DiagnosticReport represents the complete diagnostic report.
@@ -261,7 +261,7 @@ func runDoctor(cmd *cobra.Command, args []string) {
 	report.Duration = time.Since(startTime)
 
 	// Log performance metrics
-	simpleLogger.LogPerformance("doctor-diagnostic-completed", report.Duration, map[string]interface{}{
+	simpleLogger.LogPerformance("doctor-diagnostic-completed", report.Duration, map[string]any{
 		"total_checks":   report.TotalChecks,
 		"passed_checks":  report.PassedChecks,
 		"failed_checks":  report.FailedChecks,
@@ -324,7 +324,7 @@ func runSystemChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 		Category:  "system",
 		Status:    statusPass,
 		Message:   fmt.Sprintf("Running on %s/%s", sysInfo.OS, sysInfo.Arch),
-		Details:   map[string]interface{}{"system_info": sysInfo},
+		Details:   map[string]any{"system_info": sysInfo},
 		Duration:  time.Since(start),
 		Timestamp: time.Now(),
 	})
@@ -367,7 +367,7 @@ func runSystemChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 		message += " (high memory usage)"
 	}
 
-	memStatsMap := map[string]interface{}{
+	memStatsMap := map[string]any{
 		"allocated_mb":  allocatedMB,
 		"goroutines":    goroutines,
 		"sys_mb":        float64(memStats.Sys) / 1024 / 1024,
@@ -381,7 +381,7 @@ func runSystemChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 		Category:  "system",
 		Status:    status,
 		Message:   message,
-		Details:   map[string]interface{}{"memory_stats": memStatsMap},
+		Details:   map[string]any{"memory_stats": memStatsMap},
 		Duration:  time.Since(start),
 		Timestamp: time.Now(),
 	})
@@ -448,7 +448,7 @@ func runConfigChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 		Category:      "config",
 		Status:        status,
 		Message:       message,
-		Details:       map[string]interface{}{"found_configs": foundConfigs},
+		Details:       map[string]any{"found_configs": foundConfigs},
 		FixSuggestion: "Create a configuration file using 'gz synclone config generate init'",
 		Duration:      time.Since(start),
 		Timestamp:     time.Now(),
@@ -484,7 +484,7 @@ func runConfigChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 		Category:      "config",
 		Status:        status,
 		Message:       message,
-		Details:       map[string]interface{}{"set_variables": setVars},
+		Details:       map[string]any{"set_variables": setVars},
 		FixSuggestion: "Set API tokens as environment variables for authenticated access",
 		Duration:      time.Since(start),
 		Timestamp:     time.Now(),
@@ -527,7 +527,7 @@ func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ logger.Co
 		Category:  "network",
 		Status:    status,
 		Message:   message,
-		Details:   map[string]interface{}{"resolved": resolvedHosts, "failed": failedHosts},
+		Details:   map[string]any{"resolved": resolvedHosts, "failed": failedHosts},
 		Duration:  time.Since(start),
 		Timestamp: time.Now(),
 	})
@@ -565,7 +565,7 @@ func runNetworkChecks(ctx context.Context, report *DiagnosticReport, _ logger.Co
 		Category:  "network",
 		Status:    status,
 		Message:   message,
-		Details:   map[string]interface{}{"working": workingAPIs, "failed": failedAPIs},
+		Details:   map[string]any{"working": workingAPIs, "failed": failedAPIs},
 		Duration:  time.Since(start),
 		Timestamp: time.Now(),
 	})
@@ -645,7 +645,7 @@ func runGitChecks(ctx context.Context, report *DiagnosticReport, _ logger.Common
 		Category:      "git",
 		Status:        status,
 		Message:       message,
-		Details:       map[string]interface{}{"config": gitConfig},
+		Details:       map[string]any{"config": gitConfig},
 		FixSuggestion: "Configure Git with 'git config --global user.name' and 'git config --global user.email'",
 		Duration:      time.Since(start),
 		Timestamp:     time.Now(),
@@ -726,7 +726,7 @@ func runPerformanceChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *er
 		Category:  "performance",
 		Status:    status,
 		Message:   message,
-		Details:   map[string]interface{}{"ops_per_second": cpuScore},
+		Details:   map[string]any{"ops_per_second": cpuScore},
 		Duration:  time.Since(start),
 		Timestamp: time.Now(),
 	})
@@ -748,7 +748,7 @@ func runPerformanceChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *er
 		Category:  "performance",
 		Status:    status,
 		Message:   message,
-		Details:   map[string]interface{}{"mb_per_second": diskScore},
+		Details:   map[string]any{"mb_per_second": diskScore},
 		Duration:  time.Since(start),
 		Timestamp: time.Now(),
 	})
@@ -798,7 +798,7 @@ func runSecurityChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *error
 		Category:      "security",
 		Status:        status,
 		Message:       message,
-		Details:       map[string]interface{}{"unsafe_files": unsafeFiles},
+		Details:       map[string]any{"unsafe_files": unsafeFiles},
 		FixSuggestion: "Review and fix file permissions with chmod",
 		Duration:      time.Since(start),
 		Timestamp:     time.Now(),
@@ -927,7 +927,7 @@ func runCPUBenchmark() float64 {
 	iterations := 1000000
 
 	var sum int64
-	for i := 0; i < iterations; i++ {
+	for i := range iterations {
 		sum += int64(i * i)
 	}
 
@@ -957,7 +957,7 @@ func runDiskBenchmark() float64 {
 		_ = os.Remove(testFile) // Ignore remove error
 	}()
 
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		if _, err := file.Write(data); err != nil {
 			return 0 // Return 0 on write error
 		}

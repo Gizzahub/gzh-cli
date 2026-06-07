@@ -464,9 +464,9 @@ func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, 
 	}
 
 	// Try JSON format first
-	var properties map[string]interface{}
+	var properties map[string]any
 	if err := json.Unmarshal(content, &properties); err == nil {
-		if core, ok := properties["core"].(map[string]interface{}); ok {
+		if core, ok := properties["core"].(map[string]any); ok {
 			if project, ok := core["project"].(string); ok {
 				config.Project = project
 			}
@@ -476,7 +476,7 @@ func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, 
 			}
 		}
 
-		if compute, ok := properties["compute"].(map[string]interface{}); ok {
+		if compute, ok := properties["compute"].(map[string]any); ok {
 			if region, ok := compute["region"].(string); ok {
 				config.Region = region
 			}

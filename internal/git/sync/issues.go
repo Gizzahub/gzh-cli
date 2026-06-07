@@ -51,7 +51,7 @@ func (i *IssueSyncer) SetBaseURL(baseURL string) {
 }
 
 // doRequest performs an HTTP request with authentication.
-func (i *IssueSyncer) doRequest(ctx context.Context, method, url, token string, body interface{}) (*http.Response, error) {
+func (i *IssueSyncer) doRequest(ctx context.Context, method, url, token string, body any) (*http.Response, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		jsonBody, err := json.Marshal(body)
@@ -354,7 +354,7 @@ func (i *IssueSyncer) createIssue(ctx context.Context, repoID string, issue Issu
 		issue.Body, issue.URL, time.Now().Format("2006-01-02"), issue.Author)
 
 	// Build request body for GitHub API
-	apiRequest := map[string]interface{}{
+	apiRequest := map[string]any{
 		"title": issue.Title,
 		"body":  body,
 	}
@@ -412,7 +412,7 @@ func (i *IssueSyncer) createIssue(ctx context.Context, repoID string, issue Issu
 
 // closeIssue closes an issue.
 func (i *IssueSyncer) closeIssue(ctx context.Context, repoID string, issueNumber int) error {
-	apiRequest := map[string]interface{}{
+	apiRequest := map[string]any{
 		"state": "closed",
 	}
 
@@ -439,7 +439,7 @@ func (i *IssueSyncer) updateIssue(ctx context.Context, repoID string, existing, 
 	}
 
 	// Build update request
-	apiRequest := make(map[string]interface{})
+	apiRequest := make(map[string]any)
 
 	// Update title if changed
 	if existing.Title != source.Title {
@@ -614,7 +614,7 @@ func (i *IssueSyncer) createComment(ctx context.Context, repoID string, issueNum
 	body := fmt.Sprintf("%s\n\n---\n_Synced comment from @%s on %s_",
 		comment.Body, comment.Author, comment.CreatedAt.Format("2006-01-02 15:04:05"))
 
-	apiRequest := map[string]interface{}{
+	apiRequest := map[string]any{
 		"body": body,
 	}
 

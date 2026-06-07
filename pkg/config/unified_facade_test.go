@@ -204,7 +204,7 @@ func TestUnifiedConfigFacadeConfigurationSummary(t *testing.T) {
 	assert.Equal(t, 1, summary["providers"])
 
 	// Test global settings in summary
-	globalSummary, ok := summary["global"].(map[string]interface{})
+	globalSummary, ok := summary["global"].(map[string]any)
 	require.True(t, ok)
 	assert.Equal(t, "$HOME/repos", globalSummary["clone_base_dir"])
 	assert.Equal(t, "reset", globalSummary["default_strategy"])

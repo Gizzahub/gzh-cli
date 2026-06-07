@@ -499,7 +499,7 @@ func TestSecurityUpdatePolicyManager_StringComparison(t *testing.T) {
 		name     string
 		actual   string
 		operator string
-		expected interface{}
+		expected any
 		result   bool
 	}{
 		{
@@ -554,7 +554,7 @@ func TestSecurityUpdatePolicyManager_FloatComparison(t *testing.T) {
 		name     string
 		actual   float64
 		operator string
-		expected interface{}
+		expected any
 		result   bool
 	}{
 		{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/gizzahub/gzh-cli/internal/git"
@@ -221,12 +222,7 @@ func (rcm *ResumableCloneManager) getResumableRepositories(state *synclonepkg.Cl
 	reposToProcess := state.GetRemainingRepositories()
 
 	has := func(list []string, name string) bool {
-		for _, v := range list {
-			if v == name {
-				return true
-			}
-		}
-		return false
+		return slices.Contains(list, name)
 	}
 
 	// Include newly added repos since last run (exclude completed/failed)
@@ -283,10 +279,7 @@ func (rcm *ResumableCloneManager) setupWorkerPoolAndProgress(allRepos, reposToPr
 	if parallel > 0 {
 		config.CloneWorkers = parallel
 		config.UpdateWorkers = parallel + (parallel / 2)
-		config.ConfigWorkers = parallel / 2
-		if config.ConfigWorkers < 1 {
-			config.ConfigWorkers = 1
-		}
+		config.ConfigWorkers = max(parallel/2, 1)
 	}
 	if maxRetries > 0 {
 		config.RetryAttempts = maxRetries
@@ -422,7 +415,7 @@ func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Con
 	defer stateSaveTicker.Stop()
 	defer progressUpdateTicker.Stop()
 
-	for i := 0; i < len(jobs); i++ {
+	for range jobs {
 		select {
 		case result := <-resultsChan:
 			rcm.handleJobResult(result, state, progressTracker, &successCount, &failureCount)

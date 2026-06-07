@@ -3,6 +3,7 @@ package config
 
 import (
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -133,13 +134,7 @@ func testOpenSourceTemplate(t *testing.T, config *RepoConfig) {
 	assert.NotEmpty(t, template.RequiredFiles)
 
 	hasFile := func(path string) bool {
-		for _, f := range template.RequiredFiles {
-			if f == path {
-				return true
-			}
-		}
-
-		return false
+		return slices.Contains(template.RequiredFiles, path)
 	}
 	assert.True(t, hasFile("README.md"))
 	assert.True(t, hasFile("CONTRIBUTING.md"))
@@ -197,13 +192,7 @@ func testEnterpriseTemplate(t *testing.T, config *RepoConfig) {
 
 	// Verify compliance files
 	hasFile := func(path string) bool {
-		for _, f := range template.RequiredFiles {
-			if f == path {
-				return true
-			}
-		}
-
-		return false
+		return slices.Contains(template.RequiredFiles, path)
 	}
 	assert.True(t, hasFile("COMPLIANCE.md"))
 	assert.True(t, hasFile(".github/workflows/compliance.yml"))
