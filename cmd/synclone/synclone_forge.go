@@ -129,6 +129,10 @@ func runForgeSync(cmd *cobra.Command, opts *forgeOptions) error {
 	}
 
 	// Create ForgePlanner
+	cloneProto := "https"
+	if opts.UseSSH {
+		cloneProto = "ssh"
+	}
 	plannerConfig := reposync.ForgePlannerConfig{
 		TargetPath:      opts.TargetPath,
 		Organization:    opts.Organization,
@@ -136,7 +140,7 @@ func runForgeSync(cmd *cobra.Command, opts *forgeOptions) error {
 		IncludeArchived: opts.IncludeArchived,
 		IncludeForks:    opts.IncludeForks,
 		IncludePrivate:  opts.IncludePrivate,
-		UseSSH:          opts.UseSSH,
+		CloneProto:      cloneProto,
 	}
 
 	planner := reposync.NewForgePlanner(forgeProvider, plannerConfig)
@@ -209,7 +213,11 @@ func createForgeProvider(opts *forgeOptions) (reposync.ForgeProvider, error) {
 		return forgeProviderAdapter{p}, nil
 
 	case "gitea":
-		return forgeProviderAdapter{gitea.NewProvider(opts.Token, opts.BaseURL)}, nil
+		p, err := gitea.NewProvider(opts.Token, opts.BaseURL)
+		if err != nil {
+			return nil, err
+		}
+		return forgeProviderAdapter{p}, nil
 
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s (supported: github, gitlab, gitea)", opts.Provider)
