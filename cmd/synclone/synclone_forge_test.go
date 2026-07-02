@@ -25,6 +25,17 @@ func TestCreateForgeProvider(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			// GitHub Enterprise Server: a non-empty BaseURL must reach the
+			// provider (regression guard for the NewProvider(token, baseURL) sig).
+			name: "github provider with custom base URL",
+			opts: &forgeOptions{
+				Provider: "github",
+				Token:    "test-token",
+				BaseURL:  "https://github.example.com",
+			},
+			wantErr: false,
+		},
+		{
 			name: "gitlab provider",
 			opts: &forgeOptions{
 				Provider: "gitlab",
