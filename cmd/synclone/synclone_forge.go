@@ -203,7 +203,7 @@ func runForgeSync(cmd *cobra.Command, opts *forgeOptions) error {
 func createForgeProvider(opts *forgeOptions) (reposync.ForgeProvider, error) {
 	switch opts.Provider {
 	case "github":
-		return github.NewProvider(opts.Token), nil
+		return github.NewProvider(opts.Token, opts.BaseURL), nil
 
 	case "gitlab":
 		p, err := gitlab.NewProvider(opts.Token, opts.BaseURL)
