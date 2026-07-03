@@ -234,9 +234,10 @@ func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string
 		input = strings.TrimSpace(input)
 
 		// Use default value if no input provided
-		if input == "" && variable.DefaultValue != nil {
+		switch {
+		case input == "" && variable.DefaultValue != nil:
 			varMap[variable.Name] = variable.DefaultValue
-		} else if input != "" {
+		case input != "":
 			// Validate options if provided
 			if len(variable.Options) > 0 {
 				validOption := slices.Contains(variable.Options, input)
@@ -247,7 +248,7 @@ func promptForVariables(templateInfo *template.TemplateConfig, varMap map[string
 			}
 
 			varMap[variable.Name] = input
-		} else if variable.Required {
+		case variable.Required:
 			return fmt.Errorf("required variable %s not provided", variable.Name)
 		}
 	}

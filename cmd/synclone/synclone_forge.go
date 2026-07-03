@@ -47,6 +47,8 @@ type forgeOptions struct {
 }
 
 // newSyncCloneForgeCmd creates the forge subcommand for synclone.
+//
+//nolint:unparam // appCtx is reserved for consistency with sibling newSyncClone*Cmd constructors
 func newSyncCloneForgeCmd(appCtx *app.AppContext) *cobra.Command {
 	opts := &forgeOptions{
 		Strategy:       "reset",
