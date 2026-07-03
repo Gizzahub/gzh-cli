@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Archmagece
+// Copyright (c) 2026 Archmagece
 // SPDX-License-Identifier: MIT
 
 // Package synclone provides CLI commands for bulk repository synchronization
@@ -25,7 +25,7 @@ import (
 	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
-// forgeOptions holds options for forge-based sync
+// forgeOptions holds options for forge-based sync.
 type forgeOptions struct {
 	Provider        string
 	Organization    string
@@ -46,7 +46,7 @@ type forgeOptions struct {
 	IsUser          bool
 }
 
-// newSyncCloneForgeCmd creates the forge subcommand for synclone
+// newSyncCloneForgeCmd creates the forge subcommand for synclone.
 func newSyncCloneForgeCmd(appCtx *app.AppContext) *cobra.Command {
 	opts := &forgeOptions{
 		Strategy:       "reset",
@@ -199,7 +199,7 @@ func runForgeSync(cmd *cobra.Command, opts *forgeOptions) error {
 	return nil
 }
 
-// createForgeProvider creates the appropriate provider based on options
+// createForgeProvider creates the appropriate provider based on options.
 func createForgeProvider(opts *forgeOptions) (reposync.ForgeProvider, error) {
 	switch opts.Provider {
 	case "github":
@@ -224,12 +224,12 @@ func createForgeProvider(opts *forgeOptions) (reposync.ForgeProvider, error) {
 	}
 }
 
-// forgeProviderAdapter adapts gitforge providers to ForgeProvider interface
+// forgeProviderAdapter adapts gitforge providers to ForgeProvider interface.
 type forgeProviderAdapter struct {
 	provider.Provider
 }
 
-// consoleProgressSink outputs progress to console
+// consoleProgressSink outputs progress to console.
 type consoleProgressSink struct {
 	Out io.Writer
 }

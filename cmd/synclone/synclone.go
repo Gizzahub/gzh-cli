@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Archmagece
+// Copyright (c) 2026 Archmagece
 // SPDX-License-Identifier: MIT
 
 package synclone
