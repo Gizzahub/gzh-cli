@@ -476,7 +476,8 @@ func (rc *RepoConfig) updateExemptedRule(policyResults map[string]*PolicyAuditRe
 	for i, r := range policyResults[policyName].Rules {
 		if r.RuleName == ruleName {
 			policyResults[policyName].Rules[i].ExemptedRepos = append(
-				policyResults[policyName].Rules[i].ExemptedRepos, repoName)
+				policyResults[policyName].Rules[i].ExemptedRepos, repoName,
+			)
 			break
 		}
 	}
@@ -497,7 +498,8 @@ func (rc *RepoConfig) processRuleViolation(violation *PolicyViolation, policyNam
 	for i, r := range policyResults[policyName].Rules {
 		if r.RuleName == ruleName {
 			policyResults[policyName].Rules[i].ViolatingRepos = append(
-				policyResults[policyName].Rules[i].ViolatingRepos, repoName)
+				policyResults[policyName].Rules[i].ViolatingRepos, repoName,
+			)
 			break
 		}
 	}

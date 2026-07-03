@@ -365,7 +365,8 @@ multiple cloud environments with intelligent conflict resolution.`,
 					if errorMsg == "" {
 						errorMsg = "-"
 					}
-					_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", //nolint:errcheck // CLI output errors are non-critical
+					_, _ = fmt.Fprintf(
+						w, "%s\t%s\t%s\t%s\t%s\t%s\n", //nolint:errcheck // CLI output errors are non-critical
 						s.ProfileName,
 						s.Source,
 						s.Target,
@@ -686,7 +687,8 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 						enabled = "✗"
 					}
 
-					_, _ = fmt.Fprintf(w, "%s\t%d\t%s\t%d\t%d\n", //nolint:errcheck // CLI output errors are non-critical
+					_, _ = fmt.Fprintf(
+						w, "%s\t%d\t%s\t%d\t%d\n", //nolint:errcheck // CLI output errors are non-critical
 						policy.Name,
 						policy.Priority,
 						enabled,
@@ -731,7 +733,8 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 							enabled = "✗"
 						}
 
-						fmt.Printf("  %s %s (Priority: %d, Rules: %d, Actions: %d)\n",
+						fmt.Printf(
+							"  %s %s (Priority: %d, Rules: %d, Actions: %d)\n",
 							enabled,
 							policy.Name,
 							policy.Priority,
@@ -773,7 +776,8 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 						environment = "*"
 					}
 
-					_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%d\t%d\n",
+					_, _ = fmt.Fprintf(
+						w, "%s\t%s\t%s\t%d\t%s\t%d\t%d\n",
 						policy.Name,
 						profileName,
 						environment,
@@ -843,7 +847,8 @@ func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Com
 
 				appliedTime := s.Applied.Format("2006-01-02 15:04:05")
 
-				_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+				_, _ = fmt.Fprintf(
+					w, "%s\t%s\t%s\t%s\t%s\t%s\n",
 					s.PolicyName,
 					s.ProfileName,
 					s.Provider,
@@ -1797,7 +1802,8 @@ func displayVPNList(envStr string, envConnections []*cloud.VPNConnection) error 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	_, _ = fmt.Fprintln(w, "NAME\tTYPE\tPRIORITY\tAUTO-CONNECT") //nolint:errcheck // Table output
 	for _, conn := range envConnections {
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%d\t%v\n", //nolint:errcheck // Table output
+		_, _ = fmt.Fprintf(
+			w, "%s\t%s\t%d\t%v\n", //nolint:errcheck // Table output
 			conn.Name,
 			conn.Type,
 			conn.Priority,
@@ -1846,7 +1852,8 @@ func displayCloudProviders(config *cloud.Config) error {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
 	for name, provider := range config.Providers {
-		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+		if _, err := fmt.Fprintf(
+			w, "%s\t%s\t%s\t%s\n",
 			name,
 			provider.Type,
 			provider.Region,
@@ -1875,7 +1882,8 @@ func displayCloudProfiles(config *cloud.Config) error {
 		if vpcID == "" {
 			vpcID = valueNotAvailable
 		}
-		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+		if _, err := fmt.Fprintf(
+			w, "%s\t%s\t%s\t%s\t%s\n",
 			name,
 			profile.Provider,
 			profile.Environment,

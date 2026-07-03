@@ -740,7 +740,8 @@ func tryFixDevEnvIssue(ctx context.Context, result *DevEnvResult, logger logger.
 
 func displayDevEnvResults(report *DevEnvReport, opts devEnvOptions) error {
 	// Display header
-	logger.SimpleInfo("🔧 Development Environment Report",
+	logger.SimpleInfo(
+		"🔧 Development Environment Report",
 		"timestamp", report.Timestamp.Format("2006-01-02 15:04:05"),
 		"platform", report.Platform,
 		"go_version", report.GoVersion,
@@ -788,7 +789,8 @@ func displayDevEnvResults(report *DevEnvReport, opts devEnvOptions) error {
 				requiredText = " (required)"
 			}
 
-			logger.SimpleInfo(fmt.Sprintf("  %s %s%s", statusIcon, result.Tool, requiredText),
+			logger.SimpleInfo(
+				fmt.Sprintf("  %s %s%s", statusIcon, result.Tool, requiredText),
 				"status", result.Status,
 				"version", result.Version,
 			)

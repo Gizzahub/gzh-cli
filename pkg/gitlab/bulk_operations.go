@@ -21,7 +21,8 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy s
 
 		config.ConfigWorkers = max(
 			// 50% less for config operations
-			parallel/2, 1)
+			parallel/2, 1,
+		)
 	}
 
 	if maxRetries > 0 {

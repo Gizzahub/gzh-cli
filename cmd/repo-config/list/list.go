@@ -128,7 +128,8 @@ func printTableFormat(repos []services.RepositoryInfo, showConfig bool) {
 			issuesStr = "-"
 		}
 
-		fmt.Printf("%-20s %-12s %-12s %-10s %s\n",
+		fmt.Printf(
+			"%-20s %-12s %-12s %-10s %s\n",
 			repo.Name,
 			repo.Visibility,
 			repo.Template,

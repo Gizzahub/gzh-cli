@@ -186,7 +186,8 @@ type metricsOptions struct {
 func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts metricsOptions) error {
 	logger := logger.NewSimpleLogger("doctor-metrics")
 
-	logger.Info("Starting code quality metrics analysis",
+	logger.Info(
+		"Starting code quality metrics analysis",
 		"project_path", opts.projectPath,
 		"threshold", opts.threshold,
 		"detailed", opts.detailedReport,
@@ -774,7 +775,8 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 	}
 
 	// Display project overview
-	logger.SimpleInfo("🔍 Code Quality Analysis",
+	logger.SimpleInfo(
+		"🔍 Code Quality Analysis",
 		"project", report.ProjectPath,
 		"files", report.Summary.TotalFiles,
 		"lines", report.Summary.TotalLines,
@@ -782,7 +784,8 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 	)
 
 	// Display quality scores
-	logger.SimpleInfo("📊 Quality Scores",
+	logger.SimpleInfo(
+		"📊 Quality Scores",
 		"overall", fmt.Sprintf("%.1f/100", report.Summary.OverallScore),
 		"maintainability", fmt.Sprintf("%.1f", report.Scores.Maintainability),
 		"reliability", fmt.Sprintf("%.1f", report.Scores.Reliability),
@@ -790,7 +793,8 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 	)
 
 	// Display metrics
-	logger.SimpleInfo("📈 Quality Metrics",
+	logger.SimpleInfo(
+		"📈 Quality Metrics",
 		"issues", report.Summary.IssueCount,
 		"critical", report.Summary.CriticalIssues,
 		"complexity", fmt.Sprintf("%.1f", report.Metrics.AverageComplexity),
@@ -820,7 +824,8 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 				severityIcon = "🟢"
 			}
 
-			logger.SimpleWarn(fmt.Sprintf("  %s %s:%d", severityIcon, issue.File, issue.Line),
+			logger.SimpleWarn(
+				fmt.Sprintf("  %s %s:%d", severityIcon, issue.File, issue.Line),
 				"rule", issue.Rule,
 				"message", issue.Message,
 			)
@@ -857,7 +862,8 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 				break // Stop at high quality files
 			}
 
-			logger.SimpleInfo(fmt.Sprintf("  📄 %s", file.Path),
+			logger.SimpleInfo(
+				fmt.Sprintf("  📄 %s", file.Path),
 				"score", fmt.Sprintf("%.1f", file.QualityScore),
 				"issues", file.IssueCount,
 				"complexity", file.Complexity,

@@ -263,13 +263,15 @@ func discoverConfigPaths(component string) []string {
 		}
 
 		if homeDir, err := os.UserHomeDir(); err == nil {
-			legacyPaths = append(legacyPaths,
+			legacyPaths = append(
+				legacyPaths,
 				filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.yaml"),
 				filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.yml"),
 			)
 		}
 
-		legacyPaths = append(legacyPaths,
+		legacyPaths = append(
+			legacyPaths,
 			"/etc/gzh-manager/bulk-clone.yaml",
 			"/etc/gzh-manager/bulk-clone.yml",
 		)

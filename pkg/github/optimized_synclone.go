@@ -92,7 +92,8 @@ func DefaultOptimizedCloneConfig() OptimizedCloneConfig {
 		// Use up to 25% of system memory
 		systemMemory/4,
 		// Minimum 256MB
-		256*1024*1024)
+		256*1024*1024,
+	)
 
 	return OptimizedCloneConfig{
 		MaxMemoryUsage:  maxMemory,
@@ -176,7 +177,8 @@ func (m *OptimizedSyncCloneManager) RefreshAllOptimized(ctx context.Context, tar
 
 	if m.config.ShowProgress {
 		// We'll update total when we know it
-		progressBar = progressbar.NewOptions(-1,
+		progressBar = progressbar.NewOptions(
+			-1,
 			progressbar.OptionSetDescription("Processing Repositories"),
 			progressbar.OptionSetRenderBlankState(true),
 			progressbar.OptionSpinnerType(14),

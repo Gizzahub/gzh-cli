@@ -124,7 +124,8 @@ func CalculateBackoff(attempt int) time.Duration {
 	// Base backoff: 2^attempt seconds
 	backoff := min(
 		// Cap at 60 seconds
-		time.Duration(1<<uint(attempt))*time.Second, 60*time.Second)
+		time.Duration(1<<uint(attempt))*time.Second, 60*time.Second,
+	)
 
 	// Add jitter (10% of backoff)
 	jitter := time.Duration(rand.Float64() * float64(backoff) * 0.1)

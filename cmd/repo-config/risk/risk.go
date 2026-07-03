@@ -314,7 +314,8 @@ func displayRiskAssessmentTable(assessments []RiskAssessment) {
 
 		severitySymbol := getSeveritySymbol(assessment.Severity)
 
-		fmt.Printf("%-20s %-10s %-8.1f %-12d %-15s %s\n",
+		fmt.Printf(
+			"%-20s %-10s %-8.1f %-12d %-15s %s\n",
 			truncateString(assessment.Repository, 20),
 			severitySymbol,
 			assessment.OverallScore,

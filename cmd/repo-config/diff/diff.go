@@ -251,7 +251,8 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 					currentDisplay = colorize("-", "dim")
 				}
 
-				fmt.Printf("  %-28s %-15s %-15s %-12s %s\n",
+				fmt.Printf(
+					"  %-28s %-15s %-15s %-12s %s\n",
 					truncateString(diff.Setting, 28),
 					colorizeValue(currentDisplay, diff.ChangeType == changeTypeDelete),
 					colorizeValue(truncateString(diff.TargetValue, 15), diff.ChangeType == changeTypeCreate),
@@ -259,7 +260,8 @@ func displayDiffTable(differences []ConfigurationDifference, showValues bool) {
 					actionSymbol,
 				)
 			} else {
-				fmt.Printf("  %-28s %-12s %-15s %s\n",
+				fmt.Printf(
+					"  %-28s %-12s %-15s %s\n",
 					truncateString(diff.Setting, 28),
 					impactSymbol,
 					actionSymbol,
@@ -750,13 +752,15 @@ func compareBasicSettings(repoName string, current *github.RepositoryConfig, tar
 	// Description
 	if targetSettings.Description != nil && current.Description != *targetSettings.Description {
 		differences = append(differences, createConfigurationDifference(
-			repoName, "description", current.Description, *targetSettings.Description, "low", templateName))
+			repoName, "description", current.Description, *targetSettings.Description, "low", templateName,
+		))
 	}
 
 	// Homepage
 	if targetSettings.Homepage != nil && current.Homepage != *targetSettings.Homepage {
 		differences = append(differences, createConfigurationDifference(
-			repoName, "homepage", current.Homepage, *targetSettings.Homepage, "low", templateName))
+			repoName, "homepage", current.Homepage, *targetSettings.Homepage, "low", templateName,
+		))
 	}
 
 	// Private/Visibility
@@ -797,19 +801,22 @@ func compareRepositoryFeatures(repoName string, current *github.RepositoryConfig
 	// Issues feature
 	if targetSettings.HasIssues != nil && current.Settings.HasIssues != *targetSettings.HasIssues {
 		differences = append(differences, createBooleanConfigurationDifference(
-			repoName, "features.issues", current.Settings.HasIssues, *targetSettings.HasIssues, "low", templateName))
+			repoName, "features.issues", current.Settings.HasIssues, *targetSettings.HasIssues, "low", templateName,
+		))
 	}
 
 	// Wiki feature
 	if targetSettings.HasWiki != nil && current.Settings.HasWiki != *targetSettings.HasWiki {
 		differences = append(differences, createBooleanConfigurationDifference(
-			repoName, "features.wiki", current.Settings.HasWiki, *targetSettings.HasWiki, "low", templateName))
+			repoName, "features.wiki", current.Settings.HasWiki, *targetSettings.HasWiki, "low", templateName,
+		))
 	}
 
 	// Projects feature
 	if targetSettings.HasProjects != nil && current.Settings.HasProjects != *targetSettings.HasProjects {
 		differences = append(differences, createBooleanConfigurationDifference(
-			repoName, "features.projects", current.Settings.HasProjects, *targetSettings.HasProjects, "low", templateName))
+			repoName, "features.projects", current.Settings.HasProjects, *targetSettings.HasProjects, "low", templateName,
+		))
 	}
 
 	return differences
@@ -822,13 +829,15 @@ func compareMergeSettings(repoName string, current *github.RepositoryConfig, tar
 	// Delete branch on merge
 	if targetSettings.DeleteBranchOnMerge != nil && current.Settings.DeleteBranchOnMerge != *targetSettings.DeleteBranchOnMerge {
 		differences = append(differences, createBooleanConfigurationDifference(
-			repoName, "merge.delete_branch_on_merge", current.Settings.DeleteBranchOnMerge, *targetSettings.DeleteBranchOnMerge, "medium", templateName))
+			repoName, "merge.delete_branch_on_merge", current.Settings.DeleteBranchOnMerge, *targetSettings.DeleteBranchOnMerge, "medium", templateName,
+		))
 	}
 
 	// Allow squash merge
 	if targetSettings.AllowSquashMerge != nil && current.Settings.AllowSquashMerge != *targetSettings.AllowSquashMerge {
 		differences = append(differences, createBooleanConfigurationDifference(
-			repoName, "merge.allow_squash_merge", current.Settings.AllowSquashMerge, *targetSettings.AllowSquashMerge, "medium", templateName))
+			repoName, "merge.allow_squash_merge", current.Settings.AllowSquashMerge, *targetSettings.AllowSquashMerge, "medium", templateName,
+		))
 	}
 
 	return differences

@@ -228,7 +228,8 @@ type healthOptions struct {
 func runHealthMonitoring(ctx context.Context, flags *cli.CommonFlags, opts healthOptions) error {
 	logger := logger.NewSimpleLogger("doctor-health")
 
-	logger.Info("Starting system health monitoring",
+	logger.Info(
+		"Starting system health monitoring",
 		"continuous", opts.continuous,
 		"interval", opts.interval,
 		"server_mode", opts.serverMode,
@@ -817,7 +818,8 @@ func displayHealthResults(report *SystemHealthReport, opts healthOptions) error 
 		statusIcon = "❌"
 	}
 
-	logger.SimpleInfo(fmt.Sprintf("%s System Health Status", statusIcon),
+	logger.SimpleInfo(
+		fmt.Sprintf("%s System Health Status", statusIcon),
 		"status", report.OverallStatus,
 		"score", fmt.Sprintf("%.1f/100", report.Score),
 		"categories", len(report.Categories),
@@ -833,7 +835,8 @@ func displayHealthResults(report *SystemHealthReport, opts healthOptions) error 
 			categoryIcon = "❌"
 		}
 
-		logger.SimpleInfo(fmt.Sprintf("  %s %s", categoryIcon, category.Name),
+		logger.SimpleInfo(
+			fmt.Sprintf("  %s %s", categoryIcon, category.Name),
 			"status", category.Status,
 			"score", fmt.Sprintf("%.1f", category.Score),
 			"checks", len(category.Checks),
@@ -849,7 +852,8 @@ func displayHealthResults(report *SystemHealthReport, opts healthOptions) error 
 					checkIcon = "❌"
 				}
 
-				logger.SimpleInfo(fmt.Sprintf("    %s %s", checkIcon, check.Name),
+				logger.SimpleInfo(
+					fmt.Sprintf("    %s %s", checkIcon, check.Name),
 					"status", check.Status,
 					"message", check.Message,
 				)
@@ -866,7 +870,8 @@ func displayHealthResults(report *SystemHealthReport, opts healthOptions) error 
 				alertIcon = "🔴"
 			}
 
-			logger.SimpleWarn(fmt.Sprintf("  %s [%s] %s", alertIcon, alert.Category, alert.Message),
+			logger.SimpleWarn(
+				fmt.Sprintf("  %s [%s] %s", alertIcon, alert.Category, alert.Message),
 				"level", alert.Level,
 				"suggestion", alert.Suggestion,
 			)

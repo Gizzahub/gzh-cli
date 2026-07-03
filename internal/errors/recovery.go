@@ -237,10 +237,12 @@ func (er *ErrorRecovery) calculateBackoff(attempt int) time.Duration {
 	// Safe bit shift: ensure attempt is within range [0, 30] to prevent integer overflow
 	shiftAmount := min(
 		//nolint:gosec // G115: bounds-checked above, safe conversion
-		uint(attempt), 30)
+		uint(attempt), 30,
+	)
 	delay := min(
 		//nolint:gosec // Bounded by max 30, safe from overflow
-		er.retryDelay*time.Duration(1<<shiftAmount), 30*time.Second)
+		er.retryDelay*time.Duration(1<<shiftAmount), 30*time.Second,
+	)
 
 	return delay
 }

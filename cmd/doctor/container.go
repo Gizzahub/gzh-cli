@@ -401,7 +401,8 @@ type containerOptions struct {
 func runContainerDiagnostics(ctx context.Context, flags *cli.CommonFlags, opts containerOptions) error {
 	logger := logger.NewSimpleLogger("doctor-container")
 
-	logger.Info("Starting container diagnostics",
+	logger.Info(
+		"Starting container diagnostics",
 		"include_stats", opts.includeStats,
 		"include_security", opts.includeSecurity,
 		"watch_mode", opts.watchMode,
@@ -533,7 +534,8 @@ func performContainerDiagnostics(ctx context.Context, opts containerOptions, log
 	generateRecommendations(diagnostics)
 	identifyIssues(diagnostics)
 
-	logger.Info("Container diagnostics completed",
+	logger.Info(
+		"Container diagnostics completed",
 		"containers", len(diagnostics.Containers),
 		"networks", len(diagnostics.Networks),
 		"images", len(diagnostics.Images),
@@ -1390,7 +1392,8 @@ func WriteFile(filename string, data []byte, perm int) error {
 
 func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerOptions) error {
 	// Display environment information
-	logger.SimpleInfo("🐳 Container Environment",
+	logger.SimpleInfo(
+		"🐳 Container Environment",
 		"docker_version", diagnostics.Environment.DockerVersion,
 		"platform", diagnostics.Environment.Platform,
 		"architecture", diagnostics.Environment.Architecture,
@@ -1399,7 +1402,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 	)
 
 	// Display system information
-	logger.SimpleInfo("🖥️ System Information",
+	logger.SimpleInfo(
+		"🖥️ System Information",
 		"containers_running", diagnostics.SystemInfo.ContainersRunning,
 		"containers_stopped", diagnostics.SystemInfo.ContainersStopped,
 		"images", diagnostics.SystemInfo.Images,
@@ -1408,7 +1412,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 	)
 
 	// Display container summary
-	logger.SimpleInfo("📦 Container Summary",
+	logger.SimpleInfo(
+		"📦 Container Summary",
 		"total_containers", len(diagnostics.Containers),
 		"running", countContainersByState(diagnostics.Containers, "running"),
 		"stopped", countContainersByState(diagnostics.Containers, "exited"),
@@ -1430,7 +1435,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 			if i >= 5 { // Show top 5
 				break
 			}
-			logger.SimpleInfo(fmt.Sprintf("  %s", stats.ContainerName),
+			logger.SimpleInfo(
+				fmt.Sprintf("  %s", stats.ContainerName),
 				"cpu_percent", fmt.Sprintf("%.1f%%", stats.CPUPercent),
 				"memory_percent", fmt.Sprintf("%.1f%%", stats.MemoryPercent),
 				"memory_usage", fmt.Sprintf("%.2f MB", float64(stats.MemoryUsage)/(1024*1024)),
@@ -1440,7 +1446,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 
 	// Display network information
 	if len(diagnostics.Networks) > 0 {
-		logger.SimpleInfo("🌐 Network Summary",
+		logger.SimpleInfo(
+			"🌐 Network Summary",
 			"total_networks", len(diagnostics.Networks),
 			"bridge_networks", countNetworksByDriver(diagnostics.Networks, "bridge"),
 			"host_networks", countNetworksByDriver(diagnostics.Networks, "host"),
@@ -1460,7 +1467,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 			}
 		}
 
-		logger.SimpleInfo("🏥 Health Check Summary",
+		logger.SimpleInfo(
+			"🏥 Health Check Summary",
 			"total_checks", len(diagnostics.HealthChecks),
 			"healthy", healthyCount,
 			"unhealthy", unhealthyCount,
@@ -1469,7 +1477,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 
 	// Display security analysis
 	if diagnostics.SecurityAnalysis.SecurityScore > 0 {
-		logger.SimpleInfo("🔒 Security Analysis",
+		logger.SimpleInfo(
+			"🔒 Security Analysis",
 			"security_score", fmt.Sprintf("%.1f/100", diagnostics.SecurityAnalysis.SecurityScore),
 			"privileged_containers", len(diagnostics.SecurityAnalysis.PrivilegedContainers),
 			"root_containers", len(diagnostics.SecurityAnalysis.RootContainers),
@@ -1487,7 +1496,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 
 	// Display performance metrics
 	if diagnostics.PerformanceMetrics.AverageStartupTime > 0 {
-		logger.SimpleInfo("⚡ Performance Metrics",
+		logger.SimpleInfo(
+			"⚡ Performance Metrics",
 			"average_startup_time", diagnostics.PerformanceMetrics.AverageStartupTime.String(),
 			"memory_efficiency", fmt.Sprintf("%.1f%%", diagnostics.PerformanceMetrics.MemoryEfficiency),
 			"cpu_efficiency", fmt.Sprintf("%.1f%%", diagnostics.PerformanceMetrics.CPUEfficiency),
@@ -1507,7 +1517,8 @@ func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerO
 				severityIcon = "💥"
 			}
 
-			logger.SimpleWarn(fmt.Sprintf("  %s %s", severityIcon, issue.Title),
+			logger.SimpleWarn(
+				fmt.Sprintf("  %s %s", severityIcon, issue.Title),
 				"severity", issue.Severity,
 				"category", issue.Category,
 				"affected", len(issue.Affected),

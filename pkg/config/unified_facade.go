@@ -338,7 +338,8 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 	}
 
 	var report strings.Builder
-	report.WriteString(fmt.Sprintf(`# Configuration Report
+	report.WriteString(fmt.Sprintf(
+		`# Configuration Report
 
 **Generated:** %s
 **Version:** %s
@@ -363,7 +364,8 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 
 	// Add provider details
 	for providerName, provider := range f.config.Providers {
-		report.WriteString(fmt.Sprintf(`
+		report.WriteString(fmt.Sprintf(
+			`
 ### %s
 - **Token:** %s
 - **Organizations:** %d
@@ -376,7 +378,8 @@ func (f *UnifiedConfigFacade) GenerateConfigurationReport() (string, error) {
 		))
 
 		for _, org := range provider.Organizations {
-			report.WriteString(fmt.Sprintf(`  - **%s:** %s (%s, %s)
+			report.WriteString(fmt.Sprintf(
+				`  - **%s:** %s (%s, %s)
 `,
 				org.Name,
 				org.CloneDir,

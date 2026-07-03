@@ -27,28 +27,33 @@ func (v *BulkCloneConfigValidator) Validate(config any) error {
 	if bulkConfig.Concurrency <= 0 || bulkConfig.Concurrency > constants.MaxParallelism {
 		return errors.NewValidationError(
 			fmt.Sprintf("concurrency must be between 1 and %d", constants.MaxParallelism),
-			"concurrency")
+			"concurrency",
+		)
 	}
 
 	if bulkConfig.Timeout <= 0 || bulkConfig.Timeout > constants.VeryLongTimeout {
 		return errors.NewValidationError(
-			"timeout must be positive and reasonable", "timeout")
+			"timeout must be positive and reasonable", "timeout",
+		)
 	}
 
 	if bulkConfig.RetryAttempts < 0 || bulkConfig.RetryAttempts > constants.MaxRetryAttempts {
 		return errors.NewValidationError(
 			fmt.Sprintf("retry attempts must be between 0 and %d", constants.MaxRetryAttempts),
-			"retry_attempts")
+			"retry_attempts",
+		)
 	}
 
 	if bulkConfig.BufferSize <= 0 {
 		return errors.NewValidationError(
-			"buffer size must be positive", "buffer_size")
+			"buffer size must be positive", "buffer_size",
+		)
 	}
 
 	if bulkConfig.MaxRepositories <= 0 {
 		return errors.NewValidationError(
-			"max repositories must be positive", "max_repositories")
+			"max repositories must be positive", "max_repositories",
+		)
 	}
 
 	return nil
@@ -67,17 +72,20 @@ func (v *HTTPClientConfigValidator) Validate(config any) error {
 
 	if httpConfig.Timeout <= 0 || httpConfig.Timeout > constants.ExtraLongTimeout {
 		return errors.NewValidationError(
-			"timeout must be positive and reasonable", "timeout")
+			"timeout must be positive and reasonable", "timeout",
+		)
 	}
 
 	if httpConfig.MaxIdleConns < 0 {
 		return errors.NewValidationError(
-			"max idle connections must be non-negative", "max_idle_conns")
+			"max idle connections must be non-negative", "max_idle_conns",
+		)
 	}
 
 	if httpConfig.IdleConnTimeout < 0 {
 		return errors.NewValidationError(
-			"idle connection timeout must be non-negative", "idle_conn_timeout")
+			"idle connection timeout must be non-negative", "idle_conn_timeout",
+		)
 	}
 
 	validTLSVersions := map[string]bool{
@@ -86,12 +94,14 @@ func (v *HTTPClientConfigValidator) Validate(config any) error {
 
 	if httpConfig.MinTLSVersion != "" && !validTLSVersions[httpConfig.MinTLSVersion] {
 		return errors.NewValidationError(
-			"min TLS version must be one of: 1.0, 1.1, 1.2, 1.3", "min_tls_version")
+			"min TLS version must be one of: 1.0, 1.1, 1.2, 1.3", "min_tls_version",
+		)
 	}
 
 	if httpConfig.UserAgent == "" {
 		return errors.NewValidationError(
-			"user agent cannot be empty", "user_agent")
+			"user agent cannot be empty", "user_agent",
+		)
 	}
 
 	return nil
@@ -111,23 +121,27 @@ func (v *AuthConfigValidator) Validate(config any) error {
 	if authConfig.TokenMinLength < 4 || authConfig.TokenMinLength > constants.MaxTokenLength {
 		return errors.NewValidationError(
 			fmt.Sprintf("token min length must be between 4 and %d", constants.MaxTokenLength),
-			"token_min_length")
+			"token_min_length",
+		)
 	}
 
 	if authConfig.ValidationTimeout <= 0 || authConfig.ValidationTimeout > constants.LongHTTPTimeout {
 		return errors.NewValidationError(
-			"validation timeout must be positive and reasonable", "validation_timeout")
+			"validation timeout must be positive and reasonable", "validation_timeout",
+		)
 	}
 
 	if authConfig.CacheDuration < 0 {
 		return errors.NewValidationError(
-			"cache duration must be non-negative", "cache_duration")
+			"cache duration must be non-negative", "cache_duration",
+		)
 	}
 
 	if authConfig.MaxRetryAttempts < 0 || authConfig.MaxRetryAttempts > constants.MaxRetryAttempts {
 		return errors.NewValidationError(
 			fmt.Sprintf("max retry attempts must be between 0 and %d", constants.MaxRetryAttempts),
-			"max_retry_attempts")
+			"max_retry_attempts",
+		)
 	}
 
 	return nil
@@ -149,12 +163,14 @@ func (v *GitHubConfigValidator) Validate(config any) error {
 		if !strings.HasPrefix(githubConfig.Token, "ghp_") &&
 			!strings.HasPrefix(githubConfig.Token, "github_pat_") {
 			return errors.NewValidationError(
-				"GitHub token must start with 'ghp_' or 'github_pat_'", "token")
+				"GitHub token must start with 'ghp_' or 'github_pat_'", "token",
+			)
 		}
 
 		if len(githubConfig.Token) < constants.MinTokenLength {
 			return errors.NewValidationError(
-				fmt.Sprintf("token must be at least %d characters", constants.MinTokenLength), "token")
+				fmt.Sprintf("token must be at least %d characters", constants.MinTokenLength), "token",
+			)
 		}
 	}
 
@@ -162,37 +178,43 @@ func (v *GitHubConfigValidator) Validate(config any) error {
 	if githubConfig.BaseURL != "" {
 		if _, err := url.Parse(githubConfig.BaseURL); err != nil {
 			return errors.NewValidationError(
-				"invalid base URL format", "base_url")
+				"invalid base URL format", "base_url",
+			)
 		}
 
 		if !strings.HasPrefix(githubConfig.BaseURL, "https://") {
 			return errors.NewValidationError(
-				"base URL must use HTTPS", "base_url")
+				"base URL must use HTTPS", "base_url",
+			)
 		}
 	}
 
 	// Validate timeouts
 	if githubConfig.Timeout <= 0 || githubConfig.Timeout > constants.ExtraLongTimeout {
 		return errors.NewValidationError(
-			"timeout must be positive and reasonable", "timeout")
+			"timeout must be positive and reasonable", "timeout",
+		)
 	}
 
 	// Validate retry settings
 	if githubConfig.RetryAttempts < 0 || githubConfig.RetryAttempts > constants.MaxRetryAttempts {
 		return errors.NewValidationError(
 			fmt.Sprintf("retry attempts must be between 0 and %d", constants.MaxRetryAttempts),
-			"retry_attempts")
+			"retry_attempts",
+		)
 	}
 
 	if githubConfig.RetryDelay < 0 {
 		return errors.NewValidationError(
-			"retry delay must be non-negative", "retry_delay")
+			"retry delay must be non-negative", "retry_delay",
+		)
 	}
 
 	// Validate rate limit
 	if githubConfig.RateLimit < 0 {
 		return errors.NewValidationError(
-			"rate limit must be non-negative", "rate_limit")
+			"rate limit must be non-negative", "rate_limit",
+		)
 	}
 
 	return nil
@@ -211,26 +233,30 @@ func (v *SecurityConfigValidator) Validate(config any) error {
 
 	if secConfig.TokenValidationTimeout <= 0 || secConfig.TokenValidationTimeout > constants.LongHTTPTimeout {
 		return errors.NewValidationError(
-			"token validation timeout must be positive and reasonable", "token_validation_timeout")
+			"token validation timeout must be positive and reasonable", "token_validation_timeout",
+		)
 	}
 
 	if secConfig.MaxRequestSize <= 0 {
 		return errors.NewValidationError(
-			"max request size must be positive", "max_request_size")
+			"max request size must be positive", "max_request_size",
+		)
 	}
 
 	// Validate allowed hosts
 	for _, host := range secConfig.AllowedHosts {
 		if host == "" {
 			return errors.NewValidationError(
-				"allowed hosts cannot contain empty values", "allowed_hosts")
+				"allowed hosts cannot contain empty values", "allowed_hosts",
+			)
 		}
 
 		// Basic hostname validation
 		hostnameRegex := regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$`)
 		if !hostnameRegex.MatchString(host) && host != "localhost" && host != "*" {
 			return errors.NewValidationError(
-				fmt.Sprintf("invalid hostname format: %s", host), "allowed_hosts")
+				fmt.Sprintf("invalid hostname format: %s", host), "allowed_hosts",
+			)
 		}
 	}
 
@@ -254,7 +280,8 @@ func (v *LoggingConfigValidator) Validate(config any) error {
 
 	if !validLevels[strings.ToLower(logConfig.Level)] {
 		return errors.NewValidationError(
-			"log level must be one of: debug, info, warn, error, fatal", "level")
+			"log level must be one of: debug, info, warn, error, fatal", "level",
+		)
 	}
 
 	validFormats := map[string]bool{
@@ -263,7 +290,8 @@ func (v *LoggingConfigValidator) Validate(config any) error {
 
 	if !validFormats[strings.ToLower(logConfig.Format)] {
 		return errors.NewValidationError(
-			"log format must be one of: json, text, console", "format")
+			"log format must be one of: json, text, console", "format",
+		)
 	}
 
 	validOutputs := map[string]bool{
@@ -272,22 +300,26 @@ func (v *LoggingConfigValidator) Validate(config any) error {
 
 	if !validOutputs[strings.ToLower(logConfig.Output)] && !strings.HasPrefix(logConfig.Output, "/") {
 		return errors.NewValidationError(
-			"log output must be stdout, stderr, file, or a file path", "output")
+			"log output must be stdout, stderr, file, or a file path", "output",
+		)
 	}
 
 	if logConfig.MaxSize <= 0 {
 		return errors.NewValidationError(
-			"max size must be positive", "max_size")
+			"max size must be positive", "max_size",
+		)
 	}
 
 	if logConfig.MaxBackups < 0 {
 		return errors.NewValidationError(
-			"max backups must be non-negative", "max_backups")
+			"max backups must be non-negative", "max_backups",
+		)
 	}
 
 	if logConfig.MaxAge < 0 {
 		return errors.NewValidationError(
-			"max age must be non-negative", "max_age")
+			"max age must be non-negative", "max_age",
+		)
 	}
 
 	return nil

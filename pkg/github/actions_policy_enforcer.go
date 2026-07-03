@@ -466,7 +466,8 @@ func (ape *ActionsPolicyEnforcer) updateSecuritySettings(ctx context.Context, or
 
 // registerDefaultValidationRules registers the default set of validation rules.
 func (ape *ActionsPolicyEnforcer) registerDefaultValidationRules() {
-	ape.validationRules = append(ape.validationRules,
+	ape.validationRules = append(
+		ape.validationRules,
 		&PermissionLevelValidationRule{},
 		&WorkflowPermissionsValidationRule{},
 		&SecuritySettingsValidationRule{},

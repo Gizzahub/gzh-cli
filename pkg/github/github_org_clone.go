@@ -290,7 +290,8 @@ func RefreshAll(ctx context.Context, targetPath string, org string, strategy str
 	}
 
 	// bar := progressbar.Default(int64(len(orgRepos)), "Cloning Repositories")
-	bar := progressbar.NewOptions(len(orgRepos),
+	bar := progressbar.NewOptions(
+		len(orgRepos),
 		progressbar.OptionSetDescription("Cloning Repositories"),
 		progressbar.OptionSetRenderBlankState(true),
 	)

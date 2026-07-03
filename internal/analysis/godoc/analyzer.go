@@ -225,7 +225,8 @@ func (a *Analyzer) AnalyzePackage(_ context.Context, packagePath string) (*Packa
 	// Generate recommendations
 	pkgInfo.Recommendations = a.generateRecommendations(pkgInfo)
 
-	a.logger.Info("Package analysis completed",
+	a.logger.Info(
+		"Package analysis completed",
 		"package", packagePath,
 		"coverage", fmt.Sprintf("%.1f%%", pkgInfo.CoverageStats.CoveragePercentage),
 		"quality_issues", len(pkgInfo.QualityIssues),

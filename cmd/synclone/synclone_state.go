@@ -119,7 +119,8 @@ func runStateList(cmd *cobra.Command, args []string) error {
 		progress := fmt.Sprintf("%.1f%%", state.GetProgressPercent())
 		lastUpdated := state.LastUpdated.Format("2006-01-02 15:04:05")
 
-		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+		if _, err := fmt.Fprintf(
+			w, "%s\t%s\t%s\t%s\t%s\t%s\n",
 			state.Provider,
 			state.Organization,
 			state.Status,

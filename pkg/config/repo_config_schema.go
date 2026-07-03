@@ -442,7 +442,8 @@ func checkBranchProtectionConflicts(templateName, branch string, derivedRule, ba
 		if *derivedRule.RequiredReviews < *baseRule.RequiredReviews {
 			conflicts = append(conflicts, fmt.Sprintf(
 				"Template '%s': Reduces required reviews for branch '%s' from %d to %d",
-				templateName, branch, *baseRule.RequiredReviews, *derivedRule.RequiredReviews))
+				templateName, branch, *baseRule.RequiredReviews, *derivedRule.RequiredReviews,
+			))
 		}
 	}
 
@@ -451,7 +452,8 @@ func checkBranchProtectionConflicts(templateName, branch string, derivedRule, ba
 		derivedRule.EnforceAdmins != nil && !*derivedRule.EnforceAdmins {
 		conflicts = append(conflicts, fmt.Sprintf(
 			"Template '%s': Disables admin enforcement for branch '%s'",
-			templateName, branch))
+			templateName, branch,
+		))
 	}
 
 	return conflicts
@@ -468,7 +470,8 @@ func checkPermissionConflicts(templateName string, derived, base *RepoTemplate) 
 				if isHigherPermission(derivedPerm, basePerm) {
 					conflicts = append(conflicts, fmt.Sprintf(
 						"Template '%s': Escalates permissions for team '%s' from '%s' to '%s'",
-						templateName, team, basePerm, derivedPerm))
+						templateName, team, basePerm, derivedPerm,
+					))
 				}
 			}
 		}
@@ -486,7 +489,8 @@ func checkVisibilityConflicts(templateName string, derived, base *RepoTemplate) 
 			derived.Settings.Private != nil && !*derived.Settings.Private {
 			conflicts = append(conflicts, fmt.Sprintf(
 				"Template '%s': Changes repository from private to public",
-				templateName))
+				templateName,
+			))
 		}
 	}
 

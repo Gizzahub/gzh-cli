@@ -168,7 +168,8 @@ func (l *StructuredLogger) log(level slog.Level, msg string, args ...any) {
 	capacity := 5 + len(l.context) + len(args)/2
 	attrs := make([]slog.Attr, 0, capacity)
 
-	attrs = append(attrs,
+	attrs = append(
+		attrs,
 		slog.String("component", l.component),
 		slog.String("sessionId", l.sessionID),
 		slog.String("callerFile", caller.File),

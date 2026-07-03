@@ -254,7 +254,8 @@ func displayValidationTable(results ValidationSummary) {
 			lineStr = fmt.Sprintf("%d", check.Line)
 		}
 
-		fmt.Printf("%-20s %-8s %-50s %s\n",
+		fmt.Printf(
+			"%-20s %-8s %-50s %s\n",
 			check.Check,
 			statusSymbol,
 			truncateString(check.Message, 50),

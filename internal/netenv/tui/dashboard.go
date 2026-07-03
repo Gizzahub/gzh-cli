@@ -488,7 +488,9 @@ func (m *DashboardModel) updateTableSize() {
 		// Reserve space for header, footer, help, alerts
 		max(
 
-			m.height-12, 5), 10)
+			m.height-12, 5,
+		), 10,
+	)
 
 	m.table.SetHeight(availableHeight)
 }

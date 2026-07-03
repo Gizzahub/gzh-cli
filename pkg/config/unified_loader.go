@@ -282,7 +282,8 @@ func (l *UnifiedLoader) getSearchPaths() []string {
 	homeDir, err := os.UserHomeDir()
 	if err == nil {
 		configDir := filepath.Join(homeDir, ".config", "gzh-manager")
-		paths = append(paths,
+		paths = append(
+			paths,
 			filepath.Join(configDir, "gzh.yaml"),
 			filepath.Join(configDir, "gzh.yml"),
 			filepath.Join(configDir, "config.yaml"),
@@ -293,7 +294,8 @@ func (l *UnifiedLoader) getSearchPaths() []string {
 	}
 
 	// Add system paths
-	paths = append(paths,
+	paths = append(
+		paths,
 		"/etc/gzh-manager/gzh.yaml",
 		"/etc/gzh-manager/gzh.yml",
 		"/etc/gzh-manager/config.yaml",

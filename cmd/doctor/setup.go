@@ -119,7 +119,8 @@ func runAutomatedSetup(ctx context.Context, flags *cli.CommonFlags, opts setupOp
 
 	startTime := time.Now()
 
-	logger.Info("Starting automated development environment setup",
+	logger.Info(
+		"Starting automated development environment setup",
 		"setup_type", opts.setupType,
 		"platform", runtime.GOOS,
 		"dry_run", opts.dryRun,
@@ -580,7 +581,8 @@ func displaySetupSteps(steps []SetupStep, flags *cli.CommonFlags) error {
 			statusIcon = "⭐"
 		}
 
-		logger.SimpleInfo(fmt.Sprintf("  Step %d: %s %s", i+1, statusIcon, step.Name),
+		logger.SimpleInfo(
+			fmt.Sprintf("  Step %d: %s %s", i+1, statusIcon, step.Name),
 			"description", step.Description,
 			"platform", step.Platform,
 		)
@@ -590,7 +592,8 @@ func displaySetupSteps(steps []SetupStep, flags *cli.CommonFlags) error {
 		}
 	}
 
-	logger.SimpleInfo("📊 Summary",
+	logger.SimpleInfo(
+		"📊 Summary",
 		"total_steps", len(steps),
 		"critical_steps", countStepsByType(steps, true, false),
 		"optional_steps", countStepsByType(steps, false, true),
@@ -601,7 +604,8 @@ func displaySetupSteps(steps []SetupStep, flags *cli.CommonFlags) error {
 
 func displaySetupReport(report *SetupReport) error {
 	// Display header
-	logger.SimpleInfo("🚀 Setup Report",
+	logger.SimpleInfo(
+		"🚀 Setup Report",
 		"setup_type", report.SetupType,
 		"platform", report.Platform,
 		"duration", report.Duration.String(),
@@ -611,7 +615,8 @@ func displaySetupReport(report *SetupReport) error {
 		logger.SimpleInfo("✅ Setup completed successfully",
 			"success_rate", fmt.Sprintf("%d/%d", report.SuccessSteps, report.TotalSteps))
 	} else {
-		logger.SimpleWarn("⚠️ Setup completed with issues",
+		logger.SimpleWarn(
+			"⚠️ Setup completed with issues",
 			"succeeded", report.SuccessSteps,
 			"failed", report.FailedSteps,
 			"skipped", report.SkippedSteps,
@@ -624,7 +629,8 @@ func displaySetupReport(report *SetupReport) error {
 	for _, result := range report.Results {
 		statusIcon := getSetupStatusIcon(result.Status)
 
-		logger.SimpleInfo(fmt.Sprintf("  %s %s", statusIcon, result.Step),
+		logger.SimpleInfo(
+			fmt.Sprintf("  %s %s", statusIcon, result.Step),
 			"status", result.Status,
 			"duration", result.Duration.String(),
 			"message", result.Message,

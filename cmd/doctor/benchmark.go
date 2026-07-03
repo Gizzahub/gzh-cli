@@ -214,7 +214,8 @@ type benchmarkOptions struct {
 func runBenchmarkAnalysis(ctx context.Context, flags *cli.CommonFlags, opts benchmarkOptions) error {
 	logger := logger.NewSimpleLogger("doctor-benchmark")
 
-	logger.Info("Starting comprehensive benchmark analysis",
+	logger.Info(
+		"Starting comprehensive benchmark analysis",
 		"package_pattern", opts.packagePattern,
 		"ci_mode", opts.ciMode,
 		"regression_threshold", opts.regressionThreshold,
@@ -612,7 +613,8 @@ func saveBenchmarkResults(report *BenchmarkReport, filename string) error {
 
 func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, snapshotAnalysis *SnapshotAnalysis) error {
 	// Display environment information
-	logger.SimpleInfo("🔧 Benchmark Environment",
+	logger.SimpleInfo(
+		"🔧 Benchmark Environment",
 		"platform", report.Environment.Platform,
 		"go_version", report.Environment.GoVersion,
 		"cpu_cores", report.Environment.NumCPU,
@@ -620,7 +622,8 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 	)
 
 	// Display summary
-	logger.SimpleInfo("📊 Benchmark Summary",
+	logger.SimpleInfo(
+		"📊 Benchmark Summary",
 		"total_benchmarks", report.Summary.TotalBenchmarks,
 		"passed", report.Summary.PassedBenchmarks,
 		"failed", report.Summary.FailedBenchmarks,
@@ -640,7 +643,8 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 		})
 
 		for _, result := range sortedBenchmarks {
-			logger.SimpleInfo(fmt.Sprintf("  %s", result.Name),
+			logger.SimpleInfo(
+				fmt.Sprintf("  %s", result.Name),
 				"ops_per_sec", fmt.Sprintf("%.2f", result.OpsPerSec),
 				"ns_per_op", result.NsPerOp,
 				"allocs_per_op", result.AllocsPerOp,
@@ -660,7 +664,8 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 				severityIcon = "💥"
 			}
 
-			logger.SimpleWarn(fmt.Sprintf("  %s %s", severityIcon, reg.BenchmarkName),
+			logger.SimpleWarn(
+				fmt.Sprintf("  %s %s", severityIcon, reg.BenchmarkName),
 				"regression", fmt.Sprintf("%.1f%%", reg.RegressionPercent),
 				"severity", reg.Severity,
 				"impact", reg.Impact,
@@ -672,7 +677,8 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 	if len(report.Improvements) > 0 {
 		logger.SimpleInfo("✅ Performance Improvements:")
 		for _, imp := range report.Improvements {
-			logger.SimpleInfo(fmt.Sprintf("  🚀 %s", imp.BenchmarkName),
+			logger.SimpleInfo(
+				fmt.Sprintf("  🚀 %s", imp.BenchmarkName),
 				"improvement", fmt.Sprintf("%.1f%%", imp.ImprovementPercent),
 				"impact", imp.Impact,
 			)
@@ -694,7 +700,8 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 
 	// Display CI metrics if in CI mode
 	if opts.ciMode {
-		logger.SimpleInfo("🔄 CI Metrics",
+		logger.SimpleInfo(
+			"🔄 CI Metrics",
 			"exit_code", report.CIMetrics.ExitCode,
 			"action", report.CIMetrics.RecommendedAction,
 			"artifacts", len(report.CIMetrics.ArtifactPaths),
@@ -820,7 +827,8 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 	logger.SimpleInfo("📊 Performance Snapshot Analysis")
 
 	// Display comparison summary
-	logger.SimpleInfo("🔄 Comparison Summary",
+	logger.SimpleInfo(
+		"🔄 Comparison Summary",
 		"baseline_time", analysis.Baseline.Timestamp.Format("2006-01-02 15:04:05"),
 		"time_difference", analysis.Comparison.TimeDifference.String(),
 		"overall_change", fmt.Sprintf("%.2f%%", analysis.Comparison.OverallChange),
@@ -828,7 +836,8 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 	)
 
 	// Display benchmark counts
-	logger.SimpleInfo("📈 Benchmark Counts",
+	logger.SimpleInfo(
+		"📈 Benchmark Counts",
 		"current", analysis.Comparison.BenchmarkCount,
 		"baseline", analysis.Comparison.BaselineBenchmarks,
 		"new_benchmarks", len(analysis.Comparison.NewBenchmarks),
@@ -863,7 +872,8 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 				severityIcon = "💥"
 			}
 
-			logger.SimpleWarn(fmt.Sprintf("  %s %s", severityIcon, reg.BenchmarkName),
+			logger.SimpleWarn(
+				fmt.Sprintf("  %s %s", severityIcon, reg.BenchmarkName),
 				"regression", fmt.Sprintf("%.1f%%", reg.RegressionPercent),
 				"severity", reg.Severity,
 				"impact", reg.Impact,
@@ -877,7 +887,8 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 	if len(analysis.Improvements) > 0 {
 		logger.SimpleInfo("✅ Performance Improvements (Snapshot Analysis):")
 		for _, imp := range analysis.Improvements {
-			logger.SimpleInfo(fmt.Sprintf("  🚀 %s", imp.BenchmarkName),
+			logger.SimpleInfo(
+				fmt.Sprintf("  🚀 %s", imp.BenchmarkName),
 				"improvement", fmt.Sprintf("%.1f%%", imp.ImprovementPercent),
 				"impact", imp.Impact,
 				"current_ops", fmt.Sprintf("%.2f", imp.CurrentOpsPerSec),
@@ -900,7 +911,8 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 				trendIcon = "📊"
 			}
 
-			logger.SimpleInfo(fmt.Sprintf("  %s %s", trendIcon, trend.BenchmarkName),
+			logger.SimpleInfo(
+				fmt.Sprintf("  %s %s", trendIcon, trend.BenchmarkName),
 				"direction", trend.TrendDirection,
 				"data_points", len(trend.DataPoints),
 				"confidence", fmt.Sprintf("%.2f", trend.ConfidenceLevel),
@@ -921,7 +933,8 @@ func displaySnapshotAnalysis(analysis *SnapshotAnalysis) {
 	}
 
 	// Display overall health summary
-	logger.SimpleInfo("🏥 Overall Health Summary",
+	logger.SimpleInfo(
+		"🏥 Overall Health Summary",
 		"health_score", fmt.Sprintf("%.1f/100", analysis.Summary.OverallHealthScore),
 		"trending_up", analysis.Summary.TrendingUp,
 		"trending_down", analysis.Summary.TrendingDown,

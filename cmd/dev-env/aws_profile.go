@@ -272,7 +272,8 @@ func (m *AWSProfileManager) updateShellConfig(profileName string) error {
 
 // validateSSOCredentials validates SSO credentials for a profile.
 func (m *AWSProfileManager) validateSSOCredentials(profile *AWSProfile) error {
-	cfg, err := config.LoadDefaultConfig(m.ctx,
+	cfg, err := config.LoadDefaultConfig(
+		m.ctx,
 		config.WithRegion(profile.SSORegion),
 		config.WithSharedConfigProfile(profile.Name),
 	)
@@ -303,7 +304,8 @@ func (m *AWSProfileManager) LoginSSO(profileName string) error {
 	}
 
 	// Create SSO OIDC client
-	cfg, err := config.LoadDefaultConfig(m.ctx,
+	cfg, err := config.LoadDefaultConfig(
+		m.ctx,
 		config.WithRegion(profile.SSORegion),
 	)
 	if err != nil {

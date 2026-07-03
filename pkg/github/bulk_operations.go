@@ -103,7 +103,8 @@ func (b *BulkOperationsManager) RefreshAllWithWorkerPool(ctx context.Context,
 	// Create progress bar if enabled
 	var bar *progressbar.ProgressBar
 	if b.config.ShowProgress {
-		bar = progressbar.NewOptions(len(jobs),
+		bar = progressbar.NewOptions(
+			len(jobs),
 			progressbar.OptionSetDescription("Processing Repositories"),
 			progressbar.OptionSetRenderBlankState(true),
 		)
@@ -225,7 +226,8 @@ func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy str
 
 		config.PoolConfig.ConfigWorkers = max(
 			// 50% less for config operations
-			parallel/2, 1)
+			parallel/2, 1,
+		)
 	}
 
 	if maxRetries > 0 {

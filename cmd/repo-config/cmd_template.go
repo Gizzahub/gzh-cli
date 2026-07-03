@@ -265,7 +265,8 @@ func runTemplateValidateCommand(templateName string, strict bool) error {
 
 	for _, result := range validationResults {
 		statusSymbol := getStatusSymbol(result.Status)
-		fmt.Printf("%-20s %-8s %s\n",
+		fmt.Printf(
+			"%-20s %-8s %s\n",
 			result.Check,
 			statusSymbol,
 			result.Message,
@@ -331,7 +332,8 @@ func displayTemplateTable(templates []ConfigTemplate) {
 			}
 		}
 
-		fmt.Printf("%-15s %-40s %-10s %-12s %s\n",
+		fmt.Printf(
+			"%-15s %-40s %-10s %-12s %s\n",
 			template.Name,
 			truncateString(template.Description, 40),
 			template.Version,

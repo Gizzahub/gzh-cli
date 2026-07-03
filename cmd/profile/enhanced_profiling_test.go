@@ -403,7 +403,8 @@ func TestEnhancedCommandsIntegration(t *testing.T) {
 	comparison, err := analyzer.CompareProfiles(
 		filepath.Join(tempDir, "baseline.prof"),
 		filepath.Join(tempDir, "current.prof"),
-		1.0)
+		1.0,
+	)
 	assert.NoError(t, err)
 	assert.NotNil(t, comparison)
 }

@@ -39,14 +39,16 @@ func GetConfigPaths() []string {
 	// 2. Home directory
 	homeDir, err := os.UserHomeDir()
 	if err == nil {
-		paths = append(paths,
+		paths = append(
+			paths,
 			filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.yaml"),
 			filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.yml"),
 		)
 	}
 
 	// 3. System-wide config
-	paths = append(paths,
+	paths = append(
+		paths,
 		"/etc/gzh-manager/bulk-clone.yaml",
 		"/etc/gzh-manager/bulk-clone.yml",
 	)
@@ -64,7 +66,8 @@ func GetOverlayConfigPaths() []string {
 	// 2. Home directory overlays
 	homeDir, err := os.UserHomeDir()
 	if err == nil {
-		paths = append(paths,
+		paths = append(
+			paths,
 			filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.home.yaml"),
 			filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.home.yml"),
 			filepath.Join(homeDir, ".config", "gzh-manager", "bulk-clone.work.yaml"),

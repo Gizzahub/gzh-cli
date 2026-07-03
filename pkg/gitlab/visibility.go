@@ -107,7 +107,8 @@ func PreflightCheckGitAccess(ctx context.Context, group string) []string {
 		warnings = append(warnings, fmt.Sprintf(
 			"⚠️  HTTP git access appears disabled on this GitLab instance.\n"+
 				"   Consider using SSH keys or contact administrator.\n"+
-				"   Example project '%s' has no HTTP clone URL.", project.Name))
+				"   Example project '%s' has no HTTP clone URL.", project.Name,
+		))
 	}
 
 	return warnings

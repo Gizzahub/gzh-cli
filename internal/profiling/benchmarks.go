@@ -358,7 +358,8 @@ func (bs *BenchmarkSuite) PrintResults() {
 	bs.logger.Info("Benchmark Results Summary", "total_benchmarks", len(results))
 
 	for _, result := range results {
-		bs.logger.Info("Benchmark Result",
+		bs.logger.Info(
+			"Benchmark Result",
 			"name", result.Name,
 			"operations", result.Operations,
 			"duration", result.Duration,
@@ -369,7 +370,8 @@ func (bs *BenchmarkSuite) PrintResults() {
 		)
 
 		if len(result.Percentiles) > 0 {
-			bs.logger.Debug("Benchmark Percentiles",
+			bs.logger.Debug(
+				"Benchmark Percentiles",
 				"name", result.Name,
 				"p50", result.Percentiles["p50"],
 				"p90", result.Percentiles["p90"],

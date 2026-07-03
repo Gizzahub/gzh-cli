@@ -236,7 +236,8 @@ func displayGodocResults(results []*godoc.PackageInfo, failedPackages []string, 
 		overallCoverage = float64(totalDocumented) * 100.0 / float64(totalSymbols)
 	}
 
-	logger.SimpleInfo("📊 GoDoc Analysis Summary",
+	logger.SimpleInfo(
+		"📊 GoDoc Analysis Summary",
 		"packages_analyzed", len(results),
 		"failed_packages", len(failedPackages),
 		"total_symbols", totalSymbols,
@@ -272,7 +273,8 @@ func displayPackageResults(result *godoc.PackageInfo, opts godocOptions) {
 		statusIcon = "❌"
 	}
 
-	logger.SimpleInfo(fmt.Sprintf("%s Package: %s", statusIcon, result.ImportPath),
+	logger.SimpleInfo(
+		fmt.Sprintf("%s Package: %s", statusIcon, result.ImportPath),
 		"coverage", fmt.Sprintf("%.1f%%", result.CoverageStats.CoveragePercentage),
 		"symbols", result.CoverageStats.TotalPublicSymbols,
 		"documented", result.CoverageStats.DocumentedSymbols,
@@ -281,7 +283,8 @@ func displayPackageResults(result *godoc.PackageInfo, opts godocOptions) {
 
 	// Show detailed coverage if requested
 	if opts.showCoverage {
-		logger.SimpleInfo("  📈 Coverage Breakdown",
+		logger.SimpleInfo(
+			"  📈 Coverage Breakdown",
 			"functions", fmt.Sprintf("%.1f%%", result.CoverageStats.FunctionCoverage),
 			"types", fmt.Sprintf("%.1f%%", result.CoverageStats.TypeCoverage),
 			"variables", fmt.Sprintf("%.1f%%", result.CoverageStats.VariableCoverage),
@@ -341,7 +344,8 @@ func displayPackageResults(result *godoc.PackageInfo, opts godocOptions) {
 				icon = "🟡"
 			}
 
-			logger.SimpleWarn(fmt.Sprintf("  %s %s", icon, issue.Message),
+			logger.SimpleWarn(
+				fmt.Sprintf("  %s %s", icon, issue.Message),
 				"symbol", issue.Symbol,
 				"line", issue.Line,
 				"suggestion", issue.Suggestion,
