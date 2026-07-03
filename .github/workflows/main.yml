@@ -180,6 +180,18 @@ jobs:
             gosec-report.json
             lint-report.xml
 
+  # 🔒 취약점 스캔 (govulncheck: Go stdlib/의존성 CVE 자동 감지)
+  vulncheck:
+    name: Vulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
   # 🚀 성능 벤치마크 (PR 또는 [benchmark] 커밋 메시지)
   benchmark:
     name: Performance Benchmarks
