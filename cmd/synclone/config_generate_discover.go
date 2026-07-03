@@ -201,7 +201,7 @@ func generateProviderConfig(provider string, orgs map[string][]discovery.Discove
 
 // generateGitHubConfig generates GitHub-specific configuration.
 func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
-	var organizations []map[string]any
+	organizations := make([]map[string]any, 0, len(orgs))
 
 	for orgName, repos := range orgs {
 		orgConfig := map[string]any{
@@ -233,7 +233,7 @@ func generateGitHubConfig(orgs map[string][]discovery.DiscoveredRepo, basePath s
 
 // generateGitLabConfig generates GitLab-specific configuration.
 func generateGitLabConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
-	var groups []map[string]any
+	groups := make([]map[string]any, 0, len(orgs))
 
 	for groupName, repos := range orgs {
 		groupConfig := map[string]any{
@@ -258,7 +258,7 @@ func generateGitLabConfig(orgs map[string][]discovery.DiscoveredRepo, basePath s
 
 // generateBitbucketConfig generates Bitbucket-specific configuration.
 func generateBitbucketConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
-	var workspaces []map[string]any
+	workspaces := make([]map[string]any, 0, len(orgs))
 
 	for workspaceName, repos := range orgs {
 		workspaceConfig := map[string]any{
@@ -282,7 +282,7 @@ func generateBitbucketConfig(orgs map[string][]discovery.DiscoveredRepo, basePat
 
 // generateGiteaConfig generates Gitea-specific configuration.
 func generateGiteaConfig(orgs map[string][]discovery.DiscoveredRepo, basePath string) map[string]any {
-	var organizations []map[string]any
+	organizations := make([]map[string]any, 0, len(orgs))
 
 	for orgName, repos := range orgs {
 		orgConfig := map[string]any{
@@ -474,7 +474,7 @@ func displayDiscoverySummary(groupedRepos map[string]map[string][]discovery.Disc
 	fmt.Printf("   Total repositories: %d\n", len(allRepos))
 
 	// Sort providers for consistent output
-	var providers []string
+	providers := make([]string, 0, len(groupedRepos))
 	for provider := range groupedRepos {
 		providers = append(providers, provider)
 	}
