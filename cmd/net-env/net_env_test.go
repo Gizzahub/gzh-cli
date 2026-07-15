@@ -5,8 +5,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/gizzahub/gzh-cli/internal/app"
 )
@@ -16,78 +16,58 @@ func TestNewNetEnvCmd(t *testing.T) {
 	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
 
 	assert.Equal(t, "net-env", cmd.Use)
-	assert.Equal(t, "Manage network environment transitions", cmd.Short)
+	assert.Equal(t, "Manage network environment configurations", cmd.Short)
 	assert.NotEmpty(t, cmd.Long)
 	assert.True(t, cmd.SilenceUsage)
 
-	// Check subcommands - should have status, switch, and other commands
+	// Library-backed tree: status, watch, profile (no legacy switch/daemon/wifi)
 	subcommands := cmd.Commands()
-	assert.GreaterOrEqual(t, len(subcommands), 2) // At least status and switch commands
+	require.GreaterOrEqual(t, len(subcommands), 3)
 
-	// Verify core CLI subcommands exist
-	var statusCmd, switchCmd *cobra.Command
-
+	names := make(map[string]string, len(subcommands))
 	for _, subcmd := range subcommands {
-		switch subcmd.Use {
-		case "status":
-			statusCmd = subcmd
-		case "switch [profile-name]":
-			switchCmd = subcmd
-		}
+		names[subcmd.Name()] = subcmd.Short
 	}
 
-	assert.NotNil(t, statusCmd)
-	assert.Equal(t, "status", statusCmd.Use)
-	assert.Equal(t, "Show current network environment status", statusCmd.Short)
-
-	assert.NotNil(t, switchCmd)
-	assert.Equal(t, "switch [profile-name]", switchCmd.Use)
-	assert.Equal(t, "Switch network environment to specified profile", switchCmd.Short)
+	assert.Equal(t, "Show network environment status", names["status"])
+	assert.Equal(t, "Continuously monitor network changes", names["watch"])
+	assert.Equal(t, "Manage network environment profiles", names["profile"])
+	assert.NotContains(t, names, "switch")
 }
 
 func TestNetEnvCmdStructure(t *testing.T) {
 	ctx := context.Background()
 	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
 
-	// Test that the command has proper structure
-	assert.NotNil(t, cmd.Use)
-	assert.NotNil(t, cmd.Short)
-	assert.NotNil(t, cmd.Long)
+	assert.NotEmpty(t, cmd.Use)
+	assert.NotEmpty(t, cmd.Short)
+	assert.NotEmpty(t, cmd.Long)
 	assert.True(t, cmd.SilenceUsage)
+	assert.True(t, cmd.HasSubCommands())
 
-	// Test that examples are included in Long description
+	// Library Long includes examples for status/watch/profile
 	assert.Contains(t, cmd.Long, "Examples:")
-	assert.Contains(t, cmd.Long, "gz net-env daemon list")
-	assert.Contains(t, cmd.Long, "gz net-env daemon status --service ssh")
-	assert.Contains(t, cmd.Long, "gz net-env daemon monitor --network-services")
+	assert.Contains(t, cmd.Long, "net-env status")
+	assert.Contains(t, cmd.Long, "net-env watch")
+	assert.Contains(t, cmd.Long, "net-env profile list")
 }
 
 func TestNetEnvCmdHelpContent(t *testing.T) {
 	ctx := context.Background()
 	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
 
-	// Verify help content mentions key features
 	longDesc := cmd.Long
 	assert.Contains(t, longDesc, "network environment transitions")
-	assert.Contains(t, longDesc, "Daemon/service status monitoring")
-	assert.Contains(t, longDesc, "Service dependency tracking")
-	assert.Contains(t, longDesc, "Network environment transition management")
-	assert.Contains(t, longDesc, "WiFi change event monitoring and action triggers")
-	assert.Contains(t, longDesc, "Network configuration actions (VPN, DNS, proxy, hosts)")
-	assert.Contains(t, longDesc, "System state verification")
+	assert.Contains(t, longDesc, "Network status checking")
+	assert.Contains(t, longDesc, "Real-time network monitoring")
+	assert.Contains(t, longDesc, "Network profile management")
+	assert.Contains(t, longDesc, "Cross-platform support")
+}
 
-	// Verify use cases are mentioned
-	assert.Contains(t, longDesc, "Moving between different network environments")
-	assert.Contains(t, longDesc, "Switching VPN connections")
-	assert.Contains(t, longDesc, "Managing services that depend on network connectivity")
-	assert.Contains(t, longDesc, "Verifying system state after network changes")
-
-	// Verify WiFi examples are included
-	assert.Contains(t, longDesc, "gz net-env wifi monitor")
-	assert.Contains(t, longDesc, "gz net-env wifi status")
-
-	// Verify actions examples are included
-	assert.Contains(t, longDesc, "gz net-env actions run")
-	assert.Contains(t, longDesc, "gz net-env actions vpn connect")
-	assert.Contains(t, longDesc, "gz net-env actions dns set")
+func TestNetEnvCmdHelpExecute(t *testing.T) {
+	ctx := context.Background()
+	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
+	cmd.SetArgs([]string{"--help"})
+	err := cmd.Execute()
+	require.NoError(t, err)
 }
