@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Archmagece
+// Copyright (c) 2025 Gizzahub
 // SPDX-License-Identifier: MIT
 
 // Package fixtures provides test fixtures and mock data for unit tests.

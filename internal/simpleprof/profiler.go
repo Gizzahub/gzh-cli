@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Archmagece
+// Copyright (c) 2025 Gizzahub
 // SPDX-License-Identifier: MIT
 
 // Package simpleprof provides simplified profiling using standard Go pprof.

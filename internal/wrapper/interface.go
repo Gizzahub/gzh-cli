@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Archmagece
+// Copyright (c) 2025 Gizzahub
 // SPDX-License-Identifier: MIT
 
 // Package wrapper provides standard interface and utilities for integrating external libraries.

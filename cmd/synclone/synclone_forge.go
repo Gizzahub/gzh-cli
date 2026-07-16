@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Archmagece
+// Copyright (c) 2026 Gizzahub
 // SPDX-License-Identifier: MIT
 
 // Package synclone provides CLI commands for bulk repository synchronization

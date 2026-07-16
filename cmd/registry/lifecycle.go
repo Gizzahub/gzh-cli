@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Archmagece
+// Copyright (c) 2025 Gizzahub
 // SPDX-License-Identifier: MIT
 
 // Package registry provides command registration and lifecycle management.

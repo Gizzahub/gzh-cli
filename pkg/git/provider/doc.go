@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Archmagece
+// Copyright (c) 2025 Gizzahub
 // SPDX-License-Identifier: MIT
 
 // Package provider provides a unified abstraction layer for Git hosting platforms.
