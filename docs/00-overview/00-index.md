@@ -41,6 +41,7 @@ docs/
 ├── 60-development/       # Development guidelines
 ├── 70-deployment/        # Deployment and release management
 ├── 80-integrations/      # External integrations
+├── 90-archive/           # Past work reports (historical, not current)
 ├── 90-maintenance/       # Maintenance and troubleshooting
 └── 99-appendix/          # Additional resources
 ```

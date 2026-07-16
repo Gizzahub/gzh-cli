@@ -8,13 +8,13 @@
 
 ## 보존 문서
 
-| 문서 | 종류 | 내용 |
-| ---- | ---- | ---- |
+| 문서                                                                       | 종류   | 내용                           |
+| -------------------------------------------------------------------------- | ------ | ------------------------------ |
 | [DOCUMENTATION_RESTRUCTURING_PLAN.md](DOCUMENTATION_RESTRUCTURING_PLAN.md) | 계획서 | 문서 구조 재편 5단계 실행 계획 |
-| [DOCUMENTATION_COMPLETION_REPORT.md](DOCUMENTATION_COMPLETION_REPORT.md) | 보고서 | 위 계획의 완료 보고 |
-| [REFACTORING_ANALYSIS_FINAL.md](REFACTORING_ANALYSIS_FINAL.md) | 분석 | 리팩토링 최종 분석 |
-| [REFACTORING_PROGRESS_UPDATE.md](REFACTORING_PROGRESS_UPDATE.md) | 경과 | 리팩토링 진행 상황 |
-| [REFACTORING_COMPLETION_REPORT.md](REFACTORING_COMPLETION_REPORT.md) | 보고서 | 리팩토링 완료 보고 |
+| [DOCUMENTATION_COMPLETION_REPORT.md](DOCUMENTATION_COMPLETION_REPORT.md)   | 보고서 | 위 계획의 완료 보고            |
+| [REFACTORING_ANALYSIS_FINAL.md](REFACTORING_ANALYSIS_FINAL.md)             | 분석   | 리팩토링 최종 분석             |
+| [REFACTORING_PROGRESS_UPDATE.md](REFACTORING_PROGRESS_UPDATE.md)           | 경과   | 리팩토링 진행 상황             |
+| [REFACTORING_COMPLETION_REPORT.md](REFACTORING_COMPLETION_REPORT.md)       | 보고서 | 리팩토링 완료 보고             |
 
 ## 배경
 
