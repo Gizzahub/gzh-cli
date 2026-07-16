@@ -492,9 +492,9 @@ ______________________________________________________________________
 ### 관련 문서
 
 - [DOCUMENTATION_RESTRUCTURING_PLAN.md](./DOCUMENTATION_RESTRUCTURING_PLAN.md) - 실행 계획
-- [00-SUBPROJECTS_GUIDE.md](./integration/00-SUBPROJECTS_GUIDE.md) - 하위 프로젝트 가이드
-- [README.md](../README.md) - 재구성된 메인 문서
-- [CLAUDE.md](../CLAUDE.md) - 최적화된 LLM 가이드
+- [00-SUBPROJECTS_GUIDE.md](../integration/00-SUBPROJECTS_GUIDE.md) - 하위 프로젝트 가이드
+- [README.md](../../README.md) - 재구성된 메인 문서
+- [CLAUDE.md](../../CLAUDE.md) - 최적화된 LLM 가이드
 
 ### 커밋 히스토리
 
