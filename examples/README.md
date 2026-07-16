@@ -313,6 +313,6 @@ gz version
 ## 📖 Related Documentation
 
 - [Getting Started Guide](../docs/01-getting-started/)
-- [Architecture Overview](../docs/02-architecture/overview.md)
+- [Architecture Overview](../docs/20-architecture/20-system-overview.md)
 - [Configuration Guide](../docs/04-configuration/)
 - [Command Reference](../docs/05-command-reference/)

@@ -345,9 +345,9 @@ ______________________________________________________________________
 ## 📝 참고 문서
 
 - [git-migration-final-status.md](./git-migration-final-status.md) - Git 마이그레이션 최종 상태
-- [git-feature-migration-plan.md](./git-feature-migration-plan.md) - Git 마이그레이션 계획 (초기)
-- [deduplication-analysis.md](./deduplication-analysis.md) - 초기 분석 결과
-- [integration-implementation-plan.md](./integration-implementation-plan.md) - 구현 계획 (Phase 1-2)
+- git-feature-migration-plan.md - Git 마이그레이션 계획 (초기)
+- deduplication-analysis.md - 초기 분석 결과
+- integration-implementation-plan.md - 구현 계획 (Phase 1-2)
 
 ______________________________________________________________________
 

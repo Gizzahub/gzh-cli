@@ -312,5 +312,5 @@ Pre-commit hooks are also run in CI:
 
 - [Pre-commit documentation](https://pre-commit.com/)
 - [Conventional Commits](https://www.conventionalcommits.org/)
-- [Project Code Quality Standards](./code-quality.md)
-- [Testing Strategy](./testing-strategy.md)
+- [Project Code Quality Standards](./60-code-quality.md)
+- [Testing Strategy](./67-testing-strategy.md)

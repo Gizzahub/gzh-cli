@@ -1021,8 +1021,8 @@ gz git config audit --org myorg
 
 ## Related Commands
 
-- [`gz git config`](../40-api-reference/git.md#config) - New unified Git command interface
-- [`gz git webhook`](../40-api-reference/git.md#webhook) - Webhook management
+- [`gz git config`](../../specs/git.md#config) - New unified Git command interface
+- [`gz git webhook`](../../specs/git.md#webhook) - Webhook management
 
 ## Support
 
@@ -1031,4 +1031,4 @@ For additional help:
 1. Run `gz repo-config --help` for command options
 1. Check the [examples directory](../../examples/) for more configurations
 1. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)
-1. Review the [API documentation](../40-api-reference/repository-configuration-api.md)
+1. Review the API documentation

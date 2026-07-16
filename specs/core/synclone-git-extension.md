@@ -134,7 +134,7 @@ git synclone state clean --id <state-id>
 
 ## Related Platform Management Features
 
-The following features are more suitable as standalone platform management tools rather than Git extensions. See [`gz-unified-cli-design.md`](gz-unified-cli-design.md) for comprehensive platform management design:
+The following features are more suitable as standalone platform management tools rather than Git extensions. See `gz-unified-cli-design.md` for comprehensive platform management design:
 
 - **Repository Configuration Management** (`gz repo-config`) - Cross-provider repository settings
 - **Webhook Management** (`gz webhook`) - Unified webhook operations

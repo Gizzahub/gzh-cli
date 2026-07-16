@@ -379,4 +379,4 @@ ______________________________________________________________________
 
 **Usage**: Copy this template for each new command specification. Customize sections based on command complexity and requirements.
 
-**Related**: See [CLI Specification Strategy](../60-development/68-cli-specification-strategy.md) for detailed methodology.
+**Related**: See [CLI Specification Strategy](../../docs/60-development/68-cli-specification-strategy.md) for detailed methodology.

@@ -54,8 +54,8 @@
 
 - [x] **사용자 가이드**
 
-  - [x] [웹훅 관리 가이드](webhook-management-guide.md) - 완전한 기능 가이드
-  - [x] [릴리즈 노트 v1.0.0](release-notes-v1.0.0.md) - 상세한 릴리즈 정보
+  - [x] [웹훅 관리 가이드](../80-integrations/83-webhook-management.md) - 완전한 기능 가이드
+  - [x] [릴리즈 노트 v1.0.0](72-release-notes-v1.0.0.md) - 상세한 릴리즈 정보
   - [x] README.md 업데이트 - 새로운 기능 반영
 
 - [x] **설정 및 예제**
@@ -156,7 +156,7 @@ make benchmark  # 성능 테스트 실행
 
 ### ✅ 완료된 문서
 
-1. **[웹훅 관리 가이드](webhook-management-guide.md)**
+1. **[웹훅 관리 가이드](../80-integrations/83-webhook-management.md)**
 
    - 개별 웹훅 CRUD 사용법
    - 대량 웹훅 작업 가이드
@@ -164,7 +164,7 @@ make benchmark  # 성능 테스트 실행
    - 설정 파일 참조
    - 문제 해결 가이드
 
-1. **[릴리즈 노트 v1.0.0](release-notes-v1.0.0.md)**
+1. **[릴리즈 노트 v1.0.0](72-release-notes-v1.0.0.md)**
 
    - 주요 기능 하이라이트
    - 성능 개선 사항

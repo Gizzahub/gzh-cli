@@ -1029,6 +1029,6 @@ gz <command> <subcommand> --help
 For additional help:
 
 1. Run `gz <command> --help` for command-specific options
-1. Check the [Configuration Guide](../30-configuration/30-configuration-guide.md)
+1. Check the [Configuration Guide](../40-configuration/40-configuration-guide.md)
 1. Review the [Examples](../../examples/) directory
 1. Open an issue on [GitHub](https://github.com/gizzahub/gzh-cli/issues)

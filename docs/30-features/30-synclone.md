@@ -1189,10 +1189,10 @@ echo "Mirror update completed at $(date)" >> /backup/logs/mirror.log
 
 ## Related Documentation
 
-- [Configuration Guide](../30-configuration/configuration-guide.md)
-- [Git Unified Command](../40-api-reference/git.md)
-- [Repository Management](21-repository-management.md)
-- [Performance Profiling](../40-api-reference/profile.md)
+- [Configuration Guide](../40-configuration/40-configuration-guide.md)
+- [Git Unified Command](../../specs/git.md)
+- [Repository Management](31-repository-management.md)
+- [Performance Profiling](../../specs/profile.md)
 
 ## Support
 

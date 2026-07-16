@@ -372,5 +372,5 @@ Metadata: CommandMetadata{
 ## See Also
 
 - [Extensions System](38-extensions-system.md)
-- [Registry System](../20-architecture/25-registry-pattern.md)
-- [Command Development Guide](../50-development/development-guide.md)
+- Registry System
+- [Command Development Guide](../60-development/60-index.md)

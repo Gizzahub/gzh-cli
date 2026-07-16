@@ -374,7 +374,7 @@ alias gzh-debug-attach='./scripts/debug/debug-attach.sh'
 ## Resources
 
 - [Delve Documentation](https://github.com/go-delve/delve/tree/master/Documentation)
-- [GZH Manager Debugging Guide](../docs/debugging-guide.md)
+- [GZH Manager Debugging Guide](../../docs/60-development/61-debugging-guide.md)
 - [Go Debugging Tutorial](https://golang.org/doc/gdb)
 - [Delve Command Reference](https://github.com/go-delve/delve/blob/master/Documentation/cli/README.md)
 

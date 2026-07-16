@@ -616,9 +616,9 @@ iotop -o
 ## 관련 문서
 
 - [Git Repository Configuration Management](./31-repository-management.md)
-- [Synclone User Guide](./34-synclone-guide.md)
-- [Authentication Setup Guide](../60-development/authentication.md)
-- [Performance Optimization](../60-development/performance.md)
+- [Synclone User Guide](./30-synclone.md)
+- Authentication Setup Guide
+- Performance Optimization
 - [Git Repo Examples Configuration](../../examples/git-repo-examples.yaml)
 
 ## 지원 및 피드백

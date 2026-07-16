@@ -99,7 +99,7 @@ docs/
 
 - **Architecture**: [System Overview](../20-architecture/20-system-overview.md)
 - **Development**: [Development Guidelines](../60-development/)
-- **Testing**: [Testing Strategy](../60-development/testing-strategy.md)
+- **Testing**: [Testing Strategy](../60-development/67-testing-strategy.md)
 - **API Integration**: [Command Reference](../50-api-reference/50-command-reference.md)
 
 #### DevOps Engineers
@@ -131,8 +131,8 @@ docs/
 ### 🏗️ Path 4: Architecture and Development (90 minutes)
 
 1. [System architecture](../20-architecture/20-system-overview.md) (30 min)
-1. [Development setup](../60-development/60-development-setup.md) (30 min)
-1. [Contributing guidelines](../60-development/61-contributing.md) (30 min)
+1. [Development setup](../60-development/60-index.md) (30 min)
+1. [Contributing guidelines](../CONTRIBUTING.md) (30 min)
 
 ## Documentation Management
 
@@ -221,14 +221,14 @@ docs/
 ### Development Resources
 
 - **[Development Guidelines](../60-development/)** - Coding standards and practices
-- **[Testing Strategy](../60-development/testing-strategy.md)** - Testing approach and tools
+- **[Testing Strategy](../60-development/67-testing-strategy.md)** - Testing approach and tools
 - **[Deployment Guide](../70-deployment/)** - Release and deployment processes
 
 ### Support and Community
 
 - **[Troubleshooting](../90-maintenance/90-troubleshooting.md)** - Common issues and solutions
-- **[FAQ](../90-maintenance/91-faq.md)** - Frequently asked questions
-- **[Contributing](../60-development/61-contributing.md)** - How to contribute to the project
+- **[FAQ](../90-maintenance/90-troubleshooting.md)** - Frequently asked questions
+- **[Contributing](../CONTRIBUTING.md)** - How to contribute to the project
 
 ______________________________________________________________________
 
@@ -236,4 +236,4 @@ ______________________________________________________________________
 **Documentation Version**: 2.1.0
 **CLI Version**: Latest (Git package test coverage: 91.7%)
 
-For questions or feedback about this documentation, please see the [Contributing Guide](../60-development/61-contributing.md).
+For questions or feedback about this documentation, please see the Contributing Guide.

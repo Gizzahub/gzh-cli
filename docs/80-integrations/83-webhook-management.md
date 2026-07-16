@@ -720,6 +720,6 @@ gzh-cli의 웹훅 관리 기능은 GitHub 리포지토리의 자동화를 위한
 
 더 자세한 정보는 다음 문서를 참조하세요:
 
-- [API 참조](webhook-api-reference.md)
-- [고급 설정](webhook-advanced-configuration.md)
-- [문제 해결 가이드](webhook-troubleshooting.md)
+- API 참조
+- 고급 설정
+- 문제 해결 가이드

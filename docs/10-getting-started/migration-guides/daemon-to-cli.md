@@ -280,7 +280,7 @@ cat /etc/resolv.conf
 문제가 계속 발생하면 다음을 확인하세요:
 
 1. [GitHub Issues](https://github.com/gizzahub/gzh-cli/issues)
-1. [사용자 가이드](../USAGE.md#%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC-%ED%99%98%EA%B2%BD-%EA%B4%80%EB%A6%AC)
+1. 사용자 가이드
 1. [프로젝트 문서](../README.md)
 
 ## 📝 요약

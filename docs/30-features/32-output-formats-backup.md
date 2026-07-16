@@ -554,7 +554,7 @@ gz dev-env aws load --name production-aws --debug --dry-run
 
 ## See Also
 
-- [Complete Command Reference](../40-api-reference/40-command-reference.md)
-- [Configuration Guide](../30-configuration/30-configuration-guide.md)
-- [Repository Management](21-repository-management.md)
+- [Complete Command Reference](../50-api-reference/50-command-reference.md)
+- [Configuration Guide](../40-configuration/40-configuration-guide.md)
+- [Repository Management](31-repository-management.md)
 - [Network Environment Management](../03-core-features/network-management/)

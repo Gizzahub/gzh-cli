@@ -15,7 +15,7 @@ Supplementary documentation, reference materials, and additional resources for g
 
 - **[99-glossary.md](99-glossary.md)** - Complete glossary of terms and concepts
 - **[99-references.md](99-references.md)** - External references and resources
-- **[99-changelog-archive.md](99-changelog-archive.md)** - Historical changelog archive
+- **99-changelog-archive.md** - Historical changelog archive
 - **[99-migration-guides.md](99-migration-guides.md)** - Migration guides from legacy systems
 
 ### Enterprise Documentation
@@ -98,8 +98,8 @@ gz ide monitor                      # Monitor IDE settings
 ### License and Attribution
 
 - **License**: See [LICENSE](../../LICENSE) file
-- **Third-party Licenses**: See [THIRD_PARTY_LICENSES.md](99-third-party-licenses.md)
-- **Contributors**: See [CONTRIBUTORS.md](99-contributors.md)
+- **Third-party Licenses**: See THIRD_PARTY_LICENSES.md
+- **Contributors**: See CONTRIBUTORS.md
 
 ______________________________________________________________________
 

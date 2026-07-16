@@ -527,8 +527,8 @@ The new gzh.yaml format provides better performance through:
 
 ## Additional Resources
 
-- [gzh.yaml Usage Guide](./gzh-yaml-usage-guide.md) - Comprehensive usage documentation
-- [gzh.yaml Quick Reference](./gzh-yaml-quick-reference.md) - Quick reference for common patterns
+- gzh.yaml Usage Guide - Comprehensive usage documentation
+- gzh.yaml Quick Reference - Quick reference for common patterns
 - [Sample Configurations](../examples/) - Example configurations for different use cases
 - [Schema Documentation](./gzh-schema.yaml) - Complete schema reference
 
