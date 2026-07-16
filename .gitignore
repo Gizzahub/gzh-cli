@@ -14,6 +14,9 @@ benchmark-artifacts/
 # claude code
 .claude/settings.local.json
 
+# Local task tracking — family policy: public repos ignore tasks/ (see devbox GUIDELINES.md)
+tasks/
+
 # =============================================================================
 # Original Project Specific Settings
 # =============================================================================
