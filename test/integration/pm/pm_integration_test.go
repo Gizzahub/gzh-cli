@@ -2,7 +2,6 @@ package pm_test
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -111,10 +110,16 @@ func buildGzBinary(t *testing.T) string {
 	tmpDir := t.TempDir()
 	binaryPath := filepath.Join(tmpDir, "gz")
 
-	// Build the binary
-	cmd := fmt.Sprintf("go build -o %s ../../..", binaryPath)
-	if err := runCommand("bash", "-c", cmd); err != nil {
-		t.Fatalf("Failed to build gz binary: %v", err)
+	// Build the binary.
+	//
+	// 만들 꾸러미를 짚어 준다. 예전에는 ../../.. 곧 저장소 뿌리를 가리켰는데
+	// 거기에는 .go 파일이 하나도 없어서 "no Go files in ..."로 죽었다.
+	// main은 cmd/gz에 있다. test/e2e/helpers/cli.go에도 같은 것이 있었다.
+	//
+	// 겸사겸사 bash를 거치지 않는다. 인자를 문자열로 이어 붙여 셸에 넘길
+	// 까닭이 없다. runCommand가 이미 인자를 따로 받는다.
+	if err := runCommand("go", "build", "-o", binaryPath, "../../../cmd/gz"); err != nil {
+		t.Fatalf("Failed to build gz binary from ../../../cmd/gz: %v", err)
 	}
 
 	return binaryPath
