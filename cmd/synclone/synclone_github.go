@@ -5,6 +5,7 @@ package synclone
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -437,18 +438,7 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 
 	if err != nil {
 		// Create recoverable error for retry handling
-		var errorType errors.ErrorType
-
-		switch {
-		case err.Error() == "context canceled":
-			errorType = errors.ErrorTypeTimeout
-		case err.Error() == "rate limit":
-			errorType = errors.ErrorTypeRateLimit
-		default:
-			errorType = errors.ErrorTypeNetwork
-		}
-
-		recErr := errors.NewRecoverableError(errorType, "GitHub operation failed", err, true)
+		recErr := errors.NewRecoverableError(classifyGithubError(err), "GitHub operation failed", err, true)
 		recErr = recErr.WithContext("operation_duration", time.Since(start).String())
 
 		// Only log detailed error in debug mode
@@ -471,6 +461,40 @@ func (o *syncCloneGithubOptions) run(cmd *cobra.Command, args []string, appCtx *
 	log.Info("GitHub synclone operation completed successfully", "duration", duration.String())
 
 	return nil
+}
+
+// classifyGithubError는 clone 중에 난 오류를 되풀이 판단에 쓸 갈래로 나눈다.
+//
+// 예전에는 run() 안에서 err.Error()를 문자열로 견주었다. 감싸인 오류는 문자열이
+// 달라져 전부 network로 떨어졌다. 오류 사슬을 따라가는 errors.Is/As로 바꿨다.
+func classifyGithubError(err error) errors.ErrorType {
+	switch {
+	case stderrors.Is(err, context.Canceled), stderrors.Is(err, context.DeadlineExceeded):
+		return errors.ErrorTypeTimeout
+	case isRateLimitError(err):
+		return errors.ErrorTypeRateLimit
+	default:
+		return errors.ErrorTypeNetwork
+	}
+}
+
+// isRateLimitError는 오류 사슬 어딘가에 요청 한도 초과가 있는지 본다.
+//
+// 예전에는 `err.Error() == "rate limit"`이었다. 이 저장소 어디에도 Error()가
+// 정확히 그 문자열인 오류가 없어서 한 번도 참이 된 적이 없다. 한도 초과가
+// 전부 network로 분류됐다.
+//
+// 위쪽에서 이미 RecoverableError로 분류해 둔 것이 있으면 그것을 믿고, 없으면
+// 문자열을 본다. 359행이 같은 판정을 이미 문자열로 하고 있어 맞춰 둔다.
+func isRateLimitError(err error) bool {
+	var recErr *errors.RecoverableError
+	if stderrors.As(err, &recErr) && recErr.Type == errors.ErrorTypeRateLimit {
+		return true
+	}
+
+	msg := err.Error()
+
+	return strings.Contains(msg, "rate limit") || strings.Contains(msg, "API rate limit")
 }
 
 func (o *syncCloneGithubOptions) loadFromConfig() error {
