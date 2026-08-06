@@ -158,9 +158,15 @@ repo_roots:
 		fmt.Printf("Provider: %s\n", config.RepoRoots[0].Provider)
 	}
 
-	// 첫 줄 "Error: ..."는 이 예시가 찍는 것이 아니라 synclone_config.go의
-	// printValidationErrors가 표준출력으로 내보내는 것이다. Example은 표준출력을
-	// 통째로 받으므로 기대값에도 들어간다.
+	// 앞머리의 "Error: ..." 줄들은 이 예시가 찍는 것이 아니라 synclone_config.go의
+	// printValidationErrors가 표준출력으로 내보내는 것이다. 어긴 규칙 하나에
+	// 한 줄씩이다. Example은 표준출력을 통째로 받으므로 기대값에도 들어간다.
+	//
+	// 예전에는 이 줄이 하나뿐이었다. Default.Protocol만 걸렸기 때문이다.
+	// 위 invalidConfig가 "Invalid: empty path", "Invalid: empty name"이라고
+	// 스스로 적어 둔 두 가지는 정작 걸리지 않았다 -- RepoRoots에 dive가 없어
+	// 원소를 아무도 안 봤다. 검사를 보여주는 예시가 검사되지 않는 것을
+	// 보여주고 있었던 셈이다. 이제 네 줄이다.
 	//
 	// 아래 주석 앞의 빈 줄은 반드시 있어야 한다. Go는 함수 본문의 마지막 주석
 	// 덩어리가 "Output:"으로 시작할 때만 그것을 기대값으로 인정한다. 빈 줄이
@@ -168,7 +174,13 @@ repo_roots:
 
 	// Output:
 	// Error: This field is required.
+	// Error: This field is required.
+	// Error: This field is required.
+	// Error: This field is required.
 	// Validation caught error: failed to validate config file: Key: 'bulkCloneConfig.Default.Protocol' Error:Field validation for 'Protocol' failed on the 'required' tag
+	// Key: 'bulkCloneConfig.RepoRoots[0].RootPath' Error:Field validation for 'RootPath' failed on the 'required' tag
+	// Key: 'bulkCloneConfig.RepoRoots[0].Protocol' Error:Field validation for 'Protocol' failed on the 'required' tag
+	// Key: 'bulkCloneConfig.RepoRoots[0].OrgName' Error:Field validation for 'OrgName' failed on the 'required' tag
 	// Valid configuration loaded successfully
 	// Organization: valid-org
 	// Provider: github

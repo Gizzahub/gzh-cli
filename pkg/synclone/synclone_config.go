@@ -73,10 +73,19 @@ type BulkCloneGitlab struct {
 
 //nolint:tagliatelle // 설정 파일 형식이 snake_case다
 type bulkCloneConfig struct {
-	Version           string            `yaml:"version"`
-	Default           bulkCloneDefault  `yaml:"default"`
-	IgnoreNameRegexes []string          `yaml:"ignore_names"`
-	RepoRoots         []BulkCloneGithub `yaml:"repo_roots"`
+	Version           string           `yaml:"version"`
+	Default           bulkCloneDefault `yaml:"default"`
+	IgnoreNameRegexes []string         `yaml:"ignore_names"`
+	// dive가 있어야 원소까지 들어간다.
+	//
+	// validator는 구조체 필드(Default 같은)는 알아서 따라 들어가지만
+	// 조각(slice)은 dive를 붙이지 않으면 원소를 건드리지 않는다. 그래서
+	// BulkCloneGithub의 required와 oneof 네 개가 여기서는 전부 죽어
+	// 있었다. root_path도 org_name도 없는 repo_roots 항목이 그대로
+	// 통과했고, protocol에 "carrier-pigeon"을 적어도 아무 말이 없었다.
+	// 설정이 틀린 채로 통과하니 오류는 한참 뒤 clone 단계에서 엉뚱한
+	// 모습으로 나타난다.
+	RepoRoots []BulkCloneGithub `yaml:"repo_roots" validate:"dive"`
 }
 
 func fileExists(filePath string) bool {
