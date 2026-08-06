@@ -37,7 +37,7 @@ func TestPolicyTemplates(t *testing.T) {
 	for _, tt := range templates {
 		t.Run(tt.name, func(t *testing.T) {
 			// Load template file
-			samplesDir := filepath.Join("..", "..", "samples")
+			samplesDir := filepath.Join("..", "..", "examples", "repo-config")
 			configPath := filepath.Join(samplesDir, tt.filename)
 
 			config, err := LoadRepoConfig(configPath)
@@ -134,7 +134,9 @@ func testOpenSourceTemplate(t *testing.T, config *RepoConfig) {
 	assert.NotEmpty(t, template.RequiredFiles)
 
 	hasFile := func(path string) bool {
-		return slices.Contains(template.RequiredFiles, path)
+		return slices.ContainsFunc(template.RequiredFiles, func(f RequiredFile) bool {
+			return f.Path == path
+		})
 	}
 	assert.True(t, hasFile("README.md"))
 	assert.True(t, hasFile("CONTRIBUTING.md"))
@@ -192,7 +194,9 @@ func testEnterpriseTemplate(t *testing.T, config *RepoConfig) {
 
 	// Verify compliance files
 	hasFile := func(path string) bool {
-		return slices.Contains(template.RequiredFiles, path)
+		return slices.ContainsFunc(template.RequiredFiles, func(f RequiredFile) bool {
+			return f.Path == path
+		})
 	}
 	assert.True(t, hasFile("COMPLIANCE.md"))
 	assert.True(t, hasFile(".github/workflows/compliance.yml"))
@@ -219,7 +223,7 @@ func testEnterpriseTemplate(t *testing.T, config *RepoConfig) {
 
 func TestTemplateInheritanceInSchema(t *testing.T) {
 	// Test that security template inherits from standard in schema
-	schemaPath := filepath.Join("..", "..", "docs", "repo-config-schema.yaml")
+	schemaPath := filepath.Join("..", "..", "examples", "repo-config", "repo-config-schema.yaml")
 	config, err := LoadRepoConfig(schemaPath)
 	require.NoError(t, err)
 
@@ -314,7 +318,7 @@ func TestPolicyValidation(t *testing.T) {
 	}
 
 	// Load security template for policies
-	securityPath := filepath.Join("..", "..", "samples", "repo-config-security.yaml")
+	securityPath := filepath.Join("..", "..", "examples", "repo-config", "repo-config-security.yaml")
 	securityConfig, err := LoadRepoConfig(securityPath)
 	require.NoError(t, err)
 
@@ -334,7 +338,7 @@ func TestPolicyValidation(t *testing.T) {
 
 func TestTemplateUsagePatterns(t *testing.T) {
 	// Test the overview template that shows usage patterns
-	overviewPath := filepath.Join("..", "..", "samples", "repo-config-templates-overview.yaml")
+	overviewPath := filepath.Join("..", "..", "examples", "repo-config", "repo-config-templates-overview.yaml")
 	config, err := LoadRepoConfig(overviewPath)
 	require.NoError(t, err)
 

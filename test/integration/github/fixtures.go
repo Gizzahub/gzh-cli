@@ -228,9 +228,9 @@ var SampleRepoConfigs = struct {
 						},
 					},
 				},
-				Webhooks: []string{
-					"jenkins",
-					"sonarqube",
+				Webhooks: []config.WebhookConfig{
+					{URL: "https://jenkins.example.com/github-webhook/", Events: []string{"push", "pull_request"}},
+					{URL: "https://sonarqube.example.com/github-webhook/", Events: []string{"push"}},
 				},
 			},
 		},

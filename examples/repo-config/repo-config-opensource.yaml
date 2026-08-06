@@ -18,6 +18,7 @@ templates:
       has_projects: true  # Enable project boards
       has_downloads: true  # Allow releases/downloads
       has_discussions: true  # Enable GitHub Discussions
+      allow_forking: true  # Forking is the point of an open source repo
       is_template: false
       allow_squash_merge: true
       allow_merge_commit: true  # Allow all merge types for flexibility
@@ -78,9 +79,6 @@ templates:
         "core-contributors": "write"
         "documentation": "write"
         "community-moderators": "triage"
-
-      # Allow forking
-      allow_forking: true
 
     # Topics for discoverability
     topics:
@@ -158,4 +156,252 @@ templates:
           1. Fork the repo and create your branch from `main`
           2. If you've added code, add tests
           3. Ensure the test suite passes
+          4. Make sure your code follows the existing style
+          5. Issue that pull request!
 
+          ## Development Setup
+
+          ```bash
+          # Setup instructions
+          ```
+
+          ## Style Guide
+
+          [Language-specific style guide]
+
+      - path: "CODE_OF_CONDUCT.md"
+        content: |
+          # Contributor Covenant Code of Conduct
+
+          ## Our Pledge
+
+          We as members, contributors, and leaders pledge to make participation in our
+          community a harassment-free experience for everyone.
+
+          ## Our Standards
+
+          Examples of behavior that contributes to a positive environment:
+
+          * Using welcoming and inclusive language
+          * Being respectful of differing viewpoints and experiences
+          * Gracefully accepting constructive criticism
+          * Focusing on what is best for the community
+          * Showing empathy towards other community members
+
+          ## Enforcement
+
+          Instances of abusive, harassing, or otherwise unacceptable behavior may be
+          reported to the community leaders responsible for enforcement at
+          [INSERT CONTACT METHOD].
+
+      - path: "LICENSE"
+        content: |
+          MIT License
+
+          Copyright (c) [year] [fullname]
+
+          Permission is hereby granted, free of charge, to any person obtaining a copy
+          of this software and associated documentation files (the "Software"), to deal
+          in the Software without restriction, including without limitation the rights
+          to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+          copies of the Software, and to permit persons to whom the Software is
+          furnished to do so, subject to the following conditions:
+
+          The above copyright notice and this permission notice shall be included in all
+          copies or substantial portions of the Software.
+
+      - path: ".github/ISSUE_TEMPLATE/bug_report.md"
+        content: |
+          ---
+          name: Bug report
+          about: Create a report to help us improve
+          title: ''
+          labels: 'bug'
+          assignees: ''
+          ---
+
+          **Describe the bug**
+          A clear and concise description of what the bug is.
+
+          **To Reproduce**
+          Steps to reproduce the behavior:
+          1. Go to '...'
+          2. Click on '....'
+          3. Scroll down to '....'
+          4. See error
+
+          **Expected behavior**
+          A clear and concise description of what you expected to happen.
+
+          **Screenshots**
+          If applicable, add screenshots to help explain your problem.
+
+          **Environment:**
+           - OS: [e.g. Ubuntu 20.04]
+           - Version: [e.g. 1.0.0]
+
+          **Additional context**
+          Add any other context about the problem here.
+
+      - path: ".github/ISSUE_TEMPLATE/feature_request.md"
+        content: |
+          ---
+          name: Feature request
+          about: Suggest an idea for this project
+          title: ''
+          labels: 'enhancement'
+          assignees: ''
+          ---
+
+          **Is your feature request related to a problem? Please describe.**
+          A clear and concise description of what the problem is.
+
+          **Describe the solution you'd like**
+          A clear and concise description of what you want to happen.
+
+          **Describe alternatives you've considered**
+          A clear and concise description of any alternative solutions or features.
+
+          **Additional context**
+          Add any other context or screenshots about the feature request here.
+
+      - path: ".github/pull_request_template.md"
+        content: |
+          ## Description
+
+          Please include a summary of the changes and which issue is fixed.
+
+          Fixes # (issue)
+
+          ## Type of change
+
+          - [ ] Bug fix (non-breaking change which fixes an issue)
+          - [ ] New feature (non-breaking change which adds functionality)
+          - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+          - [ ] Documentation update
+
+          ## Checklist
+
+          - [ ] My code follows the style guidelines of this project
+          - [ ] I have performed a self-review of my code
+          - [ ] I have commented my code, particularly in hard-to-understand areas
+          - [ ] I have made corresponding changes to the documentation
+          - [ ] My changes generate no new warnings
+          - [ ] I have added tests that prove my fix is effective or that my feature works
+          - [ ] New and existing unit tests pass locally with my changes
+
+    # Webhooks for community engagement
+    webhooks:
+      - url: "${DISCORD_WEBHOOK_URL}"  # Community notifications
+        events:
+          - "issues"
+          - "pull_request"
+          - "release"
+          - "discussion"
+          - "star"  # Celebrate stars!
+        content_type: "json"
+        secret: "${WEBHOOK_SECRET}"
+        active: true
+
+# Policy rules for open source compliance
+policies:
+  opensource_best_practices:
+    description: "Open source best practices policy"
+    rules:
+      # Must be public
+      public_repository:
+        type: "repository_privacy"
+        value: "public"
+        enforcement: "required"
+        message: "Open source repositories must be public"
+
+      # License file required
+      license_file:
+        type: "file_exists"
+        value: "LICENSE"
+        enforcement: "required"
+        message: "Open source projects must have a LICENSE file"
+
+      # README required
+      readme_file:
+        type: "file_exists"
+        value: "README.md"
+        enforcement: "required"
+        message: "README.md is required for documentation"
+
+      # Contributing guidelines
+      contributing_guide:
+        type: "file_exists"
+        value: "CONTRIBUTING.md"
+        enforcement: "recommended"
+        message: "CONTRIBUTING.md helps onboard new contributors"
+
+      # Code of conduct
+      code_of_conduct:
+        type: "file_exists"
+        value: "CODE_OF_CONDUCT.md"
+        enforcement: "recommended"
+        message: "Code of Conduct creates a welcoming community"
+
+      # Issue templates
+      issue_templates:
+        type: "directory_exists"
+        value: ".github/ISSUE_TEMPLATE"
+        enforcement: "recommended"
+        message: "Issue templates improve issue quality"
+
+      # Security policy
+      security_policy:
+        type: "file_exists"
+        value: "SECURITY.md"
+        enforcement: "recommended"
+        message: "Security policy helps responsible disclosure"
+
+# Example usage
+repositories:
+  specific:
+    - name: "awesome-project"
+      template: "opensource-community"
+      settings:
+        description: "An awesome open source project that does amazing things"
+        homepage: "https://awesome-project.org"
+        topics:
+          - "javascript"
+          - "nodejs"
+          - "cli-tool"
+
+    - name: "documentation"
+      template: "opensource-community"
+      settings:
+        description: "Official documentation for our projects"
+        homepage: "https://docs.example.com"
+        topics:
+          - "documentation"
+          - "markdown"
+          - "docusaurus"
+
+    - name: "community-toolkit"
+      template: "opensource-community"
+      settings:
+        description: "Community-contributed tools and utilities"
+        topics:
+          - "community"
+          - "tools"
+          - "utilities"
+
+  # Apply to patterns
+  patterns:
+    - match: "example-*"
+      template: "opensource-community"
+      settings:
+        topics:
+          - "example"
+          - "tutorial"
+
+    - match: "*-starter"
+      template: "opensource-community"
+      settings:
+        is_template: true  # GitHub template repository
+        topics:
+          - "template"
+          - "starter"
