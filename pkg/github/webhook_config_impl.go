@@ -637,7 +637,24 @@ func (w *webhookConfigurationServiceImpl) applyPoliciesToRepository(ctx context.
 			}
 
 			// Check if rule applies to this repository
-			if w.ruleAppliesTo(repo, &rule.Conditions) {
+			applies, err := w.ruleAppliesTo(repo, &rule.Conditions)
+			if err != nil {
+				// 무늬가 깨졌다는 사실을 조용히 넘기지 않는다. 예전에는
+				// 컴파일 오류를 버려서 "안 걸림"과 구분되지 않았고, 정책이
+				// 통째로 건너뛰어져도 보고서는 깨끗했다.
+				results = append(results, PolicyApplicationResult{
+					Repository: repo,
+					PolicyID:   policy.ID,
+					RuleID:     rule.ID,
+					Action:     rule.Action,
+					Success:    false,
+					Error:      err.Error(),
+				})
+
+				continue
+			}
+
+			if applies {
 				result := w.applyRuleToRepository(ctx, repo, policy.ID, &rule, dryRun, force)
 				results = append(results, result)
 			}
@@ -647,13 +664,19 @@ func (w *webhookConfigurationServiceImpl) applyPoliciesToRepository(ctx context.
 	return results
 }
 
-func (w *webhookConfigurationServiceImpl) ruleAppliesTo(repo string, conditions *WebhookConditions) bool {
+// ruleAppliesTo는 규칙의 조건이 이 저장소에 걸리는지 본다.
+//
+// 무늬는 정책에 사용자가 적어 넣은 값이라 컴파일되지 않을 수 있다. 오류를
+// 버리면 "무늬가 깨졌다"와 "안 걸린다"가 같은 결과가 되어, 정책이 통째로
+// 적용되지 않아도 아무 데도 흔적이 남지 않는다. 같은 성격의 판단을 하는
+// condition_evaluator.go의 EvaluateRepositoryConditions도 오류를 올려보낸다.
+func (w *webhookConfigurationServiceImpl) ruleAppliesTo(repo string, conditions *WebhookConditions) (bool, error) {
 	// Check repository name exact match
 	if len(conditions.RepositoryName) > 0 {
 		found := slices.Contains(conditions.RepositoryName, repo)
 
 		if !found {
-			return false
+			return false, nil
 		}
 	}
 
@@ -662,21 +685,26 @@ func (w *webhookConfigurationServiceImpl) ruleAppliesTo(repo string, conditions 
 		found := false
 
 		for _, pattern := range conditions.RepositoryPattern {
-			if matched, _ := regexp.MatchString(pattern, repo); matched {
+			matched, err := regexp.MatchString(pattern, repo)
+			if err != nil {
+				return false, fmt.Errorf("invalid repository pattern %q: %w", pattern, err)
+			}
+
+			if matched {
 				found = true
 				break
 			}
 		}
 
 		if !found {
-			return false
+			return false, nil
 		}
 	}
 
 	// Additional conditions would be checked here (language, topics, etc.)
 	// For now, we'll assume the rule applies if basic conditions are met
 
-	return true
+	return true, nil
 }
 
 func (w *webhookConfigurationServiceImpl) applyRuleToRepository(ctx context.Context, repo, policyID string, rule *WebhookPolicyRule, dryRun, force bool) PolicyApplicationResult {

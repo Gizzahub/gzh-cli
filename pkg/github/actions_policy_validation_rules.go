@@ -218,7 +218,12 @@ func (r *AllowedActionsValidationRule) Validate(ctx context.Context, policy *Act
 	// Check recent workflows for unauthorized actions
 	for _, workflow := range currentState.RecentWorkflows {
 		for _, action := range workflow.Actions {
-			if !r.isActionAllowed(action, policy.AllowedActions, policy.AllowedActionsPatterns) {
+			allowed, err := r.isActionAllowed(action, policy.AllowedActions, policy.AllowedActionsPatterns)
+			if err != nil {
+				return nil, err
+			}
+
+			if !allowed {
 				unauthorizedActions = append(unauthorizedActions, fmt.Sprintf("%s in workflow %s", action, workflow.Name))
 			}
 		}
@@ -245,20 +250,31 @@ func (r *AllowedActionsValidationRule) Validate(ctx context.Context, policy *Act
 	return result, nil
 }
 
-func (r *AllowedActionsValidationRule) isActionAllowed(action string, allowedActions, allowedPatterns []string) bool {
+// isActionAllowed는 액션이 허용 목록이나 허용 무늬에 걸리는지 본다.
+//
+// 무늬는 정책에서 온 사용자 입력이라 잘못 적혀 있을 수 있다. 예전에는
+// 컴파일 오류를 버려서 잘못된 무늬가 그냥 "안 걸림"이 됐다. 허용 목록이므로
+// 결과는 거부 쪽으로 기울지만, 사용자는 자기 무늬가 깨졌다는 사실을 끝내
+// 알 수 없고 멀쩡한 액션이 무단 사용으로 보고된다.
+func (r *AllowedActionsValidationRule) isActionAllowed(action string, allowedActions, allowedPatterns []string) (bool, error) {
 	// Check exact matches
 	if slices.Contains(allowedActions, action) {
-		return true
+		return true, nil
 	}
 
 	// Check pattern matches
 	for _, pattern := range allowedPatterns {
-		if matched, _ := regexp.MatchString(pattern, action); matched {
-			return true
+		matched, err := regexp.MatchString(pattern, action)
+		if err != nil {
+			return false, fmt.Errorf("invalid allowed action pattern %q: %w", pattern, err)
+		}
+
+		if matched {
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // SecretPolicyValidationRule validates secret policy compliance.
@@ -288,7 +304,12 @@ func (r *SecretPolicyValidationRule) Validate(ctx context.Context, policy *Actio
 	// Check secret naming patterns
 	if len(policy.SecretsPolicy.SecretNamingPatterns) > 0 {
 		for _, secret := range currentState.Secrets {
-			if !r.matchesNamingPattern(secret.Name, policy.SecretsPolicy.SecretNamingPatterns) {
+			matched, err := r.matchesNamingPattern(secret.Name, policy.SecretsPolicy.SecretNamingPatterns)
+			if err != nil {
+				return nil, err
+			}
+
+			if !matched {
 				violations = append(violations, fmt.Sprintf("Secret '%s' does not match naming patterns", secret.Name))
 			}
 		}
@@ -326,14 +347,22 @@ func (r *SecretPolicyValidationRule) Validate(ctx context.Context, policy *Actio
 	return result, nil
 }
 
-func (r *SecretPolicyValidationRule) matchesNamingPattern(secretName string, patterns []string) bool {
+// matchesNamingPattern은 비밀 이름이 정책의 이름 무늬에 걸리는지 본다.
+// 무늬는 사용자 입력이므로 컴파일 오류를 버리지 않는다. 버리면 무늬가
+// 깨졌을 때 모든 비밀이 "이름 규칙 위반"으로 보고된다.
+func (r *SecretPolicyValidationRule) matchesNamingPattern(secretName string, patterns []string) (bool, error) {
 	for _, pattern := range patterns {
-		if matched, _ := regexp.MatchString(pattern, secretName); matched {
-			return true
+		matched, err := regexp.MatchString(pattern, secretName)
+		if err != nil {
+			return false, fmt.Errorf("invalid secret naming pattern %q: %w", pattern, err)
+		}
+
+		if matched {
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // RunnerPolicyValidationRule validates runner policy compliance.

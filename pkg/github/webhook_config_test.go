@@ -526,6 +526,7 @@ func TestRuleAppliesTo(t *testing.T) {
 		repo       string
 		conditions *WebhookConditions
 		expected   bool
+		expectErr  bool
 	}{
 		{
 			name: "exact repository name match",
@@ -565,11 +566,30 @@ func TestRuleAppliesTo(t *testing.T) {
 			conditions: &WebhookConditions{},
 			expected:   true,
 		},
+		{
+			// Go의 정규식 엔진(RE2)에는 전방탐색이 없어 이 무늬는 컴파일되지
+			// 않는다. 예전에는 오류를 버려서 "안 걸림"으로 조용히 넘어갔고,
+			// 정책이 통째로 적용되지 않아도 보고서에 아무것도 남지 않았다.
+			name: "invalid pattern reports an error",
+			repo: "api-service",
+			conditions: &WebhookConditions{
+				RepositoryPattern: []string{"^(?!test-).*"},
+			},
+			expected:  false,
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := service.ruleAppliesTo(tt.repo, tt.conditions)
+			result, err := service.ruleAppliesTo(tt.repo, tt.conditions)
+			if tt.expectErr {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), "invalid repository pattern")
+			} else {
+				require.NoError(t, err)
+			}
+
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -609,6 +629,6 @@ func BenchmarkRuleAppliesTo(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		service.ruleAppliesTo("api-service", conditions)
+		_, _ = service.ruleAppliesTo("api-service", conditions)
 	}
 }
