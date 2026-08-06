@@ -89,10 +89,15 @@ func TestRunComplianceAudit(t *testing.T) {
 			},
 			LastModified: time.Now(),
 		},
+		// 각 리포는 "어떤 규칙을 어기는가"를 정해 두고 그 외 규칙은 모두
+		// 만족시킨다. 아래 두 리포에 Workflows를 채우는 것도 그래서다 --
+		// security_workflow 규칙은 이들의 검증 대상이 아닌데, 비워 두면
+		// 의도하지 않은 위반이 하나씩 더 붙어 위반 개수 어설션이 어긋난다.
 		"non-compliant-repo": {
-			Name:    "non-compliant-repo",
-			Private: false,                 // Violates private_repos rule
-			Files:   []string{"README.md"}, // Missing LICENSE
+			Name:      "non-compliant-repo",
+			Private:   false,                 // Violates private_repos rule
+			Files:     []string{"README.md"}, // Missing LICENSE
+			Workflows: []string{"security"},
 			BranchProtection: map[string]BranchProtectionState{
 				"main": {
 					Protected:       true,
@@ -102,9 +107,10 @@ func TestRunComplianceAudit(t *testing.T) {
 			LastModified: time.Now(),
 		},
 		"exempt-repo": {
-			Name:    "exempt-repo",
-			Private: false, // Has exception for this
-			Files:   []string{"LICENSE"},
+			Name:      "exempt-repo",
+			Private:   false, // Has exception for this
+			Files:     []string{"LICENSE"},
+			Workflows: []string{"security"},
 			BranchProtection: map[string]BranchProtectionState{
 				"main": {
 					Protected:       true,
@@ -133,8 +139,14 @@ func TestRunComplianceAudit(t *testing.T) {
 	assert.Equal(t, "test-org", report.Organization)
 	assert.Equal(t, 4, report.Summary.TotalRepositories)
 	assert.Equal(t, 4, report.Summary.AuditedRepositories)
-	assert.Equal(t, 1, report.Summary.CompliantRepositories)   // Only compliant-repo
-	assert.Equal(t, 25.0, report.Summary.CompliancePercentage) // 1/4 = 25%
+	// 승인된 예외가 걸린 위반은 위반으로 기록되지 않으므로 exempt-repo도
+	// compliant다 -- 예외는 "이 리포는 이 규칙을 어겨도 된다"는 승인이고,
+	// 아래 156줄의 어설션도 같은 것을 요구한다. 예전 기대값 1/25%는 이와
+	// 모순됐는데, exempt-repo가 별개 버그(워크플로 표기 불일치)로 non-compliant
+	// 판정을 받고 있어서 우연히 맞아떨어졌다. 예외를 쓴 리포는 정책별
+	// ExemptedRepos로 따로 집계되므로 보고서에서 구분은 유지된다.
+	assert.Equal(t, 2, report.Summary.CompliantRepositories)   // compliant-repo, exempt-repo
+	assert.Equal(t, 50.0, report.Summary.CompliancePercentage) // 2/4 = 50%
 	assert.Equal(t, 1, report.Summary.TotalExceptions)
 	assert.Equal(t, 1, report.Summary.ActiveExceptions)
 
