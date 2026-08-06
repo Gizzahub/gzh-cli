@@ -44,19 +44,29 @@ func NewRepoDiscoverer(basePath string) *RepoDiscoverer {
 }
 
 // DiscoverRepos discovers all Git repositories in the base path.
-func (rd *RepoDiscoverer) DiscoverRepos() ([]DiscoveredRepo, error) {
+//
+// ctx는 훑기 전체를 감싼다. 저장소 하나마다 git을 세 번 부르기 때문에 나무가
+// 크면 바깥 프로세스가 수백 개 뜬다. 맥락이 없으면 그 중 어느 것도 끊을 수
+// 없고 Ctrl+C가 먹지 않는다.
+func (rd *RepoDiscoverer) DiscoverRepos(ctx context.Context) ([]DiscoveredRepo, error) {
 	var repos []DiscoveredRepo
 
-	err := rd.walkDirectory(rd.BasePath, 0, &repos)
+	err := rd.walkDirectory(ctx, rd.BasePath, 0, &repos)
 	if err != nil {
-		return nil, fmt.Errorf("failed to discover repositories: %w", err)
+		// 부르는 쪽이 "failed to discover repositories"로 한 번 더 감싼다.
+		// 같은 말을 두 번 적지 않도록 여기서는 어디를 훑다 걸렸는지만 밝힌다.
+		return nil, fmt.Errorf("failed to walk %s: %w", rd.BasePath, err)
 	}
 
 	return repos, nil
 }
 
 // walkDirectory recursively walks directories to find Git repositories.
-func (rd *RepoDiscoverer) walkDirectory(dir string, depth int, repos *[]DiscoveredRepo) error {
+func (rd *RepoDiscoverer) walkDirectory(ctx context.Context, dir string, depth int, repos *[]DiscoveredRepo) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	if depth > rd.MaxDepth {
 		return nil
 	}
@@ -69,10 +79,17 @@ func (rd *RepoDiscoverer) walkDirectory(dir string, depth int, repos *[]Discover
 	// Check if current directory is a Git repository
 	gitDir := filepath.Join(dir, ".git")
 	if stat, err := os.Stat(gitDir); err == nil && stat.IsDir() {
-		repo, err := rd.analyzeRepository(dir)
-		if err == nil {
+		repo, err := rd.analyzeRepository(ctx, dir)
+
+		switch {
+		case err == nil:
 			*repos = append(*repos, *repo)
+		case ctx.Err() != nil:
+			// 맥락이 끊겨서 실패한 것이면 위로 올린다. 그 밖의 실패는
+			// 예전처럼 이 저장소만 건너뛴다.
+			return err
 		}
+
 		// Don't recurse into .git directories
 		return nil
 	}
@@ -99,7 +116,12 @@ func (rd *RepoDiscoverer) walkDirectory(dir string, depth int, repos *[]Discover
 			}
 		}
 
-		if err := rd.walkDirectory(subPath, depth+1, repos); err != nil {
+		if err := rd.walkDirectory(ctx, subPath, depth+1, repos); err != nil {
+			// 맥락이 끊겼으면 남은 디렉토리를 마저 돌 이유가 없다.
+			if ctx.Err() != nil {
+				return err
+			}
+
 			// Log error but continue with other directories
 			continue
 		}
@@ -109,9 +131,9 @@ func (rd *RepoDiscoverer) walkDirectory(dir string, depth int, repos *[]Discover
 }
 
 // analyzeRepository analyzes a Git repository and extracts metadata.
-func (rd *RepoDiscoverer) analyzeRepository(repoPath string) (*DiscoveredRepo, error) {
+func (rd *RepoDiscoverer) analyzeRepository(ctx context.Context, repoPath string) (*DiscoveredRepo, error) {
 	// Get remote URL using git command
-	remoteURL, err := rd.getRemoteURL(repoPath)
+	remoteURL, err := rd.getRemoteURL(ctx, repoPath)
 	if err != nil {
 		// Continue without remote URL if git command fails
 		remoteURL = ""
@@ -121,15 +143,22 @@ func (rd *RepoDiscoverer) analyzeRepository(repoPath string) (*DiscoveredRepo, e
 	provider, org, repoName := rd.parseRemoteURL(remoteURL)
 
 	// Get current branch
-	branch, err := rd.getCurrentBranch(repoPath)
+	branch, err := rd.getCurrentBranch(ctx, repoPath)
 	if err != nil {
 		branch = ""
 	}
 
 	// Get last commit
-	lastCommit, err := rd.getLastCommit(repoPath)
+	lastCommit, err := rd.getLastCommit(ctx, repoPath)
 	if err != nil {
 		lastCommit = ""
+	}
+
+	// 위 세 번의 git 호출은 실패를 삼킨다 -- 원격이 없는 저장소도 결과에
+	// 넣기 위해서다. 맥락이 끊겨서 실패한 것이라면 이야기가 다르다. 빈
+	// 칸투성이 항목을 설정 파일에 적어 넣지 않도록 여기서 가른다.
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 
 	// Calculate repository size
@@ -316,8 +345,7 @@ func (rd *RepoDiscoverer) SetFollowSymlinks(follow bool) {
 }
 
 // getRemoteURL gets the remote URL for a Git repository.
-func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
-	ctx := context.Background()
+func (rd *RepoDiscoverer) getRemoteURL(ctx context.Context, repoPath string) (string, error) {
 	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "remote", "get-url", "origin")
 	output, err := cmd.Output()
 	if err != nil {
@@ -351,8 +379,8 @@ func (rd *RepoDiscoverer) getRemoteURL(repoPath string) (string, error) {
 }
 
 // getCurrentBranch gets the current branch of a Git repository.
-func (rd *RepoDiscoverer) getCurrentBranch(repoPath string) (string, error) {
-	cmd := exec.CommandContext(context.Background(), "git", "-C", repoPath, "branch", "--show-current")
+func (rd *RepoDiscoverer) getCurrentBranch(ctx context.Context, repoPath string) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "branch", "--show-current")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current branch: %w", err)
@@ -362,8 +390,8 @@ func (rd *RepoDiscoverer) getCurrentBranch(repoPath string) (string, error) {
 }
 
 // getLastCommit gets the last commit hash of a Git repository.
-func (rd *RepoDiscoverer) getLastCommit(repoPath string) (string, error) {
-	cmd := exec.Command("git", "-C", repoPath, "rev-parse", "HEAD")
+func (rd *RepoDiscoverer) getLastCommit(ctx context.Context, repoPath string) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "rev-parse", "HEAD")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get last commit: %w", err)

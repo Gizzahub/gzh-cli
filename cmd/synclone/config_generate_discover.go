@@ -4,6 +4,7 @@
 package synclone
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"os"
@@ -54,7 +55,7 @@ Examples:
   # Merge with existing configuration
   gz synclone config generate discover --path ~/repos --merge-existing`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConfigGenerateDiscover(basePath, outputFile, mergeExisting, recursive, maxDepth, ignorePatterns, followSymlinks)
+			return runConfigGenerateDiscover(cmd.Context(), basePath, outputFile, mergeExisting, recursive, maxDepth, ignorePatterns, followSymlinks)
 		},
 	}
 
@@ -70,7 +71,7 @@ Examples:
 }
 
 // runConfigGenerateDiscover executes the discover command.
-func runConfigGenerateDiscover(basePath, outputFile string, mergeExisting, _ bool, maxDepth int, ignorePatterns []string, followSymlinks bool) error {
+func runConfigGenerateDiscover(ctx context.Context, basePath, outputFile string, mergeExisting, _ bool, maxDepth int, ignorePatterns []string, followSymlinks bool) error {
 	fmt.Printf("🔍 Discovering repositories in %s...\n", basePath)
 
 	// Create repository discoverer
@@ -80,7 +81,7 @@ func runConfigGenerateDiscover(basePath, outputFile string, mergeExisting, _ boo
 	discoverer.SetFollowSymlinks(followSymlinks)
 
 	// Discover repositories
-	repos, err := discoverer.DiscoverRepos()
+	repos, err := discoverer.DiscoverRepos(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to discover repositories: %w", err)
 	}
