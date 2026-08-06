@@ -287,3 +287,44 @@ func TestRepositoryStreamProcessing(t *testing.T) {
 		t.Error("Stream metadata page not correct")
 	}
 }
+
+// Close가 메모리 감시 고루틴을 세우는지 본다.
+//
+// 예전 startMemoryMonitoring은 `for range ticker.C`라 빠져나올 길이 아예
+// 없었다. Close 뒤에도 GCInterval마다 깨어나서, 이미 닫힌
+// streamingClient의 optimizeMemory를 forceMemoryCleanup 경유로 불렀다.
+//
+// 고루틴 수를 세는 대신 감시 반복문을 직접 띄워서 그 하나가 끝나는지 본다.
+// 같은 꾸러미의 다른 시험이 남긴 고루틴에 흔들리지 않는다.
+func TestCloseStopsMemoryMonitoring(t *testing.T) {
+	config := DefaultOptimizedCloneConfig()
+	// 기본값 30초로는 ticker가 한 번도 안 돌아서 반복문을 지나가는지
+	// 확인할 수 없다.
+	config.GCInterval = 10 * time.Millisecond
+
+	manager, err := NewOptimizedSyncCloneManager("test-token", config)
+	if err != nil {
+		t.Fatalf("Failed to create manager: %v", err)
+	}
+
+	done := make(chan struct{})
+
+	go func() {
+		manager.startMemoryMonitoring()
+		close(done)
+	}()
+
+	// ticker가 몇 번 돌게 둔다. 반복문이 한 바퀴도 안 돈 채로 끝나면
+	// 정작 고치려던 자리를 지나가지 않는다.
+	time.Sleep(50 * time.Millisecond)
+
+	if err := manager.Close(); err != nil {
+		t.Fatalf("Unexpected error closing manager: %v", err)
+	}
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Close 뒤에도 메모리 감시 고루틴이 살아 있다")
+	}
+}

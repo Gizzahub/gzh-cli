@@ -21,6 +21,12 @@ type OptimizedSyncCloneManager struct {
 	workerPool      *workerpool.RepositoryWorkerPool
 	config          OptimizedCloneConfig
 	memoryMonitor   *MemoryMonitor
+
+	// stopCh는 메모리 감시 고루틴의 수명줄이다. Close가 닫는다.
+	// 이것이 없을 때는 startMemoryMonitoring이 빠져나올 길이 아예 없어서
+	// Close 뒤에도 30초마다 깨어나 이미 닫은 streamingClient를 건드렸다.
+	stopCh   chan struct{}
+	stopOnce sync.Once
 }
 
 // OptimizedCloneConfig represents configuration for optimized bulk cloning.
@@ -136,6 +142,7 @@ func NewOptimizedSyncCloneManager(token string, config OptimizedCloneConfig) (*O
 		workerPool:      workerPool,
 		config:          config,
 		memoryMonitor:   memoryMonitor,
+		stopCh:          make(chan struct{}),
 	}
 
 	// Start memory monitoring
@@ -403,7 +410,13 @@ func (m *OptimizedSyncCloneManager) startMemoryMonitoring() {
 	ticker := time.NewTicker(m.config.GCInterval)
 	defer ticker.Stop()
 
-	for range ticker.C {
+	for {
+		select {
+		case <-m.stopCh:
+			return
+		case <-ticker.C:
+		}
+
 		m.updateMemoryUsage()
 
 		m.memoryMonitor.mu.RLock()
@@ -526,6 +539,10 @@ func (m *OptimizedSyncCloneManager) printFinalStats(stats *CloneStats) {
 
 // Close cleans up resources.
 func (m *OptimizedSyncCloneManager) Close() error {
+	// 감시 고루틴을 먼저 세운다. streamingClient를 닫은 뒤에 세우면 그
+	// 사이에 깨어난 고루틴이 닫힌 client의 optimizeMemory를 부른다.
+	m.stopOnce.Do(func() { close(m.stopCh) })
+
 	if m.workerPool != nil {
 		m.workerPool.Stop()
 	}
