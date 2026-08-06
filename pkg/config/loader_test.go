@@ -97,8 +97,9 @@ default_provider: github
 providers:
   github:
     token: "test-token"
-    orgs:
+    organizations:
       - name: "test-org"
+        clone_dir: "./repos/test-org"
 `
 
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
@@ -116,9 +117,11 @@ providers:
 		t.Logf("Warning: failed to close temp file: %v", err)
 	}
 
+	// require: assert는 실패해도 계속 진행하므로, 로드가 깨지면 다음 줄에서 nil을
+	// 역참조해 SIGSEGV로 번진다. 어설션 실패로 끝나야 원인이 보인다.
 	config, err := LoadConfigFromFile(tmpFile.Name())
-	assert.NoError(t, err)
-	assert.NotNil(t, config)
+	require.NoError(t, err)
+	require.NotNil(t, config)
 	assert.Equal(t, "1.0.0", config.Version)
 	assert.Equal(t, "github", config.DefaultProvider)
 }
@@ -198,8 +201,9 @@ version: "1.0.0"
 providers:
   github:
     token: "test-token"
-    orgs:
+    organizations:
       - name: "test-org"
+        clone_dir: "./repos/test-org"
 `
 
 	tmpFile, err := os.CreateTemp("", "test-config-*.yaml")
@@ -256,8 +260,9 @@ version: "1.0.0"
 providers:
   github:
     token: "test"
-    orgs:
+    organizations:
       - name: "test"
+        clone_dir: "./repos/test"
 `,
 			wantErr: false,
 		},

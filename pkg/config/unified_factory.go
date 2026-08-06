@@ -27,9 +27,10 @@ type ConfigFactory struct {
 // NewConfigFactory creates a new configuration factory with default settings.
 func NewConfigFactory() *ConfigFactory {
 	return &ConfigFactory{
-		environment:   env.NewOSEnvironment(),
-		logger:        &NoOpLogger{},
-		searchPaths:   getDefaultSearchPaths(),
+		environment: env.NewOSEnvironment(),
+		logger:      &NoOpLogger{},
+		// ConfigSearchPaths를 읽는다 -- 공개 변수를 바꾸면 탐색에 반영되어야 한다.
+		searchPaths:   append([]string(nil), ConfigSearchPaths...),
 		autoMigrate:   true,
 		preferUnified: true,
 		createBackup:  true,
@@ -69,8 +70,36 @@ func NewConfigFactoryWithOptions(opts *ConfigFactoryOptions) *ConfigFactory {
 }
 
 // LoadConfig loads configuration from the first available file using search paths.
+//
+// GZH_CONFIG_PATH가 설정되어 있으면 그 파일만 쓴다. 이전에는 곧바로
+// LoadConfigFromPath("")로 넘겨 UnifiedLoader의 고정 경로 목록만 훑었기 때문에,
+// 환경변수 분기가 FindConfigFile 안에만 있고 로드 경로에서는 통째로 죽어 있었다
+// -- 문서에 명시된 변수인데 gz가 조용히 무시했다.
 func (f *ConfigFactory) LoadConfig() (*UnifiedConfig, error) {
-	return f.LoadConfigFromPath("")
+	envPath, err := f.envConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	return f.LoadConfigFromPath(envPath)
+}
+
+// envConfigPath returns the path from GZH_CONFIG_PATH, or "" when it is unset.
+//
+// 변수가 가리키는 파일이 없으면 조용히 탐색으로 넘어가지 않고 에러를 낸다.
+// 사용자가 경로를 지정했는데 엉뚱한 설정이 로드되는 편이 더 나쁘다.
+func (f *ConfigFactory) envConfigPath() (string, error) {
+	configPath := f.environment.Get(env.CommonEnvironmentKeys.GZHConfigPath)
+	if configPath == "" {
+		return "", nil
+	}
+
+	expandedPath := f.expandPath(configPath)
+	if !f.fileExists(expandedPath) {
+		return "", fmt.Errorf("config file specified in GZH_CONFIG_PATH not found: %s", expandedPath)
+	}
+
+	return expandedPath, nil
 }
 
 // LoadConfigFromPath loads configuration from a specific path or searches if empty.
@@ -120,12 +149,13 @@ func (f *ConfigFactory) CreateProviderCloner(ctx context.Context, providerName, 
 // FindConfigFile finds the first available configuration file in search paths.
 func (f *ConfigFactory) FindConfigFile() (string, error) {
 	// Check environment variable first
-	if configPath := f.environment.Get(env.CommonEnvironmentKeys.GZHConfigPath); configPath != "" {
-		expandedPath := f.expandPath(configPath)
-		if f.fileExists(expandedPath) {
-			return expandedPath, nil
-		}
-		return "", fmt.Errorf("config file specified in GZH_CONFIG_PATH not found: %s", expandedPath)
+	envPath, err := f.envConfigPath()
+	if err != nil {
+		return "", err
+	}
+
+	if envPath != "" {
+		return envPath, nil
 	}
 
 	// Search in predefined paths

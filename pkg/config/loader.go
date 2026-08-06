@@ -60,16 +60,11 @@ func convertUnifiedToLegacyConfig(unified *UnifiedConfig) *Config {
 }
 
 // ConfigSearchPaths defines the search order for configuration files.
-var ConfigSearchPaths = []string{
-	"./gzh.yaml",
-	"./gzh.yml",
-	"~/.config/gzh.yaml",
-	"~/.config/gzh.yml",
-	"~/.config/gzh-manager/gzh.yaml",
-	"~/.config/gzh-manager/gzh.yml",
-	"/etc/gzh-manager/gzh.yaml",
-	"/etc/gzh-manager/gzh.yml",
-}
+//
+// ConfigFactory가 실제로 쓰는 목록과 같은 값이어야 한다. 예전에는 여기에 별도
+// 리터럴이 박혀 있어서, 이 변수를 바꿔도 탐색 순서는 그대로였고 목록 내용도
+// 서로 달랐다 -- 공개 변수가 실제 동작을 설명하지 못하는 상태였다.
+var ConfigSearchPaths = getDefaultSearchPaths()
 
 // For migration guidance, see: docs/migration-guides/config-loader-migration.md.
 func LoadConfig() (*Config, error) {

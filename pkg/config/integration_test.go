@@ -70,34 +70,16 @@ providers:
 	err = os.WriteFile(configPath, []byte(configContent), 0o600)
 	require.NoError(t, err)
 
-	// Set up environment variables
-	if err := os.Setenv("GITHUB_TOKEN", "real-github-token"); err != nil {
-		t.Logf("Warning: failed to set GITHUB_TOKEN: %v", err)
-	}
-	if err := os.Setenv("GITLAB_TOKEN", "real-gitlab-token"); err != nil {
-		t.Logf("Warning: failed to set GITLAB_TOKEN: %v", err)
-	}
-	if err := os.Setenv("GITEA_TOKEN", "real-gitea-token"); err != nil {
-		t.Logf("Warning: failed to set GITEA_TOKEN: %v", err)
-	}
-	if err := os.Setenv("HOME", "/home/testuser"); err != nil {
-		t.Logf("Warning: failed to set HOME: %v", err)
-	}
-
-	defer func() {
-		if err := os.Unsetenv("GITHUB_TOKEN"); err != nil {
-			t.Logf("Warning: failed to unset GITHUB_TOKEN: %v", err)
-		}
-		if err := os.Unsetenv("GITLAB_TOKEN"); err != nil {
-			t.Logf("Warning: failed to unset GITLAB_TOKEN: %v", err)
-		}
-		if err := os.Unsetenv("GITEA_TOKEN"); err != nil {
-			t.Logf("Warning: failed to unset GITEA_TOKEN: %v", err)
-		}
-		if err := os.Unsetenv("HOME"); err != nil {
-			t.Logf("Warning: failed to unset HOME: %v", err)
-		}
-	}()
+	// Set up environment variables.
+	//
+	// t.Setenv: 이전에는 defer에서 Unsetenv로 되돌렸는데, HOME은 원래 설정되어
+	// 있던 값이라 지워버리면 같은 패키지의 뒤따르는 테스트까지 오염된다
+	// (TestExpandPath의 ~ 확장이 이것 때문에 깨졌다). t.Setenv는 원래 값을
+	// -- 없었다는 사실까지 포함해 -- 복원한다.
+	t.Setenv("GITHUB_TOKEN", "real-github-token")
+	t.Setenv("GITLAB_TOKEN", "real-gitlab-token")
+	t.Setenv("GITEA_TOKEN", "real-gitea-token")
+	t.Setenv("HOME", "/home/testuser")
 
 	// Load and parse the configuration
 	config, err := ParseYAMLFile(configPath)
@@ -488,8 +470,9 @@ version: "1.0.0"
 providers:
   github:
     token: "test-token"
-    orgs:
+    organizations:
       - name: "test-org"
+        clone_dir: "./repos/test-org"
 `
 
 	configPath := filepath.Join(tmpDir, "gzh.yaml")
