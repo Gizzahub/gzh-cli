@@ -184,7 +184,16 @@ func Execute(ctx context.Context, version string) error {
 		return nil
 	}
 
-	if err := rootCmd.Execute(); err != nil {
+	// ExecuteContext여야 한다. Execute()는 ctx가 비어 있으면 cobra가
+	// context.Background()를 대신 넣는다(command.go의 ExecuteC). 그러면
+	// cmd.Context()가 취소되지 않는 맥락을 돌려주고, 그것을 쓰는 77곳이
+	// 전부 헛돌게 된다 -- apprunner가 SIGINT/SIGTERM에서 cancel()을
+	// 불러도 아무 데도 닿지 않는다.
+	//
+	// 실제로 `gz ide monitor`는 Ctrl+C로 멈추지 않았다. "shutting down
+	// gracefully"만 찍고 계속 살아 있었다. ctx.Done()을 기다리는 자리가
+	// 영원히 열리지 않는 통로를 보고 있었기 때문이다.
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		return fmt.Errorf("error executing root command: %w", err)
 	}
 

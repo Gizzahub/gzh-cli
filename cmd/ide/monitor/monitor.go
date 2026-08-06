@@ -72,7 +72,13 @@ Examples:
   # Monitor with custom directory
   gz ide monitor --watch-dir ~/.config/JetBrains/IntelliJIdea2023.2`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return o.runMonitor(ctx, cmd, args)
+			// 붙잡아 둔 ctx가 아니라 cmd.Context()를 쓴다. 이 명령을 짜
+			// 넣는 register.go가 NewIDECmd에 context.Background()를 준다
+			// -- registry.Provider의 Command()에 ctx 자리가 없어서 다섯
+			// 제공자가 전부 그렇게 한다. 그것을 붙잡아 두면 취소가 오지
+			// 않아 감시 고리에서 빠져나올 수 없다. cmd.Context()는 root의
+			// ExecuteContext가 넣어 준 것이라 SIGINT/SIGTERM에 반응한다.
+			return o.runMonitor(cmd.Context(), cmd, args)
 		},
 	}
 
