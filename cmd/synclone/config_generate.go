@@ -31,13 +31,13 @@ Examples:
 
   # Auto-discover from existing repositories
   gz synclone config generate discover ~/projects --recursive`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return fmt.Errorf("subcommand required: init, template, discover, or github")
-			}
-
-			return nil
-		},
+		// RunE를 두지 않는다. 하위 명령만 있고 제 할 일이 없는 묶음 명령은
+		// cobra가 알아서 도움말을 찍고 0으로 끝낸다. 어미 명령인 `config`와
+		// `gz git`, `gz repo-config` 등이 전부 이 모양이다.
+		//
+		// 예전 RunE는 인자가 없으면 오류를 냈고(도움말 없이 종료 코드 1),
+		// 인자가 있으면 nil을 돌려줘서 `gz synclone config generate foo`가
+		// 아무것도 찍지 않고 성공했다. 이제는 도움말이 나온다.
 	}
 
 	// Add subcommands

@@ -51,6 +51,21 @@ func NewRootCmd(ctx context.Context, version string, appCtx *app.AppContext) *co
 
 Utility Commands: doctor, version`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// 여기 온 시점에 깃발 파싱과 인자 검사는 이미 지났다. 그러니
+			// 지금부터 나는 오류는 사용법 오류가 아니라 실행 중 오류다.
+			// 도움말을 통째로 찍을 이유가 없다.
+			//
+			// cobra는 ExecuteC에서 뿌리와 잎만 본다(command.go:1165).
+			// 중간 명령에 SilenceUsage를 걸어도 자식에게는 아무 효과가 없다 --
+			// synclone.go:60이 그랬고 `gz synclone config generate discover`가
+			// Ctrl+C에 도움말을 다 찍었다. PersistentPreRun은 실행된 잎을
+			// 받으므로 여기서 걸면 나무 전체가 덮인다.
+			//
+			// 잃는 것: --required 깃발 누락과 깃발 묶음 위반은 cobra가 이
+			// 함수보다 뒤에 검사해서 사용법이 안 나온다. 대신 그쪽은 무엇이
+			// 빠졌는지 오류 문구가 이미 분명하다.
+			cmd.SilenceUsage = true
+
 			// Set global logging configuration based on flags
 			logger.SetGlobalLoggingFlags(verbose, debug, quiet)
 			// Propagate verbose to env for deep packages that can't import logger
