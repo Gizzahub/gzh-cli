@@ -210,17 +210,23 @@ func TestTokenAwareGitHubClient_APIOperations(t *testing.T) {
 func TestTokenAwareGitHubClient_ErrorHandling(t *testing.T) {
 	// Create mock server that returns various error responses
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 경로는 GetRepository가 실제로 부르는 /repos/{owner}/{repo}다.
+		// 예전에는 /unauthorized 같은 짧은 경로로 갈라서 어느 갈래에도
+		// 걸리지 않았고, 전부 default의 500으로 떨어졌다. 그런데도 "unauthorized"
+		// 하위 시험은 통과했다 -- 오류 문구에 저장소 이름이 그대로 들어가서
+		// 500 메시지가 "unauthorized"를 포함해 버렸기 때문이다.
 		switch r.URL.Path {
-		case "/unauthorized":
+		case "/repos/user/unauthorized":
 			w.WriteHeader(http.StatusUnauthorized)
-		case "/forbidden":
+		case "/repos/user/forbidden":
 			w.Header().Set("X-RateLimit-Reset", "1640995200") // 2022-01-01 00:00:00 UTC
 			w.WriteHeader(http.StatusForbidden)
-		case "/notfound":
+		case "/repos/user/notfound":
 			w.WriteHeader(http.StatusNotFound)
-		case "/unprocessable":
+		case "/repos/user/unprocessable":
 			w.WriteHeader(http.StatusUnprocessableEntity)
 		default:
+			t.Errorf("가짜 서버가 모르는 요청을 받았다: %s %s", r.Method, r.URL.Path)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}))
@@ -239,8 +245,10 @@ func TestTokenAwareGitHubClient_ErrorHandling(t *testing.T) {
 
 	t.Run("Unauthorized", func(t *testing.T) {
 		_, err := client.GetRepository(ctx, "user", "unauthorized")
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "unauthorized")
+		require.Error(t, err)
+		// 저장소 이름에 이미 "unauthorized"가 들어 있으므로 그 낱말만으로는
+		// 아무것도 확인하지 못한다. 401 갈래에만 있는 문구를 본다.
+		assert.Contains(t, err.Error(), "token may be expired or invalid")
 	})
 
 	t.Run("Forbidden with rate limit", func(t *testing.T) {

@@ -365,6 +365,18 @@ func (c *TokenAwareGitHubClient) ValidateTokenPermissions(ctx context.Context, r
 		return fmt.Errorf("failed to create validation request: %w", err)
 	}
 
+	// 토큰을 붙인다. 이 파일의 다른 요청은 모두 붙이는데 여기만 빠져 있었다.
+	// 인증 없이 /user를 부르면 GitHub은 401을 주고, X-OAuth-Scopes 헤더는
+	// 애초에 오지 않는다. 즉 토큰 범위 검사가 언제나 실패하고 있었다.
+	if c.primaryToken != "" {
+		token, err := c.GetCurrentToken()
+		if err == nil {
+			req.Header.Set("Authorization", "token "+token)
+		}
+	}
+
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to validate token: %w", err)

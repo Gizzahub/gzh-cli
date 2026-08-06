@@ -659,7 +659,10 @@ func (wa *WorkflowAuditor) hasCodeInjectionRisk(script string) bool {
 	patterns := []string{
 		`\$\{\{\s*github\.event\..*\}\}`,
 		`\$\{\{\s*github\.head_ref\s*\}\}`,
-		`eval\s*\(`,
+		// eval은 함수 호출 꼴(eval(...))만 잡고 있었다. 워크플로의 run 블록은
+		// 셸이고, 셸에서 가장 흔한 주입 통로인 eval $(...) 는 괄호가 바로
+		// 붙지 않아 그대로 빠져나갔다. 명령어 자리에 선 eval도 잡는다.
+		`(^|[;&|(\s])eval[\s(]`,
 		`exec\s*\(`,
 	}
 
