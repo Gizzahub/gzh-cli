@@ -112,9 +112,24 @@ func (av *Validator) ValidateToken(ctx context.Context, token string, tokenType 
 	}
 
 	// Basic input validation
+	//
+	// 빈 토큰은 여기서 먼저 막는다. 공용 검사기(internal/validation)는 빈 토큰을
+	// 통과시키는데, 그쪽은 synclone 설정처럼 토큰이 선택 항목인 자리에서도
+	// 쓰이기 때문이다. 반면 이 함수는 "이 자격증명이 유효한가"에 답하므로 빈
+	// 문자열은 답할 대상 자체가 없는 상태다. 예전에는 그대로 통과해 빈
+	// Authorization 헤더로 실제 API를 호출했고, 돌아온 401이 "토큰이 틀렸다"로
+	// 읽혀 정작 "토큰을 안 줬다"는 사실을 가렸다.
+	if token == "" {
+		result.Errors = append(result.Errors, "Token format validation failed: token is empty")
+		result.Duration = time.Since(start)
+
+		return result, nil
+	}
+
 	if err := av.validator.ValidateToken(token); err != nil {
 		result.Errors = append(result.Errors, fmt.Sprintf("Token format validation failed: %v", err))
 		result.Duration = time.Since(start)
+
 		return result, nil
 	}
 
