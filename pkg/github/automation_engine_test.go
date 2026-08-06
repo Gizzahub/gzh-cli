@@ -115,29 +115,29 @@ func (m *mockEventProcessor) GetMetrics() *EventMetrics {
 	return nil
 }
 
-type mockLogger struct {
-	mock.Mock
-}
+// mockLogger는 로그를 버리는 시험용 구현이다.
+//
+// 예전에는 mock.Mock을 심어 두고 모든 메서드가 m.Called()를 부르게 했다.
+// testify의 mock은 기대를 걸지 않은 호출을 받으면 패닉하므로, 검사 대상
+// 코드가 로그를 한 줄만 남겨도 테스트가 패닉으로 끝났다 -- 패닉은 그
+// 테스트만이 아니라 패키지 전체 실행을 중단시켜서 뒤따르는 테스트는
+// 아예 돌지 않았다.
+//
+// 이 패키지에서 mockLogger는 59곳에서 만들어지지만 기대를 거는 곳
+// (.On("Info", ...))도, 호출을 확인하는 곳도 하나도 없다. 로그는 검증
+// 대상이 아니라 의존성을 채우기 위한 자리였다는 뜻이므로, 확인 기능을
+// 흉내내는 대신 실제로 아무것도 하지 않게 둔다.
+type mockLogger struct{}
 
-func (m *mockLogger) Debug(msg string, args ...any) {
-	m.Called(msg, args)
-}
+func (m *mockLogger) Debug(_ string, _ ...any) {}
 
-func (m *mockLogger) Info(msg string, args ...any) {
-	m.Called(msg, args)
-}
+func (m *mockLogger) Info(_ string, _ ...any) {}
 
-func (m *mockLogger) Warn(msg string, args ...any) {
-	m.Called(msg, args)
-}
+func (m *mockLogger) Warn(_ string, _ ...any) {}
 
-func (m *mockLogger) Error(msg string, args ...any) {
-	m.Called(msg, args)
-}
+func (m *mockLogger) Error(_ string, _ ...any) {}
 
-func (m *mockLogger) Fatal(msg string, args ...any) {
-	m.Called(msg, args)
-}
+func (m *mockLogger) Fatal(_ string, _ ...any) {}
 
 type mockConditionEvaluator struct {
 	mock.Mock
@@ -381,13 +381,15 @@ func createTestAutomationEngine() (*AutomationEngine, *mockEventProcessor, *mock
 		RetryBackoffFactor:   1.5,
 	}
 
-	// Create a real RuleManager with nil dependencies for testing
-	realRuleManager := &RuleManager{}
-
+	// 예전에는 값이 비어 있는 &RuleManager{}를 엔진에 넘기고 mockRM은
+	// 호출자에게만 돌려줬다. 그래서 테스트가 mockRM에 건 ListRules 기대는
+	// 아무도 부르지 않았고, 실제로 불린 &RuleManager{}는 storage가 nil이라
+	// 워커 고루틴에서 SIGSEGV로 죽었다. 이제 엔진이 인터페이스를 받으므로
+	// 돌려주는 대역과 엔진이 쓰는 대역이 같다.
 	engine := NewAutomationEngine(
 		logger,
 		apiClient,
-		realRuleManager,
+		mockRM,
 		conditionEvaluator,
 		actionExecutor,
 		eventProcessor,
@@ -459,13 +461,9 @@ func TestNewAutomationEngine_WithNilConfig(t *testing.T) {
 	actionExecutor := &mockActionExecutor{}
 	eventProcessor := &mockEventProcessor{}
 
-	// Create a real RuleManager since NewAutomationEngine expects *RuleManager
-	ruleManager := &RuleManager{
-		logger:         logger,
-		apiClient:      apiClient,
-		evaluator:      conditionEvaluator,
-		actionExecutor: actionExecutor,
-	}
+	// 엔진이 인터페이스를 받으므로 storage가 nil인 실제 RuleManager 대신
+	// 대역을 그대로 넣는다.
+	ruleManager := &mockRuleManager{}
 
 	engine := NewAutomationEngine(
 		logger,
@@ -558,7 +556,7 @@ func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
-	eventProcessor.On("FilterEvent", event).Return(false) // Event is filtered out
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(false, nil) // Event is filtered out
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -575,8 +573,12 @@ func TestAutomationEngine_ProcessEvent_Filtered(t *testing.T) {
 	// Wait a bit to ensure processing
 	time.Sleep(100 * time.Millisecond)
 
+	// 걸러진 이벤트는 처리 건수에 잡히지 않는다. EventsProcessed는
+	// LastProcessedEvent, EventTypeDistribution과 한 묶음으로 이벤트 채널에
+	// 실제로 실린 시점에만 올라가므로 "규칙 실행으로 넘어간 이벤트"를 뜻한다.
+	// 예전 기대값 1은 이 테스트의 이름이 말하는 것과 정반대였다.
 	metrics := engine.GetMetrics()
-	assert.Equal(t, int64(1), metrics.EventsProcessed)
+	assert.Equal(t, int64(0), metrics.EventsProcessed)
 
 	eventProcessor.AssertExpectations(t)
 }
@@ -588,6 +590,10 @@ func TestAutomationEngine_ProcessEvent_ExcludedEventType(t *testing.T) {
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
+	// 설정의 EnableRuleFiltering이 켜져 있으므로 제외 타입 검사에 닿기 전에
+	// FilterEvent가 먼저 불린다. 기대를 걸어 두지 않으면 통과가 아니라
+	// 패닉으로 끝난다.
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -604,8 +610,9 @@ func TestAutomationEngine_ProcessEvent_ExcludedEventType(t *testing.T) {
 	// Wait a bit to ensure processing
 	time.Sleep(100 * time.Millisecond)
 
+	// 제외된 타입도 걸러진 이벤트와 같이 채널에 실리지 않으므로 0이다.
 	metrics := engine.GetMetrics()
-	assert.Equal(t, int64(1), metrics.EventsProcessed)
+	assert.Equal(t, int64(0), metrics.EventsProcessed)
 
 	eventProcessor.AssertExpectations(t)
 }
@@ -617,16 +624,16 @@ func TestAutomationEngine_ProcessEvent_Success(t *testing.T) {
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
-	eventProcessor.On("FilterEvent", event).Return(true)
-	ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
-	ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
+	ruleManager.On("ListRules", mock.Anything, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
+	ruleManager.On("EvaluateConditions", mock.Anything, rule, event).Return(true, nil)
 
 	execution := &AutomationRuleExecution{
 		ID:     "exec-001",
 		RuleID: rule.ID,
 		Status: ExecutionStatusCompleted,
 	}
-	ruleManager.On("ExecuteRule", ctx, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).Return(execution, nil)
+	ruleManager.On("ExecuteRule", mock.Anything, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).Return(execution, nil)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -652,15 +659,15 @@ func TestAutomationEngine_ProcessEvent_Success(t *testing.T) {
 }
 
 func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
-	engine, eventProcessor, _ := createTestAutomationEngine()
+	engine, eventProcessor, ruleManager := createTestAutomationEngine()
 	event := createTestEngineEvent()
-	// 	rule := createTestEngineRule()
+	rule := createTestEngineRule()
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
-	eventProcessor.On("FilterEvent", event).Return(true)
-	// TODO: Fix RuleManager mocking - ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
-	// TODO: Fix RuleManager mocking - ruleManager.On("EvaluateConditions", ctx, rule, event).Return(false, nil) // Conditions don't match
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
+	ruleManager.On("ListRules", mock.Anything, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
+	ruleManager.On("EvaluateConditions", mock.Anything, rule, event).Return(false, nil) // Conditions don't match
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -683,20 +690,21 @@ func TestAutomationEngine_ProcessEvent_NoMatchingRules(t *testing.T) {
 	assert.Equal(t, int64(0), metrics.RulesExecuted) // No rules executed
 
 	eventProcessor.AssertExpectations(t)
-	// TODO: Fix RuleManager mocking - ruleManager.AssertExpectations(t)
+	ruleManager.AssertExpectations(t)
 }
 
 func TestAutomationEngine_ProcessEvent_ExecutionFailure(t *testing.T) {
-	engine, eventProcessor, _ := createTestAutomationEngine()
+	engine, eventProcessor, ruleManager := createTestAutomationEngine()
 	event := createTestEngineEvent()
-	// 	rule := createTestEngineRule()
+	rule := createTestEngineRule()
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
-	eventProcessor.On("FilterEvent", event).Return(true)
-	// TODO: Fix RuleManager mocking - ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
-	// TODO: Fix RuleManager mocking - ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
-	// TODO: Fix RuleManager mocking - ruleManager.On("ExecuteRule", ctx, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).Return((*AutomationRuleExecution)(nil), assert.AnError).Times(3) // Will retry
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
+	ruleManager.On("ListRules", mock.Anything, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
+	ruleManager.On("EvaluateConditions", mock.Anything, rule, event).Return(true, nil)
+	ruleManager.On("ExecuteRule", mock.Anything, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).
+		Return((*AutomationRuleExecution)(nil), assert.AnError)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -717,7 +725,7 @@ func TestAutomationEngine_ProcessEvent_ExecutionFailure(t *testing.T) {
 	assert.Greater(t, metrics.ExecutionErrors, int64(0))
 
 	eventProcessor.AssertExpectations(t)
-	// TODO: Fix RuleManager mocking - ruleManager.AssertExpectations(t)
+	ruleManager.AssertExpectations(t)
 }
 
 func TestAutomationEngine_GetMetrics(t *testing.T) {
@@ -739,24 +747,24 @@ func TestAutomationEngine_GetActiveExecutions(t *testing.T) {
 }
 
 func TestAutomationEngine_SyncExecution(t *testing.T) {
-	engine, eventProcessor, _ := createTestAutomationEngine()
+	engine, eventProcessor, ruleManager := createTestAutomationEngine()
 	engine.config.EnableAsyncExecution = false // Disable async execution
 
 	event := createTestEngineEvent()
-	// 	rule := createTestEngineRule()
+	rule := createTestEngineRule()
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
-	eventProcessor.On("FilterEvent", event).Return(true)
-	// TODO: Fix RuleManager mocking - ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
-	// TODO: Fix RuleManager mocking - ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
+	ruleManager.On("ListRules", mock.Anything, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
+	ruleManager.On("EvaluateConditions", mock.Anything, rule, event).Return(true, nil)
 
-	// 	execution := &AutomationRuleExecution{
-	// 		ID:     "exec-001",
-	// 		RuleID: rule.ID,
-	// 		Status: ExecutionStatusCompleted,
-	// 	}
-	// TODO: Fix RuleManager mocking - ruleManager.On("ExecuteRule", ctx, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).Return(execution, nil)
+	execution := &AutomationRuleExecution{
+		ID:     "exec-001",
+		RuleID: rule.ID,
+		Status: ExecutionStatusCompleted,
+	}
+	ruleManager.On("ExecuteRule", mock.Anything, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).Return(execution, nil)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -777,17 +785,53 @@ func TestAutomationEngine_SyncExecution(t *testing.T) {
 	assert.Greater(t, metrics.RulesExecuted, int64(0))
 
 	eventProcessor.AssertExpectations(t)
-	// TODO: Fix RuleManager mocking - ruleManager.AssertExpectations(t)
+	ruleManager.AssertExpectations(t)
 }
 
 func TestAutomationEngine_EventChannelFull(t *testing.T) {
-	engine, eventProcessor, _ := createTestAutomationEngine()
-	engine.config.EventBufferSize = 1 // Very small buffer
+	// 이 시험은 버퍼가 찼을 때 이벤트가 거절되는지를 본다. 그러려면 두 가지가
+	// 필요하다.
+	//
+	// 첫째, 버퍼 크기를 생성 시점에 정해야 한다. 예전에는 엔진을 만든 뒤
+	// engine.config.EventBufferSize = 1로 바꿨는데, 채널은 이미 생성자에서
+	// make(chan, 10)으로 만들어진 뒤라 이 대입은 아무 효과가 없었다.
+	//
+	// 둘째, 채널을 비우는 쪽이 없어야 한다. MaxWorkers가 2면 이벤트 워커가
+	// 곧바로 채널을 비우므로 "가득 참"은 경합에 따라 나기도 하고 안 나기도
+	// 한다. MaxWorkers를 0으로 두면 이벤트 워커가 뜨지 않아 결과가 확정된다.
+	logger := &mockLogger{}
+	apiClient := &mockAPIClient{}
+	ruleManager := &mockRuleManager{}
+	conditionEvaluator := &mockConditionEvaluator{}
+	actionExecutor := &mockActionExecutor{}
+	eventProcessor := &mockEventProcessor{}
+
+	engine := NewAutomationEngine(
+		logger,
+		apiClient,
+		ruleManager,
+		conditionEvaluator,
+		actionExecutor,
+		eventProcessor,
+		&AutomationEngineConfig{
+			MaxWorkers:           0, // 이벤트 워커 없음 -- 채널을 비우는 쪽이 없다
+			EventBufferSize:      1, // 한 건만 담긴다
+			ExecutionTimeout:     30 * time.Second,
+			EnableAsyncExecution: true,
+			EnableRuleFiltering:  true,
+			EnableMetrics:        true,
+			MaxRetries:           2,
+			RetryBackoffFactor:   1.5,
+		},
+	)
 
 	event := createTestEngineEvent()
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
+	// EnableRuleFiltering이 켜져 있으므로 채널에 닿기 전에 FilterEvent가 먼저
+	// 불린다. 기대를 걸어 두지 않으면 통과가 아니라 패닉으로 끝난다.
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
 
 	err := engine.Start(ctx)
 	require.NoError(t, err)
@@ -886,13 +930,9 @@ func BenchmarkAutomationEngine_ProcessEvent(b *testing.B) {
 	actionExecutor := &mockActionExecutor{}
 	eventProcessor := &mockEventProcessor{}
 
-	// Create a real RuleManager since NewAutomationEngine expects *RuleManager
-	ruleManager := &RuleManager{
-		logger:         logger,
-		apiClient:      apiClient,
-		evaluator:      conditionEvaluator,
-		actionExecutor: actionExecutor,
-	}
+	// 엔진이 인터페이스를 받으므로 storage가 nil인 실제 RuleManager 대신
+	// 대역을 그대로 넣는다.
+	ruleManager := &mockRuleManager{}
 
 	config := &AutomationEngineConfig{
 		MaxWorkers:           2,
@@ -916,13 +956,13 @@ func BenchmarkAutomationEngine_ProcessEvent(b *testing.B) {
 	)
 
 	event := createTestEngineEvent()
-	// 	rule := createTestEngineRule()
+	rule := createTestEngineRule()
 	ctx := context.Background()
 
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
-	eventProcessor.On("FilterEvent", event).Return(true)
-	// TODO: Fix RuleManager mocking - ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
-	// TODO: Fix RuleManager mocking - ruleManager.On("EvaluateConditions", ctx, rule, event).Return(false, nil) // Don't execute for benchmark
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
+	ruleManager.On("ListRules", mock.Anything, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
+	ruleManager.On("EvaluateConditions", mock.Anything, rule, event).Return(false, nil) // Don't execute for benchmark
 
 	if err := engine.Start(ctx); err != nil {
 		b.Errorf("Failed to start engine: %v", err)
@@ -957,32 +997,32 @@ func BenchmarkAutomationEngine_UpdateMetrics(b *testing.B) {
 // Integration test
 
 func TestAutomationEngine_Integration(t *testing.T) {
-	engine, eventProcessor, _ := createTestAutomationEngine()
+	engine, eventProcessor, ruleManager := createTestAutomationEngine()
 
 	// Test complete flow: start -> process event -> execute rule -> stop
 	event := createTestEngineEvent()
-	// rule := createTestEngineRule()
+	rule := createTestEngineRule()
 	ctx := context.Background()
 
 	// Set up mocks for complete flow
 	eventProcessor.On("ValidateEvent", mock.Anything, event).Return(nil)
-	eventProcessor.On("FilterEvent", event).Return(true)
-	// TODO: Fix RuleManager mocking - ruleManager.On("ListRules", ctx, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
-	// TODO: Fix RuleManager mocking - ruleManager.On("EvaluateConditions", ctx, rule, event).Return(true, nil)
+	eventProcessor.On("FilterEvent", mock.Anything, event, mock.Anything).Return(true, nil)
+	ruleManager.On("ListRules", mock.Anything, "testorg", mock.AnythingOfType("*github.RuleFilter")).Return([]*AutomationRule{rule}, nil)
+	ruleManager.On("EvaluateConditions", mock.Anything, rule, event).Return(true, nil)
 
-	// 	execution := &AutomationRuleExecution{
-	// 		ID:     "exec-001",
-	// 		RuleID: rule.ID,
-	// 		Status: ExecutionStatusCompleted,
-	// 		Actions: []ActionExecutionResult{
-	// 			{
-	// 				ActionID:   "action-001",
-	// 				ActionType: ActionTypeAddLabel,
-	// 				Status:     ExecutionStatusCompleted,
-	// 			},
-	// 		},
-	// 	}
-	// 	// TODO: Fix RuleManager mocking - ruleManager.On("ExecuteRule", ctx, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).Return(execution, nil)
+	execution := &AutomationRuleExecution{
+		ID:     "exec-001",
+		RuleID: rule.ID,
+		Status: ExecutionStatusCompleted,
+		Actions: []ActionExecutionResult{
+			{
+				ActionID:   "action-001",
+				ActionType: ActionTypeAddLabel,
+				Status:     ExecutionStatusCompleted,
+			},
+		},
+	}
+	ruleManager.On("ExecuteRule", mock.Anything, rule, mock.AnythingOfType("*github.AutomationExecutionContext")).Return(execution, nil)
 
 	// Start engine
 	err := engine.Start(ctx)
@@ -1007,5 +1047,5 @@ func TestAutomationEngine_Integration(t *testing.T) {
 
 	// Verify all mocks were called
 	eventProcessor.AssertExpectations(t)
-	// TODO: Fix RuleManager mocking - ruleManager.AssertExpectations(t)
+	ruleManager.AssertExpectations(t)
 }

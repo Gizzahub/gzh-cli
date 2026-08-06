@@ -16,7 +16,7 @@ import (
 type AutomationEngine struct {
 	logger             Logger
 	apiClient          APIClient
-	ruleManager        *RuleManager
+	ruleManager        AutomationRuleManager
 	conditionEvaluator ConditionEvaluator
 	actionExecutor     ActionExecutor
 	eventProcessor     EventProcessor
@@ -97,11 +97,27 @@ type AutomationEventProcessor interface {
 	ValidateEvent(ctx context.Context, event *GitHubEvent) error
 }
 
+// AutomationRuleManager는 엔진이 규칙 저장소에 요구하는 최소 동작이다.
+//
+// 엔진의 다른 의존성은 모두 인터페이스인데 규칙 관리자만 구체 타입
+// *RuleManager였다. 그래서 시험에서 대역을 넣을 방법이 없었고, 테스트는
+// 값이 비어 있는 &RuleManager{}를 넘긴 뒤 정작 기대는 아무도 호출하지 않는
+// 별도의 mock에 걸어 두고 있었다 -- 그 mock의 ListRules는 한 번도 불리지
+// 않았고, 실제로 불린 쪽은 storage가 nil이라 SIGSEGV로 죽었다.
+//
+// 엔진이 쓰는 것은 아래 세 가지뿐이므로 그만큼만 인터페이스로 끊는다.
+// *RuleManager가 그대로 이 인터페이스를 만족하므로 호출부는 바뀌지 않는다.
+type AutomationRuleManager interface {
+	ListRules(ctx context.Context, org string, filter *RuleFilter) ([]*AutomationRule, error)
+	EvaluateConditions(ctx context.Context, rule *AutomationRule, event *GitHubEvent) (bool, error)
+	ExecuteRule(ctx context.Context, rule *AutomationRule, execContext *AutomationExecutionContext) (*AutomationRuleExecution, error)
+}
+
 // NewAutomationEngine creates a new automation engine.
 func NewAutomationEngine(
 	logger Logger,
 	apiClient APIClient,
-	ruleManager *RuleManager,
+	ruleManager AutomationRuleManager,
 	conditionEvaluator ConditionEvaluator,
 	actionExecutor ActionExecutor,
 	eventProcessor EventProcessor,
