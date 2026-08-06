@@ -22,7 +22,9 @@ func TestNewKubeconfigCmd(t *testing.T) {
 	cmd := newKubeconfigCmd()
 
 	assert.Equal(t, "kubeconfig", cmd.Use)
-	assert.Contains(t, cmd.Short, "yaml")
+	// "yaml" is NewBaseCommand's configFileName — the extension saved configs get
+	// on disk. It never reached Short, which BaseCommand derives from serviceName.
+	assert.Contains(t, cmd.Short, "Kubeconfig")
 	assert.NotEmpty(t, cmd.Long)
 
 	// BaseCommand를 사용하므로 save, load, list 서브커맨드가 자동 생성됨

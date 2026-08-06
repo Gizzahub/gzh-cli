@@ -22,7 +22,8 @@ func TestNewSshCmd(t *testing.T) {
 	cmd := newSshCmd() // 함수명은 newSshCmd
 
 	assert.Equal(t, "ssh", cmd.Use)
-	assert.Contains(t, cmd.Short, "ssh")
+	// Short spells the protocol in caps; Use is the lowercase one.
+	assert.Contains(t, cmd.Short, "SSH")
 	assert.NotEmpty(t, cmd.Long)
 
 	// BaseCommand를 사용하므로 save, load, list 서브커맨드가 자동 생성됨
