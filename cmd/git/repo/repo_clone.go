@@ -13,6 +13,7 @@ import (
 
 	"github.com/gizzahub/gzh-cli/internal/git/clone"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/gitea"
 	"github.com/gizzahub/gzh-cli/pkg/github"
 	"github.com/gizzahub/gzh-cli/pkg/gitlab"
 )
@@ -127,41 +128,9 @@ func runRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 		return runResumeClone(ctx, opts)
 	}
 
-	// Create provider factory
-	factory := provider.NewProviderFactory()
-
-	// Register provider constructors
-	if err := registerProviderConstructors(factory); err != nil {
-		return fmt.Errorf("failed to register providers: %w\n\nNote: For production use, consider using the 'gz synclone' command which is fully stable:\n  gz synclone --config examples/synclone/synclone-example.yaml", err)
-	}
-
-	// Create provider configuration
-	providerConfig := &provider.ProviderConfig{
-		Type:     opts.Provider,
-		Name:     fmt.Sprintf("%s-clone", opts.Provider),
-		Token:    opts.Token,
-		Username: opts.Username,
-		Password: opts.Password,
-		Enabled:  true,
-		Extra:    make(map[string]any),
-	}
-
-	// Register configuration
-	if err := factory.RegisterConfig(providerConfig.Name, providerConfig); err != nil {
-		return fmt.Errorf("failed to register provider config: %w", err)
-	}
-
-	// Create provider registry
-	registry := provider.NewProviderRegistry(factory, provider.RegistryConfig{
-		EnableCaching:      true,
-		EnableHealthChecks: false, // Skip health checks for one-time operations
-		CacheTimeout:       5 * time.Minute,
-	})
-
-	// Get provider instance
-	gitProvider, err := registry.GetProvider(providerConfig.Name)
+	gitProvider, err := getCloneProvider(opts)
 	if err != nil {
-		return fmt.Errorf("failed to get provider: %w", err)
+		return err
 	}
 
 	// Create clone executor
@@ -209,42 +178,76 @@ func runResumeClone(ctx context.Context, opts *clone.CloneOptions) error {
 	return runRepoClone(ctx, originalOpts)
 }
 
+// getCloneProvider resolves the provider the clone executor runs against. It is
+// a separate seam from getGitProvider because clone takes its credentials from
+// its own flags rather than from the environment; both exist so tests can
+// substitute a double instead of reaching the live API.
+var getCloneProvider = newCloneProvider
+
+// newCloneProvider builds a real provider from the clone command's options.
+func newCloneProvider(opts *clone.CloneOptions) (provider.GitProvider, error) {
+	factory := provider.NewProviderFactory()
+
+	if err := registerProviderConstructors(factory); err != nil {
+		return nil, fmt.Errorf("failed to register providers: %w\n\nNote: For production use, consider using the 'gz synclone' command which is fully stable:\n  gz synclone --config examples/synclone/synclone-example.yaml", err)
+	}
+
+	providerConfig := &provider.ProviderConfig{
+		Type:     opts.Provider,
+		Name:     fmt.Sprintf("%s-clone", opts.Provider),
+		Token:    opts.Token,
+		Username: opts.Username,
+		Password: opts.Password,
+		Enabled:  true,
+		Extra:    make(map[string]any),
+	}
+
+	if err := factory.RegisterConfig(providerConfig.Name, providerConfig); err != nil {
+		return nil, fmt.Errorf("failed to register provider config: %w", err)
+	}
+
+	registry := provider.NewProviderRegistry(factory, provider.RegistryConfig{
+		EnableCaching:      true,
+		EnableHealthChecks: false, // Skip health checks for one-time operations
+		CacheTimeout:       5 * time.Minute,
+	})
+
+	gitProvider, err := registry.GetProvider(providerConfig.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get provider: %w", err)
+	}
+
+	return gitProvider, nil
+}
+
 // registerProviderConstructors registers provider constructors with the factory.
 func registerProviderConstructors(factory *provider.ProviderFactory) error {
-	// Register GitHub provider
-	if err := factory.RegisterProvider("github", github.CreateGitHubProvider); err != nil {
-		return fmt.Errorf("failed to register GitHub provider: %w", err)
+	constructors := []struct {
+		name string
+		ctor provider.ProviderConstructor
+	}{
+		{"github", github.CreateGitHubProvider},
+		{"gitlab", gitlab.CreateGitLabProvider},
+		{"gitea", gitea.CreateGiteaProvider},
 	}
 
-	// Register GitLab provider
-	if err := factory.RegisterProvider("gitlab", gitlab.CreateGitLabProvider); err != nil {
-		return fmt.Errorf("failed to register GitLab provider: %w", err)
-	}
-
-	// Register Gitea provider
-	if err := factory.RegisterProvider("gitea", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
-		// This would call gitea.CreateGiteaProvider(config) when fully integrated
-		// For now, provide a stub implementation that indicates the provider is configured
-		baseURL := config.BaseURL
-		if baseURL == "" {
-			baseURL = "https://gitea.com/api/v1"
+	for _, c := range constructors {
+		if err := factory.RegisterProvider(c.name, c.ctor); err != nil {
+			return fmt.Errorf("failed to register %s provider: %w", c.name, err)
 		}
-		return nil, fmt.Errorf("Gitea provider registered but implementation pending - would connect to %s", baseURL)
-	}); err != nil {
-		return fmt.Errorf("failed to register Gitea provider: %w", err)
 	}
 
-	// Register Gogs provider
+	// Gogs has no client package yet, so it stays a stub. The error names the
+	// endpoint it would have used, which is the only useful thing it can say.
 	if err := factory.RegisterProvider("gogs", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
-		// This would call gogs.CreateGogsProvider(config) when implemented
-		// For now, provide a stub implementation
 		baseURL := config.BaseURL
 		if baseURL == "" {
 			baseURL = "https://try.gogs.io/api/v1"
 		}
-		return nil, fmt.Errorf("Gogs provider registered but implementation pending - would connect to %s", baseURL)
+
+		return nil, fmt.Errorf("gogs provider is not implemented yet (would connect to %s)", baseURL)
 	}); err != nil {
-		return fmt.Errorf("failed to register Gogs provider: %w", err)
+		return fmt.Errorf("failed to register gogs provider: %w", err)
 	}
 
 	return nil

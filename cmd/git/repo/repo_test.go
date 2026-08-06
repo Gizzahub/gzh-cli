@@ -5,12 +5,15 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/suite"
+
+	"github.com/gizzahub/gzh-cli/internal/git/clone"
 
 	"github.com/gizzahub/gzh-cli/internal/git/provider/mock"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
@@ -23,6 +26,11 @@ type GitRepoTestSuite struct {
 	testRepos     []provider.Repository
 	tempDir       string
 	ctx           context.Context
+
+	// realGetGitProvider and realGetCloneProvider hold the production seams
+	// while a test has them swapped.
+	realGetGitProvider   func(providerType, org string) (provider.GitProvider, error)
+	realGetCloneProvider func(opts *clone.CloneOptions) (provider.GitProvider, error)
 }
 
 // SetupSuite initializes the test suite with mock providers and test data.
@@ -41,7 +49,8 @@ func (s *GitRepoTestSuite) SetupSuite() {
 	s.testRepos = s.generateTestRepos()
 }
 
-// SetupTest creates a temporary directory for each test.
+// SetupTest creates a temporary directory for each test and points the commands
+// at the suite's mock providers.
 func (s *GitRepoTestSuite) SetupTest() {
 	var err error
 	s.tempDir, err = os.MkdirTemp("", "gzh-git-repo-test-*")
@@ -49,10 +58,42 @@ func (s *GitRepoTestSuite) SetupTest() {
 
 	// Change to temp directory for tests
 	s.Require().NoError(os.Chdir(s.tempDir))
+
+	// Substitute both provider seams. Without this the commands build real
+	// providers and talk to the live API -- including the delete and archive
+	// paths, against fixture names like testorg/test-repo.
+	s.realGetGitProvider = getGitProvider
+	getGitProvider = func(providerType, _ string) (provider.GitProvider, error) {
+		return s.providerFor(providerType)
+	}
+
+	s.realGetCloneProvider = getCloneProvider
+	getCloneProvider = func(opts *clone.CloneOptions) (provider.GitProvider, error) {
+		return s.providerFor(opts.Provider)
+	}
+}
+
+// providerFor returns the suite's mock for a provider type, so an unregistered
+// type fails loudly here rather than silently falling through to the network.
+func (s *GitRepoTestSuite) providerFor(providerType string) (provider.GitProvider, error) {
+	mockProvider, ok := s.mockProviders[providerType]
+	if !ok {
+		return nil, fmt.Errorf("no mock provider registered for type %q", providerType)
+	}
+
+	return mockProvider, nil
 }
 
 // TearDownTest cleans up the temporary directory after each test.
 func (s *GitRepoTestSuite) TearDownTest() {
+	if s.realGetGitProvider != nil {
+		getGitProvider = s.realGetGitProvider
+	}
+
+	if s.realGetCloneProvider != nil {
+		getCloneProvider = s.realGetCloneProvider
+	}
+
 	if s.tempDir != "" {
 		os.RemoveAll(s.tempDir)
 	}

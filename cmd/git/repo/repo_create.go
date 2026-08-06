@@ -16,6 +16,9 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
+	"github.com/gizzahub/gzh-cli/pkg/gitea"
+	"github.com/gizzahub/gzh-cli/pkg/github"
+	"github.com/gizzahub/gzh-cli/pkg/gitlab"
 )
 
 // CreateOptions contains options for repository creation.
@@ -289,8 +292,14 @@ func isValidOutputFormat(format string) bool {
 	return slices.Contains(validFormats, format)
 }
 
-// getGitProvider gets a provider instance for the specified type and organization.
-func getGitProvider(providerType, org string) (provider.GitProvider, error) {
+// getGitProvider resolves a provider instance for the specified type and
+// organization. Every repo command except clone reaches its provider through
+// here, so this is the seam tests substitute a double at; clone has its own
+// (getCloneProvider) because it sources credentials from flags instead.
+var getGitProvider = newGitProvider
+
+// newGitProvider builds a real provider from the registered constructors.
+func newGitProvider(providerType, org string) (provider.GitProvider, error) {
 	// Create and configure provider factory
 	factory := provider.NewProviderFactory()
 
@@ -314,38 +323,21 @@ func getGitProvider(providerType, org string) (provider.GitProvider, error) {
 	return gitProvider, nil
 }
 
-// registerProviders registers all available provider constructors
+// registerProviders registers all available provider constructors.
 func registerProviders(factory *provider.ProviderFactory) error {
-	// Import packages to access their register functions
-	githubPkg := "github.com/gizzahub/gzh-cli/pkg/github"
-	gitlabPkg := "github.com/gizzahub/gzh-cli/pkg/gitlab"
-	giteaPkg := "github.com/gizzahub/gzh-cli/pkg/gitea"
-
-	// Note: In a real implementation, these would be direct function calls
-	// For now, register with basic implementations
-
-	// Register GitHub provider
-	if err := factory.RegisterProvider("github", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
-		// This would call github.CreateGitHubProvider(config)
-		return nil, fmt.Errorf("GitHub provider constructor not yet integrated - requires %s", githubPkg)
-	}); err != nil {
-		return fmt.Errorf("failed to register GitHub provider: %w", err)
+	constructors := []struct {
+		name string
+		ctor provider.ProviderConstructor
+	}{
+		{"github", github.CreateGitHubProvider},
+		{"gitlab", gitlab.CreateGitLabProvider},
+		{"gitea", gitea.CreateGiteaProvider},
 	}
 
-	// Register GitLab provider
-	if err := factory.RegisterProvider("gitlab", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
-		// This would call gitlab.CreateGitLabProvider(config)
-		return nil, fmt.Errorf("GitLab provider constructor not yet integrated - requires %s", gitlabPkg)
-	}); err != nil {
-		return fmt.Errorf("failed to register GitLab provider: %w", err)
-	}
-
-	// Register Gitea provider
-	if err := factory.RegisterProvider("gitea", func(config *provider.ProviderConfig) (provider.GitProvider, error) {
-		// This would call gitea.CreateGiteaProvider(config)
-		return nil, fmt.Errorf("Gitea provider constructor not yet integrated - requires %s", giteaPkg)
-	}); err != nil {
-		return fmt.Errorf("failed to register Gitea provider: %w", err)
+	for _, c := range constructors {
+		if err := factory.RegisterProvider(c.name, c.ctor); err != nil {
+			return fmt.Errorf("failed to register %s provider: %w", c.name, err)
+		}
 	}
 
 	return nil

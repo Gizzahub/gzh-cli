@@ -292,7 +292,10 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				srcProvider := s.mockProviders["github"]
 				dstProvider := s.mockProviders["gitlab"]
 
+				// Name has to move with FullName: the create request the engine
+				// builds carries Name, which is what the matcher below keys on.
 				srcRepo := s.testRepos[0]
+				srcRepo.Name = "webapp"
 				srcRepo.FullName = "sourceorg/webapp"
 				srcProvider.SetupGetResponse("sourceorg/webapp", &srcRepo, nil)
 
@@ -365,15 +368,23 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 			expectErr: false,
 		},
 		{
-			name: "Invalid parallel count",
+			// Validate() is deliberately asymmetric: it clamps a too-small worker
+			// count up to 1 and only rejects counts above the ceiling. Clamping a
+			// nonsensical low value is safe; silently shrinking a large one would
+			// hide what the user asked for, so that case errors instead.
+			name: "Parallel count below minimum is clamped",
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
 				"--to", "gitlab:targetorg",
 				"--parallel", "0",
 			},
-			setup:     func() { s.resetMocks() },
-			expectErr: true,
+			setup: func() {
+				s.resetMocks()
+				s.mockProviders["github"].SetupListResponse("sourceorg", []provider.Repository{})
+				s.mockProviders["gitlab"].SetupListResponse("targetorg", []provider.Repository{})
+			},
+			expectErr: false,
 		},
 		{
 			name: "Parallel count too high",
