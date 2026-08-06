@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -612,5 +613,9 @@ func ExampleEventProcessor() {
 	// Use the server to handle webhook requests
 	_ = server
 
-	// Output: Example completed
+	// 예시가 아무것도 찍지 않는데 기대값만 "Example completed"로 적혀 있어서
+	// 늘 실패했다. 실제로 무엇이 엮였는지 찍는다.
+	fmt.Printf("handler registered for %s events\n", EventTypePush)
+
+	// Output: handler registered for push events
 }

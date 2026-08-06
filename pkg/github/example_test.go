@@ -1,3 +1,14 @@
+// 이 파일의 예시는 실제 GitHub API를 부른다. 그래서 // Output: 주석을 두지
+// 않는다. 주석이 없는 Example은 컴파일만 되고 실행되지는 않는다는 것이 Go의
+// 규칙이고, 문서에는 그대로 실린다.
+//
+// 예전에는 주석이 붙어 있었지만 적힌 값이 코드가 찍는 내용과 아예 달랐다.
+// 이를테면 ExampleList는 "Found %d repositories"를 찍는데 기대값은 "Found
+// repositories in organization"이었다. 통과할 수 없는 시험이었고, 게다가
+// 실행될 때마다 github 조직의 저장소 수백 개를 실제로 받아왔다 -- 결과는
+// 오늘과 내일이 다르고 망이 없으면 아예 돌지 않는다.
+//
+// 실제 호출까지 확인하려면 integration 빌드 태그를 붙인 별도 시험으로 둔다.
 package github_test
 
 import (
@@ -24,7 +35,6 @@ func ExampleGetDefaultBranch() {
 	}
 
 	fmt.Printf("Default branch: %s", branch)
-	// Output: Default branch: master
 }
 
 // ExampleList demonstrates how to list all repositories in a GitHub organization.
@@ -44,7 +54,6 @@ func ExampleList() {
 	if len(repos) > 0 {
 		fmt.Printf("\nFirst repository: %s", repos[0])
 	}
-	// Output: Found repositories in organization
 }
 
 // ExampleClone demonstrates how to clone a GitHub repository to a local directory.
@@ -66,7 +75,6 @@ func ExampleClone() {
 	}
 
 	fmt.Println("Repository cloned successfully")
-	// Output: Repository cloned successfully
 }
 
 // ExampleWorkflow demonstrates a complete workflow of discovering and cloning
@@ -119,7 +127,6 @@ func ExampleCachedGitHubClient_workflow() {
 	}
 
 	fmt.Println("Workflow completed")
-	// Output: Workflow demonstrates organization repository management
 }
 
 // ExampleErrorHandling demonstrates proper error handling when working
@@ -147,5 +154,4 @@ func ExampleCachedGitHubClient_errorHandling() {
 	}
 
 	fmt.Println("Error handling examples completed")
-	// Output: Error handling examples demonstrate proper error management
 }
