@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
+	"path"
 	"regexp"
 	"slices"
 	"strconv"
@@ -491,6 +491,36 @@ func (e *conditionEvaluatorImpl) EvaluateTimeConditions(timestamp time.Time, con
 	return true, nil
 }
 
+// matchesPathGlob는 파일/경로 패턴을 글롭으로 대조한다.
+//
+// 이 패키지의 패턴 항목은 두 가지 언어를 쓴다. repository_patterns와
+// branch_patterns는 정규식("^feature/.*")이고, file_patterns와
+// path_patterns는 글롭("*.go")이다 -- 배포된 예제
+// examples/automation/automation-rule-example.yaml이 이 구분을 그대로
+// 보여준다. 예전에는 넷 다 regexp.MatchString으로 대조해서 "*.go"가
+// "missing argument to repetition operator"로 거절됐다. 즉 문서대로 규칙을
+// 쓴 사용자는 파일 조건이 통째로 오류가 됐다.
+//
+// 구분자가 없는 패턴은 파일명에만 대조한다. path.Match의 *는 /를 넘지
+// 않으므로 그대로 두면 "*.go"가 "auth/handler.go"에 걸리지 않는데,
+// file_patterns에 "*.go"를 적는 사람은 "어느 디렉터리든 Go 파일"을 뜻한다.
+// .gitignore와 CI 도구들의 관행과 같다. 반대로 "auth/*.go"처럼 구분자를
+// 넣으면 전체 경로에 대조하므로 의도한 범위가 유지된다.
+func matchesPathGlob(pattern, name string) (bool, error) {
+	if !strings.Contains(pattern, "/") {
+		matched, err := path.Match(pattern, path.Base(name))
+		if err != nil {
+			return false, err
+		}
+
+		if matched {
+			return true, nil
+		}
+	}
+
+	return path.Match(pattern, name)
+}
+
 // EvaluateContentConditions evaluates content-based conditions (branches, files, paths).
 func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, event *GitHubEvent, conditions *AutomationConditions) (bool, error) {
 	// Extract branch information from event payload
@@ -524,7 +554,7 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 
 		for _, pattern := range conditions.FilePatterns {
 			for _, file := range files {
-				if isMatch, err := regexp.MatchString(pattern, file); err != nil {
+				if isMatch, err := matchesPathGlob(pattern, file); err != nil {
 					return false, fmt.Errorf("invalid file pattern '%s': %w", pattern, err)
 				} else if isMatch {
 					matched = true
@@ -553,7 +583,7 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 
 		for _, pattern := range conditions.PathPatterns {
 			for _, path := range paths {
-				if isMatch, err := regexp.MatchString(pattern, path); err != nil {
+				if isMatch, err := matchesPathGlob(pattern, path); err != nil {
 					return false, fmt.Errorf("invalid path pattern '%s': %w", pattern, err)
 				} else if isMatch {
 					matched = true
@@ -572,6 +602,30 @@ func (e *conditionEvaluatorImpl) EvaluateContentConditions(ctx context.Context, 
 	}
 
 	return true, nil
+}
+
+// jsonPathToGJSON는 JSONPath 표기를 gjson 경로로 옮긴다.
+//
+// PayloadMatcher.Path는 JSONPath로 문서화돼 있고("$.pull_request.title"),
+// ValidateConditions도 '$'나 '@'로 시작할 것을 요구한다. 그런데 조회는
+// gjson이 하는데 gjson의 경로 문법에는 루트 기호가 없다 -- "$.action"을
+// 그대로 넘기면 "$"라는 이름의 키를 찾다가 실패한다. 그래서 문서와 예제
+// 그대로 규칙을 쓰면 payload_match가 언제나 "path not found"였다.
+//
+// 옮기는 범위는 루트 기호와 대괄호 첨자까지다. 그 밖의 JSONPath 문법
+// (필터식, 재귀 하강 '..')은 gjson에 대응이 없으므로 건드리지 않고
+// 넘긴다 -- 조용히 다른 뜻으로 바꾸는 것보다 gjson이 못 찾았다고 하는
+// 편이 낫다.
+func jsonPathToGJSON(jsonPath string) string {
+	converted := strings.TrimPrefix(jsonPath, "$")
+	converted = strings.TrimPrefix(converted, "@")
+	converted = strings.TrimPrefix(converted, ".")
+
+	// JSONPath의 배열 첨자 "a[0]"은 gjson에서 "a.0"이다.
+	converted = strings.ReplaceAll(converted, "[", ".")
+	converted = strings.ReplaceAll(converted, "]", "")
+
+	return converted
 }
 
 // EvaluatePayloadMatcher evaluates a single payload matcher.
@@ -597,7 +651,7 @@ func (e *conditionEvaluatorImpl) evaluatePayloadMatcherWithResult(matcher *Paylo
 	}
 
 	// Extract value using JSONPath
-	gjsonResult := gjson.GetBytes(jsonBytes, matcher.Path)
+	gjsonResult := gjson.GetBytes(jsonBytes, jsonPathToGJSON(matcher.Path))
 	if !gjsonResult.Exists() {
 		// Handle "exists" and "not_exists" operators specially
 		switch matcher.Operator {
@@ -870,15 +924,18 @@ func (e *conditionEvaluatorImpl) extractPathsFromPayload(payload map[string]any)
 	pathMap := make(map[string]bool)
 
 	for _, file := range files {
-		dir := filepath.Dir(file)
+		// 저장소 경로는 언제나 '/'로 구분되므로 path를 쓴다. filepath는
+		// 실행 OS의 구분자를 따르므로 Windows에서는 "auth/handler.go"를
+		// 쪼개지 못하고 통째로 돌려준다.
+		dir := path.Dir(file)
 		if dir != "." {
 			pathMap[dir] = true
 		}
 	}
 
 	paths := make([]string, 0, len(pathMap))
-	for path := range pathMap {
-		paths = append(paths, path)
+	for dir := range pathMap {
+		paths = append(paths, dir)
 	}
 
 	return paths
@@ -935,18 +992,36 @@ func (e *conditionEvaluatorImpl) ValidateConditions(conditions *AutomationCondit
 		}{fmt.Sprintf("branch_patterns[%d]", i), pattern})
 	}
 
+	// file_patterns와 path_patterns는 글롭이므로 정규식 목록에 넣지 않는다.
+	// 예전에는 함께 regexp.Compile로 검사해서 "*.go" 같은 정상적인 글롭이
+	// 유효성 오류로 보고됐다 -- 평가 단계와 같은 원인의 같은 결함이다.
+	globs := []struct {
+		field   string
+		pattern string
+	}{}
+
 	for i, pattern := range conditions.FilePatterns {
-		patterns = append(patterns, struct {
+		globs = append(globs, struct {
 			field   string
 			pattern string
 		}{fmt.Sprintf("file_patterns[%d]", i), pattern})
 	}
 
 	for i, pattern := range conditions.PathPatterns {
-		patterns = append(patterns, struct {
+		globs = append(globs, struct {
 			field   string
 			pattern string
 		}{fmt.Sprintf("path_patterns[%d]", i), pattern})
+	}
+
+	for _, g := range globs {
+		if _, err := path.Match(g.pattern, ""); err != nil {
+			result.Valid = false
+			result.Errors = append(result.Errors, ConditionValidationError{
+				Field:   g.field,
+				Message: fmt.Sprintf("Invalid glob pattern: %v", err),
+			})
+		}
 	}
 
 	for _, p := range patterns {
