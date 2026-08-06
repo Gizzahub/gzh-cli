@@ -241,11 +241,18 @@ func TestVulnerabilitySeverityConstants(t *testing.T) {
 	}
 
 	// Test specific values
-	assert.Equal(t, VulnerabilitySeverity("critical"), SeverityCritical)
-	assert.Equal(t, VulnerabilitySeverity("high"), SeverityHigh)
-	assert.Equal(t, VulnerabilitySeverity("medium"), SeverityMedium)
-	assert.Equal(t, VulnerabilitySeverity("low"), SeverityLow)
-	assert.Equal(t, VulnerabilitySeverity("info"), SeverityInfo)
+	//
+	// 예전에는 SeverityCritical 등과 비교했는데, 그쪽은 워크플로 감사용
+	// SecurityIssueSeverity 상수다. 이 패키지에는 값이 같고 타입만 다른
+	// 심각도 열거가 여럿 있어(SecurityIssueSeverity, VulnerabilitySeverity,
+	// PolicySeverity, PolicyViolationSeverity, WebhookAlertSeverity) 이름만
+	// 보고 고르면 엉뚱한 도메인의 상수를 집게 된다. assert.Equal은 타입까지
+	// 비교하므로 문자열이 같아도 통과하지 않는다.
+	assert.Equal(t, VulnerabilitySeverity("critical"), VulnSeverityCritical)
+	assert.Equal(t, VulnerabilitySeverity("high"), VulnSeverityHigh)
+	assert.Equal(t, VulnerabilitySeverity("medium"), VulnSeverityMedium)
+	assert.Equal(t, VulnerabilitySeverity("low"), VulnSeverityLow)
+	assert.Equal(t, VulnerabilitySeverity("info"), VulnSeverityInfo)
 }
 
 func TestConditionTypeConstants(t *testing.T) {

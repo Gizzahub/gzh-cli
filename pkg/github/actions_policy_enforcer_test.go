@@ -157,6 +157,12 @@ func TestActionsPolicyEnforcer_EnforcePolicy(t *testing.T) {
 		SecuritySettings: ActionsSecuritySettings{
 			AllowForkPRs: false,
 		},
+		// CreatePolicy는 validatePolicy를 통과해야 저장된다. 러너 정책이
+		// 비어 있으면 "at least one runner type must be allowed"로 거절돼
+		// 정작 검사 대상인 EnforcePolicy까지 가지도 못했다.
+		Runners: RunnerPolicy{
+			AllowedRunnerTypes: []RunnerType{RunnerTypeGitHubHosted},
+		},
 		Enabled: true,
 	}
 
@@ -180,11 +186,22 @@ func TestActionsPolicyEnforcer_EnforcePolicy_DisabledPolicy(t *testing.T) {
 	ctx := context.Background()
 
 	// Create a disabled test policy
+	//
+	// Enabled=false여도 저장 시점의 검증은 똑같이 거친다. 예전 픽스처는
+	// 필수 항목을 모두 비워 둬 CreatePolicy가 "invalid permission level: "로
+	// 거절했고, 그래서 이 시험은 EnforcePolicy를 한 번도 부르지 못했다.
 	policy := &ActionsPolicy{
-		ID:           "disabled-policy",
-		Name:         "Disabled Policy",
-		Organization: "testorg",
-		Enabled:      false, // Disabled
+		ID:              "disabled-policy",
+		Name:            "Disabled Policy",
+		Organization:    "testorg",
+		PermissionLevel: ActionsPermissionLocalOnly,
+		WorkflowPermissions: WorkflowPermissions{
+			DefaultPermissions: DefaultPermissionsRead,
+		},
+		Runners: RunnerPolicy{
+			AllowedRunnerTypes: []RunnerType{RunnerTypeGitHubHosted},
+		},
+		Enabled: false, // Disabled
 	}
 
 	err := enforcer.policyManager.CreatePolicy(ctx, policy)
