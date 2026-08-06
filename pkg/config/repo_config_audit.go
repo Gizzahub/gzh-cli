@@ -5,6 +5,7 @@ package config
 
 import (
 	"fmt"
+	"path"
 	"strings"
 	"time"
 )
@@ -254,15 +255,24 @@ func checkFileExistsCompliance(rule PolicyRule, state RepositoryState) *PolicyVi
 }
 
 // checkWorkflowExistsCompliance checks required workflow existence compliance.
+//
+// 정책은 항상 경로로 적지만(.github/workflows/security.yml), state.Workflows에
+// 어떤 표기가 담기는지는 정해진 적이 없다 -- 수집기(pkg/github의
+// listRepoWorkflows)는 아직 미구현이고, 코드베이스에서 상태를 만드는 자리들은
+// 확장자 없는 이름("security")을 쓴다. 반면 여기서는 디렉토리 접두어만 떼고
+// "security.yml"과 비교해서, 정책과 상태가 처음부터 맞은 적이 없다.
+// GitHub Actions API도 같은 워크플로를 path와 name 두 가지로 돌려주므로 표기
+// 하나를 고르는 것은 근거가 약하다. 양쪽을 같은 형태로 줄여서 비교하면
+// 수집기가 나중에 경로를 담든 파일명을 담든 그대로 동작한다.
 func checkWorkflowExistsCompliance(rule PolicyRule, state RepositoryState) *PolicyViolation {
 	expectedWorkflow, ok := rule.Value.(string)
 	if !ok {
 		return nil
 	}
 
-	workflowName := strings.TrimPrefix(expectedWorkflow, ".github/workflows/")
+	workflowName := normalizeWorkflowRef(expectedWorkflow)
 	for _, workflow := range state.Workflows {
-		if strings.EqualFold(workflow, workflowName) {
+		if strings.EqualFold(normalizeWorkflowRef(workflow), workflowName) {
 			return nil // Workflow found
 		}
 	}
@@ -273,6 +283,15 @@ func checkWorkflowExistsCompliance(rule PolicyRule, state RepositoryState) *Poli
 		Actual:      "not found",
 		Remediation: fmt.Sprintf("Add required workflow: %s", expectedWorkflow),
 	}
+}
+
+// normalizeWorkflowRef reduces a workflow reference to its bare name so that
+// ".github/workflows/ci.yml", "ci.yaml", "ci"가 모두 같은 값으로 비교된다.
+func normalizeWorkflowRef(workflow string) string {
+	name := path.Base(workflow)
+	name = strings.TrimSuffix(name, ".yml")
+
+	return strings.TrimSuffix(name, ".yaml")
 }
 
 // checkSecurityFeatureCompliance checks security feature compliance.
