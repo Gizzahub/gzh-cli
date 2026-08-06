@@ -24,7 +24,7 @@ type GitTarget struct {
 	Recursive  bool     `yaml:"recursive,omitempty" json:"recursive,omitempty"`   // For GitLab subgroups
 	Flatten    bool     `yaml:"flatten,omitempty" json:"flatten,omitempty"`       // Flatten directory structure
 	Match      string   `yaml:"match,omitempty" json:"match,omitempty"`           // Regex pattern filter
-	CloneDir   string   `yaml:"cloneDir,omitempty" json:"cloneDir,omitempty"`     // Target directory
+	CloneDir   string   `yaml:"clone_dir,omitempty" json:"clone_dir,omitempty"`   //nolint:tagliatelle // YAML compatibility required for target directory
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`       // Repos to exclude
 	Strategy   string   `yaml:"strategy,omitempty" json:"strategy,omitempty"`     // reset, pull, fetch
 }
