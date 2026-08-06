@@ -33,7 +33,7 @@ Examples:
   gz dev-env ssh install-key-simple --host server.com --user admin --public-key ~/.ssh/id_rsa.pub`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			installer := NewSimpleSSHInstaller()
-			return installer.InstallPublicKeySimple(host, user, publicKeyPath)
+			return installer.InstallPublicKeySimple(cmd.Context(), host, user, publicKeyPath)
 		},
 	}
 
