@@ -132,16 +132,25 @@ func TestSyncClone_ProgressTracking(t *testing.T) {
 	t.Run("ProgressTracker_Operations", func(t *testing.T) {
 		repos := []string{"repo1", "repo2", "repo3", "repo4", "repo5"}
 
-		// Test different display modes
-		displayModes := []synclone.DisplayMode{
-			synclone.DisplayModeCompact,
-			synclone.DisplayModeDetailed,
-			synclone.DisplayModeQuiet,
+		// 표시 방식마다 RenderProgress의 결과가 다르다. quiet은 아무것도
+		// 그리지 않기로 한 방식이므로 빈 문자열이 옳다(progress.go의
+		// RenderProgress가 DisplayModeQuiet에서 ""를 돌려준다). 예전에는
+		// 세 방식 모두에 NotEmpty를 걸어서 quiet만 늘 빨갰다 --
+		// pkg/synclone의 TestRenderQuietProgress는 같은 것을 Empty로
+		// 확인하고 통과한다. 한 함수를 두고 두 시험이 반대로 주장하고
+		// 있었던 셈이다.
+		displayModes := []struct {
+			mode       synclone.DisplayMode
+			wantRender bool
+		}{
+			{synclone.DisplayModeCompact, true},
+			{synclone.DisplayModeDetailed, true},
+			{synclone.DisplayModeQuiet, false},
 		}
 
-		for _, mode := range displayModes {
-			t.Run(string(mode), func(t *testing.T) {
-				tracker := synclone.NewProgressTracker(repos, mode)
+		for _, dm := range displayModes {
+			t.Run(string(dm.mode), func(t *testing.T) {
+				tracker := synclone.NewProgressTracker(repos, dm.mode)
 				assert.NotNil(t, tracker)
 
 				// Test initial state
@@ -156,16 +165,24 @@ func TestSyncClone_ProgressTracking(t *testing.T) {
 				tracker.CompleteRepository("repo2", "Successfully cloned")
 				tracker.SetRepositoryError("repo3", "Network timeout")
 
-				// Check progress
+				// pending은 "아직 안 끝난 것"이 아니라 "아직 시작도 안 한 것"이다.
+				// 지금 받고 있는 repo1은 completed도 failed도 pending도 아니고
+				// progressPercent에만 0.5로 반영된다. 그래서 셋의 합이 5가 되지
+				// 않는다 -- 남는 것은 repo4, repo5뿐이다. 예전에는 여기에 3을
+				// 적어 두어 repo1을 두 번 세는 셈이었다.
 				completed, failed, pending, progressPercent = tracker.GetOverallProgress()
 				assert.Equal(t, 1, completed)
 				assert.Equal(t, 1, failed)
-				assert.Equal(t, 3, pending)
+				assert.Equal(t, 2, pending)
 				assert.Greater(t, progressPercent, 0.0)
 
 				// Test progress rendering (should not panic)
 				progress := tracker.RenderProgress()
-				assert.NotEmpty(t, progress)
+				if dm.wantRender {
+					assert.NotEmpty(t, progress)
+				} else {
+					assert.Empty(t, progress)
+				}
 
 				// Test summary
 				summary := tracker.GetSummary()
@@ -175,7 +192,7 @@ func TestSyncClone_ProgressTracking(t *testing.T) {
 				duration := tracker.GetDuration()
 				assert.Greater(t, duration, time.Duration(0))
 
-				t.Logf("Mode: %s, Progress: %.1f%%, Summary: %s", mode, progressPercent, summary)
+				t.Logf("Mode: %s, Progress: %.1f%%, Summary: %s", dm.mode, progressPercent, summary)
 			})
 		}
 	})
