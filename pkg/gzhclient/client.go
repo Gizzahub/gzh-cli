@@ -213,14 +213,30 @@ func (c *Client) BulkClone(ctx context.Context, req BulkCloneRequest) (*BulkClon
 	logger := &silentLoggerImpl{}
 	manager := synclone.NewBulkCloneManager(configManager, logger)
 
-	// Process all platforms and organizations
-	allResults := make([]*BulkCloneResult, 0)
+	// 지원하지 않는 플랫폼은 조용히 건너뛰지 않고 먼저 거절한다.
+	//
+	// 예전에는 루프 안에서 platform.Type이 "github"가 아니면 그냥 지나쳤다.
+	// 그래서 오타 하나("githbu")가 결국 consolidateResults의 "no organizations
+	// were successfully processed"로 돌아왔고, 호출자는 인증이나 네트워크를
+	// 의심하게 됐다 -- 실제로는 요청을 시도조차 하지 않은 상태였다.
+	supported := make([]PlatformConfig, 0, len(req.Platforms))
 
 	for _, platform := range req.Platforms {
 		if platform.Type == "github" {
-			platformResults := c.processPlatformOrganizations(ctx, manager, platform, req, logger)
-			allResults = append(allResults, platformResults...)
+			supported = append(supported, platform)
 		}
+	}
+
+	if len(supported) == 0 {
+		return nil, fmt.Errorf("no supported platforms found in request")
+	}
+
+	// Process all platforms and organizations
+	allResults := make([]*BulkCloneResult, 0)
+
+	for _, platform := range supported {
+		platformResults := c.processPlatformOrganizations(ctx, manager, platform, req, logger)
+		allResults = append(allResults, platformResults...)
 	}
 
 	return c.consolidateResults(allResults)
