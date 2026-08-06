@@ -187,16 +187,33 @@ func TestDependabotConfigManager_CreateDefaultConfig(t *testing.T) {
 			assert.Equal(t, 2, config.Version)
 			assert.Len(t, config.Updates, tt.expected)
 
+			// 주기와 PR 상한은 생태계마다 일부러 다르다.
+			// createDefaultUpdateRule은 dockerfile을 월간·3건으로 낮춘다 --
+			// 베이스 이미지는 갱신이 잦지 않고 PR이 몰리면 오히려 묻힌다는
+			// 판단이다. 예전 시험은 모든 생태계가 주간·5건이라고 단정해서
+			// 이 의도된 차이를 결함으로 보고했다.
+			wantSchedule := map[string]struct {
+				interval string
+				prLimit  int
+			}{
+				EcosystemGoModules:  {IntervalWeekly, 5},
+				EcosystemNPM:        {IntervalWeekly, 5},
+				EcosystemDockerfile: {IntervalMonthly, 3},
+			}
+
 			// Validate each generated rule
 			for i, ecosystem := range tt.ecosystems {
 				rule := config.Updates[i]
+				want, ok := wantSchedule[ecosystem]
+				require.True(t, ok, "%s의 기대 기본값이 표에 없다", ecosystem)
+
 				assert.Equal(t, ecosystem, rule.PackageEcosystem)
 				assert.Equal(t, "/", rule.Directory)
-				assert.Equal(t, IntervalWeekly, rule.Schedule.Interval)
+				assert.Equal(t, want.interval, rule.Schedule.Interval)
 				assert.Equal(t, "monday", rule.Schedule.Day)
 				assert.Equal(t, "06:00", rule.Schedule.Time)
 				assert.Equal(t, "UTC", rule.Schedule.Timezone)
-				assert.Equal(t, 5, rule.PullRequestLimit)
+				assert.Equal(t, want.prLimit, rule.PullRequestLimit)
 				assert.Contains(t, rule.Labels, "dependencies")
 				assert.Contains(t, rule.Labels, ecosystem)
 			}

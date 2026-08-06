@@ -281,7 +281,14 @@ func TestDependabotPolicyManager_EvaluateRepositoryCompliance(t *testing.T) {
 }
 
 func TestDependabotPolicyManager_ApplyPolicyToOrganization(t *testing.T) {
-	policyManager := createTestPolicyManager()
+	// 저장소가 있는 조직이어야 한다. 공용 simpleAPIClient는 언제나 빈
+	// 목록을 돌려줘서 대상 저장소도 예상 소요 시간도 0이었고, 그래서
+	// EstimatedDuration > 0 단언이 깨졌다.
+	apiClient := &orgReposAPIClient{repos: []RepositoryInfo{
+		{Name: "repo-a", FullName: "testorg/repo-a"},
+		{Name: "repo-b", FullName: "testorg/repo-b"},
+	}}
+	policyManager := NewDependabotPolicyManager(&simpleLogger{}, apiClient, createTestDependabotManager())
 	ctx := context.Background()
 
 	// Create a test policy
@@ -297,17 +304,52 @@ func TestDependabotPolicyManager_ApplyPolicyToOrganization(t *testing.T) {
 	assert.Equal(t, BulkOperationTypeApplyPolicy, operation.Type)
 	assert.Equal(t, "testorg", operation.Organization)
 	assert.Equal(t, policy.ID, operation.PolicyID)
+	// 돌려받은 값은 사본이므로 고루틴이 무엇을 하든 Pending 그대로다.
+	// 예전에는 살아 있는 작업체를 그대로 받아서 이 단언 자체가 자료
+	// 경쟁이었다(-race로 재현됐다).
 	assert.Equal(t, BulkOperationStatusPending, operation.Status)
 	assert.NotZero(t, operation.StartedAt)
 	assert.Greater(t, operation.EstimatedDuration, time.Duration(0))
 	assert.NotEmpty(t, operation.ID)
+	assert.Equal(t, []string{"repo-a", "repo-b"}, operation.TargetRepos)
 
-	// Wait a bit for the async operation to potentially start
-	time.Sleep(100 * time.Millisecond)
+	// 진행 상황은 ID로 다시 물어본다. 고정된 sleep 대신 완료를 기다린다 --
+	// applyPolicyToRepository가 저장소마다 100ms를 쓰므로 저장소 수가
+	// 바뀌면 고정 대기는 곧 깨진다.
+	require.Eventually(t, func() bool {
+		// Eventually는 조건을 별도 고루틴에서 돌리므로 바깥 변수에 쓰지
+		// 않는다. 결과는 완료를 확인한 뒤 다시 조회해서 가져온다.
+		polled, pollErr := policyManager.GetBulkOperation(ctx, operation.ID)
+
+		return pollErr == nil && polled.Status == BulkOperationStatusCompleted
+	}, 5*time.Second, 20*time.Millisecond)
+
+	current, err := policyManager.GetBulkOperation(ctx, operation.ID)
+	require.NoError(t, err)
+	assert.Equal(t, 2, current.Progress.Total)
+	assert.Equal(t, 2, current.Progress.Completed)
+	assert.Len(t, current.Results, 2)
+	assert.NotNil(t, current.CompletedAt)
+
+	// Test with non-existent operation
+	_, err = policyManager.GetBulkOperation(ctx, "non-existent")
+	require.Error(t, err)
 
 	// Test with non-existent policy
 	_, err = policyManager.ApplyPolicyToOrganization(ctx, "non-existent", "testorg")
 	assert.Error(t, err)
+}
+
+// orgReposAPIClient는 저장소 목록만 바꾼 simpleAPIClient다. 나머지 동작은
+// 그대로 물려받는다.
+type orgReposAPIClient struct {
+	simpleAPIClient
+
+	repos []RepositoryInfo
+}
+
+func (m *orgReposAPIClient) ListOrganizationRepositories(_ context.Context, _ string) ([]RepositoryInfo, error) {
+	return m.repos, nil
 }
 
 func TestDependabotPolicyManager_GenerateOrganizationReport(t *testing.T) {

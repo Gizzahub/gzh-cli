@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // PolicyViolationType represents the type of policy violation.
@@ -45,6 +47,14 @@ type DependabotPolicyManager struct {
 	policies      map[string]*DependabotPolicyConfig
 	policyMutex   sync.RWMutex
 	cache         *PolicyCache
+
+	// operations는 진행 중이거나 끝난 대량 작업을 ID로 보관한다.
+	// 예전에는 ApplyPolicyToOrganization이 만든 작업체를 어디에도 두지
+	// 않고 호출자에게 포인터만 돌려준 뒤 같은 포인터를 고루틴이 고쳤다.
+	// 호출자가 상태를 읽는 순간이 곧 자료 경쟁이었고(-race로 재현된다),
+	// 게다가 작업이 끝난 뒤의 결과를 되찾을 방법이 아예 없었다.
+	operations      map[string]*BulkPolicyOperation
+	operationsMutex sync.RWMutex
 }
 
 // PolicyCache provides caching for policy evaluations and repository states.
@@ -323,6 +333,7 @@ func NewDependabotPolicyManager(logger Logger, apiClient APIClient, configManage
 		apiClient:     apiClient,
 		configManager: configManager,
 		policies:      make(map[string]*DependabotPolicyConfig),
+		operations:    make(map[string]*BulkPolicyOperation),
 		cache: &PolicyCache{
 			repositoryConfigs: make(map[string]*CachedRepositoryConfig),
 			policyResults:     make(map[string]*PolicyEvaluationResult),
@@ -470,7 +481,7 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 	pm.logger.Info("Applying policy to organization", "policy_id", policyID, "organization", organization)
 
 	// Get policy
-	_, err := pm.GetPolicy(ctx, policyID)
+	policy, err := pm.GetPolicy(ctx, policyID)
 	if err != nil {
 		return nil, err
 	}
@@ -482,8 +493,12 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 	}
 
 	// Create bulk operation
+	//
+	// 식별자는 uuid로 만든다. 예전에는 bulk-{Unix초}였는데 초 단위 값은
+	// 고유하지 않아서, 같은 초에 두 번 부르면 같은 ID가 나온다. operations
+	// 지도에 ID로 넣는 이상 겹치는 순간 앞선 작업이 지워진다.
 	operation := &BulkPolicyOperation{
-		ID:           fmt.Sprintf("bulk-%d", time.Now().Unix()),
+		ID:           "bulk-" + uuid.New().String(),
 		Type:         BulkOperationTypeApplyPolicy,
 		Organization: organization,
 		PolicyID:     policyID,
@@ -501,13 +516,52 @@ func (pm *DependabotPolicyManager) ApplyPolicyToOrganization(ctx context.Context
 		operation.TargetRepos[i] = repo.Name
 	}
 
-	// Get policy for execution
-	policy, _ := pm.GetPolicy(ctx, policyID)
+	pm.operationsMutex.Lock()
+	pm.operations[operation.ID] = operation
+	// 살아 있는 작업체 대신 사본을 돌려준다. 원본은 곧 고루틴이 계속
+	// 고치므로 호출자에게 그대로 넘기면 읽는 것 자체가 경쟁이 된다.
+	// 진행 상황은 GetBulkOperation으로 다시 물어본다. 사본은 고루틴을
+	// 띄우기 전에, 잠금을 쥔 채로 떠야 한다.
+	pending := snapshotBulkOperation(operation)
+	pm.operationsMutex.Unlock()
 
 	// Execute bulk operation asynchronously
 	go pm.executeBulkOperation(ctx, operation, policy)
 
-	return operation, nil
+	return pending, nil
+}
+
+// GetBulkOperation은 대량 작업의 현재 상태를 사본으로 돌려준다.
+func (pm *DependabotPolicyManager) GetBulkOperation(_ context.Context, operationID string) (*BulkPolicyOperation, error) {
+	pm.operationsMutex.RLock()
+	defer pm.operationsMutex.RUnlock()
+
+	operation, exists := pm.operations[operationID]
+	if !exists {
+		return nil, fmt.Errorf("bulk operation not found: %s", operationID)
+	}
+
+	return snapshotBulkOperation(operation), nil
+}
+
+// snapshotBulkOperation은 작업체를 깊은 사본으로 뜬다. 슬라이스와 포인터
+// 항목까지 복사해야 사본을 넘긴 뒤에도 원본 변경이 새어나가지 않는다.
+// 호출하는 쪽이 operationsMutex를 잡고 있어야 한다.
+func snapshotBulkOperation(operation *BulkPolicyOperation) *BulkPolicyOperation {
+	snapshot := *operation
+
+	snapshot.TargetRepos = make([]string, len(operation.TargetRepos))
+	copy(snapshot.TargetRepos, operation.TargetRepos)
+
+	snapshot.Results = make([]DependabotRepositoryOperationResult, len(operation.Results))
+	copy(snapshot.Results, operation.Results)
+
+	if operation.CompletedAt != nil {
+		completedAt := *operation.CompletedAt
+		snapshot.CompletedAt = &completedAt
+	}
+
+	return &snapshot
 }
 
 // GenerateOrganizationReport generates a comprehensive compliance report.
@@ -727,10 +781,19 @@ func (pm *DependabotPolicyManager) invalidateCacheForOrganization(organization s
 }
 
 func (pm *DependabotPolicyManager) executeBulkOperation(ctx context.Context, operation *BulkPolicyOperation, policy *DependabotPolicyConfig) {
+	// 이 고루틴이 고치는 항목은 모두 GetBulkOperation이 읽는 것과 같은
+	// 메모리다. 쓰기는 전부 operationsMutex 안에서 한다. 대신 실제 정책
+	// 적용은 저장소마다 오래 걸릴 수 있으므로 잠금 밖에서 부른다.
+	pm.operationsMutex.Lock()
 	operation.Status = BulkOperationStatusRunning
+	pm.operationsMutex.Unlock()
 
+	// TargetRepos와 Progress.Total은 고루틴을 띄우기 전에 정해진 뒤로
+	// 바뀌지 않으므로 잠금 없이 읽어도 된다.
 	for i, repoName := range operation.TargetRepos {
+		pm.operationsMutex.Lock()
 		operation.Progress.CurrentRepo = repoName
+		pm.operationsMutex.Unlock()
 
 		startTime := time.Now()
 		result := DependabotRepositoryOperationResult{
@@ -745,33 +808,46 @@ func (pm *DependabotPolicyManager) executeBulkOperation(ctx context.Context, ope
 		if err != nil {
 			result.Status = OperationResultStatusFailed
 			result.Error = err.Error()
-			operation.Progress.Failed++
 		} else {
 			result.Status = OperationResultStatusSuccess
 			result.Message = "Policy applied successfully"
+		}
+
+		pm.operationsMutex.Lock()
+
+		if err != nil {
+			operation.Progress.Failed++
+		} else {
 			operation.Progress.Completed++
 		}
 
 		operation.Results = append(operation.Results, result)
 		operation.Progress.Percentage = float64(i+1) / float64(operation.Progress.Total) * 100
+		percentage := operation.Progress.Percentage
+
+		pm.operationsMutex.Unlock()
 
 		pm.logger.Debug("Bulk operation progress",
 			"operation_id", operation.ID,
-			"progress", operation.Progress.Percentage,
+			"progress", percentage,
 			"current_repo", repoName)
 	}
 
 	// Mark operation as completed
 	completedAt := time.Now()
+
+	pm.operationsMutex.Lock()
 	operation.CompletedAt = &completedAt
 	operation.Status = BulkOperationStatusCompleted
 	operation.Progress.CurrentRepo = ""
+	total, completed, failed := operation.Progress.Total, operation.Progress.Completed, operation.Progress.Failed
+	pm.operationsMutex.Unlock()
 
 	pm.logger.Info("Bulk operation completed",
 		"operation_id", operation.ID,
-		"total", operation.Progress.Total,
-		"completed", operation.Progress.Completed,
-		"failed", operation.Progress.Failed)
+		"total", total,
+		"completed", completed,
+		"failed", failed)
 }
 
 func (pm *DependabotPolicyManager) applyPolicyToRepository(ctx context.Context, policy *DependabotPolicyConfig, organization, repository string) error {
