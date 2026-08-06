@@ -291,8 +291,6 @@ type ResourceWastage struct {
 
 // newContainerCmd creates the container monitoring and diagnostics subcommand.
 func newContainerCmd() *cobra.Command {
-	ctx := context.Background()
-
 	var (
 		includeStats     bool
 		includeHealth    bool
@@ -310,7 +308,7 @@ func newContainerCmd() *cobra.Command {
 		detailedAnalysis bool
 	)
 
-	cmd := cli.NewCommandBuilder(ctx, "container", "Monitor and diagnose Docker containers").
+	cmd := cli.NewCommandBuilder("container", "Monitor and diagnose Docker containers").
 		WithLongDescription(`Comprehensive Docker container monitoring and diagnostics.
 
 This command provides detailed analysis of your Docker environment including:

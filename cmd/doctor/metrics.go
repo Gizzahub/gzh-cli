@@ -106,8 +106,6 @@ type FileQualityInfo struct {
 
 // newMetricsCmd creates the metrics subcommand for code quality analysis.
 func newMetricsCmd() *cobra.Command {
-	ctx := context.Background()
-
 	var (
 		projectPath    string
 		includeTests   bool
@@ -119,7 +117,7 @@ func newMetricsCmd() *cobra.Command {
 		onlyIssues     bool
 	)
 
-	cmd := cli.NewCommandBuilder(ctx, "metrics", "Analyze code quality metrics and generate dashboard").
+	cmd := cli.NewCommandBuilder("metrics", "Analyze code quality metrics and generate dashboard").
 		WithLongDescription(`Analyze comprehensive code quality metrics and generate an interactive dashboard.
 
 This command provides detailed code quality analysis including:

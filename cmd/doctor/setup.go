@@ -47,8 +47,6 @@ type SetupReport struct {
 
 // newSetupCmd creates the setup subcommand for automated development environment setup.
 func newSetupCmd() *cobra.Command {
-	ctx := context.Background()
-
 	var (
 		setupType    string
 		force        bool
@@ -56,7 +54,7 @@ func newSetupCmd() *cobra.Command {
 		dryRun       bool
 	)
 
-	cmd := cli.NewCommandBuilder(ctx, "setup", "Automated development environment setup").
+	cmd := cli.NewCommandBuilder("setup", "Automated development environment setup").
 		WithLongDescription(`Automated setup for GZH Manager development environment.
 
 This command provides one-click setup for different development scenarios:

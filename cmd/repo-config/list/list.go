@@ -31,7 +31,7 @@ func NewCmd() *cobra.Command {
 		showConfig bool
 	)
 
-	builder := cli.NewCommandBuilder(context.Background(), "list", "List repositories with current configuration").
+	builder := cli.NewCommandBuilder("list", "List repositories with current configuration").
 		WithLongDescription(`List repositories in the organization with their current configuration status.
 
 This command shows repository details including:

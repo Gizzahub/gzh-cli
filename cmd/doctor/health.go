@@ -142,8 +142,6 @@ type EnvMetrics struct {
 
 // newHealthCmd creates the health subcommand for system health monitoring.
 func newHealthCmd() *cobra.Command {
-	ctx := context.Background()
-
 	var (
 		continuous bool
 		interval   time.Duration
@@ -156,7 +154,7 @@ func newHealthCmd() *cobra.Command {
 		detailed   bool
 	)
 
-	cmd := cli.NewCommandBuilder(ctx, "health", "Monitor comprehensive system health metrics").
+	cmd := cli.NewCommandBuilder("health", "Monitor comprehensive system health metrics").
 		WithLongDescription(`Monitor comprehensive system health metrics with real-time monitoring capabilities.
 
 This command provides advanced system health monitoring including:

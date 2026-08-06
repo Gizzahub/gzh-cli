@@ -20,8 +20,6 @@ import (
 
 // newGodocCmd creates the godoc subcommand for API documentation analysis.
 func newGodocCmd() *cobra.Command {
-	ctx := context.Background()
-
 	var (
 		packagePath     string
 		allPackages     bool
@@ -33,7 +31,7 @@ func newGodocCmd() *cobra.Command {
 		exportOnly      bool
 	)
 
-	cmd := cli.NewCommandBuilder(ctx, "godoc", "Analyze API documentation coverage and quality").
+	cmd := cli.NewCommandBuilder("godoc", "Analyze API documentation coverage and quality").
 		WithLongDescription(`Analyze Go package documentation for coverage and quality issues.
 
 This command provides comprehensive analysis of:

@@ -6,6 +6,7 @@ package cli
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
@@ -32,40 +33,34 @@ func (m *MockEnvironment) Set(key, value string) {
 }
 
 func TestNewCommandBuilder(t *testing.T) {
-	ctx := context.Background()
-	builder := NewCommandBuilder(ctx, "test", "Test command")
+	builder := NewCommandBuilder("test", "Test command")
 
 	assert.NotNil(t, builder)
 	assert.NotNil(t, builder.cmd)
 	assert.NotNil(t, builder.flags)
-	assert.Equal(t, ctx, builder.context)
 	assert.Equal(t, "test", builder.cmd.Use)
 	assert.Equal(t, "Test command", builder.cmd.Short)
 }
 
 func TestCommandBuilder_WithLongDescription(t *testing.T) {
-	ctx := context.Background()
 	longDesc := "This is a long description for the test command"
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithLongDescription(longDesc)
 
 	assert.Equal(t, longDesc, builder.cmd.Long)
 }
 
 func TestCommandBuilder_WithExample(t *testing.T) {
-	ctx := context.Background()
 	example := "gz test --org myorg"
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithExample(example)
 
 	assert.Equal(t, example, builder.cmd.Example)
 }
 
 func TestCommandBuilder_WithOrganizationFlag(t *testing.T) {
-	ctx := context.Background()
-
 	tests := []struct {
 		name     string
 		required bool
@@ -76,7 +71,7 @@ func TestCommandBuilder_WithOrganizationFlag(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			builder := NewCommandBuilder(ctx, "test", "Test command").
+			builder := NewCommandBuilder("test", "Test command").
 				WithOrganizationFlag(test.required)
 
 			cmd := builder.Build()
@@ -94,8 +89,7 @@ func TestCommandBuilder_WithOrganizationFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithTokenFlag(t *testing.T) {
-	ctx := context.Background()
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithTokenFlag()
 
 	cmd := builder.Build()
@@ -106,8 +100,7 @@ func TestCommandBuilder_WithTokenFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithConfigFileFlag(t *testing.T) {
-	ctx := context.Background()
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithConfigFileFlag()
 
 	cmd := builder.Build()
@@ -118,8 +111,7 @@ func TestCommandBuilder_WithConfigFileFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithVerboseFlag(t *testing.T) {
-	ctx := context.Background()
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithVerboseFlag()
 
 	cmd := builder.Build()
@@ -130,8 +122,7 @@ func TestCommandBuilder_WithVerboseFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithDryRunFlag(t *testing.T) {
-	ctx := context.Background()
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithDryRunFlag()
 
 	cmd := builder.Build()
@@ -142,11 +133,10 @@ func TestCommandBuilder_WithDryRunFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithFormatFlag(t *testing.T) {
-	ctx := context.Background()
 	validFormats := []string{"json", "yaml", "table"}
 	defaultFormat := "table"
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithFormatFlag(defaultFormat, validFormats)
 
 	cmd := builder.Build()
@@ -161,8 +151,7 @@ func TestCommandBuilder_WithFormatFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithFilterFlag(t *testing.T) {
-	ctx := context.Background()
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithFilterFlag()
 
 	cmd := builder.Build()
@@ -173,10 +162,9 @@ func TestCommandBuilder_WithFilterFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithLimitFlag(t *testing.T) {
-	ctx := context.Background()
 	defaultLimit := 50
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithLimitFlag(defaultLimit)
 
 	cmd := builder.Build()
@@ -188,10 +176,9 @@ func TestCommandBuilder_WithLimitFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithCustomFlag(t *testing.T) {
-	ctx := context.Background()
 	var customValue string
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithCustomFlag("custom", "default", "Custom flag for testing", &customValue)
 
 	cmd := builder.Build()
@@ -203,10 +190,9 @@ func TestCommandBuilder_WithCustomFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithCustomBoolFlag(t *testing.T) {
-	ctx := context.Background()
 	var customBool bool
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithCustomBoolFlag("custom-bool", true, "Custom bool flag for testing", &customBool)
 
 	cmd := builder.Build()
@@ -218,10 +204,9 @@ func TestCommandBuilder_WithCustomBoolFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithCustomIntFlag(t *testing.T) {
-	ctx := context.Background()
 	var customInt int
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithCustomIntFlag("custom-int", 42, "Custom int flag for testing", &customInt)
 
 	cmd := builder.Build()
@@ -233,7 +218,6 @@ func TestCommandBuilder_WithCustomIntFlag(t *testing.T) {
 }
 
 func TestCommandBuilder_WithRunFunc(t *testing.T) {
-	ctx := context.Background()
 	executed := false
 
 	runFunc := func(cmd *cobra.Command, args []string) error {
@@ -241,7 +225,7 @@ func TestCommandBuilder_WithRunFunc(t *testing.T) {
 		return nil
 	}
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithRunFunc(runFunc)
 
 	cmd := builder.Build()
@@ -254,7 +238,6 @@ func TestCommandBuilder_WithRunFunc(t *testing.T) {
 }
 
 func TestCommandBuilder_WithRunFuncE(t *testing.T) {
-	ctx := context.Background()
 	var receivedFlags *CommonFlags
 	var receivedArgs []string
 
@@ -264,7 +247,7 @@ func TestCommandBuilder_WithRunFuncE(t *testing.T) {
 		return nil
 	}
 
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithRunFuncE(runFunc)
 
 	cmd := builder.Build()
@@ -279,9 +262,7 @@ func TestCommandBuilder_WithRunFuncE(t *testing.T) {
 }
 
 func TestCommandBuilder_AddSubcommand(t *testing.T) {
-	ctx := context.Background()
-
-	parentBuilder := NewCommandBuilder(ctx, "parent", "Parent command")
+	parentBuilder := NewCommandBuilder("parent", "Parent command")
 	childCmd := &cobra.Command{
 		Use:   "child",
 		Short: "Child command",
@@ -296,8 +277,7 @@ func TestCommandBuilder_AddSubcommand(t *testing.T) {
 }
 
 func TestCommandBuilder_GetFlags(t *testing.T) {
-	ctx := context.Background()
-	builder := NewCommandBuilder(ctx, "test", "Test command")
+	builder := NewCommandBuilder("test", "Test command")
 
 	flags := builder.GetFlags()
 	assert.NotNil(t, flags)
@@ -305,10 +285,8 @@ func TestCommandBuilder_GetFlags(t *testing.T) {
 }
 
 func TestCommandBuilder_FluentInterface(t *testing.T) {
-	ctx := context.Background()
-
 	// Test that all methods return the builder for chaining
-	builder := NewCommandBuilder(ctx, "test", "Test command").
+	builder := NewCommandBuilder("test", "Test command").
 		WithLongDescription("Long description").
 		WithExample("Example usage").
 		WithOrganizationFlag(true).
@@ -531,7 +509,6 @@ func TestJoinStrings(t *testing.T) {
 }
 
 func TestCommandBuilder_Integration(t *testing.T) {
-	ctx := context.Background()
 	var executedCtx context.Context
 	var executedFlags *CommonFlags
 	var executedArgs []string
@@ -543,7 +520,7 @@ func TestCommandBuilder_Integration(t *testing.T) {
 		return nil
 	}
 
-	builder := NewCommandBuilder(ctx, "integration-test", "Integration test command").
+	builder := NewCommandBuilder("integration-test", "Integration test command").
 		WithLongDescription("This is a comprehensive integration test").
 		WithExample("gz integration-test --org myorg --verbose").
 		WithOrganizationFlag(false).
@@ -565,11 +542,72 @@ func TestCommandBuilder_Integration(t *testing.T) {
 	err := cmd.RunE(cmd, testArgs)
 
 	require.NoError(t, err)
-	assert.Equal(t, ctx, executedCtx)
+	// RunE를 직접 불렀으므로 cmd.Context()가 비어 있고, WithRunFuncE가
+	// 대신 넣어 주는 context.Background()가 온다. 실행 맥락이 제대로
+	// 전해지는지는 아래 TestCommandBuilder_RunFuncEUsesExecutionContext가
+	// Execute를 거쳐서 확인한다. 예전에는 여기서 빌더에 넣어 둔 맥락과
+	// 같은지를 봤는데, 그것이 바로 고친 동작이었다.
+	assert.NotNil(t, executedCtx)
 	assert.NotNil(t, executedFlags)
 	assert.Equal(t, "test-org", executedFlags.Organization)
 	assert.Equal(t, "test-token", executedFlags.Token)
 	assert.True(t, executedFlags.Verbose)
 	assert.Equal(t, "yaml", executedFlags.Format)
 	assert.Equal(t, testArgs, executedArgs)
+}
+
+// TestCommandBuilder_RunFuncEUsesExecutionContext는 WithRunFuncE가 실행
+// 맥락을 그대로 넘기는지 본다.
+//
+// 위 TestCommandBuilder_Integration은 이것을 잡지 못한다. RunE를 직접
+// 부르기 때문에 cobra가 맥락을 넣어 주는 단계를 건너뛰고, 그래서 무엇을
+// 넘기든 통과한다. 여기서는 ExecuteContext를 거친다 -- 실제 명령이 도는
+// 길과 같다.
+func TestCommandBuilder_RunFuncEUsesExecutionContext(t *testing.T) {
+	var executedCtx context.Context
+
+	cmd := NewCommandBuilder("ctx-test", "Context test command").
+		WithRunFuncE(func(ctx context.Context, _ *CommonFlags, _ []string) error {
+			executedCtx = ctx
+			return nil
+		}).
+		Build()
+
+	type ctxKey struct{}
+
+	ctx := context.WithValue(context.Background(), ctxKey{}, "marker")
+	require.NoError(t, cmd.ExecuteContext(ctx))
+
+	// 표식이 그대로 건너와야 한다. 빌더가 지니고 있던 맥락으로 바꿔치기하면
+	// 여기서 nil이 된다.
+	assert.Equal(t, "marker", executedCtx.Value(ctxKey{}))
+}
+
+// TestCommandBuilder_RunFuncECancellationReaches는 취소가 실제로 닿는지
+// 본다. 값이 건너오는 것과 취소가 닿는 것은 다른 이야기다 -- 예전 코드의
+// context.Background()도 값은 못 나르지만 취소도 못 나른다.
+func TestCommandBuilder_RunFuncECancellationReaches(t *testing.T) {
+	cmd := NewCommandBuilder("cancel-test", "Cancellation test command").
+		WithRunFuncE(func(ctx context.Context, _ *CommonFlags, _ []string) error {
+			<-ctx.Done()
+			return ctx.Err()
+		}).
+		Build()
+	cmd.SilenceErrors = true
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	done := make(chan error, 1)
+
+	go func() { done <- cmd.ExecuteContext(ctx) }()
+
+	time.Sleep(100 * time.Millisecond)
+	cancel()
+
+	select {
+	case err := <-done:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-time.After(5 * time.Second):
+		t.Fatal("취소했는데 돌아오지 않는다 -- RunE가 실행 맥락을 못 받고 있다")
+	}
 }

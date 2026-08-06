@@ -46,15 +46,13 @@ type DevEnvReport struct {
 
 // newDevEnvCmd creates the dev-env subcommand for development environment validation.
 func newDevEnvCmd() *cobra.Command {
-	ctx := context.Background()
-
 	var (
 		checkOnly   bool
 		fixIssues   bool
 		showDetails bool
 	)
 
-	cmd := cli.NewCommandBuilder(ctx, "dev-env", "Validate development environment setup").
+	cmd := cli.NewCommandBuilder("dev-env", "Validate development environment setup").
 		WithLongDescription(`Comprehensive development environment validation for GZH Manager contributors.
 
 This command checks all required development tools and configurations:

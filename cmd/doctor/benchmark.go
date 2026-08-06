@@ -85,8 +85,6 @@ type CIBenchmarkMetrics struct {
 
 // newBenchmarkCmd creates the benchmark subcommand for performance testing.
 func newBenchmarkCmd() *cobra.Command {
-	ctx := context.Background()
-
 	var (
 		packagePattern      string
 		benchmarkFilter     string
@@ -108,7 +106,7 @@ func newBenchmarkCmd() *cobra.Command {
 		trendWindowDays     int
 	)
 
-	cmd := cli.NewCommandBuilder(ctx, "benchmark", "Run comprehensive performance benchmarks").
+	cmd := cli.NewCommandBuilder("benchmark", "Run comprehensive performance benchmarks").
 		WithLongDescription(`Run comprehensive performance benchmarks with CI integration capabilities.
 
 This command provides advanced benchmarking features for performance testing:

@@ -31,20 +31,23 @@ type CommonFlags struct {
 
 // CommandBuilder provides a fluent interface for building cobra commands with common patterns.
 type CommandBuilder struct {
-	cmd     *cobra.Command
-	flags   *CommonFlags
-	context context.Context
+	cmd   *cobra.Command
+	flags *CommonFlags
 }
 
 // NewCommandBuilder creates a new command builder.
-func NewCommandBuilder(ctx context.Context, use, short string) *CommandBuilder {
+//
+// ctx를 받지 않는다. 예전에는 받아서 WithRunFuncE가 그것을 넘겼는데,
+// 부르는 아홉 곳이 전부 context.Background()를 주고 있었다. 명령을 "만드는"
+// 시점의 맥락은 명령을 "실행하는" 시점의 맥락이 아니다 -- 후자는 cobra가
+// RunE에 직접 준다.
+func NewCommandBuilder(use, short string) *CommandBuilder {
 	return &CommandBuilder{
 		cmd: &cobra.Command{
 			Use:   use,
 			Short: short,
 		},
-		flags:   &CommonFlags{},
-		context: ctx,
+		flags: &CommonFlags{},
 	}
 }
 
@@ -138,11 +141,24 @@ func (b *CommandBuilder) WithRunFunc(runFunc func(cmd *cobra.Command, args []str
 	return b
 }
 
-// WithRunFuncE sets the run function that uses the builder's context and flags.
+// WithRunFuncE sets the run function that uses the execution context and flags.
 func (b *CommandBuilder) WithRunFuncE(runFunc func(ctx context.Context, flags *CommonFlags, args []string) error) *CommandBuilder {
-	b.cmd.RunE = func(_ *cobra.Command, args []string) error {
-		return runFunc(b.context, b.flags, args)
+	b.cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		// cobra가 넣어 준 맥락을 그대로 넘긴다. 예전에는 이 자리에서 cmd를
+		// _로 버리고 빌더가 지니고 있던 맥락을 넘겼다. 좋은 맥락이 바로
+		// 손에 들어온 자리에서 죽은 맥락으로 바꿔치기한 셈이다. 그래서
+		// `gz doctor health --continuous`처럼 ctx.Done()을 기다리는 명령이
+		// Ctrl+C에 반응하지 않았다.
+		ctx := cmd.Context()
+		if ctx == nil {
+			// Execute를 거치지 않고 RunE를 직접 부른 경우다(주로 시험).
+			// cobra의 ExecuteC가 같은 상황에서 넣는 값을 쓴다.
+			ctx = context.Background()
+		}
+
+		return runFunc(ctx, b.flags, args)
 	}
+
 	return b
 }
 
