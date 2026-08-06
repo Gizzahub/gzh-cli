@@ -4,12 +4,27 @@ package synclone
 import (
 	"bytes"
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
 )
 
 func TestCreateForgeProvider(t *testing.T) {
+	// gitea.NewProvider는 만들어지는 자리에서 /api/v1/version을 부른다.
+	// github/gitlab 쪽은 그러지 않는다. 그래서 gitea 경우만 실제 망을 탔고,
+	// gitea.example.com은 없는 이름이라 이 시험은 늘 실패했다.
+	//
+	// 여기서 보려는 것은 createForgeProvider가 provider 이름을 보고 올바른
+	// 생성자로 보내는지다. 서버가 실제로 있는지는 상관이 없으므로 그 자리에
+	// 세운 서버를 준다.
+	giteaSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"version":"1.22.0"}`))
+	}))
+	defer giteaSrv.Close()
+
 	tests := []struct {
 		name        string
 		opts        *forgeOptions
@@ -58,7 +73,7 @@ func TestCreateForgeProvider(t *testing.T) {
 			opts: &forgeOptions{
 				Provider: "gitea",
 				Token:    "test-token",
-				BaseURL:  "https://gitea.example.com",
+				BaseURL:  giteaSrv.URL,
 			},
 			wantErr: false,
 		},

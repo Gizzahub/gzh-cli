@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/gizzahub/gzh-cli/internal/app"
+	gerrors "github.com/gizzahub/gzh-cli/internal/errors"
 )
 
 func TestDefaultSyncCloneOptions(t *testing.T) {
@@ -220,8 +222,16 @@ repo_roots:
 		}
 
 		err := opts.run(context.Background(), nil, []string{})
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to load config")
+		require.Error(t, err)
+
+		// 표지로 확인한다. 예전에는 "failed to load config"라는 글자를 찾았는데
+		// 그 말은 어느 계층도 쓰지 않아서 통과할 수 없는 확인이었다.
+		assert.ErrorIs(t, err, gerrors.ErrConfigNotFound)
+		assert.Contains(t, err.Error(), "/non/existent/config.yaml")
+
+		// 표지가 겹쳐 나오지 않아야 한다. 파사드와 서비스와 명령이 차례로
+		// 감싸면서 같은 말을 세 번 붙이던 적이 있다.
+		assert.Equal(t, 1, strings.Count(err.Error(), "config not found"))
 	})
 
 	t.Run("empty config", func(t *testing.T) {
@@ -240,9 +250,16 @@ repo_roots: []
 			strategy:   "reset",
 		}
 
-		// Should not error for empty config - just complete successfully
+		// 아무것도 설정하지 않은 파일은 오류로 답한다. 예전 기대값은 조용히
+		// 성공하는 것이었지만 그 확인은 돌아본 적이 없다 -- 설정을 읽는 쪽이
+		// 교착에 빠져 이 하위 시험까지 오지 못했다.
+		//
+		// 조용히 0으로 끝나면 사용자는 왜 아무것도 받아지지 않았는지 알 길이
+		// 없다. 거를 것이 있어서 대상이 0이 된 경우는 여전히 "No targets found
+		// to process"로 성공한다. 이건 그것과 다른, 설정 자체가 빈 경우다.
 		err = opts.run(context.Background(), nil, []string{})
-		assert.NoError(t, err)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "at least one provider must be configured")
 	})
 }
 
@@ -251,7 +268,9 @@ func TestMainSyncCloneCommandFlags(t *testing.T) {
 		cmd := NewSyncCloneCmd(context.Background(), app.NewTestAppContext())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "synclone", cmd.Use)
-		assert.Contains(t, cmd.Short, "Clone repositories from multiple Git hosting services")
+		// bulk-clone에서 synclone으로 이름이 바뀌면서 설명도 "Synchronize and
+		// clone"으로 바뀌었는데 여기 기대값만 옛 문구로 남아 있었다.
+		assert.Contains(t, cmd.Short, "Synchronize and clone repositories")
 
 		// Check that it has the right flags
 		configFlag := cmd.Flags().Lookup("config")
