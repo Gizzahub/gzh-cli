@@ -39,6 +39,40 @@ func DefaultLargeScaleConfig() *LargeScaleConfig {
 	}
 }
 
+// normalize는 쓸 수 없는 설정값을 기본값으로 되돌린다.
+//
+// 부르는 쪽이 구조체를 직접 채워 넘길 수 있어서 0이나 음수가 그대로 들어온다.
+// 그중 MaxRetries가 제일 나쁘다. 0이면 clone 재시도 반복문이 한 번도 돌지
+// 않는데, 그러면 err이 nil로 남아 아래 검사를 통과하고 성공으로 집계된다 --
+// 하나도 받지 않고 전부 받았다고 답한다. BatchSize가 0이면 per_page=0으로
+// 물어봐서 GitHub이 말없이 30으로 바꾸므로 이 값을 조절해도 아무 일이 없다.
+func (c *LargeScaleConfig) normalize() {
+	defaults := DefaultLargeScaleConfig()
+
+	if c.MaxConcurrency <= 0 {
+		c.MaxConcurrency = defaults.MaxConcurrency
+	}
+
+	if c.BatchSize <= 0 {
+		c.BatchSize = defaults.BatchSize
+	}
+
+	if c.MaxRetries <= 0 {
+		c.MaxRetries = defaults.MaxRetries
+	}
+
+	// 0을 "제한 없음"으로 읽고 싶겠지만 이 코드에서는 반대다. 0이면
+	// Alloc > 0인 한 늘 문턱을 넘은 것이 되어 항상 메모리가 모자란 것처럼
+	// 굴고 매번 GC를 부른다.
+	if c.MemoryThreshold <= 0 {
+		c.MemoryThreshold = defaults.MemoryThreshold
+	}
+
+	if c.ProgressInterval <= 0 {
+		c.ProgressInterval = defaults.ProgressInterval
+	}
+}
+
 // LargeScaleRepository represents a minimal repository structure for large-scale operations.
 type LargeScaleRepository struct {
 	Name          string `json:"name"`
@@ -82,8 +116,13 @@ func NewLargeScaleManager(config *LargeScaleConfig, progressCallback ProgressCal
 		config = DefaultLargeScaleConfig()
 	}
 
+	// 부르는 쪽 구조체를 그대로 쥐지 않고 복사해서 바로잡는다. 원본을 건드리면
+	// 부르는 쪽이 모르는 사이에 설정이 바뀐다.
+	normalized := *config
+	normalized.normalize()
+
 	return &LargeScaleManager{
-		config:           config,
+		config:           &normalized,
 		client:           &http.Client{Timeout: 30 * time.Second},
 		rateLimiter:      NewAdaptiveRateLimiter(),
 		progressCallback: progressCallback,

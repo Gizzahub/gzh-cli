@@ -97,45 +97,73 @@ func TestProgressCallback(t *testing.T) {
 }
 
 func TestRepositoryFiltering(t *testing.T) {
-	config := DefaultLargeScaleConfig()
-	manager := NewLargeScaleManager(config, nil)
+	// 큰 저장소를 거를지는 지금 이 프로세스가 쥔 힙이 MemoryThreshold를
+	// 넘었는지에 달려 있다. 그래서 경우마다 문턱을 직접 정한다.
+	//
+	// 예전에는 세 경우가 DefaultLargeScaleConfig()의 500MB 문턱을 함께 썼다.
+	// 시험 프로세스는 몇 MB밖에 안 쓰므로 2GB 저장소도 걸러지지 않았고,
+	// "메모리가 모자랄 때"라고 이름 붙인 경우가 정작 모자란 상황을 만들지
+	// 않아 통과할 수 없었다.
+	const (
+		alwaysUnderPressure = 1              // 힙이 무엇이든 문턱을 넘는다
+		neverUnderPressure  = int64(1) << 40 // 1TB. 넘을 리 없다
+	)
 
 	testCases := []struct {
-		repo     LargeScaleRepository
-		expected bool
-		name     string
+		name            string
+		repo            LargeScaleRepository
+		memoryThreshold int64
+		expected        bool
 	}{
 		{
+			name: "normal repository should not be skipped",
 			repo: LargeScaleRepository{
 				Name:     "normal-repo",
 				Archived: false,
 				Size:     1000, // 1MB
 			},
-			expected: false,
-			name:     "normal repository should not be skipped",
+			memoryThreshold: neverUnderPressure,
+			expected:        false,
 		},
 		{
+			name: "archived repository should be skipped",
 			repo: LargeScaleRepository{
 				Name:     "archived-repo",
 				Archived: true,
 				Size:     1000,
 			},
-			expected: true,
-			name:     "archived repository should be skipped",
+			memoryThreshold: neverUnderPressure,
+			expected:        true,
 		},
 		{
+			name: "very large repository should be skipped under memory pressure",
 			repo: LargeScaleRepository{
 				Name:     "huge-repo",
 				Archived: false,
 				Size:     2000000, // 2GB
 			},
-			expected: true,
-			name:     "very large repository should be skipped under memory pressure",
+			memoryThreshold: alwaysUnderPressure,
+			expected:        true,
+		},
+		{
+			// 위 경우와 짝이다. 크기만으로는 거르지 않는다는 것을 적어 둔다.
+			name: "very large repository is kept when memory is plentiful",
+			repo: LargeScaleRepository{
+				Name:     "huge-repo",
+				Archived: false,
+				Size:     2000000, // 2GB
+			},
+			memoryThreshold: neverUnderPressure,
+			expected:        false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			manager := NewLargeScaleManager(&LargeScaleConfig{
+				MemoryThreshold: tc.memoryThreshold,
+			}, nil)
+
 			result := manager.shouldSkipRepository(tc.repo)
 			if result != tc.expected {
 				t.Errorf("Expected %v for %s, got %v", tc.expected, tc.repo.Name, result)
