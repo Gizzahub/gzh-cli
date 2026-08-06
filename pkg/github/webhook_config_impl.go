@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
@@ -85,14 +86,30 @@ func (w *webhookConfigurationServiceImpl) DeletePolicy(ctx context.Context, org,
 
 // Configuration Management
 
+// ErrOrganizationConfigNotFound는 조직 설정이 아직 저장되지 않았음을
+// 알린다. ConfigStorage 구현은 "없음"을 이 오류로 감싸서 알려야 한다.
+var ErrOrganizationConfigNotFound = errors.New("organization webhook configuration not found")
+
 func (w *webhookConfigurationServiceImpl) GetOrganizationConfig(ctx context.Context, org string) (*OrganizationWebhookConfig, error) {
 	config, err := w.storage.GetOrganizationConfig(ctx, org)
-	if err != nil {
-		// Return default configuration if none exists
-		return w.getDefaultOrganizationConfig(org), err
+	if err == nil {
+		return config, nil
 	}
 
-	return config, nil
+	// 설정이 없을 때만 기본값으로 대신한다.
+	//
+	// 예전에는 어떤 오류든 기본 설정과 오류를 함께 돌려줬다. 주석은
+	// "없으면 기본값"이라고 했지만 오류도 같이 나가므로 호출자는 보통
+	// err != nil에서 되돌아가고 기본값은 버려진다. 즉 선언한 대체 동작이
+	// 실제로는 일어나지 않았다.
+	//
+	// 반대로 오류를 통째로 삼키면 저장소 장애(권한 없음, 연결 끊김)가
+	// "설정이 비어 있다"로 둔갑한다. 그래서 없음만 골라 대신한다.
+	if errors.Is(err, ErrOrganizationConfigNotFound) {
+		return w.getDefaultOrganizationConfig(org), nil
+	}
+
+	return nil, fmt.Errorf("failed to get organization config for %s: %w", org, err)
 }
 
 func (w *webhookConfigurationServiceImpl) UpdateOrganizationConfig(ctx context.Context, config *OrganizationWebhookConfig) error {
@@ -145,15 +162,17 @@ func (w *webhookConfigurationServiceImpl) ValidateConfiguration(ctx context.Cont
 	}
 
 	// Validate defaults
-	if err := w.validateWebhookTemplate(&config.Defaults.Config); err != nil {
+	if err := w.validateDefaultsTemplate(&config.Defaults.Config); err != nil {
 		result.Warnings = append(result.Warnings, WebhookValidationWarning{
 			Field:   "defaults.config",
 			Message: err.Error(),
 		})
-		result.Score -= 10
 	}
 
 	// Calculate final score
+	//
+	// 감점은 여기 한 곳에서만 한다. 예전에는 위에서 result.Score -= 10을
+	// 하고 아래에서 다시 경고 수만큼 빼서 경고 하나에 20점이 깎였다.
 	if len(result.Errors) > 0 {
 		result.Score = 0
 	} else if len(result.Warnings) > 0 {
@@ -483,6 +502,22 @@ func (w *webhookConfigurationServiceImpl) validatePolicyRule(rule *WebhookPolicy
 	return nil
 }
 
+// validateDefaultsTemplate는 조직 기본값 템플릿을 검사한다.
+//
+// 여기서는 URL이 필수가 아니다. 기본값 템플릿은 개별 웹훅이 채우지 않은
+// 항목만 메우는 자리이고 수신 주소는 웹훅마다 다르다. 실제로 이 파일의
+// getDefaultOrganizationConfig가 만드는 기본 설정에도 URL이 없어서, 예전
+// 규칙대로면 제품이 스스로 내놓은 기본 설정이 언제나 자기 검사에서 경고를
+// 받았다. 규칙이 웹훅을 새로 만들 때(validatePolicyRule)는 주소가 정말
+// 필요하므로 그쪽은 validateWebhookTemplate을 그대로 쓴다.
+func (w *webhookConfigurationServiceImpl) validateDefaultsTemplate(config *WebhookConfigTemplate) error {
+	if config.URL == "" {
+		return nil
+	}
+
+	return w.validateWebhookTemplate(config)
+}
+
 func (w *webhookConfigurationServiceImpl) validateWebhookTemplate(config *WebhookConfigTemplate) error {
 	if config.URL == "" {
 		return fmt.Errorf("webhook URL is required")
@@ -569,9 +604,27 @@ func (w *webhookConfigurationServiceImpl) getTargetRepositories(ctx context.Cont
 		return repoNames, nil
 	}
 
-	// Get all repositories in organization (mock implementation)
-	// In real implementation, this would use apiClient.ListOrganizationRepositories
-	return []string{"repo1", "repo2", "repo3"}, nil
+	// 조직 전체를 대상으로 할 때는 실제 목록을 가져온다.
+	//
+	// 예전에는 repo1/repo2/repo3을 그대로 돌려줬다. 어떤 조직을 넣어도
+	// 저장소가 셋이라고 답했고, ApplyPolicies는 존재하지도 않는 이름에
+	// 정책을 적용했다고 보고했다. 있지도 않은 결과를 지어내는 쪽이
+	// 아무것도 못 한다고 말하는 쪽보다 훨씬 위험하다.
+	if w.apiClient == nil {
+		return nil, fmt.Errorf("cannot list repositories of %s: API client is not configured", org)
+	}
+
+	repos, err := w.apiClient.ListOrganizationRepositories(ctx, org)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list repositories of %s: %w", org, err)
+	}
+
+	names := make([]string, 0, len(repos))
+	for _, repo := range repos {
+		names = append(names, repo.Name)
+	}
+
+	return names, nil
 }
 
 func (w *webhookConfigurationServiceImpl) applyPoliciesToRepository(ctx context.Context, repo string, policies []*WebhookPolicy, orgConfig *OrganizationWebhookConfig, dryRun, force bool) []PolicyApplicationResult {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // Mock storage implementation for testing.
@@ -233,14 +234,33 @@ func TestWebhookConfigurationService_GetOrganizationConfig_DefaultConfig(t *test
 	mockLogger := &mockLogger{}
 	service := NewWebhookConfigurationService(nil, nil, mockLogger, mockStorage)
 
-	// Mock storage returns error (config not found)
-	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").Return((*OrganizationWebhookConfig)(nil), assert.AnError)
+	// 없음은 ErrOrganizationConfigNotFound로 알린다. 예전에는 아무 오류나
+	// (assert.AnError) 기본값으로 대체됐는데, 그러면 저장소 장애까지
+	// "설정이 비어 있다"로 둔갑한다.
+	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").
+		Return((*OrganizationWebhookConfig)(nil), ErrOrganizationConfigNotFound)
 
 	config, err := service.GetOrganizationConfig(context.Background(), "testorg")
 
-	assert.NoError(t, err)
-	assert.NotNil(t, config)
+	require.NoError(t, err)
+	require.NotNil(t, config)
 	assert.Equal(t, "testorg", config.Organization)
+	mockStorage.AssertExpectations(t)
+}
+
+func TestWebhookConfigurationService_GetOrganizationConfig_StorageError(t *testing.T) {
+	mockStorage := &mockConfigStorage{}
+	mockLogger := &mockLogger{}
+	service := NewWebhookConfigurationService(nil, nil, mockLogger, mockStorage)
+
+	// 없음이 아닌 오류는 기본값으로 가리지 않고 그대로 올린다.
+	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").
+		Return((*OrganizationWebhookConfig)(nil), assert.AnError)
+
+	config, err := service.GetOrganizationConfig(context.Background(), "testorg")
+
+	require.Error(t, err)
+	assert.Nil(t, config)
 	mockStorage.AssertExpectations(t)
 }
 
@@ -301,18 +321,73 @@ func TestWebhookConfigurationService_ApplyPolicies(t *testing.T) {
 	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").Return(config, nil)
 	mockStorage.On("ListPolicies", mock.Anything, "testorg").Return(policies, nil)
 
+	// 대상 저장소를 직접 준다. test-repo만 정책 조건에 걸리므로 조건
+	// 필터가 실제로 동작하는지도 같이 확인된다.
 	request := &ApplyPoliciesRequest{
-		Organization: "testorg",
-		DryRun:       true,
+		Organization:    "testorg",
+		RepositoryNames: []string{"test-repo", "unrelated-repo"},
+		DryRun:          true,
 	}
 
 	result, err := service.ApplyPolicies(context.Background(), request)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
+	require.NoError(t, err)
+	require.NotNil(t, result)
 	assert.Equal(t, "testorg", result.Organization)
-	assert.True(t, result.TotalRepositories > 0)
+	assert.Equal(t, 2, result.TotalRepositories)
+	assert.Equal(t, 1, result.SuccessCount)
+	require.Len(t, result.Results, 1)
+	assert.Equal(t, "test-repo", result.Results[0].Repository)
 	mockStorage.AssertExpectations(t)
+}
+
+func TestWebhookConfigurationService_ApplyPolicies_ListsOrganizationRepositories(t *testing.T) {
+	mockStorage := &mockConfigStorage{}
+	mockLogger := &mockLogger{}
+	// 대상 저장소를 지정하지 않으면 조직 목록을 API로 가져온다. 예전에는
+	// getTargetRepositories가 repo1/repo2/repo3을 지어냈다.
+	apiClient := &orgReposAPIClient{repos: []RepositoryInfo{
+		{Name: "test-repo", FullName: "testorg/test-repo"},
+		{Name: "unrelated-repo", FullName: "testorg/unrelated-repo"},
+	}}
+	service := NewWebhookConfigurationService(nil, apiClient, mockLogger, mockStorage)
+
+	config := createTestOrganizationConfig()
+	policies := []*WebhookPolicy{createTestPolicy()}
+
+	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").Return(config, nil)
+	mockStorage.On("ListPolicies", mock.Anything, "testorg").Return(policies, nil)
+
+	request := &ApplyPoliciesRequest{Organization: "testorg", DryRun: true}
+
+	result, err := service.ApplyPolicies(context.Background(), request)
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, 2, result.TotalRepositories)
+	require.Len(t, result.Results, 1)
+	assert.Equal(t, "test-repo", result.Results[0].Repository)
+	mockStorage.AssertExpectations(t)
+}
+
+func TestWebhookConfigurationService_ApplyPolicies_NoAPIClient(t *testing.T) {
+	mockStorage := &mockConfigStorage{}
+	mockLogger := &mockLogger{}
+	service := NewWebhookConfigurationService(nil, nil, mockLogger, mockStorage)
+
+	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").
+		Return(createTestOrganizationConfig(), nil)
+	mockStorage.On("ListPolicies", mock.Anything, "testorg").
+		Return([]*WebhookPolicy{createTestPolicy()}, nil)
+
+	request := &ApplyPoliciesRequest{Organization: "testorg", DryRun: true}
+
+	// 저장소 목록을 알 수 없으면 지어내지 말고 즉시 실패해야 한다.
+	result, err := service.ApplyPolicies(context.Background(), request)
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "API client is not configured")
 }
 
 func TestWebhookConfigurationService_PreviewPolicyApplication(t *testing.T) {
@@ -327,30 +402,37 @@ func TestWebhookConfigurationService_PreviewPolicyApplication(t *testing.T) {
 	mockStorage.On("ListPolicies", mock.Anything, "testorg").Return(policies, nil)
 
 	request := &ApplyPoliciesRequest{
-		Organization: "testorg",
+		Organization:    "testorg",
+		RepositoryNames: []string{"test-repo", "unrelated-repo"},
 	}
 
 	preview, err := service.PreviewPolicyApplication(context.Background(), request)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, preview)
+	require.NoError(t, err)
+	require.NotNil(t, preview)
 	assert.Equal(t, "testorg", preview.Organization)
-	assert.True(t, len(preview.PlannedActions) > 0)
+	// 조건에 걸리는 저장소만 계획에 오른다.
+	require.Len(t, preview.PlannedActions, 1)
+	assert.Equal(t, "test-repo", preview.PlannedActions[0].Repository)
+	assert.Equal(t, WebhookActionCreate, preview.PlannedActions[0].Action)
 	mockStorage.AssertExpectations(t)
 }
 
 func TestWebhookConfigurationService_GenerateComplianceReport(t *testing.T) {
 	mockStorage := &mockConfigStorage{}
 	mockLogger := &mockLogger{}
-	service := NewWebhookConfigurationService(nil, nil, mockLogger, mockStorage)
+	apiClient := &orgReposAPIClient{repos: []RepositoryInfo{
+		{Name: "test-repo", FullName: "testorg/test-repo"},
+	}}
+	service := NewWebhookConfigurationService(nil, apiClient, mockLogger, mockStorage)
 
 	config := createTestOrganizationConfig()
 	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").Return(config, nil)
 
 	report, err := service.GenerateComplianceReport(context.Background(), "testorg")
 
-	assert.NoError(t, err)
-	assert.NotNil(t, report)
+	require.NoError(t, err)
+	require.NotNil(t, report)
 	assert.Equal(t, "testorg", report.Organization)
 	assert.True(t, report.ComplianceScore >= 0 && report.ComplianceScore <= 100)
 	mockStorage.AssertExpectations(t)
@@ -359,12 +441,15 @@ func TestWebhookConfigurationService_GenerateComplianceReport(t *testing.T) {
 func TestWebhookConfigurationService_GetWebhookInventory(t *testing.T) {
 	mockStorage := &mockConfigStorage{}
 	mockLogger := &mockLogger{}
-	service := NewWebhookConfigurationService(nil, nil, mockLogger, mockStorage)
+	apiClient := &orgReposAPIClient{repos: []RepositoryInfo{
+		{Name: "test-repo", FullName: "testorg/test-repo"},
+	}}
+	service := NewWebhookConfigurationService(nil, apiClient, mockLogger, mockStorage)
 
 	inventory, err := service.GetWebhookInventory(context.Background(), "testorg")
 
-	assert.NoError(t, err)
-	assert.NotNil(t, inventory)
+	require.NoError(t, err)
+	require.NotNil(t, inventory)
 	assert.Equal(t, "testorg", inventory.Organization)
 	assert.NotNil(t, inventory.Summary)
 }

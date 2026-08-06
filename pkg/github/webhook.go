@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -31,6 +32,45 @@ type WebhookConfig struct {
 	ContentType string `json:"content_type"`
 	Secret      string `json:"secret,omitempty"`
 	InsecureSSL bool   `json:"insecure_ssl"`
+}
+
+// UnmarshalJSON은 GitHub이 돌려주는 insecure_ssl을 읽는다.
+//
+// GitHub 웹훅 config의 insecure_ssl은 불리언이 아니라 "0"/"1" 문자열이다.
+// 이 파일의 쓰기 쪽(CreateRepositoryWebhook 등)도 그래서 문자열로 보낸다.
+// 그런데 읽기 쪽은 InsecureSSL이 bool이라 기본 디코더가 문자열을 만나면
+// "cannot unmarshal string into Go value of type bool"로 통째로 실패했다.
+// 응답 본문 하나를 해석하지 못하면 웹훅 정보 전체가 오지 않는다.
+//
+// 한 파일 안에서 쓰기는 문자열, 읽기는 불리언을 가정하고 있었다. 두 표기를
+// 모두 받아들여 맞춘다.
+func (c *WebhookConfig) UnmarshalJSON(data []byte) error {
+	// alias는 이 메서드가 다시 불리는 무한 재귀를 막는다.
+	type alias WebhookConfig
+
+	aux := struct {
+		InsecureSSL any `json:"insecure_ssl"`
+		*alias
+	}{alias: (*alias)(c)}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	switch v := aux.InsecureSSL.(type) {
+	case nil:
+		c.InsecureSSL = false
+	case bool:
+		c.InsecureSSL = v
+	case string:
+		c.InsecureSSL = v == "1" || strings.EqualFold(v, "true")
+	case float64:
+		c.InsecureSSL = v != 0
+	default:
+		return fmt.Errorf("unexpected insecure_ssl type %T", aux.InsecureSSL)
+	}
+
+	return nil
 }
 
 // WebhookCreateRequest represents a request to create a new webhook.
