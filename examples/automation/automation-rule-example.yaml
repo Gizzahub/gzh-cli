@@ -281,7 +281,11 @@ spec:
       - "opened"
       - "synchronize"
     repository_patterns:
-      - "^(?!test-).*" # Exclude test repositories
+      # Go의 정규식 엔진(RE2)에는 부정 전방탐색이 없다. 여기에 적혀 있던
+      # "^(?!test-).*"는 컴파일되지 않아 이 규칙을 쓰는 순간
+      # "invalid repository pattern" 오류로 떨어졌다. 제외가 아니라 포함할
+      # 이름을 적는다.
+      - "^(api|web|service|backend)-.*"
     file_patterns:
       - "*.go"
       - "*.js"

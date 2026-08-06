@@ -158,7 +158,10 @@ examples:
       org: "myorg"
       target: "./myorg-repos"
       parallel: 8
-      match: "^(?!.*test).*$"  # test가 포함되지 않은 리포지터리만
+      # Go의 정규식 엔진(RE2)에는 부정 전방탐색이 없다. 여기 적혀 있던
+      # "^(?!.*test).*$"는 컴파일되지 않는다. 제외가 아니라 포함할 이름을
+      # 적는다.
+      match: "^(api|web|service)-.*"
     description: "조직의 프로덕션 리포지터리만 클론"
 
 # 자동화 스크립트 예제

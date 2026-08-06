@@ -494,9 +494,9 @@ rules:
       pattern: "^var\\s+\\w+\\s*="
       severity: "error"
 
-    - id: "require-error-handling"
-      message: "Error handling is required"
-      pattern: "\\w+\\s*,\\s*err\\s*:=.*\\n(?!.*if.*err)"
+    - id: "no-discarded-errors"
+      message: "Errors must not be discarded"
+      pattern: "_\\s*=\\s*err\\b"
       severity: "warning"
 
   # Custom Python rules
@@ -515,6 +515,10 @@ rules:
       severity: "info"
       exclude_dirs: ["test/", "spec/"]
 ```
+
+> **패턴 문법**: `pattern`은 Go의 정규식 엔진(RE2)으로 컴파일된다. 전방탐색
+> `(?=...)`/`(?!...)`, 후방탐색 `(?<=...)`, 역참조 `\1`은 지원하지 않는다.
+> 제외 조건은 정규식 대신 `exclude_files`/`exclude_dirs`로 표현한다.
 
 ### Team Standards
 
