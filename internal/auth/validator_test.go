@@ -427,6 +427,13 @@ func TestValidator_analyzeRateLimit(t *testing.T) {
 				Remaining: 0,
 				ResetTime: time.Now().Add(30 * time.Minute),
 			},
+			// 잔여 0은 10% 미만이므로 소진 경고가 나오는 것이 맞다. 예전에는
+			// expectedWarnings를 아예 적지 않아 "경고 0개"를 기대했는데,
+			// 한도를 다 쓴 상태에서 아무 말도 하지 않는 쪽이 오히려 문제다.
+			// 완전 소진과 임박의 구분은 rate_limit_available이 담당한다.
+			expectedWarnings: []string{
+				"Rate limit is nearly exhausted",
+			},
 			expectedTestResults: map[string]bool{
 				"rate_limit_available": false,
 			},
