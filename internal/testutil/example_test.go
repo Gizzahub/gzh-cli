@@ -15,6 +15,8 @@ import (
 const (
 	// userEndpoint is the GitHub API user endpoint.
 	userEndpoint = "/user"
+	// reposEndpoint is the GitHub API repositories endpoint.
+	reposEndpoint = "/repos"
 )
 
 // Example of using test helpers.
@@ -54,11 +56,16 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	// Create mock HTTP client
 	mockClient := &mocks.MockHTTPClient{
 		DoFunc: func(req *http.Request) (*http.Response, error) {
-			// Return different responses based on URL
+			// Return different responses based on URL.
+			//
+			// 아래 요청은 api.github.com으로 나가므로 경로가 /user, /repos다.
+			// 예전에는 GitHub Enterprise 접두어(/api/v3/...)로 분기해서 두
+			// 요청 모두 default로 떨어져 404가 나왔다. 85~86줄의 어설션도
+			// /user, /repos를 기대하고 있어 분기 쪽이 틀린 것이 분명하다.
 			switch req.URL.Path {
-			case "/api/v3/user":
+			case userEndpoint:
 				return mocks.NewMockJSONResponse(200, `{"login":"testuser"}`), nil
-			case "/api/v3/repos":
+			case reposEndpoint:
 				return mocks.NewMockJSONResponse(200, `[{"name":"repo1"},{"name":"repo2"}]`), nil
 			default:
 				return mocks.NewMockResponse(404, "Not Found"), nil
@@ -83,7 +90,7 @@ func TestExampleWithMockHTTP(t *testing.T) {
 	// Verify calls were recorded
 	assert.Len(t, mockClient.Calls, 2)
 	assert.Equal(t, userEndpoint, mockClient.Calls[0].URL.Path)
-	assert.Equal(t, "/repos", mockClient.Calls[1].URL.Path)
+	assert.Equal(t, reposEndpoint, mockClient.Calls[1].URL.Path)
 }
 
 // Example of using fixtures.
