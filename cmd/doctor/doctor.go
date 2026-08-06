@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	goversion "go/version"
 	"net"
 	"net/http"
 	"os"
@@ -834,15 +835,41 @@ func getSystemInfo() SystemInfo {
 	}
 }
 
+// minGoVersion is the oldest toolchain this project builds against (see go.mod).
+const minGoVersion = "go1.23"
+
+// isGoVersionSupported reports whether a runtime.Version() string is at least
+// minGoVersion. The comparison is ordered, not a lookup of known releases: a
+// list has to be extended every six months, and the version that falls off the
+// end is always a *newer* one, so the failure mode is telling someone on a
+// current toolchain to upgrade.
 func isGoVersionSupported(version string) bool {
-	// Only support Go 1.23+
-	return strings.Contains(version, "go1.23") ||
-		strings.Contains(version, "go1.24") ||
-		strings.Contains(version, "go1.25") ||
-		strings.Contains(version, "go1.26") ||
-		strings.Contains(version, "go1.27") ||
-		strings.Contains(version, "go1.28") ||
-		strings.Contains(version, "go1.29")
+	v := normalizeGoVersion(version)
+	if !goversion.IsValid(v) {
+		return false
+	}
+
+	return goversion.Compare(v, minGoVersion) >= 0
+}
+
+// normalizeGoVersion picks the version token out of the several shapes callers
+// hand in: runtime.Version() gives "go1.26.0" on a release toolchain and
+// "devel go1.27-a1b2c3d <date>" on a development one, while `go version` output
+// gives a whole line, "go version go1.26.0 darwin/arm64". Input with no valid
+// token is returned unchanged so it stays invalid rather than becoming a guess.
+func normalizeGoVersion(version string) string {
+	for _, field := range strings.Fields(version) {
+		// "go1.27-a1b2c3d" (development toolchain) -> "go1.27"
+		if i := strings.IndexByte(field, '-'); i > 0 {
+			field = field[:i]
+		}
+
+		if goversion.IsValid(field) {
+			return field
+		}
+	}
+
+	return version
 }
 
 func getDiskSpace(path string) float64 {

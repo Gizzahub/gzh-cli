@@ -349,20 +349,28 @@ func TestDocorCmdStructure(t *testing.T) {
 }
 
 func TestIsGoVersionSupportedEdgeCases(t *testing.T) {
-	// Test edge cases for Go version checking
+	// The supported floor is go1.23 (go.mod, CLAUDE.md). These cases used to
+	// claim go1.19-go1.22 were supported, which was the policy before the bump.
 	testCases := []struct {
 		version   string
 		supported bool
 	}{
 		{"", false},
 		{"invalid", false},
-		{"go1.19", true},
-		{"go1.19.1", true},
-		{"go1.20", true},
-		{"go1.21", true},
-		{"go1.22", true},
+		{"not-go1.23", false}, // substring match used to accept this
 		{"go1.18", false},
-		{"go2.0", false},
+		{"go1.19", false},
+		{"go1.19.1", false},
+		{"go1.22", false},
+		{"go1.23", true},
+		{"go1.23rc1", true}, // an rc is a 1.23-series toolchain, so it clears the floor
+		{"go1.23.0", true},
+		{"go1.26.0", true},
+		{"go1.30", true},               // past the old hard-coded list's go1.29 ceiling
+		{"devel go1.27-a1b2c3d", true}, // runtime.Version() on a development toolchain
+		// A newer major is not "unsupported": the only caller turns false into
+		// "consider upgrading to Go 1.23+", which would be wrong advice here.
+		{"go2.0", true},
 	}
 
 	for _, tc := range testCases {
@@ -1524,17 +1532,27 @@ func TestDevEnvUtilityFunctions(t *testing.T) {
 	})
 
 	t.Run("isGoVersionOutdated", func(t *testing.T) {
+		// The floor is go1.23, so go1.20-go1.22 are outdated. These cases used
+		// to claim otherwise, contradicting both the function's own comment and
+		// TestIsGoVersionSupportedEdgeCases in this same file.
 		testCases := []struct {
 			version    string
 			isOutdated bool
 		}{
+			{"go1.15.0", true}, // below the old list's go1.16 floor, so it read as current
 			{"go1.16.5", true},
 			{"go1.17.0", true},
 			{"go1.18.9", true},
 			{"go1.19.2", true},
-			{"go1.20.0", false},
-			{"go1.21.5", false},
-			{"go1.22.0", false},
+			{"go1.20.0", true},
+			{"go1.21.5", true},
+			{"go1.22.0", true},
+			{"go1.23.0", false},
+			{"go1.26.0", false},
+			// What checkGoTool actually passes in: the whole `go version` line.
+			{"go version go1.26.0 darwin/arm64", false},
+			{"go version go1.22.0 linux/amd64", true},
+			// Unreadable input is not a claim that the toolchain is old.
 			{"unknown", false},
 			{"", false},
 		}

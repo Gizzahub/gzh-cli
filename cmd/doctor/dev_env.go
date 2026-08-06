@@ -6,6 +6,7 @@ package doctor
 import (
 	"context"
 	"fmt"
+	goversion "go/version"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -838,13 +839,19 @@ func getStatusIcon(status string) string {
 	}
 }
 
+// isGoVersionOutdated reports whether a `go version` line names a toolchain
+// older than minGoVersion. It is the complement of isGoVersionSupported except
+// on unreadable input: the caller turns true into a definite "outdated" status
+// plus an upgrade suggestion, and neither is honest when the version could not
+// be read at all.
+//
+// The list this replaced started at go1.16, so anything older -- go1.15 and
+// down -- was reported as current.
 func isGoVersionOutdated(version string) bool {
-	// Simple check - consider Go 1.22 and below as outdated (only 1.23+ supported)
-	outdatedVersions := []string{"go1.16", "go1.17", "go1.18", "go1.19", "go1.20", "go1.21", "go1.22"}
-	for _, old := range outdatedVersions {
-		if strings.Contains(version, old) {
-			return true
-		}
+	v := normalizeGoVersion(version)
+	if !goversion.IsValid(v) {
+		return false
 	}
-	return false
+
+	return goversion.Compare(v, minGoVersion) < 0
 }
