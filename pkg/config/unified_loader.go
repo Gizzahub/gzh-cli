@@ -4,6 +4,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,6 +15,14 @@ import (
 )
 
 const defaultConfigVersion = "1.0.0"
+
+// ErrConfigInvalid marks "파일은 읽었는데 내용이 규칙에 어긋난다"는 실패.
+//
+// 로드 경로에는 읽기/파싱과 검증이 함께 들어 있어서, 지금까지 호출자는 나온
+// error만 보고 둘을 구분할 수 없었다 -- 파일이 없는 것과 version이 빠진 것이
+// 똑같이 error로 왔다. 앞의 것은 검사 자체를 못 한 상황이고 뒤의 것은 검사
+// 결과이므로, errors.Is로 갈라볼 수 있게 표식을 붙인다.
+var ErrConfigInvalid = errors.New("configuration validation failed")
 
 // UnifiedLoader loads configuration from both legacy and unified formats.
 type UnifiedLoader struct {
@@ -120,7 +129,7 @@ func (l *UnifiedLoader) loadUnifiedConfig(configPath string, result *LoadResult)
 
 	// Validate configuration
 	if err := l.validateUnifiedConfig(&config); err != nil {
-		return nil, fmt.Errorf("configuration validation failed: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrConfigInvalid, err)
 	}
 
 	result.Config = &config

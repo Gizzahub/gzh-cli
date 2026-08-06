@@ -5,6 +5,7 @@ package config
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -242,14 +243,28 @@ func (v *ConfigValidator) addWarning(message string) {
 // contains helper function (duplicate removed - defined in provider_adapters.go)
 
 // ValidateConfigFile validates a configuration file and returns detailed results.
+//
+// 반환하는 error는 "검사를 수행하지 못했다"는 뜻이고, 설정이 유효한지 여부는
+// ValidationResult가 답한다. 예전에는 로드 단계에서 걸린 검증 실패를 결과와
+// error 양쪽으로 동시에 돌려줘서, 같은 상황을 호출자가 두 곳에서 처리해야 했다.
 func ValidateConfigFile(filename string) (*ValidationResult, error) {
 	config, err := LoadConfigFromFile(filename)
 	if err != nil {
-		return &ValidationResult{
+		result := &ValidationResult{
 			Valid:    false,
 			Errors:   []string{err.Error()},
 			Warnings: []string{},
-		}, err
+		}
+
+		// 로드 경로 안에도 검증이 들어 있어서(UnifiedLoader.validateUnifiedConfig)
+		// 여기 오는 error에는 두 가지가 섞인다. 내용이 규칙에 어긋난 경우는 검사
+		// 결과이므로 result로만 알리고, 파일을 못 읽은 경우는 검사 자체를 못 한
+		// 것이므로 error를 그대로 올려보낸다.
+		if errors.Is(err, ErrConfigInvalid) {
+			return result, nil
+		}
+
+		return result, err
 	}
 
 	validator := NewConfigValidator()
