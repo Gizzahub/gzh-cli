@@ -126,11 +126,28 @@ func (o *monitorOptions) runMonitor(ctx context.Context, _ *cobra.Command, _ []s
 	// Add directories to watcher
 	for _, dir := range watchDirs {
 		if err := o.addWatchRecursive(watcher, dir); err != nil {
+			// --watch-dir로 콕 집어 준 것이 안 되면 바로 실패한다. 쓰는
+			// 사람이 그 디렉토리를 보라고 한 것이지 아무거나 보라고 한 것이
+			// 아니다. 경고만 흘리고 계속 가면 없는 경로를 지켜보는 줄 알고
+			// 기다리게 된다.
+			if o.watchDir != "" {
+				return fmt.Errorf("cannot watch %s: %w", dir, err)
+			}
+
+			// 자동으로 찾은 것은 하나가 안 돼도 나머지가 남아 있을 수 있다.
 			fmt.Printf("⚠️  Warning: Could not watch %s: %v\n", dir, err)
 		}
 	}
 
-	fmt.Printf("📁 Watching %d paths for changes\n", len(watcher.WatchList()))
+	// 한 곳도 못 붙였으면 감시 고리에 들어갈 까닭이 없다. 예전에는
+	// "Watching 0 paths for changes"를 찍고 그대로 눌러앉았다 -- 아무 일도
+	// 일어날 수 없는데 일어나기를 기다리는 상태였다.
+	watchedPaths := len(watcher.WatchList())
+	if watchedPaths == 0 {
+		return fmt.Errorf("no directories could be watched (tried %d)", len(watchDirs))
+	}
+
+	fmt.Printf("📁 Watching %d paths for changes\n", watchedPaths)
 	fmt.Printf("🎯 Press Ctrl+C to stop monitoring\n\n")
 
 	// Start monitoring with graceful shutdown support
