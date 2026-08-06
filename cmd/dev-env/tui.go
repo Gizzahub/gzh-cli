@@ -62,8 +62,12 @@ Examples:
 func runTUI(cmd *cobra.Command, args []string) error {
 	verbose, _ := cmd.Flags().GetBool("verbose")
 
-	// Set up context
-	ctx, cancel := context.WithCancel(context.Background())
+	// 실행 맥락에서 갈라 쓴다. 예전에는 context.Background()에서 갈랐는데,
+	// 그러면 아래 "Handle interrupt signals gracefully" 고리가 제 때 돌 수
+	// 없다 -- 그 맥락을 끊는 것은 defer한 cancel뿐이고 그것은 이 함수가
+	// 끝나야, 즉 p.Run()이 이미 돌아온 뒤에야 불린다. 신호를 받아 TUI를
+	// 닫으려고 둔 자리가 TUI가 닫힌 뒤에 도는 셈이었다.
+	ctx, cancel := context.WithCancel(cmd.Context())
 	defer cancel()
 
 	// Create TUI model
