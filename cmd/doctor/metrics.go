@@ -205,12 +205,12 @@ func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts
 	}
 
 	// Run linting analysis
-	if err := collectLintingIssues(report, opts); err != nil {
+	if err := collectLintingIssues(ctx, report, opts); err != nil {
 		logger.Warn("Failed to collect linting issues", "error", err)
 	}
 
 	// Analyze test coverage
-	if err := collectCoverageMetrics(report, opts); err != nil {
+	if err := collectCoverageMetrics(ctx, report, opts); err != nil {
 		logger.Warn("Failed to collect coverage metrics", "error", err)
 	}
 
@@ -308,9 +308,13 @@ func collectProjectMetrics(report *CodeQualityReport, opts metricsOptions) error
 	return nil
 }
 
-func collectLintingIssues(report *CodeQualityReport, opts metricsOptions) error {
-	// Try golangci-lint with timeout to prevent hanging
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func collectLintingIssues(ctx context.Context, report *CodeQualityReport, opts metricsOptions) error {
+	// Try golangci-lint with timeout to prevent hanging.
+	//
+	// 실행 맥락에서 갈라 쓴다. 예전에는 Background에서 갈랐다. 시간 제한이
+	// 걸려 있으니 언젠가는 끝나지만, Ctrl+C를 눌러도 golangci-lint가 제
+	// 30초를 다 채울 때까지 기다려야 했다.
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, "golangci-lint", "run", "--out-format", "json", opts.projectPath)
@@ -376,9 +380,12 @@ func collectLintingIssues(report *CodeQualityReport, opts metricsOptions) error 
 	return nil
 }
 
-func collectCoverageMetrics(report *CodeQualityReport, opts metricsOptions) error {
-	// Try coverage analysis with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+func collectCoverageMetrics(ctx context.Context, report *CodeQualityReport, opts metricsOptions) error {
+	// Try coverage analysis with timeout.
+	//
+	// 여기가 특히 아팠다. go test ./...를 통째로 돌리는 자리라 웬만하면
+	// 60초를 다 쓴다. 실행 맥락에서 갈라야 Ctrl+C가 그 자식까지 닿는다.
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	// Run go test with coverage
