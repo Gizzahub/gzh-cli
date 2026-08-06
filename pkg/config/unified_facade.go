@@ -66,9 +66,19 @@ func (f *UnifiedConfigFacade) GetBulkCloneIntegration() *BulkCloneIntegration {
 	return f.integration
 }
 
-// SaveConfiguration saves the current configuration to a file.
+// SaveConfiguration saves the currently loaded configuration to a file.
 func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
-	if f.config == nil {
+	return f.WriteConfiguration(f.config, configPath)
+}
+
+// WriteConfiguration writes the given configuration to a file.
+//
+// 파사드가 들고 있는 설정이 아니라 인자로 받은 설정을 기록한다. 호출자가 아직
+// 로드하지 않은 설정(예: 새로 만든 설정)을 저장할 수 있어야 하기 때문이다.
+// 파사드 상태는 건드리지 않는다 -- config만 바꿔 두면 integration이 옛 설정을
+// 가리킨 채 남아 두 번째 불일치가 생긴다.
+func (f *UnifiedConfigFacade) WriteConfiguration(cfg *UnifiedConfig, configPath string) error {
+	if cfg == nil {
 		return errors.ErrConfigNotLoaded
 	}
 
@@ -78,7 +88,7 @@ func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 	}
 
 	// Marshal to YAML
-	data, err := yaml.Marshal(f.config)
+	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal configuration: %w", err)
 	}
@@ -89,7 +99,7 @@ func (f *UnifiedConfigFacade) SaveConfiguration(configPath string) error {
 # Version: %s
 # Documentation: https://github.com/gizzahub/gzh-cli/docs/configuration.md
 
-`, time.Now().Format("2006-01-02 15:04:05"), f.config.Version)
+`, time.Now().Format("2006-01-02 15:04:05"), cfg.Version)
 
 	content := header + string(data)
 

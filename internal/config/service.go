@@ -225,8 +225,10 @@ func (s *DefaultConfigService) SaveConfiguration(_ context.Context, cfg *config.
 	s.config = cfg
 	s.configPath = path
 
-	// Save using unified facade
-	err := s.unifiedFacade.SaveConfiguration(path)
+	// Save using unified facade. cfg를 명시적으로 넘긴다 -- 파사드의
+	// SaveConfiguration은 파사드가 로드한 설정을 기록하므로, 인자로 받은 cfg가
+	// 조용히 버려진다.
+	err := s.unifiedFacade.WriteConfiguration(cfg, path)
 	if err != nil {
 		return fmt.Errorf("failed to save configuration: %w", err)
 	}
