@@ -4,8 +4,6 @@
 package cmd
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/cmd/registry"
@@ -21,8 +19,11 @@ import (
 //
 // The wrapper allows customization of the command metadata while preserving all
 // subcommands and functionality from the gzh-cli-shellforge implementation.
-func NewShellforgeCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
-	_ = ctx    // Reserved for future context integration
+// ctx는 받지 않는다. "Reserved for future context integration"이라고 적어 두고
+// 쓰지 않았는데, 정작 넣어 주던 값은 register.go의 context.Background()라
+// 취소되지도 않는 것이었다. 하위 명령이 맥락을 필요로 하면 각 RunE에서
+// cmd.Context()를 쓰면 된다 -- root의 ExecuteContext가 넣어 준 진짜 맥락이다.
+func NewShellforgeCmd(appCtx *app.AppContext) *cobra.Command {
 	_ = appCtx // Reserved for future app context integration
 
 	// Use the external shellforge implementation
@@ -64,7 +65,7 @@ type shellforgeCmdProvider struct {
 }
 
 func (p shellforgeCmdProvider) Command() *cobra.Command {
-	return NewShellforgeCmd(context.Background(), p.appCtx)
+	return NewShellforgeCmd(p.appCtx)
 }
 
 func (p shellforgeCmdProvider) Metadata() registry.CommandMetadata {

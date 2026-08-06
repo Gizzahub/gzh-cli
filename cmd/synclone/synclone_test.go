@@ -265,7 +265,7 @@ repo_roots: []
 
 func TestMainSyncCloneCommandFlags(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
-		cmd := NewSyncCloneCmd(context.Background(), app.NewTestAppContext())
+		cmd := NewSyncCloneCmd(app.NewTestAppContext())
 		assert.NotNil(t, cmd)
 		assert.Equal(t, "synclone", cmd.Use)
 		// bulk-clone에서 synclone으로 이름이 바뀌면서 설명도 "Synchronize and

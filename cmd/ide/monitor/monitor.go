@@ -47,7 +47,11 @@ func defaultMonitorOptions() *monitorOptions {
 }
 
 // NewCmd creates the IDE monitor subcommand.
-func NewCmd(ctx context.Context) *cobra.Command {
+//
+// ctx를 받지 않는다. 예전에는 받았지만 쓰지 않았고, 준 쪽(register.go)은
+// context.Background()를 넣고 있었다. RunE가 cmd.Context()를 쓰므로 받을
+// 까닭이 없다. 남겨 두면 취소되는 맥락처럼 보여서 다시 붙잡아 쓰기 쉽다.
+func NewCmd() *cobra.Command {
 	o := defaultMonitorOptions()
 
 	cmd := &cobra.Command{

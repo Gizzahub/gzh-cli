@@ -4,7 +4,6 @@
 package cmd
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,11 +15,10 @@ import (
 // TestNewShellforgeCmd tests the NewShellforgeCmd wrapper function
 func TestNewShellforgeCmd(t *testing.T) {
 	// Setup
-	ctx := context.Background()
 	appCtx := &app.AppContext{}
 
 	// Execute
-	cmd := NewShellforgeCmd(ctx, appCtx)
+	cmd := NewShellforgeCmd(appCtx)
 
 	// Verify
 	require.NotNil(t, cmd, "Command should not be nil")
@@ -71,9 +69,8 @@ func TestRegisterShellforgeCmd(t *testing.T) {
 // TestShellforgeCmdIntegration tests the integration with the external library
 func TestShellforgeCmdIntegration(t *testing.T) {
 	// Setup
-	ctx := context.Background()
 	appCtx := &app.AppContext{}
-	cmd := NewShellforgeCmd(ctx, appCtx)
+	cmd := NewShellforgeCmd(appCtx)
 
 	// Verify command structure
 	assert.NotNil(t, cmd, "Command should not be nil")
@@ -93,18 +90,4 @@ func TestShellforgeCmdIntegration(t *testing.T) {
 	for _, expected := range []string{"build", "validate", "list"} {
 		assert.Contains(t, subcommandNames, expected, "Should have '%s' subcommand", expected)
 	}
-}
-
-// TestShellforgeCmdContextPropagation tests that context is properly handled
-func TestShellforgeCmdContextPropagation(t *testing.T) {
-	// Setup
-	ctx := context.Background()
-	appCtx := &app.AppContext{}
-
-	// Execute with context
-	cmd := NewShellforgeCmd(ctx, appCtx)
-
-	// Verify command was created successfully (context handling is internal)
-	require.NotNil(t, cmd, "Command should be created even with context")
-	assert.Equal(t, "shellforge", cmd.Use, "Command should be properly configured")
 }

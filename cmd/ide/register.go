@@ -4,8 +4,6 @@
 package ide
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/cmd/registry"
@@ -17,7 +15,7 @@ type ideCmdProvider struct {
 }
 
 func (p ideCmdProvider) Command() *cobra.Command {
-	return NewIDECmd(context.Background(), p.appCtx)
+	return NewIDECmd(p.appCtx)
 }
 
 func (p ideCmdProvider) Metadata() registry.CommandMetadata {

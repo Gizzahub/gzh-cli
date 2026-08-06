@@ -2,7 +2,6 @@
 package ide
 
 import (
-	"context"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -12,7 +11,7 @@ import (
 )
 
 func TestNewIDECmd(t *testing.T) {
-	cmd := NewIDECmd(context.Background(), app.NewTestAppContext())
+	cmd := NewIDECmd(app.NewTestAppContext())
 
 	assert.Equal(t, "ide", cmd.Use)
 	assert.Equal(t, "Monitor and manage IDE configuration changes", cmd.Short)

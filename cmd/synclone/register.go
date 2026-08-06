@@ -4,8 +4,6 @@
 package synclone
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/cmd/registry"
@@ -17,7 +15,7 @@ type syncCloneCmdProvider struct {
 }
 
 func (p syncCloneCmdProvider) Command() *cobra.Command {
-	return NewSyncCloneCmd(context.Background(), p.appCtx)
+	return NewSyncCloneCmd(p.appCtx)
 }
 
 func (p syncCloneCmdProvider) Metadata() registry.CommandMetadata {

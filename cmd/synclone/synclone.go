@@ -46,11 +46,12 @@ func defaultSyncCloneOptions() *syncCloneOptions {
 // services including GitHub, GitLab, Gitea, and Gogs using configuration files
 // or command-line flags.
 //
-// Parameters:
-//   - ctx: Context for operation cancellation and timeout control
+// ctx를 받지 않는다. 예전에는 받았지만 RunE가 cmd.Context()를 쓰게 되면서
+// 쓰이지 않게 되었고, 애초에 준 쪽(register.go)이 넣던 값은 취소되지 않는
+// context.Background()였다. 남겨 두면 진짜 맥락처럼 보인다.
 //
 // Returns a configured cobra.Command ready for execution.
-func NewSyncCloneCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
+func NewSyncCloneCmd(appCtx *app.AppContext) *cobra.Command {
 	o := defaultSyncCloneOptions()
 
 	cmd := &cobra.Command{

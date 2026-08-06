@@ -4,8 +4,6 @@
 package netenv
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/cmd/net-env/actions"
@@ -16,9 +14,8 @@ import (
 	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
-func NewNetEnvCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
+func NewNetEnvCmd(appCtx *app.AppContext) *cobra.Command {
 	_ = appCtx
-	_ = ctx
 
 	// Use library-based implementation instead of legacy local implementation
 	// The gzh-cli-net-env library provides:
@@ -31,13 +28,13 @@ func NewNetEnvCmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
 	return LibraryNetEnvCmd()
 
 	// Legacy implementation (commented out for now)
-	// return _legacyNetEnvCmd(ctx)
+	// return _legacyNetEnvCmd()
 }
 
 // _legacyNetEnvCmd returns the legacy net-env command implementation.
 // This is kept for reference and can be re-enabled if needed.
 // Prefer the library-based implementation (LibraryNetEnvCmd) for new features.
-func _legacyNetEnvCmd(ctx context.Context) *cobra.Command {
+func _legacyNetEnvCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "net-env",
 		Short: "Manage network environment transitions",

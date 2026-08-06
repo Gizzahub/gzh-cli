@@ -4,8 +4,6 @@
 package ide
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/cmd/ide/fixsync"
@@ -18,7 +16,7 @@ import (
 )
 
 // NewIDECmd creates the IDE subcommand for monitoring and managing IDE configuration changes.
-func NewIDECmd(ctx context.Context, appCtx *app.AppContext) *cobra.Command {
+func NewIDECmd(appCtx *app.AppContext) *cobra.Command {
 	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "ide",
@@ -65,7 +63,7 @@ Examples:
 		SilenceUsage: true,
 	}
 
-	cmd.AddCommand(monitor.NewCmd(ctx))
+	cmd.AddCommand(monitor.NewCmd())
 	cmd.AddCommand(list.NewCmd())
 	cmd.AddCommand(fixsync.NewCmd())
 	cmd.AddCommand(scan.NewCmd())

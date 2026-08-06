@@ -4,8 +4,6 @@
 package netenv
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/cmd/registry"
@@ -17,7 +15,7 @@ type netEnvCmdProvider struct {
 }
 
 func (p netEnvCmdProvider) Command() *cobra.Command {
-	return NewNetEnvCmd(context.Background(), p.appCtx)
+	return NewNetEnvCmd(p.appCtx)
 }
 
 func (p netEnvCmdProvider) Metadata() registry.CommandMetadata {

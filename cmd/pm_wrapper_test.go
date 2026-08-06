@@ -6,7 +6,6 @@
 package cmd
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,11 +17,10 @@ import (
 // TestNewPMCmd tests the NewPMCmd wrapper function
 func TestNewPMCmd(t *testing.T) {
 	// Setup
-	ctx := context.Background()
 	appCtx := &app.AppContext{}
 
 	// Execute
-	cmd := NewPMCmd(ctx, appCtx)
+	cmd := NewPMCmd(appCtx)
 
 	// Verify
 	require.NotNil(t, cmd, "Command should not be nil")
@@ -73,9 +71,8 @@ func TestRegisterPMCmd(t *testing.T) {
 // TestPMCmdIntegration tests the integration with the external library
 func TestPMCmdIntegration(t *testing.T) {
 	// Setup
-	ctx := context.Background()
 	appCtx := &app.AppContext{}
-	cmd := NewPMCmd(ctx, appCtx)
+	cmd := NewPMCmd(appCtx)
 
 	// Verify command structure
 	assert.NotNil(t, cmd, "Command should not be nil")
@@ -93,18 +90,4 @@ func TestPMCmdIntegration(t *testing.T) {
 
 	// Check that we have subcommands (exact list may vary with library version)
 	assert.NotEmpty(t, subcommandNames, "Should have subcommands from external library")
-}
-
-// TestPMCmdContextPropagation tests that context is properly handled
-func TestPMCmdContextPropagation(t *testing.T) {
-	// Setup
-	ctx := context.Background()
-	appCtx := &app.AppContext{}
-
-	// Execute with context
-	cmd := NewPMCmd(ctx, appCtx)
-
-	// Verify command was created successfully (context handling is internal)
-	require.NotNil(t, cmd, "Command should be created even with context")
-	assert.Equal(t, "pm", cmd.Use, "Command should be properly configured")
 }

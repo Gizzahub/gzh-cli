@@ -2,7 +2,6 @@
 package netenv
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,8 +11,7 @@ import (
 )
 
 func TestNewNetEnvCmd(t *testing.T) {
-	ctx := context.Background()
-	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
+	cmd := NewNetEnvCmd(app.NewTestAppContext())
 
 	assert.Equal(t, "net-env", cmd.Use)
 	assert.Equal(t, "Manage network environment configurations", cmd.Short)
@@ -36,8 +34,7 @@ func TestNewNetEnvCmd(t *testing.T) {
 }
 
 func TestNetEnvCmdStructure(t *testing.T) {
-	ctx := context.Background()
-	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
+	cmd := NewNetEnvCmd(app.NewTestAppContext())
 
 	assert.NotEmpty(t, cmd.Use)
 	assert.NotEmpty(t, cmd.Short)
@@ -53,8 +50,7 @@ func TestNetEnvCmdStructure(t *testing.T) {
 }
 
 func TestNetEnvCmdHelpContent(t *testing.T) {
-	ctx := context.Background()
-	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
+	cmd := NewNetEnvCmd(app.NewTestAppContext())
 
 	longDesc := cmd.Long
 	assert.Contains(t, longDesc, "network environment transitions")
@@ -65,8 +61,7 @@ func TestNetEnvCmdHelpContent(t *testing.T) {
 }
 
 func TestNetEnvCmdHelpExecute(t *testing.T) {
-	ctx := context.Background()
-	cmd := NewNetEnvCmd(ctx, app.NewTestAppContext())
+	cmd := NewNetEnvCmd(app.NewTestAppContext())
 	cmd.SetArgs([]string{"--help"})
 	err := cmd.Execute()
 	require.NoError(t, err)

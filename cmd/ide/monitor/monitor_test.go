@@ -77,7 +77,7 @@ func TestRunMonitorStopsOnContextCancel(t *testing.T) {
 // 실행만 취소되는 맥락으로 한다. RunE가 cmd.Context()를 쓰지 않으면
 // 이 시험은 돌아오지 않는다.
 func TestCommandUsesExecutionContext(t *testing.T) {
-	cmd := NewCmd(context.Background()) // register.go가 하는 그대로
+	cmd := NewCmd() // register.go가 하는 그대로
 	cmd.SetArgs([]string{"--watch-dir", t.TempDir()})
 
 	ctx, cancel := context.WithCancel(context.Background())
