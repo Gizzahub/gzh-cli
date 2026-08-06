@@ -145,6 +145,15 @@ func (sv *StartupValidator) validateBusinessRules(config *UnifiedConfig) {
 	}
 
 	// Validate provider configurations
+	//
+	// provider가 하나도 없으면 에러다. UnifiedLoader.validateUnifiedConfig는
+	// 이미 "at least one provider must be configured"로 거절하는데, 여기만
+	// 그냥 통과시켜 두 검증기의 판정이 갈렸다 -- 로더가 거부할 설정을
+	// StartupValidator는 유효하다고 답했다. 메시지도 로더와 맞춘다.
+	if len(config.Providers) == 0 {
+		sv.addError("Providers", "required", "", "at least one provider must be configured")
+	}
+
 	for providerName, provider := range config.Providers {
 		sv.validateProviderConfig(providerName, provider)
 	}
@@ -326,12 +335,16 @@ func (sv *StartupValidator) validateConcurrencySettings(concurrency *Concurrency
 // checkConfigurationWarnings checks for potential configuration issues.
 func (sv *StartupValidator) checkConfigurationWarnings(config *UnifiedConfig) {
 	// Check if no organizations are configured
+	//
+	// provider 자체가 없는 경우는 이미 에러로 잡았으므로 여기서 다시 경고하지
+	// 않는다. provider가 0개면 org도 당연히 0개라, 경고가 에러에 얹히기만 하고
+	// 새로 알려주는 것이 없었다.
 	totalOrgs := 0
 	for _, provider := range config.Providers {
 		totalOrgs += len(provider.Organizations)
 	}
 
-	if totalOrgs == 0 {
+	if len(config.Providers) > 0 && totalOrgs == 0 {
 		sv.addWarning("Providers", "No organizations configured, the application will not have any targets to process")
 	}
 

@@ -73,15 +73,24 @@ type TimeoutSettings struct {
 }
 
 // ConcurrencySettings contains concurrency configurations.
+//
+// 상한은 태그로 막지 않고 StartupValidator의 경고로만 알린다. 예전에는 여기
+// max=50/max=20이 붙어 있으면서 validateConcurrencySettings가 똑같은 임계값에
+// 경고를 달았다 -- 임계값이 완전히 같아서, 경고가 뜰 값은 이미 에러로 거절된
+// 뒤였다. 한 설정에 에러와 "may overwhelm the system"이라는 권고가 동시에
+// 붙는 모순이다. 문서에는 상한이 명시된 적이 없고, 태그가 만드는 메시지는
+// 정수 필드에 "must have at most 50 items"라고 나와 말도 맞지 않았다.
+// 워커 수는 사용자 머신 사정에 달린 값이라 거부할 근거가 없으므로,
+// 권고(경고)로 통일한다. min=1은 남겨 음수/0을 막는다.
 type ConcurrencySettings struct {
 	// Maximum concurrent clone operations
-	CloneWorkers int `yaml:"clone_workers,omitempty" json:"clone_workers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:revive,tagliatelle // YAML compatibility required; custom validation tags are valid
+	CloneWorkers int `yaml:"clone_workers,omitempty" json:"clone_workers,omitempty" validate:"omitempty,min=1"` //nolint:revive,tagliatelle // YAML compatibility required; custom validation tags are valid
 
 	// Maximum concurrent update operations
-	UpdateWorkers int `yaml:"update_workers,omitempty" json:"update_workers,omitempty" validate:"omitempty,min=1,max=50"` //nolint:revive,tagliatelle // YAML compatibility required; custom validation tags are valid
+	UpdateWorkers int `yaml:"update_workers,omitempty" json:"update_workers,omitempty" validate:"omitempty,min=1"` //nolint:revive,tagliatelle // YAML compatibility required; custom validation tags are valid
 
 	// Maximum concurrent API operations
-	APIWorkers int `yaml:"api_workers,omitempty" json:"api_workers,omitempty" validate:"omitempty,min=1,max=20"` //nolint:tagliatelle // YAML compatibility required
+	APIWorkers int `yaml:"api_workers,omitempty" json:"api_workers,omitempty" validate:"omitempty,min=1"` //nolint:tagliatelle // YAML compatibility required
 }
 
 // ProviderConfig represents configuration for a specific Git provider.
