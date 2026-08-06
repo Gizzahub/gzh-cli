@@ -82,12 +82,20 @@ The server provides the following endpoints:
 			fmt.Printf("✅ Pprof server started on http://localhost:%d/debug/pprof/\n", port)
 			fmt.Println("Press Ctrl+C to stop the server")
 
-			// Wait for interrupt
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			// 멈추라는 신호를 기다린다.
+			//
+			// 예전에는 여기서 새 맥락을 만들고 cancel을 defer한 뒤 그
+			// 맥락의 Done을 기다렸다. 그 cancel은 이 함수가 끝나야 불리는데
+			// 함수는 Done을 기다리느라 끝나지 않는다. 무조건 걸리는
+			// 자리였다. Ctrl+C도 소용없었다 -- apprunner가 signal.Notify로
+			// 기본 동작(신호 받으면 죽기)을 가로챈 뒤 자기 맥락만 취소하기
+			// 때문이다. 신호 처리기를 달아 둔 것이 오히려 못 죽게 만들었다.
+			//
+			// cmd.Context()가 root의 ExecuteContext를 거쳐 온 그 맥락이다.
+			<-cmd.Context().Done()
 
-			// This would normally wait for a signal, but for CLI we'll just show the message
-			<-ctx.Done()
+			// 멈추는 데 쓰는 맥락은 따로 둔다. 방금 취소된 것을 그대로
+			// 넘기면 정리할 틈도 없이 끊긴다.
 			return profiler.StopHTTPServer(context.Background())
 		},
 	}

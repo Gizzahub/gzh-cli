@@ -2,11 +2,16 @@
 package profile
 
 import (
+	"context"
+	"net"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/gizzahub/gzh-cli/internal/app"
 )
@@ -272,5 +277,54 @@ func TestProfileCommandUsagePatterns(t *testing.T) {
 			// Long description should be more detailed than short
 			assert.True(t, len(subcmd.Long) > len(subcmd.Short), "Long description should be longer than short")
 		})
+	}
+}
+
+// TestSimpleServerCmdStopsOnContextCancel은 pprof 서버가 취소로 끝나는지
+// 본다.
+//
+// 예전에는 RunE가 이렇게 돼 있었다.
+//
+//	ctx, cancel := context.WithCancel(context.Background())
+//	defer cancel()
+//	<-ctx.Done()
+//
+// 저 cancel은 함수가 끝나야 불리는데 함수는 Done을 기다리느라 끝나지
+// 않는다. 신호를 기다리는 것이 아니라 무조건 걸리는 자리였다. Ctrl+C도
+// 소용없었다 -- apprunner가 signal.Notify로 기본 동작을 가로챈 뒤 자기
+// 맥락만 취소하기 때문에, 이 맥락에는 아무것도 오지 않는다.
+//
+// 위쪽 TestNewSimpleServerCmd가 이걸 못 잡은 까닭은 RunE를 부르지 않고
+// Use와 깃발만 보기 때문이다. 명령이 있는지는 봤고 도는지는 안 봤다.
+func TestSimpleServerCmdStopsOnContextCancel(t *testing.T) {
+	// 비어 있는 항구를 하나 얻는다. 6060은 이미 누가 쓰고 있을 수 있다.
+	var lc net.ListenConfig
+
+	listener, err := lc.Listen(context.Background(), "tcp", "localhost:0")
+	require.NoError(t, err)
+
+	addr, ok := listener.Addr().(*net.TCPAddr)
+	require.True(t, ok, "TCP 주소가 나와야 한다")
+
+	port := addr.Port
+	require.NoError(t, listener.Close())
+
+	cmd := newSimpleServerCmd()
+	cmd.SetArgs([]string{"--port", strconv.Itoa(port)})
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	done := make(chan error, 1)
+	go func() { done <- cmd.ExecuteContext(ctx) }()
+
+	// 서버가 뜰 틈을 준 뒤 끊는다.
+	time.Sleep(300 * time.Millisecond)
+	cancel()
+
+	select {
+	case err := <-done:
+		assert.NoError(t, err)
+	case <-time.After(5 * time.Second):
+		t.Fatal("취소했는데 돌아오지 않는다 -- 서버가 걸려 있다")
 	}
 }

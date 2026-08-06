@@ -68,7 +68,13 @@ containing the repository list for future reference and synchronization.
 
 For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return o.run(ctx, cmd, args)
+			// 붙잡아 둔 ctx가 아니라 cmd.Context()를 쓴다. register.go가
+			// NewSyncCloneCmd에 context.Background()를 주기 때문에
+			// (registry.Provider의 Command()에 ctx 자리가 없다) 그것을
+			// 쓰면 취소가 오지 않는다. 아래 run()에서 대상마다 확인하는
+			// ctx.Done()이 통째로 죽어 있었고, 수백 개를 받는 도중에
+			// Ctrl+C를 눌러도 끝까지 갔다.
+			return o.run(cmd.Context(), cmd, args)
 		},
 	}
 
