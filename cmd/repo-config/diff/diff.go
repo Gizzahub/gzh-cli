@@ -118,7 +118,7 @@ Examples:
   gz repo-config diff --format unified          # Unified diff format
   gz repo-config diff --show-values             # Include current values`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDiffCommand(flags, filter, format, showValues, impactFilter, onlyNonCompliant, groupByImpact, detailed)
+			return runDiffCommand(cmd.Context(), flags, filter, format, showValues, impactFilter, onlyNonCompliant, groupByImpact, detailed)
 		},
 	}
 
@@ -138,7 +138,7 @@ Examples:
 }
 
 // runDiffCommand executes the diff command.
-func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, impactFilter string, onlyNonCompliant, groupByImpact, detailed bool) error {
+func runDiffCommand(ctx context.Context, flags GlobalFlags, filter, format string, showValues bool, impactFilter string, onlyNonCompliant, groupByImpact, detailed bool) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
@@ -160,7 +160,7 @@ func runDiffCommand(flags GlobalFlags, filter, format string, showValues bool, i
 	fmt.Println()
 
 	// Get configuration differences
-	differences, err := getConfigurationDifferences(flags.Organization, filter, flags.Token, flags.ConfigFile)
+	differences, err := getConfigurationDifferences(ctx, flags.Organization, filter, flags.Token, flags.ConfigFile)
 	if err != nil {
 		return fmt.Errorf("failed to get configuration differences: %w", err)
 	}
@@ -647,10 +647,7 @@ func applyPolicyExceptions(differences []ConfigurationDifference, exceptions []c
 }
 
 // getConfigurationDifferences retrieves configuration differences for an organization.
-func getConfigurationDifferences(organization, filter, token, configPath string) ([]ConfigurationDifference, error) {
-	// Create a context
-	ctx := context.Background()
-
+func getConfigurationDifferences(ctx context.Context, organization, filter, token, configPath string) ([]ConfigurationDifference, error) {
 	// Get GitHub token from environment or global flags
 	if token == "" {
 		token = os.Getenv("GITHUB_TOKEN")

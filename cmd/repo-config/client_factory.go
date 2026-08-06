@@ -93,6 +93,9 @@ func (f *DefaultClientFactory) CreateGitHubClient(token string) (*gh.Client, err
 		}
 	}
 
+	// 여기의 context.Background()는 그대로 둔다. oauth2.NewClient는 이 맥락을
+	// 취소 통로로 쓰지 않고 밑에 깔 http.Client를 찾는 데만 쓴다. 실행 맥락은
+	// 이 client를 쓰는 각 호출에 직접 넘긴다.
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},

@@ -66,14 +66,14 @@ Examples:
 			flags.ConfigFile = commonFlags.ConfigFile
 			flags.Verbose = commonFlags.Verbose
 
-			return runListCommand(flags, commonFlags.Filter, commonFlags.Format, showConfig, commonFlags.Limit)
+			return runListCommand(ctx, flags, commonFlags.Filter, commonFlags.Format, showConfig, commonFlags.Limit)
 		})
 
 	return builder.Build()
 }
 
 // runListCommand executes the list command.
-func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, limit int) error {
+func runListCommand(ctx context.Context, flags GlobalFlags, filter, format string, showConfig bool, limit int) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
@@ -95,7 +95,6 @@ func runListCommand(flags GlobalFlags, filter, format string, showConfig bool, l
 	}
 
 	// Get repository list from service
-	ctx := context.Background()
 	repositories, err := service.ListRepositories(ctx, opts)
 	if err != nil {
 		return fmt.Errorf("failed to list repositories: %w", err)

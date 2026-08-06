@@ -112,7 +112,7 @@ Examples:
   gz repo-config webhook list --org myorg --repo myrepo
   gz repo-config webhook list --org myorg --repo myrepo --output json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWebhookList(flags)
+			return runWebhookList(cmd.Context(), flags)
 		},
 	}
 
@@ -142,7 +142,7 @@ Examples:
   gz repo-config webhook create --repo myrepo --url https://example.com/webhook --events push
   gz repo-config webhook create --repo myrepo --url https://example.com/webhook --events push,pull_request --secret mysecret`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWebhookCreate(flags)
+			return runWebhookCreate(cmd.Context(), flags)
 		},
 	}
 
@@ -179,7 +179,7 @@ Examples:
   gz repo-config webhook update --repo myrepo --id 12345 --url https://newurl.com/webhook
   gz repo-config webhook update --repo myrepo --id 12345 --events push,issues --active=false`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWebhookUpdate(flags)
+			return runWebhookUpdate(cmd.Context(), flags)
 		},
 	}
 
@@ -216,7 +216,7 @@ func newWebhookDeleteCmd() *cobra.Command {
 Examples:
   gz repo-config webhook delete --repo myrepo --id 12345`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWebhookDelete(flags)
+			return runWebhookDelete(cmd.Context(), flags)
 		},
 	}
 
@@ -249,7 +249,7 @@ Examples:
   gz repo-config webhook get --repo myrepo --id 12345
   gz repo-config webhook get --repo myrepo --id 12345 --output json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWebhookGet(flags)
+			return runWebhookGet(cmd.Context(), flags)
 		},
 	}
 
@@ -272,8 +272,7 @@ Examples:
 }
 
 // runWebhookList lists all webhooks for a repository.
-func runWebhookList(flags *WebhookFlags) error {
-	ctx := context.Background()
+func runWebhookList(ctx context.Context, flags *WebhookFlags) error {
 	client := createGitHubClient(flags.Token)
 
 	webhooks, _, err := client.Repositories.ListHooks(ctx, flags.Organization, flags.Repository, nil)
@@ -285,8 +284,7 @@ func runWebhookList(flags *WebhookFlags) error {
 }
 
 // runWebhookCreate creates a new webhook.
-func runWebhookCreate(flags *WebhookFlags) error {
-	ctx := context.Background()
+func runWebhookCreate(ctx context.Context, flags *WebhookFlags) error {
 	client := createGitHubClient(flags.Token)
 
 	config := &github.HookConfig{
@@ -319,8 +317,7 @@ func runWebhookCreate(flags *WebhookFlags) error {
 }
 
 // runWebhookUpdate updates an existing webhook.
-func runWebhookUpdate(flags *WebhookFlags) error {
-	ctx := context.Background()
+func runWebhookUpdate(ctx context.Context, flags *WebhookFlags) error {
 	client := createGitHubClient(flags.Token)
 
 	// Get existing webhook to preserve unmodified fields
@@ -376,8 +373,7 @@ func runWebhookUpdate(flags *WebhookFlags) error {
 }
 
 // runWebhookDelete deletes a webhook.
-func runWebhookDelete(flags *WebhookFlags) error {
-	ctx := context.Background()
+func runWebhookDelete(ctx context.Context, flags *WebhookFlags) error {
 	client := createGitHubClient(flags.Token)
 
 	if flags.DryRun {
@@ -396,8 +392,7 @@ func runWebhookDelete(flags *WebhookFlags) error {
 }
 
 // runWebhookGet gets details of a specific webhook.
-func runWebhookGet(flags *WebhookFlags) error {
-	ctx := context.Background()
+func runWebhookGet(ctx context.Context, flags *WebhookFlags) error {
 	client := createGitHubClient(flags.Token)
 
 	hook, _, err := client.Repositories.GetHook(ctx, flags.Organization, flags.Repository, flags.ID)
@@ -414,6 +409,10 @@ func createGitHubClient(token string) *github.Client {
 		return github.NewClient(nil)
 	}
 
+	// 여기의 context.Background()는 그대로 둔다. oauth2.NewClient는 이 맥락을
+	// 취소 통로로 쓰지 않고 밑에 깔 http.Client를 찾는 데만 쓴다(내부의
+	// ContextClient). StaticTokenSource라 토큰을 다시 받아 올 일도 없다.
+	// 실행 맥락은 이 client를 쓰는 각 호출(ListHooks 등)에 직접 넘긴다.
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(context.Background(), ts)
 
